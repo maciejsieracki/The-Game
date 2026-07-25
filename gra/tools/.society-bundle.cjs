@@ -849,10 +849,6 @@ function computeLawBreakdown(input, society = null) {
       value: perUnit * effective
     });
   }
-  if (input.hasRatusz) {
-    const v = pickSociety(prBlock, "prawo_ratusz", diff, 3);
-    if (v) lines.push({ id: "ratusz", label: "Ratusz", value: v });
-  }
   if (input.hasDomStarszyzny) {
     const v = pickSociety(prBlock, "prawo_dom_starszyzny", diff, 28);
     if (v) lines.push({ id: "dom_starszyzny", label: "Dom Starszyzny", value: v });

@@ -827,13 +827,20 @@ export function diffTradeRoutes(
 
 /**
  * Surowce civ-wide, których dostęp może "przeciekać" przez aktywną trasę handlową.
- * Odpowiadają trzem silnikowym bramkom dostępu: braz-access.ts (hasBrazAccess),
+ * Odpowiadają czterem silnikowym bramkom dostępu: braz-access.ts (hasBrazAccess),
  * zelazo-access.ts (hasZelazoAccess), livestock-unlock.ts (computeEmpireLivestockUnlocks
- * — tylko 'kon', jedyny surowiec hodowlany z civ-wide odblokowaniem, Model B).
+ * — tylko 'kon', jedyny surowiec hodowlany z civ-wide odblokowaniem, Model B) oraz
+ * 'cegla' (decyzja właściciela 40=B, 2026-07-25): Cegielnia wymaga Gliny, a złoże Gliny
+ * występuje wyłącznie na lądzie z rzeką — cywilizacja bez takiego terenu była trwale
+ * odcięta od epoki Żelaza (dziewięć budynków tej epoki kosztuje Cegłę), bez żadnego
+ * środka poza jednorazową transakcją dyplomatyczną. Dostęp natywny do 'cegla' liczy
+ * wołający (main.ts, ownerHasNativeResourceAccess) tym samym wzorcem AND co brąz:
+ * empire-wide źródło Gliny (Glinianka na złożu Gliny, gdziekolwiek w imperium) ORAZ
+ * Cegielnia zbudowana w KTÓRYMKOLWIEK mieście tego właściciela.
  */
-export type TradeRouteResourceKey = 'braz' | 'zelazo' | 'kon';
+export type TradeRouteResourceKey = 'braz' | 'zelazo' | 'kon' | 'cegla';
 
-export const TRADE_ROUTE_RESOURCE_KEYS: readonly TradeRouteResourceKey[] = ['braz', 'zelazo', 'kon'];
+export const TRADE_ROUTE_RESOURCE_KEYS: readonly TradeRouteResourceKey[] = ['braz', 'zelazo', 'kon', 'cegla'];
 
 /**
  * Jeden przyznany dostęp "z trasy": `ownerId` (odbiorca) korzysta z dostępu, jaki

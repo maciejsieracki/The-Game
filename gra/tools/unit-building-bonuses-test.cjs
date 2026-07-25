@@ -225,6 +225,9 @@ console.log('\n-- F. Awans budynku (upgradeFrom) -- suma lancucha --');
   const wielkaKuzniaDef = BUILDINGS.find(b => b.id === 'wielka_kuznia');
   const akademiaDef     = BUILDINGS.find(b => b.id === 'akademia_wojskowa');
   eq(wielkaKuzniaDef.upgradeFrom, 'kuznia_zelaza', 'sanity: Wielka Kuznia zastepuje Kuznia zelaza (upgradeFrom)');
+  // KOSZTY-SUROWCOWE (Maciej 2026-07-25, ZADANIE 3): ogniwo naprawione -- Kuznia
+  // zelaza TERAZ zastepuje Kuznia (upgradeFrom='kuznia'), tak jak Palac.
+  eq(kuzniaZelazaDef.upgradeFrom, 'kuznia', 'sanity: Kuznia zelaza zastepuje Kuznia (upgradeFrom naprawiony)');
   // GRUPY-BUDYNKOW (Maciej 2026-07-25, likwidacja "awansu bocznego"): Akademia wojskowa
   // NIE zastepuje juz Koszar -- upgradeFrom usuniety, oba stoja w miescie osobno.
   eq(akademiaDef.upgradeFrom, undefined, 'sanity: Akademia wojskowa NIE zastepuje juz Koszar (upgradeFrom usuniety)');
@@ -271,8 +274,12 @@ console.log('\n-- F. Awans budynku (upgradeFrom) -- suma lancucha --');
   // cumulativeMnoznikForBuildingId -- ta sama funkcja uzywana przez UI (karta budynku,
   // panel "Statystyki (silnik)"): pyta o SAM budynek, niezaleznie od stanu miasta.
   eq(M.cumulativeMnoznikForBuildingId('kuznia', BUILDINGS), KUZNIA, 'UI: Kuznia (bez poprzednikow) = 15%');
-  eq(M.cumulativeMnoznikForBuildingId('kuznia_zelaza', BUILDINGS), KUZNIA_ZELAZA, 'UI: Kuznia zelaza (bez poprzednikow) = 15%');
-  eq(M.cumulativeMnoznikForBuildingId('wielka_kuznia', BUILDINGS), 30, 'UI: Wielka Kuznia = 30% (wlasny+kuznia_zelaza)');
+  // KOSZTY-SUROWCOWE (Maciej 2026-07-25, ZADANIE 3): ogniwo naprawione -- Kuznia
+  // zelaza teraz ZASTEPUJE Kuznia (upgradeFrom='kuznia'), wiec jej karta w UI
+  // pokazuje SKUMULOWANY % (wlasny 15 + Kuznia 15 = 30), tak jak Kuznia zelaza
+  // powinna zachowywac sie "jak Palac" (decyzja wlasciciela).
+  eq(M.cumulativeMnoznikForBuildingId('kuznia_zelaza', BUILDINGS), KUZNIA_ZELAZA + KUZNIA, 'UI: Kuznia zelaza = 30% (wlasny+Kuznia, lancuch naprawiony)');
+  eq(M.cumulativeMnoznikForBuildingId('wielka_kuznia', BUILDINGS), 45, 'UI: Wielka Kuznia = 45% (wlasny+kuznia_zelaza+kuznia, pelny lancuch)');
   eq(M.cumulativeMnoznikForBuildingId('koszary', BUILDINGS), KOSZARY, 'UI: Koszary (bez poprzednikow) = 20%');
   // GRUPY-BUDYNKOW: Akademia wojskowa juz NIE jest nastepca Koszar w upgradeFrom, wiec jej
   // karta w UI pokazuje TYLKO wlasny % (20), nie skumulowane 40 -- Koszary maja swoja
@@ -317,10 +324,15 @@ console.log('\n-- J. Podwojne liczenie -- kazdy budynek policzony najwyzej raz -
 {
   // Miasto ma jednoczesnie 'kuznia_zelaza' I 'wielka_kuznia' (nie powinno sie zdarzyc
   // w normalnej rozgrywce -- awans PODMIENIA id -- ale funkcja musi byc odporna).
-  // Naiwna suma lancuchow (kuznia_zelaza=15) + (wielka_kuznia=15+kuznia_zelaza=15=30)
-  // dalaby 45; poprawnie 'kuznia_zelaza' liczy sie TYLKO RAZ -> 15+15=30.
+  // KOSZTY-SUROWCOWE (Maciej 2026-07-25, ZADANIE 3): od naprawy ogniwa
+  // kuznia_zelaza->kuznia lancuch ma TRZY prawdziwe ogniwa (kuznia, kuznia_zelaza,
+  // wielka_kuznia), a 'kuznia' samo nie jest na liscie -- doliczane wylacznie
+  // przez lancuch 'kuznia_zelaza'. Kazde z trzech ogniw liczy sie NAJWYZEJ RAZ:
+  // 'kuznia_zelaza' (15, doliczajac tez 'kuznia'=15 -> 30) + 'wielka_kuznia'
+  // (wlasny 15, BEZ powtorki kuznia_zelaza/kuznia, juz policzonych) = 45.
+  // Naiwne podwojne liczenie dalyby 60 (2x kuznia_zelaza + 2x kuznia).
   const pathological = M.cityArmorBonusPercent(['kuznia_zelaza', 'wielka_kuznia'], BUILDINGS);
-  eq(pathological, 30, 'kuznia_zelaza obecny jednoczesnie z wielka_kuznia: liczony tylko raz (30%, nie 45%)');
+  eq(pathological, 45, 'kuznia_zelaza obecny jednoczesnie z wielka_kuznia: kazde ogniwo (kuznia/kuznia_zelaza/wielka_kuznia) liczone najwyzej raz -> 45%, nie 60%');
 
   // GRUPY-BUDYNKOW (Maciej 2026-07-25): 'koszary' + 'akademia_wojskowa' razem w miescie
   // to juz NIE stan patologiczny -- to teraz NORMALNY stan gry (upgradeFrom usuniety,

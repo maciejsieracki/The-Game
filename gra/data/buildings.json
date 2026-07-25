@@ -82,20 +82,19 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "Kamień w zasięgu imperium (aktywne źródło lub zapas w puli państwa)",
-    "uwagi": "",
+    "uwagi": "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
-      "drewno": 3,
-      "kamien": 3
+      "drewno": 6
     }
   },
   {
     "id": "kuznia",
-    "nazwa": "Kuznia",
+    "nazwa": "Kuźnia brązu",
     "kategoria": "Produkcja+Wojsko",
     "grupa": "Produkcja surowców",
     "epokaWejscia": 2,
-    "maksPoziom": 2,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 6,
@@ -122,11 +121,11 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "Ruda (miedź) w zasięgu imperium (aktywne źródło lub zapas w puli państwa)",
-    "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%)",
+    "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%). Nazwa wyswietlana zmieniona z 'Kuznia' na 'Kuźnia brązu' (Maciej 2026-07-25) -- identyfikator 'kuznia' BEZ ZMIAN (wsteczna zgodnosc zapisow). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Kuznia zelaza, nie sama z epoka. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc (kolejny tier w kolejnej epoce), obecnie martwe.",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
-      "drewno": 4,
-      "kamien": 4
+      "drewno": 6,
+      "kamien": 6
     }
   },
   {
@@ -135,7 +134,7 @@
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
     "epokaWejscia": 2,
-    "maksPoziom": 2,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 5,
@@ -162,11 +161,11 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "Kopalnia miedzi w imperium (twardy wymóg terenowy — jedyny wyjątek od reguły, decyzja właściciela Temat 8 Q3)",
-    "uwagi": "ABC-13: Piec hutniczy (brąz); upgrade → Odlewnia żelaza. Dostęp brąz = Popalnia (mapa) + ten budynek. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
+    "uwagi": "ABC-13: Piec hutniczy (brąz); upgrade → Odlewnia żelaza. Dostęp brąz = Popalnia (mapa) + ten budynek. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23). LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
-      "kamien": 6,
-      "cegla": 4
+      "drewno": 6,
+      "kamien": 8
     }
   },
   {
@@ -178,7 +177,7 @@
     "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
-      "praca": 8,
+      "praca": 12,
       "pieniadz": 1,
       "zywnosc": 0,
       "nauka": 0,
@@ -202,12 +201,12 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Odlewni brązu",
-    "uwagi": "ABC-7: suma bonusów z Odlewni brązu + żelazo; placeholder receptury",
+    "uwagi": "ABC-7: suma bonusów z Odlewni brązu + żelazo; placeholder receptury. Decyzja 42A (Maciej 2026-07-25): Praca 8 -> 12 pkt/turę -- awans z Pieca hutniczego (8 pkt) dawał dawniej 0 netto mimo kosztu 35 pkt Pracy budowy, teraz awans faktycznie się opłaca. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "Hutnictwo żelaza",
     "upgradeFrom": "odlewnia_brazu",
     "koszt_surowce": {
-      "cegla": 8,
-      "braz": 4
+      "drewno": 8,
+      "cegla": 10
     }
   },
   {
@@ -266,7 +265,7 @@
     "kategoria": "Pieniadz",
     "grupa": "Handel i pieniądz",
     "epokaWejscia": 2,
-    "maksPoziom": 2,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 1,
@@ -293,10 +292,11 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "Wybrzeże morskie lub rzeka w zasięgu tego miasta",
-    "uwagi": "",
+    "uwagi": "LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Port wielki. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "Żegluga",
     "koszt_surowce": {
-      "drewno": 10
+      "drewno": 12,
+      "kamien": 6
     }
   },
   {
@@ -332,12 +332,12 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Portu handlowego; wybrzeże morskie lub rzeka w zasięgu tego miasta",
-    "uwagi": "ABC-20 B: suma bonusów Port + Port wielki w JSON",
+    "uwagi": "ABC-20 B: suma bonusów Port + Port wielki w JSON. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. Budowla portowa epoki Żelaza -> drewno+kamień (nie drewno+cegła), zeby miasto bez zloza gliny nie zostalo bez portu.",
     "techUnlock": "Inżynieria",
     "upgradeFrom": "port",
     "koszt_surowce": {
-      "cegla": 10,
-      "braz": 4
+      "drewno": 12,
+      "kamien": 10
     }
   },
   {
@@ -346,7 +346,7 @@
     "kategoria": "Zywnosc",
     "grupa": "Żywność",
     "epokaWejscia": 1,
-    "maksPoziom": 3,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -373,11 +373,10 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "",
-    "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100",
+    "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
-      "drewno": 5,
-      "kamien": 3
+      "drewno": 8
     }
   },
   {
@@ -386,7 +385,7 @@
     "kategoria": "Zywnosc",
     "grupa": "Żywność",
     "epokaWejscia": 2,
-    "maksPoziom": 2,
+    "maksPoziom": 1,
     "upgradeFrom": "spichlerz",
     "nazwyPoziomow": [],
     "baza": {
@@ -414,10 +413,11 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 0,
     "wymagania": "upgrade ze Spichlerza I",
-    "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście",
+    "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "Warzelnia soli",
     "koszt_surowce": {
-      "cegla": 10
+      "drewno": 8,
+      "kamien": 10
     }
   },
   {
@@ -453,11 +453,10 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "glina w zasiegu",
-    "uwagi": "ABC-6: glina+drewno→ceramika (paliwo usuniete 2026-07-23)",
+    "uwagi": "ABC-6: glina+drewno→ceramika (paliwo usuniete 2026-07-23). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
-      "drewno": 4,
-      "kamien": 2
+      "drewno": 6
     }
   },
   {
@@ -496,8 +495,8 @@
     "uwagi": "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
-      "drewno": 4,
-      "kamien": 4
+      "drewno": 6,
+      "kamien": 6
     }
   },
   {
@@ -533,7 +532,7 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "",
-    "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Świątynia stoi teraz obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie następca w upgradeFrom.",
+    "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Świątynia stoi teraz obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie następca w upgradeFrom. WYJĄTEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali łamałby zgodność historyczną).",
     "techUnlock": "Mistycyzm",
     "koszt_surowce": {
       "kamien": 8
@@ -575,7 +574,8 @@
     "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY -- konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. GRUPY-BUDYNKOW (Maciej 2026-07-25): Świątynia to NIEZALEZNY budynek obok Kamiennych kregow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Kultura/Zadowolenie rozdzielone (3=1+2 wzgledem Kamiennych kregow, oba pola), zeby wklad Kamiennych kregow nie liczyl sie dwa razy.",
     "techUnlock": "Religia",
     "koszt_surowce": {
-      "cegla": 6
+      "drewno": 6,
+      "kamien": 8
     }
   },
   {
@@ -628,7 +628,8 @@
       "6": "Astronomia"
     },
     "koszt_surowce": {
-      "cegla": 5
+      "drewno": 6,
+      "kamien": 6
     }
   },
   {
@@ -664,10 +665,10 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "",
-    "uwagi": "Studnia miejska — dostęp do czystej wody (+Zdrowie proxy). Osobno: Łaźnia publiczna (termy rzymskie, epoka Żelaza).",
+    "uwagi": "Studnia miejska — dostęp do czystej wody (+Zdrowie proxy). Osobno: Łaźnia publiczna (termy rzymskie, epoka Żelaza). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "techUnlock": "Gospodarka wodna",
     "koszt_surowce": {
-      "kamien": 5
+      "drewno": 5
     }
   },
   {
@@ -706,7 +707,8 @@
     "uwagi": "T-TECH-6: zdrowie++ i cap ludności (turn-economy)",
     "techUnlock": "Budownictwo",
     "koszt_surowce": {
-      "cegla": 12
+      "drewno": 6,
+      "kamien": 12
     }
   },
   {
@@ -745,8 +747,8 @@
     "uwagi": "T-TECH-6: mnoznik handlu→pieniądz (economy.ts)",
     "techUnlock": "Waluta",
     "koszt_surowce": {
-      "kamien": 6,
-      "braz": 3
+      "drewno": 6,
+      "kamien": 8
     }
   },
   {
@@ -782,11 +784,12 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200% Obrony broniacym sie jednostkom -- patrz miasto-params.json bonus_obrona_mur_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony. Cytadela stoi teraz obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie następca w upgradeFrom.",
+    "uwagi": "Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200% Obrony broniacym sie jednostkom -- patrz miasto-params.json bonus_obrona_mur_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony. Cytadela stoi teraz obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie następca w upgradeFrom. Od 2026-07-25 dochodzi TRZECI niezależny budynek obronny -- Baszta (+100% dodatkowo, decyzja 41B).",
     "techUnlock": "Budownictwo",
     "odblokowuje": "maMur",
     "koszt_surowce": {
-      "cegla": 15
+      "drewno": 8,
+      "kamien": 16
     }
   },
   {
@@ -825,9 +828,8 @@
     "uwagi": "Mnoznik = +20% parametry miekkie (Sciezka B, wszystko poza Pancerzem) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Akademia wojskowa/Warsztat oblezniczy, max +50%). Akademia wojskowa stoi obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Praca rozdzielona, by nie liczyć wkładu Koszar dwa razy.",
     "techUnlock": "Wojskowość",
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 6,
-      "braz": 4
+      "drewno": 8,
+      "kamien": 8
     }
   },
   {
@@ -866,8 +868,8 @@
     "uwagi": "",
     "techUnlock": "Handel",
     "koszt_surowce": {
-      "drewno": 8,
-      "kamien": 4
+      "drewno": 10,
+      "kamien": 6
     }
   },
   {
@@ -903,7 +905,7 @@
     "utrzymanie": 0,
     "przyrostUtrzymania": 0,
     "wymagania": "",
-    "uwagi": "Nie wymaga utrzymania",
+    "uwagi": "Nie wymaga utrzymania. WYJĄTEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali łamałby zgodność historyczną).",
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
       "kamien": 6
@@ -915,7 +917,7 @@
     "kategoria": "Kultura/Administracja",
     "grupa": "Prawo i administracja",
     "epokaWejscia": 1,
-    "maksPoziom": 3,
+    "maksPoziom": 1,
     "nazwyPoziomow": [
       "Dom wodza",
       "Dwor",
@@ -946,7 +948,7 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "-",
-    "uwagi": "B-PALAC-TIER I (Kamień): 1/miasto; bramka drewno; bonus bazowy ×1; upgrade→Pałac II",
+    "uwagi": "B-PALAC-TIER I (Kamień): 1/miasto; bramka drewno; bonus bazowy ×1; upgrade→Pałac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pałac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "-",
     "lokalizacja": "stolica",
     "koszt_surowce": {
@@ -959,7 +961,7 @@
     "kategoria": "Kultura/Administracja",
     "grupa": "Prawo i administracja",
     "epokaWejscia": 2,
-    "maksPoziom": 2,
+    "maksPoziom": 1,
     "upgradeFrom": "palac",
     "nazwyPoziomow": [],
     "baza": {
@@ -987,12 +989,12 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Pałac I",
-    "uwagi": "B-PALAC-TIER II (Brąz): bramka drewno+kamień; bonus ×1,5 względem I; upgrade→Pałac III",
+    "uwagi": "B-PALAC-TIER II (Brąz): bramka drewno+kamień; bonus ×1,5 względem I; upgrade→Pałac III. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "-",
     "lokalizacja": "stolica",
     "koszt_surowce": {
-      "drewno": 8,
-      "kamien": 8
+      "drewno": 10,
+      "kamien": 10
     }
   },
   {
@@ -1029,13 +1031,12 @@
     "utrzymanie": 5,
     "przyrostUtrzymania": 2,
     "wymagania": "upgrade Pałac II",
-    "uwagi": "B-PALAC-TIER III (Żelazo): bramka drewno+kamień+cegła; bonus ×2,25 względem I (×1,5²)",
+    "uwagi": "B-PALAC-TIER III (Żelazo): bramka drewno+cegła; bonus ×2,25 względem I (×1,5²). LANCUCH W GORE: maksPoziom=1 (koniec lancucha, jak Pretorium) -- wartosc stala, epoki 4+ jeszcze nie ma.",
     "techUnlock": "-",
     "lokalizacja": "stolica",
     "koszt_surowce": {
-      "drewno": 8,
-      "kamien": 8,
-      "cegla": 6
+      "drewno": 10,
+      "cegla": 14
     }
   },
   {
@@ -1045,6 +1046,7 @@
     "grupa": "Produkcja surowców",
     "epokaWejscia": 3,
     "maksPoziom": 1,
+    "upgradeFrom": "kuznia",
     "nazwyPoziomow": [],
     "baza": {
       "praca": 8,
@@ -1070,13 +1072,13 @@
     "przyrostKosztu": 15,
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
-    "wymagania": "zelazo w zasiegu",
+    "wymagania": "upgrade Kuźni brązu; zelazo w zasiegu",
     "wymaganySurowiec": "zelazo",
-    "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia/Wielka Kuznia, max +45%); wymaga dostepu do zelaza",
+    "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia brazu/Wielka Kuznia, max +45%); wymaga dostepu do zelaza. NAPRAWIONE OGNIWO (decyzja Maciej 2026-07-25): dopisano upgradeFrom='kuznia' -- Kuźnia żelaza zastępuje teraz Kuźnię brązu (jak Pałac), zamiast stać obok niej w mieście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Wielka Kuznia. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "Hutnictwo żelaza",
     "koszt_surowce": {
-      "cegla": 6,
-      "braz": 4
+      "drewno": 8,
+      "cegla": 10
     }
   },
   {
@@ -1113,9 +1115,13 @@
     "przyrostUtrzymania": 2,
     "wymagania": "upgrade Kuźni żelaza; stal w zasięgu",
     "wymaganySurowiec": "stal",
-    "uwagi": "Upgrade Kuźnia żelaza → Wielka Kuźnia. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze.",
+    "uwagi": "Upgrade Kuźnia żelaza → Wielka Kuźnia. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze. LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce. Koszt surowcowy dodany wg SPEC-KOSZTY-SUROWCOWE-BUDYNKOW (epoka klasyczna, poza zasiegiem dzisiejszej gry o 3 epokach): drewno+cegla.",
     "techUnlock": "Obróbka żelaza",
-    "upgradeFrom": "kuznia_zelaza"
+    "upgradeFrom": "kuznia_zelaza",
+    "koszt_surowce": {
+      "drewno": 12,
+      "cegla": 16
+    }
   },
   {
     "id": "fort",
@@ -1150,12 +1156,53 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Cytadela to NIEZALEZNY budynek obok Murow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno, bez wymogu kolejnosci budowy. Mapa = osobny Fort terenowy (inny byt). Obrona miasta WYLACZNIE procentowa: Mury +200%, Cytadela +100% dodatkowo (razem +300% gdy oba w miescie) -- patrz miasto-params.json bonus_obrona_mur_proc / bonus_obrona_cytadela_proc + main.ts structureDefenseBonusFor (juz odporne na wspolobecnosc obu id w cityBuilt). Ten wpis nie niesie juz platowego bonusu Obrony.",
+    "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Cytadela to NIEZALEZNY budynek obok Murow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno, bez wymogu kolejnosci budowy. Mapa = osobny Fort terenowy (inny byt). Obrona miasta WYLACZNIE procentowa: Mury +200%, Cytadela +100% dodatkowo (razem +300% gdy oba w miescie), a od 2026-07-25 Baszta +100% dodatkowo (razem +400% z kompletem trzech) -- patrz miasto-params.json bonus_obrona_mur_proc / bonus_obrona_cytadela_proc / bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor (game/city-defense.ts, juz odporne na wspolobecnosc wielu id w cityBuilt). Ten wpis nie niesie juz platowego bonusu Obrony. Budowla obronna epoki Żelaza -> drewno+kamień (nie drewno+cegła), zeby miasto bez zloza gliny nie zostalo bez obrony.",
     "techUnlock": "Inżynieria",
     "odblokowuje": "maFort",
     "koszt_surowce": {
-      "cegla": 18,
-      "zelazo": 6
+      "drewno": 10,
+      "kamien": 20
+    }
+  },
+  {
+    "id": "baszta",
+    "nazwa": "Baszta",
+    "kategoria": "Obrona",
+    "grupa": "Wojsko i obrona",
+    "epokaWejscia": 3,
+    "maksPoziom": 1,
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 70,
+    "przyrostKosztu": 15,
+    "utrzymanie": 3,
+    "przyrostUtrzymania": 1,
+    "wymagania": "",
+    "uwagi": "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny, dokladany obok Murow i Cytadeli (nie zastepuje ich, brak upgradeFrom). Obrona miasta WYLACZNIE procentowa: +100% Obrony broniacym sie jednostkom, DODATKOWO ponad Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech = +400% -- patrz miasto-params.json bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor / game/city-defense.ts. Buduje sie NIEZALEZNIE od Murow/Cytadeli (brak wymogu kolejnosci) i w stolicy, i w regionach (brak pola lokalizacja). Koszt surowcowy w skali Cytadeli (ten sam rzad wielkosci bonusu +100%): drewno+kamien, budowla obronna epoki Żelaza.",
+    "techUnlock": "Inżynieria",
+    "odblokowuje": "maBaszta",
+    "koszt_surowce": {
+      "drewno": 10,
+      "kamien": 20
     }
   },
   {
@@ -1191,12 +1238,12 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "Wybudowane Koszary (lub ich upgrade — Akademia wojskowa) w tym mieście",
-    "uwagi": "Mnoznik = +10% parametry miekkie (Sciezka B) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Koszary/Akademia wojskowa). Odblokowuje budowę Katapulty w mieście (maWarsztatOblezniczy). Taran i Wieża = in-siege przy oblężeniu — styk UNITS",
+    "uwagi": "Mnoznik = +10% parametry miekkie (Sciezka B) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Koszary/Akademia wojskowa). Odblokowuje budowę Katapulty w mieście (maWarsztatOblezniczy). Taran i Wieża = in-siege przy oblężeniu — styk UNITS. Budowla obronna epoki Żelaza -> drewno+kamień (nie drewno+cegła).",
     "techUnlock": "Oblężnictwo",
     "odblokowuje": "maWarsztatOblezniczy",
     "koszt_surowce": {
-      "cegla": 8,
-      "zelazo": 6
+      "drewno": 10,
+      "kamien": 10
     }
   },
   {
@@ -1235,6 +1282,7 @@
     "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia to NIEZALEZNY budynek obok Biblioteki (nie zastepuje jej, upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura rozdzielone (9=3+6, 7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa razy. Teatr nadal ukryty z produkcji i wliczony w Akademie (merge bez zmian, ABC-21 B).",
     "techUnlock": "Filozofia",
     "koszt_surowce": {
+      "drewno": 8,
       "cegla": 14
     }
   },
@@ -1275,6 +1323,7 @@
     "techUnlock": "Filozofia",
     "suppressed": true,
     "koszt_surowce": {
+      "drewno": 8,
       "cegla": 10
     }
   },
@@ -1314,7 +1363,8 @@
     "uwagi": "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
     "techUnlock": "Prawo",
     "koszt_surowce": {
-      "cegla": 8
+      "drewno": 6,
+      "cegla": 10
     }
   },
   {
@@ -1350,7 +1400,7 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "Administracja lokalna miast regionalnych (poza stolicą), poziom 1: Dom Starszyzny. Łańcuch zastępowania jak Pałac: Dom Starszyzny → Dwór Zarządcy → Pretorium. Główne źródło Prawa miasta regionalnego (prawo_dom_starszyzny, society-params.json). Decyzja Macieja 2026-07-25 (podział stolica/region).",
+    "uwagi": "Administracja lokalna miast regionalnych (poza stolicą), poziom 1: Dom Starszyzny. Łańcuch zastępowania jak Pałac: Dom Starszyzny → Dwór Zarządcy → Pretorium. Główne źródło Prawa miasta regionalnego (prawo_dom_starszyzny, society-params.json). Decyzja Macieja 2026-07-25 (podział stolica/region). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Dwór Zarządcy. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe (juz 0, brak zmiany liczbowej).",
     "techUnlock": "-",
     "lokalizacja": "region",
     "koszt_surowce": {
@@ -1391,7 +1441,7 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Dom Starszyzny",
-    "uwagi": "Administracja lokalna miast regionalnych (poza stolicą), poziom 2: Dwór Zarządcy — zastępuje Dom Starszyzny. Główne źródło Prawa miasta regionalnego (prawo_dwor_zarzadcy, society-params.json); dalszy awans → Pretorium. Decyzja Macieja 2026-07-25 (podział stolica/region).",
+    "uwagi": "Administracja lokalna miast regionalnych (poza stolicą), poziom 2: Dwór Zarządcy — zastępuje Dom Starszyzny. Główne źródło Prawa miasta regionalnego (prawo_dwor_zarzadcy, society-params.json); dalszy awans → Pretorium. Decyzja Macieja 2026-07-25 (podział stolica/region). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pretorium. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe (juz 0, brak zmiany liczbowej).",
     "techUnlock": "Kodeks",
     "lokalizacja": "region",
     "koszt_surowce": {
@@ -1433,11 +1483,12 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Dwór Zarządcy",
-    "uwagi": "Administracja lokalna miast regionalnych (poza stolicą), poziom 3 (Żelazo): Pretorium — zastępuje Dwór Zarządcy, koniec łańcucha (jak Pałac III w stolicy). Główne źródło Prawa miasta regionalnego (prawo_pretorium, society-params.json). Garnizon liczy się do Prawa sam (prawo_garnizon_per_jednostka) — Pretorium nie daje mu dodatkowego bonusu; dawny zapis o mnożniku podatkowym nie miał pokrycia w kodzie (pole martwe, wyzerowane 2026-07-25).",
+    "uwagi": "Administracja lokalna miast regionalnych (poza stolicą), poziom 3 (Żelazo): Pretorium — zastępuje Dwór Zarządcy, koniec łańcucha (jak Pałac III w stolicy). Główne źródło Prawa miasta regionalnego (prawo_pretorium, society-params.json). Garnizon liczy się do Prawa sam (prawo_garnizon_per_jednostka) — Pretorium nie daje mu dodatkowego bonusu; dawny zapis o mnożniku podatkowym nie miał pokrycia w kodzie (pole martwe, wyzerowane 2026-07-25). LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce.",
     "techUnlock": "Prawo",
     "lokalizacja": "region",
     "koszt_surowce": {
-      "cegla": 9
+      "drewno": 8,
+      "cegla": 10
     }
   },
   {
@@ -1476,7 +1527,8 @@
     "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
     "techUnlock": "Kodeks",
     "koszt_surowce": {
-      "cegla": 8
+      "drewno": 6,
+      "kamien": 8
     }
   },
   {
@@ -1515,7 +1567,8 @@
     "uwagi": "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy — zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     "techUnlock": "Medycyna",
     "koszt_surowce": {
-      "cegla": 10
+      "drewno": 8,
+      "cegla": 12
     }
   },
   {
@@ -1554,8 +1607,8 @@
     "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia wojskowa to NIEZALEZNY budynek obok Koszar (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Praca rozdzielona (5=2+3 wzgledem Koszar), zeby wklad Koszar nie liczyl sie dwa razy. Mnoznik = +20% parametry miekkie (Sciezka B) -- TERAZ kumuluje sie z Koszarami wprost (oba obecne w miescie = +40%, razem z Warsztatem oblezniczym +50%); bramka elit UNITS.",
     "techUnlock": "Sztuka wojenna",
     "koszt_surowce": {
-      "cegla": 12,
-      "zelazo": 6
+      "drewno": 10,
+      "cegla": 14
     }
   }
 ]

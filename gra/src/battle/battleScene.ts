@@ -65,6 +65,7 @@ import { combatUnitFromDef, unitRowStat } from '../game/combat';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { applyMultiplier, civCombatStatMultipliers } from '../game/civ-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from '../game/unit-building-bonuses';
+import { cityWallDefenseBonusPercent } from '../game/city-defense';
 import { buildUnitModel } from '../render/units';
 import {
   BTerrain,
@@ -356,14 +357,15 @@ export interface SiegeOpts {
    */
   defCiv?: BronzeCiv;
   /**
-   * Maciej 2026-07-25: true gdy broniace sie miasto ma wybudowana Cytadele
-   * (budynek 'fort', upgrade Murow -- NIE mylic z ulepszeniem terenowym
-   * 'fort' na mapie). Podnosi bonus obrony na koronie muru (onWallWalkway)
-   * z +200% (sam mur) do +300% (mur+Cytadela) -- miasto-params.json
-   * bonus_obrona_mur_proc / bonus_obrona_cytadela_proc. Domyslnie false
-   * (sam mur) dla wstecznej zgodnosci callerow, ktorzy tego nie ustawiaja.
+   * Maciej 2026-07-25 (rozszerzone 41B -- Baszta): lista id budynkow FIZYCZNIE
+   * obecnych w broniacym sie miescie (City.cityBuilt), np. ['mury', 'fort',
+   * 'baszta']. Steruje bonusem obrony na koronie muru (onWallWalkway) przez
+   * cityWallDefenseBonusPercent (game/city-defense.ts) -- +200% (sam mur),
+   * +300% (mur+Cytadela, budynek 'fort'), +400% (mur+Cytadela+Baszta).
+   * Domyslnie undefined/puste (brak bonusu ponad zero) dla wstecznej
+   * zgodnosci callerow, ktorzy tego nie ustawiaja.
    */
-  cytadela?: boolean;
+  builtBuildingIds?: readonly string[];
 }
 
 export interface BattleOpts {
@@ -2190,9 +2192,10 @@ export class BattleScene {
   private siegeWallRowHi: number = -1;
   /**
    * Obrona multiplier for a defender standing on the wall walkway (onWallWalkway).
-   * 1 + bonus_obrona_mur_proc/100 (mur, default), or 1 + (mur+Cytadela)/100 when
-   * opts.siege.cytadela is true (Maciej 2026-07-25 -- miasto-params.json
-   * bonus_obrona_mur_proc/bonus_obrona_cytadela_proc). Set once in the constructor.
+   * 1 + cityWallDefenseBonusPercent(opts.siege.builtBuildingIds, ...)/100 --
+   * +200% (mur), +300% (mur+Cytadela), +400% (mur+Cytadela+Baszta), decyzja
+   * 41B (Maciej 2026-07-25 -- miasto-params.json bonus_obrona_mur_proc /
+   * bonus_obrona_cytadela_proc / bonus_obrona_baszta_proc). Set once in the constructor.
    */
   private wallDefenseMult: number = 1;
   /**
@@ -2390,12 +2393,18 @@ export class BattleScene {
     this._attackerCivLabel = opts.attackerCivLabel?.trim() || 'Gracz';
     this._defenderCivLabel = opts.defenderCivLabel?.trim() || 'Przeciwnik';
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
-    // Wall/Cytadela defence multiplier (Maciej 2026-07-25) -- data-driven from
-    // miasto-params.json, not hardcoded. +200% (mur) or +300% (mur+Cytadela).
+    // Wall/Cytadela/Baszta defence multiplier (Maciej 2026-07-25, rozszerzone
+    // 41B) -- data-driven from miasto-params.json, not hardcoded. +200% (mur),
+    // +300% (mur+Cytadela) or +400% (mur+Cytadela+Baszta). Scalone w
+    // cityWallDefenseBonusPercent (game/city-defense.ts) -- ta sama funkcja co
+    // main.ts structureDefenseBonusFor (mapa swiata), zeby oba tryby liczyly to samo.
     {
       const murProc = (miastoParamsData as any)?.bonus_obrona_mur_proc?.wartosc ?? 200;
       const cytadelaProc = (miastoParamsData as any)?.bonus_obrona_cytadela_proc?.wartosc ?? 100;
-      const totalProc = murProc + (opts.siege?.cytadela ? cytadelaProc : 0);
+      const basztaProc = (miastoParamsData as any)?.bonus_obrona_baszta_proc?.wartosc ?? 100;
+      const totalProc = cityWallDefenseBonusPercent(opts.siege?.builtBuildingIds, {
+        mur: murProc, cytadela: cytadelaProc, baszta: basztaProc,
+      });
       this.wallDefenseMult = 1 + totalProc / 100;
     }
     this._defenderSideLabel = opts.defenderSideLabel?.trim() || '';
@@ -7298,10 +7307,12 @@ export class BattleScene {
     // "Teren" rows by name, so the per-blow math stays canonical -- only WHICH
     // tile's terrain feeds each modifier changed (was a single battlefield-wide
     // terrain before). Facing/flank (B7) is applied first, exactly as before.
-    // SIEGE v2: a defender standing on the wall walkway gets the wall/Cytadela
-    // defence bonus (Maciej 2026-07-25: +200% mur-only, +300% mur+Cytadela --
-    // this.wallDefenseMult, computed once in the constructor from opts.siege.cytadela
-    // + miasto-params.json bonus_obrona_mur_proc/bonus_obrona_cytadela_proc).
+    // SIEGE v2: a defender standing on the wall walkway gets the wall/Cytadela/
+    // Baszta defence bonus (Maciej 2026-07-25, rozszerzone 41B: +200% mur-only,
+    // +300% mur+Cytadela, +400% mur+Cytadela+Baszta -- this.wallDefenseMult,
+    // computed once in the constructor from opts.siege.builtBuildingIds via
+    // cityWallDefenseBonusPercent + miasto-params.json bonus_obrona_mur_proc/
+    // bonus_obrona_cytadela_proc/bonus_obrona_baszta_proc).
     // NIE uzywamy 'Wzgorza' (+50%) — stosujemy jawny mnoznik muru dla onWallWalkway.
     const defTerrain = defender.onWallWalkway
       ? 'Plaskie (rownina/laka)'   // teren bazowy (x1.0) — mnoznik muru dodany ponizej

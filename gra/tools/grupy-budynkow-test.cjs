@@ -58,7 +58,9 @@ function ok(c, m) {
 // C. Każdy budynek ma przypisaną grupę — jedną z ośmiu dozwolonych.
 // ===========================================================================
 {
-  ok(buildings.length === 38, `buildings.json ma 38 budynków (ma: ${buildings.length})`);
+  // KOSZTY-SUROWCOWE (Maciej 2026-07-25): 39 budynków od dodania Baszty (decyzja
+  // 41B, trzeci niezależny budynek obronny) -- było 38 przed tą zmianą.
+  ok(buildings.length === 39, `buildings.json ma 39 budynków (ma: ${buildings.length})`);
   ok(M.BUILDING_GROUP_ORDER.length === 8, 'BUILDING_GROUP_ORDER ma dokładnie 8 grup');
   const allowed = new Set(M.BUILDING_GROUP_ORDER);
   let missing = [];
@@ -71,9 +73,10 @@ function ok(c, m) {
   ok(unknownGroup.length === 0, `grupa każdego budynku to jedna z 8 dozwolonych (poza listą: ${unknownGroup.join(', ')})`);
 
   // Rozkład przypisań zgodny z tabelą z zadania (kontrola liczności każdej grupy).
+  // 'Wojsko i obrona' 5 -> 6 (Baszta dołącza obok Murów/Cytadeli, decyzja 41B).
   const expectedCounts = {
     'Prawo i administracja': 8,
-    'Wojsko i obrona': 5,
+    'Wojsko i obrona': 6,
     'Handel i pieniądz': 5,
     'Nauka i kultura': 4,
     'Wiara': 2,
@@ -87,7 +90,7 @@ function ok(c, m) {
     ok(counts[g] === n, `grupa "${g}" ma ${n} budynków (ma: ${counts[g] ?? 0})`);
   }
   const totalAssigned = Object.values(counts).reduce((a, b) => a + b, 0);
-  ok(totalAssigned === 38, `suma budynków we wszystkich grupach = 38 (ma: ${totalAssigned})`);
+  ok(totalAssigned === 39, `suma budynków we wszystkich grupach = 39 (ma: ${totalAssigned})`);
 }
 
 // ===========================================================================
@@ -104,6 +107,10 @@ function ok(c, m) {
     palac_iii: 'palac_ii',
     dwor_zarzadcy: 'dom_starszyzny',
     pretorium: 'dwor_zarzadcy',
+    // KOSZTY-SUROWCOWE (Maciej 2026-07-25, ZADANIE 3): ogniwo naprawione --
+    // kuznia_zelaza teraz zastępuje kuznia (Kuźnia brązu → Kuźnia żelaza,
+    // jak Pałac), a nie stoi obok niej.
+    kuznia_zelaza: 'kuznia',
     wielka_kuznia: 'kuznia_zelaza',
     spichlerz_ii: 'spichlerz',
     port_wielki: 'port',
@@ -165,10 +172,10 @@ function ok(c, m) {
   const pretChain = M.upgradeChainSteps('pretorium', buildings);
   ok(pretChain.map(c => c.id).join(',') === 'dom_starszyzny,dwor_zarzadcy,pretorium', 'Pretorium: kolejność łańcucha dom_starszyzny→dwor_zarzadcy→pretorium');
 
-  // Wielka Kuźnia rozwija Kuźnia żelaza; Spichlerz II rozwija Spichlerz;
+  // Kuźnia żelaza rozwija Kuźnia brązu; Spichlerz II rozwija Spichlerz;
   // Port wielki rozwija Port; Odlewnia żelaza rozwija Piec hutniczy.
   for (const [id, expectedPrev] of [
-    ['wielka_kuznia', 'kuznia_zelaza'],
+    ['kuznia_zelaza', 'kuznia'],
     ['spichlerz_ii', 'spichlerz'],
     ['port_wielki', 'port'],
     ['odlewnia_zelaza', 'odlewnia_brazu'],
@@ -179,8 +186,18 @@ function ok(c, m) {
     ok(lines.length > 0, `${id}: upgradeCompositionLines() niepuste (jest następcą)`);
   }
 
-  // Budynki bez upgradeFrom (w tym cztery pary boczne) nie rozwijają nic.
-  for (const id of ['akademia', 'fort', 'akademia_wojskowa', 'swiatynia', 'biblioteka', 'koszary', 'kamienne_kregi', 'mury']) {
+  // Wielka Kuźnia rozwija DWOMA poprzednikami (Kuźnia żelaza, Kuźnia brązu) --
+  // łańcuch pełny od naprawy ogniwa kuznia_zelaza->kuznia (ZADANIE 3), tak jak
+  // Pałac III i Pretorium wyżej.
+  const wielkaKuzniaChain = M.upgradeChainSteps('wielka_kuznia', buildings);
+  ok(wielkaKuzniaChain.length === 3, `Wielka Kuźnia: łańcuch długości 3 (ma: ${wielkaKuzniaChain.length})`);
+  ok(wielkaKuzniaChain.map(c => c.id).join(',') === 'kuznia,kuznia_zelaza,wielka_kuznia',
+    'Wielka Kuźnia: kolejność łańcucha kuznia→kuznia_zelaza→wielka_kuznia');
+  const wielkaKuzniaLines = M.upgradeCompositionLines('wielka_kuznia', buildings);
+  ok(wielkaKuzniaLines.length > 0, 'Wielka Kuźnia: upgradeCompositionLines() niepuste (jest następcą)');
+
+  // Budynki bez upgradeFrom (w tym cztery pary boczne + nowa Baszta) nie rozwijają nic.
+  for (const id of ['akademia', 'fort', 'akademia_wojskowa', 'swiatynia', 'biblioteka', 'koszary', 'kamienne_kregi', 'mury', 'baszta']) {
     const chain = M.upgradeChainSteps(id, buildings);
     ok(chain.length === 1, `${id}: łańcuch to tylko on sam (długość 1, brak upgradeFrom)`);
     const lines = M.upgradeCompositionLines(id, buildings);

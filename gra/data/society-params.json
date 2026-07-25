@@ -817,13 +817,6 @@
       "jednostka": "jednostki",
       "opis": "Max jednostek liczonych do Prawa (5 → PrawPct≈100%)."
     },
-    "prawo_ratusz": {
-      "easy": 35,
-      "normal": 27,
-      "hard": 22,
-      "jednostka": "pkt Prawa",
-      "opis": "Bonus Prawa z Ratusza (gdy wpięty w budynki) — 70% wartości Pretorium (decyzja Macieja 2026-07-25, Pytanie 28). UWAGA: Ratusz nie istnieje jeszcze jako budynek w buildings.json — hasRatusz nigdy dziś nie jest true, trwa osobna decyzja o łańcuchu administracji lokalnej."
-    },
     "prawo_dom_starszyzny": {
       "easy": 36,
       "normal": 28,

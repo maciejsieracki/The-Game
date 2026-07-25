@@ -312,9 +312,9 @@ Domyślnie wagi są **po równo (50/50)**; na łatwej grze szczęście waży nie
 
 | Plusy prawa | Minusy prawa |
 |-------------|--------------|
-| **Ratusz** (+3 pkt) | Brak garnizonu przy dużej populacji (≥6) |
-| **Pretorium** (+2) | Obce wojsko tuż po podboju (krótkotrwałe) |
-| **Sąd** (+2) | |
+| **Administracja lokalna** — Dom Starszyzny / Dwór Zarządcy / Pretorium (zastępowanie, poza stolicą) | Brak garnizonu przy dużej populacji (≥6) |
+| **Pałac** (I/II/III, tylko stolica) | Obce wojsko tuż po podboju (krótkotrwałe) |
+| **Trybunał** / **Sąd** (wszędzie) | |
 | **Garnizon** — **+20 pkt na jednostkę**, max 5 jednostek → prawo 100% | |
 | Bonus Osiedle (małe miasto) | |
 
@@ -373,7 +373,7 @@ Gdy porządek utrzymuje się **poniżej ok. 10%** przez **2 tury** z rzędu (po 
 | Chcesz podnieść… | Zrób… |
 |------------------|-------|
 | **Szczęście** | Więcej **zamożności** w suwaku handlu; teatr; wojna kończy się; własna kultura/religia |
-| **Prawo** | **Wojsko w mieście** (do 5 jednostek); ratusz; pretorium |
+| **Prawo** | **Wojsko w mieście** (do 5 jednostek); administracja lokalna (Dom Starszyzny → Dwór Zarządcy → Pretorium) lub Pałac w stolicy; Trybunał/Sąd |
 | **Oba naraz** | Obniż podatki **i** zostaw garnizon — klasyczna para po podboju |
 
 ### 36.7. Porządek a przycisk Wykonaj

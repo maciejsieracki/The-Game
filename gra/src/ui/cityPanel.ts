@@ -2136,7 +2136,6 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       era,
       population: city.population,
       garnizonCount: gCount,
-      hasRatusz: builtIds.includes('ratusz'),
       hasDomStarszyzny: builtIds.includes('dom_starszyzny'),
       hasDworZarzadcy: builtIds.includes('dwor_zarzadcy'),
       hasPretorium: builtIds.includes('pretorium'),
@@ -2331,7 +2330,7 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
     'Budynki (Teatr, Łaźnia, Świątynia…) i kultura/religia → stały plus do Szczęścia.',
     'Zamożność W (poziom) → bonus zadowolenia z bogactwa obywateli.',
     'Garnizon w mieście → głównie Prawo (do 100% przy 5+ jednostkach), nie Szczęście.',
-    'Ratusz, Pretorium, Sąd → trwały plus do Prawa.',
+    'Dom Starszyzny / Dwór Zarządcy / Pretorium (region) lub Pałac (stolica), Trybunał, Sąd → trwały plus do Prawa.',
     'Duże miasto bez garnizonu → kara Prawa.',
     'PorPct spada → kary na pracę, pieniądz, naukę, wzrost; przy skrajnym spadku bunt.',
     'Sz i Prawo są niezależne — możesz podnieść jedno bez drugiego (np. wojsko bez obniżki podatków).',
@@ -2354,7 +2353,8 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
     `(obecnie ${podzial.procentLuksus}% — im wyżej, tym więcej zamożności z handlu zamiast skarbca/nauki). ` +
     'Długoterminowo: Teatr, Łaźnia, wyższe W.<br><br>' +
     `<b>Podnieś Prawo:</b> stacjonuj wojsko w mieście (obecnie ${gCount} jedn. w garnizonie) ` +
-    'lub buduj Ratusz / Pretorium / Sąd.<br><br>' +
+    'lub rozwijaj administrację lokalną (Dom Starszyzny → Dwór Zarządcy → Pretorium; ' +
+    'Pałac w stolicy), Trybunał albo Sąd.<br><br>' +
     '<span class="muted">Kompromis: więcej zamożności = mniej 💰 i nauki teraz, ale spokojniejsze miasto. ' +
     'Wojsko w mieście = wyższe Prawo, ale koszt utrzymania armii.</span>',
   );

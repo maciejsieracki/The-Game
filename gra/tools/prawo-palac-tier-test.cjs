@@ -139,5 +139,27 @@ eq(palacValue('normal', 3).label, 'Pałac III', 'Etykieta tier 3 = "Pałac III"'
   eq(JSON.stringify(resPlayer), JSON.stringify(resAi), 'Parytet AI: wynik identyczny niezależnie od ownerId');
 }
 
+// ---------------------------------------------------------------------------
+// ZADANIE 2 (decyzja 44, 2026-07-25): usunięcie Ratusza -- martwe ślady muszą zniknąć
+// całkowicie, bez zostawiania kodu "na wszelki wypadek".
+// ---------------------------------------------------------------------------
+console.log('\n[Ratusz -- usunięcie, decyzja 44]\n');
+
+ok(!Object.prototype.hasOwnProperty.call(society.prawo ?? {}, 'prawo_ratusz'),
+  'society-params.json: klucz "prawo_ratusz" USUNIĘTY z bloku prawo');
+
+{
+  // computeLawBreakdown nie zna już Ratusza -- przekazanie hasRatusz (pole obce,
+  // spoza typu LawBreakdownInput od strony JS) nie może wyprodukować linii 'ratusz'
+  // ani wpłynąć na wynik względem tego samego inputu bez tego pola.
+  const withoutFlag = { garnizonCount: 0, era: 3, difficulty: 'normal', hasPretorium: true };
+  const withStrayFlag = { ...withoutFlag, hasRatusz: true };
+  const resWithout = M.computeLawBreakdown(withoutFlag, society);
+  const resWithStray = M.computeLawBreakdown(withStrayFlag, society);
+  ok(!resWithout.lines.some(l => l.id === 'ratusz'), 'computeLawBreakdown: brak linii "ratusz" w rozbiciu');
+  ok(!resWithStray.lines.some(l => l.id === 'ratusz'), 'computeLawBreakdown: pole hasRatusz (obce, nieznane typowi) jest ignorowane -- nadal brak linii "ratusz"');
+  eq(JSON.stringify(resWithout), JSON.stringify(resWithStray), 'computeLawBreakdown: wynik identyczny z/bez zignorowanego pola hasRatusz -- Ratusz nie wpływa już na nic');
+}
+
 console.log('\n[prawo-palac-tier-test] ' + passed + ' OK, ' + failed + ' FAIL\n');
 process.exit(failed > 0 ? 1 : 0);

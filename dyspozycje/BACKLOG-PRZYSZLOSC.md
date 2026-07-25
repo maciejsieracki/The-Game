@@ -19,6 +19,7 @@ usunięcie Ratusza i Karawanseraju · utrzymanie zróżnicowane (Pytanie 19).
 | **Mock-up zdobycia miasta** | „Stary mock-up trzeba będzie dać do designera." | Decyzja o odświeżeniu UI zdobycia |
 | **Ranking Mocy** | `C-RANK-Q1 = B` — bez zmian na teraz. | Sygnał Macieja |
 | **8 pozostałych łańcuchów budynków** (Odlewnia, Port, Świątynia, Biblioteka→Akademia, Mury→Cytadela, Koszary→Akademia wojskowa, Kuźnia→Wielka Kuźnia, Spichlerz) | Ta sama zasada „1 poziom = 1 epoka" — nie projektujemy na zapas. | Kolejne epoki |
+| **Ratusz** (usunięty całkowicie 2026-07-25 — zadanie handel/Ratusz, patrz `KANAL-PRACA.md`) | Maciej: „Ratusz będzie kolejnym etapem rozwoju budynków po Pretorium, ale dopiero w średniowieczu." Wraca jako kolejny szczebel łańcucha administracji lokalnej (Dom Starszyzny → Dwór Zarządcy → Pretorium → **Ratusz**), z wartością Prawa do ustalenia wtedy — NIE reużywać starych 35/27/22 z `prawo_ratusz` bez nowej decyzji ABC. | Epoka średniowiecza |
 
 ## B. Dług techniczny — do zrobienia, ale nie pilne
 

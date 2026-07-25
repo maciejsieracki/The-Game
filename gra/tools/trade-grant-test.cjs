@@ -213,6 +213,58 @@ const grantsI_broken = TR.computeTradeRouteResourceGrants(routesI_broken, native
 eq(grantsI_broken.length, 0, 'I: grant cofniety razem z trasa -- ta sama pochodna, tylko inna przyczyna zerwania niz wojna (E)');
 eq(TR.hasTradeRouteResourceAccess(grantsI_broken, 0, 'braz'), false, 'I: gracz traci dostep do brazu po zerwaniu traktatu');
 
+// ---------------------------------------------------------------------------
+// J. ZADANIE 1 (decyzja 40=B, 2026-07-25): Cegła dołącza do TRADE_ROUTE_RESOURCE_KEYS
+// obok braz/zelazo/kon -- ten sam boolean-grant mechanizm, żadnej osobnej ścieżki.
+// ---------------------------------------------------------------------------
+console.log('\n-- J. Cegła w TRADE_ROUTE_RESOURCE_KEYS -- ten sam mechanizm co braz/zelazo/kon --');
+eq(TR.TRADE_ROUTE_RESOURCE_KEYS.length, 4, 'J: cztery klucze (braz/zelazo/kon/cegla)');
+assert(TR.TRADE_ROUTE_RESOURCE_KEYS.includes('cegla'), 'J: TRADE_ROUTE_RESOURCE_KEYS zawiera "cegla"');
+assert(TR.TRADE_ROUTE_RESOURCE_KEYS.includes('braz'), 'J: nadal zawiera "braz" (regresja)');
+assert(TR.TRADE_ROUTE_RESOURCE_KEYS.includes('zelazo'), 'J: nadal zawiera "zelazo" (regresja)');
+assert(TR.TRADE_ROUTE_RESOURCE_KEYS.includes('kon'), 'J: nadal zawiera "kon" (regresja)');
+
+// Partner (owner 1) ma cegłę natywnie; gracz (owner 0) nie ma niczego natywnie.
+function nativeAccess_partnerCeglaOnly(ownerId, key) {
+  return ownerId === 1 && key === 'cegla';
+}
+const grantsJ = TR.computeTradeRouteResourceGrants(routesA, nativeAccess_partnerCeglaOnly);
+eq(grantsJ.length, 1, 'J: dokładnie jeden grant (cegła)');
+eq(grantsJ[0].ownerId, 0, 'J: odbiorca = gracz (owner 0)');
+eq(grantsJ[0].resourceKey, 'cegla', 'J: surowiec = cegla');
+eq(grantsJ[0].viaOwnerId, 1, 'J: partner = owner 1');
+eq(TR.hasTradeRouteResourceAccess(grantsJ, 0, 'cegla'), true, 'J: hasTradeRouteResourceAccess(gracz, cegla) = true');
+eq(TR.hasTradeRouteResourceAccess(grantsJ, 1, 'cegla'), false, 'J: partner NIE dostaje grantu na własny surowiec');
+const gCegla = TR.firstTradeRouteResourceGrant(grantsJ, 0, 'cegla');
+assert(gCegla !== undefined, 'J: firstTradeRouteResourceGrant zwraca grant dla (0, cegla)');
+eq(gCegla.viaOwnerId, 1, 'J: firstTradeRouteResourceGrant.viaOwnerId = partner');
+
+// Regresja: braz/zelazo/kon nadal działają NIEZALEŻNIE od dodania cegły (żadna z
+// czterech funkcji generycznych nie zakłada już "dokładnie trzy" klucze).
+function nativeAccess_allFour(ownerId, key) {
+  if (ownerId === 1) return key === 'braz' || key === 'zelazo' || key === 'kon' || key === 'cegla';
+  return false;
+}
+const grantsAllFour = TR.computeTradeRouteResourceGrants(routesA, nativeAccess_allFour);
+eq(grantsAllFour.length, 4, 'J: partner ma wszystkie 4 surowce natywnie -> gracz dostaje 4 granty (braz/zelazo/kon/cegla)');
+for (const key of ['braz', 'zelazo', 'kon', 'cegla']) {
+  eq(TR.hasTradeRouteResourceAccess(grantsAllFour, 0, key), true, `J: gracz ma grant na ${key}`);
+}
+
+// Parytet: wynik computeTradeRouteResourceGrants nie zależy od TOŻSAMOŚCI ownerId
+// (0/1 vs jakakolwiek inna para) -- computeTradeRouteResourceGrants (w odróżnieniu od
+// refreshTradeRoutes, celowo gracz-specyficznej: filtr ownerId===0) jest generyczna po
+// ownerId, patrz trade-routes.ts. Budujemy TradeRoute ręcznie (ten sam kształt co wynik
+// refreshTradeRoutes) dla dowolnej pary właścicieli (5,6), żeby to zweryfikować.
+function nativeAccess_partnerCeglaOnly_shiftedOwners(ownerId, key) {
+  return ownerId === 6 && key === 'cegla';
+}
+const routeShifted = { ...routesA[0], ownerId: 5, toOwnerId: 6, fromCityId: 'p9', toCityId: 'f9' };
+const grantsJ2 = TR.computeTradeRouteResourceGrants([routeShifted], nativeAccess_partnerCeglaOnly_shiftedOwners);
+eq(grantsJ2.length, 1, 'J: parytet ownerId -- grant powstaje identycznie dla pary (5,6) jak dla (0,1)');
+eq(grantsJ2[0].ownerId, 5, 'J: parytet ownerId -- odbiorca poprawnie = owner 5 (nie hardkodowane 0)');
+eq(TR.hasTradeRouteResourceAccess(grantsJ2, 5, 'cegla'), true, 'J: parytet ownerId -- odbiorca (owner 5) dostaje dostęp do cegły');
+
 console.log(`\ntrade-grant-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}
 try { fs.unlinkSync(BUNDLE_FILE); } catch (e) {}

@@ -405,7 +405,7 @@ import { buildWioska, buildObozBarbarzyncow, WIOSKA_OBOZ_LAYOUT } from './render
 // GRAFIKA-TEREN-2: tarasy = wzgórze (wariant 0/3) + schodkowe półki NA garbie (nie mini-dysk w sektorze).
 import { buildWzgorze, rotacjaDlaHeksa } from './render/teren-gory-wzgorza';
 import { buildTarasy, tarasyWariantDlaHeksa } from './render/tarasy-model';
-import { foodLayerFromAnimalDeposit, improvementKeysForHex } from './game/terrain-improvements';
+import { foodLayerFromAnimalDeposit, improvementKeysForHex, normalizeImprovementKey } from './game/terrain-improvements';
 import { isLivestockAllowed } from './game/livestock-unlock';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
@@ -2458,13 +2458,32 @@ async function boot(): Promise<void> {
     }
 
     // -------------------------------------------------------------------
-    // Temat #4 (Handel E3b): dostęp do surowca civ-wide (braz/zelazo/kon)
+    // Temat #4 (Handel E3b): dostęp do surowca civ-wide (braz/zelazo/kon/cegla)
     // przez trasę handlową — patrz trade-routes.ts computeTradeRouteResourceGrants
     // dla architektury (liczone na bieżąco, nie zapisywane).
     // -------------------------------------------------------------------
 
     /** Klucz syntetycznego wpisu — patrz placedImprovementsWithBrazTradeGrant. */
     const TRADE_GRANT_BRAZ_SYNTHETIC_KEY = '__trasa_braz__';
+
+    /**
+     * Empire-wide: czy WŁASNE terytorium ownera ma Gliniankę (źródło Gliny do Cegielni),
+     * gdziekolwiek w imperium — analogicznie do empireHasKopalniaMiedzi (braz-access.ts)
+     * dla brązu. Glinianka może stanąć WYŁĄCZNIE na złożu Gliny (improvement-build.ts,
+     * case 'glinianka'), więc sama obecność klucza ulepszenia wystarcza — bez potrzeby
+     * osobnego odczytu `zloze` pod spodem (jak przy Kopalni, gdzie jeden typ ulepszenia
+     * obsługuje kilka złóż).
+     */
+    function empireHasGlinianka(
+      placedImprovements: ReadonlyMap<string, PlacedLayers>,
+    ): boolean {
+      for (const layers of placedImprovements.values()) {
+        for (const raw of layers) {
+          if (normalizeImprovementKey(raw) === 'glinianka') return true;
+        }
+      }
+      return false;
+    }
 
     /**
      * Czy WŁASNE imperium ownera ma dostęp do `key` BEZ handlu — wejście do
@@ -2486,6 +2505,13 @@ async function boot(): Promise<void> {
         if (!hasKopalniaZelazo) return false;
         for (const c of cities) {
           if (c.ownerId === ownerId && hasZelazoAccess(hasKopalniaZelazo, cityBuilt.get(c.id) ?? [])) return true;
+        }
+        return false;
+      }
+      if (key === 'cegla') {
+        if (!empireHasGlinianka(ownImprovements)) return false;
+        for (const c of cities) {
+          if (c.ownerId === ownerId && (cityBuilt.get(c.id) ?? []).includes('cegielnia')) return true;
         }
         return false;
       }
@@ -12953,7 +12979,7 @@ async function boot(): Promise<void> {
             // structureDefenseBonusFor dla ten sam rozroznienie na mapie swiata.
             siege: {
               defCiv: ikonaIdToBronzeCiv(defCivId),
-              cytadela: (cityBuilt.get(city.id) ?? []).includes('fort'),
+              builtBuildingIds: cityBuilt.get(city.id) ?? [],
             },
             attackerCivBonusy: civBonusyForOwnerId(atkRosterRef[0]?.ownerId ?? 0),
             defenderCivBonusy: civBonusyForOwnerId(defRosterRef[0]?.ownerId ?? 0),
@@ -14266,7 +14292,6 @@ async function boot(): Promise<void> {
                   era: empireEpochForOwner(city.ownerId),
                   population: city.population,
                   garnizonCount: gCountLaw,
-                  hasRatusz: builtIds.includes('ratusz'),
                   hasDomStarszyzny: builtIds.includes('dom_starszyzny'),
                   hasDworZarzadcy: builtIds.includes('dwor_zarzadcy'),
                   hasPretorium: builtIds.includes('pretorium'),
