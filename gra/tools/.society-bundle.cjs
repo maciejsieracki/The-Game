@@ -334,6 +334,21 @@ var terrain_improvements_default = {
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
   },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+  },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
     epoka: 2,
@@ -562,8 +577,8 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
 // src/game/cities.ts
 var DEFAULT_PODZIAL_HANDLU = {
   procentNauka: 20,
-  procentPieniadz: 70,
-  procentLuksus: 10
+  procentPieniadz: 60,
+  procentLuksus: 20
 };
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
@@ -721,29 +736,22 @@ function prawMaxForEra(era) {
   const e = Number.isFinite(era) ? Math.max(1, Math.floor(era)) : 1;
   return PRAWMAX_DEFAULTS[e] ?? PRAWMAX_DEFAULTS[3] ?? 24;
 }
+var ZAMOZNOSC_SIATKA_KEY = "szczescie_siatka_zamoznosc";
+var ZAMOZNOSC_SIATKA_DEFAULT = {
+  easy: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  normal: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+  hard: [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7]
+};
 function luksusHappinessBonus(procentLuksus, society, difficulty = "normal") {
   const sz = society?.szczescie ?? {};
   const luks = Number.isFinite(procentLuksus) ? procentLuksus : 0;
-  const tiers = [
-    [70, "szczescie_bonus_luksus_70"],
-    [60, "szczescie_bonus_luksus_60"],
-    [50, "szczescie_bonus_luksus_50"],
-    [40, "szczescie_bonus_luksus_40"],
-    [30, "szczescie_bonus_luksus_30"]
-  ];
-  const defaults = {
-    szczescie_bonus_luksus_30: 1,
-    szczescie_bonus_luksus_40: 2,
-    szczescie_bonus_luksus_50: 3,
-    szczescie_bonus_luksus_60: 4,
-    szczescie_bonus_luksus_70: 5
-  };
-  for (const [threshold, key] of tiers) {
-    if (luks >= threshold) {
-      return pickSociety(sz, key, difficulty, defaults[key] ?? 0);
-    }
+  const idx = Math.min(9, Math.max(0, Math.floor(luks / 10)));
+  const row = sz[ZAMOZNOSC_SIATKA_KEY];
+  const arr = row?.[difficulty];
+  if (Array.isArray(arr) && typeof arr[idx] === "number" && Number.isFinite(arr[idx])) {
+    return arr[idx];
   }
-  return 0;
+  return ZAMOZNOSC_SIATKA_DEFAULT[difficulty][idx] ?? 0;
 }
 function podzialLuksus(city) {
   const p = city ?? DEFAULT_PODZIAL_HANDLU;
@@ -800,6 +808,8 @@ function computeHappinessBreakdown(input, society = null) {
   const luksBonus = luksusHappinessBonus(luksPct, society, diff);
   if (luksBonus > 0) {
     lines.push({ id: "niskie_podatki", label: `Niskie podatki (Zamo\u017Cno\u015B\u0107 ${luksPct}%)`, value: luksBonus });
+  } else if (luksBonus < 0) {
+    lines.push({ id: "wysokie_podatki", label: `Wysokie podatki (Zamo\u017Cno\u015B\u0107 ${luksPct}%)`, value: luksBonus });
   }
   if (input.atWar) {
     const v = pickSociety(szBlock, "szczescie_kara_wojna", diff, -3);
@@ -823,15 +833,6 @@ function computeHappinessBreakdown(input, society = null) {
   if (input.stolicaEasyBonus) {
     const v = pickSociety(szBlock, "szczescie_bonus_stolica_easy", diff, 1);
     if (v) lines.push({ id: "stolica_easy", label: "Stolica imperium (easy)", value: v });
-  }
-  const baseLuks = DEFAULT_PODZIAL_HANDLU.procentLuksus;
-  if (luksPct < baseLuks) {
-    const levels = Math.floor((baseLuks - luksPct) / 10);
-    if (levels > 0) {
-      const per = pickSociety(szBlock, "szczescie_kara_wysokie_podatki", diff, -1);
-      const v = per * levels;
-      if (v) lines.push({ id: "wysokie_podatki", label: "Wysokie podatki", value: v });
-    }
   }
   const netto = lines.reduce((s, l) => s + l.value, 0);
   const szMax = szMaxForEra(era);

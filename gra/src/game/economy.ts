@@ -311,6 +311,19 @@ export interface CityYieldResult {
   pracaBudynkow:  number;
   pieniadzZPracy: number;  // Efekt 2: doPuli * targowiskoPracaMnoznik (0 gdy brak Targowiska/Waluty)
   /**
+   * Decyzja 67B (Maciej 2026-07-25, cytat: "Budynki, jeżeli miały wcześniej handel...
+   * powinny go dawać nie bezpośrednio do skarbca, tylko do puli, do podziału"). Suma
+   * SUROWA (przed-mnoznikowa, przed podzialem suwakiem) Pieniadza z bazy budynkow
+   * (Σ buildingValue(record, level, 'pieniadz')) -- WYLACZNIE pole informacyjne do
+   * UI/debug (panel miasta "ile Pieniadza z budynkow"), analogicznie do pieniadzZPracy
+   * powyzej. Ta wartosc NIE trafia juz bezposrednio do `pieniadz` (patrz Step 3/8
+   * nizej) -- wchodzi do handelBazowy PRZED Targowiskiem/civHandelMult/trasami/
+   * korupcja/Waluta+Mennica, dokladnie jak pieniadzZPracy (D5), i dopiero POTEM jest
+   * dzielona suwakiem Nauka/Pieniadz/Luksus razem z reszta Daniny. Realny wplyw
+   * mnoznikow/podzialu widac w polu `pieniadz` (i `nauka`/`luksus`), NIE tutaj.
+   */
+  pieniadzBudynkow: number;
+  /**
    * E1 Zadanie 2: surowce logistyczne zebrane z pol tej tury (przed magazynem/converterami).
    * Drewno/kamien/glina maja numeryczny plon terenu/ulepszen (tileYield); glina dodana
    * GLINA-Q1=A (2026-07-20, stala ilosc 2/ture z glinianki). Ruda miedzi/żelaza — numeryczny
@@ -797,16 +810,21 @@ export function civEconomyYieldMultipliers(
  *      Targowisko+Waluta, Praca "wystawiona na handel") musi wejsc do Handlu PRZED
  *      jego mnoznikami, nie po nich. Buildings are a direct source of Praca i Pieniadz.
  *   3. Apply Targowisko bonus, civHandelMult, trasy handlowe -- do (tile Handel +
- *      pieniadzZPracy) RAZEM, D5 (Maciej 2026-07-25, cytat: "Pieniądz z konwersji
- *      pracy wchodzi do daniny... i jest potem mnożony przez walutę i mennicę i
- *      wszystkie inne wskaźniki handlu"). pieniadzZPracy NIE jest juz osobnym
- *      strumieniem doklejanym po fakcie -- jest czescia bazy Handlu/Daniny u zrodla.
+ *      pieniadzZPracy + pieniadzBudynkow) RAZEM, D5/decyzja 67B (Maciej 2026-07-25,
+ *      cytat D5: "Pieniądz z konwersji pracy wchodzi do daniny... i jest potem
+ *      mnożony przez walutę i mennicę i wszystkie inne wskaźniki handlu"; cytat 67B:
+ *      "Budynki, jeżeli miały wcześniej handel... powinny go dawać nie bezpośrednio
+ *      do skarbca, tylko do puli, do podziału"). Ani pieniadzZPracy, ani
+ *      pieniadzBudynkow NIE sa juz osobnymi strumieniami doklejanymi po fakcie --
+ *      oba sa czescia bazy Handlu/Daniny u zrodla.
  *   5. Apply corruption/waste (strataFraction) do calego Handlu/Daniny (juz z
- *      pieniadzZPracy w srodku) -- D1: Praca NIGDY nie jest tym dotknieta.
+ *      pieniadzZPracy i pieniadzBudynkow w srodku) -- D1: Praca NIGDY nie jest tym
+ *      dotknieta.
  *   6. Split Handel via trade slider into Nauka / Pieniadz / Luksus.
- *   7. Apply Mennica multiplier to caly Handel (w tym pieniadzZPracy); Biblioteka
- *      bonus to Nauka.
- *   8. Add building direct Pieniadz + specialist Poborca bonuses.
+ *   7. Apply Mennica multiplier to caly Handel (w tym pieniadzZPracy i
+ *      pieniadzBudynkow); Biblioteka bonus to Nauka.
+ *   8. Add specialist Poborca bonus do Pieniadza (jedyny strumien Pieniadza, ktory
+ *      nadal omija podzial suwakiem -- poza zakresem decyzji 67B).
  *   9. Apply Garncarnia +Zywnosc% (lokalnie, per miasto, ctx.liczbaGarncarni) to
  *      gross food, THEN compute net food = gross food - (population + military).
  *
@@ -909,9 +927,11 @@ export function cityYieldPerTurn(
     : 0;
 
   // --- Step 3: Targowisko bonus na Handel (Spec ss.1.3) -- baza TERAZ zawiera
-  // pieniadzZPracy (D5 powyzej), wiec premia Targowiska/civHandelMult/trasy handlowe
-  // dzialaja na Danine terenowa+budynkowa RAZEM z konwersja Pracy, jak jedna wartosc. ---
-  const handelBazowy = handelTerenu + pieniadzZPracy;
+  // pieniadzZPracy (D5) ORAZ pieniadzBudynkow (decyzja 67B, Maciej 2026-07-25: Pieniadz
+  // z budynkow NIE trafia wprost do skarbca, tylko do puli do podzialu), wiec premia
+  // Targowiska/civHandelMult/trasy handlowe dzialaja na Danine terenowa + budynkowa +
+  // konwersje Pracy RAZEM, jak jedna wartosc. ---
+  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
   let handelBrutto: number;
   if (ctx.maTargowisko) {
     handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
@@ -973,9 +993,12 @@ export function cityYieldPerTurn(
     : naukaLokalnaRaw;
 
   // --- Step 8: Total Pieniadz = from trade (handelNetto juz zawiera pieniadzZPracy
-  // wtopiony w Step 3, D5 powyzej -- przeszedl przez WSZYSTKIE mnozniki Handlu) +
-  // from buildings + specialists. pieniadzZPracy NIE jest juz doliczany tu osobno.
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow;
+  // ORAZ pieniadzBudynkow, wtopione w Step 3, D5/67B powyzej -- przeszly przez
+  // WSZYSTKIE mnozniki Handlu: Targowisko, civHandelMult, trasy, korupcja, Waluta+
+  // Mennica -- i podzial suwakiem) + specialist Poborca. Decyzja 67B: pieniadzBudynkow
+  // NIE jest juz doliczany tu osobno -- inaczej liczylby sie PODWOJNIE (raz w
+  // pieniadzZHandlu przez handelBazowy, drugi raz tutaj).
+  let pieniadzTotal = pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === 'poborca') {
       pieniadzTotal += 2;
@@ -1008,6 +1031,7 @@ export function cityYieldPerTurn(
     pracaTerenu:    Math.floor(pracaBruttoTerenu),
     pracaBudynkow:  Math.floor(pracaBudynkow),
     pieniadzZPracy,
+    pieniadzBudynkow: Math.floor(pieniadzBudynkow),
     drewnoTerenu:   Math.floor(drewnoTerenu),
     kamienTerenu:   Math.floor(kamienTerenu),
     glinaTerenu:    Math.floor(glinaTerenu),

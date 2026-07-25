@@ -916,7 +916,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const pracaInt = cityPracaInteger(pracaNetto);
   const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
   const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
-  const handelBazowy = handelTerenu + pieniadzZPracy;
+  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
   let handelBrutto;
   if (ctx.maTargowisko) {
     handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
@@ -947,7 +947,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult = ctx.civNaukaMult ?? 1;
   const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow;
+  let pieniadzTotal = pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === "poborca") {
       pieniadzTotal += 2;
@@ -972,6 +972,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     pracaTerenu: Math.floor(pracaBruttoTerenu),
     pracaBudynkow: Math.floor(pracaBudynkow),
     pieniadzZPracy,
+    pieniadzBudynkow: Math.floor(pieniadzBudynkow),
     drewnoTerenu: Math.floor(drewnoTerenu),
     kamienTerenu: Math.floor(kamienTerenu),
     glinaTerenu: Math.floor(glinaTerenu),

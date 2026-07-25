@@ -259,7 +259,26 @@ export function prawMaxForEra(era: number): number {
   return PRAWMAX_DEFAULTS[e] ?? PRAWMAX_DEFAULTS[3] ?? 24;
 }
 
-/** Bonus Sz od udziału Luksus % (Maciej B2-narzedzia-stabilizacji). */
+/** Klucz JSON siatki Sz od udziału Zamożności (dziesięć przedziałów co 10 p.p.). */
+const ZAMOZNOSC_SIATKA_KEY = 'szczescie_siatka_zamoznosc';
+
+/**
+ * Fallback siatki, gdy brak `szczescie_siatka_zamoznosc` w danych (nie powinno się zdarzyć
+ * w grze — society-params.json zawsze ją niesie). Indeks 0 = 0–9% … indeks 9 = 90–100%.
+ * Wartości identyczne z JSON (Maciej 2026-07-25, nowa siatka Sz od Zamożności).
+ */
+const ZAMOZNOSC_SIATKA_DEFAULT: Record<Difficulty, number[]> = {
+  easy: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  normal: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+  hard: [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7],
+};
+
+/**
+ * Bonus/kara Sz od udziału Zamożności w podziale Daniny netto (Maciej 2026-07-25, nowa
+ * siatka — decyzja właściciela). Co 10 p.p. udziału = 1 pkt Szczęścia; poniżej 10% udziału
+ * to KARA (wartość ujemna) na normal/hard. Zero zahardkodowanych progów w kodzie poza
+ * fallbackiem na wypadek braku danych — same wartości zawsze z `society.szczescie[ZAMOZNOSC_SIATKA_KEY]`.
+ */
 export function luksusHappinessBonus(
   procentLuksus: number,
   society: SocietyParamsLike | null | undefined,
@@ -267,26 +286,13 @@ export function luksusHappinessBonus(
 ): number {
   const sz = (society?.szczescie ?? {}) as Record<string, RawParamRow>;
   const luks = Number.isFinite(procentLuksus) ? procentLuksus : 0;
-  const tiers: [number, string][] = [
-    [70, 'szczescie_bonus_luksus_70'],
-    [60, 'szczescie_bonus_luksus_60'],
-    [50, 'szczescie_bonus_luksus_50'],
-    [40, 'szczescie_bonus_luksus_40'],
-    [30, 'szczescie_bonus_luksus_30'],
-  ];
-  const defaults: Record<string, number> = {
-    szczescie_bonus_luksus_30: 1,
-    szczescie_bonus_luksus_40: 2,
-    szczescie_bonus_luksus_50: 3,
-    szczescie_bonus_luksus_60: 4,
-    szczescie_bonus_luksus_70: 5,
-  };
-  for (const [threshold, key] of tiers) {
-    if (luks >= threshold) {
-      return pickSociety(sz, key, difficulty, defaults[key] ?? 0);
-    }
+  const idx = Math.min(9, Math.max(0, Math.floor(luks / 10)));
+  const row = sz[ZAMOZNOSC_SIATKA_KEY];
+  const arr = row?.[difficulty];
+  if (Array.isArray(arr) && typeof arr[idx] === 'number' && Number.isFinite(arr[idx])) {
+    return arr[idx] as number;
   }
-  return 0;
+  return ZAMOZNOSC_SIATKA_DEFAULT[difficulty][idx] ?? 0;
 }
 
 function podzialLuksus(city?: CityPodzialHandlu): number {
@@ -353,6 +359,8 @@ export function computeHappinessBreakdown(
   const luksBonus = luksusHappinessBonus(luksPct, society, diff);
   if (luksBonus > 0) {
     lines.push({ id: 'niskie_podatki', label: `Niskie podatki (Zamożność ${luksPct}%)`, value: luksBonus });
+  } else if (luksBonus < 0) {
+    lines.push({ id: 'wysokie_podatki', label: `Wysokie podatki (Zamożność ${luksPct}%)`, value: luksBonus });
   }
 
   if (input.atWar) {
@@ -379,15 +387,10 @@ export function computeHappinessBreakdown(
     if (v) lines.push({ id: 'stolica_easy', label: 'Stolica imperium (easy)', value: v });
   }
 
-  const baseLuks = DEFAULT_PODZIAL_HANDLU.procentLuksus;
-  if (luksPct < baseLuks) {
-    const levels = Math.floor((baseLuks - luksPct) / 10);
-    if (levels > 0) {
-      const per = pickSociety(szBlock, 'szczescie_kara_wysokie_podatki', diff, -1);
-      const v = per * levels;
-      if (v) lines.push({ id: 'wysokie_podatki', label: 'Wysokie podatki', value: v });
-    }
-  }
+  // Stary mechanizm "wysokie podatki" (próg DEFAULT_PODZIAL_HANDLU.procentLuksus, kara co
+  // 10 p.p. poniżej) USUNIĘTY 2026-07-25 — dublował się z karą już wbudowaną w nową siatkę
+  // szczescie_siatka_zamoznosc powyżej (patrz raport zadania: przy udziale 5% na normalu
+  // oba mechanizmy naraz dawały -2 pkt Sz, sama nowa siatka daje poprawne -1 pkt).
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
   const szMax = szMaxForEra(era);

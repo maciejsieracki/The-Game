@@ -48,11 +48,20 @@ export type BudowaTryb = 'auto' | 'reczny';
 export const DEFAULT_BUDOWA_FOCUS: BudowaFocus = 'zrownowazone';
 export const DEFAULT_BUDOWA_TRYB: BudowaTryb = 'reczny';
 
-/** Domyslny podzial Handlu — zgodny z buildEconParams / econ-params.json normal (20/70/10). */
+/**
+ * Domyslny podzial Daniny netto nowego miasta — zgodny z econ-params.json
+ * (suwak_handel_*_domyslnie, wszystkie poziomy trudnosci).
+ *
+ * 20% Nauka / 60% Skarbiec / 20% Zamoznosc — decyzja Maciej 2026-07-25 (PYTANIE 74 = A),
+ * podniesione z dawnych 20/70/10. Powod: 20% Zamoznosci to dokladnie prog utrzymania
+ * poziomu Zamoznosci (20% pieniadza miasta przy poziomie 0), wiec poziom rusza z miejsca
+ * bez recznej interwencji; w nowej siatce Szczescia przedzial 20-29% daje +1 pkt Szczescia
+ * na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%).
+ */
 export const DEFAULT_PODZIAL_HANDLU: Readonly<CityPodzialHandlu> = {
   procentNauka:    20,
-  procentPieniadz: 70,
-  procentLuksus:   10,
+  procentPieniadz: 60,
+  procentLuksus:   20,
 };
 
 /** Domyslny podzial Pracy — zgodny z buildEconParams (70% budynki). */

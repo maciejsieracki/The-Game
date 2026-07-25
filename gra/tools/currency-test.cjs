@@ -282,9 +282,22 @@ const mockTargowiskoBuilding = {
 const yldWithTargBuilding = E.cityYieldPerTurn(
   city, workedTiles6, [mockTargowiskoBuilding], params, ctxWithTarg
 );
-// pieniadz = 6 (from handel) + 3 (from building baza.pieniadz) = 9
+// POPRAWKA decyzja 67B (Maciej 2026-07-25): Pieniadz budynku (baza.pieniadz=3) NIE
+// jest juz doklejany PO fakcie do gotowej puli -- wchodzi do handelBazowy PRZED
+// Targowiskiem/podzialem suwakiem, dokladnie jak pieniadzZPracy (D5). Rachunek:
+//   handelBazowy = handelTerenu(6) + pieniadzZPracy(0) + pieniadzBudynkow(3) = 9
+//   handelBrutto = 9 x (1 + 0.5 Targowisko) = 13.5
+//   handelNetto  = 13.5 (brak Waluty/Mennicy/korupcji w ctxWithTarg)
+//   pieniadzZHandlu = floor(13.5 x 0.70) = floor(9.45) = 9
+// Wynik liczbowy (9) WYCHODZI TAKI SAM jak stara (bledna) formula "6+3=9" -- to
+// CZYSTY ZBIEG OKOLICZNOSCI tej konkretnej fixtury (floor(6*1.5)=9 dokladnie, wiec
+// floor(9*0.7)=6, +3=9 rownie dobrze jak floor((6+3)*1.5*0.7)=floor(9.45)=9) -- NIE
+// dowod, ze formula jest bez zmian. Zobacz tools/plony-budynkow-test.cjs sekcja I
+// dla fixtury, gdzie stara i nowa formula daja WYRAZNIE rozne liczby.
 eq(yldWithTargBuilding.pieniadz, 9,
-  'Targowisko baza.pieniadz=3 nienaruszone: total pieniadz = 6+3 = 9');
+  'Targowisko baza.pieniadz=3 (decyzja 67B): pieniadz = floor((6+3)*1.5*0.70) = 9 -- ta sama liczba co stara formula 6+3=9, ale przez INNA sciezke (budynek teraz w handelBazowy, przechodzi przez Targowisko+suwak)');
+eq(yldWithTargBuilding.pieniadzBudynkow, 3,
+  'Targowisko: pole surowe pieniadzBudynkow = buildingValue = 3, niezalezne od Targowiska/suwaka (do UI/debug)');
 
 // Verify mnoznik=0 on Targowisko doesn't bleed into Praca (bug was mnoznik=10)
 // With mnoznik=0, praca should be same as without the building

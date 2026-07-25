@@ -145,9 +145,55 @@ testSingleBuildingDelta('stolarnia', 'praca', 'Stolarnia');
 
 // ---------------------------------------------------------------------------
 // C. Targowisko -> Pieniadz
+//
+// POPRAWKA decyzja 67B (Maciej 2026-07-25, cytat: "Budynki, jeżeli miały wcześniej
+// handel... powinny go dawać nie bezpośrednio do skarbca, tylko do puli, do
+// podziału"): Pieniadz z budynkow NIE trafia juz 1:1 do pola finalnego `pieniadz`
+// -- wchodzi do handelBazowy RAZEM z Danina terenowa i przechodzi przez podzial
+// suwakiem (miasto testowe: procentPieniadz=70%, procentNauka=20%, procentLuksus=10%,
+// patrz makeCity() powyzej). testSingleBuildingDelta() (helper generyczny) zakladal
+// "delta == buildingValue" -- ZALOZENIE JUZ NIEPRAWDZIWE dla klucza 'pieniadz' (nadal
+// prawdziwe dla praca/nauka/kultura, ktore NIE przechodza przez ten podzial), wiec
+// Targowisko ma teraz WLASNY, jawnie wyliczony test zamiast helpera.
 // ---------------------------------------------------------------------------
-console.log('\n-- C. Targowisko -> Pieniadz --');
-testSingleBuildingDelta('targowisko', 'pieniadz', 'Targowisko');
+console.log('\n-- C. Targowisko -> Pieniadz (decyzja 67B: dzieli sie suwakiem, nie leci 1:1 do skarbca) --');
+{
+  const r = rec('targowisko');
+  const era = r.epokaWejscia;
+  const level = M.buildingLevelForEpoch(r.epokaWejscia, era, r.maksPoziom, r.poziomTechGate ?? null, []);
+  eq(level, 1, 'targowisko: poziom w wlasnej epoce wejscia = 1');
+  const cbs = M.cityBuildingEntriesFromBuiltIds(['targowisko'], buildings, era, []);
+  const yld = M.cityYieldPerTurn(city, worked4, cbs, params, ctxFlat);
+
+  const rawPieniadzBudynku = M.buildingValue(r, level, 'pieniadz');
+  eq(rawPieniadzBudynku, 3, 'sanity: Targowisko poziom 1 daje baza.pieniadz = 3 Pieniadza/ture (buildings.json)');
+
+  // Pole SUROWE (przed podzialem/mnoznikami, do UI/debug) -- to nadal 1:1 z
+  // buildingValue, niezalezne od suwaka -- patrz komentarz CityYieldResult.pieniadzBudynkow.
+  eq(yld.pieniadzBudynkow, rawPieniadzBudynku,
+    'Targowisko: pole SUROWE pieniadzBudynkow = buildingValue = 3 (raportowane niezaleznie od podzialu suwakiem)');
+
+  // Pole FINALNE `pieniadz` juz NIE rosnie o cala wartosc budynku (3) -- rachunek
+  // reczny (ctxFlat: brak premii Targowiska/Waluty/Mennicy/korupcji, WYLACZNIE
+  // podzial suwakiem 70/20/10 Pieniadz/Nauka/Luksus):
+  //   handelBazowy (bez budynku) = handelTerenu(4) + pieniadzZPracy(0) + 0            = 4
+  //   handelBazowy (z budynkiem) = handelTerenu(4) + pieniadzZPracy(0) + budynek(3)   = 7
+  //   pieniadzZHandlu (bez) = floor(4 * 0.70) = floor(2.8) = 2  (yldNone.pieniadz)
+  //   pieniadzZHandlu (z)   = floor(7 * 0.70) = floor(4.9) = 4
+  //   delta = 4 - 2 = 2   (NIE 3 -- 30% Pieniadza budynku "idzie" do Nauki/Luksusu
+  //   przez suwak, dokladnie jak reszta Daniny; NIE jest to prosta proporcja 0.7*3=2.1
+  //   bo floor() dziala na SUMIE polaczonej z Danina terenowa, nie osobno na budynku)
+  const actualDelta = yld.pieniadz - yldNone.pieniadz;
+  eq(actualDelta, 2,
+    'Targowisko: delta finalnego Pieniadza = 2 (NIE surowe 3) -- decyzja 67B: Pieniadz budynku dzieli sie suwakiem 70/20/10 z reszta Daniny, nie trafia 1:1 do skarbca');
+
+  // Dowod, ze reszta NIE zniknela -- wzrosla tez Nauka (20% suwaka), bo budynek
+  // wszedl do WSPOLNEJ puli Daniny: naukaZHandlu(bez)=floor(4*0.20)=0,
+  // naukaZHandlu(z)=floor(7*0.20)=1 -- delta=+1 Nauki z tego samego budynku.
+  const deltaNauka = yld.nauka - yldNone.nauka;
+  eq(deltaNauka, 1,
+    'Targowisko: delta Nauki = +1 (floor(7*0.20)-floor(4*0.20)=1-0) -- czesc Pieniadza budynku trafia teraz tez do Nauki przez suwak, dowod ze idzie do wspolnej puli');
+}
 
 // ---------------------------------------------------------------------------
 // D. Biblioteka -> Nauka
@@ -317,6 +363,91 @@ console.log('\n-- H. Parytet AI: advanceCityEconomy identyczny dla gracza i AI -
   eq(tickAI.kultura, tickPlayer.kultura, 'parytet AI: Kultura identyczna');
   assert(tickPlayer.kultura > 0, `sanity: miasto z Palacem ma Kultura > 0 (got ${tickPlayer.kultura})`);
   assert(tickPlayer.praca > 0, `sanity: miasto ze Stolarnia ma Praca > 0 (got ${tickPlayer.praca})`);
+}
+
+// ---------------------------------------------------------------------------
+// I. DECYZJA 67B (Maciej 2026-07-25): Pieniadz z budynkow wchodzi do PULI DO
+//    PODZIALU, nie bezposrednio do skarbca. Test wymagany przez zadanie:
+//      1. podzial suwakiem (20/60/20) -- budynek NIE trafia w 100% do skarbca,
+//      2. mnoznik Waluty i Mennicy dziala na ten strumien,
+//      3. korupcja redukuje ten strumien,
+//      4. brak podwojnego liczenia (suma 3 strumieni po podziale == pula).
+//
+//    Fixture: 5x Gory (Handel=0/pole -- patrz terrain-yields.json: Gory Handel=0)
+//    -- izoluje Pieniadz budynku jako JEDYNE zrodlo Daniny (handelTerenu=0), zeby
+//    liczby dzielily sie CZYSTO. Mock budynku z baza.pieniadz=60 (bez Praca/Nauka/
+//    Kultura/Zadowolenie, zeby nie mieszac z innymi strumieniami) -- 60 dzieli sie
+//    bez reszty przez suwak 20/60/20 (12/36/12) i przez mnoznik Waluty+Mennicy 1.5
+//    (90 -> 18/54/18), wiec floor() nigdzie nie "je" wartosci -- latwo zweryfikowac
+//    reczne wyliczenia ponizej.
+// ---------------------------------------------------------------------------
+console.log('\n-- I. Decyzja 67B: Pieniadz z budynkow dzieli sie suwakiem/Waluta+Mennica/korupcja --');
+{
+  eq(params.mennicaMnoznikPoWalucie, 1.5, 'zalozenie fixture: mennicaMnoznikPoWalucie (normal) = 1.5');
+  eq(params.korupcjaCap, 0.50, 'zalozenie fixture: korupcjaCap (normal) = 50%');
+
+  const workedGory = Array.from({ length: 5 }, () => ({
+    terenBazowy: 'gory', nakladka: 'brak', maRzeke: false,
+  }));
+
+  const cityI = makeCity({
+    podziałHandlu: { procentNauka: 20, procentPieniadz: 60, procentLuksus: 20 }, // decyzja 74=A
+  });
+
+  // Mock budynku: WYLACZNIE Pieniadz (60/ture), zeby izolowac strumien od Praca/
+  // Nauka/Kultura/Zadowolenie -- poziom 1, bez przyrostu.
+  const mockBudynekPieniadz = {
+    record: {
+      id: 'mock_pieniadz', nazwa: 'Mock Pieniadz', kategoria: 'Handel',
+      epokaWejscia: 1, maksPoziom: 1,
+      baza:     { praca: 0, pieniadz: 60, zywnosc: 0, nauka: 0, kultura: 0, zadowolenie: 0, obrona: 0, mnoznik: 0 },
+      przyrost: { praca: 0, pieniadz: 0,  zywnosc: 0, nauka: 0, kultura: 0, zadowolenie: 0, obrona: 0, mnoznik: 0 },
+      kosztBudowy: 1, przyrostKosztu: 0, utrzymanie: 0, przyrostUtrzymania: 0, techUnlock: '',
+    },
+    level: 1,
+  };
+  const cbsI = [mockBudynekPieniadz];
+
+  function ctxI(overrides) {
+    return Object.assign({
+      wojskoZuzycieZywnosci: 0, strataFraction: 0,
+      maMlyn: false, maCegielnia: false, maTargowisko: false, maBiblioteka: false, maAkademia: false,
+      maMennica: false, walutaOdkryta: false, civHandelMult: 1, civNaukaMult: 1, liczbaGarncarni: 0,
+    }, overrides);
+  }
+
+  // --- I1: podzial suwakiem 20/60/20 -- budynek NIE trafia w 100% do skarbca ---
+  const yldSplit = M.cityYieldPerTurn(cityI, workedGory, cbsI, params, ctxI({}));
+  eq(yldSplit.pieniadzBudynkow, 60, 'I1 sanity: pieniadzBudynkow (surowe) = 60 (baza mock budynku)');
+  // handelBazowy = handelTerenu(0) + pieniadzZPracy(0) + pieniadzBudynkow(60) = 60
+  // handelNetto = 60 (brak Targowiska/Waluty/Mennicy/korupcji)
+  eq(yldSplit.pieniadz, 36, 'I1: Pieniadz = floor(60 x 0.60) = 36 (60% suwaka, NIE 60 -- budynek NIE trafia w 100% do skarbca)');
+  eq(yldSplit.nauka,    12, 'I1: Nauka   = floor(60 x 0.20) = 12 (20% suwaka -- Pieniadz budynku dzieli sie TEZ na Nauke)');
+  eq(yldSplit.luksus,   12, 'I1: Luksus  = floor(60 x 0.20) = 12 (20% suwaka -- reszta do puli zamoznosci)');
+
+  // --- I2: mnoznik Waluty i Mennicy dziala na ten strumien (x1.5 na normal) ---
+  const yldBezMennicy = M.cityYieldPerTurn(cityI, workedGory, cbsI, params, ctxI({ walutaOdkryta: false, maMennica: false }));
+  const yldZMennica   = M.cityYieldPerTurn(cityI, workedGory, cbsI, params, ctxI({ walutaOdkryta: true,  maMennica: true  }));
+  eq(yldBezMennicy.pieniadz, 36, 'I2 bez Mennicy: Pieniadz = floor(60 x 0.60) = 36 (referencja)');
+  eq(yldZMennica.pieniadz,   54, 'I2 z Waluta+Mennica: Pieniadz = floor((60 x 1.5) x 0.60) = floor(90 x 0.60) = 54 = 36 x 1.5');
+  assert(yldZMennica.pieniadz > yldBezMennicy.pieniadz,
+    'I2: Waluta+Mennica zwieksza Pieniadz z budynkow (miasto z Mennica ma go WIECEJ niz bez)');
+  eq(yldZMennica.pieniadz / yldBezMennicy.pieniadz, params.mennicaMnoznikPoWalucie,
+    'I2: stosunek Pieniadz(z Mennica)/Pieniadz(bez) = mennicaMnoznikPoWalucie (1.5) dokladnie -- mnoznik obejmuje w calosci Pieniadz budynkow');
+
+  // --- I3: korupcja redukuje ten strumien ---
+  const yldBezKorupcji = M.cityYieldPerTurn(cityI, workedGory, cbsI, params, ctxI({ strataFraction: 0 }));
+  const yldZKorupcja   = M.cityYieldPerTurn(cityI, workedGory, cbsI, params, ctxI({ strataFraction: 0.30 }));
+  eq(yldBezKorupcji.pieniadz, 36, 'I3 bez korupcji: Pieniadz = 36 (referencja)');
+  eq(yldZKorupcja.pieniadz,   25, 'I3 korupcja 30%: Pieniadz = floor((60 x 0.70) x 0.60) = floor(42 x 0.60) = floor(25.2) = 25');
+  assert(yldZKorupcja.pieniadz < yldBezKorupcji.pieniadz,
+    'I3: korupcja obniza Pieniadz z budynkow (byl bezposrednio do skarbca -- teraz jej podlega)');
+
+  // --- I4: brak podwojnego liczenia -- suma 3 strumieni po podziale == pula ---
+  const sumaI1 = yldSplit.pieniadz + yldSplit.nauka + yldSplit.luksus;
+  eq(sumaI1, 60, 'I4: Pieniadz(36)+Nauka(12)+Luksus(12) = 60 = pieniadzBudynkow, dokladnie -- budynek liczy sie DOKLADNIE RAZ, nie ginie i nie dubluje sie');
+  const sumaZMennica = yldZMennica.pieniadz + yldZMennica.nauka + yldZMennica.luksus;
+  eq(sumaZMennica, 90, 'I4 z Waluta+Mennica: suma 3 strumieni = 90 = 60 x mennicaMnoznikPoWalucie(1.5), dokladnie -- nadal bez podwojnego liczenia');
 }
 
 // --- summary ---------------------------------------------------------------

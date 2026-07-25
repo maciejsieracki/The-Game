@@ -1950,6 +1950,19 @@ const MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.40;
 const MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
 
 /**
+ * Minimalny odstęp (heksy, hexDistanceAxial) MIĘDZY SEEDAMI pasm w jednej masie lądu — Maciej
+ * 2026-07-25, PYTANIE 80: po wprowadzeniu MAX_MOUNTAIN_RANGE_CLUSTER_SIZE trzeba było dorzucić
+ * WIĘCEJ pasm (mapGenMountainRangeParams: więcej `maxPasmNaMase`, mniej `hexyNaPasmo`), żeby
+ * odzyskać ~19% udziału Gór+Wzgórz w lądzie sprzed limitu. Przy starym odstępie (5) dodatkowe
+ * pasma stykały się z sąsiednimi/z podłogą ensureReliefGridCoverage i zrastały się w JEDNO
+ * duże skupisko — które capMountainRangeClusterSize i tak przycinał z powrotem do 10, więc
+ * efekt sieciowy był zerowy (zmierzone: udział zostawał ~13.8%, liczba skupisk Gór bez zmian).
+ * Większy odstęp trzyma nowe pasma osobno, więc każde dodatkowe pasmo to NAPRAWDĘ dodatkowe,
+ * osobne (do 10 heksów) skupisko, nie karmi istniejącego, i tak ucinanego bloku.
+ */
+const MOUNTAIN_RANGE_SEED_MIN_DIST = 12;
+
+/**
  * Flood fill spójnego skupiska JEDNEGO typu terenu (Gory ALBO Wzgorza, nie razem) po całej
  * mapie — używane przez capMountainRangeClusterSize. Deterministyczna kolejność (klucze
  * posortowane) — nie zależy od kolejności iteracji Object.keys(hexes).
@@ -2173,7 +2186,7 @@ export function growMountainRanges(
     );
     const seedCandidates = mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand);
     if (seedCandidates.length === 0) continue;
-    const seeds = pickSpreadReliefKeys(seedCandidates, nRanges, 5);
+    const seeds = pickSpreadReliefKeys(seedCandidates, nRanges, MOUNTAIN_RANGE_SEED_MIN_DIST);
 
     for (const seedKey of seeds) {
       const len = params.dlugoscMin

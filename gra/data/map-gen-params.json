@@ -57,7 +57,7 @@
     "pasma_gorskie": {
       "_opis": "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska gór/wzgórz (seed-and-grow), spięte z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): dłuższe/węższe łańcuchy (kordyliery) zamiast okrągłych plam — dlugosc_min/max w górę, max_pasm_na_mase w dół (mniej ale dłuższych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
       "low": { "hexy_na_pasmo": 320, "max_pasm_na_mase": 2, "dlugosc_min": 9, "dlugosc_max": 11, "min_masa_hexow": 40, "obrzeze_szansa": 0.30 },
-      "medium": { "hexy_na_pasmo": 240, "max_pasm_na_mase": 3, "dlugosc_min": 11, "dlugosc_max": 14, "min_masa_hexow": 30, "obrzeze_szansa": 0.35 },
+      "medium": { "hexy_na_pasmo": 150, "max_pasm_na_mase": 6, "dlugosc_min": 11, "dlugosc_max": 14, "min_masa_hexow": 30, "obrzeze_szansa": 0.35 },
       "high": { "hexy_na_pasmo": 170, "max_pasm_na_mase": 5, "dlugosc_min": 13, "dlugosc_max": 17, "min_masa_hexow": 24, "obrzeze_szansa": 0.40 }
     }
   },

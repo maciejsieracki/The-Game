@@ -169,7 +169,7 @@ var map_gen_params_default = {
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
       low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
-      medium: { hexy_na_pasmo: 240, max_pasm_na_mase: 3, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
+      medium: { hexy_na_pasmo: 150, max_pasm_na_mase: 6, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
       high: { hexy_na_pasmo: 170, max_pasm_na_mase: 5, dlugosc_min: 13, dlugosc_max: 17, min_masa_hexow: 24, obrzeze_szansa: 0.4 }
     }
   },
@@ -2237,6 +2237,7 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
 }
 var MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.4;
 var MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
+var MOUNTAIN_RANGE_SEED_MIN_DIST = 12;
 function findSameTerrainClusters(hexes, terrain) {
   const visited = /* @__PURE__ */ new Set();
   const clusters = [];
@@ -2367,7 +2368,7 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
     );
     const seedCandidates = mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand);
     if (seedCandidates.length === 0) continue;
-    const seeds = pickSpreadReliefKeys(seedCandidates, nRanges, 5);
+    const seeds = pickSpreadReliefKeys(seedCandidates, nRanges, MOUNTAIN_RANGE_SEED_MIN_DIST);
     for (const seedKey of seeds) {
       const len = params.dlugoscMin + Math.floor(rand() * (params.dlugoscMax - params.dlugoscMin + 1));
       const path = [seedKey, ...walkMountainRange(hexes, scratch, width, height, rand, seedKey, len)];
@@ -7112,7 +7113,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const pracaInt = cityPracaInteger(pracaNetto);
   const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
   const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
-  const handelBazowy = handelTerenu + pieniadzZPracy;
+  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
   let handelBrutto;
   if (ctx.maTargowisko) {
     handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
@@ -7143,7 +7144,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult = ctx.civNaukaMult ?? 1;
   const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow;
+  let pieniadzTotal = pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === "poborca") {
       pieniadzTotal += 2;
@@ -7168,6 +7169,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     pracaTerenu: Math.floor(pracaBruttoTerenu),
     pracaBudynkow: Math.floor(pracaBudynkow),
     pieniadzZPracy,
+    pieniadzBudynkow: Math.floor(pieniadzBudynkow),
     drewnoTerenu: Math.floor(drewnoTerenu),
     kamienTerenu: Math.floor(kamienTerenu),
     glinaTerenu: Math.floor(glinaTerenu),
@@ -7834,8 +7836,8 @@ var DEFAULT_OKOLICA_FOCUS = "zrownowazone";
 var DEFAULT_OKOLICA_TRYB = "auto";
 var DEFAULT_PODZIAL_HANDLU = {
   procentNauka: 20,
-  procentPieniadz: 70,
-  procentLuksus: 10
+  procentPieniadz: 60,
+  procentLuksus: 20
 };
 var DEFAULT_PODZIAL_PRACY = {
   procentBudynki: 70
@@ -21703,47 +21705,12 @@ var society_params_default = {
       jednostka: "pkt Zadowolenia",
       opis: "Dodatkowa kara Sz gdy po podboju jednocze\u015Bnie obca kultura (<50%) i obca dominuj\u0105ca religia. [B-KULT-REL]"
     },
-    szczescie_kara_wysokie_podatki: {
-      easy: 0,
-      normal: -1,
-      hard: -2,
-      jednostka: "pkt/poziom",
-      opis: "Kara Zadowolenia za ka\u017Cdy poziom powy\u017Cej bazowej stawki podatkowej (wy\u017Csze podatki \u2192 gniew). [PT \u2014 do strojenia]"
-    },
-    szczescie_bonus_luksus_30: {
-      easy: 2,
-      normal: 1,
-      hard: 0,
-      jednostka: "pkt Sz",
-      opis: "Bonus Szcz\u0119\u015Bcia gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 (suwak handlu) \u2265 30% \u2014 niskie podatki. [B2-narzedzia-stabilizacji]"
-    },
-    szczescie_bonus_luksus_40: {
-      easy: 3,
-      normal: 2,
-      hard: 1,
-      jednostka: "pkt Sz",
-      opis: "Bonus Sz gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 (suwak handlu) \u2265 40%."
-    },
-    szczescie_bonus_luksus_50: {
-      easy: 4,
-      normal: 3,
-      hard: 2,
-      jednostka: "pkt Sz",
-      opis: "Bonus Sz gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 \u2265 50%."
-    },
-    szczescie_bonus_luksus_60: {
-      easy: 5,
-      normal: 4,
-      hard: 3,
-      jednostka: "pkt Sz",
-      opis: "Bonus Sz gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 \u2265 60%."
-    },
-    szczescie_bonus_luksus_70: {
-      easy: 6,
-      normal: 5,
-      hard: 4,
-      jednostka: "pkt Sz",
-      opis: "Bonus Sz gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 \u2265 70% (max suwaka)."
+    szczescie_siatka_zamoznosc: {
+      easy: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      normal: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+      hard: [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7],
+      jednostka: "pkt Szcz\u0119\u015Bcia miasta/tur\u0119",
+      opis: "NOWA SIATKA (Maciej 2026-07-25, decyzja w\u0142a\u015Bciciela): co 10 punkt\xF3w procentowych udzia\u0142u Zamo\u017Cno\u015Bci w podziale Daniny netto (suwak handlu miasta) = 1 pkt Szcz\u0119\u015Bcia. Indeks tablicy = dziesi\u0105tka udzia\u0142u: 0=0\u20139%, 1=10\u201319%, 2=20\u201329%, \u2026 8=80\u201389%, 9=90\u2013100% (suwak si\u0119ga 100%, decyzja 72A). Warto\u015Bci ujemne w indeksach 0\u20131 (normal) i 0\u20132 (hard) to KARA za zbyt niski udzia\u0142 Zamo\u017Cno\u015Bci \u2014 nowo\u015B\u0107, celowa decyzja w\u0142a\u015Bciciela. Zast\u0119puje star\u0105, rzadk\u0105 siatk\u0119 (5 prog\xF3w co 10\u201320 pkt proc. od 30% wzwy\u017C, bez kary) i stary mechanizm szczescie_kara_wysokie_podatki (usuni\u0119ty 2026-07-25 \u2014 dublowa\u0142 kar\u0119 poni\u017Cej progu bazowego; nowa siatka mierzy to samo zjawisko w spos\xF3b ci\u0105g\u0142y na ca\u0142ym zakresie 0\u2013100%, patrz society-breakdown.ts:luksusHappinessBonus)."
     },
     szczescie_prog_bunt: {
       easy: 4,

@@ -263,47 +263,12 @@
       "jednostka": "pkt Zadowolenia",
       "opis": "Dodatkowa kara Sz gdy po podboju jednocześnie obca kultura (<50%) i obca dominująca religia. [B-KULT-REL]"
     },
-    "szczescie_kara_wysokie_podatki": {
-      "easy": 0,
-      "normal": -1,
-      "hard": -2,
-      "jednostka": "pkt/poziom",
-      "opis": "Kara Zadowolenia za każdy poziom powyżej bazowej stawki podatkowej (wyższe podatki → gniew). [PT — do strojenia]"
-    },
-    "szczescie_bonus_luksus_30": {
-      "easy": 2,
-      "normal": 1,
-      "hard": 0,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Szczęścia gdy udział Zamożność (suwak handlu) ≥ 30% — niskie podatki. [B2-narzedzia-stabilizacji]"
-    },
-    "szczescie_bonus_luksus_40": {
-      "easy": 3,
-      "normal": 2,
-      "hard": 1,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Sz gdy udział Zamożność (suwak handlu) ≥ 40%."
-    },
-    "szczescie_bonus_luksus_50": {
-      "easy": 4,
-      "normal": 3,
-      "hard": 2,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Sz gdy udział Zamożność ≥ 50%."
-    },
-    "szczescie_bonus_luksus_60": {
-      "easy": 5,
-      "normal": 4,
-      "hard": 3,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Sz gdy udział Zamożność ≥ 60%."
-    },
-    "szczescie_bonus_luksus_70": {
-      "easy": 6,
-      "normal": 5,
-      "hard": 4,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Sz gdy udział Zamożność ≥ 70% (max suwaka)."
+    "szczescie_siatka_zamoznosc": {
+      "easy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "normal": [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+      "hard": [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7],
+      "jednostka": "pkt Szczęścia miasta/turę",
+      "opis": "NOWA SIATKA (Maciej 2026-07-25, decyzja właściciela): co 10 punktów procentowych udziału Zamożności w podziale Daniny netto (suwak handlu miasta) = 1 pkt Szczęścia. Indeks tablicy = dziesiątka udziału: 0=0–9%, 1=10–19%, 2=20–29%, … 8=80–89%, 9=90–100% (suwak sięga 100%, decyzja 72A). Wartości ujemne w indeksach 0–1 (normal) i 0–2 (hard) to KARA za zbyt niski udział Zamożności — nowość, celowa decyzja właściciela. Zastępuje starą, rzadką siatkę (5 progów co 10–20 pkt proc. od 30% wzwyż, bez kary) i stary mechanizm szczescie_kara_wysokie_podatki (usunięty 2026-07-25 — dublował karę poniżej progu bazowego; nowa siatka mierzy to samo zjawisko w sposób ciągły na całym zakresie 0–100%, patrz society-breakdown.ts:luksusHappinessBonus)."
     },
     "szczescie_prog_bunt": {
       "easy": 4,
