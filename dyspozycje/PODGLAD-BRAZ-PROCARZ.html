@@ -21194,7 +21194,6 @@ void main() {
   var gPZEar = null;
   var gPZEye = null;
   var gPZBrow = null;
-  var gPZHairBack = null;
   var gPZHairFrng = null;
   var gPZThigh = null;
   var gPZShin = null;
@@ -21251,11 +21250,8 @@ void main() {
   function getPZBrow() {
     return gPZBrow || (gPZBrow = new BoxGeometry(0.024 * HEX_R, 8e-3 * HEX_R, 8e-3 * HEX_R));
   }
-  function getPZHairBack() {
-    return gPZHairBack || (gPZHairBack = new BoxGeometry(PZ_HEAD_S * 1, PZ_HEAD_S * 0.66, 0.026 * HEX_R));
-  }
   function getPZHairFrng() {
-    return gPZHairFrng || (gPZHairFrng = new BoxGeometry(PZ_HEAD_S * 0.86, 0.02 * HEX_R, PZ_HEAD_S * 0.8));
+    return gPZHairFrng || (gPZHairFrng = new BoxGeometry(0.044 * HEX_R, 0.034 * HEX_R, 0.044 * HEX_R));
   }
   function getPZThigh() {
     return gPZThigh || (gPZThigh = new BoxGeometry(0.056 * HEX_R, PZ_THIGH_L, 0.06 * HEX_R));
@@ -21435,12 +21431,30 @@ void main() {
     }
   }
   function pzHair(group, mHair, mCord) {
-    const back = new Mesh(getPZHairBack(), mHair);
-    back.position.set(0, PZ_HEAD_CTR - 2e-3 * HEX_R, -(PZ_HEAD_S * 0.5 + 9e-3 * HEX_R));
-    group.add(back);
-    const fringe = new Mesh(getPZHairFrng(), mHair);
-    fringe.position.set(0, PZ_HEAD_CTR + PZ_HEAD_S * 0.46, 6e-3 * HEX_R);
-    group.add(fringe);
+    for (const [dx, dz, sy, rz] of [
+      [-0.03, -0.01, 1, -0.22],
+      [0, -0.024, 1.15, 0.05],
+      [0.03, -8e-3, 0.95, 0.24],
+      [-0.014, 0.02, 0.85, -0.1],
+      [0.016, 0.018, 0.9, 0.12]
+    ]) {
+      const tuft = new Mesh(getPZHairFrng(), mHair);
+      tuft.rotation.z = rz;
+      tuft.scale.set(0.9, sy, 0.9);
+      tuft.position.set(dx * HEX_R, PZ_HEAD_TOP - 0.01 * HEX_R, dz * HEX_R);
+      group.add(tuft);
+    }
+    for (const [dx, dy, rz] of [
+      [-0.028, 6e-3, 0.16],
+      [0.024, 2e-3, -0.2],
+      [-2e-3, -0.014, 0.05]
+    ]) {
+      const tuft = new Mesh(getPZHairFrng(), mHair);
+      tuft.rotation.set(0.1, rz, rz * 0.5);
+      tuft.scale.set(0.85, 0.75, 0.7);
+      tuft.position.set(dx * HEX_R, PZ_HEAD_CTR + dy * HEX_R, -(PZ_HEAD_S * 0.5 + 6e-3 * HEX_R));
+      group.add(tuft);
+    }
     const tieL = new Vector3(-0.03 * HEX_R, PZ_HEAD_CTR + 0.014 * HEX_R, -(PZ_HEAD_S * 0.5 + 6e-3 * HEX_R));
     const tieR = new Vector3(0.03 * HEX_R, PZ_HEAD_CTR + 0.014 * HEX_R, -(PZ_HEAD_S * 0.5 + 6e-3 * HEX_R));
     const tieBack = new Vector3(0, PZ_HEAD_CTR + 6e-3 * HEX_R, -(PZ_HEAD_S * 0.5 + 0.02 * HEX_R));
@@ -21501,8 +21515,8 @@ void main() {
     toggle.rotation.z = Math.PI / 2 + 0.2;
     toggle.position.set(BX + 0.01 * HEX_R, BY + 0.02 * HEX_R, BZ + 0.022 * HEX_R);
     group.add(toggle);
-    const strapTop = new Vector3(PZ_SHLD_X * 0.7, PZ_TORSO_TOP - 0.01 * HEX_R, PZ_TORSO_D * 0.5 + 6e-3 * HEX_R);
-    const strapBot = new Vector3(BX * 0.5, BY + 0.03 * HEX_R, BZ + 0.01 * HEX_R);
+    const strapTop = new Vector3(-PZ_SHLD_X * 0.62, PZ_TORSO_TOP - 8e-3 * HEX_R, PZ_TORSO_D * 0.5 + 2e-3 * HEX_R);
+    const strapBot = new Vector3(BX - 0.012 * HEX_R, BY + 0.052 * HEX_R, BZ + 6e-3 * HEX_R);
     pzStretch(group, mLeathDk, strapTop, strapBot, 0.02 * HEX_R, 0.01 * HEX_R);
     const draw = new Mesh(getPZFringe(), mLeath);
     draw.rotation.x = 0.3;
@@ -21701,11 +21715,6 @@ void main() {
   function rebuild(pane, color) {
     if (pane.group) {
       pane.scene.remove(pane.group);
-      pane.group.traverse((obj) => {
-        const m = obj;
-        if (m.isMesh && m.geometry) {
-        }
-      });
     }
     const group = pane.build(color);
     pane.scene.add(group);

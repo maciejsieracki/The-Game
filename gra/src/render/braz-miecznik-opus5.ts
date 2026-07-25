@@ -46,9 +46,10 @@
  *     bliskowschodnie) są wąskie, kłujące, o przekroju zbliżonym do rombu —
  *     to WŁAŚCIWY wybór dla jednostki reprezentującej "przeciętnego" miecznika
  *     przez większość epoki, i jednocześnie ODRÓŻNIA go sylwetką od Mykeńczyka
- *     (który ma szerszą, równoległą klingę tnącą). Długość klingi 0.135*HEX_R
- *     + grot 0.036*HEX_R przy figurce ok. 0.60*HEX_R (od stóp do czubka głowy)
- *     odpowiada mieczowi krótkiemu 50–70 cm (bez rękojeści) — WYRAŹNIE krótszy
+ *     (który ma szerszą, równoległą klingę tnącą). Długość klingi 0.170*HEX_R
+ *     (grot wtopiony w stopniowe zwężenie klingi, bez odrębnego segmentu)
+ *     przy figurze przeskalowanej do ok. 0.75*HEX_R (od stóp do czubka głowy)
+ *     odpowiada mieczowi krótkiemu ok. 60 cm (bez rękojeści) — WYRAŹNIE krótszy
  *     niż długi miecz sieczny oburącz epoki żelaza (to byłby anachronizm).
  *     Klinga zwęża się STOPNIOWO od nasady do sztychu (profil rombowy, bez
  *     liściastego wybrzuszenia w 1/2 długości) — czytelna różnica przy
@@ -110,9 +111,10 @@
  *     z kamery 52°.
  *   wobec WŁÓCZNIKA EPOKI BRĄZU (jednostka dystansowo-zwarta z długim
  *     drzewcem wystającym daleko przed i za dłonią, chwyt oburącz lub
- *     jednoręczny z bronią 2–3× dłuższą niż ramię): Miecznik ma broń KRÓTKĄ,
- *     która ledwie wystaje przed pięść (klinga+grot = 0.171*HEX_R, mniej niż
- *     długość jednego przedramienia) — sylwetka bez charakterystycznego
+ *     jednoręczny z bronią 2–3× dłuższą niż ramię): Miecznik ma broń KRÓTKĄ —
+ *     klinga (0.170*HEX_R) sięga niewiele ponad długość jednego przedramienia
+ *     (0.092*HEX_R), a CAŁY miecz (gałka→sztych) kończy się tuż przed figurą,
+ *     nie wystając poza nią drzewcem — sylwetka bez charakterystycznego
  *     "wydłużenia" drzewca poza obrys ciała, przez co czyta się jako
  *     zwarta, krępa figura, kontrastująca z wyraźnie wydłużoną bronią
  *     drzewcową Włócznika.
@@ -181,6 +183,13 @@ const BM_THIGH_L    = 0.104 * HEX_R;
 const BM_SHIN_L     = 0.096 * HEX_R;
 const BM_UPARM_L    = 0.100 * HEX_R;
 const BM_FOREARM_L  = 0.092 * HEX_R;
+
+// Anatomia rodziny KB_*/MS_*/NB_* daje figurę ok. 0,62×HEX_R (stopy→czubek
+// głowy) — spójną z resztą tej rodziny modeli, ale poniżej wymaganych
+// ok. 0,75×HEX_R dla tej jednostki. Zamiast przeliczać każdy offset z osobna,
+// CAŁA gotowa grupa jest skalowana JEDNYM współczynnikiem wokół punktu
+// stóp (y=0 grupy) tuż przed zwróceniem — patrz koniec buildMiecznikBrazOpus5.
+const BM_FIGURE_SCALE = 1.21;
 
 // ── geometrie-singletony (lazy) ──────────────────────────────────────────────
 let gBMTorso:     THREE.BoxGeometry | null = null;
@@ -252,7 +261,7 @@ function getBMBrow():      THREE.BoxGeometry { return (gBMBrow      ||= new THRE
 function getBMBeard():     THREE.BoxGeometry { return (gBMBeard     ||= new THREE.BoxGeometry(0.080 * HEX_R, 0.044 * HEX_R, 0.032 * HEX_R)); }
 function getBMHairTop():   THREE.BoxGeometry { return (gBMHairTop   ||= new THREE.BoxGeometry(0.126 * HEX_R, 0.028 * HEX_R, 0.126 * HEX_R)); }
 function getBMHairBack():  THREE.BoxGeometry { return (gBMHairBack  ||= new THREE.BoxGeometry(0.124 * HEX_R, 0.096 * HEX_R, 0.024 * HEX_R)); }
-function getBMCap():       THREE.CylinderGeometry { return (gBMCap  ||= new THREE.CylinderGeometry(0.058 * HEX_R, 0.088 * HEX_R, 0.072 * HEX_R, 10, 1)); }
+function getBMCap():       THREE.CylinderGeometry { return (gBMCap  ||= new THREE.CylinderGeometry(0.046 * HEX_R, 0.068 * HEX_R, 0.066 * HEX_R, 10, 1)); }
 function getBMThigh():     THREE.BoxGeometry { return (gBMThigh     ||= new THREE.BoxGeometry(0.056 * HEX_R, BM_THIGH_L, 0.060 * HEX_R)); }
 function getBMShin():      THREE.BoxGeometry { return (gBMShin      ||= new THREE.BoxGeometry(0.038 * HEX_R, BM_SHIN_L, 0.042 * HEX_R)); }
 function getBMSole():      THREE.BoxGeometry { return (gBMSole      ||= new THREE.BoxGeometry(0.046 * HEX_R, 0.016 * HEX_R, 0.084 * HEX_R)); }
@@ -279,14 +288,14 @@ function getBMSheath():    THREE.BoxGeometry { return (gBMSheath    ||= new THRE
 function getBMSheathTop(): THREE.BoxGeometry { return (gBMSheathTop ||= new THREE.BoxGeometry(0.032 * HEX_R, 0.020 * HEX_R, 0.019 * HEX_R)); }
 function getBMSheathTip(): THREE.BoxGeometry { return (gBMSheathTip ||= new THREE.BoxGeometry(0.018 * HEX_R, 0.020 * HEX_R, 0.012 * HEX_R)); }
 function getBMFrog():      THREE.BoxGeometry { return (gBMFrog      ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.036 * HEX_R, 0.012 * HEX_R)); }
-function getBMGrip():      THREE.CylinderGeometry { return (gBMGrip     ||= new THREE.CylinderGeometry(0.013 * HEX_R, 0.015 * HEX_R, 0.062 * HEX_R, 6, 1)); }
+function getBMGrip():      THREE.CylinderGeometry { return (gBMGrip     ||= new THREE.CylinderGeometry(0.013 * HEX_R, 0.015 * HEX_R, 0.040 * HEX_R, 6, 1)); }
 function getBMGripWrap():  THREE.CylinderGeometry { return (gBMGripWrap ||= new THREE.CylinderGeometry(0.016 * HEX_R, 0.016 * HEX_R, 0.010 * HEX_R, 6, 1)); }
 function getBMPommel():    THREE.SphereGeometry   { return (gBMPommel   ||= new THREE.SphereGeometry(0.017 * HEX_R, 7, 5)); }
 function getBMGuard():     THREE.BoxGeometry      { return (gBMGuard    ||= new THREE.BoxGeometry(0.056 * HEX_R, 0.014 * HEX_R, 0.020 * HEX_R)); }
-function getBMBladeEdge(): THREE.BoxGeometry      { return (gBMBladeEdge||= new THREE.BoxGeometry(0.006 * HEX_R, 0.140 * HEX_R, 0.030 * HEX_R)); }
-function getBMShField():   THREE.CylinderGeometry { return (gBMShField ||= new THREE.CylinderGeometry(0.106 * HEX_R, 0.106 * HEX_R, 0.018 * HEX_R, 12, 1)); }
-function getBMShRim():     THREE.CylinderGeometry { return (gBMShRim   ||= new THREE.CylinderGeometry(0.112 * HEX_R, 0.112 * HEX_R, 0.014 * HEX_R, 12, 1, true)); }
-function getBMShBoss():    THREE.ConeGeometry     { return (gBMShBoss  ||= new THREE.ConeGeometry(0.026 * HEX_R, 0.030 * HEX_R, 8)); }
+function getBMBladeEdge(): THREE.BoxGeometry      { return (gBMBladeEdge||= new THREE.BoxGeometry(0.006 * HEX_R, 0.094 * HEX_R, 0.030 * HEX_R)); }
+function getBMShField():   THREE.CylinderGeometry { return (gBMShField ||= new THREE.CylinderGeometry(0.132 * HEX_R, 0.132 * HEX_R, 0.020 * HEX_R, 12, 1)); }
+function getBMShRim():     THREE.CylinderGeometry { return (gBMShRim   ||= new THREE.CylinderGeometry(0.140 * HEX_R, 0.140 * HEX_R, 0.016 * HEX_R, 12, 1, true)); }
+function getBMShBoss():    THREE.ConeGeometry     { return (gBMShBoss  ||= new THREE.ConeGeometry(0.032 * HEX_R, 0.036 * HEX_R, 8)); }
 function getBMShStitch():  THREE.BoxGeometry      { return (gBMShStitch||= new THREE.BoxGeometry(0.024 * HEX_R, 0.015 * HEX_R, 0.032 * HEX_R)); }
 function getBMShGrip():    THREE.BoxGeometry      { return (gBMShGrip  ||= new THREE.BoxGeometry(0.058 * HEX_R, 0.016 * HEX_R, 0.016 * HEX_R)); }
 function getBMShLoop():    THREE.BoxGeometry      { return (gBMShLoop  ||= new THREE.BoxGeometry(0.074 * HEX_R, 0.020 * HEX_R, 0.012 * HEX_R)); }
@@ -327,7 +336,7 @@ function makeRapierBladeGeo(len: number, wMax: number, tMax: number): THREE.Buff
   return g;
 }
 function getBMBlade(): THREE.BufferGeometry {
-  return (gBMBlade ||= makeRapierBladeGeo(0.135 * HEX_R, 0.034 * HEX_R, 0.020 * HEX_R));
+  return (gBMBlade ||= makeRapierBladeGeo(0.170 * HEX_R, 0.034 * HEX_R, 0.020 * HEX_R));
 }
 
 // ---------------------------------------------------------------------------
@@ -545,43 +554,45 @@ export function buildMiecznikBrazOpus5(ownerColor_: number): THREE.Group {
   cap.position.set(0, BM_HEAD_CTR + 0.050 * HEX_R, 0);
   group.add(cap);
 
-  // ═══ PRAWE (-X) RAMIĘ: MIECZ KŁUJĄCY W GARDZIE, wysunięty nisko-przodem ══
-  const armR = bmBuildArm(group, -BM_SHLD_X, 0.32, 1.40, mTunic, mSkin, mLeathDk);
+  // ═══ PRAWE (-X) RAMIĘ: MIECZ KŁUJĄCY W GARDZIE, wysunięty przekątnie w dół-
+  // przód (NIE równolegle do osi kamery — kąt dobrany tak, żeby klinga czytała
+  // się jako przekątna na ekranie, a nie skracała się w punkt przy ujęciu 52°) ═
+  const armR = bmBuildArm(group, -BM_SHLD_X, 0.22, 0.85, mTunic, mSkin, mLeathDk);
   const axR = armR.axis;
   const atR = (d: number): THREE.Vector3 => armR.wrist.clone().addScaledVector(axR, d * HEX_R);
-  const rotR = Math.PI - 1.40;
+  const rotR = Math.PI - 0.85;
 
   const grip = new THREE.Mesh(getBMGrip(), mWood);
   grip.rotation.x = rotR;
-  grip.position.copy(atR(0.031));
+  grip.position.copy(atR(0.013));
   group.add(grip);
   const gripWrap = new THREE.Mesh(getBMGripWrap(), mSinew);
   gripWrap.rotation.x = rotR;
-  gripWrap.position.copy(atR(0.031));
+  gripWrap.position.copy(atR(0.003));
   group.add(gripWrap);
   const gripWrap2 = new THREE.Mesh(getBMGripWrap(), mSinew);      // drugi pierścień oplotu sznurkiem
   gripWrap2.rotation.x = rotR;
-  gripWrap2.position.copy(atR(0.017));
+  gripWrap2.position.copy(atR(0.023));
   group.add(gripWrap2);
   const bracer = new THREE.Mesh(getBMBracer(), mLeathLt);         // skórzany ochraniacz na przedramieniu mieczowym
   bracer.quaternion.setFromUnitVectors(BM_Y_UP, axR);
   bracer.position.copy(atR(-0.048));
   group.add(bracer);
   const pommel = new THREE.Mesh(getBMPommel(), mBone);            // gałka KOŚCIANA (nie klejnot)
-  pommel.position.copy(atR(-0.012));
+  pommel.position.copy(atR(-0.017));
   group.add(pommel);
   const guard = new THREE.Mesh(getBMGuard(), mBronze);            // JELEC BRĄZOWY, mały, prosty
   guard.rotation.x = rotR;
-  guard.position.copy(atR(0.064));
+  guard.position.copy(atR(0.040));
   group.add(guard);
-  const blade = new THREE.Mesh(getBMBlade(), mBronze);            // KLINGA KŁUJĄCA (rapier)
-  blade.rotation.x = rotR;
-  blade.position.copy(atR(0.072));
+  const blade = new THREE.Mesh(getBMBlade(), mBronze);            // KLINGA KŁUJĄCA (rapier) — DŁUGA 0,170×HEX_R,
+  blade.rotation.x = rotR;                                        // zakotwiczona u NASADY (d=0,047), sięga do d≈0,217
+  blade.position.copy(atR(0.047));
   group.add(blade);
-  const bladeEdge = new THREE.Mesh(getBMBladeEdge(), mBronzeLt);  // połysk krawędzi
+  const bladeEdge = new THREE.Mesh(getBMBladeEdge(), mBronzeLt);  // połysk krawędzi wzdłuż większej części klingi
   bladeEdge.scale.set(1.0, 1.0, 0.5);
   bladeEdge.rotation.x = rotR;
-  bladeEdge.position.copy(atR(0.072));
+  bladeEdge.position.copy(atR(0.1235));
   group.add(bladeEdge);
 
   // ═══ POCHWA PUSTA na lewym biodrze (miecz dobyty w dłoni) ════════════════
@@ -609,44 +620,52 @@ export function buildMiecznikBrazOpus5(ownerColor_: number): THREE.Group {
   group.add(frog);
 
   // ═══ LEWE (+X) RAMIĘ: TARCZA OKRĄGŁA ZE SKÓRY WOŁOWEJ + BRĄZOWE UMBO ═════
+  // Powiększona i wysunięta wyraźnie PRZED i NA ZEWNĄTRZ przedramienia (nie
+  // wewnątrz obrysu tułowia) oraz niemal prostopadle do kamery (min. przechył),
+  // żeby pole tarczy było jednoznacznie czytelne z ujęcia gry 52°.
   const armL = bmBuildArm(group, BM_SHLD_X, 0.42, 1.00, mTunic, mSkin, null);
   const sh = new THREE.Group();
   sh.position.set(
-    armL.wrist.x - 0.024 * HEX_R,
-    armL.wrist.y + 0.038 * HEX_R,
-    armL.wrist.z + 0.048 * HEX_R,
+    armL.wrist.x + 0.058 * HEX_R,
+    armL.wrist.y + 0.034 * HEX_R,
+    armL.wrist.z + 0.078 * HEX_R,
   );
-  sh.rotation.y = -0.22;
-  sh.rotation.z = 0.05;
+  sh.rotation.y = -0.10;
+  sh.rotation.z = 0.02;
 
   const field = new THREE.Mesh(getBMShField(), mOwner);           // pole = kolor gracza (skóra barwiona)
   field.rotation.x = Math.PI / 2;
   sh.add(field);
   const rim = new THREE.Mesh(getBMShRim(), mShieldHide);          // rant — skóra wołowa niebarwiona
   rim.rotation.x = Math.PI / 2;
-  rim.position.z = -0.005 * HEX_R;
+  rim.position.z = -0.006 * HEX_R;
   sh.add(rim);
   const boss = new THREE.Mesh(getBMShBoss(), mBronze);            // MAŁE brązowe umbo centralne
   boss.rotation.x = -Math.PI / 2;
-  boss.position.z = 0.016 * HEX_R;
+  boss.position.z = 0.020 * HEX_R;
   sh.add(boss);
   for (const ang of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) {   // obszycie brzegu (4 klamry)
     const st = new THREE.Mesh(getBMShStitch(), mLeathDk);
-    st.position.set(Math.sin(ang) * 0.100 * HEX_R, Math.cos(ang) * 0.100 * HEX_R, 0.006 * HEX_R);
+    st.position.set(Math.sin(ang) * 0.125 * HEX_R, Math.cos(ang) * 0.125 * HEX_R, 0.007 * HEX_R);
     sh.add(st);
   }
   const grip2 = new THREE.Mesh(getBMShGrip(), mWood);             // chwyt poprzeczny z tyłu
-  grip2.position.set(0, -0.018 * HEX_R, -0.028 * HEX_R);
+  grip2.position.set(0, -0.018 * HEX_R, -0.035 * HEX_R);
   sh.add(grip2);
   const brace = new THREE.Mesh(getBMShGrip(), mWoodDk);           // wewnętrzna listwa usztywniająca (pionowa)
   brace.rotation.z = Math.PI / 2;
   brace.scale.set(0.68, 1.0, 1.0);
-  brace.position.set(0, 0, -0.022 * HEX_R);
+  brace.position.set(0, 0, -0.028 * HEX_R);
   sh.add(brace);
   const loop = new THREE.Mesh(getBMShLoop(), mLeathDk);           // pętla na przedramię
-  loop.position.set(0, 0.026 * HEX_R, -0.024 * HEX_R);
+  loop.position.set(0, 0.026 * HEX_R, -0.030 * HEX_R);
   sh.add(loop);
   group.add(sh);
+
+  // Przeskalowanie CAŁEJ gotowej grupy JEDNYM współczynnikiem wokół stóp
+  // (origin grupy = y0), żeby figura wyszła na docelowe ok. 0,75×HEX_R —
+  // wszystkie dzieci (tunika, broń, tarcza) skalują się razem, proporcjonalnie.
+  group.scale.setScalar(BM_FIGURE_SCALE);
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];

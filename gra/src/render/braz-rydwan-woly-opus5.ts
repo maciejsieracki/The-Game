@@ -160,13 +160,17 @@ const RW_SHLD_X    = RW_TORSO_W * 0.5 + 0.028 * HEX_R;
 const RW_SHLD_Y    = RW_TORSO_TOP - 0.022 * HEX_R;
 const RW_DRIVER_Z  = 0.010 * HEX_R;
 
-// woły (dwa, w jarzmie, przodem +Z — tam gdzie łby)
-const RW_OX_LEG_L     = 0.150 * HEX_R;
-const RW_OX_TORSO_H   = 0.095 * HEX_R;
-const RW_OX_TORSO_W   = 0.078 * HEX_R;
-const RW_OX_TORSO_LEN = 0.170 * HEX_R;
+// woły (dwa, w jarzmie, przodem +Z — tam gdzie łby). Rozmiar podniesiony na
+// żądanie koordynatora (2026-07-25): grzbiet MA sięgać co najmniej wysokości
+// górnej krawędzi skrzyni (RW_FRONT_TOP=0.260) — wcześniej wół był niższy niż
+// wóz i czytał się jak cielę. Skalowane WYŁĄCZNIE tu (same zwierzęta, nie
+// cała grupa) — reszta pojazdu (koła/skrzynia/woźnica) bez zmian.
+const RW_OX_LEG_L     = 0.178 * HEX_R;
+const RW_OX_TORSO_H   = 0.135 * HEX_R;
+const RW_OX_TORSO_W   = 0.108 * HEX_R;
+const RW_OX_TORSO_LEN = 0.192 * HEX_R;
 const RW_OX_CTR_Y     = RW_OX_LEG_L + RW_OX_TORSO_H * 0.5;
-const RW_OX_X         = 0.078 * HEX_R;     // rozstaw wołów od osi wozu
+const RW_OX_X         = 0.098 * HEX_R;     // rozstaw wołów od osi wozu (rozsunięte, by obie sztuki były czytelne z ujęcia gry)
 const RW_OX_Z         = 0.360 * HEX_R;     // środek tułowia wołu
 const RW_OX_HALF_LEN  = RW_OX_TORSO_LEN * 0.5;
 const RW_YOKE_Y = RW_OX_CTR_Y + RW_OX_TORSO_H * 0.5 + 0.030 * HEX_R;
@@ -238,7 +242,7 @@ function getRWJavTip():   THREE.ConeGeometry { return (gRWJavTip   ||= new THREE
 function getRWYokeBar():  THREE.BoxGeometry { return (gRWYokeBar  ||= new THREE.BoxGeometry(2 * RW_OX_X + 0.070 * HEX_R, 0.024 * HEX_R, 0.026 * HEX_R)); }
 function getRWYokeFit():  THREE.CylinderGeometry { return (gRWYokeFit  ||= new THREE.CylinderGeometry(0.020 * HEX_R, 0.020 * HEX_R, 0.034 * HEX_R, 6, 1, true)); }
 function getRWLashing():  THREE.CylinderGeometry { return (gRWLashing  ||= new THREE.CylinderGeometry(0.022 * HEX_R, 0.022 * HEX_R, 0.018 * HEX_R, 6, 1, true)); }
-function getRWMast():     THREE.BoxGeometry { return (gRWMast     ||= new THREE.BoxGeometry(0.013 * HEX_R, 0.130 * HEX_R, 0.013 * HEX_R)); }
+function getRWMast():     THREE.BoxGeometry { return (gRWMast     ||= new THREE.BoxGeometry(0.013 * HEX_R, 0.340 * HEX_R, 0.013 * HEX_R)); }
 function getRWMastBar():  THREE.BoxGeometry { return (gRWMastBar  ||= new THREE.BoxGeometry(0.010 * HEX_R, 0.010 * HEX_R, 0.086 * HEX_R)); }
 function getRWBanner():   THREE.BoxGeometry { return (gRWBanner   ||= new THREE.BoxGeometry(0.008 * HEX_R, 0.058 * HEX_R, 0.078 * HEX_R)); }
 function getRWTorso():    THREE.BoxGeometry { return (gRWTorso    ||= new THREE.BoxGeometry(RW_TORSO_W, RW_TORSO_H, RW_TORSO_D)); }
@@ -250,11 +254,11 @@ function getRWKaunA():    THREE.BoxGeometry { return (gRWKaunA    ||= new THREE.
 function getRWKaunB():    THREE.BoxGeometry { return (gRWKaunB    ||= new THREE.BoxGeometry(RW_TORSO_W * 1.02, 0.058 * HEX_R, RW_TORSO_D * 1.08)); }
 function getRWFist():     THREE.BoxGeometry { return (gRWFist     ||= new THREE.BoxGeometry(0.044 * HEX_R, 0.044 * HEX_R, 0.046 * HEX_R)); }
 function getRWOxTorso():  THREE.BoxGeometry { return (gRWOxTorso  ||= new THREE.BoxGeometry(RW_OX_TORSO_W, RW_OX_TORSO_H, RW_OX_TORSO_LEN)); }
-function getRWOxSkull():  THREE.BoxGeometry { return (gRWOxSkull  ||= new THREE.BoxGeometry(0.052 * HEX_R, 0.052 * HEX_R, 0.062 * HEX_R)); }
-function getRWOxMuzzle(): THREE.BoxGeometry { return (gRWOxMuzzle ||= new THREE.BoxGeometry(0.044 * HEX_R, 0.036 * HEX_R, 0.034 * HEX_R)); }
-function getRWOxEar():    THREE.BoxGeometry { return (gRWOxEar    ||= new THREE.BoxGeometry(0.010 * HEX_R, 0.020 * HEX_R, 0.040 * HEX_R)); }
-function getRWOxHorn():   THREE.ConeGeometry { return (gRWOxHorn   ||= new THREE.ConeGeometry(0.014 * HEX_R, 0.056 * HEX_R, 5)); }
-function getRWOxHoof():   THREE.BoxGeometry { return (gRWOxHoof   ||= new THREE.BoxGeometry(0.034 * HEX_R, 0.022 * HEX_R, 0.038 * HEX_R)); }
+function getRWOxSkull():  THREE.BoxGeometry { return (gRWOxSkull  ||= new THREE.BoxGeometry(0.065 * HEX_R, 0.065 * HEX_R, 0.078 * HEX_R)); }
+function getRWOxMuzzle(): THREE.BoxGeometry { return (gRWOxMuzzle ||= new THREE.BoxGeometry(0.055 * HEX_R, 0.045 * HEX_R, 0.043 * HEX_R)); }
+function getRWOxEar():    THREE.BoxGeometry { return (gRWOxEar    ||= new THREE.BoxGeometry(0.013 * HEX_R, 0.025 * HEX_R, 0.050 * HEX_R)); }
+function getRWOxHorn():   THREE.ConeGeometry { return (gRWOxHorn   ||= new THREE.ConeGeometry(0.018 * HEX_R, 0.070 * HEX_R, 5)); }
+function getRWOxHoof():   THREE.BoxGeometry { return (gRWOxHoof   ||= new THREE.BoxGeometry(0.044 * HEX_R, 0.028 * HEX_R, 0.048 * HEX_R)); }
 function getRWNoseRing():  THREE.CylinderGeometry { return (gRWNoseRing ||= new THREE.CylinderGeometry(0.010 * HEX_R, 0.010 * HEX_R, 0.008 * HEX_R, 6, 1, true)); }
 
 const RW_Y_UP = new THREE.Vector3(0, 1, 0);
@@ -570,14 +574,18 @@ export function buildRydwanWolyBrazOpus5(ownerColor_: number): THREE.Group {
   group.add(javTip);
 
   // ═══ PROPORZEC RUFOWY — KOLOR GRACZA (jak w Taranie okutym) ══════════════
+  // Maszt wyraźnie WYŻSZY niż tylna ścianka (0.20), żeby proporzec był
+  // czytelny z dystansu (nie ginął w cieniu skrzyni) — szczyt ~0.54, wciąż
+  // niżej niż głowa woźnicy (~0.68) i uniesiony oszczep (~0.79).
+  const RW_MAST_BASE = RW_FLOOR_Y + 0.100 * HEX_R;
   const mast = new THREE.Mesh(getRWMast(), mWood);
-  mast.position.set(0, RW_FLOOR_Y + 0.050 * HEX_R + 0.065 * HEX_R, RW_FLOOR_RZ - 0.006 * HEX_R);
+  mast.position.set(0, RW_MAST_BASE + 0.170 * HEX_R, RW_FLOOR_RZ - 0.006 * HEX_R);
   group.add(mast);
   const mastBar = new THREE.Mesh(getRWMastBar(), mWood);
-  mastBar.position.set(0, RW_FLOOR_Y + 0.050 * HEX_R + 0.118 * HEX_R, RW_FLOOR_RZ - 0.006 * HEX_R);
+  mastBar.position.set(0, RW_MAST_BASE + 0.350 * HEX_R, RW_FLOOR_RZ - 0.006 * HEX_R);
   group.add(mastBar);
   const banner = new THREE.Mesh(getRWBanner(), mOwner);
-  banner.position.set(0.004 * HEX_R, RW_FLOOR_Y + 0.050 * HEX_R + 0.100 * HEX_R, RW_FLOOR_RZ - 0.006 * HEX_R - 0.039 * HEX_R);
+  banner.position.set(0.004 * HEX_R, RW_MAST_BASE + 0.312 * HEX_R, RW_FLOOR_RZ - 0.006 * HEX_R - 0.039 * HEX_R);
   group.add(banner);
 
   group.userData['mats'] = mats;

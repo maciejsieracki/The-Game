@@ -174,6 +174,13 @@ const WB_SHIN_L    = 0.096 * HEX_R;
 const WB_UPARM_L   = 0.100 * HEX_R;
 const WB_FOREARM_L = 0.092 * HEX_R;
 
+// Współczynnik skalowania CAŁEJ figury (bez broni) do wymaganej ~0,75×HEX_R
+// (rodzina NB_*/HO_*/P1_* daje ~0,60–0,64×HEX_R „z pudełka" — za nisko wobec
+// normy właściciela). Zmierzony: wysokość sylwetki PRZED skalowaniem, potem
+// współczynnik = 0.75 / (zmierzona wysokość). Stosowany JEDNYM group.scale
+// wokół stóp (y=0) na końcu buildWlocznikBrazOpus5 — patrz tam.
+const WB_FIGURE_SCALE = 1.163;
+
 // ── geometrie-singletony (lazy) ────────────────────────────────────────────
 let gWBTorso:    THREE.BoxGeometry | null = null;
 let gWBChest:    THREE.BoxGeometry | null = null;
@@ -205,7 +212,7 @@ let gWBStrap:    THREE.BoxGeometry | null = null;
 let gWBSash:     THREE.BoxGeometry | null = null;
 let gWBLegWrap:  THREE.BoxGeometry | null = null;
 // hełm
-let gWBDome:     THREE.CylinderGeometry | null = null;
+let gWBDome:     THREE.SphereGeometry | null = null;
 let gWBBrim:     THREE.CylinderGeometry | null = null;
 let gWBFinial:   THREE.CylinderGeometry | null = null;
 let gWBNape:     THREE.BoxGeometry | null = null;
@@ -260,8 +267,15 @@ function getWBBuckle():   THREE.BoxGeometry { return (gWBBuckle   ||= new THREE.
 function getWBStrap():    THREE.BoxGeometry { return (gWBStrap    ||= new THREE.BoxGeometry(0.024 * HEX_R, 0.120 * HEX_R, 0.010 * HEX_R)); }
 function getWBSash():     THREE.BoxGeometry { return (gWBSash     ||= new THREE.BoxGeometry(0.196 * HEX_R, 0.030 * HEX_R, 0.108 * HEX_R)); }
 function getWBLegWrap():  THREE.BoxGeometry { return (gWBLegWrap  ||= new THREE.BoxGeometry(0.042 * HEX_R, 0.020 * HEX_R, 0.046 * HEX_R)); }
-function getWBDome():     THREE.CylinderGeometry { return (gWBDome     ||= new THREE.CylinderGeometry(0.032 * HEX_R, 0.086 * HEX_R, 0.062 * HEX_R, 10, 1)); }
-function getWBBrim():     THREE.CylinderGeometry { return (gWBBrim     ||= new THREE.CylinderGeometry(0.090 * HEX_R, 0.092 * HEX_R, 0.018 * HEX_R, 10, 1)); }
+// Kopuła hełmu = PEŁNA PÓŁKULA (SphereGeometry, thetaLength=PI/2 — górna
+// połowa sfery), NIE stożek/walec z osobnym promieniem góra/dół: przy kącie
+// kamery gry (52°, patrzącej w dół) walec z małym promieniem u szczytu
+// czytał się jako otwarty "garnek" (widoczna wąska płaska czapa zapadnięta
+// w szerokim rancie). Półkula nie ma tego problemu — szczyt to gładki,
+// zamknięty biegun, zero otworu z jakiegokolwiek kąta.
+const WB_DOME_R = 0.072 * HEX_R;
+function getWBDome():     THREE.SphereGeometry { return (gWBDome     ||= new THREE.SphereGeometry(WB_DOME_R, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2)); }
+function getWBBrim():     THREE.CylinderGeometry { return (gWBBrim     ||= new THREE.CylinderGeometry(0.088 * HEX_R, 0.092 * HEX_R, 0.020 * HEX_R, 10, 1)); }
 function getWBFinial():   THREE.CylinderGeometry { return (gWBFinial   ||= new THREE.CylinderGeometry(0.012 * HEX_R, 0.018 * HEX_R, 0.016 * HEX_R, 6, 1)); }
 function getWBNape():     THREE.BoxGeometry { return (gWBNape     ||= new THREE.BoxGeometry(0.096 * HEX_R, 0.044 * HEX_R, 0.020 * HEX_R)); }
 function getWBHairTuft(): THREE.BoxGeometry { return (gWBHairTuft ||= new THREE.BoxGeometry(0.018 * HEX_R, 0.052 * HEX_R, 0.024 * HEX_R)); }
@@ -535,15 +549,18 @@ export function buildWlocznikBrazOpus5(ownerColor_: number): THREE.Group {
   hilt.position.set(knifeX - 0.006 * HEX_R, 0.244 * HEX_R, 0.012 * HEX_R);
   group.add(hilt);
 
-  // ═══ HEŁM: niska kopuła brązowa + rant + guzek — BEZ nosala/grzebienia/pióra
+  // ═══ HEŁM: niska PÓŁKULISTA kopuła brązowa (pełna, zamknięta u szczytu —
+  // BEZ efektu "otwartego garnka" widocznego przy kącie kamery gry) + rant
+  // + mały guzek — BEZ nosala/grzebienia/pióra.
+  const WB_DOME_EQ_Y = WB_HEAD_CTR + 0.020 * HEX_R;   // wysokość równika półkuli
   const dome = new THREE.Mesh(getWBDome(), mBronze);
-  dome.position.set(0, WB_HEAD_CTR + 0.052 * HEX_R, 0);
+  dome.position.set(0, WB_DOME_EQ_Y, 0);
   group.add(dome);
   const brim = new THREE.Mesh(getWBBrim(), mBronzeLt);
   brim.position.set(0, WB_HEAD_CTR + 0.026 * HEX_R, 0);
   group.add(brim);
   const finial = new THREE.Mesh(getWBFinial(), mBronzeLt);
-  finial.position.set(0, WB_HEAD_CTR + 0.092 * HEX_R, 0);
+  finial.position.set(0, WB_DOME_EQ_Y + WB_DOME_R + 0.008 * HEX_R, 0);
   group.add(finial);
   const nape = new THREE.Mesh(getWBNape(), mHair);   // włosy widoczne spod ranty z tyłu
   nape.position.set(0, WB_HEAD_CTR + 0.006 * HEX_R, -(WB_HEAD_S * 0.5 + 0.006 * HEX_R));
@@ -554,30 +571,37 @@ export function buildWlocznikBrazOpus5(ownerColor_: number): THREE.Group {
     group.add(tuft);
   }
 
-  // ═══ PRAWE (-X) RAMIĘ + WŁÓCZNIA w pchnięciu nadrocznym ══════════════════
-  const armR = wbBuildArm(group, -WB_SHLD_X, -2.55, 1.32, mSkin, mSkin, mSkin);
-  const ax = armR.axis;
-  const at = (d: number): THREE.Vector3 => armR.wrist.clone().addScaledVector(ax, d * HEX_R);
+  // ═══ PRAWE (-X) RAMIĘ + WŁÓCZNIA TRZYMANA PIONOWO PRZY BOKU, GROTEM W GÓRĘ
+  // Poza spoczynkowa (nie pchnięcie) — ramię zwisa niemal prosto wzdłuż ciała,
+  // dłoń chwyta drzewce w okolicy biodra; włócznia stoi PIONOWO (tylec przy
+  // stopie, grot wysoko nad głową) — jak reszta serii przy broni „spoczynek".
+  // Dzięki pionowej osi footprint broni w rzucie z góry to praktycznie tylko
+  // grubość drzewca — CAŁY model (sylwetka + broń) mieści się w obrysie heksu
+  // (promień HEX_R = 1,0, apotema 0,866), zamiast wystawać na sąsiednie pole
+  // jak przy poprzednim, niemal poziomym pchnięciu.
+  const armR = wbBuildArm(group, -WB_SHLD_X, 0.10, 0.05, mSkin, mSkin, mSkin);
+  const WB_UP = new THREE.Vector3(0, 1, 0);
+  const spearX = armR.wrist.x - 0.014 * HEX_R;
+  const spearZ = armR.wrist.z + 0.008 * HEX_R;
+  const atV = (y: number): THREE.Vector3 => new THREE.Vector3(spearX, y * HEX_R, spearZ);
 
-  wbAlong(group, getWBGripWrap(), mLeatherDk, at(0.010), ax);      // owinięcie rzemienne w dłoni
-  wbAlong(group, getWBShaft(), mWood, at(0.230), ax);              // drzewce (dłuższe niż dziś): środek d=0.230, długość 0.660 => -0.100..0.560
-  wbAlong(group, getWBSocket(), mBronze, at(0.582), ax);           // tulejka brązowa (osadzenie grota): 0.560..0.604
-  wbAlong(group, getWBBind(), mLeatherDk, at(0.556), ax);          // owinięcie rzemienne 1 (tył tulejki)
-  wbAlong(group, getWBBind(), mLeatherDk, at(0.600), ax);          // owinięcie rzemienne 2 (przód tulejki)
+  wbAlong(group, getWBGripWrap(), mLeatherDk, atV(armR.wrist.y / HEX_R), WB_UP);   // owinięcie w dłoni, na wysokości chwytu
+  wbAlong(group, getWBShaft(), mWood, atV(0.380), WB_UP);       // drzewce: 0.050..0.710 (dłuższe niż dziś)
+  wbAlong(group, getWBSocket(), mBronze, atV(0.732), WB_UP);    // tulejka brązowa (osadzenie grota): 0.710..0.754
+  wbAlong(group, getWBBind(), mLeatherDk, atV(0.706), WB_UP);   // owinięcie rzemienne 1 (tył tulejki)
+  wbAlong(group, getWBBind(), mLeatherDk, atV(0.748), WB_UP);   // owinięcie rzemienne 2 (przód tulejki)
 
   // Grot (wbMakeLeafHeadGeo) jest zakotwiczony w y=0 (podstawa/trzpień), NIE
-  // wyśrodkowany — position = PODSTAWA grota, rozciąga się dalej wzdłuż `ax`
+  // wyśrodkowany — position = PODSTAWA grota, rozciąga się dalej ku górze
   // o `len` (jak makeLeafPointGeo w kamien-bazowe-opus5.ts / oszczepnik).
-  // Podstawa d=0.596 (zachodzi na przód tulejki) => czubek przy d=0.596+0.115=0.711.
+  // Podstawa y=0.744 (zachodzi na przód tulejki) => czubek przy y=0.744+0.115=0.859.
   const headMesh = new THREE.Mesh(getWBHead2(), mBronzeLt);
-  headMesh.position.copy(at(0.596));
-  if (ax.y < -0.9999) headMesh.rotation.x = Math.PI;
-  else headMesh.quaternion.setFromUnitVectors(WB_Y_UP, ax);
-  group.add(headMesh);
+  headMesh.position.copy(atV(0.744));
+  group.add(headMesh);   // WB_Y_UP === kierunek grota => bez rotacji (oś już pionowa)
 
-  const butt = new THREE.Mesh(getWBButt(), mBronze);
-  butt.position.copy(at(-0.150));
-  if (ax.y < -0.9999) butt.rotation.x = 0; else butt.quaternion.setFromUnitVectors(WB_Y_UP, ax.clone().negate());
+  const butt = new THREE.Mesh(getWBButt(), mBronze);           // tylec: ostrze DOTYKA ziemi (y=0)
+  butt.position.copy(atV(0.025));
+  butt.rotation.x = Math.PI;   // apeks stożka (domyślnie +Y) obrócony w dół, ku ziemi
   group.add(butt);
 
   // ═══ LEWE (+X) RAMIĘ + TARCZA OKRĄGŁA KRYTA SKÓRĄ WOŁOWĄ ═════════════════
@@ -626,6 +650,14 @@ export function buildWlocznikBrazOpus5(ownerColor_: number): THREE.Group {
     sh.add(rivet);
   }
   group.add(sh);
+
+  // Przeskalowanie CAŁEJ grupy JEDNYM współczynnikiem wokół punktu na
+  // wysokości stóp (y=0, początek lokalny grupy) — figura anatomicznie
+  // zbudowana od y=0 w górę, więc group.scale.setScalar() wokół origin NIE
+  // rusza stóp i NIE rozjeżdża proporcji wewnętrznych (ten sam trik co przy
+  // korekcie za dużej tarczy Zulusa). WB_FIGURE_SCALE dobrany tak, żeby
+  // wysokość sylwetki (bez broni) wyszła na ~0,75×HEX_R zamiast ~0,64.
+  group.scale.setScalar(WB_FIGURE_SCALE);
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];

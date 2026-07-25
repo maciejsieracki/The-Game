@@ -186,7 +186,6 @@ let gPZNose:     THREE.BoxGeometry | null = null;
 let gPZEar:      THREE.BoxGeometry | null = null;
 let gPZEye:      THREE.BoxGeometry | null = null;
 let gPZBrow:     THREE.BoxGeometry | null = null;
-let gPZHairBack: THREE.BoxGeometry | null = null;
 let gPZHairFrng: THREE.BoxGeometry | null = null;
 let gPZThigh:    THREE.BoxGeometry | null = null;
 let gPZShin:     THREE.BoxGeometry | null = null;
@@ -230,7 +229,6 @@ function getPZNose():     THREE.BoxGeometry { return (gPZNose     ||= new THREE.
 function getPZEar():      THREE.BoxGeometry { return (gPZEar      ||= new THREE.BoxGeometry(0.010 * HEX_R, 0.032 * HEX_R, 0.022 * HEX_R)); }
 function getPZEye():      THREE.BoxGeometry { return (gPZEye      ||= new THREE.BoxGeometry(0.019 * HEX_R, 0.011 * HEX_R, 0.008 * HEX_R)); }
 function getPZBrow():     THREE.BoxGeometry { return (gPZBrow     ||= new THREE.BoxGeometry(0.024 * HEX_R, 0.008 * HEX_R, 0.008 * HEX_R)); }
-function getPZHairBack(): THREE.BoxGeometry { return (gPZHairBack ||= new THREE.BoxGeometry(PZ_HEAD_S * 1.0, PZ_HEAD_S * 0.66, 0.026 * HEX_R)); }
 function getPZHairFrng(): THREE.BoxGeometry { return (gPZHairFrng ||= new THREE.BoxGeometry(0.044 * HEX_R, 0.034 * HEX_R, 0.044 * HEX_R)); }
 function getPZThigh():    THREE.BoxGeometry { return (gPZThigh    ||= new THREE.BoxGeometry(0.056 * HEX_R, PZ_THIGH_L, 0.060 * HEX_R)); }
 function getPZShin():     THREE.BoxGeometry { return (gPZShin     ||= new THREE.BoxGeometry(0.038 * HEX_R, PZ_SHIN_L, 0.042 * HEX_R)); }
@@ -397,12 +395,10 @@ function pzBuildCore(
  *  llautu). */
 function pzHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial,
                 mCord: THREE.MeshStandardMaterial): void {
-  const back = new THREE.Mesh(getPZHairBack(), mHair);
-  back.position.set(0, PZ_HEAD_CTR - 0.002 * HEX_R, -(PZ_HEAD_S * 0.5 + 0.009 * HEX_R));
-  group.add(back);
-  // potargane kepki wlosow na czubku glowy (NIE jedna plaska plyta — ta z
-  // bliska/gory wygladala jak czarna dziura; kilka nieregularnych kepek
-  // czyta sie jako rozczochrane wlosy pasterza)
+  // potargane kepki wlosow — NIE jedna plaska plyta (z bliska/z gory/z tylu
+  // plaski box wygladal jak czarna dziura w modelu); kilka malych,
+  // nieregularnie ustawionych kepek czyta sie jako rozczochrane wlosy
+  // pasterza, zarowno z gory jak i z tylu glowy.
   for (const [dx, dz, sy, rz] of ([
     [-0.030, -0.010, 1.00, -0.22], [0.000, -0.024, 1.15, 0.05],
     [0.030, -0.008, 0.95, 0.24], [-0.014, 0.020, 0.85, -0.10],
@@ -412,6 +408,15 @@ function pzHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial,
     tuft.rotation.z = rz;
     tuft.scale.set(0.9, sy, 0.9);
     tuft.position.set(dx * HEX_R, PZ_HEAD_TOP - 0.010 * HEX_R, dz * HEX_R);
+    group.add(tuft);
+  }
+  for (const [dx, dy, rz] of ([
+    [-0.028, 0.006, 0.16], [0.024, 0.002, -0.20], [-0.002, -0.014, 0.05],
+  ] as [number, number, number][])) {
+    const tuft = new THREE.Mesh(getPZHairFrng(), mHair);      // kepki na karku (nie plaska plyta)
+    tuft.rotation.set(0.1, rz, rz * 0.5);
+    tuft.scale.set(0.85, 0.75, 0.7);
+    tuft.position.set(dx * HEX_R, PZ_HEAD_CTR + dy * HEX_R, -(PZ_HEAD_S * 0.5 + 0.006 * HEX_R));
     group.add(tuft);
   }
   // prosty rzemyk przewiazujacy wlosy z tylu — praktyczny (nie spada na oczy
@@ -682,7 +687,7 @@ export function buildProcarzBrazOpus5(ownerColor_: number): THREE.Group {
 export function disposeBrazProcarzOpus5Geometries(): void {
   const all: (THREE.BufferGeometry | null)[] = [
     gPZTorso, gPZChest, gPZCollar, gPZNeck, gPZHead, gPZJaw, gPZNose, gPZEar, gPZEye, gPZBrow,
-    gPZHairBack, gPZHairFrng, gPZThigh, gPZShin, gPZSole, gPZToes, gPZUpArm, gPZForearm, gPZFist, gPZUnit,
+    gPZHairFrng, gPZThigh, gPZShin, gPZSole, gPZToes, gPZUpArm, gPZForearm, gPZFist, gPZUnit,
     gPZWrap, gPZHem, gPZFringe, gPZBelt, gPZKnot,
     gPZBag, gPZBagFlap, gPZToggle, gPZPellet,
     gPZGourd, gPZGourdNk,
@@ -692,7 +697,7 @@ export function disposeBrazProcarzOpus5Geometries(): void {
   ];
   for (const g of all) { g?.dispose(); }
   gPZTorso = gPZChest = gPZCollar = gPZNeck = gPZHead = gPZJaw = gPZNose = gPZEar = gPZEye = gPZBrow = null;
-  gPZHairBack = gPZHairFrng = gPZThigh = gPZShin = gPZSole = gPZToes = gPZUpArm = gPZForearm = gPZFist = gPZUnit = null;
+  gPZHairFrng = gPZThigh = gPZShin = gPZSole = gPZToes = gPZUpArm = gPZForearm = gPZFist = gPZUnit = null;
   gPZWrap = gPZHem = gPZFringe = gPZBelt = gPZKnot = null;
   gPZBag = gPZBagFlap = null;
   gPZToggle = null;

@@ -122,8 +122,6 @@ function updateStats(): void {
     setText(`stat-${p.id}-h`, (box.max.y / HEX_R).toFixed(3));
     setText(`stat-${p.id}-bb`,
       `${(sz.x / HEX_R).toFixed(2)}×${(sz.y / HEX_R).toFixed(2)}×${(sz.z / HEX_R).toFixed(2)}`);
-    // eslint-disable-next-line no-console
-    console.log(`BBOX ${p.id}: min=(${box.min.x.toFixed(3)},${box.min.y.toFixed(3)},${box.min.z.toFixed(3)}) max=(${box.max.x.toFixed(3)},${box.max.y.toFixed(3)},${box.max.z.toFixed(3)})`);
   }
 }
 

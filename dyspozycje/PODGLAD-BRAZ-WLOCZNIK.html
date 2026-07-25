@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Włócznik (Brąz) — OPUS 5 vs model dzisiejszy</title>
+<title>Włócznik (Brąz) — OPUS 5 vs model dzisiejszy (poprawki v2)</title>
 <style>
   :root{
     --bg:#0e1216; --panel:#161c23; --line:#2a333d; --txt:#e6edf3;
@@ -48,8 +48,8 @@
 </head>
 <body>
 <header>
-  <h1>WŁÓCZNIK (Brąz) — <span>OPUS 5, dedykowany model</span> vs model DZISIEJSZY (buildWlocznik, jednostki-p1-rdzen.ts)</h1>
-  <p class="sub">Bazowa piechota epoki Brązu, dostępna dla wszystkich cywilizacji. Nowy model: tunika lniana NATURALNA (bez barwienia) zamiast teal, niski kopulasty hełm BEZ nosala/grzebienia/pióra, BEZ pancerza (brązowy pektorał) i BEZ nagolenników — gołe golenie, sandały zamiast butów. Włócznia dłuższa, grot brązowy liściasty osadzony w TULEJCE z owinięciem rzemiennym (nie na styk). Tarcza okrągła kryta skórą wołową na DREWNIANEJ (nie metalowej) obręczy, małe umbo, malowany emblemat gracza zamiast jednolitego barwienia całej tarczy.</p>
+  <h1>WŁÓCZNIK (Brąz) — <span>OPUS 5, POPRAWKI v2</span> vs model DZISIEJSZY (buildWlocznik, jednostki-p1-rdzen.ts)</h1>
+  <p class="sub">Poprawki po uwagach koordynatora: (1) włócznia trzymana PIONOWO przy boku, grotem w górę, zamiast pchnięcia niemal poziomo — cały model mieści się w obrysie heksu (żółta linia = promień HEX_R); (2) hełm = PEŁNA PÓŁKULA (SphereGeometry), zamknięta u szczytu — bez efektu „otwartego garnka" widocznego przy kącie kamery gry 52°; (3) cała figura przeskalowana JEDNYM współczynnikiem wokół stóp do ~0,75×HEX_R (poprzednio 0,637). Przycisk „Z GÓRY" pokazuje rzut z góry z obrysem heksu.</p>
 </header>
 
 <div id="stage">
@@ -63,7 +63,7 @@
       </div>
     </div>
     <div class="pane new">
-      <div class="plabel">WŁÓCZNIK — NOWY <span class="tag">braz-wlocznik-opus5.ts → buildWlocznikBrazOpus5()</span></div>
+      <div class="plabel">WŁÓCZNIK — NOWY (v2) <span class="tag">braz-wlocznik-opus5.ts → buildWlocznikBrazOpus5()</span></div>
       <canvas id="cv-new"></canvas>
       <div class="stats">
         mesh <b id="stat-new-mesh">–</b> · trójkąty <b id="stat-new-tri">–</b><br>
@@ -76,9 +76,10 @@
 
 <footer>
   <button id="btn-spin" class="on">Obrót: WŁ</button>
+  <button id="btn-top">Kamera: z gry (52°)</button>
   <span class="sep"></span>
   <label>kolor gracza <input type="color" id="col" value="#2f6fd0"></label>
-  <span class="hint">przeciągnij scenę = obrót ręczny · obie figury obracają się synchronicznie · kamera: ujęcie z gry (52°)</span>
+  <span class="hint">przeciągnij scenę = obrót ręczny · obie figury obracają się synchronicznie · żółty obrys = granica heksu (promień HEX_R = 1,0)</span>
 </footer>
 
 <script>
@@ -18165,6 +18166,169 @@ void main() {
       return data;
     }
   };
+  var LineBasicMaterial = class extends Material {
+    constructor(parameters) {
+      super();
+      this.isLineBasicMaterial = true;
+      this.type = "LineBasicMaterial";
+      this.color = new Color(16777215);
+      this.map = null;
+      this.linewidth = 1;
+      this.linecap = "round";
+      this.linejoin = "round";
+      this.fog = true;
+      this.setValues(parameters);
+    }
+    copy(source) {
+      super.copy(source);
+      this.color.copy(source.color);
+      this.map = source.map;
+      this.linewidth = source.linewidth;
+      this.linecap = source.linecap;
+      this.linejoin = source.linejoin;
+      this.fog = source.fog;
+      return this;
+    }
+  };
+  var _vStart = /* @__PURE__ */ new Vector3();
+  var _vEnd = /* @__PURE__ */ new Vector3();
+  var _inverseMatrix$1 = /* @__PURE__ */ new Matrix4();
+  var _ray$1 = /* @__PURE__ */ new Ray();
+  var _sphere$1 = /* @__PURE__ */ new Sphere();
+  var _intersectPointOnRay = /* @__PURE__ */ new Vector3();
+  var _intersectPointOnSegment = /* @__PURE__ */ new Vector3();
+  var Line = class extends Object3D {
+    constructor(geometry = new BufferGeometry(), material = new LineBasicMaterial()) {
+      super();
+      this.isLine = true;
+      this.type = "Line";
+      this.geometry = geometry;
+      this.material = material;
+      this.updateMorphTargets();
+    }
+    copy(source, recursive) {
+      super.copy(source, recursive);
+      this.material = Array.isArray(source.material) ? source.material.slice() : source.material;
+      this.geometry = source.geometry;
+      return this;
+    }
+    computeLineDistances() {
+      const geometry = this.geometry;
+      if (geometry.index === null) {
+        const positionAttribute = geometry.attributes.position;
+        const lineDistances = [0];
+        for (let i = 1, l = positionAttribute.count; i < l; i++) {
+          _vStart.fromBufferAttribute(positionAttribute, i - 1);
+          _vEnd.fromBufferAttribute(positionAttribute, i);
+          lineDistances[i] = lineDistances[i - 1];
+          lineDistances[i] += _vStart.distanceTo(_vEnd);
+        }
+        geometry.setAttribute("lineDistance", new Float32BufferAttribute(lineDistances, 1));
+      } else {
+        console.warn("THREE.Line.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.");
+      }
+      return this;
+    }
+    raycast(raycaster, intersects) {
+      const geometry = this.geometry;
+      const matrixWorld = this.matrixWorld;
+      const threshold = raycaster.params.Line.threshold;
+      const drawRange = geometry.drawRange;
+      if (geometry.boundingSphere === null) geometry.computeBoundingSphere();
+      _sphere$1.copy(geometry.boundingSphere);
+      _sphere$1.applyMatrix4(matrixWorld);
+      _sphere$1.radius += threshold;
+      if (raycaster.ray.intersectsSphere(_sphere$1) === false) return;
+      _inverseMatrix$1.copy(matrixWorld).invert();
+      _ray$1.copy(raycaster.ray).applyMatrix4(_inverseMatrix$1);
+      const localThreshold = threshold / ((this.scale.x + this.scale.y + this.scale.z) / 3);
+      const localThresholdSq = localThreshold * localThreshold;
+      const step = this.isLineSegments ? 2 : 1;
+      const index = geometry.index;
+      const attributes = geometry.attributes;
+      const positionAttribute = attributes.position;
+      if (index !== null) {
+        const start = Math.max(0, drawRange.start);
+        const end = Math.min(index.count, drawRange.start + drawRange.count);
+        for (let i = start, l = end - 1; i < l; i += step) {
+          const a = index.getX(i);
+          const b = index.getX(i + 1);
+          const intersect = checkIntersection(this, raycaster, _ray$1, localThresholdSq, a, b);
+          if (intersect) {
+            intersects.push(intersect);
+          }
+        }
+        if (this.isLineLoop) {
+          const a = index.getX(end - 1);
+          const b = index.getX(start);
+          const intersect = checkIntersection(this, raycaster, _ray$1, localThresholdSq, a, b);
+          if (intersect) {
+            intersects.push(intersect);
+          }
+        }
+      } else {
+        const start = Math.max(0, drawRange.start);
+        const end = Math.min(positionAttribute.count, drawRange.start + drawRange.count);
+        for (let i = start, l = end - 1; i < l; i += step) {
+          const intersect = checkIntersection(this, raycaster, _ray$1, localThresholdSq, i, i + 1);
+          if (intersect) {
+            intersects.push(intersect);
+          }
+        }
+        if (this.isLineLoop) {
+          const intersect = checkIntersection(this, raycaster, _ray$1, localThresholdSq, end - 1, start);
+          if (intersect) {
+            intersects.push(intersect);
+          }
+        }
+      }
+    }
+    updateMorphTargets() {
+      const geometry = this.geometry;
+      const morphAttributes = geometry.morphAttributes;
+      const keys = Object.keys(morphAttributes);
+      if (keys.length > 0) {
+        const morphAttribute = morphAttributes[keys[0]];
+        if (morphAttribute !== void 0) {
+          this.morphTargetInfluences = [];
+          this.morphTargetDictionary = {};
+          for (let m = 0, ml = morphAttribute.length; m < ml; m++) {
+            const name = morphAttribute[m].name || String(m);
+            this.morphTargetInfluences.push(0);
+            this.morphTargetDictionary[name] = m;
+          }
+        }
+      }
+    }
+  };
+  function checkIntersection(object, raycaster, ray, thresholdSq, a, b) {
+    const positionAttribute = object.geometry.attributes.position;
+    _vStart.fromBufferAttribute(positionAttribute, a);
+    _vEnd.fromBufferAttribute(positionAttribute, b);
+    const distSq = ray.distanceSqToSegment(_vStart, _vEnd, _intersectPointOnRay, _intersectPointOnSegment);
+    if (distSq > thresholdSq) return;
+    _intersectPointOnRay.applyMatrix4(object.matrixWorld);
+    const distance = raycaster.ray.origin.distanceTo(_intersectPointOnRay);
+    if (distance < raycaster.near || distance > raycaster.far) return;
+    return {
+      distance,
+      // What do we want? intersection point on the ray or on the segment??
+      // point: raycaster.ray.at( distance ),
+      point: _intersectPointOnSegment.clone().applyMatrix4(object.matrixWorld),
+      index: a,
+      face: null,
+      faceIndex: null,
+      barycoord: null,
+      object
+    };
+  }
+  var LineLoop = class extends Line {
+    constructor(geometry, material) {
+      super(geometry, material);
+      this.isLineLoop = true;
+      this.type = "LineLoop";
+    }
+  };
   var CylinderGeometry = class _CylinderGeometry extends BufferGeometry {
     constructor(radiusTop = 1, radiusBottom = 1, height = 1, radialSegments = 32, heightSegments = 1, openEnded = false, thetaStart = 0, thetaLength = Math.PI * 2) {
       super();
@@ -18311,6 +18475,76 @@ void main() {
     }
     static fromJSON(data) {
       return new _ConeGeometry(data.radius, data.height, data.radialSegments, data.heightSegments, data.openEnded, data.thetaStart, data.thetaLength);
+    }
+  };
+  var SphereGeometry = class _SphereGeometry extends BufferGeometry {
+    constructor(radius = 1, widthSegments = 32, heightSegments = 16, phiStart = 0, phiLength = Math.PI * 2, thetaStart = 0, thetaLength = Math.PI) {
+      super();
+      this.type = "SphereGeometry";
+      this.parameters = {
+        radius,
+        widthSegments,
+        heightSegments,
+        phiStart,
+        phiLength,
+        thetaStart,
+        thetaLength
+      };
+      widthSegments = Math.max(3, Math.floor(widthSegments));
+      heightSegments = Math.max(2, Math.floor(heightSegments));
+      const thetaEnd = Math.min(thetaStart + thetaLength, Math.PI);
+      let index = 0;
+      const grid = [];
+      const vertex2 = new Vector3();
+      const normal = new Vector3();
+      const indices = [];
+      const vertices = [];
+      const normals = [];
+      const uvs = [];
+      for (let iy = 0; iy <= heightSegments; iy++) {
+        const verticesRow = [];
+        const v = iy / heightSegments;
+        let uOffset = 0;
+        if (iy === 0 && thetaStart === 0) {
+          uOffset = 0.5 / widthSegments;
+        } else if (iy === heightSegments && thetaEnd === Math.PI) {
+          uOffset = -0.5 / widthSegments;
+        }
+        for (let ix = 0; ix <= widthSegments; ix++) {
+          const u = ix / widthSegments;
+          vertex2.x = -radius * Math.cos(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength);
+          vertex2.y = radius * Math.cos(thetaStart + v * thetaLength);
+          vertex2.z = radius * Math.sin(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength);
+          vertices.push(vertex2.x, vertex2.y, vertex2.z);
+          normal.copy(vertex2).normalize();
+          normals.push(normal.x, normal.y, normal.z);
+          uvs.push(u + uOffset, 1 - v);
+          verticesRow.push(index++);
+        }
+        grid.push(verticesRow);
+      }
+      for (let iy = 0; iy < heightSegments; iy++) {
+        for (let ix = 0; ix < widthSegments; ix++) {
+          const a = grid[iy][ix + 1];
+          const b = grid[iy][ix];
+          const c = grid[iy + 1][ix];
+          const d = grid[iy + 1][ix + 1];
+          if (iy !== 0 || thetaStart > 0) indices.push(a, b, d);
+          if (iy !== heightSegments - 1 || thetaEnd < Math.PI) indices.push(b, c, d);
+        }
+      }
+      this.setIndex(indices);
+      this.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+      this.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+      this.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+    }
+    copy(source) {
+      super.copy(source);
+      this.parameters = Object.assign({}, source.parameters);
+      return this;
+    }
+    static fromJSON(data) {
+      return new _SphereGeometry(data.radius, data.widthSegments, data.heightSegments, data.phiStart, data.phiLength, data.thetaStart, data.thetaLength);
     }
   };
   var MeshStandardMaterial = class extends Material {
@@ -19583,6 +19817,7 @@ void main() {
   var WB_SHIN_L = 0.096 * HEX_R;
   var WB_UPARM_L = 0.1 * HEX_R;
   var WB_FOREARM_L = 0.092 * HEX_R;
+  var WB_FIGURE_SCALE = 1.163;
   var gWBTorso = null;
   var gWBChest = null;
   var gWBNeck = null;
@@ -19711,11 +19946,12 @@ void main() {
   function getWBLegWrap() {
     return gWBLegWrap || (gWBLegWrap = new BoxGeometry(0.042 * HEX_R, 0.02 * HEX_R, 0.046 * HEX_R));
   }
+  var WB_DOME_R = 0.072 * HEX_R;
   function getWBDome() {
-    return gWBDome || (gWBDome = new CylinderGeometry(0.032 * HEX_R, 0.086 * HEX_R, 0.062 * HEX_R, 10, 1));
+    return gWBDome || (gWBDome = new SphereGeometry(WB_DOME_R, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2));
   }
   function getWBBrim() {
-    return gWBBrim || (gWBBrim = new CylinderGeometry(0.09 * HEX_R, 0.092 * HEX_R, 0.018 * HEX_R, 10, 1));
+    return gWBBrim || (gWBBrim = new CylinderGeometry(0.088 * HEX_R, 0.092 * HEX_R, 0.02 * HEX_R, 10, 1));
   }
   function getWBFinial() {
     return gWBFinial || (gWBFinial = new CylinderGeometry(0.012 * HEX_R, 0.018 * HEX_R, 0.016 * HEX_R, 6, 1));
@@ -19974,14 +20210,15 @@ void main() {
     hilt.rotation.z = 0.1;
     hilt.position.set(knifeX - 6e-3 * HEX_R, 0.244 * HEX_R, 0.012 * HEX_R);
     group.add(hilt);
+    const WB_DOME_EQ_Y = WB_HEAD_CTR + 0.02 * HEX_R;
     const dome = new Mesh(getWBDome(), mBronze);
-    dome.position.set(0, WB_HEAD_CTR + 0.052 * HEX_R, 0);
+    dome.position.set(0, WB_DOME_EQ_Y, 0);
     group.add(dome);
     const brim = new Mesh(getWBBrim(), mBronzeLt);
     brim.position.set(0, WB_HEAD_CTR + 0.026 * HEX_R, 0);
     group.add(brim);
     const finial = new Mesh(getWBFinial(), mBronzeLt);
-    finial.position.set(0, WB_HEAD_CTR + 0.092 * HEX_R, 0);
+    finial.position.set(0, WB_DOME_EQ_Y + WB_DOME_R + 8e-3 * HEX_R, 0);
     group.add(finial);
     const nape = new Mesh(getWBNape(), mHair);
     nape.position.set(0, WB_HEAD_CTR + 6e-3 * HEX_R, -(WB_HEAD_S * 0.5 + 6e-3 * HEX_R));
@@ -19991,23 +20228,22 @@ void main() {
       tuft.position.set(sx * (WB_HEAD_S * 0.5 + 6e-3 * HEX_R), WB_HEAD_CTR - 8e-3 * HEX_R, -0.014 * HEX_R);
       group.add(tuft);
     }
-    const armR = wbBuildArm(group, -WB_SHLD_X, -2.55, 1.32, mSkin, mSkin, mSkin);
-    const ax = armR.axis;
-    const at = (d) => armR.wrist.clone().addScaledVector(ax, d * HEX_R);
-    wbAlong(group, getWBGripWrap(), mLeatherDk, at(0.01), ax);
-    wbAlong(group, getWBShaft(), mWood, at(0.23), ax);
-    wbAlong(group, getWBSocket(), mBronze, at(0.582), ax);
-    wbAlong(group, getWBBind(), mLeatherDk, at(0.556), ax);
-    wbAlong(group, getWBBind(), mLeatherDk, at(0.6), ax);
+    const armR = wbBuildArm(group, -WB_SHLD_X, 0.1, 0.05, mSkin, mSkin, mSkin);
+    const WB_UP = new Vector3(0, 1, 0);
+    const spearX = armR.wrist.x - 0.014 * HEX_R;
+    const spearZ = armR.wrist.z + 8e-3 * HEX_R;
+    const atV = (y) => new Vector3(spearX, y * HEX_R, spearZ);
+    wbAlong(group, getWBGripWrap(), mLeatherDk, atV(armR.wrist.y / HEX_R), WB_UP);
+    wbAlong(group, getWBShaft(), mWood, atV(0.38), WB_UP);
+    wbAlong(group, getWBSocket(), mBronze, atV(0.732), WB_UP);
+    wbAlong(group, getWBBind(), mLeatherDk, atV(0.706), WB_UP);
+    wbAlong(group, getWBBind(), mLeatherDk, atV(0.748), WB_UP);
     const headMesh = new Mesh(getWBHead2(), mBronzeLt);
-    headMesh.position.copy(at(0.596));
-    if (ax.y < -0.9999) headMesh.rotation.x = Math.PI;
-    else headMesh.quaternion.setFromUnitVectors(WB_Y_UP, ax);
+    headMesh.position.copy(atV(0.744));
     group.add(headMesh);
     const butt = new Mesh(getWBButt(), mBronze);
-    butt.position.copy(at(-0.15));
-    if (ax.y < -0.9999) butt.rotation.x = 0;
-    else butt.quaternion.setFromUnitVectors(WB_Y_UP, ax.clone().negate());
+    butt.position.copy(atV(0.025));
+    butt.rotation.x = Math.PI;
     group.add(butt);
     const armL = wbBuildArm(group, WB_SHLD_X, 0.52, 1.05, mSkin, mSkin, null);
     const sh = new Group();
@@ -20053,6 +20289,7 @@ void main() {
       sh.add(rivet);
     }
     group.add(sh);
+    group.scale.setScalar(WB_FIGURE_SCALE);
     group.userData["mats"] = mats;
     group.userData["perTokenGeos"] = [];
     return group;
@@ -20333,7 +20570,7 @@ void main() {
     return group;
   }
 
-  // _tmp_podglad_wlocznik_entry.ts
+  // _wf2_entry.ts
   var HEX_R2 = 1;
   function makeHexPlate() {
     const shape = [];
@@ -20353,6 +20590,16 @@ void main() {
     const mat = new MeshStandardMaterial({ color: 2371644, roughness: 0.95, metalness: 0 });
     const mesh = new Mesh(geo, mat);
     return mesh;
+  }
+  function makeHexWire() {
+    const pts = [];
+    for (let i = 0; i < 6; i++) {
+      const a = Math.PI / 180 * (60 * i - 30);
+      pts.push(new Vector3(Math.cos(a) * HEX_R2, 1e-3, Math.sin(a) * HEX_R2));
+    }
+    const geo = new BufferGeometry().setFromPoints(pts);
+    const mat = new LineBasicMaterial({ color: 14200896 });
+    return new LineLoop(geo, mat);
   }
   function stats(group) {
     let meshCount = 0;
@@ -20377,14 +20624,14 @@ void main() {
     });
     const size = new Vector3();
     box.getSize(size);
-    return { meshCount, triCount: Math.round(triCount), matCount: matSet.size, height: size.y };
+    return { meshCount, triCount: Math.round(triCount), matCount: matSet.size, height: size.y, width: size.x, depth: size.z };
   }
   function setupPane(canvas, build) {
     const renderer = new WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(1);
     const scene = new Scene();
     scene.background = new Color(1119772);
-    const camera = new PerspectiveCamera(32, 1, 0.05, 20);
+    const camera = new PerspectiveCamera(34, 1, 0.05, 20);
     const hemi = new HemisphereLight(16777215, 3354650, 0.85);
     scene.add(hemi);
     const dir = new DirectionalLight(16777215, 1.35);
@@ -20394,15 +20641,16 @@ void main() {
     fill.position.set(-1.6, 1.2, -1);
     scene.add(fill);
     scene.add(makeHexPlate());
+    scene.add(makeHexWire());
     const rig = new Group();
     scene.add(rig);
     return { renderer, scene, camera, rig, group: null, build };
   }
   function placeCameraGra(camera) {
-    const dist = 2.6;
+    const dist = 2.9;
     const elev = 52 * Math.PI / 180;
     camera.position.set(0, Math.sin(elev) * dist, Math.cos(elev) * dist);
-    camera.lookAt(0, 0.3 * HEX_R2, 0.1 * HEX_R2);
+    camera.lookAt(0, 0.34 * HEX_R2, 0.05 * HEX_R2);
   }
   function resize(pane, canvas) {
     const w = canvas.clientWidth || 1;
@@ -20412,9 +20660,7 @@ void main() {
     pane.camera.updateProjectionMatrix();
   }
   function rebuild(pane, color, statsElMesh, statsElTri, statsElMat, statsElH) {
-    if (pane.group) {
-      pane.rig.remove(pane.group);
-    }
+    if (pane.group) pane.rig.remove(pane.group);
     const g = pane.build(color);
     pane.rig.add(g);
     pane.group = g;
@@ -20429,11 +20675,23 @@ void main() {
     const cvNew = document.getElementById("cv-new");
     const col = document.getElementById("col");
     const btnSpin = document.getElementById("btn-spin");
+    const btnTop = document.getElementById("btn-top");
     const overlay = document.getElementById("orbit-overlay");
     const paneOld = setupPane(cvOld, (c) => buildWlocznik(c));
     const paneNew = setupPane(cvNew, (c) => buildWlocznikBrazOpus5(c));
-    placeCameraGra(paneOld.camera);
-    placeCameraGra(paneNew.camera);
+    let topView = false;
+    function applyCamera() {
+      if (topView) {
+        for (const pane of [paneOld, paneNew]) {
+          pane.camera.position.set(0, 3, 1e-3);
+          pane.camera.lookAt(0, 0, 0);
+        }
+      } else {
+        placeCameraGra(paneOld.camera);
+        placeCameraGra(paneNew.camera);
+      }
+    }
+    applyCamera();
     const mOldMesh = document.getElementById("stat-old-mesh");
     const mOldTri = document.getElementById("stat-old-tri");
     const mOldMat = document.getElementById("stat-old-mat");
@@ -20460,6 +20718,12 @@ void main() {
       spinning = !spinning;
       btnSpin.textContent = spinning ? "Obr\xF3t: W\u0141" : "Obr\xF3t: WY\u0141";
       btnSpin.classList.toggle("on", spinning);
+    });
+    btnTop.addEventListener("click", () => {
+      topView = !topView;
+      btnTop.textContent = topView ? "Kamera: Z G\xD3RY" : "Kamera: z gry (52\xB0)";
+      btnTop.classList.toggle("on", topView);
+      applyCamera();
     });
     let dragging = false;
     let lastX = 0;
