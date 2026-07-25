@@ -82,3 +82,13 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 - **MOJA REKOMENDACJA: A** (jakość > pośpiech na rdzeniowym ekranie). Powiedz „rób UI kolejki" jeśli wolisz B.
 
 **Plan gotowy do wdrożenia (recon):** helpery `enqueueOrSetPlayerResearchSlug`/`dequeuePlayerResearchSlug`/`buildResearchPlanSnapshot` obok `selectPlayerResearchSlug` (main.ts:3445); przepiąć `onSelectTech` (main.ts:9396) i `onSelectTarget` (main.ts:9760) na enqueue; dodać do `ScienceHubHudConfig` haki `getQueue`/`onRemoveFromQueue` + render panelu „Plan badań"; odznaki 1/2/3 w `sciencePicker.ts`. API silnika: `enqueueResearchTarget`/`dequeueResearchTarget`/`getResearchPlanSnapshot`/`researchPlanLength`/`RESEARCH_QUEUE_MAX`=3.
+
+---
+
+## C-DYP-STOL-Q1 = B (Maciej zmienił z A) — RECON + plan
+**Ustalenie z reconu (ważne):** silnik ocenia DZIŚ **jedną akcję na propozycję** — `buildProposalFromPayload` (main.ts:8689) bierze JEDEN `actionId` z `proposalActionIdFromPayload(payload)`, a `evaluateProposal` ocenia tę jedną akcję. Payload NIESIE już `giveItems/receiveItems` (koszyk) obok pól traktatu, ALE proposal ma jeden actionId — więc „traktat + surowce jako słodzik" NIE jest dziś oceniane łącznie.
+**Wniosek:** dyplomacja-B to realny refaktor 3-warstwowy, NIE sam UI:
+1. **Silnik** — pozwolić, by propozycja traktatu niosła „słodziki" (give/receive items + złoto) i by `evaluateProposal` wliczał ich wartość do decyzji AI.
+2. **Balans (AI)** — jak bardzo X złota / Y drewna „dosładza" np. sojusz. To decyzja balansowa, którą **weryfikuje tylko playtest** (jak inne stawki — patrz R-STAWKI-STROJENIE).
+3. **UI** — sekcja „Dołóż do umowy" w oknie traktatu + podgląd oceniający złożony deal.
+**MOJA REKOMENDACJA (do Twojej akceptacji):** zbuduję mechanizm złożonego dealu z **placeholderową wyceną słodzików** (oznaczoną do strojenia w playteście, zgodnie z konwencją projektu), warstwami 1→3. To osobne, ostrożne zadanie na rdzeniowym systemie — robię je dedykowanym przebiegiem (najlepiej z Twoją pętlą playtestu), nie doklejam po cichu do nocnego batcha. Jeśli wolisz inny model wyceny/interakcji — powiedz; inaczej ruszam na tym.
