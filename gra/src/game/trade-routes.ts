@@ -997,9 +997,11 @@ export interface TradeRouteResourceFlowParams {
    */
   minStockReserve: number;
   /**
-   * Maks. ilość JEDNEGO surowca, jaką JEDEN szlak może przenieść w JEDNĄ turę.
-   * PLACEHOLDER w kodzie (nie w econ-params.json — patrz komentarz przy stałej
-   * niżej): brak zapisu w danych oznacza brak przepustowości, co odtwarzałoby
+   * Maks. ilość JEDNEGO surowca, jaką JEDEN szlak może przenieść w JEDNĄ turę
+   * (sztuk surowca/turę/szlak). Czytane z econ-params.json →
+   * handel_szlaki.handel_ilosc_na_ture_na_szlak (przeniesione z dawnego
+   * hardkodu w kodzie — patrz komentarz przy DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS).
+   * Brak zapisu w danych oznaczałby brak przepustowości, co odtwarzałoby
    * pierwotny problem (cegła dojeżdża, ale nieograniczoną ilością na turę —
    * de facto znów "z powietrza", tylko opóźnione o rozruch pierwszej tury).
    */
@@ -1007,33 +1009,33 @@ export interface TradeRouteResourceFlowParams {
 }
 
 /**
- * Wartości domyślne. `capacityPerRoutePerTurn = 4`: throughput Cegielni to
+ * Wartości domyślne (fallback gdy dane brakują/są uszkodzone).
+ * `capacityPerRoutePerTurn = 4`: throughput Cegielni to
  * `budynek_cegielnia_przepustowosc` (fallback 3 szt./turę, converters.ts) —
  * jeden szlak niosący 4 szt./turę odpowiada mniej więcej WYDAJNOŚCI JEDNEJ
  * Cegielni, czyli odciętej cywilizacji dowozi surowiec w tempie porównywalnym
  * do posiadania własnej Cegielni, a nie w tempie zalewającym partnera handlowego
- * ponad jego własną produkcję. Docelowo do przeniesienia w econ-params.json
- * (patrz raport zadania) — NIE dodane tu, bo plik jest zablokowany dla tej
- * zmiany (równoległy subagent pracuje nad ekonomia_miasta/economy-upkeep.ts).
+ * ponad jego własną produkcję. Wartość PRZENIESIONA do
+ * data/econ-params.json (handel_szlaki.handel_ilosc_na_ture_na_szlak,
+ * dług techniczny TODO(econ-params) zamknięty — było przeniesienie stałej,
+ * nie strojenie: 4/4/4 na wszystkich trudnościach, bez zmiany balansu).
  */
 export const DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS: TradeRouteResourceFlowParams = {
   minStockReserve: 2,
-  // PLACEHOLDER stałej w kodzie (patrz komentarz na interfejsie powyżej) —
-  // TODO(econ-params): przenieść do data/econ-params.json, blok "handel_szlaki",
-  // np. klucz "handel_ilosc_na_ture_na_szlak" (per poziom trudności).
   capacityPerRoutePerTurn: 4,
 };
 
 interface RawEconParamsJsonMinStock {
   ekonomia_miasta?: Record<string, RawParamRow>;
+  handel_szlaki?: Record<string, RawParamRow>;
 }
 
 /**
  * Wczytaj minStockReserve z econ-params.json (ekonomia_miasta.handel_surowiec_min_stock,
  * ABC-15) — ten sam klucz na wszystkich poziomach trudności do 2026-07-25 (2 szt.),
  * ale czytany PER difficulty na wypadek przyszłego dostrojenia. capacityPerRoutePerTurn
- * NIE jest dziś w danych (patrz DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS) — zawsze
- * placeholder ze stałej.
+ * czytany z handel_szlaki.handel_ilosc_na_ture_na_szlak (przeniesione z hardkodu —
+ * patrz komentarz przy DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS powyżej).
  */
 export function loadTradeRouteResourceFlowParams(
   raw: RawEconParamsJsonMinStock,
@@ -1045,9 +1047,17 @@ export function loadTradeRouteResourceFlowParams(
   const minStockReserve = typeof v === 'number' && Number.isFinite(v)
     ? v
     : DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.minStockReserve;
+
+  const szlakiGrp = raw.handel_szlaki ?? {};
+  const capRow = szlakiGrp['handel_ilosc_na_ture_na_szlak'];
+  const capV = capRow ? capRow[difficulty] : undefined;
+  const capacityPerRoutePerTurn = typeof capV === 'number' && Number.isFinite(capV)
+    ? capV
+    : DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.capacityPerRoutePerTurn;
+
   return {
     minStockReserve,
-    capacityPerRoutePerTurn: DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.capacityPerRoutePerTurn,
+    capacityPerRoutePerTurn,
   };
 }
 

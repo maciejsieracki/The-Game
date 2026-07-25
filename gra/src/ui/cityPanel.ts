@@ -61,7 +61,6 @@ import {
   setPaused,
   buildingProductionItem,
   buildingLevelForEpoch,
-  buildingEffectAtLevel,
   buildingWorkCost,
   itemCost,
   splitPraca,
@@ -4657,19 +4656,6 @@ function yieldBrandIconHtml(brandId: string, size: BrandIconSize = 14): string {
   if (brandId === 'loaf') return `<span class="civ-cs-inline-loaf">${loafIconHtml('civ-v-loaf-chip')}</span>`;
   if (brandId === 'science-owl') return `<span class="civ-cs-chip-ic-wrap">${scienceOwlIconHtml()}</span>`;
   return cityPanelChipIconWrap(brandId, size);
-}
-
-function formatYieldLine(b: BuildingDef['baza'], p: BuildingDef['przyrost']): string {
-  const parts: string[] = [];
-  for (const y of YIELD_BRAND) {
-    const base = b[y.key] ?? 0;
-    const inc = p[y.key] ?? 0;
-    if (base !== 0 || inc !== 0) {
-      const incStr = inc !== 0 ? ` (+${inc}/poz.)` : '';
-      parts.push(`${base >= 0 ? '+' : ''}${base} ${yieldBrandIconHtml(y.brandId)}${incStr}`);
-    }
-  }
-  return parts.join(' · ') || '—';
 }
 
 /** Chipy bonusów (max 3) — mockup Poziom B budynków 1E. */
