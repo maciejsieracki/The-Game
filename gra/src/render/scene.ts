@@ -2227,11 +2227,17 @@ export async function buildScene(
   hillBumpMesh.count = hillBumpIdx;
   hillBumpMesh.instanceMatrix.needsUpdate = true;
   // GRAFIKA-3D partia TEREN stage 2: finalizacja liczników 10 InstancedMesh terenu.
+  // R-RUCH-WZGORZA (2026-07-24): rejestruj też te meshe w terrainPickKeys, żeby picking
+  // (input/picker.ts) trafiał w RZECZYWISTĄ (wyższą) bryłę wzgórza/góry, a nie tylko w
+  // płaski pryzm bazowy pod spodem — inaczej klik na wizualnym szczycie wzgórza/góry
+  // (przesunięty perspektywicznie względem płaskiego pryzmu) trafiał w sąsiedni heks.
   for (let v = 0; v < goraInst.length; v++) {
     goraInst[v]!.count = goraIdx[v]!;
     goraInst[v]!.instanceMatrix.needsUpdate = true;
+    terrainPickKeys.set(goraInst[v]!, goraHexKey[v]!);
     wzgorzeInst[v]!.count = wzgorzeIdx[v]!;
     wzgorzeInst[v]!.instanceMatrix.needsUpdate = true;
+    terrainPickKeys.set(wzgorzeInst[v]!, wzgorzeHexKey[v]!);
   }
   // GRAFIKA-TEREN-2: finalizacja liczników 5 InstancedMesh kęp lasu.
   for (let v = 0; v < lasInst.length; v++) {
@@ -2962,8 +2968,16 @@ export async function buildScene(
       o.updateMatrix();
     }
   });
+  // R-RUCH-WZGORZA: terrainPickMeshes = pryzmy bazowe (instancedMeshes, dispose-owned) + bryły
+  // wzgórz/gór (goraInst/wzgorzeInst) — TYLKO do rzutowania promienia (input/picker.ts).
+  // Osobna tablica (nie push do `instancedMeshes`!) — ta ostatnia jest właścicielem geometrii
+  // przy dispose() (linia niżej: `for (const m of instancedMeshes) m.geometry.dispose()`), a
+  // geometrie gór/wzgórz są dzielone/cache'owane w teren-gory-wzgorza.ts (dispose() zepsułby
+  // kolejne buildScene). goraInst/wzgorzeInst mają własny dispose (patrz wyżej).
+  const terrainPickMeshes: THREE.InstancedMesh[] = [...instancedMeshes, ...goraInst, ...wzgorzeInst];
+
   return {
     scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, syncForestForUnits, setZoomLod, getZoomLodLevel,
-    terrainPickMeshes: instancedMeshes, resolveTerrainPick,
+    terrainPickMeshes, resolveTerrainPick,
   };
 }

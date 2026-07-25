@@ -22,6 +22,17 @@ export interface CameraControllerOptions {
   zoomFactor?: number;
   /** Gdy true — nie obsługuj drag/zoom (np. kursor nad panelem miasta). */
   blockPointerAt?: (clientX: number, clientY: number) => boolean;
+  /**
+   * C-EDGEPAN-Q1 (Rekomendacja A): edge-pan aktywny TYLKO gdy predykat zwraca true
+   * (np. gdy gracz ma zaznaczoną jednostkę — patrz main.ts cameraControllerOpts()).
+   * Brak funkcji = edge-pan całkowicie wyłączony (domyślne, bezpieczne dla innych
+   * użyć CameraController — np. podglądy bez zaznaczenia jednostek).
+   */
+  edgePanActive?: () => boolean;
+  /** Szerokość strefy krawędziowej ekranu w px, licząc od brzegu canvasu (domyślnie 32). */
+  edgePanZonePx?: number;
+  /** Prędkość edge-pan przy samej krawędzi (jedn./klatkę, skalowana dystansem jak WASD). */
+  edgePanSpeed?: number;
 }
 
 export class CameraController {
@@ -39,6 +50,11 @@ export class CameraController {
   // Klawisze
   private keys: Set<string> = new Set();
 
+  // Edge-pan: ostatnia znana pozycja kursora w oknie (client coords); null = kursor
+  // poza oknem (opuścił dokument) — edge-pan wtedy nieaktywny.
+  private mouseClientX: number | null = null;
+  private mouseClientY: number | null = null;
+
   // Opcje
   private minDist: number;
   private maxDist: number;
@@ -46,6 +62,9 @@ export class CameraController {
   private mousePanFactor: number;
   private zoomFactor: number;
   private blockPointerAt?: (clientX: number, clientY: number) => boolean;
+  private edgePanActive?: () => boolean;
+  private edgePanZonePx: number;
+  private edgePanSpeed: number;
 
   constructor(
     camera: THREE.PerspectiveCamera,
@@ -62,6 +81,9 @@ export class CameraController {
     this.mousePanFactor = opts.mousePanFactor ?? 0.002;
     this.zoomFactor     = opts.zoomFactor     ?? 0.12;
     this.blockPointerAt = opts.blockPointerAt;
+    this.edgePanActive  = opts.edgePanActive;
+    this.edgePanZonePx  = opts.edgePanZonePx  ?? 32;
+    this.edgePanSpeed   = opts.edgePanSpeed   ?? this.keyPanSpeed;
 
     // Oblicz dist i yaw z aktualnej pozycji kamery
     const offset = new THREE.Vector3().subVectors(camera.position, this.target);
@@ -116,6 +138,11 @@ export class CameraController {
   };
 
   private _onMouseMove = (e: MouseEvent) => {
+    // Edge-pan: zapamiętaj pozycję kursora ZAWSZE (nie tylko przy drag) — update()
+    // sprawdza ją co klatkę. Musi być przed early-returnem poniżej.
+    this.mouseClientX = e.clientX;
+    this.mouseClientY = e.clientY;
+
     if (!this.isDragging) return;
     const ddx = e.clientX - this.lastMouseX;
     const ddy = e.clientY - this.lastMouseY;
@@ -129,6 +156,11 @@ export class CameraController {
   };
 
   private _onMouseUp = () => { this.isDragging = false; };
+
+  // Kursor opuścił okno/dokument (alt-tab, drugi monitor…) — edge-pan musi się zatrzymać,
+  // inaczej mapa "ucieka" bez kontroli gracza.
+  private _onWindowBlur = () => { this.mouseClientX = null; this.mouseClientY = null; };
+  private _onDocMouseLeave = () => { this.mouseClientX = null; this.mouseClientY = null; };
 
   private _onWheel = (e: WheelEvent) => {
     if (this.blockPointerAt?.(e.clientX, e.clientY)) return;
@@ -147,6 +179,8 @@ export class CameraController {
     this.canvas.addEventListener('wheel',       this._onWheel, { passive: false });
     window.addEventListener     ('keydown',     this._onKeyDown);
     window.addEventListener     ('keyup',       this._onKeyUp);
+    window.addEventListener     ('blur',        this._onWindowBlur);
+    document.addEventListener   ('mouseleave',  this._onDocMouseLeave);
   }
 
   dispose() {
@@ -156,9 +190,39 @@ export class CameraController {
     this.canvas.removeEventListener ('wheel',     this._onWheel);
     window.removeEventListener      ('keydown',   this._onKeyDown);
     window.removeEventListener      ('keyup',     this._onKeyUp);
+    window.removeEventListener      ('blur',      this._onWindowBlur);
+    document.removeEventListener    ('mouseleave', this._onDocMouseLeave);
   }
 
-  /** Wywoływać każdą klatkę renderowania (obsługa WASD). */
+  // ── Edge-pan: przesuwanie mapy gdy kursor jest w wąskiej strefie przy krawędzi
+  // ekranu — patrz FEATURE C-EDGEPAN-Q1 (Rekomendacja A: aktywny tylko gdy
+  // opts.edgePanActive() zwraca true, np. gdy gracz ma zaznaczoną jednostkę).
+  // Prędkość rośnie liniowo im bliżej samej krawędzi (0 na granicy strefy, max na
+  // krawędzi viewportu). Kierunki = te same znaki co WASD (patrz update() niżej).
+  private _edgePanDelta(): { dx: number; dz: number } | null {
+    if (!this.edgePanActive?.()) return null;
+    if (this.mouseClientX === null || this.mouseClientY === null) return null;
+    if (this.isDragging) return null; // drag ma priorytet, bez konfliktu z pan-em
+    if (this.blockPointerAt?.(this.mouseClientX, this.mouseClientY)) return null;
+
+    const rect = this.canvas.getBoundingClientRect();
+    const mx = this.mouseClientX - rect.left;
+    const my = this.mouseClientY - rect.top;
+    // Kursor poza canvasem (np. nad panelem HTML nachodzącym na okno) — bez edge-panu.
+    if (mx < 0 || my < 0 || mx > rect.width || my > rect.height) return null;
+
+    const zone = this.edgePanZonePx;
+    const speed = this.edgePanSpeed * (this.dist / 30);
+    let dx = 0, dz = 0;
+    if (mx < zone)                dx -= speed * ((zone - mx) / zone);
+    if (mx > rect.width - zone)   dx += speed * ((zone - (rect.width - mx)) / zone);
+    if (my < zone)                dz -= speed * ((zone - my) / zone);
+    if (my > rect.height - zone)  dz += speed * ((zone - (rect.height - my)) / zone);
+    if (dx === 0 && dz === 0) return null;
+    return { dx, dz };
+  }
+
+  /** Wywoływać każdą klatkę renderowania (obsługa WASD + edge-pan). */
   update() {
     const speed = this.keyPanSpeed * (this.dist / 30);
     let dx = 0, dz = 0;
@@ -166,6 +230,12 @@ export class CameraController {
     if (this.keys.has('s') || this.keys.has('arrowdown'))  dz += speed;
     if (this.keys.has('a') || this.keys.has('arrowleft'))  dx -= speed;
     if (this.keys.has('d') || this.keys.has('arrowright')) dx += speed;
+
+    // Edge-pan: niezależny od WASD, ale nie dublujemy ruchu — jeśli gracz jednocześnie
+    // trzyma klawisz w tym samym kierunku, WASD i tak da ten sam znak (sumowanie OK).
+    const edge = this._edgePanDelta();
+    if (edge) { dx += edge.dx; dz += edge.dz; }
+
     if (dx !== 0 || dz !== 0) this._pan(dx, dz);
   }
 
