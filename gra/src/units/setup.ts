@@ -98,6 +98,23 @@ export interface RuntimeUnit {
    * Niezależna od pancerzBonusProc — jednostka może mieć różny postęp na
    * każdej ścieżce. Stare zapisy bez pola = 0% — patrz unitParametryBonusProc(). */
   parametryBonusProc?: number;
+  /**
+   * TRZECI SYSTEM -- doświadczenie bojowe / weterani (2026-07-25, decyzja
+   * właściciela, patrz game/veteran.ts). Liczba PRZEŻYTYCH bitew (starć
+   * rozstrzygniętych, w których jednostka brała udział i PRZEŻYŁA — zginęła
+   * = nie awansuje), zliczana WSPÓLNIE dla wszystkich trybów starć
+   * (mapa/pole bitwy/szturm) w JEDNYM miejscu -- post-battle-map.ts
+   * applyPostBattleMap() / registerVeteranProgressAfterBattle(), ownerId-
+   * -agnostyczne (PARYTET AI: ten sam kod dla gracza i AI). Sufit 2
+   * (poziom 3 = maks, "nie projektujemy na zapas" — patrz
+   * VETERAN_MAX_BATTLES_TRACKED). Niezależne od pancerzBonusProc /
+   * parametryBonusProc (systemy budynkowe) -- trzeci, osobny system, nie
+   * zastępuje ani nie miesza się z tamtymi. Stare zapisy bez pola = 0 =
+   * poziom 1 (Rekrut), zero premii -- patrz veteranBattlesSurvived()
+   * w game/veteran.ts, KAŻDY odczyt tego pola MUSI iść przez tę funkcję
+   * (lub veteranLevel()/veteranCombatBonusFrac()), nie odczytywać wprost.
+   */
+  battlesSurvived?: number;
 }
 
 /** Kategorie cywilne — bez utrzymania, bez głodu wojska, bez ataku miast. */

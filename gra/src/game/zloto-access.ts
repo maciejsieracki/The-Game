@@ -62,19 +62,16 @@ export function empireHasKopalniaZlota(
 // TRADE_ROUTE_RESOURCE_KEYS (trade-routes.ts) — CELOWO NIE do
 // TRADE_ROUTE_STOCK_FLOW_KEYS (żadnego przepływu ilościowego).
 //
-// WIRING WYMAGANY W main.ts (POZA ZAKRESEM TEJ ZMIANY — plik zablokowany dla
-// równoległego agenta, patrz raport zadania). Dwa miejsca do dopisania, gdy
-// main.ts zostanie odblokowany:
-//   1. `ownerHasNativeResourceAccess` (main.ts ok. linii 2498-2524) — dopisać
-//      gałąź: `if (key === 'zloto') return empireHasKopalniaZlota(ownImprovements);`
-//   2. Wszystkie miejsca, gdzie dziś woła się `placedImprovementsWithBrazTradeGrant`
-//      (main.ts ok. linii 3182, 3210, 3619, 4127, 10070, 14453, 15126, 15953) —
-//      dołożyć analogiczne `placedImprovementsWithZlotoTradeGrant(ownerId, ownImprovements)`
-//      (funkcja niżej), z `hasTradeRouteResourceAccess(tradeRouteResourceGrants,
-//      ownerId, 'zloto')` jako `hasTradeGrant`. Bez tego kroku Mennica NIE zobaczy
-//      dostępu "z trasy" w bramce budowy (production.ts czyta activeLabels z
-//      resource-access.ts collectActiveAccess, która skanuje DOKŁADNIE ten
-//      placedImprovements, jaki dostanie na wejściu — patrz ta funkcja niżej).
+// WIRING W main.ts — DOPIĘTY (2026-07-25 wieczór, domknięcie po odblokowaniu pliku):
+//   1. `ownerHasNativeResourceAccess` — gałąź `if (key === 'zloto') return
+//      empireHasKopalniaZlota(ownImprovements);` dopisana.
+//   2. Wszystkie 8 miejsc, które wołały `placedImprovementsWithBrazTradeGrant`, teraz
+//      wołają `placedImprovementsWithTradeGrants(ownerId, ownImprovements)` — nowa
+//      funkcja pomocnicza w main.ts, która składa OBA granty (brąz + złoto) w jednym
+//      miejscu (doklejа `placedImprovementsWithZlotoTradeGrant` na wyniku
+//      `placedImprovementsWithBrazTradeGrant`), zamiast dublować wywołanie w każdym
+//      z 8 miejsc. `recomputeTradeRouteResourceGrants` nie wymagał zmiany — jest
+//      generyczny po `TRADE_ROUTE_RESOURCE_KEYS`, które już zawiera 'zloto'.
 // ---------------------------------------------------------------------------
 
 /**

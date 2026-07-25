@@ -4930,6 +4930,20 @@ function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, r
       if (passFixed === 0) break;
     }
   }
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return fixed;
 }
 function ensureForestGridCoverage(hexes, scratch, forestTier, _typ, _continentOf, _nContinents, rand) {
@@ -12342,8 +12356,9 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   // PYTANIE 77=A (Maciej 2026-07-25): dostęp = własna Kopalnia złota ALBO aktywny szlak
   // handlowy z cywilizacją, która ma złoto (jak koń) — bramka TU jest bez zmian (nadal
   // sam sprawdza tylko obecność etykiety 'Złoto' w `activeLabels`); rozszerzenie jest
-  // WYŻEJ w łańcuchu, w zloto-access.ts (placedImprovementsWithZlotoTradeGrant) — patrz
-  // ten plik dla stanu wdrożenia (wiring w main.ts jeszcze NIE dopięty, plik zablokowany).
+  // WYŻEJ w łańcuchu, w zloto-access.ts (placedImprovementsWithZlotoTradeGrant), WPIĘTE
+  // w main.ts (placedImprovementsWithTradeGrants, domknięcie 2026-07-25 wieczór) —
+  // szlak handlowy realnie odblokowuje Mennicę bez własnej Kopalni złota.
   mennica: ["Z\u0142oto"]
 };
 var CITY_BUILDING_PREREQ = {

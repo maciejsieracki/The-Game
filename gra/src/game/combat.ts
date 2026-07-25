@@ -2,6 +2,7 @@ import type { CivBonusEntry } from './civ-bonuses';
 import { applyMultiplier, civCombatStatMultipliers } from './civ-bonuses';
 import type { BuildingCombatBonus } from './unit-building-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from './unit-building-bonuses';
+import { applyVeteranFracToCombatUnit } from './veteran';
 import combatParamsRaw from '../../data/combat-params.json';
 
 /** Panel-C: stałe walki (export-c.py → combat-params.json). */
@@ -298,6 +299,27 @@ export interface ResolveCombatOpts {
 
   /** Jak wyzej, dla broniacego. */
   defenderBuildingBonus?: BuildingCombatBonus;
+
+  /**
+   * TRZECI SYSTEM (2026-07-25, game/veteran.ts): ulamek premii doswiadczenia
+   * bojowego atakujacego -- 0 (Rekrut) / 0.10 (poziom 2) / 0.20 (Weteran,
+   * poziom 3, sufit). Zastosowany na SAMYM POCZATKU resolveCombat, PRZED
+   * civ+building mods, przez podmiane parametru attacker/defender na wersje
+   * przeskalowana (applyVeteranFracToCombatUnit) -- poniewaz mnozenie
+   * ulamkow niezaleznych czynnikow jest przemienne, kolejnosc "baza ->
+   * weteran -> civ+building" i "baza -> civ+building -> weteran" daja
+   * IDENTYCZNY wynik koncowy, wiec ten punkt wpiecia jest najprostszy z
+   * mozliwych i nie wymaga dotykania zadnej formuly walki ponizej. Pancerz
+   * (armor) NIGDY nie dostaje tej premii (na zadnym poziomie, patrz
+   * applyVeteranFracToCombatUnit); "Prog dezercji (% health)" jest polem
+   * ODWROCONYM -- weteran je OBNIZA (latwiej wytrzymac, trudniej
+   * zdezerterowac), nie podnosi. Domyslnie 0 -- bezpieczne dla wszystkich
+   * istniejacych wywolan/testow (combat-test.cjs pozostaje 6/6 bez zmian).
+   */
+  attackerVeteranBonusFrac?: number;
+
+  /** Jak wyzej, dla broniacego. */
+  defenderVeteranBonusFrac?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -605,6 +627,15 @@ export function resolveCombat(
   defender: CombatUnit,
   opts: ResolveCombatOpts = {},
 ): CombatResult {
+  // TRZECI SYSTEM (weterani, game/veteran.ts) -- patrz komentarz przy
+  // ResolveCombatOpts.attackerVeteranBonusFrac powyzej dla uzasadnienia,
+  // dlaczego wpiecie na samym poczatku (przeslonieciem parametrow) jest
+  // rownowazne wpiecu po civ+building mods. Gdy frac=0 (domyslnie) funkcja
+  // zwraca WEJSCIOWY obiekt bez zadnej modyfikacji (zero ryzyka szumu
+  // zmiennoprzecinkowego dla wszystkich istniejacych wywolan).
+  attacker = applyVeteranFracToCombatUnit(attacker, opts.attackerVeteranBonusFrac ?? 0);
+  defender = applyVeteranFracToCombatUnit(defender, opts.defenderVeteranBonusFrac ?? 0);
+
   const rng = opts.rng ?? (() => Math.random());
   const position: AttackerPosition = opts.attackerPosition ?? 'front';
   const maxRounds = opts.maxRounds ?? TW.max_rounds;
