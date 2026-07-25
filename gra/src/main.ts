@@ -639,6 +639,7 @@ import { showNewGameFlow, hideNewGameFlow, isNewGameFlowOpen, type NewGameParams
 import type { TempoGry } from './game/tech-tempo';
 import type { GameDifficulty } from './game/difficulty-cost';
 import { scaledResearchCost } from './game/difficulty-cost';
+import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel } from './game/veteran';
 import {
   showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
   type DiploRelation, type KnownWarBetweenCivs, type DiplomacyPanelConfig,
@@ -2950,6 +2951,7 @@ async function boot(): Promise<void> {
         category: u.category,
         inGarnizon: u.inGarnizon,
         buildingBonusLabel: unitBuildingBonusLabel(u),
+        veteranBadgeLabel: veteranBadgeLabel(veteranLevel(u)),
         esc: hudHtmlEsc,
       });
     }
@@ -11510,6 +11512,9 @@ async function boot(): Promise<void> {
         // od miasta produkujacego bitwe -- ownerId-agnostyczne (gracz i AI).
         pancerzBonusFrac: unitPancerzBonusFrac(u),
         parametryBonusFrac: unitParametryBonusFrac(u),
+        // TRZECI SYSTEM (weterani, decyzja wlasciciela 78, game/veteran.ts):
+        // ownerId-agnostyczne, identyczne dla gracza i AI.
+        veteranBonusFrac: veteranCombatBonusFrac(u),
       };
     }
 
@@ -11537,6 +11542,7 @@ async function boot(): Promise<void> {
         maxHp: hp,
         atak: unitAtak(def),
         moc: armyFieldPower(def),
+        veteranBadge: veteranBadgeLabel(veteranLevel(u)),
       };
     }
 
