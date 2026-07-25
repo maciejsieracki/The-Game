@@ -14,6 +14,7 @@ import { terrainIconSvg, civIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
 import { startPreBattleMusic, stopPreBattleMusic } from '../audio/muzyka-antyczna';
+import { setArmyStackHudSuppressed } from './hud';
 
 export interface PreBattleUnit {
   nazwa: string;
@@ -111,6 +112,11 @@ export function showPreBattle(
   document.body.appendChild(overlayEl);
   attachKeyboard(cb, info, opts);
   startPreBattleMusic();
+  // T-BITWA-ROSTER (Maciej 2026-07-24): panel rosteru armii swiata (armyStackHud, dolny
+  // stos "Armia . (x,y)") zaslania ten overlay -- ukryj go na czas dialogu, przywroc w
+  // hidePreBattle() (kazda sciezka wyjscia -- deploy/auto/cancel/Esc/Enter -- przechodzi
+  // przez hidePreBattle).
+  setArmyStackHudSuppressed(true);
 }
 
 export function hidePreBattle(): void {
@@ -121,6 +127,7 @@ export function hidePreBattle(): void {
     overlayEl = null;
   }
   stopPreBattleMusic();
+  setArmyStackHudSuppressed(false);
 }
 
 function clearPreBattleSaveToast(): void {

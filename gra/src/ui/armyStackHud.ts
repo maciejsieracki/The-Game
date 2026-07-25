@@ -101,6 +101,9 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-army-stack .ash-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:240px;}
 .civ-army-stack .ash-act-danger{border-color:rgba(200,64,64,.45)!important;color:#ffb0b0!important;}
 .civ-army-stack .ash-act-danger:hover:not(:disabled){border-color:rgba(200,64,64,.65)!important;color:#ffd0d0!important;}
+.civ-army-stack .ash-act-icon{min-width:0;width:34px;height:34px;padding:0;flex:none;}
+.civ-army-stack .ash-act-ic{width:17px;height:17px;display:block;}
+.civ-army-stack .ash-act-ic svg{width:100%;height:100%;display:block;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -111,6 +114,41 @@ ${MAP_UNIT_1E_SHARED_CSS}
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
+/**
+ * Ikony przycisków akcji jednostki (R-ARMYSTACK-IKONY, Maciej 2026-07-24) --
+ * infografiki zamiast słów, styl inline-SVG jak preBattle.ts (PB_ICON_*):
+ * viewBox 24x24, stroke=currentColor. Manifest brand-book (icons-manifest.json)
+ * nie ma dopasowań dla "zastąp/pomiń/czuwaj" -- tylko fortyfikacja ma bliski
+ * odpowiednik (chip-garrison), ale zostaje custom SVG dla spójności całego rzędu.
+ * Tooltip (title/aria-label) niesie PEŁNĄ nazwę akcji z a.label.
+ */
+const ASH_ACTION_ICONS: Partial<Record<string, string>> = {
+  // Ufortyfikuj -- fort/palisada z blankami.
+  fortify:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M4 21V10l3-2.5V6h2v1.5L12 5l3 2.5V6h2v1.5l3 2.5v11z"/>'
+    + '<path d="M4 21h16M9.5 21v-5h5v5"/>'
+    + '</svg>',
+  // Zastąp -- strzałki góra/dół (swap).
+  replace:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M7.5 3v14"/><path d="M4.5 6 7.5 3l3 3"/>'
+    + '<path d="M16.5 21V7"/><path d="M19.5 18l-3 3-3-3"/>'
+    + '</svg>',
+  // Pomiń -- podwójny chevron "skip/dalej" (step-over).
+  skip:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M5 5l6.5 7-6.5 7"/><path d="M12.5 5l6.5 7-6.5 7"/>'
+    + '</svg>',
+  // Czuwaj/Obudź (Sentry, C-SENTRY-Q1) -- półksiężyc, uniwersalny symbol
+  // "uśpienia/wartowania" w grach strategicznych (czytelniejszy w 24px niż
+  // zamknięte oko/„Zzz" -- patrz raport dla uzasadnienia wyboru).
+  sentry:
+    '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none">'
+    + '<path d="M20.7 14.9A9 9 0 1 1 9.4 3.3a7.2 7.2 0 0 0 11.3 11.6z"/>'
+    + '</svg>',
+};
 
 function outlineBtn(label: string, dataAttr: string, extraClass = '', disabled = false, title = ''): string {
   return `<button type="button" class="mu-outline-btn ${extraClass}" ${dataAttr}`
@@ -184,8 +222,12 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
     for (const a of st.actions) {
       let cls = a.primary ? 'mu-gold-btn' : 'mu-muted-btn';
       if (a.danger) cls += ' ash-act-danger';
+      const icon = ASH_ACTION_ICONS[a.id];
+      const body = icon ? '<span class="ash-act-ic">' + icon + '</span>' : esc(a.label);
+      if (icon) cls += ' ash-act-icon';
       html += '<button type="button" class="' + cls + '" data-act="' + esc(a.id) + '"'
-        + (a.disabled ? ' disabled' : '') + '>' + esc(a.label) + '</button>';
+        + ' title="' + esc(a.label) + '" aria-label="' + esc(a.label) + '"'
+        + (a.disabled ? ' disabled' : '') + '>' + body + '</button>';
     }
     html += '</div></div>';
 
