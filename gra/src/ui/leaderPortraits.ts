@@ -33,6 +33,64 @@ for (const civ of (civsRaw as CivsData).cywilizacje) {
   }
 }
 
+/**
+ * Usuwa polskie znaki diakrytyczne (NFD + odrzucenie combining marks; Ł/ł nie
+ * dekomponuje się w NFD, więc mapowane jawnie) i sprowadza do lowercase —
+ * ten sam wzorzec co normName()/normalizeForMatch() w innych miejscach
+ * silnika bitwy, żeby "Chińczycy"/"Słowianie" dały się dopasować bez akcentów.
+ */
+function foldDiacritics(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[Łł]/g, 'l').toLowerCase();
+}
+
+/**
+ * civId (ikonaId) -> lista kluczy dopasowania (ikonaId + nazwa Cywilizacja,
+ * oba bez polskich znaków), zbudowana raz z civs.json — źródło prawdy dla
+ * WSZYSTKICH 15 cywilizacji (nie tylko Rzym/Grecja).
+ */
+const CIV_MATCH_CANDIDATES: readonly { icon: string; keys: readonly string[] }[] =
+  (civsRaw as CivsData).cywilizacje
+    .filter(c => c.ikonaId)
+    .map(c => ({
+      icon: c.ikonaId!.toLowerCase(),
+      keys: [c.ikonaId, c.Cywilizacja]
+        .filter((s): s is string => !!s)
+        .map(foldDiacritics),
+    }));
+
+/**
+ * civId (ikonaId) dla dowolnej etykiety cywilizacji/państwa, albo `null` gdy
+ * żadna z 15 cywilizacji civs.json nie pasuje.
+ *
+ * BŁĄD D (właściciel, 2026-07-24): battleScene.civIconIdFromLabel() rozpoznawał
+ * jawnie tylko Rzym/Grecję (substring 'rzym'/'grec'), a WSZYSTKO inne (13 z 15
+ * cywilizacji) spadało przez fallback na 'grecy' — bo tablica civRows, po
+ * którą sięgał (opts.data.cywilizacje), nigdy nie jest wypełniana przez
+ * żadnego wołającego (main.ts/mapFieldBattle.ts), więc pętla dopasowania
+ * zawsze była pusta. Efekt: KAŻDA bitwa poza Rzymem pokazywała grecki
+ * portret + "Minos" jako władcę, po OBU stronach, niezależnie od realnej
+ * cywilizacji gracza/AI/miasta-państwa.
+ *
+ * Dopasowanie: (1) DOKŁADNE — etykieta to czysty ikonaId lub nazwa Cywilizacja
+ * (typowe dla gracza: player.civType = ikonaId, np. "grecy"/"egipt"); (2)
+ * CZĘŚCIOWE (includes) — etykiety miast-państw są złożone, np.
+ * "Teby · Egipt · miasto-państwo" (patrz resolveOwnerBaseName/
+ * formatOwnerDiploLabel w game/display-names.ts), więc szukamy nazwy
+ * cywilizacji jako podciągu. Klucze <=2 znaki pomijane w trybie (2), żeby
+ * uniknąć przypadkowych trafień.
+ */
+export function civIconIdFromCivLabel(label: string | null | undefined): string | null {
+  const key = foldDiacritics(String(label ?? '').trim());
+  if (!key) return null;
+  for (const cand of CIV_MATCH_CANDIDATES) {
+    if (cand.keys.includes(key)) return cand.icon;
+  }
+  for (const cand of CIV_MATCH_CANDIDATES) {
+    if (cand.keys.some(k => k.length > 2 && key.includes(k))) return cand.icon;
+  }
+  return null;
+}
+
 // eager: true -> moduł od razu ma { default: <data-URI string> } (nie Promise) dla każdego pliku.
 const PORTRAIT_MODULES = import.meta.glob('../assets/portrety/*.jpg', { eager: true, import: 'default' }) as Record<string, string>;
 

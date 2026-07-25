@@ -11256,6 +11256,13 @@ async function boot(): Promise<void> {
             defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
             attackerCivLabel: pbInfo4.atakujacy.cywilizacja,
             defenderCivLabel: pbInfo4.obronca.cywilizacja,
+            // BŁĄD D-weryfikacja (2026-07-25): civId liczony poprawnie w
+            // preBattleSideFromRoster (civTypeForOwner) nigdy nie trafiał do
+            // BattleScene — scena zgadywała civId z etykiety (fallback
+            // civIconIdFromLabel/civIconIdFromCivLabel), zamiast dostać
+            // gotową, pewną wartość. Przekazujemy wprost.
+            attackerCivIconId: pbInfo4.atakujacy.civId,
+            defenderCivIconId: pbInfo4.obronca.civId,
             attackerSideLabel: pbInfo4.atakujacy.nazwa,
             defenderSideLabel: pbInfo4.obronca.nazwa,
             attackerEra: empireEpochForOwner(atkLead.ownerId),
@@ -11565,6 +11572,10 @@ async function boot(): Promise<void> {
             defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
             attackerCivLabel: pbInfo.atakujacy.cywilizacja,
             defenderCivLabel: pbInfo.obronca.cywilizacja,
+            // BŁĄD D-weryfikacja: patrz komentarz przy attackerCivIconId powyżej
+            // (analogiczny call site, bitwa przychodząca / atak AI na gracza).
+            attackerCivIconId: pbInfo.atakujacy.civId,
+            defenderCivIconId: pbInfo.obronca.civId,
             attackerSideLabel: pbInfo.atakujacy.nazwa,
             defenderSideLabel: pbInfo.obronca.nazwa,
             attackerEra: empireEpochForOwner(atkLead.ownerId),
@@ -12510,6 +12521,15 @@ async function boot(): Promise<void> {
             siege: { defCiv: ikonaIdToBronzeCiv(defCivId) },
             attackerCivBonusy: civBonusyForOwnerId(atkRosterRef[0]?.ownerId ?? 0),
             defenderCivBonusy: civBonusyForOwnerId(defRosterRef[0]?.ownerId ?? 0),
+            // BŁĄD D-weryfikacja: patrz komentarz przy pierwszym call site (~linia
+            // 11258) — ten szturm oblężniczy w ogóle nie przekazywał ani
+            // civLabel, ani civIconId scenie bitwy (medaliony spadały na
+            // domyślne "Gracz"/"Przeciwnik" + civIconId 'grecy'). pbInfo już
+            // liczy civId poprawnie (preBattleSideFromRoster/civTypeForOwner).
+            attackerCivLabel: pbInfo.atakujacy.cywilizacja,
+            defenderCivLabel: pbInfo.obronca.cywilizacja,
+            attackerCivIconId: pbInfo.atakujacy.civId,
+            defenderCivIconId: pbInfo.obronca.civId,
             attackerEra: empireEpochForOwner(atkRosterRef[0]?.ownerId ?? 0),
             defenderEra: empireEpochForOwner(defRosterRef[0]?.ownerId ?? 0),
             attackerIsCityState: pbInfo.atakujacy.isCityState,
