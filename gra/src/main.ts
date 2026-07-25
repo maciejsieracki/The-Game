@@ -459,7 +459,7 @@ import {
   canAffordUnitManpower, refundUnitSpawnToCity,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
-import { filterOwnersForPowerRanking } from './game/power-ranking';
+import { filterOwnersForPowerRanking, computeAbsolutePowerRank } from './game/power-ranking';
 import { loadPowerOpcje } from './game/power-options';
 import { armyFieldPower, isSiegeUnit, siegePower } from './game/unit-power';
 import { loadOrderParams, orderEffectsToYieldMults, pickRevoltMigrationTarget, type OrderYieldMults } from './game/order';
@@ -7187,6 +7187,17 @@ async function boot(): Promise<void> {
       };
     }
 
+    /**
+     * R-RANKING-MOC (Maciej 2026-07-24): pozycja gracza wśród WSZYSTKICH żyjących
+     * cywilizacji (miasta-państwa wyłączone), niezależnie od odkrycia w mgle wojny —
+     * gracz ma znać swoje konkretne miejsce, nawet nie znając rywali.
+     */
+    function buildAbsolutePowerRank(): { rank: number; total: number } {
+      return computeAbsolutePowerRank(0, allPowerOwnerIds(), objectivePowerForOwner, {
+        cityStateOpts: ownerCityStateOpts(),
+      });
+    }
+
     function buildPowerOverlayData(): PowerOverlayData {
       const obj = objectivePowerByOwner.get(0) ?? buildObjectivePowerForOwner(0);
       const power = obj.power;
@@ -7199,20 +7210,26 @@ async function boot(): Promise<void> {
         points: c.points,
       }));
       const ranking = buildPowerRankingByOwner();
-      let respektExample: PowerOverlayData['respektExample'];
-      const contacted = getDiplomaticContacts();
-      for (const oid of contacted) {
-        if (oid === 0) continue;
-        const theirPower = objectivePowerForOwner(oid);
-        respektExample = {
-          civ: civDisplayNameForKey(civKeyForOwner(oid)),
-          respekt: computeRespekt(power, theirPower),
+      // R-RANKING-MOC bugfix (Maciej 2026-07-24): respektExample brał "pierwszego kontaktu"
+      // z diplomaticallyDiscoveredOwners — zbiór ten NIE jest filtrowany po miastach-państwach
+      // (computeDiplomaticContacts widzi każdy heks AI), więc mógł trafić na miasto-państwo
+      // wykluczone z `ranking` (inny byt, inna Moc) i jego nazwę liczoną INNĄ ścieżką
+      // (civDisplayNameForKey pomija rozróżnienie miasto-państwo vs pełna cywilizacja — kolizja
+      // etykiety z prawdziwą nacją o tym samym typCywilizacji, np. gracz "Grecy" vs
+      // miasto-państwo tej samej kultury). Efekt: "Twoja moc X vs Y" gdzie Y nie pasowało do
+      // żadnej pozycji w rankingu, a etykieta pokrywała się z inną cywilizacją. Naprawa: brać
+      // rywala WPROST z `ranking` (ta sama Moc, ta sama etykieta co wyżej na liście).
+      const rival = ranking.find(r => !r.isPlayer);
+      const respektExample: PowerOverlayData['respektExample'] = rival
+        ? {
+          civ: rival.civ,
+          respekt: computeRespekt(power, rival.power),
           playerPower: power,
-          theirPower,
-        };
-        break;
-      }
-      return { power, components, ranking, respektExample };
+          theirPower: rival.power,
+        }
+        : undefined;
+      const absoluteRank = buildAbsolutePowerRank();
+      return { power, components, ranking, respektExample, absoluteRank };
     }
 
     function buildCultureOverlayData(): CultureOverlayData {
@@ -7358,6 +7375,7 @@ async function boot(): Promise<void> {
           components: powerComponents,
           ranking: powOverlay.ranking,
           respektExample: powOverlay.respektExample,
+          absoluteRank: powOverlay.absoluteRank,
           ludnoscLudki: economy.ludnosc,
           ludnoscAbsLabel: economy.ludnoscAbsLabel ?? formatManpower(pobor.ludnoscAbsolutna),
           rekruci: pobor.rekruci,
