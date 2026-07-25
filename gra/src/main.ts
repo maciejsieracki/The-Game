@@ -888,10 +888,11 @@ async function boot(): Promise<void> {
           return false;
         },
         // FEATURE C-EDGEPAN-Q1 (Rekomendacja A, właściciel 2026-07-24): edge-pan aktywny
-        // TYLKO gdy gracz ma zaznaczoną jednostkę na mapie świata (dosłownie jak opisane) —
-        // isWorldMapUnitMode() wyklucza panele/nakładki (miasto, bitwa, oblężenie…), gdzie
-        // selectedId może zostać "zawieszone" mimo że mapa nie jest aktywnym widokiem.
-        edgePanActive: () => selectedId !== null && isWorldMapUnitMode(),
+        // C-EDGEPAN-Q1=B (Maciej 2026-07-25): edge-pan ZAWSZE aktywny na mapie świata
+        // (konwencja 4X), niezależnie od zaznaczenia jednostki. isWorldMapUnitMode() nadal
+        // wyklucza panele/nakładki (miasto, bitwa, oblężenie…), żeby mapa nie „uciekała"
+        // gdy aktywny jest panel UI.
+        edgePanActive: () => isWorldMapUnitMode(),
       };
     }
 
