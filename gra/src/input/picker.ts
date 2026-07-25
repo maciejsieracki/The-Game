@@ -140,7 +140,12 @@ export function pixelToHex(
 
   if (terrainMeshes && terrainMeshes.length > 0) {
     const hits = raycaster.intersectObjects(terrainMeshes as THREE.Object3D[], false);
+    // R-RUCH-WZGORZA: THREE.Raycaster IGNORUJE object.visible (sprawdza tylko layers) — meshe
+    // dekoracyjne wzgórz/gór bywają ukrywane (LOD niskiego zoomu: zoomFlags.styledDecor=false;
+    // fog wojny/miasto: matrix-hide) bez zerowania macierzy przy zwykłym visible=false. Bez tego
+    // filtra klik trafiałby w "widmowy" hit na niewidocznej bryle -> zly heks.
     for (const h of hits) {
+      if (h.object.visible === false) continue;
       if (
         resolveTerrainInstance
         && h.object instanceof THREE.InstancedMesh
@@ -153,9 +158,9 @@ export function pixelToHex(
         return worldToAxial(h.point.x, h.point.z, R);
       }
     }
-    if (hits.length > 0) {
-      const pt = hits[0]!.point;
-      return worldToAxial(pt.x, pt.z, R);
+    const visibleHit = hits.find((h) => h.object.visible !== false);
+    if (visibleHit) {
+      return worldToAxial(visibleHit.point.x, visibleHit.point.z, R);
     }
   }
 
