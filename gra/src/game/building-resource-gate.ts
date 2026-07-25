@@ -1,6 +1,29 @@
 /**
- * building-resource-gate.ts — bramka budynków miasta vs aktywny dostęp surowca.
- * B-SUROW-BUD (2026-07-23): bramki epokowe (dostęp AND, nie stock).
+ * building-resource-gate.ts — bramka budynków: realne wymogi terenowe / budynkowe per budynek.
+ *
+ * TEMAT 8 (2026-07-24, decyzje właściciela C-BUD-Q1/Q2/Q3 — patrz dyspozycje handoff):
+ *  - Q1: bramka EPOKI to WYŁĄCZNIE `building.epokaWejscia <= epoka gracza` — to jest CZYSTY
+ *    epoch-check w `production.ts` (`if (b.epokaWejscia > epoch) continue;`, funkcja
+ *    `availableProduction`), NIE w tym module. Poprzednia wersja (B-SUROW-BUD, 2026-07-23)
+ *    dokładała TU dla WSZYSTKICH budynków dodatkowy blankietowy wymóg "aktywny dostęp do
+ *    surowca danej epoki" (Drewno w epoce 1, +Kamień w epoce 2, +Cegła w epoce 3/4) —
+ *    koncepcyjnie błędne (myliło "w jakiej epoce budynek jest dostępny" z "czy imperium ma
+ *    dostęp do surowca tej epoki") i realnie blokowało budynki niezwiązane tematycznie z tymi
+ *    surowcami. Dowód na realną szkodliwość: `tools/deposit-building-gate-test.cjs` test
+ *    "garncarnia OK gdy Glina active" FAILOWAŁ przed tą poprawką, bo blankietowa bramka
+ *    epoki 1 dokładała wymóg Drewna, którego test (słusznie) nie dostarczał. USUNIĘTE:
+ *    stała `ERA_ACCESS_LABELS` i funkcja `eraAccessLabels()`.
+ *  - Q2: zamiast usuniętych/mylących tekstów `wymagania` w buildings.json dograno REALNE,
+ *    tematyczne bramki per budynek (patrz mapy niżej): (a) aktywny dostęp do etykiety
+ *    surowca w IMPERIUM — źródło terenowe LUB zapas puli państwa (mechanizm B-SUROW-BUD
+ *    sprzed Temat 8, tu zachowany, tylko już nie blankietowy per epokę); (b) inny budynek
+ *    wybudowany W TYM SAMYM MIEŚCIE (nie imperium — sprawdzane w `production.ts`, bo tam
+ *    jest per-city `builtList` + `isBuildingSupersededByUpgrade`); (c) wybrzeże LUB rzeka w
+ *    zasięgu TEGO miasta (teren — sprawdzane w `production.ts` przez `ctx.cityHasCoastOrRiver`,
+ *    WYLICZONE przez main.ts, bo ten moduł jest pure-logic i nie zna mapy).
+ *  - Q3: Piec hutniczy (`odlewnia_brazu`) zostaje jako jedyny hard id-lock — Kopalnia miedzi
+ *    w imperium, patrz `braz-access.ts` (`empireHasKopalniaMiedzi`) + `production.ts`
+ *    (`PIEC_HUTNICZY_BUILDING_ID`) — NIE w tym module.
  */
 import type { BuildingDef } from '../data/loader';
 
@@ -17,21 +40,41 @@ const LABEL_BY_ASCII: Record<string, string> = {
   ceramika: 'Ceramika',
 };
 
-/** Bramki per epoka budynku — aktywny dostęp imperium (B-SUROW-BUD). */
-const ERA_ACCESS_LABELS: Readonly<Record<number, readonly string[]>> = {
-  1: ['Drewno'],
-  2: ['Drewno', 'Kamień'],
-  3: ['Drewno', 'Kamień', 'Cegła'],
-  4: ['Drewno', 'Kamień', 'Cegła'],
-};
-
-/** Budynki wymagające aktywnego dostępu złoże + ulepszenie lub stock. */
+/**
+ * Budynki wymagające aktywnego dostępu do etykiety surowca w IMPERIUM (źródło terenowe
+ * w zasięgu jakiegokolwiek miasta LUB zapas puli państwa) — patrz `empireLabelSatisfied`.
+ * TEMAT 8 Q2 (2026-07-24): stolarnia/kamieniarski/kuznia dograne tu z tym samym mechanizmem
+ * co istniejące Glina/Ceramika/Sól (spójność — to już sprawdzony wzorzec, nie per-city
+ * sąsiedztwo terenu, żeby nie różnicować traktowania bez wyraźnej potrzeby).
+ */
 const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>> = {
   garncarnia: ['Glina'],
   cegielnia: ['Glina'],
   spichlerz: ['Ceramika'],
   spichlerz_ii: ['Sól'],
+  stolarnia: ['Drewno'],
+  kamieniarski: ['Kamień'],
+  kuznia: ['Ruda'],
 };
+
+/**
+ * TEMAT 8 Q2: budynek wymaga innego budynku wybudowanego W TYM SAMYM MIEŚCIE (nie imperium).
+ * Wartość = id budynku-prerekwizytu w buildings.json. Sprawdzane w `production.ts` (tam jest
+ * per-city `builtList` + `isBuildingSupersededByUpgrade`, żeby np. upgrade Koszary→Akademia
+ * wojskowa nie odbierał miastu prawa do Warsztatu oblężniczego — ten sam wzorzec co bramka
+ * Koszar dla jednostek epoki Brązu, `production.ts` ok. linii 752).
+ */
+export const CITY_BUILDING_PREREQ: Readonly<Record<string, string>> = {
+  warsztat_oblezniczy: 'koszary',
+  laznia_publiczna: 'studnia',
+};
+
+/**
+ * TEMAT 8 Q2: budynek wymaga wybrzeża morskiego LUB rzeki w zasięgu TEGO miasta (teren, nie
+ * surowiec — per-miasto, bo lokalizacja portu jest stała). Sprawdzane w `production.ts` przez
+ * `ctx.cityHasCoastOrRiver`, wyliczone przez main.ts (`cityHasCoastOrRiverAccess`).
+ */
+export const WATER_ACCESS_BUILDING_IDS: ReadonlySet<string> = new Set(['port', 'port_wielki']);
 
 /** Label → klucz ASCII w City.surowce / puli państwa (odwrotność LABEL_BY_ASCII). */
 const ASCII_BY_LABEL: Record<string, string> = Object.fromEntries(
@@ -59,11 +102,12 @@ function empireLabelSatisfied(
   return false;
 }
 
-export function eraAccessLabels(epokaWejscia: number): readonly string[] {
-  if (epokaWejscia >= 4) return ERA_ACCESS_LABELS[4] ?? [];
-  return ERA_ACCESS_LABELS[epokaWejscia] ?? [];
-}
-
+/**
+ * Etykiety surowca (aktywny dostęp w imperium) wymagane przez ten budynek.
+ * TEMAT 8 Q1 (2026-07-24): NIE zawiera już blankietowej bramki epoki — patrz nagłówek pliku.
+ * `epokaWejscia` zostaje w sygnaturze (nieużywane tu) tylko dla kompatybilności wywołań
+ * (tools/building-gate-audit.cjs, testy) — realny epoch-check jest w `production.ts`.
+ */
 export function buildingRequiredActiveLabels(building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & {
   wymaganySurowiec?: string | null;
 }): readonly string[] {
@@ -72,7 +116,6 @@ export function buildingRequiredActiveLabels(building: Pick<BuildingDef, 'id' | 
   if (hard) hard.forEach(l => out.add(l));
   const key = building.wymaganySurowiec?.trim().toLowerCase();
   if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]!);
-  for (const l of eraAccessLabels(building.epokaWejscia ?? 1)) out.add(l);
   return [...out];
 }
 

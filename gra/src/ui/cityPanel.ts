@@ -286,8 +286,10 @@ export interface CityPanelConfig {
   getEmpireResourceAccess?: (ownerId: number) => string[];
   /** Union id budynków imperium (bramka cegła/ceramika). */
   getEmpireBuiltIds?: (ownerId: number) => string[];
-  /** Zapas surowców puli państwa ownera (bramka B-SUROW-BUD spełniona też zapasem — Maciej 2026-07-24). */
+  /** Zapas surowców puli państwa ownera (bramka surowcowa spełniona też zapasem — Maciej 2026-07-24). */
   getEmpireStock?: (ownerId: number) => Record<string, number>;
+  /** TEMAT 8 Q2 (2026-07-24): czy TO miasto ma wybrzeże LUB rzekę w zasięgu — bramka Portu. */
+  getCityHasCoastOrRiver?: (cityId: string) => boolean;
   /**
    * Promień okolicy roboczej (pól obrabianych) wg EKONOMII:
    * cityRangeForPopulation(pop): pop<5 -> 5, pop>=5 -> 10, pop>=10 -> 15.
@@ -5568,6 +5570,7 @@ function productionCtxForCity(city: City): AvailabilityContext {
     empireActiveResourceLabels,
     empireBuiltIds,
     empireResourceStock: cfg.getEmpireStock?.(city.ownerId),
+    cityHasCoastOrRiver: cfg.getCityHasCoastOrRiver?.(city.id) ?? false,
   };
 }
 

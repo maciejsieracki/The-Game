@@ -41,7 +41,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
-    "wymagania": "las w zasiegu",
+    "wymagania": "Drewno w zasięgu imperium (aktywne źródło lub zapas w puli państwa)",
     "uwagi": "B-SUROW-BUD-03: bonus Pracy only — bez konwertera desek",
     "techUnlock": "Obróbka drewna",
     "koszt_surowce": {
@@ -79,7 +79,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
-    "wymagania": "kamien w zasiegu",
+    "wymagania": "Kamień w zasięgu imperium (aktywne źródło lub zapas w puli państwa)",
     "uwagi": "",
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
@@ -118,7 +118,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "ruda miedzi w zasięgu (kopalnia miedzi)",
+    "wymagania": "Ruda (miedź) w zasięgu imperium (aktywne źródło lub zapas w puli państwa)",
     "uwagi": "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
@@ -157,7 +157,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "Popalnia brązu w imperium + ruda + drewno",
+    "wymagania": "Kopalnia miedzi w imperium (twardy wymóg terenowy — jedyny wyjątek od reguły, decyzja właściciela Temat 8 Q3)",
     "uwagi": "ABC-13: Piec hutniczy (brąz); upgrade → Odlewnia żelaza. Dostęp brąz = Popalnia (mapa) + ten budynek. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
@@ -285,7 +285,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "wybrzeze morskie lub rzeka",
+    "wymagania": "Wybrzeże morskie lub rzeka w zasięgu tego miasta",
     "uwagi": "",
     "techUnlock": "Żegluga",
     "koszt_surowce": {
@@ -323,7 +323,7 @@
     "przyrostKosztu": 12,
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
-    "wymagania": "upgrade Portu handlowego; wybrzeże",
+    "wymagania": "upgrade Portu handlowego; wybrzeże morskie lub rzeka w zasięgu tego miasta",
     "uwagi": "ABC-20 B: suma bonusów Port + Port wielki w JSON",
     "techUnlock": "Inżynieria",
     "upgradeFrom": "port",
@@ -1198,7 +1198,7 @@
     "przyrostKosztu": 15,
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
-    "wymagania": "wymaga Koszary",
+    "wymagania": "Wybudowane Koszary (lub ich upgrade — Akademia wojskowa) w tym mieście",
     "uwagi": "Odblokowuje budowę Katapulty w mieście (maWarsztatOblezniczy). Taran i Wieża = in-siege przy oblężeniu — styk UNITS",
     "techUnlock": "Oblężnictwo",
     "odblokowuje": "maWarsztatOblezniczy",
@@ -1430,7 +1430,7 @@
     "przyrostKosztu": 12,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "wymaga Studnia",
+    "wymagania": "Wybudowana Studnia w tym mieście",
     "uwagi": "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy — zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     "techUnlock": "Medycyna",
     "koszt_surowce": {
