@@ -62,7 +62,11 @@ import {
   PIEC_HUTNICZY_BUILDING_ID,
 } from './braz-access';
 import { hasZelazoAccess } from './zelazo-access';
-import { buildingResourceGateMet } from './building-resource-gate';
+import {
+  buildingResourceGateMet,
+  CITY_BUILDING_PREREQ,
+  WATER_ACCESS_BUILDING_IDS,
+} from './building-resource-gate';
 import {
   isBuildingSuppressedFromProduction,
   upgradeProductionDisplayName,
@@ -407,13 +411,20 @@ export interface AvailabilityContext {
    * bramka budynkow wymagajacych zloza + ulepszenia w zasiegu.
    */
   activeResourceLabels?: readonly string[];
-  /** Aktywny dostęp surowców imperium (union miast) — bramki epok B-SUROW-BUD. */
+  /** Aktywny dostęp surowców imperium (union miast) — bramki surowcowe (TEMAT 8 Q2). */
   empireActiveResourceLabels?: readonly string[];
   /** Wszystkie id budynków w imperium (union) — bramka cegła/ceramika. */
   empireBuiltIds?: readonly string[];
-  /** Zapas surowców puli państwa (Maciej 2026-07-24) — bramka B-SUROW-BUD spełniona też ZAPASEM,
+  /** Zapas surowców puli państwa (Maciej 2026-07-24) — bramka surowcowa spełniona też ZAPASEM,
    *  nie tylko aktywnym źródłem (fix: budynek blokowany mimo posiadanego surowca w puli). */
   empireResourceStock?: Readonly<Record<string, number>>;
+  /**
+   * TEMAT 8 Q2 (2026-07-24): czy TO miasto ma wybrzeże morskie LUB rzekę w zasięgu — bramka
+   * Portu/Portu wielkiego (`WATER_ACCESS_BUILDING_IDS`, building-resource-gate.ts). Per-miasto
+   * (nie imperium — lokalizacja portu jest stała), WYLICZONE przez wołającego (main.ts zna
+   * mapę, ten moduł jest pure-logic) — patrz main.ts `cityHasCoastOrRiverAccess`.
+   */
+  cityHasCoastOrRiver?: boolean;
 }
 
 /**
@@ -701,6 +712,19 @@ export function availableProduction(
       ? ctx.empireActiveResourceLabels
       : ctx.activeResourceLabels;
     if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
+      continue;
+    }
+    // TEMAT 8 Q2 (2026-07-24): budynek wymaga innego budynku W TYM MIEŚCIE (np. Warsztat
+    // oblężniczy → Koszary, Łaźnia publiczna → Studnia). Akceptuje też upgrade prerekwizytu
+    // (np. Koszary→Akademia wojskowa), ten sam wzorzec co bramka Koszar dla jednostek epoki
+    // Brązu niżej — inaczej upgrade odbierałby miastu już zdobyte prawo budowy.
+    const cityPrereq = CITY_BUILDING_PREREQ[b.id];
+    if (cityPrereq && !builtList.includes(cityPrereq)
+      && !isBuildingSupersededByUpgrade(cityPrereq, builtList, data.buildings)) {
+      continue;
+    }
+    // TEMAT 8 Q2: Port/Port wielki wymagają wybrzeża LUB rzeki w zasięgu TEGO miasta.
+    if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
       continue;
     }
     items.push({

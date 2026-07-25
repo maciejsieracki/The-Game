@@ -236,6 +236,7 @@ import {
   previewCityEconomy,
   computeTerritoryResourceYieldByCity,
   ownerResourceCap,
+  cityHasWaterAccess,
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
@@ -598,6 +599,7 @@ import {
   scaleBarbParamsForLevel, pickBronzeBarbUnit,
   BARBARIAN_OWNER_ID, isBarbarian,
   loadSeaBarbParams, spawnSeaCamps, decideSeaPeoplesRaids, collectSeaRaidTargets,
+  isCoastalCity,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
@@ -2506,6 +2508,19 @@ async function boot(): Promise<void> {
         || hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'zelazo');
     }
 
+    /**
+     * TEMAT 8 Q2 (2026-07-24, decyzja właściciela): Port/Port wielki wymagają wybrzeża
+     * morskiego LUB rzeki w zasięgu TEGO miasta (teren, nie surowiec — per-miasto, nie
+     * imperium, bo lokalizacja portu jest stała per miasto). isCoastalCity = sąsiad-woda
+     * (barbarians.ts, dawniej tylko do celów rajdów); cityHasWaterAccess = rzeka na heksie
+     * miasta/sąsiada (turn-economy.ts, dawniej tylko bonus zdrowia). Reużyte tu 1:1 dla
+     * bramki budowy — WYLICZONE przez wołającego (main.ts zna mapę), bo production.ts /
+     * building-resource-gate.ts są pure-logic (patrz wzorzec hasKopalniaNaZlozuZelaza wyżej).
+     */
+    function cityHasCoastOrRiverAccess(city: Pick<City, 'q' | 'r'>): boolean {
+      return isCoastalCity(map, city) || cityHasWaterAccess(city, map);
+    }
+
     /** UI: "źródło dostępu" dla panelu miasta — undefined gdy brak grantu z trasy. */
     function tradeRouteResourceSourceLabel(ownerId: number, key: TradeRouteResourceKey): string | undefined {
       const grant = firstTradeRouteResourceGrant(tradeRouteResourceGrants, ownerId, key);
@@ -3476,6 +3491,10 @@ async function boot(): Promise<void> {
         getEmpireResourceAccess: (ownerId: number) => empireActiveResourceLabelsForOwner(ownerId),
         getEmpireBuiltIds: (ownerId: number) => [...empireBuiltIdsForOwner(ownerId)],
         getEmpireStock: (ownerId: number) => citySurowceSumForOwner(ownerId),
+        getCityHasCoastOrRiver: (cityId: string) => {
+          const c = cities.find(x => x.id === cityId);
+          return c ? cityHasCoastOrRiverAccess(c) : false;
+        },
         getHasKopalniaNaZlozuZelaza: () => hasKopalniaNaZlozuZelazaOrTradeGrant(0, placedImprovementsForOwner(0)),
         // audyt #11: limit 1 żywej Super-jednostka na cywilizację -- nazwy (typeId)
         // jednostek TEGO ownera aktualnie żywych na mapie (respawn po śmierci działa
@@ -3970,6 +3989,9 @@ async function boot(): Promise<void> {
           empireActiveResourceLabels: empireActiveResourceLabelsForOwner(city.ownerId),
           empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
           empireResourceStock: citySurowceSumForOwner(city.ownerId),
+          // TEMAT 8 Q2 (2026-07-24): parytet — Port/Port wielki dostają tu tę samą bramkę
+          // wybrzeże/rzeka co ręczna budowa gracza (cityPanel.ts) i AI (main.ts cmd 'build').
+          cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
         },
       });
       if (!item) return null;
@@ -13937,6 +13959,14 @@ async function boot(): Promise<void> {
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
                         placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
                         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
+                        // TEMAT 8 Q2 (2026-07-24, parytet AI/Zarządca z tryAutoEnqueueBuild):
+                        // bez tych 4 pól bramki surowcowe/terenowe (Glina/Ceramika/Sól/Drewno/
+                        // Kamień/Ruda/Port) byłyby tu zawsze niespełnione (brak etykiet = pusta
+                        // tablica), więc Zarządca nigdy nie zaproponowałby tych budynków.
+                        empireActiveResourceLabels: empireActiveResourceLabelsForOwner(city.ownerId),
+                        empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
+                        empireResourceStock: citySurowceSumForOwner(city.ownerId),
+                        cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
                       },
                     },
                   );
@@ -14602,6 +14632,15 @@ async function boot(): Promise<void> {
                         buildingCostPace: player.buildingCostPace ?? 'niski',
                         ownerId,
                         difficulty: _menuDifficulty,
+                        // TEMAT 8 Q2 (2026-07-24, PARYTET AI): bez tych 4 pól bramki surowcowe/
+                        // terenowe (Glina/Ceramika/Sól/Drewno/Kamień/Ruda/Port — w tym stolarnia,
+                        // którą AI faktycznie proponuje w ai.ts) byłyby tu zawsze niespełnione,
+                        // więc polecenie 'build' AI byłoby odrzucane mimo realnego dostępu —
+                        // te same wejścia co tryAutoEnqueueBuild / cityPanel.ts (ręczna budowa gracza).
+                        empireActiveResourceLabels: empireActiveResourceLabelsForOwner(ownerId),
+                        empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
+                        empireResourceStock: citySurowceSumForOwner(ownerId),
+                        cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
                       },
                     );
                     const buildAllowed = allowed.some(
