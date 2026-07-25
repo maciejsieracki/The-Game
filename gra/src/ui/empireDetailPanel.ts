@@ -21,11 +21,12 @@ let pendingScrollSection: string | null = null;
 let activeSection: string | null = null;
 
 /** Sekcja/żeton → który TOP-LEVEL blok panelu pokazać. 'all' = cały panel. */
-function blockForSection(section: string | null): 'all' | 'parametry' | 'moc' | 'ekonomia' | 'kultura' | 'surowce' | 'armia' {
+function blockForSection(section: string | null): 'all' | 'parametry' | 'moc' | 'ekonomia' | 'kultura' | 'surowce' | 'armia' | 'handel' {
   if (!section) return 'all';
   if (section === 'ekonomia') return 'all';                         // ogólny przycisk „Imperium" = pełny widok
   if (section === 'armia') return 'armia';                          // Armia = żywność armii + ludność + rekruci (Maciej 2026-07-24)
   if (section === 'surowce' || section.startsWith('econ-surowiec-')) return 'surowce';
+  if (section === 'handel') return 'handel';                        // TEMAT 14 (Maciej 2026-07-24) — szlaki handlowe imperium
   if (section === 'kultura') return 'kultura';
   if (section === 'moc') return 'moc';
   if (section === 'parametry') return 'parametry';
@@ -403,6 +404,51 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   return sur;
 }
 
+/**
+ * Sekcja HANDEL (TEMAT 14, Maciej 2026-07-24) — żeton HUD „Handel" obok Skarbca.
+ * Pokazuje WSZYSTKIE aktywne trasy handlowe gracz↔obca cywilizacja (trade-routes.ts
+ * refreshTradeRoutes) + dochód z każdej + sumę imperium. Szczegóły algorytmu per
+ * miasto zostają w panelu miasta (cityPanel.ts buildTradeRoutesDetailCard) — tu
+ * jest zbiorczy widok imperium, nie duplikat.
+ */
+function renderHandelSection(t: EmpireDetailSnap['trade']): string {
+  let h = `<div class="civ-emp-sect sep" data-section="handel">`
+    + `<div class="civ-emp-title">Handel — szlaki handlowe</div>`
+    + `<div class="civ-emp-kult-line">Dochód z tras: <b class="gold">+${t.totalIncome}</b>/turę · `
+    + `${t.routes.length} ${routeCountWord(t.routes.length)} aktywnych</div>`;
+
+  if (t.routes.length > 0) {
+    const grid = '1.1fr 1.2fr 1fr 0.7fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['TWOJE MIASTO', 'PARTNER', 'MEDIUM · DYSTANS', 'DOCHÓD/TURĘ'], grid)}`;
+    for (const r of t.routes) {
+      h += miniRow([
+        esc(r.cityName),
+        `${esc(r.partnerCityName)} (${esc(r.partnerOwnerLabel)})`,
+        `${r.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.dystans} heks.`,
+        `+${r.income}`,
+      ], grid);
+    }
+    h += `</div>`;
+  } else {
+    h += `<div class="civ-emp-note" style="font-style:italic">Brak aktywnych tras handlowych. Wymagany: budynek handlowy `
+      + `(Targowisko/Karawanseraj/Port) w mieście + zawarta Umowa Handlowa z obcą cywilizacją w zasięgu (bez wojny).</div>`;
+  }
+
+  h += `<div class="civ-emp-foot">Dochód trasy = max(podłoga, bazowy − dystans×współczynnik), kredytowany w pełnej kwocie `
+    + `OBU miastom trasy. Każda aktywna trasa dodaje też +5% Handlu z pól tego miasta (osobno od Targowiska, nie w tej sumie). `
+    + `Szczegóły i warunki per miasto — panel miasta → Plony i handel → Szlaki handlowe.</div>`;
+  h += `</div>`;
+  return h;
+}
+
+function routeCountWord(n: number): string {
+  if (n === 1) return 'trasa';
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'trasy';
+  return 'tras';
+}
+
 function scrollToSection(section: string | null | undefined): void {
   if (!section || bodyEl === null) return;
   const target = bodyEl.querySelector(`[data-section="${section}"]`) as HTMLElement | null;
@@ -555,6 +601,9 @@ function render(): void {
   // — MAGAZYN PAŃSTWA (surowce, mockup „Magazyn surowców" — Maciej 2026-07-24) —
   const sur = renderSurowceSection(snap.resources);
 
+  // — HANDEL (TEMAT 14, Maciej 2026-07-24) — żeton HUD „Handel" obok Skarbca —
+  const handel = renderHandelSection(snap.trade);
+
   // C-PANEL=B: pokaż tylko blok odpowiadający klikniętemu żetonowi (albo cały panel, gdy 'all').
   const block = blockForSection(activeSection);
   let body = '';
@@ -564,6 +613,7 @@ function render(): void {
   if (block === 'armia') body += armia;   // tylko po kliknięciu żetonu Armia (na 'all' żywność/ludność/rekruci są już w zasoby)
   if (block === 'all' || block === 'kultura') body += kult;
   if (block === 'all' || block === 'surowce') body += sur;
+  if (block === 'all' || block === 'handel') body += handel;
   bodyEl.innerHTML = body;
 
   // Scroll do podsekcji ma sens tylko w pełnym widoku; przy pojedynczym bloku i tak widać całość.
@@ -667,6 +717,7 @@ export function empireSectionFromHudAct(act: string): string | undefined {
     case 'religia': return 'econ-religia';
     case 'empire': return 'ekonomia';
     case 'surowce': return 'surowce';
+    case 'handel': return 'handel';
     default: return undefined;
   }
 }

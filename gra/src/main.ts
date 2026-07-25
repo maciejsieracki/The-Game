@@ -7389,7 +7389,39 @@ async function boot(): Promise<void> {
         cityEcon,
         cityPobor,
         resources: buildEmpireResourceRows(0),
+        trade: buildEmpireTradeSnap(),
       };
+    }
+
+    /**
+     * TEMAT 14 (Maciej 2026-07-24) — zbiorczy widok imperium: WSZYSTKIE aktywne trasy
+     * handlowe gracza (tradeRoutes zawiera wyłącznie pary gracz<->obca cyw., patrz
+     * refreshTradeRoutes) + dochód każdej + suma. Panel miasta (cityPanel.ts
+     * buildTradeRoutesDetailCard) pokazuje to samo per-miasto; tu jest agregat.
+     */
+    function buildEmpireTradeSnap(): EmpireDetailSnap['trade'] {
+      const incomeParams = loadTradeRouteIncomeParams(
+        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+        _menuDifficulty,
+      );
+      const routes = tradeRoutes
+        .filter(r => r.status === 'polaczony')
+        .map(r => {
+          const myCity = cities.find(c => c.id === r.fromCityId);
+          const partnerCity = cities.find(c => c.id === r.toCityId);
+          return {
+            id: r.id,
+            cityName: myCity?.name ?? r.fromCityId,
+            partnerCityName: partnerCity?.name ?? r.toCityId,
+            partnerOwnerLabel: ownerDiploLabel(r.toOwnerId),
+            medium: r.medium,
+            dystans: r.dystans,
+            income: tradeRouteDistanceIncome(r.dystans, incomeParams),
+          };
+        })
+        .sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));
+      const totalIncome = routes.reduce((s, r) => s + r.income, 0);
+      return { totalIncome, routes };
     }
 
     function openEmpireDetailFromHud(section?: string): void {
@@ -7763,6 +7795,20 @@ async function boot(): Promise<void> {
       ).length;
       const surowceTotal = storedResourceRows.length;
       const surowceOk = surowceTotal - resourceAlertCount;
+      // TEMAT 14 (Maciej 2026-07-24): chip „Handel" w HUD — suma dochodu z aktywnych
+      // tras handlowych (gracz<->obca cyw.) tej tury. `tradeRoutes` zawiera WYŁĄCZNIE
+      // pary gracz<->obcy (refreshTradeRoutes), więc każda trasa liczy się raz.
+      const handelIncomeParams = loadTradeRouteIncomeParams(
+        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+        _menuDifficulty,
+      );
+      let handelIncome = 0;
+      let handelRouteCount = 0;
+      for (const r of tradeRoutes) {
+        if (r.status !== 'polaczony') continue;
+        handelIncome += tradeRouteDistanceIncome(r.dystans, handelIncomeParams);
+        handelRouteCount++;
+      }
       return {
         zywnoscLabel: String(foodReserve),
         zywnoscMax: foodMaxCap,
@@ -7807,6 +7853,8 @@ async function boot(): Promise<void> {
         civKolorHex: civKolorHexFn(0),
         surowceSummary: surowceTotal > 0 ? `${surowceOk}/${surowceTotal}` : '—',
         surowceAlert: resourceAlertCount > 0,
+        handelIncome,
+        handelRouteCount,
       };
     }
 

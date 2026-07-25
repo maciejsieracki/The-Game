@@ -117,6 +117,10 @@ export interface HudState {
   surowceSummary?: string;
   /** true → czerwony/bursztynowy alert: co najmniej jeden surowiec na capie lub w niedoborze. */
   surowceAlert?: boolean;
+  /** TEMAT 14 (Maciej 2026-07-24) — dochód z aktywnych tras handlowych (gracz↔obca cyw.) tej tury. */
+  handelIncome?: number;
+  /** Liczba aktywnych tras handlowych gracza (do tytułu chipa). */
+  handelRouteCount?: number;
 }
 
 export interface HudConfig {
@@ -433,6 +437,14 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     chip6cHtml({
+      iconId: 'res-trade',
+      label: 'Handel',
+      value: signed(s.handelIncome ?? 0),
+      act: 'handel',
+      title: `Handel — dochód z ${s.handelRouteCount ?? 0} aktywnych tras handlowych/turę. Kliknij po szczegóły.`,
+    }),
+    chip6cSep(),
+    chip6cHtml({
       iconId: 'res-work',
       label: 'Praca',
       value: String(s.praca),
@@ -586,7 +598,7 @@ function handleHudBarAction(act: string): void {
       }
     }
   } else if (act === 'religia' || act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'
-    || act === 'ludnosc' || act === 'rekruci' || act === 'zywnosc' || act === 'surowce') {
+    || act === 'ludnosc' || act === 'rekruci' || act === 'zywnosc' || act === 'surowce' || act === 'handel') {
     hideEmpireOverlay();
     const section = empireSectionFromHudAct(act);
     if (cfg.onOpenEmpireDetail) cfg.onOpenEmpireDetail(section);
