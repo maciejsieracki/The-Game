@@ -1192,14 +1192,14 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 3
+      "mnoznik": 0
     },
     "kosztBudowy": 65,
     "przyrostKosztu": 15,
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "Wybudowane Koszary (lub ich upgrade — Akademia wojskowa) w tym mieście",
-    "uwagi": "Odblokowuje budowę Katapulty w mieście (maWarsztatOblezniczy). Taran i Wieża = in-siege przy oblężeniu — styk UNITS",
+    "uwagi": "Mnoznik = +10% parametry miekkie (Sciezka B) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Koszary/Akademia wojskowa). Odblokowuje budowę Katapulty w mieście (maWarsztatOblezniczy). Taran i Wieża = in-siege przy oblężeniu — styk UNITS",
     "techUnlock": "Oblężnictwo",
     "odblokowuje": "maWarsztatOblezniczy",
     "koszt_surowce": {
@@ -1462,14 +1462,14 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 6
+      "mnoznik": 0
     },
     "kosztBudowy": 80,
     "przyrostKosztu": 18,
     "utrzymanie": 4,
     "przyrostUtrzymania": 2,
     "wymagania": "upgrade Koszar",
-    "uwagi": "Upgrade Koszary → Akademia wojskowa; suma bonusów w JSON; bramka elit UNITS",
+    "uwagi": "Upgrade Koszary → Akademia wojskowa. Mnoznik = +20% parametry miekkie (Sciezka B), NIE kumuluje sie z Koszary bo je zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie; bramka elit UNITS",
     "techUnlock": "Sztuka wojenna",
     "upgradeFrom": "koszary",
     "koszt_surowce": {
