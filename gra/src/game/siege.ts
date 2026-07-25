@@ -17,11 +17,21 @@
  *   - PROJEKT-GRY-master.md SS9c "Milicja wieśniaków": miasto atakowane/oblegane
  *       wystawia ~20% mieszkancow jako milicje (chlopi z widlami, ~1/2 Wojownika
  *       Ep. Kamienia).
- *   - data/buildings.json -> "mury" (Mury): baza.obrona = 5, przyrost.obrona = 3
- *       => obrona murow na poziomie L = 5 + (L-1)*3.  Mury daja +obrona dla
- *       garnizonu w walce oblezniczej (master-doc SS5 / Budynki).
  *   - data/terrain-combat.json -> "Wzgórza" Bonus Obrona "+50%" (miasto na
  *       wzgorzu => obronca x1.5 Obrony), spojnie z combat.ts terrainDefenseMultiplier.
+ *
+ * KANON 2026-07-25 (Maciej): obrona miasta dziala WYLACZNIE procentowo teraz
+ * (mur +200% / Cytadela +300% lacznie -- miasto-params.json bonus_obrona_mur_proc
+ * / bonus_obrona_cytadela_proc, konsumowane przez main.ts structureDefenseBonusFor
+ * -> combat.ts structureDefBonusPct oraz battleScene.ts onWallWalkway). Ten modul
+ * dublowal ten procent z osobnym PLASKIM bonusem Obrony/Pancerza (WALL_BASE_OBRONA
+ * / WALL_PER_LEVEL_OBRONA, patrz combat-params.json "oblężenie") -- zneutralizowany
+ * zerowaniem tych dwoch pol w danych (wall_base_obrona=0, wall_per_level_obrona=0),
+ * a NIE usuniety z kodu, zeby wallLevel/hasWalls (fakt "miasto ma mur", uzywany
+ * m.in. przez siegeAi.ts do oceny sily garnizonu) nadal dzialalo bez zmian API.
+ * cityDefenseBonus() ponizej zwraca wiec zawsze obronaBonus=0 / pancerzBonus=0
+ * z murow -- fortify_obrona_bonus (fortyfikacja jednostki) i terrainMult (wzgorza)
+ * to jedyne nie-zerowe skladniki, jakie ten modul jeszcze dokłada.
  *
  * Design decisions:
  *   1. SiegeUnit mirrors only the combat-relevant fields of a unit (same field
@@ -33,7 +43,10 @@
  *   2. cityDefenseBonus() returns a structured breakdown plus a single
  *      obronaBonus (flat, added to defender Obrona) and pancerzBonus (flat,
  *      added to defender Pancerz). Walls also expose an obronaMult-style hook
- *      via fortyfikacja for a braced garrison.
+ *      via fortyfikacja for a braced garrison. Since 2026-07-25 the wall's flat
+ *      contribution is zero by data (see KANON note above) -- the fields stay
+ *      for API stability, but the real wall/Cytadela defence lives in the %
+ *      layer (structureDefenseBonusFor / structureDefBonusPct), not here.
  *   3. resolveSiegeAttack() resolves ONE attacker vs the TOP garrison defender
  *      using the SS5l formula family with the city bonus folded into the
  *      defender, returning HP losses / death and attacker losses. It is a
@@ -43,8 +56,9 @@
  *      surviving (HP>0) defender can be captured by an adjacent enemy; ownership
  *      transfers and a NEW city object is returned (no mutation).
  *   5. All numeric constants come from data where available
- *      (WALL_BASE_OBRONA / WALL_PER_LEVEL_OBRONA from buildings.json,
- *      HILL_DEFENSE_MULT from terrain-combat.json) with safe fallbacks baked in.
+ *      (WALL_BASE_OBRONA / WALL_PER_LEVEL_OBRONA from combat-params.json,
+ *      now zeroed per the 2026-07-25 kanon; HILL_DEFENSE_MULT from
+ *      terrain-combat.json) with safe fallbacks baked in.
  *
  * ASCII-only source file (hex escapes used for any non-ASCII), matching combat.ts.
  */
@@ -54,8 +68,13 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Mury (city walls) base defence at level 1 -- data/buildings.json "mury".baza.obrona.
- * Fallback baked in case data is unavailable to the caller.
+ * Mury (city walls) base defence at level 1 -- ZEROED (Maciej 2026-07-25):
+ * wall/Cytadela defence is now PURELY percentage-based (miasto-params.json
+ * bonus_obrona_mur_proc / bonus_obrona_cytadela_proc, applied in main.ts
+ * structureDefenseBonusFor -> combat.ts structureDefBonusPct / battleScene.ts).
+ * Kept as a data-sourced constant (combat-params.json "oblężenie".wall_base_obrona,
+ * now 0) rather than deleted, so wallLevel/hasWalls (the "city has a wall" fact,
+ * still used e.g. by siegeAi.ts strength estimation) keep working unchanged.
  */
 // ---------------------------------------------------------------------------
 // Compound building level scaling (shared with economy.ts)
@@ -69,12 +88,14 @@ const OBL = combatParamsRaw['oblężenie'];
 export const WALL_BASE_OBRONA = OBL.wall_base_obrona;
 
 /**
- * Mury (city walls) defence gained per level above 1 -- buildings.json "mury".przyrost.obrona.
+ * Mury (city walls) defence gained per level above 1 -- ZEROED alongside
+ * WALL_BASE_OBRONA (see comment above); combat-params.json "oblężenie".wall_per_level_obrona.
  */
 export const WALL_PER_LEVEL_OBRONA = OBL.wall_per_level_obrona;
 
 /**
- * Maximum wall level -- buildings.json "mury".maksPoziom.
+ * Maximum wall level -- buildings.json "mury".maksPoziom (still used to clamp
+ * hasWalls/wallLevel; unrelated to the retired flat Obrona/Pancerz bonus above).
  */
 export const WALL_MAX_LEVEL = OBL.wall_max_level;
 
@@ -82,6 +103,10 @@ export const WALL_MAX_LEVEL = OBL.wall_max_level;
  * Fraction of the wall's Obrona bonus that ALSO hardens the defender's Pancerz
  * (walls give cover, reducing incoming damage, not only dodge). Conservative
  * default; tunable. 0.5 means half the flat wall bonus is added to Pancerz.
+ * NOTE: with WALL_BASE_OBRONA/WALL_PER_LEVEL_OBRONA now 0, this fraction is
+ * multiplied against a zero base (see cityDefenseBonus below) -- no NaN/divide-
+ * by-zero risk (it's a multiplication, not a division), it's just inert until/
+ * unless the flat layer is ever revived.
  */
 export const WALL_PANCERZ_FRACTION = OBL.wall_pancerz_fraction;
 
@@ -242,6 +267,11 @@ export interface SiegeParams {
  *
  * Accepts the raw buildings array (each row shaped like buildings.json entries
  * with id/baza.obrona/przyrost.obrona). Unknown shapes fall back to constants.
+ *
+ * NOTE (2026-07-25): buildings.json "mury".baza/przyrost.obrona are now 0 (the
+ * flat building bonus was retired -- see KANON note at the top of this file),
+ * so this will resolve to {wallBaseObrona: 0, wallPerLevelObrona: 0} for the
+ * real game data. Kept for API stability / tests; not called from main.ts.
  */
 export function wallParamsFromBuildings(
   buildings: ReadonlyArray<{
@@ -316,10 +346,15 @@ export interface CityDefenseBonus {
 /**
  * Compute the city's defensive bonus for its garrison in a siege.
  *
- * Combines, per master-doc "Mury -> +obrona dla garnizonu, walka obleznicza":
- *   - Wall (Mury) flat Obrona:  wallBaseObrona + (wallLevel - 1) * wallPerLevelObrona
+ * Combines:
+ *   - Wall (Mury) flat Obrona: wallBaseObrona + (wallLevel - 1) * wallPerLevelObrona
  *     (only when wallLevel >= 1 / hasWalls), part of which also hardens Pancerz.
- *   - Fortification flat Obrona when city.fortified.
+ *     RETIRED 2026-07-25 -- wallBaseObrona/wallPerLevelObrona are 0 by data now
+ *     (see KANON note at top of file), so this term is always 0 in the real
+ *     game; the actual wall/Cytadela defence (+200%/+300%) is applied elsewhere
+ *     as a percentage (main.ts structureDefenseBonusFor -> combat.ts
+ *     structureDefBonusPct / battleScene.ts onWallWalkway), not by this module.
+ *   - Fortification flat Obrona when city.fortified (unrelated to walls; unchanged).
  *   - Terrain multiplier (hills x1.5, mountains x1.75) applied to the
  *     Obrona total -- mirrors combat.ts terrainDefenseMultiplier.
  *

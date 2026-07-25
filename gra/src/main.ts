@@ -424,6 +424,7 @@ import { loadAmbiencePrefs, saveAmbiencePrefs } from './audio/ambiencePrefs';
 import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
 import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
+import miastoParams from '../data/miasto-params.json';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -11263,35 +11264,55 @@ async function boot(): Promise<void> {
     // Battle helpers
     // -----------------------------------------------------------------------
 
+    // Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25) -- data-driven z
+    // miasto-params.json, nie hardkodowane. Mur = MUR_BONUS_PROC (200%); Cytadela
+    // (budynek 'fort', upgrade Murow) dodaje CYTADELA_BONUS_PROC (100%) PONAD mur,
+    // czyli miasto z Cytadela -> 300% lacznie. Zob. tez battleScene.ts (onWallWalkway).
+    const MUR_BONUS_PROC = (miastoParams.bonus_obrona_mur_proc?.wartosc as number) ?? 200;
+    const CYTADELA_BONUS_PROC = (miastoParams.bonus_obrona_cytadela_proc?.wartosc as number) ?? 100;
+
     /**
      * structureDefenseBonusFor (STEP E) -- bonusy obronne za mape/budowle.
      *
      * Zwraca najwyzszy bonus procentowy dla broniaceego sie (defender) na podanej
      * pozycji (q, r). Hierarchia (najwyzszy wygrywa, nie kumuluja sie):
-     *   miasto z murem (City.maMur) -> 200%
-     *   fort (ulepszenie terenu 'fort') -> 100%
+     *   miasto z murem + Cytadela (City.maMur + budynek 'fort' w cityBuilt) -> 300%
+     *   miasto z samym murem (City.maMur, brak budynku 'fort') -> 200%
+     *   fort (ulepszenie TERENOWE 'fort' na mapie -- INNY byt niz budynek Cytadela
+     *     o tym samym id! budynek miasta to buildings.json id='fort'/nazwa='Cytadela';
+     *     to tutaj to hex.ulepszenie==='fort', stawiane poza miastem) -> 100%
      *   posterunek ('posterunek') -> 50%
      *   brak struktury -> 0%
      *
-     * Warunek trybu OBOZOWANIA (posterunek/fort) -- do czasu wdrozenia toggle
-     * "stand-by" traktujemy kazda jednostke na polu budowli we wlasnym
+     * Warunek trybu OBOZOWANIA (posterunek/fort terenowy) -- do czasu wdrozenia
+     * toggle "stand-by" traktujemy kazda jednostke na polu budowli we wlasnym
      * terytorium jako obozujaca (zgodnie z ustaleniem w handoffie UNITS).
      */
     function structureDefenseBonusFor(q: number, r: number): number {
       // Sprawdz czy bronicacy jest w miescie z murem
       const cityOnHex = cities.find(c => c.q === q && c.r === r);
       if (cityOnHex && (cityOnHex as any).maMur === true) {
-        return 200; // mur +200% (trojkrotnosc bazowej Obrony)
+        // Cytadela = upgrade budynku 'mury' -> podmienia jego ID na 'fort' w
+        // cityBuilt (miasto z Cytadela NIE ma juz 'mury' na liscie budynkow).
+        // maMur zostaje true dla obu (main.ts ustawia ja przy ukonczeniu
+        // 'mury' LUB 'fort' -- patrz applyCompletedBuildingIds), wiec
+        // rozroznienie mur/Cytadela robimy tu, po budynku 'fort' w cityBuilt.
+        const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
+        if (builtIds.includes('fort')) {
+          return MUR_BONUS_PROC + CYTADELA_BONUS_PROC; // mur+Cytadela = 200+100 = 300%
+        }
+        return MUR_BONUS_PROC; // sam mur +200%
       }
 
-      // Sprawdz ulepszenie terenu na tym heksie
+      // Sprawdz ulepszenie terenu na tym heksie (Fort NA MAPIE -- ulepszenie
+      // terenowe, calkiem inny byt niz budynek Cytadela sprawdzany wyzej).
       const hk = keyOf(q, r);
       const hex = map.hexes[hk];
       if (hex) {
         const ulepszenie = (hex as any).ulepszenie ?? (hex as any).improvement ?? null;
         if (typeof ulepszenie === 'string') {
           const ul = ulepszenie.toLowerCase();
-          if (ul === 'fort') return 100;      // fort +100%
+          if (ul === 'fort') return 100;      // fort (teren) +100%
           if (ul === 'posterunek') return 50; // posterunek +50%
         }
       }
@@ -12875,7 +12896,13 @@ async function boot(): Promise<void> {
             data,
             deploy: true,
             deployPlayerSide: 'atk',
-            siege: { defCiv: ikonaIdToBronzeCiv(defCivId) },
+            // Cytadela (budynek 'fort', upgrade Murow) -> +300% zamiast +200%
+            // na koronie muru (battleScene wallDefenseMult). Patrz
+            // structureDefenseBonusFor dla ten sam rozroznienie na mapie swiata.
+            siege: {
+              defCiv: ikonaIdToBronzeCiv(defCivId),
+              cytadela: (cityBuilt.get(city.id) ?? []).includes('fort'),
+            },
             attackerCivBonusy: civBonusyForOwnerId(atkRosterRef[0]?.ownerId ?? 0),
             defenderCivBonusy: civBonusyForOwnerId(defRosterRef[0]?.ownerId ?? 0),
             // BŁĄD D-weryfikacja: patrz komentarz przy pierwszym call site (~linia

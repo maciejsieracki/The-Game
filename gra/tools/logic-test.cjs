@@ -893,30 +893,38 @@ function makeCity(over) {
   }, over || {});
 }
 
-// --- siege: data-sourced wall constants match buildings.json "mury" ---
+// --- siege: flat wall bonus RETIRED (Maciej 2026-07-25) -- defence is now
+// PURELY percentage-based (miasto-params.json bonus_obrona_mur_proc=200% /
+// bonus_obrona_cytadela_proc=100%, applied in main.ts structureDefenseBonusFor
+// -> combat.ts structureDefBonusPct / battleScene.ts), so buildings.json "mury"
+// baza/przyrost.obrona and combat-params.json wall_base_obrona/wall_per_level_obrona
+// are now 0 (data-sourced, not deleted, so wallLevel/hasWalls keep working for
+// siegeAi.ts strength estimation). These assertions guard that retirement.
 {
   const wp = wallParamsFromBuildings(data.buildings);
-  assert('siege: wall constants sourced from buildings.json mury (base 5, per-level 3)',
-    wp.wallBaseObrona === 5 && wp.wallPerLevelObrona === 3,
+  assert('siege: wall constants retired to 0 in buildings.json mury (flat bonus removed 2026-07-25)',
+    wp.wallBaseObrona === 0 && wp.wallPerLevelObrona === 0,
     `base=${wp.wallBaseObrona} per=${wp.wallPerLevelObrona}`);
-  assert('siege: exported WALL_BASE_OBRONA/PER_LEVEL match data defaults',
-    WALL_BASE_OBRONA === 5 && WALL_PER_LEVEL_OBRONA === 3);
+  assert('siege: exported WALL_BASE_OBRONA/PER_LEVEL match retired (0) data defaults',
+    WALL_BASE_OBRONA === 0 && WALL_PER_LEVEL_OBRONA === 0);
 }
 
-// --- siege: walls increase city defence (defended city harder than undefended) ---
+// --- siege: walls no longer contribute a FLAT Obrona/Pancerz bonus (retired
+// 2026-07-25 -- the wall/Cytadela defence now lives entirely in the % layer,
+// outside this pure module). Regression guard: any wallLevel gives 0 here.
 {
   const undef = cityDefenseBonus(makeCity({ wallLevel: 0 }));
   const walled = cityDefenseBonus(makeCity({ wallLevel: 1 }));
   const walled3 = cityDefenseBonus(makeCity({ wallLevel: 3 }));
   assert('siege: no walls -> zero Obrona bonus', undef.obronaBonus === 0,
     `bonus=${undef.obronaBonus}`);
-  assert('siege: level-1 walls add the base wall Obrona bonus (5)',
-    walled.obronaBonus === 5, `bonus=${walled.obronaBonus}`);
-  assert('siege: higher wall level => strictly greater defence bonus',
-    walled3.obronaBonus > walled.obronaBonus && walled.obronaBonus > undef.obronaBonus,
+  assert('siege: level-1 walls add NO flat Obrona bonus (retired; was 5)',
+    walled.obronaBonus === 0, `bonus=${walled.obronaBonus}`);
+  assert('siege: wall level no longer changes the flat defence bonus (all 0)',
+    walled3.obronaBonus === 0 && walled.obronaBonus === 0 && undef.obronaBonus === 0,
     `L0=${undef.obronaBonus} L1=${walled.obronaBonus} L3=${walled3.obronaBonus}`);
-  assert('siege: walls also harden Pancerz (cover) > 0',
-    walled.pancerzBonus > 0, `pancerz=${walled.pancerzBonus}`);
+  assert('siege: walls no longer harden Pancerz (retired; flat bonus == 0)',
+    walled.pancerzBonus === 0, `pancerz=${walled.pancerzBonus}`);
 }
 
 // --- siege: hill terrain multiplies defender Obrona (x1.5), matches terrain-combat.json ---
@@ -934,14 +942,16 @@ function makeCity(over) {
     boosted.Obrona > warrior().Obrona, `obrona ${warrior().Obrona} -> ${boosted.Obrona}`);
 }
 
-// --- siege: an attacker vs a walled garrison deals LESS than vs an unwalled one ---
+// --- siege: wall level no longer changes this module's damage math (retired
+// 2026-07-25 -- the real wall/Cytadela defence is applied as a % elsewhere,
+// not by this pure module's flat bonus, which is now 0 regardless of level) ---
 {
   const atk = warrior();
   // Same seeded RNG for both so only the wall differs.
   const rUnwalled = resolveSiegeAttack(atk, makeCity({ wallLevel: 0 }), { rng: makeRng(123) });
   const rWalled   = resolveSiegeAttack(atk, makeCity({ wallLevel: 5 }), { rng: makeRng(123) });
-  assert('siege: attacker deals less damage to a heavily-walled garrison',
-    rWalled.defenderHpLoss < rUnwalled.defenderHpLoss,
+  assert('siege: wall level no longer changes damage dealt here (flat bonus retired; was less)',
+    rWalled.defenderHpLoss === rUnwalled.defenderHpLoss,
     `walled loss=${rWalled.defenderHpLoss} vs unwalled=${rUnwalled.defenderHpLoss}`);
   assert('siege: both engagements produced a defender HP loss (sanity)',
     rUnwalled.defenderHpLoss > 0,

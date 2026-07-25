@@ -74,6 +74,7 @@ import {
   type WorldTerrainInput,
 } from './battle-terrain';
 import combatParamsData from '../../data/combat-params.json';
+import miastoParamsData from '../../data/miasto-params.json';
 import { buildTestArmies } from './testBattle';
 import { buildSiegeWall, attachRowBreachPanels } from './siegeWall';
 import type { BronzeCiv } from '../render/bronzeCity';
@@ -342,6 +343,15 @@ export interface SiegeOpts {
    * different from the city owner -- the wall should reflect the DEFENDER.
    */
   defCiv?: BronzeCiv;
+  /**
+   * Maciej 2026-07-25: true gdy broniace sie miasto ma wybudowana Cytadele
+   * (budynek 'fort', upgrade Murow -- NIE mylic z ulepszeniem terenowym
+   * 'fort' na mapie). Podnosi bonus obrony na koronie muru (onWallWalkway)
+   * z +200% (sam mur) do +300% (mur+Cytadela) -- miasto-params.json
+   * bonus_obrona_mur_proc / bonus_obrona_cytadela_proc. Domyslnie false
+   * (sam mur) dla wstecznej zgodnosci callerow, ktorzy tego nie ustawiaja.
+   */
+  cytadela?: boolean;
 }
 
 export interface BattleOpts {
@@ -2167,6 +2177,13 @@ export class BattleScene {
   private siegeWallRowLo: number = -1;
   private siegeWallRowHi: number = -1;
   /**
+   * Obrona multiplier for a defender standing on the wall walkway (onWallWalkway).
+   * 1 + bonus_obrona_mur_proc/100 (mur, default), or 1 + (mur+Cytadela)/100 when
+   * opts.siege.cytadela is true (Maciej 2026-07-25 -- miasto-params.json
+   * bonus_obrona_mur_proc/bonus_obrona_cytadela_proc). Set once in the constructor.
+   */
+  private wallDefenseMult: number = 1;
+  /**
    * SIEGE v2: set of row values where a friendly siege tower has reached the
    * wall base (col = siegeWallCol-1). Attacking infantry adjacent to a tower
    * at these rows may "climb" onto the wall walkway.
@@ -2361,6 +2378,14 @@ export class BattleScene {
     this._attackerCivLabel = opts.attackerCivLabel?.trim() || 'Gracz';
     this._defenderCivLabel = opts.defenderCivLabel?.trim() || 'Przeciwnik';
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
+    // Wall/Cytadela defence multiplier (Maciej 2026-07-25) -- data-driven from
+    // miasto-params.json, not hardcoded. +200% (mur) or +300% (mur+Cytadela).
+    {
+      const murProc = (miastoParamsData as any)?.bonus_obrona_mur_proc?.wartosc ?? 200;
+      const cytadelaProc = (miastoParamsData as any)?.bonus_obrona_cytadela_proc?.wartosc ?? 100;
+      const totalProc = murProc + (opts.siege?.cytadela ? cytadelaProc : 0);
+      this.wallDefenseMult = 1 + totalProc / 100;
+    }
     this._defenderSideLabel = opts.defenderSideLabel?.trim() || '';
     const civRows: readonly { Cywilizacja?: string; ikonaId?: string }[] = d.cywilizacje ?? [];
     this._attackerCivIconId = opts.attackerCivIconId
@@ -7261,15 +7286,17 @@ export class BattleScene {
     // "Teren" rows by name, so the per-blow math stays canonical -- only WHICH
     // tile's terrain feeds each modifier changed (was a single battlefield-wide
     // terrain before). Facing/flank (B7) is applied first, exactly as before.
-    // SIEGE v2: a defender standing on the wall walkway gets ×3.0 defence bonus
-    // (bonus_obrona_mur_proc=200 z miasto-params, mnoznik = 1 + 200/100 = 3.0).
-    // NIE uzywamy 'Wzgorza' (+50%) — stosujemy jawny mnoznik x3.0 dla onWallWalkway.
+    // SIEGE v2: a defender standing on the wall walkway gets the wall/Cytadela
+    // defence bonus (Maciej 2026-07-25: +200% mur-only, +300% mur+Cytadela --
+    // this.wallDefenseMult, computed once in the constructor from opts.siege.cytadela
+    // + miasto-params.json bonus_obrona_mur_proc/bonus_obrona_cytadela_proc).
+    // NIE uzywamy 'Wzgorza' (+50%) — stosujemy jawny mnoznik muru dla onWallWalkway.
     const defTerrain = defender.onWallWalkway
       ? 'Plaskie (rownina/laka)'   // teren bazowy (x1.0) — mnoznik muru dodany ponizej
       : this.terrainMap.combatTerrainName(defender.q, defender.r);
     const atkTerrain = this.terrainMap.combatTerrainName(attacker.q, attacker.r);
     const terrDefMult  = defender.onWallWalkway
-      ? 3.0  // bonus_obrona_mur_proc=200 => x3.0 (miasto-params.json)
+      ? this.wallDefenseMult  // mur=200% -> x3.0, mur+Cytadela=300% -> x4.0
       : terrainDefenseMultiplier(defTerrain, cuA.rola, this.terrainData);
     // River-crossing Atak penalty (SS5j, pre-existing): the ATTACKER's own
     // tile decides this -- -25% Atak when it is wading a Ford (river_attack_mult

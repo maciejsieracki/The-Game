@@ -31,8 +31,9 @@
     "bonusObronaBrzegu": 0.15
   },
   "oblężenie": {
-    "wall_base_obrona": 5,
-    "wall_per_level_obrona": 3,
+    "_opis": "wall_base_obrona / wall_per_level_obrona ZEROWANE (Maciej 2026-07-25): obrona miasta dziala WYLACZNIE procentowo (miasto-params.json bonus_obrona_mur_proc=200 / bonus_obrona_cytadela_proc=100, konsumowane przez main.ts structureDefenseBonusFor + combat.ts structureDefBonusPct + battleScene onWallWalkway). Plaski bonus Obrony/Pancerza z muru w game/siege.ts (cityDefenseBonus) dublowal ten procent -- zneutralizowany tutaj zamiast w kodzie, zeby wallLevel/hasWalls (obecnosc muru) nadal dzialaly bez zmian. Pola zostawione (nie usuniete) dla zgodnosci z SiegeParams/wallParamsFromBuildings.",
+    "wall_base_obrona": 0,
+    "wall_per_level_obrona": 0,
     "wall_max_level": 10,
     "wall_pancerz_fraction": 0.5,
     "hill_defense_mult": 1.5,

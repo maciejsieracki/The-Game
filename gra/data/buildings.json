@@ -784,7 +784,7 @@
       "nauka": 0,
       "kultura": 0,
       "zadowolenie": 0,
-      "obrona": 5,
+      "obrona": 0,
       "mnoznik": 0
     },
     "przyrost": {
@@ -794,7 +794,7 @@
       "nauka": 0,
       "kultura": 0,
       "zadowolenie": 0,
-      "obrona": 3,
+      "obrona": 0,
       "mnoznik": 0
     },
     "kosztBudowy": 35,
@@ -802,7 +802,7 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "",
+    "uwagi": "Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200% Obrony broniacym sie jednostkom -- patrz miasto-params.json bonus_obrona_mur_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony.",
     "techUnlock": "Budownictwo",
     "odblokowuje": "maMur",
     "koszt_surowce": {
@@ -1140,7 +1140,7 @@
       "nauka": 0,
       "kultura": 0,
       "zadowolenie": 0,
-      "obrona": 15,
+      "obrona": 0,
       "mnoznik": 0
     },
     "przyrost": {
@@ -1150,7 +1150,7 @@
       "nauka": 0,
       "kultura": 0,
       "zadowolenie": 0,
-      "obrona": 8,
+      "obrona": 0,
       "mnoznik": 0
     },
     "kosztBudowy": 70,
@@ -1158,7 +1158,7 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Murów",
-    "uwagi": "ABC-22 C: Cytadela = upgrade Murów (1 slot). Mapa = osobny Fort terenowy. Suma Mury+Cytadela w JSON.",
+    "uwagi": "ABC-22 C: Cytadela = upgrade Murów (1 slot). Mapa = osobny Fort terenowy. Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200%, Cytadela +300% lacznie -- patrz miasto-params.json bonus_obrona_mur_proc / bonus_obrona_cytadela_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony.",
     "techUnlock": "Inżynieria",
     "odblokowuje": "maFort",
     "upgradeFrom": "mury",
