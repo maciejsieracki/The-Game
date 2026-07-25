@@ -5509,6 +5509,8 @@ function formatBuildingCatalogLockHint(
   if (entry.status === 'built') return 'Już wybudowany w tym mieście';
   if (entry.status === 'queued') return '⏳ W kolejce produkcji';
   if (entry.status === 'ready') return '';
+  if (entry.locationBlocked === 'stolica') return '🔒 Tylko w stolicy';
+  if (entry.locationBlocked === 'region') return '🔒 Tylko poza stolicą';
 
   const parts: string[] = [];
   let techIc = '';

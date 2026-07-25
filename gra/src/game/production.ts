@@ -422,6 +422,31 @@ export interface AvailabilityContext {
    * mapę, ten moduł jest pure-logic) — patrz main.ts `cityHasCoastOrRiverAccess`.
    */
   cityHasCoastOrRiver?: boolean;
+  /**
+   * ADMIN-STOLICA (decyzja Macieja 2026-07-25): czy TO miasto jest stolicą TEGO
+   * właściciela — bramka budynków z `BuildingDef.lokalizacja` ('stolica' = tylko
+   * tu, np. Pałac I/II/III; 'region' = tylko poza stolicą, np. Dom Starszyzny/
+   * Dwór Zarządcy/Pretorium). Musi być liczone jednym, spójnym źródłem prawdy —
+   * `capitalCityIdForOwner(ownerId)` (main.ts) / `cfg.getCapitalCityId` (cityPanel.ts),
+   * NIGDY osobną heurystyką — patrz uwaga przy turn-economy.ts `isCapital`
+   * (liczone tam jako "pierwsze miasto w tablicy `cities`", które NIE uwzględnia
+   * przeniesienia stolicy gracza/AI — to inne, starsze źródło, tu celowo nieużywane).
+   * `undefined` = nieznane → oba kierunki bramki blokują budynek (fail-safe:
+   * budynku ograniczonego lokalizacją nie pokazujemy, dopóki wołający nie poda
+   * jednoznacznej odpowiedzi). WYLICZANE identycznie dla gracza i AI (ownerId
+   * to zwykły parametr `capitalCityIdForOwner`, bez gałęzi po ownerId) — PARYTET AI.
+   */
+  isCapital?: boolean;
+}
+
+/** Czy budynek wolno postawić w tym mieście wg `BuildingDef.lokalizacja` (ADMIN-STOLICA). */
+function buildingLocationAllowed(
+  lokalizacja: 'stolica' | 'region' | undefined,
+  isCapital: boolean | undefined,
+): boolean {
+  if (lokalizacja === 'stolica') return isCapital === true;
+  if (lokalizacja === 'region') return isCapital === false;
+  return true;
 }
 
 /**
@@ -701,6 +726,7 @@ export function availableProduction(
 
     const tech = (b.techUnlock ?? '').trim();
     if (tech.length > 0 && !techs.has(tech)) continue;
+    if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID
       && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
@@ -1358,6 +1384,12 @@ export interface BuildingCatalogEntry {
   /** Wymagana tech, której gracz jeszcze nie ma (pusta = brak wymogu tech). */
   missingTech: string;
   wymagania: string;
+  /**
+   * ADMIN-STOLICA: powód blokady z lokalizacji miasta (niezależny od tech) —
+   * 'stolica' gdy budynek wymaga stolicy a miasto jest regionalne, 'region' gdy
+   * odwrotnie. `undefined` = lokalizacja nie jest powodem blokady.
+   */
+  locationBlocked?: 'stolica' | 'region';
 }
 
 /**
@@ -1391,13 +1423,19 @@ export function eraBuildingCatalog(
     const tech = (b.techUnlock ?? '').trim();
     const techOk = tech.length === 0 || techs.has(tech);
 
+    const locationOk = buildingLocationAllowed(b.lokalizacja, ctx.isCapital);
+
     let status: BuildingCatalogStatus = 'ready';
+    let locationBlocked: 'stolica' | 'region' | undefined;
     if (buildingTypeQueued(b.id, queue)) {
       status = 'queued';
     } else if (!b.wielokrotny && builtList.includes(b.id)) {
       status = 'built';
     } else if (!techOk) {
       status = 'locked';
+    } else if (!locationOk) {
+      status = 'locked';
+      locationBlocked = b.lokalizacja;
     }
 
     entries.push({
@@ -1408,6 +1446,7 @@ export function eraBuildingCatalog(
       status,
       missingTech: !techOk ? tech : '',
       wymagania: (b.wymagania ?? '').trim(),
+      locationBlocked,
     });
   }
 

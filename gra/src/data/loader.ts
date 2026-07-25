@@ -133,6 +133,15 @@ export interface BuildingDef {
    * (zachowanie sprzed TEMAT #6, zero regresji). Patrz game/building-stock-cost.ts.
    */
   koszt_surowce?: Partial<Record<string, number>>;
+  /**
+   * ADMIN-STOLICA (decyzja Macieja 2026-07-25): gdzie wolno postawić budynek.
+   * 'stolica' = wyłącznie w mieście będącym stolicą właściciela (Pałac I/II/III).
+   * 'region' = wyłącznie w mieście NIE będącym stolicą (Dom Starszyzny/Dwór
+   * Zarządcy/Pretorium). Brak pola = dostępny wszędzie (np. Trybunał, Sąd).
+   * Bramka egzekwowana w game/production.ts (availableProduction/eraBuildingCatalog)
+   * przez AvailabilityContext.isCapital — ownerId-agnostic (PARYTET AI).
+   */
+  lokalizacja?: 'stolica' | 'region';
 }
 
 /** Wiersz z arkusza Surowce.xlsx. */

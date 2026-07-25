@@ -926,6 +926,7 @@
     "wymagania": "-",
     "uwagi": "B-PALAC-TIER I (Kamień): 1/miasto; bramka drewno; bonus bazowy ×1; upgrade→Pałac II",
     "techUnlock": "-",
+    "lokalizacja": "stolica",
     "koszt_surowce": {
       "drewno": 8
     }
@@ -965,6 +966,7 @@
     "wymagania": "upgrade Pałac I",
     "uwagi": "B-PALAC-TIER II (Brąz): bramka drewno+kamień; bonus ×1,5 względem I; upgrade→Pałac III",
     "techUnlock": "-",
+    "lokalizacja": "stolica",
     "koszt_surowce": {
       "drewno": 8,
       "kamien": 8
@@ -1005,6 +1007,7 @@
     "wymagania": "upgrade Pałac II",
     "uwagi": "B-PALAC-TIER III (Żelazo): bramka drewno+kamień+cegła; bonus ×2,25 względem I (×1,5²)",
     "techUnlock": "-",
+    "lokalizacja": "stolica",
     "koszt_surowce": {
       "drewno": 8,
       "kamien": 8,
@@ -1286,21 +1289,102 @@
     }
   },
   {
+    "id": "dom_starszyzny",
+    "nazwa": "Dom Starszyzny",
+    "kategoria": "Administracja",
+    "epokaWejscia": 1,
+    "maksPoziom": 1,
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 1,
+      "pieniadz": 1,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 2,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 25,
+    "przyrostKosztu": 5,
+    "utrzymanie": 1,
+    "przyrostUtrzymania": 1,
+    "wymagania": "",
+    "uwagi": "Administracja lokalna miast regionalnych (poza stolicą), poziom 1: Dom Starszyzny. Łańcuch zastępowania jak Pałac: Dom Starszyzny → Dwór Zarządcy → Pretorium. Główne źródło Prawa miasta regionalnego (prawo_dom_starszyzny, society-params.json). Decyzja Macieja 2026-07-25 (podział stolica/region).",
+    "techUnlock": "-",
+    "lokalizacja": "region",
+    "koszt_surowce": {
+      "drewno": 6
+    }
+  },
+  {
+    "id": "dwor_zarzadcy",
+    "nazwa": "Dwór Zarządcy",
+    "kategoria": "Administracja",
+    "epokaWejscia": 2,
+    "maksPoziom": 1,
+    "upgradeFrom": "dom_starszyzny",
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 1,
+      "pieniadz": 2,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 3,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 45,
+    "przyrostKosztu": 9,
+    "utrzymanie": 2,
+    "przyrostUtrzymania": 1,
+    "wymagania": "upgrade Dom Starszyzny",
+    "uwagi": "Administracja lokalna miast regionalnych (poza stolicą), poziom 2: Dwór Zarządcy — zastępuje Dom Starszyzny. Główne źródło Prawa miasta regionalnego (prawo_dwor_zarzadcy, society-params.json); dalszy awans → Pretorium. Decyzja Macieja 2026-07-25 (podział stolica/region).",
+    "techUnlock": "Kodeks",
+    "lokalizacja": "region",
+    "koszt_surowce": {
+      "drewno": 6,
+      "kamien": 6
+    }
+  },
+  {
     "id": "pretorium",
     "nazwa": "Pretorium",
     "kategoria": "Administracja",
     "epokaWejscia": 3,
     "maksPoziom": 1,
+    "upgradeFrom": "dwor_zarzadcy",
     "nazwyPoziomow": [],
     "baza": {
       "praca": 2,
       "pieniadz": 3,
       "zywnosc": 0,
       "nauka": 0,
-      "kultura": 0,
-      "zadowolenie": 1,
-      "obrona": 2,
-      "mnoznik": 5
+      "kultura": 5,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
     },
     "przyrost": {
       "praca": 1,
@@ -1308,17 +1392,18 @@
       "zywnosc": 0,
       "nauka": 0,
       "kultura": 0,
-      "zadowolenie": 1,
-      "obrona": 1,
-      "mnoznik": 2
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
     },
     "kosztBudowy": 75,
     "przyrostKosztu": 15,
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
-    "wymagania": "",
-    "uwagi": "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
+    "wymagania": "upgrade Dwór Zarządcy",
+    "uwagi": "Administracja lokalna miast regionalnych (poza stolicą), poziom 3 (Żelazo): Pretorium — zastępuje Dwór Zarządcy, koniec łańcucha (jak Pałac III w stolicy). Główne źródło Prawa miasta regionalnego (prawo_pretorium, society-params.json). Garnizon liczy się do Prawa sam (prawo_garnizon_per_jednostka) — Pretorium nie daje mu dodatkowego bonusu; dawny zapis o mnożniku podatkowym nie miał pokrycia w kodzie (pole martwe, wyzerowane 2026-07-25).",
     "techUnlock": "Prawo",
+    "lokalizacja": "region",
     "koszt_surowce": {
       "cegla": 9
     }

@@ -824,12 +824,33 @@
       "jednostka": "pkt Prawa",
       "opis": "Bonus Prawa z Ratusza (gdy wpięty w budynki) — 70% wartości Pretorium (decyzja Macieja 2026-07-25, Pytanie 28). UWAGA: Ratusz nie istnieje jeszcze jako budynek w buildings.json — hasRatusz nigdy dziś nie jest true, trwa osobna decyzja o łańcuchu administracji lokalnej."
     },
+    "prawo_dom_starszyzny": {
+      "easy": 36,
+      "normal": 28,
+      "hard": 22,
+      "jednostka": "pkt Prawa",
+      "opis": "Bonus Prawa z Domu Starszyzny — administracja lokalna miast regionalnych, poziom 1 (Kamień); 50% wartości Pałacu III (decyzja Macieja 2026-07-25, łańcuch Dom Starszyzny → Dwór Zarządcy → Pretorium, zastępowanie jak Pałac)."
+    },
+    "prawo_dwor_zarzadcy": {
+      "easy": 43,
+      "normal": 33,
+      "hard": 26,
+      "jednostka": "pkt Prawa",
+      "opis": "Bonus Prawa z Dworu Zarządcy — administracja lokalna miast regionalnych, poziom 2 (Brąz), zastępuje Dom Starszyzny; 60% wartości Pałacu III (decyzja Macieja 2026-07-25)."
+    },
     "prawo_pretorium": {
       "easy": 50,
       "normal": 38,
       "hard": 31,
       "jednostka": "pkt Prawa",
       "opis": "Bonus Prawa z Pretorium — 70% wartości Pałacu III (decyzja Macieja 2026-07-25, Pytanie 28)."
+    },
+    "prawo_trybunal": {
+      "easy": 22,
+      "normal": 17,
+      "hard": 13,
+      "jednostka": "pkt Prawa",
+      "opis": "Bonus Prawa z Trybunału — dostępny wszędzie (stolica i region), niezależny od łańcucha administracji lokalnej; 50% wartości Dworu Zarządcy (decyzja Macieja 2026-07-25). Wcześniej Trybunał w ogóle nie był wpięty w system Prawa (hasTrybunal nie istniało)."
     },
     "prawo_sad": {
       "easy": 25,

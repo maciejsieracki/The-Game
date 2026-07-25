@@ -92,8 +92,14 @@ export interface LawBreakdownInput {
   /** Jednostki stacjonujące w mieście (garnizon). */
   garnizonCount: number;
   hasRatusz?: boolean;
+  /** Dom Starszyzny — administracja lokalna miast regionalnych, poziom 1 (ADMIN-STOLICA). */
+  hasDomStarszyzny?: boolean;
+  /** Dwór Zarządcy — administracja lokalna miast regionalnych, poziom 2, zastępuje Dom Starszyzny. */
+  hasDworZarzadcy?: boolean;
   hasPretorium?: boolean;
   hasSad?: boolean;
+  /** Trybunał — dostępny wszędzie (stolica i region); dotąd nie był wpięty w system Prawa. */
+  hasTrybunal?: boolean;
   /**
    * Pałac — główne źródło Prawa cywilizacyjnego (≠ garnizon).
    * @deprecated Użyj `palacTier` (1/2/3). Zostaje dla wstecznej zgodności — jeśli
@@ -420,9 +426,21 @@ export function computeLawBreakdown(
     const v = pickSociety(prBlock, 'prawo_ratusz', diff, 3);
     if (v) lines.push({ id: 'ratusz', label: 'Ratusz', value: v });
   }
+  if (input.hasDomStarszyzny) {
+    const v = pickSociety(prBlock, 'prawo_dom_starszyzny', diff, 28);
+    if (v) lines.push({ id: 'dom_starszyzny', label: 'Dom Starszyzny', value: v });
+  }
+  if (input.hasDworZarzadcy) {
+    const v = pickSociety(prBlock, 'prawo_dwor_zarzadcy', diff, 33);
+    if (v) lines.push({ id: 'dwor_zarzadcy', label: 'Dwór Zarządcy', value: v });
+  }
   if (input.hasPretorium) {
     const v = pickSociety(prBlock, 'prawo_pretorium', diff, 2);
     if (v) lines.push({ id: 'pretorium', label: 'Pretorium', value: v });
+  }
+  if (input.hasTrybunal) {
+    const v = pickSociety(prBlock, 'prawo_trybunal', diff, 17);
+    if (v) lines.push({ id: 'trybunal', label: 'Trybunał', value: v });
   }
   if (input.hasSad) {
     const v = pickSociety(prBlock, 'prawo_sad', diff, 2);
