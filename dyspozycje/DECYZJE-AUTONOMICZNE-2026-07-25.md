@@ -58,12 +58,12 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 
 ## ⏸ NIE decyduję sam — czekam na Ciebie (genuine wybór produktowy)
 
-## C-BITWA-FACING — flankowanie/kierunek (główny wniosek audytu)
-**Sytuacja:** Facing (front/flank/rear) jest w 100% AUTOMATYCZNY — gracz nie ustawia kierunku jednostki; jedyny feedback to tekst w logu PO starciu. Audyt wskazuje to jako główne źródło wrażenia „ciężko sterować, nielogiczne".
-- **A — Minimalny wskaźnik kierunku** na pierścieniu zaznaczenia PRZED rozkazem (widać, w którą stronę jednostka „patrzy"), bez zmiany mechaniki. *Za:* tanie, bez refaktoru silnika; rozwiązuje czytelność. *Przeciw:* nadal brak realnej KONTROLI nad facingiem.
-- **B — Realna kontrola facingu** (komenda „obróć się") + wskaźnik. *Za:* pełna taktyka oskrzydlania. *Przeciw:* nowa mechanika + UI + parytet AI, większa praca.
-- **C — Zostaw jak jest** (tylko log po fakcie). *Przeciw:* zostaje główna bolączka.
-- **MOJA REKOMENDACJA: A** — ale to Twoja decyzja projektowa (czy w ogóle dawać kontrolę). Czekam.
+## C-BITWA-FACING → PRZEFORMUŁOWANE na C-FLANK (Maciej 2026-07-25)
+**Moja pierwotna wersja (ręczne sterowanie kierunkiem w bitwie taktycznej) — ODRZUCONA.** Maciej: flankowanie to mechanika **trybu autonomicznego (auto-rozgrywki), NIE ręcznej gry**, głównie dla KONNICY (konnica obchodzi bokiem i uderza na skrzydła/tyły; ewentualnie rozszerzyć na wszystkie jednostki: front/bok/tył). Ręcznej gry nie zmieniamy.
+**C-FLANK-Q1 — który tryb autonomiczny:** A=auto-odgrywanie na polu (silnik realnie manewruje konnicą) · B=auto-rozstrzygnięcie mocą (modyfikator w formule). REKOMENDACJA B.
+**C-FLANK-Q2 — zakres:** A=tylko konnica · B=wszystkie jednostki (front/bok/tył). REKOMENDACJA A.
+**C-FLANK-Q3 — zachowanie konnicy:** A=okrążenie do tyłu (bok→tył) · B=uderzenie w same boki. REKOMENDACJA A.
+**STATUS: czeka na decyzję Macieja (Q1/Q2/Q3).**
 
 ## Pomniejsze z audytu (do decyzji, nie pilne)
 - **Ctrl+klik multi-select**: jest tylko w bitwie, brak na mapie świata (złamany nawyk) — ujednolicić?
