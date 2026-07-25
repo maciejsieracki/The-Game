@@ -31,10 +31,10 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 - A — tylko hub-lista · B — tylko drzewko.
 
 ## C-RES-Q2 — kolejność kolejki
-- **A — FIFO + usuwanie** ✅ WYBRANE (przycisk „×", bez przestawiania). *Za:* najprościej przy max 3. B — strzałki góra/dół · C — drag&drop.
+- **C — drag & drop** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25, zmiana z mojego A). Przeciąganie pozycji. A — FIFO+usuwanie „×" · B — strzałki góra/dół.
 
 ## C-RES-Q3 — ETA kolejki
-- **C — ETA skumulowane per pozycja + ostrzeżenie o niespójnej kolejności** ✅ WYBRANE. *Za:* ciche pomijanie przez silnik bez ostrzeżenia wygląda jak bug. A — tylko aktywny cel · B — ETA bez ostrzeżenia.
+- **A — tylko aktywny cel** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25, zmiana z mojego C). ETA liczone tylko dla aktualnie badanej tech, bez ETA kolejki i bez ostrzeżeń. B — ETA bez ostrzeżenia · C — ETA + ostrzeżenie.
 
 ## C-RES-Q4 — kolejka dla AI
 - **A — AI bez kolejki** ✅ WYBRANE (zostaje heurystyka co turę — AI i tak nigdy nie stoi). *Za:* zero ryzyka regresji balansu AI. B/C — formalna kolejka AI (martwy kod / ryzyko).
