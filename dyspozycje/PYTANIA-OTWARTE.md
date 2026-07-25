@@ -211,7 +211,7 @@ Koszary→Akademia wojskowa, Kuźnia żelaza→Wielka Kuźnia, Spichlerz→kolej
 
 ---
 
-## PYTANIE 26 — Pałac III jest SŁABSZY od Pałacu II (realny błąd) · STATUS: OTWARTE
+## PYTANIE 26 — Pałac III jest SŁABSZY od Pałacu II · STATUS: **ODPOWIEDZIANE = B** (podnieść bazy wyższych tierów)
 
 **Sytuacja.** Po przejściu na model liniowy (`baza + przyrost × (poziom−1)`) kultura Pałacu wychodzi tak:
 
@@ -247,7 +247,7 @@ NA POZIOM wewnątrz tieru, a poziom rośnie sam z epoką miasta, więc tiery nac
 
 ---
 
-## PYTANIE 27 — czy Prawo z Pałacu ma rosnąć z tierem · STATUS: OTWARTE
+## PYTANIE 27 — czy Prawo z Pałacu ma rosnąć z tierem · STATUS: **ODPOWIEDZIANE = A** (35 / 45 / 55)
 
 **Sytuacja.** Prawo **już istnieje** jako pełny system (`society-breakdown.ts`: Szczęście + Prawo → Porządek; przy zbyt
 niskim Porządku wybucha bunt). Pałac już jest jego głównym źródłem: **35 pkt** (łatwy 45 / trudny 28) — dla porównania
@@ -276,7 +276,7 @@ identyczne 35. Skoro zadowolenie (2/3/5) znika z Pałacu, jego progresja przesta
 
 ---
 
-## PYTANIE 28 — Prawo z Pretorium na poziomie trudnym · STATUS: OTWARTE
+## PYTANIE 28 — Prawo z Pretorium · STATUS: **ODPOWIEDZIANE = 70% Pałacu III** (50 / 38 / 31)
 
 **Sytuacja.** Prosiłeś, żeby bonus Prawa z Pretorium był „co najmniej pięć". W danych już jest:
 **łatwy 6 · normalny 5 · trudny 3**. Czyli na normalnym poziomie warunek jest spełniony, ale na trudnym wynosi 3.

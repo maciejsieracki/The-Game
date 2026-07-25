@@ -316,3 +316,29 @@ zgodnego heksu — dopuszczalne, bo fair-play wymaga ≥85% pokrycia, nie 100%),
 Sąsiednie złoża (miedź/żelazo/węgiel/konie) bezpieczne — `prepareTerrainForDeposit` wymusza teren PRZED złożem.
 **Zauważone przy okazji (osobny temat):** `fair-play-grid-test.cjs` ma pre-istniejące porażki — klastry gór/wzgórz
 za duże, pokrycie złóż 75% < 85% na „Standard Ziemia".
+
+## R-PRAWO-ADMINISTRACJA (2026-07-25) — decyzje Macieja 26B, 27A, 28
+**26 = B** — bazy wyższych tierów podnoszone tak, żeby awans zawsze wygrywał (nie zerujemy przyrostu).
+**27 = A** — Prawo z Pałacu rośnie z tierem.
+**28** — Pretorium = **70% wartości Pałacu III**; wcześniej ustalone: Ratusz = 70% Pretorium, Sąd = 50% Pretorium.
+
+**Docelowa siatka Prawa (łatwy / normalny / trudny):**
+| Budynek | easy | normal | hard | % skali w Żelazie (100 pkt) |
+|---|---|---|---|---|
+| Pałac I | 45 | 35 | 28 | 35% |
+| Pałac II | 58 | 45 | 36 | 45% |
+| Pałac III | 71 | 55 | 44 | 55% |
+| Pretorium (70% P3) | 50 | 38 | 31 | 38% |
+| Ratusz (70% Pretorium) | 35 | 27 | 22 | 27% |
+| Sąd (50% Pretorium) | 25 | 19 | 16 | 19% |
+| Dom Starszyzny (70% P1) — gdy powstanie | 31 | 24 | 20 | — |
+| Dwór Zarządcy (70% P2) — gdy powstanie | 41 | 31 | 25 | — |
+| Garnizon (za jednostkę, max 5) — bez zmian | 25 | 20 | 15 | 20% każda |
+
+**KONSEKWENCJA ZGŁOSZONA WŁAŚCICIELOWI:** miasto z Pretorium + Ratuszem + Sądem zbiera 84 pkt Prawa
+bez ani jednej jednostki wojska (dziś te same trzy budynki dają 16). Garnizon przestaje być koniecznością,
+staje się uzupełnieniem. Właściciel podtrzymał regułę 70% — wdrażamy.
+
+**Do rozstrzygnięcia osobno:** Ratusz nie istnieje jako budynek (parametr gotowy, `hasRatusz` nigdy nie jest true).
+Przy trzech szczeblach administracji lokalnej byłoby sześć budynków administracyjnych (Dom Starszyzny, Dwór Zarządcy,
+Ratusz, Trybunał, Sąd, Pretorium) w grze o trzech epokach — patrz pytania 29–31.
