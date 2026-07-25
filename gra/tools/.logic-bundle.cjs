@@ -12582,44 +12582,6 @@ var buildings_default = [
     }
   },
   {
-    id: "karawanseraj",
-    nazwa: "Karawanseraj",
-    kategoria: "Pieniadz",
-    epokaWejscia: 2,
-    maksPoziom: 2,
-    nazwyPoziomow: [],
-    baza: {
-      praca: 0,
-      pieniadz: 6,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 8
-    },
-    przyrost: {
-      praca: 0,
-      pieniadz: 3,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 3
-    },
-    kosztBudowy: 25,
-    przyrostKosztu: 10,
-    utrzymanie: 2,
-    przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)",
-    techUnlock: "Handel",
-    koszt_surowce: {
-      cegla: 4
-    }
-  },
-  {
     id: "spichlerz",
     nazwa: "Spichlerz",
     kategoria: "Zywnosc",
@@ -14065,7 +14027,7 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Pismo + \u017Begluga",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Karawanseraj; Magazyn",
+      "Odblokowuje budynek": "Magazyn",
       "Koszt nauki": 148,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null

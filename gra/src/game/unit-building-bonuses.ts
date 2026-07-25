@@ -66,7 +66,7 @@ export const SOFT_STAT_BUILDING_IDS: readonly string[] = ['koszary', 'akademia_w
  * Uzywane przez UI (cityPanel.ts), zeby chip/wiersz "mnoznik" w karcie budynku
  * pokazywal PRAWDZIWY efekt (Pancerz / Parametry), zamiast martwej ogolnej
  * etykiety "x N mnoznik" sprzed usuniecia "mnoznik -> Praca" (Step 5,
- * economy.ts). Budynki spoza obu list (Targowisko/Karawanseraj/Akademia/
+ * economy.ts). Budynki spoza obu list (Targowisko/Akademia/
  * Pretorium) maja dzis w danych mnoznik z HISTORYCZNYCH powodow (kiedys szedl
  * do Pracy) -- ich mnoznik jest odtad CALKOWICIE martwy (swiadoma decyzja
  * wlasciciela: tylko 6 budynkow wojskowych dostaje nowa mechanike), wiec

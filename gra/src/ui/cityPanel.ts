@@ -4610,7 +4610,7 @@ function buildingBonusChipsHtml(def: BuildingDef, max = 3): string {
   }
   // Sciezki ulepszen jednostek (2026-07-25): mnoznik nie idzie juz do Pracy --
   // pokaz PRAWDZIWY efekt (Pancerz / Parametry) tylko dla 6 rozpoznanych
-  // budynkow; dla reszty (Targowisko/Karawanseraj/Akademia/Pretorium) mnoznik
+  // budynkow; dla reszty (Targowisko/Akademia/Pretorium) mnoznik
   // jest odtad calkowicie martwy, wiec chip znika (nie obiecujemy nieistniejacego).
   if (def.baza.mnoznik) {
     const role = mnoznikRoleForBuildingId(def.id);
@@ -7327,7 +7327,7 @@ function buildTradeRoutesDetailCard(city: City, rows: TradeRouteRowInfo[], data:
   appendDetailSection(card, 'Limit i warunki');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Budynek handlowy', maBudynekHandlowy ? 'Tak' : 'Brak — trasy niemożliwe');
-  gridDetailRow(g0, 'Limit tras miasta', `${limit} (= liczba budynków: Targowisko/Karawanseraj/Port)`);
+  gridDetailRow(g0, 'Limit tras miasta', `${limit} (= liczba budynków: Targowisko/Port)`);
   gridDetailRow(g0, 'Aktywne trasy', `${rows.length} / ${limit}`);
   gridDetailRow(g0, 'Warunek partnera', 'Miasto obcej cywilizacji, bez wojny, w zasięgu (ląd/morze), z zawartą Umową Handlową');
 
@@ -7406,7 +7406,7 @@ function renderTradeRoutesPanel(mount: HTMLElement, city: City, data: GameData |
     } else if (maBudynekHandlowy) {
       hint.textContent = 'Brak tras — brak w zasięgu obcego miasta (bez wojny), z którym dałoby się połączyć.';
     } else {
-      hint.textContent = 'Brak tras — potrzebny budynek handlowy (Targowisko/Karawanseraj/Port) i połączone obce miasto w pokoju.';
+      hint.textContent = 'Brak tras — potrzebny budynek handlowy (Targowisko/Port) i połączone obce miasto w pokoju.';
     }
     mount.appendChild(hint);
     return;

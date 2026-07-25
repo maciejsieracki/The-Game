@@ -274,11 +274,10 @@ Surowce **logistyczne** (drewno, kamień, glina, ruda, ruda żelaza, **cegła**,
 
 Zanim ta zmiana weszła (do 2026-07-23), baza wynosiła **100** i traktowano ją per miasto (`city.surowce`); brąz/żelazo/hodowla były wtedy tylko flagą dostępu civ-wide. Dziś **wszystkie** wymienione surowce logistyczne dzielą jeden wspólny model: produkcja lokalna, cap i realne zużycie (koszty budynków §53.2 niżej, koszty jednostek Część VII §47.2a) — **wspólne dla całego imperium**.
 
-Od 2026-07-23 **10 budynków epoki Brązu/Żelaza** mają realny **koszt materiałowy** pobierany z tej puli państwa przy zapisaniu do kolejki (placeholdery cenowe, do strojenia w panelu):
+Od 2026-07-23 **9 budynków epoki Brązu/Żelaza** mają realny **koszt materiałowy** pobierany z tej puli państwa przy zapisaniu do kolejki (placeholdery cenowe, do strojenia w panelu):
 
 | Budynek | Koszt surowca |
 |---------|----------------|
-| Karawanseraj | 4 ceramiki |
 | Świątynia | 6 ceramiki |
 | Biblioteka | 5 ceramiki |
 | Spichlerz II | 10 cegły |
@@ -302,7 +301,7 @@ Brak materiału w **puli państwa** **blokuje** wejście do kolejki (karta budyn
 
 **Dostęp do surowca** — aktywna trasa daje też dostęp do **brązu, żelaza lub konia**, których nie masz u siebie (Handel E3b) — czysta pochodna trasy: zerwanie traktatu lub wojna **automatycznie cofa** dostęp. Panel miasta pokazuje adnotację „szlak handlowy z **X**" przy takim surowcu.
 
-**Limit tras na miasto** = liczba zbudowanych budynków handlowych (Targowisko/Karawanseraj/Port/Port wielki) — więcej budynków, więcej równoległych tras.
+**Limit tras na miasto** = liczba zbudowanych budynków handlowych (Targowisko/Port/Port wielki) — więcej budynków, więcej równoległych tras.
 
 **Powiadomienia** — toast + wpis w Wydarzeniach przy powstaniu **nowej** trasy i przy jej **zerwaniu** (z podanym powodem: koniec traktatu, wojna, zerwane połączenie terenowe).
 
@@ -332,7 +331,7 @@ Transfer bierze surowiec **od największych zapasów dawcy** i dostarcza do **st
 1. Odkryj **góry** zwiadowcą przed Brązem — tam są złoża miedzi/rudy/żelaza.
 2. Po wejściu w epokę — postaw **kopalnię** na złożu (po Murarstwie), nie tylko odkryj tech.
 3. Planuj **Cegielnię/Garncarnię** zanim zaczniesz kolejkować Mury, Akwedukt czy Cytadelę — bez cegły/ceramiki w magazynie kolejka stoi.
-4. Zawrzyj **Umowę Handlową** z sąsiadem w pokoju, zanim zbudujesz drugi Karawanseraj — bez niej szlak i tak nie powstanie; brak brązu/żelaza u siebie to często tańsze rozwiązanie niż czekanie na własne złoże.
+4. Zawrzyj **Umowę Handlową** z sąsiadem w pokoju, zanim zbudujesz drugi budynek handlowy — bez niej szlak i tak nie powstanie; brak brązu/żelaza u siebie to często tańsze rozwiązanie niż czekanie na własne złoże.
 5. Nadwyżkę drewna/kamienia/gliny — sprzedawaj w koszyku dyplomacji zamiast trzymać martwy zapas.
 
 

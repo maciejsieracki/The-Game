@@ -19,7 +19,7 @@
  *     co turę: filtr obcy właściciel + pokój (nie wojna) + AKTYWNA Umowa Handlowa
  *     (RodzajTraktatu.UmowaHandlowa — decyzja właściciela C-HANDEL-UMOWA=B,
  *     2026-07-23: sam pokój już NIE wystarcza, trasa wymaga zawartego traktatu),
- *     limit tras na miasto = liczba budynków handlowych (Targowisko/Karawanseraj/
+ *     limit tras na miasto = liczba budynków handlowych (Targowisko/
  *     Port/Port wielki).
  *   - Dochód = DWA SKŁADNIKI (wpięte oddzielnie):
  *     (1) składnik dystansowy (tradeRouteDistanceIncome / computeTradeRouteIncomeByCity)
@@ -450,9 +450,13 @@ export function loadTradeRouteParams(
  * Port/Port wielki to upgrade tej samej linii (upgradeFrom w buildings.json) —
  * builtByCity zawiera po upgrade WYŁĄCZNIE 'port_wielki', więc nie ma ryzyka
  * podwójnego liczenia tego samego budynku.
+ *
+ * Karawanseraj usunięty z gry (decyzja właściciela 2026-07-25, odpowiedź „15b" —
+ * anachronizm, budynek średniowieczny błędnie stał w epoce Brązu). Limit tras
+ * nadal działa: Targowisko/Port/Port wielki zostają.
  */
 export const TRADE_BUILDING_IDS: ReadonlySet<string> = new Set([
-  'targowisko', 'karawanseraj', 'port', 'port_wielki',
+  'targowisko', 'port', 'port_wielki',
 ]);
 
 /** Limit tras handlowych danego miasta = liczba zbudowanych budynków handlowych. */

@@ -71,7 +71,7 @@ Ulepszenia: tartak, kamieniołom, kopalnia, glinianka; budynki: stolarnia, kuźn
 
 ### 43.3. Złoto z pól
 
-Profile **Podatki** i **Zrównoważone** kierują heksy na wyższy dochód złota z terenu. Handel międzymiastowy i karawanseraj to już budynki + dyplomacja — nie pojedynczy heks.
+Profile **Podatki** i **Zrównoważone** kierują heksy na wyższy dochód złota z terenu. Handel międzymiastowy to już budynki + dyplomacja — nie pojedynczy heks.
 
 ### 43.4. Typ terenu
 
@@ -156,7 +156,7 @@ Pełny katalog z tabelą i kartami Wiki: [`45-katalog-budynkow.md`](45-katalog-b
 | Kategoria | Po co |
 |-----------|-------|
 | Produkcja | Praca, czasem złoto (stolarnia, kuźnia, wielka kuźnia) |
-| Pieniądz | Targowisko, port, karawanseraj |
+| Pieniądz | Targowisko, port |
 | Żywność | Spichlerz |
 | Nauka | Biblioteka, Akademia |
 | Kultura | Świątynia, teatr, pałac, stela |
@@ -184,13 +184,13 @@ Szare na liście = brak tech. Przykłady: Murarstwo → kamieniarski; Brązownic
 Dwa osobne mechanizmy działają razem:
 
 - **Dostęp** do surowca na mapie (miedź, żelazo, koń, drewno…) — nadal **tak/nie** po złożu + ulepszeniu na heksie (Część VIII §53.1), nie magazyn sztuk.
-- **Koszt materiałowy** — **10 budynków** epoki Brązu/Żelazo (Karawanseraj, Świątynia, Biblioteka, Spichlerz II, Akwedukt, Pretorium, Łaźnia publiczna, Akademia, Mury, Cytadela) pobierają **cegłę** lub **ceramikę** z magazynu miasta przy wejściu do kolejki — realne odejmowanie sztuk, nie flaga. Pełna tabela kosztów i strategia — Część VIII §53.2.
+- **Koszt materiałowy** — **9 budynków** epoki Brązu/Żelazo (Świątynia, Biblioteka, Spichlerz II, Akwedukt, Pretorium, Łaźnia publiczna, Akademia, Mury, Cytadela) pobierają **cegłę** lub **ceramikę** z magazynu miasta przy wejściu do kolejki — realne odejmowanie sztuk, nie flaga. Pełna tabela kosztów i strategia — Część VIII §53.2.
 
 **To dlatego Cegielnia i Garncarnia wreszcie mają sens** — bez zapasu cegły/ceramiki karta budynku pokazuje brakujący chip surowca i nie wejdzie do kolejki, nawet przy pełnej puli Pracy.
 
 ### 45.6. Przyrost i mnożniki
 
-Budynki dają stały przyrost (żywność, nauka…) lub **mnożnik %** (kuźnia → silniejsze jednostki z miasta, karawanseraj → handel lądowy). Kumulują się z suwakami z Części VI.
+Budynki dają stały przyrost (żywność, nauka…) lub **mnożnik %** (kuźnia → silniejsze jednostki z miasta, targowisko → handel lądowy). Kumulują się z suwakami z Części VI.
 
 **Wskazówka:** Pałac — jeden na miasto, fundament kultury; Spichlerz — pierwszy w imperium przed masową rekrutacją.
 

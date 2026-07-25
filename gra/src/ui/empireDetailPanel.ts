@@ -431,7 +431,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     h += `</div>`;
   } else {
     h += `<div class="civ-emp-note" style="font-style:italic">Brak aktywnych tras handlowych. Wymagany: budynek handlowy `
-      + `(Targowisko/Karawanseraj/Port) w mieście + zawarta Umowa Handlowa z obcą cywilizacją w zasięgu (bez wojny).</div>`;
+      + `(Targowisko/Port) w mieście + zawarta Umowa Handlowa z obcą cywilizacją w zasięgu (bez wojny).</div>`;
   }
 
   h += `<div class="civ-emp-foot">Dochód trasy = max(podłoga, bazowy − dystans×współczynnik), kredytowany w pełnej kwocie `

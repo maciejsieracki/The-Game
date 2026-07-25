@@ -5,13 +5,12 @@
 
 > **WERYFIKACJA 2026-07-23:** `buildings.json` ma dziś **37** budynków, nie 26 — brakuje w tym katalogu: Mielerz, Piec hutniczy, Odlewnia żelaza, Port wielki, Spichlerz II, Garncarnia, Cegielnia, Kamienne kręgi, Akwedukt, Mennica, Trybunał (11 pozycji, spoza zakresu tej sesji dokumentacyjnej — poradnik dotyczy `docs/PORADNIK-GRACZA/`, nie regeneracji katalogu). **„Fort" zmienił nazwę na „Cytadela"** (ten sam `id: fort` w danych) i stał się **upgrade'em Murów** (1 slot, nie osobny budynek) — poprawione niżej; osobno istnieje **Fort terenowy** jako ulepszenie na mapie ([`28-katalog-ulepszen.md`](28-katalog-ulepszen.md)), to inny system. **Koszt materiałowy budynków** (cegła/ceramika z magazynu miasta, nowość 2026-07-23) — tabela w §„Koszt materiałowy" poniżej.
 
-Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **praca** z puli imperium; utrzymanie — **złoto** co turę. Każdy budynek ma do **10 poziomów** — kolejny poziom droższy, ale daje większy przyrost. **10 budynków** epoki Brązu/Żelaza dodatkowo kosztują **cegłę lub ceramikę** z magazynu miasta przy wejściu do kolejki (Część VIII §53.2) — tabela niżej.
+Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **praca** z puli imperium; utrzymanie — **złoto** co turę. Każdy budynek ma do **10 poziomów** — kolejny poziom droższy, ale daje większy przyrost. **9 budynków** epoki Brązu/Żelaza dodatkowo kosztują **cegłę lub ceramikę** z magazynu miasta przy wejściu do kolejki (Część VIII §53.2) — tabela niżej.
 
-## Koszt materiałowy — 10 budynków (2026-07-23)
+## Koszt materiałowy — 9 budynków (2026-07-23)
 
 | Budynek | Koszt materiałowy | Skąd brać |
 |---------|---------------------|-----------|
-| Karawanseraj | 4 ceramiki | Garncarnia |
 | Świątynia | 6 ceramiki | Garncarnia |
 | Biblioteka | 5 ceramiki | Garncarnia |
 | Spichlerz II *(brak w tabeli głównej — §82.1c)* | 10 cegły | Cegielnia |
@@ -33,7 +32,6 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Kuznia | Produkcja+Wojsko | Brąz | Brązownictwo | 30 pracy | 2 ¤/t | +6 praca, +1 złoto (+5% mnożnik) | [Kuznia](../encyklopedia/budynki/kuznia.md) |
 | Targowisko (Rynek) | Pieniadz | Kamień | Wymiana | 25 pracy | 1 ¤/t | +3 złoto | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
 | Port handlowy | Pieniadz | Brąz | Żegluga | 30 pracy | 2 ¤/t | +1 praca, +5 złoto | [Port handlowy](../encyklopedia/budynki/port.md) |
-| Karawanseraj | Pieniadz | Brąz | Handel | 25 pracy | 2 ¤/t | +6 złoto (+8% mnożnik) | [Karawanseraj](../encyklopedia/budynki/karawanseraj.md) |
 | Spichlerz | Zywnosc | Kamień | Garncarstwo | 20 pracy | 1 ¤/t | +2 żywność | [Spichlerz](../encyklopedia/budynki/spichlerz.md) |
 | Swiatynia | Kultura | Kamień | Mistycyzm | 25 pracy | 1 ¤/t | +2 kultura, +2 szczęście | [Swiatynia](../encyklopedia/budynki/swiatynia.md) |
 | Biblioteka | Nauka | Brąz | Pismo | 25 pracy | 1 ¤/t | +3 nauka, +1 kultura | [Biblioteka](../encyklopedia/budynki/biblioteka.md) |
@@ -132,22 +130,6 @@ Koszt **30** pracy przy **7** pracy/t na budynki (70%) → **~4** tury budowy.
 Bonus **+1 praca, +5 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/port.md`](../encyklopedia/budynki/port.md)
-
-### Karawanseraj
-
-**Karawanseraj** (Pieniadz) odblokowuje się w epoce **Brąz** po technologii **Handel**. Pierwsze wzniesienie kosztuje **25** pracy; każdy kolejny poziom +**10**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
-
-Na poziomie 1 daje: **+6 złoto**. Każdy kolejny poziom dodaje: **+3 złoto**.
-**Wymagania:** brak.
-**Uwaga:** Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)
-
-
-### Przykład liczbowy
-
-Koszt **25** pracy przy **7** pracy/t na budynki (70%) → **~3** tury budowy.
-Bonus **+6 złoto** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
-Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
-→ Pełna karta: [`docs/encyklopedia/budynki/karawanseraj.md`](../encyklopedia/budynki/karawanseraj.md)
 
 ### Spichlerz
 
