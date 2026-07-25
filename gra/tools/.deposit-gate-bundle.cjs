@@ -195,7 +195,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -6760,9 +6760,6 @@ var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
 var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
-function isLandTerrain(tb) {
-  return tb === "laka" /* Laka */ || tb === "rownina" /* Rownina */ || tb === "wzgorza" /* Wzgorza */ || tb === "pustynia" /* Pustynia */;
-}
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,
@@ -6799,7 +6796,10 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "glina",
     nakladka: "zloze_gliny" /* ZlozeGliny */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || isLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true),
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
     rarity: 0.1
   },
   {
@@ -6821,7 +6821,12 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "sol",
     nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "pustynia" /* Pustynia */ || h.terenBazowy === "rownina" /* Rownina */),
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
     rarity: 0.12
   }
 ];
@@ -7142,11 +7147,6 @@ var miasto_params_default = {
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
-  budynek_mnoznik_poziomu: {
-    wartosc: 1.1,
-    jednostka: "x / poziom",
-    opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
-  },
   jednostka_koszt_ludnosci: {
     wartosc: 0,
     jednostka: "ludnosc",
@@ -7215,7 +7215,12 @@ var miasto_params_default = {
   bonus_obrona_mur_proc: {
     wartosc: 200,
     jednostka: "% Obrony",
-    opis: "Miasto Z MUREM daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje game/siege.ts + battleScene (defensa miasta). Miasto bez muru = brak tego bonusu."
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -7305,27 +7310,30 @@ var LABEL_BY_ASCII = {
   cegla: "Ceg\u0142a",
   ceramika: "Ceramika"
 };
-var ERA_ACCESS_LABELS = {
-  1: ["Drewno"],
-  2: ["Drewno", "Kamie\u0144"],
-  3: ["Drewno", "Kamie\u0144", "Ceg\u0142a"],
-  4: ["Drewno", "Kamie\u0144", "Ceg\u0142a"]
-};
 var DEPOSIT_LINKED_BUILDING_LABELS = {
   garncarnia: ["Glina"],
   cegielnia: ["Glina"],
   spichlerz: ["Ceramika"],
-  spichlerz_ii: ["S\xF3l"]
+  spichlerz_ii: ["S\xF3l"],
+  stolarnia: ["Drewno"],
+  kamieniarski: ["Kamie\u0144"],
+  kuznia: ["Ruda"]
 };
-function empireLabelSatisfied(label, activeLabels, empireBuiltIds) {
+var CITY_BUILDING_PREREQ = {
+  warsztat_oblezniczy: "koszary",
+  laznia_publiczna: "studnia"
+};
+var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"]);
+var ASCII_BY_LABEL = Object.fromEntries(
+  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+function empireLabelSatisfied(label, activeLabels, empireBuiltIds, empireStock) {
   if (activeLabels.includes(label)) return true;
   if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
   if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
+  const asciiKey = ASCII_BY_LABEL[label];
+  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
   return false;
-}
-function eraAccessLabels(epokaWejscia) {
-  if (epokaWejscia >= 4) return ERA_ACCESS_LABELS[4] ?? [];
-  return ERA_ACCESS_LABELS[epokaWejscia] ?? [];
 }
 function buildingRequiredActiveLabels(building) {
   const out = /* @__PURE__ */ new Set();
@@ -7333,14 +7341,13 @@ function buildingRequiredActiveLabels(building) {
   if (hard) hard.forEach((l) => out.add(l));
   const key = building.wymaganySurowiec?.trim().toLowerCase();
   if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
-  for (const l of eraAccessLabels(building.epokaWejscia ?? 1)) out.add(l);
   return [...out];
 }
-function buildingResourceGateMet(building, activeLabels, empireBuiltIds) {
+function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireStock) {
   const required = buildingRequiredActiveLabels(building);
   if (required.length === 0) return true;
   const active = activeLabels ?? [];
-  return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds));
+  return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
 }
 
 // src/game/building-upgrades.ts
@@ -7372,7 +7379,6 @@ function epochNumber(epoka) {
   const n = EPOCH_BY_NAME[epoka];
   return typeof n === "number" ? n : 1;
 }
-var BUILDING_LEVEL_FACTOR = miasto_params_default.budynek_mnoznik_poziomu?.wartosc ?? 1.1;
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
   Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
@@ -7406,11 +7412,17 @@ function itemCost(kind, id, data, cityLevelOrEpoch) {
     const b = findBuilding(data, id);
     if (!b) return 0;
     const level = Number.isFinite(cityLevelOrEpoch) ? Math.max(1, Math.floor(cityLevelOrEpoch)) : 1;
-    return Math.round(b.kosztBudowy * Math.pow(BUILDING_LEVEL_FACTOR, level - 1));
+    const przyrostKosztu = Number.isFinite(b.przyrostKosztu) ? b.przyrostKosztu : 0;
+    return Math.round(b.kosztBudowy + przyrostKosztu * (level - 1));
   }
   const u = findUnit(data, id);
   if (!u) return 0;
   return unitCostFromDef(u);
+}
+function buildingLocationAllowed(lokalizacja, isCapital) {
+  if (lokalizacja === "stolica") return isCapital === true;
+  if (lokalizacja === "region") return isCapital === false;
+  return true;
 }
 var GLOBAL_BUILDING_PROD_MULT = 0.5;
 function buildingWorkCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
@@ -7519,12 +7531,20 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
       if (buildingTypeCommitted(b.id, builtList, queue)) continue;
     }
     const tech = (b.techUnlock ?? "").trim();
-    if (tech.length > 0 && !techs.has(tech)) continue;
+    if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
+    if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
     const gateLabels = ctx.empireActiveResourceLabels?.length ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
-    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds)) {
+    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
+      continue;
+    }
+    const cityPrereq = CITY_BUILDING_PREREQ[b.id];
+    if (cityPrereq && !builtList.includes(cityPrereq) && !isBuildingSupersededByUpgrade(cityPrereq, builtList, data.buildings)) {
+      continue;
+    }
+    if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
       continue;
     }
     items.push({
@@ -7795,8 +7815,8 @@ var TERRAIN_ALLOW = {
   stadnina: /* @__PURE__ */ new Set(["laka" /* Laka */, "rownina" /* Rownina */]),
   kopalnia: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
   glinianka: null,
-  kamieniolom: /* @__PURE__ */ new Set(["gory" /* Gory */]),
-  // Maciej 2026-07-09: kamieniołom TYLKO góry (bez złoża)
+  kamieniolom: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
+  // Maciej 2026-07-24: Wzgórza+Góry (nie zawsze mamy dostęp do gór); teren, bez złoża
   oboz_lowiecki: null,
   wyrab: null,
   lodzie_rybackie: /* @__PURE__ */ new Set(["wybrzeze" /* Wybrzeze */, "morze" /* Morze */]),

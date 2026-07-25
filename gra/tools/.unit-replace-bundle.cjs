@@ -712,6 +712,11 @@ function itemCost(kind, id, data, cityLevelOrEpoch) {
   if (!u) return 0;
   return unitCostFromDef(u);
 }
+function buildingLocationAllowed(lokalizacja, isCapital) {
+  if (lokalizacja === "stolica") return isCapital === true;
+  if (lokalizacja === "region") return isCapital === false;
+  return true;
+}
 var GLOBAL_BUILDING_PROD_MULT = 0.5;
 function buildingWorkCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
   const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
@@ -819,7 +824,8 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
       if (buildingTypeCommitted(b.id, builtList, queue)) continue;
     }
     const tech = (b.techUnlock ?? "").trim();
-    if (tech.length > 0 && !techs.has(tech)) continue;
+    if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
+    if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
