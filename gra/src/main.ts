@@ -11818,6 +11818,7 @@ async function boot(): Promise<void> {
         zbadane: new Set(done),
         badana,
         playerResearchTargetId: badana,
+        researchQueue: [], // T10: AI nie ma kolejki gracza — chooseAIResearch przelicza co turę (patrz ABC C-RES-Q4)
         era: empireEpochForOwner(ownerId),
         pieniadzMnoznik: 1,
         tempoGry: player.tempoGry,
@@ -12875,6 +12876,7 @@ async function boot(): Promise<void> {
           era:      player.era,
           zbadane:  Array.from(player.zbadane),
           badana:   player.badana,
+          researchQueue: player.researchQueue.slice(),
           tempoGry: player.tempoGry,
           buildingCostPace: player.buildingCostPace,
           kosztJednostekPace: player.kosztJednostekPace,
@@ -15613,6 +15615,8 @@ async function boot(): Promise<void> {
       player.nauka = 0;
       player.zbadane = grantTechEpokWczesniejszych(data.tech, params.epochId || 'kamien');
       player.badana = null;
+      player.playerResearchTargetId = null;
+      player.researchQueue = [];
       player.pieniadzMnoznik = 1;
       console.log('[NewGame] Tech wcześniejszych epok:', player.zbadane.size, '· epoka start=', params.epochId || 'kamien');
 
@@ -15856,6 +15860,8 @@ async function boot(): Promise<void> {
       player.nauka = 0;
       player.zbadane = new Set<string>();
       player.badana = null;
+      player.playerResearchTargetId = null;
+      player.researchQueue = [];
       player.pieniadzMnoznik = 1;
 
       const rozmiar = rozmiarFromMenuLabel('Maly');
@@ -16190,6 +16196,8 @@ async function boot(): Promise<void> {
 
       player.zbadane = new Set(preset.grantedTechIds);
       player.badana = null;
+      player.playerResearchTargetId = null;
+      player.researchQueue = [];
 
       turn = 1;
       cityBuilt.clear();
@@ -16393,6 +16401,8 @@ async function boot(): Promise<void> {
 
       player.zbadane = new Set(preset.grantedTechIds);
       player.badana = 'Metalurgia Brązu';
+      player.playerResearchTargetId = null;
+      player.researchQueue = [];
 
       turn = 1;
       cityBuilt.clear();
@@ -16633,6 +16643,7 @@ async function boot(): Promise<void> {
         player.nauka    = saved.gracz.nauka ?? 0;
         player.era      = saved.gracz.era ?? 1;
         player.badana   = saved.gracz.badana ?? null;
+        player.researchQueue = Array.isArray(saved.gracz.researchQueue) ? saved.gracz.researchQueue.slice() : [];
         player.zbadane  = new Set<string>(saved.gracz.zbadane ?? []);
         player.tempoGry = saved.gracz.tempoGry ?? 'standardowa';
         player.buildingCostPace = saved.gracz.buildingCostPace
