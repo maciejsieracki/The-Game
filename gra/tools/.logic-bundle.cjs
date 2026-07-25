@@ -4873,7 +4873,11 @@ function prepareTerrainForDeposit(hex, rule) {
 function pickDepositBootstrapHex(land, hexes, rule, rand) {
   const ranked = land.filter(([q, r]) => {
     const hex = hexes[hexKey(q, r)];
-    return hex && hex.terenBazowy !== "morze" /* Morze */ && hex.terenBazowy !== "wybrzeze" /* Wybrzeze */;
+    if (!hex || hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      return false;
+    }
+    if (rule.id === "glina" && !rule.allowedOn(hex)) return false;
+    return true;
   }).map(([q, r]) => ({ q, r, score: rand() })).sort((a, b) => b.score - a.score);
   if (ranked.length === 0) return null;
   const spot = ranked[0];

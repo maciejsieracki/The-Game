@@ -959,12 +959,17 @@ var EARTH_MASK_ROWS = [
 
 // src/map/earth-land-mask.ts
 var EARTH_PLAYABLE_BORDER = 2;
-var EARTH_NORTH_OCEAN_REF_ROWS = 30;
-var EARTH_NORTH_OCEAN_REF_INNER_H = 115;
-var EARTH_TEMPLATE_NR_LAND_MAX = 0.74;
+var EARTH_POLAR_OCEAN_REF_ROWS = 30;
+var EARTH_POLAR_OCEAN_REF_INNER_H = 115;
 function earthNorthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthSouthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthPolarOceanRows(height) {
   const innerH = earthPlayableInnerHeight(height);
-  return Math.max(2, Math.round(EARTH_NORTH_OCEAN_REF_ROWS * innerH / EARTH_NORTH_OCEAN_REF_INNER_H));
+  return Math.max(2, Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H));
 }
 function earthPlayableInnerHeight(height) {
   const b = EARTH_PLAYABLE_BORDER;
@@ -973,6 +978,11 @@ function earthPlayableInnerHeight(height) {
 function earthPlayableInnerWidth(width) {
   const b = EARTH_PLAYABLE_BORDER;
   return Math.max(1, width - 1 - 2 * b);
+}
+function earthLandMapRows(height) {
+  const innerH = earthPlayableInnerHeight(height);
+  const polar = earthPolarOceanRows(height);
+  return Math.max(1, innerH - polar * 2);
 }
 function bitAt(x, y) {
   const xi = Math.min(EARTH_MASK_W - 1, Math.max(0, x));
@@ -1000,16 +1010,17 @@ function earthHexToTemplateNorm(q, r, width, height) {
   const innerW = earthPlayableInnerWidth(width);
   const innerH = earthPlayableInnerHeight(height);
   const north = earthNorthOceanRows(height);
-  if (r - b < north) return null;
-  const landSpan = Math.max(1, innerH - north);
-  const pr = (r - b - north) / landSpan;
+  const south = earthSouthOceanRows(height);
+  const relR = r - b;
+  if (relR < north) return null;
+  if (relR >= innerH - south) return null;
+  const landRows = earthLandMapRows(height);
+  const pr = (relR - north) / Math.max(1, landRows - 1);
   const pq = (q - b) / innerW;
-  const { minX, minY, maxX } = EARTH_MASK_BBOX;
-  const templateMaxY = Math.min(EARTH_MASK_BBOX.maxY, EARTH_TEMPLATE_NR_LAND_MAX);
-  const templateMinY = minY;
+  const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   return {
     nq: minX + pq * (maxX - minX),
-    nr: templateMinY + pr * (templateMaxY - templateMinY)
+    nr: minY + pr * (maxY - minY)
   };
 }
 function earthSubsampleGrid(width, height) {
@@ -1029,13 +1040,10 @@ function earthLandFractionThreshold(width, height) {
 function earthTemplateLandAt(q, r, width, height) {
   const t = earthHexToTemplateNorm(q, r, width, height);
   if (!t) return 0;
-  const b = EARTH_PLAYABLE_BORDER;
   const innerW = earthPlayableInnerWidth(width);
-  const innerH = earthPlayableInnerHeight(height);
-  const { minX, minY, maxX } = EARTH_MASK_BBOX;
-  const templateMaxY = Math.min(EARTH_MASK_BBOX.maxY, EARTH_TEMPLATE_NR_LAND_MAX);
+  const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   const cellW = (maxX - minX) / innerW;
-  const cellH = (templateMaxY - minY) / Math.max(1, innerH - earthNorthOceanRows(height));
+  const cellH = (maxY - minY) / Math.max(1, earthLandMapRows(height));
   const steps = earthSubsampleGrid(width, height);
   if (steps <= 1) return sampleEarthTemplateLand(t.nq, t.nr);
   let landHits = 0;
@@ -4555,7 +4563,10 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "glina",
     nakladka: "zloze_gliny" /* ZlozeGliny */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || isLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true),
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
     rarity: 0.1
   },
   {
@@ -4577,7 +4588,12 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "sol",
     nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "pustynia" /* Pustynia */ || h.terenBazowy === "rownina" /* Rownina */),
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
     rarity: 0.12
   }
 ];
@@ -4609,8 +4625,10 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
     if (hex.nakladka !== "brak" /* Brak */) continue;
     if (hex.zloze) continue;
     if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) continue;
+    const [depQ, depR] = key.split(",").map(Number);
     for (const rule of rules) {
       if (!rule.allowedOn(hex)) continue;
+      if (rule.requiresCoastalLand && !isCoastalLandHex(hexes, depQ, depR)) continue;
       if (rand() < Math.min(1, rule.rarity * baselineMult * resourceMult)) {
         if (rule.nakladka !== null) {
           hex.nakladka = rule.nakladka;
@@ -4654,9 +4672,8 @@ function cellCarriesDepositType(cellLand, hexes, id) {
   return false;
 }
 function hexCanAcceptDeposit(hex, rule, allowForestClear) {
-  if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-    return false;
-  }
+  if (hex.terenBazowy === "morze" /* Morze */) return false;
+  if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
   if (hex.zloze) return false;
   if (hex.nakladka !== "brak" /* Brak */) {
     if (!allowForestClear || hex.nakladka !== "las" /* Las */) return false;
@@ -4685,17 +4702,11 @@ function prepareTerrainForDeposit(hex, rule) {
     case "owce":
       hex.terenBazowy = "wzgorza" /* Wzgorza */;
       break;
-    case "glina":
-      hex.terenBazowy = "laka" /* Laka */;
-      break;
     case "konie":
       hex.terenBazowy = "rownina" /* Rownina */;
       break;
     case "bydlo":
       hex.terenBazowy = "laka" /* Laka */;
-      break;
-    case "sol":
-      hex.terenBazowy = "pustynia" /* Pustynia */;
       break;
     default:
       break;
@@ -4704,14 +4715,15 @@ function prepareTerrainForDeposit(hex, rule) {
 function pickDepositBootstrapHex(land, hexes, rule, rand) {
   const ranked = land.filter(([q, r]) => {
     const hex = hexes[hexKey(q, r)];
-    return hex && hex.terenBazowy !== "morze" /* Morze */ && hex.terenBazowy !== "wybrzeze" /* Wybrzeze */;
+    if (!hex || hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      return false;
+    }
+    if (rule.id === "glina" && !rule.allowedOn(hex)) return false;
+    return true;
   }).map(([q, r]) => ({ q, r, score: rand() })).sort((a, b) => b.score - a.score);
   if (ranked.length === 0) return null;
   const spot = ranked[0];
   prepareTerrainForDeposit(hexes[hexKey(spot.q, spot.r)], rule);
-  if (rule.id === "glina") {
-    hexes[hexKey(spot.q, spot.r)].rzeka = { ...hexes[hexKey(spot.q, spot.r)].rzeka ?? {}, obecna: true };
-  }
   return [spot.q, spot.r];
 }
 function forceDepositInCell(land, hexes, id, rand) {
@@ -5102,7 +5114,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -5448,9 +5460,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     purgeOceanInsideEarthLandMask(hexes, width, height);
   }
   finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 2);
-  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
-  finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 1);
   ensureReliefGridCoverage(
     hexes,
     terrainScratch,
@@ -5463,7 +5472,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     rand
   );
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
@@ -5494,10 +5502,12 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     wgn.riverTrace.maxLen
   );
   stripRiverMarksFromOpenSea(hexes);
-  stripDepositsFromWater(hexes);
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   flattenFalseCoastalRiverNotches(hexes, width, height);
+  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
+  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+  stripDepositsFromWater(hexes);
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
     minDist: 5,

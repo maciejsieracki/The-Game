@@ -1141,6 +1141,9 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('rydwan sumeryjski') || n.includes('sumerian chariot')) return buildSumerianChariot(ownerColor_);
   // EGIPT ------------------------------------------------------------------
   if (n.includes('lucznik egipski') || n.includes('egyptian archer')) return buildEgyptianArcher(ownerColor_);
+  // Łucznik nubijski (Brąz, zastępuje Łucznika): model docelowy nie istnieje jeszcze
+  // (decyzja właściciela 2026-07-25) — TYMCZASOWO reużywa buildera łucznika egipskiego.
+  if (n.includes('lucznik nubijski') || n.includes('nubian archer')) return buildEgyptianArcher(ownerColor_);
   if (n.includes('wojownik z khopesh') || n.includes('khopesh warrior')) return buildKhopeshWarrior(ownerColor_);
   if (n.includes('rydwan egipski') || n.includes('egyptian chariot')) return buildEgyptianChariot(ownerColor_);
   // INKA -------------------------------------------------------------------

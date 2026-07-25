@@ -6498,17 +6498,25 @@ function pickDepositBootstrapHex(
   const ranked = land
     .filter(([q, r]) => {
       const hex = hexes[hexKey(q, r)];
-      return hex && hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze;
+      if (!hex || hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+        return false;
+      }
+      // 'glina' nie wymusza już terenu (TEMAT 12, patrz prepareTerrainForDeposit) — jej regula
+      // wymaga prawdziwej h.rzeka.obecna, ktorej bootstrap nie moze wytworzyc (geometria rzek
+      // jest juz finalna na tym etapie; TEMAT 12 usunelo fabrykowanie falszywej rzeka.obecna).
+      // Bootstrap MUSI wiec nadal respektowac rule.allowedOn dla gliny — w przeciwnym razie
+      // zloze ladowaloby na hexie bez rzeki i lamalo DEPOSIT_RULES (logic-test: "deposits obey
+      // terrain rules"). Dla pozostalych id w tej funkcji (zelazo/miedz/wegiel/konie/bydlo)
+      // prepareTerrainForDeposit ponizej wymusza wlasciwy teren, wiec rule.allowedOn zawsze
+      // bedzie spelnione PO forsowaniu — nie trzeba filtrowac ich tutaj z gory.
+      if (rule.id === 'glina' && !rule.allowedOn(hex)) return false;
+      return true;
     })
     .map(([q, r]) => ({ q, r, score: rand() }))
     .sort((a, b) => b.score - a.score);
   if (ranked.length === 0) return null;
   const spot = ranked[0]!;
   prepareTerrainForDeposit(hexes[hexKey(spot.q, spot.r)]!, rule);
-  // TEMAT 12 (2026-07-24): USUNIĘTA fabrykacja fałszywej rzeka.obecna=true na hexie bez
-  // prawdziwej geometrii rzeki (brak krawedzie) — psuło render/logikę (hex „z rzeką" bez
-  // koryta). Bootstrap gliny może więc wylądować na hexie bez rzeki (rzadki fallback fair-play,
-  // gdy cała komórka nie ma ani jednego hexa z prawdziwą rzeką) — akceptowalny wyjątek.
   return [spot.q, spot.r];
 }
 
