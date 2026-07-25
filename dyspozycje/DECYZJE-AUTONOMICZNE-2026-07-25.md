@@ -72,3 +72,13 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 ## Pomniejsze z audytu (do decyzji, nie pilne)
 - **Ctrl+klik multi-select**: jest tylko w bitwie, brak na mapie świata (złamany nawyk) — ujednolicić?
 - **Dwa różne „Auto"**: auto-rozstrzygnięcie mocą (pomija pole) vs auto-odgrywanie na polu — przemianować jedno?
+
+---
+
+## C-RES-UI-TIMING — kiedy zrobić UI kolejki badań (dopisane w nocy)
+**Sytuacja:** Silnik kolejki (temat 10) zintegrowany. UI wymaga rozbudowanej zmiany RDZENIOWEGO ekranu nauki (`scienceHubHud.ts` + `sciencePicker.ts` + helpery `main.ts`): klik=enqueue w obu miejscach, panel „Plan badań (n/3)" z odznakami 1/2/3, ETA skumulowane, ostrzeżenie o niespójnej kolejności, przyciski usuwania. Subagenty nie mogą tego zrobić (ich worktree są izolowane na `546b0c8` — nie widzą zintegrowanego silnika; subagent słusznie przerwał). Zostaje główna pętla.
+- **A — Odłożyć UI, zrobić jako osobny dopięty krok** ✅ WYBRANE. *Za:* nie wciskam nietestowalnej (przeze mnie) zmiany rdzeniowego ekranu do dużego nocnego batcha; silnik zintegrowany jest nieszkodliwy (kolejka pusta = zachowanie jak dziś); pełny recon+plan spisany. *Przeciw:* funkcja „kolejka do 3" nie będzie w porannym deployu do przetestowania.
+- **B — Zaimplementować w nocy w głównej pętli.** *Za:* funkcja gotowa do porannego testu. *Przeciw:* rozbudowana zmiana rdzeniowego ekranu bez mojego playtestu, w dużym batchu — podnosi ryzyko całego deploya.
+- **MOJA REKOMENDACJA: A** (jakość > pośpiech na rdzeniowym ekranie). Powiedz „rób UI kolejki" jeśli wolisz B.
+
+**Plan gotowy do wdrożenia (recon):** helpery `enqueueOrSetPlayerResearchSlug`/`dequeuePlayerResearchSlug`/`buildResearchPlanSnapshot` obok `selectPlayerResearchSlug` (main.ts:3445); przepiąć `onSelectTech` (main.ts:9396) i `onSelectTarget` (main.ts:9760) na enqueue; dodać do `ScienceHubHudConfig` haki `getQueue`/`onRemoveFromQueue` + render panelu „Plan badań"; odznaki 1/2/3 w `sciencePicker.ts`. API silnika: `enqueueResearchTarget`/`dequeueResearchTarget`/`getResearchPlanSnapshot`/`researchPlanLength`/`RESEARCH_QUEUE_MAX`=3.
