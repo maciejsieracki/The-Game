@@ -399,3 +399,34 @@ obrona 6, pancerz 2, przebicie 2, morale 85, plus podane przez właściciela: za
 **48 = A** — deploy do wersji roboczej dopiero po naprawie plonów budynków i po grupowaniu, w komplecie.
 
 **49 = A** — dedykowany model 3D Łucznika nubijskiego **do zrobienia teraz**.
+
+---
+
+# KOREKTA 2026-07-25 — bramki surowcowe budynków ZOSTAJĄ
+
+**Błąd Claude, skorygowany przez Macieja.** Z wypowiedzi „większość budynków nie potrzebuje dostępu do surowca,
+tylko musi mieć surowce w magazynie" wyciągnąłem wniosek, że należy zdjąć bramkę dostępu z pięciu budynków
+przetwórczych. **To było błędne.** Maciej: „Stolarnia, warsztat kamieniarski, kuźnia brązu, garncarnia i cegielnia
+potrzebują surowców w terenie, mieć do nich dostęp — czyli najpierw muszą się pojawić ulepszenia, a dopiero można
+budować ten budynek. To było jak najbardziej prawidłowe."
+
+**Obowiązująca zasada — trzy różne rzeczy, których nie wolno mylić:**
+1. **Koszt budowy** (`koszt_surowce`) — materiał pobierany z magazynu cywilizacji. Dotyczy każdego budynku
+   i to właśnie o nim mówił Maciej („musi mieć surowce w magazynie").
+2. **Bramka dostępu do surowca w terenie** (`DEPOSIT_LINKED_BUILDING_LABELS`) — dotyczy **zakładów przetwórczych**,
+   które bez źródła nie mają czego przerabiać. **ZOSTAJE BEZ ZMIAN:** Stolarnia → Drewno · Warsztat kamieniarski →
+   Kamień · Kuźnia brązu → Ruda · Garncarnia → Glina · Cegielnia → Glina · Spichlerz → Ceramika · Spichlerz II → Sól.
+3. **Bramka `wymaganySurowiec`** w danych — Kuźnia żelaza → żelazo, Wielka Kuźnia → stal. **ZOSTAJE** (odpowiedź A).
+
+**PYTANIE 50 = A** (Maciej 2026-07-25): bramki dostępu przy obu kuźniach i obu spichlerzach zostają nietknięte.
+Uzasadnienie: budynki epoki Żelaza płacą drewnem i cegłą, więc bez tej bramki kuźnię żelaza dałoby się postawić
+w cywilizacji, która żelaza nigdy nie widziała.
+
+**Konie** — bramka dotyczy wyłącznie jednostek, żadnego budynku; bez zmian.
+
+## REGRESJA Z DZIŚ — przywracany wymóg kolejności budowania
+Usunięcie `upgradeFrom` z czterech par („likwidacja awansu bocznego") skasowało przy okazji wymóg,
+że poprzednik musi stać w mieście. Maciej: „musi być budowana najpierw biblioteka, a potem Akademia,
+i to trzeba stosować dla wszystkich budynków, które miały awans boczny."
+→ Do `CITY_BUILDING_PREREQ` dopisywane: `akademia`←`biblioteka` · `fort`←`mury` ·
+`akademia_wojskowa`←`koszary` · `swiatynia`←`kamienne_kregi`.
