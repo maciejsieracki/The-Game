@@ -94,8 +94,20 @@ export interface LawBreakdownInput {
   hasRatusz?: boolean;
   hasPretorium?: boolean;
   hasSad?: boolean;
-  /** Pałac — główne źródło Prawa cywilizacyjnego (≠ garnizon). */
+  /**
+   * Pałac — główne źródło Prawa cywilizacyjnego (≠ garnizon).
+   * @deprecated Użyj `palacTier` (1/2/3). Zostaje dla wstecznej zgodności — jeśli
+   * podano `hasPalac: true` bez `palacTier`, liczy się jak tier 1 (stara wartość).
+   */
   hasPalac?: boolean;
+  /**
+   * Który tier Pałacu stoi w mieście (B-PALAC-TIER-PRAWO, decyzja Macieja 2026-07-25,
+   * Pytanie 27=A: Prawo z Pałacu rośnie z tierem). `null`/`undefined` = brak Pałacu
+   * (chyba że `hasPalac: true` — patrz wyżej). Gdy miasto miałoby kilka wpisów
+   * pałacowych naraz, przekaż tu najwyższy tier — liczy się TYLKO jeden wpis Pałacu,
+   * nigdy suma.
+   */
+  palacTier?: 1 | 2 | 3 | null;
   brakGarnizonuKara?: boolean;
   /** Kara Prawa: niestabilny podbój bez garnizonu. */
   conquestNoGarrisonPenalty?: number;
@@ -208,6 +220,18 @@ export function loadRevoltParams(
     criticalPorPct: pickSociety(block, 'porzadek_prog_bunt_skrajny_pct', difficulty, REVOLT_CRITICAL_POR_PCT),
     graceTurns: pickSociety(block, 'porzadek_grace_tur_bunt', difficulty, REVOLT_GRACE_TURNS),
   };
+}
+
+/**
+ * Rozstrzyga tier Pałacu (1/2/3) z pól `palacTier` / `hasPalac` (wsteczna zgodność —
+ * B-PALAC-TIER-PRAWO). 0 = brak Pałacu. `palacTier` ma pierwszeństwo; `hasPalac: true`
+ * bez `palacTier` = tier 1 (stara wartość, żeby żaden istniejący wywołujący się nie wywrócił).
+ */
+function resolvePalacTier(input: Pick<LawBreakdownInput, 'palacTier' | 'hasPalac'>): 0 | 1 | 2 | 3 {
+  const t = input.palacTier;
+  if (t === 1 || t === 2 || t === 3) return t;
+  if (input.hasPalac) return 1;
+  return 0;
 }
 
 function clampPct(x: number, cap: number): number {
@@ -404,9 +428,16 @@ export function computeLawBreakdown(
     const v = pickSociety(prBlock, 'prawo_sad', diff, 2);
     if (v) lines.push({ id: 'sad', label: 'Sąd', value: v });
   }
-  if (input.hasPalac) {
-    const v = pickSociety(prBlock, 'prawo_palac', diff, 35);
-    if (v) lines.push({ id: 'palac', label: 'Pałac', value: v });
+  const palacTier = resolvePalacTier(input);
+  if (palacTier === 1 || palacTier === 2 || palacTier === 3) {
+    const palacByTier: Record<1 | 2 | 3, { key: string; fallback: number; label: string }> = {
+      1: { key: 'prawo_palac', fallback: 35, label: 'Pałac' },
+      2: { key: 'prawo_palac_ii', fallback: 45, label: 'Pałac II' },
+      3: { key: 'prawo_palac_iii', fallback: 55, label: 'Pałac III' },
+    };
+    const { key, fallback, label } = palacByTier[palacTier];
+    const v = pickSociety(prBlock, key, diff, fallback);
+    if (v) lines.push({ id: 'palac', label, value: v });
   }
 
   if (input.brakGarnizonuKara) {

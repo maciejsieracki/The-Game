@@ -125,7 +125,7 @@ import {
 } from './game/diplomacy-layers';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch } from './game/owner-epoch';
-import { cityHasPalacLine } from './game/building-upgrades';
+import { cityPalacTier } from './game/building-upgrades';
 import {
   evaluateOrderFromBreakdown,
   updateRevoltGrace,
@@ -14263,7 +14263,7 @@ async function boot(): Promise<void> {
                   hasRatusz: builtIds.includes('ratusz'),
                   hasPretorium: builtIds.includes('pretorium'),
                   hasSad: builtIds.includes('sad'),
-                  hasPalac: cityHasPalacLine(builtIds),
+                  palacTier: cityPalacTier(builtIds),
                   brakGarnizonuKara: city.population >= 6 && gCountLaw === 0,
                   conquestNoGarrisonPenalty: conquestNoGarPen,
                   stolicaEasyBonus: stolicaBonus,

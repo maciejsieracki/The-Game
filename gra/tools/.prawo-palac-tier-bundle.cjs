@@ -17,25 +17,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.society-entry.ts
-var society_entry_exports = {};
-__export(society_entry_exports, {
-  computeHappinessBreakdown: () => computeHappinessBreakdown,
-  computeLawBreakdown: () => computeLawBreakdown,
-  computeOrderPctBreakdown: () => computeOrderPctBreakdown,
-  evaluateOrderFromBreakdown: () => evaluateOrderFromBreakdown,
-  happinessBucketsFromPct: () => happinessBucketsFromPct,
-  isOsiedleRevoltImmune: () => isOsiedleRevoltImmune,
-  loadOrderParams: () => loadOrderParams,
-  loadRevoltParams: () => loadRevoltParams,
-  luksusHappinessBonus: () => luksusHappinessBonus,
-  orderEffectsFromPorPct: () => orderEffectsFromPorPct,
-  osiedlePopMax: () => osiedlePopMax,
-  porPctBand: () => porPctBand,
-  tierFromPorPct: () => tierFromPorPct,
-  updateRevoltGrace: () => updateRevoltGrace
+// tools/.prawo-palac-tier-entry.ts
+var prawo_palac_tier_entry_exports = {};
+__export(prawo_palac_tier_entry_exports, {
+  cityHasPalacLine: () => cityHasPalacLine,
+  cityPalacTier: () => cityPalacTier,
+  computeLawBreakdown: () => computeLawBreakdown
 });
-module.exports = __toCommonJS(society_entry_exports);
+module.exports = __toCommonJS(prawo_palac_tier_entry_exports);
 
 // data/terrain-improvements.json
 var terrain_improvements_default = {
@@ -536,6 +525,17 @@ var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
 
+// src/game/building-upgrades.ts
+function cityHasPalacLine(builtIds) {
+  return builtIds.includes("palac") || builtIds.includes("palac_ii") || builtIds.includes("palac_iii");
+}
+function cityPalacTier(builtIds) {
+  if (builtIds.includes("palac_iii")) return 3;
+  if (builtIds.includes("palac_ii")) return 2;
+  if (builtIds.includes("palac")) return 1;
+  return null;
+}
+
 // src/game/production.ts
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
@@ -555,11 +555,6 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
 });
 
 // src/game/cities.ts
-var DEFAULT_PODZIAL_HANDLU = {
-  procentNauka: 20,
-  procentPieniadz: 70,
-  procentLuksus: 10
-};
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
 // src/game/order.ts
@@ -577,81 +572,9 @@ var FALLBACK_ORDER_PARAMS = Object.freeze({
   bonusProdukcjaT2: 0.1,
   bonusHandelT2: 0.1
 });
-function pick(row, difficulty, fallback) {
-  if (row === void 0) return fallback;
-  const v = row[difficulty];
-  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
-}
-function loadOrderParams(society, difficulty = "normal") {
-  const p = society && society.porzadek || {};
-  const f = FALLBACK_ORDER_PARAMS;
-  return {
-    wagaSzczescie: pick(p.porzadek_waga_szczescie, difficulty, f.wagaSzczescie),
-    wagaPrawo: pick(p.porzadek_waga_prawo, difficulty, f.wagaPrawo),
-    progT1: pick(p.porzadek_prog_t1, difficulty, f.progT1),
-    progT2: pick(p.porzadek_prog_t2, difficulty, f.progT2),
-    karaProdukcjaT1: pick(p.porzadek_kara_produkcja_t1, difficulty, f.karaProdukcjaT1),
-    karaPieniadzT1: pick(p.porzadek_kara_pieniadz_t1, difficulty, f.karaPieniadzT1),
-    karaNaukaT1: pick(p.porzadek_kara_nauka_t1, difficulty, f.karaNaukaT1),
-    karaKulturaT1: pick(p.porzadek_kara_kultura_t1, difficulty, f.karaKulturaT1),
-    karaWzrostT1: pick(p.porzadek_kara_wzrost_t1, difficulty, f.karaWzrostT1),
-    ryzykoBuntuT1: pick(p.porzadek_ryzyko_buntu_t1, difficulty, f.ryzykoBuntuT1),
-    bonusProdukcjaT2: pick(p.porzadek_bonus_produkcja_t2, difficulty, f.bonusProdukcjaT2),
-    bonusHandelT2: pick(p.porzadek_bonus_handel_t2, difficulty, f.bonusHandelT2)
-  };
-}
-function orderEffects(tier, params = FALLBACK_ORDER_PARAMS) {
-  switch (tier) {
-    case "unrest":
-      return {
-        productionMult: Math.max(0, 1 + params.karaProdukcjaT1),
-        pieniadzMult: Math.max(0, 1 + params.karaPieniadzT1),
-        naukaMult: Math.max(0, 1 + params.karaNaukaT1),
-        kulturaMult: Math.max(0, 1 + params.karaKulturaT1),
-        growthMult: Math.max(0, 1 + params.karaWzrostT1),
-        tradeMult: 1,
-        revoltRisk: clamp01(params.ryzykoBuntuT1)
-      };
-    case "order":
-      return {
-        productionMult: 1 + params.bonusProdukcjaT2,
-        pieniadzMult: 1,
-        naukaMult: 1,
-        kulturaMult: 1,
-        growthMult: 1,
-        tradeMult: 1 + params.bonusHandelT2,
-        revoltRisk: 0
-      };
-    case "neutral":
-    default:
-      return {
-        productionMult: 1,
-        pieniadzMult: 1,
-        naukaMult: 1,
-        kulturaMult: 1,
-        growthMult: 1,
-        tradeMult: 1,
-        revoltRisk: 0
-      };
-  }
-}
-function clamp01(x) {
-  if (!Number.isFinite(x)) return 0;
-  if (x < 0) return 0;
-  if (x > 1) return 1;
-  return x;
-}
 
 // src/game/society-breakdown.ts
-var REVOLT_CRITICAL_POR_PCT = 12;
-var REVOLT_GRACE_TURNS = 3;
-var FALLBACK_REVOLT_PARAMS = {
-  criticalPorPct: REVOLT_CRITICAL_POR_PCT,
-  graceTurns: REVOLT_GRACE_TURNS
-};
-var SZMAX_DEFAULTS = { 1: 14, 2: 20, 3: 28 };
 var PRAWMAX_DEFAULTS = { 1: 50, 2: 75, 3: 100 };
-var SZ_PCT_CAP = 120;
 var PRAW_PCT_CAP = 100;
 function pickOsiedlePopBonus(block, key, pop, difficulty, legacyFlatFallback = 0) {
   const p = Math.floor(pop);
@@ -676,24 +599,6 @@ function osiedlePopLabel(pop) {
   const p = Math.max(1, Math.floor(pop));
   return `Osiedle (${p} mieszk.)`;
 }
-function osiedlePopMax(society, difficulty = "normal") {
-  const prBlock = society?.prawo ?? {};
-  return Math.max(1, Math.floor(
-    pickSociety(prBlock, "prawo_bonus_osada_prog", difficulty, 4)
-  ));
-}
-function isOsiedleRevoltImmune(population, society = null, difficulty = "normal") {
-  const p = Math.floor(population);
-  if (p < 1) return false;
-  return p <= osiedlePopMax(society, difficulty);
-}
-function loadRevoltParams(society, difficulty = "normal") {
-  const block = society?.porzadek ?? {};
-  return {
-    criticalPorPct: pickSociety(block, "porzadek_prog_bunt_skrajny_pct", difficulty, REVOLT_CRITICAL_POR_PCT),
-    graceTurns: pickSociety(block, "porzadek_grace_tur_bunt", difficulty, REVOLT_GRACE_TURNS)
-  };
-}
 function resolvePalacTier(input) {
   const t = input.palacTier;
   if (t === 1 || t === 2 || t === 3) return t;
@@ -708,130 +613,9 @@ function pctFromNetto(netto, max, cap) {
   const m = max > 0 ? max : 1;
   return clampPct(100 * netto / m, cap);
 }
-function szMaxForEra(era) {
-  const e = Number.isFinite(era) ? Math.max(1, Math.floor(era)) : 1;
-  return SZMAX_DEFAULTS[e] ?? SZMAX_DEFAULTS[3] ?? 24;
-}
 function prawMaxForEra(era) {
   const e = Number.isFinite(era) ? Math.max(1, Math.floor(era)) : 1;
   return PRAWMAX_DEFAULTS[e] ?? PRAWMAX_DEFAULTS[3] ?? 24;
-}
-function luksusHappinessBonus(procentLuksus, society, difficulty = "normal") {
-  const sz = society?.szczescie ?? {};
-  const luks = Number.isFinite(procentLuksus) ? procentLuksus : 0;
-  const tiers = [
-    [70, "szczescie_bonus_luksus_70"],
-    [60, "szczescie_bonus_luksus_60"],
-    [50, "szczescie_bonus_luksus_50"],
-    [40, "szczescie_bonus_luksus_40"],
-    [30, "szczescie_bonus_luksus_30"]
-  ];
-  const defaults = {
-    szczescie_bonus_luksus_30: 1,
-    szczescie_bonus_luksus_40: 2,
-    szczescie_bonus_luksus_50: 3,
-    szczescie_bonus_luksus_60: 4,
-    szczescie_bonus_luksus_70: 5
-  };
-  for (const [threshold, key] of tiers) {
-    if (luks >= threshold) {
-      return pickSociety(sz, key, difficulty, defaults[key] ?? 0);
-    }
-  }
-  return 0;
-}
-function podzialLuksus(city) {
-  const p = city ?? DEFAULT_PODZIAL_HANDLU;
-  return p.procentLuksus ?? DEFAULT_PODZIAL_HANDLU.procentLuksus;
-}
-function computeHappinessBreakdown(input, society = null) {
-  const diff = input.difficulty ?? "normal";
-  const szBlock = society?.szczescie ?? {};
-  const lines = [];
-  const pop = Math.max(0, Math.floor(input.population ?? 0));
-  const era = input.era ?? 1;
-  if (input.buildingZadowolenie !== 0) {
-    lines.push({ id: "budynki", label: "Budynki (+1/budynek)", value: input.buildingZadowolenie });
-  }
-  if (input.haKult) {
-    lines.push({ id: "kultura", label: "Kultura dominuj\u0105ca", value: input.haKult });
-  }
-  if (input.haRel) {
-    lines.push({ id: "religia", label: "Religia", value: input.haRel });
-  }
-  if (input.haWealth) {
-    lines.push({ id: "wealth", label: "Wealth (pula luksusu)", value: input.haWealth });
-  }
-  if (input.haCuda) {
-    lines.push({ id: "cuda", label: "Cuda \u015Bwiata", value: input.haCuda });
-  }
-  if (input.hasSwiatynia) {
-    const v = pickSociety(szBlock, "szczescie_swiatynia", diff, 1);
-    if (v) lines.push({ id: "swiatynia", label: "\u015Awi\u0105tynia", value: v });
-  }
-  if (input.hasAmfiteatr) {
-    const v = pickSociety(szBlock, "szczescie_amfiteatr", diff, 1);
-    if (v) lines.push({ id: "amfiteatr", label: "Amfiteatr", value: v });
-  }
-  const progZagesz = pickSociety(szBlock, "szczescie_prog_zag\u0119szczenia", diff, 4);
-  const legacyMale = pop <= progZagesz ? pickSociety(szBlock, "szczescie_male_miasto_bonus", diff, 1) : 0;
-  const osiedleV = pickOsiedlePopBonus(
-    szBlock,
-    "szczescie_bonus_osiedle_pop",
-    pop,
-    diff,
-    legacyMale
-  );
-  if (osiedleV) {
-    lines.push({ id: "osiedle", label: osiedlePopLabel(pop), value: osiedleV });
-  }
-  if (pop > progZagesz) {
-    const karaPer = pickSociety(szBlock, "szczescie_kara_wielkosc_miasta", diff, -1);
-    const excess = pop - progZagesz;
-    const v = karaPer * excess;
-    if (v) lines.push({ id: "zageszczenie", label: `Zag\u0119szczenie (${pop}\u2212${progZagesz})`, value: v });
-  }
-  const luksPct = podzialLuksus(input.podzialHandlu);
-  const luksBonus = luksusHappinessBonus(luksPct, society, diff);
-  if (luksBonus > 0) {
-    lines.push({ id: "niskie_podatki", label: `Niskie podatki (Zamo\u017Cno\u015B\u0107 ${luksPct}%)`, value: luksBonus });
-  }
-  if (input.atWar) {
-    const v = pickSociety(szBlock, "szczescie_kara_wojna", diff, -3);
-    if (v) lines.push({ id: "wojna", label: "Wojna", value: v });
-  }
-  if (input.ownCultureShare !== void 0 && input.ownCultureShare < 0.5) {
-    const v = pickSociety(szBlock, "szczescie_kara_obca_kultura", diff, -1);
-    if (v) lines.push({ id: "obca_kultura", label: "Obca kultura", value: v });
-  }
-  if (input.foreignReligionDominant) {
-    const v = pickSociety(szBlock, "szczescie_kara_obca_religia", diff, -2);
-    if (v) lines.push({ id: "obca_religia", label: "Obca religia", value: v });
-  }
-  if (input.conquestUnstablePenalty) {
-    lines.push({
-      id: "podboj_niestabilny",
-      label: "Podb\xF3j: obca kultura i religia",
-      value: input.conquestUnstablePenalty
-    });
-  }
-  if (input.stolicaEasyBonus) {
-    const v = pickSociety(szBlock, "szczescie_bonus_stolica_easy", diff, 1);
-    if (v) lines.push({ id: "stolica_easy", label: "Stolica imperium (easy)", value: v });
-  }
-  const baseLuks = DEFAULT_PODZIAL_HANDLU.procentLuksus;
-  if (luksPct < baseLuks) {
-    const levels = Math.floor((baseLuks - luksPct) / 10);
-    if (levels > 0) {
-      const per = pickSociety(szBlock, "szczescie_kara_wysokie_podatki", diff, -1);
-      const v = per * levels;
-      if (v) lines.push({ id: "wysokie_podatki", label: "Wysokie podatki", value: v });
-    }
-  }
-  const netto = lines.reduce((s, l) => s + l.value, 0);
-  const szMax = szMaxForEra(era);
-  const szPct = pctFromNetto(netto, szMax, SZ_PCT_CAP);
-  return { lines, netto, szMax, szPct };
 }
 function computeLawBreakdown(input, society = null) {
   const diff = input.difficulty ?? "normal";
@@ -905,158 +689,9 @@ function computeLawBreakdown(input, society = null) {
   const prawPct = pctFromNetto(Math.max(0, netto), prawMax, PRAW_PCT_CAP);
   return { lines, netto, prawMax, prawPct };
 }
-function porPctBand(porPct, criticalPorPct = REVOLT_CRITICAL_POR_PCT) {
-  const p = Number.isFinite(porPct) ? porPct : 0;
-  const crit = Number.isFinite(criticalPorPct) ? criticalPorPct : REVOLT_CRITICAL_POR_PCT;
-  if (p >= 90) return "lad";
-  if (p >= 70) return "spokoj";
-  if (p >= 50) return "napiecie";
-  if (p >= 30) return "niepokoj";
-  if (p >= crit) return "bunt";
-  return "bunt_skrajny";
-}
-var POR_BAND_LABELS = {
-  lad: "\u0141ad",
-  spokoj: "Spok\xF3j",
-  napiecie: "Napi\u0119cie",
-  niepokoj: "Niepok\xF3j",
-  bunt: "Bunt",
-  bunt_skrajny: "Bunt skrajny"
-};
-function tierFromPorPct(porPct) {
-  const p = Number.isFinite(porPct) ? porPct : 0;
-  if (p >= 90) return "order";
-  if (p >= 30) return "neutral";
-  return "unrest";
-}
-function orderEffectsFromPorPct(porPct, params = FALLBACK_ORDER_PARAMS, criticalPorPct = REVOLT_CRITICAL_POR_PCT) {
-  const band = porPctBand(porPct, criticalPorPct);
-  switch (band) {
-    case "lad":
-      return orderEffects("order", params);
-    case "spokoj":
-      return orderEffects("neutral", params);
-    case "napiecie":
-      return {
-        productionMult: 0.95,
-        pieniadzMult: 1,
-        naukaMult: 1,
-        kulturaMult: 1,
-        growthMult: 1,
-        tradeMult: 1,
-        revoltRisk: 0
-      };
-    case "niepokoj":
-      return orderEffects("unrest", params);
-    case "bunt":
-      return {
-        ...orderEffects("unrest", params),
-        revoltRisk: params.ryzykoBuntuT1
-      };
-    case "bunt_skrajny":
-    default: {
-      const base = orderEffects("unrest", params);
-      return {
-        productionMult: Math.max(0, base.productionMult - 0.15),
-        pieniadzMult: Math.max(0, base.pieniadzMult - 0.15),
-        naukaMult: Math.max(0, base.naukaMult - 0.15),
-        kulturaMult: Math.max(0, base.kulturaMult - 0.15),
-        growthMult: base.growthMult,
-        tradeMult: 1,
-        revoltRisk: Math.min(1, params.ryzykoBuntuT1 + 0.03)
-      };
-    }
-  }
-}
-function computePorPct(szPct, prawPct, params = FALLBACK_ORDER_PARAMS) {
-  const wS = params.wagaSzczescie;
-  const wP = params.wagaPrawo;
-  return clampPct(wS * szPct + wP * prawPct, SZ_PCT_CAP);
-}
-function computeOrderPctBreakdown(sz, prawo, params = FALLBACK_ORDER_PARAMS, revolt = FALLBACK_REVOLT_PARAMS) {
-  const porPct = computePorPct(sz.szPct, prawo.prawPct, params);
-  const band = porPctBand(porPct, revolt.criticalPorPct);
-  const tier = tierFromPorPct(porPct);
-  const effects = orderEffectsFromPorPct(porPct, params, revolt.criticalPorPct);
-  return {
-    sz,
-    prawo,
-    wagaSz: params.wagaSzczescie,
-    wagaPraw: params.wagaPrawo,
-    porPct,
-    tier,
-    band,
-    bandLabel: POR_BAND_LABELS[band],
-    effects
-  };
-}
-function evaluateOrderFromBreakdown(happinessInput, lawInput, society, difficulty = "normal") {
-  const params = loadOrderParams(society, difficulty);
-  const revolt = loadRevoltParams(society, difficulty);
-  const sz = computeHappinessBreakdown(happinessInput, society);
-  const prawo = computeLawBreakdown(lawInput, society);
-  return computeOrderPctBreakdown(sz, prawo, params, revolt);
-}
-function updateRevoltGrace(currentGrace, porPct, revolt = FALLBACK_REVOLT_PARAMS) {
-  const crit = revolt.criticalPorPct;
-  const graceTurns = Math.max(0, Math.floor(revolt.graceTurns));
-  if (porPct >= crit) {
-    return {
-      revoltGraceRemaining: null,
-      revoltWarning: false,
-      shouldTriggerRebellion: false,
-      graceTurnsLeft: null
-    };
-  }
-  if (currentGrace === null || currentGrace === void 0) {
-    return {
-      revoltGraceRemaining: graceTurns,
-      revoltWarning: true,
-      shouldTriggerRebellion: false,
-      graceTurnsLeft: graceTurns
-    };
-  }
-  if (currentGrace > 0) {
-    const next = currentGrace - 1;
-    return {
-      revoltGraceRemaining: next,
-      revoltWarning: true,
-      shouldTriggerRebellion: false,
-      graceTurnsLeft: next
-    };
-  }
-  return {
-    revoltGraceRemaining: 0,
-    revoltWarning: true,
-    shouldTriggerRebellion: true,
-    graceTurnsLeft: 0
-  };
-}
-function happinessBucketsFromPct(population, szPct) {
-  const pop = Number.isFinite(population) && population > 0 ? Math.floor(population) : 0;
-  if (pop <= 0) return { zadowoleni: 0, kontentni: 0, niezadowoleni: 0 };
-  const p = Number.isFinite(szPct) ? szPct : 0;
-  const happyFrac = Math.min(1, Math.max(0, (p - 50) / 50));
-  const unhappyFrac = Math.min(1, Math.max(0, (50 - p) / 50));
-  const zadowoleni = Math.floor(pop * happyFrac);
-  const niezadowoleni = Math.floor(pop * unhappyFrac);
-  const kontentni = pop - zadowoleni - niezadowoleni;
-  return { zadowoleni, kontentni, niezadowoleni };
-}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  computeHappinessBreakdown,
-  computeLawBreakdown,
-  computeOrderPctBreakdown,
-  evaluateOrderFromBreakdown,
-  happinessBucketsFromPct,
-  isOsiedleRevoltImmune,
-  loadOrderParams,
-  loadRevoltParams,
-  luksusHappinessBonus,
-  orderEffectsFromPorPct,
-  osiedlePopMax,
-  porPctBand,
-  tierFromPorPct,
-  updateRevoltGrace
+  cityHasPalacLine,
+  cityPalacTier,
+  computeLawBreakdown
 });

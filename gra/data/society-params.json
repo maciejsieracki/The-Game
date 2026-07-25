@@ -818,32 +818,46 @@
       "opis": "Max jednostek liczonych do Prawa (5 → PrawPct≈100%)."
     },
     "prawo_ratusz": {
-      "easy": 8,
-      "normal": 6,
-      "hard": 4,
+      "easy": 35,
+      "normal": 27,
+      "hard": 22,
       "jednostka": "pkt Prawa",
-      "opis": "Bonus Prawa z Ratusza (gdy wpięty w budynki)."
+      "opis": "Bonus Prawa z Ratusza (gdy wpięty w budynki) — 70% wartości Pretorium (decyzja Macieja 2026-07-25, Pytanie 28). UWAGA: Ratusz nie istnieje jeszcze jako budynek w buildings.json — hasRatusz nigdy dziś nie jest true, trwa osobna decyzja o łańcuchu administracji lokalnej."
     },
     "prawo_pretorium": {
-      "easy": 6,
-      "normal": 5,
-      "hard": 3,
+      "easy": 50,
+      "normal": 38,
+      "hard": 31,
       "jednostka": "pkt Prawa",
-      "opis": "Bonus Prawa z Pretorium."
+      "opis": "Bonus Prawa z Pretorium — 70% wartości Pałacu III (decyzja Macieja 2026-07-25, Pytanie 28)."
     },
     "prawo_sad": {
-      "easy": 6,
-      "normal": 5,
-      "hard": 3,
+      "easy": 25,
+      "normal": 19,
+      "hard": 16,
       "jednostka": "pkt Prawa",
-      "opis": "Bonus Prawa z Sądu."
+      "opis": "Bonus Prawa z Sądu — 50% wartości Pretorium (decyzja Macieja 2026-07-25, Pytanie 28)."
     },
     "prawo_palac": {
       "easy": 45,
       "normal": 35,
       "hard": 28,
       "jednostka": "pkt Prawa",
-      "opis": "Pałac — główne źródło Prawa (≈1,75× jednostka garnizonu; PT 2026-07)."
+      "opis": "Pałac I — główne źródło Prawa (≈1,75× jednostka garnizonu; PT 2026-07). Prawo z Pałacu rośnie z tierem (decyzja Macieja 2026-07-25, Pytanie 27=A) — patrz prawo_palac_ii, prawo_palac_iii."
+    },
+    "prawo_palac_ii": {
+      "easy": 58,
+      "normal": 45,
+      "hard": 36,
+      "jednostka": "pkt Prawa",
+      "opis": "Pałac II — Prawo rośnie z tierem Pałacu (decyzja Macieja 2026-07-25, Pytanie 27=A)."
+    },
+    "prawo_palac_iii": {
+      "easy": 71,
+      "normal": 55,
+      "hard": 44,
+      "jednostka": "pkt Prawa",
+      "opis": "Pałac III — Prawo rośnie z tierem Pałacu; Pretorium = 70% tej wartości (decyzja Macieja 2026-07-25, Pytania 27=A i 28)."
     },
     "prawo_kara_brak_garnizonu": {
       "easy": -1,

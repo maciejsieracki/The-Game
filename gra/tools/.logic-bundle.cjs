@@ -21870,32 +21870,46 @@ var society_params_default = {
       opis: "Max jednostek liczonych do Prawa (5 \u2192 PrawPct\u2248100%)."
     },
     prawo_ratusz: {
-      easy: 8,
-      normal: 6,
-      hard: 4,
+      easy: 35,
+      normal: 27,
+      hard: 22,
       jednostka: "pkt Prawa",
-      opis: "Bonus Prawa z Ratusza (gdy wpi\u0119ty w budynki)."
+      opis: "Bonus Prawa z Ratusza (gdy wpi\u0119ty w budynki) \u2014 70% warto\u015Bci Pretorium (decyzja Macieja 2026-07-25, Pytanie 28). UWAGA: Ratusz nie istnieje jeszcze jako budynek w buildings.json \u2014 hasRatusz nigdy dzi\u015B nie jest true, trwa osobna decyzja o \u0142a\u0144cuchu administracji lokalnej."
     },
     prawo_pretorium: {
-      easy: 6,
-      normal: 5,
-      hard: 3,
+      easy: 50,
+      normal: 38,
+      hard: 31,
       jednostka: "pkt Prawa",
-      opis: "Bonus Prawa z Pretorium."
+      opis: "Bonus Prawa z Pretorium \u2014 70% warto\u015Bci Pa\u0142acu III (decyzja Macieja 2026-07-25, Pytanie 28)."
     },
     prawo_sad: {
-      easy: 6,
-      normal: 5,
-      hard: 3,
+      easy: 25,
+      normal: 19,
+      hard: 16,
       jednostka: "pkt Prawa",
-      opis: "Bonus Prawa z S\u0105du."
+      opis: "Bonus Prawa z S\u0105du \u2014 50% warto\u015Bci Pretorium (decyzja Macieja 2026-07-25, Pytanie 28)."
     },
     prawo_palac: {
       easy: 45,
       normal: 35,
       hard: 28,
       jednostka: "pkt Prawa",
-      opis: "Pa\u0142ac \u2014 g\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa (\u22481,75\xD7 jednostka garnizonu; PT 2026-07)."
+      opis: "Pa\u0142ac I \u2014 g\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa (\u22481,75\xD7 jednostka garnizonu; PT 2026-07). Prawo z Pa\u0142acu ro\u015Bnie z tierem (decyzja Macieja 2026-07-25, Pytanie 27=A) \u2014 patrz prawo_palac_ii, prawo_palac_iii."
+    },
+    prawo_palac_ii: {
+      easy: 58,
+      normal: 45,
+      hard: 36,
+      jednostka: "pkt Prawa",
+      opis: "Pa\u0142ac II \u2014 Prawo ro\u015Bnie z tierem Pa\u0142acu (decyzja Macieja 2026-07-25, Pytanie 27=A)."
+    },
+    prawo_palac_iii: {
+      easy: 71,
+      normal: 55,
+      hard: 44,
+      jednostka: "pkt Prawa",
+      opis: "Pa\u0142ac III \u2014 Prawo ro\u015Bnie z tierem Pa\u0142acu; Pretorium = 70% tej warto\u015Bci (decyzja Macieja 2026-07-25, Pytania 27=A i 28)."
     },
     prawo_kara_brak_garnizonu: {
       easy: -1,

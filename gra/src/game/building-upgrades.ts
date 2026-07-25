@@ -135,3 +135,17 @@ export function cityHasPalacLine(builtIds: readonly string[]): boolean {
     || builtIds.includes('palac_ii')
     || builtIds.includes('palac_iii');
 }
+
+/**
+ * Który tier Pałacu stoi w mieście — dla Prawa rosnącego z tierem
+ * (B-PALAC-TIER-PRAWO, decyzja Macieja 2026-07-25, Pytanie 27=A).
+ * Jeśli w danych miasta znalazłoby się kilka wpisów pałacowych naraz
+ * (nie powinno się zdarzyć w normalnym łańcuchu upgrade), liczy się
+ * NAJWYŻSZY tier — nigdy suma. `null` = brak Pałacu w mieście.
+ */
+export function cityPalacTier(builtIds: readonly string[]): 1 | 2 | 3 | null {
+  if (builtIds.includes('palac_iii')) return 3;
+  if (builtIds.includes('palac_ii')) return 2;
+  if (builtIds.includes('palac')) return 1;
+  return null;
+}
