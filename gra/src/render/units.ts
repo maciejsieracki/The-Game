@@ -36,7 +36,6 @@ import type { StackDisplayInfo } from '../game/armyMerge';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
-// Zulu i łucznicy Egipt/Sumer NIE są jeszcze wpięci — czekają na decyzje właściciela.
 import {
   buildWojownikOpus5,
   buildOszczepnikOpus5,
@@ -45,6 +44,7 @@ import {
 } from './kamien-bazowe-opus5';
 import { buildMaceWarriorOpus5, buildInkaJavelineerOpus5 } from './kamien-inka-opus5';
 import { buildBatteringRamOpus5, buildZuluJavelineerOpus5 } from './kamien-zulu-taran-opus5';
+import { buildEgyptianArcherOpus5, buildSumerianArcherOpus5 } from './kamien-lucznicy-opus5';
 // BRĄZ OPUS 5 (Maciej 2026-07-25): taran epoki Brązu na KOŁACH — nie może być
 // tym samym modelem co płozowy taran Kamienia (koło ~3500 p.n.e.).
 import { buildTaranOkutyOpus5 } from './braz-taran-opus5';
@@ -59,8 +59,6 @@ import {
   buildSuperInca as newBuildSuperInca,
 } from './jednostki-p2-inka';
 import {
-  buildEgyptianArcher as newBuildEgyptianArcher,
-  buildSumerianArcher as newBuildSumerianArcher,
   buildAkkadianArcher as newBuildAkkadianArcher,
   buildAssyrianArcher,
 } from './jednostki-p3-dystans';
@@ -1570,12 +1568,14 @@ function buildSumerianSpearman(ownerColor_: number): THREE.Group {
 }
 
 /**
- * Łucznik sumeryjski — composite bow, fleece-trimmed kaunakes, copper conical
- * helm.  Distinct from generic (green) archer via teal robe + copper helm.
+ * Łucznik sumeryjski — Mezopotamia wczesnodynastyczna (kaunakes w 4 poziomach,
+ * narzuta z runa barwionego na terakotę, luk prosty, groty liściaste).
  */
 function buildSumerianArcher(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p3-dystans.ts).
-  return newBuildSumerianArcher(ownerColor_);
+  // KAMIEŃ OPUS 5 (Maciej 2026-07-25): deleguje do wariantu OPUS 5
+  // (kamien-lucznicy-opus5.ts) — zgodność historyczna z epoką Kamienia
+  // (bez luku kompozytowego, bez metalu), rozróżnialny od Egiptu.
+  return buildSumerianArcherOpus5(ownerColor_);
 }
 
 /**
@@ -1783,12 +1783,14 @@ function buildSumerianChariot(ownerColor_: number): THREE.Group {
 // --- EGIPT SPECIALS --------------------------------------------------------
 
 /**
- * Łucznik egipski — composite bow, white linen kilt, blue striped nemes
- * headcloth (distinct from the green generic archer and the Akkadian).
+ * Łucznik egipski — Egipt predynastyczny (luk dwuwypukły / double-convex,
+ * shendyt lniany, pióro strusia w opasce, groty poprzeczne z krzemienia).
  */
 function buildEgyptianArcher(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p3-dystans.ts).
-  return newBuildEgyptianArcher(ownerColor_);
+  // KAMIEŃ OPUS 5 (Maciej 2026-07-25): deleguje do wariantu OPUS 5
+  // (kamien-lucznicy-opus5.ts) — zgodność historyczna z epoką Kamienia
+  // (bez luku kompozytowego, bez nemes, bez metalu).
+  return buildEgyptianArcherOpus5(ownerColor_);
 }
 
 /**

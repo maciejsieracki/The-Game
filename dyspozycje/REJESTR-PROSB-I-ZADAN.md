@@ -265,3 +265,29 @@ mur 200%, Cytadela 300%) → wyzerować, spójnie z decyzją 2A dla murów i Cyt
 ## ZASADA MODELI (Maciej 2026-07-25)
 „Tylko wyjątkowo za moją zgodą możesz użyć Opus 5 albo Fable 5." → **wszystkie prace zlecane subagentom na Sonnet 5**;
 Opus/Fable wyłącznie po wyraźnej zgodzie właściciela.
+
+## R-LINEARYZACJA (2026-07-25) — ZAMKNIĘTE: ×1,10 zlikwidowane
+Odpowiedź Macieja na pytanie 10: „parametry pałacu miały rosnąć o jeden w każdym z wypadków, a nie o dziesięć procent.
+To dziesięć procent do likwidacji, usunięcia, żeby już nie było śladów w grze."
+**Wdrożone przez subagenta Sonnet 5:**
+- `buildingEffectAtLevel(baza, przyrost, poziom) = baza + przyrost × (poziom−1)` — zamiast `baza × 1,10^(poziom−1)`
+- koszt budowy: `kosztBudowy + przyrostKosztu × (poziom−1)`; utrzymanie: `utrzymanie + przyrostUtrzymania × (poziom−1)`
+- usunięty parametr `budynek_mnoznik_poziomu` z `gra/data/miasto-params.json` i stała `BUILDING_LEVEL_FACTOR`
+- `maksPoziom` urealniony w 37 budynkach: epoka 1 → 3, epoka 2 → 2, epoka 3 → 1 (koniec fikcyjnego „10")
+- UI przycina listę `nazwyPoziomow` do realnego `maksPoziom`
+**Skutek liczbowy:** Pałac kultura 5→11 na poziomie 3 (wcześniej compound dawał 5→6). Rodzina `przyrost*` z martwej stała się ŻYWA.
+Bramki: tsc 0, tech-tree 19/19, research 33/33, logic-test 207/208 (1 porażka mapgen — osobne zadanie).
+
+## R-COMBAT-TEST (2026-07-25) — ZAMKNIĘTE: nic do naprawy
+Zlecona naprawa „zepsutego harnessu `counterTyp`" okazała się bezprzedmiotowa — naprawiono go już commitem `496dd53` (2026-07-19/20).
+Test daje **6/6 pass**, exit 0, bez wyjątku. Nieaktualny był zapis w `CLAUDE.md` („~21 porażek logic-test", „combat-test rzuca wyjątkiem")
+— poprawiony. Uwaga na przyszłość: asercje `combat-test.cjs` są sanity-checkami strukturalnymi, NIE porównaniem z oczekiwanymi
+wynikami bitew — test nie wykryje błędów balansu, tylko awarie.
+
+## PYTANIA 18–20 (2026-07-25) — ZADANE, CZEKAJĄ NA ODPOWIEDŹ
+Pełna forma ABC w `dyspozycje/PYTANIA-OTWARTE.md`:
+- **18** profil Pretorium po sprzątnięciu (rek. A: zadowolenie 1→3)
+- **19** utrzymanie budynków — zróżnicowane czy płaskie (rek. A: włączyć dane, flat tylko jako domyślna)
+- **20** Targowisko — co z bonusem handlowym, który nigdy nie działał (rek. A: przenieść do bazowego pieniądza)
+Szkice paczki 2 (21 `odblokowuje`, 22 Wielka Kuźnia, 23 odznaki ulepszeń) — tamże.
+Backlog przyszłościowy: **`dyspozycje/BACKLOG-PRZYSZLOSC.md`**.
