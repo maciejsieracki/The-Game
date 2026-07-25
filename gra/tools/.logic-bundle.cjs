@@ -6963,7 +6963,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     handelNetto * pctPieniadz * ctx.mennicaMnoznik
   );
   const luksusZHandlu = Math.floor(handelNetto * pctLuksus);
-  const naukaBonusFactor = ctx.maBiblioteka ? 1 + params.budynekBibliotekaBonusNauki : 1;
+  const naukaBonusFactor = 1 + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0) + (ctx.maAkademia ? params.budynekAkademiaBonusNauki : 0);
   const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult = ctx.civNaukaMult ?? 1;
   const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
@@ -7554,11 +7554,11 @@ function loadUpkeepParams(raw, difficulty = "normal") {
   };
 }
 function buildingUpkeep(building, level, flatOverride) {
-  if (typeof flatOverride === "number" && Number.isFinite(flatOverride)) {
-    return flatOverride;
-  }
   const lvl = level >= 1 ? level : 1;
-  const base = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
+  if (!Number.isFinite(building.utrzymanie)) {
+    return typeof flatOverride === "number" && Number.isFinite(flatOverride) ? flatOverride : 0;
+  }
+  const base = building.utrzymanie;
   const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
   return Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
 }
@@ -19950,6 +19950,13 @@ var econ_params_default = {
       jednostka: "%",
       opis: "Premia Biblioteki do Nauki lokalnie (+50%). [PT \u2014 do strojenia]"
     },
+    budynek_akademia_bonus_nauki: {
+      easy: 0.1,
+      normal: 0.1,
+      hard: 0.1,
+      jednostka: "%",
+      opis: "ZADANIE 2 (Maciej 2026-07-25, decyzja 4): premia Akademii do Nauki miasta, LOKALNIE, w tej samej konwencji co Biblioteka \u2014 stackuje ADDYTYWNIE z premi\u0105 Biblioteki (obie razem: +60% normal), dotyczy te\u017C w\u0142asnych 6 punkt\xF3w Nauki Akademii (ta sama zasada co przy Bibliotece \u2014 premia liczy si\u0119 PO zsumowaniu plon\xF3w budynk\xF3w). Warto\u015B\u0107 +10% jednolita na wszystkich trzech poziomach trudno\u015Bci (decyzja w\u0142a\u015Bciciela nie r\xF3\u017Cnicowa\u0142a jej wg trudno\u015Bci, w przeciwie\u0144stwie do Biblioteki). Rozbie\u017Cno\u015B\u0107 Biblioteka 50% vs Akademia 10% zg\u0142oszona w\u0142a\u015Bcicielowi do ewentualnego ujednolicenia \u2014 NIE zmienia\u0107 bez decyzji. [PT]"
+    },
     waluta_mnoznik: {
       easy: 2,
       normal: 2,
@@ -19997,7 +20004,7 @@ var econ_params_default = {
       normal: 1,
       hard: 2,
       jednostka: "Pieni\u0105dz/tur\u0119",
-      opis: "Koszt utrzymania ka\u017Cdego budynku (niezr\xF3\u017Cnicowany w v0.1). [PT]"
+      opis: "Domy\u015Blna stawka utrzymania TYLKO dla budynku bez w\u0142asnego wpisu `utrzymanie` w buildings.json. Od 2026-07-25 (decyzja w\u0142a\u015Bciciela 19=A) silnik czyta utrzymanie z danych ka\u017Cdego budynku (0\u20135 Pieni\u0105dz/tur\u0119, zr\xF3\u017Cnicowane per budynek) \u2014 ta warto\u015B\u0107 NIE nadpisuje ich, jest wy\u0142\u0105cznie zabezpieczeniem na wypadek brakuj\u0105cego wpisu. Dzi\u015B wszystkie 39 budynk\xF3w maj\u0105 w\u0142asn\u0105 warto\u015B\u0107, wi\u0119c ta stawka faktycznie si\u0119 nie stosuje. [PT]"
     }
   },
   teren_mapa: {
@@ -23277,6 +23284,7 @@ function buildEconParams(data2, difficulty = "normal") {
     budynekCegielniBonusPracy: num(bu, "budynek_cegielnia_bonus_pracy", 0.25),
     budynekTargowiskoBonusHandlu: num(bu, "budynek_targowisko_bonus_handlu", 0.5),
     budynekBibliotekaBonusNauki: num(bu, "budynek_biblioteka_bonus_nauki", 0.5),
+    budynekAkademiaBonusNauki: num(bu, "budynek_akademia_bonus_nauki", 0.1),
     budynekGarncarniaBonusZywnosci: num(bu, "budynek_garncarnia_bonus_zywnosci_lokalnie", 0.1),
     budynekMennicaMnoznik: num(bu, "budynek_mennica_mnoznik", 1),
     mennicaMnoznikPoWalucie: num(gl, "mennica_mnoznik_po_walucie", 1.5),
@@ -23669,6 +23677,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       maCegielnia: builtIds.includes("cegielnia"),
       maTargowisko: builtIds.includes("targowisko"),
       maBiblioteka: builtIds.includes("biblioteka"),
+      maAkademia: builtIds.includes("akademia"),
       maMennica: builtIds.includes("mennica"),
       // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
       // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).

@@ -786,6 +786,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       maCegielnia: built.includes('cegielnia'),
       maTargowisko: built.includes('targowisko'),
       maBiblioteka: built.includes('biblioteka'),
+      maAkademia: built.includes('akademia'),
       maMennica,
       // Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (jak w silniku).
       mennicaMnoznik: maMennica && walutaOdkryta ? params.mennicaMnoznikPoWalucie : 1,

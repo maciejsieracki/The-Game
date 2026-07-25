@@ -253,6 +253,7 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     budynekCegielniBonusPracy:      num(bu, 'budynek_cegielnia_bonus_pracy', 0.25),
     budynekTargowiskoBonusHandlu:   num(bu, 'budynek_targowisko_bonus_handlu', 0.5),
     budynekBibliotekaBonusNauki:    num(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
+    budynekAkademiaBonusNauki:      num(bu, 'budynek_akademia_bonus_nauki', 0.10),
     budynekGarncarniaBonusZywnosci: num(bu, 'budynek_garncarnia_bonus_zywnosci_lokalnie', 0.10),
     budynekMennicaMnoznik:          num(bu, 'budynek_mennica_mnoznik', 1),
     mennicaMnoznikPoWalucie:        num(gl, 'mennica_mnoznik_po_walucie', 1.5),
@@ -1135,6 +1136,7 @@ export function previewCityEconomy(
       maCegielnia: builtIds.includes('cegielnia'),
       maTargowisko: builtIds.includes('targowisko'),
       maBiblioteka: builtIds.includes('biblioteka'),
+      maAkademia: builtIds.includes('akademia'),
       maMennica: builtIds.includes('mennica'),
       // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
       // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
@@ -1429,6 +1431,7 @@ export function advanceCityEconomy(
       maCegielnia:           builtIds.includes('cegielnia'),
       maTargowisko:          builtIds.includes('targowisko'),
       maBiblioteka:          builtIds.includes('biblioteka'),
+      maAkademia:            builtIds.includes('akademia'),
       maMennica:             builtIds.includes('mennica'),
       // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
       // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).

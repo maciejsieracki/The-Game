@@ -108,6 +108,13 @@ export interface EconParams {
   budynekTargowiskoBonusHandlu:     number;
   budynekBibliotekaBonusNauki:      number;  // Biblioteka -> +Nauka% (master par.2a)
   /**
+   * ZADANIE 2 (Maciej 2026-07-25, decyzja 4): Akademia -> +Nauka% LOKALNIE, w tej
+   * samej konwencji co Biblioteka (stackuje addytywnie: (1 + biblioteka% + akademia%)).
+   * Biblioteka NIE dotknięta -- zostaje przy +50%. Placeholder 10% na wszystkich
+   * poziomach trudności (econ-params budynek_akademia_bonus_nauki).
+   */
+  budynekAkademiaBonusNauki:        number;
+  /**
    * Zadanie 2 (2026-07-23): Garncarnia -> +Zywnosc% LOKALNIE (tylko w miescie gdzie
    * stoi), stackuje addytywnie za kazda sztuke: ×(1 + wartosc × liczbaGarncarni).
    * PLACEHOLDER 10% (econ-params.json budynek_garncarnia_bonus_zywnosci_lokalnie).
@@ -191,6 +198,7 @@ export function loadEconParams(
     budynekCegielniBonusPracy:      read(bu, 'budynek_cegielnia_bonus_pracy', 0.25),
     budynekTargowiskoBonusHandlu:   read(bu, 'budynek_targowisko_bonus_handlu', 0.5),
     budynekBibliotekaBonusNauki:    read(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
+    budynekAkademiaBonusNauki:      read(bu, 'budynek_akademia_bonus_nauki', 0.10),
     budynekGarncarniaBonusZywnosci: read(bu, 'budynek_garncarnia_bonus_zywnosci_lokalnie', 0.10),
     budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),
     mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5),
@@ -549,6 +557,11 @@ export interface CityYieldContext {
   maTargowisko:   boolean;
   /** Biblioteka present -> +Nauka%. Optional so existing ctx literals stay valid. */
   maBiblioteka?:  boolean;
+  /**
+   * ZADANIE 2 (2026-07-25): Akademia present -> +Nauka% (osobny param od Biblioteki,
+   * stackuje addytywnie). Optional so existing ctx literals stay valid.
+   */
+  maAkademia?:    boolean;
   maMennica:      boolean;
   /**
    * Mint (Mennica) trade->money multiplier (from econ-params budynek_mennica_mnoznik).
@@ -800,7 +813,13 @@ export function cityYieldPerTurn(
   const luksusZHandlu   = Math.floor(handelNetto * pctLuksus);
 
   // Biblioteka: +Nauka% applied to the city's local science (master par.2a).
-  const naukaBonusFactor = ctx.maBiblioteka ? (1 + params.budynekBibliotekaBonusNauki) : 1;
+  // Akademia (ZADANIE 2, 2026-07-25, decyzja 4): +Nauka% osobny, stackuje ADDYTYWNIE
+  // z Biblioteka -- (1 + bibliotekaBonus + akademiaBonus), NIE (1+b)*(1+a). Kolejnosc
+  // nie zmieniona: premia dziala PO zsumowaniu plonow budynkow (naukaBudynkow), wiec
+  // mnozy takze wlasne 6 pkt Nauki Akademii -- ten sam efekt co Biblioteka ma dzis.
+  const naukaBonusFactor = 1
+    + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0)
+    + (ctx.maAkademia   ? params.budynekAkademiaBonusNauki   : 0);
   const naukaLokalnaRaw  = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult     = ctx.civNaukaMult ?? 1;
   const naukaLokalna     = civNaukaMult !== 1

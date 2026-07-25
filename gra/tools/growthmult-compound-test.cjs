@@ -71,8 +71,19 @@ near(M.buildingEffectAtLevel(10, 0, 5), 10, 0.001, 'przyrost=0 lvl5 -> 10.0 (fla
 // 2. linear buildingUpkeep (economy-upkeep.ts)
 // ===========================================================================
 console.log('\n--- 7.5 linear buildingUpkeep ---');
-// flat override always wins
-eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 3, 99), 99, 'flat override wins');
+// R-UTRZYMANIE-ZROZNICOWANE (2026-07-25, decyzja wlasciciela 19=A): flatOverride
+// jest DOMYSLNA wartoscia tylko gdy budynek NIE MA wlasnego utrzymania w danych --
+// nie nadpisuje juz istniejacej wartosci per-budynek (stary test kodowal odwrotne,
+// wlasnie naprawione zachowanie -- patrz economy-upkeep.ts buildingUpkeep()).
+eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 3, 99), 7, 'per-building utrzymanie wins over flat override');
+// budynek bez pola utrzymanie (undefined -> not finite) -> flat jest DOMYSLNA wartoscia
+eq(M.buildingUpkeep({ przyrostUtrzymania: 1 }, 3, 99), 99, 'no per-building value -> flat default applies');
+// budynek bez pola utrzymanie i bez flat override -> 0 (bezpieczny fallback)
+eq(M.buildingUpkeep({ przyrostUtrzymania: 1 }, 3), 0, 'no per-building value, no flat default -> 0');
+// utrzymanie=0 (Stela/Pomnik) to WARTOSC, nie "brak wpisu" -- flat NIE nadpisuje zera
+// (0 jest falsy w JS, ale Number.isFinite(0) === true -- to jest wlasnie pulapka
+// ktorej ma unikac buildingUpkeep()).
+eq(M.buildingUpkeep({ utrzymanie: 0, przyrostUtrzymania: 0 }, 1, 99), 0, 'Stela utrzymanie=0 nie jest nadpisywana flat override');
 // linear: floor(baza + przyrost*(level-1))
 // baza=5, lvl1: floor(5) = 5
 eq(M.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 1 }, 1), 5, 'linear baza=5 lvl1 -> 5');

@@ -219,6 +219,13 @@
       "jednostka": "%",
       "opis": "Premia Biblioteki do Nauki lokalnie (+50%). [PT — do strojenia]"
     },
+    "budynek_akademia_bonus_nauki": {
+      "easy": 0.10,
+      "normal": 0.10,
+      "hard": 0.10,
+      "jednostka": "%",
+      "opis": "ZADANIE 2 (Maciej 2026-07-25, decyzja 4): premia Akademii do Nauki miasta, LOKALNIE, w tej samej konwencji co Biblioteka — stackuje ADDYTYWNIE z premią Biblioteki (obie razem: +60% normal), dotyczy też własnych 6 punktów Nauki Akademii (ta sama zasada co przy Bibliotece — premia liczy się PO zsumowaniu plonów budynków). Wartość +10% jednolita na wszystkich trzech poziomach trudności (decyzja właściciela nie różnicowała jej wg trudności, w przeciwieństwie do Biblioteki). Rozbieżność Biblioteka 50% vs Akademia 10% zgłoszona właścicielowi do ewentualnego ujednolicenia — NIE zmieniać bez decyzji. [PT]"
+    },
     "waluta_mnoznik": {
       "easy": 2,
       "normal": 2,

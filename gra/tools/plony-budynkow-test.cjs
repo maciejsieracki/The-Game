@@ -232,9 +232,45 @@ console.log('\n-- G. Zadowolenie z budynkow liczone dokladnie raz --');
 }
 
 // ---------------------------------------------------------------------------
+// H0. ZADANIE 2 (2026-07-25, decyzja 4): premia procentowa Nauki -- Akademia
+//    +10%, Biblioteka nadal +50%, obie razem stackuja ADDYTYWNIE (1+0.5+0.10=1.60).
+//    Uzywa PRAWDZIWYCH budynkow (nauka wylacznie z terenu ROWNINA jest tu 0 --
+//    yldNone.nauka=0 -- wiec caly efekt idzie przez naukaBudynkow, po
+//    zsumowaniu plonow, DOKLADNIE jak opisuje formula w economy.ts).
+// ---------------------------------------------------------------------------
+console.log('\n-- H0. Akademia +10% / Biblioteka +50% do Nauki (ZADANIE 2) --');
+{
+  const bibRec = rec('biblioteka');
+  const akaRec = rec('akademia');
+  const bibNauka = M.buildingValue(bibRec, 1, 'nauka');
+  const akaNauka = M.buildingValue(akaRec, 1, 'nauka');
+  eq(bibNauka, 3, 'sanity: Biblioteka poziom 1 daje 3 Nauki (baza, plaski plon)');
+  eq(akaNauka, 6, 'sanity: Akademia poziom 1 daje 6 Nauki (baza, plaski plon)');
+
+  const cbsBib = M.cityBuildingEntriesFromBuiltIds(['biblioteka'], buildings, bibRec.epokaWejscia, []);
+  const yldBib = M.cityYieldPerTurn(city, worked4, cbsBib, params, makeCtx({ maBiblioteka: true }));
+  eq(yldBib.nauka, Math.floor(bibNauka * 1.5), `Biblioteka: +50% do Nauki -- floor(${bibNauka}*1.5)=${Math.floor(bibNauka * 1.5)} (bez zmian, kontrolne)`);
+
+  const cbsAka = M.cityBuildingEntriesFromBuiltIds(['akademia'], buildings, akaRec.epokaWejscia, []);
+  const yldAka = M.cityYieldPerTurn(city, worked4, cbsAka, params, makeCtx({ maAkademia: true }));
+  const expectedAka = Math.floor(akaNauka * 1.10);
+  eq(yldAka.nauka, expectedAka,
+    `Akademia: +10% do Nauki -- floor(${akaNauka}*1.10)=${expectedAka} (mnozy TAKZE wlasne 6 pkt Nauki -- ten sam efekt co Biblioteka ma dzis z +50%)`);
+  console.log(`   Akademia realnie daje ${yldAka.nauka} Nauki/ture (6 wlasnej produkcji + ${yldAka.nauka - akaNauka} z premii +10% na cala pule -- w tym mieście, bez innych zrodel Nauki).`);
+
+  const cbsOba = M.cityBuildingEntriesFromBuiltIds(['biblioteka', 'akademia'], buildings, 1, []);
+  const yldOba = M.cityYieldPerTurn(city, worked4, cbsOba, params, makeCtx({ maBiblioteka: true, maAkademia: true }));
+  const expectedOba = Math.floor((bibNauka + akaNauka) * 1.60);
+  eq(yldOba.nauka, expectedOba,
+    `Biblioteka + Akademia razem: +60% do Nauki (addytywnie 50%+10%) -- floor((${bibNauka}+${akaNauka})*1.60)=${expectedOba}`);
+}
+
+// ---------------------------------------------------------------------------
 // H. Parytet AI -- advanceCityEconomy musi dawac IDENTYCZNY wynik dla miasta
 //    gracza (ownerId=0) i miasta AI (dowolny inny ownerId), przy tych samych
 //    budynkach/epoce/technologiach -- zero specjalnej sciezki dla ownerId=0.
+//    ZADANIE 2: builtIds obejmuje TERAZ tez 'akademia' -- parytet musi trzymac
+//    sie takze z nowa premia +10% aktywna.
 // ---------------------------------------------------------------------------
 console.log('\n-- H. Parytet AI: advanceCityEconomy identyczny dla gracza i AI --');
 {
@@ -266,7 +302,7 @@ console.log('\n-- H. Parytet AI: advanceCityEconomy identyczny dla gracza i AI -
     return econ.perCity[0];
   }
 
-  const builtIds = ['stolarnia', 'targowisko', 'biblioteka', 'palac'];
+  const builtIds = ['stolarnia', 'targowisko', 'biblioteka', 'palac', 'akademia'];
   const tickPlayer = runTickForOwner(0, builtIds);
   const tickAI     = runTickForOwner(7, builtIds);
 
