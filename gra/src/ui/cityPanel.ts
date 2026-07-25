@@ -160,7 +160,7 @@ import {
   cityPopulationCap,
   sumBuildingHappinessFromBuiltIds,
   cityBuildingEntriesFromBuiltIds,
-  mnoznikHandelPieniadzForCiv,
+  mnoznikHandelPieniadzForCivByDifficulty,
   civEconomyYieldMultipliers,
   type CityYieldContext,
   type BuildingRecord,
@@ -773,15 +773,21 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // (getBuiltBuildingIds/getUnlockedTechs/getCivKey/getCivBonusy używane już np. w buildHandelDetailCard).
     const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
     const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
-    const maMennica = built.includes('mennica');
+    // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie
+    // 70/B) -> bramka Efektu 1 patrzy na CAŁE imperium, nie tylko to miasto.
+    const maMennica = ownerHasMennica(city.ownerId);
     const civKey = cfg.getCivKey?.(city.ownerId);
-    // Efekt 1 SCALONY (2026-07-25): fallback dla per-cyw override jest teraz
-    // params.mennicaMnoznikPoWalucie (easy 2 / normal 1.5 / hard 1), NIE stare
-    // params.walutaMnoznik (NIEUZYWANE, flat x2 na wszystkich trudnosciach) --
+    // Efekt 1 SCALONY (2026-07-25) + pytanie 69 (2026-07-25): mnoznik cywilizacyjny
+    // (civs.json mnoznikHandelPieniadz) SKALOWANY TRUDNOSCIA (+0,5 easy / -0,5 hard).
+    // ZASTĘPUJE dawna plaska regule "2/1.5/1 dla wszystkich" -- ta zostaje TYLKO
+    // jako fallbackScaled (params.mennicaMnoznikPoWalucie, juz per-trudnosc) dla
+    // cywilizacji bez wpisu w civs.json. Musi być IDENTYCZNE ze silnikiem tury
+    // (resolveWalutaMnoznikOverride w turn-economy.ts) — inaczej panel znów
+    // rozjeżdża się z realnym dochodem (rozjazd wykryty i naprawiony 2026-07-25).
     // bramka maMennica&&walutaOdkryta w cityYieldPerTurn i tak decyduje CZY ten
     // mnoznik w ogole zadziala, wiec ustawienie go tutaj nie omija Mennicy.
     const walutaMnoznikOverride = walutaOdkryta && civKey
-      ? mnoznikHandelPieniadzForCiv(civKey, cfg.data?.civs, params.mennicaMnoznikPoWalucie)
+      ? mnoznikHandelPieniadzForCivByDifficulty(civKey, cfg.data?.civs, cfg.difficulty ?? 'normal', params.mennicaMnoznikPoWalucie)
       : undefined;
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
@@ -858,6 +864,24 @@ function ownerHasSpichlerz(ownerId: number): boolean {
     if (c.ownerId !== ownerId) continue;
     const ids = cfg.getBuiltBuildingIds?.(c.id) ?? [];
     if (ids.includes('spichlerz')) return true;
+  }
+  return false;
+}
+
+/**
+ * Czy właściciel ma Mennicę zbudowaną GDZIEKOLWIEK w imperium (nie tylko w
+ * tym mieście) -- Maciej 2026-07-25, pytanie 71/C: Mennica stoi wyłącznie w
+ * stolicy (pytanie 70/B), więc bramka Efektu 1 (Waluta+Mennica) musi patrzeć
+ * na całe imperium, inaczej żadne miasto poza stolicą nie dostałoby mnożnika.
+ * Spójne z turn-economy.ts ownersWithMennica() (ten sam union, liczony po
+ * stronie panelu zamiast silnika tury).
+ */
+function ownerHasMennica(ownerId: number): boolean {
+  const cities = cfg.getCities?.() ?? [];
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    const ids = cfg.getBuiltBuildingIds?.(c.id) ?? [];
+    if (ids.includes('mennica')) return true;
   }
   return false;
 }
@@ -7206,13 +7230,22 @@ function buildHandelDetailCard(
   const params = data ? buildEconParams(data, cfg.difficulty ?? 'normal') : null;
   const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
   const maTargowisko = built.includes('targowisko');
-  const maMennica = built.includes('mennica');
+  // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie
+  // 70/B) -> bramka Efektu 1 patrzy na CAŁE imperium, nie tylko to miasto.
+  const maMennica = ownerHasMennica(city.ownerId);
   const maBiblioteka = cityHasBibliotekaLine(built);
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
   const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
-  // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (turn-economy.ts).
+  // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana (gdziekolwiek w imperium)
+  // ORAZ Waluta odkryta (turn-economy.ts).
   const mennicaAktywna = maMennica && walutaOdkryta;
-  const mennicaMnoznikTxt = params ? `×${params.mennicaMnoznikPoWalucie}` : '×?';
+  // Pytanie 69 (2026-07-25): tekst pokazuje mnoznik CYWILIZACYJNY skalowany
+  // trudnoscia (ten sam co realnie liczy silnik), nie plaski params.mennicaMnoznikPoWalucie.
+  const civKeyForMennicaTxt = cfg.getCivKey?.(city.ownerId);
+  const mennicaMnoznikVal = params
+    ? mnoznikHandelPieniadzForCivByDifficulty(civKeyForMennicaTxt, cfg.data?.civs, cfg.difficulty ?? 'normal', params.mennicaMnoznikPoWalucie)
+    : undefined;
+  const mennicaMnoznikTxt = mennicaMnoznikVal !== undefined ? `×${mennicaMnoznikVal}` : '×?';
   const est = estimateHandelChips(view, split);
 
   const card = el('div', 'detail-card');

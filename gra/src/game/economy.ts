@@ -582,11 +582,16 @@ export interface CityYieldContext {
    */
   maAkademia?:    boolean;
   /**
-   * Mennica (Mint) zbudowana w TYM mieście. Sam ten flag nic nie mnoży -- jest
-   * jednym z DWÓCH warunków (obok walutaOdkryta) bramki Efektu 1 (patrz niżej).
-   * Dawne osobne pole `mennicaMnoznik` (mnożnik TYLKO na strumień Pieniądza)
-   * zostało USUNIĘTE 2026-07-25 (decyzja Maciej) -- efekt jest teraz jeden,
-   * scalony w Efekcie 1 poniżej, i wymaga Mennicy + Waluty razem.
+   * Mennica (Mint) zbudowana GDZIEKOLWIEK W IMPERIUM tego właściciela (NIE
+   * "w tym mieście" -- zmiana Maciej 2026-07-25, pytanie 71/C: "moneta bita w
+   * jednym miejscu obsługuje obieg całego państwa", w parze z decyzją B, że
+   * Mennica stoi WYŁĄCZNIE w stolicy). Wołający (turn-economy.ts, cityPanel.ts)
+   * liczy to jako union budynków po WSZYSTKICH miastach tego ownera -- economy.ts
+   * samo nie zna innych miast, dostaje gotowy boolean. Sam ten flag nic nie
+   * mnoży -- jest jednym z DWÓCH warunków (obok walutaOdkryta) bramki Efektu 1
+   * (patrz niżej). Dawne osobne pole `mennicaMnoznik` (mnożnik TYLKO na strumień
+   * Pieniądza) zostało USUNIĘTE 2026-07-25 (decyzja Maciej) -- efekt jest teraz
+   * jeden, scalony w Efekcie 1 poniżej, i wymaga Mennicy + Waluty razem.
    */
   maMennica:      boolean;
   /**
@@ -670,6 +675,71 @@ export function mnoznikHandelPieniadzForCiv(
     return fallback;
   }
   return fallback;
+}
+
+/**
+ * Raw civs.json mnoznikHandelPieniadz lookup that DISTINGUISHES "civ not found /
+ * field missing" (returns undefined) from "civ found with a valid value" -- used
+ * by mnoznikHandelPieniadzForCivByDifficulty() below to decide whether the
+ * difficulty delta should apply (only to a REAL per-civ value, never to the
+ * already-difficulty-scaled fallback).
+ */
+function mnoznikHandelPieniadzRawForCiv(
+  civKey: string | null | undefined,
+  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+): number | undefined {
+  if (!civKey || !civs?.cywilizacje?.length) return undefined;
+  const key = civKey.toLowerCase();
+  for (const row of civs.cywilizacje) {
+    if (!row) continue;
+    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja]
+      .filter((s): s is string => typeof s === 'string' && s.length > 0)
+      .map(s => s.toLowerCase());
+    if (!ids.includes(key)) continue;
+    const v = row.mnoznikHandelPieniadz;
+    return (typeof v === 'number' && Number.isFinite(v) && v > 0) ? v : undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Difficulty delta applied on top of the civs.json mnoznikHandelPieniadz value
+ * (decyzja Maciej 2026-07-25, pytanie 69 -- "mnoznik cywilizacyjny skalowany
+ * poziomem trudnosci"): "Zostawmy go jako obowiazujacy dla poziomu normal.
+ * Wersja easy bedzie miala pol punktu wiecej [...] wersja hard pol punktu
+ * mniej." The civs.json number IS the normal-difficulty value; we NEVER edit
+ * civs.json itself -- the +0.5 / -0.5 scaling lives only here.
+ */
+const MNOZNIK_HANDEL_TRUDNOSC_DELTA: Record<Difficulty, number> = {
+  easy:   0.5,
+  normal: 0,
+  hard:   -0.5,
+};
+
+/**
+ * Per-nacja mnoznik Handel->Pieniadz SKALOWANY TRUDNOSCIA (Maciej 2026-07-25,
+ * pytanie 69). civs.json niesie wartosc dla poziomu normal (1.7-2.6); tutaj
+ * doliczamy +0.5 (easy) / -0.5 (hard). Zastepuje dawna regule "2/1.5/1 dla
+ * wszystkich cywilizacji" -- ta zostaje TYLKO jako `fallbackScaled` (przekaz
+ * przez wolajacego z params.mennicaMnoznikPoWalucie, ktory JUZ niesie
+ * poprawna skale per trudnosc w econ-params.json), dla cywilizacji BEZ wpisu
+ * w civs.json ("cywilizacja bez wpisu dostaje wartosc zapasowa, tez
+ * skalowana trudnoscia" -- spelnione, bo fallbackScaled juz jest per-trudnosc).
+ *
+ * WAZNE: `fallbackScaled` NIE dostaje drugiej warstwy delty tutaj -- gdyby
+ * dolozyc +0.5/-0.5 na juz-przeskalowanej wartosci (np. easy=2.0), wyszloby
+ * podwojne skalowanie (2.5 zamiast 2.0). Delta dziala WYLACZNIE na surowej
+ * wartosci civs.json (poziom normal).
+ */
+export function mnoznikHandelPieniadzForCivByDifficulty(
+  civKey: string | null | undefined,
+  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+  difficulty: Difficulty,
+  fallbackScaled: number,
+): number {
+  const raw = mnoznikHandelPieniadzRawForCiv(civKey, civs);
+  if (raw === undefined) return fallbackScaled;
+  return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
 }
 
 /** Bonusy ekonomii z wiersza cywilizacji (civs.json). */

@@ -52,6 +52,7 @@ import {
   populationGrowth,
   civBonusyForCivKey,
   civEconomyYieldMultipliers,
+  mnoznikHandelPieniadzForCivByDifficulty,
   tileYield,
   type EconParams,
   type EconomyCity,
@@ -179,17 +180,24 @@ function civDisplayNameForKey(
   return null;
 }
 
-/** B-KULT-REL-Q3A — mnożnik handlu z religii (gate: Waluta + Mennica + dominująca wiara). */
+/**
+ * B-KULT-REL-Q3A — mnożnik handlu z religii (gate: Waluta + Mennica + dominująca
+ * wiara). Maciej 2026-07-25 (pytanie 71/C): Mennica stoi wyłącznie w stolicy,
+ * więc bramka "Mennica" tutaj musi być IMPERIUM-WIDE (czy właściciel ma Mennicę
+ * GDZIEKOLWIEK), nie "w tym mieście" — spójnie z resztą Efektu 1 (patrz
+ * economy.ts CityYieldContext.maMennica). Wołający liczy union po miastach raz
+ * per tick i przekazuje gotowy boolean.
+ */
 function religionTradeWalutaOverride(
   cityReligion: ReligionState | undefined,
   ownerCivKey: string | undefined,
-  builtIds: readonly string[],
+  maMennicaEmpireWide: boolean,
   walutaOdkryta: boolean,
   civs: GameData['civs'],
   societyParams: GameData['societyParams'],
   difficulty: Difficulty,
 ): number | undefined {
-  if (!walutaOdkryta || !builtIds.includes('mennica') || !cityReligion) return undefined;
+  if (!walutaOdkryta || !maMennicaEmpireWide || !cityReligion) return undefined;
   const civName = civDisplayNameForKey(ownerCivKey, civs);
   if (!civName) return undefined;
   const rp = loadReligionParams(societyParams, difficulty);
@@ -197,6 +205,48 @@ function religionTradeWalutaOverride(
     cityReligion, civName, civs as unknown as import('./culture-religion').CivsDataLike, rp, true,
   );
   return trade.applied ? trade.multiplier : undefined;
+}
+
+/**
+ * Właściciele (ownerId), którzy mają Mennicę zbudowaną w KTÓRYMKOLWIEK ze swoich
+ * miast -- liczone RAZ na tick (Maciej 2026-07-25, pytanie 71/C: skoro Mennica
+ * stoi wyłącznie w stolicy, bramka Efektu 1 musi sprawdzać całe imperium, nie
+ * "to miasto", inaczej żadne miasto poza stolicą nie dostałoby mnożnika).
+ */
+function ownersWithMennica(
+  cities: ReadonlyArray<{ id: string; ownerId: number }>,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+): Set<number> {
+  const owners = new Set<number>();
+  for (const c of cities) {
+    if ((builtByCity.get(c.id) ?? []).includes('mennica')) owners.add(c.ownerId);
+  }
+  return owners;
+}
+
+/**
+ * Wartość Efektu 1 (mnożnik Handel netto) gdy bramka jest otwarta: override z
+ * religii (dominująca wiara, patrz religionTradeWalutaOverride) ma pierwszeństwo;
+ * w przeciwnym razie mnożnik CYWILIZACYJNY skalowany trudnością (Maciej
+ * 2026-07-25, pytanie 69) -- ZASTĘPUJE dawną płaską regułę "2/1.5/1 dla
+ * wszystkich", która żyje teraz tylko jako `fallbackScaled` dla cywilizacji bez
+ * wpisu w civs.json.
+ */
+function resolveWalutaMnoznikOverride(
+  cityReligion: ReligionState | undefined,
+  ownerCivKey: string | undefined,
+  maMennicaEmpireWide: boolean,
+  walutaOdkryta: boolean,
+  civs: GameData['civs'],
+  societyParams: GameData['societyParams'],
+  difficulty: Difficulty,
+  fallbackScaled: number,
+): number | undefined {
+  const religionOverride = religionTradeWalutaOverride(
+    cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty,
+  );
+  if (religionOverride !== undefined) return religionOverride;
+  return mnoznikHandelPieniadzForCivByDifficulty(ownerCivKey, civs, difficulty, fallbackScaled);
 }
 
 // ---------------------------------------------------------------------------
@@ -1090,6 +1140,10 @@ export function previewCityEconomy(
 
   const perCity: CityEconomyTick[] = [];
   const capitalSeen = new Set<number>();
+  // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie 70/B)
+  // -> bramka Efektu 1 musi patrzeć na CAŁE imperium ownera, nie tylko to miasto.
+  // Liczone RAZ na tick, nie per-city.
+  const mennicaOwners = ownersWithMennica(cities, builtByCity);
 
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
@@ -1115,14 +1169,16 @@ export function previewCityEconomy(
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const walutaMnoznikOverride = religionTradeWalutaOverride(
+    const maMennicaEmpireWide = mennicaOwners.has(city.ownerId);
+    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
-      builtIds,
+      maMennicaEmpireWide,
       walutaOdkryta,
       data.civs,
       data.societyParams,
       difficulty,
+      params.mennicaMnoznikPoWalucie,
     );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
@@ -1140,9 +1196,11 @@ export function previewCityEconomy(
       // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
       // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
       // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
-      // przez params.mennicaMnoznikPoWalucie. Dawne osobne pole `mennicaMnoznik`
-      // (mnoznik TYLKO na strumien Pieniadza) zostalo usuniete -- efekt jest jeden.
-      maMennica: builtIds.includes('mennica'),
+      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
+      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
+      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B).
+      maMennica: maMennicaEmpireWide,
       walutaOdkryta,
       walutaMnoznikOverride,
       civHandelMult,
@@ -1364,6 +1422,10 @@ export function advanceCityEconomy(
 
   // Track the first city seen per owner -> treat as that owner's capital.
   const capitalSeen = new Set<number>();
+  // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie 70/B)
+  // -> bramka Efektu 1 musi patrzeć na CAŁE imperium ownera, nie tylko to miasto.
+  // Liczone RAZ na tick, nie per-city.
+  const mennicaOwners = ownersWithMennica(cities, builtByCity);
 
   const result: EconomyTickResult = {
     perCity:        [],
@@ -1410,14 +1472,16 @@ export function advanceCityEconomy(
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const walutaMnoznikOverride = religionTradeWalutaOverride(
+    const maMennicaEmpireWide = mennicaOwners.has(city.ownerId);
+    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
-      builtIds,
+      maMennicaEmpireWide,
       walutaOdkryta,
       data.civs,
       data.societyParams,
       difficulty,
+      params.mennicaMnoznikPoWalucie,
     );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
@@ -1435,11 +1499,13 @@ export function advanceCityEconomy(
       // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
       // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
       // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
-      // przez params.mennicaMnoznikPoWalucie. Dawne osobne pole `mennicaMnoznik`
-      // (mnoznik TYLKO na strumien Pieniadza) zostalo usuniete -- efekt jest jeden.
-      maMennica:             builtIds.includes('mennica'),
+      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
+      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
+      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B).
+      maMennica:             maMennicaEmpireWide,
       walutaOdkryta,         // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
-      walutaMnoznikOverride, // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
+      walutaMnoznikOverride, // per-cyw skalowany trudnoscia (lub override religii)
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
       liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych, // Handel E3: +5%/trasa

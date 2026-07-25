@@ -743,9 +743,10 @@
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "Dostęp do Złota (Kopalnia złota gdziekolwiek w imperium) + wybudowane Targowisko w tym mieście",
-    "uwagi": "T-TECH-6: mnoznik handlu→pieniądz (economy.ts). Maciej 2026-07-25: bramka złota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mieście (CITY_BUILDING_PREREQ, decyzja 54c=A).",
+    "wymagania": "Tylko w stolicy. Dostęp do Złota (Kopalnia złota gdziekolwiek w imperium) + wybudowane Targowisko w stolicy",
+    "uwagi": "T-TECH-6: mnoznik handlu→pieniądz (economy.ts), imperium-wide gdy Waluta odkryta (pytanie 71/C). Maciej 2026-07-25: bramka złota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mieście (CITY_BUILDING_PREREQ, decyzja 54c=A). Pytanie 70/B (2026-07-25): Mennica WYŁĄCZNIE w stolicy, jedna sztuka na cywilizację (wynika automatycznie z 'lokalizacja':'stolica' -- jedna stolica na cywilizację). Stare zapisy z Mennicą w mieście regionalnym NIE są cofane -- budynek zostaje, bramka dotyczy tylko budowania NOWYCH.",
     "techUnlock": "Waluta",
+    "lokalizacja": "stolica",
     "koszt_surowce": {
       "drewno": 6,
       "kamien": 8
