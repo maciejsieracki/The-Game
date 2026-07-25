@@ -184,57 +184,47 @@ for (const [label, p] of [['easy', pEasy], ['normal', pNormal], ['hard', pHard]]
 // ---------------------------------------------------------------------------
 // 7. PARYTET AI: identyczny wynik dla dwoch roznych ownerId, przez pelny silnik
 //    advanceCityEconomy (nie tylko cityYieldPerTurn) -- dowod braku galezi po ownerId.
+//    UWAGA: geografia (terrain wokol miasta) legalnie wplywa na dochod, wiec zeby
+//    izolowac WYLACZNIE efekt ownerId, uzywamy TEGO SAMEGO miasta (identyczne q/r,
+//    identyczne worked tiles) w DWOCH oddzielnych wywolaniach advanceCityEconomy --
+//    raz oznaczonego ownerId=0 (gracz), raz ownerId=7 (AI). Roznica w wyniku moglaby
+//    powstac WYLACZNIE gdyby kod mial galaz po ownerId -- nie ma.
 // ---------------------------------------------------------------------------
-console.log('\n-- 7. PARYTET AI: advanceCityEconomy, ownerId=0 (gracz) vs ownerId=7 (AI) --');
+console.log('\n-- 7. PARYTET AI: advanceCityEconomy, ownerId=0 (gracz) vs ownerId=7 (AI), to samo miasto --');
 const gameData = { civs, econParams: econParamsRaw, societyParams, buildings, units, tech };
 const map = M.generateMap(30, 30, 4242, 'kontynenty');
-const landHexes = [];
+let baseCityForParity = null;
 for (const h of Object.values(map.hexes)) {
   const c = { q: h.coords.q, r: h.coords.r };
-  if (M.canFoundCity(c.q, c.r, [], map).ok) landHexes.push(c);
+  if (M.canFoundCity(c.q, c.r, [], map).ok) {
+    const city = M.foundCityAt(c.q, c.r, 0, [], map, 'Test');
+    if (city) { baseCityForParity = city; break; }
+  }
 }
-const cities = [];
-const cPlayer = (() => {
-  for (const c of landHexes) {
-    const city = M.foundCityAt(c.q, c.r, 0, cities, map, 'Gracz');
-    if (city) return city;
-  }
-  return null;
-})();
-if (cPlayer) cities.push(cPlayer);
-// Szukaj drugiego miejsca odpowiednio daleko od cPlayer (MIN_CITY_DISTANCE w cities.ts) --
-// foundCityAt sam odrzuci kandydata za blisko (canFoundCity), wiec probujemy po kolei.
-const cAI = cPlayer && (() => {
-  for (const c of landHexes) {
-    const city = M.foundCityAt(c.q, c.r, 7, cities, map, 'AI');
-    if (city) return city;
-  }
-  return null;
-})();
-if (cAI) cities.push(cAI);
-if (!cPlayer || !cAI) {
-  console.error('FAIL: brak 2 osobnych pol ladu (odleglych od siebie) do zalozenia miast testowych parytetu AI');
+if (!baseCityForParity) {
+  console.error('FAIL: brak pola ladu do zalozenia miasta testowego parytetu AI');
   failed++;
 } else {
-  const builtByCity = new Map([[cPlayer.id, ['mennica']], [cAI.id, ['mennica']]]);
+  const builtByCity = new Map([[baseCityForParity.id, ['mennica']]]);
   const playerZbadane = new Set(['Waluta']);
-  // Brak resolveOwnerTech/resolveOwnerEra -> silnik uzywa TEGO SAMEGO playerZbadane/
-  // playerEra dla KAZDEGO ownerId (patrz turn-economy.ts linia ~1112: fallback bez
-  // rozgalezienia po ownerId) -- dokladnie to co ma byc sprawdzone: zero specjalnej
-  // sciezki dla ownerId=0 vs AI.
-  const econ = M.advanceCityEconomy(
-    cities, map, gameData, 'normal', [], new Map(), builtByCity, 1, playerZbadane, new Map(), new Map(),
-  );
-  const tickPlayer = econ.perCity.find(t => t.cityId === cPlayer.id);
-  const tickAI = econ.perCity.find(t => t.cityId === cAI.id);
-  assert(!!tickPlayer && !!tickAI, 'parytet AI: oba miasta maja wpis w perCity');
+  function tickFor(ownerId) {
+    const city = { ...baseCityForParity, ownerId };
+    const econ = M.advanceCityEconomy(
+      [city], map, gameData, 'normal', [], new Map(), builtByCity, 1, playerZbadane, new Map(), new Map(),
+    );
+    return econ.perCity.find(t => t.cityId === city.id);
+  }
+  const tickPlayer = tickFor(0);
+  const tickAI = tickFor(7);
+  assert(!!tickPlayer && !!tickAI, 'parytet AI: oba przebiegi zwracaja wpis perCity');
   if (tickPlayer && tickAI) {
     eq(tickAI.pieniadzBrutto, tickPlayer.pieniadzBrutto,
-      `parytet AI: pieniadzBrutto identyczny dla ownerId=0 i ownerId=7 (${tickPlayer.pieniadzBrutto})`);
+      `parytet AI: pieniadzBrutto identyczny dla ownerId=0 i ownerId=7, to samo miasto (${tickPlayer.pieniadzBrutto})`);
     eq(tickAI.nauka, tickPlayer.nauka,
       `parytet AI: nauka identyczna dla ownerId=0 i ownerId=7 (${tickPlayer.nauka})`);
     eq(tickAI.luksus, tickPlayer.luksus,
       `parytet AI: luksus identyczny dla ownerId=0 i ownerId=7 (${tickPlayer.luksus})`);
+    assert(tickPlayer.pieniadzBrutto > 0, `parytet AI: sanity -- pieniadzBrutto > 0 (Mennica+Waluta aktywne, got ${tickPlayer.pieniadzBrutto})`);
   }
 }
 
