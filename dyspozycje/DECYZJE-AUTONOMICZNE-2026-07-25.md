@@ -40,13 +40,13 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 - **A — AI bez kolejki** ✅ WYBRANE (zostaje heurystyka co turę — AI i tak nigdy nie stoi). *Za:* zero ryzyka regresji balansu AI. B/C — formalna kolejka AI (martwy kod / ryzyko).
 
 ## C-EDGEPAN-Q1 — kiedy działa przesuwanie mapy przy krawędzi
-- **A — Tylko gdy zaznaczona jednostka** ✅ WYBRANE (dokładnie jak opisałeś). *Za:* nie porywa mapy przy biernym oglądaniu. *Przeciw:* niespójne z „zawsze aktywnym" w 4X. B — zawsze · C — też w trybie budowy. (Przełączenie = 1 linia.)
+- **B — Zawsze aktywny** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25, zmiana z mojego A). Edge-pan działa w każdej chwili (konwencja 4X). DO PRZERÓBKI: predykat `edgePanActive` w `cameraControllerOpts()` (main.ts) → true zawsze. A — tylko gdy zaznaczona jednostka · C — też w trybie budowy.
 
 ## C-RANK-Q1 — prezentacja nieodkrytych w rankingu Mocy
 - **B — „Jesteś X. z N cywilizacji (uwzględnia nieodkryte)"** ✅ WYBRANE (bez osobnych wierszy „???"). *Za:* dokładnie o to prosiłeś; zero info-leaku o nieodkrytych. A — pełna lista z „???" · C — zbiorczy „+K nieodkrytych".
 
 ## C-SENTRY-Q1 — zakres Sentry (czuwanie)
-- **B — Proste „uśpij/obudź" ręcznie** ✅ WYBRANE (bez auto-budzenia na wroga). *Za:* bez ryzykownej logiki auto-wake w silniku tur/AI. A — pełne auto-budzenie na wroga w zasięgu wzroku (większa mechanika) · C — tylko wizualny znacznik. **Ikona Sentry = półksiężyc** (do ewentualnej korekty Design).
+- **A — Pełne auto-budzenie na wroga** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25, zmiana z mojego B). Jednostka śpi/pomija tury i BUDZI SIĘ automatycznie, gdy wróg wejdzie w pole widzenia. DO ZBUDOWANIA: nowa logika w silniku tur (wykrywanie wroga w zasięgu wzroku jednostki + wybudzenie) + parytet AI. Obecnie wdrożone B (ręczne) — trzeba dobudować auto-wake. B — proste uśpij/obudź · C — tylko znacznik. **Ikona = półksiężyc.**
 
 ## C-BITWA-WLADCA — imię władcy gdy obie strony to ta sama cywilizacja
 **Sytuacja:** Portret/ikona władcy naprawione (było zawsze „Minos/grecy" — teraz poprawnie per cywilizacja). ALE gdy dwaj gracze to ta sama kultura (np. dwóch Greków / Grek vs greckie miasto-państwo), dzielą jedno imię władcy per cywilizacja+epoka („Minos" po obu stronach).
