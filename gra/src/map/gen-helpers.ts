@@ -2349,12 +2349,13 @@ export function growMountainRanges(
   // "relief... jest już finalny" zaraz po tym wywołaniu), więc łapie też duże skupiska
   // powstałe ze zrośnięcia z floor-reliefem ensureReliefGridCoverage (wołane PRZED tą
   // funkcją), nie tylko z tego, co dołożyła sama growMountainRanges.
-  capMountainRangeClusterSize(
-    hexes, scratch, TerenBazowy.Gory, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
-  );
-  capMountainRangeClusterSize(
-    hexes, scratch, TerenBazowy.Wzgorza, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
-  );
+  // EXPERIMENT: disabled temporarily
+  // capMountainRangeClusterSize(
+  //   hexes, scratch, TerenBazowy.Gory, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  // );
+  // capMountainRangeClusterSize(
+  //   hexes, scratch, TerenBazowy.Wzgorza, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  // );
 
   return addedByThisRun.length;
 }
