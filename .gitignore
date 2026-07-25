@@ -49,7 +49,5 @@ desktop.ini
 *~
 .claude/worktrees/
 
-# tymczasowe artefakty narzedziowe
+# tymczasowe artefakty narzedziowe (bundle testowe sa juz sledzone, wiec ich nie ignorujemy)
 gra/tmp-*.ts
-gra/tools/.*-bundle.cjs
-gra/tools/.*-entry.ts
