@@ -1,5 +1,7 @@
 import type { CivBonusEntry } from './civ-bonuses';
 import { applyMultiplier, civCombatStatMultipliers } from './civ-bonuses';
+import type { BuildingCombatBonus } from './unit-building-bonuses';
+import { mergeBuildingBonusIntoStatMultipliers } from './unit-building-bonuses';
 import combatParamsRaw from '../../data/combat-params.json';
 
 /** Panel-C: stałe walki (export-c.py → combat-params.json). */
@@ -283,6 +285,19 @@ export interface ResolveCombatOpts {
 
   /** RDY-01: bonusy cyw broniacego. */
   defenderCivBonusy?: readonly CivBonusEntry[];
+
+  /**
+   * Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts): bonus
+   * Pancerza (pancerz) i pozostalych statow bojowych (other) ATAKUJACEGO,
+   * jako ulamki (0.15 = +15%), wg NAJLEPSZEGO miasta jednostka kiedykolwiek
+   * odwiedzila. Domyslnie brak (0/0) -- bezpieczne dla wszystkich istniejacych
+   * wywolan. Scalane w te sama strukture mnoznikow co bonusy cyw (patrz
+   * mergeBuildingBonusIntoStatMultipliers).
+   */
+  attackerBuildingBonus?: BuildingCombatBonus;
+
+  /** Jak wyzej, dla broniacego. */
+  defenderBuildingBonus?: BuildingCombatBonus;
 }
 
 // ---------------------------------------------------------------------------
@@ -601,16 +616,22 @@ export function resolveCombat(
   const log: string[] = [];
   const routed: ('attacker' | 'defender')[] = [];
 
-  const atkBaseMods = civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
-    side: 'attacker',
-    terrain: defenderTerrain,
-    isChargeRound: false,
-  });
-  const defBaseMods = civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
-    side: 'defender',
-    terrain: defenderTerrain,
-    isChargeRound: false,
-  });
+  const atkBaseMods = mergeBuildingBonusIntoStatMultipliers(
+    civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
+      side: 'attacker',
+      terrain: defenderTerrain,
+      isChargeRound: false,
+    }),
+    opts.attackerBuildingBonus,
+  );
+  const defBaseMods = mergeBuildingBonusIntoStatMultipliers(
+    civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
+      side: 'defender',
+      terrain: defenderTerrain,
+      isChargeRound: false,
+    }),
+    opts.defenderBuildingBonus,
+  );
 
   const atkMelee0 = applyMultiplier(attacker.meleeAttack, atkBaseMods.atk);
   const atkObrona0 = applyMultiplier(attacker.meleeDefence, atkBaseMods.obrona);
@@ -757,16 +778,22 @@ export function resolveCombat(
       const isCharge = meleeRound === 1 && !defBracing;
       const phaseLabel = isCharge ? 'Szarza' : 'Zwarcie';
 
-      const atkRoundMods = civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
-        side: 'attacker',
-        terrain: defenderTerrain,
-        isChargeRound: isCharge,
-      });
-      const defRoundMods = civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
-        side: 'defender',
-        terrain: defenderTerrain,
-        isChargeRound: isCharge,
-      });
+      const atkRoundMods = mergeBuildingBonusIntoStatMultipliers(
+        civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
+          side: 'attacker',
+          terrain: defenderTerrain,
+          isChargeRound: isCharge,
+        }),
+        opts.attackerBuildingBonus,
+      );
+      const defRoundMods = mergeBuildingBonusIntoStatMultipliers(
+        civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
+          side: 'defender',
+          terrain: defenderTerrain,
+          isChargeRound: isCharge,
+        }),
+        opts.defenderBuildingBonus,
+      );
 
       const roundAtkMelee = applyMultiplier(attacker.meleeAttack, atkRoundMods.atk) * terrRiverMult;
       const roundAtkCharge = applyMultiplier(attacker.chargeBonus, atkRoundMods.uderzenie);

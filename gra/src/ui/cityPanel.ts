@@ -130,6 +130,7 @@ import {
 } from '../game/turn-economy';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { tileYield } from '../game/economy';
+import { mnoznikRoleForBuildingId } from '../game/unit-building-bonuses';
 import {
   tradeRouteDistanceIncome,
   loadTradeRouteIncomeParams,
@@ -4607,9 +4608,15 @@ function buildingBonusChipsHtml(def: BuildingDef, max = 3): string {
       `<span class="bld-infocard-chip">${yieldBrandIconHtml(y.brandId, 13)}${val} ${y.label.toLowerCase()}</span>`,
     );
   }
-  if (def.baza.mnoznik || def.przyrost.mnoznik) {
-    if (chips.length < max) {
-      chips.push(`<span class="bld-infocard-chip">×${def.baza.mnoznik ?? 1} mnożnik</span>`);
+  // Sciezki ulepszen jednostek (2026-07-25): mnoznik nie idzie juz do Pracy --
+  // pokaz PRAWDZIWY efekt (Pancerz / Parametry) tylko dla 6 rozpoznanych
+  // budynkow; dla reszty (Targowisko/Karawanseraj/Akademia/Pretorium) mnoznik
+  // jest odtad calkowicie martwy, wiec chip znika (nie obiecujemy nieistniejacego).
+  if (def.baza.mnoznik) {
+    const role = mnoznikRoleForBuildingId(def.id);
+    if (role && chips.length < max) {
+      const label = role === 'pancerz' ? 'Pancerz' : 'Parametry';
+      chips.push(`<span class="bld-infocard-chip">+${def.baza.mnoznik}% ${label}</span>`);
     }
   }
   return chips.join('');
@@ -4964,9 +4971,16 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
       gridDetailRow(gYield, y.label, `${base >= 0 ? '+' : ''}${base} ${yieldBrandIconHtml(y.brandId)}${incStr}`);
     }
   }
-  if (def.baza.mnoznik || def.przyrost.mnoznik) {
-    anyYield = true;
-    gridDetailRow(gYield, 'Mnożnik', `baza ${def.baza.mnoznik} · +${def.przyrost.mnoznik}/poz.`);
+  // Sciezki ulepszen jednostek (2026-07-25): jak w buildingBonusChipsHtml powyzej --
+  // mnoznik nie idzie juz do Pracy, wiec pokazujemy PRAWDZIWY efekt tylko dla 6
+  // rozpoznanych budynkow (Pancerz / Parametry); dla reszty jest martwy -> ukryty.
+  if (def.baza.mnoznik) {
+    const role = mnoznikRoleForBuildingId(def.id);
+    if (role) {
+      anyYield = true;
+      const label = role === 'pancerz' ? 'Pancerz (jednostki, trwale)' : 'Parametry poza Pancerzem (jednostki, trwale)';
+      gridDetailRow(gYield, label, `+${def.baza.mnoznik}%`);
+    }
   }
   if (!anyYield) gridDetailRow(gYield, 'Efekty', '—');
 

@@ -2,6 +2,8 @@
  * Upgrade budynków — kanon Maciej 2026-07-05 (UPG-LOC/PROD/BONUS, ABC-20…24).
  */
 
+import { mnoznikRoleForBuildingId } from './unit-building-bonuses';
+
 export type BuildingUpgradeLite = {
   id: string;
   nazwa: string;
@@ -49,7 +51,7 @@ export function upgradeProductionDisplayName(
 }
 
 const STAT_KEYS = [
-  'praca', 'pieniadz', 'zywnosc', 'nauka', 'kultura', 'zadowolenie', 'obrona', 'mnoznik',
+  'praca', 'pieniadz', 'zywnosc', 'nauka', 'kultura', 'zadowolenie', 'obrona',
 ] as const;
 
 function statLine(label: string, baza: number, przyrost: number): string | null {
@@ -82,6 +84,21 @@ export function buildingStatSummaryLines(def: BuildingUpgradeLite): string[] {
     const p = def.przyrost?.[k] ?? 0;
     const line = statLine(k, b, p);
     if (line) lines.push(line);
+  }
+  // Sciezki ulepszen jednostek (2026-07-25): `mnoznik` NIE jest juz zwykla
+  // staty ekonomiczna miasta (Step 5 usuniety z economy.ts) -- to trwaly bonus
+  // bojowy jednostek. Pokazujemy go tu z PRAWDZIWA etykieta (Pancerz/Parametry)
+  // TYLKO dla 6 rozpoznanych budynkow; dla reszty (mnoznik dawniej dolaczany
+  // do Pracy, dzis calkowicie martwy) NIE pokazujemy nic -- zero fałszywych
+  // obietnic w panelu "Statystyki (silnik)" (audyt: to byla najbardziej
+  // myląca etykieta w kodzie).
+  const mnoznikBaza = def.baza?.['mnoznik'] ?? 0;
+  if (mnoznikBaza !== 0) {
+    const role = mnoznikRoleForBuildingId(def.id);
+    if (role) {
+      const label = role === 'pancerz' ? 'Pancerz (jednostki)' : 'Parametry poza Pancerzem (jednostki)';
+      lines.push(`${label} +${mnoznikBaza}%`);
+    }
   }
   return lines;
 }

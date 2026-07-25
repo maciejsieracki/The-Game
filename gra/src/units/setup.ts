@@ -81,6 +81,23 @@ export interface RuntimeUnit {
    *  tury, ownerId-agnostyczne). Trwałe między turami poza tym — nic innego nie
    *  czyści tego pola automatycznie. */
   sentry?: boolean;
+  /**
+   * ŚCIEŻKA A — Pancerz (2026-07-25, patrz game/unit-building-bonuses.ts).
+   * Najlepszy % kumulacyjny bonusu Pancerza, jaki ta jednostka KIEDYKOLWIEK
+   * osiągnęła (przy produkcji LUB wchodząc do miasta z Kuźnią/Kuźnią żelaza/
+   * Wielką Kuźnią). Trwałe — nie znika po wyjściu z miasta ani zburzeniu
+   * budynku; tylko rośnie (max), nigdy nie maleje. Ownerid-agnostyczne
+   * (gracz i AI identycznie). Stare zapisy bez pola = undefined = 0% (brak
+   * bonusu) — patrz unitPancerzBonusProc() w unit-building-bonuses.ts, KAŻDY
+   * odczyt tego pola MUSI iść przez te funkcje, nie odczytywać wprost. */
+  pancerzBonusProc?: number;
+  /**
+   * ŚCIEŻKA B — parametry miękkie, wszystko POZA Pancerzem (atak, obrona,
+   * atak dystansowy, zdrowie, uderzenie/szarża). Analogicznie do
+   * pancerzBonusProc, ale z Koszar/Akademii wojskowej/Warsztatu oblężniczego.
+   * Niezależna od pancerzBonusProc — jednostka może mieć różny postęp na
+   * każdej ścieżce. Stare zapisy bez pola = 0% — patrz unitParametryBonusProc(). */
+  parametryBonusProc?: number;
 }
 
 /** Kategorie cywilne — bez utrzymania, bez głodu wojska, bez ataku miast. */

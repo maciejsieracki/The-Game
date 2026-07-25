@@ -29,6 +29,12 @@ export interface UnitPanelState {
   hp: number;
   hpMax: number;
   actions: UnitPanelAction[];
+  /**
+   * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts):
+   * etykieta "Pancerz +30% · Parametry +20%" (unitBuildingBonusLabel()), lub
+   * undefined/pusty string gdy jednostka nie zdobyla jeszcze zadnego bonusu.
+   */
+  buildingBonusLabel?: string;
 }
 
 export interface UnitPanelHudConfig {
@@ -107,6 +113,9 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
       + '</div>'
       + '<div class="mu-hp-lbl"><span>HP</span><span>' + u.hp + ' / ' + u.hpMax + '</span></div>'
       + '<div class="mu-hp-bar"><i style="width:' + hpPct + '%"></i></div>'
+      + (u.buildingBonusLabel
+        ? '<div class="sub" style="margin:6px 0 0;">' + esc(u.buildingBonusLabel) + '</div>'
+        : '')
       + '<div class="actions">';
     for (const a of u.actions) {
       let cls = a.primary ? 'mu-gold-btn' : 'mu-muted-btn';

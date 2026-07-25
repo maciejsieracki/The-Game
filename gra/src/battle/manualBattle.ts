@@ -44,6 +44,9 @@ export interface BattleUnit {
   stats: any;
   hp: number;
   maxHp: number;
+  /** Sciezki ulepszen jednostek (2026-07-25) -- patrz battleScene.ts BattleUnit. */
+  pancerzBonusFrac?: number;
+  parametryBonusFrac?: number;
 }
 
 export interface ManualBattleOpts {
@@ -1032,6 +1035,8 @@ export class ManualBattle {
       counters: this.counters,
       attackerCivBonusy: this.attackerCivBonusy,
       defenderCivBonusy: this.defenderCivBonusy,
+      attackerBuildingBonus: { pancerz: attacker.bu.pancerzBonusFrac ?? 0, other: attacker.bu.parametryBonusFrac ?? 0 },
+      defenderBuildingBonus: { pancerz: defender.bu.pancerzBonusFrac ?? 0, other: defender.bu.parametryBonusFrac ?? 0 },
     });
 
     this.log.push(

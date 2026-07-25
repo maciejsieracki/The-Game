@@ -454,6 +454,10 @@ import {
 } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
 import {
+  bestBuildingProgressAfterCityVisit, buildingProgressWouldChange,
+  unitPancerzBonusFrac, unitParametryBonusFrac, unitBuildingBonusLabel,
+} from './game/unit-building-bonuses';
+import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
   type TradeGoodEntry,
 } from './game/diplomacy-goods';
@@ -2041,6 +2045,12 @@ async function boot(): Promise<void> {
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
       const newUnitId = 'prod_' + turn + '_' + cityId + '_' + Math.random().toString(36).slice(2);
+      // Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts): jednostka
+      // rodzi sie juz na poziomie budynkow miasta, w ktorym powstala (Pancerz/
+      // parametry miekkie); ownerId-agnostyczne -- dziala identycznie dla gracza i AI.
+      const birthProgress = bestBuildingProgressAfterCityVisit(
+        undefined, cityBuilt.get(cityId), data.buildings,
+      );
       units.push({
         id: newUnitId,
         ownerId: city.ownerId,
@@ -2050,6 +2060,8 @@ async function boot(): Promise<void> {
         r: city.r,
         ruch,
         ruchLeft: 0,
+        pancerzBonusProc: birthProgress.pancerzBonusProc,
+        parametryBonusProc: birthProgress.parametryBonusProc,
       });
       maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
       if (city.ownerId === 0) {
@@ -2878,6 +2890,7 @@ async function boot(): Promise<void> {
         maxHp: unitHealth(def),
         category: u.category,
         inGarnizon: u.inGarnizon,
+        buildingBonusLabel: unitBuildingBonusLabel(u),
         esc: hudHtmlEsc,
       });
     }
@@ -4880,6 +4893,34 @@ async function boot(): Promise<void> {
             showHintMessage(su.typeId + ' obudzony — wróg w polu widzenia!', 3000);
           }
         }
+      }
+    }
+
+    /**
+     * Ścieżki ulepszeń jednostek (2026-07-25, unit-building-bonuses.ts, wariant A
+     * właściciela): jednostka dostaje bonus Pancerza/parametrów miękkich NIE
+     * TYLKO przy wyprodukowaniu, ale też gdy WEJDZIE do miasta posiadającego
+     * dany budynek — liczy się najlepsze miasto, jakie kiedykolwiek odwiedziła.
+     * Zamiast łapać każdą ścieżkę ruchu (animowany marsz gracza, teleport AI,
+     * merge/split stosów, embarkacja…) osobno, sprawdzamy RAZ NA KONIEC KAŻDEJ
+     * TURY każdą jednostkę stojącą na heksie WŁASNEGO miasta — dokładnie tak
+     * samo jak wakeSentryUnitsOnEnemyContact() powyżej, z tym samym komentarzem
+     * "pozycje wszystkich jednostek (gracz + AI) są już finalne dla tej tury".
+     * CAŁKOWICIE ownerId-agnostyczne — PARYTET AI: brak gałęzi „tylko gracz",
+     * miasta-państwa i AI awansują swoje jednostki dokładnie tak samo.
+     */
+    function applyCityVisitBuildingBonuses(): void {
+      if (units.length === 0 || cities.length === 0) return;
+      // Miasto (q,r) -> City, żeby uniknąć O(units*cities) find() w pętli.
+      const cityByHex = new Map<string, City>();
+      for (const c of cities) cityByHex.set(keyOf(c.q, c.r), c);
+      for (const u of units) {
+        const c = cityByHex.get(keyOf(u.q, u.r));
+        if (!c || c.ownerId !== u.ownerId) continue;
+        if (!buildingProgressWouldChange(u, cityBuilt.get(c.id), data.buildings)) continue;
+        const next = bestBuildingProgressAfterCityVisit(u, cityBuilt.get(c.id), data.buildings);
+        u.pancerzBonusProc = next.pancerzBonusProc;
+        u.parametryBonusProc = next.parametryBonusProc;
       }
     }
 
@@ -11398,6 +11439,11 @@ async function boot(): Promise<void> {
         stats: def,
         hp,
         maxHp,
+        // Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts):
+        // najlepszy % kiedykolwiek osiagniety przez TE jednostke, niezalezny
+        // od miasta produkujacego bitwe -- ownerId-agnostyczne (gracz i AI).
+        pancerzBonusFrac: unitPancerzBonusFrac(u),
+        parametryBonusFrac: unitParametryBonusFrac(u),
       };
     }
 
@@ -14445,6 +14491,9 @@ async function boot(): Promise<void> {
                 const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
                 const isSuper = def['Super-jednostka'] === 'TAK';
                 const newUnitId = 'rec_' + turn + '_' + cid + '_' + Math.random().toString(36).slice(2);
+                const recBirthProgress = bestBuildingProgressAfterCityVisit(
+                  undefined, cityBuilt.get(cid), data.buildings,
+                );
                 units.push({
                   id: newUnitId,
                   ownerId: city.ownerId,
@@ -14454,6 +14503,8 @@ async function boot(): Promise<void> {
                   r: city.r,
                   ruch,
                   ruchLeft: 0,
+                  pancerzBonusProc: recBirthProgress.pancerzBonusProc,
+                  parametryBonusProc: recBirthProgress.parametryBonusProc,
                 });
                 maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
                 if (city.ownerId === 0) {
@@ -15439,6 +15490,7 @@ async function boot(): Promise<void> {
         // finalne dla tej tury — teraz sprawdzamy, czy jakaś śpiąca (sentry)
         // jednostka ma wroga w polu widzenia i trzeba ją obudzić.
         wakeSentryUnitsOnEnemyContact();
+        applyCityVisitBuildingBonuses();
         executePlannedMarchesEndTurn();
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();

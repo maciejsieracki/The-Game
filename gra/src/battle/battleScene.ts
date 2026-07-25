@@ -64,6 +64,7 @@ import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef, unitRowStat } from '../game/combat';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { applyMultiplier, civCombatStatMultipliers } from '../game/civ-bonuses';
+import { mergeBuildingBonusIntoStatMultipliers } from '../game/unit-building-bonuses';
 import { buildUnitModel } from '../render/units';
 import {
   BTerrain,
@@ -331,6 +332,17 @@ export interface BattleUnit {
   stats: any;
   hp: number;
   maxHp: number;
+  /**
+   * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts).
+   * Ulamkowy bonus Pancerza (Sciezka A: Kuznia/Kuznia zelaza/Wielka Kuznia)
+   * wg NAJLEPSZEGO miasta ta jednostka kiedykolwiek odwiedzila. Wypelniane
+   * przez main.ts runtimeToBattleUnit() z RuntimeUnit.pancerzBonusProc;
+   * domyslnie undefined/0 -- bezpieczne dla wszystkich istniejacych wywolan
+   * (synthetic/test BattleUnit literals bez tego pola).
+   */
+  pancerzBonusFrac?: number;
+  /** Jak wyzej, Sciezka B (parametry miekkie: wszystko poza Pancerzem). */
+  parametryBonusFrac?: number;
 }
 
 /** Siege-mode options: add a wall across the defender's end of the field. */
@@ -7336,16 +7348,25 @@ export class BattleScene {
       this.engaged.add(key);
     }
 
-    const atkMods = civCombatStatMultipliers(atkBonusy, cuA, {
-      side: 'attacker',
-      terrain: defTerrain,
-      isChargeRound: isCharge,
-    });
-    const defMods = civCombatStatMultipliers(defBonusy, cuD, {
-      side: 'defender',
-      terrain: defTerrain,
-      isChargeRound: isCharge,
-    });
+    // Sciezki ulepszen jednostek (2026-07-25): bonus PER-JEDNOSTKA (nie per-strona
+    // jak bonusy cyw) -- czytany wprost z BattleUnit.pancerzBonusFrac/parametryBonusFrac
+    // (main.ts runtimeToBattleUnit ustawia je z RuntimeUnit przy wejsciu do bitwy).
+    const atkMods = mergeBuildingBonusIntoStatMultipliers(
+      civCombatStatMultipliers(atkBonusy, cuA, {
+        side: 'attacker',
+        terrain: defTerrain,
+        isChargeRound: isCharge,
+      }),
+      { pancerz: attacker.bu.pancerzBonusFrac ?? 0, other: attacker.bu.parametryBonusFrac ?? 0 },
+    );
+    const defMods = mergeBuildingBonusIntoStatMultipliers(
+      civCombatStatMultipliers(defBonusy, cuD, {
+        side: 'defender',
+        terrain: defTerrain,
+        isChargeRound: isCharge,
+      }),
+      { pancerz: defender.bu.pancerzBonusFrac ?? 0, other: defender.bu.parametryBonusFrac ?? 0 },
+    );
 
     const defMeleeDef = applyMultiplier(cuD.meleeDefence, defMods.obrona);
     const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac));
@@ -18012,6 +18033,10 @@ function computeInstantResult(
         attackerPosition: arc,
         attackerCivBonusy,
         defenderCivBonusy,
+        // Sciezki ulepszen jednostek (2026-07-25): tryb "pomin animacje" korzysta
+        // z tego samego resolveCombat -- musi dostac ten sam per-jednostkowy bonus.
+        attackerBuildingBonus: { pancerz: a.ru.bu.pancerzBonusFrac ?? 0, other: a.ru.bu.parametryBonusFrac ?? 0 },
+        defenderBuildingBonus: { pancerz: d.ru.bu.pancerzBonusFrac ?? 0, other: d.ru.bu.parametryBonusFrac ?? 0 },
       });
       for (const line of res.log) log.push(line);
 

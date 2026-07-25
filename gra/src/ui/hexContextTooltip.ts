@@ -319,6 +319,13 @@ export interface UnitContextTooltipInput {
   maxHp: number;
   category?: string;
   inGarnizon?: boolean;
+  /**
+   * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts):
+   * etykieta typu "Pancerz +30% · Parametry +20%" (unitBuildingBonusLabel()),
+   * lub pusty string / undefined gdy jednostka nie zdobyla jeszcze zadnego
+   * bonusu budynkowego. Pokazuje graczowi SKAD wynikaja podniesione staty.
+   */
+  buildingBonusLabel?: string;
   esc: (raw: string) => string;
 }
 
@@ -334,6 +341,9 @@ export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string 
   }
   if (u.category) {
     lines.push(subLine('Typ', u.esc(u.category)));
+  }
+  if (u.buildingBonusLabel) {
+    lines.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));
   }
   if (u.inGarnizon) {
     lines.push(subLine('Status', 'w garnizonie miasta'));
