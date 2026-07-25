@@ -28,7 +28,6 @@
 - [Sąd](budynki/sad.md)
 - [Pretorium](budynki/pretorium.md)
 - [Łaźnia publiczna](budynki/laznia_publiczna.md)
-- [Lazaret](budynki/lazaret.md)
 - [Akademia wojskowa](budynki/akademia_wojskowa.md)
 
 ## Jednostki (50)

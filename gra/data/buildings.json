@@ -1437,42 +1437,7 @@
       "cegla": 10
     }
   },
-  {
-    "id": "lazaret",
-    "nazwa": "Lazaret",
-    "kategoria": "Zdrowie+Wojsko",
-    "epokaWejscia": 5,
-    "maksPoziom": 10,
-    "nazwyPoziomow": [],
-    "baza": {
-      "praca": 0,
-      "pieniadz": 0,
-      "zywnosc": 0,
-      "nauka": 1,
-      "kultura": 0,
-      "zadowolenie": 1,
-      "obrona": 0,
-      "mnoznik": 5
-    },
-    "przyrost": {
-      "praca": 0,
-      "pieniadz": 0,
-      "zywnosc": 0,
-      "nauka": 1,
-      "kultura": 0,
-      "zadowolenie": 1,
-      "obrona": 0,
-      "mnoznik": 2
-    },
-    "kosztBudowy": 55,
-    "przyrostKosztu": 12,
-    "utrzymanie": 2,
-    "przyrostUtrzymania": 1,
-    "wymagania": "",
-    "uwagi": "Regeneracja HP jednostek stacjonujacych w miescie; mnoznik % do tempa regeneracji - styk UNITS. PARKOWANIE: budynek epoki Sredniowiecze (epokaWejscia=4); poza cap v0.1 (max epoka=3=Zelazo) -- nie usuwamy, aktywuje sie w pozniejszej epoce. techUnlock docelowo tech sredniowieczna (zostaje Medycyna jako placeholder; nie wymyslac nowej techy przed decyzja Macieja).",
-    "techUnlock": "Medycyna"
-  },
-  {
+    {
     "id": "akademia_wojskowa",
     "nazwa": "Akademia wojskowa",
     "kategoria": "Wojsko",

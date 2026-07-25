@@ -901,7 +901,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 **34.1.** Co to jest zdrowie miasta
 - Osobna sekcja w lewej kolumnie panelu
 - Liczba punktów zdrowia i rozpiska **+ / −** ze źródeł
-- Budynki podnoszące zdrowie (np. ujęcie, lazaret — według danych gry)
+- Budynki podnoszące zdrowie (według danych gry)
 - Kary: zanieczyszczenie, przepełnienie, wojna (jeśli wpięte)
 
 **34.2.** Wpływ zdrowia na miasto

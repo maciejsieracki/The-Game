@@ -52,7 +52,6 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Sąd | Administracja | Żelazo | Kodeks prawa | 55 pracy | 2 ¤/t | +2 złoto, +1 kultura, +2 szczęście | [Sąd](../encyklopedia/budynki/sad.md) |
 | Pretorium | Administracja | Żelazo | Kodeks prawa | 75 pracy | 3 ¤/t | +2 praca, +3 złoto, +1 szczęście, +2 obrona (+5% mnożnik) | [Pretorium](../encyklopedia/budynki/pretorium.md) |
 | Łaźnia publiczna | Zdrowie | Żelazo | Medycyna | 50 pracy | 2 ¤/t | +1 żywność, +1 kultura, +3 szczęście | [Łaźnia publiczna](../encyklopedia/budynki/laznia_publiczna.md) |
-| Lazaret | Zdrowie+Wojsko | Późne średniowiecze | Medycyna | 55 pracy | 2 ¤/t | +1 nauka, +1 szczęście (+5% mnożnik) | [Lazaret](../encyklopedia/budynki/lazaret.md) |
 | Akademia wojskowa | Wojsko | Żelazo | Sztuka wojenna | 80 pracy | 4 ¤/t | +3 praca, +2 złoto (+15% mnożnik) | [Akademia wojskowa](../encyklopedia/budynki/akademia_wojskowa.md) |
 
 ---
@@ -433,22 +432,6 @@ Koszt **50** pracy przy **7** pracy/t na budynki (70%) → **~7** tury budowy.
 Bonus **+1 żywność, +1 kultura, +3 szczęście** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/laznia_publiczna.md`](../encyklopedia/budynki/laznia_publiczna.md)
-
-### Lazaret
-
-**Lazaret** (Zdrowie+Wojsko) odblokowuje się w epoce **Późne średniowiecze** po technologii **Medycyna**. Pierwsze wzniesienie kosztuje **55** pracy; każdy kolejny poziom +**12**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
-
-Na poziomie 1 daje: **+1 nauka, +1 szczęście**. Każdy kolejny poziom dodaje: **+1 nauka, +1 szczęście**.
-**Wymagania:** brak.
-**Uwaga:** Regeneracja HP jednostek stacjonujacych w miescie; mnoznik % do tempa regeneracji - styk UNITS. PARKOWANIE: budynek epoki Sredniowiecze (epokaWejscia=4); poza cap v0.1 (max epoka=3=Zelazo) -- nie usuwamy, aktywuje sie w pozniejszej epoce. techUnlock docelowo tech sredniowieczna (zostaje Medycyna jako placeholder; nie wymyslac nowej techy przed decyzja Macieja).
-
-
-### Przykład liczbowy
-
-Koszt **55** pracy przy **7** pracy/t na budynki (70%) → **~7** tury budowy.
-Bonus **+1 nauka, +1 szczęście** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
-Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
-→ Pełna karta: [`docs/encyklopedia/budynki/lazaret.md`](../encyklopedia/budynki/lazaret.md)
 
 ### Akademia wojskowa
 

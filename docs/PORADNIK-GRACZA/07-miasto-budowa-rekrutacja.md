@@ -162,7 +162,7 @@ Pełny katalog z tabelą i kartami Wiki: [`45-katalog-budynkow.md`](45-katalog-b
 | Kultura | Świątynia, teatr, pałac, stela |
 | Wojsko | Koszary, warsztat oblężniczy, akademia wojskowa |
 | Obrona | Mury, fort (w mieście) |
-| Zdrowie | Studnia, łaźnia, lazaret |
+| Zdrowie | Studnia, łaźnia |
 | Administracja | Sąd, pretorium |
 
 ### 45.2. Koszt i poziomy

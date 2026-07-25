@@ -178,7 +178,7 @@ Miasto ma **3** mieszkańców — kolejny awans wymaga **Próg(3) = 20 + 3×16 =
 - **Targowisko** — dostęp do świeżej żywności.
 - **Ceramika / garncarnia** — higiena przechowywania.
 - **Bonus Osiedle** — małe miasto (§33.4).
-- Budynki z kategorii zdrowia (np. lazaret — według dostępnych technologii).
+- Budynki z kategorii zdrowia (według dostępnych technologii).
 
 **Typowe minusy:**
 
