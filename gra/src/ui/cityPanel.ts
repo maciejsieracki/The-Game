@@ -2123,7 +2123,10 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       population: city.population,
       garnizonCount: gCount,
       hasRatusz: builtIds.includes('ratusz'),
+      hasDomStarszyzny: builtIds.includes('dom_starszyzny'),
+      hasDworZarzadcy: builtIds.includes('dwor_zarzadcy'),
       hasPretorium: builtIds.includes('pretorium'),
+      hasTrybunal: builtIds.includes('trybunal'),
       hasSad: builtIds.includes('sad'),
       palacTier: cityPalacTier(builtIds),
       brakGarnizonuKara: !playtestSandbox && city.population >= 6 && gCount === 0,
@@ -5596,6 +5599,11 @@ function productionCtxForCity(city: City): AvailabilityContext {
     empireBuiltIds,
     empireResourceStock: cfg.getEmpireStock?.(city.ownerId),
     cityHasCoastOrRiver: cfg.getCityHasCoastOrRiver?.(city.id) ?? false,
+    // ADMIN-STOLICA (2026-07-25): jedno źródło prawdy o stolicy — capitalCityIdForOwner
+    // (main.ts), tu przez cfg.getCapitalCityId (patrz getCapitalCityId doc powyżej —
+    // wyznaczona stolica z fallbackiem na najstarsze miasto, NIE heurystyka
+    // turn-economy.ts "pierwsze miasto w tablicy"). Ownerid-agnostyczne (parytet AI).
+    isCapital: (cfg.getCapitalCityId?.(city.ownerId) ?? null) === city.id,
   };
 }
 

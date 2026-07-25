@@ -4104,6 +4104,10 @@ async function boot(): Promise<void> {
           // TEMAT 8 Q2 (2026-07-24): parytet — Port/Port wielki dostają tu tę samą bramkę
           // wybrzeże/rzeka co ręczna budowa gracza (cityPanel.ts) i AI (main.ts cmd 'build').
           cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+          // ADMIN-STOLICA (2026-07-25): parytet — ta sama bramka stolica/region (Pałac vs
+          // Dom Starszyzny/Dwór Zarządcy/Pretorium) co ręczna budowa i AI, jedno źródło
+          // prawdy capitalCityIdForOwner (nie duplikat heurystyki turn-economy.ts).
+          isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
         },
       });
       if (!item) return null;
@@ -14261,7 +14265,10 @@ async function boot(): Promise<void> {
                   population: city.population,
                   garnizonCount: gCountLaw,
                   hasRatusz: builtIds.includes('ratusz'),
+                  hasDomStarszyzny: builtIds.includes('dom_starszyzny'),
+                  hasDworZarzadcy: builtIds.includes('dwor_zarzadcy'),
                   hasPretorium: builtIds.includes('pretorium'),
+                  hasTrybunal: builtIds.includes('trybunal'),
                   hasSad: builtIds.includes('sad'),
                   palacTier: cityPalacTier(builtIds),
                   brakGarnizonuKara: city.population >= 6 && gCountLaw === 0,
@@ -14400,6 +14407,8 @@ async function boot(): Promise<void> {
                         empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
                         empireResourceStock: citySurowceSumForOwner(city.ownerId),
                         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+                        // ADMIN-STOLICA (2026-07-25): parytet — patrz uwaga w tryAutoEnqueueBuild.
+                        isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
                       },
                     },
                   );
@@ -15079,6 +15088,10 @@ async function boot(): Promise<void> {
                         empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
                         empireResourceStock: citySurowceSumForOwner(ownerId),
                         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+                        // ADMIN-STOLICA (2026-07-25, PARYTET AI): parytet — patrz uwaga w
+                        // tryAutoEnqueueBuild; jedno źródło prawdy capitalCityIdForOwner,
+                        // identyczne dla ownerId=0 (gracz) i każdej cywilizacji AI.
+                        isCapital: capitalCityIdForOwner(ownerId) === city.id,
                       },
                     );
                     const buildAllowed = allowed.some(
