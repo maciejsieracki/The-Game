@@ -60,10 +60,11 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 
 ## C-BITWA-FACING → PRZEFORMUŁOWANE na C-FLANK (Maciej 2026-07-25)
 **Moja pierwotna wersja (ręczne sterowanie kierunkiem w bitwie taktycznej) — ODRZUCONA.** Maciej: flankowanie to mechanika **trybu autonomicznego (auto-rozgrywki), NIE ręcznej gry**, głównie dla KONNICY (konnica obchodzi bokiem i uderza na skrzydła/tyły; ewentualnie rozszerzyć na wszystkie jednostki: front/bok/tył). Ręcznej gry nie zmieniamy.
-**C-FLANK-Q1 — który tryb autonomiczny:** A=auto-odgrywanie na polu (silnik realnie manewruje konnicą) · B=auto-rozstrzygnięcie mocą (modyfikator w formule). REKOMENDACJA B.
-**C-FLANK-Q2 — zakres:** A=tylko konnica · B=wszystkie jednostki (front/bok/tył). REKOMENDACJA A.
-**C-FLANK-Q3 — zachowanie konnicy:** A=okrążenie do tyłu (bok→tył) · B=uderzenie w same boki. REKOMENDACJA A.
-**STATUS: czeka na decyzję Macieja (Q1/Q2/Q3).**
+**ROZSTRZYGNIĘTE (Maciej 2026-07-25):**
+- **Q1 = A** — mechanika w AUTO-ODGRYWANIU bitwy na polu (silnik realnie prowadzi jednostki, nie sam modyfikator mocy).
+- **Q2 = B** — WSZYSTKIE jednostki (nie tylko konnica).
+- **Q3 = bezprzedmiotowe** — skoro dotyczy wszystkich, to ustawienie KIERUNKU NATARCIA per jednostka: front / bok / tył. Jednostki (każdego typu) manewrują w auto-rozgrywce, by uderzyć z wybranego kierunku; obejście na bok/tył = bonus flanki/tyłu.
+**DO ZBUDOWANIA (osobne zadanie, duże):** AI ruchu oskrzydlającego w auto-play (pathfinding na bok/tył wroga) + UI wyboru kierunku (front/bok/tył) per jednostka/formacja w fazie rozstawiania. Parytet AI. Wykorzystać istniejący `facing.ts` (front/flank/rear już policzone) + mechanizm postawy grupy (`_setGroupDoctrine`).
 
 ## Pomniejsze z audytu (do decyzji, nie pilne)
 - **Ctrl+klik multi-select**: jest tylko w bitwie, brak na mapie świata (złamany nawyk) — ujednolicić?
