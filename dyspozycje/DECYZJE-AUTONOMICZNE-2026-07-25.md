@@ -12,10 +12,10 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 - **B — Tylko kamieniołom** (kopalnie zostają płaskie). *Za:* ściśle w zakresie zgłoszenia. *Przeciw:* niespójność wizualna, ten sam bug zostaje.
 
 ## C-MAP-SOL-ZIEMIA — sól na mapie „Ziemia"
-**Sytuacja:** Po „sól tylko Wybrzeże" mapa typu Ziemia (0 heksów Wybrzeża) nie ma soli.
-- **A — Akceptuj** ✅ WYBRANE; generator Wybrzeża-Ziemi jako osobny dług. *Za:* zero ryzyka, poza zakresem; naprawi też łodzie/warzelnię później. *Przeciw:* luka na Ziemi.
-- **B — Napraw generator Wybrzeża Ziemi** (osobne, duże). *Przeciw:* ryzyko zmiany wyglądu map Ziemia.
-- **C — Fallback sól na Pustynię/Równinę** gdy brak Wybrzeża. *Przeciw:* łamie regułę „tylko Wybrzeże".
+**Sytuacja:** Po „sól tylko Wybrzeże" mapa typu Ziemia (0 kafli typu Wybrzeże) nie miała soli.
+- ~~A — Akceptuj~~ (moja pierwotna) — **ZMIENIONE przez Macieja na B.**
+- **B — Napraw definicję wybrzeża** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25). Maciej: „przecież jest wybrzeże. Wybrzeże to miejsce, gdzie łączy się płytkie morze z lądem, więc po prostu ląd najbliższy wybrzeża." → **sól = ląd graniczący z płytkim morzem (`isCoastalLandHex`), NIE osobny kafel Wybrzeże.** Działa też na Ziemi (ląd przy Morzu istnieje). ZAIMPLEMENTOWANE (gen-helpers.ts: `requiresCoastalLand` w regule soli + rewert wyjątków „sól na Wybrzeżu").
+- C — Fallback Pustynia/Równina (odrzucone).
 
 ## C-DYP-STOL-Q1 — zakres stołu dyplomatycznego
 **Sytuacja:** Dwuetapowa dyplomacja (propozycja → podgląd wstępnej zgody AI → akcept/zmień).

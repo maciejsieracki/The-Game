@@ -6259,6 +6259,13 @@ export interface DepositRule {
   nakladka: Nakladka | null;
   /** Predykat: czy ten heks moze przyjac to zloze. */
   allowedOn: (hex: Hex) => boolean;
+  /**
+   * Gdy true — dodatkowo wymaga, by heks byl LADEM najblizszym wybrzeza
+   * (suchy lad graniczacy z plytkim morzem/Wybrzezem — isCoastalLandHex).
+   * C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): tak zdefiniowane wybrzeze dziala
+   * takze na mapie Ziemia (brak kafli Wybrzeze, ale jest lad przy Morzu).
+   */
+  requiresCoastalLand?: boolean;
   /** Rzadkosc: ulamek pasujacych heksow, ktore dostana zloze (0..1). */
   rarity: number;
 }
@@ -6304,10 +6311,12 @@ const BASE_DEPOSIT_RULES: DepositRule[] = [
   {
     id: 'sol',
     nakladka: null,
-    // TEMAT 12 (2026-07-24, Maciej): sól TYLKO na Wybrzeżu (dawniej Pustynia/Równina).
-    // Wybrzeże jest normalnie wykluczone z reguł złóż (isDryLandTerrain === false) — sól jest
-    // JEDYNYM wyjątkiem, patrz bramki w placeDeposits()/hexCanAcceptDeposit() poniżej.
-    allowedOn: (h) => h.terenBazowy === TerenBazowy.Wybrzeze,
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
     rarity: 0.12,
   },
 ];
@@ -6361,13 +6370,16 @@ export function placeDeposits(
     // Nie nadpisuj lasu ani istniejacych nakladek; jedno zloze na heks.
     if (hex.nakladka !== Nakladka.Brak) continue;
     if (hex.zloze) continue;
-    // Morze nigdy nie dostaje złoża. Wybrzeże NIE jest tu wykluczane globalnie — sól (TEMAT 12,
-    // jedyny surowiec dopuszczony na Wybrzeżu) filtruje się przez własny allowedOn; pozostałe
-    // reguły i tak odrzucą Wybrzeże przez isDryLandTerrain (Wybrzeże => false).
-    if (hex.terenBazowy === TerenBazowy.Morze) continue;
+    // Woda nigdy nie dostaje złoża. C-MAP-SOL-ZIEMIA=B: sól nie jest już na kaflu Wybrzeże,
+    // tylko na LĄDZIE przy wybrzeżu (requiresCoastalLand niżej) — więc Wybrzeże, jak Morze,
+    // jest wykluczone dla wszystkich złóż.
+    if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) continue;
 
+    const [depQ, depR] = key.split(',').map(Number) as [number, number];
     for (const rule of rules) {
       if (!rule.allowedOn(hex)) continue;
+      // C-MAP-SOL-ZIEMIA=B: reguła „ląd przy wybrzeżu" (sól) — suchy ląd graniczący z wodą.
+      if (rule.requiresCoastalLand && !isCoastalLandHex(hexes, depQ, depR)) continue;
       // Rzut PRNG dla kazdej pasujacej reguly — deterministyczny przy danym seed.
       if (rand() < Math.min(1, rule.rarity * baselineMult * resourceMult)) {
         if (rule.nakladka !== null) {
@@ -6427,10 +6439,9 @@ function hexCanAcceptDeposit(
   allowForestClear: boolean,
 ): boolean {
   if (hex.terenBazowy === TerenBazowy.Morze) return false;
-  // TEMAT 12: Wybrzeże wykluczone dla wszystkich złóż OPRÓCZ soli (jedyny surowiec dopuszczony
-  // na Wybrzeżu). Dziś sól nie jest w FAIR_PLAY_DEPOSIT_IDS (więc ta funkcja i tak nigdy nie
-  // dostaje rule.id==='sol'), ale bramka zostaje spójna z placeDeposits() na wypadek zmiany.
-  if (hex.terenBazowy === TerenBazowy.Wybrzeze && rule.id !== 'sol') return false;
+  // C-MAP-SOL-ZIEMIA=B: żadne złoże nie ląduje na wodzie (sól jest teraz na LĄDZIE przy
+  // wybrzeżu, nie na kaflu Wybrzeże) — Wybrzeże, jak Morze, wykluczone dla wszystkich złóż.
+  if (hex.terenBazowy === TerenBazowy.Wybrzeze) return false;
   if (hex.zloze) return false;
   if (hex.nakladka !== Nakladka.Brak) {
     if (!allowForestClear || hex.nakladka !== Nakladka.Las) return false;
@@ -6471,10 +6482,8 @@ function prepareTerrainForDeposit(hex: Hex, rule: DepositRule): void {
     case 'bydlo':
       hex.terenBazowy = TerenBazowy.Laka;
       break;
-    case 'sol':
-      // TEMAT 12: sól TYLKO na Wybrzeżu.
-      hex.terenBazowy = TerenBazowy.Wybrzeze;
-      break;
+    // C-MAP-SOL-ZIEMIA=B: 'sol' nie wymusza terenu — jest na istniejącym LĄDZIE przy wybrzeżu
+    // (i tak nie jest w FAIR_PLAY_DEPOSIT_IDS, więc ta ścieżka forsowania soli nie dotyczy).
     default:
       break;
   }
@@ -6674,14 +6683,13 @@ export function ensureForestGridCoverage(
 
 /**
  * Usuwa nakładki/złoża z morza i wybrzeża (bezpiecznik po generacji).
- * TEMAT 12 (2026-07-24): WYJĄTEK — sól na Wybrzeżu to zamierzone złoże (jedyny surowiec
- * dopuszczony tam), więc NIE jest usuwana. Morze nigdy nie dostaje żadnego złoża (w tym soli).
+ * C-MAP-SOL-ZIEMIA=B (2026-07-25): sól jest teraz na LĄDZIE przy wybrzeżu, nie na kaflu
+ * Wybrzeże — więc woda (Morze i Wybrzeże) jest zawsze czyszczona ze wszystkich złóż, bez wyjątków.
  */
 export function stripDepositsFromWater(hexes: Record<string, Hex>): number {
   let n = 0;
   for (const hex of Object.values(hexes) as HexWithZloze[]) {
     if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
-    if (hex.terenBazowy === TerenBazowy.Wybrzeze && hex.zloze === 'sol') continue;
     const had = hex.nakladka !== Nakladka.Brak || !!hex.zloze;
     hex.nakladka = Nakladka.Brak;
     delete hex.zloze;
@@ -6690,12 +6698,11 @@ export function stripDepositsFromWater(hexes: Record<string, Hex>): number {
   return n;
 }
 
-/** Liczy złoża/nakładki surowcowe na morzu lub wybrzeżu (0 = OK). Sól na Wybrzeżu — patrz wyżej. */
+/** Liczy złoża/nakładki surowcowe na morzu lub wybrzeżu (0 = OK). C-MAP-SOL-ZIEMIA=B: bez wyjątków. */
 export function countDepositsOnWater(hexes: Record<string, Hex>): number {
   let n = 0;
   for (const hex of Object.values(hexes) as HexWithZloze[]) {
     if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
-    if (hex.terenBazowy === TerenBazowy.Wybrzeze && hex.zloze === 'sol') continue;
     if (hex.nakladka !== Nakladka.Brak || hex.zloze) n++;
   }
   return n;
