@@ -887,7 +887,6 @@ async function boot(): Promise<void> {
           if (foundCityMode || (buildModeOpen && activeImprovementKey)) return true;
           return false;
         },
-        // FEATURE C-EDGEPAN-Q1 (Rekomendacja A, właściciel 2026-07-24): edge-pan aktywny
         // C-EDGEPAN-Q1=B (Maciej 2026-07-25): edge-pan ZAWSZE aktywny na mapie świata
         // (konwencja 4X), niezależnie od zaznaczenia jednostki. isWorldMapUnitMode() nadal
         // wyklucza panele/nakładki (miasto, bitwa, oblężenie…), żeby mapa nie „uciekała"

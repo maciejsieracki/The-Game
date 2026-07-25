@@ -27,8 +27,7 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 - **A — Modal** ✅ WYBRANE. *Za:* prostsze, zgodne z obecnym flow. **B — Stały panel-stół.** *Przeciw:* więcej pracy.
 
 ## C-RES-Q1 — gdzie zaznaczać kolejkę badań (do 3 tech)
-- **C — Oba miejsca współdzielą kolejkę** ✅ WYBRANE (hub-lista + drzewko; numeracja 1/2/3 wszędzie). *Za:* spójne, wykorzystuje oba UI. *Przeciw:* najwięcej pracy UI.
-- A — tylko hub-lista · B — tylko drzewko.
+- **C — Oba miejsca współdzielą kolejkę** ✅ POTWIERDZONE PRZEZ MACIEJA (2026-07-25). Klik w hubie-liście LUB w drzewku dodaje do kolejki; numeracja 1/2/3 w obu. A — tylko hub-lista · B — tylko drzewko.
 
 ## C-RES-Q2 — kolejność kolejki
 - **C — drag & drop** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25, zmiana z mojego A). Przeciąganie pozycji. A — FIFO+usuwanie „×" · B — strzałki góra/dół.
