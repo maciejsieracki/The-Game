@@ -4839,6 +4839,50 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * C-SENTRY-Q1 wariant A (Maciej 2026-07-25): czy dwaj właściciele są wrogami
+     * — barbarzyńcy są wrogami wszystkich, poza tym decyduje stan wojny w
+     * dyplomacji. ownerId-agnostyczne (nie zakłada gracza=0 po żadnej stronie) —
+     * ta sama funkcja obsługuje pary gracz-AI i AI-AI.
+     */
+    function areEnemyOwners(a: number, b: number): boolean {
+      if (a === b) return false;
+      if (isBarbarian(a) || isBarbarian(b)) return true;
+      return getDiploRelation(a, b).status === 'wojna';
+    }
+
+    /**
+     * C-SENTRY-Q1 wariant A (Maciej 2026-07-25): auto-budzenie jednostek w
+     * trybie Sentry (czuwa), gdy wróg wejdzie w ich pole widzenia. Pole widzenia
+     * = ISTNIEJĄCY per-jednostkowy zasięg wzroku (unitSight — ta sama funkcja
+     * co odsłanianie mgły wojny, kolumna „Widok pola" z units.json).
+     * ownerId-agnostyczne: działa identycznie dla jednostek gracza i AI (gdyby
+     * AI kiedykolwiek ustawiło sentry=true) — brak gałęzi „tylko ownerId===0".
+     * Komunikat na ekranie (showHintMessage) tylko dla jednostek gracza (0) —
+     * AI nie ma UI, które mogłoby go pokazać.
+     * Wołane raz na koniec pełnego cyklu tury (main.ts, po refreshFog() w
+     * obsłudze End Turn), gdy pozycje wszystkich jednostek (gracz + AI) są już
+     * finalne dla tej tury.
+     */
+    function wakeSentryUnitsOnEnemyContact(): void {
+      const sleepers = units.filter(u => u.sentry === true);
+      if (sleepers.length === 0) return;
+      for (const su of sleepers) {
+        const sight = unitSight(su);
+        const enemyNear = units.some(v =>
+          v.id !== su.id
+          && areEnemyOwners(su.ownerId, v.ownerId)
+          && hexDistance(su.q, su.r, v.q, v.r) <= sight,
+        );
+        if (enemyNear) {
+          su.sentry = false;
+          if (su.ownerId === 0) {
+            showHintMessage(su.typeId + ' obudzony — wróg w polu widzenia!', 3000);
+          }
+        }
+      }
+    }
+
+    /**
      * Return the subset of units to display under current visibility.
      * Garnizon (inGarnizon) — niewidoczny na mapie.
      */
@@ -9279,10 +9323,11 @@ async function boot(): Promise<void> {
           || active.replaceUsedThisTurn === true
           || computeUnitReplacements(active).length === 0;
         actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
-        // C-SENTRY-Q1 wariant B (Maciej 2026-07-24): "Czuwaj" -- jak Pomi\u0144/Ufort.
-        // (zu\u017cywa ruch na wej\u015bciu), ale trwa mi\u0119dzy turami do r\u0119cznego
-        // odwo\u0142ania (ponowny klik budzi -- bez zu\u017cycia ruchu). BEZ auto-budzenia
-        // na widok wroga w tej wersji (poza zakresem -- patrz ABC C-SENTRY-Q1 w raporcie).
+        // C-SENTRY-Q1 wariant A (Maciej 2026-07-25): "Czuwaj" -- jak Pomi\u0144/Ufort.
+        // (zu\u017cywa ruch na wej\u015bciu), trwa mi\u0119dzy turami do r\u0119cznego lub
+        // AUTOMATYCZNEGO budzenia (ponowny klik budzi bez zu\u017cycia ruchu; patrz te\u017c
+        // wakeSentryUnitsOnEnemyContact() -- budzi automatycznie, gdy wr\u00f3g wejdzie
+        // w pole widzenia jednostki, sprawdzane raz na ko\u0144cu ka\u017cdej tury).
         const enteringSentry = active.sentry !== true;
         actions.push({
           id: 'sentry',
@@ -9719,9 +9764,10 @@ async function boot(): Promise<void> {
             } else if (actionId === 'replace') {
               openUnitReplacePicker(u);
             } else if (actionId === 'sentry') {
-              // C-SENTRY-Q1 wariant B: toggle -- wejście zużywa ruch całego stosu
+              // C-SENTRY-Q1 wariant A: toggle -- wejście zużywa ruch całego stosu
               // (jak Ufort./Pomiń), obudzenie NIE zużywa ruchu (gracz odzyskuje
-              // kontrolę od razu). Bez auto-budzenia na widok wroga (poza zakresem).
+              // kontrolę od razu). Auto-budzenie na widok wroga: patrz
+              // wakeSentryUnitsOnEnemyContact() (koniec każdej tury).
               const enteringSentry = u.sentry !== true;
               if (enteringSentry) {
                 clearPlannedMarch(u.id);
@@ -15353,6 +15399,10 @@ async function boot(): Promise<void> {
         refreshWorkerFieldOverlay();
         // Refresh fog after end-turn so new unit positions update visibility.
         refreshFog();
+        // C-SENTRY-Q1 wariant A: pozycje wszystkich jednostek (gracz + AI) są już
+        // finalne dla tej tury — teraz sprawdzamy, czy jakaś śpiąca (sentry)
+        // jednostka ma wroga w polu widzenia i trzeba ją obudzić.
+        wakeSentryUnitsOnEnemyContact();
         executePlannedMarchesEndTurn();
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();

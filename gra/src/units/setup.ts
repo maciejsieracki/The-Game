@@ -74,11 +74,12 @@ export interface RuntimeUnit {
    *  heksie wody (Morze/Wybrzeże). Ustawiane automatycznie po ruchu wg terenu
    *  docelowego (woda→true, ląd→false). Stare save'y bez pola = niezaokrętowana. */
   embarked?: boolean;
-  /** C-SENTRY-Q1 wariant B (Maciej 2026-07-24): jednostka „czuwa" — pomija tury
-   *  (jak Ufort./Pomiń) do RĘCZNEGO odwołania (ponowny klik akcji Sentry budzi ją).
-   *  BEZ auto-budzenia na widok wroga (poza zakresem tej wersji — patrz ABC w
-   *  raporcie T-BITWA-ROSTER). Trwałe między turami — nic nie czyści tego pola
-   *  automatycznie poza akcją gracza. */
+  /** C-SENTRY-Q1 wariant A (Maciej 2026-07-25): jednostka „czuwa" — pomija tury
+   *  (jak Ufort./Pomiń) do RĘCZNEGO odwołania (ponowny klik akcji Sentry budzi ją)
+   *  LUB do AUTOMATYCZNEGO obudzenia, gdy wróg wejdzie w jej pole widzenia
+   *  (main.ts, wakeSentryUnitsOnEnemyContact() — wołane raz na koniec każdej
+   *  tury, ownerId-agnostyczne). Trwałe między turami poza tym — nic innego nie
+   *  czyści tego pola automatycznie. */
   sentry?: boolean;
 }
 
