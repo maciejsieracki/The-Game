@@ -6489,6 +6489,11 @@ var miasto_params_default = {
     jednostka: "% Obrony (dodatkowo do muru)",
     opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
   },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
+  },
   zasieg_okolicy_baza: {
     wartosc: 5,
     jednostka: "pola/strona",
@@ -14122,7 +14127,7 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Garncarstwo + Murarstwo + Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Odlewnia br\u0105zu; Kuznia; Jednostki: W\u0142\xF3cznik, Wojownik z mieczem i tarcz\u0105, Impi, Wojownik z toporem, Wojownik z khopesh, W\u0142\xF3cznik sumeryjski, Wojownik myke\u0144ski, Wojownik Sherden, Halabardnik Shang, Wie\u017Ca obl\u0119\u017Cnicza, Wojownik tyrre\u0144ski, Wojownik szekelesz",
+      "Odblokowuje budynek": "Odlewnia br\u0105zu; Ku\u017Ania br\u0105zu; Jednostki: W\u0142\xF3cznik, Wojownik z mieczem i tarcz\u0105, Impi, Wojownik z toporem, Wojownik z khopesh, W\u0142\xF3cznik sumeryjski, Wojownik myke\u0144ski, Wojownik Sherden, Halabardnik Shang, Wie\u017Ca obl\u0119\u017Cnicza, Wojownik tyrre\u0144ski, Wojownik szekelesz",
       "Koszt nauki": 90,
       Uwagi: "ko\u0144czy Epok\u0119 1; ABC-7: Popalnia br\u0105zu na mapie",
       "Odblokowuje ulepszenie terenu": "Popalnia br\u0105zu",
@@ -14294,9 +14299,9 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Budownictwo",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Fort",
+      "Odblokowuje budynek": "Fort; Cytadela; Baszta",
       "Koszt nauki": 260,
-      Uwagi: "Fort = NOWY budynek (obrona terenu, zasi\u0119g 10, +100% obrona przy obozowaniu \u2014 zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniej\u0105cego Akweduktu",
+      Uwagi: "Fort = NOWY budynek (obrona terenu, zasi\u0119g 10, +100% obrona przy obozowaniu \u2014 zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniej\u0105cego Akweduktu. Baszta (decyzja 41B, 2026-07-25) -- trzeci budynek obronny miasta, obok Cytadeli, ta sama technologia.",
       "Odblokowuje ulepszenie terenu": null
     },
     {

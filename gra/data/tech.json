@@ -159,7 +159,7 @@
       "wymagany budynek": null,
       "Wymaga (prereq)": "Garncarstwo + Murarstwo + Obróbka drewna",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Odlewnia brązu; Kuznia; Jednostki: Włócznik, Wojownik z mieczem i tarczą, Impi, Wojownik z toporem, Wojownik z khopesh, Włócznik sumeryjski, Wojownik mykeński, Wojownik Sherden, Halabardnik Shang, Wieża oblężnicza, Wojownik tyrreński, Wojownik szekelesz",
+      "Odblokowuje budynek": "Odlewnia brązu; Kuźnia brązu; Jednostki: Włócznik, Wojownik z mieczem i tarczą, Impi, Wojownik z toporem, Wojownik z khopesh, Włócznik sumeryjski, Wojownik mykeński, Wojownik Sherden, Halabardnik Shang, Wieża oblężnicza, Wojownik tyrreński, Wojownik szekelesz",
       "Koszt nauki": 90,
       "Uwagi": "kończy Epokę 1; ABC-7: Popalnia brązu na mapie",
       "Odblokowuje ulepszenie terenu": "Popalnia brązu",
@@ -331,9 +331,9 @@
       "wymagany budynek": null,
       "Wymaga (prereq)": "Budownictwo",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Fort",
+      "Odblokowuje budynek": "Fort; Cytadela; Baszta",
       "Koszt nauki": 260,
-      "Uwagi": "Fort = NOWY budynek (obrona terenu, zasięg 10, +100% obrona przy obozowaniu — zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniejącego Akweduktu",
+      "Uwagi": "Fort = NOWY budynek (obrona terenu, zasięg 10, +100% obrona przy obozowaniu — zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniejącego Akweduktu. Baszta (decyzja 41B, 2026-07-25) -- trzeci budynek obronny miasta, obok Cytadeli, ta sama technologia.",
       "Odblokowuje ulepszenie terenu": null
     },
     {

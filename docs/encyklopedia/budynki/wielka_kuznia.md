@@ -28,7 +28,7 @@ Wielka Kuźnia wzmacnia miasto w kategorii **Produkcja**. Poziom 1: **+12 pracy*
 - **Każdy kolejny poziom:** +18 pracy
 - **Utrzymanie:** 4 ¤/turę (+2 ¤/poziom)
 - Technologia **Hutnictwo żelaza**.
-Warunek: zelazo i stal w zasiegu; wymaga Kuznia zelaza.
+Warunek: zelazo i stal w zasiegu; wymaga Kuźni żelaza.
 - **Uwaga:** Mnoznik % dotyczy sily i kosztu produkcji wszystkich jednostek w miescie; wymaga dostepu do stali
 ### Strategia gracza
 Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.

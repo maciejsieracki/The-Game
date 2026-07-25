@@ -29,7 +29,7 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 |---------|-----------|-------|------|----------------|------------|--------------|------|
 | Stolarnia | Produkcja | Kamień | Obróbka drewna | 20 pracy | 1 ¤/t | +5 praca | [Stolarnia](../encyklopedia/budynki/stolarnia.md) |
 | Warsztat kamieniarski | Produkcja | Kamień | Murarstwo | 20 pracy | 1 ¤/t | +4 praca | [Warsztat kamieniarski](../encyklopedia/budynki/kamieniarski.md) |
-| Kuznia | Produkcja+Wojsko | Brąz | Brązownictwo | 30 pracy | 2 ¤/t | +6 praca, +1 złoto (+5% mnożnik) | [Kuznia](../encyklopedia/budynki/kuznia.md) |
+| Kuźnia brązu | Produkcja+Wojsko | Brąz | Brązownictwo | 30 pracy | 2 ¤/t | +6 praca, +1 złoto (+5% mnożnik) | [Kuźnia brązu](../encyklopedia/budynki/kuznia.md) |
 | Targowisko (Rynek) | Pieniadz | Kamień | Wymiana | 25 pracy | 1 ¤/t | +3 złoto | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
 | Port handlowy | Pieniadz | Brąz | Żegluga | 30 pracy | 2 ¤/t | +1 praca, +5 złoto | [Port handlowy](../encyklopedia/budynki/port.md) |
 | Spichlerz | Zywnosc | Kamień | Garncarstwo | 20 pracy | 1 ¤/t | +2 żywność | [Spichlerz](../encyklopedia/budynki/spichlerz.md) |
@@ -84,9 +84,9 @@ Bonus **+4 praca** — przy **4** polach w okolicy suma skalowana liniowo z przy
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/kamieniarski.md`](../encyklopedia/budynki/kamieniarski.md)
 
-### Kuznia
+### Kuźnia brązu
 
-**Kuznia** (Produkcja+Wojsko) odblokowuje się w epoce **Brąz** po technologii **Brązownictwo**. Pierwsze wzniesienie kosztuje **30** pracy; każdy kolejny poziom +**10**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
+**Kuźnia brązu** (Produkcja+Wojsko) odblokowuje się w epoce **Brąz** po technologii **Brązownictwo**. Pierwsze wzniesienie kosztuje **30** pracy; każdy kolejny poziom +**10**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
 
 Na poziomie 1 daje: **+6 praca, +1 złoto**. Każdy kolejny poziom dodaje: **+3 praca**.
 **Wymagania:** miedz lub cyna w zasiegu.
@@ -290,7 +290,7 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 **Wielka Kuźnia** (Produkcja) odblokowuje się w epoce **Średniowiecze** po technologii **Hutnictwo żelaza**. Pierwsze wzniesienie kosztuje **90** pracy; każdy kolejny poziom +**18**. Utrzymanie: **4** ¤ na turę (rosnie o **2** per poziom).
 
 Na poziomie 1 daje: **+12 praca, +3 złoto**. Każdy kolejny poziom dodaje: **+5 praca, +2 złoto**.
-**Wymagania:** zelazo i stal w zasiegu; wymaga Kuznia zelaza.
+**Wymagania:** zelazo i stal w zasiegu; wymaga Kuźni żelaza.
 **Uwaga:** Mnoznik % dotyczy sily i kosztu produkcji wszystkich jednostek w miescie; wymaga dostepu do stali
 
 

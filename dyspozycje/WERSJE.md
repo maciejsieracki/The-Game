@@ -9,7 +9,62 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `b1f16a59` — 2026-07-25 · FALA 10.1: fix błędnego „mnożnika" Pałacu — **AKTUALNA**
+## ROBOCZA `dd1ec38e` — 2026-07-25 · FALA 11: przebudowa systemu budynków + naprawa martwych plonów — **AKTUALNA**
+
+- **KRYTYCZNA NAPRAWA — plony budynków nigdy nie docierały do silnika.** `cityYieldPerTurn()` była wołana
+  z **pustą tablicą budynków** we wszystkich trzech miejscach (`turn-economy.ts` preview i advance,
+  `cityPanel.ts` „Bilans plonów"). Od 2026-07-09 **żaden budynek nie dawał Pracy, Pieniądza, Żywności,
+  Nauki ani Kultury** — całą gospodarkę niosło wyłącznie pole wokół miasta. Zmierzony skutek naprawy
+  (miasto Żelaza, pełna zabudowa): Praca 12→**78**, Pieniądz 8→**98**, Nauka 2→**21**, Kultura 0→**36**,
+  Żywność 2→**8**. Zadowolenie NIE dubluje się — pole z tej funkcji nigdy nie było propagowane dalej,
+  żywym kanałem pozostaje `sumBuildingHappinessFromBuiltIds`; asercja regresyjna dopisana.
+- **Model awansu budynków rozdzielony na dwa rodzaje** (decyzja Macieja):
+  **w górę** (następca kasuje poprzednika, stała wartość per tier, `maksPoziom: 1`): Pałac I/II/III ·
+  Dom Starszyzny→Dwór Zarządcy→Pretorium · Kuźnia brązu→Kuźnia żelaza→Wielka Kuźnia · Spichlerz→Spichlerz II ·
+  Port handlowy→Port wielki · Piec hutniczy→Odlewnia żelaza;
+  **w bok** (oba stoją obok siebie, wartości rozdzielone żeby nie liczyć podwójnie): Mury+Cytadela+Baszta ·
+  Biblioteka+Akademia · Koszary+Akademia wojskowa · Kamienne kręgi+Świątynia.
+  Rozdzielone: Akademia nauka 9→6 i kultura 7→5, Akademia wojskowa praca 5→3, Świątynia kultura 3→2 i zadow. 3→2.
+- **Panel miasta: osiem grup dziedzinowych** zamiast płaskiej listy 39 budynków (Prawo i administracja ·
+  Wojsko i obrona · Handel i pieniądz · Nauka i kultura · Wiara · Zdrowie · Produkcja surowców · Żywność).
+  Przypisanie grupy jest **danymi**, nie hardkodem UI.
+- **Stolica kontra regiony:** Pałac I/II/III wyłącznie w stolicy, nowy łańcuch **Dom Starszyzny → Dwór Zarządcy →
+  Pretorium** wyłącznie poza stolicą, Trybunał i Sąd wszędzie. **FIX pre-istniejącego buga:** budynki z pustym
+  `techUnlock` nie miały obsługi znacznika pustego, przez co **Pałac nigdy nie pojawiał się na liście produkcji**.
+- **Prawo — nowa siatka** (pkt Prawa, łatwy/normalny/trudny; skala Kamień 50 = 100%, Brąz 75, Żelazo 100):
+  Pałac I 45/35/28 · Pałac II 58/45/36 · Pałac III 71/55/44 · Dom Starszyzny 36/28/22 · Dwór Zarządcy 43/33/26 ·
+  Pretorium 50/38/31 · Trybunał 22/17/13 (wcześniej NIE był wpięty w Prawo) · Sąd 25/19/16.
+  Zasada: Pretorium = 70% Pałacu III, Dwór Zarządcy 60%, Dom Starszyzny 50%, Sąd 50% Pretorium.
+- **Obrona miasta:** nowy budynek **Baszta** (+100%). Mury 200% + Cytadela 100% + Baszta 100% = **400%**.
+  Arytmetyka scalona w jednej funkcji `city-defense.ts` dla mapy świata i bitwy interaktywnej
+  (wcześniej dublowana osobno w `main.ts` i `battleScene.ts`).
+- **Dwie ścieżki ulepszeń jednostek z budynków:** Pancerz (Kuźnia brązu 15% → Kuźnia żelaza 30% → Wielka
+  Kuźnia 45%, suma po łańcuchu) i parametry miękkie (Koszary 20 + Akademia wojskowa 20 + Warsztat oblężniczy
+  10 = 50%). Jednostka pamięta **najlepsze odwiedzone własne miasto**, bonus trwały, parytet AI.
+- **Koszty surowcowe wg epok:** Kamień = drewno (wyjątek: Kamienne kręgi i Stela na kamieniu), Brąz =
+  drewno+kamień, Żelazo = drewno+cegła (obrona i port: drewno+kamień). **Brąz i żelazo jako surowiec budowlany
+  usunięte z całej gry.** Powód: cegła powstaje tylko z gliny, a glina tylko przy rzece — sześć budynków Brązu
+  i wszystkie Żelaza były nieosiągalne dla cywilizacji bez rzeki.
+- **Cegła wchodzi na szlaki handlowe** (obok brązu, żelaza, koni). Uwaga: budynki pobierają cegłę **ilościowo**
+  z puli cywilizacji, a szlak przekazuje **dostęp**, więc do pełnego zadziałania decyzji brakuje jeszcze bramki
+  po stronie budynków — do rozstrzygnięcia z Maciejem.
+- **Usunięte z gry:** Karawanseraj (anachronizm — budynek średniowieczny w Brązie), Ratusz (martwy parametr
+  Prawa bez budynku; wróci jako szczebel po Pretorium w średniowieczu). Wcześniej tej doby: Lazaret.
+- **Jednostki:** **Łucznik nubijski** (Brąz, Egipt — zasięg 5, atak dystansowy 7, 16 pocisków, 50 zdrowia,
+  ruch 3) z **dedykowanym modelem 3D** (84 mesh / 1052 tri, długi łuk self-bow, ciemna karnacja, pióro strusia).
+  Wpięte modele Opus 5 łuczników Egiptu i Sumeru. Tarcza Zulu przeskalowana z 2,07 na 1,49 wysokości tułowia.
+- **Naprawa generatora map:** ścieżka „fair play" wymuszała glinę na heksie bez rzeki, łamiąc własną regułę —
+  `logic-test.cjs` wrócił z 207/208 na **208/208**.
+- **Bramki:** tsc 0 · koszty-surowcowe 117/117 (nowy) · grupy-budynkow 80/80 (nowy) · plony-budynkow 47/47 (nowy) ·
+  unit-building-bonuses 76/76 · administracja-stolica 48/48 (nowy) · prawo-palac-tier 30/30 (nowy) ·
+  society-breakdown 40/40 · logic 208/208 · upkeep 58/58 · building-happiness 8/8 · tech-tree 19/19 ·
+  research 33/33 · unit-replace 10/10 · combat 6/6 · post-battle-map 25/25 · VERIFY OK.
+- **md5:** `dd1ec38e0b277765e710e6ae48601b73` · pieczątka `dd1ec38e`. Zastępuje `b1f16a59`.
+- **UWAGA DO PLAYTESTU:** ekonomia zmieniła się skokowo (patrz naprawa plonów) — to jest główna rzecz do ogrania.
+  Stare zapisy wczytają się, ale miasta z Akademią bez Biblioteki dostaną mniej Nauki, a budynki z łańcuchów
+  „w górę" spadną do wartości jednego poziomu.
+
+## ROBOCZA `b1f16a59` — 2026-07-25 · FALA 10.1: fix błędnego „mnożnika" Pałacu — ZASTĄPIONA
 
 - **Zawartość:** cała FALA 10 (patrz niżej) **+ poprawka danych**: trzy tiery Pałacu miały w `baza.mnoznik` wartość równą DOKŁADNIE swojej kulturze (5/5, 8/8, 11/11, przyrost 0) — pomyłka przy wpisywaniu danych, wykryta przy weryfikacji z Maciejem. Pole `mnoznik` NIE jest konsumowane przez silnik ekonomii (czytane tylko do wyświetlenia chipa „×5 mnożnik" w panelu miasta), więc karta Pałacu obiecywała bonus, którego gra nie stosuje. Wyzerowane dla `palac`/`palac_ii`/`palac_iii` — chip znika, realne bonusy (kultura + zadowolenie, które silnik faktycznie liczy) bez zmian.
 - **Potwierdzone przez Macieja koszty i bonusy Pałacu:** I (Kamień) 8 drewna / 40 pracy · kultura 5 (+3/poz.), zadowolenie 2 (+1/poz.) — II (Brąz) 8 drewna+8 kamienia / 60 pracy · kultura 8 (+5), zadow. 3 (+2) — III (Żelazo) 8 drewna+8 kamienia+6 cegły / 90 pracy · kultura 11 (+7), zadow. 5 (+2). Maks. poziom 10, ulepszane kolejno I→II→III.

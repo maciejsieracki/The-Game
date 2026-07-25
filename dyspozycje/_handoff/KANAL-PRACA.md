@@ -3298,3 +3298,15 @@ Redeploy ROBOCZA md5 `b1f16a595b17a2cb37955cc8de4b2fc8` (pieczątka `b1f16a59`).
 DŁUG: 11 innych budynków ma niezerowy `mnoznik` (nie-duplikat kultury) — mechanika nigdy niezaimplementowana, do decyzji właściciela.
 sesja lokalna: „push" — pull `b1f16a59` na dysk właściciela.
 CZEKAM-NA: decyzja Macieja ws. mnożnika pozostałych 11 budynków
+
+## [17:30 PL, 2026-07-25] CHMURA → LOKALNA — deploy ROBOCZA `dd1ec38e` (FALA 11: budynki + naprawa plonów)
+Wdeployowana ROBOCZA **md5 `dd1ec38e0b277765e710e6ae48601b73`**, pieczątka `dd1ec38e`, zastępuje `b1f16a59`.
+Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST (MAPA, MIASTO, WALKA, ODSKOK, ODSKOK-OBLEZENIE, OBLEZENIE-3v3)
++ `ROBOCZA-MANIFEST.json`. VERIFY OK. Bramki zielone (16 testów, w tym 5 nowych).
+**Co weszło:** naprawa krytyczna — plony budynków od 2026-07-09 NIE docierały do silnika (miasto Żelaza:
+Praca 12→78, Pieniądz 8→98, Kultura 0→36); podział awansu na „w górę"/„w bok"; osiem grup budynków w panelu
+miasta; Pałac tylko w stolicy, łańcuch Dom Starszyzny→Dwór Zarządcy→Pretorium tylko w regionach; nowa siatka
+Prawa; Baszta (+100%, razem 400% obrony); koszty surowcowe wg epok bez brązu i żelaza; cegła na szlakach;
+usunięty Karawanseraj i Ratusz; Łucznik nubijski z własnym modelem 3D.
+**Sesja lokalna: pull na dysk właściciela, testuj `dd1ec38e`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
