@@ -11104,6 +11104,11 @@ async function boot(): Promise<void> {
         civId: civTypeForOwner(ownerId),
         era: empireEpochForOwner(ownerId),
         isCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+        // TEMAT 11 (2026-07-24): barbarzyncy (BARBARIAN_OWNER_ID) nie maja wpisu w
+        // aiOwnerCivMap, wiec civTypeForOwner() spada na fallback 'grecy' -- medalion
+        // dostawal portret/ikone Grecji zamiast wlasnego sygnetu. Flaga isBarbarian ma
+        // pierwszenstwo nad civId w renderze (preBattle.ts / battleScene.ts).
+        isBarbarian: isBarbarian(ownerId),
         units: roster.map(preBattleUnitFromRuntime),
       };
     }
@@ -11262,6 +11267,8 @@ async function boot(): Promise<void> {
             defenderEra: empireEpochForOwner(defLead.ownerId),
             attackerIsCityState: pbInfo4.atakujacy.isCityState,
             defenderIsCityState: pbInfo4.obronca.isCityState,
+            attackerIsBarbarian: pbInfo4.atakujacy.isBarbarian,
+            defenderIsBarbarian: pbInfo4.obronca.isBarbarian,
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -11571,6 +11578,8 @@ async function boot(): Promise<void> {
             defenderEra: empireEpochForOwner(defLead.ownerId),
             attackerIsCityState: pbInfo.atakujacy.isCityState,
             defenderIsCityState: pbInfo.obronca.isCityState,
+            attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
+            defenderIsBarbarian: pbInfo.obronca.isBarbarian,
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -12514,6 +12523,8 @@ async function boot(): Promise<void> {
             defenderEra: empireEpochForOwner(defRosterRef[0]?.ownerId ?? 0),
             attackerIsCityState: pbInfo.atakujacy.isCityState,
             defenderIsCityState: pbInfo.obronca.isCityState,
+            attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
+            defenderIsBarbarian: pbInfo.obronca.isBarbarian,
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {

@@ -189,7 +189,7 @@ import {
   createSettingsToggleRow1E,
   createSettingsActionRow1E,
 } from './battleHudTheme';
-import { civIconSvg } from '../ui/icons/brandAssets';
+import { civIconSvg, brandIconSvg } from '../ui/icons/brandAssets';
 import { leaderPortraitUrl, leaderName } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
 import { startVictoryMusic, startDefeatMusic, startBattleMusic } from '../audio/muzyka-antyczna';
@@ -390,6 +390,16 @@ export interface BattleOpts {
   attackerIsCityState?: boolean;
   /** Jw. dla broniacego. */
   defenderIsCityState?: boolean;
+  /**
+   * TEMAT 11 (Maciej 2026-07-24) -- atakujacy to frakcja barbarzyncow
+   * (game/barbarians.ts isBarbarian(ownerId)). Gdy true, medalion dowodcy NIE pokazuje
+   * ani portretu-zdjecia, ani ikony-symbolu jakiejkolwiek cywilizacji (civId barbarzyncow
+   * bywa fallbackiem 'grecy' -- brak prawdziwej kultury) -- wlasny sygnet (czaszka).
+   * Ma pierwszenstwo przed attackerIsCityState.
+   */
+  attackerIsBarbarian?: boolean;
+  /** Jw. dla broniacego. */
+  defenderIsBarbarian?: boolean;
   /** Etykieta składu atakującego (np. Skład (2) / Wojownik). */
   attackerSideLabel?: string;
   /** Etykieta składu broniącego. */
@@ -2199,6 +2209,9 @@ export class BattleScene {
   // R-MP-PORTRET (2026-07-24) -- miasto-panstwo klastra: medalion wraca do symbolu kultury.
   private _attackerIsCityState = false;
   private _defenderIsCityState = false;
+  // TEMAT 11 (2026-07-24) -- frakcja barbarzyncow: medalion dostaje wlasny sygnet (czaszka).
+  private _attackerIsBarbarian = false;
+  private _defenderIsBarbarian = false;
   /** Scroll kontener kart w lewym panelu deploy. */
   private _deployRosterScroll: HTMLDivElement | null = null;
 
@@ -2283,6 +2296,8 @@ export class BattleScene {
     this._defenderEra = clampEra(opts.defenderEra);
     this._attackerIsCityState = opts.attackerIsCityState === true;
     this._defenderIsCityState = opts.defenderIsCityState === true;
+    this._attackerIsBarbarian = opts.attackerIsBarbarian === true;
+    this._defenderIsBarbarian = opts.defenderIsBarbarian === true;
 
     // World-hex-derived terrain preset (forest/hills/river density + palette).
     // ?bt=... (debug/screenshot only) wins over opts.worldTerrain; both are
@@ -2509,7 +2524,9 @@ export class BattleScene {
       display: 'none', alignItems: 'center', justifyContent: 'center',
       color: '#f4e6a8', lineHeight: '0',
     });
-    civEmblem.innerHTML = civIconSvg(this._attackerCivIconId, 24);
+    civEmblem.innerHTML = this._attackerIsBarbarian
+      ? brandIconSvg('chip-death', 24)
+      : civIconSvg(this._attackerCivIconId, 24);
     topLeft.insertBefore(civEmblem, turnLbl);
 
     const speedLbl = document.createElement('span');
@@ -2584,10 +2601,14 @@ export class BattleScene {
       const civIconId = isAtk ? this._attackerCivIconId : this._defenderCivIconId;
       const era = isAtk ? this._attackerEra : this._defenderEra;
       const isCityState = isAtk ? this._attackerIsCityState : this._defenderIsCityState;
+      const isBarbarianSide = isAtk ? this._attackerIsBarbarian : this._defenderIsBarbarian;
       // R-MP-PORTRET: miasto-panstwo NIGDY nie dostaje portretu-zdjecia wladcy glownej
       // cywilizacji -- wraca do ikony-symbolu kultury (civIconSvg), nie do generycznej
       // ikony PB_SVG.commander, zeby bylo widac KTOREJ kultury to MP.
-      const portraitUrl = isCityState ? null : leaderPortraitUrl(civIconId, era);
+      // TEMAT 11: barbarzyncy tez NIGDY nie dostaja portretu -- ani nawet ikony-symbolu
+      // cywilizacji (civIconId bywa fallbackiem 'grecy' -- brak prawdziwej kultury), tylko
+      // wlasny sygnet (czaszka). Sprawdzane PRZED isCityState.
+      const portraitUrl = (isBarbarianSide || isCityState) ? null : leaderPortraitUrl(civIconId, era);
       if (portraitUrl) {
         // Portret wladcy (docs/.../PORTRETY-WLADCOW-2026-07-23) -- obwodka/tlo medalionu
         // (border + gradient ustawione powyzej) zostaja, tylko srodek to zdjecie zamiast ikony.
@@ -2598,6 +2619,10 @@ export class BattleScene {
           width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block',
         });
         medallion.appendChild(img);
+      } else if (isBarbarianSide) {
+        medallion.innerHTML = brandIconSvg('chip-death', 22);
+        const medallionSvg = medallion.querySelector('svg');
+        if (medallionSvg) { medallionSvg.setAttribute('width', '22'); medallionSvg.setAttribute('height', '22'); }
       } else if (isCityState) {
         medallion.innerHTML = civIconSvg(civIconId, 22);
         const medallionSvg = medallion.querySelector('svg');
@@ -2621,7 +2646,7 @@ export class BattleScene {
       });
       nameLbl.textContent = civLabel;
       textCol.appendChild(nameLbl);
-      const leader = leaderName(civIconId, era);
+      const leader = isBarbarianSide ? null : leaderName(civIconId, era);
       if (leader) {
         const leaderLbl = document.createElement('div');
         Object.assign(leaderLbl.style, { fontSize: '10px', fontStyle: 'italic', color: BATTLE_TEXT_DIM, whiteSpace: 'nowrap' });
