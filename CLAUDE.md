@@ -65,7 +65,11 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    Pieniądz / Zadowolenie / Obrona), **w jakiej jednostce** (pkt na turę, %, pkt Prawa) i **w jakim kontekście**
    (poziom, epoka, poziom trudności). Nagłówek kolumny „Baza" jest zakazany — ma być „Kultura (baza)".
    Jego słowa: „wpisujesz baza, ale baza do czego? potem chodzimy po omacku".
-4. **Deleguj wykonanie subagentom na Sonnet 5** (`Agent`, `model: "sonnet"`; `general-purpose` do pracy w repo, `Explore` do read-only reconu). **Opus 5 i Fable 5 wyłącznie za wyraźną zgodą Macieja** (2026-07-25) — domyślnie wszystko na Sonnet 5. Główna pętla zostaje do: rozmowy, dekompozycji, syntezy i decyzji ABC. Subagentowi dawaj samodzielny prompt: ścieżki, bramki, zakaz `npm run build`, zakaz commita/deployu.
+4. **Deleguj wykonanie subagentom na Sonnet 5** (`Agent`, `model: "sonnet"`; `general-purpose` do pracy w repo, `Explore` do read-only reconu). **Opus 5 i Fable 5 wyłącznie za wyraźną zgodą Macieja** (2026-07-25) — domyślnie wszystko na Sonnet 5.
+   **WYJĄTEK — ZGODA STAŁA (Maciej, 2026-07-25):** *„Jednostki i render musisz dawać do subagentów Opus 5, bo Sonnet sobie z tym nie poradzi."* → **modele 3D jednostek i cała praca w `gra/src/render/**` idą na Opus 5.**
+   Powód praktyczny: Sonnet poprawnie dobiera detale historyczne, ale nie ocenia proporcji i czytelności bryły
+   z kąta kamery gry — modele wychodziły za niskie (0,62–0,64 zamiast 0,75 HEX_R), broń nieczytelna albo
+   wystająca poza obrys heksu, tarcze niewidoczne. Każdy wymagał 2–3 rund poprawek po oględzinach zrzutu. Główna pętla zostaje do: rozmowy, dekompozycji, syntezy i decyzji ABC. Subagentowi dawaj samodzielny prompt: ścieżki, bramki, zakaz `npm run build`, zakaz commita/deployu.
 5. **Publikacja tylko na wyraźny sygnał.** `git push` i deploy do wersji roboczej **wyłącznie** gdy Maciej powie („pushuj", „deploy", „wdrażaj") — on jest jedyną bramką publikacji i jedynym playtesterem.
 6. **Nie zgaduj przy niejednoznaczności** — zrób resztę, a sporny punkt opisz i zapytaj. Ta zasada wielokrotnie uchroniła projekt przed kosztownymi błędami.
 7. **Nie twórz problemów, których nie ma.** Maciej kilkakrotnie korygował nadmierne komplikowanie („znajdujesz problemy, których nie ma"). Najprostsze rozwiązanie spełniające wymaganie wygrywa.

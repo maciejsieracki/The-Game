@@ -21702,7 +21702,7 @@ void main() {
     const renderer = new WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     const controls = new OrbitControls(camera, canvas);
-    controls.target.set(0, 0.3 * HEX_R, 0);
+    controls.target.set(0, 0.36 * HEX_R, 0);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
     controls.minDistance = 0.6;
@@ -21752,10 +21752,10 @@ void main() {
     pane.camera.updateProjectionMatrix();
   }
   var VIEWS = {
-    gra: { polarDeg: 52, azimDeg: 24, dist: 1.55 },
-    skos28: { polarDeg: 28, azimDeg: 30, dist: 1.7 },
-    bok: { polarDeg: 82, azimDeg: 90, dist: 1.5 },
-    tyl: { polarDeg: 60, azimDeg: 200, dist: 1.55 }
+    gra: { polarDeg: 52, azimDeg: 24, dist: 1.95 },
+    skos28: { polarDeg: 28, azimDeg: 30, dist: 2.1 },
+    bok: { polarDeg: 82, azimDeg: 90, dist: 1.85 },
+    tyl: { polarDeg: 60, azimDeg: 200, dist: 1.95 }
   };
   function applyView(pane, key) {
     const v = VIEWS[key] ?? VIEWS["gra"];

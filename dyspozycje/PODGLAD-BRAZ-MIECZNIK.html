@@ -21540,7 +21540,7 @@ void main() {
     return gBMTorso ||= new BoxGeometry(BM_TORSO_W, BM_TORSO_H, BM_TORSO_D);
   }
   function getBMCuirass() {
-    return gBMCuirass ||= new BoxGeometry(0.15 * HEX_R, 0.132 * HEX_R, 0.022 * HEX_R);
+    return gBMCuirass ||= new BoxGeometry(0.146 * HEX_R, 0.114 * HEX_R, 0.022 * HEX_R);
   }
   function getBMStrap() {
     return gBMStrap ||= new BoxGeometry(0.026 * HEX_R, 0.118 * HEX_R, 0.014 * HEX_R);
@@ -21612,7 +21612,7 @@ void main() {
     return gBMFist ||= new BoxGeometry(0.046 * HEX_R, 0.046 * HEX_R, 0.048 * HEX_R);
   }
   function getBMDelt() {
-    return gBMDelt ||= new BoxGeometry(0.05 * HEX_R, 0.05 * HEX_R, 0.07 * HEX_R);
+    return gBMDelt ||= new BoxGeometry(0.046 * HEX_R, 0.038 * HEX_R, 0.062 * HEX_R);
   }
   function getBMSkirt() {
     return gBMSkirt ||= new BoxGeometry(0.196 * HEX_R, 0.07 * HEX_R, 0.118 * HEX_R);
@@ -21769,7 +21769,7 @@ void main() {
   }
   function bmBuildArm(group, sx, thU, thF, mUp, mFore, mFist) {
     const delt = new Mesh(getBMDelt(), mUp);
-    delt.position.set(sx * (BM_TORSO_W * 0.5 + 0.014 * HEX_R), BM_SHLD_Y + 0.014 * HEX_R, 0);
+    delt.position.set(sx * (BM_TORSO_W * 0.5 + 0.016 * HEX_R), BM_SHLD_Y - 4e-3 * HEX_R, 0);
     group.add(delt);
     let P = new Vector3(sx, BM_SHLD_Y, 0);
     P = bmSeg(group, getBMUpArm(), mUp, P, thU, BM_UPARM_L);
@@ -21839,7 +21839,7 @@ void main() {
     const HIP_Y = BM_HIP_Y - 0.01 * HEX_R;
     bmBuildCore(group, mTunic, mSkin, mSkinDk, mEye);
     const cuirass = new Mesh(getBMCuirass(), mLeath);
-    cuirass.position.set(0, BM_TORSO_TOP - 0.076 * HEX_R, BM_TORSO_D * 0.5 + 0.011 * HEX_R);
+    cuirass.position.set(0, BM_TORSO_TOP - 0.086 * HEX_R, BM_TORSO_D * 0.5 + 0.011 * HEX_R);
     group.add(cuirass);
     for (const sx of [-1, 1]) {
       const strap = new Mesh(getBMStrap(), mLeathLt);
@@ -21954,11 +21954,12 @@ void main() {
     const armL = bmBuildArm(group, BM_SHLD_X, 0.42, 1, mTunic, mSkin, null);
     const sh = new Group();
     sh.position.set(
-      armL.wrist.x + 0.058 * HEX_R,
-      armL.wrist.y + 0.034 * HEX_R,
-      armL.wrist.z + 0.078 * HEX_R
+      armL.wrist.x - 0.01 * HEX_R,
+      armL.wrist.y - 0.015 * HEX_R,
+      armL.wrist.z + 0.06 * HEX_R
     );
-    sh.rotation.y = -0.1;
+    sh.rotation.x = -0.62;
+    sh.rotation.y = -0.14;
     sh.rotation.z = 0.02;
     const field = new Mesh(getBMShField(), mOwner);
     field.rotation.x = Math.PI / 2;

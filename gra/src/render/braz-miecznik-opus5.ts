@@ -249,7 +249,7 @@ let gBMShGrip:    THREE.BoxGeometry | null = null;
 let gBMShLoop:    THREE.BoxGeometry | null = null;
 
 function getBMTorso():     THREE.BoxGeometry { return (gBMTorso     ||= new THREE.BoxGeometry(BM_TORSO_W, BM_TORSO_H, BM_TORSO_D)); }
-function getBMCuirass():   THREE.BoxGeometry { return (gBMCuirass   ||= new THREE.BoxGeometry(0.150 * HEX_R, 0.132 * HEX_R, 0.022 * HEX_R)); }
+function getBMCuirass():   THREE.BoxGeometry { return (gBMCuirass   ||= new THREE.BoxGeometry(0.146 * HEX_R, 0.114 * HEX_R, 0.022 * HEX_R)); }
 function getBMStrap():     THREE.BoxGeometry { return (gBMStrap     ||= new THREE.BoxGeometry(0.026 * HEX_R, 0.118 * HEX_R, 0.014 * HEX_R)); }
 function getBMNeck():      THREE.BoxGeometry { return (gBMNeck      ||= new THREE.BoxGeometry(0.042 * HEX_R, BM_NECK_H * 1.6, 0.042 * HEX_R)); }
 function getBMHead():      THREE.BoxGeometry { return (gBMHead      ||= new THREE.BoxGeometry(BM_HEAD_S, BM_HEAD_S, BM_HEAD_S)); }
@@ -273,7 +273,7 @@ function getBMShinBind():  THREE.BoxGeometry { return (gBMShinBind  ||= new THRE
 function getBMUpArm():     THREE.BoxGeometry { return (gBMUpArm     ||= new THREE.BoxGeometry(0.054 * HEX_R, BM_UPARM_L, 0.054 * HEX_R)); }
 function getBMForearm():   THREE.BoxGeometry { return (gBMForearm   ||= new THREE.BoxGeometry(0.040 * HEX_R, BM_FOREARM_L, 0.040 * HEX_R)); }
 function getBMFist():      THREE.BoxGeometry { return (gBMFist      ||= new THREE.BoxGeometry(0.046 * HEX_R, 0.046 * HEX_R, 0.048 * HEX_R)); }
-function getBMDelt():      THREE.BoxGeometry { return (gBMDelt      ||= new THREE.BoxGeometry(0.050 * HEX_R, 0.050 * HEX_R, 0.070 * HEX_R)); }
+function getBMDelt():      THREE.BoxGeometry { return (gBMDelt      ||= new THREE.BoxGeometry(0.046 * HEX_R, 0.038 * HEX_R, 0.062 * HEX_R)); }
 function getBMSkirt():     THREE.BoxGeometry { return (gBMSkirt     ||= new THREE.BoxGeometry(0.196 * HEX_R, 0.070 * HEX_R, 0.118 * HEX_R)); }
 function getBMBelt():      THREE.BoxGeometry { return (gBMBelt      ||= new THREE.BoxGeometry(0.192 * HEX_R, 0.028 * HEX_R, 0.114 * HEX_R)); }
 function getBMBuckle():    THREE.BoxGeometry { return (gBMBuckle    ||= new THREE.BoxGeometry(0.028 * HEX_R, 0.024 * HEX_R, 0.014 * HEX_R)); }
@@ -401,7 +401,7 @@ function bmBuildArm(
   mFist: THREE.MeshStandardMaterial | null,
 ): { wrist: THREE.Vector3; axis: THREE.Vector3 } {
   const delt = new THREE.Mesh(getBMDelt(), mUp);
-  delt.position.set(sx * (BM_TORSO_W * 0.5 + 0.014 * HEX_R), BM_SHLD_Y + 0.014 * HEX_R, 0);
+  delt.position.set(sx * (BM_TORSO_W * 0.5 + 0.016 * HEX_R), BM_SHLD_Y - 0.004 * HEX_R, 0);
   group.add(delt);
   let P = new THREE.Vector3(sx, BM_SHLD_Y, 0);
   P = bmSeg(group, getBMUpArm(), mUp, P, thU, BM_UPARM_L);
@@ -491,7 +491,7 @@ export function buildMiecznikBrazOpus5(ownerColor_: number): THREE.Group {
 
   // ═══ PROSTY NAPIERŚNIK ZE SKÓRY + SZELKI KRZYŻOWE ════════════════════════
   const cuirass = new THREE.Mesh(getBMCuirass(), mLeath);
-  cuirass.position.set(0, BM_TORSO_TOP - 0.076 * HEX_R, BM_TORSO_D * 0.5 + 0.011 * HEX_R);
+  cuirass.position.set(0, BM_TORSO_TOP - 0.086 * HEX_R, BM_TORSO_D * 0.5 + 0.011 * HEX_R);
   group.add(cuirass);
   for (const sx of [-1, 1]) {
     const strap = new THREE.Mesh(getBMStrap(), mLeathLt);
@@ -620,17 +620,20 @@ export function buildMiecznikBrazOpus5(ownerColor_: number): THREE.Group {
   group.add(frog);
 
   // ═══ LEWE (+X) RAMIĘ: TARCZA OKRĄGŁA ZE SKÓRY WOŁOWEJ + BRĄZOWE UMBO ═════
-  // Powiększona i wysunięta wyraźnie PRZED i NA ZEWNĄTRZ przedramienia (nie
-  // wewnątrz obrysu tułowia) oraz niemal prostopadle do kamery (min. przechył),
-  // żeby pole tarczy było jednoznacznie czytelne z ujęcia gry 52°.
+  // Wyśrodkowana na przedramieniu na wysokości pas→dolna klatka piersiowa
+  // (nie na wysokości barków/głowy), wysunięta PRZED tułów (zasłania korpus,
+  // nie sterczy z boku). Płaszczyzna odchylona o rotation.x (normalna w górę
+  // -i-przód, w stronę podniesionej kamery gry 52°) — inaczej z tego ujęcia
+  // widać tylko wąską krawędź tarczy zamiast pola z umbem.
   const armL = bmBuildArm(group, BM_SHLD_X, 0.42, 1.00, mTunic, mSkin, null);
   const sh = new THREE.Group();
   sh.position.set(
-    armL.wrist.x + 0.058 * HEX_R,
-    armL.wrist.y + 0.034 * HEX_R,
-    armL.wrist.z + 0.078 * HEX_R,
+    armL.wrist.x - 0.010 * HEX_R,
+    armL.wrist.y - 0.015 * HEX_R,
+    armL.wrist.z + 0.060 * HEX_R,
   );
-  sh.rotation.y = -0.10;
+  sh.rotation.x = -0.62;
+  sh.rotation.y = -0.14;
   sh.rotation.z = 0.02;
 
   const field = new THREE.Mesh(getBMShField(), mOwner);           // pole = kolor gracza (skóra barwiona)
