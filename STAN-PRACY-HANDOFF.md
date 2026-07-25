@@ -294,7 +294,14 @@ Maciej (dosłownie): „Każdy poziom jest dla następnej epoki… Jak będziemy
 - Jeśli awansuje: jaki nowy tier, jakie surowce (muszą się RÓŻNIĆ od poprzedniego poziomu), jakie bonusy, jaka nazwa.
 - Dotyczy to Pałacu ORAZ 8 pozostałych łańcuchów: Odlewnia brązu→żelaza · Port→Port wielki · Kamienne kręgi→Świątynia · Spichlerz→Spichlerz II · Biblioteka→Akademia · Mury→Fort/Cytadela · Koszary→Akademia wojskowa · Kuźnia żelaza→Wielka kuźnia.
 
-**Kiedy ruszać:** WYŁĄCZNIE gdy Maciej powie, że wchodzimy w kolejne epoki. Do tego czasu temat jest zamknięty — nie proponować, nie „poprawiać przy okazji".
+**Kiedy ruszać:** WYŁĄCZNIE gdy Maciej powie, że wchodzimy w kolejne epoki.
+
+### 🅿️ DRUGI TEMAT ZAPARKOWANY: AWANS BUDYNKÓW PRZEZ POZIOMY (Maciej 2026-07-25)
+**Pierwotny pomysł (z początku projektu):** każdy budynek ma **10 poziomów rozwoju**, awansuje o jeden w każdej epoce.
+**Dlaczego to nie działa dziś:** gra ma 3 epoki, więc budynek z epoki 1 osiąga poziom 3, z epoki 2 — poziom 2, z epoki 3 — poziom 1. Deklarowane `maksPoziom: 10` było fikcją w KAŻDYM budynku. Maciej: „jeżeli budynek będzie w epoce piątej, to już nie będzie miał dziesięciu poziomów, tylko 5. Więc na razie przyjmijmy to, co jest pewne."
+**Decyzja (PYTANIE 7 = A):** `maksPoziom` ustawiony na REALNIE osiągalny (epoka 1→3, epoka 2→2, epoka 3→1). Nazwy poziomów zostają w danych (przydadzą się przy kolejnych epokach), UI pokazuje tylko osiągalne.
+**DO PRZEMYŚLENIA, gdy dojdą epoki:** czy wracamy do modelu „awans co epokę" — wtedy `maksPoziom` każdego budynku trzeba podnieść o liczbę nowych epok, a wzrost `×1,10` na poziom prawdopodobnie przeskalować (dziś przez 3 epoki Stolarnia rośnie z 5 do 6,1 Pracy — praktycznie płasko).
+**Kiedy ruszać:** razem z tematem awansów budynków wyżej — wyłącznie na sygnał Macieja. Do tego czasu temat jest zamknięty — nie proponować, nie „poprawiać przy okazji".
 (Drobiazg kosmetyczny na potem: każdy tier deklaruje `maksPoziom: 10`, co UI pokazuje jako „Maks. poziom: 10" mimo że nieosiągalne. Niski priorytet, do sprzątnięcia przy okazji tamtej pracy.)
 
 
