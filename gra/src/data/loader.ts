@@ -142,6 +142,19 @@ export interface BuildingDef {
    * przez AvailabilityContext.isCapital — ownerId-agnostic (PARYTET AI).
    */
   lokalizacja?: 'stolica' | 'region';
+  /**
+   * GRUPY-BUDYNKOW (decyzja Macieja 2026-07-25): grupa dziedzinowa budynku dla
+   * panelu miasta — jedna z ośmiu: 'Prawo i administracja', 'Wojsko i obrona',
+   * 'Handel i pieniądz', 'Nauka i kultura', 'Wiara', 'Zdrowie',
+   * 'Produkcja surowców', 'Żywność'. Warstwa PREZENTACJI (panel „Budynki w
+   * mieście" grupuje po tym polu zamiast płaskiej listy 38 budynków) — dane,
+   * nie hardkod w UI (patrz game/building-upgrades.ts BUILDING_GROUP_ORDER /
+   * groupBuiltBuildingIds). Każdy budynek w buildings.json ma to pole
+   * wypełnione — sprawdzane przez tools/grupy-budynkow-test.cjs. Opcjonalne w
+   * typie dla wstecznej zgodności (np. ręcznie budowane obiekty testowe bez
+   * tego pola nie psują kompilacji), ale w danych gry brak = błąd danych.
+   */
+  grupa?: string;
 }
 
 /** Wiersz z arkusza Surowce.xlsx. */

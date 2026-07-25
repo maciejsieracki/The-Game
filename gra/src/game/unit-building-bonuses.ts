@@ -24,10 +24,13 @@
  * SCIEZKA B -- PARAMETRY MIEKKIE (wszystko POZA Pancerzem: atak, obrona,
  *   atak dystansowy, zdrowie, uderzenie/szarza): budynki szkoleniowe,
  *   analogicznie kumulatywne wg budynkow realnie obecnych + suma lancucha
- *   upgradeFrom (patrz Sciezka A powyzej). Akademia wojskowa zastepuje Koszary
- *   -- z Warsztatem oblezniczym obecnym w miescie wychodzi (20+20)+10=+50%.
+ *   upgradeFrom (patrz Sciezka A powyzej). GRUPY-BUDYNKOW (Maciej 2026-07-25,
+ *   likwidacja "awansu bocznego"): Akademia wojskowa NIE zastepuje juz Koszar
+ *   (upgradeFrom usuniety z buildings.json) -- oba budynki stoja w miescie
+ *   OSOBNO i licza sie WPROST (nie przez lancuch), z Warsztatem oblezniczym
+ *   obecnym w miescie wychodzi (20+20)+10=+50%, dokladnie jak przed zmiana.
  *     koszary             -> buildings.json baza.mnoznik (20)
- *     akademia_wojskowa   -> buildings.json baza.mnoznik (20) [upgradeFrom=koszary]
+ *     akademia_wojskowa   -> buildings.json baza.mnoznik (20) [niezalezny budynek od 2026-07-25]
  *     warsztat_oblezniczy -> buildings.json baza.mnoznik (10)
  *
  * Jednostka PAMIETA najlepszy % kiedykolwiek osiagniety na kazdej sciezce

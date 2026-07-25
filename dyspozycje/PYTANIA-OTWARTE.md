@@ -333,8 +333,13 @@ Cegielnia jest budynkiem epoki Brązu, więc gracz może produkować cegłę z w
 ## PYTANIE 41 = **B, bonus +100% Obrony** — trzeci budynek obronny w epoce Żelaza
 Trzeci budynek obronny miasta, **dokładany** obok Murów i Cytadeli (nie zastępuje ich).
 Obrona miasta narasta: Mury +200% → Cytadela +100% → nowy budynek +100% = **łącznie +400%**.
-Propozycja nazwy: **Baszty** (wieże obronne) — w epoce Żelaza mury najeżone wieżami to standard
+Nazwa **ZATWIERDZONA przez Macieja**: **Baszta** („mury, cytadela i baszta może być") — w epoce Żelaza mury najeżone wieżami to standard
 hellenistyczny i rzymski (`turres`), więc nazwa jest historycznie trafna i nie myli się z Fortem terenowym.
 Uwaga: identyfikator Cytadeli w danych to `fort`, a osobny **Fort terenowy** to ulepszenie mapy stawiane
 robotnikiem — te trzy rzeczy trzeba trzymać rozdzielnie.
 **DO WDROŻENIA.**
+
+
+## NAZWA ZATWIERDZONA (Maciej 2026-07-25)
+Łańcuch obronny miasta: **Mury → Cytadela → Baszta**, wszystkie trzy stoją obok siebie (dokładane, nie zastępowane).
+Obrona miasta: Mury +200% → Cytadela +100% → Baszta +100% = **łącznie +400%**.

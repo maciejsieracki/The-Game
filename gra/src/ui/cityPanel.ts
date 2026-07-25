@@ -93,6 +93,7 @@ import {
   cityHasBibliotekaLine,
   cityHasAmfiteatrLine,
   cityPalacTier,
+  groupBuiltBuildingIds,
 } from '../game/building-upgrades';
 import { getCityFoodSplit, getEmpireFoodMaxCap } from '../game/empire-food';
 import type { CityManpowerSnapshot } from '../game/manpower';
@@ -1381,6 +1382,13 @@ function ensureStyles(): void {
 .civ-cs .bi{font-size:0.95em;width:1.3em;text-align:center;} .civ-cs .bn{flex:1;font-size:0.84em;}
 .civ-cs .bld-upg{flex:0 0 auto;margin-left:auto;padding:0 0.35em;background:transparent;border:none;color:var(--gold);cursor:pointer;font-size:0.95em;line-height:1;}
 .civ-cs .bld-upg:hover{color:#fff;}
+.civ-cs .bld-group{margin-bottom:0.22em;}
+.civ-cs .bld-group>.bld,.civ-cs .bld-group>.bld-group-empty-note{margin-left:0.15em;}
+.civ-cs .bld-group-h{cursor:pointer;font-size:0.82em;font-weight:700;color:var(--fg);padding:0.16em 0.3em;
+  background:var(--panel2);border:1px solid var(--border);border-radius:3px;margin-bottom:0.16em;user-select:none;}
+.civ-cs .bld-group-h:hover{color:var(--gold);}
+.civ-cs .bld-group-empty>.bld-group-h{color:var(--muted);font-weight:400;background:transparent;border-style:dashed;}
+.civ-cs .bld-group-empty-note{font-size:0.72em;padding-left:0.5em;}
 .civ-cs .be{font-size:0.74em;color:var(--green);} .civ-cs .bm{font-size:0.74em;color:var(--red);margin-left:auto;}
 .civ-cs .ybox{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:0.4em 0.5em;}
 .civ-cs .yn{font-size:0.74em;color:var(--muted);} .civ-cs .yv{font-size:1.4em;font-weight:700;line-height:1.1;}
@@ -5918,6 +5926,39 @@ function buildUpgradeBonusDetailCard(
   return card;
 }
 
+/** Jeden wiersz budynku w panelu „Budynki w mieście" (GRUPY-BUDYNKOW, 2026-07-25). */
+function appendOwnedBuildingRow(target: HTMLElement, id: string, data: GameData): void {
+  const def = data.buildings.find(b => b.id === id);
+  const row = el('div', 'bld');
+  appendBuildingInlineIcon(row, def);
+  const bn = el('span', 'bn');
+  bn.textContent = def ? def.nazwa : id;
+  if (def && (def.upgradeFrom ?? '').trim().length > 0) {
+    const chain = upgradeChainSteps(def.id, data.buildings);
+    bn.title = chain.map(c => c.nazwa).join(' → ');
+  }
+  row.appendChild(bn);
+  if (def && (def.upgradeFrom ?? '').trim().length > 0) {
+    const upBtn = el('button', 'bld-upg');
+    upBtn.type = 'button';
+    upBtn.textContent = '↗';
+    upBtn.title = 'Skład bonusów upgrade';
+    upBtn.setAttribute('aria-label', `Skład bonusów ${def.nazwa}`);
+    attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data), { delayMs: 260, sideHint: 'left' });
+    row.appendChild(upBtn);
+  }
+  target.appendChild(row);
+}
+
+/**
+ * Panel „Budynki w mieście" — GRUPY-BUDYNKOW (Maciej 2026-07-25): zamiast
+ * płaskiej listy do 38 budynków, osiem grup dziedzinowych (`<details>`,
+ * kliknięcie rozwija). Przypisanie budynek→grupa czyta się z danych
+ * (BuildingDef.grupa, patrz data/loader.ts) — grupowanie samo w sobie jest
+ * WYŁĄCZNIE prezentacją, nie zmienia żadnej wartości silnika. Grupa bez
+ * zbudowanych budynków zostaje widoczna (wymóg #3 zadania), ale w stanie
+ * odróżnionym (`bld-group-empty`, zwinięta, „— brak —").
+ */
 function renderBuildingsOwned(
   mount: HTMLElement,
   city: City,
@@ -5936,27 +5977,20 @@ function renderBuildingsOwned(
         ? createScrollList('list-scroll', { visible: opts.visibleRows })
         : null;
     const target = scroll ?? mount;
-    for (const id of built) {
-      const def = data.buildings.find(b => b.id === id);
-      const row = el('div', 'bld');
-      appendBuildingInlineIcon(row, def);
-      const bn = el('span', 'bn');
-      bn.textContent = def ? def.nazwa : id;
-      if (def && (def.upgradeFrom ?? '').trim().length > 0) {
-        const chain = upgradeChainSteps(def.id, data.buildings);
-        bn.title = chain.map(c => c.nazwa).join(' → ');
+    const groups = groupBuiltBuildingIds(built, data.buildings);
+    for (const { grupa, ids } of groups) {
+      const isEmpty = ids.length === 0;
+      const details = el('details', `bld-group${isEmpty ? ' bld-group-empty' : ''}`);
+      details.open = !isEmpty;
+      const summary = el('summary', 'bld-group-h');
+      summary.textContent = isEmpty ? `${grupa} — brak` : `${grupa} (${ids.length})`;
+      details.appendChild(summary);
+      if (isEmpty) {
+        details.appendChild(el('div', 'muted bld-group-empty-note', '(brak zbudowanych budynków w tej grupie)'));
+      } else {
+        for (const id of ids) appendOwnedBuildingRow(details, id, data);
       }
-      row.appendChild(bn);
-      if (def && (def.upgradeFrom ?? '').trim().length > 0) {
-        const upBtn = el('button', 'bld-upg');
-        upBtn.type = 'button';
-        upBtn.textContent = '↗';
-        upBtn.title = 'Skład bonusów upgrade';
-        upBtn.setAttribute('aria-label', `Skład bonusów ${def.nazwa}`);
-        attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data), { delayMs: 260, sideHint: 'left' });
-        row.appendChild(upBtn);
-      }
-      target.appendChild(row);
+      target.appendChild(details);
     }
     if (scroll) mount.appendChild(scroll);
   } else {

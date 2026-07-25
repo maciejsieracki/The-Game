@@ -11337,11 +11337,13 @@ async function boot(): Promise<void> {
       // Sprawdz czy bronicacy jest w miescie z murem
       const cityOnHex = cities.find(c => c.q === q && c.r === r);
       if (cityOnHex && (cityOnHex as any).maMur === true) {
-        // Cytadela = upgrade budynku 'mury' -> podmienia jego ID na 'fort' w
-        // cityBuilt (miasto z Cytadela NIE ma juz 'mury' na liscie budynkow).
-        // maMur zostaje true dla obu (main.ts ustawia ja przy ukonczeniu
-        // 'mury' LUB 'fort' -- patrz applyCompletedBuildingIds), wiec
-        // rozroznienie mur/Cytadela robimy tu, po budynku 'fort' w cityBuilt.
+        // GRUPY-BUDYNKOW (Maciej 2026-07-25): Cytadela ('fort') juz NIE zastepuje
+        // 'mury' w cityBuilt (upgradeFrom usuniety z buildings.json) -- miasto z
+        // Cytadela ma OBA id na liscie budynkow naraz. maMur zostaje true przy
+        // ukonczeniu 'mury' LUB 'fort' (main.ts, patrz applyCompletedBuildingIds),
+        // wiec rozroznienie sam-mur / mur+Cytadela robimy tu, po obecnosci 'fort'
+        // w cityBuilt -- kod juz odporny na wspolobecnosc obu id (nie zaklada
+        // usuniecia 'mury'), zadna zmiana logiki tu nie byla potrzebna.
         const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
         if (builtIds.includes('fort')) {
           return MUR_BONUS_PROC + CYTADELA_BONUS_PROC; // mur+Cytadela = 200+100 = 300%

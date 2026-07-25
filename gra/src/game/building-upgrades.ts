@@ -149,3 +149,61 @@ export function cityPalacTier(builtIds: readonly string[]): 1 | 2 | 3 | null {
   if (builtIds.includes('palac')) return 1;
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// GRUPY-BUDYNKOW (decyzja Macieja 2026-07-25): panel „Budynki w mieście"
+// grupuje 38 typów budynków w osiem grup dziedzinowych zamiast płaskiej listy.
+// Przypisanie budynek→grupa jest DANYMI (pole `grupa` w buildings.json /
+// BuildingDef, data/loader.ts) — kolejny budynek dostaje grupę w JSON, bez
+// zmiany UI. Kolejność grup poniżej to WYŁĄCZNIE porządek wyświetlania
+// (prezentacja), nie dane gry.
+// ---------------------------------------------------------------------------
+
+/** Osiem grup dziedzinowych panelu miasta, w kolejności wyświetlania. */
+export const BUILDING_GROUP_ORDER = [
+  'Prawo i administracja',
+  'Wojsko i obrona',
+  'Handel i pieniądz',
+  'Nauka i kultura',
+  'Wiara',
+  'Zdrowie',
+  'Produkcja surowców',
+  'Żywność',
+] as const;
+
+export type BuildingGroupName = typeof BUILDING_GROUP_ORDER[number];
+
+/** Grupa „koszyk" dla budynków, którym brakuje pola `grupa` w danych (nie powinno się zdarzyć — patrz tools/grupy-budynkow-test.cjs). */
+export const BUILDING_GROUP_FALLBACK = 'Inne';
+
+export type BuildingGroupLite = { id: string; grupa?: string | null };
+
+export interface BuildingGroupBucket {
+  grupa: string;
+  /** Puste = miasto nie ma jeszcze żadnego budynku z tej grupy (grupa nadal ma być widoczna, patrz WYMAGANIA TWARDE #3). */
+  ids: string[];
+}
+
+/**
+ * Grupuje zbudowane budynki miasta (`builtIds`, kolejność zachowana wewnątrz
+ * grupy) wg pola `grupa` z definicji, w stałej kolejności `BUILDING_GROUP_ORDER`
+ * — każda z ośmiu grup zawsze obecna w wyniku (nawet pusta), żeby UI mogło
+ * pokazać "grupa istnieje, ale jeszcze bez budynków" zamiast ją pomijać.
+ * Budynek bez rozpoznanej grupy trafia do koszyka `BUILDING_GROUP_FALLBACK`
+ * (dopisywanego na końcu) — sygnał błędu danych, nie oczekiwany w praniu.
+ */
+export function groupBuiltBuildingIds(
+  builtIds: readonly string[],
+  buildings: readonly BuildingGroupLite[],
+): BuildingGroupBucket[] {
+  const byId = new Map(buildings.map(b => [b.id, b] as const));
+  const buckets = new Map<string, string[]>();
+  for (const g of BUILDING_GROUP_ORDER) buckets.set(g, []);
+  for (const id of builtIds) {
+    const raw = byId.get(id)?.grupa;
+    const g = typeof raw === 'string' && raw.trim().length > 0 ? raw.trim() : BUILDING_GROUP_FALLBACK;
+    if (!buckets.has(g)) buckets.set(g, []);
+    buckets.get(g)!.push(id);
+  }
+  return Array.from(buckets.entries()).map(([grupa, ids]) => ({ grupa, ids }));
+}
