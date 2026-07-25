@@ -926,3 +926,196 @@ export function firstTradeRouteResourceGrant(
     .filter(g => g.ownerId === ownerId && g.resourceKey === resourceKey)
     .sort((a, b) => a.routeId.localeCompare(b.routeId))[0];
 }
+
+// ---------------------------------------------------------------------------
+// E3c: przepływ ILOŚCIOWY surowca przez trasę handlową (PYTANIE 53 = B, decyzja
+// właściciela 2026-07-25).
+//
+// Kontekst: computeTradeRouteResourceGrants (wyżej) daje tylko dostęp TAK/NIE —
+// to wystarcza jako bramka produkcji jednostek (Brąz/Żelazo/Koń), ale NIE zasila
+// magazynu surowca zużywanego ILOŚCIOWO przez `koszt_surowce` budynków
+// (building-stock-cost.ts) — Cegielnia produkuje Cegłę tylko z Gliny, a złoże
+// Gliny bywa nieosiągalne geograficznie (brak lądu z rzeką) dla całej
+// cywilizacji. Ta sekcja DODAJE realny transfer ilości do puli PAŃSTWA
+// odbiorcy — NIE zastępuje grantu dostępu powyżej (Brąz/Żelazo/Koń jako
+// bramka jednostek zostają dokładnie takie, jak są).
+//
+// ROZPOZNANIE PRZED KODOWANIEM (wymagane zadaniem): magazyn surowców jest JUŻ
+// pulą PAŃSTWA (SUROW-CIV-01, Maciej 2026-07-24, patrz building-stock-cost.ts
+// ownerResourceStockAll — suma City.surowce po WSZYSTKICH miastach jednego
+// ownera). Oznacza to, że WEWNĄTRZ jednej cywilizacji przepływ przez trasę nie
+// miałby żadnego efektu: surowiec miasta A tej samej cywilizacji jest już
+// identycznie dostępny miastu B (ta sama pula). Przepływ ilościowy ma sens
+// WYŁĄCZNIE MIĘDZY RÓŻNYMI cywilizacjami — a to jest dokładnie zbiór tras, jaki
+// w ogóle istnieje: refreshTradeRoutes tworzy WYŁĄCZNIE pary
+// gracz(ownerId=0)<->obca cywilizacja, własne<->własne nigdy nie tworzy trasy
+// (patrz nagłówek refreshTradeRoutes). Funkcja niżej tego nie zakłada na twardo
+// (czyta route.ownerId/toOwnerId jak leci) — gdyby kiedyś doszły trasy
+// AI<->AI, zadziała identycznie, bez żadnej gałęzi po ownerId (parytet AI).
+// ---------------------------------------------------------------------------
+
+/**
+ * Podzbiór TRADE_ROUTE_RESOURCE_KEYS, który ma realną reprezentację ILOŚCIOWĄ
+ * w City.surowce (building-stock-cost.ts STOCK_RESOURCE_LABEL) — 'kon' jest
+ * WYŁĄCZONY celowo: to czysty odblokownik civ-wide (computeEmpireLivestockUnlocks),
+ * bez żadnego magazynu sztuk do przenoszenia; przepływ ilościowy dla 'kon' nie
+ * ma więc żadnego sensownego znaczenia i pozostaje wyłącznie boolean-grantem.
+ */
+export type TradeRouteStockFlowResourceKey = Exclude<TradeRouteResourceKey, 'kon'>;
+
+export const TRADE_ROUTE_STOCK_FLOW_KEYS: readonly TradeRouteStockFlowResourceKey[] =
+  ['braz', 'zelazo', 'cegla'];
+
+/** Parametry przepływu ilościowego (data/econ-params.json — patrz loader niżej). */
+export interface TradeRouteResourceFlowParams {
+  /**
+   * Minimalny zapas surowca (per właściciel, per surowiec), który NIGDY nie jest
+   * eksportowany — właściciel oddaje przez trasę wyłącznie nadwyżkę PONAD ten
+   * próg. Odpowiada ISTNIEJĄCEMU, dotąd NIEKONSUMOWANEMU kluczowi
+   * econ-params.json → ekonomia_miasta.handel_surowiec_min_stock (ABC-15,
+   * Maciej 2026-07-04, opis: „handel surowcem dopiero gdy stock ≥ wartość; 1
+   * szt. zostaje = dostęp"). Ten mechanizm jest jego PIERWSZYM realnym
+   * zastosowaniem w kodzie (patrz loadTradeRouteResourceFlowParams).
+   */
+  minStockReserve: number;
+  /**
+   * Maks. ilość JEDNEGO surowca, jaką JEDEN szlak może przenieść w JEDNĄ turę.
+   * PLACEHOLDER w kodzie (nie w econ-params.json — patrz komentarz przy stałej
+   * niżej): brak zapisu w danych oznacza brak przepustowości, co odtwarzałoby
+   * pierwotny problem (cegła dojeżdża, ale nieograniczoną ilością na turę —
+   * de facto znów "z powietrza", tylko opóźnione o rozruch pierwszej tury).
+   */
+  capacityPerRoutePerTurn: number;
+}
+
+/**
+ * Wartości domyślne. `capacityPerRoutePerTurn = 4`: throughput Cegielni to
+ * `budynek_cegielnia_przepustowosc` (fallback 3 szt./turę, converters.ts) —
+ * jeden szlak niosący 4 szt./turę odpowiada mniej więcej WYDAJNOŚCI JEDNEJ
+ * Cegielni, czyli odciętej cywilizacji dowozi surowiec w tempie porównywalnym
+ * do posiadania własnej Cegielni, a nie w tempie zalewającym partnera handlowego
+ * ponad jego własną produkcję. Docelowo do przeniesienia w econ-params.json
+ * (patrz raport zadania) — NIE dodane tu, bo plik jest zablokowany dla tej
+ * zmiany (równoległy subagent pracuje nad ekonomia_miasta/economy-upkeep.ts).
+ */
+export const DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS: TradeRouteResourceFlowParams = {
+  minStockReserve: 2,
+  // PLACEHOLDER stałej w kodzie (patrz komentarz na interfejsie powyżej) —
+  // TODO(econ-params): przenieść do data/econ-params.json, blok "handel_szlaki",
+  // np. klucz "handel_ilosc_na_ture_na_szlak" (per poziom trudności).
+  capacityPerRoutePerTurn: 4,
+};
+
+interface RawEconParamsJsonMinStock {
+  ekonomia_miasta?: Record<string, RawParamRow>;
+}
+
+/**
+ * Wczytaj minStockReserve z econ-params.json (ekonomia_miasta.handel_surowiec_min_stock,
+ * ABC-15) — ten sam klucz na wszystkich poziomach trudności do 2026-07-25 (2 szt.),
+ * ale czytany PER difficulty na wypadek przyszłego dostrojenia. capacityPerRoutePerTurn
+ * NIE jest dziś w danych (patrz DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS) — zawsze
+ * placeholder ze stałej.
+ */
+export function loadTradeRouteResourceFlowParams(
+  raw: RawEconParamsJsonMinStock,
+  difficulty: Difficulty,
+): TradeRouteResourceFlowParams {
+  const grp = raw.ekonomia_miasta ?? {};
+  const row = grp['handel_surowiec_min_stock'];
+  const v = row ? row[difficulty] : undefined;
+  const minStockReserve = typeof v === 'number' && Number.isFinite(v)
+    ? v
+    : DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.minStockReserve;
+  return {
+    minStockReserve,
+    capacityPerRoutePerTurn: DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.capacityPerRoutePerTurn,
+  };
+}
+
+/**
+ * Jeden przyznany transfer ilościowy — `amount` (zawsze > 0, liczba całkowita)
+ * ma zostać ODJĘTY z puli państwa `fromOwnerId` (nadawca — ma nadwyżkę) i
+ * DODANY do puli państwa `toOwnerId` (odbiorca), przez wywołującego (main.ts)
+ * — ten moduł tylko WYLICZA, nigdy nie mutuje żadnego stanu gry (spójne z resztą
+ * pliku: pure logic, bez side effects poza cache'em detekcji).
+ */
+export interface TradeRouteResourceFlow {
+  routeId: string;
+  resourceKey: TradeRouteStockFlowResourceKey;
+  /** Właściciel, któremu surowiec REALNIE UBYWA z puli państwa. */
+  fromOwnerId: number;
+  /** Właściciel, któremu surowiec REALNIE PRZYBYWA w puli państwa. */
+  toOwnerId: number;
+  /** Ilość (szt., liczba całkowita > 0). */
+  amount: number;
+}
+
+/**
+ * Wylicza transfery ilościowe surowca dla wszystkich aktywnych tras. Model:
+ * dla KAŻDEJ trasy `status === 'polaczony'` i KAŻDEGO surowca z
+ * TRADE_ROUTE_STOCK_FLOW_KEYS, strona z WIĘKSZYM zapasem (wg `ownerStock`,
+ * civ-wide) eksportuje nadwyżkę PONAD `params.minStockReserve` do strony z
+ * mniejszym zapasem, maks. `params.capacityPerRoutePerTurn` na tę jedną trasę.
+ *
+ * `ownerStock` to WEJŚCIOWY snapshot (główny wołający liczy go z
+ * ownerResourceStockAll, building-stock-cost.ts) — ale funkcja utrzymuje
+ * WEWNĘTRZNY ledger aktualizowany PO KAŻDYM przyznanym transferze, żeby jeden
+ * właściciel z wieloma trasami do różnych partnerów nigdy nie "wyeksportował"
+ * więcej niż realnie ma nadwyżki w jednej turze (surowiec realnie ubywa —
+ * zasada #2 zadania). Kolejność przetwarzania tras jest deterministyczna
+ * (sort po `id`), więc wynik jest powtarzalny przy tym samym wejściu — w tym
+ * IDENTYCZNY niezależnie od tego, który `ownerId` jest "graczem" (parytet AI,
+ * zasada #4 zadania: zero gałęzi po ownerId).
+ *
+ * Zwraca tylko transfery z `amount > 0` (Math.floor — surowiec liczy się w
+ * sztukach całkowitych, zgodnie z resztą City.surowce).
+ */
+export function computeTradeRouteResourceFlow(
+  routes: readonly TradeRoute[],
+  ownerStock: (ownerId: number, key: TradeRouteStockFlowResourceKey) => number,
+  params: TradeRouteResourceFlowParams = DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS,
+  resourceKeys: readonly TradeRouteStockFlowResourceKey[] = TRADE_ROUTE_STOCK_FLOW_KEYS,
+): TradeRouteResourceFlow[] {
+  const flows: TradeRouteResourceFlow[] = [];
+
+  const ledger = new Map<string, number>();
+  const ledgerKey = (ownerId: number, key: TradeRouteStockFlowResourceKey): string => `${ownerId}|${key}`;
+  const stockOf = (ownerId: number, key: TradeRouteStockFlowResourceKey): number => {
+    const lk = ledgerKey(ownerId, key);
+    if (!ledger.has(lk)) ledger.set(lk, ownerStock(ownerId, key));
+    return ledger.get(lk)!;
+  };
+  const applyDelta = (ownerId: number, key: TradeRouteStockFlowResourceKey, delta: number): void => {
+    ledger.set(ledgerKey(ownerId, key), stockOf(ownerId, key) + delta);
+  };
+
+  const sortedRoutes = routes
+    .filter(r => r.status === 'polaczony')
+    .slice()
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  for (const route of sortedRoutes) {
+    for (const key of resourceKeys) {
+      const ownerStockNow = stockOf(route.ownerId, key);
+      const toOwnerStockNow = stockOf(route.toOwnerId, key);
+      if (ownerStockNow === toOwnerStockNow) continue;
+
+      const fromOwnerId = ownerStockNow > toOwnerStockNow ? route.ownerId : route.toOwnerId;
+      const toOwnerId   = fromOwnerId === route.ownerId ? route.toOwnerId : route.ownerId;
+      const donorStock  = Math.max(ownerStockNow, toOwnerStockNow);
+
+      const surplus = donorStock - params.minStockReserve;
+      if (surplus <= 0) continue;
+
+      const amount = Math.floor(Math.min(params.capacityPerRoutePerTurn, surplus));
+      if (amount <= 0) continue;
+
+      applyDelta(fromOwnerId, key, -amount);
+      applyDelta(toOwnerId, key, amount);
+      flows.push({ routeId: route.id, resourceKey: key, fromOwnerId, toOwnerId, amount });
+    }
+  }
+
+  return flows;
+}

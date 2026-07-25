@@ -251,12 +251,15 @@ import {
   findCityConnection,
   tradeRouteDistanceIncome,
   citiesHaveTradeConnection,
+  computeTradeRouteResourceFlow,
+  loadTradeRouteResourceFlowParams,
   type TradeRoute,
   type TradeRouteCityRef,
   type TradeRouteParams,
   type TradeRouteIncomeParams,
   type TradeRouteResourceGrant,
   type TradeRouteResourceKey,
+  type TradeRouteStockFlowResourceKey,
 } from './game/trade-routes';
 import {
   empireHasKopalniaMiedzi,
@@ -13785,6 +13788,27 @@ async function boot(): Promise<void> {
             recomputeTradeRouteResourceGrants();
           } catch (eTradeGrant) {
             console.error('[Handel] Blad przeliczania grantow z trasy:', eTradeGrant);
+          }
+          // Handel E3c (PYTANIE 53=B, Maciej 2026-07-25): przepływ ILOŚCIOWY surowca
+          // (braz/zelazo/cegla — patrz TRADE_ROUTE_STOCK_FLOW_KEYS) przez aktywne trasy,
+          // NIEZALEŻNY od grantu dostępu wyżej (ten zostaje boolean-bramką jednostek).
+          // Surowiec REALNIE ubywa nadawcy i przybywa odbiorcy w puli PAŃSTWA (ta sama
+          // pula co koszt_surowce budynków, building-stock-cost.ts) — dzięki temu np.
+          // dowieziona Cegła faktycznie zasila budowę, nie tylko "odblokowuje" ją.
+          try {
+            const tradeFlowParams = loadTradeRouteResourceFlowParams(
+              data.econParams as unknown as Parameters<typeof loadTradeRouteResourceFlowParams>[0],
+              _menuDifficulty,
+            );
+            const ownerStockForTradeFlow = (ownerId: number, key: TradeRouteStockFlowResourceKey): number =>
+              ownerResourceStockAll(cities, ownerId)[key] ?? 0;
+            const tradeFlows = computeTradeRouteResourceFlow(tradeRoutes, ownerStockForTradeFlow, tradeFlowParams);
+            for (const flow of tradeFlows) {
+              deductBuildingStockCostAcrossCities(cities, flow.fromOwnerId, { [flow.resourceKey]: flow.amount });
+              creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount);
+            }
+          } catch (eTradeFlow) {
+            console.error('[Handel] Blad przeplywu ilosciowego surowca przez trase:', eTradeFlow);
           }
           const tradeIncomeParams = loadTradeRouteIncomeParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
