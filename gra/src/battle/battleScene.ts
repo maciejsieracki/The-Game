@@ -190,7 +190,7 @@ import {
   createSettingsActionRow1E,
 } from './battleHudTheme';
 import { civIconSvg } from '../ui/icons/brandAssets';
-import { leaderPortraitUrl, leaderName } from '../ui/leaderPortraits';
+import { leaderPortraitUrl, leaderName, civIconIdFromCivLabel } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
 import { startVictoryMusic, startDefeatMusic, startBattleMusic } from '../audio/muzyka-antyczna';
 import {
@@ -651,16 +651,41 @@ const BATTLE_TOP_BAR_H     = 68;
 const BATTLE_HEADER_H      = BATTLE_TOP_BAR_H + DEPLOY_POWER_BAR_H;
 /** Szerokosc kolumny kart w lewym panelu (tab + karta + odstep). */
 const ROSTER_COL_W         = ROSTER_PANEL_FIXED_W;
-/** Wysokość karty rosteru deploy — lewy panel pionowy. */
-const DEPLOY_ROSTER_CARD_H = 56;
-const BATTLE_ROSTER_CARD_H = 56;
+/**
+ * Wysokość karty rosteru deploy — lewy panel pionowy.
+ *
+ * BŁĄD H (właściciel, 2026-07-24): pasek mocy/HP zasłaniał nazwę jednostki
+ * ("Oszczepnik"/"Wojownik" częściowo ucięte). Przyczyna: budżet wysokości
+ * treści karty (_createUnitCard, ~linia 16386) NIE mieścił się w 56px —
+ * padding 5+4 + ikona 26 + gap 3 + etykieta nazwy (~9-10, font 7px) + gap 3 +
+ * pasek HP 4 + gap 3 + pasek morale 4 = ~61-62px, czyli o ~5-6px za dużo.
+ * Bez jawnego flexShrink na dzieciach (dodany niżej), flexbox w kolumnie
+ * ściskał elementy nierówno, a jednoliniowy tekst nazwy (white-space:nowrap)
+ * wizualnie nachodził na sąsiedni pasek. 56 -> 64 daje realny zapas.
+ */
+const DEPLOY_ROSTER_CARD_H = 64;
+const BATTLE_ROSTER_CARD_H = 64;
 /** Wersja UI bitwy polowej — widoczna w panelu (weryfikacja buildu). */
 const BATTLE_UI_BUILD      = 'POLE-BITWY-20260705-end-replay';
 /** TW v5 §3: szerokosc panelu "Tempo + minimapa" (mockup 236px; minimapa
  * canvas 180×MINIMAP_H rozciaga sie na cala szerokosc — patrz _buildMinimapOverlay). */
 const TEMPO_PANEL_W = 236;
 
-/** ikonaId z civs.json po nazwie wyswietlanej lub ikonaId. */
+/**
+ * ikonaId z civs.json po nazwie wyswietlanej lub ikonaId.
+ *
+ * BŁĄD D (właściciel, 2026-07-24): `civRows` (opts.data.cywilizacje) NIE jest
+ * nigdy wypełniane przez żadnego wołającego (main.ts/mapFieldBattle.ts) —
+ * pętla poniżej więc nigdy nie dopasowuje nic, a stary fallback rozpoznawał
+ * WYŁĄCZNIE Rzym ('rzym') i Grecję ('grec') substringiem, więc wszystkie
+ * pozostałe 13 z 15 cywilizacji spadały na 'grecy' (portret + władca "Minos"
+ * po OBU stronach bitwy, niezależnie od realnej cywilizacji). Naprawa: zanim
+ * spadniemy na sztywny 'grecy', spróbuj civIconIdFromCivLabel() —
+ * pełnowartościowe dopasowanie po WSZYSTKICH 15 cywilizacjach z civs.json
+ * (leaderPortraits.ts, ta sama tabela co portrety/wodzowie), zarówno dla
+ * czystej etykiety (player.civType = ikonaId) jak i złożonej etykiety
+ * miasta-państwa ("Teby · Egipt · miasto-państwo").
+ */
 function civIconIdFromLabel(civRows: readonly { Cywilizacja?: string; ikonaId?: string }[], label: string): string {
   const key = String(label ?? '').trim().toLowerCase();
   if (!key) return 'grecy';
@@ -668,6 +693,8 @@ function civIconIdFromLabel(civRows: readonly { Cywilizacja?: string; ikonaId?: 
     if (String(c.Cywilizacja ?? '').trim().toLowerCase() === key) return c.ikonaId ?? 'grecy';
     if (String(c.ikonaId ?? '').trim().toLowerCase() === key) return c.ikonaId ?? 'grecy';
   }
+  const resolved = civIconIdFromCivLabel(label);
+  if (resolved) return resolved;
   if (key.includes('rzym')) return 'rzymianie';
   if (key.includes('grec')) return 'grecy';
   return 'grecy';
@@ -1995,6 +2022,19 @@ export class BattleScene {
   };
   /** Licznik do generowania unikalnych groupId. */
   private _groupCounter = 0;
+  /**
+   * BŁĄD I (właściciel, 2026-07-24): stan grup (kto jest w jakiej grupie,
+   * kto ręcznie rozgrupowany) zapisany na koniec fazy rozstawiania
+   * (_endDeployPhase), klucz = bu.id jednostki, wartość = jej groupId W TEJ
+   * CHWILI (grupy puste/rozgrupowane jednostki po prostu nie mają wpisu).
+   * `null` = brak zapisu (pierwszy deploy tej sesji bitwy — jeszcze nic nie
+   * zakończyło fazy rozstawiania) → `_initDeployUI()` używa dawnego
+   * zachowania (`_autoGroupDeployByKind`). Po `_replayBattle()`
+   * ("Rozegraj ponownie") `_initDeployUI()` odtwarza TEN zapis zamiast na
+   * nowo auto-grupować — więc ręczne rozgrupowanie gracza z poprzedniej
+   * rundy PRZETRWA powtórkę, zamiast znikać.
+   */
+  private _deployGroupSnapshot: Map<string, string> | null = null;
   /** Zloty marker grupy na mapie (3D) per jednostka. */
   private _groupFrameMarkers = new Map<string, THREE.Group>();
   // --- PROFESSIONAL HUD (TotalWar-style) ---
@@ -2483,6 +2523,22 @@ export class BattleScene {
       boxSizing:      'border-box',
     });
     applyTopBar1E(topBar);
+    // BŁĄD E (właściciel, 2026-07-24): usuń chrome KONTENERA topBar (tło/ramka/
+    // cień/blur wspólne dla całego wiersza) — ma zostawać wygląd "nowoczesny",
+    // same przyciski/etykiety uniesione nad mapą, BEZ pudełka. Każdy przycisk w
+    // topLeft/topRight ma JUŻ własną, osobną otoczkę (speedLbl/pauseBadge/
+    // btnGear/btnSkipTop mają własne tło+ramkę; btnTopExit był i zostaje
+    // transparentny z czerwoną ramką) — usuwane jest wyłącznie WSPÓLNE tło tego
+    // długiego paska, nie otoczki pojedynczych elementów. Środkowy panel
+    // dowódców (commanderPanel/applyCommanderPanel1E) jest OSOBNYM elementem i
+    // NIE jest tu ruszany.
+    Object.assign(topBar.style, {
+      background:    'transparent',
+      backdropFilter: 'none',
+      border:        'none',
+      boxShadow:     'none',
+      borderRadius:  '0',
+    });
     this.overlay.appendChild(topBar);
     this._topBar = topBar;
 
@@ -2495,6 +2551,10 @@ export class BattleScene {
     Object.assign(turnLbl.style, {
       color: HUD_GOLD, fontFamily: BATTLE_FONT_TITLE, fontSize: '18px', fontWeight: 'bold',
       letterSpacing: '0.04em',
+      // BŁĄD E: topBar stracił wspólne tło (patrz wyżej) — ten label jest jedynym
+      // elementem topLeft BEZ własnej otoczki/pigułki, więc dopisujemy cień, żeby
+      // zostać czytelnym nad jasną mapą zamiast pełnego panelu.
+      textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.6)',
     });
     turnLbl.textContent = 'Przygotowanie';
     topLeft.appendChild(turnLbl);
@@ -3232,6 +3292,32 @@ export class BattleScene {
       this._deployRosterDock.parentNode.removeChild(this._deployRosterDock);
     }
     this._deployRosterDock = null;
+    // BŁĄD F (właściciel, 2026-07-24): "START WALKI" (+ Reset) osierocone na
+    // mapie po zakończeniu bitwy. Przyczyna: `_buildDeployToolbar()` dołącza
+    // `#deploy-toolbar` (pływający klaster Reset/Start, linia ~10512) i JEGO 5
+    // popupów dropdownu (Formacja/Konnica/Linie/Taktyka/Strategia, linia ~10568)
+    // BEZPOŚREDNIO do `document.body` — NIE do `this.overlay` — więc usunięcie
+    // `this.overlay` (kilka linii niżej) ich nie zabiera. Zwykle klaster jest
+    // ukryty (`display:none`) po starcie walki / na ekranie końca, więc
+    // osierocenie jest niewidoczne — ALE `_replayBattle()` ("Rozegraj ponownie"
+    // na ekranie końca, linia ~8376) jawnie ustawia z powrotem
+    // `_deployToolbar.style.display = 'flex'` (nowa faza rozstawiania w tej
+    // samej scenie); jeśli gracz z tego stanu wyjdzie przez "Wycofaj się"
+    // zamiast dograć powtórkę, dispose() nigdy nie usuwał tego elementu z DOM —
+    // został widoczny, floating, nad mapą świata. Ten sam wzorzec dotyczy
+    // `_modeBanner` (linia ~2919, też `document.body.appendChild`), więc
+    // sprzątamy je tu wszystkie explicite, tak samo jak _deployRosterDock wyżej.
+    if (this._deployToolbar?.parentNode) {
+      this._deployToolbar.parentNode.removeChild(this._deployToolbar);
+    }
+    this._deployToolbar = null;
+    for (const popup of Object.values(this._deployDropdownPopups)) {
+      if (popup?.parentNode) popup.parentNode.removeChild(popup);
+    }
+    this._deployDropdownPopups = {};
+    if (this._modeBanner?.parentNode) {
+      this._modeBanner.parentNode.removeChild(this._modeBanner);
+    }
     disposeSiegeHud1E();
     document.removeEventListener('click', this._onSettingsDocClick);
     this._settingsGearWrap = null;
@@ -7875,6 +7961,27 @@ export class BattleScene {
     return Math.max(0, Math.min(1, cur / max));
   }
 
+  /**
+   * Klasyfikacja PRAWDZIWEGO typu jednostki (konnica/wręcz/dystans) do liczników
+   * górnego paska HUD (medaliony dowódców — BŁĄD C, zgłoszenie właściciela
+   * 2026-07-24). CELOWO nie używa _deployRowKind: tamta funkcja przekłada
+   * oszczepnika (miotacz oszczepów — Rola (linia)="Dystans" w units.json) do
+   * kubełka 'melee', bo to potrzebne dla formacji rozstawiania/zachowania przy
+   * wyczerpaniu amunicji (patrz komentarz przy _deployRowKind, ok. linii 12093).
+   * Górny pasek ma jednak pokazywać REALNY skład armii (ile wręcz, ile
+   * dystansowych) — z tamtą regułą oszczepnik znikał z licznika dystansowych i
+   * podwajał licznik wręcz (np. 1 wręcz + 1 oszczepnik => "wręcz 2 / dystans 0"
+   * zamiast poprawnego "wręcz 1 / dystans 1"). isPrimaryRanged() bez wyjątku
+   * dla oszczepnika = ten sam sygnał co isRanged()/attackRange (Atak dystansowy
+   * + Zasięg ataku z units.json), więc liczy się to co faktycznie jest
+   * jednostką strzelającą, niezależnie od typu pocisku (łuk/proca/oszczep).
+   */
+  private _armyCompositionKind(ru: RuntimeBattleUnit): 'mounted' | 'melee' | 'ranged' {
+    if (ru.mounted || isMounted(ru.bu)) return 'mounted';
+    if (isPrimaryRanged(ru.bu)) return 'ranged';
+    return 'melee';
+  }
+
   /** Konnica / piechota / lucznictwo — opcjonalnie tylko aktywne (w trakcie walki). */
   private _sideTypeCounts(
     arr: RuntimeBattleUnit[],
@@ -7884,7 +7991,7 @@ export class BattleScene {
     for (const u of arr) {
       if (u.removed) continue;
       if (activeOnly && (u.dead || u.routed || u.fadingOut)) continue;
-      const kind = this._deployRowKind(u);
+      const kind = this._armyCompositionKind(u);
       if (kind === 'mounted') k++;
       else if (kind === 'ranged') l++;
       else p++;
@@ -9068,8 +9175,34 @@ export class BattleScene {
       }
     }
     if (!gotHit) {
-      const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-      if (!raycaster.ray.intersectPlane(ground, pt)) return null;
+      // BŁĄD K1 (właściciel, 2026-07-25): ten fallback zakładał płaszczyznę
+      // y=0, IGNORUJĄC wysokość kafla (wzgórze/rzeka). Przy pochylonej
+      // kamerze przecięcie promienia z płaszczyzną na złej wysokości
+      // przesuwało trafiony punkt wzdłuż promienia (w stronę kamery, gdy
+      // realny kafel jest WYŻEJ niż y=0) -> Math.round poniżej łapał SĄSIEDNI
+      // kafel zamiast tego pod kursorem (ten sam mechanizm co dawny bug
+      // pickingu mapy świata). Naprawa: zamiast zgadywać y=0, iteracyjnie
+      // dopasuj wysokość płaszczyzny do REALNEJ wysokości terenu (tileTopY —
+      // tylko 3 możliwe wartości: 0 / HILL_SUMMIT_Y / -RIVER_DROP, więc zbiega
+      // w 1-2 krokach): przetnij na obecnym szacunku wysokości, sprawdź jaki
+      // kafel wskazuje ten punkt, weź WYSOKOŚĆ TEGO KAFLA jako nowy szacunek,
+      // powtórz aż col/row się ustabilizują (limit 4 iteracji — zabezpieczenie,
+      // nie powinno być potrzebne przy tylko 3 poziomach wysokości).
+      let y = 0;
+      let col = 0;
+      let row = 0;
+      for (let i = 0; i < 4; i++) {
+        const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), -y);
+        if (!raycaster.ray.intersectPlane(ground, pt)) return null;
+        const nCol = Math.round(pt.x / TILE_S);
+        const nRow = Math.round(pt.z / TILE_S);
+        if (i > 0 && nCol === col && nRow === row) break;
+        col = nCol;
+        row = nRow;
+        y = tileTopY(this.terrainMap, col, row);
+      }
+      if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) return null;
+      return { col, row };
     }
     const col = Math.round(pt.x / TILE_S);
     const row = Math.round(pt.z / TILE_S);
@@ -11417,7 +11550,19 @@ export class BattleScene {
 
     this._buildDeployHalfLabels();
     this._initDeployGhostLayer();
-    this._autoGroupDeployByKind();
+    // BŁĄD I: mamy zapis grup z KOŃCA poprzedniej fazy rozstawiania tej samej
+    // bitwy (_endDeployPhase) -> odtwórz go (w tym ręczne rozgrupowanie
+    // gracza) zamiast na nowo auto-grupować po typie. Sprawdzamy ISTNIENIE
+    // zapisu (nie jego rozmiar!) — pusty zapis (Map o size 0) oznacza, że
+    // gracz miał WSZYSTKO rozgrupowane przed końcem poprzedniego rozstawiania,
+    // co też ma PRZETRWAĆ powtórkę (patrz błąd I — auto-grupowanie nadpisywało
+    // dokładnie ten stan). Brak zapisu (`null`, pierwszy deploy tej bitwy) ->
+    // dawne zachowanie bez zmian.
+    if (this._deployGroupSnapshot) {
+      this._restoreDeployGroupSnapshot(this._deployGroupSnapshot);
+    } else {
+      this._autoGroupDeployByKind();
+    }
     this._updateBattleRosterHeader();
     this._updateDeployGroupsBar();
     this._updateDeployStrategyBar();
@@ -11491,6 +11636,44 @@ export class BattleScene {
       for (const u of units) this._selectedUnits.add(u.bu.id);
       this._groupSelected();
     }
+    this._selectedUnits.clear();
+    for (const gid of this._sortedGroupIds()) {
+      this._rosterGroupCollapsed.delete(gid);
+    }
+    this._rebuildDeployRosterGrid();
+    this._refreshDeploySelectionVisuals();
+  }
+
+  /**
+   * BŁĄD I: odtwarza podział na grupy z zapisu `_endDeployPhase`
+   * (`_deployGroupSnapshot`) zamiast na nowo auto-grupować po typie — więc
+   * ręczne rozgrupowanie/przegrupowanie gracza z poprzedniej rundy PRZETRWA
+   * "Rozegraj ponownie". Woła się TYLKO gdy istnieje zapis (patrz
+   * _initDeployUI); jednostki bez wpisu w zapisie (ręcznie rozgrupowane albo
+   * nowe) zostają ungrouped — `_initDeployUI` już wyzerował ich groupId
+   * przed wywołaniem tej funkcji.
+   */
+  private _restoreDeployGroupSnapshot(snapshot: Map<string, string>): void {
+    const byGroup = new Map<string, Set<string>>();
+    for (const ru of this.atk) {
+      if (ru.dead || ru.removed) continue;
+      const gid = snapshot.get(ru.bu.id);
+      if (!gid) continue;
+      ru.groupId = gid;
+      let set = byGroup.get(gid);
+      if (!set) { set = new Set<string>(); byGroup.set(gid, set); }
+      set.add(ru.bu.id);
+      this._refreshUnitRingColor(ru);
+      this._updateGroupFrameMarker(ru);
+    }
+    for (const [gid, memberIds] of byGroup) {
+      if (memberIds.size === 0) continue;
+      this._groups.set(gid, memberIds);
+      this._ensureGroupMeta(gid);
+      const n = parseInt(gid, 10);
+      if (Number.isFinite(n)) this._groupCounter = Math.max(this._groupCounter, n);
+    }
+    this._pruneStaleGroups();
     this._selectedUnits.clear();
     for (const gid of this._sortedGroupIds()) {
       this._rosterGroupCollapsed.delete(gid);
@@ -12582,7 +12765,10 @@ export class BattleScene {
     const isSel = this._selectedUnits.has(ru.bu.id);
     const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
     const morPct = ru.moraleMax > 0 ? Math.max(0, ru.morale / ru.moraleMax) : hpPct;
-    const row = this._deployRowKind(ru);
+    // BŁĄD H: ikona/kolor karty = PRAWDZIWY typ jednostki (jak licznik górnego
+    // paska, BŁĄD C), nie _deployRowKind (ten zostaje dla szyku/formacji —
+    // celowo wrzuca oszczepnika do 'melee', patrz komentarz przy tej funkcji).
+    const row = this._armyCompositionKind(ru);
 
     const card = document.createElement('div');
     card.className = 'deploy-roster-card';
@@ -12854,6 +13040,31 @@ export class BattleScene {
         this._groups.set(gid, new Set(live.map(u => u.bu.id)));
       }
     }
+  }
+
+  /**
+   * BŁĄD J (właściciel, 2026-07-24): najniższy WOLNY numer grupy (1, 2, 3…),
+   * nie licznik monotonicznie rosnący. Przyczyna zgłoszonego błędu:
+   * `_groupSelected()` (patrz niżej) przydzielał gid przez `_groupCounter++`,
+   * który nigdy nie wraca w dół — rozgrupowanie i ponowne zgrupowanie TYCH
+   * SAMYCH jednostek dawało kolejno G1, potem G2, potem G3, mimo że G1/G2 są
+   * już wolne (puste grupy są usuwane z `_groups` przez `_detachUnitsFromGroups`/
+   * `_pruneStaleGroups`, ale sam licznik tego nie widział). Tu liczymy
+   * najmniejszą dodatnią liczbę całkowitą NIEobecną wśród kluczy `_groups`
+   * (gid = numer jako string, patrz `_groupDisplayNum`) — wołający powinien
+   * najpierw upewnić się, że `_groups` jest świeże (np. przez
+   * `_detachUnitsFromGroups`/`_pruneStaleGroups`, co `_groupSelected()` już
+   * robi tuż przed wywołaniem tej funkcji).
+   */
+  private _nextFreeGroupId(): string {
+    const used = new Set<number>();
+    for (const gid of this._groups.keys()) {
+      const n = parseInt(gid, 10);
+      if (Number.isFinite(n) && n > 0) used.add(n);
+    }
+    let n = 1;
+    while (used.has(n)) n++;
+    return String(n);
   }
 
   /** Posortowane groupId (po numerze) — tylko grupy z >=1 zywym czlonkiem. */
@@ -13455,6 +13666,11 @@ export class BattleScene {
   private _onDeployClick(cx: number, cy: number, preferPlacement = false): void {
     if (!this.deployPhase) return;
 
+    // Kafel pod kursorem liczony RAZ na starcie — uzywany zarowno do
+    // weryfikacji trafienia modelu (KROK 1, patrz BLAD K2 nizej), jak i do
+    // przeniesienia (KROK 2).
+    const tile = this._pickGroundTile(cx, cy);
+
     // --- KROK 1: Sprawdz 3D-raycast na meshach atakujacych ---
     // Dzieki temu klikniecie w dowolna czesc modelu (nie tylko podstawe)
     // precyzyjnie identyfikuje jednostke bez bledu perspektywy.
@@ -13481,6 +13697,22 @@ export class BattleScene {
           }
           if (hitUnit) break;
         }
+        // BŁĄD K2 (właściciel, 2026-07-25): "prawie nie można przenieść
+        // pojedynczej jednostki z grupy" — model 3D (włócznia/pióropusz/
+        // sylwetka) często wystaje POZA własny kafel na sąsiedni, zwłaszcza
+        // gdy jednostki stoją ciasno w grupie/formacji. Bez tej weryfikacji
+        // raycast na mesh łapał SĄSIADA jednostki, którą user próbował
+        // przenieść (klik "obok" trafiał w model grupowego kolegi) — więc
+        // zamiast ruchu wychodziła cicha zmiana zaznaczenia ("cuda" z
+        // relacji właściciela). Honorujemy trafienie modelu TYLKO gdy
+        // realnie zgadza się z kaflem geometrycznie wskazywanym przez
+        // kursor (_pickGroundTile) — czyli user faktycznie mierzy we
+        // WŁASNY kafel tej jednostki, nie w sąsiedni. Ten sam mechanizm co
+        // BŁĄD K1 (rozjazd kursor/heks) — tu chodzi o priorytet
+        // wybór-jednostki vs przenieś-tutaj, nie o samo wyznaczenie kafla.
+        if (hitUnit && (!tile || hitUnit.q !== tile.col || hitUnit.r !== tile.row)) {
+          hitUnit = null;
+        }
         if (hitUnit) {
           this._handleDeployUnitPick(hitUnit, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
           return;
@@ -13489,7 +13721,6 @@ export class BattleScene {
     }
 
     // --- KROK 2: Raycast na teren 3D (cel przeniesienia) ---
-    const tile = this._pickGroundTile(cx, cy);
     if (!tile) return;
     const { col, row } = tile;
 
@@ -14275,7 +14506,23 @@ export class BattleScene {
     const live = this.atk.filter(u => !u.dead && !u.removed);
     if (live.length === 0) return;
 
-    const targets = this._resolveDeployFormationTargets(live);
+    // BŁĄD G (właściciel, 2026-07-24): "Piechota z przodu" (F2) bywał ignorowany
+    // — armia zostawała ułożona jak poprzednio (dystans z przodu). Przyczyna:
+    // ten handler (JEDYNY aktywny wywołujący — przycisk "Formacja" w górnym
+    // rzędzie ikon, _makeDeployToolbarDropdown, linia ~10435) zawężał cel przez
+    // _resolveDeployFormationTargets(): jeśli w momencie kliknięcia jakaś grupa
+    // była zaznaczona/zarządzana (np. z automatycznego grupowania po typie,
+    // _autoGroupDeployByKind — GRUPA melee/GRUPA dystans), formacja przestawiała
+    // TYLKO tę jedną grupę (samą wśród siebie — bez widocznej zmiany, skoro
+    // wszyscy w niej mają tę samą rolę), a reszta armii (inna grupa/rola)
+    // zostawała nietknięta. Guzik "Formacja" żyje w GŁÓWNYM pasku narzędzi
+    // (nie w menu kontekstowym konkretnej grupy), więc gracz oczekuje efektu
+    // na CAŁĄ armię niezależnie od tego, co akurat jest zaznaczone — stąd
+    // zawsze `live` (cała armia), bez zawężania przez zaznaczenie. Osobny
+    // mechanizm "postawa grupy" (_setGroupDoctrine → _applyGroupFormation,
+    // linia ~15202) nadal ustawia formację per-grupa tam, gdzie to naprawdę
+    // per-grupowa decyzja (auto-gra w walce), więc ta zdolność nie ginie.
+    const targets = live;
     if (targets.length === 0) return;
 
     const groupIds = [...new Set(targets.map(u => u.groupId).filter(Boolean))] as string[];
@@ -14597,6 +14844,13 @@ export class BattleScene {
    * uruchamia walke.
    */
   private _endDeployPhase(): void {
+    // BŁĄD I: zapamiętaj stan grup PRZED czymkolwiek innym (w tym
+    // _syncGroupRegistry poniżej), żeby _replayBattle -> _initDeployUI mógł go
+    // odtworzyć zamiast na nowo auto-grupować (patrz komentarz przy polu).
+    this._deployGroupSnapshot = new Map();
+    for (const ru of this.atk) {
+      if (ru.groupId) this._deployGroupSnapshot.set(ru.bu.id, ru.groupId);
+    }
     this.deployPhase = false;
     this._clearAllSelection();
     this._clearDeploySelection();
@@ -15682,6 +15936,10 @@ export class BattleScene {
     const ndcX =  ((cx - rect.left) / rect.width)  * 2 - 1;
     const ndcY = -((cy - rect.top)  / rect.height) * 2 + 1;
 
+    // Kafel pod kursorem liczony wczesniej niz dawniej — patrz BLAD K2 nizej
+    // (ten sam mechanizm co w _onDeployClick).
+    const tile = this._pickGroundTile(cx, cy);
+
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
 
@@ -15701,6 +15959,15 @@ export class BattleScene {
       if (hitUnit) break;
     }
 
+    // BŁĄD K2 (parytet z _onDeployClick): model 3D moze wystawac na sasiedni
+    // kafel (grupa stojaca ciasno) — honoruj trafienie mesha TYLKO gdy
+    // zgadza sie z kaflem geometrycznie wskazywanym przez kursor, inaczej
+    // klik "obok" (np. rozkaz ruchu dla zaznaczonej jednostki) chwytal
+    // sasiada zamiast wykonac zamierzona akcje na kaflu.
+    if (hitUnit && (!tile || hitUnit.q !== tile.col || hitUnit.r !== tile.row)) {
+      hitUnit = null;
+    }
+
     if (hitUnit) {
       if (this._isPlayerSide(hitUnit.side)) {
         this._handleBattleUnitPick(hitUnit, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
@@ -15712,7 +15979,6 @@ export class BattleScene {
       }
     }
 
-    const tile = this._pickGroundTile(cx, cy);
     if (!tile) return;
 
     if (!hitUnit) {
@@ -16290,7 +16556,10 @@ export class BattleScene {
     const isSel = this._selectedUnits.has(ru.bu.id);
     const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
     const morPct = ru.moraleMax > 0 ? Math.max(0, ru.morale / ru.moraleMax) : hpPct;
-    const row = this._deployRowKind(ru);
+    // BŁĄD H: ikona/kolor karty = PRAWDZIWY typ jednostki (jak licznik górnego
+    // paska, BŁĄD C), nie _deployRowKind (ten zostaje dla szyku/formacji —
+    // celowo wrzuca oszczepnika do 'melee', patrz komentarz przy tej funkcji).
+    const row = this._armyCompositionKind(ru);
 
     const card = document.createElement('div');
     card.dataset.unitId = ru.bu.id;
@@ -16338,6 +16607,10 @@ export class BattleScene {
     }
 
     const iconEl = document.createElement('div');
+    // BŁĄD H: flexShrink:'0' na ikonie/nazwie/paskach — bez tego flexbox w
+    // kolumnie (patrz DEPLOY_ROSTER_CARD_H/BATTLE_ROSTER_CARD_H wyżej) potrafił
+    // nierówno ścisnąć te elementy, a jednoliniowa nazwa nachodziła na pasek.
+    iconEl.style.flexShrink = '0';
     if (isDead) {
       Object.assign(iconEl.style, {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -16366,6 +16639,11 @@ export class BattleScene {
     const hpLbl = document.createElement('div');
     Object.assign(hpLbl.style, {
       fontSize: (isDead || isRouted) ? '7px' : '7px',
+      // B\u0141\u0104D H: lineHeight jawny (zamiast domy\u015blnego 'normal') + flexShrink:'0'
+      // \u2014 nazwa jednostki dostaje sta\u0142\u0105, przewidywaln\u0105 wysoko\u015b\u0107 linii i nigdy
+      // nie jest \u015bciskana przez flexbox, wi\u0119c pasek HP pod ni\u0105 jej nie zas\u0142ania.
+      lineHeight: '1.3',
+      flexShrink: '0',
       fontWeight: (isDead || isRouted) ? '700' : '600',
       letterSpacing: isDead ? '0.06em' : isRouted ? '0.08em' : '0',
       textTransform: (isDead || isRouted) ? 'uppercase' : 'none',
@@ -16384,7 +16662,7 @@ export class BattleScene {
     const hpTrack = document.createElement('div');
     Object.assign(hpTrack.style, {
       width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px',
-      overflow: 'hidden', display: isDead ? 'none' : '',
+      overflow: 'hidden', display: isDead ? 'none' : '', flexShrink: '0',
     });
     const hpFill = document.createElement('div');
     Object.assign(hpFill.style, {
@@ -16400,7 +16678,7 @@ export class BattleScene {
     const morTrack = document.createElement('div');
     Object.assign(morTrack.style, {
       width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px',
-      overflow: 'hidden', display: isDead ? 'none' : '',
+      overflow: 'hidden', display: isDead ? 'none' : '', flexShrink: '0',
     });
     const morFill = document.createElement('div');
     Object.assign(morFill.style, {
@@ -16474,7 +16752,10 @@ export class BattleScene {
         const isDead = ru.dead || ru.removed;
         const isSel = this._selectedUnits.has(ru.bu.id);
         const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
-        const row = this._deployRowKind(ru);
+        // BŁĄD H: ikona/kolor karty = PRAWDZIWY typ jednostki (jak licznik górnego
+    // paska, BŁĄD C), nie _deployRowKind (ten zostaje dla szyku/formacji —
+    // celowo wrzuca oszczepnika do 'melee', patrz komentarz przy tej funkcji).
+    const row = this._armyCompositionKind(ru);
         card.style.opacity = isDead ? '0.35' : '1';
         card.style.cursor = isDead ? 'default' : 'pointer';
         Object.assign(card.style, rosterCardBaseStyle(row, isSel));
@@ -16551,7 +16832,10 @@ export class BattleScene {
       const moraleVal: number = ru.morale ?? (hpPct * 100);
       const moraleMax: number = ru.moraleMax ?? 100;
       const morPct = moraleMax > 0 ? Math.max(0, moraleVal / moraleMax) : hpPct;
-      const row = this._deployRowKind(ru);
+      // BŁĄD H: ikona/kolor karty = PRAWDZIWY typ jednostki (jak licznik górnego
+    // paska, BŁĄD C), nie _deployRowKind (ten zostaje dla szyku/formacji —
+    // celowo wrzuca oszczepnika do 'melee', patrz komentarz przy tej funkcji).
+    const row = this._armyCompositionKind(ru);
 
       // C-09 v5 klatka 6: stan karty (normalna/zaznaczona/rout/martwa) \u2014 pe\u0142ny
       // przemalunek na wypadek przej\u015bcia \u017cywa->rout->martwa PO utworzeniu karty.
@@ -16677,9 +16961,11 @@ export class BattleScene {
     const centCol = selUnits.reduce((s, u) => s + u.q, 0) / selUnits.length;
     const centRow = selUnits.reduce((s, u) => s + u.r, 0) / selUnits.length;
 
-    // Nadaj nowe groupId
-    this._groupCounter++;
-    const gid = String(this._groupCounter);
+    // Nadaj nowe groupId — BŁĄD J: najniższy WOLNY numer (_nextFreeGroupId),
+    // nie licznik rosnący (_groupCounter zostaje tylko jako high-water mark,
+    // niekonsultowany przy alokacji — patrz komentarz przy _nextFreeGroupId).
+    const gid = this._nextFreeGroupId();
+    this._groupCounter = Math.max(this._groupCounter, parseInt(gid, 10));
     const memberIds = new Set<string>();
 
     for (const ru of selUnits) {
