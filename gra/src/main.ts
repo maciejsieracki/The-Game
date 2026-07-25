@@ -6072,11 +6072,20 @@ async function boot(): Promise<void> {
       console.log('[BuildMode]', req.key, req.hexKey, 'koszt=' + req.kosztPraca);
     }
 
-    /** Solo hodowla na wzgórzu — zostaw naturalny kopiec (nie hideDecor). */
-    const SOLO_LIVESTOCK_KEYS = new Set(['bydlo', 'owce', 'lama']);
+    /**
+     * Ulepszenia, które NIE spłaszczają wzgórza/góry — zostaw naturalny kopiec/szczyt
+     * (nie hideDecor): solo hodowla (bydło/owce/lama stoją na kopcu) + kamieniołom
+     * (Maciej 2026-07-24, R-KAMIEN-RELIEF: kamieniołom ma być wkomponowany w istniejące
+     * wzgórze/górę, a nie je spłaszczać — model już siada na wysokości szczytu/plateau
+     * przez improvementMeshPlacement/galleryDecorSurfaceY poniżej; brakowało tylko
+     * pozostawienia widocznej bryły reliefu pod nim).
+     * UWAGA: kopalnia/kopalnia_miedzi mają identyczny mechanizm spłaszczania (ten sam
+     * kod), ale świadomie zostają POZA zakresem tej poprawki — zob. raport zadania.
+     */
+    const PRESERVES_HILL_RELIEF_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom']);
 
-    function isSoloLivestockLayers(layers: readonly string[]): boolean {
-      return layers.length > 0 && layers.every(k => SOLO_LIVESTOCK_KEYS.has(k));
+    function preservesHillRelief(layers: readonly string[]): boolean {
+      return layers.length > 0 && layers.every(k => PRESERVES_HILL_RELIEF_KEYS.has(k));
     }
 
     /** Y osadzenia mesh ulepszenia — solo hodowla na wzgórzu: wierzchołek kopca (kopiec zostaje widoczny). */
@@ -6112,7 +6121,7 @@ async function boot(): Promise<void> {
         hideDecorAtHex(hexKey);
         return;
       }
-      if (elevated && isSoloLivestockLayers(layers)) {
+      if (elevated && preservesHillRelief(layers)) {
         return;
       }
       if (elevated) {
