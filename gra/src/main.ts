@@ -8578,7 +8578,24 @@ async function boot(): Promise<void> {
       }
     }
 
-    function handleNegotiatedProposal(ownerId: number, payload: NegotiationPayload): void {
+    /**
+     * TEMAT 9 (2026-07-24, stół negocjacyjny) — wspólne złożenie payloadu UI → propozycji
+     * CYW, dzielone przez podgląd (previewNegotiatedProposal, BEZ finalizacji) i faktyczne
+     * zawarcie umowy (handleNegotiatedProposal, WOŁANE dopiero z „Akceptuj").
+     */
+    function buildProposalFromPayload(
+      ownerId: number,
+      payload: NegotiationPayload,
+    ): {
+      cywAction: string;
+      uiPayload: ProposalPayload;
+      proposal: {
+        actionId: import('./game/diplomacy-proposals').ProposalActionId;
+        proposerOwnerId: number;
+        responderOwnerId: number;
+        payload: ProposalPayload;
+      };
+    } {
       const cywAction = proposalActionIdFromPayload(payload);
       const uiPayload: ProposalPayload = {
         turns: payload.turns,
@@ -8604,6 +8621,28 @@ async function boot(): Promise<void> {
         responderOwnerId: ownerId,
         payload: uiPayload,
       };
+      return { cywAction, uiPayload, proposal };
+    }
+
+    /**
+     * TEMAT 9 — podgląd „wstępnej zgody" drugiej strony PRZED zawarciem umowy.
+     * Woła evaluateProposal (czysta funkcja, patrz diplomacy-proposals.ts:297) BEZ
+     * applyProposalOutcome — zero mutacji stanu gry, zero efektów ubocznych (banner/relacja).
+     */
+    function previewNegotiatedProposal(
+      ownerId: number,
+      payload: NegotiationPayload,
+    ): { accepted: boolean; reason?: string } {
+      const { proposal } = buildProposalFromPayload(ownerId, payload);
+      const ctx = buildProposalEvalContext(0, ownerId);
+      const result = evaluateProposal(proposal, ctx);
+      return { accepted: result.accepted, reason: result.reason };
+    }
+
+    function handleNegotiatedProposal(ownerId: number, payload: NegotiationPayload): void {
+      // Re-walidacja: ctx + evaluateProposal liczone od nowa TU (moment „Akceptuj"),
+      // nie ponownie użyty wynik podglądu — relacja mogła się zmienić od czasu podglądu.
+      const { cywAction, uiPayload, proposal } = buildProposalFromPayload(ownerId, payload);
       const ctx = buildProposalEvalContext(0, ownerId);
       const result = evaluateProposal(proposal, ctx);
       applyProposalOutcome(0, ownerId, result, uiPayload, cywAction);
@@ -8917,6 +8956,7 @@ async function boot(): Promise<void> {
           };
         },
         onAction: applyAudienceAction,
+        previewNegotiation: previewNegotiatedProposal,
         backLabel: d1bHudActive ? 'Wróć' : 'Wyjście',
         onBack: () => {
           hideDiplomacyAudience();

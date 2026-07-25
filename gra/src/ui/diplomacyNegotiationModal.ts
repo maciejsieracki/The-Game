@@ -108,6 +108,9 @@ ${DIPLO_1E_SHARED_CSS}
   border:1px solid rgba(232,216,138,.28);background:rgba(10,12,18,0.9);color:#e8e0c8;font:inherit;}
 .civ-diplo-neg .cdn-row{display:flex;gap:8px;align-items:center;margin:6px 0;}
 .civ-diplo-neg .cdn-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
+.civ-diplo-neg .cdn-result-text p{margin:4px 0 0;line-height:1.5;}
+.civ-diplo-neg .cdn-result-text .cdn-accepted{color:#9fd88a;}
+.civ-diplo-neg .cdn-result-text .cdn-rejected{color:#d88a8a;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -265,10 +268,24 @@ function readPayload(actionId: string, ctx: NegotiationModalContext): Negotiatio
   }
 }
 
+/** Wynik podglądu „wstępnej zgody" (TEMAT 9, stół negocjacyjny) — evaluateProposal bez finalizacji. */
+export interface NegotiationPreviewResult {
+  accepted: boolean;
+  reason?: string;
+}
+
+/**
+ * TEMAT 9 (2026-07-24) — negocjacje DWUETAPOWE: „Zaproponuj" nie zawiera już umowy od razu.
+ * Krok 1 (formularz) → `onPreview` (evaluateProposal, BEZ mutacji) → krok 2 pokazuje wstępną
+ * odpowiedź drugiej strony + „Zmień" (powrót do formularza, wartości zachowane) / „Akceptuj"
+ * (dopiero to woła `onAccept`, który w SILNIKU re-waliduje i finalizuje umowę).
+ * Zakres MVP: koszyk handlu/daru (aid 5/13) ma OSOBNY modal (diplomacyTradeBasket) i tu nie wchodzi.
+ */
 export function showNegotiationModal(
   action: AudienceAction,
   ctx: NegotiationModalContext,
-  onSubmit: (payload: NegotiationPayload) => void,
+  onPreview: (payload: NegotiationPayload) => NegotiationPreviewResult,
+  onAccept: (payload: NegotiationPayload) => void,
   onCancel: () => void,
 ): void {
   closeModal();
@@ -278,20 +295,54 @@ export function showNegotiationModal(
   overlay.innerHTML =
     '<div class="civ-diplo-neg" role="dialog" aria-modal="true">'
     + '<h3>' + esc(action.label) + '</h3>'
+    + '<div class="cdn-form-step">'
     + buildForm(action, ctx)
     + '<div class="cdn-btns">'
     + '<button type="button" class="dip-muted-btn cdn-cancel">Anuluj</button>'
     + '<button type="button" class="dip-gold-btn cdn-submit">Zaproponuj</button>'
-    + '</div></div>';
+    + '</div></div>'
+    + '<div class="cdn-result-step" style="display:none">'
+    + '<div class="cdn-result-text"></div>'
+    + '<div class="cdn-btns">'
+    + '<button type="button" class="dip-muted-btn cdn-change">Zmień</button>'
+    + '<button type="button" class="dip-gold-btn cdn-accept">Akceptuj</button>'
+    + '</div></div>'
+    + '</div>';
   document.body.appendChild(overlay);
 
   const box = overlay.querySelector('.civ-diplo-neg')!;
+  const formStep = box.querySelector('.cdn-form-step') as HTMLElement;
+  const resultStep = box.querySelector('.cdn-result-step') as HTMLElement;
+  const resultText = box.querySelector('.cdn-result-text') as HTMLElement;
+  const acceptBtn = box.querySelector('.cdn-accept') as HTMLButtonElement | null;
+  let lastPayload: NegotiationPayload | null = null;
+
   box.querySelector('.cdn-cancel')?.addEventListener('click', () => { closeModal(); onCancel(); });
   box.querySelector('.cdn-submit')?.addEventListener('click', () => {
     const payload = readPayload(action.id, ctx);
     if (payload == null) return;
+    lastPayload = payload;
+    const preview = onPreview(payload);
+    resultText.innerHTML = preview.accepted
+      ? '<p class="cdn-accepted">✓ ' + esc(ctx.civName) + ' wstępnie się zgadza'
+        + (preview.reason ? ': ' + esc(preview.reason) : '') + '.</p>'
+      : '<p class="cdn-rejected">✗ ' + esc(ctx.civName) + ' odrzuca propozycję'
+        + (preview.reason ? ': ' + esc(preview.reason) : '') + '.</p>';
+    if (acceptBtn) {
+      acceptBtn.disabled = !preview.accepted;
+      acceptBtn.title = preview.accepted ? '' : 'Druga strona odrzuca te warunki — zmień propozycję';
+    }
+    formStep.style.display = 'none';
+    resultStep.style.display = '';
+  });
+  box.querySelector('.cdn-change')?.addEventListener('click', () => {
+    resultStep.style.display = 'none';
+    formStep.style.display = '';
+  });
+  box.querySelector('.cdn-accept')?.addEventListener('click', () => {
+    if (lastPayload == null || acceptBtn?.disabled) return;
     closeModal();
-    onSubmit(payload);
+    onAccept(lastPayload);
   });
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) { closeModal(); onCancel(); }

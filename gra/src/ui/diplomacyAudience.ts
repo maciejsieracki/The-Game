@@ -162,6 +162,16 @@ export interface DiplomacyAudienceConfig {
   /** Kontekst modali negocjacji (wrogowie, tech, opłaty granic). */
   getNegotiationContext?: (actionId: string) => NegotiationModalContext | null;
   /**
+   * TEMAT 9 (2026-07-24, „stół negocjacyjny") — podgląd wstępnej zgody drugiej strony
+   * PRZED zawarciem umowy (klik „Zaproponuj" w modalu negocjacji). Woła evaluateProposal
+   * bez finalizacji (SILNIK: previewNegotiatedProposal, main.ts). Brak = modal traktuje
+   * podgląd jako zawsze zaakceptowany (kompatybilność wstecz, gdyby callback nie był wpięty).
+   */
+  previewNegotiation?: (
+    ownerId: number,
+    payload: NegotiationPayload,
+  ) => { accepted: boolean; reason?: string };
+  /**
    * Zaległość #2 — „Zerwij": dobrowolne zerwanie traktatu wskazanego przez `id`
    * (kolumna „Aktywne traktaty"). Brak = przycisk pozostaje wyłączony ("wkrótce").
    */
@@ -916,6 +926,9 @@ function render(): void {
           showNegotiationModal(
             action,
             negCtx,
+            (payload) => cfg!.previewNegotiation
+              ? cfg!.previewNegotiation(cfg!.ownerId, payload)
+              : { accepted: true },
             (payload) => cfg!.onAction(cfg!.ownerId, aid, payload),
             () => { /* anulowano */ },
           );
