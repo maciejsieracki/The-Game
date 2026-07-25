@@ -34,6 +34,38 @@ for (const civ of (civsRaw as CivsData).cywilizacje) {
 }
 
 /**
+ * civId (ikonaId) -> pula imion władców (wodzowiePula w civs.json).
+ * C-BITWA-WLADCA=B (Maciej 2026-07-25): każda cywilizacja ma pulę 10 imion, a KAŻDY
+ * właściciel tej samej kultury (państwo LUB miasto-państwo) dostaje OSOBNE imię z puli.
+ */
+const LEADER_POOL_MAP: Record<string, readonly string[]> = {};
+for (const civ of (civsRaw as CivsData).cywilizacje) {
+  const pula = (civ as { wodzowiePula?: readonly string[] }).wodzowiePula;
+  if (civ.ikonaId && Array.isArray(pula) && pula.length > 0) {
+    LEADER_POOL_MAP[civ.ikonaId.toLowerCase()] = pula;
+  }
+}
+
+/**
+ * Imię władcy z puli wg indeksu właściciela (C-BITWA-WLADCA=B). Każdy właściciel tej
+ * samej cywilizacji dostaje inne imię (indeks = pozycja wśród właścicieli tej kultury).
+ * Fallback: gdy brak puli dla danej cywilizacji — imię per-epoka (leaderName).
+ */
+export function leaderNameFromPool(
+  civId: string | null | undefined,
+  ownerIndex: number,
+  era = 1,
+): string | null {
+  if (!civId) return null;
+  const pool = LEADER_POOL_MAP[civId.toLowerCase()];
+  if (pool && pool.length > 0) {
+    const i = ((ownerIndex % pool.length) + pool.length) % pool.length;
+    return pool[i]!;
+  }
+  return leaderName(civId, era);
+}
+
+/**
  * Usuwa polskie znaki diakrytyczne (NFD + odrzucenie combining marks; Ł/ł nie
  * dekomponuje się w NFD, więc mapowane jawnie) i sprowadza do lowercase —
  * ten sam wzorzec co normName()/normalizeForMatch() w innych miejscach

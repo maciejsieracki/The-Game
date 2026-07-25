@@ -499,7 +499,9 @@ function commanderHtml(
       : side.isCityState
         ? civIconSvg(side.civId ?? '', 27)
         : PB_SVG.commander;
-  const leader = side.isBarbarian ? null : leaderName(side.civId, side.era ?? 1);
+  // C-BITWA-WLADCA=B: preferuj imię przydzielone per właściciel (side.wodz, pula 10/civ);
+  // fallback do imienia per-epoka gdy brak (np. brak puli dla cywilizacji).
+  const leader = side.isBarbarian ? null : (side.wodz ?? leaderName(side.civId, side.era ?? 1));
   const leaderHtml = leader ? '<div class="pb-leader">' + esc(leader) + '</div>' : '';
   return (
     '<div class="pb-cmd ' + sideCls + ' ' + posCls + '">' +

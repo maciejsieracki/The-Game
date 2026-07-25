@@ -88,6 +88,8 @@ export interface DiplomacyAudienceState {
   otherEpochLabel?: string;
   /** ikonaId rozmówcy (z civs.json — nie po nazwie wyświetlanej). */
   otherIkonaId?: string;
+  /** C-BITWA-WLADCA=B: imię władcy rozmówcy przydzielone per właściciel (pula 10/civ). */
+  otherWodz?: string;
   /** Epoka rozmówcy (1=kamien,2=braz,3=zelazo) — portret władcy w medalionie (leaderPortraits.ts). */
   otherEra?: number;
   /** kolorHex rozmówcy (#RRGGBB). */
@@ -117,6 +119,8 @@ export interface DiplomacyAudienceState {
   // ---------------------------------------------------------------------
   /** ikonaId gracza (civs.json) — medalion karty lewej. */
   playerIkonaId?: string;
+  /** C-BITWA-WLADCA=B: imię władcy gracza przydzielone per właściciel (pula 10/civ). */
+  playerWodz?: string;
   /** kolorHex gracza (#RRGGBB) — ramka medalionu karty lewej. */
   playerKolorHex?: string;
   /** Epoka gracza (1=kamien,2=braz,3=zelazo) — portret władcy w medalionie (leaderPortraits.ts). */
@@ -553,13 +557,13 @@ function goodsHtml(goods: readonly string[] | undefined): string {
 
 /** Imię władcy gracza (civs.json wodzowie) pod nazwą cywilizacji, pusty string gdy brak. */
 function playerLeaderHtml(st: DiplomacyAudienceState): string {
-  const name = leaderName(st.playerIkonaId, st.playerEra ?? 1);
+  const name = st.playerWodz ?? leaderName(st.playerIkonaId, st.playerEra ?? 1);
   return name ? '<div class="da-civleader">' + esc(name) + '</div>' : '';
 }
 
 /** Imię władcy rozmówcy (civs.json wodzowie) pod nazwą cywilizacji, pusty string gdy brak. */
 function otherLeaderHtml(st: DiplomacyAudienceState): string {
-  const name = leaderName(st.otherIkonaId, st.otherEra ?? 1);
+  const name = st.otherWodz ?? leaderName(st.otherIkonaId, st.otherEra ?? 1);
   return name ? '<div class="da-civleader">' + esc(name) + '</div>' : '';
 }
 

@@ -314,6 +314,7 @@ import {
   buildUnitContextTooltipHtml,
 } from './ui/hexContextTooltip';
 import { showPreBattle, hidePreBattle, isPreBattleOpen, configurePreBattle } from './ui/preBattle';
+import { leaderNameFromPool } from './ui/leaderPortraits';
 import {
   showPostBattleSummary,
   hidePostBattleSummary,
@@ -9034,6 +9035,7 @@ async function boot(): Promise<void> {
             activeTreaties: activeTreatiesForPair(0, ownerId),
             otherEpochLabel: epochLabelForOwner(ownerId),
             otherIkonaId: civTypeForOwner(ownerId),
+            otherWodz: leaderNameForOwnerId(ownerId) ?? undefined,
             otherEra: empireEpochForOwner(ownerId),
             otherKolorHex: civKolorHexFn(ownerId),
             otherIsCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
@@ -9054,6 +9056,7 @@ async function boot(): Promise<void> {
             playerGoods: tradeGoodsForOwner(0),
             otherGoods: tradeGoodsForOwner(ownerId),
             playerIkonaId: civTypeForOwner(0),
+            playerWodz: leaderNameForOwnerId(0) ?? undefined,
             playerKolorHex: civKolorHexFn(0),
             playerEra: empireEpochForOwner(0),
           };
@@ -11266,12 +11269,29 @@ async function boot(): Promise<void> {
       return autoBattleWinPct(mAtk, mDef);
     }
 
+    /**
+     * C-BITWA-WLADCA=B (Maciej 2026-07-25): imię władcy OSOBNE per właściciel — indeks =
+     * pozycja tego właściciela wśród wszystkich właścicieli tej samej cywilizacji (państwa +
+     * miasta-państwa), więc dwóch Greków dostaje różne imiona z puli 10. Barbarzyńcy: null.
+     */
+    function leaderNameForOwnerId(ownerId: number): string | null {
+      if (isBarbarian(ownerId)) return null;
+      const civ = civTypeForOwner(ownerId);
+      const era = empireEpochForOwner(ownerId);
+      const sameCiv = allPowerOwnerIds()
+        .filter(id => !isBarbarian(id) && civTypeForOwner(id) === civ)
+        .sort((a, b) => a - b);
+      const idx = Math.max(0, sameCiv.indexOf(ownerId));
+      return leaderNameFromPool(civ, idx, era);
+    }
+
     function preBattleSideFromRoster(roster: RuntimeUnit[], title: string, civLabel: string): PreBattleInfo['atakujacy'] {
       const ownerId = roster[0]?.ownerId ?? 0;
       return {
         nazwa: title,
         cywilizacja: civLabel,
         ownerId,
+        wodz: leaderNameForOwnerId(ownerId) ?? undefined,
         civId: civTypeForOwner(ownerId),
         era: empireEpochForOwner(ownerId),
         isCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
@@ -11439,6 +11459,8 @@ async function boot(): Promise<void> {
             // gotową, pewną wartość. Przekazujemy wprost.
             attackerCivIconId: pbInfo4.atakujacy.civId,
             defenderCivIconId: pbInfo4.obronca.civId,
+            attackerLeaderName: pbInfo4.atakujacy.wodz,
+            defenderLeaderName: pbInfo4.obronca.wodz,
             attackerSideLabel: pbInfo4.atakujacy.nazwa,
             defenderSideLabel: pbInfo4.obronca.nazwa,
             attackerEra: empireEpochForOwner(atkLead.ownerId),
@@ -11754,6 +11776,8 @@ async function boot(): Promise<void> {
             // (analogiczny call site, bitwa przychodząca / atak AI na gracza).
             attackerCivIconId: pbInfo.atakujacy.civId,
             defenderCivIconId: pbInfo.obronca.civId,
+            attackerLeaderName: pbInfo.atakujacy.wodz,
+            defenderLeaderName: pbInfo.obronca.wodz,
             attackerSideLabel: pbInfo.atakujacy.nazwa,
             defenderSideLabel: pbInfo.obronca.nazwa,
             attackerEra: empireEpochForOwner(atkLead.ownerId),
@@ -12711,6 +12735,8 @@ async function boot(): Promise<void> {
             defenderCivLabel: pbInfo.obronca.cywilizacja,
             attackerCivIconId: pbInfo.atakujacy.civId,
             defenderCivIconId: pbInfo.obronca.civId,
+            attackerLeaderName: pbInfo.atakujacy.wodz,
+            defenderLeaderName: pbInfo.obronca.wodz,
             attackerEra: empireEpochForOwner(atkRosterRef[0]?.ownerId ?? 0),
             defenderEra: empireEpochForOwner(defRosterRef[0]?.ownerId ?? 0),
             attackerIsCityState: pbInfo.atakujacy.isCityState,

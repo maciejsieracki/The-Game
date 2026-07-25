@@ -22,6 +22,7 @@
       ],
       "mnoznikHandelPieniadz": 2.3,
       "ikonaId": "grecy",
+      "wodzowiePula": ["Perykles", "Temistokles", "Miltiades", "Kimon", "Solon", "Kleistenes", "Lizander", "Epaminondas", "Pelopidas", "Alkibiades"],
       "wodzowie": {
         "kamien": "Minos",
         "braz": "Agamemnon",
@@ -195,6 +196,7 @@
       ],
       "mnoznikHandelPieniadz": 2.0,
       "ikonaId": "rzymianie",
+      "wodzowiePula": ["Kamillus", "Cyncynat", "Fabiusz Maksymus", "Katon Starszy", "Emiliusz Paulus", "Klaudiusz", "Waleriusz", "Korneliusz", "Serwiliusz", "Fulwiusz"],
       "wodzowie": {
         "kamien": "Romulus",
         "braz": "Numa Pompiliusz",
@@ -373,6 +375,7 @@
       ],
       "mnoznikHandelPieniadz": 2.4,
       "ikonaId": "chinczycy",
+      "wodzowiePula": ["Cheng Tang", "Wu Ding", "Wen Wang", "Zhou Gong", "Goujian", "Fuchai", "Helü", "Ksiaze Mu", "Ksiaze Huan", "Zhuang"],
       "wodzowie": {
         "kamien": "Huang Di",
         "braz": "Yu Wielki",
@@ -538,6 +541,7 @@
       ],
       "mnoznikHandelPieniadz": 1.9,
       "ikonaId": "inkowie",
+      "wodzowiePula": ["Sinchi Roca", "Lloque Yupanqui", "Mayta Capac", "Capac Yupanqui", "Inca Roca", "Yahuar Huacac", "Tupac Yupanqui", "Huayna Capac", "Atahualpa", "Huascar"],
       "wodzowie": {
         "kamien": "Manco Cápac",
         "braz": "Wirakocza Inka",
@@ -705,6 +709,7 @@
       ],
       "mnoznikHandelPieniadz": 1.8,
       "ikonaId": "zulusi",
+      "wodzowiePula": ["Dingane", "Mpande", "Ndaba", "Jama", "Punga", "Mageba", "Zwide", "Sobhuza", "Dingiswayo", "Langalibalele"],
       "wodzowie": {
         "kamien": "Zulu kaMalandela",
         "braz": "Senzangakhona",
@@ -870,6 +875,7 @@
       ],
       "mnoznikHandelPieniadz": 2.1,
       "ikonaId": "egipt",
+      "wodzowiePula": ["Dzeser", "Snofru", "Chefren", "Mykerinos", "Pepi II", "Mentuhotep II", "Amenemhat I", "Totmes III", "Amenhotep III", "Echnaton"],
       "wodzowie": {
         "kamien": "Narmer",
         "braz": "Chufu",
@@ -1036,6 +1042,7 @@
       ],
       "mnoznikHandelPieniadz": 2.2,
       "ikonaId": "sumer",
+      "wodzowiePula": ["Etana", "Enmerkar", "Lugalbanda", "Dumuzi", "Eannatum", "Lugalzagesi", "Meskalamdug", "Mesannepada", "Enannatum", "Entemena"],
       "wodzowie": {
         "kamien": "Alulim",
         "braz": "Gilgamesz",
@@ -1203,6 +1210,7 @@
       ],
       "mnoznikHandelPieniadz": 1.9,
       "ikonaId": "celtowie",
+      "wodzowiePula": ["Dumnoryks", "Divitiakus", "Cassivellaunus", "Kunobelinos", "Orgetoryks", "Kastyk", "Ambioryks", "Indutiomaros", "Tasgetios", "Litawikus"],
       "wodzowie": {
         "kamien": "Ambigatos",
         "braz": "Brennus",
@@ -1368,6 +1376,7 @@
       ],
       "mnoznikHandelPieniadz": 1.7,
       "ikonaId": "germanie",
+      "wodzowiePula": ["Marbod", "Segestes", "Segimer", "Inguiomer", "Chariovalda", "Katualda", "Nasua", "Cimberius", "Boioryks", "Teutobod"],
       "wodzowie": {
         "kamien": "Mannus",
         "braz": "Ariowist",
@@ -1531,6 +1540,7 @@
       ],
       "mnoznikHandelPieniadz": 2.4,
       "ikonaId": "harappa",
+      "wodzowiePula": ["Vasu", "Bharata", "Divodasa", "Sudas", "Trasadasyu", "Mandhatri", "Purukutsa", "Kuvalashva", "Anaranya", "Trishanku"],
       "wodzowie": {
         "kamien": "Starszy z Mehrgarh",
         "braz": "Kapłan-Król z Mohendżo-Daro",
@@ -1696,6 +1706,7 @@
       ],
       "mnoznikHandelPieniadz": 2.0,
       "ikonaId": "hetyci",
+      "wodzowiePula": ["Tudhalija I", "Arnuwanda I", "Mursili I", "Muwatalli II", "Hantili I", "Zidanta I", "Ammuna", "Telipinu", "Tahurwaili", "Alluwamna"],
       "wodzowie": {
         "kamien": "Labarna I",
         "braz": "Hattusili I",
@@ -1861,6 +1872,7 @@
       ],
       "mnoznikHandelPieniadz": 1.8,
       "ikonaId": "slowianie",
+      "wodzowiePula": ["Piast", "Siemowit", "Lestek", "Siemomysl", "Popiel", "Przemysl", "Ziemowit", "Choscisko", "Wiszymir", "Leszek"],
       "wodzowie": {
         "kamien": "Lech",
         "braz": "Krak",
@@ -2025,6 +2037,7 @@
       ],
       "mnoznikHandelPieniadz": 2.3,
       "ikonaId": "babilonia",
+      "wodzowiePula": ["Sumu-la-El", "Sabium", "Apil-Sin", "Sin-muballit", "Samsu-iluna", "Abi-eszuh", "Ammi-ditana", "Ammi-saduqa", "Samsu-ditana", "Kurigalzu I"],
       "wodzowie": {
         "kamien": "Sumu-abum",
         "braz": "Hammurabi",
@@ -2190,6 +2203,7 @@
       ],
       "mnoznikHandelPieniadz": 1.7,
       "ikonaId": "asyria",
+      "wodzowiePula": ["Szamszi-Adad I", "Adad-nirari I", "Salmanasar I", "Tukulti-Ninurta I", "Aszur-uballit I", "Sargon II", "Asarhaddon", "Aszurnasirpal II", "Salmanasar III", "Sennacheryb"],
       "wodzowie": {
         "kamien": "Puzur-Aszur I",
         "braz": "Tiglat-Pileser I",
@@ -2355,6 +2369,7 @@
       ],
       "mnoznikHandelPieniadz": 2.6,
       "ikonaId": "fenicjanie",
+      "wodzowiePula": ["Ahiram", "Ittobaal I", "Baal-Eser I", "Matten I", "Pygmalion", "Abibaal", "Elibaal", "Szipitbaal", "Mago I", "Hazdrubal"],
       "wodzowie": {
         "kamien": "Agenor",
         "braz": "Hiram I",

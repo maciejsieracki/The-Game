@@ -378,6 +378,10 @@ export interface BattleOpts {
   attackerCivIconId?: string;
   /** ikonaId cywilizacji broniacego (emblemat UI). */
   defenderCivIconId?: string;
+  /** C-BITWA-WLADCA=B: imie wladcy atakujacego przydzielone per wlasciciel (pula 10/civ). */
+  attackerLeaderName?: string;
+  /** C-BITWA-WLADCA=B: imie wladcy broniacego przydzielone per wlasciciel (pula 10/civ). */
+  defenderLeaderName?: string;
   /** Epoka atakujacego (1=kamien,2=braz,3=zelazo) -- dobor portretu wladcy w medalionie. Brak = 1. */
   attackerEra?: number;
   /** Epoka broniacego (1=kamien,2=braz,3=zelazo) -- dobor portretu wladcy w medalionie. Brak = 1. */
@@ -2242,6 +2246,8 @@ export class BattleScene {
   private _defenderSideLabel = '';
   private _attackerCivIconId = 'grecy';
   private _defenderCivIconId = 'grecy';
+  private _attackerLeaderName: string | null = null;
+  private _defenderLeaderName: string | null = null;
   /** Epoka per strona (1/2/3) -- portret wladcy w medalionie (leaderPortraits.ts). */
   private _attackerEra = 1;
   private _defenderEra = 1;
@@ -2332,6 +2338,8 @@ export class BattleScene {
       ?? civIconIdFromLabel(civRows, this._attackerCivLabel);
     this._defenderCivIconId = opts.defenderCivIconId
       ?? civIconIdFromLabel(civRows, this._defenderCivLabel);
+    this._attackerLeaderName = opts.attackerLeaderName ?? null;
+    this._defenderLeaderName = opts.defenderLeaderName ?? null;
     this._attackerEra = clampEra(opts.attackerEra);
     this._defenderEra = clampEra(opts.defenderEra);
     this._attackerIsCityState = opts.attackerIsCityState === true;
@@ -2706,7 +2714,10 @@ export class BattleScene {
       });
       nameLbl.textContent = civLabel;
       textCol.appendChild(nameLbl);
-      const leader = isBarbarianSide ? null : leaderName(civIconId, era);
+      // C-BITWA-WLADCA=B: imię przydzielone per właściciel (pula 10/civ) ma pierwszeństwo;
+      // fallback do imienia per-epoka gdy brak (np. brak puli dla cywilizacji).
+      const leaderOverride = isAtk ? this._attackerLeaderName : this._defenderLeaderName;
+      const leader = isBarbarianSide ? null : (leaderOverride ?? leaderName(civIconId, era));
       if (leader) {
         const leaderLbl = document.createElement('div');
         Object.assign(leaderLbl.style, { fontSize: '10px', fontStyle: 'italic', color: BATTLE_TEXT_DIM, whiteSpace: 'nowrap' });
