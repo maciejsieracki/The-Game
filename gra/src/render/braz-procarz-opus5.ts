@@ -250,7 +250,7 @@ function getPZKnot():     THREE.BoxGeometry { return (gPZKnot     ||= new THREE.
 function getPZBag():      THREE.BoxGeometry { return (gPZBag      ||= new THREE.BoxGeometry(0.068 * HEX_R, 0.078 * HEX_R, 0.040 * HEX_R)); }
 function getPZBagFlap():  THREE.BoxGeometry { return (gPZBagFlap  ||= new THREE.BoxGeometry(0.072 * HEX_R, 0.030 * HEX_R, 0.010 * HEX_R)); }
 function getPZToggle():   THREE.CylinderGeometry { return (gPZToggle ||= new THREE.CylinderGeometry(0.007 * HEX_R, 0.007 * HEX_R, 0.024 * HEX_R, 6, 1)); }
-function getPZPellet():   THREE.OctahedronGeometry { return (gPZPellet ||= new THREE.OctahedronGeometry(0.017 * HEX_R, 0)); }
+function getPZPellet():   THREE.OctahedronGeometry { return (gPZPellet ||= new THREE.OctahedronGeometry(0.019 * HEX_R, 0)); }
 function getPZGourd():    THREE.BoxGeometry { return (gPZGourd    ||= new THREE.BoxGeometry(0.056 * HEX_R, 0.072 * HEX_R, 0.048 * HEX_R)); }
 function getPZGourdNk():  THREE.BoxGeometry { return (gPZGourdNk  ||= new THREE.BoxGeometry(0.026 * HEX_R, 0.024 * HEX_R, 0.026 * HEX_R)); }
 function getPZWhistle():  THREE.CylinderGeometry { return (gPZWhistle ||= new THREE.CylinderGeometry(0.009 * HEX_R, 0.009 * HEX_R, 0.052 * HEX_R, 6, 1)); }
@@ -399,40 +399,43 @@ function pzBuildCore(
  *  llautu). */
 function pzHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial,
                 mCord: THREE.MeshStandardMaterial): void {
-  // potargane kepki wlosow — OKTAEDRY (spiczaste), NIE plaskie boxy: z gory
-  // plaski, ciemny box czytal sie jak dziura/doklejona czapka (uwaga
-  // koordynatora 2026-07-25). Oktaedr ma spiczasty wierzcholek zamiast
-  // plaskiego "stolu", a rozna WYSOKOSC kazdej kepki (dy) niszczy plaski
-  // plateau — sylwetka z gory jest nieregularna, czytelnie "wlosiasta".
-  // Kolor PZ_HAIR tez zlagodzony (patrz definicja stalej) — mniejszy
-  // kontrast ze skora = mniej "dziura", wiecej "wlosy".
-  for (const [dx, dz, dy, sy, rz] of ([
-    [-0.032, -0.006,  0.000, 1.00, -0.24],
-    [-0.010, -0.026,  0.010, 1.20,  0.08],
-    [ 0.014, -0.016, -0.006, 0.95,  0.20],
-    [ 0.032,  0.004,  0.004, 0.85, -0.14],
-    [-0.020,  0.022, -0.010, 0.80, -0.05],
-    [ 0.006,  0.026,  0.008, 0.90,  0.16],
-    [ 0.000, -0.002,  0.016, 1.05,  0.02],
-  ] as [number, number, number, number, number][])) {
+  // potargane kepki wlosow — OKTAEDRY SPLASZCZONE i POCHYLONE na wszystkich
+  // osiach (NIE tylko obrot Z): pierwsza proba (same sy>=0.85 + tylko rotation.z)
+  // zachowala PIONOWY czubek oktaedru u kazdej kepki — z kamery 52° zlozylo
+  // sie to w jeden czytelny SPICZASTY STOZEK (jak mohawk/czapka), gorszy efekt
+  // niz plaska plyta (uwaga koordynatora, druga tura). Poprawka: kepki NISKIE
+  // (sy 0.42-0.58, wyraznie splaszczone) + pochylone na X ORAZ Z (nie sam Z),
+  // zeby zaden czubek nie stal pionowo — sylwetka z gory czyta sie jako
+  // nierowna, grudkowata czupryna, nie pojedynczy spiczasty ksztalt.
+  for (const [dx, dz, dy, sy, rz, rx] of ([
+    [-0.032, -0.006,  0.000, 0.48, -0.30,  0.35],
+    [-0.010, -0.026,  0.006, 0.55,  0.10, -0.28],
+    [ 0.014, -0.016, -0.004, 0.50,  0.26,  0.30],
+    [ 0.032,  0.004,  0.002, 0.44, -0.18, -0.32],
+    [-0.020,  0.022, -0.006, 0.42, -0.08,  0.34],
+    [ 0.006,  0.026,  0.004, 0.46,  0.20, -0.26],
+    [ 0.000, -0.002,  0.008, 0.52,  0.05,  0.40],
+    [-0.014,  0.008,  0.002, 0.40,  0.34, -0.20],
+  ] as [number, number, number, number, number, number][])) {
     const tuft = new THREE.Mesh(getPZTuft(), mHair);
-    tuft.rotation.z = rz;
-    tuft.scale.set(0.85, sy, 0.85);
-    tuft.position.set(dx * HEX_R, PZ_HEAD_TOP - 0.016 * HEX_R + dy * HEX_R, dz * HEX_R);
+    tuft.rotation.set(rx, 0, rz);
+    tuft.scale.set(0.95, sy, 0.95);
+    tuft.position.set(dx * HEX_R, PZ_HEAD_TOP - 0.020 * HEX_R + dy * HEX_R, dz * HEX_R);
     group.add(tuft);
   }
   for (const [dx, dy, rz] of ([
     [-0.028, 0.006, 0.16], [0.024, 0.002, -0.20], [-0.002, -0.014, 0.05],
   ] as [number, number, number][])) {
     const tuft = new THREE.Mesh(getPZTuft(), mHair);      // kepki na karku (nie plaska plyta)
-    tuft.rotation.set(0.1, rz, rz * 0.5);
-    tuft.scale.set(0.80, 0.70, 0.65);
+    tuft.rotation.set(0.32, rz, rz * 0.5);
+    tuft.scale.set(0.80, 0.50, 0.65);
     tuft.position.set(dx * HEX_R, PZ_HEAD_CTR + dy * HEX_R, -(PZ_HEAD_S * 0.5 + 0.004 * HEX_R));
     group.add(tuft);
   }
   for (const sx of [-1, 1]) {                             // drobne kepki nad skroniami —
     const tuft = new THREE.Mesh(getPZTuft(), mHair);      // laczy czubek z karkiem, bez
-    tuft.scale.set(0.55, 0.60, 0.55);                     // "krawedzi helmu"
+    tuft.rotation.x = sx * 0.3;
+    tuft.scale.set(0.55, 0.42, 0.55);                     // "krawedzi helmu"
     tuft.position.set(sx * (PZ_HEAD_S * 0.5 - 0.006 * HEX_R), PZ_HEAD_CTR + 0.032 * HEX_R, -0.014 * HEX_R);
     group.add(tuft);
   }

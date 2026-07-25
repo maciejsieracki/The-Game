@@ -344,7 +344,7 @@ function rwOx(
       rwStretch(group, mBody, new THREE.Vector3(x + lx * HEX_R, legTopY, lz),
         new THREE.Vector3(x + lx * HEX_R, 0.015 * HEX_R, lz), 0.036 * HEX_R, 0.040 * HEX_R);
       const hoof = new THREE.Mesh(getRWOxHoof(), mDk);
-      hoof.position.set(x + lx * HEX_R, 0.012 * HEX_R, lz);
+      hoof.position.set(x + lx * HEX_R, 0.014 * HEX_R, lz);
       group.add(hoof);
     }
   }
