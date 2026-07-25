@@ -644,15 +644,22 @@ export function civEconomyYieldMultipliers(
  *   3. Apply Targowisko bonus on tile Handel.
  *   4. Sum building BASE outputs (praca, pieniadz, zywnosc, nauka, kultura, zadowolenie).
  *      Buildings are a direct source of Praca and Pieniadz (par. 8e rule 3).
- *   5. Apply non-combat building mnoznik% to combined Praca.
- *   6. Apply corruption/waste (strataFraction) to gross Praca and Handel.
- *   7. Split Handel via trade slider into Nauka / Pieniadz / Luksus.
- *   8. Apply Mennica multiplier to Pieniadz; Biblioteka bonus to Nauka.
- *   9. Add building direct Pieniadz + specialist Poborca bonuses.
- *  10. Apply Garncarnia +Zywnosc% (lokalnie, per miasto, ctx.liczbaGarncarni) to
+ *   5. Apply corruption/waste (strataFraction) to gross Praca and Handel.
+ *   6. Split Handel via trade slider into Nauka / Pieniadz / Luksus.
+ *   7. Apply Mennica multiplier to Pieniadz; Biblioteka bonus to Nauka.
+ *   8. Add building direct Pieniadz + specialist Poborca bonuses.
+ *   9. Apply Garncarnia +Zywnosc% (lokalnie, per miasto, ctx.liczbaGarncarni) to
  *      gross food, THEN compute net food = gross food - (population + military).
  *
  * All fractional results are floored.
+ *
+ * UWAGA (2026-07-25): dawny "Step 5" (baza.mnoznik budynkow niewojskowych -> % do
+ * Pracy) zostal CALKOWICIE USUNIETY — byl martwy/blednie policzony (patrz
+ * dyspozycje/AUDYT-MARTWE-PARAMETRY-BUDYNKOW.md). Pole `mnoznik` w buildings.json
+ * zyje teraz WYLACZNIE jako zrodlo % dla dwoch sciezek ulepszen jednostek
+ * (Pancerz / Parametry miekkie) — patrz gra/src/game/unit-building-bonuses.ts.
+ * Praca miasta to odtad WYLACZNIE suma Praca(teren) + Praca(budynki), bez zadnego
+ * globalnego mnoznika procentowego.
  */
 export function cityYieldPerTurn(
   city: EconomyCity,
@@ -732,18 +739,11 @@ export function cityYieldPerTurn(
     zadBudynkow      += buildingHappinessAtLevel(record, level);
   }
 
-  // --- Step 5: Sum non-combat mnoznik% and apply to combined Praca ---
-  let totalMnoznikProc = 0;
-  for (const { record, level } of cityBuildings) {
-    const kat = record.kategoria;
-    if (!kat.includes('Wojsko') && !kat.includes('Obrona')) {
-      totalMnoznikProc += buildingValue(record, level, 'mnoznik');
-    }
-  }
-  const mnoznikFactor = 1 + totalMnoznikProc / 100;
-  const pracaBruttoLacznie = (pracaBruttoTerenu + pracaBudynkow) * mnoznikFactor;
+  // Step 5 (dawne "mnoznik% -> Praca") USUNIETE 2026-07-25 — patrz komentarz
+  // funkcji powyzej. Praca miasta to czysta suma teren+budynki, bez mnoznika.
+  const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
 
-  // --- Step 6: Apply corruption/waste ---
+  // --- Step 5 (renumbered from 6): Apply corruption/waste ---
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
   const pracaNetto        = pracaBruttoLacznie * (1 - strata);
   const handelNettoRaw    = handelBrutto       * (1 - strata);
@@ -754,7 +754,7 @@ export function cityYieldPerTurn(
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto   = handelNettoRaw * walutaMnoznikAktywny;
 
-  // --- Step 7+8: Trade slider -> Nauka / Pieniadz / Luksus; apply mint multiplier ---
+  // --- Step 6+7: Trade slider -> Nauka / Pieniadz / Luksus; apply mint multiplier ---
   const pctNauka    = city.podziałHandlu.procentNauka    / 100;
   const pctPieniadz = city.podziałHandlu.procentPieniadz / 100;
   const pctLuksus   = city.podziałHandlu.procentLuksus   / 100;
@@ -774,7 +774,7 @@ export function cityYieldPerTurn(
     ? Math.floor(naukaLokalnaRaw * civNaukaMult)
     : naukaLokalnaRaw;
 
-  // --- Step 9: Total Pieniadz = from trade + from buildings + specialists + Efekt 2 ---
+  // --- Step 8: Total Pieniadz = from trade + from buildings + specialists + Efekt 2 ---
   // Efekt 2 (Targowisko + Waluta): pula-Praca (doPuli) -> Pieniadz x targowiskoPracaMnoznik.
   // doPuli = pracaNetto * (1 - podziałPracy.procentBudynki/100) -- computed by caller (splitPraca).
   // Tutaj obliczamy wewnetrznie z pracaNetto i suwaka, zeby wynik był w CityYieldResult.
@@ -792,7 +792,7 @@ export function cityYieldPerTurn(
     }
   }
 
-  // --- Step 10: Net food ---
+  // --- Step 9: Net food ---
   // Garncarnia (Zadanie 2, 2026-07-23): +Zywnosc% LOKALNIE po zsumowaniu bazowej
   // Zywnosci (teren+budynki), PRZED odjeciem konsumpcji. Stackuje za kazda sztuke
   // zbudowana w TYM miescie (civ-wide NIE dotyczy -- patrz Stolarnia/Warsztat kamieniarski

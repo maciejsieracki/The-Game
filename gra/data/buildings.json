@@ -102,7 +102,7 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 5
+      "mnoznik": 15
     },
     "przyrost": {
       "praca": 3,
@@ -112,14 +112,14 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 2
+      "mnoznik": 0
     },
     "kosztBudowy": 30,
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "Ruda (miedź) w zasięgu imperium (aktywne źródło lub zapas w puli państwa)",
-    "uwagi": "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
+    "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%)",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
       "drewno": 4,
@@ -824,7 +824,7 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 5
+      "mnoznik": 20
     },
     "przyrost": {
       "praca": 1,
@@ -834,14 +834,14 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 2
+      "mnoznik": 0
     },
     "kosztBudowy": 25,
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie",
+    "uwagi": "Mnoznik = +20% parametry miekkie (Sciezka B, wszystko poza Pancerzem) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Akademia wojskowa/Warsztat oblezniczy, max +50%)",
     "techUnlock": "Wojskowość",
     "koszt_surowce": {
       "drewno": 6,
@@ -1064,7 +1064,7 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 8
+      "mnoznik": 15
     },
     "przyrost": {
       "praca": 4,
@@ -1074,7 +1074,7 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 3
+      "mnoznik": 0
     },
     "kosztBudowy": 60,
     "przyrostKosztu": 15,
@@ -1082,7 +1082,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "zelazo w zasiegu",
     "wymaganySurowiec": "zelazo",
-    "uwagi": "Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza",
+    "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia/Wielka Kuznia, max +45%); wymaga dostepu do zelaza",
     "techUnlock": "Hutnictwo żelaza",
     "koszt_surowce": {
       "cegla": 6,
@@ -1104,7 +1104,7 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 23
+      "mnoznik": 15
     },
     "przyrost": {
       "praca": 9,
@@ -1114,7 +1114,7 @@
       "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
-      "mnoznik": 7
+      "mnoznik": 0
     },
     "kosztBudowy": 90,
     "przyrostKosztu": 18,
@@ -1122,7 +1122,7 @@
     "przyrostUtrzymania": 2,
     "wymagania": "upgrade Kuźni żelaza; stal w zasięgu",
     "wymaganySurowiec": "stal",
-    "uwagi": "Upgrade Kuźnia żelaza → Wielka Kuźnia; suma bonusów w JSON",
+    "uwagi": "Upgrade Kuźnia żelaza → Wielka Kuźnia. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze.",
     "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "kuznia_zelaza"
   },
