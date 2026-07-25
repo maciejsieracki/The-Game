@@ -1,19 +1,34 @@
 'use strict';
 /**
- * praca-na-pieniadz-test.cjs -- testy D5 (Maciej 2026-07-25, PYTANIE 76 = B):
- * Pieniadz z konwersji Pracy (Efekt 2: Targowisko+Waluta, pula-Praca x
- * targowiskoPracaMnoznik) wchodzi do PULI Daniny/Podatku (dzielonej suwakiem miasta
- * Nauka/Pieniadz/Luksus), zamiast trafiac wprost do skarbca z pominieciem suwaka.
+ * praca-na-pieniadz-test.cjs -- testy D5 POPRAWIONE (Maciej 2026-07-25, PYTANIE 76=B,
+ * korekta tego samego dnia). Cytat wlasciciela: "Pieniądz z konwersji pracy wchodzi
+ * do daniny, później do podatku i jest potem mnożony przez walutę i mennicę i
+ * wszystkie inne wskaźniki handlu... zamieniamy to na równowartość podatku."
+ *
+ * Sens: pieniadzZPracy (Efekt 2: Targowisko+Waluta, pula-Praca x targowiskoPracaMnoznik)
+ * NIE jest osobnym strumieniem doklejanym po fakcie do gotowej puli Daniny -- wchodzi
+ * do Daniny/Handlu U ZRODLA (do handelBrutto, PRZED Targowiskiem), wiec przechodzi
+ * przez WSZYSTKIE mnozniki Handlu na tych samych prawach co Danina z terenu:
+ * Targowisko, civHandelMult, trasy handlowe, korupcja (D1: Danina/Podatek, nie Praca),
+ * Waluta+Mennica -- dopiero na koncu podzial suwakiem Nauka/Pieniadz/Luksus.
+ *
  * Uruchom z gra/: node tools/praca-na-pieniadz-test.cjs
  *
  * Weryfikuje:
- *   1. Miasto z Targowiskiem+Waluta (bez Mennicy), suwak 20/60/20 (domyslne wartosci
- *      po decyzji 74=A): pieniadzZPracy rozklada sie w tych proporcjach (nie w 100%
- *      do skarbca).
- *   2. Mnoznik Waluty/Mennicy NIE mnozy pieniadzZPracy -- to samo miasto z Mennica i
- *      bez Mennicy ma identyczna wartosc pola pieniadzZPracy.
- *   3. Suma trzech strumieni po podziale (Nauka+Pieniadz+Luksus) = pula
- *      (handelNetto + pieniadzZPracy) -- nic nie ginie, nic sie nie dubluje.
+ *   1. handelBrutto (zwracane pole, PRZED korupcja/Waluta+Mennica) juz zawiera
+ *      pieniadzZPracy PRZEMNOZONY przez premie Targowiska -- dowod, ze wchodzi do
+ *      Daniny u zrodla, nie po fakcie.
+ *   2. civHandelMult mnozy CALY strumien (w tym czesc z konwersji Pracy).
+ *   3. Korupcja (strataFraction) redukuje CALY strumien (w tym czesc z konwersji
+ *      Pracy) -- zgodnie z D1 (dotyczy Daniny/Podatku, nie Pracy).
+ *   4. Waluta+Mennica MNOZY strumien z konwersji Pracy (POPRAWKA -- przed korekta
+ *      bledny test twierdzil, ze NIE mnozy; teraz odwrotnie: mnozy, bo to juz Danina).
+ *   5. Pole pieniadzZPracy w CityYieldResult to nadal SUROWA (przed-mnoznikowa)
+ *      wartosc informacyjna -- identyczna niezaleznie od Mennicy/Targowiska/civMult
+ *      (bo liczona PRZED nimi); realny wplyw multiplikatorow widac dopiero w
+ *      finalnych polach nauka/pieniadz/luksus.
+ *   6. Suma trzech strumieni po podziale = pula (handelBrutto po wszystkich
+ *      mnoznikach) -- nic nie ginie, nic sie nie dubluje.
  */
 
 const fs   = require('fs');
@@ -71,17 +86,25 @@ function eq(a, b, msg) {
 }
 
 // ---------------------------------------------------------------------------
-// Real econ-params.json + loader (normal) -- suwak 20/60/20 (decyzja 74=A) czytany
-// z JSON, NIE hardkodowany tutaj.
+// Real econ-params.json + loader (normal) -- suwak 20/60/20 (decyzja 74=A) i
+// mennicaMnoznikPoWalucie (1,5 na normal) czytane z JSON, NIE hardkodowane tutaj.
 // ---------------------------------------------------------------------------
 const rawEconParams = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'econ-params.json'), 'utf8'));
 const params = loadEconParams(rawEconParams, 'normal');
+eq(params.mennicaMnoznikPoWalucie, 1.5, 'zalozenie fixture: mennicaMnoznikPoWalucie (normal) = 1.5');
+eq(params.targowiskoPracaMnoznik, 2, 'zalozenie fixture: targowiskoPracaMnoznik = 2');
+eq(params.budynekTargowiskoBonusHandlu, 0.5, 'zalozenie fixture: budynekTargowiskoBonusHandlu (normal) = 0.5 (+50%)');
 
-// Fixture: 10x Laka (Zywnosc 3 / Praca 1 / Handel 1 kazda) -> pracaTerenu=10,
-// handelTerenu=10. Liczby dobrane tak, zeby podzial suwakiem 20/60/20 wychodzil
-// bez utraty na floor() (pula = 35, 42.5 -- patrz test 3).
-const workedTiles = Array.from({ length: 10 }, () => ({
-  terenBazowy: TerenBazowy.Laka,
+// Fixture: 5x Gory (Praca=4, Handel=0 kazda -- brak Handlu terenowego, zeby
+// pieniadzZPracy byl JEDYNYM zrodlem Daniny, latwo policzalnym) -> pracaTerenu=20,
+// handelTerenu=0. procentBudynki=0 -> cala Praca netto idzie do puli (doPuli=20).
+// pieniadzZPracy = doPuli(20) x targowiskoPracaMnoznik(2) = 40.
+// handelBazowy = handelTerenu(0) + pieniadzZPracy(40) = 40.
+// handelBrutto (Targowisko +50%) = 40 x 1.5 = 60 -- liczby dobrane tak, zeby
+// zarowno 60 (bez Mennicy) jak i 60x1.5=90 (z Mennica) dzielily sie CZYSTO na
+// 20/60/20 bez utraty na floor().
+const workedTiles = Array.from({ length: 5 }, () => ({
+  terenBazowy: TerenBazowy.Gory,
   nakladka:    Nakladka.Brak,
   maRzeke:     false,
 }));
@@ -97,65 +120,112 @@ const baseCity = {
   specjalisci: [],
   kolejkaProdukcji: [],
   podziałHandlu: { procentNauka: 20, procentPieniadz: 60, procentLuksus: 20 }, // decyzja 74=A
-  podziałPracy:  { procentBudynki: 0 }, // 100% Pracy netto -> pula (doPuli), zeby pieniadzZPracy byl czytelny
+  podziałPracy:  { procentBudynki: 0 }, // 100% Pracy netto -> pula (doPuli)
 };
 
-function ctxFor(maMennica) {
+function ctxFor(opts) {
   return {
     wojskoZuzycieZywnosci: 0,
-    strataFraction: 0, // D5 jest niezalezny od korupcji -- izolujemy zmienna
+    strataFraction: opts.strataFraction ?? 0,
     maMlyn: false, maCegielnia: false,
     maTargowisko: true,       // Efekt 2 wymaga Targowiska...
     maBiblioteka: false, maAkademia: false,
-    maMennica,
+    maMennica: opts.maMennica ?? false,
     walutaOdkryta: true,      // ...i odkrytej Waluty (walutaOdkrytaOnly)
-    civHandelMult: 1, civNaukaMult: 1,
+    civHandelMult: opts.civHandelMult ?? 1,
+    civNaukaMult: 1,
   };
 }
 
 // ============================================================================
-// TEST 1: bez Mennicy -- pieniadzZPracy rozklada sie 20/60/20, NIE w 100% do skarbca
-// handelTerenu=10 -> handelBrutto (Targowisko +50%) = 15; strata=0, mnoznik=1 (brak
-// Mennicy) -> handelNetto=15. pracaNetto=10, doPuli=10 (procentBudynki=0),
-// pieniadzZPracy = 10 * targowiskoPracaMnoznik(2) = 20. Pula = 15+20 = 35.
-// Podzial 20/60/20 na 35: Nauka=7, Pieniadz=21, Luksus=7.
+// TEST 1: handelBrutto (zwracane pole) JUZ zawiera pieniadzZPracy PRZEMNOZONY
+// przez Targowisko -- dowod ze wchodzi do Daniny u zrodla (D5 poprawione).
+// Gdyby (blednie, jak przed korekta) doklejano pieniadzZPracy PO Targowisku,
+// handelBrutto = handelTerenu(0) x 1.5 + pieniadzZPracy(40) = 40, NIE 60.
 // ============================================================================
-console.log('\n--- T1: bez Mennicy -- pula 35 dzielona 20/60/20 ---');
+console.log('\n--- T1: pieniadzZPracy wchodzi do handelBrutto PRZED Targowiskiem ---');
 {
-  const yld = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor(false));
-  eq(yld.pieniadzZPracy, 20, 'pieniadzZPracy = doPuli(10) x targowiskoPracaMnoznik(2) = 20 (pole nadal raportowane)');
-  eq(yld.handelBrutto, 15, 'handelBrutto (Targowisko +50% na handelTerenu=10) = 15');
-  eq(yld.nauka, 7, 'Nauka = floor(35 x 0.20) = 7 (D5: pula zawiera pieniadzZPracy)');
-  eq(yld.pieniadz, 21, 'Pieniadz = floor(35 x 0.60) = 21 (NIE 9+20=29 jak przed D5 -- patrz raport)');
-  eq(yld.luksus, 7, 'Luksus = floor(35 x 0.20) = 7');
-  assert(yld.pieniadz < 29, 'Pieniadz NIE trafia juz w 100% do skarbca (przed D5 byloby 9+20=29)');
+  const yld = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor({}));
+  eq(yld.pieniadzZPracy, 40, 'pieniadzZPracy (surowa wartosc) = doPuli(20) x targowiskoPracaMnoznik(2) = 40');
+  eq(yld.handelBrutto, 60, 'handelBrutto = (handelTerenu(0)+pieniadzZPracy(40)) x Targowisko(1.5) = 60, NIE 40 (dowod ze Targowisko mnozy tez konwersje Pracy)');
 }
 
 // ============================================================================
-// TEST 2: Mennica NIE mnozy pieniadzZPracy -- ta sama wartosc z i bez Mennicy.
-// Z Mennica: walutaActive=true -> handelNetto = 15 x mennicaMnoznikPoWalucie(1.5) = 22.5.
-// pieniadzZPracy zostaje 20 (liczony z doPuli, NIEZALEZNIE od walutaMnoznikAktywny).
+// TEST 2: civHandelMult mnozy CALY strumien (w tym pieniadzZPracy wtopiony w baze).
+// civHandelMult=2 -> handelBrutto = 60 x 2 = 120 (nie 40x2+... czy inna czesciowa kombinacja).
 // ============================================================================
-console.log('\n--- T2: Mennica NIE mnozy strumienia z konwersji Pracy ---');
+console.log('\n--- T2: civHandelMult mnozy tez konwersje Pracy (jest w tej samej bazie) ---');
 {
-  const bezMennicy = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor(false));
-  const zMennica    = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor(true));
-  eq(bezMennicy.pieniadzZPracy, zMennica.pieniadzZPracy, 'pieniadzZPracy identyczny z i bez Mennicy (mnoznik jej NIE dotyczy)');
-  eq(zMennica.pieniadzZPracy, 20, 'pieniadzZPracy z Mennica dalej = 20 (nie 20 x 1.5 = 30)');
-  assert(zMennica.pieniadz > bezMennicy.pieniadz, 'Skarbiec z Mennica wyzszy (mnoznik dziala na handelNetto z terenu/budynkow, nie na pieniadzZPracy)');
+  const bez = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor({ civHandelMult: 1 }));
+  const zCiv = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor({ civHandelMult: 2 }));
+  eq(bez.handelBrutto, 60, 'civHandelMult=1: handelBrutto = 60 (bazowy)');
+  eq(zCiv.handelBrutto, 120, 'civHandelMult=2: handelBrutto = 60 x 2 = 120 (mnoznik dziala na CALA baze, w tym pieniadzZPracy)');
 }
 
 // ============================================================================
-// TEST 3: Suma trzech strumieni po podziale = pula (handelNetto + pieniadzZPracy).
-// Uzywamy fixture bez Mennicy, gdzie pula=35 dzieli sie bez utraty na floor().
+// TEST 3: Korupcja redukuje CALY strumien (D1: dotyczy Daniny/Podatku -- a
+// pieniadzZPracy to TERAZ czesc Daniny, wiec i on jest redukowany).
+// strataFraction=0.30 (30%): pieniadz/nauka/luksus spadaja proporcjonalnie o 30%
+// wzgledem strataFraction=0 (Praca -- gdyby ja tu liczyc -- pozostalaby NIETKNIETA,
+// patrz korupcja-test.cjs T3, D1 nie jest tu ponownie testowane wprost).
 // ============================================================================
-console.log('\n--- T3: suma strumieni po podziale = pula (nic nie ginie/dubluje) ---');
+console.log('\n--- T3: korupcja (D1: Danina/Podatek) redukuje tez czesc z konwersji Pracy ---');
 {
-  const yld = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor(false));
-  const pula = 15 + yld.pieniadzZPracy; // handelNetto(15, liczone wyzej) + pieniadzZPracy
-  const suma = yld.nauka + yld.pieniadz + yld.luksus;
-  eq(pula, 35, 'pula (handelNetto=15 + pieniadzZPracy=20) = 35');
-  eq(suma, 35, 'Nauka(7) + Pieniadz(21) + Luksus(7) = 35 = pula, dokladnie (podzial 20/60/20 bez reszty)');
+  const bezKorupcji = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor({ strataFraction: 0 }));
+  const zKorupcja   = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor({ strataFraction: 0.30 }));
+  eq(bezKorupcji.pieniadz, 36, 'bez korupcji: Pieniadz = floor(60 x 0.60) = 36');
+  eq(zKorupcja.pieniadz, 25, 'korupcja 30%: Pieniadz = floor((60 x 0.70) x 0.60) = floor(25.2) = 25 (strumien z konwersji Pracy tez strata dotyka)');
+  assert(zKorupcja.pieniadz < bezKorupcji.pieniadz, 'korupcja obniza Pieniadz takze gdy jego zrodlem jest w calosci konwersja Pracy');
+  assert(zKorupcja.nauka < bezKorupcji.nauka, 'korupcja obniza tez Nauke z tego strumienia');
+  assert(zKorupcja.luksus < bezKorupcji.luksus, 'korupcja obniza tez Luksus/Zamoznosc z tego strumienia');
+}
+
+// ============================================================================
+// TEST 4 (POPRAWKA GLOWNA): Waluta+Mennica MNOZY strumien z konwersji Pracy --
+// bez Mennicy: handelNetto=60 (mnoznik nieaktywny). Z Mennica: handelNetto =
+// 60 x mennicaMnoznikPoWalucie(1.5) = 90. Podzial 20/60/20 obu (60 i 90 dzieli sie
+// czysto): bez Mennicy Pieniadz=36/Nauka=12/Luksus=12; z Mennica Pieniadz=54/
+// Nauka=18/Luksus=18 -- dokladnie x1.5, dowod ze mnoznik TERAZ obejmuje tez
+// pieniadze pochodzace z konwersji Pracy (przed korekta bylo odwrotnie: strumien
+// byl POZA zasiegiem mnoznika).
+// ============================================================================
+console.log('\n--- T4 (GLOWNA POPRAWKA): Waluta+Mennica MNOZY strumien z konwersji Pracy ---');
+{
+  const bezMennicy = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor({ maMennica: false }));
+  const zMennica    = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor({ maMennica: true }));
+
+  eq(bezMennicy.pieniadz, 36, 'bez Mennicy: Pieniadz = floor(60 x 0.60) = 36');
+  eq(zMennica.pieniadz, 54, 'z Mennica: Pieniadz = floor(90 x 0.60) = 54 = 36 x 1.5 (mnoznik TERAZ obejmuje konwersje Pracy)');
+  eq(bezMennicy.nauka, 12, 'bez Mennicy: Nauka = floor(60 x 0.20) = 12');
+  eq(zMennica.nauka, 18, 'z Mennica: Nauka = floor(90 x 0.20) = 18 = 12 x 1.5');
+  eq(bezMennicy.luksus, 12, 'bez Mennicy: Luksus = floor(60 x 0.20) = 12');
+  eq(zMennica.luksus, 18, 'z Mennica: Luksus = floor(90 x 0.20) = 18 = 12 x 1.5');
+
+  assert(zMennica.pieniadz / bezMennicy.pieniadz === params.mennicaMnoznikPoWalucie,
+    'stosunek Pieniadz(z Mennica)/Pieniadz(bez Mennicy) = mennicaMnoznikPoWalucie (1.5) dokladnie');
+
+  // Pole pieniadzZPracy samo w sobie pozostaje SUROWA (przed-mnoznikowa) wartoscia
+  // informacyjna -- identyczne 40 w obu przypadkach, bo liczone PRZED Targowiskiem/
+  // civHandelMult/korupcja/Waluta+Mennica. Realny wplyw mnoznika widac w polach
+  // nauka/pieniadz/luksus powyzej, NIE w tym polu.
+  eq(bezMennicy.pieniadzZPracy, 40, 'pieniadzZPracy (surowe, przed-mnoznikowe) = 40 bez Mennicy');
+  eq(zMennica.pieniadzZPracy, 40, 'pieniadzZPracy (surowe, przed-mnoznikowe) = 40 takze z Mennica -- pole raportuje wartosc PRZED mnoznikami, realny efekt widac w nauka/pieniadz/luksus');
+}
+
+// ============================================================================
+// TEST 5: Suma trzech strumieni po podziale = pula (handelBrutto po wszystkich
+// mnoznikach handlu) -- bez Mennicy (pula=60) i z Mennica (pula=90), obie dzielone
+// bez utraty na floor() dzieki dobranym liczbom fixture.
+// ============================================================================
+console.log('\n--- T5: suma strumieni po podziale = pula (nic nie ginie/dubluje) ---');
+{
+  const bezMennicy = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor({ maMennica: false }));
+  const zMennica    = cityYieldPerTurn(baseCity, workedTiles, [], params, ctxFor({ maMennica: true }));
+
+  const sumaBez = bezMennicy.nauka + bezMennicy.pieniadz + bezMennicy.luksus;
+  const sumaZ   = zMennica.nauka + zMennica.pieniadz + zMennica.luksus;
+  eq(sumaBez, 60, 'bez Mennicy: Nauka(12)+Pieniadz(36)+Luksus(12) = 60 = handelBrutto, dokladnie');
+  eq(sumaZ, 90, 'z Mennica: Nauka(18)+Pieniadz(54)+Luksus(18) = 90 = handelBrutto x mennicaMnoznikPoWalucie(1.5), dokladnie');
 }
 
 // ============================================================================
