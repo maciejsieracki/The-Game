@@ -273,6 +273,9 @@ import {
   techCost,
   isEraAdvanceTech,
   eraAdvanceTarget,
+  enqueueResearchTarget,
+  dequeueResearchTarget,
+  getResearchPlanSnapshot,
   type PlayerState,
   type EmpireResearchGate,
 } from './game/playerState';
@@ -3455,6 +3458,95 @@ async function boot(): Promise<void> {
       } else {
         console.warn('[Nauka] Nie można ustawić celu:', techSlug);
       }
+    }
+
+    // TEMAT 10 — UI kolejki badań (C-RES-Q1=C/Q2=C/Q3=A/Q4=A). Silnik (playerState.ts)
+    // gotowy i NIEZMIENIONY — poniższe helpery to tylko cienka warstwa UI nad
+    // enqueueResearchTarget/dequeueResearchTarget/getResearchPlanSnapshot.
+
+    /** Odśwież wszystkie powierzchnie UI, które pokazują stan/plan badań. */
+    function refreshResearchUiSurfaces(): void {
+      updateHud();
+      refreshScienceHubIfOpen();
+      refreshSciencePickerIfOpen();
+      refreshTechTreeViewIfOpen();
+    }
+
+    /** Jedna pozycja planu badań (aktywny cel lub pozycja w kolejce) do UI. */
+    interface ResearchPlanEntryInfo {
+      /** Slug węzła drzewka (jak ScienceHubEntry.id / techToSlug). */
+      id: string;
+      name: string;
+      isActive: boolean;
+      /** Pozycja 1..RESEARCH_QUEUE_MAX (1 = aktywny cel). */
+      pos: number;
+    }
+
+    /** Plan badań (aktywny + kolejka) do wyświetlenia w hub-liście i drzewku. */
+    function buildResearchPlanSnapshot(): ResearchPlanEntryInfo[] {
+      const plan = getResearchPlanSnapshot(player);
+      return plan.map((techName, idx) => ({
+        id: techToSlug(techName),
+        name: techName,
+        isActive: idx === 0,
+        pos: idx + 1,
+      }));
+    }
+
+    /**
+     * C-RES-Q1=C: klik technologii na hub-liście LUB w drzewku = dodaj do
+     * planu badań. Gdy plan pusty — pierwszy dodany tech od razu staje się
+     * aktywnym celem (patrz enqueueResearchTarget w playerState.ts).
+     */
+    function enqueueOrSetPlayerResearchSlug(techSlug: string): void {
+      const techName = techNameFromSlug(techSlug) ?? techSlug;
+      const ok = enqueueResearchTarget(player, techName, data.tech);
+      if (ok) {
+        console.log('[Nauka] Gracz dodał do planu badań:', techName);
+        refreshResearchUiSurfaces();
+      } else {
+        console.warn('[Nauka] Nie można dodać do planu badań:', techSlug);
+      }
+    }
+
+    /** Usuwa pozycję z planu badań (aktywny cel lub pozycję w kolejce). */
+    function dequeuePlayerResearchSlug(techSlug: string): void {
+      const techName = techNameFromSlug(techSlug) ?? techSlug;
+      const ok = dequeueResearchTarget(player, techName);
+      if (ok) {
+        console.log('[Nauka] Gracz usunął z planu badań:', techName);
+        refreshResearchUiSurfaces();
+      } else {
+        console.warn('[Nauka] Pozycja nie występuje w planie badań:', techSlug);
+      }
+    }
+
+    /**
+     * C-RES-Q2=C: zmiana kolejności planu przez drag&drop. Silnik nie ma
+     * natywnej operacji "przesuń" — realizujemy ją jako pełne wyczyszczenie
+     * planu (dequeueResearchTarget dla każdej pozycji) i odbudowanie w nowej
+     * kolejności (enqueueResearchTarget), zamiast pisać nową logikę silnika.
+     * fromIdx/toIdx to indeksy w getResearchPlanSnapshot() (0 = aktywny cel).
+     */
+    function reorderPlayerResearchQueue(fromIdx: number, toIdx: number): void {
+      const plan = getResearchPlanSnapshot(player);
+      if (
+        fromIdx < 0 || fromIdx >= plan.length ||
+        toIdx < 0 || toIdx >= plan.length ||
+        fromIdx === toIdx
+      ) {
+        return;
+      }
+      const reordered = plan.slice();
+      const [moved] = reordered.splice(fromIdx, 1);
+      if (moved === undefined) return;
+      reordered.splice(toIdx, 0, moved);
+
+      for (const techName of plan) dequeueResearchTarget(player, techName);
+      for (const techName of reordered) enqueueResearchTarget(player, techName, data.tech);
+
+      console.log('[Nauka] Gracz zmienił kolejność planu badań:', reordered);
+      refreshResearchUiSurfaces();
     }
 
     function extraCityPanelConfig() {
@@ -9397,7 +9489,7 @@ async function boot(): Promise<void> {
         },
         getEntries: () => getScienceHubSnapshot(0).entries,
         onSelectTech: (techId) => {
-          selectPlayerResearchSlug(techId);
+          enqueueOrSetPlayerResearchSlug(techId);
           refreshD1bHud();
         },
         onOpenFullTree: () => openScienceTreeDocked(),
@@ -9408,6 +9500,10 @@ async function boot(): Promise<void> {
           refreshD1bHud();
         },
         isTreeOpen: () => isSciencePickerOpen() || isTechTreeViewOpen(),
+        getPlan: () => buildResearchPlanSnapshot(),
+        onEnqueue: (techId) => enqueueOrSetPlayerResearchSlug(techId),
+        onDequeue: (techId) => dequeuePlayerResearchSlug(techId),
+        onReorder: (fromIdx, toIdx) => reorderPlayerResearchQueue(fromIdx, toIdx),
       });
       createWikiHubHud({
         onClose: () => refreshD1bHud(),
@@ -9760,11 +9856,12 @@ async function boot(): Promise<void> {
         );
       },
       onSelectTarget: (techSlug: string) => {
-        selectPlayerResearchSlug(techSlug);
+        enqueueOrSetPlayerResearchSlug(techSlug);
       },
       getPlayerEra: (_ownerId: number) => player.era,
       getTempoGry: (_ownerId: number) => player.tempoGry ?? 'standardowa',
       getDifficulty: (_ownerId: number) => _menuDifficulty,
+      getPlan: (_ownerId: number) => buildResearchPlanSnapshot(),
     });
 
     // --- Konfiguracja grafu drzewa technologii (siatka 1E — techTreeView) ---

@@ -17,7 +17,7 @@ import type { TempoGry } from '../game/tech-tempo';
 import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
 import { techIconSvg } from './techIcons';
-import type { ScienceHubEntry, ScienceHubProgress } from './scienceHubHud';
+import type { ScienceHubEntry, ScienceHubPlanEntry, ScienceHubProgress } from './scienceHubHud';
 import { refreshScienceHubIfOpen } from './scienceHubHud';
 import { buildHubTechEntries } from './scienceHubSnapshotLogic';
 
@@ -83,6 +83,11 @@ export interface SciencePickerConfig {
    * Poziom trudnosci — asymetria kosztow badan (latwa/normalna/trudna).
    */
   getDifficulty?: (ownerId: number) => GameDifficulty;
+  /**
+   * TEMAT 10 (C-RES-Q1=C): plan badań (aktywny cel + kolejka) — węzły w planie
+   * dostają widoczny numerek 1/2/3 na drzewku. Brak haka → bez numerków.
+   */
+  getPlan?: (ownerId: number) => ScienceHubPlanEntry[];
 }
 
 // ---------------------------------------------------------------------------
@@ -640,6 +645,7 @@ function buildSVG(
   researchedIds: Set<string>,
   availableIds: Set<string>,
   glass = false,
+  planPosById: Map<string, number> = new Map(),
 ): string {
   const { svgW, svgH, dividers, zoneInfos, bottomLaneYStart } = layout;
   void bottomLaneYStart;
@@ -835,6 +841,13 @@ function buildSVG(
 
     if (isClickable) {
       lines.push(`<rect class="civ-sci-hit" x="0" y="0" width="${NW}" height="${NH}" rx="8" fill="rgba(0,0,0,0.001)" stroke="none" pointer-events="all"/>`);
+    }
+
+    // TEMAT 10 (C-RES-Q1=C): numerek 1/2/3 gdy tech jest w planie badań (aktywny cel lub kolejka).
+    const planPos = planPosById.get(node.id);
+    if (planPos !== undefined) {
+      lines.push(`<circle cx="-2" cy="-2" r="9" fill="#e0b24a" stroke="#1a1400" stroke-width="1.2" pointer-events="none"/>`);
+      lines.push(`<text x="-2" y="1.5" text-anchor="middle" fill="#1a1400" font-size="10" font-family="Georgia,serif" font-weight="bold" pointer-events="none">${planPos}</text>`);
     }
 
     lines.push('</g>');
@@ -1112,7 +1125,10 @@ function render(): void {
   const layout = computeLayout(nodes);
   const routedEdges = routeEdges(nodes, layout.zoneInfos, layout.bottomLaneYStart);
   const isDock = displayMode === 'dock';
-  const svgStr = buildSVG(nodes, layout, routedEdges, targetId, researchedIds, availableIds, isDock);
+  // TEMAT 10 (C-RES-Q1=C): numerki 1/2/3 na węzłach, które są w planie badań.
+  const planPosById = new Map<string, number>();
+  for (const p of cfg.getPlan?.(activeOwner) ?? []) planPosById.set(p.id, p.pos);
+  const svgStr = buildSVG(nodes, layout, routedEdges, targetId, researchedIds, availableIds, isDock, planPosById);
 
   const ph = hasHooks ? '' : ' <span style="font-size:0.68em;color:#5a4820;font-weight:400">[podgl&#x0105;d]</span>';
 

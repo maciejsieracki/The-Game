@@ -29,6 +29,20 @@ export interface ScienceHubEntry {
   lockHint?: string;
 }
 
+/**
+ * TEMAT 10 (C-RES-Q1=C): pozycja w planie badań (aktywny cel + kolejka).
+ * `pos` to numer 1..RESEARCH_QUEUE_MAX (1 = aktywny cel, silnik: playerState.ts).
+ */
+export interface ScienceHubPlanEntry {
+  id: string;
+  name: string;
+  isActive: boolean;
+  pos: number;
+}
+
+/** Max pozycji w planie badań — mirror RESEARCH_QUEUE_MAX (playerState.ts). UI celowo odsprzęgnięty od silnika. */
+const PLAN_MAX = 3;
+
 export interface ScienceHubHudConfig {
   getProgress: () => ScienceHubProgress | null;
   getEntries: () => ScienceHubEntry[];
@@ -40,6 +54,14 @@ export interface ScienceHubHudConfig {
   onClose?: () => void;
   /** Gdy drzewko otwarte — Esc obsługuje drzewko, nie hub. */
   isTreeOpen?: () => boolean;
+  /** TEMAT 10: plan badań (aktywny cel + kolejka, do RESEARCH_QUEUE_MAX pozycji). */
+  getPlan?: () => ScienceHubPlanEntry[];
+  /** Dodaj tech do planu (lub ustaw jako aktywny gdy plan pusty). */
+  onEnqueue?: (techId: string) => void;
+  /** Usuń tech z planu (aktywny cel lub pozycję w kolejce). */
+  onDequeue?: (techId: string) => void;
+  /** C-RES-Q2=C: drag&drop — przestaw pozycję fromIdx→toIdx (indeksy w getPlan()). */
+  onReorder?: (fromIdx: number, toIdx: number) => void;
 }
 
 export interface ScienceHubHudApi {
@@ -119,6 +141,25 @@ function ensureStyles(): void {
 .civ-science-hub-hud .sh-tree-btn.gold{border-color:rgba(232,216,138,0.5);background:rgba(232,216,138,0.1);color:#e8d88a;}
 .civ-science-hub-hud .sh-tree-btn.gold:hover{background:rgba(232,216,138,0.2);border-color:rgba(232,216,138,0.75);}
 .civ-science-hub-hud .sh-hint{font-size:0.7em;color:var(--muted);font-style:italic;margin-top:0.4em;line-height:1.4;}
+.civ-science-hub-hud .sh-plan-title{display:flex;align-items:baseline;justify-content:space-between;gap:0.5em;}
+.civ-science-hub-hud .sh-plan-empty{font-size:0.78em;color:var(--muted);font-style:italic;padding:0.2em 0;}
+.civ-science-hub-hud .sh-plan-item{display:flex;align-items:center;gap:0.45em;padding:0.32em 0.4em;
+  margin-top:0.22em;border-radius:5px;border:1px solid rgba(224,178,74,0.28);background:rgba(224,178,74,0.06);
+  cursor:grab;}
+.civ-science-hub-hud .sh-plan-item.active{border-color:rgba(224,178,74,0.6);background:rgba(224,178,74,0.12);}
+.civ-science-hub-hud .sh-plan-item.dragging{opacity:0.4;}
+.civ-science-hub-hud .sh-plan-item.drop-target{box-shadow:inset 0 0 0 2px var(--sci);}
+.civ-science-hub-hud .sh-plan-num{flex-shrink:0;width:1.4em;height:1.4em;border-radius:50%;
+  background:var(--gold);color:#1a1400;font-size:0.72em;font-weight:800;display:flex;align-items:center;
+  justify-content:center;}
+.civ-science-hub-hud .sh-plan-name{flex:1;min-width:0;font-size:0.86em;font-weight:600;color:#f2e0b0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.civ-science-hub-hud .sh-plan-del{flex-shrink:0;background:none;border:none;color:var(--muted);
+  font-size:1.05em;line-height:1;cursor:pointer;padding:0.1em 0.3em;border-radius:4px;}
+.civ-science-hub-hud .sh-plan-del:hover{color:#e07a5f;background:rgba(224,122,95,0.12);}
+.civ-science-hub-hud .sh-item .sh-num-badge{flex-shrink:0;width:1.3em;height:1.3em;border-radius:50%;
+  background:var(--gold);color:#1a1400;font-size:0.68em;font-weight:800;display:flex;align-items:center;
+  justify-content:center;margin-left:0.3em;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -177,9 +218,93 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     return box;
   }
 
+  /** TEMAT 10 (C-RES-Q1=C/Q2=C): panel „Plan badań (n/PLAN_MAX)" — numerki + usuwanie + drag&drop. */
+  function renderPlanPanel(plan: ScienceHubPlanEntry[]): HTMLElement {
+    const box = document.createElement('div');
+    box.className = 'panel';
+    const title = document.createElement('div');
+    title.className = 'sh-sec sh-plan-title';
+    title.innerHTML = '<span>Plan badań (' + plan.length + '/' + PLAN_MAX + ')</span>';
+    box.appendChild(title);
+
+    if (plan.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'sh-plan-empty';
+      empty.textContent = 'Pusty — kliknij technologię na liście lub w drzewku, by dodać do planu.';
+      box.appendChild(empty);
+      return box;
+    }
+
+    let dragFromIdx: number | null = null;
+
+    plan.forEach((entry, idx) => {
+      const row = document.createElement('div');
+      row.className = 'sh-plan-item' + (entry.isActive ? ' active' : '');
+      const canDrag = config.onReorder !== undefined;
+      row.draggable = canDrag;
+
+      const num = document.createElement('span');
+      num.className = 'sh-plan-num';
+      num.textContent = String(entry.pos);
+      row.appendChild(num);
+
+      const name = document.createElement('span');
+      name.className = 'sh-plan-name';
+      name.title = entry.name;
+      name.textContent = entry.name;
+      row.appendChild(name);
+
+      if (config.onDequeue) {
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'sh-plan-del';
+        del.title = 'Usuń z planu';
+        del.setAttribute('aria-label', 'Usuń ' + entry.name + ' z planu badań');
+        del.innerHTML = '<span class="sh-close-ic">' + brandIconSvg('ui-close', 16) + '</span>';
+        del.addEventListener('click', (ev) => { ev.stopPropagation(); config.onDequeue?.(entry.id); });
+        row.appendChild(del);
+      }
+
+      if (canDrag) {
+        row.addEventListener('dragstart', (ev: DragEvent) => {
+          dragFromIdx = idx;
+          row.classList.add('dragging');
+          ev.dataTransfer?.setData('text/plain', String(idx));
+          if (ev.dataTransfer) ev.dataTransfer.effectAllowed = 'move';
+        });
+        row.addEventListener('dragend', () => {
+          dragFromIdx = null;
+          box.querySelectorAll('.sh-plan-item').forEach(r => r.classList.remove('dragging', 'drop-target'));
+        });
+        row.addEventListener('dragover', (ev: DragEvent) => {
+          if (dragFromIdx === null) return;
+          ev.preventDefault();
+          if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'move';
+          if (idx !== dragFromIdx) row.classList.add('drop-target');
+        });
+        row.addEventListener('dragleave', () => row.classList.remove('drop-target'));
+        row.addEventListener('drop', (ev: DragEvent) => {
+          ev.preventDefault();
+          row.classList.remove('drop-target');
+          const from = dragFromIdx;
+          dragFromIdx = null;
+          if (from === null || from === idx) return;
+          config.onReorder?.(from, idx);
+        });
+      }
+
+      box.appendChild(row);
+    });
+
+    return box;
+  }
+
   function render(): void {
     const prog = config.getProgress();
     const entries = config.getEntries();
+    const plan = config.getPlan?.() ?? [];
+    const planPosById = new Map<string, number>();
+    for (const p of plan) planPosById.set(p.id, p.pos);
     const available = entries.filter(e => !e.locked);
     const locked = entries.filter(e => e.locked).slice(0, 4);
 
@@ -215,6 +340,10 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
 
     scroll.appendChild(head);
 
+    if (config.getPlan) {
+      scroll.appendChild(renderPlanPanel(plan));
+    }
+
     const listPanel = document.createElement('div');
     listPanel.className = 'panel';
     const secAvail = document.createElement('div');
@@ -247,7 +376,9 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
 
     const hint = document.createElement('div');
     hint.className = 'sh-hint';
-    hint.textContent = 'Klik tech na liście lub w drzewku = ustaw cel. Esc zamyka hub (najpierw drzewko).';
+    hint.textContent = config.getPlan
+      ? 'Klik tech na liście lub w drzewku = dodaj do planu (do 3). Przeciągnij pozycję w planie, by zmienić kolejność. Esc zamyka hub (najpierw drzewko).'
+      : 'Klik tech na liście lub w drzewku = ustaw cel. Esc zamyka hub (najpierw drzewko).';
 
     listPanel.appendChild(hint);
     scroll.appendChild(listPanel);
@@ -289,6 +420,15 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       }
       row.appendChild(ico);
       row.appendChild(body);
+      // TEMAT 10 (C-RES-Q1=C): numerek 1/2/3 gdy tech jest w planie badań (aktywny cel lub kolejka).
+      const planPos = planPosById.get(e.id);
+      if (planPos !== undefined) {
+        const badge = document.createElement('span');
+        badge.className = 'sh-num-badge';
+        badge.title = 'Pozycja ' + planPos + ' w planie badań';
+        badge.textContent = String(planPos);
+        row.appendChild(badge);
+      }
       const act = () => {
         if (lockedRow) config.onShowInTree(e.id);
         else config.onSelectTech(e.id);
