@@ -54,17 +54,37 @@ export function daninaLabelAccusative(label: DaninaLabel): 'daninę' | 'podatek'
 
 /**
  * Czy strumien nazywa sie "Podatek" (true) czy pozostaje "Danina" (false) dla
- * danej cywilizacji. Oba argumenty juz gotowe (policzone przez wolajacego) --
- * ta funkcja tylko laczy warunki AND, zeby nie bylo dwoch miejsc z ta sama
- * logika bramki.
+ * danej cywilizacji. Oba pierwsze argumenty juz gotowe (policzone przez
+ * wolajacego) -- ta funkcja tylko laczy warunki AND, zeby nie bylo dwoch
+ * miejsc z ta sama logika bramki.
+ *
+ * PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie
+ * dostępu do złota. Mnożnik znika, Podatek wraca do Daniny." -- trzeci,
+ * OPCJONALNY argument `maDostepDoZlota` rozszerza istniejącą bramkę (nie
+ * duplikuje jej): gdy cywilizacja STRACI dostęp do złota (własna Kopalnia
+ * złota zniszczona/utracona ALBO szlak handlowy zerwany -- game/zloto-access.ts),
+ * nazwa wraca na "Danina" mimo że Mennica fizycznie nadal stoi w stolicy
+ * (budynek NIE jest burzony -- patrz turn-economy.ts maMennicaBuiltEmpireWide
+ * vs maMennicaEmpireWide, ten sam wzorzec "budynek stoi, efekt śpi"). Domyślnie
+ * `true` -- zachowuje DOKŁADNIE stare zachowanie dla wołających, którzy jeszcze
+ * nie liczą dostępu do złota (np. gra/src/ui/cityPanel.ts daninaLabelForCity,
+ * należy do innego agenta -- patrz raport zadania PYTANIE 83).
  */
-export function isPodatekActive(walutaOdkryta: boolean, mennicaWStolicy: boolean): boolean {
-  return walutaOdkryta === true && mennicaWStolicy === true;
+export function isPodatekActive(
+  walutaOdkryta: boolean,
+  mennicaWStolicy: boolean,
+  maDostepDoZlota: boolean = true,
+): boolean {
+  return walutaOdkryta === true && mennicaWStolicy === true && maDostepDoZlota === true;
 }
 
 /** Etykieta do wyswietlenia graczowi na podstawie stanu bramki (patrz isPodatekActive). */
-export function daninaLabel(walutaOdkryta: boolean, mennicaWStolicy: boolean): DaninaLabel {
-  return isPodatekActive(walutaOdkryta, mennicaWStolicy) ? 'Podatek' : 'Danina';
+export function daninaLabel(
+  walutaOdkryta: boolean,
+  mennicaWStolicy: boolean,
+  maDostepDoZlota: boolean = true,
+): DaninaLabel {
+  return isPodatekActive(walutaOdkryta, mennicaWStolicy, maDostepDoZlota) ? 'Podatek' : 'Danina';
 }
 
 /**
@@ -100,8 +120,10 @@ export function daninaLabelForOwnerByCityList(
   cities: ReadonlyArray<{ id: string; ownerId: number }>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   capitalCityId?: string | null,
+  /** PYTANIE 83=B: patrz isPodatekActive powyżej. Domyślnie true (stare zachowanie). */
+  maDostepDoZlota: boolean = true,
 ): DaninaLabel {
   const capId = capitalCityId ?? cities.find(c => c.ownerId === ownerId)?.id ?? null;
   const hasMennicaWStolicy = mennicaWStolicy(capId, capId ? builtByCity.get(capId) : undefined);
-  return daninaLabel(walutaOdkryta, hasMennicaWStolicy);
+  return daninaLabel(walutaOdkryta, hasMennicaWStolicy, maDostepDoZlota);
 }

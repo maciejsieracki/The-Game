@@ -2587,6 +2587,45 @@ async function boot(): Promise<void> {
       return placedImprovementsWithZlotoTradeGrant(withBraz, hasZlotoGrant);
     }
 
+    /**
+     * PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie
+     * dostępu do złota." Dostęp AKTUALNY = własna Kopalnia złota gdziekolwiek w
+     * imperium (ownerHasNativeResourceAccess, 'zloto') ALBO aktywny grant "z
+     * trasy" (hasTradeRouteResourceAccess, tradeRouteResourceGrants — ten sam
+     * stan przeliczany co turę przez recomputeTradeRouteResourceGrants). Czyste
+     * OR — dokładnie ten sam warunek, który dziś odblokowuje BUDOWĘ Mennicy
+     * (building-resource-gate.ts), tylko tu decyduje o tym, czy Mennica JUŻ
+     * ZBUDOWANA nadal działa. Zero gałęzi po ownerId — parytet AI z definicji
+     * (obie wołane funkcje są już ownerId-agnostyczne).
+     */
+    function ownerHasZlotoAccessNow(ownerId: number): boolean {
+      return ownerHasNativeResourceAccess(ownerId, 'zloto')
+        || hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'zloto');
+    }
+
+    /**
+     * Resolver "dostęp do złota" MEMOIZOWANY per owner — do wpięcia w
+     * advanceCityEconomy/previewCityEconomy (turn-economy.ts), które wołają go
+     * RAZ per miasto ale chcemy policzyć realnie tylko RAZ per właściciela na
+     * tick (ownerHasZlotoAccessNow skanuje placedImprovements całego imperium —
+     * kosztowne, żeby liczyć je ponownie dla każdego miasta tej samej cywilizacji).
+     * Ten sam wzorzec cache co ownerResourceCapFor w turn-economy.ts. Nowy Map
+     * TWORZONY PRZY KAŻDYM WYWOŁANIU tej fabryki — wołający ma wywołać ją raz na
+     * początku tury/przeliczenia HUD, nie trzymać jednej instancji między turami
+     * (stan mógłby się zestarzeć po zerwaniu szlaku/utracie kopalni).
+     */
+    function makeOwnerZlotoAccessResolver(): (ownerId: number) => boolean {
+      const cache = new Map<number, boolean>();
+      return (ownerId: number): boolean => {
+        let v = cache.get(ownerId);
+        if (v === undefined) {
+          v = ownerHasZlotoAccessNow(ownerId);
+          cache.set(ownerId, v);
+        }
+        return v;
+      };
+    }
+
     /** empireHasKopalniaNaZlozuZelaza własne LUB grant "z trasy" na zelazo. */
     function hasKopalniaNaZlozuZelazaOrTradeGrant(
       ownerId: number,
@@ -7682,6 +7721,8 @@ async function boot(): Promise<void> {
       const daninaLbl = resolveDaninaLabel(
         walutaOdkrytaPlayer,
         mennicaWStolicy(playerCapitalId, playerCapitalId ? cityBuilt.get(playerCapitalId) : undefined),
+        // PYTANIE 83=B: nazwa wraca na "Danina" gdy gracz straci dostęp do złota.
+        ownerHasZlotoAccessNow(0),
       );
       return { totalIncome, routes, daninaLabel: daninaLbl };
     }
@@ -7936,6 +7977,8 @@ async function boot(): Promise<void> {
         buildAllTerritoryNodes(),
         undefined,
         buildWonderCityYieldsByOwnerMap([0]),
+        // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — projekcja gracza.
+        makeOwnerZlotoAccessResolver(),
       );
       const cityFoods = preview.perCity
         .filter(tk => tk.ownerId === 0 && !tk.oblegany)
@@ -7986,6 +8029,8 @@ async function boot(): Promise<void> {
         buildAllTerritoryNodes(),
         undefined,
         buildWonderCityYieldsByOwnerMap([0]),
+        // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — HUD gracza.
+        makeOwnerZlotoAccessResolver(),
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
       _lastPracaRate = playerEcon.doPuli;
@@ -13678,6 +13723,8 @@ async function boot(): Promise<void> {
             cityRelig,
             // CUDA-EKON-01: dotyczy gracza I AI (ownerId-agnostic) — patrz raport C-CUDA-BONUS=A.
             buildWonderCityYieldsByOwnerMap(cities.map(c => c.ownerId)),
+            // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — real tick, gracz + AI.
+            makeOwnerZlotoAccessResolver(),
           );
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();

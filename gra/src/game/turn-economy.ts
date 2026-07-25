@@ -1104,6 +1104,18 @@ export interface EconUnit {
 
 export type OwnerEraResolver = (ownerId: number) => number;
 export type OwnerTechResolver = (ownerId: number) => ReadonlySet<string>;
+/**
+ * PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
+ * do złota." Wołający (main.ts) liczy TO RAZ PER OWNER PER TICK (memoizowany
+ * resolver -- ten sam wzorzec co ownerResourceCapFor w advanceCityEconomy niżej),
+ * łącząc dostęp natywny (empireHasKopalniaZlota) ORAZ dostęp "z trasy" (grant
+ * handlowy 'zloto') -- main.ts zna oba, ten moduł celowo nie zna placedImprovements
+ * ani tras handlowych (pure per-city economy, patrz nagłówek pliku). Domyślny
+ * resolver (gdy wołający go nie poda -- testy/tools sprzed tej decyzji) zwraca
+ * zawsze `true`, żeby NIE zmieniać zachowania istniejących wywołań, które o
+ * dostępie do złota jeszcze nie wiedzą (żaden regres w tools/*.cjs).
+ */
+export type OwnerZlotoAccessResolver = (ownerId: number) => boolean;
 
 /**
  * Live preview of per-city yields — same formulas as advanceCityEconomy, but
@@ -1127,6 +1139,8 @@ export function previewCityEconomy(
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
   /** CUDA-EKON-01: ownerId -> suma bonusy.miasto cudów ukończonych (× każde miasto ownera). */
   wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
+  /** PYTANIE 83=B: dostęp do złota per owner (patrz OwnerZlotoAccessResolver powyżej). */
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver = () => true,
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
@@ -1185,7 +1199,14 @@ export function previewCityEconomy(
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const maMennicaEmpireWide = mennicaOwners.has(city.ownerId);
+    const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
+    // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
+    // do złota. Mnożnik znika, Podatek wraca do Daniny." Budynek NIE jest burzony
+    // (maMennicaBuiltEmpireWide zostaje true) -- tylko EFEKT śpi, gdy cywilizacja
+    // aktualnie nie ma dostępu do złota (ani własna Kopalnia złota, ani szlak).
+    // resolveOwnerZlotoAccess to memoizowany resolver ownera (RAZ per owner per tick,
+    // main.ts) -- patrz OwnerZlotoAccessResolver powyżej.
+    const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
     const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
@@ -1228,7 +1249,9 @@ export function previewCityEconomy(
       // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
       // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
       // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
-      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B).
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
+      // maMennicaEmpireWide juz zawiera bramke dostepu do zlota (patrz wyzej) --
+      // gdy zlota brak, ta flaga jest false mimo ze budynek dalej stoi.
       maMennica: maMennicaEmpireWide,
       walutaOdkryta,
       walutaMnoznikOverride,
@@ -1357,6 +1380,8 @@ export function advanceCityEconomy(
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
   /** CUDA-EKON-01: ownerId -> suma bonusy.miasto cudów ukończonych (× każde miasto ownera). */
   wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
+  /** PYTANIE 83=B: dostęp do złota per owner (patrz OwnerZlotoAccessResolver powyżej). */
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver = () => true,
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -1515,7 +1540,14 @@ export function advanceCityEconomy(
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const maMennicaEmpireWide = mennicaOwners.has(city.ownerId);
+    const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
+    // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
+    // do złota. Mnożnik znika, Podatek wraca do Daniny." Budynek NIE jest burzony
+    // (maMennicaBuiltEmpireWide zostaje true) -- tylko EFEKT śpi, gdy cywilizacja
+    // aktualnie nie ma dostępu do złota (ani własna Kopalnia złota, ani szlak).
+    // resolveOwnerZlotoAccess to memoizowany resolver ownera (RAZ per owner per tick,
+    // main.ts) -- patrz OwnerZlotoAccessResolver powyżej.
+    const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
     const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
@@ -1558,7 +1590,9 @@ export function advanceCityEconomy(
       // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
       // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
       // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
-      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B).
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
+      // maMennicaEmpireWide juz zawiera bramke dostepu do zlota -- gdy brak, false
+      // mimo ze budynek dalej stoi (nie jest burzony).
       maMennica:             maMennicaEmpireWide,
       walutaOdkryta,         // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
       walutaMnoznikOverride, // per-cyw skalowany trudnoscia (lub override religii)
