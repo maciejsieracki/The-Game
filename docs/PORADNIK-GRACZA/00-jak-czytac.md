@@ -117,7 +117,7 @@ Balans gry nie jest „na oko" — pochodzi z **paneli sterowania** (arkusze Exc
 
 **Dla gracza:** liczby w poradniku i encyklopedii odzwierciedlają aktualny build. Po aktualizacji balansu mogą się zmienić — wtedy odświeżamy poradnik (rewizja w stopce pliku).
 
-**Wzory matematyczne** (np. wzrost ludności, siła państwa) — Apendyks C w pełnym spisie. W rozdziałach 0–XVII unikamy skrótów technicznych; tam, gdzie trzeba, podajemy efekt w języku gry („+15% złota z handlu").
+**Wzory matematyczne** (np. wzrost ludności, siła państwa) — Apendyks C w pełnym spisie. W rozdziałach 0–XVII unikamy skrótów technicznych; tam, gdzie trzeba, podajemy efekt w języku gry („+15% Daniny z portów").
 
 Decyzje produktowe Macieja (np. Spichlerz, layout HUD) są zapisane w `docs/decyzje/` — poradnik z nich korzysta, ale nie wymaga ich czytania.
 
@@ -180,7 +180,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 **Rozdziały 0–XVII** (ten poradnik) piszą językiem gracza:
 
 - „Siła państwa", nie „Power P-A"
-- „Suwak handlu", nie „wealth slider lane B"
+- „Suwak Daniny", nie „wealth slider lane B"
 - Pełne nazwy ekranów: panel Miasto, ekran przed bitwą, drzewko technologii
 
 **Apendyks A** (w pełnym spisie) — alfabetyczny słownik pojęć z krótką definicją.

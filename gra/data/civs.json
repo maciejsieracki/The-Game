@@ -54,7 +54,7 @@
           "typ": "bonus_zloto",
           "cel": "handel",
           "wartosc": 0.15,
-          "opis": "Morskie szlaki handlowe: +15% złota z portów i dróg morskich (Korynt, Ateny)",
+          "opis": "Morskie szlaki handlowe: +15% Daniny z portów i dróg morskich (Korynt, Ateny)",
           "realizuje": "ekonomia"
         },
         {
@@ -1554,7 +1554,7 @@
           "typ": "bonus_zloto",
           "cel": "handel",
           "wartosc": 0.15,
-          "opis": "Szlaki lokalne: +15% złota z handlu w miastach",
+          "opis": "Szlaki lokalne: +15% Daniny miast",
           "realizuje": "ekonomia"
         },
         {
@@ -2058,7 +2058,7 @@
           "typ": "bonus_zloto",
           "cel": "handel",
           "wartosc": 0.1,
-          "opis": "Rynek Euphratu: +10% złota",
+          "opis": "Rynek Euphratu: +10% Daniny miast",
           "realizuje": "ekonomia"
         },
         {
@@ -2383,14 +2383,14 @@
           "typ": "bonus_zloto",
           "cel": "handel",
           "wartosc": 0.25,
-          "opis": "Szlaki morskie: +25% złota z portów",
+          "opis": "Szlaki morskie: +25% Daniny z portów",
           "realizuje": "ekonomia"
         },
         {
           "typ": "bonus_zloto",
           "cel": "handel",
           "wartosc": 0.1,
-          "opis": "Purpura: +10% handlu",
+          "opis": "Purpura: +10% Daniny",
           "realizuje": "ekonomia"
         },
         {

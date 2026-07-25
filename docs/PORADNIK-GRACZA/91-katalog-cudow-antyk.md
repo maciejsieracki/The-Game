@@ -3,7 +3,7 @@
 > **Poradnik gracza (Pełny)** · Część XV §94–96 · dane: `gra/data/wonders.json`
 > Pełne karty Wiki: `docs/encyklopedia/cuda/` · mechanika: [`15-kultura-religia-cuda.md`](15-kultura-religia-cuda.md)
 
-W epoce Antyku (Kamień–Brąz–Żelazo) każda cywilizacja ma **cud wyłączny (E)** oraz dostęp do **trzech wyścigów (R)**: Wyrocznia (Kamień), Kamień Ha'amonga (Brąz), Brama wszystkich narodów (Żelazo). Cud stawiasz na **heksie w terytorium**; koszt to **praca**; utrzymanie — **złoto** co turę. Bonusy miasta działają **× każde miasto**. Po **absolut** (koniec epoki 6) efekty wygasają — zostaje ruina (+10 handlu).
+W epoce Antyku (Kamień–Brąz–Żelazo) każda cywilizacja ma **cud wyłączny (E)** oraz dostęp do **trzech wyścigów (R)**: Wyrocznia (Kamień), Kamień Ha'amonga (Brąz), Brama wszystkich narodów (Żelazo). Cud stawiasz na **heksie w terytorium**; koszt to **praca**; utrzymanie — **złoto** co turę. Bonusy miasta działają **× każde miasto**. Po **absolut** (koniec epoki 6) efekty wygasają — zostaje ruina (+10 Daniny).
 
 ## Typy dostępu
 

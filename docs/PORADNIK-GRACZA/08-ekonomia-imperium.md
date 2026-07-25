@@ -13,7 +13,7 @@ Ekonomia imperium to wspólna kasa państwa: złoto, żywność na wojsko, tempo
 
 | Źródło | Skąd |
 |--------|------|
-| **Podatki** | Suwak **handlu** w każdym mieście — część na złoto (Część VI §38.1) |
+| **Podatki** | Suwak **Daniny** w każdym mieście — część na złoto (Część VI §38.1) |
 | **Pola** | Profile **Podatki** / zrównoważone w okolicy (Część VII §43.3) |
 | **Handel dyplomatyczny** | Umowy z innymi państwami (Część XII) |
 | **Jednorazowo** | Prezenty, trybut, łup (jeśli mechanika aktywna w buildzie) |
@@ -141,7 +141,7 @@ Wszystkie miasta **składają** punkty badań do **jednej puli** państwa:
 
 | Źródło nauki | Gdzie ustawiasz |
 |--------------|-----------------|
-| Suwak handlu (% na naukę) | Zakładka **Miasto** w każdym centrum |
+| Suwak Daniny (% na naukę) | Zakładka **Miasto** w każdym centrum |
 | Budynki | Biblioteka, Akademia… |
 | Cuda / bonusy | Rzadkie mnożniki |
 
@@ -172,7 +172,7 @@ Część tech jest **wyszarzona**, dopóki nie awansujesz epoki. Awans epoki odb
 
 ### Przykład liczbowy
 
-2 miasta: **+6** i **+4** badań/t + suwak **20%** z handlu **30** = **+6** → łącznie **+16**/turę.
+2 miasta: **+6** i **+4** badań/t + suwak **20%** z Daniny **30** = **+6** → łącznie **+16**/turę.
 Tech koszt **80** → ukończenie za **5** tur przy stałym tempie.
 
 ### Strategia gracza
@@ -297,7 +297,7 @@ Brak materiału w **puli państwa** **blokuje** wejście do kolejki (karta budyn
 **Dochód** ma dwa niezależne składniki, oba do skarbca **czysto** (pomijają suwak Wealth):
 
 1. **Wzór dystansowy** — baza + dystans × mnożnik, z podłogą (placeholdery `econ-params.json`: baza 8 ¤/turę, +0,4 ¤/heks, podłoga 1 ¤/turę). Obie strony trasy zarabiają pełną kwotę.
-2. **+5% do Handlu za każdą aktywną trasę** — osobny, kumulatywny mnożnik miasta (nie łączony z bonusem Targowiska/Waluty, żeby uniknąć podwójnego liczenia).
+2. **+5% do Daniny za każdą aktywną trasę handlową** — osobny, kumulatywny mnożnik miasta (nie łączony z bonusem Targowiska/Waluty, żeby uniknąć podwójnego liczenia).
 
 **Dostęp do surowca** — aktywna trasa daje też dostęp do **brązu, żelaza lub konia**, których nie masz u siebie (Handel E3b) — czysta pochodna trasy: zerwanie traktatu lub wojna **automatycznie cofa** dostęp. Panel miasta pokazuje adnotację „szlak handlowy z **X**" przy takim surowcu.
 
@@ -357,7 +357,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 | Zasób | Gdzie widzisz | Główna dźwignia gracza |
 |-------|---------------|-------------------------|
-| **Złoto** | Pasek ¤ | Suwak handlu, mniejsze utrzymanie |
+| **Złoto** | Pasek ¤ | Suwak Daniny, mniejsze utrzymanie |
 | **Żywność** | Pasek + Spichlerz | Farmy, suwak wojska/wzrost, Spichlerz (B5) |
 | **Praca** | Pasek | Tartaki, profil Produkcja w okolicy |
 | **Nauka** | Pasek Badania | Biblioteki, % nauki w suwaku |

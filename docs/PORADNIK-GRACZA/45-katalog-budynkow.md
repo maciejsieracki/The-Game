@@ -106,7 +106,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 Na poziomie 1 daje: **+3 złoto**. Każdy kolejny poziom dodaje: **+2 złoto**.
 **Wymagania:** brak.
-**Uwaga:** Mnoznik % dotyczy przychodow z handlu w miescie
+**Uwaga:** Mnoznik % dotyczy przychodow z Daniny w miescie
 
 
 ### Przykład liczbowy

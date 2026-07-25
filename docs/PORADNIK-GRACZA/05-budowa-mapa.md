@@ -79,7 +79,7 @@ Skrót kategorii (szczegóły w katalogu):
 ### Przykład liczbowy
 
 Farma **20** pracy, **+2** 🍞 (bonus ulepszenia normal) + pole **3** 🍞 = **5** 🍞/t z heksu.
-Droga **15** pracy → **+1** handel; przy handlu **10** brutto daje **+1** dodatkowy.
+Droga **15** pracy → **+1** Daniny; przy Daninie **10** brutto daje **+1** dodatkowy.
 
 ### Strategia gracza
 
@@ -119,7 +119,7 @@ Po zbadaniu pozycje pojawiają się **od razu** w trybie budowy i w zakładce **
 ### Przykład liczbowy
 
 Farma **20** pracy, **+2** 🍞 (bonus ulepszenia normal) + pole **3** 🍞 = **5** 🍞/t z heksu.
-Droga **15** pracy → **+1** handel; przy handlu **10** brutto daje **+1** dodatkowy.
+Droga **15** pracy → **+1** Daniny; przy Daninie **10** brutto daje **+1** dodatkowy.
 
 ### Strategia gracza
 
@@ -155,7 +155,7 @@ Pełna tabela warunków — apendyks B.7 spisu treści i kolumna **Warunek** w [
 ### Przykład liczbowy
 
 Farma **20** pracy, **+2** 🍞 (bonus ulepszenia normal) + pole **3** 🍞 = **5** 🍞/t z heksu.
-Droga **15** pracy → **+1** handel; przy handlu **10** brutto daje **+1** dodatkowy.
+Droga **15** pracy → **+1** Daniny; przy Daninie **10** brutto daje **+1** dodatkowy.
 
 ### Strategia gracza
 
@@ -193,7 +193,7 @@ Infrastruktura może mieć **utrzymanie** w danych balansu — sprawdź tooltip 
 ### Przykład liczbowy
 
 Farma **20** pracy, **+2** 🍞 (bonus ulepszenia normal) + pole **3** 🍞 = **5** 🍞/t z heksu.
-Droga **15** pracy → **+1** handel; przy handlu **10** brutto daje **+1** dodatkowy.
+Droga **15** pracy → **+1** Daniny; przy Daninie **10** brutto daje **+1** dodatkowy.
 
 ### Strategia gracza
 

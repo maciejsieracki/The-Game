@@ -15,7 +15,7 @@ Podsumowanie **netto co turę** z pól i budynków przypisanych do tego miasta:
 
 - **Żywność** — czy miasto karmi wzrost i udział wojska.
 - **Praca** — ile trafia do kolejki budowy i na mapę (przez suwaki).
-- **Złoto** — podatki z pól i handel lokalny (reszta przez suwak handlu w zakładce Miasto).
+- **Złoto** — Danina z pól i z miasta (reszta przez suwak Daniny w zakładce Miasto; po Walucie i Mennicy w stolicy nazywana Podatkiem).
 
 **Wskazówka:** Otwieraj **Plony** po podboju — nowe miasto często ma zerowe przypisanie pól i stoi w miejscu mimo dużej populacji.
 
@@ -79,7 +79,7 @@ Profile **Podatki** i **Zrównoważone** kierują heksy na wyższy dochód złot
 
 ### 43.5. Cuda
 
-Cud z bonusem ×3 mnoży wybrane plony **per miasto** w zasięgu. Po zbudowaniu cudu absolut w epoce — bonus wygasa, zostaje turystyka (+handel).
+Cud z bonusem ×3 mnoży wybrane plony **per miasto** w zasięgu. Po zbudowaniu cudu absolut w epoce — bonus wygasa, zostaje turystyka (+Danina).
 
 
 ### Przykład liczbowy
@@ -190,7 +190,7 @@ Dwa osobne mechanizmy działają razem:
 
 ### 45.6. Przyrost i mnożniki
 
-Budynki dają stały przyrost (żywność, nauka…) lub **mnożnik %** (kuźnia → silniejsze jednostki z miasta, targowisko → handel lądowy). Kumulują się z suwakami z Części VI.
+Budynki dają stały przyrost (żywność, nauka…) lub **mnożnik %** (kuźnia → silniejsze jednostki z miasta, targowisko → mnożnik Daniny miasta). Kumulują się z suwakami z Części VI.
 
 **Wskazówka:** Pałac — jeden na miasto, fundament kultury; Spichlerz — pierwszy w imperium przed masową rekrutacją.
 

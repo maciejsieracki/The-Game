@@ -10,7 +10,7 @@ Ulepszenia stawiasz z lewego panelu mapy (**Budowa**) na heksach w **swoim** ter
 | Ulepszenie | Epoka | Koszt pracy | Bonus | Teren | Tech | Wiki |
 |------------|-------|-------------|-------|-------|------|------|
 | Bydło | Kamień | 20 | +2 żywność, +3 praca | Łąka, Równina | Oswojenie zwierząt | [Bydło](../encyklopedia/ulepszenia/bydlo.md) |
-| Droga | Kamień | 15 | +1 handel | każdy przejezdny heks | Koło | [Droga](../encyklopedia/ulepszenia/droga.md) |
+| Droga | Kamień | 15 | +1 Danina | każdy przejezdny heks | Koło | [Droga](../encyklopedia/ulepszenia/droga.md) |
 | Farma | Kamień | 20 | +3 żywność | Łąka, Równina | Rolnictwo | [Farma](../encyklopedia/ulepszenia/farma.md) |
 | Kamieniołom | Kamień | 22 | +1 praca, +1 kamień | Wzgórza, Góry (kamień) | Murarstwo | [Kamieniołom](../encyklopedia/ulepszenia/kamieniolom.md) |
 | Kopalnia | Kamień | 25 | +2 praca | Wzgórza, Góry, złoże Rudy | Murarstwo | [Kopalnia](../encyklopedia/ulepszenia/kopalnia.md) |
@@ -249,7 +249,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Droga
 
-**Droga** (epoka **Kamień**) kosztuje **15** pracy i wymaga technologii **Koło**. Daje: **+1 handel**.
+**Droga** (epoka **Kamień**) kosztuje **15** pracy i wymaga technologii **Koło**. Daje: **+1 Daniny**.
 Dozwolony teren: każdy przejezdny heks.
 **Warunek:** łączy TYLKO miasta i posterunki (MAPA pilnuje); +szybkość ruchu jednostek
 
@@ -257,7 +257,7 @@ Dozwolony teren: każdy przejezdny heks.
 ### Przykład liczbowy
 
 Koszt **15** pracy przy **7** pracy/t na budynki (70%) → **~2** tury budowy.
-Bonus **+1 handel** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+1 Daniny** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → [`docs/encyklopedia/ulepszenia/droga.md`](../encyklopedia/ulepszenia/droga.md)
 

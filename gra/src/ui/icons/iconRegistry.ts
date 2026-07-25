@@ -47,18 +47,3 @@ export function iconHtml(id: IconId, size: BrandIconSize = 24): string {
   }
   return '';
 }
-
-/** Etykieta PL dla chipów 6C. */
-export const ICON_LABELS_PL: Partial<Record<IconId, string>> = {
-  'res-food': 'Żywność',
-  'res-work': 'Praca',
-  'res-treasury': 'Skarbiec',
-  'res-science': 'Badania',
-  'res-culture': 'Kultura',
-  'res-religion': 'Religia',
-  'res-population': 'Ludność',
-  'res-influence': 'Wpływ',
-  'res-settlements': 'Osiedla',
-  'res-resources': 'Surowce',
-  'res-trade': 'Handel',
-};

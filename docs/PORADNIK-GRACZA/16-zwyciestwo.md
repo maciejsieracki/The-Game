@@ -38,7 +38,7 @@ Warunki szczegółowe:
 1. **Wszystkie technologie** w zakresie gry v1.0 (epoki Kamień + Brąz + Żelazo w drzewku) muszą być **zbadane**.
 2. **Rakieta z robotami** — projekt końcowy: odpowiednia technologia **oraz** produkcja / wystrzelenie (flaga w silniku gry).
 
-**Nie musisz** dominować militarnie — możesz wygrać nauką przy mniejszej armii, jeśli masz spokojnych sąsiadów i silną produkcję badań (Biblioteka, Akademia, suwak nauki w handlu).
+**Nie musisz** dominować militarnie — możesz wygrać nauką przy mniejszej armii, jeśli masz spokojnych sąsiadów i silną produkcję badań (Biblioteka, Akademia, suwak nauki w Daninie).
 
 **Strategia naukowa:**
 

@@ -231,9 +231,9 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Po absolut utrzymanie = **floor(utrzymanie/2)**, min. 0 (np. Piramidy 2→1 ¤/turę).
 
-### 96.3. Turystyka — +10 handlu
+### 96.3. Turystyka — +10 Daniny
 
-Jedyny **stały** bonus ruiny: **+10 do handlu** (atrakcja turystyczna). Nie przywraca yield × miasto.
+Jedyny **stały** bonus ruiny: **+10 do Daniny** (atrakcja turystyczna). Nie przywraca yield × miasto.
 
 ### 96.4. Cuda epok 4+
 
