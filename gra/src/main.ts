@@ -456,6 +456,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor,
   type CityProduction, type AvailabilityContext } from './game/production';
+import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
 import {
   buildingStockCost, unitStockCost, canAffordBuildingStock,
   ownerResourceStockAll, deductBuildingStockCostAcrossCities, creditOwnerResourceStock,
@@ -7673,7 +7674,16 @@ async function boot(): Promise<void> {
         })
         .sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));
       const totalIncome = routes.reduce((s, r) => s + r.income, 0);
-      return { totalIncome, routes };
+      // Decyzje 65B/66B: panel imperium jest zawsze widokiem gracza (ownerId=0),
+      // wiec etykieta Danina/Podatek liczona jest dla ownerId=0 -- patrz
+      // EmpireTradeSnap.daninaLabel (empireDetailTypes.ts).
+      const playerCapitalId = capitalCityIdForOwner(0);
+      const walutaOdkrytaPlayer = unlockedTechsForOwner(0).includes('Waluta');
+      const daninaLbl = resolveDaninaLabel(
+        walutaOdkrytaPlayer,
+        mennicaWStolicy(playerCapitalId, playerCapitalId ? cityBuilt.get(playerCapitalId) : undefined),
+      );
+      return { totalIncome, routes, daninaLabel: daninaLbl };
     }
 
     function openEmpireDetailFromHud(section?: string): void {

@@ -154,23 +154,26 @@ export interface City {
   maMur?: boolean;
   /**
    * Ustawiane po zbudowaniu budynku 'fort'/Cytadela (odblokowuje='maFort').
-   * DEAD FLAG (audyt 2026-07-25, Zadanie 1 "odblokowuje ozywic"): nigdzie w
-   * gra/src nie jest odczytywane. Bonus Cytadeli liczy sie z cityBuilt
-   * (game/city-defense.ts), nie z tej flagi. Ustawiana wylacznie dla parytetu
-   * z polem `odblokowuje` w danych -- nie wymyslaj jej nowego zastosowania bez
-   * decyzji wlasciciela.
+   * REZERWA -- decyzja wlasciciela 2026-07-25 (PYTANIE 82 = A). Flaga jest
+   * ustawiana z pola `odblokowuje` w danych, ale swiadomie nie jest jeszcze
+   * przez nic odczytywana: premie obronne licza sie z listy zbudowanych
+   * budynkow (game/city-defense.ts cityWallDefenseBonusPercent), niezaleznie
+   * od tej flagi. Zostawiona pod przyszla mechanike oblezenia.
    */
   maFort?: boolean;
   /**
    * Ustawiane po zbudowaniu budynku 'baszta' (odblokowuje='maBaszta').
-   * DEAD FLAG (audyt 2026-07-25) -- jak wyzej, nigdzie odczytywane.
+   * REZERWA -- decyzja wlasciciela 2026-07-25 (PYTANIE 82 = A), jak przy
+   * maFort powyzej: swiadomie jeszcze nieodczytywana, premia Baszty liczy sie
+   * z cityBuilt (game/city-defense.ts). Zostawiona pod przyszla mechanike.
    */
   maBaszta?: boolean;
   /**
    * Ustawiane po zbudowaniu budynku 'warsztat_oblezniczy'
-   * (odblokowuje='maWarsztatOblezniczy'). DEAD FLAG (audyt 2026-07-25) -- jak
-   * wyzej, nigdzie odczytywane; odblokowanie Katapulty w produkcji sprawdza
-   * bezposrednio cityBuilt/CITY_BUILDING_PREREQ, nie te flage.
+   * (odblokowuje='maWarsztatOblezniczy'). REZERWA -- decyzja wlasciciela
+   * 2026-07-25 (PYTANIE 82 = A): swiadomie jeszcze nieodczytywana,
+   * odblokowanie Katapulty sprawdza budynek bezposrednio (cityBuilt /
+   * CITY_BUILDING_PREREQ), nie te flage. Zostawiona pod przyszla mechanike.
    */
   maWarsztatOblezniczy?: boolean;
   /**

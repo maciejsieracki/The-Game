@@ -54,10 +54,21 @@ const TEREN_LABEL: Record<TerenBazowy, string> = {
 
 type YieldKey = keyof Pick<TileYield, 'zywnosc' | 'praca' | 'handel' | 'drewno' | 'kamien'>;
 
+/**
+ * Decyzja wlasciciela 81=A (2026-07-25): plon heksu "Handel" -> "Danina"
+ * (a po Walucie+Mennicy w stolicy -> "Podatek", jak w panelu miasta,
+ * game/danina-nazwa.ts). LIMITACJA: HexContextTooltipInput (ponizej) nie
+ * niesie ownerId/kontekstu cywilizacji -- ten tooltip renderuje sie dla
+ * DOWOLNEGO heksu na mapie (w tym niczyjego/wrogiego terenu), bez wiedzy
+ * "czyja to bramka Danina/Podatek". Etykieta pokazuje wiec na razie zawsze
+ * nazwe DOMYSLNA "Danina" (nigdy nie przelacza sie na "Podatek") -- zgloszone
+ * w raporcie zamiast wymyslania obejscia; przelaczenie wymaga dociagniecia
+ * ownerId (wlasciciela heksu/miasta) do buildHexContextTooltipHtml.
+ */
 const YIELD_ROWS: ReadonlyArray<{ key: YieldKey; label: string }> = [
   { key: 'zywnosc', label: 'Żywność' },
   { key: 'praca', label: 'Praca' },
-  { key: 'handel', label: 'Handel' },
+  { key: 'handel', label: 'Danina' },
   { key: 'drewno', label: 'Drewno' },
   { key: 'kamien', label: 'Kamień' },
 ];

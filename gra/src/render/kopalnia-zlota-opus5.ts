@@ -70,32 +70,46 @@ import { HEX_R } from './hexutil';
 
 // ═══ PALETA ════════════════════════════════════════════════════════════════
 const KZ = {
-  skala:    0xa8a294,   // szara skała wyrobiska
-  skalaDk:  0x7d786c,   // cień / półka górna / obrzeże sadzawki
-  kwarc:    0xe2ddd0,   // biały kwarc — skała złotonośna i hałda urobku
+  skala:    0xa39d8f,   // szara skała wyrobiska
+  skalaDk:  0x78735f,   // cień / półka górna / obrzeże sadzawki
+  kwarc:    0xcac2ae,   // kwarc — skała złotonośna i hałda urobku (KOR-1: przygaszony,
+                        // wcześniej 0xe2ddd0 czytał się na Górach jak śnieg)
   drewno:   0xc98a4b,
   drewnoDk: 0x8a5a2e,
   lina:     0xb9a37c,   // lina / oploty
   wiklina:  0xb2823f,   // kosz
-  runo:     0xf2ead6,   // runo owcze w rynnie
-  woda:     0x4ab6e8,
-  zloto:    0xffc94a,
-  zlotoDk:  0xd9a327,
+  runo:     0xe4d7ba,   // runo owcze w rynnie — ściemnione, żeby złoto na nim wyszło
+  woda:     0x6b95a4,   // WODA STONOWANA (patrz KOR-1)
+  wodaDk:   0x577c8b,   // woda w cieniu sadzawki
+  zloto:    0xffd12a,
+  zlotoDk:  0xe0a114,
   czern:    0x14100b,   // gardziel szybu
 } as const;
+
+// ═══ KOR-1 (korekta po oględzinach zrzutu w skali mapy, 2026-07-25) ═════════
+// Pierwsza wersja czytała się z odległości jako „biało-błękitna plamka": jaskrawy
+// cyjan rynny i sadzawki był NAJJAŚNIEJSZYM elementem modelu, biały kwarc dominował
+// masą (na Górach grozi to pomyleniem ze śniegiem), a złote akcenty były tak małe,
+// że w skali sektora (0,30) znikały. Poprawka NIE rusza bryły — zmienia wyłącznie
+// wagę barw: (a) woda zbita do przygaszonego szaro-modrego, (b) kwarc i runo
+// ściemnione o stopień, (c) WSZYSTKIE istniejące akcenty złota powiększone
+// i rozjaśnione (żyła, drobiny na runie, kosz, misa, hałda, urobek przy żarnach) —
+// bez dokładania złota w miejsca, w których go historycznie nie było.
 
 // ═══ SINGLETONY: materiały ═════════════════════════════════════════════════
 const MATS = new Map<number, THREE.MeshStandardMaterial>();
 function mat(color: number): THREE.MeshStandardMaterial {
   let m = MATS.get(color);
   if (!m) {
-    // złoto jako jedyne dostaje metalness — ma błysnąć, reszta jest matowa
+    // Złoto jako jedyne dostaje metalness + delikatną emisję — w skali mapy
+    // (model zmniejszony do 0,30) sam kolor jest za słaby, żeby wygrać z bielą.
     const zloty = color === KZ.zloto || color === KZ.zlotoDk;
     m = new THREE.MeshStandardMaterial({
       color,
       flatShading: true,
-      metalness: zloty ? 0.55 : 0.04,
-      roughness: zloty ? 0.32 : 0.88,
+      metalness: zloty ? 0.62 : 0.04,
+      roughness: zloty ? 0.28 : 0.88,
+      emissive: zloty ? new THREE.Color(color).multiplyScalar(0.22) : new THREE.Color(0x000000),
     });
     MATS.set(color, m);
   }
@@ -110,10 +124,10 @@ function boxGeo(w: number, h: number, d: number): THREE.BoxGeometry {
   if (!g) { g = new THREE.BoxGeometry(w, h, d); GEOS.set(k, g); }
   return g;
 }
-function cylGeo(rt: number, rb: number, h: number, seg = 6): THREE.CylinderGeometry {
-  const k = `c|${rt}|${rb}|${h}|${seg}`;
+function cylGeo(rt: number, rb: number, h: number, seg = 6, open = false): THREE.CylinderGeometry {
+  const k = `c|${rt}|${rb}|${h}|${seg}|${open ? 1 : 0}`;
   let g = GEOS.get(k) as THREE.CylinderGeometry | undefined;
-  if (!g) { g = new THREE.CylinderGeometry(rt, rb, h, seg); GEOS.set(k, g); }
+  if (!g) { g = new THREE.CylinderGeometry(rt, rb, h, seg, 1, open); GEOS.set(k, g); }
   return g;
 }
 /** Walec jednostkowy (r=1, h=1) — belki pod dowolnym kątem robimy przez scale. */

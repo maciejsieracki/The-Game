@@ -117,6 +117,16 @@ export interface EmpireTradeRouteRow {
 export interface EmpireTradeSnap {
   totalIncome: number;
   routes: EmpireTradeRouteRow[];
+  /**
+   * Decyzje 65B/66B (Maciej 2026-07-25, "Handel -> Danina -> Podatek"): etykieta
+   * strumienia miasta (dawny "Handel" z pól) dla gracza (ownerId=0) -- ten
+   * panel jest zawsze widokiem WLASNEGO imperium gracza (trasy sa zawsze
+   * gracz<->obcy, patrz komentarz przy EmpireTradeRouteRow). Uzywana wylacznie
+   * do zdania "+5% Daniny/Podatku z pól" w renderHandelSection (empireDetailPanel.ts)
+   * -- NIE do nazwy sekcji "Handel — szlaki handlowe", ktora zostaje bez zmian
+   * (to trasy z obcymi cywilizacjami). Patrz game/danina-nazwa.ts.
+   */
+  daninaLabel: 'Danina' | 'Podatek';
 }
 
 export interface EmpireDetailSnap {
