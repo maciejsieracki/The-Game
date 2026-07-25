@@ -81,10 +81,12 @@
  *     zgodne ze statystyką „Ruch 1" i „budowana podczas oblężenia (1 tura)".
  *
  * ===========================================================================
- * BUDŻET (traverse; wartości mierzone — patrz dyspozycje/PODGLAD-BRAZ-TARAN.html):
- *   Taran KAMIEŃ (płozy)  85 mesh / 1244 tri / 14 mat
- *   Taran BRĄZ  (koła)   102 mesh / ~1570 tri / 14 mat
- *   Różnica to niemal w całości ZESPÓŁ JEZDNY (4 koła x 6 mesh + 2 osie).
+ * BUDŻET (mierzone traversem — patrz dyspozycje/PODGLAD-BRAZ-TARAN.html):
+ *   Taran KAMIEŃ (płozy)  85 mesh / 1244 tri / 14 mat · bbox 0.349 x 0.610 x 0.564
+ *   Taran BRĄZ  (koła)   102 mesh / 1600 tri / 12 mat · bbox 0.349 x 0.641 x 0.574
+ *   Różnica to niemal w całości ZESPÓŁ JEZDNY (4 koła x 6 mesh + 2 osie = 26
+ *   mesh / ~500 tri). Y +5% bo koła podnoszą całą machinę o promień koła;
+ *   X identyczny, Z +2% (dyszel z poprzeczką zamiast luźnych lin wleczenia).
  *   Wzorzec szczegółowości: hastati-opus5.ts — 92 mesh / 1378 tri.
  * ===========================================================================
  */
@@ -106,8 +108,12 @@ const BT_ROPE      = 0x9a8060;   // liny zawiesia
 const BT_LASH      = 0xb09a72;   // wiązania (jaśniejsze — mają być widoczne)
 
 // ── wymiary wiodące ────────────────────────────────────────────────────────
-const BT_WHEEL_R  = 0.058 * HEX_R;   // promień koła (podnosi całą machinę)
-const BT_AXLE_Y   = BT_WHEEL_R;      // oś na wysokości promienia
+const BT_WHEEL_R  = 0.058 * HEX_R;             // promień tarczy koła
+const BT_TYRE_R   = BT_WHEEL_R + 0.005 * HEX_R; // + opona ze skóry surowej
+// Oś na wysokości APOTEMY opony (koło jest 10-bocznym walcem, nie okręgiem) —
+// dzięki temu płaszczyzna toczna leży dokładnie na y = 0 grupy, zgodnie
+// z konwencją rodziny („stopy/podstawa na y = 0").
+const BT_AXLE_Y   = BT_TYRE_R * Math.cos(Math.PI / 10);
 const BT_WHEEL_X  = 0.130 * HEX_R;
 const BT_AXLE_ZF  =  0.152 * HEX_R;  // oś przednia
 const BT_AXLE_ZR  = -0.164 * HEX_R;  // oś tylna
@@ -153,7 +159,7 @@ let gBTBannerBar:THREE.BoxGeometry | null = null;
 let gBTPanel:    THREE.BoxGeometry | null = null;
 
 function getBTWheel():    THREE.CylinderGeometry { return (gBTWheel    ||= new THREE.CylinderGeometry(BT_WHEEL_R, BT_WHEEL_R, 0.026 * HEX_R, 10, 1)); }
-function getBTTyre():     THREE.CylinderGeometry { return (gBTTyre     ||= new THREE.CylinderGeometry(BT_WHEEL_R + 0.005 * HEX_R, BT_WHEEL_R + 0.005 * HEX_R, 0.030 * HEX_R, 10, 1, true)); }
+function getBTTyre():     THREE.CylinderGeometry { return (gBTTyre     ||= new THREE.CylinderGeometry(BT_TYRE_R, BT_TYRE_R, 0.030 * HEX_R, 10, 1, true)); }
 function getBTNave():     THREE.CylinderGeometry { return (gBTNave     ||= new THREE.CylinderGeometry(0.016 * HEX_R, 0.021 * HEX_R, 0.030 * HEX_R, 6, 1)); }
 function getBTNaveRing(): THREE.CylinderGeometry { return (gBTNaveRing ||= new THREE.CylinderGeometry(0.023 * HEX_R, 0.023 * HEX_R, 0.010 * HEX_R, 6, 1, true)); }
 function getBTSeam():     THREE.BoxGeometry { return (gBTSeam     ||= new THREE.BoxGeometry(0.007 * HEX_R, 0.100 * HEX_R, 0.009 * HEX_R)); }
