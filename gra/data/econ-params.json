@@ -266,7 +266,7 @@
       "normal": 1,
       "hard": 2,
       "jednostka": "Pieniądz/turę",
-      "opis": "Koszt utrzymania każdego budynku (niezróżnicowany w v0.1). [PT]"
+      "opis": "Domyślna stawka utrzymania TYLKO dla budynku bez własnego wpisu `utrzymanie` w buildings.json. Od 2026-07-25 (decyzja właściciela 19=A) silnik czyta utrzymanie z danych każdego budynku (0–5 Pieniądz/turę, zróżnicowane per budynek) — ta wartość NIE nadpisuje ich, jest wyłącznie zabezpieczeniem na wypadek brakującego wpisu. Dziś wszystkie 39 budynków mają własną wartość, więc ta stawka faktycznie się nie stosuje. [PT]"
     }
   },
   "teren_mapa": {
