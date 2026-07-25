@@ -44,7 +44,10 @@ import {
   buildZwiadowcaOpus5,
 } from './kamien-bazowe-opus5';
 import { buildMaceWarriorOpus5, buildInkaJavelineerOpus5 } from './kamien-inka-opus5';
-import { buildBatteringRamOpus5 } from './kamien-zulu-taran-opus5';
+import { buildBatteringRamOpus5, buildZuluJavelineerOpus5 } from './kamien-zulu-taran-opus5';
+// BRĄZ OPUS 5 (Maciej 2026-07-25): taran epoki Brązu na KOŁACH — nie może być
+// tym samym modelem co płozowy taran Kamienia (koło ~3500 p.n.e.).
+import { buildTaranOkutyOpus5 } from './braz-taran-opus5';
 import {
   buildProcarz as newBuildProcarz,
   buildWlocznik as newBuildWlocznik,
@@ -56,7 +59,6 @@ import {
   buildSuperInca as newBuildSuperInca,
 } from './jednostki-p2-inka';
 import {
-  buildZuluJavelineer as newBuildZuluJavelineer,
   buildEgyptianArcher as newBuildEgyptianArcher,
   buildSumerianArcher as newBuildSumerianArcher,
   buildAkkadianArcher as newBuildAkkadianArcher,
@@ -1153,6 +1155,9 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // KUSZNIK (CROSSBOWMAN) --------------------------------------------------
   if (n.includes('kusznik') || n.includes('crossbowman')) return buildCrossbowman(ownerColor_);
   // MACHINY OBLĘŻNICZE -------------------------------------------------------
+  // UWAGA: „taran okuty" (Brąz, na kołach) MUSI być sprawdzony PRZED ogólnym
+  // 'taran', inaczej przechwyci go płozowy taran epoki Kamienia.
+  if (n.includes('taran okuty') || n.includes('bronze-shod ram') || n.includes('bronze shod ram')) return buildTaranOkutyOpus5(ownerColor_);
   if (n.includes('taran') || n.includes('battering ram')) return buildBatteringRam(ownerColor_);
   if (n.includes('katapulta') || n.includes('catapult')) return buildCatapult(ownerColor_);
   if ((n.includes('wieza') && n.includes('oblezn')) || n.includes('siege tower')) return buildSiegeTower(ownerColor_);
@@ -1547,8 +1552,10 @@ function buildImpi(ownerColor_: number): THREE.Group {
  * shield, ochre bare body identical to Impi silhouette but lighter kit.
  */
 function buildZuluJavelineer(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p3-dystans.ts).
-  return newBuildZuluJavelineer(ownerColor_);
+  // KAMIEŃ OPUS 5 (Maciej 2026-07-25, „zulu jest ok"): deleguje do wariantu
+  // OPUS 5 (kamien-zulu-taran-opus5.ts) — groty kościane zamiast stalowych,
+  // duża tarcza Nguni z plecionką izintsinga, wiązka zapasowych oszczepów.
+  return buildZuluJavelineerOpus5(ownerColor_);
 }
 
 // --- SUMER SPECIALS --------------------------------------------------------
