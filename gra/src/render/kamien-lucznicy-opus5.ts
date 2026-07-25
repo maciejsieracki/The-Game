@@ -121,8 +121,8 @@
  *    jasniejsza karnacja, golona glowa bez zarostu, runo na ramieniu,
  *    liscias­te groty.
  *
- * Budzet (policzony traversem): Egipt 86 mesh / 1032 tri, Sumer 94 mesh /
- * 1124 tri (modele obecne: Egipt 38/452, Sumer 37/460; wzorzec Hastati Opus 5:
+ * Budzet (policzony traversem): Egipt 86 mesh / 1032 tri, Sumer 95 mesh /
+ * 1136 tri (modele obecne: Egipt 38/452, Sumer 37/460; wzorzec Hastati Opus 5:
  * 92/1378). Wysokosc sylwetki i obrys stopy niezmienione wobec modeli obecnych
  * (Egipt 0.744 vs 0.731, Sumer 0.690 vs 0.701 HEX_R) — tokeny zostaja wymienne.
  */
@@ -906,16 +906,25 @@ export function buildSumerianArcherOpus5(ownerColor_: number): THREE.Group {
   group.add(knot);
 
   // ═══ NARZUTA Z RUNA BARWIONEGO przez LEWE (+X) ramie ═════════════════════
+  // Draperia podniesiona tak, by ZAKRYWALA CZUBEK BARKU — z ujecia gry (52 st.)
+  // gorne plaszczyzny czytaja sie najlepiej, a przy pozycji na wysokosci piersi
+  // narzute zaslanialo wyciagniete lewe ramie.
   const shawl = new THREE.Mesh(getKLShawl(), mDyed);
-  shawl.rotation.z = -0.18;
-  shawl.position.set(KL_TORSO_W * 0.5 - 0.002 * HEX_R, KL_TORSO_CTR + 0.026 * HEX_R, 0.002 * HEX_R);
+  shawl.rotation.z = -0.22;
+  shawl.scale.set(1.0, 0.92, 1.05);
+  shawl.position.set(KL_TORSO_W * 0.5 + 0.004 * HEX_R, KL_TORSO_CTR + 0.044 * HEX_R, -0.004 * HEX_R);
   group.add(shawl);
+  const cap = new THREE.Mesh(getKLShawl(), mDyed);          // czepiec narzuty NA barku
+  cap.rotation.z = Math.PI / 2 - 0.30;
+  cap.scale.set(0.62, 0.46, 1.02);
+  cap.position.set(KL_SHLD_X - 0.006 * HEX_R, KL_SHLD_Y + 0.020 * HEX_R, -0.002 * HEX_R);
+  group.add(cap);
   for (let j = 0; j < 3; j++) {
     const tuft = new THREE.Mesh(getKLTuft(), j % 2 === 0 ? mDyed : mDyedDk);
-    tuft.scale.set(0.72, 0.62, 0.72);
-    tuft.position.set((KL_TORSO_W * 0.5 + 0.008) * HEX_R,
-                      (KL_TORSO_CTR - 0.036 + j * 0.032) * HEX_R,
-                      0.030 * HEX_R);
+    tuft.scale.set(0.72, 0.62, 0.78);
+    tuft.position.set((KL_TORSO_W * 0.5 + 0.012) * HEX_R,
+                      (KL_TORSO_CTR - 0.012 + j * 0.034) * HEX_R,
+                      0.028 * HEX_R);
     group.add(tuft);
   }
 
