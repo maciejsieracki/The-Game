@@ -17,8 +17,20 @@ w naturze i w robociźnie. Dopiero bita moneta pozwala opodatkować obieg pieni�
 Uwaga na klucze zapisu gry — zmiana nazw pól wymaga migracji albo obsługi obu wariantów przy wczytywaniu.
 
 ## PYTANIE 66 = B — Danina staje się Podatkiem na poziomie CYWILIZACJI
-Warunek: technologia **Waluta** odkryta **oraz** pierwsza **Mennica** zbudowana gdziekolwiek w imperium.
-Wtedy nazwa zmienia się we wszystkich miastach naraz, nie per miasto.
+Warunek: technologia **Waluta** odkryta **oraz** **Mennica zbudowana w stolicy**.
+Wtedy nazwa zmienia się **we wszystkich miastach naraz**, nie per miasto.
+
+**Doprecyzowanie po decyzjach 70 i 71 (Maciej 2026-07-25):** Mennica jest budowalna **wyłącznie w stolicy**
+i jest jedna na cywilizację, więc warunek „pierwsza Mennica gdziekolwiek" sprowadza się do „Mennica w stolicy".
+Mnożnik działa **w całym imperium** (71 = A), więc przełączenie nazwy w całej cywilizacji jest z tym spójne:
+tam, gdzie działa mnożnik monetarny, strumień nazywa się **Podatkiem**; zanim powstanie Mennica — **Daniną**.
+
+**Podsumowanie cyklu życia strumienia:**
+| Etap | Nazwa | Warunek |
+|---|---|---|
+| Przed Walutą albo przed Mennicą | **Danina** | domyślnie |
+| Waluta odkryta **i** Mennica w stolicy | **Podatek** | w całej cywilizacji, we wszystkich miastach |
+| Dochód ze szlaków handlowych | **Handel** | zawsze osobno, poza pulą (68 = A) |
 
 ## PYTANIE 67 = B — plony pieniężne budynków wpadają do puli Daniny
 **Właściciel nazwał dotychczasowy stan „bardzo dużym błędem".** Dziś 16 budynków daje pieniądz **prosto
