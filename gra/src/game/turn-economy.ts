@@ -255,9 +255,9 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     budynekBibliotekaBonusNauki:    num(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
     budynekAkademiaBonusNauki:      num(bu, 'budynek_akademia_bonus_nauki', 0.10),
     budynekGarncarniaBonusZywnosci: num(bu, 'budynek_garncarnia_bonus_zywnosci_lokalnie', 0.10),
-    budynekMennicaMnoznik:          num(bu, 'budynek_mennica_mnoznik', 1),
-    mennicaMnoznikPoWalucie:        num(gl, 'mennica_mnoznik_po_walucie', 1.5),
-    walutaMnoznik:                  num(bu, 'waluta_mnoznik', 2),
+    budynekMennicaMnoznik:          num(bu, 'budynek_mennica_mnoznik', 1),      // NIEUZYWANE 2026-07-25 (patrz economy.ts)
+    mennicaMnoznikPoWalucie:        num(gl, 'mennica_mnoznik_po_walucie', 1.5), // JEDYNY mnoznik Efektu 1 (Waluta+Mennica scalone)
+    walutaMnoznik:                  num(bu, 'waluta_mnoznik', 2),               // NIEUZYWANE 2026-07-25 (patrz economy.ts)
     targowiskoPracaMnoznik:         num(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       num(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           num(em, 'suwak_handel_pieniadz_domyslnie', 30),
@@ -1137,12 +1137,12 @@ export function previewCityEconomy(
       maTargowisko: builtIds.includes('targowisko'),
       maBiblioteka: builtIds.includes('biblioteka'),
       maAkademia: builtIds.includes('akademia'),
+      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
+      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
+      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
+      // przez params.mennicaMnoznikPoWalucie. Dawne osobne pole `mennicaMnoznik`
+      // (mnoznik TYLKO na strumien Pieniadza) zostalo usuniete -- efekt jest jeden.
       maMennica: builtIds.includes('mennica'),
-      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
-      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
-      mennicaMnoznik: (builtIds.includes('mennica') && walutaOdkryta)
-        ? params.mennicaMnoznikPoWalucie
-        : 1,
       walutaOdkryta,
       walutaMnoznikOverride,
       civHandelMult,
@@ -1432,13 +1432,13 @@ export function advanceCityEconomy(
       maTargowisko:          builtIds.includes('targowisko'),
       maBiblioteka:          builtIds.includes('biblioteka'),
       maAkademia:            builtIds.includes('akademia'),
+      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
+      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
+      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
+      // przez params.mennicaMnoznikPoWalucie. Dawne osobne pole `mennicaMnoznik`
+      // (mnoznik TYLKO na strumien Pieniadza) zostalo usuniete -- efekt jest jeden.
       maMennica:             builtIds.includes('mennica'),
-      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
-      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
-      mennicaMnoznik:        (builtIds.includes('mennica') && walutaOdkryta)
-        ? params.mennicaMnoznikPoWalucie
-        : 1,
-      walutaOdkryta,         // P1b: mnoznik Handel->Pieniadz gdy Waluta zbadana
+      walutaOdkryta,         // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
       walutaMnoznikOverride, // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)

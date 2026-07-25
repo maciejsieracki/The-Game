@@ -120,14 +120,33 @@ export interface EconParams {
    * PLACEHOLDER 10% (econ-params.json budynek_garncarnia_bonus_zywnosci_lokalnie).
    */
   budynekGarncarniaBonusZywnosci:   number;
-  budynekMennicaMnoznik:            number;  // Mennica: Handel->Pieniadz x mnoznik (par.2.3)
   /**
-   * E1 Zadanie 1: Mennica mnoznik Handel->Pieniadz AKTYWNY DOPIERO gdy Waluta odkryta
-   * (globalne.mennica_mnoznik_po_walucie). Wartosci wlasciciela: easy 2 / normal 1.5 / hard 1.
-   * Bramka (budynek + tech) liczona przez wolajacego (turn-economy.ts), nie tutaj.
+   * NIEUŻYWANE od 2026-07-25 (decyzja Maciej): dawna wartość bazowa Mennicy
+   * (budynek_mennica_mnoznik), praktycznie martwa już wcześniej -- efekt Mennicy
+   * jest teraz w całości opisany przez mennicaMnoznikPoWalucie poniżej. Pole
+   * zostawione w schemacie (parsowane z JSON) dla zgodności starych zapisów/
+   * narzędzi, ale kod go już nigdzie nie konsumuje.
+   */
+  budynekMennicaMnoznik:            number;
+  /**
+   * JEDYNY mnożnik Handlu netto po scaleniu (Maciej 2026-07-25): mnoży CAŁY
+   * handelNetto miasta (Skarb + Nauka + Zamożność razem, PRZED podziałem
+   * suwakiem) TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest
+   * zbudowana w tym mieście (bramka AND liczona przez wołającego -- ctx.maMennica
+   * && ctx.walutaOdkryta w cityYieldPerTurn). Wartości właściciela: easy x2,0 /
+   * normal x1,5 / hard x1,0 (brak efektu). Dawne DWA osobne mnożniki (waluta_mnoznik
+   * na cały Handel przy samym techu; mennica_mnoznik_po_walucie tylko na strumień
+   * Pieniądza) zostały scalone w ten jeden -- patrz CityYieldContext.walutaOdkryta.
    */
   mennicaMnoznikPoWalucie:          number;
-  walutaMnoznik:                    number;  // Efekt 1: handelNetto x mnoznik gdy walutaOdkryta (domyslnie 2)
+  /**
+   * NIEUŻYWANE od 2026-07-25 (decyzja Maciej): dawny Efekt 1 "sam tech Waluty
+   * daje x2 na cały Handel netto, bez wymogu Mennicy" -- zastąpiony przez
+   * mennicaMnoznikPoWalucie (wymaga Mennicy + Waluty, wartość różna per trudność).
+   * Pole zostawione w schemacie (parsowane z JSON) dla zgodności, kod go
+   * już nigdzie nie konsumuje w formule Efektu 1.
+   */
+  walutaMnoznik:                    number;
   targowiskoPracaMnoznik:           number;  // Efekt 2: doPuli x mnoznik -> Pieniadz gdy maTargowisko+waluta (domyslnie 2)
   suwaakHandelNaukaDefault:         number;
   suwaakHandelPieniadz:             number;
@@ -200,9 +219,9 @@ export function loadEconParams(
     budynekBibliotekaBonusNauki:    read(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
     budynekAkademiaBonusNauki:      read(bu, 'budynek_akademia_bonus_nauki', 0.10),
     budynekGarncarniaBonusZywnosci: read(bu, 'budynek_garncarnia_bonus_zywnosci_lokalnie', 0.10),
-    budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),
-    mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5),
-    walutaMnoznik:                  read(bu, 'waluta_mnoznik', 2),
+    budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),      // NIEUZYWANE 2026-07-25
+    mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5), // JEDYNY mnoznik Efektu 1
+    walutaMnoznik:                  read(bu, 'waluta_mnoznik', 2),               // NIEUZYWANE 2026-07-25
     targowiskoPracaMnoznik:         read(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       read(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           read(em, 'suwak_handel_pieniadz_domyslnie', 30),
@@ -562,22 +581,32 @@ export interface CityYieldContext {
    * stackuje addytywnie). Optional so existing ctx literals stay valid.
    */
   maAkademia?:    boolean;
+  /**
+   * Mennica (Mint) zbudowana w TYM mieście. Sam ten flag nic nie mnoży -- jest
+   * jednym z DWÓCH warunków (obok walutaOdkryta) bramki Efektu 1 (patrz niżej).
+   * Dawne osobne pole `mennicaMnoznik` (mnożnik TYLKO na strumień Pieniądza)
+   * zostało USUNIĘTE 2026-07-25 (decyzja Maciej) -- efekt jest teraz jeden,
+   * scalony w Efekcie 1 poniżej, i wymaga Mennicy + Waluty razem.
+   */
   maMennica:      boolean;
   /**
-   * Mint (Mennica) trade->money multiplier (from econ-params budynek_mennica_mnoznik).
-   * Pass 1.0 when Mennica is absent or tech Waluta not yet researched.
-   */
-  mennicaMnoznik: number;
-  /**
    * Waluta (currency tech) discovered by this player.
-   * Efekt 1: handelNetto *= walutaMnoznik (domyslnie x2) when true.
-   * Efekt 2: doPuli (Praca surplus) -> Pieniadz x targowiskoPracaMnoznik gdy maTargowisko && walutaOdkryta.
+   * Efekt 1 (SCALONY, decyzja Maciej 2026-07-25): handelNetto *= mennicaMnoznikPoWalucie
+   * (easy x2,0 / normal x1,5 / hard x1,0 -- BRAK efektu na hard) TYLKO gdy
+   * walutaOdkryta ORAZ maMennica są oba prawdziwe. Sam tech Waluty już NIE
+   * wystarcza -- to jest sedno zmiany; przedtem (do 2026-07-24) sam tech dawał
+   * już x2 niezależnie od trudności i budynku, a Mennica mnożyła osobno tylko
+   * strumień Pieniądza -- oba stare efekty są teraz jednym.
+   * Efekt 2 (bez zmian): doPuli (Praca surplus) -> Pieniadz x targowiskoPracaMnoznik gdy maTargowisko && walutaOdkryta.
    * Optional; defaults to false so existing ctx literals remain valid.
    */
   walutaOdkryta?: boolean;
   /**
-   * Per-cyw override for Efekt 1 (mnoznikHandelPieniadz z civs.json, 1.7-2.4).
-   * Gdy ustawione i walutaOdkryta, zastepuje params.walutaMnoznik dla tego miasta.
+   * Per-cyw/religia override for Efekt 1 bazy (mnoznikHandelPieniadz z civs.json,
+   * 1.7-2.4, lub religionTradeWalutaOverride). Gdy ustawione, zastepuje
+   * params.mennicaMnoznikPoWalucie jako WARTOŚĆ mnożnika -- NIE omija bramki
+   * walutaOdkryta && maMennica powyżej (bramka decyduje CZY mnożyć, override
+   * decyduje O ILE).
    */
   walutaMnoznikOverride?: number;
   /** RDY-01: mnoznik na Handel z bonusu cyw (np. Grecy +15%). Domyslnie 1. */
@@ -793,22 +822,27 @@ export function cityYieldPerTurn(
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
   const pracaNetto        = pracaBruttoLacznie * (1 - strata);
   const handelNettoRaw    = handelBrutto       * (1 - strata);
-  // Efekt 1 (Waluta): gdy walutaOdkryta, caly handelNetto jest mnozony x walutaMnoznik (domyslnie x2).
-  // Dziala na cala pule PRZED podzialem na Nauka/Pieniadz/Luksus, wiec nauka i wealth z handlu tez rosna x2.
-  const walutaActive = ctx.walutaOdkryta === true;
-  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.walutaMnoznik;
+  // Efekt 1 SCALONY (Waluta + Mennica, decyzja Maciej 2026-07-25): caly handelNetto
+  // jest mnozony x mennicaMnoznikPoWalucie (easy x2,0 / normal x1,5 / hard x1,0) TYLKO
+  // gdy walutaOdkryta ORAZ maMennica sa oba prawdziwe -- sam tech Waluty juz NIE
+  // wystarcza. Dziala na cala pule PRZED podzialem na Nauka/Pieniadz/Luksus, wiec
+  // nauka i zamoznosc z handlu tez rosna razem ze Skarbem (decyzja: wariant A).
+  const walutaActive = ctx.walutaOdkryta === true && ctx.maMennica === true;
+  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto   = handelNettoRaw * walutaMnoznikAktywny;
 
-  // --- Step 6+7: Trade slider -> Nauka / Pieniadz / Luksus; apply mint multiplier ---
+  // --- Step 6+7: Trade slider -> Nauka / Pieniadz / Luksus ---
+  // Dawny osobny mnoznik ctx.mennicaMnoznik (Handel->Pieniadz, TYLKO strumien
+  // Pieniadza) zostal USUNIETY 2026-07-25 -- Mennica jest teraz jednym z dwoch
+  // warunkow bramki Efektu 1 powyzej (handelNetto), wiec mnozy juz i tak Skarb+
+  // Nauke+Zamoznosc razem; osobne mnozenie tutaj dublowaloby efekt.
   const pctNauka    = city.podziałHandlu.procentNauka    / 100;
   const pctPieniadz = city.podziałHandlu.procentPieniadz / 100;
   const pctLuksus   = city.podziałHandlu.procentLuksus   / 100;
 
   const naukaZHandlu    = Math.floor(handelNetto * pctNauka);
-  const pieniadzZHandlu = Math.floor(
-    handelNetto * pctPieniadz * ctx.mennicaMnoznik
-  );
+  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
   // Luksus stream (Spec ss.2.1/2.2): feeds Zadowolenie downstream (society lane).
   const luksusZHandlu   = Math.floor(handelNetto * pctLuksus);
 

@@ -743,8 +743,8 @@
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "",
-    "uwagi": "T-TECH-6: mnoznik handlu→pieniądz (economy.ts)",
+    "wymagania": "Dostęp do Złota (Kopalnia złota gdziekolwiek w imperium) + wybudowane Targowisko w tym mieście",
+    "uwagi": "T-TECH-6: mnoznik handlu→pieniądz (economy.ts). Maciej 2026-07-25: bramka złota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mieście (CITY_BUILDING_PREREQ, decyzja 54c=A).",
     "techUnlock": "Waluta",
     "koszt_surowce": {
       "drewno": 6,

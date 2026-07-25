@@ -138,7 +138,7 @@ const params = {
 // With growthMult=1 (default): zywnoscNetto=5 -> magazyn = 5
 const r1 = M.populationGrowth(cityBase, 5, params);
 eq(r1.nowyMagazynZywnosci, 5, 'growthMult=1 zywnoscNetto=5 -> magazyn=5');
-ok(!r1.wzrost, 'growthMult=1 no growth yet (threshold = 10+3*8=34)');
+ok(!r1.wzrost, 'growthMult=1 no growth yet (threshold = 20+3*8=44)');
 
 // With growthMult=0.5 (unrest): effectively zywnosc=5*0.5=2.5 -> magazyn=2
 // Simulates: caller multiplies zywnoscNetto by growthMult before passing to populationGrowth
@@ -161,12 +161,12 @@ const r4 = M.populationGrowth(cityBase, 10 * 0.1, params);
 eq(r4.nowyMagazynZywnosci, 1, 'growthMult=0.1 on food=10 -> floor(1) = 1');
 
 // With growthMult=10 on food near threshold
-// threshold for pop=3 = 10 + 3*8 = 34; need magazyn + zywnosc >= 34
-// city already has 0 in store; need zywnoscNetto=34
-const r5 = M.populationGrowth(cityBase, 34 * 1.0, params);
-ok(r5.wzrost, 'growthMult=1 food=34 -> growth triggered');
-// With growthMult=0.5: food=34*0.5=17 -> magazyn=17, no growth yet
-const r6 = M.populationGrowth(cityBase, 34 * 0.5, params);
+// threshold for pop=3 = 20 + 3*8 = 44 (baza progu = 20, economy.ts:970); need magazyn + zywnosc >= 44
+// city already has 0 in store; need zywnoscNetto=44
+const r5 = M.populationGrowth(cityBase, 44 * 1.0, params);
+ok(r5.wzrost, 'growthMult=1 food=44 -> growth triggered');
+// With growthMult=0.5: food=44*0.5=22 -> magazyn=22, no growth yet
+const r6 = M.populationGrowth(cityBase, 44 * 0.5, params);
 ok(!r6.wzrost, 'growthMult=0.5 on threshold food -> half effective -> no growth');
 
 // --- summary ---------------------------------------------------------------

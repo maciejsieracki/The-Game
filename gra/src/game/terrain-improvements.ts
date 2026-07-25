@@ -194,4 +194,10 @@ export function improvementDisplayName(key: string): string {
 export const RESOURCE_UPKEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set([
   'tartak', 'kamieniolom', 'glinianka', 'kopalnia', 'kopalnia_miedzi',
   'warzelnia_soli', 'stadnina',
+  // Maciej 2026-07-25: Kopalnia złota jest czysto DOSTĘPOWA (jak warzelnia_soli/stadnina —
+  // nie w TERRITORY_YIELD_IMPROVEMENTS powyżej, bez ilości/turę), ale tak jak inne ulepszenia
+  // surowcowe płaci utrzymanie Pracy civ-wide (decyzja modelowa tej sesji — spójność z
+  // istniejącym wzorcem "dostęp bez wydobycia" = warzelnia_soli/stadnina, do potwierdzenia
+  // przy playteście jeśli balans wymaga innej wartości).
+  'kopalnia_zlota',
 ]);

@@ -3,9 +3,13 @@
  * currency-test.cjs -- standalone Node test for Waluta (currency) model.
  * Run from gra/:  node tools/currency-test.cjs
  *
- * Tests (wg decyzji Maciela 2026-06-25):
- *   Efekt 1: handelNetto x2 gdy walutaOdkryta=true (cala pula przed podzialem).
+ * Tests:
+ *   Efekt 1 SCALONY (decyzja Maciej 2026-07-25): handelNetto x mennicaMnoznikPoWalucie
+ *     (easy x2,0 / normal x1,5 / hard x1,0) TYLKO gdy walutaOdkryta ORAZ maMennica sa
+ *     oba prawdziwe -- sam tech Waluty juz NIE wystarcza (to jest sedno zmiany, patrz
+ *     tez tools/waluta-mennica-test.cjs dla pelnej macierzy trudnosc x Mennica).
  *   Efekt 2: doPuli * targowiskoPracaMnoznik -> pieniadzZPracy gdy maTargowisko+waluta; 0 bez nich.
+ *     (Efekt 2 NIE wymaga Mennicy -- niezmieniony przez decyzje 2026-07-25.)
  *   Targowisko bonusy bazowe: +50% Handel (param) + 3 Pieniadz (baza) -- nienaruszone.
  *
  * Self-contained: bundles economy.ts + production.ts with esbuild.
@@ -137,22 +141,36 @@ eq(yldBase.pieniadzZPracy, 0, 'baseline: pieniadzZPracy = 0');
 eq(yldBase.pieniadz, 2,       'baseline: pieniadz = 2 (floor(3*0.70*1)+0 buildings)');
 
 // ---------------------------------------------------------------------------
-// B. EFEKT 1: Waluta odkryta (bez Targowiska) — handelNetto x2
+// B. EFEKT 1 SCALONY: Waluta odkryta BEZ Mennicy -> BRAK zmiany (sedno decyzji
+//    2026-07-25 -- sam tech Waluty juz nie wystarcza, kontrast z B2 ponizej).
 // ---------------------------------------------------------------------------
-const ctxWaluta = makeCtx({ walutaOdkryta: true });
+const ctxWalutaNoMennica = makeCtx({ walutaOdkryta: true, maMennica: false });
+const yldWalutaNoMennica = E.cityYieldPerTurn(city, workedTiles, noBuildings, params, ctxWalutaNoMennica);
+
+// Bez Mennicy: mnoznik = 1 mimo walutaOdkryta=true -> identyczne jak baseline.
+eq(yldWalutaNoMennica.pieniadzZPracy, 0, 'waluta bez Mennicy (no targowisko): pieniadzZPracy = 0');
+eq(yldWalutaNoMennica.pieniadz, yldBase.pieniadz,
+  'EFEKT 1 SCALONY: Waluta bez Mennicy -> pieniadz NIEZMIENIONY wzgledem baseline (brak mnoznika)');
+eq(yldWalutaNoMennica.nauka, yldBase.nauka,
+  'EFEKT 1 SCALONY: Waluta bez Mennicy -> nauka NIEZMIENIONA wzgledem baseline (brak mnoznika)');
+
+// ---------------------------------------------------------------------------
+// B2. EFEKT 1 SCALONY: Waluta + Mennica -> handelNetto x mennicaMnoznikPoWalucie
+//     (normal = x1,5, NIE stare flat x2 sprzed decyzji 2026-07-25).
+// ---------------------------------------------------------------------------
+const ctxWaluta = makeCtx({ walutaOdkryta: true, maMennica: true });
 const yldWaluta = E.cityYieldPerTurn(city, workedTiles, noBuildings, params, ctxWaluta);
 
-// handelNetto = 3 * walutaMnoznik(2) = 6
-// pieniadzZHandlu = floor(6 * 0.70 * mennicaMnoznik(1)) = floor(4.2) = 4
-// naukaZHandlu    = floor(6 * 0.20) = floor(1.2) = 1  (was 0 at base)
-// luksusZHandlu   = floor(6 * 0.10) = floor(0.6) = 0
-// pieniadzZPracy  = 0 (brak Targowiska)
-eq(yldWaluta.pieniadzZPracy, 0, 'waluta (no targowisko): pieniadzZPracy = 0');
-eq(yldWaluta.pieniadz, 4,       'efekt1: pieniadz = 4 (floor(6*0.70*1))');
-// nauka z handlu powinna wzrosnac
-assert(yldWaluta.nauka >= 1,    'efekt1: nauka >= 1 (handelNetto x2 wplywa tez na nauke)');
-// Verify handel x2 vs baseline
-assert(yldWaluta.pieniadz > yldBase.pieniadz, 'efekt1: pieniadz po waluta > pieniadz bez');
+// handelNetto = 3 * mennicaMnoznikPoWalucie(1.5, normal) = 4.5
+// pieniadzZHandlu = floor(4.5 * 0.70) = floor(3.15) = 3
+eq(yldWaluta.pieniadzZPracy, 0, 'waluta+mennica (no targowisko): pieniadzZPracy = 0');
+eq(yldWaluta.pieniadz, 3,       'efekt1 scalony (normal x1.5): pieniadz = 3 (floor(4.5*0.70))');
+// nauka z handlu powinna wzrosnac wzgledem baseline (mnoznik dziala na cala pule, wariant A)
+assert(yldWaluta.nauka > yldBase.nauka,
+  'efekt1 scalony: nauka > baseline (handelNetto x1.5 wplywa tez na nauke, wariant A)');
+// Verify pieniadz wyzszy niz bez Mennicy
+assert(yldWaluta.pieniadz > yldWalutaNoMennica.pieniadz,
+  'efekt1 scalony: pieniadz z Mennica+Waluta > pieniadz bez Mennicy');
 
 // ---------------------------------------------------------------------------
 // C. EFEKT 1 + EFEKT 2: Waluta + Targowisko
@@ -163,27 +181,27 @@ const yldBoth = E.cityYieldPerTurn(city, workedTiles, noBuildings, params, ctxBo
 // handelBrutto = 3 * (1 + 0.5) = 4.5  (Targowisko +50%)
 // handelNetto  = 4.5 * walutaMnoznik(2) = 9
 // pieniadzZHandlu = floor(9 * 0.70 * 1) = floor(6.3) = 6
-// pracaNetto = floor(3) = 3  (no mlyn/cegielnia, no buildings, no corruption)
-// doPuli = floor(3 * (1 - 0.70)) = floor(0.9) = 0
-// pieniadzZPracy = floor(0 * 2) = 0  (doPuli=0 from 3 praca * 30%)
-// pieniadz total = 6 + 0 (buildings) + 0 (pieniadzZPracy) = 6
-eq(yldBoth.pieniadzZPracy, 0,   'efekt2 (low praca): pieniadzZPracy = 0 (doPuli=floor(3*0.30)=0)');
-eq(yldBoth.pieniadz, 6,         'efekt1+targowisko: pieniadz = 6 (floor(9*0.70))');
+// Praca Rownina = 2 (data/terrain-yields.json) -> pracaNetto = 3*2 = 6 (no mlyn/cegielnia, no buildings, no corruption)
+// splitPraca(6, 0.70): doBudynkow=round(6*0.70)=round(4.2)=4, doPuli=6-4=2
+// pieniadzZPracy = floor(2 * 2) = 4
+// pieniadz total = 6 + 0 (buildings) + 4 (pieniadzZPracy) = 10
+eq(yldBoth.pieniadzZPracy, 4,   'efekt2 (praca rownina=2): pieniadzZPracy = 4 (doPuli=round(6)-round(6*0.70)=2, x2)');
+eq(yldBoth.pieniadz, 10,        'efekt1+targowisko: pieniadz = 10 (floor(9*0.70)+4)');
 
 // Now test with more worked tiles so doPuli > 0
-// 6 rownina tiles -> praca=6, handel=6
+// 6 rownina tiles -> praca=6*2=12 (Praca Rownina=2), handel=6
 const workedTiles6 = Array(6).fill(ROWNINA_TILE);
 const yldBoth6 = E.cityYieldPerTurn(city, workedTiles6, noBuildings, params, ctxBoth);
 
 // handelBrutto = 6 * 1.5 = 9
 // handelNetto  = 9 * 2   = 18
 // pieniadzZHandlu = floor(18 * 0.70) = floor(12.6) = 12
-// pracaNetto = floor(6) = 6  (no multipliers)
-// doPuli = floor(6 * 0.30) = floor(1.8) = 1
-// pieniadzZPracy = floor(1 * 2) = 2
-// pieniadz total = 12 + 0 + 2 = 14
-eq(yldBoth6.pieniadzZPracy, 2,  'efekt2: pieniadzZPracy = 2 (doPuli=1, x2)');
-eq(yldBoth6.pieniadz, 14,       'efekt1+efekt2: pieniadz = 14');
+// pracaNetto = 6*2 = 12  (Praca Rownina=2, no multipliers)
+// splitPraca(12, 0.70): doBudynkow=round(12*0.70)=round(8.4)=8, doPuli=12-8=4
+// pieniadzZPracy = floor(4 * 2) = 8
+// pieniadz total = 12 + 0 + 8 = 20
+eq(yldBoth6.pieniadzZPracy, 8,  'efekt2: pieniadzZPracy = 8 (doPuli=4, x2)');
+eq(yldBoth6.pieniadz, 20,       'efekt1+efekt2: pieniadz = 20');
 
 // ---------------------------------------------------------------------------
 // D. EFEKT 2 gate: Targowisko BEZ Waluty -> pieniadzZPracy = 0
@@ -286,7 +304,10 @@ eq(E.mnoznikHandelPieniadzForCiv('chinczycy', mockCivs, 2), 2.4, 'mnoznikHandelP
 eq(E.mnoznikHandelPieniadzForCiv('zulusi', mockCivs, 2), 1.7, 'mnoznikHandelPieniadz: Zulusi = 1.7');
 eq(E.mnoznikHandelPieniadzForCiv('unknown', mockCivs, 2), 2, 'mnoznikHandelPieniadz: unknown -> fallback 2');
 
-const workedTiles7 = [{ praca: 0, handel: 10, zywnosc: 0, pieniadz: 0, nauka: 0, kultura: 0, zadowolenie: 0 }];
+// terenBazowy wymagany -- tileYield() czyta tylko to pole (WorkedTile), literalne
+// klucze praca/handel/... na obiekcie tile sa ignorowane. Uzyj 10x Rownina (handel=1/tile)
+// zeby odtworzyc pierwotny zamysl testu (handel=10).
+const workedTiles7 = Array(10).fill(ROWNINA_TILE);
 const ctxWalutaGrecy = {
   wojskoZuzycieZywnosci: 0, strataFraction: 0,
   maMlyn: false, maCegielnia: false, maTargowisko: false, maMennica: false, mennicaMnoznik: 1,

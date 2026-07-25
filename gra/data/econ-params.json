@@ -210,7 +210,7 @@
       "normal": 1,
       "hard": 0,
       "jednostka": "×",
-      "opis": "Mnożnik Mennicy (Handel→Pieniądz). Docelowo ×1,5–×2,0 po upgrade. [PT]"
+      "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25) — było już martwe wcześniej (żaden kod go nie konsumował). Efekt Mennicy jest teraz w całości opisany przez globalne.mennica_mnoznik_po_walucie (jeden mnożnik na cały Handel netto, aktywny gdy Waluta odkryta ORAZ Mennica zbudowana). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta."
     },
     "budynek_biblioteka_bonus_nauki": {
       "easy": 0.62,
@@ -231,7 +231,7 @@
       "normal": 2,
       "hard": 2,
       "jednostka": "×",
-      "opis": "Efekt 1 (Waluta tech): mnoznik na caly handelNetto miasta gdy walutaOdkryta=true (×2 na cala pule Handlu przed podzialem). Dotyczy wszystkich miast automatycznie po wynalezieniu Waluty."
+      "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25): dawny Efekt 1 'sam tech Waluty odkryty → ×2 na cały Handel netto, bez wymogu Mennicy, jednakowo na wszystkich trudnościach' — ZASTĄPIONY przez globalne.mennica_mnoznik_po_walucie (wymaga Waluty ORAZ Mennicy zbudowanej w mieście; wartość różna per trudność: easy ×2 / normal ×1,5 / hard ×1 czyli brak efektu). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta w formule Efektu 1."
     },
     "targowisko_praca_na_pieniadz_mnoznik": {
       "easy": 2,
@@ -447,7 +447,7 @@
       "normal": 1.5,
       "hard": 1,
       "jednostka": "×",
-      "opis": "Mnożnik Mennicy (Handel→Pieniądz) aktywny TYLKO gdy Mennica zbudowana ORAZ technologia Waluta odkryta w mieście. Wartości właściciela (Q5=A, 2026-07-20): easy ×2 / normal ×1,5 / hard ×1 (hard = bez bonusu, ale nie zeruje dochodu). Wcześniej 1.88/1.5/1.12 mimo że mennicaMnoznik był zahardkodowany na 1 w turn-economy.ts (Mennica nic nie robiła) — naprawione E1 zadanie 1."
+      "opis": "JEDYNY mnożnik Handlu netto (decyzja Maciej 2026-07-25, wątek 'scalenie mnożników'): mnoży CAŁY handelNetto miasta (Skarb + Nauka + Zamożność razem, PRZED podziałem suwakiem) aktywny TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest zbudowana w tym mieście (bramka AND — sam tech Waluty już NIE wystarcza). Wartości właściciela: easy ×2,0 / normal ×1,5 / hard ×1,0 (hard = brak efektu, nie zeruje dochodu). Poprzednio (do 2026-07-24) istniały DWA osobne mnożniki: `budynki.waluta_mnoznik` (×2 na cały Handel przy samym techu, bez Mennicy) + ten parametr (mnożył TYLKO strumień Pieniądza). Oba zostały scalone w ten jeden efekt — `waluta_mnoznik` zostaje w pliku oznaczony jako nieużywany."
     },
     "luksus_przelicznik_zadowolenie": {
       "easy": 4,

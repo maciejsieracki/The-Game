@@ -49,7 +49,7 @@ const params = M.buildEmpireFoodParams({ suwak_zywnosc_rozwoj_domyslnie: { norma
 const ef = M.advanceEmpireFood(econ, units, states, upkeep, params);
 const t0 = ef.byOwner.get(0);
 ok(t0.doPanstwa === 30, 'empire food 30% to state');
-ok(states.get(0).zapasyPanstwa === 29, 'empire reserve after army cost 1');
+ok(states.get(0).zapasyPanstwa === 15, 'empire reserve after army cost 1 (50% netto bez Spichlerza w imperium: round(29*0.5)=15)');
 
 const y = M.tileYield({
   terenBazowy: M.TerenBazowy.Laka,
@@ -104,7 +104,7 @@ const yForestPlain = M.tileYield({
 });
 ok(yForestPlain.zywnosc === 1, 'las rownina: zywnosc 2-1');
 ok(yForestPlain.handel === 0, 'las rownina: handel 1-1 floored');
-ok(yForestPlain.praca === 4, 'las rownina: praca 1+3');
+ok(yForestPlain.praca === 5, 'las rownina: praca 2+3 (Praca Rownina=2, data/terrain-yields.json)');
 ok(yForestPlain.drewno === 5, 'las rownina: drewno 2+3');
 
 ok(M.resolveOwnCultureShare({ ownCultureShare: 0.4 }) === 0.4, 'culture share resolve');
@@ -139,7 +139,7 @@ ok(!M.isImprovementTechUnlocked('farma', new Set(['Garncarstwo'])), 'farma needs
 ok(M.isImprovementTechUnlocked('farma', new Set(['Rolnictwo'])), 'farma unlocked with Rolnictwo');
 const farmaHint = M.getImprovementLockHint('farma', new Set());
 ok(farmaHint && farmaHint.includes('Rolnictwo'), 'farma lock hint');
-ok(M.getImprovementMeta('fort')?.techId === 'Wojskowosc', 'fort tech Wojskowosc B1-Q4');
+ok(M.getImprovementMeta('fort')?.techId === 'Wojskowość', 'fort tech Wojskowość B1-Q4');
 ok(!M.isImprovementTechUnlocked('posterunek', new Set(['Obróbka drewna'])), 'posterunek T-TECH-3 needs Murarstwo too');
 ok(!M.isImprovementTechUnlocked('posterunek', new Set(['Murarstwo'])), 'posterunek T-TECH-3 needs Obróbka drewna too');
 ok(M.isImprovementTechUnlocked('posterunek', new Set(['Obróbka drewna', 'Murarstwo'])), 'posterunek unlocked with both tech');
@@ -165,9 +165,9 @@ ok(aff.ok && aff.sourceCityId === 'c2', 'evaluate afford subsequent city');
 const affFirst = M.evaluateFoundCityAffordance(0, [], 0);
 ok(affFirst.ok && affFirst.kosztPraca === 0, 'FOUND Q2A first city free');
 const clr = M.freshClearingState('wyrab', 0);
-ok(clr && clr.turnsLeft === 3, 'clearing 3 turns');
+ok(clr && clr.turnsLeft === 1, 'clearing 1 turn (decyzja Maciej 2026-07-24: 1 tura, 5 Drewna)');
 const t1 = M.tickHexClearing(clr);
-ok(t1.pracaGrant === 20 && t1.expired === false, 'clearing tick 20');
+ok(t1.pracaGrant === 5 && t1.expired === true, 'clearing tick 5, expired po 1 turze');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

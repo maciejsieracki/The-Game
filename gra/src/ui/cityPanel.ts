@@ -775,8 +775,13 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
     const maMennica = built.includes('mennica');
     const civKey = cfg.getCivKey?.(city.ownerId);
+    // Efekt 1 SCALONY (2026-07-25): fallback dla per-cyw override jest teraz
+    // params.mennicaMnoznikPoWalucie (easy 2 / normal 1.5 / hard 1), NIE stare
+    // params.walutaMnoznik (NIEUZYWANE, flat x2 na wszystkich trudnosciach) --
+    // bramka maMennica&&walutaOdkryta w cityYieldPerTurn i tak decyduje CZY ten
+    // mnoznik w ogole zadziala, wiec ustawienie go tutaj nie omija Mennicy.
     const walutaMnoznikOverride = walutaOdkryta && civKey
-      ? mnoznikHandelPieniadzForCiv(civKey, cfg.data?.civs, params.walutaMnoznik)
+      ? mnoznikHandelPieniadzForCiv(civKey, cfg.data?.civs, params.mennicaMnoznikPoWalucie)
       : undefined;
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
@@ -787,9 +792,10 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       maTargowisko: built.includes('targowisko'),
       maBiblioteka: built.includes('biblioteka'),
       maAkademia: built.includes('akademia'),
+      // Efekt 1 SCALONY: maMennica jest jednym z dwoch warunkow bramki w
+      // cityYieldPerTurn (razem z walutaOdkryta) -- osobne pole `mennicaMnoznik`
+      // (mnoznik TYLKO na strumien Pieniadza) zostalo usuniete 2026-07-25.
       maMennica,
-      // Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (jak w silniku).
-      mennicaMnoznik: maMennica && walutaOdkryta ? params.mennicaMnoznikPoWalucie : 1,
       walutaOdkryta,
       walutaMnoznikOverride,
       civHandelMult,
@@ -7248,22 +7254,22 @@ function buildHandelDetailCard(
 
   appendDetailFormula(card, 'handelBrutto = Σ handel pól' + (maTargowisko ? ' × (1 + bonus Targowiska)' : ''));
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)`);
-  appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (params ? ' × mnożnik Waluty (jeśli zbadana)' : ''));
-  appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki');
-  appendDetailFormula(card, `skarb_z_handlu = floor(handelNetto × %Skarb${mennicaAktywna ? ` × mennica (${mennicaMnoznikTxt})` : ' × mennica (×1, brak Waluty lub Mennicy)'})`);
-  appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności`);
+  appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (mennicaAktywna ? ` × Waluta+Mennica (${mennicaMnoznikTxt})` : ' × ×1 (brak Waluty lub Mennicy)'));
+  appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki  ← już zawiera mnożnik Waluty+Mennicy powyżej');
+  appendDetailFormula(card, 'skarb_z_handlu = floor(handelNetto × %Skarb)  ← już zawiera mnożnik Waluty+Mennicy powyżej');
+  appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności  ← też już zawiera mnożnik`);
 
   appendDetailAlgo(card, 'Algorytm podziału handlu (cityYieldPerTurn)', [
     'Zbierz handel ze wszystkich obrabianych pól + centrum miasta.',
     maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
     `Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
-    'Technologia Waluta mnoży handelNetto (także Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ').',
+    'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
     mennicaAktywna
-      ? `Mennica mnoży część Skarb z handlu ${mennicaMnoznikTxt} (aktywna: zbudowana + Waluta odkryta).`
+      ? `Mennica + Waluta razem mnożą całe Handel netto ${mennicaMnoznikTxt} (Skarb, Nauka i ${HANDEL_ZAMOZNOSC_LABEL} rosną razem).`
       : maMennica
-        ? 'Mennica zbudowana, ale bez Waluty jeszcze nie mnoży Skarbu (bramka: budynek + technologia).'
-        : 'Bez Mennicy — Skarb z handlu bez mnożnika.',
+        ? 'Mennica zbudowana, ale bez Waluty jeszcze nic nie mnoży (bramka: budynek + technologia, obie wymagane).'
+        : 'Bez Mennicy — Handel netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.',
     maBiblioteka ? 'Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z handlu).' : 'Nauka = wyłącznie udział z handlu + budynki.',
     `${HANDEL_ZAMOZNOSC_LABEL} nie trafia do skarbca — idzie do puli zamożności miasta.`,
     'Na końcu: mnożnik W mnoży cały pieniądz miasta (Skarb + budynki + Targowisko).',
