@@ -65,6 +65,8 @@ export interface EmpirePowerSnap {
   components: EmpirePowerComponentRow[];
   ranking: Array<{ civ: string; power: number; rank: number; isPlayer?: boolean }>;
   respektExample?: { civ: string; respekt: number; playerPower: number; theirPower: number };
+  /** R-RANKING-MOC: pozycja absolutna wśród WSZYSTKICH cywilizacji (także nieodkrytych). */
+  absoluteRank?: { rank: number; total: number };
   ludnoscLudki: number;
   ludnoscAbsLabel: string;
   rekruci: number;

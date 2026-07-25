@@ -36,3 +36,37 @@ export function filterOwnersForPowerRanking(
   }
   return out;
 }
+
+const EMPTY_DISCOVERED: ReadonlySet<number> = new Set<number>();
+
+export interface AbsolutePowerRank {
+  /** Miejsce ownera wśród WSZYSTKICH pełnych cywilizacji (1 = najsilniejszy). */
+  rank: number;
+  /** Liczba wszystkich pełnych cywilizacji branych pod uwagę (żywe, bez miast-państw). */
+  total: number;
+}
+
+/**
+ * R-RANKING-MOC (Maciej 2026-07-24): pozycja ownera wśród WSZYSTKICH żyjących pełnych
+ * cywilizacji — niezależnie od mgły wojny / odkrycia. Gracz ma znać swoje KONKRETNE
+ * miejsce (np. „jesteś 5. z 12"), nawet nie znając tożsamości/mocy rywali.
+ *
+ * Celowo NIE filtruje po odkryciu (showAllCivs zawsze true) — to warstwa liczenia
+ * pozycji, nie prezentacji; UI decyduje ile z tego ujawnić wprost.
+ */
+export function computeAbsolutePowerRank(
+  ownerId: number,
+  allOwnerIds: Iterable<number>,
+  powerOf: (ownerId: number) => number,
+  opts: { cityStateOpts?: PowerRankingFilterOpts['cityStateOpts'] } = {},
+): AbsolutePowerRank {
+  const eligible = filterOwnersForPowerRanking(allOwnerIds, {
+    cityStateOpts: opts.cityStateOpts,
+    discoveredOwners: EMPTY_DISCOVERED,
+    showAllCivs: true,
+  });
+  const powers = eligible.map(oid => ({ oid, power: powerOf(oid) }));
+  const mine = powers.find(p => p.oid === ownerId)?.power ?? powerOf(ownerId);
+  const better = powers.filter(p => p.oid !== ownerId && p.power > mine).length;
+  return { rank: better + 1, total: powers.length };
+}

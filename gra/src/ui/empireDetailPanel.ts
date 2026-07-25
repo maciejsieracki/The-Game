@@ -469,6 +469,10 @@ function render(): void {
     }
     moc += `</div>`;
   }
+  if (p.absoluteRank) {
+    moc += `<div class="civ-emp-foot">Twoja pozycja: <b>${p.absoluteRank.rank}. z ${p.absoluteRank.total}</b> `
+      + `cywilizacji (uwzględnia nieodkryte)</div>`;
+  }
   if (p.respektExample) {
     const ex = p.respektExample;
     moc += `<div class="civ-emp-resp">Respekt wobec <b>${esc(ex.civ)}</b>: `

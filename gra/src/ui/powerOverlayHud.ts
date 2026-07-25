@@ -26,6 +26,12 @@ export interface PowerOverlayData {
   components: PowerComponentRow[];
   ranking: PowerRankingRow[];
   respektExample?: { civ: string; respekt: number; playerPower: number; theirPower: number };
+  /**
+   * R-RANKING-MOC (Maciej 2026-07-24): pozycja ABSOLUTNA wśród WSZYSTKICH żyjących
+   * cywilizacji (także nieodkrytych) — gracz ma znać swoje konkretne miejsce, nawet
+   * nie znając rywali. `ranking` powyżej pokazuje tylko cywilizacje odkryte.
+   */
+  absoluteRank?: { rank: number; total: number };
 }
 
 const STYLE_ID = 'civ-power-overlay-css';
@@ -82,6 +88,11 @@ export function showPowerOverlay(data: PowerOverlayData, onClose?: () => void, o
         + ' — ' + esc(mocWithValue(r.power)) + '<br>';
     }
     html += '</div>';
+  }
+  if (data.absoluteRank) {
+    const ar = data.absoluteRank;
+    html += '<div class="civ-pow-rank">Twoja pozycja: <b>' + ar.rank + '. z ' + ar.total
+      + '</b> cywilizacji (uwzględnia nieodkryte)</div>';
   }
   if (data.respektExample) {
     const ex = data.respektExample;
