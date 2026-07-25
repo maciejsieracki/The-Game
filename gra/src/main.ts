@@ -8783,6 +8783,15 @@ async function boot(): Promise<void> {
           if (cywAction === 'umowa_handlowa' && (payload.goldOnce ?? 0) > 0) {
             executePnDealTransfer(proposerId, responderId, payload);
           }
+        } else if ((payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0) {
+          // C-DYP-STOL-Q1=B (2026-07-25): „słodzik" dołożony do propozycji TRAKTATOWEJ
+          // (pakt/sojusz/granice/wasal/trybut — result.deal.rodzaj != UmowaHandlowa, więc
+          // gałąź powyżej się nie wykonuje). Sam traktat nie niesie koszyka (handelPayload
+          // istnieje tylko dla UmowaHandlowa) — transfer bierzemy wprost z `payload` UI,
+          // razem z zawarciem traktatu. ownerId-agnostyczne (proposerId/responderId — zwykłe
+          // liczby, ta sama ścieżka gracz→AI lub AI→gracz).
+          transferBasketItems(proposerId, responderId, payload.giveItems, result.deal.id);
+          transferBasketItems(responderId, proposerId, payload.receiveItems, result.deal.id);
         }
       }
       if (result.oneShotTrade) {

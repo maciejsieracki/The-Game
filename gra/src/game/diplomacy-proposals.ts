@@ -247,6 +247,41 @@ export function clampDealTurns(turns: number | undefined, defaultTurns = 15): nu
   return clamp(turns ?? defaultTurns, 1, 20);
 }
 
+// ---------------------------------------------------------------------------
+// C-DYP-STOL-Q1=B (2026-07-25): KOSZYK-TRAKTAT — „słodzik" dołożony do propozycji
+// traktatowej (pakt/sojusz/granice/wasal/trybut) OBOK samego traktatu. Wycena =
+// TA SAMA suma PN co koszyk handlu/daru (diplomacy-value-catalog przez
+// resolveProposalPn z diplomacy-pn-engine) — brak nowej ekonomii. Netto =
+// max(0, givePn − receivePn): jeśli respondent w payload.receiveItems też coś
+// oddaje, słodzik netto się o tyle kurczy (symetria — respondent nie powinien
+// tracić dodatkowo NA korzyść niższego progu akceptacji).
+// ownerId-agnostyczne: proposerOwnerId/responderOwnerId w evaluateProposal to
+// zwykłe liczby — ta sama ścieżka niezależnie od tego, kto proponuje (gracz/AI).
+// ---------------------------------------------------------------------------
+
+/** PLACEHOLDER (strojenie w playteście): 25 PN słodzika = 1 punkt „ease" progu. */
+const SWEETENER_PN_PER_EASE_POINT = 25;
+/** PLACEHOLDER (strojenie w playteście): sufit ease — złoto/dobra nie zastępują relacji całkowicie. */
+const SWEETENER_EASE_MAX_POINTS = 20;
+
+/** Wartość netto słodzika w PN (koszyk giveItems minus receiveItems, floor 0). */
+export function sweetenerNetPn(payload: ProposalPayload): number {
+  const { givePn, receivePn } = resolveProposalPn(payload);
+  return Math.max(0, givePn - receivePn);
+}
+
+/**
+ * Punkty „ease" ze słodzika — obniżają progi akceptacji traktatu (Relacja/
+ * Zaufanie/Respekt, w zależności od akcji), analogicznie do
+ * diplomacyProposerStrengthEase (przewaga militarna/Respekt) w diplomacy.ts.
+ * PLACEHOLDER: liniowe, sufit 20 punktów — strojenie właściciela w playteście.
+ */
+export function sweetenerEasePoints(payload: ProposalPayload): number {
+  const netPn = sweetenerNetPn(payload);
+  if (netPn <= 0) return 0;
+  return Math.min(SWEETENER_EASE_MAX_POINTS, Math.floor(netPn / SWEETENER_PN_PER_EASE_POINT));
+}
+
 /**
  * HANDEL-SUROWCE-CYKL (2026-07-24): koszyk `surowiec_ilosc` (+ opcjonalna zapłata
  * zloto/praca po stronie przeciwnej) → przepływy CO TURĘ. `ilosc` na pozycji
@@ -310,8 +345,11 @@ export function evaluateProposal(
 
   switch (actionId) {
     case 'nap': {
-      if (score < p.progNapRelacja) {
-        return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana ≥ ${p.progNapRelacja})` };
+      // C-DYP-STOL-Q1=B: słodzik (giveItems/receiveItems w payload) obniża próg Relacji.
+      const napEase = sweetenerEasePoints(payload);
+      const napThreshold = Math.max(0, p.progNapRelacja - napEase);
+      if (score < napThreshold) {
+        return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana ≥ ${napThreshold})` };
       }
       if (ctx.ekspansjaPrzyGranicy) {
         return { accepted: false, reason: 'Ekspansja przy granicy — brak zaufania do paktu' };
@@ -340,9 +378,13 @@ export function evaluateProposal(
         ctx.responderRespekt,
         p,
       );
-      const minZ = diplomacyAllianceMinZaufanie(adj, milRatio, p);
+      // C-DYP-STOL-Q1=B: słodzik obniża progi tak samo jak przewaga militarna/Respekt
+      // (diplomacyProposerStrengthEase) — komponuje się z istniejącą ulgą, nie ją zastępuje.
+      // diplomacyTreatyMinRelacja i tak nie zejdzie poniżej progUmowaMinRelacja (twarda podłoga).
+      const sojuszEase = sweetenerEasePoints(payload);
+      const minZ = Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
       const minScore = diplomacyTreatyMinRelacja(
-        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore,
+        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase,
         p,
       );
       const minAlly = Math.max(0, p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + adj.penaltyAlly);
@@ -382,10 +424,13 @@ export function evaluateProposal(
       if (perTurn < p.progTrybutMinGoldPerTurn) {
         return { accepted: false, reason: `Minimalny trybut to ${p.progTrybutMinGoldPerTurn} ¤/turę` };
       }
-      if (ctx.proposerRespekt <= p.progTrybutZadanieMinRespekt) {
+      // C-DYP-STOL-Q1=B: słodzik obniża próg Respektu wymaganego do żądania trybutu.
+      const trybutEase = sweetenerEasePoints(payload);
+      const trybutRespektThreshold = Math.max(0, p.progTrybutZadanieMinRespekt - trybutEase);
+      if (ctx.proposerRespekt <= trybutRespektThreshold) {
         return {
           accepted: false,
-          reason: `Żądanie trybutu wymaga Respekt > ${p.progTrybutZadanieMinRespekt} (masz ${ctx.proposerRespekt})`,
+          reason: `Żądanie trybutu wymaga Respekt > ${trybutRespektThreshold} (masz ${ctx.proposerRespekt})`,
         };
       }
       // Górny limit kwoty — skaluje się z Respektem proponenta (audyt #21, decyzja A5=A).
@@ -598,19 +643,23 @@ export function evaluateProposal(
     }
 
     case 'granice': {
-      const granRelOk = score >= p.progGraniceRelacja;
-      const granZaufOk = relation.zaufanie >= p.progGraniceZaufanie;
+      // C-DYP-STOL-Q1=B: słodzik obniża oba progi (Relacja/Zaufanie) o tyle samo.
+      const graniceEase = sweetenerEasePoints(payload);
+      const graniceRelThreshold = Math.max(0, p.progGraniceRelacja - graniceEase);
+      const graniceZaufThreshold = Math.max(0, p.progGraniceZaufanie - graniceEase);
+      const granRelOk = score >= graniceRelThreshold;
+      const granZaufOk = relation.zaufanie >= graniceZaufThreshold;
       if (!granRelOk && !granZaufOk) {
         return {
           accepted: false,
-          reason: `Relacja zbyt niska na granice (wymagana Relacja ≥ ${p.progGraniceRelacja} i Zaufanie ≥ ${p.progGraniceZaufanie})`,
+          reason: `Relacja zbyt niska na granice (wymagana Relacja ≥ ${graniceRelThreshold} i Zaufanie ≥ ${graniceZaufThreshold})`,
         };
       }
       if (!granRelOk) {
-        return { accepted: false, reason: `Relacja zbyt niska na granice (wymagana ≥ ${p.progGraniceRelacja})` };
+        return { accepted: false, reason: `Relacja zbyt niska na granice (wymagana ≥ ${graniceRelThreshold})` };
       }
       if (!granZaufOk) {
-        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane ≥ ${p.progGraniceZaufanie})` };
+        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane ≥ ${graniceZaufThreshold})` };
       }
       if (payload.borderMilitary && ctx.proposerRespekt < p.progGraniceWojskoweRespekt) {
         return { accepted: false, reason: `Prawo wojskowe wymaga Respekt ≥ ${p.progGraniceWojskoweRespekt}` };
@@ -644,8 +693,11 @@ export function evaluateProposal(
     }
 
     case 'wasal': {
-      if (ctx.proposerRespekt < p.progWasalizacjaRespekt) {
-        return { accepted: false, reason: `Wasalizacja wymaga Respekt ≥ ${p.progWasalizacjaRespekt}` };
+      // C-DYP-STOL-Q1=B: słodzik obniża próg Respektu wymaganego do wasalizacji.
+      const wasalEase = sweetenerEasePoints(payload);
+      const wasalRespektThreshold = Math.max(0, p.progWasalizacjaRespekt - wasalEase);
+      if (ctx.proposerRespekt < wasalRespektThreshold) {
+        return { accepted: false, reason: `Wasalizacja wymaga Respekt ≥ ${wasalRespektThreshold}` };
       }
       const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;
       const deal = buildDeal(

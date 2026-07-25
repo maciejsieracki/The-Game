@@ -122,6 +122,67 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+/**
+ * C-DYP-STOL-Q1=B (2026-07-25): KOSZYK-TRAKTAT — akcje traktatowe, do których dołączamy
+ * sekcję „Dołóż do umowy" (złoto + jeden surowiec jako słodzik oceniany RAZEM z traktatem
+ * przez evaluateProposal — diplomacy-proposals.ts sweetenerEasePoints). Świadomie POZA tym
+ * zbiorem: '6' (tech ma własną cenę), '7' (namów-wojnę ma bribeGold), '9' (ultimatum ma
+ * reparacje) — tam "dołóż" nakładałby się na istniejące pole gold/cena.
+ * Minimalna sekcja (nie pełny koszyk diplomacyTradeBasket.ts — patrz raport zadania):
+ * jedno pole złota + jeden wybór surowca (dostęp LUB ilość) + ilość pakietów.
+ */
+const SWEETENER_ACTION_IDS = new Set(['2', '3', '4', '8', '12']);
+
+function sweetenerSectionHtml(ctx: NegotiationModalContext): string {
+  const goldMax = Math.max(0, Math.floor(ctx.playerSkarbiec ?? 0));
+  const boolOpts = ctx.giveResourceOptions ?? [];
+  const qtyOpts = (ctx.giveQuantityResourceOptions ?? []).filter(o => o.maxPakiety > 0);
+  const resOptions =
+    '<option value="">— brak —</option>'
+    + boolOpts.map(o => '<option value="bool:' + esc(o.id) + '">' + esc(o.label) + ' (dostęp)</option>').join('')
+    + qtyOpts.map(o =>
+      '<option value="qty:' + esc(o.id) + '" data-max="' + o.maxPakiety + '">'
+      + esc(o.label) + ' (ilość, max ' + o.maxPakiety + ' pak.)</option>',
+    ).join('');
+  return (
+    '<div class="cdn-sweetener" style="margin-top:12px;border-top:1px dashed rgba(232,216,138,.18);padding-top:8px">'
+    + '<label style="margin-top:0">Dołóż do umowy (opcjonalnie — słodzik)</label>'
+    + '<p class="cdn-sub">Zwiększa szansę akceptacji — wliczane RAZEM z traktatem.</p>'
+    + numInput('cdn-sw-gold', 'Złoto ¤', 0, 0, goldMax)
+    + '<label>Surowiec</label>'
+    + '<select id="cdn-sw-res">' + resOptions + '</select>'
+    + '<div id="cdn-sw-qty-wrap" style="display:none">'
+    + numInput('cdn-sw-qty', 'Liczba pakietów', 1, 1)
+    + '</div>'
+    + '</div>'
+  );
+}
+
+/** Odczyt sekcji słodzika → BasketItem[] (pomijane, gdy pole puste/zero). */
+function readSweetenerGiveItems(): BasketItem[] {
+  const items: BasketItem[] = [];
+  const gold = parseInt((document.getElementById('cdn-sw-gold') as HTMLInputElement)?.value ?? '0', 10);
+  if (gold > 0) items.push({ typ: 'zloto', id: 'zloto', ilosc: gold });
+  const resSel = document.getElementById('cdn-sw-res') as HTMLSelectElement | null;
+  const resVal = resSel?.value ?? '';
+  if (resVal.startsWith('bool:')) {
+    items.push({ typ: 'surowiec_boolean', id: resVal.slice('bool:'.length) });
+  } else if (resVal.startsWith('qty:')) {
+    const id = resVal.slice('qty:'.length);
+    const maxAttr = parseInt(resSel!.selectedOptions[0]?.getAttribute('data-max') ?? '0', 10);
+    const rawQty = parseInt((document.getElementById('cdn-sw-qty') as HTMLInputElement)?.value ?? '0', 10);
+    const qty = maxAttr > 0 ? Math.min(Math.max(0, rawQty), maxAttr) : Math.max(0, rawQty);
+    if (qty > 0) items.push({ typ: 'surowiec_ilosc', id, ilosc: qty });
+  }
+  return items;
+}
+
+/** Dołącza koszyk słodzika (jeśli niepusty) do payloadu akcji traktatowej. */
+function withSweetener(payload: NegotiationPayload): NegotiationPayload {
+  const giveItems = readSweetenerGiveItems();
+  return giveItems.length > 0 ? { ...payload, giveItems } : payload;
+}
+
 function closeModal(): void {
   if (overlay !== null) { overlay.remove(); overlay = null; }
 }
@@ -133,6 +194,11 @@ function numInput(id: string, label: string, value: number, min: number, max?: n
 }
 
 function buildForm(action: AudienceAction, ctx: NegotiationModalContext): string {
+  const body = buildFormBody(action, ctx);
+  return SWEETENER_ACTION_IDS.has(action.id) ? body + sweetenerSectionHtml(ctx) : body;
+}
+
+function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): string {
   const sub = ctx.aiCounterOffer
     ? '<div class="cdn-sub">' + esc(ctx.aiCounterOffer) + '</div>'
     : '<div class="cdn-sub">Partner: <strong>' + esc(ctx.civName) + '</strong></div>';
@@ -218,16 +284,16 @@ function readPayload(actionId: string, ctx: NegotiationModalContext): Negotiatio
   switch (actionId) {
     case '2': {
       const turns = parseInt((document.getElementById('cdn-turns') as HTMLInputElement)?.value ?? '15', 10);
-      return { ...base, turns: Math.max(10, Math.min(20, turns)) };
+      return withSweetener({ ...base, turns: Math.max(10, Math.min(20, turns)) });
     }
     case '3': {
       const v = (document.getElementById('cdn-alliance') as HTMLSelectElement)?.value;
-      return { ...base, allianceKind: v === 'defensywny' ? 'defensywny' : 'pelny' };
+      return withSweetener({ ...base, allianceKind: v === 'defensywny' ? 'defensywny' : 'pelny' });
     }
     case '4': {
       const mil = (document.getElementById('cdn-mil') as HTMLInputElement)?.checked ?? false;
       const fee = mil ? (ctx.borderFeeMilitary ?? 40) : (ctx.borderFeeCivil ?? 20);
-      return { ...base, borderMilitary: mil, goldOnce: fee };
+      return withSweetener({ ...base, borderMilitary: mil, goldOnce: fee });
     }
     case '5':
     case '13':
@@ -248,12 +314,12 @@ function readPayload(actionId: string, ctx: NegotiationModalContext): Negotiatio
       const mode = (document.getElementById('cdn-trib-mode') as HTMLSelectElement)?.value;
       const gpt = parseInt((document.getElementById('cdn-gpt') as HTMLInputElement)?.value ?? '10', 10);
       const turns = parseInt((document.getElementById('cdn-turns-trib') as HTMLInputElement)?.value ?? '0', 10);
-      return {
+      return withSweetener({
         ...base,
         tributeMode: mode === 'offer' ? 'offer' : 'demand',
         goldPerTurn: gpt,
         turns: turns > 0 ? turns : undefined,
-      };
+      });
     }
     case '9': {
       const gold = parseInt((document.getElementById('cdn-ult-gold') as HTMLInputElement)?.value ?? '0', 10);
@@ -261,7 +327,7 @@ function readPayload(actionId: string, ctx: NegotiationModalContext): Negotiatio
     }
     case '12': {
       const gpt = parseInt((document.getElementById('cdn-wasal-gpt') as HTMLInputElement)?.value ?? '10', 10);
-      return { ...base, goldPerTurn: gpt };
+      return withSweetener({ ...base, goldPerTurn: gpt });
     }
     default:
       return base;
@@ -355,6 +421,24 @@ export function showNegotiationModal(
       const price = parseInt(opt?.getAttribute('data-price') ?? '50', 10);
       const inp = box.querySelector('#cdn-tech-price') as HTMLInputElement | null;
       if (inp) inp.value = String(price);
+    });
+  }
+
+  // C-DYP-STOL-Q1=B: sekcja „Dołóż do umowy" — pokaż pole ilości tylko dla surowca ILOŚCIOWEGO
+  // (qty:...), i ogranicz je do maxPakiety tej pozycji (analogicznie do koszyka handlu).
+  const swResSel = box.querySelector('#cdn-sw-res') as HTMLSelectElement | null;
+  if (swResSel) {
+    const swQtyWrap = box.querySelector('#cdn-sw-qty-wrap') as HTMLElement | null;
+    const swQtyInput = box.querySelector('#cdn-sw-qty') as HTMLInputElement | null;
+    swResSel.addEventListener('change', () => {
+      const val = swResSel.value;
+      const isQty = val.startsWith('qty:');
+      if (swQtyWrap) swQtyWrap.style.display = isQty ? '' : 'none';
+      if (isQty && swQtyInput) {
+        const max = parseInt(swResSel.selectedOptions[0]?.getAttribute('data-max') ?? '1', 10);
+        swQtyInput.max = String(max);
+        if (parseInt(swQtyInput.value, 10) > max) swQtyInput.value = String(max);
+      }
     });
   }
 }
