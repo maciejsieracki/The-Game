@@ -13175,6 +13175,7 @@ var buildings_default = [
     wymagania: "-",
     uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bramka drewno; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II",
     techUnlock: "-",
+    lokalizacja: "stolica",
     koszt_surowce: {
       drewno: 8
     }
@@ -13214,6 +13215,7 @@ var buildings_default = [
     wymagania: "upgrade Pa\u0142ac I",
     uwagi: "B-PALAC-TIER II (Br\u0105z): bramka drewno+kamie\u0144; bonus \xD71,5 wzgl\u0119dem I; upgrade\u2192Pa\u0142ac III",
     techUnlock: "-",
+    lokalizacja: "stolica",
     koszt_surowce: {
       drewno: 8,
       kamien: 8
@@ -13254,6 +13256,7 @@ var buildings_default = [
     wymagania: "upgrade Pa\u0142ac II",
     uwagi: "B-PALAC-TIER III (\u017Belazo): bramka drewno+kamie\u0144+ceg\u0142a; bonus \xD72,25 wzgl\u0119dem I (\xD71,5\xB2)",
     techUnlock: "-",
+    lokalizacja: "stolica",
     koszt_surowce: {
       drewno: 8,
       kamien: 8,
@@ -13535,21 +13538,102 @@ var buildings_default = [
     }
   },
   {
+    id: "dom_starszyzny",
+    nazwa: "Dom Starszyzny",
+    kategoria: "Administracja",
+    epokaWejscia: 1,
+    maksPoziom: 1,
+    nazwyPoziomow: [],
+    baza: {
+      praca: 1,
+      pieniadz: 1,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 2,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 25,
+    przyrostKosztu: 5,
+    utrzymanie: 1,
+    przyrostUtrzymania: 1,
+    wymagania: "",
+    uwagi: "Administracja lokalna miast regionalnych (poza stolic\u0105), poziom 1: Dom Starszyzny. \u0141a\u0144cuch zast\u0119powania jak Pa\u0142ac: Dom Starszyzny \u2192 Dw\xF3r Zarz\u0105dcy \u2192 Pretorium. G\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa miasta regionalnego (prawo_dom_starszyzny, society-params.json). Decyzja Macieja 2026-07-25 (podzia\u0142 stolica/region).",
+    techUnlock: "-",
+    lokalizacja: "region",
+    koszt_surowce: {
+      drewno: 6
+    }
+  },
+  {
+    id: "dwor_zarzadcy",
+    nazwa: "Dw\xF3r Zarz\u0105dcy",
+    kategoria: "Administracja",
+    epokaWejscia: 2,
+    maksPoziom: 1,
+    upgradeFrom: "dom_starszyzny",
+    nazwyPoziomow: [],
+    baza: {
+      praca: 1,
+      pieniadz: 2,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 3,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 45,
+    przyrostKosztu: 9,
+    utrzymanie: 2,
+    przyrostUtrzymania: 1,
+    wymagania: "upgrade Dom Starszyzny",
+    uwagi: "Administracja lokalna miast regionalnych (poza stolic\u0105), poziom 2: Dw\xF3r Zarz\u0105dcy \u2014 zast\u0119puje Dom Starszyzny. G\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa miasta regionalnego (prawo_dwor_zarzadcy, society-params.json); dalszy awans \u2192 Pretorium. Decyzja Macieja 2026-07-25 (podzia\u0142 stolica/region).",
+    techUnlock: "Kodeks",
+    lokalizacja: "region",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 6
+    }
+  },
+  {
     id: "pretorium",
     nazwa: "Pretorium",
     kategoria: "Administracja",
     epokaWejscia: 3,
     maksPoziom: 1,
+    upgradeFrom: "dwor_zarzadcy",
     nazwyPoziomow: [],
     baza: {
       praca: 2,
       pieniadz: 3,
       zywnosc: 0,
       nauka: 0,
-      kultura: 0,
-      zadowolenie: 1,
-      obrona: 2,
-      mnoznik: 5
+      kultura: 5,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
     },
     przyrost: {
       praca: 1,
@@ -13557,17 +13641,18 @@ var buildings_default = [
       zywnosc: 0,
       nauka: 0,
       kultura: 0,
-      zadowolenie: 1,
-      obrona: 1,
-      mnoznik: 2
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
     },
     kosztBudowy: 75,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
+    wymagania: "upgrade Dw\xF3r Zarz\u0105dcy",
+    uwagi: "Administracja lokalna miast regionalnych (poza stolic\u0105), poziom 3 (\u017Belazo): Pretorium \u2014 zast\u0119puje Dw\xF3r Zarz\u0105dcy, koniec \u0142a\u0144cucha (jak Pa\u0142ac III w stolicy). G\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa miasta regionalnego (prawo_pretorium, society-params.json). Garnizon liczy si\u0119 do Prawa sam (prawo_garnizon_per_jednostka) \u2014 Pretorium nie daje mu dodatkowego bonusu; dawny zapis o mno\u017Cniku podatkowym nie mia\u0142 pokrycia w kodzie (pole martwe, wyzerowane 2026-07-25).",
     techUnlock: "Prawo",
+    lokalizacja: "region",
     koszt_surowce: {
       cegla: 9
     }
@@ -14040,7 +14125,7 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Pismo + Religia",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Trybuna\u0142",
+      "Odblokowuje budynek": "Trybuna\u0142; Dw\xF3r Zarz\u0105dcy",
       "Koszt nauki": 124,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
@@ -21876,12 +21961,33 @@ var society_params_default = {
       jednostka: "pkt Prawa",
       opis: "Bonus Prawa z Ratusza (gdy wpi\u0119ty w budynki) \u2014 70% warto\u015Bci Pretorium (decyzja Macieja 2026-07-25, Pytanie 28). UWAGA: Ratusz nie istnieje jeszcze jako budynek w buildings.json \u2014 hasRatusz nigdy dzi\u015B nie jest true, trwa osobna decyzja o \u0142a\u0144cuchu administracji lokalnej."
     },
+    prawo_dom_starszyzny: {
+      easy: 36,
+      normal: 28,
+      hard: 22,
+      jednostka: "pkt Prawa",
+      opis: "Bonus Prawa z Domu Starszyzny \u2014 administracja lokalna miast regionalnych, poziom 1 (Kamie\u0144); 50% warto\u015Bci Pa\u0142acu III (decyzja Macieja 2026-07-25, \u0142a\u0144cuch Dom Starszyzny \u2192 Dw\xF3r Zarz\u0105dcy \u2192 Pretorium, zast\u0119powanie jak Pa\u0142ac)."
+    },
+    prawo_dwor_zarzadcy: {
+      easy: 43,
+      normal: 33,
+      hard: 26,
+      jednostka: "pkt Prawa",
+      opis: "Bonus Prawa z Dworu Zarz\u0105dcy \u2014 administracja lokalna miast regionalnych, poziom 2 (Br\u0105z), zast\u0119puje Dom Starszyzny; 60% warto\u015Bci Pa\u0142acu III (decyzja Macieja 2026-07-25)."
+    },
     prawo_pretorium: {
       easy: 50,
       normal: 38,
       hard: 31,
       jednostka: "pkt Prawa",
       opis: "Bonus Prawa z Pretorium \u2014 70% warto\u015Bci Pa\u0142acu III (decyzja Macieja 2026-07-25, Pytanie 28)."
+    },
+    prawo_trybunal: {
+      easy: 22,
+      normal: 17,
+      hard: 13,
+      jednostka: "pkt Prawa",
+      opis: "Bonus Prawa z Trybuna\u0142u \u2014 dost\u0119pny wsz\u0119dzie (stolica i region), niezale\u017Cny od \u0142a\u0144cucha administracji lokalnej; 50% warto\u015Bci Dworu Zarz\u0105dcy (decyzja Macieja 2026-07-25). Wcze\u015Bniej Trybuna\u0142 w og\xF3le nie by\u0142 wpi\u0119ty w system Prawa (hasTrybunal nie istnia\u0142o)."
     },
     prawo_sad: {
       easy: 25,

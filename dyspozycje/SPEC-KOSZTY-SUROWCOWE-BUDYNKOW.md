@@ -72,3 +72,31 @@ a przy okazji miasto bez złoża gliny nie zostaje w epoce Żelaza bez obrony i 
 | Budynek | Było | Ma być |
 |---|---|---|
 | Wielka Kuźnia | brak kosztu surowcowego | **drewno 12 + cegła 16** |
+
+---
+
+# SPEC: łańcuch kuźni — ZATWIERDZONE przez Macieja 2026-07-25
+
+**Zmiana nazwy:** „Kuznia" → **„Kuźnia brązu"**. Identyfikator `kuznia` w danych **zostaje bez zmian**
+(zmiana id zepsułaby wczytywanie zapisanych gier) — zmienia się wyłącznie nazwa wyświetlana graczowi.
+
+**Łańcuch (rozwój w górę, następca kasuje poprzednika — tak jak Pałac):**
+`kuznia` (Kuźnia brązu, Brąz) → `kuznia_zelaza` (Kuźnia żelaza, Żelazo) → `wielka_kuznia` (Wielka Kuźnia, klasyczna)
+
+**Do naprawy w danych:**
+1. `kuznia_zelaza` dostaje `upgradeFrom: "kuznia"` — dziś brakuje tego ogniwa i oba budynki stoją obok siebie.
+2. `kuznia` — `maksPoziom` na 1 i przyrost przestaje być stosowany (dziś rośnie z epoką do 9 pkt Pracy w Żelazie).
+3. Nazwa „Kuznia" → „Kuźnia brązu" w danych, Civpedii, poradniku i wszędzie, gdzie występuje.
+
+**Docelowe parametry:**
+| Parametr | Kuźnia brązu | Kuźnia żelaza | Wielka Kuźnia |
+|---|---|---|---|
+| Epoka | Brąz | Żelazo | klasyczna |
+| Praca | 6 pkt/turę | 8 pkt/turę | 20 pkt/turę |
+| Pieniądz | 1 pkt/turę | 2 pkt/turę | 5 pkt/turę |
+| Pancerz jednostek (suma po łańcuchu) | +15% | **+30%** | **+45%** |
+| Koszt budowy | 30 pkt Pracy | 60 pkt Pracy | 90 pkt Pracy |
+| Surowce | drewno 6 + kamień 6 | drewno 8 + cegła 10 | drewno 12 + cegła 16 |
+| Utrzymanie | 2 pieniądze/turę | 3 pieniądze/turę | 4 pieniądze/turę |
+
+W dzisiejszej grze o trzech epokach Pancerz dobija do **30%** — Wielka Kuźnia należy do epoki klasycznej.
