@@ -18,6 +18,8 @@ export type IconId =
   | 'res-settlements'
   /** Chip HUD „Surowce" (magazyn państwa) — mapuje na brand-icon 'chip-crate'. */
   | 'res-resources'
+  /** TEMAT 14 (Maciej 2026-07-24) — chip HUD „Handel" (dochód z tras handlowych). Mapuje na brand-icon 'cp-trade' (już używany w panelu miasta). */
+  | 'res-trade'
   | 'tb-cities'
   | 'tb-science'
   | 'tb-diplomacy'
@@ -27,6 +29,7 @@ export type IconId =
 /** IconId → id realnego assetu w manifeście brand-book (gdy różne od klucza IconId). */
 const ICON_ID_ALIAS: Partial<Record<IconId, string>> = {
   'res-resources': 'chip-crate',
+  'res-trade': 'cp-trade',
 };
 
 /**
@@ -57,4 +60,5 @@ export const ICON_LABELS_PL: Partial<Record<IconId, string>> = {
   'res-influence': 'Wpływ',
   'res-settlements': 'Osiedla',
   'res-resources': 'Surowce',
+  'res-trade': 'Handel',
 };

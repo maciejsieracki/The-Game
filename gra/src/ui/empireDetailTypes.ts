@@ -95,6 +95,28 @@ export interface EmpireCityPoborRow {
   regenPerTurn: number;
 }
 
+/**
+ * TEMAT 14 (Maciej 2026-07-24) — jedna aktywna trasa handlowa gracz↔obca cywilizacja
+ * (trade-routes.ts TradeRoute), widziana z panelu imperium (nie panelu miasta).
+ */
+export interface EmpireTradeRouteRow {
+  id: string;
+  /** Miasto gracza (fromCityId trasy — trasy zawsze gracz↔obcy, patrz refreshTradeRoutes). */
+  cityName: string;
+  partnerCityName: string;
+  partnerOwnerLabel: string;
+  medium: 'lad' | 'morze';
+  dystans: number;
+  /** Dochód tej trasy/turę (tradeRouteDistanceIncome) — kredytowany OBU miastom w pełnej kwocie. */
+  income: number;
+}
+
+/** Zbiorczy widok imperium: suma dochodu + rozpiska aktywnych tras (żeton HUD „Handel"). */
+export interface EmpireTradeSnap {
+  totalIncome: number;
+  routes: EmpireTradeRouteRow[];
+}
+
 export interface EmpireDetailSnap {
   global: EmpireGlobalParams;
   economy: HudState;
@@ -103,4 +125,5 @@ export interface EmpireDetailSnap {
   cityEcon: EmpireCityEconRow[];
   cityPobor: EmpireCityPoborRow[];
   resources: EmpireResourceRow[];
+  trade: EmpireTradeSnap;
 }
