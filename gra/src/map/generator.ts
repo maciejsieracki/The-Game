@@ -349,20 +349,16 @@ export function generateMap(
   }
   // ── Przebieg 3e-pre: wysepki-szum po finalnym wybrzeżu (pustynia/łąka w oceanie) ─
   finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 2);
-  // ── Przebieg 3f: złoża DOPIERO po finalnym wybrzeżu (relief siatka przed rzekami) ─
-  placeDeposits(hexes, effectiveSeed, undefined, wgn.resourceMult, wgn.resourceBaseline);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
-  // ── Bezpiecznik: drobne wyspy po bootstrap złóż ───────────────────────────
-  finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 1);
   // ── Przebieg 3g: siatki fair play relief + las (po finalnym lądzie, przed rzekami) ─
   ensureReliefGridCoverage(
     hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
   );
   // ── Przebieg 3g-bis: pasma górskie — naturalne skupiska (HILLS Q1, po floor reliefu,
-  // przed drugim ensureDepositGridCoverage żeby nowe Gory/Wzgorza dostały złoża, i przed
-  // rzekami żeby rzeki opływały nowy relief) ───────────────────────────────────────────
+  // przed rzekami żeby rzeki opływały nowy relief). TEMAT 12 (2026-07-24): złoża NIE są już
+  // stawiane tutaj — patrz Przebieg 3i niżej, po finalnych rzekach (glina wymaga prawdziwej
+  // rzeka.obecna, więc jeden konsolidowany przebieg złóż po rzekach zastępuje dawne dwa
+  // przebiegi placeDeposits/ensureDepositGridCoverage rozsiane wokół reliefu). ─────────────
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   // ── Przebieg 3h-pre: ostatni purge wody→ląd PRZED rzekami (B0.1 — nie kasować ujść) ─
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
@@ -402,7 +398,6 @@ export function generateMap(
     wgn.riverTrace.maxLen,
   );
   stripRiverMarksFromOpenSea(hexes);
-  stripDepositsFromWater(hexes);
   // B0.7/B0.8: „zero sierot" — usun sciezki niepolaczone z morzem (finalny stan, jak widzi test).
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   // ZADANIE 2 — bezpiecznik końcowy: generateRivers/topUpRiverGridCoverage już trasują do
@@ -415,6 +410,17 @@ export function generateMap(
   // udające deltę) — OSTATNI krok geografii, po finalnym oznakowaniu rzek, żeby znać PRAWDZIWE
   // ujścia i nigdy ich nie ruszać.
   flattenFalseCoastalRiverNotches(hexes, width, height);
+
+  // ── Przebieg 3i: złoża DOPIERO po finalnych rzekach i finalnym wybrzeżu (TEMAT 12,
+  // 2026-07-24, Maciej) — glina wymaga prawdziwej h.rzeka.obecna (rzeki wcześniej nie
+  // istniały — placeDeposits() był wołany PRZED generateRivers, więc gałąź rzeki w regule
+  // gliny była martwym kodem), sól wymaga finalnego (już domkniętego) Wybrzeża. Jeden
+  // konsolidowany przebieg wystarcza — relief (w tym pasma górskie z growMountainRanges) jest
+  // już finalny, więc nie trzeba dawnej dwuprzebiegowej gimnastyki placeDeposits/
+  // ensureDepositGridCoverage sprzed/po growMountainRanges.
+  placeDeposits(hexes, effectiveSeed, undefined, wgn.resourceMult, wgn.resourceBaseline);
+  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+  stripDepositsFromWater(hexes);
 
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
