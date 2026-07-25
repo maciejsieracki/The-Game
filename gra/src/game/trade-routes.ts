@@ -827,20 +827,31 @@ export function diffTradeRoutes(
 
 /**
  * Surowce civ-wide, których dostęp może "przeciekać" przez aktywną trasę handlową.
- * Odpowiadają czterem silnikowym bramkom dostępu: braz-access.ts (hasBrazAccess),
+ * Odpowiadają pięciu silnikowym bramkom dostępu: braz-access.ts (hasBrazAccess),
  * zelazo-access.ts (hasZelazoAccess), livestock-unlock.ts (computeEmpireLivestockUnlocks
- * — tylko 'kon', jedyny surowiec hodowlany z civ-wide odblokowaniem, Model B) oraz
- * 'cegla' (decyzja właściciela 40=B, 2026-07-25): Cegielnia wymaga Gliny, a złoże Gliny
+ * — tylko 'kon', jedyny surowiec hodowlany z civ-wide odblokowaniem, Model B), 'cegla'
+ * (decyzja właściciela 40=B, 2026-07-25): Cegielnia wymaga Gliny, a złoże Gliny
  * występuje wyłącznie na lądzie z rzeką — cywilizacja bez takiego terenu była trwale
  * odcięta od epoki Żelaza (dziewięć budynków tej epoki kosztuje Cegłę), bez żadnego
  * środka poza jednorazową transakcją dyplomatyczną. Dostęp natywny do 'cegla' liczy
  * wołający (main.ts, ownerHasNativeResourceAccess) tym samym wzorcem AND co brąz:
  * empire-wide źródło Gliny (Glinianka na złożu Gliny, gdziekolwiek w imperium) ORAZ
  * Cegielnia zbudowana w KTÓRYMKOLWIEK mieście tego właściciela.
+ *
+ * 'zloto' (PYTANIE 77=A, Maciej 2026-07-25): Mennica wymaga dostępu do Złota
+ * (game/zloto-access.ts empireHasKopalniaZlota), ale złoże złota ma rarity=3% i NIE
+ * jest w FAIR_PLAY_DEPOSIT_IDS (map/gen-helpers.ts) — generator nie gwarantuje go
+ * żadnej cywilizacji. Bez trasy jako alternatywnej ścieżki dostępu, cywilizacja bez
+ * złota w zasięgu nigdy nie zbudowałaby Mennicy i nigdy nie weszłaby w etap Podatku
+ * (mnożnik Daniny netto po Walucie) — dokładnie ta sama pułapka co Cegła wyżej,
+ * rozstrzygnięta tym samym mechanizmem: dostęp TAK/NIE, BEZ przepływu ilościowego
+ * (patrz TRADE_ROUTE_STOCK_FLOW_KEYS niżej — złoto tam CELOWO nie występuje, złoto
+ * nigdy nie było i nadal nie jest magazynowane w City.surowce).
  */
-export type TradeRouteResourceKey = 'braz' | 'zelazo' | 'kon' | 'cegla';
+export type TradeRouteResourceKey = 'braz' | 'zelazo' | 'kon' | 'cegla' | 'zloto';
 
-export const TRADE_ROUTE_RESOURCE_KEYS: readonly TradeRouteResourceKey[] = ['braz', 'zelazo', 'kon', 'cegla'];
+export const TRADE_ROUTE_RESOURCE_KEYS: readonly TradeRouteResourceKey[] =
+  ['braz', 'zelazo', 'kon', 'cegla', 'zloto'];
 
 /**
  * Jeden przyznany dostęp "z trasy": `ownerId` (odbiorca) korzysta z dostępu, jaki
@@ -960,8 +971,15 @@ export function firstTradeRouteResourceGrant(
  * WYŁĄCZONY celowo: to czysty odblokownik civ-wide (computeEmpireLivestockUnlocks),
  * bez żadnego magazynu sztuk do przenoszenia; przepływ ilościowy dla 'kon' nie
  * ma więc żadnego sensownego znaczenia i pozostaje wyłącznie boolean-grantem.
+ *
+ * 'zloto' jest WYŁĄCZONE z tego samego powodu co 'kon' (PYTANIE 77=A, Maciej
+ * 2026-07-25): złoto to surowiec WYŁĄCZNIE DOSTĘPOWY — brak jakiegokolwiek pola w
+ * City.surowce / ownerResourceStockAll (patrz zloto-access.ts, nagłówek pliku),
+ * więc "przepływ ilościowy" nie miałby żadnego magazynu do zasilenia. Szlak handlowy
+ * z posiadaczem złota ma dawać WYŁĄCZNIE prawo do budowy Mennicy (jak koń dla
+ * jednostek) — ANI JEDNEJ sztuki złota nie wolno dokładać do żadnej puli.
  */
-export type TradeRouteStockFlowResourceKey = Exclude<TradeRouteResourceKey, 'kon'>;
+export type TradeRouteStockFlowResourceKey = Exclude<TradeRouteResourceKey, 'kon' | 'zloto'>;
 
 export const TRADE_ROUTE_STOCK_FLOW_KEYS: readonly TradeRouteStockFlowResourceKey[] =
   ['braz', 'zelazo', 'cegla'];

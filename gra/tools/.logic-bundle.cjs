@@ -2236,6 +2236,89 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
   return fixed;
 }
 var MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.4;
+var MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
+function findSameTerrainClusters(hexes, terrain) {
+  const visited = /* @__PURE__ */ new Set();
+  const clusters = [];
+  const keys = Object.keys(hexes).sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const hex = hexes[key];
+    if (!hex || hex.terenBazowy !== terrain) continue;
+    const cluster = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      cluster.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk)) continue;
+        const nh = hexes[nk];
+        if (!nh || nh.terenBazowy !== terrain) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+function connectedComponentsWithin(remaining) {
+  const visited = /* @__PURE__ */ new Set();
+  const comps = [];
+  const keys = [...remaining].sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const comp = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      comp.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk) || !remaining.has(nk)) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    comps.push(comp);
+  }
+  return comps;
+}
+function capMountainRangeClusterSize(hexes, scratch, terrain, fallbackTerrain, maxSize) {
+  let reverted = 0;
+  const clusters = findSameTerrainClusters(hexes, terrain);
+  for (const cluster of clusters) {
+    if (cluster.length <= maxSize) continue;
+    const remaining = new Set(cluster);
+    for (; ; ) {
+      const comps = connectedComponentsWithin(remaining).sort((a, b) => b.length - a.length);
+      const biggest = comps[0];
+      if (!biggest || biggest.length <= maxSize) break;
+      const sorted = [...biggest].sort((a, b) => {
+        var _a9, _b3;
+        const na = ((_a9 = scratch.get(a)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+        const nb = ((_b3 = scratch.get(b)) == null ? void 0 : _b3.mtnNoise) ?? 0;
+        if (na !== nb) return na - nb;
+        return a < b ? -1 : a > b ? 1 : 0;
+      });
+      const victim = sorted[0];
+      remaining.delete(victim);
+      const hex = hexes[victim];
+      if (hex) {
+        hex.terenBazowy = fallbackTerrain;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+      }
+      reverted++;
+    }
+  }
+  return reverted;
+}
 function mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand) {
   return mass.filter((k) => {
     const hex = hexes[k];
@@ -2403,6 +2486,20 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
       mountainous--;
     }
   }
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return addedByThisRun.length;
 }
 function assignContinentIndices(width, height, centers) {
@@ -7017,21 +7114,22 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto = handelNettoRaw * walutaMnoznikAktywny;
-  const pctNauka = city.podzia\u0142Handlu.procentNauka / 100;
-  const pctPieniadz = city.podzia\u0142Handlu.procentPieniadz / 100;
-  const pctLuksus = city.podzia\u0142Handlu.procentLuksus / 100;
-  const naukaZHandlu = Math.floor(handelNetto * pctNauka);
-  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
-  const luksusZHandlu = Math.floor(handelNetto * pctLuksus);
-  const naukaBonusFactor = 1 + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0) + (ctx.maAkademia ? params.budynekAkademiaBonusNauki : 0);
-  const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
-  const civNaukaMult = ctx.civNaukaMult ?? 1;
-  const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
   const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
   const pracaInt = cityPracaInteger(pracaNetto);
   const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
   const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
+  const handelNettoPula = handelNetto + pieniadzZPracy;
+  const pctNauka = city.podzia\u0142Handlu.procentNauka / 100;
+  const pctPieniadz = city.podzia\u0142Handlu.procentPieniadz / 100;
+  const pctLuksus = city.podzia\u0142Handlu.procentLuksus / 100;
+  const naukaZHandlu = Math.floor(handelNettoPula * pctNauka);
+  const pieniadzZHandlu = Math.floor(handelNettoPula * pctPieniadz);
+  const luksusZHandlu = Math.floor(handelNettoPula * pctLuksus);
+  const naukaBonusFactor = 1 + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0) + (ctx.maAkademia ? params.budynekAkademiaBonusNauki : 0);
+  const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
+  const civNaukaMult = ctx.civNaukaMult ?? 1;
+  const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
+  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow;
   for (const spec of city.specjalisci) {
     if (spec === "poborca") {
       pieniadzTotal += 2;
@@ -13088,7 +13186,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Tylko w stolicy. Dost\u0119p do Z\u0142ota (Kopalnia z\u0142ota gdziekolwiek w imperium) + wybudowane Targowisko w stolicy",
+    wymagania: "Tylko w stolicy. Dost\u0119p do Z\u0142ota (w\u0142asna Kopalnia z\u0142ota gdziekolwiek w imperium ALBO aktywny szlak handlowy z cywilizacj\u0105 posiadaj\u0105c\u0105 z\u0142oto) + wybudowane Targowisko w stolicy",
     uwagi: "T-TECH-6: mnoznik handlu\u2192pieni\u0105dz (economy.ts), imperium-wide gdy Waluta odkryta (pytanie 71/C). Maciej 2026-07-25: bramka z\u0142ota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mie\u015Bcie (CITY_BUILDING_PREREQ, decyzja 54c=A). Pytanie 70/B (2026-07-25): Mennica WY\u0141\u0104CZNIE w stolicy, jedna sztuka na cywilizacj\u0119 (wynika automatycznie z 'lokalizacja':'stolica' -- jedna stolica na cywilizacj\u0119). Stare zapisy z Mennic\u0105 w mie\u015Bcie regionalnym NIE s\u0105 cofane -- budynek zostaje, bramka dotyczy tylko budowania NOWYCH.",
     techUnlock: "Waluta",
     lokalizacja: "stolica",

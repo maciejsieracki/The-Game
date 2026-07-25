@@ -567,8 +567,13 @@ export interface CityYieldContext {
    */
   wojskoZuzycieZywnosci: number;
   /**
-   * Corruption/waste loss fraction [0, cap].
-   * Use corruptionRate() to compute; pass 0 for the capital in a 1-city empire.
+   * Corruption/waste loss fraction [0, cap]. D1 (Maciej 2026-07-25): affects ONLY
+   * handelNetto (Danina/Podatek) below, NEVER Praca. Compute via corruptionRate()
+   * (dystansOdStolicy, liczbaWszystkichMiast, params), then multiply by
+   * (1 - corruptionBuildingReduction(builtIds)) for Sad/Pretorium/Palac (D4) --
+   * caller (turn-economy.ts) does this BEFORE building this ctx. NOTE: even the
+   * capital in a 1-city empire is NOT automatically 0 -- korupcjaWspolczynnikMiast
+   * still applies (liczbaWszystkichMiast >= 1), only dystansOdStolicy is 0 for it.
    */
   strataFraction: number;
   maMlyn:         boolean;

@@ -932,21 +932,22 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto = handelNettoRaw * walutaMnoznikAktywny;
-  const pctNauka = city.podzia\u0142Handlu.procentNauka / 100;
-  const pctPieniadz = city.podzia\u0142Handlu.procentPieniadz / 100;
-  const pctLuksus = city.podzia\u0142Handlu.procentLuksus / 100;
-  const naukaZHandlu = Math.floor(handelNetto * pctNauka);
-  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
-  const luksusZHandlu = Math.floor(handelNetto * pctLuksus);
-  const naukaBonusFactor = 1 + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0) + (ctx.maAkademia ? params.budynekAkademiaBonusNauki : 0);
-  const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
-  const civNaukaMult = ctx.civNaukaMult ?? 1;
-  const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
   const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
   const pracaInt = cityPracaInteger(pracaNetto);
   const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
   const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
+  const handelNettoPula = handelNetto + pieniadzZPracy;
+  const pctNauka = city.podzia\u0142Handlu.procentNauka / 100;
+  const pctPieniadz = city.podzia\u0142Handlu.procentPieniadz / 100;
+  const pctLuksus = city.podzia\u0142Handlu.procentLuksus / 100;
+  const naukaZHandlu = Math.floor(handelNettoPula * pctNauka);
+  const pieniadzZHandlu = Math.floor(handelNettoPula * pctPieniadz);
+  const luksusZHandlu = Math.floor(handelNettoPula * pctLuksus);
+  const naukaBonusFactor = 1 + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0) + (ctx.maAkademia ? params.budynekAkademiaBonusNauki : 0);
+  const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
+  const civNaukaMult = ctx.civNaukaMult ?? 1;
+  const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
+  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow;
   for (const spec of city.specjalisci) {
     if (spec === "poborca") {
       pieniadzTotal += 2;

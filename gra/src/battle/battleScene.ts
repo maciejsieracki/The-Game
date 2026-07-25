@@ -77,7 +77,6 @@ import {
 } from './battle-terrain';
 import combatParamsData from '../../data/combat-params.json';
 import miastoParamsData from '../../data/miasto-params.json';
-import { buildTestArmies } from './testBattle';
 import { buildSiegeWall, attachRowBreachPanels } from './siegeWall';
 import type { BronzeCiv } from '../render/bronzeCity';
 import {
@@ -1814,56 +1813,6 @@ interface FloatLabel {
 }
 
 // ---------------------------------------------------------------------------
-// Default TEST-BATTLE composition (the "T" key battle) -- BRIDGE to testBattle.ts
-//
-// The test-battle composition + terrain are DATA owned by src/battle/testBattle.ts
-// (its PRESETS / buildTestArmies). main.ts::launchTestBattle() lives outside this
-// module's edit lane, so on "T" it still hands us its canned 4 Legionista vs 4
-// Falanga roster. We DETECT that exact canned signature here and, when seen,
-// rebuild BOTH armies from testBattle's DEFAULT preset ("rzym_grecja" = 60 per
-// side / 120 total) using the real stat rows from data.units. Any OTHER battle
-// (a real in-game fight) passes through completely unchanged.
-//
-// NOTE for SILNIK: this detect-and-swap is only a bridge so "T" works without
-// editing main.ts. main.ts can later build the test battle directly in ONE line
-//   const { attacker, defender, teren } = buildTestArmies(data.units);
-// and drop the canned 4v4 roster entirely -- that change is out of this lane.
-// ---------------------------------------------------------------------------
-
-/**
- * If `opts` is the canned launchTestBattle roster (4 Legionista vs 4 Falanga,
- * ids atk0..atkN / def0..defN), return a fresh BattleOpts whose two armies are
- * rebuilt from testBattle's default preset (buildTestArmies). Otherwise return
- * `opts` unchanged.
- */
-function expandTestBattleComposition(opts: BattleOpts): BattleOpts {
-  const a = opts.attacker ?? [];
-  const d = opts.defender ?? [];
-  const units = (opts.data && (opts.data as any).units) as any[] | undefined;
-
-  // Accept both old name ('Legionista') and new name ('Hastati') for backward compat.
-  const isCannedSide = (arr: BattleUnit[], idPrefix: string, names: string[]): boolean =>
-    arr.length > 0 &&
-    arr.length <= 8 && // launchTestBattle ships exactly 4; allow a little slack
-    arr.every(u => new RegExp('^' + idPrefix + '\\d+$').test(u.id) && names.includes(u.nazwa));
-
-  const canned =
-    Array.isArray(units) &&
-    isCannedSide(a, 'atk', ['Hastati', 'Legionista']) &&
-    isCannedSide(d, 'def', ['Falanga']);
-
-  if (!canned) return opts;
-
-  // Build the spec'd test battle from testBattle.ts (DEFAULT preset).
-  const armies = buildTestArmies(units!);
-
-  // Safety: if the build produced nothing (data missing), keep the originals.
-  if (armies.attacker.length === 0 || armies.defender.length === 0) return opts;
-
-  return { ...opts, attacker: armies.attacker, defender: armies.defender, teren: armies.teren };
-}
-
-// ---------------------------------------------------------------------------
 // BattleScene
 // ---------------------------------------------------------------------------
 
@@ -2378,10 +2327,6 @@ export class BattleScene {
 
   // -------------------------------------------------------------------------
   constructor(opts: BattleOpts) {
-    // Default test battle ("T"): swap the canned 4v4 roster for the spec'd
-    // 20 Legionista + 10 Oszczepnik + 10 Lucznik per side. No-op for real fights.
-    opts = expandTestBattleComposition(opts);
-
     this.onCancelCb  = opts.onCancel ?? null;
     this.terrain     = opts.teren;
     const d: any     = opts.data ?? {};
