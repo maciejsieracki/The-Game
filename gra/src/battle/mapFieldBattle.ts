@@ -6,6 +6,7 @@
  */
 
 import type { City } from '../game/cities';
+import { isBarbarian } from '../game/barbarians';
 import type { MapSiegeContext } from '../game/mapSiegeDetect';
 import {
   collectCityDefRoster,
@@ -152,6 +153,9 @@ function preBattleSideFromRoster(
     civId: ownerId !== undefined ? civIdForOwner?.(ownerId) : undefined,
     era: ownerId !== undefined ? eraForOwnerId?.(ownerId) : undefined,
     isCityState: ownerId !== undefined ? isCityStateForOwner?.(ownerId) : undefined,
+    // TEMAT 11 (2026-07-24): isBarbarian(ownerId) jest czysta funkcja (game/barbarians.ts) --
+    // nie wymaga osobnego callbacku deps jak isCityStateForOwner (kontekst klastra/miast).
+    isBarbarian: ownerId !== undefined ? isBarbarian(ownerId) : undefined,
     units: roster.map(u => preBattleUnitFromRuntime(u, unitDefFor, unitHealth, unitAtak)),
   };
 }
@@ -425,6 +429,8 @@ export function launchFieldBattleFromMap(
         defenderEra: deps.eraForOwnerId?.(defLead.ownerId),
         attackerIsCityState: pbInfo.atakujacy.isCityState,
         defenderIsCityState: pbInfo.obronca.isCityState,
+        attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
+        defenderIsBarbarian: pbInfo.obronca.isBarbarian,
         onCancel: () => setMood('mapa'),
       });
       bs.play((res) => {

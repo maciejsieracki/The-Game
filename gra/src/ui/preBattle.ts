@@ -10,7 +10,7 @@
 
 import type { CivBonusLite } from '../game/production';
 import { isCombatModifierBonus } from '../game/civ-bonuses';
-import { terrainIconSvg, civIconSvg } from './icons/brandAssets';
+import { terrainIconSvg, civIconSvg, brandIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
 import { startPreBattleMusic, stopPreBattleMusic } from '../audio/muzyka-antyczna';
@@ -51,6 +51,15 @@ export interface PreBattleSide {
    * wygladalo identycznie jak gracz/glowne AI tej samej kultury.
    */
   isCityState?: boolean;
+  /**
+   * TEMAT 11 (Maciej 2026-07-24) -- ta strona to frakcja barbarzyncow
+   * (game/barbarians.ts isBarbarian(ownerId)). Gdy true, medalion dowodcy NIE
+   * pokazuje ani portretu-zdjecia, ani ikony-symbolu jakiejkolwiek cywilizacji
+   * (barbarzyncy nie maja kultury/civId -- civId bywa fallbackiem 'grecy') --
+   * dostaje wlasny sygnet barbarzyncow (czaszka, brandIconSvg('chip-death')).
+   * Ma pierwszenstwo przed isCityState (wzajemnie wykluczajace sie w praktyce).
+   */
+  isBarbarian?: boolean;
   units: PreBattleUnit[];
 }
 
@@ -477,13 +486,20 @@ function commanderHtml(
   // R-MP-PORTRET: miasto-panstwo (side.isCityState) NIGDY nie dostaje portretu-zdjecia
   // wladcy glownej cywilizacji -- wraca do ikony-symbolu kultury (civIconSvg), nie do
   // generycznej ikony dowodcy, zeby bylo widac KTOREJ kultury to MP.
-  const portraitUrl = side.isCityState ? null : leaderPortraitUrl(side.civId, side.era ?? 1);
+  // TEMAT 11: barbarzyncy (side.isBarbarian) tez NIGDY nie dostaja portretu -- ani nawet
+  // ikony-symbolu cywilizacji (civId bywa fallbackiem 'grecy' -- barbarzyncy nie maja
+  // prawdziwej kultury), tylko wlasny sygnet (czaszka). Sprawdzane PRZED isCityState.
+  const portraitUrl = (side.isBarbarian || side.isCityState)
+    ? null
+    : leaderPortraitUrl(side.civId, side.era ?? 1);
   const porInner = portraitUrl
     ? '<img src="' + esc(portraitUrl) + '" alt="">'
-    : side.isCityState
-      ? civIconSvg(side.civId ?? '', 27)
-      : PB_SVG.commander;
-  const leader = leaderName(side.civId, side.era ?? 1);
+    : side.isBarbarian
+      ? brandIconSvg('chip-death', 27)
+      : side.isCityState
+        ? civIconSvg(side.civId ?? '', 27)
+        : PB_SVG.commander;
+  const leader = side.isBarbarian ? null : leaderName(side.civId, side.era ?? 1);
   const leaderHtml = leader ? '<div class="pb-leader">' + esc(leader) + '</div>' : '';
   return (
     '<div class="pb-cmd ' + sideCls + ' ' + posCls + '">' +
