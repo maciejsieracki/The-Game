@@ -1435,6 +1435,16 @@ export function eraBuildingCatalog(
     const techOk = tech.length === 0 || tech === '-' || tech === '—' || techs.has(tech);
 
     const locationOk = buildingLocationAllowed(b.lokalizacja, ctx.isCapital);
+    // REGRESJA-KOLEJNOSC (2026-07-25 wieczor): eraBuildingCatalog liczy status wylacznie z
+    // tech/lokalizacji -- budynek zablokowany WYLACZNIE brakujacym prerekwizytem miejskim
+    // (CITY_BUILDING_PREREQ, np. Akademia bez Biblioteki) zostawal 'ready' mimo ze
+    // availableProduction (buildableProduction) i tak go odrzuca -- znikal z panelu bez
+    // zadnego komunikatu (ani na liscie "Dostepne", ani w "Jeszcze zablokowane", bo ta druga
+    // sekcja pokazuje tylko status==='locked'). Ta sama luka istniala juz wczesniej dla
+    // warsztat_oblezniczy/laznia_publiczna -- naprawiona tu raz dla wszystkich wpisow mapy.
+    const prereqOk = cityBuildingPrereqMet(
+      CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade,
+    );
 
     let status: BuildingCatalogStatus = 'ready';
     let locationBlocked: 'stolica' | 'region' | undefined;
@@ -1447,6 +1457,8 @@ export function eraBuildingCatalog(
     } else if (!locationOk) {
       status = 'locked';
       locationBlocked = b.lokalizacja;
+    } else if (!prereqOk) {
+      status = 'locked';
     }
 
     entries.push({

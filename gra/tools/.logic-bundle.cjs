@@ -12840,7 +12840,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 1,
-    wymagania: "",
+    wymagania: "Wybudowane Kamienne kr\u0119gi w tym mie\u015Bcie",
     uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY -- konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. GRUPY-BUDYNKOW (Maciej 2026-07-25): \u015Awi\u0105tynia to NIEZALEZNY budynek obok Kamiennych kregow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Kultura/Zadowolenie rozdzielone (3=1+2 wzgledem Kamiennych kregow, oba pola), zeby wklad Kamiennych kregow nie liczyl sie dwa razy.",
     techUnlock: "Religia",
     koszt_surowce: {
@@ -13425,8 +13425,8 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Cytadela to NIEZALEZNY budynek obok Murow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno, bez wymogu kolejnosci budowy. Mapa = osobny Fort terenowy (inny byt). Obrona miasta WYLACZNIE procentowa: Mury +200%, Cytadela +100% dodatkowo (razem +300% gdy oba w miescie), a od 2026-07-25 Baszta +100% dodatkowo (razem +400% z kompletem trzech) -- patrz miasto-params.json bonus_obrona_mur_proc / bonus_obrona_cytadela_proc / bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor (game/city-defense.ts, juz odporne na wspolobecnosc wielu id w cityBuilt). Ten wpis nie niesie juz platowego bonusu Obrony. Budowla obronna epoki \u017Belaza -> drewno+kamie\u0144 (nie drewno+ceg\u0142a), zeby miasto bez zloza gliny nie zostalo bez obrony.",
+    wymagania: "Wybudowane Mury w tym mie\u015Bcie",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Cytadela to NIEZALEZNY budynek obok Murow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno; REGRESJA-KOLEJNOSC (Maciej 2026-07-25 wieczor) przywrocila wymog kolejnosci -- Mury musza byc wybudowane w tym miescie PRZED Cytadela (CITY_BUILDING_PREREQ w building-resource-gate.ts), tylko sam upgradeFrom (zastepowanie w builtIds) zostal usuniety. Mapa = osobny Fort terenowy (inny byt). Obrona miasta WYLACZNIE procentowa: Mury +200%, Cytadela +100% dodatkowo (razem +300% gdy oba w miescie), a od 2026-07-25 Baszta +100% dodatkowo (razem +400% z kompletem trzech) -- patrz miasto-params.json bonus_obrona_mur_proc / bonus_obrona_cytadela_proc / bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor (game/city-defense.ts, juz odporne na wspolobecnosc wielu id w cityBuilt). Ten wpis nie niesie juz platowego bonusu Obrony. Budowla obronna epoki \u017Belaza -> drewno+kamie\u0144 (nie drewno+ceg\u0142a), zeby miasto bez zloza gliny nie zostalo bez obrony.",
     techUnlock: "In\u017Cynieria",
     odblokowuje: "maFort",
     koszt_surowce: {
@@ -13548,7 +13548,7 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "",
+    wymagania: "Wybudowana Biblioteka w tym mie\u015Bcie",
     uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia to NIEZALEZNY budynek obok Biblioteki (nie zastepuje jej, upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura rozdzielone (9=3+6, 7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa razy. Teatr nadal ukryty z produkcji i wliczony w Akademie (merge bez zmian, ABC-21 B).",
     techUnlock: "Filozofia",
     koszt_surowce: {
@@ -13873,7 +13873,7 @@ var buildings_default = [
     przyrostKosztu: 18,
     utrzymanie: 4,
     przyrostUtrzymania: 2,
-    wymagania: "",
+    wymagania: "Wybudowane Koszary w tym mie\u015Bcie",
     uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia wojskowa to NIEZALEZNY budynek obok Koszar (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Praca rozdzielona (5=2+3 wzgledem Koszar), zeby wklad Koszar nie liczyl sie dwa razy. Mnoznik = +20% parametry miekkie (Sciezka B) -- TERAZ kumuluje sie z Koszarami wprost (oba obecne w miescie = +40%, razem z Warsztatem oblezniczym +50%); bramka elit UNITS.",
     techUnlock: "Sztuka wojenna",
     koszt_surowce: {

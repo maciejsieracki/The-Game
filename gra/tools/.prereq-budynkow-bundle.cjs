@@ -17,15 +17,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.koszary-gate-entry.ts
-var koszary_gate_entry_exports = {};
-__export(koszary_gate_entry_exports, {
-  EPOCH_BY_NAME: () => EPOCH_BY_NAME,
-  availableProduction: () => availableProduction,
-  epochNumber: () => epochNumber,
-  purchasableUnits: () => purchasableUnits
+// tools/.prereq-budynkow-entry.ts
+var prereq_budynkow_entry_exports = {};
+__export(prereq_budynkow_entry_exports, {
+  CITY_BUILDING_PREREQ: () => CITY_BUILDING_PREREQ,
+  buildableProduction: () => buildableProduction,
+  eraBuildingCatalog: () => eraBuildingCatalog
 });
-module.exports = __toCommonJS(koszary_gate_entry_exports);
+module.exports = __toCommonJS(prereq_budynkow_entry_exports);
 
 // src/game/building-cost-tempo.ts
 var KOSZT_BUDYNKOW_PACE = {
@@ -782,6 +781,12 @@ function isBuildingSupersededByUpgrade(buildingId, builtIds, buildings) {
   }
   return false;
 }
+function buildingTypeQueued(buildingId, queue) {
+  for (const it of queue) {
+    if (it.kind === "budynek" && it.id === buildingId) return true;
+  }
+  return false;
+}
 function isBlankReplacement(zamiast) {
   return zamiast.length === 0 || zamiast === "-" || zamiast === "\u2014";
 }
@@ -917,8 +922,67 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
   return items;
 }
 var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
-function purchasableUnits(city, data, unlockedTechs, ctx = {}) {
-  return availableProduction(city, data, unlockedTechs, ctx).filter((it) => it.kind === "jednostka");
+function buildableProduction(city, data, unlockedTechs, ctx = {}) {
+  return availableProduction(city, data, unlockedTechs, ctx).filter((it) => it.kind === "budynek");
+}
+function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
+  const epoch = Number.isFinite(ctx.epoch) ? ctx.epoch : 1;
+  const level = Number.isFinite(ctx.buildingLevel) ? ctx.buildingLevel : 1;
+  const builtList = ctx.builtBuildingIds ?? [];
+  const queue = ctx.productionQueue ?? [];
+  const techs = new Set(unlockedTechs);
+  const ownerId = ctx.ownerId ?? 0;
+  const difficulty = ctx.difficulty ?? "normal";
+  const entries = [];
+  for (const b of data.buildings) {
+    if (b.epokaWejscia !== epoch) continue;
+    const koszt = buildingWorkCost(
+      itemCost("budynek", b.id, data, level),
+      ctx.civBonusy,
+      ctx.buildingCostPace,
+      ownerId,
+      difficulty
+    );
+    const tech = (b.techUnlock ?? "").trim();
+    const techOk = tech.length === 0 || tech === "-" || tech === "\u2014" || techs.has(tech);
+    const locationOk = buildingLocationAllowed(b.lokalizacja, ctx.isCapital);
+    const prereqOk = cityBuildingPrereqMet(
+      CITY_BUILDING_PREREQ[b.id],
+      builtList,
+      data.buildings,
+      isBuildingSupersededByUpgrade
+    );
+    let status = "ready";
+    let locationBlocked;
+    if (buildingTypeQueued(b.id, queue)) {
+      status = "queued";
+    } else if (!b.wielokrotny && builtList.includes(b.id)) {
+      status = "built";
+    } else if (!techOk) {
+      status = "locked";
+    } else if (!locationOk) {
+      status = "locked";
+      locationBlocked = b.lokalizacja;
+    } else if (!prereqOk) {
+      status = "locked";
+    }
+    entries.push({
+      id: b.id,
+      nazwa: b.nazwa,
+      kategoria: b.kategoria,
+      koszt,
+      status,
+      missingTech: !techOk ? tech : "",
+      wymagania: (b.wymagania ?? "").trim(),
+      locationBlocked
+    });
+  }
+  const rank = { ready: 0, locked: 1, queued: 2, built: 3 };
+  entries.sort((a, b) => {
+    if (rank[a.status] !== rank[b.status]) return rank[a.status] - rank[b.status];
+    return a.nazwa.localeCompare(b.nazwa, "pl");
+  });
+  return entries;
 }
 var DEFAULT_OUTPUT_SHARES = Object.freeze({
   produkcja: miasto_params_default.udzial_output_produkcja?.wartosc ?? 0.4,
@@ -928,8 +992,7 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
 });
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  EPOCH_BY_NAME,
-  availableProduction,
-  epochNumber,
-  purchasableUnits
+  CITY_BUILDING_PREREQ,
+  buildableProduction,
+  eraBuildingCatalog
 });

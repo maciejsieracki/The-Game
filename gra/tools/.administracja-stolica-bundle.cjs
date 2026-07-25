@@ -620,7 +620,11 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
 };
 var CITY_BUILDING_PREREQ = {
   warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
-  laznia_publiczna: "studnia"
+  laznia_publiczna: "studnia",
+  akademia: "biblioteka",
+  fort: "mury",
+  akademia_wojskowa: "koszary",
+  swiatynia: "kamienne_kregi"
 };
 function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
   if (!prereq) return true;
@@ -951,6 +955,12 @@ function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
     const tech = (b.techUnlock ?? "").trim();
     const techOk = tech.length === 0 || tech === "-" || tech === "\u2014" || techs.has(tech);
     const locationOk = buildingLocationAllowed(b.lokalizacja, ctx.isCapital);
+    const prereqOk = cityBuildingPrereqMet(
+      CITY_BUILDING_PREREQ[b.id],
+      builtList,
+      data.buildings,
+      isBuildingSupersededByUpgrade
+    );
     let status = "ready";
     let locationBlocked;
     if (buildingTypeQueued(b.id, queue)) {
@@ -962,6 +972,8 @@ function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
     } else if (!locationOk) {
       status = "locked";
       locationBlocked = b.lokalizacja;
+    } else if (!prereqOk) {
+      status = "locked";
     }
     entries.push({
       id: b.id,

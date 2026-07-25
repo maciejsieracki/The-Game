@@ -619,7 +619,11 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
 };
 var CITY_BUILDING_PREREQ = {
   warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
-  laznia_publiczna: "studnia"
+  laznia_publiczna: "studnia",
+  akademia: "biblioteka",
+  fort: "mury",
+  akademia_wojskowa: "koszary",
+  swiatynia: "kamienne_kregi"
 };
 function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
   if (!prereq) return true;

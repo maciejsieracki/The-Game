@@ -139,5 +139,24 @@ function mapWith(...hexes) {
   ok(M.improvementUnlockActiveOnHex('bydlo', { nakladka: NK.Brak }), 'bydlo active bez złoża');
 }
 
+// --- ZADANIE-2-WSTRZYMANE (Maciej 2026-07-25, tego samego wieczoru): polecenie zdjęcia
+// bramki dostępu do surowca ze stolarni/warsztatu kamieniarskiego/kuźni/garncarni/cegielni
+// zostało COFNIĘTE przez właściciela w trakcie tej samej sesji -- to zakłady przetwórcze:
+// "bez kopalni rudy nie ma kuźni, bez glinianki nie ma cegielni". DEPOSIT_LINKED_BUILDING_LABELS
+// w building-resource-gate.ts zostaje BEZ ZMIAN; testy niżej pilnują, żeby tych pięć budynków
+// nadal wymagało aktywnego dostępu do etykiety surowca w imperium (regresja tej bramki).
+{
+  ok(!M.buildingResourceGateMet({ id: 'stolarnia' }, []), 'stolarnia zablokowana bez Drewna w imperium');
+  ok(M.buildingResourceGateMet({ id: 'stolarnia' }, ['Drewno']), 'stolarnia OK gdy Drewno active');
+  ok(!M.buildingResourceGateMet({ id: 'kamieniarski' }, []), 'warsztat kamieniarski zablokowany bez Kamienia w imperium');
+  ok(M.buildingResourceGateMet({ id: 'kamieniarski' }, ['Kamień']), 'warsztat kamieniarski OK gdy Kamień active');
+  ok(!M.buildingResourceGateMet({ id: 'kuznia' }, []), 'kuźnia (brązu) zablokowana bez Rudy w imperium');
+  ok(M.buildingResourceGateMet({ id: 'kuznia' }, ['Ruda']), 'kuźnia (brązu) OK gdy Ruda active');
+  ok(!M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'garncarnia zablokowana bez Gliny w imperium (regresja)');
+  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, ['Glina']), 'garncarnia OK gdy Glina active (regresja)');
+  ok(!M.buildingResourceGateMet({ id: 'cegielnia' }, []), 'cegielnia zablokowana bez Gliny w imperium');
+  ok(M.buildingResourceGateMet({ id: 'cegielnia' }, ['Glina']), 'cegielnia OK gdy Glina active');
+}
+
 console.log('\ndeposit-building-gate: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail ? 1 : 0);

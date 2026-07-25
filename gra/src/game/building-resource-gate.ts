@@ -70,10 +70,22 @@ const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>
  * mieć Akademię wojskową bez nigdy niezbudowanych Koszar. Warsztat oblężniczy musi więc nadal
  * być dostępny, gdy w mieście stoi KTÓRYKOLWIEK z dwóch budynków treningowych — stąd tablica
  * zamiast pojedynczego id.
+ *
+ * REGRESJA-KOLEJNOSC (Maciej 2026-07-25, wieczór): likwidacja "awansu bocznego" (usunięcie
+ * `upgradeFrom` z czterech par: Biblioteka/Akademia, Mury/Cytadela, Koszary/Akademia wojskowa,
+ * Kamienne kręgi/Świątynia) skasowała PRZY OKAZJI wymóg kolejności budowy, którego istnienia
+ * nikt nie planował usuwać — dało się postawić Akademię bez Biblioteki. Właściciel: "budynek
+ * wcześniejszy musi być wybudowany, żeby wybudować kolejny", dla WSZYSTKICH par z dawnym
+ * awansem bocznym. Stąd cztery dopiski niżej (semantyka OR nie ma tu znaczenia — pojedynczy
+ * id — ale funkcja i tak akceptuje tablicę, gdyby kiedyś przybył drugi wariant poprzednika).
  */
 export const CITY_BUILDING_PREREQ: Readonly<Record<string, string | readonly string[]>> = {
   warsztat_oblezniczy: ['koszary', 'akademia_wojskowa'],
   laznia_publiczna: 'studnia',
+  akademia: 'biblioteka',
+  fort: 'mury',
+  akademia_wojskowa: 'koszary',
+  swiatynia: 'kamienne_kregi',
 };
 
 /**

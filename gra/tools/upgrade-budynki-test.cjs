@@ -70,9 +70,13 @@ function ok(c, m) {
 }
 
 // GRUPY-BUDYNKOW (Maciej 2026-07-25, likwidacja "awansu bocznego"): Mury + Cytadela
-// (fort) TERAZ NIEZALEZNE budynki -- upgradeFrom usuniety, stoja w miescie obok siebie,
-// bez wymogu kolejnosci budowy. Obrona miasta wylacznie procentowa (miasto-params.json),
-// baza.obrona pozostaje 0 dla obu -- patrz handoff §7 / buildings.json uwagi.
+// (fort) TERAZ NIEZALEZNE budynki -- upgradeFrom usuniety, stoja w miescie obok siebie.
+// Obrona miasta wylacznie procentowa (miasto-params.json), baza.obrona pozostaje 0 dla
+// obu -- patrz handoff §7 / buildings.json uwagi.
+// REGRESJA-KOLEJNOSC (Maciej 2026-07-25, wieczor): usuniecie upgradeFrom skasowalo PRZY
+// OKAZJI wymog kolejnosci budowy, ktorego nikt nie planowal usuwac -- przywrocony przez
+// CITY_BUILDING_PREREQ (building-resource-gate.ts): Cytadela wymaga wybudowanych Murow
+// w tym samym miescie (patrz tez tools/prereq-budynkow-test.cjs, pelne pokrycie bramki).
 {
   const fort = buildings.find(b => b.id === 'fort');
   ok(fort.upgradeFrom === undefined, 'fort NIE ma juz upgradeFrom (niezalezny od Murow)');
@@ -84,7 +88,7 @@ function ok(c, m) {
   const noMury = M.availableProduction(city, prodData, ['Inżynieria'], {
     epoch: 3, builtBuildingIds: [],
   });
-  ok(noMury.some(i => i.id === 'fort'), 'fort dostepny TEZ bez Murow (niezalezny budynek, brak wymogu kolejnosci)');
+  ok(!noMury.some(i => i.id === 'fort'), 'fort NIEDOSTEPNY bez Murow (REGRESJA-KOLEJNOSC, CITY_BUILDING_PREREQ)');
   const after = M.applyCompletedBuildingIds(['mury'], 'fort', buildings);
   ok(after.includes('fort') && after.includes('mury'), 'po ukonczeniu fort: Mury ZOSTAJA na builtIds (nie sa zastepowane)');
   ok(M.cityHasMurLine(after), 'cityHasMurLine z obydwoma budynkami w miescie');
@@ -116,11 +120,13 @@ function ok(c, m) {
   ok(aw.baza.praca === 3, 'akademia_wojskowa baza.praca rozdzielona (3 -- bez wkladu Koszar)');
   ok(kosz.baza.praca === 2, 'koszary baza.praca niezmieniona (2)');
   ok(kosz.baza.praca + aw.baza.praca === 5, 'suma Pracy w miescie z obydwoma budynkami = 5 (jak przed rozdzieleniem)');
-  // Bez Koszar zbudowanych: Akademia wojskowa dostepna od razu (brak wymogu kolejnosci).
+  // REGRESJA-KOLEJNOSC (Maciej 2026-07-25, wieczor): Akademia wojskowa wymaga wybudowanych
+  // Koszar w tym samym miescie (CITY_BUILDING_PREREQ) -- usuniecie upgradeFrom NIE mialo
+  // znosic wymogu kolejnosci budowy, tylko relacje "zastepuje w builtIds".
   const items = M.availableProduction(city, prodData, ['Sztuka wojenna'], {
     epoch: 3, builtBuildingIds: [],
   });
-  ok(items.some(i => i.id === 'akademia_wojskowa'), 'Akademia wojskowa dostepna bez Koszar (niezalezny budynek)');
+  ok(!items.some(i => i.id === 'akademia_wojskowa'), 'Akademia wojskowa NIEDOSTEPNA bez Koszar (REGRESJA-KOLEJNOSC)');
   const afterAw = M.applyCompletedBuildingIds(['koszary'], 'akademia_wojskowa', buildings);
   ok(afterAw.includes('koszary') && afterAw.includes('akademia_wojskowa'), 'po ukonczeniu akademia_wojskowa: Koszary ZOSTAJA na builtIds');
 
