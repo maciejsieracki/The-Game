@@ -8,22 +8,26 @@
  *
  * SCIEZKA A -- PANCERZ (Armor): budynki kuznicze, kazdy +baza.mnoznik% do
  *   Pancerza jednostki, kumulatywnie za KAZDY budynek REALNIE obecny w
- *   miescie (nie "kiedykolwiek zbudowany" -- awans budynku PODMIENIA id,
- *   patrz production.ts applyCompletedBuildingIds: miasto z Wielka Kuznia
- *   nie ma juz 'kuznia_zelaza' na liscie, bo Wielka Kuznia je zastapila
- *   (upgradeFrom). Dlatego realny max dzis to kuznia+kuznia_zelaza=+30%, a
- *   "wszystkie trzy=+45%" z opisu zadania jest teoretyczne/nieosiagalne --
- *   patrz raport koncowy.
+ *   miescie. Awans budynku PODMIENIA id na liscie miasta (production.ts
+ *   applyCompletedBuildingIds -- upgradeFrom), wiec poprzednik znika z
+ *   `cityBuilt` -- ALE (decyzja wlasciciela 2026-07-25, druga tura) budynek-
+ *   nastepca wnosi SWOJ WLASNY % + % calego lancucha poprzednikow (rekurencyjnie
+ *   po `upgradeFrom`, patrz `sumMnoznikForPresentBuildings`/`chainMnoznikContribution`
+ *   nizej). Efekt: kuznia+kuznia_zelaza=+30%, a po awansie na Wielka Kuznia
+ *   (miasto ma kuznia+wielka_kuznia) = 15(kuznia)+15(wielka_kuznia wlasny)+
+ *   15(kuznia_zelaza, doliczone z lancucha) = +45%, dokladnie liczba zalozona
+ *   przez wlasciciela w zadaniu.
  *     kuznia          -> buildings.json baza.mnoznik (15)
  *     kuznia_zelaza   -> buildings.json baza.mnoznik (15)
- *     wielka_kuznia   -> buildings.json baza.mnoznik (15) [epoka 4, PARKOWANE]
+ *     wielka_kuznia   -> buildings.json baza.mnoznik (15) [epoka 4, PARKOWANE, upgradeFrom=kuznia_zelaza]
  *
  * SCIEZKA B -- PARAMETRY MIEKKIE (wszystko POZA Pancerzem: atak, obrona,
  *   atak dystansowy, zdrowie, uderzenie/szarza): budynki szkoleniowe,
- *   analogicznie kumulatywne wg budynkow realnie obecnych. Akademia wojskowa
- *   zastepuje Koszary (upgradeFrom) -- ten sam mechanizm/zastrzezenie jak wyzej.
+ *   analogicznie kumulatywne wg budynkow realnie obecnych + suma lancucha
+ *   upgradeFrom (patrz Sciezka A powyzej). Akademia wojskowa zastepuje Koszary
+ *   -- z Warsztatem oblezniczym obecnym w miescie wychodzi (20+20)+10=+50%.
  *     koszary             -> buildings.json baza.mnoznik (20)
- *     akademia_wojskowa   -> buildings.json baza.mnoznik (20)
+ *     akademia_wojskowa   -> buildings.json baza.mnoznik (20) [upgradeFrom=koszary]
  *     warsztat_oblezniczy -> buildings.json baza.mnoznik (10)
  *
  * Jednostka PAMIETA najlepszy % kiedykolwiek osiagniety na kazdej sciezce
@@ -53,6 +57,8 @@
 export interface MnoznikBuildingLookup {
   id: string;
   baza?: { mnoznik?: number } | null;
+  /** id budynku-poprzednika w lancuchu awansu (patrz production.ts applyCompletedBuildingIds). */
+  upgradeFrom?: string | null;
 }
 
 /** Sciezka A: budynki kuznicze -> % do Pancerza (rozpoznanie PO id, nie nazwie/kategorii). */
@@ -84,9 +90,62 @@ function mnoznikOf(b: MnoznikBuildingLookup | undefined): number {
 }
 
 /**
+ * Twardy limit glebokosci lancucha upgradeFrom -- zabezpieczenie przed
+ * cyklem w danych (blad w buildings.json nie moze zawiesic gry). W praktyce
+ * lancuchy maja 2-3 poziomy; 32 to hojny margines bez ryzyka petli.
+ */
+const MAX_UPGRADE_CHAIN_DEPTH = 32;
+
+/**
+ * Przechodzi lancuchem `upgradeFrom` w gore od `startId` (wlacznie) i sumuje
+ * `baza.mnoznik` KAZDEGO ogniwa nalezacego do `allowed` (sciezka A lub B),
+ * pomijajac (wnoszac 0, ale NIE przerywajac przejscia) ogniwa spoza obu list.
+ * `countedGlobal` jest dzielone miedzy wywolaniami dla wszystkich budynkow
+ * jednego miasta -- kazdy `id` moze wniesc swoj % NAJWYZEJ RAZ do sumy
+ * calego miasta, nawet jesli lancuch dwoch roznych obecnych budynkow by go
+ * ponownie napotkal (zabezpieczenie przed podwojnym liczeniem, patrz
+ * `sumMnoznikForPresentBuildings`). Cykl w `upgradeFrom` zatrzymuje sie na
+ * lokalnym `visited` (ogniwo juz odwiedzone W TYM przejsciu) + twardym
+ * limicie glebokosci -- co pierwsze.
+ */
+function chainMnoznikContribution(
+  startId: string,
+  byId: ReadonlyMap<string, MnoznikBuildingLookup>,
+  allowed: ReadonlySet<string>,
+  countedGlobal: Set<string>,
+): number {
+  let total = 0;
+  let cur: string | undefined = startId;
+  let depth = 0;
+  const visitedThisChain = new Set<string>();
+  while (cur && depth < MAX_UPGRADE_CHAIN_DEPTH && !visitedThisChain.has(cur)) {
+    visitedThisChain.add(cur);
+    const b = byId.get(cur);
+    if (!b) break;
+    if (allowed.has(cur) && !countedGlobal.has(cur)) {
+      countedGlobal.add(cur);
+      total += mnoznikOf(b);
+    }
+    const from = typeof b.upgradeFrom === 'string' ? b.upgradeFrom.trim() : '';
+    cur = from || undefined;
+    depth++;
+  }
+  return total;
+}
+
+/**
  * Suma baza.mnoznik budynkow z `ids`, ktore sa REALNIE obecne w
  * `builtBuildingIds` tego miasta (city.cityBuilt -- lista PO podmianach
- * upgrade'owych, patrz komentarz modulu). Zwraca % (np. 30 = +30%), nie ulamek.
+ * upgrade'owych, patrz komentarz modulu) -- DOLICZAJAC do kazdego obecnego
+ * budynku caly jego lancuch poprzednikow `upgradeFrom` (decyzja wlasciciela
+ * 2026-07-25: awans ma pokazywac SUME, nie tylko wlasny procent). Zwraca %
+ * (np. 45 = +45%), nie ulamek.
+ *
+ * Kazdy `id` (obecny budynek LUB jego poprzednik w lancuchu) liczy sie
+ * najwyzej raz w calej sumie miasta -- gdyby miasto mialo jednoczesnie
+ * poprzednika i nastepce na liscie (stan patologiczny/blad danych), poprzednik
+ * nie zostanie doliczony podwojnie (raz jako "obecny budynek", raz jako
+ * "ogniwo lancucha nastepcy").
  */
 function sumMnoznikForPresentBuildings(
   builtBuildingIds: readonly string[] | null | undefined,
@@ -95,16 +154,18 @@ function sumMnoznikForPresentBuildings(
 ): number {
   if (!builtBuildingIds?.length || !buildings?.length) return 0;
   const built = new Set(builtBuildingIds);
+  const byId = new Map(buildings.map(b => [b.id, b] as const));
+  const allowed = new Set(ids);
+  const counted = new Set<string>();
   let total = 0;
   for (const id of ids) {
     if (!built.has(id)) continue;
-    const b = buildings.find(x => x.id === id);
-    total += mnoznikOf(b);
+    total += chainMnoznikContribution(id, byId, allowed, counted);
   }
   return total;
 }
 
-/** Sciezka A: % Pancerz aktualnie oferowany przez to miasto (suma budynkow obecnych, max +45% teoretycznie / +30% realnie dzis). */
+/** Sciezka A: % Pancerz aktualnie oferowany przez to miasto (suma budynkow obecnych + ich lancuchow upgradeFrom, max +45%). */
 export function cityArmorBonusPercent(
   builtBuildingIds: readonly string[] | null | undefined,
   buildings: readonly MnoznikBuildingLookup[] | null | undefined,
@@ -112,12 +173,33 @@ export function cityArmorBonusPercent(
   return sumMnoznikForPresentBuildings(builtBuildingIds, buildings, ARMOR_BUILDING_IDS);
 }
 
-/** Sciezka B: % parametry miekkie aktualnie oferowany przez to miasto (max +50% teoretycznie / +30% realnie dzis). */
+/** Sciezka B: % parametry miekkie aktualnie oferowany przez to miasto (suma budynkow obecnych + ich lancuchow upgradeFrom, max +50%). */
 export function citySoftStatBonusPercent(
   builtBuildingIds: readonly string[] | null | undefined,
   buildings: readonly MnoznikBuildingLookup[] | null | undefined,
 ): number {
   return sumMnoznikForPresentBuildings(builtBuildingIds, buildings, SOFT_STAT_BUILDING_IDS);
+}
+
+/**
+ * Skumulowany % (wlasny + caly lancuch poprzednikow `upgradeFrom`) DANEGO
+ * budynku, niezaleznie od tego, czy jest fizycznie "obecny" w jakims miescie
+ * -- do wyswietlania w UI (karta budynku, panel "Statystyki (silnik)"), gdzie
+ * pytanie brzmi "ile % daje TEN budynek", a nie "ile % daje TO miasto".
+ * Jedna funkcja uzywana wszedzie (cityPanel.ts, building-upgrades.ts), zeby
+ * wzor sumowania lancucha nie byl kopiowany. Zwraca 0 dla budynkow spoza obu
+ * list (`mnoznikRoleForBuildingId` = null) oraz przy braku danych.
+ */
+export function cumulativeMnoznikForBuildingId(
+  buildingId: string,
+  buildings: readonly MnoznikBuildingLookup[] | null | undefined,
+): number {
+  if (!buildings?.length) return 0;
+  const role = mnoznikRoleForBuildingId(buildingId);
+  if (!role) return 0;
+  const ids = role === 'pancerz' ? ARMOR_BUILDING_IDS : SOFT_STAT_BUILDING_IDS;
+  const byId = new Map(buildings.map(b => [b.id, b] as const));
+  return chainMnoznikContribution(buildingId, byId, new Set(ids), new Set());
 }
 
 // ---------------------------------------------------------------------------

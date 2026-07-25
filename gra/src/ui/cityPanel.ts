@@ -130,7 +130,7 @@ import {
 } from '../game/turn-economy';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { tileYield } from '../game/economy';
-import { mnoznikRoleForBuildingId } from '../game/unit-building-bonuses';
+import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
 import {
   tradeRouteDistanceIncome,
   loadTradeRouteIncomeParams,
@@ -4596,7 +4596,7 @@ function formatYieldLine(b: BuildingDef['baza'], p: BuildingDef['przyrost']): st
 }
 
 /** Chipy bonusów (max 3) — mockup Poziom B budynków 1E. */
-function buildingBonusChipsHtml(def: BuildingDef, max = 3): string {
+function buildingBonusChipsHtml(def: BuildingDef, buildings: readonly BuildingDef[], max = 3): string {
   const chips: string[] = [];
   for (const y of YIELD_BRAND) {
     if (chips.length >= max) break;
@@ -4608,15 +4608,18 @@ function buildingBonusChipsHtml(def: BuildingDef, max = 3): string {
       `<span class="bld-infocard-chip">${yieldBrandIconHtml(y.brandId, 13)}${val} ${y.label.toLowerCase()}</span>`,
     );
   }
-  // Sciezki ulepszen jednostek (2026-07-25): mnoznik nie idzie juz do Pracy --
-  // pokaz PRAWDZIWY efekt (Pancerz / Parametry) tylko dla 6 rozpoznanych
-  // budynkow; dla reszty (Targowisko/Akademia/Pretorium) mnoznik
-  // jest odtad calkowicie martwy, wiec chip znika (nie obiecujemy nieistniejacego).
-  if (def.baza.mnoznik) {
-    const role = mnoznikRoleForBuildingId(def.id);
-    if (role && chips.length < max) {
+  // Sciezki ulepszen jednostek (2026-07-25, druga tura -- suma lancucha
+  // upgradeFrom): mnoznik nie idzie juz do Pracy -- pokaz PRAWDZIWY,
+  // SKUMULOWANY efekt (Pancerz / Parametry, wlasny % + cala sciezka
+  // poprzednikow) tylko dla 6 rozpoznanych budynkow; dla reszty
+  // (Targowisko/Akademia/Pretorium) mnoznik jest odtad calkowicie martwy,
+  // wiec chip znika (nie obiecujemy nieistniejacego).
+  const role = mnoznikRoleForBuildingId(def.id);
+  if (role) {
+    const cumulative = cumulativeMnoznikForBuildingId(def.id, buildings);
+    if (cumulative !== 0 && chips.length < max) {
       const label = role === 'pancerz' ? 'Pancerz' : 'Parametry';
-      chips.push(`<span class="bld-infocard-chip">+${def.baza.mnoznik}% ${label}</span>`);
+      chips.push(`<span class="bld-infocard-chip">+${cumulative}% ${label}</span>`);
     }
   }
   return chips.join('');
@@ -4687,7 +4690,7 @@ function buildBuildingInfocard(
   const bd = el('div', 'bld-infocard-bd');
   // DAJE (efekty) — bonusy budynku, wyraźnie oddzielone od tego, co jest WYMAGANE do budowy
   // (Maciej 2026-07-24: gracz musi wiedzieć, czego mu brakuje i dlaczego nie może budować).
-  const chipsHtml = buildingBonusChipsHtml(def);
+  const chipsHtml = buildingBonusChipsHtml(def, data.buildings);
   if (chipsHtml) {
     bd.appendChild(el('div', 'bld-infocard-eyebrow', 'Daje'));
     const chips = el('div', 'bld-infocard-chips');
@@ -4971,15 +4974,19 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
       gridDetailRow(gYield, y.label, `${base >= 0 ? '+' : ''}${base} ${yieldBrandIconHtml(y.brandId)}${incStr}`);
     }
   }
-  // Sciezki ulepszen jednostek (2026-07-25): jak w buildingBonusChipsHtml powyzej --
-  // mnoznik nie idzie juz do Pracy, wiec pokazujemy PRAWDZIWY efekt tylko dla 6
+  // Sciezki ulepszen jednostek (2026-07-25, druga tura -- suma lancucha
+  // upgradeFrom): jak w buildingBonusChipsHtml powyzej -- mnoznik nie idzie juz
+  // do Pracy, wiec pokazujemy PRAWDZIWY SKUMULOWANY efekt tylko dla 6
   // rozpoznanych budynkow (Pancerz / Parametry); dla reszty jest martwy -> ukryty.
-  if (def.baza.mnoznik) {
+  {
     const role = mnoznikRoleForBuildingId(def.id);
     if (role) {
-      anyYield = true;
-      const label = role === 'pancerz' ? 'Pancerz (jednostki, trwale)' : 'Parametry poza Pancerzem (jednostki, trwale)';
-      gridDetailRow(gYield, label, `+${def.baza.mnoznik}%`);
+      const cumulative = cumulativeMnoznikForBuildingId(def.id, data.buildings);
+      if (cumulative !== 0) {
+        anyYield = true;
+        const label = role === 'pancerz' ? 'Pancerz (jednostki, trwale)' : 'Parametry poza Pancerzem (jednostki, trwale)';
+        gridDetailRow(gYield, label, `+${cumulative}%`);
+      }
     }
   }
   if (!anyYield) gridDetailRow(gYield, 'Efekty', '—');
@@ -5889,7 +5896,7 @@ function buildUpgradeBonusDetailCard(
     }
   }
   appendDetailSection(card, 'Statystyki (silnik)');
-  const stats = buildingStatSummaryLines(def);
+  const stats = buildingStatSummaryLines(def, data.buildings);
   if (stats.length === 0) {
     const note = el('div', 'dc-note');
     note.textContent = 'Brak statów bazowych w definicji.';

@@ -2,7 +2,7 @@
  * Upgrade budynków — kanon Maciej 2026-07-05 (UPG-LOC/PROD/BONUS, ABC-20…24).
  */
 
-import { mnoznikRoleForBuildingId } from './unit-building-bonuses';
+import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from './unit-building-bonuses';
 
 export type BuildingUpgradeLite = {
   id: string;
@@ -76,8 +76,18 @@ export function upgradeCompositionLines(
   ];
 }
 
-/** Statystyki końcowe z definicji (panel ↗). */
-export function buildingStatSummaryLines(def: BuildingUpgradeLite): string[] {
+/**
+ * Statystyki końcowe z definicji (panel ↗).
+ * `buildings` -- pełna lista budynków (data.buildings), potrzebna do policzenia
+ * skumulowanego % łańcucha upgradeFrom (decyzja właściciela 2026-07-25, druga
+ * tura: następca ma pokazywać sumę własnego % i % poprzedników, nie sam
+ * surowy `baza.mnoznik`). Opcjonalna dla wstecznej zgodności wywołań, które
+ * nie mają dostępu do pełnej listy -- wtedy pokazujemy tylko własny %.
+ */
+export function buildingStatSummaryLines(
+  def: BuildingUpgradeLite,
+  buildings?: readonly BuildingUpgradeLite[],
+): string[] {
   const lines: string[] = [];
   for (const k of STAT_KEYS) {
     const b = def.baza?.[k] ?? 0;
@@ -91,13 +101,14 @@ export function buildingStatSummaryLines(def: BuildingUpgradeLite): string[] {
   // TYLKO dla 6 rozpoznanych budynkow; dla reszty (mnoznik dawniej dolaczany
   // do Pracy, dzis calkowicie martwy) NIE pokazujemy nic -- zero fałszywych
   // obietnic w panelu "Statystyki (silnik)" (audyt: to byla najbardziej
-  // myląca etykieta w kodzie).
-  const mnoznikBaza = def.baza?.['mnoznik'] ?? 0;
-  if (mnoznikBaza !== 0) {
-    const role = mnoznikRoleForBuildingId(def.id);
-    if (role) {
+  // myląca etykieta w kodzie). Wartosc jest SKUMULOWANA (wlasny % + cala
+  // sciezka poprzednikow upgradeFrom) -- Akademia wojskowa pokazuje +40%, nie +20%.
+  const role = mnoznikRoleForBuildingId(def.id);
+  if (role) {
+    const cumulative = buildings ? cumulativeMnoznikForBuildingId(def.id, buildings) : (def.baza?.['mnoznik'] ?? 0);
+    if (cumulative !== 0) {
       const label = role === 'pancerz' ? 'Pancerz (jednostki)' : 'Parametry poza Pancerzem (jednostki)';
-      lines.push(`${label} +${mnoznikBaza}%`);
+      lines.push(`${label} +${cumulative}%`);
     }
   }
   return lines;
