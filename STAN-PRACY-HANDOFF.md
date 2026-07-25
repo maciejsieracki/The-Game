@@ -218,7 +218,7 @@ node tools/tech-tree-test.cjs        # 19/19
 node tools/research-test.cjs         # 33/33
 node tools/unit-replace-test.cjs     # 10/10
 node tools/map-gen-regression-test.cjs   # determinizm A=B + 0 rzek bez ujścia
-node tools/logic-test.cjs            # 203/203  (NAPRAWIONE 2026-07-20)
+node tools/logic-test.cjs            # 208/208  (203/203 naprawione 2026-07-20; porażka mapgen-gliny naprawiona 2026-07-25, R-MAPGEN-GLINA)
 node tools/combat-test.cjs           # 6/6      (NAPRAWIONE 2026-07-20)
 node tools/barbarians-test.cjs       # 74/74
 node tools/villages-test.cjs         # 31/31
@@ -234,9 +234,12 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 
 **⚠️ KOREKTA starego handoffu:** notatka o „21 porażkach `logic-test`" i „`combat-test` rzuca wyjątek" jest **NIEAKTUALNA** — oba **naprawione 2026-07-20** i zielone (203/203, 6/6). Zweryfikowane na baseline.
 
-**Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji):**
+**Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji) — stan 2026-07-25:**
 - `currency-test.cjs` → **5 porażek** (dot. `pieniadzZPracy`/Efekt2 i mnożnika per-cyw). Zweryfikowane identycznie na baseline `git stash`.
 - `map-gen-regression-test.cjs` — progi czasowe „AC" (generacja <5s/<15s) FAIL na wolnej maszynie = pomiar wydajności, nie regresja.
+- `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs` — po jednej porażce (próg wzrostu populacji / dopasowanie kategorii auto-budowy) — zgłoszone przez subagenta linearyzacji, patrz `dyspozycje/BACKLOG-PRZYSZLOSC.md` §B.8.
+- `upgrade-budynki-test.cjs` — **2 porażki** (nowe, doszły 2026-07-25).
+- `deposit-building-gate-test.cjs` — **2 porażki** (nowe, doszły 2026-07-25).
 
 **Inne znane problemy / długi:**
 - **Bug rzeka↔mgła** — rzeka znika przy budowie miasta, wraca po wyłączeniu mgły wojny. ⚠️ Możliwe, że zmiana „wybrzeże=woda" (2026-07-20) to zmieniła — **do weryfikacji wzrokowej**.
@@ -288,7 +291,9 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 
 ### 🅿️ ZAPARKOWANE DO CZASU KOLEJNYCH EPOK (Maciej 2026-07-25) — NIE RUSZAĆ
 **Zasada: 1 poziom budynku = 1 epoka**, każdy poziom z INNYMI surowcami.
-Przykład wzorcowy — Pałac: `palac` (Kamień, drewno) → `palac_ii` (Brąz, drewno+kamień) → `palac_iii` (Żelazo, drewno+kamień+cegła). To jest model docelowy i **działa poprawnie**.
+Przykład wzorcowy — Pałac: `palac` (Kamień, drewno) → `palac_ii` (Brąz, drewno+kamień) → `palac_iii` (Żelazo, drewno+kamień+cegła). Te trzy tiery istnieją i są poprawne jako podział na epoki.
+
+**⚠️ AKTUALIZACJA (2026-07-25, później tego samego dnia) — poprzedni zapis „model docelowy, działa poprawnie" był NIEPEŁNY dla łańcuchów „w górę".** Pełny, aktualny model rozwoju budynków (rozróżnienie awansu „w górę" — następca kasuje poprzednika, stała wartość per tier, rośnie TYLKO przez awans — vs awansu „w bok" — oba budynki stoją obok siebie naprawdę) jest w **[`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md`](dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md) §1**. Skrót różnicy: Pałac to łańcuch „w górę" (Dom Starszyzny→Dwór Zarządcy→Pretorium, Kuźnia brązu→Kuźnia żelaza→Wielka Kuźnia, Spichlerz→Spichlerz II, Port→Port wielki, Piec hutniczy→Odlewnia żelaza — też „w górę"), a Mury+Cytadela+Baszta / Biblioteka+Akademia / Koszary+Akademia wojskowa / Kamienne kręgi+Świątynia idą „w bok" (nie zastępują się). Status wdrożenia w kodzie: NIE sprawdzony w tej sesji dla wszystkich sześciu łańcuchów „w górę" — patrz plik decyzji.
 
 **⛔ NIE projektujemy poziomów budynków „na zapas".** Kolejny poziom/tier budynku powstaje **dopiero wtedy, gdy realnie dochodzi kolejna epoka** — nie wcześniej.
 Maciej (dosłownie): „Każdy poziom jest dla następnej epoki… Jak będziemy rozwijać kolejne epoki, to robimy kolejny poziom pałacu. Po co teraz to robić?"

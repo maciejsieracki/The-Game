@@ -479,6 +479,7 @@ function nbAddString(
 function nbAddArrow(
   group: THREE.Group,
   mShaft: THREE.MeshStandardMaterial, mBronze: THREE.MeshStandardMaterial,
+  mBronzeLt: THREE.MeshStandardMaterial,
   mSinew: THREE.MeshStandardMaterial, mFletch: THREE.MeshStandardMaterial,
 ): void {
   const dirA = NB_GRIP.clone().sub(NB_NOCK).normalize();
@@ -494,6 +495,13 @@ function nbAddArrow(
   tip.quaternion.setFromUnitVectors(NB_Y_UP, dirA);
   tip.position.copy(shaftEnd.clone().addScaledVector(dirA, 0.024 * HEX_R));
   group.add(tip);
+  // cienki polysk krawedzi grotu (jasniejszy brąz) — jedyne miejsce w calym
+  // modelu, gdzie metal daje odblysk; reszta uzbrojenia zostaje matowa
+  const edge = new THREE.Mesh(getNBBinding(), mBronzeLt);
+  edge.scale.set(0.55, 1.6, 0.28);
+  edge.quaternion.setFromUnitVectors(NB_Y_UP, dirA);
+  edge.position.copy(shaftEnd.clone().addScaledVector(dirA, 0.034 * HEX_R));
+  group.add(edge);
 
   for (const rz of [0, Math.PI / 2]) {
     const fl = new THREE.Mesh(getNBFletch(), mFletch);
