@@ -171,8 +171,14 @@ const BM_TORSO_D    = 0.100 * HEX_R;
 const BM_TORSO_BOT  = 0.240 * HEX_R;
 const BM_TORSO_CTR  = BM_TORSO_BOT + BM_TORSO_H * 0.5;
 const BM_TORSO_TOP  = BM_TORSO_BOT + BM_TORSO_H;
-const BM_NECK_H     = 0.028 * HEX_R;
-const BM_HEAD_S     = 0.128 * HEX_R;
+// SZYJA WYDŁUŻONA (0.028 → 0.052 × HEX_R) — przy kamerze gry pod 52° pionowy
+// odstęp między linią barków a spodem głowy skraca się o cos(52°) ≈ 0,62, więc
+// rodzinne 0,028×HEX_R dawało na ekranie ~0,017×HEX_R prześwitu: głowa czytała
+// się jako wtopiona w bryłę barków ("kaptur"). 0,052×HEX_R daje ~0,032×HEX_R
+// prześwitu + miejsce na widoczny, ocieniony słupek szyi.
+const BM_NECK_H     = 0.062 * HEX_R;
+const BM_HEAD_S     = 0.122 * HEX_R;
+const BM_HEAD_D     = 0.106 * HEX_R;   // głębokość czaszki (patrz getBMHead)
 const BM_HEAD_CTR   = BM_TORSO_TOP + BM_NECK_H + BM_HEAD_S * 0.5;
 const BM_HEAD_TOP   = BM_TORSO_TOP + BM_NECK_H + BM_HEAD_S;
 const BM_SHLD_X     = BM_TORSO_W * 0.5 + 0.030 * HEX_R;
@@ -189,13 +195,15 @@ const BM_FOREARM_L  = 0.092 * HEX_R;
 // ok. 0,75×HEX_R dla tej jednostki. Zamiast przeliczać każdy offset z osobna,
 // CAŁA gotowa grupa jest skalowana JEDNYM współczynnikiem wokół punktu
 // stóp (y=0 grupy) tuż przed zwróceniem — patrz koniec buildMiecznikBrazOpus5.
-const BM_FIGURE_SCALE = 1.21;
+const BM_FIGURE_SCALE = 1.166;
 
 // ── geometrie-singletony (lazy) ──────────────────────────────────────────────
 let gBMTorso:     THREE.BoxGeometry | null = null;
 let gBMCuirass:   THREE.BoxGeometry | null = null;
 let gBMStrap:     THREE.BoxGeometry | null = null;
 let gBMNeck:      THREE.BoxGeometry | null = null;
+let gBMCollar:    THREE.BoxGeometry | null = null;
+let gBMTrap:      THREE.BoxGeometry | null = null;
 let gBMHead:      THREE.BoxGeometry | null = null;
 let gBMJaw:       THREE.BoxGeometry | null = null;
 let gBMNose:      THREE.BoxGeometry | null = null;
@@ -244,6 +252,7 @@ let gBMBladeEdge: THREE.BoxGeometry | null = null;
 let gBMShField:   THREE.CylinderGeometry | null = null;
 let gBMShRim:     THREE.CylinderGeometry | null = null;
 let gBMShBoss:    THREE.ConeGeometry | null = null;
+let gBMShBossRing: THREE.CylinderGeometry | null = null;
 let gBMShStitch:  THREE.BoxGeometry | null = null;
 let gBMShGrip:    THREE.BoxGeometry | null = null;
 let gBMShLoop:    THREE.BoxGeometry | null = null;
@@ -251,14 +260,20 @@ let gBMShLoop:    THREE.BoxGeometry | null = null;
 function getBMTorso():     THREE.BoxGeometry { return (gBMTorso     ||= new THREE.BoxGeometry(BM_TORSO_W, BM_TORSO_H, BM_TORSO_D)); }
 function getBMCuirass():   THREE.BoxGeometry { return (gBMCuirass   ||= new THREE.BoxGeometry(0.146 * HEX_R, 0.114 * HEX_R, 0.022 * HEX_R)); }
 function getBMStrap():     THREE.BoxGeometry { return (gBMStrap     ||= new THREE.BoxGeometry(0.026 * HEX_R, 0.118 * HEX_R, 0.014 * HEX_R)); }
-function getBMNeck():      THREE.BoxGeometry { return (gBMNeck      ||= new THREE.BoxGeometry(0.042 * HEX_R, BM_NECK_H * 1.6, 0.042 * HEX_R)); }
-function getBMHead():      THREE.BoxGeometry { return (gBMHead      ||= new THREE.BoxGeometry(BM_HEAD_S, BM_HEAD_S, BM_HEAD_S)); }
+function getBMNeck():      THREE.BoxGeometry { return (gBMNeck      ||= new THREE.BoxGeometry(0.050 * HEX_R, BM_NECK_H * 1.10, 0.048 * HEX_R)); }
+function getBMCollar():    THREE.BoxGeometry { return (gBMCollar    ||= new THREE.BoxGeometry(0.104 * HEX_R, 0.020 * HEX_R, 0.086 * HEX_R)); }
+function getBMTrap():      THREE.BoxGeometry { return (gBMTrap      ||= new THREE.BoxGeometry(0.056 * HEX_R, 0.024 * HEX_R, 0.076 * HEX_R)); }
+// Głowa PŁYTSZA niż szeroka (0,122 × 0,122 × 0,106 ×HEX_R): przy kamerze 52°
+// każde 0,01×HEX_R głębokości „zjada" 0,008×HEX_R pionowego prześwitu między
+// spodem głowy a barkami (rzut: y·cos52° − z·sin52°), więc spłaszczenie czaszki
+// w osi Z jest tu równoważne podniesieniu głowy o tyle samo.
+function getBMHead():      THREE.BoxGeometry { return (gBMHead      ||= new THREE.BoxGeometry(BM_HEAD_S, BM_HEAD_S, 0.106 * HEX_R)); }
 function getBMJaw():       THREE.BoxGeometry { return (gBMJaw       ||= new THREE.BoxGeometry(0.086 * HEX_R, 0.034 * HEX_R, 0.038 * HEX_R)); }
 function getBMNose():      THREE.BoxGeometry { return (gBMNose      ||= new THREE.BoxGeometry(0.019 * HEX_R, 0.026 * HEX_R, 0.017 * HEX_R)); }
 function getBMEar():       THREE.BoxGeometry { return (gBMEar       ||= new THREE.BoxGeometry(0.010 * HEX_R, 0.032 * HEX_R, 0.022 * HEX_R)); }
 function getBMEye():       THREE.BoxGeometry { return (gBMEye       ||= new THREE.BoxGeometry(0.019 * HEX_R, 0.011 * HEX_R, 0.008 * HEX_R)); }
 function getBMBrow():      THREE.BoxGeometry { return (gBMBrow      ||= new THREE.BoxGeometry(0.104 * HEX_R, 0.014 * HEX_R, 0.016 * HEX_R)); }
-function getBMBeard():     THREE.BoxGeometry { return (gBMBeard     ||= new THREE.BoxGeometry(0.080 * HEX_R, 0.044 * HEX_R, 0.032 * HEX_R)); }
+function getBMBeard():     THREE.BoxGeometry { return (gBMBeard     ||= new THREE.BoxGeometry(0.074 * HEX_R, 0.038 * HEX_R, 0.030 * HEX_R)); }
 function getBMHairTop():   THREE.BoxGeometry { return (gBMHairTop   ||= new THREE.BoxGeometry(0.126 * HEX_R, 0.028 * HEX_R, 0.126 * HEX_R)); }
 function getBMHairBack():  THREE.BoxGeometry { return (gBMHairBack  ||= new THREE.BoxGeometry(0.124 * HEX_R, 0.096 * HEX_R, 0.024 * HEX_R)); }
 function getBMCap():       THREE.CylinderGeometry { return (gBMCap  ||= new THREE.CylinderGeometry(0.046 * HEX_R, 0.068 * HEX_R, 0.066 * HEX_R, 10, 1)); }
@@ -293,9 +308,10 @@ function getBMGripWrap():  THREE.CylinderGeometry { return (gBMGripWrap ||= new 
 function getBMPommel():    THREE.SphereGeometry   { return (gBMPommel   ||= new THREE.SphereGeometry(0.017 * HEX_R, 7, 5)); }
 function getBMGuard():     THREE.BoxGeometry      { return (gBMGuard    ||= new THREE.BoxGeometry(0.056 * HEX_R, 0.014 * HEX_R, 0.020 * HEX_R)); }
 function getBMBladeEdge(): THREE.BoxGeometry      { return (gBMBladeEdge||= new THREE.BoxGeometry(0.006 * HEX_R, 0.094 * HEX_R, 0.030 * HEX_R)); }
-function getBMShField():   THREE.CylinderGeometry { return (gBMShField ||= new THREE.CylinderGeometry(0.132 * HEX_R, 0.132 * HEX_R, 0.020 * HEX_R, 12, 1)); }
-function getBMShRim():     THREE.CylinderGeometry { return (gBMShRim   ||= new THREE.CylinderGeometry(0.140 * HEX_R, 0.140 * HEX_R, 0.016 * HEX_R, 12, 1, true)); }
-function getBMShBoss():    THREE.ConeGeometry     { return (gBMShBoss  ||= new THREE.ConeGeometry(0.032 * HEX_R, 0.036 * HEX_R, 8)); }
+function getBMShField():   THREE.CylinderGeometry { return (gBMShField ||= new THREE.CylinderGeometry(0.120 * HEX_R, 0.120 * HEX_R, 0.020 * HEX_R, 14, 1)); }
+function getBMShRim():     THREE.CylinderGeometry { return (gBMShRim   ||= new THREE.CylinderGeometry(0.128 * HEX_R, 0.128 * HEX_R, 0.018 * HEX_R, 14, 1, true)); }
+function getBMShBoss():    THREE.ConeGeometry     { return (gBMShBoss  ||= new THREE.ConeGeometry(0.040 * HEX_R, 0.030 * HEX_R, 9)); }
+function getBMShBossRing():THREE.CylinderGeometry { return (gBMShBossRing ||= new THREE.CylinderGeometry(0.050 * HEX_R, 0.050 * HEX_R, 0.008 * HEX_R, 12, 1)); }
 function getBMShStitch():  THREE.BoxGeometry      { return (gBMShStitch||= new THREE.BoxGeometry(0.024 * HEX_R, 0.015 * HEX_R, 0.032 * HEX_R)); }
 function getBMShGrip():    THREE.BoxGeometry      { return (gBMShGrip  ||= new THREE.BoxGeometry(0.058 * HEX_R, 0.016 * HEX_R, 0.016 * HEX_R)); }
 function getBMShLoop():    THREE.BoxGeometry      { return (gBMShLoop  ||= new THREE.BoxGeometry(0.074 * HEX_R, 0.020 * HEX_R, 0.012 * HEX_R)); }
@@ -401,7 +417,7 @@ function bmBuildArm(
   mFist: THREE.MeshStandardMaterial | null,
 ): { wrist: THREE.Vector3; axis: THREE.Vector3 } {
   const delt = new THREE.Mesh(getBMDelt(), mUp);
-  delt.position.set(sx * (BM_TORSO_W * 0.5 + 0.016 * HEX_R), BM_SHLD_Y - 0.004 * HEX_R, 0);
+  delt.position.set(sx * (BM_TORSO_W * 0.5 + 0.018 * HEX_R), BM_SHLD_Y - 0.016 * HEX_R, 0);
   group.add(delt);
   let P = new THREE.Vector3(sx, BM_SHLD_Y, 0);
   P = bmSeg(group, getBMUpArm(), mUp, P, thU, BM_UPARM_L);
@@ -417,34 +433,59 @@ function bmBuildArm(
   return { wrist, axis };
 }
 
-/** Tors + szyja + głowa + żuchwa + nos + brwi + oczy + uszy. */
+/**
+ * Tors + KARK (kołnierz + czworoboczne) + szyja + głowa + żuchwa + nos + brwi +
+ * oczy + uszy.
+ *
+ * ROZDZIELENIE GŁOWY OD BARKÓW (wada nr 2 zgłoszona przez właściciela) — trzy
+ * współdziałające zabiegi, bo sam dłuższy karczek przy kamerze 52° nie starczał:
+ *   (a) SZYJA: słupek 0,050×HEX_R szerokości, wysoki na BM_NECK_H (0,052×HEX_R),
+ *       w materiale CIENIA karnacji (mSkinDk) — ciemna przewiązka rozdziela
+ *       jasną twarz od jasnej tuniki;
+ *   (b) KOŁNIERZ tuniki (mTunicDk) — ciemny, WĘŻSZY od torsu placek na szczycie
+ *       torsu: przy patrzeniu z góry to on jest widoczny wokół szyi, więc górna
+ *       płaszczyzna barków przestaje być jednym jasnym polem z twarzą;
+ *   (c) CZWOROBOCZNE (trap) — dwa kliny opadające od kołnierza ku barkom,
+ *       dzięki czemu linia barków biegnie SKOŚNIE w dół (a nie prostą krawędzią
+ *       na wysokości spodu głowy, co dawało efekt „kaptura").
+ */
 function bmBuildCore(
   group: THREE.Group,
   mTunic: THREE.MeshStandardMaterial, mSkin: THREE.MeshStandardMaterial,
   mSkinDk: THREE.MeshStandardMaterial, mEye: THREE.MeshStandardMaterial,
+  mTunicDk: THREE.MeshStandardMaterial, mCollar: THREE.MeshStandardMaterial,
 ): void {
   const torso = new THREE.Mesh(getBMTorso(), mTunic);
   torso.position.set(0, BM_TORSO_CTR, 0);
   group.add(torso);
-  const neck = new THREE.Mesh(getBMNeck(), mSkin);
-  neck.position.set(0, BM_TORSO_TOP + BM_NECK_H * 0.5, 0);
+  const collar = new THREE.Mesh(getBMCollar(), mCollar);          // (b) CIEMNY skórzany karczek napierśnika
+  collar.position.set(0, BM_TORSO_TOP - 0.002 * HEX_R, 0);
+  group.add(collar);
+  for (const sx of [-1, 1]) {                                     // (c) czworoboczne — skos kołnierz→bark
+    const trap = new THREE.Mesh(getBMTrap(), mTunicDk);
+    trap.rotation.z = sx * 0.44;
+    trap.position.set(sx * 0.060 * HEX_R, BM_TORSO_TOP - 0.024 * HEX_R, 0);
+    group.add(trap);
+  }
+  const neck = new THREE.Mesh(getBMNeck(), mSkinDk);              // (a) ciemny słupek szyi
+  neck.position.set(0, BM_TORSO_TOP + BM_NECK_H * 0.52, 0);
   group.add(neck);
   const head = new THREE.Mesh(getBMHead(), mSkin);
   head.position.set(0, BM_HEAD_CTR, 0);
   group.add(head);
   const jaw = new THREE.Mesh(getBMJaw(), mSkinDk);
-  jaw.position.set(0, BM_HEAD_CTR - BM_HEAD_S * 0.38, 0.010 * HEX_R);
+  jaw.position.set(0, BM_HEAD_CTR - BM_HEAD_S * 0.30, 0.010 * HEX_R);
   group.add(jaw);
   const nose = new THREE.Mesh(getBMNose(), mSkin);
-  nose.position.set(0, BM_HEAD_CTR - 0.002 * HEX_R, BM_HEAD_S * 0.5 + 0.007 * HEX_R);
+  nose.position.set(0, BM_HEAD_CTR - 0.002 * HEX_R, BM_HEAD_D * 0.5 + 0.007 * HEX_R);
   group.add(nose);
   const brow = new THREE.Mesh(getBMBrow(), mSkinDk);
   brow.rotation.x = 0.12;
-  brow.position.set(0, BM_HEAD_CTR + 0.032 * HEX_R, BM_HEAD_S * 0.5 + 0.003 * HEX_R);
+  brow.position.set(0, BM_HEAD_CTR + 0.030 * HEX_R, BM_HEAD_D * 0.5 + 0.003 * HEX_R);
   group.add(brow);
   for (const sx of [-1, 1]) {
     const eye = new THREE.Mesh(getBMEye(), mEye);
-    eye.position.set(sx * 0.026 * HEX_R, BM_HEAD_CTR + 0.014 * HEX_R, BM_HEAD_S * 0.5 + 0.002 * HEX_R);
+    eye.position.set(sx * 0.026 * HEX_R, BM_HEAD_CTR + 0.012 * HEX_R, BM_HEAD_D * 0.5 + 0.002 * HEX_R);
     group.add(eye);
     const ear = new THREE.Mesh(getBMEar(), mSkinDk);
     ear.position.set(sx * (BM_HEAD_S * 0.5 + 0.004 * HEX_R), BM_HEAD_CTR - 0.006 * HEX_R, 0);
@@ -487,7 +528,7 @@ export function buildMiecznikBrazOpus5(ownerColor_: number): THREE.Group {
   const HIP_Y = BM_HIP_Y - 0.010 * HEX_R;
 
   // ═══ KORPUS: tunika lniana + głowa ═══════════════════════════════════════
-  bmBuildCore(group, mTunic, mSkin, mSkinDk, mEye);
+  bmBuildCore(group, mTunic, mSkin, mSkinDk, mEye, mTunicDk, mLeathDk);
 
   // ═══ PROSTY NAPIERŚNIK ZE SKÓRY + SZELKI KRZYŻOWE ════════════════════════
   const cuirass = new THREE.Mesh(getBMCuirass(), mLeath);
@@ -541,14 +582,14 @@ export function buildMiecznikBrazOpus5(ownerColor_: number): THREE.Group {
   bmBuildLeg(group, -BM_HIP_X, -0.48, -0.16, mSkin, mLeath, mLeathDk, HIP_Y);
 
   // ═══ GŁOWA: krótkie włosy + broda + prosta czapka skórzana (BEZ brązu) ═══
-  const hairTop = new THREE.Mesh(getBMHairTop(), mHair);
+  const hairTop = new THREE.Mesh(getBMHairTop(), mLeath);   // płaska korona czapki (ta sama skóra co czapka)
   hairTop.position.set(0, BM_HEAD_TOP - 0.014 * HEX_R, -0.006 * HEX_R);
   group.add(hairTop);
   const hairBack = new THREE.Mesh(getBMHairBack(), mHair);
-  hairBack.position.set(0, BM_HEAD_CTR - 0.006 * HEX_R, -(BM_HEAD_S * 0.5 + 0.011 * HEX_R));
+  hairBack.position.set(0, BM_HEAD_CTR - 0.006 * HEX_R, -(BM_HEAD_D * 0.5 + 0.011 * HEX_R));
   group.add(hairBack);
-  const beard = new THREE.Mesh(getBMBeard(), mHair);
-  beard.position.set(0, BM_HEAD_CTR - 0.066 * HEX_R, 0.020 * HEX_R);
+  const beard = new THREE.Mesh(getBMBeard(), mHair);              // krótka broda: zwisa tylko 0,015×HEX_R
+  beard.position.set(0, BM_HEAD_CTR - 0.052 * HEX_R, 0.024 * HEX_R);  // poniżej żuchwy — NIE sięga barków
   group.add(beard);
   const cap = new THREE.Mesh(getBMCap(), mLeath);                 // czapka skórzana prosta
   cap.position.set(0, BM_HEAD_CTR + 0.050 * HEX_R, 0);
@@ -625,16 +666,27 @@ export function buildMiecznikBrazOpus5(ownerColor_: number): THREE.Group {
   // nie sterczy z boku). Płaszczyzna odchylona o rotation.x (normalna w górę
   // -i-przód, w stronę podniesionej kamery gry 52°) — inaczej z tego ujęcia
   // widać tylko wąską krawędź tarczy zamiast pola z umbem.
-  const armL = bmBuildArm(group, BM_SHLD_X, 0.42, 1.00, mTunic, mSkin, null);
+  // POZA RAMIENIA: ramię prawie pionowe (thU = 0,30 rad), PRZEDRAMIĘ prawie
+  // poziome do przodu (thF = 1,32 rad ≈ 76° od pionu) — tarcza siedzi wtedy na
+  // przedramieniu, przed tułowiem, na wysokości pas → dolna klatka piersiowa.
+  const armL = bmBuildArm(group, BM_SHLD_X, 0.30, 1.32, mTunic, mSkin, mSkin);
+
+  // ŚRODEK TARCZY = ŚRODEK PRZEDRAMIENIA (nie nadgarstek, nie bark!) przesunięty
+  // o pół grubości tarczy WZDŁUŻ JEJ NORMALNEJ, żeby tył pola dotykał ręki.
+  const SH_TILT = -0.66;                                          // odchylenie pola tarczy od pionu (rad)
+  // Normalna pola po obrocie o SH_TILT wokół osi X: (0, -sin(SH_TILT), cos(SH_TILT))
+  // — skierowana W GÓRĘ I DO PRZODU, czyli ku kamerze gry stojącej na 52°
+  // (kierunek ku kamerze = (0; sin52° = 0,788; cos52° = 0,616); iloczyn skalarny
+  // z normalną tarczy ≈ 0,97, więc kamera widzi PEŁNE KOŁO POLA Z UMBEM, nie
+  // krawędź dysku).
+  const shN = new THREE.Vector3(0, -Math.sin(SH_TILT), Math.cos(SH_TILT));
+  const foreMid = armL.wrist.clone().addScaledVector(armL.axis, -BM_FOREARM_L * 0.5);
   const sh = new THREE.Group();
-  sh.position.set(
-    armL.wrist.x - 0.010 * HEX_R,
-    armL.wrist.y - 0.015 * HEX_R,
-    armL.wrist.z + 0.060 * HEX_R,
-  );
-  sh.rotation.x = -0.62;
-  sh.rotation.y = -0.14;
-  sh.rotation.z = 0.02;
+  sh.position.copy(foreMid.clone().addScaledVector(shN, 0.030 * HEX_R));
+  sh.position.x -= 0.004 * HEX_R;
+  sh.rotation.x = SH_TILT;
+  sh.rotation.y = -0.16;
+  sh.rotation.z = 0.03;
 
   const field = new THREE.Mesh(getBMShField(), mOwner);           // pole = kolor gracza (skóra barwiona)
   field.rotation.x = Math.PI / 2;
@@ -643,13 +695,20 @@ export function buildMiecznikBrazOpus5(ownerColor_: number): THREE.Group {
   rim.rotation.x = Math.PI / 2;
   rim.position.z = -0.006 * HEX_R;
   sh.add(rim);
-  const boss = new THREE.Mesh(getBMShBoss(), mBronze);            // MAŁE brązowe umbo centralne
+  // UMBO: stożek brązowy + płaski pierścień podkładki. Powiększone względem
+  // poprzedniej wersji (r 0,032 → 0,040 ×HEX_R), bo z dystansu żetonu to ono
+  // czyni z niebieskiego krążka TARCZĘ, a nie talerz.
+  const bossRing = new THREE.Mesh(getBMShBossRing(), mLeathDk);
+  bossRing.rotation.x = Math.PI / 2;
+  bossRing.position.z = 0.012 * HEX_R;
+  sh.add(bossRing);
+  const boss = new THREE.Mesh(getBMShBoss(), mBronzeLt);          // brązowe umbo centralne
   boss.rotation.x = -Math.PI / 2;
   boss.position.z = 0.020 * HEX_R;
   sh.add(boss);
   for (const ang of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) {   // obszycie brzegu (4 klamry)
     const st = new THREE.Mesh(getBMShStitch(), mLeathDk);
-    st.position.set(Math.sin(ang) * 0.125 * HEX_R, Math.cos(ang) * 0.125 * HEX_R, 0.007 * HEX_R);
+    st.position.set(Math.sin(ang) * 0.113 * HEX_R, Math.cos(ang) * 0.113 * HEX_R, 0.007 * HEX_R);
     sh.add(st);
   }
   const grip2 = new THREE.Mesh(getBMShGrip(), mWood);             // chwyt poprzeczny z tyłu
@@ -687,7 +746,8 @@ export function disposeBrazMiecznikOpus5Geometries(): void {
     gBMApron, gBMTasset, gBMSideburn, gBMLace, gBMRivet, gBMBracer,
     gBMSheath, gBMSheathTop, gBMSheathTip, gBMFrog,
     gBMGrip, gBMGripWrap, gBMPommel, gBMGuard, gBMBlade, gBMBladeEdge,
-    gBMShField, gBMShRim, gBMShBoss, gBMShStitch, gBMShGrip, gBMShLoop,
+    gBMShField, gBMShRim, gBMShBoss, gBMShBossRing, gBMShStitch, gBMShGrip, gBMShLoop,
+    gBMCollar, gBMTrap,
   ];
   for (const g of all) { g?.dispose(); }
   gBMTorso = gBMCuirass = gBMStrap = gBMNeck = gBMHead = gBMJaw = gBMNose = gBMEar = null;
@@ -700,4 +760,6 @@ export function disposeBrazMiecznikOpus5Geometries(): void {
   gBMSheath = gBMSheathTop = gBMSheathTip = gBMFrog = null;
   gBMGrip = gBMGripWrap = gBMPommel = gBMGuard = gBMBlade = gBMBladeEdge = null;
   gBMShField = gBMShRim = gBMShBoss = gBMShStitch = gBMShGrip = gBMShLoop = null;
+  gBMShBossRing = null;
+  gBMCollar = gBMTrap = null;
 }

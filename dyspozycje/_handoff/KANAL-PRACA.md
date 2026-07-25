@@ -3310,3 +3310,14 @@ Prawa; Baszta (+100%, razem 400% obrony); koszty surowcowe wg epok bez brązu i 
 usunięty Karawanseraj i Ratusz; Łucznik nubijski z własnym modelem 3D.
 **Sesja lokalna: pull na dysk właściciela, testuj `dd1ec38e`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [19:15 PL, 2026-07-25] CHMURA → LOKALNA — deploy ROBOCZA `98b1403a` (FALA 11.1)
+Wdeployowana ROBOCZA **md5 `98b1403ac94d335015e5c28411155909`**, pieczątka `98b1403a`, zastępuje `dd1ec38e`.
+Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. VERIFY OK, 13 bramek zielonych.
+**Co weszło:** przywrócony wymóg kolejności budowania (Akademia←Biblioteka, Cytadela←Mury, Akademia
+wojskowa←Koszary, Świątynia←Kamienne kręgi) — zniknął dziś przy likwidacji „awansu bocznego"; plus naprawa
+luki, przez którą budynek zablokowany brakiem poprzednika znikał z panelu bez komunikatu.
+**Co NIE weszło:** modele jednostek epoki Brązu — pliki w repo, niewpięte do dispatchu (właściciel ocenił
+serię Sonnetową jako uwstecznienie; praca przeniesiona na Opus 5, przerwana na jego prośbę).
+**Sesja lokalna: pull na dysk właściciela, testuj `98b1403a`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.

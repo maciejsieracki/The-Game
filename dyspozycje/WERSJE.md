@@ -9,7 +9,25 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `dd1ec38e` — 2026-07-25 · FALA 11: przebudowa systemu budynków + naprawa martwych plonów — **AKTUALNA**
+## ROBOCZA `98b1403a` — 2026-07-25 · FALA 11.1: przywrócony wymóg kolejności budowania — **AKTUALNA**
+
+- **Wymóg „najpierw poprzednik" wrócił.** Likwidacja „awansu bocznego" (FALA 11) usunęła pole `upgradeFrom`
+  z czterech par budynków, a **razem z nim zniknął wymóg kolejności budowania** — dało się postawić Akademię
+  w mieście, które nigdy nie miało Biblioteki. Dopisane do `CITY_BUILDING_PREREQ`:
+  Akademia ← Biblioteka · Cytadela ← Mury · Akademia wojskowa ← Koszary · Świątynia ← Kamienne kręgi.
+- **FIX pre-istniejącej luki:** `eraBuildingCatalog` w ogóle nie sprawdzał prerekwizytu budynkowego, więc budynek
+  zablokowany brakiem poprzednika **znikał z panelu bez żadnego komunikatu**, zamiast trafić do sekcji
+  „Jeszcze zablokowane" z tekstem „🔒 Wybudowana Biblioteka w tym mieście". Dotyczyło to również Warsztatu
+  oblężniczego i Łaźni publicznej, czyli było widoczne dla gracza już przed dzisiejszymi zmianami.
+- **Bramki:** tsc 0 · nowy prereq-budynkow 42/42 · grupy-budynkow 80/80 · koszty-surowcowe 117/117 ·
+  plony-budynkow 47/47 · unit-building-bonuses 76/76 · administracja-stolica 48/48 · prawo-palac-tier 30/30 ·
+  society-breakdown 40/40 · logic 208/208 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · VERIFY OK.
+- **md5:** `98b1403ac94d335015e5c28411155909` · pieczątka `98b1403a`. Zastępuje `dd1ec38e`.
+- **Nie weszło:** modele jednostek epoki Brązu (Włócznik, Miecznik, Procarz, Rydwan na wołach) — pliki istnieją
+  w repo, ale **NIE są wpięte do dispatchu**, bo właściciel ocenił serię jako uwstecznienie. Praca przeniesiona
+  na subagentów Opus 5 i przerwana na jego prośbę (limit). Gra renderuje te jednostki starymi modelami.
+
+## ROBOCZA `dd1ec38e` — 2026-07-25 · FALA 11: przebudowa systemu budynków + naprawa martwych plonów — ZASTĄPIONA
 
 - **KRYTYCZNA NAPRAWA — plony budynków nigdy nie docierały do silnika.** `cityYieldPerTurn()` była wołana
   z **pustą tablicą budynków** we wszystkich trzech miejscach (`turn-economy.ts` preview i advance,
