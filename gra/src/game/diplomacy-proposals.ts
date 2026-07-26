@@ -881,22 +881,75 @@ export function evaluatePendingFromAI(
 /**
  * Gracz klika AKCEPTUJ na propozycji AI — bez ponownej oceny progów AI/respondenta.
  * Zwraca wynik gotowy do applyProposalOutcome (deal / oneShotTrade).
+ *
+ * C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY woła tę funkcję dla KAŻDEGO wpisu, który
+ * gracz ręcznie akceptuje — niezależnie od tego, czy rundę 1 zainicjował gracz, czy AI
+ * (patrz negotiationToLegacyPending). Dlatego rozszerzona o WSZYSTKIE warianty
+ * ProposalActionId (wcześniej tylko podzbiór realnie wysyłany przez decideAIDiplomacy) —
+ * nowe gałęzie (nap/sojusz_defensywny/granice/tech/namow_wojne/ultimatum/wasal) kopiują
+ * 1:1 budowę traktatu z odpowiadającej gałęzi `accepted` w evaluateProposal powyżej,
+ * bez progów (gracz już się zgodził ręcznie — jak reszta tej funkcji).
  */
 export function resolvePlayerAcceptsAiPending(
   pending: PendingProposal,
   turn: number,
+  difficulty: GameDifficulty = 'normal',
 ): ProposalEvalResult {
   const { actionId, fromOwnerId, toOwnerId, payload } = pending;
   switch (actionId) {
+    case 'nap': {
+      const turns = clamp(payload.turns ?? 15, 10, 20);
+      const deal = buildDeal(RodzajTraktatu.PaktNieagresji, fromOwnerId, toOwnerId, turn, turn + turns);
+      return { accepted: true, reason: `Pakt nieagresji na ${turns} tur`, deal };
+    }
+    case 'sojusz_defensywny':
     case 'sojusz_pelny': {
       const deal = buildDeal(
-        'sojusz_pelny',
+        actionId,
         fromOwnerId,
         toOwnerId,
         turn,
         null,
       );
-      return { accepted: true, reason: 'Sojusz pełny zawarty', deal };
+      const label = actionId === 'sojusz_defensywny' ? 'Sojusz defensywny' : 'Sojusz pełny';
+      return { accepted: true, reason: `${label} zawarty`, deal };
+    }
+    case 'granice': {
+      const rodzaj = payload.borderMilitary
+        ? RodzajTraktatu.PrawoWojskowePrzemarszu
+        : RodzajTraktatu.OtwartGranice;
+      const deal = buildDeal(rodzaj, fromOwnerId, toOwnerId, turn, null);
+      return {
+        accepted: true,
+        reason: payload.borderMilitary ? 'Prawo wojskowego przemarszu' : 'Otwarte granice cywilne',
+        deal,
+      };
+    }
+    case 'tech': {
+      return { accepted: true, reason: 'Sprzedaż technologii zaakceptowana', oneShotTrade: true };
+    }
+    case 'namow_wojne': {
+      return { accepted: true, reason: 'Zgoda na wypowiedzenie wojny wskazanemu wrogowi' };
+    }
+    case 'ultimatum': {
+      return { accepted: true, reason: 'Warunki ultimatum spełnione', oneShotTrade: true };
+    }
+    case 'wasal': {
+      const p = getEffectiveDiplomacyParams(difficulty);
+      const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;
+      const deal = buildDeal(
+        RodzajTraktatu.Wasalizacja,
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        null,
+        {
+          payerOwnerId: toOwnerId,
+          receiverOwnerId: fromOwnerId,
+          pieniadzePerTura: perTurn,
+        },
+      );
+      return { accepted: true, reason: 'Wasalizacja zaakceptowana', deal };
     }
     case 'handel': {
       // HANDEL-SUROWCE-CYKL (2026-07-24): AI zaproponowała cykliczny handel
@@ -985,4 +1038,382 @@ export function resolvePlayerAcceptsAiPending(
     default:
       return { accepted: false, reason: 'Nieznana akcja dyplomatyczna' };
   }
+}
+
+// ---------------------------------------------------------------------------
+// C-DYP-Q1=A (2026-07-26, Maciej): STÓŁ NEGOCJACYJNY — pełny stan „propozycja
+// oczekuje" per para właścicieli, z kontrofertą. SILNIK (main.ts) trzyma tablicę
+// PendingNegotiation[] (zapis/odczyt gry — meta.negotiationTable); ten moduł
+// dostarcza WYŁĄCZNIE czyste funkcje:
+//   - createNegotiation / applyCounterOffer — budowa i mutacja (czysta, zwraca kopię)
+//     wpisu przez kolejne rundy;
+//   - generateCounterOffer — 2. i 3. reakcja AI („składa kontrofertę"), NIE liczy
+//     nowej wyceny — evaluateProposal (już wyżej w tym pliku) jest WYROCZNIĄ, szukamy
+//     minimalnej zmiany jednego pola, która przełącza jej wynik na accepted;
+//   - resolveNegotiationAsResponder — pełny dispatcher rundy z perspektywy AI
+//     (jedyna zautomatyzowana decyzja; decyzje GRACZA są zawsze ręczne — UI);
+//   - negotiationStillValid — RYZYKO ze zlecenia: świat mógł się zmienić między
+//     propozycją a odpowiedzią (wojna/eliminacja) — wpis wygasa z czytelnym powodem
+//     zamiast wykonać się na nieaktualnych warunkach;
+//   - negotiationToLegacyPending — adapter do resolvePlayerAcceptsAiPending (wyżej),
+//     żeby ręczna akceptacja gracza (KTÓRAKOLWIEK strona zainicjowała rundę 1) używała
+//     JEDNEGO buildera traktatu zamiast duplikować konstrukcję deal.
+//
+// Role proposerOwnerId/responderOwnerId w PendingNegotiation są STAŁE od rundy 1
+// (określają kierunek koszyka giveItems/receiveItems — "proposerOwnerId daje
+// giveItems, dostaje receiveItems" — patrz ProposalPayload) i NIE zmieniają się przy
+// kontrofertach — zmienia się tylko payload (liczby) oraz awaitingOwnerId/authorOwnerId
+// (kto teraz odpowiada / kto ustawił bieżące warunki). evaluateProposal jest zawsze
+// wołane z tymi STAŁYMI rolami — jego `accepted` to bramka „czy ta treść+kwota mieści
+// się w progu inżynierskim tej pary", niezależna od tego, kto ostatnio ją zmienił
+// (patrz przykład trybut_zadanie w raporcie zadania — próg jest o STAŁEJ stronie
+// żądającej, nie o „aktualnym autorze").
+// ---------------------------------------------------------------------------
+
+/** Limit rund kontrofert w JEDNEJ negocjacji (Maciej 2026-07-26, C-DYP-Q1=A pkt 3). Runda 1 = pierwsza propozycja; każda kontroferta +1. Po osiągnięciu limitu — silnik dopuszcza już tylko Przyjmij/Odrzuć. */
+export const NEGOTIATION_MAX_ROUNDS = 3;
+
+/** Ile tur od ostatniej aktywności (propozycja / kontroferta) zanim wpis wygasa bez odpowiedzi drugiej strony. */
+export const NEGOTIATION_EXPIRY_TURNS = 5;
+
+/**
+ * Akcje, których evaluateProposal NIE ocenia (patrz komentarz przy typie
+ * ProposalActionId — 'umowa_handlowa' to wyłącznie ścieżka AI→gracz, oceniana w
+ * decideAIDiplomacy, nie tutaj) — więc silnik nie ma na czym oprzeć auto-kontry AI.
+ * Kontra na tych akcjach zawsze kończy się (po stronie AI) odrzuceniem — gracz wciąż
+ * może Przyjąć/Odrzucić rundę 1.
+ */
+const NEGOTIATION_NO_ENGINE_COUNTER: ReadonlySet<ProposalActionId> = new Set([
+  'umowa_handlowa' as ProposalActionId,
+]);
+
+export interface PendingNegotiation {
+  id: string;
+  /** STAŁE przez całą negocjację — patrz komentarz bloku wyżej. */
+  proposerOwnerId: number;
+  responderOwnerId: number;
+  actionId: ProposalActionId;
+  /** Warunki AKTUALNIE na stole — każda runda NADPISUJE poprzednie (nie kumuluje). */
+  payload: ProposalPayload;
+  /** 1 = pierwsza propozycja; +1 za każdą kontrofertę (limit NEGOTIATION_MAX_ROUNDS). */
+  round: number;
+  /** Kto MUSI teraz odpowiedzieć (Przyjmij / Odrzuć / Kontruj). */
+  awaitingOwnerId: number;
+  /** Kto ustawił BIEŻĄCE warunki (drugi z pary awaitingOwnerId). */
+  authorOwnerId: number;
+  createdTurn: number;
+  lastActionTurn: number;
+  expiresTurn: number;
+  /** Kto zainicjował rundę 1 — UI (własne/przychodzące) + parytet AI/gracz (ta sama droga). */
+  source: 'player' | 'ai';
+}
+
+function otherPartyOf(
+  entry: Pick<PendingNegotiation, 'proposerOwnerId' | 'responderOwnerId'>,
+  ownerId: number,
+): number {
+  return ownerId === entry.proposerOwnerId ? entry.responderOwnerId : entry.proposerOwnerId;
+}
+
+export function makeNegotiationId(
+  actionId: ProposalActionId,
+  turn: number,
+  a: number,
+  b: number,
+  seq: number,
+): string {
+  const [p0, p1] = a < b ? [a, b] : [b, a];
+  return `negot-${actionId}-${p0}-${p1}-t${turn}-${seq}`;
+}
+
+/** Tworzy nowy wpis (runda 1) z propozycji — respondent = ten, kto musi teraz odpowiedzieć. */
+export function createNegotiation(
+  proposal: DiplomaticProposal,
+  turn: number,
+  source: 'player' | 'ai',
+  seq: number,
+): PendingNegotiation {
+  return {
+    id: makeNegotiationId(proposal.actionId, turn, proposal.proposerOwnerId, proposal.responderOwnerId, seq),
+    proposerOwnerId: proposal.proposerOwnerId,
+    responderOwnerId: proposal.responderOwnerId,
+    actionId: proposal.actionId,
+    payload: proposal.payload,
+    round: 1,
+    awaitingOwnerId: proposal.responderOwnerId,
+    authorOwnerId: proposal.proposerOwnerId,
+    createdTurn: turn,
+    lastActionTurn: turn,
+    expiresTurn: turn + NEGOTIATION_EXPIRY_TURNS,
+    source,
+  };
+}
+
+export function negotiationAsProposal(entry: PendingNegotiation): DiplomaticProposal {
+  return {
+    actionId: entry.actionId,
+    proposerOwnerId: entry.proposerOwnerId,
+    responderOwnerId: entry.responderOwnerId,
+    payload: entry.payload,
+  };
+}
+
+/** Czy ten wpis może jeszcze przyjąć kontrofertę (limit rund + wsparcie silnika dla tej akcji). */
+export function canCounterNegotiation(entry: PendingNegotiation): boolean {
+  return entry.round < NEGOTIATION_MAX_ROUNDS && !NEGOTIATION_NO_ENGINE_COUNTER.has(entry.actionId);
+}
+
+/** Nakłada kontrofertę (nowe warunki) — woła SILNIK zarówno dla ręcznej kontry gracza, jak i automatycznej AI (resolveNegotiationAsResponder). */
+export function applyCounterOffer(
+  entry: PendingNegotiation,
+  newPayload: ProposalPayload,
+  authorOwnerId: number,
+  turn: number,
+): PendingNegotiation {
+  return {
+    ...entry,
+    payload: newPayload,
+    round: entry.round + 1,
+    authorOwnerId,
+    awaitingOwnerId: otherPartyOf(entry, authorOwnerId),
+    lastActionTurn: turn,
+    expiresTurn: turn + NEGOTIATION_EXPIRY_TURNS,
+  };
+}
+
+export interface NegotiationWorldCtx {
+  turn: number;
+  isAtWar: boolean;
+  proposerEliminated: boolean;
+  responderEliminated: boolean;
+}
+
+/**
+ * Akcje, dla których wybuch wojny między stronami unieważnia propozycję. Świadomie
+ * POZA tym zbiorem: 'trybut_oferta' i 'ultimatum' — dotyczą WŁAŚNIE stanu
+ * wojny/napięcia, więc jej wybuch ich nie gasi (odwrotnie — to ich kontekst).
+ * 'namow_wojne' też poza zbiorem — nie wymaga pokoju między proponentem/respondentem.
+ */
+const NEGOTIATION_PEACE_REQUIRED: ReadonlySet<ProposalActionId> = new Set([
+  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'handel',
+  'umowa_handlowa' as ProposalActionId, 'granice', 'tech', 'wasal', 'trybut_zadanie',
+]);
+
+export interface NegotiationValidity {
+  valid: boolean;
+  reason?: string;
+}
+
+/**
+ * RYZYKO ze zlecenia (2026-07-26): świat mógł się zmienić między złożeniem a
+ * odpowiedzią (wybuchła wojna, zginęła strona/miasto stolica → eliminacja, zerwano
+ * traktat) — wpis WYGASA z czytelnym komunikatem zamiast wykonać się na nieaktualnych
+ * warunkach. SILNIK (main.ts) dostarcza world ctx PER WPIS (per parę) — nie ma tu
+ * dostępu do stanu gry (moduł pozostaje pure/bez importu main.ts).
+ */
+export function negotiationStillValid(
+  entry: PendingNegotiation,
+  world: NegotiationWorldCtx,
+): NegotiationValidity {
+  if (world.proposerEliminated || world.responderEliminated) {
+    return { valid: false, reason: 'Jedna ze stron została wyeliminowana z gry — propozycja wygasła' };
+  }
+  if (world.turn > entry.expiresTurn) {
+    return { valid: false, reason: 'Propozycja wygasła — brak odpowiedzi w terminie' };
+  }
+  if (world.isAtWar && NEGOTIATION_PEACE_REQUIRED.has(entry.actionId)) {
+    return { valid: false, reason: 'Wybuchła wojna — warunki straciły aktualność' };
+  }
+  return { valid: true };
+}
+
+// --- Generator kontroferty (2. i 3. reakcja AI) -----------------------------
+
+/** Jeden „krok" słodzika = SWEETENER_PN_PER_EASE_POINT (ta sama stawka co sweetenerEasePoints wyżej — brak nowego cennika). */
+const NEGOTIATION_SWEETENER_STEP_GOLD = SWEETENER_PN_PER_EASE_POINT;
+/** Sufit prób — tyle samo punktów ease ile sweetenerEasePoints dopuszcza maksymalnie. */
+const NEGOTIATION_SWEETENER_MAX_STEPS = SWEETENER_EASE_MAX_POINTS;
+/** Krok dopłaty/obniżki pieniężnej (trybut/tech/łapówka/ultimatum/handel) — ±20% na próbę. */
+const NEGOTIATION_MONEY_STEP_PCT = 0.2;
+/** Maks. prób na kierunek (± do 80% od bieżącej kwoty) zanim uznajemy impas. */
+const NEGOTIATION_MONEY_MAX_STEPS = 4;
+
+const SWEETENER_COUNTER_ELIGIBLE: ReadonlySet<ProposalActionId> = new Set([
+  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal',
+]);
+
+function withExtraSweetenerGold(payload: ProposalPayload, extraGold: number): ProposalPayload {
+  const items: BasketItem[] = [...(payload.giveItems ?? [])];
+  const idx = items.findIndex(i => i.typ === 'zloto');
+  if (idx >= 0) {
+    items[idx] = { ...items[idx]!, ilosc: (items[idx]!.ilosc ?? 0) + extraGold };
+  } else {
+    items.push({ typ: 'zloto', id: 'zloto', ilosc: extraGold });
+  }
+  return { ...payload, giveItems: items };
+}
+
+type NegotiationMoneyField = 'goldPerTurn' | 'goldOnce' | 'techPrice' | 'bribeGold';
+
+function getMoneyField(payload: ProposalPayload, field: NegotiationMoneyField): number {
+  switch (field) {
+    case 'goldPerTurn': return payload.goldPerTurn ?? 0;
+    case 'goldOnce': return payload.goldOnce ?? 0;
+    case 'techPrice': return payload.techPrice ?? 0;
+    case 'bribeGold': return payload.bribeGold ?? 0;
+  }
+}
+
+function withMoneyField(payload: ProposalPayload, field: NegotiationMoneyField, value: number): ProposalPayload {
+  const v = Math.max(0, Math.round(value));
+  switch (field) {
+    case 'goldPerTurn': return { ...payload, goldPerTurn: v };
+    case 'goldOnce': return { ...payload, goldOnce: v };
+    case 'techPrice': return { ...payload, techPrice: v };
+    case 'bribeGold': return { ...payload, bribeGold: v };
+  }
+}
+
+export interface CounterOfferResult {
+  payload: ProposalPayload;
+  note: string;
+}
+
+/**
+ * Generator kontroferty — Maciej 2026-07-26 (C-DYP-Q1=A pkt 2): „AI... składa
+ * kontrofertę (ta sama treść z innymi warunkami — np. żąda dopłaty albo oferuje
+ * mniej)". CELOWO nie liczy nowej wyceny: evaluateProposal (ISTNIEJĄCA ocena — patrz
+ * sweetenerEasePoints/pnDealAcceptedByAi wyżej w tym pliku) jest tu WYROCZNIĄ —
+ * funkcja szuka MINIMALNEJ zmiany JEDNEGO pola (słodzik / kwota), która przełącza jej
+ * wynik na accepted=true. Zwraca null, gdy żadna próba w limicie kroków (stałe
+ * NEGOTIATION_*_STEP/_MAX_STEPS wyżej) nie domyka propozycji — impas, silnik kończy
+ * negocjację zwykłym odrzuceniem.
+ *
+ * Świadomie POZA zasięgiem (brak kontroferty, `null` od razu): 'umowa_handlowa'
+ * (evaluateProposal jej nie ocenia), koszyk wielo-pozycyjny PN w 'handel'/
+ * 'zaproponuj_handel_surowiec' (giveItems/receiveItems niescalarne — patrz raport
+ * zadania), 'namow_wojne' bez wskazanego celu.
+ */
+export function generateCounterOffer(
+  proposal: DiplomaticProposal,
+  ctx: ProposalEvalContext,
+): CounterOfferResult | null {
+  const { actionId, payload } = proposal;
+  if (NEGOTIATION_NO_ENGINE_COUNTER.has(actionId)) return null;
+
+  const tryPayload = (p: ProposalPayload): boolean =>
+    evaluateProposal({ ...proposal, payload: p }, ctx).accepted;
+
+  // trybut_zadanie: dźwignia naturalna to SAMA kwota żądania (respondent „oferuje
+  // mniej" / proponent „żąda dopłaty") — dwukierunkowe przeszukanie PRZED słodzikiem.
+  if (actionId === 'trybut_zadanie') {
+    const base = payload.goldPerTurn ?? 0;
+    if (base > 0) {
+      for (let step = 1; step <= NEGOTIATION_MONEY_MAX_STEPS; step++) {
+        const down = withMoneyField(payload, 'goldPerTurn', base * (1 - NEGOTIATION_MONEY_STEP_PCT * step));
+        if ((down.goldPerTurn ?? 0) > 0 && tryPayload(down)) {
+          return { payload: down, note: `obniżone żądanie trybutu (${down.goldPerTurn} ¤/turę)` };
+        }
+        const up = withMoneyField(payload, 'goldPerTurn', base * (1 + NEGOTIATION_MONEY_STEP_PCT * step));
+        if (tryPayload(up)) {
+          return { payload: up, note: `podniesione żądanie trybutu (${up.goldPerTurn} ¤/turę)` };
+        }
+      }
+    }
+    return null;
+  }
+
+  if (SWEETENER_COUNTER_ELIGIBLE.has(actionId)) {
+    for (let step = 1; step <= NEGOTIATION_SWEETENER_MAX_STEPS; step++) {
+      const extra = step * NEGOTIATION_SWEETENER_STEP_GOLD;
+      const candidate = withExtraSweetenerGold(payload, extra);
+      if (tryPayload(candidate)) {
+        return { payload: candidate, note: `+${extra} ¤ słodzika do umowy` };
+      }
+    }
+    if (actionId === 'granice' && payload.borderMilitary) {
+      const candidate: ProposalPayload = { ...payload, borderMilitary: false };
+      if (tryPayload(candidate)) {
+        return { payload: candidate, note: 'rezygnacja z prawa wojskowego (tylko cywilne)' };
+      }
+    }
+    return null;
+  }
+
+  const moneyField: NegotiationMoneyField | null =
+    actionId === 'trybut_oferta' ? (payload.goldPerTurn != null ? 'goldPerTurn' : 'goldOnce')
+    : actionId === 'tech' ? 'techPrice'
+    : actionId === 'namow_wojne' ? 'bribeGold'
+    : actionId === 'ultimatum' ? 'goldOnce'
+    : (actionId === 'handel' && !payload.giveItems?.length && !payload.receiveItems?.length) ? 'goldOnce'
+    : null;
+
+  if (moneyField) {
+    const base = getMoneyField(payload, moneyField);
+    if (base > 0) {
+      for (let step = 1; step <= NEGOTIATION_MONEY_MAX_STEPS; step++) {
+        const up = withMoneyField(payload, moneyField, base * (1 + NEGOTIATION_MONEY_STEP_PCT * step));
+        if (tryPayload(up)) {
+          return { payload: up, note: `podbita oferta (${getMoneyField(up, moneyField)})` };
+        }
+        if (actionId === 'trybut_oferta') {
+          const down = withMoneyField(payload, moneyField, base * (1 - NEGOTIATION_MONEY_STEP_PCT * step));
+          if (getMoneyField(down, moneyField) > 0 && tryPayload(down)) {
+            return { payload: down, note: `obniżona oferta (${getMoneyField(down, moneyField)})` };
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+export type NegotiationRoundOutcome =
+  | { kind: 'accepted'; result: ProposalEvalResult }
+  | { kind: 'rejected'; reason: string }
+  | { kind: 'countered'; entry: PendingNegotiation; note: string };
+
+/**
+ * Rozstrzyga rundę z perspektywy AI — JEDYNA zautomatyzowana decyzja silnika (decyzje
+ * GRACZA są zawsze ręczne, main.ts nie woła tej funkcji dla wpisów
+ * awaitingOwnerId=gracz). Role proposerOwnerId/responderOwnerId brane ZAWSZE z entry
+ * (stałe od rundy 1 — patrz komentarz bloku wyżej), niezależnie od tego, czy bieżącym
+ * autorem warunków (authorOwnerId) jest ta sama, czy odwrotna strona.
+ */
+export function resolveNegotiationAsResponder(
+  entry: PendingNegotiation,
+  ctx: ProposalEvalContext,
+  turn: number,
+): NegotiationRoundOutcome {
+  const proposal = negotiationAsProposal(entry);
+  const result = evaluateProposal(proposal, ctx);
+  if (result.accepted) return { kind: 'accepted', result };
+  if (canCounterNegotiation(entry)) {
+    const counter = generateCounterOffer(proposal, ctx);
+    if (counter) {
+      const nextEntry = applyCounterOffer(entry, counter.payload, entry.awaitingOwnerId, turn);
+      return { kind: 'countered', entry: nextEntry, note: counter.note };
+    }
+  }
+  return { kind: 'rejected', reason: result.reason };
+}
+
+/**
+ * Adapter PendingNegotiation → (istniejący) PendingProposal — żeby ręczna akceptacja
+ * gracza (KTÓRAKOLWIEK strona zainicjowała rundę 1) mogła użyć JEDNEGO buildera
+ * traktatu (resolvePlayerAcceptsAiPending, wyżej w tym pliku) zamiast duplikować
+ * konstrukcję deal po raz trzeci.
+ */
+export function negotiationToLegacyPending(entry: PendingNegotiation): PendingProposal {
+  return {
+    id: entry.id,
+    fromOwnerId: entry.proposerOwnerId,
+    toOwnerId: entry.responderOwnerId,
+    actionId: entry.actionId,
+    payload: entry.payload,
+    createdTurn: entry.createdTurn,
+    expiresTurn: entry.expiresTurn,
+    source: entry.source,
+  };
 }

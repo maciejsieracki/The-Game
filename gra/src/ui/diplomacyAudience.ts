@@ -145,6 +145,31 @@ export interface DiplomacyAudienceState {
    * (nie ma traktatu, do którego by się to odnosiło).
    */
   formalStatusDetail?: { sinceTurns?: number; breakPenaltyLabel?: string };
+
+  /**
+   * C-DYP-Q1=A (2026-07-26, Maciej — pełny stół negocjacyjny z kontrofertą): wpisy
+   * OCZEKUJĄCE odpowiedzi dla tej pary (własne wysłane + przychodzące od tej
+   * cywilizacji), z terminem ważności. SILNIK: getNegotiationsForPair (main.ts).
+   */
+  pendingNegotiations?: readonly PendingNegotiationRow[];
+}
+
+/** Jeden wiersz stołu „Oczekujące propozycje" — patrz DiplomacyAudienceState.pendingNegotiations. */
+export interface PendingNegotiationRow {
+  id: string;
+  /** 'own' = gracz czeka na odpowiedź AI; 'incoming' = to gracz musi odpowiedzieć. */
+  direction: 'own' | 'incoming';
+  actionLabel: string;
+  /** Krótki opis bieżących warunków (kwota/tury/typ) — main.ts formatuje z payloadu. */
+  summary: string;
+  round: number;
+  maxRounds: number;
+  /** Ile tur zostało do wygaśnięcia bez odpowiedzi (0 = ostatnia tura ważności). */
+  expiresInTurns: number;
+  /** Czy „Kontruj" jest dostępne (limit rund + wsparcie silnika dla tej akcji). */
+  canCounter: boolean;
+  /** Id akcji formularza negocjacji ('2'..'13') — do ponownego otwarcia modalu przy „Kontruj". */
+  uiActionId: string;
 }
 
 export interface DiplomacyAudienceConfig {
@@ -180,6 +205,12 @@ export interface DiplomacyAudienceConfig {
    * (kolumna „Aktywne traktaty"). Brak = przycisk pozostaje wyłączony ("wkrótce").
    */
   onBreakTreaty?: (dealId: string) => void;
+  /** C-DYP-Q1=A: gracz Przyjmuje wpis stołu (id z pendingNegotiations), w którym to jego kolej. */
+  onAcceptNegotiation?: (negotiationId: string) => void;
+  /** C-DYP-Q1=A: gracz Odrzuca wpis stołu. */
+  onRejectNegotiation?: (negotiationId: string) => void;
+  /** C-DYP-Q1=A: gracz wysyła kontrofertę (nowy formularz negocjacji) do wpisu stołu. */
+  onCounterNegotiation?: (negotiationId: string, payload: NegotiationPayload) => void;
 }
 
 let cfg: DiplomacyAudienceConfig | null = null;
@@ -306,7 +337,23 @@ ${DIPLO_1E_SHARED_CSS}
 .da-tab:not(.on):hover{border-color:rgba(232,216,138,.5);color:#e8d88a;}
 .da-tab svg{width:12px;height:12px;}
 
-.da-table{flex:1;display:grid;grid-template-columns:1.1fr 0.95fr 1.05fr;gap:10px;min-height:0;}
+.da-table{flex:1;display:grid;grid-template-columns:1fr 0.85fr 0.85fr 1fr;gap:10px;min-height:0;}
+/* C-DYP-Q1=A (2026-07-26) — kolumna „Oczekujące propozycje" (stół negocjacyjny z kontrofertą). */
+.da-negot{display:flex;flex-direction:column;gap:6px;padding:7px 8px;border-radius:8px;
+  border:1px solid rgba(232,216,138,.18);background:linear-gradient(180deg,rgba(26,32,44,.7),rgba(12,16,24,.7));}
+.da-negot.incoming{border-color:rgba(90,208,122,.4);}
+.da-negot .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;display:flex;align-items:center;gap:6px;}
+.da-negot .da-nm .dir{font-size:0.62em;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+  padding:1px 6px;border-radius:6px;border:1px solid rgba(232,216,138,.3);color:#8a8070;}
+.da-negot.incoming .da-nm .dir{border-color:rgba(90,208,122,.45);color:#7ad0a0;}
+.da-negot .da-meta{font-size:0.62em;color:#8a8070;}
+.da-negot .da-btnrow{display:flex;gap:6px;margin-top:2px;}
+.da-negot .da-btnrow button{flex:1;font-size:0.66em;padding:5px 6px;border-radius:6px;
+  border:1px solid rgba(232,216,138,.3);background:rgba(232,216,138,.06);color:#e8e0c8;cursor:pointer;font-family:inherit;}
+.da-negot .da-btnrow button.acc{border-color:rgba(90,208,122,.5);color:#7ad0a0;}
+.da-negot .da-btnrow button.rej{border-color:rgba(200,64,64,.5);color:#e08a8a;}
+.da-negot .da-btnrow button:hover{filter:brightness(1.2);}
+.da-negot .da-btnrow button:disabled{opacity:.4;cursor:not-allowed;}
 .da-col{background:rgba(0,0,0,.22);border:1px solid rgba(232,216,138,.18);border-radius:10px;
   padding:9px 9px 10px;display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;min-width:180px;}
 .da-col h3{font-family:var(--tg-font-title,Georgia,serif);font-size:0.78em;color:var(--tg-gold-primary,#e8d88a);
@@ -832,6 +879,46 @@ function offersColumnHtml(st: DiplomacyAudienceState): string {
   );
 }
 
+/**
+ * C-DYP-Q1=A (2026-07-26, Maciej — pełny stół negocjacyjny z kontrofertą) — kolumna
+ * „Oczekujące propozycje": wpisy własne (czekamy na AI) i przychodzące (AI czeka na
+ * nas, przyciski aktywne). Data-attrs (data-negot-id/data-negot-action) czytane w
+ * render() — Kontruj ponownie otwiera showNegotiationModal (nowy formularz, bez
+ * wypełniania poprzednich wartości — patrz raport zadania).
+ */
+function pendingNegotiationsColumnHtml(st: DiplomacyAudienceState): string {
+  const rows = st.pendingNegotiations ?? [];
+  const items = rows.map(r => {
+    const cls = 'da-negot' + (r.direction === 'incoming' ? ' incoming' : '');
+    const dirLabel = r.direction === 'incoming' ? 'Ich propozycja' : 'Twoja propozycja';
+    const expLabel = r.expiresInTurns <= 0 ? 'wygasa w tej turze' : `ważna jeszcze ${r.expiresInTurns} tur`;
+    const btns = r.direction === 'incoming'
+      ? (
+        '<div class="da-btnrow">'
+        + '<button type="button" class="acc" data-negot-id="' + esc(r.id) + '" data-negot-act="accept">Przyjmij</button>'
+        + '<button type="button" class="rej" data-negot-id="' + esc(r.id) + '" data-negot-act="reject">Odrzuć</button>'
+        + (r.canCounter
+          ? '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="counter" data-negot-aid="' + esc(r.uiActionId) + '">Kontruj</button>'
+          : '') +
+        '</div>'
+      )
+      : '<div class="da-meta">Czekamy na odpowiedź drugiej strony.</div>';
+    return (
+      '<div class="' + cls + '">' +
+        '<div class="da-nm"><span class="dir">' + esc(dirLabel) + '</span>' + esc(r.actionLabel) + '</div>' +
+        '<div class="da-meta">' + esc(r.summary) + ' · runda ' + r.round + '/' + r.maxRounds + ' · ' + esc(expLabel) + '</div>' +
+        btns +
+      '</div>'
+    );
+  }).join('');
+  return (
+    '<div class="da-col da-col-negot">' +
+      '<h3>Oczekujące propozycje<span class="cnt">' + rows.length + '</span></h3>' +
+      (items || '<div class="da-empty">Brak oczekujących propozycji.</div>') +
+    '</div>'
+  );
+}
+
 /** FAZA 2 (dyspozycja, sekcja pod stołem) — rozbicie relacji za/przeciw, prosta wersja. */
 function relBreakdownHtml(st: DiplomacyAudienceState): string {
   const rb = st.relationBreakdown;
@@ -887,7 +974,7 @@ function render(): void {
             '<span class="da-tab on">' + dipBrandIconHtml('tb-diplomacy', 12) + 'Stół negocjacji</span>' +
           '</div>' +
           '<div class="da-table">' +
-            dealsColumnHtml(st) + treatiesColumnHtml(st) + offersColumnHtml(st) +
+            dealsColumnHtml(st) + treatiesColumnHtml(st) + offersColumnHtml(st) + pendingNegotiationsColumnHtml(st) +
           '</div>' +
           relBreakdownHtml(st) +
         '</div>' +
@@ -971,6 +1058,40 @@ function render(): void {
         treaty?.breakPenaltyLabel,
         () => { cfg!.onBreakTreaty?.(dealId); },
       );
+    });
+  });
+
+  /**
+   * C-DYP-Q1=A (2026-07-26) — stół negocjacyjny: Przyjmij/Odrzuć trafiają wprost do
+   * SILNIKU; Kontruj otwiera TEN SAM formularz negocjacji (showNegotiationModal) co
+   * świeża propozycja — submit woła onCounterNegotiation zamiast onAction (nowe
+   * warunki NADPISUJĄ poprzednie na tym samym wpisie stołu, nie tworzą nowego).
+   */
+  rootEl.querySelectorAll<HTMLButtonElement>('[data-negot-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (cfg === null) return;
+      const negotId = btn.getAttribute('data-negot-id');
+      const act = btn.getAttribute('data-negot-act');
+      if (!negotId || !act) return;
+      if (act === 'accept') { cfg.onAcceptNegotiation?.(negotId); return; }
+      if (act === 'reject') { cfg.onRejectNegotiation?.(negotId); return; }
+      if (act === 'counter') {
+        const aid = btn.getAttribute('data-negot-aid');
+        if (!aid || !cfg.getNegotiationContext) return;
+        const negCtx = cfg.getNegotiationContext(aid);
+        if (!negCtx) return;
+        const row = (st.pendingNegotiations ?? []).find(r => r.id === negotId);
+        const syntheticAction: AudienceAction = { id: aid, label: row?.actionLabel ?? 'Kontroferta', enabled: true };
+        showNegotiationModal(
+          syntheticAction,
+          mergeBasketCtx(negCtx),
+          (payload) => cfg!.previewNegotiation
+            ? cfg!.previewNegotiation(cfg!.ownerId, payload)
+            : { accepted: true },
+          (payload) => cfg!.onCounterNegotiation?.(negotId, payload),
+          () => { /* anulowano */ },
+        );
+      }
     });
   });
 }

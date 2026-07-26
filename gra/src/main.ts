@@ -676,7 +676,7 @@ import {
 } from './ui/diplomacyPanel';
 import {
   showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
-  showWarConfirmModal, type AudienceAction, type NegotiationPayload,
+  showWarConfirmModal, type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
 } from './ui/diplomacyAudience';
 import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
 import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
@@ -685,6 +685,10 @@ import {
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
   enrichAiCommandWithTreasury, clampDealTurns,
   type ProposalEvalContext, type ProposalPayload,
+  // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta/odpowiedź.
+  type PendingNegotiation, createNegotiation, applyCounterOffer, canCounterNegotiation,
+  negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
+  NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
 } from './game/diplomacy-proposals';
 import {
   type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
@@ -4421,6 +4425,17 @@ async function boot(): Promise<void> {
     let diplomaticContactTrackingReady = false;
     /** v1.1: aktywne traktaty dyplomatyczne (save/load meta.diplomacyDeals). */
     let activeDeals: ActiveDeal[] = [];
+    /**
+     * C-DYP-Q1=A (2026-07-26, Maciej): STÓŁ NEGOCJACYJNY — stan „propozycja oczekuje"
+     * per para właścicieli, PRZENOSZONY przez zapis/odczyt gry (save/load
+     * meta.negotiationTable). Obie strony (gracz→AI i AI→gracz) trafiają do TEJ SAMEJ
+     * tablicy (parytet — patrz raport zadania) i przechodzą przez TE SAME funkcje
+     * silnika (diplomacy-proposals.ts: createNegotiation/resolveNegotiationAsResponder/
+     * generateCounterOffer/negotiationStillValid).
+     */
+    let negotiationTable: PendingNegotiation[] = [];
+    /** Licznik do unikalnego id wpisu w negotiationTable (save/load meta.negotiationSeq). */
+    let negotiationSeq = 0;
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
@@ -6827,6 +6842,10 @@ async function boot(): Promise<void> {
         openDiplomacyPendingById(ev.id);
         return;
       }
+      if (ev.id.startsWith('negot-')) {
+        openDiplomacyAudienceForNegotiation(ev.id);
+        return;
+      }
       const cityId = cityIdFromRevoltEventId(ev.id)
         ?? cityIdFromProdEmptyEventId(ev.id);
       if (cityId) {
@@ -7601,7 +7620,29 @@ async function boot(): Promise<void> {
           kind: 'diplo',
         });
       }
+      // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — wpisy czekające na GRACZA (własne
+      // z AI, LUB kontroferta AI na propozycję gracza) też trafiają do kolejki zdarzeń
+      // tury, jak stary pendingDiplomacyInbox (zachowanie „zwróć uwagę" nie regresuje).
+      for (const n of negotiationTable) {
+        if (n.awaitingOwnerId !== 0) continue;
+        const aiOwnerId = n.proposerOwnerId === 0 ? n.responderOwnerId : n.proposerOwnerId;
+        events.push({
+          id: n.id,
+          icon: '\u{1F91D}',
+          title: 'Dyplomacja: ' + ownerDiploLabel(aiOwnerId),
+          subtitle: negotiationSummary(n) + ` (runda ${n.round}/${NEGOTIATION_MAX_ROUNDS})`,
+          kind: 'diplo',
+        });
+      }
       return events;
+    }
+
+    /** C-DYP-Q1=A: klik na wpis stołu w kolejce zdarzeń — otwiera pełną Audiencję (stół), nie stary modal jednopozycyjny. */
+    function openDiplomacyAudienceForNegotiation(negotiationId: string): void {
+      const entry = negotiationTable.find(n => n.id === negotiationId);
+      if (!entry) return;
+      const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      openDiplomacyAudience(aiOwnerId);
     }
 
     function collectDiploChipCounts(): { sojusze: number; pakty: number; wojny: number } {
@@ -8051,6 +8092,13 @@ async function boot(): Promise<void> {
       const enriched = enrichAiCommandWithTreasury(cmd, balance);
       if (!enriched) return;
       console.log(`[Dyplomacja] AI${ownerId} ${enriched.type}: ${enriched.powod}`);
+      // 'zaproponuj_pokoj' zostaje na STARYM, prostym torze (pendingDiplomacyInbox) —
+      // to nie jest "treść" do kontrowania (traktat/koszyk), tylko binarna zgoda na
+      // zakończenie wojny; ProposalActionId jej nie modeluje.
+      if (enriched.type === 'zaproponuj_pokoj') {
+        enqueueDiplomacyPending(ownerId, enriched.type, formatAiDiplomacyPlayerMessage(enriched));
+        return;
+      }
       if (enriched.type === 'zaproponuj_handel') {
         aiOneShotGiftLastTurn.set(ownerId, turn);
       }
@@ -8060,17 +8108,214 @@ async function boot(): Promise<void> {
       if (enriched.type === 'zaproponuj_handel_surowiec') {
         aiResourceTradeLastProposalTurn.set(ownerId, turn);
       }
-      enqueueDiplomacyPending(
-        ownerId,
-        enriched.type,
-        formatAiDiplomacyPlayerMessage(enriched),
-        enriched.type === 'zaproponuj_handel' || enriched.type === 'oferuj_trybut_za_pokoj'
-          ? enriched.goldOnce
-          : enriched.type === 'zaproponuj_umowe_handlowa'
-            ? enriched.sweetenerGold
-            : undefined,
-        enriched.type === 'zaproponuj_handel_surowiec' ? enriched : undefined,
+      // C-DYP-Q1=A (2026-07-26): PARYTET — reszta komend (sojusz/handel/umowa
+      // handlowa/handel surowcem/trybut) idzie PRZEZ TĘ SAMĄ tablicę stołu
+      // negocjacyjnego co propozycje gracza (negotiationTable), NIE osobną,
+      // uproszczoną ścieżkę.
+      enqueueNegotiationFromAiCmd(ownerId, enriched);
+    }
+
+    /**
+     * C-DYP-Q1=A (2026-07-26): AI składa propozycję GRACZOWI przez STÓŁ NEGOCJACYJNY —
+     * ta sama tablica (negotiationTable) i te same funkcje silnika co propozycje gracza
+     * (parytet, zlecenie pkt 5). Mapowanie cmd → {actionId, payload} to ISTNIEJĄCY
+     * konwerter aiCommandToPendingProposal (diplomacy-proposals.ts) — bierzemy z niego
+     * tylko treść (actionId/payload), id/expiresTurn/source dokłada createNegotiation.
+     */
+    function enqueueNegotiationFromAiCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
+      const converted = aiCommandToPendingProposal(cmd, ownerId, 0, turn);
+      if (!converted) return;
+      // Dedup — nie stackuj drugiej propozycji TEGO SAMEGO typu, gdy jedna już czeka.
+      if (negotiationTable.some(n =>
+        n.proposerOwnerId === ownerId && n.responderOwnerId === 0 && n.actionId === converted.actionId,
+      )) return;
+      negotiationSeq += 1;
+      const entry = createNegotiation(
+        { actionId: converted.actionId, proposerOwnerId: ownerId, responderOwnerId: 0, payload: converted.payload },
+        turn, 'ai', negotiationSeq,
       );
+      negotiationTable.push(entry);
+      showHintMessage('Dyplomacja: ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmd.type), 4500);
+      refreshD1bHud();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    /**
+     * C-DYP-Q1=A: RYZYKO ze zlecenia — świat mógł się zmienić między złożeniem a
+     * odpowiedzią (wojna, eliminacja) — sprzątamy nieaktualne wpisy RAZ na turę (wołane
+     * z runAiPhase, TYLKO na świeżej turze — nie przy wznowieniu po animacji bitwy).
+     */
+    function pruneInvalidNegotiations(): void {
+      let changed = false;
+      for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
+        const entry = negotiationTable[ni]!;
+        const validity = negotiationStillValid(entry, {
+          turn,
+          isAtWar: getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
+          proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
+          responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
+        });
+        if (!validity.valid) {
+          negotiationTable.splice(ni, 1);
+          changed = true;
+          showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
+        }
+      }
+      if (changed) {
+        refreshD1bHud();
+        if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+      }
+    }
+
+    /**
+     * C-DYP-Q1=A: AI odpowiada na wpisy, w których to jej kolej — JEDYNA
+     * zautomatyzowana decyzja (decyzje GRACZA są zawsze ręczne, patrz
+     * handleNegotiationAccept/Reject/Counter niżej). Wołane raz na turę per AI
+     * właściciel, tuż po przetworzeniu dipCmds tego samego ownera.
+     */
+    function resolvePendingNegotiationsForOwner(ownerId: number): void {
+      let changed = false;
+      for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
+        const entry = negotiationTable[ni]!;
+        if (entry.awaitingOwnerId !== ownerId) continue;
+        if (entry.proposerOwnerId !== 0 && entry.responderOwnerId !== 0) continue;
+        const validity = negotiationStillValid(entry, {
+          turn,
+          isAtWar: getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
+          proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
+          responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
+        });
+        if (!validity.valid) {
+          negotiationTable.splice(ni, 1);
+          changed = true;
+          showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
+          continue;
+        }
+        const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
+        const outcome = resolveNegotiationAsResponder(entry, ctx, turn);
+        changed = true;
+        if (outcome.kind === 'countered') {
+          negotiationTable[ni] = outcome.entry;
+          showHintMessage(ownerDiploLabel(ownerId) + ' składa kontrofertę: ' + outcome.note, 4500);
+        } else {
+          negotiationTable.splice(ni, 1);
+          const result = outcome.kind === 'accepted' ? outcome.result : { accepted: false as const, reason: outcome.reason };
+          applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
+          showHintMessage(
+            ownerDiploLabel(ownerId) + (outcome.kind === 'accepted' ? ' przyjmuje propozycję' : ' odrzuca propozycję'),
+            4000,
+          );
+        }
+      }
+      if (changed) {
+        refreshD1bHud();
+        if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+      }
+    }
+
+    /** Gracz Przyjmuje wpis stołu, w którym to jego kolej — bez ponownej oceny progów (jak resolvePlayerAcceptsAiPending). */
+    function handleNegotiationAccept(negotiationId: string): void {
+      const idx = negotiationTable.findIndex(n => n.id === negotiationId);
+      if (idx < 0) return;
+      const entry = negotiationTable[idx]!;
+      if (entry.awaitingOwnerId !== 0) return;
+      negotiationTable.splice(idx, 1);
+      const result = resolvePlayerAcceptsAiPending(negotiationToLegacyPending(entry), turn, _menuDifficulty);
+      applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
+      refreshD1bHud();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    /** Gracz Odrzuca wpis stołu, w którym to jego kolej. */
+    function handleNegotiationReject(negotiationId: string): void {
+      const idx = negotiationTable.findIndex(n => n.id === negotiationId);
+      if (idx < 0) return;
+      const entry = negotiationTable[idx]!;
+      if (entry.awaitingOwnerId !== 0) return;
+      negotiationTable.splice(idx, 1);
+      if (entry.actionId === 'trybut_zadanie' || entry.actionId === 'trybut_oferta') {
+        const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+        const cur = getDiploRelation(0, aiOwnerId);
+        setDiploRelation(0, aiOwnerId, applyDiploEventTracked(0, aiOwnerId, cur, 'trybut_odmowa'));
+      }
+      showDiplomacyProposalBanner(false, 'Odrzucono propozycję');
+      refreshD1bHud();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    /** Gracz Kontruje wpis stołu, w którym to jego kolej — nowe warunki z formularza negocjacji. */
+    function handleNegotiationCounter(negotiationId: string, payload: NegotiationPayload): void {
+      const idx = negotiationTable.findIndex(n => n.id === negotiationId);
+      if (idx < 0) return;
+      const entry = negotiationTable[idx]!;
+      if (entry.awaitingOwnerId !== 0 || !canCounterNegotiation(entry)) {
+        showHintMessage('Limit rund osiągnięty — możesz tylko przyjąć lub odrzucić', 3500);
+        return;
+      }
+      const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      const { uiPayload } = buildProposalFromPayload(aiOwnerId, payload);
+      negotiationTable[idx] = applyCounterOffer(entry, uiPayload, 0, turn);
+      showHintMessage('Kontroferta wysłana — czekamy na odpowiedź', 4000);
+      refreshD1bHud();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    /** A1-Q18 / C-DYP-Q1=A: wpisy stołu WIDOCZNE dla gracza (własne + przychodzące), dla danej pary z ownerId. */
+    function getNegotiationsForPair(ownerId: number): PendingNegotiation[] {
+      return negotiationTable.filter(n =>
+        (n.proposerOwnerId === ownerId && n.responderOwnerId === 0)
+        || (n.proposerOwnerId === 0 && n.responderOwnerId === ownerId),
+      );
+    }
+
+    /** C-DYP-Q1=A: ProposalActionId (CYW) → id formularza negocjacji UI ('2'..'13', diplomacyNegotiationModal.ts). */
+    const CYW_ACTION_TO_UI_ID: Record<string, string> = {
+      nap: '2', sojusz_defensywny: '3', sojusz_pelny: '3', granice: '4',
+      handel: '5', umowa_handlowa: '5', tech: '6', namow_wojne: '7',
+      trybut_zadanie: '8', trybut_oferta: '8', ultimatum: '9', wasal: '12',
+    };
+
+    /** C-DYP-Q1=A: krótki opis WARUNKÓW aktualnie na stole (bez nowej wyceny — tylko odczyt payloadu). */
+    function negotiationSummary(entry: PendingNegotiation): string {
+      const p = entry.payload;
+      switch (entry.actionId) {
+        case 'nap': return `Pakt nieagresji na ${p.turns ?? 15} tur`;
+        case 'sojusz_defensywny': return 'Sojusz defensywny';
+        case 'sojusz_pelny': return 'Sojusz pełny';
+        case 'granice': return p.borderMilitary ? 'Prawo wojskowego przemarszu' : 'Otwarte granice cywilne';
+        case 'handel': return p.goldOnce ? `Handel — ${p.goldOnce} ¤` : 'Handel — koszyk PN';
+        case 'umowa_handlowa': return 'Umowa handlowa' + (p.goldOnce ? ` (+${p.goldOnce} ¤ słodzika)` : '');
+        case 'tech': return `Sprzedaż technologii za ${p.techPrice ?? p.goldOnce ?? 0} ¤`;
+        case 'namow_wojne': return `Namowa do wojny — łapówka ${p.bribeGold ?? 0} ¤`;
+        case 'trybut_zadanie': return `Żądanie trybutu ${p.goldPerTurn ?? 0} ¤/turę`;
+        case 'trybut_oferta': return p.goldOnce ? `Trybut jednorazowy ${p.goldOnce} ¤` : `Trybut ${p.goldPerTurn ?? 0} ¤/turę`;
+        case 'ultimatum': return `Ultimatum — ${p.goldOnce ?? 0} ¤`;
+        case 'wasal': return `Wasalizacja — ${p.goldPerTurn ?? 0} ¤/turę`;
+        default: return entry.actionId;
+      }
+    }
+
+    /** C-DYP-Q1=A: wiersze UI (diplomacyAudience.ts kolumna „Oczekujące propozycje") dla tej pary. */
+    function buildPendingNegotiationRows(
+      ownerId: number,
+      actionsList: readonly AudienceAction[],
+    ): PendingNegotiationRow[] {
+      return getNegotiationsForPair(ownerId).map(entry => {
+        const direction: 'own' | 'incoming' = entry.awaitingOwnerId === 0 ? 'incoming' : 'own';
+        const uiActionId = CYW_ACTION_TO_UI_ID[entry.actionId] ?? '5';
+        const actionLabel = actionsList.find(a => a.id === uiActionId)?.label ?? entry.actionId;
+        return {
+          id: entry.id,
+          direction,
+          actionLabel,
+          summary: negotiationSummary(entry),
+          round: entry.round,
+          maxRounds: NEGOTIATION_MAX_ROUNDS,
+          expiresInTurns: Math.max(0, entry.expiresTurn - turn),
+          canCounter: direction === 'incoming' && canCounterNegotiation(entry),
+          uiActionId,
+        };
+      });
     }
 
     function enqueueDiplomacyPending(
@@ -9341,13 +9586,22 @@ async function boot(): Promise<void> {
       return { accepted: result.accepted, reason: result.reason };
     }
 
+    /**
+     * C-DYP-Q1=A (2026-07-26, Maciej): DECYZJA WŁAŚCICIELA — pełny stół negocjacyjny
+     * z kontrofertą. Propozycja gracza NIE jest już rozstrzygana natychmiast: ląduje
+     * na stole (negotiationTable) i czeka na odpowiedź AI w JEJ turze przetwarzania
+     * (resolvePendingNegotiationsForOwner) — przyjęcie / odrzucenie / kontroferta.
+     * previewNegotiatedProposal (wyżej) zostaje jako ADWIZORY „prawdopodobna
+     * odpowiedź" — nie finalizuje niczego, nie gwarantuje wyniku.
+     */
     function handleNegotiatedProposal(ownerId: number, payload: NegotiationPayload): void {
-      // Re-walidacja: ctx + evaluateProposal liczone od nowa TU (moment „Akceptuj"),
-      // nie ponownie użyty wynik podglądu — relacja mogła się zmienić od czasu podglądu.
-      const { cywAction, uiPayload, proposal } = buildProposalFromPayload(ownerId, payload);
-      const ctx = buildProposalEvalContext(0, ownerId);
-      const result = evaluateProposal(proposal, ctx);
-      applyProposalOutcome(0, ownerId, result, uiPayload, cywAction);
+      const { proposal } = buildProposalFromPayload(ownerId, payload);
+      negotiationSeq += 1;
+      const entry = createNegotiation(proposal, turn, 'player', negotiationSeq);
+      negotiationTable.push(entry);
+      showHintMessage('Propozycja wysłana do: ' + ownerDiploLabel(ownerId) + ' — czekamy na odpowiedź', 4000);
+      refreshD1bHud();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
     function diplomacyActionIdFromLabel(akcja: string): string {
@@ -9607,6 +9861,7 @@ async function boot(): Promise<void> {
             hasTrade: _fsTrade,
             contactEstablished: diplomaticContactEstablished.has(ownerId),
           });
+          const audienceActionsList = buildAudienceActions(ownerId, layer);
           const dominantTreaty = dominantTreatyForFormalStatus(formalStatus.kind, 0, ownerId);
           const formalStatusDetail = dominantTreaty ? {
             sinceTurns: dominantTreaty.zawartaTura !== undefined
@@ -9646,7 +9901,8 @@ async function boot(): Promise<void> {
             tier: relationTier(rel),
             layer: layer === 'pre_contact' ? 'full' : layer,
             contactEstablished: diplomaticContactEstablished.has(ownerId),
-            actions: buildAudienceActions(ownerId, layer),
+            actions: audienceActionsList,
+            pendingNegotiations: buildPendingNegotiationRows(ownerId, audienceActionsList),
             relationBreakdown: getRelationBreakdown(0, ownerId),
             playerSkarbiec: Math.floor(player.skarbiec),
             playerZlotoPerTura: Math.floor(_lastPieniadzRate),
@@ -9713,6 +9969,10 @@ async function boot(): Promise<void> {
           };
         },
         onBreakTreaty: (dealId: string) => breakTreatyVoluntarily(dealId),
+        onAcceptNegotiation: (negotiationId: string) => handleNegotiationAccept(negotiationId),
+        onRejectNegotiation: (negotiationId: string) => handleNegotiationReject(negotiationId),
+        onCounterNegotiation: (negotiationId: string, payload: NegotiationPayload) =>
+          handleNegotiationCounter(negotiationId, payload),
       });
     }
 
@@ -10400,6 +10660,10 @@ async function boot(): Promise<void> {
         onEventClick: (id) => {
           if (id.startsWith('diplo-pend-')) {
             openDiplomacyPendingById(id);
+            return;
+          }
+          if (id.startsWith('negot-')) {
+            openDiplomacyAudienceForNegotiation(id);
             return;
           }
           const prodCityId = cityIdFromProdEmptyEventId(id);
@@ -13861,6 +14125,10 @@ async function boot(): Promise<void> {
           diplomaticallyDiscoveredOwners: Array.from(diplomaticallyDiscoveredOwners),
           diplomaticDiscoveryPopupShown: Array.from(diplomaticDiscoveryPopupShown),
           diplomacyDeals: activeDeals.slice(),
+          // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta oczekująca
+          // MUSI przetrwać zapis/odczyt (zlecenie właściciela pkt 1).
+          negotiationTable: negotiationTable.slice(),
+          negotiationSeq,
           diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
           diplomacyFactorLog: Array.from(diplomacyFactorLog.entries()),
           aiOwnerCivMap: Array.from(aiOwnerCivMap.entries()),
@@ -15143,6 +15411,11 @@ async function boot(): Promise<void> {
         try {
           const runAiPhase = async (): Promise<void> => {
             aiTurnAwaitingBattle = false;
+            // C-DYP-Q1=A: sprzątanie nieaktualnych wpisów stołu RAZ na świeżą turę —
+            // NIE przy wznowieniu po animacji bitwy (aiCmdResume wtedy niepuste).
+            if (!aiCmdResume) {
+              try { pruneInvalidNegotiations(); } catch (ePrune) { console.error('[Dyplomacja] Blad sprzatania stolu negocjacyjnego:', ePrune); }
+            }
             reconcileAllOwnerErasFromResearch();
             const aiOwnerList = aiCmdResume?.ownerList ?? (() => {
               const s = new Set<number>();
@@ -15547,6 +15820,14 @@ async function boot(): Promise<void> {
                 } catch (eCmdDiplo) {
                   console.error(`[Dyplomacja] Blad komendy ${cmd.type}:`, eCmdDiplo);
                 }
+              }
+
+              // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — AI odpowiada (przyjmuje /
+              // odrzuca / kontruje) na wpisy, w których to jej kolej, TĄ SAMĄ turą.
+              try {
+                resolvePendingNegotiationsForOwner(ownerId);
+              } catch (eNegoc) {
+                console.error(`[Dyplomacja] Blad stolu negocjacyjnego AI${ownerId}:`, eNegoc);
               }
 
               if (tier !== 2) { // 2 = Neutralny -- log only non-neutral
@@ -18049,6 +18330,22 @@ async function boot(): Promise<void> {
       }
       const savedDeals = saved.meta?.diplomacyDeals as ActiveDeal[] | undefined;
       if (savedDeals?.length) activeDeals = hydrateActiveDeals(savedDeals);
+      // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — stara gra BEZ tego pola wczytuje się
+      // z pustą tablicą (brak pola = brak oczekujących propozycji, nie błąd). Wpisy, których
+      // strona nie ma już nawiązanego kontaktu (analogicznie do pendingDiplomacyInbox wyżej),
+      // lub które negotiationStillValid uzna za nieaktualne PRZY WCZYTANIU (wojna wybuchła /
+      // strona wyeliminowana / termin minął w międzyczasie) — odpadają cicho, bez crasha.
+      negotiationTable.length = 0;
+      const savedNegotiations = saved.meta?.negotiationTable as PendingNegotiation[] | undefined;
+      if (savedNegotiations?.length) {
+        for (const entry of savedNegotiations) {
+          const otherOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+          if (!diplomaticContactEstablished.has(otherOwnerId)) continue;
+          negotiationTable.push(entry);
+        }
+      }
+      negotiationSeq = (saved.meta?.negotiationSeq as number | undefined) ?? negotiationTable.length;
+      try { pruneInvalidNegotiations(); } catch (ePruneLoad) { console.error('[Dyplomacja] Blad sprzatania stolu po wczytaniu:', ePruneLoad); }
       diplomacyPairMeta.clear();
       const savedPairMeta = saved.meta?.diplomacyPairMeta as Array<[string, DiploPairMeta]> | undefined;
       if (savedPairMeta?.length) {

@@ -371,7 +371,7 @@ export function showNegotiationModal(
     + '<div class="cdn-result-text"></div>'
     + '<div class="cdn-btns">'
     + '<button type="button" class="dip-muted-btn cdn-change">Zmień</button>'
-    + '<button type="button" class="dip-gold-btn cdn-accept">Akceptuj</button>'
+    + '<button type="button" class="dip-gold-btn cdn-accept">Wyślij propozycję</button>'
     + '</div></div>'
     + '</div>';
   document.body.appendChild(overlay);
@@ -388,16 +388,16 @@ export function showNegotiationModal(
     const payload = readPayload(action.id, ctx);
     if (payload == null) return;
     lastPayload = payload;
+    // C-DYP-Q1=A (2026-07-26): podgląd to WYŁĄCZNIE prognoza — propozycja i tak ląduje
+    // na stole (negotiationTable) i czeka na realną odpowiedź w turze AI (przyjęcie /
+    // odrzucenie / kontroferta). „Wyślij propozycję" NIE jest już blokowane prognozą —
+    // to gracz decyduje, czy mimo słabej prognozy warto spróbować.
     const preview = onPreview(payload);
     resultText.innerHTML = preview.accepted
-      ? '<p class="cdn-accepted">✓ ' + esc(ctx.civName) + ' wstępnie się zgadza'
+      ? '<p class="cdn-accepted">✓ ' + esc(ctx.civName) + ' prawdopodobnie się zgodzi'
         + (preview.reason ? ': ' + esc(preview.reason) : '') + '.</p>'
-      : '<p class="cdn-rejected">✗ ' + esc(ctx.civName) + ' odrzuca propozycję'
+      : '<p class="cdn-rejected">✗ ' + esc(ctx.civName) + ' prawdopodobnie odrzuci'
         + (preview.reason ? ': ' + esc(preview.reason) : '') + '.</p>';
-    if (acceptBtn) {
-      acceptBtn.disabled = !preview.accepted;
-      acceptBtn.title = preview.accepted ? '' : 'Druga strona odrzuca te warunki — zmień propozycję';
-    }
     formStep.style.display = 'none';
     resultStep.style.display = '';
   });
