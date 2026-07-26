@@ -11,7 +11,18 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `a2436938` — 2026-07-27 00:08 · FALA 27: PANEL MIASTA UX — **AKTUALNA**
+## ROBOCZA `b0d642b4` — 2026-07-27 00:11 · FALA 27: PANEL MIASTA — NAWIGACJA ‹ › — **AKTUALNA**
+- md5 (pelne): `b0d642b4c3892284ac52e7f6060b497b` · stempel: `ROBOCZA · 2026-07-27 00:10`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).
+- **Co nowego (sesja F27):**
+  - **Panel miasta — nawigacja:** przyciski ‹ › zamiast przecinków/kropek; mniejszy font chevronów.
+  - **cityUxFrame:** `pointer-events:none` na `.civ-ux-top` + `auto` tylko na `.civ-v-top-stack` — klik w mapę pod banerem działa.
+  - **Skróty klawiszowe:** `stopImmediatePropagation` na ← → / , . — nie przechwytuje mapa.
+  - **Rail ikon:** z-index 405 (nad panelami bocznymi).
+- **Bramki:** tsc 0.
+
+## ROBOCZA `a2436938` — 2026-07-27 00:08 · FALA 27: PANEL MIASTA UX — **ZASTĄPIONA**
 - md5 (pelne): `a243693882d297d687273e10f01074f7` · stempel: `ROBOCZA · 2026-07-27 00:08`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock przy inject).

@@ -3527,3 +3527,11 @@ Nowe: panel miasta — klikalne ikony zakładek (pointer-events + z-index 405); 
 Bramki: tsc 0 · smoke OK · logic 207/208 (pre garnizon).
 **Sesja lokalna: pull / sync dysk, testuj `a2436938` — `gra-robocza/START.html`.**
 CZEKAM-NA: Maciej — playtest panelu miasta (taby + nawigacja miast).
+
+## [00:11 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `b0d642b4` (FALA 27, VERIFY)
+**md5 `b0d642b4c3892284ac52e7f6060b497b`**, stempel `ROBOCZA · 2026-07-27 00:10`. **VERIFY OK** (certutil md5 HTML = manifest).
+Wynik `vite build` exit 0. POLE-BITWY: pominięty. Publish: inject przez temp (OneDrive lock).
+Nowe: republish F27 z `stopImmediatePropagation` na skrótach ← →; chevrony ‹ ›; pointer-events baner.
+Bramki: tsc 0.
+**Sesja lokalna: pull / sync dysk, testuj `b0d642b4` — `gra-robocza/START.html`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
