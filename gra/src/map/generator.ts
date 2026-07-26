@@ -411,6 +411,24 @@ export function generateMap(
   // ujścia i nigdy ich nie ruszać.
   flattenFalseCoastalRiverNotches(hexes, width, height);
 
+  // ── Przebieg 3h-bis: DRUGI przebieg lasu — DOPIERO po finalnej geografii (TEMAT „80% lasu",
+  // Maciej 2026-07-25). Pierwszy przebieg (Przebieg 1e/3g, wyżej) liczy się na terenie SPRZED
+  // enforceMapBorderOcean/rebalanceLandFractionWithMargins/thickenCoastAndSmoothInlets/
+  // flattenFalseCoastalRiverNotches — zmierzone empirycznie: (a) ~15-17% przydzielonego lasu
+  // ląduje na heksach, które PÓŹNIEJ stają się Wybrzeże (thickenCoastAndSmoothInlets pogrubia
+  // wybrzeże o kolejny pierścień) i traci nakładkę w stripDepositsFromWater niżej; (b) nowy
+  // kwalifikowalny ląd (Łąka/Równina/Wzgórza) pojawiający się w międzyczasie (rebalans lądu/
+  // morza) nigdy nie dostaje szansy na las, bo obie funkcje już przeleciały. Ponowne wywołanie
+  // reapplyForestOverlay na finalnym terenie (ten sam scratch, BEZ rand() — deterministyczne,
+  // zero ryzyka dla A=B) naprawia oba efekty: reset+reasajn na PRAWDZIWIE finalnym terenie.
+  // Musi być PRZED placeDeposits (żeby złoża respektowały ostateczne rozmieszczenie lasu, tak
+  // jak dotychczas). BEZ drugiego ensureForestGridCoverage — wydajność ("duża" <15s, AC z
+  // map-gen-regression-test.cjs): próg minLand lasu jest już niski (minLandHexesForForestCell),
+  // więc share-based reapplyForestOverlay sam pokrywa prawie wszystkie komórki; drugi przebieg
+  // ensureForestGridCoverage (4 pełne przejścia po wszystkich masach lądu) kosztował ~4s na
+  // "dużej" mapie za utratę <1pp pokrycia — zmierzone empirycznie, nie warte kosztu.
+  reapplyForestOverlay(hexes, terrainScratch, terrainTh, typ, forestTier, zoneOf, nZones, height);
+
   // ── Przebieg 3i: złoża DOPIERO po finalnych rzekach i finalnym wybrzeżu (TEMAT 12,
   // 2026-07-24, Maciej) — glina wymaga prawdziwej h.rzeka.obecna (rzeki wcześniej nie
   // istniały — placeDeposits() był wołany PRZED generateRivers, więc gałąź rzeki w regule
