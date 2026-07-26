@@ -234,6 +234,8 @@ import {
   unitWithStackRuch,
   countLawGarrisonOnCityHex,
   unitsOnCityHexForLaw,
+  activeUnitStack,
+  exitGarnizon,
 } from './game/armyMerge';
 import {
   resolveMapUnitCursor,
@@ -3521,7 +3523,13 @@ async function boot(): Promise<void> {
       const playerUnits = units.filter(u => u.ownerId === 0);
       const stacks = new Map<string, typeof playerUnits>();
       for (const u of playerUnits) {
-        const key = `${u.q},${u.r}`;
+        // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka ufortyfikowana
+        // (inGarnizon) dostaje WŁASNY klucz (po id) — nigdy nie miesza się w
+        // jeden wpis z widocznym stosem na tym samym heksie miasta, bo Ufort.
+        // ukrywa/odkrywa też tylko JEDNĄ konkretną jednostkę, nie cały stos
+        // (patrz onAction 'fortify'). Dzięki temu jest osobno widoczna,
+        // zaznaczalna i oznaczona „w garnizonie” na liście armii.
+        const key = u.inGarnizon === true ? `g:${u.id}` : `${u.q},${u.r}`;
         const arr = stacks.get(key);
         if (arr) arr.push(u);
         else stacks.set(key, [u]);
@@ -3529,6 +3537,7 @@ async function boot(): Promise<void> {
       const out: ArmyListEntry[] = [];
       for (const group of stacks.values()) {
         const lead = group[0]!;
+        const inGarnizon = lead.inGarnizon === true;
         const types = [...new Set(group.map(u => u.typeId))];
         const name = group.length === 1
           ? lead.typeId
@@ -3563,6 +3572,7 @@ async function boot(): Promise<void> {
           ruchMax,
           hp,
           hpMax,
+          inGarnizon,
         });
       }
       out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
@@ -4034,12 +4044,35 @@ async function boot(): Promise<void> {
               const def = lookupUnitDef(u.typeId);
               const hpMax = unitHealth(def);
               return {
+                id: u.id,
                 nazwa: u.typeId,
                 category: u.category,
                 health: hpMax,
                 maxHealth: hpMax,
+                inGarnizon: u.inGarnizon === true,
               };
             });
+        },
+        // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): "Opuść garnizon" przy
+        // jednostce w panelu miasta -- odwraca dokładnie to, co robi Ufort.
+        // (inGarnizon=false), PER JEDNOSTKA (symetrycznie do tego, że Ufort.
+        // ukrywa też tylko jedną wybraną jednostkę, nie cały widoczny stos).
+        // Jednostka wraca do zwykłego, widocznego stosu na heksie miasta —
+        // "Czuwaj"/"Rozwiąż" działają dalej bez dalszych zmian.
+        onLeaveGarrison: (unitId: string) => {
+          const u = units.find(x => x.id === unitId);
+          if (!u || u.ownerId !== 0 || u.inGarnizon !== true) return;
+          const city = cityAtUnit(u);
+          if (!exitGarnizon(u)) return;
+          if (city) syncGarnizonForCity(city);
+          syncUnitsRender();
+          refreshFog();
+          refreshCityPanelIfOpen();
+          refreshD1bHud();
+          showHintMessage(
+            u.typeId + ' opuścił garnizon' + (city ? ' — ' + city.name : ''),
+            2500,
+          );
         },
         getBuildingCostPace: () => player.buildingCostPace ?? 'niski',
         getKosztJednostekPace: () => player.kosztJednostekPace ?? 'niski',
@@ -5601,7 +5634,10 @@ async function boot(): Promise<void> {
     }
 
     function playerStackAt(u: RuntimeUnit): RuntimeUnit[] {
-      return visibleStackOnHex(units, u.q, u.r, u.ownerId);
+      // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): patrz activeUnitStack()
+      // w armyMerge.ts — jednostka ufortyfikowana zaznaczona z listy armii
+      // dostaje stos-solo, zamiast pustej tablicy z visibleStackOnHex.
+      return activeUnitStack(units, u);
     }
 
     function stackCanMove(u: RuntimeUnit): boolean {
@@ -9712,7 +9748,17 @@ async function boot(): Promise<void> {
         });
       }
       if (!siegeCity) {
-        actions.push({ id: 'fortify', label: 'Ufortyfikuj', disabled: stackRuch <= 0 });
+        // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): gdy jednostka jest już
+        // ufortyfikowana (zaznaczona z listy armii w lewym menu — patrz
+        // playerStackAt), przycisk zamienia się w "Opuść garnizon" — bez
+        // zużycia ruchu, żeby raz ufortyfikowana jednostka NIE była trwale
+        // niesterowalna z tego panelu.
+        const isGarnizoned = active.inGarnizon === true;
+        actions.push({
+          id: 'fortify',
+          label: isGarnizoned ? 'Opuść garnizon' : 'Ufortyfikuj',
+          disabled: isGarnizoned ? false : stackRuch <= 0,
+        });
         // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
         // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
         // jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
@@ -10153,6 +10199,24 @@ async function boot(): Promise<void> {
               unitRenderer.clearPathRoute();
               refreshD1bHud();
             } else if (actionId === 'fortify') {
+              // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka ju\u017c
+              // ufortyfikowana (wybrana z listy armii w lewym menu, gdzie jest
+              // teraz widoczna i zaznaczalna) -- ten sam przycisk staje si\u0119
+              // "Opu\u015b\u0107 garnizon" (patrz label w buildArmyStackHudState), bez
+              // zu\u017cycia ruchu, jak "Obud\u017a". Trzeci, r\u00f3wnoleg\u0142y spos\u00f3b wyj\u015bcia
+              // z garnizonu obok panelu miasta i rozkazu ruchu z listy armii.
+              if (u.inGarnizon === true) {
+                const leaveCity = cityAtUnit(u);
+                if (exitGarnizon(u) && leaveCity) syncGarnizonForCity(leaveCity);
+                refreshFog();
+                refreshCityPanelIfOpen();
+                showHintMessage(
+                  u.typeId + ' opu\u015bci\u0142 garnizon' + (leaveCity ? ' \u2014 ' + leaveCity.name : ''),
+                  2500,
+                );
+                selectPlayerUnit(u.id, true);
+                return;
+              }
               clearPlannedMarch(u.id);
               syncStackRuchLeft(stack, 0);
               reachable = new Set<string>();
@@ -10728,6 +10792,14 @@ async function boot(): Promise<void> {
       moveDestR: number,
       cost: number,
     ): void {
+      // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): rozkaz ruchu wydany
+      // jednostce ufortyfikowanej (z listy armii w lewym menu, gdzie taka
+      // jednostka jest teraz widoczna i zaznaczalna — patrz playerStackAt)
+      // automatycznie ją odfortyfikowuje i budzi (sentry) — PRZED policzeniem
+      // stosu do animacji, żeby po ruchu wróciła do zwykłego, widocznego stosu
+      // zamiast zostać "ukrytym" duchem na nowym heksie.
+      const garnizonCity = u.inGarnizon === true ? cityAtUnit(u) : undefined;
+      if (exitGarnizon(u) && garnizonCity) syncGarnizonForCity(garnizonCity);
       const stack = playerStackAt(u);
       const startPl = unitRenderer.getTokenPlacement(u.q, u.r);
       const startWP: Waypoint = {

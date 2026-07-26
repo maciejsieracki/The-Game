@@ -29,6 +29,45 @@ export function visibleStackOnHex(
   );
 }
 
+/**
+ * C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): "Ufortyfikuj" chowa jednostkę
+ * (RuntimeUnit.inGarnizon=true) do garnizonu miasta — wtedy visibleStackOnHex
+ * (powyżej) świadomie ją wyklucza, bo ten filtr steruje też merge'em armii
+ * i blokadami ruchu na mapie (NIE zmieniamy go — patrz handoff C-GARN-Q1).
+ * Bez tej funkcji jednostka raz ufortyfikowana nie miała już żadnego stosu do
+ * policzenia ruchu/akcji (playerStackAt zwracał pustą tablicę), więc mimo że
+ * dało się ją "zaznaczyć" z listy armii, każda akcja (ruch, Czuwaj, Pomiń)
+ * była no-opem.
+ *
+ * `activeUnitStack` daje "stos do działania" dla JUŻ ZAZNACZONEJ jednostki:
+ * ukryta w garnizonie -> stos-solo [u] (Ufort. chowa tylko JEDNĄ konkretną
+ * jednostkę, nie cały widoczny stos, więc wyjście też jest per-jednostka);
+ * w przeciwnym razie zwykły, widoczny stos na jej heksie (bez zmian).
+ */
+export function activeUnitStack(
+  units: RuntimeUnit[],
+  active: RuntimeUnit,
+): RuntimeUnit[] {
+  if (active.inGarnizon === true) return [active];
+  return visibleStackOnHex(units, active.q, active.r, active.ownerId);
+}
+
+/**
+ * Wyprowadza jednostkę z ukrytego garnizonu: odfortyfikowanie + budzenie
+ * (sentry) w jednym kroku — dokładnie to, czego oczekuje właściciel przy
+ * rozkazie ruchu wydanym jednostce z listy armii ("wtedy automatycznie
+ * następuje odfortyfikowanie albo odśpienie"), a także przycisk „Opuść
+ * garnizon" w panelu miasta i w panelu akcji jednostki.
+ * Mutuje `u` w miejscu; zwraca `true`, jeśli coś się rzeczywiście zmieniło
+ * (żeby wołający zsynchronizował licznik garnizonu miasta — `city.garnizon`).
+ */
+export function exitGarnizon(u: RuntimeUnit): boolean {
+  if (u.inGarnizon !== true) return false;
+  u.inGarnizon = false;
+  u.sentry = false;
+  return true;
+}
+
 /** Najmocniejsza jednostka stosu (Atak → id). */
 export function pickStackRepresentative(
   stack: RuntimeUnit[],

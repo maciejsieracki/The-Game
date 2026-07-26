@@ -184,10 +184,19 @@ export interface PodzialPracySplit {
 
 /** A unit garrisoned in the city (supplied by the engine via getUnitsAt). */
 export interface GarrisonUnit {
+  /** RuntimeUnit id — potrzebny do akcji „Opuść garnizon" (onLeaveGarrison). */
+  id: string;
   nazwa: string;
   category?: string;
   health?: number;
   maxHealth?: number;
+  /**
+   * C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): czy ta jednostka jest UKRYTA
+   * w garnizonie (Ufort., RuntimeUnit.inGarnizon===true) — tylko takie dostają
+   * przycisk „Opuść garnizon". Jednostki po prostu stojące na heksie miasta
+   * (niewymagające fortyfikacji) są już sterowalne normalnie z mapy.
+   */
+  inGarnizon?: boolean;
 }
 
 /** Optional hooks the engine may supply so the view reflects real game state. */
@@ -212,6 +221,12 @@ export interface CityPanelConfig {
   getCityBuildingFlags?: (cityId: string) => Partial<CityYieldContext>;
   /** Units standing on the city hex -> real Garnizon panel. */
   getUnitsAt?: (q: number, r: number) => GarrisonUnit[];
+  /**
+   * C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): wyprowadza JEDNĄ jednostkę
+   * z ukrytego garnizonu (inGarnizon=false) — wraca do zwykłego, widocznego
+   * stosu na heksie miasta; „Czuwaj"/„Rozwiąż" działają dalej bez zmian.
+   */
+  onLeaveGarrison?: (unitId: string) => void;
   /** Player treasury (gold) -> enables the Wykup (rush-buy) button. */
   getTreasury?: (ownerId: number) => number;
   /**
@@ -1797,6 +1812,11 @@ function ensureStyles(): void {
 .civ-v-garrison-chip .hpb{width:2em;height:0.4em;background:#0a0e14;border-radius:2px;overflow:hidden;border:1px solid rgba(0,0,0,0.35);flex-shrink:0;}
 .civ-v-garrison-chip .hpf{height:100%;background:linear-gradient(90deg,#2a6a2a,#6bbf59);}
 .civ-v-garrison-chip .hpf.hpl{background:linear-gradient(90deg,#6a1818,#d36b5e);}
+.civ-v-garrison-chip.in-garnizon{border-color:rgba(224,178,74,0.55);}
+.civ-v-garrison-leave-btn{flex-shrink:0;cursor:pointer;border:1px solid rgba(212,175,90,0.4);
+  background:rgba(212,175,90,0.12);color:#e0b24a;font-size:0.85em;line-height:1;border-radius:3px;
+  padding:0.05em 0.32em;margin-left:0.1em;}
+.civ-v-garrison-leave-btn:hover{background:rgba(212,175,90,0.28);color:#f0d290;}
 .civ-v-garrison-empty{display:none;}
 .civ-v-res-scroll{display:flex;align-items:center;justify-content:center;gap:1.15rem;
   justify-self:center;align-self:center;max-width:min(100%,96vw);
@@ -6150,11 +6170,28 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
     const max = u.maxHealth ?? 100;
     const pct = Math.max(0, Math.min(100, Math.round((hp / Math.max(1, max)) * 100)));
     const low = pct < 40;
-    const chip = el('div', 'civ-v-garrison-chip');
+    const isHidden = u.inGarnizon === true;
+    const chip = el('div', 'civ-v-garrison-chip' + (isHidden ? ' in-garnizon' : ''));
     chip.innerHTML =
       `<span class="gi">${cityPanelChipIconWrap('tb-army', 14)}</span><span class="gn">${u.nazwa}</span>` +
       `<span class="hpb"><span class="hpf ${low ? 'hpl' : ''}" style="width:${pct}%"></span></span>`;
-    chip.title = `${u.nazwa} · ${hp}/${max} HP`;
+    chip.title = `${u.nazwa} · ${hp}/${max} HP`
+      + (isHidden ? ' · ukryta w garnizonie (Ufort.)' : '');
+    // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jedyny sposób na wyprowadzenie
+    // trwale ufortyfikowanej jednostki bez rozkazu ruchu z listy armii.
+    if (isHidden && cfg.onLeaveGarrison) {
+      const leaveBtn = document.createElement('button');
+      leaveBtn.type = 'button';
+      leaveBtn.className = 'civ-v-garrison-leave-btn';
+      leaveBtn.textContent = '↩'; // ↩
+      leaveBtn.title = `Opuść garnizon — ${u.nazwa} wraca na mapę (odfortyfikowanie)`;
+      leaveBtn.setAttribute('aria-label', `Opuść garnizon — ${u.nazwa}`);
+      leaveBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        cfg.onLeaveGarrison?.(u.id);
+      });
+      chip.appendChild(leaveBtn);
+    }
     mount.appendChild(chip);
   }
 }

@@ -22,6 +22,13 @@ export interface ArmyListEntry {
   /** Łączne HP stosu (suma jednostek) — pasek zdrowia, patrz `al-hpbar`. */
   hp?: number;
   hpMax?: number;
+  /**
+   * C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka ukryta w garnizonie
+   * (Ufort.) — widoczna i zaznaczalna na liście, ale wydanie jej rozkazu
+   * ruchu (klik na mapie po zaznaczeniu) automatycznie ją odfortyfikuje
+   * i obudzi (sentry). Oznaczona wizualnie badge'em „w garnizonie”.
+   */
+  inGarnizon?: boolean;
 }
 
 export interface ArmyListHudConfig {
@@ -87,6 +94,9 @@ function ensureStyles(): void {
 .civ-army-list-hud .al-hpbar{height:5px;background:rgba(0,0,0,.35);border-radius:3px;margin-top:0.14em;overflow:hidden;}
 .civ-army-list-hud .al-hpbar i{display:block;height:100%;transition:width .2s,background-color .2s;}
 .civ-army-list-hud .al-meta{font-size:0.72em;color:var(--muted);margin-top:0.1em;}
+.civ-army-list-hud .al-garnizon-badge{display:inline-block;font-size:0.7em;font-weight:600;
+  letter-spacing:.02em;color:#e0b24a;background:rgba(224,178,74,0.14);
+  border:1px solid rgba(224,178,74,0.4);border-radius:4px;padding:0.1em 0.45em;margin-top:0.28em;}
 .civ-army-list-hud .al-hint{font-size:0.72em;color:var(--muted);font-style:italic;margin-top:0.45em;line-height:1.4;}
 `;
   const s = document.createElement('style');
@@ -161,9 +171,11 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         row.className = 'al-item' + (selectedHighlightId === a.id ? ' on' : '');
         row.setAttribute('role', 'button');
         row.tabIndex = 0;
-        row.title = a.unitCount > 1
-          ? formatZaznaczArmieLabel(a.unitCount)
-          : 'Zaznacz ' + a.name;
+        row.title = a.inGarnizon
+          ? 'Zaznacz ' + a.name + ' — w garnizonie; rozkaz ruchu ją odfortyfikuje i obudzi'
+          : a.unitCount > 1
+            ? formatZaznaczArmieLabel(a.unitCount)
+            : 'Zaznacz ' + a.name;
         const ico = document.createElement('span');
         ico.className = 'al-ico';
         ico.innerHTML = brandIconSvg('tb-army', 18);
@@ -178,6 +190,12 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         hex.textContent = 'Heks ' + a.hexLabel
           + (a.unitCount > 1 ? ' · ' + formatJednostkiCount(a.unitCount) : '');
         body.appendChild(hex);
+        if (a.inGarnizon) {
+          const badge = document.createElement('div');
+          badge.className = 'al-garnizon-badge';
+          badge.textContent = 'w garnizonie';
+          body.appendChild(badge);
+        }
         if (typeof a.hpMax === 'number' && a.hpMax > 0) {
           const hpVal = Math.round(a.hp ?? 0);
           const hpMax = Math.round(a.hpMax);
