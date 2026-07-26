@@ -647,3 +647,58 @@ brak odpowiedzi na nie można tymczasowo zastąpić rekomendacjami (C, C) oznacz
 
 **Komplet decyzji: Q1=A (globalna) · Q2=C (dryf+blizna) · Q3=C (tempo+progi) · Q4=A (jawna) · Q5=B (umiarkowanie) · Q6=A (start 70 dla wszystkich).**
 Otwarte do strojenia w playteście (nie blokuje startu prac): konkretne wagi zdarzeń, tempo dryfu, wysokość progów blokujących.
+
+---
+
+## 🔴 ZMIANA SKALI + decyzje trzeciej tury (2026-07-26) — NADRZĘDNE wobec wcześniejszych zapisów
+
+### SKALA: −100 … +100 (BYŁO 0–100 — nieaktualne!)
+Maciej: „wiarygodność powinna mieć też ujemny wskaźnik od plus sto do minus sto".
+Powód projektowy: na skali 0–100 zero znaczyłoby jednocześnie „nieznany" i „potwór". Na nowej skali:
+- **+100** Wzór cnoty · **+40…+99** Uczciwy · **−39…+39** Chwiejny/nieznany · **−100…−40** Wiarołomny
+- **0 = brak historii** (nic nie udowodniłeś w żadną stronę)
+
+### WARTOŚĆ STARTOWA — zależna od POZIOMU TRUDNOŚCI (decyzja Macieja)
+| Poziom | Start | Sens |
+|---|---|---|
+| **Łatwy** | **+40** | świat zakłada dobre intencje — sojusze dostępne od razu |
+| **Normalny** | **+20** | lekki kredyt zaufania |
+| **Trudny** | **0** | zero kredytu — reputację trzeba zapracować, próg sojuszu (W≥0) stoi dokładnie na starcie |
+Dotyczy gracza I wszystkich AI jednakowo (parytet). Bez różnicowania per cywilizacja.
+
+### CZTERY DŹWIGNIE WPŁYWU NA ZAUFANIE (wszystkie zatwierdzone)
+
+**1. Mnożnik tempa** — wiarygodność nie zmienia zaufania wprost, zmienia jego dynamikę:
+`wzrostMult = 1 + (W/100)×0,5` · `spadekMult = 1 − (W/100)×0,5`
+- W=+100 → zaufanie rośnie ×1,5, spada ×0,5 (wybaczają Ci)
+- W=0 → ×1,0 / ×1,0
+- W=−100 → rośnie ×0,5, spada ×1,5 (przy pierwszej okazji)
+
+**2. SUFIT ZAUFANIA** (Maciej: TAK) — wiarygodność wyznacza MAKSYMALNE osiągalne zaufanie, niezależnie od darów. Np. przy W=−60 zaufanie nie przekroczy ~30, choćby zasypać złotem.
+⚠️ To najważniejsza dźwignia: zamyka lukę „kupię sobie zaufanie prezentami" u źródła (audyt łatał podobną — zaufanie za dary bez pokrycia, #16). Najbardziej zrozumiała dla gracza: „nie ufam ci, bo mnie oszukałeś".
+
+**3. Twarde progi** (Q3=C) — poniżej wartości AI odmawia z zasady, bez negocjacji, NIEZALEŻNIE od zaufania i Respektu:
+- **Sojusz** wymaga W ≥ 0 · **Pakt o nieagresji** wymaga W ≥ −40
+
+**4. PIERWSZY KONTAKT** (Maciej: TAK) — startowe nastawienie nowo spotkanej cywilizacji zależy od reputacji gracza. Zdrada na drugim końcu mapy = chłodne powitanie u nowego sąsiada.
+⚠️ To realizuje sens decyzji „globalna" — bez tego wiarygodność byłaby drugą kopią Zaufania.
+
+### DRYF / ZAPOMINANIE KAR — zróżnicowany trudnością (Maciej 2026-07-26)
+Maciej: „musisz przyjąć jakiś współczynnik, o jaki ta wiarygodność się poprawia — kary są zapominane; trzeba to zróżnicować w zależności od poziomu trudności."
+
+**PROPOZYCJA WYJŚCIOWA [ZAŁOŻENIE — do strojenia w playteście]:**
+| Poziom | Tempo odbudowy | Odrobienie −50 → start |
+|---|---|---|
+| **Łatwy** | **+1,0 pkt / turę** (10 pkt / 10 tur) | ~50–90 tur |
+| **Normalny** | **+0,4 pkt / turę** (10 pkt / 25 tur) | ~125–150 tur |
+| **Trudny** | **+0,2 pkt / turę** (10 pkt / 50 tur) | ~250 tur (praktycznie na całą partię) |
+
+**ZASADY DRYFU (ważne dla implementacji):**
+1. **Dryf działa TYLKO W GÓRĘ, w stronę wartości startowej** — zapominane są KARY, zgodnie ze słowami Macieja. Wypracowana reputacja powyżej bazy NIE zanika (dobre czyny się nie „przedawniają").
+2. Dryf zatrzymuje się na wartości startowej danego poziomu trudności (nie ciągnie w górę bez końca).
+3. **BLIZNA (Q2=C) ogranicza dryf:** ciężkie zdarzenia (zdrada sojusznika, atak mimo paktu) trwale obniżają SUFIT, do którego dryf może dociągnąć. Czyli: kary się zapominają, ale najgorsze czyny zostawiają trwały ślad. Głębokość blizny też może zależeć od trudności — [do rozstrzygnięcia przy implementacji].
+
+### KOMPLET DECYZJI (stan 2026-07-26)
+Q1=A globalna · Q2=C dryf+blizna · Q3=C tempo+progi · Q4=A jawna zawsze · Q5=B umiarkowana surowość · Q6→**ZMIENIONE: start zależny od trudności (+40/+20/0)** · skala **−100…+100** · sufit zaufania TAK · pierwszy kontakt TAK · dryf zróżnicowany trudnością.
+
+**Otwarte do strojenia w playteście:** dokładne wagi 13 zdarzeń, dokładne tempo dryfu, wysokość progów, głębokość blizny, krzywa sufitu zaufania.
