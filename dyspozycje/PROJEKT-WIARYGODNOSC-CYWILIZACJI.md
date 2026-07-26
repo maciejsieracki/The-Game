@@ -1,3 +1,9 @@
+⚠️ **TEN DOKUMENT TO HISTORIA PROJEKTOWANIA, NIE SPECYFIKACJA.** Zawiera anulowane warianty i sprzeczne
+wersje parametrów (dopisywane na końcu dokumentu przez cały dzień 2026-07-26, bez poprawiania oryginału).
+**Do wdrożenia używaj WYŁĄCZNIE: `WIARYGODNOSC-SPECYFIKACJA.md`.**
+
+---
+
 # PROJEKT: Wiarygodność Cywilizacji
 
 (MASTER, 2026-07-26 · zlecenie Macieja 2026-07-25 — „element wiarygodności obok Zaufania i Respektu,
