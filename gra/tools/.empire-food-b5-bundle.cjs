@@ -1583,20 +1583,6 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   if (ctx.maCegielnia) {
     pracaBruttoTerenu = pracaBruttoTerenu * (1 + params.budynekCegielniBonusPracy);
   }
-  let handelBrutto;
-  if (ctx.maTargowisko) {
-    handelBrutto = handelTerenu * (1 + params.budynekTargowiskoBonusHandlu);
-  } else {
-    handelBrutto = handelTerenu;
-  }
-  const civHandelMult = ctx.civHandelMult ?? 1;
-  if (civHandelMult !== 1) {
-    handelBrutto *= civHandelMult;
-  }
-  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
-  if (liczbaTrasHandlowych > 0) {
-    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
-  }
   let pracaBudynkow = 0;
   let pieniadzBudynkow = 0;
   let zywnoscBudynkow = 0;
@@ -1612,10 +1598,29 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     zadBudynkow += buildingHappinessAtLevel(record, level);
   }
   const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
-  const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
   const pracaNetto = pracaBruttoLacznie;
-  const handelNettoRaw = handelBrutto * (1 - strata);
   const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
+  const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
+  const pracaInt = cityPracaInteger(pracaNetto);
+  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
+  const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
+  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
+  let handelBrutto;
+  if (ctx.maTargowisko) {
+    handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
+  } else {
+    handelBrutto = handelBazowy;
+  }
+  const civHandelMult = ctx.civHandelMult ?? 1;
+  if (civHandelMult !== 1) {
+    handelBrutto *= civHandelMult;
+  }
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
+  }
+  const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
+  const handelNettoRaw = handelBrutto * (1 - strata);
   const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
   const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
@@ -1630,11 +1635,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult = ctx.civNaukaMult ?? 1;
   const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
-  const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
-  const pracaInt = cityPracaInteger(pracaNetto);
-  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
-  const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
+  let pieniadzTotal = pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === "poborca") {
       pieniadzTotal += 2;
@@ -1659,6 +1660,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     pracaTerenu: Math.floor(pracaBruttoTerenu),
     pracaBudynkow: Math.floor(pracaBudynkow),
     pieniadzZPracy,
+    pieniadzBudynkow: Math.floor(pieniadzBudynkow),
     drewnoTerenu: Math.floor(drewnoTerenu),
     kamienTerenu: Math.floor(kamienTerenu),
     glinaTerenu: Math.floor(glinaTerenu),
@@ -2464,7 +2466,7 @@ var wonders_default = {
         ],
         specjalne: [
           { typ: "magazyn_pojemnosc", wartosc: 6, opis: "+6 pojemno\u015B\u0107 handlu/surowc\xF3w (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z tras handlowych (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 5, opis: "+5 Wp\u0142ywu \u2014 karawany Nabatejczyk\xF3w (cywilizacja)" }
         ]
       }
@@ -2504,7 +2506,7 @@ var wonders_default = {
           { typTerenu: "laka", kultura: 2, warunek: "hex_sasiad_wybrzeze" }
         ],
         specjalne: [
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.15, opis: "+15% Pieni\u0105dza z handlu morskiego (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych morskich (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 3, opis: "+3 Wp\u0142ywu (cywilizacja)" }
         ]
       },
@@ -2526,7 +2528,7 @@ var wonders_default = {
         miasto: { pieniadz: 3, kultura: 3 },
         specjalne: [
           { typ: "magazyn_pojemnosc", wartosc: 8, opis: "+8 pojemno\u015B\u0107 surowc\xF3w / trade capacity (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.2, opis: "+20% Pieni\u0105dza z port\xF3w (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.2, opis: "+20% Handlu \u2014 dochodu z tras handlowych morskich, korzystaj\u0105cych z port\xF3w (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 6, opis: "+6 Wp\u0142ywu \u2014 Rhodos, w\u0119ze\u0142 morski (cywilizacja)" }
         ]
       }
@@ -2698,7 +2700,7 @@ var wonders_default = {
         miasto: { kultura: 3, pieniadz: 3 },
         specjalne: [
           { typ: "wojna_wsparcie", wartosc: 3, opis: "+3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z tras handlowych (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 10, opis: "+10 Wp\u0142ywu \u2014 satrapie i go\u015Bcie narod\xF3w (cywilizacja)" },
           { typ: "relacje_zaufanie", wartosc: 3, opis: "+3 Zaufanie u pa\u0144stw z aktywnym handlem (cywilizacja)" }
         ]
@@ -2721,7 +2723,7 @@ var wonders_default = {
         miasto: { kultura: 3, zadowolenie: 3, pieniadz: 3 },
         specjalne: [
           { typ: "dyplomacja_wp\u0142yw", wartosc: 12, opis: "+12 Wp\u0142ywu \u2014 cesarski dw\xF3r Chang'an (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z handlu (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "relacje_zaufanie", wartosc: 4, opis: "+4 bazowe Zaufanie (cywilizacja)" }
         ]
       },
@@ -3336,7 +3338,7 @@ function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pa
 function getCityFood(city) {
   return readCityFoodBufferFromCity(city);
 }
-function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map()) {
+function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map(), resolveOwnerZlotoAccess = () => true) {
   const gameDifficulty = difficulty;
   const params = buildEconParams(data2, difficulty);
   const buildingCatalog = data2.buildings;
@@ -3445,7 +3447,8 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     const walutaOdkryta = ownerTech.has("Waluta") || ownerTech.has("waluta");
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const maMennicaEmpireWide = mennicaOwners.has(city.ownerId);
+    const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
+    const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
     const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
@@ -3480,7 +3483,9 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
       // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
       // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
-      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B).
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
+      // maMennicaEmpireWide juz zawiera bramke dostepu do zlota -- gdy brak, false
+      // mimo ze budynek dalej stoi (nie jest burzony).
       maMennica: maMennicaEmpireWide,
       walutaOdkryta,
       // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
