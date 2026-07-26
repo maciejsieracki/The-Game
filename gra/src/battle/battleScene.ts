@@ -58,6 +58,8 @@ import {
   counterMultiplier,
   terrainDefenseMultiplier,
   terrainRiverAttackMultiplier,
+  terrainRangeDelta,
+  cavalryTerrainMultiplier,
   flankRearDefensePenalty,
 } from '../game/combat';
 import type { CombatUnit, CombatResult } from '../game/combat';
@@ -1736,7 +1738,12 @@ interface RuntimeBattleUnit {
   fadeStart:    number;
   acted:        boolean;
   moveLeft:     number;
-  range:        number;   // attack range in tiles (0 => melee adjacency only)
+  range:        number;   // CURRENT effective attack range in tiles (0 => melee adjacency only);
+                          // recomputed every activation from rangeBase + the standing tile's
+                          // terrain Delta Zasieg (C-TEREN-Q1 ETAP 2, see _applyTerrainRange),
+                          // then the wall-walkway elevation bonus stacks on top temporarily.
+  rangeBase:    number;   // unit's UNMODIFIED range (attackRange(bu) / catapult formula) --
+                          // never mutated after spawn; `range` is recomputed from this each turn.
   ranged:       boolean;  // base ranged capability (kept for back-compat)
   rangedBase:   boolean;  // base ranged capability; actual shooting gated by ammoLeft (see canShoot)
   primaryRanged: boolean; // TRUE for a unit whose PRIMARY weapon is ranged (archer/slinger/javelin skirmisher).
@@ -2178,6 +2185,15 @@ export class BattleScene {
    */
   private wallDefenseMult: number = 1;
   /**
+   * Ta sama wartość jak wyżej, ale jako "surowy" procent strukturalny
+   * (0/200/300/400) zamiast mnożnika — do przekazania jako
+   * ResolveCombatOpts.structureDefBonusPct w computeInstantResult() (tryb
+   * "Pomiń"), żeby ta ścieżka liczyła bonus muru identycznie jak _singleBlow
+   * (C-COMBAT-Q1, Maciej 2026-07-26: „Pomiń" wcześniej w ogóle nie stosował
+   * bonusu murów). wallDefenseMult === 1 + wallDefenseTotalProc/100.
+   */
+  private wallDefenseTotalProc: number = 0;
+  /**
    * SIEGE v2: set of row values where a friendly siege tower has reached the
    * wall base (col = siegeWallCol-1). Attacking infantry adjacent to a tower
    * at these rows may "climb" onto the wall walkway.
@@ -2381,6 +2397,7 @@ export class BattleScene {
         mur: murProc, cytadela: cytadelaProc, baszta: basztaProc,
       });
       this.wallDefenseMult = 1 + totalProc / 100;
+      this.wallDefenseTotalProc = totalProc;
     }
     this._defenderSideLabel = opts.defenderSideLabel?.trim() || '';
     const civRows: readonly { Cywilizacja?: string; ikonaId?: string }[] = d.cywilizacje ?? [];
@@ -3285,6 +3302,7 @@ export class BattleScene {
       this.terrainMap,
       this.attackerCivBonusy,
       this.defenderCivBonusy,
+      this.wallDefenseTotalProc,
     );
     for (const line of result.log) this.log.push(line);
     this._endWinner = result.winner;
@@ -3943,6 +3961,7 @@ export class BattleScene {
         acted:     false,
         moveLeft:  movementPoints(bu),
         range:      attackRange(bu),
+        rangeBase:  attackRange(bu),
         ranged:     isRanged(bu),
         rangedBase: isRanged(bu),
         primaryRanged: isPrimaryRanged(bu),
@@ -4098,6 +4117,7 @@ export class BattleScene {
         moveLeft: movementPoints(bu),
         // Defender catapult on wall walkway (kontrbateria) gets range 6 (cataRange 5 + 1 elevation).
         range: (this._isCatapult(bu) ? Math.max(attackRange(bu), 6) : attackRange(bu)),
+        rangeBase: (this._isCatapult(bu) ? Math.max(attackRange(bu), 6) : attackRange(bu)),
         ranged: (this._isCatapult(bu) ? true : isRanged(bu)),
         rangedBase: (this._isCatapult(bu) ? true : isRanged(bu)),
         primaryRanged: isPrimaryRanged(bu),
@@ -4833,6 +4853,7 @@ export class BattleScene {
           acted:     false,
           moveLeft:  movementPoints(bu),
           range:      attackRange(bu),
+          rangeBase:  attackRange(bu),
           ranged:     isRanged(bu),
           rangedBase: isRanged(bu),
           primaryRanged: isPrimaryRanged(bu),
@@ -5060,6 +5081,15 @@ export class BattleScene {
     // and NEVER attack. This branch runs FIRST, before any facing/ranged/melee
     // logic, so a broken unit only ever walks off the field.
     if (ru.routed) { this._fleeStep(ru, done); return; }
+
+    // C-TEREN-Q1 ETAP 2 -- recompute this turn's shooting range from the tile
+    // the unit is STANDING ON (not the target's tile) BEFORE any branch below
+    // reads ru.range: Las -1 / Wzgorza+Gory +1 (data/terrain-combat.json "Delta
+    // Zasieg (dystansowi)"). Runs every activation (position only changes
+    // between activations -- a unit takes one action per turn -- so this always
+    // reflects where it stood when its turn began). The wall-walkway elevation
+    // bonus (below) stacks additively on top of this terrain-adjusted value.
+    this._applyTerrainRange(ru);
 
     // STEROWANIE RECZNIE: jednostki gracza (atak lub obrona)
     if (this._manualMode && this._isPlayerSide(ru.side)) {
@@ -5495,7 +5525,7 @@ export class BattleScene {
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;
-      if (!this.terrainMap.passable(nc, nr)) continue;
+      if (!this._passableForUnit(ru, nc, nr)) continue;
 
       const dTgt = manhattan(nc, nr, tgt.q, tgt.r);
 
@@ -5638,7 +5668,7 @@ export class BattleScene {
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;
-      if (!this.terrainMap.passable(nc, nr)) continue;
+      if (!this._passableForUnit(ru, nc, nr)) continue;
 
       const dEnemy = manhattan(nc, nr, enemy.q, enemy.r);
       if (dEnemy >= dNow) continue; // must close on the enemy
@@ -5834,7 +5864,7 @@ export class BattleScene {
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;             // occupied
-      if (!this.terrainMap.passable(nc, nr)) continue; // deep river
+      if (!this._passableForUnit(ru, nc, nr)) continue; // deep river
 
       // Advance-axis (column) distance to the enemy from the candidate tile.
       const colDist = Math.abs(nearest.q - nc);
@@ -5885,7 +5915,7 @@ export class BattleScene {
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;
-      if (!this.terrainMap.passable(nc, nr)) continue;
+      if (!this._passableForUnit(ru, nc, nr)) continue;
 
       // Never back ONTO a tile adjacent to ANY enemy.
       let dMinAny = Infinity;
@@ -5939,7 +5969,7 @@ export class BattleScene {
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;
-      if (!this.terrainMap.passable(nc, nr)) continue;
+      if (!this._passableForUnit(ru, nc, nr)) continue;
 
       // Distances FROM the candidate tile.
       let dMinAny = Infinity;
@@ -6108,7 +6138,7 @@ export class BattleScene {
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;            // occupied
-      if (!this.terrainMap.passable(nc, nr)) continue; // deep river
+      if (!this._passableForUnit(ru, nc, nr)) continue; // deep river
 
       // Distances FROM the candidate tile: dMinAny = nearest enemy of ANY kind
       // (used to forbid backing into adjacency with any sword), dMinThreat =
@@ -6165,7 +6195,7 @@ export class BattleScene {
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue;             // occupied
-      if (!this.terrainMap.passable(nc, nr)) continue; // deep river
+      if (!this._passableForUnit(ru, nc, nr)) continue; // deep river
 
       let dMin = Infinity;
       for (const e of enemies) {
@@ -6376,6 +6406,71 @@ export class BattleScene {
   private _isCatapult(bu: BattleUnit): boolean {
     const n = normName(String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa ?? ''));
     return n.includes('katapult') || n.includes('catapult') || n.includes('balist') || n.includes('onager');
+  }
+
+  // -------------------------------------------------------------------------
+  // C-TEREN-Q1 ETAP 3 -- unit-aware move cost / passability.
+  //
+  // SINGLE shared rule for "can this unit enter (col,row)" / "what does it
+  // cost": every movement/pathfinding call site in this file (kiting,
+  // retreat, phalanx/cavalry maneuver, BFS approach, manual player orders,
+  // siege advance, _doMove's per-step cost charge, and the battle-move ghost
+  // preview) MUST call THIS pair, not this.terrainMap.passable/moveCost
+  // directly -- otherwise a mounted unit could walk somewhere its own move
+  // preview refused (owner spec, C-TEREN-Q1 ETAP 3).
+  //
+  // Foot units: identical to this.terrainMap.passable/moveCost (multiplier
+  // 1 from cavalryTerrainMultiplier for every terrain), so this is a no-op
+  // wrapper for them -- zero behaviour change for infantry/archers/siege.
+  // Mounted units (cavalry/chariot, ru.mounted): Forest costs double (data:
+  // Las "koszt x2"), Gory (world mountains preset only, see
+  // battle-terrain.ts TerrainPreset.isMountain) is impassable (data:
+  // "NIEDOSTEPNE dla kawalerii/rydwanow"). Both read from
+  // data/terrain-combat.json via combat.ts's cavalryTerrainMultiplier --
+  // never a hardcoded number here.
+  // -------------------------------------------------------------------------
+
+  /** Movement points to ENTER (col,row) for THIS unit. Infinity = cannot enter. */
+  private _moveCostForUnit(ru: RuntimeBattleUnit, col: number, row: number): number {
+    if (!this.terrainMap.passable(col, row)) return Infinity;
+    const base = this.terrainMap.moveCost(col, row);
+    if (!ru.mounted) return base;
+    const mult = cavalryTerrainMultiplier(this.terrainMap.combatTerrainName(col, row), this.terrainData);
+    if (!Number.isFinite(mult)) return Infinity;
+    return base * mult;
+  }
+
+  /** True if THIS unit may stand on / enter (col,row) (terrain only -- ignores occupancy). */
+  private _passableForUnit(ru: RuntimeBattleUnit, col: number, row: number): boolean {
+    return Number.isFinite(this._moveCostForUnit(ru, col, row));
+  }
+
+  // -------------------------------------------------------------------------
+  // C-TEREN-Q1 ETAP 2 -- terrain-derived ranged-reach delta.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Recompute ru.range = ru.rangeBase + terrain delta for the tile ru is
+   * CURRENTLY standing on (data/terrain-combat.json "Delta Zasieg
+   * (dystansowi)": Las -1, Wzgorza/Gory +1, everything else 0), gated the
+   * same way the existing wall-elevation bonus is (rangedBase && not a
+   * catapult -- a catapult's range is a fixed siege stat, never terrain-
+   * modified). Non-ranged units (rangeBase === 0) are left at 0: melee reach
+   * is adjacency-only regardless of terrain.
+   *
+   * Called once per activation (_activateUnit), BEFORE the wall-walkway
+   * elevation bonus temporarily adds its own +1 on top -- the two stack
+   * additively, same convention as that bonus already uses (origRange save/
+   * restore around a temporary ru.range mutation).
+   */
+  private _applyTerrainRange(ru: RuntimeBattleUnit): void {
+    if (!ru.rangedBase || this._isCatapult(ru.bu) || ru.rangeBase <= 0) {
+      ru.range = ru.rangeBase;
+      return;
+    }
+    const terrain = this.terrainMap.combatTerrainName(ru.q, ru.r);
+    const delta = terrainRangeDelta(terrain, this.terrainData);
+    ru.range = Math.max(0, ru.rangeBase + delta);
   }
 
   /** Obrażenia vs mur/bramę z units.json TW (`wallAttack`, fallback legacy). */
@@ -6764,7 +6859,7 @@ export class BattleScene {
       const nc = ru.q + dc;
       const nr = ru.r + dr;
       if (nc < 0 || nr < 0 || nc >= BF_COLS || nr >= BF_ROWS) continue;
-      if (this.terrainMap.moveCost(nc, nr) === Infinity) continue;
+      if (this._moveCostForUnit(ru, nc, nr) === Infinity) continue;
       if (this.occByKey.has(cellKey(nc, nr))) continue;
       const d = Math.abs(nc - targetCol) + Math.abs(nr - targetRow);
       if (d < bestDist) { bestDist = d; bestKey = cellKey(nc, nr); }
@@ -6967,7 +7062,7 @@ export class BattleScene {
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       const nk = cellKey(nc, nr);
       if (this.occByKey.has(nk)) continue; // occupied -- cannot enter
-      if (!this.terrainMap.passable(nc, nr)) continue; // deep river -- cannot enter
+      if (!this._passableForUnit(ru, nc, nr)) continue; // deep river -- cannot enter
       const dd = manhattan(nc, nr, target.q, target.r);
       if (dd < bestD) { bestD = dd; best = nk; }
     }
@@ -7042,7 +7137,7 @@ export class BattleScene {
         const nk = cellKey(nc, nr);
         if (parent.has(nk)) continue;          // already seen
         if (this.occByKey.has(nk)) continue;   // occupied -> wall (cannot stand here)
-        if (!this.terrainMap.passable(nc, nr)) continue; // river / wall body -> cannot stand
+        if (!this._passableForUnit(ru, nc, nr)) continue; // river / wall body -> cannot stand
         parent.set(nk, cellKey(cur.c, cur.r));
         if (isGoal(nc, nr)) { goalKey = nk; frontier.length = 0; break; }
         frontier.push({ c: nc, r: nr });
@@ -7105,7 +7200,7 @@ export class BattleScene {
         // The _canAttackFrom check already handles this (Manhattan==1 to defender).
         // We only skip wall tiles from being ENTERED (continued expansion), not
         // from being TARGETED.
-        if (!this.terrainMap.passable(nc, nr)) continue; // river / wall body -> cannot stand
+        if (!this._passableForUnit(ru, nc, nr)) continue; // river / wall body -> cannot stand
         parent.set(nk, cellKey(cur.c, cur.r));
         if (this._canAttackFrom(ru, nc, nr)) { goalKey = nk; frontier.length = 0; break; }
         frontier.push({ c: nc, r: nr });
@@ -7163,7 +7258,7 @@ export class BattleScene {
         const nk = cellKey(nc, nr);
         if (parent.has(nk)) continue;          // already seen
         if (this.occByKey.has(nk)) continue;   // occupied -> wall (cannot stand here)
-        if (!this.terrainMap.passable(nc, nr)) continue; // deep river -> wall
+        if (!this._passableForUnit(ru, nc, nr)) continue; // deep river -> wall
         parent.set(nk, cellKey(cur.c, cur.r));
         if (adjEnemy(nc, nr)) { goalKey = nk; frontier.length = 0; break; }
         frontier.push({ c: nc, r: nr });
@@ -7208,7 +7303,7 @@ export class BattleScene {
     // eats more of this turn's movement budget, so units cross terrain slower.
     // A river ford is finite-but-expensive; deep river is never entered (walled
     // out of pathing). Always spend at least 1 so a unit can take its step.
-    const enterCost = Math.max(1, Math.min(this.terrainMap.moveCost(col, row), 99));
+    const enterCost = Math.max(1, Math.min(this._moveCostForUnit(ru, col, row), 99));
     // C-BTL-BROD-Q1 (wariant C): a unit standing on OR entering a Ford tile
     // wades at half speed -- ADDITIONAL on top of the move-cost table above
     // (not a replacement for it), via brod.ruchMult (data/combat-params.json).
@@ -8100,7 +8195,7 @@ export class BattleScene {
       const nr = ru.r + dr;
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       if (this.occByKey.has(cellKey(nc, nr))) continue;
-      if (!this.terrainMap.passable(nc, nr)) continue;
+      if (!this._passableForUnit(ru, nc, nr)) continue;
       target = [nc, nr];
       break;
     }
@@ -15180,6 +15275,7 @@ export class BattleScene {
         acted:       false,
         moveLeft:    movementPoints(bu),
         range:       attackRange(bu),
+        rangeBase:   attackRange(bu),
         ranged:      isRanged(bu),
         rangedBase:  isRanged(bu),
         primaryRanged: isPrimaryRanged(bu),
@@ -15645,7 +15741,7 @@ export class BattleScene {
           if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
           const nk = cellKey(nc, nr);
           if (this.occByKey.has(nk)) continue;
-          if (!this.terrainMap.passable(nc, nr)) continue;
+          if (!this._passableForUnit(ru, nc, nr)) continue;
           const dTgt = manhattan(nc, nr, target.q, target.r);
           let spearAdj = false;
           for (const e of this._enemiesOf(ru)) {
@@ -15666,7 +15762,7 @@ export class BattleScene {
     for (const r of [ru.r, ru.r - 1, ru.r + 1]) {
       if (r < 0 || r >= BF_ROWS) continue;
       const nk = cellKey(nc, r);
-      if (!this.occByKey.has(nk) && this.terrainMap.passable(nc, r)) return nk;
+      if (!this.occByKey.has(nk) && this._passableForUnit(ru, nc, r)) return nk;
     }
     return null;
   }
@@ -15688,7 +15784,7 @@ export class BattleScene {
     const tryCell = (c: number, r: number): { col: number; row: number } | null => {
       if (r < 0 || r >= BF_ROWS) return null;
       const nk = cellKey(c, r);
-      if (this.occByKey.has(nk) || !this.terrainMap.passable(c, r)) return null;
+      if (this.occByKey.has(nk) || !this._passableForUnit(ru, c, r)) return null;
       return { col: c, row: r };
     };
     return tryCell(nc, ru.r) ?? tryCell(nc, ru.r - 1) ?? tryCell(nc, ru.r + 1);
@@ -16140,10 +16236,10 @@ export class BattleScene {
       const dr = Math.sign(tr - ru.r);
       let nc = ru.q + dc;
       let nr = ru.r + dr;
-      if (!this.terrainMap.passable(nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-        if (dc !== 0 && this.terrainMap.passable(ru.q + dc, ru.r) && !this.occByKey.has(cellKey(ru.q + dc, ru.r))) {
+      if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
+        if (dc !== 0 && this._passableForUnit(ru, ru.q + dc, ru.r) && !this.occByKey.has(cellKey(ru.q + dc, ru.r))) {
           nc = ru.q + dc; nr = ru.r;
-        } else if (dr !== 0 && this.terrainMap.passable(ru.q, ru.r + dr) && !this.occByKey.has(cellKey(ru.q, ru.r + dr))) {
+        } else if (dr !== 0 && this._passableForUnit(ru, ru.q, ru.r + dr) && !this.occByKey.has(cellKey(ru.q, ru.r + dr))) {
           nc = ru.q; nr = ru.r + dr;
         } else {
           done();
@@ -16178,9 +16274,9 @@ export class BattleScene {
       const dr = Math.sign(tgt.r - ru.r);
       let nc = ru.q + dc;
       let nr = ru.r + dr;
-      if (!this.terrainMap.passable(nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
+      if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
         nc = ru.q + dc; nr = ru.r;
-        if (!this.terrainMap.passable(nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
+        if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
           nc = ru.q; nr = ru.r + dr;
         }
       }
@@ -16307,15 +16403,23 @@ export class BattleScene {
     this._deployGhostOwnedGeos.push(discGeo);
     const destMap = this._moveDestinationsForSelection(col, row);
     for (const [id, dest] of destMap) {
-      this._addBattleGhostDisc(discGeo, dest.col, dest.row, skipIds);
+      // C-TEREN-Q1 ETAP 3: look up the actual unit so the ghost reflects the
+      // SAME per-unit terrain rule (Gory blocks cavalry/chariot, etc.) that
+      // _performPlayerOrder will enforce when the move is actually issued --
+      // otherwise a mounted unit's move preview could show a tile as
+      // reachable (blue) that its real move then refuses to enter.
+      const u = this._findPlayerUnit(id);
+      this._addBattleGhostDisc(discGeo, dest.col, dest.row, skipIds, u ?? null);
     }
   }
 
   private _addBattleGhostDisc(
     geo: THREE.BufferGeometry, col: number, row: number, skipIds: Set<string>,
+    ru: RuntimeBattleUnit | null,
   ): void {
     if (!this._deployGhostGroup) return;
-    const ok = this.terrainMap.passable(col, row)
+    const passable = ru ? this._passableForUnit(ru, col, row) : this.terrainMap.passable(col, row);
+    const ok = passable
       && (!this.occByKey.has(cellKey(col, row)) || skipIds.has(this.occByKey.get(cellKey(col, row))!.bu.id));
     const mat = new THREE.MeshBasicMaterial({
       color: ok ? 0x44aaff : 0xff5555,
@@ -17958,6 +18062,11 @@ function computeInstantResult(
   terrainMap?: BattleTerrainMap,
   attackerCivBonusy: readonly CivBonusEntry[] = [],
   defenderCivBonusy: readonly CivBonusEntry[] = [],
+  // C-COMBAT-Q1 (Maciej, 2026-07-26): bonus Obrony muru/Cytadeli/Baszty (procent,
+  // 0/200/300/400 -- BattleScene.wallDefenseTotalProc), przekazywany do
+  // resolveCombat jako structureDefBonusPct dla obrońców onWallWalkway --
+  // wcześniej "Pomiń" w ogóle nie stosował tego bonusu (rozjazd z _singleBlow).
+  wallDefenseTotalProc: number = 0,
 ): { winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[] } {
   const log: string[] = [];
 
@@ -17994,9 +18103,18 @@ function computeInstantResult(
       // Per-tile terrain (B8): the DEFENDER's tile decides its terrain defence
       // bonus in the canonical resolver, falling back to the battlefield-wide
       // terrain name when no map is provided.
-      const defTerrain = terrainMap
-        ? terrainMap.combatTerrainName(d.ru.q, d.ru.r)
-        : terrain;
+      //
+      // C-COMBAT-Q1 (Maciej, 2026-07-26) parity with _singleBlow: a defender
+      // onWallWalkway gets the mur/Cytadela/Baszta Obrona bonus via
+      // structureDefBonusPct below instead of its tile's terrain bonus (the
+      // wall walkway itself is flat ground) -- previously this skip path
+      // ignored the wall bonus entirely, so "Pomiń" resolved as if the city
+      // had no walls at all.
+      const defOnWall = d.ru.onWallWalkway === true;
+      const defTerrain = defOnWall
+        ? 'Plaskie (rownina/laka)'
+        : (terrainMap ? terrainMap.combatTerrainName(d.ru.q, d.ru.r) : terrain);
+      const structBonusPctForPair = defOnWall ? wallDefenseTotalProc : 0;
 
       // C-BTL-BROD-Q1 (wariant C), skip-resolve parity: pre-scale the
       // defender's Obrona for the ford penalty / shore bonus the animated
@@ -18030,6 +18148,9 @@ function computeInstantResult(
         attackerPosition: arc,
         attackerCivBonusy,
         defenderCivBonusy,
+        // C-COMBAT-Q1 (Maciej, 2026-07-26): bonus muru/Cytadeli/Baszty, dopiety
+        // do "Pomiń" -- patrz defOnWall/structBonusPctForPair powyżej.
+        structureDefBonusPct: structBonusPctForPair,
         // Sciezki ulepszen jednostek (2026-07-25): tryb "pomin animacje" korzysta
         // z tego samego resolveCombat -- musi dostac ten sam per-jednostkowy bonus.
         attackerBuildingBonus: { pancerz: a.ru.bu.pancerzBonusFrac ?? 0, other: a.ru.bu.parametryBonusFrac ?? 0 },

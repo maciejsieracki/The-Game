@@ -1997,6 +1997,30 @@ function cellHasIronPackage(cellLand, hexes) {
 function cellHasCopperPackage(cellLand, hexes) {
   return countHighlandsInCell(cellLand, hexes) >= MIN_HIGHLANDS_COPPER_CELL;
 }
+function ironGridCoverageRatio(massLandKeys, hexes, cellSize) {
+  const massSet = new Set(massLandKeys);
+  const minLand = minLandHexesForReliefCell(cellSize);
+  let need = 0;
+  let hit = 0;
+  for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
+    if (land.length < minLand) continue;
+    need++;
+    if (cellHasIronPackage(land, hexes)) hit++;
+  }
+  return need > 0 ? hit / need : 1;
+}
+function copperGridCoverageRatio(massLandKeys, hexes, cellSize) {
+  const massSet = new Set(massLandKeys);
+  const minLand = minLandHexesForReliefCell(cellSize);
+  let need = 0;
+  let hit = 0;
+  for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
+    if (land.length < minLand) continue;
+    need++;
+    if (cellHasCopperPackage(land, hexes)) hit++;
+  }
+  return need > 0 ? hit / need : 1;
+}
 function pickReliefForceHex(land, hexes, scratch, width, height, want, avoid, rand, protectHighland = false, protectMountain = false) {
   const ranked = land.filter(([q, r]) => {
     const k = hexKey(q, r);
@@ -6463,7 +6487,27 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     nZones,
     rand
   );
+  if (process.env.MAPGEN_DEBUG_RELIEF) {
+    const dbgIronSize = ironCoverageCellSize(reliefTier);
+    const dbgCopperSize = copperCoverageCellSize(reliefTier);
+    for (const mass of groupLandMassKeys(hexes)) {
+      if (mass.length < 150) continue;
+      const iron = ironGridCoverageRatio(mass, hexes, dbgIronSize);
+      const copper = copperGridCoverageRatio(mass, hexes, dbgCopperSize);
+      console.error(`[DBG pre-growMountainRanges] mass ${mass.length}: iron=${(iron * 100).toFixed(0)}% copper=${(copper * 100).toFixed(0)}%`);
+    }
+  }
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
+  if (process.env.MAPGEN_DEBUG_RELIEF) {
+    const dbgIronSize = ironCoverageCellSize(reliefTier);
+    const dbgCopperSize = copperCoverageCellSize(reliefTier);
+    for (const mass of groupLandMassKeys(hexes)) {
+      if (mass.length < 150) continue;
+      const iron = ironGridCoverageRatio(mass, hexes, dbgIronSize);
+      const copper = copperGridCoverageRatio(mass, hexes, dbgCopperSize);
+      console.error(`[DBG post-growMountainRanges] mass ${mass.length}: iron=${(iron * 100).toFixed(0)}% copper=${(copper * 100).toFixed(0)}%`);
+    }
+  }
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
@@ -12859,7 +12903,7 @@ var buildings_default = [
     ],
     baza: {
       praca: 0,
-      pieniadz: 3,
+      pieniadz: 5,
       zywnosc: 0,
       nauka: 0,
       kultura: 0,
@@ -12869,20 +12913,20 @@ var buildings_default = [
     },
     przyrost: {
       praca: 0,
-      pieniadz: 2,
+      pieniadz: 3,
       zywnosc: 0,
       nauka: 0,
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 3
+      mnoznik: 0
     },
     kosztBudowy: 25,
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "Mnoznik % dotyczy przychodow z handlu w miescie",
+    uwagi: "PYTANIE 20=A (Maciej 2026-07-26): dawny przyrost.mnoznik=3 przy baza.mnoznik=0 nigdy nie byl czytany przez silnik dla tego budynku (mnoznik zyje wylacznie dla 6 rozpoznanych budynkow sciezek Pancerz/Parametry, patrz unit-building-bonuses.ts) -- realny efekt handlowy Targowiska byl wiec zerowy na kazdym poziomie mimo widocznego chipu. Naprawa: zamierzony efekt przeniesiony do baza.pieniadz (3->5) i przyrost.pieniadz (2->3), mnoznik skasowany (oba pola = 0).",
     techUnlock: "Wymiana",
     koszt_surowce: {
       drewno: 6
@@ -13332,8 +13376,8 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "T-TECH-6: zdrowie++ i cap ludno\u015Bci (turn-economy)",
+    wymagania: "Wybudowana Studnia w tym mie\u015Bcie",
+    uwagi: "T-TECH-6: zdrowie++ i cap ludno\u015Bci (turn-economy). DECYZJA 54b (Maciej 2026-07-25): Akwedukt wymaga Studni w tym samym mie\u015Bcie -- prerekwyzyt w CITY_BUILDING_PREREQ (building-resource-gate.ts), sprawdzany w production.ts.",
     techUnlock: "Budownictwo",
     koszt_surowce: {
       drewno: 6,
@@ -13826,8 +13870,8 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny, dokladany obok Murow i Cytadeli (nie zastepuje ich, brak upgradeFrom). Obrona miasta WYLACZNIE procentowa: +100% Obrony broniacym sie jednostkom, DODATKOWO ponad Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech = +400% -- patrz miasto-params.json bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor / game/city-defense.ts. Buduje sie NIEZALEZNIE od Murow/Cytadeli (brak wymogu kolejnosci) i w stolicy, i w regionach (brak pola lokalizacja). Koszt surowcowy w skali Cytadeli (ten sam rzad wielkosci bonusu +100%): drewno+kamien, budowla obronna epoki \u017Belaza.",
+    wymagania: "Wybudowane Mury w tym mie\u015Bcie",
+    uwagi: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny, dokladany obok Murow i Cytadeli (nie zastepuje ich, brak upgradeFrom). Obrona miasta WYLACZNIE procentowa: +100% Obrony broniacym sie jednostkom, DODATKOWO ponad Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech = +400% -- patrz miasto-params.json bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor / game/city-defense.ts. Koszt surowcowy w skali Cytadeli (ten sam rzad wielkosci bonusu +100%): drewno+kamien, budowla obronna epoki \u017Belaza. DECYZJA 54a (Maciej 2026-07-25): Baszta wymaga wybudowanych Murow W TYM SAMYM MIESCIE -- prerekwyzyt kolejnosci budowy w CITY_BUILDING_PREREQ (building-resource-gate.ts), sprawdzany w production.ts; NIE dotyczy bonusu Obrony (ten pozostaje niezalezny, patrz city-defense.ts).",
     techUnlock: "In\u017Cynieria",
     odblokowuje: "maBaszta",
     koszt_surowce: {

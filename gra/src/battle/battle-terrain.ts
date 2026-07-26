@@ -215,6 +215,19 @@ export interface TerrainPreset {
    * their own, separate flank concentration -- unrelated to this flag.
    */
   biasSafeCols: boolean;
+  /**
+   * true ONLY for the world "Gory" (mountains) preset -- distinguishes a
+   * Gory battlefield from a Wzgorza (hills) one even though both generate
+   * the SAME BTerrain.Hills tile kind. combatTerrainName() reads this to
+   * report 'Gory' instead of 'Wzgorza' for Hills tiles (C-TEREN-Q1 ETAP 1:
+   * without this, every tactical battle on a world Gory hex silently fed
+   * combat.ts's terrainDefenseMultiplier the 'Wzgorza' name and got +50%
+   * Obrona instead of the promised +75%). Also gates the ETAP 3 cavalry/
+   * chariot Gory impassability rule (see moveCostFor/passableFor below).
+   * false for every other preset (incl. DEFAULT_PRESET) -- legacy/no-
+   * worldTerrain battles are unaffected.
+   */
+  isMountain: boolean;
 }
 
 /** The exact behaviour of every caller before this feature existed. */
@@ -228,6 +241,7 @@ export const DEFAULT_PRESET: TerrainPreset = {
   noForest: false,
   desertPalette: false,
   biasSafeCols: false,
+  isMountain: false,
 };
 
 /**
@@ -268,12 +282,12 @@ export function presetForWorldTerrain(wt?: WorldTerrainInput): TerrainPreset {
     case 'laka':
       p = { forestBlobsMul: 1.1, hillBlobsMul: 0.3, rockCountMul: 0.9, hillRadiusBoost: 0,
             riverMode: 'winding', edgeRocks: false, noForest: false, desertPalette: false, biasSafeCols: false,
-            lakeCount: [2, 4] };
+            isMountain: false, lakeCount: [2, 4] };
       break;
     case 'rownina':
       p = { forestBlobsMul: 0.5, hillBlobsMul: 0, rockCountMul: 0.6, hillRadiusBoost: 0,
             riverMode: wt.rzeka ? 'winding' : 'none', edgeRocks: false, noForest: false, desertPalette: false, biasSafeCols: false,
-            lakeCount: [0, 2] };
+            isMountain: false, lakeCount: [0, 2] };
       break;
     case 'wzgorza':
       // 2026-07-22 korekta #2 (za mało wyraźne z dystansu): mocno wyższy
@@ -281,20 +295,27 @@ export function presetForWorldTerrain(wt?: WorldTerrainInput): TerrainPreset {
       // widocznych pasach -- patrz TerrainPreset.biasSafeCols) + gęstsze
       // edgeRocks, żeby pole czytało się jako "teren pagórkowaty" nie kropki.
       p = { forestBlobsMul: 0.7, hillBlobsMul: 3.5, rockCountMul: 1.8, hillRadiusBoost: 1,
-            riverMode: wt.rzeka ? 'winding' : 'none', edgeRocks: true, noForest: false, desertPalette: false, biasSafeCols: true };
+            riverMode: wt.rzeka ? 'winding' : 'none', edgeRocks: true, noForest: false, desertPalette: false, biasSafeCols: true,
+            isMountain: false };
       break;
     case 'gory':
       // proporcjonalnie mocniej niz Wzgorza (owner ask 2026-07-22 #2).
+      // isMountain=true (C-TEREN-Q1 ETAP 1/3): the ONLY preset whose Hills
+      // tiles report combat name 'Gory' (+75% Obrona, not Wzgorza's +50%)
+      // and block cavalry/chariot movement.
       p = { forestBlobsMul: 0.4, hillBlobsMul: 5.0, rockCountMul: 2.6, hillRadiusBoost: 2,
-            riverMode: wt.rzeka ? 'winding' : 'none', edgeRocks: true, noForest: false, desertPalette: false, biasSafeCols: true };
+            riverMode: wt.rzeka ? 'winding' : 'none', edgeRocks: true, noForest: false, desertPalette: false, biasSafeCols: true,
+            isMountain: true };
       break;
     case 'pustynia':
       p = { forestBlobsMul: 0, hillBlobsMul: 1.3, rockCountMul: 1.4, hillRadiusBoost: 0,
-            riverMode: 'none', edgeRocks: false, noForest: true, desertPalette: true, biasSafeCols: true };
+            riverMode: 'none', edgeRocks: false, noForest: true, desertPalette: true, biasSafeCols: true,
+            isMountain: false };
       break;
     case 'wybrzeze':
       p = { forestBlobsMul: 0.4, hillBlobsMul: 0, rockCountMul: 0.7, hillRadiusBoost: 0,
-            riverMode: 'coast', edgeRocks: false, noForest: false, desertPalette: false, biasSafeCols: false };
+            riverMode: 'coast', edgeRocks: false, noForest: false, desertPalette: false, biasSafeCols: false,
+            isMountain: false };
       break;
     default:
       p = { ...DEFAULT_PRESET };
@@ -772,7 +793,17 @@ export function generateBattleTerrain(opts: GenerateOpts): BattleTerrainMap {
       return t !== BTerrain.River && t !== BTerrain.Wall && t !== BTerrain.Gate;
     },
     moveCost: (c, r) => MOVE_COST[at(c, r)] ?? 1,
-    combatTerrainName: (c, r) => COMBAT_NAME[at(c, r)] ?? 'Plaskie (rownina/laka)',
+    // C-TEREN-Q1 ETAP 1: on an isMountain (world "Gory") preset, Hills tiles
+    // report the 'Gory' combat name instead of 'Wzgorza' so combat.ts's
+    // terrainDefenseMultiplier resolves the +75% Gory bonus (not +50%
+    // Wzgorza) for a defender standing there. Every other preset (incl.
+    // DEFAULT_PRESET / legacy no-worldTerrain battles) keeps 'Wzgorza',
+    // byte-for-byte unchanged.
+    combatTerrainName: (c, r) => {
+      const t = at(c, r);
+      if (t === BTerrain.Hills && preset.isMountain) return 'Gory';
+      return COMBAT_NAME[t] ?? 'Plaskie (rownina/laka)';
+    },
   };
 }
 

@@ -441,6 +441,7 @@ import miastoParams from '../data/miasto-params.json';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
+  sumRosterFieldMSplit,
   autoBattleWinPct,
 } from './game/auto-battle-power';
 import {
@@ -647,7 +648,7 @@ import { showNewGameFlow, hideNewGameFlow, isNewGameFlowOpen, type NewGameParams
 import type { TempoGry } from './game/tech-tempo';
 import type { GameDifficulty } from './game/difficulty-cost';
 import { scaledResearchCost } from './game/difficulty-cost';
-import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel } from './game/veteran';
+import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit } from './game/veteran';
 import {
   showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
   type DiploRelation, type KnownWarBetweenCivs, type DiplomacyPanelConfig,
@@ -11756,6 +11757,45 @@ async function boot(): Promise<void> {
       return lookupUnitDef(u.typeId);
     }
 
+    /**
+     * unitDefFor() + premia weterana (TRZECI SYSTEM, game/veteran.ts) --
+     * TYLKO do zasilania mocy M (rosterFieldPowerM/effectiveDefenderM), czyli
+     * ścieżki Auto-walka mocą. Audyt 2026-07-26: resolveAutoBattleByPower
+     * czytał unitDefFor() 1:1 z units.json, bez żadnego skalowania -- bitwa
+     * oglądana i "Pomiń" już skalują poprawnie (battleScene.ts toCombatUnit()
+     * -> applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac)), bo tam
+     * BattleUnit.veteranBonusFrac jest ustawiany JUŻ przy budowie z RuntimeUnit
+     * (runtimeToBattleUnit, patrz veteranBonusFrac: veteranCombatBonusFrac(u)
+     * ponizej w tym pliku). Auto-power nie przechodzi przez BattleUnit wcale
+     * (liczy M wprost z def), więc potrzebuje WŁASNEGO punktu wpięcia -- ta
+     * funkcja go daje, wołając TĘ SAMĄ applyVeteranFracToCombatUnit() z
+     * veteran.ts (zero nowej matematyki, zero drugiej implementacji premii).
+     *
+     * Celowo NIE podpięte pod unitDefFor() samo w sobie: unitDefFor() zasila
+     * też runtimeToBattleUnit()/combatFromDef() (bitwa oglądana/"Pomiń"), które
+     * już mają WŁASNĄ warstwę weterana (toCombatUnit w battleScene.ts) --
+     * podmiana unitDefFor() globalnie podwoiłaby premię (raz tutaj, raz tam).
+     *
+     * PUŁAPKA znaleziona przez tools/weterani-test.cjs sekcja 9 (M zostawało
+     * płaskie na WSZYSTKICH poziomach weterana mimo poprawnie przeskalowanych
+     * pól): unit-power.ts armyFieldPower() ma skrót -- jeśli def.fieldPower
+     * (cache z eksportu units.json) jest liczbą, ZWRACA JĄ WPROST i w ogóle
+     * nie liczy z surowych pól. applyVeteranFracToCombatUnit() (veteran.ts)
+     * nie wie o tym cache'u (moduł nie zależy od unit-power.ts) i przepisuje
+     * def.fieldPower 1:1 (stare, sprzed premii) -- więc armyFieldPower()
+     * później zwracał STARĄ wartość niezależnie od przeskalowanych
+     * meleeAttack/meleeDefence/health. Usunięcie pola fieldPower z wyniku
+     * wymusza przeliczenie z (już przeskalowanych) surowych pól.
+     */
+    function veteranScaledDefFor(u: RuntimeUnit): any {
+      const def = unitDefFor(u);
+      const frac = veteranCombatBonusFrac(u);
+      if (!frac) return def;
+      const scaled = applyVeteranFracToCombatUnit(def, frac);
+      const { fieldPower: _staleFieldPower, ...rest } = scaled;
+      return rest;
+    }
+
     /** Return max HP from a unit def (TW v3 `health`). */
     function unitHealth(def: any): number {
       return normFieldVal(def['health'] ?? def['Health'], 30);
@@ -12147,9 +12187,13 @@ async function boot(): Promise<void> {
       return units.some(u => u.q === q && u.r === r && u.id !== exceptId);
     }
 
+    // Audyt weteranów 2026-07-26: def przez veteranScaledDefFor (nie goły
+    // unitDefFor) -- premia weterana (+10%/+20%, patrz game/veteran.ts) musi
+    // wejść do M ataku/obrony auto-walki mocą tak samo jak w bitwie oglądanej
+    // (obie strony, ownerId-agnostycznie -- PARYTET AI).
     function rosterFieldPowerM(roster: RuntimeUnit[]): number {
       return sumRosterFieldM(
-        roster.map(u => ({ typeId: u.typeId, def: unitDefFor(u) })),
+        roster.map(u => ({ typeId: u.typeId, def: veteranScaledDefFor(u) })),
       );
     }
 
@@ -12170,16 +12214,45 @@ async function boot(): Promise<void> {
       structBonusPct: number,
       atkLeadDef: Record<string, unknown>,
     ): number {
-      const raw = rosterFieldPowerM(defRoster);
+      // C-COMBAT-Q1 (Maciej, 2026-07-26): bonus muru/Cytadeli/Baszty ma podnosić
+      // WYŁĄCZNIE Obronę obrońcy, nigdy Atak — zgodnie z bitwą taktyczną
+      // (_singleBlow w battleScene.ts, gdzie ten mnożnik dotyka tylko
+      // defEffObrona). rosterFieldPowerM (M = atak+obrona zlane) nie pozwala
+      // rozdzielić składowych, więc dla ścieżki Auto liczymy je osobno przez
+      // sumRosterFieldMSplit (unit-power.ts armyFieldPowerSplit) i strukturalny
+      // structMult mnożymy TYLKO przez część obronną.
+      //
+      // UWAGA — punkt 3 (mnożnik terenu terrainDefenseMultiplier) WSTRZYMANY
+      // na wyraźne polecenie właściciela (aktualizacja zlecenia 2026-07-26):
+      // terrMult celowo zostaje na CAŁYM M (atak+obrona), dokładnie jak przed
+      // tą zmianą — nie zwężamy jego zakresu teraz, bo właściciel rozważa inną
+      // regułę (teren liczy się tylko z murem + tylko wzniesienie). Gdy
+      // structMult=1 (brak murów) całość redukuje się do
+      // (attack+defense)*terrMult*embarkMult = raw*terrMult*embarkMult,
+      // bit-for-bit jak przed zmianą.
+      // Audyt weteranów 2026-07-26: def przez veteranScaledDefFor (patrz
+      // rosterFieldPowerM powyżej) -- premia weterana wchodzi PRZED terrMult/
+      // structMult (kolejność uzasadniona w raporcie zadania: to niezależne
+      // mnożniki różnych czynników, kolejność mnożenia nie zmienia wyniku
+      // matematycznie, ale weteran musi skalować BAZOWĄ Obronę/Atak, na
+      // której dopiero mur/teren nakładają swój procent -- nie odwrotnie).
+      const split = sumRosterFieldMSplit(
+        defRoster.map(u => ({ typeId: u.typeId, def: veteranScaledDefFor(u) })),
+      );
       const terrMult = terrainDefenseMultiplier(
         terrain,
         String(atkLeadDef['Rola (linia)'] ?? ''),
         terrainCombatData as unknown as TerrainEntry[],
       );
       const structMult = 1 + structBonusPct / 100;
+      const terrAdjAttack = split.attack * terrMult;
+      const terrAdjDefense = split.defense * terrMult * structMult;
       // TEMAT #15: obrońca zaokrętowany (bitwa na wodzie) — obrona ×0,5 (−50%).
+      // Poza zakresem decyzji C-COMBAT-Q1 (dotyczy muru) — zachowanie embarkMult
+      // NIE zmienione: nadal mnoży całość (atak+obrona), tak jak przed tą
+      // zmianą, mimo że komentarz mówi "obrona x0,5" (patrz raport).
       const embarkMult = defRoster[0]?.embarked === true ? EMBARK_DEFENSE_MULT : 1;
-      return Math.round(raw * terrMult * structMult * embarkMult * 10) / 10;
+      return Math.round((terrAdjAttack + terrAdjDefense) * embarkMult * 10) / 10;
     }
 
     /** Auto-walka M v2b + wspólne skutki mapy (identyczne reguły ruchu co ręczna). */

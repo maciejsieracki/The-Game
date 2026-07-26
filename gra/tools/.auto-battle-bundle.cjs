@@ -54,9 +54,17 @@ var combat_params_default = {
   },
   counter_multiplier: 1.5,
   river_attack_mult: 0.75,
+  brod: {
+    _opis: "C-BTL-BROD-Q1 wariant C -- mechanika brodu (Ford) na planszy bitwy taktycznej (battleScene.ts). karaAtak/karaObrona sa numerycznie te same co river_attack_mult (0.75=1-0.25) ale to OSOBNY, dedykowany dla brodu wpis (tamten zasila swiatowy resolveCombat/instant-resolve dla starcia z obronca-na-rzece; ten zasila per-tile Ford w bitwie taktycznej -- oba moga byc strojone niezaleznie w przyszlosci).",
+    ruchMult: 0.5,
+    karaAtak: 0.25,
+    karaObrona: 0.25,
+    bonusObronaBrzegu: 0.15
+  },
   obl\u0119\u017Cenie: {
-    wall_base_obrona: 5,
-    wall_per_level_obrona: 3,
+    _opis: "wall_base_obrona / wall_per_level_obrona ZEROWANE (Maciej 2026-07-25): obrona miasta dziala WYLACZNIE procentowo (miasto-params.json bonus_obrona_mur_proc=200 / bonus_obrona_cytadela_proc=100, konsumowane przez main.ts structureDefenseBonusFor + combat.ts structureDefBonusPct + battleScene onWallWalkway). Plaski bonus Obrony/Pancerza z muru w game/siege.ts (cityDefenseBonus) dublowal ten procent -- zneutralizowany tutaj zamiast w kodzie, zeby wallLevel/hasWalls (obecnosc muru) nadal dzialaly bez zmian. Pola zostawione (nie usuniete) dla zgodnosci z SiegeParams/wallParamsFromBuildings.",
+    wall_base_obrona: 0,
+    wall_per_level_obrona: 0,
     wall_max_level: 10,
     wall_pancerz_fraction: 0.5,
     hill_defense_mult: 1.5,

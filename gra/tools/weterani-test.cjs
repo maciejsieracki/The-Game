@@ -26,6 +26,8 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const VETERAN_TS = path.join(GRA_DIR, 'src/game/veteran.ts');
 const COMBAT_TS = path.join(GRA_DIR, 'src/game/combat.ts');
 const PBM_TS = path.join(GRA_DIR, 'src/game/post-battle-map.ts');
+const UNIT_POWER_TS = path.join(GRA_DIR, 'src/game/unit-power.ts');
+const AUTO_BATTLE_POWER_TS = path.join(GRA_DIR, 'src/game/auto-battle-power.ts');
 const UNITS_JSON = path.join(GRA_DIR, 'data/units.json');
 const ESBUILD_BIN = path.join(GRA_DIR, 'node_modules/.bin/esbuild');
 
@@ -38,16 +40,23 @@ function bundle(entry, outName) {
   return require(outfile);
 }
 
-console.log('Bundling veteran.ts, combat.ts, post-battle-map.ts with esbuild...');
+console.log('Bundling veteran.ts, combat.ts, post-battle-map.ts, unit-power.ts, auto-battle-power.ts with esbuild...');
 const veteranMod = bundle(VETERAN_TS, 'veteran-bundle.cjs');
 const combatMod = bundle(COMBAT_TS, 'combat-bundle-weterani.cjs');
 const pbmMod = bundle(PBM_TS, 'pbm-bundle-weterani.cjs');
+// Audyt 2026-07-26 (C-COMBAT-Q1, fala 2): sciezka Auto-walka moca
+// (unit-power.ts + auto-battle-power.ts) nie miala ZADNEJ asercji weteranskiej
+// -- to wlasnie dlatego luka (main.ts czytal unitDefFor() bez skalowania)
+// przezyla poprzedni audyt. Sekcja 9 ponizej pokrywa te sciezke.
+const unitPowerMod = bundle(UNIT_POWER_TS, 'unit-power-bundle-weterani.cjs');
+const autoBattlePowerMod = bundle(AUTO_BATTLE_POWER_TS, 'auto-battle-power-bundle-weterani.cjs');
 console.log('Bundle OK.\n');
 
 const {
   VETERAN_BONUS_FRAC,
   veteranLevelFromBattles,
   veteranBattlesSurvived,
+  veteranCombatBonusFrac,
   registerBattleSurvived,
   applyVeteranFracToCombatUnit,
   veteranMoraleBazoweUp,
@@ -55,6 +64,8 @@ const {
 } = veteranMod;
 const { resolveCombat, combatUnitFromDef } = combatMod;
 const { applyPostBattleMap } = pbmMod;
+const { armyFieldPower, armyFieldPowerSplit } = unitPowerMod;
+const { sumRosterFieldM, sumRosterFieldMSplit } = autoBattlePowerMod;
 
 let passCount = 0;
 let failCount = 0;
@@ -260,6 +271,114 @@ const progLowCu = applyVeteranFracToCombatUnit(
   { ...baseCu, 'Prog dezercji (% health)': 0.1 }, 0.20,
 );
 check('podloga: Prog dezercji=0.1, poziom3 == 0.08 (dodatnie, z zapasem)', approxEq(progLowCu['Prog dezercji (% health)'], 0.08, 1e-6), progLowCu['Prog dezercji (% health)']);
+console.log('');
+
+// ---------------------------------------------------------------------------
+// 9. Sciezka Auto-walka moca (main.ts effectiveDefenderM/rosterFieldPowerM,
+// mapFieldBattle.ts duplikat) -- audyt 2026-07-26 (C-COMBAT-Q1, fala 2):
+// resolveAutoBattleByPower budowal M ataku/obrony z unitDefFor() CZYSTO z
+// units.json, bez zadnego skalowania weteranskiego -- kazda auto-walka
+// (kliknij "Auto" ORAZ kazda bitwa AI-vs-AI) ignorowala poziom weterana obu
+// stron. Naprawa: main.ts veteranScaledDefFor() / mapFieldBattle.ts
+// veteranScaledDef() wolaja TA SAMA applyVeteranFracToCombatUnit() z
+// veteran.ts (zero drugiej implementacji) PRZED policzeniem M przez
+// unit-power.ts fieldPower/armyFieldPower. Ten test odtwarza dokladnie ten
+// przeplyw (unitRow -> applyVeteranFracToCombatUnit -> armyFieldPower/
+// sumRosterFieldM) i dowodzi, ze premia faktycznie wchodzi do M.
+// ---------------------------------------------------------------------------
+console.log('9. Sciezka Auto-moc (M) -- premia weterana musi wejsc do M ataku/obrony');
+
+// Konnica: Atak(26)/Obrona(23) wyraznie rozne skladowe (patrz raport zadania
+// -- ten sam fixture co structure-defense-bonus-test.cjs Czesc A).
+const konnicaRaw = unitsRaw.find(u => u['Jednostka'] === 'Konnica');
+if (!konnicaRaw) { console.error('Fixture unit "Konnica" not found in units.json'); process.exit(1); }
+
+/**
+ * Reimplementuje main.ts veteranScaledDefFor()/mapFieldBattle.ts
+ * veteranScaledDef() 1:1: unitDefFor(u) (tu: surowy wiersz units.json) +
+ * premia z veteranCombatBonusFrac({battlesSurvived}) -> ta sama
+ * applyVeteranFracToCombatUnit() jak w produkcyjnym kodzie i jak sekcje 1-8
+ * powyzej.
+ */
+function veteranScaledUnitRow(raw, battlesSurvived) {
+  const frac = veteranCombatBonusFrac({ battlesSurvived });
+  if (!frac) return raw;
+  const scaled = applyVeteranFracToCombatUnit(raw, frac);
+  // PUŁAPKA (patrz main.ts veteranScaledDefFor): armyFieldPower() zwraca
+  // WPROST scaled.fieldPower (cache eksportu units.json) jesli jest liczba,
+  // ignorujac przeskalowane pola -- usuwamy je, zeby wymusic przeliczenie.
+  const { fieldPower, ...rest } = scaled;
+  return rest;
+}
+
+const mRekrut = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 0)); // poziom 1 (Rekrut), 0 przezytych bitew
+const mDoswiadczony = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 1)); // poziom 2, +10%
+const mWeteran = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 2)); // poziom 3 (Weteran, sufit), +20%
+
+check(
+  'Auto-moc: M rosnie z kazdym poziomem weterana (rekrut ' + mRekrut + ' < doswiadczony ' + mDoswiadczony + ' < weteran ' + mWeteran + ')',
+  mRekrut < mDoswiadczony && mDoswiadczony < mWeteran,
+);
+// M bazowe*1.20 NIE jest wprost oczekiwana wartosc: Pancerz jest wylaczony z
+// premii weterana (veteran.ts), a Pancerz WCHODZI do M (fieldPower() defense =
+// meleeDefence+armor+health/2) -- wiec poprawny wzor to M_bazowe*(1+frac) -
+// armor_bazowy*frac (odejmujemy premie, ktorej Pancerz NIE dostaje). Konnica:
+// armor=4, wiec 49*1.20 - 4*0.20 = 58.8 - 0.8 = 58.0.
+const konnicaArmor = konnicaRaw.armor;
+const expectedMWeteran = Math.round((mRekrut * 1.20 - konnicaArmor * 0.20) * 10) / 10;
+check(
+  'Auto-moc: M poziomu 3 == M bazowe*1.20 minus premia NIE-doliczona do Pancerza (ta sama premia co bitwa ogladana/"Pomin", zero nowej matematyki)',
+  approxEq(mWeteran, expectedMWeteran, 0.05),
+  mWeteran + ' vs oczekiwane ' + expectedMWeteran,
+);
+check(
+  'Auto-moc: brak kumulacji -- M poziomu 3 != M poziomu2 dalsze +20% (' + mWeteran + ' != ' + Math.round((mDoswiadczony * 1.20 - konnicaArmor * 0.20) * 10) / 10 + ')',
+  Math.abs(mWeteran - Math.round((mDoswiadczony * 1.20 - konnicaArmor * 0.20) * 10) / 10) > 0.01,
+);
+
+// Rozbicie Atak/Obrona (unit-power.ts armyFieldPowerSplit): premia weterana
+// (w odroznieniu od bonusu murow/terenu C-COMBAT-Q1, ktory dotyka WYLACZNIE
+// Obrony) ma prawo podniesc OBIE skladowe -- to inny, niezalezny system
+// (patrz veteran.ts naglowek: "W GORE -- meleeAttack, meleeDefence, ...").
+const splitRekrut = armyFieldPowerSplit(veteranScaledUnitRow(konnicaRaw, 0));
+const splitWeteran = armyFieldPowerSplit(veteranScaledUnitRow(konnicaRaw, 2));
+check(
+  'Auto-moc: weteran podnosi skladowa Ataku (' + splitRekrut.attack + ' -> ' + splitWeteran.attack + ')',
+  splitWeteran.attack > splitRekrut.attack,
+);
+check(
+  'Auto-moc: weteran podnosi skladowa Obrony (' + splitRekrut.defense + ' -> ' + splitWeteran.defense + ')',
+  splitWeteran.defense > splitRekrut.defense,
+);
+
+// PARYTET AI: veteranCombatBonusFrac()/applyVeteranFracToCombatUnit() nie
+// odwoluja sie do ownerId -- ta sama jednostka (ten sam battlesSurvived) musi
+// dac IDENTYCZNE M niezaleznie od tego, czy "nalezy" do gracza czy do AI (tu
+// symulowane przez dwie oddzielne kopie tego samego wiersza -- funkcje testowane
+// nie przyjmuja ownerId w ogole, wiec identycznosc jest gwarantowana STRUKTURALNIE,
+// nie przez przypadek fixture'u).
+const mWeteranCopyA = armyFieldPower(veteranScaledUnitRow({ ...konnicaRaw }, 2));
+const mWeteranCopyB = armyFieldPower(veteranScaledUnitRow({ ...konnicaRaw }, 2));
+check(
+  'PARYTET AI: veteranCombatBonusFrac/armyFieldPower nie zalezy od ownerId (brak parametru ownerId w ogole) -- M identyczne (' + mWeteranCopyA + ' == ' + mWeteranCopyB + ')',
+  mWeteranCopyA === mWeteranCopyB,
+);
+
+// Roster-poziom: sumRosterFieldM/sumRosterFieldMSplit -- funkcje, ktorych
+// FAKTYCZNIE uzywa main.ts rosterFieldPowerM/effectiveDefenderM po naprawie
+// (patrz main.ts ~L12177-12182, ~L12220-12222).
+const rosterRekrut = [{ typeId: 'Konnica', def: veteranScaledUnitRow(konnicaRaw, 0) }];
+const rosterWeteran = [{ typeId: 'Konnica', def: veteranScaledUnitRow(konnicaRaw, 2) }];
+check(
+  'sumRosterFieldM: roster z jednostka-weteranem (poziom 3) daje WYZSZE M niz identyczny sklad z rekrutem (' + sumRosterFieldM(rosterRekrut) + ' -> ' + sumRosterFieldM(rosterWeteran) + ')',
+  sumRosterFieldM(rosterWeteran) > sumRosterFieldM(rosterRekrut),
+);
+const rosterSplitWeteran = sumRosterFieldMSplit(rosterWeteran);
+check(
+  'sumRosterFieldMSplit: attack+defense == sumRosterFieldM rowniez PO doliczeniu weterana (zgodnosc z rankingiem Mocy)',
+  approxEq(rosterSplitWeteran.attack + rosterSplitWeteran.defense, sumRosterFieldM(rosterWeteran), 0.05),
+  (rosterSplitWeteran.attack + rosterSplitWeteran.defense) + ' vs ' + sumRosterFieldM(rosterWeteran),
+);
 console.log('');
 
 // ---------------------------------------------------------------------------

@@ -19,9 +19,11 @@ import {
   autoBattleWinPct,
   resolveAutoBattleByPower,
   sumRosterFieldM,
+  sumRosterFieldMSplit,
 } from '../game/auto-battle-power';
 import type { UnitPowerInput } from '../game/unit-power';
 import { armyFieldPower } from '../game/unit-power';
+import { veteranCombatBonusFrac, applyVeteranFracToCombatUnit } from '../game/veteran';
 import { snapshotRosterPositions } from '../game/post-battle-map';
 import type { RuntimeUnit } from '../units/setup';
 import { collectAtkRosterNearCity } from '../units/battleRoster';
@@ -160,11 +162,41 @@ function preBattleSideFromRoster(
   };
 }
 
+/**
+ * unitDefFor(u) + premia weterana (TRZECI SYSTEM, game/veteran.ts) -- audyt
+ * 2026-07-26: ta ścieżka (atak na miasto BEZ muru z mapy świata) czytała
+ * statystyki wprost z unitDefFor(), bez skalowania weterańskiego, tak samo
+ * jak main.ts effectiveDefenderM przed naprawą. Woła TĘ SAMĄ
+ * applyVeteranFracToCombatUnit() z veteran.ts co bitwa oglądana/"Pomiń"
+ * (battleScene.ts toCombatUnit) -- zero drugiej implementacji premii.
+ * Celowo NIE podpięte pod unitDefFor() samo w sobie: unitDefFor() zasila też
+ * preBattleUnitFromRuntime (wyświetlanie "moc"/atak w preBattle) i
+ * runtimeToBattleUnit (bitwa oglądana), która ma WŁASNĄ warstwę weterana --
+ * podmiana globalna podwoiłaby premię tam.
+ *
+ * PUŁAPKA (patrz main.ts veteranScaledDefFor dla pełnego uzasadnienia,
+ * znaleziona przez tools/weterani-test.cjs sekcja 9): unit-power.ts
+ * armyFieldPower() zwraca WPROST def.fieldPower (cache eksportu units.json),
+ * jeśli jest liczbą -- ignorując przeskalowane surowe pola. Usuwamy to pole
+ * po skalowaniu, żeby wymusić przeliczenie z (już przeskalowanych) statystyk.
+ */
+function veteranScaledDef(
+  u: RuntimeUnit,
+  unitDefFor: MapFieldBattleLaunchDeps['unitDefFor'],
+): UnitPowerInput & Record<string, unknown> {
+  const def = unitDefFor(u);
+  const frac = veteranCombatBonusFrac(u);
+  if (!frac) return def;
+  const scaled = applyVeteranFracToCombatUnit(def as any, frac);
+  const { fieldPower: _staleFieldPower, ...rest } = scaled;
+  return rest;
+}
+
 function rosterFieldPowerM(
   roster: RuntimeUnit[],
   unitDefFor: MapFieldBattleLaunchDeps['unitDefFor'],
 ): number {
-  return sumRosterFieldM(roster.map(u => ({ typeId: u.typeId, def: unitDefFor(u) })));
+  return sumRosterFieldM(roster.map(u => ({ typeId: u.typeId, def: veteranScaledDef(u, unitDefFor) })));
 }
 
 function effectiveDefenderM(
@@ -175,14 +207,27 @@ function effectiveDefenderM(
   unitDefFor: MapFieldBattleLaunchDeps['unitDefFor'],
   terrainCombatData: readonly TerrainEntry[],
 ): number {
-  const raw = rosterFieldPowerM(defRoster, unitDefFor);
+  // C-COMBAT-Q1 (Maciej, 2026-07-26): sam bug jak w main.ts effectiveDefenderM
+  // (M = atak+obrona zlane, mnożnik struktury -- fort/posterunek -- mnożył
+  // całość) — ten duplikat obsługuje atak na miasto BEZ muru z mapy świata.
+  // Wyrównane identycznie: sumRosterFieldMSplit dzieli M na attack/defense,
+  // structMult mnożony TYLKO przez defense.
+  //
+  // UWAGA — punkt 3 (mnożnik terenu) WSTRZYMANY (aktualizacja zlecenia
+  // 2026-07-26): terrMult celowo zostaje na CAŁYM M, jak przed zmianą (patrz
+  // main.ts effectiveDefenderM dla identycznego uzasadnienia).
+  const split = sumRosterFieldMSplit(
+    defRoster.map(u => ({ typeId: u.typeId, def: veteranScaledDef(u, unitDefFor) })),
+  );
   const terrMult = terrainDefenseMultiplier(
     terrain,
     String(atkLeadDef['Rola (linia)'] ?? ''),
     terrainCombatData as TerrainEntry[],
   );
   const structMult = 1 + structBonusPct / 100;
-  return Math.round(raw * terrMult * structMult * 10) / 10;
+  const terrAdjAttack = split.attack * terrMult;
+  const terrAdjDefense = split.defense * terrMult * structMult;
+  return Math.round((terrAdjAttack + terrAdjDefense) * 10) / 10;
 }
 
 function preBattleSzanseAtkPct(

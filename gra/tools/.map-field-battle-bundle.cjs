@@ -41,7 +41,8 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol"
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -135,9 +136,10 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "klucz 'ruda' wg Surowiec='Ruda' w resources.json; brak pola id \u2014 propozycja EKONOMIA, wymaga uzgodnienia z DANE",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wydobycie rudy do magazynu",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
     tech: "Murarstwo",
     odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
@@ -150,7 +152,8 @@ var terrain_improvements_default = {
       glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 5,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -165,7 +168,8 @@ var terrain_improvements_default = {
       kamien: 1
     },
     surowiecOdblokowany: "kamien",
-    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba",
+    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    surowiec_ilosc_tura: 4,
     teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
     warunek: "budulec \u2014 mury, budynki",
     koszt_praca: 22,
@@ -194,7 +198,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -212,12 +216,13 @@ var terrain_improvements_default = {
       praca: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "v0.1: tylko dost\u0119p boolean (panel Surowce) \u2014 bez liczenia ilo\u015Bci w magazynie",
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
+    surowiec_ilosc_tura: 4,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
     tech: "Obr\xF3bka drewna",
-    odblokowuje: "Deski (z budynkiem miejskim Tartak)"
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
   },
   tarasy: {
     nazwa: "Tarasy uprawne",
@@ -257,8 +262,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "z\u0142o\u017Ce soli (Pustynia/R\xF3wnina \u2014 hex.zloze=sol)",
-    warunek: "s\xF3l (konserwacja \u017Cywno\u015Bci + handel); bez wybrze\u017Ca bez z\u0142o\u017Ca",
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
     tech: "Garncarstwo",
     odblokowuje: "S\xF3l"
@@ -315,12 +320,29 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wst\u0119pne przetwarzanie rudy (przed Odlewni\u0105 w mie\u015Bcie)",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+  },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
   },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
@@ -485,11 +507,6 @@ var miasto_params_default = {
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
-  budynek_mnoznik_poziomu: {
-    wartosc: 1.1,
-    jednostka: "x / poziom",
-    opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
-  },
   jednostka_koszt_ludnosci: {
     wartosc: 0,
     jednostka: "ludnosc",
@@ -558,7 +575,17 @@ var miasto_params_default = {
   bonus_obrona_mur_proc: {
     wartosc: 200,
     jednostka: "% Obrony",
-    opis: "Miasto Z MUREM daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje game/siege.ts + battleScene (defensa miasta). Miasto bez muru = brak tego bonusu."
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -600,8 +627,24 @@ var miasto_params_default = {
 // src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 
+// src/game/building-resource-gate.ts
+var LABEL_BY_ASCII = {
+  drewno: "Drewno",
+  kamien: "Kamie\u0144",
+  glina: "Glina",
+  ruda: "Ruda",
+  zelazo: "\u017Belazo",
+  stal: "Stal",
+  braz: "Br\u0105z",
+  sol: "S\xF3l",
+  cegla: "Ceg\u0142a",
+  ceramika: "Ceramika"
+};
+var ASCII_BY_LABEL = Object.fromEntries(
+  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+
 // src/game/production.ts
-var BUILDING_LEVEL_FACTOR = miasto_params_default.budynek_mnoznik_poziomu?.wartosc ?? 1.1;
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
   Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
@@ -645,9 +688,17 @@ var combat_params_default = {
   },
   counter_multiplier: 1.5,
   river_attack_mult: 0.75,
+  brod: {
+    _opis: "C-BTL-BROD-Q1 wariant C -- mechanika brodu (Ford) na planszy bitwy taktycznej (battleScene.ts). karaAtak/karaObrona sa numerycznie te same co river_attack_mult (0.75=1-0.25) ale to OSOBNY, dedykowany dla brodu wpis (tamten zasila swiatowy resolveCombat/instant-resolve dla starcia z obronca-na-rzece; ten zasila per-tile Ford w bitwie taktycznej -- oba moga byc strojone niezaleznie w przyszlosci).",
+    ruchMult: 0.5,
+    karaAtak: 0.25,
+    karaObrona: 0.25,
+    bonusObronaBrzegu: 0.15
+  },
   obl\u0119\u017Cenie: {
-    wall_base_obrona: 5,
-    wall_per_level_obrona: 3,
+    _opis: "wall_base_obrona / wall_per_level_obrona ZEROWANE (Maciej 2026-07-25): obrona miasta dziala WYLACZNIE procentowo (miasto-params.json bonus_obrona_mur_proc=200 / bonus_obrona_cytadela_proc=100, konsumowane przez main.ts structureDefenseBonusFor + combat.ts structureDefBonusPct + battleScene onWallWalkway). Plaski bonus Obrony/Pancerza z muru w game/siege.ts (cityDefenseBonus) dublowal ten procent -- zneutralizowany tutaj zamiast w kodzie, zeby wallLevel/hasWalls (obecnosc muru) nadal dzialaly bez zmian. Pola zostawione (nie usuniete) dla zgodnosci z SiegeParams/wallParamsFromBuildings.",
+    wall_base_obrona: 0,
+    wall_per_level_obrona: 0,
     wall_max_level: 10,
     wall_pancerz_fraction: 0.5,
     hill_defense_mult: 1.5,
@@ -672,6 +723,51 @@ var combat_params_default = {
     hp_siege_divisor: 10
   }
 };
+
+// src/game/veteran.ts
+var VETERAN_BONUS_FRAC = {
+  1: 0,
+  2: 0.1,
+  3: 0.2
+};
+function veteranBattlesSurvived(unit) {
+  const v = unit?.battlesSurvived;
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? Math.floor(v) : 0;
+}
+function veteranLevelFromBattles(battlesSurvived) {
+  if (battlesSurvived >= 2) return 3;
+  if (battlesSurvived >= 1) return 2;
+  return 1;
+}
+function veteranLevel(unit) {
+  return veteranLevelFromBattles(veteranBattlesSurvived(unit));
+}
+function veteranBonusFracForLevel(level) {
+  return VETERAN_BONUS_FRAC[level];
+}
+function veteranCombatBonusFrac(unit) {
+  return veteranBonusFracForLevel(veteranLevel(unit));
+}
+function round4(x) {
+  return Math.round(x * 1e4) / 1e4;
+}
+function applyVeteranFracToCombatUnit(cu, frac) {
+  if (!frac) return cu;
+  const up = 1 + frac;
+  const progRaw = cu["Prog dezercji (% health)"];
+  const progScaled = progRaw === null || progRaw === void 0 ? progRaw : round4(progRaw * (1 - frac));
+  return {
+    ...cu,
+    meleeAttack: cu.meleeAttack * up,
+    meleeDefence: cu.meleeDefence * up,
+    weaponDamage: cu.weaponDamage * up,
+    piercing: cu.piercing * up,
+    chargeBonus: cu.chargeBonus * up,
+    health: cu.health * up,
+    missileAttack: cu.missileAttack * up,
+    "Prog dezercji (% health)": progScaled
+  };
+}
 
 // src/game/combat.ts
 var TW = combat_params_default.tw_v3;
@@ -814,6 +910,12 @@ function defenderSideTitle(city, defRoster) {
   return defRoster.length > 1 ? "Garnizon (" + defRoster.length + ")" : lead.typeId;
 }
 
+// src/game/barbarians.ts
+var BARBARIAN_OWNER_ID = -1;
+function isBarbarian(ownerId) {
+  return ownerId === BARBARIAN_OWNER_ID;
+}
+
 // src/game/unit-power.ts
 var DEFAULT_COEFF = {
   chargeDivisor: 2,
@@ -861,6 +963,11 @@ function armyFieldPower(u, coeff) {
   }
   return fieldPower(u, coeff).total;
 }
+function armyFieldPowerSplit(u, coeff) {
+  if (isSiegeUnit(u)) return { attack: 0, defense: 0 };
+  const bd = fieldPower(u, coeff);
+  return { attack: bd.attack, defense: bd.defense };
+}
 
 // src/game/auto-battle-power.ts
 var BATTLE_EXCLUDED_TYPES = /* @__PURE__ */ new Set(["Zwiadowca", "Osadnik"]);
@@ -877,6 +984,17 @@ function sumRosterFieldM(roster) {
   }
   return Math.round(sum * 10) / 10;
 }
+function sumRosterFieldMSplit(roster) {
+  let atk = 0;
+  let def = 0;
+  for (const u of roster) {
+    if (!isFieldBattleUnit(u.typeId, u.def)) continue;
+    const split = armyFieldPowerSplit(u.def);
+    atk += split.attack;
+    def += split.defense;
+  }
+  return { attack: Math.round(atk * 10) / 10, defense: Math.round(def * 10) / 10 };
+}
 function autoBattleWinPct(mAtk, mDef) {
   const a = Math.max(0, mAtk);
   const d = Math.max(0, mDef);
@@ -885,6 +1003,39 @@ function autoBattleWinPct(mAtk, mDef) {
   if (d <= 0) return 100;
   return Math.round(a / (a + d) * 100);
 }
+
+// src/game/culture-religion.ts
+var FALLBACK_CULTURE_PARAMS = Object.freeze({
+  progZasieg1: 100,
+  progZasieg2: 250,
+  progZasieg3: 500,
+  zadowolenie100: 2,
+  zadowolenie75: 1,
+  zadowolenie50: 0,
+  karaLt50: -1,
+  karaLt25: -2,
+  konwersjaBaza: 1,
+  konwersjaSwiatynia: 1.5,
+  konwersjaAmfiteatr: 1,
+  konwersjaBiblioteka: 2,
+  konwersjaPalac: 2,
+  konwersjaStela: 0.5,
+  konwersjaSad: 2,
+  konwersjaLaznia: 1,
+  konwersjaCapTura: 5
+});
+var FALLBACK_RELIGION_PARAMS = Object.freeze({
+  progDominacjiPct: 50,
+  szybkoscSzerzeniaBazowa: 1,
+  swiatyniaBonusSzerzenia: 1,
+  szerzenieMaxDystans: 3,
+  zadowolenieDominujaca: 2,
+  karaObca: -2,
+  karaBrakReligii: -1,
+  konwersjaBazaPct: 2,
+  konwersjaSwiatyniaPct: 4,
+  konwersjaKregiPct: 2
+});
 
 // src/audio/filePlayer.ts
 var import_meta = {};
@@ -1141,13 +1292,44 @@ var introModules = import_meta.glob("./utwory/intro/*.mp3", {
   import: "default"
 });
 var INTRO_KOLEJNOSC = [
+  "Prayer_of_the_Sun_Stone",
   "Dawn_of_the_Architect",
   "Seven_Hills_Rising",
   "Ascent_to_Zenith"
 ];
 var INTRO_URLS = INTRO_KOLEJNOSC.map((nazwa) => Object.keys(introModules).find((k) => k.includes(nazwa))).filter((k) => Boolean(k)).map((k) => introModules[k]);
+var dyplomacjaModules = import_meta.glob("./utwory/dyplomacja/*.mp3", {
+  eager: true,
+  import: "default"
+});
+var DYPLOMACJA_URLS = Object.keys(dyplomacjaModules).sort().map((k) => dyplomacjaModules[k]);
+var preBattleModules = import_meta.glob("./utwory/prebattle/*.mp3", {
+  eager: true,
+  import: "default"
+});
+var PREBATTLE_URLS = Object.keys(preBattleModules).sort().map((k) => preBattleModules[k]);
+var bitwaModules = import_meta.glob("./utwory/bitwa/*.mp3", {
+  eager: true,
+  import: "default"
+});
+var BITWA_URLS = Object.keys(bitwaModules).sort().map((k) => bitwaModules[k]);
+var zwyciestwoModules = import_meta.glob("./utwory/zwyciestwo/*.mp3", {
+  eager: true,
+  import: "default"
+});
+var ZWYCIESTWO_URLS = Object.keys(zwyciestwoModules).sort().map((k) => zwyciestwoModules[k]);
+var porazkaModules = import_meta.glob("./utwory/porazka/*.mp3", {
+  eager: true,
+  import: "default"
+});
+var PORAZKA_URLS = Object.keys(porazkaModules).sort().map((k) => porazkaModules[k]);
 var kamienPlaylist = createPlaylist(KAMIEN_URLS, 3);
 var introPlaylist = createPlaylist(INTRO_URLS, 1, "stala");
+var dyplomacjaPlaylist = createPlaylist(DYPLOMACJA_URLS, 1, "stala");
+var preBattlePlaylist = createPlaylist(PREBATTLE_URLS, 1, "stala");
+var bitwaPlaylist = createPlaylist(BITWA_URLS, 1, "stala");
+var zwyciestwoPlaylist = createPlaylist(ZWYCIESTWO_URLS, 1, "stala");
+var porazkaPlaylist = createPlaylist(PORAZKA_URLS, 1, "stala");
 
 // src/battle/mapFieldBattle.ts
 function preBattleUnitFromRuntime(u, unitDefFor, unitHealth, unitAtak) {
@@ -1162,26 +1344,43 @@ function preBattleUnitFromRuntime(u, unitDefFor, unitHealth, unitAtak) {
     moc: armyFieldPower(def)
   };
 }
-function preBattleSideFromRoster(roster, title, civLabel, unitDefFor, unitHealth, unitAtak) {
+function preBattleSideFromRoster(roster, title, civLabel, unitDefFor, unitHealth, unitAtak, civIdForOwner, eraForOwnerId, isCityStateForOwner) {
+  const ownerId = roster[0]?.ownerId;
   return {
     nazwa: title,
     cywilizacja: civLabel,
-    ownerId: roster[0]?.ownerId,
+    ownerId,
+    civId: ownerId !== void 0 ? civIdForOwner?.(ownerId) : void 0,
+    era: ownerId !== void 0 ? eraForOwnerId?.(ownerId) : void 0,
+    isCityState: ownerId !== void 0 ? isCityStateForOwner?.(ownerId) : void 0,
+    // TEMAT 11 (2026-07-24): isBarbarian(ownerId) jest czysta funkcja (game/barbarians.ts) --
+    // nie wymaga osobnego callbacku deps jak isCityStateForOwner (kontekst klastra/miast).
+    isBarbarian: ownerId !== void 0 ? isBarbarian(ownerId) : void 0,
     units: roster.map((u) => preBattleUnitFromRuntime(u, unitDefFor, unitHealth, unitAtak))
   };
 }
+function veteranScaledDef(u, unitDefFor) {
+  const def = unitDefFor(u);
+  const frac = veteranCombatBonusFrac(u);
+  if (!frac) return def;
+  return applyVeteranFracToCombatUnit(def, frac);
+}
 function rosterFieldPowerM(roster, unitDefFor) {
-  return sumRosterFieldM(roster.map((u) => ({ typeId: u.typeId, def: unitDefFor(u) })));
+  return sumRosterFieldM(roster.map((u) => ({ typeId: u.typeId, def: veteranScaledDef(u, unitDefFor) })));
 }
 function effectiveDefenderM(defRoster, terrain, structBonusPct, atkLeadDef, unitDefFor, terrainCombatData) {
-  const raw = rosterFieldPowerM(defRoster, unitDefFor);
+  const split = sumRosterFieldMSplit(
+    defRoster.map((u) => ({ typeId: u.typeId, def: veteranScaledDef(u, unitDefFor) }))
+  );
   const terrMult = terrainDefenseMultiplier(
     terrain,
     String(atkLeadDef["Rola (linia)"] ?? ""),
     terrainCombatData
   );
   const structMult = 1 + structBonusPct / 100;
-  return Math.round(raw * terrMult * structMult * 10) / 10;
+  const terrAdjAttack = split.attack * terrMult;
+  const terrAdjDefense = split.defense * terrMult * structMult;
+  return Math.round((terrAdjAttack + terrAdjDefense) * 10) / 10;
 }
 function preBattleSzanseAtkPct(atkRoster, defRoster, terrain, structBonusPct, unitDefFor, terrainCombatData) {
   const aLeadDef = unitDefFor(atkRoster[0]);
@@ -1226,7 +1425,10 @@ function planOpenCityFieldBattle(action, city, anchor, units, deps) {
       deps.civLabelForOwner(anchor.ownerId),
       deps.unitDefFor,
       deps.unitHealth,
-      deps.unitAtak
+      deps.unitAtak,
+      deps.civIdForOwner,
+      deps.eraForOwnerId,
+      deps.isCityStateForOwner
     ),
     obronca: preBattleSideFromRoster(
       defRoster,
@@ -1234,7 +1436,10 @@ function planOpenCityFieldBattle(action, city, anchor, units, deps) {
       deps.civLabelForOwner(defLead.ownerId),
       deps.unitDefFor,
       deps.unitHealth,
-      deps.unitAtak
+      deps.unitAtak,
+      deps.civIdForOwner,
+      deps.eraForOwnerId,
+      deps.isCityStateForOwner
     ),
     teren: terrain,
     szanseAtkPct: szanse,
@@ -1289,7 +1494,8 @@ function canInitiateSiege(atakujacy, city) {
 // src/map/map-attack-city.ts
 function adjacentPlayerAttackers(city, units, playerOwnerId) {
   return units.filter(
-    (u) => u.ownerId === playerOwnerId && u.ruchLeft > 0 && !isCivilianUnit(u) && hexDistance(u.q, u.r, city.q, city.r) === 1
+    (u) => u.ownerId === playerOwnerId && u.ruchLeft > 0 && !isCivilianUnit(u) && // TEMAT #15: BRAK ataku z wody — jednostka zaokrętowana nie atakuje miast.
+    u.embarked !== true && hexDistance(u.q, u.r, city.q, city.r) === 1
   );
 }
 function resolveAttacker(adjacent, selectedUnit, playerOwnerId) {

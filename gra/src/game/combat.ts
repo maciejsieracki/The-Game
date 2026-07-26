@@ -37,11 +37,21 @@ export interface CounterEntry {
 
 /**
  * A single entry from data/terrain-combat.json.
+ *
+ * NOTE: the raw JSON key for the ranged-reach delta carries Polish
+ * diacritics + a delta glyph (literally "Delta Zasieg (dystansowi)" with a
+ * capital Greek delta and an accented e). Written here via \uXXXX escapes
+ * so this ASCII-only source file's bytes stay 7-bit, but the PROPERTY NAME
+ * at runtime is the real accented string that matches data/terrain-combat.json
+ * (and src/data/loader.ts's TerrainCombatDef) -- a plain-ASCII key here would
+ * silently never match the real data (this was the original bug: an ASCII
+ * 'Delta Zasieg (dystansowi)' key was declared but never read anywhere).
  */
 export interface TerrainEntry {
   'Teren': string;
   'Bonus Obrona': string;
-  'Delta Zasieg (dystansowi)': string;
+  '\u0394 Zasi\u0119g (dystansowi)': string | null;
+  'Kawaleria/Rydwan': string | null;
   'Efekt specjalny': string;
 }
 
@@ -552,6 +562,91 @@ export function terrainRiverAttackMultiplier(
   if (!isRiver) return 1.0;
   const entry = terrainData.find((t) => normTerrain(t['Teren']).includes('rzek'));
   return entry ? combatParamsRaw.river_attack_mult : 1.0;
+}
+
+/**
+ * Shared "Teren" row lookup for terrainRangeDelta / cavalryTerrainMultiplier.
+ *
+ * EXACT normalized match only (not terrainDefenseMultiplier's fuzzy
+ * includes()-based rule): a substring check here would false-positive match
+ * combatTerrainName's 'Plaskie (rownina/laka)' against the JSON 'Las' row,
+ * because normTerrain('Plaskie...') literally CONTAINS the substring 'las'
+ * ("p-LAS-kie") -- verified with a failing test before this fix. Every real
+ * caller passes one of battle-terrain.ts's canonical COMBAT_NAME strings
+ * ('Las'/'Wzgorza'/'Gory'/'Rzeka'/'Plaskie (rownina/laka)'), and the first
+ * four normalize to an EXACT match with their JSON row (both sides lose the
+ * same accents via NFD); 'Plaskie' legitimately finds no row (its own JSON
+ * name has an L-with-stroke letter that NFD does not decompose, so the
+ * plain-ASCII 'l' COMBAT_NAME uses never matches it byte-for-byte), which is
+ * fine -- callers default to 0 / 1 (no delta / no penalty) exactly as Plains
+ * data intends.
+ */
+function findTerrainEntry(terrain: TerrainName, terrainData: TerrainEntry[]): TerrainEntry | undefined {
+  if (!terrain || terrainData.length === 0) return undefined;
+  const terrNorm = normTerrain(terrain);
+  return terrainData.find((t) => normTerrain(t['Teren']) === terrNorm);
+}
+
+// Raw JSON key for the ranged-reach delta column (see TerrainEntry doc comment
+// above for why this must be the real accented key, not an ASCII alias).
+const RANGE_DELTA_KEY = 'Δ Zasięg (dystansowi)' as const;
+
+/**
+ * terrainRangeDelta (C-TEREN-Q1 ETAP 2):
+ * Reads the "Δ Zasięg (dystansowi)" column of terrain-combat.json for the
+ * tile a RANGED unit is STANDING ON (not the target's tile) and returns the
+ * signed tile delta to apply to that unit's shooting range this turn.
+ *
+ *   Las (forest)   -> -1 (zaslona / cover blocks line of sight)
+ *   Wzgorza (hills)-> +1 (elevation)
+ *   Gory (mountains)-> +1 (elevation)
+ *   Everything else (incl. unmatched terrain / empty terrainData) -> 0
+ *
+ * The data cell uses a unicode minus sign (U+2212) for the negative value
+ * ("−1 (zaslona)"), normalised to ASCII '-' before parsing.
+ */
+export function terrainRangeDelta(
+  terrain: TerrainName,
+  terrainData: TerrainEntry[],
+): number {
+  const entry = findTerrainEntry(terrain, terrainData);
+  if (!entry) return 0;
+  const raw = entry[RANGE_DELTA_KEY];
+  if (raw === null || raw === undefined) return 0;
+  const s = String(raw).replace(/−/g, '-');
+  const match = s.match(/([+-]?\d+)/);
+  if (!match?.[1]) return 0;
+  return parseInt(match[1], 10);
+}
+
+/**
+ * cavalryTerrainMultiplier (C-TEREN-Q1 ETAP 3):
+ * Reads the "Kawaleria/Rydwan" column of terrain-combat.json and returns the
+ * movement-cost MULTIPLIER a MOUNTED unit (cavalry / chariot) pays entering
+ * that terrain, relative to the terrain's normal (foot) entry cost:
+ *
+ *   Las (forest)    -> 2         ("koszt x2 -- mocno spowolnione")
+ *   Gory (mountains)-> Infinity  ("NIEDOSTEPNE dla kawalerii/rydwanow")
+ *   Everything else (incl. Wzgorza "spowolnione" -- no explicit numeric/block
+ *   marker -- and unmatched terrain / empty terrainData) -> 1 (no penalty),
+ *   so callers can always multiply this straight into the base entry cost.
+ */
+export function cavalryTerrainMultiplier(
+  terrain: TerrainName,
+  terrainData: TerrainEntry[],
+): number {
+  const entry = findTerrainEntry(terrain, terrainData);
+  if (!entry) return 1;
+  const raw = entry['Kawaleria/Rydwan'];
+  if (!raw) return 1;
+  const norm = normTerrain(raw);
+  if (norm.includes('niedostepne')) return Infinity;
+  const match = raw.match(/[x×]\s*(\d+(?:[.,]\d+)?)/i);
+  if (match?.[1]) {
+    const n = parseFloat(match[1].replace(',', '.'));
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return 1;
 }
 
 // ---------------------------------------------------------------------------

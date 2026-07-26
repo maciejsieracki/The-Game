@@ -137,6 +137,32 @@ export function armyFieldPower(
   return fieldPower(u, coeff).total;
 }
 
+/**
+ * M_pole rozbite na Atak/Obronę (decyzja Maciej C-COMBAT-Q1, 2026-07-26: bonusy
+ * murów/terenu obronnego mają podnosić WYŁĄCZNIE Obronę, nigdy Atak). Czysta
+ * funkcja — używana TYLKO przez effectiveDefenderM (auto-walka mocą), żeby
+ * rozdzielić stronę obronną roster-a przed pomnożeniem przez mnożniki
+ * teren/mur. NIE zmienia sygnatury/zachowania armyFieldPower() (ranking Mocy,
+ * AI-decyzje) — ten pozostaje pojedynczą liczbą attack+defense.
+ *
+ * Zwraca {attack:0, defense:0} dla jednostek oblężniczych (spójne z
+ * armyFieldPower, które dla nich zwraca 0 — patrz decyzja 2A).
+ *
+ * Uwaga: gdy dane jednostki mają precomputed `fieldPower` (units.json), ta
+ * funkcja i tak liczy attack/defense z surowych statystyk przez fieldPower()
+ * — zweryfikowano, że dla wszystkich wpisów w units.json
+ * attack+defense === precomputed fieldPower (te same współczynniki
+ * combat-params.json), więc suma się zgadza, tylko rozbita na składowe.
+ */
+export function armyFieldPowerSplit(
+  u: UnitPowerInput,
+  coeff?: UnitPowerCoeffs,
+): { attack: number; defense: number } {
+  if (isSiegeUnit(u)) return { attack: 0, defense: 0 };
+  const bd = fieldPower(u, coeff);
+  return { attack: bd.attack, defense: bd.defense };
+}
+
 /** Suma M armii na mapie (bez oblężniczych). */
 export function sumArmyFieldPower(
   units: ReadonlyArray<UnitPowerInput & { count?: number }>,

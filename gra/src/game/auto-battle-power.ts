@@ -3,7 +3,7 @@
  */
 
 import type { UnitPowerInput } from './unit-power';
-import { armyFieldPower, isSiegeUnit } from './unit-power';
+import { armyFieldPower, armyFieldPowerSplit, isSiegeUnit } from './unit-power';
 import {
   loadAutoBattleParams,
   UPSET_CHANCE,
@@ -56,6 +56,27 @@ export function sumRosterFieldM(
     sum += armyFieldPower(u.def);
   }
   return Math.round(sum * 10) / 10;
+}
+
+/**
+ * Jak sumRosterFieldM, ale rozbite na Atak/Obronę (decyzja Maciej C-COMBAT-Q1,
+ * 2026-07-26) — do użytku WYŁĄCZNIE przez effectiveDefenderM (auto-walka mocą),
+ * żeby mnożniki muru/terenu obronnego dotykały tylko strony Obrony roster-a
+ * obrońcy. Ten sam filtr jednostek co sumRosterFieldM (oblężnicze i
+ * BATTLE_EXCLUDED_TYPES pominięte), więc attack+defense === sumRosterFieldM().
+ */
+export function sumRosterFieldMSplit(
+  roster: ReadonlyArray<{ typeId: string; def: UnitPowerInput }>,
+): { attack: number; defense: number } {
+  let atk = 0;
+  let def = 0;
+  for (const u of roster) {
+    if (!isFieldBattleUnit(u.typeId, u.def)) continue;
+    const split = armyFieldPowerSplit(u.def);
+    atk += split.attack;
+    def += split.defense;
+  }
+  return { attack: Math.round(atk * 10) / 10, defense: Math.round(def * 10) / 10 };
 }
 
 function coreLoss(ratio: number, pExp: number, L_MAX: number): number {
