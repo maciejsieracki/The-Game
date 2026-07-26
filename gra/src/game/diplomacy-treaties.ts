@@ -33,6 +33,21 @@ export interface HandelSurowiecCyklicznyItem {
   /** Forma zapłaty biorcy → dawcy (brak = wymiana bez zapłaty, np. barter surowiec-za-surowiec). */
   zaplataTyp?: 'zloto' | 'praca';
   zaplataPerTura?: number;
+  /**
+   * N6/atomowość (WIARYGODNOSC-SPECYFIKACJA.md §2, C-HANDEL-1/2/3) — kolejne tury
+   * Z RZĘDU, w których SPRZEDAWCA (sellerOwnerId) nie miał zapasu na pełną dostawę
+   * tej pozycji. Reset do 0 po każdej udanej dostawie; przy osiągnięciu progu
+   * (DIPLOMACY_PARAMS.wiarygodnoscN6ProgTurZRzedu) nalicza się kara N6 dawcy i licznik
+   * wraca do 0 (może się powtórzyć).
+   */
+  sellerNiedostarczylTuryZRzedu?: number;
+  /**
+   * N6/atomowość — kolejne tury Z RZĘDU, w których KUPUJĄCY (buyerOwnerId) nie miał
+   * środków na zapłatę MIMO że sprzedawca był gotów dostarczyć (dostawa i tak NIE
+   * następuje — atomowość, C-HANDEL-3). Nie dotyczy barteru (tam liczy się wyłącznie
+   * `sellerNiedostarczylTuryZRzedu` obu sprzężonych pozycji).
+   */
+  buyerNieZaplacilTuryZRzedu?: number;
 }
 
 /** Aktywny traktat między dwoma ownerId (gra używa number). */
@@ -66,6 +81,13 @@ export interface ActiveDeal {
    * activeDeals razem z tym polem (brak osobnego cleanupu).
    */
   handelSurowiecCykliczny?: HandelSurowiecCyklicznyItem[];
+  /**
+   * WIARYGODNOSC-SPECYFIKACJA.md §3 tabela B (P3 finisz) — true od PIERWSZEGO
+   * niedostarczenia (czyjejkolwiek winy, sprzedawca LUB kupujący) w tym dealu;
+   * P3 ("100% dostaw AŻ DO KOŃCA") wymaga, żeby to pole pozostało falsy przez
+   * całe życie umowy. Dotyczy WYŁĄCZNIE dealów z handelSurowiecCykliczny.
+   */
+  handelCyklicznyKiedykolwiekNiedostarczono?: boolean;
 }
 
 export type AllianceEvent =

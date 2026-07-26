@@ -317,6 +317,8 @@ export const DIPLOMACY_PARAMS = {
   wiarygodnoscN5ZerwanieHandelCzasowy:       -4,
   /** N6 — niedotrzymanie handlu cyklicznego (3 tury z rzędu z winy strony), kara wyłącznie dla winnego (pkt Wiarygodności, jednorazowo). */
   wiarygodnoscN6NiedotrzymanieHandluCyklicznego: -2,
+  /** N6 — próg kolejnych tur z rzędu z winy TEJ SAMEJ strony (dawca bez zapasu / biorca bez środków), po którym nalicza się kara (tury). */
+  wiarygodnoscN6ProgTurZRzedu: 3,
   /** N7 — nieautoryzowany przemarsz, jednorazowo przy pierwszym wykryciu w danej "wizycie" (pkt Wiarygodności). Zwiadowcy wykluczeni (C-WIAR-SKAUT=A). */
   wiarygodnoscN7NieautoryzowanyPrzemarsz:    -2,
   /** Odwet (C-WIAR-ODWET=A) — okno (tury) od cudzego N1/N2/N4 wobec nas, w którym nasza odwetowa wojna NIE nalicza N1/N2. */
@@ -1509,6 +1511,24 @@ export interface TickCtx {
   odmiennaReligia?:     boolean;
   /** Czy gracz rozbudowuje się przy granicy partnera? (-2 Zaufanie/turę). */
   ekspansjaPrzyGranicy?: boolean;
+  /**
+   * WIARYGODNOSC-SPECYFIKACJA.md §5, Dźwignia 1 — Wiarygodność GLOBALNA (nie per
+   * para) strony, której reputacja ma tu wpływać na Zaufanie tej pary (surowa,
+   * nieklamrowana suma — klamrowanie do −100…+100 dzieje się WEWNĄTRZ tej funkcji,
+   * identycznie jak `strumienWiarygodnoscDoZaufania`, patrz niżej). `undefined` =
+   * brak wkładu tej tury (SILNIK zostawia pole puste m.in. gdy ta konkretna para
+   * jest AKTUALNIE w stanie wojny — C-WIAR-WROG=A: strumień nie działa wobec
+   * aktualnego przeciwnika wojennego, ale działa normalnie wobec reszty, także
+   * w trakcie tej samej wojny — C-WIAR-WOJNA=B). C-WIAR-SUMA=A: DODAJE SIĘ do
+   * `dZ`, nie zastępuje żadnego istniejącego składnika.
+   *
+   * Formuła wzięta wprost ze `strumienWiarygodnoscDoZaufania` (game/diplomacy-credibility.ts)
+   * — NIE importowana stamtąd wprost (ten moduł już importuje DIPLOMACY_PARAMS
+   * STĄD, import w drugą stronę utworzyłby cykl); dzielnik czytany z tego samego
+   * DIPLOMACY_PARAMS.wiarygodnoscZaufanieDzielnikPerTura, więc obie ścieżki
+   * zawsze się zgadzają.
+   */
+  wiarygodnoscSelf?: number;
 }
 
 /**
@@ -1552,6 +1572,12 @@ export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): Relacja
   if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;
   if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
+  // WIARYGODNOSC §5 Dźwignia 1 (C-WIAR-SUMA=A) — składnik NIEZALEŻNY od reszty dZ,
+  // patrz komentarz TickCtx.wiarygodnoscSelf powyżej (formuła = strumienWiarygodnoscDoZaufania).
+  if (ctx.wiarygodnoscSelf !== undefined) {
+    const wKlamrowane = clamp(ctx.wiarygodnoscSelf, p.wiarygodnoscSkalaMin, p.wiarygodnoscSkalaMax);
+    dZ += wKlamrowane / p.wiarygodnoscZaufanieDzielnikPerTura;
+  }
 
   // --- zanik urazów historycznych co 20 tur ---
   // main.ts trzyma slim Relation (bez traktaty/urazy) — guard dla bezpiecznego ticku.

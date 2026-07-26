@@ -1,14 +1,18 @@
 'use strict';
 /**
- * wiarygodnosc-test.cjs — Wiarygodność cywilizacji, Etap 1 (rdzeń).
+ * wiarygodnosc-test.cjs — Wiarygodność cywilizacji, Etap 1 (rdzeń) + Etapy 2–4 (haki).
  * Pokrycie wg `dyspozycje/WIARYGODNOSC-SPECYFIKACJA.md` §7 "Testy (bramki)":
  *   - klamrowanie do [-100,100] dla skrajnych wartości i sum;
  *   - krzywa zapominania: t=0 pełna, t>=czasZapomnienia dokładnie 10% (podłoga), liniowość pomiędzy;
  *   - wiarygodnoscBand/wiarygodnoscLabelPl na granicach pasm;
  *   - test parytetu (ownerId=0 vs ownerId=N daje identyczną deltę);
  *   - różnice między poziomami trudności (start, czasy zapomnienia).
- * Save/load, atomowość handlu cyklicznego, haki zdarzeń — POZA zakresem Etapu 1
- * (patrz zlecenie: te testy przyjdą z etapem save/load i haków).
+ *   - Etap 2–4: STRUMIEŃ (fresh/tick, bez trwałej podłogi), Wiarygodność CAŁKOWITA
+ *     (zdarzenia jednorazowe + strumień, klamrowana), Dźwignia 1 (tickDiplomacy +
+ *     wiarygodnoscSelf → ΔZaufanie, C-WIAR-SUMA=A: dodaje się do dZ).
+ * Haki silnika (main.ts — N1–N7, S1–S4, P1–P5, save/load) nie są tu wprost jednostkowo
+ * testowalne (żyją w domknięciu main.ts) — pokryte pośrednio przez zielone bramki
+ * ai-test/logic-test/diplomacy-*-test (brak regresji) i manualny playtest (raport).
  *
  * Uruchom z gra/: node tools/wiarygodnosc-test.cjs
  */
@@ -41,8 +45,11 @@ fs.writeFileSync(
   credibilityStreamWeight,
   sumaStrumienia,
   strumienWiarygodnoscDoZaufania,
+  freshCredibilityStreamEntry,
+  tickCredibilityStreamEntry,
+  sumaWiarygodnosciCalkowita,
 } from '../src/game/diplomacy-credibility';
-export { DIPLOMACY_PARAMS } from '../src/game/diplomacy';\n`,
+export { DIPLOMACY_PARAMS, tickDiplomacy } from '../src/game/diplomacy';\n`,
   'utf8',
 );
 
@@ -272,6 +279,91 @@ ok(WC.credibilityStreamWeight('strumien_przemarsz') === P.wiarygodnoscS4Przemars
   ];
   ok(WC.sumaStrumienia(wpisy) === 13, `sumaStrumienia sumuje sumaAktywna wpisów (got ${WC.sumaStrumienia(wpisy)})`);
   ok(WC.sumaStrumienia([]) === 0, 'sumaStrumienia([]) === 0');
+}
+
+// ---------------------------------------------------------------------------
+// 7) Etap 2-4: STRUMIEŃ tick/fresh (bez trwałej podłogi — C-WIAR-SLAD=A) i
+//    sumaWiarygodnosciCalkowita (startowa + zdarzenia jednorazowe + strumień).
+// ---------------------------------------------------------------------------
+
+{
+  const fresh = WC.freshCredibilityStreamEntry('strumien_sojusz');
+  ok(fresh.wartoscNaTure === P.wiarygodnoscS1SojuszPerTure, 'freshCredibilityStreamEntry: waga = S1 sojusz');
+  ok(fresh.sumaAktywna === 0, 'freshCredibilityStreamEntry: sumaAktywna startuje od 0');
+
+  const t1 = WC.tickCredibilityStreamEntry(fresh);
+  ok(t1.sumaAktywna === P.wiarygodnoscS1SojuszPerTure, `tickCredibilityStreamEntry: +1 tura = +waga (got ${t1.sumaAktywna})`);
+  const t2 = WC.tickCredibilityStreamEntry(t1);
+  ok(approxEqual(t2.sumaAktywna, 2 * P.wiarygodnoscS1SojuszPerTure), `tickCredibilityStreamEntry: +2 tury = 2x waga (got ${t2.sumaAktywna})`);
+  ok(t1 !== fresh, 'tickCredibilityStreamEntry: immutable (nowy obiekt, nie mutacja)');
+
+  // §3/§4 C-WIAR-SLAD=A: strumień nie ma krzywej zapominania ani podłogi — po
+  // 1000 tur wpis nadal rośnie liniowo, nigdy się nie "zamraża" jak zdarzenia jednorazowe.
+  let acc = WC.freshCredibilityStreamEntry('strumien_nap');
+  for (let i = 0; i < 1000; i++) acc = WC.tickCredibilityStreamEntry(acc);
+  ok(approxEqual(acc.sumaAktywna, 1000 * P.wiarygodnoscS2NapPerTure), 'strumień: 1000 tur = 1000x waga, bez podłogi/zamrożenia');
+}
+
+{
+  // sumaWiarygodnosciCalkowita = startowa + Σ wartoscBiezaca(zdarzenia) + sumaStrumienia.
+  const zdarzenia = [
+    { typ: 'zlamanie_paktu_sojusz', wartoscPierwotna: -25, turaWystapienia: 0, znak: 'kara' },
+  ];
+  const wpisyStrumienia = [
+    { typ: 'strumien_sojusz', wartoscNaTure: P.wiarygodnoscS1SojuszPerTure, sumaAktywna: 4 },
+  ];
+  const suma = WC.sumaWiarygodnosciCalkowita(zdarzenia, wpisyStrumienia, 20, 0, 'normal');
+  ok(approxEqual(suma, 20 - 25 + 4), `sumaWiarygodnosciCalkowita: startowa+zdarzenia+strumien (got ${suma}, want ${20 - 25 + 4})`);
+
+  // Klamrowanie: strumień ogromny (np. dziesiątki jednoczesnych zobowiązań przez setki tur, §9.2=C bez limitu) nie ucieka poza +100.
+  const wpisyOgromne = [
+    { typ: 'strumien_sojusz', wartoscNaTure: 1, sumaAktywna: 100000 },
+  ];
+  const sumaKlamrowana = WC.sumaWiarygodnosciCalkowita([], wpisyOgromne, 20, 0, 'normal');
+  ok(sumaKlamrowana === 100, `sumaWiarygodnosciCalkowita klamruje do +100 (got ${sumaKlamrowana})`);
+}
+
+// ---------------------------------------------------------------------------
+// 8) Etap 4: Dźwignia 1 — tickDiplomacy + TickCtx.wiarygodnoscSelf (C-WIAR-SUMA=A:
+//    dodaje się do dZ, nie zastępuje reszty; C-WIAR-WROG/WOJNA — gating jest
+//    obowiązkiem WOŁAJĄCEGO (main.ts), tickDiplomacy tylko dodaje gdy pole podane).
+// ---------------------------------------------------------------------------
+
+function freshRdip(zaufanie, status) {
+  return { zaufanie, respekt: 30, status, traktaty: [], urazyHistoryczne: 0, relacjaOgolna: zaufanie + 30 };
+}
+
+{
+  const before = freshRdip(50, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, wiarygodnoscSelf: 50 });
+  const expectedDelta = 50 / P.wiarygodnoscZaufanieDzielnikPerTura; // = 2.5
+  ok(approxEqual(after.zaufanie, 50 + expectedDelta), `tickDiplomacy: wiarygodnoscSelf=50 -> dZ=+2.5 (got ${after.zaufanie})`);
+}
+
+{
+  // Undefined = brak wpływu (dokładnie jak dziś, przed Etapem 4) — caller (main.ts)
+  // zostawia pole puste, gdy TA para jest aktualnie w stanie wojny (C-WIAR-WROG=A).
+  const before = freshRdip(50, 'wojna');
+  const after = WC.tickDiplomacy(before, { turn: 1 });
+  ok(after.zaufanie === 50, `tickDiplomacy: wiarygodnoscSelf undefined -> brak zmiany (got ${after.zaufanie})`);
+}
+
+{
+  // C-WIAR-SUMA=A: strumień DODAJE SIĘ do istniejących składników dZ (np. sojusz +3), nie zastępuje.
+  const before = freshRdip(50, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 40 });
+  const expectedDelta = P.sojusz_zaufanie_perTura + 40 / P.wiarygodnoscZaufanieDzielnikPerTura;
+  ok(approxEqual(after.zaufanie, 50 + expectedDelta), `tickDiplomacy: sojusz(+3) + wiarygodnoscSelf(+2) sumują się (got ${after.zaufanie}, want ${50 + expectedDelta})`);
+}
+
+{
+  // Klamrowanie wejścia: W spoza -100..100 (nie powinno się zdarzyć w praniu ownera
+  // Wiarygodności, ale funkcja musi być odporna) nie psuje wyniku — identyczne z
+  // strumienWiarygodnoscDoZaufania.
+  const before = freshRdip(10, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, wiarygodnoscSelf: 100000 });
+  ok(approxEqual(after.zaufanie, 10 + 100 / P.wiarygodnoscZaufanieDzielnikPerTura), `tickDiplomacy: klamruje W>100 przed dzieleniem (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, WC.strumienWiarygodnoscDoZaufania(100000) + 10), 'tickDiplomacy: spójne ze strumienWiarygodnoscDoZaufania (ta sama formuła)');
 }
 
 console.log(`wiarygodnosc-test: ${pass} pass, ${fail} fail`);

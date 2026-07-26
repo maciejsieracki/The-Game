@@ -695,6 +695,7 @@ import {
   type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
   removeTreatiesById, allianceObligationsForWarDeclaration, treatiesBrokenByRefusal,
   normalizeTreatyKind, hydrateActiveDeals, addTreaty, resolvePokojTrustTier,
+  type HandelSurowiecCyklicznyItem,
 } from './game/diplomacy-treaties';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
@@ -716,6 +717,17 @@ import {
   type ZlozeGrant,
 } from './game/diplomacy-pn-engine';
 import {
+  wiarygodnoscStartowa,
+  sumaWiarygodnosciCalkowita,
+  appendCredibilityEvent,
+  freshCredibilityStreamEntry,
+  tickCredibilityStreamEntry,
+  type CredibilityEvent,
+  type CredibilityEventRecord,
+  type CredibilityStreamEvent,
+  type CredibilityStreamEntry,
+} from './game/diplomacy-credibility';
+import {
   diplomacyPnZloto,
   diplomacyPnPraca,
   diplomacyProgDarRelacja,
@@ -732,6 +744,7 @@ import {
   applyUnauthorizedBorderPenalties,
   dedupeBorderMarchPairs,
   loadBorderMarchParams,
+  hasAuthorizedBorderCrossing,
   type BorderMarchPair,
 } from './game/diplomacy-border-march';
 import {
@@ -2785,8 +2798,13 @@ async function boot(): Promise<void> {
 
     function applyBorderMarchPenaltiesEndTurn(): void {
       const territoryNodes = buildAllTerritoryNodes();
+      // C-WIAR-SKAUT=A (WIARYGODNOSC-SPECYFIKACJA.md §2/§6 pkt 5) — zwiadowcy WYŁĄCZENI
+      // z OBU kar: ISTNIEJĄCEJ kary Zaufania (poniżej) i NOWEJ N7 Wiarygodności (dalej w tej
+      // funkcji). Jedyny zatwierdzony wyjątek od "nie zmieniamy istniejących mechanizmów" —
+      // filtr działa na wejściu (`units`), więc obie kary widzą dokładnie te same pary.
+      const unitsForBorderMarch = units.filter(u => !isCredibilityScoutUnit(u));
       const rawPairs = collectUnauthorizedBorderPairs(
-        units,
+        unitsForBorderMarch,
         territoryNodes,
         defaultIsMilitaryUnit,
       );
@@ -2811,6 +2829,28 @@ async function boot(): Promise<void> {
           `Nieautoryzowany przemarsz: −${borderParams.karaPrzemarszNieautoryzowany_zaufanie_perTura} Zauf./para`,
           3500,
         );
+      }
+
+      // N7 (§2, §8) — jednorazowo PRZY WEJŚCIU do nieautoryzowanej "wizyty" (NIE co turę
+      // obecności, w przeciwieństwie do kary Zaufania powyżej). Wizyta = ciągła obecność
+      // bez autoryzacji w tej samej parze intruz→właściciel; wyjście i powrót = nowa wizyta.
+      const violatingNow = new Set<string>();
+      for (const pair of enriched) {
+        const ctx = {
+          treaties: activeDeals,
+          isMilitary: pair.isMilitary === true,
+          relation: getDiploRelation(pair.intruderOwnerId, pair.territoryOwnerId),
+        };
+        if (hasAuthorizedBorderCrossing(pair.intruderOwnerId, pair.territoryOwnerId, ctx)) continue;
+        const key = `${pair.intruderOwnerId}->${pair.territoryOwnerId}`;
+        violatingNow.add(key);
+        if (!wiarygodnoscN7ActivePairs.has(key)) {
+          wiarygodnoscN7ActivePairs.add(key);
+          appendWiarygodnoscEvent(pair.intruderOwnerId, 'nieautoryzowany_przemarsz', _diplomacyParams().wiarygodnoscN7NieautoryzowanyPrzemarsz);
+        }
+      }
+      for (const key of Array.from(wiarygodnoscN7ActivePairs)) {
+        if (!violatingNow.has(key)) wiarygodnoscN7ActivePairs.delete(key);
       }
     }
 
@@ -4413,6 +4453,46 @@ async function boot(): Promise<void> {
      * poniżej — moduł game/diplomacy-factors.ts zostaje czysty. Save/load: meta.diplomacyFactorLog.
      */
     const diplomacyFactorLog = new Map<string, DiploFactorLog>();
+    /**
+     * WIARYGODNOSC-SPECYFIKACJA.md §7 — rejestr zdarzeń jednorazowych (kary N1–N7,
+     * FINISZ P1–P3, CZYNY P4–P5) PER WŁAŚCICIEL (globalna, nie per para — §1).
+     * Jedna wspólna mapa dla gracza (ownerId=0) i każdego AI (§6 pkt 2, parytet:
+     * brak osobnego pola na `player`, wzorem `aiSkarbiecByOwner` ALE bez wyjątku
+     * dla ownerId=0). Save/load: meta.wiarygodnoscZdarzeniaByOwner.
+     */
+    const wiarygodnoscZdarzeniaByOwner = new Map<number, CredibilityEventRecord[]>();
+    /**
+     * WIARYGODNOSC-SPECYFIKACJA.md §3/§7 — wpisy STRUMIENIA (S1–S4) PER WŁAŚCICIEL,
+     * klucz wewnętrzny = `${partnerOwnerId}_${typ}` (jedno zobowiązanie z jednym
+     * partnerem = jeden wpis). Bez trwałej podłogi (C-WIAR-SLAD=A) — wpis znika
+     * natychmiast, gdy zobowiązanie się kończy (patrz updateWiarygodnoscStreamsThisTurn).
+     * Save/load: meta.wiarygodnoscStrumienByOwner.
+     */
+    const wiarygodnoscStrumienByOwner = new Map<number, Map<string, CredibilityStreamEntry>>();
+    /**
+     * CZYN P4 ("30 tur bez wojny", §3 tabela C) — ostatnia tura, w której ownerId
+     * WSZEDŁ w stan wojny z KIMKOLWIEK (globalnie, §9.3=A: każda wojna zeruje
+     * licznik). Domyślnie (brak wpisu) = tura 0 (start gry). Save/load: meta.
+     */
+    const wiarygodnoscOstatniaWojnaTuraByOwner = new Map<number, number>();
+    /** CZYN P4 — ile kamieni milowych "bez wojny" już naliczono danemu ownerId (żeby nie naliczać drugi raz tego samego okna). Save/load: meta. */
+    const wiarygodnoscP4MilestonesByOwner = new Map<number, number>();
+    /**
+     * N7 (§2) — pary intruz→właściciel AKTUALNIE w trakcie nieautoryzowanej "wizyty"
+     * (kara N7 nalicza się jednorazowo PRZY WEJŚCIU, nie co turę obecności — patrz
+     * applyBorderMarchPenaltiesEndTurn). Klucz = `${intruderOwnerId}->${territoryOwnerId}`.
+     * Save/load: meta.wiarygodnoscN7ActivePairs.
+     */
+    const wiarygodnoscN7ActivePairs = new Set<string>();
+    /**
+     * N6/S3/P3 (§2/§3) — czy pozycja handlu cyklicznego (klucz `${dealId}#${idx}`)
+     * została w PEŁNI dostarczona W TEJ TURZE (atomowo: obie strony spełnione).
+     * Wypełniane przez `tickCyclicResourceTradeDeals`, odczytywane w tej samej
+     * turze przez `updateWiarygodnoscStreamsThisTurn` (warunek S3 §3: "TYLKO przy
+     * 100% zrealizowanych dostaw w danej turze"). Nie wymaga save/load — czysto
+     * przejściowy stan jednej tury.
+     */
+    const wiarygodnoscCyclicDeliveryOkThisTurn = new Map<string, boolean>();
     /** D4-W10-A+: trwały dostęp do złoża (active=false w wojnie). */
     let zlozeGrants: ZlozeGrant[] = [];
     /** D3-Q2: nacje, z którymi gracz nawiązał kontakt dyplomatyczny (save/load w meta). */
@@ -4641,6 +4721,11 @@ async function boot(): Promise<void> {
       aiBadanaByOwner.clear();
       diplomacyPairMeta.clear();
       diplomacyFactorLog.clear();
+      wiarygodnoscZdarzeniaByOwner.clear();
+      wiarygodnoscStrumienByOwner.clear();
+      wiarygodnoscOstatniaWojnaTuraByOwner.clear();
+      wiarygodnoscP4MilestonesByOwner.clear();
+      wiarygodnoscN7ActivePairs.clear();
       zlozeGrants = [];
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
       _dipUnitSeq = 0;
@@ -4783,6 +4868,216 @@ async function boot(): Promise<void> {
 
     function setDiploPairMeta(a: number, b: number, meta: DiploPairMeta): void {
       diplomacyPairMeta.set(diploPairKey(a, b), meta);
+    }
+
+    // -------------------------------------------------------------------------
+    // WIARYGODNOSC CYWILIZACJI — WIARYGODNOSC-SPECYFIKACJA.md, etapy 2–4.
+    // Rdzeń (typy, krzywa zapominania, klamrowanie) w game/diplomacy-credibility.ts
+    // (Etap 1, gotowe). Poniżej: rejestr per-owner + haki silnika. PARYTET AI (§6
+    // pkt 2) — żadna z tych funkcji nie rozgałęzia się po `ownerId === 0`.
+    // -------------------------------------------------------------------------
+
+    /** Rejestr zdarzeń jednorazowych danego ownera (pusty = brak historii poza wartością startową). */
+    function getWiarygodnoscEvents(ownerId: number): CredibilityEventRecord[] {
+      return wiarygodnoscZdarzeniaByOwner.get(ownerId) ?? [];
+    }
+
+    /**
+     * Dopisuje zdarzenie jednorazowe (kara N1–N7 / FINISZ P1–P3 / CZYN P4–P5) do
+     * rejestru ownera w BIEŻĄCEJ turze. `appendCredibilityEvent` jest no-op dla
+     * wartość=0 (patrz diplomacy-credibility.ts) — bezpieczne wołać z wagą=0.
+     */
+    function appendWiarygodnoscEvent(ownerId: number, typ: CredibilityEvent, wartoscPierwotna: number): void {
+      const cur = getWiarygodnoscEvents(ownerId);
+      const next = appendCredibilityEvent(cur, typ, wartoscPierwotna, turn);
+      if (next !== cur) wiarygodnoscZdarzeniaByOwner.set(ownerId, next as CredibilityEventRecord[]);
+    }
+
+    /** Aktywne wpisy STRUMIENIA (S1–S4) danego ownera, jako tablica (dla sumaWiarygodnosciCalkowita). */
+    function getWiarygodnoscStreamEntries(ownerId: number): CredibilityStreamEntry[] {
+      const m = wiarygodnoscStrumienByOwner.get(ownerId);
+      return m ? Array.from(m.values()) : [];
+    }
+
+    /**
+     * Wiarygodność CAŁKOWITA (§4/§5) tego ownera, liczona NA ŻYWO (§9.9 — bez
+     * cache, koszt pomijalny: lista zdarzeń per właściciel jest krótka). Startowa
+     * wartość zależy od `_menuDifficulty` (§1: +40/+20/0) — jednakowa dla gracza
+     * i każdego AI (parytet, WIAR-Q6).
+     */
+    function getWiarygodnosc(ownerId: number): number {
+      return sumaWiarygodnosciCalkowita(
+        getWiarygodnoscEvents(ownerId),
+        getWiarygodnoscStreamEntries(ownerId),
+        wiarygodnoscStartowa(_menuDifficulty),
+        turn,
+        _menuDifficulty,
+      );
+    }
+
+    /** Klucz wpisu STRUMIENIA dla jednego zobowiązania z jednym partnerem. */
+    function wiarygodnoscStreamKey(partnerId: number, typ: CredibilityStreamEvent): string {
+      return partnerId + '_' + typ;
+    }
+
+    /** Dolicza jedną turę wpisu STRUMIENIA (tworzy świeży wpis, jeśli jeszcze nie istnieje). */
+    function tickWiarygodnoscStreamFor(ownerId: number, partnerId: number, typ: CredibilityStreamEvent): void {
+      const m = wiarygodnoscStrumienByOwner.get(ownerId) ?? new Map<string, CredibilityStreamEntry>();
+      const key = wiarygodnoscStreamKey(partnerId, typ);
+      const existing = m.get(key) ?? freshCredibilityStreamEntry(typ);
+      m.set(key, tickCredibilityStreamEntry(existing));
+      wiarygodnoscStrumienByOwner.set(ownerId, m);
+    }
+
+    /**
+     * P4 (§3 tabela C, §9.3=A) — kamień milowy globalny "30 tur bez wojny",
+     * powtarzalny, zerowany przez KAŻDĄ wojnę (obronną, zaczepną, sojuszniczą).
+     * Wołane raz na turę per znany owner (gracz + wszystkie AI na mapie).
+     */
+    function tickWiarygodnoscBezWojnyMilestone(ownerId: number): void {
+      const lastWar = wiarygodnoscOstatniaWojnaTuraByOwner.get(ownerId) ?? 0;
+      const okno = _diplomacyParams().wiarygodnoscP4OknoBezWojnyTur;
+      const milestonesNow = Math.floor(Math.max(0, turn - lastWar) / okno);
+      const already = wiarygodnoscP4MilestonesByOwner.get(ownerId) ?? 0;
+      if (milestonesNow > already) {
+        for (let i = already; i < milestonesNow; i++) {
+          appendWiarygodnoscEvent(ownerId, 'wieloletni_pokoj', _diplomacyParams().wiarygodnoscP4BezWojny30Tur);
+        }
+        wiarygodnoscP4MilestonesByOwner.set(ownerId, milestonesNow);
+      }
+    }
+
+    /** Wszyscy znani ownerzy (gracz + AI na mapie) — do pętli P4 co turę. Barbarzyńcy wykluczeni (§1 — nie mają Wiarygodności). */
+    function allWiarygodnoscOwnerIds(): number[] {
+      return [0, ...Array.from(aiOwnerCivMap.keys())];
+    }
+
+    /** Czy `typ` zdarzenia otwiera prawo do odwetu (C-WIAR-ODWET=A: TYLKO N1, N2, N4). */
+    function credibilityEventOpensOdwet(typ: CredibilityEvent): boolean {
+      return typ === 'wypowiedzenie_wojny_bez_ostrzezenia'
+        || typ === 'zlamanie_paktu_nap'
+        || typ === 'zlamanie_paktu_sojusz'
+        || typ === 'odmowa_obowiazku_sojuszu';
+    }
+
+    /**
+     * Czy `retaliatorId` może dziś (bez kary N1/N2) wypowiedzieć/zaatakować
+     * `targetId` w ramach odwetu za PRZEWINIENIE targetId wobec retaliatorId w
+     * oknie `wiarygodnoscOdwetOknoTur` tur (C-WIAR-ODWET=A). Symetryczna funkcja
+     * pary — nie rozgałęzia się po ownerId (parytet).
+     */
+    function isCredibilityRetaliation(retaliatorId: number, targetId: number): boolean {
+      const off = getDiploPairMeta(retaliatorId, targetId).ostatniePrzewinienieWobecNas;
+      if (!off) return false;
+      if (off.byOwnerId !== targetId || off.againstOwnerId !== retaliatorId) return false;
+      if (turn - off.turn > _diplomacyParams().wiarygodnoscOdwetOknoTur) return false;
+      return credibilityEventOpensOdwet(off.typ);
+    }
+
+    /**
+     * Nowa wojna deklarowana (`declarerId` → `targetId`) — hak N2 (§2) + timing
+     * N1/N3/odwet (§7 nowe pola DiploPairMeta). MUSI być wołane PRZED
+     * `breakTreatiesOnWar`, bo czyta `activeDeals` żeby ustalić, JAKI traktat
+     * został złamany (Sojusz > NAP, per §2 hierarchia wag). Parytet: `declarerId`/
+     * `targetId` to gołe liczby, zero specjalnego traktowania ownerId===0.
+     */
+    function chargeWarDeclarationCredibility(declarerId: number, targetId: number): void {
+      if (isBarbarian(declarerId) || isBarbarian(targetId)) return;
+      const retaliation = isCredibilityRetaliation(declarerId, targetId);
+
+      if (!retaliation) {
+        const hasAlliance = activeDeals.some(
+          d => dealInvolvesOwners(d, declarerId, targetId) && isAllianceDealKind(d.rodzaj),
+        );
+        const hasNap = hasTreaty(activeDeals, declarerId, targetId, RodzajTraktatu.PaktNieagresji);
+        if (hasAlliance) {
+          appendWiarygodnoscEvent(declarerId, 'zlamanie_paktu_sojusz', _diplomacyParams().wiarygodnoscN2ZlamaniePaktuSojusz);
+        } else if (hasNap) {
+          appendWiarygodnoscEvent(declarerId, 'zlamanie_paktu_nap', _diplomacyParams().wiarygodnoscN2ZlamaniePaktuNap);
+        }
+      }
+
+      const meta = getDiploPairMeta(declarerId, targetId);
+      setDiploPairMeta(declarerId, targetId, {
+        ...meta,
+        wojnaOdTury: turn,
+        n1Zastosowany: false,
+        ...(retaliation ? {} : {
+          ostatniePrzewinienieWobecNas: {
+            turn, typ: 'wypowiedzenie_wojny_bez_ostrzezenia' as CredibilityEvent,
+            byOwnerId: declarerId, againstOwnerId: targetId,
+          },
+        }),
+      });
+
+      // P4 (§3/§9.3) — KAŻDA wojna zeruje licznik "bez wojny" OBU stron, globalnie.
+      wiarygodnoscOstatniaWojnaTuraByOwner.set(declarerId, turn);
+      wiarygodnoscOstatniaWojnaTuraByOwner.set(targetId, turn);
+    }
+
+    /** Czy jednostka jest zwiadowcą — POLE DANYCH (units.json "Typ"==="Civilian"), NIE nazwa (C-WIAR-SKAUT=A, różne nazwy per nacja). */
+    function isCredibilityScoutUnit(unit: RuntimeUnit): boolean {
+      return unitDefFor(unit)?.['Typ'] === 'Civilian';
+    }
+
+    /**
+     * N1 ("atak bez ostrzeżenia" — atak w TEJ SAMEJ turze co wypowiedzenie wojny)
+     * + N3-rozszerzone (atak w oknie karencji po zakończeniu porozumienia
+     * bezterminowego/pokoju), §2 — hak wpięty w JEDYNY wspólny punkt
+     * rozstrzygania potyczki na mapie (`applyMapBattleOutcome`, gracz + AI, pole
+     * + oblężenie), więc parytet AI jest z definicji: atakujący/broniący to gołe
+     * `ownerId` z rosterów, zero rozgałęzienia po ownerId===0. Nalicza się raz na
+     * WOJNĘ/OKNO (guard n1Zastosowany/n3Window.charged), nie raz na każdą bitwę.
+     *
+     * ⚠️ Zakres tej fali: dotyczy WYŁĄCZNIE ataku w ramach JUŻ zadeklarowanej
+     * (status==='wojna') wojny — atak BEZ jakiejkolwiek deklaracji wojny (dzisiejszy,
+     * pre-istniejący brak bramki combat↔dyplomacja, `status!=='wojna'` a walka mimo
+     * to możliwa) jest samodzielnym, nieudokumentowanym w tym projekcie bugiem UX
+     * ("do naprawy niezależnie od tego projektu" — WIARYGODNOSC-SPECYFIKACJA.md §2 N1),
+     * analogicznym ograniczeniem do wyłączonych w tej fali Dźwigni 2–4: wymaga osobnej,
+     * większej zmiany (modal potwierdzenia ataku / bramka wojny przed walką) — patrz
+     * raport wdrożeniowy.
+     */
+    function chargeCombatCredibilityPenalties(atkRoster: readonly RuntimeUnit[], defRoster: readonly RuntimeUnit[]): void {
+      const attackerId = atkRoster[0]?.ownerId;
+      const defenderId = defRoster[0]?.ownerId;
+      if (attackerId === undefined || defenderId === undefined) return;
+      if (attackerId === defenderId) return;
+      if (isBarbarian(attackerId) || isBarbarian(defenderId)) return;
+
+      const rel = getDiploRelation(attackerId, defenderId);
+      if (rel.status !== 'wojna') return;
+
+      const meta0 = getDiploPairMeta(attackerId, defenderId);
+
+      if (
+        meta0.wojnaOdTury !== undefined
+        && !meta0.n1Zastosowany
+        && (turn - meta0.wojnaOdTury) < _diplomacyParams().wiarygodnoscN1KarencjaTur
+        && !isCredibilityRetaliation(attackerId, defenderId)
+      ) {
+        appendWiarygodnoscEvent(attackerId, 'wypowiedzenie_wojny_bez_ostrzezenia', _diplomacyParams().wiarygodnoscN1BezOstrzezenia);
+        setDiploPairMeta(attackerId, defenderId, {
+          ...getDiploPairMeta(attackerId, defenderId),
+          n1Zastosowany: true,
+          ostatniePrzewinienieWobecNas: {
+            turn, typ: 'wypowiedzenie_wojny_bez_ostrzezenia', byOwnerId: attackerId, againstOwnerId: defenderId,
+          },
+        });
+      }
+
+      const win = getDiploPairMeta(attackerId, defenderId).n3Window;
+      if (
+        win && !win.charged
+        && (turn - win.turn) < _diplomacyParams().wiarygodnoscN3KarencjaBezterminoweTur
+        && (win.typ === 'pokoj' || win.byOwnerId === attackerId)
+      ) {
+        appendWiarygodnoscEvent(attackerId, 'atak_w_oknie_karencji', _diplomacyParams().wiarygodnoscN3AtakWOknieKarencji);
+        setDiploPairMeta(attackerId, defenderId, {
+          ...getDiploPairMeta(attackerId, defenderId),
+          n3Window: { ...win, charged: true },
+        });
+      }
     }
 
     /**
@@ -8920,12 +9215,39 @@ async function boot(): Promise<void> {
      * Sojusz zerwany dobrowolnie → status pary wraca do 'pokoj' (nie zostaje błędnie
      * „sojusz" mimo braku traktatu — patrz resolveFormalDiplomaticStatus/diplomacy-display.ts).
      */
-    function breakTreatyVoluntarily(dealId: string): void {
+    /**
+     * `initiatorOwnerId` — kto kliknął „Zerwij" (WIARYGODNOSC-SPECYFIKACJA.md §2 N5:
+     * „main.ts nie rozróżnia dziś kto kliknął, zakłada gracza"). Domyślnie 0 (jedyny
+     * dziś istniejący wywołujący — przycisk UI gracza, `onBreakTreaty` w diplomacyPanel);
+     * parametr istnieje właśnie po to, żeby funkcja NIE zakładała gracza na stałe — gdy
+     * AI dostanie kiedyś własną ścieżkę dobrowolnego zerwania (dziś jej nie ma, patrz
+     * raport wdrożeniowy), wystarczy przekazać jej ownerId tutaj, bez zmiany tej funkcji.
+     */
+    function breakTreatyVoluntarily(dealId: string, initiatorOwnerId: number = 0): void {
       const deal = activeDeals.find(d => d.id === dealId);
       if (!deal) return;
       const [a, b] = deal.strony;
       const wasAlliance = isAllianceDealKind(deal.rodzaj);
       const isTrade = normalizeTreatyKind(deal.rodzaj) === RodzajTraktatu.UmowaHandlowa;
+      const otherOwnerId0 = a === initiatorOwnerId ? b : a;
+
+      // WIARYGODNOSC §2 N5/N3-rozszerzone: traktat BEZTERMINOWY (wygasaTura===null,
+      // patrz ActiveDeal — Sojusz/Otwarte Granice/Prawo Przemarszu/Wasalizacja-wasal)
+      // → BRAK kary N5 za samo zerwanie (C-WIAR-N5KONF=B), ale otwiera okno karencji
+      // N3-rozszerzone (10 tur, TYLKO inicjator zerwania płaci za atak w tym oknie).
+      // Traktat CZASOWY → N5 zwykłe (-6 traktat / -4 handel), bez okna N3.
+      if (deal.wygasaTura === null) {
+        setDiploPairMeta(initiatorOwnerId, otherOwnerId0, {
+          ...getDiploPairMeta(initiatorOwnerId, otherOwnerId0),
+          n3Window: { turn, typ: 'bezterminowe', byOwnerId: initiatorOwnerId, charged: false },
+        });
+      } else {
+        appendWiarygodnoscEvent(
+          initiatorOwnerId,
+          isTrade ? 'zerwanie_dobrowolne_handel' : 'zerwanie_dobrowolne_traktat',
+          isTrade ? _diplomacyParams().wiarygodnoscN5ZerwanieHandelCzasowy : _diplomacyParams().wiarygodnoscN5ZerwanieTraktatCzasowy,
+        );
+      }
 
       activeDeals = removeTreatiesById(activeDeals, [dealId]);
       zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, dealId);
@@ -9289,6 +9611,7 @@ async function boot(): Promise<void> {
             );
           }
 
+          chargeWarDeclarationCredibility(allyId, ob.mustDeclareWarOn);
           breakTreatiesOnWar(allyId, ob.mustDeclareWarOn, allyId === 0);
           setDiploRelation(
             allyId,
@@ -9296,6 +9619,29 @@ async function boot(): Promise<void> {
             applyDiploEventTracked(allyId, ob.mustDeclareWarOn, getDiploRelation(allyId, ob.mustDeclareWarOn), 'wojna_wypowiedziana'),
           );
           joinedWarOwnerIds.push(allyId);
+        }
+      }
+
+      // N4 (§2, §8) — odmowa pomocy sojusznikowi na wezwanie obowiązku sojuszniczego.
+      // Kara WYŁĄCZNIE dla odmawiającego (nigdy dla opuszczonego sojusznika, §6 pkt 3).
+      // Hak wpięty w TO SAMO miejsce, które silnik już dziś woła, żeby wykryć kto się
+      // nie stawił (obligatedAllies \ joinedWarOwnerIds) — pętla wyżej dziś ZAWSZE
+      // egzekwuje udział (brak realnej ścieżki odmowy dla gracza/AI), więc ten hak
+      // pozostaje strukturalnie gotowy, ale nieaktywowany, dopóki gdzieś w silniku nie
+      // powstanie faktyczna decyzja "odmawiam" — patrz raport wdrożeniowy (poza
+      // zakresem tej fali, analogicznie do Dźwigni 2–4: brakujący prerekwizyt to inna,
+      // większa funkcja AI, nie ten projekt).
+      for (const ob of obligations) {
+        for (const allyId of ob.obligatedAllies) {
+          if (joinedWarOwnerIds.includes(allyId)) continue;
+          appendWiarygodnoscEvent(allyId, 'odmowa_obowiazku_sojuszu', _diplomacyParams().wiarygodnoscN4OdmowaObowiazkuSojuszu);
+          const betrayedId = ob.mustDeclareWarOn === attackerId ? victimId : attackerId;
+          setDiploPairMeta(allyId, betrayedId, {
+            ...getDiploPairMeta(allyId, betrayedId),
+            ostatniePrzewinienieWobecNas: {
+              turn, typ: 'odmowa_obowiazku_sojuszu', byOwnerId: allyId, againstOwnerId: betrayedId,
+            },
+          });
         }
       }
 
@@ -9334,49 +9680,234 @@ async function boot(): Promise<void> {
      * ale zapłata się nie wykonuje (applyOneShotGoldTransfer no-op przy niedoborze;
      * Praca — setOwnerPracaPool klampuje do 0, więc biorca płaci ile ma).
      */
+    /** Zapas surowca `key` we WSZYSTKICH miastach ownera (bez mutacji — do sprawdzenia atomowości PRZED transferem). */
+    function ownerResourceStock(ownerId: number, key: string): number {
+      const k = key.trim().toLowerCase();
+      let sum = 0;
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        sum += c.surowce?.[k] ?? 0;
+      }
+      return sum;
+    }
+
+    /**
+     * C-HANDEL-3 (§2 N6, atomowość) — wykonuje (lub NIE, w całości) jedną pozycję
+     * handlu cyklicznego. `delivered` = czy TA transakcja faktycznie się wykonuje
+     * (atomowo — przy barterze to WSPÓLNA wartość dla obu sprzężonych itemów, żeby
+     * żadna strona nie oddała towaru za darmo). `sellerAtFault`/`buyerAtFault` =
+     * kto konkretnie zawinił — ROZŁĄCZONE od `delivered`, bo przy barterze `delivered`
+     * jest wspólne dla obu itemów, ale wina jest WYŁĄCZNIE PO STRONIE TEGO itemu, który
+     * faktycznie nie miał zapasu (§6 pkt 3: "strona gotowa nigdy nie jest karana za
+     * winę drugiej"). `delivered===false` → ZERO transferu (ani surowca, ani zapłaty).
+     */
+    function applyCyclicDeliveryOutcome(
+      deal: ActiveDeal,
+      item: HandelSurowiecCyklicznyItem,
+      delivered: boolean,
+      sellerAtFault: boolean,
+      buyerAtFault: boolean,
+      treasury: ReturnType<typeof buildDiploTreasury>,
+      pakietWielkosc: number,
+    ): boolean {
+      if (delivered) {
+        const totalUnits = item.pakietyPerTura * pakietWielkosc;
+        const capId = capitalCityIdForOwner(item.buyerOwnerId);
+        const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
+        const result = transferSurowiecIlosc(
+          item.surowiecKey, totalUnits, item.sellerOwnerId, item.buyerOwnerId, capId, refs,
+        );
+        for (let i = 0; i < cities.length; i++) {
+          const before = refs[i];
+          const after = result.cities[i];
+          if (before && after && after.surowce !== before.surowce) {
+            cities[i]!.surowce = after.surowce;
+          }
+        }
+        const zaplata = item.zaplataPerTura ?? 0;
+        if (zaplata > 0 && item.zaplataTyp === 'zloto') {
+          applyOneShotGoldTransfer(item.buyerOwnerId, item.sellerOwnerId, zaplata, treasury);
+        } else if (zaplata > 0 && item.zaplataTyp === 'praca') {
+          setOwnerPracaPool(item.buyerOwnerId, ownerPracaPool(item.buyerOwnerId) - zaplata);
+          setOwnerPracaPool(item.sellerOwnerId, ownerPracaPool(item.sellerOwnerId) + zaplata);
+        }
+      } else {
+        deal.handelCyklicznyKiedykolwiekNiedostarczono = true;
+      }
+
+      // N6 -- liczniki kolejnych tur Z RZEDU, WYŁĄCZNIE per strona winna (nigdy strona gotowa).
+      item.sellerNiedostarczylTuryZRzedu = sellerAtFault ? (item.sellerNiedostarczylTuryZRzedu ?? 0) + 1 : 0;
+      item.buyerNieZaplacilTuryZRzedu = buyerAtFault ? (item.buyerNieZaplacilTuryZRzedu ?? 0) + 1 : 0;
+      const prog = _diplomacyParams().wiarygodnoscN6ProgTurZRzedu;
+      if ((item.sellerNiedostarczylTuryZRzedu ?? 0) >= prog) {
+        appendWiarygodnoscEvent(item.sellerOwnerId, 'niedotrzymanie_handlu_cyklicznego', _diplomacyParams().wiarygodnoscN6NiedotrzymanieHandluCyklicznego);
+        item.sellerNiedostarczylTuryZRzedu = 0;
+      }
+      if ((item.buyerNieZaplacilTuryZRzedu ?? 0) >= prog) {
+        appendWiarygodnoscEvent(item.buyerOwnerId, 'niedotrzymanie_handlu_cyklicznego', _diplomacyParams().wiarygodnoscN6NiedotrzymanieHandluCyklicznego);
+        item.buyerNieZaplacilTuryZRzedu = 0;
+      }
+
+      return delivered;
+    }
+
+    /**
+     * HANDEL-SUROWCE-CYKL (2026-07-24) — co turę: dla każdy aktywny ActiveDeal z
+     * handelSurowiecCykliczny, przenieś pakietyPerTura surowca sprzedawca→kupujący
+     * i pobierz zapłatę kupujący→sprzedawca (zloto/Praca). ownerId-agnostyczne —
+     * sellerOwnerId/buyerOwnerId mogą być gracz (0) LUB dowolne AI, w dowolnej
+     * kombinacji (gracz↔AI dowolny kierunek, AI↔AI).
+     *
+     * C-HANDEL-1/2/3 (WIARYGODNOSC-SPECYFIKACJA.md §2 N6, naprawa RAZEM z Wiarygodnością,
+     * audyt siedmiu ustaleń §2) — ATOMOWOŚĆ: walidacja OBU stron PRZED jakimkolwiek
+     * transferem (nigdy odwrotnie), transfer TYLKO gdy oba warunki spełnione, zero
+     * dostaw częściowych. BARTER (surowiec-za-surowiec, audyt ustalenie #2 — dawniej
+     * dwa niezależne itemy A→B/B→A iterowane osobno, dawca bez zapasu jednej strony
+     * NIE blokował drugiej) — sprzężone TU w jedną atomową parę: oba itemy sprawdzane
+     * i wykonywane RAZEM, żadna strona nie oddaje towaru za darmo. Zapłata Pracą/złotem
+     * przy niedoborze kupującego (audyt #3/#4 — Praca kreowana z niczego / towar za
+     * darmo) niemożliwa z definicji: `buyerOk` sprawdzany PRZED transferem surowca.
+     */
     function tickCyclicResourceTradeDeals(): void {
+      wiarygodnoscCyclicDeliveryOkThisTurn.clear();
       if (!activeDeals.some(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0)) return;
       const treasury = buildDiploTreasury();
+      const pakietWielkosc = diplomacyHandelSurowcePakietWielkosc();
+
       for (const deal of activeDeals) {
         const items = deal.handelSurowiecCykliczny;
         if (!items?.length) continue;
-        for (const item of items) {
-          if (item.sellerOwnerId === item.buyerOwnerId) continue;
-          const capId = capitalCityIdForOwner(item.buyerOwnerId);
-          const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
-          const totalUnits = item.pakietyPerTura * diplomacyHandelSurowcePakietWielkosc();
-          const result = transferSurowiecIlosc(
-            item.surowiecKey, totalUnits, item.sellerOwnerId, item.buyerOwnerId, capId, refs,
-          );
-          for (let i = 0; i < cities.length; i++) {
-            const before = refs[i];
-            const after = result.cities[i];
-            if (before && after && after.surowce !== before.surowce) {
-              cities[i]!.surowce = after.surowce;
-            }
+
+        const handled = new Set<number>();
+        const sellerOkOf = (item: HandelSurowiecCyklicznyItem): boolean =>
+          item.sellerOwnerId !== item.buyerOwnerId
+          && ownerResourceStock(item.sellerOwnerId, item.surowiecKey) >= item.pakietyPerTura * pakietWielkosc;
+
+        for (let i = 0; i < items.length; i++) {
+          if (handled.has(i)) continue;
+          const a = items[i]!;
+
+          // Para barterowa: odwrotny kierunek, brak własnej zapłaty (C-HANDEL-3 pkt 3).
+          let bIdx = -1;
+          if (!a.zaplataTyp) {
+            bIdx = items.findIndex((other, j) =>
+              j !== i && !handled.has(j) && !other.zaplataTyp
+              && other.sellerOwnerId === a.buyerOwnerId && other.buyerOwnerId === a.sellerOwnerId,
+            );
           }
-          if (result.moved <= 0) continue; // brak zapasow dawcy ta ture -- pomijamy tez zaplate
-          const zaplata = item.zaplataPerTura ?? 0;
-          if (zaplata > 0 && item.zaplataTyp === 'zloto') {
-            applyOneShotGoldTransfer(item.buyerOwnerId, item.sellerOwnerId, zaplata, treasury);
-          } else if (zaplata > 0 && item.zaplataTyp === 'praca') {
-            setOwnerPracaPool(item.buyerOwnerId, ownerPracaPool(item.buyerOwnerId) - zaplata);
-            setOwnerPracaPool(item.sellerOwnerId, ownerPracaPool(item.sellerOwnerId) + zaplata);
+
+          if (bIdx >= 0) {
+            const b = items[bIdx]!;
+            handled.add(i); handled.add(bIdx);
+            const aOk = sellerOkOf(a);
+            const bOk = sellerOkOf(b);
+            const bothOk = aOk && bOk; // atomowość: barter dochodzi do skutku W CAŁOŚCI albo wcale
+            const okA = applyCyclicDeliveryOutcome(deal, a, bothOk, !aOk, false, treasury, pakietWielkosc);
+            const okB = applyCyclicDeliveryOutcome(deal, b, bothOk, !bOk, false, treasury, pakietWielkosc);
+            wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${i}`, okA);
+            wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${bIdx}`, okB);
+            continue;
           }
+
+          handled.add(i);
+          const sellerOk = sellerOkOf(a);
+          const zaplata = a.zaplataPerTura ?? 0;
+          let buyerOk = true;
+          if (sellerOk && zaplata > 0 && a.zaplataTyp === 'zloto') {
+            buyerOk = treasury.getPieniadze(a.buyerOwnerId) >= zaplata;
+          } else if (sellerOk && zaplata > 0 && a.zaplataTyp === 'praca') {
+            buyerOk = ownerPracaPool(a.buyerOwnerId) >= zaplata;
+          }
+          const ok = applyCyclicDeliveryOutcome(deal, a, sellerOk && buyerOk, !sellerOk, sellerOk && !buyerOk, treasury, pakietWielkosc);
+          wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${i}`, ok);
         }
       }
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    /**
+     * S1–S4 (§3 tabela A) — strumień pozytywny co turę, za każde AKTUALNIE dotrzymywane
+     * zobowiązanie (Sojusz/NAP/Handel/Przemarsz). Bez limitu przyrostu (§9.2=C) — wiele
+     * jednoczesnych zobowiązań po prostu się sumują. Działa TAKŻE podczas wojny wobec
+     * stron NIEZAANGAŻOWANYCH (§9.4=A) — naturalnie spełnione, bo "aktywny zbiór" pochodzi
+     * z `activeDeals`, a traktaty z parą aktualnie w stanie wojny zostały już usunięte
+     * przez `breakTreatiesOnWar` PRZED wywołaniem tej funkcji. C-WIAR-SLAD=A: wpis znika
+     * NATYCHMIAST (bez trwałego śladu) gdy zobowiązanie się kończy — realizowane przez
+     * przeliczanie "aktywnego zbioru" co turę i kasowanie kluczy spoza niego (self-healing,
+     * nie wymaga osobnego hooka w KAŻDYM miejscu, gdzie traktat może się skończyć).
+     */
+    function updateWiarygodnoscStreamsThisTurn(): void {
+      type StreamActiveTuple = { ownerId: number; partnerId: number; typ: CredibilityStreamEvent };
+      const active: StreamActiveTuple[] = [];
+
+      for (const deal of activeDeals) {
+        const kind = normalizeTreatyKind(deal.rodzaj);
+        const [a, b] = deal.strony;
+        let typ: CredibilityStreamEvent | null = null;
+        if (kind === 'sojusz_defensywny' || kind === 'sojusz_pelny' || kind === RodzajTraktatu.SojuszWojskowy) {
+          typ = 'strumien_sojusz';
+        } else if (kind === RodzajTraktatu.PaktNieagresji) {
+          typ = 'strumien_nap';
+        } else if (kind === RodzajTraktatu.OtwartGranice || kind === RodzajTraktatu.PrawoWojskowePrzemarszu) {
+          typ = 'strumien_przemarsz';
+        } else if (kind === RodzajTraktatu.UmowaHandlowa) {
+          // S3 warunek (§3): TYLKO przy 100% zrealizowanych dostaw TEJ tury (dotyczy
+          // wyłącznie itemów cyklicznych — zwykła UmowaHandlowa bez nich liczy się zawsze).
+          const items = deal.handelSurowiecCykliczny ?? [];
+          const allDelivered = items.every((_, idx) => wiarygodnoscCyclicDeliveryOkThisTurn.get(`${deal.id}#${idx}`) !== false);
+          if (allDelivered) typ = 'strumien_handel';
+        }
+        if (!typ) continue;
+        active.push({ ownerId: a, partnerId: b, typ });
+        active.push({ ownerId: b, partnerId: a, typ });
+      }
+
+      const keepByOwner = new Map<number, Set<string>>();
+      for (const t of active) {
+        const set = keepByOwner.get(t.ownerId) ?? new Set<string>();
+        set.add(wiarygodnoscStreamKey(t.partnerId, t.typ));
+        keepByOwner.set(t.ownerId, set);
+      }
+      for (const [ownerId, m] of wiarygodnoscStrumienByOwner.entries()) {
+        const keep = keepByOwner.get(ownerId) ?? new Set<string>();
+        for (const key of Array.from(m.keys())) {
+          if (!keep.has(key)) m.delete(key);
+        }
+      }
+      for (const t of active) tickWiarygodnoscStreamFor(t.ownerId, t.partnerId, t.typ);
     }
 
     function runDiplomacyTurnTick(): void {
       const dealsBeforeExpire = activeDeals;
       activeDeals = expireTreaties(activeDeals, turn);
       for (const d of dealsBeforeExpire) {
-        if (!activeDeals.some(x => x.id === d.id)) {
-          zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, d.id);
+        if (activeDeals.some(x => x.id === d.id)) continue;
+        zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, d.id);
+        // WIARYGODNOSC §3 tabela B (FINISZ P1/P2/P3) — traktat zniknął TU, w
+        // expireTreaties, czyli wygasł NATURALNIE (zerwania dobrowolne i zerwania
+        // wojną usuwają traktat WCZEŚNIEJ w tej samej turze, więc nie trafiają tu
+        // podwójnie — SPEC §3 "Hak (P1/P2)"). Finisz przyznawany OBU stronom (dotrwanie
+        // to wspólna zasługa, nie asymetryczna wina jak kary N1–N7).
+        const kindExpired = normalizeTreatyKind(d.rodzaj);
+        const [pa, pb] = d.strony;
+        if (kindExpired === 'sojusz_defensywny' || kindExpired === 'sojusz_pelny' || kindExpired === RodzajTraktatu.SojuszWojskowy) {
+          appendWiarygodnoscEvent(pa, 'dotrwanie_sojuszu', _diplomacyParams().wiarygodnoscP1FiniszSojusz);
+          appendWiarygodnoscEvent(pb, 'dotrwanie_sojuszu', _diplomacyParams().wiarygodnoscP1FiniszSojusz);
+        } else if (kindExpired === RodzajTraktatu.PaktNieagresji) {
+          appendWiarygodnoscEvent(pa, 'dotrwanie_nap', _diplomacyParams().wiarygodnoscP2FiniszNap);
+          appendWiarygodnoscEvent(pb, 'dotrwanie_nap', _diplomacyParams().wiarygodnoscP2FiniszNap);
+        } else if (kindExpired === RodzajTraktatu.UmowaHandlowa) {
+          appendWiarygodnoscEvent(pa, 'dotrwanie_handlu', _diplomacyParams().wiarygodnoscP2FiniszHandel);
+          appendWiarygodnoscEvent(pb, 'dotrwanie_handlu', _diplomacyParams().wiarygodnoscP2FiniszHandel);
+          if ((d.handelSurowiecCykliczny?.length ?? 0) > 0 && !d.handelCyklicznyKiedykolwiekNiedostarczono) {
+            appendWiarygodnoscEvent(pa, 'splata_handlu_cyklicznego', _diplomacyParams().wiarygodnoscP3FiniszHandelCykliczny);
+            appendWiarygodnoscEvent(pb, 'splata_handlu_cyklicznego', _diplomacyParams().wiarygodnoscP3FiniszHandelCykliczny);
+          }
         }
       }
       tickCyclicResourceTradeDeals();
+      updateWiarygodnoscStreamsThisTurn();
+      for (const oid of allWiarygodnoscOwnerIds()) tickWiarygodnoscBezWojnyMilestone(oid);
       const treasury = buildDiploTreasury();
       const payDeals = activeDealsToPaymentDeals(activeDeals, turn);
       const { broken, messages } = tickDiplomacyPayments(payDeals, treasury, turn);
@@ -9782,6 +10313,7 @@ async function boot(): Promise<void> {
       if (actionId === '11') {
         showWarConfirmModal(civName, () => {
           if (!playerDiplomacyActionAllowed(layer, 'war')) return;
+          chargeWarDeclarationCredibility(0, ownerId);
           breakTreatiesOnWar(0, ownerId, true);
           applyAllianceObligationsOnWar(0, ownerId);
           setDiploRelation(0, ownerId, applyDiploEventTracked(0, ownerId, getDiploRelation(0, ownerId), 'wojna_wypowiedziana'));
@@ -13081,6 +13613,7 @@ async function boot(): Promise<void> {
         allowCityCapture?: boolean;
       },
     ): void {
+      chargeCombatCredibilityPenalties(atkRoster, defRoster);
       const battleQ = opts?.battleQ ?? defRoster[0]?.q ?? atkRoster[0]?.q ?? 0;
       const battleR = opts?.battleR ?? defRoster[0]?.r ?? atkRoster[0]?.r ?? 0;
       const atkStart = opts?.atkStart ?? snapshotRosterPositions(atkRoster);
@@ -13478,6 +14011,20 @@ async function boot(): Promise<void> {
       }
       for (const key of Array.from(diplomacyFactorLog.keys())) {
         if (diploPairKeyHasOwner(key, ownerId)) diplomacyFactorLog.delete(key);
+      }
+      // WIARYGODNOSC — rejestry per-owner tej cywilizacji + wpisy STRUMIENIA innych
+      // ownerów, w których figurowała jako partner (klucz wewnętrzny `${partnerId}_${typ}`).
+      wiarygodnoscZdarzeniaByOwner.delete(ownerId);
+      wiarygodnoscStrumienByOwner.delete(ownerId);
+      wiarygodnoscOstatniaWojnaTuraByOwner.delete(ownerId);
+      wiarygodnoscP4MilestonesByOwner.delete(ownerId);
+      for (const key of Array.from(wiarygodnoscN7ActivePairs)) {
+        if (key.startsWith(`${ownerId}->`) || key.endsWith(`->${ownerId}`)) wiarygodnoscN7ActivePairs.delete(key);
+      }
+      for (const m of wiarygodnoscStrumienByOwner.values()) {
+        for (const key of Array.from(m.keys())) {
+          if (key.startsWith(`${ownerId}_`)) m.delete(key);
+        }
       }
       activeDeals = activeDeals.filter(d => !d.strony.includes(ownerId));
 
@@ -14196,6 +14743,18 @@ async function boot(): Promise<void> {
           negotiationSeq,
           diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
           diplomacyFactorLog: Array.from(diplomacyFactorLog.entries()),
+          // WIARYGODNOSC CYWILIZACJI (WIARYGODNOSC-SPECYFIKACJA.md §7 "Save/load") — rejestr
+          // zdarzeń jednorazowych + wpisy STRUMIENIA + timing P4 ("bez wojny"), per właściciel.
+          // Stary zapis (bez tych pól) wczytuje się z pustymi mapami — brak historii = tylko
+          // wartość startowa wg trudności (§1), zero błędu.
+          wiarygodnoscZdarzeniaByOwner: Array.from(wiarygodnoscZdarzeniaByOwner.entries()),
+          wiarygodnoscStrumienByOwner: Array.from(
+            wiarygodnoscStrumienByOwner.entries(),
+            ([oid, m]) => [oid, Array.from(m.entries())] as const,
+          ),
+          wiarygodnoscOstatniaWojnaTuraByOwner: Array.from(wiarygodnoscOstatniaWojnaTuraByOwner.entries()),
+          wiarygodnoscP4MilestonesByOwner: Array.from(wiarygodnoscP4MilestonesByOwner.entries()),
+          wiarygodnoscN7ActivePairs: Array.from(wiarygodnoscN7ActivePairs),
           aiOwnerCivMap: Array.from(aiOwnerCivMap.entries()),
           ownerDisplayName: Array.from(ownerDisplayName.entries()),
           zlozeGrants: zlozeGrants.slice(),
@@ -15773,6 +16332,11 @@ async function boot(): Promise<void> {
                 ekspansjaPrzyGranicy:
                   cities.filter(c => c.ownerId === ownerId).length > 2 &&
                   cities.filter(c => c.ownerId === 0).length > 2,
+                // WIARYGODNOSC §5 Dźwignia 1 — strumień Wiarygodność(gracza)→Zaufanie tej
+                // pary. C-WIAR-WROG=A: pominięty (undefined) TYLKO gdy TA para jest aktualnie
+                // w stanie wojny; wobec wszystkich pozostałych działa normalnie, także w
+                // trakcie wojny gdzie indziej (C-WIAR-WOJNA=B). Wartość liczona NA ŻYWO (§9.9).
+                wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(0),
               };
               const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
               setDiploRelation(0, ownerId, relTicked as unknown as Relation);
@@ -15860,6 +16424,7 @@ async function boot(): Promise<void> {
                 try {
                   const curRel = getDiploRelation(0, ownerId);
                   if (cmd.type === 'wypowiedz_wojne') {
+                    chargeWarDeclarationCredibility(ownerId, 0);
                     breakTreatiesOnWar(0, ownerId, false);
                     applyAllianceObligationsOnWar(ownerId, 0);
                     const newRel = applyDiploEventTracked(0, ownerId, curRel, 'wojna_wypowiedziana');
@@ -18422,6 +18987,38 @@ async function boot(): Promise<void> {
       const savedFactorLog = saved.meta?.diplomacyFactorLog as Array<[string, DiploFactorLog]> | undefined;
       if (savedFactorLog?.length) {
         for (const [key, log] of savedFactorLog) diplomacyFactorLog.set(key, log);
+      }
+      // WIARYGODNOSC CYWILIZACJI (WIARYGODNOSC-SPECYFIKACJA.md §7) — pola opcjonalne,
+      // stary zapis (przed tą falą) wczytuje się z pustymi mapami: brak historii = tylko
+      // wartość startowa wg trudności (§1), zero crasha — wzorem diplomacyPairMeta wyżej.
+      wiarygodnoscZdarzeniaByOwner.clear();
+      const savedWiarZdarzenia = saved.meta?.wiarygodnoscZdarzeniaByOwner as
+        Array<[number, CredibilityEventRecord[]]> | undefined;
+      if (savedWiarZdarzenia?.length) {
+        for (const [oid, ev] of savedWiarZdarzenia) wiarygodnoscZdarzeniaByOwner.set(oid, ev);
+      }
+      wiarygodnoscStrumienByOwner.clear();
+      const savedWiarStrumien = saved.meta?.wiarygodnoscStrumienByOwner as
+        Array<[number, Array<[string, CredibilityStreamEntry]>]> | undefined;
+      if (savedWiarStrumien?.length) {
+        for (const [oid, entries] of savedWiarStrumien) {
+          wiarygodnoscStrumienByOwner.set(oid, new Map(entries));
+        }
+      }
+      wiarygodnoscOstatniaWojnaTuraByOwner.clear();
+      const savedWiarLastWar = saved.meta?.wiarygodnoscOstatniaWojnaTuraByOwner as Array<[number, number]> | undefined;
+      if (savedWiarLastWar?.length) {
+        for (const [oid, t] of savedWiarLastWar) wiarygodnoscOstatniaWojnaTuraByOwner.set(oid, t);
+      }
+      wiarygodnoscP4MilestonesByOwner.clear();
+      const savedWiarP4 = saved.meta?.wiarygodnoscP4MilestonesByOwner as Array<[number, number]> | undefined;
+      if (savedWiarP4?.length) {
+        for (const [oid, n] of savedWiarP4) wiarygodnoscP4MilestonesByOwner.set(oid, n);
+      }
+      wiarygodnoscN7ActivePairs.clear();
+      const savedWiarN7 = saved.meta?.wiarygodnoscN7ActivePairs as string[] | undefined;
+      if (savedWiarN7?.length) {
+        for (const key of savedWiarN7) wiarygodnoscN7ActivePairs.add(key);
       }
       zlozeGrants = [];
       const savedZloze = saved.meta?.zlozeGrants as ZlozeGrant[] | undefined;

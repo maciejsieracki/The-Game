@@ -9,5 +9,8 @@ export {
   credibilityStreamWeight,
   sumaStrumienia,
   strumienWiarygodnoscDoZaufania,
+  freshCredibilityStreamEntry,
+  tickCredibilityStreamEntry,
+  sumaWiarygodnosciCalkowita,
 } from '../src/game/diplomacy-credibility';
-export { DIPLOMACY_PARAMS } from '../src/game/diplomacy';
+export { DIPLOMACY_PARAMS, tickDiplomacy } from '../src/game/diplomacy';

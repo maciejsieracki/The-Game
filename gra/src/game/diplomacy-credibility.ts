@@ -301,6 +301,49 @@ export function sumaStrumienia(wpisy: readonly CredibilityStreamEntry[]): number
   return suma;
 }
 
+/** Świeży wpis STRUMIENIA (sumaAktywna=0) dla danego typu zobowiązania — waga z DIPLOMACY_PARAMS. */
+export function freshCredibilityStreamEntry(typ: CredibilityStreamEvent): CredibilityStreamEntry {
+  return { typ, wartoscNaTure: credibilityStreamWeight(typ), sumaAktywna: 0 };
+}
+
+/**
+ * Dolicza jedną turę wartoscNaTure do wpisu STRUMIENIA (immutable — nowy obiekt).
+ * Silnik (main.ts) woła to co turę dla każdego aktualnie AKTYWNEGO zobowiązania —
+ * wpis, którego zobowiązanie się skończyło, jest po prostu USUWANY z listy (nie
+ * tikowany dalej), zgodnie z C-WIAR-SLAD=A ("gasną do zera, bez trwałego śladu").
+ */
+export function tickCredibilityStreamEntry(entry: CredibilityStreamEntry): CredibilityStreamEntry {
+  return { ...entry, sumaAktywna: entry.sumaAktywna + entry.wartoscNaTure };
+}
+
+// ---------------------------------------------------------------------------
+// §4 (rozszerzone etapem 2-4) — Wiarygodność CAŁKOWITA = startowa + zdarzenia
+// jednorazowe (z krzywą zapominania) + STRUMIEŃ (bez krzywej, patrz §3/§4).
+// ---------------------------------------------------------------------------
+
+/**
+ * Wiarygodność(właściciel, tura) PEŁNA — startowa (wg trudności) + suma
+ * wartości bieżących wszystkich zdarzeń jednorazowych (kary N1–N7, FINISZ,
+ * CZYNY — z krzywą zapominania §4) + suma aktywnych wpisów STRUMIENIA (S1–S4,
+ * bez krzywej — C-WIAR-SLAD=A). Twarde klamrowanie do −100…+100 (§4 pkt 10).
+ * Czysta funkcja — `ownerId` NIE wchodzi tu w żadnej postaci (parytet, §6 pkt 2);
+ * wywołujący (main.ts) dobiera właściwe listy dla danego ownera.
+ */
+export function sumaWiarygodnosciCalkowita(
+  zdarzenia: readonly CredibilityEventRecord[],
+  wpisyStrumienia: readonly CredibilityStreamEntry[],
+  startowa: number,
+  tura: number,
+  poziomTrudnosci: GameDifficulty,
+): number {
+  let suma = startowa;
+  for (const zdarzenie of zdarzenia) {
+    suma += wartoscBiezaca(zdarzenie, tura, poziomTrudnosci);
+  }
+  suma += sumaStrumienia(wpisyStrumienia);
+  return clamp(suma, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+}
+
 // ---------------------------------------------------------------------------
 // §5 — Dźwignia 1: strumień bezpośredni Wiarygodność → Zaufanie
 // ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@
  */
 import type { Relation } from './diplomacy';
 import type { GameDifficulty } from './difficulty-cost';
+import type { CredibilityEvent } from './diplomacy-credibility';
 import {
   diplomacyTradeTrustFromDeal,
   diplomacyGiftTrustFromPn,
@@ -17,9 +18,35 @@ import {
   type WartoscPozycjaTyp,
 } from './diplomacy-value-catalog';
 
+/**
+ * WIARYGODNOSC-SPECYFIKACJA.md §7 "Nowe pola w DiploPairMeta" — timing per para,
+ * potrzebny do haków kar N1/N3 (karencja po wypowiedzeniu wojny / po zakończeniu
+ * porozumienia) i do odwetu (C-WIAR-ODWET=A). Wszystkie pola OPCJONALNE — stary
+ * zapis bez nich wczytuje się jako "brak zdarzenia", nie błąd (patrz freshDiploPairMeta).
+ */
 export interface DiploPairMeta {
   trustPnGainedThisTurn: number;
   dobraWolaRemainingTur: number;
+  /** N1 — tura, w której OSTATNIO wypowiedziano wojnę w tej parze (karencja 1 tury: atak w TEJ SAMEJ turze = kara). */
+  wojnaOdTury?: number;
+  /** N1 — czy kara za "atak bez ostrzeżenia" była już naliczona dla BIEŻĄCEJ wojny w tej parze (nalicza się raz na wojnę, nie raz na bitwę). */
+  n1Zastosowany?: boolean;
+  /**
+   * N3-rozszerzone — okno karencji otwarte przez zakończenie porozumienia BEZTERMINOWEGO
+   * (sojusz/otwarte granice/przemarsz/wasal-`wasal`, anulowane jednostronnie) LUB przez
+   * zawarcie pokoju. `typ==='bezterminowe'` wymaga `byOwnerId` (TYLKO ten, kto anulował,
+   * płaci karę za atak w oknie — C-WIAR-N5KONF=B); `typ==='pokoj'` dotyczy obu stron
+   * (kto zaatakuje pierwszy w oknie). `charged` = kara N3 już naliczona dla TEGO okna
+   * (nie nalicza się drugi raz przy kolejnej bitwie tej samej wojny).
+   */
+  n3Window?: { turn: number; typ: 'bezterminowe' | 'pokoj'; byOwnerId?: number; charged?: boolean };
+  /**
+   * Odwet (C-WIAR-ODWET=A) — ostatnie przewinienie w TEJ parze otwierające prawo
+   * do bezkarnej (bez N1/N2) wojny odwetowej w oknie `wiarygodnoscOdwetOknoTur`
+   * tur. `byOwnerId` = kto zawinił, `againstOwnerId` = wobec kogo (tylko TA strona
+   * może się odwołać na ten wpis).
+   */
+  ostatniePrzewinienieWobecNas?: { turn: number; typ: CredibilityEvent; byOwnerId: number; againstOwnerId: number };
 }
 
 export interface ZlozeGrant {
