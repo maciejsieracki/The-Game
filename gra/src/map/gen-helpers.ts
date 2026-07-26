@@ -795,7 +795,7 @@ export function reapplyForestOverlay(
 ): number {
   const share = FOREST_SHARE_OF_DRY_LAND[forestTier];
   const cellSize = forestCoverageCellSize(forestTier);
-  const minLand = minLandHexesForForestCell(cellSize);
+  const minLand = minLandHexesForFairPlayCell(cellSize);
 
   for (const hex of Object.values(hexes)) {
     if (hex.nakladka === Nakladka.Las) hex.nakladka = Nakladka.Brak;
@@ -809,18 +809,12 @@ export function reapplyForestOverlay(
     for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
       if (land.length < minLand) continue;
 
-      // TEMAT „80% lasu" (Maciej 2026-07-25): wykluczenie strefy 'arid' USUNIĘTE — Maciej
-      // wymienił WPROST tylko góry/pustynię/morze jako tereny bez lasu; pas suchy (climateZone
-      // 'arid', ~15% wysokości mapy) to OSOBNY mechanizm klimatyczny, który blokował las także
-      // na Łące/Równinie/Wzgórzach (nie tylko na faktycznej Pustyni — ta i tak jest wykluczona
-      // wyżej przez isForestEligibleTerrain, niezależnie od klimatu). Zostawienie tego wykluczenia
-      // tworzyłoby SKONCENTROWANY poziomy pas bez lasu w poprzek mapy — sprzeczne z wymogiem
-      // "polany rozrzucone, nie w jednym rogu/pasie". Pustynia w tym pasie nadal będzie bez lasu
-      // (wykluczona po typie terenu), reszta (Łąka/Równina/Wzgórza) — tak jak wszędzie indziej.
       const eligible = land
         .filter(([q, r]) => {
           const h = hexes[hexKey(q, r)];
-          return !!h && isForestEligibleTerrain(h.terenBazowy) && h.nakladka === Nakladka.Brak;
+          if (!h || !isForestEligibleTerrain(h.terenBazowy) || h.nakladka !== Nakladka.Brak) return false;
+          if (mapHeight && climateZoneAt(q, r, mapHeight) === 'arid') return false;
+          return true;
         })
         .map(([q, r]) => ({ k: hexKey(q, r), n: scratch.get(hexKey(q, r))?.forNoise ?? 0 }))
         .sort((a, b) => b.n - a.n);
@@ -833,7 +827,7 @@ export function reapplyForestOverlay(
 
       const minForest = typ === 'pangea' ? 0 : 1;
       const target = Math.max(minForest, Math.round(eligible.length * share * zoneShareMul));
-      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * FOREST_CELL_CAP_FRAC)));
+      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * 0.18)));
 
       for (let i = 0; i < Math.min(cap, eligible.length); i++) {
         hexes[eligible[i]!.k]!.nakladka = Nakladka.Las;
@@ -1234,33 +1228,12 @@ export function landPartitionKeysForDistribution(
   return groupLandMassKeys(hexes);
 }
 
-/**
- * Udział heksów z lasem na suche ląd per partycja (przed cap-em w reapplyForestOverlay).
- *
- * TEMAT „80% lasu" (Maciej 2026-07-25, playtest): poprzednie 0.22/0.36/0.50 wyglądały jak
- * zamierzony ~2× wzrost gęstości, ale FAKTYCZNE pokrycie było usztywnione przez osobny cap
- * (patrz FOREST_CELL_CAP_FRAC w reapplyForestOverlay) na ~18% niezależnie od tej stałej —
- * zmierzone empirycznie PRZED zmianą: ~13-17% (kontynenty/pangea/wyspy/ziemia, tier medium),
- * czyli generator NIGDY nie osiągał udokumentowanych 36%. Efekt w grze: start bez lasu w
- * zasięgu miasta ("nie jestem w stanie zbudować tartaku"). Nowe wartości + podniesiony cap
- * (0.85) dają FAKTYCZNE ~75-85% na terenie kwalifikowalnym (Łąka/Równina/Wzgórza) w strefie
- * umiarkowanej (zoneShareMul=1.35) i ~55-95% poza nią — zmierzone tools/forest measure script,
- * patrz raport zadania. „high" = cap (zawsze maksimum gęstości, niezależnie od strefy).
- */
+/** Udział heksów z lasem na suche ląd per partycja — ~2× poprzedniego (medium ≈ 36%). */
 const FOREST_SHARE_OF_DRY_LAND: Record<DensityTier, number> = {
-  low: 0.55,
-  medium: 0.80,
-  high: 0.85,
+  low: 0.22,
+  medium: 0.36,
+  high: 0.50,
 };
-
-/**
- * Górny sufit udziału lasu w jednej komórce fair-play (forestCoverageCellSize) — zostawia
- * gwarantowane polany (≥15% eligible w komórce) nawet przy „high" tierze/strefie umiarkowanej,
- * żeby las tworzył zwarte obszary z przerwami, a nie jednolitą płachtę. PRZED zmianą był 0.18 —
- * to on, nie FOREST_SHARE_OF_DRY_LAND, realnie ograniczał pokrycie (share×zoneShareMul zawsze
- * > 0.18 dla medium/high, więc cap zawsze wygrywał — stąd rozjazd z udokumentowanym „medium≈36%”).
- */
-const FOREST_CELL_CAP_FRAC = 0.85;
 
 function applyReliefToLandKeys(
   hexes: Record<string, Hex>,
@@ -1486,21 +1459,6 @@ export function minLandHexesForFairPlayCell(cellSize: number): number {
 
 export function minLandHexesForReliefCell(cellSize: number): number {
   return Math.max(8, Math.floor(cellSize * 0.32));
-}
-
-/**
- * Próg minLand SPECYFICZNY dla lasu (reapplyForestOverlay/ensureForestGridCoverage/
- * forestGridCoverageRatio) — NIE dzieli progu z reliefem/złożami (minLandHexesForFairPlayCell),
- * bo las partycjonuje ląd per strefa kontynentu/wyspy (landPartitionKeysForDistribution), a
- * relief/złoża per cała masa lądu. Komórka fair-play na GRANICY dwóch stref Voronoi bywa
- * przecięta na kawałki < 8 lądu z każdej strony granicy mimo że fizycznie ma ich dużo więcej
- * — przy progu reliefu (8) taki fragment jest pomijany przez udziałowy przydział lasu i
- * dostaje tylko backstop „≥1 las" z ensureForestGridCoverage zamiast docelowego udziału, co
- * ciągnęło w dół zmierzone globalne pokrycie (temat „80% lasu", Maciej 2026-07-25). Niższy
- * próg (3) łapie te przycięte fragmenty z powrotem do przydziału udziałowego.
- */
-export function minLandHexesForForestCell(cellSize: number): number {
-  return Math.max(3, Math.floor(cellSize * 0.15));
 }
 
 function countMountainsInCell(
@@ -6664,7 +6622,7 @@ export function forestGridCoverageRatio(
   cellSize: number = forestCoverageCellSize('medium'),
 ): number {
   const massSet = new Set(massLandKeys);
-  const minLand = minLandHexesForForestCell(cellSize);
+  const minLand = minLandHexesForFairPlayCell(cellSize);
   let need = 0;
   let hit = 0;
   for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
@@ -6688,7 +6646,7 @@ export function ensureForestGridCoverage(
   rand: () => number,
 ): number {
   const cellSize = forestCoverageCellSize(forestTier);
-  const minLand = minLandHexesForForestCell(cellSize);
+  const minLand = minLandHexesForFairPlayCell(cellSize);
   const masses = groupLandMassKeys(hexes)
     .filter((m) => m.length >= 8)
     .sort((a, b) => b.length - a.length);
@@ -6761,31 +6719,6 @@ export interface StartPosition {
 }
 
 /**
- * Promien (heks-distance), w ktorym sprawdzamy dostepnosc lasu dla startu — zgodny z
- * `zasieg_okolicy_baza` (miasto-params.json, CITY_RANGE_MIN w game/okolica.ts): to promien
- * "okolicy" (obszaru roboczego) NOWEGO miasta (pop 1..4), zanim urosnie z populacja. Wartosc
- * zapisana tu jako stala (nie import z game/okolica.ts) zeby nie ciagnac calego modulu gry
- * (economy/culture-religion/cities) do generatora mapy — jesli zasieg_okolicy_baza w JSON
- * kiedys sie zmieni, zsynchronizuj recznie.
- */
-const START_FOREST_CHECK_RADIUS = 5;
-
-/**
- * Minimalna liczba heksow lasu w promieniu START_FOREST_CHECK_RADIUS od pozycji startowej.
- *
- * TEMAT „las w zasiegu startu" (Maciej 2026-07-25, playtest — realna blokada): bez ani
- * jednego lasu w okolicy miasta gracz nie moze zbudowac 'wyrab' (wymaga Nakladka.Las w
- * terytorium — patrz improvement-build.ts) ani zadnego budynku kosztujacego drewno — cala
- * sciezka budowlana jest zablokowana, to nie „gorszy start", tylko gra nie do przejscia.
- * N=4 (nie 1): margines na to, ze czesc lasu w promieniu moze byc od razu wygolona pod
- * pierwsze budowle/pola, a gracz i tak potrzebuje wiecej niz jednego zrodla drewna zeby
- * budowac cokolwiek poza pierwszym 'wyrab'. Promien 5 (91 heksow) przy docelowym ~75-85%
- * pokryciu i tak zwykle znaczaco przekracza N=4 — to twardy floor na katastroficzny
- * przypadek (0-1 lasu), nie balansowy parametr do podkrecania.
- */
-const START_FOREST_MIN_COUNT = 4;
-
-/**
  * Zwraca >= minCount pozycji startowych na ladzie, parami oddalonych
  * o co najmniej minDist (heks-distance). Deterministyczne dla danego seed.
  *
@@ -6793,34 +6726,20 @@ const START_FOREST_MIN_COUNT = 4;
  *   1. Zbierz wszystkie ladowe heksy (isLandTerrain), posortuj deterministycznie.
  *   2. Przetasuj Fishera-Yatesa seedowanym PRNG (rownomierny rozrzut, nie tylko
  *      lewy-gorny rog).
- *   3. Zachlannie dodawaj kandydatow oddalonych >= minDist od juz wybranych, WYLACZNIE
- *      spomiedzy tych z >= forestMinCount lasu w promieniu forestRadius (Etap 3, patrz
- *      START_FOREST_CHECK_RADIUS/START_FOREST_MIN_COUNT) — PARYTET AI: to jedyna funkcja
- *      generujaca pozycje startowe, dziala identycznie dla gracza i AI (nie ma osobnej
- *      sciezki wyboru startu per-gracz).
- *   4. Jesli nie uzbierano minCount, stopniowo luzuj — NAJPIERW minDist (>= absMinDist)
- *      przy pelnym wymogu lasu, potem (dopiero gdy zaden dystans nie wystarcza) obniz
- *      wymog lasu krok po kroku az do 0 — spacing miedzy startami jest kwestia
- *      estetyki/fair-play, dostepnosc drewna jest kwestia grywalnosci, wiec ustepuje
- *      pozniej. Ostateczny fallback (jak wczesniej): dobierz pozostaly lad bez ogladania
- *      sie na dystans/las, zeby zawsze zwrocic minCount pozycji (o ile na mapie jest tyle
- *      ladu w ogole).
+ *   3. Zachlannie dodawaj kandydatow oddalonych >= minDist od juz wybranych.
+ *   4. Jesli nie uzbierano minCount, stopniowo luzuj minDist (>= absMinDist),
+ *      by zawsze zwrocic minCount pozycji (o ile na mapie jest tyle ladu).
  *
  * @returns posortowana wg q,r lista pozycji (stabilna kolejnosc wyjscia).
  */
 export function computeStartPositions(
   hexes: Record<string, Hex>,
   seed: number,
-  opts: {
-    minCount?: number; minDist?: number; absMinDist?: number;
-    forestRadius?: number; forestMinCount?: number;
-  } = {},
+  opts: { minCount?: number; minDist?: number; absMinDist?: number } = {},
 ): StartPosition[] {
   const minCount   = opts.minCount ?? 5;
   const minDist    = opts.minDist ?? 5;
   const absMinDist = opts.absMinDist ?? 2;
-  const forestRadius = opts.forestRadius ?? START_FOREST_CHECK_RADIUS;
-  const forestMinCount = opts.forestMinCount ?? START_FOREST_MIN_COUNT;
 
   // 1. Ladowe heksy w deterministycznej kolejnosci.
   const land: StartPosition[] = [];
@@ -6837,21 +6756,6 @@ export function computeStartPositions(
   }
   if (land.length === 0) return [];
 
-  // 1b. Las w promieniu forestRadius per kandydat (Etap 3 — raz, przed shuffle/greedy).
-  function countForestNear(q: number, r: number): number {
-    let n = 0;
-    for (let dq = -forestRadius; dq <= forestRadius; dq++) {
-      const drMin = Math.max(-forestRadius, -dq - forestRadius);
-      const drMax = Math.min(forestRadius, -dq + forestRadius);
-      for (let dr = drMin; dr <= drMax; dr++) {
-        if (hexes[hexKey(q + dq, r + dr)]?.nakladka === Nakladka.Las) n++;
-      }
-    }
-    return n;
-  }
-  const forestNearby = new Map<string, number>();
-  for (const c of land) forestNearby.set(hexKey(c.q, c.r), countForestNear(c.q, c.r));
-
   // 2. Seedowane tasowanie (oddzielny strumien losowy).
   const rand = mulberry32((seed ^ 0x85ebca6b) >>> 0);
   const shuffled = land.slice();
@@ -6860,10 +6764,10 @@ export function computeStartPositions(
     const tmp = shuffled[i]!; shuffled[i] = shuffled[j]!; shuffled[j] = tmp;
   }
 
-  // 3/4. Zachlanny dobor z luzowaniem minDist az do minCount, na puli kandydatow.
-  function greedyPick(dist: number, pool: StartPosition[]): StartPosition[] {
+  // 3/4. Zachlanny dobor z luzowaniem minDist az do minCount.
+  function greedyPick(dist: number): StartPosition[] {
     const picked: StartPosition[] = [];
-    for (const c of pool) {
+    for (const c of shuffled) {
       const tooClose = picked.some(p => hexDistanceAxial(c.q, c.r, p.q, p.r) < dist);
       if (!tooClose) picked.push(c);
     }
@@ -6871,21 +6775,16 @@ export function computeStartPositions(
   }
 
   let result: StartPosition[] = [];
-  outer:
-  for (let need = forestMinCount; need >= 0; need--) {
-    const pool = shuffled.filter(c => (forestNearby.get(hexKey(c.q, c.r)) ?? 0) >= need);
-    if (pool.length === 0) continue;
-    for (let d = minDist; d >= absMinDist; d--) {
-      result = greedyPick(d, pool);
-      if (result.length >= minCount) {
-        // Przytnij do "ladnej" liczby, ale zachowaj te z najwyzszym dystansem:
-        // greedyPick juz daje pozycje >= d; zostawiamy wszystkie >= minCount.
-        break outer;
-      }
+  for (let d = minDist; d >= absMinDist; d--) {
+    result = greedyPick(d);
+    if (result.length >= minCount) {
+      // Przytnij do "ladnej" liczby, ale zachowaj te z najwyzszym dystansem:
+      // greedyPick juz daje pozycje >= d; zostawiamy wszystkie >= minCount.
+      break;
     }
   }
 
-  // Jesli nawet przy absMinDist i need=0 nie ma minCount (bardzo malo ladu),
+  // Jesli nawet przy absMinDist nie ma minCount (bardzo malo ladu),
   // dolacz pozostale ladowe heksy zachowujac maksymalny mozliwy rozrzut.
   if (result.length < minCount) {
     const have = new Set(result.map(p => hexKey(p.q, p.r)));
