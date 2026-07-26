@@ -7,7 +7,11 @@ import { formatArmiaLabel } from './formatPl';
 
 export interface CityUnitPickOptions {
   cityName: string;
+  /** Populacja miasta (Maciej 2026-07-26: dodatkowa informacja na kafel). */
+  cityPopulation?: number;
   unitLabel: string;
+  /** Łączny % HP jednostki/stosu (suma hp / suma maxHp * 100). */
+  unitHealthPercent?: number;
   stackCount?: number;
   onCity: () => void;
   onUnit: () => void;
@@ -55,8 +59,10 @@ function ensureStyles(): void {
 .civ-cup-act-ic{font-size:28px;line-height:1;}
 .civ-cup-act-lbl{font-size:12px;font-weight:700;color:var(--gold);}
 .civ-cup-act-desc{font-size:9px;color:var(--muted);text-align:center;line-height:1.3;}
+.civ-cup-act-stat{font-size:10px;font-weight:700;color:var(--gold);margin-top:3px;}
 .civ-cup-act.unit:hover{border-color:rgba(107,196,232,0.45);background:rgba(107,196,232,0.08);}
 .civ-cup-act.unit .civ-cup-act-lbl{color:#a8d4ff;}
+.civ-cup-act.unit .civ-cup-act-stat{color:#a8d4ff;}
 .civ-cup-foot{padding:0 12px 12px;text-align:center;}
 .civ-cup-cancel{
   font:inherit;font-size:10px;cursor:pointer;padding:5px 12px;
@@ -121,10 +127,14 @@ export function showCityUnitPick(opts: CityUnitPickOptions): void {
   const btnCity = document.createElement('button');
   btnCity.type = 'button';
   btnCity.className = 'civ-cup-act city';
+  const cityStat = opts.cityPopulation != null
+    ? '<span class="civ-cup-act-stat">Ludność ' + Math.round(opts.cityPopulation) + '</span>'
+    : '';
   btnCity.innerHTML =
     '<span class="civ-cup-act-ic">\u{1F3DB}</span>' +
     '<span class="civ-cup-act-lbl">Miasto</span>' +
-    '<span class="civ-cup-act-desc">' + escapeHtml(opts.cityName) + '</span>';
+    '<span class="civ-cup-act-desc">' + escapeHtml(opts.cityName) + '</span>' +
+    cityStat;
   btnCity.onclick = () => pick(opts.onCity);
 
   const btnUnit = document.createElement('button');
@@ -133,10 +143,14 @@ export function showCityUnitPick(opts: CityUnitPickOptions): void {
   const stackHint = opts.stackCount && opts.stackCount > 1
     ? formatArmiaLabel(opts.stackCount)
     : 'Zaznacz i rozkazuj';
+  const unitStat = opts.unitHealthPercent != null
+    ? '<span class="civ-cup-act-stat">HP ' + Math.round(opts.unitHealthPercent) + '%</span>'
+    : '';
   btnUnit.innerHTML =
     '<span class="civ-cup-act-ic">\u2694</span>' +
     '<span class="civ-cup-act-lbl">Jednostka</span>' +
-    '<span class="civ-cup-act-desc">' + escapeHtml(opts.unitLabel) + '<br>' + stackHint + '</span>';
+    '<span class="civ-cup-act-desc">' + escapeHtml(opts.unitLabel) + '<br>' + stackHint + '</span>' +
+    unitStat;
   btnUnit.onclick = () => pick(opts.onUnit);
 
   actions.appendChild(btnCity);

@@ -3316,6 +3316,16 @@ async function boot(): Promise<void> {
             : formatArmiaLabel(group.length);
         const ruchLeft = Math.min(...group.map(u => u.ruchLeft));
         const ruchMax = Math.max(...group.map(u => u.ruch));
+        // Suma HP stosu: armia = stos, więc pokazujemy łączny stan zdrowia
+        // (np. 34/50), a nie zdrowie pojedynczej jednostki wiodącej.
+        let hp = 0;
+        let hpMax = 0;
+        for (const u of group) {
+          const udef = unitDefFor(u);
+          const unitMaxHp = unitHealth(udef);
+          hp += u.hp ?? unitMaxHp;
+          hpMax += unitMaxHp;
+        }
         out.push({
           id: lead.id,
           name,
@@ -3327,6 +3337,8 @@ async function boot(): Promise<void> {
           metaLine: types.length > 1 ? types.join(', ') : undefined,
           ruchLeft,
           ruchMax,
+          hp,
+          hpMax,
         });
       }
       out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
@@ -11096,9 +11108,18 @@ async function boot(): Promise<void> {
         const stackOnCity = visibleStackOnHex(units, hit.q, hit.r, 0);
         if (stackOnCity.length > 0) {
           const rep = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore) ?? stackOnCity[0]!;
+          // Łączny % HP stosu (suma hp / suma maxHp) — spójne z etykietą „Armia — N jednostek”.
+          const stackHpSum = stackOnCity.reduce(
+            (sum, u) => sum + (u.hp ?? unitHealth(unitDefFor(u))), 0,
+          );
+          const stackMaxHpSum = stackOnCity.reduce(
+            (sum, u) => sum + unitHealth(unitDefFor(u)), 0,
+          );
           showCityUnitPick({
             cityName: clickedCity.name,
+            cityPopulation: clickedCity.population,
             unitLabel: rep.typeId,
+            unitHealthPercent: stackMaxHpSum > 0 ? (stackHpSum / stackMaxHpSum) * 100 : undefined,
             stackCount: stackOnCity.length,
             onCity: () => openCityPanelForPlayer(clickedCity),
             onUnit: () => selectPlayerUnit(rep.id),

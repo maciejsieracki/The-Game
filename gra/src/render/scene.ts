@@ -1313,7 +1313,16 @@ export async function buildScene(
     ?? new THREE.WebGLRenderer({ canvas, antialias: preset.antialias, powerPreference: 'high-performance' });
   if (ownRenderer) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, preset.pixelRatioMax));
-    renderer.setSize(vpW, vpH);
+    // updateStyle=fixedViewport: dla qualitypreview (stały viewport, JS zarządza pikselowym
+    // rozmiarem canvasu) zachowujemy stare zachowanie (true). Dla głównego canvasu gry
+    // (fixedViewport=false) NIE wolno nadpisywać stylu — main.ts ustawia canvas na
+    // position:fixed + width/height:100%, żeby canvas ZAWSZE wizualnie wypełniał viewport
+    // (także w pełnym ekranie, bez czekania na 'resize'). setSize z updateStyle=true zapisuje
+    // literalne piksele w canvas.style.width/height, co ubija tę reaktywność — po wejściu w
+    // pełny ekran canvas zostaje "zamrożony" na starym rozmiarze i u dołu/z boku zostaje
+    // nieprzeskalowany pas tła (a canvas.getBoundingClientRect() używany przez edge-pan nie
+    // sięga już do prawdziwej krawędzi ekranu, więc edge-pan tam nie działa).
+    renderer.setSize(vpW, vpH, fixedViewport);
   }
   if (renderStyle === 'civ') {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -2441,16 +2450,24 @@ export async function buildScene(
     if (w <= 0 || h <= 0) return;
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
+    // updateStyle=false — canvas.style.width/height (100%/100%, main.ts) zostaje nietknięty,
+    // ustawiamy tylko rozdzielczość bufora renderowania (patrz komentarz przy setSize wyżej).
+    renderer.setSize(w, h, false);
   }
   if (!fixedViewport) {
     window.addEventListener('resize', onResize);
+    // Bug Maciej 2026-07-25/26: samo 'resize' bywa niewystarczające przy wejściu w pełny
+    // ekran (część przeglądarek nie odpala go przy fullscreenchange, część odpala go zanim
+    // layout się ustabilizuje) — dopinamy się też wprost pod fullscreenchange, żeby kamera
+    // (aspect) i bufor renderera na pewno dogoniły nowy rozmiar canvasu.
+    document.addEventListener('fullscreenchange', onResize);
   }
 
   // -- Dispose
   function dispose() {
     if (!fixedViewport) {
       window.removeEventListener('resize', onResize);
+      document.removeEventListener('fullscreenchange', onResize);
     }
     for (const m of instancedMeshes) { m.geometry.dispose(); }
     for (const mat of Object.values(terrainMaterials)) mat?.dispose();

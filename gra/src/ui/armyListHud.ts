@@ -18,6 +18,9 @@ export interface ArmyListEntry {
   metaLine?: string;
   ruchLeft?: number;
   ruchMax?: number;
+  /** Łączne HP stosu (suma jednostek) — pasek zdrowia, patrz `al-hpbar`. */
+  hp?: number;
+  hpMax?: number;
 }
 
 export interface ArmyListHudConfig {
@@ -77,6 +80,8 @@ function ensureStyles(): void {
 .civ-army-list-hud .al-detail{font-size:0.78em;color:#d4cba0;margin-top:0.18em;line-height:1.35;}
 .civ-army-list-hud .al-mvbar{height:5px;background:rgba(0,0,0,.35);border-radius:3px;margin-top:0.28em;overflow:hidden;}
 .civ-army-list-hud .al-mvbar i{display:block;height:100%;background:linear-gradient(90deg,#1a6020,#50b070);transition:width .2s;}
+.civ-army-list-hud .al-hpbar{height:5px;background:rgba(0,0,0,.35);border-radius:3px;margin-top:0.22em;overflow:hidden;}
+.civ-army-list-hud .al-hpbar i{display:block;height:100%;transition:width .2s,background-color .2s;}
 .civ-army-list-hud .al-meta{font-size:0.72em;color:var(--muted);margin-top:0.1em;}
 .civ-army-list-hud .al-hint{font-size:0.72em;color:var(--muted);font-style:italic;margin-top:0.45em;line-height:1.4;}
 `;
@@ -169,6 +174,19 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         hex.textContent = 'Heks ' + a.hexLabel
           + (a.unitCount > 1 ? ' · ' + formatJednostkiCount(a.unitCount) : '');
         body.appendChild(hex);
+        if (typeof a.hpMax === 'number' && a.hpMax > 0) {
+          const pct = Math.max(0, Math.min(100, Math.round(((a.hp ?? 0) / a.hpMax) * 100)));
+          // Czerwień (ranna armia) → zieleń (pełne zdrowie), interpolacja po hue HSL.
+          const hue = Math.round(pct * 1.2);
+          const hpbar = document.createElement('div');
+          hpbar.className = 'al-hpbar';
+          hpbar.title = 'Zdrowie: ' + pct + '%';
+          const fill = document.createElement('i');
+          fill.style.width = pct + '%';
+          fill.style.backgroundColor = `hsl(${hue},65%,45%)`;
+          hpbar.appendChild(fill);
+          body.appendChild(hpbar);
+        }
         if (typeof a.ruchMax === 'number' && a.ruchMax > 0) {
           const pct = Math.max(0, Math.min(100, Math.round(((a.ruchLeft ?? 0) / a.ruchMax) * 100)));
           const mvbar = document.createElement('div');
