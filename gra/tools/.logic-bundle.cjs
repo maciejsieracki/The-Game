@@ -166,6 +166,12 @@ var map_gen_params_default = {
       medium: { mountain: 0.06, highland: 0.11 },
       high: { mountain: 0.12, highland: 0.18 }
     },
+    relief_overflow_cap_frac: {
+      _opis: "Decyzja w\u0142a\u015Bciciela C-MAPA-Q2=B (2026-07-26): sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief' w kreatorze: low\u22488%, medium\u224810% (0,04+0,06 \u2014 dobrane tak, by odpowiada\u0107 progom fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224820%. To \u015AWIADOMA REWIZJA decyzji 80A (19,3% g\xF3rzysto\u015Bci) \u2014 w\u0142a\u015Bciciel uprzedzony, \u017Ce 10% < 13,8% odrzucone wcze\u015Bniej, i mimo to wybra\u0142 ten wariant, bo priorytetem jest przej\u015Bcie fair-play-grid-test bez naginania prog\xF3w testu.",
+      low: { mountain: 0.03, highland: 0.05 },
+      medium: { mountain: 0.04, highland: 0.06 },
+      high: { mountain: 0.08, highland: 0.12 }
+    },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
       low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
@@ -242,6 +248,11 @@ var FALLBACK_DESERT = { low: 0.68, medium: 0.63, high: 0.58 };
 var FALLBACK_FOREST = { low: 0.65, medium: 0.58, high: 0.5 };
 var FALLBACK_MOUNTAIN = { low: 0.8, medium: 0.68, high: 0.52 };
 var FALLBACK_HIGHLAND = { low: 0.66, medium: 0.5, high: 0.38 };
+var FALLBACK_RELIEF_OVERFLOW_CAP = {
+  low: { mountain: 0.03, highland: 0.05 },
+  medium: { mountain: 0.04, highland: 0.06 },
+  high: { mountain: 0.08, highland: 0.12 }
+};
 var FALLBACK_MOUNTAIN_RANGE = {
   low: { hexyNaPasmo: 320, maxPasmNaMase: 2, dlugoscMin: 9, dlugoscMax: 15, minMasaHexow: 40, obrzezeSzansa: 0.3 },
   medium: { hexyNaPasmo: 240, maxPasmNaMase: 3, dlugoscMin: 11, dlugoscMax: 18, minMasaHexow: 30, obrzezeSzansa: 0.35 },
@@ -325,6 +336,16 @@ function mapGenHighlandThreshold(tier) {
   const k = tierKey(tier);
   if (h && typeof h[k] === "number") return h[k];
   return FALLBACK_HIGHLAND[tier];
+}
+function mapGenReliefOverflowCapFrac(tier) {
+  var _a9;
+  const fb = FALLBACK_RELIEF_OVERFLOW_CAP[tier];
+  const src = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.relief_overflow_cap_frac;
+  const row = src == null ? void 0 : src[tierKey(tier)];
+  if (!row) return { ...fb };
+  const mountain = typeof row.mountain === "number" && row.mountain > 0 ? row.mountain : fb.mountain;
+  const highland = typeof row.highland === "number" && row.highland > 0 ? row.highland : fb.highland;
+  return { mountain, highland };
 }
 function mapGenMountainRangeParams(tier) {
   var _a9;
@@ -1851,11 +1872,11 @@ function reliefBonusCapHighland(tier, landCount) {
   return Math.max(0, Math.ceil(landCount * frac));
 }
 function reliefSpreadCapMountain(tier, landCount) {
-  const frac = tier === "high" ? 0.08 : tier === "low" ? 0.03 : 0.04;
+  const frac = mapGenReliefOverflowCapFrac(tier).mountain;
   return Math.max(MIN_MOUNTAINS_IRON_CELL, Math.ceil(landCount * frac));
 }
 function reliefSpreadCapHighland(tier, landCount) {
-  const frac = tier === "high" ? 0.12 : tier === "low" ? 0.05 : 0.06;
+  const frac = mapGenReliefOverflowCapFrac(tier).highland;
   return Math.max(MIN_HIGHLANDS_COPPER_CELL, Math.ceil(landCount * frac));
 }
 function applyIronMountainsToLandKeys(hexes, scratch, tier, keys, width, height) {
@@ -2112,7 +2133,7 @@ function forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand) {
     MIN_HIGHLANDS_COPPER_CELL
   );
 }
-var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
+var RELIEF_OVERFLOW_CAP_MULT = 1;
 function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
   const baseMaxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
   const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
@@ -5629,11 +5650,13 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
+    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
   lodzie_rybackie: {
     nazwa: "\u0141odzie rybackie",
@@ -19410,7 +19433,12 @@ var diplomacy_default = {
     dobra_wola_po_wymianie: true,
     dobra_wola_tur: 3,
     dobra_wola_min_nadmiar_pn: 100,
-    dobra_wola_zaufanie_per_tura: 1
+    dobra_wola_zaufanie_per_tura: 1,
+    _opis_wiarygodnosc_limit: "Dzwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md \xA75, decyzja WIAR-9.5b=B, 2026-07-26): limit max_zaufanie_na_ture zaleny od Wiarygodnosci SPRAWCY daru/handlu (proposerId). Reputacja dodatnia (W>=0) NIE zmienia limitu (zostaje max_zaufanie_na_ture=5) \u2014 karzemy zla reputacje, nie nagradzamy dobrej. Pasmo Chwiejny (W<0, W>wiarygodnoscProgWiarolomny=-40): limit obnizony. Pasmo Wiarolomny gorne (-70<W<=-40): limit dalej obnizony. Dno (W<=-70): zakup Zaufania darem calkowicie zablokowany.",
+    wiarygodnosc_limit_zaufanie_chwiejny: 3,
+    wiarygodnosc_limit_zaufanie_wiarolomny: 1,
+    wiarygodnosc_limit_zaufanie_dno: 0,
+    wiarygodnosc_limit_prog_dno: -70
   },
   akcje_dyplomatyczne: [
     {

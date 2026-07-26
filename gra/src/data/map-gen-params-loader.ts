@@ -29,6 +29,18 @@ const FALLBACK_FOREST: Record<DensityTier, number> = { low: 0.65, medium: 0.58, 
 const FALLBACK_MOUNTAIN: Record<DensityTier, number> = { low: 0.80, medium: 0.68, high: 0.52 };
 const FALLBACK_HIGHLAND: Record<DensityTier, number> = { low: 0.66, medium: 0.50, high: 0.38 };
 
+/**
+ * Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play — Maciej 2026-07-26,
+ * C-MAPA-Q2=B (rewizja decyzji 80A: górzystość ląduje ~10% zamiast ~19,3%, żeby
+ * fair-play-grid-test.cjs przechodził bez naginania progów testu). Suma mountain+highland
+ * per tier ≈ docelowa górzystość lądu: low≈0,08 / medium≈0,10 / high≈0,20.
+ */
+const FALLBACK_RELIEF_OVERFLOW_CAP: Record<DensityTier, { mountain: number; highland: number }> = {
+  low: { mountain: 0.03, highland: 0.05 },
+  medium: { mountain: 0.04, highland: 0.06 },
+  high: { mountain: 0.08, highland: 0.12 },
+};
+
 /** Parametry pasm górskich (seed-and-grow) — Zadanie HILLS Q1/Q2 (2026-07-20). */
 export interface MountainRangeTierParams {
   /** Ile heksów lądu w masie przypada na jedno pasmo (mniej = więcej pasm). */
@@ -132,6 +144,22 @@ export function mapGenHighlandThreshold(tier: DensityTier): number {
   const k = tierKey(tier);
   if (h && typeof h[k] === 'number') return h[k]!;
   return FALLBACK_HIGHLAND[tier];
+}
+
+/**
+ * Sufit gęstości reliefu per komórka fair-play (Panel-A JSON `gestosc.relief_overflow_cap_frac`,
+ * fallback w kodzie) — Maciej 2026-07-26, C-MAPA-Q2=B. Patrz FALLBACK_RELIEF_OVERFLOW_CAP.
+ */
+export function mapGenReliefOverflowCapFrac(tier: DensityTier): { mountain: number; highland: number } {
+  const fb = FALLBACK_RELIEF_OVERFLOW_CAP[tier];
+  const src = (raw as {
+    gestosc?: { relief_overflow_cap_frac?: Record<string, Partial<Record<'mountain' | 'highland', number>>> };
+  }).gestosc?.relief_overflow_cap_frac;
+  const row = src?.[tierKey(tier)];
+  if (!row) return { ...fb };
+  const mountain = typeof row.mountain === 'number' && row.mountain > 0 ? row.mountain : fb.mountain;
+  const highland = typeof row.highland === 'number' && row.highland > 0 ? row.highland : fb.highland;
+  return { mountain, highland };
 }
 
 /** Parametry pasm górskich (Panel-A JSON `gestosc.pasma_gorskie`, fallback w kodzie). */

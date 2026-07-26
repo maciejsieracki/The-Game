@@ -17,18 +17,42 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.map-gen-regression-entry.ts
-var map_gen_regression_entry_exports = {};
-__export(map_gen_regression_entry_exports, {
-  defaultCivTypesFromMapLabel: () => defaultCivTypesFromMapLabel,
-  defaultMiastaPanstwaFromMapLabel: () => defaultMiastaPanstwaFromMapLabel,
-  expectedStartCityCount: () => expectedStartCityCount,
-  generujSwiat: () => generujSwiat,
-  pathEndsAtSea: () => pathEndsAtSea,
-  pathReachesRealSea: () => pathReachesRealSea,
-  targetVillageHutCount: () => targetVillageHutCount
+// tools/.diag-ziemia-entry.ts
+var diag_ziemia_entry_exports = {};
+__export(diag_ziemia_entry_exports, {
+  Nakladka: () => Nakladka,
+  TerenBazowy: () => TerenBazowy,
+  depositGridCoverageRatio: () => depositGridCoverageRatio,
+  fairPlayResourceCellSize: () => fairPlayResourceCellSize,
+  generateMap: () => generateMap,
+  groupLandMassKeys: () => groupLandMassKeys,
+  landHexesByCoverageCell: () => landHexesByCoverageCell,
+  minLandHexesForFairPlayCell: () => minLandHexesForFairPlayCell
 });
-module.exports = __toCommonJS(map_gen_regression_entry_exports);
+module.exports = __toCommonJS(diag_ziemia_entry_exports);
+
+// src/types/hex.ts
+var TerenBazowy = /* @__PURE__ */ ((TerenBazowy3) => {
+  TerenBazowy3["Laka"] = "laka";
+  TerenBazowy3["Rownina"] = "rownina";
+  TerenBazowy3["Wzgorza"] = "wzgorza";
+  TerenBazowy3["Gory"] = "gory";
+  TerenBazowy3["Wybrzeze"] = "wybrzeze";
+  TerenBazowy3["Morze"] = "morze";
+  TerenBazowy3["Pustynia"] = "pustynia";
+  return TerenBazowy3;
+})(TerenBazowy || {});
+var Nakladka = /* @__PURE__ */ ((Nakladka3) => {
+  Nakladka3["Brak"] = "brak";
+  Nakladka3["Las"] = "las";
+  Nakladka3["ZlozeGliny"] = "zloze_gliny";
+  Nakladka3["ZlozeRudy"] = "zloze_rudy";
+  Nakladka3["ZlozeKonia"] = "zloze_konia";
+  Nakladka3["ZlozeOwiec"] = "zloze_owiec";
+  Nakladka3["ZlozeBydla"] = "zloze_bydla";
+  Nakladka3["ZlozeLamy"] = "zloze_lamy";
+  return Nakladka3;
+})(Nakladka || {});
 
 // data/map-gen-params.json
 var map_gen_params_default = {
@@ -5072,6 +5096,9 @@ function forceDepositInCell(land, hexes, id, rand) {
   const rule = depositRuleById(id);
   let spot = pickDepositForceHex(land, hexes, rule, rand);
   if (!spot) spot = pickDepositBootstrapHex(land, hexes, rule, rand);
+  if (process.env.DBG_DEPOSIT && land.length === 21) {
+    console.error("DBG forceDepositInCell", id, "land21 spot=", spot);
+  }
   if (!spot) return false;
   forceDepositOnHex(hexes[hexKey(spot[0], spot[1])], rule);
   return true;
@@ -5099,6 +5126,19 @@ function cellHasForest(cellLand, hexes) {
     if (hexes[hexKey(q, r)]?.nakladka === "las" /* Las */) return true;
   }
   return false;
+}
+function depositGridCoverageRatio(massLandKeys, hexes, cellSize, required = FAIR_PLAY_DEPOSIT_IDS) {
+  const massSet = new Set(massLandKeys);
+  const minLand = minLandHexesForFairPlayCell(cellSize);
+  let need = 0;
+  let hit = 0;
+  for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
+    if (land.length < minLand) continue;
+    need++;
+    const ok = required.every((id) => cellCarriesDepositType(land, hexes, id));
+    if (ok) hit++;
+  }
+  return need > 0 ? hit / need : 1;
 }
 function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, rand) {
   const cellSize = fairPlayResourceCellSize(tier);
@@ -5961,21 +6001,14 @@ function rozmiarToDims(rozmiar) {
 function menuLabelToDims(label) {
   return rozmiarToDims(rozmiarFromMenuLabel(label));
 }
-function generujSwiat(seed, rozmiar, typ = "kontynenty", genOpts, onProgress) {
-  const effectiveSeed = seed && seed !== 0 ? seed : (Date.now() ^ 3735928559) >>> 0 || 42;
-  const [w, h] = ROZMIAR_DIMS[rozmiar];
-  onProgress?.("Przygotowanie mapy", 5, 1, 6);
-  const map = generateMap(w, h, effectiveSeed, typ, genOpts);
-  onProgress?.("Pozycje startowe", 100, 6, 7);
-  return map;
-}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  defaultCivTypesFromMapLabel,
-  defaultMiastaPanstwaFromMapLabel,
-  expectedStartCityCount,
-  generujSwiat,
-  pathEndsAtSea,
-  pathReachesRealSea,
-  targetVillageHutCount
+  Nakladka,
+  TerenBazowy,
+  depositGridCoverageRatio,
+  fairPlayResourceCellSize,
+  generateMap,
+  groupLandMassKeys,
+  landHexesByCoverageCell,
+  minLandHexesForFairPlayCell
 });

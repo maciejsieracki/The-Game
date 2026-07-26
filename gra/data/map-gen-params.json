@@ -54,6 +54,12 @@
       "medium": { "mountain": 0.06, "highland": 0.11 },
       "high": { "mountain": 0.12, "highland": 0.18 }
     },
+    "relief_overflow_cap_frac": {
+      "_opis": "Decyzja właściciela C-MAPA-Q2=B (2026-07-26): sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZROŚCIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland ≈ docelowa górzystość lądu per tier suwaka 'Relief' w kreatorze: low≈8%, medium≈10% (0,04+0,06 — dobrane tak, by odpowiadać progom fair-play-grid-test.cjs: max(3, ceil(land·mountain)) Gór i max(3, ceil(land·highland)) Wzgórz na komórkę 25×25/15×15), high≈20%. To ŚWIADOMA REWIZJA decyzji 80A (19,3% górzystości) — właściciel uprzedzony, że 10% < 13,8% odrzucone wcześniej, i mimo to wybrał ten wariant, bo priorytetem jest przejście fair-play-grid-test bez naginania progów testu.",
+      "low": { "mountain": 0.03, "highland": 0.05 },
+      "medium": { "mountain": 0.04, "highland": 0.06 },
+      "high": { "mountain": 0.08, "highland": 0.12 }
+    },
     "pasma_gorskie": {
       "_opis": "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska gór/wzgórz (seed-and-grow), spięte z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): dłuższe/węższe łańcuchy (kordyliery) zamiast okrągłych plam — dlugosc_min/max w górę, max_pasm_na_mase w dół (mniej ale dłuższych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
       "low": { "hexy_na_pasmo": 320, "max_pasm_na_mase": 2, "dlugosc_min": 9, "dlugosc_max": 11, "min_masa_hexow": 40, "obrzeze_szansa": 0.30 },

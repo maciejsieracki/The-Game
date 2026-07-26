@@ -424,16 +424,24 @@ export function generateMap(
   // jeśli wypadł jako najsłabszy szum w sąsiedztwie istniejącego skupiska (zmierzone empirycznie:
   // cap-po-floor kasował dokładnie te heksy, które floor przed chwilą dołożył).
   //
-  // UWAGA (C-MAPA-Q1=B, audyt drugiej połowy zlecenia): próbowano DODATKOWO domknąć limit
-  // fair-play-grid-test.cjs per komórka (max Gór/Wzgórz na komórkę 25×25, patrz fair-play-grid-
-  // test.cjs) przez cap+regrow analogiczny do powyższego. Cofnięte — matematycznie sprzeczne
-  // z twardym wymogiem górzystości lądu ~19,3% (decyzja 80A, zakres 19,0-20,2%): limit fair-play
-  // (max(3,ceil(land*0.04)) Gór + max(3,ceil(land*0.06)) Wzgórz na komórkę 25×25) daje SUFIT
-  // ~10% gęstości reliefu na KAŻDEJ komórce — a skoro większość lądu dużego kontynentu to
-  // komórki blisko pełne (~625 heksów), globalna górzystość NIE MOŻE przekroczyć tego sufitu
-  // (zmierzone: wymuszenie limitu zbiło górzystość z ~19,3% do ~9,4-9,8% na 5 seedach). Te dwa
-  // wymagania się wykluczają — to jest opisane w raporcie zlecenia, nie naprawiać "przy okazji"
-  // bez decyzji właściciela.
+  // UWAGA (C-MAPA-Q1=B, audyt drugiej połowy zlecenia, 2026-07-26 popołudnie): próbowano
+  // DODATKOWO domknąć limit fair-play-grid-test.cjs per komórka (max Gór/Wzgórz na komórkę
+  // 25×25, patrz fair-play-grid-test.cjs) przez cap+regrow analogiczny do powyższego. WTEDY
+  // cofnięte — matematycznie sprzeczne z ówczesnym twardym wymogiem górzystości lądu ~19,3%
+  // (decyzja 80A, zakres 19,0-20,2%): limit fair-play (max(3,ceil(land*0.04)) Gór +
+  // max(3,ceil(land*0.06)) Wzgórz na komórkę 25×25) daje SUFIT ~10% gęstości reliefu na KAŻDEJ
+  // komórce — a skoro większość lądu dużego kontynentu to komórki blisko pełne (~625 heksów),
+  // globalna górzystość NIE MOŻE przekroczyć tego sufitu (zmierzone: wymuszenie limitu zbiło
+  // górzystość z ~19,3% do ~9,4-9,8% na 5 seedach).
+  //
+  // PONOWNIE WŁĄCZONE — Maciej 2026-07-26 (wieczór), C-MAPA-Q2=B: świadoma REWIZJA decyzji 80A.
+  // Właściciel obniżył docelową górzystość do ~10% (uprzedzony, że to mniej niż 13,8% odrzucone
+  // wcześniej), żeby fair-play-grid-test.cjs przechodził bez naginania progów testu. Sufit żyje
+  // teraz jako RELIEF_OVERFLOW_CAP_MULT=1 w gen-helpers.ts (frakcje z Panel-A
+  // `gestosc.relief_overflow_cap_frac`). Heksy ze złożem są chronione przed przycięciem
+  // (isDepositProtectedFromOverflowCap) — inaczej TEN sam sufit, wywołany ponownie niżej
+  // (linia „Ziemia — ostatnia szansa") PO placeDeposits/ensureDepositGridCoverage, kasowałby
+  // dopiero co wymuszone złoża fair-play na najsłabszym szumem heksie przepełnionej komórki.
   capReliefClusterSizeSafetyNet(hexes, terrainScratch);
   ensureReliefGridCoverage(
     hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
@@ -506,6 +514,14 @@ export function generateMap(
     ensureReliefGridCoverage(
       hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
     );
+    // C-MAPA-Q2=B (Maciej 2026-07-26, dociągnięcie): TEN SAM powód co floor reliefu wyżej —
+    // fragment lądu odcięty przez szablon Ziemi PO ensureDepositGridCoverage (linia ~464) może
+    // wypaść bez własnego pakietu żelazo/miedź/glina (fair-play-grid-test.cjs mierzy to na
+    // FINALNYCH masach, a maski/rozdrobnienie lądu dla 'ziemia' zamykają się dopiero tutaj).
+    // Powtórka jest tania i bezpieczna: forceDepositInCell pomija komórki, które już mają
+    // komplet (cellCarriesDepositType), więc nie zużywa rand() tam, gdzie nic się nie zmienia.
+    ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+    stripDepositsFromWater(hexes);
   }
 
   return {

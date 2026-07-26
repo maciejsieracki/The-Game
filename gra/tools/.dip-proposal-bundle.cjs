@@ -209,7 +209,12 @@ var diplomacy_default = {
     dobra_wola_po_wymianie: true,
     dobra_wola_tur: 3,
     dobra_wola_min_nadmiar_pn: 100,
-    dobra_wola_zaufanie_per_tura: 1
+    dobra_wola_zaufanie_per_tura: 1,
+    _opis_wiarygodnosc_limit: "Dzwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md \xA75, decyzja WIAR-9.5b=B, 2026-07-26): limit max_zaufanie_na_ture zaleny od Wiarygodnosci SPRAWCY daru/handlu (proposerId). Reputacja dodatnia (W>=0) NIE zmienia limitu (zostaje max_zaufanie_na_ture=5) \u2014 karzemy zla reputacje, nie nagradzamy dobrej. Pasmo Chwiejny (W<0, W>wiarygodnoscProgWiarolomny=-40): limit obnizony. Pasmo Wiarolomny gorne (-70<W<=-40): limit dalej obnizony. Dno (W<=-70): zakup Zaufania darem calkowicie zablokowany.",
+    wiarygodnosc_limit_zaufanie_chwiejny: 3,
+    wiarygodnosc_limit_zaufanie_wiarolomny: 1,
+    wiarygodnosc_limit_zaufanie_dno: 0,
+    wiarygodnosc_limit_prog_dno: -70
   },
   akcje_dyplomatyczne: [
     {
@@ -3932,11 +3937,13 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
+    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
   lodzie_rybackie: {
     nazwa: "\u0141odzie rybackie",
@@ -9623,8 +9630,8 @@ var buildings_default = [
     przyrostKosztu: 8,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "",
-    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    wymagania: "Dost\u0119p do Ceramiki w imperium (wybudowana Garncarnia gdziekolwiek w imperium ALBO zapas Ceramiki w puli pa\u0144stwa)",
+    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): pole 'wymagania' bylo puste, wiec gdy bramka Ceramika nie byla spelniona, budynek znikal z panelu bez zadnego komunikatu (eraBuildingCatalog nie sprawdzal tej bramki w ogole -- naprawione w production.ts, patrz komentarz R-BUD-SPICHLERZ-ZNIKA tamze). Tekst tu teraz zasila formatBuildingCatalogLockHint w cityPanel.ts.",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
       drewno: 8
@@ -9663,8 +9670,8 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 2,
     przyrostUtrzymania: 0,
-    wymagania: "upgrade ze Spichlerza I",
-    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    wymagania: "Upgrade ze Spichlerza I + dost\u0119p do Soli w imperium (w\u0142asne z\u0142o\u017Ce ALBO zapas Soli w puli pa\u0144stwa)",
+    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupe\u0142nione o bramk\u0119 Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     techUnlock: "Warzelnia soli",
     koszt_surowce: {
       drewno: 8,
@@ -11712,6 +11719,10 @@ var DEFAULT_DOBRA_WOLA_TUR = 3;
 var DEFAULT_PN_NA_ZAUFANIE = 100;
 var DEFAULT_MAX_ZAUFANIE_NA_TURE = 5;
 var DEFAULT_MIN_NADMIAR = 1;
+var DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY = 3;
+var DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY = 1;
+var DEFAULT_WIARYGODNOSC_LIMIT_DNO = 0;
+var DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO = -70;
 function loadPnRelacjaParams() {
   const block = diplomacy_default.pn_relacja ?? {};
   const maxNaTure = typeof block.max_zaufanie_na_ture === "number" && block.max_zaufanie_na_ture > 0 ? block.max_zaufanie_na_ture : typeof block.max_zaufanie_jednorazowo === "number" && block.max_zaufanie_jednorazowo > 0 ? block.max_zaufanie_jednorazowo : DEFAULT_MAX_ZAUFANIE_NA_TURE;
@@ -11722,7 +11733,11 @@ function loadPnRelacjaParams() {
     prog_dar_relacja: typeof block.prog_dar_relacja === "number" && block.prog_dar_relacja >= 0 ? block.prog_dar_relacja : DEFAULT_PROG_DAR_RELACJA,
     dobra_wola_min_nadmiar_pn: typeof block.dobra_wola_min_nadmiar_pn === "number" && block.dobra_wola_min_nadmiar_pn > 0 ? block.dobra_wola_min_nadmiar_pn : DEFAULT_DOBRA_WOLA_MIN_PN,
     dobra_wola_tur: typeof block.dobra_wola_tur === "number" && block.dobra_wola_tur > 0 ? block.dobra_wola_tur : DEFAULT_DOBRA_WOLA_TUR,
-    dobra_wola_zaufanie_per_tura: typeof block.dobra_wola_zaufanie_per_tura === "number" && block.dobra_wola_zaufanie_per_tura > 0 ? block.dobra_wola_zaufanie_per_tura : 1
+    dobra_wola_zaufanie_per_tura: typeof block.dobra_wola_zaufanie_per_tura === "number" && block.dobra_wola_zaufanie_per_tura > 0 ? block.dobra_wola_zaufanie_per_tura : 1,
+    wiarygodnosc_limit_zaufanie_chwiejny: typeof block.wiarygodnosc_limit_zaufanie_chwiejny === "number" && block.wiarygodnosc_limit_zaufanie_chwiejny >= 0 ? block.wiarygodnosc_limit_zaufanie_chwiejny : DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY,
+    wiarygodnosc_limit_zaufanie_wiarolomny: typeof block.wiarygodnosc_limit_zaufanie_wiarolomny === "number" && block.wiarygodnosc_limit_zaufanie_wiarolomny >= 0 ? block.wiarygodnosc_limit_zaufanie_wiarolomny : DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY,
+    wiarygodnosc_limit_zaufanie_dno: typeof block.wiarygodnosc_limit_zaufanie_dno === "number" && block.wiarygodnosc_limit_zaufanie_dno >= 0 ? block.wiarygodnosc_limit_zaufanie_dno : DEFAULT_WIARYGODNOSC_LIMIT_DNO,
+    wiarygodnosc_limit_prog_dno: typeof block.wiarygodnosc_limit_prog_dno === "number" ? block.wiarygodnosc_limit_prog_dno : DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO
   };
 }
 var _pnRelacja = loadPnRelacjaParams();

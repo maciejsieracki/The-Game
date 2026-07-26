@@ -18,6 +18,7 @@ import {
   mapGenMountainThreshold,
   mapGenHighlandThreshold,
   mapGenMountainRangeParams,
+  mapGenReliefOverflowCapFrac,
 } from '../data/map-gen-params-loader';
 import { riverGridTraceMinLen, type DensityTier } from './newGameMapDefaults';
 import { earthTemplateLandAt } from './earth-land-mask';
@@ -1274,14 +1275,19 @@ function reliefBonusCapHighland(tier: ReliefDensityTier, landCount: number): num
   return Math.max(0, Math.ceil(landCount * frac));
 }
 
-/** Anty-klaster w komórce żelaza (fair play — rozkład, nie jeden stos wzgórz). */
+/**
+ * Anty-klaster w komórce żelaza (fair play — rozkład, nie jeden stos wzgórz).
+ * Frakcja czytana z Panel-A (`gestosc.relief_overflow_cap_frac`, C-MAPA-Q2=B) — patrz
+ * mapGenReliefOverflowCapFrac. To TEN SAM sufit, który (po włączeniu przez
+ * RELIEF_OVERFLOW_CAP_MULT) egzekwuje docelową górzystość ~10% dla tieru medium.
+ */
 function reliefSpreadCapMountain(tier: ReliefDensityTier, landCount: number): number {
-  const frac = tier === 'high' ? 0.08 : tier === 'low' ? 0.03 : 0.04;
+  const frac = mapGenReliefOverflowCapFrac(tier).mountain;
   return Math.max(MIN_MOUNTAINS_IRON_CELL, Math.ceil(landCount * frac));
 }
 
 function reliefSpreadCapHighland(tier: ReliefDensityTier, landCount: number): number {
-  const frac = tier === 'high' ? 0.12 : tier === 'low' ? 0.05 : 0.06;
+  const frac = mapGenReliefOverflowCapFrac(tier).highland;
   return Math.max(MIN_HIGHLANDS_COPPER_CELL, Math.ceil(landCount * frac));
 }
 
@@ -1753,12 +1759,36 @@ function forceReliefInCell(
 
 /**
  * Zmiana 1 „MIN NIE MAX" (Maciej 2026-07-11): fair-play min. 2 Góry + 2 Wzgórza / komórkę
- * jest DOLNĄ granicą reliefu, nie górną. Górny limit (degradacja nadmiaru — najsłabsza
- * Góra→Wzgórza, Wzgórze→Równina) BYŁ sztuczną regularnością. Mnożnik = ∞ → cap wyłączony:
- * naturalny szum daje bogatszy, nieregularny relief (gwarancja minimum zostaje — force*InCell).
- * Miękki sufit (np. 3–5 × dawny cap) tylko gdy skan pokaże za dużo (>~40% lądu górzyste).
+ * jest DOLNĄ granicą reliefu, nie górną — górny limit (degradacja nadmiaru — najsłabsza
+ * Góra→Wzgórza, Wzgórze→Równina) był wtedy uznany za sztuczną regularność, więc mnożnik = ∞
+ * wyłączał cap (gwarancja minimum zostawała — force*InCell).
+ *
+ * PONOWNIE WŁĄCZONE — Maciej 2026-07-26, C-MAPA-Q2=B (świadoma rewizja 80A): sufit
+ * `reliefSpreadCapMountain`/`reliefSpreadCapHighland` (frakcje z `gestosc.relief_overflow_cap_frac`,
+ * ~0,04 Gór / ~0,06 Wzgórz na komórkę dla tieru medium — suma ≈10% górzystości lądu) egzekwowany
+ * mnożnikiem 1 (bez marginesu) PRZY ZASIEWANIU (ensureReliefGridCoverage wołane w generator.ts
+ * PRZED growMountainRanges) i PO ROZROŚCIE pasm (to samo wywołanie ponownie na finalnej
+ * geografii, PO growMountainRanges — patrz generator.ts). Właściciel został uprzedzony, że efekt
+ * (~10%) jest NIŻSZY niż 13,8% odrzucone wcześniej, i mimo to wybrał ten wariant, bo priorytetem
+ * jest przejście fair-play-grid-test.cjs bez naginania progów testu. Limit skupiska (decyzja 63,
+ * MAX_MOUNTAIN_RANGE_CLUSTER_SIZE=10) i floor 2/2 na komórkę (MIN_MOUNTAINS_IRON_CELL/
+ * MIN_HIGHLANDS_COPPER_CELL) zostają nienaruszone — te capy nigdy nie schodzą poniżej floora
+ * (patrz `Math.max(MIN_..._CELL, ...)` w capMountainOverflowInCell/capHighlandOverflowInCell).
  */
-const RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
+const RELIEF_OVERFLOW_CAP_MULT = 1;
+
+/**
+ * Heks ze złożem (zelazo/miedz/glina/... — cokolwiek forceDepositInCell/placeDeposits już
+ * postawiło) NIGDY nie jest kandydatem do przycięcia sufitem gęstości — inaczej trzeci,
+ * spóźniony przebieg domykania floora reliefu dla typu 'ziemia' (generator.ts, PO
+ * placeDeposits/ensureDepositGridCoverage, patrz „Ziemia — ostatnia szansa") kasowałby
+ * właśnie co dopiero wymuszone złoża fair-play, gdy trafiły na najsłabszy szumem heks w
+ * przepełnionej komórce. Zmierzone: bez tej ochrony aktywacja RELIEF_OVERFLOW_CAP_MULT=1
+ * zbijała pokrycie złóż „Standard Ziemia" z 50% do 25% (fair-play-grid-test.cjs).
+ */
+function isDepositProtectedFromOverflowCap(hex: Hex | undefined): boolean {
+  return !!hex && !!(hex as HexWithZloze).zloze;
+}
 
 function capMountainOverflowInCell(
   land: Array<[number, number]>,
@@ -1773,16 +1803,25 @@ function capMountainOverflowInCell(
   const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
   const mountains = land
     .filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === TerenBazowy.Gory)
-    .map(([q, r]) => ({ q, r, n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0 }))
+    .map(([q, r]) => ({
+      q, r,
+      n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0,
+      protected: isDepositProtectedFromOverflowCap(hexes[hexKey(q, r)]),
+    }))
     .sort((a, b) => a.n - b.n);
   let changed = false;
-  while (mountains.length > maxMtn && mountains.length > MIN_MOUNTAINS_IRON_CELL) {
-    const drop = mountains.shift()!;
-    const dropHex = hexes[hexKey(drop.q, drop.r)]!;
+  let total = mountains.length;
+  let i = 0;
+  while (total > maxMtn && total > MIN_MOUNTAINS_IRON_CELL && i < mountains.length) {
+    const cand = mountains[i]!;
+    if (cand.protected) { i++; continue; }
+    const dropHex = hexes[hexKey(cand.q, cand.r)]!;
     dropHex.terenBazowy = TerenBazowy.Wzgorza;
     dropHex.nakladka = Nakladka.Brak;
     delete (dropHex as HexWithZloze).zloze;
     changed = true;
+    total--;
+    mountains.splice(i, 1);
   }
   return changed;
 }
@@ -1794,23 +1833,31 @@ function capHighlandOverflowInCell(
   tier: ReliefDensityTier,
   spreadOnly = false,
 ): boolean {
-  // Zmiana 1 „MIN NIE MAX": górny limit Wzgórz wyłączony (RELIEF_OVERFLOW_CAP_MULT = ∞).
   const baseMaxHi = spreadOnly
     ? reliefSpreadCapHighland(tier, land.length)
     : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
   const maxHi = baseMaxHi * RELIEF_OVERFLOW_CAP_MULT;
   const highlands = land
     .filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === TerenBazowy.Wzgorza)
-    .map(([q, r]) => ({ q, r, n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0 }))
+    .map(([q, r]) => ({
+      q, r,
+      n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0,
+      protected: isDepositProtectedFromOverflowCap(hexes[hexKey(q, r)]),
+    }))
     .sort((a, b) => a.n - b.n);
   let changed = false;
-  while (highlands.length > maxHi && highlands.length > MIN_HIGHLANDS_COPPER_CELL) {
-    const drop = highlands.shift()!;
-    const dropHex = hexes[hexKey(drop.q, drop.r)]!;
+  let total = highlands.length;
+  let i = 0;
+  while (total > maxHi && total > MIN_HIGHLANDS_COPPER_CELL && i < highlands.length) {
+    const cand = highlands[i]!;
+    if (cand.protected) { i++; continue; }
+    const dropHex = hexes[hexKey(cand.q, cand.r)]!;
     dropHex.terenBazowy = TerenBazowy.Rownina;
     dropHex.nakladka = Nakladka.Brak;
     delete (dropHex as HexWithZloze).zloze;
     changed = true;
+    total--;
+    highlands.splice(i, 1);
   }
   return changed;
 }
@@ -2105,7 +2152,13 @@ function capMountainRangeClusterSize(
         if (na !== nb) return na - nb; // najsłabszy szum najpierw
         return a < b ? -1 : a > b ? 1 : 0; // remis: deterministyczny klucz
       });
-      const victim = sorted[0]!;
+      // Pomijamy heksy ze złożem (isDepositProtectedFromOverflowCap) — ten sam powód co przy
+      // sufitcie gęstości (patrz komentarz tam): to wywołanie (capReliefClusterSizeSafetyNet)
+      // leci też PO placeDeposits/ensureDepositGridCoverage („Ziemia — ostatnia szansa",
+      // generator.ts), więc bez ochrony kasowałoby dopiero co wymuszone złoża fair-play, jeśli
+      // trafiły na najsłabszy szumem heks przepełnionego skupiska.
+      const victim = sorted.find((k) => !isDepositProtectedFromOverflowCap(hexes[k]));
+      if (!victim) break; // wszystkie kandydatki mają złoże — zostawiamy nadmiar (rzadkie)
       remaining.delete(victim);
       const hex = hexes[victim];
       if (hex) {

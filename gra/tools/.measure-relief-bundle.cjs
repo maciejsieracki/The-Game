@@ -17,18 +17,25 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.map-gen-regression-entry.ts
-var map_gen_regression_entry_exports = {};
-__export(map_gen_regression_entry_exports, {
-  defaultCivTypesFromMapLabel: () => defaultCivTypesFromMapLabel,
-  defaultMiastaPanstwaFromMapLabel: () => defaultMiastaPanstwaFromMapLabel,
-  expectedStartCityCount: () => expectedStartCityCount,
-  generujSwiat: () => generujSwiat,
-  pathEndsAtSea: () => pathEndsAtSea,
-  pathReachesRealSea: () => pathReachesRealSea,
-  targetVillageHutCount: () => targetVillageHutCount
+// tools/.measure-relief-entry.ts
+var measure_relief_entry_exports = {};
+__export(measure_relief_entry_exports, {
+  TerenBazowy: () => TerenBazowy,
+  generateMap: () => generateMap
 });
-module.exports = __toCommonJS(map_gen_regression_entry_exports);
+module.exports = __toCommonJS(measure_relief_entry_exports);
+
+// src/types/hex.ts
+var TerenBazowy = /* @__PURE__ */ ((TerenBazowy3) => {
+  TerenBazowy3["Laka"] = "laka";
+  TerenBazowy3["Rownina"] = "rownina";
+  TerenBazowy3["Wzgorza"] = "wzgorza";
+  TerenBazowy3["Gory"] = "gory";
+  TerenBazowy3["Wybrzeze"] = "wybrzeze";
+  TerenBazowy3["Morze"] = "morze";
+  TerenBazowy3["Pustynia"] = "pustynia";
+  return TerenBazowy3;
+})(TerenBazowy || {});
 
 // data/map-gen-params.json
 var map_gen_params_default = {
@@ -5961,21 +5968,8 @@ function rozmiarToDims(rozmiar) {
 function menuLabelToDims(label) {
   return rozmiarToDims(rozmiarFromMenuLabel(label));
 }
-function generujSwiat(seed, rozmiar, typ = "kontynenty", genOpts, onProgress) {
-  const effectiveSeed = seed && seed !== 0 ? seed : (Date.now() ^ 3735928559) >>> 0 || 42;
-  const [w, h] = ROZMIAR_DIMS[rozmiar];
-  onProgress?.("Przygotowanie mapy", 5, 1, 6);
-  const map = generateMap(w, h, effectiveSeed, typ, genOpts);
-  onProgress?.("Pozycje startowe", 100, 6, 7);
-  return map;
-}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  defaultCivTypesFromMapLabel,
-  defaultMiastaPanstwaFromMapLabel,
-  expectedStartCityCount,
-  generujSwiat,
-  pathEndsAtSea,
-  pathReachesRealSea,
-  targetVillageHutCount
+  TerenBazowy,
+  generateMap
 });

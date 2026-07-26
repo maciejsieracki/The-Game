@@ -224,11 +224,13 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
+    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
   lodzie_rybackie: {
     nazwa: "\u0141odzie rybackie",
@@ -6949,6 +6951,12 @@ var map_gen_params_default = {
       medium: { mountain: 0.06, highland: 0.11 },
       high: { mountain: 0.12, highland: 0.18 }
     },
+    relief_overflow_cap_frac: {
+      _opis: "Decyzja w\u0142a\u015Bciciela C-MAPA-Q2=B (2026-07-26): sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief' w kreatorze: low\u22488%, medium\u224810% (0,04+0,06 \u2014 dobrane tak, by odpowiada\u0107 progom fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224820%. To \u015AWIADOMA REWIZJA decyzji 80A (19,3% g\xF3rzysto\u015Bci) \u2014 w\u0142a\u015Bciciel uprzedzony, \u017Ce 10% < 13,8% odrzucone wcze\u015Bniej, i mimo to wybra\u0142 ten wariant, bo priorytetem jest przej\u015Bcie fair-play-grid-test bez naginania prog\xF3w testu.",
+      low: { mountain: 0.03, highland: 0.05 },
+      medium: { mountain: 0.04, highland: 0.06 },
+      high: { mountain: 0.08, highland: 0.12 }
+    },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
       low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
@@ -7177,7 +7185,6 @@ var RIVER_SCALE_BY_SIZE = {
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
-var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,
