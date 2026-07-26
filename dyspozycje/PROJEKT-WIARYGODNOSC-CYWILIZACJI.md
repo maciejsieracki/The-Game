@@ -796,3 +796,48 @@ Modal potwierdzenia i karencja 1 tury dotyczą **każdego** wypowiedzenia wojny 
 
 ### Skutek dla reszty tabeli
 Maksymalna pojedyncza kara to teraz **−35** (sojusznik + brak ostrzeżenia). Pozostałe wagi (N3…N7, P1…P5) BEZ ZMIAN — hierarchia zachowana, bo N4 (odmowa pomocy sojusznikowi) = −10 pozostaje poniżej złamania sojuszu wojną.
+
+---
+
+## 🔷 N3–N7 — ZATWIERDZONE Z DOPRECYZOWANIAMI (Maciej 2026-07-26)
+
+### ⭐ ZASADA NADRZĘDNA: ŻADNEJ KARY BEZ UPRZEDZENIA
+Wyłoniona z uwag Macieja do N1 i N7, obowiązuje **CAŁY mechanizm**:
+> Gracz nie może stracić Wiarygodności za czyn, o którego konsekwencji nie został uprzedzony PRZED jego wykonaniem.
+
+Maciej (N7): *„trzeba do gry wprowadzić ostrzeżenie, że wchodzisz na cudze terytorium — czy na pewno chcesz. Bo w tej chwili gra tego nie robi. **Gracz nie będzie wiedział, za co traci zaufanie i wiarygodność.**"*
+
+Konsekwencja dla wykonawcy: **każde zdarzenie karzące, które gracz wywołuje świadomym kliknięciem, musi mieć modal/ostrzeżenie z jawnym kosztem.** Kary naliczane pasywnie (np. N6 — niedostarczony handel) muszą mieć czytelny komunikat w momencie naliczenia. Wdrożenie kary BEZ ostrzeżenia = niepełne wdrożenie.
+
+### N3 — atak zaraz po pokoju: **ZATWIERDZONE bez zmian** (−12 dodatkowo, próg <10 tur)
+
+### N4 — odmowa pomocy sojusznikowi na wezwanie: **ZATWIERDZONE** (−10)
+Przypomnienie: to realna luka w istniejącym kodzie — gra dziś wykrywa, kto się nie stawił (`treatiesBrokenByRefusal`), zrywa sojusz, ale **nie nakłada żadnej kary**.
+
+### N5 — dobrowolne zerwanie traktatu: **WARUNKOWE** ⚠️ ZMIANA
+Maciej: *„przy założeniu, że to ten traktat był CZASOWY. Jeżeli był zwykłym, to nie ma żadnej kary."*
+
+| Rodzaj traktatu | Kara przy zerwaniu |
+|---|---|
+| **Czasowy** (zawarty na określoną liczbę tur) | **−6** (traktat) / **−4** (umowa handlowa) |
+| **Zwykły/bezterminowy** | **BRAK KARY** |
+
+Uzasadnienie: zobowiązanie na czas określony to obietnica z terminem — zerwanie przed czasem łamie słowo. Umowa bezterminowa jest z natury wypowiadalna.
+⚠️ **DO SPRAWDZENIA PRZY IMPLEMENTACJI:** czy `ActiveDeal` (`diplomacy-treaties.ts:39-50`) rozróżnia traktaty czasowe od bezterminowych. Jest tam `zawartaTura`; trzeba ustalić, czy istnieje pole z długością/terminem wygaśnięcia. Jeśli WSZYSTKIE traktaty są dziś czasowe — kara obowiązuje zawsze i warunek jest bezprzedmiotowy (odnotować). Jeśli NIE MA rozróżnienia — zgłosić Maciejowi przed wdrożeniem.
+
+### N6 — niedotrzymanie handlu cyklicznego: **ZATWIERDZONE** (−2 po 3 turach z rzędu)
+⚠️ **ALE Maciej zgłasza do weryfikacji zachowanie samej wymiany:**
+> *„Zakładam, że jeżeli mamy handel cykliczny i jedna z cywilizacji nie ma surowca, to po prostu wymiana się nie dokonuje — a nie że jedni dostają, a drudzy nie dostają."*
+
+Czyli wymiana ma być **SYMETRYCZNA**: brak surowca u jednej strony = transakcja nie dochodzi do skutku **w obie strony**. Niedopuszczalne, żeby jedna strona dostała towar/zapłatę, a druga nie.
+→ Zlecona osobna weryfikacja w kodzie (`tickCyclicResourceTradeDeals`, main.ts ~8595-8627). Jeśli dziś jest asymetria — to BUG do naprawy niezależnie od Wiarygodności.
+
+### N7 — nieautoryzowany przemarsz: **ZATWIERDZONE + WYMÓG OSTRZEŻENIA** (−2 jednorazowo)
+Maciej: gra **musi ostrzec** przed wejściem na cudze terytorium.
+Docelowo: przy próbie ruchu jednostki na heks obcego terytorium bez otwartych granic/prawa przemarszu → **modal potwierdzenia** z jawnym kosztem („wejście bez zgody: −Zaufanie co turę, −2 Wiarygodności").
+Opcje: „Wejdź mimo to" / „Anuluj". Rozważyć opcję „nie pytaj ponownie w tej turze/wizycie", żeby nie irytować przy dłuższym marszu — ale koszt musi być pokazany przynajmniej raz.
+⚠️ To ostrzeżenie ma wartość SAMO W SOBIE — dziś gracz traci zaufanie, nie wiedząc dlaczego. Może powstać przed Wiarygodnością.
+
+### Podsumowanie statusu tabeli kar
+N1 ✅ (−10, przemianowane) · N2 ✅ (rozbite: NAP −18 / sojusz −25) · N3 ✅ (−12) · N4 ✅ (−10) · N5 ✅ **warunkowo — tylko traktaty czasowe** · N6 ✅ (−2) **+ weryfikacja symetrii wymiany** · N7 ✅ (−2) **+ wymóg ostrzeżenia**
+**Strona pozytywna P1–P5 — jeszcze nieprzejrzana przez Macieja.**
