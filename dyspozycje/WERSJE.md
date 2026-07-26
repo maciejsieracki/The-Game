@@ -11,7 +11,48 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `290a962b` — 2026-07-26 14:27 · FALA 16: PLAYTEST MACIEJA (10 napraw) — **AKTUALNA**
+## ROBOCZA `17ca0a4f` — 2026-07-26 16:24 · FALA 17: DECYZJE ABC + PARYTET AI — **AKTUALNA**
+- md5 (pelne): `17ca0a4f3ed09a2daf955667a17cf4a1` · stempel: `ROBOCZA · f9125052 · 2026-07-26 16:24`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- Zbudowane z czystego HEAD `3c17ce5` w osobnym worktree — praca nad generatorem map
+  (nowa kolejnosc krokow) trwa i **NIE** weszla do tego bundla.
+- **Co weszlo:**
+  - **Stol negocjacyjny dyplomacji** (C-DYP-Q1=A) — propozycja nie jest juz rozstrzygana
+    natychmiast, laduje na stole; AI odpowiada w swojej turze i moze zlozyc kontroferte
+    (limit 3 rundy, waznosc 5 tur). Nowa kolumna „Oczekujace propozycje" w audiencji.
+  - **Teren przy obronie miasta tylko z murem** (C-COMBAT-Q2) — miasto bez muru na wzgorzu
+    ma 0% bonusu; przy okazji teren i budynki obronne SUMUJA sie w punktach procentowych,
+    a nie mnoza (komplet na wzgorzu: 450%, bylo 675%).
+  - **Bonus murow wylacznie do Obrony** we wszystkich trzech trybach walki (C-COMBAT-Q1);
+    „Pomin" w ogole nie stosowalo murow.
+  - **Weterani w bitwie „Auto"** — premia byla ignorowana w kazdym starciu AI-vs-AI
+    i przy kazdym kliknieciu „Auto"; przyczyna byl cache fieldPower z eksportu danych.
+  - **Teren w bitwie, trzy etapy** (C-TEREN-Q1=A) — Gory +75% Obrony, Delta Zasiegu
+    (Las -1, Wzgorza +1 pola), konnica: Las x2 kosztu, Gory niedostepne.
+  - **Glod armii** (C-GLOD-Q1=A, C-GLOD-Q2=B) — karencja 3 tury z odliczaniem w HUD,
+    zuzycie x1,0 na wlasnym terytorium i x2,0 poza nim, atrycja dziala teraz TAKZE dla AI
+    (dotad wylacznie dla gracza — AI mialo darmowa armie).
+  - **Ufortyfikowana jednostka zjada polowe zywnosci** — parametr istnial od zawsze
+    i byl martwy (flaga camping zahardkodowana na false).
+  - **Realna fortyfikacja w polu, takze podczas oblezenia** — zeruje ruch, nie przerywa
+    oblezenia, daje +2 pkt Obrony (ozywiony fortify_obrona_bonus). Dotad „Ufortyfikuj"
+    poza wlasnym miastem zuzywalo ruch i nie robilo nic.
+  - **Parytet AI** (C-AI-SUWAKI=A) — AI rusza suwakami zywnosci/Handlu/Pracy (dotad ani
+    razu, przez cala partie), kara za wojne nalicza sie miastom AI (dotad tylko graczowi).
+  - **Garnizon** (C-GARN-Q1=A + rozszerzenie) — jednostka ufortyfikowana byla PERMANENTNIE
+    niesterowalna; trzy drogi wyjscia, w tym rozkaz ruchu z listy armii zdejmujacy
+    fortyfikacje automatycznie.
+  - **Odznaki weterana na zetonach** (decyzja 57) — zlote gwiazdki, 2 dla +10%, 3 dla +20%.
+  - **Budynki** — 54a Baszta wymaga Murow, 54b Akwedukt wymaga Studni, Targowisko wg
+    PYTANIE 20=A (Pieniadz 3->5 pkt, przyrost 2->3 pkt, martwy mnoznik skasowany).
+  - **Wersja 0.9** takze na ekranie Nowej Gry (drugie, pominiete miejsce z „v0.1").
+- **Bramki:** tsc 0 · logic 208/208 · ai 239/239 · combat 6/6 · battle-roster 7/7 ·
+  weterani 55/55 · glod-wojska-karencja 39/39 · fortify-pole 25/25 · garnizon-exit 11/11 ·
+  city-defense-terrain-gate 31/31 · structure-defense-bonus 8/8 · teren-walki-etapy 26/26 ·
+  diplomacy-negotiation-table 39/39 · ai-slider 37/37 · war-happiness-parity 18/18 ·
+  prereq-budynkow 59/59 · administracja-stolica 48/48 · happiness-breakdown 38/38.
+
+## ROBOCZA `290a962b` — 2026-07-26 14:27 · FALA 16: PLAYTEST MACIEJA (10 napraw) — **ZASTĄPIONA**
 - md5 (pelne): `290a962b077588ecbbaa1820fc470ae8` · stempel: `ROBOCZA · 69644b2d · 2026-07-26 14:27`
 - **VERIFY OK.** Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - Zbudowane z **czystego HEAD `6be1355`** w osobnym worktree — w drzewie roboczym trwaly

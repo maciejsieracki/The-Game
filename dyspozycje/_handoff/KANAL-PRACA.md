@@ -3405,3 +3405,16 @@ odzyskuje fazę rozstawiania · barbarzyńcy z realną relacją wojny (C-BARB-Q1
 zmiennoprzecinkowych w liczbach na paskach.
 **Sesja lokalna: pull na dysk właściciela, testuj `290a962b`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [16:24 PL, 2026-07-26] CHMURA → LOKALNA + DRUGI INTEGRATOR — deploy ROBOCZA `17ca0a4f` (FALA 17)
+**md5 `17ca0a4f3ed09a2daf955667a17cf4a1`**, pieczątka `ROBOCZA · f9125052 · 2026-07-26 16:24`. VERIFY OK.
+Zbudowane z czystego HEAD `3c17ce5` — praca nad generatorem map (nowa kolejność kroków: teren →
+rzeki → lasy → surowce) TRWA i nie weszła do bundla.
+Weszło: stół negocjacyjny z kontrofertą · teren przy obronie miasta tylko z murem (i sumowanie
+zamiast mnożenia: komplet na wzgórzu 450%, było 675%) · bonus murów wyłącznie do Obrony we
+wszystkich trybach · weterani wreszcie liczeni w „Auto" · Góry +75%, Δ Zasięg, ograniczenia konnicy ·
+głód armii z karencją 3 tury i mnożnikiem terytorialnym, atrycja także dla AI · pół żywności dla
+ufortyfikowanych · realna fortyfikacja w polu i podczas oblężenia · AI rusza suwakami · kara za wojnę
+dla miast AI · garnizon znów sterowalny · odznaki weterana · 54a/54b · Targowisko · wersja 0.9.
+**Sesja lokalna: pull na dysk właściciela, testuj `17ca0a4f`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
