@@ -165,34 +165,36 @@ console.log('\n-- C. Targowisko -> Pieniadz (decyzja 67B: dzieli sie suwakiem, n
   const cbs = M.cityBuildingEntriesFromBuiltIds(['targowisko'], buildings, era, []);
   const yld = M.cityYieldPerTurn(city, worked4, cbs, params, ctxFlat);
 
+  // PYTANIE 20=A (Maciej 2026-07-26): baza.pieniadz 3 -> 5 (dawny przyrost.mnoznik=3
+  // byl martwy, przeniesiony tu). Liczby nizej przeliczone na nowa wartosc.
   const rawPieniadzBudynku = M.buildingValue(r, level, 'pieniadz');
-  eq(rawPieniadzBudynku, 3, 'sanity: Targowisko poziom 1 daje baza.pieniadz = 3 Pieniadza/ture (buildings.json)');
+  eq(rawPieniadzBudynku, 5, 'sanity: Targowisko poziom 1 daje baza.pieniadz = 5 Pieniadza/ture (buildings.json, PYTANIE 20=A)');
 
   // Pole SUROWE (przed podzialem/mnoznikami, do UI/debug) -- to nadal 1:1 z
   // buildingValue, niezalezne od suwaka -- patrz komentarz CityYieldResult.pieniadzBudynkow.
   eq(yld.pieniadzBudynkow, rawPieniadzBudynku,
-    'Targowisko: pole SUROWE pieniadzBudynkow = buildingValue = 3 (raportowane niezaleznie od podzialu suwakiem)');
+    'Targowisko: pole SUROWE pieniadzBudynkow = buildingValue = 5 (raportowane niezaleznie od podzialu suwakiem)');
 
-  // Pole FINALNE `pieniadz` juz NIE rosnie o cala wartosc budynku (3) -- rachunek
+  // Pole FINALNE `pieniadz` juz NIE rosnie o cala wartosc budynku (5) -- rachunek
   // reczny (ctxFlat: brak premii Targowiska/Waluty/Mennicy/korupcji, WYLACZNIE
   // podzial suwakiem 70/20/10 Pieniadz/Nauka/Luksus):
   //   handelBazowy (bez budynku) = handelTerenu(4) + pieniadzZPracy(0) + 0            = 4
-  //   handelBazowy (z budynkiem) = handelTerenu(4) + pieniadzZPracy(0) + budynek(3)   = 7
+  //   handelBazowy (z budynkiem) = handelTerenu(4) + pieniadzZPracy(0) + budynek(5)   = 9
   //   pieniadzZHandlu (bez) = floor(4 * 0.70) = floor(2.8) = 2  (yldNone.pieniadz)
-  //   pieniadzZHandlu (z)   = floor(7 * 0.70) = floor(4.9) = 4
-  //   delta = 4 - 2 = 2   (NIE 3 -- 30% Pieniadza budynku "idzie" do Nauki/Luksusu
-  //   przez suwak, dokladnie jak reszta Daniny; NIE jest to prosta proporcja 0.7*3=2.1
+  //   pieniadzZHandlu (z)   = floor(9 * 0.70) = floor(6.3) = 6
+  //   delta = 6 - 2 = 4   (NIE 5 -- 30% Pieniadza budynku "idzie" do Nauki/Luksusu
+  //   przez suwak, dokladnie jak reszta Daniny; NIE jest to prosta proporcja 0.7*5=3.5
   //   bo floor() dziala na SUMIE polaczonej z Danina terenowa, nie osobno na budynku)
   const actualDelta = yld.pieniadz - yldNone.pieniadz;
-  eq(actualDelta, 2,
-    'Targowisko: delta finalnego Pieniadza = 2 (NIE surowe 3) -- decyzja 67B: Pieniadz budynku dzieli sie suwakiem 70/20/10 z reszta Daniny, nie trafia 1:1 do skarbca');
+  eq(actualDelta, 4,
+    'Targowisko: delta finalnego Pieniadza = 4 (NIE surowe 5) -- decyzja 67B: Pieniadz budynku dzieli sie suwakiem 70/20/10 z reszta Daniny, nie trafia 1:1 do skarbca');
 
   // Dowod, ze reszta NIE zniknela -- wzrosla tez Nauka (20% suwaka), bo budynek
   // wszedl do WSPOLNEJ puli Daniny: naukaZHandlu(bez)=floor(4*0.20)=0,
-  // naukaZHandlu(z)=floor(7*0.20)=1 -- delta=+1 Nauki z tego samego budynku.
+  // naukaZHandlu(z)=floor(9*0.20)=1 -- delta=+1 Nauki z tego samego budynku.
   const deltaNauka = yld.nauka - yldNone.nauka;
   eq(deltaNauka, 1,
-    'Targowisko: delta Nauki = +1 (floor(7*0.20)-floor(4*0.20)=1-0) -- czesc Pieniadza budynku trafia teraz tez do Nauki przez suwak, dowod ze idzie do wspolnej puli');
+    'Targowisko: delta Nauki = +1 (floor(9*0.20)-floor(4*0.20)=1-0) -- czesc Pieniadza budynku trafia teraz tez do Nauki przez suwak, dowod ze idzie do wspolnej puli');
 }
 
 // ---------------------------------------------------------------------------

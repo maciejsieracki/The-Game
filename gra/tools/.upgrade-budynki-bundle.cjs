@@ -659,7 +659,11 @@ var CITY_BUILDING_PREREQ = {
   swiatynia: "kamienne_kregi",
   // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
   // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
-  mennica: "targowisko"
+  mennica: "targowisko",
+  // DECYZJA 54a (Maciej 2026-07-25): Baszta wymaga Murów w tym samym mieście.
+  baszta: "mury",
+  // DECYZJA 54b (Maciej 2026-07-25): Akwedukt wymaga Studni w tym samym mieście.
+  akwedukt: "studnia"
 };
 function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
   if (!prereq) return true;

@@ -13,9 +13,15 @@
  *   Cytadela +bonus_obrona_cytadela_proc%  -- dodatkowo, gdy budynek 'fort' obecny
  *   Baszta   +bonus_obrona_baszta_proc%    -- dodatkowo, gdy budynek 'baszta' obecny
  *
- * Miasto z Murami+Cytadela+Baszta = 200+100+100 = 400%. Miasto z SAMA Baszta
- * (bez Murow/Cytadeli -- Baszta nie ma wymogu budowy innej budowli obronnej,
- * patrz buildings.json "baszta".wymagania) dostaje WYLACZNIE swoj wlasny
+ * Miasto z Murami+Cytadela+Baszta = 200+100+100 = 400%. DECYZJA 54a (Maciej
+ * 2026-07-25): Baszta wymaga wybudowanych Murow W TYM SAMYM MIESCIE, zanim da
+ * sie ja postawic -- prerekwyzyt KOLEJNOSCI BUDOWY, egzekwowany w
+ * CITY_BUILDING_PREREQ (building-resource-gate.ts) / production.ts, NIE w tej
+ * funkcji. Ta funkcja liczy WYLACZNIE bonus procentowy z budynkow juz stojacych
+ * w miescie -- skoro Baszta nie moglaby dzis stac bez Murow, kombinacja "sama
+ * Baszta bez Murow" jest juz nieosiagalna przez budowanie, ale funkcja zostaje
+ * odporna na stare zapisy (patrz `builtBuildingIds` nizej): gdyby w danych
+ * zapisu Baszta byla obecna bez Murow, dostaje WYLACZNIE swoj wlasny
  * bonus_obrona_baszta_proc (baza "mur" NIE aktywuje sie bez realnych Murow lub
  * Cytadeli -- inaczej Baszta bylaby "tanszym Murem", co nie bylo intencja).
  *

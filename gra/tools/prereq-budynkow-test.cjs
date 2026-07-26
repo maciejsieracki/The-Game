@@ -69,8 +69,9 @@ function buildIds(techs, ctxOverrides) {
 }
 
 // ===========================================================================
-// 1. CITY_BUILDING_PREREQ ma dokładnie siedem wpisów: dwa istniejące (nietknięte)
-//    + cztery z REGRESJA-KOLEJNOSC + jeden nowy (ZLOTO 2026-07-25: mennica -> targowisko).
+// 1. CITY_BUILDING_PREREQ ma dokładnie dziewięć wpisów: dwa istniejące (nietknięte)
+//    + cztery z REGRESJA-KOLEJNOSC + jeden ZLOTO (2026-07-25: mennica -> targowisko)
+//    + dwa nowe DECYZJE 54a/54b (2026-07-25: baszta -> mury, akwedukt -> studnia).
 // ===========================================================================
 {
   const p = M.CITY_BUILDING_PREREQ;
@@ -83,7 +84,9 @@ function buildIds(techs, ctxOverrides) {
   ok(p.akademia_wojskowa === 'koszary', `akademia_wojskowa: 'koszary' (ma: ${JSON.stringify(p.akademia_wojskowa)})`);
   ok(p.swiatynia === 'kamienne_kregi', `swiatynia: 'kamienne_kregi' (ma: ${JSON.stringify(p.swiatynia)})`);
   ok(p.mennica === 'targowisko', `mennica: 'targowisko' (ma: ${JSON.stringify(p.mennica)})`);
-  ok(Object.keys(p).length === 7, `CITY_BUILDING_PREREQ ma dokładnie 7 wpisów (ma: ${Object.keys(p).length})`);
+  ok(p.baszta === 'mury', `baszta: 'mury' (DECYZJA 54a) (ma: ${JSON.stringify(p.baszta)})`);
+  ok(p.akwedukt === 'studnia', `akwedukt: 'studnia' (DECYZJA 54b) (ma: ${JSON.stringify(p.akwedukt)})`);
+  ok(Object.keys(p).length === 9, `CITY_BUILDING_PREREQ ma dokładnie 9 wpisów (ma: ${Object.keys(p).length})`);
 }
 
 // ===========================================================================
@@ -118,6 +121,26 @@ function buildIds(techs, ctxOverrides) {
   ok(!buildIds(techs, { epoch: 3 }).includes('fort'), 'Cytadela NIEDOSTĘPNA bez Murów w mieście');
   ok(buildIds(techs, { epoch: 3, builtBuildingIds: ['mury'] }).includes('fort'),
     'Cytadela DOSTĘPNA z Murami w mieście');
+}
+
+// ===========================================================================
+// 3b. DECYZJA 54a: Baszta niedostępna bez Murów, dostępna z Murami.
+// ===========================================================================
+{
+  const techs = ['Inżynieria'];
+  ok(!buildIds(techs, { epoch: 3 }).includes('baszta'), 'Baszta NIEDOSTĘPNA bez Murów w mieście');
+  ok(buildIds(techs, { epoch: 3, builtBuildingIds: ['mury'] }).includes('baszta'),
+    'Baszta DOSTĘPNA z Murami w mieście');
+}
+
+// ===========================================================================
+// 3c. DECYZJA 54b: Akwedukt niedostępny bez Studni, dostępny ze Studnią.
+// ===========================================================================
+{
+  const techs = ['Budownictwo'];
+  ok(!buildIds(techs, { epoch: 2 }).includes('akwedukt'), 'Akwedukt NIEDOSTĘPNY bez Studni w mieście');
+  ok(buildIds(techs, { epoch: 2, builtBuildingIds: ['studnia'] }).includes('akwedukt'),
+    'Akwedukt DOSTĘPNY ze Studnią w mieście');
 }
 
 // ===========================================================================
@@ -206,6 +229,8 @@ function buildIds(techs, ctxOverrides) {
     ['swiatynia', 2, ['Religia'], [], 'kamienne_kregi', 'Kamienne kręgi'],
     ['warsztat_oblezniczy', 3, ['Oblężnictwo'], [], null, 'Koszary'],
     ['laznia_publiczna', 3, ['Medycyna'], [], 'studnia', 'Studnia'],
+    ['baszta', 3, ['Inżynieria'], [], 'mury', 'Mury'],
+    ['akwedukt', 2, ['Budownictwo'], [], 'studnia', 'Studnia'],
   ];
   for (const [id, epoch, techs, built, prereqId, prereqLabel] of cases) {
     const locked = catalogEntry(id, epoch, techs, built);
@@ -234,8 +259,15 @@ function buildIds(techs, ctxOverrides) {
   ok(JSON.stringify(idsPlayer) === JSON.stringify(idsAi),
     `Parytet AI: identyczna lista budynków dla ownerId=0 i ownerId=7 (gracz: ${JSON.stringify(idsPlayer)}, AI: ${JSON.stringify(idsAi)})`);
   ok(idsPlayer.includes('akademia') && idsPlayer.includes('fort')
-    && idsPlayer.includes('akademia_wojskowa') && idsPlayer.includes('swiatynia'),
-    'Parytet AI: ze wszystkimi poprzednikami wybudowanymi, wszystkie 4 następniki dostępne dla obu');
+    && idsPlayer.includes('akademia_wojskowa') && idsPlayer.includes('swiatynia')
+    && idsPlayer.includes('baszta'),
+    'Parytet AI: ze wszystkimi poprzednikami wybudowanymi (w tym Mury dla Baszty -- DECYZJA 54a), wszystkie 5 następników dostępne dla obu');
+
+  // DECYZJA 54b: Akwedukt (epoka 2) dostępny identycznie dla gracza i AI ze Studnią w mieście.
+  const idsPlayerAkw = buildIds(['Budownictwo'], { epoch: 2, builtBuildingIds: ['studnia'], ownerId: 0 });
+  const idsAiAkw = buildIds(['Budownictwo'], { epoch: 2, builtBuildingIds: ['studnia'], ownerId: 7 });
+  ok(idsPlayerAkw.includes('akwedukt') && idsAiAkw.includes('akwedukt'),
+    'Parytet AI: Akwedukt dostępny identycznie dla gracza i AI ze Studnią w mieście (DECYZJA 54b)');
 
   // I odwrotnie -- bez poprzedników, obaj tak samo zablokowani.
   const idsPlayerLocked = buildIds(techs, { epoch: 3, builtBuildingIds: [], ownerId: 0 });

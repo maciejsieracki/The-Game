@@ -90,6 +90,15 @@ const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>
  * wcześniejszy musi być wybudowany, żeby wybudować kolejny", dla WSZYSTKICH par z dawnym
  * awansem bocznym. Stąd cztery dopiski niżej (semantyka OR nie ma tu znaczenia — pojedynczy
  * id — ale funkcja i tak akceptuje tablicę, gdyby kiedyś przybył drugi wariant poprzednika).
+ *
+ * DECYZJE 54a/54b (Maciej 2026-07-25): Baszta wymaga Murów, Akwedukt wymaga Studni — oba W TYM
+ * SAMYM MIEŚCIE. Dograne tym samym mechanizmem (nie osobna ścieżka) — patrz `baszta`/`akwedukt`
+ * niżej. Baszta jest budynkiem obronnym NIEZALEŻNYM od Cytadeli (city-defense.ts) — ten
+ * prerekwyzyt dotyczy WYŁĄCZNIE kolejności budowy, NIE bonusu procentowego Obrony (Baszta nadal
+ * daje własny +bonus_obrona_baszta_proc niezależnie od tego, czy Mury/Cytadela aktywują bazę
+ * "mur" — patrz city-defense.ts). `akwedukt: 'studnia'` jest DODANY OBOK `laznia_publiczna:
+ * 'studnia'` (nie zamiast) — to dwa różne budynki z tym samym wymogiem terenowym Studni w tym
+ * samym mieście, nie pomyłka.
  */
 export const CITY_BUILDING_PREREQ: Readonly<Record<string, string | readonly string[]>> = {
   warsztat_oblezniczy: ['koszary', 'akademia_wojskowa'],
@@ -101,6 +110,10 @@ export const CITY_BUILDING_PREREQ: Readonly<Record<string, string | readonly str
   // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
   // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
   mennica: 'targowisko',
+  // DECYZJA 54a (Maciej 2026-07-25): Baszta wymaga Murów w tym samym mieście.
+  baszta: 'mury',
+  // DECYZJA 54b (Maciej 2026-07-25): Akwedukt wymaga Studni w tym samym mieście.
+  akwedukt: 'studnia',
 };
 
 /**
