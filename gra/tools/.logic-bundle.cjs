@@ -1633,12 +1633,23 @@ function reapplyLandTerrain(hexes, scratch, seed, thresholds, mapHeight, reliefT
   reliefCandidates.sort((a, b) => b.n - a.n);
   const budgetFrac = REAPPLY_RELIEF_BUDGET_FRAC[reliefTier];
   const budget = Math.floor(landCount * budgetFrac);
+  const budgetGuard = buildFairPlayCellBudget(hexes, reliefTier);
   for (let i = 0; i < Math.min(budget, reliefCandidates.length); i++) {
     const c = reliefCandidates[i];
     const hex = hexes[c.key];
     if (!hex) continue;
-    hex.terenBazowy = c.want;
-    hex.nakladka = "brak" /* Brak */;
+    const { q, r } = parseHexKey(c.key);
+    if (c.want === "gory" /* Gory */) {
+      if (!budgetGuard.canPlaceMtn(q, r)) continue;
+      hex.terenBazowy = c.want;
+      hex.nakladka = "brak" /* Brak */;
+      budgetGuard.markPlacedMtn(q, r);
+    } else {
+      if (!budgetGuard.canPlaceHi(q, r)) continue;
+      hex.terenBazowy = c.want;
+      hex.nakladka = "brak" /* Brak */;
+      budgetGuard.markPlacedHi(q, r);
+    }
   }
 }
 var FALLBACK_RELIEF_FRAC = {
@@ -2769,6 +2780,107 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
     MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
   );
   return addedByThisRun.length;
+}
+function capFairPlayCellDensity(hexes, scratch, tier) {
+  var _a9, _b3;
+  const cellSize = fairPlayResourceCellSize(tier);
+  const massIdxOf = /* @__PURE__ */ new Map();
+  groupLandMassKeys(hexes).forEach((mass, idx) => {
+    for (const k of mass) massIdxOf.set(k, idx);
+  });
+  const cellKeyOf = (key, q, r) => `${massIdxOf.get(key) ?? -1}:${Math.floor(q / cellSize)},${Math.floor(r / cellSize)}`;
+  const cellLandCount = /* @__PURE__ */ new Map();
+  const cellMtn = /* @__PURE__ */ new Map();
+  const cellHi = /* @__PURE__ */ new Map();
+  for (const key of Object.keys(hexes)) {
+    const hex = hexes[key];
+    if (!hex || hex.terenBazowy === "morze" /* Morze */) continue;
+    const { q, r } = parseHexKey(key);
+    const ck = cellKeyOf(key, q, r);
+    cellLandCount.set(ck, (cellLandCount.get(ck) ?? 0) + 1);
+    if (hex.terenBazowy === "gory" /* Gory */) {
+      const arr = cellMtn.get(ck) ?? [];
+      arr.push({ k: key, n: ((_a9 = scratch.get(key)) == null ? void 0 : _a9.mtnNoise) ?? 0 });
+      cellMtn.set(ck, arr);
+    } else if (hex.terenBazowy === "wzgorza" /* Wzgorza */) {
+      const arr = cellHi.get(ck) ?? [];
+      arr.push({ k: key, n: ((_b3 = scratch.get(key)) == null ? void 0 : _b3.mtnNoise) ?? 0 });
+      cellHi.set(ck, arr);
+    }
+  }
+  const copperCellSize = copperCoverageCellSize(tier);
+  const copperCellOf = (key, q, r) => `${massIdxOf.get(key) ?? -1}:${Math.floor(q / copperCellSize)},${Math.floor(r / copperCellSize)}`;
+  const copperCellCount = /* @__PURE__ */ new Map();
+  for (const arr of cellHi.values()) {
+    for (const item of arr) {
+      const { q, r } = parseHexKey(item.k);
+      const cck = copperCellOf(item.k, q, r);
+      copperCellCount.set(cck, (copperCellCount.get(cck) ?? 0) + 1);
+    }
+  }
+  let reverted = 0;
+  const trim = (arr, cap, protectFloor) => {
+    if (arr.length <= cap) return;
+    const sorted = [...arr].sort((a, b) => a.n - b.n);
+    let need = arr.length - cap;
+    for (const item of sorted) {
+      if (need <= 0) break;
+      if (protectFloor == null ? void 0 : protectFloor(item.k)) continue;
+      const hex = hexes[item.k];
+      if (!hex) continue;
+      hex.terenBazowy = "rownina" /* Rownina */;
+      hex.nakladka = "brak" /* Brak */;
+      delete hex.zloze;
+      reverted++;
+      need--;
+      if (protectFloor) {
+        const { q, r } = parseHexKey(item.k);
+        const cck = copperCellOf(item.k, q, r);
+        copperCellCount.set(cck, (copperCellCount.get(cck) ?? 0) - 1);
+      }
+    }
+  };
+  for (const [ck, arr] of cellMtn) {
+    trim(arr, Math.max(3, Math.ceil((cellLandCount.get(ck) ?? 0) * 0.04)));
+  }
+  for (const [ck, arr] of cellHi) {
+    trim(
+      arr,
+      Math.max(3, Math.ceil((cellLandCount.get(ck) ?? 0) * 0.06)),
+      (k) => {
+        const { q, r } = parseHexKey(k);
+        const cck = copperCellOf(k, q, r);
+        return (copperCellCount.get(cck) ?? 0) <= MIN_HIGHLANDS_COPPER_CELL;
+      }
+    );
+  }
+  return reverted;
+}
+function finalizeFairPlayReliefDensity(hexes, scratch, tier, width, height, rand) {
+  const reverted = capFairPlayCellDensity(hexes, scratch, tier);
+  if (reverted > 0) {
+    const mtnTh = mapGenMountainThreshold(tier);
+    const hiTh = mapGenHighlandThreshold(tier);
+    const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 8);
+    const budget = buildFairPlayCellBudget(hexes, tier);
+    regrowLostMountainClusters(
+      hexes,
+      scratch,
+      width,
+      height,
+      rand,
+      masses,
+      mtnTh,
+      hiTh,
+      reverted,
+      budget.canPlaceMtn,
+      budget.canPlaceHi,
+      budget.markPlacedMtn,
+      budget.markPlacedHi
+    );
+    capReliefClusterSizeSafetyNet(hexes, scratch);
+  }
+  return reverted;
 }
 function assignContinentIndices(width, height, centers) {
   const map = /* @__PURE__ */ new Map();
@@ -6604,6 +6716,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     nZones,
     rand
   );
+  finalizeFairPlayReliefDensity(hexes, terrainScratch, reliefTier, width, height, rand);
   reapplyForestOverlay(hexes, terrainScratch, terrainTh, typ, forestTier, zoneOf, nZones, height);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
@@ -6644,6 +6757,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
       nZones,
       rand
     );
+    finalizeFairPlayReliefDensity(hexes, terrainScratch, reliefTier, width, height, rand);
   }
   return {
     szerokoscQ: width,
