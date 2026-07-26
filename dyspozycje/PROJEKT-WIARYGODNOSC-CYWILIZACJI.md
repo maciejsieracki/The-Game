@@ -1023,3 +1023,448 @@ cyklicznego) — nie zakładać, że zniknięcie jest automatyczne bez potwierdz
 C-HANDEL-1/2/3 ZATWIERDZONE do realizacji WSPÓLNIE z wdrożeniem Wiarygodności (Etap 1, hak N6+P3, §7
 wyżej — `main.ts:8595-8627`, `tickCyclicResourceTradeDeals`). Naprawa atomowości handlu cyklicznego i
 podłączenie kar/nagród Wiarygodności to JEDEN przebieg przez ten sam kod, nie dwa osobne.
+
+---
+
+## 🔴 MODEL ZAPOMINANIA (KRZYWA WIARYGODNOŚCI) — DECYZJA OSTATECZNA PO DWÓCH KOREKTACH TEGO SAMEGO DNIA (Maciej 2026-07-26) — NADRZĘDNA wobec §5 i sekcji „DRYF / ZAPOMINANIE KAR"
+
+⚠️ **Ta decyzja zmieniała się trzykrotnie w ciągu jednej sesji z Maciejem** (czasy zapomnienia, a potem
+sam kształt krzywej — czy gaśnie do zera czy zostawia trwały ślad). Poniżej pełna ścieżka cytatów w
+kolejności chronologicznej, ale **licz się WYŁĄCZNIE z sekcją „MODEL FINALNY DO IMPLEMENTACJI" niżej** —
+wcześniejsze warianty zostają w dokumencie jako ślad decyzji, nie jako obowiązująca specyfikacja.
+
+**Cytat 1 (pierwotna decyzja, krzywa liniowa per zdarzenie):**
+> „C-WIAR-KRZYWA A, ale różnie w zależności od poziomu trudności. Na przykład przy poziomie trudnym może
+> być 40 tur zapomnienia, przy normalnym 30, a przy łatwym 20 tur. I tak spada o procent od wartości
+> pierwotnej, zmniejszając daną karę do zera. Za to przy pozytywnych kwestiach wszędzie zeruje się to do
+> zera po 40 turach dla łatwego poziomu, po 30 dla normalnego i po 20 dla trudnego. Czyli niestety
+> zarówno pozytywne, jak i negatywne czynności ulegają zapomnieniu. Tak działa świat."
+
+**Cytat 2 (korekta C-WIAR-TEMPO — czasy ×3):**
+> „C-WIAR-TEMPO — wiesz co? Dotychczasowe moje współczynniki zmieńmy na inne. 40/80/120 zamiast
+> 20/30/40."
+
+**Cytat 3 (korekta ostateczna — krzywa NIE gaśnie do zera, tylko do trwałej podłogi 10%):**
+> „Wiesz co, myślę sobie, że jednak powinniśmy wrócić do tego śladu i 10% kary na plus i na minus
+> powinno zostawać w historii na zawsze."
+
+---
+
+### MODEL FINALNY DO IMPLEMENTACJI
+
+**C-WIAR-KRZYWA = A** — każde zdarzenie Wiarygodności (kara N1–N7 albo nagroda P1–P5, patrz §3) gaśnie
+**NIEZALEŻNIE od pozostałych**, własnym licznikiem tur, LINIOWO, jako procent swojej wartości pierwotnej
+— ale **NIE do zera**. Krzywa zatrzymuje się na **trwałej podłodze 10% wartości pierwotnej, która
+zostaje NA ZAWSZE, do końca partii**. To zastępuje model „jedna liczba + dryf do bazy" z §5 i sekcji
+„DRYF / ZAPOMINANIE KAR" wyżej — Wiarygodność przestaje być pojedynczym stanem, staje się **sumą:
+wartości startowej + trwałych śladów wszystkich przeszłych zdarzeń + jeszcze wygasających części
+zdarzeń świeższych**.
+
+### TABELA CZASÓW ZAPOMNIENIA — wersja OSTATECZNA (40/80/120, było 20/30/40) — odwrócenie kara↔nagroda BEZ ZMIAN
+
+| Poziom trudności | Kary (zdarzenia negatywne) | Nagrody (zdarzenia pozytywne) |
+|---|---|---|
+| **Łatwy** | **40 tur** (2,5%/turę) | **120 tur** (0,833%/turę) |
+| **Normalny** | **80 tur** (1,25%/turę) | **80 tur** (1,25%/turę) |
+| **Trudny** | **120 tur** (0,833%/turę) | **40 tur** (2,5%/turę) |
+
+⚠️ Wcześniejsza tabela 20/30/40 (widoczna wyżej w tym dokumencie, jeśli ktoś czyta wersję pośrednią z
+historii) **jest NIEAKTUALNA** — Maciej trzykrotnie wydłużył czasy (C-WIAR-TEMPO). Procenty/turę policzone
+jako `100% / liczbaTur` (np. 100/40 = 2,5%, 100/80 = 1,25%, 100/120 ≈ 0,833%) — to tempo, z jakim
+multiplikator schodzi od 100% do podłogi 10% (patrz wzór niżej), nie tempo schodzenia do zera.
+
+**Sens odwrócenia (uzasadnienie Macieja, BEZ ZMIAN mimo zmiany skali czasów) — poziom trudności to
+charakter świata, nie tylko liczba:**
+- **Trudny** = świat surowy i niewdzięczny: zdradę pamięta **120 tur**, przysługę zapomina po **40**.
+- **Łatwy** = świat wybaczający i wdzięczny: zdradę zapomina po **40 turach**, dobro pamięta **120**.
+- **Normalny** = symetryczny (80/80) — brak stronniczości w żadną stronę.
+
+**Uwaga projektowa (czemu ×3, nie kosmetyka):** przy tej skali Wiarygodność **waży przez WIĘKSZOŚĆ
+partii, nie jest epizodem** — pojedyncza zdrada sojusznika na trudnym poziomie ciąży świeżą częścią
+kary przez **120 tur**, a nawet po wygaśnięciu zostawia trwały ślad na zawsze (patrz niżej). To świadomy
+wybór Macieja — wcześniejsze 40 tur (maksimum starej tabeli) uznał za zbyt krótkie dla wagi, jaką ma mieć
+ta statystyka.
+
+### Wzór finalny — podłoga 10%, NIE zero
+
+```
+wartośćBieżąca(zdarzenie, tura) =
+    zdarzenie.wartośćPierwotna
+    × max(0,10 ; 1 − (tura − zdarzenie.turaWystąpienia) / czasZapomnienia(zdarzenie.znak, poziomTrudności))
+
+Wiarygodność(właściciel, tura) = wartośćStartowa(poziomTrudności)
+                                  + Σ wartośćBieżąca(zdarzenie, tura)  dla WSZYSTKICH zdarzeń tego
+                                                                          właściciela (nawet dawno
+                                                                          wygasłych do podłogi)
+```
+
+Mnożnik `max(0,10 ; …)` nigdy nie schodzi poniżej 0,10 — po `tura − turaWystąpienia ≥ czasZapomnienia`
+zdarzenie **NIE znika**, tylko zamraża się na 10% swojej pierwotnej wartości i zostaje tam do końca
+partii. Dla UI/koncepcji ten sam wynik można rozbić na dwie sumy (matematycznie równoważne wzorowi
+wyżej, ale czytelniejsze dla gracza — patrz punkt UI niżej):
+
+```
+Wiarygodność = wartośćStartowa
+             + Σ trwałySlad(zdarzenie)      // = 0,10 × wartośćPierwotna, LICZONE OD RAZU PO
+                                             //   OSIĄGNIĘCIU PODŁOGI, NA ZAWSZE
+             + Σ aktywnaCzęść(zdarzenie, tura)  // pozostała, jeszcze wygasająca część (0–90% ponad ślad)
+```
+
+### Przykłady (z wag §3, waga = wartość pierwotna zdarzenia)
+
+| Zdarzenie | Wartość świeża | Trwały ślad po wygaśnięciu |
+|---|---|---|
+| Zdrada sojusznika / złamanie paktu wojną — sojusz (N2) | −25 | **−2,5 na zawsze** |
+| Wypowiedzenie wojny bez ostrzeżenia (N1) | −10 | **−1 na zawsze** |
+| Odmowa pomocy sojusznikowi (N4, C-WIAR-N4=B) | −15 | **−1,5 na zawsze** |
+| Dotrwanie sojuszu do końca (P1) | +8 | **+0,8 na zawsze** |
+| Pomoc sojusznikowi w wojnie (P5) | +6 | **+0,6 na zawsze** |
+
+### ⚠️ ZMIANA WOBEC WCZEŚNIEJSZYCH ZAPISÓW W TYM DOKUMENCIE — jawne anulowanie (stan OSTATECZNY)
+
+1. **„Dryf działa TYLKO W GÓRĘ" (sekcja „DRYF / ZAPOMINANIE KAR" wyżej, pkt 1: „zapominane są KARY;
+   wypracowana reputacja powyżej bazy NIE zanika, dobre czyny się nie przedawniają") — JEST ANULOWANE.**
+   Nagrody gasną tak samo jak kary (aż do podłogi 10%, nie niżej) — asymetria jest wyłącznie w CZASIE
+   zapomnienia (tabela wyżej), nie w tym, CZY coś w ogóle ulega zapomnieniu. Bez zmian względem
+   pierwszej wersji tej decyzji.
+2. **BLIZNA — historia decyzji w ramach JEDNEJ sesji, DWA zwroty:**
+   - Najpierw uznano: skoro zdarzenia gasną do zera, oryginalna blizna z WIAR-Q2=C (§5/§8 — trwałe
+     obniżenie SUFITU po N1/N2, zamrożenie regeneracji na 20 tur) staje się bezprzedmiotowa →
+     robocze rozstrzygnięcie „C-WIAR-BLIZNA = A, blizna znika" — i Maciej to WPROST potwierdził.
+   - Potem Maciej to **odwrócił** (Cytat 3): blizna WRACA, ale w **nowej, jednolitej postaci**, inaczej
+     zbudowanej niż oryginalna z WIAR-Q2=C — nie jako obniżenie sufitu tylko dla N1/N2, tylko jako
+     **trwały ślad 10% KAŻDEGO zdarzenia, kary i nagrody jednakowo, wbudowany wprost we wzór krzywej**
+     (nie osobny licznik/mechanizm nałożony NA krzywą, jak w oryginale).
+   - **Rozstrzygnięcie ostateczne: C-WIAR-BLIZNA — ani A, ani żadna z pierwotnych opcji A/B/C z
+     WIAR-Q2 dosłownie.** Nowy, czwarty wariant: podłoga 10% w samym wzorze krzywej zapominania, opisana
+     wyżej. Historyczne zapisy (§5 „PO ZDARZENIU N1/N2: licznikBlizny = max(...,20)", tabela WIAR-Q2 w
+     sekcji „DECYZJE MACIEJA (2026-07-25)", i wcześniejsza wersja TEJ sekcji z „C-WIAR-BLIZNA=A") **zostają
+     w dokumencie jako ślad historii decyzji, NIE obowiązują wykonawcy** — traktować jako nieaktualne.
+3. **Wcześniejsza propozycja tempa dryfu w punktach na turę (+1,0 / +0,4 / +0,2 pkt/turę, sekcja
+   „DRYF / ZAPOMINANIE KAR" wyżej) JEST ZASTĄPIONA** tabelą czasów zapomnienia wyżej (40/80/120). Nie ma
+   już jednego globalnego tempa dryfu — jest czas zapomnienia PER ZDARZENIE, zależny od jego znaku i
+   poziomu trudności, ORAZ trwały ślad 10% po wygaśnięciu.
+
+### KONSEKWENCJA — stan spoczynku Wiarygodności PRZESTAJE być samą wartością startową
+
+To jest sedno ostatniej korekty. We wcześniejszej wersji tej decyzji (model „do zera") stan spoczynku po
+wygaśnięciu wszystkich zdarzeń wracał dokładnie do wartości startowej poziomu trudności. **Teraz to
+nieprawda** — skoro każde zdarzenie zostawia trwały ślad 10%, naturalnym poziomem po długiej grze jest:
+
+```
+wartośćStartowa(poziomTrudności) + suma WSZYSTKICH trwałych śladów nagromadzonych przez całą partię
+```
+
+Reputacja **przestaje być w pełni odzyskiwalna** — życiorys cywilizacji (dobry i zły) trwale przesuwa jej
+punkt równowagi, nawet gdy chwilowe („świeże") zdarzenia już dawno wygasły do podłogi.
+
+---
+
+### WYMAGANIA IMPLEMENTACYJNE (wersja finalna)
+
+1. **Model danych: LISTA zdarzeń per właściciel, nie jedna liczba.** Zastępuje prosty
+   `wiarygodnoscByOwner: Map<number, number>` z planu Etapu 0 (§7) strukturą typu
+   `wiarygodnoscZdarzeniaByOwner: Map<number, CredibilityEventRecord[]>`, gdzie
+   `CredibilityEventRecord = { typ: CredibilityEvent; wartoscPierwotna: number; turaWystapienia: number;
+   znak: 'kara' | 'nagroda' }`. Bieżąca Wiarygodność to funkcja WYLICZANA z listy (wzór wyżej), nie
+   osobno trzymane pole — inaczej dwa źródła prawdy mogą się rozjechać.
+2. **Wartość bieżąca = wartość pierwotna × max(0,10 ; 1 − minęłoTur/czasZapomnienia).** Mnożnik nigdy nie
+   schodzi poniżej 0,10 — to samo w sobie realizuje trwały ślad, bez osobnego mechanizmu „blizny" nałożonego
+   na wynik. Działa identycznie dla kar (wartość pierwotna ujemna) i nagród (dodatnia), bo znak niesie
+   sama `wartośćPierwotna`.
+3. **Zdarzenia NIE są usuwane z listy po osiągnięciu podłogi** — w przeciwieństwie do poprzedniej wersji
+   tego wymogu (sprzątanie po wygaśnięciu). Zdarzenie na podłodze 10% zostaje aktywnym, trwałym wkładem do
+   sumy do końca partii.
+4. **Decyzja implementacyjna DO PODJĘCIA PRZEZ WYKONAWCĘ (Maciej nie rozstrzygnął, tylko zlecił
+   zanotowanie):** czy po osiągnięciu podłogi 10% zdarzenie zostaje w PEŁNEJ liście (prostsze, ale lista
+   rośnie bez końca przez całą partię — potencjalnie setki wpisów w długiej grze) czy jest
+   **konsolidowane** do jednej sumy `trwałySladSumaByOwner: Map<number, number>` per właściciel (lepsza
+   wydajność i mniejszy save), z osobnym zachowaniem rozbicia „co się na to złożyło" WYŁĄCZNIE jeśli UI
+   (punkt 7 niżej) ma to pokazywać w rejestrze czynników. Obie opcje są poprawne matematycznie — różnica
+   jest czysto inżynierska (pamięć/wydajność vs szczegółowość UI).
+5. **Czas zapomnienia = dwa osobne parametry** (nie jeden): funkcja znaku zdarzenia (kara/nagroda) ORAZ
+   poziomu trudności — 6 wartości (3 poziomy × 2 znaki): 40/80/120 wg tabeli wyżej.
+6. **Wartości procentowe/czasy/podłoga 10% = parametry strojeniowe w danych, NIE stałe w kodzie.**
+   Kandydat: `DIPLOMACY_PARAMS` w `gra/src/game/diplomacy.ts` (tam już żyją inne wagi/progi dyplomacji,
+   §3 wyżej) — albo osobna sekcja w `gra/data/diplomacy.json`, jeśli integrator Excela (Panel-D, §7
+   Etap 0) ma je docelowo stroić z panelu. Do ustalenia przy implementacji które z dwóch miejsc.
+7. **Save/load — lista zdarzeń (lub lista + skonsolidowana suma śladów, wg punktu 4) MUSI wejść do
+   zapisu gry**, analogicznie do wzorca `aiSkarbiecByOwner` (§7 Etap 3, `main.ts:13268-13332` snapshot /
+   `main.ts:17308-17328` restore) — bez tego po wczytaniu gry Wiarygodność „skacze". To ZASTĘPUJE zapis
+   `wiarygodnoscBlizna` z pierwotnego planu §7 Etap 0/3 — w jej miejsce wchodzi serializacja listy
+   zdarzeń (i/lub sumy trwałych śladów) per `ownerId`. **Rozmiar save rośnie z długością partii** —
+   konsekwencja punktu 3/4, do uwzględnienia przy testach wydajności.
+8. **Parytet AI — identycznie dla gracza i AI, kod ownerId-agnostyczny.** Funkcja wyliczająca wartość
+   bieżącą i sumę nie zna `ownerId` (czysta funkcja nad listą + numerem bieżącej tury) — `ownerId` służy
+   wyłącznie do wyboru, do której listy w mapie sięgnąć. Zgodne z zasadą parytetu z §6.
+9. **UI — REKOMENDACJA MOCNA (podniesiona z „opcjonalne V2" na „silnie zalecane"), bo teraz ma realne
+   uzasadnienie mechaniczne:** skoro Wiarygodność już NIGDY w pełni nie wraca do wartości startowej,
+   gracz musi rozumieć DLACZEGO — bez tego „mimo dobrego zachowania pasek się nie rusza" wygląda jak
+   błąd, nie jak zamierzona mechanika. Pokazać rozbicie: **„trwały życiorys" (suma śladów 10%, na stałe)
+   vs „bieżące uczynki" (świeże, jeszcze wygasające zdarzenia)** — np. *„zdrada sojusznika: −2,5 na
+   stałe (dawne zdarzenie, w pełni wygasłe) + jeszcze aktywna kara −6,2 z −25, wygasa za 34 tury"*.
+   Naturalne rozszerzenie rekomendacji „Rejestr czynników (opcjonalnie, V2)" z §7 Etap 4 — planowany
+   `CredibilityLogEntry[]` to dokładnie ta sama lista zdarzeń.
+
+### ⚠️ Otwarte pytania / ryzyka przy tym modelu — DO POTWIERDZENIA PRZEZ MACIEJA, NIE rozstrzygnięte tutaj
+
+- **Kumulacja trwałych śladów bez limitu.** 10 zdrad sojusznika × (−2,5 trwałego śladu) = −25 na stałe;
+  40 takich zdrad = −100, czyli DNO całej skali wyłącznie ze śladów, bez żadnego aktywnego świeżego
+  zdarzenia. Czy to zamierzone (seryjny zdrajca ma TRWALE zrujnowaną reputację do końca partii — zgodne
+  z duchem „historia zostaje na zawsze") czy jednak potrzebny górny/dolny limit na SUMĘ trwałych śladów,
+  żeby jedna bardzo długa/agresywna partia nie „wypłaszczyła" skali do skrajności na stałe? **Pytanie do
+  Macieja, nierozstrzygnięte.**
+- **Twarde klamrowanie sumy końcowej do −100…+100 — TERAZ OBOWIĄZKOWE, nie tylko rekomendacja.** Skoro
+  trwałe ślady kumulują się bez naturalnej górnej granicy przez całą partię, `Wiarygodność(właściciel,
+  tura)` MUSI być klamrowana do zakresu skali (sekcja „ZMIANA SKALI" wyżej) na etapie WYŚWIETLANIA i
+  WSZĘDZIE tam, gdzie liczba wchodzi do wzorów §4 (mnożniki tempa, progi blokujące) — inaczej przy
+  długiej partii z wieloma zdarzeniami wartość może realnie uciec poza −100…+100 i zepsuć wzory, które
+  zakładają ten zakres.
+- **Długość partii a dominacja śladów nad bieżącym zachowaniem.** Przy bardzo długiej grze suma trwałych
+  śladów może z czasem przeważyć nad wartością startową i bieżącymi (świeżymi) zdarzeniami — gracz o
+  długiej, ale w większości dobrej historii z pojedynczym poważnym potknięciem może utknąć bliżej środka
+  skali niż intuicja by podpowiadała. Odnotowane jako obserwacja do sprawdzenia w playteście, NIE do
+  rozstrzygania teraz.
+- **Ten model wymaga przepisania planu Etapu 0 (§7)** — funkcje `applyCredibilityEvent`/
+  `tickCredibility` zaprojektowane pod wcześniejsze wersje (jedna liczba + blizna, potem lista gasnąca
+  do zera) nie pasują wprost do modelu z trwałą podłogą 10%; wykonawca powinien zaktualizować §7 PRZED
+  napisaniem kodu rdzenia, nie w trakcie.
+- **Relacja z „pierwszym kontaktem" (§ „CZTERY DŹWIGNIE WPŁYWU NA ZAUFANIE", pkt 4 wyżej)** — nowo
+  spotkana cywilizacja ma zobaczyć aktualną (wyliczoną z listy, WŁĄCZNIE z trwałymi śladami) Wiarygodność
+  gracza — mechanika się nie zmienia, ale warto to jednym zdaniem potwierdzić przy implementacji.
+- **Zmiana poziomu trudności w trakcie partii (jeśli w ogóle możliwa w tej grze)** — nieodnotowana jako
+  obsługiwana funkcja; jeśli nie istnieje, temat jest bezprzedmiotowy. Odnotowane wyłącznie dla
+  kompletności, NIE do rozwiązywania teraz.
+
+---
+
+## 🔄 Przebudowa: Wiarygodność → Zaufanie per turę (2026-07-26)
+
+> „Jeżeli jakaś cywilizacja ma wiarygodność na poziomie 10, to zaufanie powinno rosnąć o 1 co każdą turę
+> z daną cywilizacją, którą ona spotka. Jeżeli ma 50, to o 5 co każdą turę. A jeżeli ma −10, to powinno
+> spadać o 1 co każdą turę. Jak ma −50, to o 5 co każdą turę. Więc jeżeli ktoś ma dobrą wiarygodność, to
+> systematycznie rośnie zaufanie; jeżeli ma słabą wiarygodność, to systematycznie z wszystkimi
+> cywilizacjami spada."
+
+### Wzór
+
+**ΔZaufanie na turę = Wiarygodność / 10**, naliczane jednocześnie z KAŻDĄ poznaną cywilizacją.
+
+| Wiarygodność | ΔZaufanie/turę |
+|---|---|
+| +10 | +1 |
+| +50 | +5 |
+| +100 | +10 |
+| −10 | −1 |
+| −50 | −5 |
+| −100 | −10 |
+
+### ⚠️ ANULOWANIE Dźwigni 1 (mnożnik tempa)
+
+Ten mechanizm **ZASTĘPUJE** wcześniejszą Dźwignię 1 opisaną w §4.1 i w sekcji „CZTERY DŹWIGNIE WPŁYWU NA
+ZAUFANIE" wyżej — mnożnik tempa:
+
+```
+wzrostMult(W) = 1 + (W/100)×0,5
+spadekMult(W) = 1 − (W/100)×0,5
+```
+
+(dawniej też pod postacią `mnoznikWzrostu/mnoznikSpadku = clamp(0.5 ± W/100, 0.5, 1.5)` z pierwszej wersji
+§4.1) **jest niniejszym ANULOWANY.** Wiarygodność nie ma już mnożyć delty Zaufania — ma ją **bezpośrednio
+zwiększać/zmniejszać** co turę, niezależnie od pozostałych składników `dZ`. Dźwignie 2 (wpływ na sufit
+Zaufania), 3 (twarde progi) i 4 (pierwszy kontakt) z tej samej sekcji **nie są tym ruszane** — dotyczy to
+WYŁĄCZNIE Dźwigni 1. Czy dźwignie 2–4 mają zostać w mocy razem z nowym strumieniem, potwierdza Maciej
+(patrz „Ryzyka i pytania otwarte" niżej).
+
+---
+
+### Wyniki weryfikacji w kodzie
+
+**1. Istniejące per-turowe składniki Zaufania w `tickDiplomacy` i kolizja z nowym strumieniem**
+
+`tickDiplomacy` (`game/diplomacy.ts:1403-1452`) sumuje `dZ` z kilku niezależnych źródeł, sterowanych
+flagami `TickCtx` ustawianymi przez wywołującego w `main.ts`:
+
+```ts
+// game/diplomacy.ts:1406-1420
+let dZ = 0;
+if (ctx.aktywnyHandel)        dZ += p.handel_zaufanie_perTura;        // +1
+switch (peaceTier) {
+  case 'sojusz': dZ += p.sojusz_zaufanie_perTura; break;               // +3
+  case 'nap':    dZ += p.nap_zaufanie_perTura; break;                  // +2
+  case 'pokoj':  dZ += p.pokoj_zaufanie_perTura; break;                // +1
+}
+if (ctx.dobraWolaAktywna)     dZ += p.dobraWola_zaufanie_perTura;      // +1
+if (ctx.wspolnyWrog)          dZ += p.wspolnyWrog_zaufanie_perTura;    // +1
+if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura; // +0.5
+if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;// -0.5
+if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;// -2
+```
+
+Wagi z `DIPLOMACY_PARAMS` (`game/diplomacy.ts:100-122`, sekcja „per-turn Zaufanie deltas"):
+`handel_zaufanie_perTura=1`, `sojusz_zaufanie_perTura=3`, `nap_zaufanie_perTura=2`,
+`pokoj_zaufanie_perTura=1` (**dokładnie ten składnik, o który pytał Maciej — potwierdzone: +1/turę
+podczas samego pokojowego kontaktu**), `dobraWola_zaufanie_perTura=1`, `wspolnyWrog_zaufanie_perTura=1`,
+`wspolnaReligia_zaufanie_perTura=0.5`, `odmiennaReligia_zaufanie_perTura=-0.5`,
+`ekspansjaGranica_zaufanie_perTura=-2`.
+
+`peaceTier` (sojusz/nap/pokoj) jest **wzajemnie wykluczający** (jeden `switch`) i wyliczany przez
+`resolvePokojTrustTier` (`game/diplomacy-treaties.ts:275-292`):
+
+```ts
+// game/diplomacy-treaties.ts:275-292
+export function resolvePokojTrustTier(
+  state: readonly ActiveDeal[], ownerA: number, ownerB: number,
+  opts: { contactEstablished: boolean; atWar: boolean },
+): PokojTrustTier | undefined {
+  if (opts.atWar) return undefined;
+  const [p0, p1] = pairKey(ownerA, ownerB);
+  const pairDeals = state.filter(d => d.strony[0] === p0 && d.strony[1] === p1);
+  if (pairDeals.some(d => isAllianceKind(normalizeTreatyKind(d.rodzaj)))) return 'sojusz';
+  if (pairDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji)) return 'nap';
+  if (opts.contactEstablished) return 'pokoj';
+  return undefined;
+}
+```
+
+**Kolizja z nowym strumieniem: TAK, realna.** Nowy strumień „ΔZaufanie/turę = W/10" ma być naliczany
+**dodatkowo, co turę, dla każdej poznanej cywilizacji** — dokładnie ten sam mechanizm miejsca wpięcia
+(`dZ` w `tickDiplomacy`) co `pokoj_zaufanie_perTura` i pozostałe składniki wyżej. Przy dobrej Wiarygodności
+(np. +50 → +5/turę) nowy strumień jest 5× większy niż istniejący maksymalny tier pokoju (sojusz, +3/turę)
+i nakłada się na niego SUMARYCZNIE (oba dodają się do tego samego `dZ`), a nie go zastępuje — bez decyzji
+Macieja to podwójne liczenie „bycia w pokoju/sojuszu" dwoma niezależnymi mechanizmami jednocześnie.
+
+**2. Cap/floor Zaufania**
+
+TAK, istnieje i jest jednoznaczny: `clamp(rdip.zaufanie + dZ, 0, 100)` (`game/diplomacy.ts:1442`),
+zgodnie z deklaracją typu `RelacjaDyplomatyczna.zaufanie`: „zakres 0–100" (`types/diplomacy.ts:65-70`).
+Klamrowanie działa niezależnie od wielkości `dZ` w danej turze — więc **nowy strumień +10/turę przy
+Wiarygodności=+100 zostanie bezpiecznie ucięty na 100** tym samym mechanizmem co dziś (nie trzeba nowego
+klampowania w `tickDiplomacy`). Trzeba jednak pamiętać: to klamruje WYNIK Zaufania (0–100), nie sam
+strumień — przy skrajnych wartościach kilka źródeł `dZ` naraz (np. sojusz +3 i nowy strumień +10) i tak
+wyląduje w tym samym clamp, więc efekt kumulacji jest niewidoczny w logach per-składnik (brak dziś
+rejestru „ile z tej tury przyszło z Wiarygodności a ile z tieru pokoju").
+
+**3. Zakres par: wszystkie czy tylko poznane/odkryte?**
+
+TYLKO odkryte. Pętla wywołująca `tickDiplomacy` dla pary gracz↔AI jest jawnie bramkowana:
+
+```ts
+// main.ts:14757-14760
+try {
+  if (!diplomaticallyDiscoveredOwners.has(ownerId)) {
+    // Brak odkrycia na mapie — zero dyplomacji wobec gracza (w tym darów).
+  } else {
+  /* ... tickDiplomacy wywoływane tutaj, main.ts:14820 ... */
+```
+
+Dodatkowo sam tier `'pokoj'` (ten odpowiadający `pokoj_zaufanie_perTura`) wymaga osobno
+`contactEstablished` (`diplomaticContactEstablished.has(ownerId)`, przekazywane w
+`main.ts:14803-14806`) — więc nawet w obrębie odkrytych par, sam pokojowy +1/turę nie naliczy się bez
+nawiązanego kontaktu dyplomatycznego (`resolvePokojTrustTier`, `game/diplomacy-treaties.ts:290`). Model
+danych ma też pole `RelacjaDyplomatyczna.kontaktNawiazany: boolean` (`types/diplomacy.ts:92-96`, „Bez
+kontaktu żadne dalsze akcje dyplomatyczne nie są możliwe").
+
+**Uwaga dodatkowa:** ten konkretny blok (`main.ts:14756-14822`) tickuje WYŁĄCZNIE parę gracz(0)↔AI. Dla
+AI↔AI dokument wyżej (§6 pkt 4, cytując `AUDYT-PARYTET-AI-2026-07-24.md` pkt 3) już odnotowuje, że
+dyplomacja AI↔AI ma dziś węższy zakres niż gracz↔AI — to samo ograniczenie dotyczy więc i nowego
+strumienia „ΔZaufanie/turę = W/10", jeśli ma dotyczyć też par AI↔AI.
+
+**4. Czy działa też podczas wojny, czy tylko podczas pokoju?**
+
+TYLKO podczas pokoju — potwierdzone wprost w kodzie. `resolvePokojTrustTier` zwraca `undefined`
+natychmiast przy `atWar`:
+
+```ts
+// game/diplomacy-treaties.ts:281
+if (opts.atWar) return undefined;
+```
+
+a flaga `atWar` jest przekazywana z rzeczywistego stanu relacji: `atWar: relStatus === 'wojna'`
+(`main.ts:14805`, gdzie `relStatus = (relWithRespekt as Relation).status`). Gdy `atWar===true`, żaden z
+trzech tierów (`sojusz`/`nap`/`pokoj`) się nie uruchamia, więc `pokoj_zaufanie_perTura` (i całe `dZ` z tej
+gałęzi `switch`) jest zerowe podczas wojny. Pozostałe składniki `dZ` (`aktywnyHandel`, `dobraWola`,
+`wspolnyWrog`, religia, ekspansja) NIE mają analogicznego jawnego sprawdzenia `atWar` wewnątrz
+`tickDiplomacy` — są sterowane wyłącznie przez to, co przekaże wywołujący w `TickCtx` (w praktyce np.
+`aktywnyHandel` i tak zwykle wygasa przy wojnie przez `breakTreatiesOnWar`, ale to efekt uboczny gdzie
+indziej, nie sprawdzenie w samym `tickDiplomacy`).
+
+**5. Plik parametrów strojeniowych `DIPLOMACY_PARAMS`**
+
+Istnieje: `export const DIPLOMACY_PARAMS = {...} as const` (`game/diplomacy.ts:65-242`), płaska struktura
+z sekcjami (one-shot Zaufanie/Respekt, „per-turn Zaufanie deltas (co ture)" na liniach 100-122, progi,
+wartości startowe, mnożniki globalne). Istnieje też odpowiadający plik danych `gra/data/diplomacy.json`
+(potwierdzone — plik obecny w repo), zasilany z panelu Excela `Dyplomacja.xlsx` przez
+`loadDiplomacyParams` (`game/diplomacy.ts:252+`, „bridge data/diplomacy.json → model parameter
+overrides"). **Nowy dzielnik „10" powinien wylądować jako nowa stała w tej samej sekcji „per-turn
+Zaufanie deltas"**, np. `wiarygodnoscZaufanieDzielnikPerTura: 10` (obok `pokoj_zaufanie_perTura` na
+linii 108) — zgodnie z istniejącą konwencją „żadnych twardych stałych w kodzie, wszystko w
+`DIPLOMACY_PARAMS` + roundtrip do `diplomacy.json`/Excela".
+
+---
+
+### Ryzyka i pytania otwarte (do rozstrzygnięcia przez Macieja)
+
+- **Wojna czy tylko pokój?** Sama nazwa `pokoj_zaufanie_perTura` i cała logika `resolvePokojTrustTier`
+  sugerują „tylko pokój" (patrz pkt 4 wyżej), ale brief Macieja („systematycznie z wszystkimi
+  cywilizacjami spada" przy złej Wiarygodności) da się czytać i jako uniwersalny, także podczas wojny —
+  nierozstrzygnięte, wymaga jednoznacznej decyzji.
+- **Dublowanie z `pokoj_zaufanie_perTura` (i pozostałymi składnikami `dZ`).** Potwierdzone w kodzie (pkt 1
+  wyżej): nowy strumień dodawałby się do tego samego `dZ` co istniejące `pokoj_zaufanie_perTura` (+1),
+  `nap_zaufanie_perTura` (+2), `sojusz_zaufanie_perTura` (+3) i reszta. Do zdecydowania: **zsumować**
+  (nowy strumień jako dodatkowy, niezależny składnik `dZ`), **zastąpić** (nowy strumień wypiera istniejące
+  tiery pokoju — usunąć/wyzerować `pokoj_zaufanie_perTura` itp.), czy **wykluczać się wzajemnie** (jeśli
+  aktywny nowy strumień, tiery pokoju się nie liczą, i odwrotnie)?
+- **Los Dźwigni 2–4** (sufit Zaufania, twarde progi sojuszu/NAP, pierwszy kontakt — sekcja „CZTERY
+  DŹWIGNIE" wyżej). Zadanie każe anulować wyłącznie Dźwignię 1 (mnożnik tempa) — czy 2, 3 i 4 zostają w
+  mocy RÓWNOLEGLE z nowym bezpośrednim strumieniem, czy też wymagają przeglądu w świetle tej zmiany
+  (zwłaszcza Dźwignia 2 „wpływ na sufit Zaufania" — koncepcyjnie bliska nowemu mechanizmowi, bo oba
+  dotyczą tego, jak Wiarygodność ogranicza Zaufanie)?
+- **Sufit/podłoga Zaufania przy skrajnych wartościach.** Klamrowanie `clamp(zaufanie+dZ, 0, 100)`
+  (`game/diplomacy.ts:1442`) technicznie obsłuży każdą wielkość `dZ`, w tym +10/turę — ale czy to
+  wystarczające zachowanie, czy przy Wiarygodności bliskiej ±100 chcemy czegoś subtelniejszego (np.
+  malejący krańcowy przyrost blisko granic, żeby nie było „ściany" 0/100 osiąganej w kilka tur)? Do
+  potwierdzenia: brak dziś żadnego mechanizmu diminishing returns w `tickDiplomacy` poza samym clampem.
+- **Dzielnik „10" jako parametr strojeniowy.** Potwierdzone (pkt 5 wyżej): `DIPLOMACY_PARAMS`
+  (`game/diplomacy.ts:65-242`) to właściwe miejsce, sekcja „per-turn Zaufanie deltas" (linie 100-122) —
+  czy Maciej chce to jako osobną stałą teraz, czy zostawić jako twardą wartość „10" do czasu playtestu?
+- **Skala Wiarygodności a skala Zaufania.** Wiarygodność jest dziś (po „ZMIANIE SKALI" wyżej) na skali
+  −100…+100, a Zaufanie pozostaje na 0–100. Dzielnik „/10" daje więc zakres −10…+10 na turę względem
+  Zaufania 0–100 — matematycznie spójne, ale warto potwierdzić, że to zamierzona proporcja (przy
+  Wiarygodności skrajnej +100, pełne wypełnienie Zaufania od zera zajmie ok. 10 tur, co jest bardzo
+  szybkie w porównaniu do istniejących tempów +1..+3/turę) — czy to zamierzone, czy dzielnik „10" wymaga
+  przeszacowania w świetle istniejących tempów.
+- **Miejsce integracji: `tickDiplomacy` czy osobna funkcja?** Dokument (§7, Etap 2) już zakładał wpięcie
+  Wiarygodności w `tickDiplomacy` (`game/diplomacy.ts:1403`) i `applyDiplomaticEvent`
+  (`game/diplomacy.ts:646`) jako MNOŻNIK (Dźwignia 1, teraz anulowana). Nowy bezpośredni strumień
+  wymaga innego kształtu integracji — prawdopodobnie nowy opcjonalny parametr `wiarygodnoscSelf?: number`
+  w `TickCtx` (`game/diplomacy.ts:1356-1378`) dodający `wiarygodnoscSelf/10` do `dZ` — ale to wymaga
+  jawnej decyzji projektowej, nie tylko podłączenia mnożnika.
+- **Zaokrąglanie.** Przy niskich wartościach Wiarygodności (np. +5 → +0,5/turę) wynik nie jest liczbą
+  całkowitą — czy akumuluje się jako ułamek (jak dziś `wspolnaReligia_zaufanie_perTura=0.5`), czy
+  zaokrąglać w którymś kierunku? Istniejący kod toleruje ułamki w `dZ` (patrz `0.5`/`-0.5` wyżej), więc
+  prawdopodobnie nieproblematyczne, ale niepotwierdzone czy to zamierzone dla nowego strumienia.
+- **Zgodność z nowym MODELEM ZAPOMINANIA (sekcja wyżej, „🔴 MODEL ZAPOMINANIA (KRZYWA WIARYGODNOŚCI)",
+  2026-07-26).** Ta sekcja zastąpiła prosty model „jedna liczba Wiarygodności" modelem listy gasnących
+  zdarzeń — Wiarygodność(właściciel, tura) jest teraz WYLICZANA z sumy aktywnych zdarzeń, nie stałym
+  polem. Wzór „ΔZaufanie/turę = Wiarygodność/10" z tej sekcji pozostaje formalnie spójny (bierze bieżącą,
+  wyliczoną wartość W), ale trzeba potwierdzić: czy przelicznik W→ΔZaufanie ma czytać W wyliczone NA ŻYWO
+  z listy zdarzeń co turę (kosztowniejsze, ale zawsze aktualne), czy z jakiejś zserializowanej/cache'owanej
+  wartości odświeżanej raz na turę (taniej, ale wymaga jawnego miejsca odświeżenia PRZED wywołaniem
+  `tickDiplomacy` dla wszystkich par).
+
+---
+
+### Parytet AI
+
+Zgodnie z zasadą nadrzędną projektu (§6 wyżej, `AUDYT-PARYTET-AI-2026-07-24.md`): mechanizm „ΔZaufanie/turę
+= Wiarygodność/10" musi działać **identycznie dla gracza (ownerId=0) i każdego AI (ownerId≠0)**, kod
+ownerId-agnostyczny, **zero gałęzi `if (ownerId===0)`**. Konkretnie:
+- Wzór `W/10` nie może różnicować się w zależności od tego, czyja to Wiarygodność (gracza czy AI) ani czyje
+  to Zaufanie jest modyfikowane.
+- Naliczanie „dla KAŻDEJ poznanej cywilizacji" musi obejmować pary AI↔AI tam, gdzie silnik w ogóle je
+  obsługuje (patrz zastrzeżenie w pkt 3 wyżej — dziś dyplomacja AI↔AI ma węższy zakres niż gracz↔AI, znana
+  luka z audytu parytetu, nie do naprawy w tym zadaniu, ale nie do pogłębiania nowym kodem
+  gracz-only).
+- Test parytetu przy wdrożeniu (wzorem §7 „Bramki" wyżej): ta sama Wiarygodność (np. W=50) zaaplikowana raz
+  jako `ownerId=0`, raz jako `ownerId=N`, musi dać identyczny wpływ +5/turę na odpowiednie relacje.
