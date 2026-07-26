@@ -3512,10 +3512,10 @@ CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
 ## [23:49 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `b87481fc` (FALA 26, próba)
 **md5 `b87481fca6f9632ad3a6eebea90438c8`** — zastąpiona przez `96f307ce` (ponowny publish 23:50).
 
-## [23:50 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `96f307ce` (FALA 26)
-**md5 `96f307ce2447236558bad2914fabeccd`**, stempel `ROBOCZA · 2026-07-26 23:50`. **VERIFY OK** (manifest + 6 PLAYTEST).
-Wynik `vite build` exit 0. POLE-BITWY: build pominięty (ostrzeżenie npm).
-Nowe: bitwa (obrona/deployPlayerSide, win/loss, manual _autoBattleSuspended), ekrany końca bitwy (playerSide), panel miasta (sortProductionItemsByBuildability + Skarbiec), negocjacje onCounterNegotiation, górzystość medium ~18%, economy-upkeep + empireDetailPanel.
+## [23:52 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `81b1d467` (FALA 26, VERIFY)
+**md5 `81b1d46795ddbaa51f6167a49b85857d`**, stempel `ROBOCZA · 2026-07-26 23:52`. **VERIFY OK** (certutil md5 HTML = manifest).
+Wynik `vite build` exit 0. POLE-BITWY: build pominięty. Poprzednie próby (`96f307ce`) — manifest≠HTML (OneDrive).
+Nowe: bitwa (obrona/deployPlayerSide, win/loss, manual), ekrany końca bitwy (playerSide), panel miasta (sort + Skarbiec), negocjacje onCounterNegotiation, górzystość medium ~18%, economy-upkeep + empireDetailPanel.
 Bramki: tsc 0 · diplomacy-negotiation-table 39/39 · fair-play-grid **8/8** · relief-grid-coverage **6/6** · upkeep 67/67.
-**Sesja lokalna: pull / sync dysk, testuj `96f307ce` — `gra-robocza/START.html`.**
+**Sesja lokalna: pull / sync dysk, testuj `81b1d467` — `gra-robocza/START.html`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.

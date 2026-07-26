@@ -11,9 +11,9 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `96f307ce` — 2026-07-26 23:50 · FALA 26: BITWA + DYPLOMACJA + MAPA 18% — **AKTUALNA**
-- md5 (pelne): `96f307ce2447236558bad2914fabeccd` · stempel: `ROBOCZA · 2026-07-26 23:50`
-- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+## ROBOCZA `81b1d467` — 2026-07-26 23:52 · FALA 26: BITWA + DYPLOMACJA + MAPA 18% — **AKTUALNA**
+- md5 (pelne): `81b1d46795ddbaa51f6167a49b85857d` · stempel: `ROBOCZA · 2026-07-26 23:52`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (ostrzeżenie npm).
 - **Co nowego (sesja F26):**
   - **Bitwa (battleScene):** obrona (`deployPlayerSide`), win/loss (`_playerWonFromBattleWinner`), manual (`_autoBattleSuspended`).
@@ -23,6 +23,9 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
   - **Mapa:** górzystość medium ~18% lądu (`relief_overflow_cap_frac` 0,06 Góry + 0,09 Wzgórza — decyzja właściciela).
   - **Ekonomia:** `economy-upkeep` + panel imperium (`empireDetailPanel`) — korekty wyświetlania skarbca.
 - **Bramki:** tsc 0 · diplomacy-negotiation-table 39/39 · fair-play-grid **8/8** · relief-grid-coverage **6/6** · upkeep 67/67 · map-gen-regression determinizm PASS (timing standard 5,41s — pre).
+
+## ROBOCZA `96f307ce` — 2026-07-26 23:50 · FALA 26 (manifest bez HTML — OneDrive) — **ZASTĄPIONA**
+- md5 manifest ≠ md5 HTML (OneDrive lock) — nie używać.
 
 ## ROBOCZA `b87481fc` — 2026-07-26 23:49 · FALA 26 (próba publish) — **ZASTĄPIONA**
 - md5 (pelne): `b87481fca6f9632ad3a6eebea90438c8` · stempel: `ROBOCZA · 2026-07-26 23:49`
