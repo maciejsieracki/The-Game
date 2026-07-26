@@ -841,3 +841,21 @@ Opcje: „Wejdź mimo to" / „Anuluj". Rozważyć opcję „nie pytaj ponownie 
 ### Podsumowanie statusu tabeli kar
 N1 ✅ (−10, przemianowane) · N2 ✅ (rozbite: NAP −18 / sojusz −25) · N3 ✅ (−12) · N4 ✅ (−10) · N5 ✅ **warunkowo — tylko traktaty czasowe** · N6 ✅ (−2) **+ weryfikacja symetrii wymiany** · N7 ✅ (−2) **+ wymóg ostrzeżenia**
 **Strona pozytywna P1–P5 — jeszcze nieprzejrzana przez Macieja.**
+
+### N7 — uzupełnienia (Maciej 2026-07-26, druga tura)
+
+**1. Braku zgody na przemarsz nie da się dziś naprawić w grze — trzeba to umożliwić.**
+Maciej: *„gdzie brakuje jeszcze zgody na przemarsz przez cudze terytorium, powinno być to możliwe w ustawieniach"*.
+Czyli: gracz, który zobaczy ostrzeżenie „wchodzisz na cudze terytorium", musi mieć **realną alternatywę** — możliwość wynegocjowania prawa przemarszu, zamiast wyłącznie wyboru „wejdź i płać" albo „zawróć".
+⚠️ DO SPRAWDZENIA PRZY IMPLEMENTACJI: prawo wojskowego przemarszu **istnieje** jako typ propozycji dyplomatycznej (`diplomacy-proposals.ts`, case `'granice'`, bramka Respektu `progGraniceWojskoweRespekt` — naprawiana w audycie #46). Ustalić:
+- czy gracz ma do niego **dostęp w UI** (czy da się je zaproponować z panelu dyplomacji), czy tylko AI je proponuje,
+- czy w ustawieniach/kreatorze jest opcja globalna dotycząca granic,
+- czego dokładnie brakuje, żeby gracz mógł o nie wystąpić.
+Jeśli ścieżka istnieje — modal ostrzegawczy powinien do niej **odsyłać** („możesz poprosić o prawo przemarszu w dyplomacji"). Jeśli nie istnieje — trzeba ją dorobić, inaczej kara N7 jest nieuczciwa (karzemy za coś, czego nie da się legalnie załatwić).
+
+**2. ZWIADOWCY WYKLUCZENI z reguły N7.**
+Maciej: *„skauci powinni być wykluczeni z tej reguły"*.
+Jednostki zwiadowcze (Zwiadowca i analogiczne — sprawdzić rolę/typ w `units.json`; kandydat: rola „Zwiad"/kategoria zwiadowcza) **nie naruszają terytorium**: ani nie tracą Wiarygodności (N7), ani nie wywołują modala ostrzegawczego, ani — DO POTWIERDZENIA — nie powinny naliczać istniejącej kary Zaufania za przemarsz.
+Uzasadnienie projektowe: zwiad to podstawowa mechanika wczesnej gry; blokowanie go dyplomatycznie zablokowałoby eksplorację, a wysyłanie zwiadowcy nie jest aktem wrogim jak marsz armii.
+⚠️ DO ROZSTRZYGNIĘCIA PRZY IMPLEMENTACJI: czy wykluczenie obejmuje TYLKO Wiarygodność (N7), czy także istniejącą karę Zaufania z `diplomacy-border-march.ts`. Rekomendacja: **oba** — inaczej gracz nadal traci Zaufanie za zwiad i zasada „bez kary za zwiad" jest połowiczna. Ale to zmiana w ISTNIEJĄCEJ mechanice Zaufania → zgodnie z korektą Macieja („nie zmieniamy tego, co jest") **zapytać przed wdrożeniem**.
+**PARYTET AI:** wykluczenie dotyczy zwiadowców AI tak samo jak gracza.
