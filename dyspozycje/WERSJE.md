@@ -11,7 +11,40 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `3e847677` — 2026-07-26 17:57 · FALA 21: DZWIGNIA 2 WIARYGODNOSCI + TARASY UNIKALNE — **AKTUALNA**
+## ROBOCZA `61cd43ad` — 2026-07-26 18:21 · FALA 22: GORZYSTOSC OBNIZONA DO ~12% — **AKTUALNA**
+- md5 (pelne): `61cd43ad517642a6bb92494a633871e5` · stempel: `ROBOCZA · 2026-07-26 18:21`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `668229a`.
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0).
+- **Co nowego — C-MAPA-Q2 = B, obnizenie gorzystosci:**
+  - Nowy nazwany parametr `gestosc.relief_overflow_cap_frac` w `map-gen-params.json`
+    (jednostka: **ulamek heksow ladu w komorce siatki fair-play 25x25**):
+    low 0,03 Gory / 0,05 Wzgorza · medium 0,04 / 0,06 · high 0,08 / 0,12.
+    Dla medium suma = 0,10, czyli dokladnie progi wymagane przez `fair-play-grid-test`.
+  - Przywrocony sufit `RELIEF_OVERFLOW_CAP_MULT = 1` (byl wylaczony na nieskonczonosc,
+    bo w poprzedniej probie zbijal gorzystosc — teraz to jest CEL). Egzekwowany dwukrotnie:
+    przy zasiewaniu reliefu i po rozroscie pasm gorskich.
+  - **Naprawa, ktorej brakowalo w poprzedniej probie:** spozniony przebieg domykania reliefu
+    dla typu „ziemia" przycinal sufitem heksy z wymuszonymi zlozami fair-play i je KASOWAL.
+    Nowa funkcja ochronna — heks ze zlozem nigdy nie jest kandydatem do przyciecia
+    (ani w sufitcie gestosci, ani w limicie skupiska z decyzji 63).
+- **Zmierzona gorzystosc** (5 ziaren, standard 168x120, kontynenty, relief medium), jednostka:
+  **% powierzchni ladu**: przed 25,76–28,37% (srednia **26,64%**) -> po 11,83–12,68%
+  (srednia **12,12%**). Ponad dwukrotny spadek. Powyzej idealnych 10%, bo podloga
+  2 Gory + 2 Wzgorza na komorke oraz mniejsze komorki brzegowe podnosza efektywna gestosc.
+- **⚠️ SKUTEK UBOCZNY DO OCENY PRZEZ WLASCICIELA — spadek liczby zloz** (sumy z 5 ziaren):
+  miedz 317 -> 209 (**-34%**), zelazo 339 -> 225 (**-34%**), zloto 150 -> 67 (**-55%**).
+  Miedz i zelazo maja gwarancje fair-play (min. 1 na komorke), zloto nie.
+- **Bramki:** tsc 0 · relief-grid-coverage **6/6** · fair-play-grid **7/8** · zloto 43/43 ·
+  deposit-coast 20/20 · map-quality-forest-parity 101/101 · world-density 30/31 (porazka
+  pre-istniejaca, niezwiazana z reliefem) · map-gen-regression: determinizm A=B (hash
+  `471f0970`), **0 rzek bez ujscia** (710/710 do realnego morza); FAIL tylko na progach
+  czasowych — pomiar wydajnosci kontenera, nie regresja.
+- **Jedyna pozostala porazka fair-play** („Standard Ziemia: zloza siatka 25 >=85%", dziś 75%,
+  bylo 50%): w jednym ziarnie komorka 21-heksowa nie ma ANI JEDNEGO heksu z rzeka, a regula
+  gliny wymaga rzeki (decyzja 2026-07-24) — glina jest tam strukturalnie niemozliwa.
+  Przyczyna lezy w generacji RZEK, nie reliefu. Test ani regula gliny nie byly naginane.
+
+## ROBOCZA `3e847677` — 2026-07-26 17:57 · FALA 21: DZWIGNIA 2 WIARYGODNOSCI + TARASY UNIKALNE — **ZASTĄPIONA (61cd43ad)**
 - md5 (pelne): `3e847677394e0464c0bd617760941a21` · stempel: `ROBOCZA · 2026-07-26 17:57`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `8e48dec`.
 - **Wynik `vite build` sprawdzony PRZED kopiowaniem** (721 modulow, exit 0) — procedura po wpadce z fali 20b.

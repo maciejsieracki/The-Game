@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.measure-relief-entry.ts
+// ../../../../../../../home/user/The-Game/gra/tools/.measure-relief-entry.ts
 var measure_relief_entry_exports = {};
 __export(measure_relief_entry_exports, {
   TerenBazowy: () => TerenBazowy,
@@ -25,7 +25,7 @@ __export(measure_relief_entry_exports, {
 });
 module.exports = __toCommonJS(measure_relief_entry_exports);
 
-// src/types/hex.ts
+// ../../../../../../../home/user/The-Game/gra/src/types/hex.ts
 var TerenBazowy = /* @__PURE__ */ ((TerenBazowy3) => {
   TerenBazowy3["Laka"] = "laka";
   TerenBazowy3["Rownina"] = "rownina";
@@ -37,7 +37,7 @@ var TerenBazowy = /* @__PURE__ */ ((TerenBazowy3) => {
   return TerenBazowy3;
 })(TerenBazowy || {});
 
-// data/map-gen-params.json
+// ../../../../../../../home/user/The-Game/gra/data/map-gen-params.json
 var map_gen_params_default = {
   _meta: {
     opis: "Panel-A export \u2014 generator E2 + mg\u0142a. Kod czyta po P3 / handoff Integratora.",
@@ -152,7 +152,7 @@ var map_gen_params_default = {
   }
 };
 
-// src/data/map-gen-params-loader.ts
+// ../../../../../../../home/user/The-Game/gra/src/data/map-gen-params-loader.ts
 var FALLBACK_ROZMIAR = {
   malenki: [76, 52],
   maly: [108, 74],
@@ -298,7 +298,7 @@ function mapGenAllDepositRarities() {
   return out;
 }
 
-// data/e-start-params.json
+// ../../../../../../../home/user/The-Game/gra/data/e-start-params.json
 var e_start_params_default = {
   _opis: "Panel-E (Grupa E): start, meta, generator E2, zwyci\u0119stwo, tempo. \u0179r\xF3d\u0142o: panele-sterowania/Panel-E.xlsx \u2192 export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i regu\u0142y silnika (docelowo odczyt w TS \u2014 dzi\u015B sync z kodem).",
   defaulty: {
@@ -374,12 +374,12 @@ var e_start_params_default = {
   }
 };
 
-// src/util/norm-pl-label.ts
+// ../../../../../../../home/user/The-Game/gra/src/util/norm-pl-label.ts
 function normPlMenuLabel(label) {
   return label.toLowerCase().replace(/ł/g, "l").replace(/[ó]/g, "o").replace(/[ąà]/g, "a").replace(/[ę]/g, "e").replace(/[żź]/g, "z").replace(/[^a-z0-9]/g, "");
 }
 
-// src/data/e-start-params-loader.ts
+// ../../../../../../../home/user/The-Game/gra/src/data/e-start-params-loader.ts
 var R = e_start_params_default;
 var MENU_KEYS = ["Malenki", "Ma\u0142y", "Standardowy", "Du\u017Cy", "Ogromny", "Super Huge"];
 function normMenuLabel(label) {
@@ -415,7 +415,7 @@ function eStartMiastaPanstwa(menuLabel) {
   return skalaRow(menuLabel)?.miasta_panstwa;
 }
 
-// src/map/newGameMapDefaults.ts
+// ../../../../../../../home/user/The-Game/gra/src/map/newGameMapDefaults.ts
 function mapSizeLabelFromDims(w, h) {
   const area = w * h;
   if (area < 4800) return "mala";
@@ -576,7 +576,7 @@ function defaultCivTypesFromMapLabel(menuLabel) {
   return typyCywilizacjiTriple(menuLabel).default;
 }
 
-// src/map/earth-land-mask.generated.ts
+// ../../../../../../../home/user/The-Game/gra/src/map/earth-land-mask.generated.ts
 var EARTH_MASK_W = 720;
 var EARTH_MASK_H = 400;
 var EARTH_MASK_BBOX = {
@@ -988,7 +988,7 @@ var EARTH_MASK_ROWS = [
   "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 ];
 
-// src/map/earth-land-mask.ts
+// ../../../../../../../home/user/The-Game/gra/src/map/earth-land-mask.ts
 var EARTH_PLAYABLE_BORDER = 2;
 var EARTH_POLAR_OCEAN_REF_ROWS = 30;
 var EARTH_POLAR_OCEAN_REF_INNER_H = 115;
@@ -1089,7 +1089,7 @@ function earthTemplateLandAt(q, r, width, height) {
   return landHits / total >= earthLandFractionThreshold(width, height) ? 1 : 0;
 }
 
-// src/map/gen-helpers.ts
+// ../../../../../../../home/user/The-Game/gra/src/map/gen-helpers.ts
 function mulberry32(seed) {
   let s = seed >>> 0;
   return () => {
@@ -5238,7 +5238,7 @@ function computeStartPositions(hexes, seed, opts = {}) {
   return result;
 }
 
-// src/map/villages.ts
+// ../../../../../../../home/user/The-Game/gra/src/map/villages.ts
 var VILLAGE_HUTS_PER_CITY = {
   hard: 1,
   normal: 2,
@@ -5310,7 +5310,7 @@ function placeVillages(hexes, cities, existingCamps, seed, opts) {
   return result;
 }
 
-// data/terrain-improvements.json
+// ../../../../../../../home/user/The-Game/gra/data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
     opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
@@ -5646,14 +5646,14 @@ var terrain_improvements_default = {
   }
 };
 
-// src/game/terrain-improvements.ts
+// ../../../../../../../home/user/The-Game/gra/src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
 
-// src/map/road-movement.ts
+// ../../../../../../../home/user/The-Game/gra/src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
-// src/units/setup.ts
+// ../../../../../../../home/user/The-Game/gra/src/units/setup.ts
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -5665,7 +5665,7 @@ var DEFAULT_TERRAIN_COSTS = {
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
-// src/map/generator.ts
+// ../../../../../../../home/user/The-Game/gra/src/map/generator.ts
 var DEFAULT_WIDTH = 36;
 var DEFAULT_HEIGHT = 28;
 function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, typ = "kontynenty", genOpts) {

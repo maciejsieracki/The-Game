@@ -3471,3 +3471,16 @@ Wchodzą wreszcie **modal wyboru heksa** i **maksymalne HP w szczegółach bitwy
 tu naprawione; wniosek: commitować tylko pliki zamkniętego zlecenia, nie całe drzewo.
 **Sesja lokalna: pull na dysk właściciela, testuj `3e847677`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [18:21 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `61cd43ad` (FALA 22)
+**md5 `61cd43ad517642a6bb92494a633871e5`**, stempel `ROBOCZA · 2026-07-26 18:21`. VERIFY OK. HEAD `668229a`.
+Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0).
+**C-MAPA-Q2=B — górzystość spadła z 26,64% do 12,12% powierzchni lądu** (średnia z 5 ziaren).
+Nowy parametr `gestosc.relief_overflow_cap_frac` (ułamek heksów lądu w komórce 25×25) + przywrócony
+sufit `RELIEF_OVERFLOW_CAP_MULT=1` + ochrona heksów ze złożem przed przycięciem (to kasowało
+wymuszone złoża fair-play — brakujące ogniwo poprzedniej próby).
+`relief-grid-coverage` 6/6, `fair-play-grid` 7/8 (ostatnia porażka to strukturalny brak rzeki
+w komórce → glina niemożliwa; leży w generacji rzek).
+⚠️ Skutek uboczny do oceny właściciela: miedź −34%, żelazo −34%, złoto −55%.
+**Sesja lokalna: pull na dysk właściciela, testuj `61cd43ad`.**
+CZEKAM-NA: decyzja Macieja o gęstości złóż po obniżeniu górzystości.
