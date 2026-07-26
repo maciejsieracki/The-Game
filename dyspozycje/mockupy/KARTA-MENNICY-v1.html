@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karta budynku: Mennica — mockup v1 (do konsultacji z designerem)</title>
+<style>
+:root{
+  --civ-bg-deep:#080a12; --civ-panel-bg:#121820;
+  --civ-panel-gradient:linear-gradient(180deg,rgba(14,18,28,.98),rgba(8,10,16,.95));
+  --civ-gold-primary:#e8d88a; --civ-gold-dim:#a08030;
+  --civ-gold-border:rgba(232,216,138,.22); --civ-gold-border-strong:rgba(232,216,138,.45);
+  --civ-gold-glow:radial-gradient(ellipse 70% 50% at 50% 38%,rgba(232,216,138,.08),transparent 70%);
+  --civ-text-primary:#e8e0c8; --civ-text-muted:#8a8070; --civ-text-pergament:#c8b898;
+  --civ-science:#5a9bd4; --civ-success:#50b070; --civ-danger:#c84040; --civ-warning:#d08030;
+  --civ-font-title:Georgia,'Times New Roman',serif;
+  --civ-font-ui:'Segoe UI',Tahoma,sans-serif;
+  --civ-panel-border:2px solid var(--civ-gold-border-strong);
+  --civ-radius-panel:8px; --civ-radius-btn:6px;
+  --civ-shadow-panel:0 12px 40px rgba(0,0,0,.65);
+}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 24px 64px;background:var(--civ-bg-deep);
+  font-family:var(--civ-font-ui);color:var(--civ-text-primary);line-height:1.5}
+h1{font-family:var(--civ-font-title);color:var(--civ-gold-primary);font-size:26px;margin:0 0 4px}
+h2{font-family:var(--civ-font-title);color:var(--civ-gold-primary);font-size:19px;
+  margin:40px 0 14px;border-bottom:1px solid var(--civ-gold-border);padding-bottom:6px}
+.lead{color:var(--civ-text-muted);max-width:860px;margin:0 0 8px;font-size:14px}
+.wrap{max-width:1180px;margin:0 auto}
+.stany{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+
+/* ——— KARTA ——— */
+.karta{width:340px;background:var(--civ-panel-gradient);border:var(--civ-panel-border);
+  border-radius:var(--civ-radius-panel);box-shadow:var(--civ-shadow-panel);overflow:hidden;position:relative}
+.karta::before{content:"";position:absolute;inset:0;background:var(--civ-gold-glow);pointer-events:none}
+.karta.spi{border-color:rgba(208,128,48,.5)}
+.karta.zablokowana{opacity:.72;border-color:rgba(138,128,112,.35)}
+
+.k-naglowek{display:flex;gap:12px;align-items:center;padding:14px 16px 12px;
+  border-bottom:1px solid var(--civ-gold-border);position:relative}
+.k-ikona{width:46px;height:46px;flex:0 0 46px;border-radius:6px;
+  border:1px solid var(--civ-gold-border-strong);background:#0d1119;
+  display:grid;place-items:center;font-size:24px}
+.k-tytul{flex:1;min-width:0}
+.k-nazwa{font-family:var(--civ-font-title);font-size:19px;color:var(--civ-gold-primary);line-height:1.15}
+.k-grupa{font-size:11.5px;color:var(--civ-text-muted);letter-spacing:.03em;text-transform:uppercase;margin-top:2px}
+.k-poziom{font-size:12px;color:var(--civ-text-pergament);border:1px solid var(--civ-gold-border);
+  border-radius:4px;padding:2px 7px;white-space:nowrap}
+
+.k-stan{padding:8px 16px;font-size:12.5px;display:flex;align-items:center;gap:7px;
+  border-bottom:1px solid var(--civ-gold-border)}
+.k-stan.dziala{background:rgba(80,176,112,.10);color:var(--civ-success)}
+.k-stan.spi{background:rgba(208,128,48,.12);color:var(--civ-warning)}
+.k-stan.zablok{background:rgba(138,128,112,.10);color:var(--civ-text-muted)}
+.kropka{width:7px;height:7px;border-radius:50%;background:currentColor;flex:0 0 7px}
+
+.k-sekcja{padding:12px 16px;border-bottom:1px solid rgba(232,216,138,.10)}
+.k-sekcja:last-child{border-bottom:none}
+.k-etykieta{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--civ-text-muted);margin-bottom:7px}
+
+.wiersz{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:3px 0}
+.wiersz .nazwa{color:var(--civ-text-pergament)}
+.wiersz .wartosc{color:var(--civ-text-primary);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wiersz .wartosc.plus{color:var(--civ-success)}
+.wiersz .wartosc.minus{color:var(--civ-danger)}
+.wiersz .wartosc.wyszarzona{color:var(--civ-text-muted);text-decoration:line-through}
+
+.chipy{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:12px;padding:4px 10px;border-radius:4px;border:1px solid var(--civ-gold-border);
+  color:var(--civ-text-pergament);background:rgba(232,216,138,.05);white-space:nowrap}
+.chip.brak{border-color:rgba(200,64,64,.45);color:#e08a8a;background:rgba(200,64,64,.08)}
+.chip.ok{border-color:rgba(80,176,112,.4);color:#8fd8a8;background:rgba(80,176,112,.07)}
+
+.mnoznik{font-family:var(--civ-font-title);font-size:22px;color:var(--civ-gold-primary);
+  display:flex;align-items:baseline;gap:8px}
+.mnoznik small{font-family:var(--civ-font-ui);font-size:11.5px;color:var(--civ-text-muted)}
+.mnoznik.wylaczony{color:var(--civ-text-muted)}
+
+.ostrzezenie{font-size:12.5px;color:var(--civ-warning);background:rgba(208,128,48,.09);
+  border-left:3px solid var(--civ-warning);padding:9px 11px;border-radius:0 4px 4px 0;margin-top:4px}
+.ostrzezenie b{color:#e8b070}
+.podpowiedz{font-size:12px;color:var(--civ-text-muted);margin-top:6px}
+
+.k-stopka{padding:12px 16px;display:flex;gap:9px}
+.btn{flex:1;font-family:var(--civ-font-ui);font-size:13px;padding:8px 12px;border-radius:var(--civ-radius-btn);
+  background:transparent;color:var(--civ-gold-primary);border:2px solid var(--civ-gold-primary);cursor:pointer}
+.btn[disabled]{color:var(--civ-text-muted);border-color:rgba(138,128,112,.4);cursor:not-allowed}
+
+.opis-stanu{width:340px;font-size:12.5px;color:var(--civ-text-muted);margin-top:10px}
+.opis-stanu b{color:var(--civ-text-pergament)}
+
+/* ——— TABELE SPEC ——— */
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:6px}
+th,td{border:1px solid rgba(232,216,138,.16);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:rgba(232,216,138,.06);color:var(--civ-gold-primary);font-weight:600;font-size:12.5px}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+code{background:rgba(232,216,138,.07);padding:1px 5px;border-radius:3px;font-size:12.5px;color:var(--civ-text-pergament)}
+.uwaga{border-left:3px solid var(--civ-science);background:rgba(90,155,212,.08);
+  padding:11px 14px;border-radius:0 4px 4px 0;font-size:13.5px;margin:14px 0;max-width:900px}
+.uwaga b{color:var(--civ-science)}
+ul{margin:8px 0 0;padding-left:20px}li{margin:4px 0;font-size:13.5px}
+.meta{font-size:12px;color:var(--civ-text-muted);margin-top:26px;border-top:1px solid var(--civ-gold-border);padding-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Karta budynku: Mennica</h1>
+<p class="lead">Mockup v1 do konsultacji z designerem. <b>Wszystkie liczby są prawdziwe</b> — pochodzą z
+<code>gra/data/buildings.json</code> i <code>gra/data/econ-params.json</code>, stan na 2026‑07‑26.
+Kolory i typografia z oficjalnych tokenów <code>UI/design-tokens-brand-v1.css</code>.
+Układ jest propozycją do przerobienia — <b>wiążąca jest treść i hierarchia informacji, nie estetyka</b>.</p>
+
+<div class="uwaga">
+<b>Dlaczego ta karta jest wyjątkowa.</b> Mennica to jedyny budynek w grze, który może być
+<b>zbudowany i jednocześnie nie działać</b>. Wymaga dostępu do złota (własna Kopalnia złota
+gdziekolwiek w imperium albo aktywny szlak handlowy z cywilizacją posiadającą złoto), a po utracie
+tego dostępu <b>zasypia</b>: mnożnik przestaje działać, nazwa strumienia wraca z „Podatek” na „Danina”,
+ale budynek nie jest burzony i budzi się sam po odzyskaniu dostępu.
+<b>Karta musi umieć pokazać trzy stany</b> — i to jest główny problem projektowy do rozwiązania.
+</div>
+
+<h2>Trzy stany karty</h2>
+<div class="stany">
+
+  <!-- STAN 1 — DZIAŁA -->
+  <div>
+  <div class="karta">
+    <div class="k-naglowek">
+      <div class="k-ikona">🪙</div>
+      <div class="k-tytul">
+        <div class="k-nazwa">Mennica</div>
+        <div class="k-grupa">Handel i pieniądz · Brąz</div>
+      </div>
+      <div class="k-poziom">poz. 1 / 2</div>
+    </div>
+
+    <div class="k-stan dziala"><span class="kropka"></span> Działa</div>
+
+    <div class="k-sekcja">
+      <div class="k-etykieta">Efekt główny</div>
+      <div class="mnoznik">×1,5 <small>Podatku netto miasta<br>(poziom normalny)</small></div>
+      <div class="podpowiedz">Mnoży <b>całą</b> pulę przed podziałem suwakiem, więc rosną razem Skarbiec, Nauka i Zamożność.</div>
+    </div>
+
+    <div class="k-sekcja">
+      <div class="k-etykieta">Plon budynku</div>
+      <div class="wiersz"><span class="nazwa">Pieniądz</span><span class="wartosc plus">+3 pkt/turę</span></div>
+      <div class="wiersz"><span class="nazwa">Utrzymanie</span><span class="wartosc minus">−2 pkt/turę</span></div>
+    </div>
+
+    <div class="k-sekcja">
+      <div class="k-etykieta">Warunki</div>
+      <div class="chipy">
+        <span class="chip ok">✓ Stolica</span>
+        <span class="chip ok">✓ Waluta</span>
+        <span class="chip ok">✓ Targowisko</span>
+        <span class="chip ok">✓ Dostęp do złota</span>
+      </div>
+    </div>
+
+    <div class="k-stopka"><button class="btn">Rozbuduj do poz. 2</button></div>
+  </div>
+  <div class="opis-stanu"><b>Stan 1 — działa.</b> Wszystkie cztery warunki spełnione.
+  Strumień dochodu miasta nazywa się w całej cywilizacji <b>Podatek</b>.</div>
+  </div>
+
+  <!-- STAN 2 — ŚPI -->
+  <div>
+  <div class="karta spi">
+    <div class="k-naglowek">
+      <div class="k-ikona">🪙</div>
+      <div class="k-tytul">
+        <div class="k-nazwa">Mennica</div>
+        <div class="k-grupa">Handel i pieniądz · Brąz</div>
+      </div>
+      <div class="k-poziom">poz. 1 / 2</div>
+    </div>
+
+    <div class="k-stan spi"><span class="kropka"></span> Nieaktywna — brak dostępu do złota</div>
+
+    <div class="k-sekcja">
+      <div class="k-etykieta">Efekt główny</div>
+      <div class="mnoznik wylaczony">×1,0 <small>mnożnik wyłączony<br>(byłoby ×1,5)</small></div>
+      <div class="ostrzezenie">
+        <b>Mennica śpi, ale nie została zburzona.</b> Zdobądź dostęp do złota — własną Kopalnię złota
+        gdziekolwiek w imperium albo szlak handlowy z cywilizacją posiadającą złoto — a mnożnik wróci sam,
+        bez odbudowy.
+      </div>
+    </div>
+
+    <div class="k-sekcja">
+      <div class="k-etykieta">Plon budynku</div>
+      <div class="wiersz"><span class="nazwa">Pieniądz</span><span class="wartosc plus">+3 pkt/turę</span></div>
+      <div class="wiersz"><span class="nazwa">Utrzymanie</span><span class="wartosc minus">−2 pkt/turę</span></div>
+      <div class="podpowiedz">Plon i utrzymanie działają dalej — usypia <b>tylko mnożnik</b>.</div>
+    </div>
+
+    <div class="k-sekcja">
+      <div class="k-etykieta">Warunki</div>
+      <div class="chipy">
+        <span class="chip ok">✓ Stolica</span>
+        <span class="chip ok">✓ Waluta</span>
+        <span class="chip ok">✓ Targowisko</span>
+        <span class="chip brak">✗ Dostęp do złota</span>
+      </div>
+    </div>
+
+    <div class="k-stopka"><button class="btn">Rozbuduj do poz. 2</button></div>
+  </div>
+  <div class="opis-stanu"><b>Stan 2 — śpi.</b> Budynek stoi, mnożnik nie działa, nazwa strumienia
+  wróciła na <b>Danina</b>. Odzyskanie dostępu przywraca wszystko automatycznie.</div>
+  </div>
+
+  <!-- STAN 3 — NIE MOŻNA ZBUDOWAĆ -->
+  <div>
+  <div class="karta zablokowana">
+    <div class="k-naglowek">
+      <div class="k-ikona">🪙</div>
+      <div class="k-tytul">
+        <div class="k-nazwa">Mennica</div>
+        <div class="k-grupa">Handel i pieniądz · Brąz</div>
+      </div>
+      <div class="k-poziom">niezbudowana</div>
+    </div>
+
+    <div class="k-stan zablok"><span class="kropka"></span> Nie można zbudować</div>
+
+    <div class="k-sekcja">
+      <div class="k-etykieta">Koszt</div>
+      <div class="wiersz"><span class="nazwa">Praca</span><span class="wartosc">28 pkt</span></div>
+      <div class="wiersz"><span class="nazwa">Drewno</span><span class="wartosc">6 szt.</span></div>
+      <div class="wiersz"><span class="nazwa">Kamień</span><span class="wartosc">8 szt.</span></div>
+    </div>
+
+    <div class="k-sekcja">
+      <div class="k-etykieta">Warunki</div>
+      <div class="chipy">
+        <span class="chip ok">✓ Stolica</span>
+        <span class="chip ok">✓ Waluta</span>
+        <span class="chip brak">✗ Targowisko</span>
+        <span class="chip brak">✗ Dostęp do złota</span>
+      </div>
+      <div class="podpowiedz">Buduje się <b>wyłącznie w stolicy</b>, więc w całej cywilizacji może stać tylko jedna.</div>
+    </div>
+
+    <div class="k-stopka"><button class="btn" disabled>Brak warunków</button></div>
+  </div>
+  <div class="opis-stanu"><b>Stan 3 — zablokowana.</b> Karta pokazuje koszt i <b>które konkretnie</b>
+  warunki nie są spełnione. Dziś budynek bez spełnionych warunków po prostu znikał z listy bez wyjaśnienia.</div>
+  </div>
+
+</div>
+
+<h2>Dane źródłowe — wszystkie liczby z gry</h2>
+<table>
+<tr><th>Parametr</th><th>Poziom 1</th><th>Poziom 2</th><th>Jednostka</th><th>Skąd</th></tr>
+<tr><td>Plon Pieniądza</td><td class="num">3</td><td class="num">5</td><td>pkt Pieniądza na turę</td><td><code>baza.pieniadz</code> + <code>przyrost</code></td></tr>
+<tr><td>Koszt budowy</td><td class="num">28</td><td class="num">38</td><td>pkt Pracy</td><td><code>kosztBudowy</code> + <code>przyrostKosztu</code></td></tr>
+<tr><td>Utrzymanie</td><td class="num">2</td><td class="num">3</td><td>pkt Pieniądza na turę</td><td><code>utrzymanie</code> + <code>przyrostUtrzymania</code></td></tr>
+<tr><td>Koszt surowcowy</td><td class="num">drewno 6 · kamień 8</td><td class="num">—</td><td>sztuk</td><td><code>koszt_surowce</code></td></tr>
+</table>
+
+<table style="margin-top:16px">
+<tr><th>Mnożnik Podatku netto</th><th>Łatwy</th><th>Normalny</th><th>Trudny</th></tr>
+<tr><td>Wartość</td><td class="num">×2,0</td><td class="num">×1,5</td><td class="num">×1,0 (brak efektu)</td></tr>
+</table>
+<p class="lead" style="margin-top:8px">Mnożnik działa <b>tylko</b> gdy spełnione są równocześnie trzy warunki:
+technologia <b>Waluta</b> odkryta, <b>Mennica zbudowana w stolicy</b>, <b>dostęp do złota</b>.
+Mnoży całą pulę <b>przed</b> podziałem suwakiem, więc podnosi jednocześnie Skarbiec, Naukę i Zamożność.</p>
+
+<h2>Czego potrzebuję od designera</h2>
+<ul>
+<li><b>Rozróżnienie trzech stanów.</b> Moja propozycja to kolor obramowania plus pasek stanu pod nagłówkiem.
+  Czy to wystarczy, czy stan „śpi” zasługuje na mocniejszy sygnał — na przykład wyszarzenie samego mnożnika
+  przy zachowaniu pełnej czytelności reszty karty?</li>
+<li><b>Chipy warunków.</b> Cztery chipy ✓/✗ to najgęstsza informacja na karcie. Czy zostają jako chipy,
+  czy lepiej sprawdzi się lista z ikonami? Przy stanie 3 aż dwa bywają czerwone naraz.</li>
+<li><b>Ikona Mennicy.</b> Emoji 🪙 to zaślepka. Potrzebna ikona w konwencji pozostałych budynków.</li>
+<li><b>Hierarchia.</b> Czy mnożnik ×1,5 słusznie jest największym elementem karty? To jego najważniejszy efekt,
+  ale plon i utrzymanie decydują o bilansie miasta w każdej turze.</li>
+<li><b>Komunikat o śpiącej Mennicy.</b> Dziś to trzy linijki tekstu. Czy da się przekazać to samo krócej,
+  nie tracąc informacji <i>co zrobić, żeby naprawić</i>?</li>
+</ul>
+
+<h2>Uwagi techniczne — do sprawdzenia przed wdrożeniem</h2>
+<ul>
+<li><b>Poziom 2 nie ma nazwy.</b> Pole <code>nazwyPoziomow</code> jest puste, więc karta pokazuje „poz. 1 / 2”.
+  Jeśli poziomy mają mieć nazwy własne, trzeba je wymyślić.</li>
+<li><b>Stare zapisy gry</b> mogą mieć Mennicę w mieście regionalnym — bramka „tylko stolica” dotyczy
+  budowania nowych, nie cofa istniejących. Karta musi wyglądać sensownie także tam.</li>
+<li><b>Brak karty Mennicy w katalogu budynków</b> (<code>docs/PORADNIK-GRACZA/45-katalog-budynkow.md</code>) —
+  katalog wygląda na eksport z danych, więc kartę trzeba dopisać po ustaleniu formatu.</li>
+</ul>
+
+<p class="meta">Mockup przygotowany 2026‑07‑26 na podstawie stanu bundla ROBOCZA <code>3cf111ce</code>.
+Liczby zweryfikowane bezpośrednio w danych gry. Plik jest samodzielny — działa bez internetu i bez żadnych
+zewnętrznych zasobów.</p>
+
+</div>
+</body>
+</html>
