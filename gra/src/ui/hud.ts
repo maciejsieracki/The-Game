@@ -437,14 +437,6 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     chip6cHtml({
-      iconId: 'res-trade',
-      label: 'Handel',
-      value: signed(s.handelIncome ?? 0),
-      act: 'handel',
-      title: `Handel — dochód z ${s.handelRouteCount ?? 0} aktywnych tras handlowych/turę. Kliknij po szczegóły.`,
-    }),
-    chip6cSep(),
-    chip6cHtml({
       iconId: 'res-work',
       label: 'Praca',
       value: String(s.praca),
@@ -462,6 +454,18 @@ function renderBarD1B(s: HudState): string {
       rateWarn: !!s.surowceAlert,
       act: 'surowce',
       title: 'Surowce — magazyn państwa, klik po szczegóły',
+    }),
+    chip6cSep(),
+    // DYSPOZYCJA 85 (Maciej 2026-07-26): Handel przeniesiony NA KONIEC, za Surowce.
+    // Kolejność paska: Skarbiec · Praca · Surowce · Handel. Powód porządkowy: Skarbiec, Praca
+    // i Surowce to zasoby WŁASNE imperium, a Handel to wymiana Z OBCYMI cywilizacjami — inna
+    // kategoria pojęciowa, więc stoi osobno na końcu, a nie w środku zasobów własnych.
+    chip6cHtml({
+      iconId: 'res-trade',
+      label: 'Handel',
+      value: signed(s.handelIncome ?? 0),
+      act: 'handel',
+      title: `Handel — dochód z ${s.handelRouteCount ?? 0} aktywnych tras handlowych z obcymi cywilizacjami, na turę. Kliknij po szczegóły.`,
     }),
   ];
   const rightChips: string[] = [
