@@ -1755,3 +1755,135 @@ z nową, niższą wagą i nowym, dodatkowym mechanizmem strumienia obok.
 Razem ze stanem strony negatywnej (sekcja „STAN TABELI KAR — DOMKNIĘTA" wyżej) obie strony tabeli
 zdarzeń Wiarygodności (§3) są teraz w komplecie przeprojektowane i zatwierdzone co do modelu; otwarte
 pozostają wyłącznie strojenie liczbowe i cztery pytania odnotowane wyżej.
+
+---
+
+## 🔷 N3 — ROZSZERZENIE: KARA TAKŻE PO JEDNOSTRONNYM ZAKOŃCZENIU POROZUMIENIA BEZTERMINOWEGO (Maciej 2026-07-26)
+
+> „Atak zaraz po pokoju powinien być rozszerzony na atak po zakończeniu umowy, z wyłączeniem umów
+> terminowych. Czyli jeżeli umowa terminowa się kończy między nami — czy do pokoju, czy do porozumienia
+> o pakcie o nieagresji — to możemy atakować następnej tury. Ale jeżeli to było nieczasowe ustalenie, na
+> przykład sojusz czy jakiekolwiek inne ustalenie typu pakt o nieagresji, i anulujemy to, to nie tylko
+> karę powinniśmy dostać za anulowanie — ale jeżeli zaatakujemy w ciągu dziesięciu tur od zakończonego
+> przez nas porozumienia, to też mamy karę. Czyli atak zaraz po pokoju powinien też dotyczyć umowy o
+> pakcie nieagresji przez 10 tur. A jeżeli to była umowa czasowa, to możemy turę po zakończeniu tej umowy
+> atakować bez kary."
+
+### Nowa reguła
+
+Kara N3 (**−12**, dodatkowa, na wierzchu N1/N2 — patrz sekcja „N1 + N2 — UKŁAD OSTATECZNY" wyżej) obejmuje
+teraz NIE TYLKO atak w ciągu 10 tur od zawarcia pokoju (reguła pierwotna, bez zmian), ale także **atak w
+ciągu 10 tur od JEDNOSTRONNEGO ZAKOŃCZENIA przez nas porozumienia bezterminowego** (sojusz, pakt o
+nieagresji — o ile w ogóle bezterminowy, patrz weryfikacja niżej — lub inne bezterminowe ustalenie).
+
+### Kluczowe rozróżnienie
+
+| Jak zakończyło się porozumienie | Kiedy wolno zaatakować bez kary N3 |
+|---|---|
+| **Umowa TERMINOWA wygasła naturalnie** (dobiegła końca terminu) | **następna tura** — zero karencji, dotrzymaliśmy słowa do końca |
+| **Porozumienie BEZTERMINOWE anulowane przez nas** | dopiero **po 10 turach**; atak wcześniej = N3 (−12) |
+| **Pokój zawarty** (stan po wojnie) | dopiero po 10 turach (reguła pierwotna, bez zmian) |
+
+### Uzasadnienie projektowe
+
+Wygaśnięcie umowy terminowej to dotrzymanie słowa do końca — nie ma powodu do karencji. Jednostronne
+zerwanie bezterminowego porozumienia, po którym natychmiast następuje atak, to jawnie zaplanowana
+agresja — „zrywam, żeby uderzyć". Stąd kara sumuje się z karą za samo zerwanie.
+
+### Przykładowy rachunek (sumowanie kar)
+
+Anulowanie bezterminowego paktu o nieagresji + atak w 3. turze po anulowaniu:
+
+| Składnik | Waga |
+|---|---|
+| Kara za samo zerwanie (N5 — o ile obowiązuje, patrz sprzeczność niżej) | zależne od rozstrzygnięcia konfliktu N3↔N5 |
+| N3 — atak w oknie 10 tur od zakończenia porozumienia | **−12** |
+| N1/N2 — kara za sam sposób wypowiedzenia wojny (brak ostrzeżenia / złamanie zobowiązania NAP lub sojuszu) | −10 / −18 / −25 wg tabeli N1+N2 |
+| **RAZEM (przykład: NAP, zerwany bezterminowy, atak natychmiastowy bez ostrzeżenia)** | kara zerwania + (−12) + (−28 dla NAP+brak ostrzeżenia) |
+
+### ⚠️ SPRZECZNOŚĆ DO JAWNEGO ZGŁOSZENIA — NIE ROZSTRZYGNIĘTA TUTAJ
+
+Ta decyzja **koliduje z wcześniejszą decyzją Macieja o N5**, zapisaną w tym samym dokumencie (sekcja
+„N3–N7 — ZATWIERDZONE Z DOPRECYZOWANIAMI" wyżej):
+
+- **Wcześniej (N5):** „dobrowolne zerwanie traktatu — WARUNKOWE: kara TYLKO dla traktatów CZASOWYCH.
+  Traktat zwykły/bezterminowy → **BRAK KARY**." Uzasadnienie zapisane tam: umowa bezterminowa jest z
+  natury wypowiadalna.
+- **Teraz (N3 rozszerzone):** anulowanie porozumienia **BEZTERMINOWEGO** ma dawać karę („nie tylko karę
+  powinniśmy dostać za anulowanie, ale jeżeli zaatakujemy…").
+
+Te dwa zapisy się wykluczają. **Trzy możliwe odczytania — NIE wybrano żadnego:**
+
+**(a)** N5 zmienia się — kara za samo zerwanie obowiązuje też przy porozumieniach bezterminowych
+(wcześniejsza decyzja N5 zostaje tym samym anulowana).
+
+**(b)** N5 zostaje bez zmian (bezterminowe bez kary za samo zerwanie), a nowa reguła dodaje WYŁĄCZNIE
+karencję 10 tur na atak — czyli „zerwać wolno bez kary, ale nie wolno od razu uderzyć".
+
+**(c)** rozróżnienie zależy od typu porozumienia: sojusz zawsze karany przy zerwaniu, pakt o nieagresji
+nie.
+
+⚠️ **Wykonawca NIE MOŻE wdrażać tej części (kara za samo zerwanie porozumienia bezterminowego) do czasu
+rozstrzygnięcia przez Macieja.** Reguła karencji 10 tur na atak (N3 rozszerzone) sama w sobie NIE jest
+sporna i można ją projektować równolegle — sporne jest wyłącznie to, czy samo zerwanie bezterminowego
+porozumienia (niezależnie od późniejszego ataku) ma dodatkowo kosztować.
+
+### Wymagania implementacyjne
+
+Wymaga zapamiętania per para: **tury zakończenia porozumienia**, **jego typu** (terminowe/bezterminowe) i
+**kto je zakończył**. To ta sama struktura co `wojnaOdTury` (N1, sekcja „N1 — PEŁNA SPECYFIKACJA" wyżej) i
+`pokojOdTury` (N3 pierwotne, sekcja „N3–N7 — ZATWIERDZONE" wyżej) — **zbudować raz, wspólnie**, jako
+rozszerzenie `DiploPairMeta` (`game/diplomacy-pn-engine.ts:20-23` — dziś ma WYŁĄCZNIE
+`trustPnGainedThisTurn` i `dobraWolaRemainingTur`, żadne z trzech pól `wojnaOdTury`/`pokojOdTury`/nowego
+pola zakończenia porozumienia jeszcze nie istnieje w kodzie — wszystkie trzy to praca do wykonania w
+jednym przebiegu przez ten sam plik).
+
+**PARYTET AI:** identycznie dla gracza i AI — to samo zdarzenie (anulowanie bezterminowego porozumienia +
+atak w oknie 10 tur) zaaplikowane raz z inicjatorem-graczem, raz z inicjatorem-AI, musi dać identyczną
+karę N3.
+
+### ✅ Weryfikacja w kodzie: czy `ActiveDeal` rozróżnia traktaty terminowe od bezterminowych
+
+**WYNIK: TAK, rozróżnienie ISTNIEJE w kodzie już dziś — i to nie wszystkie traktaty są terminowe.**
+Reguła NIE jest bezprzedmiotowa, ale weryfikacja ujawniła niespójność między przykładem Macieja w cytacie
+i tym, jak silnik faktycznie buduje pakt o nieagresji (patrz ⚠️ niżej).
+
+Pole `ActiveDeal.wygasaTura: number | null` (`game/diplomacy-treaties.ts:44`) JEST dokładnie tym
+rozróżnieniem: `null` = bezterminowe, liczba = tura wygaśnięcia (terminowe). Już dziś aktywnie
+wykorzystywane przez `expireTreaties` (`game/diplomacy-treaties.ts:156`:
+`state.filter(d => d.wygasaTura === null || d.wygasaTura > turn)`) i `tickDiplomacy`
+(`game/diplomacy.ts:1438`, ten sam warunek) do decydowania, które traktaty wygasają naturalnie.
+
+Sprawdzono WSZYSTKIE miejsca budowania deali (`buildDeal(...)`, `game/diplomacy-proposals.ts`, oraz
+odpowiedniki w `main.ts`) — rozkład wg typu traktatu:
+
+| Typ traktatu | `wygasaTura` w kodzie dziś | Miejsca |
+|---|---|---|
+| **Sojusz** (defensywny/pełny, w tym sojusz sióstr AI↔AI) | **ZAWSZE `null` (bezterminowe)** | `diplomacy-proposals.ts:417`, `:892` (`resolvePlayerAcceptsAiPending`), `main.ts:8384` (sojusz sióstr) |
+| **Otwarte granice / Prawo wojskowego przemarszu** | **ZAWSZE `null` (bezterminowe)** | `diplomacy-proposals.ts:670-675` |
+| **Wasalizacja/Trybut** (przez `'wasal'`) | **ZAWSZE `null` (bezterminowe)** | `diplomacy-proposals.ts:703-708` |
+| **Wasalizacja/Trybut** (przez `'trybut_zadanie'`/`'trybut_oferta'`) | **MIESZANE** — zależy od `payload.turns` (może być `null` lub liczba) | `diplomacy-proposals.ts:454`, `:483`, `:957`, `:976` |
+| **Pakt o nieagresji (NAP)** | **ZAWSZE liczba (terminowe), NIGDY `null`** — `turns = clamp(payload.turns ?? 15, 10, 20)`, więc zawsze 10–20 tur | `diplomacy-proposals.ts:360-366` |
+| **Umowa handlowa** (jednorazowa propozycja gracza, akceptacja propozycji AI, AI↔AI cykliczna) | **ZAWSZE liczba (terminowe)** — `turn + clampDealTurns(...)`, domyślnie 15 tur, zakres 1–20 | `diplomacy-proposals.ts:531-536`, `:566-571`, `:941-946`; `main.ts:8525` |
+
+**⚠️ Niespójność do zgłoszenia Maciejowi:** w cytacie Maciej podaje pakt o nieagresji jako PRZYKŁAD
+porozumienia „nieczasowego" („jakiekolwiek inne ustalenie typu pakt o nieagresji"). W kodzie dziś jest
+odwrotnie — **NAP jest jedynym traktatem, który NIGDY nie może być bezterminowy** (zawsze 10–20 tur,
+`diplomacy-proposals.ts:360`). Sojusz i otwarte granice/prawo przemarszu są bezterminowe ZAWSZE; NAP jest
+terminowy ZAWSZE. Konsekwencja: przy dosłownym czytaniu obecnego kodu, **anulowanie NAP przed czasem
+zawsze trafia do gałęzi „zerwanie umowy terminowej"** (N5, kara −6/−4 jeśli N5 obowiązuje — bez sporu, bo
+N5 już dziś karze zerwanie czasowych) i NIGDY nie wejdzie w nową gałąź „bezterminowe zerwane
+jednostronnie" opisaną w tej sekcji — bo w dzisiejszym silniku NAP bezterminowy po prostu nie istnieje.
+Scenariusz z cytatu Macieja („anulujemy pakt o nieagresji jako porozumienie bezterminowe") dziś w
+praktyce dotyczyłby WYŁĄCZNIE Sojuszu (i technicznie Otwartych Granic/Prawa Przemarszu, Wasalizacji przez
+`'wasal'`) — NIE NAP, dopóki albo (i) NAP nie zostanie przebudowany tak, by dopuszczał wariant
+bezterminowy, albo (ii) Maciej potwierdzi, że mimo przykładu w cytacie chodziło mu o zasadę ogólną
+(„każde bezterminowe porozumienie, jakiekolwiek by nie było"), a NAP akurat po prostu nie kwalifikuje się
+dziś do tej kategorii i przykład w wypowiedzi był ilustracyjny, nie dosłowny. **Do potwierdzenia przez
+Macieja przed implementacją** — nie rozstrzygać samodzielnie, które traktaty realnie wchodzą w zakres tej
+reguły.
+
+**Wniosek dla wykonawcy:** reguła NIE jest bezprzedmiotowa (istnieją dziś w kodzie traktaty bezterminowe:
+sojusz, otwarte granice/prawo przemarszu, wasalizacja przez `'wasal'`) — ale zakres stosowania
+(„czy NAP też", zgodnie z literalnym przykładem Macieja) wymaga wyjaśnienia, bo koliduje z tym, jak NAP
+jest dziś zaimplementowany.
