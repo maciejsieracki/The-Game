@@ -11,7 +11,23 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `0dc317f2` — 2026-07-26 · FALA 20: SKARBIEC I PRACA NETTO — **AKTUALNA**
+## ROBOCZA `856b804b` — 2026-07-26 · FALA 20b: PONOWNY BUILD PO NIEUDANYM DEPLOYU — **AKTUALNA**
+- md5 (pelne): `856b804bef0b80fe33e8d59628670235` · VERIFY OK. Zbudowane z commita `6e1e0e4`.
+- **ZAWARTOSC IDENTYCZNA z fala 20** (Skarbiec i Praca netto). Nowy md5 wynika wylacznie
+  z nowego stempla czasu.
+- **⚠️ WPADKA DO ODNOTOWANIA:** bundle `ddcc04c1` (wgrany chwile wczesniej) byl NIEWAZNY —
+  build sie NIE POWIODL, a `cp` skopiowal poprzednia zawartosc dist, wiec plik mial nowa
+  pieczatke i stara tresc. VERIFY tego nie wykrywa, bo porownuje manifest z plikiem, a nie
+  z wynikiem builda. **Wniosek na przyszlosc: sprawdzac wynik `vite build` PRZED kopiowaniem
+  do gra-robocza — sam `VERIFY OK` nie jest dowodem, ze build sie udal.**
+- **Przyczyna nieudanego builda:** commit `b9867b3` (modal wyboru heksa + maksymalne HP)
+  objal `main.ts`, w ktorym byl juz import `diplomacyMaxZaufanieNaTureForWiarygodnosc`
+  z NIEDOKONCZONEJ, niezacommitowanej pracy innego zlecenia (Dzwignia 2 Wiarygodnosci).
+  `tsc` przechodzi, bo widzi caly katalog roboczy; bundler buduje wylacznie z tego, co
+  skomitowane — i pada. Modal i maksymalne HP sa wiec SKOMITOWANE, ale NIE ma ich w tym
+  bundlu; wejda razem z Dzwignia 2, gdy tamto zlecenie sie zamknie.
+
+## ROBOCZA `0dc317f2` — 2026-07-26 · FALA 20: SKARBIEC I PRACA NETTO — **ZASTĄPIONA (ta sama zawartosc, nowy stempel: 856b804b)**
 - md5 (pelne): `0dc317f28114bcfd86238aa706fc8910` · VERIFY OK, 6 bundli PLAYTEST, manifest 10 pozycji.
 - Zbudowane z HEAD `6e1e0e4`.
 - **Co nowego:** liczba przy Skarbcu pokazywala WPLYWY BRUTTO (Danina/Podatek + pieniadz

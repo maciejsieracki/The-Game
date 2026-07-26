@@ -3448,3 +3448,14 @@ Naprawione: liczba przy Skarbcu i Pracy pokazywala wplywy brutto zamiast netto �
 utrzymania budynkow i jednostek („+6 na chipie, +1 realnie"). Tooltipy pokazuja pelne rozbicie.
 **Sesja lokalna: pull na dysk wlasciciela, testuj `0dc317f2`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [PL, 2026-07-26] CHMURA → LOKALNA — korekta: ROBOCZA `856b804b` (FALA 20b)
+Bundle `ddcc04c1` byl NIEWAZNY — vite build sie nie powiodl, a kopiowanie przenioslo starą
+zawartosc dist z nowa pieczatka. VERIFY tego nie wykrywa (porownuje manifest z plikiem).
+Przyczyna: commit `b9867b3` objal main.ts z importem z niedokonczonej pracy innego zlecenia
+(Dzwignia 2 Wiarygodnosci) — tsc przechodzi, bundler nie.
+Aktualny, poprawny bundle: **`856b804bef0b80fe33e8d59628670235`**, zbudowany z `6e1e0e4`,
+zawartosc jak fala 20 (Skarbiec i Praca netto). Modal wyboru heksa i maksymalne HP sa
+skomitowane, ale wejda do bundla dopiero z Dzwignia 2.
+**Sesja lokalna: pull, testuj `856b804b`.**
+CZEKAM-NA: nic.
