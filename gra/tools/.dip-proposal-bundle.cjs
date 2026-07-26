@@ -954,6 +954,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.3,
       ikonaId: "grecy",
+      wodzowiePula: ["Perykles", "Temistokles", "Miltiades", "Kimon", "Solon", "Kleistenes", "Lizander", "Epaminondas", "Pelopidas", "Alkibiades"],
+      wodzowie: {
+        kamien: "Minos",
+        braz: "Agamemnon",
+        zelazo: "Leonidas",
+        antyk: "Aleksander Wielki"
+      },
       kolorHex: "#1E5AA8",
       bonusy: [
         {
@@ -979,7 +986,7 @@ var civs_default = {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.15,
-          opis: "Morskie szlaki handlowe: +15% z\u0142ota z port\xF3w i dr\xF3g morskich (Korynt, Ateny)",
+          opis: "Morskie szlaki handlowe: +15% Daniny z port\xF3w i dr\xF3g morskich (Korynt, Ateny)",
           realizuje: "ekonomia"
         },
         {
@@ -1121,6 +1128,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2,
       ikonaId: "rzymianie",
+      wodzowiePula: ["Kamillus", "Cyncynat", "Fabiusz Maksymus", "Katon Starszy", "Emiliusz Paulus", "Klaudiusz", "Waleriusz", "Korneliusz", "Serwiliusz", "Fulwiusz"],
+      wodzowie: {
+        kamien: "Romulus",
+        braz: "Numa Pompiliusz",
+        zelazo: "Scypion Afryka\u0144ski",
+        antyk: "Juliusz Cezar"
+      },
       kolorHex: "#8B1A1A",
       bonusy: [
         {
@@ -1293,6 +1307,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.4,
       ikonaId: "chinczycy",
+      wodzowiePula: ["Cheng Tang", "Wu Ding", "Wen Wang", "Zhou Gong", "Goujian", "Fuchai", "Hel\xFC", "Ksiaze Mu", "Ksiaze Huan", "Zhuang"],
+      wodzowie: {
+        kamien: "Huang Di",
+        braz: "Yu Wielki",
+        zelazo: "Qin Shi Huang",
+        antyk: "Han Wudi"
+      },
       kolorHex: "#C41E3A",
       bonusy: [
         {
@@ -1452,6 +1473,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.9,
       ikonaId: "inkowie",
+      wodzowiePula: ["Sinchi Roca", "Lloque Yupanqui", "Mayta Capac", "Capac Yupanqui", "Inca Roca", "Yahuar Huacac", "Tupac Yupanqui", "Huayna Capac", "Atahualpa", "Huascar"],
+      wodzowie: {
+        kamien: "Manco C\xE1pac",
+        braz: "Wirakocza Inka",
+        zelazo: "Pachacuti",
+        antyk: "T\xFApac Inca Yupanqui"
+      },
       kolorHex: "#D4A017",
       bonusy: [
         {
@@ -1613,6 +1641,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.8,
       ikonaId: "zulusi",
+      wodzowiePula: ["Dingane", "Mpande", "Ndaba", "Jama", "Punga", "Mageba", "Zwide", "Sobhuza", "Dingiswayo", "Langalibalele"],
+      wodzowie: {
+        kamien: "Zulu kaMalandela",
+        braz: "Senzangakhona",
+        zelazo: "Czaka",
+        antyk: "Cetshwayo"
+      },
       kolorHex: "#2E7D32",
       bonusy: [
         {
@@ -1772,6 +1807,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.1,
       ikonaId: "egipt",
+      wodzowiePula: ["Dzeser", "Snofru", "Chefren", "Mykerinos", "Pepi II", "Mentuhotep II", "Amenemhat I", "Totmes III", "Amenhotep III", "Echnaton"],
+      wodzowie: {
+        kamien: "Narmer",
+        braz: "Chufu",
+        zelazo: "Ramzes II",
+        antyk: "Kleopatra VII"
+      },
       kolorHex: "#E8C547",
       bonusy: [
         {
@@ -1793,6 +1835,7 @@ var civs_default = {
           cel: "piechota",
           wartosc: [
             "\u0141ucznik egipski",
+            "\u0141ucznik nubijski",
             "Rydwan egipski",
             "Wojownik z khopesh",
             "Wojownik z \u017Celaznym khopesh"
@@ -1932,6 +1975,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.2,
       ikonaId: "sumer",
+      wodzowiePula: ["Etana", "Enmerkar", "Lugalbanda", "Dumuzi", "Eannatum", "Lugalzagesi", "Meskalamdug", "Mesannepada", "Enannatum", "Entemena"],
+      wodzowie: {
+        kamien: "Alulim",
+        braz: "Gilgamesz",
+        zelazo: "Ur-Nammu",
+        antyk: "Szulgi"
+      },
       kolorHex: "#6B4226",
       bonusy: [
         {
@@ -2093,6 +2143,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.9,
       ikonaId: "celtowie",
+      wodzowiePula: ["Dumnoryks", "Divitiakus", "Cassivellaunus", "Kunobelinos", "Orgetoryks", "Kastyk", "Ambioryks", "Indutiomaros", "Tasgetios", "Litawikus"],
+      wodzowie: {
+        kamien: "Ambigatos",
+        braz: "Brennus",
+        zelazo: "Wercyngetoryks",
+        antyk: "Boudika"
+      },
       kolorHex: "#3D6B35",
       bonusy: [
         {
@@ -2252,6 +2309,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.7,
       ikonaId: "germanie",
+      wodzowiePula: ["Marbod", "Segestes", "Segimer", "Inguiomer", "Chariovalda", "Katualda", "Nasua", "Cimberius", "Boioryks", "Teutobod"],
+      wodzowie: {
+        kamien: "Mannus",
+        braz: "Ariowist",
+        zelazo: "Arminiusz",
+        antyk: "Alaryk I"
+      },
       kolorHex: "#4A5568",
       bonusy: [
         {
@@ -2409,13 +2473,20 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.4,
       ikonaId: "harappa",
+      wodzowiePula: ["Vasu", "Bharata", "Divodasa", "Sudas", "Trasadasyu", "Mandhatri", "Purukutsa", "Kuvalashva", "Anaranya", "Trishanku"],
+      wodzowie: {
+        kamien: "Starszy z Mehrgarh",
+        braz: "Kap\u0142an-Kr\xF3l z Mohend\u017Co-Daro",
+        zelazo: "Rad\u017Ca Dholaviry",
+        antyk: "A\u015Boka"
+      },
       kolorHex: "#C67B4E",
       bonusy: [
         {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.15,
-          opis: "Szlaki lokalne: +15% z\u0142ota z handlu w miastach",
+          opis: "Szlaki lokalne: +15% Daniny miast",
           realizuje: "ekonomia"
         },
         {
@@ -2568,6 +2639,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2,
       ikonaId: "hetyci",
+      wodzowiePula: ["Tudhalija I", "Arnuwanda I", "Mursili I", "Muwatalli II", "Hantili I", "Zidanta I", "Ammuna", "Telipinu", "Tahurwaili", "Alluwamna"],
+      wodzowie: {
+        kamien: "Labarna I",
+        braz: "Hattusili I",
+        zelazo: "Suppiluliuma I",
+        antyk: "Suppiluliuma II"
+      },
       kolorHex: "#7B4B8A",
       bonusy: [
         {
@@ -2727,6 +2805,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.8,
       ikonaId: "slowianie",
+      wodzowiePula: ["Piast", "Siemowit", "Lestek", "Siemomysl", "Popiel", "Przemysl", "Ziemowit", "Choscisko", "Wiszymir", "Leszek"],
+      wodzowie: {
+        kamien: "Lech",
+        braz: "Krak",
+        zelazo: "Samo",
+        antyk: "Mieszko I"
+      },
       kolorHex: "#B83232",
       bonusy: [
         {
@@ -2885,6 +2970,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.3,
       ikonaId: "babilonia",
+      wodzowiePula: ["Sumu-la-El", "Sabium", "Apil-Sin", "Sin-muballit", "Samsu-iluna", "Abi-eszuh", "Ammi-ditana", "Ammi-saduqa", "Samsu-ditana", "Kurigalzu I"],
+      wodzowie: {
+        kamien: "Sumu-abum",
+        braz: "Hammurabi",
+        zelazo: "Nabuchodonozor II",
+        antyk: "Nabonid"
+      },
       kolorHex: "#2B5F8A",
       bonusy: [
         {
@@ -2898,7 +2990,7 @@ var civs_default = {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.1,
-          opis: "Rynek Euphratu: +10% z\u0142ota",
+          opis: "Rynek Euphratu: +10% Daniny miast",
           realizuje: "ekonomia"
         },
         {
@@ -3044,6 +3136,13 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.7,
       ikonaId: "asyria",
+      wodzowiePula: ["Szamszi-Adad I", "Adad-nirari I", "Salmanasar I", "Tukulti-Ninurta I", "Aszur-uballit I", "Sargon II", "Asarhaddon", "Aszurnasirpal II", "Salmanasar III", "Sennacheryb"],
+      wodzowie: {
+        kamien: "Puzur-Aszur I",
+        braz: "Tiglat-Pileser I",
+        zelazo: "Aszurbanipal",
+        antyk: "Sennacheryb"
+      },
       kolorHex: "#5C4033",
       bonusy: [
         {
@@ -3203,20 +3302,27 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.6,
       ikonaId: "fenicjanie",
+      wodzowiePula: ["Ahiram", "Ittobaal I", "Baal-Eser I", "Matten I", "Pygmalion", "Abibaal", "Elibaal", "Szipitbaal", "Mago I", "Hazdrubal"],
+      wodzowie: {
+        kamien: "Agenor",
+        braz: "Hiram I",
+        zelazo: "Dydona-Elissa",
+        antyk: "Hannibal Barkas"
+      },
       kolorHex: "#9B2335",
       bonusy: [
         {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.25,
-          opis: "Szlaki morskie: +25% z\u0142ota z port\xF3w",
+          opis: "Szlaki morskie: +25% Daniny z port\xF3w",
           realizuje: "ekonomia"
         },
         {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.1,
-          opis: "Purpura: +10% handlu",
+          opis: "Purpura: +10% Daniny",
           realizuje: "ekonomia"
         },
         {
@@ -3796,7 +3902,98 @@ var DIPLOMACY_PARAMS = {
   /** Jednorazowe złoto min przy ultimatum */
   progUltimatumMinGold: 20,
   /** Domyślny trybut wasala (¤/turę) */
-  progWasalDefaultGoldPerTurn: 10
+  progWasalDefaultGoldPerTurn: 10,
+  // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
+  // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
+  // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —
+  // wzorem loadDiplomacyParams() dla reszty DIPLOMACY_PARAMS.
+  // -- §1: skala i wartość startowa (pkt Wiarygodności, skala −100…+100) --
+  /** Dolna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMin: -100,
+  /** Górna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMax: 100,
+  /** Próg pasma „Wzór cnoty" — W >= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWzorCnoty: 40,
+  /** Próg pasma „Wiarołomny" — W <= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWiarolomny: -40,
+  /** Wartość startowa Wiarygodności, poziom Łatwy (pkt Wiarygodności), §1. */
+  wiarygodnoscStartLatwy: 40,
+  /** Wartość startowa Wiarygodności, poziom Normalny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartNormalny: 20,
+  /** Wartość startowa Wiarygodności, poziom Trudny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartTrudny: 0,
+  // -- §2: KARY N1–N7 (pkt Wiarygodności, jednorazowo, wszystkie poziomy trudności) --
+  /** N1 — wypowiedzenie wojny bez ostrzeżenia / atak w tej samej turze co deklaracja (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN1BezOstrzezenia: -10,
+  /** N1 — okno karencji: liczba tur po wypowiedzeniu wojny, w której atak jeszcze liczy się jako "bez ostrzeżenia" (tury). */
+  wiarygodnoscN1KarencjaTur: 1,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Paktu o Nieagresji (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuNap: -18,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Sojuszu (pełny/defensywny), także atak na sojusznika (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuSojusz: -25,
+  /** N3 — atak w oknie karencji po zakończeniu porozumienia (pkt Wiarygodności, jednorazowo, na wierzchu N1/N2). */
+  wiarygodnoscN3AtakWOknieKarencji: -12,
+  /** N3 — okno karencji (tury) po jednostronnym anulowaniu porozumienia BEZTERMINOWEGO lub po zawarciu pokoju, przed którym atak = kara N3. */
+  wiarygodnoscN3KarencjaBezterminoweTur: 10,
+  /** N4 — odmowa pomocy sojusznikowi na wezwanie obowiązku sojuszniczego, kara WYŁĄCZNIE dla odmawiającego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN4OdmowaObowiazkuSojuszu: -15,
+  /** N5 — dobrowolne zerwanie traktatu CZASOWEGO (nie handlowego) (pkt Wiarygodności, jednorazowo). Bezterminowe = brak kary (patrz N3). */
+  wiarygodnoscN5ZerwanieTraktatCzasowy: -6,
+  /** N5 — dobrowolne zerwanie umowy handlowej CZASOWEJ (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN5ZerwanieHandelCzasowy: -4,
+  /** N6 — niedotrzymanie handlu cyklicznego (3 tury z rzędu z winy strony), kara wyłącznie dla winnego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN6NiedotrzymanieHandluCyklicznego: -2,
+  /** N7 — nieautoryzowany przemarsz, jednorazowo przy pierwszym wykryciu w danej "wizycie" (pkt Wiarygodności). Zwiadowcy wykluczeni (C-WIAR-SKAUT=A). */
+  wiarygodnoscN7NieautoryzowanyPrzemarsz: -2,
+  /** Odwet (C-WIAR-ODWET=A) — okno (tury) od cudzego N1/N2/N4 wobec nas, w którym nasza odwetowa wojna NIE nalicza N1/N2. */
+  wiarygodnoscOdwetOknoTur: 10,
+  // -- §3: NAGRODY — tabela A STRUMIEŃ (pkt Wiarygodności NA TURĘ, za każde aktualnie dotrzymywane zobowiązanie) --
+  /** S1 — Sojusz (pełny lub defensywny) aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS1SojuszPerTure: 1,
+  /** S2 — Pakt o nieagresji aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS2NapPerTure: 0.5,
+  /** S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTure: 0.3,
+  /** S4 — Prawo przemarszu / otwarte granice aktywne (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTure: 0.2,
+  // -- §3: NAGRODY — tabela B FINISZ (pkt Wiarygodności, jednorazowo, za dotrwanie do zapisanego terminu) --
+  /** P1 — Sojusz dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP1FiniszSojusz: 10,
+  /** P2 — Pakt o nieagresji dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszNap: 5,
+  /** P2 — Umowa handlowa dotrwana do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszHandel: 5,
+  /** P3 — Handel cykliczny ze 100% dostaw aż do końca umowy (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP3FiniszHandelCykliczny: 1,
+  // -- §3: NAGRODY — tabela C CZYNY (pkt Wiarygodności, jednorazowo, niepowiązane z trwającym zobowiązaniem) --
+  /** P4 — kamień milowy "bez wojny" (pkt Wiarygodności, jednorazowo, powtarzalny co wiarygodnoscP4OknoBezWojnyTur tur). */
+  wiarygodnoscP4BezWojny30Tur: 3,
+  /** P4 — długość okna "bez wojny" wymaganego do naliczenia kamienia milowego (tury). */
+  wiarygodnoscP4OknoBezWojnyTur: 30,
+  /** P5 — pomoc sojusznikowi w wojnie, dołączenie z własnej woli LUB na wezwanie (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP5PomocSojusznikowi: 20,
+  // -- §4: model zapominania — krzywa liniowa z trwałą podłogą (tury do osiągnięcia podłogi, wg trudności i znaku zdarzenia) --
+  /** Czas zapomnienia KAR, poziom Łatwy (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraLatwy: 40,
+  /** Czas zapomnienia KAR, poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraNormalny: 80,
+  /** Czas zapomnienia KAR, poziom Trudny (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraTrudny: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Łatwy (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaLatwy: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaNormalny: 80,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Trudny (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaTrudny: 40,
+  /** Trwała podłoga krzywej zapominania — ułamek [0,1] wartości pierwotnej, który zostaje NA ZAWSZE po pełnym wygaśnięciu (dotyczy WYŁĄCZNIE zdarzeń jednorazowych, nie STRUMIENIA — C-WIAR-SLAD=A). */
+  wiarygodnoscTrwalaPodlogaProcent: 0.1,
+  // -- §5: wpływ Wiarygodności na Zaufanie --
+  /** Dzielnik strumienia Wiarygodność→Zaufanie: ΔZaufanie/turę = Wiarygodność / wartość (C-WIAR-SKALA=20). */
+  wiarygodnoscZaufanieDzielnikPerTura: 20,
+  /** Dźwignia 3 — twardy próg: Sojusz wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgSojuszMin: 0,
+  /** Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgNapMin: -40
 };
 function loadDiplomacyParams(json) {
   const out = {};
@@ -4134,7 +4331,7 @@ var tech_default = {
     szybka: 1,
     standardowa: 2,
     dluga: 4,
-    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' = tryb szybki (x1). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=12, szybka -> 12 PN; standardowa -> 24 PN; dluga -> 48 PN. Maciej 2026-07-07."
+    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1); dawniejszy globalny x2 jest juz w JSON (B-RESEARCH-COST-MODEL 2026-07-24). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=24, szybka -> 24 PN; standardowa -> 48 PN; dluga -> 96 PN. Obr\xF3bka drewna/Murarstwo: 5/10/20 PN."
   },
   technologie: [
     {
@@ -4144,9 +4341,9 @@ var tech_default = {
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
-      "Odblokowuje surowiec.": "paliwo, drewno",
-      "Odblokowuje budynek": "Stolarnia, Mielerz",
-      "Koszt nauki": 12,
+      "Odblokowuje surowiec.": "drewno",
+      "Odblokowuje budynek": "Stolarnia",
+      "Koszt nauki": 5,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Tartak, Posterunek (Stra\u017Cnica)"
     },
@@ -4159,7 +4356,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "ceg\u0142a, glina, sol",
       "Odblokowuje budynek": "Spichlerz; Garncarnia; Cegielnia",
-      "Koszt nauki": 10,
+      "Koszt nauki": 20,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Glinianka, Warzelnia soli"
     },
@@ -4172,7 +4369,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "kamien, ruda",
       "Odblokowuje budynek": "Warsztat kamieniarski; Stela / Pomnik",
-      "Koszt nauki": 14,
+      "Koszt nauki": 28,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Kopalnia, Kamienio\u0142om, Posterunek (Stra\u017Cnica)"
     },
@@ -4186,7 +4383,7 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Farma, Tarasy uprawne",
-      "Koszt nauki": 8,
+      "Koszt nauki": 16,
       Uwagi: "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie"
     },
     {
@@ -4199,7 +4396,7 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Ob\xF3z \u0142owiecki",
-      "Koszt nauki": 10,
+      "Koszt nauki": 20,
       Uwagi: "B1-Q2A Maciej 2026-06-29"
     },
     {
@@ -4208,10 +4405,10 @@ var tech_default = {
       Poziom: 2,
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
-      "Wymaga (prereq)": "\u2014",
+      "Wymaga (prereq)": "\u0141owiectwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Jednostki: \u0141ucznik, \u0141ucznik egipski, \u0141ucznik sumeryjski, \u0141ucznik akadyjski",
-      "Koszt nauki": 14,
+      "Koszt nauki": 28,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4224,7 +4421,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "krowa/byk, owce, bydlo, lama",
       "Odblokowuje budynek": null,
-      "Koszt nauki": 12,
+      "Koszt nauki": 24,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Byd\u0142o, Owce, Lama"
     },
@@ -4237,7 +4434,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Kamienne kr\u0119gi",
-      "Koszt nauki": 10,
+      "Koszt nauki": 20,
       Uwagi: "T-TECH-8: pierwszy poziom kultu \u2014 upgrade do \u015Awi\u0105tyni po Religii",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4250,7 +4447,7 @@ var tech_default = {
       "Wymaga (prereq)": "Garncarstwo + Rolnictwo + Oswojenie zwierz\u0105t",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Targowisko (Rynek)",
-      "Koszt nauki": 16,
+      "Koszt nauki": 32,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4263,7 +4460,7 @@ var tech_default = {
       "Wymaga (prereq)": "Rolnictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Studnia",
-      "Koszt nauki": 18,
+      "Koszt nauki": 36,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Irygacja"
     },
@@ -4276,7 +4473,7 @@ var tech_default = {
       "Wymaga (prereq)": "Oswojenie zwierz\u0105t",
       "Odblokowuje surowiec.": "krowa/byk",
       "Odblokowuje budynek": "Jednostki: Rydwan (wo\u0142y)",
-      "Koszt nauki": 22,
+      "Koszt nauki": 44,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Droga"
     },
@@ -4288,8 +4485,8 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Garncarstwo + Murarstwo + Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Odlewnia br\u0105zu; Kuznia; Jednostki: W\u0142\xF3cznik, Wojownik z mieczem i tarcz\u0105, Impi, Wojownik z toporem, Wojownik z khopesh, W\u0142\xF3cznik sumeryjski, Wojownik myke\u0144ski, Wojownik Sherden, Halabardnik Shang, Wie\u017Ca obl\u0119\u017Cnicza, Wojownik tyrre\u0144ski, Wojownik szekelesz",
-      "Koszt nauki": 45,
+      "Odblokowuje budynek": "Odlewnia br\u0105zu; Ku\u017Ania br\u0105zu; Jednostki: W\u0142\xF3cznik, Wojownik z mieczem i tarcz\u0105, Impi, Wojownik z toporem, Wojownik z khopesh, W\u0142\xF3cznik sumeryjski, Wojownik myke\u0144ski, Wojownik Sherden, Halabardnik Shang, Wie\u017Ca obl\u0119\u017Cnicza, Wojownik tyrre\u0144ski, Wojownik szekelesz",
+      "Koszt nauki": 90,
       Uwagi: "ko\u0144czy Epok\u0119 1; ABC-7: Popalnia br\u0105zu na mapie",
       "Odblokowuje ulepszenie terenu": "Popalnia br\u0105zu",
       awansDoEpoki: 2
@@ -4303,7 +4500,7 @@ var tech_default = {
       "Wymaga (prereq)": "Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Port handlowy; Jednostki: Galera",
-      "Koszt nauki": 40,
+      "Koszt nauki": 80,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "\u0141odzie rybackie",
       "wymagane ulepszenie": "Tartak"
@@ -4317,7 +4514,7 @@ var tech_default = {
       "Wymaga (prereq)": "Garncarstwo + Wymiana",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Biblioteka",
-      "Koszt nauki": 45,
+      "Koszt nauki": 90,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4330,7 +4527,7 @@ var tech_default = {
       "Wymaga (prereq)": "Garncarstwo + Mistycyzm",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "\u015Awi\u0105tynia (upgrade kr\u0119g\xF3w)",
-      "Koszt nauki": 48,
+      "Koszt nauki": 96,
       Uwagi: "T-TECH-8: upgrade kamienne_kregi \u2192 swiatynia (suma bonus\xF3w w JSON)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4343,7 +4540,7 @@ var tech_default = {
       "Wymaga (prereq)": "Ko\u0142o + Br\u0105zownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Jednostki: Konnica, Je\u017Adziec chi\u0144ski, Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan myke\u0144ski, Rydwan Shang",
-      "Koszt nauki": 56,
+      "Koszt nauki": 112,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4356,7 +4553,7 @@ var tech_default = {
       "Wymaga (prereq)": "Br\u0105zownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Koszary",
-      "Koszt nauki": 52,
+      "Koszt nauki": 104,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Fort / umocnienia"
     },
@@ -4369,7 +4566,7 @@ var tech_default = {
       "Wymaga (prereq)": "Pismo + Wymiana",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
-      "Koszt nauki": 68,
+      "Koszt nauki": 136,
       Uwagi: "Maciej 2026-06-30: usuni\u0119to luksus/plantacj\u0119 z gry",
       "Odblokowuje ulepszenie terenu": "\u2014"
     },
@@ -4381,8 +4578,8 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Pismo + \u017Begluga",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Karawanseraj; Magazyn",
-      "Koszt nauki": 74,
+      "Odblokowuje budynek": "Magazyn",
+      "Koszt nauki": 148,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4394,8 +4591,8 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Pismo + Religia",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Trybuna\u0142",
-      "Koszt nauki": 62,
+      "Odblokowuje budynek": "Trybuna\u0142; Dw\xF3r Zarz\u0105dcy",
+      "Koszt nauki": 124,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4408,7 +4605,7 @@ var tech_default = {
       "Wymaga (prereq)": "Matematyka + Murarstwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Mury; Akwedukt",
-      "Koszt nauki": 85,
+      "Koszt nauki": 170,
       Uwagi: "T-TECH-6: Akwedukt v1.0",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4421,9 +4618,9 @@ var tech_default = {
       "Wymaga (prereq)": "Handel + Matematyka",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Mennica",
-      "Koszt nauki": 100,
-      Uwagi: "ko\u0144czy Epok\u0119 2 (Pieni\u0105dz); T-TECH-6: Mennica v1.0",
-      "Odblokowuje ulepszenie terenu": null
+      "Koszt nauki": 200,
+      Uwagi: "ko\u0144czy Epok\u0119 2 (Pieni\u0105dz); T-TECH-6: Mennica v1.0; ZLOTO 2026-07-25: Mennica dodatkowo wymaga dost\u0119pu do Z\u0142ota (Kopalnia z\u0142ota) + Targowiska w mie\u015Bcie",
+      "Odblokowuje ulepszenie terenu": "Kopalnia z\u0142ota"
     },
     {
       Technologia: "Astronomia",
@@ -4434,7 +4631,7 @@ var tech_default = {
       "Wymaga (prereq)": "Matematyka + Religia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Biblioteka: poziom Obserwatorium+ (poz. 6)",
-      "Koszt nauki": 110,
+      "Koszt nauki": 220,
       Uwagi: "3a: Astronomia = bramka rozwoju Biblioteki do poziomu 6 (Obserwatorium) i wyzej; nie osobny budynek. prereq Matematyka+Mistycyzm",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4447,7 +4644,7 @@ var tech_default = {
       "Wymaga (prereq)": "Br\u0105zownictwo",
       "Odblokowuje surowiec.": "\u017Celazo",
       "Odblokowuje budynek": "Ku\u017Ania \u017Celaza; Jednostki: Hastati, Falanga, Dru\u017Cynnik, Garnizon Harappy, Gwardia hetycka, Piechota neobabilo\u0144ska, Tyrski miecznik, Gwardia Tyre\u0144ska, Thorakites, iButho z iklwa, Wojownik z \u017Celaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski, Rydwan celtycki, Konnica lancowa asyryjska, Konnica \u0142ucznicza asyryjska, Je\u017Adziec z oszczepami",
-      "Koszt nauki": 120,
+      "Koszt nauki": 240,
       Uwagi: "ko\u0144czy Epok\u0119 2 / otwiera Epok\u0119 3; jednostki \u017Celazne (Gaesatae, Soldurii, Wojownik germa\u0144ski itp.) \u2014 do zdefiniowania przez UNITS; Ku\u017Ania \u017Celaza = NOWY budynek dla EKONOMIA",
       "Odblokowuje ulepszenie terenu": null,
       awansDoEpoki: 3
@@ -4460,9 +4657,9 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Budownictwo",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Fort",
-      "Koszt nauki": 130,
-      Uwagi: "Fort = NOWY budynek (obrona terenu, zasi\u0119g 10, +100% obrona przy obozowaniu \u2014 zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniej\u0105cego Akweduktu",
+      "Odblokowuje budynek": "Fort; Cytadela; Baszta",
+      "Koszt nauki": 260,
+      Uwagi: "Fort = NOWY budynek (obrona terenu, zasi\u0119g 10, +100% obrona przy obozowaniu \u2014 zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniej\u0105cego Akweduktu. Baszta (decyzja 41B, 2026-07-25) -- trzeci budynek obronny miasta, obok Cytadeli, ta sama technologia.",
       "Odblokowuje ulepszenie terenu": null
     },
     {
@@ -4474,7 +4671,7 @@ var tech_default = {
       "Wymaga (prereq)": "Matematyka + Wojskowo\u015B\u0107",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Warsztat obl\u0119\u017Cniczy; Jednostki: Katapulta",
-      "Koszt nauki": 140,
+      "Koszt nauki": 280,
       Uwagi: "jednostki: Katapulta, Taran, Wie\u017Ca obl\u0119\u017Cnicza (cz\u0119\u015B\u0107 ju\u017C w UNITS \u2014 weryfikacja przez UNITS); Warsztat obl\u0119\u017Cniczy = NOWY budynek dla EKONOMIA; Katapulta wymaga tego tech (aktualizacja Tech w units.json przez UNITS)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4487,7 +4684,7 @@ var tech_default = {
       "Wymaga (prereq)": "Pismo + Religia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Akademia; Teatr",
-      "Koszt nauki": 150,
+      "Koszt nauki": 300,
       Uwagi: "Akademia = NOWY budynek (nauka++); Teatr = NOWY budynek (kultura++, zadowolenie++); oba dla EKONOMIA",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4500,7 +4697,7 @@ var tech_default = {
       "Wymaga (prereq)": "Kodeks + Filozofia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "S\u0105d; Pretorium",
-      "Koszt nauki": 155,
+      "Koszt nauki": 310,
       Uwagi: "S\u0105d = NOWY budynek (administracja, zadowolenie+, korupcja-); Pretorium = NOWY budynek (administracja, bonus do utrzymania porz\u0105dku); oba dla EKONOMIA",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4513,7 +4710,7 @@ var tech_default = {
       "Wymaga (prereq)": "In\u017Cynieria + Budownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
-      "Koszt nauki": 170,
+      "Koszt nauki": 340,
       Uwagi: "T-TECH-9: ulepszenie Droga brukowana (+2 ruch, upgrade z Drogi)",
       "Odblokowuje ulepszenie terenu": "Droga brukowana"
     },
@@ -4526,7 +4723,7 @@ var tech_default = {
       "Wymaga (prereq)": "Filozofia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "\u0141a\u017Ania publiczna; Lazaret",
-      "Koszt nauki": 162,
+      "Koszt nauki": 324,
       Uwagi: "\u0141a\u017Ania publiczna = NOWY budynek (zadowolenie++, zdrowie++); Lazaret = NOWY budynek (odnawianie HP jednostek w mie\u015Bcie); oba dla EKONOMIA; styk z UNITS (regeneracja)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4539,7 +4736,7 @@ var tech_default = {
       "Wymaga (prereq)": "Hutnictwo \u017Celaza + Drogi brukowane",
       "Odblokowuje surowiec.": "stal (prereq)",
       "Odblokowuje budynek": "Wielka Ku\u017Ania; Jednostki: Gaesatae, Soldurii, Wojownik germa\u0144ski, Berserker germa\u0144ski",
-      "Koszt nauki": 185,
+      "Koszt nauki": 370,
       Uwagi: "Wielka Ku\u017Ania = NOWY budynek (produkcja++, mnoznik jednostek++); stal = NOWY surowiec dla DANE (prereq dalszych epok); EKONOMIA dodaje surowiec; UNITS aktualizuje jednostki \u017Celazne wy\u017Cszego poziomu",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -4552,7 +4749,7 @@ var tech_default = {
       "Wymaga (prereq)": "Obl\u0119\u017Cnictwo + Obr\xF3bka \u017Celaza",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Akademia wojskowa",
-      "Koszt nauki": 200,
+      "Koszt nauki": 400,
       Uwagi: "ko\u0144czy Epok\u0119 3 (cap v0.1); Akademia wojskowa = NOWY budynek (mnoznik sily i exp jednostek ++, prereq elitarnych jednostek \u017Celaznych); UNITS definiuje jednostki top-tier \u017Belaza; EKONOMIA dodaje budynek",
       "Odblokowuje ulepszenie terenu": null
     }
@@ -4568,7 +4765,8 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol"
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -4662,7 +4860,8 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
+    surowiec_ilosc_tura: 2,
     teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
     warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
@@ -4677,7 +4876,8 @@ var terrain_improvements_default = {
       glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 5,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -4692,7 +4892,8 @@ var terrain_improvements_default = {
       kamien: 1
     },
     surowiecOdblokowany: "kamien",
-    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba",
+    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    surowiec_ilosc_tura: 4,
     teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
     warunek: "budulec \u2014 mury, budynki",
     koszt_praca: 22,
@@ -4721,7 +4922,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -4739,7 +4940,8 @@ var terrain_improvements_default = {
       praca: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "v0.1: tylko dost\u0119p boolean (panel Surowce) \u2014 bez liczenia ilo\u015Bci w magazynie",
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
+    surowiec_ilosc_tura: 4,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -4842,13 +5044,29 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    surowiec_ilosc_tura: 2,
     teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+  },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
   },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
@@ -5049,8 +5267,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -5161,8 +5379,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5217,8 +5435,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5273,8 +5491,8 @@ var units_default = [
     Tech: "Ko\u0142o",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
-    Surowiec: "bydlo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5329,8 +5547,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 22,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5385,8 +5603,8 @@ var units_default = [
     Tech: "\u017Begluga",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -5441,8 +5659,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5497,8 +5715,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5514,7 +5732,7 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
     "W zamian za": "\u2014",
     "Super-jednostka": "TAK",
-    Uwagi: "propozycja \u2014 do akceptacji; max 1, bezp\u0142atna, stolica, respawn",
+    Uwagi: "hoplici elitarni \u2014 w\u0142\xF3cznia (dory) + aspis (decyzja Macieja 2026-07-23); max 1, bezp\u0142atna, stolica, respawn",
     "Rola (linia)": "Wr\u0119cz",
     Pancerz: 6,
     Przebicie: 4,
@@ -5531,7 +5749,7 @@ var units_default = [
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
     "Zast\u0105p specjalnie": "\u2014",
@@ -5553,8 +5771,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5607,10 +5825,10 @@ var units_default = [
     Epoka: "\u017Belazo",
     Kultura: "Rzymska",
     Tech: "Hutnictwo \u017Celaza",
-    "Pieni\u0105dz (koszt)": 18,
+    "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5643,7 +5861,7 @@ var units_default = [
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
     "Zast\u0105p specjalnie": "\u2014",
@@ -5665,8 +5883,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5721,8 +5939,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -5777,8 +5995,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -5889,8 +6107,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -6001,8 +6219,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -6169,7 +6387,7 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "Br\u0105z",
     "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -6225,8 +6443,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -6281,8 +6499,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -6298,7 +6516,7 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": 12,
     "W zamian za": "\u0141ucznik",
     "Super-jednostka": "\u2014",
-    Uwagi: "propozycja; jednostka specjalna; \u0142uk kompozytowy (\u0142uk refleksyjny); silniejszy dystans ni\u017C standardowy \u0142ucznik | BALANCE: Koszt\u219114, Pociski\u219312",
+    Uwagi: "propozycja; jednostka specjalna; \u0142uk dwuwypuk\u0142y (self bow); silniejszy dystans ni\u017C standardowy \u0142ucznik | BALANCE: Koszt\u219114, Pociski\u219312",
     "Rola (linia)": "Dystans",
     Pancerz: 2,
     Przebicie: 2,
@@ -6337,8 +6555,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -6393,8 +6611,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -6449,8 +6667,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -6499,14 +6717,70 @@ var units_default = [
     fieldPower: 64.5
   },
   {
+    Jednostka: "\u0141ucznik nubijski",
+    Epoka: "Br\u0105z",
+    Kultura: "Egipt",
+    Tech: "\u0141ucznictwo",
+    "Pieni\u0105dz (koszt)": 20,
+    Ludno\u015B\u0107: 1,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
+    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
+    "\u017Cywno\u015B\u0107/tur\u0119": 1,
+    Atak: 4,
+    Uderzenie: 2,
+    Obrona: 6,
+    Ruch: 3,
+    "Ruch w bitwie (heksy)": 4,
+    Health: 50,
+    "Pr\xF3g dezercji (% health)": 0.4,
+    "Widok pola": 2,
+    "Atak dystansowy": 7,
+    "Zasi\u0119g ataku (hex)": 5,
+    "Ilo\u015B\u0107 pocisk\xF3w": 16,
+    "W zamian za": "\u0141ucznik",
+    "Super-jednostka": "\u2014",
+    Uwagi: 'propozycja; jednostka specjalna Egiptu (Br\u0105z); \u0142ucznik nubijski z Ta-Seti ("Kraina \u0141uku", Nubia) \u2014 nie myli\u0107 z Numidami (jazda, \u017Belazo, inny region); zast\u0119puje \u0141ucznika; najwi\u0119kszy zasi\u0119g i najliczniejszy ko\u0142czan w\u015Br\xF3d \u0142ucznik\xF3w Br\u0105zu, szybszy marsz (Ruch 3) | UWAGA KOORDYNATORA: Koszt 20, Utrzymanie 2, Pancerz/Przebicie/Obrona/Ruch-w-bitwie i staty TW v3 (meleeAttack/meleeDefence/weaponDamage/piercing/armor/chargeBonus/health/missileAttack) dobrane przez subagenta wzorem \u0141ucznika akadyjskiego \u2014 do zatwierdzenia przez w\u0142a\u015Bciciela. Model 3D: buildNubianArcherOpus5 (braz-lucznik-nubijski-opus5.ts) \u2014 dedykowany model, luk dlugi self-bow, karnacja ciemniejsza niz Egipt, przepaska skorzana.',
+    "Rola (linia)": "Dystans",
+    Pancerz: 2,
+    Przebicie: 2,
+    "Kara obrony z flanki (%)": 50,
+    "Kara obrony z ty\u0142u (%)": 80,
+    "Morale bazowe": 85,
+    "Morale ucieczki": 25,
+    "Nazwa EN": "Nubian Archer",
+    Typ: "Distance",
+    Klasa: "Specjalna",
+    Nacja: "Egipt",
+    "Bonus vs Swordsman %": 0,
+    "Bonus vs Spearman %": 0,
+    "Bonus vs Falangite %": 0,
+    "Bonus vs Offensive %": 0,
+    "Bonus vs Distance %": 0,
+    "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
+    "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
+    meleeAttack: 1,
+    meleeDefence: 2,
+    weaponDamage: 0,
+    piercing: 0,
+    armor: 1,
+    chargeBonus: 0,
+    health: 18,
+    missileAttack: 6,
+    fieldPower: 16
+  },
+  {
     Jednostka: "\u0141ucznik sumeryjski",
     Epoka: "Kamie\u0144",
     Kultura: "Sumerowie",
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -6522,7 +6796,7 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": 14,
     "W zamian za": "\u0141ucznik",
     "Super-jednostka": "\u2014",
-    Uwagi: "propozycja; jednostka specjalna; \u0142ucznik pieszny z \u0142ukiem kompozytowym; solidny dystans, fundament armii sumeryjskiej",
+    Uwagi: "propozycja; jednostka specjalna; \u0142ucznik pieszny z \u0142ukiem prostym; solidny dystans, fundament armii sumeryjskiej",
     "Rola (linia)": "Dystans",
     Pancerz: 2,
     Przebicie: 2,
@@ -6561,8 +6835,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 38,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -6617,8 +6891,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -6673,8 +6947,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -6729,8 +7003,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -6763,7 +7037,7 @@ var units_default = [
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
     "Zast\u0105p specjalnie": "Hieros Lochos (\u015Awi\u0119ty Zast\u0119p)",
@@ -6785,8 +7059,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -6841,8 +7115,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -6897,8 +7171,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -6953,8 +7227,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -7009,8 +7283,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -7065,8 +7339,8 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "stal",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -7118,8 +7392,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "stal",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -7174,8 +7448,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -7228,10 +7502,10 @@ var units_default = [
     Epoka: "\u017Belazo",
     Kultura: "Germanie",
     Tech: "Obr\xF3bka \u017Celaza",
-    "Pieni\u0105dz (koszt)": 16,
+    "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "stal",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -7264,7 +7538,7 @@ var units_default = [
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
     "Zast\u0105p specjalnie": "\u2014",
@@ -7286,8 +7560,8 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "stal",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -7380,7 +7654,7 @@ var units_default = [
     "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
     "Zast\u0105p specjalnie": "\u2014",
-    "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z;\u017Belazo",
+    "Dost\u0119pna w epokach": "Kamie\u0144",
     meleeAttack: 0,
     meleeDefence: 0,
     weaponDamage: 0,
@@ -7394,14 +7668,72 @@ var units_default = [
     siegePower: 85
   },
   {
+    Jednostka: "Taran okuty",
+    Epoka: "Br\u0105z",
+    Kultura: null,
+    Tech: "Br\u0105zownictwo",
+    "Pieni\u0105dz (koszt)": 18,
+    Ludno\u015B\u0107: 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
+    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
+    "\u017Cywno\u015B\u0107/tur\u0119": 1,
+    Atak: 4,
+    Uderzenie: 12,
+    Obrona: 2,
+    Ruch: 1,
+    "Ruch w bitwie (heksy)": 2,
+    Health: 3e3,
+    "Pr\xF3g dezercji (% health)": null,
+    "Widok pola": 1,
+    "Atak dystansowy": 0,
+    "Zasi\u0119g ataku (hex)": "\u2014",
+    "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
+    "W zamian za": "\u2014",
+    "Super-jednostka": "\u2014",
+    Uwagi: "Machina obl\u0119\u017Cnicza epoki Br\u0105zu; nast\u0119pca Taranu (kamiennego) \u2014 k\u0142oda na KO\u0141ACH zamiast p\u0142\xF3z, g\u0142owica OKUTA BR\u0104ZEM, za\u0142oga pod przeno\u015Bnym daszkiem ze sk\xF3r; \u0142amie BRAM\u0118 i mur (wysokie Przebicie/Uderzenie), s\u0142aba vs jednostki; budowana podczas obl\u0119\u017Cenia (1 tura); niez\u0142omny (machina nie routuje) | PLACEHOLDER: liczby do strojenia w playte\u015Bcie",
+    "Rola (linia)": "Obl\u0119\u017Cnicza",
+    Pancerz: 8,
+    Przebicie: 10,
+    "Kara obrony z flanki (%)": "\u2014",
+    "Kara obrony z ty\u0142u (%)": "\u2014",
+    "Morale bazowe": 100,
+    "Morale ucieczki": null,
+    "Nazwa EN": "Bronze-Shod Ram",
+    Typ: "Siege",
+    Klasa: "Specjalna",
+    Nacja: "",
+    "Bonus vs Swordsman %": 0,
+    "Bonus vs Spearman %": 0,
+    "Bonus vs Falangite %": 0,
+    "Bonus vs Offensive %": 0,
+    "Bonus vs Distance %": 0,
+    "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
+    "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
+    meleeAttack: 0,
+    meleeDefence: 0,
+    weaponDamage: 0,
+    piercing: 1,
+    armor: 1,
+    chargeBonus: 1,
+    health: 750,
+    missileAttack: 0,
+    wallAttack: 18,
+    fieldPower: 377.5,
+    siegePower: 94
+  },
+  {
     Jednostka: "Katapulta",
     Epoka: "\u017Belazo",
     Kultura: null,
     Tech: "Obl\u0119\u017Cnictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 1,
@@ -7458,8 +7790,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 0,
@@ -7516,8 +7848,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 15,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -7572,8 +7904,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -7606,7 +7938,7 @@ var units_default = [
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 25,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
     "Zast\u0105p specjalnie": "\u2014",
@@ -7625,8 +7957,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -7678,8 +8010,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -7731,8 +8063,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -7784,8 +8116,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -7837,8 +8169,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -7890,8 +8222,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -7922,7 +8254,7 @@ var units_default = [
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
     "Zast\u0105p specjalnie": "\u2014",
@@ -7943,8 +8275,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -7975,7 +8307,7 @@ var units_default = [
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
     "Zast\u0105p specjalnie": "\u2014",
@@ -7996,8 +8328,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8049,8 +8381,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 34,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8102,8 +8434,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -8134,7 +8466,7 @@ var units_default = [
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
     "Zast\u0105p specjalnie": "\u2014",
@@ -8155,8 +8487,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -8208,8 +8540,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -8261,8 +8593,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -8314,8 +8646,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8367,8 +8699,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8420,8 +8752,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -8473,8 +8805,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8529,8 +8861,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -8563,7 +8895,7 @@ var units_default = [
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
     "Zast\u0105p specjalnie": "\u2014",
@@ -8582,8 +8914,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -8635,8 +8967,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -8688,8 +9020,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8741,8 +9073,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8794,8 +9126,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -8847,8 +9179,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -8901,8 +9233,9 @@ var buildings_default = [
     id: "stolarnia",
     nazwa: "Stolarnia",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [
       "Warsztat drewna",
       "Stolarnia",
@@ -8939,51 +9272,20 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "las w zasiegu",
+    wymagania: "Drewno w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
     uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
-    techUnlock: "Obr\xF3bka drewna"
-  },
-  {
-    id: "mielerz",
-    nazwa: "Mielerz",
-    kategoria: "Produkcja",
-    epokaWejscia: 1,
-    maksPoziom: 10,
-    nazwyPoziomow: [],
-    baza: {
-      praca: 4,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 0
-    },
-    przyrost: {
-      praca: 2,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 0
-    },
-    kosztBudowy: 18,
-    przyrostKosztu: 8,
-    utrzymanie: 1,
-    przyrostUtrzymania: 0,
-    wymagania: "las w zasiegu",
-    uwagi: "ABC-9: drewno \u2192 paliwo (konwerter)",
-    techUnlock: "Obr\xF3bka drewna"
+    techUnlock: "Obr\xF3bka drewna",
+    koszt_surowce: {
+      drewno: 5
+    }
   },
   {
     id: "kamieniarski",
     nazwa: "Warsztat kamieniarski",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 4,
@@ -9009,16 +9311,20 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "kamien w zasiegu",
-    uwagi: "",
-    techUnlock: "Murarstwo"
+    wymagania: "Kamie\u0144 w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    uwagi: "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
+    techUnlock: "Murarstwo",
+    koszt_surowce: {
+      drewno: 6
+    }
   },
   {
     id: "kuznia",
-    nazwa: "Kuznia",
+    nazwa: "Ku\u017Ania br\u0105zu",
     kategoria: "Produkcja+Wojsko",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 6,
@@ -9028,7 +9334,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 5
+      mnoznik: 15
     },
     przyrost: {
       praca: 3,
@@ -9038,22 +9344,27 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 2
+      mnoznik: 0
     },
     kosztBudowy: 30,
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "ruda miedzi w zasi\u0119gu (kopalnia miedzi)",
-    uwagi: "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
-    techUnlock: "Br\u0105zownictwo"
+    wymagania: "Ruda (mied\u017A) w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%). Nazwa wyswietlana zmieniona z 'Kuznia' na 'Ku\u017Ania br\u0105zu' (Maciej 2026-07-25) -- identyfikator 'kuznia' BEZ ZMIAN (wsteczna zgodnosc zapisow). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Kuznia zelaza, nie sama z epoka. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc (kolejny tier w kolejnej epoce), obecnie martwe.",
+    techUnlock: "Br\u0105zownictwo",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 6
+    }
   },
   {
     id: "odlewnia_brazu",
     nazwa: "Piec hutniczy",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 5,
@@ -9079,19 +9390,24 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Popalnia br\u0105zu w imperium + ruda + paliwo",
-    uwagi: "ABC-13: Piec hutniczy (br\u0105z); upgrade \u2192 Odlewnia \u017Celaza. Dost\u0119p br\u0105z = Popalnia (mapa) + ten budynek.",
-    techUnlock: "Br\u0105zownictwo"
+    wymagania: "Kopalnia miedzi w imperium (twardy wym\xF3g terenowy \u2014 jedyny wyj\u0105tek od regu\u0142y, decyzja w\u0142a\u015Bciciela Temat 8 Q3)",
+    uwagi: "ABC-13: Piec hutniczy (br\u0105z); upgrade \u2192 Odlewnia \u017Celaza. Dost\u0119p br\u0105z = Popalnia (mapa) + ten budynek. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23). LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    techUnlock: "Br\u0105zownictwo",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 8
+    }
   },
   {
     id: "odlewnia_zelaza",
     nazwa: "Odlewnia \u017Celaza",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
-      praca: 8,
+      praca: 12,
       pieniadz: 1,
       zywnosc: 0,
       nauka: 0,
@@ -9115,16 +9431,21 @@ var buildings_default = [
     utrzymanie: 3,
     przyrostUtrzymania: 1,
     wymagania: "upgrade Odlewni br\u0105zu",
-    uwagi: "ABC-7: suma bonus\xF3w z Odlewni br\u0105zu + \u017Celazo; placeholder receptury",
+    uwagi: "ABC-7: suma bonus\xF3w z Odlewni br\u0105zu + \u017Celazo; placeholder receptury. Decyzja 42A (Maciej 2026-07-25): Praca 8 -> 12 pkt/tur\u0119 -- awans z Pieca hutniczego (8 pkt) dawa\u0142 dawniej 0 netto mimo kosztu 35 pkt Pracy budowy, teraz awans faktycznie si\u0119 op\u0142aca. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "Hutnictwo \u017Celaza",
-    upgradeFrom: "odlewnia_brazu"
+    upgradeFrom: "odlewnia_brazu",
+    koszt_surowce: {
+      drewno: 8,
+      cegla: 10
+    }
   },
   {
     id: "targowisko",
     nazwa: "Targowisko (Rynek)",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [
       "Targowisko",
       "Rynek",
@@ -9163,14 +9484,18 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "Mnoznik % dotyczy przychodow z handlu w miescie",
-    techUnlock: "Wymiana"
+    techUnlock: "Wymiana",
+    koszt_surowce: {
+      drewno: 6
+    }
   },
   {
     id: "port",
     nazwa: "Port handlowy",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 1,
@@ -9196,16 +9521,21 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "wybrzeze morskie lub rzeka",
-    uwagi: "",
-    techUnlock: "\u017Begluga"
+    wymagania: "Wybrze\u017Ce morskie lub rzeka w zasi\u0119gu tego miasta",
+    uwagi: "LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Port wielki. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    techUnlock: "\u017Begluga",
+    koszt_surowce: {
+      drewno: 12,
+      kamien: 6
+    }
   },
   {
     id: "port_wielki",
     nazwa: "Port wielki",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 2,
@@ -9231,52 +9561,22 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Portu handlowego; wybrze\u017Ce",
-    uwagi: "ABC-20 B: suma bonus\xF3w Port + Port wielki w JSON",
+    wymagania: "upgrade Portu handlowego; wybrze\u017Ce morskie lub rzeka w zasi\u0119gu tego miasta",
+    uwagi: "ABC-20 B: suma bonus\xF3w Port + Port wielki w JSON. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. Budowla portowa epoki \u017Belaza -> drewno+kamie\u0144 (nie drewno+ceg\u0142a), zeby miasto bez zloza gliny nie zostalo bez portu.",
     techUnlock: "In\u017Cynieria",
-    upgradeFrom: "port"
-  },
-  {
-    id: "karawanseraj",
-    nazwa: "Karawanseraj",
-    kategoria: "Pieniadz",
-    epokaWejscia: 2,
-    maksPoziom: 10,
-    nazwyPoziomow: [],
-    baza: {
-      praca: 0,
-      pieniadz: 6,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 8
-    },
-    przyrost: {
-      praca: 0,
-      pieniadz: 3,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 3
-    },
-    kosztBudowy: 25,
-    przyrostKosztu: 10,
-    utrzymanie: 2,
-    przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)",
-    techUnlock: "Handel"
+    upgradeFrom: "port",
+    koszt_surowce: {
+      drewno: 12,
+      kamien: 10
+    }
   },
   {
     id: "spichlerz",
     nazwa: "Spichlerz",
     kategoria: "Zywnosc",
+    grupa: "\u017Bywno\u015B\u0107",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -9303,15 +9603,19 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100",
-    techUnlock: "Garncarstwo"
+    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    techUnlock: "Garncarstwo",
+    koszt_surowce: {
+      drewno: 8
+    }
   },
   {
     id: "spichlerz_ii",
     nazwa: "Spichlerz II",
     kategoria: "Zywnosc",
+    grupa: "\u017Bywno\u015B\u0107",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 1,
     upgradeFrom: "spichlerz",
     nazwyPoziomow: [],
     baza: {
@@ -9339,15 +9643,20 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 0,
     wymagania: "upgrade ze Spichlerza I",
-    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie",
-    techUnlock: "Warzelnia soli"
+    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    techUnlock: "Warzelnia soli",
+    koszt_surowce: {
+      drewno: 8,
+      kamien: 10
+    }
   },
   {
     id: "garncarnia",
     nazwa: "Garncarnia",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 3,
@@ -9374,15 +9683,19 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "glina w zasiegu",
-    uwagi: "ABC-6: glina+paliwo\u2192ceramika",
-    techUnlock: "Garncarstwo"
+    uwagi: "ABC-6: glina+drewno\u2192ceramika (paliwo usuniete 2026-07-23). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
+    techUnlock: "Garncarstwo",
+    koszt_surowce: {
+      drewno: 6
+    }
   },
   {
     id: "cegielnia",
     nazwa: "Cegielnia",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 4,
@@ -9408,16 +9721,21 @@ var buildings_default = [
     przyrostKosztu: 9,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "glina + paliwo",
-    uwagi: "ABC-8: bramka Pismo wymaga Cegielni w imperium",
-    techUnlock: "Garncarstwo"
+    wymagania: "glina + drewno",
+    uwagi: "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
+    techUnlock: "Garncarstwo",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 6
+    }
   },
   {
     id: "kamienne_kregi",
     nazwa: "Kamienne kr\u0119gi",
     kategoria: "Religia",
+    grupa: "Wiara",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -9444,27 +9762,21 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Upgrade \u2192 \u015Awi\u0105tynia.",
-    techUnlock: "Mistycyzm"
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. \u015Awi\u0105tynia stoi teraz obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie nast\u0119pca w upgradeFrom. WYJ\u0104TEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali \u0142ama\u0142by zgodno\u015B\u0107 historyczn\u0105).",
+    techUnlock: "Mistycyzm",
+    koszt_surowce: {
+      kamien: 8
+    }
   },
   {
     id: "swiatynia",
     nazwa: "\u015Awi\u0105tynia",
     kategoria: "Religia",
+    grupa: "Wiara",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
-      praca: 0,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 3,
-      zadowolenie: 3,
-      obrona: 0,
-      mnoznik: 0
-    },
-    przyrost: {
       praca: 0,
       pieniadz: 0,
       zywnosc: 0,
@@ -9474,21 +9786,35 @@ var buildings_default = [
       obrona: 0,
       mnoznik: 0
     },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 1,
+      zadowolenie: 1,
+      obrona: 0,
+      mnoznik: 0
+    },
     kosztBudowy: 25,
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Kamiennych kr\u0119g\xF3w",
-    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
+    wymagania: "Wybudowane Kamienne kr\u0119gi w tym mie\u015Bcie",
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY -- konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. GRUPY-BUDYNKOW (Maciej 2026-07-25): \u015Awi\u0105tynia to NIEZALEZNY budynek obok Kamiennych kregow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Kultura/Zadowolenie rozdzielone (3=1+2 wzgledem Kamiennych kregow, oba pola), zeby wklad Kamiennych kregow nie liczyl sie dwa razy.",
     techUnlock: "Religia",
-    upgradeFrom: "kamienne_kregi"
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 8
+    }
   },
   {
     id: "biblioteka",
     nazwa: "Biblioteka",
     kategoria: "Nauka",
+    grupa: "Nauka i kultura",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [
       "Skryptorium",
       "Biblioteka",
@@ -9526,18 +9852,23 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "3a: poziom 6 (Obserwatorium) i wyzej wymaga odkrycia technologii Astronomia \u2014 patrz poziomTechGate.",
+    uwagi: "3a: poziom 6 (Obserwatorium) i wyzej wymaga odkrycia technologii Astronomia \u2014 patrz poziomTechGate. Akademia stoi obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Nauka/Kultura rozdzielone, by nie liczy\u0107 wk\u0142adu Biblioteki dwa razy.",
     techUnlock: "Pismo",
     poziomTechGate: {
       "6": "Astronomia"
+    },
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 6
     }
   },
   {
     id: "studnia",
     nazwa: "Studnia",
     kategoria: "Zdrowie",
+    grupa: "Zdrowie",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -9564,15 +9895,19 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "Studnia miejska \u2014 dost\u0119p do czystej wody (+Zdrowie proxy). Osobno: \u0141a\u017Ania publiczna (termy rzymskie, epoka \u017Belaza).",
-    techUnlock: "Gospodarka wodna"
+    uwagi: "Studnia miejska \u2014 dost\u0119p do czystej wody (+Zdrowie proxy). Osobno: \u0141a\u017Ania publiczna (termy rzymskie, epoka \u017Belaza). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
+    techUnlock: "Gospodarka wodna",
+    koszt_surowce: {
+      drewno: 5
+    }
   },
   {
     id: "akwedukt",
     nazwa: "Akwedukt",
     kategoria: "Zdrowie",
+    grupa: "Zdrowie",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -9600,14 +9935,19 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "T-TECH-6: zdrowie++ i cap ludno\u015Bci (turn-economy)",
-    techUnlock: "Budownictwo"
+    techUnlock: "Budownictwo",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 12
+    }
   },
   {
     id: "mennica",
     nazwa: "Mennica",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -9633,16 +9973,22 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "T-TECH-6: mnoznik handlu\u2192pieni\u0105dz (economy.ts)",
-    techUnlock: "Waluta"
+    wymagania: "Tylko w stolicy. Dost\u0119p do Z\u0142ota (w\u0142asna Kopalnia z\u0142ota gdziekolwiek w imperium ALBO aktywny szlak handlowy z cywilizacj\u0105 posiadaj\u0105c\u0105 z\u0142oto) + wybudowane Targowisko w stolicy",
+    uwagi: "T-TECH-6: mnoznik handlu\u2192pieni\u0105dz (economy.ts), imperium-wide gdy Waluta odkryta (pytanie 71/C). Maciej 2026-07-25: bramka z\u0142ota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mie\u015Bcie (CITY_BUILDING_PREREQ, decyzja 54c=A). Pytanie 70/B (2026-07-25): Mennica WY\u0141\u0104CZNIE w stolicy, jedna sztuka na cywilizacj\u0119 (wynika automatycznie z 'lokalizacja':'stolica' -- jedna stolica na cywilizacj\u0119). Stare zapisy z Mennic\u0105 w mie\u015Bcie regionalnym NIE s\u0105 cofane -- budynek zostaje, bramka dotyczy tylko budowania NOWYCH.",
+    techUnlock: "Waluta",
+    lokalizacja: "stolica",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 8
+    }
   },
   {
     id: "mury",
     nazwa: "Mury",
     kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -9651,7 +9997,7 @@ var buildings_default = [
       nauka: 0,
       kultura: 0,
       zadowolenie: 0,
-      obrona: 5,
+      obrona: 0,
       mnoznik: 0
     },
     przyrost: {
@@ -9661,7 +10007,7 @@ var buildings_default = [
       nauka: 0,
       kultura: 0,
       zadowolenie: 0,
-      obrona: 3,
+      obrona: 0,
       mnoznik: 0
     },
     kosztBudowy: 35,
@@ -9669,16 +10015,21 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "",
+    uwagi: "Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200% Obrony broniacym sie jednostkom -- patrz miasto-params.json bonus_obrona_mur_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony. Cytadela stoi teraz obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie nast\u0119pca w upgradeFrom. Od 2026-07-25 dochodzi TRZECI niezale\u017Cny budynek obronny -- Baszta (+100% dodatkowo, decyzja 41B).",
     techUnlock: "Budownictwo",
-    odblokowuje: "maMur"
+    odblokowuje: "maMur",
+    koszt_surowce: {
+      drewno: 8,
+      kamien: 16
+    }
   },
   {
     id: "koszary",
     nazwa: "Koszary",
     kategoria: "Wojsko",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 2,
@@ -9688,7 +10039,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 5
+      mnoznik: 20
     },
     przyrost: {
       praca: 1,
@@ -9698,22 +10049,27 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 2
+      mnoznik: 0
     },
     kosztBudowy: 25,
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie",
-    techUnlock: "Wojskowo\u015B\u0107"
+    uwagi: "Mnoznik = +20% parametry miekkie (Sciezka B, wszystko poza Pancerzem) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Akademia wojskowa/Warsztat oblezniczy, max +50%). Akademia wojskowa stoi obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Praca rozdzielona, by nie liczy\u0107 wk\u0142adu Koszar dwa razy.",
+    techUnlock: "Wojskowo\u015B\u0107",
+    koszt_surowce: {
+      drewno: 8,
+      kamien: 8
+    }
   },
   {
     id: "magazyn",
     nazwa: "Magazyn",
     kategoria: "Produkcja+Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 1,
@@ -9741,14 +10097,19 @@ var buildings_default = [
     przyrostUtrzymania: 0,
     wymagania: "",
     uwagi: "",
-    techUnlock: "Handel"
+    techUnlock: "Handel",
+    koszt_surowce: {
+      drewno: 10,
+      kamien: 6
+    }
   },
   {
     id: "stela",
     nazwa: "Stela / Pomnik",
     kategoria: "Kultura",
+    grupa: "Nauka i kultura",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -9775,26 +10136,23 @@ var buildings_default = [
     utrzymanie: 0,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "Nie wymaga utrzymania",
-    techUnlock: "Murarstwo"
+    uwagi: "Nie wymaga utrzymania. WYJ\u0104TEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali \u0142ama\u0142by zgodno\u015B\u0107 historyczn\u0105).",
+    techUnlock: "Murarstwo",
+    koszt_surowce: {
+      kamien: 6
+    }
   },
   {
     id: "palac",
-    nazwa: "Palac",
+    nazwa: "Pa\u0142ac",
     kategoria: "Kultura/Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [
       "Dom wodza",
       "Dwor",
-      "Palac zarzadcy",
-      "Palac",
-      "Rezydencja",
-      "Dworzec",
-      "Palac regionu",
-      "Stolica prowincji",
-      "Palac krolewski",
-      "Palac cesarski"
+      "Pa\u0142ac zarz\u0105dcy"
     ],
     baza: {
       praca: 0,
@@ -9804,7 +10162,7 @@ var buildings_default = [
       kultura: 5,
       zadowolenie: 2,
       obrona: 0,
-      mnoznik: 5
+      mnoznik: 0
     },
     przyrost: {
       praca: 0,
@@ -9821,15 +10179,105 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "-",
-    uwagi: "1 na miasto; g\u0142\xF3wne \u017Ar\xF3d\u0142o kultury + Prawo (society-params prawo_palac); budynek startowy \u2014 bez bramki tech",
-    techUnlock: "-"
+    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bramka drewno; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    techUnlock: "-",
+    lokalizacja: "stolica",
+    koszt_surowce: {
+      drewno: 8
+    }
+  },
+  {
+    id: "palac_ii",
+    nazwa: "Pa\u0142ac II",
+    kategoria: "Kultura/Administracja",
+    grupa: "Prawo i administracja",
+    epokaWejscia: 2,
+    maksPoziom: 1,
+    upgradeFrom: "palac",
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 8,
+      zadowolenie: 3,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 5,
+      zadowolenie: 2,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 60,
+    przyrostKosztu: 18,
+    utrzymanie: 3,
+    przyrostUtrzymania: 1,
+    wymagania: "upgrade Pa\u0142ac I",
+    uwagi: "B-PALAC-TIER II (Br\u0105z): bramka drewno+kamie\u0144; bonus \xD71,5 wzgl\u0119dem I; upgrade\u2192Pa\u0142ac III. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    techUnlock: "-",
+    lokalizacja: "stolica",
+    koszt_surowce: {
+      drewno: 10,
+      kamien: 10
+    }
+  },
+  {
+    id: "palac_iii",
+    nazwa: "Pa\u0142ac III",
+    kategoria: "Kultura/Administracja",
+    grupa: "Prawo i administracja",
+    epokaWejscia: 3,
+    maksPoziom: 1,
+    upgradeFrom: "palac_ii",
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 11,
+      zadowolenie: 5,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 7,
+      zadowolenie: 2,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 90,
+    przyrostKosztu: 27,
+    utrzymanie: 5,
+    przyrostUtrzymania: 2,
+    wymagania: "upgrade Pa\u0142ac II",
+    uwagi: "B-PALAC-TIER III (\u017Belazo): bramka drewno+ceg\u0142a; bonus \xD72,25 wzgl\u0119dem I (\xD71,5\xB2). LANCUCH W GORE: maksPoziom=1 (koniec lancucha, jak Pretorium) -- wartosc stala, epoki 4+ jeszcze nie ma.",
+    techUnlock: "-",
+    lokalizacja: "stolica",
+    koszt_surowce: {
+      drewno: 10,
+      cegla: 14
+    }
   },
   {
     id: "kuznia_zelaza",
     nazwa: "Ku\u017Ania \u017Celaza",
     kategoria: "Produkcja+Wojsko",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
+    upgradeFrom: "kuznia",
     nazwyPoziomow: [],
     baza: {
       praca: 8,
@@ -9839,7 +10287,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 8
+      mnoznik: 15
     },
     przyrost: {
       praca: 4,
@@ -9849,23 +10297,28 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 3
+      mnoznik: 0
     },
     kosztBudowy: 60,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "zelazo w zasiegu",
+    wymagania: "upgrade Ku\u017Ani br\u0105zu; zelazo w zasiegu",
     wymaganySurowiec: "zelazo",
-    uwagi: "Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza",
-    techUnlock: "Hutnictwo \u017Celaza"
+    uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia brazu/Wielka Kuznia, max +45%); wymaga dostepu do zelaza. NAPRAWIONE OGNIWO (decyzja Maciej 2026-07-25): dopisano upgradeFrom='kuznia' -- Ku\u017Ania \u017Celaza zast\u0119puje teraz Ku\u017Ani\u0119 br\u0105zu (jak Pa\u0142ac), zamiast sta\u0107 obok niej w mie\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Wielka Kuznia. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    techUnlock: "Hutnictwo \u017Celaza",
+    koszt_surowce: {
+      drewno: 8,
+      cegla: 10
+    }
   },
   {
     id: "wielka_kuznia",
     nazwa: "Wielka Ku\u017Ania",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 4,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 20,
@@ -9875,7 +10328,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 23
+      mnoznik: 15
     },
     przyrost: {
       praca: 9,
@@ -9885,7 +10338,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 7
+      mnoznik: 0
     },
     kosztBudowy: 90,
     przyrostKosztu: 18,
@@ -9893,16 +10346,21 @@ var buildings_default = [
     przyrostUtrzymania: 2,
     wymagania: "upgrade Ku\u017Ani \u017Celaza; stal w zasi\u0119gu",
     wymaganySurowiec: "stal",
-    uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania; suma bonus\xF3w w JSON",
+    uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze. LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce. Koszt surowcowy dodany wg SPEC-KOSZTY-SUROWCOWE-BUDYNKOW (epoka klasyczna, poza zasiegiem dzisiejszej gry o 3 epokach): drewno+cegla.",
     techUnlock: "Obr\xF3bka \u017Celaza",
-    upgradeFrom: "kuznia_zelaza"
+    upgradeFrom: "kuznia_zelaza",
+    koszt_surowce: {
+      drewno: 12,
+      cegla: 16
+    }
   },
   {
     id: "fort",
     nazwa: "Cytadela",
     kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -9911,7 +10369,7 @@ var buildings_default = [
       nauka: 0,
       kultura: 0,
       zadowolenie: 0,
-      obrona: 15,
+      obrona: 0,
       mnoznik: 0
     },
     przyrost: {
@@ -9921,25 +10379,70 @@ var buildings_default = [
       nauka: 0,
       kultura: 0,
       zadowolenie: 0,
-      obrona: 8,
+      obrona: 0,
       mnoznik: 0
     },
     kosztBudowy: 70,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Mur\xF3w",
-    uwagi: "ABC-22 C: Cytadela = upgrade Mur\xF3w (1 slot). Mapa = osobny Fort terenowy. Suma Mury+Cytadela w JSON.",
+    wymagania: "Wybudowane Mury w tym mie\u015Bcie",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Cytadela to NIEZALEZNY budynek obok Murow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno; REGRESJA-KOLEJNOSC (Maciej 2026-07-25 wieczor) przywrocila wymog kolejnosci -- Mury musza byc wybudowane w tym miescie PRZED Cytadela (CITY_BUILDING_PREREQ w building-resource-gate.ts), tylko sam upgradeFrom (zastepowanie w builtIds) zostal usuniety. Mapa = osobny Fort terenowy (inny byt). Obrona miasta WYLACZNIE procentowa: Mury +200%, Cytadela +100% dodatkowo (razem +300% gdy oba w miescie), a od 2026-07-25 Baszta +100% dodatkowo (razem +400% z kompletem trzech) -- patrz miasto-params.json bonus_obrona_mur_proc / bonus_obrona_cytadela_proc / bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor (game/city-defense.ts, juz odporne na wspolobecnosc wielu id w cityBuilt). Ten wpis nie niesie juz platowego bonusu Obrony. Budowla obronna epoki \u017Belaza -> drewno+kamie\u0144 (nie drewno+ceg\u0142a), zeby miasto bez zloza gliny nie zostalo bez obrony.",
     techUnlock: "In\u017Cynieria",
     odblokowuje: "maFort",
-    upgradeFrom: "mury"
+    koszt_surowce: {
+      drewno: 10,
+      kamien: 20
+    }
+  },
+  {
+    id: "baszta",
+    nazwa: "Baszta",
+    kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
+    epokaWejscia: 3,
+    maksPoziom: 1,
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 70,
+    przyrostKosztu: 15,
+    utrzymanie: 3,
+    przyrostUtrzymania: 1,
+    wymagania: "",
+    uwagi: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny, dokladany obok Murow i Cytadeli (nie zastepuje ich, brak upgradeFrom). Obrona miasta WYLACZNIE procentowa: +100% Obrony broniacym sie jednostkom, DODATKOWO ponad Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech = +400% -- patrz miasto-params.json bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor / game/city-defense.ts. Buduje sie NIEZALEZNIE od Murow/Cytadeli (brak wymogu kolejnosci) i w stolicy, i w regionach (brak pola lokalizacja). Koszt surowcowy w skali Cytadeli (ten sam rzad wielkosci bonusu +100%): drewno+kamien, budowla obronna epoki \u017Belaza.",
+    techUnlock: "In\u017Cynieria",
+    odblokowuje: "maBaszta",
+    koszt_surowce: {
+      drewno: 10,
+      kamien: 20
+    }
   },
   {
     id: "warsztat_oblezniczy",
     nazwa: "Warsztat obl\u0119\u017Cniczy",
     kategoria: "Wojsko",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 4,
@@ -9959,30 +10462,35 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 3
+      mnoznik: 0
     },
     kosztBudowy: 65,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "wymaga Koszary",
-    uwagi: "Odblokowuje budow\u0119 Katapulty w mie\u015Bcie (maWarsztatOblezniczy). Taran i Wie\u017Ca = in-siege przy obl\u0119\u017Ceniu \u2014 styk UNITS",
+    wymagania: "Wybudowane Koszary (lub ich upgrade \u2014 Akademia wojskowa) w tym mie\u015Bcie",
+    uwagi: "Mnoznik = +10% parametry miekkie (Sciezka B) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Koszary/Akademia wojskowa). Odblokowuje budow\u0119 Katapulty w mie\u015Bcie (maWarsztatOblezniczy). Taran i Wie\u017Ca = in-siege przy obl\u0119\u017Ceniu \u2014 styk UNITS. Budowla obronna epoki \u017Belaza -> drewno+kamie\u0144 (nie drewno+ceg\u0142a).",
     techUnlock: "Obl\u0119\u017Cnictwo",
-    odblokowuje: "maWarsztatOblezniczy"
+    odblokowuje: "maWarsztatOblezniczy",
+    koszt_surowce: {
+      drewno: 10,
+      kamien: 10
+    }
   },
   {
     id: "akademia",
     nazwa: "Akademia",
     kategoria: "Nauka",
+    grupa: "Nauka i kultura",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
       pieniadz: 0,
       zywnosc: 0,
-      nauka: 9,
-      kultura: 7,
+      nauka: 6,
+      kultura: 5,
       zadowolenie: 3,
       obrona: 0,
       mnoznik: 10
@@ -10001,17 +10509,21 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Biblioteki (merge Teatr)",
-    uwagi: "ABC-21 B: merge Biblioteka+Akademia+Teatr \u2014 suma w JSON; Teatr ukryty z produkcji",
+    wymagania: "Wybudowana Biblioteka w tym mie\u015Bcie",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia to NIEZALEZNY budynek obok Biblioteki (nie zastepuje jej, upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura rozdzielone (9=3+6, 7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa razy. Teatr nadal ukryty z produkcji i wliczony w Akademie (merge bez zmian, ABC-21 B).",
     techUnlock: "Filozofia",
-    upgradeFrom: "biblioteka"
+    koszt_surowce: {
+      drewno: 8,
+      cegla: 14
+    }
   },
   {
     id: "teatr",
     nazwa: "Teatr",
     kategoria: "Kultura",
+    grupa: "Nauka i kultura",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -10040,14 +10552,19 @@ var buildings_default = [
     wymagania: "",
     uwagi: "ABC-21 B: wchodzi w merge Akademia \u2014 nie buduj osobno",
     techUnlock: "Filozofia",
-    suppressed: true
+    suppressed: true,
+    koszt_surowce: {
+      drewno: 8,
+      cegla: 10
+    }
   },
   {
     id: "sad",
     nazwa: "S\u0105d",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -10075,24 +10592,112 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
-    techUnlock: "Prawo"
+    techUnlock: "Prawo",
+    koszt_surowce: {
+      drewno: 6,
+      cegla: 10
+    }
+  },
+  {
+    id: "dom_starszyzny",
+    nazwa: "Dom Starszyzny",
+    kategoria: "Administracja",
+    grupa: "Prawo i administracja",
+    epokaWejscia: 1,
+    maksPoziom: 1,
+    nazwyPoziomow: [],
+    baza: {
+      praca: 1,
+      pieniadz: 1,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 2,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 25,
+    przyrostKosztu: 5,
+    utrzymanie: 1,
+    przyrostUtrzymania: 1,
+    wymagania: "",
+    uwagi: "Administracja lokalna miast regionalnych (poza stolic\u0105), poziom 1: Dom Starszyzny. \u0141a\u0144cuch zast\u0119powania jak Pa\u0142ac: Dom Starszyzny \u2192 Dw\xF3r Zarz\u0105dcy \u2192 Pretorium. G\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa miasta regionalnego (prawo_dom_starszyzny, society-params.json). Decyzja Macieja 2026-07-25 (podzia\u0142 stolica/region). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Dw\xF3r Zarz\u0105dcy. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe (juz 0, brak zmiany liczbowej).",
+    techUnlock: "-",
+    lokalizacja: "region",
+    koszt_surowce: {
+      drewno: 6
+    }
+  },
+  {
+    id: "dwor_zarzadcy",
+    nazwa: "Dw\xF3r Zarz\u0105dcy",
+    kategoria: "Administracja",
+    grupa: "Prawo i administracja",
+    epokaWejscia: 2,
+    maksPoziom: 1,
+    upgradeFrom: "dom_starszyzny",
+    nazwyPoziomow: [],
+    baza: {
+      praca: 1,
+      pieniadz: 2,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 3,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 45,
+    przyrostKosztu: 9,
+    utrzymanie: 2,
+    przyrostUtrzymania: 1,
+    wymagania: "upgrade Dom Starszyzny",
+    uwagi: "Administracja lokalna miast regionalnych (poza stolic\u0105), poziom 2: Dw\xF3r Zarz\u0105dcy \u2014 zast\u0119puje Dom Starszyzny. G\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa miasta regionalnego (prawo_dwor_zarzadcy, society-params.json); dalszy awans \u2192 Pretorium. Decyzja Macieja 2026-07-25 (podzia\u0142 stolica/region). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pretorium. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe (juz 0, brak zmiany liczbowej).",
+    techUnlock: "Kodeks",
+    lokalizacja: "region",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 6
+    }
   },
   {
     id: "pretorium",
     nazwa: "Pretorium",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
+    upgradeFrom: "dwor_zarzadcy",
     nazwyPoziomow: [],
     baza: {
       praca: 2,
       pieniadz: 3,
       zywnosc: 0,
       nauka: 0,
-      kultura: 0,
-      zadowolenie: 1,
-      obrona: 2,
-      mnoznik: 5
+      kultura: 5,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
     },
     przyrost: {
       praca: 1,
@@ -10100,24 +10705,30 @@ var buildings_default = [
       zywnosc: 0,
       nauka: 0,
       kultura: 0,
-      zadowolenie: 1,
-      obrona: 1,
-      mnoznik: 2
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
     },
     kosztBudowy: 75,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
-    techUnlock: "Prawo"
+    wymagania: "upgrade Dw\xF3r Zarz\u0105dcy",
+    uwagi: "Administracja lokalna miast regionalnych (poza stolic\u0105), poziom 3 (\u017Belazo): Pretorium \u2014 zast\u0119puje Dw\xF3r Zarz\u0105dcy, koniec \u0142a\u0144cucha (jak Pa\u0142ac III w stolicy). G\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa miasta regionalnego (prawo_pretorium, society-params.json). Garnizon liczy si\u0119 do Prawa sam (prawo_garnizon_per_jednostka) \u2014 Pretorium nie daje mu dodatkowego bonusu; dawny zapis o mno\u017Cniku podatkowym nie mia\u0142 pokrycia w kodzie (pole martwe, wyzerowane 2026-07-25). LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce.",
+    techUnlock: "Prawo",
+    lokalizacja: "region",
+    koszt_surowce: {
+      drewno: 8,
+      cegla: 10
+    }
   },
   {
     id: "trybunal",
     nazwa: "Trybuna\u0142",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -10145,14 +10756,19 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "3a: wczesna administracja \u2014 +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
-    techUnlock: "Kodeks"
+    techUnlock: "Kodeks",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 8
+    }
   },
   {
     id: "laznia_publiczna",
     nazwa: "\u0141a\u017Ania publiczna",
     kategoria: "Zdrowie",
+    grupa: "Zdrowie",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -10178,54 +10794,24 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "wymaga Studnia",
+    wymagania: "Wybudowana Studnia w tym mie\u015Bcie",
     uwagi: "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy \u2014 zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
-    techUnlock: "Medycyna"
-  },
-  {
-    id: "lazaret",
-    nazwa: "Lazaret",
-    kategoria: "Zdrowie+Wojsko",
-    epokaWejscia: 5,
-    maksPoziom: 10,
-    nazwyPoziomow: [],
-    baza: {
-      praca: 0,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 1,
-      kultura: 0,
-      zadowolenie: 1,
-      obrona: 0,
-      mnoznik: 5
-    },
-    przyrost: {
-      praca: 0,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 1,
-      kultura: 0,
-      zadowolenie: 1,
-      obrona: 0,
-      mnoznik: 2
-    },
-    kosztBudowy: 55,
-    przyrostKosztu: 12,
-    utrzymanie: 2,
-    przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "Regeneracja HP jednostek stacjonujacych w miescie; mnoznik % do tempa regeneracji - styk UNITS. PARKOWANIE: budynek epoki Sredniowiecze (epokaWejscia=4); poza cap v0.1 (max epoka=3=Zelazo) -- nie usuwamy, aktywuje sie w pozniejszej epoce. techUnlock docelowo tech sredniowieczna (zostaje Medycyna jako placeholder; nie wymyslac nowej techy przed decyzja Macieja).",
-    techUnlock: "Medycyna"
+    techUnlock: "Medycyna",
+    koszt_surowce: {
+      drewno: 8,
+      cegla: 12
+    }
   },
   {
     id: "akademia_wojskowa",
     nazwa: "Akademia wojskowa",
     kategoria: "Wojsko",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
-      praca: 5,
+      praca: 3,
       pieniadz: 2,
       zywnosc: 0,
       nauka: 0,
@@ -10242,18 +10828,627 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 6
+      mnoznik: 0
     },
     kosztBudowy: 80,
     przyrostKosztu: 18,
     utrzymanie: 4,
     przyrostUtrzymania: 2,
-    wymagania: "upgrade Koszar",
-    uwagi: "Upgrade Koszary \u2192 Akademia wojskowa; suma bonus\xF3w w JSON; bramka elit UNITS",
+    wymagania: "Wybudowane Koszary w tym mie\u015Bcie",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia wojskowa to NIEZALEZNY budynek obok Koszar (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Praca rozdzielona (5=2+3 wzgledem Koszar), zeby wklad Koszar nie liczyl sie dwa razy. Mnoznik = +20% parametry miekkie (Sciezka B) -- TERAZ kumuluje sie z Koszarami wprost (oba obecne w miescie = +40%, razem z Warsztatem oblezniczym +50%); bramka elit UNITS.",
     techUnlock: "Sztuka wojenna",
-    upgradeFrom: "koszary"
+    koszt_surowce: {
+      drewno: 10,
+      cegla: 14
+    }
   }
 ];
+
+// data/econ-params.json
+var econ_params_default = {
+  ekonomia_miasta: {
+    pr\u00F3g_wzrostu_wspolczynnik: {
+      easy: 12,
+      normal: 16,
+      hard: 20,
+      jednostka: "per 1 ludno\u015Bci",
+      opis: "Pr\xF3g wzrostu populacji: Pr\xF3g(N) = 20 + N \xD7 warto\u015B\u0107 (baza 20 w kodzie, economy.ts/turn-economy.ts). Wi\u0119kszy = wolniejszy wzrost. Warto\u015Bci finalne. [PT]"
+    },
+    spichlerz_zachowanie_po_wzroscie: {
+      easy: 0.6,
+      normal: 0.5,
+      hard: 0.4,
+      jednostka: "%",
+      opis: "Ze Spichlerzem w mie\u015Bcie: u\u0142amek bufora wzrostu zachowany po awansie populacji (+1). Bez Spichlerza bufor zeruje si\u0119. Maciej 2026-07-06: normal=50%."
+    },
+    handel_surowiec_min_stock: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "szt.",
+      opis: "ABC-15 Maciej 2026-07-04: handel surowcem dopiero gdy stock \u2265 warto\u015B\u0107; 1 szt. zostaje = dost\u0119p (v2 handlu)."
+    },
+    akwedukt_prog_ludnosci: {
+      easy: 6,
+      normal: 5,
+      hard: 4,
+      jednostka: "ludno\u015B\u0107",
+      opis: "Max populacja bez Akweduktu (Maciej: normal=5). Wzrost zablokowany przy cap \u2014 nadwy\u017Cka \u017Cywno\u015Bci idzie do armii lub przepada (B5). [PT]"
+    },
+    akwedukt_max_ludnosci: {
+      easy: 15,
+      normal: 15,
+      hard: 15,
+      jednostka: "ludno\u015B\u0107",
+      opis: "Twardy cap populacji Z Akweduktem (Maciej 2026-07-07: normal=15). Epoka 4+ \u2014 osobny unlock (do decyzji ABC)."
+    },
+    zywnosc_zuzytka_populacja: {
+      easy: 1,
+      normal: 1,
+      hard: 2,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119/os.",
+      opis: "Zu\u017Cycie \u017Cywno\u015Bci na 1 punkt populacji na tur\u0119."
+    },
+    zywnosc_jednostka_ruch: {
+      easy: 1,
+      normal: 1,
+      hard: 2,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119",
+      opis: "Zu\u017Cycie \u017Cywno\u015Bci jednostki wojskowej w ruchu lub w garnizonie."
+    },
+    zywnosc_jednostka_oboz: {
+      easy: 0.38,
+      normal: 0.5,
+      hard: 0.62,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119",
+      opis: "Zu\u017Cycie \u017Cywno\u015Bci jednostki wojskowej obozuj\u0105cej (bez ruchu)."
+    },
+    suwak_handel_nauka_domyslnie: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Nauka (= BADANIA) w podziale Daniny netto nowego miasta. 20% (Maciej 2026-06-25, potwierdzone przy decyzji 74 = A z 2026-07-25 \u2014 ten strumie\u0144 zostaje bez zmian)."
+    },
+    suwak_handel_pieniadz_domyslnie: {
+      easy: 60,
+      normal: 60,
+      hard: 60,
+      jednostka: "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Pieni\u0105dz (= SKARBIEC) w podziale Daniny netto nowego miasta. Obni\u017Cony 70% \u2192 60% decyzj\u0105 Maciej 2026-07-25 (PYTANIE 74 = A); te 10 punkt\xF3w procentowych przesz\u0142o na Zamo\u017Cno\u015B\u0107, \u017Ceby nowe miasto nie startowa\u0142o z ujemnym Szcz\u0119\u015Bciem na trudnym."
+    },
+    suwak_handel_luksus_domyslnie: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Zamo\u017Cno\u015B\u0107 (Wealth) w podziale Daniny netto nowego miasta. Podniesiony 10% \u2192 20% decyzj\u0105 Maciej 2026-07-25 (PYTANIE 74 = A). Pow\xF3d: 20% to dok\u0142adnie pr\xF3g utrzymania poziomu Zamo\u017Cno\u015Bci (20% pieni\u0105dza miasta przy poziomie 0), wi\u0119c poziom Zamo\u017Cno\u015Bci rusza z miejsca bez r\u0119cznej interwencji; w nowej siatce Szcz\u0119\u015Bcia przedzia\u0142 20-29% daje +1 pkt Szcz\u0119\u015Bcia na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%)."
+    },
+    suwak_praca_budynki_domyslnie: {
+      easy: 70,
+      normal: 70,
+      hard: 70,
+      jednostka: "%",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Praca\u2192Budynki w podziale Pracy netto. [PT]"
+    },
+    suwak_praca_teren_domyslnie: {
+      easy: 30,
+      normal: 30,
+      hard: 30,
+      jednostka: "%",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Praca\u2192Teren (ulepszenia heks\xF3w). [PT]"
+    },
+    suwak_zywnosc_rozwoj_domyslnie: {
+      easy: 100,
+      normal: 100,
+      hard: 100,
+      jednostka: "%",
+      opis: "Domy\u015Blny udzia\u0142 brutto \u017Cywno\u015Bci imperium \u2192 rozw\xF3j miast (magazyn/wzrost). Reszta \u2192 zapasy pa\u0144stwa. Start gry: 100% wzrost, 0% armia (Maciej 2026-07-03)."
+    },
+    glod_wojska_hp_frac: {
+      easy: 0.06,
+      normal: 0.08,
+      hard: 0.1,
+      jednostka: "u\u0142amek maxHP",
+      opis: "Atrycja HP jednostek na mapie gdy zapasy pa\u0144stwa < 0 po koszcie armii (\u22128% maxHP/tura normal)."
+    },
+    spichlerz_pojemnosc_zapasow_panstwa: {
+      easy: 120,
+      normal: 100,
+      hard: 80,
+      jednostka: "\u{1F35E}",
+      opis: "Max zapas\xF3w armii na 1 Spichlerz w imperium (100% odk\u0142adania). Suma = warto\u015B\u0107 \xD7 liczba Spichlerzy. Bez Spichlerza: odk\u0142adanie 50%, bez limitu pojemno\u015Bci."
+    },
+    armia_odklad_bez_spichlerza: {
+      easy: 0.6,
+      normal: 0.5,
+      hard: 0.4,
+      jednostka: "u\u0142amek",
+      opis: "Od startu gry: u\u0142amek netto \u017Cywno\u015Bci armii (po koszcie wojska) odk\u0142adany do zapas\xF3w pa\u0144stwa BEZ Spichlerza w imperium. Reszta przepada."
+    },
+    armia_odklad_ze_spichlerzem: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "u\u0142amek",
+      opis: "U\u0142amek netto \u017Cywno\u015Bci armii odk\u0142adany do zapas\xF3w pa\u0144stwa gdy w imperium jest \u22651 Spichlerz (100%). Limit pojemno\u015Bci = spichlerz_pojemnosc \xD7 liczba Spichlerzy."
+    },
+    korupcja_wspolczynnik_dystansu: {
+      easy: 0.5,
+      normal: 1,
+      hard: 1.5,
+      jednostka: "punkty procentowe straty Daniny/Podatku na ka\u017Cde pole odleg\u0142o\u015Bci od stolicy",
+      opis: 'Korupcja \u2014 wsp\xF3\u0142czynnik dystansu. Strata% Daniny (po wynalezieniu Waluty: Podatku) += Dystans_od_Stolicy [pola] \xD7 warto\u015B\u0107. NIE dotyczy Pracy (decyzja Maciej 2026-07-25: korupcja obci\u0105\u017Ca wy\u0142\u0105cznie Danin\u0119/Podatek). Warto\u015Bci obni\u017Cone o 50% wobec pierwotnych 1 / 2 / 3 (decyzja Maciej 2026-07-25: \u201Ezbyt rygorystyczne\u2026 maj\u0105 mie\u0107 wp\u0142yw, ale nie by\u0107 druzgoc\u0105ce"). [PT]'
+    },
+    korupcja_wspolczynnik_miast: {
+      easy: 0.5,
+      normal: 0.5,
+      hard: 1,
+      jednostka: "punkty procentowe straty Daniny/Podatku na ka\u017Cde miasto w imperium",
+      opis: "Korupcja \u2014 wsp\xF3\u0142czynnik liczby miast. Strata% Daniny (po Walucie: Podatku) += Liczba_Miast \xD7 warto\u015B\u0107; obci\u0105\u017Ca ka\u017Cde miasto, tak\u017Ce stolic\u0119. NIE dotyczy Pracy. Warto\u015Bci obni\u017Cone o 50% wobec pierwotnych 1 / 1 / 2 (decyzja Maciej 2026-07-25). [PT]"
+    },
+    korupcja_cap: {
+      easy: 38,
+      normal: 50,
+      hard: 62,
+      jednostka: "% \u2014 maksymalna strata Daniny/Podatku w jednym mie\u015Bcie",
+      opis: "Korupcja \u2014 sufit straty. G\xF3rne ograniczenie \u0142\u0105cznej straty z dystansu i liczby miast. BEZ ZMIAN 2026-07-25 \u2014 Maciej obni\u017Cy\u0142 o 50% dwa WSP\xD3\u0141CZYNNIKI (dystansu i miast), sufitu nie wymienia\u0142; po obni\u017Cce sufit i tak jest praktycznie nieosi\u0105galny (normal wymaga Dystans + 0,5\xD7Liczba_Miast \u2265 50). [PT]"
+    }
+  },
+  budynki: {
+    budynek_mlyn_mnoznik_pracy: {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      jednostka: "\xD7",
+      opis: "Mno\u017Cnik M\u0142yna na ca\u0142\u0105 Prac\u0119 bazow\u0105 miasta (Praca_brutto = \u03A3 \xD7 warto\u015B\u0107). [PT]"
+    },
+    budynek_mlyn_bonus_pracy: {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      jednostka: "Praca/tur\u0119",
+      opis: "Sta\u0142y bonus Pracy dodawany przez M\u0142yn po mno\u017Cniku. [PT]"
+    },
+    budynek_cegielnia_bonus_pracy: {
+      easy: 0.31,
+      normal: 0.25,
+      hard: 0.19,
+      jednostka: "%",
+      opis: "Premia Cegielni do lokalnej Pracy (+25% Pracy brutto). [PT]"
+    },
+    budynek_targowisko_bonus_handlu: {
+      easy: 0.62,
+      normal: 0.5,
+      hard: 0.38,
+      jednostka: "%",
+      opis: "Premia Targowiska do Handlu brutto (+50%). [PT]"
+    },
+    budynek_stolarnia_bonus_drewna_civ: {
+      easy: 0.1,
+      normal: 0.1,
+      hard: 0.1,
+      jednostka: "%",
+      opis: "Zadanie 2 (2026-07-23): Stolarnia +10% produkcji Drewna CALEJ CYWILIZACJI za kazda Stolarnie (civ-wide, stackuje addytywnie: \xD7(1+0.10\xD7liczbaStolarni_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.drewno. PLACEHOLDER do strojenia."
+    },
+    budynek_kamieniarski_bonus_kamienia_civ: {
+      easy: 0.1,
+      normal: 0.1,
+      hard: 0.1,
+      jednostka: "%",
+      opis: "Zadanie 2 (2026-07-23): Warsztat kamieniarski +10% produkcji Kamienia CALEJ CYWILIZACJI za kazda sztuke (civ-wide, stackuje addytywnie: \xD7(1+0.10\xD7liczbaWarsztatow_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.kamien. PLACEHOLDER do strojenia."
+    },
+    budynek_garncarnia_bonus_zywnosci_lokalnie: {
+      easy: 0.1,
+      normal: 0.1,
+      hard: 0.1,
+      jednostka: "%",
+      opis: "Zadanie 2 (2026-07-23): Garncarnia +10% Zywnosci LOKALNIE (tylko w miescie, gdzie stoi; NIE civ-wide), stackuje addytywnie: \xD7(1+0.10\xD7garncarnie_w_miescie). Wpiete w economy.ts cityYieldPerTurn (zywnoscBrutto, przed konsumpcja). PLACEHOLDER do strojenia."
+    },
+    ulepszenie_surowcowe_upkeep_praca: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "Praca/tur\u0119/ulepszenie",
+      opis: "ZADANIE 1 (Maciej 2026-07-23, decyzja B): KAZDE zbudowane ulepszenie surowcowe (tartak/kamieniolom/glinianka/kopalnia/kopalnia_miedzi + DOSTEPOWE warzelnia_soli/stadnina) zuzywa 1 Praca/ture z globalnej puli produkcji cywilizacji (playerPracaPool / aiPracaPoolByOwner w main.ts) -- ciagly upkeep, niezaleznie od obsadzenia ludnoscia. Zwolnione: zywnosciowe (farma/irygacja/tarasy/bydlo/owce/lama/oboz_lowiecki/lodzie_rybackie) + infrastruktura (droga/droga_brukowana/fort/posterunek/wyrab). Wpiete w turn-economy.ts computePracaUpkeepByOwner. PLACEHOLDER do strojenia (koszt=1)."
+    },
+    budynek_mennica_mnoznik: {
+      easy: 2,
+      normal: 1,
+      hard: 0,
+      jednostka: "\xD7",
+      opis: "NIEU\u017BYWANE (decyzja Maciej 2026-07-25) \u2014 by\u0142o ju\u017C martwe wcze\u015Bniej (\u017Caden kod go nie konsumowa\u0142). Efekt Mennicy jest teraz w ca\u0142o\u015Bci opisany przez globalne.mennica_mnoznik_po_walucie (jeden mno\u017Cnik na ca\u0142y Handel netto, aktywny gdy Waluta odkryta ORAZ Mennica zbudowana). Zostawione tylko dla zgodno\u015Bci starych zapis\xF3w/narz\u0119dzi \u2014 kod (economy.ts, turn-economy.ts) go ju\u017C nie czyta."
+    },
+    budynek_biblioteka_bonus_nauki: {
+      easy: 0.37,
+      normal: 0.3,
+      hard: 0.23,
+      jednostka: "u\u0142amek \u2014 premia do Nauki miasta (0,30 = +30% Nauki tego miasta na tur\u0119)",
+      opis: 'Premia Biblioteki do Nauki miasta. Obni\u017Cona +50% \u2192 +30% (normalny) decyzj\u0105 Maciej 2026-07-25 (PYTANIE 75 = C). Pow\xF3d: dot\u0105d ta\u0144sza i wcze\u015Bniejsza Biblioteka dawa\u0142a PI\u0118CIOKROTNIE wi\u0119cej ni\u017C dro\u017Csza Akademia (+50% vs +10%) \u2014 logika by\u0142a odwr\xF3cona. Skalowanie trudno\u015Bci\u0105 w konwencji pliku (\u0142atwy \xD71,24 / trudny \xD70,76). Stackuje ADDYTYWNIE z premi\u0105 Akademii: Nauka \xD7 (1 + premia Biblioteki + premia Akademii) = \xD71,50 na normalnym przy obu budynkach (Biblioteka i Akademia to para \u201Ew bok" \u2014 stoj\u0105 obok siebie, \u017Cadna nie zast\u0119puje drugiej).'
+    },
+    budynek_akademia_bonus_nauki: {
+      easy: 0.25,
+      normal: 0.2,
+      hard: 0.15,
+      jednostka: "u\u0142amek \u2014 premia do Nauki miasta (0,20 = +20% Nauki tego miasta na tur\u0119)",
+      opis: "Premia Akademii do Nauki miasta. Podniesiona +10% \u2192 +20% (normalny) decyzj\u0105 Maciej 2026-07-25 (PYTANIE 75 = C) i obj\u0119ta skalowaniem trudno\u015Bci\u0105 (\u0142atwy \xD71,24 / trudny \xD70,76), kt\xF3rego wcze\u015Bniej nie mia\u0142a. Pow\xF3d: Akademia jest dro\u017Csza i p\xF3\u017Aniejsza od Biblioteki, wi\u0119c musi dawa\u0107 wyra\u017Anie mniej ni\u017C Biblioteka tylko dlatego, \u017Ce jest drugim krokiem \u2014 a nie pi\u0119ciokrotnie mniej. Stackuje ADDYTYWNIE z premi\u0105 Biblioteki: Nauka \xD7 (1 + 0,30 + 0,20) = \xD71,50 na normalnym."
+    },
+    waluta_mnoznik: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "\xD7",
+      opis: "NIEU\u017BYWANE (decyzja Maciej 2026-07-25): dawny Efekt 1 'sam tech Waluty odkryty \u2192 \xD72 na ca\u0142y Handel netto, bez wymogu Mennicy, jednakowo na wszystkich trudno\u015Bciach' \u2014 ZAST\u0104PIONY przez globalne.mennica_mnoznik_po_walucie (wymaga Waluty ORAZ Mennicy zbudowanej w mie\u015Bcie; warto\u015B\u0107 r\xF3\u017Cna per trudno\u015B\u0107: easy \xD72 / normal \xD71,5 / hard \xD71 czyli brak efektu). Zostawione tylko dla zgodno\u015Bci starych zapis\xF3w/narz\u0119dzi \u2014 kod (economy.ts, turn-economy.ts) go ju\u017C nie czyta w formule Efektu 1."
+    },
+    targowisko_praca_na_pieniadz_mnoznik: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "\xD7",
+      opis: "Efekt 2 (Targowisko + Waluta): mnoznik konwersji puli-Pracy (doPuli) na Pieniadz. Aktywny per-miasto gdy maTargowisko=true i walutaOdkryta=true. pieniadzZPracy = floor(doPuli \xD7 mnoznik)."
+    },
+    budynek_tartak_przepustowosc: {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      jednostka: "szt/tur\u0119",
+      opis: "Maks konwersja Drewno\u2192Deski w Tartaku na tur\u0119. [PT]"
+    },
+    budynek_cegielnia_przepustowosc: {
+      easy: 4,
+      normal: 3,
+      hard: 2,
+      jednostka: "szt/tur\u0119",
+      opis: "Maks konwersja (Glina+Drewno)\u2192Ceg\u0142a w Cegielni na tur\u0119. [PT] C-SUROW-CEGLA=A (Maciej 2026-07-24): normal 2\u21923 (odci\u0105\u017Cenie ceg\u0142y wg symulacji bilansu)."
+    },
+    budynek_huta_przepustowosc: {
+      easy: 2,
+      normal: 1,
+      hard: 0,
+      jednostka: "szt/tur\u0119",
+      opis: "Maks konwersja (Ruda+Drewno)\u2192Br\u0105z w Hucie na tur\u0119. [PT]"
+    },
+    budynek_garncarnia_przepustowosc: {
+      easy: 2,
+      normal: 1,
+      hard: 0,
+      jednostka: "szt/tur\u0119",
+      opis: "Maks konwersja (Glina+Drewno)\u2192Ceramika w Garncarni na tur\u0119. [PT]"
+    },
+    utrzymanie_budynek: {
+      easy: 1,
+      normal: 1,
+      hard: 2,
+      jednostka: "Pieni\u0105dz/tur\u0119",
+      opis: "Domy\u015Blna stawka utrzymania TYLKO dla budynku bez w\u0142asnego wpisu `utrzymanie` w buildings.json. Od 2026-07-25 (decyzja w\u0142a\u015Bciciela 19=A) silnik czyta utrzymanie z danych ka\u017Cdego budynku (0\u20135 Pieni\u0105dz/tur\u0119, zr\xF3\u017Cnicowane per budynek) \u2014 ta warto\u015B\u0107 NIE nadpisuje ich, jest wy\u0142\u0105cznie zabezpieczeniem na wypadek brakuj\u0105cego wpisu. Dzi\u015B wszystkie 39 budynk\xF3w maj\u0105 w\u0142asn\u0105 warto\u015B\u0107, wi\u0119c ta stawka faktycznie si\u0119 nie stosuje. [PT]"
+    }
+  },
+  teren_mapa: {
+    teren_rzeka_zywnosc: {
+      easy: 4,
+      normal: 3,
+      hard: 2,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119",
+      opis: "Bonus \u017Cywno\u015Bci z nak\u0142adki Rzeka na pole bazowe. (Bazowe plony \u2192 Plony-terenow.xlsx)"
+    },
+    teren_rzeka_praca: {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      jednostka: "Praca/tur\u0119",
+      opis: "Bonus Pracy z nak\u0142adki Rzeka na pole bazowe."
+    },
+    teren_rzeka_handel: {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      jednostka: "Handel/tur\u0119",
+      opis: "Bonus Handlu z nak\u0142adki Rzeka na pole bazowe."
+    },
+    teren_las_zywnosc: {
+      easy: -0.75,
+      normal: -1,
+      hard: -1.25,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119",
+      opis: "Modyfikator \u017Cywno\u015Bci z nak\u0142adki Las (kara \u2014 las utrudnia uprawy)."
+    },
+    teren_las_handel: {
+      easy: -0.75,
+      normal: -1,
+      hard: -1.25,
+      jednostka: "Handel/tur\u0119",
+      opis: "Modyfikator Handlu z nak\u0142adki Las (kara \u2014 las utrudnia ruch handlowy)."
+    },
+    teren_las_drewno: {
+      easy: 4,
+      normal: 3,
+      hard: 2,
+      jednostka: "Drewno/tur\u0119",
+      opis: "Bonus Drewna z nak\u0142adki Las."
+    },
+    teren_las_praca: {
+      easy: 2.5,
+      normal: 2,
+      hard: 1.5,
+      jednostka: "Praca/tur\u0119",
+      opis: "Bonus Pracy z nak\u0142adki Las (dost\u0119p do drewna / wyr\u0105b)."
+    },
+    ulepszenie_farma_zywnosc: {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119",
+      opis: "Bonus \u017Cywno\u015Bci z wybudowanej Farmy na polu (\u0141\u0105ka, R\xF3wnina). [PT \u2014 do strojenia]"
+    },
+    ulepszenie_irygacja_zywnosc: {
+      easy: 4,
+      normal: 3,
+      hard: 2,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119",
+      opis: "Bonus \u017Cywno\u015Bci z Irygacji (lepsze pola uprawne, wymaga tech). [PT \u2014 do strojenia]"
+    },
+    ulepszenie_kopalnia_kamien: {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      jednostka: "Kamie\u0144/tur\u0119",
+      opis: "Bonus Kamienia z Kopalni na Wzg\xF3rzach/G\xF3rach (wymaga tech Murarstwo). [PT \u2014 do strojenia]"
+    },
+    ulepszenie_droga_ruch: {
+      easy: 2,
+      normal: 1,
+      hard: 0,
+      jednostka: "hex/tur\u0119 bonus",
+      opis: "Bonus szybko\u015Bci ruchu jednostek na polach z Drog\u0105 (skr\xF3cenie kosztu ruchu). [PT \u2014 do strojenia]"
+    },
+    ulepszenie_pastwisko_bydlo_produkcja: {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      jednostka: "\xD7",
+      opis: "Mno\u017Cnik Pracy/produkcji gdy byd\u0142o przypisane do Pastwiska (\xD7200%). [PT \u2014 do strojenia]"
+    },
+    ulepszenie_pastwisko_owce_zywnosc: {
+      easy: 3,
+      normal: 2,
+      hard: 1,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119",
+      opis: "Bonus \u017Cywno\u015Bci gdy owce przypisane do Pastwiska. [PT \u2014 do strojenia]"
+    }
+  },
+  wealth: {
+    wealth_cap_na_epoke: {
+      easy: 10,
+      normal: 10,
+      hard: 10,
+      jednostka: "poziom/epoka",
+      opis: "Cap poziomu Wealth = epoka * wartosc. Epoka 1 -> 10, epoka 10 -> 100."
+    },
+    wealth_prog_na_poziom: {
+      easy: 3.5,
+      normal: 4.5,
+      hard: 6,
+      jednostka: "srodki",
+      opis: "Prog awansu L->L+1 = wartosc * (L+1) * epoka. Wyzszy = wolniejszy wzrost Wealth."
+    },
+    wealth_mnoznik_na_poziom: {
+      easy: 0.18,
+      normal: 0.15,
+      hard: 0.12,
+      jednostka: "x per poziom",
+      opis: "Mnoznik strumienia podatku = max(1, 1+(W-1)*wartosc). W=1 -> x1, W=10 -> x2.35 (normal)."
+    },
+    wealth_utrzymanie_baza: {
+      easy: 0.15,
+      normal: 0.2,
+      hard: 0.25,
+      jednostka: "udzial pieniadza",
+      opis: "Udzial pieniadza miasta potrzebny na utrzymanie przy W=0 (rownowaga bazowa)."
+    },
+    wealth_utrzymanie_przy_cap: {
+      easy: 0.35,
+      normal: 0.4,
+      hard: 0.5,
+      jednostka: "udzial pieniadza",
+      opis: "Udzial pieniadza miasta potrzebny na utrzymanie przy W=cap. Liniowa interpolacja miedzy baza a cap."
+    },
+    wealth_zachowanie_po_awansie: {
+      easy: 0.6,
+      normal: 0.5,
+      hard: 0.4,
+      jednostka: "ulamek",
+      opis: "Ulamek puli zachowany po awansie poziomu Wealth (jak Spichlerz po wzroscie populacji)."
+    },
+    wealth_zadowolenie_na_10pkt: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "zadowoleni/10 poz.",
+      opis: "Ile zadowolonych mieszkancow daje kazde 10 poziomow Wealth (W10->+1, W20->+2, ...)."
+    },
+    wealth_kara_zero: {
+      easy: 0,
+      normal: 0,
+      hard: -1,
+      jednostka: "zadowoleni",
+      opis: "Kara zadowolenia gdy Wealth = 0 (bieda spoleczna). Wartosc ujemna."
+    },
+    wealth_immunitet_tur: {
+      easy: 10,
+      normal: 5,
+      hard: 3,
+      jednostka: "tur",
+      opis: "Tury od za\u0142o\u017Cenia miasta bez spadku poziomu W z utrzymania (D18-3=B)."
+    }
+  },
+  globalne: {
+    kurs_pieniadz_praca: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "1:1",
+      opis: "Kurs bazowy: 1 Pieni\u0105dz = 1 Praca (u\u017Cywany do wykupu budynk\xF3w za Pieni\u0105dz)."
+    },
+    mennica_mnoznik_po_walucie: {
+      easy: 2,
+      normal: 1.5,
+      hard: 1,
+      jednostka: "\xD7",
+      opis: "JEDYNY mno\u017Cnik Handlu netto (decyzja Maciej 2026-07-25, w\u0105tek 'scalenie mno\u017Cnik\xF3w'): mno\u017Cy CA\u0141Y handelNetto miasta (Skarb + Nauka + Zamo\u017Cno\u015B\u0107 razem, PRZED podzia\u0142em suwakiem) aktywny TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest zbudowana w tym mie\u015Bcie (bramka AND \u2014 sam tech Waluty ju\u017C NIE wystarcza). Warto\u015Bci w\u0142a\u015Bciciela: easy \xD72,0 / normal \xD71,5 / hard \xD71,0 (hard = brak efektu, nie zeruje dochodu). Poprzednio (do 2026-07-24) istnia\u0142y DWA osobne mno\u017Cniki: `budynki.waluta_mnoznik` (\xD72 na ca\u0142y Handel przy samym techu, bez Mennicy) + ten parametr (mno\u017Cy\u0142 TYLKO strumie\u0144 Pieni\u0105dza). Oba zosta\u0142y scalone w ten jeden efekt \u2014 `waluta_mnoznik` zostaje w pliku oznaczony jako nieu\u017Cywany."
+    },
+    luksus_przelicznik_zadowolenie: {
+      easy: 4,
+      normal: 5,
+      hard: 6,
+      jednostka: "Luksus / +1 mieszk.",
+      opis: "Ile jednostek Luksusu daje +1 zadowolony mieszkaniec. [PT]"
+    },
+    magazyn_baza_zywnosc: {
+      easy: 25,
+      normal: 20,
+      hard: 15,
+      jednostka: "\u017Cywno\u015B\u0107",
+      opis: "Bazowa pojemno\u015B\u0107 Magazynu \u017Bywno\u015Bci (bez Spichlerza). [PT]"
+    },
+    magazyn_baza_surowce: {
+      easy: 500,
+      normal: 500,
+      hard: 500,
+      jednostka: "szt/typ surowca (PA\u0143STWO)",
+      opis: "SUROW-CIV-01 (decyzja Macieja 2026-07-24): ZMIANA SEMANTYKI \u2014 od teraz to baza pojemno\u015Bci CA\u0141EGO PA\u0143STWA (civ-wide, suma po wszystkich miastach ownera) per typ surowca, przy 0 zbudowanych budynk\xF3w \u201EMagazyn\u201D w imperium \u2014 NIE per-miasto jak dawniej. Model ADDYTYWNY razem z magazyn_bonus_surowce_na_budynek (nie mno\u017Cnikowy). BAZA PODNIESIONA 100\u2192500 (Maciej 2026-07-24). Cap per typ = 500 + 100 \xD7 liczba Magazyn\xF3w (ka\u017Cdy Magazyn w dowolnym mie\u015Bcie dok\u0142ada +100, nie jednorazowo). P\u0142askie na easy/normal/hard. Dotyczy WY\u0141\u0104CZNIE surowc\xF3w (drewno/kamie\u0144/glina/ruda/ruda_zelaza/ceg\u0142a/br\u0105z/\u017Celazo/stal) \u2014 \u017Bywno\u015B\u0107/Spichlerz nadal u\u017Cywa modelu mno\u017Cnikowego per-miasto (bez zmian, patrz magazyn_baza_zywnosc)."
+    },
+    magazyn_bonus_surowce_na_budynek: {
+      easy: 100,
+      normal: 100,
+      hard: 100,
+      jednostka: "szt/typ surowca (PA\u0143STWO) / Magazyn",
+      opis: "SUROW-CIV-01 (decyzja Macieja 2026-07-24, NOWY PARAMETR): dodatkowa pojemno\u015B\u0107 CA\u0141EGO PA\u0143STWA per typ surowca za KA\u017BDY budynek \u201EMagazyn\u201D zbudowany GDZIEKOLWIEK w imperium ownera (addytywnie, nie mno\u017Cnik \u2014 2 Magazyny = +200, nie \xD72). Cap per typ = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek \xD7 liczba_magazynow. Placeholder do strojenia."
+    },
+    magazyn_mnoznik_spichlerz: {
+      easy: 6,
+      normal: 5,
+      hard: 4,
+      jednostka: "\xD7",
+      opis: "Mno\u017Cnik pojemno\u015Bci \u017BYWNO\u015ACI przy wybudowanym Spichlerzu (magazyn_baza_zywnosc \xD7 ten mno\u017Cnik). SUROW-CIV-01 2026-07-24: surowce (drewno/kamie\u0144/\u2026) NIE u\u017Cywaj\u0105 ju\u017C tego mno\u017Cnika \u2014 patrz magazyn_baza_surowce/magazyn_bonus_surowce_na_budynek (model addytywny, civ-wide). [PT]"
+    },
+    utrzymanie_jednostka_standard: {
+      easy: 1,
+      normal: 1,
+      hard: 2,
+      jednostka: "Pieni\u0105dz/tur\u0119",
+      opis: "Koszt utrzymania standardowej jednostki wojskowej. [PT]"
+    },
+    ai_rush_jednostka_rezerwa_zlota: {
+      easy: 100,
+      normal: 100,
+      hard: 100,
+      jednostka: "Z\u0142oto",
+      opis: "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): bufor skarbca AI, ktory musi zostac PO zaplaceniu za rush-zakup jednostki za zloto (shouldAIRushBuyUnit, game/ai.ts) -- AI kupuje tylko gdy treasury >= wartosc + koszt jednostki. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_RESERVE, wartosc bez zmian)."
+    },
+    ai_rush_jednostka_max_na_ture: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "szt./ownera/tur\u0119",
+      opis: "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): twardy cap liczby rush-zakupow jednostek za zloto na jednego AI-ownera w jednej turze (shouldAIRushBuyUnit, game/ai.ts) -- zapobiega farmieniu skarbca. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_MAX_PER_TURN, wartosc bez zmian)."
+    },
+    skarbiec_centralny_lokalizacja: {
+      easy: "stolica",
+      normal: "stolica",
+      hard: "stolica",
+      jednostka: "miasto",
+      opis: "Skarbiec zawsze w stolicy; utrata stolicy zeruje go do 0."
+    }
+  },
+  handel_szlaki: {
+    lad_max_dystans: {
+      easy: 12,
+      normal: 12,
+      hard: 12,
+      jednostka: "heksow",
+      opis: "Handel E2 (trade-routes.ts): prog uproszczonego dystansu (hexDistance) dla szlaku LADOWEGO miedzy centrami dwoch miast. Ta sama wartosc na wszystkich trudnosciach -- to parametr geografii/gameplayu, nie ekonomicznego skalowania trudnosci. Q6=B (Maciej 2026-07-20): connected = dystans <= prog ORAZ istnieje przechodnia sciezka bez przeszkody terenowej (woda/gory blokuja); NIE budujemy pathfindera po sieci drog."
+    },
+    morze_max_dystans: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "heksow",
+      opis: "Handel E2 (trade-routes.ts): prog uproszczonego dystansu dla szlaku MORSKIEGO (przez Port w OBU miastach), po wodzie (Morze unia Wybrzeze -- obie klasyfikowane jako woda po zmianie z 2026-07-20). Szerszy prog niz lad, bo statek nie zna przeszkod gorskich/lasu."
+    },
+    dochod_bazowy: {
+      easy: 8,
+      normal: 8,
+      hard: 8,
+      jednostka: "pieniadz/ture",
+      opis: "Handel E3 (trade-routes.ts, Q7=A): dochod trasy przy dystansie 0 (skladnik dystansowy, PRZED odjeciem dochod_na_dystans*dystans). Kredytowany OBU miastom trasy w pelnej kwocie (Q8=B). Placeholder startowy -- do dostrojenia przez wlasciciela w panelu Excel."
+    },
+    dochod_na_dystans: {
+      easy: 0.4,
+      normal: 0.4,
+      hard: 0.4,
+      jednostka: "pieniadz/heks",
+      opis: "Handel E3: ile pieniedzy odejmujemy od dochod_bazowy za kazdy heks dystansu miedzy miastami trasy (wzor liniowy Q7=A)."
+    },
+    dochod_podloga: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "pieniadz/ture",
+      opis: "Handel E3: dolna podloga dochodu dystansowego -- aktywna trasa nigdy nie daje mniej niz to, nawet przy dystansie bliskim progowi max."
+    },
+    handel_ilosc_na_ture_na_szlak: {
+      easy: 4,
+      normal: 4,
+      hard: 4,
+      jednostka: "sztuk surowca na ture na jeden szlak handlowy",
+      opis: "Sufit przepustowosci WYMIANY SUROWCOW na pojedynczym szlaku handlowym (game/trade-routes.ts, dawny hardkod capacityPerRoutePerTurn=4, PLACEHOLDER, dlug techniczny TODO(econ-params) przeniesiony do danych bez zmiany wartosci): maksymalna ilosc JEDNEGO surowca, jaka JEDEN szlak moze przeniesc w JEDNA ture od cywilizacji z nadwyzka do cywilizacji z niedoborem. Ta sama wartosc na wszystkich trudnosciach (parametr geografii/gameplayu jednego szlaku, nie skalowania ekonomicznego trudnoscia) -- kalibrowana tak, by jeden szlak dowozil surowiec w tempie porownywalnym do WYDAJNOSCI JEDNEJ Cegielni (budynek_cegielnia_przepustowosc, fallback 3 szt./ture, converters.ts), a nie zalewal partnera handlowego ponad jego wlasna produkcje."
+    }
+  },
+  handel_surowce: {
+    cena_drewno: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B (2026-07-23): cena jednostkowa Drewna w koszyku PN dyplomacji (pozycja surowiec_ilosc, diplomacy-value-catalog.ts) \u2014 warto\u015B\u0107 PN pozycji = pakiety \xD7 pakiet_wielkosc \xD7 cena. PLACEHOLDER do strojenia przez w\u0142a\u015Bciciela w panelu Excel (gen-panel-*.py) \u2014 nie warto\u015B\u0107 finalna. Ta sama cena na wszystkich trudno\u015Bciach (parametr handlu, nie skalowania trudno\u015Bci)."
+    },
+    cena_kamien: {
+      easy: 3,
+      normal: 3,
+      hard: 3,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Kamienia w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    },
+    cena_glina: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Gliny w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    },
+    cena_cegla: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceg\u0142y w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    },
+    cena_ruda: {
+      easy: 4,
+      normal: 4,
+      hard: 4,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Rudy w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    },
+    pakiet_wielkosc: {
+      easy: 10,
+      normal: 10,
+      hard: 10,
+      jednostka: "szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: wielko\u015B\u0107 pakietu handlu ilo\u015Bciowego (surowiec_ilosc) \u2014 handel odbywa si\u0119 w pakietach po tyle sztuk. Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach."
+    }
+  }
+};
 
 // src/game/diplomacy-deposit-trade.ts
 var HANDEL_ZLOZE_CENA_BAZA = Object.freeze({
@@ -10363,6 +11558,38 @@ function diplomacyPnSurowiecBoolean(surowiecKey) {
   const v = _resourceAccessPn.get(surowiecKey.trim().toLowerCase());
   return v != null ? v : null;
 }
+var _handelSurowce = econ_params_default.handel_surowce ?? {};
+var HANDEL_SUROWCE_CENA_ROW = {
+  drewno: "cena_drewno",
+  kamien: "cena_kamien",
+  glina: "cena_glina",
+  cegla: "cena_cegla",
+  ruda: "cena_ruda"
+};
+var DEFAULT_HANDEL_SUROWCE_PAKIET = 10;
+function readHandelSurowceParam(rowKey, fallback) {
+  const row = _handelSurowce[rowKey];
+  const v = row?.normal;
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+function diplomacyHandelSurowcePakietWielkosc() {
+  const v = readHandelSurowceParam("pakiet_wielkosc", DEFAULT_HANDEL_SUROWCE_PAKIET);
+  return v > 0 ? Math.floor(v) : DEFAULT_HANDEL_SUROWCE_PAKIET;
+}
+function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey) {
+  const rowKey = HANDEL_SUROWCE_CENA_ROW[surowiecKey.trim().toLowerCase()];
+  if (!rowKey) return null;
+  const v = readHandelSurowceParam(rowKey, NaN);
+  return Number.isFinite(v) && v >= 0 ? v : null;
+}
+function diplomacyPnSurowiecIlosc(surowiecKey, pakietyQty) {
+  const cena = diplomacyHandelSurowiecCenaJednostkowa(surowiecKey);
+  if (cena == null) return null;
+  const pakiety = Math.floor(pakietyQty);
+  if (!Number.isFinite(pakiety) || pakiety <= 0) return 0;
+  const pakiet = diplomacyHandelSurowcePakietWielkosc();
+  return Math.max(0, Math.round(pakiety * pakiet * cena));
+}
 function diplomacySumPn(items) {
   let sum = 0;
   for (const item of items) {
@@ -10391,11 +11618,14 @@ function diplomacySumPn(items) {
       case "surowiec_boolean":
         pn = diplomacyPnSurowiecBoolean(item.id);
         break;
+      case "surowiec_ilosc":
+        pn = diplomacyPnSurowiecIlosc(item.id, qty);
+        break;
       default:
         return null;
     }
     if (pn == null) return null;
-    sum += pn * (item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" ? 1 : qty);
+    sum += pn * (item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" || item.typ === "surowiec_ilosc" ? 1 : qty);
   }
   return sum;
 }
@@ -10501,7 +11731,7 @@ function stanceForEval(ctx) {
   };
   return aiDiplomacyStance(responder, proposer, ctx.relation, dipCtx);
 }
-function buildDeal(rodzaj, a, b, turn, wygasaTura, ekonomia, handelJednorazowy, handelPayload) {
+function buildDeal(rodzaj, a, b, turn, wygasaTura, ekonomia, handelJednorazowy, handelPayload, handelSurowiecCykliczny) {
   return {
     id: makeDealId(rodzaj, turn, a, b),
     rodzaj,
@@ -10510,7 +11740,8 @@ function buildDeal(rodzaj, a, b, turn, wygasaTura, ekonomia, handelJednorazowy, 
     zawartaTura: turn,
     ekonomia,
     handelJednorazowy,
-    handelPayload
+    handelPayload,
+    handelSurowiecCykliczny
   };
 }
 var RESOURCE_ACCESS_TYPES = /* @__PURE__ */ new Set(["zloze", "surowiec_boolean"]);
@@ -10520,6 +11751,45 @@ function proposalHasResourceAccess(payload) {
 }
 function clampDealTurns(turns, defaultTurns = 15) {
   return clamp2(turns ?? defaultTurns, 1, 20);
+}
+var SWEETENER_PN_PER_EASE_POINT = 25;
+var SWEETENER_EASE_MAX_POINTS = 20;
+function sweetenerNetPn(payload) {
+  const { givePn, receivePn } = resolveProposalPn(payload);
+  return Math.max(0, givePn - receivePn);
+}
+function sweetenerEasePoints(payload) {
+  const netPn = sweetenerNetPn(payload);
+  if (netPn <= 0) return 0;
+  return Math.min(SWEETENER_EASE_MAX_POINTS, Math.floor(netPn / SWEETENER_PN_PER_EASE_POINT));
+}
+function buildHandelSurowiecCykliczny(proposerId, responderId, giveItems = [], receiveItems = []) {
+  const out = [];
+  const giveRes = giveItems.find((i) => i.typ === "surowiec_ilosc" && (i.ilosc ?? 0) > 0);
+  const givePayment = giveItems.find((i) => i.typ === "zloto" || i.typ === "praca");
+  const recvRes = receiveItems.find((i) => i.typ === "surowiec_ilosc" && (i.ilosc ?? 0) > 0);
+  const recvPayment = receiveItems.find((i) => i.typ === "zloto" || i.typ === "praca");
+  if (giveRes) {
+    out.push({
+      surowiecKey: giveRes.id,
+      pakietyPerTura: Math.floor(giveRes.ilosc ?? 0),
+      sellerOwnerId: proposerId,
+      buyerOwnerId: responderId,
+      zaplataTyp: recvPayment?.typ,
+      zaplataPerTura: recvPayment?.ilosc
+    });
+  }
+  if (recvRes) {
+    out.push({
+      surowiecKey: recvRes.id,
+      pakietyPerTura: Math.floor(recvRes.ilosc ?? 0),
+      sellerOwnerId: responderId,
+      buyerOwnerId: proposerId,
+      zaplataTyp: givePayment?.typ,
+      zaplataPerTura: givePayment?.ilosc
+    });
+  }
+  return out;
 }
 function evaluateProposal(proposal, ctx) {
   const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
@@ -10532,8 +11802,10 @@ function evaluateProposal(proposal, ctx) {
   }
   switch (actionId) {
     case "nap": {
-      if (score < p.progNapRelacja) {
-        return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana \u2265 ${p.progNapRelacja})` };
+      const napEase = sweetenerEasePoints(payload);
+      const napThreshold = Math.max(0, p.progNapRelacja - napEase);
+      if (score < napThreshold) {
+        return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana \u2265 ${napThreshold})` };
       }
       if (ctx.ekspansjaPrzyGranicy) {
         return { accepted: false, reason: "Ekspansja przy granicy \u2014 brak zaufania do paktu" };
@@ -10561,9 +11833,10 @@ function evaluateProposal(proposal, ctx) {
         ctx.responderRespekt,
         p
       );
-      const minZ = diplomacyAllianceMinZaufanie(adj, milRatio, p);
+      const sojuszEase = sweetenerEasePoints(payload);
+      const minZ = Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
       const minScore = diplomacyTreatyMinRelacja(
-        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore,
+        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase,
         p
       );
       const minAlly = Math.max(0, p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + adj.penaltyAlly);
@@ -10597,10 +11870,12 @@ function evaluateProposal(proposal, ctx) {
       if (perTurn < p.progTrybutMinGoldPerTurn) {
         return { accepted: false, reason: `Minimalny trybut to ${p.progTrybutMinGoldPerTurn} \xA4/tur\u0119` };
       }
-      if (ctx.proposerRespekt <= p.progTrybutZadanieMinRespekt) {
+      const trybutEase = sweetenerEasePoints(payload);
+      const trybutRespektThreshold = Math.max(0, p.progTrybutZadanieMinRespekt - trybutEase);
+      if (ctx.proposerRespekt <= trybutRespektThreshold) {
         return {
           accepted: false,
-          reason: `\u017B\u0105danie trybutu wymaga Respekt > ${p.progTrybutZadanieMinRespekt} (masz ${ctx.proposerRespekt})`
+          reason: `\u017B\u0105danie trybutu wymaga Respekt > ${trybutRespektThreshold} (masz ${ctx.proposerRespekt})`
         };
       }
       const maxPerTurn = p.progTrybutZadanieMaxGoldBase + Math.max(0, ctx.proposerRespekt - p.progTrybutZadanieMinRespekt) * p.progTrybutZadanieMaxGoldPerRespekt;
@@ -10703,6 +11978,38 @@ function evaluateProposal(proposal, ctx) {
           deal
         };
       }
+      const hasQuantityResourceItems = (payload.giveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false) || (payload.receiveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false);
+      if (payload.resourceTradeMode === "per_turn" && hasQuantityResourceItems) {
+        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
+        }
+        const turns = clampDealTurns(payload.turns);
+        const cyklicznyItems = buildHandelSurowiecCykliczny(
+          proposerOwnerId,
+          responderOwnerId,
+          payload.giveItems,
+          payload.receiveItems
+        );
+        if (!cyklicznyItems.length) {
+          return { accepted: false, reason: "Brak surowca do cyklicznej wymiany" };
+        }
+        const deal = buildDeal(
+          "umowa_handlowa" /* UmowaHandlowa */,
+          proposerOwnerId,
+          responderOwnerId,
+          ctx.turn,
+          ctx.turn + turns,
+          void 0,
+          false,
+          void 0,
+          cyklicznyItems
+        );
+        return {
+          accepted: true,
+          reason: `Umowa handlowa (surowiec co tur\u0119) na ${turns} tur`,
+          deal
+        };
+      }
       if (hasPnPath) {
         if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
           return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
@@ -10760,19 +12067,22 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: true, reason: "Sprzeda\u017C technologii zaakceptowana", oneShotTrade: true };
     }
     case "granice": {
-      const granRelOk = score >= p.progGraniceRelacja;
-      const granZaufOk = relation.zaufanie >= p.progGraniceZaufanie;
+      const graniceEase = sweetenerEasePoints(payload);
+      const graniceRelThreshold = Math.max(0, p.progGraniceRelacja - graniceEase);
+      const graniceZaufThreshold = Math.max(0, p.progGraniceZaufanie - graniceEase);
+      const granRelOk = score >= graniceRelThreshold;
+      const granZaufOk = relation.zaufanie >= graniceZaufThreshold;
       if (!granRelOk && !granZaufOk) {
         return {
           accepted: false,
-          reason: `Relacja zbyt niska na granice (wymagana Relacja \u2265 ${p.progGraniceRelacja} i Zaufanie \u2265 ${p.progGraniceZaufanie})`
+          reason: `Relacja zbyt niska na granice (wymagana Relacja \u2265 ${graniceRelThreshold} i Zaufanie \u2265 ${graniceZaufThreshold})`
         };
       }
       if (!granRelOk) {
-        return { accepted: false, reason: `Relacja zbyt niska na granice (wymagana \u2265 ${p.progGraniceRelacja})` };
+        return { accepted: false, reason: `Relacja zbyt niska na granice (wymagana \u2265 ${graniceRelThreshold})` };
       }
       if (!granZaufOk) {
-        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${p.progGraniceZaufanie})` };
+        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${graniceZaufThreshold})` };
       }
       if (payload.borderMilitary && ctx.proposerRespekt < p.progGraniceWojskoweRespekt) {
         return { accepted: false, reason: `Prawo wojskowe wymaga Respekt \u2265 ${p.progGraniceWojskoweRespekt}` };
@@ -10802,8 +12112,10 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: false, reason: "Ultimatum odrzucone \u2014 warunki zbyt surowe" };
     }
     case "wasal": {
-      if (ctx.proposerRespekt < p.progWasalizacjaRespekt) {
-        return { accepted: false, reason: `Wasalizacja wymaga Respekt \u2265 ${p.progWasalizacjaRespekt}` };
+      const wasalEase = sweetenerEasePoints(payload);
+      const wasalRespektThreshold = Math.max(0, p.progWasalizacjaRespekt - wasalEase);
+      if (ctx.proposerRespekt < wasalRespektThreshold) {
+        return { accepted: false, reason: `Wasalizacja wymaga Respekt \u2265 ${wasalRespektThreshold}` };
       }
       const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;
       const deal = buildDeal(
@@ -10848,6 +12160,8 @@ function formatAiDiplomacyPlayerMessage(cmd) {
   switch (cmd.type) {
     case "zaproponuj_handel":
       return `Proponujemy jednorazow\u0105 wymian\u0119: ${cmd.goldOnce ?? 0} \xA4 na rzecz twojego pa\u0144stwa.`;
+    case "zaproponuj_umowe_handlowa":
+      return cmd.sweetenerGold ? `Proponujemy sta\u0142\u0105 umow\u0119 handlow\u0105 (szlaki handlowe) \u2014 w ge\u015Bcie dobrej woli dok\u0142adamy ${cmd.sweetenerGold} \xA4.` : "Proponujemy sta\u0142\u0105 umow\u0119 handlow\u0105 \u2014 otwiera i utrzymuje szlaki handlowe mi\u0119dzy naszymi miastami.";
     case "zaproponuj_sojusz":
       return "Proponujemy pe\u0142ny sojusz \u2014 wsp\xF3lna obrona i wsparcie militarnie.";
     case "zaproponuj_pokoj":
@@ -10858,6 +12172,10 @@ function formatAiDiplomacyPlayerMessage(cmd) {
       return `Oferujemy jednorazow\u0105 zap\u0142at\u0119 ${cmd.goldOnce ?? 0} \xA4 w zamian za pok\xF3j.`;
     case "wypowiedz_wojne":
       return "Wypowiadamy wojn\u0119 \u2014 nasze wojska s\u0105 gotowe do walki.";
+    case "zaproponuj_handel_surowiec": {
+      const zaplataLabel = cmd.zaplataTyp === "praca" ? "Praca" : "\xA4";
+      return `Mamy nadwy\u017Ck\u0119 surowca ${cmd.label} \u2014 oferujemy ${cmd.pakietyPerTura} pakiet(y)/tur\u0119 za ${cmd.zaplataPerTura} ${zaplataLabel}/tur\u0119 przez ${cmd.turns} tur.`;
+    }
     default:
       return "Propozycja dyplomatyczna od tego pa\u0144stwa.";
   }
@@ -10889,6 +12207,14 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
         actionId: "handel"
       };
     }
+    case "zaproponuj_umowe_handlowa": {
+      return {
+        ...base,
+        id: makeDealId("pending-umowahandlowa", turn, fromOwnerId, toOwnerId),
+        actionId: "umowa_handlowa",
+        payload: cmd.sweetenerGold ? { goldOnce: cmd.sweetenerGold } : {}
+      };
+    }
     case "zadaj_trybut":
       return {
         ...base,
@@ -10904,6 +12230,20 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
         id: makeDealId("pending-trybut-oferta", turn, fromOwnerId, toOwnerId),
         actionId: "trybut_oferta",
         payload: { goldOnce }
+      };
+    }
+    case "zaproponuj_handel_surowiec": {
+      if (cmd.pakietyPerTura <= 0) return null;
+      return {
+        ...base,
+        id: makeDealId("pending-handelsurowiec", turn, fromOwnerId, toOwnerId),
+        actionId: "handel",
+        payload: {
+          giveItems: [{ typ: "surowiec_ilosc", id: cmd.surowiecKey, ilosc: cmd.pakietyPerTura }],
+          receiveItems: cmd.zaplataPerTura > 0 ? [{ typ: cmd.zaplataTyp, id: cmd.zaplataTyp, ilosc: cmd.zaplataPerTura }] : void 0,
+          resourceTradeMode: "per_turn",
+          turns: cmd.turns
+        }
       };
     }
     default:
@@ -10924,10 +12264,45 @@ function resolvePlayerAcceptsAiPending(pending, turn) {
       return { accepted: true, reason: "Sojusz pe\u0142ny zawarty", deal };
     }
     case "handel": {
+      const hasQuantityResourceItems = (payload.giveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false) || (payload.receiveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false);
+      if (payload.resourceTradeMode === "per_turn" && hasQuantityResourceItems) {
+        const turns = clampDealTurns(payload.turns);
+        const cyklicznyItems = buildHandelSurowiecCykliczny(
+          fromOwnerId,
+          toOwnerId,
+          payload.giveItems,
+          payload.receiveItems
+        );
+        if (!cyklicznyItems.length) {
+          return { accepted: false, reason: "Brak surowca do cyklicznej wymiany" };
+        }
+        const deal = buildDeal(
+          "umowa_handlowa" /* UmowaHandlowa */,
+          fromOwnerId,
+          toOwnerId,
+          turn,
+          turn + turns,
+          void 0,
+          false,
+          void 0,
+          cyklicznyItems
+        );
+        return { accepted: true, reason: `Umowa handlowa (surowiec co tur\u0119) na ${turns} tur`, deal };
+      }
       if (payload.goldOnce != null && payload.goldOnce > 0) {
         return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
       }
       return { accepted: true, reason: "Wymiana PN zaakceptowana", oneShotTrade: true };
+    }
+    case "umowa_handlowa": {
+      const deal = buildDeal(
+        "umowa_handlowa" /* UmowaHandlowa */,
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        turn + clampDealTurns(payload.turns)
+      );
+      return { accepted: true, reason: "Umowa handlowa zawarta", deal };
     }
     case "trybut_zadanie": {
       const perTurn = payload.goldPerTurn ?? AI_TRIBUTE_PER_TURN;
