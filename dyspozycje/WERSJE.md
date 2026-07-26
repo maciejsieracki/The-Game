@@ -9,7 +9,17 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `076e3c0b` — 2026-07-26 · uwagi z playtestu Macieja (BEZ lasów) — **AKTUALNA**
+## ROBOCZA `c08b5fcc` — 2026-07-26 · naprawy UI z playtestu + lasy wg ustawienia — **AKTUALNA**
+
+- **Pełny ekran naprawiony** — przyczyną paska u dołu NIE był element HUD, tylko canvas 3D zamrożony na rozmiarze z chwili startu (`renderer.setSize()` nadpisywał `canvas.style` pikselami, kasując 100%/100% z main.ts). Edge-pan wyłączał się, bo kursor wyjeżdżał poza obszar canvasu przed prawdziwą krawędzią. Fix w `render/scene.ts` (updateStyle=false + nasłuch `fullscreenchange`). **Efekt uboczny: naprawia też skalowanie przy zwykłej zmianie rozmiaru okna.**
+- **Dyplomacja** — niebieskie kwadratowe tło pod godłem państwa → obramówka w tym samym kolorze (`.dip-pennant`, jeden wspólny komponent = poprawione w liście relacji i toolbarze naraz).
+- **Lista armii** — dograne HP (suma stosu), widać ranne armie bez wchodzenia w każdą.
+- **Modal „CO WYBIERASZ?"** — populacja miasta i % HP jednostki na kaflach.
+- **LASY wg ustawienia w kreatorze** — suwak „Las" wreszcie działa: **Mało 38% · Normalnie 58% · Dużo 77%** (było ~15% niezależnie od wyboru). Przyczyna: zahardkodowany cap `0.18` dominował nad parametrem tierów; wyniesiony do `FOREST_OVERLAY_CAP_FRAC=0.95`. Zero nowego kodu, tylko istniejące wartości. ⚠️ Przy „Mało" ryzyko startu bez lasu w promieniu 5 NADAL istnieje (mechanizm gwarancji świadomie niedodany).
+- **Bramki:** tsc=0 · map-gen-regression PASS (determinizm) · combat 6/6 · tech-tree 19/0 · research 33/33 · unit-replace 10/10.
+- Commity: `f4f6dd9` (4 naprawy UI), `b2f48bc` (lasy).
+
+## ROBOCZA `076e3c0b` — 2026-07-26 · uwagi z playtestu Macieja (BEZ lasów)
 
 - **Zawartość:** dźwięk marszu jednostek (nowy 4. kanał SFX mapy, synteza 0 MB, skalowany wielkością armii, cisza za mgłą wojny, przełącznik „Odgłosy jednostek") · przycisk PEŁNEGO EKRANU w HUD (funkcji wcześniej nie było) · „Podział handlu" → **Danina** / po Mennicy **Podatek** · Murarstwo 5→28 (długa gra 20→112, jak przed 24.07).
 - **CELOWO BEZ LASÓW:** commit `e4c3e33` (pokrycie 14→83% + wymóg lasu przy starcie) **wycofany** rewertem `9a86e42` — Maciej: „będziemy je zmieniać inaczej". Praca zachowana w historii, do ponownego użycia.
