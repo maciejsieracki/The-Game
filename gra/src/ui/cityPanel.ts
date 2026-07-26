@@ -580,6 +580,31 @@ const HANDEL_ZAMOZNOSC_LABEL = 'Zamożność';
  */
 const HANDEL_KORUPCJA_PCT_PLACEHOLDER = 5;
 
+/**
+ * Nazewnictwo strumienia „Skarb” z podziału handlu (WYŁĄCZNIE etykieta UI — sam podział,
+ * wzory i mnożnik zostają bez zmian). Ten sam warunek steruje już mnożnikiem Mennicy
+ * w turn-economy.ts (`builtIds.includes('mennica') && walutaOdkryta`) i w
+ * `buildHandelDetailCard` niżej („mennica (×1, brak Waluty lub Mennicy)”):
+ *   - brak Mennicy ZBUDOWANEJ w mieście LUB brak odkrytej technologii Waluta → „Danina”.
+ *   - Mennica zbudowana ORAZ Waluta odkryta (mnożnik aktywny)              → „Podatek”.
+ */
+function isMennicaAktywna(city: City): boolean {
+  const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
+  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+  const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
+  return built.includes('mennica') && walutaOdkryta;
+}
+
+/** Dopełniaczowa forma nazwy strumienia — „daniny” / „podatku” (do fraz typu „suwaki podziału ___”). */
+function handelStreamLabelGenetiv(city: City): string {
+  return isMennicaAktywna(city) ? 'podatku' : 'daniny';
+}
+
+/** „Podział daniny” / „Podział podatku” — dynamiczny nagłówek sekcji podziału handlu (zależny od Mennicy+Waluty). */
+function podzialHandluHeading(city: City): string {
+  return `Podział ${isMennicaAktywna(city) ? 'podatku' : 'daniny'}`;
+}
+
 interface HandelChipEstimates {
   brutto: number;
   korupcja: number;
@@ -3157,7 +3182,7 @@ function appendPodzialHandlu(
 ): void {
   if (!opts?.skipSubhd) {
     const sub = el('div', 'subhd');
-    sub.textContent = 'Podział handlu';
+    sub.textContent = podzialHandluHeading(city);
     mount.appendChild(sub);
   }
 
@@ -3218,7 +3243,7 @@ function appendPodzialHandlu(
 /** @deprecated używane przez testy / kompat — prefer renderEkonomiaStrip */
 function renderPodzialHandlu(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
-  mount.appendChild(el('div', 'ptitle', '<span>Podział Handlu</span>'));
+  mount.appendChild(el('div', 'ptitle', `<span>${podzialHandluHeading(city)}</span>`));
   appendPodzialHandlu(mount, city, view, data);
 }
 
@@ -3380,7 +3405,7 @@ function buildWealthDetailCard(
 
   appendDetailAlgo(card, 'Skąd bierze się wpływ do puli', [
     'Handel brutto z pól + bonus Targowiska → handelNetto (po korupcji, opcjonalnie ×Waluta).',
-    `Podział handlu: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
+    `${podzialHandluHeading(city)}: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
     `Więcej % na Skarb = mniej ${HANDEL_ZAMOZNOSC_LABEL} = wolniejszy W, ale więcej 💰 od razu.`,
     `Więcej % na ${HANDEL_ZAMOZNOSC_LABEL} = szybszy W, ale mniej gotówki — ×Skarb rośnie z opóźnieniem.`,
   ]);
@@ -4097,7 +4122,7 @@ function buildTopBarZlotoDetailCard(
   appendDetailSection(card, 'Skąd bierze się pieniądz (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Plony + budynki', 'Targowisko, Mennica, podatki z pól — patrz okolica.');
-  gridDetailRow(g1, 'Podział handlu', `${split.procentPieniadz}% Skarb · ${split.procentNauka}% Nauka · ${split.procentLuksus}% Zamożność`);
+  gridDetailRow(g1, podzialHandluHeading(city), `${split.procentPieniadz}% Skarb · ${split.procentNauka}% Nauka · ${split.procentLuksus}% Zamożność`);
   if (est.netto) {
     gridDetailRow(g1, 'Handel netto (szac.)', `~${est.netto} → split suwaków`);
     gridDetailRow(g1, '→ do Skarbu', est.skarb ? `~+${est.skarb}` : '—');
@@ -4107,7 +4132,7 @@ function buildTopBarZlotoDetailCard(
   appendDetailFormula(card, 'pieniadzNetto = podatki + handel_netto + budynki − utrzymanie');
   appendDetailFormula(card, 'Skarbiec += Σ pieniadzNetto_miast − wydatki');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
-    'Prawa kolumna → „Podział handlu”: Skarb vs Nauka vs Zamożność.',
+    `Prawa kolumna → „${podzialHandluHeading(city)}”: Skarb vs Nauka vs Zamożność.`,
     'Prawa kolumna → „Zamożność”: pasek puli W.',
     'Lewa kolumna → Wykup / Rekrutuj za złoto ze skarbca.',
   ]);
@@ -4153,7 +4178,7 @@ function buildTopBarNaukaDetailCard(
   appendDetailFormula(card, 'nauka += plony + budynki + % handlu');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
     'Panel badań (mapa) — wydajesz bank na tech.',
-    'Podział handlu → więcej % na Naukę = szybsze tech, mniej złota.',
+    `${podzialHandluHeading(city)} → więcej % na Naukę = szybsze tech, mniej złota.`,
     'Buduj Bibliotekę, przypisuj 👤 na pola z nauką.',
   ]);
   return card;
@@ -7087,14 +7112,18 @@ function renderCityIconLeftRail(mount: HTMLElement): void {
   renderCityIconRail(iconMount, CITY_PANEL_ICONS_LEFT, true, true);
 }
 
-function renderCityIconRightRail(mount: HTMLElement): void {
+function renderCityIconRightRail(mount: HTMLElement, city: City): void {
   mount.innerHTML = '';
   const scope = el('div', 'civ-cs civ-ux-panel-scope');
   mount.appendChild(scope);
   const iconMount = el('div', 'civ-v-icon-rail-mount');
   iconMount.id = 'cs-icon-rail-right';
   scope.appendChild(iconMount);
-  renderCityIconRail(iconMount, CITY_PANEL_ICONS_RIGHT, true, true);
+  // Tab „handel”: nazwa strumienia Skarbu (Danina/Podatek) zależy od Mennicy+Waluty — patrz podzialHandluHeading.
+  const items = CITY_PANEL_ICONS_RIGHT.map(item => item.id === 'handel'
+    ? { ...item, title: `${podzialHandluHeading(city)} i zamożność — suwaki Skarb / Nauka / Zamożność` }
+    : item);
+  renderCityIconRail(iconMount, items, true, true);
 }
 
 /** Prawy panel (góra): nazwa miasta, ludność, pasek wzrostu. */
@@ -7133,16 +7162,18 @@ function buildHandelDetailCard(
   // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (turn-economy.ts).
   const mennicaAktywna = maMennica && walutaOdkryta;
   const mennicaMnoznikTxt = params ? `×${params.mennicaMnoznikPoWalucie}` : '×?';
+  const handelHeading = mennicaAktywna ? 'Podział podatku' : 'Podział daniny';
+  const handelStreamNazwa = mennicaAktywna ? 'podatek' : 'daninę';
   const est = estimateHandelChips(view, split);
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
-  head.innerHTML = '<span>Podział handlu — szczegóły</span>';
+  head.innerHTML = `<span>${handelHeading} — szczegóły</span>`;
   card.appendChild(head);
 
   const intro = el('div', 'dc-note');
   setNoteHtml(intro,
-    `Handel z pól okolicy to osobny strumień 💰. Najpierw odejmujemy stratę (korupcję), potem suwaki dzielą resztę między skarbiec, naukę i ${HANDEL_ZAMOZNOSC_LABEL.toLowerCase()}. Suma suwaków = 100%, kroki 10%.`,
+    `Handel z pól okolicy zasila ${handelStreamNazwa} 💰 — osobny strumień. Najpierw odejmujemy stratę (korupcję), potem suwaki dzielą resztę między skarbiec, naukę i ${HANDEL_ZAMOZNOSC_LABEL.toLowerCase()}. Suma suwaków = 100%, kroki 10%.`,
   );
   card.appendChild(intro);
 
@@ -7179,7 +7210,7 @@ function buildHandelDetailCard(
   appendDetailFormula(card, `skarb_z_handlu = floor(handelNetto × %Skarb${mennicaAktywna ? ` × mennica (${mennicaMnoznikTxt})` : ' × mennica (×1, brak Waluty lub Mennicy)'})`);
   appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności`);
 
-  appendDetailAlgo(card, 'Algorytm podziału handlu (cityYieldPerTurn)', [
+  appendDetailAlgo(card, `Algorytm podziału ${mennicaAktywna ? 'podatku' : 'daniny'} (cityYieldPerTurn)`, [
     'Zbierz handel ze wszystkich obrabianych pól + centrum miasta.',
     maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
     `Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
@@ -7207,14 +7238,14 @@ function buildHandelDetailCard(
   note.style.fontStyle = 'normal';
   note.textContent =
     'Handel, zamożność, Spichlerz/wzrost i porządek — ustawienia w tej kolumnie wpływają na każdą turę. ' +
-    'Podział handlu jest per miasto; suwak żywności armii — globalny dla całego państwa.';
+    `${handelHeading} jest per miasto; suwak żywności armii — globalny dla całego państwa.`;
   card.appendChild(note);
   return card;
 }
 
 function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
-  appendSectionTitleWithDetails(mount, '<span>Podział handlu</span>', () => buildHandelDetailCard(city, view, data));
+  appendSectionTitleWithDetails(mount, `<span>${podzialHandluHeading(city)}</span>`, () => buildHandelDetailCard(city, view, data));
   const split = readPodzialHandlu(city, data);
   const est = estimateHandelChips(view, split);
   if (view) {
@@ -7579,6 +7610,7 @@ const CITY_PANEL_ICONS_LEFT: { id: CityPanelProductionTab; iconId: string; title
 
 const CITY_PANEL_ICONS_RIGHT: { id: CityPanelCityParamTab; iconId: string; title: string }[] = [
   { id: 'spichlerz', iconId: 'cp-granary', title: 'Spichlerz' },
+  // 'handel'.title = fallback; renderCityIconRightRail() nadpisuje go dynamicznie (Danina/Podatek — patrz podzialHandluHeading).
   { id: 'handel', iconId: 'cp-trade', title: 'Podział handlu i zamożność — suwaki Skarb / Nauka / Zamożność' },
   { id: 'praca', iconId: 'cp-labor', title: 'Podział pracy — budynki i ulepszenia' },
   { id: 'porzadek', iconId: 'cp-order', title: 'Społeczeństwo i porządek' },
@@ -7724,7 +7756,7 @@ function renderRightPanelTab(
     case 'handel':
       withW4TabCard(mount, undefined, city, body => {
         const hint = el('div', 'civ-handel-tab-hint');
-        hint.textContent = 'Suwaki podziału handlu (Skarb · Nauka · Zamożność) i poziom zamożności — przewiń, jeśli nie mieści się na ekranie.';
+        hint.textContent = `Suwaki podziału ${handelStreamLabelGenetiv(city)} (Skarb · Nauka · Zamożność) i poziom zamożności — przewiń, jeśli nie mieści się na ekranie.`;
         body.appendChild(hint);
         const slidersHost = el('div', 'civ-handel-sliders-host');
         const wealthHost = el('div', 'civ-handel-wealth-host');
@@ -7810,7 +7842,7 @@ export function paintCityPanelSections(
     renderCityIconLeftRail(mounts.leftIconRail);
   }
   if (mounts.rightIconRail) {
-    renderCityIconRightRail(mounts.rightIconRail);
+    renderCityIconRightRail(mounts.rightIconRail, city);
   }
 
   if (mounts.mapChrome) {

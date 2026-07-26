@@ -247,6 +247,88 @@ let armyStackSuppressed = false;
 let hudSessionActive = false;
 let barActionsBound = false;
 
+// ---------------------------------------------------------------------------
+// Pełny ekran (Maciej 2026-07-25) — przycisk w HUD (⛶) obok Menu/Civpedia.
+// Zero flagowania własnego stanu: zawsze pytamy document.fullscreenElement na
+// żywo (renderBar czyta go przy każdym renderze), a zdarzenie 'fullscreenchange'
+// tylko WYZWALA odświeżenie — dzięki temu F11 przeglądarki i Esc też trzymają
+// przycisk/podpowiedź w zgodzie ze stanem (nie rozjeżdża się jak własna flaga).
+// ---------------------------------------------------------------------------
+
+let fsListenerBound = false;
+let fsHintEl: HTMLDivElement | null = null;
+let fsHintHideTimer: ReturnType<typeof setTimeout> | null = null;
+let fsHintFadeTimer: ReturnType<typeof setTimeout> | null = null;
+
+function isDocFullscreen(): boolean {
+  return document.fullscreenElement != null;
+}
+
+function fullscreenSupported(): boolean {
+  return typeof document.documentElement.requestFullscreen === 'function';
+}
+
+function ensureFsHintEl(): HTMLDivElement {
+  if (fsHintEl !== null) return fsHintEl;
+  const el = document.createElement('div');
+  el.className = 'civ-fs-hint';
+  el.textContent = 'Esc — wyjście z pełnego ekranu';
+  el.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(el);
+  fsHintEl = el;
+  return el;
+}
+
+/** Dyskretna podpowiedź po wejściu w pełny ekran — sama gaśnie po ~4s. */
+function showFullscreenHint(): void {
+  const el = ensureFsHintEl();
+  if (fsHintHideTimer !== null) { clearTimeout(fsHintHideTimer); fsHintHideTimer = null; }
+  if (fsHintFadeTimer !== null) { clearTimeout(fsHintFadeTimer); fsHintFadeTimer = null; }
+  el.style.display = 'block';
+  void el.offsetWidth; // reflow — żeby transition opacity zadziałał od 0
+  el.classList.add('show');
+  fsHintHideTimer = setTimeout(() => {
+    el.classList.remove('show');
+    fsHintFadeTimer = setTimeout(() => { if (fsHintEl !== null) fsHintEl.style.display = 'none'; }, 300);
+  }, 4000);
+}
+
+function hideFullscreenHint(): void {
+  if (fsHintHideTimer !== null) { clearTimeout(fsHintHideTimer); fsHintHideTimer = null; }
+  if (fsHintFadeTimer !== null) { clearTimeout(fsHintFadeTimer); fsHintFadeTimer = null; }
+  if (fsHintEl !== null) { fsHintEl.classList.remove('show'); fsHintEl.style.display = 'none'; }
+}
+
+/** Rejestrowany raz na dokument — reaguje na zmianę stanu wywołaną ZARÓWNO
+ *  naszym przyciskiem, jak i F11/Esc przeglądarki. */
+function ensureFullscreenListener(): void {
+  if (fsListenerBound) return;
+  fsListenerBound = true;
+  document.addEventListener('fullscreenchange', () => {
+    renderBar();
+    if (isDocFullscreen()) showFullscreenHint();
+    else hideFullscreenHint();
+  });
+}
+
+/** Cały DOM gry (canvas + HUD) wisi bezpośrednio pod <body> — brak osobnego
+ *  kontenera-roota — więc fullscreenujemy documentElement, żeby w pełnym
+ *  ekranie zostały widoczne i canvas, i cały HUD (siblingi canvasu). */
+function toggleFullscreen(): void {
+  if (isDocFullscreen()) {
+    void document.exitFullscreen().catch(() => {
+      // Przeglądarka odrzuciła wyjście — stan i tak czytamy na żywo z
+      // document.fullscreenElement przy każdym renderze, więc UI nie rozjedzie się.
+    });
+    return;
+  }
+  if (!fullscreenSupported()) return;
+  void document.documentElement.requestFullscreen().catch(() => {
+    // Odrzucone (np. brak gestu użytkownika / brak wsparcia w danym kontekście) —
+    // fullscreenchange się nie odpali, więc przycisk po prostu zostaje widoczny.
+  });
+}
+
 const useD1BLayout = (): boolean => cfg?.onExecutePending !== undefined || cfg?.mapToolbar !== undefined;
 
 const MINI_W = 280;
@@ -361,6 +443,12 @@ function ensureStyles(): void {
   background:rgba(120,20,20,0.85);border:1px solid rgba(255,80,80,0.7);color:#ffe0e0;font-weight:600;}
 .civ-war-chip:hover{background:rgba(160,30,30,0.95);}
 .civ-mini-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#9aa6b6;font:11px monospace;text-align:center;}
+.civ-fs-hint{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;
+  display:none;padding:6px 14px;border-radius:8px;pointer-events:none;
+  background:rgba(8,12,20,.92);color:var(--civ-text-muted);
+  border:1px solid rgba(232,216,138,.3);font:12px var(--civ-font-ui);letter-spacing:.02em;
+  opacity:0;transition:opacity .3s ease;box-shadow:0 6px 20px rgba(0,0,0,.45);}
+.civ-fs-hint.show{opacity:1;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -544,11 +632,18 @@ function renderBarD1B(s: HudState): string {
       + wikiBookIcon(16)
       + '<span>Civpedia</span></button>'
     : '';
+  // Pełny ekran (Maciej 2026-07-25): dyskretna ikona ⛶, ta sama klasa co Menu.
+  // Znika w pełnym ekranie (isDocFullscreen()) — wraca po Esc/F11 (fullscreenchange → renderBar()).
+  const fsBtn = (fullscreenSupported() && !isDocFullscreen())
+    ? '<button type="button" class="b-menu" data-act="fullscreen" title="Pełny ekran" aria-label="Pełny ekran">'
+      + '<span aria-hidden="true">⛶</span></button>'
+    : '';
   html += '<div class="hud-right-cluster">'
     + '<div class="civ-hud-banner-shell civ-hud-banner-right"><div class="hud-chip-row">'
     + rightChips.join('') + '</div></div>'
     + '<div class="hud-right">'
     + wikiBtn
+    + fsBtn
     + '<button type="button" class="b-menu" data-act="menu">'
     + (menuIc || '') + '<span>Menu</span></button>'
     + '</div></div>';
@@ -582,6 +677,7 @@ function handleHudBarAction(act: string): void {
   else if (act === 'diplo') cfg.onOpenDiplomacy?.();
   else if (act === 'wiki') cfg.onOpenWiki?.();
   else if (act === 'menu') cfg.onOpenMenu?.();
+  else if (act === 'fullscreen') toggleFullscreen();
   else if (act === 'power') {
     hideEmpireOverlay();
     hidePowerOverlay();
@@ -990,6 +1086,7 @@ export function showHud(config: HudConfig): void {
   if (sidePanelApi !== null) { sidePanelApi.destroy(); sidePanelApi = null; }
   destroyD1BModules();
   ensureStyles();
+  ensureFullscreenListener();
   if (barEl === null) {
     barEl = document.createElement('div');
     barEl.className = 'civ-hud';
