@@ -3535,3 +3535,11 @@ Nowe: republish F27 z `stopImmediatePropagation` na skrótach ← →; chevrony 
 Bramki: tsc 0.
 **Sesja lokalna: pull / sync dysk, testuj `b0d642b4` — `gra-robocza/START.html`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [00:39 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `2dcd69e2` (FALA 28, VERIFY)
+**md5 `2dcd69e2cd09b1f73253570728cd4d46`**, stempel `ROBOCZA · 2026-07-27 00:39`. **VERIFY OK** (certutil md5 HTML = manifest).
+Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive lock).
+Nowe: chipy paktów dyplomacji · RESEARCH_QUEUE_MAX=4 · Civpedia+MENU ukryte w mieście · rekrutacja skondensowana · Buduj/Kup + can-build · hover flyout fix · surowce w zasięgu Koń/Sól/Złoto · hint boxy usunięte · detail dock bez overlap rails.
+Bramki: tsc 0 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41 · research 33/33 · fair-play-grid 8/8.
+**Sesja lokalna: pull / sync dysk, testuj `2dcd69e2` — `gra-robocza/START.html`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.

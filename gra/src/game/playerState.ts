@@ -75,10 +75,10 @@ export const PIENIADZ_MNOZNIK = 10;
 
 /**
  * TEMAT 10 — pojemność kolejki badań LICZONA RAZEM z aktualnym celem
- * (np. 1 aktywny + 2 w state.researchQueue = 3). Dziś (przed TEMAT 10) gracz
+ * (np. 1 aktywny + 3 w state.researchQueue = 4). Dziś (przed TEMAT 10) gracz
  * mógł mieć tylko 1 aktywny cel — to odpowiada RESEARCH_QUEUE_MAX == 1.
  */
-export const RESEARCH_QUEUE_MAX = 3;
+export const RESEARCH_QUEUE_MAX = 4;
 
 // ---------------------------------------------------------------------------
 // Player state

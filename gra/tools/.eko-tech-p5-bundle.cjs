@@ -228,11 +228,13 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
+    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
   lodzie_rybackie: {
     nazwa: "\u0141odzie rybackie",
@@ -324,6 +326,21 @@ var terrain_improvements_default = {
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+  },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
   },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
@@ -423,8 +440,14 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.03, highland: 0.07 },
-      medium: { mountain: 0.06, highland: 0.11 },
+      low: { mountain: 0.045, highland: 0.105 },
+      medium: { mountain: 0.09, highland: 0.165 },
+      high: { mountain: 0.18, highland: 0.27 }
+    },
+    relief_overflow_cap_frac: {
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224818% (0,06+0,09 \u2014 progi fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224830%. Rewizja 2026-07-26: w\u0142a\u015Bciciel \u2014 wi\u0119cej g\xF3r (~12%\u2192~18% g\xF3rzysto\u015Bci l\u0105du na medium).",
+      low: { mountain: 0.045, highland: 0.075 },
+      medium: { mountain: 0.06, highland: 0.09 },
       high: { mountain: 0.12, highland: 0.18 }
     },
     pasma_gorskie: {
@@ -469,7 +492,8 @@ var map_gen_params_default = {
     glina: { rarity: 0.1 },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    sol: { rarity: 0.12 }
+    sol: { rarity: 0.12 },
+    zloto: { rarity: 0.03 }
   },
   metal_deposit_min_era: {
     miedz: 2,
@@ -504,7 +528,10 @@ var FALLBACK_DEPOSIT_RARITY = {
   wegiel: 0.1,
   owce: 0.08,
   bydlo: 0.07,
-  sol: 0.12
+  sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03
 };
 function mapGenResourceBaselineRarity() {
   const v = map_gen_params_default.gestosc?.baseline_rarity_mult;
@@ -6758,7 +6785,6 @@ var RIVER_SCALE_BY_SIZE = {
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
-var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,
@@ -6827,6 +6853,18 @@ var BASE_DEPOSIT_RULES = [
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
     requiresCoastalLand: true,
     rarity: 0.12
+  },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: "zloto",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    rarity: 0.03
   }
 ];
 var _depositRarities = mapGenAllDepositRarities();
@@ -6964,6 +7002,18 @@ var NH_LEG_TOP_R = 0.2 * HEX_R;
 
 // src/render/styleResources.ts
 var S = 2.05 / 3;
+
+// src/render/kopalnia-zlota-opus5.ts
+var _a = new Vector3();
+var _b = new Vector3();
+var _dir = new Vector3();
+var _up = new Vector3(0, 1, 0);
+var SL_TILT = 0.4;
+var SL_YAW = 0.55;
+var SL_Q = new Quaternion().setFromEuler(
+  new Euler(SL_TILT, SL_YAW, 0, "YXZ")
+);
+var _sl = new Vector3();
 
 // data/terrain-yields.json
 var terrain_yields_default = {
@@ -7166,6 +7216,11 @@ var miasto_params_default = {
     wartosc: 100,
     jednostka: "% Obrony (dodatkowo do muru)",
     opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -7476,7 +7531,10 @@ var TERRAIN_ALLOW = {
   droga: null,
   droga_brukowana: null,
   posterunek: null,
-  kopalnia_miedzi: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */])
+  kopalnia_miedzi: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
+  // Maciej 2026-07-25: złoto żyłowe — Wzgórza/Góry, jak kopalnia_miedzi (patrz DEPOSIT_RULES
+  // gen-helpers.ts id='zloto').
+  kopalnia_zlota: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */])
 };
 function depositAllowsPlayerImprovement(key, hex) {
   const nakladka = hex.nakladka;
@@ -7494,6 +7552,8 @@ function depositAllowsPlayerImprovement(key, hex) {
       return zloze === "sol";
     case "kopalnia_miedzi":
       return zloze === "miedz";
+    case "kopalnia_zlota":
+      return zloze === "zloto";
     case "bydlo":
       return nakladka === "zloze_bydla" /* ZlozeBydla */;
     case "owce":
@@ -7516,6 +7576,25 @@ var NAKLADKI_ZWIERZECZE = /* @__PURE__ */ new Set([
 ]);
 function hasAnimalDeposit(nakladka) {
   return NAKLADKI_ZWIERZECZE.has(nakladka);
+}
+
+// src/game/zloto-access.ts
+var KOPALNIA_ZLOTA_KEY = "kopalnia_zlota";
+function improvementKeysOnPlaced2(imp) {
+  if (typeof imp === "string") {
+    const k = normalizeImprovementKey(imp);
+    return k ? [k] : [];
+  }
+  return imp.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
+}
+function empireHasKopalniaZlota(placedImprovements) {
+  if (!placedImprovements?.size) return false;
+  for (const imp of placedImprovements.values()) {
+    for (const key of improvementKeysOnPlaced2(imp)) {
+      if (key === KOPALNIA_ZLOTA_KEY) return true;
+    }
+  }
+  return false;
 }
 
 // src/game/resource-access.ts
@@ -7544,7 +7623,8 @@ var ZLOZE_LABEL = {
   sol: "S\xF3l",
   miedz: "Ruda miedzi",
   zelazo: "Ruda \u017Celaza",
-  stal: "Stal"
+  stal: "Stal",
+  zloto: "Z\u0142oto"
 };
 var SUROWIEC_KEY_LABEL = {
   drewno: "Drewno",
@@ -7559,7 +7639,8 @@ var SUROWIEC_KEY_LABEL = {
   lama: "Lama",
   kon: "Ko\u0144",
   sol: "S\xF3l",
-  braz: "Br\u0105z"
+  braz: "Br\u0105z",
+  zloto: "Z\u0142oto"
 };
 function labelForHex(hex, currentEra = 99) {
   const z = hex.zloze?.trim().toLowerCase();
@@ -7630,6 +7711,14 @@ function activeLabelsForImprovementOnHex(improvementKey, hex) {
 function sortLabels(labels) {
   return Array.from(labels).sort((a, b) => a.localeCompare(b, "pl"));
 }
+var CITY_PANEL_RANGE_DEPOSIT_LABELS = /* @__PURE__ */ new Set([
+  "Ko\u0144",
+  "S\xF3l",
+  "Z\u0142oto"
+]);
+function filterCityPanelRangeLabels(labels) {
+  return sortLabels([...labels].filter((l) => CITY_PANEL_RANGE_DEPOSIT_LABELS.has(l)));
+}
 function hexesInCitySight(city, map) {
   const sight = citySightRadius(city.population, city.kulturaSkumulowana ?? 0);
   if (sight <= 0) return [];
@@ -7675,6 +7764,9 @@ function collectActiveAccess(city, map, placedImprovements, options) {
   if (options.builtIds && hasBrazAccess(placedImprovements, options.builtIds)) {
     found.add(SUROWIEC_KEY_LABEL.braz);
   }
+  if (empireHasKopalniaZlota(placedImprovements)) {
+    found.add(SUROWIEC_KEY_LABEL.zloto);
+  }
   return found;
 }
 function getCityResourceAccessForCity(city, map, placedImprovements, currentEra = 99, options = {}) {
@@ -7685,7 +7777,7 @@ function getCityResourceAccessForCity(city, map, placedImprovements, currentEra 
     if (!activeSet.has(label)) potentialSet.add(label);
   }
   return {
-    potential: sortLabels(potentialSet),
+    potential: filterCityPanelRangeLabels(potentialSet),
     active: sortLabels(activeSet)
   };
 }

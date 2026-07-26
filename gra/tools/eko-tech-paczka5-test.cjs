@@ -44,7 +44,7 @@ function mapWith(...hexes) {
     { coords: { q: 1, r: 0 }, terenBazowy: TB.Wzgorza, zloze: 'miedz', wlasciciel: '0' },
   );
   const split = M.getCityResourceAccessForCity(city, map, new Map(), 99, { ownerId: '0' });
-  ok(split.potential.includes('Ruda miedzi'), 'miedz = potencjał bez kopalni');
+  ok(!split.potential.includes('Ruda miedzi'), 'miedz poza potencjałem panelu (tylko Koń/Sól/Złoto)');
   ok(!split.active.includes('Ruda miedzi'), 'miedz NIE active bez kopalni');
   ok(M.getResourceAccessForCity(city, map, new Map(), 99).length === 0, 'getResourceAccessForCity = tylko active');
 }
@@ -68,7 +68,7 @@ function mapWith(...hexes) {
   });
   const placed = new Map([['1,0', 'bydlo']]);
   const split = M.getCityResourceAccessForCity(city, map, placed, 99, { ownerId: '0' });
-  ok(split.active.includes('Trzoda (krowa/świnia)'), 'Model B bydlo → active bez złoża');
+  ok(!split.active.includes('Trzoda (krowa/świnia)'), 'Model B bydlo NIE jest surowcem → brak active');
   ok(!split.potential.includes('Trzoda (krowa/świnia)'), 'bydlo nie w potencjale gdy active');
 }
 
@@ -78,7 +78,7 @@ function mapWith(...hexes) {
     { coords: { q: 1, r: 0 }, terenBazowy: TB.Wzgorze, zloze: 'miedz', wlasciciel: '0' },
   );
   const noPop = M.getCityResourceAccessForCity(city, map, new Map(), 99, { builtIds: [PIEC] });
-  ok(noPop.potential.includes('Ruda miedzi'), 'miedz = potencjał bez popalni');
+  ok(!noPop.potential.includes('Ruda miedzi'), 'miedz poza potencjałem panelu bez popalni');
   ok(!noPop.active.includes('Brąz'), 'brak Brązu bez popalni mimo Pieca');
 
   const placed = new Map([['1,0', 'kopalnia_miedzi']]);

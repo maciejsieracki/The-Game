@@ -20,6 +20,8 @@ export {
   nastawienieLabelFromScore,
   resolveFormalDiplomaticStatus,
   respektTooltipPl,
+  treatyDisplayLabel,
+  activeTreatyLabelsForPair,
 } from './game/diplomacy-display';
 `);
 
@@ -81,6 +83,16 @@ ok(trade.kind === 'handel', 'formal: umowa handlowa');
 
 ok(mod.nastawienieLabelFromScore(10, 10) === 'Wrogi', 'nastawienie: wrogi z score');
 ok(mod.nastawienieLabelFromScore(25, 25) === 'Neutralny', 'nastawienie: neutralny z score');
+
+ok(mod.treatyDisplayLabel('pakt_nieagresji') === 'Pakt nieagresji', 'etykieta: NAP');
+ok(mod.treatyDisplayLabel('umowa_handlowa') === 'Umowa handlowa', 'etykieta: handel');
+const labels = mod.activeTreatyLabelsForPair([
+  { id: 't1', rodzaj: 'pakt_nieagresji', strony: [0, 2], wygasaTura: 50 },
+  { id: 't2', rodzaj: 'umowa_handlowa', strony: [0, 2], wygasaTura: null },
+  { id: 't3', rodzaj: 'pakt_nieagresji', strony: [0, 3], wygasaTura: 50 },
+], 0, 2);
+ok(labels.length === 2 && labels.includes('Pakt nieagresji') && labels.includes('Umowa handlowa'),
+  'activeTreatyLabelsForPair: tylko para 0↔2');
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
 

@@ -11,7 +11,23 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `b0d642b4` — 2026-07-27 00:11 · FALA 27: PANEL MIASTA — NAWIGACJA ‹ › — **AKTUALNA**
+## ROBOCZA `2dcd69e2` — 2026-07-27 00:39 · FALA 28: PANEL MIASTA + DYPLOMACJA + NAUKA — **AKTUALNA**
+- md5 (pelne): `2dcd69e2cd09b1f73253570728cd4d46` · stempel: `ROBOCZA · 2026-07-27 00:39`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).
+- **Co nowego (sesja F28):**
+  - **Dyplomacja:** chipy paktów (diplomacy-display, diploListHud, diplomacyPanel, diploUiSkin).
+  - **Nauka:** `RESEARCH_QUEUE_MAX = 4` (sciencePicker, scienceHubHud, playerState).
+  - **HUD miasta:** Civpedia + MENU ukryte w widoku miasta (hud.ts).
+  - **Rekrutacja:** skondensowany layout (unitRecruitCard.ts).
+  - **Budynki:** przyciski Buduj/Kup + stany can-build/cannot-build; tooltip labels + tile layout; strip dev notes.
+  - **Hover flyout:** fix Szczegóły (hoverDetailDock, cityPanel).
+  - **Surowce w zasięgu:** tylko Koń/Sól/Złoto w panelu (resource-access.ts).
+  - **Zakładki miasta:** usunięte hint boxy.
+  - **Detail dock:** fix layout bez overlap rails (cityUxFrame).
+- **Bramki:** tsc 0 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41 · research 33/33 · fair-play-grid 8/8.
+
+## ROBOCZA `b0d642b4` — 2026-07-27 00:11 · FALA 27: PANEL MIASTA — NAWIGACJA ‹ › — **ZASTĄPIONA**
 - md5 (pelne): `b0d642b4c3892284ac52e7f6060b497b` · stempel: `ROBOCZA · 2026-07-27 00:10`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).

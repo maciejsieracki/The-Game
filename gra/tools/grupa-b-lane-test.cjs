@@ -76,8 +76,8 @@ const mockMap = {
 };
 const resSplit = M.getCityResourceAccessForCity({ id: 'c1', q: 0, r: 0, population: 5 }, mockMap);
 ok(
-  resSplit.potential.includes('Ruda') && resSplit.potential.includes('Glina'),
-  'ABC-19: złoża w potencjale bez ulepszenia',
+  resSplit.potential.length === 0,
+  'ABC-19: potencjał panelu = tylko Koń/Sól/Złoto (Ruda/Glina poza stopką)',
 );
 const res = M.getResourceAccessForCity({ id: 'c1', q: 0, r: 0, population: 5 }, mockMap);
 ok(!res.includes('Ruda') && !res.includes('Glina'), 'ABC-19: bez ulepszenia brak active z złoża');

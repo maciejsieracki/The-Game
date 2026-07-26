@@ -54,7 +54,7 @@ function mapWith(...hexes) {
   const placed = new Map([['1,0', 'glinianka']]);
   const split = M.getCityResourceAccessForCity(city, map, placed, 99);
   ok(split.active.includes('Glina'), 'glinianka na złożu gliny → active Glina');
-  ok(split.potential.length === 0 || !split.potential.includes('Glina'), 'Glina nie w potencjale gdy active');
+  ok(!split.potential.includes('Glina'), 'Glina złoże → poza potencjałem panelu (magazynowe)');
   ok(M.buildingResourceGateMet({ id: 'garncarnia' }, split.active), 'garncarnia OK gdy Glina active');
   ok(!M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'garncarnia zablokowana bez Glina');
 }
@@ -64,7 +64,7 @@ function mapWith(...hexes) {
   const hex = { coords: { q: 1, r: 0 }, terenBazowy: TB.Wzgorza, zloze: 'miedz', wlasciciel: '0' };
   const map = mapWith(hex);
   const noImp = M.getCityResourceAccessForCity(city, map, new Map(), 99);
-  ok(noImp.potential.includes('Ruda miedzi'), 'miedz bez ulepszenia → potencjał');
+  ok(!noImp.potential.includes('Ruda miedzi'), 'miedz bez ulepszenia → poza potencjałem panelu (tylko Koń/Sól/Złoto)');
   ok(!noImp.active.includes('Ruda'), 'miedz bez ulepszenia → brak active Ruda');
   const placed = new Map([['1,0', 'kopalnia_miedzi']]);
   const withImp = M.getCityResourceAccessForCity(city, map, placed, 99);
@@ -121,6 +121,19 @@ function mapWith(...hexes) {
   const placed = new Map([['1,0', 'stadnina']]);
   ok(M.getCityResourceAccessForCity(city, map, placed, 99).active.includes('Koń'), 'stadnina na złożu konia → Koń');
   ok(!M.improvementUnlockActiveOnHex('stadnina', { nakladka: NK.Brak }), 'stadnina false bez złoża');
+}
+
+// --- złoto: złoże w zasięgu panelu ---
+{
+  const hex = { coords: { q: 1, r: 0 }, terenBazowy: TB.Wzgorza, zloze: 'zloto', wlasciciel: '0' };
+  const map = mapWith(hex);
+  const noImp = M.getCityResourceAccessForCity(city, map, new Map(), 99);
+  ok(noImp.potential.includes('Złoto'), 'złoże złota bez kopalni → potencjał panelu');
+  ok(!noImp.active.includes('Złoto'), 'złoże złota bez kopalni → brak active Złoto');
+  const placed = new Map([['1,0', 'kopalnia_zlota']]);
+  const withImp = M.getCityResourceAccessForCity(city, map, placed, 99);
+  ok(withImp.active.includes('Złoto'), 'kopalnia_zlota na złożu → active Złoto (imperium)');
+  ok(!withImp.potential.includes('Złoto'), 'kopalnia_zlota → Złoto nie w potencjale');
 }
 
 // --- wyjątki: tartak, kamieniołom ---

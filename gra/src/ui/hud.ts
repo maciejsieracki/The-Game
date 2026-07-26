@@ -466,8 +466,7 @@ function ensureStyles(): void {
   right:calc(32px + min(26vw,300px) + 16px + 46px + 10px);
   z-index:407;flex-direction:column;align-items:stretch;gap:5px;max-width:148px;}
 .civ-hud.is-city-view .hud-right-cluster .hud-right{flex-direction:column;align-items:stretch;gap:5px;}
-.civ-hud.is-city-view .hud-right-cluster .b-menu,
-.civ-hud.is-city-view .hud-right-cluster .b-wiki{height:36px;padding:0 10px;font-size:10px;letter-spacing:.12em;justify-content:center;}
+.civ-hud.is-city-view .hud-right-cluster .b-menu{height:36px;padding:0 10px;font-size:10px;letter-spacing:.12em;justify-content:center;}
 .civ-mini{position:fixed;left:20px;bottom:20px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
 .civ-war-strip{pointer-events:auto;position:fixed;top:46px;left:0;right:0;z-index:309;display:flex;flex-wrap:wrap;gap:6px;align-items:center;
   padding:3px 12px;background:rgba(48,12,12,0.92);border-bottom:1px solid rgba(211,55,55,0.55);
@@ -751,7 +750,7 @@ function renderBarD1B(s: HudState): string {
 
   const menuIc = brandIconSvg('ui-menu', 24);
   const wikiOn = cfg?.isWikiActive?.() ?? false;
-  const wikiBtn = cfg?.onOpenWiki
+  const wikiBtn = (!mapChromeSuppressed && cfg?.onOpenWiki)
     ? '<button type="button" class="b-wiki' + (wikiOn ? ' on' : '') + '" data-act="wiki" title="Civpedia — poradnik i encyklopedia">'
       + wikiBookIcon(16)
       + '<span>Civpedia</span></button>'
@@ -762,14 +761,17 @@ function renderBarD1B(s: HudState): string {
     ? '<button type="button" class="b-menu" data-act="fullscreen" title="Pełny ekran" aria-label="Pełny ekran">'
       + '<span aria-hidden="true">⛶</span></button>'
     : '';
+  const menuBtn = (!mapChromeSuppressed && cfg?.onOpenMenu)
+    ? '<button type="button" class="b-menu" data-act="menu" title="Menu główne">'
+      + (menuIc || '') + '<span>Menu</span></button>'
+    : '';
   html += '<div class="hud-right-cluster">'
     + '<div class="civ-hud-banner-shell civ-hud-banner-right"><div class="hud-chip-row">'
     + rightChips.join('') + '</div></div>'
     + '<div class="hud-right">'
     + wikiBtn
     + fsBtn
-    + '<button type="button" class="b-menu" data-act="menu">'
-    + (menuIc || '') + '<span>Menu</span></button>'
+    + menuBtn
     + '</div></div>';
   return html;
 }
@@ -1176,6 +1178,7 @@ export function setMapHudChromeSuppressed(suppressed: boolean): void {
   if (mapChromeSuppressed === suppressed) return;
   mapChromeSuppressed = suppressed;
   applyMapChromeVisibility();
+  renderBar();
 }
 
 /**

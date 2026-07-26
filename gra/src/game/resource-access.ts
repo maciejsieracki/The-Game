@@ -231,6 +231,22 @@ function sortLabels(labels: Iterable<string>): string[] {
   return Array.from(labels).sort((a, b) => a.localeCompare(b, 'pl'));
 }
 
+/**
+ * Etykiety złóż mapowych widoczne w stopce panelu miasta „Surowce w zasięgu"
+ * (Potencjał: złoże — zbuduj ulepszenie). Tylko surowce DOSTĘPOWE z heksu
+ * (Koń / Sól / Złoto) — NIE magazynowe (Glina, Ruda, Drewno…), które trafiają
+ * do City.surowce i są widoczne w magazynie państwa.
+ */
+export const CITY_PANEL_RANGE_DEPOSIT_LABELS: ReadonlySet<string> = new Set([
+  'Koń',
+  'Sól',
+  'Złoto',
+]);
+
+function filterCityPanelRangeLabels(labels: Iterable<string>): string[] {
+  return sortLabels([...labels].filter(l => CITY_PANEL_RANGE_DEPOSIT_LABELS.has(l)));
+}
+
 function hexesInCitySight(
   city: ResourceAccessCity,
   map: GameMap,
@@ -325,7 +341,7 @@ export function getCityResourceAccessForCity(
     if (!activeSet.has(label)) potentialSet.add(label);
   }
   return {
-    potential: sortLabels(potentialSet),
+    potential: filterCityPanelRangeLabels(potentialSet),
     active: sortLabels(activeSet),
   };
 }

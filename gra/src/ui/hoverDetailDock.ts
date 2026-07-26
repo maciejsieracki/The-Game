@@ -20,10 +20,11 @@ let showTimer: ReturnType<typeof setTimeout> | null = null;
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
 let activeAnchor: HTMLElement | null = null;
 let activeSide: HoverDetailDockSide | null = null;
+let dockHovered = false;
 
 let floatEl: HTMLDivElement | null = null;
 
-const HIDE_DELAY = 160;
+const HIDE_DELAY = 280;
 const DOCK_INIT = 'data-civ-hover-dock-init';
 
 function cancelTimers(): void {
@@ -138,25 +139,27 @@ function hasDockForSide(side: HoverDetailDockSide): boolean {
   return !!(mount && content);
 }
 
+function showFloat(card: HTMLElement, anchor: HTMLElement): void {
+  const tip = ensureFloat();
+  tip.innerHTML = '';
+  tip.appendChild(wrapDetailCard(card));
+  tip.style.display = 'block';
+  positionFloat(anchor);
+  activeSide = null;
+}
+
 function showContent(card: HTMLElement, anchor: HTMLElement, sideHint?: HoverDetailDockSide | 'auto'): void {
   const side = resolveDockSide(anchor, sideHint);
-  if (hasDockForSide(side)) {
-    showInDock(side, card);
-    activeSide = side;
-  } else if (hasDockForSide('right')) {
-    showInDock('right', card);
-    activeSide = 'right';
-  } else if (hasDockForSide('left')) {
-    showInDock('left', card);
-    activeSide = 'left';
-  } else {
-    const tip = ensureFloat();
-    tip.innerHTML = '';
-    tip.appendChild(wrapDetailCard(card));
-    tip.style.display = 'block';
-    positionFloat(anchor);
-    activeSide = null;
+  const tryOrder: HoverDetailDockSide[] =
+    side === 'left' ? ['left', 'right'] : ['right', 'left'];
+  for (const candidate of tryOrder) {
+    if (hasDockForSide(candidate)) {
+      showInDock(candidate, card);
+      activeSide = candidate;
+      return;
+    }
   }
+  showFloat(card, anchor);
 }
 
 function clearContent(): void {
@@ -170,7 +173,7 @@ function scheduleClear(): void {
   if (hideTimer) clearTimeout(hideTimer);
   hideTimer = setTimeout(() => {
     hideTimer = null;
-    if (activeAnchor) return;
+    if (activeAnchor || dockHovered) return;
     cancelTimers();
     clearContent();
   }, HIDE_DELAY);
@@ -193,12 +196,16 @@ function buildDockShell(mount: HTMLElement, side: HoverDetailDockSide): void {
   else contentElRight = contentEl;
 
   mount.addEventListener('mouseenter', () => {
+    dockHovered = true;
     if (hideTimer) {
       clearTimeout(hideTimer);
       hideTimer = null;
     }
   });
-  mount.addEventListener('mouseleave', scheduleClear);
+  mount.addEventListener('mouseleave', () => {
+    dockHovered = false;
+    scheduleClear();
+  });
   mount.setAttribute(DOCK_INIT, '1');
   setDockWidth(side, false);
 }
@@ -220,6 +227,7 @@ export function setHoverDetailDocks(mounts: HoverDetailDockMounts | null): void 
   cancelTimers();
   activeAnchor = null;
   activeSide = null;
+  dockHovered = false;
   hideFloat();
 
   if (!mounts) {
@@ -349,6 +357,7 @@ export function disposeHoverDetailDock(): void {
   cancelTimers();
   activeAnchor = null;
   activeSide = null;
+  dockHovered = false;
   clearContent();
   dockMountLeft?.removeAttribute(DOCK_INIT);
   dockMountRight?.removeAttribute(DOCK_INIT);

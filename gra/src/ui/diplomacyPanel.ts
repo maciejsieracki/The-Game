@@ -15,6 +15,7 @@ import {
   dipBrandIconHtml,
   ensureDiploBrandScope,
   tierBadgeHtml,
+  treatyChipsHtml,
 } from './diploUiSkin';
 // Typy publiczne
 // ---------------------------------------------------------------------------
@@ -57,6 +58,8 @@ export interface DiploRelation {
   ikonaId?: string;
   /** kolorHex nacji (#RRGGBB). */
   kolorHex?: string;
+  /** Aktywne traktaty między graczem a tą cywilizacją (etykiety PL z silnika). */
+  activeTreaties?: readonly string[];
 }
 
 /** Wojna między dwiema cywilizacjami (wywiad) — A1-Q5; nie musi dotyczyć gracza. */
@@ -166,7 +169,7 @@ ${DIPLO_1E_SHARED_CSS}
   font-family:var(--tg-font-title,Georgia,serif);font-size:0.95em;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .civ-diplo .cd-stats{font-size:0.72em;color:#8a8070;margin-top:3px;line-height:1.35;}
-.civ-diplo .cd-tier-row{margin-top:4px;}
+.civ-diplo .cd-tier-row{margin-top:4px;display:flex;flex-direction:column;align-items:flex-start;gap:3px;}
 .civ-diplo .cd-empty{font-size:0.86em;color:#8a8070;text-align:center;padding:12px 0;font-style:italic;}
 .civ-diplo .cd-sub{font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
   color:#e08a8a;margin:10px 0 4px;padding-top:6px;border-top:1px solid rgba(200,64,64,.25);}
@@ -206,7 +209,10 @@ function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
     actionBtn = '<button type="button" class="dip-gold-btn cd-aud-btn" data-act="audience" data-oid="' + rel.ownerId + '">'
       + esc(btnLabel) + '</button>';
   }
-  const tierBadge = '<div class="cd-tier-row">' + tierBadgeHtml(rel.tier, tierLabel(rel.tier)) + '</div>';
+  const treatyChips = rel.activeTreaties?.length
+    ? treatyChipsHtml(rel.activeTreaties)
+    : '';
+  const tierBadge = '<div class="cd-tier-row">' + tierBadgeHtml(rel.tier, tierLabel(rel.tier)) + treatyChips + '</div>';
   const zauf = rel.zaufanie ?? 0;
   const relTotal = panelRelTotal(zauf, rel.respekt ?? 0);
   const stats = (rel.zaufanie != null || rel.respekt != null)

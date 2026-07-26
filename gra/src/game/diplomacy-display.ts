@@ -7,6 +7,9 @@ import { civMatrixParam, loadCivMatrix } from './civ-matrix';
 import type { DiplomacyPerNacjaRow } from './civ-ai-data';
 import { diplomacyPerNacjaRow } from './civ-ai-data';
 import { computeRespekt } from './diplomacy';
+import { RodzajTraktatu } from '../types/diplomacy';
+import type { ActiveDeal, TreatyKind } from './diplomacy-treaties';
+import { normalizeTreatyKind } from './diplomacy-treaties';
 
 const MATRIX = loadCivMatrix();
 
@@ -258,6 +261,38 @@ export function nastawienieLabelFromScore(zaufanie: number, respekt: number): st
 /** Krótki podpis pod etykietą nastawienia w audiencji. */
 export function nastawienieHintPl(): string {
   return 'Ocena relacji i zachowania — niezależna od formalnej wojny i traktatów.';
+}
+
+/** Etykieta PL aktywnego traktatu (lista dyplomacji, audiencja, banner). */
+export function treatyDisplayLabel(rodzaj: TreatyKind): string {
+  const k = normalizeTreatyKind(rodzaj);
+  switch (k) {
+    case RodzajTraktatu.PaktNieagresji: return 'Pakt nieagresji';
+    case 'sojusz_defensywny': return 'Sojusz defensywny';
+    case 'sojusz_pelny': return 'Sojusz pełny';
+    case RodzajTraktatu.UmowaHandlowa: return 'Umowa handlowa';
+    case RodzajTraktatu.OtwartGranice: return 'Otwarte granice';
+    case RodzajTraktatu.PrawoWojskowePrzemarszu: return 'Prawo przemarszu wojskowego';
+    case RodzajTraktatu.Wasalizacja: return 'Wasalizacja';
+    case RodzajTraktatu.Rozejm: return 'Rozejm';
+    default: return String(k);
+  }
+}
+
+function canonicalOwnerPair(a: number, b: number): [number, number] {
+  return a < b ? [a, b] : [b, a];
+}
+
+/** Aktywne traktaty między dwoma ownerId — etykiety PL do chipów na liście dyplomacji. */
+export function activeTreatyLabelsForPair(
+  deals: readonly ActiveDeal[],
+  ownerA: number,
+  ownerB: number,
+): string[] {
+  const [p0, p1] = canonicalOwnerPair(ownerA, ownerB);
+  return deals
+    .filter(d => d.strony[0] === p0 && d.strony[1] === p1)
+    .map(d => treatyDisplayLabel(d.rodzaj));
 }
 
 /**

@@ -8,6 +8,7 @@ import { brandIconSvg } from './icons/brandAssets';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { techIconSvg } from './techIcons';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
+import { RESEARCH_QUEUE_MAX } from '../game/playerState';
 
 export interface ScienceHubProgress {
   targetName: string | null;
@@ -41,8 +42,8 @@ export interface ScienceHubPlanEntry {
   pos: number;
 }
 
-/** Max pozycji w planie badań — mirror RESEARCH_QUEUE_MAX (playerState.ts). UI celowo odsprzęgnięty od silnika. */
-const PLAN_MAX = 3;
+/** Max pozycji w planie badań — mirror RESEARCH_QUEUE_MAX (playerState.ts). */
+const PLAN_MAX = RESEARCH_QUEUE_MAX;
 
 export interface ScienceHubHudConfig {
   getProgress: () => ScienceHubProgress | null;
@@ -378,7 +379,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     const hint = document.createElement('div');
     hint.className = 'sh-hint';
     hint.textContent = config.getPlan
-      ? 'Klik tech na liście lub w drzewku = dodaj do planu (do 3). Przeciągnij pozycję w planie, by zmienić kolejność. Esc zamyka hub (najpierw drzewko).'
+      ? 'Klik tech na liście lub w drzewku = dodaj do planu (do ' + PLAN_MAX + '). Przeciągnij pozycję w planie, by zmienić kolejność. Esc zamyka hub (najpierw drzewko).'
       : 'Klik tech na liście lub w drzewku = ustaw cel. Esc zamyka hub (najpierw drzewko).';
 
     listPanel.appendChild(hint);
@@ -421,7 +422,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       }
       row.appendChild(ico);
       row.appendChild(body);
-      // TEMAT 10 (C-RES-Q1=C): numerek 1/2/3 gdy tech jest w planie badań (aktywny cel lub kolejka).
+      // TEMAT 10 (C-RES-Q1=C): numerek 1..RESEARCH_QUEUE_MAX gdy tech jest w planie badań (aktywny cel lub kolejka).
       const planPos = planPosById.get(e.id);
       if (planPos !== undefined) {
         const badge = document.createElement('span');

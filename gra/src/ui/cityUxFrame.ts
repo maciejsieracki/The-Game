@@ -29,6 +29,10 @@ const RIGHT_RAIL_GAP = 16;
 const RIGHT_ICON_RAIL_W = 46;
 const DETAIL_DOCK_W = HOVER_DETAIL_DOCK_W;
 const RIGHT_W = 300;
+/** Dolny margines docków — nie zasłaniają środkowego stosu okolicy (profile / akcje). */
+const DOCK_BOTTOM_CLEAR = 96;
+const LEFT_PANEL_W_EXPR = `min(24vw,${LEFT_W}px)`;
+const RIGHT_PANEL_W_EXPR = `min(26vw,${RIGHT_W}px)`;
 
 function ensureFrameStyles(): void {
   ensureBrandRootTokens();
@@ -49,23 +53,23 @@ function ensureFrameStyles(): void {
   display:flex;align-items:flex-start;justify-content:center;padding:5px 12px 4px 12px;}
 .civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:100%;box-sizing:border-box;pointer-events:auto;}
-.civ-ux-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:${LEFT_MARGIN}px;bottom:0;width:min(24vw,${LEFT_W}px);min-width:280px;z-index:401;
+.civ-ux-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:${LEFT_MARGIN}px;bottom:0;width:${LEFT_PANEL_W_EXPR};min-width:280px;z-index:401;
   pointer-events:auto;overflow-y:auto;overflow-x:hidden;padding:0.18rem 0.4rem 0.48rem;
   display:flex;flex-direction:column;background:transparent;border:none;box-shadow:none;}
 .civ-ux-left-icon-rail{position:fixed;top:${LEFT_RAIL_TOP}px;
-  left:calc(${LEFT_MARGIN}px + min(24vw,${LEFT_W}px) + var(--civ-detail-dock-left-w,0px) + ${LEFT_RAIL_GAP}px);
-  width:${LEFT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - 24px);z-index:405;pointer-events:auto;overflow:visible;
+  left:calc(${LEFT_MARGIN}px + ${LEFT_PANEL_W_EXPR} + var(--civ-detail-dock-left-w,0px) + ${LEFT_RAIL_GAP}px);
+  width:${LEFT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - ${DOCK_BOTTOM_CLEAR}px);z-index:408;pointer-events:auto;overflow:visible;
   display:flex;flex-direction:column;align-items:center;padding:0;
   background:transparent;border:none;box-shadow:none;transition:left .22s ease;}
 .civ-ux-left-icon-rail .civ-ux-panel-scope{width:100%;height:auto;display:flex;flex-direction:column;align-items:center;}
 .civ-ux-right-icon-rail{position:fixed;top:${LEFT_RAIL_TOP}px;
-  right:calc(${RIGHT_MARGIN}px + min(26vw,${RIGHT_W}px) + var(--civ-detail-dock-w,0px) + ${RIGHT_RAIL_GAP}px);
-  width:${RIGHT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - 24px);z-index:405;pointer-events:auto;overflow:visible;
+  right:calc(${RIGHT_MARGIN}px + ${RIGHT_PANEL_W_EXPR} + var(--civ-detail-dock-w,0px) + ${RIGHT_RAIL_GAP}px);
+  width:${RIGHT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - ${DOCK_BOTTOM_CLEAR}px);z-index:408;pointer-events:auto;overflow:visible;
   display:flex;flex-direction:column;align-items:center;padding:0;
   background:transparent;border:none;box-shadow:none;transition:right .22s ease;}
 .civ-ux-right-icon-rail .civ-ux-panel-scope{width:100%;height:auto;display:flex;flex-direction:column;align-items:center;}
-.civ-ux-detail-dock-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:calc(${LEFT_MARGIN}px + min(22vw,${LEFT_W}px));bottom:0;z-index:402;
-  width:0;min-width:0;padding:0;opacity:0;pointer-events:none;overflow:hidden;
+.civ-ux-detail-dock-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:calc(${LEFT_MARGIN}px + ${LEFT_PANEL_W_EXPR});bottom:${DOCK_BOTTOM_CLEAR}px;z-index:407;
+  width:0;min-width:0;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - ${DOCK_BOTTOM_CLEAR}px);padding:0;opacity:0;pointer-events:none;overflow:hidden;
   background:linear-gradient(90deg,rgba(10,16,28,0.97) 0%,rgba(8,14,28,0.88) 100%);
   border-right:1px solid transparent;box-shadow:none;
   transition:width .22s ease,opacity .18s ease,padding .22s ease,box-shadow .22s ease,border-color .18s ease;}
@@ -73,8 +77,8 @@ function ensureFrameStyles(): void {
   overflow-y:auto;overflow-x:hidden;border-right-color:rgba(212,175,90,0.28);box-shadow:4px 0 18px rgba(0,0,0,0.35);}
 .civ-ux-detail-dock-left.is-open::-webkit-scrollbar{width:5px;}
 .civ-ux-detail-dock-left.is-open::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
-.civ-ux-detail-dock{position:fixed;top:${LEFT_RAIL_TOP}px;right:calc(${RIGHT_MARGIN}px + min(26vw,${RIGHT_W}px) + ${RIGHT_RAIL_GAP}px + ${RIGHT_ICON_RAIL_W}px);bottom:0;z-index:402;
-  width:0;min-width:0;padding:0;opacity:0;pointer-events:none;overflow:hidden;
+.civ-ux-detail-dock{position:fixed;top:${LEFT_RAIL_TOP}px;right:calc(${RIGHT_MARGIN}px + ${RIGHT_PANEL_W_EXPR});bottom:${DOCK_BOTTOM_CLEAR}px;z-index:407;
+  width:0;min-width:0;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - ${DOCK_BOTTOM_CLEAR}px);padding:0;opacity:0;pointer-events:none;overflow:hidden;
   background:linear-gradient(270deg,rgba(10,16,28,0.97) 0%,rgba(8,14,28,0.88) 100%);
   border-left:1px solid transparent;box-shadow:none;
   transition:width .22s ease,opacity .18s ease,padding .22s ease,box-shadow .22s ease,border-color .18s ease;}
@@ -82,7 +86,9 @@ function ensureFrameStyles(): void {
   overflow-y:auto;overflow-x:hidden;border-left-color:rgba(212,175,90,0.28);box-shadow:-4px 0 18px rgba(0,0,0,0.35);}
 .civ-ux-detail-dock.is-open::-webkit-scrollbar{width:5px;}
 .civ-ux-detail-dock.is-open::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
-.civ-ux-right{position:fixed;top:${LEFT_RAIL_TOP}px;right:${RIGHT_MARGIN}px;bottom:32px;width:min(26vw,${RIGHT_W}px);min-width:260px;z-index:401;
+.civ-hover-detail-dock .civ-hover-detail-scope{display:flex;flex-direction:column;min-height:0;max-height:100%;}
+.civ-hover-detail-dock .civ-hover-detail-content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;}
+.civ-ux-right{position:fixed;top:${LEFT_RAIL_TOP}px;right:${RIGHT_MARGIN}px;bottom:32px;width:${RIGHT_PANEL_W_EXPR};min-width:260px;z-index:401;
   pointer-events:auto;overflow:hidden;padding:0;
   background:linear-gradient(180deg,rgba(18,24,32,0.97),rgba(8,10,16,0.97));
   border:2px solid rgba(232,216,138,0.42);border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,0.6);

@@ -86,7 +86,7 @@ export interface SciencePickerConfig {
   getDifficulty?: (ownerId: number) => GameDifficulty;
   /**
    * TEMAT 10 (C-RES-Q1=C): plan badań (aktywny cel + kolejka) — węzły w planie
-   * dostają widoczny numerek 1/2/3 na drzewku. Brak haka → bez numerków.
+   * dostają widoczny numerek 1..RESEARCH_QUEUE_MAX na drzewku. Brak haka → bez numerków.
    */
   getPlan?: (ownerId: number) => ScienceHubPlanEntry[];
 }
@@ -844,7 +844,7 @@ function buildSVG(
       lines.push(`<rect class="civ-sci-hit" x="0" y="0" width="${NW}" height="${NH}" rx="8" fill="rgba(0,0,0,0.001)" stroke="none" pointer-events="all"/>`);
     }
 
-    // TEMAT 10 (C-RES-Q1=C): numerek 1/2/3 gdy tech jest w planie badań (aktywny cel lub kolejka).
+    // TEMAT 10 (C-RES-Q1=C): numerek 1..RESEARCH_QUEUE_MAX gdy tech jest w planie badań (aktywny cel lub kolejka).
     const planPos = planPosById.get(node.id);
     if (planPos !== undefined) {
       lines.push(`<circle cx="-2" cy="-2" r="9" fill="#e0b24a" stroke="#1a1400" stroke-width="1.2" pointer-events="none"/>`);
@@ -1127,7 +1127,7 @@ function render(): void {
   const layout = computeLayout(nodes);
   const routedEdges = routeEdges(nodes, layout.zoneInfos, layout.bottomLaneYStart);
   const isDock = displayMode === 'dock';
-  // TEMAT 10 (C-RES-Q1=C): numerki 1/2/3 na węzłach, które są w planie badań.
+  // TEMAT 10 (C-RES-Q1=C): numerki 1..RESEARCH_QUEUE_MAX na węzłach, które są w planie badań.
   const planPosById = new Map<string, number>();
   for (const p of cfg.getPlan?.(activeOwner) ?? []) planPosById.set(p.id, p.pos);
   const svgStr = buildSVG(nodes, layout, routedEdges, targetId, researchedIds, availableIds, isDock, planPosById);

@@ -122,6 +122,35 @@ export function tierBadgeHtml(tier: number, label: string): string {
   return `<span class="dip-tier-badge ${cls}">${icon}<span>${label}</span></span>`;
 }
 
+function treatyChipIconId(label: string): string {
+  const l = label.toLowerCase();
+  if (l.includes('sojusz')) return 'dip-alliance';
+  if (l.includes('nieagresji')) return 'dip-pact';
+  if (l.includes('handlow')) return 'cp-trade';
+  if (l.includes('rozejm')) return 'dip-peace';
+  if (l.includes('wasal')) return 'tb-army';
+  if (l.includes('granice') || l.includes('przemarsz')) return 'dip-peace';
+  return 'dip-pact';
+}
+
+function escTreatyLabel(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Aktywne traktaty — chipy pod badge tieru (lista dyplomacji / panel). */
+export function treatyChipsHtml(labels: readonly string[]): string {
+  if (labels.length === 0) return '';
+  const chips = labels.map(label => {
+    const icon = dipBrandIconHtml(treatyChipIconId(label), 24, 'dip-treaty-ic') ?? '';
+    return `<span class="dip-treaty-chip">${icon}<span>${escTreatyLabel(label)}</span></span>`;
+  }).join('');
+  return `<div class="dip-treaty-row">${chips}</div>`;
+}
+
 export function dipCloseBtnHtml(title = 'Zamknij'): string {
   const ic = dipBrandIconHtml('ui-close', 24, 'dip-close-ic');
   return ic
@@ -158,6 +187,11 @@ ${CIV_BRAND_SCOPE_VARS}
 .dip-tier-badge.neutral{color:var(--civ-text-pergament,#c8b898);border:1px solid rgba(232,216,138,.28);background:rgba(255,255,255,.03);}
 .dip-tier-badge.friendly{color:#a8d8b8;border:1px solid rgba(80,176,112,.35);background:rgba(80,176,112,.06);}
 .dip-tier-badge.ally{color:#7ad0a0;border:1px solid rgba(80,176,112,.4);background:rgba(80,176,112,.1);}
+.dip-treaty-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.dip-treaty-chip{display:inline-flex;align-items:center;gap:4px;font-size:0.62em;font-weight:600;
+  letter-spacing:.04em;text-transform:none;border-radius:10px;padding:2px 7px;white-space:nowrap;
+  color:#b8d4e8;border:1px solid rgba(100,160,200,.35);background:rgba(60,100,140,.12);}
+.dip-treaty-chip .dip-treaty-ic{width:11px;height:11px;flex-shrink:0;opacity:.9;}
 .dip-close-btn{background:none;border:none;color:var(--tg-text-muted,#8a8070);cursor:pointer;padding:0.15em;
   border-radius:6px;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
 .dip-close-btn:hover{color:var(--tg-gold-primary,#e8d88a);background:rgba(232,216,138,.1);}

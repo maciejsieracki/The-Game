@@ -10,6 +10,7 @@ import {
   DIPLO_1E_SHARED_CSS,
   ensureDiploBrandScope,
   tierBadgeHtml,
+  treatyChipsHtml,
 } from './diploUiSkin';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
@@ -20,6 +21,8 @@ export interface DiploListEntry {
   tier: number;
   detailLine: string;
   metaLine?: string;
+  /** Aktywne traktaty z silnika (etykiety PL). */
+  treatyLabels?: readonly string[];
 }
 
 export interface DiploListHudConfig {
@@ -80,7 +83,7 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-list-hud .dl-body{flex:1;min-width:0;}
 .civ-diplo-list-hud .dl-name{font-family:Georgia,'Times New Roman',serif;font-size:1.12em;font-weight:700;color:#e8e0c8;line-height:1.2;}
 .civ-diplo-list-hud .dl-meta{font-size:0.72em;color:#8a8070;margin-top:0.18em;line-height:1.35;}
-.civ-diplo-list-hud .dl-tier-row{margin-top:0.35em;}
+.civ-diplo-list-hud .dl-tier-row{margin-top:0.35em;display:flex;flex-direction:column;align-items:flex-start;gap:3px;}
 .civ-diplo-list-hud .dl-hint{font-size:0.72em;color:#8a8070;margin-top:0.65em;line-height:1.45;padding:0 0.15em;}
 `;
   const s = document.createElement('style');
@@ -172,7 +175,8 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
         }
         const tierRow = document.createElement('div');
         tierRow.className = 'dl-tier-row';
-        tierRow.innerHTML = tierBadgeHtml(e.tier, tierLabel(e.tier));
+        tierRow.innerHTML = tierBadgeHtml(e.tier, tierLabel(e.tier))
+          + (e.treatyLabels?.length ? treatyChipsHtml(e.treatyLabels) : '');
         body.appendChild(tierRow);
         if (e.detailLine) {
           const stats = document.createElement('div');
@@ -283,6 +287,7 @@ export function diploListEntryFromRelation(rel: {
   zaufanie?: number;
   respekt?: number;
   contactEstablished?: boolean;
+  activeTreaties?: readonly string[];
 }): DiploListEntry | null {
   if (rel.ownerId === undefined) return null;
   const zauf = rel.zaufanie ?? 0;
@@ -293,5 +298,6 @@ export function diploListEntryFromRelation(rel: {
     tier: rel.tier,
     detailLine: 'Relacja: ' + relTotal + ' · Zaufanie: ' + zauf,
     metaLine: rel.contactEstablished ? 'Audiencja — kontakt nawiązany' : 'Audiencja — nawiąż kontakt',
+    treatyLabels: rel.activeTreaties?.length ? rel.activeTreaties : undefined,
   };
 }

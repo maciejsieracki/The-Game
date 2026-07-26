@@ -592,6 +592,8 @@ import {
   formatPowerRelationLine,
   resolveFormalDiplomaticStatus,
   sameCultureCircle,
+  treatyDisplayLabel,
+  activeTreatyLabelsForPair,
   type FormalDiplomaticKind,
 } from './game/diplomacy-display';
 import {
@@ -3673,6 +3675,7 @@ async function boot(): Promise<void> {
           zaufanie: Math.round(Math.max(0, Math.min(100, rel.zaufanie ?? 0))),
           respekt: objectiveRespektPctToward(otherId),
           contactEstablished: diplomaticContactEstablished.has(otherId),
+          activeTreaties: activeTreatyLabelsForPair(activeDeals, 0, otherId),
         });
       }
       rels.sort((x, y) => x.civ.localeCompare(y.civ, 'pl'));
@@ -9548,21 +9551,6 @@ async function boot(): Promise<void> {
       const era = empireEpochForOwner(ownerId);
       const idx = Math.max(0, Math.min(EPOCH_LABELS_PL.length - 1, Math.round(era) - 1));
       return EPOCH_LABELS_PL[idx] ?? 'Kamień';
-    }
-
-    function treatyDisplayLabel(rodzaj: ActiveDeal['rodzaj']): string {
-      const k = normalizeTreatyKind(rodzaj);
-      switch (k) {
-        case RodzajTraktatu.PaktNieagresji: return 'Pakt nieagresji';
-        case 'sojusz_defensywny': return 'Sojusz defensywny';
-        case 'sojusz_pelny': return 'Sojusz pełny';
-        case RodzajTraktatu.UmowaHandlowa: return 'Umowa handlowa';
-        case RodzajTraktatu.OtwartGranice: return 'Otwarte granice';
-        case RodzajTraktatu.PrawoWojskowePrzemarszu: return 'Prawo przemarszu wojskowego';
-        case RodzajTraktatu.Wasalizacja: return 'Wasalizacja';
-        case RodzajTraktatu.Rozejm: return 'Rozejm';
-        default: return String(k);
-      }
     }
 
     /**
