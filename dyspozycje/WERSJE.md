@@ -9,6 +9,50 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
+## ROBOCZA `9fc91af8` — 2026-07-26 00:12 · FALA 13: nazewnictwo Danina/Podatek, Mennica ze zlotem, odznaki i Kopalnia zlota — **AKTUALNA**
+- md5 (pelne): `9fc91af8bec6561fd6d2d2afa4bf2e95` · stempel z menu: `ROBOCZA · c06affa9 · 2026-07-26 00:12`
+- Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. **VERIFY OK.** 34 250 545 B.
+- **Co weszlo (decyzje 55B, 57, 65B, 66B, 81A, 82A, 83B + dlugi techniczne):**
+  - **Zmiana nazwy Handel -> Danina -> Podatek.** Jeden wspolny modul `game/danina-nazwa.ts`
+    rozstrzyga nazwe; przelacza na **Podatek** dla CALEJ cywilizacji dopiero gdy Waluta odkryta
+    ORAZ Mennica stoi **w stolicy**. Strumien z tras handlowych swiadomie zostaje **Handlem**.
+    Objelo tez **plon pojedynczego heksu** (decyzja 81A) — tooltip przelacza sie dynamicznie.
+  - **Mennica zasypia po utracie dostepu do zlota** (83B): mnoznik Daniny wraca do x1,0,
+    nazwa wraca na Danine. Budynek NIE jest burzony i budzi sie sam po odzyskaniu dostepu.
+    Panel miasta mowi graczowi, DLACZEGO Mennica nie dziala i co zrobic.
+  - **Odznaki ulepszen budynkowych na zetonach** (57 A+B): kropki przy podstawie + kolorowa
+    obwodka; skala wyprowadzona z realnych maksimow (Pancerz 45 pkt proc. + Parametry 50 =
+    95, trzy tercje: granice 31 i 63). Wizualnie odrozniane od gwiazdek weterana (kule przy
+    podstawie vs bryly nad glowa; zloto zarezerwowane dla weterana).
+  - **Wlasny model 3D Kopalni zlota** — koniec reuzycia Kopalni miedzi. Odkrywka z plytkim
+    szybem, trojnog z koszem, rynna pluczkowa z runem owczym, sadzawka, misa batea.
+    Po rundzie korekty czyta sie jako ZLOTO takze w skali mapy (weryfikacja na renderze
+    200x200 px, czyli tyle pikseli, ile pole naprawde dostaje w grze).
+  - **Pole `odblokowuje` ozywione** (55B): koniec hardkodu `id === 'mury'`, flagi czytane
+    z danych. Trzy flagi (maFort/maBaszta/maWarsztatOblezniczy) zostaja jako **rezerwa**
+    (decyzja 82A) — jawnie udokumentowana, zeby nikt nie usunal ich jako martwego kodu.
+  - **Stala przepustowosci szlaku** przeniesiona do `econ-params.json`
+    (`handel_szlaki.handel_ilosc_na_ture_na_szlak` = 4 sztuki surowca na ture na szlak).
+  - **Martwy kod usuniety**: `buildingEffectAtLevel`, `formatYieldLine`, `ICON_LABELS_PL`.
+  - **Dokumentacja doprowadzona do kanonu**: Poradnik gracza i encyklopedia — 50 wystapien
+    zmienionych na Danine (74 swiadomie zostawione jako Handel), przykłady liczbowe
+    przeliczone z 70/20/10 na **20/60/20**, dopisane cztery reguly, ktorych Poradnik
+    w ogole nie opisywal (korupcja, Mennica/Podatek, pula Daniny z budynkow, weterani).
+    Opisy bonusow 5 cywilizacji mowia wreszcie o Daninie, a nie o zlocie z handlu.
+- **Bramki:** tsc 0 bledow · logic 208/208 · combat 6/6 · currency 32/32 · plony-budynkow 68/68 ·
+  korupcja 18/18 · praca-na-pieniadz 23/23 · zloto-szlak 45/45 · weterani 47/47 ·
+  mennica-uspienie 47/47 (NOWY) · mennica-magazyn 41/41 · danina-podatek-nazwa 15/15 (NOWY) ·
+  danina-podatek-tooltip-ui 13/13 (NOWY) · szczescie-zamoznosc 60/60 · society-breakdown 40/40 ·
+  upgrade-budynki 48/48 · deposit-building-gate 34/34 · trade-grant 60/60.
+- **Co NIE weszlo:** 5 modeli jednostek Brazu (istnieja, NIEWPIETE — czekaja na ogledziny
+  wlasciciela, material w `dyspozycje/podglad-modeli-braz/`), pomiar FPS, panele Excel.
+- **DO OGLEDZIN NA PLAYTESCIE:** (1) czy mapa nie jest za drobno cetkowana po limicie
+  10 heksow na skupisko; (2) nowe liczby w panelu miasta — trzy strumienie przestaly omijac
+  suwak, wiec Skarbiec dostaje mniej niz dotad, a Nauka i Zamoznosc wiecej.
+- **ZNALEZISKO DO DECYZJI:** cuda o bonusie typu `handel_procent` (`wonders.json`) — typ
+  NIGDZIE nie jest konsumowany przez kod. Kolejna martwa obietnica; nie wiadomo, czy mialy
+  zasilac Danine czy Handel.
+
 ## ROBOCZA `0f9ce758` — 2026-07-25 22:33 · FALA 12: domknięcie ekonomii (Danina/korupcja/Mennica), złoto na szlakach, weterani, limit skupisk górskich — **AKTUALNA**
 - md5 (pełne): `0f9ce758973fb53490fb79fdecda7bc7` · stempel z menu: `ROBOCZA · 9600d931 · 2026-07-25 22:33`
   (stempel nosi md5 pliku SPRZED wstrzyknięcia stempla — tak jak poprzednie wydania; manifest i VERIFY

@@ -3334,3 +3334,15 @@ ucieczki i próg dezercji w dół), limit 10 heksów na skupisko górskie przy g
 **Co NIE weszło:** rename Handel→Danina→Podatek, `odblokowuje`, odznaki na żetonach, 5 modeli jednostek Brązu.
 **Sesja lokalna: pull na dysk właściciela, testuj `0f9ce758`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [00:12 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `9fc91af8` (FALA 13)
+Wdeployowana ROBOCZA **md5 `9fc91af8bec6561fd6d2d2afa4bf2e95`**, pieczątka `ROBOCZA · c06affa9 · 2026-07-26 00:12`.
+Zastępuje `0f9ce758`. Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest. **VERIFY OK.**
+**Co weszło:** zmiana nazwy Handel→Danina→Podatek (z bramką Waluta + Mennica w stolicy; trasy handlowe
+zostają Handlem), Mennica zasypia po utracie dostępu do złota i mówi w panelu dlaczego, odznaki ulepszeń
+na żetonach jednostek, własny model 3D Kopalni złota, ożywione pole `odblokowuje`, stała przepustowości
+szlaku w danych, usunięty martwy kod, Poradnik i encyklopedia przeliczone na podział 20/60/20.
+**Co NIE weszło:** 5 modeli jednostek Brązu — gotowe, ale NIEWPIĘTE, czekają na oględziny właściciela
+(zrzuty + pomiary + rekomendacje: `dyspozycje/podglad-modeli-braz/`).
+**Sesja lokalna: pull na dysk właściciela, testuj `9fc91af8`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
