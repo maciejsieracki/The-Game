@@ -11,7 +11,35 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `856b804b` — 2026-07-26 · FALA 20b: PONOWNY BUILD PO NIEUDANYM DEPLOYU — **AKTUALNA**
+## ROBOCZA `3e847677` — 2026-07-26 17:57 · FALA 21: DZWIGNIA 2 WIARYGODNOSCI + TARASY UNIKALNE — **AKTUALNA**
+- md5 (pelne): `3e847677394e0464c0bd617760941a21` · stempel: `ROBOCZA · 2026-07-26 17:57`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `8e48dec`.
+- **Wynik `vite build` sprawdzony PRZED kopiowaniem** (721 modulow, exit 0) — procedura po wpadce z fali 20b.
+- **Co nowego:**
+  - **Dzwignia 2 Wiarygodnosci (WIAR-9.5b=B)** — limit „max_zaufanie_na_ture" (pkt Zaufania na ture,
+    z darow i nadwyzki handlowej) zalezy teraz od Wiarygodnosci TEGO, KTO DAJE:
+    W w [0,100] -> 5 pkt/ture (bez zmian) · W w (-40,0) -> 3 pkt/ture ·
+    W w (-70,-40] -> 1 pkt/ture · W w [-100,-70] -> 0 pkt/ture (zakup zaufania darem zablokowany).
+    Cywilizacja o zlej reputacji nie kupi juz sympatii zlotem.
+  - **Nagroda P5 „pomoc sojusznikowi"** (+20 pkt Wiarygodnosci) — naliczana wylacznie wtedy, gdy
+    sojusznik FAKTYCZNIE dolacza do wojny na wezwanie obowiazku sojuszniczego.
+  - **Kara N4 (odmowa pomocy)** — wpiety seam decyzyjny w AI; dzis zawsze „honoruje sojusz",
+    wiec ZERO zmiany w balansie, ale petla kary (-15 pkt Wiarygodnosci + zerwanie traktatu
+    wylacznie odmawiajacemu) jest juz podpieta i czeka na heurystyke (decyzja balansowa do ABC).
+  - **Tarasy uprawne znowu UNIKALNE kulturowo (C-TARASY-Q1=A)** — buduja je wylacznie Chinczycy
+    i Inkowie. Bramka dziala w panelu budowy, na duchach/podswietleniu mapy, przy kliknieciu
+    budowy ORAZ w planowaniu AI (parytet, bez rozgalezien per wlasciciel). Uzyto istniejacej
+    konwencji z cudow swiata (pole „cywilizacje" w danych) — mechanizm jest ogolny, wiec kolejne
+    ulepszenie unikalne to juz tylko wpis w JSON.
+  - **Modal wyboru heksa w brandzie gry + maksymalne HP w szczegolach bitwy** — skomitowane
+    wczesniej (`b9867b3`), do bundla wchodza dopiero TERAZ (build byl zablokowany).
+- **Bramki:** tsc 0 · wiarygodnosc-test 84/84 (bylo 63/63) · tarasy-cywilizacje-test 17/17 (nowy) ·
+  ai-test 239/239 · logic-test 208/208 · civ-visual-test 54/54 · diplomacy-layers 14/14 ·
+  diplomacy-negotiation-table 39/39 · tech-tree 19/19 · research 33/33 · unit-replace 10/10.
+  Porazki `diplomacy-test` 144/146, `diplomacy-proposal` 65/66, `diplomacy-value-catalog` 40/41 —
+  identyczne jak bazowo, bez nowych regresji.
+
+## ROBOCZA `856b804b` — 2026-07-26 · FALA 20b: PONOWNY BUILD PO NIEUDANYM DEPLOYU — **ZASTĄPIONA (3e847677)**
 - md5 (pelne): `856b804bef0b80fe33e8d59628670235` · VERIFY OK. Zbudowane z commita `6e1e0e4`.
 - **ZAWARTOSC IDENTYCZNA z fala 20** (Skarbiec i Praca netto). Nowy md5 wynika wylacznie
   z nowego stempla czasu.

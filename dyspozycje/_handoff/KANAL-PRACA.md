@@ -3459,3 +3459,15 @@ zawartosc jak fala 20 (Skarbiec i Praca netto). Modal wyboru heksa i maksymalne 
 skomitowane, ale wejda do bundla dopiero z Dzwignia 2.
 **Sesja lokalna: pull, testuj `856b804b`.**
 CZEKAM-NA: nic.
+
+## [17:57 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `3e847677` (FALA 21)
+**md5 `3e847677394e0464c0bd617760941a21`**, stempel `ROBOCZA · 2026-07-26 17:57`. VERIFY OK. HEAD `8e48dec`.
+Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0) — nowa procedura po wpadce z fali 20b.
+Nowe: **Dźwignia 2 Wiarygodności** (limit zakupu Zaufania darem zależy od reputacji dającego:
+5/3/1/0 pkt Zaufania na turę wg pasm W), **nagroda P5** za realną pomoc sojusznikowi (+20),
+**seam kary N4** (dziś neutralny), **tarasy uprawne tylko Chińczycy + Inkowie** (bramka też w AI).
+Wchodzą wreszcie **modal wyboru heksa** i **maksymalne HP w szczegółach bitwy** z `b9867b3`.
+⚠️ Dwaj agenci zgłosili, że commity `b9867b3`/`0847205` zgarnęły ich niedokończone zmiany —
+tu naprawione; wniosek: commitować tylko pliki zamkniętego zlecenia, nie całe drzewo.
+**Sesja lokalna: pull na dysk właściciela, testuj `3e847677`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
