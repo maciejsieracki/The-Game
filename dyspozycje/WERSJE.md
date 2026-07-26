@@ -11,7 +11,18 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `d9f2c1fa` — 2026-07-27 01:18 · FALA 30: DYPLOMACJA HANDEL + SLEEP + AI PERF — **AKTUALNA**
+## ROBOCZA `f694dcba` — 2026-07-27 01:45 · FALA 31: WOJNA HUD + KLIK MAPY + DYPLO + MANPOWER HP — **AKTUALNA**
+- md5 (pelne): `f694dcba20acc6ed63866da4e3cd4672` · stempel: `ROBOCZA · 2026-07-27 01:45`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).
+- **Co nowego (sesja F31):**
+  - **Wojna HUD:** usunięty stały pasek wojny; wydarzenia wojenne tylko w panelu Wydarzenia.
+  - **Klik mapy:** pickMapTarget + raycast jednostek/heksów (picker.ts, units.ts, main.ts).
+  - **Dyplomacja:** karta „Twoje państwo" bez traktatów/wojen; dodane nauka/ludność/armia.
+  - **Manpower B-MP-Q1:** uzupełnianie HP (% max: 25/20/15), częściowe MP, blokada oblężenia.
+- **Bramki:** tsc 0 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41 · logic 207/208 (pre garnizon).
+
+## ROBOCZA `d9f2c1fa` — 2026-07-27 01:18 · FALA 30: DYPLOMACJA HANDEL + SLEEP + AI PERF — **ZASTĄPIONA**
 - md5 (pelne): `d9f2c1fa32cd9b8165c00de127339ab3` · stempel: `ROBOCZA · 2026-07-27 01:18`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).

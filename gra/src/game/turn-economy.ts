@@ -69,7 +69,7 @@ import {
   RESOURCE_UPKEEP_IMPROVEMENT_KEYS,
   type TerritoryResourceKey,
 } from './terrain-improvements';
-import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams } from './manpower';
+import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
 import {
   loadStorageParams,
   foodStorageCapacity,
@@ -1450,6 +1450,11 @@ export function advanceCityEconomy(
   wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
   /** PYTANIE 83=B: dostęp do złota per owner (patrz OwnerZlotoAccessResolver powyżej). */
   resolveOwnerZlotoAccess: OwnerZlotoAccessResolver = () => true,
+  /** Faza 3 Manpower: leczenie HP jednostek z puli imperium (po regen w pętli miast). */
+  manpowerHeal?: {
+    units: ManpowerHealUnit[];
+    getMaxHp: (typeId: string) => number;
+  },
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -1975,6 +1980,20 @@ export function advanceCityEconomy(
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
     const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
+  }
+
+  if (manpowerHeal) {
+    tickManpowerUnitReplenishment(
+      cities,
+      manpowerHeal.units,
+      difficulty,
+      resolveOwnerEra ?? ((oid: number) => (oid === 0 ? playerEra : 1)),
+      (oid: number) => {
+        const key = ownerCivByOwnerId.get(oid);
+        return key ? civBonusyForCivKey(key, data.civs) : [];
+      },
+      manpowerHeal.getMaxHp,
+    );
   }
 
   return result;

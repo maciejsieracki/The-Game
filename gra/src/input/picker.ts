@@ -161,6 +161,8 @@ export function pixelToHex(
   R: number,
   terrainMeshes?: readonly THREE.Object3D[],
   resolveTerrainInstance?: TerrainPickResolver,
+  /** Wysokość wierzchu terenu (y) — używana przy awaryjnym przecięciu z płaszczyzną. */
+  terrainTopYAt?: (q: number, r: number) => number,
 ): { q: number; r: number } | null {
   const rect = canvas.getBoundingClientRect();
   const ndc = clientRectToNdc(clientX, clientY, rect);
@@ -177,6 +179,7 @@ export function pixelToHex(
     // dekoracyjne wzgórz/gór bywają ukrywane (LOD niskiego zoomu: zoomFlags.styledDecor=false;
     // fog wojny/miasto: matrix-hide) bez zerowania macierzy przy zwykłym visible=false. Bez tego
     // filtra klik trafiałby w "widmowy" hit na niewidocznej bryle -> zly heks.
+    let sideResolvedFallback: { q: number; r: number } | null = null;
     for (const h of hits) {
       if (h.object.visible === false) continue;
       if (
@@ -185,27 +188,46 @@ export function pixelToHex(
         && h.instanceId !== undefined
       ) {
         const resolved = resolveTerrainInstance(h.object, h.instanceId);
-        if (resolved) return resolved;
+        if (resolved) {
+          const nY = worldUpNormal(h);
+          if (nY > 0.5) return resolved;
+          // Bok góry/wzgórza może leżeć nad sąsiednim heksem — akceptuj tylko gdy
+          // punkt trafienia i instancja wskazują ten sam heks.
+          const fromPoint = worldToAxial(h.point.x, h.point.z, R);
+          if (fromPoint.q === resolved.q && fromPoint.r === resolved.r) return resolved;
+          if (!sideResolvedFallback) sideResolvedFallback = resolved;
+          continue;
+        }
       }
       if (worldUpNormal(h) > 0.5) {
         return worldToAxial(h.point.x, h.point.z, R);
       }
     }
+    if (sideResolvedFallback) return sideResolvedFallback;
     const visibleHit = hits.find((h) => h.object.visible !== false);
     if (visibleHit) {
       return worldToAxial(visibleHit.point.x, visibleHit.point.z, R);
     }
   }
 
-  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   const intersection = new THREE.Vector3();
-  const hit = raycaster.ray.intersectPlane(plane, intersection);
-
-  if (hit === null) {
+  const plane0 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  if (raycaster.ray.intersectPlane(plane0, intersection) === null) {
     return null;
   }
 
-  return worldToAxial(intersection.x, intersection.z, R);
+  const coarse = worldToAxial(intersection.x, intersection.z, R);
+  if (terrainTopYAt) {
+    const topY = terrainTopYAt(coarse.q, coarse.r);
+    if (topY > 0) {
+      const refined = new THREE.Vector3();
+      const planeTop = new THREE.Plane(new THREE.Vector3(0, 1, 0), -topY);
+      if (raycaster.ray.intersectPlane(planeTop, refined) !== null) {
+        return worldToAxial(refined.x, refined.z, R);
+      }
+    }
+  }
+  return coarse;
 }
 
 // ---------------------------------------------------------------------------

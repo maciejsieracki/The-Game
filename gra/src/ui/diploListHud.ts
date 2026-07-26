@@ -5,6 +5,7 @@
 import { tierLabel } from './diplomacyPanel';
 import {
   civPennantHtml,
+  civPennantHtmlById,
   dipBrandIconHtml,
   dipCloseBtnHtml,
   DIPLO_1E_SHARED_CSS,
@@ -25,8 +26,24 @@ export interface DiploListEntry {
   treatyLabels?: readonly string[];
 }
 
+/** Podsumowanie państwa gracza na liście dyplomacji. */
+export interface DiploPlayerSummary {
+  name: string;
+  ikonaId: string;
+  kolorHex?: string;
+  cultureLabel?: string;
+  epochLabel?: string;
+  personalityTags?: readonly string[];
+  detailLine: string;
+  metaLine?: string;
+}
+
+export type DiploListFilter = 'all' | 'war';
+
 export interface DiploListHudConfig {
   getEntries: () => DiploListEntry[];
+  /** Opcjonalne — karta „Twoje państwo" u góry listy. */
+  getPlayerSummary?: () => DiploPlayerSummary | null;
   onSelectEntry: (ownerId: number) => void;
   onClose?: () => void;
 }
@@ -59,6 +76,7 @@ ${DIPLO_1E_SHARED_CSS}
   border-right:2px solid rgba(232,216,138,.22);box-shadow:8px 0 32px rgba(0,0,0,.55);
   font:14px 'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;}
 .civ-diplo-list-hud.open{display:flex;}
+.civ-diplo-list-hud.dl-filter-war{border-right-color:rgba(200,64,64,.35);}
 .civ-diplo-list-hud .dl-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:0.55rem 0.65rem 0.7rem;}
 .civ-diplo-list-hud .dl-scroll::-webkit-scrollbar{width:6px;}
 .civ-diplo-list-hud .dl-scroll::-webkit-scrollbar-thumb{background:rgba(232,216,138,.22);border-radius:3px;}
@@ -84,7 +102,16 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-list-hud .dl-name{font-family:Georgia,'Times New Roman',serif;font-size:1.12em;font-weight:700;color:#e8e0c8;line-height:1.2;}
 .civ-diplo-list-hud .dl-meta{font-size:0.72em;color:#8a8070;margin-top:0.18em;line-height:1.35;}
 .civ-diplo-list-hud .dl-tier-row{margin-top:0.35em;display:flex;flex-direction:column;align-items:flex-start;gap:3px;}
+.civ-diplo-list-hud.dl-filter-war .dl-head-title{color:#e08a8a;}
 .civ-diplo-list-hud .dl-hint{font-size:0.72em;color:#8a8070;margin-top:0.65em;line-height:1.45;padding:0 0.15em;}
+.civ-diplo-list-hud .dl-self{margin-top:0.45em;margin-bottom:0.35em;padding:0.85em 0.95em;border-radius:12px;
+  border:1px solid rgba(232,216,138,.38);background:linear-gradient(180deg,rgba(232,216,138,.1),rgba(232,216,138,.03));
+  display:flex;gap:0.85em;align-items:center;cursor:default;}
+.civ-diplo-list-hud .dl-self-label{font-size:0.58em;letter-spacing:.22em;text-transform:uppercase;color:#b8a870;margin-bottom:0.2em;}
+.civ-diplo-list-hud .dl-self .dl-name{color:#e8d88a;}
+.civ-diplo-list-hud .dl-divider{height:1px;margin:0.5em 0 0.35em;background:rgba(232,216,138,.14);}
+.civ-diplo-list-hud .dl-section{font-size:0.62em;letter-spacing:.18em;text-transform:uppercase;color:#6a6458;
+  padding:0.15em 0.15em 0.35em;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -93,6 +120,16 @@ ${DIPLO_1E_SHARED_CSS}
 }
 
 let api: DiploListHudApi | null = null;
+let listFilter: DiploListFilter = 'all';
+
+export function setDiploListFilter(filter: DiploListFilter): void {
+  listFilter = filter;
+  api?.update();
+}
+
+export function getDiploListFilter(): DiploListFilter {
+  return listFilter;
+}
 
 export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi {
   ensureStyles();
@@ -108,7 +145,9 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
   function closeList(): void {
     if (!open) return;
     open = false;
+    listFilter = 'all';
     el.classList.remove('open');
+    el.classList.remove('dl-filter-war');
     document.removeEventListener('keydown', onEsc);
     unbindOutside?.();
     unbindOutside = null;
@@ -123,7 +162,10 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
   }
 
   function render(): void {
-    const entries = config.getEntries();
+    const allEntries = config.getEntries();
+    const entries = listFilter === 'war'
+      ? allEntries.filter(e => e.tier === 0)
+      : allEntries;
     const scroll = document.createElement('div');
     scroll.className = 'dl-scroll';
 
@@ -131,10 +173,13 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
     head.className = 'dl-head';
     const headLeft = document.createElement('div');
     headLeft.className = 'dl-head-left';
-    const dipIc = dipBrandIconHtml('tb-diplomacy', 24, 'dip-ic');
+    const headIconId = listFilter === 'war' ? 'dip-war' : 'tb-diplomacy';
+    const dipIc = dipBrandIconHtml(headIconId, 24, 'dip-ic');
+    const headTitle = listFilter === 'war' ? 'Wojna' : 'Dyplomacja';
+    const headSub = listFilter === 'war' ? 'Wrogowie' : 'THE GAME';
     headLeft.innerHTML =
       (dipIc ? `<div class="dl-head-ic">${dipIc}</div>` : '') +
-      '<div class="dl-head-text"><div class="dl-head-title">Dyplomacja</div><div class="dl-head-sub">THE GAME</div></div>';
+      `<div class="dl-head-text"><div class="dl-head-title">${headTitle}</div><div class="dl-head-sub">${headSub}</div></div>`;
     head.appendChild(headLeft);
     const closeWrap = document.createElement('div');
     closeWrap.innerHTML = dipCloseBtnHtml('Zamknij listę (Esc)');
@@ -145,12 +190,78 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
     head.appendChild(closeWrap);
     scroll.appendChild(head);
 
+    const playerSummary = config.getPlayerSummary?.() ?? null;
+    if (playerSummary) {
+      const selfRow = document.createElement('div');
+      selfRow.className = 'dl-self';
+      selfRow.setAttribute('aria-label', 'Twoje państwo — ' + playerSummary.name);
+
+      const pennant = document.createElement('div');
+      pennant.innerHTML = civPennantHtmlById(
+        playerSummary.ikonaId,
+        playerSummary.kolorHex,
+        4,
+      );
+
+      const body = document.createElement('div');
+      body.className = 'dl-body';
+      const selfLabel = document.createElement('div');
+      selfLabel.className = 'dl-self-label';
+      selfLabel.textContent = 'Twoje państwo';
+      body.appendChild(selfLabel);
+      const name = document.createElement('div');
+      name.className = 'dl-name';
+      name.textContent = playerSummary.name;
+      body.appendChild(name);
+      const subtitleParts: string[] = [];
+      if (playerSummary.cultureLabel) subtitleParts.push(playerSummary.cultureLabel);
+      if (playerSummary.epochLabel) subtitleParts.push(playerSummary.epochLabel);
+      if (subtitleParts.length > 0) {
+        const sub = document.createElement('div');
+        sub.className = 'dl-meta';
+        sub.textContent = subtitleParts.join(' · ');
+        body.appendChild(sub);
+      }
+      if (playerSummary.personalityTags?.length) {
+        const tagRow = document.createElement('div');
+        tagRow.className = 'dl-tier-row';
+        tagRow.innerHTML = treatyChipsHtml(playerSummary.personalityTags);
+        body.appendChild(tagRow);
+      }
+      if (playerSummary.detailLine) {
+        const stats = document.createElement('div');
+        stats.className = 'dl-meta';
+        stats.textContent = playerSummary.detailLine;
+        body.appendChild(stats);
+      }
+      if (playerSummary.metaLine) {
+        const meta = document.createElement('div');
+        meta.className = 'dl-meta';
+        meta.textContent = playerSummary.metaLine;
+        body.appendChild(meta);
+      }
+      selfRow.appendChild(pennant.firstElementChild ?? pennant);
+      selfRow.appendChild(body);
+      scroll.appendChild(selfRow);
+    }
+
     if (entries.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'dl-empty';
-      empty.textContent = 'Nie spotkałeś jeszcze obcej cywilizacji — zbadaj mapę lub spotkaj posłańców.';
+      empty.textContent = listFilter === 'war'
+        ? 'Brak aktywnych wojen z odkrytymi cywilizacjami.'
+        : 'Nie spotkałeś jeszcze obcej cywilizacji — zbadaj mapę lub spotkaj posłańców.';
       scroll.appendChild(empty);
     } else {
+      if (playerSummary) {
+        const divider = document.createElement('div');
+        divider.className = 'dl-divider';
+        scroll.appendChild(divider);
+        const section = document.createElement('div');
+        section.className = 'dl-section';
+        section.textContent = listFilter === 'war' ? 'Wrogowie' : 'Znane cywilizacje';
+        scroll.appendChild(section);
+      }
       for (const e of entries) {
         const row = document.createElement('div');
         row.className = e.tier === 0 ? 'dl-item dl-war' : 'dl-item';
@@ -202,7 +313,9 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
       }
       const hint = document.createElement('div');
       hint.className = 'dl-hint';
-      hint.textContent = 'Kliknij cywilizację, aby otworzyć audiencję. Esc — powrót. Ponowne uścisk dłoni w toolbarze — zamknij listę.';
+      hint.textContent = listFilter === 'war'
+        ? 'Lista wrogów — kliknij państwo, aby otworzyć audiencję. Esc — zamknij.'
+        : 'Kliknij cywilizację, aby otworzyć audiencję. Esc — powrót. Ponowne uścisk dłoni w toolbarze — zamknij listę.';
       scroll.appendChild(hint);
     }
 
@@ -214,6 +327,8 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
     open = true;
     render();
     el.classList.add('open');
+    if (listFilter === 'war') el.classList.add('dl-filter-war');
+    else el.classList.remove('dl-filter-war');
     document.addEventListener('keydown', onEsc);
     unbindOutside?.();
     unbindOutside = bindHudPanelOutsideDismiss(
@@ -234,7 +349,11 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
   }
 
   function update(): void {
-    if (open) render();
+    if (open) {
+      render();
+      if (listFilter === 'war') el.classList.add('dl-filter-war');
+      else el.classList.remove('dl-filter-war');
+    }
   }
 
   function destroy(): void {

@@ -86,7 +86,7 @@ function worldUpNormal(hit) {
   n.transformDirection(hit.object.matrixWorld);
   return n.y;
 }
-function pixelToHex(clientX, clientY, canvas, camera, R2, terrainMeshes, resolveTerrainInstance) {
+function pixelToHex(clientX, clientY, canvas, camera, R2, terrainMeshes, resolveTerrainInstance, terrainTopYAt) {
   const rect = canvas.getBoundingClientRect();
   const ndc = clientRectToNdc(clientX, clientY, rect);
   if (!ndc) return null;
@@ -95,28 +95,47 @@ function pixelToHex(clientX, clientY, canvas, camera, R2, terrainMeshes, resolve
   raycaster.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), camera);
   if (terrainMeshes && terrainMeshes.length > 0) {
     const hits = raycaster.intersectObjects(terrainMeshes, false);
+    let sideResolvedFallback = null;
     for (const h of hits) {
       if (h.object.visible === false) continue;
       if (resolveTerrainInstance && h.object instanceof THREE.InstancedMesh && h.instanceId !== void 0) {
         const resolved = resolveTerrainInstance(h.object, h.instanceId);
-        if (resolved) return resolved;
+        if (resolved) {
+          const nY = worldUpNormal(h);
+          if (nY > 0.5) return resolved;
+          const fromPoint = worldToAxial(h.point.x, h.point.z, R2);
+          if (fromPoint.q === resolved.q && fromPoint.r === resolved.r) return resolved;
+          if (!sideResolvedFallback) sideResolvedFallback = resolved;
+          continue;
+        }
       }
       if (worldUpNormal(h) > 0.5) {
         return worldToAxial(h.point.x, h.point.z, R2);
       }
     }
+    if (sideResolvedFallback) return sideResolvedFallback;
     const visibleHit = hits.find((h) => h.object.visible !== false);
     if (visibleHit) {
       return worldToAxial(visibleHit.point.x, visibleHit.point.z, R2);
     }
   }
-  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   const intersection = new THREE.Vector3();
-  const hit = raycaster.ray.intersectPlane(plane, intersection);
-  if (hit === null) {
+  const plane0 = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  if (raycaster.ray.intersectPlane(plane0, intersection) === null) {
     return null;
   }
-  return worldToAxial(intersection.x, intersection.z, R2);
+  const coarse = worldToAxial(intersection.x, intersection.z, R2);
+  if (terrainTopYAt) {
+    const topY = terrainTopYAt(coarse.q, coarse.r);
+    if (topY > 0) {
+      const refined = new THREE.Vector3();
+      const planeTop = new THREE.Plane(new THREE.Vector3(0, 1, 0), -topY);
+      if (raycaster.ray.intersectPlane(planeTop, refined) !== null) {
+        return worldToAxial(refined.x, refined.z, R2);
+      }
+    }
+  }
+  return coarse;
 }
 
 // src/render/hexutil.ts
@@ -184,8 +203,14 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.03, highland: 0.07 },
-      medium: { mountain: 0.06, highland: 0.11 },
+      low: { mountain: 0.045, highland: 0.105 },
+      medium: { mountain: 0.09, highland: 0.165 },
+      high: { mountain: 0.18, highland: 0.27 }
+    },
+    relief_overflow_cap_frac: {
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224818% (0,06+0,09 \u2014 progi fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224830%. Rewizja 2026-07-26: w\u0142a\u015Bciciel \u2014 wi\u0119cej g\xF3r (~12%\u2192~18% g\xF3rzysto\u015Bci l\u0105du na medium).",
+      low: { mountain: 0.045, highland: 0.075 },
+      medium: { mountain: 0.06, highland: 0.09 },
       high: { mountain: 0.12, highland: 0.18 }
     },
     pasma_gorskie: {
@@ -599,11 +624,13 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
+    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
   lodzie_rybackie: {
     nazwa: "\u0141odzie rybackie",
@@ -769,7 +796,6 @@ var RIVER_SCALE_BY_SIZE = {
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
-var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,

@@ -385,7 +385,10 @@ import {
   showDiploListHud,
   toggleDiploListHud,
   diploListEntryFromRelation,
+  setDiploListFilter,
+  getDiploListFilter,
   type DiploListEntry,
+  type DiploPlayerSummary,
 } from './ui/diploListHud';
 import type { ArmyStackHudState } from './ui/armyStackHud';
 import { formatArmiaLabel } from './ui/formatPl';
@@ -590,6 +593,7 @@ import {
   civCultureLabelForKey,
   diplomacyPersonalityTags,
   formatNegotiationDealSummary,
+  formatDiploPlayerSummaryLines,
   formatPowerRelationLine,
   resolveFormalDiplomaticStatus,
   sameCultureCircle,
@@ -963,7 +967,21 @@ async function boot(): Promise<void> {
     let { scene, camera, renderer, center, setFog, hideDecorAtHex, syncForestForUnits, setZoomLod, getZoomLodLevel, terrainPickMeshes, resolveTerrainPick, dispose: disposeScene } = await buildScene(map, canvas, _currentRenderOptions);
 
     function pickHexAt(clientX: number, clientY: number): { q: number; r: number } | null {
-      return pixelToHex(clientX, clientY, canvas, camera, HEX_R, terrainPickMeshes, resolveTerrainPick);
+      return pixelToHex(
+        clientX, clientY, canvas, camera, HEX_R,
+        terrainPickMeshes, resolveTerrainPick,
+        (q, r) => unitRenderer.topYAt(q, r),
+      );
+    }
+
+    /** Heks pod kursorem: model jednostki (offset na mieście) ma pierwszeństwo przed terenem. */
+    function pickMapTarget(clientX: number, clientY: number): { q: number; r: number } | null {
+      const unitId = unitRenderer.pickUnitIdAt(clientX, clientY, canvas, camera);
+      if (unitId) {
+        const u = units.find((x) => x.id === unitId);
+        if (u) return { q: u.q, r: u.r };
+      }
+      return pickHexAt(clientX, clientY);
     }
 
     function cameraControllerOpts(): CameraControllerOptions {
@@ -3691,6 +3709,31 @@ async function boot(): Promise<void> {
         .filter((e): e is DiploListEntry => e !== null);
     }
 
+    function buildPlayerDiploSummary(): DiploPlayerSummary {
+      const civKey = civKeyForOwner(0);
+      const playerCities = cities.filter(c => c.ownerId === 0);
+      const lines = formatDiploPlayerSummaryLines({
+        militaryPower: objectivePowerForOwner(0),
+        powerRank: buildAbsolutePowerRank(),
+        treasuryGold: player.skarbiec,
+        goldPerTurn: _lastPieniadzRate,
+        culturePerTurn: _lastKulturaRate,
+        sciencePerTurn: _lastNaukaRate,
+        population: playerCities.reduce((s, c) => s + c.population, 0),
+        armyCount: units.filter(u => u.ownerId === 0).length,
+      });
+      return {
+        name: ownerDiploLabel(0),
+        ikonaId: civTypeForOwner(0),
+        kolorHex: civKolorHexFn(0),
+        cultureLabel: civCultureLabelForKey(civKey),
+        epochLabel: epochLabelForOwner(0),
+        personalityTags: diplomacyPersonalityTags(civKey),
+        detailLine: lines.detailLine,
+        metaLine: lines.metaLine,
+      };
+    }
+
     function closeAllMapToolbarModes(): void {
       if (buildModeOpen) exitBuildMode();
       hideCityListHud();
@@ -3712,12 +3755,26 @@ async function boot(): Promise<void> {
 
     function toggleDiploListFromToolbar(): void {
       clearPlayerUnitSelection();
-      if (isDiploListHudOpen()) {
+      if (isDiploListHudOpen() && getDiploListFilter() === 'all') {
         hideDiploListHud();
         refreshD1bHud();
         return;
       }
       closeAllMapToolbarModes();
+      setDiploListFilter('all');
+      showDiploListHud();
+      refreshD1bHud();
+    }
+
+    function openDiploListWarEnemies(): void {
+      clearPlayerUnitSelection();
+      if (isDiploListHudOpen() && getDiploListFilter() === 'war') {
+        hideDiploListHud();
+        refreshD1bHud();
+        return;
+      }
+      closeAllMapToolbarModes();
+      setDiploListFilter('war');
       showDiploListHud();
       refreshD1bHud();
     }
@@ -4740,6 +4797,52 @@ async function boot(): Promise<void> {
       return formatOwnerDiploLabel(base, ownerId, opts);
     }
 
+    /** Wojna z udziałem gracza — wpisy w panelu WYDARZENIA (bez stałego paska na HUD). */
+    const warEventLog: SidePanelEvent[] = [];
+
+    function recordWarDeclarationEvent(declarerId: number, targetId: number): void {
+      if (declarerId !== 0 && targetId !== 0) return;
+      if (isBarbarian(declarerId) || isBarbarian(targetId)) return;
+
+      const evId = `war-${turn}-${declarerId}-${targetId}`;
+      if (warEventLog.some(e => e.id === evId)) return;
+
+      const enemyOwnerId = declarerId === 0 ? targetId : declarerId;
+      const enemyName = ownerDiploLabel(enemyOwnerId);
+      const title = declarerId === 0
+        ? 'Wypowiedzieliśmy wojnę: ' + enemyName
+        : enemyName + ' wypowiedziało wojnę';
+
+      const contacted = getDiplomaticContacts();
+      const enemyNames = new Set<string>();
+      for (const [key, rel] of diplomacyRelations.entries()) {
+        if ((rel as { status?: string }).status !== 'wojna') continue;
+        const parts = key.split('_').map(Number);
+        if (parts.length !== 2) continue;
+        const [a, b] = parts;
+        if (a !== 0 && b !== 0) continue;
+        const oid = a === 0 ? b! : a!;
+        if (!contacted.has(oid)) continue;
+        enemyNames.add(ownerDiploLabel(oid));
+      }
+      enemyNames.add(enemyName);
+
+      const allEnemies = [...enemyNames].sort((x, y) => x.localeCompare(y, 'pl'));
+      const subtitle = allEnemies.length > 1
+        ? 'W stanie wojny z: ' + allEnemies.join(', ')
+        : undefined;
+
+      warEventLog.unshift({
+        id: evId,
+        icon: '\u2694',
+        title,
+        subtitle,
+        kind: 'enemy',
+      });
+      if (warEventLog.length > 8) warEventLog.length = 8;
+      refreshD1bHud();
+    }
+
     function terrainLabelPl(tb: string): string {
       const m: Record<string, string> = {
         Rownina: 'równina',
@@ -5622,6 +5725,7 @@ async function boot(): Promise<void> {
         ownerId,
         applyDiploEventTracked(0, ownerId, getDiploRelation(0, ownerId), 'wojna_wypowiedziana'),
       );
+      recordWarDeclarationEvent(0, ownerId);
       showHintMessage('\u2694 Wypowiedziałeś wojnę: ' + civName, 4500);
       updateDiplomacyAudience();
       updateDiplomacyPanel();
@@ -8240,7 +8344,7 @@ async function boot(): Promise<void> {
     }
 
     function collectTurnEvents(): SidePanelEvent[] {
-      const events: SidePanelEvent[] = [...villageEventLog, ...tradeRouteEventLog];
+      const events: SidePanelEvent[] = [...warEventLog, ...villageEventLog, ...tradeRouteEventLog];
       for (const city of cities) {
         if (city.ownerId !== 0) continue;
         const st = cityOrderState.get(city.id);
@@ -9458,7 +9562,7 @@ async function boot(): Promise<void> {
         const oid = a === 0 ? b! : a!;
         if (!contacted.has(oid)) continue;
         const civId = aiOwnerCivMap.get(oid);
-        wars.push({ civName: ownerDiploLabel(oid), civId });
+        wars.push({ civName: ownerDiploLabel(oid), civId, ownerId: oid });
       }
       return wars;
     }
@@ -10263,6 +10367,7 @@ async function boot(): Promise<void> {
             ob.mustDeclareWarOn,
             applyDiploEventTracked(allyId, ob.mustDeclareWarOn, getDiploRelation(allyId, ob.mustDeclareWarOn), 'wojna_wypowiedziana'),
           );
+          recordWarDeclarationEvent(allyId, ob.mustDeclareWarOn);
           joinedWarOwnerIds.push(allyId);
 
           // P5 (§3 tabela C, §8) — "Pomoc sojusznikowi w wojnie… LUB na wezwanie": allyId
@@ -11547,6 +11652,7 @@ async function boot(): Promise<void> {
       });
       createDiploListHud({
         getEntries: buildPlayerDiploListEntries,
+        getPlayerSummary: buildPlayerDiploSummary,
         onSelectEntry: (ownerId) => {
           hideDiploListHud();
           openDiplomacyAudience(ownerId);
@@ -11602,7 +11708,10 @@ async function boot(): Promise<void> {
           toggleGamePauseMenu();
         },
         onOpenDiplomacy: () => toggleDiploListFromToolbar(),
-        onDiploChip: () => toggleDiploListFromToolbar(),
+        onDiploChip: (kind) => {
+          if (kind === 'wojna') openDiploListWarEnemies();
+          else toggleDiploListFromToolbar();
+        },
         onOpenScience: () => toggleScienceHubFromToolbar(),
         onOpenEmpireDetail: (section) => openEmpireDetailFromHud(section),
         onOpenWiki: () => toggleWikiFromToolbar(),
@@ -11925,6 +12034,10 @@ async function boot(): Promise<void> {
         getEvents: collectTurnEvents,
         getContextPanelMessage: () => buildContextPanelMessage(),
         onEventClick: (id) => {
+          if (id.startsWith('war-')) {
+            openDiploListWarEnemies();
+            return;
+          }
           if (id.startsWith('diplo-pend-')) {
             openDiplomacyPendingById(id);
             return;
@@ -11949,6 +12062,14 @@ async function boot(): Promise<void> {
           }
         },
         onEventDismiss: (id) => {
+          if (id.startsWith('war-')) {
+            const idx = warEventLog.findIndex(e => e.id === id);
+            if (idx >= 0) {
+              warEventLog.splice(idx, 1);
+              refreshD1bHud();
+            }
+            return;
+          }
           if (id.startsWith('village-')) {
             const idx = villageEventLog.findIndex(e => e.id === id);
             if (idx >= 0) {
@@ -12896,7 +13017,7 @@ async function boot(): Promise<void> {
         return;
       }
 
-      const hitEarly = pickHexAt(e.clientX, e.clientY);
+      const hitEarly = pickMapTarget(e.clientX, e.clientY);
 
       // Kursory jednostek tylko na mapie świata (nie w panelu miasta / mockupie okolicy).
       if (!isWorldMapUnitMode()) {
@@ -12988,7 +13109,7 @@ async function boot(): Promise<void> {
       if (isCityForeignPickOpen()) hideCityForeignPick();
 
       // Treat as a click at (e.clientX, e.clientY)
-      const hit = pickHexAt(e.clientX, e.clientY);
+      const hit = pickMapTarget(e.clientX, e.clientY);
       if (!hit) {
         if (foundCityMode) {
           showHintMessage('Kliknij w heks lądu (podświetlony obszar startu)', 2500);
@@ -15977,6 +16098,20 @@ async function boot(): Promise<void> {
             buildWonderCityYieldsByOwnerMap(cities.map(c => c.ownerId)),
             // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — real tick, gracz + AI.
             makeOwnerZlotoAccessResolver(),
+            {
+              units: units.map(u => ({
+                id: u.id,
+                ownerId: u.ownerId,
+                typeId: u.typeId,
+                category: u.category,
+                hp: u.hp,
+                hpMax: unitHealth(data.units.find(ud => ud.Jednostka === u.typeId) ?? {}),
+                q: u.q,
+                r: u.r,
+                inGarnizon: u.inGarnizon,
+              })),
+              getMaxHp: (typeId) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
+            },
           );
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -17212,6 +17347,9 @@ async function boot(): Promise<void> {
                         ownerId, targetId, getDiploRelation(ownerId, targetId), 'wojna_wypowiedziana',
                       );
                       setDiploRelation(ownerId, targetId, newRel);
+                      if (targetId === 0 || ownerId === 0) {
+                        recordWarDeclarationEvent(ownerId, targetId);
+                      }
                       if (targetId === 0) {
                         console.log(`[Dyplomacja] AI${ownerId} wypowiada wojne graczowi: ${cmd.powod}`);
                         showHintMessage('\u2694 ' + ownerDiploLabel(ownerId) + ' — ' + formatAiDiplomacyPlayerMessage(cmd), 4500);

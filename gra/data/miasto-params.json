@@ -19,6 +19,13 @@
     "jednostka": "0/1",
     "opis": "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas oblężenia."
   },
+  "manpower_uzupelnienie_hp_proc_max_tura": {
+    "easy": 25,
+    "normal": 20,
+    "hard": 15,
+    "jednostka": "% maxHP/tura",
+    "opis": "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP × wartość/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP × kosztJednostki). Przy braku MP — leczenie częściowe do dostępnej puli. manpower.tickManpowerUnitReplenishment."
+  },
   "jednostka_koszt_domyslny": {
     "wartosc": 10,
     "jednostka": "Praca",

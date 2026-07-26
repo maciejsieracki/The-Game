@@ -45956,3 +45956,893 @@ Szukam stałej w kodzie generatora i ustawiam **18%**. Żeby zobaczyć efekt na 
 Dam znać, gdzie dokładnie to siedzi i czy testy generatora przechodzą po zmianie.
 
 [REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-26 22:48 UTC (linie 4817–4944)
+
+
+### Linia 4817 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 11:43 PM (UTC+2)</timestamp>
+
+To udało się zdeployować. Sprawdź, co z tej listy jest odhaczone, a co ewentualnie jeszcze zostaje do zrobienia z tematów, które ty masz.  Raport deploy — co jest w ROBOCZA
+Aktualna wersja: gra-robocza/START.html → md5 1636f388 · stempel ROBOCZA · 2026-07-26 23:38 · VERIFY OK
+
+Dzisiaj weszły 4 fale (22→25). Poniżej od najnowszej — wszystko kumuluje się w jednym bundlu.
+
+FALA 25 — 1636f388 (najświeższa, dziś 23:38)
+Kultura i religia
+
+Usunięta podwójna kara — w Szczęściu jest jedna pozycja „Kultura", bez osobnej linii „Obca kultura −2"
+Miasta założone = zawsze 100% kultury właściciela (presja sąsiadów ich nie obniża)
+Podbój tego samego okręgu kulturowego (np. Ateny → Sparta, obie Grecka) = od razu 100% kultury + religia państwa zdobywcy
+Okręg kulturowy liczony po typie cywilizacji, nie po nazwie państwa
+Naprawiona presja kultury — silniejsze imperium podnosi udział własnej kultury (wcześniej obie gałęzie ją obniżały)
+Panel miasta
+
+Zakładka Kultura: sekcja „Skład kultury" (% właściciela / obca + konwersja)
+Zakładka Religia: „Religia państwa" + „Skład wyznawców" z procentami
+Bramki: tsc 0 · manpower 44/44 · ai-test 246/246 · map-attack-city 8/8 · society-breakdown 40/40
+
+FALA 24 — 4a8745eb (23:28) — nadal w bundlu
+Manpower imperium
+
+Rekrutacja tylko z puli rekrutów cywilizacji (suma po miastach)
+Bez spadku obywateli przy werbie
+Anulowanie / rozwiązanie jednostki → zwrot MP do imperium, nie do miasta
+FALA 23 — e5972875 (23:21) — nadal w bundlu
+UI miasta i mapa
+
+Alert „Produkcja: …" tylko gdy jest co wybrać; ✕ zamyka i pamięta fingerprint; bez alertu w trybie auto-budowy
+Baner zasobów miasta 2×3 (Praca/Żywność/Skarbiec nad Kulturą/Religią/Nauką)
+Klik w miasto przy zaznaczonej jednostce → marsz (nawet przy 0 ruchu = podgląd trasy); obcy gród → atak lub marsz na sąsiad
+AI
+
+P-AI-011 + pakiet C-AI (proaktywny handel, audiencja, margines ceny, rozwój/wojna/ekspansja)
+FALA 22 — 61cd43ad (18:21) — nadal w bundlu
+Mapa — górzystość ~12% (decyzja C-MAPA-Q2 = B)
+
+Średnia górzystość spadła z ~26,6% do ~12,1% powierzchni lądu
+Nowy parametr gestosc.relief_overflow_cap_frac + ochrona heksów ze złożem
+Skutek uboczny (do Twojej oceny): mniej złóż — miedź −34%, żelazo −34%, złoto −55%
+
+### Linia 4818 — AGENT
+
+Porównuję zgłoszenia z tej sesji z tym, co faktycznie jest w deployu ROBOCZA (md5 1636f388).
+
+[REDACTED]
+
+### Linia 4819 — AGENT
+
+Audyt trwa — poniżej wstępna lista na podstawie tej sesji i opisu fal 22–25. Po weryfikacji kodu vs `1636f388` doprecyzuję, co jest w bundlu.
+
+---
+
+## W deployzie `1636f388` (fale 22–25) — **nie z tej sesji**
+
+| Temat | Status |
+|--------|--------|
+| Kultura / religia (FALA 25) | ✅ w ROBOCZA |
+| Manpower imperium (FALA 24) | ✅ w ROBOCZA |
+| UI miasta + mapa + AI (FALA 23) | ✅ w ROBOCZA |
+| Górzystość **~12%** (FALA 22, C-MAPA-Q2=B) | ✅ w ROBOCZA |
+
+---
+
+## Z **tej sesji** — poprawki w `gra/src/`, **prawdopodobnie poza** `1636f388`
+
+W opisie deployu **nie ma** tych punktów → jeśli build był przed commitami z tej sesji, **nie są w grze**:
+
+| # | Temat | Kod | W `1636f388`? |
+|---|--------|-----|----------------|
+| 1 | Obrona — jednostki po bokach (zwarta formacja) | ✅ | ❓ raczej **nie** |
+| 2 | Obrona — odwrócone Zwycięstwo/Porażka | ✅ | ❓ raczej **nie** |
+| 3 | Obrona — auto→ręczna, brak rozkazów | ✅ | ❓ raczej **nie** |
+| 4 | Budowa — najpierw dostępne budynki | ✅ | ❓ raczej **nie** |
+| 5 | Stół negocjacji — Kontruj zamiast auto-akceptacji | ✅ | ❓ raczej **nie** |
+| 6 | Góry **18%** (zamiast 12%) | ✅ w `gra/` | ⚠️ **konflikt** z FALĄ 22 (12%) |
+
+---
+
+## Tylko informacja / wcześniejsze wątki
+
+| Temat | Status |
+|--------|--------|
+| Tabele utrzymania Brązu | 📋 raport — bez zmian w danych |
+| Skarbiec / rozbicie kosztów miasta | 🔶 było w `main.ts` / UI — **do potwierdzenia** w bundlu |
+| Formacje + taktyka OBRONA przy obronie | 🔶 częściowo w `battleScene.ts` — **do potwierdzenia** w grze |
+
+---
+
+## Co dalej
+
+1. **Kolejny deploy** z aktualnego `gra/src/` — wtedy wchodzą punkty 1–5 (i ewentualnie 6 z górami 18%).
+2. **Góry:** w ROBOCZA jest **12%** (FALA 22); w kodzie źródłowym już **18%** — decyzja, co ma być w następnym buildzie.
+3. Po deployu warto przejść: obrona ręczna (formacja, wynik, auto→ręczna), sort budynków, negocjacje.
+
+Doprecyzuję checklistę po audycie kodu vs manifest `1636f388`.
+
+[REDACTED]
+
+### Linia 4821 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 11:46 PM (UTC+2)</timestamp>
+
+Okej zatem porównaj co zostało wdrożone i zrób deploy pozostałych swoich tematów które masz tutaj przygotowane. Jeżeli masz jakieś pytania abc daj znać.
+
+### Linia 4822 — AGENT
+
+Porównuję stan wdrożenia z kodem i uruchamiam deploy pozostałych tematów z tej sesji.
+
+[REDACTED]
+
+### Linia 4823 — AGENT
+
+Przyjąłem — robię deploy pozostałych tematów z tej sesji.
+
+**Poza `1636f388` (wejdzie w nowy bundle):**
+- Obrona ręczna: formacja, wynik bitwy, auto→ręczna
+- Sort budynków (dostępne na górze)
+- Stół negocjacji (Kontruj)
+- Góry **18%** (zamiast 12% z FALI 22)
+
+**Bez zmian w kodzie:** tabele utrzymania Brązu (tylko raport).
+
+**ABC:** nie mam pytań — góry 18% już ustalone, reszta to poprawki bugów.
+
+Po bramce (typecheck, testy, build) zaktualizuję `WERSJE.md` i `KANAL-PRACA.md` i dam znać z nowym md5.
+
+[REDACTED]
+
+### Linia 4825 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 4826 — AGENT
+
+[REDACTED]
+
+### Linia 4827 — AGENT
+
+Audyt potwierdza: deploy sesji jeszcze nie wszedł (`1636f388`). Uruchamiam deploy zgodnie z Twoją prośbą.
+
+[REDACTED]
+
+### Linia 4828 — AGENT
+
+[Audit session vs deploy](aa9dd8a9-cb12-450e-8120-1b6cc0aec8a7) potwierdza stan — deploy **FALA 26** jest w toku.
+
+**W `1636f388` (masz teraz):** FALE 22–25 — kultura, manpower, UI miasta, AI, góry **~12%**.
+
+**Poza bundlem (czeka na FALA 26):**
+- obrona: formacja, wynik bitwy, auto→ręczna
+- sort budynków, stół negocjacji, bilans skarbca w mieście
+- góry **~18%**
+
+Dam znać z nowym md5 po zakończeniu buildu.
+
+[REDACTED]
+
+### Linia 4830 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 11:53 PM (UTC+2)</timestamp>
+
+Czy wszystkie prace masz zdeployowane? Czy potrzebowałeś jeszcze jakiejś odpowiedzi abc?
+
+### Linia 4831 — AGENT
+
+**Tak — wszystko z tej sesji jest w ROBOCZA.**
+
+**Aktualny bundle:** `gra-robocza/START.html` → md5 **`81b1d467`** (FALA 26, 23:52, VERIFY OK)
+
+| Temat | Deploy |
+|--------|--------|
+| Obrona — formacja (nie po bokach) | ✅ |
+| Obrona — wynik bitwy (Zwycięstwo/Porażka) | ✅ |
+| Obrona — auto → ręczna | ✅ |
+| Sort budynków (dostępne na górze) | ✅ |
+| Stół negocjacji (Kontruj) | ✅ |
+| Bilans skarbca w panelu miasta | ✅ |
+| Góry ~18% (nowa gra) | ✅ |
+| Tabele utrzymania Brązu | — tylko raport, bez zmian w grze |
+
+**ABC:** nie potrzebowałem żadnej odpowiedzi — góry 18% ustaliłeś wcześniej, reszta to poprawki bugów bez otwartych decyzji.
+
+**Uwaga:** commit jest lokalny (ahead of origin). Jeśli chcesz synchronizację z repo — napisz **push**. POLE-BITWY nadal pomijany przy buildzie (jak wcześniej); główna gra jest OK.
+
+[REDACTED]
+
+### Linia 4833 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 11:54 PM (UTC+2)</timestamp>
+
+Ok, jeżeli wszystko jest robocze to zrób git push.
+
+### Linia 4834 — AGENT
+
+[REDACTED]
+
+### Linia 4835 — AGENT
+
+Wypycham commity FALI 26 na `origin/main` — dam znać, gdy push się zakończy.
+
+[REDACTED]
+
+### Linia 4837 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-735b12e9-edbc-4442-b4ed-c686e4301214.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:00 AM (UTC+2)</timestamp>
+
+Menu wygląda spoko, ale niestety nie da się w nie klikać, iż się wejdzie do miasta, to ikony od tego momentu, od którego przesunąłeś do góry nie są klikalne.  Menu wygląda spoko, ale niestety nie da się w nie klikać, iż się wejdzie do miasta, to ikony od tego momentu, od którego przesunąłeś do góry nie są klikalne. Po prawej stronie dopiero aktywne jest zdrowie. Wszystkie powyższe ikony nie są klikalne. Tak jakby to było poza strefą gry. Sprawiać o co chodzi.
+
+### Linia 4838 — AGENT
+
+Wygląda na niewidoczną warstwę albo złe `pointer-events` po przesunięciu menu — sprawdzam, co blokuje kliknięcia w górnej części panelu miasta.
+
+[REDACTED]
+
+### Linia 4839 — AGENT
+
+To wygląda na **niewidoczną warstwę** (np. canvas mapy albo tło panelu), która przykrywa górną część ekranu i przechwytuje kliknięcia — ikony są widoczne, ale strefa kliknięcia jest niżej albo zasłonięta.
+
+Sprawdzam `cityPanel.ts` / `cityUxFrame.ts`: `pointer-events`, `z-index` i overlay po ostatnim przesunięciu menu w górę. Dam znać z poprawką.
+
+[REDACTED]
+
+### Linia 4841 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-cdcb5cfe-188b-4fff-931d-7643b04e1afb.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:05 AM (UTC+2)</timestamp>
+
+Poza tym chyba nie zrozumieliśmy się w kwestii przycisków przesuwania między miastem  mi chodziło o to, żebym mógł użyć przycisków skenatury, strzałek na przykład, żeby zmieniać miasta. A Ty zmieniłeś widok strzałek na kropkę i przecinek. To jest śmieszne.
+
+### Linia 4842 — AGENT
+
+Rozumiem — chodziło o strzałki na klawiaturze do zmiany miasta, nie o zamianę ikon na przecinek i kropkę. Przywracam strzałki w UI i dodaję obsługę klawiszy.
+
+[REDACTED]
+
+### Linia 4843 — AGENT
+
+Masz rację — to była pomyłka. Przecinek i kropka to była **podpowiedź klawiszy** (`,` / `.`), a nie zamiennik strzałek — wygląda to źle.
+
+**Co robimy:**
+- przywracam **normalne strzałki** w nagłówku miasta (klikalne)
+- dodaję **← →** na klawiaturze do przełączania miast (w panelu miasta)
+- `,` / `.` zostaną jako dodatkowy skrót, jeśli już działają
+
+Dam znać, gdy będzie gotowe — potem możemy zdeployować razem z poprawką klikalności ikon.
+
+[REDACTED]
+
+### Linia 4845 — MACIEJ
+
+<timestamp>Monday, Jul 27, 2026, 12:06 AM (UTC+2)</timestamp>
+
+deploy
+
+### Linia 4846 — AGENT
+
+[REDACTED]
+
+### Linia 4847 — AGENT
+
+Uruchamiam **FALA 27** — klikalność ikon w panelu miasta + strzałki i klawisze ← → do zmiany miasta. Dam znać z nowym md5 po buildzie.
+
+[REDACTED]
+
+### Linia 4849 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-b25325c2-b7fa-4be9-a228-85e8d2754145.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:16 AM (UTC+2)</timestamp>
+
+Brakuje w dyplomacji informacji o tym, czy mamy jakieś zawarte pakty typu pakty agresji, pak handlowy czy sojusz.  zawarły między innymi państw np. Pagnie Agresji, ale dalej to widnieje jako państwo neutralne. Rozumiem, że tu chodzi to, że jest państwo albo neutralne, albo w stanie wojny, ale inne umowy powinny być wyjustowane.
+
+### Linia 4850 — AGENT
+
+Paki i sojusze powinny być widoczne obok statusu neutralny/wojna — sprawdzam, gdzie dyplomacja trzyma te umowy i jak je wyświetlić na liście.
+
+[REDACTED]
+
+### Linia 4851 — AGENT
+
+Masz rację — **neutralny** to postawa (brak wojny), a **paki** to osobna warstwa i powinny być widoczne na karcie.
+
+**Plan:** pod statusem (🤝 NEUTRALNY) dodam chipy aktywnych umów z danymi silnika — np. Pakt nieagresji, Pakt handlowy, Sojusz — tylko te faktycznie zawarte z danym państwem.
+
+Status główny zostaje; paki to dodatkowa informacja. Dam znać, gdy będzie gotowe — **deploy** na Twoje polecenie.
+
+[REDACTED]
+
+### Linia 4853 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-0f040bf9-b8bf-48c8-899d-adb66c454e04.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:17 AM (UTC+2)</timestamp>
+
+### Linia 4854 — AGENT
+
+[REDACTED]
+
+### Linia 4855 — AGENT
+
+Na screenie widać dokładnie ten problem — tylko „NEUTRALNY”, bez paków. Dokańczam implementację chipów umów.
+
+[REDACTED]
+
+### Linia 4856 — AGENT
+
+Ten screen to dokładnie to, o co chodzi — na **Germanie** (i innych) widać tylko „NEUTRALNY”, mimo że pakt nieagresji jest zawarty.
+
+Poprawka jest w toku: pod statusem pojawią się chipy aktywnych umów (pakt nieagresji, handel, sojusz). **Nie ma tego jeszcze w ROBOCZA** (`b0d642b4`) — dam znać, gdy będzie gotowe; **deploy** na Twoje polecenie.
+
+[REDACTED]
+
+### Linia 4858 — MACIEJ
+
+<timestamp>Monday, Jul 27, 2026, 12:18 AM (UTC+2)</timestamp>
+
+I jeszcze zmieniłbym ilość technologii, które mogą wpaść do rostera czy do koszyka z trzech do czterek.
+
+### Linia 4859 — AGENT
+
+Szukam w kodzie limitu trzech technologii w rosterze/koszyku i podnoszę go do czterech.
+
+[REDACTED]
+
+### Linia 4860 — AGENT
+
+Podnoszę limit z **3 → 4** technologii w rosterze i koszyku badań.
+
+Szukam stałej w kodzie (picker badań, kolejka) i zaktualizuję testy. Dam znać, gdy będzie gotowe — można wtedy zdeployować razem z chipami paków w dyplomacji.
+
+[REDACTED]
+
+### Linia 4862 — MACIEJ
+
+<timestamp>Monday, Jul 27, 2026, 12:20 AM (UTC+2)</timestamp>
+
+civpediemożemy usunąć z widoku miasta. Nie jest tam potrzebna
+
+### Linia 4863 — AGENT
+
+[REDACTED]
+
+### Linia 4864 — AGENT
+
+Usuwam Civpedię z widoku miasta — zostaje na mapie. Dam znać, gdy będzie gotowe; można wtedy zdeployować razem z pakami dyplomatycznymi i limitem 4 techów.
+
+[REDACTED]
+
+### Linia 4866 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-96e56c6a-cfe5-42a2-9ceb-17130a935e18.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:21 AM (UTC+2)</timestamp>
+
+miałeś skondensować panel rekrutacji jednostek podobnie jak zrobiłeś to w wypadku budynków. czyli minimalistycznie podstawowe informacje.
+
+### Linia 4867 — AGENT
+
+[REDACTED]
+
+### Linia 4868 — AGENT
+
+Masz rację — rekrutacja nadal jest rozwlekła (pełny pasek HP, cztery osobne wiersze statów).
+
+Skondensuję ją jak **Budowę**: ikona, nazwa, kluczowe liczby w jednej linii, koszt + Rekrutuj; pełne staty w **Szczegółach** po kliknięciu.
+
+Dam znać, gdy będzie gotowe — potem można zdeployować całą paczkę (dyplomacja, 4 techy, Civpedia, rekrutacja).
+
+[REDACTED]
+
+### Linia 4869 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-cdd8669c-5550-4070-9d55-15d6015a2b71.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:21 AM (UTC+2)</timestamp>
+
+### Linia 4870 — AGENT
+
+[REDACTED]
+
+### Linia 4871 — AGENT
+
+Ten screen z **Budowy** to wzorzec, o który chodzi: ikona + nazwa + przycisk w jednym wierszu, bez rozwlekłych statów.
+
+**Rekrutacja** dostosowuję do tego samego układu — kompaktowe wiersze, pełne staty w **Szczegółach**.
+
+W kolejce na deploy (jeszcze nie w ROBOCZA):
+- chipy paków w dyplomacji
+- plan badań **4** techy
+- usunięcie Civpedii z miasta
+- skondensowana rekrutacja
+
+Dam znać, gdy rekrutacja będzie gotowa — napisz **deploy**, żeby wpuścić całą paczkę.
+
+[REDACTED]
+
+### Linia 4873 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-f3f34cec-3da0-4496-9e6a-1d68d8d7e457.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:22 AM (UTC+2)</timestamp>
+
+na panelu lewym budowania niestety brakuje pozycji buduj i zakup, które były wcześniej i zniknęły.
+
+### Linia 4874 — AGENT
+
+Przy skracaniu listy zniknęły przyciski „Buduj” i „Zakup” — przywracam je na panelu budowy.
+
+[REDACTED]
+
+### Linia 4875 — AGENT
+
+Przy skracaniu listy zniknęły przyciski **Buduj** i **Zakup** po prawej — przywracam je na każdym wierszu (aktywne lub wyszarzone, jak wcześniej).
+
+Dam znać, gdy poprawka będzie w kodzie.
+
+[REDACTED]
+
+### Linia 4877 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 4878 — AGENT
+
+[Remove Civpedia from city view](52673d13-2502-4c5d-80f6-d19ee0c0acaa) — w kodzie, **nie w ROBOCZA**.
+
+Civpedia znika z HUD przy otwartym panelu miasta (`hud.ts`); na mapie zostaje.
+
+**Uwaga:** w `unitRecruitCard.ts` są błędy typecheck (praca nad skondensowaną rekrutacją) — do naprawy przed deployem.
+
+Kolejka na deploy: dyplomacja, 4 techy, Civpedia, rekrutacja, Buduj/Zakup. Napisz **deploy**, gdy chcesz paczkę.
+
+[REDACTED]
+
+### Linia 4880 — MACIEJ
+
+<timestamp>Monday, Jul 27, 2026, 12:22 AM (UTC+2)</timestamp>
+
+W sytuacji gdy nie możemy danego w budynku wybudować po prostu powinien być wyszarzony czy taki bladoniebieski a w sytuacji gdy możemy budować jest jaskrawo-niebieski a teraz w ogóle nie ma nic
+
+### Linia 4881 — AGENT
+
+[REDACTED]
+
+### Linia 4882 — AGENT
+
+Jasne — przywracam przyciski **Buduj** / **Zakup** na każdym wierszu:
+
+- **Można budować** → jaskrawo-niebieski, aktywny  
+- **Nie można** (brak surowców, badań itd.) → wyszarzony / bladoniebieski, nieklikalny  
+- **Zablokowane** (epoka, tech) → szary wiersz, bez akcji  
+
+Teraz przyciski w ogóle nie renderują się — to naprawiam. Dam znać, gdy będzie w kodzie.
+
+[REDACTED]
+
+### Linia 4884 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 4885 — AGENT
+
+[Condense recruitment panel UI](b00fbf44-4a16-4983-8bd2-ba3587bc51e1) — w kodzie, **nie w ROBOCZA**.
+
+Rekrutacja ma teraz kompaktowe wiersze jak Budowa: ikona, nazwa, staty w jednej linii, koszt + **Rekrutuj**; pełne staty w hoverze i „i szczegóły”. Typecheck OK.
+
+**W toku:** przyciski **Buduj/Zakup** i kolory (niebieski / wyszarzony) na liście budynków.
+
+Napisz **deploy**, gdy chcesz całą paczkę w `gra-robocza/`.
+
+[REDACTED]
+
+### Linia 4887 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-62556c52-061d-4721-b1a6-488bd41bcefb.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-caa97ef5-8b78-45d9-8cb8-e3fa873882c1.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:26 AM (UTC+2)</timestamp>
+
+po za tym co to jest wymiana magazyn? Powinno być wymagane badania i wymagane surowce.  Kolejne pytanie. Nie wiadomo o co chodzi. Pieniądz plus 5 plus 3 POS. Chodzi o i są pod spodem koszty. To jest koszt czy to jest przychód?
+
+### Linia 4888 — AGENT
+
+Poprawiam etykiety w tooltipach budynków: „WymianaMagazyn” → wymagane badania/surowce, a sekcja z Pieniądzem wyraźnie jako przychód, nie koszt.
+
+[REDACTED]
+
+### Linia 4889 — AGENT
+
+Krótko, o co chodzi:
+
+**„WymianaMagazyn”** — to wewnętrzna nazwa bramki magazynowej (czy masz surowce w spichlerzu). W UI powinno być **„Wymagane surowce”**, a badania osobno jako **„Wymagane badania”**. To poprawiam.
+
+**„Pieniądz +5 (+3/poz.)”** pod **PLONY I EFEKTY** — to **przychód** (ile budynek daje na turę), nie koszt. **KOSZTY** niżej to **koszt budowy** (np. 25 🔨). Doprecyzuję etykiety, żeby było jednoznacznie: „Pieniądz (przyrost): +5/turę” itd.
+
+Dam znać, gdy poprawki będą w kodzie.
+
+[REDACTED]
+
+### Linia 4891 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-def3168d-3000-4c9f-8f7c-15b7088a9054.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:27 AM (UTC+2)</timestamp>
+
+Po najechaniu na szczegóły na prawej stronie, na przykład z rozludności, nie pojawia się lista wysuwana dodatkowymi informacjami.
+
+### Linia 4892 — AGENT
+
+[REDACTED]
+
+### Linia 4893 — AGENT
+
+„I szczegóły” przy **Wzroście ludności** (i podobnych kartach) powinno po najechaniu pokazywać rozbicie — teraz flyout się nie otwiera.
+
+Sprawdzam, czy zepsuł to ostatni refaktor panelu albo `pointer-events` w `cityUxFrame`. Naprawię to spójnie na wszystkich zakładkach z tym linkiem. Dam znać.
+
+[REDACTED]
+
+### Linia 4895 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-03b6c181-6e25-498f-98b2-e743c2cb0f8c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:27 AM (UTC+2)</timestamp>
+
+w surowce zasięgu brakuje złota, jest glina koń i sól. Chociaż w sumie nie wiem po co jest glina? Bo to jest przecież surowy strój się składuje. Powiem być koń, sól i złoto.
+
+### Linia 4896 — AGENT
+
+[REDACTED]
+
+### Linia 4897 — AGENT
+
+**„Surowce w zasięgu”** powinny pokazywać **złoża na heksach** w okolicy miasta (koń, sól, złoto — gdzie budujesz ulepszenie), a nie zapasy ze spichlerza.
+
+**Glina** tam nie powinna się pojawiać — to surowiec magazynowy, nie złoże na mapie. **Złoto** prawdopodobnie jest w zasięgu, ale lista je pomija albo filtruje źle.
+
+Sprawdzam logikę w `okolica.ts` / panelu miasta i dopasowuję listę do złoża mapowych. Dam znać po poprawce.
+
+[REDACTED]
+
+### Linia 4899 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-869cca52-6f02-4b4a-99a0-e122599d08fd.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:29 AM (UTC+2)</timestamp>
+
+już wiem, źle to odczytywałem, ale to oznacza, że to jest nieczytelnie rozpisane. Trzeba bardziej oddzielić poszczególne kategorie poziomymi kreskami, tak żeby wstawić w swojego rodzaju kafelki poszczególne charakterystyki.
+
+### Linia 4900 — AGENT
+
+[REDACTED]
+
+### Linia 4901 — AGENT
+
+Zgoda — tooltip budynku to teraz ściana tekstu bez wyraźnych podziałów.
+
+**Plan:**
+- każda sekcja w osobnym „kafelku” (Charakterystyka, Plony, Koszty, Poziomy, Technologie…)
+- **poziome kreski** i odstępy między blokami
+- usunięcie z widoku gracza notatek deweloperskich typu „PYTANIE 20=A…”
+
+To łączę z poprawkami etykiet (Wymagane badania / surowce, przychód vs koszt). Dam znać, gdy będzie w kodzie.
+
+[REDACTED]
+
+### Linia 4903 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-6060e29c-4bab-4b28-8366-1ce02d49de59.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:31 AM (UTC+2)</timestamp>
+
+te dodatkowe opisy są do usunięcia. Można jedynie dać to do szczegółów albo na full tip ale w sumie nie jest to potrzebne.
+
+### Linia 4904 — AGENT
+
+[REDACTED]
+
+### Linia 4905 — AGENT
+
+Usuwam te szare ramki z instrukcjami („przewiń, jeśli nie mieści się…”) ze wszystkich zakładek panelu miasta — zostają tytuły i „i szczegóły”, bez zbędnych opisów.
+
+[REDACTED]
+
+### Linia 4907 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-6df01b88-995f-4dba-803d-af0827b87fb1.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:33 AM (UTC+2)</timestamp>
+
+Dolne szczegóły się pojawiają, ale niestety po ich rozwinięciu nachodzą na oczne menu. Propozycja, usuń też menu, bo nie jest tam potrzebne, bo jest na mapie świata i ułóż tak, żeby się nie zasłaniały batony wyboru z dodatkowymi informacjami.
+
+### Linia 4908 — AGENT
+
+[REDACTED]
+
+### Linia 4909 — AGENT
+
+Rozumiem — flyout „ściągi” nachodzi na boczny pasek ikon.
+
+**Plan:**
+- **Usunąć MENU** z widoku miasta (jak Civpedia — zostaje na mapie świata)
+- **Przesunąć dock szczegółów** obok raila, nie na niego — z limitem wysokości i scrollem
+- **Dolne szczegóły** (Surowce itd.) — bez zasłaniania przycisków wyboru
+
+Dam znać, gdy będzie w kodzie.
+
+[REDACTED]
+
+### Linia 4911 — MACIEJ
+
+<timestamp>Monday, Jul 27, 2026, 12:37 AM (UTC+2)</timestamp>
+
+deploy
+
+### Linia 4912 — AGENT
+
+[REDACTED]
+
+### Linia 4913 — AGENT
+
+Uruchamiam **FALA 28** — cała paczka poprawek panelu miasta, dyplomacji, badań (4 techy), rekrutacji, budowy i layoutu docków. Dam znać z nowym md5 po buildzie.
+
+[REDACTED]
+
+### Linia 4915 — MACIEJ
+
+<timestamp>Monday, Jul 27, 2026, 12:39 AM (UTC+2)</timestamp>
+
+Ok, deploy wszystko, daj znać jak skończysz.
+
+### Linia 4916 — AGENT
+
+[REDACTED]
+
+### Linia 4917 — AGENT
+
+Deploy FALI 28 jeszcze trwa — dokańczam i dam znać z md5.
+
+[REDACTED]
+
+### Linia 4918 — AGENT
+
+FALA 28 jest w toku (build + publish + push). Jak skończę, dam znać z md5 i krótką listą tego, co weszło. **Ctrl+F5** przed testem.
+
+[REDACTED]
+
+### Linia 4920 — MACIEJ
+
+<timestamp>Monday, Jul 27, 2026, 12:42 AM (UTC+2)</timestamp>
+
+zastanawiam się jeszcze na jedną kwestię. Jestem w epoce kamienia, Celtowie i Germanie mieli dochodzić dopiero w epoce brązu, z tego co się orientuję, ale mogę się mylić. ?
+
+### Linia 4921 — AGENT
+
+Sprawdzam w danych gry, kiedy Celtowie i Germanie mają się pojawiać.
+
+[REDACTED]
+
+### Linia 4922 — AGENT
+
+[REDACTED]
+
+### Linia 4923 — AGENT
+
+[REDACTED]
+
+### Linia 4924 — AGENT
+
+[REDACTED]
+
+### Linia 4925 — AGENT
+
+[REDACTED]
+
+### Linia 4926 — AGENT
+
+[REDACTED]
+
+### Linia 4927 — AGENT
+
+[REDACTED]
+
+### Linia 4928 — AGENT
+
+[REDACTED]
+
+### Linia 4929 — AGENT
+
+[REDACTED]
+
+### Linia 4930 — AGENT
+
+[REDACTED]
+
+### Linia 4931 — AGENT
+
+**Masz rację co do kanonu gry** — to nie kwestia historii „na żywo”, tylko zapisanej decyzji z lipca 2026.
+
+## Co mówi projekt (`D-CYW-EPOKA-WEJSCIA`)
+
+| Epoka wejścia | Cywilizacje |
+|---------------|-------------|
+| **Kamień** | Grecy, Rzymianie, Chińczycy, Zulusi, Egipt, Sumerowie, Harappa, Inkowie |
+| **Brąz** | **Celtowie**, **Germanie**, Hetyci, Babilonia, Asyria, Fenicjanie |
+| **Żelazo** | Słowianie |
+
+W `civs.json` obie mają:
+- `"epokaWejscia": "braz"`
+- `"epokiStartowe": ["braz"]`
+
+**Celtowie i Germanie nie powinni być na mapie przy starcie w epoce Kamienia** — wchodzą dopiero od Brązu (i potem są też w Żelazie).
+
+## Dlaczego mogłeś ich widzieć w „Kamieniu”
+
+1. **Gra startowała w Brązie** (kreator) — wtedy Germanie na liście dyplomacji są OK.
+2. **Błąd spawnu** — silnik powinien filtrować przez `civIdsAvailableAtGameEpoch` w `main.ts`; jeśli przy **Kamieniu** i tak są na mapie, to regresja.
+3. **Barbarzyńcy** — mogą wyglądać jak „plemiona”, ale to inny system niż państwa Celtów/Germanów z `civs.json`.
+
+## Władców „kamiennych” w danych
+
+Mannus / Ambigatos w polu `wodzowie.kamien` to **rezerwa na portrety** — nie znaczy, że cywilizacja startuje w Kamieniu.
+
+---
+
+**Podsumowanie:** Twoja intuicja = **kanon gry**. W epoce Kamienia **nie powinno** być państw Celtów ani Germanów.
+
+Jeśli w **nowej grze, epoka startu = Kamień**, nadal widzisz Germanów na mapie/dyplomacji — to bug do naprawy. Daj znać, czy tak jest — wtedy sprawdzę spawn i ewentualnie poprawię.
+
+[REDACTED]
+
+### Linia 4933 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-d3792ec2-6ccf-4d41-9704-e009f3f61c2f.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:46 AM (UTC+2)</timestamp>
+
+Widzimy jaka jest produkcja na innych terenach, ale nie widzimy jaka jest produkcja na terenie miasta.
+
+### Linia 4934 — AGENT
+
+Na heksie miasta brakuje ikon produkcji — sprawdzam overlay pól pracowników i render plonów na hexie centrum.
+
+[REDACTED]
+
+### Linia 4935 — AGENT
+
+Na sąsiednich heksach widać plony (🍞🔨💰), na **heksie samego miasta** — nie. To wygląda na pominięcie hexu centrum w overlayu pól pracowników.
+
+Sprawdzam `workerFieldOverlay` / widok okolicy i dopiszę te same ikony na kafelku miasta. Dam znać — na razie **poza** F28 (`2dcd69e2`); przy następnym **deploy** albo na Twoje polecenie.
+
+[REDACTED]
+
+### Linia 4937 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-b529e044-5e36-45e0-822c-73e146181861.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:47 AM (UTC+2)</timestamp>
+
+znowu nie da się kliknąć na szczegóły u góry w prawym rogu górnym
+
+### Linia 4938 — AGENT
+
+[REDACTED]
+
+### Linia 4939 — AGENT
+
+„I szczegóły” przy **Podziale daniny** znowu nie łapie kliknięcia — prawdopodobnie górny pasek lub warstwa panelu przykrywa link (podobny problem jak wcześniej przy railu ikon).
+
+Sprawdzam zakładkę Handel i naprawiam obsługę kliknięcia/hover. Dam znać; jeśli chcesz od razu w grze — **deploy** po poprawce (obecnie masz F28 `2dcd69e2`, tam ta poprawka mogła nie w pełni zadziałać na Handlu).
+
+[REDACTED]
+
+### Linia 4941 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 4942 — AGENT
+
+[Show city hex yields](f34dcc81-c172-42ba-9b72-97b8b63769da) — w kodzie, **poza F28** (`2dcd69e2`).
+
+Usunięto celowy skip centrum w `cityOkolicaOverlay.ts` — na heksie miasta widać teraz 🍞/🔨/💰 jak na sąsiednich polach.
+
+Wchodzi w następny deploy razem z poprawką klikalności „i szczegóły” (Handel). Napisz **deploy**, gdy chcesz paczkę.
+
+[REDACTED]
+
+### Linia 4944 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-4d3a65f9-d161-47ce-a4c3-bc464c81e9e2.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 27, 2026, 12:48 AM (UTC+2)</timestamp>
+
+dałbym pracę żywność i skarbiec po lewej stronie obok Aten, a kulturę, religię, naukę po prawej stronie obok batonu Ateny. Wróć na mapę, przeniósłbym na dół troszeczkę nad zarządzanie polami.

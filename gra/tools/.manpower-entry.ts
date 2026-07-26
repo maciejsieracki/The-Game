@@ -48,6 +48,20 @@ import {
 
   refundManpowerToEmpire,
 
+  tickManpowerUnitReplenishment,
+
+  loadManpowerReplenishParams,
+
+  manpowerHealCapForTurn,
+
+  manpowerCostForHeal,
+
+  maxAffordableManpowerHeal,
+
+  isUnitInBesiegedLocation,
+
+  replenishmentUnitSortKey,
+
 } from '../src/game/manpower';
 
 
@@ -97,6 +111,20 @@ module.exports = {
   deductManpowerFromEmpire,
 
   refundManpowerToEmpire,
+
+  tickManpowerUnitReplenishment,
+
+  loadManpowerReplenishParams,
+
+  manpowerHealCapForTurn,
+
+  manpowerCostForHeal,
+
+  maxAffordableManpowerHeal,
+
+  isUnitInBesiegedLocation,
+
+  replenishmentUnitSortKey,
 
 };
 

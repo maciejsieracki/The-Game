@@ -25,6 +25,7 @@
  */
 
 import * as THREE from 'three';
+import { clientRectToNdc } from '../input/picker';
 import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
@@ -4608,6 +4609,39 @@ export class UnitRenderer {
   /** Pozycja tokena na heksie (uwzględnia podbicie na polu miasta). */
   getTokenPlacement(q: number, r: number): { x: number; y: number; z: number } {
     return this._tokenPlacement(q, r);
+  }
+
+  /**
+   * Raycast na widoczne modele jednostek — trafienie w offset na polu miasta
+   * nie mapuje się na sąsiedni heks (pickHexAt liczy tylko teren).
+   */
+  pickUnitIdAt(
+    clientX: number,
+    clientY: number,
+    canvas: HTMLCanvasElement,
+    camera: THREE.Camera,
+  ): string | null {
+    const rect = canvas.getBoundingClientRect();
+    const ndc = clientRectToNdc(clientX, clientY, rect);
+    if (!ndc) return null;
+
+    camera.updateMatrixWorld(true);
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), camera);
+
+    const roots = [...this.tokens.values()].filter((o) => o.visible);
+    if (roots.length === 0) return null;
+
+    const hits = raycaster.intersectObjects(roots, true);
+    for (const h of hits) {
+      let obj: THREE.Object3D | null = h.object;
+      while (obj) {
+        const uid = obj.userData['unitId'];
+        if (typeof uid === 'string' && uid.length > 0) return uid;
+        obj = obj.parent;
+      }
+    }
+    return null;
   }
 
   private _tokenPlacement(q: number, r: number): { x: number; y: number; z: number } {

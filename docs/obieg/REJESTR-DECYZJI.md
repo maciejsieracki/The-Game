@@ -46,6 +46,7 @@
 |---|---|---|---|---|---|---|
 | **B-PALAC-TIER** | 2026-07-24 | Pałac 3 tiery: I=drewno, II=drewno+kamień, III=drewno+kamień+cegła; bonus +50%/tier (×1,5) | B | 🟢 **WDROŻONA** | `buildings.json` · `cityHasPalacLine()` · robocza md5 `a85e7d3f…` | upgradeFrom łańcuch |
 | **B-RESEARCH-COST-MODEL** | 2026-07-24 | JSON pochłania dawniejszy global ×2; `GLOBAL_RESEARCH_COST_MULT=1`; Obróbka drewna/Murarstwo JSON=5 → 5/10/20 PN wg tempa | B | 🟢 **WDROŻONA** | `tech.json` · `difficulty-cost.ts` · robocza md5 `c77d2bc9…` | dyplomacja: JSON×tempo only |
+| **B-MP-Q1** | 2026-07-27 | **Q1a=B** % maxHP/turę (25/20/15) · **Q1b=A** częściowe leczenie · **Q1c** brak uzupełnienia w oblężonym mieście | B | 🔵 **W TRAKCIE** | `manpower.ts` `tickManpowerUnitReplenishment` · `miasto-params.json` · `manpower-test.cjs` | garnizon przed polem |
 | **B-TECH-EARLY-COST** | 2026-07-24 | Koszt bazowy nauki **5 PN** dla **Obróbka drewna** i **Murarstwo** — szybszy dostęp do tartaku/kamieniołomu | B | 🟢 **WDROŻONA** (część B-RESEARCH-COST-MODEL) | `tech.json` koszt=5 | efektywnie 5/10/20 @ tempo |
 | **E-START-CS-Q1** | 2026-07-21 | **C** — wybór stolicy gracza zostaje; państwa-miasta pakowane wokół FAKTYCZNEGO hexu gracza + backfill przy odrzuceniu; pre-plan mapgen = podgląd | E+F | 🟢 **WDROŻONA** | robocza md5 `35a07a49…` · `main.ts` spawnPendingSameTypeRivals · cluster-start-test | Maciej: „sprawdźmy C, jak nie zadziała → A" |
 | **EKO-TECH-P1** | 2026-07-04 | Paczka 1/3 (patrz doc) | B+MASTER | 🟢 WDROŻONA | kanon md5 `afd8770d…` · test 9/9 | playtest Maciej |

@@ -362,6 +362,60 @@ export function formatBasketListBrief(items: readonly BasketItem[] | undefined):
   return items.map(formatBasketItemBrief).join(' · ');
 }
 
+/** Dane wejściowe do podsumowania gracza na liście dyplomacji (tylko realne pola stanu). */
+export interface DiploPlayerSummaryInput {
+  militaryPower: number;
+  powerRank?: { rank: number; total: number };
+  treasuryGold?: number;
+  goldPerTurn?: number;
+  culturePerTurn?: number;
+  sciencePerTurn?: number;
+  population?: number;
+  armyCount?: number;
+}
+
+function signedPerTurn(value: number, unit: string): string {
+  const v = Math.round(value);
+  const sign = v > 0 ? '+' : '';
+  return `${sign}${v} ${unit}/turę`;
+}
+
+/** Linie statystyk gracza — spójne z kartami obcych cywilizacji (detail + meta). */
+export function formatDiploPlayerSummaryLines(input: DiploPlayerSummaryInput): {
+  detailLine: string;
+  metaLine: string;
+} {
+  const detailParts: string[] = [
+    `Moc: ${Math.round(Math.max(0, input.militaryPower))}`,
+  ];
+  if (input.powerRank && input.powerRank.total > 0) {
+    detailParts.push(`Ranking mocy: ${input.powerRank.rank}. z ${input.powerRank.total}`);
+  }
+  const metaParts: string[] = [];
+  if (input.treasuryGold !== undefined) {
+    metaParts.push(`Skarbiec: ${Math.floor(input.treasuryGold)} ¤`);
+  }
+  if (input.goldPerTurn !== undefined) {
+    metaParts.push(`Pieniądz: ${signedPerTurn(input.goldPerTurn, '¤')}`);
+  }
+  if (input.culturePerTurn !== undefined) {
+    metaParts.push(`Kultura: ${signedPerTurn(input.culturePerTurn, 'pkt')}`);
+  }
+  if (input.sciencePerTurn !== undefined) {
+    metaParts.push(`Nauka: ${signedPerTurn(input.sciencePerTurn, 'pkt')}`);
+  }
+  if (input.population !== undefined) {
+    detailParts.push(`Ludność: ${Math.floor(input.population)}`);
+  }
+  if (input.armyCount !== undefined) {
+    detailParts.push(`Armia: ${input.armyCount}`);
+  }
+  return {
+    detailLine: detailParts.join(' · '),
+    metaLine: metaParts.join(' · '),
+  };
+}
+
 /**
  * Czytelne podsumowanie warunków na stole — perspektywa gracza (incoming) lub
  * proponenta (własna propozycja gracza).

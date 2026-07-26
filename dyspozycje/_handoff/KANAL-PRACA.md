@@ -3559,3 +3559,11 @@ Nowe: modal handlu dyplomacji (koszyk + tury + podsumowania + Esc) · sentry odz
 Bramki: tsc 0 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · manpower 44/44 · deposit-building-gate 41/41 · logic 207/208 (pre garnizon).
 **Sesja lokalna: pull / sync dysk, testuj `d9f2c1fa` — `gra-robocza/START.html`.**
 CZEKAM-NA: Maciej — playtest handlu dyplomatycznego + sentry jednostek.
+
+## [01:45 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `f694dcba` (FALA 31, VERIFY)
+**md5 `f694dcba20acc6ed63866da4e3cd4672`**, stempel `ROBOCZA · 2026-07-27 01:45`. **VERIFY OK** (manifest md5 = HTML).
+Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive lock).
+Nowe: wojna bez stałego paska (tylko Wydarzenia) · klik heks/jednostka pickMapTarget+raycast · dyplomacja „Twoje państwo" (nauka/ludność/armia, bez traktatów/wojen) · manpower HP heal 25/20/15% + częściowe MP + blokada oblężenia.
+Bramki: tsc 0 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41 · logic 207/208 (pre garnizon).
+**Sesja lokalna: pull / sync dysk, testuj `f694dcba` — `gra-robocza/START.html`.**
+CZEKAM-NA: Maciej — playtest wojny HUD + klik mapy + dyplomacja + manpower HP.

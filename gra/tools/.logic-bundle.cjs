@@ -5947,6 +5947,12 @@ function applyRoadMovementModifier(cost, hex) {
 
 // src/units/setup.ts
 var RIVER_MOVE_BONUS = 4;
+var CIVILIAN_CATEGORIES = /* @__PURE__ */ new Set(["osadnik", "robotnik", "zwiadowca"]);
+var CIVILIAN_TYPE_IDS = /* @__PURE__ */ new Set(["Zwiadowca", "Osadnik", "Robotnik"]);
+function isCivilianUnit(u) {
+  if (CIVILIAN_CATEGORIES.has(u.category)) return true;
+  return CIVILIAN_TYPE_IDS.has(u.typeId);
+}
 function keyOf(q, r) {
   return `${q},${r}`;
 }
@@ -6844,6 +6850,13 @@ var miasto_params_default = {
     jednostka: "0/1",
     opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
   },
+  manpower_uzupelnienie_hp_proc_max_tura: {
+    easy: 25,
+    normal: 20,
+    hard: 15,
+    jednostka: "% maxHP/tura",
+    opis: "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP \xD7 warto\u015B\u0107/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP \xD7 kosztJednostki). Przy braku MP \u2014 leczenie cz\u0119\u015Bciowe do dost\u0119pnej puli. manpower.tickManpowerUnitReplenishment."
+  },
   jednostka_koszt_domyslny: {
     wartosc: 10,
     jednostka: "Praca",
@@ -6953,6 +6966,94 @@ var DEFAULT_REGEN = {
   regenProcMaxPerTurn: 2,
   blockWhenBesieged: true
 };
+var DEFAULT_REPLENISH_PCT = {
+  easy: 25,
+  normal: 20,
+  hard: 15
+};
+function loadManpowerReplenishParams(difficulty = "normal", raw = miasto_params_default) {
+  const row = raw.manpower_uzupelnienie_hp_proc_max_tura;
+  const pick3 = (key) => {
+    const v = row == null ? void 0 : row[key];
+    if (typeof v === "number" && Number.isFinite(v) && v >= 0) return v;
+    const fb = row == null ? void 0 : row.normal;
+    if (typeof fb === "number" && Number.isFinite(fb) && fb >= 0) return fb;
+    return DEFAULT_REPLENISH_PCT[key];
+  };
+  return { healPctMaxPerTurn: Math.min(100, pick3(difficulty)) };
+}
+function isUnitInBesiegedLocation(unit, cities) {
+  if (unit.q == null || unit.r == null) return false;
+  const city = cities.find((c) => c.q === unit.q && c.r === unit.r);
+  if (!city || city.ownerId !== unit.ownerId) return false;
+  return city.oblegane === true;
+}
+function replenishmentUnitSortKey(unit, cities) {
+  if (isUnitInBesiegedLocation(unit, cities)) return 2;
+  if (unit.inGarnizon === true) return 0;
+  return 1;
+}
+function manpowerHealCapForTurn(maxHp, curHp, params) {
+  if (maxHp <= 0 || curHp <= 0 || curHp >= maxHp) return 0;
+  const cap = Math.floor(maxHp * params.healPctMaxPerTurn / 100);
+  return Math.max(0, Math.min(cap, maxHp - curHp));
+}
+function manpowerCostForHeal(healHp, maxHp, unitCost) {
+  if (healHp <= 0 || maxHp <= 0 || unitCost <= 0) return 0;
+  return Math.min(unitCost, Math.ceil(healHp / maxHp * unitCost));
+}
+function maxAffordableManpowerHeal(desiredHeal, maxHp, unitCost, availableMp) {
+  if (desiredHeal <= 0 || maxHp <= 0 || unitCost <= 0 || availableMp <= 0) return 0;
+  return Math.min(desiredHeal, Math.floor(availableMp * maxHp / unitCost));
+}
+function tickManpowerUnitReplenishment(cities, units, difficulty, resolveOwnerEra, resolveOwnerBonusy, getMaxHp, rawMiastoParams) {
+  const params = loadManpowerReplenishParams(difficulty, rawMiastoParams);
+  if (params.healPctMaxPerTurn <= 0 || units.length === 0) {
+    return { healedCount: 0, totalMpSpent: 0 };
+  }
+  const byOwner = /* @__PURE__ */ new Map();
+  for (const u of units) {
+    if (isCivilianUnit(u)) continue;
+    const list = byOwner.get(u.ownerId) ?? [];
+    list.push(u);
+    byOwner.set(u.ownerId, list);
+  }
+  let healedCount = 0;
+  let totalMpSpent = 0;
+  for (const [ownerId, ownerUnits] of byOwner) {
+    const epoka = resolveOwnerEra(ownerId);
+    const maxMult = civManpowerMaxMult(resolveOwnerBonusy(ownerId));
+    let empireMp = empireManpowerCurrent(cities, ownerId, epoka, maxMult);
+    if (empireMp <= 0) continue;
+    const sorted = [...ownerUnits].sort((a, b) => {
+      const keyDiff = replenishmentUnitSortKey(a, cities) - replenishmentUnitSortKey(b, cities);
+      return keyDiff !== 0 ? keyDiff : a.id.localeCompare(b.id);
+    });
+    for (const u of sorted) {
+      if (isUnitInBesiegedLocation(u, cities)) continue;
+      const maxHp = u.hpMax ?? getMaxHp(u.typeId);
+      if (maxHp <= 0) continue;
+      if (u.hpMax == null) u.hpMax = maxHp;
+      const curHp = u.hp == null ? maxHp : u.hp;
+      if (u.hp == null) u.hp = curHp;
+      if (curHp <= 0 || curHp >= maxHp) continue;
+      const unitCost = unitManpowerCostForType(u.typeId, epoka, maxMult);
+      if (unitCost <= 0 || isScoutTypeId(u.typeId)) continue;
+      const desiredHeal = manpowerHealCapForTurn(maxHp, curHp, params);
+      if (desiredHeal <= 0) continue;
+      const healHp = maxAffordableManpowerHeal(desiredHeal, maxHp, unitCost, empireMp);
+      if (healHp <= 0) continue;
+      const mpCost = manpowerCostForHeal(healHp, maxHp, unitCost);
+      if (mpCost <= 0) continue;
+      if (!deductManpowerFromEmpire(cities, ownerId, epoka, mpCost, maxMult)) continue;
+      empireMp -= mpCost;
+      totalMpSpent += mpCost;
+      u.hp = Math.min(maxHp, curHp + healHp);
+      healedCount++;
+    }
+  }
+  return { healedCount, totalMpSpent };
+}
 function loadManpowerRegenParams(raw = miasto_params_default) {
   var _a9, _b3;
   const pct = (_a9 = raw.manpower_regen_proc_max_tura) == null ? void 0 : _a9.wartosc;
@@ -7017,14 +7118,64 @@ function epokaManpowerRow(epoka) {
 function clampLudki(population) {
   return Math.max(1, Math.floor(population) || 1);
 }
+function cityLudnoscAbsolutna(ludki, epoka) {
+  const row = epokaManpowerRow(epoka);
+  return clampLudki(ludki) * row.ludekNaLudka;
+}
 function cityManpowerMax(ludki, epoka, maxMult = 1) {
   const row = epokaManpowerRow(epoka);
   return scaledManpower(clampLudki(ludki) * row.manpowerNaLudka, maxMult);
+}
+var SCOUT_TYPE_ID = "Zwiadowca";
+function isScoutTypeId(typeId) {
+  return typeId === SCOUT_TYPE_ID;
+}
+function unitManpowerCost(epoka, maxMult = 1) {
+  return scaledManpower(epokaManpowerRow(epoka).manpowerNaJednostke, maxMult);
+}
+function unitManpowerCostForType(typeId, epoka, maxMult = 1) {
+  if (isScoutTypeId(typeId)) return 0;
+  return unitManpowerCost(epoka, maxMult);
 }
 function cityManpowerCurrent(city, epoka, maxMult = 1) {
   const max = cityManpowerMax(city.population, epoka, maxMult);
   if (city.manpower === void 0 || !Number.isFinite(city.manpower)) return max;
   return Math.max(0, Math.min(max, Math.floor(city.manpower)));
+}
+function empirePoborTotals(cities, ownerId, epoka, maxMult = 1) {
+  let sumaLudkow = 0;
+  let ludnoscAbsolutna = 0;
+  let rekruci = 0;
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    sumaLudkow += clampLudki(c.population);
+    ludnoscAbsolutna += cityLudnoscAbsolutna(c.population, epoka);
+    rekruci += cityManpowerCurrent(c, epoka, maxMult);
+  }
+  return { sumaLudkow, ludnoscAbsolutna, rekruci, poborRaw: ludnoscAbsolutna + rekruci };
+}
+function empireManpowerCurrent(cities, ownerId, epoka, maxMult = 1) {
+  return empirePoborTotals(cities, ownerId, epoka, maxMult).rekruci;
+}
+function deductManpowerFromEmpire(cities, ownerId, epoka, amount, maxMult = 1) {
+  if (amount <= 0) return true;
+  if (empireManpowerCurrent(cities, ownerId, epoka, maxMult) < amount) return false;
+  let remaining = amount;
+  const ownerCities = cities.filter((c) => c.ownerId === ownerId);
+  const sorted = [...ownerCities].sort((a, b) => {
+    const curDiff = cityManpowerCurrent(b, epoka, maxMult) - cityManpowerCurrent(a, epoka, maxMult);
+    return curDiff !== 0 ? curDiff : a.id.localeCompare(b.id);
+  });
+  for (const c of sorted) {
+    if (remaining <= 0) break;
+    const cur = cityManpowerCurrent(c, epoka, maxMult);
+    const take = Math.min(cur, remaining);
+    if (take > 0) {
+      c.manpower = cur - take;
+      remaining -= take;
+    }
+  }
+  return remaining <= 0;
 }
 function refreshManpowerAfterPopChange(city, epoka, previousPop, maxMult = 1) {
   const max = cityManpowerMax(city.population, epoka, maxMult);
@@ -24068,7 +24219,7 @@ function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pa
 function getCityFood(city) {
   return readCityFoodBufferFromCity(city);
 }
-function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map(), resolveOwnerZlotoAccess = () => true) {
+function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map(), resolveOwnerZlotoAccess = () => true, manpowerHeal) {
   var _a9;
   const gameDifficulty = difficulty;
   const params = buildEconParams(data2, difficulty);
@@ -24448,6 +24599,19 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     const ounits = econUnits.filter((u) => u.ownerId === oid);
     const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
+  }
+  if (manpowerHeal) {
+    tickManpowerUnitReplenishment(
+      cities,
+      manpowerHeal.units,
+      difficulty,
+      resolveOwnerEra ?? ((oid) => oid === 0 ? playerEra : 1),
+      (oid) => {
+        const key = ownerCivByOwnerId.get(oid);
+        return key ? civBonusyForCivKey(key, data2.civs) : [];
+      },
+      manpowerHeal.getMaxHp
+    );
   }
   return result;
 }

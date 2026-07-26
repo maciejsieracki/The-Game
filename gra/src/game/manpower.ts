@@ -10,10 +10,17 @@
  *
  * Faza 2: odejmowanie przy rekrutacji z puli imperium (tryDeductUnitSpawnCostsEmpire).
  * Faza 2b: odnowa co turę (tickManpowerRegen) — parametry w miasto-params.json.
- * Faza 3: uzupełnianie wojska z puli — osobny batch.
+ * Faza 3: uzupełnianie HP jednostek z puli imperium (tickManpowerUnitReplenishment) —
+ *          po regen, przed końcem tury; parametry manpower_uzupelnienie_hp_proc_max_tura.
+ *
+ * Decyzje B-MP-Q1 (Maciej):
+ *   Q1a=B — leczenie % maxHP/turę (łatwy 25 / normalny 20 / trudny 15).
+ *   Q1b=A — częściowe leczenie gdy brak MP (proporcjonalnie do puli).
+ *   Q1c  — brak uzupełnienia w oblężonym mieście (hex miasta lub garnizon).
  */
 
 import type { City } from './cities';
+import { isCivilianUnit } from '../units/setup';
 import epokaTable from '../../data/epoka-ludnosc-manpower.json';
 import miastoParams from '../../data/miasto-params.json';
 
@@ -54,6 +61,182 @@ const DEFAULT_REGEN: ManpowerRegenParams = {
   regenProcMaxPerTurn: 2,
   blockWhenBesieged: true,
 };
+
+export type ManpowerDifficulty = 'easy' | 'normal' | 'hard';
+
+export interface ManpowerReplenishParams {
+  /** Procent maxHP leczony co turę (0–100). Łatwy 25 / Normalny 20 / Trudny 15. */
+  healPctMaxPerTurn: number;
+}
+
+const DEFAULT_REPLENISH_PCT: Record<ManpowerDifficulty, number> = {
+  easy: 25,
+  normal: 20,
+  hard: 15,
+};
+
+/** Parametry uzupełniania HP z miasto-params.json (per trudność). */
+export function loadManpowerReplenishParams(
+  difficulty: ManpowerDifficulty = 'normal',
+  raw: typeof miastoParams = miastoParams,
+): ManpowerReplenishParams {
+  const row = (raw as Record<string, unknown>).manpower_uzupelnienie_hp_proc_max_tura as
+    | Record<string, unknown>
+    | undefined;
+  const pick = (key: ManpowerDifficulty): number => {
+    const v = row?.[key];
+    if (typeof v === 'number' && Number.isFinite(v) && v >= 0) return v;
+    const fb = row?.normal;
+    if (typeof fb === 'number' && Number.isFinite(fb) && fb >= 0) return fb;
+    return DEFAULT_REPLENISH_PCT[key];
+  };
+  return { healPctMaxPerTurn: Math.min(100, pick(difficulty)) };
+}
+
+export interface ManpowerHealUnit {
+  id: string;
+  ownerId: number;
+  typeId: string;
+  category: string;
+  hp?: number;
+  hpMax?: number;
+  q?: number;
+  r?: number;
+  inGarnizon?: boolean;
+}
+
+type CityReplenishFields = Pick<City, 'id' | 'ownerId' | 'population' | 'manpower' | 'q' | 'r' | 'oblegane'>;
+
+/** Jednostka w oblężonym mieście (hex własnego miasta z oblegane=true lub garnizon takiego miasta). */
+export function isUnitInBesiegedLocation(
+  unit: Pick<ManpowerHealUnit, 'ownerId' | 'q' | 'r' | 'inGarnizon'>,
+  cities: ReadonlyArray<Pick<City, 'ownerId' | 'q' | 'r' | 'oblegane'>>,
+): boolean {
+  if (unit.q == null || unit.r == null) return false;
+  const city = cities.find(c => c.q === unit.q && c.r === unit.r);
+  if (!city || city.ownerId !== unit.ownerId) return false;
+  return city.oblegane === true;
+}
+
+/** Kolejność leczenia: garnizon (nie-oblężony) → pole; oblężone pomijane. */
+export function replenishmentUnitSortKey(
+  unit: ManpowerHealUnit,
+  cities: ReadonlyArray<Pick<City, 'ownerId' | 'q' | 'r' | 'oblegane'>>,
+): number {
+  if (isUnitInBesiegedLocation(unit, cities)) return 2;
+  if (unit.inGarnizon === true) return 0;
+  return 1;
+}
+
+export interface ManpowerReplenishResult {
+  healedCount: number;
+  totalMpSpent: number;
+}
+
+/** Ile HP można uleczyć w tej turze (cap wg trudności, bez kosztu MP). */
+export function manpowerHealCapForTurn(
+  maxHp: number,
+  curHp: number,
+  params: ManpowerReplenishParams,
+): number {
+  if (maxHp <= 0 || curHp <= 0 || curHp >= maxHp) return 0;
+  const cap = Math.floor(maxHp * params.healPctMaxPerTurn / 100);
+  return Math.max(0, Math.min(cap, maxHp - curHp));
+}
+
+/** Koszt Manpower za wskazane leczenie (proporcjonalnie do kosztu rekrutacji). */
+export function manpowerCostForHeal(
+  healHp: number,
+  maxHp: number,
+  unitCost: number,
+): number {
+  if (healHp <= 0 || maxHp <= 0 || unitCost <= 0) return 0;
+  return Math.min(unitCost, Math.ceil((healHp / maxHp) * unitCost));
+}
+
+/** Maks. HP do uleczenia przy ograniczonej puli Manpower (częściowe leczenie). */
+export function maxAffordableManpowerHeal(
+  desiredHeal: number,
+  maxHp: number,
+  unitCost: number,
+  availableMp: number,
+): number {
+  if (desiredHeal <= 0 || maxHp <= 0 || unitCost <= 0 || availableMp <= 0) return 0;
+  return Math.min(desiredHeal, Math.floor(availableMp * maxHp / unitCost));
+}
+
+/**
+ * Koniec tury (po tickManpowerRegen): leczy jednostki wojskowe z puli imperium.
+ * Parytet gracz + AI. HP nigdy nie spada od tego mechanizmu — tylko wzrost (bitwa osobno).
+ */
+export function tickManpowerUnitReplenishment(
+  cities: CityReplenishFields[],
+  units: ManpowerHealUnit[],
+  difficulty: ManpowerDifficulty,
+  resolveOwnerEra: (ownerId: number) => number,
+  resolveOwnerBonusy: (ownerId: number) => readonly CivBonusPoborLite[] | undefined,
+  getMaxHp: (typeId: string) => number,
+  rawMiastoParams?: typeof miastoParams,
+): ManpowerReplenishResult {
+  const params = loadManpowerReplenishParams(difficulty, rawMiastoParams);
+  if (params.healPctMaxPerTurn <= 0 || units.length === 0) {
+    return { healedCount: 0, totalMpSpent: 0 };
+  }
+
+  const byOwner = new Map<number, ManpowerHealUnit[]>();
+  for (const u of units) {
+    if (isCivilianUnit(u)) continue;
+    const list = byOwner.get(u.ownerId) ?? [];
+    list.push(u);
+    byOwner.set(u.ownerId, list);
+  }
+
+  let healedCount = 0;
+  let totalMpSpent = 0;
+
+  for (const [ownerId, ownerUnits] of byOwner) {
+    const epoka = resolveOwnerEra(ownerId);
+    const maxMult = civManpowerMaxMult(resolveOwnerBonusy(ownerId));
+    let empireMp = empireManpowerCurrent(cities, ownerId, epoka, maxMult);
+    if (empireMp <= 0) continue;
+
+    const sorted = [...ownerUnits].sort((a, b) => {
+      const keyDiff = replenishmentUnitSortKey(a, cities) - replenishmentUnitSortKey(b, cities);
+      return keyDiff !== 0 ? keyDiff : a.id.localeCompare(b.id);
+    });
+
+    for (const u of sorted) {
+      if (isUnitInBesiegedLocation(u, cities)) continue;
+
+      const maxHp = u.hpMax ?? getMaxHp(u.typeId);
+      if (maxHp <= 0) continue;
+      if (u.hpMax == null) u.hpMax = maxHp;
+      const curHp = u.hp == null ? maxHp : u.hp;
+      if (u.hp == null) u.hp = curHp;
+      if (curHp <= 0 || curHp >= maxHp) continue;
+
+      const unitCost = unitManpowerCostForType(u.typeId, epoka, maxMult);
+      if (unitCost <= 0 || isScoutTypeId(u.typeId)) continue;
+
+      const desiredHeal = manpowerHealCapForTurn(maxHp, curHp, params);
+      if (desiredHeal <= 0) continue;
+
+      const healHp = maxAffordableManpowerHeal(desiredHeal, maxHp, unitCost, empireMp);
+      if (healHp <= 0) continue;
+
+      const mpCost = manpowerCostForHeal(healHp, maxHp, unitCost);
+      if (mpCost <= 0) continue;
+      if (!deductManpowerFromEmpire(cities, ownerId, epoka, mpCost, maxMult)) continue;
+
+      empireMp -= mpCost;
+      totalMpSpent += mpCost;
+      u.hp = Math.min(maxHp, curHp + healHp);
+      healedCount++;
+    }
+  }
+
+  return { healedCount, totalMpSpent };
+}
 
 /** Parametry odnowy Manpower z miasto-params.json (Panel-B). */
 export function loadManpowerRegenParams(

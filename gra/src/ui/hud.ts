@@ -57,10 +57,11 @@ import './buildStampToggle';
 
 export type { PowerOverlayData, CultureOverlayData, ReligionOverlayData };
 
-/** Wojna z graczem — minimalny wpis na HUD mapy (A1-Q5). */
+/** Wojna z graczem — badge na ikonie Wojsko (lista dyplomacji). */
 export interface WarWithPlayer {
   civName: string;
   civId?: string;
+  ownerId?: number;
 }
 
 export interface HudState {
@@ -247,7 +248,6 @@ const TEREN_KOLOR_DEFAULT = '#3a4450';
 
 let cfg: HudConfig | null = null;
 let barEl: HTMLDivElement | null = null;
-let warStripEl: HTMLDivElement | null = null;
 let miniEl: HTMLDivElement | null = null;
 let miniCanvas: HTMLCanvasElement | null = null;
 let miniMounted = false;
@@ -469,13 +469,6 @@ function ensureStyles(): void {
 .civ-hud.is-city-view .hud-right-cluster .hud-right{flex-direction:column;align-items:stretch;gap:5px;}
 .civ-hud.is-city-view .hud-right-cluster .b-menu{height:36px;padding:0 10px;font-size:10px;letter-spacing:.12em;justify-content:center;}
 .civ-mini{position:fixed;left:20px;bottom:20px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
-.civ-war-strip{pointer-events:auto;position:fixed;top:46px;left:0;right:0;z-index:309;display:flex;flex-wrap:wrap;gap:6px;align-items:center;
-  padding:3px 12px;background:rgba(48,12,12,0.92);border-bottom:1px solid rgba(211,55,55,0.55);
-  font:12px var(--civ-font-ui);color:#ffd0cc;}
-.civ-war-strip .lbl{font-size:0.68em;text-transform:uppercase;letter-spacing:.06em;color:#ff9999;margin-right:4px;}
-.civ-war-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;cursor:pointer;
-  background:rgba(120,20,20,0.85);border:1px solid rgba(255,80,80,0.7);color:#ffe0e0;font-weight:600;}
-.civ-war-chip:hover{background:rgba(160,30,30,0.95);}
 .civ-mini-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#9aa6b6;font:11px monospace;text-align:center;}
 .civ-fs-hint{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;
   display:none;padding:6px 14px;border-radius:8px;pointer-events:none;
@@ -866,38 +859,9 @@ function renderBar(): void {
   barEl.innerHTML = useD1BLayout() ? renderBarD1B(s) : renderBarLegacy(s);
 }
 
-/** A1-Q5: minimalny pasek — tylko wrogowie prowadzący wojnę z graczem. */
-function renderWarStrip(): void {
-  if (cfg === null) return;
-  if (warStripEl === null) {
-    warStripEl = document.createElement('div');
-    warStripEl.className = 'civ-war-strip';
-    document.body.appendChild(warStripEl);
-  }
-  const wars = cfg.getWarsWithPlayer?.() ?? [];
-  if (wars.length === 0) {
-    warStripEl.style.display = 'none';
-    return;
-  }
-  warStripEl.style.display = 'flex';
-  let html = '<span class="lbl">Wojna z:</span>';
-  for (const w of wars) {
-    html += '<button type="button" class="civ-war-chip" data-civ="' + escAttr(w.civName) + '">'
-      + '<span class="swords">\u2694\uFE0F</span><span>' + escHtml(w.civName) + '</span></button>';
-  }
-  warStripEl.innerHTML = html;
-  warStripEl.querySelectorAll('.civ-war-chip').forEach(btn => {
-    btn.addEventListener('click', () => { cfg?.onOpenDiplomacy?.(); });
-  });
-}
-
 function escHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
-function escAttr(s: string): string {
-  return escHtml(s).replace(/"/g, '&quot;');
-}
-
 // ---------------------------------------------------------------------------
 // Minimapa — wariant B: rysowanie na canvas
 // ---------------------------------------------------------------------------
@@ -1163,7 +1127,6 @@ function applyMapChromeVisibility(): void {
     barEl.style.zIndex = mapChromeSuppressed ? '404' : '310';
     barEl.classList.toggle('is-city-view', mapChromeSuppressed);
   }
-  if (warStripEl !== null) warStripEl.style.display = showMapChrome ? '' : 'none';
   if (minimapApi !== null) minimapApi.el.style.display = showMapChrome ? 'flex' : 'none';
   if (sidePanelApi !== null) sidePanelApi.el.style.display = showMapChrome ? 'flex' : 'none';
   if (bottomBarApi !== null) bottomBarApi.el.style.display = showMapChrome ? 'flex' : 'none';
@@ -1231,7 +1194,6 @@ export function showHud(config: HudConfig): void {
     miniCanvas = null;
   }
   renderBar();
-  renderWarStrip();
   mountMinimap();
   mountSidePanel();
   mountBottomBar();
@@ -1247,7 +1209,6 @@ export function showHud(config: HudConfig): void {
 /** Odswiez wartosci HUD (po turze / zmianie stanu) — odswieza tez minimape B. */
 export function updateHud(): void {
   renderBar();
-  renderWarStrip();
   refreshMinimap();
   refreshSidePanel();
   refreshD1BModules();
@@ -1260,7 +1221,6 @@ export function hideHud(): void {
   hidePowerOverlay();
   hideEmpireOverlay();
   if (barEl !== null) barEl.style.display = 'none';
-  if (warStripEl !== null) warStripEl.style.display = 'none';
   if (miniEl !== null) miniEl.style.display = 'none';
   if (minimapApi !== null) minimapApi.el.style.display = 'none';
   if (sidePanelApi !== null) sidePanelApi.el.style.display = 'none';

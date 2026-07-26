@@ -74,6 +74,20 @@ import {
 
   refundManpowerToEmpire,
 
+  tickManpowerUnitReplenishment,
+
+  loadManpowerReplenishParams,
+
+  manpowerHealCapForTurn,
+
+  manpowerCostForHeal,
+
+  maxAffordableManpowerHeal,
+
+  isUnitInBesiegedLocation,
+
+  replenishmentUnitSortKey,
+
 } from '../src/game/manpower';
 
 
@@ -123,6 +137,20 @@ module.exports = {
   deductManpowerFromEmpire,
 
   refundManpowerToEmpire,
+
+  tickManpowerUnitReplenishment,
+
+  loadManpowerReplenishParams,
+
+  manpowerHealCapForTurn,
+
+  manpowerCostForHeal,
+
+  maxAffordableManpowerHeal,
+
+  isUnitInBesiegedLocation,
+
+  replenishmentUnitSortKey,
 
 };
 
@@ -344,6 +372,83 @@ ok(mp.empireManpowerCurrent(empCities, 0, 1) === 400, 'empire po werbie: 400 MP'
 const beforeRefund = mp.empireManpowerCurrent(empCities, 0, 1);
 mp.refundManpowerToEmpire(empCities, 0, 1, 1000, 1);
 ok(mp.empireManpowerCurrent(empCities, 0, 1) === beforeRefund + 1000, 'zwrot MP do puli imperium');
+
+// Faza 3: uzupełnianie HP z puli Manpower
+const healParamsEasy = mp.loadManpowerReplenishParams('easy');
+const healParamsHard = mp.loadManpowerReplenishParams('hard');
+ok(healParamsEasy.healPctMaxPerTurn === 25, 'uzupelnienie easy 25%');
+ok(healParamsHard.healPctMaxPerTurn === 15, 'uzupelnienie hard 15%');
+ok(mp.manpowerHealCapForTurn(100, 10, healParamsEasy) === 25, 'cap leczenia 25% maxHP');
+ok(mp.manpowerCostForHeal(25, 100, 1000) === 250, 'koszt MP proporcjonalny do leczenia');
+
+const healCities = [{ id: 'h1', ownerId: 0, population: 10, manpower: 5000, q: 0, r: 0, oblegane: false }];
+const healUnit = { id: 'u1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 3, r: 3 };
+const healRes = mp.tickManpowerUnitReplenishment(
+  healCities,
+  [healUnit],
+  'normal',
+  () => 1,
+  () => [],
+  () => 100,
+);
+ok(healRes.healedCount === 1 && healUnit.hp === 30, 'normal: +20 HP (20% z 100)');
+ok(healRes.totalMpSpent === 200, 'normal: koszt 200 MP');
+ok(healCities[0].manpower === 4800, 'normal: pula -200 MP');
+
+const lowMpCities = [{ id: 'h2', ownerId: 0, population: 10, manpower: 50, q: 0, r: 0, oblegane: false }];
+const lowMpUnit = { id: 'u2', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 4, r: 4 };
+const lowMpRes = mp.tickManpowerUnitReplenishment(
+  lowMpCities,
+  [lowMpUnit],
+  'normal',
+  () => 1,
+  () => [],
+  () => 100,
+);
+ok(lowMpRes.healedCount === 1 && lowMpUnit.hp === 15, 'czesciowe leczenie przy malo MP (+5 HP)');
+ok(lowMpRes.totalMpSpent === 50, 'czesciowe: wydano cala dostepna pule 50 MP');
+
+const multiTurnUnit = { id: 'u3', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 1, hpMax: 100, q: 6, r: 6 };
+const multiCities = [{ id: 'h3', ownerId: 0, population: 10, manpower: 100_000, q: 0, r: 0, oblegane: false }];
+for (let t = 0; t < 3; t++) {
+  mp.tickManpowerUnitReplenishment(multiCities, [multiTurnUnit], 'easy', () => 1, () => [], () => 100);
+}
+ok(multiTurnUnit.hp === 76, 'easy: 3 tury z 1 HP do 76 (25/ture)');
+
+// B-MP-Q1c: brak leczenia w oblężonym mieście (hex lub garnizon)
+const siegeCities = [{ id: 's1', ownerId: 0, population: 10, manpower: 5000, q: 5, r: 5, oblegane: true }];
+const siegeGarnUnit = { id: 'sg', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 5, r: 5, inGarnizon: true };
+ok(mp.isUnitInBesiegedLocation(siegeGarnUnit, siegeCities), 'garnizon w obleganym miescie = blokada');
+const siegeRes = mp.tickManpowerUnitReplenishment(siegeCities, [siegeGarnUnit], 'normal', () => 1, () => [], () => 100);
+ok(siegeRes.healedCount === 0 && siegeGarnUnit.hp === 10, 'oblezenie: brak leczenia garnizonu');
+ok(siegeCities[0].manpower === 5000, 'oblezenie: pula MP bez zmian');
+
+const siegeHexUnit = { id: 'sh', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 20, hpMax: 100, q: 5, r: 5 };
+const siegeHexRes = mp.tickManpowerUnitReplenishment(siegeCities, [siegeHexUnit], 'normal', () => 1, () => [], () => 100);
+ok(siegeHexRes.healedCount === 0 && siegeHexUnit.hp === 20, 'oblezenie: brak leczenia na hexie miasta');
+
+// Pole poza oblężeniem leczy się normalnie
+const mixCities = [
+  { id: 'ok', ownerId: 0, population: 10, manpower: 5000, q: 1, r: 1, oblegane: false },
+  { id: 'bad', ownerId: 0, population: 10, manpower: 5000, q: 5, r: 5, oblegane: true },
+];
+const fieldOk = { id: 'fo', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 10, r: 10 };
+const mixRes = mp.tickManpowerUnitReplenishment(mixCities, [fieldOk], 'normal', () => 1, () => [], () => 100);
+ok(mixRes.healedCount === 1 && fieldOk.hp === 30, 'pole poza oblezeniem: +20 HP');
+
+// Garnizon pierwszy przy ograniczonej puli MP
+const orderCities = [{ id: 'oc', ownerId: 0, population: 10, manpower: 200, q: 1, r: 1, oblegane: false }];
+const garUnit = { id: 'g1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 1, r: 1, inGarnizon: true };
+const fldUnit = { id: 'f1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 8, r: 8 };
+mp.tickManpowerUnitReplenishment(orderCities, [fldUnit, garUnit], 'normal', () => 1, () => [], () => 100);
+ok(garUnit.hp === 30 && fldUnit.hp === 10, 'garnizon leczony przed jednostka w polu przy malo MP');
+ok(orderCities[0].manpower === 0, 'garnizon: wydano cala pule 200 MP');
+
+// Zwiadowca pomijany (koszt MP = 0)
+const scoutCities = [{ id: 'sc', ownerId: 0, population: 10, manpower: 5000, q: 0, r: 0, oblegane: false }];
+const scoutUnit = { id: 'zs', ownerId: 0, typeId: 'Zwiadowca', category: 'zwiadowca', hp: 5, hpMax: 20, q: 2, r: 2 };
+const scoutRes = mp.tickManpowerUnitReplenishment(scoutCities, [scoutUnit], 'normal', () => 1, () => [], () => 20);
+ok(scoutRes.healedCount === 0 && scoutUnit.hp === 5, 'zwiadowca: brak leczenia z puli MP');
 
 console.log(`[manpower-test] ${pass} OK, ${fail} FAIL`);
 
