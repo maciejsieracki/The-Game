@@ -6997,6 +6997,18 @@ var NH_LEG_TOP_R = 0.2 * HEX_R;
 // src/render/styleResources.ts
 var S = 2.05 / 3;
 
+// src/render/kopalnia-zlota-opus5.ts
+var _a = new Vector3();
+var _b = new Vector3();
+var _dir = new Vector3();
+var _up = new Vector3(0, 1, 0);
+var SL_TILT = 0.4;
+var SL_YAW = 0.55;
+var SL_Q = new Quaternion().setFromEuler(
+  new Euler(SL_TILT, SL_YAW, 0, "YXZ")
+);
+var _sl = new Vector3();
+
 // data/terrain-yields.json
 var terrain_yields_default = {
   terrain_types: [

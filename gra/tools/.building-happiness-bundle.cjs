@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.building-happiness-entry.ts
+// ../../../gra/tools/.building-happiness-entry.ts
 var building_happiness_entry_exports = {};
 __export(building_happiness_entry_exports, {
   BUILDING_HAPPINESS_BASE_PER_BUILDING: () => BUILDING_HAPPINESS_BASE_PER_BUILDING,
@@ -27,7 +27,7 @@ __export(building_happiness_entry_exports, {
 });
 module.exports = __toCommonJS(building_happiness_entry_exports);
 
-// data/terrain-yields.json
+// ../../../gra/data/terrain-yields.json
 var terrain_yields_default = {
   terrain_types: [
     {
@@ -125,7 +125,7 @@ var terrain_yields_default = {
   ]
 };
 
-// data/epoka-ludnosc-manpower.json
+// ../../../gra/data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
   _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
   _formuly: {
@@ -147,7 +147,7 @@ var epoka_ludnosc_manpower_default = {
   ]
 };
 
-// data/miasto-params.json
+// ../../../gra/data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
     wartosc: 5,
@@ -271,10 +271,10 @@ var miasto_params_default = {
   }
 };
 
-// src/game/manpower.ts
+// ../../../gra/src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 
-// data/terrain-improvements.json
+// ../../../gra/data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
     opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
@@ -608,11 +608,11 @@ var terrain_improvements_default = {
   }
 };
 
-// src/game/terrain-improvements.ts
+// ../../../gra/src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
 
-// src/game/building-resource-gate.ts
+// ../../../gra/src/game/building-resource-gate.ts
 var LABEL_BY_ASCII = {
   drewno: "Drewno",
   kamien: "Kamie\u0144",
@@ -629,7 +629,7 @@ var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
 
-// src/game/production.ts
+// ../../../gra/src/game/production.ts
 function buildingEffectAtLevel(baza, przyrost, level) {
   const n = Math.max(1, Math.floor(level));
   return baza + przyrost * (n - 1);
@@ -651,7 +651,7 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
   rozwoj: miasto_params_default.udzial_output_rozwoj?.wartosc ?? 0.1
 });
 
-// src/game/economy.ts
+// ../../../gra/src/game/economy.ts
 var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 var TERRAIN_NAME_TO_ENUM = {
   "\u0141\u0105ka": "laka" /* Laka */,
@@ -709,10 +709,10 @@ function sumBuildingHappinessFromBuiltIds(builtIds, catalog, levelFor) {
   return sum;
 }
 
-// src/map/road-movement.ts
+// ../../../gra/src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
-// src/units/setup.ts
+// ../../../gra/src/units/setup.ts
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -724,7 +724,7 @@ var DEFAULT_TERRAIN_COSTS = {
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
-// src/game/cities.ts
+// ../../../gra/src/game/cities.ts
 var DEFAULT_PODZIAL_HANDLU = {
   procentNauka: 20,
   procentPieniadz: 60,
@@ -732,7 +732,7 @@ var DEFAULT_PODZIAL_HANDLU = {
 };
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
-// src/game/order.ts
+// ../../../gra/src/game/order.ts
 var FALLBACK_ORDER_PARAMS = Object.freeze({
   wagaSzczescie: 0.5,
   wagaPrawo: 0.5,
@@ -748,7 +748,7 @@ var FALLBACK_ORDER_PARAMS = Object.freeze({
   bonusHandelT2: 0.1
 });
 
-// src/game/society-breakdown.ts
+// ../../../gra/src/game/society-breakdown.ts
 var SZMAX_DEFAULTS = { 1: 14, 2: 20, 3: 28 };
 var SZ_PCT_CAP = 120;
 function pickOsiedlePopBonus(block, key, pop, difficulty, legacyFlatFallback = 0) {

@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.prawo-palac-tier-entry.ts
+// ../../../gra/tools/.prawo-palac-tier-entry.ts
 var prawo_palac_tier_entry_exports = {};
 __export(prawo_palac_tier_entry_exports, {
   cityHasPalacLine: () => cityHasPalacLine,
@@ -26,7 +26,7 @@ __export(prawo_palac_tier_entry_exports, {
 });
 module.exports = __toCommonJS(prawo_palac_tier_entry_exports);
 
-// data/terrain-improvements.json
+// ../../../gra/data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
     opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
@@ -323,6 +323,21 @@ var terrain_improvements_default = {
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
   },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+  },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
     epoka: 2,
@@ -345,14 +360,14 @@ var terrain_improvements_default = {
   }
 };
 
-// src/game/terrain-improvements.ts
+// ../../../gra/src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
 
-// src/map/road-movement.ts
+// ../../../gra/src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
-// src/units/setup.ts
+// ../../../gra/src/units/setup.ts
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -364,7 +379,7 @@ var DEFAULT_TERRAIN_COSTS = {
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
-// data/epoka-ludnosc-manpower.json
+// ../../../gra/data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
   _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
   _formuly: {
@@ -386,7 +401,7 @@ var epoka_ludnosc_manpower_default = {
   ]
 };
 
-// data/miasto-params.json
+// ../../../gra/data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
     wartosc: 5,
@@ -510,10 +525,10 @@ var miasto_params_default = {
   }
 };
 
-// src/game/manpower.ts
+// ../../../gra/src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 
-// src/game/building-resource-gate.ts
+// ../../../gra/src/game/building-resource-gate.ts
 var LABEL_BY_ASCII = {
   drewno: "Drewno",
   kamien: "Kamie\u0144",
@@ -530,7 +545,7 @@ var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
 
-// src/game/building-upgrades.ts
+// ../../../gra/src/game/building-upgrades.ts
 function cityHasPalacLine(builtIds) {
   return builtIds.includes("palac") || builtIds.includes("palac_ii") || builtIds.includes("palac_iii");
 }
@@ -541,7 +556,7 @@ function cityPalacTier(builtIds) {
   return null;
 }
 
-// src/game/production.ts
+// ../../../gra/src/game/production.ts
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
   Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
@@ -559,10 +574,10 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
   rozwoj: miasto_params_default.udzial_output_rozwoj?.wartosc ?? 0.1
 });
 
-// src/game/cities.ts
+// ../../../gra/src/game/cities.ts
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
-// src/game/order.ts
+// ../../../gra/src/game/order.ts
 var FALLBACK_ORDER_PARAMS = Object.freeze({
   wagaSzczescie: 0.5,
   wagaPrawo: 0.5,
@@ -578,7 +593,7 @@ var FALLBACK_ORDER_PARAMS = Object.freeze({
   bonusHandelT2: 0.1
 });
 
-// src/game/society-breakdown.ts
+// ../../../gra/src/game/society-breakdown.ts
 var PRAWMAX_DEFAULTS = { 1: 50, 2: 75, 3: 100 };
 var PRAW_PCT_CAP = 100;
 function pickOsiedlePopBonus(block, key, pop, difficulty, legacyFlatFallback = 0) {

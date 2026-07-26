@@ -1467,7 +1467,7 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
       const zoneShareMul = cellZone === "temperate" ? 1.35 : 1;
       const minForest = typ === "pangea" ? 0 : 1;
       const target = Math.max(minForest, Math.round(eligible.length * share * zoneShareMul));
-      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * 0.18)));
+      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * FOREST_OVERLAY_CAP_FRAC)));
       for (let i = 0; i < Math.min(cap, eligible.length); i++) {
         hexes[eligible[i].k].nakladka = "las" /* Las */;
         assigned++;
@@ -1726,10 +1726,11 @@ function landPartitionKeysForDistribution(hexes, typ, continentOf, nContinents) 
   return groupLandMassKeys(hexes);
 }
 var FOREST_SHARE_OF_DRY_LAND = {
-  low: 0.22,
-  medium: 0.36,
-  high: 0.5
+  low: 0.38,
+  medium: 0.58,
+  high: 0.95
 };
+var FOREST_OVERLAY_CAP_FRAC = 0.95;
 function applyReliefToLandKeys(hexes, scratch, tier, keys, width, height) {
   if (keys.length === 0) return;
   applyIronMountainsToLandKeys(hexes, scratch, tier, keys, width, height);

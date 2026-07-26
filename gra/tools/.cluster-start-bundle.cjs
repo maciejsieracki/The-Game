@@ -236,7 +236,8 @@ var map_gen_params_default = {
     glina: { rarity: 0.1 },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    sol: { rarity: 0.12 }
+    sol: { rarity: 0.12 },
+    zloto: { rarity: 0.03 }
   },
   metal_deposit_min_era: {
     miedz: 2,
@@ -281,7 +282,10 @@ var FALLBACK_DEPOSIT_RARITY = {
   wegiel: 0.1,
   owce: 0.08,
   bydlo: 0.07,
-  sol: 0.12
+  sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03
 };
 function tierKey(t) {
   return t;
@@ -572,7 +576,8 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol"
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -666,9 +671,10 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "klucz 'ruda' wg Surowiec='Ruda' w resources.json; brak pola id \u2014 propozycja EKONOMIA, wymaga uzgodnienia z DANE",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wydobycie rudy do magazynu",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
     tech: "Murarstwo",
     odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
@@ -681,7 +687,8 @@ var terrain_improvements_default = {
       glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 5,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -696,7 +703,8 @@ var terrain_improvements_default = {
       kamien: 1
     },
     surowiecOdblokowany: "kamien",
-    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba",
+    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    surowiec_ilosc_tura: 4,
     teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
     warunek: "budulec \u2014 mury, budynki",
     koszt_praca: 22,
@@ -725,7 +733,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -743,12 +751,13 @@ var terrain_improvements_default = {
       praca: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "v0.1: tylko dost\u0119p boolean (panel Surowce) \u2014 bez liczenia ilo\u015Bci w magazynie",
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
+    surowiec_ilosc_tura: 4,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
     tech: "Obr\xF3bka drewna",
-    odblokowuje: "Deski (z budynkiem miejskim Tartak)"
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
   },
   tarasy: {
     nazwa: "Tarasy uprawne",
@@ -788,8 +797,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "z\u0142o\u017Ce soli (Pustynia/R\xF3wnina \u2014 hex.zloze=sol)",
-    warunek: "s\xF3l (konserwacja \u017Cywno\u015Bci + handel); bez wybrze\u017Ca bez z\u0142o\u017Ca",
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
     tech: "Garncarstwo",
     odblokowuje: "S\xF3l"
@@ -846,12 +855,29 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wst\u0119pne przetwarzanie rudy (przed Odlewni\u0105 w mie\u015Bcie)",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+  },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
   },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
@@ -1068,9 +1094,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     purgeOceanInsideEarthLandMask(hexes, width, height);
   }
   finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 2);
-  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
-  finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 1);
   ensureReliefGridCoverage(
     hexes,
     terrainScratch,
@@ -1083,7 +1106,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     rand
   );
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
@@ -1114,10 +1136,12 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     wgn.riverTrace.maxLen
   );
   stripRiverMarksFromOpenSea(hexes);
-  stripDepositsFromWater(hexes);
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   flattenFalseCoastalRiverNotches(hexes, width, height);
+  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
+  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+  stripDepositsFromWater(hexes);
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
     minDist: 5,
@@ -1137,6 +1161,10 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   for (const site of villageSites) {
     const hex = hexes[`${site.q},${site.r}`];
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
+  }
+  if (typ === "ziemia") {
+    enforceEarthTemplateOnHexes(hexes, width, height);
+    purgeOceanInsideEarthLandMask(hexes, width, height);
   }
   return {
     szerokoscQ: width,
@@ -1745,6 +1773,31 @@ var EARTH_MASK_ROWS = [
 
 // src/map/earth-land-mask.ts
 var EARTH_PLAYABLE_BORDER = 2;
+var EARTH_POLAR_OCEAN_REF_ROWS = 30;
+var EARTH_POLAR_OCEAN_REF_INNER_H = 115;
+function earthNorthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthSouthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthPolarOceanRows(height) {
+  const innerH = earthPlayableInnerHeight(height);
+  return Math.max(2, Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H));
+}
+function earthPlayableInnerHeight(height) {
+  const b = EARTH_PLAYABLE_BORDER;
+  return Math.max(1, height - 1 - 2 * b);
+}
+function earthPlayableInnerWidth(width) {
+  const b = EARTH_PLAYABLE_BORDER;
+  return Math.max(1, width - 1 - 2 * b);
+}
+function earthLandMapRows(height) {
+  const innerH = earthPlayableInnerHeight(height);
+  const polar = earthPolarOceanRows(height);
+  return Math.max(1, innerH - polar * 2);
+}
 function bitAt(x, y) {
   const xi = Math.min(EARTH_MASK_W - 1, Math.max(0, x));
   const yi = Math.min(EARTH_MASK_H - 1, Math.max(0, y));
@@ -1768,10 +1821,16 @@ function sampleEarthTemplateLand(nq, nr) {
 function earthHexToTemplateNorm(q, r, width, height) {
   const b = EARTH_PLAYABLE_BORDER;
   if (q < b || r < b || q >= width - b || r >= height - b) return null;
-  const innerW = Math.max(1, width - 1 - 2 * b);
-  const innerH = Math.max(1, height - 1 - 2 * b);
+  const innerW = earthPlayableInnerWidth(width);
+  const innerH = earthPlayableInnerHeight(height);
+  const north = earthNorthOceanRows(height);
+  const south = earthSouthOceanRows(height);
+  const relR = r - b;
+  if (relR < north) return null;
+  if (relR >= innerH - south) return null;
+  const landRows = earthLandMapRows(height);
+  const pr = (relR - north) / Math.max(1, landRows - 1);
   const pq = (q - b) / innerW;
-  const pr = (r - b) / innerH;
   const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   return {
     nq: minX + pq * (maxX - minX),
@@ -1795,12 +1854,10 @@ function earthLandFractionThreshold(width, height) {
 function earthTemplateLandAt(q, r, width, height) {
   const t = earthHexToTemplateNorm(q, r, width, height);
   if (!t) return 0;
-  const b = EARTH_PLAYABLE_BORDER;
-  const innerW = Math.max(1, width - 1 - 2 * b);
-  const innerH = Math.max(1, height - 1 - 2 * b);
+  const innerW = earthPlayableInnerWidth(width);
   const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   const cellW = (maxX - minX) / innerW;
-  const cellH = (maxY - minY) / innerH;
+  const cellH = (maxY - minY) / Math.max(1, earthLandMapRows(height));
   const steps = earthSubsampleGrid(width, height);
   if (steps <= 1) return sampleEarthTemplateLand(t.nq, t.nr);
   let landHits = 0;
@@ -2220,7 +2277,7 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
       const zoneShareMul = cellZone === "temperate" ? 1.35 : 1;
       const minForest = typ === "pangea" ? 0 : 1;
       const target = Math.max(minForest, Math.round(eligible.length * share * zoneShareMul));
-      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * 0.18)));
+      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * FOREST_OVERLAY_CAP_FRAC)));
       for (let i = 0; i < Math.min(cap, eligible.length); i++) {
         hexes[eligible[i].k].nakladka = "las" /* Las */;
         assigned++;
@@ -2479,10 +2536,11 @@ function landPartitionKeysForDistribution(hexes, typ, continentOf, nContinents) 
   return groupLandMassKeys(hexes);
 }
 var FOREST_SHARE_OF_DRY_LAND = {
-  low: 0.22,
-  medium: 0.36,
-  high: 0.5
+  low: 0.38,
+  medium: 0.58,
+  high: 0.95
 };
+var FOREST_OVERLAY_CAP_FRAC = 0.95;
 function applyReliefToLandKeys(hexes, scratch, tier, keys, width, height) {
   if (keys.length === 0) return;
   applyIronMountainsToLandKeys(hexes, scratch, tier, keys, width, height);
@@ -2859,6 +2917,92 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
   return fixed;
 }
 var MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.4;
+var MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
+var MOUNTAIN_RANGE_REGROW_MIN_GAP = 1;
+var MOUNTAIN_RANGE_REGROW_TARGET_MULT = 1;
+var MOUNTAIN_RANGE_REGROW_LEN_MIN = 4;
+var MOUNTAIN_RANGE_REGROW_LEN_MAX = 8;
+function findSameTerrainClusters(hexes, terrain) {
+  const visited = /* @__PURE__ */ new Set();
+  const clusters = [];
+  const keys = Object.keys(hexes).sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const hex = hexes[key];
+    if (!hex || hex.terenBazowy !== terrain) continue;
+    const cluster = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      cluster.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk)) continue;
+        const nh = hexes[nk];
+        if (!nh || nh.terenBazowy !== terrain) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+function connectedComponentsWithin(remaining) {
+  const visited = /* @__PURE__ */ new Set();
+  const comps = [];
+  const keys = [...remaining].sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const comp = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      comp.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk) || !remaining.has(nk)) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    comps.push(comp);
+  }
+  return comps;
+}
+function capMountainRangeClusterSize(hexes, scratch, terrain, fallbackTerrain, maxSize) {
+  let reverted = 0;
+  const clusters = findSameTerrainClusters(hexes, terrain);
+  for (const cluster of clusters) {
+    if (cluster.length <= maxSize) continue;
+    const remaining = new Set(cluster);
+    for (; ; ) {
+      const comps = connectedComponentsWithin(remaining).sort((a, b) => b.length - a.length);
+      const biggest = comps[0];
+      if (!biggest || biggest.length <= maxSize) break;
+      const sorted = [...biggest].sort((a, b) => {
+        const na = scratch.get(a)?.mtnNoise ?? 0;
+        const nb = scratch.get(b)?.mtnNoise ?? 0;
+        if (na !== nb) return na - nb;
+        return a < b ? -1 : a > b ? 1 : 0;
+      });
+      const victim = sorted[0];
+      remaining.delete(victim);
+      const hex = hexes[victim];
+      if (hex) {
+        hex.terenBazowy = fallbackTerrain;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+      }
+      reverted++;
+    }
+  }
+  return reverted;
+}
 function mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand) {
   return mass.filter((k) => {
     const hex = hexes[k];
@@ -2886,6 +3030,138 @@ function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
     path.push(cur);
   }
   return path;
+}
+function bfsExpandExclusion(hexes, excluded, sources, minDist) {
+  const queue = [];
+  for (const k of sources) {
+    if (!excluded.has(k)) excluded.add(k);
+    queue.push({ k, d: 0 });
+  }
+  let head = 0;
+  while (head < queue.length) {
+    const { k, d } = queue[head++];
+    if (d >= minDist) continue;
+    const { q, r } = parseHexKey(k);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (excluded.has(nk)) continue;
+      if (!hexes[nk]) continue;
+      excluded.add(nk);
+      queue.push({ k: nk, d: d + 1 });
+    }
+  }
+}
+function isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  if (n > mtnTh) return excludedGory.has(k);
+  if (n > hiTh) return excludedWzgorza.has(k);
+  return false;
+}
+function walkMountainRangeAvoiding(hexes, scratch, width, height, rand, start, steps, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  const path = [];
+  const visited = /* @__PURE__ */ new Set([start]);
+  let cur = start;
+  for (let i = 0; i < steps; i++) {
+    const { q, r } = parseHexKey(cur);
+    const candidates = HEX_DIRECTIONS.map(([dq, dr]) => hexKey(q + dq, r + dr)).filter((k) => {
+      if (visited.has(k)) return false;
+      const hex = hexes[k];
+      if (!hex) return false;
+      const { q: nq, r: nr } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, nq, nr, width, height)) return false;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.3 })).sort((a, b) => b.n - a.n);
+    if (candidates.length === 0) break;
+    cur = candidates[0].k;
+    visited.add(cur);
+    path.push(cur);
+  }
+  return path;
+}
+function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses, mtnTh, hiTh, deficit) {
+  if (deficit <= 0 || masses.length === 0) return 0;
+  const excludedGory = /* @__PURE__ */ new Set();
+  const excludedWzgorza = /* @__PURE__ */ new Set();
+  const initialGory = [];
+  const initialWzgorza = [];
+  for (const key of Object.keys(hexes).sort()) {
+    const hex = hexes[key];
+    if (hex.terenBazowy === "gory" /* Gory */) initialGory.push(key);
+    else if (hex.terenBazowy === "wzgorza" /* Wzgorza */) initialWzgorza.push(key);
+  }
+  bfsExpandExclusion(hexes, excludedGory, initialGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  bfsExpandExclusion(hexes, excludedWzgorza, initialWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  let recovered = 0;
+  let massIdx = 0;
+  let attemptsSinceProgress = 0;
+  const maxAttemptsSinceProgress = masses.length * 40 + 200;
+  while (recovered < deficit && attemptsSinceProgress < maxAttemptsSinceProgress) {
+    const mass = masses[massIdx % masses.length];
+    massIdx++;
+    const seedCandidates = mass.filter((k) => {
+      const hex = hexes[k];
+      if (!hex) return false;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) return false;
+      const { q, r } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, q, r, width, height)) return false;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.15 })).sort((a, b) => b.n - a.n);
+    if (seedCandidates.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    const seedKey = seedCandidates[0].k;
+    const len = MOUNTAIN_RANGE_REGROW_LEN_MIN + Math.floor(rand() * (MOUNTAIN_RANGE_REGROW_LEN_MAX - MOUNTAIN_RANGE_REGROW_LEN_MIN + 1));
+    const path = [seedKey, ...walkMountainRangeAvoiding(
+      hexes,
+      scratch,
+      width,
+      height,
+      rand,
+      seedKey,
+      len,
+      mtnTh,
+      hiTh,
+      excludedGory,
+      excludedWzgorza
+    )];
+    const placedGory = [];
+    const placedWzgorza = [];
+    for (const k of path) {
+      const hex = hexes[k];
+      if (!hex) continue;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) continue;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      if (isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza)) continue;
+      if (n > mtnTh) {
+        hex.terenBazowy = "gory" /* Gory */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedGory.push(k);
+        recovered++;
+      } else if (n > hiTh) {
+        hex.terenBazowy = "wzgorza" /* Wzgorza */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedWzgorza.push(k);
+        recovered++;
+      }
+    }
+    if (placedGory.length === 0 && placedWzgorza.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    attemptsSinceProgress = 0;
+    if (placedGory.length > 0) {
+      bfsExpandExclusion(hexes, excludedGory, placedGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (placedWzgorza.length > 0) {
+      bfsExpandExclusion(hexes, excludedWzgorza, placedWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (recovered >= deficit) break;
+  }
+  return recovered;
 }
 function growMountainRanges(hexes, scratch, tier, width, height, rand) {
   const params = mapGenMountainRangeParams(tier);
@@ -3019,6 +3295,45 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
       mountainous--;
     }
   }
+  const mtnReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  const hiReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  regrowLostMountainClusters(
+    hexes,
+    scratch,
+    width,
+    height,
+    rand,
+    masses,
+    mtnTh,
+    hiTh,
+    Math.round((mtnReverted + hiReverted) * MOUNTAIN_RANGE_REGROW_TARGET_MULT)
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return addedByThisRun.length;
 }
 function assignContinentIndices(width, height, centers) {
@@ -5320,7 +5635,10 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "glina",
     nakladka: "zloze_gliny" /* ZlozeGliny */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || isLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true),
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
     rarity: 0.1
   },
   {
@@ -5342,8 +5660,25 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "sol",
     nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "pustynia" /* Pustynia */ || h.terenBazowy === "rownina" /* Rownina */),
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
     rarity: 0.12
+  },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: "zloto",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    rarity: 0.03
   }
 ];
 var _depositRarities = mapGenAllDepositRarities();
@@ -5366,7 +5701,8 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
     wegiel: 0,
     owce: 0,
     bydlo: 0,
-    sol: 0
+    sol: 0,
+    zloto: 0
   };
   for (const key of keys) {
     const hex = hexes[key];
@@ -5374,8 +5710,10 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
     if (hex.nakladka !== "brak" /* Brak */) continue;
     if (hex.zloze) continue;
     if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) continue;
+    const [depQ, depR] = key.split(",").map(Number);
     for (const rule of rules) {
       if (!rule.allowedOn(hex)) continue;
+      if (rule.requiresCoastalLand && !isCoastalLandHex(hexes, depQ, depR)) continue;
       if (rand() < Math.min(1, rule.rarity * baselineMult * resourceMult)) {
         if (rule.nakladka !== null) {
           hex.nakladka = rule.nakladka;
@@ -5419,9 +5757,8 @@ function cellCarriesDepositType(cellLand, hexes, id) {
   return false;
 }
 function hexCanAcceptDeposit(hex, rule, allowForestClear) {
-  if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-    return false;
-  }
+  if (hex.terenBazowy === "morze" /* Morze */) return false;
+  if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
   if (hex.zloze) return false;
   if (hex.nakladka !== "brak" /* Brak */) {
     if (!allowForestClear || hex.nakladka !== "las" /* Las */) return false;
@@ -5450,17 +5787,11 @@ function prepareTerrainForDeposit(hex, rule) {
     case "owce":
       hex.terenBazowy = "wzgorza" /* Wzgorza */;
       break;
-    case "glina":
-      hex.terenBazowy = "laka" /* Laka */;
-      break;
     case "konie":
       hex.terenBazowy = "rownina" /* Rownina */;
       break;
     case "bydlo":
       hex.terenBazowy = "laka" /* Laka */;
-      break;
-    case "sol":
-      hex.terenBazowy = "pustynia" /* Pustynia */;
       break;
     default:
       break;
@@ -5469,14 +5800,15 @@ function prepareTerrainForDeposit(hex, rule) {
 function pickDepositBootstrapHex(land, hexes, rule, rand) {
   const ranked = land.filter(([q, r]) => {
     const hex = hexes[hexKey(q, r)];
-    return hex && hex.terenBazowy !== "morze" /* Morze */ && hex.terenBazowy !== "wybrzeze" /* Wybrzeze */;
+    if (!hex || hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      return false;
+    }
+    if (rule.id === "glina" && !rule.allowedOn(hex)) return false;
+    return true;
   }).map(([q, r]) => ({ q, r, score: rand() })).sort((a, b) => b.score - a.score);
   if (ranked.length === 0) return null;
   const spot = ranked[0];
   prepareTerrainForDeposit(hexes[hexKey(spot.q, spot.r)], rule);
-  if (rule.id === "glina") {
-    hexes[hexKey(spot.q, spot.r)].rzeka = { ...hexes[hexKey(spot.q, spot.r)].rzeka ?? {}, obecna: true };
-  }
   return [spot.q, spot.r];
 }
 function forceDepositInCell(land, hexes, id, rand) {
@@ -5531,6 +5863,20 @@ function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, r
       if (passFixed === 0) break;
     }
   }
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return fixed;
 }
 function ensureForestGridCoverage(hexes, scratch, forestTier, _typ, _continentOf, _nContinents, rand) {
@@ -6447,7 +6793,98 @@ var DIPLOMACY_PARAMS = {
   /** Jednorazowe złoto min przy ultimatum */
   progUltimatumMinGold: 20,
   /** Domyślny trybut wasala (¤/turę) */
-  progWasalDefaultGoldPerTurn: 10
+  progWasalDefaultGoldPerTurn: 10,
+  // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
+  // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
+  // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —
+  // wzorem loadDiplomacyParams() dla reszty DIPLOMACY_PARAMS.
+  // -- §1: skala i wartość startowa (pkt Wiarygodności, skala −100…+100) --
+  /** Dolna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMin: -100,
+  /** Górna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMax: 100,
+  /** Próg pasma „Wzór cnoty" — W >= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWzorCnoty: 40,
+  /** Próg pasma „Wiarołomny" — W <= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWiarolomny: -40,
+  /** Wartość startowa Wiarygodności, poziom Łatwy (pkt Wiarygodności), §1. */
+  wiarygodnoscStartLatwy: 40,
+  /** Wartość startowa Wiarygodności, poziom Normalny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartNormalny: 20,
+  /** Wartość startowa Wiarygodności, poziom Trudny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartTrudny: 0,
+  // -- §2: KARY N1–N7 (pkt Wiarygodności, jednorazowo, wszystkie poziomy trudności) --
+  /** N1 — wypowiedzenie wojny bez ostrzeżenia / atak w tej samej turze co deklaracja (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN1BezOstrzezenia: -10,
+  /** N1 — okno karencji: liczba tur po wypowiedzeniu wojny, w której atak jeszcze liczy się jako "bez ostrzeżenia" (tury). */
+  wiarygodnoscN1KarencjaTur: 1,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Paktu o Nieagresji (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuNap: -18,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Sojuszu (pełny/defensywny), także atak na sojusznika (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuSojusz: -25,
+  /** N3 — atak w oknie karencji po zakończeniu porozumienia (pkt Wiarygodności, jednorazowo, na wierzchu N1/N2). */
+  wiarygodnoscN3AtakWOknieKarencji: -12,
+  /** N3 — okno karencji (tury) po jednostronnym anulowaniu porozumienia BEZTERMINOWEGO lub po zawarciu pokoju, przed którym atak = kara N3. */
+  wiarygodnoscN3KarencjaBezterminoweTur: 10,
+  /** N4 — odmowa pomocy sojusznikowi na wezwanie obowiązku sojuszniczego, kara WYŁĄCZNIE dla odmawiającego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN4OdmowaObowiazkuSojuszu: -15,
+  /** N5 — dobrowolne zerwanie traktatu CZASOWEGO (nie handlowego) (pkt Wiarygodności, jednorazowo). Bezterminowe = brak kary (patrz N3). */
+  wiarygodnoscN5ZerwanieTraktatCzasowy: -6,
+  /** N5 — dobrowolne zerwanie umowy handlowej CZASOWEJ (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN5ZerwanieHandelCzasowy: -4,
+  /** N6 — niedotrzymanie handlu cyklicznego (3 tury z rzędu z winy strony), kara wyłącznie dla winnego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN6NiedotrzymanieHandluCyklicznego: -2,
+  /** N7 — nieautoryzowany przemarsz, jednorazowo przy pierwszym wykryciu w danej "wizycie" (pkt Wiarygodności). Zwiadowcy wykluczeni (C-WIAR-SKAUT=A). */
+  wiarygodnoscN7NieautoryzowanyPrzemarsz: -2,
+  /** Odwet (C-WIAR-ODWET=A) — okno (tury) od cudzego N1/N2/N4 wobec nas, w którym nasza odwetowa wojna NIE nalicza N1/N2. */
+  wiarygodnoscOdwetOknoTur: 10,
+  // -- §3: NAGRODY — tabela A STRUMIEŃ (pkt Wiarygodności NA TURĘ, za każde aktualnie dotrzymywane zobowiązanie) --
+  /** S1 — Sojusz (pełny lub defensywny) aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS1SojuszPerTure: 1,
+  /** S2 — Pakt o nieagresji aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS2NapPerTure: 0.5,
+  /** S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTure: 0.3,
+  /** S4 — Prawo przemarszu / otwarte granice aktywne (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTure: 0.2,
+  // -- §3: NAGRODY — tabela B FINISZ (pkt Wiarygodności, jednorazowo, za dotrwanie do zapisanego terminu) --
+  /** P1 — Sojusz dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP1FiniszSojusz: 10,
+  /** P2 — Pakt o nieagresji dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszNap: 5,
+  /** P2 — Umowa handlowa dotrwana do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszHandel: 5,
+  /** P3 — Handel cykliczny ze 100% dostaw aż do końca umowy (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP3FiniszHandelCykliczny: 1,
+  // -- §3: NAGRODY — tabela C CZYNY (pkt Wiarygodności, jednorazowo, niepowiązane z trwającym zobowiązaniem) --
+  /** P4 — kamień milowy "bez wojny" (pkt Wiarygodności, jednorazowo, powtarzalny co wiarygodnoscP4OknoBezWojnyTur tur). */
+  wiarygodnoscP4BezWojny30Tur: 3,
+  /** P4 — długość okna "bez wojny" wymaganego do naliczenia kamienia milowego (tury). */
+  wiarygodnoscP4OknoBezWojnyTur: 30,
+  /** P5 — pomoc sojusznikowi w wojnie, dołączenie z własnej woli LUB na wezwanie (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP5PomocSojusznikowi: 20,
+  // -- §4: model zapominania — krzywa liniowa z trwałą podłogą (tury do osiągnięcia podłogi, wg trudności i znaku zdarzenia) --
+  /** Czas zapomnienia KAR, poziom Łatwy (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraLatwy: 40,
+  /** Czas zapomnienia KAR, poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraNormalny: 80,
+  /** Czas zapomnienia KAR, poziom Trudny (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraTrudny: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Łatwy (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaLatwy: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaNormalny: 80,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Trudny (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaTrudny: 40,
+  /** Trwała podłoga krzywej zapominania — ułamek [0,1] wartości pierwotnej, który zostaje NA ZAWSZE po pełnym wygaśnięciu (dotyczy WYŁĄCZNIE zdarzeń jednorazowych, nie STRUMIENIA — C-WIAR-SLAD=A). */
+  wiarygodnoscTrwalaPodlogaProcent: 0.1,
+  // -- §5: wpływ Wiarygodności na Zaufanie --
+  /** Dzielnik strumienia Wiarygodność→Zaufanie: ΔZaufanie/turę = Wiarygodność / wartość (C-WIAR-SKALA=20). */
+  wiarygodnoscZaufanieDzielnikPerTura: 20,
+  /** Dźwignia 3 — twardy próg: Sojusz wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgSojuszMin: 0,
+  /** Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgNapMin: -40
 };
 var ARCHETYPE_AGGRESSION = {
   ["grecy" /* Grecy */]: 0.4,
