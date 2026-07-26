@@ -771,6 +771,19 @@ wymienił jako kandydata).
 - **§9.4 strumień POZYTYWNY podczas wojny = A — DZIAŁA NORMALNIE.** Dotrzymywanie zobowiązań wobec
   stron niezaangażowanych nalicza Wiarygodność także w trakcie wojny. Spójne z C-WIAR-WOJNA = B.
 
+- **§9.1 pakt o nieagresji — decyzja właściciela (jego słowa):** „powinna być opcja zarówno
+  terminowego zawarcia paktu o nieagresji, jak i bezterminowego." → gracz wybiera przy zawieraniu:
+  **wariant terminowy (10–20 tur)** albo **bezterminowy**. Bezterminowy jest drugą twardą bramką
+  Dźwigni 3 (patrz §9.10) i podlega karze N3-rozszerzonej przy zerwaniu.
+- **§9.6 kumulacja trwałych śladów = A — BEZ LIMITU.** Suma trwałych śladów nie ma dna: 10 zdrad
+  sojusznika × (−2,5 pkt) = −25 pkt na stałe, 40 zdrad = −100 pkt (dno skali) z samych śladów.
+  Seryjny zdrajca ma trwale zrujnowaną reputację — świadomy wybór właściciela.
+- **§9.10 druga twarda bramka Dźwigni 3 = A — PAKT O NIEAGRESJI** (nie wasalizacja/trybut).
+- **§9.5 dźwignie 2–4 = C — PRZEGLĄD WSZYSTKICH TRZECH** przed wdrożeniem strumienia (Dźwignia 1).
+  Sufit Zaufania (2), twarde progi (3) i modyfikator pierwszego kontaktu (4) mają zostać przejrzane
+  w świetle nowego strumienia, żeby nie karać reputacji dwa razy za to samo. **To blokuje start
+  implementacji Dźwigni 1** — przegląd najpierw.
+
 ### Nadal nierozstrzygnięte — nie zgadywać, nie wdrażać, dopóki Maciej nie odpowie.
 
 1. **Niespójność „NAP jako bezterminowy".** W kodzie NAP ZAWSZE ma termin (10–20 tur) — przykład Macieja
