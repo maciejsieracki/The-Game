@@ -30,6 +30,12 @@
  *         — osobny, jawny mnożnik w economy.ts (cityYieldPerTurn), NIE łączony z
  *         Targowiskiem/civHandelMult, żeby uniknąć podwójnego liczenia.
  *
+ * CUDA-HANDEL-01 (Maciej 2026-07-26): bonus cudów świata "handel_procent"
+ * (wonders.json, bonusy.specjalne) mnoży WYŁĄCZNIE składnik (1) — dochód
+ * dystansowy — nigdy Daninę/Podatek. Patrz sumWonderTradeRouteBonusForOwner
+ * w wonders-data.ts (wylicza sumę % per owner/medium) i 3. argument
+ * computeTradeRouteIncomeByCity niżej (resolver wstrzyknięty przez main.ts).
+ *
  * Pure logic — bez DOM, bez THREE, bez side effects (poza cache'em w WeakMap,
  * patrz niżej).
  */
@@ -740,17 +746,33 @@ export function loadTradeRouteIncomeParams(
  * Q8=B, obie strony zarabiają, bez podziału. Miasto uczestniczące w wielu
  * trasach sumuje wkłady. Do wpięcia w turn-economy.ts jako "pieniadzZTras"
  * (dochód czysto do skarbca, pomija Wealth — patrz advanceCityEconomy).
+ *
+ * CUDA-HANDEL-01 (Maciej 2026-07-26): `wonderTradeBonusForOwner` — resolver
+ * wstrzyknięty przez wołającego (main.ts, sumWonderTradeRouteBonusForOwner z
+ * wonders-data.ts), ten sam wzorzec co resolveOwnerEra/resolveOwnerZlotoAccess
+ * gdzie indziej w projekcie — ten moduł CELOWO nie zna wonders-data.ts (uniknięcie
+ * zależności cyklicznej i zachowanie trade-routes.ts jako pure logic bez wiedzy
+ * o cudach). Zwraca sumę % bonusu "handel_procent" (addytywna kumulacja, patrz
+ * wonders-data.ts) dla danego ownera i medium tej KONKRETNEJ trasy — liczony
+ * OSOBNO dla każdej strony (fromCityId wg route.ownerId, toCityId wg
+ * route.toOwnerId), bo obaj właściciele mogą mieć różne cuda. Domyślnie 0 (brak
+ * bonusu) — zachowuje dokładnie dawne zachowanie dla wywołań bez 3. argumentu.
  */
 export function computeTradeRouteIncomeByCity(
   routes: readonly TradeRoute[],
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+  wonderTradeBonusForOwner: (ownerId: number, medium: TradeRouteMedium) => number = () => 0,
 ): Map<string, number> {
   const out = new Map<string, number>();
   for (const route of routes) {
     if (route.status !== 'polaczony') continue;
-    const income = tradeRouteDistanceIncome(route.dystans, params);
-    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + income);
-    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + income);
+    const baseIncome = tradeRouteDistanceIncome(route.dystans, params);
+    const fromMult = 1 + wonderTradeBonusForOwner(route.ownerId, route.medium);
+    const toMult   = 1 + wonderTradeBonusForOwner(route.toOwnerId, route.medium);
+    const fromIncome = fromMult === 1 ? baseIncome : Math.floor(baseIncome * fromMult);
+    const toIncome   = toMult === 1 ? baseIncome : Math.floor(baseIncome * toMult);
+    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + fromIncome);
+    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + toIncome);
   }
   return out;
 }

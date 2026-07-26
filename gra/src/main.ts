@@ -98,8 +98,10 @@ import {
   getWondersData,
   sumWonderCityYieldsForOwner,
   hasAnyWonderCityYield,
+  sumWonderTradeRouteBonusForOwner,
   type WonderDef,
   type WonderYieldBonus,
+  type WonderTradeRouteMedium,
 } from './game/wonders-data';
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
@@ -1913,6 +1915,19 @@ async function boot(): Promise<void> {
     /** Suma bonusy.miasto cudów właściciela (× każde jego miasto), z bramką absolut. */
     function wonderCityYieldBonusForOwner(ownerId: number): WonderYieldBonus {
       return sumWonderCityYieldsForOwner(wonderIdsOwnedBy(ownerId), empireEpochForOwner(ownerId));
+    }
+
+    /**
+     * CUDA-HANDEL-01 (Maciej 2026-07-26): suma % bonusu "handel_procent" cudów
+     * właściciela dla dane medium trasy (0 gdy brak) — resolver wstrzyknięty do
+     * computeTradeRouteIncomeByCity (trade-routes.ts) i do liczenia chipu HUD
+     * "Handel". OwnerId-agnostyczny (parytet AI, patrz wonders-data.ts nagłówek
+     * sekcji CUDA-HANDEL-01) — gracz i AI liczeni identycznie.
+     */
+    function wonderTradeRouteBonusForOwner(ownerId: number, medium: WonderTradeRouteMedium): number {
+      return sumWonderTradeRouteBonusForOwner(
+        wonderIdsOwnedBy(ownerId), empireEpochForOwner(ownerId), medium,
+      );
     }
 
     /** Mapa ownerId -> suma bonusy.miasto, do previewCityEconomy/advanceCityEconomy. */
@@ -8141,7 +8156,11 @@ async function boot(): Promise<void> {
       let handelRouteCount = 0;
       for (const r of tradeRoutes) {
         if (r.status !== 'polaczony') continue;
-        handelIncome += tradeRouteDistanceIncome(r.dystans, handelIncomeParams);
+        // CUDA-HANDEL-01: chip HUD musi odzwierciedlać ten sam bonus % cudów, co
+        // realny wpis do skarbca (tradeIncomeByCity) — inaczej HUD i skarbiec by się rozjechały.
+        const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
+        const base = tradeRouteDistanceIncome(r.dystans, handelIncomeParams);
+        handelIncome += bonus === 0 ? base : Math.floor(base * (1 + bonus));
         handelRouteCount++;
       }
       return {
@@ -13733,7 +13752,11 @@ async function boot(): Promise<void> {
             data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
             _menuDifficulty,
           );
-          const tradeIncomeByCity = computeTradeRouteIncomeByCity(tradeRoutes, tradeIncomeParams);
+          // CUDA-HANDEL-01: 3. argument = bonus % "handel_procent" cudów, per owner/medium
+          // trasy (0 gdy brak cudu) — ownerId-agnostyczny, patrz wonderTradeRouteBonusForOwner.
+          const tradeIncomeByCity = computeTradeRouteIncomeByCity(
+            tradeRoutes, tradeIncomeParams, wonderTradeRouteBonusForOwner,
+          );
           // TEMAT #5: powiadomienia WYDARZENIA o powstaniu/zerwaniu szlaku (tylko gracz;
           // tradeRoutes zawiera WYLACZNIE trasy gracz<->obcy, AI<->AI tu nie istnieje).
           try {

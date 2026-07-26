@@ -188,7 +188,7 @@ Nie sumowane w karcie miasta — działają na całe państwo:
 - **Wpływ** dyplomatyczny (+PN w negocjacjach).
 - **Zaufanie** bazowe u sąsiadów.
 - **Wojna** — wsparcie, XP armii, % ataku piechoty/oblężenia.
-- **Handel** — +% z tras morskich/lądowych.
+- **Handel** — +% dochodu z tras handlowych (lądowych/morskich); NIE zwiększa Daniny miasta.
 - **Nauka / produkcja** — +% imperium.
 
 Pełna lista per cud — katalog i `docs/encyklopedia/cuda/`.

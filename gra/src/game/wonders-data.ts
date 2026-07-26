@@ -244,3 +244,69 @@ export function hasAnyWonderCityYield(b: Readonly<WonderYieldBonus>): boolean {
     || (b.praca ?? 0) !== 0
     || (b.obrona ?? 0) !== 0;
 }
+
+// ---------------------------------------------------------------------------
+// CUDA-HANDEL-01 (Maciej 2026-07-26, decyzja dosłowna: "3 handel nie daninę"):
+// ożywienie bonusu bonusy.specjalne[].typ === "handel_procent" (Petra, Kamień
+// Ha'amonga, Kolos Rodyjski, Brama wszystkich narodów, Pałac Weiyang) — do tej
+// pory czysta martwa obietnica w wonders.json, żaden kod go nie czytał.
+//
+// ROZSTRZYGNIĘCIA (nie zgaduj przy następnej sesji — to jest kanon):
+//   1. ZASILA WYŁĄCZNIE dochód z TRAS HANDLOWYCH (tradeRouteDistanceIncome /
+//      computeTradeRouteIncomeByCity w trade-routes.ts, wpięte do
+//      turn-economy.ts jako "pieniadzZTras"). NIGDY Daninę/Podatek
+//      (handelBrutto/handelNetto w economy.ts, cityYieldPerTurn) — pieniadzZTras
+//      jest dodawany do skarbca miasta PO całej ścieżce Daniny (patrz
+//      turn-economy.ts, komentarz przy `pieniadzZTras = tradeIncomeByCity...`),
+//      więc modyfikując tylko tradeIncomeByCity ten bonus STRUKTURALNIE nie może
+//      dotknąć Daniny — nie trzeba osobnej bramki, wystarczy wpiąć się w
+//      odpowiednim miejscu (patrz test cuda-handel-test.cjs, asercja #4).
+//   2. ZASIĘG: WSZYSTKIE trasy WŁAŚCICIELA cudu (imperium), NIE tylko trasy
+//      miasta-nosiciela. Uzasadnienie: bonus żyje w bonusy.specjalne, a
+//      _meta.bonus_cywilizacja w wonders.json definiuje tę sekcję wprost jako
+//      "Tylko imperium — NIE sumowane w karcie miasta" — dokładnie tak samo jak
+//      dyplomacja_wpływ/armia_xp/wojna_wsparcie z tych samych cudów, które też
+//      działają na całe imperium, nie na miasto-nosiciela. Cud to inwestycja
+//      imperialna (rekomendacja właściciela w zadaniu), spójna z resztą
+//      bonus_cywilizacja_typy.
+//   3. KUMULACJA: ADDYTYWNA — suma wartości wszystkich aktywnych cudów tego typu
+//      posiadanych przez ownera (rekomendacja właściciela — spójne z premiami
+//      budynków i redukcją korupcji w projekcie, które też sumują się
+//      addytywnie, nigdy mnożnie).
+//   4. "cel": "handel" -> dolicza się do KAŻDEJ trasy (dowolne medium, ląd LUB
+//      morze) — opisy tych wpisów w JSON są ogólne ("z tras handlowych"/"z
+//      handlu"). "cel": "handel_morski" -> dolicza się WYŁĄCZNIE do tras z
+//      medium === 'morze' (Kamień Ha'amonga/Kolos Rodyjski: opisy mówią wprost
+//      o "handlu morskim"/"portach") — na trasie lądowej ten wpis się NIE liczy.
+//   5. PARYTET AI: funkcja jest ownerId-agnostyczna (bierze listę cudów ownera
+//      jako argument) — wołający (main.ts) używa jej identycznie dla gracza i AI.
+// ---------------------------------------------------------------------------
+
+/** Medium trasy handlowej — luźna kopia trade-routes.ts:TradeRouteMedium (structural,
+ *  bez importu, żeby uniknąć zależności cyklicznej wonders-data.ts <-> trade-routes.ts). */
+export type WonderTradeRouteMedium = 'lad' | 'morze';
+
+/**
+ * Suma % bonusu handel_procent aktywnych cudów właściciela dla danego medium trasy
+ * (0, gdy brak). Addytywna kumulacja (patrz nagłówek sekcji, punkt 3). Respektuje
+ * bramkę absolut (isWonderBonusActive) — po końcu Średniowiecza bonus wygasa jak
+ * każdy inny bonus_cywilizacja cudu Antyku.
+ */
+export function sumWonderTradeRouteBonusForOwner(
+  ownerWonderIds: readonly string[],
+  ownerEra: number,
+  medium: WonderTradeRouteMedium,
+): number {
+  let total = 0;
+  for (const id of ownerWonderIds) {
+    const w = wonderById.get(id);
+    if (!w) continue;
+    if (!isWonderBonusActive(w, ownerEra)) continue;
+    for (const s of w.bonusy?.specjalne ?? []) {
+      if (s.typ !== 'handel_procent') continue;
+      if (s.cel === 'handel_morski' && medium !== 'morze') continue;
+      total += typeof s.wartosc === 'number' ? s.wartosc : 0;
+    }
+  }
+  return total;
+}
