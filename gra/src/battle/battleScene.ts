@@ -8728,7 +8728,12 @@ export class BattleScene {
       if (this._topTurnLbl) this._topTurnLbl.textContent = 'Faza rozstawiania';
       this.hint.textContent =
         'FAZA ROZSTAWIANIA — strefa gry (środek mapy). WASD / strzałki = przesuń widok · kółko = zoom.';
-      if (this._rosterBar) this._rosterBar.style.display = 'none';
+      // NIE chowaj _rosterBar tutaj: to ten sam panel co w walce
+      // (`player-roster-bar`, patrz _initDeployUI) i _initDeployUI() wyżej już
+      // ustawił mu display:flex — schowanie go tu było przyczyną zgłoszenia
+      // właściciela (2026-07-26): po „Rozegraj ponownie" panel sterowania
+      // fazą rozstawiania (szyk/grupowanie/roster) znikał całkowicie, zostawało
+      // tylko przesuwanie żetonów po siatce.
       this._showDeployFeedback('Bitwa od nowa — rozstaw armie');
     } else {
       this.deployPhase = false;
