@@ -137,6 +137,38 @@ ok(params.glodWojskaKarencjaTur === 3, 'buildEmpireFoodParams: karencja domyśln
 }
 
 // ---------------------------------------------------------------------------
+// 3b) C-GARN-Q1 rozszerzenie: jednostka ufortyfikowana/w garnizonie (camping=true,
+// zywnosc_jednostka_oboz domyślnie 0,5) SKŁADA SIĘ multiplikatywnie z mnożnikiem
+// terytorialnym (Maciej 2026-07-26: "zjada tylko połowę żywności... można by
+// było to uzupełnić i wprowadzić jako całość").
+// ---------------------------------------------------------------------------
+{
+  const upkeepT = M.loadUpkeepParams({
+    ekonomia_miasta: {
+      zywnosc_jednostka_ruch: { normal: 1 },
+      zywnosc_jednostka_oboz: { normal: 0.5 },
+      zywnosc_mnoznik_terytorium_wlasne: { normal: 1.0 },
+      zywnosc_mnoznik_poza_terytorium: { normal: 2.0 },
+    },
+  }, 'normal');
+
+  ok(M.unitFoodPerTurn({ camping: true, onOwnTerritory: true }, upkeepT) === 0.5,
+    'ufortyfikowana we własnym terytorium: 0,5 żywności/turę (0,5 obóz x 1,0 teren)');
+  ok(M.unitFoodPerTurn({ camping: true, onOwnTerritory: false }, upkeepT) === 1,
+    'ufortyfikowana POZA własnym terytorium: 1,0 żywności/turę (0,5 obóz x 2,0 teren)');
+  ok(M.unitFoodPerTurn({ camping: false, onOwnTerritory: false }, upkeepT) === 2,
+    'maszerująca poza własnym terytorium (regresja, camping=false): nadal 2,0 żywności/turę');
+
+  const garrisonStack = [
+    { camping: true, onOwnTerritory: true },
+    { camping: true, onOwnTerritory: true },
+    { camping: false, onOwnTerritory: true },
+  ];
+  ok(M.militaryFoodConsumption(garrisonStack, upkeepT) === 2,
+    'stos w garnizonie: 2 ufortyfikowane (0,5+0,5) + 1 maszerująca (1) = 2,0 żywności/turę');
+}
+
+// ---------------------------------------------------------------------------
 // 4) PARYTET: AI traci HP z głodu identycznie jak gracz (bez pytania — luka)
 // ---------------------------------------------------------------------------
 {

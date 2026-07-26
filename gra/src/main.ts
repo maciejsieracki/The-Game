@@ -8200,7 +8200,10 @@ async function boot(): Promise<void> {
         .map(u => ({
           ownerId: u.ownerId,
           typeId: u.typeId,
-          camping: false,
+          // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka ufortyfikowana/w
+          // garnizonie miasta (RuntimeUnit.inGarnizon) zjada połowę żywności
+          // (zywnosc_jednostka_oboz), zgodnie z decyzją o połączeniu obu mnożników.
+          camping: u.inGarnizon === true,
           onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForFoodProj) === u.ownerId,
         }));
       const kosztArmii = militaryFoodConsumption(playerUnits, upkeepParams, unitFoodTbl);
@@ -14098,15 +14101,14 @@ async function boot(): Promise<void> {
           const econUnits: EconUnit[] = units.map(u => ({
             ownerId: u.ownerId,
             typeId:  u.typeId,
-            // DECYZJA (Maciej 2026-07-26, przy okazji C-GLOD-Q2=B): `camping` (obozowanie,
-            // zywnosc_jednostka_oboz = 0.5/turę) POZOSTAJE świadomie martwy w tym zadaniu —
-            // silnik nie ma jeszcze pojęcia "jednostka obozuje" (v0.1, brak stanu ruchu/akcji
-            // do tego dedykowanego). Wprowadzenie prawdziwego stanu obozowania to osobna
-            // decyzja produktowa (kiedy jednostka "obozuje" vs "maszeruje"?), poza zakresem
-            // karencji/mnożnika terytorialnego zleconych tutaj. Różnicowanie tempa idzie
-            // WYŁĄCZNIE przez mnożnik terytorialny (onOwnTerritory, C-GLOD-Q2=B) -- prostszy,
-            // jawnie wybrany przez właściciela wariant.
-            camping: false,
+            // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): łączymy mnożnik terytorialny
+            // (C-GLOD-Q2=B) z połową żywności dla jednostki ufortyfikowanej/w garnizonie
+            // miasta. Stan "obozuje" osobno nie istnieje w silniku (audyt: brak enum/pola) —
+            // jedyny istniejący stan tego typu to RuntimeUnit.inGarnizon (ustawiane akcją
+            // "Ufortyfikuj" WYŁĄCZNIE na hexie własnego miasta, patrz cityAtUnit()).
+            // Mnożniki się składają multiplikatywnie: ufortyfikowana we własnym kraju =
+            // 1,0 (teren) x 0,5 (garnizon) = 0,5 żywności/turę.
+            camping: u.inGarnizon === true,
             onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForFood) === u.ownerId,
           }));
           const ownerCivMap = new Map<number, string>();
