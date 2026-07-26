@@ -757,7 +757,21 @@ wymienił jako kandydata).
 
 ## 9. PYTANIA OTWARTE
 
-Tylko te NADAL nierozstrzygnięte — nie zgadywać, nie wdrażać, dopóki Maciej nie odpowie.
+### ✅ ODPOWIEDZIANE 2026-07-26 (paczka 1/4) — wdrażać zgodnie z tym
+
+- **§9.2 kumulacja przyrostu strumienia = C — BEZ LIMITU.** Przyrosty Wiarygodności z jednocześnie
+  utrzymywanych zobowiązań sumują się bez sufitu na turę (Sojusz + pakt + handel = +1,8 pkt
+  Wiarygodności na turę z jednym partnerem; przy pięciu partnerach ponad +3 pkt/turę). Właściciel
+  świadomie przyjmuje, że sufit +100 pkt jest osiągalny w ~30 tur przy intensywnej dyplomacji.
+  **Konsekwencja do obserwacji w playteście:** uczciwi gracze szybko siadają na suficie, więc
+  różnicowanie przenosi się na stronę kar. Nie dokładać limitu bez nowej decyzji.
+- **§9.3 „30 tur bez wojny" (CZYN P4) = A — GLOBALNIE.** Jeden licznik: 30 tur bez wojny
+  z kimkolwiek. Spójne z globalnym zasięgiem Wiarygodności (WIAR-Q1 = A). Każda wojna — także
+  obronna i wynikająca z sojuszu — zeruje licznik.
+- **§9.4 strumień POZYTYWNY podczas wojny = A — DZIAŁA NORMALNIE.** Dotrzymywanie zobowiązań wobec
+  stron niezaangażowanych nalicza Wiarygodność także w trakcie wojny. Spójne z C-WIAR-WOJNA = B.
+
+### Nadal nierozstrzygnięte — nie zgadywać, nie wdrażać, dopóki Maciej nie odpowie.
 
 1. **Niespójność „NAP jako bezterminowy".** W kodzie NAP ZAWSZE ma termin (10–20 tur) — przykład Macieja
    o „bezterminowym pakcie o nieagresji" (cytat przy N3 rozszerzone, §2) nie ma dziś odpowiednika.
