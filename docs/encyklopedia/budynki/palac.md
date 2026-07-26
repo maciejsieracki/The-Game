@@ -22,7 +22,7 @@
 ## Wiki‑M
 
 ### Co robi
-Palac wzmacnia miasto w kategorii **Kultura/Administracja**. Poziom 1: **+3 kultury** (+2 na poziom), **+1 pkt szczęścia** (+1 na poziom), **+5 % mnożnika handlu** (+0 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**12** od poprzedniego), ale daje większy przyrost.
+Palac wzmacnia miasto w kategorii **Kultura/Administracja**. Poziom 1: **+3 kultury** (+2 na poziom), **+1 pkt szczęścia** (+1 na poziom), **+5 % mnożnika Daniny** (+0 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**12** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 40 pracy
 - **Każdy kolejny poziom:** +12 pracy
@@ -47,9 +47,9 @@ Buduj **przed** przekroczeniem progu zagęszczenia (pop > 4) lub po podboju obce
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 40 | **4 tur** | +3 kultury, +1 pkt szczęścia, +5 % mnożnika handlu | 2 ¤/t |
+| Poziom 1 | 40 | **4 tur** | +3 kultury, +1 pkt szczęścia, +5 % mnożnika Daniny | 2 ¤/t |
 | Poziom 2 | 52 | **6 tur** | więcej (patrz niżej) | 2 ¤/t |
-| Poziom 3 | 64 | — | **+7 kultury, +3 pkt szczęścia, +5 % mnożnika handlu** | 2 ¤/t |
+| Poziom 3 | 64 | — | **+7 kultury, +3 pkt szczęścia, +5 % mnożnika Daniny** | 2 ¤/t |
 
 Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu **Miasto** przed/po budowie.
 

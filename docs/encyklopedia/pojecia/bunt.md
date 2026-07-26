@@ -33,7 +33,7 @@ Przy **10–29%**: jak wyżej + **migracja** ~5% ludno w turę (ktoś może odej
 
 ### Dźwignie gracza
 
-- **Niższe podatki** (suwak handlu → więcej zamożności) → szczęście ↑  
+- **Niższe podatki** (suwak Daniny → więcej zamożności) → szczęście ↑  
 - **Wojsko w mieście** → prawo ↑  
 - **Teatr / łaźnia / świątynia** → szczęście ↑  
 
@@ -51,7 +51,7 @@ Przy **10–29%**: jak wyżej + **migracja** ~5% ludno w turę (ktoś może odej
 
 **10 tur buntu:** ~**30 pracy** utraconej, ~**12 ¤**, bufor wzrostu rośnie wolniej o **~10 żywności** łącznie.
 
-**Naprawa w 3 turach:** suwak handlu **50% zamożność** (+3 pkt szczęścia), **2 jednostki** w mieście (+prawo) → porządek **72%** → kary znikają **od razu** (bez opóźnienia).
+**Naprawa w 3 turach:** suwak Daniny **50% zamożność** (**+4 pkt** szczęścia, normal — tabela pełna: [`szczescie.md`](szczescie.md)), **2 jednostki** w mieście (+prawo) → porządek **72%** → kary znikają **od razu** (bez opóźnienia).
 
 **Bunt skrajny:** porządek **7%** → **2 tury** grace z alertem → jeśli nie reagujesz, miasto może przejść pod **rebeliantów AI** (odbijasz wojskiem).
 

@@ -30,7 +30,7 @@ Biblioteka wzmacnia miasto w kategorii **Nauka**. Poziom 1: **+3 nauki** (+2 na 
 - **Surowiec do budowy:** 5× ceramika (poz. 1)
 - Technologia **Pismo**.
 ### Strategia gracza
-Miasto naukowe: ustaw suwak handlu więcej na **naukę (20%)**, suwak pracy **70% budynki**.
+Miasto naukowe: ustaw suwak Daniny więcej na **naukę (20%)**, suwak pracy **70% budynki**.
 ### Typowe błędy
 - Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
 - Ignorowanie utrzymania: 1 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.

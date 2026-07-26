@@ -235,7 +235,7 @@ Pełna mechanika: [`szczescie.md`](../encyklopedia/pojecia/szczescie.md).
 | **Świątynia** | +1 punkt, jeśli budynek stoi w mieście |
 | **Amfiteatr / teatr / rozrywka** | +1 punkt (teatr daje więcej — według danych budynku) |
 | **Zamożność / luksus na mieszkańca** | +1 punkt na co **5 jednostek** luksusu w puli miasta |
-| **Niskie podatki** (duży udział zamożności w Daninie) | **+1 do +5 pkt** przy udziale zamożności ≥30/40/50/60/70% — patrz [`suwak-handlu.md`](../encyklopedia/pojecia/suwak-handlu.md) |
+| **Niskie podatki** (duży udział zamożności w Daninie) | Tabela pełna niżej (§35.2a) — na normal od **+1 pkt** (20–29% zamożności) do **+8 pkt** (90–100%) |
 | **Ustrój polityczny** | +1 pkt, gdy mechanika ustroju aktywna (w v1.0 często 0) |
 | **Nasza religia dominuje** | +2 pkt przy ≥50% wyznawców twojej wiary |
 | **Nasza kultura dominuje** | +1 pkt przy ≥80% własnej kultury w mieście |
@@ -243,6 +243,25 @@ Pełna mechanika: [`szczescie.md`](../encyklopedia/pojecia/szczescie.md).
 | **Inne budynki** | Suma bonusów z kolumny „zadowolenie” w danych budynków (np. łaźnia, ogrody) |
 
 **Wskazówka:** Najtańszy szybki boost — przesuń suwak Daniny na **zamożność** (§38.1). Najtrwalszy — świątynia + teatr + utrzymywana własna kultura.
+
+### 35.2a. Tabela pełna — Szczęście od udziału Zamożności w Daninie
+
+Jedna wspólna siatka (nie dwa osobne mechanizmy „niskie podatki" / „wysokie podatki") — **10 przedziałów po 10 punktów procentowych** udziału Zamożności w Daninie netto miasta. Wartość ujemna = kara („wysokie podatki"), dodatnia = bonus („niskie podatki"). Jednostka: **punkty Szczęścia miasta na turę**.
+
+| Udział Zamożności w Daninie | Łatwy | Normalny | Trudny |
+|---|---|---|---|
+| 0–9% | **+1** | **−1** | **−2** |
+| 10–19% | **+2** | **0** | **−1** |
+| 20–29% | **+3** | **+1** | **0** |
+| 30–39% | **+4** | **+2** | **+1** |
+| 40–49% | **+5** | **+3** | **+2** |
+| 50–59% | **+6** | **+4** | **+3** |
+| 60–69% | **+7** | **+5** | **+4** |
+| 70–79% | **+8** | **+6** | **+5** |
+| 80–89% | **+9** | **+7** | **+6** |
+| 90–100% | **+10** | **+8** | **+7** |
+
+Przy domyślnym podziale **20%** zamożności (§38.1) na normalnej trudności miasto dostaje **+1 pkt** Szczęścia z tego tytułu.
 
 ### 35.3. Rozpiska czynników — co obniża szczęście (−)
 
@@ -252,7 +271,7 @@ Pełna mechanika: [`szczescie.md`](../encyklopedia/pojecia/szczescie.md).
 | **Wojna** | −3 pkt, gdy państwo jest w stanie wojny (zmęczenie wojenne) |
 | **Obca kultura dominuje** | −1 pkt przy **<50%** własnej kultury |
 | **Obra religia dominuje** | −2 pkt |
-| **Wysokie podatki** | −1 pkt × poziom powyżej bazy — gdy mało zamożności w suwaku Daniny (dużo złota/nauki, mało luksusu) |
+| **Wysokie podatki** | Ta sama tabela §35.2a, po prostu przy niskim udziale zamożności (0–19% na normal) wartość jest ujemna |
 
 **Wskazówka:** Po podboju licz się z **obcą kulturą i religią** naraz — to −3 pkt łącznie, zanim w ogóle pomyślisz o podatkach.
 
@@ -280,9 +299,9 @@ Sam procent szczęścia **nie kończy** gry — bezpośrednie kary ekonomiczne w
 
 ### Przykład liczbowy
 
-Świątynia **+1**, teatr **+1**, zamożność w Daninie **40%** → bonus niskich podatków **+2**.
-Wojna **−3**, zagęszczenie (pop 6, próg 4) **−2** → netto **−1** pkt bazowych.
-Przy maksimum epoki **10** pkt → **Szczęście ≈ 90%** (euforia dopiero z dodatkowymi bonusami).
+Świątynia **+1**, teatr **+1**, zamożność w Daninie **40%** (normal, §35.2a) → bonus niskich podatków **+3**.
+Wojna **−3**, zagęszczenie (pop 6, próg 4) **−2** → netto **0** pkt bazowych (1+1+3−3−2 = 0, nie mniej niż 0).
+Przy maksimum epoki **10** pkt → **Szczęście ≈ 0%** (bez dodatkowych bonusów miasto wpada w niepokój — patrz §35.5).
 
 ### Strategia gracza
 
@@ -434,7 +453,7 @@ Suwak **Daniny** → udział **zamożności** karmi pulę W. Więcej zamożnośc
 - **Podnosi** bogactwo i często szczęście (niskie podatki).
 - **Obniża** bieżący wpływ złota i nauki z tego miasta.
 
-Mniej zamożności (domyślnie ok. 10%):
+Mniej zamożności (domyślnie **20%**):
 
 - **Więcej** złota i nauki teraz.
 - **Ryzyko** kar wysokich podatków i niższego szczęścia.
@@ -472,19 +491,25 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Trzy kierunki — **suma zawsze 100%**, kroki co 10%:
 
-| Kierunek | Domyślnie | Rola |
-|----------|-----------|------|
-| **Złoto (skarbiec)** | **70%** | Gotówka imperium z Daniny miasta |
+| Kierunek | Domyślnie (Danina netto nowego miasta) | Rola |
+|----------|-----------------------------------------|------|
+| **Skarbiec (złoto)** | **60%** | Gotówka imperium z Daniny miasta |
 | **Nauka** | **20%** | Punkty badań z tego miasta |
-| **Zamożność (bogactwo)** | **10%** | Pula luksusu → poziom W → mnożnik i szczęście |
+| **Zamożność (bogactwo)** | **20%** | Pula luksusu → poziom W → mnożnik i szczęście |
 
-**Wpływ na szczęście:** duży udział zamożności = bonus niskich podatków (§35.2); mały = kara wysokich podatków.
+Domyślny podział **60/20/20** jest identyczny na wszystkich trzech poziomach trudności (łatwy/normalny/trudny) — trudność zmienia inne parametry ekonomii (korupcję, mnożnik Mennicy), nie ten podział.
+
+**Wpływ na szczęście:** duży udział zamożności = bonus niskich podatków (§35.2); mały = kara wysokich podatków — patrz siatka pełna w §35.2/§35.3 (10 przedziałów po 10 pkt proc.).
 
 **Ustawienie osobno dla każdego miasta** — stolica może płacić więcej zamożności, kolonia więcej złota.
 
-Wiki: [`suwak-handlu.md`](../encyklopedia/pojecia/suwak-handlu.md).
+**Co jeszcze wchodzi do tej puli:** Pieniądz z budynków (np. Targowisko) oraz Pieniądz z zamiany Pracy przez Targowisko **nie trafiają wprost do skarbca** — wpadają do puli Daniny netto miasta i dzielą się tym samym suwakiem 60/20/20 jak reszta.
 
-**Wskazówka:** Miasto naukowe: 50–60% nauki tylko jeśli utrzymujesz szczęście innymi bonusami. Inaczej wpadniesz w niepokój.
+**Nazwa zmienia się na Podatek:** gdy cywilizacja odkryje technologię **Waluta** i zbuduje **Mennicę w stolicy**, cały ten strumień (dla wszystkich miast tej cywilizacji) zmienia nazwę z **Danina** na **Podatek** — liczby się nie zmieniają, zmienia się tylko etykieta. Mennica dodatkowo wymaga **dostępu do złota** (własna Kopalnia złota albo szlak handlowy z posiadaczem złota) — bez dostępu mnożnik Mennicy „zasypia" i nazwa wraca na Daninę, choć budynek zostaje i budzi się sam po odzyskaniu dostępu (§49.5).
+
+Wiki: [`suwak-handlu.md`](../encyklopedia/pojecia/suwak-handlu.md) — nazwa pliku historyczna („suwak handlu"), treść dotyczy podziału **Daniny**.
+
+**Wskazówka:** Miasto naukowe: 40–50% nauki tylko jeśli utrzymujesz szczęście innymi bonusami. Inaczej wpadniesz w niepokój.
 
 ### 38.2. Suwak Praca (podział pracy miasta)
 
@@ -528,22 +553,22 @@ Przełącznik **per miasto** — włącz/wyłącz obok suwaków.
 
 **Czego nie robi:** nie zmienia automatycznie suwaków Daniny przy buncie (v1.0); **nie** buduje cudów; **nie** rekrutuje jednostek za złoto.
 
-Domyślne wartości nowego miasta: Danina 70/20/10, praca 70/30, żywność imperium 70/30.
+Domyślne wartości nowego miasta: Danina **60/20/20** (skarbiec/nauka/zamożność), praca 70/30, żywność imperium 70/30.
 
 ### 38.5. Strategie gracza — przykłady
 
-| Typ miasta | Danina | Praca | Żywność | Inne |
+| Typ miasta | Danina (skarbiec/nauka/zamożność) | Praca | Żywność | Inne |
 |------------|--------|-------|---------|------|
-| **Graniczne** | 60/20/20 (więcej zamożności) | 60/40 (mury, koszary) | 60/40 (wojsko) | Garnizon 2–3 jednostki |
-| **Naukowe** | 50/40/10 | 80/20 (kampus) | 70/30 | Teatr na szczęście |
-| **Rolnicze** | 70/20/10 | 40/60 (ulepszenia pól) | 80/20 (wzrost) | Spichlerz priorytet |
-| **Po podboju** | 50/20/30 | 70/30 | 70/30 | Wojsko + niskie podatki 2–5 tur |
+| **Graniczne** | 50/20/30 (więcej zamożności niż domyślne 20%) | 60/40 (mury, koszary) | 60/40 (wojsko) | Garnizon 2–3 jednostki |
+| **Naukowe** | 40/40/20 (więcej nauki niż domyślne 20%) | 80/20 (kampus) | 70/30 | Teatr na szczęście |
+| **Rolnicze** | 60/20/20 (ustawienie domyślne — nie zmieniaj suwaka) | 40/60 (ulepszenia pól) | 80/20 (wzrost) | Spichlerz priorytet |
+| **Po podboju** | 40/20/40 (dużo zamożności na szczęście) | 70/30 | 70/30 | Wojsko + niskie podatki 2–5 tur |
 
 
 ### Przykład liczbowy
 
-Danina netto miasta **20**/turę, ustawienie **70% złoto · 20% nauka · 10% zamożność**:
-**14** ¤ · **4** badań · **2** luksusu (zamożność).
+Danina netto miasta **20**/turę, ustawienie **domyślne 60% skarbiec · 20% nauka · 20% zamożność**:
+**12** ¤ · **4** badań · **4** luksusu (zamożność).
 Praca miasta **30**/turę, **70% budynki · 30% teren** → **21** na budynki · **9** na farmę.
 Żywność netto **15**/turę, **70% rozwój miast · 30% wojsko** → **10,5** bufor · **4,5** wojsko (ze Spichlerzem kumuluje zapas).
 
@@ -558,13 +583,13 @@ Postaw **pierwszy Spichlerz** przed masową rekrutacją — jeden budynek w impe
 
 ### 38.6. Trzy suwaki — tabele obliczeń (normal)
 
-**Danina netto = 24/t** (przykład miasta o wysokim dochodzie):
+**Danina netto = 24/t** (przykład miasta o wysokim dochodzie), ustawienie **domyślne 60/20/20**:
 
-| Złoto 70% | Nauka 20% | Zamożność 10% |
+| Skarbiec 60% | Nauka 20% | Zamożność 20% |
 |-----------|-----------|---------------|
-| **16,8 → 16** ¤ | **4,8 → 4** badań | **2,4 → 2** luksusu |
+| **14,4 → 14** ¤ | **4,8 → 4** badań | **4,8 → 4** luksusu |
 
-Przesunięcie na **50/30/20** przy tej samej Daninie **24**: **12** ¤ · **7** badań · **5** luksusu (+bonus szczęścia od **≥30%** zamożności).
+Przesunięcie na **50/30/20** przy tej samej Daninie **24**: **12** ¤ · **7** badań · **5** luksusu (bonus szczęścia od zamożności bez zmian, bo udział zamożności zostaje **20%** — patrz §35.2a).
 
 **Praca netto = 20/t**:
 
@@ -784,7 +809,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -797,4 +822,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Ostatnia aktualizacja poradnika: 2026-07-03 · rev E — pogłębienie + przykłady liczbowe · Decyzje: B2 (szczęście, porządek), B4 (bogactwo), B5 (Spichlerz SP1–SP6), D-START-OSIEDLE*
+*Ostatnia aktualizacja poradnika: 2026-07-26 · rev F — domyślny podział Daniny poprawiony z błędnego 70/20/10 na kanoniczne **60/20/20** (§38.1, §38.5, §38.6); tabela pełna Szczęście-od-Zamożności (§35.2a, 10 przedziałów po 10 p.p., łatwy/normalny/trudny) zastępuje starą siatkę progów 30/40/50/60/70%; dopisana zmiana nazwy Danina→Podatek i pula Daniny z budynków/Targowiska · pierwotnie rev E 2026-07-03 — pogłębienie + przykłady liczbowe · Decyzje: B2 (szczęście, porządek), B4 (bogactwo), B5 (Spichlerz SP1–SP6), D-START-OSIEDLE, 65B/66B, PYTANIE 83, D1/D4 (korupcja)*

@@ -22,13 +22,13 @@
 ## Wiki‑M
 
 ### Co robi
-Targowisko (Rynek) wzmacnia miasto w kategorii **Pieniadz**. Poziom 1: **+3 złota** (+2 na poziom), **+0 % mnożnika handlu** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
+Targowisko (Rynek) wzmacnia miasto w kategorii **Pieniadz**. Poziom 1: **+3 złota** (+2 na poziom), **+0 % mnożnika Daniny** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 25 pracy
 - **Każdy kolejny poziom:** +10 pracy
 - **Utrzymanie:** 1 ¤/turę (+1 ¤/poziom)
 - Technologia **Wymiana**.
-- **Uwaga:** Mnoznik % dotyczy przychodow z handlu w miescie
+- **Uwaga:** Mnoznik % dotyczy przychodow z Daniny w miescie
 ### Strategia gracza
 Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.
 ### Typowe błędy
@@ -45,9 +45,9 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 25 | **3 tur** | +3 złota, +0 % mnożnika handlu | 1 ¤/t |
+| Poziom 1 | 25 | **3 tur** | +3 złota, +0 % mnożnika Daniny | 1 ¤/t |
 | Poziom 2 | 35 | **4 tur** | więcej (patrz niżej) | 1 ¤/t |
-| Poziom 3 | 45 | — | **+7 złota, +6 % mnożnika handlu** | 1 ¤/t |
+| Poziom 3 | 45 | — | **+7 złota, +6 % mnożnika Daniny** | 1 ¤/t |
 
 Przy +3 złota/t, utrzymanie 1 ¤/t → netto **+2 ¤/t**. Koszt 25 pracy przy 10/t ≈ **3 tur** pracy — złotem „zwraca się" po ok. **13 tur** (uproszczenie, bez inflacji).
 

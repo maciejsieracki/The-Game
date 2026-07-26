@@ -80,7 +80,7 @@ Przy słabej obronie miasto może paść szybciej; przy silnej — preBattle lub
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -357,6 +357,30 @@ Wracają na **heks bitwy**. Ranni — obniżone HP; zniszczone — znikają z ma
 
 Lista strat, ewentualny łup/XP (wg buildu). **Kontynuuj** — powrót na mapę.
 
+### 65.2a. Doświadczenie i weterani (trzy poziomy)
+
+Jednostka, która **przeżywa** bitwę, awansuje w doświadczeniu — system niezależny od Pancerza i od parametrów miękkich budynków:
+
+| Poziom | Próg (przeżyte bitwy) | Premia do statystyk bojowych |
+|--------|------------------------|-------------------------------|
+| **1 — Rekrut** | 0 | 0% (dokładnie baza z karty jednostki) |
+| **2 — Doświadczony** | 1 przeżyta bitwa | **+10%** |
+| **3 — Weteran** (sufit) | 2+ przeżyte bitwy | **+20%** |
+
+**Premie liczone od bazy, nie kumulują się między poziomami** — poziom 3 to baza ×1,20, nie baza ×1,10 → ×1,20 (czyli nie ×1,32).
+
+**Co rośnie (+10%/+20%):** atak wręcz, obrona wręcz, obrażenia broni, przebicie, bonus szarży, zdrowie, atak dystansowy.
+
+**Co jest wyłączone:** **Pancerz** — na żadnym poziomie doświadczenia się nie zmienia.
+
+**Dwa pola odwrócone — niższa wartość jest lepsza dla jednostki, więc premia je OBNIŻA:**
+- **Morale ucieczki** — doświadczony żołnierz łamie się **później**, nie wcześniej.
+- **Próg dezercji (% zdrowia)** — doświadczony żołnierz dezerteruje przy **niższym** progu HP niż rekrut.
+
+**Przykład liczbowy:** Wojownik bazowy: atak wręcz **10**, zdrowie **50**, próg dezercji **30%** HP.
+Po 1. przeżytej bitwie (poziom 2, +10%): atak wręcz **11**, zdrowie **55**, próg dezercji **27%** HP (30% × 0,90).
+Po 2. przeżytej bitwie (poziom 3, +20%, sufit): atak wręcz **12**, zdrowie **60**, próg dezercji **24%** HP (30% × 0,80) — **nie** 8 (baza ×0,90×0,80), bo premie nie kumulują się.
+
 ### 65.3. Fan-out — pierścień
 
 Jednostki rozkładają się na **pierścieniu** wokół heksu bitwy (reguła M×W+) — unika stosu wielu armii.
@@ -382,4 +406,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część X · rev. F · 2026-07-23 (HUD TW-v5 komplet, plansze wg terenu hexa, bród, ekrany Koniec/Szczegóły bitwy, Bonus vs Mount) · pierwotnie rev. E 2026-07-03 · dane: `units.json`, `counters.json`, `combat-params.json`, `battle-terrain.ts` · katalog: [`57-katalog-jednostek.md`](57-katalog-jednostek.md)*
+*Poradnik‑L · Część X · rev. G · 2026-07-26 (§65.2a: dopisany system doświadczenia/weteranów, 3 poziomy, nieopisany wcześniej) · rev. F 2026-07-23 (HUD TW-v5 komplet, plansze wg terenu hexa, bród, ekrany Koniec/Szczegóły bitwy, Bonus vs Mount) · pierwotnie rev. E 2026-07-03 · dane: `units.json`, `counters.json`, `combat-params.json`, `battle-terrain.ts`, `veteran.ts` · katalog: [`57-katalog-jednostek.md`](57-katalog-jednostek.md)*

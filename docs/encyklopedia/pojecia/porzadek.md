@@ -28,7 +28,7 @@ Oba składniki mają własne rozpiski w panelu. **Prawo** podnoszą: wojsko w mi
 
 | Porządek | Stan | Efekt |
 |----------|------|-------|
-| ≥ 90% | Ład | bonus pracy i handlu ×1,10 |
+| ≥ 90% | Ład | bonus pracy i Daniny ×1,10 |
 | 70–89% | Spokój | normalna gra |
 | 50–69% | Napięcie | praca ×0,95 |
 | 30–49% | Niepokój | plony ×~0,85, wzrost ×0,75, chip buntu |

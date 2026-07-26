@@ -27,8 +27,9 @@ Górny i dolny pasek ekranu mapy to **pulpit dowodzenia** — tu widzisz, czy im
 
 **Złoto** (symbol ¤) to skarbiec państwa — na rekrutację, utrzymanie budynków, utrzymanie wojska i przyspieszenie produkcji. Przyrost co turę to **netto**: podatki i handel minus utrzymanie.
 
-- **Podatki** — wynik suwaka Daniny w każdym mieście (złoto vs nauka vs luksus).
+- **Podatki** — wynik suwaka Daniny w każdym mieście, domyślnie **60% skarbiec / 20% nauka / 20% zamożność** (Część VI §38.1). Strumień nazywa się **Danina**, a po odkryciu Waluty i budowie Mennicy w stolicy — **Podatek** (Część VIII §49.3b).
 - **Handel** — umowy dyplomatyczne i trasy między miastami (Część XII).
+- **Korupcja** — pomniejsza Daninę/Podatek z odległych miast i przy dużym imperium; **nie dotyka** Pracy (Część VIII §49.3a).
 - **Utrzymanie** — suma budynków i jednostek; przy dużej armii netto bywa ujemne mimo bogatych miast.
 
 **Złoto ≠ bogactwo.** Bogactwo (luksus) to osobny wiersz (§14.5) — wpływa na szczęście i warstwę zamożności, ale nie zastępuje skarbca.

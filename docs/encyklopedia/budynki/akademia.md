@@ -22,7 +22,7 @@
 ## Wiki‑M
 
 ### Co robi
-Akademia wzmacnia miasto w kategorii **Nauka**. Poziom 1: **+6 nauki** (+3 na poziom), **+2 kultury** (+1 na poziom), **+10 % mnożnika handlu** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
+Akademia wzmacnia miasto w kategorii **Nauka**. Poziom 1: **+6 nauki** (+3 na poziom), **+2 kultury** (+1 na poziom), **+10 % mnożnika Daniny** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 70 pracy
 - **Każdy kolejny poziom:** +15 pracy
@@ -32,7 +32,7 @@ Akademia wzmacnia miasto w kategorii **Nauka**. Poziom 1: **+6 nauki** (+3 na po
 Warunek: upgrade Biblioteki (merge z Teatrem — 1 slot budynku).
 - **Uwaga:** Mnoznik % dotyczy globalnej puli nauki (nadbudowka nad Biblioteka)
 ### Strategia gracza
-Miasto naukowe: ustaw suwak handlu więcej na **naukę (20%)**, suwak pracy **70% budynki**.
+Miasto naukowe: ustaw suwak Daniny więcej na **naukę (20%)**, suwak pracy **70% budynki**.
 ### Typowe błędy
 - Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
 - Ignorowanie utrzymania: 3 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
@@ -47,9 +47,9 @@ Miasto naukowe: ustaw suwak handlu więcej na **naukę (20%)**, suwak pracy **70
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 70 | **7 tur** | +6 nauki, +2 kultury, +10 % mnożnika handlu | 3 ¤/t |
+| Poziom 1 | 70 | **7 tur** | +6 nauki, +2 kultury, +10 % mnożnika Daniny | 3 ¤/t |
 | Poziom 2 | 85 | **9 tur** | więcej (patrz niżej) | 3 ¤/t |
-| Poziom 3 | 100 | — | **+12 nauki, +4 kultury, +16 % mnożnika handlu** | 3 ¤/t |
+| Poziom 3 | 100 | — | **+12 nauki, +4 kultury, +16 % mnożnika Daniny** | 3 ¤/t |
 
 Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu **Miasto** przed/po budowie.
 
