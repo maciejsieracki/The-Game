@@ -13043,8 +13043,8 @@ var buildings_default = [
     przyrostKosztu: 8,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "",
-    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    wymagania: "Dost\u0119p do Ceramiki w imperium (wybudowana Garncarnia gdziekolwiek w imperium ALBO zapas Ceramiki w puli pa\u0144stwa)",
+    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): pole 'wymagania' bylo puste, wiec gdy bramka Ceramika nie byla spelniona, budynek znikal z panelu bez zadnego komunikatu (eraBuildingCatalog nie sprawdzal tej bramki w ogole -- naprawione w production.ts, patrz komentarz R-BUD-SPICHLERZ-ZNIKA tamze). Tekst tu teraz zasila formatBuildingCatalogLockHint w cityPanel.ts.",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
       drewno: 8
@@ -13083,8 +13083,8 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 2,
     przyrostUtrzymania: 0,
-    wymagania: "upgrade ze Spichlerza I",
-    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    wymagania: "Upgrade ze Spichlerza I + dost\u0119p do Soli w imperium (w\u0142asne z\u0142o\u017Ce ALBO zapas Soli w puli pa\u0144stwa)",
+    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupe\u0142nione o bramk\u0119 Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     techUnlock: "Warzelnia soli",
     koszt_surowce: {
       drewno: 8,

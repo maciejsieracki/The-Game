@@ -148,8 +148,21 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
 
   root = document.createElement('div');
   root.className = 'civ-amp-overlay';
+  // R-MERGE-DISMISS (2026-07-26, zgloszenie blokujace: "zwiadowca cofa sie do
+  // miasta na koniec tury"): klik w tlo NIE moze byc rownowazny "Zostaw osobno"
+  // (opts.onSeparate) -- ta akcja ma efekt uboczny assignBounceHexesForUnits w
+  // main.ts, ktory PRZESUWA wlasnie przybyla jednostke z powrotem w strone
+  // punktu, z ktorego wyszla (lub na sasiedni heks, jesli zajety). Ten panel
+  // potrafi wyskoczyc odlozony (flushDeferredMergePrompts, main.ts) dokladnie
+  // na przelomie tury/ruchu gracza -- przypadkowy klik w mapie tuz po tym
+  // (gracz nie zdazyl zauwazyc modala) dotychczas SAMOCZYNNIE teleportowal
+  // jednostke, ktora gracz przed chwila wyslal w nowe miejsce. Dismiss (klik w
+  // tlo / Escape) ma byc NIEDESTRUKCYJNY -- domyslnie "Polacz" (onMerge), ktory
+  // NIE rusza zadnej jednostki (jednostki i tak juz stoja razem na heksie;
+  // "Polacz" tylko synchronizuje pulę ruchu/zaznaczenie), w przeciwienstwie do
+  // "Zostaw osobno".
   root.addEventListener('click', (e) => {
-    if (e.target === root) pick(opts.onSeparate);
+    if (e.target === root) pick(opts.onMerge);
   });
 
   const box = document.createElement('div');
@@ -190,9 +203,11 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
   document.body.appendChild(root);
 
   keyHandler = (e: KeyboardEvent) => {
+    // R-MERGE-DISMISS: patrz komentarz przy click-outside powyzej -- Escape to
+    // dismiss, nie "Zostaw osobno" (ktore bouncowaloby jednostke).
     if (e.key === 'Escape') {
       e.preventDefault();
-      pick(opts.onSeparate);
+      pick(opts.onMerge);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       pick(opts.onMerge);
