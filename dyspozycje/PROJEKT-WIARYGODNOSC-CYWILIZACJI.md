@@ -636,3 +636,14 @@ brak odpowiedzi na nie można tymczasowo zastąpić rekomendacjami (C, C) oznacz
 **Status:** projekt ZATWIERDZONY do implementacji. Realizacja wg planu etapowego (rdzeń → haki → wpływ na Zaufanie → save/load → UI → reakcje AI).
 **Parytet AI obowiązuje** — mechanizm identyczny dla gracza i AI, kod ownerId-agnostic.
 **Uwaga wykonawcza:** część haków zdarzeń NIE ISTNIEJE w kodzie (oznaczone w tabeli zdarzeń) — trzeba je zbudować, nie tylko dopiąć.
+
+### Decyzje uzupełniające (2026-07-26, druga tura)
+
+| Pytanie | Decyzja | Dla implementacji |
+|---|---|---|
+| **WIAR-Q4** widoczność | **A — JAWNA ZAWSZE** | Wiarygodność każdej cywilizacji widoczna dla gracza od początku, bez warunku kontaktu. Symetria: AI reaguje na reputację gracza, gracz widzi ich. Wchodzi do UI obok Zaufania i Respektu. |
+| **WIAR-Q5** surowość | **B — UMIARKOWANIE** | Zdrada wyraźnie boli, ale reputację da się odbudować (spójne z WIAR-Q2=C: blizna zostaje, gra idzie dalej). Wagi dobrać tak, by JEDNA zdrada nie zamykała ścieżki dyplomatycznej, ale była odczuwalna przez wiele tur. Konkretne liczby = do strojenia w playteście. |
+| **WIAR-Q6** start | **A — WSZYSCY 70** | Jednakowa wartość startowa dla gracza i wszystkich AI. Bez różnicowania per cywilizacja ani per trudność — różnice biorą się wyłącznie z czynów. |
+
+**Komplet decyzji: Q1=A (globalna) · Q2=C (dryf+blizna) · Q3=C (tempo+progi) · Q4=A (jawna) · Q5=B (umiarkowanie) · Q6=A (start 70 dla wszystkich).**
+Otwarte do strojenia w playteście (nie blokuje startu prac): konkretne wagi zdarzeń, tempo dryfu, wysokość progów blokujących.
