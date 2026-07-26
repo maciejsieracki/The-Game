@@ -605,3 +605,45 @@ musi mieć NUMER i PEŁNĄ FORMĘ ABC** (nagłówek `[TEMAT: …]` + ID + Sytuac
 A/B/C z co najmniej dwoma „za" i dwoma „przeciw" + Rekomendacja + formularz Ask na końcu).
 **Nie istnieje kategoria „drobne pytanie poza formą".** Zdanie w rodzaju „powiedz, jeśli ma być inaczej"
 jest pytaniem i łamie zasadę.
+
+---
+
+## PYTANIE 84 (szkic, zapisane 2026-07-26) — czy inne budynki też mają zasypiać bez surowca?
+**STATUS: OTWARTE — czeka na decyzję ABC. Uwaga Macieja, zapisana zanim zdążyliśmy ją rozwinąć.**
+
+> „Mamy chyba więcej budynków takich, które wymagają surowca do działania. Na przykład gliny i innych.
+> Teoretycznie też nie powinny działać w sytuacji, gdy nie mają dostępu. Chyba że działają na tym,
+> co mają skumulowane w magazynie."
+
+**Kontekst.** Decyzją 83B **Mennica zasypia** po utracie dostępu do złota — mnożnik znika, budynek zostaje
+i budzi się sam. Maciej zauważa, że to nie jest wyjątek: podobnych budynków jest więcej.
+
+**Stan dzisiejszy — w grze istnieją TRZY różne rodzaje bramek surowcowych i tylko jedna z nich działa
+po zbudowaniu:**
+
+| Rodzaj bramki | Gdzie w kodzie | Kiedy sprawdzana |
+|---|---|---|
+| **Dostęp do złoża w terenie** (Stolarnia→Drewno, Warsztat kamieniarski→Kamień, Kuźnia→Ruda, Garncarnia i Cegielnia→Glina, Spichlerz→Ceramika, Spichlerz II→Sól, Mennica→Złoto) | `DEPOSIT_LINKED_BUILDING_LABELS` w `building-resource-gate.ts` | **tylko przy budowie** — poza Mennicą |
+| **Wymagany wcześniejszy budynek** | `CITY_BUILDING_PREREQ` | tylko przy budowie |
+| **Surowce w magazynie** (`koszt_surowce`) | dane budynku | jednorazowo, przy budowie |
+| **Dostęp do złota — DZIAŁANIE** | `zloto-access.ts` + `turn-economy.ts` | **co turę** (decyzja 83B) |
+
+Czyli dziś **tylko Mennica** ma bramkę działania. Pozostałe sześć budynków po zbudowaniu pracuje
+w nieskończoność, nawet jeśli cywilizacja straci dostęp do złoża, na którym powstały.
+
+**Do rozstrzygnięcia — trzy warianty, do rozpisania w pełnej formie ABC:**
+- **A — jak Mennica:** utrata dostępu usypia budynek (plon 0 albo zmniejszony), odzyskanie budzi.
+- **B — praca z magazynu:** budynek działa dopóki ma surowiec w magazynie miasta, zużywając go co turę;
+  po wyczerpaniu zasypia. To wariant, który Maciej wprost dopuścił („chyba że działają na tym, co mają
+  skumulowane"). **Wymaga rozstrzygnięcia, ile sztuk na turę zużywa każdy budynek** — dziś taki parametr
+  nie istnieje.
+- **C — zostaje jak jest:** dostęp to warunek budowy, nie działania; Mennica pozostaje świadomym wyjątkiem
+  ze względu na siłę mnożnika.
+
+**Uwaga projektowa:** wariant B jest najciekawszy gospodarczo, ale to **nowy mechanizm zużycia surowców
+na turę**, którego silnik dziś nie ma — nie mylić z jednorazowym `koszt_surowce` przy budowie.
+Wariant A jest najtańszy we wdrożeniu, bo powiela gotowy wzorzec z 83B (`OwnerZlotoAccessResolver`).
+
+**Kto to prowadzi:** temat przekazany przez Macieja do innej sesji/agenta razem z paczką prac
+(karta Mennicy v2, mockupy badań i miast, dyplomacja, lokalizacja, muzyka, wiarygodność cywilizacji).
+Ten wpis istnieje po to, żeby uwaga nie zginęła w czacie.
