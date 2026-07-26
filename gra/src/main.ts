@@ -8184,10 +8184,57 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * C-DYP-Q1=A: AI odpowiada na wpisy, w których to jej kolej — JEDYNA
-     * zautomatyzowana decyzja (decyzje GRACZA są zawsze ręczne, patrz
-     * handleNegotiationAccept/Reject/Counter niżej). Wołane raz na turę per AI
-     * właściciel, tuż po przetworzeniu dipCmds tego samego ownera.
+     * C-DYP-Q1=B (2026-07-26, Maciej — po playteście: negocjacja NA ŻYWO, bez czekania na
+     * koniec tury; jego słowa: „wszystkie decyzje powinny być na bieżąco rozwiązywane",
+     * „gracz będzie myślał, że coś się nie udało… to jest nielogiczne"). Rozstrzyga JEDEN
+     * wpis stołu, w którym to AI musi teraz odpowiedzieć — DOKŁADNIE ta sama maszyneria co
+     * wcześniej (negotiationStillValid → resolveNegotiationAsResponder, wyrocznia
+     * evaluateProposal, limit NEGOTIATION_MAX_ROUNDS, generateCounterOffer), tylko WOŁANA Z
+     * INNEGO MIEJSCA: natychmiast po tym, jak gracz złoży propozycję/kontrofertę
+     * (handleNegotiatedProposal/handleNegotiationCounter niżej), zamiast wyłącznie w turze
+     * AI. Efekt: gracz widzi przyjęcie/odrzucenie/kontrofertę OD RAZU w tym samym oknie
+     * audiencji — bez kończenia tury. `resolvePendingNegotiationsForOwner` (niżej) zostaje
+     * jako AWARYJNA siatka bezpieczeństwa w turze AI — w normalnym biegu nie powinna mieć
+     * już nic do zrobienia (każdy wpis rozstrzyga się w miejscu powstania), ale chroni na
+     * wypadek wpisu, który z jakiegoś powodu przetrwał nierozstrzygnięty.
+     */
+    function resolveNegotiationEntryAt(ni: number): void {
+      const entry = negotiationTable[ni];
+      if (!entry) return;
+      const awaitingId = entry.awaitingOwnerId;
+      const validity = negotiationStillValid(entry, {
+        turn,
+        isAtWar: getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
+        proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
+        responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
+      });
+      if (!validity.valid) {
+        negotiationTable.splice(ni, 1);
+        showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
+        return;
+      }
+      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
+      const outcome = resolveNegotiationAsResponder(entry, ctx, turn);
+      if (outcome.kind === 'countered') {
+        negotiationTable[ni] = outcome.entry;
+        showHintMessage(ownerDiploLabel(awaitingId) + ' składa kontrofertę: ' + outcome.note, 4500);
+      } else {
+        negotiationTable.splice(ni, 1);
+        const result = outcome.kind === 'accepted' ? outcome.result : { accepted: false as const, reason: outcome.reason };
+        applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
+        const summary = negotiationSummary(entry);
+        showHintMessage(
+          ownerDiploLabel(awaitingId)
+            + (outcome.kind === 'accepted' ? ' przyjmuje propozycję: ' + summary : ' odrzuca propozycję: ' + summary),
+          4000,
+        );
+      }
+    }
+
+    /**
+     * C-DYP-Q1=B: siatka bezpieczeństwa w turze AI (patrz komentarz resolveNegotiationEntryAt
+     * wyżej) — iteruje wpisy, w których to AI ma odpowiedzieć, i rozstrzyga każdy przez tę
+     * samą funkcję co ścieżka „na żywo". W normalnym biegu gry nie powinno tu nic trafiać.
      */
     function resolvePendingNegotiationsForOwner(ownerId: number): void {
       let changed = false;
@@ -8195,33 +8242,8 @@ async function boot(): Promise<void> {
         const entry = negotiationTable[ni]!;
         if (entry.awaitingOwnerId !== ownerId) continue;
         if (entry.proposerOwnerId !== 0 && entry.responderOwnerId !== 0) continue;
-        const validity = negotiationStillValid(entry, {
-          turn,
-          isAtWar: getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
-          proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
-          responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
-        });
-        if (!validity.valid) {
-          negotiationTable.splice(ni, 1);
-          changed = true;
-          showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
-          continue;
-        }
-        const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
-        const outcome = resolveNegotiationAsResponder(entry, ctx, turn);
+        resolveNegotiationEntryAt(ni);
         changed = true;
-        if (outcome.kind === 'countered') {
-          negotiationTable[ni] = outcome.entry;
-          showHintMessage(ownerDiploLabel(ownerId) + ' składa kontrofertę: ' + outcome.note, 4500);
-        } else {
-          negotiationTable.splice(ni, 1);
-          const result = outcome.kind === 'accepted' ? outcome.result : { accepted: false as const, reason: outcome.reason };
-          applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
-          showHintMessage(
-            ownerDiploLabel(ownerId) + (outcome.kind === 'accepted' ? ' przyjmuje propozycję' : ' odrzuca propozycję'),
-            4000,
-          );
-        }
       }
       if (changed) {
         refreshD1bHud();
@@ -8239,6 +8261,7 @@ async function boot(): Promise<void> {
       const result = resolvePlayerAcceptsAiPending(negotiationToLegacyPending(entry), turn, _menuDifficulty);
       applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
       refreshD1bHud();
+      updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
@@ -8256,10 +8279,15 @@ async function boot(): Promise<void> {
       }
       showDiplomacyProposalBanner(false, 'Odrzucono propozycję');
       refreshD1bHud();
+      updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
-    /** Gracz Kontruje wpis stołu, w którym to jego kolej — nowe warunki z formularza negocjacji. */
+    /**
+     * Gracz Kontruje wpis stołu, w którym to jego kolej — nowe warunki z formularza
+     * negocjacji. C-DYP-Q1=B: odpowiedź AI na tę kontrofertę liczymy TU OD RAZU
+     * (resolveNegotiationEntryAt), nie czekamy końca tury — patrz komentarz wyżej.
+     */
     function handleNegotiationCounter(negotiationId: string, payload: NegotiationPayload): void {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
@@ -8271,8 +8299,9 @@ async function boot(): Promise<void> {
       const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
       const { uiPayload } = buildProposalFromPayload(aiOwnerId, payload);
       negotiationTable[idx] = applyCounterOffer(entry, uiPayload, 0, turn);
-      showHintMessage('Kontroferta wysłana — czekamy na odpowiedź', 4000);
+      resolveNegotiationEntryAt(idx);
       refreshD1bHud();
+      updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
@@ -9603,20 +9632,23 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * C-DYP-Q1=A (2026-07-26, Maciej): DECYZJA WŁAŚCICIELA — pełny stół negocjacyjny
-     * z kontrofertą. Propozycja gracza NIE jest już rozstrzygana natychmiast: ląduje
-     * na stole (negotiationTable) i czeka na odpowiedź AI w JEJ turze przetwarzania
-     * (resolvePendingNegotiationsForOwner) — przyjęcie / odrzucenie / kontroferta.
-     * previewNegotiatedProposal (wyżej) zostaje jako ADWIZORY „prawdopodobna
-     * odpowiedź" — nie finalizuje niczego, nie gwarantuje wyniku.
+     * C-DYP-Q1=B (2026-07-26, Maciej — po playteście, zastępuje poprzednią wersję C-DYP-Q1=A
+     * poniższego komentarza): DECYZJA WŁAŚCICIELA — pełny stół negocjacyjny z kontrofertą,
+     * rozstrzygany NA ŻYWO. Wpis ląduje na stole (negotiationTable — potrzebne dla zapisu/
+     * odczytu gry i dla przypadku zamknięcia okna w trakcie rozmowy), ale AI odpowiada
+     * NATYCHMIAST (resolveNegotiationEntryAt), tu, w tym samym wywołaniu — gracz widzi
+     * przyjęcie / odrzucenie / kontrofertę od razu w oknie audiencji, bez czekania na turę.
+     * previewNegotiatedProposal (wyżej) zostaje jako ADWIZORY „prawdopodobna odpowiedź"
+     * PRZED wysłaniem — nie finalizuje niczego, nie gwarantuje wyniku.
      */
     function handleNegotiatedProposal(ownerId: number, payload: NegotiationPayload): void {
       const { proposal } = buildProposalFromPayload(ownerId, payload);
       negotiationSeq += 1;
       const entry = createNegotiation(proposal, turn, 'player', negotiationSeq);
       negotiationTable.push(entry);
-      showHintMessage('Propozycja wysłana do: ' + ownerDiploLabel(ownerId) + ' — czekamy na odpowiedź', 4000);
+      resolveNegotiationEntryAt(negotiationTable.length - 1);
       refreshD1bHud();
+      updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
@@ -9840,6 +9872,23 @@ async function boot(): Promise<void> {
 
     function openDiplomacyAudience(ownerId: number): void {
       diplomacyAudienceOwnerId = ownerId;
+      // C-DYP-Q1=B (2026-07-26, po playteście — negocjacja NA ŻYWO): siatka bezpieczeństwa
+      // przy OTWARCIU okna — jeśli z jakiegoś powodu (stary zapis sprzed tej zmiany, albo
+      // okno zamknięte dokładnie w trakcie rozstrzygania) na stole leży wpis, w którym to
+      // AKURAT TA AI ma teraz odpowiedzieć, rozstrzygamy go od razu, ZANIM gracz zobaczy
+      // okno — żeby nigdy nie pokazać „czekamy" tam, gdzie odpowiedź jest już do wzięcia.
+      let _preOpenResolved = false;
+      for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
+        const entry = negotiationTable[ni]!;
+        if (entry.awaitingOwnerId !== ownerId) continue;
+        if (entry.proposerOwnerId !== 0 && entry.responderOwnerId !== 0) continue;
+        resolveNegotiationEntryAt(ni);
+        _preOpenResolved = true;
+      }
+      if (_preOpenResolved) {
+        refreshD1bHud();
+        if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+      }
       const playerCivName = String(player.civType || 'Gracz');
       showDiplomacyAudience({
         ownerId,

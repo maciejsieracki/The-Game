@@ -388,10 +388,14 @@ export function showNegotiationModal(
     const payload = readPayload(action.id, ctx);
     if (payload == null) return;
     lastPayload = payload;
-    // C-DYP-Q1=A (2026-07-26): podgląd to WYŁĄCZNIE prognoza — propozycja i tak ląduje
-    // na stole (negotiationTable) i czeka na realną odpowiedź w turze AI (przyjęcie /
-    // odrzucenie / kontroferta). „Wyślij propozycję" NIE jest już blokowane prognozą —
-    // to gracz decyduje, czy mimo słabej prognozy warto spróbować.
+    // C-DYP-Q1=B (2026-07-26, po playteście — negocjacja NA ŻYWO): ten podgląd to
+    // WYŁĄCZNIE prognoza (evaluateProposal BEZ finalizacji). Kliknięcie „Wyślij
+    // propozycję" ląduje na stole (negotiationTable — potrzebne dla zapisu gry i na
+    // wypadek zamknięcia okna w trakcie rozmowy) i SILNIK odpowiada NATYCHMIAST
+    // (resolveNegotiationEntryAt w main.ts) — wynik (przyjęcie / odrzucenie /
+    // kontroferta) gracz zobaczy od razu w oknie audiencji, BEZ czekania na turę AI.
+    // „Wyślij propozycję" NIE jest blokowane tą prognozą — to gracz decyduje, czy mimo
+    // słabej prognozy warto spróbować.
     const preview = onPreview(payload);
     resultText.innerHTML = preview.accepted
       ? '<p class="cdn-accepted">✓ ' + esc(ctx.civName) + ' prawdopodobnie się zgodzi'

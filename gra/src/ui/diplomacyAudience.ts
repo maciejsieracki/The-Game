@@ -346,6 +346,9 @@ ${DIPLO_1E_SHARED_CSS}
 .da-negot .da-nm .dir{font-size:0.62em;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
   padding:1px 6px;border-radius:6px;border:1px solid rgba(232,216,138,.3);color:#8a8070;}
 .da-negot.incoming .da-nm .dir{border-color:rgba(90,208,122,.45);color:#7ad0a0;}
+.da-negot:not(.incoming){border-style:dashed;opacity:.82;}
+.da-dir-ic{width:11px;height:11px;vertical-align:-1px;margin-right:3px;color:#8a8070;}
+.da-negot.incoming .da-nm .dir .da-dir-ic{color:#7ad0a0;}
 .da-negot .da-meta{font-size:0.62em;color:#8a8070;}
 .da-negot .da-btnrow{display:flex;gap:6px;margin-top:2px;}
 .da-negot .da-btnrow button{flex:1;font-size:0.66em;padding:5px 6px;border-radius:6px;
@@ -880,17 +883,24 @@ function offersColumnHtml(st: DiplomacyAudienceState): string {
 }
 
 /**
- * C-DYP-Q1=A (2026-07-26, Maciej — pełny stół negocjacyjny z kontrofertą) — kolumna
- * „Oczekujące propozycje": wpisy własne (czekamy na AI) i przychodzące (AI czeka na
- * nas, przyciski aktywne). Data-attrs (data-negot-id/data-negot-action) czytane w
- * render() — Kontruj ponownie otwiera showNegotiationModal (nowy formularz, bez
- * wypełniania poprzednich wartości — patrz raport zadania).
+ * C-DYP-Q1=B (2026-07-26, Maciej — po playteście: negocjacja NA ŻYWO w oknie audiencji,
+ * BEZ czekania na koniec tury; jego słowa: „wszystkie decyzje powinny być na bieżąco
+ * rozwiązywane", „gracz będzie myślał, że coś się nie udało… to jest nielogiczne").
+ * SILNIK (main.ts resolveNegotiationEntryAt) odpowiada AI natychmiast po złożeniu
+ * propozycji/kontroferty gracza — w normalnym biegu ta kolumna pokazuje więc od razu
+ * albo (a) wpis PRZYCHODZĄCY („incoming" — kontroferta AI lub świeża propozycja AI,
+ * wymaga decyzji gracza TERAZ) albo nic (przyjęto/odrzucono i zniknęło ze stołu).
+ * Gałąź „własna" (direction='own', dashed/przygaszona) zostaje WYŁĄCZNIE jako awaryjny
+ * stan (np. okno zamknięte w ułamku sekundy między krokami) — patrz komentarz niżej.
+ * Data-attrs (data-negot-id/data-negot-action) czytane w render() — Kontruj ponownie
+ * otwiera showNegotiationModal (nowy formularz, bez wypełniania poprzednich wartości).
  */
 function pendingNegotiationsColumnHtml(st: DiplomacyAudienceState): string {
   const rows = st.pendingNegotiations ?? [];
   const items = rows.map(r => {
     const cls = 'da-negot' + (r.direction === 'incoming' ? ' incoming' : '');
-    const dirLabel = r.direction === 'incoming' ? 'Ich propozycja' : 'Twoja propozycja';
+    const dirIcon = r.direction === 'incoming' ? dipBrandIconHtml('chip-warning', 11, 'da-dir-ic') : '';
+    const dirLabel = r.direction === 'incoming' ? 'Ich propozycja — czeka na Ciebie' : 'Twoja propozycja';
     const expLabel = r.expiresInTurns <= 0 ? 'wygasa w tej turze' : `ważna jeszcze ${r.expiresInTurns} tur`;
     const btns = r.direction === 'incoming'
       ? (
@@ -902,10 +912,13 @@ function pendingNegotiationsColumnHtml(st: DiplomacyAudienceState): string {
           : '') +
         '</div>'
       )
-      : '<div class="da-meta">Czekamy na odpowiedź drugiej strony.</div>';
+      // C-DYP-Q1=B: STAN AWARYJNY — w normalnym biegu ta gałąź się nie renderuje (AI
+      // odpowiada natychmiast, patrz komentarz funkcji). Świadomie BEZ odniesienia do
+      // „końca tury"/„czekamy" — właśnie to mylenie właściciel odrzucił w playtescie.
+      : '<div class="da-meta">Wysłano — odpowiedź pojawi się w tym oknie za chwilę.</div>';
     return (
       '<div class="' + cls + '">' +
-        '<div class="da-nm"><span class="dir">' + esc(dirLabel) + '</span>' + esc(r.actionLabel) + '</div>' +
+        '<div class="da-nm"><span class="dir">' + dirIcon + esc(dirLabel) + '</span>' + esc(r.actionLabel) + '</div>' +
         '<div class="da-meta">' + esc(r.summary) + ' · runda ' + r.round + '/' + r.maxRounds + ' · ' + esc(expLabel) + '</div>' +
         btns +
       '</div>'
