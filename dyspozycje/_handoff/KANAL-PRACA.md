@@ -3388,3 +3388,20 @@ dźwięk marszu, menu pauzy, Murarstwo.
 inaczej znów rozjedziemy się na tych samych plikach.
 **Sesja lokalna: pull na dysk właściciela, testuj `7c7ae9a0`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+
+## [14:27 PL, 2026-07-26] CHMURA → LOKALNA + DRUGI INTEGRATOR — deploy ROBOCZA `290a962b` (FALA 16)
+Fala napraw ze zgłoszeń z playtestu Macieja. **md5 `290a962b077588ecbbaa1820fc470ae8`**,
+pieczątka `ROBOCZA · 69644b2d · 2026-07-26 14:27`. VERIFY OK, manifest 10 bundli.
+Zbudowane z **czystego HEAD `6be1355`** w osobnym worktree — dwa zlecenia trwały równolegle
+w drzewie roboczym i ich niedokończone zmiany świadomie NIE weszły do bundla.
+Weszło: trafianie w heks (29,7%→0,0% błędnych kliknięć, przyczyna: nieodświeżana
+`boundingSphere` `InstancedMesh` + brak martwej strefy przeciągania) · Escape i „← Wróć"
+w drzewku technologii · panele lewej kolumny bez nachodzenia (jedno źródło offsetów) ·
+niebieski pasek ruchu + etykiety w liście armii · nowa jednostka z pełnym ruchem w turze
+narodzin (C-TURA-Q1=A) · panel surowców z dostępem i Złotem · budynki stolica/region znikają
+z niewłaściwego miasta · model Wojownika Kamienia (był stary miecznik) · „Rozegraj ponownie"
+odzyskuje fazę rozstawiania · barbarzyńcy z realną relacją wojny (C-BARB-Q1=B) · koniec śmieci
+zmiennoprzecinkowych w liczbach na paskach.
+**Sesja lokalna: pull na dysk właściciela, testuj `290a962b`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.

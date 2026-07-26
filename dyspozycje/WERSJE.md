@@ -11,7 +11,46 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `7c7ae9a0` — 2026-07-26 12:18 · FALA 15: SCALENIE OBU INTEGRATOROW — **AKTUALNA**
+## ROBOCZA `290a962b` — 2026-07-26 14:27 · FALA 16: PLAYTEST MACIEJA (10 napraw) — **AKTUALNA**
+- md5 (pelne): `290a962b077588ecbbaa1820fc470ae8` · stempel: `ROBOCZA · 69644b2d · 2026-07-26 14:27`
+- **VERIFY OK.** Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- Zbudowane z **czystego HEAD `6be1355`** w osobnym worktree — w drzewie roboczym trwaly
+  rownolegle dwa zlecenia (teren w bitwie, bonus murow), wiec ich niedokonczone zmiany
+  NIE trafily do bundla. Swiadoma decyzja, zeby playtest dostal wylacznie skonczone rzeczy.
+- **Co weszlo (zgloszenia z playtestu 2026-07-26):**
+  - **Trafianie w heks** (`R-RUCH-WZGORZA-2`) — 29,7% klikniec trafialo w zly heks (40,0% na
+    wzgorzach i gorach). Przyczyna: `InstancedMesh.raycast()` odsiewa caly mesh po
+    boundingSphere liczonej leniwie przy pierwszym raycascie i nigdy nieodswiezanej; mgla wojny
+    zawezala ja do odslonietego skrawka na starcie gry. Plus martwa strefa 6 px w `camera.ts`
+    (pan zaczynal sie od pierwszego piksela, klik ginal). Po poprawce 0,0%.
+  - **Drzewko technologii** — Escape zamyka drzewko przed pelnym ekranem (Keyboard Lock API),
+    przycisk `✕` zastapiony wysrodkowana pigulka „← Wroc · ESC".
+  - **Panele lewej kolumny** — koniec nachodzenia na przyciski toolbara i na pasek chipow;
+    jedno zrodlo offsetow (`ui/sidePanelLayout.ts`, 86 px / 104 px) dla szesciu paneli.
+  - **Lista armii** — pasek ruchu niebieski, etykiety „Zdrowie 34/50" i „Ruch 3/3" nad paskami.
+  - **Nowa jednostka** (C-TURA-Q1 = A) — jednostka gotowa na przelomie tur ma pelne punkty
+    ruchu w tej turze (wczesniej 0 pkt i tracila cala ture) + kamera leci do niej.
+  - **Panel surowcow** — wiersze dostepu (Ceramika, Sol, Kon) widoczne zawsze („masz"/„brak"),
+    dolozone **Zloto** korzystajace z istniejacej bramki `ownerHasZlotoAccessNow`.
+  - **Budynki stolica/region** — karta budynku nie pokazuje sie w miescie, w ktorym nigdy nie
+    bedzie dostepny (blokada lokalizacji jest trwala, w odroznieniu od braku technologii).
+  - **Model Wojownika (Kamien)** — trafial na stary model miecznika (`Typ = "Swordsman"`
+    w `units.json`), nowy model Opus 5 byl martwym kodem. Widoczne glownie na miastach-panstwach.
+  - **„Rozegraj ponownie"** — powtorka gubila panel fazy rozstawiania (jedna linia chowala
+    `_rosterBar` tuz po jego zbudowaniu).
+  - **Barbarzyncy** (C-BARB-Q1 = B) — realna relacja „wojna" i atak przez ta sama bramke co
+    reszta AI, zamiast wyjatku. Zamkniety przeciek: barbarzyncy potrafili trafic do listy
+    odkrytych cywilizacji i otworzyc audiencje dyplomatyczna.
+  - **Liczby na paskach** — koniec `Skarbiec +6.600000000000005`; wspolny `signedPl()`,
+    zaokraglenie WYLACZNIE prezentacyjne (silnik liczy dalej na pelnej wartosci).
+- **Bramki:** tsc 0 bledow · picker-test 140/140 (nowy) · ai 239/239 · logic 208/208 ·
+  combat 6/6 · battle-roster 7/7 · barbarians 148/148 · diplomacy-layers 14/14 ·
+  administracja-stolica 48/48 · prereq-budynkow 46/46 · zloto-szlak 45/45 ·
+  mennica-uspienie 47/47 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 ·
+  map-gen: determinizm A=B PASS, 0 rzek bez ujscia PASS (progi czasowe FAIL — wydajnosc
+  kontenera, nie regresja) · build vite + smoke OK.
+
+## ROBOCZA `7c7ae9a0` — 2026-07-26 12:18 · FALA 15: SCALENIE OBU INTEGRATOROW — **ZASTĄPIONA**
 - md5 (pelne): `7c7ae9a018b174425ff9e99698f286c9` · stempel: `ROBOCZA · 5755d741 · 2026-07-26 12:18`
 - **VERIFY OK.** Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
 - **TO PIERWSZY BUNDLE ZAWIERAJACY PRACE OBU INTEGRATOROW.** Do tej pory istnialy dwa rozne
