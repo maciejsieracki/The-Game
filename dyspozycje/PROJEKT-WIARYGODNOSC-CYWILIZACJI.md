@@ -674,8 +674,12 @@ Dotyczy gracza I wszystkich AI jednakowo (parytet). Bez różnicowania per cywil
 - W=0 → ×1,0 / ×1,0
 - W=−100 → rośnie ×0,5, spada ×1,5 (przy pierwszej okazji)
 
-**2. SUFIT ZAUFANIA** (Maciej: TAK) — wiarygodność wyznacza MAKSYMALNE osiągalne zaufanie, niezależnie od darów. Np. przy W=−60 zaufanie nie przekroczy ~30, choćby zasypać złotem.
-⚠️ To najważniejsza dźwignia: zamyka lukę „kupię sobie zaufanie prezentami" u źródła (audyt łatał podobną — zaufanie za dary bez pokrycia, #16). Najbardziej zrozumiała dla gracza: „nie ufam ci, bo mnie oszukałeś".
+**2. WPŁYW NA ISTNIEJĄCY SUFIT ZAUFANIA** ⚠️ **KOREKTA Macieja 2026-07-26:**
+> „zaufanie ma już swój sufit i nie można go kupować w nadmiarze darami. Ale Ty nie miałeś zajmować się zaufaniem, tylko wiarygodnością. **Nie zmieniamy już tego, co jest, tylko dostosuj do wiarygodności.**"
+
+**NIE PROJEKTUJEMY nowego sufitu ani nie ruszamy mechaniki Zaufania.** Sufit zaufania i ochrona przed kupowaniem go darami **JUŻ ISTNIEJĄ i działają** — zostają nietknięte.
+Rola Wiarygodności: **wchodzi jako WEJŚCIE do istniejącego mechanizmu sufitu**, obniżając go dla cywilizacji o złej reputacji. Implementacja: znaleźć miejsce, gdzie sufit zaufania jest dziś wyliczany, i dołożyć tam człon zależny od W — bez zmiany reszty wzoru i bez dotykania pozostałych ścieżek zaufania.
+⚠️ ZASADA DLA WYKONAWCY: wszystkie cztery dźwignie mają być **doczepione do istniejących mechanizmów**, nie zastępować ich. Jeśli w trakcie implementacji okaże się, że dźwignia wymaga przebudowy Zaufania — ZATRZYMAJ SIĘ i zapytaj Macieja, zamiast przebudowywać.
 
 **3. Twarde progi** (Q3=C) — poniżej wartości AI odmawia z zasady, bez negocjacji, NIEZALEŻNIE od zaufania i Respektu:
 - **Sojusz** wymaga W ≥ 0 · **Pakt o nieagresji** wymaga W ≥ −40
