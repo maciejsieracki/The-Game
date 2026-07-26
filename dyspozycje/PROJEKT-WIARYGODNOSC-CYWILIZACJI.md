@@ -102,7 +102,7 @@ przez silnik (albo typ eventu istnieje w `DiplomaticEvent`, ale nikt go nie wywo
 
 | # | Zdarzenie | Waga (propozycja) | Status | Plik : funkcja | Uwagi |
 |---|---|---|---|---|---|
-| N1 | **Zdrada — atak bez wypowiedzenia wojny** (kontrahent zaatakowany mimo statusu ≠ 'wojna') | **−25** | ❌ WYMAGA NOWEGO HAKA | Event `'zdrada'` zdefiniowany w `game/diplomacy.ts:596-631` (typ) i `:699-703` (delta −50 Zaufania, ustawia `status='wojna'`) — **zero wywołań w `main.ts`** (potwierdzone grepem). Silnik dziś nie odróżnia „zaatakowałem bez ostrzeżenia" od zwykłego `wojna_wypowiedziana`. Trzeba znaleźć punkt inicjacji walki (combat entry point) i sprawdzić, czy dopuszcza atak na cel, z którym `getDiploRelation(a,b).status !== 'wojna'` — jeśli tak, to jest dokładnie ten hak. | Najcięższa pojedyncza kara — złamanie fundamentalnej reguły wojny |
+| N1 | **ATAK Z ZASKOCZENIA — atak bez wypowiedzenia wojny** *(NIE „zdrada" — patrz §N1 spec)* (kontrahent zaatakowany mimo statusu ≠ 'wojna') | **−25** | ❌ WYMAGA NOWEGO HAKA | Event `'zdrada'` zdefiniowany w `game/diplomacy.ts:596-631` (typ) i `:699-703` (delta −50 Zaufania, ustawia `status='wojna'`) — **zero wywołań w `main.ts`** (potwierdzone grepem). Silnik dziś nie odróżnia „zaatakowałem bez ostrzeżenia" od zwykłego `wojna_wypowiedziana`. Trzeba znaleźć punkt inicjacji walki (combat entry point) i sprawdzić, czy dopuszcza atak na cel, z którym `getDiploRelation(a,b).status !== 'wojna'` — jeśli tak, to jest dokładnie ten hak. | Najcięższa pojedyncza kara — złamanie fundamentalnej reguły wojny |
 | N2 | **Zerwanie traktatu WYMUSZONE wojną** (wypowiedzenie wojny mimo aktywnego NAP/sojuszu/otwartych granic z ofiarą) | **−18** (JEDNAKOWO dla gracza i AI — patrz §6 o parytecie) | ✅ ISTNIEJE (Zaufanie), Wiarygodność DOPISAĆ | `main.ts:8510-8521` (`breakTreatiesOnWar(a,b,breakerIsPlayer)`) → dziś aplikuje `'zlamana_obietnica'` (gracz, −40 Zaufania) / `'zlamana_obietnica_ai'` (AI, −20 Zaufania) przez `applyDiploEventTracked`. Wywoływane z: deklaracja wojny gracza (`main.ts:9031`), AI (`main.ts:14834`), kaskada obowiązków sojuszniczych (`main.ts:8550`). | To obejmuje też „atak na własnego sojusznika" (atak = wypowiedzenie wojny, `BREAK_ON_WAR` w `diplomacy-treaties.ts:239-247` zawiera oba typy sojuszu) |
 | N3 | **Atak zaraz po podpisaniu pokoju** (nowa wojna z TĄ SAMĄ stroną < 10 tur od zawarcia pokoju) | dodatkowe **−12** (NA WIERZCHU kary N2/N1) | ❌ WYMAGA NOWEGO HAKA | Dziś pokój (`status='pokoj'`) nie jest `ActiveDeal` — nie ma pola `zawartaTura` jak traktaty (`diplomacy-treaties.ts:39-50`, `ActiveDeal.zawartaTura`). `'pokoj'` event aplikowany w `main.ts:7703` i `:9049`, ale bez zapisu KIEDY. Trzeba dopisać pole np. `pokojOdTury?: number` do `DiploPairMeta` (`game/diplomacy-pn-engine.ts:20-23`, dziś ma tylko `trustPnGainedThisTurn`/`dobraWolaRemainingTur`) i sprawdzać różnicę tur przy N1/N2. | Najbardziej „gracz to poczuje" zdarzenie — świeży pokój złamany w kilka tur |
 | N4 | **Odmowa dołączenia do wojny sojuszniczej** (sojusznik NIE wypełnia obowiązku Sojuszu Pełnego/Defensywnego) | **−10** | ❌ WYMAGA NOWEGO HAKA (wykrycie już jest, kara nie) | `treatiesBrokenByRefusal()` (`game/diplomacy-treaties.ts:217-231`) i `applyAllianceObligationsOnWar` (`main.ts:8523-8577`) **już wykrywają** kto się nie stawił (`brokenTreatyIds`, linia 8560) i zrywają traktat — ale **nie aplikują dziś żadnej kary Zaufania/Wiarygodności** za samą odmowę, tylko usuwają sojusz. | Realna luka w istniejącym kodzie, niezależnie od tego projektu |
@@ -706,3 +706,49 @@ Maciej: „musisz przyjąć jakiś współczynnik, o jaki ta wiarygodność się
 Q1=A globalna · Q2=C dryf+blizna · Q3=C tempo+progi · Q4=A jawna zawsze · Q5=B umiarkowana surowość · Q6→**ZMIENIONE: start zależny od trudności (+40/+20/0)** · skala **−100…+100** · sufit zaufania TAK · pierwszy kontakt TAK · dryf zróżnicowany trudnością.
 
 **Otwarte do strojenia w playteście:** dokładne wagi 13 zdarzeń, dokładne tempo dryfu, wysokość progów, głębokość blizny, krzywa sufitu zaufania.
+
+---
+
+## 🔷 N1 — PEŁNA SPECYFIKACJA MECHANIKI (Maciej 2026-07-26) — NADRZĘDNA
+
+### Zmiana nazwy
+**N1 nie nazywa się „zdrada" — nazywa się ATAK Z ZASKOCZENIA.**
+Powód (Maciej): zdrada = złamanie istniejącego zobowiązania (to N2 — atak mimo paktu/sojuszu). Atak na cywilizację neutralną lub pokojową to co innego: nie łamiesz umowy, łamiesz obyczaj wojenny. Etykieta w UI, komunikatach i logu: **„Atak z zaskoczenia"**.
+
+### Stan obecny = BUG UX (do naprawy niezależnie od Wiarygodności)
+Dziś gracz może zaatakować cywilizację, z którą **nie jest w stanie wojny**, i:
+- nie dostaje ŻADNEGO ostrzeżenia ani pytania,
+- nie ma nawet komunikatu „czy wypowiedzieć wojnę?",
+- wojna po prostu się dzieje.
+Maciej: *„w tej chwili można zaatakować, nie wypowiadając wojny, i nawet nie ma komunikatu"*. To trzeba naprawić — gracz musi wiedzieć, co robi.
+
+### Docelowa mechanika
+
+**KROK 1 — kliknięcie ataku na cel spoza wojny** (status ≠ 'wojna': neutralny, pokój, pakt, sojusz)
+→ pojawia się MODAL POTWIERDZENIA z jasnym wyborem i konsekwencją:
+
+| Opcja | Skutek |
+|---|---|
+| **„Wypowiedz wojnę"** | wojna wypowiedziana, atak NIE następuje w tej turze |
+| **„Atakuj bez wypowiedzenia"** | wojna deklarowana automatycznie + **atak natychmiast** + **kara N1 (−25 Wiarygodności)** |
+| **„Anuluj"** | nic się nie dzieje |
+
+⚠️ Modal MUSI jawnie pokazać koszt: *„Atak bez wypowiedzenia wojny = Atak z zaskoczenia, −25 Wiarygodności u WSZYSTKICH cywilizacji"*. Maciej: *„trzeba dać informację zwrotną graczowi, żeby wiedział, że jeżeli nie odczeka tury, to zapłaci karę"*.
+
+**KROK 2 — reguła jednej tury karencji**
+Po wypowiedzeniu wojny trzeba **odczekać JEDNĄ turę**. Atak w kolejnej turze i później = **czysty, bez kary**.
+Atak w TEJ SAMEJ turze, w której wypowiedziano wojnę = **traktowany jak atak z zaskoczenia** (kara N1).
+→ Wymaga zapisania numeru tury wypowiedzenia wojny per para (pole typu `wojnaOdTury` w `DiploPairMeta`) — ta sama struktura przyda się do N3 (atak zaraz po pokoju), więc zrobić raz i wspólnie.
+
+**KROK 3 — brak obejścia**
+Atak bez wypowiedzenia **i tak deklaruje wojnę z automatu** (jak dziś) — gracz nie może „atakować bez konsekwencji dyplomatycznych". Różnica polega wyłącznie na karze Wiarygodności.
+
+### PARYTET AI (zasada nadrzędna)
+Reguła obowiązuje AI **identycznie**: AI atakujące w turze wypowiedzenia wojny płaci tę samą karę. AI nie ma modala (nie klika), ale ma tę samą bramkę czasową w logice decyzji — inaczej gracz byłby karany za coś, co AI robi bezkarnie.
+
+### Kolejność wdrożenia
+1. **Modal ostrzegawczy + reguła 1 tury** — wartość sama w sobie (dziś gracz atakuje na ślepo). Może powstać PRZED Wiarygodnością; wtedy modal nie pokazuje jeszcze kary, tylko pyta o wypowiedzenie wojny.
+2. **Kara N1** — dopina się do tego samego miejsca, gdy Wiarygodność wejdzie do kodu.
+
+### Otwarte (do decyzji Macieja)
+**Wojna w ODWECIE** — czy wypowiedzenie wojny w odpowiedzi na czyjeś złamanie paktu ma obciążać własną Wiarygodność? Warianty: A) nie obciąża przez N tur od cudzego przewinienia · B) obciąża o połowę · C) bez wyjątków. **Nierozstrzygnięte.**
