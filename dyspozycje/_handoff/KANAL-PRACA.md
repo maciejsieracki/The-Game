@@ -3346,3 +3346,14 @@ szlaku w danych, usunięty martwy kod, Poradnik i encyklopedia przeliczone na po
 (zrzuty + pomiary + rekomendacje: `dyspozycje/podglad-modeli-braz/`).
 **Sesja lokalna: pull na dysk właściciela, testuj `9fc91af8`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [06:02 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `3cf111ce` (FALA 14)
+Wdeployowana ROBOCZA **md5 `3cf111ced9515fe4263cde7a75ddc692`**, pieczątka `ROBOCZA · 8c897b6c · 2026-07-26 06:02`.
+Zastępuje `9fc91af8`. Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest. **VERIFY OK.**
+**Co weszło:** pięć modeli jednostek WPIĘTYCH (Włócznik — po poprawce wysokości 0,999→0,870 HEX_R i tarczy;
+Wojownik z mieczem i tarczą, Procarz, Rydwan (woły), Hastati); bonus cudów `handel_procent` ożywiony i zasila
+HANDEL (trasy handlowe), nie Daninę — decyzja właściciela.
+**Do oględzin właściciela:** Rydwan na wołach nie czyta się jako rydwan pod kątem kamery; Procarz drobniejszy
+od reszty i bez widocznej procy. Oba przechodzą pomiary, ale wyglądem budzą moje zastrzeżenia.
+**Sesja lokalna: pull na dysk właściciela, testuj `3cf111ce`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.

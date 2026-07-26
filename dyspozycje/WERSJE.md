@@ -9,7 +9,43 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `9fc91af8` — 2026-07-26 00:12 · FALA 13: nazewnictwo Danina/Podatek, Mennica ze zlotem, odznaki i Kopalnia zlota — **AKTUALNA**
+## ROBOCZA `3cf111ce` — 2026-07-26 06:02 · FALA 14: jednostki Brazu wpiete + bonus cudow zasila Handel — **AKTUALNA**
+- md5 (pelne): `3cf111ced9515fe4263cde7a75ddc692` · stempel z menu: `ROBOCZA · 8c897b6c · 2026-07-26 06:02`
+- Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. **VERIFY OK.**
+- **Co weszlo:**
+  - **PIEC MODELI JEDNOSTEK WPIETYCH** (dotad istnialy w repo, ale zaden zywy kod ich nie
+    importowal): Wlocznik, Wojownik z mieczem i tarcza, Procarz, Rydwan (woly) — wszystkie
+    epoka Brazu — oraz Hastati (epoka Zelaza, Rzym; model zastapil wczesniejszy
+    z `hastati-falangita.ts`).
+    - **Poprawka Wlocznika przed wpieciem:** wysokosc **0,999 -> 0,870 x HEX_R** (byl o jedna
+      trzecia wyzszy od reszty serii i odstawal jak tyczka); tarcza przeniesiona z nadgarstka
+      przy biodrze na srodek przedramienia, kryje tors od pasa po bark.
+    - **SPROSTOWANIE:** w meldunku FALA 13 napisalem, ze wlocznia siega 0,999 w POZIOMIE
+      i wchodzi na sasiednie pola. To byla moja bledna interpretacja pomiaru — 0,999 bylo
+      WYSOKOSCIA, maks. promien poziomy wynosil 0,321 przy limicie 0,866.
+    - Dopasowanie do jednostek po PELNEJ nazwie, nie po fragmencie. Nowy test
+      `wpiecie-dispatch-check` 14/14 ma piec asercji NEGATYWNYCH potwierdzajacych, ze warianty
+      kulturowe (Wlocznik sumeryjski, Procarz (Huaracoc), Rydwan egipski, Tyrski miecznik,
+      Miecznik galijski) zachowaly wlasne modele.
+  - **Bonus cudow `handel_procent` ozywiony** (decyzja wlasciciela 2026-07-26: „handel nie
+    danine"). Dotad ZADEN kod go nie konsumowal — czwarta martwa obietnica w tym projekcie.
+    Zasila **Handel**, czyli dochod z tras handlowych z obcymi cywilizacjami, a **NIE Danine**
+    (dochod miasta oddawany wladcy). Piec cudow: Petra 0,15 · Kamien Ha'amonga 0,15 ·
+    Kolos Rodyjski 0,20 · Brama wszystkich narodow 0,15 · Palac Weiyang 0,15.
+    Kumulacja **addytywna** (spojnie z premiami budynkow i redukcja korupcji).
+    Teksty w Poradniku i encyklopedii poprawione.
+- **Bramki:** tsc 0 bledow · logic 208/208 · combat 6/6 · unit-replace 10/10 ·
+  wpiecie-dispatch-check 14/14 (NOWY) · cuda-handel 26/26 (NOWY) · trade-grant 60/60 ·
+  zloto-szlak 45/45 · currency 32/32 · mennica-uspienie 47/47 · danina-podatek-nazwa 15/15.
+- **DO OGLEDZIN WLASCICIELA — dwa zastrzezenia integratora do wpietych modeli:**
+  1. **Rydwan (woly) nie czyta sie jako rydwan** pod katem kamery 52 stopni — wyglada jak
+     stojaca postac, nie widac ani zaprzegu, ani wozu.
+  2. **Procarz jest wyraznie drobniejszy od reszty i nie widac u niego procy** — ta sama wada
+     wracala juz trzy razy (proca czytana raz jako pochodnia, raz jako sztywny prostokat).
+  Oba przechodza wszystkie pomiary (mieszcza sie w obrysie, stopy na y=0), ale pomiar
+  to nie to samo co czytelnosc.
+
+## ROBOCZA `9fc91af8` — 2026-07-26 00:12 · FALA 13: nazewnictwo Danina/Podatek, Mennica ze zlotem, odznaki i Kopalnia zlota — **ZASTAPIONA** (-> `3cf111ce`)
 - md5 (pelne): `9fc91af8bec6561fd6d2d2afa4bf2e95` · stempel z menu: `ROBOCZA · c06affa9 · 2026-07-26 00:12`
 - Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. **VERIFY OK.** 34 250 545 B.
 - **Co weszlo (decyzje 55B, 57, 65B, 66B, 81A, 82A, 83B + dlugi techniczne):**
