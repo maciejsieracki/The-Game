@@ -647,3 +647,49 @@ Wariant A jest najtańszy we wdrożeniu, bo powiela gotowy wzorzec z 83B (`Owner
 **Kto to prowadzi:** temat przekazany przez Macieja do innej sesji/agenta razem z paczką prac
 (karta Mennicy v2, mockupy badań i miast, dyplomacja, lokalizacja, muzyka, wiarygodność cywilizacji).
 Ten wpis istnieje po to, żeby uwaga nie zginęła w czacie.
+
+---
+
+## DYSPOZYCJA 85 (2026-07-26) — przebudowa paska zasobów i rozdzielenie Handlu od Podatku
+**STATUS: ZDECYDOWANE przez właściciela, NIEWDROŻONE. Przekazane do innej sesji razem z paczką prac.**
+
+Słowa Macieja, dosłownie:
+> „Handel powinien być przeniesiony za surowcami, czyli skarbiec, praca, surowce i handel.
+> W zakładce handlu powinny być te wszystkie informacje, które teraz lądują w mieście w handlu,
+> który powinien zajmować się podatkiem. Nazywać się podatkiem. To tam przenieść wszystkie informacje
+> o handlu międzynarodowym z innymi cywilizacjami. Nie powinno być żadnych dodatkowych informacji
+> w miastach, bo to jest globalne ustawienie dla całej cywilizacji, a nie dla miasta."
+
+### Co z tego wynika — cztery zmiany
+
+**1. Nowa kolejność żetonów w pasku zasobów (górny HUD).**
+Dziś: `Skarbiec · Handel · Praca · Surowce`. Ma być: **`Skarbiec · Praca · Surowce · Handel`**.
+Handel wędruje na koniec, ZA Surowce.
+
+**2. Zakładka Handel = handel międzynarodowy, i tylko on.**
+Wszystkie informacje o wymianie z obcymi cywilizacjami (trasy handlowe, dochód ze szlaków, wymiana
+surowców) mają być zebrane w JEDNYM miejscu — w zakładce Handel, a nie rozsiane po panelach miast.
+
+**3. Sekcja w mieście przestaje nazywać się Handel i zajmuje się wyłącznie Podatkiem.**
+To domyka decyzje 65B/66B na poziomie układu interfejsu, nie tylko nazewnictwa: miasto pokazuje
+Daninę/Podatek (dochód oddawany władcy, dzielony suwakiem), a nie handel.
+
+**4. Zasada rozdziału — najważniejsza z całej dyspozycji.**
+> „Nie powinno być żadnych dodatkowych informacji w miastach, bo to jest **globalne ustawienie dla całej
+> cywilizacji, a nie dla miasta**."
+
+Handel międzynarodowy jest sprawą IMPERIUM. Powielanie go w każdym panelu miasta jest błędem
+konstrukcyjnym, nie tylko nadmiarem. Przy wdrożeniu trzeba przejrzeć panel miasta i **usunąć** stamtąd
+to, co dotyczy szlaków z obcymi, zamiast to przenosić i zostawiać kopię.
+
+### Punkt do rozstrzygnięcia przy wdrożeniu
+Suwak podziału (Nauka / Skarbiec / Zamożność) jest dziś **per miasto** — każde miasto ma własny
+`podziałHandlu`. Dyspozycja mówi o globalności *handlu międzynarodowego*, nie suwaka. **Nie zakładać,
+że suwak też ma się uglobalnić** — to byłaby zmiana mechaniki, nie układu, i wymaga osobnej decyzji ABC.
+
+### Stan wyjściowy dla wdrażającego
+- Żetony paska zasobów: `gra/src/ui/hud.ts` (żeton „Handel” z `value: s.handelIncome`, ok. linii 439-444)
+- Dochód ze szlaków: `gra/src/game/trade-routes.ts` (`tradeRouteDistanceIncome`), sumowany
+  w `gra/src/main.ts` (`handelIncome`, ok. linii 8046)
+- Sekcja Daniny/Podatku w mieście: `gra/src/ui/cityPanel.ts`, etykiety przez `game/danina-nazwa.ts`
+- Bonus cudów `handel_procent` (5 cudów) zasila Handel, nie Daninę — decyzja z 2026-07-26
