@@ -859,3 +859,19 @@ Jednostki zwiadowcze (Zwiadowca i analogiczne — sprawdzić rolę/typ w `units.
 Uzasadnienie projektowe: zwiad to podstawowa mechanika wczesnej gry; blokowanie go dyplomatycznie zablokowałoby eksplorację, a wysyłanie zwiadowcy nie jest aktem wrogim jak marsz armii.
 ⚠️ DO ROZSTRZYGNIĘCIA PRZY IMPLEMENTACJI: czy wykluczenie obejmuje TYLKO Wiarygodność (N7), czy także istniejącą karę Zaufania z `diplomacy-border-march.ts`. Rekomendacja: **oba** — inaczej gracz nadal traci Zaufanie za zwiad i zasada „bez kary za zwiad" jest połowiczna. Ale to zmiana w ISTNIEJĄCEJ mechanice Zaufania → zgodnie z korektą Macieja („nie zmieniamy tego, co jest") **zapytać przed wdrożeniem**.
 **PARYTET AI:** wykluczenie dotyczy zwiadowców AI tak samo jak gracza.
+
+### N4 — DOPRECYZOWANIE (Maciej 2026-07-26): odmowa = zerwanie + kara TYLKO dla winnego
+
+Maciej: *„Jeżeli sojusznik odmawia czynności, do której się zobowiązał, to po prostu sojusz jest zrywany plus kara dla tego, **którego jest winą to zerwanie**. Nie po to zawiera się sojusze, żeby nie dotrzymać słowa."*
+
+**Mechanika (dwie części, obie obowiązkowe):**
+1. **Sojusz zostaje zerwany** — to już dziś działa (`treatiesBrokenByRefusal` → `brokenTreatyIds`, main.ts ~8560).
+2. **Karę Wiarygodności ponosi WYŁĄCZNIE odmawiający** — dziś nie ma jej wcale (luka).
+
+⚠️ **KRYTYCZNE DLA IMPLEMENTACJI — asymetria kary:**
+Zerwanie sojuszu ma DWIE strony, ale winna jest JEDNA. **Opuszczony sojusznik NIE MOŻE dostać żadnej kary** za to, że jego sojusz przestał istnieć — on jest ofiarą, nie sprawcą.
+Ryzyko: istniejący kod zrywania traktatów może aplikować zdarzenia „symetrycznie" na parę (wzorzec `applyDiploEventTracked(a,b,...)`). Przy dopinaniu Wiarygodności **trzeba jawnie sprawdzić, komu przypisywana jest wina** i naliczyć odpis tylko jemu. To samo dotyczy N2 i N5 — sprawca ≠ para.
+
+**Waga — do potwierdzenia przez Macieja.** Obecna propozycja **−10**. Argument za podniesieniem do **−15**: odmowa pomocy unieważnia cały sens sojuszu („nie po to zawiera się sojusze"), a dziś −10 zrównuje ją z... niczym w tabeli — jest lżejsza niż dobrowolne zerwanie traktatu czasowego (−6) tylko dwukrotnie, przy nieporównywalnie większej szkodzie dla sojusznika, który liczył na pomoc w wojnie. Hierarchia przy −15: atak na sojusznika −25 > odmowa pomocy −15 > zerwanie traktatu czasowego −6. **Decyzja: Maciej.**
+
+**PARYTET AI:** AI odmawiające pomocy płaci identycznie. Sprawdzić, czy AI w ogóle ma dziś ścieżkę odmowy (czy zawsze dołącza), bo jeśli tylko gracz może odmówić — to złamany parytet.
