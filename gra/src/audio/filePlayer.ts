@@ -103,10 +103,30 @@ const RAMP_STEP_MS = 40;
 export interface FilePlaylist {
   hasTracks(): boolean;
   start(): void;
+  /**
+   * Jak start(), ale odracza faktyczne odtworzenie PIERWSZEGO utworu: nie
+   * wcześniej niż `minDelayMs` PO WYWOŁANIU ORAZ nie wcześniej niż gdy ten
+   * utwór zgłosi gotowość do płynnego odtwarzania ('canplaythrough') —
+   * którykolwiek z tych dwóch warunków spełni się później. Zabezpieczenie
+   * przed brakiem 'canplaythrough' (np. rzadki przypadek przeglądarki): po
+   * `minDelayMs + STARTDELAY_SAFETY_MS` startuje mimo wszystko.
+   * Zastosowanie: WYŁĄCZNIE pierwsze uruchomienie playlisty intro na starcie
+   * strony (patrz resumeIntroMusic() w main.ts / R-MUZYKA-KONTEKST,
+   * parametr menu.muzyka_opoznienie_startu_ms w ui-params.json) — chroni
+   * początek nagrania przed ucięciem, gdy main thread jeszcze kończy
+   * ładować/renderować stronę. Po tym pierwszym starcie playlista działa
+   * dokładnie jak po zwykłym start() (crossfade, kolejne utwory - bez
+   * dodatkowego opóźnienia). No-op, jeśli już gra albo brak plików (jak start()).
+   */
+  startDelayed(minDelayMs: number): void;
   stop(): void;
   setVolume(v: number): void;
   isPlaying(): boolean;
 }
+
+/** Zabezpieczenie startDelayed(): ile dodatkowo (ponad minDelayMs) czekać na
+ *  'canplaythrough', zanim start i tak nastąpi mimo braku tego zdarzenia. */
+const STARTDELAY_SAFETY_MS = 4000;
 
 /** Ta sama krzywa percepcyjna głośności co suwak w silniku syntezy (patrz
  *  volCurve w muzyka-antyczna.ts) — osobna kopia celowa: ten moduł ma zero
@@ -174,6 +194,12 @@ function createPlaylist(
   let crossfadeFromIdx: 0 | 1 = 0;
   let crossfadeToIdx: 0 | 1 = 1;
 
+  // Stan startDelayed() — patrz definicja niżej i komentarz w interfejsie FilePlaylist.
+  let startDelayTimer: number | null = null;
+  let startDelaySafetyTimer: number | null = null;
+  let startDelayReadyHandler: (() => void) | null = null;
+  let startDelayEl: HTMLAudioElement | null = null;
+
   function hasTracks(): boolean { return trackUrls.length > 0; }
 
   function currentUrl(): string | null {
@@ -211,6 +237,20 @@ function createPlaylist(
 
   function clearStopFade(): void {
     if (stopFadeTimer !== null) { window.clearInterval(stopFadeTimer); stopFadeTimer = null; }
+  }
+
+  /** Anuluje ewentualne oczekiwanie startDelayed() w toku (timer opóźnienia,
+   *  zabezpieczenie i nasłuch 'canplaythrough') — wołane na początku stop(),
+   *  żeby stop() trafiający w okno oczekiwania nie skutkował spóźnionym
+   *  startem po fakcie. */
+  function clearStartDelay(): void {
+    if (startDelayTimer !== null) { window.clearTimeout(startDelayTimer); startDelayTimer = null; }
+    if (startDelaySafetyTimer !== null) { window.clearTimeout(startDelaySafetyTimer); startDelaySafetyTimer = null; }
+    if (startDelayReadyHandler && startDelayEl) {
+      startDelayEl.removeEventListener('canplaythrough', startDelayReadyHandler);
+    }
+    startDelayReadyHandler = null;
+    startDelayEl = null;
   }
 
   // Referencje do handlerów per-slot (A/B) — trzymane, żeby releaseEl() mógł
@@ -368,6 +408,69 @@ function createPlaylist(
     monitorTimer = window.setInterval(monitorTick, MONITOR_STEP_MS);
   }
 
+  /** Jak start(), ale odracza faktyczne odtworzenie pierwszego utworu do
+   *  późniejszego z dwóch momentów: upływu `minDelayMs` LUB zdarzenia
+   *  'canplaythrough' na tym utworze — patrz komentarz w interfejsie
+   *  FilePlaylist. `playing` jest ustawiane od razu (jak w start()), więc
+   *  isPlaying()/stop() traktują ten okres oczekiwania jako "już gra"
+   *  (analogicznie do zwykłego start(), gdzie decodowanie/pierwsza klatka
+   *  też nie jest natychmiastowa) — stop() w tym oknie po prostu anuluje
+   *  oczekiwanie (clearStartDelay()) zamiast odtwarzać dźwięk, który i tak
+   *  zaraz by ucichł. */
+  function startDelayed(minDelayMs: number): void {
+    if (!hasTracks() || playing) return;
+    clearStopFade();
+    playing = true;
+    if (queue.length === 0) {
+      queue = kolejnosc === 'stala'
+        ? Array.from({ length: trackUrls.length }, (_, i) => i)
+        : buildShuffledQueue(trackUrls.length, null);
+      queuePos = 0;
+      repeatsLeft = repeatsPerTrack;
+    }
+    activeIdx = 0;
+    const url = currentUrl();
+    clearMonitor();
+    monitorTimer = window.setInterval(monitorTick, MONITOR_STEP_MS);
+    if (!url) return; // hasTracks()===true więc nie powinno się zdarzyć
+
+    const el = ensureEl(0);
+    el.src = url;
+    el.currentTime = 0;
+    el.volume = volCurve(volume01);
+
+    let timerDone = false;
+    let readyDone = false;
+    let started = false;
+
+    function tryStart(): void {
+      if (started || !playing || !timerDone || !readyDone) return;
+      started = true;
+      clearStartDelay();
+      el.volume = volCurve(volume01);
+      void el.play().catch(() => { playing = false; });
+    }
+
+    startDelayReadyHandler = (): void => { readyDone = true; tryStart(); };
+    startDelayEl = el;
+    el.addEventListener('canplaythrough', startDelayReadyHandler);
+
+    startDelayTimer = window.setTimeout(() => {
+      startDelayTimer = null;
+      timerDone = true;
+      tryStart();
+      // Zabezpieczenie: 'canplaythrough' czasem może nie nadejść (rzadki
+      // przypadek przeglądarki) — nie trzymaj ciszy w nieskończoność.
+      if (!started) {
+        startDelaySafetyTimer = window.setTimeout(() => {
+          startDelaySafetyTimer = null;
+          readyDone = true;
+          tryStart();
+        }, STARTDELAY_SAFETY_MS);
+      }
+    }, Math.max(0, minDelayMs));
+  }
+
   /** Zatrzymuje playlistę: fade-out ~STOP_FADE_SEC (liniowy — gaśnie tylko
    *  jeden aktywny sygnał, równoległy podczas crossfade — oba), potem
    *  zwalnia zasoby OBU elementów A/B. Pozycja w playliście ZOSTAJE —
@@ -379,6 +482,7 @@ function createPlaylist(
     clearCrossfadeTimer();
     crossfading = false;
     clearStopFade();
+    clearStartDelay();
     const a = els[0];
     const b = els[1];
     if (!a && !b) return; // nigdy nie odtwarzano / już zwolnione
@@ -429,7 +533,7 @@ function createPlaylist(
 
   function isPlaying(): boolean { return playing; }
 
-  return { hasTracks, start, stop, setVolume, isPlaying };
+  return { hasTracks, start, startDelayed, stop, setVolume, isPlaying };
 }
 
 // ---------------------------------------------------------------------------

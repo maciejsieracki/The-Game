@@ -442,10 +442,11 @@ import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene'
 import type { WorldTerrainInput } from './battle/battle-terrain';
 import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
-  startIntroMusic, stopIntroMusic,
+  startIntroMusic, startIntroMusicDelayed, stopIntroMusic,
   startAmbience, stopAmbience, setAmbienceVolume, setAmbienceWaterView,
   startMarch, stopMarch, setMarchVolume, playMarchAccent,
 } from './audio/muzyka-antyczna';
+import { UI_PARAMS } from './ui/uiParams';
 import { loadMusicPrefs, saveMusicPrefs } from './audio/musicPrefs';
 import { loadAmbiencePrefs, saveAmbiencePrefs } from './audio/ambiencePrefs';
 import { loadSfxPrefs, saveSfxPrefs } from './audio/sfxPrefs';
@@ -5467,6 +5468,16 @@ async function boot(): Promise<void> {
       document.addEventListener('pointerdown', onGesture, true);
       document.addEventListener('keydown', onGesture, true);
     }
+    /** Czy playlista intro odtworzyła już swój pierwszy utwór w tej sesji
+     *  strony. Wyłącznie NA STARCIE STRONY (pierwsze wejście do
+     *  openStartupMainMenu(), wprost z boot(), zanim przeglądarka na pewno
+     *  skończyła ładować/renderować) start jest opóźniony — patrz
+     *  resumeIntroMusic() niżej. Każdy KOLEJNY powrót do menu (z gry, po
+     *  bitwie itd.) nie ma problemu z ładowaniem, więc gra od razu, jak
+     *  dotychczas. Zgłoszenie właściciela: "przesuń start muzyki w menu
+     *  głównym o dwie, trzy sekundy, bo ścina początek, zanim się załaduje
+     *  przeglądarka" (R-MUZYKA-KONTEKST). */
+    let introMusicStartedOnce = false;
     /** Uruchamia (lub wznawia) playlistę intro. Wołane za każdym razem, gdy
      *  pokazuje się ekran przedgrowy (patrz openStartupMainMenu()). CELOWO
      *  odcięte od `musicEnabled` (C-AUD-Q5=A): intro nigdy nie milknie z
@@ -5474,7 +5485,12 @@ async function boot(): Promise<void> {
      *  decyzja (patrz startGameMusic() i audio/musicPrefs.ts). Głośność nadal
      *  respektowana przez setMusicVolume() (wspólna, trwała, patrz wyżej). */
     function resumeIntroMusic(): void {
-      startIntroMusic();
+      if (!introMusicStartedOnce) {
+        introMusicStartedOnce = true;
+        startIntroMusicDelayed(UI_PARAMS.menu.muzyka_opoznienie_startu_ms);
+      } else {
+        startIntroMusic();
+      }
       armIntroFallbackGesture();
     }
     // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)

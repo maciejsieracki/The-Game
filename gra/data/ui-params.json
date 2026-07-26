@@ -27,6 +27,7 @@
   "menu": {
     "wersja": "0.9",
     "etap": "alfa",
+    "muzyka_opoznienie_startu_ms": 2500,
     "ustawienia": [
       {
         "key": "muzyka",

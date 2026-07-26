@@ -66,6 +66,15 @@ export interface UiMenu {
    * zahardkodowane „prototyp v0.1”, niezależne od `wersja` w danych.
    */
   etap?: string;
+  /**
+   * Opóźnienie (ms) przed startem PIERWSZEGO odtworzenia utworu playlisty intro
+   * (menu główne) na starcie strony — chroni początek nagrania przed ucięciem,
+   * gdy przeglądarka jeszcze kończy ładować/renderować stronę (zgłoszenie
+   * właściciela, R-MUZYKA-KONTEKST). Dotyczy WYŁĄCZNIE pierwszego uruchomienia
+   * po wejściu na stronę — kolejne przejścia w menu (powrót z gry, zmiana
+   * utworu) nie są tym opóźnieniem objęte. Patrz resumeIntroMusic() w main.ts.
+   */
+  muzyka_opoznienie_startu_ms: number;
   ustawienia: UiMenuSetting[];
 }
 

@@ -1738,6 +1738,18 @@ export function startIntroMusic(): void {
   introPlaylist.start();
 }
 
+/** Jak startIntroMusic(), ale odracza faktyczny start pierwszego utworu do
+ *  późniejszego z dwóch momentów: upływu `minDelayMs` LUB gotowości utworu
+ *  do płynnego odtwarzania (patrz FilePlaylist.startDelayed() w
+ *  audio/filePlayer.ts). Użycie: WYŁĄCZNIE pierwsze uruchomienie intro na
+ *  starcie strony (patrz resumeIntroMusic() w main.ts) — chroni początek
+ *  nagrania przed ucięciem, zanim przeglądarka skończy ładować/renderować
+ *  stronę (zgłoszenie właściciela, R-MUZYKA-KONTEKST). */
+export function startIntroMusicDelayed(minDelayMs: number): void {
+  introPlaylist.setVolume(volume);
+  introPlaylist.startDelayed(minDelayMs);
+}
+
 /** Zatrzymuje i zwalnia zasoby playlisty intro. */
 export function stopIntroMusic(): void {
   introPlaylist.stop();
