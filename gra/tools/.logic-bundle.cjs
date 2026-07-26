@@ -2032,9 +2032,6 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
   let changed = false;
   const placed = /* @__PURE__ */ new Set();
   let guard = 0;
-  if (land.length === 73 && want === "mountain") {
-    console.error(`[TRACE-ENTER] land=${land.length} want=${want} minCount=${minCount} countFn()=${countFn()}`);
-  }
   while (countFn() < minCount && guard++ < land.length + 8) {
     const protectHighland = want === "mountain" && countHighlandsInCell(land, hexes) <= MIN_HIGHLANDS_COPPER_CELL;
     const protectMountain = want === "highland" && countMountainsInCell(land, hexes) <= MIN_MOUNTAINS_IRON_CELL;
@@ -2171,9 +2168,6 @@ function ensureMassIronGridCoverage(hexes, scratch, tier, width, height, massSet
   const ironSize = ironCoverageCellSize(tier);
   const minIronLand = minLandHexesForReliefCell(ironSize);
   const eligibleCells = [...landHexesByCoverageCell(massSet, ironSize).values()].filter((land) => land.length >= minIronLand);
-  if (massSet.size > 300) {
-    console.error(`[TRACE-MASS] ensureMassIronGridCoverage massSet.size=${massSet.size} eligibleCells=${eligibleCells.length}`);
-  }
   let fixed = 0;
   if (!skipCap) {
     for (const land of eligibleCells) {
@@ -6557,6 +6551,18 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   if (typ === "ziemia") {
     enforceEarthTemplateOnHexes(hexes, width, height);
     purgeOceanInsideEarthLandMask(hexes, width, height);
+    capReliefClusterSizeSafetyNet(hexes, terrainScratch);
+    ensureReliefGridCoverage(
+      hexes,
+      terrainScratch,
+      reliefTier,
+      width,
+      height,
+      typ,
+      zoneOf,
+      nZones,
+      rand
+    );
   }
   return {
     szerokoscQ: width,
