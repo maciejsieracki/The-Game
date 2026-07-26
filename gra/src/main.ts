@@ -2960,6 +2960,33 @@ async function boot(): Promise<void> {
       return raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
+    /**
+     * Decyzja 81=A (2026-07-25): etykieta Danina/Podatek DLA TEGO KONKRETNEGO
+     * HEKSU -- wg WLASCICIELA TERYTORIUM (territoryOwnerAtLive), nie gracza
+     * patrzacego. Ten sam wzorzec liczenia jak buildEmpireTradeSnap (ok. linii
+     * 7719): stolica ownera (capitalCityIdForOwner) + jego odkryte technologie
+     * (unlockedTechsForOwner) + jego AKTUALNY dostep do zlota
+     * (ownerHasZlotoAccessNow) -- jedna sciezka liczenia bramki, zeby panel
+     * miasta i tooltip heksu nigdy nie rozjechaly sie w odpowiedzi na to samo
+     * pytanie (dokladnie ten rozjazd juz raz naprawialismy przy mnozniku
+     * cywilizacyjnym).
+     * Heks NICZYJ (poza terytorium kazdej cywilizacji) -> brak wlasciciela,
+     * bramka nie ma czego sprawdzic -> zawsze "Danina" (jawnie, nie tylko
+     * przez fallback domyslny w tooltipie).
+     * Reszta tooltipa (rozbicie plonow) juz dzis pokazuje pelne dane dla
+     * DOWOLNEGO heksu, w tym obcego/wrogiego, bez ukrywania -- wiec etykieta
+     * rowniez pokazuje realny stan WLASCICIELA heksu (parytet z reszta panelu,
+     * nie stan gracza patrzacego).
+     */
+    function hexDaninaLabelAt(q: number, r: number): 'Danina' | 'Podatek' {
+      const ownerId = territoryOwnerAtLive(q, r);
+      if (ownerId === null) return 'Danina';
+      const capId = capitalCityIdForOwner(ownerId);
+      const walutaOdkryta = unlockedTechsForOwner(ownerId).includes('Waluta');
+      const hasMennicaWStolicy = mennicaWStolicy(capId, capId ? cityBuilt.get(capId) : undefined);
+      return resolveDaninaLabel(walutaOdkryta, hasMennicaWStolicy, ownerHasZlotoAccessNow(ownerId));
+    }
+
     /** D17=A: panel kontekstowy — pole mapy + opcjonalnie jednostka na tym heksie. */
     function buildHexContextPanelMessage(): string | null {
       if (!isWorldMapUnitMode() || lastBHex === null) return null;
@@ -2973,6 +3000,7 @@ async function boot(): Promise<void> {
         cityName: cityOn?.name ?? null,
         cityIsCityState: cityOn != null && cityOn.ownerId !== 0 && !!cityOn.startCityState,
         currentEra: player.era,
+        daninaLabel: hexDaninaLabelAt(lastBHex.q, lastBHex.r),
         esc: hudHtmlEsc,
       });
     }
@@ -10159,6 +10187,9 @@ async function boot(): Promise<void> {
       getOwnerColor: civColorFn,
       getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
       getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
+      // PYTANIE 83=B: panel miasta musi patrzeć na dokładnie ten sam dostęp do
+      // złota co silnik (turn-economy.ts resolveOwnerZlotoAccess) -- jedna funkcja.
+      getOwnerHasZlotoAccess: (ownerId: number) => ownerHasZlotoAccessNow(ownerId),
       // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
       // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
       getPlacedImprovements: () => placedImprovementsWithTradeGrants(0, placedImprovementsForOwner(0)),
@@ -15838,6 +15869,8 @@ async function boot(): Promise<void> {
       getOwnerColor: civColorFn,
         getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
+        // PYTANIE 83=B: jedna funkcja co silnik (turn-economy.ts resolveOwnerZlotoAccess).
+        getOwnerHasZlotoAccess: (ownerId: number) => ownerHasZlotoAccessNow(ownerId),
         // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
         // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
         getPlacedImprovements: () => placedImprovementsWithTradeGrants(0, placedImprovementsForOwner(0)),

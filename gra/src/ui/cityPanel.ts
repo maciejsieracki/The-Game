@@ -200,6 +200,15 @@ export interface CityPanelConfig {
   getEpoch?: (ownerId: number) => number;
   getUnlockedTechs?: (ownerId: number) => string[];
   getBuiltBuildingIds?: (cityId: string) => string[];
+  /**
+   * PYTANIE 83=B (Maciej 2026-07-25): dostęp do złota TERAZ dla tego ownera
+   * (własna Kopalnia złota gdziekolwiek w imperium ALBO aktywny szlak handlowy
+   * z posiadaczem złota) -- ta sama funkcja co silnik (main.ts
+   * ownerHasZlotoAccessNow / OwnerZlotoAccessResolver w turn-economy.ts).
+   * Brak hooka -> domyślnie `true` (stare zachowanie: bramka Mennicy patrzy
+   * tylko na Waluta+budynek, jak przed wprowadzeniem 83/B).
+   */
+  getOwnerHasZlotoAccess?: (ownerId: number) => boolean;
   getProduction?: (cityId: string) => CityProduction | null;
   setProduction?: (cityId: string, prod: CityProduction) => void;
   getCityBuildingFlags?: (cityId: string) => Partial<CityYieldContext>;
@@ -780,7 +789,12 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
     // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie
     // 70/B) -> bramka Efektu 1 patrzy na CAŁE imperium, nie tylko to miasto.
-    const maMennica = ownerHasMennica(city.ownerId);
+    // PYTANIE 83=B: budynek "stoi" nawet bez złota (nie burzymy go), ale EFEKT
+    // (mnożnik) śpi bez aktualnego dostępu do złota -- dokładnie
+    // maMennicaEmpireWide z turn-economy.ts (maMennicaBuiltEmpireWide &&
+    // resolveOwnerZlotoAccess). ctx.maMennica poniżej idzie właśnie do
+    // cityYieldPerTurn tak samo jak silnik, więc musi być tym samym warunkiem.
+    const maMennica = ownerHasMennica(city.ownerId) && (cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true);
     const civKey = cfg.getCivKey?.(city.ownerId);
     // Efekt 1 SCALONY (2026-07-25) + pytanie 69 (2026-07-25): mnoznik cywilizacyjny
     // (civs.json mnoznikHandelPieniadz) SKALOWANY TRUDNOSCIA (+0,5 easy / -0,5 hard).
@@ -906,7 +920,11 @@ function daninaLabelForCity(city: City): DaninaLabel {
   const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
   const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;
   const builtAtCapital = capitalId ? (cfg.getBuiltBuildingIds?.(capitalId) ?? []) : [];
-  return daninaLabel(walutaOdkryta, mennicaWStolicy(capitalId, builtAtCapital));
+  // PYTANIE 83=B: trzeci argument -- dostęp do złota TERAZ, ta sama funkcja co
+  // silnik (cfg.getOwnerHasZlotoAccess -> main.ts ownerHasZlotoAccessNow).
+  // Brak dostępu -> nazwa wraca na "Danina", mimo że Mennica fizycznie stoi.
+  const maDostepDoZlota = cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true;
+  return daninaLabel(walutaOdkryta, mennicaWStolicy(capitalId, builtAtCapital), maDostepDoZlota);
 }
 
 function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
@@ -7256,13 +7274,25 @@ function buildHandelDetailCard(
   const maTargowisko = built.includes('targowisko');
   // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie
   // 70/B) -> bramka Efektu 1 patrzy na CAŁE imperium, nie tylko to miasto.
-  const maMennica = ownerHasMennica(city.ownerId);
+  // maMennicaBudynek = budynek fizycznie istnieje (nie burzymy go po utracie
+  // złota -- "budynek stoi, efekt śpi", ten sam wzorzec co
+  // maMennicaBuiltEmpireWide w turn-economy.ts). Rozdzielone od maDostepDoZlota
+  // (PYTANIE 83=B), zeby ponizej dalo sie rozroznic w tekscie DLACZEGO mnoznik
+  // nie dziala: brak Mennicy vs brak Waluty vs Mennica usnieta bez zlota.
+  const maMennicaBudynek = ownerHasMennica(city.ownerId);
+  const maDostepDoZlota = cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true;
   const maBiblioteka = cityHasBibliotekaLine(built);
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
   const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
-  // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana (gdziekolwiek w imperium)
-  // ORAZ Waluta odkryta (turn-economy.ts).
+  // Zadanie 1 (E1) + PYTANIE 83=B: Mennica dziala TYLKO gdy zbudowana
+  // (gdziekolwiek w imperium) ORAZ Waluta odkryta ORAZ cywilizacja MA TERAZ
+  // dostep do zlota (turn-economy.ts maMennicaEmpireWide && walutaOdkryta) --
+  // identyczna bramka jak silnik, zeby panel nigdy nie pokazywal aktywnego
+  // mnoznika, ktorego silnik juz nie liczy.
+  const maMennica = maMennicaBudynek && maDostepDoZlota;
   const mennicaAktywna = maMennica && walutaOdkryta;
+  // Mennica fizycznie stoi + Waluta odkryta, ale mnoznik SPI bo brak zlota TERAZ.
+  const mennicaSpiZBrakuZlota = maMennicaBudynek && walutaOdkryta && !maDostepDoZlota;
   // Pytanie 69 (2026-07-25): tekst pokazuje mnoznik CYWILIZACYJNY skalowany
   // trudnoscia (ten sam co realnie liczy silnik), nie plaski params.mennicaMnoznikPoWalucie.
   const civKeyForMennicaTxt = cfg.getCivKey?.(city.ownerId);
@@ -7298,6 +7328,17 @@ function buildHandelDetailCard(
     `Na razie w UI: stałe <b>${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%</b> ${daninaLblGen} brutto — placeholder, nie wpływa jeszcze na silnik w prototypie.`;
   card.appendChild(todo);
 
+  // PYTANIE 83=B: Mennica fizycznie stoi (nie burzymy jej), ale mnoznik SPI bez
+  // aktualnego dostepu do zlota -- gracz musi wiedziec DLACZEGO i CO zrobic.
+  if (mennicaSpiZBrakuZlota) {
+    const mennicaWarn = el('div', 'dc-note');
+    mennicaWarn.style.cssText = 'font-style:normal;border-left:2px solid #e08a8a;padding-left:0.45em;margin-top:0.35em;color:#f0c8c8;';
+    mennicaWarn.textContent =
+      'Mennica nieaktywna: brak dostępu do złota (własna Kopalnia złota albo szlak handlowy z posiadaczem złota). ' +
+      'Zdobądź dostęp do złota, żeby mnożnik znów zadziałał — budynek nie jest burzony, tylko czeka.';
+    card.appendChild(mennicaWarn);
+  }
+
   appendDetailSection(card, 'Korupcja (placeholder)');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, `${daninaLbl} brutto (szac.)`, est.brutto ? `~${est.brutto}` : '—');
@@ -7318,7 +7359,13 @@ function buildHandelDetailCard(
 
   appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól` + (maTargowisko ? ' × (1 + bonus Targowiska)' : ''));
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)`);
-  appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (mennicaAktywna ? ` × Waluta+Mennica (${mennicaMnoznikTxt})` : ' × ×1 (brak Waluty lub Mennicy)'));
+  appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
+    mennicaAktywna
+      ? ` × Waluta+Mennica (${mennicaMnoznikTxt})`
+      : mennicaSpiZBrakuZlota
+        ? ' × ×1 (Mennica śpi — brak dostępu do złota)'
+        : ' × ×1 (brak Waluty lub Mennicy)'
+  ));
   appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki  ← już zawiera mnożnik Waluty+Mennicy powyżej');
   appendDetailFormula(card, 'skarb_z_handlu = floor(handelNetto × %Skarb)  ← już zawiera mnożnik Waluty+Mennicy powyżej');
   appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności  ← też już zawiera mnożnik`);
@@ -7331,9 +7378,11 @@ function buildHandelDetailCard(
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
     mennicaAktywna
       ? `Mennica + Waluta razem mnożą całe ${daninaLbl} netto ${mennicaMnoznikTxt} (Skarb, Nauka i ${HANDEL_ZAMOZNOSC_LABEL} rosną razem).`
-      : maMennica
-        ? 'Mennica zbudowana, ale bez Waluty jeszcze nic nie mnoży (bramka: budynek + technologia, obie wymagane).'
-        : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
+      : mennicaSpiZBrakuZlota
+        ? `Mennica zbudowana i Waluta odkryta, ale mnożnik ŚPI: brak dostępu do złota (własna Kopalnia złota albo szlak handlowy z posiadaczem złota) — wraca sam po odzyskaniu dostępu.`
+        : maMennicaBudynek
+          ? 'Mennica zbudowana, ale bez Waluty jeszcze nic nie mnoży (bramka: budynek + technologia, obie wymagane).'
+          : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
     maBiblioteka ? `Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z ${daninaLblGen}).` : `Nauka = wyłącznie udział z ${daninaLblGen} + budynki.`,
     `${HANDEL_ZAMOZNOSC_LABEL} nie trafia do skarbca — idzie do puli zamożności miasta.`,
     'Na końcu: mnożnik W mnoży cały pieniądz miasta (Skarb + budynki + Targowisko).',
