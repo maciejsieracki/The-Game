@@ -3543,3 +3543,11 @@ Nowe: chipy paktów dyplomacji · RESEARCH_QUEUE_MAX=4 · Civpedia+MENU ukryte w
 Bramki: tsc 0 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41 · research 33/33 · fair-play-grid 8/8.
 **Sesja lokalna: pull / sync dysk, testuj `2dcd69e2` — `gra-robocza/START.html`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [01:01 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `e0238cc8` (FALA 29, VERIFY)
+**md5 `e0238cc8114bfe065a55573a590c714e`**, stempel `ROBOCZA · 2026-07-27 01:01`. **VERIFY OK** (manifest md5 = HTML).
+Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive lock).
+Nowe: nagłówek miasta flank layout · fix „i szczegóły" (z-index 410) · rekrutacja bez HP w podtytule · wymagania budynków niebieski/czerwony · sekcja budynków w mieście 2× · hex detail panel double-click · pieczęć build ukryta + ℹ toggle.
+Bramki: tsc 0 · logic 207/208 (pre garnizon) · manpower 44/44 · deposit-building-gate 41/41.
+**Sesja lokalna: pull / sync dysk, testuj `e0238cc8` — `gra-robocza/START.html`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.

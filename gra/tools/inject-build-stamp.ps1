@@ -20,7 +20,9 @@ $color = switch ($Tier) {
   'FINALNA' { '#9ee6b8' }
   default { '#d4af37' }
 }
-$labelPh = "$Tier · $shortPh · $stamp"
+# HTML entity — unika Â· przy zapisie UTF-8 bez BOM
+$dot = '&#183;'
+$labelPh = "$Tier $dot $shortPh $dot $stamp"
 
 $html = [IO.File]::ReadAllText($HtmlPath)
 $html = $html -replace '(?s)<!-- CIV-BUILD-STAMP -->.*?<!-- /CIV-BUILD-STAMP -->\s*', ''
@@ -28,7 +30,7 @@ $html = $html -replace '(?s)<div id="civ-build-stamp"[^>]*>.*?</div>\s*', ''
 
 $block = @"
 <!-- CIV-BUILD-STAMP -->
-<div id="civ-build-stamp" title="md5=$md5Ph" style="position:fixed;bottom:6px;left:6px;z-index:2147483647;font:11px/1.3 ui-monospace,Consolas,monospace;background:rgba(0,0,0,.78);color:$color;padding:3px 8px;border-radius:4px;border:1px solid rgba(212,175,55,.35);pointer-events:none;letter-spacing:.02em">$labelPh</div>
+<div id="civ-build-stamp" title="md5=$md5Ph" hidden style="position:fixed;bottom:32px;left:6px;z-index:2147483647;display:none;font:11px/1.3 ui-monospace,Consolas,monospace;background:rgba(0,0,0,.78);color:$color;padding:3px 8px;border-radius:4px;border:1px solid rgba(212,175,55,.35);pointer-events:none;letter-spacing:.02em">$labelPh</div>
 <!-- /CIV-BUILD-STAMP -->
 
 "@
@@ -44,7 +46,7 @@ if ($html -match '</body>') {
 for ($iter = 0; $iter -lt 4; $iter++) {
   $Md5 = (Get-FileHash -LiteralPath $HtmlPath -Algorithm MD5).Hash.ToLower()
   $short = $Md5.Substring(0, 8)
-  $label = "$Tier · $short · $stamp"
+  $label = "$Tier $dot $short $dot $stamp"
   $content = [IO.File]::ReadAllText($HtmlPath)
   $next = $content -replace 'title="md5=[0-9a-f]{32}"', "title=`"md5=$Md5`""
   $next = $next -replace '(?<=id="civ-build-stamp"[^>]*>)[^<]+(?=</div>)', $label

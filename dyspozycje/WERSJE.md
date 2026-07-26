@@ -11,7 +11,20 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `2dcd69e2` — 2026-07-27 00:39 · FALA 28: PANEL MIASTA + DYPLOMACJA + NAUKA — **AKTUALNA**
+## ROBOCZA `e0238cc8` — 2026-07-27 01:01 · FALA 29: PANEL MIASTA UX + HEX DETAIL — **AKTUALNA**
+- md5 (pelne): `e0238cc8114bfe065a55573a590c714e` · stempel: `ROBOCZA · 2026-07-27 01:01`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).
+- **Co nowego (sesja F29):**
+  - **Nagłówek miasta:** flank layout — Praca/Żywność/Skarbiec lewo, Kultura/Religia/Nauka prawo; przycisk wyjścia niżej.
+  - **„i szczegóły":** fix kliku (z-index 410, pointer-events, przyciski).
+  - **Rekrutacja:** uproszczony wiersz — bez HP/statów w podtytule (unitRecruitCard).
+  - **Budynki:** wymagania kolorowane niebieski/czerwony (cityPanel); sekcja „w mieście" 2× większa.
+  - **Mapa:** panel szczegółów heksu na podwójne kliknięcie (main.ts).
+  - **Pieczęć build:** ukryta domyślnie + przełącznik ℹ (buildStampToggle, inject-build-stamp).
+- **Bramki:** tsc 0 · logic 207/208 (pre garnizon) · manpower 44/44 · deposit-building-gate 41/41.
+
+## ROBOCZA `2dcd69e2` — 2026-07-27 00:39 · FALA 28: PANEL MIASTA + DYPLOMACJA + NAUKA — **ZASTĄPIONA**
 - md5 (pelne): `2dcd69e2cd09b1f73253570728cd4d46` · stempel: `ROBOCZA · 2026-07-27 00:39`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).

@@ -52,8 +52,12 @@ function ensureFrameStyles(): void {
 .civ-ux-top{position:fixed;top:0;left:0;right:0;height:auto;min-height:${TOP_H}px;z-index:403;pointer-events:none;overflow:visible;
   display:flex;align-items:flex-start;justify-content:center;padding:5px 12px 4px 12px;}
 .civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
-.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:100%;box-sizing:border-box;pointer-events:auto;}
-.civ-ux-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:${LEFT_MARGIN}px;bottom:0;width:${LEFT_PANEL_W_EXPR};min-width:280px;z-index:401;
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:min(98vw,1280px);box-sizing:border-box;pointer-events:none;}
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .civ-v-w3-chips-flank{pointer-events:none;}
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack button,
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .hover-detail-anchor,
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack [data-res-stat]{pointer-events:auto;}
+.civ-ux-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:${LEFT_MARGIN}px;bottom:0;width:${LEFT_PANEL_W_EXPR};min-width:280px;z-index:410;
   pointer-events:auto;overflow-y:auto;overflow-x:hidden;padding:0.18rem 0.4rem 0.48rem;
   display:flex;flex-direction:column;background:transparent;border:none;box-shadow:none;}
 .civ-ux-left-icon-rail{position:fixed;top:${LEFT_RAIL_TOP}px;
@@ -88,7 +92,7 @@ function ensureFrameStyles(): void {
 .civ-ux-detail-dock.is-open::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
 .civ-hover-detail-dock .civ-hover-detail-scope{display:flex;flex-direction:column;min-height:0;max-height:100%;}
 .civ-hover-detail-dock .civ-hover-detail-content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;}
-.civ-ux-right{position:fixed;top:${LEFT_RAIL_TOP}px;right:${RIGHT_MARGIN}px;bottom:32px;width:${RIGHT_PANEL_W_EXPR};min-width:260px;z-index:401;
+.civ-ux-right{position:fixed;top:${LEFT_RAIL_TOP}px;right:${RIGHT_MARGIN}px;bottom:32px;width:${RIGHT_PANEL_W_EXPR};min-width:260px;z-index:410;
   pointer-events:auto;overflow:hidden;padding:0;
   background:linear-gradient(180deg,rgba(18,24,32,0.97),rgba(8,10,16,0.97));
   border:2px solid rgba(232,216,138,0.42);border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,0.6);

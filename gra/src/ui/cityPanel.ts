@@ -1693,9 +1693,15 @@ function ensureStyles(): void {
   padding:0.28em 0.45em;background:var(--panel2);border:1px solid var(--border);border-radius:4px;}
 .civ-cs .okolica-compact-inner.hover-detail-anchor{cursor:help;}
 .civ-cs .okolica-info-link{font-size:0.72em;font-weight:600;text-decoration:underline dotted;text-underline-offset:2px;
-  pointer-events:auto;cursor:help;position:relative;z-index:2;}
-.civ-cs .civ-w4-surowce-detail{pointer-events:auto;cursor:help;position:relative;z-index:2;}
-.civ-cs .ptitle .okolica-info-link,.civ-cs .ptitle .civ-w4-panel-detail{flex-shrink:0;}
+  pointer-events:auto;cursor:pointer;position:relative;z-index:6;background:none;border:none;padding:0.18em 0.32em;margin:0;
+  font-family:inherit;color:inherit;line-height:inherit;text-transform:inherit;letter-spacing:inherit;}
+.civ-cs .okolica-info-link:hover,.civ-cs .okolica-info-link:focus-visible{color:var(--gold);}
+.civ-cs .civ-w4-surowce-detail{pointer-events:auto;cursor:pointer;position:relative;z-index:6;background:none;border:none;padding:0.18em 0.32em;margin:0;
+  font-family:inherit;color:inherit;line-height:inherit;text-transform:inherit;letter-spacing:inherit;}
+.civ-cs .civ-w4-surowce-detail:hover,.civ-cs .civ-w4-surowce-detail:focus-visible{color:var(--gold);}
+.civ-cs .ptitle .okolica-info-link,.civ-cs .ptitle .civ-w4-panel-detail{flex-shrink:0;pointer-events:auto;}
+.civ-ux-right .ptitle,.civ-ux-left .ptitle{position:relative;z-index:3;isolation:isolate;}
+.civ-ux-right .civ-w4-tab-body--scroll .ptitle{z-index:4;}
 .civ-detail-scope .detail-card.okolica-detail-card{font-size:0.84em;line-height:1.42;}
 .civ-detail-scope .detail-card.okolica-detail-card .dc-grid{grid-template-columns:minmax(7em,0.95fr) 1.05fr;}
 .civ-cs .cs-order .or-t{font-size:0.78em;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);
@@ -1783,8 +1789,14 @@ function ensureStyles(): void {
 .civ-ux-mount.civ-cs{pointer-events:auto;}
 .civ-ux-panel-scope.civ-cs{position:relative!important;inset:auto!important;display:flex!important;flex-direction:column!important;
   gap:0.48em!important;
-  pointer-events:auto!important;z-index:auto!important;width:100%;height:auto;min-height:0;
+  z-index:auto!important;width:100%;height:auto;min-height:0;
   background:transparent;color:var(--text);font-family:var(--civ-font-ui);}
+.civ-ux-left .civ-ux-panel-scope.civ-cs,
+.civ-ux-right .civ-ux-panel-scope.civ-cs,
+.civ-ux-left-icon-rail .civ-ux-panel-scope.civ-cs,
+.civ-ux-right-icon-rail .civ-ux-panel-scope.civ-cs,
+.civ-ux-map-chrome .civ-ux-panel-scope.civ-cs{pointer-events:auto!important;}
+.civ-ux-top .civ-ux-panel-scope.civ-cs{pointer-events:none;}
 .civ-ux-right,.civ-ux-left,.civ-v-right-main,.civ-v-left-main,.civ-w4-tab-card,.civ-w4-tab-body{pointer-events:auto;}
 .civ-v-card{background:rgba(6,12,24,0.55);border:1px solid var(--civ-gold-border);border-radius:var(--civ-radius-panel);
   padding:0.45em 0.5em;margin-bottom:0.45em;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.35);}
@@ -1807,11 +1819,18 @@ function ensureStyles(): void {
   background:linear-gradient(180deg,#0c121c,#060a10);border-bottom:1px solid rgba(212,175,90,0.32);}
 .civ-v-resource-bar.civ-v-resource-bar-w3{display:flex;align-items:center;justify-content:center;gap:0.65rem;
   padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
-.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(96vw,1120px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
+.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1280px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
+.civ-v-top-flank-row{display:flex;align-items:center;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:wrap;width:100%;}
+.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.28rem 0.42rem;
+  padding:0.28rem 0.7rem;border-radius:12px;
+  background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
+  flex:0 1 auto;min-width:0;max-width:min(42vw,460px);}
+.civ-v-w3-chips-flank.civ-v-w3-chips-left{justify-content:flex-end;}
+.civ-v-w3-chips-flank.civ-v-w3-chips-right{justify-content:flex-start;}
 .civ-v-top-line{display:flex;align-items:center;justify-content:center;gap:0.65rem;flex-wrap:wrap;width:100%;}
-.civ-v-exit-top-row{display:flex;flex-direction:column;align-items:center;gap:0.15em;pointer-events:auto;flex-shrink:0;}
-.civ-v-exit-top-row .civ-v-exit-map-btn{font-size:0.76em;padding:0.38em 0.9em 0.38em 0.72em;}
-.civ-v-exit-top-row .civ-v-exit-foot-hint{font-size:0.58em;color:#8b97a8;text-align:center;white-space:nowrap;}
+.civ-v-exit-bottom-row{display:flex;flex-direction:column;align-items:center;gap:0.15em;pointer-events:auto;flex-shrink:0;margin-bottom:0.12em;}
+.civ-v-exit-bottom-row .civ-v-exit-map-btn{font-size:0.76em;padding:0.38em 0.9em 0.38em 0.72em;}
+.civ-v-exit-bottom-row .civ-v-exit-foot-hint{font-size:0.58em;color:#8b97a8;text-align:center;white-space:nowrap;}
 .civ-v-w3-bar-spacer{display:none;}
 .civ-v-w3-chips-city{margin-left:0;flex:0 0 auto;width:fit-content;max-width:100%;min-width:0;}
 .civ-v-w3-city-badge{display:inline-flex;align-items:center;gap:0.55rem;padding:0.45rem 1.05rem 0.45rem 0.75rem;
@@ -1884,8 +1903,8 @@ function ensureStyles(): void {
 .civ-v-res-city{font-size:0.85em;font-weight:700;color:#d4af5a;letter-spacing:0.07em;text-transform:uppercase;
   white-space:nowrap;align-self:center;padding-right:0;line-height:1;flex-shrink:0;}
 .civ-v-res-head{display:flex;align-items:center;gap:0.55rem;justify-self:start;min-width:0;max-width:min(44vw,520px);}
-.civ-v-garrison-inline{display:flex;align-items:center;gap:0.42rem;min-width:0;overflow-x:auto;scrollbar-width:none;
-  padding:0.1rem 0;-ms-overflow-style:none;}
+.civ-v-garrison-inline{display:flex;align-items:center;justify-content:center;gap:0.42rem;min-width:0;overflow-x:auto;scrollbar-width:none;
+  padding:0.1rem 0;-ms-overflow-style:none;width:100%;}
 .civ-v-garrison-inline::-webkit-scrollbar{display:none;}
 .civ-v-garrison-label{display:inline-flex;align-items:center;gap:0.28em;font-size:0.82em;font-weight:700;color:var(--text);
   letter-spacing:0.03em;flex-shrink:0;white-space:nowrap;cursor:help;}
@@ -2023,14 +2042,15 @@ function ensureStyles(): void {
 .civ-cs .bld-infocard-title{font-family:Georgia,serif;font-size:1.05em;color:#e8e0c8;line-height:1.15;font-weight:600;}
 .civ-cs .bld-infocard-cat{display:inline-flex;margin-top:0.28em;font-size:0.58em;letter-spacing:.1em;text-transform:uppercase;color:#0f1218;background:#c8b070;padding:0.18em 0.45em;border-radius:5px;}
 .civ-cs .bld-infocard-bd{padding:0.62em 0.85em 0.72em;display:flex;flex-direction:column;gap:0.45em;}
-.civ-cs .bld-infocard-chips{display:flex;flex-wrap:wrap;gap:0.35em;}
 .civ-cs .bld-infocard-chip{display:inline-flex;align-items:center;gap:0.28em;font-size:0.68em;color:#c8b898;border:1px solid rgba(232,216,138,.25);border-radius:20px;padding:0.22em 0.52em;}
 .civ-cs .bld-infocard-chip.stock-missing{color:#e88a7a;border-color:rgba(232,110,90,.45);background:rgba(232,90,70,.08);}
-.civ-cs .bld-req-chip{display:inline-flex;align-items:center;gap:0.28em;font-size:0.68em;border-radius:20px;padding:0.22em 0.52em;border:1px solid;line-height:1.25;}
-.civ-cs .bld-req-chip.met{color:#8ec8f0;border-color:rgba(90,155,212,.55);background:rgba(90,155,212,.12);}
-.civ-cs .bld-req-chip.unmet{color:#e88a7a;border-color:rgba(232,110,90,.5);background:rgba(232,90,70,.1);}
-.civ-cs .bld-infocard-eyebrow{font-size:0.54em;letter-spacing:.14em;text-transform:uppercase;color:#8a8478;margin-top:0.15em;}
-.civ-cs .bld-infocard-eyebrow.req{color:#c9a35a;}
+.civ-cs .bld-req-chip,.civ-detail-scope .bld-req-chip{display:inline-flex;align-items:center;gap:0.28em;font-size:0.68em;border-radius:20px;padding:0.22em 0.52em;border:1px solid;line-height:1.25;}
+.civ-cs .bld-req-chip.met,.civ-detail-scope .bld-req-chip.met{color:#6eb5ff;border-color:rgba(90,155,212,.55);background:rgba(90,155,212,.12);}
+.civ-cs .bld-req-chip.unmet,.civ-detail-scope .bld-req-chip.unmet{color:#ff6b6b;border-color:rgba(232,110,90,.5);background:rgba(232,90,70,.1);}
+.civ-cs .bld-req-chip .bld-req-tech-ic,.civ-detail-scope .bld-req-chip .bld-req-tech-ic{color:currentColor;opacity:0.92;}
+.civ-cs .bld-infocard-chips,.civ-detail-scope .bld-infocard-chips{display:flex;flex-wrap:wrap;gap:0.35em;}
+.civ-cs .bld-infocard-eyebrow,.civ-detail-scope .bld-infocard-eyebrow{font-size:0.54em;letter-spacing:.14em;text-transform:uppercase;color:#8a8478;margin-top:0.15em;}
+.civ-cs .bld-infocard-eyebrow.req,.civ-detail-scope .bld-infocard-eyebrow.req{color:#c9a35a;}
 .civ-cs .bld-infocard-req-access{font-size:0.68em;color:#c8b898;display:flex;align-items:center;gap:0.3em;}
 /* SUROW-UI-B1/B2 (Maciej 2026-07-24): pasek surowców uproszczony (budowa/rekrutacja) — Total War-style. */
 .civ-cs .civ-cs-res-strip{display:flex;flex-wrap:wrap;align-items:center;gap:0.65em;margin:0 0 0.55em;padding:0.35em 0;}
@@ -2232,15 +2252,24 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-v-build-main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .civ-v-build-main > .panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .civ-v-build-main .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;}
-.civ-v-build-owned-bar{flex:0 0 auto;padding-top:0.18em;border-top:1px solid rgba(212,175,90,0.28);min-height:0;max-height:34%;display:flex;flex-direction:column;}
-.civ-v-build-owned-bar > .panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:0.22em 0.28em 0.18em!important;}
-.civ-v-build-owned-bar .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:9em;overflow-y:auto;}
-.civ-v-build-owned-bar .ptitle{font-size:0.66em;margin-bottom:0.12em;letter-spacing:.06em;padding:0;}
-.civ-v-build-owned-bar .bld-owned-title-upkeep{font-weight:600;color:#c8a878;margin-left:0.2em;}
-.civ-v-build-owned-bar .bld-owned-summary{margin:0 0 0.18em;padding:0.18em 0.28em;font-size:0.62em;}
-.civ-v-build-owned-bar .bld-group{margin-bottom:0.1em;}
-.civ-v-build-owned-bar .bld-group-h{font-size:0.64em;padding:0.06em 0.18em;margin-bottom:0.06em;line-height:1.2;}
-.civ-v-build-owned-bar .bld-group>.bld-owned-row{margin-left:0.08em;}
+.civ-v-build-owned-bar{flex:1 1 auto;padding-top:0.28em;border-top:1px solid rgba(212,175,90,0.28);min-height:10em;max-height:68%;display:flex;flex-direction:column;}
+.civ-v-build-owned-bar > .panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:0.32em 0.36em 0.28em!important;}
+.civ-v-build-owned-bar .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:18em;overflow-y:auto;}
+.civ-v-build-owned-bar .ptitle{font-size:0.82em;margin-bottom:0.22em;letter-spacing:.06em;padding:0;}
+.civ-v-build-owned-bar .muted{font-size:0.82em;min-height:4.5em;padding:0.55em 0.12em;line-height:1.45;}
+.civ-v-build-owned-bar .bld-owned-title-upkeep{font-weight:600;color:#c8a878;margin-left:0.2em;font-size:0.95em;}
+.civ-v-build-owned-bar .bld-owned-summary{margin:0 0 0.28em;padding:0.28em 0.36em;font-size:0.78em;}
+.civ-v-build-owned-bar .bld-group{margin-bottom:0.18em;}
+.civ-v-build-owned-bar .bld-group-h{font-size:0.8em;padding:0.12em 0.28em;margin-bottom:0.1em;line-height:1.35;}
+.civ-v-build-owned-bar .bld-group>.bld-owned-row{margin-left:0.12em;}
+.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-row--tight{padding:0.18em 0.32em;margin-bottom:0.1em;border-radius:4px;gap:0.18em 0.36em;min-height:2.7em;}
+.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-hd{gap:0.28em;max-width:46%;}
+.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-hd .bi{width:1.25em;height:1.25em;font-size:1em;}
+.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-name{font-size:0.82em;max-width:9em;}
+.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-tail{font-size:0.76em;gap:0.28em 0.36em;line-height:1.25;}
+.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-chip{gap:0.1em;}
+.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-sep{opacity:.4;font-size:0.95em;margin:0 0.1em;}
+.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-row .bld-upg{font-size:0.76em;padding:0.06em 0.28em;}
 .bld-owned-compact-mount .bld-owned-row--tight{padding:0.1em 0.22em;margin-bottom:0.06em;border-radius:4px;gap:0.12em 0.28em;min-height:1.35em;}
 .bld-owned-compact-mount .bld-owned-hd{gap:0.18em;max-width:46%;}
 .bld-owned-compact-mount .bld-owned-hd .bi{width:1em;height:1em;font-size:0.85em;}
@@ -2758,17 +2787,17 @@ function renderSurowce(mount: HTMLElement, city: City): void {
   const { potential, active, legacy } = normalizeResourceAccess(raw);
   const wrap = el('div', 'civ-w4-surowce-foot');
   const hd = el('div', 'civ-w4-surowce-hd');
-  hd.innerHTML =
-    '<span class="civ-w4-surowce-title">Surowce w zasięgu</span>' +
-    '<span class="civ-w4-surowce-detail gold">i szczegóły</span>';
+  const surowceTitle = el('span', 'civ-w4-surowce-title');
+  surowceTitle.textContent = 'Surowce w zasięgu';
+  const surowceDetail = el('button', 'civ-w4-surowce-detail civ-w4-panel-detail gold');
+  surowceDetail.type = 'button';
+  surowceDetail.textContent = 'i szczegóły';
+  surowceDetail.setAttribute('aria-label', 'Pokaż szczegóły surowców');
+  hd.appendChild(surowceTitle);
+  hd.appendChild(surowceDetail);
   wrap.appendChild(hd);
-  const surowceDetail = hd.querySelector('.civ-w4-surowce-detail') as HTMLElement | null;
   const surowceBuild = () => buildSurowceDetailCard(potential, active, legacy);
-  if (surowceDetail) {
-    attachInteractiveDetail(surowceDetail, surowceBuild, { delayMs: 220, sideHint: 'right' });
-  } else {
-    attachInteractiveDetail(hd, surowceBuild, { delayMs: 220, sideHint: 'right' });
-  }
+  attachInteractiveDetail(surowceDetail, surowceBuild, { delayMs: 220, sideHint: 'right' });
 
   const preview = ['Koń', 'Sól', 'Złoto'];
   const hasSplit = raw !== undefined && !legacy;
@@ -5193,16 +5222,20 @@ function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefined): s
   const cost = buildingStockCost(def);
   const keys = Object.keys(cost);
   if (keys.length === 0) return '';
-  // Brak `city` (katalog/podgląd epoki bez kontekstu miasta) -- pokaż koszt neutralnie,
-  // bez czerwieni (nie wiemy, czy pula PAŃSTWA tego ownera starcza).
   const pool = city !== undefined ? ownerSurowcePoolFor(city) : undefined;
-  const chips = keys.map(k => {
+  const chips: BuildingReqChip[] = keys.map(k => {
     const need = cost[k]!;
-    const missing = pool !== undefined && need > (pool[k] ?? 0);
-    const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';
-    return `<span class="${cls}">${need} ${stockResourceLabel(k)}</span>`;
+    const have = pool?.[k] ?? 0;
+    const met = pool !== undefined && have >= need;
+    return {
+      label: pool !== undefined
+        ? `${need} ${stockResourceLabel(k)} (masz ${have})`
+        : `${need} ${stockResourceLabel(k)}`,
+      met,
+      kind: 'stock' as const,
+    };
   });
-  return chips.join('');
+  return buildingRequirementChipsHtml(chips);
 }
 
 const BUILDING_UPKEEP_ZERO_LABEL = 'utrzymanie zero';
@@ -5270,7 +5303,7 @@ function buildingRequirementChips(
     chips.push({
       label: met ? tech : steps.join(' → '),
       met,
-      iconHtml: techIconHintSpan(tech),
+      iconHtml: techIconHintSpan(tech, 14, { inheritColor: true }),
       kind: 'tech',
     });
   }
@@ -5382,12 +5415,13 @@ function sortProductionItemsByBuildability(
   return [...buildable, ...blocked];
 }
 
+function buildingReqChipSpan(chip: Pick<BuildingReqChip, 'label' | 'met' | 'iconHtml'>): string {
+  const cls = chip.met ? 'bld-req-chip met' : 'bld-req-chip unmet';
+  return `<span class="${cls}">${chip.iconHtml ?? ''}${chip.label}</span>`;
+}
+
 function buildingRequirementChipsHtml(chips: BuildingReqChip[]): string {
-  return chips.map(c => {
-    const cls = c.met ? 'bld-req-chip met' : 'bld-req-chip unmet';
-    const icon = c.iconHtml ?? '';
-    return `<span class="${cls}">${icon}${c.label}</span>`;
-  }).join('');
+  return chips.map(c => buildingReqChipSpan(c)).join('');
 }
 
 const BUILDING_REQ_SECTION_LABELS: Record<BuildingReqChipKind, string> = {
@@ -5652,11 +5686,17 @@ function playerFacingNote(text: string | null | undefined): string | null {
 }
 
 /** Mały medalion ikony technologii (14px) do wklejenia w tekst-podpowiedzi (innerHTML). */
-function techIconHintSpan(techName: string | null | undefined, sizePx = 14): string {
+function techIconHintSpan(
+  techName: string | null | undefined,
+  sizePx = 14,
+  opts?: { inheritColor?: boolean },
+): string {
   if (!techName) return '';
   const svg = techIconSvg(techName, sizePx);
   if (!svg) return '';
-  return `<span style="display:inline-flex;width:${sizePx}px;height:${sizePx}px;vertical-align:-3px;margin-right:4px;color:var(--gold);">${svg}</span>`;
+  const icCls = opts?.inheritColor ? 'bld-req-tech-ic' : '';
+  const color = opts?.inheritColor ? 'currentColor' : 'var(--gold)';
+  return `<span class="${icCls}" style="display:inline-flex;width:${sizePx}px;height:${sizePx}px;vertical-align:-3px;margin-right:4px;color:${color};">${svg}</span>`;
 }
 
 function unitExtraField(u: UnitDef, key: string): string | number | null {
@@ -7795,8 +7835,10 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
     const left = el('span', '');
     left.textContent = 'Zarządzanie polami';
     headEl.appendChild(left);
-    const infoLink = el('span', 'okolica-info-link gold');
+    const infoLink = el('button', 'okolica-info-link gold');
+    infoLink.type = 'button';
     infoLink.textContent = 'ℹ szczegóły';
+    infoLink.setAttribute('aria-label', 'Pokaż szczegóły okolicy');
     headEl.appendChild(infoLink);
     attachInteractiveDetail(infoLink, buildDetail, { delayMs: 220, sideHint: 'right' });
   }
@@ -8098,8 +8140,8 @@ function w3SplitSpan(amount: number, cls: string, title: string, suffix = ''): s
   return `<span class="civ-v-w3-split ${cls}" title="${title.replace(/"/g, '&quot;')}">${d.html}${suffix}</span>`;
 }
 
-/** Prawy górny pasek widoku miasta — tylko produkcja tego grodu (nie imperium). */
-function buildCityOnlyW3StatItems(city: City, view: CityView, data: GameData | null): string {
+/** Górny pasek widoku miasta — chipy po bokach nazwy miasta (lewo: ekonomia, prawo: kultura/nauka). */
+function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | null): { left: string; right: string } {
   const pracaSplit = cityPracaSplit(city, view, data);
   const pracaCls = pracaSplit.total > 0 ? 'green' : pracaSplit.total < 0 ? 'red' : '';
   const pracaSplits =
@@ -8192,10 +8234,7 @@ function buildCityOnlyW3StatItems(city: City, view: CityView, data: GameData | n
     ),
   ].join('');
 
-  return (
-    '<div class="civ-v-w3-chips-row">' + economyRow + '</div>' +
-    '<div class="civ-v-w3-chips-row">' + cultureRow + '</div>'
-  );
+  return { left: economyRow, right: cultureRow };
 }
 
 function buildCityResourceStatItems(
@@ -8206,10 +8245,7 @@ function buildCityResourceStatItems(
   w3 = false,
 ): string {
   const empire = resolveEmpireSnap(city, map, data);
-  if (w3 && view) {
-    return buildCityOnlyW3StatItems(city, view, data);
-  }
-  if (w3 && !view) {
+  if (w3) {
     return '';
   }
 
@@ -8362,14 +8398,15 @@ function renderCivResourceTopBar(
   view: CityView | null,
   map: GameMap | null,
   data: GameData | null,
-  onClose?: () => void,
+  _onClose?: () => void,
 ): void {
-  const items = buildCityResourceStatItems(city, view, map, data, true);
-  const chipsStacked = view ? ' civ-v-w3-chips-stacked' : '';
+  const flank = view ? buildCityOnlyW3FlankChips(city, view, data) : { left: '', right: '' };
   const multi = ownerCities(city).length > 1;
   const navDis = multi ? '' : 'disabled';
   mount.innerHTML =
     `<div class="civ-v-top-stack">` +
+    `<div class="civ-v-top-flank-row">` +
+    `<div class="civ-v-w3-chips-flank civ-v-w3-chips-left">${flank.left}</div>` +
     `<div class="civ-v-w3-city-badge">` +
     `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-prev" ${navDis} title="Poprzednie miasto (←)" aria-label="Poprzednie miasto">‹</button>` +
     `<span class="civ-v-w3-city-name">${cityPanelTitle(city)}</span>` +
@@ -8377,19 +8414,10 @@ function renderCivResourceTopBar(
     `<span class="civ-v-w3-city-pop">${city.population}</span>` +
     capitalBadgeOrButtonHtml(city) +
     `</div>` +
-    `<div class="civ-v-resource-bar civ-v-resource-bar-w3">` +
-    `<div class="civ-v-w3-chips civ-v-w3-chips-city${chipsStacked}">${items}</div>` +
+    `<div class="civ-v-w3-chips-flank civ-v-w3-chips-right">${flank.right}</div>` +
     `</div>` +
     `<div id="civ-v-garrison-row" class="civ-v-garrison-inline"></div>` +
-    `<div class="civ-v-exit-top-row">` +
-    `<button type="button" class="civ-v-exit-map-btn" id="civ-v-map-close" title="Wróć na mapę świata (Esc)">` +
-    `<span class="civ-v-exit-ic">${cityPanelBrandIcon('menu-exit', 24)}</span>` +
-    `<span>Wróć na mapę</span>` +
-    `</button>` +
-    `<span class="civ-v-exit-foot-hint">Esc — szybkie wyjście</span>` +
-    `</div>` +
     `</div>`;
-  mount.querySelector('#civ-v-map-close')?.addEventListener('click', () => closeCityView(onClose));
   mount.querySelector('#civ-v-city-prev')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -8667,9 +8695,16 @@ function activeTradeRouteCountForCity(city: City): number {
   return n;
 }
 
-function renderCivMapChrome(mount: HTMLElement, city: City, _onClose?: () => void): void {
+function renderCivMapChrome(mount: HTMLElement, city: City, onClose?: () => void): void {
   mount.innerHTML =
     `<div class="civ-v-map-bottom-stack">` +
+    `<div class="civ-v-exit-bottom-row">` +
+    `<button type="button" class="civ-v-exit-map-btn" id="civ-v-map-close" title="Wróć na mapę świata (Esc)">` +
+    `<span class="civ-v-exit-ic">${cityPanelBrandIcon('menu-exit', 24)}</span>` +
+    `<span>Wróć na mapę</span>` +
+    `</button>` +
+    `<span class="civ-v-exit-foot-hint">Esc — szybkie wyjście</span>` +
+    `</div>` +
     `<div id="cs-okolica-center" class="civ-v-okolica-center">` +
     `<div id="cs-okhead-ux" class="ptitle civ-v-okolica-head"></div>` +
     `<div id="cs-oktoolbar-ux" class="okolica-toolbar okolica-toolbar-map"></div>` +
@@ -8681,6 +8716,7 @@ function renderCivMapChrome(mount: HTMLElement, city: City, _onClose?: () => voi
     `<div id="cs-okstats" class="okstats is-collapsed"></div>` +
     `<div id="cs-okhint" class="okhint is-collapsed"></div>` +
     `</div>`;
+  mount.querySelector('#civ-v-map-close')?.addEventListener('click', () => closeCityView(onClose));
 }
 
 function appendOkolicaToolbarProfiles(
@@ -8807,8 +8843,10 @@ function appendSectionTitleWithDetails(
   const left = el('span', '');
   left.innerHTML = titleHtml;
   head.appendChild(left);
-  const infoLink = el('span', 'okolica-info-link civ-w4-panel-detail gold');
+  const infoLink = el('button', 'okolica-info-link civ-w4-panel-detail gold');
+  infoLink.type = 'button';
   infoLink.textContent = 'i szczegóły';
+  infoLink.setAttribute('aria-label', 'Pokaż szczegóły sekcji');
   head.appendChild(infoLink);
   mount.appendChild(head);
   attachInteractiveDetail(infoLink, buildDetail, {

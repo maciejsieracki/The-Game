@@ -3141,13 +3141,13 @@ async function boot(): Promise<void> {
 
     /** D17=A: panel kontekstowy — pole mapy + opcjonalnie jednostka na tym heksie. */
     function buildHexContextPanelMessage(): string | null {
-      if (!isWorldMapUnitMode() || lastBHex === null) return null;
-      const hex = map.hexes[keyOf(lastBHex.q, lastBHex.r)];
+      if (!isWorldMapUnitMode() || hexDetailHex === null) return null;
+      const hex = map.hexes[keyOf(hexDetailHex.q, hexDetailHex.r)];
       if (!hex) return null;
-      const cityOn = cities.find(c => c.q === lastBHex!.q && c.r === lastBHex!.r);
+      const cityOn = cities.find(c => c.q === hexDetailHex!.q && c.r === hexDetailHex!.r);
       return buildHexContextTooltipHtml({
-        q: lastBHex.q,
-        r: lastBHex.r,
+        q: hexDetailHex.q,
+        r: hexDetailHex.r,
         hex,
         cityName: cityOn?.name ?? null,
         cityIsCityState: cityOn != null && cityOn.ownerId !== 0 && !!cityOn.startCityState,
@@ -3156,7 +3156,7 @@ async function boot(): Promise<void> {
           : null,
         cityPopulation: cityOn?.population ?? null,
         currentEra: player.era,
-        daninaLabel: hexDaninaLabelAt(lastBHex.q, lastBHex.r),
+        daninaLabel: hexDaninaLabelAt(hexDetailHex.q, hexDetailHex.r),
         esc: hudHtmlEsc,
       });
     }
@@ -3190,7 +3190,7 @@ async function boot(): Promise<void> {
       const unitMsg = buildUnitContextPanelMessage();
       if (hexMsg && unitMsg) {
         const u = units.find(x => x.id === selectedId);
-        const sameHex = u && lastBHex && u.q === lastBHex.q && u.r === lastBHex.r;
+        const sameHex = u && hexDetailHex && u.q === hexDetailHex.q && u.r === hexDetailHex.r;
         if (sameHex) {
           return hexMsg + '<div class="cp-sep"></div>' + unitMsg;
         }
@@ -5641,8 +5641,7 @@ async function boot(): Promise<void> {
 
     /** Panel kontekstowy mapy (heks + miasto) — po wyborze „Informacja" przy obcym mieście. */
     function showForeignCityHexContext(q: number, r: number): void {
-      lastBHex = { q, r };
-      refreshD1bHud();
+      showHexContextPanel(q, r);
     }
 
     /** Modal: informacja o heksie/mieście vs audiencja dyplomatyczna (Maciej 2026-07-26). */
@@ -5856,16 +5855,24 @@ async function boot(): Promise<void> {
     let playtestMiastoActive = false;
     /** Last hex the player explicitly clicked on the map (for B = found city). */
     let lastBHex: { q: number; r: number } | null = null;
+    /** Heks z otwartym panelem „Pole mapy” — tylko po dblclick (lub „Informacja” u obcego miasta). */
+    let hexDetailHex: { q: number; r: number } | null = null;
+
+    function showHexContextPanel(q: number, r: number): void {
+      hexDetailHex = { q, r };
+      lastBHex = { q, r };
+      refreshD1bHud();
+    }
 
     /**
      * Zamyka panel kontekstowy heksa (D17=A) — wzajemna wyłączność z innymi
      * panelami/funkcjami (badania/ekonomia/kultura/itp.) oraz PPM na mapie.
-     * Panel jest w 100% pochodną `lastBHex` (patrz buildHexContextPanelMessage),
-     * więc wyczyszczenie stanu + odświeżenie HUD-a wystarcza, by realnie zniknął.
+     * Panel jest pochodną `hexDetailHex` (patrz buildHexContextPanelMessage);
+     * `lastBHex` zostaje dla skrótu B = załóż miasto.
      */
     function hideHexContextPanel(): void {
-      if (lastBHex === null) return;
-      lastBHex = null;
+      if (hexDetailHex === null) return;
+      hexDetailHex = null;
       refreshD1bHud();
     }
 
@@ -7019,6 +7026,7 @@ async function boot(): Promise<void> {
       hideCityPanelFull();
       clearPlayerUnitSelection();
       lastBHex = null;
+      hexDetailHex = null;
       // D12: usunięty zbędny drugi refreshFog (pierwszy — po spawnie rywali — już odświeżył mgłę).
       updateHud();
       refreshD1bHud();
@@ -12970,8 +12978,9 @@ async function boot(): Promise<void> {
         return;
       }
 
-      // Record the clicked hex so B (found city) can use it.
+      // Record the clicked hex so B (found city) can use it; panel szczegółów tylko po dblclick.
       lastBHex = { q: hit.q, r: hit.r };
+      hexDetailHex = null;
 
       // Panel miasta (Civ V): klik heksu w okolicy = przypisz / zabierz 👤
       if (isCityPanelOpen()) {
@@ -13235,6 +13244,19 @@ async function boot(): Promise<void> {
         clearPlayerUnitSelection();
         refreshD1bHud();
       }
+    });
+
+    canvas.addEventListener('dblclick', (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      if (galleryOn || isAnimating || isPostBattleSummaryOpen()) return;
+      if (isPointOverCityPanelUi(e.clientX, e.clientY)) return;
+      if (!isWorldMapUnitMode()) return;
+
+      const hit = pickHexAt(e.clientX, e.clientY);
+      if (!hit) return;
+
+      e.preventDefault();
+      showHexContextPanel(hit.q, hit.r);
     });
 
     // -----------------------------------------------------------------------

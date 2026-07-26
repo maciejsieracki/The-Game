@@ -19,7 +19,7 @@ export interface SidePanelEvent {
 
 export interface SidePanelHudConfig {
   getEvents?: () => SidePanelEvent[];
-  /** Karta „Pole mapy” nad wydarzeniami (klik heksu). */
+  /** Karta „Pole mapy” nad wydarzeniami (dblclick heksu na mapie świata). */
   getHexContext?: () => string | null;
   onEventClick?: (id: string) => void;
   onEventDismiss?: (id: string) => void;

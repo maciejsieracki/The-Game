@@ -53,6 +53,7 @@ import {
   type CultureOverlayData, type ReligionOverlayData,
 } from './empireOverlayHud';
 import { empireSectionFromHudAct } from './empireDetailPanel';
+import './buildStampToggle';
 
 export type { PowerOverlayData, CultureOverlayData, ReligionOverlayData };
 

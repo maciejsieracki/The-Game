@@ -8,7 +8,6 @@ import type { ProductionItem } from '../game/production';
 import { categoryOf } from '../units/setup';
 import { unitIconSvg } from './icons/brandAssets';
 import {
-  unitCombatClassTag,
   unitInfographicLabel,
   unitInfographicSvg,
 } from './unitInfographic';
@@ -34,29 +33,9 @@ function unitCategory(u: UnitDef): string {
   return categoryOf(u.Jednostka ?? '', u['Rola (linia)'] ?? '', isSuper, u['Typ']);
 }
 
-function statPresent(val: string | number | null | undefined): val is string | number {
-  return val != null && val !== '' && val !== '—';
-}
-
-function compactCombatStats(u: UnitDef): string {
-  const parts: string[] = [];
-  const hp = u.Health;
-  if (hp != null && hp > 0) parts.push(`HP ${hp}`);
-  if (statPresent(u.Atak)) parts.push(`A${u.Atak}`);
-  if (statPresent(u.Obrona)) parts.push(`O${u.Obrona}`);
-  const ranged = u['Atak dystansowy'];
-  if (statPresent(ranged)) parts.push(`D${ranged}`);
-  const armor = u.Pancerz;
-  if (statPresent(armor)) parts.push(`P${armor}`);
-  return parts.join(' · ');
-}
-
+/** Podtytuł wiersza rekrutacji — tylko typ jednostki (bez statów bojowych). */
 function unitCompactMeta(u: UnitDef, cat: string): string {
-  const label = unitInfographicLabel(cat);
-  const combat = unitCombatClassTag(u).label;
-  const stats = compactCombatStats(u);
-  const head = label || combat;
-  return [head, stats].filter(s => s.length > 0).join(' · ');
+  return unitInfographicLabel(cat) || u.Jednostka || '';
 }
 
 export interface UnitRecruitCardOpts {

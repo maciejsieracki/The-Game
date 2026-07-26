@@ -231,7 +231,6 @@ export function buildCityOkolicaOverlayGroup(
       const hex = map.hexes[key];
       if (!hex) continue;
       const { q, r } = hex.coords;
-      if (q === params.cityQ && r === params.cityR) continue;
       const t = hex.terenBazowy;
       if (t === TerenBazowy.Morze || t === TerenBazowy.Gory) continue;
 
