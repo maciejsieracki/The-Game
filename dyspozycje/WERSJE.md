@@ -11,7 +11,20 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `1636f388` — 2026-07-26 23:38 · FALA 25: KULTURA/RELIGIA + PANEL SKŁAD — **AKTUALNA**
+## ROBOCZA `b87481fc` — 2026-07-26 23:49 · FALA 26: BITWA + DYPLOMACJA + MAPA 18% — **AKTUALNA**
+- md5 (pelne): `b87481fca6f9632ad3a6eebea90438c8` · stempel: `ROBOCZA · 2026-07-26 23:49`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (ostrzeżenie npm).
+- **Co nowego (sesja F26):**
+  - **Bitwa (battleScene):** poprawione ustawienie obrony, ekran wygranej/przegranej, tryb manualny.
+  - **Ekrany końca bitwy:** `endScreen1E` + `endDetails1E` — spójność z wynikiem walki.
+  - **Panel miasta:** sortowanie list + Skarbiec (jeśli zbudowany) w banerze zasobów.
+  - **Dyplomacja:** negocjacje w `main.ts` + audiencja; handel od relacji neutralnej (`progHandelRelacja=0`).
+  - **Mapa:** górzystość medium ~18% lądu (`relief_overflow_cap_frac` 0,06 Góry + 0,09 Wzgórza w `map-gen-params.json`).
+  - **Ekonomia:** `economy-upkeep` + panel imperium (`empireDetailPanel`) — korekty wyświetlania.
+- **Bramki:** tsc 0 · diplomacy-negotiation-table 39/39 · fair-play-grid **8/8** · relief-grid-coverage **6/6**.
+
+## ROBOCZA `1636f388` — 2026-07-26 23:38 · FALA 25: KULTURA/RELIGIA + PANEL SKŁAD — **ZASTĄPIONA**
 - md5 (pelne): `1636f388b512b008a2b95a6a46d8bdb9` · stempel: `ROBOCZA · 2026-07-26 23:38`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0).

@@ -84,7 +84,7 @@ var diplomacy_default = {
     progPoboczneWojna: 15,
     progNapZaufanie: 40,
     progNapRelacja: 50,
-    progHandelRelacja: 40,
+    progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
     progSojuszPartnerRwMax: 0.7,
     progSojuszPremiaSilniejszyMax: 0.25,
@@ -4186,8 +4186,8 @@ var DIPLOMACY_PARAMS = {
   progNapZaufanie: 40,
   /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
   progNapRelacja: 50,
-  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża (Maciej 2026-07-21: 40 @ normal) */
-  progHandelRelacja: 40,
+  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
+  progHandelRelacja: 0,
   /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
   progSojuszPartnerRwMin: 0.4,
   progSojuszPartnerRwMax: 0.7,
@@ -4378,7 +4378,6 @@ var DIPLO_RELATION_THRESHOLD_KEYS = [
   "progSojuszRelacja",
   "progUmowaMinRelacja",
   "progNapRelacja",
-  "progHandelRelacja",
   "progGraniceRelacja",
   "progPoboczneHandel",
   "progPoboczneWojna"
@@ -11603,7 +11602,9 @@ var HANDEL_SUROWCE_CENA_ROW = {
   kamien: "cena_kamien",
   glina: "cena_glina",
   cegla: "cena_cegla",
-  ruda: "cena_ruda"
+  ruda: "cena_ruda",
+  /** Ruda żelaza — osobny klucz magazynu (City.surowce.ruda_zelaza); cena placeholder jak ruda. */
+  ruda_zelaza: "cena_ruda"
 };
 var DEFAULT_HANDEL_SUROWCE_PAKIET = 10;
 function readHandelSurowceParam(rowKey, fallback) {

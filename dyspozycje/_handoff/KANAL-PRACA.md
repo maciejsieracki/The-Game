@@ -3508,3 +3508,11 @@ Nowe: kultura/religia — bez podwójnej kary „Obca kultura"; miasta założon
 Bramki: tsc 0 · manpower 44/44 · ai-test 246/246 · map-attack-city 8/8 · society-breakdown 40/40.
 **Sesja lokalna: pull / sync dysk, testuj `1636f388` — `gra-robocza/START.html`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [23:49 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `b87481fc` (FALA 26)
+**md5 `b87481fca6f9632ad3a6eebea90438c8`**, stempel `ROBOCZA · 2026-07-26 23:49`. **VERIFY OK** (manifest + 6 PLAYTEST).
+Wynik `vite build` exit 0. POLE-BITWY: build pominięty (ostrzeżenie npm). Stamp wstrzyknięty przez TEMP (OneDrive lock na bezpośrednim zapisie).
+Nowe: bitwa (obrona, win/loss, manual), ekrany końca bitwy, panel miasta (sort + Skarbiec), negocjacje dyplomatyczne + audiencja, górzystość medium ~18%, economy-upkeep + empireDetailPanel.
+Bramki: tsc 0 · diplomacy-negotiation-table 39/39 · fair-play-grid **8/8** · relief-grid-coverage **6/6**.
+**Sesja lokalna: pull / sync dysk, testuj `b87481fc` — `gra-robocza/START.html`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
