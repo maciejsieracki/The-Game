@@ -36,6 +36,13 @@ export interface EmpireResourceRow {
   capBase?: number;
   /** Bonus capu za KAŻDY Magazyn (econ-params.json magazyn_bonus_surowce_na_budynek). */
   capBonusPerMagazyn?: number;
+  /**
+   * ZGŁOSZENIE (Maciej 2026-07-26): dla wierszy czystego DOSTĘPU (Sól/Koń/Ceramika/Złoto)
+   * — skąd dostęp pochodzi ("własna Kopalnia złota" / "szlak handlowy z <partner>" /
+   * "Garncarnia zbudowana w imperium" ...). `undefined` gdy `dostep` jest false (nie ma
+   * czego pokazać) albo dla wierszy magazynowanych (nie dotyczy).
+   */
+  zrodlo?: string;
 }
 
 export interface EmpireKulturaSnap {

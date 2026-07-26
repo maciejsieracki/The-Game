@@ -1761,26 +1761,67 @@ async function boot(): Promise<void> {
         { id: 'stal',        label: 'Stal',        icon: '🔩', typ: 'przetworzony' },
         { id: 'sol',         label: 'Sól',         icon: '🧂', typ: 'surowy',  access: true },
         { id: 'kon',         label: 'Koń',         icon: '🐎', typ: 'hodowla', access: true },
+        // ZGŁOSZENIE (Maciej 2026-07-26): "trzeba dodać złoto" — surowiec czystego
+        // dostępu (jak Sól/Koń/Ceramika), NIE magazynowany (zloto-access.ts nagłówek:
+        // "nie będzie składowane jako oddzielny surowiec"). dostep liczony niżej przez
+        // ownerHasZlotoAccessNow — TA SAMA funkcja co silnik (bramka Mennicy) i panel
+        // miasta, zero drugiej implementacji.
+        { id: 'zloto',       label: 'Złoto',       icon: '🪙', typ: 'surowy',  access: true },
       ];
       const rows: EmpireResourceRow[] = [];
       for (const c of CATALOG) {
-        // Wiersze czystego dostępu (Sól/Koń/Ceramika) NIE pokazują stocku — nawet gdy
-        // stary zapis gry ma jeszcze niezerowy City.surowce.ceramika (migracja, brak
+        // Wiersze czystego dostępu (Sól/Koń/Ceramika/Złoto) NIE pokazują stocku — nawet
+        // gdy stary zapis gry ma jeszcze niezerowy City.surowce.ceramika (migracja, brak
         // konsumenta) świadomie go tu ukrywamy (Maciej 2026-07-23: "stock 0/—").
         const stock = c.access ? 0 : Math.floor(warehouse[c.id] ?? 0);
-        const dostep = accessLabels.has(c.label) || stock > 0;
-        // C-SURUI=A (Maciej 2026-07-24): surowce MAGAZYNOWANE pokazuj ZAWSZE (nawet 0) — panel
-        // imperium to dedykowany magazyn państwa, ma być widoczny od tury 1 (koniec placeholdera
-        // „mockupów nie ma w grze"). Pomiń tylko wiersze czystego DOSTĘPU (Sól/Koń/Ceramika),
-        // których owner jeszcze nie odblokował.
-        if (c.access && !dostep) continue;
+        // Zgłoszenie Macieja 2026-07-26: "surowce na dostęp" mają mieć ŹRÓDŁO PRAWDY
+        // per surowiec (nie jeden zbiorczy accessLabels.has), żeby złoto mogło użyć
+        // TEJ SAMEJ bramki co silnik (ownerHasZlotoAccessNow = natywna Kopalnia złota
+        // GDZIEKOLWIEK w imperium LUB grant "z trasy" handlowej) zamiast osobnej
+        // (i niepełnej dla handlu) etykiety z diplomacyActiveResourceLabelsForOwner.
+        // Koń ma analogiczny native+trasa rozdział (jest w TRADE_ROUTE_RESOURCE_KEYS),
+        // więc dostaje ten sam wzorzec. Ceramika/Sól nie mają ścieżki handlowej (nie ma
+        // ich w TRADE_ROUTE_RESOURCE_KEYS) — źródło to wyłącznie własny budynek/złoże.
+        let dostep: boolean;
+        let zrodlo: string | undefined;
+        if (c.id === 'zloto') {
+          // Krok 2 zlecenia: dostep MUSI wołać dokładnie ownerHasZlotoAccessNow —
+          // jedno źródło prawdy ze silnikiem (bramka Mennicy) i panelem miasta,
+          // zero drugiej implementacji tego samego pytania (main.ts linia ~2619).
+          // native/grant niżej służą WYŁĄCZNIE do wyboru tekstu „zrodlo" (te same
+          // dwie składowe, z których ownerHasZlotoAccessNow jest zbudowane) — nie
+          // zmieniają wyniku dostep.
+          dostep = ownerHasZlotoAccessNow(ownerId);
+          const native = dostep && ownerHasNativeResourceAccess(ownerId, 'zloto');
+          const grant = dostep && !native ? firstTradeRouteResourceGrant(tradeRouteResourceGrants, ownerId, 'zloto') : undefined;
+          zrodlo = native ? 'własna Kopalnia złota' : (grant ? `szlak handlowy z ${ownerDiploLabel(grant.viaOwnerId)}` : undefined);
+        } else if (c.id === 'kon') {
+          const native = ownerHasNativeResourceAccess(ownerId, 'kon');
+          const grant = native ? undefined : firstTradeRouteResourceGrant(tradeRouteResourceGrants, ownerId, 'kon');
+          dostep = native || !!grant;
+          zrodlo = native ? 'własna Stadnina (złoże Konia)' : (grant ? `szlak handlowy z ${ownerDiploLabel(grant.viaOwnerId)}` : undefined);
+        } else if (c.id === 'ceramika') {
+          dostep = accessLabels.has(c.label);
+          zrodlo = dostep ? 'Garncarnia zbudowana w imperium' : undefined;
+        } else if (c.id === 'sol') {
+          dostep = accessLabels.has(c.label);
+          zrodlo = dostep ? 'Warzelnia soli w zasięgu miasta' : undefined;
+        } else {
+          dostep = accessLabels.has(c.label) || stock > 0;
+        }
+        // C-SURUI=A (Maciej 2026-07-24) — NADPISANE przez zgłoszenie 2026-07-26: dawniej
+        // wiersze czystego DOSTĘPU znikały całkowicie, gdy owner ich nie odblokował ("Pomiń
+        // wiersze, których owner jeszcze nie odblokował"). Maciej: "nawet jeżeli nie mamy
+        // nic, powinno być zasugerowane, że jest miejsce na surowce, które są dostępem" —
+        // więc od teraz wiersze dostępu ZOSTAJĄ zawsze, ze stanem dostep=false ("brak")
+        // renderowanym przez resAccessHtml (empireDetailPanel.ts) zamiast znikać z panelu.
         const ratePerTurn = c.access ? 0 : Math.floor((territoryRates[c.id] ?? 0) + (converterRates[c.id] ?? 0));
         const cap = c.access ? undefined : empireCap;
         const capBase = c.access ? undefined : storageParams.bazaSurowcePanstwo;
         const capBonusPerMagazyn = c.access ? undefined : storageParams.bonusSurowceNaBudynek;
         rows.push({
           id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
-          cap, capBase, capBonusPerMagazyn,
+          cap, capBase, capBonusPerMagazyn, zrodlo,
         });
       }
       return rows;
@@ -3489,14 +3530,17 @@ async function boot(): Promise<void> {
           hp += u.hp ?? unitMaxHp;
           hpMax += unitMaxHp;
         }
+        // Liczby ruchu pokazuje teraz pasek „Ruch X/Y” (armyListHud.ts, al-bar-lbl) —
+        // detailLine zostaje wyłącznie znacznikiem stosu i ostrzeżeniem o wyczerpanym ruchu.
+        const detailParts: string[] = [];
+        if (group.length > 1) detailParts.push('armia');
+        if (ruchLeft === 0) detailParts.push('Ruch wykorzystany w tej turze');
         out.push({
           id: lead.id,
           name,
           unitCount: group.length,
           hexLabel: `(${lead.q}, ${lead.r})`,
-          detailLine: ruchLeft > 0
-            ? `Ruch: ${ruchLeft}/${ruchMax}` + (group.length > 1 ? ' · armia' : '')
-            : 'Ruch wykorzystany w tej turze',
+          detailLine: detailParts.length > 0 ? detailParts.join(' · ') : undefined,
           metaLine: types.length > 1 ? types.join(', ') : undefined,
           ruchLeft,
           ruchMax,

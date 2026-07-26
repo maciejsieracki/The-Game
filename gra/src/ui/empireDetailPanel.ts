@@ -173,8 +173,10 @@ function ensureStyles(): void {
 .civ-emp-res-acc .dot{width:8px;height:8px;border-radius:50%;flex:none;}
 .civ-emp-res-acc.on .dot{background:#78c95a;box-shadow:0 0 6px #78c95a;}
 .civ-emp-res-acc.off .dot{background:#e07a7a;}
+.civ-emp-res-acc .nm-wrap{min-width:0;display:flex;flex-direction:column;gap:1px;}
 .civ-emp-res-acc .nm{font-size:12.5px;font-weight:600;color:#e2e6ec;}
-.civ-emp-res-acc .st{margin-left:auto;font-size:10px;letter-spacing:.03em;text-transform:uppercase;
+.civ-emp-res-acc .src{font-size:10px;color:#7d8798;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.civ-emp-res-acc .st{margin-left:auto;flex:none;font-size:10px;letter-spacing:.03em;text-transform:uppercase;
   font-weight:700;}
 .civ-emp-res-acc.on .st{color:#78c95a;}
 .civ-emp-res-acc.off .st{color:#e07a7a;}
@@ -321,6 +323,9 @@ function resTooltipHtml(r: EmpireResourceRow): string {
   if (r.cap != null) {
     parts.push(`Magazyn: wspólna pula państwa, limit ${r.cap}/typ — nadmiar przepada`);
   }
+  if (r.cap == null) {
+    parts.push(r.zrodlo ? `Źródło dostępu: ${r.zrodlo}` : 'Dostęp: brak — nie odblokowano jeszcze tego surowca');
+  }
   parts.push(r.ratePerTurn === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(r.ratePerTurn)} / turę`);
   return esc(parts.join(' · '));
 }
@@ -343,13 +348,21 @@ function resCardHtml(r: EmpireResourceRow): string {
     + `</div>`;
 }
 
-/** Wiersz dostępu (boolean) — Ceramika/Sól/Koń — nie magazynowane, tylko odblokowują budowę. */
+/**
+ * Wiersz dostępu (boolean) — Ceramika/Sól/Koń/Złoto — nie magazynowane, tylko
+ * odblokowują budowę. ZGŁOSZENIE (Maciej 2026-07-26): wiersz zostaje widoczny ZAWSZE
+ * (nawet gdy dostep=false — "masz"/"brak"), a gdy źródło jest znane (r.zrodlo — własne
+ * złoże/budynek albo szlak handlowy) pokazujemy je jako podpis pod nazwą surowca.
+ */
 function resAccessHtml(r: EmpireResourceRow): string {
   const cls = r.dostep ? 'on' : 'off';
+  const zrodloHtml = r.dostep && r.zrodlo
+    ? `<div class="src">${esc(r.zrodlo)}</div>`
+    : '';
   return `<div class="civ-emp-res-acc ${cls}" data-section="econ-surowiec-${esc(r.id)}" title="${resTooltipHtml(r)}">`
     + `<span class="dot"></span><span class="ic">${resIconHtml(r.label, 16)}</span>`
-    + `<span class="nm">${esc(r.label)}</span>`
-    + `<span class="st">${r.dostep ? 'jest' : 'brak'}</span></div>`;
+    + `<div class="nm-wrap"><div class="nm">${esc(r.label)}</div>${zrodloHtml}</div>`
+    + `<span class="st">${r.dostep ? 'masz' : 'brak'}</span></div>`;
 }
 
 /** Sekcja SUROWCE (magazyn państwa) — mockup „Magazyn surowców" (Maciej 2026-07-24). */
@@ -387,7 +400,13 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   }
 
   if (access.length > 0) {
-    sur += `<div class="civ-emp-res-lbl">Dostęp — odblokowują budowę, nie zliczają się</div>`
+    // ZGŁOSZENIE (Maciej 2026-07-26): podsekcja osobna od magazynu, zawsze widoczna
+    // (także gdy owner nie ma dostępu do żadnego z tych surowców — kafelek pokazuje
+    // wtedy "brak", nie znika) + krótkie wyjaśnienie różnicy wobec magazynu powyżej.
+    sur += `<div class="civ-emp-res-lbl">Dostęp — nie magazynowane</div>`
+      + `<div class="civ-emp-note" style="margin:-2px 0 8px;font-size:11.5px">`
+      + `Te surowce nie gromadzą się w magazynie państwa — liczy się tylko, czy imperium ma do nich dostęp `
+      + `(własne złoże/budynek albo szlak handlowy). „Brak" = jeszcze nieodblokowane, nie błąd.</div>`
       + `<div class="civ-emp-res-access-row">${access.map(resAccessHtml).join('')}</div>`;
   }
 
