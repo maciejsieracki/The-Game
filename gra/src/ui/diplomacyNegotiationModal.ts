@@ -97,10 +97,10 @@ function ensureStyles(): void {
   const css = `
 ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-neg-overlay{position:fixed;inset:0;z-index:510;background:rgba(0,0,0,0.6);
-  display:flex;align-items:center;justify-content:center;padding:12px;}
+  display:flex;align-items:center;justify-content:center;padding:12px;pointer-events:auto;}
 .civ-diplo-neg{background:linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98));
   border:2px solid rgba(232,216,138,.4);border-radius:12px;padding:18px 20px;max-width:400px;width:100%;
-  color:#e8e0c8;font:14px 'Segoe UI',Tahoma,sans-serif;}
+  color:#e8e0c8;font:14px 'Segoe UI',Tahoma,sans-serif;pointer-events:auto;position:relative;z-index:1;}
 .civ-diplo-neg h3{margin:0 0 8px;font-family:Georgia,serif;font-size:1.05em;color:#e8d88a;}
 .civ-diplo-neg .cdn-sub{font-size:0.78em;color:#8a8070;margin-bottom:12px;line-height:1.45;}
 .civ-diplo-neg label{display:block;margin:8px 0 4px;font-size:0.78em;color:#a8a090;}
@@ -111,6 +111,7 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-neg .cdn-result-text p{margin:4px 0 0;line-height:1.5;}
 .civ-diplo-neg .cdn-result-text .cdn-accepted{color:#9fd88a;}
 .civ-diplo-neg .cdn-result-text .cdn-rejected{color:#d88a8a;}
+.civ-diplo-neg .cdn-invalid{color:#e08a8a;font-size:0.72em;margin-top:8px;line-height:1.4;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -224,9 +225,9 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
     }
 
     case '5':
-      return sub + '<p class="cdn-sub">Handel PN — koszyk. Przy dostępie do surowców/złóż wybierz czas umowy (1–20 tur).</p>';
+      return sub + '<p class="cdn-sub">Handel PN otwiera się w koszyku wymiany — zamknij to okno i wybierz „Umowa handlowa" ponownie.</p>';
     case '13':
-      return sub + '<p class="cdn-sub">Dar PN — użyj koszyka (diplomacyTradeBasket).</p>';
+      return sub + '<p class="cdn-sub">Dar PN otwiera się w koszyku — zamknij to okno i wybierz „Przekaż dar" ponownie.</p>';
 
     case '6': {
       const techs = ctx.techOptions ?? [];
@@ -381,12 +382,35 @@ export function showNegotiationModal(
   const resultStep = box.querySelector('.cdn-result-step') as HTMLElement;
   const resultText = box.querySelector('.cdn-result-text') as HTMLElement;
   const acceptBtn = box.querySelector('.cdn-accept') as HTMLButtonElement | null;
+  const submitBtn = box.querySelector('.cdn-submit') as HTMLButtonElement | null;
   let lastPayload: NegotiationPayload | null = null;
+  let invalidMsg: HTMLDivElement | null = null;
+
+  const showInvalid = (msg: string): void => {
+    if (!invalidMsg) {
+      invalidMsg = document.createElement('div');
+      invalidMsg.className = 'cdn-invalid';
+      formStep.insertBefore(invalidMsg, formStep.querySelector('.cdn-btns'));
+    }
+    invalidMsg.textContent = msg;
+  };
+
+  const clearInvalid = (): void => {
+    if (invalidMsg) { invalidMsg.remove(); invalidMsg = null; }
+  };
 
   box.querySelector('.cdn-cancel')?.addEventListener('click', () => { closeModal(); onCancel(); });
   box.querySelector('.cdn-submit')?.addEventListener('click', () => {
+    clearInvalid();
     const payload = readPayload(action.id, ctx);
-    if (payload == null) return;
+    if (payload == null) {
+      if (action.id === '5' || action.id === '13') {
+        showInvalid('Ta akcja wymaga koszyka wymiany — zamknij okno i wybierz ją ponownie z listy umów.');
+      } else {
+        showInvalid('Uzupełnij wymagane pola formularza.');
+      }
+      return;
+    }
     lastPayload = payload;
     // C-DYP-Q1=B (2026-07-26, po playteście — negocjacja NA ŻYWO): ten podgląd to
     // WYŁĄCZNIE prognoza (evaluateProposal BEZ finalizacji). Kliknięcie „Wyślij
@@ -417,6 +441,11 @@ export function showNegotiationModal(
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) { closeModal(); onCancel(); }
   });
+
+  if (action.id === '5' || action.id === '13') {
+    submitBtn?.setAttribute('disabled', 'disabled');
+    submitBtn?.setAttribute('title', 'Użyj koszyka wymiany zamiast tego formularza');
+  }
 
   const techSel = box.querySelector('#cdn-tech') as HTMLSelectElement | null;
   if (techSel) {

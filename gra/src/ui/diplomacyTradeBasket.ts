@@ -64,10 +64,10 @@ function ensureStyles(): void {
   const css = `
 ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket-overlay{position:fixed;inset:0;z-index:515;background:rgba(0,0,0,0.65);
-  display:flex;align-items:center;justify-content:center;padding:12px;}
+  display:flex;align-items:center;justify-content:center;padding:12px;pointer-events:auto;}
 .civ-diplo-basket{background:linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98));
   border:2px solid rgba(232,216,138,.4);border-radius:12px;padding:18px 20px;max-width:760px;width:100%;max-height:92vh;overflow:auto;
-  color:#e8e0c8;font:14px 'Segoe UI',Tahoma,sans-serif;}
+  color:#e8e0c8;font:14px 'Segoe UI',Tahoma,sans-serif;pointer-events:auto;position:relative;z-index:1;}
 .civ-diplo-basket h3{margin:0 0 6px;font-family:Georgia,serif;font-size:1.05em;color:#e8d88a;}
 .civ-diplo-basket .cdb-sub{font-size:0.75em;color:#8a8070;margin-bottom:10px;line-height:1.45;}
 .civ-diplo-basket .cdb-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -97,6 +97,7 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-add-btn{margin-top:6px;}
 .civ-diplo-basket .cdb-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
 .civ-diplo-basket .cdb-submit:disabled{opacity:0.4;cursor:not-allowed;}
+.civ-diplo-basket .cdb-invalid{color:#e08a8a;font-size:0.72em;margin-top:8px;line-height:1.4;}
 .civ-diplo-basket .cdb-duration{margin-top:10px;padding:10px;border-radius:8px;
   border:1px solid rgba(232,216,138,.22);background:rgba(24,30,40,0.55);}
 .civ-diplo-basket .cdb-duration label{margin-top:0;}
@@ -175,6 +176,49 @@ function basketHasQuantityResource(...lists: ReadonlyArray<readonly BasketItem[]
     if (items.some(i => i.typ === 'surowiec_ilosc')) return true;
   }
   return false;
+}
+
+interface BasketValidation {
+  valid: boolean;
+  reason?: string;
+}
+
+function validateBasketForm(
+  mode: TradeBasketMode,
+  giveItems: BasketItem[],
+  receiveItems: BasketItem[],
+  ctx: NegotiationModalContext,
+  dealTurns: number,
+  resourceTradeMode: 'once' | 'per_turn',
+  blocked: boolean,
+): BasketValidation {
+  if (blocked) {
+    return { valid: false, reason: 'Nie spełniasz progu Relacji dla tej akcji' };
+  }
+  if (mode === 'gift') {
+    if (giveItems.length === 0) {
+      return { valid: false, reason: 'Dodaj co najmniej jedną pozycję do daru' };
+    }
+  } else {
+    if (giveItems.length === 0) {
+      return { valid: false, reason: 'Dodaj co najmniej jedną pozycję w „Co oddaję"' };
+    }
+    if (receiveItems.length === 0) {
+      return { valid: false, reason: 'Dodaj co najmniej jedną pozycję w „Co dostaję"' };
+    }
+  }
+  const givePn = diplomacySumPn(toPnItems(giveItems, ctx));
+  const receivePn = mode === 'trade' ? diplomacySumPn(toPnItems(receiveItems, ctx)) : 0;
+  if (givePn == null || (mode === 'trade' && receivePn == null)) {
+    return { valid: false, reason: 'Nie można wycenić pozycji — sprawdź typy i ilości' };
+  }
+  const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
+  const hasQtyRes = mode === 'trade' && !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
+  const needsTurns = mode === 'trade' && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn'));
+  if (needsTurns && (dealTurns < 1 || dealTurns > 20)) {
+    return { valid: false, reason: 'Wybierz czas umowy od 1 do 20 tur' };
+  }
+  return { valid: true };
 }
 
 function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (tur, max 20)', sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'): string {
@@ -570,6 +614,13 @@ function renderBasket(
     ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
     : 'Surowiec i zapłata płyną CO TURĘ przez wybrany czas. Deal znika po wygaśnięciu, zerwaniu traktatu lub wojnie.';
 
+  const validation = validateBasketForm(
+    mode, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, !!blocked,
+  );
+  const invalidHtml = !validation.valid && validation.reason
+    ? '<div class="cdb-invalid">' + esc(validation.reason) + '</div>'
+    : '';
+
   box.className = 'civ-diplo-basket' + (mode === 'gift' ? ' cdb-gift' : '');
   box.innerHTML =
     '<h3>' + esc(title) + '</h3>' +
@@ -579,15 +630,18 @@ function renderBasket(
     (blocked ? '' : resourceTradeModeHtml(resourceTradeMode, showResModeSelector)) +
     (blocked ? '' : dealDurationHtml(dealTurns, showDealDuration, dealDurationLabel, dealDurationSub)) +
     (blocked ? '' : summaryHtml(mode, giveItems, receiveItems, ctx)) +
+    invalidHtml +
     '<div class="cdb-btns">' +
       '<button type="button" class="dip-muted-btn cdb-cancel">Anuluj</button>' +
-      '<button type="button" class="dip-gold-btn cdb-submit"' + (blocked ? ' disabled' : '') + '>Zaproponuj</button>' +
+      '<button type="button" class="dip-gold-btn cdb-submit"' + (blocked || !validation.valid ? ' disabled' : '') + '>Zaproponuj</button>' +
     '</div>';
 }
 
 export interface TradeBasketInitial {
   giveItems?: readonly BasketItem[];
   receiveItems?: readonly BasketItem[];
+  turns?: number;
+  resourceTradeMode?: 'once' | 'per_turn';
 }
 
 export function showTradeBasketModal(
@@ -605,8 +659,8 @@ export function showTradeBasketModal(
   // (computeQuickDealBasket), użytkownik dalej może edytować/usuwać pozycje normalnie.
   let giveItems: BasketItem[] = initial?.giveItems ? [...initial.giveItems] : [];
   let receiveItems: BasketItem[] = initial?.receiveItems ? [...initial.receiveItems] : [];
-  let dealTurns = 15;
-  let resourceTradeMode: 'once' | 'per_turn' = 'once';
+  let dealTurns = initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 15;
+  let resourceTradeMode: 'once' | 'per_turn' = initial?.resourceTradeMode ?? 'once';
 
   overlay = document.createElement('div');
   overlay.className = 'civ-diplo-basket-overlay';
@@ -615,6 +669,15 @@ export function showTradeBasketModal(
   box.setAttribute('aria-modal', 'true');
   overlay.appendChild(box);
   document.body.appendChild(overlay);
+
+  const onBasketEsc = (ev: KeyboardEvent): void => {
+    if (ev.key !== 'Escape') return;
+    ev.preventDefault();
+    document.removeEventListener('keydown', onBasketEsc);
+    closeModal();
+    onCancel();
+  };
+  document.addEventListener('keydown', onBasketEsc);
 
   const readDealTurnsFromDom = (): void => {
     const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
@@ -634,7 +697,12 @@ export function showTradeBasketModal(
   };
 
   const bindEvents = (): void => {
-    box.querySelector('.cdb-cancel')?.addEventListener('click', () => { closeModal(); onCancel(); });
+    const dismiss = (): void => {
+      document.removeEventListener('keydown', onBasketEsc);
+      closeModal();
+      onCancel();
+    };
+    box.querySelector('.cdb-cancel')?.addEventListener('click', dismiss);
 
     box.querySelectorAll('.cdb-typ').forEach(sel => {
       sel.addEventListener('change', () => {
@@ -652,6 +720,8 @@ export function showTradeBasketModal(
       readResourceTradeModeFromDom();
       refresh();
     });
+
+    box.querySelector('.cdb-deal-turns')?.addEventListener('input', () => refresh());
 
     box.querySelectorAll('.cdb-res-qty-sel').forEach(sel => {
       sel.addEventListener('change', () => {
@@ -689,7 +759,14 @@ export function showTradeBasketModal(
     });
 
     box.querySelector('.cdb-submit')?.addEventListener('click', () => {
-      if (giveItems.length === 0 && (mode === 'gift' || receiveItems.length === 0)) return;
+      const blocked = (mode === 'trade' && (ctx.relacjaTotal ?? 0) < (ctx.progHandelRelacja ?? PROG_HANDEL_REL))
+        || (mode === 'gift' && (ctx.relacjaTotal ?? 0) < (ctx.progDarRelacja ?? diplomacyProgDarRelacja()));
+      readDealTurnsFromDom();
+      readResourceTradeModeFromDom();
+      const validation = validateBasketForm(
+        mode, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, blocked,
+      );
+      if (!validation.valid) return;
       const givePn = diplomacySumPn(toPnItems(giveItems, ctx));
       const receivePn = mode === 'trade'
         ? diplomacySumPn(toPnItems(receiveItems, ctx))
@@ -720,6 +797,7 @@ export function showTradeBasketModal(
         payload.turns = dealTurns;
       }
       closeModal();
+      document.removeEventListener('keydown', onBasketEsc);
       onSubmit(payload);
     });
   };
@@ -727,7 +805,11 @@ export function showTradeBasketModal(
   refresh();
 
   overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) { closeModal(); onCancel(); }
+    if (e.target === overlay) {
+      document.removeEventListener('keydown', onBasketEsc);
+      closeModal();
+      onCancel();
+    }
   });
 }
 

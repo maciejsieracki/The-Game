@@ -3551,3 +3551,11 @@ Nowe: nagłówek miasta flank layout · fix „i szczegóły" (z-index 410) · r
 Bramki: tsc 0 · logic 207/208 (pre garnizon) · manpower 44/44 · deposit-building-gate 41/41.
 **Sesja lokalna: pull / sync dysk, testuj `e0238cc8` — `gra-robocza/START.html`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [01:18 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `d9f2c1fa` (FALA 30, VERIFY)
+**md5 `d9f2c1fa32cd9b8165c00de127339ab3`**, stempel `ROBOCZA · 2026-07-27 01:18`. **VERIFY OK** (manifest md5 = HTML).
+Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive lock).
+Nowe: modal handlu dyplomacji (koszyk + tury + podsumowania + Esc) · sentry odznacza jednostkę · cache AI w pętli handlu.
+Bramki: tsc 0 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · manpower 44/44 · deposit-building-gate 41/41 · logic 207/208 (pre garnizon).
+**Sesja lokalna: pull / sync dysk, testuj `d9f2c1fa` — `gra-robocza/START.html`.**
+CZEKAM-NA: Maciej — playtest handlu dyplomatycznego + sentry jednostek.

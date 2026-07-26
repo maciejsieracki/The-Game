@@ -11,7 +11,17 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `e0238cc8` — 2026-07-27 01:01 · FALA 29: PANEL MIASTA UX + HEX DETAIL — **AKTUALNA**
+## ROBOCZA `d9f2c1fa` — 2026-07-27 01:18 · FALA 30: DYPLOMACJA HANDEL + SLEEP + AI PERF — **AKTUALNA**
+- md5 (pelne): `d9f2c1fa32cd9b8165c00de127339ab3` · stempel: `ROBOCZA · 2026-07-27 01:18`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).
+- **Co nowego (sesja F30):**
+  - **Dyplomacja — modal handlu:** naprawa pustego modala; koszyk z wyborem tur; podsumowania oferty; Anuluj/Esc.
+  - **Jednostki:** po Sentry (sen) odznaczenie jednostki gracza (clearPlayerUnitSelection).
+  - **AI:** cache + wczesny skip w pętli handlu dyplomatycznego (wydajność tury AI).
+- **Bramki:** tsc 0 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · manpower 44/44 · deposit-building-gate 41/41 · logic 207/208 (pre garnizon).
+
+## ROBOCZA `e0238cc8` — 2026-07-27 01:01 · FALA 29: PANEL MIASTA UX + HEX DETAIL — **ZASTĄPIONA**
 - md5 (pelne): `e0238cc8114bfe065a55573a590c714e` · stempel: `ROBOCZA · 2026-07-27 01:01`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).

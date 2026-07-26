@@ -10,6 +10,9 @@ import { computeRespekt } from './diplomacy';
 import { RodzajTraktatu } from '../types/diplomacy';
 import type { ActiveDeal, TreatyKind } from './diplomacy-treaties';
 import { normalizeTreatyKind } from './diplomacy-treaties';
+import type { BasketItem } from './diplomacy-pn-engine';
+import type { ProposalPayload } from './diplomacy-proposals';
+import { diplomacyHandelSurowcePakietWielkosc } from './diplomacy-value-catalog';
 
 const MATRIX = loadCivMatrix();
 
@@ -325,4 +328,69 @@ export function formatPowerRelationLine(
     ratioLabel: formatPowerRatioLabel(selfPower, otherPower),
     respekt: computeRespekt(selfPower, otherPower),
   };
+}
+
+/** Krótka etykieta jednej pozycji koszyka PN (UI + podsumowania stołu negocjacji). */
+export function formatBasketItemBrief(item: BasketItem): string {
+  switch (item.typ) {
+    case 'zloto':
+      return `${item.ilosc ?? 0} ¤`;
+    case 'praca':
+      return `${item.ilosc ?? 0} pracy`;
+    case 'zywnosc':
+      return `${item.ilosc ?? 0} żywności`;
+    case 'zloze':
+      return `dostęp do złoża: ${item.id}`;
+    case 'tech':
+      return `technologia: ${item.id}`;
+    case 'jednostka':
+      return `jednostka: ${item.id}`;
+    case 'surowiec_boolean':
+      return `dostęp do surowca: ${item.id}`;
+    case 'surowiec_ilosc': {
+      const pakiet = diplomacyHandelSurowcePakietWielkosc();
+      const pakiety = item.ilosc ?? 1;
+      return `${item.id} ×${pakiety * pakiet} (${pakiety} pak.)`;
+    }
+    default:
+      return item.id ?? item.typ;
+  }
+}
+
+export function formatBasketListBrief(items: readonly BasketItem[] | undefined): string {
+  if (!items?.length) return '—';
+  return items.map(formatBasketItemBrief).join(' · ');
+}
+
+/**
+ * Czytelne podsumowanie warunków na stole — perspektywa gracza (incoming) lub
+ * proponenta (własna propozycja gracza).
+ */
+export function formatNegotiationDealSummary(
+  payload: ProposalPayload,
+  opts: { fromPlayerPerspective?: boolean } = {},
+): string {
+  const give = payload.giveItems ?? [];
+  const receive = payload.receiveItems ?? [];
+  if (give.length > 0 || receive.length > 0) {
+    const parts: string[] = [];
+    if (opts.fromPlayerPerspective) {
+      parts.push(`Oni dają: ${formatBasketListBrief(give)}`);
+      parts.push(`Oni chcą: ${formatBasketListBrief(receive)}`);
+    } else {
+      parts.push(`Ty dajesz: ${formatBasketListBrief(give)}`);
+      parts.push(`Ty dostajesz: ${formatBasketListBrief(receive)}`);
+    }
+    if (payload.turns != null && payload.turns > 0) {
+      const mode = payload.resourceTradeMode === 'per_turn' ? 'co turę' : 'umowa';
+      parts.push(`${mode}: ${payload.turns} tur`);
+    }
+    return parts.join(' · ');
+  }
+  if (payload.isGift && (payload.givePn ?? 0) > 0) {
+    return `Dar: ${payload.givePn} PN`;
+  }
+  if (payload.goldOnce) return `Jednorazowo: ${payload.goldOnce} ¤`;
+  if (payload.goldPerTurn) return `Co turę: ${payload.goldPerTurn} ¤`;
+  return '';
 }

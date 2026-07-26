@@ -21,7 +21,7 @@ import {
   type NegotiationModalContext,
   type NegotiationPayload,
 } from './diplomacyNegotiationModal';
-import { actionUsesTradeBasket, showTradeBasketModal, openQuickDealBasket } from './diplomacyTradeBasket';
+import { actionUsesTradeBasket, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { leaderName } from './leaderPortraits';
 
 export interface AudienceAction {
@@ -162,6 +162,10 @@ export interface PendingNegotiationRow {
   actionLabel: string;
   /** Krótki opis bieżących warunków (kwota/tury/typ) — main.ts formatuje z payloadu. */
   summary: string;
+  /** Rozszerzony opis treści oferty (koszyk PN, kwoty) — ten sam tekst co summary dla handlu. */
+  dealDetails?: string;
+  /** Prefill koszyka przy „Kontruj" (perspektywa gracza). */
+  counterInitial?: TradeBasketInitial;
   round: number;
   maxRounds: number;
   /** Ile tur zostało do wygaśnięcia bez odpowiedzi (0 = ostatnia tura ważności). */
@@ -246,6 +250,17 @@ function openCounterNegotiationModal(
     label: row.actionLabel ?? 'Kontroferta',
     enabled: true,
   };
+  if (actionUsesTradeBasket(row.uiActionId)) {
+    showTradeBasketModal(
+      row.uiActionId === '13' ? 'gift' : 'trade',
+      syntheticAction,
+      mergeBasketCtx(negCtx),
+      (payload) => cfg!.onCounterNegotiation?.(row.id, payload),
+      () => { /* anulowano */ },
+      row.counterInitial,
+    );
+    return;
+  }
   showNegotiationModal(
     syntheticAction,
     mergeBasketCtx(negCtx),
@@ -390,6 +405,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-dir-ic{width:11px;height:11px;vertical-align:-1px;margin-right:3px;color:#8a8070;}
 .da-negot.incoming .da-nm .dir .da-dir-ic{color:#7ad0a0;}
 .da-negot .da-meta{font-size:0.62em;color:#8a8070;}
+.da-negot .da-deal-detail{font-size:0.7em;color:#e8e0c8;line-height:1.45;margin:2px 0 4px;}
 .da-negot .da-btnrow{display:flex;gap:6px;margin-top:2px;}
 .da-negot .da-btnrow button{flex:1;font-size:0.66em;padding:5px 6px;border-radius:6px;
   border:1px solid rgba(232,216,138,.3);background:rgba(232,216,138,.06);color:#e8e0c8;cursor:pointer;font-family:inherit;}
@@ -959,7 +975,10 @@ function pendingNegotiationsColumnHtml(st: DiplomacyAudienceState): string {
     return (
       '<div class="' + cls + '">' +
         '<div class="da-nm"><span class="dir">' + dirIcon + esc(dirLabel) + '</span>' + esc(r.actionLabel) + '</div>' +
-        '<div class="da-meta">' + esc(r.summary) + ' · runda ' + r.round + '/' + r.maxRounds + ' · ' + esc(expLabel) + '</div>' +
+        (r.dealDetails || r.summary
+          ? '<div class="da-deal-detail">' + esc(r.dealDetails || r.summary) + '</div>'
+          : '') +
+        '<div class="da-meta">runda ' + r.round + '/' + r.maxRounds + ' · ' + esc(expLabel) + '</div>' +
         btns +
       '</div>'
     );

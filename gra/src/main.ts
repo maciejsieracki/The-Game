@@ -589,6 +589,7 @@ import {
 import {
   civCultureLabelForKey,
   diplomacyPersonalityTags,
+  formatNegotiationDealSummary,
   formatPowerRelationLine,
   resolveFormalDiplomaticStatus,
   sameCultureCircle,
@@ -723,6 +724,7 @@ import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
   tributeBreakPairsFromDeals, canAiProposeTradeAgreement,
   AI_RESOURCE_TRADE_DEFAULT_TURNS, AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
+  canAiProposeResourceTrade,
 } from './game/diplomacy-economy';
 import { RodzajTraktatu } from './types/diplomacy';
 import {
@@ -1637,6 +1639,7 @@ async function boot(): Promise<void> {
     function empireActiveResourceLabelsForOwner(ownerId: number): string[] {
       const labels = new Set<string>();
       const builtEmpire = empireBuiltIdsForOwner(ownerId);
+      const ownerImprovements = placedImprovementsForOwner(ownerId);
       for (const c of cities) {
         if (c.ownerId !== ownerId) continue;
         const builtIds = cityBuilt.get(c.id) ?? [];
@@ -1649,7 +1652,7 @@ async function boot(): Promise<void> {
             kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
           },
           map,
-          placedImprovementsForOwner(ownerId),
+          ownerImprovements,
           empireEpochForOwner(ownerId),
           { builtIds, ownerId: String(ownerId) },
         );
@@ -8979,20 +8982,25 @@ async function boot(): Promise<void> {
     /** C-DYP-Q1=A: krótki opis WARUNKÓW aktualnie na stole (bez nowej wyceny — tylko odczyt payloadu). */
     function negotiationSummary(entry: PendingNegotiation): string {
       const p = entry.payload;
+      const basketDetail = formatNegotiationDealSummary(p, {
+        fromPlayerPerspective: entry.proposerOwnerId !== 0,
+      });
       switch (entry.actionId) {
         case 'nap': return `Pakt nieagresji na ${p.turns ?? 15} tur`;
         case 'sojusz_defensywny': return 'Sojusz defensywny';
         case 'sojusz_pelny': return 'Sojusz pełny';
         case 'granice': return p.borderMilitary ? 'Prawo wojskowego przemarszu' : 'Otwarte granice cywilne';
-        case 'handel': return p.goldOnce ? `Handel — ${p.goldOnce} ¤` : 'Handel — koszyk PN';
-        case 'umowa_handlowa': return 'Umowa handlowa' + (p.goldOnce ? ` (+${p.goldOnce} ¤ słodzika)` : '');
+        case 'handel':
+          return basketDetail || (p.goldOnce ? `Handel — ${p.goldOnce} ¤` : 'Handel — koszyk PN');
+        case 'umowa_handlowa':
+          return basketDetail || ('Umowa handlowa' + (p.goldOnce ? ` (+${p.goldOnce} ¤ słodzika)` : ''));
         case 'tech': return `Sprzedaż technologii za ${p.techPrice ?? p.goldOnce ?? 0} ¤`;
         case 'namow_wojne': return `Namowa do wojny — łapówka ${p.bribeGold ?? 0} ¤`;
         case 'trybut_zadanie': return `Żądanie trybutu ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'trybut_oferta': return p.goldOnce ? `Trybut jednorazowy ${p.goldOnce} ¤` : `Trybut ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'ultimatum': return `Ultimatum — ${p.goldOnce ?? 0} ¤`;
         case 'wasal': return `Wasalizacja — ${p.goldPerTurn ?? 0} ¤/turę`;
-        default: return entry.actionId;
+        default: return basketDetail || entry.actionId;
       }
     }
 
@@ -9005,16 +9013,36 @@ async function boot(): Promise<void> {
         const direction: 'own' | 'incoming' = entry.awaitingOwnerId === 0 ? 'incoming' : 'own';
         const uiActionId = CYW_ACTION_TO_UI_ID[entry.actionId] ?? '5';
         const actionLabel = actionsList.find(a => a.id === uiActionId)?.label ?? entry.actionId;
+        const dealDetails = negotiationSummary(entry);
+        const canCounter = direction === 'incoming' && canCounterNegotiation(entry);
+        const p = entry.payload;
+        let counterInitial: import('./ui/diplomacyTradeBasket').TradeBasketInitial | undefined;
+        if (canCounter && (uiActionId === '5' || uiActionId === '13')) {
+          if (uiActionId === '5') {
+            counterInitial = {
+              giveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
+              receiveItems: p.giveItems?.length ? [...p.giveItems] : undefined,
+              turns: p.turns,
+              resourceTradeMode: p.resourceTradeMode,
+            };
+          } else {
+            counterInitial = {
+              giveItems: p.giveItems?.length ? [...p.giveItems] : undefined,
+            };
+          }
+        }
         return {
           id: entry.id,
           direction,
           actionLabel,
-          summary: negotiationSummary(entry),
+          summary: dealDetails,
+          dealDetails,
           round: entry.round,
           maxRounds: NEGOTIATION_MAX_ROUNDS,
           expiresInTurns: Math.max(0, entry.expiresTurn - turn),
-          canCounter: direction === 'incoming' && canCounterNegotiation(entry),
+          canCounter,
           uiActionId,
+          counterInitial,
         };
       });
     }
@@ -9823,6 +9851,28 @@ async function boot(): Promise<void> {
       return needs.deficitKeys;
     }
 
+    /** Cache na jedną turę AI ownera — pickResourceTradeRelOffer wołany O(N²) w dyplomacji. */
+    let aiDiploTradeGoodsCache: Map<number, TradeGoodEntry[]> | null = null;
+    let aiDiploQtyOptionsCache: Map<number, Array<{ id: string; label: string; maxPakiety: number }>> | null = null;
+
+    function tradableGoodsForAiDiplo(ownerId: number): TradeGoodEntry[] {
+      if (!aiDiploTradeGoodsCache) return tradableGoodsIndexForOwner(ownerId);
+      const hit = aiDiploTradeGoodsCache.get(ownerId);
+      if (hit) return hit;
+      const v = tradableGoodsIndexForOwner(ownerId);
+      aiDiploTradeGoodsCache.set(ownerId, v);
+      return v;
+    }
+
+    function quantityOptionsForAiDiplo(ownerId: number): Array<{ id: string; label: string; maxPakiety: number }> {
+      if (!aiDiploQtyOptionsCache) return quantityTradableGoodOptions(ownerId);
+      const hit = aiDiploQtyOptionsCache.get(ownerId);
+      if (hit) return hit;
+      const v = quantityTradableGoodOptions(ownerId);
+      aiDiploQtyOptionsCache.set(ownerId, v);
+      return v;
+    }
+
     function pickResourceTradeRelOffer(
       proposerOwnerId: number,
       partnerOwnerId: number,
@@ -9843,10 +9893,10 @@ async function boot(): Promise<void> {
         maxPakietyPerTura: AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
         pricePerPakiet: (key: string, pakiety: number) => diplomacyPnSurowiecIlosc(key, pakiety),
       };
-      const goodsProposer = tradableGoodsIndexForOwner(proposerOwnerId);
-      const goodsPartner = tradableGoodsIndexForOwner(partnerOwnerId);
-      const sellerOptsProposer = quantityTradableGoodOptions(proposerOwnerId);
-      const sellerOptsPartner = quantityTradableGoodOptions(partnerOwnerId);
+      const goodsProposer = tradableGoodsForAiDiplo(proposerOwnerId);
+      const goodsPartner = tradableGoodsForAiDiplo(partnerOwnerId);
+      const sellerOptsProposer = quantityOptionsForAiDiplo(proposerOwnerId);
+      const sellerOptsPartner = quantityOptionsForAiDiplo(partnerOwnerId);
 
       const pick = pickResourceDeficitForOwnerPair({
         ...base,
@@ -11810,11 +11860,9 @@ async function boot(): Promise<void> {
               if (enteringSentry) {
                 clearPlannedMarch(u.id);
                 syncStackRuchLeft(stack, 0);
-                reachable = new Set<string>();
-                unitRenderer.clearHighlight();
-                unitRenderer.clearPathRoute();
                 for (const su of stack) su.sentry = true;
                 showHintMessage(u.typeId + ' czuwa (obudź ręcznie)', 2500);
+                clearPlayerUnitSelection();
               } else {
                 for (const su of stack) su.sentry = false;
                 showHintMessage('Obudzono: ' + u.typeId, 2000);
@@ -16967,6 +17015,8 @@ async function boot(): Promise<void> {
             } else {
             // --- C-AI-WOJNA-Q1=A: dyplomacja PRZED ruchem (wojna w tej turze, atak od następnej) ---
             try {
+              aiDiploTradeGoodsCache = new Map();
+              aiDiploQtyOptionsCache = new Map();
               const aiTyp = aiTypForOpts;
               const diffParamsDip = loadDifficultyParams(data, aiDiffLevel);
               const potAI = objectivePowerByOwner.get(ownerId)?.power ?? 0;
@@ -17031,6 +17081,8 @@ async function boot(): Promise<void> {
                 );
                 const aiHandlowosc = resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5);
                 const resourceTradeOfferRaw = relStatus !== 'wojna'
+                  && !hasActiveResourceTradeDealForPair(0, ownerId)
+                  && canAiProposeResourceTrade(turn, aiResourceTradeLastProposalTurn.get(ownerId))
                   ? pickResourceTradeRelOffer(ownerId, 0, aiHandlowosc)
                   : null;
                 relacjeDip.push({
@@ -17074,6 +17126,8 @@ async function boot(): Promise<void> {
                 const potOther = objectivePowerByOwner.get(otherId)?.power ?? 0;
                 const respektWzgAi = (potAI + potOther) > 0 ? potAI / (potAI + potOther) : 0.5;
                 const resTradeAi = relAi.status !== 'wojna'
+                  && !hasActiveResourceTradeDealForPair(ownerId, otherId)
+                  && canAiProposeResourceTrade(turn, aiResourceTradeLastProposalTurn.get(ownerId))
                   ? pickResourceTradeRelOffer(
                     ownerId,
                     otherId,
@@ -17199,6 +17253,9 @@ async function boot(): Promise<void> {
               }
             } catch (eDiplo) {
               console.error(`[Dyplomacja] Blad dyplomacji AI${ownerId}:`, eDiplo);
+            } finally {
+              aiDiploTradeGoodsCache = null;
+              aiDiploQtyOptionsCache = null;
             }
 
             try {
