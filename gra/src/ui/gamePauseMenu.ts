@@ -29,6 +29,17 @@ export interface GamePauseMenuConfig {
   onAmbienceToggle?: (enabled: boolean) => void;
   /** Suwak głośności odgłosów natury, wartość 0..1 (setAmbienceVolume). */
   onAmbienceVolumeChange?: (volume: number) => void;
+  /** Odgłosy jednostek (marsz) WŁ/WYŁ — stan bieżący, do zaznaczenia
+   *  przełącznika przy otwarciu. Osobny, CZWARTY kanał (od muzyki I od
+   *  odgłosów natury) — patrz sekcja "SFX JEDNOSTEK" w audio/muzyka-antyczna.ts. */
+  getSfxEnabled?: () => boolean;
+  /** Głośność odgłosów jednostek 0..1 — do ustawienia suwaka przy otwarciu. */
+  getSfxVolume?: () => number;
+  /** Przełącznik Odgłosy jednostek WŁ/WYŁ (stopMarch() / nic — marsz startuje
+   *  reaktywnie przy kolejnym ruchu, nie od razu jak startAmbience()). */
+  onSfxToggle?: (enabled: boolean) => void;
+  /** Suwak głośności odgłosów jednostek, wartość 0..1 (setMarchVolume). */
+  onSfxVolumeChange?: (volume: number) => void;
   /** M: co ile tur wykonywać rotacyjny autozapis (1..20; 10 ostatnich wstecz). */
   getAutosaveFreq?: () => number;
   /** M: zmiana częstotliwości autozapisu (liczba tur). */
@@ -86,6 +97,18 @@ function ensureStyles(): void {
 .civ-pause-ambience-toggle[aria-pressed="true"]::after{left:19px;background:#f5e6b8;}
 .civ-pause-ambience-vol{width:100%;margin-top:8px;accent-color:#e0b24a;cursor:pointer;}
 .civ-pause-ambience-vol:disabled{opacity:.4;cursor:not-allowed;}
+.civ-pause-sfx{margin:4px 0 14px;padding:10px 12px;border-radius:8px;
+  border:1px solid rgba(224,178,74,0.22);background:rgba(255,255,255,0.03);}
+.civ-pause-sfx-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.civ-pause-sfx-lbl{font-size:13px;font-weight:600;color:#e8ebf0;display:flex;align-items:center;gap:8px;}
+.civ-pause-sfx-toggle{position:relative;width:38px;height:21px;flex:none;border-radius:11px;
+  border:1px solid rgba(224,178,74,0.35);background:rgba(0,0,0,0.35);cursor:pointer;padding:0;}
+.civ-pause-sfx-toggle::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
+  background:#9aa4b8;transition:left .15s,background .15s;}
+.civ-pause-sfx-toggle[aria-pressed="true"]{background:rgba(224,178,74,0.35);border-color:rgba(224,178,74,0.6);}
+.civ-pause-sfx-toggle[aria-pressed="true"]::after{left:19px;background:#f5e6b8;}
+.civ-pause-sfx-vol{width:100%;margin-top:8px;accent-color:#e0b24a;cursor:pointer;}
+.civ-pause-sfx-vol:disabled{opacity:.4;cursor:not-allowed;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -115,6 +138,8 @@ export function showGamePauseMenu(): void {
   const musicVolumeNow = cfg.getMusicVolume?.() ?? 0.7;
   const ambienceEnabledNow = cfg.getAmbienceEnabled?.() ?? true;
   const ambienceVolumeNow = cfg.getAmbienceVolume?.() ?? 0.7;
+  const sfxEnabledNow = cfg.getSfxEnabled?.() ?? true;
+  const sfxVolumeNow = cfg.getSfxVolume?.() ?? 0.35;
   const autosaveFreqNow = Math.max(1, Math.min(20, Math.round(cfg.getAutosaveFreq?.() ?? 1)));
 
   const box = document.createElement('div');
@@ -140,6 +165,13 @@ export function showGamePauseMenu(): void {
     'aria-pressed="' + (ambienceEnabledNow ? 'true' : 'false') + '" aria-label="Odgłosy natury WŁ/WYŁ"></button></div>' +
     '<input type="range" class="civ-pause-ambience-vol" data-act="ambience-vol" min="0" max="100" step="5" ' +
     'value="' + Math.round(ambienceVolumeNow * 100) + '"' + (ambienceEnabledNow ? '' : ' disabled') + ' aria-label="Głośność odgłosów natury" />' +
+    '</div>' +
+    '<div class="civ-pause-sfx">' +
+    '<div class="civ-pause-sfx-row"><span class="civ-pause-sfx-lbl">Odgłosy jednostek</span>' +
+    '<button type="button" class="civ-pause-sfx-toggle" data-act="sfx-toggle" role="switch" ' +
+    'aria-pressed="' + (sfxEnabledNow ? 'true' : 'false') + '" aria-label="Odgłosy jednostek WŁ/WYŁ"></button></div>' +
+    '<input type="range" class="civ-pause-sfx-vol" data-act="sfx-vol" min="0" max="100" step="5" ' +
+    'value="' + Math.round(sfxVolumeNow * 100) + '"' + (sfxEnabledNow ? '' : ' disabled') + ' aria-label="Głośność odgłosów jednostek" />' +
     '</div>' +
     '<div class="civ-pause-ambience">' +
     '<div class="civ-pause-ambience-row"><span class="civ-pause-ambience-lbl">Autozapis co N tur</span>' +
@@ -183,6 +215,19 @@ export function showGamePauseMenu(): void {
   ambienceVolInput?.addEventListener('input', () => {
     const v = Math.max(0, Math.min(100, Number(ambienceVolInput.value))) / 100;
     cfg?.onAmbienceVolumeChange?.(v);
+  });
+
+  const sfxToggleBtn = box.querySelector('[data-act="sfx-toggle"]') as HTMLButtonElement | null;
+  const sfxVolInput = box.querySelector('[data-act="sfx-vol"]') as HTMLInputElement | null;
+  sfxToggleBtn?.addEventListener('click', () => {
+    const next = sfxToggleBtn.getAttribute('aria-pressed') !== 'true';
+    sfxToggleBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    if (sfxVolInput) sfxVolInput.disabled = !next;
+    cfg?.onSfxToggle?.(next);
+  });
+  sfxVolInput?.addEventListener('input', () => {
+    const v = Math.max(0, Math.min(100, Number(sfxVolInput.value))) / 100;
+    cfg?.onSfxVolumeChange?.(v);
   });
 
   const autosaveFreqInput = box.querySelector('[data-act="autosave-freq"]') as HTMLInputElement | null;

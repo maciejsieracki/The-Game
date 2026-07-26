@@ -57,6 +57,28 @@
 //   stąd, w wariancie AMB_BITWA_MUTE_PELNE=false (patrz ta stała) — czyli
 //   "tylko zwierzęta milkną" zamiast pełnej ciszy. Zostaje też publiczny.
 //
+// API NOWE — SFX JEDNOSTEK, CZWARTY i NIEZALEŻNY kanał (efekty dźwiękowe
+// jednostek na mapie): własny AudioContext/bus (sfxCtx/sfxOut, zero wspólnego
+// stanu z muzyką ORAZ z ambience — gracz musi móc wyciszyć marsz bez utraty
+// ptaków/wiatru). Pierwszy (i na razie jedyny) mieszkaniec tego kanału: MARSZ
+// jednostek — delikatny, stłumiony tupot podczas animowanego ruchu gracza po
+// mapie (patrz sekcja "SFX JEDNOSTEK" na końcu pliku). Kroki to krótkie
+// impulsy szumu przez podwójny jednobiegunowy filtr dolnoprzepustowy (technika
+// 1:1 z renderListowie/renderWoda wyżej — lp/lp2 kaskadowo), 150–380 Hz,
+// zerowy ton/rezonans. Skalowanie z wielkością armii: więcej jednostek w
+// stosie -> więcej nakładających się (z rozjazdem fazowym) impulsów na "krok",
+// każdy nieco cichszy (patrz marchBeatGain — łączna głośność rośnie tylko
+// łagodnie, nigdy liniowo z liczebnością).
+//   startMarch(voices)/stopMarch()/setMarchVolume(v: 0..1)/isMarchPlaying() —
+//   pętla dla TRWAJĄCEGO ruchu (main.ts: startAnimatedMove()/koniec animacji).
+//   playMarchAccent(voices) — pojedynczy, throttlowany (SFX_ACCENT_MIN_GAP)
+//   akcent kroków dla ruchu BEZ animacji (AI — patrz komentarz przy wywołaniu
+//   w main.ts, oraz auto-eksploracja zwiadowców). Throttling = "limit głosów":
+//   wiele jednostek poruszających się w tej samej klatce/turze nigdy nie daje
+//   N nakładających się instancji, tylko jedną wspólną warstwę.
+//   setMood() -> sfxApplyBattleMute() (jak ambApplyBattleMute) wycisza cały
+//   kanał w bitwie (bitwa ma własną warstwę SFX, patrz battle/battleScene.ts).
+//
 // EPOKA 1 — KAMIEŃ ("odgłosy natury i dzikich ludów, bez przesady"):
 //   NATURA    — wiatr (filtrowany szum, falowanie 0.03–0.08 Hz; gra ZAWSZE),
 //               ptaki (3 syntetyczne gatunki, co 4–15 s), świerszcze (rzadko),
@@ -1600,6 +1622,7 @@ function respawn(fade: number): void {
  *  bez żadnych zmian po ich stronie. */
 export function setMood(mood: Mood): void {
   ambApplyBattleMute(mood);
+  sfxApplyBattleMute(mood);
   // Overlay BITWY (utwór z utwory/bitwa/) — 'bitwa' przejmuje muzykę na czas
   // sceny bitwy, wyjście z bitwy zdejmuje overlay i wraca muzyka mapy. Ustawiamy
   // moodNow PRZED zdjęciem overlayu, żeby stopOverlay->startMusic wznowił 'mapa',
@@ -2047,4 +2070,296 @@ function ambApplyBattleMute(mood: Mood): void {
   ambOut.gain.setValueAtTime(ambOut.gain.value, now);
   const target = shouldMute ? 0.0001 : volCurve(ambVolume);
   ambOut.gain.linearRampToValueAtTime(target, now + AMB_BITWA_XFADE);
+}
+
+// ---------------------------------------------------------------------------
+// SFX JEDNOSTEK — CZWARTY, NIEZALEŻNY kanał audio: efekty dźwiękowe jednostek
+// na mapie (odrębny od muzyki I od ambience — patrz nagłówek pliku, "API NOWE
+// — SFX JEDNOSTEK"). Właściciel: "przydałby się jakiś delikatny dźwięk marszu
+// dla poruszających się jednostek". Pierwszy mieszkaniec kanału: MARSZ.
+// Własny AudioContext (sfxCtx) + własny gain wyjściowy (sfxOut — suwak gracza
+// + wyciszenie bitewne, ANALOGICZNY do ambOut) z osobnym dzieckiem
+// (marchLoopGain) używanym WYŁĄCZNIE do fade-in/fade-out trwającej pętli
+// marszu — dzięki temu jednorazowe akcenty (playMarchAccent, AI/teleport) NIE
+// walczą o te same węzły automatyzacji gainu co start/stop pętli gracza; oba
+// tory i tak dziedziczą suwak/wyciszenie bitewne przez wspólny nadrzędny
+// sfxOut (jak ambWaterOut dziedziczy po ambOut w sekcji AMBIENCE wyżej).
+// ---------------------------------------------------------------------------
+
+let sfxCtx: AudioContext | null = null;
+let sfxOut: GainNode | null = null;
+/** Dziecko sfxOut — TYLKO fade-in/out ciągłej pętli marszu (startMarch/
+ *  stopMarch). Jednorazowe akcenty (playMarchAccent) pomijają ten węzeł i
+ *  grają wprost do sfxOut — zero konfliktu automatyzacji między pętlą a
+ *  akcentem, patrz komentarz sekcji wyżej. */
+let marchLoopGain: GainNode | null = null;
+/** Pula gotowych buforów pojedynczego kroku (renderKrok), tworzona raz przy
+ *  pierwszym ensureSfxGraph() dla danego sample rate — kroki grają często
+ *  (co ~0.4 s podczas marszu), więc render "na żywo" per-krok byłby
+ *  niepotrzebnym kosztem; tu tylko losowy wybór z puli + playbackRate. */
+const sfxStepBuffers: AudioBuffer[] = [];
+const SFX_STEP_POOL = 6;
+/** Aktywne źródła kroków — na wszelki wypadek trzymane jak w ambActiveSources,
+ *  choć krótkie bufory (<=90 ms) i tak dogrywają się same przy stopMarch()
+ *  (patrz jej komentarz) — to tylko higiena (disconnect po onended). */
+const sfxActiveSources: AudioBufferSourceNode[] = [];
+
+let marchPlaying = false;
+/** Liczba jednostek w maszerującym stosie — main.ts przekazuje
+ *  anim.movingStackIds.length (startAnimatedMove) przy starcie pętli;
+ *  wpływa na gęstość "kroków" na wybicie, patrz marchImpulsesForVoices(). */
+let marchVoices = 1;
+/** 0..1, CELOWO niższa domyślna niż muzyka/natura (0.7) — marsz ma być tłem
+ *  ruchu, nie wydarzeniem (właściciel: "wyraźnie cichszy niż muzyka"). main.ts
+ *  nadpisuje tę wartość zapisaną preferencją zaraz po starcie (audio/sfxPrefs.ts),
+ *  jak dla musicVolumeState/ambienceVolumeState. */
+let marchVolume = 0.35;
+let marchTimer: number | null = null;
+let marchNextBeatAt = 0;
+/** Wspólne dla całego kanału SFX (nie tylko marszu) — jedyny hak wpięty w
+ *  setMood() (patrz sfxApplyBattleMute niżej), analogiczny do ambBattleMuted. */
+let sfxBattleMuted = false;
+
+/** Bazowy odstęp (s) między grupami kroków dla POJEDYNCZEJ jednostki —
+ *  umiarkowane, rzadkie stąpanie. Duże stosy nie przyspieszają tego rytmu
+ *  (byłoby nienaturalne) — gęstnieją przez WIĘCEJ nakładających się impulsów
+ *  na tę samą grupę (marchImpulsesForVoices), nie przez szybsze wybijanie. */
+const MARCH_BEAT_S = 0.46;
+/** ±18% losowej zmiany odstępu między wybiciami — bez tego brzmi jak
+ *  metronom (właściciel: "to najczęstszy błąd przy takich efektach"). */
+const MARCH_BEAT_JITTER = 0.18;
+/** Planowanie do przodu (jak LOOKAHEAD wyżej, ale krótsze — pętla marszu jest
+ *  krótkotrwała, zbyt duży horyzont zaplanowałby kroki, które i tak zostaną
+ *  wyciszone falowaniem stopMarch() zamiast po prostu się nie odbyć). */
+const MARCH_LOOKAHEAD = 0.3;
+const MARCH_TICK_MS = 90;
+/** Throttle WSPÓLNY dla wszystkich jednorazowych akcentów (AI + auto-eksploracja
+ *  zwiadowców) — "limit głosów": gdy w jednej turze rusza się dużo jednostek
+ *  naraz, gracz słyszy JEDEN akcent na okno czasowe, nie kakofonię N akcentów. */
+const SFX_ACCENT_MIN_GAP = 0.22;
+let sfxAccentLastAt = -Infinity;
+
+/** Liczba nakładających się impulsów kroku na jedno "wybicie" w funkcji
+ *  wielkości stosu — pierwiastek kwadratowy (nie liniowo): pojedyncza
+ *  jednostka = 1 rzadki krok; duża armia gęstnieje, ale bez eksplozji liczby
+ *  jednoczesnych źródeł (limit 6, patrz SFX_STEP_POOL i koszt Web Audio). */
+function marchImpulsesForVoices(n: number): number {
+  const v = Math.max(1, Math.floor(n));
+  return Math.min(6, Math.max(1, Math.round(Math.sqrt(v) * 1.6 - 0.6)));
+}
+
+/** Głośność POJEDYNCZEGO impulsu w grupie o `impulses` nakładających się
+ *  krokach — maleje jako impulses^-0.4, więc łączna "energia" grupy
+ *  (~impulses * gain^2) rośnie tylko łagodnie (~impulses^0.2) z wielkością
+ *  armii: duży stos brzmi gęściej i odrobinę pełniej, NIGDY proporcjonalnie
+ *  głośniej — inaczej N jednostek dałoby ogłuszający tupot. */
+function marchBeatGain(impulses: number): number {
+  return 0.85 / Math.pow(Math.max(1, impulses), 0.4);
+}
+
+/** Renderuje pojedynczy odgłos kroku: krótki impuls szumu przez PODWÓJNY
+ *  jednobiegunowy filtr dolnoprzepustowy (dokładnie technika lp/lp2 z
+ *  renderListowie wyżej) na losowej częstotliwości odcięcia 150–380 Hz —
+ *  "stąpanie po ziemi", nigdy trzask/klik. Szybki atak (~3 ms) + wykładniczy
+ *  zanik — pojedynczy, stłumiony "tup". Zero tonu/rezonansu — celowo
+ *  delikatny (właściciel: "nie fanfary"). */
+function renderKrok(fs: number, seed: number): Float32Array {
+  const rng = mulberry32(seed);
+  const dur = rr(rng, 0.05, 0.09);
+  const len = Math.max(1, Math.floor(fs * dur));
+  const out = new Float32Array(len);
+  const fc = rr(rng, 150, 380);
+  const k = 1 - Math.exp((-2 * Math.PI * fc) / fs);
+  const decay = rr(rng, 13, 20);
+  const attack = 0.003;
+  let lp = 0, lp2 = 0;
+  for (let i = 0; i < len; i++) {
+    const t = i / fs;
+    const env = Math.exp(-t * decay) * Math.min(1, t / attack);
+    const w = rng() * 2 - 1;
+    lp += k * (w - lp);
+    lp2 += k * (lp - lp2);
+    out[i] = lp2 * env;
+  }
+  let peak = 0.0001;
+  for (let i = 0; i < len; i++) peak = Math.max(peak, Math.abs(out[i] as number));
+  const norm = 1 / peak;
+  for (let i = 0; i < len; i++) out[i] = (out[i] as number) * norm;
+  return out;
+}
+
+/** Tworzy (raz) prywatny AudioContext + graf SFX + pulę buforów kroku. Zwraca
+ *  null, gdy przeglądarka nie ma Web Audio (jak ensureAmbGraph wyżej). */
+function ensureSfxGraph(): { ac: AudioContext; out: GainNode; loop: GainNode } | null {
+  if (sfxCtx === null) {
+    const w = window as unknown as { AudioContext?: typeof AudioContext;
+      webkitAudioContext?: typeof AudioContext };
+    const AC = w.AudioContext ?? w.webkitAudioContext;
+    if (!AC) return null;
+    sfxCtx = new AC();
+    sfxOut = sfxCtx.createGain();
+    sfxOut.gain.value = sfxBattleMuted ? 0.0001 : volCurve(marchVolume);
+    sfxOut.connect(sfxCtx.destination);
+    marchLoopGain = sfxCtx.createGain();
+    marchLoopGain.gain.value = 0.0001;
+    marchLoopGain.connect(sfxOut);
+  }
+  if (sfxStepBuffers.length === 0) {
+    const fs = sfxCtx.sampleRate;
+    for (let i = 0; i < SFX_STEP_POOL; i++) {
+      const mono = renderKrok(fs, 90210 + i * 4517);
+      const buf = sfxCtx.createBuffer(1, mono.length, fs);
+      buf.copyToChannel(mono as Float32Array<ArrayBuffer>, 0);
+      sfxStepBuffers.push(buf);
+    }
+  }
+  return sfxCtx && sfxOut && marchLoopGain ? { ac: sfxCtx, out: sfxOut, loop: marchLoopGain } : null;
+}
+
+/** Planuje jedno źródło-krok (bufor z puli, losowy playbackRate dla
+ *  urozmaicenia) na węzeł `dest` — używane zarówno przez pętlę marszu
+ *  (dest=marchLoopGain) jak i jednorazowe akcenty (dest=sfxOut). */
+function sfxScheduleStep(dest: GainNode, when: number, gain: number, pan: number): void {
+  if (!sfxCtx || sfxStepBuffers.length === 0) return;
+  const ac = sfxCtx;
+  const buf = sfxStepBuffers[Math.floor(Math.random() * sfxStepBuffers.length)]!;
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  src.playbackRate.value = 0.86 + Math.random() * 0.34;
+  const g = ac.createGain();
+  g.gain.value = Math.max(0, gain);
+  const pn = ac.createStereoPanner();
+  pn.pan.value = Math.max(-1, Math.min(1, pan));
+  src.connect(g); g.connect(pn); pn.connect(dest);
+  sfxActiveSources.push(src);
+  src.onended = () => {
+    const i = sfxActiveSources.indexOf(src);
+    if (i >= 0) sfxActiveSources.splice(i, 1);
+    src.disconnect(); g.disconnect(); pn.disconnect();
+  };
+  src.start(Math.max(ac.currentTime + 0.004, when));
+}
+
+/** Planuje jedną "grupę wybicia" — `impulses` nakładających się kroków z
+ *  lekkim rozjazdem czasowym (TEMAT: "rozjazd fazowy" dla dużych stosów) i
+ *  panoramą, każdy z własnym driftem głośności (humanizacja — bez tego
+ *  brzmi jak metronom nawet przy losowym odstępie między grupami). */
+function marchScheduleBeat(dest: GainNode, when: number, impulses: number): void {
+  const baseGain = marchBeatGain(impulses);
+  const spread = impulses <= 1 ? 0 : Math.min(0.12, 0.025 + impulses * 0.015);
+  for (let i = 0; i < impulses; i++) {
+    const t = when + (spread > 0 ? Math.random() * spread : 0);
+    const g = baseGain * (0.75 + Math.random() * 0.4);
+    const pan = (Math.random() - 0.5) * (impulses <= 1 ? 0.15 : 0.6);
+    sfxScheduleStep(dest, t, g, pan);
+  }
+}
+
+function marchTick(): void {
+  if (!sfxCtx || !marchLoopGain || !marchPlaying) return;
+  const ac = sfxCtx;
+  const horizon = ac.currentTime + MARCH_LOOKAHEAD;
+  while (marchNextBeatAt < horizon) {
+    marchScheduleBeat(marchLoopGain, marchNextBeatAt, marchImpulsesForVoices(marchVoices));
+    const jitter = 1 + (Math.random() * 2 - 1) * MARCH_BEAT_JITTER;
+    marchNextBeatAt += MARCH_BEAT_S * jitter;
+  }
+}
+
+/** Startuje (lub, jeśli już gra, tylko podmienia `voices`) pętlę marszu.
+ *  MUSI być wołane w kontekście, który jest już "po geście użytkownika" —
+ *  main.ts woła to wyłącznie z startAnimatedMove(), a ta funkcja jest
+ *  osiągalna tylko w trakcie rozgrywki (długo po pierwszym kliknięciu, które
+ *  odblokowało AudioContext muzyki/ambience). AudioContext.resume() —
+ *  Promise obsłużony (.catch) tak jak filePlayer.ts (playOn(): "przeglądarka
+ *  wstrzymała odtwarzanie — reset playing"), żeby odrzucenie NIE zostawiło
+ *  marchPlaying=true przy realnie niedziałającym dźwięku. */
+export function startMarch(voices: number): void {
+  const g = ensureSfxGraph();
+  if (!g) return; // brak Web Audio — cicho odpuszczamy, jak reszta modułów audio
+  const { ac, loop } = g;
+  marchVoices = Math.max(1, Math.floor(voices));
+  if (ac.state === 'suspended') {
+    ac.resume().catch(() => { marchPlaying = false; });
+  }
+  if (marchPlaying) return; // już gra -- marchVoices wyżej wystarczy do podmiany gęstości
+  marchPlaying = true;
+  const now = ac.currentTime;
+  loop.gain.cancelScheduledValues(now);
+  loop.gain.setValueAtTime(0.0001, now);
+  loop.gain.linearRampToValueAtTime(1.0, now + 0.06); // krótki fade-in, bez trzasku
+  marchNextBeatAt = now + 0.04;
+  marchTick();
+  marchTimer = window.setInterval(marchTick, MARCH_TICK_MS);
+}
+
+/** Zatrzymuje pętlę marszu — krótki fade-out (~120 ms, bez trzasku), NIE
+ *  ucina twardo aktywnych źródeł jak stopAmbience(): kroki są krótkie
+ *  (<=90 ms) i tak dogrywają się same, w przeciwieństwie do długich,
+ *  nakładających się segmentów ambience. */
+export function stopMarch(): void {
+  if (!marchPlaying) return;
+  marchPlaying = false;
+  if (marchTimer !== null) { window.clearInterval(marchTimer); marchTimer = null; }
+  if (sfxCtx && marchLoopGain) {
+    const now = sfxCtx.currentTime;
+    marchLoopGain.gain.cancelScheduledValues(now);
+    marchLoopGain.gain.setValueAtTime(marchLoopGain.gain.value, now);
+    marchLoopGain.gain.linearRampToValueAtTime(0.0001, now + 0.12);
+  }
+}
+
+export function isMarchPlaying(): boolean { return marchPlaying; }
+
+/** Głośność 0..1 kanału SFX jednostek (ta sama krzywa percepcyjna volCurve co
+ *  muzyka/natura). Podczas wyciszenia bitewnego (sfxBattleMuted) celowo NIE
+ *  rusza słyszalnego gain — jak setAmbienceVolume() — wartość i tak zostaje
+ *  zapamiętana i wejdzie w życie po powrocie na mapę. */
+export function setMarchVolume(v: number): void {
+  marchVolume = Math.max(0, Math.min(1, v));
+  if (sfxCtx && sfxOut && !sfxBattleMuted) {
+    sfxOut.gain.setTargetAtTime(volCurve(marchVolume), sfxCtx.currentTime, 0.05);
+  }
+}
+
+/** Jednorazowy, throttlowany (SFX_ACCENT_MIN_GAP) akcent kroków — dla ruchu
+ *  BEZ animacji: AI (main.ts, komenda 'move' — pozycja zmienia się natychmiast,
+ *  zero systemu animacji dla jednostek AI) oraz auto-eksploracja zwiadowców
+ *  gracza (runScoutsAutoExplore). `voices` skaluje gęstość jak w pętli marszu,
+ *  ale ograniczoną do 4 impulsów (to akcent, nie pełny marsz). Cicho odpuszcza
+ *  w bitwie i gdy poprzedni akcent był < SFX_ACCENT_MIN_GAP temu — to właśnie
+ *  jest "limit głosów" przy wielu jednostkach ruszających się w tej samej
+ *  turze/klatce (patrz nagłówek pliku). */
+export function playMarchAccent(voices: number): void {
+  if (sfxBattleMuted) return;
+  const g = ensureSfxGraph();
+  if (!g) return;
+  const { ac, out } = g;
+  if (ac.state === 'suspended') {
+    ac.resume().catch(() => { /* jednorazowy akcent — nic do cofnięcia */ });
+  }
+  const now = ac.currentTime;
+  if (now - sfxAccentLastAt < SFX_ACCENT_MIN_GAP) return;
+  sfxAccentLastAt = now;
+  const impulses = Math.min(4, marchImpulsesForVoices(voices));
+  marchScheduleBeat(out, now, impulses);
+}
+
+/** Wyciszenie CAŁEGO kanału SFX jednostek w bitwie — jedyny hak wpięty w
+ *  setMood() (patrz jej definicja), więc działa automatycznie ze wszystkich
+ *  ~16 miejsc w main.ts/battle/mapFieldBattle.ts. Bitwa ma własną warstwę SFX
+ *  (battle/battleScene.ts, _sfxMelee/_sfxShot/...) — marsz na mapie MUSI
+ *  milknąć, inaczej nakładałby się na dźwięki starcia. Analogiczne do
+ *  ambApplyBattleMute() wyżej, ale prostsze: brak wariantu "częściowego"
+ *  wyciszenia (nie ma tu odpowiednika "tylko zwierzęta milkną"). */
+function sfxApplyBattleMute(mood: Mood): void {
+  const shouldMute = mood === 'bitwa';
+  if (shouldMute === sfxBattleMuted) return;
+  sfxBattleMuted = shouldMute;
+  if (!sfxCtx || !sfxOut) return; // kanał jeszcze nie wystartowany — nic do wyciszenia
+  const now = sfxCtx.currentTime;
+  sfxOut.gain.cancelScheduledValues(now);
+  sfxOut.gain.setValueAtTime(sfxOut.gain.value, now);
+  const target = shouldMute ? 0.0001 : volCurve(marchVolume);
+  sfxOut.gain.linearRampToValueAtTime(target, now + 0.5);
 }
