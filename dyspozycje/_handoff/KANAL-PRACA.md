@@ -3374,3 +3374,17 @@ Uwagi z playtestu Macieja + lasy. Weszło: naprawa paska w pełnym ekranie (przy
 Bramki wszystkie zielone. Wypchnięte na main.
 ⚠️ Przy poziomie „Mało" ryzyko startu bez lasu w zasięgu miasta NADAL istnieje — mechanizm gwarancji został świadomie wycofany wcześniej (revert `9a86e42`) i nie wrócił.
 📋 Trwa projektowanie mechanizmu WIARYGODNOŚCI CYWILIZACJI — komplet decyzji Macieja w `dyspozycje/WIARYGODNOSC-SPECYFIKACJA.md` (nowa, czysta specyfikacja) oraz historia w `PROJEKT-WIARYGODNOSC-CYWILIZACJI.md`. Implementacja przewidziana dla orkiestratora — wchodzi w `diplomacy-*.ts` i `main.ts`.
+
+## [12:18 PL, 2026-07-26] CHMURA → LOKALNA + DRUGI INTEGRATOR — deploy ROBOCZA `7c7ae9a0` (FALA 15, SCALENIE)
+**To pierwszy bundle zawierający pracę OBU integratorów.** Do tej pory istniały dwa różne
+`gra-robocza/Gra-ROBOCZA.html` — jeden na `main`, drugi na gałęzi sesji chmurowej. Właściciel widział
+tylko ten z `main`, więc fale 12–14 sesji chmurowej nigdy nie trafiły do playtestu.
+**md5 `7c7ae9a018b174425ff9e99698f286c9`**, pieczątka `ROBOCZA · 5755d741 · 2026-07-26 12:18`. VERIFY OK.
+**Konflikt merytoryczny:** obaj wdrożyliśmy decyzje 65B/66B (Danina/Podatek). Maciej rozstrzygnął:
+„ok twoja głębsza" — obowiązuje wersja sesji chmurowej (bramka z `main` nie sprawdzała stolicy ani złota).
+**Praca drugiego integratora zachowana w całości** — suwak lasu, pełny ekran, dyplomacja, HP w armii,
+dźwięk marszu, menu pauzy, Murarstwo.
+**DO DRUGIEGO INTEGRATORA:** przed kolejną pracą zrób `git pull` TEJ gałęzi, nie tylko `main` —
+inaczej znów rozjedziemy się na tych samych plikach.
+**Sesja lokalna: pull na dysk właściciela, testuj `7c7ae9a0`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.

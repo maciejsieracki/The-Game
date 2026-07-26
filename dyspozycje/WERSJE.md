@@ -10,6 +10,34 @@ wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy 
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
+
+## ROBOCZA `7c7ae9a0` — 2026-07-26 12:18 · FALA 15: SCALENIE OBU INTEGRATOROW — **AKTUALNA**
+- md5 (pelne): `7c7ae9a018b174425ff9e99698f286c9` · stempel: `ROBOCZA · 5755d741 · 2026-07-26 12:18`
+- **VERIFY OK.** Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+- **TO PIERWSZY BUNDLE ZAWIERAJACY PRACE OBU INTEGRATOROW.** Do tej pory istnialy dwa rozne
+  `gra-robocza/Gra-ROBOCZA.html` — jeden na `main` (drugi integrator), drugi na galezi
+  `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (sesja chmurowa). Wlasciciel widzial tylko ten
+  z `main`, wiec fale 12-14 sesji chmurowej NIGDY nie trafily do jego playtestu.
+- **Z galezi main (drugi integrator):** naprawa suwaka lasu (40/60/80% — przyczyna byla
+  zahardkodowanym sufitem 0,18 mniejszym od wszystkich progow, wiec tiery byly nierozroznialne),
+  pasek w pelnym ekranie, tlo ikony dyplomacji, HP w liscie armii, dzwiek marszu jednostek,
+  menu pauzy, koszt Murarstwa 28.
+- **Z galezi sesji chmurowej (fale 12-14):** korupcja ozywiona (byla zahardkodowana na 0%),
+  Pieniadz z budynkow i z konwersji Pracy do puli Daniny, domyslny podzial 20/60/20,
+  nowa siatka Szczescia z kara ponizej 10%, Biblioteka +30%/Akademia +20%, Mennica tylko
+  w stolicy + zasypianie bez zlota, zloto na szlakach, system weteranow, limit 10 heksow
+  na skupisko gorskie przy gorzystosci 19,3%, 5 modeli jednostek wpietych, model Kopalni
+  zlota, odznaki ulepszen na zetonach, bonus cudow zasilajacy Handel, nazewnictwo
+  Danina/Podatek, Wyjdz w menu glownym, wersja 0.9.
+- **KONFLIKT MERYTORYCZNY ROZSTRZYGNIETY PRZEZ WLASCICIELA:** obaj integratorzy wdrozyli
+  decyzje 65B/66B niezaleznie. Maciej 2026-07-26: „ok twoja glebsza" — obowiazuje wersja
+  sesji chmurowej. Powod widoczny w kodzie: bramka z `main` nie sprawdzala ani wymogu
+  STOLICY (66B), ani dostepu do ZLOTA (83B).
+- **Bramki po scaleniu:** tsc 0 bledow · logic 208/208 · combat 6/6 · currency 32/32 ·
+  plony-budynkow 68/68 · korupcja 18/18 · praca-na-pieniadz 23/23 · zloto-szlak 45/45 ·
+  weterani 47/47 · mennica-uspienie 47/47 · danina-podatek-nazwa 15/15 · tooltip-ui 13/13 ·
+  cuda-handel 26/26 · szczescie-zamoznosc 60/60 · unit-replace 10/10 · dispatch-check OK.
+
 <!-- ===== WPISY DRUGIEGO INTEGRATORA (galaz main) — doklejone przy scaleniu 2026-07-26 ===== -->
 
 ## ROBOCZA `c08b5fcc` — 2026-07-26 · naprawy UI z playtestu + lasy wg ustawienia — **AKTUALNA**
