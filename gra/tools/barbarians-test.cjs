@@ -279,6 +279,26 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
     eq(cmds[0].targetUnitId, 'e', 'attacks the adjacent enemy');
   }
 
+  // 6a-canEngage. C-BARB-Q1/Q2 (Maciej 2026-07-26): the attack decision now
+  // goes through the same war-state gate as the rest of the engine
+  // (canEngageOwner), not a hard-coded "!isBarbarian". Unit sits ON its camp
+  // and aggroRadius=0 so, with the attack blocked, there is no chase/idle
+  // fallback command either -- isolates the attack-gate effect precisely.
+  {
+    const bOnCamp = barb('b', 6, 6); // same hex as the camp
+    const e = player('e', 6, 5, 3); // AI rival owner 3, adjacent to the camp
+    const noAggro = Object.assign({}, P, { aggroRadius: 0 });
+    const cmdsBlocked = decideBarbarianMoves([bOnCamp], [e], [], camps, map, noAggro, () => false);
+    eq(cmdsBlocked.length, 0, 'canEngageOwner=false -> no attack on adjacent enemy (and no chase/idle fallback)');
+    const cmdsAllowed = decideBarbarianMoves([bOnCamp], [e], [], camps, map, noAggro, () => true);
+    eq(cmdsAllowed.length, 1, 'canEngageOwner=true -> attack proceeds');
+    eq(cmdsAllowed[0].type, 'attack', 'canEngageOwner=true -> attack command');
+    eq(cmdsAllowed[0].targetUnitId, 'e', 'canEngageOwner=true -> targets the adjacent enemy');
+    const cmdsOmitted = decideBarbarianMoves([bOnCamp], [e], [], camps, map, noAggro);
+    eq(cmdsOmitted.length, 1, 'canEngageOwner omitted -> defaults to always-engageable (no regression for existing callers)');
+    eq(cmdsOmitted[0].type, 'attack', 'omitted canEngageOwner -> attack command (unchanged default)');
+  }
+
   // 6b. Chase a target inside aggro radius (step gets closer).
   {
     const b = barb('b', 0, 0);
@@ -587,6 +607,23 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
     eq(cmds.length, 1, 'ashore: one command');
     eq(cmds[0].type, 'attack', 'ashore + adjacent enemy -> attack');
     eq(cmds[0].targetUnitId, 'e', 'attacks the adjacent enemy');
+  }
+
+  // 10d-canEngage. C-BARB-Q1/Q2 (Maciej 2026-07-26): ashore attack also gated
+  // by canEngageOwner (mirrors decideBarbarianMoves 6a-canEngage). Nothing to
+  // raid nearby, so a blocked attack falls through to "return to sea" (still
+  // one command, but never 'attack').
+  {
+    const m = mapa({});
+    const b = raider('sr', 5, 5);
+    const e = player('e', 6, 5, 3);
+    const cmdsBlocked = decideSeaPeoplesRaids([b], [e], [], [], m, seaParams, 4, () => false);
+    eq(cmdsBlocked.length, 1, 'canEngageOwner=false: one command (fallback to return-to-sea)');
+    assert(cmdsBlocked[0].type !== 'attack', 'canEngageOwner=false -> never attacks the adjacent enemy');
+    const cmdsAllowed = decideSeaPeoplesRaids([b], [e], [], [], m, seaParams, 4, () => true);
+    eq(cmdsAllowed.length, 1, 'canEngageOwner=true: one command');
+    eq(cmdsAllowed[0].type, 'attack', 'canEngageOwner=true -> attack command');
+    eq(cmdsAllowed[0].targetUnitId, 'e', 'canEngageOwner=true -> targets the adjacent enemy');
   }
 
   // 10e. Na ladzie bez celow -> wraca w morze (krok ku wodzie).

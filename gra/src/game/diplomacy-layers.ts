@@ -6,6 +6,7 @@
 
 import type { AIDiplomacyCommand } from './ai';
 import { DIPLOMACY_PARAMS, type Relation } from './diplomacy';
+import { isBarbarian } from './barbarians';
 
 export type DiplomacyLayer = 'simplified' | 'full' | 'pre_contact';
 
@@ -92,9 +93,34 @@ export function defaultNeutralRelation(): Relation {
 }
 
 /**
+ * C-BARB-Q1 (Maciej 2026-07-26, decyzja B): barbarzyńcy są w REALNEJ relacji
+ * „wojna" ze WSZYSTKIMI niebarbarzyńcami (gracz, każde AI, każde miasto-państwo) —
+ * ta sama struktura Relation co reszta ownerów w diplomacyRelations (main.ts
+ * getDiploRelation wymusza ten status dla każdej pary z udziałem barbarzyńcy),
+ * NIE osobny wyjątek w bramce walki. Zaufanie 0 (nigdy nie negocjują, brak
+ * zaufania z definicji); respekt neutralny -- pole nieużywane w praktyce, bo
+ * barbarzyńcy nie przechodzą przez aiDiplomacyStance/tickDiplomacy (main.ts
+ * aiOwnerList filtruje tylko ownerId > 0).
+ */
+export function barbarianWarRelation(): Relation {
+  const p = DIPLOMACY_PARAMS;
+  return {
+    zaufanie: 0,
+    respekt: p.startRespekt,
+    status: 'wojna',
+  };
+}
+
+/**
  * D-START-3A: odkrycie na mapie = heks miasta AI lub jednostki AI w bieżącym
  * zasięgu widzenia (visible — NIE explored). Explored utrzymywał fałszywe kontakty:
  * miasto znika z renderu poza zasięgiem, ale hex zostaje w explored → wpis w dyplomacji.
+ *
+ * C-BARB-Q1/Q2 (Maciej 2026-07-26): barbarzyńcy WYKLUCZENI -- nie są "cywilizacją"
+ * do negocjacji (brak miast, więc tylko jednostki mogłyby wpaść tu przez
+ * `units`). Bez tego filtra widoczny obóz/jednostka barbarzyńców trafiał do
+ * `diplomaticallyDiscoveredOwners` i mógł otworzyć graczowi pełną audiencję
+ * dyplomatyczną z "Barbarzyńcami" (checkNewDiplomaticContacts w main.ts).
  */
 export function computeDiplomaticContacts(
   visible: ReadonlySet<string>,
@@ -104,11 +130,11 @@ export function computeDiplomaticContacts(
 ): Set<number> {
   const contacted = new Set<number>();
   for (const c of cities) {
-    if (c.ownerId === playerOwnerId) continue;
+    if (c.ownerId === playerOwnerId || isBarbarian(c.ownerId)) continue;
     if (visible.has(hexKey(c.q, c.r))) contacted.add(c.ownerId);
   }
   for (const u of units) {
-    if (u.ownerId === playerOwnerId) continue;
+    if (u.ownerId === playerOwnerId || isBarbarian(u.ownerId)) continue;
     if (visible.has(hexKey(u.q, u.r))) contacted.add(u.ownerId);
   }
   return contacted;

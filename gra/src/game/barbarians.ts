@@ -746,6 +746,14 @@ function isFreeLand(q: number, r: number, map: GameMap, occupied: Set<string>): 
  * @param camps       Barbarian camps (retreat / idle anchors).
  * @param map         Game map for pathing.
  * @param params      Tunable coefficients.
+ * @param canEngageOwner
+ *   C-BARB-Q1/Q2 (Maciej 2026-07-26): war-state gate for the ATTACK decision --
+ *   same bramka as ai.ts's aiCanEngageOwner (main.ts wires it to
+ *   getDiploRelation(BARBARIAN_OWNER_ID, targetOwnerId).status === 'wojna').
+ *   Barbarians are always at war with every non-barbarian owner (see main.ts
+ *   getDiploRelation), so this is a rule, not a hard-coded exception -- omitted
+ *   (tests, legacy callers) it defaults to "always engageable", identical to
+ *   the previous unconditional behaviour.
  */
 export function decideBarbarianMoves(
   barbUnits: BarbUnit[],
@@ -754,8 +762,10 @@ export function decideBarbarianMoves(
   camps: BarbCamp[],
   map: GameMap,
   params: BarbParams,
+  canEngageOwner?: (targetOwnerId: number) => boolean,
 ): BarbCommand[] {
   const commands: BarbCommand[] = [];
+  const engageOk = canEngageOwner ?? ((_targetOwnerId: number) => true);
 
   // Only real players are valid targets.
   const enemies = playerUnits.filter(u => !isBarbarian(u.ownerId));
@@ -787,8 +797,14 @@ export function decideBarbarianMoves(
       continue;
     }
 
-    // 2. Attack an adjacent enemy unit.
-    const adjacentEnemy = enemies.find(e => hexDistance(unit.q, unit.r, e.q, e.r) === 1);
+    // 2. Attack an adjacent enemy unit -- gated by the same war-state rule as
+    // the rest of the engine (canEngageOwner), not a hard-coded !isBarbarian
+    // bypass (C-BARB-Q1/Q2). Barbarians are always at war with everyone, so in
+    // practice this changes nothing observable -- it routes through the rule
+    // instead of around it.
+    const adjacentEnemy = enemies.find(
+      e => hexDistance(unit.q, unit.r, e.q, e.r) === 1 && engageOk(e.ownerId),
+    );
     if (adjacentEnemy !== undefined) {
       commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
       continue;
@@ -907,8 +923,13 @@ export function decideSeaPeoplesRaids(
   map: GameMap,
   seaParams: SeaBarbParams,
   turn: number,
+  // C-BARB-Q1/Q2 (Maciej 2026-07-26): war-state gate for the ashore ATTACK
+  // decision -- see decideBarbarianMoves for the full rationale. Optional so
+  // existing callers/tests keep the previous "always engageable" behaviour.
+  canEngageOwner?: (targetOwnerId: number) => boolean,
 ): BarbCommand[] {
   const commands: BarbCommand[] = [];
+  const engageOk = canEngageOwner ?? ((_targetOwnerId: number) => true);
   const enemies = playerUnits.filter(u => !isBarbarian(u.ownerId));
   const allUnits: RuntimeUnit[] = [...seaUnits, ...enemies];
   const raidWave = seaParams.raidPeriod <= 1 || turn % seaParams.raidPeriod === 0;
@@ -963,8 +984,10 @@ export function decideSeaPeoplesRaids(
     }
 
     // --- NA LĄDZIE (desant) ---
-    // 1. Atak na wroga obok (jak barbarzyńcy lądowi).
-    const adjacentEnemy = enemies.find(e => hexDistance(unit.q, unit.r, e.q, e.r) === 1);
+    // 1. Atak na wroga obok (jak barbarzyńcy lądowi) -- ta sama bramka canEngageOwner.
+    const adjacentEnemy = enemies.find(
+      e => hexDistance(unit.q, unit.r, e.q, e.r) === 1 && engageOk(e.ownerId),
+    );
     if (adjacentEnemy !== undefined) {
       commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
       continue;

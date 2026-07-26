@@ -17,7 +17,9 @@ export {
   computeDiplomaticContacts,
   filterDiplomacyCommandsForEstablishedContact,
   diplomacyLayerForOwner,
+  barbarianWarRelation,
 } from ${JSON.stringify(SRC + '/game/diplomacy-layers')};
+export { BARBARIAN_OWNER_ID } from ${JSON.stringify(SRC + '/game/barbarians')};
 export type { AIDiplomacyCommand } from ${JSON.stringify(SRC + '/game/ai')};
 `, 'utf8');
 
@@ -35,6 +37,8 @@ const {
   computeDiplomaticContacts,
   filterDiplomacyCommandsForEstablishedContact,
   diplomacyLayerForOwner,
+  barbarianWarRelation,
+  BARBARIAN_OWNER_ID,
 } = require(BUNDLE);
 
 let passed = 0;
@@ -86,6 +90,33 @@ ok(
   filterDiplomacyCommandsForEstablishedContact(cmds, true).length === 2,
   'po formalnym kontakcie — pełna lista',
 );
+
+// C-BARB-Q1/Q2 (Maciej 2026-07-26): barbarzyńcy nie są "cywilizacją" do
+// negocjacji -- widoczny obóz/jednostka barbarzyńców nie może wpaść do
+// diplomaticallyDiscoveredOwners (inaczej main.ts checkNewDiplomaticContacts
+// otwierałby graczowi pełną audiencję z "Barbarzyńcami").
+{
+  const citiesWithBarb = [
+    { ownerId: 1, q: 5, r: 5 },
+  ];
+  const unitsWithBarb = [
+    { ownerId: 3, q: 8, r: 8 },
+    { ownerId: BARBARIAN_OWNER_ID, q: 9, r: 9 },
+  ];
+  const vis = new Set(['5,5', '8,8', '9,9']);
+  const contacts = computeDiplomaticContacts(vis, citiesWithBarb, unitsWithBarb);
+  ok(contacts.has(1), 'real city owner still contacted');
+  ok(contacts.has(3), 'real unit owner still contacted');
+  ok(!contacts.has(BARBARIAN_OWNER_ID), 'visible barbarian unit NEVER becomes a diplomatic contact');
+}
+
+// barbarianWarRelation: realna relacja 'wojna' w tej samej strukturze Relation.
+{
+  const rel = barbarianWarRelation();
+  ok(rel.status === 'wojna', 'barbarianWarRelation status is wojna');
+  ok(rel.zaufanie === 0, 'barbarianWarRelation zaufanie is 0 (no trust, ever)');
+  ok(typeof rel.respekt === 'number', 'barbarianWarRelation respekt is a number');
+}
 
 console.log(`\ndiplomacy-layers-test: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
