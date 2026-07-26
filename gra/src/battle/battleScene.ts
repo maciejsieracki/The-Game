@@ -8727,11 +8727,15 @@ export class BattleScene {
       const snap = snapById.get(ru.bu.id);
       const hpBefore = Math.max(0, Math.round(snap ? snap.hp : ru.bu.maxHp));
       const hpAfter = ru.dead ? 0 : Math.max(0, Math.round(ru.bu.hp));
+      // ZNALEZISKO 86: maxHp z tego samego snapshotu (_startAtkSnaps/_startDefSnaps),
+      // które już zasila _buildBattleSummaryData/postBattleSummary — jedno źródło,
+      // bez ponownego liczenia. Fallback na ru.bu.maxHp, jak przy hpBefore wyżej.
+      const maxHp = Math.max(0, Math.round(snap ? snap.maxHp : ru.bu.maxHp));
       const fate: EndDetailsUnitRow['fate'] = ru.dead ? 'destroyed' : ru.routed ? 'routed' : 'survived';
       return {
         name: this._unitDisplayLabel(ru),
         kind: this._unitBattleClass(ru),
-        hpBefore, hpAfter, fate,
+        hpBefore, hpAfter, maxHp, fate,
       };
     });
     const totalBefore = units.reduce((s, u) => s + u.hpBefore, 0);

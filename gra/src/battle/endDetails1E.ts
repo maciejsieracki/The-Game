@@ -28,6 +28,10 @@ export interface EndDetailsUnitRow {
   kind: EndDetailsUnitKind;
   hpBefore: number;
   hpAfter: number;
+  /** ZNALEZISKO 86: maksymalne HP jednostki — bez tego gracz widział spadek
+   *  (before→after), ale nie wiedział „z ilu". Ten sam wzorzec danych co
+   *  BattleUnitBeforeSnap.maxHp / BattleSummaryUnitCard.maxHp (game/battle-summary.ts). */
+  maxHp: number;
   fate: EndDetailsUnitFate;
 }
 
@@ -78,14 +82,21 @@ const FATE_META: Record<EndDetailsUnitFate, { label: string; color: string }> = 
   survived: { label: 'Ocalałe', color: '#7ad0a0' },
 };
 
+/** ZNALEZISKO 86: „34/50 HP (−16)" — HP po bitwie / maksymalne HP, w nawiasie
+ *  spadek tej bitwy (hpBefore − hpAfter). Bez spadku (pełne zdrowie) nawias
+ *  pomijany, żeby nie zaśmiecać wiersza „(−0)". */
+function hpText(u: EndDetailsUnitRow): string {
+  const maxHp = Math.max(0, Math.round(u.maxHp));
+  const hpAfter = Math.max(0, Math.round(u.hpAfter));
+  const loss = Math.max(0, Math.round(u.hpBefore) - hpAfter);
+  const base = hpAfter + '/' + maxHp + ' HP' + (loss > 0 ? ' (−' + loss + ')' : '');
+  return u.fate === 'routed' ? base + ' · uciekli' : base;
+}
+
 function unitRowHtml(u: EndDetailsUnitRow, color: string): string {
   const iconColor = rosterRowAccent(u.kind);
   const icon = resizeSvg(ROSTER_TYPE_SVG[u.kind], 15);
-  const right = u.fate === 'destroyed'
-    ? u.hpBefore + ' → 0'
-    : u.fate === 'routed'
-      ? u.hpBefore + ' → ' + u.hpAfter + ' · uciekli'
-      : u.hpBefore + ' → ' + u.hpAfter;
+  const right = hpText(u);
   const bg = hexToRgba(color, u.fate === 'destroyed' ? 0.06 : 0.05);
   const border = hexToRgba(color, u.fate === 'survived' ? 0.16 : u.fate === 'routed' ? 0.18 : 0.2);
   return (

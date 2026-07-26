@@ -433,7 +433,12 @@ import { buildWioska, buildObozBarbarzyncow, WIOSKA_OBOZ_LAYOUT } from './render
 // GRAFIKA-TEREN-2: tarasy = wzgórze (wariant 0/3) + schodkowe półki NA garbie (nie mini-dysk w sektorze).
 import { buildWzgorze, rotacjaDlaHeksa } from './render/teren-gory-wzgorza';
 import { buildTarasy, tarasyWariantDlaHeksa } from './render/tarasy-model';
-import { foodLayerFromAnimalDeposit, improvementKeysForHex, normalizeImprovementKey } from './game/terrain-improvements';
+import {
+  foodLayerFromAnimalDeposit,
+  improvementKeysForHex,
+  normalizeImprovementKey,
+  isImprovementAllowedForCiv,
+} from './game/terrain-improvements';
 import { isLivestockAllowed } from './game/livestock-unlock';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
@@ -737,6 +742,8 @@ import {
   diplomacyHandelSurowcePakietWielkosc,
   diplomacyHandelSurowceCatalog,
   diplomacyPnSurowiecIlosc,
+  diplomacyMaxZaufanieNaTureForWiarygodnosc,
+  type PnRelacjaParams,
 } from './game/diplomacy-value-catalog';
 import {
   collectUnauthorizedBorderPairs,
@@ -5131,7 +5138,15 @@ async function boot(): Promise<void> {
     ): void {
       const cur = getDiploRelation(proposerId, responderId);
       const meta = getDiploPairMeta(proposerId, responderId);
-      const applied = applyPnTrustToRelation(cur, meta, givePn, receivePn, isGift);
+      // Dźwignia 2 (§5, WIAR-9.5b=B) — limit Zaufania kupowalnego na turę zależy od
+      // Wiarygodności SPRAWCY (proposerId, ten kto daje/dopłaca) — im gorsza reputacja
+      // proponenta, tym mniej Zaufania może "kupić" darem/nadwyżką handlową w tej
+      // turze. Reputacja dodatnia nie zmienia niczego (zostaje dzisiejsze 5/turę) —
+      // patrz diplomacyMaxZaufanieNaTureForWiarygodnosc (diplomacy-value-catalog.ts).
+      const pnRelacjaParams: PnRelacjaParams = {
+        max_zaufanie_na_ture: diplomacyMaxZaufanieNaTureForWiarygodnosc(getWiarygodnosc(proposerId)),
+      };
+      const applied = applyPnTrustToRelation(cur, meta, givePn, receivePn, isGift, pnRelacjaParams);
       setDiploRelation(proposerId, responderId, applied.rel);
       setDiploPairMeta(proposerId, responderId, applied.meta);
       // FAZA 1 pkt 6: to jest RZECZYWISTA delta Zaufania z PN (dar/handel) — inna niż
@@ -6655,7 +6670,8 @@ async function boot(): Promise<void> {
     }
 
     function refreshBuildApi(): void {
-      buildApi = createImprovementBuildApi(
+      const civArch = String(player.civType || 'rzymianie');
+      const rawBuildApi = createImprovementBuildApi(
         {
           map,
           cityNodes: playerCityNodes(),
@@ -6663,7 +6679,7 @@ async function boot(): Promise<void> {
           playerOwnerIdNum: 0,
           placedKeys: collectPlacedImprovementKeys(),
           roadKeys: collectRoadKeys(map),
-          playerCivArchetype: String(player.civType || 'rzymianie'),
+          playerCivArchetype: civArch,
           playerEra: player.era,
           playerOwnerId: '0',
           placedImprovements,
@@ -6679,6 +6695,29 @@ async function boot(): Promise<void> {
           onSelect: (req) => applyBuildRequest(req),
         },
       );
+      // C-TARASY-Q1 (Maciej 2026-07-26): bramka OGÓLNA per cywilizacja (pole `cywilizacje`
+      // w terrain-improvements.json, np. Tarasy = tylko Chińczycy+Inkowie). Owinięta TU,
+      // nie w map/improvement-build.ts (zablokowanym równoległym zleceniem górzystości —
+      // patrz zakaz w zleceniu) — jedyny konsument `buildApi` w tym pliku, więc owinięcie
+      // w jednym miejscu wystarcza dla panelu (listTypes), highlightu/duchów
+      // (getQualifyingHexes), kliknięcia (handleHexClick) i bramki (canBuild).
+      buildApi = {
+        listTypes: () => rawBuildApi.listTypes().filter(t => isImprovementAllowedForCiv(t.key, civArch)),
+        getWorkCost: (key) => rawBuildApi.getWorkCost(key),
+        canBuild: (key, q, r) => isImprovementAllowedForCiv(key, civArch) && rawBuildApi.canBuild(key, q, r),
+        getQualifyingHexes: (key) =>
+          isImprovementAllowedForCiv(key, civArch) ? rawBuildApi.getQualifyingHexes(key) : [],
+        createBuildRequest: (key, q, r) =>
+          isImprovementAllowedForCiv(key, civArch) ? rawBuildApi.createBuildRequest(key, q, r) : null,
+        ...(rawBuildApi.handleHexClick
+          ? {
+              handleHexClick: (q: number, r: number) =>
+                (activeImprovementKey && isImprovementAllowedForCiv(activeImprovementKey, civArch))
+                  ? rawBuildApi.handleHexClick!(q, r)
+                  : null,
+            }
+          : {}),
+      };
     }
 
     function refreshBuildHighlight(): void {
