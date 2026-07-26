@@ -1468,3 +1468,133 @@ ownerId-agnostyczny, **zero gałęzi `if (ownerId===0)`**. Konkretnie:
   gracz-only).
 - Test parytetu przy wdrożeniu (wzorem §7 „Bramki" wyżej): ta sama Wiarygodność (np. W=50) zaaplikowana raz
   jako `ownerId=0`, raz jako `ownerId=N`, musi dać identyczny wpływ +5/turę na odpowiednie relacje.
+
+---
+
+## ✅ Decyzje Macieja (2026-07-26, popołudnie) — KORYGUJĄ sekcję „🔄 Przebudowa: Wiarygodność → Zaufanie
+## per turę" wyżej
+
+Poniższe trzy decyzje są **nadrzędne wobec** sekcji „🔄 Przebudowa: Wiarygodność → Zaufanie per turę
+(2026-07-26)" (linie 1241-1471 wyżej) w punktach, gdzie ta sekcja zostawiła pytanie otwarte lub wzór
+„na propozycję". Sekcja wyżej NIE jest tym anulowana w całości — jej weryfikacja kodu (`tickDiplomacy`,
+`resolvePokojTrustTier`, `DIPLOMACY_PARAMS`, zasięg par odkrytych/AI↔AI) pozostaje aktualna i wiążąca;
+zmienia się tylko dzielnik, zachowanie podczas wojny i status pytania o sumowanie, jak niżej.
+
+### DECYZJA 1 — C-WIAR-SKALA: dzielnik **20**, nie 10
+
+Cytat Macieja:
+
+> „C-WIAR-SKALA — OK. Zmieniliśmy o połowę ten wzrost, z 10 na 5 przy wiarygodności 100, pozostałe
+> proporcjonalnie."
+
+**Koryguje wzór z sekcji wyżej.** Wzór „ΔZaufanie na turę = Wiarygodność / 10" (§ „Wzór", linia 1251)
+zastąpić przez:
+
+**ΔZaufanie na turę = Wiarygodność / 20**
+
+| Wiarygodność | ΔZaufanie/turę |
+|---|---|
+| +100 | **+5,0** |
+| +50 | +2,5 |
+| +20 | +1,0 |
+| +10 | +0,5 |
+| 0 | 0 |
+| −10 | −0,5 |
+| −50 | −2,5 |
+| −100 | **−5,0** |
+
+**Uzasadnienie (dopisane do meldunku, nie od Macieja wprost, ale wynika z jego audytu proporcji):**
+weryfikacja kodu (patrz „Wyniki weryfikacji w kodzie" pkt 1 wyżej) wykazała, że wszystkie istniejące
+per-turowe składniki Zaufania razem dają **+1…+3** (`tickDiplomacy`, `game/diplomacy.ts:1403-1452`:
+handel +1, sojusz +3 / NAP +2 / pokój +1, dobra wola +1, wspólny wróg +1, religia ±0,5, ekspansja przy
+granicy −2). Przy dzielniku /10 strumień dawałby do +10/turę — **trzykrotnie więcej niż wszystko inne
+razem**, co uczyniłoby pozostałe mechanizmy nieistotnymi (Wiarygodność zdominowałaby cały tick). Przy
+/20 Wiarygodność pozostaje NAJSILNIEJSZYM pojedynczym czynnikiem (+5 vs. +3 dla samego sojuszu), ale
+współgra z resztą zamiast ją zastępować.
+
+**Status dzielnika:** PARAMETR STROJENIOWY w danych, NIE stała w kodzie — tam gdzie sekcja wyżej (pkt 5,
+„Plik parametrów strojeniowych") już wskazała miejsce: `DIPLOMACY_PARAMS` (`game/diplomacy.ts:65-242`,
+sekcja „per-turn Zaufanie deltas", linie 100-122) lub odpowiadający wpis w `gra/data/diplomacy.json`.
+Nazwa stałej z propozycji sekcji wyżej (`wiarygodnoscZaufanieDzielnikPerTura`) zostaje — zmienia się
+tylko jej WARTOŚĆ (20, nie 10).
+
+### DECYZJA 2 — C-WIAR-WOJNA = B: strumień działa TAKŻE podczas wojny
+
+Cytat Macieja (dosłownie):
+
+> „C-WIAR-WOJNA B — nie ma znaczenia. Jeżeli ktoś nam wypowiedział wojnę, a niekoniecznie my ją
+> wypowiedzieliśmy, lub wypowiedzieliśmy ją, ale zgodnie z zasadami prowadzenia wojny, nie zrywając
+> żadnego paktu — to nie widzę żadnego powodu, żebyśmy nie zyskiwali na wiarygodności z innymi
+> cywilizacjami, jeżeli na przykład wobec nich jesteśmy sojusznikami i tak dalej."
+
+**Rozstrzyga pierwsze pytanie otwarte z sekcji wyżej** („Wojna czy tylko pokój?", linie 1408-1411).
+
+**ZASADA: prowadzenie wojny z jedną cywilizacją NIE blokuje przyrostu Zaufania z pozostałymi
+(niezaangażowanymi) cywilizacjami.**
+
+Uzasadnienie Macieja: wojna prowadzona uczciwie (wypowiedziana zgodnie z zasadami, bez zrywania paktów)
+NIE jest przewinieniem — więc nie ma powodu, by zawieszała budowanie reputacji wobec sojuszników i
+innych partnerów, którzy w tym konflikcie nie uczestniczą.
+
+**⚠️ To ZMIENIA dzisiejsze zachowanie silnika**, potwierdzone w kodzie w sekcji wyżej (pkt 4, „Czy działa
+też podczas wojny, czy tylko podczas pokoju?"): `resolvePokojTrustTier` zwraca `undefined` natychmiast
+przy `atWar` (`game/diplomacy-treaties.ts:281`, `if (opts.atWar) return undefined;`), czyli dziś cały
+tier pokoju (`pokoj_zaufanie_perTura` i cała gałąź `sojusz`/`nap`/`pokoj`) zeruje się w wojnie —
+per-turowe Zaufanie z tej gałęzi nalicza się TYLKO w pokoju. **Nowy strumień Wiarygodności (W/20) ma tę
+bramkę OMIJAĆ** — być niezależny od stanu wojny z kimkolwiek innym, wpięty jako osobny składnik `dZ` w
+`tickDiplomacy`, nie przechodzący przez `resolvePokojTrustTier`.
+
+**⚠️ PODPYTANIE DO ROZSTRZYGNIĘCIA PRZEZ MACIEJA (zapisane, NIE rozstrzygnięte tutaj):**
+
+Maciej uzasadnił decyzję wyłącznie w odniesieniu do „innych cywilizacji" (tych, z którymi NIE walczymy).
+Nie wypowiedział się wprost o parze, z którą TRWA WOJNA. Dwa możliwe odczytania:
+
+- **(a)** strumień działa ze WSZYSTKIMI, łącznie z aktualnym przeciwnikiem (dosłowne „działa zawsze") —
+  konsekwencja: wysoka Wiarygodność buduje Zaufanie nawet u wroga, z którym się aktualnie walczy;
+- **(b)** strumień działa ze wszystkimi PARAMI, w których nie ma stanu wojny — wojna z X blokuje
+  przyrost tylko z X, nie z resztą (ściślej zgodne z literalnym brzmieniem uzasadnienia „z innymi
+  cywilizacjami").
+
+Oba warianty zapisane jako pytanie otwarte — wykonawca wdrożenia NIE wybiera sam, czeka na odpowiedź
+Macieja przed Etapem 2 (§7 wyżej, wpięcie do `tickDiplomacy`).
+
+### DECYZJA 3 — C-WIAR-SUMA = A: strumień DODAJE SIĘ (ROZSTRZYGNIĘTE, dopisane w toku tego samego dnia)
+
+Maciej rozstrzygnął drugie pytanie otwarte z sekcji wyżej („Dublowanie z `pokoj_zaufanie_perTura`...",
+linie 1412-1417): **strumień z Wiarygodności DODAJE SIĘ do istniejących per-turowych składników
+Zaufania. Nie zastępuje żadnego z nich.**
+
+- `pokoj_zaufanie_perTura` (+1), sojusz (+3) / NAP (+2), handel (+1), dobra wola (+1), wspólny wróg
+  (+1), religia (±0,5), ekspansja przy granicy (−2) — **wszystkie zostają nietknięte**, bez zmian w
+  wagach ani logice.
+- Strumień Wiarygodności (W/20) jest **nowym, niezależnym składnikiem** doliczanym do tej samej sumy
+  `dZ` w `tickDiplomacy` (`game/diplomacy.ts:1403-1452`), obok istniejących linii `dZ += ...`.
+- Zgodne z nadrzędną zasadą Macieja „nie zmieniamy tego, co jest — tylko dostosuj do wiarygodności":
+  nic nie kasujemy z istniejącej logiki, dokładamy jeden dodatkowy człon do sumy.
+
+**Konsekwencja do zapisania (obserwacja do playtestu, NIE korekta — Maciej świadomie wybrał wariant
+sumujący):** przy jednoczesnym pokoju + sojuszu + aktywnym handlu + Wiarygodności +100, suma per-turowa
+może wynieść ok. **+3 (istniejące: sojusz +3, handel +1, dobra wola +1 — górna granica przykładowa,
+niekoniecznie wszystkie naraz) + 5 (nowy strumień) ≈ +8/turę lub więcej** w skrajnym, sprzyjającym
+przypadku. Przy clampie Zaufania 0–100 (`game/diplomacy.ts:1442`) oznacza to teoretyczne dojście do
+maksimum w rzędzie **~13 tur** od zera przy stale utrzymanym maksimum wszystkich składników naraz —
+w praktyce wolniej, bo nie wszystkie tiery/warunki są aktywne jednocześnie od pierwszej tury kontaktu.
+Do sprawdzenia w playteście, czy to tempo jest pożądane — nie proponować korekty na tym etapie
+dokumentu.
+
+### Przypomnienie — pozostaje otwarte
+
+**C-WIAR-WOJNA, podpytanie (a)/(b) powyżej** — jedyne z trzech pierwotnych pytań otwartych sekcji wyżej,
+które NIE zostało jeszcze w pełni rozstrzygnięte (samo „czy działa podczas wojny" = TAK, ale „czy też z
+aktualnym przeciwnikiem" = nierozstrzygnięte). Reszta pytań otwartych z sekcji „Ryzyka i pytania otwarte"
+(Los Dźwigni 2–4, sufit/podłoga przy skrajnych wartościach, zaokrąglanie, zgodność z modelem
+zapominania, miejsce integracji) pozostaje bez zmian względem stanu opisanego wyżej — nie były
+przedmiotem dzisiejszych trzech decyzji.
+
+### Parytet AI (przypomnienie, bez zmian względem §6 i sekcji wyżej)
+
+Wszystkie trzy decyzje powyżej obowiązują **identycznie dla gracza (ownerId=0) i każdego AI
+(ownerId≠0)** — kod ownerId-agnostyczny, zero gałęzi `if (ownerId===0)`. Dzielnik 20, działanie podczas
+wojny i sumowanie z istniejącymi składnikami `dZ` to własności WZORU, nie własności konkretnego
+`ownerId` — dokładnie ta sama zasada co w §6 i w sekcji „Parytet AI" wyżej (linie 1458-1471), tu tylko
+potwierdzona raz jeszcze w kontekście trzech nowych decyzji.
