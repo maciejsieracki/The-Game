@@ -9,6 +9,21 @@
 
 import * as THREE from 'three';
 
+/**
+ * Martwa strefa (px) odróżniająca KLIK od PRZECIĄGNIĘCIA mapy — jedno źródło prawdy
+ * dla kamery i dla obsługi kliknięcia w main.ts.
+ *
+ * Zgłoszenie właściciela 2026-07-26 („czasem trzeba trzy razy kliknąć w kafelek, żeby
+ * przenieść jednostkę"): main.ts odrzucał klik, gdy między mousedown a mouseup kursor
+ * przejechał ≥ 6 px, ale kamera panowała już od PIERWSZEGO piksela ruchu. Drobne
+ * drgnięcie ręki przy kliknięciu dawało więc dwa niezależne skutki: mapa uciekała spod
+ * kursora (pan ≈ 2× szybszy niż sam kursor, więc heks pod kursorem przesuwał się o ok.
+ * 0,05 heksa na piksel), a przy większym drgnięciu klik znikał bez śladu. Teraz kamera
+ * używa TEJ SAMEJ martwej strefy: poniżej progu nie pan-uje wcale (klik zachowuje się
+ * jak klik), powyżej — startuje przeciąganie od punktu przekroczenia progu.
+ */
+export const DRAG_THRESHOLD_PX = 6;
+
 export interface CameraControllerOptions {
   /** Minimalna odległość (zoom in). */
   minDist?: number;
@@ -46,6 +61,11 @@ export class CameraController {
   private isDragging = false;
   private lastMouseX = 0;
   private lastMouseY = 0;
+  /** Pozycja wciśnięcia LPM — punkt odniesienia martwej strefy klik/drag. */
+  private pressX = 0;
+  private pressY = 0;
+  /** true dopiero po przekroczeniu DRAG_THRESHOLD_PX — wcześniej kamera stoi. */
+  private dragArmed = false;
 
   // Klawisze
   private keys: Set<string> = new Set();
@@ -133,6 +153,9 @@ export class CameraController {
     if (e.button !== 0) return;
     if (this.blockPointerAt?.(e.clientX, e.clientY)) return;
     this.isDragging = true;
+    this.dragArmed = false;
+    this.pressX = e.clientX;
+    this.pressY = e.clientY;
     this.lastMouseX = e.clientX;
     this.lastMouseY = e.clientY;
   };
@@ -144,6 +167,21 @@ export class CameraController {
     this.mouseClientY = e.clientY;
 
     if (!this.isDragging) return;
+
+    // Martwa strefa: dopóki kursor nie odjechał od punktu wciśnięcia o DRAG_THRESHOLD_PX,
+    // to jeszcze KLIK, nie przeciąganie — mapa ma stać w miejscu, żeby heks pod kursorem
+    // nie uciekł przed mouseup (main.ts liczy trafienie dopiero na mouseup).
+    if (!this.dragArmed) {
+      const px = e.clientX - this.pressX;
+      const py = e.clientY - this.pressY;
+      if (px * px + py * py < DRAG_THRESHOLD_PX * DRAG_THRESHOLD_PX) return;
+      this.dragArmed = true;
+      // Przeciąganie startuje OD progu (nie od punktu wciśnięcia) — brak skoku mapy.
+      this.lastMouseX = e.clientX;
+      this.lastMouseY = e.clientY;
+      return;
+    }
+
     const ddx = e.clientX - this.lastMouseX;
     const ddy = e.clientY - this.lastMouseY;
     this.lastMouseX = e.clientX;
@@ -155,7 +193,7 @@ export class CameraController {
     this._pan(-ddx * speed, -ddy * speed);
   };
 
-  private _onMouseUp = () => { this.isDragging = false; };
+  private _onMouseUp = () => { this.isDragging = false; this.dragArmed = false; };
 
   // Kursor opuścił okno/dokument (alt-tab, drugi monitor…) — edge-pan musi się zatrzymać,
   // inaczej mapa "ucieka" bez kontroli gracza.

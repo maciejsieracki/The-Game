@@ -62,7 +62,7 @@ import {
   yieldTurnTransitionUi,
 } from './ui/turnTransitionOverlay';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
-import { CameraController, type CameraControllerOptions } from './render/camera';
+import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { computeStartPlacements, computeReachable, computePath, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
 import type { RuntimeUnit } from './units/setup';
@@ -118,6 +118,7 @@ import {
 import {
   computeDiplomaticContacts,
   defaultNeutralRelation,
+  barbarianWarRelation,
   diplomacyLayerForOwner,
   filterDiplomacyCommandsForLayer,
   filterDiplomacyCommandsForEstablishedContact,
@@ -4395,6 +4396,19 @@ async function boot(): Promise<void> {
 
     function getDiploRelation(a: number, b: number): Relation {
       const key = a < b ? `${a}_${b}` : `${b}_${a}`;
+      // C-BARB-Q1 (Maciej 2026-07-26, decyzja B): barbarzyńcy są w REALNEJ relacji
+      // "wojna" ze WSZYSTKIMI niebarbarzyńcami -- ustawiana (i utrzymywana) tu, w
+      // tej samej mapie diplomacyRelations co reszta ownerów, nie jako osobny
+      // wyjątek w bramce ataku (patrz decideBarbarianMoves/decideSeaPeoplesRaids
+      // canEngageOwner niżej). Wymuszone defensywnie na każdym odczycie -- nic w
+      // silniku nie powinno móc "wynegocjować" barbarzyńcom pokoju.
+      if (isBarbarian(a) || isBarbarian(b)) {
+        const existing = diplomacyRelations.get(key);
+        if (!existing || existing.status !== 'wojna') {
+          diplomacyRelations.set(key, barbarianWarRelation());
+        }
+        return diplomacyRelations.get(key)!;
+      }
       if (!diplomacyRelations.has(key)) {
         diplomacyRelations.set(key, defaultNeutralRelation());
       }
@@ -6859,6 +6873,12 @@ async function boot(): Promise<void> {
         const parts = key.split('_').map(Number);
         if (parts.length !== 2) continue;
         const [a, b] = parts;
+        // C-BARB-Q1 (Maciej 2026-07-26): barbarzyńcy są ZAWSZE w "wojnie" (nowa
+        // realna relacja w diplomacyRelations, patrz getDiploRelation) -- to NIE
+        // jest wojna cywilizacyjna gracza (zadowolenie/war-weariness itd.), więc
+        // nie liczy się tutaj. Zero regresji: przed tą zmianą para barbarzyńca-X
+        // nigdy nie miała status='wojna' w tej mapie.
+        if (isBarbarian(a!) || isBarbarian(b!)) continue;
         if (a === 0 || b === 0) return true;
       }
       return false;
@@ -11097,7 +11117,10 @@ async function boot(): Promise<void> {
 
     let mouseDownX = 0;
     let mouseDownY = 0;
-    const DRAG_THRESHOLD = 6; // pixels
+    // Próg klik/drag — TEN SAM, którego używa kamera (render/camera.ts). Wspólna stała
+    // gwarantuje, że nie ma zakresu ruchu myszy, w którym mapa już panuje, a klik jeszcze
+    // się liczy (albo odwrotnie) — patrz komentarz przy DRAG_THRESHOLD_PX.
+    const DRAG_THRESHOLD = DRAG_THRESHOLD_PX; // pixels
 
     canvas.addEventListener('mousedown', (e: MouseEvent) => {
       mouseDownX = e.clientX;
@@ -15520,11 +15543,22 @@ async function boot(): Promise<void> {
             const landBarbs = barbUnitsAfterSpawn.filter(u => u.seaRaider !== true && u.embarked !== true);
             const seaBarbs = barbUnitsAfterSpawn.filter(u => u.seaRaider === true || u.embarked === true);
             const playerUnitsForBarbs = units.filter(u => !isBarbarian(u.ownerId));
-            const barbCmds = decideBarbarianMoves(landBarbs, playerUnitsForBarbs, cities, barbCamps, map, barbLive);
+            // C-BARB-Q1/Q2 (Maciej 2026-07-26): atak barbarzyńców przez tę samą
+            // bramkę stanu wojny co reszta silnika (aiCanEngageOwner w ai.ts),
+            // zamiast bezwarunkowego "!isBarbarian". Barbarzyńcy są zawsze w
+            // wojnie ze wszystkimi (getDiploRelation wymusza status='wojna' dla
+            // każdej pary z ich udziałem) -- efekt w grze bez zmian, ale
+            // egzekwowany regułą, nie wyjątkiem.
+            const barbCanEngageOwner = (targetOwnerId: number): boolean =>
+              getDiploRelation(BARBARIAN_OWNER_ID, targetOwnerId).status === 'wojna';
+            const barbCmds = decideBarbarianMoves(
+              landBarbs, playerUnitsForBarbs, cities, barbCamps, map, barbLive, barbCanEngageOwner,
+            );
             if (seaBarbs.length > 0) {
               const raidTargets = collectSeaRaidTargets(map);
               barbCmds.push(...decideSeaPeoplesRaids(
                 seaBarbs, playerUnitsForBarbs, cities, raidTargets, map, seaBarbParams, turn,
+                barbCanEngageOwner,
               ));
             }
             // SFX marsz — barbarzyńcy: ta sama logika co AI wyżej (jednorazowy
@@ -17478,11 +17512,13 @@ async function boot(): Promise<void> {
       resetDiplomaticDiscoveryUiState();
       const savedContacts = saved.meta?.diplomaticContactEstablished as number[] | undefined;
       if (savedContacts?.length) {
-        for (const oid of savedContacts) diplomaticContactEstablished.add(oid);
+        // C-BARB-Q1/Q2: defensywny filtr -- stare save'y (przed tą zmianą) nie
+        // powinny mieć barbarzyńców tutaj, ale wykluczamy jawnie zamiast zakładać.
+        for (const oid of savedContacts) { if (!isBarbarian(oid)) diplomaticContactEstablished.add(oid); }
       }
       const savedDiscovered = saved.meta?.diplomaticallyDiscoveredOwners as number[] | undefined;
       if (savedDiscovered?.length) {
-        for (const oid of savedDiscovered) diplomaticallyDiscoveredOwners.add(oid);
+        for (const oid of savedDiscovered) { if (!isBarbarian(oid)) diplomaticallyDiscoveredOwners.add(oid); }
       } else {
         for (const oid of diplomaticContactEstablished) diplomaticallyDiscoveredOwners.add(oid);
       }

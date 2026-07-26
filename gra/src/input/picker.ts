@@ -97,6 +97,39 @@ export function clientRectToNdc(
   };
 }
 
+// ---------------------------------------------------------------------------
+// 1c. refreshInstancedPickBounds — sfera otaczająca InstancedMesh do raycastu
+// ---------------------------------------------------------------------------
+
+/**
+ * Przelicza sferę otaczającą (`boundingSphere`) każdego InstancedMesh z listy
+ * pickingowej.
+ *
+ * DLACZEGO TO ISTNIEJE (R-RUCH-WZGORZA, nawrót 2026-07-26):
+ * `THREE.InstancedMesh.raycast()` robi najpierw odsiew po sferze otaczającej:
+ *   if (this.boundingSphere === null) this.computeBoundingSphere();
+ *   if (raycaster.ray.intersectsSphere(sphere) === false) return;   // CAŁY mesh odpada
+ * Sfera liczy się LENIWIE — przy PIERWSZYM raycaście — z AKTUALNYCH macierzy
+ * instancji i nigdy nie jest odświeżana. Tymczasem renderer chowa heksy pod mgłą
+ * wojny i dekor pod miastem, wpisując instancjom macierz zerową (`ZERO_MATRIX`,
+ * scene.ts) i przywracając ją, gdy mgła opadnie. Pierwszy ruch myszy po starcie
+ * gry pada więc na mapę prawie całą zasłoniętą mgłą → sfera obejmuje tylko
+ * odsłonięty skrawek i taka ZOSTAJE do końca sesji. Każdy późniejszy klik poza
+ * tym skrawkiem nie trafia już w żadną bryłę terenu i leci do awaryjnego
+ * przecięcia z płaszczyzną y = 0 — a ta leży POD wierzchem terenu, więc promień
+ * biegnie dalej i wskazuje heks o pół pola dalej od kamery (tym bardziej, im
+ * teren wyższy: wzgórze ≈ 0,50 heksa, góra ≈ 0,95 heksa).
+ *
+ * Wywoływać RAZ, tuż po zbudowaniu sceny — gdy wszystkie instancje mają jeszcze
+ * oryginalne macierze. Sfera pokrywa wtedy pełny zasięg mapy i nie zdezaktualizuje
+ * się: chowanie instancji tylko ściąga je do punktu (nic nie wychodzi poza sferę).
+ */
+export function refreshInstancedPickBounds(meshes: readonly THREE.Object3D[]): void {
+  for (const mesh of meshes) {
+    if (mesh instanceof THREE.InstancedMesh) mesh.computeBoundingSphere();
+  }
+}
+
 function worldUpNormal(hit: THREE.Intersection): number {
   if (!hit.face) return 0;
   const n = hit.face.normal.clone();

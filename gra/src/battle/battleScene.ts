@@ -72,6 +72,7 @@ import {
 } from '../game/veteran';
 import { cityWallDefenseBonusPercent } from '../game/city-defense';
 import { buildUnitModel } from '../render/units';
+import { refreshInstancedPickBounds } from '../input/picker';
 import {
   BTerrain,
   generateBattleTerrain,
@@ -4630,6 +4631,12 @@ export class BattleScene {
     frame.position.set(fx, 0.038, fz);
     frame.renderOrder = 6;
     this.scene.add(frame);
+
+    // Parytet z mapą świata (R-RUCH-WZGORZA, 2026-07-26): sfery otaczające meshy
+    // pickingu liczymy TERAZ, na komplecie instancji. three.js liczy je inaczej
+    // leniwie przy pierwszym raycaście i już nigdy nie odświeża — a wtedy każda
+    // późniejsza podmiana macierzy instancji cicho wycina cały mesh z pickingu.
+    refreshInstancedPickBounds(this._battleGroundPickMeshes);
   }
 
   // -------------------------------------------------------------------------

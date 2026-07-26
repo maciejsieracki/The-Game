@@ -91,6 +91,7 @@ import {
 } from './zoomLod';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './fogDim';
 import { landRiverRenderPath } from '../map/gen-helpers';
+import { refreshInstancedPickBounds } from '../input/picker';
 
 export type { MapRenderStyle, MapRenderOptions, QualityTier } from './mapRenderStyle';
 export { DEFAULT_MAP_RENDER_OPTIONS, normalizeMapRenderOptions, resolveRenderPreset } from './mapRenderStyle';
@@ -2992,6 +2993,13 @@ export async function buildScene(
   // geometrie gór/wzgórz są dzielone/cache'owane w teren-gory-wzgorza.ts (dispose() zepsułby
   // kolejne buildScene). goraInst/wzgorzeInst mają własny dispose (patrz wyżej).
   const terrainPickMeshes: THREE.InstancedMesh[] = [...instancedMeshes, ...goraInst, ...wzgorzeInst];
+  // R-RUCH-WZGORZA (nawrót, 2026-07-26): zamroź sfery otaczające pickingu TERAZ — w tym miejscu
+  // wszystkie instancje mają jeszcze ORYGINALNE macierze (setFog/hideDecorAtHex, które chowają
+  // heksy macierzą zerową, biegną dopiero po powrocie z buildScene). Bez tego three.js policzyłby
+  // je leniwie przy pierwszym kliknięciu — czyli na mapie prawie całej zakrytej mgłą — i taka
+  // zawężona sfera odsiewałaby CAŁE meshe terenu z raycastu do końca sesji (picking spadał wtedy
+  // na płaszczyznę y=0 = klik o pół heksa obok; na wzgórzach/górach jeszcze dalej).
+  refreshInstancedPickBounds(terrainPickMeshes);
 
   return {
     scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, syncForestForUnits, setZoomLod, getZoomLodLevel,
