@@ -83033,3 +83033,472 @@ Pamiętasz może jakie odkrycia pozwalały na budowę Tartaku na mapie świata? 
 ### Linia 10113 — AGENT
 
 [REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-26 18:45 UTC (linie 10114–10199)
+
+
+### Linia 10114 — AGENT
+
+Sprawdzam w `terrain-improvements.json` i drzewku technologii — wrócę z dokładnymi nazwami odkryć.
+
+[REDACTED]
+
+### Linia 10115 — AGENT
+
+[REDACTED]
+
+### Linia 10116 — AGENT
+
+[REDACTED]
+
+### Linia 10117 — AGENT
+
+W grze to są **dwa różne ulepszenia terenu**:
+
+| Ulepszenie | Odkrycie (technologia) | Co robi |
+|---|---|---|
+| **Tartak** | **Obróbka drewna** | Stałe ulepszenie — daje dostęp do **drewna** (4/turę). Można na lesie; las zostaje. |
+| **Wyrąb** | **brak** (od startu) | To nie tartak — **wycina las** (5 Pracy, 1 tura), potem pole bez lasu. Nie produkuje drewna jako surowca. |
+| **Kamieniołom** | **Murarstwo** | Na **wzgórzach i górach** — daje **kamień** (4/turę). |
+
+**Krótko:** drewno z mapy = **Tartak** po **Obróbce drewna**. Kamień = **Kamieniołom** po **Murarstwie**. **Wyrąb** to tylko ścinanie lasu, bez technologii.
+
+[REDACTED]
+
+### Linia 10119 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:22 PM (UTC+2)</timestamp>
+
+Okej, a jakie są koszty technologii obróbka drewna i muralstwo?
+
+### Linia 10120 — AGENT
+
+[REDACTED]
+
+### Linia 10121 — AGENT
+
+[REDACTED]
+
+### Linia 10122 — AGENT
+
+[REDACTED]
+
+### Linia 10123 — AGENT
+
+| Technologia | Epoka | Koszt w JSON | W grze (×2 globalny mnożnik) |
+|---|---|---:|---:|
+| **Obróbka drewna** | Kamień, poziom 1 | **12** | **24** nauki |
+| **Murarstwo** | Kamień, poziom 1 | **14** | **28** nauki |
+
+*(Chodziło o **Murarstwo**, nie „muralstwo".)*
+
+Koszt ×2 obowiązuje na każdej trudności (decyzja balansowa). Tempo gry i asymetria trudności AI mogą jeszcze lekko skorygować wartość — w panelu badań zobaczysz dokładną liczbę.
+
+[REDACTED]
+
+### Linia 10125 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:23 PM (UTC+2)</timestamp>
+
+A dlaczego jest rozjazd między Jasonem a grą?
+
+### Linia 10126 — AGENT
+
+To nie jest błąd synchronizacji — **JSON trzyma koszt bazowy**, a **gra liczy koszt końcowy** w `scaledResearchCost()`.
+
+**Łańcuch mnożników:**
+
+```
+JSON „Koszt nauki”  →  × tempo kreatora  →  × 2 (GLOBAL_RESEARCH_COST_MULT)  →  × trudność (gracz)
+```
+
+| Warstwa | Obróbka drewna | Murarstwo |
+|---|---:|---:|
+| **JSON** (baza, tempo szybka) | 12 | 14 |
+| × tempo **standardowa** (×2) | 24 | 28 |
+| × **balans globalny** (×2) | **48** | **56** |
+
+**Dlaczego tak zrobiono:**
+- JSON = jedna liczba do balansowania w panelu/Excelu (referencja przy tempie szybkim).
+- Mnożnik ×2 w kodzie = decyzja balansowa z 2026-07-22 („podwoić koszty badań”) bez ręcznej edycji każdego wpisu w `tech.json`.
+- Tempo i trudność nakładają się w silniku, żeby jeden JSON obsługiwał wszystkie ustawienia nowej gry.
+
+**W UI** panel badań pokazuje już **wynik po mnożnikach** — stąd 48/56 zamiast 12/14.
+
+Ten sam wzorzec dotyczy innych technologii. Osobny rozjazd (kamieniołom: JSON „wzgórza+góry” vs kod „tylko góry”) to inna sprawa — niespójność danych z kodem, nie zamierzony mnożnik.
+
+[REDACTED]
+
+### Linia 10128 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:25 PM (UTC+2)</timestamp>
+
+OK. Ze względu na to że potrzebujemy tych dwóch surowców obróbki drewna i murarstwa to zróbmy tak żeby ich koszt bazowy Jason był po 5
+
+### Linia 10129 — AGENT
+
+[REDACTED]
+
+### Linia 10130 — AGENT
+
+Przyjąłem — **koszt bazowy w JSON = 5** dla **Obróbki drewna** i **Murarstwa**.
+
+Przy tempie standardowym i normalnej trudności w grze wyjdzie **20 PN** każda (5 × 2 tempo × 2 balans). Wdrażam i publikuję do roboczej — dam znać z md5.
+
+[REDACTED]
+
+### Linia 10133 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:25 PM (UTC+2)</timestamp>
+
+Poza tym zastanawiam się czy nie jest błąd w grze czy JSON nie miał być po prostu poziomem easy a nie że easy jeszcze z razy 2 JSON
+
+### Linia 10134 — AGENT
+
+Sprawdzam intencję projektową i łańcuch mnożników — czy JSON to już koszt „easy”, czy baza pod kolejne ×2.
+
+[REDACTED]
+
+### Linia 10135 — AGENT
+
+Dobre pytanie — sprawdzam, czy JSON miał być kosztem „easy/szybka” bez dodatkowego ×2 w kodzie, czy obecny łańcuch (JSON × tempo × 2 × trudność) to zamierzony balans z lipca. Wrócę z werdyktem i opcjami naprawy.
+
+[REDACTED]
+
+### Linia 10137 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:27 PM (UTC+2)</timestamp>
+
+Zróbmy też poziomy pałaców w kamieniu, niech będzie tylko i wyłącznie z drewna, w rązie niech będzie z kamienia, a w żelazie niech będzie z cegły.  Trzeba ustalić, że pierwszy pałac robimy tylko z drewna i wymagane jest tylko drewno, drugi drewno i kamień, a trzeci drewno, kamień i cegły.  Trzeba też zwiększyć bonusy pałacu na każdym poziomie. Za każdy upgrade pięćdziesiąt procent wyższe bonusy.
+
+### Linia 10138 — AGENT
+
+[REDACTED]
+
+### Linia 10139 — AGENT
+
+Przyjąłem — wdrażam **3 poziomy pałacu**:
+
+| Poziom | Epoka | Surowce |
+|---|---|---|
+| I | Kamień | drewno |
+| II | Brąz | drewno + kamień |
+| III | Żelazo | drewno + kamień + cegła |
+
+Bonusy: **+50% na każdy upgrade** (II = ×1,5 od I, III = ×1,5 od II).  
+Po bramce → deploy do roboczej, dam znać z md5.
+
+[REDACTED]
+
+### Linia 10142 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:30 PM (UTC+2)</timestamp>
+
+A już wiem z czego to wynika.  Kiedyś poprosiłem żeby zwiększyć razy dwa wszystkie koszty technologii, a ktoś nie zaktualizował JSON-a. Więc to jasony trzeba zaktualizować. Jeżeli chodzi o technologię  a dla tych dwóch technologii, o których mówiliśmy, przyjmijmy bardzo niski koszt na easy 5, na Normal 10, a na Hard, na długim sorry, 20.
+
+### Linia 10143 — AGENT
+
+Rozumiem: podwojenie kosztów powinno być w JSON, nie w kodzie. Wdrażam — dla Obróbki drewna i Murarstwa: 5 / 10 / 20 przy tempach szybka / standardowa / długa.
+
+[REDACTED]
+
+### Linia 10144 — AGENT
+
+Przyjąłem — to był właśnie ten rozjazd.
+
+**Plan:**
+1. **Podwoić wszystkie koszty w `tech.json`** (wchłonięcie starego ×2 z kodu)
+2. **`GLOBAL_RESEARCH_COST_MULT = 1`** — JSON = to, co widzisz w grze przy danym tempie
+3. **Obróbka drewna + Murarstwo:** baza **5** → **5 / 10 / 20** PN (szybka / standardowa / długa)
+
+Wdrażam + deploy do roboczej. Pałace czekają w kolejce.
+
+[REDACTED]
+
+### Linia 10146 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 10147 — AGENT
+
+**✅ Gotowe:** [Pałace tier surowce bonusy](51729a58-b9bc-4de1-9ef0-326f9d2527c2) — ROBOCZA **`a85e7d3f`**
+
+**Pałac I → II → III:** drewno → +kamień → +cegła · bonusy **+50%** na tier (kultura, zadowolenie, mnożnik).
+
+W produkcji: „Rozbuduj Pałac → Pałac II" itd.
+
+**Równolegle w toku:** [Fix kosztów tech JSON](2865e2ab-97ba-41db-b1b0-b2e25e3e3fb5) — podwojenie JSON + GLOBAL ×1. Nowszy deploy może nadpisać md5 pałaców; po zakończeniu dam finalny hash.
+
+[REDACTED]
+
+### Linia 10149 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:30 PM (UTC+2)</timestamp>
+
+OK. Budynki teraz kosztują konkretne surowce, więc zaktualizuj potrzebne surowce, ale najpierw sprawdź co jest w grze, jeżeli chodzi o koszty surowców obecnie dla samego pałacu.
+
+### Linia 10150 — AGENT
+
+[REDACTED]
+
+### Linia 10151 — AGENT
+
+Sprawdzam najpierw stan pałacu w grze — koszty surowców w JSON, bramki epok i to, co widać w UI — potem ewentualna korekta tylko dla pałacu (I/II/III), bez masowej edycji innych budynków.
+
+[REDACTED]
+
+### Linia 10152 — AGENT
+
+[REDACTED]
+
+### Linia 10153 — AGENT
+
+Trwa pełny audyt w [Audyt kosztów pałacu](bc03e3cd-c17b-4d40-afe5-d1e0aeb80089) — poniżej stan z `buildings.json`:
+
+| Tier | Praca (kosztBudowy) | `koszt_surowce` w JSON |
+|---|---|---|
+| **Pałac I** | 40 | drewno **8** |
+| **Pałac II** | 60 | drewno **8** + kamień **8** |
+| **Pałac III** | 90 | drewno **8** + kamień **8** + cegła **6** |
+
+Bramki epok (dostęp imperium) są zgodne z decyzją. Do sprawdzenia w kodzie: czy te surowce są **faktycznie pobierane ze stocku** przy budowie, czy tylko wyświetlane / bramka dostępu. Wrócę z werdyktem i ewentualną korektą.
+
+[REDACTED]
+
+### Linia 10155 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:46 PM (UTC+2)</timestamp>
+
+ok mozesz zrobic deploy do robocza
+
+### Linia 10156 — AGENT
+
+[REDACTED]
+
+### Linia 10157 — AGENT
+
+Buduję świeży bundle i publikuję do **gra-robocza** — dam znać z md5 po bramce.
+
+[REDACTED]
+
+### Linia 10158 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:46 PM (UTC+2)</timestamp>
+
+ok super  zrob teraz git pull zeby miec najktualnijesza wersje i zrobimy
+
+### Linia 10159 — AGENT
+
+[REDACTED]
+
+### Linia 10160 — AGENT
+
+[REDACTED]
+
+### Linia 10161 — AGENT
+
+Robię `git pull --ff-only origin main` — dam znać, czy repo jest zsynchronizowane i na jakim HEAD. Równolegle może dojść deploy do roboczej z poprzedniego polecenia.
+
+[REDACTED]
+
+### Linia 10163 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:47 PM (UTC+2)</timestamp>
+
+Sprawdź. Inny agent robił zmiany I powinny być w najnowszej wersji na git Więc musisz mieć najaktualniejszą wersję żeby zrobić swój deploy
+
+### Linia 10164 — AGENT
+
+[REDACTED]
+
+### Linia 10165 — AGENT
+
+Sprawdzam synchronizację z GitHubem (`fetch` + `pull`), potem deploy roboczej na najnowszym `main` — wrócę z hashem i podsumowaniem zmian z drugiego agenta.
+
+[REDACTED]
+
+### Linia 10167 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:48 PM (UTC+2)</timestamp>
+
+a
+
+### Linia 10168 — AGENT
+
+[REDACTED]
+
+### Linia 10169 — AGENT
+
+Przyjąłem **A** — `stash` → `pull` (FALA 8 z GitHub) → `stash pop` → deploy roboczej. Dam znać z md5 albo o konfliktach.
+
+[REDACTED]
+
+### Linia 10171 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:50 PM (UTC+2)</timestamp>
+
+Czy zmiany które zrobiłeś na mapie świata  są niezależnie wykonane od tego jaka jest wielkość mapy? W każdej będą tak działać? czyli odległość od północnego i południowego brzegu oraz Antarktyda.
+
+### Linia 10172 — AGENT
+
+[REDACTED]
+
+### Linia 10173 — AGENT
+
+Sprawdzam w kodzie generatora, czy bufory N/S i Antarktyda są w **stałej liczbie heksów**, czy skalują się z rozmiarem mapy — i czy dotyczą tylko presetu Ziemia.
+
+[REDACTED]
+
+### Linia 10174 — AGENT
+
+[REDACTED]
+
+### Linia 10175 — AGENT
+
+[REDACTED]
+
+### Linia 10176 — AGENT
+
+[REDACTED]
+
+### Linia 10177 — AGENT
+
+[REDACTED]
+
+### Linia 10178 — AGENT
+
+**Krótka odpowiedź:** bufory N/S i Antarktyda działają na **każdym rozmiarze mapy Ziemi**, ale **nie są stałe w heksach** — **skalują się z wysokością mapy**. Na innych typach świata (Kontynenty, Pangea, Wyspy) **nie obowiązują**.
+
+---
+
+### Tylko mapa **Ziemia** (`typ === 'ziemia'`)
+
+Kod w `earth-land-mask.ts` mówi wprost: dotyczy wyłącznie presetu Ziemi, nie generatorów proceduralnych.
+
+---
+
+### Bufory północny i południowy — **proporcjonalne**
+
+Referencja: mapa **standardowa** 168×120 → ok. **30 rzędów** oceanu u góry i u dołu.
+
+Wzór: `round(30 × innerH / 115)`, minimum **2 rzędy**.
+
+| Rozmiar | Wymiary | innerH | Bufor N + S (każdy) |
+|---|---:|---:|---:|
+| Malenki | 76×52 | 47 | **~12 hex** |
+| Mały | 108×74 | 69 | **~18 hex** |
+| Standardowy | 168×120 | 115 | **~30 hex** |
+| Duży | 240×168 | 163 | **~43 hex** |
+| Ogromny | 336×238 | 233 | **~61 hex** |
+| Super ogromny | 672×476 | 471 | **~123 hex** |
+
+Na każdej wielkości **proporcja oceanu przy biegunach** jest podobna — na większej mapie bufor jest po prostu **szerszy w heksach**.
+
+Dodatkowo na **wszystkich** mapach (nie tylko Ziemia) jest stały pas **2 hex** oceanu przy krawędzi ramki (`MAP_BORDER_OCEAN_HEXES`).
+
+---
+
+### Antarktyda
+
+Jest w **pełnym szablonie lądu** (nie wycinana z maski). Południowy bufor to wolny ocean **przed** pasem lądu z Antarktydą — na każdym rozmiarze Ziemi, z tym samym skalowaniem co bufor północny.
+
+Na małych mapach gęstość próbkowania maski jest wyższa, żeby kontynenty i cienkie wyspy nie znikały.
+
+---
+
+**Podsumowanie:** na każdej wielkości **Ziemi** — tak, bufory i Antarktyda działają; odległość od brzegu **nie jest stała w hexach**, tylko **skalowana jak na standardowej**. Na Kontynentach / Pangei / Wyspach — **nie**.
+
+[REDACTED]
+
+### Linia 10180 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:51 PM (UTC+2)</timestamp>
+
+Ok, super. To teraz możesz zrobić git push
+
+### Linia 10181 — AGENT
+
+[REDACTED]
+
+### Linia 10182 — AGENT
+
+Robię `git push` — najpierw sprawdzę stan repo (commit jeśli trzeba), potem wypchnę na `origin/main`. Dam znać z hashem.
+
+[REDACTED]
+
+### Linia 10185 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:55 PM (UTC+2)</timestamp>
+
+Ok, ale czemu te nowe rzeczy nie są w main? Trzeba je wgrać też we zmiany.
+
+### Linia 10186 — AGENT
+
+Stash trzymał tier pałacu i koszty tech poza `main` — scalam to z FALA 8, commituję i pushuję.
+
+[REDACTED]
+
+### Linia 10187 — AGENT
+
+OneDrive i procedura **stash przed pull** zostawiły kod źródłowy w **stash**, a na `main` poszedł tylko deploy FALA 8 + logi (`ec51d52`) — stąd brak tierów pałacu i kosztów tech na remote.
+
+Scalam stash z FALA 8 → commit → **push** na `main` → nowy deploy roboczej. Dam znać z hashem.
+
+[REDACTED]
+
+### Linia 10188 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:56 PM (UTC+2)</timestamp>
+
+Także zrób deploy do roboczej.
+
+### Linia 10189 — AGENT
+
+[REDACTED]
+
+### Linia 10190 — AGENT
+
+Scalam zmiany ze stash → commit → push na `main` → deploy do **gra-robocza**. Dam znać z md5.
+
+[REDACTED]
+
+### Linia 10192 — MACIEJ
+
+<timestamp>Saturday, Jul 25, 2026, 12:00 AM (UTC+2)</timestamp>
+
+teraz git push
+
+### Linia 10193 — AGENT
+
+[REDACTED]
+
+### Linia 10194 — AGENT
+
+Sprawdzam stan repo i wypycham na `origin/main`, jeśli coś jeszcze czeka — `d1f2a49` mogło już pójść przy poprzednim merge.
+
+[REDACTED]
+
+### Linia 10196 — MACIEJ
+
+<timestamp>Saturday, Jul 25, 2026, 12:05 AM (UTC+2)</timestamp>
+
+?
+
+### Linia 10197 — AGENT
+
+**Stan na teraz — wszystko gotowe:**
+
+| Co | Gdzie |
+|---|---|
+| **Kod** | `main` = `origin/main` · commit **`d1f2a49`** |
+| **Gra** | ROBOCZA **`0de2599c`** · `gra-robocza/START.html` (**Ctrl+F5**) |
+| **Git** | zsynchronizowany — push już zrobiony, nic nie czeka |
+
+**W grze:** FALA 8 (1. miasto, UI surowców, Civpedia, kamień) + **pałac 3 tiery** (drewno/kamień/cegła) + **tańsze techy** (Obróbka drewna/Murarstwo 5/10/20 PN).
+
+Coś nie działa albo chcesz kolejną zmianę — napisz co widzisz.
+
+[REDACTED]

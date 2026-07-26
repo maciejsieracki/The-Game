@@ -31,13 +31,9 @@ export function visibleStackOnHex(
 
 /**
  * C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): "Ufortyfikuj" chowa jednostkę
- * (RuntimeUnit.inGarnizon=true) do garnizonu miasta — wtedy visibleStackOnHex
- * (powyżej) świadomie ją wyklucza, bo ten filtr steruje też merge'em armii
- * i blokadami ruchu na mapie (NIE zmieniamy go — patrz handoff C-GARN-Q1).
- * Bez tej funkcji jednostka raz ufortyfikowana nie miała już żadnego stosu do
- * policzenia ruchu/akcji (playerStackAt zwracał pustą tablicę), więc mimo że
- * dało się ją "zaznaczyć" z listy armii, każda akcja (ruch, Czuwaj, Pomiń)
- * była no-opem.
+ * (RuntimeUnit.inGarnizon=true) do garnizonu miasta — na mapie gracza widać
+ * reprezentanta stosu w koszarach (computeStackDisplay); merge/ruch na heksie
+ * nadal ignoruje garnizon (visibleStackOnHex).
  *
  * `activeUnitStack` daje "stos do działania" dla JUŻ ZAZNACZONEJ jednostki:
  * ukryta w garnizonie -> stos-solo [u] (Ufort. chowa tylko JEDNĄ konkretną
@@ -48,7 +44,9 @@ export function activeUnitStack(
   units: RuntimeUnit[],
   active: RuntimeUnit,
 ): RuntimeUnit[] {
-  if (active.inGarnizon === true) return [active];
+  if (active.inGarnizon === true) {
+    return garrisonUnitsOnHex(units, active.q, active.r, active.ownerId);
+  }
   return visibleStackOnHex(units, active.q, active.r, active.ownerId);
 }
 
@@ -111,6 +109,21 @@ export function pickStackRepresentative(
   });
 }
 
+/** Jednostki ufortyfikowane w garnizonie miasta na danym heksie. */
+export function garrisonUnitsOnHex(
+  units: ReadonlyArray<RuntimeUnit>,
+  q: number,
+  r: number,
+  ownerId: number,
+): RuntimeUnit[] {
+  return units.filter(
+    u => u.ownerId === ownerId
+      && u.q === q
+      && u.r === r
+      && u.inGarnizon === true,
+  );
+}
+
 /** 1 token na heks — reprezentant najmocniejszy + badge ×N. */
 export function computeStackDisplay(
   units: RuntimeUnit[],
@@ -118,8 +131,9 @@ export function computeStackDisplay(
 ): StackDisplayInfo {
   const byStack = new Map<string, RuntimeUnit[]>();
   for (const u of units) {
-    if (u.inGarnizon === true) continue;
-    const k = u.ownerId + '|' + u.q + ',' + u.r;
+    const k = u.inGarnizon === true
+      ? u.ownerId + '|' + u.q + ',' + u.r + '|g'
+      : u.ownerId + '|' + u.q + ',' + u.r;
     const arr = byStack.get(k);
     if (arr) arr.push(u);
     else byStack.set(k, [u]);

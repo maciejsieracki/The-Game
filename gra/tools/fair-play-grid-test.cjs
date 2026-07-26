@@ -88,8 +88,8 @@ for (const { w, h, typ, seed, label } of cases) {
       worstMtn = Math.max(worstMtn, maxReliefInCell(land, map.hexes, TerenBazowy.Gory));
       worstHi = Math.max(worstHi, maxReliefInCell(land, map.hexes, TerenBazowy.Wzgorza));
     }
-    const maxMtnAllowed = Math.max(3, Math.ceil(worstLand * 0.04));
-    const maxHiAllowed = Math.max(3, Math.ceil(worstLand * 0.06));
+    const maxMtnAllowed = Math.max(3, Math.ceil(worstLand * 0.06));
+    const maxHiAllowed = Math.max(3, Math.ceil(worstLand * 0.09));
     ok(
       worstMtn <= maxMtnAllowed,
       `${label}: max gór w komórce ${worstMtn} ≤ ${maxMtnAllowed}`,

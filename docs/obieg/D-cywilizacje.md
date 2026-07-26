@@ -138,6 +138,9 @@ Pełnego buildu całej gry **nie robisz** — to rola Integratora (ma wszystkie 
 - 🟢 **M jednostki → Power WPIĘTE** — kanon `3DAE1AA5…` / `5D965EB7…` (sprawdź MASTER-WATCH)
 
 ## 🧾 DECYZJE MACIEJA (świeże — echo, przed wdrożeniem)
+- **C-AI-WOJNA-Q1 (2026-07-26):** **A** — dyplomacja przed ruchem AI; wypowiedzenie w tej turze, atak od następnej (karencja N1). → `docs/decyzje/C-AI-WOJNA-EKSPANSJA-2026-07-26.md`
+- **C-AI-EKSP-Q1 (2026-07-26):** **A** — max 1 miasto/turę/cyw., koszt Pracy+ludność z panelu budowy (bez osadnika). → j.w.
+- **C-AI-EKSP-Q2 (2026-07-26):** **A** — najpierw miasta-państwa w klastrze, potem zakładanie nowych miast. → j.w.
 - **D-CUD2 (2026-06-26):** **C** — utrzymanie wygasłego cudu = **50%** starej stawki (`floor(utrzymanie/2)`, min. 0). → `docs/decyzje/D-CUD2-utrzymanie-wygasly.md`
 - **D3-v1.1 (2026-06-30):** `T1A` trybut ze skarbca · **dwa sojusze** (defensywny + pełny, brak wojny=zryw) · `T3A` handel jednorazowy · `T4B` wszystko naraz → `docs/decyzje/D3-v1.1-MACIEJ-2026-06-30.md`
 

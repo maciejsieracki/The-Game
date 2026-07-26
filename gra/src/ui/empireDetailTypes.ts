@@ -88,7 +88,14 @@ export interface EmpirePowerSnap {
 /** Dochód / turę per miasto (ostatni tick ekonomii). */
 export interface EmpireCityEconRow {
   name: string;
+  /** Wpływ do skarbca imperium z tego miasta / turę. */
   pieniadz: number;
+  /** Pieniądz brutto miasta przed mnożnikiem zamożności. */
+  pieniadzBrutto?: number;
+  /** Dochód ze szlaków handlowych (wliczony w pieniadz). */
+  handelZeSzlakow?: number;
+  /** Utrzymanie budynków w tym mieście / turę (schodzi ze skarbca imperium). */
+  utrzymanieBudynkow?: number;
   pracaPula: number;
   pracaBudynki: number;
   nauka: number;

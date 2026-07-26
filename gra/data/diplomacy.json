@@ -44,7 +44,7 @@
     "progPoboczneWojna": 15,
     "progNapZaufanie": 40,
     "progNapRelacja": 50,
-    "progHandelRelacja": 40,
+    "progHandelRelacja": 0,
     "progSojuszPartnerRwMin": 0.4,
     "progSojuszPartnerRwMax": 0.7,
     "progSojuszPremiaSilniejszyMax": 0.25,

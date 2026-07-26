@@ -179,13 +179,26 @@ export function civCultureLabelForKey(civKey: string | null | undefined): string
   return CIV_KEY_TO_CULTURE_LABEL[String(civ?.typCywilizacji ?? civ?.ikonaId ?? '').toLowerCase()] ?? name;
 }
 
-/** Czy oba klucze należą do tego samego okręgu kulturowego (typCywilizacji / ikonaId). */
+/** typCywilizacji (okręg kulturowy) — np. ateny i sparta → „grecy”. */
+function civTypCywilizacjiKey(civKey: string): string {
+  const key = civKeyNorm(civKey);
+  const civ = civsRaw.cywilizacje.find(c =>
+    String(c.ikonaId ?? '').toLowerCase() === key ||
+    String(c.typCywilizacji ?? '').toLowerCase() === key ||
+    String(c.Cywilizacja ?? '').toLowerCase() === key,
+  );
+  const typ = civ?.typCywilizacji;
+  if (typeof typ === 'string' && typ.trim()) return typ.trim().toLowerCase();
+  return key;
+}
+
+/** Czy oba klucze należą do tego samego okręgu kulturowego (typCywilizacji). */
 export function sameCultureCircle(
   playerCivKey: string | null | undefined,
   otherCivKey: string | null | undefined,
 ): boolean {
   if (!playerCivKey?.trim() || !otherCivKey?.trim()) return false;
-  return civKeyNorm(playerCivKey) === civKeyNorm(otherCivKey);
+  return civTypCywilizacjiKey(playerCivKey) === civTypCywilizacjiKey(otherCivKey);
 }
 
 /** Tooltip PL dla paska Respekt (D3-UX-4B). */

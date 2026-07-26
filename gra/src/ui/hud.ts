@@ -43,6 +43,7 @@ import { mocLabel } from './power-labels';
 import { wikiBookIcon } from './icons/wikiBookIcon';
 import { iconHtml, type IconId } from './icons/iconRegistry';
 import { brandIconSvg, civIconSvg } from './icons/brandAssets';
+import { leaderPortraitUrl } from './leaderPortraits';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import { chip6cHtml, chip6cSep } from './hudChip6c';
 import { createLeaderBannersHud, type LeaderBannersHudApi } from './leaderBannersHud';
@@ -129,6 +130,10 @@ export interface HudState {
   civIconId?: string;
   /** kolorHex cywilizacji gracza (ramka medalionu). */
   civKolorHex?: string;
+  /** Epoka gracza (1=kamień…) — portret władcy w medalionie Mocy (PORTRETY-WLADCOW). */
+  playerEra?: number;
+  /** Imię władcy gracza (tooltip medalionu). */
+  playerWodz?: string;
   /** SUROW-HUD-01 (Maciej 2026-07-24) — wartość chipa „Surowce" (np. „7/9" dobrze/wszystkie). */
   surowceSummary?: string;
   /** true → czerwony/bursztynowy alert: co najmniej jeden surowiec na capie lub w niedoborze. */
@@ -437,6 +442,14 @@ function ensureStyles(): void {
 .civ-hud .power-center .p-ic.p-ic-civ{background:radial-gradient(circle at 35% 30%,#2a3248,#0e1420);
   border:1.5px solid rgba(160,128,48,0.6);box-shadow:0 0 12px rgba(160,128,48,.25);}
 .civ-hud .power-center .p-ic.p-ic-civ svg{width:30px;height:30px;}
+.civ-hud .power-center .p-ic.p-ic-leader{position:relative;overflow:visible;padding:0;}
+.civ-hud .power-center .p-ic.p-ic-leader .p-ic-portrait{display:block;width:44px;height:44px;border-radius:50%;
+  object-fit:cover;object-position:center top;}
+.civ-hud .power-center .p-ic .p-ic-signet{position:absolute;right:-3px;bottom:-3px;width:18px;height:18px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 30%,#2a3248,#0e1420);border:1.5px solid rgba(160,128,48,0.75);
+  box-shadow:0 0 6px rgba(0,0,0,.55);overflow:hidden;}
+.civ-hud .power-center .p-ic .p-ic-signet svg{width:12px;height:12px;display:block;color:#f4e6a8;}
 .civ-hud .power-center .p-recruit-ic{display:inline-flex;align-items:center;justify-content:center;color:#c8b888;}
 .civ-hud .power-center .p-recruit-ic svg{width:20px;height:20px;display:block;}
 .civ-hud .power-center .p-power-ic{display:inline-flex;align-items:center;justify-content:center;color:#d4bc78;}
@@ -449,7 +462,12 @@ function ensureStyles(): void {
 .civ-hud.is-city-view .civ-hud-banner-right,
 .civ-hud.is-city-view .power-center{display:none!important;}
 .civ-hud.is-city-view .hud-meta{display:none!important;}
-.civ-hud.is-city-view .hud-right-cluster{top:10px;right:14px;z-index:5;}
+.civ-hud.is-city-view .hud-right-cluster{top:8px;
+  right:calc(32px + min(26vw,300px) + 16px + 46px + 10px);
+  z-index:407;flex-direction:column;align-items:stretch;gap:5px;max-width:148px;}
+.civ-hud.is-city-view .hud-right-cluster .hud-right{flex-direction:column;align-items:stretch;gap:5px;}
+.civ-hud.is-city-view .hud-right-cluster .b-menu,
+.civ-hud.is-city-view .hud-right-cluster .b-wiki{height:36px;padding:0 10px;font-size:10px;letter-spacing:.12em;justify-content:center;}
 .civ-mini{position:fixed;left:20px;bottom:20px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
 .civ-war-strip{pointer-events:auto;position:fixed;top:46px;left:0;right:0;z-index:309;display:flex;flex-wrap:wrap;gap:6px;align-items:center;
   padding:3px 12px;background:rgba(48,12,12,0.92);border-bottom:1px solid rgba(211,55,55,0.55);
@@ -566,13 +584,36 @@ function hudIc(id: IconId): string {
   return iconHtml(id, 24) || '';
 }
 
-/** Medalion Mocy — znak cywilizacji gracza (fallback: res-influence). */
+/**
+ * Medalion Mocy — portret władcy gracza + sygnet cywilizacji (PORTRETY-WLADCOW 2026-07-23).
+ * Fallback: sam sygnet SVG gdy brak pliku portretu.
+ */
 function powerCenterIconHtml(s: HudState): string {
   const civId = s.civIconId ?? 'grecy';
-  const civSvg = civIconSvg(civId, 28);
-  const border = s.civKolorHex ? ` style="border-color:${s.civKolorHex}"` : '';
-  if (civSvg) {
-    return `<span class="p-ic p-ic-civ"${border} aria-hidden="true">${civSvg}</span>`;
+  const era = s.playerEra ?? 1;
+  const borderColor = s.civKolorHex ?? '';
+  const border = borderColor ? ` style="border-color:${borderColor}"` : '';
+  const signetStyle = borderColor ? ` style="border-color:${borderColor}"` : '';
+  const civSignetSvg = civIconSvg(civId, 24);
+  const signetHtml = civSignetSvg
+    ? `<span class="p-ic-signet"${signetStyle} aria-hidden="true">${civSignetSvg.replace(
+      '<svg ',
+      '<svg width="12" height="12" ',
+    )}</span>`
+    : '';
+  const portraitUrl = leaderPortraitUrl(civId, era);
+  const titleParts = [s.playerWodz, s.nacja].filter(Boolean);
+  const titleAttr = titleParts.length > 0
+    ? ` title="${escHtml(titleParts.join(' · '))}"`
+    : '';
+  if (portraitUrl) {
+    return `<span class="p-ic p-ic-civ p-ic-leader"${border}${titleAttr} aria-hidden="true">`
+      + `<img class="p-ic-portrait" src="${escHtml(portraitUrl)}" alt="">`
+      + signetHtml
+      + `</span>`;
+  }
+  if (civSignetSvg) {
+    return `<span class="p-ic p-ic-civ"${border}${titleAttr} aria-hidden="true">${civSignetSvg}</span>`;
   }
   const fallback = brandIconSvg('res-influence', 32) || hudIc('res-influence');
   return `<span class="p-ic" aria-hidden="true">${fallback}</span>`;

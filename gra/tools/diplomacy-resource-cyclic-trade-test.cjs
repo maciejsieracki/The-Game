@@ -217,6 +217,28 @@ ok(!cmds.some(c => c.type === 'zaproponuj_handel_surowiec'), '5c: cooldown (osta
 cmds = decideAIDiplomacy(diploInpBase({ stanWojny: true }));
 ok(!cmds.some(c => c.type === 'zaproponuj_handel_surowiec'), '5c: w trakcie wojny -> brak propozycji');
 
+// -- 4g. deficyt surowca -> AI proponuje ZAKUP (kierunek zakup) --
+const inp5g = diploInpBase({
+  resourceTradeOffer: {
+    surowiecKey: 'glina',
+    label: 'Glina',
+    pakietyPerTura: 2,
+    zaplataTyp: 'zloto',
+    zaplataPerTura: 20,
+    turns: AI_RESOURCE_TRADE_DEFAULT_TURNS,
+    kierunek: 'zakup',
+    powod: 'deficyt',
+  },
+});
+inp5g.skarbiecGold = 100;
+cmds = decideAIDiplomacy(inp5g);
+cmdRes = cmds.find(c => c.type === 'zaproponuj_handel_surowiec');
+ok(!!cmdRes, '5g: deficyt -> zaproponuj_handel_surowiec');
+ok(cmdRes && cmdRes.kierunek === 'zakup' && cmdRes.surowiecKey === 'glina',
+  '5g: kierunek zakup + glina');
+ok(cmdRes && (cmdRes.powodHandlu === 'deficyt' || String(cmdRes.powod).includes('deficyt')),
+  '5g: powod deficyt');
+
 // -- 4f. AI<->AI: decideAIDiplomacy nie rozroznia typu partnera (ownerId-agnostyczne z zalozenia) --
 cmds = decideAIDiplomacy({
   myPlayerId: '3',

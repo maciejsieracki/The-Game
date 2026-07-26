@@ -29,6 +29,46 @@ export function resolveOwnCultureShare(city: { ownCultureShare?: number; kultura
 }
 
 /**
+ * Czy miasto ma aktywny mix kulturowy (podbój / presja) — false = założone, 100% kultury właściciela.
+ * Brak pola ownCultureShare = miasto nigdy nie było podbite → bez kar „obcej kultury”.
+ */
+export function cityCultureMixActive(city: { ownCultureShare?: number; kulturaOwnShare?: number }): boolean {
+  return typeof city.ownCultureShare === 'number' || typeof city.kulturaOwnShare === 'number';
+}
+
+/** Pełna kultura właściciela — jak miasto założone (bez mixu po podboju). */
+export function clearCityCultureMix(city: { ownCultureShare?: number; kulturaOwnShare?: number }): void {
+  delete city.ownCultureShare;
+  delete city.kulturaOwnShare;
+}
+
+export interface CultureMixLine {
+  label: string;
+  pct: number;
+  isOwner: boolean;
+}
+
+/** Skład kultury miasta do UI: udział kultury właściciela vs obca. */
+export function cultureMixBreakdown(
+  ownerCultureLabel: string,
+  ownCultureShare: number,
+  mixActive: boolean,
+): CultureMixLine[] {
+  const ownPct = Math.round(Math.max(0, Math.min(1, ownCultureShare)) * 100);
+  const foreignPct = 100 - ownPct;
+  if (!mixActive || foreignPct <= 0) {
+    return [{ label: ownerCultureLabel, pct: 100, isOwner: true }];
+  }
+  const lines: CultureMixLine[] = [
+    { label: ownerCultureLabel, pct: ownPct, isOwner: true },
+  ];
+  if (foreignPct > 0) {
+    lines.push({ label: 'Obca kultura', pct: foreignPct, isOwner: false });
+  }
+  return lines;
+}
+
+/**
  * Czy `city` jest stolicą gracza (ownerId 0).
  *
  * Follow-up „przenieś stolicę" (2026-07-21): stolica gracza jest teraz WYZNACZONYM

@@ -1,6 +1,6 @@
 /**
- * workerFieldOverlay.ts — przeźroczyste ikonki 👤 na mapie świata (pola z robotnikami).
- * E-map-worker-overlay: wszystkie miasta gracza (ownerId 0), toggle przy minimapie.
+ * workerFieldOverlay.ts — ikonki pracowników na mapie świata (pola z robotnikami).
+ * Kolor = paleta właściciela (jak jednostki/miasta); gracz dostaje dodatkową obwódkę.
  */
 import * as THREE from 'three';
 import type { GameMap } from '../types/map';
@@ -11,39 +11,96 @@ import { GAME_MAP_RENDER_STYLE, terrainSurfaceTopY } from './mapRenderStyle';
 const WORKER_ICON_SCALE = 0.72;
 const WORKER_Y_OFFSET = 0.18;
 
+/** Paleta właścicieli — zsynchronizowana z render/units.ts i render/cities.ts. */
+const OWNER_COLORS: number[] = [
+  0xffd54a, // 0 = gracz (złoto)
+  0xe53935, // 1 = czerwony
+  0x43a047, // 2 = zielony
+  0x1e88e5, // 3 = niebieski
+  0xfb8c00, // 4 = pomarańczowy
+  0x8e24aa, // 5 = fioletowy
+  0x00acc1, // 6 = turkusowy
+  0xf06292, // 7 = różowy
+];
+
+function ownerColor(ownerId: number): number {
+  return OWNER_COLORS[ownerId % OWNER_COLORS.length]!;
+}
+
+function hexToRgba(hex: number, alpha: number): string {
+  const r = (hex >> 16) & 255;
+  const g = (hex >> 8) & 255;
+  const b = hex & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function hexTopY(map: GameMap, q: number, r: number): number {
   const hex = map.hexes[`${q},${r}`];
   const teren = hex?.terenBazowy ?? TerenBazowy.Laka;
   return terrainSurfaceTopY(teren, GAME_MAP_RENDER_STYLE, WORKER_Y_OFFSET);
 }
 
-/** Minimalna przeźroczysta ikonka 👤 (jak badge w cityOkolicaOverlay). */
-function makeWorkerIconSprite(): THREE.Sprite {
+const workerSpriteCache = new Map<string, THREE.CanvasTexture>();
+
+function workerSpriteCacheKey(ownerId: number, playerOwnerId: number): string {
+  return `${ownerId}|ring:${ownerId === playerOwnerId ? 1 : 0}`;
+}
+
+/** Ikona 👤 na tle w kolorze cywilizacji; gracz — dodatkowa obwódka w swoim kolorze. */
+function getWorkerIconTexture(ownerId: number, playerOwnerId: number): THREE.CanvasTexture {
+  const key = workerSpriteCacheKey(ownerId, playerOwnerId);
+  let tex = workerSpriteCache.get(key);
+  if (tex) return tex;
+
+  const color = ownerColor(ownerId);
+  const isPlayer = ownerId === playerOwnerId;
   const canvas = document.createElement('canvas');
   canvas.width = 64;
   canvas.height = 64;
   const ctx = canvas.getContext('2d')!;
   ctx.clearRect(0, 0, 64, 64);
 
-  const badgeR = 13;
-  const badgeY = 32;
-  ctx.fillStyle = 'rgba(30,80,30,0.55)';
+  const cx = 32;
+  const cy = 32;
+  const badgeR = isPlayer ? 11 : 12;
+
+  if (isPlayer) {
+    ctx.strokeStyle = hexToRgba(color, 1);
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, badgeR + 4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, badgeR + 5.5, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = hexToRgba(color, isPlayer ? 0.72 : 0.62);
   ctx.beginPath();
-  ctx.arc(32, badgeY, badgeR, 0, Math.PI * 2);
+  ctx.arc(cx, cy, badgeR, 0, Math.PI * 2);
   ctx.fill();
+
   ctx.font = 'bold 16px Segoe UI, Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'rgba(255,255,255,0.88)';
-  ctx.fillText('👤', 32, badgeY + 1);
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.fillText('👤', cx, cy + 1);
 
-  const tex = new THREE.CanvasTexture(canvas);
+  tex = new THREE.CanvasTexture(canvas);
   tex.minFilter = THREE.LinearFilter;
   tex.colorSpace = THREE.SRGBColorSpace;
+  workerSpriteCache.set(key, tex);
+  return tex;
+}
+
+function makeWorkerIconSprite(ownerId: number, playerOwnerId: number): THREE.Sprite {
+  const tex = getWorkerIconTexture(ownerId, playerOwnerId);
   const mat = new THREE.SpriteMaterial({
     map: tex,
     transparent: true,
-    opacity: 0.82,
+    opacity: 0.9,
     depthTest: false,
     depthWrite: false,
     toneMapped: false,
@@ -55,22 +112,23 @@ function makeWorkerIconSprite(): THREE.Sprite {
   return sprite;
 }
 
-/** Buduje grupę ikon 👤 na heksach z przypisanymi robotnikami. */
+/** Buduje grupę ikon pracowników — hexKey → ownerId. */
 export function buildWorkerFieldOverlayGroup(
   map: GameMap,
-  workedKeys: Set<string>,
+  workedByOwner: Map<string, number>,
+  playerOwnerId: number,
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = 'worker-field-overlay';
 
-  for (const key of workedKeys) {
+  for (const [key, ownerId] of workedByOwner) {
     const hex = map.hexes[key];
     if (!hex) continue;
     const { q, r } = hex.coords;
     const t = hex.terenBazowy;
     if (t === TerenBazowy.Morze || t === TerenBazowy.Gory) continue;
 
-    const sprite = makeWorkerIconSprite();
+    const sprite = makeWorkerIconSprite(ownerId, playerOwnerId);
     const { x, z } = axialToWorld(q, r, HEX_R);
     sprite.position.set(x, hexTopY(map, q, r), z);
     group.add(sprite);
@@ -83,14 +141,15 @@ export function syncWorkerFieldOverlay(
   scene: THREE.Scene,
   current: THREE.Group | null,
   map: GameMap,
-  workedKeys: Set<string>,
+  workedByOwner: Map<string, number>,
+  playerOwnerId: number = 0,
 ): THREE.Group | null {
   if (current) {
     scene.remove(current);
     disposeWorkerFieldOverlayGroup(current);
   }
-  if (workedKeys.size === 0) return null;
-  const next = buildWorkerFieldOverlayGroup(map, workedKeys);
+  if (workedByOwner.size === 0) return null;
+  const next = buildWorkerFieldOverlayGroup(map, workedByOwner, playerOwnerId);
   scene.add(next);
   return next;
 }
@@ -101,8 +160,13 @@ export function disposeWorkerFieldOverlayGroup(group: THREE.Group | null): void 
     const sprite = obj as THREE.Sprite;
     if (!sprite.material) return;
     const mat = sprite.material as THREE.SpriteMaterial;
-    if (mat.map) mat.map.dispose();
     mat.dispose();
   });
   group.clear();
+}
+
+/** Czyści współdzielone tekstury ikon (np. przy zamykaniu sceny). */
+export function disposeWorkerFieldSpriteCache(): void {
+  for (const tex of workerSpriteCache.values()) tex.dispose();
+  workerSpriteCache.clear();
 }

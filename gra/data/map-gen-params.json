@@ -50,15 +50,15 @@
       "high": 0.38
     },
     "relief_land_fraction": {
-      "low": { "mountain": 0.03, "highland": 0.07 },
-      "medium": { "mountain": 0.06, "highland": 0.11 },
-      "high": { "mountain": 0.12, "highland": 0.18 }
+      "low": { "mountain": 0.045, "highland": 0.105 },
+      "medium": { "mountain": 0.09, "highland": 0.165 },
+      "high": { "mountain": 0.18, "highland": 0.27 }
     },
     "relief_overflow_cap_frac": {
-      "_opis": "Decyzja właściciela C-MAPA-Q2=B (2026-07-26): sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZROŚCIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland ≈ docelowa górzystość lądu per tier suwaka 'Relief' w kreatorze: low≈8%, medium≈10% (0,04+0,06 — dobrane tak, by odpowiadać progom fair-play-grid-test.cjs: max(3, ceil(land·mountain)) Gór i max(3, ceil(land·highland)) Wzgórz na komórkę 25×25/15×15), high≈20%. To ŚWIADOMA REWIZJA decyzji 80A (19,3% górzystości) — właściciel uprzedzony, że 10% < 13,8% odrzucone wcześniej, i mimo to wybrał ten wariant, bo priorytetem jest przejście fair-play-grid-test bez naginania progów testu.",
-      "low": { "mountain": 0.03, "highland": 0.05 },
-      "medium": { "mountain": 0.04, "highland": 0.06 },
-      "high": { "mountain": 0.08, "highland": 0.12 }
+      "_opis": "Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZROŚCIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland ≈ docelowa górzystość lądu per tier suwaka 'Relief': low≈12%, medium≈18% (0,06+0,09 — progi fair-play-grid-test.cjs: max(3, ceil(land·mountain)) Gór i max(3, ceil(land·highland)) Wzgórz na komórkę 25×25/15×15), high≈30%. Rewizja 2026-07-26: właściciel — więcej gór (~12%→~18% górzystości lądu na medium).",
+      "low": { "mountain": 0.045, "highland": 0.075 },
+      "medium": { "mountain": 0.06, "highland": 0.09 },
+      "high": { "mountain": 0.12, "highland": 0.18 }
     },
     "pasma_gorskie": {
       "_opis": "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska gór/wzgórz (seed-and-grow), spięte z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): dłuższe/węższe łańcuchy (kordyliery) zamiast okrągłych plam — dlugosc_min/max w górę, max_pasm_na_mase w dół (mniej ale dłuższych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",

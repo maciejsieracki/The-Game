@@ -48,6 +48,14 @@ import {
 
   tryDeductUnitSpawnCosts,
 
+  canAffordUnitManpower,
+
+  tryDeductUnitSpawnCostsEmpire,
+
+  canAffordUnitManpowerEmpire,
+
+  empireManpowerCurrent,
+
   tickManpowerRegen,
 
   manpowerRegenGain,
@@ -61,6 +69,10 @@ import {
   civManpowerMults,
 
   empirePoborTotals,
+
+  deductManpowerFromEmpire,
+
+  refundManpowerToEmpire,
 
 } from '../src/game/manpower';
 
@@ -88,6 +100,14 @@ module.exports = {
 
   tryDeductUnitSpawnCosts,
 
+  canAffordUnitManpower,
+
+  tryDeductUnitSpawnCostsEmpire,
+
+  canAffordUnitManpowerEmpire,
+
+  empireManpowerCurrent,
+
   tickManpowerRegen,
 
   manpowerRegenGain,
@@ -99,6 +119,10 @@ module.exports = {
   civManpowerMults,
 
   empirePoborTotals,
+
+  deductManpowerFromEmpire,
+
+  refundManpowerToEmpire,
 
 };
 
@@ -196,9 +220,9 @@ ok(!block.ok && block.reason === 'brak_manpower', 'blokada przy 50 MP');
 
 
 
-const okDed = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 10_000 }, 1);
+const okDed = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 10_000 }, 1, 1);
 
-ok(okDed.ok && okDed.manpower === 9_000 && okDed.population === 9, 'deduct pop+mp');
+ok(okDed.ok && okDed.manpower === 9_000 && okDed.population === 9, 'deduct pop+mp gdy popCost=1');
 
 
 
@@ -295,6 +319,31 @@ const scoutDed = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 50 }, 1,
 ok(scoutDed.ok && scoutDed.kosztManpower === 0 && scoutDed.manpower === 50, 'zwiadowca: brak MP nawet przy pustej puli');
 const scoutDed2 = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 10_000 }, 1, 0, 1, 'Zwiadowca');
 ok(scoutDed2.ok && scoutDed2.manpower === 10_000, 'zwiadowca: pula MP bez zmian po rekrutacji');
+
+// Werb imperium: suma pul miast, pobór z innego miasta gdy lokalna pula za mała
+const empCities = [
+  { id: 'a', ownerId: 0, population: 5, manpower: 200 },
+  { id: 'b', ownerId: 0, population: 5, manpower: 1200 },
+];
+ok(mp.empireManpowerCurrent(empCities, 0, 1) === 1400, 'empireManpowerCurrent suma');
+const athens = empCities[0];
+const sparta = empCities[1];
+ok(
+  mp.canAffordUnitManpowerEmpire(empCities, 0, athens, 1, 1, 1, 'Wojownik'),
+  'empire afford: Ateny z MP Sparty',
+);
+ok(
+  !mp.canAffordUnitManpower(athens, 1, 1, 'Wojownik'),
+  'per-city afford: Ateny same nie starcza',
+);
+const empDed = mp.tryDeductUnitSpawnCostsEmpire(empCities, 'a', 0, 1, 0, 1, 'Wojownik');
+ok(empDed.ok && empDed.kosztManpower === 1000, 'empire deduct ok');
+ok(athens.population === 5 && sparta.population === 5, 'werb: ludnosc miast bez zmian');
+ok(athens.manpower === 200 && sparta.manpower === 200, 'empire deduct: z puli cywilizacji (najpierz wieksza pula)');
+ok(mp.empireManpowerCurrent(empCities, 0, 1) === 400, 'empire po werbie: 400 MP');
+const beforeRefund = mp.empireManpowerCurrent(empCities, 0, 1);
+mp.refundManpowerToEmpire(empCities, 0, 1, 1000, 1);
+ok(mp.empireManpowerCurrent(empCities, 0, 1) === beforeRefund + 1000, 'zwrot MP do puli imperium');
 
 console.log(`[manpower-test] ${pass} OK, ${fail} FAIL`);
 

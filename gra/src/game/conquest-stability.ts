@@ -15,6 +15,8 @@ import {
   type SocietyParamsLike,
 } from './culture-religion';
 import type { Difficulty } from './order';
+import { sameCultureCircle } from './diplomacy-display';
+import { clearCityCultureMix } from './society-inputs';
 
 interface RawParamRow {
   easy: number;
@@ -45,13 +47,24 @@ export function isConquestUnstable(
   return isForeignCultureDominant(ownCultureShare) && foreignReligionDominant;
 }
 
-/** Po podboju: zachowaj mix presji (KULT-PRESJA-05) — nie zeruj. */
+export interface CityCaptureCultureOpts {
+  /** Np. civKeyForOwnerId z silnika — do sprawdzenia tego samego okręgu kulturowego. */
+  civKeyForOwner?: (ownerId: number) => string;
+}
+
+/** Po podboju: mix kultury (KULT-PRESJA-05) — ten sam okręg = pełna zgodność (100%). */
 export function onCityCapturedCulture(
   city: { ownCultureShare?: number; kulturaOwnShare?: number },
   newOwnerId?: number,
   previousOwnerId?: number,
+  opts?: CityCaptureCultureOpts,
 ): void {
   if (newOwnerId === undefined || previousOwnerId === undefined || newOwnerId === previousOwnerId) {
+    return;
+  }
+  const civKey = opts?.civKeyForOwner;
+  if (civKey && sameCultureCircle(civKey(newOwnerId), civKey(previousOwnerId))) {
+    clearCityCultureMix(city);
     return;
   }
   const prev = Math.max(0, Math.min(1, city.ownCultureShare ?? city.kulturaOwnShare ?? 1));

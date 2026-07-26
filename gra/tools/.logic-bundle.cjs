@@ -162,15 +162,15 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.03, highland: 0.07 },
-      medium: { mountain: 0.06, highland: 0.11 },
-      high: { mountain: 0.12, highland: 0.18 }
+      low: { mountain: 0.045, highland: 0.105 },
+      medium: { mountain: 0.09, highland: 0.165 },
+      high: { mountain: 0.18, highland: 0.27 }
     },
     relief_overflow_cap_frac: {
-      _opis: "Decyzja w\u0142a\u015Bciciela C-MAPA-Q2=B (2026-07-26): sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief' w kreatorze: low\u22488%, medium\u224810% (0,04+0,06 \u2014 dobrane tak, by odpowiada\u0107 progom fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224820%. To \u015AWIADOMA REWIZJA decyzji 80A (19,3% g\xF3rzysto\u015Bci) \u2014 w\u0142a\u015Bciciel uprzedzony, \u017Ce 10% < 13,8% odrzucone wcze\u015Bniej, i mimo to wybra\u0142 ten wariant, bo priorytetem jest przej\u015Bcie fair-play-grid-test bez naginania prog\xF3w testu.",
-      low: { mountain: 0.03, highland: 0.05 },
-      medium: { mountain: 0.04, highland: 0.06 },
-      high: { mountain: 0.08, highland: 0.12 }
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224818% (0,06+0,09 \u2014 progi fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224830%. Rewizja 2026-07-26: w\u0142a\u015Bciciel \u2014 wi\u0119cej g\xF3r (~12%\u2192~18% g\xF3rzysto\u015Bci l\u0105du na medium).",
+      low: { mountain: 0.045, highland: 0.075 },
+      medium: { mountain: 0.06, highland: 0.09 },
+      high: { mountain: 0.12, highland: 0.18 }
     },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
@@ -249,9 +249,9 @@ var FALLBACK_FOREST = { low: 0.65, medium: 0.58, high: 0.5 };
 var FALLBACK_MOUNTAIN = { low: 0.8, medium: 0.68, high: 0.52 };
 var FALLBACK_HIGHLAND = { low: 0.66, medium: 0.5, high: 0.38 };
 var FALLBACK_RELIEF_OVERFLOW_CAP = {
-  low: { mountain: 0.03, highland: 0.05 },
-  medium: { mountain: 0.04, highland: 0.06 },
-  high: { mountain: 0.08, highland: 0.12 }
+  low: { mountain: 0.045, highland: 0.075 },
+  medium: { mountain: 0.06, highland: 0.09 },
+  high: { mountain: 0.12, highland: 0.18 }
 };
 var FALLBACK_MOUNTAIN_RANGE = {
   low: { hexyNaPasmo: 320, maxPasmNaMase: 2, dlugoscMin: 9, dlugoscMax: 15, minMasaHexow: 40, obrzezeSzansa: 0.3 },
@@ -1663,9 +1663,9 @@ function reapplyLandTerrain(hexes, scratch, seed, thresholds, mapHeight, reliefT
   }
 }
 var FALLBACK_RELIEF_FRAC = {
-  low: { mountain: 0.03, highland: 0.07 },
-  medium: { mountain: 0.06, highland: 0.11 },
-  high: { mountain: 0.12, highland: 0.18 }
+  low: { mountain: 0.045, highland: 0.105 },
+  medium: { mountain: 0.09, highland: 0.165 },
+  high: { mountain: 0.18, highland: 0.27 }
 };
 function reliefLandFractions(tier) {
   return { ...FALLBACK_RELIEF_FRAC[tier] };
@@ -2134,6 +2134,9 @@ function forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand) {
   );
 }
 var RELIEF_OVERFLOW_CAP_MULT = 1;
+function isDepositProtectedFromOverflowCap(hex) {
+  return !!hex && !!hex.zloze;
+}
 function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
   const baseMaxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
   const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
@@ -2142,16 +2145,29 @@ function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
     return ((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "gory" /* Gory */;
   }).map(([q, r]) => {
     var _a9;
-    return { q, r, n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0 };
+    return {
+      q,
+      r,
+      n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0,
+      protected: isDepositProtectedFromOverflowCap(hexes[hexKey(q, r)])
+    };
   }).sort((a, b) => a.n - b.n);
   let changed = false;
-  while (mountains.length > maxMtn && mountains.length > MIN_MOUNTAINS_IRON_CELL) {
-    const drop = mountains.shift();
-    const dropHex = hexes[hexKey(drop.q, drop.r)];
+  let total = mountains.length;
+  let i = 0;
+  while (total > maxMtn && total > MIN_MOUNTAINS_IRON_CELL && i < mountains.length) {
+    const cand = mountains[i];
+    if (cand.protected) {
+      i++;
+      continue;
+    }
+    const dropHex = hexes[hexKey(cand.q, cand.r)];
     dropHex.terenBazowy = "wzgorza" /* Wzgorza */;
     dropHex.nakladka = "brak" /* Brak */;
     delete dropHex.zloze;
     changed = true;
+    total--;
+    mountains.splice(i, 1);
   }
   return changed;
 }
@@ -2163,16 +2179,29 @@ function capHighlandOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
     return ((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "wzgorza" /* Wzgorza */;
   }).map(([q, r]) => {
     var _a9;
-    return { q, r, n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0 };
+    return {
+      q,
+      r,
+      n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0,
+      protected: isDepositProtectedFromOverflowCap(hexes[hexKey(q, r)])
+    };
   }).sort((a, b) => a.n - b.n);
   let changed = false;
-  while (highlands.length > maxHi && highlands.length > MIN_HIGHLANDS_COPPER_CELL) {
-    const drop = highlands.shift();
-    const dropHex = hexes[hexKey(drop.q, drop.r)];
+  let total = highlands.length;
+  let i = 0;
+  while (total > maxHi && total > MIN_HIGHLANDS_COPPER_CELL && i < highlands.length) {
+    const cand = highlands[i];
+    if (cand.protected) {
+      i++;
+      continue;
+    }
+    const dropHex = hexes[hexKey(cand.q, cand.r)];
     dropHex.terenBazowy = "rownina" /* Rownina */;
     dropHex.nakladka = "brak" /* Brak */;
     delete dropHex.zloze;
     changed = true;
+    total--;
+    highlands.splice(i, 1);
   }
   return changed;
 }
@@ -2332,7 +2361,8 @@ function capMountainRangeClusterSize(hexes, scratch, terrain, fallbackTerrain, m
         if (na !== nb) return na - nb;
         return a < b ? -1 : a > b ? 1 : 0;
       });
-      const victim = sorted[0];
+      const victim = sorted.find((k) => !isDepositProtectedFromOverflowCap(hexes[k]));
+      if (!victim) break;
       remaining.delete(victim);
       const hex = hexes[victim];
       if (hex) {
@@ -6586,6 +6616,8 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
       nZones,
       rand
     );
+    ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+    stripDepositsFromWater(hexes);
   }
   return {
     szerokoscQ: width,
@@ -8549,7 +8581,7 @@ function computePlayerVisibility(opts) {
 }
 function unitsVisibleOnMap(units, visibleHexes, playerOwnerId = 0) {
   return units.filter((u) => {
-    if (u.inGarnizon === true) return false;
+    if (u.inGarnizon === true) return u.ownerId === playerOwnerId;
     return u.ownerId === playerOwnerId || visibleHexes.has(keyOf(u.q, u.r));
   });
 }
@@ -12736,7 +12768,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "Drewno w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    wymagania: "Dost\u0119p do Drewna w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
     techUnlock: "Obr\xF3bka drewna",
     koszt_surowce: {
@@ -12775,7 +12807,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "Kamie\u0144 w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    wymagania: "Dost\u0119p do Kamienia w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     uwagi: "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     techUnlock: "Murarstwo",
     koszt_surowce: {
@@ -12814,7 +12846,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Ruda (mied\u017A) w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    wymagania: "Dost\u0119p do Rudy (mied\u017A) w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%). Nazwa wyswietlana zmieniona z 'Kuznia' na 'Ku\u017Ania br\u0105zu' (Maciej 2026-07-25) -- identyfikator 'kuznia' BEZ ZMIAN (wsteczna zgodnosc zapisow). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Kuznia zelaza, nie sama z epoka. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc (kolejny tier w kolejnej epoce), obecnie martwe.",
     techUnlock: "Br\u0105zownictwo",
     koszt_surowce: {
@@ -13106,7 +13138,7 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 2,
     przyrostUtrzymania: 0,
-    wymagania: "Upgrade ze Spichlerza I + dost\u0119p do Soli w imperium (w\u0142asne z\u0142o\u017Ce ALBO zapas Soli w puli pa\u0144stwa)",
+    wymagania: "Upgrade ze Spichlerza I + dost\u0119p do Soli w imperium (aktywne \u017Ar\xF3d\u0142o \u2014 warzelnia na z\u0142o\u017Cu lub wybrze\u017Cu)",
     uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupe\u0142nione o bramk\u0119 Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     techUnlock: "Warzelnia soli",
     koszt_surowce: {
@@ -13146,7 +13178,7 @@ var buildings_default = [
     przyrostKosztu: 8,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "glina w zasiegu",
+    wymagania: "Dost\u0119p do Gliny w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas gliny w magazynie pa\u0144stwa); koszt drewna z magazynu pa\u0144stwa",
     uwagi: "ABC-6: glina+drewno\u2192ceramika (paliwo usuniete 2026-07-23). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
@@ -13185,7 +13217,7 @@ var buildings_default = [
     przyrostKosztu: 9,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "glina + drewno",
+    wymagania: "Dost\u0119p do Gliny w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas gliny w magazynie pa\u0144stwa); koszt drewna i kamienia z magazynu pa\u0144stwa",
     uwagi: "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
@@ -13767,7 +13799,7 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Ku\u017Ani br\u0105zu; zelazo w zasiegu",
+    wymagania: "Upgrade Ku\u017Ani br\u0105zu; dost\u0119p do \u017Belaza w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     wymaganySurowiec: "zelazo",
     uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia brazu/Wielka Kuznia, max +45%); wymaga dostepu do zelaza. NAPRAWIONE OGNIWO (decyzja Maciej 2026-07-25): dopisano upgradeFrom='kuznia' -- Ku\u017Ania \u017Celaza zast\u0119puje teraz Ku\u017Ani\u0119 br\u0105zu (jak Pa\u0142ac), zamiast sta\u0107 obok niej w mie\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Wielka Kuznia. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "Hutnictwo \u017Celaza",
@@ -13808,7 +13840,7 @@ var buildings_default = [
     przyrostKosztu: 18,
     utrzymanie: 4,
     przyrostUtrzymania: 2,
-    wymagania: "upgrade Ku\u017Ani \u017Celaza; stal w zasi\u0119gu",
+    wymagania: "Upgrade Ku\u017Ani \u017Celaza; dost\u0119p do Stali w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     wymaganySurowiec: "stal",
     uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze. LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce. Koszt surowcowy dodany wg SPEC-KOSZTY-SUROWCOWE-BUDYNKOW (epoka klasyczna, poza zasiegiem dzisiejszej gry o 3 epokach): drewno+cegla.",
     techUnlock: "Obr\xF3bka \u017Celaza",
@@ -14398,7 +14430,7 @@ var tech_default = {
     szybka: 1,
     standardowa: 2,
     dluga: 4,
-    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1); dawniejszy globalny x2 jest juz w JSON (B-RESEARCH-COST-MODEL 2026-07-24). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=24, szybka -> 24 PN; standardowa -> 48 PN; dluga -> 96 PN. Obr\xF3bka drewna/Murarstwo: 5/10/20 PN."
+    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Tier 1 epoki Kamienia (Maciej 2026-07-26): bazowo 5 PN \u2192 szybka 5 \xB7 standardowa 10 \xB7 dluga 20."
   },
   technologie: [
     {
@@ -14417,7 +14449,7 @@ var tech_default = {
     {
       Technologia: "Garncarstwo",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": "Dost\u0119p do glina",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -14430,7 +14462,7 @@ var tech_default = {
     {
       Technologia: "Murarstwo",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": "Dost\u0119p do kamie\u0144",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -14450,8 +14482,8 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Farma, Tarasy uprawne",
-      "Koszt nauki": 16,
-      Uwagi: "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie"
+      "Koszt nauki": 5,
+      Uwagi: "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie; tier-1 Kamie\u0144: 5/10/20 PN (szybka/std/dluga)"
     },
     {
       Technologia: "\u0141owiectwo",
@@ -14463,13 +14495,13 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Ob\xF3z \u0142owiecki",
-      "Koszt nauki": 20,
-      Uwagi: "B1-Q2A Maciej 2026-06-29"
+      "Koszt nauki": 5,
+      Uwagi: "B1-Q2A Maciej 2026-06-29; tier-1 Kamie\u0144: 5/10/20 PN (szybka/std/dluga)"
     },
     {
       Technologia: "\u0141ucznictwo",
       Epoka: "Kamie\u0144",
-      Poziom: 2,
+      Poziom: 3,
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u0141owiectwo",
@@ -14488,14 +14520,14 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "krowa/byk, owce, bydlo, lama",
       "Odblokowuje budynek": null,
-      "Koszt nauki": 24,
-      Uwagi: null,
+      "Koszt nauki": 5,
+      Uwagi: "tier-1 Kamie\u0144: 5/10/20 PN (szybka/std/dluga)",
       "Odblokowuje ulepszenie terenu": "Byd\u0142o, Owce, Lama"
     },
     {
       Technologia: "Mistycyzm",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -14534,7 +14566,7 @@ var tech_default = {
     {
       Technologia: "Ko\u0142o",
       Epoka: "Kamie\u0144",
-      Poziom: 2,
+      Poziom: 3,
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Oswojenie zwierz\u0105t",
@@ -19312,7 +19344,7 @@ var diplomacy_default = {
     progPoboczneWojna: 15,
     progNapZaufanie: 40,
     progNapRelacja: 50,
-    progHandelRelacja: 40,
+    progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
     progSojuszPartnerRwMax: 0.7,
     progSojuszPremiaSilniejszyMax: 0.25,

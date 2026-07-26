@@ -371,8 +371,8 @@ export function accumulateCulture(
  *   share == 1.0  -> zadowolenie100   (full unity)
  *   share >= 0.75 -> zadowolenie75
  *   share >= 0.50 -> zadowolenie50    (neutral)
- *   share <  0.50 -> karaLt50         (foreign culture dominates; penalty)
- *   share <  0.25 -> karaLt25         (heavy foreign dominance; bigger penalty)
+ *   share <  0.50 -> karaLt50         (niski udział kultury właściciela — typowo po podboju)
+ *   share <  0.25 -> karaLt25         (bardzo niski udział — większa kara)
  *
  * Returns a small signed bonus (positive = happier, negative = unrest). Pure,
  * deterministic, NaN-safe (share clamped to [0,1]; default share = 1).
@@ -696,6 +696,21 @@ export function countReligionAdherents(state: ReligionState, religion: string | 
   if (!religion) return 0;
   const v = state.counts[religion];
   return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0;
+}
+
+/** Skład wyznawców w mieście (nazwa religii + % udziału) — do panelu miasta. */
+export function religionCompositionBreakdown(
+  state: ReligionState,
+): { name: string; pct: number; count: number }[] {
+  const total = totalAdherents(state);
+  if (total <= 0) return [];
+  const rows: { name: string; pct: number; count: number }[] = [];
+  for (const name of Object.keys(state.counts).sort()) {
+    const count = countReligionAdherents(state, name);
+    if (count <= 0) continue;
+    rows.push({ name, count, pct: Math.round((count / total) * 100) });
+  }
+  return rows;
 }
 
 /** Brak wpisu w save / pusty counts — T0 przed pierwszą turą ekonomii. */
@@ -1173,6 +1188,7 @@ export interface PressureCity {
   population: number;
   kulturaSkumulowana?: number;
   ownCultureShare?: number;
+  kulturaOwnShare?: number;
   religionPressurePct?: Record<number, number>;
 }
 
@@ -1267,7 +1283,11 @@ export function applyCultureReligionPressureToTarget(
   ratePct: number,
   stateReligionByOwner: ReadonlyMap<number, string | null>,
 ): PressureTickResult {
-  let share = clamp(finiteOr(target.ownCultureShare ?? 1, 1), 0, 1);
+  const cultureMixActive =
+    typeof target.ownCultureShare === 'number' || typeof target.kulturaOwnShare === 'number';
+  let share = cultureMixActive
+    ? clamp(finiteOr(target.ownCultureShare ?? target.kulturaOwnShare ?? 0, 0), 0, 1)
+    : 1;
   const relPct: Record<number, number> = { ...(target.religionPressurePct ?? {}) };
   const rate = Math.max(0, ratePct) / 100;
   const oT = target.ownerId;
@@ -1282,10 +1302,11 @@ export function applyCultureReligionPressureToTarget(
     const oS = src.ownerId;
     const cultS = empireCultureTotal(cities, oS);
     const cultT = empireCultureTotal(cities, oT);
+    if (!cultureMixActive) continue;
     if (cultS > cultT) {
       share = clamp(share - rate, 0, 1);
     } else if (cultT > cultS) {
-      share = clamp(share - rate, 0, 1);
+      share = clamp(share + rate, 0, 1);
     }
 
     const relS = empireReligionTotal(

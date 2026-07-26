@@ -472,3 +472,25 @@ export function collectWorkedHexKeysForOwner(
   }
   return keys;
 }
+
+/** Wszystkie heksy z robotnikiem — hexKey → ownerId miasta (wszystkie cywilizacje na mapie). */
+export function collectWorkedHexOwnerMap(
+  cities: Array<Pick<City, 'q' | 'r' | 'population' | 'okolicaFocus' | 'okolicaTryb' | 'okolicaReczne' | 'ownerId'>>,
+  map: GameMap,
+  opts: {
+    isWorkable?: (q: number, r: number) => boolean;
+    territoryNodes?: readonly TerritoryNode[];
+  } = {},
+): Map<string, number> {
+  const byKey = new Map<string, number>();
+  const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r);
+  for (const city of cities) {
+    const worked = resolveWorkedTiles(city, map, yieldOf, {
+      isWorkable: opts.isWorkable,
+      territoryNodes: opts.territoryNodes,
+      ownerId: city.ownerId,
+    });
+    for (const t of worked) byKey.set(t.key, city.ownerId);
+  }
+  return byKey;
+}

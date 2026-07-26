@@ -778,3 +778,21 @@ export function upkeepBalance(
     deficyt: saldo < 0,
   };
 }
+
+/**
+ * Suma utrzymania budynków jednego miasta (Spec s.6.1 — per-building z buildings.json).
+ */
+export function buildingUpkeepForBuiltIds(
+  builtIds: readonly string[],
+  buildingCatalog: readonly BuildingRecord[],
+  levelFor: (bdef: BuildingRecord) => number,
+  flatOverride?: number,
+): number {
+  const instances: BuildingInstanceLike[] = [];
+  for (const bid of builtIds) {
+    const bdef = buildingCatalog.find(b => b.id === bid);
+    if (!bdef) continue;
+    instances.push({ record: bdef, level: levelFor(bdef) });
+  }
+  return totalBuildingUpkeep(instances, flatOverride);
+}

@@ -928,9 +928,9 @@ export function reapplyLandTerrain(
 export type ReliefDensityTier = 'low' | 'medium' | 'high';
 
 const FALLBACK_RELIEF_FRAC: Record<ReliefDensityTier, { mountain: number; highland: number }> = {
-  low: { mountain: 0.03, highland: 0.07 },
-  medium: { mountain: 0.06, highland: 0.11 },
-  high: { mountain: 0.12, highland: 0.18 },
+  low: { mountain: 0.045, highland: 0.105 },
+  medium: { mountain: 0.09, highland: 0.165 },
+  high: { mountain: 0.18, highland: 0.27 },
 };
 
 /** Docelowy udział gór/wzgórz na lądzie (gwarantowany ranking szumu). */
@@ -1279,7 +1279,7 @@ function reliefBonusCapHighland(tier: ReliefDensityTier, landCount: number): num
  * Anty-klaster w komórce żelaza (fair play — rozkład, nie jeden stos wzgórz).
  * Frakcja czytana z Panel-A (`gestosc.relief_overflow_cap_frac`, C-MAPA-Q2=B) — patrz
  * mapGenReliefOverflowCapFrac. To TEN SAM sufit, który (po włączeniu przez
- * RELIEF_OVERFLOW_CAP_MULT) egzekwuje docelową górzystość ~10% dla tieru medium.
+ * RELIEF_OVERFLOW_CAP_MULT) egzekwuje docelową górzystość ~18% dla tieru medium.
  */
 function reliefSpreadCapMountain(tier: ReliefDensityTier, landCount: number): number {
   const frac = mapGenReliefOverflowCapFrac(tier).mountain;

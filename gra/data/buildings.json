@@ -42,7 +42,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
-    "wymagania": "Drewno w zasięgu imperium (aktywne źródło lub zapas w puli państwa)",
+    "wymagania": "Dostęp do Drewna w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "uwagi": "B-SUROW-BUD-03: bonus Pracy only — bez konwertera desek",
     "techUnlock": "Obróbka drewna",
     "koszt_surowce": {
@@ -81,7 +81,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
-    "wymagania": "Kamień w zasięgu imperium (aktywne źródło lub zapas w puli państwa)",
+    "wymagania": "Dostęp do Kamienia w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "uwagi": "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
@@ -120,7 +120,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "Ruda (miedź) w zasięgu imperium (aktywne źródło lub zapas w puli państwa)",
+    "wymagania": "Dostęp do Rudy (miedź) w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%). Nazwa wyswietlana zmieniona z 'Kuznia' na 'Kuźnia brązu' (Maciej 2026-07-25) -- identyfikator 'kuznia' BEZ ZMIAN (wsteczna zgodnosc zapisow). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Kuznia zelaza, nie sama z epoka. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc (kolejny tier w kolejnej epoce), obecnie martwe.",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
@@ -412,7 +412,7 @@
     "przyrostKosztu": 12,
     "utrzymanie": 2,
     "przyrostUtrzymania": 0,
-    "wymagania": "Upgrade ze Spichlerza I + dostęp do Soli w imperium (własne złoże ALBO zapas Soli w puli państwa)",
+    "wymagania": "Upgrade ze Spichlerza I + dostęp do Soli w imperium (aktywne źródło — warzelnia na złożu lub wybrzeżu)",
     "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     "techUnlock": "Warzelnia soli",
     "koszt_surowce": {
@@ -452,7 +452,7 @@
     "przyrostKosztu": 8,
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
-    "wymagania": "glina w zasiegu",
+    "wymagania": "Dostęp do Gliny w imperium (aktywne źródło lub zapas gliny w magazynie państwa); koszt drewna z magazynu państwa",
     "uwagi": "ABC-6: glina+drewno→ceramika (paliwo usuniete 2026-07-23). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
@@ -491,7 +491,7 @@
     "przyrostKosztu": 9,
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
-    "wymagania": "glina + drewno",
+    "wymagania": "Dostęp do Gliny w imperium (aktywne źródło lub zapas gliny w magazynie państwa); koszt drewna i kamienia z magazynu państwa",
     "uwagi": "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
@@ -1073,7 +1073,7 @@
     "przyrostKosztu": 15,
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
-    "wymagania": "upgrade Kuźni brązu; zelazo w zasiegu",
+    "wymagania": "Upgrade Kuźni brązu; dostęp do Żelaza w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "wymaganySurowiec": "zelazo",
     "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia brazu/Wielka Kuznia, max +45%); wymaga dostepu do zelaza. NAPRAWIONE OGNIWO (decyzja Maciej 2026-07-25): dopisano upgradeFrom='kuznia' -- Kuźnia żelaza zastępuje teraz Kuźnię brązu (jak Pałac), zamiast stać obok niej w mieście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Wielka Kuznia. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "Hutnictwo żelaza",
@@ -1114,7 +1114,7 @@
     "przyrostKosztu": 18,
     "utrzymanie": 4,
     "przyrostUtrzymania": 2,
-    "wymagania": "upgrade Kuźni żelaza; stal w zasięgu",
+    "wymagania": "Upgrade Kuźni żelaza; dostęp do Stali w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "wymaganySurowiec": "stal",
     "uwagi": "Upgrade Kuźnia żelaza → Wielka Kuźnia. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze. LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce. Koszt surowcowy dodany wg SPEC-KOSZTY-SUROWCOWE-BUDYNKOW (epoka klasyczna, poza zasiegiem dzisiejszej gry o 3 epokach): drewno+cegla.",
     "techUnlock": "Obróbka żelaza",

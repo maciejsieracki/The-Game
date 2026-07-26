@@ -80,7 +80,7 @@ var diplomacy_default = {
     progPoboczneWojna: 15,
     progNapZaufanie: 40,
     progNapRelacja: 50,
-    progHandelRelacja: 40,
+    progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
     progSojuszPartnerRwMax: 0.7,
     progSojuszPremiaSilniejszyMax: 0.25,
@@ -4182,8 +4182,8 @@ var DIPLOMACY_PARAMS = {
   progNapZaufanie: 40,
   /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
   progNapRelacja: 50,
-  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża (Maciej 2026-07-21: 40 @ normal) */
-  progHandelRelacja: 40,
+  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
+  progHandelRelacja: 0,
   /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
   progSojuszPartnerRwMin: 0.4,
   progSojuszPartnerRwMax: 0.7,
@@ -4374,7 +4374,6 @@ var DIPLO_RELATION_THRESHOLD_KEYS = [
   "progSojuszRelacja",
   "progUmowaMinRelacja",
   "progNapRelacja",
-  "progHandelRelacja",
   "progGraniceRelacja",
   "progPoboczneHandel",
   "progPoboczneWojna"
@@ -4644,7 +4643,7 @@ var tech_default = {
     szybka: 1,
     standardowa: 2,
     dluga: 4,
-    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1); dawniejszy globalny x2 jest juz w JSON (B-RESEARCH-COST-MODEL 2026-07-24). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=24, szybka -> 24 PN; standardowa -> 48 PN; dluga -> 96 PN. Obr\xF3bka drewna/Murarstwo: 5/10/20 PN."
+    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Tier 1 epoki Kamienia (Maciej 2026-07-26): bazowo 5 PN \u2192 szybka 5 \xB7 standardowa 10 \xB7 dluga 20."
   },
   technologie: [
     {
@@ -4663,7 +4662,7 @@ var tech_default = {
     {
       Technologia: "Garncarstwo",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": "Dost\u0119p do glina",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -4676,7 +4675,7 @@ var tech_default = {
     {
       Technologia: "Murarstwo",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": "Dost\u0119p do kamie\u0144",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -4696,8 +4695,8 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Farma, Tarasy uprawne",
-      "Koszt nauki": 16,
-      Uwagi: "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie"
+      "Koszt nauki": 5,
+      Uwagi: "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie; tier-1 Kamie\u0144: 5/10/20 PN (szybka/std/dluga)"
     },
     {
       Technologia: "\u0141owiectwo",
@@ -4709,13 +4708,13 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Ob\xF3z \u0142owiecki",
-      "Koszt nauki": 20,
-      Uwagi: "B1-Q2A Maciej 2026-06-29"
+      "Koszt nauki": 5,
+      Uwagi: "B1-Q2A Maciej 2026-06-29; tier-1 Kamie\u0144: 5/10/20 PN (szybka/std/dluga)"
     },
     {
       Technologia: "\u0141ucznictwo",
       Epoka: "Kamie\u0144",
-      Poziom: 2,
+      Poziom: 3,
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u0141owiectwo",
@@ -4734,14 +4733,14 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "krowa/byk, owce, bydlo, lama",
       "Odblokowuje budynek": null,
-      "Koszt nauki": 24,
-      Uwagi: null,
+      "Koszt nauki": 5,
+      Uwagi: "tier-1 Kamie\u0144: 5/10/20 PN (szybka/std/dluga)",
       "Odblokowuje ulepszenie terenu": "Byd\u0142o, Owce, Lama"
     },
     {
       Technologia: "Mistycyzm",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -4780,7 +4779,7 @@ var tech_default = {
     {
       Technologia: "Ko\u0142o",
       Epoka: "Kamie\u0144",
-      Poziom: 2,
+      Poziom: 3,
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Oswojenie zwierz\u0105t",
@@ -9251,7 +9250,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "Drewno w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    wymagania: "Dost\u0119p do Drewna w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
     techUnlock: "Obr\xF3bka drewna",
     koszt_surowce: {
@@ -9290,7 +9289,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "Kamie\u0144 w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    wymagania: "Dost\u0119p do Kamienia w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     uwagi: "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     techUnlock: "Murarstwo",
     koszt_surowce: {
@@ -9329,7 +9328,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Ruda (mied\u017A) w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    wymagania: "Dost\u0119p do Rudy (mied\u017A) w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%). Nazwa wyswietlana zmieniona z 'Kuznia' na 'Ku\u017Ania br\u0105zu' (Maciej 2026-07-25) -- identyfikator 'kuznia' BEZ ZMIAN (wsteczna zgodnosc zapisow). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Kuznia zelaza, nie sama z epoka. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc (kolejny tier w kolejnej epoce), obecnie martwe.",
     techUnlock: "Br\u0105zownictwo",
     koszt_surowce: {
@@ -9621,7 +9620,7 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 2,
     przyrostUtrzymania: 0,
-    wymagania: "Upgrade ze Spichlerza I + dost\u0119p do Soli w imperium (w\u0142asne z\u0142o\u017Ce ALBO zapas Soli w puli pa\u0144stwa)",
+    wymagania: "Upgrade ze Spichlerza I + dost\u0119p do Soli w imperium (aktywne \u017Ar\xF3d\u0142o \u2014 warzelnia na z\u0142o\u017Cu lub wybrze\u017Cu)",
     uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupe\u0142nione o bramk\u0119 Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     techUnlock: "Warzelnia soli",
     koszt_surowce: {
@@ -9661,7 +9660,7 @@ var buildings_default = [
     przyrostKosztu: 8,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "glina w zasiegu",
+    wymagania: "Dost\u0119p do Gliny w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas gliny w magazynie pa\u0144stwa); koszt drewna z magazynu pa\u0144stwa",
     uwagi: "ABC-6: glina+drewno\u2192ceramika (paliwo usuniete 2026-07-23). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
@@ -9700,7 +9699,7 @@ var buildings_default = [
     przyrostKosztu: 9,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "glina + drewno",
+    wymagania: "Dost\u0119p do Gliny w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas gliny w magazynie pa\u0144stwa); koszt drewna i kamienia z magazynu pa\u0144stwa",
     uwagi: "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
@@ -10282,7 +10281,7 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Ku\u017Ani br\u0105zu; zelazo w zasiegu",
+    wymagania: "Upgrade Ku\u017Ani br\u0105zu; dost\u0119p do \u017Belaza w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     wymaganySurowiec: "zelazo",
     uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia brazu/Wielka Kuznia, max +45%); wymaga dostepu do zelaza. NAPRAWIONE OGNIWO (decyzja Maciej 2026-07-25): dopisano upgradeFrom='kuznia' -- Ku\u017Ania \u017Celaza zast\u0119puje teraz Ku\u017Ani\u0119 br\u0105zu (jak Pa\u0142ac), zamiast sta\u0107 obok niej w mie\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Wielka Kuznia. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "Hutnictwo \u017Celaza",
@@ -10323,7 +10322,7 @@ var buildings_default = [
     przyrostKosztu: 18,
     utrzymanie: 4,
     przyrostUtrzymania: 2,
-    wymagania: "upgrade Ku\u017Ani \u017Celaza; stal w zasi\u0119gu",
+    wymagania: "Upgrade Ku\u017Ani \u017Celaza; dost\u0119p do Stali w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     wymaganySurowiec: "stal",
     uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze. LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce. Koszt surowcowy dodany wg SPEC-KOSZTY-SUROWCOWE-BUDYNKOW (epoka klasyczna, poza zasiegiem dzisiejszej gry o 3 epokach): drewno+cegla.",
     techUnlock: "Obr\xF3bka \u017Celaza",
@@ -11599,7 +11598,9 @@ var HANDEL_SUROWCE_CENA_ROW = {
   kamien: "cena_kamien",
   glina: "cena_glina",
   cegla: "cena_cegla",
-  ruda: "cena_ruda"
+  ruda: "cena_ruda",
+  /** Ruda żelaza — osobny klucz magazynu (City.surowce.ruda_zelaza); cena placeholder jak ruda. */
+  ruda_zelaza: "cena_ruda"
 };
 var DEFAULT_HANDEL_SUROWCE_PAKIET = 10;
 function readHandelSurowceParam(rowKey, fallback) {
@@ -12221,6 +12222,8 @@ function formatAiDiplomacyPlayerMessage(cmd) {
       return cmd.sweetenerGold ? `Proponujemy sta\u0142\u0105 umow\u0119 handlow\u0105 (szlaki handlowe) \u2014 w ge\u015Bcie dobrej woli dok\u0142adamy ${cmd.sweetenerGold} \xA4.` : "Proponujemy sta\u0142\u0105 umow\u0119 handlow\u0105 \u2014 otwiera i utrzymuje szlaki handlowe mi\u0119dzy naszymi miastami.";
     case "zaproponuj_sojusz":
       return "Proponujemy pe\u0142ny sojusz \u2014 wsp\xF3lna obrona i wsparcie militarnie.";
+    case "zaproponuj_pakt":
+      return `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur \u2014 \u017Cadna strona nie zaatakuje drugiej.`;
     case "zaproponuj_pokoj":
       return "Proponujemy zawarcie pokoju i zako\u0144czenie wojny.";
     case "zadaj_trybut":
@@ -12231,6 +12234,9 @@ function formatAiDiplomacyPlayerMessage(cmd) {
       return "Wypowiadamy wojn\u0119 \u2014 nasze wojska s\u0105 gotowe do walki.";
     case "zaproponuj_handel_surowiec": {
       const zaplataLabel = cmd.zaplataTyp === "praca" ? "Praca" : "\xA4";
+      if (cmd.kierunek === "zakup") {
+        return `Kupi\u0119 od ciebie ${cmd.label} \u2014 ${cmd.pakietyPerTura} pakiet(y)/tur\u0119 za ${cmd.zaplataPerTura} ${zaplataLabel}/tur\u0119 przez ${cmd.turns} tur.`;
+      }
       return `Mamy nadwy\u017Ck\u0119 surowca ${cmd.label} \u2014 oferujemy ${cmd.pakietyPerTura} pakiet(y)/tur\u0119 za ${cmd.zaplataPerTura} ${zaplataLabel}/tur\u0119 przez ${cmd.turns} tur.`;
     }
     default:
@@ -12253,6 +12259,13 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
         id: makeDealId("pending-sojusz", turn, fromOwnerId, toOwnerId),
         actionId: "sojusz_pelny",
         payload: {}
+      };
+    case "zaproponuj_pakt":
+      return {
+        ...base,
+        id: makeDealId("pending-nap", turn, fromOwnerId, toOwnerId),
+        actionId: "nap",
+        payload: { turns: cmd.turns ?? 15 }
       };
     case "zaproponuj_handel": {
       const goldOnce = cmd.goldOnce ?? 0;
@@ -12291,11 +12304,17 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
     }
     case "zaproponuj_handel_surowiec": {
       if (cmd.pakietyPerTura <= 0) return null;
+      const isBuy = cmd.kierunek === "zakup";
       return {
         ...base,
         id: makeDealId("pending-handelsurowiec", turn, fromOwnerId, toOwnerId),
         actionId: "handel",
-        payload: {
+        payload: isBuy ? {
+          giveItems: cmd.zaplataPerTura > 0 ? [{ typ: cmd.zaplataTyp, id: cmd.zaplataTyp, ilosc: cmd.zaplataPerTura }] : void 0,
+          receiveItems: [{ typ: "surowiec_ilosc", id: cmd.surowiecKey, ilosc: cmd.pakietyPerTura }],
+          resourceTradeMode: "per_turn",
+          turns: cmd.turns
+        } : {
           giveItems: [{ typ: "surowiec_ilosc", id: cmd.surowiecKey, ilosc: cmd.pakietyPerTura }],
           receiveItems: cmd.zaplataPerTura > 0 ? [{ typ: cmd.zaplataTyp, id: cmd.zaplataTyp, ilosc: cmd.zaplataPerTura }] : void 0,
           resourceTradeMode: "per_turn",
@@ -19519,15 +19538,15 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.03, highland: 0.07 },
-      medium: { mountain: 0.06, highland: 0.11 },
-      high: { mountain: 0.12, highland: 0.18 }
+      low: { mountain: 0.045, highland: 0.105 },
+      medium: { mountain: 0.09, highland: 0.165 },
+      high: { mountain: 0.18, highland: 0.27 }
     },
     relief_overflow_cap_frac: {
-      _opis: "Decyzja w\u0142a\u015Bciciela C-MAPA-Q2=B (2026-07-26): sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief' w kreatorze: low\u22488%, medium\u224810% (0,04+0,06 \u2014 dobrane tak, by odpowiada\u0107 progom fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224820%. To \u015AWIADOMA REWIZJA decyzji 80A (19,3% g\xF3rzysto\u015Bci) \u2014 w\u0142a\u015Bciciel uprzedzony, \u017Ce 10% < 13,8% odrzucone wcze\u015Bniej, i mimo to wybra\u0142 ten wariant, bo priorytetem jest przej\u015Bcie fair-play-grid-test bez naginania prog\xF3w testu.",
-      low: { mountain: 0.03, highland: 0.05 },
-      medium: { mountain: 0.04, highland: 0.06 },
-      high: { mountain: 0.08, highland: 0.12 }
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224818% (0,06+0,09 \u2014 progi fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224830%. Rewizja 2026-07-26: w\u0142a\u015Bciciel \u2014 wi\u0119cej g\xF3r (~12%\u2192~18% g\xF3rzysto\u015Bci l\u0105du na medium).",
+      low: { mountain: 0.045, highland: 0.075 },
+      medium: { mountain: 0.06, highland: 0.09 },
+      high: { mountain: 0.12, highland: 0.18 }
     },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
@@ -20073,12 +20092,69 @@ function loadDefaultAIDiplomacyProgs(difficulty = "normal") {
     progHandelRelacjaMin: dip.progHandelRelacja
   };
 }
+function resolveDiplomacyCivBias(agresja, sklonnoscDoPodboju = 2, agresywnoscRaw, tolerancjaRyzyka) {
+  const pod = sklonnoscDoPodboju;
+  const risk = tolerancjaRyzyka ?? 5;
+  const peaceful = agresywnoscRaw != null ? agresywnoscRaw <= 3 && pod <= 2 : false;
+  const aggressive = agresywnoscRaw != null ? agresywnoscRaw >= 7 || pod >= 4 : pod >= 4;
+  const neutral = {
+    peaceful: false,
+    aggressive: false,
+    warSilaBonus: 0,
+    warAgresjaBonus: 0,
+    tradeScoreEase: 0,
+    allyThresholdEase: 0,
+    napScoreEase: 0,
+    skipTributeDemand: false,
+    proposeNap: false,
+    tributeRespektEase: 0,
+    tributeAgresjaFactor: 0.5
+  };
+  if (peaceful) {
+    return {
+      peaceful: true,
+      aggressive: false,
+      warSilaBonus: 0.08,
+      warAgresjaBonus: 0.1,
+      tradeScoreEase: 15,
+      allyThresholdEase: 0.1,
+      napScoreEase: 12,
+      skipTributeDemand: true,
+      proposeNap: true,
+      tributeRespektEase: 0,
+      tributeAgresjaFactor: 0.5
+    };
+  }
+  if (aggressive) {
+    const riskWar = risk >= 7 ? 0.04 : 0;
+    return {
+      peaceful: false,
+      aggressive: true,
+      warSilaBonus: -(0.06 + riskWar),
+      warAgresjaBonus: -(0.08 + riskWar * 0.5),
+      tradeScoreEase: -10,
+      allyThresholdEase: -0.08,
+      napScoreEase: 0,
+      skipTributeDemand: false,
+      proposeNap: false,
+      tributeRespektEase: 10,
+      tributeAgresjaFactor: 0.35
+    };
+  }
+  return neutral;
+}
 function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc = 1, difficulty = "normal") {
   if (!inp?.relacje?.length) return [];
   const p = {
     ...loadDefaultAIDiplomacyProgs(difficulty),
     ...params
   };
+  const bias = resolveDiplomacyCivBias(
+    inp.agresja,
+    inp.sklonnoscDoPodboju ?? 2,
+    inp.agresywnoscRaw,
+    inp.tolerancjaRyzyka
+  );
   const komendy = [];
   for (const rel of inp.relacje) {
     const rw = rel.respektWzgledny;
@@ -20092,12 +20168,23 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
       turnsAtWar: rel.stanWojny ? 5 : 0
       // heurystyka – wystarczy do oceny peaceW
     };
-    const stubAIPlayer = { typCywilizacji: "grecy" };
-    const stubOtherPlayer = { typCywilizacji: "rzym" };
+    const aiTyp = inp.myTypCywilizacji ?? "grecy";
+    const partnerTyp = rel.partnerTypCywilizacji ?? "rzymianie";
+    const stubAIPlayer = { typCywilizacji: aiTyp };
+    const stubOtherPlayer = { typCywilizacji: partnerTyp };
     const stance = aiDiplomacyStance(stubAIPlayer, stubOtherPlayer, rel.relation, ctx);
     const score = relationScore(rel.relation);
     const { progMinimalnyRelacja } = getEffectiveDiplomacyParams(difficulty);
     const effAgresja = Math.min(1, inp.agresja * agresjaMnoznik);
+    const podbojBoost = (inp.sklonnoscDoPodboju ?? 2) >= 4 ? 0.12 : 0;
+    const effProgWojnaSila = Math.max(
+      0.3,
+      p.progWojnaSila - podbojBoost + bias.warSilaBonus
+    );
+    const effProgWojnaAgresja = Math.max(
+      0.15,
+      p.progWojnaAgresja - podbojBoost * 0.5 + bias.warAgresjaBonus
+    );
     if (rel.stanWojny && rw <= p.progTrybutKrytyczny) {
       const peaceGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRIBUTE_PEACE_MAX);
       if (peaceGold > 0) {
@@ -20118,17 +20205,54 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
       });
       continue;
     }
-    const dipTrybut = getEffectiveDiplomacyParams(difficulty);
-    const proposerRespektPct = Math.round(100 * rw);
-    if (!rel.stanWojny && proposerRespektPct > dipTrybut.progTrybutZadanieMinRespekt && effAgresja >= p.progWojnaAgresja * 0.5 && effAgresja < p.progTrybutAgresjaMax) {
+    const currentTurnForTrade = inp.currentTurn ?? 0;
+    const tradeRelMin = Math.max(0, p.progHandelRelacjaMin - bias.tradeScoreEase);
+    const resOffer = rel.resourceTradeOffer;
+    const isDeficitTrade = resOffer?.kierunek === "zakup" || resOffer?.powod === "deficyt";
+    const tradeScoreForRes = tradeRelMin;
+    const canAffordBuy = !isDeficitTrade || resOffer?.zaplataTyp !== "zloto" || (inp.skarbiecGold ?? 0) >= (resOffer?.zaplataPerTura ?? 0);
+    if (!rel.stanWojny && resOffer != null && !rel.hasActiveResourceTradeDeal && canAffordBuy && score >= tradeScoreForRes && canAiProposeResourceTrade(currentTurnForTrade, rel.lastResourceTradeProposalTurn)) {
+      const zaplataLabel = resOffer.zaplataTyp === "praca" ? "Praca" : "\xA4";
+      const verb = resOffer.kierunek === "zakup" ? `Kupi\u0119 od ciebie ${resOffer.label}` : `Nadwy\u017Cka ${resOffer.label} \u2014 oferujemy sprzeda\u017C`;
       komendy.push({
-        type: "zadaj_trybut",
+        type: "zaproponuj_handel_surowiec",
         targetId: rel.partnerId,
-        powod: `Respekt ${proposerRespektPct} > ${dipTrybut.progTrybutZadanieMinRespekt}, srednia agresja (effAgresja=${effAgresja.toFixed(2)} < 0.75): zadamy trybut zamiast wojny`
+        powod: `${verb}: ${resOffer.pakietyPerTura} pakiet(y)/tur\u0119 za ${resOffer.zaplataPerTura} ${zaplataLabel}/tur\u0119 przez ${resOffer.turns} tur` + (isDeficitTrade ? " (deficyt surowca)" : ""),
+        surowiecKey: resOffer.surowiecKey,
+        label: resOffer.label,
+        pakietyPerTura: resOffer.pakietyPerTura,
+        zaplataTyp: resOffer.zaplataTyp,
+        zaplataPerTura: resOffer.zaplataPerTura,
+        turns: resOffer.turns,
+        kierunek: resOffer.kierunek,
+        powodHandlu: resOffer.powod
       });
       continue;
     }
-    if (!rel.stanWojny && stance.willingnessWar > 0 && rw >= p.progWojnaSila && effAgresja >= p.progWojnaAgresja && score < progMinimalnyRelacja) {
+    const dipTrybut = getEffectiveDiplomacyParams(difficulty);
+    const proposerRespektPct = Math.round(100 * rw);
+    const tributeRespektMin = dipTrybut.progTrybutZadanieMinRespekt - bias.tributeRespektEase;
+    const tributeAgresjaMin = p.progWojnaAgresja * bias.tributeAgresjaFactor;
+    const tributeAgresjaMax = bias.aggressive ? 0.95 : p.progTrybutAgresjaMax;
+    if (!rel.stanWojny && !bias.skipTributeDemand && proposerRespektPct > tributeRespektMin && (!bias.aggressive || rw >= p.progTrybut) && effAgresja >= tributeAgresjaMin && effAgresja < tributeAgresjaMax) {
+      komendy.push({
+        type: "zadaj_trybut",
+        targetId: rel.partnerId,
+        powod: `Respekt ${proposerRespektPct} > ${tributeRespektMin}, agresja profilu (effAgresja=${effAgresja.toFixed(2)}): zadamy trybut zamiast wojny`
+      });
+      continue;
+    }
+    const dipP = getEffectiveDiplomacyParams(difficulty);
+    if (!rel.stanWojny && inp.fullDiplomacyLayer !== false && bias.proposeNap && !rel.hasNapTreaty && score >= dipP.progNapRelacja - bias.napScoreEase && rel.relation.zaufanie >= dipP.progNapZaufanie - (bias.peaceful ? 5 : 0)) {
+      komendy.push({
+        type: "zaproponuj_pakt",
+        targetId: rel.partnerId,
+        powod: `Profil pokojowy (Relacja=${score} >= progNap=${dipP.progNapRelacja - bias.napScoreEase}): proponujemy pakt nieagresji`,
+        turns: 15
+      });
+      continue;
+    }
+    if (!rel.stanWojny && stance.willingnessWar > 0 && rw >= effProgWojnaSila && effAgresja >= effProgWojnaAgresja && score < progMinimalnyRelacja) {
       komendy.push({
         type: "wypowiedz_wojne",
         targetId: rel.partnerId,
@@ -20136,7 +20260,6 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
       });
       continue;
     }
-    const dipP = getEffectiveDiplomacyParams(difficulty);
     const aiMilRatio = rw >= 1 ? 99 : rw <= 0 ? 0.01 : rw / (1 - rw);
     const aiRespekt = Math.round(rw * 100);
     const partnerRespekt = Math.round((1 - rw) * 100);
@@ -20146,7 +20269,7 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
       partnerRespekt,
       dipP
     );
-    const minSojuszAlly = p.progSojusz - sojuszAdj.ease.allyThresholdDelta + sojuszAdj.penaltyAlly;
+    const minSojuszAlly = p.progSojusz - sojuszAdj.ease.allyThresholdDelta + sojuszAdj.penaltyAlly - bias.allyThresholdEase;
     const minSojuszScore = diplomacyTreatyMinRelacja(
       dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore,
       dipP
@@ -20160,37 +20283,22 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
       });
       continue;
     }
-    const currentTurnForTrade = inp.currentTurn ?? 0;
-    if (!rel.stanWojny && !rel.hasHandelTreaty && rel.hasTradeConnection === true && score >= p.progHandelRelacjaMin && canAiProposeTradeAgreement(currentTurnForTrade, rel.lastTradeAgreementProposalTurn)) {
-      const closeToThreshold = score < p.progHandelRelacjaMin + AI_TRADE_AGREEMENT_SWEETENER_MARGIN;
+    if (!rel.stanWojny && !rel.hasHandelTreaty && rel.hasTradeConnection === true && score >= tradeRelMin && canAiProposeTradeAgreement(currentTurnForTrade, rel.lastTradeAgreementProposalTurn)) {
+      const closeToThreshold = score < tradeRelMin + AI_TRADE_AGREEMENT_SWEETENER_MARGIN;
       const sweetenerRaw = closeToThreshold ? capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_AGREEMENT_SWEETENER_MAX) : 0;
       const sweetenerGold = sweetenerRaw > 0 ? sweetenerRaw : void 0;
       komendy.push({
         type: "zaproponuj_umowe_handlowa",
         targetId: rel.partnerId,
-        powod: `Relacja=${score} >= prog=${p.progHandelRelacjaMin}, polaczenie tras mozliwe, brak aktywnej umowy` + (sweetenerGold ? `: dokladamy oslodzik ${sweetenerGold} \xA4 (Relacja blisko progu)` : ": proponujemy stala Umowe Handlowa"),
+        powod: `Relacja=${score} >= prog=${tradeRelMin}, polaczenie tras mozliwe, brak aktywnej umowy` + (sweetenerGold ? `: dokladamy oslodzik ${sweetenerGold} \xA4 (Relacja blisko progu)` : ": proponujemy stala Umowe Handlowa"),
         sweetenerGold
       });
       continue;
     }
-    if (!rel.stanWojny && rel.resourceTradeOffer != null && !rel.hasActiveResourceTradeDeal && score >= p.progHandelRelacjaMin && canAiProposeResourceTrade(currentTurnForTrade, rel.lastResourceTradeProposalTurn)) {
-      const offer = rel.resourceTradeOffer;
-      const zaplataLabel = offer.zaplataTyp === "praca" ? "Praca" : "\xA4";
-      komendy.push({
-        type: "zaproponuj_handel_surowiec",
-        targetId: rel.partnerId,
-        powod: `Nadwy\u017Cka ${offer.label}: oferujemy ${offer.pakietyPerTura} pakiet(y)/tur\u0119 za ${offer.zaplataPerTura} ${zaplataLabel}/tur\u0119 przez ${offer.turns} tur`,
-        surowiecKey: offer.surowiecKey,
-        label: offer.label,
-        pakietyPerTura: offer.pakietyPerTura,
-        zaplataTyp: offer.zaplataTyp,
-        zaplataPerTura: offer.zaplataPerTura,
-        turns: offer.turns
-      });
-      continue;
-    }
-    const handlowosc = inp.handlowosc ?? p.progHandelArchetypeMin;
+    const handlowoscBase = inp.handlowosc ?? p.progHandelArchetypeMin;
+    const handlowosc = bias.peaceful ? Math.min(1, handlowoscBase + 0.15) : handlowoscBase;
     const effWillingnessTrade = Math.min(1, stance.willingnessTrade * dyplomacjaAktywnosc);
+    const effProgHandel = bias.peaceful ? Math.max(0.3, p.progHandel - 0.08) : p.progHandel;
     const giftTurn = inp.currentTurn ?? 0;
     const giftCooldownOk = canAiProposeOneShotGoldGift(
       giftTurn,
@@ -20202,7 +20310,7 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
       0,
       Math.floor(rawTradeGold * aiOneShotGiftGoldMultiplier(difficulty))
     );
-    if (!rel.stanWojny && giftCooldownOk && tradeGold > 0 && effWillingnessTrade >= p.progHandel && handlowosc >= p.progHandelArchetypeMin && score > p.progHandelRelacjaMin) {
+    if (!rel.stanWojny && giftCooldownOk && tradeGold > 0 && effWillingnessTrade >= effProgHandel && handlowosc >= p.progHandelArchetypeMin && score > tradeRelMin) {
       komendy.push({
         type: "zaproponuj_handel",
         targetId: rel.partnerId,

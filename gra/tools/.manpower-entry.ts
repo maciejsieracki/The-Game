@@ -22,6 +22,14 @@ import {
 
   tryDeductUnitSpawnCosts,
 
+  canAffordUnitManpower,
+
+  tryDeductUnitSpawnCostsEmpire,
+
+  canAffordUnitManpowerEmpire,
+
+  empireManpowerCurrent,
+
   tickManpowerRegen,
 
   manpowerRegenGain,
@@ -35,6 +43,10 @@ import {
   civManpowerMults,
 
   empirePoborTotals,
+
+  deductManpowerFromEmpire,
+
+  refundManpowerToEmpire,
 
 } from '../src/game/manpower';
 
@@ -62,6 +74,14 @@ module.exports = {
 
   tryDeductUnitSpawnCosts,
 
+  canAffordUnitManpower,
+
+  tryDeductUnitSpawnCostsEmpire,
+
+  canAffordUnitManpowerEmpire,
+
+  empireManpowerCurrent,
+
   tickManpowerRegen,
 
   manpowerRegenGain,
@@ -73,6 +93,10 @@ module.exports = {
   civManpowerMults,
 
   empirePoborTotals,
+
+  deductManpowerFromEmpire,
+
+  refundManpowerToEmpire,
 
 };
 

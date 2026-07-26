@@ -5,7 +5,7 @@
     "szybka": 1,
     "standardowa": 2,
     "dluga": 4,
-    "_opis": "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1); dawniejszy globalny x2 jest juz w JSON (B-RESEARCH-COST-MODEL 2026-07-24). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=24, szybka -> 24 PN; standardowa -> 48 PN; dluga -> 96 PN. Obróbka drewna/Murarstwo: 5/10/20 PN."
+    "_opis": "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Tier 1 epoki Kamienia (Maciej 2026-07-26): bazowo 5 PN → szybka 5 · standardowa 10 · dluga 20."
   },
   "technologie": [
     {
@@ -24,7 +24,7 @@
     {
       "Technologia": "Garncarstwo",
       "Epoka": "Kamień",
-      "Poziom": 1,
+      "Poziom": 2,
       "Dostęp do surowca.": "Dostęp do glina",
       "wymagany budynek": null,
       "Wymaga (prereq)": "—",
@@ -37,7 +37,7 @@
     {
       "Technologia": "Murarstwo",
       "Epoka": "Kamień",
-      "Poziom": 1,
+      "Poziom": 2,
       "Dostęp do surowca.": "Dostęp do kamień",
       "wymagany budynek": null,
       "Wymaga (prereq)": "—",
@@ -57,8 +57,8 @@
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Farma, Tarasy uprawne",
-      "Koszt nauki": 16,
-      "Uwagi": "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie"
+      "Koszt nauki": 5,
+      "Uwagi": "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie; tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)"
     },
     {
       "Technologia": "Łowiectwo",
@@ -70,13 +70,13 @@
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Obóz łowiecki",
-      "Koszt nauki": 20,
-      "Uwagi": "B1-Q2A Maciej 2026-06-29"
+      "Koszt nauki": 5,
+      "Uwagi": "B1-Q2A Maciej 2026-06-29; tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)"
     },
     {
       "Technologia": "Łucznictwo",
       "Epoka": "Kamień",
-      "Poziom": 2,
+      "Poziom": 3,
       "Dostęp do surowca.": "Dostęp do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Łowiectwo",
@@ -95,14 +95,14 @@
       "Wymaga (prereq)": "—",
       "Odblokowuje surowiec.": "krowa/byk, owce, bydlo, lama",
       "Odblokowuje budynek": null,
-      "Koszt nauki": 24,
-      "Uwagi": null,
+      "Koszt nauki": 5,
+      "Uwagi": "tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)",
       "Odblokowuje ulepszenie terenu": "Bydło, Owce, Lama"
     },
     {
       "Technologia": "Mistycyzm",
       "Epoka": "Kamień",
-      "Poziom": 1,
+      "Poziom": 2,
       "Dostęp do surowca.": null,
       "wymagany budynek": null,
       "Wymaga (prereq)": "—",
@@ -141,7 +141,7 @@
     {
       "Technologia": "Koło",
       "Epoka": "Kamień",
-      "Poziom": 2,
+      "Poziom": 3,
       "Dostęp do surowca.": "Dostęp do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Oswojenie zwierząt",

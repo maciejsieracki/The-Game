@@ -800,6 +800,9 @@ function inDeployAtkZone(col: number, row: number): boolean {
 
 const DEPLOY_DEF_MIN_COL = DEPLOY_MID_COL + 1;
 const DEPLOY_DEF_MAX_COL = PLAY_COL1;
+/** Kotwica frontu obrońcy w deploy — przy lewej krawędzi prawej połowy (jak ATK po drugiej stronie). */
+const DEPLOY_DEF_FRONT_COL = DEPLOY_DEF_MIN_COL + 2;
+const DEPLOY_DEF_COL_STEP  = 1;
 
 function inDeployDefZone(col: number, row: number): boolean {
   return col >= DEPLOY_DEF_MIN_COL && col <= DEPLOY_DEF_MAX_COL
@@ -2073,6 +2076,12 @@ export class BattleScene {
   private _manualMode = true;
   /** Po Start walki: faza planowania (Spacja = rozpocznij turę). */
   private _battleAwaitingOrders = false;
+  /**
+   * AUTO→RECZNY w trakcie tury: blokuje done()-callbacki starej aktywacji
+   * (rAF animacje nie idą przez vTimers) — bez tego jednostki dostają acted=true
+   * i _executeUnitsImmediate odrzuca rozkazy gracza.
+   */
+  private _autoBattleSuspended = false;
   /** Jednostki z rozkazem odlozonym (Ctrl/Shift) — wykonaj na SPACJI. */
   private _queuedOrderUnitIds = new Set<string>();
   /** Zaznaczone jednostki gracza (id). */
@@ -3278,6 +3287,7 @@ export class BattleScene {
   private _kickoffBattleTurn(): void {
     if (!this.started || this.finished || !this._battleAwaitingOrders) return;
     this._battleAwaitingOrders = false;
+    this._autoBattleSuspended = false;
     this._clearOrderPreview();
     this._disposeQueuedOrderArrows();
     this._updateBattlePhaseBanner();
@@ -4766,11 +4776,8 @@ export class BattleScene {
 
       const layGroup = (list: number[], rankBase: number): number => {
         if (list.length === 0) return 0;
-        if (this._deployMode && side === this._playerControlSide()) {
-          const col = clampCol(frontCol + rankBase * rankStep);
-          this._deploySpreadRank(list, col, idealRow, idealCol, clampRow, clampCol);
-          return 1;
-        }
+        // Deploy gracza: ten sam zwarty szyk co w walce (max 12 w szeregu, centrum
+        // PLAY_MID_ROW) — NIE _deploySpreadRank (rozciągał całą wysokość strefy).
         const per = Math.max(1, Math.min(list.length, MAX_LINE));
         const r0g = midRow - Math.floor(per / 2);
         list.forEach((ui, k) => {
@@ -4787,12 +4794,9 @@ export class BattleScene {
       const siegeRanks = layGroup(siegeI, rankBase); // NA KOŃCU: maszyny oblężnicze (katapulty/taran/wieże)
       const totalFootRanks = rankBase + siegeRanks;
 
-      // Mounted: w deploy rozloz wzdłuż calej linii; w walce — za piechota
-      if (this._deployMode && side === this._playerControlSide()) {
-        const mountCol = clampCol(frontCol + (totalFootRanks + 2) * rankStep);
-        this._deploySpreadRank(mountIdx, mountCol, idealRow, idealCol, clampRow, clampCol);
-      } else {
-        const mountColOff = totalFootRanks + 5;
+      // Mounted: za piechotą — zwarty blok w centrum mapy (deploy i walka).
+      {
+        const mountColOff = totalFootRanks + (this._deployMode && side === this._playerControlSide() ? 2 : 5);
         const mountPer    = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
         const mountR0     = midRow - Math.floor(mountPer / 2);
         mountIdx.forEach((ui, k) => {
@@ -4815,8 +4819,15 @@ export class BattleScene {
           return s;
         };
         let bestScore = -1;
+        const playerDeploy = this._deployMode && side === this._playerControlSide();
+        const rowLo = playerDeploy
+          ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
+          : PLAY_ROW0;
+        const rowHi = playerDeploy
+          ? Math.min(DEPLOY_MAX_ROW, idealRow[idx]! + 8)
+          : PLAY_ROW1;
         for (let extra = 0; extra < 10; extra++) {
-          for (let rr = PLAY_ROW0; rr <= PLAY_ROW1; rr++) {
+          for (let rr = rowLo; rr <= rowHi; rr++) {
             for (const cc of [
               clampCol(idealCol[idx]! + extra * rankStep),
               clampCol(idealCol[idx]! - extra * rankStep),
@@ -4987,8 +4998,10 @@ export class BattleScene {
     } else {
       const atkFront = this._deployMode ? DEPLOY_ATK_FRONT_COL : ATK_FRONT_COL;
       const atkStep  = this._deployMode ? DEPLOY_ATK_COL_STEP  : ATK_COL_STEP;
+      const defFront = this._deployMode ? DEPLOY_DEF_FRONT_COL : DEF_FRONT_COL;
+      const defStep  = this._deployMode ? DEPLOY_DEF_COL_STEP  : DEF_COL_STEP;
       this.atk = place(atkArr, 'atk', atkFront, atkStep, Dir.E);
-      this.def = place(defArr, 'def', DEF_FRONT_COL, DEF_COL_STEP, Dir.W);
+      this.def = place(defArr, 'def', defFront, defStep, Dir.W);
     }
   }
 
@@ -5093,6 +5106,10 @@ export class BattleScene {
     const u = ru;
     this._updateBattlePhaseBanner(u);
     this._activateUnit(u, () => {
+      if (this._autoBattleSuspended) {
+        this.busy = false;
+        return;
+      }
       const idlePlayerUnit =
         this._manualMode
         && this._isPlayerSide(u.side)
@@ -5144,8 +5161,8 @@ export class BattleScene {
       if (this._performPlayerOrder(ru, done)) return;
     }
 
-    // AUTO bitwy: jednostki z autoPlay wykonuja doktryne (Szturm, Atak, …)
-    if (ru.side === 'atk' && !this._manualMode) {
+    // AUTO bitwy: jednostki z autoPlay wykonuja doktryne (Szturm, Atak, Obrona, …)
+    if (!this._manualMode) {
       if (this._isUnitDoctrineAuto(ru) && ru.playerOrder.type === 'none') {
         const meta = this._effectiveMetaForUnit(ru);
         if (meta.doctrine !== 'manual') {
@@ -5849,6 +5866,25 @@ export class BattleScene {
    *  attacker advances to higher col (+1, east); defender to lower col (-1, west). */
   private _advanceDir(side: 'atk' | 'def'): number {
     return side === 'atk' ? 1 : -1;
+  }
+
+  /** Kolumna N kroków w stronę wroga (z clampem do planszy). */
+  private _forwardCol(side: 'atk' | 'def', col: number, steps = 1): number {
+    return Math.max(0, Math.min(BF_COLS - 1, col + this._advanceDir(side) * steps));
+  }
+
+  /** Ogranicza kolumnę marszu w stronę wroga (nie dalej niż pozycja celu). */
+  private _clampColTowardEnemy(side: 'atk' | 'def', col: number, enemyCol: number): number {
+    return side === 'atk' ? Math.min(enemyCol, col) : Math.max(enemyCol, col);
+  }
+
+  /** Strona bitwy grupy (atk/def) — pierwszy żywy członek. */
+  private _groupSide(gid: string): 'atk' | 'def' {
+    for (const id of this._liveGroupMemberIds(gid)) {
+      const u = this._findUnitById(id);
+      if (u && !u.dead && !u.removed) return u.side;
+    }
+    return 'atk';
   }
 
   /**
@@ -7369,7 +7405,7 @@ export class BattleScene {
 
     const t0 = this._now();
     const step = () => {
-      if (this.finished) { this.busy = false; return; }
+      if (this.finished || this._autoBattleSuspended) { this.busy = false; return; }
       const p = Math.min(1, (this._now() - t0) / MOVE_STEP_MS);
       const e = easeOut(p);
       const x = lerp(from.x, to.x, e);
@@ -7670,7 +7706,7 @@ export class BattleScene {
     const t0 = this._now();
 
     const stepAnim = () => {
-      if (this.finished) { this.busy = false; return; }
+      if (this.finished || this._autoBattleSuspended) { this.busy = false; return; }
       const localT = this._now() - t0;
 
       // Land the single blow once we reach the connect moment.
@@ -7715,7 +7751,11 @@ export class BattleScene {
           attacker.group.position.set(aHome.x, aHome.y, aHome.z);
           attacker.hpBarGroup.position.set(aHome.x, aHome.y + HPBAR_Y, aHome.z);
         }
-        this._schedule(BLOW_SETTLE_MS, () => { this.busy = false; done(); });
+        this._schedule(BLOW_SETTLE_MS, () => {
+          if (this._autoBattleSuspended) { this.busy = false; return; }
+          this.busy = false;
+          done();
+        });
         return;
       }
       requestAnimationFrame(stepAnim);
@@ -7774,12 +7814,16 @@ export class BattleScene {
 
     // Apply the single blow when the projectile lands.
     this._schedule(RANGED_FLY_MS, () => {
-      if (this.finished) { this.busy = false; return; }
+      if (this.finished || this._autoBattleSuspended) { this.busy = false; return; }
       const dmg = this._singleBlow(attacker, defender, true);
       if (dmg > 0 && !defender.dead && !defender.fadingOut) {
         this._spawnDamageLabel(defender, dmg);
       }
-      this._schedule(RANGED_GAP_MS, () => { this.busy = false; done(); });
+      this._schedule(RANGED_GAP_MS, () => {
+        if (this._autoBattleSuspended) { this.busy = false; return; }
+        this.busy = false;
+        done();
+      });
     });
   }
 
@@ -8753,16 +8797,21 @@ export class BattleScene {
     if (this._endScreenWrap) this._endScreenWrap.style.visibility = 'hidden';
     this._hideEndDetails();
 
-    const playerWon = this._battleSummaryWinner() === 'atakujacy';
+    const battleWinner = this._battleSummaryWinner();
+    const playerWon = battleWinner !== 'remis' && this._playerWonFromBattleWinner(battleWinner);
+    const playerSide = this._playerControlSide();
     const elapsedMs = (this.started && this._battleStartVNow !== null)
       ? Math.max(0, this.vNow - this._battleStartVNow)
       : 0;
     const battleSubtitle = 'Tura ' + this.roundNo + ' · ' + this._fmtBattleClock(elapsedMs);
-    const winnerCiv = playerWon ? this._attackerCivLabel : this._defenderCivLabel;
+    const winnerCiv = playerWon
+      ? this._civLabelForSide(playerSide)
+      : this._civLabelForSide(playerSide === 'atk' ? 'def' : 'atk');
     const params: EndDetails1EParams = {
       battleSubtitle,
       resultLabel: 'zwycięstwo ' + winnerCiv,
       playerWon,
+      playerSide,
       atk: this._buildEndDetailsSide('atk'),
       def: this._buildEndDetailsSide('def'),
     };
@@ -8872,7 +8921,8 @@ export class BattleScene {
     this.paused = false;
     if (this.pauseHud) this.pauseHud.style.display = 'none';
     if (this._topPauseBadge) this._topPauseBadge.style.display = 'none';
-    this._haltAutoBattleTurn();
+    this._autoBattleSuspended = false;
+    this._haltAutoBattleTurn(false);
   }
 
   /** Ta sama bitwa od poczatku — bez wyjscia na mape i bez onFinish (wygrana lub porazka). */
@@ -8977,18 +9027,20 @@ export class BattleScene {
     this._setBattleChromeForEndScreen(true);
     this._sfxVictory();
 
+    const playerSide = this._playerControlSide();
     const sA = this._sideEndStats('atk');
     const sD = this._sideEndStats('def');
-    const playerWon = winner === 'atakujacy';
+    const playerWon = this._playerWonFromBattleWinner(winner);
+    const enemyStats = playerSide === 'atk' ? sD : sA;
     // Muzyka ekranu końca bitwy (wg tej samej flagi playerWon, co wizualia):
     // wygrana -> utwór zwycięstwa, przegrana -> utwór porażki. Overlay bitwy jest
     // aktywny, więc to czysta wymiana utworu; muzykę mapy wznawia setMood('mapa')
     // wołane z callbacku onFinish/onCancel bitwy (patrz main.ts).
     if (playerWon) startVictoryMusic(); else startDefeatMusic();
     const winSub = winner === 'atakujacy' ? 'Zwyci\u0119stwo atakuj\u0105cego!' : 'Zwyci\u0119stwo obro\u0144cy!';
-    const loot = playerWon ? Math.max(0, sD.lost * 20) : 0;
+    const loot = playerWon ? Math.max(0, enemyStats.lost * 20) : 0;
     let heroLabel = '—';
-    for (const u of this.atk) {
+    for (const u of this._playerRoster()) {
       if (!u.dead && !u.routed) {
         heroLabel = String(u.bu.nazwa ?? u.bu.kategoria ?? 'Jednostka');
         if (isMounted(u.bu)) break;
@@ -8999,6 +9051,7 @@ export class BattleScene {
       : 0;
     const endUi = showEndScreen1E(this.overlay, {
       playerWon,
+      playerSide,
       winnerLabel: winSub,
       battleTitle: 'Tura ' + this.roundNo + ' \u00b7 ' + this._fmtBattleClock(elapsedMsEnd),
       atk: sA,
@@ -10684,8 +10737,23 @@ export class BattleScene {
   // FAZA ROZSTAWIANIA — metody pomocnicze
   // -------------------------------------------------------------------------
 
+  private _findUnitById(id: string): RuntimeBattleUnit | undefined {
+    return this.atk.find(u => u.bu.id === id) ?? this.def.find(u => u.bu.id === id);
+  }
+
   private _playerControlSide(): 'atk' | 'def' {
     return this._deployPlayerSideOpt;
+  }
+
+  /** Czy gracz wygrał bitwę — uwzględnia deployPlayerSide (atk/def). */
+  private _playerWonFromBattleWinner(winner: 'atakujacy' | 'obronca'): boolean {
+    const playerRole: 'atakujacy' | 'obronca' =
+      this._playerControlSide() === 'atk' ? 'atakujacy' : 'obronca';
+    return winner === playerRole;
+  }
+
+  private _civLabelForSide(side: 'atk' | 'def'): string {
+    return side === 'atk' ? this._attackerCivLabel : this._defenderCivLabel;
   }
 
   private _isPlayerSide(side: 'atk' | 'def'): boolean {
@@ -10705,7 +10773,7 @@ export class BattleScene {
   }
 
   private _groupRegistryRoster(): RuntimeBattleUnit[] {
-    if (this.deployPhase || (this.started && this._manualMode)) {
+    if (this.deployPhase || this.started) {
       return this._playerRoster();
     }
     return this.atk;
@@ -11058,7 +11126,7 @@ export class BattleScene {
     btnReset.innerHTML = FMT_SVG.reset;
     btnReset.onclick = (e) => {
       e.stopPropagation();
-      this._resetDeployAttacker();
+      this._resetDeployPlayer();
       this._showDeployFeedback('Jednostki przywr\u00F3cone do domy\u015Blnego rozstawienia.');
       this._updateDeployToolbarStatus();
     };
@@ -11756,7 +11824,7 @@ export class BattleScene {
   /** Lewy panel rosteru: licznik rozstawionych + zaznaczenie + Grupuj/Rozgrupuj. */
   private _updateDeployRosterCountLine(): void {
     if (!this._deployRosterCount || !this.deployPhase) return;
-    const live = this.atk.filter(u => !u.dead && !u.removed).length;
+    const live = this._playerRoster().filter(u => !u.dead && !u.removed).length;
     this._deployRosterCount.textContent = 'Rozstawiono: ' + live + ' jednostek';
   }
 
@@ -11774,7 +11842,7 @@ export class BattleScene {
     bar.innerHTML = '';
 
     const selUnits = [...this._selectedUnits]
-      .map(id => this.atk.find(u => u.bu.id === id))
+      .map(id => this._findUnitById(id))
       .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
 
     const groupIds = [...new Set(selUnits.map(u => u.groupId).filter(Boolean))];
@@ -12045,7 +12113,7 @@ export class BattleScene {
     this._groups.clear();
     this._groupCounter = 0;
     this._groupMeta.clear();
-    for (const u of this.atk) {
+    for (const u of this._playerRoster()) {
       u.groupId = null;
       u.formationOffset = null;
       u.group.scale.setScalar(1.0);
@@ -12158,7 +12226,7 @@ export class BattleScene {
    */
   private _restoreDeployGroupSnapshot(snapshot: Map<string, string>): void {
     const byGroup = new Map<string, Set<string>>();
-    for (const ru of this.atk) {
+    for (const ru of this._playerRoster()) {
       if (ru.dead || ru.removed) continue;
       const gid = snapshot.get(ru.bu.id);
       if (!gid) continue;
@@ -12788,7 +12856,7 @@ export class BattleScene {
 
   /** Sortowanie w rzedzie: nazwa jednostki. */
   private _sortedDeployUnits(): RuntimeBattleUnit[] {
-    return this.atk
+    return this._playerRoster()
       .filter(u => !u.dead && !u.removed)
       .sort((a, b) => {
         const ra = this._deployRowKind(a);
@@ -12899,7 +12967,7 @@ export class BattleScene {
       slots += 1;
     }
     if (!visibleOnly || !filterGid) {
-      for (const ru of this.atk) {
+      for (const ru of this._playerRoster()) {
         if (ru.dead || ru.removed || inGroup.has(ru.bu.id)) continue;
         slots += 1;
       }
@@ -13145,7 +13213,7 @@ export class BattleScene {
    * Stosuje ustawienia linii (piechota / lucznicy) do zaznaczenia lub calej armii.
    */
   private _applyDeployLineSettings(): void {
-    const live = this.atk.filter(u => !u.dead && !u.removed);
+    const live = this._playerRoster().filter(u => !u.dead && !u.removed);
     if (live.length === 0) return;
 
     const targets = this._resolveDeployFormationTargets(live);
@@ -13255,7 +13323,7 @@ export class BattleScene {
     }
   }
 
-  /** Rozklada jednostki ATK w jednym szeregu wzdłuż calej wysokosci strefy deploy. */
+  /** @deprecated — zastąpione zwartym layGroup (centrum PLAY_MID_ROW, max 12/szereg). */
   private _deploySpreadRank(
     list: number[],
     col: number,
@@ -13264,14 +13332,13 @@ export class BattleScene {
     clampRow: (r: number) => number,
     clampCol: (c: number) => number,
   ): void {
-    const rowSpan = DEPLOY_MAX_ROW - DEPLOY_MIN_ROW;
+    const MAX_LINE = 12;
+    const midRow = PLAY_MID_ROW;
+    const per = Math.max(1, Math.min(list.length, MAX_LINE));
+    const r0g = midRow - Math.floor(per / 2);
     list.forEach((ui, k) => {
       idealCol[ui] = clampCol(col);
-      idealRow[ui] = clampRow(
-        list.length <= 1
-          ? PLAY_MID_ROW
-          : DEPLOY_MIN_ROW + Math.round((k * rowSpan) / Math.max(1, list.length - 1)),
-      );
+      idealRow[ui] = clampRow(r0g + (k % per));
     });
   }
 
@@ -13392,7 +13459,7 @@ export class BattleScene {
   /** Nagłówek nad rosterem — C09 v4 (Roster + licznik + podsumowanie grup). */
   private _updateDeployRosterHeader(): void {
     if (!this._deployRosterHeader || !this.deployPhase) return;
-    const live = this.atk.filter(u => !u.dead && !u.removed).length;
+    const live = this._playerRoster().filter(u => !u.dead && !u.removed).length;
     let titleWrap = this._deployRosterHeader.querySelector('#deploy-roster-title-wrap') as HTMLDivElement | null;
     let count = this._deployRosterHeader.querySelector('#deploy-roster-header-count') as HTMLSpanElement | null;
     let groupsLine = this._deployRosterHeader.querySelector('#deploy-roster-groups-line') as HTMLDivElement | null;
@@ -13473,7 +13540,7 @@ export class BattleScene {
 
   private _clearDeploySelectionState(): void {
     for (const id of this._selectedUnits) {
-      const u = this.atk.find(x => x.bu.id === id);
+      const u = this._findUnitById(id);
       if (u) {
         this._removeSelectionRing(u);
         u.group.scale.setScalar(1.0);
@@ -13521,7 +13588,7 @@ export class BattleScene {
     } else {
       if (this._selectedUnits.size === 1 && this._selectedUnits.has(ru.bu.id)) return;
       for (const id of [...this._selectedUnits]) {
-        const u = this.atk.find(x => x.bu.id === id);
+        const u = this._findUnitById(id);
         if (u) {
           this._removeSelectionRing(u);
           u.group.scale.setScalar(1.0);
@@ -14092,7 +14159,7 @@ export class BattleScene {
   /** Odswieza karty, naglowek, panel po zmianie zaznaczenia (deploy = jak walka, bez skali 3D). */
   private _refreshDeploySelectionVisuals(): void {
     this._clearDeployGhosts();
-    for (const u of this.atk) {
+    for (const u of this._playerRoster()) {
       if (u.dead || u.removed) continue;
       u.group.scale.setScalar(1.0);
       const sel = this._selectedUnits.has(u.bu.id);
@@ -15025,7 +15092,7 @@ export class BattleScene {
    * Stosuje formacje F1/F2/F3 do zaznaczenia (lub calej armii gdy brak zaznaczenia).
    */
   private _applyDeployArmyFormation(formation: 'F1' | 'F2' | 'F3'): void {
-    const live = this.atk.filter(u => !u.dead && !u.removed);
+    const live = this._playerRoster().filter(u => !u.dead && !u.removed);
     if (live.length === 0) return;
 
     // C-BITWA-FORMACJA=B (Maciej 2026-07-25): szyk stosuje się do AKTUALNIE ZAZNACZONEGO
@@ -15062,7 +15129,7 @@ export class BattleScene {
    * Ustawia konnice (boki / z tylu) i przelicza aktywna formacje zaznaczenia.
    */
   private _applyDeployCavalryMode(mode: CavalryDeployMode): void {
-    const live = this.atk.filter(u => !u.dead && !u.removed);
+    const live = this._playerRoster().filter(u => !u.dead && !u.removed);
     if (live.length === 0) return;
 
     const targets = this._resolveDeployFormationTargets(live);
@@ -15096,7 +15163,7 @@ export class BattleScene {
    * poczatkowego deploy.
    */
   private _applyDeployAttackDirection(dir: AttackDirection): void {
-    const live = this.atk.filter(u => !u.dead && !u.removed);
+    const live = this._playerRoster().filter(u => !u.dead && !u.removed);
     if (live.length === 0) return;
 
     const targets = this._resolveDeployFormationTargets(live);
@@ -15174,28 +15241,31 @@ export class BattleScene {
   }
 
   /**
-   * Reset rozmieszczenia atakujacych — usuwa ich z mapy zajętości,
-   * usuwa ich modele z sceny i wywoluje _placeUnits ponownie.
+   * Reset rozmieszczenia gracza (atak lub obrona) — usuwa jednostki ze sceny
+   * i odtwarza startowe pozycje z zapisu _saved*BU.
    */
+  private _resetDeployPlayer(): void {
+    this._resetDeploySide(this._playerControlSide());
+  }
+
+  /** @deprecated alias — używaj _resetDeployPlayer */
   private _resetDeployAttacker(): void {
-    // Usun atakujacych z sceny i occByKey
-    for (const ru of this.atk) {
+    this._resetDeploySide('atk');
+  }
+
+  private _resetDeploySide(side: 'atk' | 'def'): void {
+    const roster = side === 'atk' ? this.atk : this.def;
+    for (const ru of roster) {
       if (ru.removed) continue;
       this.occByKey.delete(cellKey(ru.q, ru.r));
       this.scene.remove(ru.group);
       this.scene.remove(ru.hpBarGroup);
     }
-    this.atk = [];
+    if (side === 'atk') this.atk = [];
+    else this.def = [];
     this._groups.clear();
     this._groupCounter = 0;
-    // Ponownie wywolaj place dla atakujacych
-    const siegeMode = this.siegeWallCol >= 0;
-    // Potrzebujemy oryginalnych BattleUnit[] — pobierz z aktualnych def (dziala bo atk byly wyczyszczone)
-    // Re-derive from existing def side — atk BattleUnit[] zachowane w closurze opts
-    // Najlatwiej: wywolaj ponownie _placeUnits tylko dla atakujacych
-    // W tym celu uzyj istniejacych danych z runtime units obrońców
-    // UWAGA: przy resecie wywolujemy _placeUnitsAtk — podzbiór _placeUnits
-    this._placeUnitsAtkOnly(siegeMode);
+    this._placeUnitsOneSide(side, this.siegeWallCol >= 0);
     this._clearAllSelection();
     this._clearDeploySelection();
     this._rebuildDeployRosterGrid();
@@ -15203,33 +15273,39 @@ export class BattleScene {
   }
 
   /**
-   * Ustawia tylko atakujacych (dla Reset w fazie deploy).
-   * Odtwarza logike z _placeUnits dla strony 'atk'.
-   * Korzysta z _savedAtkBUs zapisanych przy _placeUnits.
+   * Ustawia tylko jedną stronę (dla Reset w fazie deploy).
+   * Korzysta z _savedAtkBUs / _savedDefBUs zapisanych przy _placeUnits.
    */
-  private _placeUnitsAtkOnly(siegeMode: boolean): void {
-    if (this._savedAtkBUs.length === 0) {
-      // Fallback: brak zapisanych danych — powiadom gracza
+  private _placeUnitsOneSide(side: 'atk' | 'def', siegeMode: boolean): void {
+    const saved = side === 'atk' ? this._savedAtkBUs : this._savedDefBUs;
+    if (saved.length === 0) {
       this._showDeployFeedback('Brak danych do resetu — uzyj Start walki.');
       return;
     }
 
-    // Pomocnicze stale z _placeUnits (siege layout)
     const SIEGE_ATK_FRONT_COL = 2;
     const SIEGE_ATK_COL_STEP  = 1;
-    const frontCol = (siegeMode && this.siegeWallCol >= 0)
-      ? SIEGE_ATK_FRONT_COL
-      : (this.deployPhase ? DEPLOY_ATK_FRONT_COL : ATK_FRONT_COL);
-    const rankStep = (siegeMode && this.siegeWallCol >= 0)
-      ? SIEGE_ATK_COL_STEP
-      : (this.deployPhase ? DEPLOY_ATK_COL_STEP : ATK_COL_STEP);
+    let frontCol: number;
+    let rankStep: number;
+    if (side === 'atk') {
+      frontCol = (siegeMode && this.siegeWallCol >= 0)
+        ? SIEGE_ATK_FRONT_COL
+        : (this.deployPhase ? DEPLOY_ATK_FRONT_COL : ATK_FRONT_COL);
+      rankStep = (siegeMode && this.siegeWallCol >= 0)
+        ? SIEGE_ATK_COL_STEP
+        : (this.deployPhase ? DEPLOY_ATK_COL_STEP : ATK_COL_STEP);
+    } else {
+      frontCol = this.deployPhase ? DEPLOY_DEF_FRONT_COL : DEF_FRONT_COL;
+      rankStep = this.deployPhase ? DEPLOY_DEF_COL_STEP : DEF_COL_STEP;
+    }
+    const faceDir = side === 'atk' ? Dir.E : Dir.W;
 
     const clampCol = (c: number): number => Math.max(0, Math.min(BF_COLS - 1, c));
     const clampRow = (r: number): number => Math.max(0, Math.min(BF_ROWS - 1, r));
     const freeOk = (c: number, r: number): boolean =>
       !this.occByKey.has(cellKey(c, r)) && this.terrainMap.passable(c, r);
 
-    const units = this._savedAtkBUs;
+    const units = saved;
     const meleeI: number[] = [], javI: number[] = [], arcI: number[] = [],
           siegeI: number[] = [], mountIdx: number[] = [];
     units.forEach((u, i) => {
@@ -15244,14 +15320,10 @@ export class BattleScene {
     const midRow = PLAY_MID_ROW;
     const idealRow = new Array<number>(units.length);
     const idealCol = new Array<number>(units.length);
+    const playerSide = this._playerControlSide();
 
     const layGroup = (list: number[], rankBase: number): number => {
       if (list.length === 0) return 0;
-      if (this.deployPhase) {
-        const col = clampCol(frontCol + rankBase * rankStep);
-        this._deploySpreadRank(list, col, idealRow, idealCol, clampRow, clampCol);
-        return 1;
-      }
       const per = Math.max(1, Math.min(list.length, MAX_LINE));
       const r0g = midRow - Math.floor(per / 2);
       list.forEach((ui, k) => {
@@ -15267,11 +15339,8 @@ export class BattleScene {
     rankBase += arcRanks;
     const siegeRanks = layGroup(siegeI, rankBase);
     const totalFootRanks = rankBase + siegeRanks;
-    if (this.deployPhase) {
-      const mountCol = clampCol(frontCol + (totalFootRanks + 2) * rankStep);
-      this._deploySpreadRank(mountIdx, mountCol, idealRow, idealCol, clampRow, clampCol);
-    } else {
-      const mountColOff = totalFootRanks + 5;
+    {
+      const mountColOff = totalFootRanks + (this.deployPhase && side === playerSide ? 2 : 5);
       const mountPer = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
       const mountR0 = midRow - Math.floor(mountPer / 2);
       mountIdx.forEach((ui, k) => {
@@ -15280,22 +15349,28 @@ export class BattleScene {
       });
     }
 
-    const newAtk: RuntimeBattleUnit[] = [];
+    const placed: RuntimeBattleUnit[] = [];
     for (let idx = 0; idx < units.length; idx++) {
       const bu = units[idx]!;
       let row = idealRow[idx]!;
       let col = idealCol[idx]!;
       let key = cellKey(col, row);
       if (!freeOk(col, row)) {
-        let placed = false;
+        let found = false;
         const baseCol = col;
-        for (let rr = 0; rr < BF_ROWS && !placed; rr++) {
-          if (freeOk(baseCol, rr)) { col = baseCol; row = rr; key = cellKey(baseCol, rr); placed = true; }
+        const rowLo = this.deployPhase && side === playerSide
+          ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
+          : 0;
+        const rowHi = this.deployPhase && side === playerSide
+          ? Math.min(DEPLOY_MAX_ROW, idealRow[idx]! + 8)
+          : BF_ROWS - 1;
+        for (let rr = rowLo; rr <= rowHi && !found; rr++) {
+          if (freeOk(baseCol, rr)) { col = baseCol; row = rr; key = cellKey(baseCol, rr); found = true; }
         }
-        for (let extra = 1; extra < BF_COLS && !placed; extra++) {
-          for (let rr = 0; rr < BF_ROWS && !placed; rr++) {
+        for (let extra = 1; extra < BF_COLS && !found; extra++) {
+          for (let rr = rowLo; rr <= rowHi && !found; rr++) {
             const cc = clampCol(baseCol + extra * rankStep);
-            if (freeOk(cc, rr)) { col = cc; row = rr; key = cellKey(cc, rr); placed = true; }
+            if (freeOk(cc, rr)) { col = cc; row = rr; key = cellKey(cc, rr); found = true; }
           }
         }
       }
@@ -15310,7 +15385,7 @@ export class BattleScene {
         group = makeFallbackAvatar(bu.ownerColor);
       }
       group.position.set(x, topY, z);
-      group.rotation.y = dirYaw(Dir.E);
+      group.rotation.y = dirYaw(faceDir);
       this.scene.add(group);
 
       const mats: THREE.Material[] = (group.userData['mats'] as THREE.Material[]) ?? [];
@@ -15318,7 +15393,7 @@ export class BattleScene {
 
       const ammo0 = ammoCount(bu);
       const ammoShown = Number.isFinite(ammo0) && ammo0 > 0;
-      const bars = makeUnitBars(sideColor('atk'), ammoShown);
+      const bars = makeUnitBars(sideColor(side), ammoShown);
       bars.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
       this.scene.add(bars.hpBarGroup);
       bars.hpBarGroup.traverse(obj => {
@@ -15345,7 +15420,7 @@ export class BattleScene {
         ammoBarShown: ammoShown,
         q:           col,
         r:           row,
-        side:        'atk',
+        side,
         dead:        false,
         fadingOut:   false,
         fadeStart:   0,
@@ -15363,7 +15438,7 @@ export class BattleScene {
         mounted:      isMounted(bu),
         antiCavSpear: isAntiCavSpear(bu),
         phalanx:      isPhalanx(bu),
-        facing:       Dir.E,
+        facing:       faceDir,
         morale:       moraleBase,
         moraleMax:    moraleBase,
         neverRout:    isNeverRout(bu),
@@ -15387,9 +15462,18 @@ export class BattleScene {
       this._updateMoraleBar(ru);
       this._updateAmmoBar(ru);
       this.occByKey.set(key, ru);
-      newAtk.push(ru);
+      placed.push(ru);
     }
-    this.atk = newAtk;
+    if (side === 'atk') this.atk = placed;
+    else this.def = placed;
+  }
+
+  /**
+   * Ustawia tylko atakujacych (dla Reset w fazie deploy).
+   * @deprecated używaj _placeUnitsOneSide('atk', …)
+   */
+  private _placeUnitsAtkOnly(siegeMode: boolean): void {
+    this._placeUnitsOneSide('atk', siegeMode);
   }
 
   /**
@@ -15401,7 +15485,7 @@ export class BattleScene {
     // _syncGroupRegistry poniżej), żeby _replayBattle -> _initDeployUI mógł go
     // odtworzyć zamiast na nowo auto-grupować (patrz komentarz przy polu).
     this._deployGroupSnapshot = new Map();
-    for (const ru of this.atk) {
+    for (const ru of this._playerRoster()) {
       if (ru.groupId) this._deployGroupSnapshot.set(ru.bu.id, ru.groupId);
     }
     this.deployPhase = false;
@@ -15426,10 +15510,11 @@ export class BattleScene {
   // =========================================================================
 
   /** Zatrzymaj zaplanowana auto-ture (przejscie AUTO -> RECZNY w trakcie bitwy). */
-  private _haltAutoBattleTurn(): void {
+  private _haltAutoBattleTurn(suspendInFlight = true): void {
     this.vTimers.length = 0;
     this.busy = false;
     this._battleAwaitingOrders = true;
+    if (suspendInFlight) this._autoBattleSuspended = true;
   }
 
   /** Przelacza miedzy trybem AUTO a RECZNYM. */
@@ -15440,7 +15525,7 @@ export class BattleScene {
     }
     if (!this._manualMode) {
       this._clearAllSelection();
-      for (const ru of this.atk) ru.playerOrder = { type: 'none' };
+      for (const ru of this._playerRoster()) ru.playerOrder = { type: 'none' };
       this._queuedOrderUnitIds.clear();
       this._disposeQueuedOrderArrows();
       for (const gid of this._sortedGroupIds()) {
@@ -15458,11 +15543,12 @@ export class BattleScene {
       }
     } else {
       this._haltAutoBattleTurn();
-      for (const ru of this.atk) {
+      for (const ru of this._playerRoster()) {
         if (ru.dead || ru.removed || ru.routed) continue;
         ru.playerOrder = { type: 'none' };
         ru.acted = false;
       }
+      this._syncGroupRegistry();
       this._showBattleRosterFeedback(
         'Tryb RECZNY — SPACJA = kontynuuj · Taktyka/Strategia = per jednostka (Ctrl+LPM) · Grupuj = wspolna formacja',
       );
@@ -15716,7 +15802,7 @@ export class BattleScene {
     };
     if (!ru.groupId && doctrine !== 'defensive' && doctrine !== 'manual' && doctrine !== 'aggressive') {
       if (doctrine === 'steady' || doctrine === 'skirmish') {
-        meta.rallyCol = Math.min(BF_COLS - 1, ru.q + 2);
+        meta.rallyCol = this._forwardCol(ru.side, ru.q, 2);
         meta.rallyRow = ru.r;
       } else {
         const tgt = this._pickTargetByPriority(ru);
@@ -15761,7 +15847,7 @@ export class BattleScene {
     const ids = this._liveGroupMemberIds(gid);
     let col = 0; let row = 0; let n = 0;
     for (const id of ids) {
-      const u = this.atk.find(x => x.bu.id === id);
+      const u = this._findUnitById(id);
       if (!u || u.dead || u.removed) continue;
       col += u.q; row += u.r; n++;
     }
@@ -15780,21 +15866,25 @@ export class BattleScene {
   /** Cel marszu formacji (Atak): centroid + krok do przodu, bez rozpadu linii. */
   private _attackFormationRallyPoint(gid: string, meta: GroupMeta): { col: number; row: number } | null {
     if (this._liveGroupMemberIds(gid).length === 0) return null;
+    const side = this._groupSide(gid);
     const cent = this._groupCentroid(gid);
+    const fwd = this._advanceDir(side);
     let col: number;
     let row: number;
     if (meta.rallyCol != null && meta.rallyRow != null) {
       const dc = Math.sign(meta.rallyCol - cent.col);
       const dr = Math.sign(meta.rallyRow - cent.row);
-      col = cent.col + (dc !== 0 ? dc : 1);
+      col = cent.col + (dc !== 0 ? dc : fwd);
       row = cent.row + dr;
     } else {
-      col = cent.col + 1;
+      col = this._forwardCol(side, cent.col, 1);
       row = cent.row;
-      const lead = this.atk.find(u => u.groupId === gid && !u.dead && !u.removed);
+      const lead = this._liveGroupMemberIds(gid)
+        .map(id => this._findUnitById(id))
+        .find(u => u && !u.dead && !u.removed);
       const tgt = lead ? this._pickTargetByPriority(lead) : null;
       if (tgt && row !== tgt.r) row += Math.sign(tgt.r - row);
-      if (tgt) col = Math.min(tgt.q, col);
+      if (tgt) col = this._clampColTowardEnemy(side, col, tgt.q);
     }
     return {
       col: Math.max(0, Math.min(BF_COLS - 1, col)),
@@ -15834,8 +15924,8 @@ export class BattleScene {
       }
       return this._stepToward(ru, target);
     }
-    const nc = ru.q + 1;
-    if (nc >= BF_COLS) return null;
+    const nc = this._forwardCol(ru.side, ru.q, 1);
+    if (nc < 0 || nc >= BF_COLS) return null;
     for (const r of [ru.r, ru.r - 1, ru.r + 1]) {
       if (r < 0 || r >= BF_ROWS) continue;
       const nk = cellKey(nc, r);
@@ -15856,7 +15946,7 @@ export class BattleScene {
       };
     }
     if (tgt) return null;
-    const nc = ru.q + 1;
+    const nc = this._forwardCol(ru.side, ru.q, 1);
     if (nc >= BF_COLS) return null;
     const tryCell = (c: number, r: number): { col: number; row: number } | null => {
       if (r < 0 || r >= BF_ROWS) return null;
@@ -15869,7 +15959,7 @@ export class BattleScene {
 
   private _groupHasRanged(gid: string): boolean {
     for (const id of this._liveGroupMemberIds(gid)) {
-      const u = this.atk.find(x => x.bu.id === id);
+      const u = this._findUnitById(id);
       if (u && !u.dead && (u.primaryRanged || u.rangedBase || u.range > 1)) return true;
     }
     return false;
@@ -15878,13 +15968,15 @@ export class BattleScene {
   /** Czy cel ruchu nie lamie blokady linii. */
   private _destAllowedByBlockade(ru: RuntimeBattleUnit, col: number): boolean {
     if (!this._generalSettings.blockadeActive || this._generalSettings.blockadeCol == null) return true;
-    if (ru.side !== 'atk') return true;
-    return col <= this._generalSettings.blockadeCol;
+    const block = this._generalSettings.blockadeCol;
+    if (ru.side === 'atk') return col <= block;
+    if (ru.side === 'def') return col >= block;
+    return true;
   }
 
   private _applySkirmishFlags(gid: string): void {
     for (const id of this._liveGroupMemberIds(gid)) {
-      const u = this.atk.find(x => x.bu.id === id);
+      const u = this._findUnitById(id);
       if (!u || u.dead) continue;
       if (u.primaryRanged || u.rangedBase || u.range > 1) {
         u.rangedKite = true;
@@ -15908,16 +16000,17 @@ export class BattleScene {
   private _setLineBlockadeFromSelection(): void {
     const cols: number[] = [];
     for (const id of this._selectedUnits) {
-      const u = this.atk.find(x => x.bu.id === id);
+      const u = this._findUnitById(id);
       if (u && !u.dead) cols.push(u.q);
     }
     if (cols.length === 0) {
-      for (const u of this.atk) {
+      for (const u of this._playerRoster()) {
         if (!u.dead && !u.removed) cols.push(u.q);
       }
     }
     if (cols.length === 0) return;
-    const front = Math.max(...cols);
+    const side = this._playerControlSide();
+    const front = side === 'atk' ? Math.max(...cols) : Math.min(...cols);
     this._setLineBlockade(front, true);
     for (const gid of this._sortedGroupIds()) {
       const meta = this._ensureGroupMeta(gid);
@@ -15957,26 +16050,31 @@ export class BattleScene {
       delete meta.rallyRow;
     } else if (doctrine === 'skirmish') {
       const cent = this._groupCentroid(gid);
-      meta.rallyCol = Math.min(BF_COLS - 1, cent.col + 2);
+      const side = this._groupSide(gid);
+      meta.rallyCol = this._forwardCol(side, cent.col, 2);
       meta.rallyRow = cent.row;
     } else if (doctrine === 'steady') {
       const cent = this._groupCentroid(gid);
-      meta.rallyCol = Math.min(BF_COLS - 1, cent.col + 2);
+      const side = this._groupSide(gid);
+      meta.rallyCol = this._forwardCol(side, cent.col, 2);
       meta.rallyRow = cent.row;
     } else {
       const cent = this._groupCentroid(gid);
-      const lead = this.atk.find(u => u.groupId === gid && !u.dead && !u.removed);
+      const side = this._groupSide(gid);
+      const lead = this._liveGroupMemberIds(gid)
+        .map(id => this._findUnitById(id))
+        .find(u => u && !u.dead && !u.removed);
       const tgt = lead ? this._pickTargetByPriority(lead) : null;
       if (tgt) {
         meta.rallyCol = tgt.q;
         meta.rallyRow = tgt.r;
       } else {
-        meta.rallyCol = Math.min(BF_COLS - 1, cent.col + 4);
+        meta.rallyCol = this._forwardCol(side, cent.col, 4);
         meta.rallyRow = cent.row;
       }
     }
     for (const id of this._liveGroupMemberIds(gid)) {
-      const u = this.atk.find(x => x.bu.id === id);
+      const u = this._findUnitById(id);
       if (u && !u.dead) u.playerOrder = { type: 'none' };
     }
     this._refreshQueuedOrderVisuals();
@@ -16026,6 +16124,15 @@ export class BattleScene {
 
   /** Jeden krok auto-gra wg doktryny grupy. */
   private _executeGroupDoctrineStep(ru: RuntimeBattleUnit, meta: GroupMeta, done: () => void): boolean {
+    if (meta.doctrine === 'defensive') {
+      const adj = this._pickAdjacentTargetByPriority(ru);
+      if (adj) {
+        this._doAttack(ru, adj, done);
+        return true;
+      }
+      done();
+      return true;
+    }
     if (meta.doctrine === 'skirmish') {
       return this._executeSkirmishDoctrineStep(ru, meta, done);
     }
@@ -16335,7 +16442,7 @@ export class BattleScene {
       return true;
     }
     if (ord.type === 'attack') {
-      const tgt = this.def.find(u => u.bu.id === ord.targetId && !u.dead && !u.fadingOut);
+      const tgt = this._enemiesOf(ru).find(u => u.bu.id === ord.targetId && !u.dead && !u.fadingOut);
       if (!tgt) {
         ru.playerOrder = { type: 'none' };
         this._refreshQueuedOrderVisuals();
@@ -16367,6 +16474,7 @@ export class BattleScene {
 
   /** Natychmiastowe wykonanie rozkazow wybranych jednostek (po kolei). */
   private _executeUnitsImmediate(unitIds: string[]): void {
+    this._autoBattleSuspended = false;
     const queue = unitIds.filter(id => {
       const u = this._findPlayerUnit(id);
       return u && !u.dead && !u.removed && !u.routed && !u.acted
@@ -16617,7 +16725,7 @@ export class BattleScene {
   /** Wyczysc calkowite zaznaczenie. */
   private _clearAllSelection(): void {
     for (const id of this._selectedUnits) {
-      const u = this.atk.find(u => u.bu.id === id);
+      const u = this._findUnitById(id);
       if (u) this._removeSelectionRing(u);
     }
     this._selectedUnits.clear();
@@ -16660,7 +16768,7 @@ export class BattleScene {
   private _orderHoldSelected(): void {
     if (this._selectedUnits.size === 0) return;
     for (const id of this._selectedUnits) {
-      const u = this.atk.find(u => u.bu.id === id);
+      const u = this._findUnitById(id);
       if (u && !u.dead) u.playerOrder = { type: 'hold' };
     }
     this._refreshQueuedOrderVisuals();
@@ -16711,9 +16819,11 @@ export class BattleScene {
   private _orderRetreatSelected(): void {
     if (this._selectedUnits.size === 0) return;
     for (const id of this._selectedUnits) {
-      const u = this.atk.find(u => u.bu.id === id);
+      const u = this._findUnitById(id);
       if (!u || u.dead) continue;
-      const retreatCol = Math.max(0, u.q - 6);
+      const retreatCol = u.side === 'def'
+        ? Math.min(BF_COLS - 1, u.q + 6)
+        : Math.max(0, u.q - 6);
       u.playerOrder = { type: 'move', col: retreatCol, row: u.r };
     }
     this._showOrderFeedback('WYCOFAJ');
@@ -16765,7 +16875,7 @@ export class BattleScene {
   /** Lewy panel walki: licznik rozstawionych jednostek. */
   private _updateBattleRosterCountLine(): void {
     if (!this._battleRosterCount || this.deployPhase || !this.started) return;
-    const live = this.atk.filter(u => !u.dead && !u.removed && !u.routed).length;
+    const live = this._playerRoster().filter(u => !u.dead && !u.removed && !u.routed).length;
     this._battleRosterCount.textContent = 'Na polu: ' + live + ' jednostek';
   }
 
@@ -16797,7 +16907,7 @@ export class BattleScene {
     if (unitBar) unitBar.style.display = 'flex';
 
     const selUnits = [...this._selectedUnits]
-      .map(id => this.atk.find(u => u.bu.id === id))
+      .map(id => this._findUnitById(id))
       .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed
         && (this.deployPhase || !u.routed));
     if (selUnits.length === 0) return;
@@ -16853,7 +16963,7 @@ export class BattleScene {
     if (!this._battleRosterHeader) return;
     if (!this.deployPhase && (!this.started || !this._manualMode)) return;
     const counts = { mounted: 0, melee: 0, ranged: 0 };
-    for (const ru of this.atk) {
+    for (const ru of this._playerRoster()) {
       if (ru.dead || ru.removed) continue;
       if (!this.deployPhase && ru.routed) continue;
       counts[this._deployRowKind(ru)]++;
@@ -17310,13 +17420,15 @@ export class BattleScene {
   private _updateRosterBar(): void {
     if (this.deployPhase) {
       if (!this._ensureDeployRowRefs()) return;
+      const roster = this._playerRoster();
+      const rosterContainer = this._battleRosterCards ?? this._deployUnitsRow;
       let missingCards = false;
       let wrongContainer = false;
-      for (const ru of this.atk) {
+      for (const ru of roster) {
         if (ru.dead || ru.removed) continue;
         const card = this._unitCards.get(ru.bu.id);
         if (!card) { missingCards = true; break; }
-        if (!this._deployUnitsRow?.contains(card)) {
+        if (!rosterContainer?.contains(card)) {
           wrongContainer = true;
           break;
         }
@@ -17326,7 +17438,7 @@ export class BattleScene {
         return;
       }
       this._updateBattleRosterHeader();
-      for (const ru of this.atk) {
+      for (const ru of roster) {
         const card = this._unitCards.get(ru.bu.id);
         if (!card) continue;
         const isDead = ru.dead || ru.removed;
@@ -17609,7 +17721,7 @@ export class BattleScene {
    */
   private _ungroupSelected(): void {
     const selUnits = [...this._selectedUnits]
-      .map(id => this.atk.find(u => u.bu.id === id))
+      .map(id => this._findUnitById(id))
       .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed && !!u.groupId);
     if (selUnits.length === 0) {
       const msg = 'Zaznaczone jednostki nie sa w grupie';
@@ -17737,9 +17849,9 @@ export class BattleScene {
     this._groupFrameMarkers.set(ru.bu.id, g);
   }
 
-  /** Odswieza ramki wszystkich jednostek ATK w grupach. */
+  /** Odswieza ramki wszystkich jednostek gracza w grupach. */
   private _syncAllGroupFrameMarkers(): void {
-    for (const ru of this.atk) {
+    for (const ru of this._playerRoster()) {
       if (ru.groupId && !ru.dead && !ru.removed) {
         this._updateGroupFrameMarker(ru);
       } else {
@@ -17750,18 +17862,18 @@ export class BattleScene {
 
   /** Kolejnosc jednostek na pasku rostera (zywe, nie wycofane). */
   private _battleRosterOrder(): RuntimeBattleUnit[] {
-    return this.atk.filter(u => !u.dead && !u.removed && !u.routed);
+    return this._playerRoster().filter(u => !u.dead && !u.removed && !u.routed);
   }
 
   /** Zastepuje zaznaczenie w walce recznej. */
   private _selectBattleUnitsByIds(ids: string[]): void {
     for (const id of [...this._selectedUnits]) {
-      const u = this.atk.find(x => x.bu.id === id);
+      const u = this._findUnitById(id);
       if (u) this._removeSelectionRing(u);
     }
     this._selectedUnits.clear();
     for (const id of ids) {
-      const u = this.atk.find(x => x.bu.id === id);
+      const u = this._findUnitById(id);
       if (u && !u.dead && !u.removed && !u.routed) {
         this._selectedUnits.add(id);
         this._addSelectionRing(u);
@@ -18011,13 +18123,13 @@ export class BattleScene {
       if (alreadyAllSelected) {
         const members = this._liveGroupMemberIds(gid);
         for (const id of members) {
-          const u = this.atk.find(u => u.bu.id === id);
+          const u = this._findUnitById(id);
           if (u) { this._selectedUnits.delete(id); this._removeSelectionRing(u); }
         }
       } else {
         const members = this._liveGroupMemberIds(gid);
         for (const id of members) {
-          const u = this.atk.find(u => u.bu.id === id);
+          const u = this._findUnitById(id);
           if (u && !u.dead && !u.removed) {
             this._selectedUnits.add(id);
             this._addSelectionRing(u);
@@ -18042,7 +18154,7 @@ export class BattleScene {
     const members = this._liveGroupMemberIds(gid);
     if (members.length === 0) return false;
     for (const id of members) {
-      const u = this.atk.find(u => u.bu.id === id);
+      const u = this._findUnitById(id);
       if (u && !u.dead && !u.removed && !this._selectedUnits.has(id)) return false;
     }
     return true;
@@ -18055,7 +18167,7 @@ export class BattleScene {
   private _orderGroupMove(gid: string, targetCol: number, targetRow: number): void {
     const ids = this._liveGroupMemberIds(gid);
     for (const id of ids) {
-      const u = this.atk.find(u => u.bu.id === id);
+      const u = this._findUnitById(id);
       if (!u || u.dead || u.removed) continue;
       const dest = this._moveTargetForUnit(u, targetCol, targetRow);
       u.playerOrder = { type: 'move', col: dest.col, row: dest.row };
@@ -18069,7 +18181,7 @@ export class BattleScene {
     const ids = this._liveGroupMemberIds(gid);
     if (ids.length === 0) return;
     const units = ids
-      .map(id => this.atk.find(u => u.bu.id === id))
+      .map(id => this._findUnitById(id))
       .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
     if (units.length === 0) return;
     this._applyFormationToUnits(units, formation);

@@ -237,11 +237,13 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
+    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
   lodzie_rybackie: {
     nazwa: "\u0141odzie rybackie",
@@ -757,6 +759,13 @@ function podzialLuksus(city) {
   const p = city ?? DEFAULT_PODZIAL_HANDLU;
   return p.procentLuksus ?? DEFAULT_PODZIAL_HANDLU.procentLuksus;
 }
+function cultureHappinessLineLabel(haKult, ownCultureShare) {
+  if (haKult < 0 && ownCultureShare !== void 0 && ownCultureShare < 0.5) {
+    const pct = Math.round(ownCultureShare * 100);
+    return `Kultura (udzia\u0142 w\u0142asnej ${pct}%)`;
+  }
+  return "Kultura";
+}
 function computeHappinessBreakdown(input, society = null) {
   const diff = input.difficulty ?? "normal";
   const szBlock = society?.szczescie ?? {};
@@ -767,7 +776,7 @@ function computeHappinessBreakdown(input, society = null) {
     lines.push({ id: "budynki", label: "Budynki (+1/budynek)", value: input.buildingZadowolenie });
   }
   if (input.haKult) {
-    lines.push({ id: "kultura", label: "Kultura dominuj\u0105ca", value: input.haKult });
+    lines.push({ id: "kultura", label: cultureHappinessLineLabel(input.haKult, input.ownCultureShare), value: input.haKult });
   }
   if (input.haRel) {
     lines.push({ id: "religia", label: "Religia", value: input.haRel });
@@ -814,10 +823,6 @@ function computeHappinessBreakdown(input, society = null) {
   if (input.atWar) {
     const v = pickSociety(szBlock, "szczescie_kara_wojna", diff, -3);
     if (v) lines.push({ id: "wojna", label: "Wojna", value: v });
-  }
-  if (input.ownCultureShare !== void 0 && input.ownCultureShare < 0.5) {
-    const v = pickSociety(szBlock, "szczescie_kara_obca_kultura", diff, -1);
-    if (v) lines.push({ id: "obca_kultura", label: "Obca kultura", value: v });
   }
   if (input.foreignReligionDominant) {
     const v = pickSociety(szBlock, "szczescie_kara_obca_religia", diff, -2);

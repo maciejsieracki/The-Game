@@ -20,6 +20,7 @@ const SIMPLIFIED_CMD = new Set<string>([
   // ucinał komendę dla warstwy 'simplified' mimo że decideAIDiplomacy ją generował
   // (main.ts pickResourceSurplusForOwnerPair jest już ownerId-agnostyczne).
   'zaproponuj_handel_surowiec',
+  'zaproponuj_audiencje',
 ]);
 
 function clamp(n: number, lo: number, hi: number): number {
@@ -174,6 +175,7 @@ export function filterDiplomacyCommandsForLayer(
 const ESTABLISHED_CONTACT_CMDS = new Set<string>([
   'zaproponuj_pokoj',
   'zaproponuj_sojusz',
+  'zaproponuj_pakt',
   'zaproponuj_handel',
   'zaproponuj_umowe_handlowa',
   'zaproponuj_handel_surowiec',

@@ -216,6 +216,46 @@ export interface DiplomacyAudienceConfig {
 let cfg: DiplomacyAudienceConfig | null = null;
 let rootEl: HTMLDivElement | null = null;
 let modalOverlay: HTMLDivElement | null = null;
+/** Po kliknięciu wpisu stołu w kolejce zdarzeń — otwórz modal kontroferty zaraz po renderze audiencji. */
+let pendingAutoCounterNegotiationId: string | null = null;
+
+/** Woła SILNIK (openDiplomacyAudienceForNegotiation) przed showDiplomacyAudience. */
+export function requestAutoCounterNegotiation(negotiationId: string): void {
+  pendingAutoCounterNegotiationId = negotiationId;
+}
+
+function findIncomingNegotiationRow(
+  st: DiplomacyAudienceState,
+  aid: string,
+): PendingNegotiationRow | undefined {
+  return (st.pendingNegotiations ?? []).find(
+    r => r.direction === 'incoming' && r.uiActionId === aid,
+  );
+}
+
+function openCounterNegotiationModal(
+  st: DiplomacyAudienceState,
+  row: PendingNegotiationRow,
+  mergeBasketCtx: (negCtx: NegotiationModalContext) => NegotiationModalContext,
+): void {
+  if (!cfg?.getNegotiationContext || !row.canCounter) return;
+  const negCtx = cfg.getNegotiationContext(row.uiActionId);
+  if (!negCtx) return;
+  const syntheticAction: AudienceAction = {
+    id: row.uiActionId,
+    label: row.actionLabel ?? 'Kontroferta',
+    enabled: true,
+  };
+  showNegotiationModal(
+    syntheticAction,
+    mergeBasketCtx(negCtx),
+    (payload) => cfg!.previewNegotiation
+      ? cfg!.previewNegotiation(cfg!.ownerId, payload)
+      : { accepted: true },
+    (payload) => cfg!.onCounterNegotiation?.(row.id, payload),
+    () => { /* anulowano */ },
+  );
+}
 
 function childModalBlocksExit(): boolean {
   if (modalOverlay !== null) return true;
@@ -1027,9 +1067,19 @@ function render(): void {
           return;
         }
         if (action && action.enabled && actionNeedsNegotiation(aid) && negCtx) {
+          // Ich propozycja na stole — ten sam kafelek ma otwierać KONTROFERTĘ (istniejący
+          // wpis), nie składać nowej propozycji gracza (handleNegotiatedProposal), bo ta
+          // ścieżka od razu rozstrzyga AI i wygląda jak natychmiastowe „Przyjmij".
+          const incoming = findIncomingNegotiationRow(st, aid);
+          if (incoming) {
+            if (incoming.canCounter) {
+              openCounterNegotiationModal(st, incoming, mergeBasketCtx);
+            }
+            return;
+          }
           showNegotiationModal(
             action,
-            negCtx,
+            mergeBasketCtx(negCtx),
             (payload) => cfg!.previewNegotiation
               ? cfg!.previewNegotiation(cfg!.ownerId, payload)
               : { accepted: true },
@@ -1090,23 +1140,22 @@ function render(): void {
       if (act === 'reject') { cfg.onRejectNegotiation?.(negotId); return; }
       if (act === 'counter') {
         const aid = btn.getAttribute('data-negot-aid');
-        if (!aid || !cfg.getNegotiationContext) return;
-        const negCtx = cfg.getNegotiationContext(aid);
-        if (!negCtx) return;
+        if (!aid) return;
         const row = (st.pendingNegotiations ?? []).find(r => r.id === negotId);
-        const syntheticAction: AudienceAction = { id: aid, label: row?.actionLabel ?? 'Kontroferta', enabled: true };
-        showNegotiationModal(
-          syntheticAction,
-          mergeBasketCtx(negCtx),
-          (payload) => cfg!.previewNegotiation
-            ? cfg!.previewNegotiation(cfg!.ownerId, payload)
-            : { accepted: true },
-          (payload) => cfg!.onCounterNegotiation?.(negotId, payload),
-          () => { /* anulowano */ },
-        );
+        if (!row) return;
+        openCounterNegotiationModal(st, row, mergeBasketCtx);
       }
     });
   });
+
+  if (pendingAutoCounterNegotiationId) {
+    const autoId = pendingAutoCounterNegotiationId;
+    pendingAutoCounterNegotiationId = null;
+    const autoRow = (st.pendingNegotiations ?? []).find(r => r.id === autoId);
+    if (autoRow?.canCounter) {
+      openCounterNegotiationModal(st, autoRow, mergeBasketCtx);
+    }
+  }
 }
 
 export function showDiplomacyAudience(config: DiplomacyAudienceConfig): void {

@@ -31,14 +31,13 @@ const FALLBACK_HIGHLAND: Record<DensityTier, number> = { low: 0.66, medium: 0.50
 
 /**
  * Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play — Maciej 2026-07-26,
- * C-MAPA-Q2=B (rewizja decyzji 80A: górzystość ląduje ~10% zamiast ~19,3%, żeby
- * fair-play-grid-test.cjs przechodził bez naginania progów testu). Suma mountain+highland
- * per tier ≈ docelowa górzystość lądu: low≈0,08 / medium≈0,10 / high≈0,20.
+ * C-MAPA-Q2=B (rewizja 2026-07-26: górzystość lądu ~18% zamiast ~12% na medium).
+ * Suma mountain+highland per tier ≈ docelowa górzystość lądu: low≈0,12 / medium≈0,18 / high≈0,30.
  */
 const FALLBACK_RELIEF_OVERFLOW_CAP: Record<DensityTier, { mountain: number; highland: number }> = {
-  low: { mountain: 0.03, highland: 0.05 },
-  medium: { mountain: 0.04, highland: 0.06 },
-  high: { mountain: 0.08, highland: 0.12 },
+  low: { mountain: 0.045, highland: 0.075 },
+  medium: { mountain: 0.06, highland: 0.09 },
+  high: { mountain: 0.12, highland: 0.18 },
 };
 
 /** Parametry pasm górskich (seed-and-grow) — Zadanie HILLS Q1/Q2 (2026-07-20). */

@@ -31,7 +31,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-test-bundle.cjs');
 // Entry TS re-exports everything we need from ai.ts.
 // Uses AI_SRC path so env override works correctly.
 const ENTRY_TS = `
-export { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
 export { diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } from ${JSON.stringify(AI_SRC + '/game/diplomacy-layers')};
 `;
@@ -55,7 +55,7 @@ try {
 }
 
 const AI = require(BUNDLE_FILE);
-const { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } = AI;
+const { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
 let passed = 0;
@@ -95,6 +95,10 @@ function makeUnit(id, ownerId, q, r, category = 'miecznik') {
   return { id, ownerId, typeId: 'Wojownik', category, q, r, ruch: 2, ruchLeft: 2 };
 }
 
+function makeScout(id, ownerId, q, r) {
+  return { id, ownerId, typeId: 'Zwiadowca', category: 'zwiadowca', q, r, ruch: 3, ruchLeft: 3 };
+}
+
 function makeCity(id, ownerId, q, r) {
   return { id, ownerId, q, r, name: 'TestCity', population: 2 };
 }
@@ -109,6 +113,7 @@ function makeGameData(aiParamsOverride = {}) {
     units: [
       { Jednostka: 'Wojownik', Health: 30, Ruch: 2 },
       { Jednostka: 'Łucznik', Health: 20, Ruch: 2 },
+      { Jednostka: 'Zwiadowca', Health: 20, Ruch: 3 },
       { Jednostka: 'Osadnik', Health: 10, Ruch: 2 },
     ],
     // id-y zgodne z prawdziwym data/buildings.json -- ai.ts (chooseCityProduction)
@@ -201,7 +206,7 @@ console.log('\n--- T1a: decideAITurn basic contract ---');
   eq(last.type, 'endTurn', 'last command is endTurn');
   
   const types = result.map(c => c.type);
-  const validTypes = new Set(['move', 'foundCity', 'attack', 'build', 'endTurn']);
+  const validTypes = new Set(['move', 'foundCityAt', 'attack', 'build', 'buildImprovement', 'endTurn']);
   const allValid = types.every(t => validTypes.has(t));
   assert(allValid, 'all command types are valid AICommand types');
 }
@@ -268,9 +273,9 @@ console.log('\n--- T1c: wartość (unicode) backward compat ---');
 // ============================================================================
 // TEST 4: T1 - faza wczesna z 2 miastami, bez enemy → produkcja budynku
 // Sprawdzamy że ai produkuje budynki (nie tylko endTurn) w fazie wczesnej
-// oraz że Osadnik jest produkowany gdy myCities < 3 (ekspansja)
+// oraz że AI NIE produkuje Osadnika (C-AI-EKSP: founding przez planCityFounding)
 // ============================================================================
-console.log('\n--- T1d: early phase builds and settler expansion ---');
+console.log('\n--- T1d: early phase builds (no Osadnik) ---');
 {
   const earlyData = makeGameData({ ...aiParamsT1 });
   const guard1 = makeUnit('g1', 1, 1, 1, 'miecznik');
@@ -285,14 +290,11 @@ console.log('\n--- T1d: early phase builds and settler expansion ---');
   const buildCmds = earlyResult.filter(c => c.type === 'build');
   assert(buildCmds.length > 0, 'early phase (2 cities): at least one build command');
   
-  // Osadnik powinien być kandydatem gdy myCities < 3
-  const settler = buildCmds.find(c => c.buildingId === 'Osadnik');
-  // Łucznik/Wojownik mogą wygrać z powodu score, ale Osadnik powinien być przynajmniej
-  // dla jednego z 2 miast — OR spichlerz jeśli wygrał
   const hasValidBuild = buildCmds.every(c =>
-    ['spichlerz', 'Osadnik', 'Wojownik', 'Łucznik'].includes(c.buildingId)
+    ['spichlerz', 'Wojownik', 'Łucznik', 'Zwiadowca'].includes(c.buildingId)
   );
-  assert(hasValidBuild, 'early phase: all builds are valid early-game choices; got: ' + buildCmds.map(c=>c.buildingId).join(', '));
+  assert(hasValidBuild, 'early phase: no Osadnik; allowed: spichlerz/Wojownik/Łucznik/Zwiadowca; got: ' + buildCmds.map(c=>c.buildingId).join(', '));
+  assert(!buildCmds.some(c => c.buildingId === 'Osadnik'), 'early phase: Osadnik removed from AI production');
 
   // spichlerz jest priorytetem gdy nie zbudowany — sprawdź że score 250 > Osadnik 200
   // przez weryfikację że jeśli spichlerz jest wybrany w danym mieście, to nie jest tam zbudowany
@@ -1028,9 +1030,8 @@ console.log('\n--- T5b: canAfford gate — all blocked -> AI saves (no build com
 // Osadnik w centrum (10,10); kandydat w klastrze (q=2,r=2) vs kandydat daleki (q=18,r=18)
 // Oczekiwany wynik: move direction toward cluster, nie w stronę dalekiego
 // ============================================================================
-console.log('\n--- T6a: clusterCenter+radius -> settler prefers hex inside cluster ---');
+console.log('\n--- T6a: clusterCenter+radius -> planCityFounding prefers hex inside cluster ---');
 {
-  // Build a 20x20 map where cluster hex (2,2) has same base score as (18,18)
   const bigMap2 = makeMap(20, 20);
   const clusterData = makeGameData({
     'archetype_grecy_wojsko_priorytet':   { wartosc: 0, sekcja: 'test', opis: '' },
@@ -1052,23 +1053,16 @@ console.log('\n--- T6a: clusterCenter+radius -> settler prefers hex inside clust
     'trudnosc_poziom2_bonus_walka':       { wartosc: 0, sekcja: 'test', opis: '' },
   });
 
-  // Settler at center of map
-  const settler = { id: 's1', ownerId: 1, typeId: 'Osadnik', category: 'osadnik', q: 10, r: 10, ruch: 2, ruchLeft: 2 };
-
-  // Block founding at settler's current position by placing a city at (10,10)
-  // (canFoundCity returns false when any city within minCityDist, dist=0 always blocks)
-  const blockingCity = makeCity('blocker', 2, 10, 10);
-
-  // clusterCenter at (2,2), radius=5 — hexes in range get +50 score bonus
   const clusterCenter = { q: 2, r: 2 };
   const clusterRadius = 5;
 
   let result;
   let threw = false;
   try {
-    result = decideAITurn(1, [settler], [blockingCity], bigMap2, clusterData, {
+    result = decideAITurn(1, [], [], bigMap2, clusterData, {
       civType: 'grecy',
       poziomTrudnosci: 2,
+      pracaAvailable: 30,
       clusterCenter,
       clusterRadius,
     });
@@ -1078,27 +1072,13 @@ console.log('\n--- T6a: clusterCenter+radius -> settler prefers hex inside clust
   }
 
   assert(!threw, 'T6a: decideAITurn with clusterCenter does not throw');
-  assert(Array.isArray(result), 'T6a: returns array');
-  eq(result[result.length - 1].type, 'endTurn', 'T6a: last cmd = endTurn');
-
-  const moveCmds = result.filter(c => c.type === 'move' && c.unitId === 's1');
-  // Settler should move toward cluster (toward q=2,r=2 corner) not toward q=18,r=18
-  assert(
-    moveCmds.length > 0,
-    'T6a: settler gets move command; got: ' + result.map(c=>c.type).join(', ')
-  );
-
-  if (moveCmds.length > 0) {
-    const move = moveCmds[0];
-    const distToCluster = hexDistance(move.toQ, move.toR, clusterCenter.q, clusterCenter.r);
-    const distToFarCorner = hexDistance(move.toQ, move.toR, 18, 18);
-    // The first step toward cluster (q=2,r=2) must be closer to cluster than to far corner
-    assert(
-      distToCluster < distToFarCorner,
-      'T6a: settler move step is toward cluster not away from it; ' +
-      'step=(' + move.toQ + ',' + move.toR + '), ' +
-      'distToCluster=' + distToCluster + ', distToFarCorner=' + distToFarCorner
-    );
+  const foundCmds = result.filter(c => c.type === 'foundCityAt');
+  assert(foundCmds.length > 0, 'T6a: planCityFounding emits foundCityAt; got: ' + result.map(c=>c.type).join(', '));
+  if (foundCmds.length > 0) {
+    const fc = foundCmds[0];
+    const distToCluster = hexDistance(fc.q, fc.r, clusterCenter.q, clusterCenter.r);
+    const distToFarCorner = hexDistance(fc.q, fc.r, 18, 18);
+    assert(distToCluster < distToFarCorner, 'T6a: founding hex closer to cluster than far corner');
   }
 }
 
@@ -1106,7 +1086,7 @@ console.log('\n--- T6a: clusterCenter+radius -> settler prefers hex inside clust
 // TEST 18: T6 - WITHOUT clusterCenter: settler picks globally best hex (regression)
 // Same setup but no clusterCenter -> behavior unchanged (existing logic)
 // ============================================================================
-console.log('\n--- T6b: no clusterCenter -> present settler logic unchanged (regression) ---');
+console.log('\n--- T6b: no clusterCenter -> planCityFounding still works (regression) ---');
 {
   const bigMap3 = makeMap(20, 20);
   const clusterDataB = makeGameData({
@@ -1122,15 +1102,14 @@ console.log('\n--- T6b: no clusterCenter -> present settler logic unchanged (reg
     'trudnosc_poziom2_startowe_miasta':   { wartosc: 0, sekcja: 'test', opis: '' },
     'trudnosc_poziom2_bonus_walka':       { wartosc: 0, sekcja: 'test', opis: '' },
   });
-  const settler2 = { id: 's2', ownerId: 1, typeId: 'Osadnik', category: 'osadnik', q: 10, r: 10, ruch: 2, ruchLeft: 2 };
 
   let result;
   let threw = false;
   try {
-    // No clusterCenter passed -> default behaviour
-    result = decideAITurn(1, [settler2], [], bigMap3, clusterDataB, {
+    result = decideAITurn(1, [], [], bigMap3, clusterDataB, {
       civType: 'grecy',
       poziomTrudnosci: 2,
+      pracaAvailable: 25,
     });
   } catch (e) {
     threw = true;
@@ -1140,8 +1119,7 @@ console.log('\n--- T6b: no clusterCenter -> present settler logic unchanged (reg
   assert(!threw, 'T6b: decideAITurn without clusterCenter does not throw');
   assert(Array.isArray(result), 'T6b: returns array');
   eq(result[result.length - 1].type, 'endTurn', 'T6b: last cmd = endTurn');
-  // Just verify it does not crash and returns valid commands (regression)
-  const validTypes = new Set(['move', 'foundCity', 'attack', 'build', 'endTurn']);
+  const validTypes = new Set(['move', 'foundCityAt', 'attack', 'build', 'buildImprovement', 'endTurn']);
   assert(
     result.every(c => validTypes.has(c.type)),
     'T6b: all commands have valid types (no regression)'
@@ -1155,10 +1133,8 @@ console.log('\n--- T6b: no clusterCenter -> present settler logic unchanged (reg
 // TESTY T6c-T6f: ekspansja AI świadoma klastra — dalsze przypadki
 // ============================================================================
 
-console.log('\n--- T6c: settler IN cluster range -> foundCity (jesli canFound=true) ---');
+console.log('\n--- T6c: planCityFounding w klastrze -> foundCityAt ---');
 {
-  // Settler ustawiony WEWNĄTRZ klastra (q=3,r=3); brak miast w pobliżu -> canFoundCity=true
-  // Oczekiwanie: AI wydaje foundCity (jest w dobrym miejscu), nie rusza się dalej
   const map6c = makeMap(20, 20);
   const data6c = makeGameData({
     'archetype_grecy_wojsko_priorytet':   { wartosc: 0, sekcja: 'test', opis: '' },
@@ -1173,96 +1149,42 @@ console.log('\n--- T6c: settler IN cluster range -> foundCity (jesli canFound=tr
     'trudnosc_poziom2_startowe_miasta':   { wartosc: 0, sekcja: 'test', opis: '' },
     'trudnosc_poziom2_bonus_walka':       { wartosc: 0, sekcja: 'test', opis: '' },
   });
-  // Settler w pozycji (3,3) — wewnątrz klastra (centrum=2,2, radius=6)
-  const settler6c = { id: 's6c', ownerId: 1, typeId: 'Osadnik', category: 'osadnik', q: 3, r: 3, ruch: 2, ruchLeft: 2 };
   let result6c;
   let threw6c = false;
   try {
-    result6c = decideAITurn(1, [settler6c], [], map6c, data6c, {
+    result6c = decideAITurn(1, [], [], map6c, data6c, {
       civType: 'grecy',
       poziomTrudnosci: 2,
+      pracaAvailable: 30,
       clusterCenter: { q: 2, r: 2 },
       clusterRadius: 6,
     });
   } catch(e) { threw6c = true; }
 
-  assert(!threw6c, 'T6c: nie rzuca gdy settler w klastrze');
-  assert(Array.isArray(result6c), 'T6c: zwraca tablice');
-  const foundCmds6c = result6c.filter(c => c.type === 'foundCity');
-  // canFoundCity(3,3) = true (brak innych miast) -> AI powinna zakladac miasto
-  assert(foundCmds6c.length > 0, 'T6c: settler w zasięgu klastra zakłada miasto (foundCity)');
+  assert(!threw6c, 'T6c: nie rzuca przy founding w klastrze');
+  const foundCmds6c = result6c.filter(c => c.type === 'foundCityAt');
+  assert(foundCmds6c.length > 0, 'T6c: planCityFounding zaklada miasto (foundCityAt)');
 }
 
-console.log('\n--- T6d: settler FAR from cluster -> first move step decreases dist to clusterCenter ---');
+console.log('\n--- T6d: clusterStateTargets -> planCityFounding blocked (consolidation) ---');
 {
-  // Settler w (18,18) — daleko od klastra (centrum=2,2, radius=4)
-  // Oczekiwanie: AI wydaje ruch ku centrum klastra
-  const map6d = makeMap(25, 25);
+  const map6d = makeMap(15, 15);
   const data6d = makeGameData({
-    'archetype_grecy_wojsko_priorytet':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'archetype_grecy_nauka_priorytet':    { wartosc: 0, sekcja: 'test', opis: '' },
-    'archetype_grecy_ekonomia_priorytet': { wartosc: 0, sekcja: 'test', opis: '' },
-    'archetype_grecy_obrona_priorytet':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'ekspansja_min_dystans_miast':        { wartosc: 3, sekcja: 'test', opis: '' },
-    'ekspansja_zagroz_zasieg':            { wartosc: 5, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_zywnosc_pkt':   { wartosc: 3, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_praca_pkt':     { wartosc: 2, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_handel_pkt':    { wartosc: 1, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_rzeka_pkt':     { wartosc: 2, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_surowiec_pkt':  { wartosc: 2, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_granica_kara':  { wartosc: -3, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_produkcja':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_nauka':       { wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_startowe_jednostki':{ wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_startowe_miasta':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_walka':       { wartosc: 0, sekcja: 'test', opis: '' },
+    'ekspansja_min_dystans_miast': { wartosc: 3, sekcja: 'test', opis: '' },
+    'ekspansja_zagroz_zasieg':     { wartosc: 5, sekcja: 'test', opis: '' },
   });
-  const settler6d = { id: 's6d', ownerId: 1, typeId: 'Osadnik', category: 'osadnik', q: 18, r: 18, ruch: 2, ruchLeft: 2 };
-  // Blokujące miasto w (18,18) aby uniemożliwić foundCity w miejscu startu
-  const blockingCity6d = makeCity('b6d', 2, 18, 18);
-  const clusterCenter6d = { q: 2, r: 2 };
-  const clusterRadius6d = 4;
-
-  let result6d;
-  let threw6d = false;
-  try {
-    result6d = decideAITurn(1, [settler6d], [blockingCity6d], map6d, data6d, {
-      civType: 'grecy',
-      poziomTrudnosci: 2,
-      clusterCenter: clusterCenter6d,
-      clusterRadius: clusterRadius6d,
-    });
-  } catch(e) { threw6d = true; }
-
-  assert(!threw6d, 'T6d: nie rzuca gdy settler poza klastrem');
-  const moveCmds6d = result6d.filter(c => c.type === 'move' && c.unitId === 's6d');
-  assert(moveCmds6d.length > 0, 'T6d: settler poza klastrem dostaje move');
-  if (moveCmds6d.length > 0) {
-    const move6d = moveCmds6d[0];
-    const distBefore = hexDistance(18, 18, clusterCenter6d.q, clusterCenter6d.r);
-    const distAfter  = hexDistance(move6d.toQ, move6d.toR, clusterCenter6d.q, clusterCenter6d.r);
-    assert(
-      distAfter < distBefore,
-      'T6d: ruch osadnika zmniejsza dystans do centrum klastra; before=' + distBefore + ' after=' + distAfter +
-      ' step=(' + move6d.toQ + ',' + move6d.toR + ')'
-    );
-  }
+  const cmd6d = planCityFounding(1, [], map6d, data6d, {
+    pracaAvailable: 30,
+    clusterStateTargets: [{ ownerId: 2, q: 5, r: 5 }],
+  }, 3);
+  assert(cmd6d === null, 'T6d: clusterConsolidationPhase blokuje planCityFounding');
 }
 
-console.log('\n--- T6e: scoring discriminator — hex inside cluster wins over hex just outside ---');
+console.log('\n--- T6e: planCityFounding prefers hex inside cluster ---');
 {
-  // Weryfikuje, że bonus +50 wewnątrz klastra dominuje nad brakiem bonusu na zewnątrz.
-  // Mapa 15x15; klaster centrum=(2,2) radius=3.
-  // Hex (2,2) wewnątrz klastra (dist=0 <= 3) -> score += 50
-  // Hex (9,9) poza klastrem (dist > 3) -> score -= 20
-  // Oba mają identyczny teren (laka), settler w (7,7), blokujące miasto w (7,7)
-  const map6e = makeMap(15, 15);
+  const map6e = makeMap(20, 20);
   const data6e = makeGameData({
-    'archetype_grecy_wojsko_priorytet':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'archetype_grecy_nauka_priorytet':    { wartosc: 0, sekcja: 'test', opis: '' },
-    'archetype_grecy_ekonomia_priorytet': { wartosc: 0, sekcja: 'test', opis: '' },
-    'archetype_grecy_obrona_priorytet':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'ekspansja_min_dystans_miast':        { wartosc: 2, sekcja: 'test', opis: '' },
+    'ekspansja_min_dystans_miast':        { wartosc: 3, sekcja: 'test', opis: '' },
     'ekspansja_zagroz_zasieg':            { wartosc: 5, sekcja: 'test', opis: '' },
     'ekspansja_heurystyka_zywnosc_pkt':   { wartosc: 3, sekcja: 'test', opis: '' },
     'ekspansja_heurystyka_praca_pkt':     { wartosc: 2, sekcja: 'test', opis: '' },
@@ -1270,110 +1192,38 @@ console.log('\n--- T6e: scoring discriminator — hex inside cluster wins over h
     'ekspansja_heurystyka_rzeka_pkt':     { wartosc: 0, sekcja: 'test', opis: '' },
     'ekspansja_heurystyka_surowiec_pkt':  { wartosc: 0, sekcja: 'test', opis: '' },
     'ekspansja_heurystyka_granica_kara':  { wartosc: -3, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_produkcja':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_nauka':       { wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_startowe_jednostki':{ wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_startowe_miasta':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_walka':       { wartosc: 0, sekcja: 'test', opis: '' },
   });
-  const settler6e = { id: 's6e', ownerId: 1, typeId: 'Osadnik', category: 'osadnik', q: 7, r: 7, ruch: 2, ruchLeft: 2 };
-  const blockCity6e = makeCity('b6e', 2, 7, 7);
   const cc6e = { q: 2, r: 2 };
-  const cr6e = 3; // radius=3; hex (2,2) dist=0 <= 3 => in; hex (9,9) dist > 3 => out
-
-  let result6e;
-  let threw6e = false;
-  try {
-    result6e = decideAITurn(1, [settler6e], [blockCity6e], map6e, data6e, {
-      civType: 'grecy',
-      poziomTrudnosci: 2,
-      clusterCenter: cc6e,
-      clusterRadius: cr6e,
-    });
-  } catch(e) { threw6e = true; }
-
-  assert(!threw6e, 'T6e: nie rzuca z klastrem');
-  const moveCmds6e = result6e.filter(c => c.type === 'move' && c.unitId === 's6e');
-  assert(moveCmds6e.length > 0, 'T6e: settler dostaje move');
-  if (moveCmds6e.length > 0) {
-    const step6e = moveCmds6e[0];
-    const distToCluster = hexDistance(step6e.toQ, step6e.toR, cc6e.q, cc6e.r);
-    const distToFar     = hexDistance(step6e.toQ, step6e.toR, 13, 13);
+  const cmd6e = planCityFounding(1, [], map6e, data6e, {
+    pracaAvailable: 30,
+    clusterCenter: cc6e,
+    clusterRadius: 5,
+  }, 3);
+  assert(cmd6e !== null, 'T6e: planCityFounding zwraca foundCityAt w klastrze');
+  if (cmd6e) {
+    eq(cmd6e.type, 'foundCityAt', 'T6e: typ komendy');
+    const distToCluster = hexDistance(cmd6e.q, cmd6e.r, cc6e.q, cc6e.r);
+    const distToFar     = hexDistance(cmd6e.q, cmd6e.r, 18, 18);
     assert(
       distToCluster < distToFar,
-      'T6e: scoring +50 vs -20: settler idzie ku klastrowi (dist=' + distToCluster + ') nie daleko (dist=' + distToFar + ')'
+      'T6e: hex founding blizej centrum klastra niz dalekiego rogu'
     );
   }
 }
 
-console.log('\n--- T6f: ClusterPlacement mapping: centrum+minDystans*2 -> same bias as manual clusterCenter ---');
+console.log('\n--- T6f: decideAITurn z clusterStateTargets -> brak foundCityAt ---');
 {
-  // Symuluje jak silnik mapuje ClusterPlacement -> AITurnOpts.
-  // placement.klastry[1] = { typ: 'egipt', centrum: {q:4,r:4}, typIndex: 1 }
-  // placement.minDystans = 4 => clusterRadius = 4*2 = 8
-  // Osadnik AI dla cywilizacji 'egipt' powinien ekspandować ku (4,4)
   const map6f = makeMap(20, 20);
   const data6f = makeGameData({
-    'archetype_egipt_wojsko_priorytet':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'archetype_egipt_nauka_priorytet':    { wartosc: 0, sekcja: 'test', opis: '' },
-    'archetype_egipt_ekonomia_priorytet': { wartosc: 0, sekcja: 'test', opis: '' },
-    'archetype_egipt_obrona_priorytet':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'ekspansja_min_dystans_miast':        { wartosc: 3, sekcja: 'test', opis: '' },
-    'ekspansja_zagroz_zasieg':            { wartosc: 5, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_zywnosc_pkt':   { wartosc: 3, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_praca_pkt':     { wartosc: 2, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_handel_pkt':    { wartosc: 1, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_rzeka_pkt':     { wartosc: 0, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_surowiec_pkt':  { wartosc: 0, sekcja: 'test', opis: '' },
-    'ekspansja_heurystyka_granica_kara':  { wartosc: -3, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_produkcja':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_nauka':       { wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_startowe_jednostki':{ wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_startowe_miasta':   { wartosc: 0, sekcja: 'test', opis: '' },
-    'trudnosc_poziom2_bonus_walka':       { wartosc: 0, sekcja: 'test', opis: '' },
+    'ekspansja_min_dystans_miast': { wartosc: 3, sekcja: 'test', opis: '' },
+    'ekspansja_zagroz_zasieg':     { wartosc: 5, sekcja: 'test', opis: '' },
   });
-
-  // Symulowany TypeCluster z ClusterPlacement
-  const mockCluster = { typ: 'egipt', typIndex: 1, centrum: { q: 4, r: 4 }, miasta: [] };
-  const mockPlacement = { rozmiarMapy: 'mala', aktywneTypy: 3, minDystansMiastaPanstwa: 4, minDystansObcyOdGracza: 5, playerTypIndex: 0, klastry: [
-    { typ: 'grecy', typIndex: 0, centrum: { q: 15, r: 15 }, miasta: [] },
-    mockCluster,
-  ]};
-
-  // Mapping (jak silnik powinien to robić):
-  const tc = mockPlacement.klastry.find(k => k.typ === 'egipt');
-  const clusterCenter6f = tc ? tc.centrum : undefined;
-  const clusterRadius6f = tc ? mockPlacement.minDystansMiastaPanstwa * 2 : undefined; // 4*2=8
-
-  const settler6f = { id: 's6f', ownerId: 1, typeId: 'Osadnik', category: 'osadnik', q: 16, r: 16, ruch: 2, ruchLeft: 2 };
-  const blockCity6f = makeCity('b6f', 2, 16, 16);
-
-  let result6f;
-  let threw6f = false;
-  try {
-    result6f = decideAITurn(1, [settler6f], [blockCity6f], map6f, data6f, {
-      civType: 'egipt',
-      poziomTrudnosci: 2,
-      clusterCenter: clusterCenter6f,
-      clusterRadius: clusterRadius6f,
-    });
-  } catch(e) { threw6f = true; }
-
-  assert(!threw6f, 'T6f: ClusterPlacement mapping nie rzuca');
-  assert(Array.isArray(result6f), 'T6f: zwraca tablice przy ClusterPlacement mapping');
-  const moveCmds6f = result6f.filter(c => c.type === 'move' && c.unitId === 's6f');
-  assert(moveCmds6f.length > 0, 'T6f: settler egiptu dostaje move (z centrum klastra z placement)');
-  if (moveCmds6f.length > 0) {
-    const step6f = moveCmds6f[0];
-    // Sprawdz że krok zmniejsza dystans do centrum Egiptu (4,4), nie zwiększa
-    const distBefore6f = hexDistance(16, 16, 4, 4);
-    const distAfter6f  = hexDistance(step6f.toQ, step6f.toR, 4, 4);
-    assert(
-      distAfter6f < distBefore6f,
-      'T6f: krok osadnika zbliża go do centrum Egiptu (4,4); before=' + distBefore6f + ' after=' + distAfter6f +
-      ' step=(' + step6f.toQ + ',' + step6f.toR + ')'
-    );
-  }
+  const result6f = decideAITurn(1, [], [], map6f, data6f, {
+    pracaAvailable: 30,
+    clusterStateTargets: [{ ownerId: 2, q: 4, r: 4 }],
+  });
+  const found6f = result6f.filter(c => c.type === 'foundCityAt');
+  assert(found6f.length === 0, 'T6f: konsolidacja klastra blokuje foundCityAt w decideAITurn');
 }
 
 
@@ -2205,33 +2055,30 @@ console.log('\n--- T5h: endTurn zawsze ostatni przy roznym canAfford ---');
 // TEST 19: T7D — D-START defensiveCopy (kopia_typu_obronna)
 // ---------------------------------------------------------------------------
 
-console.log('\n--- T7D-a: defensiveCopy -> brak foundCity i build ---');
+console.log('\n--- T7D-a: defensiveCopy -> brak foundCityAt i build ---');
 {
   const map7 = makeMap(10, 10);
-  const settler = makeUnit('s1', 2, 5, 5, 'osadnik');
   const warrior = makeUnit('w1', 2, 4, 5, 'miecznik');
   const city = makeCity('c1', 2, 3, 3);
-  const result = decideAITurn(2, [settler, warrior], [city], map7, makeGameData(), {
+  const result = decideAITurn(2, [warrior], [city], map7, makeGameData(), {
     defensiveCopy: true,
     civType: 'chinczycy',
+    pracaAvailable: 50,
   });
-  const found = result.filter(c => c.type === 'foundCity');
-  // Miasta-panstwa (defensiveCopy) maja od 2026-07-21 pelny rozwoj gospodarczy (decyzja
-  // Maciej) -- emitowanie komend 'build' jest wiec poprawne i NIE jest testowane tutaj.
-  // Wciaz nie zakladaja nowych miast (found.length===0 ponizej).
-  assert(found.length === 0, 'T7D-a: defensiveCopy nie emituje foundCity');
+  const found = result.filter(c => c.type === 'foundCityAt');
+  assert(found.length === 0, 'T7D-a: defensiveCopy nie emituje foundCityAt');
   eq(result[result.length - 1].type, 'endTurn', 'T7D-a: endTurn na koncu');
 }
 
-console.log('\n--- T7D-b: defensiveCopy -> osadnik bez ruchu ekspansyjnego ---');
+console.log('\n--- T7D-b: defensiveCopy -> brak founding mimo pracy ---');
 {
   const map7b = makeMap(10, 10);
-  const settler = makeUnit('s2', 3, 8, 8, 'osadnik');
-  const result = decideAITurn(3, [settler], [], map7b, makeGameData(), { defensiveCopy: true });
-  const moves = result.filter(c => c.type === 'move' && c.unitId === 's2');
-  const found = result.filter(c => c.type === 'foundCity');
-  assert(moves.length === 0, 'T7D-b: osadnik kopia_typu nie rusza sie');
-  assert(found.length === 0, 'T7D-b: osadnik kopia_typu nie zaklada miasta');
+  const result = decideAITurn(3, [], [], map7b, makeGameData(), {
+    defensiveCopy: true,
+    pracaAvailable: 50,
+  });
+  const found = result.filter(c => c.type === 'foundCityAt');
+  assert(found.length === 0, 'T7D-b: kopia_typu_obronna nie zaklada miasta');
 }
 
 console.log('\n--- T7D-c: defensiveCopy -> riposta na sasiedniego wroga (AI, nie gracz) ---');
@@ -2273,16 +2120,18 @@ console.log('\n--- T7D-d: defensiveCopy -> brak marszu na odlegle miasto wroga -
   assert(moves.length === 0, 'T7D-d: brak marszu na odlegle miasto wroga');
 }
 
-console.log('\n--- T7D-e: 20 tur defensiveCopy — zero foundCity (regresja D-START) ---');
+console.log('\n--- T7D-e: 20 tur defensiveCopy — zero foundCityAt (regresja D-START) ---');
 {
   const map7e = makeMap(12, 12);
-  let units = [makeUnit('s20', 6, 6, 6, 'osadnik'), makeUnit('w20', 6, 5, 5, 'miecznik')];
+  let units = [makeUnit('w20', 6, 5, 5, 'miecznik')];
   const cities = [makeCity('c20', 6, 4, 4)];
   let foundTotal = 0;
   for (let t = 0; t < 20; t++) {
-    const cmds = decideAITurn(6, units, cities, map7e, makeGameData(), { defensiveCopy: true });
-    foundTotal += cmds.filter(c => c.type === 'foundCity').length;
-    // Symulacja: po ruchu aktualizuj pozycje (uproszczona)
+    const cmds = decideAITurn(6, units, cities, map7e, makeGameData(), {
+      defensiveCopy: true,
+      pracaAvailable: 50,
+    });
+    foundTotal += cmds.filter(c => c.type === 'foundCityAt').length;
     for (const cmd of cmds) {
       if (cmd.type === 'move') {
         const u = units.find(x => x.id === cmd.unitId);
@@ -2290,16 +2139,18 @@ console.log('\n--- T7D-e: 20 tur defensiveCopy — zero foundCity (regresja D-ST
       }
     }
   }
-  eq(foundTotal, 0, 'T7D-e: 20 tur bez foundCity dla kopia_typu_obronna');
+  eq(foundTotal, 0, 'T7D-e: 20 tur bez foundCityAt dla kopia_typu_obronna');
 }
 
-console.log('\n--- T7D-f: bez defensiveCopy -> foundCity gdy osadnik moze (regresja) ---');
+console.log('\n--- T7D-f: bez defensiveCopy -> foundCityAt gdy stac (regresja) ---');
 {
   const map7f = makeMap(10, 10);
-  const settler = makeUnit('sf', 7, 5, 5, 'osadnik');
-  const result = decideAITurn(7, [settler], [], map7f, makeGameData(), { civType: 'grecy' });
-  const found = result.filter(c => c.type === 'foundCity');
-  assert(found.length === 1, 'T7D-f: ekspansyjny AI zaklada miasto gdy canFound');
+  const result = decideAITurn(7, [], [], map7f, makeGameData(), {
+    civType: 'grecy',
+    pracaAvailable: 25,
+  });
+  const found = result.filter(c => c.type === 'foundCityAt');
+  assert(found.length === 1, 'T7D-f: ekspansyjny AI zaklada miasto przez foundCityAt');
 }
 
 // ============================================================================
@@ -2351,6 +2202,204 @@ console.log('\n--- T10c: obca cywilizacja bez odkrycia -> pre_contact ---');
   const contacted = new Set([3]);
   const layer = diplomacyLayerForOwner(5, simplified, foreign, contacted);
   eq(layer, 'pre_contact', 'T10c: foreign civ bez odkrycia = pre_contact');
+}
+
+// ---------------------------------------------------------------------------
+// TEST 11: T11 — wyścig o wioski (zwiadowcy na starcie, Maciej 2026-07-26)
+// ---------------------------------------------------------------------------
+
+console.log('\n--- T11-scout-a: pełna cywilizacja w fazie startowej -> kolejka Zwiadowca ---');
+{
+  const map = makeMap(10, 10);
+  const city = makeCity('c1', 1, 1, 1);
+  const cmds = decideAITurn(1, [], [city], map, makeGameData(), { civType: 'chinczycy' });
+  const builds = cmds.filter(c => c.type === 'build');
+  assert(
+    builds.some(b => b.buildingId === 'Zwiadowca'),
+    'T11-scout-a: early AI queues Zwiadowca when scoutCount < 2; got: ' + builds.map(b => b.buildingId).join(', '),
+  );
+}
+
+console.log('\n--- T11-scout-b: defensiveCopy (państwo-miasto) -> brak Zwiadowca ---');
+{
+  const map = makeMap(10, 10);
+  const city = makeCity('c1', 4, 1, 1);
+  const cmds = decideAITurn(4, [], [city], map, makeGameData(), { defensiveCopy: true });
+  assert(
+    !cmds.some(c => c.type === 'build' && c.buildingId === 'Zwiadowca'),
+    'T11-scout-b: defensiveCopy never queues Zwiadowca',
+  );
+}
+
+console.log('\n--- T11-scout-c: zwiadowca rusza w stronę neutralnej wioski ---');
+{
+  const map = makeMap(10, 10);
+  map.hexes['5,5'].wioska = { istnieje: true, ludnosc: 1 };
+  const scout = makeScout('s1', 1, 1, 1);
+  const city = makeCity('c1', 1, 1, 1);
+  const cmds = decideAITurn(1, [scout], [city], map, makeGameData());
+  const move = cmds.find(c => c.type === 'move' && c.unitId === 's1');
+  assert(move != null, 'T11-scout-c: scout receives move command toward village');
+  if (move) {
+    const distBefore = hexDistance(1, 1, 5, 5);
+    const distAfter = hexDistance(move.toQ, move.toR, 5, 5);
+    assert(distAfter < distBefore, `T11-scout-c: move reduces distance to village (${distBefore} -> ${distAfter})`);
+  }
+}
+
+console.log('\n--- T11-scout-d: po 2 zwiadowcach nie wymusza trzeciego w early phase ---');
+{
+  const map = makeMap(10, 10);
+  const city = makeCity('c1', 1, 1, 1);
+  const scouts = [makeScout('s1', 1, 2, 1), makeScout('s2', 1, 3, 1)];
+  const cmds = decideAITurn(1, scouts, [city], map, makeGameData(), { civType: 'chinczycy' });
+  const scoutBuilds = cmds.filter(c => c.type === 'build' && c.buildingId === 'Zwiadowca');
+  assert(scoutBuilds.length === 0, 'T11-scout-d: with 2 scouts, no forced third Zwiadowca');
+}
+
+// ---------------------------------------------------------------------------
+// TEST 12: T12 — dyplomacja per typ cywilizacji (Maciej 2026-07-26)
+// ---------------------------------------------------------------------------
+
+console.log('\n--- T12-dip-a: pokojowa cywilizacja -> pakt/handlu, bez haraczu ---');
+{
+  const rel = {
+    partnerId: '0',
+    relation: { zaufanie: 50, respekt: 55, status: 'neutralni' },
+    respektWzgledny: 0.5,
+    stanWojny: false,
+    hasNapTreaty: false,
+    partnerTypCywilizacji: 'rzymianie',
+  };
+  const cmds = decideAIDiplomacy({
+    myPlayerId: '2',
+    myTypCywilizacji: 'chinczycy',
+    agresja: 0.25,
+    agresywnoscRaw: 2,
+    sklonnoscDoPodboju: 1,
+    tolerancjaRyzyka: 2,
+    handlowosc: 0.85,
+    skarbiecGold: 50,
+    currentTurn: 10,
+    fullDiplomacyLayer: true,
+    relacje: [rel],
+  });
+  const types = cmds.map(c => c.type);
+  assert(!types.includes('zadaj_trybut'), `T12-dip-a: brak haraczu; got: ${types.join(', ')}`);
+  assert(!types.includes('wypowiedz_wojne'), `T12-dip-a: brak wojny; got: ${types.join(', ')}`);
+  assert(
+    types.includes('zaproponuj_pakt') || types.includes('zaproponuj_handel'),
+    `T12-dip-a: pakt lub handel; got: ${types.join(', ')}`,
+  );
+}
+
+console.log('\n--- T12-dip-b: agresywna cywilizacja -> szybciej wojna niz pokojowa ---');
+{
+  const hostileRel = {
+    partnerId: '0',
+    relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
+    respektWzgledny: 0.65,
+    stanWojny: false,
+    partnerTypCywilizacji: 'chinczycy',
+  };
+  const aggressive = decideAIDiplomacy({
+    myPlayerId: '3',
+    myTypCywilizacji: 'zulusi',
+    agresja: 0.75,
+    agresywnoscRaw: 9,
+    sklonnoscDoPodboju: 5,
+    tolerancjaRyzyka: 9,
+    relacje: [hostileRel],
+  });
+  assert(
+    aggressive.some(c => c.type === 'wypowiedz_wojne'),
+    `T12-dip-b: zulusi wypowiada wojne; got: ${aggressive.map(c => c.type).join(', ')}`,
+  );
+  const peaceful = decideAIDiplomacy({
+    myPlayerId: '4',
+    myTypCywilizacji: 'chinczycy',
+    agresja: 0.75,
+    agresywnoscRaw: 2,
+    sklonnoscDoPodboju: 1,
+    tolerancjaRyzyka: 2,
+    relacje: [hostileRel],
+  });
+  assert(
+    !peaceful.some(c => c.type === 'wypowiedz_wojne'),
+    `T12-dip-b: chinczycy nie wypowiadaja wojny przy tych samych warunkach; got: ${peaceful.map(c => c.type).join(', ')}`,
+  );
+}
+
+console.log('\n--- T12-dip-c: agresywna zada haracz, pokojowa nie ---');
+{
+  const tributeRel = {
+    partnerId: '0',
+    relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
+    respektWzgledny: 0.75,
+    stanWojny: false,
+    partnerTypCywilizacji: 'chinczycy',
+  };
+  const rome = decideAIDiplomacy({
+    myPlayerId: '5',
+    myTypCywilizacji: 'rzymianie',
+    agresja: 0.55,
+    agresywnoscRaw: 8,
+    sklonnoscDoPodboju: 4,
+    relacje: [tributeRel],
+  });
+  assert(rome.some(c => c.type === 'zadaj_trybut'), `T12-dip-c: rzym zada trybut; got: ${rome.map(c => c.type).join(', ')}`);
+  const china = decideAIDiplomacy({
+    myPlayerId: '6',
+    myTypCywilizacji: 'chinczycy',
+    agresja: 0.55,
+    agresywnoscRaw: 2,
+    sklonnoscDoPodboju: 1,
+    relacje: [tributeRel],
+  });
+  assert(!china.some(c => c.type === 'zadaj_trybut'), `T12-dip-c: chiny bez haraczu; got: ${china.map(c => c.type).join(', ')}`);
+}
+
+console.log('\n--- T12-dip-d: resolveDiplomacyCivBias klasyfikuje profile ---');
+{
+  const p = resolveDiplomacyCivBias(0.3, 1, 2, 2);
+  assert(p.peaceful && !p.aggressive && p.proposeNap, 'T12-dip-d: chinczycy = peaceful');
+  const z = resolveDiplomacyCivBias(0.8, 5, 9, 9);
+  assert(z.aggressive && !z.peaceful && !z.proposeNap, 'T12-dip-d: zulusi = aggressive');
+}
+
+console.log('\n--- T12-dip-e: brak kontaktu + oferta handlu -> zaproponuj_audiencje ---');
+{
+  const tradeRel = {
+    partnerId: '0',
+    relation: { zaufanie: 30, respekt: 50, status: 'neutralni' },
+    respektWzgledny: 0.5,
+    stanWojny: false,
+    contactEstablished: false,
+    mapContact: true,
+    resourceTradeOffer: {
+      surowiecKey: 'drewno',
+      label: 'Drewno',
+      pakietyPerTura: 1,
+      zaplataTyp: 'zloto',
+      zaplataPerTura: 10,
+      turns: 10,
+      kierunek: 'zakup',
+      powod: 'deficyt',
+    },
+  };
+  const cmds = decideAIDiplomacy({
+    myPlayerId: '7',
+    myTypCywilizacji: 'grecy',
+    agresja: 0.4,
+    handlowosc: 0.7,
+    relacje: [tradeRel],
+    currentTurn: 20,
+    skarbiecGold: 100,
+  });
+  assert(
+    cmds.some(c => c.type === 'zaproponuj_audiencje'),
+    `T12-dip-e: audiencja przed handlem; got: ${cmds.map(c => c.type).join(', ')}`,
+  );
 }
 
 // --- summary ---------------------------------------------------------------

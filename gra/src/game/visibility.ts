@@ -279,7 +279,7 @@ export { citySightRadius } from './okolica';
  * Jednostki widoczne na mapie świata przy włączonej mgle:
  * - gracz (playerOwnerId) zawsze,
  * - obcy tylko gdy heks jest w bieżącym zasięgu widzenia (nie w explored/shroud),
- * - garnizon (inGarnizon) nigdy.
+ * - garnizon wroga — niewidoczny; garnizon gracza — token na heksie miasta (koszary).
  */
 export function unitsVisibleOnMap(
   units: readonly RuntimeUnit[],
@@ -287,7 +287,7 @@ export function unitsVisibleOnMap(
   playerOwnerId = 0,
 ): RuntimeUnit[] {
   return units.filter(u => {
-    if (u.inGarnizon === true) return false;
+    if (u.inGarnizon === true) return u.ownerId === playerOwnerId;
     return u.ownerId === playerOwnerId || visibleHexes.has(keyOf(u.q, u.r));
   });
 }

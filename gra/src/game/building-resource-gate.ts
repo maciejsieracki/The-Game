@@ -41,8 +41,9 @@ const LABEL_BY_ASCII: Record<string, string> = {
 };
 
 /**
- * Budynki wymagające aktywnego dostępu do etykiety surowca w IMPERIUM (źródło terenowe
- * w zasięgu jakiegokolwiek miasta LUB zapas puli państwa) — patrz `empireLabelSatisfied`.
+ * Budynki wymagające aktywnego dostępu do etykiety surowca w IMPERIUM (aktywne źródło
+ * gdziekolwiek w cywilizacji LUB — dla surowców magazynowanych — zapas w puli państwa) —
+ * patrz `empireLabelSatisfied`. NIE wymaga zasięgu TEGO miasta budowy.
  * TEMAT 8 Q2 (2026-07-24): stolarnia/kamieniarski/kuznia dograne tu z tym samym mechanizmem
  * co istniejące Glina/Ceramika/Sól (spójność — to już sprawdzony wzorzec, nie per-city
  * sąsiedztwo terenu, żeby nie różnicować traktowania bez wyraźnej potrzeby).
@@ -147,12 +148,32 @@ const ASCII_BY_LABEL: Record<string, string> = Object.fromEntries(
 );
 
 /**
- * Bramka spełniona etykietą, gdy: aktywne ŹRÓDŁO surowca (activeLabels), LUB budynek-konwerter
- * (Cegielnia/Garncarnia), LUB — Maciej 2026-07-24 — surowiec jest w ZAPASIE puli państwa
- * (`empireStock` > 0). Poprawka realnego buga: gracz miał 8 drewna w puli (i las/Tartak w zasięgu),
- * a bramka „dostępu" i tak blokowała Pałac, bo sprawdzała tylko aktywne źródło. Dokładną ILOŚĆ
- * i tak egzekwuje osobno `koszt_surowce` przy kliknięciu „Buduj".
+ * Surowce „tylko dostęp" — bramka NIE spełnia się samym zapasem w puli państwa (Maciej 2026-07-26).
+ * Wymagają aktywnego źródła w imperium (np. warzelnia soli, kopalnia złota / handel).
+ * Ilościowy koszt budowy (`koszt_surowce`) to osobna ścieżka — magazyn państwa.
  */
+export const ACCESS_ONLY_RESOURCE_LABELS: ReadonlySet<string> = new Set(['Sól', 'Złoto']);
+
+export function isAccessOnlyResourceLabel(label: string): boolean {
+  return ACCESS_ONLY_RESOURCE_LABELS.has(label);
+}
+
+/**
+ * Bramka spełniona etykietą, gdy: aktywne ŹRÓDŁO surowca w imperium (activeLabels), LUB
+ * budynek-konwerter (Cegielnia/Garncarnia), LUB — dla surowców magazynowanych — zapas puli
+ * państwa (`empireStock` > 0). Wyjątki ACCESS_ONLY (Sól, Złoto): tylko aktywne źródło.
+ * Dokładną ILOŚĆ kosztu budowy egzekwuje osobno `koszt_surowce` (civ-wide magazyn).
+ */
+/** Czy pojedyncza etykieta surowca jest spełniona (źródło / konwerter / zapas państwa). */
+export function empireResourceLabelSatisfied(
+  label: string,
+  activeLabels: readonly string[] | undefined,
+  empireBuiltIds?: readonly string[],
+  empireStock?: Readonly<Record<string, number>>,
+): boolean {
+  return empireLabelSatisfied(label, activeLabels ?? [], empireBuiltIds, empireStock);
+}
+
 function empireLabelSatisfied(
   label: string,
   activeLabels: readonly string[],
@@ -162,8 +183,10 @@ function empireLabelSatisfied(
   if (activeLabels.includes(label)) return true;
   if (label === 'Cegła' && empireBuiltIds?.includes('cegielnia')) return true;
   if (label === 'Ceramika' && empireBuiltIds?.includes('garncarnia')) return true;
-  const asciiKey = ASCII_BY_LABEL[label];
-  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
+    const asciiKey = ASCII_BY_LABEL[label];
+    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  }
   return false;
 }
 

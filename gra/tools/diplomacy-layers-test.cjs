@@ -83,11 +83,15 @@ ok(
 const cmds = [
   { type: 'zaproponuj_handel', targetId: 0, powod: 'test' },
   { type: 'wypowiedz_wojne', targetId: 0, powod: 'test' },
+  { type: 'zaproponuj_audiencje', targetId: '0', powod: 'test' },
 ];
 const filtered = filterDiplomacyCommandsForEstablishedContact(cmds, false);
-ok(filtered.length === 1 && filtered[0].type === 'wypowiedz_wojne', 'brak daru bez formalnego kontaktu');
+ok(filtered.length === 2, 'brak handlu bez formalnego kontaktu — audiencja dozwolona');
+ok(filtered.some(c => c.type === 'zaproponuj_audiencje'), 'audiencja przechodzi bez kontaktu');
+ok(filtered.some(c => c.type === 'wypowiedz_wojne'), 'wojna bez kontaktu OK');
+ok(!filtered.some(c => c.type === 'zaproponuj_handel'), 'handel zablokowany bez kontaktu');
 ok(
-  filterDiplomacyCommandsForEstablishedContact(cmds, true).length === 2,
+  filterDiplomacyCommandsForEstablishedContact(cmds, true).length === 3,
   'po formalnym kontakcie — pełna lista',
 );
 

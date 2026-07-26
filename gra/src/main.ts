@@ -75,7 +75,7 @@ import {
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
-import { computeStartPlacements, computeReachable, computePath, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
+import { computeStartPlacements, computeReachable, computePath, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
 import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
@@ -116,7 +116,7 @@ import {
 } from './game/wonders-data';
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
-import { resolveArchetypeAggression, resolveArchetypeTrade } from './game/civ-ai-data';
+import { resolveArchetypeAggression, resolveArchetypeTrade, civAiProfileForTyp } from './game/civ-ai-data';
 import { buildClusterStartPlan, buildSameTypeRivalCandidateHexes } from './game/cluster-start';
 import { clusterCityStateRadius, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
@@ -187,7 +187,7 @@ import {
   canInitiateSiege, classifyCityAttack, detectAutoSiegeOnCity,
   type MapSiegeContext,
 } from './game/mapSiegeDetect';
-import { resolveEnemyCityClick } from './map/map-attack-city';
+import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import { collectAtkRosterNearCity, collectBattleRoster as collectBattleRosterPure, collectDefRosterNearCity } from './units/battleRoster';
 import { hasCityDefenders, survivorsLiveSet } from './game/siegeDefenders';
@@ -215,6 +215,7 @@ import {
 } from './game/siegeMachines';
 import { showCityAttackChoice, hideCityAttackChoice } from './ui/cityAttackChoice';
 import { showCityUnitPick, hideCityUnitPick, isCityUnitPickOpen } from './ui/cityUnitPick';
+import { showCityForeignPick, hideCityForeignPick, isCityForeignPickOpen } from './ui/cityForeignPick';
 import { showUnitReplacePicker } from './ui/unitReplacePicker';
 import { showCityCaptureNotice } from './ui/cityCaptureNotice';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
@@ -235,6 +236,7 @@ import {
   countLawGarrisonOnCityHex,
   unitsOnCityHexForLaw,
   activeUnitStack,
+  garrisonUnitsOnHex,
   exitGarnizon,
   enterFieldFortify,
   exitFieldFortify,
@@ -379,6 +381,7 @@ import {
   createDiploListHud,
   hideDiploListHud,
   isDiploListHudOpen,
+  refreshDiploListHudIfOpen,
   showDiploListHud,
   toggleDiploListHud,
   diploListEntryFromRelation,
@@ -484,7 +487,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, availableProduction, availableReplacementsFor,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
-  buildingUnlockFlagFor,
+  buildingUnlockFlagFor, buildingTypeQueued,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
 import {
@@ -506,10 +509,18 @@ import {
   type TradeGoodEntry,
 } from './game/diplomacy-goods';
 import {
-  tryDeductUnitSpawnCosts, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
+  pickResourceTradeBetweenOwners,
+  pickResourceDeficitForOwnerPair,
+  pickResourceSurplusForOwnerPair as pickResourceSurplusTradePick,
+  resourceTradeKierunekForProposer,
+  applyTradeArchetypePriceMargin,
+} from './game/diplomacy-resource-trade-pick';
+import { detectOwnerResourceNeeds } from './game/ai-resource-needs';
+import {
+  tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
   cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
   cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
-  canAffordUnitManpower, refundUnitSpawnToCity,
+  canAffordUnitManpowerEmpire, refundManpowerToEmpire,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
 import { filterOwnersForPowerRanking, computeAbsolutePowerRank } from './game/power-ranking';
@@ -522,6 +533,7 @@ import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadiu
          makeRng, type CultureCity, type ReligionState,
          spreadReligion, type ReligionNeighbor,
          aggregateReligionEmpire, resolveCityReligionState, defaultCityReligionState,
+         religionCompositionBreakdown,
          isEmptyReligionState, type CivsDataLike } from './game/culture-religion';
 import {
   advanceEmpireFood, bindEmpireFoodRuntime, freshEmpireFoodState,
@@ -530,11 +542,11 @@ import {
   computeEmpireFoodNetDelta, computeEmpireFoodNetDeltaFromCityFoods, getCityFoodSplit, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
   type EmpireFoodState,
 } from './game/empire-food';
-import { loadUpkeepParams, buildUnitFoodTable, militaryFoodConsumption, loadOwnerStorageParams } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, militaryFoodConsumption, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
-import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexKeysForOwner, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
+import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
-import { isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
+import { cityCultureMixActive, cultureMixBreakdown, isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
 import {
   tickCityCultureReligion,
   conquestUnstableHappinessPenalty,
@@ -684,7 +696,8 @@ import {
 } from './ui/diplomacyPanel';
 import {
   showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
-  showWarConfirmModal, type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
+  showWarConfirmModal, requestAutoCounterNegotiation,
+  type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
 } from './ui/diplomacyAudience';
 import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
 import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
@@ -2148,8 +2161,8 @@ async function boot(): Promise<void> {
       }
       const ep = empireEpochForOwner(city.ownerId);
       const mpMults = civManpowerMultsForOwner(city.ownerId);
-      const d = tryDeductUnitSpawnCosts(
-        city, ep, populationCostOf(completed), mpMults.maxMult, completed.id,
+      const d = tryDeductUnitSpawnCostsEmpire(
+        cities, cityId, city.ownerId, ep, populationCostOf(completed), mpMults.maxMult, completed.id,
       );
       if (!d.ok) {
         console.log(`[Produkcja] Tura ${turn} ${city.name}: brak Manpower — odlozono ${completed.id}`);
@@ -2162,7 +2175,6 @@ async function boot(): Promise<void> {
           requeueManpower: true,
         };
       }
-      city.population = d.population;
       city.manpower = d.manpower;
       const def = lookupUnitDef(completed.id);
       const ruch = normFieldVal(def['Ruch'], 2);
@@ -2214,8 +2226,10 @@ async function boot(): Promise<void> {
       if (!city || city.ownerId !== ownerId) return false;
       const ep = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
-      if (!canAffordUnitManpower(city, ep, mpMults.maxMult, itemId)) {
-        if (ownerId === 0) showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
+      if (!canAffordUnitManpowerEmpire(cities, ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId)) {
+        if (ownerId === 0) {
+          showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
+        }
         return false;
       }
       const item = unitProductionItem(
@@ -2238,16 +2252,17 @@ async function boot(): Promise<void> {
         if (ownerId === 0) showHintMessage('Za mało surowca w magazynie państwa', 2800);
         return false;
       }
-      const d = tryDeductUnitSpawnCosts(
-        city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId,
+      const d = tryDeductUnitSpawnCostsEmpire(
+        cities, cityId, ownerId, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId,
       );
       if (!d.ok) {
-        if (ownerId === 0) showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
+        if (ownerId === 0) {
+          showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
+        }
         return false;
       }
-      setOwnerTreasury(ownerId, ownerTreasury(ownerId) - koszt);
-      city.population = d.population;
       city.manpower = d.manpower;
+      setOwnerTreasury(ownerId, ownerTreasury(ownerId) - koszt);
       if (Object.keys(stockCost).length > 0) {
         deductBuildingStockCostAcrossCities(cities, ownerId, stockCost);
       }
@@ -2264,18 +2279,14 @@ async function boot(): Promise<void> {
       return true;
     }
 
-    /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower (ownerId-agnostyczne,
-     *  patrz komentarz przy purchaseRecruitmentUnit). */
+    /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower do puli imperium. */
     function cancelRecruitmentPurchase(cityId: string, itemId: string, koszt: number, ownerId = 0): void {
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== ownerId) return;
       const ep = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
-      const refunded = refundUnitSpawnToCity(
-        city, ep, UNIT_POPULATION_COST, undefined, mpMults.maxMult, itemId,
-      );
-      city.population = refunded.population;
-      city.manpower = refunded.manpower;
+      const mpRefund = unitManpowerCostForType(itemId, ep, mpMults.maxMult);
+      refundManpowerToEmpire(cities, ownerId, ep, mpRefund, mpMults.maxMult);
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) + koszt);
       // JEDNOSTKI-SUROWIEC-01: zwrot surowca do puli PAŃSTWA (civ-wide) — symetrycznie
       // z poborem w purchaseRecruitmentUnit. BEZ capPerType: to zwrot, nie nowa produkcja
@@ -3026,6 +3037,7 @@ async function boot(): Promise<void> {
 
     function hideCityPanelFull(): void {
       hideCityUnitPick();
+      hideCityForeignPick();
       if (closeCityPanelIfOpen()) {
         requestAnimationFrame(() => tryOpenNextAutoDiploAudience());
         return;
@@ -3137,6 +3149,10 @@ async function boot(): Promise<void> {
         hex,
         cityName: cityOn?.name ?? null,
         cityIsCityState: cityOn != null && cityOn.ownerId !== 0 && !!cityOn.startCityState,
+        cityOwnerLabel: cityOn != null && cityOn.ownerId !== 0
+          ? ownerDiploLabel(cityOn.ownerId)
+          : null,
+        cityPopulation: cityOn?.population ?? null,
         currentEra: player.era,
         daninaLabel: hexDaninaLabelAt(lastBHex.q, lastBHex.r),
         esc: hudHtmlEsc,
@@ -3221,10 +3237,12 @@ async function boot(): Promise<void> {
       hideEmpireOverlay();
       hideEmpireDetailPanel();
       hideCityUnitPick();
+      hideCityForeignPick();
     }
 
     function openCityPanelForPlayer(city: City): void {
       hideCityUnitPick();
+      hideCityForeignPick();
       hideScienceHubHud();
       hideWikiHubHud();
       hideSciencePicker();
@@ -3316,7 +3334,7 @@ async function boot(): Promise<void> {
       camCtrl.focusAt(x, z, dist);
     }
 
-    /** Rozwiązanie jednostki gracza — usuwa z mapy, zwraca ludność + Manpower do miasta. */
+    /** Rozwiązanie jednostki gracza — usuwa z mapy, zwraca Manpower do puli imperium. */
     function disbandPlayerUnit(unitId: string): boolean {
       const idx = units.findIndex(x => x.id === unitId);
       if (idx < 0) return false;
@@ -3325,19 +3343,8 @@ async function boot(): Promise<void> {
 
       const ep = empireEpochForOwner(0);
       const mpMults = civManpowerMultsForOwner(0);
-      const popRefund = UNIT_POPULATION_COST;
       const mpRefund = unitManpowerCostForType(u.typeId, ep, mpMults.maxMult);
-      const refundCity = cityAtUnit(u) ?? cities.find(c => c.ownerId === 0);
-      if (refundCity) {
-        const built = cityBuilt.get(refundCity.id) ?? [];
-        const maAkwedukt = built.includes('akwedukt');
-        const popCap = cityPopulationCap(maAkwedukt, loadEconParams(data.econParams, _menuDifficulty));
-        const refunded = refundUnitSpawnToCity(
-          refundCity, ep, popRefund, popCap, mpMults.maxMult, u.typeId,
-        );
-        refundCity.population = refunded.population;
-        refundCity.manpower = refunded.manpower;
-      }
+      refundManpowerToEmpire(cities, 0, ep, mpRefund, mpMults.maxMult);
 
       const siegeCityId = u.oblegaCityId;
       const wasGarnizon = u.inGarnizon === true;
@@ -3367,9 +3374,9 @@ async function boot(): Promise<void> {
       refreshFog();
       refreshSiegeMarkers();
 
-      const cityLabel = refundCity?.name ?? 'imperium';
+      const cityLabel = cityAtUnit(u)?.name ?? cities.find(c => c.ownerId === 0)?.name ?? 'imperium';
       showHintMessage(
-        u.typeId + ' rozwiązany — +' + popRefund + ' ludność, +' + formatManpower(mpRefund) + ' MP → ' + cityLabel,
+        u.typeId + ' rozwiązany — +' + formatManpower(mpRefund) + ' rekrutów → pula imperium (' + cityLabel + ')',
         4000,
       );
       refreshD1bHud();
@@ -3567,7 +3574,9 @@ async function boot(): Promise<void> {
           const front = prod ? frontItem(prod) : null;
           const productionLine = front
             ? `${front.nazwa} • ${prod?.postep ?? 0}/${front.koszt} 🔨`
-            : 'Kolejka pusta';
+            : cityHasActionableProduction(c)
+              ? 'Kolejka pusta'
+              : undefined;
           const gar = c.garnizon ?? 0;
           return {
             id: c.id,
@@ -3583,13 +3592,9 @@ async function boot(): Promise<void> {
       const playerUnits = units.filter(u => u.ownerId === 0);
       const stacks = new Map<string, typeof playerUnits>();
       for (const u of playerUnits) {
-        // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka ufortyfikowana
-        // (inGarnizon) dostaje WŁASNY klucz (po id) — nigdy nie miesza się w
-        // jeden wpis z widocznym stosem na tym samym heksie miasta, bo Ufort.
-        // ukrywa/odkrywa też tylko JEDNĄ konkretną jednostkę, nie cały stos
-        // (patrz onAction 'fortify'). Dzięki temu jest osobno widoczna,
-        // zaznaczalna i oznaczona „w garnizonie” na liście armii.
-        const key = u.inGarnizon === true ? `g:${u.id}` : `${u.q},${u.r}`;
+        // C-GARN-Q1: ufortyfikowane jednostki grupuj po heksie miasta (jak armia),
+        // żeby lista armii nie rozdzielała stosu po wejściu do garnizonu.
+        const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
         const arr = stacks.get(key);
         if (arr) arr.push(u);
         else stacks.set(key, [u]);
@@ -3639,16 +3644,18 @@ async function boot(): Promise<void> {
       return out;
     }
 
+    /**
+     * Lista dyplomacji (panel + toolbar) — wszystkie ODKRYTE w mgle cywilizacje,
+     * nie tylko po formalnym „Nawiąż kontakt" (akcja 1). Spotkanie / zamknięcie
+     * audiencji bez rozmowy = „znamy się" (contactEstablished=false, pełne akcje
+     * dopiero po akcji 1 — filterDiplomacyCommandsForEstablishedContact).
+     */
     function buildPlayerDiploRelations(): DiploRelation[] {
       const rels: DiploRelation[] = [];
-      for (const [key, rel] of diplomacyRelations.entries()) {
-        const parts = key.split('_');
-        const a = parseInt(parts[0] ?? '0', 10);
-        const b = parseInt(parts[1] ?? '0', 10);
-        if (a !== 0 && b !== 0) continue;
-        const otherId = a === 0 ? b : a;
-        if (!diplomaticContactEstablished.has(otherId)) continue;
-        const contacted = getDiplomaticContacts();
+      const contacted = getDiplomaticContacts();
+      for (const otherId of contacted) {
+        if (otherId === 0 || isBarbarian(otherId)) continue;
+        const rel = getDiploRelation(0, otherId);
         const layer = diplomacyLayerForOwner(
           otherId,
           simplifiedDiplomacyOwners,
@@ -3858,6 +3865,75 @@ async function boot(): Promise<void> {
       refreshResearchUiSurfaces();
     }
 
+    function refreshPlayerCityEcon(
+      perCity: Array<{
+        cityId: string;
+        ownerId: number;
+        pieniadz: number;
+        pieniadzBrutto: number;
+        pieniadzZTras: number;
+        wealthMnoznik: number;
+        doPuli: number;
+        doBudynkow: number;
+        nauka: number;
+      }>,
+    ): void {
+      _lastPlayerCityEcon = perCity
+        .filter(tk => tk.ownerId === 0)
+        .map(tk => {
+          const c = cities.find(x => x.id === tk.cityId);
+          return {
+            cityId: tk.cityId,
+            name: c?.name ?? tk.cityId,
+            pieniadz: Math.round(tk.pieniadz),
+            pieniadzBrutto: Math.round(tk.pieniadzBrutto),
+            pieniadzZTras: Math.round(tk.pieniadzZTras),
+            wealthMnoznik: tk.wealthMnoznik,
+            utrzymanieBudynkow: buildingUpkeepForCityId(tk.cityId, 0),
+            utrzymanieGarnizonu: c ? garrisonUpkeepForCity(c) : 0,
+            doPuli: Math.round(tk.doPuli),
+            doBudynkow: Math.round(tk.doBudynkow),
+            nauka: Math.round(tk.nauka),
+          };
+        });
+    }
+
+    function buildingUpkeepForCityId(cityId: string, ownerId: number): number {
+      const builtIds = cityBuilt.get(cityId) ?? [];
+      const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
+      const era = empireEpochForOwner(ownerId);
+      const tech = unlockedTechSetForOwner(ownerId);
+      const catalog = data.buildings as unknown as import('./game/economy').BuildingRecord[];
+      return buildingUpkeepForBuiltIds(
+        builtIds,
+        catalog,
+        bdef => buildingLevelForEpoch(
+          bdef.epokaWejscia,
+          era,
+          bdef.maksPoziom,
+          (bdef.poziomTechGate as Record<string, string> | null | undefined) ?? null,
+          tech,
+        ),
+        upkeepParams.budynekUtrzymanieFlat,
+      );
+    }
+
+    function garrisonUpkeepForCity(city: City): number {
+      const onHex = units.filter(
+        u => u.ownerId === city.ownerId && u.q === city.q && u.r === city.r,
+      );
+      if (onHex.length === 0) return 0;
+      const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
+      const unitUpkeepTbl = buildUnitUpkeepTable(
+        data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0],
+      );
+      const upkeepUnits: UnitUpkeepLike[] = onHex.map(u => ({
+        typeId: u.typeId,
+        category: u.category ?? String(lookupUnitDef(u.typeId)?.Kategoria ?? 'domyslny'),
+      }));
+      return totalUnitUpkeep(upkeepUnits, unitUpkeepTbl, upkeepParams.jednostkaUtrzymanieStd);
+    }
+
     function extraCityPanelConfig() {
       return {
         getResourceAccess: (cityId: string) => {
@@ -3931,11 +4007,18 @@ async function boot(): Promise<void> {
           if (!city) return null;
           const kulturaSuma = (city as { kultura?: number }).kultura ?? 0;
           const cp = loadCultureParams(data.societyParams, _menuDifficulty);
+          const mixActive = cityCultureMixActive(city);
+          const ownShare = resolveOwnCultureShare(city);
+          const ownerCultureLabel = civCultureLabelForKey(civKeyForOwnerId(city.ownerId)) ?? 'Kultura właściciela';
           return {
             kulturaSuma,
             przyrost: lastCityKulturaTick.get(cityId) ?? 0,
             borderRadius: cityBorderRadius(kulturaSuma, cp),
             thresholds: cultureThresholds(cp),
+            ownerCultureLabel,
+            ownCultureSharePct: Math.round(ownShare * 100),
+            kulturaMix: cultureMixBreakdown(ownerCultureLabel, ownShare, mixActive),
+            cultureConverting: mixActive && ownShare < 0.999,
           };
         },
         getReligionState: (cityId: string) => {
@@ -3953,6 +4036,8 @@ async function boot(): Promise<void> {
             udzialPct: Math.round(dom.share * 100),
             wplywSzczescie: religionHappiness(rel, ownRel, rp, builtIds.includes('swiatynia')),
             przyrostWiernych: lastReligionSpreadByCity.get(cityId) ?? 0,
+            stateReligion: ownRel,
+            sklad: religionCompositionBreakdown(rel),
           };
         },
         getEmpireHud: (oid: number) => {
@@ -3981,6 +4066,24 @@ async function boot(): Promise<void> {
             religionRate: relAgg.spreadRateTotal,
             stateReligion: stateRel,
             religionSharePct: relAgg.sharePct,
+            bogactwoWplywyBrutto: hs.bogactwoWplywyBrutto,
+            bogactwoHandel: hs.bogactwoHandel,
+            bogactwoUtrzymanieBudynkow: hs.bogactwoUtrzymanieBudynkow,
+            bogactwoUtrzymanieJednostek: hs.bogactwoUtrzymanieJednostek,
+            bogactwoRate: hs.bogactwoRate,
+          };
+        },
+        getCityMoneySnap: (cityId: string) => {
+          const row = _lastPlayerCityEcon.find(r => r.cityId === cityId);
+          if (!row) return null;
+          return {
+            doSkarbca: row.pieniadz,
+            pieniadzBrutto: row.pieniadzBrutto,
+            wealthMnoznik: row.wealthMnoznik,
+            handelZeSzlakow: row.pieniadzZTras,
+            utrzymanieBudynkow: row.utrzymanieBudynkow,
+            utrzymanieGarnizonu: row.utrzymanieGarnizonu,
+            nauka: row.nauka,
           };
         },
         getOkolicaState: (cityId: string) => {
@@ -4318,6 +4421,7 @@ async function boot(): Promise<void> {
       hideNewGameFlow();
       if (isCityPanelOpen()) hideCityPanelFull();
       hideCityUnitPick();
+      hideCityForeignPick();
       dismissMapOverlayModes();
       if (isPostBattleSummaryOpen()) hidePostBattleSummary();
       selectedId = null;
@@ -5462,7 +5566,7 @@ async function boot(): Promise<void> {
       return (vis ?? currentVisible()).has(keyOf(city.q, city.r));
     };
 
-    /** Ukryta w garnizonie (po Ufort. w mieście) — niewidoczna na mapie świata. */
+    /** Garnizon gracza (Ufort.) — widoczny na mapie jako stos w koszarach miasta. */
     function isUnitInGarnizon(u: RuntimeUnit): boolean {
       return u.inGarnizon === true;
     }
@@ -5483,6 +5587,94 @@ async function boot(): Promise<void> {
       if (a === b) return false;
       if (isBarbarian(a) || isBarbarian(b)) return true;
       return getDiploRelation(a, b).status === 'wojna';
+    }
+
+    /** Czy gracz (0) jest w stanie wojny z danym właścicielem (barbarzyńcy = zawsze tak). */
+    function playerIsAtWarWith(ownerId: number): boolean {
+      if (ownerId === 0) return false;
+      return areEnemyOwners(0, ownerId);
+    }
+
+    /** Wypowiedzenie wojny gracza — ten sam efekt co audiencja dyplomatyczna (akcja 11). */
+    function playerDeclareWarOnOwner(ownerId: number): boolean {
+      const civName = ownerDiploLabel(ownerId);
+      const layer = diplomacyLayerForOwner(
+        ownerId,
+        simplifiedDiplomacyOwners,
+        foreignTypeOwners,
+        getDiplomaticContacts(),
+      );
+      if (!playerDiplomacyActionAllowed(layer, 'war')) {
+        showHintMessage('Nie możesz teraz wypowiedzieć wojny: ' + civName, 4000);
+        return false;
+      }
+      chargeWarDeclarationCredibility(0, ownerId);
+      breakTreatiesOnWar(0, ownerId, true);
+      applyAllianceObligationsOnWar(0, ownerId);
+      setDiploRelation(
+        0,
+        ownerId,
+        applyDiploEventTracked(0, ownerId, getDiploRelation(0, ownerId), 'wojna_wypowiedziana'),
+      );
+      showHintMessage('\u2694 Wypowiedziałeś wojnę: ' + civName, 4500);
+      updateDiplomacyAudience();
+      updateDiplomacyPanel();
+      updateHud();
+      wireUnitRendererRingStance();
+      return true;
+    }
+
+    /** Bramka UX: atak / marsz na obce państwo wymaga wojny (modal potwierdzenia). */
+    function withPlayerWarConsent(targetOwnerId: number, onAllowed: () => void): void {
+      if (playerIsAtWarWith(targetOwnerId)) {
+        onAllowed();
+        return;
+      }
+      const civName = ownerDiploLabel(targetOwnerId);
+      showWarConfirmModal(civName, () => {
+        if (playerDeclareWarOnOwner(targetOwnerId)) onAllowed();
+      });
+    }
+
+    /** Panel kontekstowy mapy (heks + miasto) — po wyborze „Informacja" przy obcym mieście. */
+    function showForeignCityHexContext(q: number, r: number): void {
+      lastBHex = { q, r };
+      refreshD1bHud();
+    }
+
+    /** Modal: informacja o heksie/mieście vs audiencja dyplomatyczna (Maciej 2026-07-26). */
+    function offerForeignCityInteraction(city: City): void {
+      const ownerId = city.ownerId;
+      hideCityForeignPick();
+      showCityForeignPick({
+        cityName: city.name,
+        civName: ownerDiploLabel(ownerId),
+        cityPopulation: city.population,
+        diplomacyAvailable: !isBarbarian(ownerId),
+        onInfo: () => showForeignCityHexContext(city.q, city.r),
+        onDiplomacy: () => {
+          diplomaticallyDiscoveredOwners.add(ownerId);
+          openDiplomacyAudience(ownerId);
+        },
+      });
+    }
+
+    /** Najtańszy sąsiedni heks przy obcym mieście, na który jednostka może wejść. */
+    function pickMarchHexAdjacentToCity(unit: RuntimeUnit, city: City): { q: number; r: number } | null {
+      const stack = playerStackAt(unit);
+      const mover = unitWithStackRuch(unit, stack);
+      const occ = occupiedForMove(unit.ownerId, ...stack.map(s => s.id));
+      const costFn = moveCostFnForUnit(unit);
+      let best: { q: number; r: number; cost: number } | null = null;
+      for (const nb of hexNeighborCoords(city.q, city.r)) {
+        if (!map.hexes[keyOf(nb.q, nb.r)]) continue;
+        if (!canOccupyHexForUnit(unit, nb.q, nb.r)) continue;
+        const path = computePath(mover, map, nb.q, nb.r, occ, costFn);
+        if (path.length === 0) continue;
+        const cost = pathCost(path, map, costFn);
+        if (!best || cost < best.cost) best = { q: nb.q, r: nb.r, cost };
+      }
+      return best ? { q: best.q, r: best.r } : null;
     }
 
     /**
@@ -5547,7 +5739,7 @@ async function boot(): Promise<void> {
 
     /**
      * Return the subset of units to display under current visibility.
-     * Garnizon (inGarnizon) — niewidoczny na mapie.
+     * Garnizon (inGarnizon) — token na heksie miasta gracza (koszary).
      */
     function visibleUnitsList(vis: Set<string>): RuntimeUnit[] {
       return unitsVisibleOnMap(units, vis, 0);
@@ -5836,11 +6028,16 @@ async function boot(): Promise<void> {
     let _lastBogactwoUtrzymanieJednostek: number = 0;
     /** Live brutto żywności imperium (preview) — gdy brak ticku po endTurn. */
     let _liveFoodBrutto: number = 0;
-    /** Ostatni tick ekonomii per miasto gracza (HUD imperium). */
+    /** Ostatni tick ekonomii per miasto gracza (HUD imperium + bilans pieniędzy miasta). */
     let _lastPlayerCityEcon: Array<{
       cityId: string;
       name: string;
       pieniadz: number;
+      pieniadzBrutto: number;
+      pieniadzZTras: number;
+      wealthMnoznik: number;
+      utrzymanieBudynkow: number;
+      utrzymanieGarnizonu: number;
       doPuli: number;
       doBudynkow: number;
       nauka: number;
@@ -5877,6 +6074,8 @@ async function boot(): Promise<void> {
      * surowcem AI→gracz (cooldown per ownerId — gracz jest zawsze druga strona, 0).
      */
     const aiResourceTradeLastProposalTurn = new Map<number, number>();
+    /** P-AI-011: cooldown prośby AI o audiencję handlową u gracza (per ownerId). */
+    const aiAudienceLastRequestTurn = new Map<number, number>();
 
     function unitAttackScore(u: RuntimeUnit): number {
       return normFieldVal(lookupUnitDef(u.typeId)['meleeAttack'], 0);
@@ -6275,7 +6474,7 @@ async function boot(): Promise<void> {
       scene.add(tradeRoutesOverlayGroup);
     }
 
-    // --- E-map-worker-overlay: ikonki 👤 na polach z robotnikami (wszystkie miasta gracza) ---
+    // --- E-map-worker-overlay: ikonki 👤 na polach z robotnikami (wszystkie cywilizacje) ---
     let showWorkerOverlay = false;
     let workerFieldOverlayGroup: THREE.Group | null = null;
 
@@ -6289,12 +6488,12 @@ async function boot(): Promise<void> {
     function refreshWorkerFieldOverlay(): void {
       clearWorkerFieldOverlay();
       if (!showWorkerOverlay || isCityPanelOpen()) return;
-      const keys = collectWorkedHexKeysForOwner(cities, map, 0, {
+      const workedByOwner = collectWorkedHexOwnerMap(cities, map, {
         isWorkable: okolicaHexWorkable,
         territoryNodes: buildAllTerritoryNodes(),
       });
-      if (keys.size === 0) return;
-      workerFieldOverlayGroup = syncWorkerFieldOverlay(scene, null, map, keys);
+      if (workedByOwner.size === 0) return;
+      workerFieldOverlayGroup = syncWorkerFieldOverlay(scene, null, map, workedByOwner, 0);
     }
 
     function toggleWorkerOverlayOnMap(): void {
@@ -7829,6 +8028,92 @@ async function boot(): Promise<void> {
     // w tym samym miejscu, zob. `villageEventLog.length = 0;` przy turn++).
     const tradeRouteEventLog: SidePanelEvent[] = [];
 
+    /** Miasta, w których gracz zamknął (✕) alert pustej kolejki — fingerprint opcji produkcji. */
+    const prodEmptyDismissFp = new Map<string, string>();
+
+    function productionAvailabilityCtxForCity(city: City): AvailabilityContext {
+      const ownImprovements = placedImprovementsForOwner(city.ownerId);
+      const prod0 = cityProd.get(city.id) ?? { kolejka: [], postep: 0 };
+      const accessRaw = extraCityPanelConfig().getResourceAccess(city.id);
+      const activeResourceLabels = Array.isArray(accessRaw)
+        ? accessRaw
+        : (accessRaw?.active ?? []);
+      return {
+        epoch: empireEpochForOwner(city.ownerId),
+        builtBuildingIds: cityBuilt.get(city.id) ?? [],
+        productionQueue: prod0.kolejka,
+        buildingLevel: 1,
+        civBonusy: civBonusyForOwnerId(city.ownerId),
+        civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
+        placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
+        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
+        aliveUnitTypeNames: new Set(
+          units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId),
+        ),
+        buildingCostPace: player.buildingCostPace ?? 'niski',
+        kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
+        ownerId: city.ownerId,
+        difficulty: _menuDifficulty,
+        activeResourceLabels,
+        empireActiveResourceLabels: empireActiveResourceLabelsForOwner(city.ownerId),
+        empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
+        empireResourceStock: citySurowceSumForOwner(city.ownerId),
+        cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+        isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
+      };
+    }
+
+    function cityHasLevelUpgradeOptions(city: City, ctx: AvailabilityContext): boolean {
+      const built = ctx.builtBuildingIds ?? [];
+      const queue = ctx.productionQueue ?? [];
+      const techs = unlockedTechsForOwner(city.ownerId);
+      const epoch = ctx.epoch ?? 1;
+      const civBonusy = ctx.civBonusy ?? [];
+      const seen = new Set<string>();
+      for (const id of built) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const def = data.buildings.find(b => b.id === id);
+        if (!def || def.maksPoziom <= 1) continue;
+        if (buildingTypeQueued(id, queue)) continue;
+        const targetLevel = buildingLevelForEpoch(
+          def.epokaWejscia, epoch, def.maksPoziom, def.poziomTechGate, techs,
+        );
+        if (targetLevel <= 1) continue;
+        const item = buildingProductionItem(
+          id,
+          data,
+          targetLevel,
+          civBonusy,
+          ctx.buildingCostPace ?? 'niski',
+          city.ownerId,
+          ctx.difficulty ?? 'normal',
+        );
+        if (item) return true;
+      }
+      return false;
+    }
+
+    function productionOptionsFingerprint(city: City): string {
+      const ctx = productionAvailabilityCtxForCity(city);
+      const techs = unlockedTechsForOwner(city.ownerId);
+      const ids = availableProduction(city, data, techs, ctx).map(it => it.id).sort();
+      const wonders = city.ownerId === 0 ? listBuildableWondersForOwner(0).length : 0;
+      const ups = cityHasLevelUpgradeOptions(city, ctx) ? 1 : 0;
+      return ids.join(',') + '|w' + wonders + '|u' + ups;
+    }
+
+    /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta z powodu). */
+    function cityHasActionableProduction(city: City): boolean {
+      if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'auto') return false;
+      const ctx = productionAvailabilityCtxForCity(city);
+      const techs = unlockedTechsForOwner(city.ownerId);
+      if (availableProduction(city, data, techs, ctx).length > 0) return true;
+      if (cityHasLevelUpgradeOptions(city, ctx)) return true;
+      if (city.ownerId === 0 && listBuildableWondersForOwner(0).length > 0) return true;
+      return false;
+    }
+
     /**
      * TEMAT #5 — porownuje trasy sprzed i po jednym wywolaniu refreshTradeRoutes
      * (ta sama tura) i zglasza zdarzenia WYDARZENIA + toast dla kazdej nowej/
@@ -7964,14 +8249,19 @@ async function boot(): Promise<void> {
           });
         }
         const prod = cityProd.get(city.id);
-        if (!prod || prod.kolejka.length === 0) {
-          events.push({
-            id: 'prod-empty-' + city.id,
-            icon: '\u2699\ufe0f',
-            title: 'Produkcja: ' + city.name,
-            subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',
-            kind: 'city',
-          });
+        if (prod && prod.kolejka.length > 0) {
+          prodEmptyDismissFp.delete(city.id);
+        } else if (cityHasActionableProduction(city)) {
+          const fp = productionOptionsFingerprint(city);
+          if (prodEmptyDismissFp.get(city.id) !== fp) {
+            events.push({
+              id: 'prod-empty-' + city.id,
+              icon: '\u2699\ufe0f',
+              title: 'Produkcja: ' + city.name,
+              subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',
+              kind: 'city',
+            });
+          }
         }
       }
       for (const p of pendingDiplomacyInbox) {
@@ -8005,6 +8295,11 @@ async function boot(): Promise<void> {
       const entry = negotiationTable.find(n => n.id === negotiationId);
       if (!entry) return;
       const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      // Gracz chce negocjować — po otwarciu audiencji od razu formularz kontroferty, nie
+      // tylko kolumna z przyciskiem „Przyjmij" (który finalizuje propozycję AI).
+      if (entry.awaitingOwnerId === 0 && canCounterNegotiation(entry)) {
+        requestAutoCounterNegotiation(negotiationId);
+      }
       openDiplomacyAudience(aiOwnerId);
     }
 
@@ -8240,6 +8535,9 @@ async function boot(): Promise<void> {
         return {
           name: c.name,
           pieniadz: tk?.pieniadz ?? 0,
+          pieniadzBrutto: tk?.pieniadzBrutto,
+          handelZeSzlakow: tk?.pieniadzZTras,
+          utrzymanieBudynkow: tk?.utrzymanieBudynkow,
           pracaPula: tk?.doPuli ?? 0,
           pracaBudynki: tk?.doBudynkow ?? 0,
           nauka: tk?.nauka ?? 0,
@@ -8984,19 +9282,7 @@ async function boot(): Promise<void> {
       for (const tk of preview.perCity) {
         if (tk.ownerId === 0) lastCityKulturaTick.set(tk.cityId, tk.kultura);
       }
-      _lastPlayerCityEcon = preview.perCity
-        .filter(tk => tk.ownerId === 0)
-        .map(tk => {
-          const c = cities.find(x => x.id === tk.cityId);
-          return {
-            cityId: tk.cityId,
-            name: c?.name ?? tk.cityId,
-            pieniadz: Math.round(tk.pieniadz),
-            doPuli: Math.round(tk.doPuli),
-            doBudynkow: Math.round(tk.doBudynkow),
-            nauka: Math.round(tk.nauka),
-          };
-        });
+      refreshPlayerCityEcon(preview.perCity);
     }
 
     function buildHudState(): HudState {
@@ -9111,6 +9397,9 @@ async function boot(): Promise<void> {
         wojny: chips.wojny,
         civIconId: String(player.civType || _menuCivId || 'grecy'),
         civKolorHex: civKolorHexFn(0),
+        playerEra: player.era,
+        playerWodz: leaderNameForOwnerId(0) ?? undefined,
+        nacja: civDisplayNameForOwner(0) ?? undefined,
         surowceSummary: surowceTotal > 0 ? `${surowceOk}/${surowceTotal}` : '—',
         surowceAlert: resourceAlertCount > 0,
         handelIncome,
@@ -9508,30 +9797,203 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * HANDEL-SUROWCE-CYKL (2026-07-24) — nadwyżka surowca sprzedającego, którego
-     * kupujący NIE MA (lub ma najmniej), do zaproponowania jako cykliczny handel
-     * co turę. ownerId-agnostyczne: sellerOwnerId/buyerOwnerId = DOWOLNY właściciel
-     * (gracz=0 lub AI) w DOWOLNEJ kombinacji — ta sama funkcja obsługuje gracz↔AI
-     * (obie strony) i AI↔AI. Cena = katalog PN (diplomacyPnSurowiecIlosc) — fair,
-     * deterministyczna, bez negocjacji (używana tylko do AUTOMATYCZNYCH ofert AI;
-     * gracz nadal może zaoferować dowolną cenę przez koszyk, oceni ją evaluateProposal).
+     * HANDEL-SUROWCE-CYKL (2026-07-24) + P-AI-011 (2026-07-26): handel surowcem
+     * między ownerami — deficyt (kupno) ma pierwszeństwo przed nadwyżką (sprzedaż).
+     * Rozszerzone: kolejka budowy + niski spichlerz (needsResource).
      */
+    function queuedBuildingIdsForOwner(ownerId: number): string[] {
+      const ids: string[] = [];
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        const prod = cityProd.get(c.id);
+        for (const item of prod?.kolejka ?? []) {
+          if (item.kind === 'budynek') ids.push(item.id);
+        }
+      }
+      return ids;
+    }
+
+    function resourceDeficitKeysForOwner(ownerId: number): string[] {
+      const pricedKeys = Object.keys(diplomacyHandelSurowceCatalog());
+      const needs = detectOwnerResourceNeeds({
+        goods: tradableGoodsIndexForOwner(ownerId),
+        pricedKeys,
+        pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
+        queuedBuildingIds: queuedBuildingIdsForOwner(ownerId),
+        lookupBuildingStockCost: (buildingId) =>
+          data.buildings.find(b => b.id === buildingId)?.koszt_surowce,
+        foodReserve: getEmpireFoodReserve(ownerId),
+      });
+      return needs.deficitKeys;
+    }
+
+    function pickResourceTradeRelOffer(
+      proposerOwnerId: number,
+      partnerOwnerId: number,
+      proposerHandlowosc?: number,
+    ): {
+      surowiecKey: string;
+      label: string;
+      pakietyPerTura: number;
+      zaplataPerTura: number;
+      kierunek: 'sprzedaz' | 'zakup';
+      powod: 'deficyt' | 'nadwyzka';
+    } | null {
+      const pricedKeys = Object.keys(diplomacyHandelSurowceCatalog());
+      const pakiet = diplomacyHandelSurowcePakietWielkosc();
+      const base = {
+        pricedKeys,
+        pakietWielkosc: pakiet,
+        maxPakietyPerTura: AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
+        pricePerPakiet: (key: string, pakiety: number) => diplomacyPnSurowiecIlosc(key, pakiety),
+      };
+      const goodsProposer = tradableGoodsIndexForOwner(proposerOwnerId);
+      const goodsPartner = tradableGoodsIndexForOwner(partnerOwnerId);
+      const sellerOptsProposer = quantityTradableGoodOptions(proposerOwnerId);
+      const sellerOptsPartner = quantityTradableGoodOptions(partnerOwnerId);
+
+      const pick = pickResourceDeficitForOwnerPair({
+        ...base,
+        buyerOwnerId: proposerOwnerId,
+        sellerOwnerId: partnerOwnerId,
+        goodsBuyer: goodsProposer,
+        goodsSeller: goodsPartner,
+        sellerOptions: sellerOptsPartner,
+      })
+        ?? pickResourceSurplusTradePick({
+          ...base,
+          sellerOwnerId: proposerOwnerId,
+          buyerOwnerId: partnerOwnerId,
+          goodsSeller: goodsProposer,
+          goodsBuyer: goodsPartner,
+          sellerOptions: sellerOptsProposer,
+        });
+      if (!pick) return null;
+      const kierunek = resourceTradeKierunekForProposer(proposerOwnerId, pick);
+      const handlowosc = proposerHandlowosc ?? 0.5;
+      const zaplataPerTura = applyTradeArchetypePriceMargin(
+        pick.zaplataPerTura,
+        handlowosc,
+        kierunek,
+      );
+      return {
+        surowiecKey: pick.surowiecKey,
+        label: pick.label,
+        pakietyPerTura: pick.pakietyPerTura,
+        zaplataPerTura,
+        kierunek,
+        powod: pick.powod,
+      };
+    }
+
     function pickResourceSurplusForOwnerPair(
       sellerOwnerId: number,
       buyerOwnerId: number,
     ): { surowiecKey: string; label: string; pakietyPerTura: number; zaplataPerTura: number } | null {
-      const sellerOpts = quantityTradableGoodOptions(sellerOwnerId);
-      if (!sellerOpts.length) return null;
-      const buyerGoods = tradableGoodsIndexForOwner(buyerOwnerId);
-      const buyerHave = new Set(buyerGoods.filter(g => (g.ilosc ?? 0) > 0).map(g => g.key));
-      const sorted = [...sellerOpts].sort((a, b) => b.maxPakiety - a.maxPakiety);
-      const pick = sorted.find(o => !buyerHave.has(o.id)) ?? sorted[0];
-      if (!pick || pick.maxPakiety <= 0) return null;
-      const pakiety = Math.max(1, Math.min(AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA, pick.maxPakiety));
-      const zaplata = diplomacyPnSurowiecIlosc(pick.id, pakiety) ?? 0;
-      if (zaplata <= 0) return null;
-      const label = pick.label.split(' ×')[0] ?? pick.id;
-      return { surowiecKey: pick.id, label, pakietyPerTura: pakiety, zaplataPerTura: zaplata };
+      const pricedKeys = Object.keys(diplomacyHandelSurowceCatalog());
+      const pick = pickResourceSurplusTradePick({
+        sellerOwnerId,
+        buyerOwnerId,
+        goodsSeller: tradableGoodsIndexForOwner(sellerOwnerId),
+        goodsBuyer: tradableGoodsIndexForOwner(buyerOwnerId),
+        sellerOptions: quantityTradableGoodOptions(sellerOwnerId),
+        pricedKeys,
+        pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
+        maxPakietyPerTura: AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
+        pricePerPakiet: (key, pakiety) => diplomacyPnSurowiecIlosc(key, pakiety),
+      });
+      if (!pick) return null;
+      return {
+        surowiecKey: pick.surowiecKey,
+        label: pick.label,
+        pakietyPerTura: pick.pakietyPerTura,
+        zaplataPerTura: pick.zaplataPerTura,
+      };
+    }
+
+    /** AI↔AI: auto-akceptacja propozycji handlu surowcem (deficyt lub nadwyżka). */
+    function applyAiAiHandelSurowiecCmd(
+      proposerId: number,
+      targetId: number,
+      cmd: Extract<AIDiplomacyCommand, { type: 'zaproponuj_handel_surowiec' }>,
+    ): void {
+      if (hasActiveResourceTradeDealForPair(proposerId, targetId)) return;
+      const pending = aiCommandToPendingProposal(cmd, proposerId, targetId, turn);
+      if (!pending) return;
+      const result = resolvePlayerAcceptsAiPending(
+        pending, turn, effectiveGameDifficultyForOwner(targetId),
+      );
+      if (!result.accepted || !result.deal) return;
+      activeDeals = applyAcceptedProposal(activeDeals, result);
+      syncRelationFromDeals(proposerId, targetId);
+      aiResourceTradeLastProposalTurn.set(proposerId, turn);
+      const labelA = ownerDiploLabel(proposerId);
+      const labelB = ownerDiploLabel(targetId);
+      console.log(
+        `[Dyplomacja] AI↔AI handel surowcem (${cmd.kierunek ?? 'sprzedaz'}): ` +
+        `${labelA} ↔ ${labelB} — ${cmd.powod}`,
+      );
+      const playerSeesA = getDiplomaticContacts().has(proposerId)
+        || diplomaticallyDiscoveredOwners.has(proposerId);
+      const playerSeesB = getDiplomaticContacts().has(targetId)
+        || diplomaticallyDiscoveredOwners.has(targetId);
+      if (playerSeesA && playerSeesB) {
+        showHintMessage(`${labelA} handluje z ${labelB}`, 4000);
+      }
+    }
+
+    function buildHandelSurowiecCmdFromOffer(
+      ownerId: number,
+      offer: NonNullable<ReturnType<typeof pickResourceTradeRelOffer>>,
+    ): Extract<AIDiplomacyCommand, { type: 'zaproponuj_handel_surowiec' }> {
+      const zaplataLabel = '¤';
+      const verb = offer.kierunek === 'zakup'
+        ? `Kupię od ciebie ${offer.label}`
+        : `Nadwyżka ${offer.label} — oferujemy sprzedaż`;
+      return {
+        type: 'zaproponuj_handel_surowiec',
+        targetId: '0',
+        powod: `${verb}: ${offer.pakietyPerTura} pakiet(y)/turę`
+          + ` za ${offer.zaplataPerTura} ${zaplataLabel}/turę przez ${AI_RESOURCE_TRADE_DEFAULT_TURNS} tur`
+          + (offer.powod === 'deficyt' ? ' (deficyt surowca)' : ''),
+        surowiecKey: offer.surowiecKey,
+        label: offer.label,
+        pakietyPerTura: offer.pakietyPerTura,
+        zaplataTyp: 'zloto',
+        zaplataPerTura: offer.zaplataPerTura,
+        turns: AI_RESOURCE_TRADE_DEFAULT_TURNS,
+        kierunek: offer.kierunek,
+        powodHandlu: offer.powod,
+      };
+    }
+
+    /** AI proaktywnie prosi gracza o audiencję (handel bez wymogu „Nawiąż kontakt”). */
+    function applyAiAudienceRequest(
+      ownerId: number,
+      cmd: Extract<AIDiplomacyCommand, { type: 'zaproponuj_audiencje' }>,
+    ): void {
+      if (!getDiplomaticContacts().has(ownerId)) return;
+      aiAudienceLastRequestTurn.set(ownerId, turn);
+      diplomaticContactEstablished.add(ownerId);
+      const motive = cmd.motive ?? 'chcą rozmawiać';
+      showHintMessage(
+        `${ownerDiploLabel(ownerId)} prosi o audiencję — ${motive}`,
+        5500,
+      );
+      console.log(`[Dyplomacja] AI${ownerId} zaproponuj_audiencje: ${cmd.powod}`);
+      if (!pendingAutoDiploAudience.includes(ownerId)) {
+        pendingAutoDiploAudience.push(ownerId);
+      }
+      const aiTypKey = civKeyForOwner(ownerId) as TypCywilizacji;
+      const offer = pickResourceTradeRelOffer(
+        ownerId,
+        0,
+        resolveArchetypeTrade(aiTypKey, ARCHETYPE_TRADE[aiTypKey] ?? 0.5),
+      );
+      if (offer) {
+        enqueueDiplomacyPendingFromCmd(ownerId, buildHandelSurowiecCmdFromOffer(ownerId, offer));
+      }
+      requestAnimationFrame(() => tryOpenNextAutoDiploAudience());
     }
 
     /** Czy para (a,b) ma już aktywny cykliczny deal surowcowy (dowolny surowiec, dowolny kierunek). */
@@ -9602,22 +10064,62 @@ async function boot(): Promise<void> {
           if (!hasConnection) continue;
 
           const [p0, p1] = pairOwnerIds(a, b);
-          // HANDEL-SUROWCE-CYKL (2026-07-24): przy okazji zawarcia Umowy Handlowej
-          // AI↔AI, jeśli jedna strona ma wyraźną nadwyżkę surowca, którego druga
-          // nie ma — dołóż cykliczny przepływ surowiec→¤. Nie blokuje zawarcia
-          // samej umowy, gdy nadwyżki brak (handelSurowiecCykliczny zostaje undefined).
-          const offerAtoB = pickResourceSurplusForOwnerPair(a, b);
-          const offerBtoA = pickResourceSurplusForOwnerPair(b, a);
-          const bestOffer = offerAtoB && offerBtoA
-            ? (offerAtoB.pakietyPerTura * offerAtoB.zaplataPerTura
-              >= offerBtoA.pakietyPerTura * offerBtoA.zaplataPerTura
-              ? { seller: a, buyer: b, offer: offerAtoB }
-              : { seller: b, buyer: a, offer: offerBtoA })
-            : offerAtoB
-              ? { seller: a, buyer: b, offer: offerAtoB }
-              : offerBtoA
-                ? { seller: b, buyer: a, offer: offerBtoA }
-                : null;
+          const pricedKeys = Object.keys(diplomacyHandelSurowceCatalog());
+          const tradeBase = {
+            pricedKeys,
+            pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
+            maxPakietyPerTura: AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
+            pricePerPakiet: (key: string, pakiety: number) => diplomacyPnSurowiecIlosc(key, pakiety),
+          };
+          const goodsA = tradableGoodsIndexForOwner(a);
+          const goodsB = tradableGoodsIndexForOwner(b);
+          const sellerA = quantityTradableGoodOptions(a);
+          const sellerB = quantityTradableGoodOptions(b);
+          // P-AI-011: deficyt (kupno) przed nadwyżką (sprzedaż) — także AI↔miasto-państwo.
+          const tradePick = pickResourceDeficitForOwnerPair({
+            ...tradeBase,
+            buyerOwnerId: a,
+            sellerOwnerId: b,
+            goodsBuyer: goodsA,
+            goodsSeller: goodsB,
+            sellerOptions: sellerB,
+          })
+            ?? pickResourceDeficitForOwnerPair({
+              ...tradeBase,
+              buyerOwnerId: b,
+              sellerOwnerId: a,
+              goodsBuyer: goodsB,
+              goodsSeller: goodsA,
+              sellerOptions: sellerA,
+            })
+            ?? pickResourceSurplusTradePick({
+              ...tradeBase,
+              sellerOwnerId: a,
+              buyerOwnerId: b,
+              goodsSeller: goodsA,
+              goodsBuyer: goodsB,
+              sellerOptions: sellerA,
+            })
+            ?? pickResourceSurplusTradePick({
+              ...tradeBase,
+              sellerOwnerId: b,
+              buyerOwnerId: a,
+              goodsSeller: goodsB,
+              goodsBuyer: goodsA,
+              sellerOptions: sellerB,
+            });
+          const bestOffer = tradePick
+            ? {
+                seller: tradePick.sellerOwnerId,
+                buyer: tradePick.buyerOwnerId,
+                offer: {
+                  surowiecKey: tradePick.surowiecKey,
+                  label: tradePick.label,
+                  pakietyPerTura: tradePick.pakietyPerTura,
+                  zaplataPerTura: tradePick.zaplataPerTura,
+                },
+              }
+            : null;
           // R-MP-HANDEL-SUROWCE: para z miastem-państwem — deal WYŁĄCZNIE gdy jest
           // realna oferta surowca (patrz komentarz nad funkcją). Pełne AI↔AI: bez zmian.
           if (eitherIsCityState && !bestOffer) continue;
@@ -10275,8 +10777,28 @@ async function boot(): Promise<void> {
      * previewNegotiatedProposal (wyżej) zostaje jako ADWIZORY „prawdopodobna odpowiedź"
      * PRZED wysłaniem — nie finalizuje niczego, nie gwarantuje wyniku.
      */
+    /** Wpis stołu czekający na gracza (AI złożyło propozycję) — ten sam typ akcji. */
+    function findIncomingNegotiationForAction(
+      ownerId: number,
+      actionId: import('./game/diplomacy-proposals').ProposalActionId,
+    ): PendingNegotiation | undefined {
+      return negotiationTable.find(n =>
+        n.awaitingOwnerId === 0
+        && n.proposerOwnerId === ownerId
+        && n.responderOwnerId === 0
+        && n.actionId === actionId,
+      );
+    }
+
     function handleNegotiatedProposal(ownerId: number, payload: NegotiationPayload): void {
       const { proposal } = buildProposalFromPayload(ownerId, payload);
+      // Ich propozycja już leży na stole — nie zakładaj drugiej (gracz jako proponent) i nie
+      // wołaj resolveNegotiationEntryAt od razu; to wyglądało jak natychmiastowe przyjęcie.
+      const incoming = findIncomingNegotiationForAction(ownerId, proposal.actionId);
+      if (incoming) {
+        handleNegotiationCounter(incoming.id, payload);
+        return;
+      }
       negotiationSeq += 1;
       const entry = createNegotiation(proposal, turn, 'player', negotiationSeq);
       negotiationTable.push(entry);
@@ -10415,15 +10937,7 @@ async function boot(): Promise<void> {
 
       if (actionId === '11') {
         showWarConfirmModal(civName, () => {
-          if (!playerDiplomacyActionAllowed(layer, 'war')) return;
-          chargeWarDeclarationCredibility(0, ownerId);
-          breakTreatiesOnWar(0, ownerId, true);
-          applyAllianceObligationsOnWar(0, ownerId);
-          setDiploRelation(0, ownerId, applyDiploEventTracked(0, ownerId, getDiploRelation(0, ownerId), 'wojna_wypowiedziana'));
-          showHintMessage('\u2694 Wypowiedziałeś wojnę: ' + civName, 4500);
-          updateDiplomacyAudience();
-          updateDiplomacyPanel();
-          updateHud();
+          playerDeclareWarOnOwner(ownerId);
         });
         return;
       }
@@ -10621,6 +11135,7 @@ async function boot(): Promise<void> {
         onBack: () => {
           hideDiplomacyAudience();
           diplomacyAudienceOwnerId = null;
+          refreshDiploListHudIfOpen();
           if (d1bHudActive) {
             showDiploListHud();
             refreshD1bHud();
@@ -11215,11 +11730,16 @@ async function boot(): Promise<void> {
               // z garnizonu obok panelu miasta i rozkazu ruchu z listy armii.
               if (u.inGarnizon === true) {
                 const leaveCity = cityAtUnit(u);
-                if (exitGarnizon(u) && leaveCity) syncGarnizonForCity(leaveCity);
+                const garStack = garrisonUnitsOnHex(units, u.q, u.r, u.ownerId);
+                for (const su of garStack) exitGarnizon(su);
+                if (leaveCity) syncGarnizonForCity(leaveCity);
                 refreshFog();
+                syncUnitsRender();
                 refreshCityPanelIfOpen();
+                const n = garStack.length;
                 showHintMessage(
-                  u.typeId + ' opu\u015bci\u0142 garnizon' + (leaveCity ? ' \u2014 ' + leaveCity.name : ''),
+                  (n > 1 ? `${n} jednostek opu\u015bci\u0142o garnizon` : u.typeId + ' opu\u015bci\u0142 garnizon')
+                    + (leaveCity ? ' \u2014 ' + leaveCity.name : ''),
                   2500,
                 );
                 selectPlayerUnit(u.id, true);
@@ -11260,12 +11780,15 @@ async function boot(): Promise<void> {
               unitRenderer.clearPathRoute();
               const city = cityAtUnit(u);
               if (city !== undefined && u.ownerId === city.ownerId) {
-                u.inGarnizon = true;
+                for (const su of stack) su.inGarnizon = true;
                 syncGarnizonForCity(city);
                 refreshFog();
+                syncUnitsRender();
                 refreshCityPanelIfOpen();
+                const n = stack.length;
                 showHintMessage(
-                  u.typeId + ' w garnizonie \u2014 ' + city.name,
+                  (n > 1 ? `Armia \u00d7${n} w garnizonie` : u.typeId + ' w garnizonie')
+                    + ' \u2014 ' + city.name,
                   2800,
                 );
                 clearPlayerUnitSelection();
@@ -11382,11 +11905,21 @@ async function boot(): Promise<void> {
           }
         },
         onEventDismiss: (id) => {
-          if (!id.startsWith('village-')) return;
-          const idx = villageEventLog.findIndex(e => e.id === id);
-          if (idx >= 0) {
-            villageEventLog.splice(idx, 1);
-            refreshD1bHud();
+          if (id.startsWith('village-')) {
+            const idx = villageEventLog.findIndex(e => e.id === id);
+            if (idx >= 0) {
+              villageEventLog.splice(idx, 1);
+              refreshD1bHud();
+            }
+            return;
+          }
+          if (id.startsWith('prod-empty-')) {
+            const cityId = cityIdFromProdEmptyEventId(id);
+            const city = cityId ? cities.find(c => c.id === cityId) : undefined;
+            if (city) {
+              prodEmptyDismissFp.set(city.id, productionOptionsFingerprint(city));
+              refreshD1bHud();
+            }
           }
         },
       });
@@ -11499,6 +12032,11 @@ async function boot(): Promise<void> {
         const ep = empireEpochForOwner(c.ownerId);
         const mpMults = civManpowerMultsForOwner(c.ownerId);
         return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult);
+      },
+      getEmpireRekruciTotal: (ownerId: number) => {
+        const ep = empireEpochForOwner(ownerId);
+        const mpMults = civManpowerMultsForOwner(ownerId);
+        return empirePoborTotals(cities, ownerId, ep, mpMults.maxMult).rekruci;
       },
       getOwnerColor: civColorFn,
       getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
@@ -12403,6 +12941,7 @@ async function boot(): Promise<void> {
       if (isPointOverCityPanelUi(e.clientX, e.clientY)) return;
       // Osierocony modal (np. po zamknięciu panelu miasta) — nie blokuj mapy.
       if (isCityUnitPickOpen()) hideCityUnitPick();
+      if (isCityForeignPickOpen()) hideCityForeignPick();
 
       // Treat as a click at (e.clientX, e.clientY)
       const hit = pickHexAt(e.clientX, e.clientY);
@@ -12518,17 +13057,14 @@ async function boot(): Promise<void> {
         return;
       }
 
-      // City click: panel tylko dla miast gracza; wrogie = podpowiedź (nie „twoje miasto”).
+      // City click: zaznaczona jednostka gracza → marsz (planMarchTo); bez zaznaczenia → panel / dyplomacja / atak.
       const clickedCity = cities.find(c => c.q === hit.q && c.r === hit.r);
       if (clickedCity) {
         const sel = selectedId !== null ? units.find(u => u.id === selectedId) : null;
-        const action = resolveEnemyCityClick({
-          city: clickedCity,
-          selectedUnit: sel ?? null,
-          units,
-          playerOwnerId: 0,
-        });
-        switch (action.kind) {
+        const playerSel = sel && sel.ownerId === 0 ? sel : null;
+
+        const dispatchMapEnemyCityClick = (action: MapEnemyCityClickAction): void => {
+          switch (action.kind) {
           case 'siege_panel':
             syncSiegePanelMeta(action.ctx.city);
             showSiegeMapPanel(
@@ -12577,41 +13113,85 @@ async function boot(): Promise<void> {
             clearPlayerUnitSelection();
             refreshD1bHud();
             return;
-          case 'not_enemy':
-            break;
-        }
-        if (sel && sel.ownerId === 0 && stackCanMove(sel)
-            && reachable.has(keyOf(clickedCity.q, clickedCity.r))) {
-          if (beginMoveSelectedUnitTo(clickedCity.q, clickedCity.r)) return;
-        }
-        const stackOnCity = visibleStackOnHex(units, hit.q, hit.r, 0);
-        if (stackOnCity.length > 0) {
-          const rep = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore) ?? stackOnCity[0]!;
-          // Łączny % HP stosu (suma hp / suma maxHp) — spójne z etykietą „Armia — N jednostek”.
-          const stackHpSum = stackOnCity.reduce(
-            (sum, u) => sum + (u.hp ?? unitHealth(unitDefFor(u))), 0,
-          );
-          const stackMaxHpSum = stackOnCity.reduce(
-            (sum, u) => sum + unitHealth(unitDefFor(u)), 0,
-          );
-          // Ruch stosu: min. ruchLeft / maks. ruch spośród jednostek na heksie
-          // (ta sama konwencja co armyListHud/ArmyListEntry, patrz linia ~3600-3601).
-          const stackRuchLeft = Math.min(...stackOnCity.map(u => u.ruchLeft));
-          const stackRuchMax = Math.max(...stackOnCity.map(u => u.ruch));
-          showCityUnitPick({
-            cityName: clickedCity.name,
-            cityPopulation: clickedCity.population,
-            unitLabel: rep.typeId,
-            unitHealthPercent: stackMaxHpSum > 0 ? (stackHpSum / stackMaxHpSum) * 100 : undefined,
-            unitRuchLeft: stackRuchLeft,
-            unitRuchMax: stackRuchMax,
-            stackCount: stackOnCity.length,
-            onCity: () => openCityPanelForPlayer(clickedCity),
-            onUnit: () => selectPlayerUnit(rep.id),
+            case 'not_enemy':
+              break;
+          }
+        };
+
+        if (playerSel) {
+          if (clickedCity.ownerId === 0) {
+            if (planMarchTo(clickedCity.q, clickedCity.r)) return;
+            showHintMessage(clickedCity.name + ' — brak trasy do miasta.', 3500);
+            return;
+          }
+          const enemyAction = resolveEnemyCityClick({
+            city: clickedCity,
+            selectedUnit: playerSel,
+            units,
+            playerOwnerId: 0,
           });
+          const isMilitaryAction =
+            enemyAction.kind === 'siege_panel' ||
+            enemyAction.kind === 'attack_choice' ||
+            enemyAction.kind === 'field_battle' ||
+            enemyAction.kind === 'capture_empty';
+          if (isMilitaryAction) {
+            withPlayerWarConsent(clickedCity.ownerId, () => dispatchMapEnemyCityClick(enemyAction));
+            return;
+          }
+          const marchAdj = pickMarchHexAdjacentToCity(playerSel, clickedCity);
+          if (marchAdj && planMarchTo(marchAdj.q, marchAdj.r)) return;
+          showHintMessage(clickedCity.name + ' — brak trasy do miasta.', 3500);
           return;
         }
-        openCityPanelForPlayer(clickedCity);
+
+        if (clickedCity.ownerId === 0) {
+          const stackOnCity = visibleStackOnHex(units, hit.q, hit.r, 0);
+          if (stackOnCity.length > 0) {
+            const rep = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore) ?? stackOnCity[0]!;
+            const stackHpSum = stackOnCity.reduce(
+              (sum, u) => sum + (u.hp ?? unitHealth(unitDefFor(u))), 0,
+            );
+            const stackMaxHpSum = stackOnCity.reduce(
+              (sum, u) => sum + unitHealth(unitDefFor(u)), 0,
+            );
+            const stackRuchLeft = Math.min(...stackOnCity.map(u => u.ruchLeft));
+            const stackRuchMax = Math.max(...stackOnCity.map(u => u.ruch));
+            showCityUnitPick({
+              cityName: clickedCity.name,
+              cityPopulation: clickedCity.population,
+              unitLabel: rep.typeId,
+              unitHealthPercent: stackMaxHpSum > 0 ? (stackHpSum / stackMaxHpSum) * 100 : undefined,
+              unitRuchLeft: stackRuchLeft,
+              unitRuchMax: stackRuchMax,
+              stackCount: stackOnCity.length,
+              onCity: () => openCityPanelForPlayer(clickedCity),
+              onUnit: () => selectPlayerUnit(rep.id),
+            });
+            return;
+          }
+          openCityPanelForPlayer(clickedCity);
+          return;
+        }
+
+        const enemyAction = resolveEnemyCityClick({
+          city: clickedCity,
+          selectedUnit: sel ?? null,
+          units,
+          playerOwnerId: 0,
+        });
+        const isMilitaryAction =
+          enemyAction.kind === 'siege_panel' ||
+          enemyAction.kind === 'attack_choice' ||
+          enemyAction.kind === 'field_battle' ||
+          enemyAction.kind === 'capture_empty';
+
+        if (isMilitaryAction) {
+          withPlayerWarConsent(clickedCity.ownerId, () => dispatchMapEnemyCityClick(enemyAction));
+          return;
+        }
+
+        offerForeignCityInteraction(clickedCity);
         return;
       }
 
@@ -12632,12 +13212,18 @@ async function boot(): Promise<void> {
         const atkUnit = units.find(x => x.id === selectedId);
         if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
             hexDistance(atkUnit.q, atkUnit.r, cu.q, cu.r) <= 1) {
-          openPlayerMapUnitAttack(atkUnit, cu);
+          withPlayerWarConsent(cu.ownerId, () => openPlayerMapUnitAttack(atkUnit, cu));
         } else if (atkUnit && atkUnit.ownerId === 0) {
           if (!stackCanMove(atkUnit)) {
             showHintMessage('Brak ruchu — zakończ turę lub wybierz inną jednostkę.', 3500);
           } else if (!currentVisible().has(keyOf(cu.q, cu.r))) {
             showHintMessage('Cel niewidoczny (mgła).', 3500);
+          } else if (!playerIsAtWarWith(cu.ownerId)) {
+            withPlayerWarConsent(cu.ownerId, () => {
+              if (!planMarchTo(cu.q, cu.r, cu.id)) {
+                showHintMessage('Brak trasy do wroga — cel zablokowany.', 3500);
+              }
+            });
           } else if (!planMarchTo(cu.q, cu.r, cu.id)) {
             showHintMessage('Brak trasy do wroga — cel zablokowany.', 3500);
           }
@@ -13132,6 +13718,14 @@ async function boot(): Promise<void> {
 
     /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
+      if (atkUnit.ownerId === 0 && defUnit.ownerId !== 0 && !playerIsAtWarWith(defUnit.ownerId)) {
+        withPlayerWarConsent(defUnit.ownerId, () => openPlayerMapUnitAttackCore(atkUnit, defUnit));
+        return;
+      }
+      openPlayerMapUnitAttackCore(atkUnit, defUnit);
+    }
+
+    function openPlayerMapUnitAttackCore(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
       // TEMAT #15: BRAK ataku z wody — jednostka zaokrętowana musi zejść na ląd.
       if (atkUnit.embarked === true) {
         showHintMessage('Jednostka zaokrętowana nie może atakować — zejdź na ląd.', 3800);
@@ -14229,7 +14823,14 @@ async function boot(): Promise<void> {
         atkOwner,
         units,
         anchor?.id ?? atkRoster[0]?.id ?? '',
+        { civKeyForOwner: civKeyForOwnerId },
       );
+      if (sameCultureCircle(civKeyForOwnerId(atkOwner), civKeyForOwnerId(oldOwner))) {
+        cityRelig.set(
+          city.id,
+          defaultCityReligionState(city.population, ownerReligionForOwnerId(atkOwner)),
+        );
+      }
       if (atkOwner === 0) playerEverOwnedCity = true;
       syncCityGarnizon(city);
       endMapSiege(city.id);
@@ -14842,6 +15443,7 @@ async function boot(): Promise<void> {
           aiTradeAgreementLastProposalTurn: Array.from(aiTradeAgreementLastProposalTurn.entries()),
           aiAiTradeAgreementLastTurn: Array.from(aiAiTradeAgreementLastTurn.entries()),
           aiResourceTradeLastProposalTurn: Array.from(aiResourceTradeLastProposalTurn.entries()),
+          aiAudienceLastRequestTurn: Array.from(aiAudienceLastRequestTurn.entries()),
           diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
           diplomaticallyDiscoveredOwners: Array.from(diplomaticallyDiscoveredOwners),
           diplomaticDiscoveryPopupShown: Array.from(diplomaticDiscoveryPopupShown),
@@ -14993,6 +15595,7 @@ async function boot(): Promise<void> {
         if (tryCloseCityUxFrameFromKeyboard() || (isCityPanelOpen() && closeCityPanelIfOpen())) {
           e.preventDefault();
           hideCityUnitPick();
+      hideCityForeignPick();
           requestAnimationFrame(() => tryOpenNextAutoDiploAudience());
           return;
         }
@@ -15443,19 +16046,7 @@ async function boot(): Promise<void> {
               finalizeHexClearing(hexKey);
             }
           }
-          _lastPlayerCityEcon = econ.perCity
-            .filter(tk => tk.ownerId === 0)
-            .map(tk => {
-              const c = cities.find(x => x.id === tk.cityId);
-              return {
-                cityId: tk.cityId,
-                name: c?.name ?? tk.cityId,
-                pieniadz: Math.round(tk.pieniadz),
-                doPuli: Math.round(tk.doPuli),
-                doBudynkow: Math.round(tk.doBudynkow),
-                nauka: Math.round(tk.nauka),
-              };
-            });
+          refreshPlayerCityEcon(econ.perCity);
           _lastLudnoscRate = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + c.population, 0) - popBeforeTick;
           {
             const pc = cities.filter(c => c.ownerId === 0);
@@ -15671,6 +16262,7 @@ async function boot(): Promise<void> {
               const kulturaTick = econTick ? econTick.kultura : 0;
 
               let ownCultureShare = resolveOwnCultureShare(city as { ownCultureShare?: number; kulturaOwnShare?: number });
+              const cultureMixActive = cityCultureMixActive(city as { ownCultureShare?: number; kulturaOwnShare?: number });
 
               const builtIds = cityBuilt.get(cid) ?? [];
 
@@ -15778,7 +16370,10 @@ async function boot(): Promise<void> {
                     q: city.q,
                     r: city.r,
                     population: city.population,
-                    ownCultureShare,
+                    ownCultureShare: cultureMixActive ? ownCultureShare : undefined,
+                    kulturaOwnShare: cultureMixActive
+                      ? (city as { kulturaOwnShare?: number }).kulturaOwnShare
+                      : undefined,
                     religionState: curRel,
                     religionPressurePct: (city as { religionPressurePct?: Record<number, number> }).religionPressurePct,
                   },
@@ -15787,8 +16382,10 @@ async function boot(): Promise<void> {
                   cpPresja.presjaProcTura,
                   stateRelMap,
                 );
-                ownCultureShare = pres.ownCultureShare;
-                (city as { ownCultureShare?: number }).ownCultureShare = ownCultureShare;
+                if (cultureMixActive) {
+                  ownCultureShare = pres.ownCultureShare;
+                  (city as { ownCultureShare?: number }).ownCultureShare = ownCultureShare;
+                }
                 (city as { religionPressurePct?: Record<number, number> }).religionPressurePct = pres.religionPressurePct;
               }
 
@@ -15838,7 +16435,7 @@ async function boot(): Promise<void> {
                   atWar: ownerAtWar,
                   hasSwiatynia: builtIds.includes('swiatynia'),
                   hasAmfiteatr: builtIds.includes('teatr') || builtIds.includes('akademia'),
-                  ownCultureShare,
+                  ownCultureShare: cultureMixActive ? ownCultureShare : undefined,
                   foreignReligionDominant,
                   conquestUnstablePenalty: conquestUnstablePen,
                   stolicaEasyBonus: stolicaBonus,
@@ -16250,16 +16847,29 @@ async function boot(): Promise<void> {
             // (DifficultyParams: bonusProdukcja/bonusWalka/agresjaMnoznik/celObranie) niżej.
             const aiDiffLevel = aiDiffLevelForOwner(ownerId);
             const contactedOwners = getDiplomaticContacts();
+            const aiCivIdForOpts = aiOwnerCivMap.get(ownerId) ?? 'grecy';
+            const aiTypForOpts = (aiCivIdForOpts as TypCywilizacji);
+            const civAiProf = civAiProfileForTyp(data, aiTypForOpts);
+            const powerRankInfo = computeAbsolutePowerRank(
+              ownerId,
+              aiOwnerList,
+              (oid) => objectivePowerByOwner.get(oid)?.power ?? 0,
+              { cityStateOpts: ownerCityStateOpts() },
+            );
             const opts: AITurnOpts = {
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
               poziomTrudnosci: aiDiffLevel,
               defensiveCopy: typCityCopyOwners.has(ownerId),
               canEngageOwner: (targetOwnerId: number) => {
-                if (targetOwnerId === 0) {
-                  return getDiploRelation(ownerId, 0).status === 'wojna';
-                }
-                return true;
+                if (isBarbarian(targetOwnerId)) return true;
+                return getDiploRelation(ownerId, targetOwnerId).status === 'wojna';
               },
+              civAiProfile: civAiProf
+                ? { ekspansywnosc: civAiProf.ekspansywnosc, sklonnoscDoPodboju: civAiProf.sklonnoscDoPodboju }
+                : undefined,
+              currentTurn: turn,
+              powerRank: powerRankInfo.rank,
+              powerOfOwner: (oid: number) => objectivePowerByOwner.get(oid)?.power ?? 0,
               cityBuildings: Object.fromEntries(
                 [...cityBuilt.entries()].filter(([cid]) => cities.find(c => c.id === cid && c.ownerId === ownerId))
               ),
@@ -16270,6 +16880,7 @@ async function boot(): Promise<void> {
               placedImprovements,
               improvementTechs: aiResearchDone.get(ownerId) ?? new Set<string>(),
               pracaAvailable: aiPracaPoolByOwner.get(ownerId) ?? 0,
+              resourceDeficitKeys: resourceDeficitKeysForOwner(ownerId),
               civEra: empireEpochForOwner(ownerId),
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
@@ -16344,6 +16955,242 @@ async function boot(): Promise<void> {
               commands = resumeCommands;
               cmdStart = resumeCmdIdx;
             } else {
+            // --- C-AI-WOJNA-Q1=A: dyplomacja PRZED ruchem (wojna w tej turze, atak od następnej) ---
+            try {
+              const aiTyp = aiTypForOpts;
+              const diffParamsDip = loadDifficultyParams(data, aiDiffLevel);
+              const potAI = objectivePowerByOwner.get(ownerId)?.power ?? 0;
+              const relacjeDip: DiplomacjaInputs['relacje'] = [];
+
+              if (diplomaticallyDiscoveredOwners.has(ownerId)) {
+                const militaryRatio = militaryRatioFromArmyM(
+                  sumArmyMForOwner(ownerId),
+                  sumArmyMForOwner(0),
+                );
+                const rel = getDiploRelation(0, ownerId);
+                const dipCtx: AIDiplomacyContext = {
+                  isMinorCiv: false,
+                  militaryRatio,
+                  currentTurn: turn,
+                  turnsAtWar: rel.status === 'wojna' ? 1 : 0,
+                };
+                const plrTyp = ((player.civType ?? 'rzymianie') as TypCywilizacji);
+                const aiStub: Player = { ownerId, typCywilizacji: aiTyp } as unknown as Player;
+                const humanStub: Player = { ownerId: 0, typCywilizacji: plrTyp } as unknown as Player;
+                void aiDiplomacyStance(aiStub, humanStub, rel, dipCtx);
+
+                const potPlr = objectivePowerByOwner.get(0)?.power ?? 0;
+                const respektAI = computeRespekt(potAI, potPlr);
+                const relWithRespekt = { ...rel, respekt: respektAI };
+                setDiploRelation(0, ownerId, relWithRespekt);
+
+                const relStatus = (relWithRespekt as Relation).status;
+                const tickCtx: TickCtx = {
+                  turn,
+                  aktywnyHandel: activeDeals.some(
+                    d => dealInvolvesOwners(d, 0, ownerId)
+                      && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaHandlowa,
+                  ),
+                  pokojTrustTier: resolvePokojTrustTier(activeDeals, 0, ownerId, {
+                    contactEstablished: diplomaticContactEstablished.has(ownerId),
+                    atWar: relStatus === 'wojna',
+                  }),
+                  dobraWolaAktywna: false,
+                  wspolnyWrog: false,
+                  wspolnaReligia: (() => {
+                    const sameCulture = sameCultureCircle(civKeyForOwner(0), civKeyForOwner(ownerId));
+                    const pr = ownerReligionForOwnerId(0);
+                    const ar = ownerReligionForOwnerId(ownerId);
+                    return sameCulture && !!pr && !!ar && pr === ar;
+                  })(),
+                  odmiennaReligia: false,
+                  ekspansjaPrzyGranicy:
+                    cities.filter(c => c.ownerId === ownerId).length > 2 &&
+                    cities.filter(c => c.ownerId === 0).length > 2,
+                  wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(0),
+                };
+                const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
+                setDiploRelation(0, ownerId, relTicked as unknown as Relation);
+
+                const respektWzglednyPlr = (potAI + potPlr) > 0 ? potAI / (potAI + potPlr) : 0.5;
+                const hasTradeConnectionToPlayer = citiesHaveTradeConnection(
+                  cities.filter(c => c.ownerId === 0),
+                  cities.filter(c => c.ownerId === ownerId),
+                  map,
+                  cityBuilt,
+                );
+                const aiHandlowosc = resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5);
+                const resourceTradeOfferRaw = relStatus !== 'wojna'
+                  ? pickResourceTradeRelOffer(ownerId, 0, aiHandlowosc)
+                  : null;
+                relacjeDip.push({
+                  partnerId: '0',
+                  relation: relTicked as unknown as Relation,
+                  respektWzgledny: respektWzglednyPlr,
+                  stanWojny: (relTicked as any).status === 'wojna',
+                  lastOneShotGiftTurn: aiOneShotGiftLastTurn.get(ownerId),
+                  hasHandelTreaty: tickCtx.aktywnyHandel,
+                  hasTradeConnection: hasTradeConnectionToPlayer,
+                  lastTradeAgreementProposalTurn: aiTradeAgreementLastProposalTurn.get(ownerId),
+                  resourceTradeOffer: resourceTradeOfferRaw
+                    ? {
+                        surowiecKey: resourceTradeOfferRaw.surowiecKey,
+                        label: resourceTradeOfferRaw.label,
+                        pakietyPerTura: resourceTradeOfferRaw.pakietyPerTura,
+                        zaplataTyp: 'zloto',
+                        zaplataPerTura: resourceTradeOfferRaw.zaplataPerTura,
+                        turns: AI_RESOURCE_TRADE_DEFAULT_TURNS,
+                        kierunek: resourceTradeOfferRaw.kierunek,
+                        powod: resourceTradeOfferRaw.powod,
+                      }
+                    : undefined,
+                  hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(0, ownerId),
+                  lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
+                  partnerTypCywilizacji: civKeyForOwner(0),
+                  hasNapTreaty: hasTreaty(
+                    activeDeals, ownerId, 0, RodzajTraktatu.PaktNieagresji,
+                  ),
+                  contactEstablished: diplomaticContactEstablished.has(ownerId),
+                  mapContact: contactedOwners.has(ownerId),
+                  lastAudienceRequestTurn: aiAudienceLastRequestTurn.get(ownerId),
+                });
+              }
+
+              // AI↔AI relacje (C-AI-WOJNA: wypowiedzenie wojny między AI)
+              for (const otherId of aiOwnerList) {
+                if (otherId === ownerId) continue;
+                if (isBarbarian(otherId) || eliminatedOwners.has(otherId)) continue;
+                const relAi = getDiploRelation(ownerId, otherId);
+                const potOther = objectivePowerByOwner.get(otherId)?.power ?? 0;
+                const respektWzgAi = (potAI + potOther) > 0 ? potAI / (potAI + potOther) : 0.5;
+                const resTradeAi = relAi.status !== 'wojna'
+                  ? pickResourceTradeRelOffer(
+                    ownerId,
+                    otherId,
+                    resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
+                  )
+                  : null;
+                relacjeDip.push({
+                  partnerId: String(otherId),
+                  relation: relAi,
+                  respektWzgledny: respektWzgAi,
+                  stanWojny: relAi.status === 'wojna',
+                  partnerTypCywilizacji: civKeyForOwner(otherId),
+                  hasNapTreaty: hasTreaty(
+                    activeDeals, ownerId, otherId, RodzajTraktatu.PaktNieagresji,
+                  ),
+                  resourceTradeOffer: resTradeAi
+                    ? {
+                        surowiecKey: resTradeAi.surowiecKey,
+                        label: resTradeAi.label,
+                        pakietyPerTura: resTradeAi.pakietyPerTura,
+                        zaplataTyp: 'zloto',
+                        zaplataPerTura: resTradeAi.zaplataPerTura,
+                        turns: AI_RESOURCE_TRADE_DEFAULT_TURNS,
+                        kierunek: resTradeAi.kierunek,
+                        powod: resTradeAi.powod,
+                      }
+                    : undefined,
+                  hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(ownerId, otherId),
+                  isMinorCivPartner: simplifiedDiplomacyOwners.has(otherId),
+                  lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
+                });
+              }
+
+              if (relacjeDip.length > 0) {
+                const dipLayer = diplomacyLayerForOwner(
+                  ownerId,
+                  simplifiedDiplomacyOwners,
+                  foreignTypeOwners,
+                  contactedOwners,
+                );
+                const diploInp: DiplomacjaInputs = {
+                  myPlayerId: String(ownerId),
+                  relacje: relacjeDip,
+                  agresja: resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5, data),
+                  handlowosc: resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
+                  epoka: player.era,
+                  skarbiecGold: aiSkarbiecByOwner.get(ownerId) ?? 0,
+                  currentTurn: turn,
+                  sklonnoscDoPodboju: civAiProf?.sklonnoscDoPodboju,
+                  myTypCywilizacji: aiTyp,
+                  agresywnoscRaw: civAiProf?.agresywnosc,
+                  tolerancjaRyzyka: civAiProf?.tolerancjaRyzyka,
+                  fullDiplomacyLayer: dipLayer === 'full',
+                  isMinorCivSelf: simplifiedDiplomacyOwners.has(ownerId),
+                };
+                const dipCmdsRaw = decideAIDiplomacy(
+                  diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
+                  effectiveGameDifficultyForOwner(ownerId),
+                );
+                const dipCmdsLayered = filterDiplomacyCommandsForLayer(
+                  Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
+                  dipLayer,
+                );
+                for (const cmd of dipCmdsLayered) {
+                  if (cmd.type === 'zaproponuj_audiencje' && cmd.targetId === '0') {
+                    applyAiAudienceRequest(ownerId, cmd);
+                  }
+                }
+                const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForEstablishedContact(
+                  dipCmdsLayered.filter(c => c.type !== 'zaproponuj_audiencje'),
+                  diplomaticContactEstablished.has(ownerId),
+                );
+                for (const cmd of dipCmds) {
+                  try {
+                    const targetId = parseInt(cmd.targetId, 10);
+                    if (Number.isNaN(targetId)) continue;
+                    if (cmd.type === 'wypowiedz_wojne') {
+                      chargeWarDeclarationCredibility(ownerId, targetId);
+                      breakTreatiesOnWar(ownerId, targetId, false);
+                      applyAllianceObligationsOnWar(ownerId, targetId);
+                      const newRel = applyDiploEventTracked(
+                        ownerId, targetId, getDiploRelation(ownerId, targetId), 'wojna_wypowiedziana',
+                      );
+                      setDiploRelation(ownerId, targetId, newRel);
+                      if (targetId === 0) {
+                        console.log(`[Dyplomacja] AI${ownerId} wypowiada wojne graczowi: ${cmd.powod}`);
+                        showHintMessage('\u2694 ' + ownerDiploLabel(ownerId) + ' — ' + formatAiDiplomacyPlayerMessage(cmd), 4500);
+                        if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+                      } else {
+                        console.log(`[Dyplomacja] AI${ownerId} wypowiada wojne AI${targetId}: ${cmd.powod}`);
+                      }
+                    } else if (targetId === 0) {
+                      if (cmd.type === 'zaproponuj_pokoj') {
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      } else if (cmd.type === 'zadaj_trybut') {
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      } else if (cmd.type === 'oferuj_trybut_za_pokoj') {
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      } else if (cmd.type === 'zaproponuj_sojusz') {
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      } else if (cmd.type === 'zaproponuj_handel') {
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      } else if (cmd.type === 'zaproponuj_umowe_handlowa') {
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      } else if (cmd.type === 'zaproponuj_handel_surowiec') {
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      } else if (cmd.type === 'zaproponuj_pakt') {
+                        enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                      }
+                    } else if (cmd.type === 'zaproponuj_handel_surowiec') {
+                      applyAiAiHandelSurowiecCmd(ownerId, targetId, cmd);
+                    }
+                  } catch (eCmdDiplo) {
+                    console.error(`[Dyplomacja] Blad komendy ${cmd.type}:`, eCmdDiplo);
+                  }
+                }
+              }
+
+              try {
+                resolvePendingNegotiationsForOwner(ownerId);
+              } catch (eNegoc) {
+                console.error(`[Dyplomacja] Blad stolu negocjacyjnego AI${ownerId}:`, eNegoc);
+              }
+            } catch (eDiplo) {
+              console.error(`[Dyplomacja] Blad dyplomacji AI${ownerId}:`, eDiplo);
+            }
+
             try {
               commands = decideAITurn(ownerId, units, cities, map, data, opts);
             } catch (eAI) {
@@ -16392,210 +17239,6 @@ async function boot(): Promise<void> {
                 console.error(`[AI] Cuda -- blad decyzji owner=${ownerId}:`, eAiWonder);
               }
             }
-
-            // --- Diplomacy stance + computeRespekt + decideAIDiplomacy ---
-            try {
-              if (!diplomaticallyDiscoveredOwners.has(ownerId)) {
-                // Brak odkrycia na mapie — zero dyplomacji wobec gracza (w tym darów).
-              } else {
-              const militaryRatio = militaryRatioFromArmyM(
-                sumArmyMForOwner(ownerId),
-                sumArmyMForOwner(0),
-              );
-              const rel = getDiploRelation(0, ownerId);
-              const dipCtx: AIDiplomacyContext = {
-                isMinorCiv: false,
-                militaryRatio,
-                currentTurn: turn,
-                turnsAtWar: rel.status === 'wojna' ? 1 : 0,
-              };
-              // ikonaId w civs.json === wartosci enum TypCywilizacji (np. 'grecy' === TypCywilizacji.Grecy)
-              const aiCivId = aiOwnerCivMap.get(ownerId) ?? 'grecy';
-              const aiTyp = (aiCivId as TypCywilizacji);
-              const plrTyp = ((player.civType ?? 'rzymianie') as TypCywilizacji);
-              const aiStub: Player = {
-                ownerId,
-                typCywilizacji: aiTyp,
-              } as unknown as Player;
-              const humanStub: Player = {
-                ownerId: 0,
-                typCywilizacji: plrTyp,
-              } as unknown as Player;
-              const stance = aiDiplomacyStance(aiStub, humanStub, rel, dipCtx);
-              const tier = relationTier(rel);
-
-              // --- computeRespekt: obiektywny POWER (power-objective v2) ---
-              const potPlr = objectivePowerByOwner.get(0)?.power ?? 0;
-              const potAI  = objectivePowerByOwner.get(ownerId)?.power ?? 0;
-              const respektAI = computeRespekt(potAI, potPlr);
-              // Update respekt in relation
-              const relWithRespekt = { ...rel, respekt: respektAI };
-              setDiploRelation(0, ownerId, relWithRespekt);
-
-              // --- tickDiplomacy: per-turn shift ---
-              const relStatus = (relWithRespekt as Relation).status;
-              const tickCtx: TickCtx = {
-                turn,
-                aktywnyHandel: activeDeals.some(
-                  d => dealInvolvesOwners(d, 0, ownerId)
-                    && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaHandlowa,
-                ),
-                pokojTrustTier: resolvePokojTrustTier(activeDeals, 0, ownerId, {
-                  contactEstablished: diplomaticContactEstablished.has(ownerId),
-                  atWar: relStatus === 'wojna',
-                }),
-                dobraWolaAktywna: false,
-                wspolnyWrog: false,
-                wspolnaReligia: (() => {
-                  const sameCulture = sameCultureCircle(civKeyForOwner(0), civKeyForOwner(ownerId));
-                  const pr = ownerReligionForOwnerId(0);
-                  const ar = ownerReligionForOwnerId(ownerId);
-                  return sameCulture && !!pr && !!ar && pr === ar;
-                })(),
-                odmiennaReligia: false,
-                ekspansjaPrzyGranicy:
-                  cities.filter(c => c.ownerId === ownerId).length > 2 &&
-                  cities.filter(c => c.ownerId === 0).length > 2,
-                // WIARYGODNOSC §5 Dźwignia 1 — strumień Wiarygodność(gracza)→Zaufanie tej
-                // pary. C-WIAR-WROG=A: pominięty (undefined) TYLKO gdy TA para jest aktualnie
-                // w stanie wojny; wobec wszystkich pozostałych działa normalnie, także w
-                // trakcie wojny gdzie indziej (C-WIAR-WOJNA=B). Wartość liczona NA ŻYWO (§9.9).
-                wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(0),
-              };
-              const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
-              setDiploRelation(0, ownerId, relTicked as unknown as Relation);
-
-              // --- decideAIDiplomacy: AI dyplomacja (war/peace/trybut) ---
-              // R-MP-DYPL-PROAKT (Maciej 2026-07-24, dokończenie): CAŁA dyplomacja
-              // miast-panstw ma isc z trudnosci MP (_menuCityStateDifficulty), NIE z
-              // globalnej _menuDifficulty -- (a) agresjaMnoznik/dyplomacjaAktywnosc
-              // (P3/P4 wojna/trybut, P5/P6 sojusz/handel) juz per-owner przez diffParams
-              // nizej (loadDifficultyParams(data, aiDiffLevel)); (b) ostatni argument
-              // decideAIDiplomacy (GameDifficulty string -- progWojnaSila/progHandel przez
-              // loadDefaultAIDiplomacyProgs ORAZ dary jednorazowe canAiProposeOneShotGoldGift/
-              // aiOneShotGiftGoldMultiplier) teraz TEZ per-owner przez
-              // effectiveGameDifficultyForOwner -- dokladnie ta sama galaz co
-              // aiDiffLevelForOwner. Pelne cywilizacje AI (nie miasta-panstwa) -- bez zmian,
-              // nadal globalna _menuDifficulty (typCityCopyOwners.has(ownerId) decyduje
-              // w obu helperach identycznie).
-              const diffParams = loadDifficultyParams(data, aiDiffLevel);
-              const respektWzgledny = (potAI + potPlr) > 0
-                ? potAI / (potAI + potPlr)
-                : 0.5;
-              // E6 (2026-07-23): "polaczenie mozliwe" geometryczne (ignoruje limit
-              // slotow budynkow handlowych — patrz citiesHaveTradeConnection) miedzy
-              // miastami gracza i tego AI. Tania: liczba miast na cywilizacje jest
-              // mala, a wynik jest cache'owany per mapa w findCityConnection.
-              const hasTradeConnectionToPlayer = citiesHaveTradeConnection(
-                cities.filter(c => c.ownerId === 0),
-                cities.filter(c => c.ownerId === ownerId),
-                map,
-                cityBuilt,
-              );
-              // HANDEL-SUROWCE-CYKL (2026-07-24): ownerId-agnostyczne — ta sama
-              // funkcja liczy nadwyżkę AI(ownerId)→gracz(0) jak w AI↔AI (formAiAiTradeAgreementsIfEligible).
-              const resourceTradeOfferRaw = !relStatus || relStatus !== 'wojna'
-                ? pickResourceSurplusForOwnerPair(ownerId, 0)
-                : null;
-              const diploInp: DiplomacjaInputs = {
-                myPlayerId: String(ownerId),
-                relacje: [{
-                  partnerId: '0',
-                  relation: relTicked as unknown as Relation,
-                  respektWzgledny,
-                  stanWojny: (relTicked as any).status === 'wojna',
-                  lastOneShotGiftTurn: aiOneShotGiftLastTurn.get(ownerId),
-                  hasHandelTreaty: tickCtx.aktywnyHandel,
-                  hasTradeConnection: hasTradeConnectionToPlayer,
-                  lastTradeAgreementProposalTurn: aiTradeAgreementLastProposalTurn.get(ownerId),
-                  resourceTradeOffer: resourceTradeOfferRaw
-                    ? {
-                        surowiecKey: resourceTradeOfferRaw.surowiecKey,
-                        label: resourceTradeOfferRaw.label,
-                        pakietyPerTura: resourceTradeOfferRaw.pakietyPerTura,
-                        zaplataTyp: 'zloto',
-                        zaplataPerTura: resourceTradeOfferRaw.zaplataPerTura,
-                        turns: AI_RESOURCE_TRADE_DEFAULT_TURNS,
-                      }
-                    : undefined,
-                  hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(0, ownerId),
-                  lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
-                }],
-                agresja: resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5),
-                handlowosc: resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
-                epoka: player.era,
-                skarbiecGold: aiSkarbiecByOwner.get(ownerId) ?? 0,
-                currentTurn: turn,
-              };
-              const dipLayer = diplomacyLayerForOwner(
-                ownerId,
-                simplifiedDiplomacyOwners,
-                foreignTypeOwners,
-                contactedOwners,
-              );
-              const dipCmdsRaw = decideAIDiplomacy(
-                diploInp, undefined, diffParams.agresjaMnoznik, diffParams.dyplomacjaAktywnosc,
-                effectiveGameDifficultyForOwner(ownerId),
-              );
-              const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForEstablishedContact(
-                filterDiplomacyCommandsForLayer(
-                  Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
-                  dipLayer,
-                ),
-                diplomaticContactEstablished.has(ownerId),
-              );
-              for (const cmd of dipCmds) {
-                try {
-                  const curRel = getDiploRelation(0, ownerId);
-                  if (cmd.type === 'wypowiedz_wojne') {
-                    chargeWarDeclarationCredibility(ownerId, 0);
-                    breakTreatiesOnWar(0, ownerId, false);
-                    applyAllianceObligationsOnWar(ownerId, 0);
-                    const newRel = applyDiploEventTracked(0, ownerId, curRel, 'wojna_wypowiedziana');
-                    setDiploRelation(0, ownerId, newRel);
-                    console.log(`[Dyplomacja] AI${ownerId} wypowiada wojne: ${cmd.powod}`);
-                    showHintMessage('\u2694 ' + ownerDiploLabel(ownerId) + ' — ' + formatAiDiplomacyPlayerMessage(cmd), 4500);
-                    if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
-                  } else if (cmd.type === 'zaproponuj_pokoj') {
-                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
-                  } else if (cmd.type === 'zadaj_trybut') {
-                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
-                  } else if (cmd.type === 'oferuj_trybut_za_pokoj') {
-                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
-                  } else if (cmd.type === 'zaproponuj_sojusz') {
-                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
-                  } else if (cmd.type === 'zaproponuj_handel') {
-                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
-                  } else if (cmd.type === 'zaproponuj_umowe_handlowa') {
-                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
-                  } else if (cmd.type === 'zaproponuj_handel_surowiec') {
-                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
-                  }
-                } catch (eCmdDiplo) {
-                  console.error(`[Dyplomacja] Blad komendy ${cmd.type}:`, eCmdDiplo);
-                }
-              }
-
-              // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — AI odpowiada (przyjmuje /
-              // odrzuca / kontruje) na wpisy, w których to jej kolej, TĄ SAMĄ turą.
-              try {
-                resolvePendingNegotiationsForOwner(ownerId);
-              } catch (eNegoc) {
-                console.error(`[Dyplomacja] Blad stolu negocjacyjnego AI${ownerId}:`, eNegoc);
-              }
-
-              if (tier !== 2) { // 2 = Neutralny -- log only non-neutral
-                console.log(
-                  `[Dyplomacja] Tura ${turn} AI${ownerId}: tier=${tier}` +
-                  ` war=${stance.willingnessWar.toFixed(2)}` +
-                  ` peace=${stance.willingnessPeace.toFixed(2)}` +
-                  ` respektAI=${respektAI}`,
-                );
-              }
-              } // discovered owner
-            } catch (eDiplo) {
-              console.error(`[Dyplomacja] Blad dyplomacji AI${ownerId}:`, eDiplo);
-            }
             } // !isCommandResume
 
             // SFX marsz — AI: pozycja jednostki AI zmienia się TU natychmiast (zero
@@ -16640,30 +17283,39 @@ async function boot(): Promise<void> {
                   continue;
                 }
 
-                if (cmd.type === 'foundCity') {
-                  const u = units.find(x => x.id === cmd.unitId);
-                  if (!u || u.ownerId !== ownerId) continue;
-                  const res = canFoundCity(u.q, u.r, cities, map);
-                  if (res.ok) {
-                    const ownerCities = cities.filter(c => c.ownerId === ownerId);
-                    const usedNames = new Set(ownerCities.map(c => c.name));
-                    const civId = aiOwnerCivMap.get(ownerId) ?? '';
-                    const aiName = pickAiFoundedCityName(
-                      data.cityNamesPools,
-                      civId,
-                      usedNames,
-                      ownerCities.length,
-                    );
-                    const c = foundCity(u, cities, map, aiName);
-                    if (c) {
-                      c.ownerId = ownerId;
-                      cities.push(c);
-                      finalizeCityFounding(c, u.q, u.r);
-                      const idx = units.indexOf(u);
-                      if (idx >= 0) units.splice(idx, 1);
-                      cityRenderer.sync(cities, _cityRenderOpts());
-                      console.log(`[AI ${ownerId}] Zalozono miasto ${c.name} @ (${c.q},${c.r})`);
-                    }
+                if (cmd.type === 'foundCityAt') {
+                  const aff = evaluateFoundCityAffordance(
+                    aiPracaPoolByOwner.get(ownerId) ?? 0,
+                    cities.filter(c => c.ownerId === ownerId),
+                    ownerId,
+                  );
+                  if (!aff.ok) continue;
+                  const res = canFoundCity(cmd.q, cmd.r, cities, map);
+                  if (!res.ok) continue;
+                  aiPracaPoolByOwner.set(
+                    ownerId,
+                    Math.max(0, (aiPracaPoolByOwner.get(ownerId) ?? 0) - aff.kosztPraca),
+                  );
+                  if (aff.sourceCityId) {
+                    const src = cities.find(c => c.id === aff.sourceCityId);
+                    if (src) src.population = Math.max(1, src.population - aff.kosztLudnosc);
+                  }
+                  const ownerCities = cities.filter(c => c.ownerId === ownerId);
+                  const usedNames = new Set(ownerCities.map(c => c.name));
+                  const civId = aiOwnerCivMap.get(ownerId) ?? '';
+                  const aiName = pickAiFoundedCityName(
+                    data.cityNamesPools,
+                    civId,
+                    usedNames,
+                    ownerCities.length,
+                  );
+                  const c = foundCityAt(cmd.q, cmd.r, ownerId, cities, map, aiName);
+                  if (c) {
+                    ensureCitySaveDefaults(c);
+                    cities.push(c);
+                    finalizeCityFounding(c, cmd.q, cmd.r);
+                    cityRenderer.sync(cities, _cityRenderOpts());
+                    console.log(`[AI ${ownerId}] Zalozono miasto ${c.name} @ (${c.q},${c.r})`);
                   }
                   continue;
                 }
@@ -16674,11 +17326,8 @@ async function boot(): Promise<void> {
                   if (!attacker || !defender || attacker.ownerId !== ownerId) continue;
                   // TEMAT #15: BRAK ataku z wody (jednostka zaokrętowana).
                   if (attacker.embarked === true) continue;
-                  if (
-                    defender.ownerId === 0
-                    && getDiploRelation(ownerId, 0).status !== 'wojna'
-                  ) {
-                    console.warn(`[AI ${ownerId}] Atak na gracza bez wojny — pominięto`);
+                  if (!areEnemyOwners(ownerId, defender.ownerId)) {
+                    console.warn(`[AI ${ownerId}] Atak na owner ${defender.ownerId} bez wojny — pominięto`);
                     continue;
                   }
                   const atkRoster = collectBattleRoster(attacker, units, 'attacker');
@@ -16843,8 +17492,9 @@ async function boot(): Promise<void> {
                           treasury: ownerTreasury(ownerId),
                           reserve: aiRushParams.reserve,
                           goldCost: item.koszt,
-                          hasManpower: canAffordUnitManpower(
-                            city, empireEpochForOwner(ownerId), civManpowerMultsForOwner(ownerId).maxMult, cmd.buildingId,
+                          hasManpower: canAffordUnitManpowerEmpire(
+                            cities, ownerId, city, empireEpochForOwner(ownerId),
+                            UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, cmd.buildingId,
                           ),
                           boughtThisTurn,
                           maxPerTurn: aiRushParams.maxPerTurn,
@@ -17592,6 +18242,11 @@ async function boot(): Promise<void> {
         const mpMults = civManpowerMultsForOwner(c.ownerId);
         return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult);
       },
+      getEmpireRekruciTotal: (ownerId: number) => {
+        const ep = empireEpochForOwner(ownerId);
+        const mpMults = civManpowerMultsForOwner(ownerId);
+        return empirePoborTotals(cities, ownerId, ep, mpMults.maxMult).rekruci;
+      },
       getOwnerColor: civColorFn,
         getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
@@ -17912,6 +18567,7 @@ async function boot(): Promise<void> {
       aiTradeAgreementLastProposalTurn.clear();
       aiAiTradeAgreementLastTurn.clear();
       aiResourceTradeLastProposalTurn.clear();
+      aiAudienceLastRequestTurn.clear();
       units.length = 0;
       plannedMarches.clear();
       marchExecQueue.length = 0;
@@ -19079,9 +19735,15 @@ async function boot(): Promise<void> {
         for (const [key, t] of savedAiAiTradeCooldown) aiAiTradeAgreementLastTurn.set(key, t);
       }
       aiResourceTradeLastProposalTurn.clear();
+      aiAudienceLastRequestTurn.clear();
       const savedResourceTradeCooldown = saved.meta?.aiResourceTradeLastProposalTurn as Array<[number, number]> | undefined;
       if (savedResourceTradeCooldown?.length) {
         for (const [oid, t] of savedResourceTradeCooldown) aiResourceTradeLastProposalTurn.set(oid, t);
+      }
+      aiAudienceLastRequestTurn.clear();
+      const savedAudienceCooldown = saved.meta?.aiAudienceLastRequestTurn as Array<[number, number]> | undefined;
+      if (savedAudienceCooldown?.length) {
+        for (const [oid, t] of savedAudienceCooldown) aiAudienceLastRequestTurn.set(oid, t);
       }
       activeDeals = [];
       // Audyt #44: aiSkarbiecByOwner bylo czyszczone bez petli odtwarzajacej

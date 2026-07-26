@@ -41,6 +41,17 @@ export function civAiProfilMapy(data: GameData, civName: string): string | undef
   return row?.profilMapy?.trim() || undefined;
 }
 
+/** Pełny profil AI per cywilizacja z civ-ai.json (C-AI-PAKIET). */
+export function civAiProfileFor(data: GameData, civName: string): CivAiProfile | undefined {
+  return data.civAi?.cywilizacje?.find(c => c.Cywilizacja === civName);
+}
+
+/** Profil po TypCywilizacji (ikonaId w civs.json). */
+export function civAiProfileForTyp(data: GameData, typ: TypCywilizacji): CivAiProfile | undefined {
+  const name = civExcelNameFromTyp(typ);
+  return name ? civAiProfileFor(data, name) : undefined;
+}
+
 export function civParamsFor(data: GameData, civName: string): CivParamsProfile | undefined {
   return data.civParams?.cywilizacje?.find(c => c.Cywilizacja === civName);
 }

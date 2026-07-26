@@ -41355,3 +41355,4604 @@ Masz rację — źle zinterpretowałem: **Antarktydy nie wolno było wycinać**.
 <timestamp>Friday, Jul 24, 2026, 11:20 PM (UTC+2)</timestamp>
 
 ok deploy i git push
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-26 18:45 UTC (linie 4125–4143)
+
+
+### Linia 4125 — AGENT
+
+[REDACTED]
+
+### Linia 4126 — AGENT
+
+[REDACTED]
+
+### Linia 4127 — AGENT
+
+[REDACTED]
+
+### Linia 4128 — AGENT
+
+[REDACTED]
+
+### Linia 4129 — AGENT
+
+Stan repozytorium się zmienił — sprawdzam aktualny deploy i synchronizację z `origin`.
+
+[REDACTED]
+
+### Linia 4130 — AGENT
+
+[REDACTED]
+
+### Linia 4131 — AGENT
+
+[REDACTED]
+
+### Linia 4132 — AGENT
+
+**Deploy i push — gotowe.**
+
+| | |
+|---|---|
+| **ROBOCZA** | `0de2599c` |
+| **md5** | `0de2599cba16087cbb47cb202fdb616c` |
+| **Commit** | `d1f2a49` na `main` |
+| **GitHub** | zsynchronizowany (`HEAD` = `origin/main`) |
+
+**Co jest w bundlu:**
+- FALA 8 (blokada 1. miasta, UI surowców, kamień współistnieje, Civpedia, mapa Ziemia N+S + Antarktyda)
+- Sesja lokalna: **pałac 3 tiery** + **koszty badań** (model ×2 w `tech.json`)
+- Menu: O grze → poradnik
+
+**Test:** `gra-robocza/START.html` → **Ctrl+F5** → pieczątka `0de2599c`.
+
+Logi: `dyspozycje/WERSJE.md` + `KANAL-PRACA.md` (wpis `[00:05]`). Drzewo czyste — nic nie czeka na push.
+
+[REDACTED]
+
+### Linia 4134 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 8:37 PM (UTC+2)</timestamp>
+
+Sprawdzał w dokumentacji, jakie rzeczy weszły ostatnio do diplo i do roboczej bo dawno pewnie tutaj nie było.
+
+### Linia 4135 — AGENT
+
+Przejrzę dokumentację i ostatnie wpisy w rejestrze wersji oraz w kanale pracy, żeby zebrać, co ostatnio weszło do dyplomacji i do ROBOCZEJ.
+
+[REDACTED]
+
+### Linia 4136 — AGENT
+
+[REDACTED]
+
+### Linia 4137 — AGENT
+
+[REDACTED]
+
+### Linia 4138 — AGENT
+
+[REDACTED]
+
+### Linia 4139 — AGENT
+
+[REDACTED]
+
+### Linia 4140 — AGENT
+
+Przejrzałem `dyspozycje/WERSJE.md`, `KANAL-PRACA.md` i `docs/MACIEJ-GOTOWE.md`. Oto skrót — od najnowszego.
+
+---
+
+## Aktualna ROBOCZA
+
+| | |
+|---|---|
+| **Pieczątka** | `61cd43ad` |
+| **Data** | 2026-07-26, 18:21 |
+| **Wejście** | `gra-robocza/START.html` → Ctrl+F5 |
+
+**Ostatnia fala (22)** to głównie **mapa** — górzystość spadła z ~26,6% do ~12,1% lądu (decyzja C-MAPA-Q2=B). Dyplomacji w niej nie ruszano; wszystko poniżej jest już w tym bundlu.
+
+---
+
+## Dyplomacja — co weszło (chronologicznie)
+
+### 24 lipca — miasta-państwa i handel (FALA 6 → 6.2)
+
+- **FALA 6.1** — cała dyplomacja miast-państw pod suwak **„Trudność miast-państw”** (wojna, handel, dary, agresja, posiłki). Pełne cywilizacje AI = globalna trudność.
+- **FALA 6.2** — **handel surowcami z miastami-państwami** (gracz↔MP i AI↔MP, jednorazowo + cyklicznie, parytet).
+- **Portret MP = symbol kultury** (świątynia/tarcza/piramida zamiast zdjęcia władcy). Etykieta: „Sparta · Grecja · miasto-państwo”.
+- **FALA 7** — osobna muzyka przy panelu dyplomacji (`Gilded_Porticos`), overlay (gra milknie na czas audiencji).
+
+### 23–25 lipca — kultura/religia i ekonomia dyplomatyczna
+
+- **Presja kultury/religii** po podboju + bonus dyplomatyczny **KULT-DYP-01**: +0,5/t tylko gdy **wspólna wiara I ten sam okręg kulturowy** (bez kar za obcą wiarę).
+- **KULT-04** — kultura i religia wchodzą do formuły **Mocy** (Power).
+- **Danina / Podatek** — rename w UI (Handel = trasy z obcymi; Danina = podatek wewnętrzny).
+- **Dwuetapowa dyplomacja** — formalny kontakt przed wpisem na liście (fix Syrakuzy/darów AI przed kontaktem).
+- **Bonus cudów `handel_procent`** zasila **Handel** (trasy), nie Daninę.
+
+### 26 lipca — duży pakiet dyplomatyczny (FALA 15–21)
+
+**UI i jakość życia**
+- Godło w dyplomacji: niebieski kwadrat → **obramówka** w kolorze państwa (lista relacji + toolbar).
+- Barbarzyńcy **nie otwierają już audiencji** (fix przecieku do listy cywilizacji).
+
+**Negocjacje — ewolucja modelu**
+1. **FALA 17 — Stół negocjacyjny** (C-DYP-Q1=A): propozycja nie rozstrzygana od razu; AI odpowiada w swojej turze, może kontroferta (max 3 rundy, ważność 5 tur). Kolumna „Oczekujące propozycje”.
+2. **FALA 18 — Negocjacje NA ŻYWO** (po Twoim feedbacku): odrzucony model „propozycja czeka turę AI”. Teraz AI odpowiada **od razu** w oknie audiencji (przyjmuje / odrzuca / kontruje). Reguły silnika bez zmian — zmieniony tylko moment rozstrzygania.
+
+**Wiarygodność cywilizacji (FALA 19 + 21)**
+- **Etapy 2–4 w silniku**: rejestr zdarzeń, kary N1–N7, nagrody S/P, zapis w save.
+- **Dźwignia 1** — reputacja wpływa na Zaufanie co turę (W/20).
+- **Dźwignia 2** (WIAR-9.5b=B) — limit „zakupu zaufania” darem zależy od reputacji **dającego**:
+  - W 0…100 → 5 pkt/t
+  - W (−40, 0) → 3 pkt/t
+  - W (−70, −40] → 1 pkt/t
+  - W ≤ −70 → **0** (nie kupisz sympatii złotem)
+- **Nagroda P5** — +20 Wiarygodności za **realną** pomoc sojusznikowi (gdy faktycznie wchodzi w wojnę na wezwanie).
+- **Kara N4** — seam podpięty, ale AI dziś zawsze honoruje sojusz → **zero efektu w grze**; czeka heurystyka (decyzja balansowa).
+- **Handel cykliczny** — naprawiona atomowość (walidacja obu stron przed transferem).
+
+---
+
+## ROBOCZA poza dyplomacją (żebyś wiedział, co jeszcze jest „świeże”)
+
+Od 24 lipca weszło m.in.:
+
+| Obszar | Co |
+|--------|-----|
+| **Mapa** | Ziemia: bufor oceanu N+S + Antarktyda · górzystość ~12% (26.07) |
+| **Ekonomia** | Pałac 3 tiery · magazyn 500+100/Magazyn · Skarbiec/Praca **netto** (nie brutto) · korupcja · Mennica tylko w stolicy · złoto na szlakach |
+| **Walka** | Teren w bitwie (Góry +75% obrony, las/wzgórza/konnica) · głód armii też dla AI · fortyfikacja w polu · garnizon znów sterowalny · weterani + odznaki |
+| **AI** | Suwaki żywności/Handlu/Pracy · kara za wojnę też dla miast AI |
+| **UI** | Civpedia · blokada 1. miasta · pełny ekran · lasy 38/58/77% · modal wyboru heksa · max HP w szczegółach bitwy |
+| **Jednostki** | 5 modeli Brązu wpiętych · tarasy tylko Chiny + Inkowie (26.07) |
+
+---
+
+## Co jeszcze **nie** jest / czeka
+
+- **N4** (odmowa pomocy sojusznikowi) — kod gotowy, AI nie odmawia → brak gameplayu.
+- **Muzyka dyplomacji per cywilizacja** — na liście TODO (dziś 1 wspólny utwór).
+- **Kary za obcą wiarę/kulturę w dyplomacji** — świadomie **nie** wdrożone (KULT-DYP-01 = tylko bonus AND).
+- Znane baseline testów: `diplomacy-test` 144/146, `diplomacy-proposal` 65/66 — **stare**, bez nowych regresji od fal 17–21.
+
+---
+
+## Jak szybko sprawdzić dyplomację w grze
+
+1. `gra-robocza/START.html` → Ctrl+F5 → pieczątka **`61cd43ad`**
+2. **Audiencja** — negocjacje na żywo (od razu odpowiedź AI, nie czekanie tury)
+3. **Miasto-państwo** — symbol kultury, handel surowcami, trudność z kreatora
+4. **Wiarygodność** — przy złej reputacji dar powinien dawać mniej pkt Zaufania (albo 0)
+5. **Barbarzyńcy** — nie powinni pojawiać się na liście dyplomacji
+
+Źródło prawdy: `dyspozycje/WERSJE.md` (sekcje FALA 6–22). Jeśli chcesz, mogę w następnej turze zrobić **skróconą checklistę tylko dyplomacji** pod Twój playtest (5–7 kroków).
+
+[REDACTED]
+
+### Linia 4142 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 8:38 PM (UTC+2)</timestamp>
+
+Jak przejdziesz wszystko i porównasz sobie to zrobimy eksport do kanonu.
+
+### Linia 4143 — AGENT
+
+Przejrzę stan ROBOCZEJ vs KANONU, odpalę bramki i przygotuję porównanie przed eksportem.
+
+[REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-26 19:13 UTC (linie 4144–4288)
+
+
+### Linia 4144 — AGENT
+
+[REDACTED]
+
+### Linia 4145 — AGENT
+
+Przeszedłem dokumentację, manifesty, bramki i testy. Poniżej raport przed eksportem do KANONU.
+
+---
+
+## Porównanie: KANON vs ROBOCZA
+
+| | **KANON (dziś)** | **ROBOCZA (aktualna)** |
+|---|---|---|
+| **Data** | 2026-07-20 | 2026-07-26 18:21 |
+| **Pieczątka** | `d4052380` | `61cd43ad` |
+| **Źródło** | robocza `a31ebe6f` | commit `cba0a39` |
+| **Rozmiar bundla** | ~28 MB (szac.) | **34,4 MB** |
+| **Luka** | — | **~6 dni, FALA 8→22** (22 deploye) |
+
+KANON zatrzymał się na stanie sprzed: FALI 6–8 (surowce/MP), całej sesji 25–26 lipca (ekonomia, walka, dyplomacja, mapa). To duży skok — nie „kilka poprawek”, tylko **nowa era gry**.
+
+---
+
+## Bramki techniczne (sprawdzone teraz)
+
+| Test | Wynik |
+|------|--------|
+| `tsc --noEmit` | **0 błędów** |
+| `verify-robocza-bundle` | **VERIFY OK** (manifest = plik) |
+| `logic-test` | **208/208** |
+| `ai-test` | **239/239** |
+| `wiarygodnosc-test` | **84/84** |
+| `diplomacy-negotiation-table` | **39/39** |
+| `diplomacy-layers` | **14/14** |
+| `earth-template-test` | **1288/0** |
+| `relief-grid-coverage` | **6/6** |
+| `map-gen-regression` | determinizm OK · 0 rzek bez ujścia OK |
+
+**Znane porażki (baseline, nie nowe regresje):**
+
+| Test | Wynik | Ocena |
+|------|--------|--------|
+| `fair-play-grid` | **7/8** | glina w komórce bez rzeki (problem generatora rzek, nie reliefu) |
+| `diplomacy-test` | **144/146** | stary fixture (prog Handel Relacja 40 vs 100) |
+| `diplomacy-proposal` | **65/66** | stary fixture |
+| `world-density` | 30/31 | pre-istniejąca (WERSJE) |
+
+---
+
+## Co wejdzie do KANONU — skrót tematyczny
+
+### Dyplomacja (największa zmiana od 20.07)
+- Handel surowcami z miastami-państwami (FALA 6.2)
+- Cała dyplomacja MP pod suwak trudności (6.1)
+- Portret MP = symbol kultury
+- Muzyka overlay przy audiencji
+- Dwuetapowy kontakt · KULT-DYP bonus (wiara + okręg)
+- **Stół negocjacyjny** → potem **negocjacje na żywo** (Twoja decyzja po playteście)
+- **Wiarygodność** etapy 2–4 + Dźwignia 1 i 2 (limit darów wg reputacji)
+- Nagroda P5 za realną pomoc sojusznikowi
+- UI: obramówka zamiast niebieskiego kwadratu pod godłem
+
+### Walka i armia (FALA 17 + 16)
+- Teren w bitwie (Góry +75%, las/wzgórza/konnica)
+- Głód armii z karencją — **też dla AI**
+- Fortyfikacja w polu · garnizon znów sterowalny
+- Weterani + odznaki na żetonach
+- Obrona miasta: mur wymagany na wzgórzu, sumowanie zamiast mnożenia bonusów
+
+### Ekonomia (FALA 12–15, 20)
+- Danina/Podatek rename · korupcja · Mennica tylko w stolicy
+- Skarbiec i Praca pokazują **netto** (nie brutto)
+- Magazyn 500+100 · koszty surowcowe jednostek
+- Bonus cudów zasila Handel (nie Daninę)
+- Pałac 3 tiery (konflikt ze stash rozstrzygnięty)
+
+### Mapa (FALA 22 — **do Twojej oceny**)
+- Górzystość: **26,6% → 12,1%** lądu (decyzja C-MAPA-Q2=B)
+- Ziemia: bufory N+S + Antarktyda
+- **Skutek uboczny:** miedź −34%, żelazo −34%, **złoto −55%** (średnia z 5 ziaren)
+
+### UI / jakość
+- Civpedia · pełny ekran · lasy 38/58/77% · modal heksa · max HP w bitwie
+- Tarasy tylko Chiny + Inkowie
+- 5 modeli jednostek Brązu w bundlu
+
+---
+
+## Flagi przed eksportem (Twoja decyzja)
+
+1. **Górzystość 12% + mniej złóż** — świadoma decyzja C-MAPA-Q2=B, ale warto jeden smoke na mapie Standard/Ziemia przed kanonem.
+2. **fair-play-grid 7/8** — glina w komórce bez rzeki; nie blokuje buildu, ale fair-play na Ziemi nie jest idealny.
+3. **N4 (odmowa pomocy sojusznikowi)** — kod podpięty, AI zawsze honoruje → zero efektu w grze.
+4. **Pieczątka w grze** pokazuje `0446a384` (one-iter quirk inject-stamp); **manifest `61cd43ad` jest miarodajny** — VERIFY OK.
+5. **FINALNA** (`Gra-FINALNA.html`) zostanie na starym `69bef0b2` — promocja kanonu **nie** rusza finalnej (osobny skrypt, tylko na wyraźne polecenie).
+
+---
+
+## Werdykt
+
+**Technicznie: gotowe do eksportu** — bundel spójny, VERIFY OK, kluczowe testy dyplomacji/wiarygodności/logiki zielone.
+
+**Produktowo: duży skok** — kanon skoczy z 20.07 na pełną sesję 24–26.07. Nie ma sensu „małej” promocji; to cały pakiet.
+
+**Rekomendacja:** jeśli ostatni playtest ROBOCZY (`61cd43ad`) był OK na mapie + dyplomacji — **możemy robić eksport**. Jedyny punkt, który bym jeszcze raz sprawdził w grze: **górzystość i ilość złota** na Standard/Ziemia.
+
+---
+
+## Eksport — co zrobimy (gdy dasz sygnał)
+
+Sesja lokalna (PowerShell):
+
+```powershell
+cd gra
+.\tools\publish-kanon-snapshot.ps1
+```
+
+Potem log w dwóch miejscach:
+- `dyspozycje/WERSJE.md` — sekcja KANON (nowy wpis, stary → ZASTĄPIONA)
+- `dyspozycje/_handoff/KANAL-PRACA.md` — meldunek promocji
+
+Wejście po promocji: `gra-kanon/START.html` → `Gra-KANON.html`, pieczątka powinna odpowiadać `61cd43ad`.
+
+---
+
+Napisz **„eksportuj kanon”** (albo „deploy kanon”) — wtedy odpalę skrypt, dopiszę logi i dam Ci gotowy stamp do sprawdzenia. Jeśli wolisz najpierw tylko mapę albo tylko dyplomację — też mogę przygotować krótką checklistę pod Ctrl+F5.
+
+[REDACTED]
+
+### Linia 4146 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 8:43 PM (UTC+2)</timestamp>
+
+wiem, że był jakiś problem ostatnio z górzystością, jak byś mógł sprawdzić w raportach, co się tam podziało.
+
+### Linia 4147 — AGENT
+
+Przeszukam raporty i dokumentację pod kątem problemu z górzystością.
+
+[REDACTED]
+
+### Linia 4148 — AGENT
+
+[REDACTED]
+
+### Linia 4149 — AGENT
+
+[REDACTED]
+
+### Linia 4150 — AGENT
+
+[REDACTED]
+
+### Linia 4151 — AGENT
+
+[REDACTED]
+
+### Linia 4152 — AGENT
+
+Oto co wynika z raportów (`WERSJE.md`, `KANAL-PRACA.md`, `PYTANIA-OTWARTE.md`, komentarze w kodzie i historia commitów).
+
+---
+
+## Krótko: o co chodziło
+
+Chodziło o **konflikt dwóch celów**, które przez miesiąc ciągnęły się równolegle:
+
+1. **Fair-play** — żeby każda cywilizacja miała dostęp do rud (miedź, żelazo, złoto), bez wielkich pasm gór zajmujących całe regiony.
+2. **Górzystość ~19%** — decyzja **80A** (25.07): ląd ma mieć ok. **19,3%** Gór+Wzgórz (zakres 19,0–20,2%).
+
+Problem: test `fair-play-grid-test` liczy **maksimum Gór/Wzgórz w komórce siatki 25×25** i implikuje sufit ok. **10%** gęstości reliefu na komórce. Przy **19,3% globalnie** na dużym kontynencie matematycznie **nie da się** przejść tego testu bez zmiany albo progów, albo docelowej górzystości.
+
+To zostało udowodnione w **FALI 19** (26.07, 17:22) i opisane w kodzie `generator.ts` — nie był to błąd implementacji, tylko sprzeczność reguł.
+
+---
+
+## Oś czasu
+
+### Faza 1 — „Za duże pasma" (lipiec, przed 25.07)
+
+- Generator robił **wielkie skupiska** gór (największe: **218 heksów** w jednym klastrze).
+- `fair-play-grid-test` padał — w jednej komórce siatki było np. **56 Gór** (limit ~25) i **95 Wzgórz** (limit ~37).
+- **Decyzja 63** (25.07, Twoje słowa): max **10 Gór + 10 Wzgórz** w jednym **spójnym** skupisku — żeby wszystkie cywilizacje miały szansę na rudy.
+
+### Faza 2 — Limit 10 + przywrócenie 19,3% (FALA 12, 25.07)
+
+- Commit `622f672`: **80A** — górzystość z powrotem na **~19,3%** + limit skupisk 10.
+- Skupiska naprawione (218 → 10), pokrycie złóż na Ziemi wróciło do **75%**.
+- Ale mapa wyglądała jak **„cętkowanie"** — dużo pojedynczych szczytów z szumu reliefu.
+- `fair-play-grid` **nadal padał** — bo limit skupiska ≠ limit na komórkę siatki; kilka małych skupisk może wpaść do jednej komórki 25×25.
+
+### Faza 3 — Porządek w generatorze (FALA 19, 26.07 rano)
+
+- **Nowa kolejność kroków:** teren → rzeki → lasy → surowce (Twoja prośba **R-MAPGEN-KOLEJNOSC**).
+- Naprawiono bug: zmiana parametrów lasu **przesuwała RNG** i psuła góry/złoża.
+- `relief-grid-coverage`: **2/6 → 6/6** (pokrycie reliefu w siatce).
+- Zmierzona górzystość: **19,16–20,58%** (średnia **19,53%**) — zgodnie z 80A.
+- `fair-play-grid`: nadal **3/8** — udokumentowana **sprzeczność arytmetyczna** 80A vs test.
+
+### Faza 4 — Pierwsza próba „ściśnięcia" (26.07 popołudnie, C-MAPA-Q1)
+
+- Próbowano włączyć sufit per komórka (`RELIEF_OVERFLOW_CAP`).
+- Efekt: górzystość spadła z **~19,3% do ~9,4–9,8%** — za mało.
+- Dodatkowo sufit **kasował heksy ze złożami** fair-play (bo przycinał relief *po* losowaniu złóż).
+- Cofnięto — w kodzie jest to opisane jako „WTEDY cofnięte".
+
+### Faza 5 — Twoja decyzja C-MAPA-Q2 = **B** (26.07 wieczór)
+
+Świadoma **rewizja 80A**:
+
+- Cel: **~10%** górzystości lądu (żeby `fair-play-grid` przechodził bez naginania testu).
+- W dokumentacji jest zapis, że byłeś **uprzedzony**: 10% < **13,8%** odrzucone wcześniej — i mimo to wybrałeś ten wariant.
+- Nowy parametr w `map-gen-params.json`: `gestosc.relief_overflow_cap_frac` (medium: **0,04 Góry + 0,06 Wzgórz** na heks lądu w komórce).
+- Przywrócono `RELIEF_OVERFLOW_CAP_MULT = 1`.
+- **Ochrona heksów ze złożem** — nie można ich przycinać sufitami reliefu.
+
+### Faza 6 — Deploy FALA 22 (`61cd43ad`, 26.07 18:21)
+
+| Metryka | Przed (ten sam pomiar) | Po |
+|---------|------------------------|-----|
+| Górzystość lądu | **26,64%** średnia | **12,12%** średnia |
+| Zakres | 25,76–28,37% | 11,83–12,68% |
+| `relief-grid-coverage` | — | **6/6** |
+| `fair-play-grid` | 3/8 (FALA 19) | **7/8** |
+
+**Skutek uboczny** (5 ziaren, Standard, kontynenty):
+
+| Surowiec | Spadek |
+|----------|--------|
+| Miedź | **−34%** |
+| Żelazo | **−34%** |
+| Złoto | **−55%** |
+
+Miedź i żelazo mają gwarancję fair-play (min. 1 na komórkę). Złoto nie.
+
+**Jedyna pozostała porażka fair-play (7/8):** w jednym ziarnie komórka 21-heksowa **nie ma rzeki** → glina strukturalnie niemożliwa (reguła gliny przy rzece). To problem **generatora rzek**, nie reliefu.
+
+---
+
+## Dlaczego „przed" było 26,6%, a FALA 19 mówiła 19,5%?
+
+To wygląda na **różne stany tego samego dnia**:
+
+- FALA 19 mierzyła po nowej kolejności kroków, **bez** w pełni działającego sufitu overflow.
+- Pomiar „przed" w FALI 22 (26,64%) to stan **tuż przed** wdrożeniem `relief_overflow_cap_frac` — prawdopodobnie z **domknięciem floora reliefu** (`ensureReliefGridCoverage`), które **dokładało** Góry/Wzgórza, ale bez skutecznego sufitu per komórka.
+- W kodzie jest opis, że floor + cap w złej kolejności potrafił **kasować własne heksy** — generator był w trakcie strojenia (commit `668229a` oznaczony jako **WIP, NIE do deployu**).
+
+Czyli: nie był to regres od 19% do 27% w grze u Ciebie na playteście, tylko **różne pomiary w trakcie jednej sesji strojenia** generatora.
+
+---
+
+## Stan dziś w ROBOCZEJ (`61cd43ad`)
+
+| Aspekt | Stan |
+|--------|------|
+| Górzystość | **~12%** lądu (cel był ~10%, lekko powyżej przez podłogę 2+2 heksy/komórkę) |
+| Duże pasma | Limit **10 heksów** w skupisku — działa |
+| Fair-play siatka | **7/8** (prawie OK) |
+| Złoża | Wyraźnie **mniej**, zwłaszcza złoto |
+| KANON | Nadal na **20.07** (`a31ebe6f`) — **nie ma** żadnej z tych zmian mapy |
+
+---
+
+## Co to znaczy przed eksportem do kanonu
+
+**Plusy wdrożenia:**
+- Koniec wielkich pasm górskich
+- Fair-play prawie zielony
+- Generator stabilniejszy (kolejność kroków, ochrona złóż)
+
+**Ryzyka do świadomej akceptacji:**
+1. **Mapa wyraźnie mniej górzysta** niż 80A (19%) — bliżej 12% niż 10%
+2. **Mniej złota** na mapie (−55% w pomiarze) — gameplayowo może być odczuwalne
+3. **fair-play 7/8** — jedna znana porażka (glina bez rzeki w małej komórce)
+4. **STAN-PRACY-HANDOFF.md** jest **nieaktualny** (pisze jeszcze o FALI 6.2 z 24.07) — nie polegaj na nim w temacie mapy
+
+---
+
+Jeśli idziemy w kanon z `61cd43ad`, eksportujesz **cały pakiet** wraz z tą mapą — nie da się wyciąć samej dyplomacji. Przed eksportem warto jeden szybki smoke: **Nowa gra → Standard → Kontynenty → Ctrl+F5** i ocenić, czy góry i złoża wyglądają OK.
+
+Mogę przygotować krótką checklistę „mapa przed kanonem" (3–4 kroki w grze) albo od razu przejść do `publish-kanon-snapshot.ps1`, jak dasz sygnał.
+
+[REDACTED]
+
+### Linia 4153 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-2e567974-775b-4880-8ee0-68cd0463ada5.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 8:44 PM (UTC+2)</timestamp>
+
+pierwszy błąd, który widzę to po odrzuceniu, wycofaniu się z rozmowy dyplomatycznej. To wygląda tak, jakby w ogóle nie było żadnego nawiązanego stosunku  a to jest nieprawda. Nawet jeżeli nie rozmawiamy z tą cywilizacją i usuwamy okienko, to powinno być nawiązanie relacji, że się znamy.
+
+### Linia 4154 — AGENT
+
+Sprawdzę w kodzie, kiedy uznajemy cywilizację za „znaną” po audiencji — zwłaszcza po zamknięciu lub odrzuceniu rozmowy.
+
+[REDACTED]
+
+### Linia 4155 — AGENT
+
+[REDACTED]
+
+### Linia 4156 — AGENT
+
+[REDACTED]
+
+### Linia 4157 — AGENT
+
+[REDACTED]
+
+### Linia 4158 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-2e567974-775b-4880-8ee0-68cd0463ada5.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 8:44 PM (UTC+2)</timestamp>
+
+pierwszy błąd, który widzę to po odrzuceniu, wycofaniu się z rozmowy dyplomatycznej. To wygląda tak, jakby w ogóle nie było żadnego nawiązanego stosunku  a to jest nieprawda. Nawet jeżeli nie rozmawiamy z tą cywilizacją i usuwamy okienko, to powinno być nawiązanie relacji, że się znamy.
+
+### Linia 4159 — AGENT
+
+[REDACTED]
+
+### Linia 4160 — AGENT
+
+[REDACTED]
+
+### Linia 4161 — AGENT
+
+[REDACTED]
+
+### Linia 4162 — AGENT
+
+[REDACTED]
+
+### Linia 4163 — AGENT
+
+[REDACTED]
+
+### Linia 4164 — AGENT
+
+[REDACTED]
+
+### Linia 4165 — AGENT
+
+[REDACTED]
+
+### Linia 4166 — AGENT
+
+[REDACTED]
+
+### Linia 4167 — AGENT
+
+[REDACTED]
+
+### Linia 4168 — AGENT
+
+[REDACTED]
+
+### Linia 4169 — AGENT
+
+[REDACTED]
+
+### Linia 4170 — AGENT
+
+[REDACTED]
+
+### Linia 4171 — AGENT
+
+[REDACTED]
+
+### Linia 4172 — AGENT
+
+[REDACTED]
+
+### Linia 4173 — AGENT
+
+[REDACTED]
+
+### Linia 4174 — AGENT
+
+[REDACTED]
+
+### Linia 4175 — AGENT
+
+[REDACTED]
+
+### Linia 4176 — AGENT
+
+Lista dyplomacji filtruje tylko po formalnym kontakcie — zmieniam to na odkryte cywilizacje (znamy się, nawet bez „Nawiąż kontakt”).
+
+[REDACTED]
+
+### Linia 4177 — AGENT
+
+[REDACTED]
+
+### Linia 4178 — AGENT
+
+[REDACTED]
+
+### Linia 4179 — AGENT
+
+**Diagnoza:** Lista dyplomacji pokazywała tylko cywilizacje z formalnym kontaktem (`diplomaticContactEstablished`), czyli po kliknięciu „Nawiąż kontakt” w audiencji. Po odkryciu w mgle i zamknięciu okna bez tej akcji cywilizacja była odkryta na mapie, ale **nie pojawiała się na liście** — stąd komunikat „Nie spotkałeś jeszcze obcej cywilizacji…”.
+
+**Naprawa:** `buildPlayerDiploRelations()` teraz buduje listę ze **wszystkich odkrytych** cywilizacji (`diplomaticallyDiscoveredOwners`). Rozróżnienie zostaje:
+
+| Stan | Na liście | Pełne akcje (handel, dary AI itd.) |
+|------|-----------|-------------------------------------|
+| Odkryta, bez formalnego kontaktu | tak — „Audiencja — nawiąż kontakt” | nie |
+| Po „Nawiąż kontakt” | tak — „kontakt nawiązany” | tak |
+
+Po zamknięciu audiencji lista odświeża się od razu, jeśli jest otwarta.
+
+**Typecheck:** OK · **diplomacy-layers-test:** 14/14
+
+Żeby zobaczyć poprawkę w grze, potrzebny jest deploy do roboczej — napisz **„deploy”**, jeśli mam to zrobić.
+
+[REDACTED]
+
+### Linia 4180 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-59211cc7-50cb-4499-8bce-4418d16546a1.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 8:47 PM (UTC+2)</timestamp>
+
+w miejscu gdzie jest dotychczasowy sygnet cywilizacji powinien być wygląd władcy którego reprezentujemy i jego sygnet.
+
+### Linia 4181 — AGENT
+
+Szukam w kodzie miejsca renderu sygnetu cywilizacji na etykiecie miasta — ma tam być portret władcy i jego sygnet.
+
+[REDACTED]
+
+### Linia 4182 — AGENT
+
+[REDACTED]
+
+### Linia 4183 — AGENT
+
+[REDACTED]
+
+### Linia 4184 — AGENT
+
+[REDACTED]
+
+### Linia 4185 — AGENT
+
+[REDACTED]
+
+### Linia 4186 — AGENT
+
+[REDACTED]
+
+### Linia 4187 — AGENT
+
+[REDACTED]
+
+### Linia 4188 — AGENT
+
+[REDACTED]
+
+### Linia 4189 — AGENT
+
+[REDACTED]
+
+### Linia 4190 — AGENT
+
+[REDACTED]
+
+### Linia 4191 — AGENT
+
+[REDACTED]
+
+### Linia 4192 — AGENT
+
+[REDACTED]
+
+### Linia 4193 — AGENT
+
+[REDACTED]
+
+### Linia 4194 — AGENT
+
+[REDACTED]
+
+### Linia 4195 — AGENT
+
+[REDACTED]
+
+### Linia 4196 — AGENT
+
+[REDACTED]
+
+### Linia 4197 — AGENT
+
+[REDACTED]
+
+### Linia 4198 — AGENT
+
+[REDACTED]
+
+### Linia 4199 — AGENT
+
+[REDACTED]
+
+### Linia 4200 — AGENT
+
+[REDACTED]
+
+### Linia 4201 — AGENT
+
+[REDACTED]
+
+### Linia 4202 — AGENT
+
+[REDACTED]
+
+### Linia 4203 — AGENT
+
+[REDACTED]
+
+### Linia 4204 — AGENT
+
+[REDACTED]
+
+### Linia 4205 — AGENT
+
+[REDACTED]
+
+### Linia 4206 — AGENT
+
+[REDACTED]
+
+### Linia 4207 — AGENT
+
+[REDACTED]
+
+### Linia 4208 — AGENT
+
+[REDACTED]
+
+### Linia 4209 — AGENT
+
+[REDACTED]
+
+### Linia 4210 — AGENT
+
+[REDACTED]
+
+### Linia 4211 — AGENT
+
+[REDACTED]
+
+### Linia 4212 — AGENT
+
+[REDACTED]
+
+### Linia 4213 — AGENT
+
+[REDACTED]
+
+### Linia 4214 — AGENT
+
+[REDACTED]
+
+### Linia 4215 — AGENT
+
+[REDACTED]
+
+### Linia 4216 — AGENT
+
+[REDACTED]
+
+### Linia 4217 — AGENT
+
+[REDACTED]
+
+### Linia 4218 — AGENT
+
+[REDACTED]
+
+### Linia 4219 — AGENT
+
+[REDACTED]
+
+### Linia 4220 — AGENT
+
+[REDACTED]
+
+### Linia 4221 — AGENT
+
+[REDACTED]
+
+### Linia 4222 — AGENT
+
+[REDACTED]
+
+### Linia 4223 — AGENT
+
+[REDACTED]
+
+### Linia 4224 — AGENT
+
+[REDACTED]
+
+### Linia 4225 — AGENT
+
+[REDACTED]
+
+### Linia 4226 — AGENT
+
+[REDACTED]
+
+### Linia 4227 — AGENT
+
+Panel Mocy na HUDzie — zamieniam sygnet cywilizacji na portret władcy z małym sygnetem w rogu.
+
+[REDACTED]
+
+### Linia 4228 — AGENT
+
+[REDACTED]
+
+### Linia 4229 — AGENT
+
+[REDACTED]
+
+### Linia 4230 — AGENT
+
+[REDACTED]
+
+### Linia 4231 — AGENT
+
+**Co zmieniłem**
+
+Chodzi o **centralny panel Mocy** na górze ekranu (Epoka · rekruci · sygnet · Moc) — ten z Twojego zrzutu nad Tebą.
+
+Zamiast samego sygnetu cywilizacji (ikona świątyni) jest teraz:
+
+1. **Portret władcy** — z tej samej puli co bitwa/dyplomacja (`leaderPortraits.ts`, epoka gracza)
+2. **Sygnet cywilizacji** — mała odznaka w prawym dolnym rogu medalionu (kolor ramki z `civKolorHex`)
+
+Po najechaniu na medalion: imię władcy + nazwa cywilizacji.
+
+**Pliki:** `gra/src/ui/hud.ts` · `gra/src/main.ts` (`buildHudState` → `playerEra`, `playerWodz`, `nacja`)
+
+**Typecheck:** OK
+
+---
+
+**Uwaga:** Etykieta „TEBY · MIASTO-…” pod spodem to osobna pigułka miasta (nazwa + populacja) — na razie bez portretu. Jeśli chcesz ten sam układ **nad każdym obcym miastem** na mapie, to osobny krok (większy render canvas 3D).
+
+Żeby zobaczyć w grze: **deploy** do roboczej (wcześniejsza poprawka dyplomacji też czeka w kodzie).
+
+[REDACTED]
+
+### Linia 4232 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 8:51 PM (UTC+2)</timestamp>
+
+sprawdź też jak sztuczna inteligencja zachowuje się dla innych cywilizacji, jeżeli chodzi o podejście do państw, miast, czy ma zapisane, że pierwszym celem jest przejęcie państw, miast, które są wokół niej. Generalnie cywilizacje powinny prowadzić w miarę agresywną politykę, może niekoniecznie zawsze pod kątem wojennym, ale pod kątem ekspansji, stawiania miast i rozbudowy, a nie skupiać się na defensywie. bo inaczej nie będzie wyzwań i gra będzie nudna. Przyjmiemy natomiast jest charakter do analizy zacji jeżeli chodzi o dyplomację to zachowujemy ale każda cywilizacja musi dążyć do tego żeby być numer jeden i żeby rozwijać się najszybciej jak się da zdobywać nowe miasta budować nowe miasta.
+
+### Linia 4233 — AGENT
+
+Sprawdzam logikę AI: ekspansja, zakładanie miast, agresja wobec sąsiadów i cechy dyplomatyczne.
+
+[REDACTED]
+
+### Linia 4234 — AGENT
+
+[REDACTED]
+
+### Linia 4235 — MACIEJ
+
+<mcp_meta_tools>
+You have access to MCP (Model Context Protocol) tools through `GetMcpTools` and `CallMcpTool`.
+
+## MCP Tool Discovery and Invocation
+
+Use `GetMcpTools` to discover tool schemas, then `CallMcpTool` to invoke them. Aim to minimize round-trips: ideally one `GetMcpTools` call followed by one `CallMcpTool` call.
+
+If the user mentions, references, or links to a product or service that corresponds to an available MCP server, and the request likely depends on information from that service, proactively inspect that MCP server before answering. Do not wait for the user to explicitly ask you to use MCP. If you are unsure which server matches, use `GetMcpTools` with a pattern based on the service name.
+
+`GetMcpTools` supports four modes:
+
+1. `{"server":"<id>"}`: returns full input schemas and full descriptions for every tool on that server. Preferred when you know which server to use.
+2. `{"server":"<id>","toolName":"<name>"}`: returns the full schema and full description for one tool.
+3. `{"pattern":"<regex>"}`: searches tool and server names across all servers using RE2 syntax (no backreferences, lookahead, or lookbehind). Use when you're unsure which server has the tool you need.
+4. No arguments: returns a catalog of all servers with tool names and short descriptions. Only use this if you have no idea which server or tool to look for — in most cases, prefer fetching by server or pattern instead.
+
+Pattern-search and catalog results shorten long descriptions, marked by a trailing "... [truncated]"; server and single-tool lookups always return the complete description.
+
+MANDATORY - Always call `GetMcpTools` to discover a tool's schema before invoking it with `CallMcpTool`. If you already know the server, go directly to it rather than listing the full catalog first.
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+Available MCP servers:
+
+<mcp_meta_tool_servers>
+<mcp_meta_tool_server name="cursor-app-control" tools="move_agent_to_root, move_agent_to_cloned_root, create_project, rename_chat, cursor_dialog, open_resource, open_automation" serverUseInstructions="Controls the Cursor application itself (workspace root, projects, opening resources and automations, user rules, chat title). See each tool description for usage." />
+<mcp_meta_tool_server name="cursor-ide-browser" tools="browser_navigate, browser_snapshot, browser_click, browser_mouse_click_xy, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, browser_drag, browser_get_bounding_box, browser_highlight, browser_tabs, browser_cdp, browser_take_screenshot, browser_lock" serverUseInstructions="The cursor-ide-browser MCP server provides a Cursor-owned browser tab plus a raw Chrome DevTools Protocol command tool.
+
+CORE WORKFLOW:
+1. Start by understanding the user's goal and what success looks like on the page.
+2. Use browser_tabs with action "list" to inspect open tabs and URLs before acting.
+3. Use browser_navigate to create or navigate the target tab. Omit the position parameter for background automation so focus is preserved.
+4. Use browser_lock before longer automation on an existing tab, then browser_lock with action "unlock" when finished.
+5. Use browser_snapshot for accessibility context and browser_take_screenshot for visual verification.
+6. Use browser_click, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, and browser_drag for page interactions.
+7. Use browser_highlight and browser_get_bounding_box for visual grounding and coordinate diagnostics.
+8. Use browser_cdp for page inspection, profiling, runtime evaluation, DOM/CSS queries, and performance data.
+
+AVOID RABBIT HOLES:
+1. Do not repeat the same failing action more than once without new evidence such as a fresh snapshot, a different ref, a changed page state, or a clear new hypothesis.
+2. IMPORTANT: If four attempts fail or progress stalls, stop acting and report what you observed, what blocked progress, and the most likely next step.
+3. Prefer gathering evidence over brute force. If the page is confusing, use browser_snapshot, browser_take_screenshot, or CDP inspection before trying more actions.
+4. If you encounter a blocker such as login, passkey/manual user interaction, permissions, captchas, destructive confirmations, missing data, or an unexpected state, stop and report it instead of improvising repeated actions.
+5. Do not get stuck in wait-action-wait loops. Every retry should be justified by something newly observed.
+
+CRITICAL - Lock/unlock workflow:
+1. browser_lock requires an existing browser tab - you CANNOT call browser_lock with action: "lock" before browser_navigate
+2. Correct order: browser_navigate -> browser_lock({ action: "lock" }) -> (interactions) -> browser_lock({ action: "unlock" })
+3. If a browser tab already exists (check with browser_tabs list), call browser_lock with action: "lock" FIRST before any interactions
+4. Only call browser_lock with action: "unlock" when completely done with ALL browser operations for this turn
+
+IMPORTANT - Waiting strategy:
+When waiting for page changes, prefer short CDP polling loops with Runtime.evaluate, DOM queries, Page lifecycle signals, or browser_snapshot checks rather than a single long wait.
+
+CDP USAGE:
+- Use browser_cdp with a DevTools Protocol method and params object, for example Runtime.evaluate, DOM.getDocument, CSS.getComputedStyleForNode, Profiler.start/stop, Performance.getMetrics, Log.enable, and Network.enable.
+- Do not use browser_cdp with CDP Input.* methods. They are denied because they are focus-sensitive in Electron webviews and can route input to Cursor UI instead of the browser page.
+- Use browser_click, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, and browser_drag for clicks, typing, filling inputs, selecting options, keyboard actions, scrolling, and drag-and-drop.
+- Use Runtime.evaluate for advanced DOM-scoped interactions that the dedicated browser tools do not cover.
+- For profiling, call Profiler.enable, Profiler.start, reproduce the behavior, then Profiler.stop. The profile is saved to a file and returned as a log_file; read that file only when you need to inspect details.
+- For JavaScript evaluation, prefer Runtime.evaluate with returnByValue when possible.
+- Some browser-wide or sensitive CDP methods are denied, especially cookie, storage, permission, download, target-management, filesystem-backed file-input commands, system-level commands, and CDP navigation/history navigation commands.
+- Large CDP responses are saved to files instead of being inlined. Prefer using the returned file path over immediately stuffing large payloads into context; read focused sections only when needed.
+
+VISION:
+- browser_take_screenshot attaches an image result that the model can inspect. CDP Page.captureScreenshot returns data inside JSON and should not replace browser_take_screenshot when visual verification is needed.
+
+NOTES:
+- browser_snapshot returns snapshot YAML and is the main source of truth for page structure.
+- Refs are opaque handles tied to the latest browser_snapshot for that tab.
+- Iframe content is not accessible - only elements outside iframes can be interacted with.
+- When you stop to report a blocker, include the current page, the target you were trying to reach, the blocker you observed, and the best next action. If the blocker requires manual user interaction, ask the user to take over at that point rather than assuming it in advance." />
+<mcp_meta_tool_server name="plugin-notion-workspace-notion" />
+<mcp_meta_tool_server name="plugin-datadog-datadog" />
+<mcp_meta_tool_server name="plugin-slack-slack" tools="slack_send_message, slack_schedule_message, slack_add_reaction, slack_create_conversation, slack_create_canvas, slack_update_canvas, slack_search_public, slack_search_public_and_private, slack_search_channels, slack_search_users, slack_read_channel, slack_read_thread, slack_read_canvas, slack_read_user_profile, slack_list_channel_members, slack_read_file, slack_send_message_draft, slack_search_emojis, slack_get_reactions" />
+</mcp_meta_tool_servers>
+
+## MCP Resource Access
+
+You also have access to MCP resources via `FetchMcpResource`.
+If a relevant server is marked as needing authentication, or if an MCP tool call fails with an authentication/authorization error, call `mcp_auth` for that server, then inspect that server again and retry the original request if appropriate. Do not call `mcp_auth` just because it is listed, and do not repeatedly call it if authentication did not fix the failure. Do not call `mcp_auth` in parallel; authenticate only one server at a time.
+</mcp_meta_tools>
+
+### Linia 4236 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 8:51 PM (UTC+2)</timestamp>
+
+sprawdź też jak sztuczna inteligencja zachowuje się dla innych cywilizacji, jeżeli chodzi o podejście do państw, miast, czy ma zapisane, że pierwszym celem jest przejęcie państw, miast, które są wokół niej. Generalnie cywilizacje powinny prowadzić w miarę agresywną politykę, może niekoniecznie zawsze pod kątem wojennym, ale pod kątem ekspansji, stawiania miast i rozbudowy, a nie skupiać się na defensywie. bo inaczej nie będzie wyzwań i gra będzie nudna. Przyjmiemy natomiast jest charakter do analizy zacji jeżeli chodzi o dyplomację to zachowujemy ale każda cywilizacja musi dążyć do tego żeby być numer jeden i żeby rozwijać się najszybciej jak się da zdobywać nowe miasta budować nowe miasta.
+
+### Linia 4237 — AGENT
+
+[REDACTED]
+
+### Linia 4238 — AGENT
+
+Przejrzałem logikę AI w kodzie (`ai.ts`, `main.ts`, `civ-ai.json`, `ai-params.json`). Poniżej stan faktyczny i luka względem tego, co opisujesz.
+
+---
+
+## Jak AI działa dziś (skrót)
+
+### Co robi co turę
+1. Suwaki ekonomii (żywność ↔ rozwój; w wojnie więcej Pracy)
+2. Nauka (wybór tech)
+3. **Produkcja** w każdym mieście → **ulepszenia terenu** → **ruch wojska/osadników**
+4. Dyplomacja **tylko wobec gracza** (wojna, pokój, trybut, handel)
+
+**Brak:** celu „bądź numer 1” — ranking Mocy (`power-ranking.ts`) **nie jest** używany w decyzjach AI.
+
+---
+
+## Ekspansja i zakładanie miast
+
+| Mechanizm | Stan |
+|-----------|------|
+| Osadnik w produkcji | Tak — wysoki priorytet przy &lt;3 miastach (score 200), potem niższy (100) |
+| `foundCity` | Tak — osadnik zakłada miasto, min. 5 hex od innego miasta |
+| Wybór lokacji | Heurystyka terenu (żywność, praca, rzeki) **minus kara −3** za bliskość wroga (&lt;5 hex) |
+| Faza konsolidacji klastra | **Tak** — stolica klastra najpierw atakuje **miasta-państwa tego samego typu** w regionie; osadnicy **stoją**, dopóki cele nie padną |
+
+**Miasta-państwa** (`kopia_typu_obronna`): celowo **bez ekspansji** — tylko garnizon, mury, obrona. To zamierzone (D-START).
+
+**Wniosek:** pełne cywilizacje **mogą** się rozrastać, ale ekspansja **ustępuje** spichlerzowi, garnizonowi i murom przy zagrożeniu; nie ma strategii „najpierw sąsiad”.
+
+---
+
+## Agresja militarna
+
+**Ruch wojska** (kolejność):
+1. Atak sąsiedniej jednostki  
+2. Wejście na wrogie miasto (przejęcie)  
+3. Marsz na **najbliższe** lub **słabsze** wrogie miasto (zależnie od trudności)  
+4. Wioski neutralne  
+5. **Patrol przy własnym mieście** (defensywa)  
+6. Powrót „do domu”
+
+**Gracz:** atak tylko przy formalnej **wojnie**.  
+**AI vs AI:** wojsko **może walczyć bez wypowiedzenia wojny** (`canEngageOwner` → zawsze `true` dla AI).
+
+**Hamulce defensywne:**
+- Łucznicy **cofają się**, gdy wróg jest blisko ich miasta  
+- Przy zagrożeniu priorytet: mury + wojownik zamiast osadnika  
+- W dyplomacji wobec gracza: przy pokoju i zaufaniu ≥60 często **odwrót** zamiast walki  
+
+**Brak:** dedykowanego celu „przejmij sąsiednie państwo”, kampanii, zbierania armii przed atakiem.
+
+---
+
+## Charakter dyplomatyczny — co działa, co nie
+
+| Źródło | Wpływ na AI |
+|--------|-------------|
+| `agresywnosc` z `civ-ai.json` (0–10) | **Tak** — próg wojny, reakcja na spotkanie z graczem |
+| Archetypy w `diplomacy.ts` (Zulusi 0.9, Indie 0.15…) | **Tak** — `willingnessWar`, handel |
+| `perNacja` w `diplomacy.json` | Częściowo — handel, progi |
+| Tagi UI (Handlowy, Wojowniczy…) | **Tylko wyświetlanie** — nie sterują AI |
+| **`ekspansywnosc`, `sklonnoscDoPodboju`, `priorytetMilitarny`, `tolerancjaRyzyka`** w Excelu/`civ-ai.json` | **Zapisane w danych, ale nigdzie nie czytane w kodzie** |
+
+Dyplomacja zachowuje **charakter agresji/handlu** per nacja — to zostaje. Brakuje podpięcia **ekspansji** i **podboju** z tych samych danych.
+
+---
+
+## Odpowiedź na Twoje pytania
+
+| Pytanie | Odpowiedź |
+|---------|-----------|
+| Czy AI ma cel „przejąć sąsiednie państwa/miasta”? | **Nie jako pierwszy cel.** Jest marsz na najbliższe/słabsze miasto + faza „posprzątaj miasta-państwa w klastrze”. |
+| Czy polityka jest ekspansyjna? | **Częściowo** — osadnicy tak, ale z hamulcami obronnymi i karą za granicę wroga. |
+| Czy AI dąży do bycia #1? | **Nie** — brak porównania z rankingiem Mocy. |
+| Czy gra będzie nudna? | Ryzyko **tak** przy obecnym balansie: dużo patrolu, cofania łuczników, konsolidacja zamiast wypychania na mapę. |
+
+---
+
+## Kierunek zmian (gdy zechcesz wdrożyć)
+
+Zgodnie z Twoją dyspozycją: **charakter dyplomatyczny zostaje**, ale każda pełna cywilizacja ma **dążyć do #1** — szybki rozwój, nowe miasta, presja na sąsiadów (nie zawsze wojna).
+
+Proponowany pakiet (logiczna kolejność):
+
+1. **Podpiąć `ekspansywnosc` i `sklonnoscDoPodboju`** z `civ-ai.json` do: częstotliwości osadnika, kary za granicę (dla agresywnych — mniejsza kara lub bonus), progu marszu na obce miasta.
+2. **Warstwa „sąsiad”** — preferuj cele w promieniu N hex od własnego terytorium przed losowym najbliższym miastem na mapie.
+3. **Cel „#1”** — co kilka tur: jeśli AI nie jest liderem Mocy → więcej osadników, budynków, niższy próg ekspansji wojskowej; jeśli lider → cuda/nauka (zależnie od warunków zwycięstwa).
+4. **Zmniejszyć defensywę u ekspansywnych archetypów** — mniej patrolu „przy domu”, łucznicy nie cofają się przy wysokiej agresji.
+5. **Naprawa techniczna** — w `decideAIDiplomacy` są sztywne stuby `grecy`/`rzym` zamiast prawdziwych typów cywilizacji (agresja i tak idzie osobno, ale stance handlowy/sojuszowy może być niespójny).
+
+**Miasta-państwa** — zostają defensywne (inna rola na mapie); ekspansja dotyczy **stolic klastrów i pełnych imperiów**.
+
+---
+
+Jeśli chcesz to wdrożyć, mogę przygotować paczkę ABC (max 3 pytania): np. jak agresywnie traktować miasta-państwa tego samego typu (wasalizacja vs podbój) i czy AI vs AI ma wymagać formalnej wojny przed atakiem na gracza-sąsiada. Napisz **„działaj”** albo wskaż, od którego punktu zacząć.
+
+[REDACTED]
+
+### Linia 4240 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 8:54 PM (UTC+2)</timestamp>
+
+służba inteligencja, także państwo miasta, powinna być bardziej proaktywna, jeżeli chodzi o handel. Czyli jeżeli jakichś surowców jej brakuje, to próbuje nawiązać współpracę i handlować z graczem, lub też z innymi AI.  Generalnie brakuje proaktywności przeciwnika, żeby sam się odzywał i proponował różne rozwiązania.
+
+### Linia 4241 — AGENT
+
+Sprawdzam, jak dziś działa proaktywna dyplomacja i handel AI — czy w ogóle inicjuje kontakt przy brakach surowców.
+
+[REDACTED]
+
+### Linia 4242 — AGENT
+
+[REDACTED]
+
+### Linia 4243 — AGENT
+
+[REDACTED]
+
+### Linia 4244 — AGENT
+
+[REDACTED]
+
+### Linia 4245 — AGENT
+
+[REDACTED]
+
+### Linia 4246 — AGENT
+
+[REDACTED]
+
+### Linia 4247 — AGENT
+
+[REDACTED]
+
+### Linia 4248 — AGENT
+
+[REDACTED]
+
+### Linia 4249 — AGENT
+
+[REDACTED]
+
+### Linia 4250 — AGENT
+
+Masz rację co do odczucia — **proaktywność handlowa jest w kodzie częściowo zapisana, ale w praktyce rzadko dochodzi do gracza** i **nie reaguje na braki surowców**. Poniżej stan faktyczny i luki.
+
+---
+
+## Co już jest w silniku
+
+W `decideAIDiplomacy` AI **może** co turę wysłać **jedną** komendę na partnera, w tym kolejności (po wojnie/pokoju/trybucie):
+
+| Priorytet | Komenda | Co robi |
+|-----------|---------|---------|
+| 5b | `zaproponuj_umowe_handlowa` | Stała umowa handlowa (szlaki) + ewentualny „osłodzik” w złocie |
+| 5c | `zaproponuj_handel_surowiec` | Cykliczna sprzedaż **nadwyżki** surowca (pakiety/turę za ¤) |
+| 6 | `zaproponuj_handel` | Jednorazowy **dar** do ~20 ¤ (nie pełny koszyk handlu) |
+
+Dla **gracza** propozycje trafiają na **stół negocjacyjny** (widzisz je jak oferty od AI).  
+Dla **AI↔AI** umowy handlowe zawierane są **cicho** w tle (`formAiAiTradeAgreementsIfEligible`) — max **jedna nowa umowa AI↔AI na turę**.
+
+**Miasta-państwa** mogą proponować graczowi `zaproponuj_handel` i `zaproponuj_handel_surowiec`, ale **nie** pełną umowę handlową ani sojusz (warstwa `simplified`).
+
+---
+
+## Dlaczego w grze to wygląda na „AI milczy”
+
+### 1. Bramka kontaktu — największy hamulec
+AI **nie może** wysłać handlu/daru/sojuszu, dopóki gracz **nie nawiąże formalnego kontaktu** w audiencji (`diplomaticContactEstablished`). Samo odkrycie na mapie **nie wystarczy**.
+
+**Brak komendy** typu „zaproś gracza na audiencję” / „nawiąż kontakt” — **AI nigdy nie odzywa się pierwsze** w tej warstwie.
+
+### 2. Logika surowców = tylko **sprzedaż nadwyżki**, nie **kupno braków**
+`pickResourceSurplusForOwnerPair` szuka surowca, który **sprzedawca ma nadmiar**, a kupujący **nie ma wcale** (lub ma najmniej).  
+
+**Nie ma** odpowiednika `pickResourceDeficitForOwnerPair` — AI **nie wykrywa „braku żelaza / gliny / …”** i nie proponuje: *„kupię od ciebie X za Y”*.
+
+### 3. Wysokie progi i cooldowny
+- Handel wymaga **Relacji ≥ 40** (`progHandelRelacja` w `diplomacy.json`)
+- Miasta-państwa startują z **bardzo niskim zaufaniem** (często ~0–10) → długo poniżej progu
+- Cooldowny: umowa handlowa co **5 tur**, handel surowcem co **8 tur**, dar ¤ osobno
+- Wojna/pokój/trybut **blokują** handel w tej samej turze (jedna komenda)
+
+### 4. Umowa handlowa wymaga połączenia tras
+`hasTradeConnection` — geometrycznie możliwa trasa między miastami. Bez tego AI **nie proponuje** nawet umowy.
+
+### 5. `zaproponuj_handel` to nie handel surowcami
+To symboliczny dar złota (max ~20 ¤), nie wymiana „brakuje mi miedzi — dam ci pracę”.
+
+### 6. Charakter archetypu — częściowo
+`handlowosc` i `willingnessTrade` wpływają na dar ¤, ale **nie** na priorytet „mam deficyt → szukam partnera”. Stub `grecy`/`rzym` w `decideAIDiplomacy` zamiast prawdziwego typu cywilizacji też psuje spójność nastawienia handlowego.
+
+---
+
+## Miasta-państwa vs pełne cywilizacje
+
+| | Pełne AI | Miasto-państwo |
+|---|----------|----------------|
+| Propozycja handlu surowcem | Tak (po kontakcie + progu) | Tak |
+| Dar ¤ | Tak | Tak |
+| Umowa handlowa (szlaki) | Tak | **Nie** (warstwa uproszczona) |
+| Sojusz | Tak | **Nie** |
+| AI↔AI handel surowcem | Tak (cicho) | Tylko gdy jest realna oferta surowca |
+| Ekspansja / podbój | Tak (ograniczona) | **Nie** (defensywa) |
+
+Dla miast-państw **handel jest jedyną sensowną proaktywną ścieżką** — i jest mocno przykręcony kontaktem + relacją + logiką „tylko nadwyżka”.
+
+---
+
+## Luka względem Twojej wizji
+
+Chcesz: **„brakuje surowca → AI samo szuka współpracy”** (gracz i inne AI), przy zachowaniu charakteru dyplomatycznego.
+
+Dziś:
+- AI **czasem** proponuje sprzedaż nadwyżki, **jeśli** gracz już nawiązał kontakt i relacja ≥ 40
+- AI **nie** proponuje zakupu tego, czego mu brakuje
+- AI **nie** zaprasza gracza do rozmowy
+- Propozycje są **rzadkie** i **ustępują** wojnie/trybutowi
+- Gracz **nie widzi** życia handlowego AI↔AI (dzieje się w tle)
+
+---
+
+## Kierunek zmian (gdy powiesz „działaj”)
+
+Proponowany pakiet **„AI proaktywny handel”** (łączy się z wcześniejszą ekspansją):
+
+1. **Wykrywanie deficytu** — per owner: brak surowca do budowy/kolejki/utrzymania → flaga `needsResource[key]`.
+2. **`zaproponuj_kupno_surowca`** (lub rozszerzenie 5c) — AI proponuje **kupno** u partnera, który ma nadwyżkę; cena z katalogu PN + margines archetypu handlowego.
+3. **Niższy próg przy deficycie** — np. Relacja ≥ 25 zamiast 40, gdy AI **potrzebuje** towaru (pilność).
+4. **AI inicjuje kontakt** — nowa komenda `zaproponuj_audiencje` / powiadomienie HUD: *„Egipt prosi o audiencję — chcą handlować”* (bez wymogu wcześniejszego „Nawiąż kontakt” od gracza).
+5. **Priorytet** — przy aktywnym deficycie handel **przed** sojuszem (nie przed wojną, jeśli trwa).
+6. **Miasta-państwa** — ten sam mechanizm kupna/sprzedaży; ewentualnie częstsze propozycje przy niskim zapasie żywności/surowca.
+7. **Widoczność** — opcjonalnie krótki log / hint: *„Teby handluje z Babilonią”* (świat żyje).
+
+Charakter dyplomatyczny zostaje: **Grecy** częściej i taniej handlują, **Zulusi** rzadziej i tylko z przewagą — przez `handlowosc` / `willingnessTrade` / `agresywnosc`, nie jeden szablon dla wszystkich.
+
+---
+
+**Podsumowanie:** fundament proaktywnego handlu **jest** (umowy, cykliczny surowiec, stół negocjacyjny), ale **brakuje motywacji ekonomicznej (deficyt), inicjatywy pierwszego kontaktu i częstszego odzywania się** — stąd wrażenie pasywnego przeciwnika.
+
+Jeśli chcesz to wdrożyć, napisz **„działaj”** — przygotuję paczkę ABC (max 3 pytania), np. czy AI może prosić o audiencję **przed** kontaktem gracza, i czy przy deficycie może handlować **mimo** niskiej relacji (np. ≥20).
+
+[REDACTED]
+
+### Linia 4252 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-4476027b-7411-4d23-814c-2fc4d2b2b490.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-7d1aafe5-3d14-49ad-a1c2-cff01f3a47b5.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 8:59 PM (UTC+2)</timestamp>
+
+jeżeli się naciśnie na obcą jednostkę nie pojawiają się żadne informacje dodatkowe o tej jednostce. Powinny być chociaż podstawowe informacje co to za jednostka i kto jest właścicielem tej jednostki. Poza tym nie wiem w jaki sposób komputer nagle zaczął produkować od razu trzy gwiazdkowe jednostki. Przecież powinny być po awansie po walce. Więc nie wiem czy tutaj jakaś walka miała miejsce. Poza tym dosyć ciężko odróżnić je z różnej jednostki, różnych typów. Trzeba wprowadzić chyba zasadę, że nad jednostką jeszcze jest symbol danej cywilizacji państwa miasta czy barbarzyńców, np. w wypadku cywilizacji głowa tej cywilizacji, którą reprezentujemy, czyli władca.
+
+### Linia 4253 — AGENT
+
+Sprawdzam zachowanie kliknięcia w obcą jednostkę, system weteranów (3 gwiazdki) i sposób oznaczania właściciela na mapie.
+
+[REDACTED]
+
+### Linia 4254 — AGENT
+
+[REDACTED]
+
+### Linia 4255 — AGENT
+
+[REDACTED]
+
+### Linia 4256 — AGENT
+
+[REDACTED]
+
+### Linia 4257 — AGENT
+
+[REDACTED]
+
+### Linia 4258 — AGENT
+
+[REDACTED]
+
+### Linia 4259 — AGENT
+
+[REDACTED]
+
+### Linia 4260 — AGENT
+
+[REDACTED]
+
+### Linia 4261 — AGENT
+
+[REDACTED]
+
+### Linia 4262 — AGENT
+
+[REDACTED]
+
+### Linia 4263 — AGENT
+
+[REDACTED]
+
+### Linia 4264 — AGENT
+
+[REDACTED]
+
+### Linia 4265 — AGENT
+
+[REDACTED]
+
+### Linia 4266 — AGENT
+
+Masz rację na wszystkich trzech frontach — to nie kwestia „wrażenia”, tylko realnych luk w UI i czytelności mapy.
+
+---
+
+## 1. Klik w obcą jednostkę — brak informacji
+
+**Dziś:** gdy nie masz zaznaczonej własnej jednostki i klikniesz wroga, silnik pokazuje tylko podpowiedź:
+
+> *„Zaznacz swoją jednostkę obok wroga, potem kliknij wroga — pre-bitwa.”*
+
+**Panel kontekstowy** (dolny tooltip z heksu) pokazuje statystyki jednostki **wyłącznie dla twoich** (`ownerId === 0`). Dla obcych zwraca `null` — stąd zero informacji po kliknięciu.
+
+**Luka:** brak trybu „podgląd obcej jednostki” (nazwa typu, właściciel, HP, weteran, ewentualnie agresja/sojusz).
+
+---
+
+## 2. Trzy gwiazdki — to nie „świeża produkcja”, ale weterani
+
+System weteranów działa tak:
+
+| Poziom | Przeżyte bitwy | Efekt |
+|--------|----------------|-------|
+| Rekrut | 0 | brak gwiazdek |
+| Doświadczony | 1 | ★★ (+10% statów) |
+| Weteran | 2+ | ★★★ (+20% statów) |
+
+**Nowo wyprodukowana jednostka** startuje z `battlesSurvived = 0` — **nie może** mieć trzech gwiazdek od razu po zakończeniu produkcji.
+
+Gwiazdki pojawiają się po **przeżyciu bitew**, w tym:
+- auto-rozstrzygnięte starcia na mapie (bez animacji 3D),
+- walki AI↔AI poza twoim ekranem,
+- konsolidacja klastra (miasto-państwo vs miasto-państwo),
+- walki z barbarzyńcami.
+
+**Dlaczego wygląda to jak „nagle”:** te starcia często **nie otwierają ekranu bitwy** — jednostka po cichu dostaje +1 do licznika bitew, a na mapie widać tylko złote gwiazdki nad głową.
+
+**Wniosek:** mechanika prawdopodobnie działa poprawnie, ale **gracz nie widzi przyczyny** (brak logu typu „Teby: potyczka z Thebami — weteran ★★★”).
+
+---
+
+## 3. Trudno odróżnić jednostki i właścicieli
+
+**Co jest dziś:**
+
+| Element | Stan |
+|---------|------|
+| Kolorowy pierścień u stóp | Jest (`civ-owner-ring`) — delikatna obwódka w kolorze państwa |
+| Model 3D | Często ten sam szablon (np. „Wojownik” Opus5) dla miast-państw i wielu AI |
+| Portret władcy nad jednostką | **Brak** |
+| Sygnet cywilizacji / barbarzyńcy | **Brak** |
+| Etykieta tekstowa nad żetonem | Tylko przy zaznaczeniu własnej armii |
+
+Pierścień u stóp jest **mało widoczny** (przezroczystość, kolor zależy od `ownerId`, nie od kultury) — na zrzucie widać głównie identyczne modele i gwiazdki.
+
+Twoja propozycja — **mini-portret władcy / symbol państwa nad jednostką** — nie jest w grze; jest natomiast gotowe `leaderPortraitUrl()` (używane w HUD dyplomacji i panelu Mocy).
+
+---
+
+## Proponowany pakiet napraw (gdy powiesz „działaj”)
+
+**A. Podgląd obcej jednostki (priorytet 1)**  
+Klik w obcą jednostkę (bez własnej zaznaczonej) → panel/skrypt:
+- nazwa typu (np. „Wojownik”),
+- właściciel (np. „Teby · miasto-państwo” lub „Egipt — Ramzes”),
+- HP, atak/obrona, poziom weterana,
+- status: wrogi / neutralny / sojusznik.
+
+**B. Znak właściciela nad żetonem (priorytet 2)**  
+Mały sprite nad głową:
+- pełna cywilizacja → portret władcy (jak w panelu Mocy),
+- miasto-państwo → sygnet kultury + skrót nazwy,
+- barbarzyńcy → ikona własna (np. czaszka / płomień).
+
+**C. Widoczność awansów weteranów (priorytet 3)**  
+Krótki wpis w dzienniku zdarzeń / hint przy pierwszym zauważeniu wroga z ★★★: *„Jednostka doświadczona w boju (2+ starcia)”* — żeby było jasne, że to nie fabryka, tylko historia walk.
+
+**D. Rozróżnienie typów (opcjonalnie później)**  
+Silniejsze różnice modeli / tarcz per kultura — większy koszt artystyczny; na start wystarczą A+B.
+
+---
+
+**Podsumowanie:** klik w obcą jednostkę jest **celowo pusty** (tylko podpowiedź do ataku); gwiazdki **nie pochodzą z produkcji**, tylko z niewidocznych bitew AI; rozpoznawanie właściciela opiera się na słabym pierścieniu u stóp, bez portretu/sygnetu.
+
+Jeśli chcesz wdrożyć — napisz **„działaj”** (albo od którego punktu A/B/C zacząć). Mogę też przygotować krótką paczkę ABC: np. czy podgląd obcej jednostki ma być **tylko odczyt** (bez ataku) czy od razu z przyciskiem „Atakuj”, gdy stoisz obok.
+
+[REDACTED]
+
+### Linia 4268 — MACIEJ
+
+[Image]
+[Image]
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-ab81bebc-91cb-44b1-bfbd-f56094be38e4.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-7cbe56f2-c440-4160-91f0-c5eb3809c473.png
+3. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-22873cb1-75fc-413a-9f82-3e5ed14dbc5d.png
+4. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-d3cb549a-4692-4cb1-a73d-4ff0da7449e9.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:10 PM (UTC+2)</timestamp>
+
+trzeba trochę przebudować menu w mieście budowania jest kompletnie nieintuicyjne. Tak naprawdę potrzebna byłaby tylko i wyłącznie podstawowa informacja, czyli symbol budynku, stolarnia, czyli nazwa i buduj kuch. To wszystko. A resztę powinno się pojawiać jako Tool Tip w momencie najechania. Czyli co daje, czyli jakie bonusy ma ten budynek, utrzymanie, jaki ma koszt utrzymania i co jest wymagane jeszcze, żeby wybudować. Czyli ile surowców, ile pracy. Oprócz tego wszystkie dodatkowe informacje które tam były czyli z jakiej epoki jest i co musi być jeszcze spełnione na przykład że musi być w zasięgu drewno. Nie mniej jednak ten pierwszy Tool Tip pierwsza karta musi być uproszczoną. bo się nie mieszczą i ledwo jedną widać i trzeba przesuwać. Ewentualnie jeżeli nie da się pokazać w QLTIP-ie tych wszystkich informacji, bo to może być zbyt nieczytelne, to powinno się to pojawiać podobnie jak się pojawia więcej szczegółów czy szczegóły na tym pasku, gdzie się pojawiają szczegóły. Dodatkowo budynki w mieście. Powinny być tylko batonem w tym samym miejscu które są obecnie ale w momencie gdy się na niej kliknie tak samo przechodzą do tego paska w którym są szczegóły żeby nie zasłaniały dostępnego do budowy. Teraz pole dostępne do budowy trzeba maksymalnie rozszerzyć w dół przeciągnąć tak jak to jest możliwe tak żeby tylko na dole się mieściło budynki w mieście jako pasek do otwierania.
+
+### Linia 4269 — AGENT
+
+Przejrzę obecną strukturę panelu miasta i sekcji budowy, żeby zaplanować uproszczone karty oraz tooltip/szczegóły.
+
+[REDACTED]
+
+### Linia 4270 — AGENT
+
+[REDACTED]
+
+### Linia 4271 — AGENT
+
+[REDACTED]
+
+### Linia 4272 — AGENT
+
+[REDACTED]
+
+### Linia 4273 — AGENT
+
+[REDACTED]
+
+### Linia 4274 — AGENT
+
+[REDACTED]
+
+### Linia 4275 — AGENT
+
+[REDACTED]
+
+### Linia 4276 — AGENT
+
+[REDACTED]
+
+### Linia 4277 — AGENT
+
+[REDACTED]
+
+### Linia 4278 — AGENT
+
+[REDACTED]
+
+### Linia 4279 — AGENT
+
+[REDACTED]
+
+### Linia 4280 — AGENT
+
+Wdrażam uproszczone karty budynków, tooltipy ze szczegółami oraz zwinięty pasek „Budynki w mieście”.
+
+[REDACTED]
+
+### Linia 4281 — AGENT
+
+[REDACTED]
+
+### Linia 4282 — AGENT
+
+[REDACTED]
+
+### Linia 4283 — AGENT
+
+[REDACTED]
+
+### Linia 4284 — AGENT
+
+[REDACTED]
+
+### Linia 4286 — AGENT
+
+[REDACTED]
+
+### Linia 4287 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-54dd6dee-0720-41b5-b1c8-134f38de715d.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:13 PM (UTC+2)</timestamp>
+
+te ikony surowców powinny być trochę większe, bo są kompletnie niewidoczne. Same ikony trzeba powiększyć dwukrotnie. Liczby muszą być wyjustowane do wielkości też, z wielkości surowców i symboli surowców.
+
+### Linia 4288 — AGENT
+
+[REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-26 19:25 UTC (linie 4289–4308)
+
+
+### Linia 4289 — AGENT
+
+Powiększam ikony surowców 2× i dopasowuję liczby w `appendCityResourceStockStrip`.
+
+[REDACTED]
+
+### Linia 4290 — AGENT
+
+[REDACTED]
+
+### Linia 4291 — AGENT
+
+[REDACTED]
+
+### Linia 4292 — AGENT
+
+[REDACTED]
+
+### Linia 4293 — AGENT
+
+Powiększyłem ikony surowców na pasku nad listą „Dostępne do budowy”.
+
+**Co się zmieniło** (`cityPanel.ts`):
+
+1. **Ikony 2×** — z 16px na **32px** (stała `CS_RES_STRIP_ICON_PX`), zarówno na pasku budowy, jak i rekrutacji.
+2. **Liczby dopasowane** — font **16px**, `line-height: 32px` (ta sama wysokość co ikona), wyrównanie pionowe przez `align-items: center` na chipie.
+3. **Kontener ikony** — stały rozmiar **32×32px** zamiast `1.05em` przy małym `font-size: 0.78em`, który je praktycznie chował.
+
+Typecheck przechodzi. Żeby zobaczyć zmianę w grze, potrzebny będzie deploy do roboczej — napisz **„deploy”**, jeśli mam to zrobić.
+
+[REDACTED]
+
+### Linia 4294 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-27a987f7-eb01-417f-ae76-c4fc2dbcb63d.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:14 PM (UTC+2)</timestamp>
+
+zauważ też, że w lewym górnym rogu menu oraz prawym górnym rogu jest mnóstwo miejsca, gdzie można podciągnąć do góry jeszcze te paski prawie do samego krańca ekranu. Po prawej stronie jedynie trzeba trochę przesunąć Cifpedię i menu w miejsce pomiędzy nazwą miasta a nowym prawym panelem i pojawi się dużo wolnego miejsca. Zwłaszcza dla produkcji.
+
+### Linia 4295 — AGENT
+
+Szukam w kodzie układu panelu miasta i pozycji przycisków Civpedia/Menu, żeby podciągnąć paski do góry.
+
+[REDACTED]
+
+### Linia 4296 — AGENT
+
+[REDACTED]
+
+### Linia 4297 — AGENT
+
+[REDACTED]
+
+### Linia 4298 — AGENT
+
+[REDACTED]
+
+### Linia 4299 — AGENT
+
+[REDACTED]
+
+### Linia 4300 — AGENT
+
+[REDACTED]
+
+### Linia 4301 — AGENT
+
+Podciągam panele boczne do góry — lewy górny róg jest pusty, bo pasek miasta jest tylko na środku. Przenoszę też Civpedia/Menu w lukę między środkiem a prawym panelem.
+
+[REDACTED]
+
+### Linia 4302 — AGENT
+
+[REDACTED]
+
+### Linia 4303 — AGENT
+
+Podciągnąłem układ panelu miasta — głównie zyskała na tym **Produkcja** po lewej.
+
+### Co się zmieniło
+
+**Panele boczne (lewy + prawy + rails)**
+- Startują teraz **10 px od góry** ekranu (wcześniej ~148 px), bo pasek miasta jest wyśrodkowany i nie zajmuje rogów.
+- Produkcja i prawy panel mają **~138 px więcej wysokości**.
+
+**Civpedia + Menu**
+- Przeniesione z prawego górnego rogu **w lukę między środkiem a prawym panelem** (na lewo od pionowego raila ikon).
+- Ułożone pionowo, kompaktowe — nie blokują już górnej krawędzi.
+
+**Górny pasek (środek)**
+- Mniejszy padding i odstępy między nazwą miasta, chipami surowców i przyciskiem „Wróć na mapę”.
+- Usunięty duży prawy margines (`13vw`), który był rezerwowany pod stare położenie przycisków.
+
+**Pliki:** `cityUxFrame.ts`, `hud.ts`, `cityPanel.ts`
+
+Typecheck OK. Żeby zobaczyć to w grze, napisz **„deploy”**. Jeśli Civpedia/Menu trzeba jeszcze przesunąć w poziomie — daj znać.
+
+[REDACTED]
+
+### Linia 4304 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:16 PM (UTC+2)</timestamp>
+
+prowadzaj zmiany na bieżąco, ale nie rób deploy do roboczej, tylko rób sobie na swojej wersji. I druga kwestia, jeżeli masz pytania ABC, to zadawaj je na bieżąco.
+
+### Linia 4305 — AGENT
+
+Przyjąłem.
+
+**Od teraz:**
+- Zmiany wdrażam na bieżąco w kodzie źródłowym (`gra/src/`) — bez publikacji do `gra-robocza/`.
+- Deploy tylko gdy wyraźnie poprosisz.
+- Pytania gameplayowe/produktowe zadaję od razu w formacie ABC (max 3 na turę), bez odkładania.
+
+**Stan po ostatnich zmianach** (lokalnie, nie w roboczej):
+- Ikony surowców na pasku budowy: 2× większe + dopasowane liczby
+- Układ panelu miasta: panele podciągnięte do góry, Civpedia/Menu w luce przy prawym panelu
+
+Jeśli chcesz coś dalej dopracować w tym widoku miasta — pisz, robię od razu.
+
+[REDACTED]
+
+### Linia 4307 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:17 PM (UTC+2)</timestamp>
+
+za to w opcji budynki w mieście powinno być znacznie więcej informacji, chociażby o kosztach utrzymania oraz bonusach, a nie tylko wylistowane, ale akurat jeżeli to pójdzie do bocznego menu tego wysuwanego to powinno być na to miejsce. Oczywiście wszystko w skompresowanej wersji, żeby zajmowała najmniej miejsca.
+
+### Linia 4308 — AGENT
+
+Sprawdzam, jak teraz wygląda sekcja „Budynki w mieście” i panel boczny ze szczegółami.
+
+[REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-26 20:20 UTC (linie 4309–4352)
+
+
+### Linia 4309 — AGENT
+
+[REDACTED]
+
+### Linia 4310 — AGENT
+
+[REDACTED]
+
+### Linia 4311 — AGENT
+
+[REDACTED]
+
+### Linia 4312 — AGENT
+
+[REDACTED]
+
+### Linia 4313 — AGENT
+
+[REDACTED]
+
+### Linia 4314 — AGENT
+
+[REDACTED]
+
+### Linia 4315 — AGENT
+
+[REDACTED]
+
+### Linia 4316 — AGENT
+
+[REDACTED]
+
+### Linia 4317 — AGENT
+
+[REDACTED]
+
+### Linia 4318 — AGENT
+
+[REDACTED]
+
+### Linia 4319 — AGENT
+
+[REDACTED]
+
+### Linia 4320 — AGENT
+
+Wprowadzam poprawki dla obrony: formacje, startowy układ i zaznaczanie.
+
+[REDACTED]
+
+### Linia 4321 — AGENT
+
+[REDACTED]
+
+### Linia 4322 — AGENT
+
+[REDACTED]
+
+### Linia 4323 — AGENT
+
+[REDACTED]
+
+### Linia 4324 — AGENT
+
+[REDACTED]
+
+### Linia 4325 — AGENT
+
+[REDACTED]
+
+### Linia 4326 — AGENT
+
+[REDACTED]
+
+### Linia 4327 — AGENT
+
+[REDACTED]
+
+### Linia 4328 — AGENT
+
+[REDACTED]
+
+### Linia 4329 — AGENT
+
+[REDACTED]
+
+### Linia 4330 — AGENT
+
+[REDACTED]
+
+### Linia 4331 — AGENT
+
+[REDACTED]
+
+### Linia 4332 — AGENT
+
+[REDACTED]
+
+### Linia 4333 — AGENT
+
+[REDACTED]
+
+### Linia 4334 — AGENT
+
+Znalazłem przyczynę — to ten sam błąd co wcześniej przy ataku, tylko że naprawa obejmowała wyłącznie stronę atakującą. Przy obronie gracz steruje `this.def`, a kod formacji i zaznaczenia nadal patrzył na `this.atk`.
+
+### Co było nie tak
+1. **Formacje (Dystans / Piechota / Linie)** — przyciski szukały jednostek w `this.atk`, więc przy obronie nic nie robiły.
+2. **Rozstrzelony start** — obrońca lądował przy linii bitwy (środek mapy), zamiast w swojej strefie deploy (prawa połowa).
+3. **Zaznaczanie** — pierścienie, roster i „Wszystkie” nie widziały jednostek obrońcy.
+
+### Co zmieniłem (`battleScene.ts`)
+- Formacje, linie, konnica → `_playerRoster()` (twoja strona: atk lub def).
+- Start obrońcy → `DEPLOY_DEF_FRONT_COL` w prawej połowie pola (jak atak po lewej).
+- Zaznaczanie, roster, reset → działają na stronie gracza, nie tylko na atakującym.
+- Reset rozstawienia → `_resetDeployPlayer()` (działa też przy obronie).
+
+### Jak sprawdzić
+Wejdź w obronę ręczną (AI atakuje):
+1. Jednostki powinny startować **zwarte w prawej połowie**.
+2. **Wszystkie** / box-select zaznacza całą twoją armię.
+3. **Formacja F1/F2/F3** i **Linie** fizycznie przestawiają żetony.
+
+Żeby zobaczyć to w grze, trzeba zbudować i wdrożyć do `gra-robocza/` — napisz **deploy**, jeśli mam to zrobić.
+
+[REDACTED]
+
+### Linia 4335 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:14 PM (UTC+2)</timestamp>
+
+zaznaczyłem też obronę a nie atak a jednostki się nie broniły tylko atakowały czyli po prostu w ogóle nie działają ustalenia priorytetów i zasad który ma się armia kierować ani grupowania ani nic. W samym ataku już, gdy atakujemy jest prawidłowo, ale podczas obrony polu jest nie okej.
+
+### Linia 4336 — AGENT
+
+Sprawdzam logikę walki ręcznej przy obronie — priorytety, rozkazy i grupowanie prawdopodobnie nadal zakładają, że gracz jest atakującym.
+
+[REDACTED]
+
+### Linia 4337 — AGENT
+
+[REDACTED]
+
+### Linia 4338 — AGENT
+
+[REDACTED]
+
+### Linia 4339 — AGENT
+
+[REDACTED]
+
+### Linia 4340 — AGENT
+
+[REDACTED]
+
+### Linia 4341 — AGENT
+
+[REDACTED]
+
+### Linia 4342 — AGENT
+
+[REDACTED]
+
+### Linia 4343 — AGENT
+
+[REDACTED]
+
+### Linia 4344 — AGENT
+
+[REDACTED]
+
+### Linia 4345 — AGENT
+
+[REDACTED]
+
+### Linia 4346 — AGENT
+
+[REDACTED]
+
+### Linia 4347 — AGENT
+
+[REDACTED]
+
+### Linia 4348 — AGENT
+
+Wprowadzam poprawki: logika bitwy nadal zakładała, że gracz jest atakującym — kierunek marszu, rozkazy ataku i tryb AUTO.
+
+[REDACTED]
+
+### Linia 4349 — AGENT
+
+[REDACTED]
+
+### Linia 4351 — AGENT
+
+[REDACTED]
+
+### Linia 4352 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:18 PM (UTC+2)</timestamp>
+
+Start multitasking
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-26 20:42 UTC (linie 4353–4816)
+
+
+### Linia 4353 — AGENT
+
+[REDACTED]
+
+### Linia 4354 — AGENT
+
+Poprawione — chodziło o **przecinek i kropkę**, nie znaki `<` `>`.
+
+### Przyciski przy nazwie miasta
+- **`,`** → poprzednie miasto (w lewo na mapie)
+- **`.`** → następne miasto (w prawo)
+
+### Klawiatura
+- **`,`** lub **←** → poprzednie
+- **`.`** lub **→** → następne  
+(działa też po fizycznym klawiszu przecinka/kropki na polskim układzie)
+
+Klik w przycisk robi to samo co odpowiedni klawisz. Bez deployu — tylko lokalnie w kodzie.
+
+[REDACTED]
+
+### Linia 4355 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-09fcf60c-2114-4669-870d-4d4f1a83cdb8.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:22 PM (UTC+2)</timestamp>
+
+teraz budynki w mieście wyglądają tak: po najechaniu na produkcję surowców pojawia się stolarnia i obok tej stolarni powinny się pojawić kosz utrzymania oraz bonusy, jakie daje lub surowce ten budynek.
+
+### Linia 4356 — AGENT
+
+Sprawdzam, gdzie renderowana jest lista „Budynki w mieście” w zakładce produkcji — chcę dodać utrzymanie i bonusy obok nazwy budynku.
+
+[REDACTED]
+
+### Linia 4357 — AGENT
+
+[REDACTED]
+
+### Linia 4358 — AGENT
+
+[REDACTED]
+
+### Linia 4359 — AGENT
+
+[REDACTED]
+
+### Linia 4360 — AGENT
+
+Przerabiam wiersz budynku na jedną linię (nazwa + utrzymanie + bonusy) i przywracam listę grup w dolnym panelu budowy.
+
+[REDACTED]
+
+### Linia 4361 — AGENT
+
+[REDACTED]
+
+### Linia 4362 — AGENT
+
+Zrobione — przy rozwiniętej grupie (np. **Produkcja surowców**) każdy budynek ma teraz **jedną linię**:
+
+**`[ikona] Stolarnia`** · **`−2¤/t`** · **`+3 🔨`** (i kolejne bonusy, jeśli są)
+
+### Zmiany
+- Utrzymanie i bonusy **obok nazwy**, w tej samej linii (nie pod spodem, nie tylko w panelu bocznym)
+- Dolny pasek **„Budynki w mieście”** znowu pokazuje listę grup (accordion), nie sam przycisk „szczegóły”
+- Nad listą: skrót **„Utrzymanie łącznie: −X¤/turę”**
+- Klik / hover na wiersz → pełna karta w panelu bocznym (jak wcześniej)
+
+Po odświeżeniu dev serwera przy **Produkcja surowców → Stolarnia** powinieneś od razu widzieć koszt i bonusy po prawej stronie nazwy.
+
+[REDACTED]
+
+### Linia 4363 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:23 PM (UTC+2)</timestamp>
+
+wszystko w formie skompresowanej, najmniejszego jak jest możliwe.
+
+### Linia 4364 — AGENT
+
+[REDACTED]
+
+### Linia 4365 — AGENT
+
+[REDACTED]
+
+### Linia 4366 — AGENT
+
+Maksymalnie ściskam sekcję „Budynki w mieście”: mniejsze fonty, ukryte puste grupy, skrócone etykiety.
+
+[REDACTED]
+
+### Linia 4367 — AGENT
+
+[REDACTED]
+
+### Linia 4368 — AGENT
+
+[REDACTED]
+
+### Linia 4369 — AGENT
+
+[REDACTED]
+
+### Linia 4370 — AGENT
+
+Sekcja **„Budynki w mieście”** jest teraz maksymalnie ściśnięta:
+
+### Co się zmieniło
+- **Tytuł:** `Budynki (1) · −2¤` — suma utrzymania w nagłówku, bez osobnego paska
+- **Puste grupy** — ukryte (nie ma już 7× „— brak”)
+- **Wiersz budynku** — jedna niska linia: `Stolarnia` · `−2¤` · `+3🔨`
+- **Utrzymanie 0** — w ogóle nie zajmuje miejsca
+- **Bonusy** — max 3, małe ikony (8px), oddzielone kropką
+- **Mniejsze fonty, paddingi, odstępy** w całym dolnym panelu
+
+Pełne szczegóły nadal po kliknięciu / hover na wiersz (panel boczny). Lokalnie w kodzie — bez deployu.
+
+[REDACTED]
+
+### Linia 4371 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:25 PM (UTC+2)</timestamp>
+
+zrób screenshoty z tego co stworzyłeś, najpierw żebym mógł to ocenić.
+
+### Linia 4372 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:25 PM (UTC+2)</timestamp>
+
+zrób screenshoty z tego co stworzyłeś, najpierw żebym mógł to ocenić.
+
+### Linia 4373 — AGENT
+
+Uruchomię grę lokalnie i zrobię zrzuty ekranu panelu budowy oraz sekcji „Budynki w mieście”.
+
+[REDACTED]
+
+### Linia 4374 — AGENT
+
+[REDACTED]
+
+### Linia 4375 — AGENT
+
+[REDACTED]
+
+### Linia 4376 — AGENT
+
+[REDACTED]
+
+### Linia 4377 — AGENT
+
+[REDACTED]
+
+### Linia 4378 — AGENT
+
+[REDACTED]
+
+### Linia 4379 — AGENT
+
+[REDACTED]
+
+### Linia 4380 — AGENT
+
+[REDACTED]
+
+### Linia 4381 — AGENT
+
+[REDACTED]
+
+### Linia 4382 — AGENT
+
+[REDACTED]
+
+### Linia 4383 — AGENT
+
+[REDACTED]
+
+### Linia 4384 — AGENT
+
+[REDACTED]
+
+### Linia 4385 — AGENT
+
+[REDACTED]
+
+### Linia 4386 — AGENT
+
+[REDACTED]
+
+### Linia 4387 — AGENT
+
+[REDACTED]
+
+### Linia 4388 — AGENT
+
+[REDACTED]
+
+### Linia 4389 — AGENT
+
+[REDACTED]
+
+### Linia 4390 — AGENT
+
+Mamy już 3 zrzuty — poprawiam skrypt (zakładka Budowa jest już aktywna) i robię resztę.
+
+[REDACTED]
+
+### Linia 4391 — AGENT
+
+[REDACTED]
+
+### Linia 4392 — AGENT
+
+[REDACTED]
+
+### Linia 4393 — AGENT
+
+[REDACTED]
+
+### Linia 4394 — AGENT
+
+[REDACTED]
+
+### Linia 4395 — AGENT
+
+[REDACTED]
+
+### Linia 4396 — AGENT
+
+[REDACTED]
+
+### Linia 4397 — AGENT
+
+[REDACTED]
+
+### Linia 4398 — AGENT
+
+[REDACTED]
+
+### Linia 4399 — AGENT
+
+[REDACTED]
+
+### Linia 4400 — AGENT
+
+[REDACTED]
+
+### Linia 4401 — AGENT
+
+[REDACTED]
+
+### Linia 4402 — AGENT
+
+[REDACTED]
+
+### Linia 4403 — AGENT
+
+[REDACTED]
+
+### Linia 4404 — AGENT
+
+[REDACTED]
+
+### Linia 4405 — AGENT
+
+[REDACTED]
+
+### Linia 4406 — AGENT
+
+Wszystkie zrzuty są gotowe — wyświetlam kluczowe podglądy.
+
+[REDACTED]
+
+### Linia 4407 — AGENT
+
+[REDACTED]
+
+### Linia 4408 — AGENT
+
+Zrobiłem **11 screenshotów** z bieżącego kodu (`gra/src/`) przez Vite dev — **bez deployu** do `gra-robocza/`.
+
+Wszystkie pliki są w: `docs/ux/preview-city-panel/`
+
+| Plik | Co widać |
+|------|----------|
+| `01_panel-miasta-pelny.png` | Cały widok miasta (playtest `?playtest=miasto`) |
+| `02_naglowek-miasta-nawigacja.png` | Nagłówek: **TESTPOLIS**, przyciski **`,`** i **`.`**, pasek zasobów |
+| `03_pasek-zasobow-gora.png` | Górny pasek: Praca, Żywność, Skarbiec itd. |
+| `04_zakladka-budowa-pelna.png` | Zakładka Budowa: kolejka + lista + dolna sekcja budynków |
+| `05_pasek-surowcow-budowa-32px.png` | Pasek surowców nad listą budowy (ikony 32px) |
+| `06_budynki-w-miescie-kompakt.png` | Sekcja **BUDYNKI (1) · −2¤** — tryb kompakt |
+| `07_budynki-grupa-rozwinieta.png` | Rozwinięta grupa „Wojsko i obrona” + wiersz Koszarów |
+| `08_budynek-w-miescie-panel-boczny.png` | Klik w Koszary → panel boczny ze szczegółami |
+| `09_zakladka-rekrutacja.png` | Zakładka rekrutacji + karta jednostki (Procarz) |
+| `10_pasek-surowcow-rekrutacja-32px.png` | Pasek surowców przy rekrutacji |
+| `11_gorny-pasek-civpedia-menu.png` | Górny pasek z Civpedia / Menu |
+
+**Co widać na podglądzie:**
+- Panele podciągnięte do góry, Civpedia/Menu w luce między środkiem a prawą kolumną
+- Nawigacja miast: **`,`** / **`.`** przy nazwie
+- Ikony surowców 2× większe na budowie i rekrutacji
+- Dolna sekcja budynków: nagłówek z sumą utrzymania, kompaktowe wiersze (Koszary: −2¤ +2 +20%)
+- Klik w budynek → pełna karta w panelu bocznym
+
+Możesz też otworzyć folder w eksploratorze albo powtórzyć zrzuty skryptem:
+`node gra/tools/preview-city-ui-screenshots.cjs` (wymaga działającego Vite na porcie 5173).
+
+Daj znać, co poprawić — layout, czytelność kompaktu, rozmiar ikon, coś innego.
+
+[REDACTED]
+
+### Linia 4409 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:30 PM (UTC+2)</timestamp>
+
+kolejna kwestia gdy mam jednostkę zaznaczoną i wyznaczam jej miejsce w które ma iść w momencie gdy kliknę na miasto to zamiast ta jednostka iść do miasta to ja wchodzę do miasta. A tego nie chcę. Więc powinno być tak że jeżeli jednostka jest zaznaczona na miasto swoje no to ta jednostka idzie do mojego miasta. A jeżeli najadę na miasto obce to system powie mnie zapytać się czy chce wypowiedzieć wojnę. Poza tym miał być wprowadzony system wypowiadania wołomien przed atakiem. Czyli jeżeli najadę na miasto wroga czy nawet neutralne to powinien system się mnie zapytać czy chce wypowiedzieć wojnę. a tego nie robi.
+
+### Linia 4410 — AGENT
+
+Sprawdzę obsługę kliknięć w miasto przy zaznaczonej jednostce oraz logikę wypowiadania wojny.
+
+[REDACTED]
+
+### Linia 4411 — AGENT
+
+[REDACTED]
+
+### Linia 4412 — AGENT
+
+[REDACTED]
+
+### Linia 4413 — AGENT
+
+[REDACTED]
+
+### Linia 4414 — AGENT
+
+[REDACTED]
+
+### Linia 4415 — AGENT
+
+[REDACTED]
+
+### Linia 4416 — AGENT
+
+[REDACTED]
+
+### Linia 4417 — AGENT
+
+[REDACTED]
+
+### Linia 4418 — AGENT
+
+[REDACTED]
+
+### Linia 4419 — AGENT
+
+[REDACTED]
+
+### Linia 4420 — AGENT
+
+[REDACTED]
+
+### Linia 4421 — AGENT
+
+[REDACTED]
+
+### Linia 4422 — AGENT
+
+[REDACTED]
+
+### Linia 4423 — AGENT
+
+[REDACTED]
+
+### Linia 4424 — AGENT
+
+[REDACTED]
+
+### Linia 4425 — AGENT
+
+[REDACTED]
+
+### Linia 4426 — AGENT
+
+[REDACTED]
+
+### Linia 4427 — AGENT
+
+[REDACTED]
+
+### Linia 4428 — AGENT
+
+[REDACTED]
+
+### Linia 4429 — AGENT
+
+[REDACTED]
+
+### Linia 4430 — AGENT
+
+[REDACTED]
+
+### Linia 4431 — AGENT
+
+[REDACTED]
+
+### Linia 4432 — AGENT
+
+Wprowadzam poprawki: priorytet ruchu jednostki przy kliknięciu własnego miasta oraz bramkę wypowiedzenia wojny przed akcją na obcym/neutralnym.
+
+[REDACTED]
+
+### Linia 4433 — AGENT
+
+[REDACTED]
+
+### Linia 4434 — AGENT
+
+[REDACTED]
+
+### Linia 4435 — AGENT
+
+[REDACTED]
+
+### Linia 4436 — AGENT
+
+[REDACTED]
+
+### Linia 4437 — AGENT
+
+[REDACTED]
+
+### Linia 4438 — AGENT
+
+[REDACTED]
+
+### Linia 4439 — AGENT
+
+[REDACTED]
+
+### Linia 4440 — AGENT
+
+[REDACTED]
+
+### Linia 4441 — AGENT
+
+[REDACTED]
+
+### Linia 4442 — AGENT
+
+[REDACTED]
+
+### Linia 4443 — AGENT
+
+[REDACTED]
+
+### Linia 4444 — AGENT
+
+[REDACTED]
+
+### Linia 4445 — AGENT
+
+Naprawiłem oba problemy w `gra/src/main.ts` (bez deployu).
+
+### 1. Klik w **własne** miasto przy zaznaczonej jednostce
+**Było:** panel miasta otwierał się zamiast ruchu (warunek `reachable.has(...)` + `beginMoveSelectedUnitTo` — często nie przechodził).
+
+**Jest:** jeśli masz zaznaczoną jednostkę z ruchem → **`planMarchTo`** (ten sam mechanizm co klik w zwykły heks). Panel otwiera się **tylko gdy nic nie masz zaznaczone** (albo jednostka bez ruchu).
+
+### 2. Bramka **„Wypowiedzieć wojnę?”** przed akcją wroga
+**Było:** brak potwierdzenia — można było atakować bez wojny (znany bug w kodzie, komentarz przy `chargeCombatCredibilityPenalties`).
+
+**Jest:** modal `showWarConfirmModal` (ten sam co w dyplomacji) przed:
+- kliknięciem w **obce/neutralne** miasto,
+- atakiem na **wrogą jednostkę** (sąsiad lub marsz w jej stronę),
+- po potwierdzeniu: wypowiedzenie wojny + dalsza akcja (atak jeśli przy mieście, marsz na sąsiedni heks jeśli dalej).
+
+**Zachowanie po zmianie:**
+
+| Sytuacja | Efekt |
+|----------|--------|
+| Jednostka zaznaczona → klik **swoje** miasto | Jednostka idzie do miasta |
+| Jednostka zaznaczona → klik **obce** miasto (bez wojny) | Modal „Wypowiedzieć wojnę?” → Tak = wojna + marsz/atak |
+| Jednostka zaznaczona → klik **wroga** (bez wojny) | Modal → Tak = wojna + pre-bitwa / marsz |
+| Brak zaznaczenia → klik **swoje** miasto | Panel miasta (jak wcześniej) |
+| Już **wojna** | Bez modala — od razu atak/marsz |
+
+Żeby wejść do panelu miasta przy zaznaczonej jednostce — najpierw ją odznacz (Esc lub klik w puste pole).
+
+Chcesz, żebym zrobił deploy do `gra-robocza`, żebyś mógł to od razu sprawdzić w grze?
+
+[REDACTED]
+
+### Linia 4446 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-902b8734-eece-4ea8-aa48-2b03625b024c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:34 PM (UTC+2)</timestamp>
+
+kolejna kwestia. Nie mogę wyłączyć np. produkcji a ten symbol u kolejki, że jest nie ustawiona produkcja, chociaż nie mam tam co produkować to po pierwsze, a po drugie po to jest ten krzyżyk, żeby wyłączyć, a nie jest to możliwe. Generalnie też w momencie, gdy w danym mieście nie mamy czego produkować, bo nie odkryliśmy nowej technologii, to nie powinno wykonywać raportu brak produkcji. Tylko po prostu wtedy, kiedy jest coś możliwe do wybudowania, a nie mamy ustawionej produkcji.
+
+### Linia 4447 — AGENT
+
+Szukam w kodzie logiki powiadomień o produkcji i przycisku zamykania (X).
+
+[REDACTED]
+
+### Linia 4448 — AGENT
+
+[REDACTED]
+
+### Linia 4449 — AGENT
+
+[REDACTED]
+
+### Linia 4450 — AGENT
+
+[REDACTED]
+
+### Linia 4451 — AGENT
+
+[REDACTED]
+
+### Linia 4452 — AGENT
+
+[REDACTED]
+
+### Linia 4453 — AGENT
+
+[REDACTED]
+
+### Linia 4454 — AGENT
+
+[REDACTED]
+
+### Linia 4455 — AGENT
+
+[REDACTED]
+
+### Linia 4456 — AGENT
+
+[REDACTED]
+
+### Linia 4457 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-902b8734-eece-4ea8-aa48-2b03625b024c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:34 PM (UTC+2)</timestamp>
+
+kolejna kwestia. Nie mogę wyłączyć np. produkcji a ten symbol u kolejki, że jest nie ustawiona produkcja, chociaż nie mam tam co produkować to po pierwsze, a po drugie po to jest ten krzyżyk, żeby wyłączyć, a nie jest to możliwe. Generalnie też w momencie, gdy w danym mieście nie mamy czego produkować, bo nie odkryliśmy nowej technologii, to nie powinno wykonywać raportu brak produkcji. Tylko po prostu wtedy, kiedy jest coś możliwe do wybudowania, a nie mamy ustawionej produkcji.
+
+### Linia 4458 — AGENT
+
+[REDACTED]
+
+### Linia 4459 — AGENT
+
+[REDACTED]
+
+### Linia 4460 — AGENT
+
+[REDACTED]
+
+### Linia 4461 — AGENT
+
+[REDACTED]
+
+### Linia 4462 — AGENT
+
+[REDACTED]
+
+### Linia 4463 — AGENT
+
+[REDACTED]
+
+### Linia 4464 — AGENT
+
+[REDACTED]
+
+### Linia 4465 — AGENT
+
+[REDACTED]
+
+### Linia 4466 — AGENT
+
+[REDACTED]
+
+### Linia 4467 — AGENT
+
+[REDACTED]
+
+### Linia 4468 — AGENT
+
+[REDACTED]
+
+### Linia 4469 — AGENT
+
+[REDACTED]
+
+### Linia 4470 — AGENT
+
+[REDACTED]
+
+### Linia 4471 — AGENT
+
+[REDACTED]
+
+### Linia 4472 — AGENT
+
+[REDACTED]
+
+### Linia 4473 — AGENT
+
+[REDACTED]
+
+### Linia 4474 — AGENT
+
+[REDACTED]
+
+### Linia 4475 — AGENT
+
+[REDACTED]
+
+### Linia 4476 — AGENT
+
+[REDACTED]
+
+### Linia 4477 — AGENT
+
+[REDACTED]
+
+### Linia 4478 — AGENT
+
+Wprowadzam poprawki: ostrzeżenie o pustej kolejce tylko gdy coś można zbudować, oraz działający krzyżyk do zamknięcia.
+
+[REDACTED]
+
+### Linia 4479 — AGENT
+
+[REDACTED]
+
+### Linia 4480 — AGENT
+
+Brakuje definicji helperów — dodaję je teraz.
+
+[REDACTED]
+
+### Linia 4481 — AGENT
+
+[REDACTED]
+
+### Linia 4482 — AGENT
+
+[REDACTED]
+
+### Linia 4483 — AGENT
+
+[REDACTED]
+
+### Linia 4484 — AGENT
+
+Trzy powiązane problemy są naprawione w `gra/src/main.ts`:
+
+### Co się zmieniło
+
+1. **Alert „Produkcja: … / Kolejka pusta”** pojawia się tylko gdy w mieście **naprawdę jest co wybrać** — budynki, jednostki, ulepszenia poziomu lub cuda (ta sama logika co panel miasta). Gdy nie ma nowej technologii i nic nie da się zbudować, alert **nie wyskakuje**.
+
+2. **Krzyżyk (✕) działa** — zamyka alert produkcji. Miasto trafia na listę „odrzuconych” z odciskiem dostępnych opcji; alert wróci dopiero gdy pojawi się **nowa** możliwość produkcji (np. po badaniu) albo gdy ustawisz kolejkę i znowu ją opróżnisz.
+
+3. **Lista miast** — linia „Kolejka pusta” przy mieście też tylko gdy faktycznie coś można produkować (nie przy braku technologii).
+
+4. **Tryb auto-budowy** — miasta z włączonym zarządcą nie dostają tego ostrzeżenia (kolejkę uzupełnia automat).
+
+`npx tsc --noEmit` — OK.
+
+Żeby zobaczyć to w grze, potrzebny będzie deploy do `gra-robocza/` — daj znać, jeśli mam to zrobić.
+
+[REDACTED]
+
+### Linia 4485 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-1857915b-fdd9-4763-8c80-6cf109521450.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:38 PM (UTC+2)</timestamp>
+
+chłopki symbolizujące pracowników w terenie dla gracza powinny być w kolorze jego nacji, jego cywilizacji. A dla przeciwników w kolorze ich cywilizacji. Żeby można było na polu odróżnić, które pola są nasze i które możemy upgrade'ować jeżeli to jest państwo-miasto, z kolei to powinno się tym odróżniać, że oczywiście kolor ze względu na to, że cywilizacja jest taka sama, będzie ten sam. A nasz chłopak jeszcze powinien mieć w naszym kolorze obwódkę okrągłą. Wtedy będziemy wiedzieli, że to znasz, a nie kogoś, pracownik i teren.
+
+### Linia 4486 — AGENT
+
+Szukam w kodzie renderowania ikon pracowników na mapie i sposobu przypisywania kolorów cywilizacji.
+
+[REDACTED]
+
+### Linia 4487 — AGENT
+
+[REDACTED]
+
+### Linia 4488 — AGENT
+
+[REDACTED]
+
+### Linia 4489 — AGENT
+
+[REDACTED]
+
+### Linia 4490 — AGENT
+
+[REDACTED]
+
+### Linia 4491 — AGENT
+
+[REDACTED]
+
+### Linia 4492 — AGENT
+
+[REDACTED]
+
+### Linia 4493 — AGENT
+
+[REDACTED]
+
+### Linia 4494 — AGENT
+
+Wprowadzam kolory cywilizacji i obwódkę dla pracowników gracza — najpierw rozszerzę zbieranie danych, potem render ikon.
+
+[REDACTED]
+
+### Linia 4495 — AGENT
+
+[REDACTED]
+
+### Linia 4496 — AGENT
+
+[REDACTED]
+
+### Linia 4497 — AGENT
+
+Zrobione. Ikony pracowników na mapie działają tak:
+
+### Kolory cywilizacji
+Każdy pracownik ma **kółko w kolorze właściciela** — tej samej palety co jednostki i miasta (złoto = gracz, czerwony/zielony/niebieski = AI, fioletowy = państwo-miasto itd.). Widać teraz **wszystkich** pracowników na mapie, nie tylko gracza.
+
+### Obwódka gracza
+**Twoi** pracownicy mają dodatkową **okrągłą obwódkę** w twoim kolorze (złoto) — dzięki temu odróżnisz własny teren od państwa-miasta tej samej cywilizacji (bez obwódki, sam kolor tła).
+
+### Pliki
+- `gra/src/render/workerFieldOverlay.ts` — rysowanie ikon z kolorem + obwódka
+- `gra/src/game/okolica.ts` — `collectWorkedHexOwnerMap()` zbiera pracowników wszystkich cywilizacji
+- `gra/src/main.ts` — overlay pokazuje wszystkich, nie tylko gracza
+
+Włącz warstwę pracowników przy minimapie (jak dotąd) — zobaczysz różnicę od razu. Deploy do `gra-robocza/` na żądanie.
+
+[REDACTED]
+
+### Linia 4498 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:40 PM (UTC+2)</timestamp>
+
+I jeszcze jedna kwestia. Na karcie budowania, jeżeli jeszcze budynek nie jest wybudowany, powinny być jakieś różnice. Jeżeli są jakieś budynki inne lub badania lub surowce wymagane, to musi to być napisane, ale jednocześnie musi być informacja czy warunek jest pełniony czy nie. Jeżeli jest na niebiesko, znaczy że jest pełniony. Jeżeli na czerwono, to będzie niespełniony. I tak to trzeba odróżniać.
+
+### Linia 4499 — AGENT
+
+Szukam w panelu miasta, jak renderowana jest karta budynku i warunki odblokowania.
+
+[REDACTED]
+
+### Linia 4500 — AGENT
+
+[REDACTED]
+
+### Linia 4501 — AGENT
+
+[REDACTED]
+
+### Linia 4502 — AGENT
+
+[REDACTED]
+
+### Linia 4503 — AGENT
+
+[REDACTED]
+
+### Linia 4504 — AGENT
+
+[REDACTED]
+
+### Linia 4505 — AGENT
+
+[REDACTED]
+
+### Linia 4506 — AGENT
+
+[REDACTED]
+
+### Linia 4507 — AGENT
+
+[REDACTED]
+
+### Linia 4508 — AGENT
+
+[REDACTED]
+
+### Linia 4509 — AGENT
+
+[REDACTED]
+
+### Linia 4510 — AGENT
+
+[REDACTED]
+
+### Linia 4511 — AGENT
+
+[REDACTED]
+
+### Linia 4512 — AGENT
+
+[REDACTED]
+
+### Linia 4513 — AGENT
+
+[REDACTED]
+
+### Linia 4514 — AGENT
+
+[REDACTED]
+
+### Linia 4515 — AGENT
+
+[REDACTED]
+
+### Linia 4516 — AGENT
+
+Dodaję sekcję wymagań z chipami niebieski/czerwony na kartach budynków — najpierw helper w `building-resource-gate.ts`, potem UI w `cityPanel.ts`.
+
+[REDACTED]
+
+### Linia 4517 — AGENT
+
+[REDACTED]
+
+### Linia 4518 — AGENT
+
+[REDACTED]
+
+### Linia 4519 — AGENT
+
+[REDACTED]
+
+### Linia 4520 — AGENT
+
+[REDACTED]
+
+### Linia 4521 — AGENT
+
+[REDACTED]
+
+### Linia 4522 — AGENT
+
+[REDACTED]
+
+### Linia 4523 — AGENT
+
+[REDACTED]
+
+### Linia 4524 — AGENT
+
+[REDACTED]
+
+### Linia 4525 — AGENT
+
+[REDACTED]
+
+### Linia 4526 — AGENT
+
+Zrobione. Na karcie budynku (panel po najechaniu na pozycję w zakładce **Budowa**) jest teraz sekcja **„Wymagane”** z osobnymi chipami:
+
+### Jak to wygląda
+- **Niebieski** — warunek spełniony (badanie odkryte, budynek w mieście, dostęp do surowca, zapas w magazynie itd.)
+- **Czerwony** — warunek niespełniony (widać dokładnie, czego brakuje)
+
+### Co jest wymieniane osobno
+| Typ | Przykład |
+|-----|----------|
+| **Badanie** | `Badanie: Garncarstwo` lub łańcuch `Badanie: X → Y` |
+| **Budynek w mieście** | `W mieście: Koszary lub Akademia wojskowa` |
+| **Rozbudowa** | `Rozbudowa: Spichlerz` |
+| **Dostęp surowca** | `Dostęp: Ceramika`, `Dostęp: Brąz` |
+| **Teren** | `Wybrzeże lub rzeka przy mieście`, `Kopalnia miedzi w imperium` |
+| **Lokalizacja** | `Tylko stolica` / `Tylko poza stolicą` |
+| **Magazyn** | `Magazyn: 5 Drewno (masz 3)` — czerwony gdy za mało |
+
+Dotyczy:
+- budynków **dostępnych** do budowy (najedź na wiersz),
+- sekcji **„Jeszcze zablokowane”** i **„Podgląd badań”**.
+
+Stary czerwony blok tekstu (`🔒 Zbadaj: …`) znika, gdy są chipy — zostaje tylko tam, gdzie nie ma żadnych warunków do pokazania (np. „Już w kolejce”).
+
+`npx tsc --noEmit` — OK. Deploy na żądanie.
+
+[REDACTED]
+
+### Linia 4527 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:43 PM (UTC+2)</timestamp>
+
+jeżeli utrzymanie zero, to trzeba napisać, że utrzymanie zero.
+
+### Linia 4528 — AGENT
+
+[REDACTED]
+
+### Linia 4529 — AGENT
+
+[REDACTED]
+
+### Linia 4530 — AGENT
+
+[REDACTED]
+
+### Linia 4531 — AGENT
+
+[REDACTED]
+
+### Linia 4532 — AGENT
+
+[REDACTED]
+
+### Linia 4533 — AGENT
+
+[REDACTED]
+
+### Linia 4534 — AGENT
+
+[REDACTED]
+
+### Linia 4535 — AGENT
+
+[REDACTED]
+
+### Linia 4536 — AGENT
+
+[REDACTED]
+
+### Linia 4537 — AGENT
+
+Dodaję wyświetlanie „utrzymanie zero” na kartach budynków i w liście zbudowanych.
+
+[REDACTED]
+
+### Linia 4538 — AGENT
+
+[REDACTED]
+
+### Linia 4539 — AGENT
+
+[REDACTED]
+
+### Linia 4540 — AGENT
+
+[REDACTED]
+
+### Linia 4541 — AGENT
+
+[REDACTED]
+
+### Linia 4542 — AGENT
+
+Gdy utrzymanie budynku wynosi **0**, zamiast pustego miejsca lub samej „0” widać teraz wyraźnie **„utrzymanie zero”**:
+
+- **Karta szczegółów** (zakładka Budowa, po najechaniu) — wiersz „Utrzymanie”
+- **Lista zbudowanych budynków** — przy każdym budynku (w tym Stela i inne bez kosztu)
+- **Podsumowanie** — „Utrzymanie łącznie: **utrzymanie zero**”, gdy suma = 0
+- **Nagłówek kompaktowy** — „· utrzymanie zero” przy zerowym łącznym utrzymaniu
+
+Gdy utrzymanie > 0, wyświetlanie bez zmian (−X 💰/turę).
+
+[REDACTED]
+
+### Linia 4543 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-8735fdf2-7420-48bb-ab44-03a044f2b3fa.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:45 PM (UTC+2)</timestamp>
+
+widzę jeszcze jeden problem, o którym nie pomyślałem. Mianowicie pomimo tego, że w cywilizacji powinna być wspólna pula jednostek do rekrutowania, to wygląda tak, że oba miasta awansowały po jednej jednostce, ale nie mogłem zbudować dwóch nowych jednostek w jednym mieście. Musiałem zbudować jedną w jednym, a drugą w drugim, bo nie było wystarczającej ludności, chociaż w panelu cywilizacji była odpowiednia liczba  wygląda to na błąd, że system każe rekrutować jednostki tylko z puli danego miasta, a ona się łączy potem na pulę całą cywilizacji, ale to wprowadza w błąd, więc powinna być rekrutacja z puli całej cywilizacji, sumy, a nie z danego miasta tylko.
+
+### Linia 4544 — AGENT
+
+Szukam w kodzie, gdzie rekrutacja jednostek ogranicza się populacją miasta zamiast pulą całej cywilizacji.
+
+[REDACTED]
+
+### Linia 4545 — AGENT
+
+[REDACTED]
+
+### Linia 4546 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-8735fdf2-7420-48bb-ab44-03a044f2b3fa.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:45 PM (UTC+2)</timestamp>
+
+widzę jeszcze jeden problem, o którym nie pomyślałem. Mianowicie pomimo tego, że w cywilizacji powinna być wspólna pula jednostek do rekrutowania, to wygląda tak, że oba miasta awansowały po jednej jednostce, ale nie mogłem zbudować dwóch nowych jednostek w jednym mieście. Musiałem zbudować jedną w jednym, a drugą w drugim, bo nie było wystarczającej ludności, chociaż w panelu cywilizacji była odpowiednia liczba  wygląda to na błąd, że system każe rekrutować jednostki tylko z puli danego miasta, a ona się łączy potem na pulę całą cywilizacji, ale to wprowadza w błąd, więc powinna być rekrutacja z puli całej cywilizacji, sumy, a nie z danego miasta tylko.
+
+### Linia 4547 — AGENT
+
+[REDACTED]
+
+### Linia 4548 — AGENT
+
+[REDACTED]
+
+### Linia 4549 — AGENT
+
+[REDACTED]
+
+### Linia 4550 — AGENT
+
+[REDACTED]
+
+### Linia 4551 — AGENT
+
+[REDACTED]
+
+### Linia 4552 — AGENT
+
+[REDACTED]
+
+### Linia 4553 — AGENT
+
+Wdrażam rekrutację z puli imperium — najpierw logika w `manpower.ts`, potem podpięcie w silniku i UI.
+
+[REDACTED]
+
+### Linia 4554 — AGENT
+
+[REDACTED]
+
+### Linia 4555 — AGENT
+
+[REDACTED]
+
+### Linia 4556 — AGENT
+
+[REDACTED]
+
+### Linia 4557 — AGENT
+
+[REDACTED]
+
+### Linia 4558 — AGENT
+
+[REDACTED]
+
+### Linia 4559 — AGENT
+
+[REDACTED]
+
+### Linia 4560 — AGENT
+
+[REDACTED]
+
+### Linia 4561 — AGENT
+
+[REDACTED]
+
+### Linia 4562 — AGENT
+
+[REDACTED]
+
+### Linia 4563 — AGENT
+
+[REDACTED]
+
+### Linia 4564 — AGENT
+
+[REDACTED]
+
+### Linia 4565 — AGENT
+
+[REDACTED]
+
+### Linia 4566 — AGENT
+
+[REDACTED]
+
+### Linia 4567 — AGENT
+
+[REDACTED]
+
+### Linia 4568 — AGENT
+
+[REDACTED]
+
+### Linia 4569 — AGENT
+
+[REDACTED]
+
+### Linia 4570 — AGENT
+
+[REDACTED]
+
+### Linia 4571 — AGENT
+
+[REDACTED]
+
+### Linia 4572 — AGENT
+
+[REDACTED]
+
+### Linia 4573 — AGENT
+
+[REDACTED]
+
+### Linia 4574 — AGENT
+
+[REDACTED]
+
+### Linia 4575 — AGENT
+
+Masz rację — to był błąd spójności. Panel cywilizacji pokazywał **sumę rekrutów imperium**, a werb sprawdzał tylko **pulę jednego miasta**.
+
+### Co zmieniłem
+
+**Rekrutacja jednostek** korzysta teraz z **puli całej cywilizacji** (suma `manpower` po wszystkich miastach):
+
+1. **`manpower.ts`** — nowe funkcje:
+   - `canAffordUnitManpowerEmpire` — sprawdza sumę imperium
+   - `tryDeductUnitSpawnCostsEmpire` — pobiera rekrutów najpierw z miasta werbującego, potem z pozostałych miast imperium
+
+2. **`main.ts`** — ścieżki rekrutacji za złoto, produkcja jednostek z kolejki i AI używają puli imperium
+
+3. **`cityPanel.ts`** — przycisk „Rekrutuj” patrzy na sumę imperium (nie tylko lokalną pulę)
+
+4. **`empireDetailPanel.ts`** — dopisek zaktualizowany: werb zużywa pulę całej cywilizacji
+
+### Co się nie zmienia
+
+- **−1 obywatel** przy werbie nadal schodzi z **miasta, w którym rekrutujesz** (to osobna reguła od puli rekrutów)
+- Zwrot przy anulowaniu kolejki wraca do miasta rekrutującego (jak wcześniej)
+
+### Przykład z Twojego scenariusza
+
+Ateny mają mało rekrutów, Sparta dużo — ale **suma w panelu cywilizacji wystarcza** → możesz zrekrutować **dwie jednostki w Atenach**; brakujące rekruty zostaną pobrane ze Sparty.
+
+`typecheck` OK · `manpower-test` 43/43 OK. Zmiany są w `gra/src/` — bez deployu do `gra-robocza/`. Jak chcesz to sprawdzić w grze, daj znać (`push` / deploy).
+
+[REDACTED]
+
+### Linia 4576 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-200bc95a-f04b-4603-a701-24431e8bbcd3.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 9:49 PM (UTC+2)</timestamp>
+
+kolejny błąd który zauważyłem w momencie gdy wejdziemy do miasta dwoma jednostkami armią i ufortyfikujemy to po pierwsze nie widać jej w mieście jak się wejdzie a powinien być widoczny w tak zwanych koszarach, ale to mniejsza oto. Są widoczne na szczęście w panelu jednostek, z tym, że armia się wtedy rozdziela z powrotem na dwie części. To po pierwsze. A po drugie, nie widać jej w mieście gracze mogą być zezerentowani, że im jednostka po fortyfikowaniu znikła, a powinna być widoczna w mieście.
+
+### Linia 4577 — AGENT
+
+Sprawdzam mechanikę garnizonu i renderowanie jednostek w mieście — szukam przyczyny znikających stosów i rozdzielania armii.
+
+[REDACTED]
+
+### Linia 4578 — AGENT
+
+[REDACTED]
+
+### Linia 4579 — AGENT
+
+[REDACTED]
+
+### Linia 4580 — AGENT
+
+[REDACTED]
+
+### Linia 4581 — AGENT
+
+[REDACTED]
+
+### Linia 4582 — AGENT
+
+[REDACTED]
+
+### Linia 4583 — AGENT
+
+[REDACTED]
+
+### Linia 4584 — AGENT
+
+[REDACTED]
+
+### Linia 4585 — AGENT
+
+[REDACTED]
+
+### Linia 4586 — AGENT
+
+[REDACTED]
+
+### Linia 4587 — AGENT
+
+[REDACTED]
+
+### Linia 4588 — AGENT
+
+[REDACTED]
+
+### Linia 4589 — AGENT
+
+[REDACTED]
+
+### Linia 4590 — AGENT
+
+[REDACTED]
+
+### Linia 4591 — AGENT
+
+[REDACTED]
+
+### Linia 4592 — AGENT
+
+[REDACTED]
+
+### Linia 4593 — AGENT
+
+[REDACTED]
+
+### Linia 4594 — AGENT
+
+[REDACTED]
+
+### Linia 4595 — AGENT
+
+[REDACTED]
+
+### Linia 4596 — AGENT
+
+[REDACTED]
+
+### Linia 4597 — AGENT
+
+[REDACTED]
+
+### Linia 4598 — AGENT
+
+[REDACTED]
+
+### Linia 4599 — AGENT
+
+[REDACTED]
+
+### Linia 4600 — AGENT
+
+[REDACTED]
+
+### Linia 4601 — AGENT
+
+[REDACTED]
+
+### Linia 4602 — AGENT
+
+Wprowadzam trzy poprawki: fortyfikacja całego stosu, widoczność garnizonu na mapie miasta oraz podpięcie panelu koszar w widoku miasta.
+
+[REDACTED]
+
+### Linia 4603 — AGENT
+
+[REDACTED]
+
+### Linia 4604 — AGENT
+
+[REDACTED]
+
+### Linia 4605 — AGENT
+
+[REDACTED]
+
+### Linia 4606 — AGENT
+
+[REDACTED]
+
+### Linia 4607 — AGENT
+
+[REDACTED]
+
+### Linia 4608 — AGENT
+
+[REDACTED]
+
+### Linia 4609 — AGENT
+
+Znalazłem trzy powiązane przyczyny i naprawiłem je.
+
+### Co było nie tak
+
+1. **Ufortyfikuj** chowało tylko **jedną** zaznaczoną jednostkę — druga zostawała na mapie, stąd „rozpad” armii w panelu jednostek.
+2. Garnizon był **całkowicie niewidoczny** na mapie świata (`inGarnizon` = ukryj token), więc wyglądało to jak zniknięcie jednostki.
+3. Panel miasta miał gotowy UI koszar (`renderTopBarGarrison`), ale **nigdy nie był podpięty** — po wejściu do miasta garnizonu nie widać było w interfejsie.
+
+### Co teraz działa
+
+| Obszar | Zachowanie |
+|--------|------------|
+| **Ufortyfikuj w mieście** | Cały widoczny stos na heksie miasta idzie do garnizonu (jak Czuwaj / fortyfikacja w polu) |
+| **Mapa świata** | Garnizon gracza widać na heksie miasta jako **jeden token + badge ×N** (koszary) |
+| **Lista armii** | Ufortyfikowane jednostki na tym samym mieście = **jeden wpis** (np. `Wojownik ×2`), nie dwa osobne |
+| **Panel miasta** | Pod paskiem zasobów: **Garnizon** z chipami jednostek (↩ = opuść garnizon) |
+| **Opuść garnizon** (przycisk Ufort.) | Wyciąga **cały** garnizon z tego miasta |
+
+Wrogie garnizony nadal są ukryte (mgła / balans).
+
+Zmiany w `gra/src/` — bez deployu. Jak chcesz to sprawdzić w grze, daj znać (`push` / deploy).
+
+[REDACTED]
+
+### Linia 4610 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:53 PM (UTC+2)</timestamp>
+
+jeszcze jedna kwestia. Część budynków ma stare wytyczne, że jakiś surowiec musi być w zasięgu a to nie do końca jest prawda, bo teraz każdy budynek, jeżeli ma jakiegoś surowca, który się zlicza, to sięga do puli całej cywilizacji. Nie musi być on w zasięgu tego miasta. Trzeba to wszystko sprawdzić i wyjątkiem są takie surowce np. sól które nie muszą mieć zasięgu ale musi być tzw. dostęp ale nie musi być ilościowo więc żeby wybudować jakiś budynek w większości wymaga tylko tego żeby był ten surowiec dostępny w magazynie i to wszystko a nie musi być widoczności zasięgu.
+
+### Linia 4611 — AGENT
+
+Sprawdzam, gdzie w kodzie i UI nadal obowiązuje stary warunek „surowiec w zasięgu miasta” zamiast puli imperium i wyjątków typu dostęp (np. sól).
+
+[REDACTED]
+
+### Linia 4612 — AGENT
+
+[REDACTED]
+
+### Linia 4613 — AGENT
+
+[REDACTED]
+
+### Linia 4614 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:53 PM (UTC+2)</timestamp>
+
+jeszcze jedna kwestia. Część budynków ma stare wytyczne, że jakiś surowiec musi być w zasięgu a to nie do końca jest prawda, bo teraz każdy budynek, jeżeli ma jakiegoś surowca, który się zlicza, to sięga do puli całej cywilizacji. Nie musi być on w zasięgu tego miasta. Trzeba to wszystko sprawdzić i wyjątkiem są takie surowce np. sól które nie muszą mieć zasięgu ale musi być tzw. dostęp ale nie musi być ilościowo więc żeby wybudować jakiś budynek w większości wymaga tylko tego żeby był ten surowiec dostępny w magazynie i to wszystko a nie musi być widoczności zasięgu.
+
+### Linia 4615 — AGENT
+
+[REDACTED]
+
+### Linia 4616 — AGENT
+
+[REDACTED]
+
+### Linia 4617 — AGENT
+
+[REDACTED]
+
+### Linia 4618 — AGENT
+
+[REDACTED]
+
+### Linia 4619 — AGENT
+
+[REDACTED]
+
+### Linia 4620 — AGENT
+
+[REDACTED]
+
+### Linia 4621 — AGENT
+
+[REDACTED]
+
+### Linia 4622 — AGENT
+
+[REDACTED]
+
+### Linia 4623 — AGENT
+
+[REDACTED]
+
+### Linia 4624 — AGENT
+
+[REDACTED]
+
+### Linia 4625 — AGENT
+
+Wprowadzam poprawki: rozdzielenie „dostępu” od magazynu imperium, wyjątek dla Soli i aktualizacja przestarzałych tekstów.
+
+[REDACTED]
+
+### Linia 4626 — AGENT
+
+[REDACTED]
+
+### Linia 4627 — AGENT
+
+[REDACTED]
+
+### Linia 4628 — AGENT
+
+[REDACTED]
+
+### Linia 4629 — AGENT
+
+[REDACTED]
+
+### Linia 4630 — AGENT
+
+[REDACTED]
+
+### Linia 4631 — AGENT
+
+[REDACTED]
+
+### Linia 4632 — AGENT
+
+[REDACTED]
+
+### Linia 4633 — AGENT
+
+[REDACTED]
+
+### Linia 4634 — AGENT
+
+[REDACTED]
+
+### Linia 4635 — AGENT
+
+Ujednoliciłem model surowców przy budowie — zgodnie z tym, co opisałeś.
+
+## Co było nie tak
+
+Część tekstów (`buildings.json`, podpowiedzi w panelu miasta) nadal mówiła o surowcu **„w zasięgu”**, choć logika już w dużej mierze działała **imperium-wide**:
+- **koszt surowcowy** (`koszt_surowce`) → magazyn **całej cywilizacji** (suma po miastach),
+- **bramka dostępu** → aktywne źródło **gdziekolwiek w imperium** (nie zasięg tego miasta).
+
+## Co zmieniłem
+
+### 1. Logika bramki (`building-resource-gate.ts`)
+- **Sól i Złoto** = tylko **dostęp** (aktywne źródło w imperium). Sam zapas w magazynie **nie** odblokowuje budynku.
+- Pozostałe surowce magazynowane (drewno, glina, żelazo…) — bramka nadal spełnia się przez: aktywne źródło **lub** zapas w magazynie państwa **lub** konwerter (cegielnia/garncarnia).
+- Koszt ilościowy (`koszt_surowce`) — bez zmian, osobna ścieżka z magazynu państwa.
+
+### 2. Spójność imperium (`production.ts`, `cityPanel.ts`)
+- Bramki surowcowe **zawsze** patrzą na etykiety imperium, gdy są dostępne — nie wracają do zasięgu lokalnego miasta, gdy imperium ma pustą listę.
+
+### 3. Teksty w danych (`buildings.json`)
+Zaktualizowane m.in.: garncarnia, cegielnia, kuźnia żelaza, wielka kuźnia, spichlerz II oraz stolarnia/kamieniarski/kuźnia brązu — bez mylącego „w zasięgu”, z podziałem **dostęp** vs **magazyn państwa**.
+
+### 4. UI panelu miasta
+Sekcja „Surowce w zasięgu” wyjaśnia teraz, że to **podgląd mapy lokalnej**, a nie warunek budowy w innym mieście. Chipy budynków rozróżniają:
+- `Dostęp (źródło): Sól` — tylko aktywne źródło,
+- `Dostęp: Drewno` — źródło lub magazyn,
+- `Magazyn: N drewno` — koszt z puli państwa.
+
+### 5. Testy
+3 nowe przypadki w `deposit-building-gate-test.cjs` — **37/37 PASS**, typecheck OK.
+
+## Podsumowanie reguł (jak w grze)
+
+| Typ | Przykład | Warunek |
+|-----|----------|---------|
+| Koszt magazynowy | drewno 8 przy Spichlerzu | wystarczy suma w magazynie **całej cywilizacji** |
+| Dostęp magazynowy | Stolarnia, Garncarnia | aktywne źródło w imperium **lub** zapas w magazynie |
+| Tylko dostęp | Sól (Spichlerz II), Złoto (Mennica) | aktywne źródło w imperium — **bez** ilości w magazynie |
+| Lokalnie przy mieście | Port | wybrzeże/rzeka **tego** miasta (celowo) |
+
+Zmiany są w `gra/src/` i `gra/data/` — bez deployu do `gra-robocza/`. Jeśli chcesz to zobaczyć w grze, daj znać (`push` / deploy).
+
+[REDACTED]
+
+### Linia 4636 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:56 PM (UTC+2)</timestamp>
+
+po naciśnięciu na obce miasto powinna być opcja dyplomatyczna. Coś podobnego jak jedziemy na nasze miasto gdzie jest jednostka. To powinien być wybór czy chcemy informację o tym Hexie i o tym mieście? Czy chcemy wejść do dyplomacji z tą cywilizacją na której miasto nacisnęliśmy?
+
+### Linia 4637 — AGENT
+
+Sprawdzam, jak dziś działa klik w miasto (własne vs obce) i gdzie jest wejście do dyplomacji.
+
+[REDACTED]
+
+### Linia 4638 — AGENT
+
+[REDACTED]
+
+### Linia 4639 — AGENT
+
+[REDACTED]
+
+### Linia 4640 — AGENT
+
+[REDACTED]
+
+### Linia 4641 — AGENT
+
+[REDACTED]
+
+### Linia 4642 — AGENT
+
+[REDACTED]
+
+### Linia 4643 — AGENT
+
+[REDACTED]
+
+### Linia 4644 — AGENT
+
+[REDACTED]
+
+### Linia 4645 — AGENT
+
+[REDACTED]
+
+### Linia 4646 — AGENT
+
+[REDACTED]
+
+### Linia 4647 — AGENT
+
+[REDACTED]
+
+### Linia 4648 — AGENT
+
+[REDACTED]
+
+### Linia 4649 — AGENT
+
+[REDACTED]
+
+### Linia 4650 — AGENT
+
+[REDACTED]
+
+### Linia 4651 — AGENT
+
+Tworzę modal wyboru (jak przy własnym mieście) i podpinam go do kliknięcia w obce miasto.
+
+[REDACTED]
+
+### Linia 4652 — AGENT
+
+[REDACTED]
+
+### Linia 4653 — AGENT
+
+[REDACTED]
+
+### Linia 4654 — AGENT
+
+[REDACTED]
+
+### Linia 4655 — AGENT
+
+[REDACTED]
+
+### Linia 4656 — AGENT
+
+[REDACTED]
+
+### Linia 4657 — AGENT
+
+[REDACTED]
+
+### Linia 4658 — AGENT
+
+[REDACTED]
+
+### Linia 4659 — AGENT
+
+[REDACTED]
+
+### Linia 4660 — AGENT
+
+[REDACTED]
+
+### Linia 4661 — AGENT
+
+[REDACTED]
+
+### Linia 4662 — AGENT
+
+Wdrożyłem wybór przy kliknięciu **obcego miasta** — ten sam wzorzec co przy własnym mieście z jednostką.
+
+## Jak to działa
+
+Klik w **obce miasto** (cywilizacja AI, nie barbarzyńcy w trybie ataku) otwiera modal z dwoma opcjami:
+
+| Klawisz | Opcja | Efekt |
+|---------|--------|--------|
+| **1** | **Informacja** | Panel kontekstowy mapy (heks + teren + surowce + **nazwa miasta, właściciel, ludność**) |
+| **2** | **Dyplomacja** | Audiencja z cywilizacją właściciela tego miasta |
+
+- **Barbarzyńcy** — tylko informacja (dyplomacja wyłączona).
+- **Atak** — bez zmian: gdy twoja jednostka bojowa stoi **obok** i może zaatakować, nadal idzie ścieżka wojenna (oblężenie / szturm / bitwa), z potwierdzeniem wojny jeśli trzeba.
+- Zamiast starego komunikatu „ustaw jednostkę obok…” dostajesz wybór informacja / dyplomacja.
+
+## Pliki
+
+- `gra/src/ui/cityForeignPick.ts` — nowy modal (styl jak `cityUnitPick`)
+- `gra/src/main.ts` — podpięcie kliku + otwarcie audiencji
+- `gra/src/ui/hexContextTooltip.ts` — w panelu heksa widać **właściciela** i **ludność** obcego miasta
+
+Typecheck przechodzi. Żeby zobaczyć to w grze, potrzebny deploy do `gra-robocza/` — daj znać, jeśli mam to zrobić.
+
+[REDACTED]
+
+### Linia 4663 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 9:59 PM (UTC+2)</timestamp>
+
+Jeszcze jedna kwestia. Chciałbym, żeby murarstwo, garncarstwo, mistycyzm przyszedł w epoce kamienia do tier 2. Natomiast Ucznictwo i Koło do tier 3.
+
+### Linia 4664 — AGENT
+
+[REDACTED]
+
+### Linia 4665 — AGENT
+
+[REDACTED]
+
+### Linia 4666 — AGENT
+
+[REDACTED]
+
+### Linia 4667 — AGENT
+
+[REDACTED]
+
+### Linia 4668 — AGENT
+
+[REDACTED]
+
+### Linia 4669 — AGENT
+
+[REDACTED]
+
+### Linia 4670 — AGENT
+
+[REDACTED]
+
+### Linia 4671 — AGENT
+
+[REDACTED]
+
+### Linia 4672 — AGENT
+
+[REDACTED]
+
+### Linia 4673 — AGENT
+
+Aktualizuję `Poziom` w `tech.json`. „Ucznictwo” traktuję jako **Łucznictwo** — w danych nie ma technologii o tej nazwie.
+
+[REDACTED]
+
+### Linia 4674 — AGENT
+
+[REDACTED]
+
+### Linia 4675 — AGENT
+
+Zaktualizowałem pole **`Poziom`** (tier w epoce Kamień) w `gra/data/tech.json`:
+
+| Technologia | Było | Jest |
+|-------------|------|------|
+| **Garncarstwo** | tier 1 | **tier 2** |
+| **Murarstwo** | tier 1 | **tier 2** |
+| **Mistycyzm** | tier 1 | **tier 2** |
+| **Koło** | tier 2 | **tier 3** |
+| **Łucznictwo** | tier 2 | **tier 3** |
+
+**„Ucznictwo”** — w danych nie ma takiej technologii; przyjąłem, że chodziło o **Łucznictwo**. Jeśli miałeś na myśli coś innego, napisz które badanie.
+
+## Co to zmienia w grze
+
+Bramka tierów (`research.ts`) wymaga **ukończenia wszystkich badań niższego tieru** w epoce, zanim odblokujesz wyższy:
+
+**Tier 1 (Kamień)** — najpierw wszystkie cztery:
+- Obróbka drewna, Rolnictwo, Łowiectwo, Oswojenie zwierząt
+
+**Tier 2** — potem m.in.:
+- Garncarstwo, Murarstwo, Mistycyzm, Wymiana, Gospodarka wodna
+
+**Tier 3** — na końcu epoki kamienia:
+- Łucznictwo, Koło, Brązownictwo (awans do Brązu)
+
+Prerekwizyty AND (np. Brązownictwo = Garncarstwo + Murarstwo + Obróbka drewna) **bez zmian** — zmienia się tylko kolejność tierów.
+
+Testy `tech-tree-test` i `research-test`: **wszystkie zielone**.
+
+[REDACTED]
+
+### Linia 4676 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:01 PM (UTC+2)</timestamp>
+
+I wszystkie technologie powinny w TIR 1, depo C, kamienia kosztować 5 na EZ, na szybkiej grze, a na wolnej grze 20. Back to resistance of tier 1. Chodzi o to, żeby szybciej były te podstawowe technologie odkryte. Po to, żeby można było budować budynki, bo większość czasu tak naprawdę miasta nie mają co budować.
+
+### Linia 4677 — AGENT
+
+Sprawdzam, jak działa koszt badań w tier 1 epoki Kamienia i jak tempo gry mnoży PN.
+
+[REDACTED]
+
+### Linia 4678 — AGENT
+
+[REDACTED]
+
+### Linia 4679 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:01 PM (UTC+2)</timestamp>
+
+I wszystkie technologie powinny w TIR 1, depo C, kamienia kosztować 5 na EZ, na szybkiej grze, a na wolnej grze 20. Back to resistance of tier 1. Chodzi o to, żeby szybciej były te podstawowe technologie odkryte. Po to, żeby można było budować budynki, bo większość czasu tak naprawdę miasta nie mają co budować.
+
+### Linia 4680 — AGENT
+
+[REDACTED]
+
+### Linia 4681 — AGENT
+
+Ustawiam bazowy koszt 5 PN dla wszystkich badań tier 1 w epoce Kamienia — przy tempie szybkim 5, standardowym 10, długim 20.
+
+[REDACTED]
+
+### Linia 4682 — AGENT
+
+[REDACTED]
+
+### Linia 4683 — AGENT
+
+Przywracam przypadkowo usunięte pole w `Oswojenie zwierząt`.
+
+[REDACTED]
+
+### Linia 4684 — AGENT
+
+[REDACTED]
+
+### Linia 4685 — AGENT
+
+Naprawiam uszkodzony JSON w `tech.json`.
+
+[REDACTED]
+
+### Linia 4686 — AGENT
+
+[REDACTED]
+
+### Linia 4687 — AGENT
+
+[REDACTED]
+
+### Linia 4688 — AGENT
+
+**Zrobione** — wszystkie 4 technologie **tier 1, epoka Kamień** mają teraz bazowy koszt **5 PN** (przy tempie szybkiej):
+
+| Technologia | Było | Jest |
+|---|---|---|
+| Obróbka drewna | 5 | 5 |
+| Rolnictwo | 16 | **5** |
+| Łowiectwo | 20 | **5** |
+| Oswojenie zwierząt | 24 | **5** |
+
+**Efekt w grze** (mnożnik tempa z `tech-tempo.ts`):
+
+| Tempo | Koszt tier 1 Kamień |
+|---|---|
+| Szybka | **5 PN** |
+| Standardowa | **10 PN** |
+| Długa (wolna) | **20 PN** |
+
+Wyższe tiery (Garncarstwo, Murarstwo, Łucznictwo itd.) **bez zmian** — tylko podstawowe tech bez prereqów.
+
+**Cel:** szybsze odkrycie Obróbki drewna, Rolnictwa, Łowiectwa i Oswojenia → miasta szybciej dostają Stolarnię, farmy, obozy łowieckie i bydło.
+
+Testy: `tech-tree-test` 19/19, `research-test` 33/33.
+
+Zmiana jest w `gra/data/tech.json` — **bez deployu** do roboczej. Jak chcesz to zobaczyć w grze, napisz **deploy** albo **push**.
+
+[REDACTED]
+
+### Linia 4689 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-bd4901ec-908b-46fb-b3ae-e7c487726d2d.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-bb076b2b-23e7-49fe-b041-e8cef590121c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 10:02 PM (UTC+2)</timestamp>
+
+wyjaśnij mi dlaczego stolica ma takie parametry szczęścia?  A sparta takie. Praktycznie to jest ta sama cywilizacja, ta sama wielkość miasta, więc powinno być w miarę podobnie. Ale widzę, że tutaj nie ma szczęścia. Prawo jest niższe. Z czego to wynika głównie? I religia, kultura dominująca. No przecież jesteśmy w tej samej kulturze, więc też powinno mieć plus 4, a nie minus 4. KONIEC I obca kultura widzę, że jest dwa. Przecież to jest ta sama kultura grecka.  System traktuje państwa, miasta jak obcą kulturę i obcą religię, co jest jakieś dziwne. To jest błąd moim zdaniem.
+
+### Linia 4690 — AGENT
+
+Sprawdzam w kodzie, skąd biorą się modyfikatory szczęścia, prawa i kultury dla stolicy vs innych miast tej samej cywilizacji.
+
+[REDACTED]
+
+### Linia 4691 — AGENT
+
+[REDACTED]
+
+### Linia 4692 — AGENT
+
+[REDACTED]
+
+### Linia 4693 — AGENT
+
+[REDACTED]
+
+### Linia 4694 — AGENT
+
+[REDACTED]
+
+### Linia 4695 — AGENT
+
+[REDACTED]
+
+### Linia 4696 — AGENT
+
+[REDACTED]
+
+### Linia 4697 — AGENT
+
+[REDACTED]
+
+### Linia 4698 — AGENT
+
+[REDACTED]
+
+### Linia 4699 — AGENT
+
+**Krótko:** religia działa poprawnie (+4). Problem to mechanika **„udziału własnej kultury w mieście”** (`ownCultureShare`) — nie porównanie „Grek vs Grek”. U was oba miasta mają ten sam niski udział (<25%), stąd identyczne kary −4 i −2. Sparta jest gorzej głównie przez **brak Pałacu** i **brak budynków**, nie przez inną cywilizację.
+
+---
+
+## Co oznaczają te liczby
+
+### Religia +4 — OK
+Twoja religia **dominuje** w obu miastach. System daje +4 pkt szczęścia — tu nie ma błędu.
+
+### „Kultura dominująca” −4 — to NIE jest „inna cywilizacja”
+To kara za **niski udział kultury imperium w samym mieście** (`ownCultureShare`):
+
+| Udział własnej kultury | Efekt (normal) |
+|---|---|
+| 100% | **+4** |
+| 75–99% | +2 |
+| 50–74% | 0 |
+| 25–49% | −2 |
+| **poniżej 25%** | **−4** ← to widzisz |
+
+**−4 oznacza, że w mieście jest mniej niż 25% „kultury właściciela”** — mechanika zaprojektowana pod **podbite** miasta z obcą ludnością, nie pod porównanie Aten vs Sparta.
+
+### „Obca kultura” −2 — dodatkowa kara
+Gdy `ownCultureShare` **< 50%**, dokładana jest druga kara (−2). To nadal ten sam wskaźnik — **nie** osobny licznik „Grecja vs Persja”.
+
+---
+
+## Dlaczego stolica i Sparta mają **te same** kary kultury
+
+Bo **oba** miasta mają ten sam niski `ownCultureShare` — prawdopodobnie spadł przez **presję kultury z sąsiednich obcych miast** (KULT-PRESJA).
+
+W kodzie jest błąd: gdy **twoje imperium ma więcej kultury łącznie** niż sąsiad, udział własnej kultury **i tak spada** zamiast rosnąć:
+
+```1285:1289:gra/src/game/culture-religion.ts
+    if (cultS > cultT) {
+      share = clamp(share - rate, 0, 1);
+    } else if (cultT > cultS) {
+      share = clamp(share - rate, 0, 1);
+    }
+```
+
+Obie gałęzie robią to samo (spadek). Założone miasto greckie powinno mieć 100% kultury właściciela i **nie** dostawać kar „obcej kultury” — masz rację, to błąd dla miast założonych, nie podbitych.
+
+---
+
+## Skąd różnica stolica vs Sparta (przy tych samych 3 mieszk.)
+
+| Składnik | Stolica | Sparta |
+|---|---|---|
+| Kultura dominująca | −4 | −4 |
+| Religia | +4 | +4 |
+| Osiedle (3 mieszk.) | +2 | +2 |
+| Wysokie podatki (Zamożność 0%) | −1 | −1 |
+| Obca kultura | −2 | −2 |
+| **Budynki (+1/budynek)** | **+5** | **brak** |
+| **Szczęście łącznie** | **~29%** | **~0%** |
+| **Pałac → Prawo** | **+35** | **brak** |
+| Osiedle → Prawo | +14 | +14 |
+| **Prawo łącznie** | **~98%** | **~28%** |
+| **Porządek** | Spokój (~71%) | Bunt (~18%) |
+
+**Sparta nie jest karana za „obcą cywilizację”.** Jest słabsza, bo:
+1. **Brak Pałacu** — stolica ma +35 do Prawa; Sparta tylko +14 z osiedla.
+2. **Brak budynków** — stolica +5 szczęścia; Sparta 0.
+3. **Garnizon 0** w obu — wojsko w mieście podnosiłoby Prawo.
+4. **Ten sam suwak podatków** (Zamożność 0% = wysokie podatki, −1).
+
+---
+
+## Werdykt
+
+Masz rację co do sedna: **system myli „kultura lokalna po podboju” z „ta sama cywilizacja grecka”**. Dla miast **założonych** przez ciebie (nie podbitych) `ownCultureShare` powinien zostać przy **100%** → wtedy byłoby **+4** z kultury, bez „Obcej kultury”.
+
+**Naprawa** (gdy powiesz „działaj”):
+1. Miasta założone = zawsze 100% kultury właściciela (immunitet presji).
+2. Poprawka błędu w presji: silniejsze imperium **podnosi** udział, nie obniża.
+3. Ewentualnie lepsza etykieta w UI („Udział kultury imperium: X%” zamiast mylącego „obca kultura”).
+
+Chcesz, żebym to naprawił w kodzie?
+
+[REDACTED]
+
+### Linia 4700 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-fb278e0d-7d7c-46b9-8382-02cbccf94250.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-0d3cda63-e8a5-4444-9a64-ba0515865641.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 10:04 PM (UTC+2)</timestamp>
+
+stan pieniądza pokazuje mi skarbiec minus 9, czyli pewnie kosztują jakieś budynki, tylko ja o tych kosztach nic nie wiem.
+
+### Linia 4701 — AGENT
+
+Sprawdzam, skąd bierze się −9 w skarbcu i czy gra gdzieś pokazuje koszty utrzymania budynków.
+
+[REDACTED]
+
+### Linia 4702 — AGENT
+
+[REDACTED]
+
+### Linia 4703 — AGENT
+
+[REDACTED]
+
+### Linia 4704 — AGENT
+
+[REDACTED]
+
+### Linia 4705 — AGENT
+
+[REDACTED]
+
+### Linia 4706 — AGENT
+
+[REDACTED]
+
+### Linia 4707 — AGENT
+
+Masz rację co do mechaniki — **−9 to utrzymanie**, nie dochód z miast. Tylko gra **słabo to pokazuje**.
+
+## Co oznacza „Skarbiec 46 −9”
+
+Czerwone **−9** to **bilans netto na turę** (ile realnie zmieni się skarbiec po zakończeniu tury):
+
+```
+Skarbiec netto = wpływy do skarbca − utrzymanie budynków − utrzymanie wojska
+```
+
+U ciebie wpływy = **0**, utrzymanie = **9** → netto **−9**.
+
+## Dlaczego w tabeli miast wszędzie „—”
+
+W Atenach masz suwak **Skarb 0% · Nauka 100%** — cała danina (11 pkt) idzie do badań, **zero do skarbca**.
+
+Tabela w panelu imperium pokazuje tylko **ile każde miasto wpłaca do skarbca**, nie koszty utrzymania. Stąd:
+
+| Miasto | Pieniądz |
+|---|---|
+| Ateny, Sparta, Argos, Mykeny | — (zero) |
+
+Na dole jest dopisek: *„Utrzymanie budynków i wojska schodzi ze skarbca imperium osobno”* — ale **bez liczb**, więc łatwo to przeoczyć.
+
+## Skąd bierze się −9
+
+Każdy zbudowany budynek ma koszt utrzymania w `buildings.json` (zwykle **1–3 złota/turę** za budynek; Pałac droższy). Koszt schodzi **z całego skarbca imperium**, niezależnie od suwaków w miastach.
+
+Przy 4 miastach i kilku budynkach w stolicy (Pałac, Świątynia itd.) **~9 złota/turę** to realistyczna suma.
+
+**Nie myl z „Korupcja −9%”** w panelu miasta — to osobna kara do daniny, nie ten sam −9 przy skarbcu.
+
+## Gdzie to dziś zobaczyć w grze
+
+| Gdzie | Co widać |
+|---|---|
+| **Górny pasek → najechanie na Skarbiec** | Rozbicie: danina/budynki, handel, **utrzymanie budynków**, **utrzymanie jednostek**, razem netto |
+| **Panel miasta → Budynki** | Przy każdym budynku: `−X/t` utrzymania |
+| **Panel imperium → Skarbiec** | Tylko dochód per miasto + dopisek — **bez listy kosztów** ← tu jest luka |
+
+## Co zrobić, żeby przestać tracić złoto
+
+1. **Przesuń suwak Skarb** w miastach (np. 20–30%) — żeby danina trafiała do skarbca, nie tylko do nauki.
+2. **Sprawdź budynki w stolicy** — Pałac i droższe budynki kosztują najwięcej.
+3. **Najedź na Skarbiec** w górnym pasku — zobaczysz, ile idzie na budynki, a ile na wojsko.
+
+---
+
+**Podsumowanie:** −9 to prawie na pewno **utrzymanie budynków (i ewentualnie jednostek)** przy **zerowym wpływie** do skarbca (100% nauka). To nie błąd liczenia — **brakuje czytelnego rozbicia w panelu imperium** (jak jest przy Pracy z utrzymaniem ulepszeń).
+
+Chcesz, żebym dopisał w panelu Skarbca wiersze typu „Utrzymanie budynków: −7 · jednostek: −2 · netto: −9”?
+
+[REDACTED]
+
+### Linia 4708 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:05 PM (UTC+2)</timestamp>
+
+I w pieniądzach też powinna być informacja skarbcu państwa ile kosztują nas budynki a ile kosztują nas jednostki i jaka jest suma brutto po opłaceniu tego.  W mieście też powinna być informacja. ale kosztów, które dotyczą tylko miasta i przychodów, które dotyczą tylko miasta.
+
+### Linia 4709 — AGENT
+
+Dodam rozbicie kosztów utrzymania w panelu skarbca imperium oraz przychody i koszty tylko dla danego miasta w panelu miasta.
+
+[REDACTED]
+
+### Linia 4710 — AGENT
+
+[REDACTED]
+
+### Linia 4711 — AGENT
+
+[REDACTED]
+
+### Linia 4712 — AGENT
+
+[REDACTED]
+
+### Linia 4713 — AGENT
+
+[REDACTED]
+
+### Linia 4714 — AGENT
+
+[REDACTED]
+
+### Linia 4715 — AGENT
+
+[REDACTED]
+
+### Linia 4716 — AGENT
+
+[REDACTED]
+
+### Linia 4717 — AGENT
+
+[REDACTED]
+
+### Linia 4718 — AGENT
+
+Implementuję rozbicie kosztów w panelu imperium i bilans pieniędzy per miasto.
+
+[REDACTED]
+
+### Linia 4719 — AGENT
+
+[REDACTED]
+
+### Linia 4720 — AGENT
+
+[REDACTED]
+
+### Linia 4721 — AGENT
+
+[REDACTED]
+
+### Linia 4722 — AGENT
+
+[REDACTED]
+
+### Linia 4723 — AGENT
+
+[REDACTED]
+
+### Linia 4724 — AGENT
+
+[REDACTED]
+
+### Linia 4725 — AGENT
+
+[REDACTED]
+
+### Linia 4726 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:05 PM (UTC+2)</timestamp>
+
+I w pieniądzach też powinna być informacja skarbcu państwa ile kosztują nas budynki a ile kosztują nas jednostki i jaka jest suma brutto po opłaceniu tego.  W mieście też powinna być informacja. ale kosztów, które dotyczą tylko miasta i przychodów, które dotyczą tylko miasta.
+
+### Linia 4727 — AGENT
+
+[REDACTED]
+
+### Linia 4728 — AGENT
+
+[REDACTED]
+
+### Linia 4729 — AGENT
+
+[REDACTED]
+
+### Linia 4730 — AGENT
+
+[REDACTED]
+
+### Linia 4731 — AGENT
+
+[REDACTED]
+
+### Linia 4732 — AGENT
+
+[REDACTED]
+
+### Linia 4733 — AGENT
+
+[REDACTED]
+
+### Linia 4734 — AGENT
+
+[REDACTED]
+
+### Linia 4735 — AGENT
+
+[REDACTED]
+
+### Linia 4736 — AGENT
+
+[REDACTED]
+
+### Linia 4737 — AGENT
+
+[REDACTED]
+
+### Linia 4738 — AGENT
+
+[REDACTED]
+
+### Linia 4739 — AGENT
+
+[REDACTED]
+
+### Linia 4740 — AGENT
+
+[REDACTED]
+
+### Linia 4741 — AGENT
+
+Dokończyłem wpięcie danych w `main.ts` — UI skarbca i miasta ma teraz pełne liczby z silnika.
+
+### Skarbiec imperium (panel Pieniądz / chip 💰)
+Widzisz rozbicie **na turę**:
+- **Wpływy brutto** (danina + budynki)
+- **Handel ze szlaków**
+- **Utrzymanie budynków**
+- **Utrzymanie jednostek**
+- **Netto skarbiec**
+
+To samo w tooltipie po najechaniu na chip oraz w panelu imperium (zakładka ekonomii).
+
+### Miasto (panel grodu)
+Sekcja **„Bilans pieniędzy miasta”** pokazuje tylko to, co dotyczy **tego grodu**:
+- pieniądz brutto (pola + budynki)
+- mnożnik zamożności W
+- handel ze szlaków
+- wpływ do skarbca imperium (po suwakach)
+- utrzymanie budynków tego miasta
+- utrzymanie garnizonu na hexie miasta
+
+Karta szczegółów 💰 w mieście ma też osobną sekcję „Ten gród — przychody i koszty lokalne”.
+
+### Uwaga gameplayowa
+Utrzymanie budynków i wojska **schodzi ze skarbca imperium**, nie z daniny miasta — dlatego w tabeli imperium „Do skarbca” to wpływ miasta, a koszty utrzymania są w bilansie u góry.
+
+`npx tsc --noEmit` przechodzi bez błędów. Żeby zobaczyć to w grze, trzeba zbudować i wdrożyć do `gra-robocza/` — napisz **deploy**, jeśli mam to zrobić.
+
+[REDACTED]
+
+### Linia 4742 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:09 PM (UTC+2)</timestamp>
+
+podczas bronienia się w rozgrywce ręcznej, powtarza się historia, która była wcześniej podczas ataku, mianowicie nie działają przyciski formacji. Nawet jak się zmienia z dystansu na piechotę, z piechoty na dystans, to się nic nie zmienia. Poza tym jednostki startują w sposób rozwalony po całym polu. Nie można ich wszystkich zaznaczyć, trzeba kombinować.
+
+### Linia 4743 — AGENT
+
+Sprawdzam kod ręcznej bitwy — formacje przy obronie i startowy układ jednostek.
+
+[REDACTED]
+
+### Linia 4744 — AGENT
+
+[REDACTED]
+
+### Linia 4745 — AGENT
+
+[REDACTED]
+
+### Linia 4746 — AGENT
+
+[REDACTED]
+
+### Linia 4747 — AGENT
+
+[REDACTED]
+
+### Linia 4748 — AGENT
+
+[REDACTED]
+
+### Linia 4749 — AGENT
+
+[REDACTED]
+
+### Linia 4750 — AGENT
+
+[REDACTED]
+
+### Linia 4751 — AGENT
+
+[REDACTED]
+
+### Linia 4752 — AGENT
+
+[REDACTED]
+
+### Linia 4753 — AGENT
+
+[REDACTED]
+
+### Linia 4754 — AGENT
+
+[REDACTED]
+
+### Linia 4755 — AGENT
+
+[REDACTED]
+
+### Linia 4756 — AGENT
+
+[REDACTED]
+
+### Linia 4757 — AGENT
+
+Wprowadzam poprawki dla obrony: formacje, startowy układ i zaznaczanie.
+
+[REDACTED]
+
+### Linia 4758 — AGENT
+
+[REDACTED]
+
+### Linia 4759 — AGENT
+
+[REDACTED]
+
+### Linia 4760 — AGENT
+
+[REDACTED]
+
+### Linia 4761 — AGENT
+
+[REDACTED]
+
+### Linia 4762 — AGENT
+
+[REDACTED]
+
+### Linia 4763 — AGENT
+
+[REDACTED]
+
+### Linia 4764 — AGENT
+
+[REDACTED]
+
+### Linia 4765 — AGENT
+
+[REDACTED]
+
+### Linia 4766 — AGENT
+
+[REDACTED]
+
+### Linia 4767 — AGENT
+
+[REDACTED]
+
+### Linia 4768 — AGENT
+
+[REDACTED]
+
+### Linia 4769 — AGENT
+
+[REDACTED]
+
+### Linia 4770 — AGENT
+
+[REDACTED]
+
+### Linia 4771 — AGENT
+
+Znalazłem przyczynę — to ten sam błąd co wcześniej przy ataku, tylko że naprawa obejmowała wyłącznie stronę atakującą. Przy obronie gracz steruje `this.def`, a kod formacji i zaznaczenia nadal patrzył na `this.atk`.
+
+### Co było nie tak
+1. **Formacje (Dystans / Piechota / Linie)** — przyciski szukały jednostek w `this.atk`, więc przy obronie nic nie robiły.
+2. **Rozstrzelony start** — obrońca lądował przy linii bitwy (środek mapy), zamiast w swojej strefie deploy (prawa połowa).
+3. **Zaznaczanie** — pierścienie, roster i „Wszystkie” nie widziały jednostek obrońcy.
+
+### Co zmieniłem (`battleScene.ts`)
+- Formacje, linie, konnica → `_playerRoster()` (twoja strona: atk lub def).
+- Start obrońcy → `DEPLOY_DEF_FRONT_COL` w prawej połowie pola (jak atak po lewej).
+- Zaznaczanie, roster, reset → działają na stronie gracza, nie tylko na atakującym.
+- Reset rozstawienia → `_resetDeployPlayer()` (działa też przy obronie).
+
+### Jak sprawdzić
+Wejdź w obronę ręczną (AI atakuje):
+1. Jednostki powinny startować **zwarte w prawej połowie**.
+2. **Wszystkie** / box-select zaznacza całą twoją armię.
+3. **Formacja F1/F2/F3** i **Linie** fizycznie przestawiają żetony.
+
+Żeby zobaczyć to w grze, trzeba zbudować i wdrożyć do `gra-robocza/` — napisz **deploy**, jeśli mam to zrobić.
+
+[REDACTED]
+
+### Linia 4772 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:14 PM (UTC+2)</timestamp>
+
+zaznaczyłem też obronę a nie atak a jednostki się nie broniły tylko atakowały czyli po prostu w ogóle nie działają ustalenia priorytetów i zasad który ma się armia kierować ani grupowania ani nic. W samym ataku już, gdy atakujemy jest prawidłowo, ale podczas obrony polu jest nie okej.
+
+### Linia 4773 — AGENT
+
+Sprawdzam logikę walki ręcznej przy obronie — priorytety, rozkazy i grupowanie prawdopodobnie nadal zakładają, że gracz jest atakującym.
+
+[REDACTED]
+
+### Linia 4774 — AGENT
+
+[REDACTED]
+
+### Linia 4775 — AGENT
+
+[REDACTED]
+
+### Linia 4776 — AGENT
+
+[REDACTED]
+
+### Linia 4777 — AGENT
+
+[REDACTED]
+
+### Linia 4778 — AGENT
+
+[REDACTED]
+
+### Linia 4779 — AGENT
+
+[REDACTED]
+
+### Linia 4780 — AGENT
+
+[REDACTED]
+
+### Linia 4781 — AGENT
+
+[REDACTED]
+
+### Linia 4782 — AGENT
+
+[REDACTED]
+
+### Linia 4783 — AGENT
+
+[REDACTED]
+
+### Linia 4784 — AGENT
+
+[REDACTED]
+
+### Linia 4785 — AGENT
+
+Wprowadzam poprawki: logika bitwy nadal zakładała, że gracz jest atakującym — kierunek marszu, rozkazy ataku i tryb AUTO.
+
+[REDACTED]
+
+### Linia 4786 — AGENT
+
+[REDACTED]
+
+### Linia 4787 — AGENT
+
+[REDACTED]
+
+### Linia 4788 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:18 PM (UTC+2)</timestamp>
+
+Start multitasking
+
+### Linia 4789 — AGENT
+
+Dokończę poprawki obrony w tle — część zmian została przerwana.
+
+[REDACTED]
+
+### Linia 4790 — AGENT
+
+Włączyłem tryb multitask i w tle dokańczam poprawki obrony w bitwie ręcznej.
+
+**Diagnoza:** silnik bitwy w wielu miejscach zakładał, że gracz zawsze jest **atakującym** (`this.atk`). Przy obronie (`deployPlayerSide: 'def'`) psuło to:
+
+- taktykę **OBRONA** (jednostki szły do przodu zamiast trzymać linię),
+- priorytety celów i rozkazy ataku (szukały wroga w `this.def` zamiast w `this.atk`),
+- grupowanie i roster (tylko armia atakującego),
+- tryb AUTO (doktryna działała tylko dla strony `atk`).
+
+**Już wprowadzone** (częściowo): kierunek marszu zależny od strony, obrona bez szturmu na dystans, blokada linii dla obrońcy, poprawione cele ataku.
+
+**W toku w tle:** dokończenie przerwanych zmian (przełącznik Ręczny/AUTO, licznik rosteru, ramki grup) + `typecheck`.
+
+Dam znać, gdy będzie gotowe do testu w grze.
+
+[REDACTED]
+
+### Linia 4791 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:19 PM (UTC+2)</timestamp>
+
+jednostki pojawiają się totalnie po bokach.
+
+### Linia 4792 — AGENT
+
+[REDACTED]
+
+### Linia 4793 — MACIEJ
+
+<mcp_meta_tools>
+You have access to MCP (Model Context Protocol) tools through `GetMcpTools` and `CallMcpTool`.
+
+## MCP Tool Discovery and Invocation
+
+Use `GetMcpTools` to discover tool schemas, then `CallMcpTool` to invoke them. Aim to minimize round-trips: ideally one `GetMcpTools` call followed by one `CallMcpTool` call.
+
+If the user mentions, references, or links to a product or service that corresponds to an available MCP server, and the request likely depends on information from that service, proactively inspect that MCP server before answering. Do not wait for the user to explicitly ask you to use MCP. If you are unsure which server matches, use `GetMcpTools` with a pattern based on the service name.
+
+`GetMcpTools` supports four modes:
+
+1. `{"server":"<id>"}`: returns full input schemas and full descriptions for every tool on that server. Preferred when you know which server to use.
+2. `{"server":"<id>","toolName":"<name>"}`: returns the full schema and full description for one tool.
+3. `{"pattern":"<regex>"}`: searches tool and server names across all servers using RE2 syntax (no backreferences, lookahead, or lookbehind). Use when you're unsure which server has the tool you need.
+4. No arguments: returns a catalog of all servers with tool names and short descriptions. Only use this if you have no idea which server or tool to look for — in most cases, prefer fetching by server or pattern instead.
+
+Pattern-search and catalog results shorten long descriptions, marked by a trailing "... [truncated]"; server and single-tool lookups always return the complete description.
+
+MANDATORY - Always call `GetMcpTools` to discover a tool's schema before invoking it with `CallMcpTool`. If you already know the server, go directly to it rather than listing the full catalog first.
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+Available MCP servers:
+
+<mcp_meta_tool_servers>
+<mcp_meta_tool_server name="cursor-app-control" tools="move_agent_to_root, move_agent_to_cloned_root, create_project, rename_chat, cursor_dialog, open_resource, open_automation" serverUseInstructions="Controls the Cursor application itself (workspace root, projects, opening resources and automations, user rules, chat title). See each tool description for usage." />
+<mcp_meta_tool_server name="cursor-ide-browser" tools="browser_navigate, browser_snapshot, browser_click, browser_mouse_click_xy, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, browser_drag, browser_get_bounding_box, browser_highlight, browser_tabs, browser_cdp, browser_take_screenshot, browser_lock" serverUseInstructions="The cursor-ide-browser MCP server provides a Cursor-owned browser tab plus a raw Chrome DevTools Protocol command tool.
+
+CORE WORKFLOW:
+1. Start by understanding the user's goal and what success looks like on the page.
+2. Use browser_tabs with action "list" to inspect open tabs and URLs before acting.
+3. Use browser_navigate to create or navigate the target tab. Omit the position parameter for background automation so focus is preserved.
+4. Use browser_lock before longer automation on an existing tab, then browser_lock with action "unlock" when finished.
+5. Use browser_snapshot for accessibility context and browser_take_screenshot for visual verification.
+6. Use browser_click, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, and browser_drag for page interactions.
+7. Use browser_highlight and browser_get_bounding_box for visual grounding and coordinate diagnostics.
+8. Use browser_cdp for page inspection, profiling, runtime evaluation, DOM/CSS queries, and performance data.
+
+AVOID RABBIT HOLES:
+1. Do not repeat the same failing action more than once without new evidence such as a fresh snapshot, a different ref, a changed page state, or a clear new hypothesis.
+2. IMPORTANT: If four attempts fail or progress stalls, stop acting and report what you observed, what blocked progress, and the most likely next step.
+3. Prefer gathering evidence over brute force. If the page is confusing, use browser_snapshot, browser_take_screenshot, or CDP inspection before trying more actions.
+4. If you encounter a blocker such as login, passkey/manual user interaction, permissions, captchas, destructive confirmations, missing data, or an unexpected state, stop and report it instead of improvising repeated actions.
+5. Do not get stuck in wait-action-wait loops. Every retry should be justified by something newly observed.
+
+CRITICAL - Lock/unlock workflow:
+1. browser_lock requires an existing browser tab - you CANNOT call browser_lock with action: "lock" before browser_navigate
+2. Correct order: browser_navigate -> browser_lock({ action: "lock" }) -> (interactions) -> browser_lock({ action: "unlock" })
+3. If a browser tab already exists (check with browser_tabs list), call browser_lock with action: "lock" FIRST before any interactions
+4. Only call browser_lock with action: "unlock" when completely done with ALL browser operations for this turn
+
+IMPORTANT - Waiting strategy:
+When waiting for page changes, prefer short CDP polling loops with Runtime.evaluate, DOM queries, Page lifecycle signals, or browser_snapshot checks rather than a single long wait.
+
+CDP USAGE:
+- Use browser_cdp with a DevTools Protocol method and params object, for example Runtime.evaluate, DOM.getDocument, CSS.getComputedStyleForNode, Profiler.start/stop, Performance.getMetrics, Log.enable, and Network.enable.
+- Do not use browser_cdp with CDP Input.* methods. They are denied because they are focus-sensitive in Electron webviews and can route input to Cursor UI instead of the browser page.
+- Use browser_click, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, and browser_drag for clicks, typing, filling inputs, selecting options, keyboard actions, scrolling, and drag-and-drop.
+- Use Runtime.evaluate for advanced DOM-scoped interactions that the dedicated browser tools do not cover.
+- For profiling, call Profiler.enable, Profiler.start, reproduce the behavior, then Profiler.stop. The profile is saved to a file and returned as a log_file; read that file only when you need to inspect details.
+- For JavaScript evaluation, prefer Runtime.evaluate with returnByValue when possible.
+- Some browser-wide or sensitive CDP methods are denied, especially cookie, storage, permission, download, target-management, filesystem-backed file-input commands, system-level commands, and CDP navigation/history navigation commands.
+- Large CDP responses are saved to files instead of being inlined. Prefer using the returned file path over immediately stuffing large payloads into context; read focused sections only when needed.
+
+VISION:
+- browser_take_screenshot attaches an image result that the model can inspect. CDP Page.captureScreenshot returns data inside JSON and should not replace browser_take_screenshot when visual verification is needed.
+
+NOTES:
+- browser_snapshot returns snapshot YAML and is the main source of truth for page structure.
+- Refs are opaque handles tied to the latest browser_snapshot for that tab.
+- Iframe content is not accessible - only elements outside iframes can be interacted with.
+- When you stop to report a blocker, include the current page, the target you were trying to reach, the blocker you observed, and the best next action. If the blocker requires manual user interaction, ask the user to take over at that point rather than assuming it in advance." />
+<mcp_meta_tool_server name="plugin-notion-workspace-notion" />
+<mcp_meta_tool_server name="plugin-datadog-datadog" />
+<mcp_meta_tool_server name="plugin-slack-slack" tools="slack_send_message, slack_schedule_message, slack_add_reaction, slack_create_conversation, slack_create_canvas, slack_update_canvas, slack_search_public, slack_search_public_and_private, slack_search_channels, slack_search_users, slack_read_channel, slack_read_thread, slack_read_canvas, slack_read_user_profile, slack_list_channel_members, slack_read_file, slack_send_message_draft, slack_search_emojis, slack_get_reactions" />
+</mcp_meta_tool_servers>
+
+## MCP Resource Access
+
+You also have access to MCP resources via `FetchMcpResource`.
+If a relevant server is marked as needing authentication, or if an MCP tool call fails with an authentication/authorization error, call `mcp_auth` for that server, then inspect that server again and retry the original request if appropriate. Do not call `mcp_auth` just because it is listed, and do not repeatedly call it if authentication did not fix the failure. Do not call `mcp_auth` in parallel; authenticate only one server at a time.
+</mcp_meta_tools>
+
+### Linia 4794 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:19 PM (UTC+2)</timestamp>
+
+jednostki pojawiają się totalnie po bokach.
+
+### Linia 4795 — AGENT
+
+[REDACTED]
+
+### Linia 4796 — AGENT
+
+Rozumiem — jednostki lądują wzdłuż boków pola zamiast zwartej formacji w strefie deploy.
+
+**Prawdopodobna przyczyna:** przy obronie `_deploySpreadRank` rozkłada żetony **na całą wysokość mapy** (od góry do dołu) w jednej kolumnie — wygląda to jak „linia po boku”, a nie jak armia.
+
+W tle poprawiam:
+- **klastrowanie wokół środka pola** (jak przy ataku), zamiast rozciągania na całą wysokość,
+- **kotwicę kolumny obrońcy** przy właściwej krawędzi strefy deploy (prawa połowa, front w stronę wroga),
+- dokończenie wcześniejszych poprawek taktyki/grupowania przy obronie.
+
+Dam znać, gdy będzie gotowe do sprawdzenia w grze.
+
+[REDACTED]
+
+### Linia 4797 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-2bc9397a-77f6-40b1-87d2-22ca4a3ab483.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-8a7ea824-8fe6-42ef-9929-83a233f92008.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Sunday, Jul 26, 2026, 10:20 PM (UTC+2)</timestamp>
+
+I w ogóle pomylone są chyba terminy wygranej, przegranej, ponieważ jako obrońca wygrałem, a system twierdzi, że przegrałem, chociaż zabijem wroga a co śmieszniejsze, po wyjściu na mapę okazuje się, że moje jednostki dalej są i są wygrane, a jednostka barbarzyńcy zniknęła.
+
+### Linia 4798 — AGENT
+
+To wygląda na odwróconą logikę wyniku przy obronie — mapa ma rację, ekran bitwy nie. Sprawdzam, gdzie przy `deployPlayerSide: 'def'` zamieniają się wygrana i przegrana.
+
+[REDACTED]
+
+### Linia 4799 — AGENT
+
+Masz rację — to wygląda na błąd w **ekranie wyniku bitwy**, nie w samej grze.
+
+**Co się dzieje:**
+- **Mapa** po powrocie wie, że wygrałeś: twoje jednostki zostały, barbarzyńca zniknął.
+- **Ekran bitwy** pokazuje „Porażka” i złe statystyki strat — prawdopodobnie nadal traktuje gracza jak **atakującego** (`atk`), a ty jesteś po stronie **obrońcy** (`def`).
+
+**Prawdopodobna przyczyna:** przy `deployPlayerSide: 'def'` logika końca bitwy i etykiety „Zwycięstwo/Porażka” nie są odwrócone względem twojej strony, więc UI pokazuje odwrotny wynik niż faktyczny stan mapy.
+
+Poprawiam to teraz — wynik, etykiety i liczenie strat mają iść z `_playerRoster()` / `_enemyRoster()`, a nie na sztywno z `atk`/`def`. Dam znać, gdy będzie gotowe do sprawdzenia.
+
+[REDACTED]
+
+### Linia 4800 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:20 PM (UTC+2)</timestamp>
+
+w momencie, gdy jest się w dogmatycznym rozkrzynięciu bitwy, ale będzie chciało się przejść do ręcznej bitwy i chce się wskazać swoje działania, to niestety nie działa w ogóle możliwość wskazywania ataku ani czego. W ogóle nic nie działa.
+
+### Linia 4801 — AGENT
+
+Kolejny błąd przy obronie: przejście z auto-bitwy do ręcznej nie pozwala wydawać rozkazów. Sprawdzam, co blokuje interakcję po przełączeniu.
+
+[REDACTED]
+
+### Linia 4802 — AGENT
+
+To pasuje do tego samego wzorca co wcześniejsze bugi przy obronie: po przełączeniu z auto-bitwy na ręczną gra nadal traktuje cię jak atakującego (`atk`), więc kliknięcia, zaznaczenie i rozkazy nie trafiają w twoje jednostki po stronie `def`.
+
+**Co sprawdzam:**
+- przejście auto → ręczna (`_toggleManualMode`)
+- obsługa kliknięć i zaznaczenia jednostek gracza
+- wydawanie rozkazów (atak, ruch) po przełączeniu
+- ewentualne blokowanie inputu podczas fazy auto
+
+Poprawka ma iść przez `_playerRoster()` / `_playerControlSide()`, żeby przy obronie wszystko działało na twojej stronie. Dam znać, gdy będzie gotowe do sprawdzenia.
+
+[REDACTED]
+
+### Linia 4803 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:20 PM (UTC+2)</timestamp>
+
+jeszcze jedna kwestia: Budynki jeżeli są puli do budowy najpierw powinny się pojawiać te które możemy wybudować u samej góry a poniżej dopiero te które nie możemy wybudować bo nam czegoś brakuje: surowców dostępu itd czy badań.
+
+### Linia 4804 — AGENT
+
+Sortowanie listy budynków: na górze te, które można wybudować, poniżej zablokowane. Sprawdzam, gdzie budowa jest renderowana w panelu miasta.
+
+[REDACTED]
+
+### Linia 4805 — AGENT
+
+Dobry pomysł — w puli budowy najpierw powinny być budynki dostępne, a dopiero pod nimi zablokowane.
+
+**Plan:**
+- **Góra listy** — budynki, które możesz wybudować teraz (surowce, badania, dostęp do złoża itd.)
+- **Dół listy** — zablokowane (brakuje czegoś)
+- Wewnątrz każdej grupy zostaje obecne sortowanie (kategoria, epoka itd.)
+
+Zmiana dotyczy tylko kolejności wyświetlania w panelu miasta, nie logiki budowy. Dam znać, gdy będzie gotowe.
+
+[REDACTED]
+
+### Linia 4806 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:21 PM (UTC+2)</timestamp>
+
+I nie wiem czy już mówiłem ale w ogóle stół negocjacji nie działa. Od razu akceptuję propozycję którą chcieliśmy przedyskutować czy wynegocjować coś więcej
+
+### Linia 4807 — AGENT
+
+Stół negocjacji akceptuje propozycję od razu zamiast pozwolić na dyskusję — sprawdzam przepływ dyplomacji i obsługę kliknięć w panelu negocjacji.
+
+[REDACTED]
+
+### Linia 4808 — AGENT
+
+To brzmi jak błąd w obsłudze kliknięć — przycisk „negocjuj” albo otwarcie stołu negocjacji prawdopodobnie wywołuje **akceptację** zamiast trybu **kontrpropozycji**.
+
+**Co sprawdzam:**
+- panel dyplomacji i stół negocjacji
+- rozróżnienie: akceptuj vs negocjuj vs kontrpropozycja
+- czy kliknięcie nie trafia w zły handler (np. `accept` zamiast `openNegotiation`)
+
+**Oczekiwane zachowanie:** otwarcie stołu = dyskusja i możliwość zmiany warunków, bez natychmiastowej akceptacji propozycji.
+
+Dam znać, gdy poprawka będzie gotowa.
+
+[REDACTED]
+
+### Linia 4809 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:21 PM (UTC+2)</timestamp>
+
+Wypisz mi koszty utrzymania wszystkich budynków epoki brązu oraz koszty utrzymania wszystkich jednostek epoki brązu, bo coś mi tu nie pasuje.
+
+### Linia 4810 — AGENT
+
+Zbieram z danych gry koszty utrzymania budynków i jednostek epoki brązu.
+
+[REDACTED]
+
+### Linia 4811 — AGENT
+
+Zbieram z `buildings.json`, danych jednostek i logiki utrzymania pełną listę kosztów epoki brązu — budynki i jednostki osobno, z jednostkami (PN, żywność itd.).
+
+Jak tylko będę miał zestawienie, wkleję tabele tutaj — wtedy łatwiej sprawdzimy, co się nie zgadza.
+
+[REDACTED]
+
+### Linia 4813 — MACIEJ
+
+<timestamp>Sunday, Jul 26, 2026, 10:23 PM (UTC+2)</timestamp>
+
+Pytanie, czy nie możemy dostroić tak, żeby gór było troszeczkę więcej, nie 12 procent, tylko powiedzmy 18.
+
+### Linia 4814 — AGENT
+
+Sprawdzam, gdzie w generatorze mapy ustawiony jest procent gór (12%), żeby podnieść go do 18%.
+
+[REDACTED]
+
+### Linia 4815 — AGENT
+
+Tak — da się podnieść udział gór z **12%** do **18%** w generatorze mapy.
+
+Szukam stałej w kodzie generatora i ustawiam **18%**. Żeby zobaczyć efekt na mapie, trzeba będzie **nową grę** (Ctrl+F5 + Nowa gra) — stara mapa się nie przeliczy.
+
+Dam znać, gdzie dokładnie to siedzi i czy testy generatora przechodzą po zmianie.
+
+[REDACTED]

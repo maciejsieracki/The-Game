@@ -51,6 +51,8 @@ export interface EndDetails1EParams {
   /** np. „zwycięstwo Greków" — kolor dobierany wg playerWon. */
   resultLabel: string;
   playerWon: boolean;
+  /** Strona gracza — do poprawnego podświetlenia zwycięzcy w kolumnach ATK/OBR. */
+  playerSide?: 'atk' | 'def';
   atk: EndDetailsSideData;
   def: EndDetailsSideData;
 }
@@ -290,8 +292,9 @@ export function showEndDetails1E(
     overflow: 'hidden',
     minHeight: '0',
   });
-  body.appendChild(buildSideColumn('atk', p.atk, p.playerWon));
-  body.appendChild(buildSideColumn('def', p.def, !p.playerWon));
+  const playerSide = p.playerSide ?? 'atk';
+  body.appendChild(buildSideColumn('atk', p.atk, playerSide === 'atk' ? p.playerWon : !p.playerWon));
+  body.appendChild(buildSideColumn('def', p.def, playerSide === 'def' ? p.playerWon : !p.playerWon));
   panel.appendChild(body);
 
   back.appendChild(panel);

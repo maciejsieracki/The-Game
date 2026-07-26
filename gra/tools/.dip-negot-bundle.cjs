@@ -4648,7 +4648,7 @@ var tech_default = {
     szybka: 1,
     standardowa: 2,
     dluga: 4,
-    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1); dawniejszy globalny x2 jest juz w JSON (B-RESEARCH-COST-MODEL 2026-07-24). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=24, szybka -> 24 PN; standardowa -> 48 PN; dluga -> 96 PN. Obr\xF3bka drewna/Murarstwo: 5/10/20 PN."
+    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Tier 1 epoki Kamienia (Maciej 2026-07-26): bazowo 5 PN \u2192 szybka 5 \xB7 standardowa 10 \xB7 dluga 20."
   },
   technologie: [
     {
@@ -4667,7 +4667,7 @@ var tech_default = {
     {
       Technologia: "Garncarstwo",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": "Dost\u0119p do glina",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -4680,7 +4680,7 @@ var tech_default = {
     {
       Technologia: "Murarstwo",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": "Dost\u0119p do kamie\u0144",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -4700,8 +4700,8 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Farma, Tarasy uprawne",
-      "Koszt nauki": 16,
-      Uwagi: "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie"
+      "Koszt nauki": 5,
+      Uwagi: "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie; tier-1 Kamie\u0144: 5/10/20 PN (szybka/std/dluga)"
     },
     {
       Technologia: "\u0141owiectwo",
@@ -4713,13 +4713,13 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Ob\xF3z \u0142owiecki",
-      "Koszt nauki": 20,
-      Uwagi: "B1-Q2A Maciej 2026-06-29"
+      "Koszt nauki": 5,
+      Uwagi: "B1-Q2A Maciej 2026-06-29; tier-1 Kamie\u0144: 5/10/20 PN (szybka/std/dluga)"
     },
     {
       Technologia: "\u0141ucznictwo",
       Epoka: "Kamie\u0144",
-      Poziom: 2,
+      Poziom: 3,
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u0141owiectwo",
@@ -4738,14 +4738,14 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "krowa/byk, owce, bydlo, lama",
       "Odblokowuje budynek": null,
-      "Koszt nauki": 24,
-      Uwagi: null,
+      "Koszt nauki": 5,
+      Uwagi: "tier-1 Kamie\u0144: 5/10/20 PN (szybka/std/dluga)",
       "Odblokowuje ulepszenie terenu": "Byd\u0142o, Owce, Lama"
     },
     {
       Technologia: "Mistycyzm",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -4784,7 +4784,7 @@ var tech_default = {
     {
       Technologia: "Ko\u0142o",
       Epoka: "Kamie\u0144",
-      Poziom: 2,
+      Poziom: 3,
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Oswojenie zwierz\u0105t",
@@ -9255,7 +9255,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "Drewno w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    wymagania: "Dost\u0119p do Drewna w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
     techUnlock: "Obr\xF3bka drewna",
     koszt_surowce: {
@@ -9294,7 +9294,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "Kamie\u0144 w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    wymagania: "Dost\u0119p do Kamienia w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     uwagi: "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     techUnlock: "Murarstwo",
     koszt_surowce: {
@@ -9333,7 +9333,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Ruda (mied\u017A) w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    wymagania: "Dost\u0119p do Rudy (mied\u017A) w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%). Nazwa wyswietlana zmieniona z 'Kuznia' na 'Ku\u017Ania br\u0105zu' (Maciej 2026-07-25) -- identyfikator 'kuznia' BEZ ZMIAN (wsteczna zgodnosc zapisow). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Kuznia zelaza, nie sama z epoka. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc (kolejny tier w kolejnej epoce), obecnie martwe.",
     techUnlock: "Br\u0105zownictwo",
     koszt_surowce: {
@@ -9625,7 +9625,7 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 2,
     przyrostUtrzymania: 0,
-    wymagania: "Upgrade ze Spichlerza I + dost\u0119p do Soli w imperium (w\u0142asne z\u0142o\u017Ce ALBO zapas Soli w puli pa\u0144stwa)",
+    wymagania: "Upgrade ze Spichlerza I + dost\u0119p do Soli w imperium (aktywne \u017Ar\xF3d\u0142o \u2014 warzelnia na z\u0142o\u017Cu lub wybrze\u017Cu)",
     uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupe\u0142nione o bramk\u0119 Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     techUnlock: "Warzelnia soli",
     koszt_surowce: {
@@ -9665,7 +9665,7 @@ var buildings_default = [
     przyrostKosztu: 8,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "glina w zasiegu",
+    wymagania: "Dost\u0119p do Gliny w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas gliny w magazynie pa\u0144stwa); koszt drewna z magazynu pa\u0144stwa",
     uwagi: "ABC-6: glina+drewno\u2192ceramika (paliwo usuniete 2026-07-23). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
@@ -9704,7 +9704,7 @@ var buildings_default = [
     przyrostKosztu: 9,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "glina + drewno",
+    wymagania: "Dost\u0119p do Gliny w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas gliny w magazynie pa\u0144stwa); koszt drewna i kamienia z magazynu pa\u0144stwa",
     uwagi: "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
@@ -10286,7 +10286,7 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Ku\u017Ani br\u0105zu; zelazo w zasiegu",
+    wymagania: "Upgrade Ku\u017Ani br\u0105zu; dost\u0119p do \u017Belaza w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     wymaganySurowiec: "zelazo",
     uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia brazu/Wielka Kuznia, max +45%); wymaga dostepu do zelaza. NAPRAWIONE OGNIWO (decyzja Maciej 2026-07-25): dopisano upgradeFrom='kuznia' -- Ku\u017Ania \u017Celaza zast\u0119puje teraz Ku\u017Ani\u0119 br\u0105zu (jak Pa\u0142ac), zamiast sta\u0107 obok niej w mie\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Wielka Kuznia. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "Hutnictwo \u017Celaza",
@@ -10327,7 +10327,7 @@ var buildings_default = [
     przyrostKosztu: 18,
     utrzymanie: 4,
     przyrostUtrzymania: 2,
-    wymagania: "upgrade Ku\u017Ani \u017Celaza; stal w zasi\u0119gu",
+    wymagania: "Upgrade Ku\u017Ani \u017Celaza; dost\u0119p do Stali w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
     wymaganySurowiec: "stal",
     uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze. LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce. Koszt surowcowy dodany wg SPEC-KOSZTY-SUROWCOWE-BUDYNKOW (epoka klasyczna, poza zasiegiem dzisiejszej gry o 3 epokach): drewno+cegla.",
     techUnlock: "Obr\xF3bka \u017Celaza",

@@ -766,6 +766,8 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
         : 'Proponujemy stałą umowę handlową — otwiera i utrzymuje szlaki handlowe między naszymi miastami.';
     case 'zaproponuj_sojusz':
       return 'Proponujemy pełny sojusz — wspólna obrona i wsparcie militarnie.';
+    case 'zaproponuj_pakt':
+      return `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur — żadna strona nie zaatakuje drugiej.`;
     case 'zaproponuj_pokoj':
       return 'Proponujemy zawarcie pokoju i zakończenie wojny.';
     case 'zadaj_trybut':
@@ -776,6 +778,10 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
       return 'Wypowiadamy wojnę — nasze wojska są gotowe do walki.';
     case 'zaproponuj_handel_surowiec': {
       const zaplataLabel = cmd.zaplataTyp === 'praca' ? 'Praca' : '¤';
+      if (cmd.kierunek === 'zakup') {
+        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} pakiet(y)/turę`
+          + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
+      }
       return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} pakiet(y)/turę`
         + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
     }
@@ -807,6 +813,13 @@ export function aiCommandToPendingProposal(
         id: makeDealId('pending-sojusz', turn, fromOwnerId, toOwnerId),
         actionId: 'sojusz_pelny',
         payload: {},
+      };
+    case 'zaproponuj_pakt':
+      return {
+        ...base,
+        id: makeDealId('pending-nap', turn, fromOwnerId, toOwnerId),
+        actionId: 'nap',
+        payload: { turns: cmd.turns ?? 15 },
       };
     case 'zaproponuj_handel': {
       const goldOnce = cmd.goldOnce ?? 0;
@@ -845,18 +858,28 @@ export function aiCommandToPendingProposal(
     }
     case 'zaproponuj_handel_surowiec': {
       if (cmd.pakietyPerTura <= 0) return null;
+      const isBuy = cmd.kierunek === 'zakup';
       return {
         ...base,
         id: makeDealId('pending-handelsurowiec', turn, fromOwnerId, toOwnerId),
         actionId: 'handel',
-        payload: {
-          giveItems: [{ typ: 'surowiec_ilosc', id: cmd.surowiecKey, ilosc: cmd.pakietyPerTura }],
-          receiveItems: cmd.zaplataPerTura > 0
-            ? [{ typ: cmd.zaplataTyp, id: cmd.zaplataTyp, ilosc: cmd.zaplataPerTura }]
-            : undefined,
-          resourceTradeMode: 'per_turn',
-          turns: cmd.turns,
-        },
+        payload: isBuy
+          ? {
+              giveItems: cmd.zaplataPerTura > 0
+                ? [{ typ: cmd.zaplataTyp, id: cmd.zaplataTyp, ilosc: cmd.zaplataPerTura }]
+                : undefined,
+              receiveItems: [{ typ: 'surowiec_ilosc', id: cmd.surowiecKey, ilosc: cmd.pakietyPerTura }],
+              resourceTradeMode: 'per_turn',
+              turns: cmd.turns,
+            }
+          : {
+              giveItems: [{ typ: 'surowiec_ilosc', id: cmd.surowiecKey, ilosc: cmd.pakietyPerTura }],
+              receiveItems: cmd.zaplataPerTura > 0
+                ? [{ typ: cmd.zaplataTyp, id: cmd.zaplataTyp, ilosc: cmd.zaplataPerTura }]
+                : undefined,
+              resourceTradeMode: 'per_turn',
+              turns: cmd.turns,
+            },
       };
     }
     default:

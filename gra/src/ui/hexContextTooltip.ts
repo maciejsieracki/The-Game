@@ -256,6 +256,10 @@ export interface HexContextTooltipInput {
   cityName?: string | null;
   /** Miasto-państwo klastra — dopisek w etykiecie (Maciej 2026-07-07). */
   cityIsCityState?: boolean;
+  /** Etykieta cywilizacji właściciela (obce miasto). */
+  cityOwnerLabel?: string | null;
+  /** Ludność miasta (gdy znana z odkrycia). */
+  cityPopulation?: number | null;
   currentEra?: number;
   /**
    * Decyzja 81=A: etykieta Danina/Podatek dla plonu "handel" TEGO heksu,
@@ -332,6 +336,12 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   if (cityName) {
     const label = formatEntityDisplayName({ baseName: cityName, isCityState: input.cityIsCityState });
     lines.push(subLine('Miasto', esc(label)));
+    if (input.cityOwnerLabel) {
+      lines.push(subLine('Właściciel', esc(input.cityOwnerLabel)));
+    }
+    if (input.cityPopulation != null) {
+      lines.push(subLine('Ludność', String(Math.round(input.cityPopulation))));
+    }
   }
 
   return lines.join('');

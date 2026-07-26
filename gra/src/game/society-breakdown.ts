@@ -300,6 +300,15 @@ function podzialLuksus(city?: CityPodzialHandlu): number {
   return p.procentLuksus ?? DEFAULT_PODZIAL_HANDLU.procentLuksus;
 }
 
+/** Etykieta w rozpisce Szczęścia — „Kultura”, nie mylące „obca kultura” (to osobna mechanika podboju). */
+function cultureHappinessLineLabel(haKult: number, ownCultureShare?: number): string {
+  if (haKult < 0 && ownCultureShare !== undefined && ownCultureShare < 0.5) {
+    const pct = Math.round(ownCultureShare * 100);
+    return `Kultura (udział własnej ${pct}%)`;
+  }
+  return 'Kultura';
+}
+
 // ---------------------------------------------------------------------------
 // Happiness breakdown
 // ---------------------------------------------------------------------------
@@ -318,7 +327,7 @@ export function computeHappinessBreakdown(
     lines.push({ id: 'budynki', label: 'Budynki (+1/budynek)', value: input.buildingZadowolenie });
   }
   if (input.haKult) {
-    lines.push({ id: 'kultura', label: 'Kultura dominująca', value: input.haKult });
+    lines.push({ id: 'kultura', label: cultureHappinessLineLabel(input.haKult, input.ownCultureShare), value: input.haKult });
   }
   if (input.haRel) {
     lines.push({ id: 'religia', label: 'Religia', value: input.haRel });
@@ -366,10 +375,6 @@ export function computeHappinessBreakdown(
   if (input.atWar) {
     const v = pickSociety(szBlock, 'szczescie_kara_wojna', diff, -3);
     if (v) lines.push({ id: 'wojna', label: 'Wojna', value: v });
-  }
-  if (input.ownCultureShare !== undefined && input.ownCultureShare < 0.5) {
-    const v = pickSociety(szBlock, 'szczescie_kara_obca_kultura', diff, -1);
-    if (v) lines.push({ id: 'obca_kultura', label: 'Obca kultura', value: v });
   }
   if (input.foreignReligionDominant) {
     const v = pickSociety(szBlock, 'szczescie_kara_obca_religia', diff, -2);

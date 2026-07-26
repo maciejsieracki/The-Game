@@ -29,11 +29,6 @@ var miasto_params_default = {
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
-  budynek_mnoznik_poziomu: {
-    wartosc: 1.1,
-    jednostka: "x / poziom",
-    opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
-  },
   jednostka_koszt_ludnosci: {
     wartosc: 0,
     jednostka: "ludnosc",
@@ -102,7 +97,17 @@ var miasto_params_default = {
   bonus_obrona_mur_proc: {
     wartosc: 200,
     jednostka: "% Obrony",
-    opis: "Miasto Z MUREM daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje game/siege.ts + battleScene (defensa miasta). Miasto bez muru = brak tego bonusu."
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -266,7 +271,91 @@ function cityManpowerSnapshot(city, epoka, regenMult = 1, maxMult = 1) {
     werbMaxPrzyPelnejPuli: kosztJednostki > 0 ? Math.floor(manpowerBiezacy / kosztJednostki) : 0
   };
 }
-function tryDeductUnitSpawnCosts(city, epoka, popCost = 1, maxMult = 1, typeId) {
+function canAffordUnitManpower(city, epoka, maxMult = 1, typeId) {
+  const cost = unitManpowerCostForType(typeId, epoka, maxMult);
+  if (cost <= 0) return true;
+  return cityManpowerCurrent(city, epoka, maxMult) >= cost;
+}
+function empireManpowerCurrent(cities, ownerId, epoka, maxMult = 1) {
+  return empirePoborTotals(cities, ownerId, epoka, maxMult).rekruci;
+}
+function deductManpowerFromEmpire(cities, ownerId, epoka, amount, maxMult = 1) {
+  if (amount <= 0) return true;
+  if (empireManpowerCurrent(cities, ownerId, epoka, maxMult) < amount) return false;
+  let remaining = amount;
+  const ownerCities = cities.filter((c) => c.ownerId === ownerId);
+  const sorted = [...ownerCities].sort((a, b) => {
+    const curDiff = cityManpowerCurrent(b, epoka, maxMult) - cityManpowerCurrent(a, epoka, maxMult);
+    return curDiff !== 0 ? curDiff : a.id.localeCompare(b.id);
+  });
+  for (const c of sorted) {
+    if (remaining <= 0) break;
+    const cur = cityManpowerCurrent(c, epoka, maxMult);
+    const take = Math.min(cur, remaining);
+    if (take > 0) {
+      c.manpower = cur - take;
+      remaining -= take;
+    }
+  }
+  return remaining <= 0;
+}
+function refundManpowerToEmpire(cities, ownerId, epoka, amount, maxMult = 1) {
+  if (amount <= 0) return;
+  let remaining = amount;
+  const ownerCities = cities.filter((c) => c.ownerId === ownerId);
+  const sorted = [...ownerCities].sort((a, b) => {
+    const roomA = cityManpowerMax(a.population, epoka, maxMult) - cityManpowerCurrent(a, epoka, maxMult);
+    const roomB = cityManpowerMax(b.population, epoka, maxMult) - cityManpowerCurrent(b, epoka, maxMult);
+    const roomDiff = roomB - roomA;
+    return roomDiff !== 0 ? roomDiff : a.id.localeCompare(b.id);
+  });
+  for (const c of sorted) {
+    if (remaining <= 0) break;
+    const max = cityManpowerMax(c.population, epoka, maxMult);
+    const cur = cityManpowerCurrent(c, epoka, maxMult);
+    const room = max - cur;
+    if (room <= 0) continue;
+    const add = Math.min(room, remaining);
+    c.manpower = cur + add;
+    remaining -= add;
+  }
+}
+function canAffordUnitManpowerEmpire(cities, ownerId, _recruitingCity, epoka, _popCost = 0, maxMult = 1, typeId) {
+  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
+  if (kosztManpower <= 0) return true;
+  return empireManpowerCurrent(cities, ownerId, epoka, maxMult) >= kosztManpower;
+}
+function tryDeductUnitSpawnCostsEmpire(cities, recruitingCityId, ownerId, epoka, _popCost = 0, maxMult = 1, typeId) {
+  const recruitingCity = cities.find((c) => c.id === recruitingCityId && c.ownerId === ownerId);
+  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
+  const recruitingMp = recruitingCity ? cityManpowerCurrent(recruitingCity, epoka, maxMult) : 0;
+  const recruitingPop = recruitingCity?.population ?? 0;
+  if (!recruitingCity) {
+    return {
+      ok: false,
+      population: 0,
+      manpower: 0,
+      kosztManpower,
+      reason: "brak_manpower"
+    };
+  }
+  if (kosztManpower > 0 && !deductManpowerFromEmpire(cities, ownerId, epoka, kosztManpower, maxMult)) {
+    return {
+      ok: false,
+      population: recruitingPop,
+      manpower: recruitingMp,
+      kosztManpower,
+      reason: "brak_manpower"
+    };
+  }
+  return {
+    ok: true,
+    population: recruitingPop,
+    manpower: cityManpowerCurrent(recruitingCity, epoka, maxMult),
+    kosztManpower
+  };
+}
+function tryDeductUnitSpawnCosts(city, epoka, popCost = 0, maxMult = 1, typeId) {
   const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
   const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (cur < kosztManpower) {
@@ -323,10 +412,16 @@ module.exports = {
   spendManpower,
   formatPopulationAbs,
   tryDeductUnitSpawnCosts,
+  canAffordUnitManpower,
+  tryDeductUnitSpawnCostsEmpire,
+  canAffordUnitManpowerEmpire,
+  empireManpowerCurrent,
   tickManpowerRegen,
   manpowerRegenGain,
   civManpowerRegenMult,
   civManpowerMaxMult,
   civManpowerMults,
-  empirePoborTotals
+  empirePoborTotals,
+  deductManpowerFromEmpire,
+  refundManpowerToEmpire
 };

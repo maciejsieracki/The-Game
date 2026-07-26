@@ -8,7 +8,7 @@
  *   - manpowerMax = ludki × manpowerNaLudka[epoka]  (= 10% ludnoscAbs)
  *   - koszt 1 jednostki = manpowerNaJednostke[epoka] (= manpowerNaLudka; 1 ludek = 1 jednostka przy pełnej puli)
  *
- * Faza 2: odejmowanie przy rekrutacji (tryDeductUnitSpawnCosts).
+ * Faza 2: odejmowanie przy rekrutacji z puli imperium (tryDeductUnitSpawnCostsEmpire).
  * Faza 2b: odnowa co turę (tickManpowerRegen) — parametry w miasto-params.json.
  * Faza 3: uzupełnianie wojska z puli — osobny batch.
  */
@@ -306,6 +306,138 @@ export function canAffordUnitManpower(
   return cityManpowerCurrent(city, epoka, maxMult) >= cost;
 }
 
+/** Suma bieżącej puli rekrutów imperium (wszystkie miasta ownera). */
+export function empireManpowerCurrent(
+  cities: ReadonlyArray<Pick<City, 'ownerId' | 'population' | 'manpower'>>,
+  ownerId: number,
+  epoka: number,
+  maxMult = 1,
+): number {
+  return empirePoborTotals(cities, ownerId, epoka, maxMult).rekruci;
+}
+
+type CityRecruitFields = Pick<City, 'id' | 'ownerId' | 'population' | 'manpower'>;
+
+/** Ściąga Manpower z puli imperium (suma city.manpower) — bez wiązania z miastem rekrutującym. */
+export function deductManpowerFromEmpire(
+  cities: CityRecruitFields[],
+  ownerId: number,
+  epoka: number,
+  amount: number,
+  maxMult = 1,
+): boolean {
+  if (amount <= 0) return true;
+  if (empireManpowerCurrent(cities, ownerId, epoka, maxMult) < amount) return false;
+  let remaining = amount;
+  const ownerCities = cities.filter(c => c.ownerId === ownerId);
+  const sorted = [...ownerCities].sort((a, b) => {
+    const curDiff = cityManpowerCurrent(b, epoka, maxMult) - cityManpowerCurrent(a, epoka, maxMult);
+    return curDiff !== 0 ? curDiff : a.id.localeCompare(b.id);
+  });
+  for (const c of sorted) {
+    if (remaining <= 0) break;
+    const cur = cityManpowerCurrent(c, epoka, maxMult);
+    const take = Math.min(cur, remaining);
+    if (take > 0) {
+      c.manpower = cur - take;
+      remaining -= take;
+    }
+  }
+  return remaining <= 0;
+}
+
+/** Zwraca Manpower do puli imperium (rozdziela po miastach z wolnym cap). */
+export function refundManpowerToEmpire(
+  cities: CityRecruitFields[],
+  ownerId: number,
+  epoka: number,
+  amount: number,
+  maxMult = 1,
+): void {
+  if (amount <= 0) return;
+  let remaining = amount;
+  const ownerCities = cities.filter(c => c.ownerId === ownerId);
+  const sorted = [...ownerCities].sort((a, b) => {
+    const roomA = cityManpowerMax(a.population, epoka, maxMult)
+      - cityManpowerCurrent(a, epoka, maxMult);
+    const roomB = cityManpowerMax(b.population, epoka, maxMult)
+      - cityManpowerCurrent(b, epoka, maxMult);
+    const roomDiff = roomB - roomA;
+    return roomDiff !== 0 ? roomDiff : a.id.localeCompare(b.id);
+  });
+  for (const c of sorted) {
+    if (remaining <= 0) break;
+    const max = cityManpowerMax(c.population, epoka, maxMult);
+    const cur = cityManpowerCurrent(c, epoka, maxMult);
+    const room = max - cur;
+    if (room <= 0) continue;
+    const add = Math.min(room, remaining);
+    c.manpower = cur + add;
+    remaining -= add;
+  }
+}
+
+/**
+ * Werb jednostki: koszt tylko z puli Manpower imperium (suma po miastach).
+ * Ludność miasta (obywatele) NIE maleje przy rekrutacji — spada wyłącznie przy zakładaniu miasta.
+ */
+export function canAffordUnitManpowerEmpire(
+  cities: ReadonlyArray<CityRecruitFields>,
+  ownerId: number,
+  _recruitingCity: CityRecruitFields,
+  epoka: number,
+  _popCost = 0,
+  maxMult = 1,
+  typeId?: string,
+): boolean {
+  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
+  if (kosztManpower <= 0) return true;
+  return empireManpowerCurrent(cities, ownerId, epoka, maxMult) >= kosztManpower;
+}
+
+/** Odejmuje koszt rekrutów z puli imperium. Mutuje `cities`. */
+export function tryDeductUnitSpawnCostsEmpire(
+  cities: CityRecruitFields[],
+  recruitingCityId: string,
+  ownerId: number,
+  epoka: number,
+  _popCost = 0,
+  maxMult = 1,
+  typeId?: string,
+): UnitSpawnDeduction {
+  const recruitingCity = cities.find(c => c.id === recruitingCityId && c.ownerId === ownerId);
+  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
+  const recruitingMp = recruitingCity
+    ? cityManpowerCurrent(recruitingCity, epoka, maxMult)
+    : 0;
+  const recruitingPop = recruitingCity?.population ?? 0;
+  if (!recruitingCity) {
+    return {
+      ok: false,
+      population: 0,
+      manpower: 0,
+      kosztManpower,
+      reason: 'brak_manpower',
+    };
+  }
+  if (kosztManpower > 0 && !deductManpowerFromEmpire(cities, ownerId, epoka, kosztManpower, maxMult)) {
+    return {
+      ok: false,
+      population: recruitingPop,
+      manpower: recruitingMp,
+      kosztManpower,
+      reason: 'brak_manpower',
+    };
+  }
+
+  return {
+    ok: true,
+    population: recruitingPop,
+    manpower: cityManpowerCurrent(recruitingCity, epoka, maxMult),
+    kosztManpower,
+  };
+}
+
 export type UnitSpawnBlockReason = 'brak_manpower' | 'brak_ludnosci';
 
 export interface UnitSpawnDeduction {
@@ -317,13 +449,13 @@ export interface UnitSpawnDeduction {
 }
 
 /**
- * Przy werbie jednostki: −1 ludek (popCost) oraz −kosztJednostki[epoka] z puli Manpower.
- * Zwraca ok:false gdy manpower niewystarczający — jednostka NIE powinna powstać.
+ * Werb jednostki (pojedyncze miasto — testy / legacy): tylko −koszt Manpower z puli miasta.
+ * W grze używaj tryDeductUnitSpawnCostsEmpire (pula imperium).
  */
 export function tryDeductUnitSpawnCosts(
   city: Pick<City, 'population' | 'manpower'>,
   epoka: number,
-  popCost = 1,
+  popCost = 0,
   maxMult = 1,
   typeId?: string,
 ): UnitSpawnDeduction {

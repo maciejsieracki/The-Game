@@ -128,6 +128,15 @@
 | **D-DISPLAY-MIASTO** | 2026-07-07 | Dopisek `· miasto-państwo` dla państw klastra (nie imperium) | D | 🟢 **WDROŻONA** | `display-names.ts` · test 6/6 | `docs/decyzje/D-display-miasto-panstwo-2026-07-07.md` |
 | **B-KOLORY-CYW** | 2026-07-07 | **B** — `kolorHex` per cywilizacja (mapa, jednostki, dyplomacja, HUD) | B→F | 🟢 **WDROŻONA** | `civ-visual.ts` · robocza md5 `ee4355af…` · test 54/54 | obwódki frakcji w `e2c5c711…` |
 | **B-SPIC-Q1** | 2026-07-23 | **C** — Spichlerz II: cap 150 + bufor 70% + Zd/Sz lokalnie (wszystko naraz) | B | 🟡 **ZAPISANA** | `docs/decyzje/B-SPIC-2026-07-23.md` · `SUROWCE-KANON-2026-07-22.md` | **NIE** B-KULT-REL — korekta routingu |
+| **C-AI-WOJNA-Q1** | 2026-07-26 | **A** — dyplomacja przed ruchem AI; wypowiedzenie w tej turze, atak od następnej (karencja N1) | D+F | 🟢 **WDROŻONA** | `ai.ts` · `main.ts` · `ai-war-gate-test.cjs` 11/11 | `docs/decyzje/C-AI-WOJNA-EKSPANSJA-2026-07-26.md` |
+| **C-AI-EKSP-Q1** | 2026-07-26 | **A** — max 1 miasto/turę/cyw., gdy Praca+ludność i dobry hex (panel budowy, nie osadnik) | D+F | 🟢 **WDROŻONA** | `planCityFounding` · `foundCityAt` · ai-test T6/T7D | j.w. |
+| **C-AI-EKSP-Q2** | 2026-07-26 | **A** — najpierw konsolidacja klastra (miasta-państwa), potem nowe miasta | D+F | 🟢 **WDROŻONA** | `clusterStateTargets` blokuje founding · T6d/T6f | j.w. |
+| **C-AI-PAKIET-Q1** | 2026-07-26 | **C** — pełny pakiet: błędy + ekonomia + cel „być #1 w Mocy" | D+F | 🟢 **WDROŻONA** | `docs/decyzje/C-AI-ROZWOJ-PAKIET-2026-07-26.md` · ai-test 231/231 | bez zmiany bonusów liczbowych |
+| **C-AI-PAKIET-Q2** | 2026-07-26 | **C** — eksploracja/agresja tylko przy wysokiej sklonnoscDoPodboju; spokojne = patrol | D+F | 🟢 **WDROŻONA** | `civAiProfile` · skip patrol 4e gdy ≥4 | z `civ-ai.json` |
+| **C-AI-PAKIET-Q3** | 2026-07-26 | **C** — nie ruszać bonusów trudności w ai-params; tylko logika | D+F | 🟢 **WDROŻONA** | ai-params.json bez zmian | 0%/+10%/+25% zostaje |
+| **C-AI-MOC-Q1** | 2026-07-26 | **B** — co 3 tury sprawdź Moc; nie #1 → miasta+ekonomia; sklonnoscDoPodboju≥4 → agresja | D+F | 🟢 **WDROŻONA** | `powerRank` · `chooseCityProduction` boost | power-ranking.ts |
+| **C-AI-MOC-Q2** | 2026-07-26 | **A** — cel wojskowy: sąsiad ≤8 hex od terytorium, preferuj słabszego | D+F | 🟢 **WDROŻONA** | `isEnemyNearOwnTerritory` · `powerOfOwner` | |
+| **C-AI-MOC-Q3** | 2026-07-26 | **A** — próg ulepszeń terenu AI zostaje 30 Pracy | D+F | 🟢 **WDROŻONA** | `AI_IMPROVEMENT_PRACA_SURPLUS=30` bez zmian | |
 | **B-SPIC-Q2** | 2026-07-23 | **A** — bonus soli tylko miasto ze Spichlerzem II | B | 🟡 **ZAPISANA** | j.w. | |
 | **B-SPIC-Q3** | 2026-07-23 | **A** — budynki lokalnie; surowce z aktywnego dostępu imperium | B | 🟡 **ZAPISANA** | j.w. | |
 | **B-SPIC-Q4** | 2026-07-23 | **A** — upgrade Spichlerz II przez kolejkę produkcji | B | 🟡 **ZAPISANA** | j.w. · handoff `B-SPIC-do-INTEGRATOR_*` | |

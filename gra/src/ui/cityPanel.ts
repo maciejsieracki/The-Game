@@ -31,7 +31,13 @@
  * Mini-podgląd jednostek: unitMiniPreview.ts (Three.js — buildUnitModel).
  */
 
-import { attachHoverDetail, attachInteractiveDetail, setHoverDetailDocks, disposeHoverDetailDock } from './hoverDetailDock';
+import {
+  attachHoverDetail,
+  attachInteractiveDetail,
+  setHoverDetailDocks,
+  disposeHoverDetailDock,
+  showHoverDetailNow,
+} from './hoverDetailDock';
 import { naukaCostSuffix } from './naukaLabel';
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
 import {
@@ -61,6 +67,7 @@ import {
   setPaused,
   buildingProductionItem,
   buildingLevelForEpoch,
+  buildingEffectAtLevel,
   buildingWorkCost,
   itemCost,
   splitPraca,
@@ -75,7 +82,17 @@ import {
   type ProductionItem,
   type CivBonusLite,
   type AvailabilityContext,
+  isBuildingSupersededByUpgrade,
 } from '../game/production';
+import {
+  buildingRequiredActiveLabels,
+  CITY_BUILDING_PREREQ,
+  cityBuildingPrereqMet,
+  WATER_ACCESS_BUILDING_IDS,
+  empireResourceLabelSatisfied,
+  isAccessOnlyResourceLabel,
+} from '../game/building-resource-gate';
+import { empireHasKopalniaMiedzi, PIEC_HUTNICZY_BUILDING_ID } from '../game/braz-access';
 import {
   buildingStockCost,
   unitStockCost,
@@ -130,8 +147,10 @@ import {
   type Difficulty,
 } from '../game/turn-economy';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
+import { axialToWorld, HEX_R } from '../render/hexutil';
 import { tileYield } from '../game/economy';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
+import { buildingUpkeep } from '../game/economy-upkeep';
 import {
   type TradeRoute,
 } from '../game/trade-routes';
@@ -234,6 +253,8 @@ export interface CityPanelConfig {
    * Brak hooka → cityPanel sumuje plony miast gracza (prototyp 1 miasto).
    */
   getEmpireHud?: (ownerId: number) => EmpireHudSnap | null;
+  /** Bilans pieniędzy tego miasta (przychody i koszty lokalne). */
+  getCityMoneySnap?: (cityId: string) => CityMoneySnap | null;
   /** Engine performs the actual rush-buy spend + completion. */
   onRushBuy?: (cityId: string, item: ProductionItem, koszt: number) => void;
   /** Called after the queue changes so the engine can react (e.g. refresh HUD). */
@@ -253,6 +274,10 @@ export interface CityPanelConfig {
     borderRadius: number;
     thresholds: number[];
     zrodla?: { nazwa: string; wartosc: number }[];
+    ownerCultureLabel?: string;
+    ownCultureSharePct?: number;
+    kulturaMix?: { label: string; pct: number; isOwner: boolean }[];
+    cultureConverting?: boolean;
   } | null;
   /** B4-Q2=A — religia w sekcji z kulturą. */
   getReligionState?: (cityId: string) => {
@@ -262,6 +287,8 @@ export interface CityPanelConfig {
     /** Nowi wierni szerzeni z tego miasta / ostatnia tura (wyjście). */
     przyrostWiernych?: number;
     zrodla?: { nazwa: string; wartosc: number }[];
+    stateReligion?: string | null;
+    sklad?: { name: string; pct: number; count: number }[];
   } | null;
   /** B5-Q1=A — zapasy państwa (global per owner); suwak split jest per miasto (city.procentRozwoj). */
   getEmpireFoodState?: (ownerId: number) => EmpireFoodState | null;
@@ -275,6 +302,8 @@ export interface CityPanelConfig {
   getOrderYieldMults?: (cityId: string) => OrderYieldMults | null;
   /** EKONOMIA — snapshot rekrutów (Manpower) per miasto. */
   getManpowerSnapshot?: (cityId: string) => CityManpowerSnapshot | null;
+  /** Suma rekrutów (Manpower) imperium — werb jednostki zużywa tę pulę. */
+  getEmpireRekruciTotal?: (ownerId: number) => number;
   getEmpireFoodTick?: (ownerId: number) => EmpireFoodTick | null;
   onCityFoodSplitChange?: (cityId: string, procentRozwoj: number) => void;
   /** Okolica 4C — profile + ręczna korekta. */
@@ -768,6 +797,30 @@ export interface EmpireHudSnap {
   religionRate?: number;
   stateReligion?: string | null;
   religionSharePct?: number;
+  /** Rozbicie skarbca imperium (jak HUD — bilans netto / turę). */
+  bogactwoWplywyBrutto?: number;
+  bogactwoHandel?: number;
+  bogactwoUtrzymanieBudynkow?: number;
+  bogactwoUtrzymanieJednostek?: number;
+  bogactwoRate?: number;
+}
+
+/** Bilans pieniędzy jednego miasta — tylko przychody/koszty tego grodu. */
+export interface CityMoneySnap {
+  /** Wpływ do skarbca imperium z tego miasta / turę. */
+  doSkarbca: number;
+  /** Pieniądz brutto (pola + budynki) przed mnożnikiem zamożności. */
+  pieniadzBrutto: number;
+  /** Mnożnik zamożności W tej tury. */
+  wealthMnoznik: number;
+  /** Dochód ze szlaków handlowych (doliczany do skarbca). */
+  handelZeSzlakow: number;
+  /** Utrzymanie budynków w tym mieście / turę. */
+  utrzymanieBudynkow: number;
+  /** Utrzymanie jednostek na heksie miasta (garnizon) / turę. */
+  utrzymanieGarnizonu: number;
+  /** Nauka / turę z tego miasta (informacyjnie). */
+  nauka: number;
 }
 function isCapital(city: City): boolean {
   const all = cfg.getCities?.();
@@ -1184,6 +1237,8 @@ const CITY_PANEL_ICON_GLYPH_EM = 4.5;
 const CITY_PANEL_ICON_RAIL_VERT_EM = CITY_PANEL_ICON_GLYPH_EM * 0.5;
 /** Ile wierszy list (budynki, jednostki) widocznych bez przewijania — reszta w scrollu. */
 const LIST_SCROLL_VISIBLE = 3;
+/** Kompaktowy wiersz katalogu budowy (ikona + nazwa + Buduj). */
+const LIST_ROW_HEIGHT_COMPACT = 2.35;
 /** Kolejka rekrutacji w panelu Produkcja (lewa kolumna). */
 const RECRUIT_QUEUE_VISIBLE = 7;
 /** Kolejka budowy (pozycje po bieżącym projekcie) — max widocznych wierszy. */
@@ -1410,6 +1465,12 @@ function ensureStyles(): void {
 .civ-cs .handel-chip-grid .handel-card-skarb{border-color:rgba(232,216,138,0.18);}
 .civ-cs .handel-chip-grid .handel-card-nauka{border-color:rgba(90,155,212,0.25);background:rgba(90,155,212,0.04);}
 .civ-cs .handel-chip-grid .handel-card-zam{border-color:rgba(232,216,138,0.18);}
+.civ-cs .city-money-grid{display:flex;flex-direction:column;gap:0.22em;font-size:0.72em;}
+.civ-cs .city-money-row{display:flex;justify-content:space-between;gap:0.5em;padding:0.18em 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.civ-cs .city-money-lbl{color:#8a8070;flex:1;}
+.civ-cs .city-money-val{font-weight:600;white-space:nowrap;}
+.civ-cs .city-money-val.green{color:#78c95a;}
+.civ-cs .city-money-val.red{color:#e07070;}
 .civ-cs .handel-korupcja-chip{border-style:dashed;opacity:0.92;background:rgba(200,64,64,0.04)!important;border-color:rgba(200,64,64,0.25)!important;}
 .civ-cs .handel-w4-sliders{display:flex;flex-direction:column;gap:0.38em;max-width:100%;margin-top:0.12em;}
 .civ-cs .handel-w4-sliders .slider-row{margin-bottom:0;}
@@ -1478,7 +1539,7 @@ function ensureStyles(): void {
 .civ-cs .bld-upg{flex:0 0 auto;margin-left:auto;padding:0 0.35em;background:transparent;border:none;color:var(--gold);cursor:pointer;font-size:0.95em;line-height:1;}
 .civ-cs .bld-upg:hover{color:#fff;}
 .civ-cs .bld-group{margin-bottom:0.22em;}
-.civ-cs .bld-group>.bld,.civ-cs .bld-group>.bld-group-empty-note{margin-left:0.15em;}
+.civ-cs .bld-group>.bld,.civ-cs .bld-group>.bld-owned-row,.civ-cs .bld-group>.bld-group-empty-note{margin-left:0.15em;}
 .civ-cs .bld-group-h{cursor:pointer;font-size:0.82em;font-weight:700;color:var(--fg);padding:0.16em 0.3em;
   background:var(--panel2);border:1px solid var(--border);border-radius:3px;margin-bottom:0.16em;user-select:none;}
 .civ-cs .bld-group-h:hover{color:var(--gold);}
@@ -1731,20 +1792,22 @@ function ensureStyles(): void {
   background:linear-gradient(180deg,#0c121c,#060a10);border-bottom:1px solid rgba(212,175,90,0.32);}
 .civ-v-resource-bar.civ-v-resource-bar-w3{display:flex;align-items:center;justify-content:center;gap:0.65rem;
   padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
-.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(96vw,1120px);gap:0.38rem;padding:0 0.25rem;box-sizing:border-box;margin:0 auto;}
+.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(96vw,1120px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
 .civ-v-top-line{display:flex;align-items:center;justify-content:center;gap:0.65rem;flex-wrap:wrap;width:100%;}
-.civ-v-exit-top-row{display:flex;flex-direction:column;align-items:center;gap:0.28em;pointer-events:auto;flex-shrink:0;}
-.civ-v-exit-top-row .civ-v-exit-map-btn{font-size:0.82em;padding:0.48em 1.05em 0.48em 0.85em;}
-.civ-v-exit-top-row .civ-v-exit-foot-hint{font-size:0.62em;color:#8b97a8;text-align:center;white-space:nowrap;}
+.civ-v-exit-top-row{display:flex;flex-direction:column;align-items:center;gap:0.15em;pointer-events:auto;flex-shrink:0;}
+.civ-v-exit-top-row .civ-v-exit-map-btn{font-size:0.76em;padding:0.38em 0.9em 0.38em 0.72em;}
+.civ-v-exit-top-row .civ-v-exit-foot-hint{font-size:0.58em;color:#8b97a8;text-align:center;white-space:nowrap;}
 .civ-v-w3-bar-spacer{display:none;}
 .civ-v-w3-chips-city{margin-left:0;flex:0 0 auto;width:fit-content;max-width:100%;min-width:0;}
 .civ-v-w3-city-badge{display:inline-flex;align-items:center;gap:0.55rem;padding:0.45rem 1.05rem 0.45rem 0.75rem;
   border-radius:24px;background:linear-gradient(180deg,#151b26,#0a0d14);border:1.5px solid #e8d88a;
   box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;max-width:100%;}
-.civ-v-w3-city-nav{background:none;border:none;color:#e8d88a;font-size:1.35em;line-height:1;padding:0 0.15em;
-  cursor:pointer;opacity:0.85;font-family:inherit;}
-.civ-v-w3-city-nav:hover:not(:disabled){opacity:1;color:#fff8e0;}
-.civ-v-w3-city-nav:disabled{opacity:0.25;cursor:default;}
+.civ-v-w3-city-nav{display:inline-flex;align-items:center;justify-content:center;min-width:1.75em;min-height:1.75em;
+  padding:0 0.22em;border:none;border-radius:7px;background:rgba(232,216,138,0.08);color:#e8d88a;
+  font-size:1.55em;font-weight:700;line-height:1;cursor:pointer;opacity:0.92;font-family:inherit;
+  flex-shrink:0;pointer-events:auto;}
+.civ-v-w3-city-nav:hover:not(:disabled){opacity:1;color:#fff8e0;background:rgba(232,216,138,0.18);}
+.civ-v-w3-city-nav:disabled{opacity:0.25;cursor:default;background:transparent;}
 .civ-v-w3-city-name{font-family:var(--civ-font-title, Georgia, serif);font-size:1.35em;font-weight:700;
   color:#f0e6d0;letter-spacing:0.04em;text-transform:uppercase;line-height:1;}
 .civ-v-w3-city-pop{width:1.65em;height:1.65em;border-radius:50%;background:#e8d88a;color:#2a2208;
@@ -1756,10 +1819,18 @@ function ensureStyles(): void {
   white-space:nowrap;flex-shrink:0;cursor:pointer;opacity:0.9;}
 .civ-v-w3-capital-btn:hover:not(:disabled){opacity:1;background:rgba(232,216,138,0.14);}
 .civ-v-w3-capital-btn:disabled{opacity:0.35;cursor:not-allowed;}
-.civ-v-w3-chips{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.42rem 0.65rem;
-  padding:0.42rem 1rem;border-radius:12px;
+.civ-v-w3-chips{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.35rem 0.55rem;
+  padding:0.3rem 0.85rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
   flex:1 1 auto;width:100%;max-width:100%;min-width:0;overflow-x:visible;overflow-y:visible;}
+.civ-v-w3-chips-stacked{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:0.22rem;
+  padding:0.34rem 0.9rem 0.38rem;}
+.civ-v-w3-chips-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:0.7rem;
+  align-items:center;justify-items:center;width:100%;}
+.civ-v-w3-chips-row + .civ-v-w3-chips-row{padding-top:0.24rem;border-top:1px solid rgba(232,216,138,0.18);}
+.civ-v-w3-chips-stacked .civ-v-w3-chip{justify-content:center;width:100%;max-width:100%;min-width:0;
+  flex-wrap:wrap;row-gap:0.08rem;}
+.civ-v-w3-chips-stacked.civ-v-w3-chips-city{width:100%;}
 .civ-v-w3-chip{display:inline-flex;align-items:center;gap:0.42rem;white-space:nowrap;flex-shrink:0;
   font-size:0.78em;line-height:1;border:none;background:transparent;padding:0.12em 0.18em;margin:0;
   cursor:pointer;border-radius:4px;font-family:inherit;color:inherit;}
@@ -1926,14 +1997,18 @@ function ensureStyles(): void {
 .civ-cs .bld-infocard-chips{display:flex;flex-wrap:wrap;gap:0.35em;}
 .civ-cs .bld-infocard-chip{display:inline-flex;align-items:center;gap:0.28em;font-size:0.68em;color:#c8b898;border:1px solid rgba(232,216,138,.25);border-radius:20px;padding:0.22em 0.52em;}
 .civ-cs .bld-infocard-chip.stock-missing{color:#e88a7a;border-color:rgba(232,110,90,.45);background:rgba(232,90,70,.08);}
+.civ-cs .bld-req-chip{display:inline-flex;align-items:center;gap:0.28em;font-size:0.68em;border-radius:20px;padding:0.22em 0.52em;border:1px solid;line-height:1.25;}
+.civ-cs .bld-req-chip.met{color:#8ec8f0;border-color:rgba(90,155,212,.55);background:rgba(90,155,212,.12);}
+.civ-cs .bld-req-chip.unmet{color:#e88a7a;border-color:rgba(232,110,90,.5);background:rgba(232,90,70,.1);}
 .civ-cs .bld-infocard-eyebrow{font-size:0.54em;letter-spacing:.14em;text-transform:uppercase;color:#8a8478;margin-top:0.15em;}
 .civ-cs .bld-infocard-eyebrow.req{color:#c9a35a;}
 .civ-cs .bld-infocard-req-access{font-size:0.68em;color:#c8b898;display:flex;align-items:center;gap:0.3em;}
 /* SUROW-UI-B1/B2 (Maciej 2026-07-24): pasek surowców uproszczony (budowa/rekrutacja) — Total War-style. */
-.civ-cs .civ-cs-res-strip{display:flex;flex-wrap:wrap;align-items:center;gap:0.5em;margin:0 0 0.5em;padding:0.3em 0;}
-.civ-cs .civ-cs-res-chip{display:inline-flex;align-items:center;gap:0.3em;font-size:0.78em;color:#e8e0c8;font-weight:600;font-variant-numeric:tabular-nums;}
-.civ-cs .civ-cs-res-chip-ic{display:flex;align-items:center;justify-content:center;width:1.05em;height:1.05em;flex:none;color:#c8b070;}
+.civ-cs .civ-cs-res-strip{display:flex;flex-wrap:wrap;align-items:center;gap:0.65em;margin:0 0 0.55em;padding:0.35em 0;}
+.civ-cs .civ-cs-res-chip{display:inline-flex;align-items:center;gap:0.4em;color:#e8e0c8;font-weight:600;font-variant-numeric:tabular-nums;line-height:1;}
+.civ-cs .civ-cs-res-chip-ic{display:flex;align-items:center;justify-content:center;width:32px;height:32px;flex:none;color:#c8b070;}
 .civ-cs .civ-cs-res-chip-ic svg{width:100%;height:100%;display:block;}
+.civ-cs .civ-cs-res-chip>b{font-size:16px;line-height:32px;min-width:1.15em;}
 .civ-cs .civ-cs-mil-strip{gap:0.6em;padding:0.35em 0.6em;border:1px solid rgba(232,216,138,.22);border-radius:8px;background:rgba(232,216,138,.05);}
 .civ-cs .civ-cs-mil-era{font-size:0.62em;letter-spacing:.08em;text-transform:uppercase;color:#8a8070;}
 .civ-cs .bld-infocard-upg{display:flex;align-items:center;gap:0.42em;padding:0.42em 0.52em;background:rgba(232,216,138,.07);border:1px solid rgba(232,216,138,.22);border-radius:9px;font-size:0.68em;color:#d8cca8;}
@@ -2044,7 +2119,7 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-v-left-col{display:flex!important;flex-direction:column!important;flex:1;min-height:0;width:100%;gap:0;}
 .civ-v-right-col{display:flex!important;flex-direction:column!important;flex:1;min-height:0;width:100%;height:100%!important;gap:0;}
 .civ-v-right-head{flex:0 0 auto;padding-bottom:0.38em;margin-bottom:0.28em;border-bottom:1px solid rgba(212,175,90,0.28);}
-.civ-v-left-main{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-top:0.12em;margin-top:0.2em;}
+.civ-v-left-main{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-top:0;margin-top:0;}
 .civ-v-left-main::-webkit-scrollbar{width:5px;}
 .civ-v-left-main::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
 .civ-v-left-main.civ-v-left-main-split{overflow:hidden;display:flex;flex-direction:column;padding-top:0;}
@@ -2114,6 +2189,62 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-v-split-col > .panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .civ-v-split-col .list-scroll-fill,
 .civ-v-split-col .recruit-scroll.list-scroll-fill{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;}
+.civ-v-build-pane{display:flex;flex-direction:column;flex:1;min-height:0;height:100%;width:100%;gap:0;}
+.civ-v-build-main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.civ-v-build-main > .panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.civ-v-build-main .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;}
+.civ-v-build-owned-bar{flex:0 0 auto;padding-top:0.18em;border-top:1px solid rgba(212,175,90,0.28);min-height:0;max-height:34%;display:flex;flex-direction:column;}
+.civ-v-build-owned-bar > .panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:0.22em 0.28em 0.18em!important;}
+.civ-v-build-owned-bar .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:9em;overflow-y:auto;}
+.civ-v-build-owned-bar .ptitle{font-size:0.66em;margin-bottom:0.12em;letter-spacing:.06em;padding:0;}
+.civ-v-build-owned-bar .bld-owned-title-upkeep{font-weight:600;color:#c8a878;margin-left:0.2em;}
+.civ-v-build-owned-bar .bld-owned-summary{margin:0 0 0.18em;padding:0.18em 0.28em;font-size:0.62em;}
+.civ-v-build-owned-bar .bld-group{margin-bottom:0.1em;}
+.civ-v-build-owned-bar .bld-group-h{font-size:0.64em;padding:0.06em 0.18em;margin-bottom:0.06em;line-height:1.2;}
+.civ-v-build-owned-bar .bld-group>.bld-owned-row{margin-left:0.08em;}
+.bld-owned-compact-mount .bld-owned-row--tight{padding:0.1em 0.22em;margin-bottom:0.06em;border-radius:4px;gap:0.12em 0.28em;min-height:1.35em;}
+.bld-owned-compact-mount .bld-owned-hd{gap:0.18em;max-width:46%;}
+.bld-owned-compact-mount .bld-owned-hd .bi{width:1em;height:1em;font-size:0.85em;}
+.bld-owned-compact-mount .bld-owned-name{font-size:0.68em;max-width:7.5em;}
+.bld-owned-compact-mount .bld-owned-tail{font-size:0.62em;gap:0.22em 0.28em;line-height:1.1;}
+.bld-owned-compact-mount .bld-owned-chip{gap:0.06em;}
+.bld-owned-compact-mount .bld-owned-sep{opacity:.4;font-size:0.9em;margin:0 0.06em;}
+.bld-owned-compact-mount .bld-owned-row .bld-upg{font-size:0.62em;padding:0 0.2em;}
+.bld-owned-bar{width:100%;display:flex;align-items:center;justify-content:space-between;gap:0.5em;padding:0.48em 0.58em;
+  background:rgba(9,13,22,0.96);border:1px solid rgba(212,175,90,0.34);border-radius:8px;color:var(--gold);cursor:pointer;
+  font-family:inherit;font-size:0.78em;letter-spacing:.03em;}
+.bld-owned-bar:hover{border-color:rgba(232,216,138,0.55);background:rgba(14,18,28,0.98);}
+.bld-owned-bar .bld-owned-chevron{opacity:.75;font-size:0.9em;}
+.bld-owned-summary{display:flex;align-items:center;gap:0.35em;flex-wrap:wrap;font-size:0.72em;color:#a8a090;
+  margin:0.12em 0 0.42em;padding:0.32em 0.42em;border-radius:6px;background:rgba(232,216,138,0.06);
+  border:1px solid rgba(232,216,138,0.14);}
+.bld-owned-summary b{color:#e8d070;font-weight:700;}
+.bld-owned-row{display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;gap:0.22em 0.42em;padding:0.24em 0.36em;margin-bottom:0.12em;
+  background:rgba(255,255,255,0.025);border:1px solid rgba(232,216,138,0.14);border-radius:6px;cursor:pointer;}
+.bld-owned-row:hover{border-color:rgba(232,216,138,0.38);background:rgba(232,216,138,0.05);}
+.bld-owned-hd{display:flex;align-items:center;gap:0.28em;min-width:0;flex:0 1 auto;max-width:55%;}
+.bld-owned-hd .bi{flex:none;width:1.25em;height:1.25em;display:flex;align-items:center;justify-content:center;}
+.bld-owned-name{flex:0 1 auto;min-width:0;max-width:9.5em;font-size:0.78em;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bld-owned-lvl{flex:none;font-size:0.58em;font-weight:700;color:#2a2208;background:#c8b070;border-radius:4px;padding:0.08em 0.32em;line-height:1.2;}
+.bld-owned-tail{display:flex;align-items:center;justify-content:flex-end;gap:0.35em 0.45em;flex:1 1 8em;min-width:0;margin-left:auto;flex-wrap:wrap;font-size:0.66em;line-height:1.25;}
+.bld-owned-upkeep{flex:none;color:#e8a090;font-weight:600;white-space:nowrap;}
+.bld-owned-upkeep.muted{color:#6a6458;font-weight:500;}
+.bld-owned-bonus{display:inline-flex;flex-wrap:wrap;gap:0.18em 0.32em;min-width:0;justify-content:flex-end;}
+.bld-owned-chip{display:inline-flex;align-items:center;gap:0.12em;color:#c8d8b0;white-space:nowrap;}
+.bld-owned-chip .civ-cs-chip-ic-wrap,.bld-owned-chip .civ-cs-inline-loaf{opacity:0.92;}
+.bld-owned-row .bld-upg{margin-left:auto;flex:none;font-size:0.72em;padding:0.1em 0.32em;line-height:1;border-radius:4px;
+  border:1px solid rgba(232,216,138,0.28);background:rgba(0,0,0,0.2);color:var(--gold);cursor:pointer;}
+.bld-compact-row{display:flex;align-items:center;gap:0.45em;padding:0.2em 0.38em;margin-bottom:0.16em;
+  background:var(--panel2);border:1px solid var(--border);border-radius:6px;min-height:calc(${LIST_ROW_HEIGHT_COMPACT}em - 0.35em);
+  cursor:help;}
+.bld-compact-row.is-locked{opacity:.72;cursor:help;}
+.bld-compact-ic{width:1.65em;height:1.65em;flex:none;border-radius:6px;border:1px solid rgba(160,128,48,.35);
+  background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);display:flex;align-items:center;justify-content:center;color:var(--gold);}
+.bld-compact-ic .mini-thumb{width:100%;height:100%;border:none;background:transparent;}
+.bld-compact-name{flex:1;min-width:0;font-size:0.82em;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bld-compact-actions{flex:0 0 auto;display:flex;gap:0.28em;}
+.bld-compact-actions .btn-sm{padding:0.18em 0.55em;font-size:0.72em;min-width:3.2em;}
+.bld-detail-actions{display:flex;flex-wrap:wrap;gap:0.35em;margin-top:0.55em;padding-top:0.45em;border-top:1px solid rgba(232,216,138,.16);}
 `;
   let style = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
   if (!style) {
@@ -2631,8 +2762,8 @@ function buildSurowceDetailCard(
   const intro = el('div', 'dc-note');
   intro.style.fontStyle = 'normal';
   intro.textContent = legacy
-    ? 'Surowce na mapie w zasięgu miasta odblokowują budynki i bonusy (ikona = dostęp). v0.1: tylko boolean dostęp — ilości w wersji 2.0.'
-    : 'Potencjał (szare) = złoże widoczne w zasięgu — jeszcze nieużywalne. Dostęp aktywny = po ulepszeniu terenu na tym heksie (lub wyjątkach: tartak, kamieniołom, warzelnia na wybrzeżu, hodowla bez złoża). Brąz wymaga Popalni + Piec hutniczy.';
+    ? 'Surowce w zasięgu TEGO miasta — podgląd mapy lokalnej (nie warunek budowy w innym mieście). Koszt surowcowy budynku = magazyn całej cywilizacji.'
+    : 'Potencjał (szare) = złoże widoczne w zasięgu tego miasta — jeszcze nieużywalne. Dostęp aktywny w imperium = po ulepszeniu terenu (tartak, glinianka, warzelnia soli…) gdziekolwiek w cywilizacji. Koszt budowy (`koszt_surowce`) pobierany jest z magazynu państwa — bez wymogu zasięgu tego miasta.';
   card.appendChild(intro);
   if (active.length > 0) {
     appendDetailSection(card, legacy ? 'Lista' : 'Dostęp aktywny');
@@ -2648,14 +2779,14 @@ function buildSurowceDetailCard(
   }
   appendDetailAlgo(card, 'Mechanika', legacy
     ? [
-      'Surowiec w zasięgu = możliwość budowy wymagających go obiektów.',
-      'Brak surowca = budynek zablokowany do czasu podboju/heksu z zasobem.',
+      'Lista pokazuje surowce widoczne z tego miasta — informacja mapowa.',
+      'Budowa wymagająca surowców liczonych: wystarczy zapas w magazynie państwa (dowolne miasto).',
     ]
     : [
-      'Złoże w zasięgu ≠ dostęp — zbuduj ulepszenie na tym heksie (glinianka, kopalnia, stadnina…).',
-      'Wyjątki bez złoża: tartak (drewno), kamieniołom (kamień), hodowla trzody/owiec/lam.',
-      'Warzelnia soli: złoże soli LUB wybrzeże (sól z morza).',
-      'Dostęp aktywny odblokowuje produkcję i handel surowcem (v0.1: boolean, bez magazynów).',
+      'Złoże w zasięgu tego miasta ≠ dostęp imperium — zbuduj ulepszenie na heksie.',
+      'Bramka „dostęp" (np. Sól, Złoto): aktywne źródło w imperium — bez wymogu ilości w magazynie.',
+      'Koszt surowcowy budynku (`koszt_surowce`): tylko magazyn państwa (suma po wszystkich miastach).',
+      'Wyjątki lokalne: Port (wybrzeże/rzeka przy tym mieście), prerekwizyty budynków w tym mieście.',
     ]);
   return card;
 }
@@ -2717,6 +2848,29 @@ function renderImperiumZywnosc(mount: HTMLElement, _city: City): void {
   mount.style.display = 'none';
 }
 
+/** Blok „Kultura: Grecka 70% / Obca 30%” lub skład wyznawców. */
+function appendCompositionBlock(
+  parent: HTMLElement,
+  title: string,
+  lines: { label: string; pct: number; note?: string }[],
+  footnote?: string,
+): void {
+  if (!lines.length) return;
+  appendDetailSection(parent, title);
+  const g = appendDetailGrid(parent);
+  for (const row of lines) {
+    const val = row.note ? `${row.pct}% · ${row.note}` : `${row.pct}%`;
+    gridDetailRow(g, row.label, val);
+  }
+  if (footnote) {
+    const note = document.createElement('div');
+    note.className = 'dc-note';
+    note.style.fontStyle = 'normal';
+    note.textContent = footnote;
+    parent.appendChild(note);
+  }
+}
+
 function buildKulturaDetailCard(
   city: City,
   view: CityView | null,
@@ -2750,6 +2904,25 @@ function buildKulturaDetailCard(
   if (cultState) {
     appendDetailSection(card, 'Kultura — stan miasta');
     const gc = appendDetailGrid(card);
+    if (cultState.ownerCultureLabel) {
+      gridDetailRow(gc, 'Okręg kulturowy właściciela', cultState.ownerCultureLabel);
+    }
+    if (cultState.kulturaMix && cultState.kulturaMix.length > 0) {
+      appendCompositionBlock(
+        card,
+        'Skład kultury w mieście',
+        cultState.kulturaMix.map(m => ({
+          label: m.label,
+          pct: m.pct,
+          note: !m.isOwner ? 'konwersja w toku' : undefined,
+        })),
+        cultState.cultureConverting
+          ? 'Miasto ma mieszankę kultur — udział kultury właściciela rośnie co turę (budynki kulturalne przyspieszają).'
+          : undefined,
+      );
+    } else if (cultState.ownCultureSharePct != null) {
+      gridDetailRow(gc, 'Udział kultury właściciela', `${cultState.ownCultureSharePct}%`);
+    }
     gridDetailRow(gc, 'Suma kultury', String(cultState.kulturaSuma));
     gridDetailRow(gc, 'Przyrost', `+${cultState.przyrost}`);
     gridDetailRow(gc, 'Zasięg granic', `+${cultState.borderRadius} pierścieni`);
@@ -2803,6 +2976,23 @@ function buildKulturaDetailCard(
   if (relState) {
     appendDetailSection(card, 'Religia — stan miasta');
     const gs = appendDetailGrid(card);
+    if (relState.stateReligion) {
+      gridDetailRow(gs, 'Religia państwa', relState.stateReligion);
+    }
+    if (relState.sklad && relState.sklad.length > 0) {
+      appendCompositionBlock(
+        card,
+        'Skład wyznawców',
+        relState.sklad.map(s => ({
+          label: s.name,
+          pct: s.pct,
+          note: relState.stateReligion && s.name !== relState.stateReligion ? 'obca wiara' : undefined,
+        })),
+        relState.sklad.some(s => relState.stateReligion && s.name !== relState.stateReligion)
+          ? 'Po podboju obca wiara stopniowo ustępuje religii państwa (Świątynia przyspiesza konwersję).'
+          : undefined,
+      );
+    }
     gridDetailRow(gs, 'Dominująca', relState.dominujaca);
     gridDetailRow(gs, 'Udział wyznawców', `${relState.udzialPct}%`);
     gridDetailRow(gs, 'Wpływ na Szczęście', `${relState.wplywSzczescie >= 0 ? '+' : ''}${relState.wplywSzczescie}`);
@@ -2887,6 +3077,21 @@ function renderKultura(mount: HTMLElement, city: City, view: CityView | null): v
   }
 
   appendTabIndicators(mount, cultChips);
+
+  if (cultState?.kulturaMix && cultState.kulturaMix.length > 0) {
+    appendCompositionBlock(
+      mount,
+      'Skład kultury',
+      cultState.kulturaMix.map(m => ({
+        label: m.label,
+        pct: m.pct,
+        note: !m.isOwner ? 'konwersja' : (m.pct >= 100 ? 'pełna zgodność' : undefined),
+      })),
+      cultState.cultureConverting
+        ? 'Udział kultury właściciela rośnie co turę po podboju obcego miasta.'
+        : undefined,
+    );
+  }
 
   const kultLines: BreakdownLine[] = cultState?.zrodla?.map(z => ({ label: z.nazwa, value: z.wartosc })) ?? [];
   if (kultLines.length === 0 && view && view.kultura !== 0) {
@@ -2997,6 +3202,25 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
     });
   }
   appendTabIndicators(mount, relChips);
+
+  if (relState?.stateReligion) {
+    const stateNote = document.createElement('di' + 'v');
+    stateNote.className = 'rsb';
+    stateNote.innerHTML =
+      `<span class="muted">Religia państwa:</span> <span class="gold">${relState.stateReligion}</span>`;
+    mount.appendChild(stateNote);
+  }
+  if (relState?.sklad && relState.sklad.length > 0) {
+    appendCompositionBlock(
+      mount,
+      'Skład wyznawców',
+      relState.sklad.map(s => ({
+        label: s.name,
+        pct: s.pct,
+        note: relState.stateReligion && s.name !== relState.stateReligion ? 'obca' : undefined,
+      })),
+    );
+  }
 
   const relLines: BreakdownLine[] = relState?.zrodla?.map(z => ({ label: z.nazwa, value: z.wartosc })) ?? [];
   if (relState) {
@@ -3325,6 +3549,57 @@ function appendPodzialHandlu(
     sumRow.textContent = `Suma ${sum}% (korygowane)`;
     mount.appendChild(sumRow);
   }
+
+  appendCitySkarbiecBalance(mount, city);
+}
+
+/** Bilans pieniędzy tego miasta — przychody i koszty lokalne. */
+function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void {
+  const snap = cfg.getCityMoneySnap?.(city.id);
+  if (!snap) return;
+
+  const sub = el('div', 'subhd');
+  sub.textContent = 'Bilans pieniędzy miasta';
+  sub.style.marginTop = '0.65em';
+  mount.appendChild(sub);
+
+  const note = el('div', 'muted');
+  note.style.cssText = 'font-size:0.68em;line-height:1.35;margin-bottom:0.35em;';
+  note.textContent =
+    'Przychody i koszty tylko tego grodu. Utrzymanie budynków i garnizonu schodzi ze skarbca imperium (nie z daniny miasta).';
+  mount.appendChild(note);
+
+  const rows: Array<{ label: string; value: string; cls?: string }> = [
+    { label: 'Pieniądz brutto (pola + budynki)', value: signed(snap.pieniadzBrutto) },
+    { label: 'Mnożnik zamożności W', value: `×${snap.wealthMnoznik.toFixed(2)}` },
+    { label: 'Handel ze szlaków', value: signed(snap.handelZeSzlakow) },
+    { label: '→ Wpływ do skarbca imperium', value: signed(snap.doSkarbca), cls: snap.doSkarbca > 0 ? 'green' : snap.doSkarbca < 0 ? 'red' : 'muted' },
+    { label: 'Utrzymanie budynków (to miasto)', value: snap.utrzymanieBudynkow > 0 ? `−${snap.utrzymanieBudynkow}` : '—', cls: snap.utrzymanieBudynkow > 0 ? 'red' : undefined },
+    { label: 'Utrzymanie garnizonu (hex miasta)', value: snap.utrzymanieGarnizonu > 0 ? `−${snap.utrzymanieGarnizonu}` : '—', cls: snap.utrzymanieGarnizonu > 0 ? 'red' : undefined },
+  ];
+
+  const grid = el('div', 'city-money-grid');
+  for (const r of rows) {
+    const row = el('div', 'city-money-row');
+    const lbl = el('span', 'city-money-lbl');
+    lbl.textContent = r.label;
+    const val = el('span', `city-money-val${r.cls ? ' ' + r.cls : ''}`);
+    val.textContent = r.value;
+    row.appendChild(lbl);
+    row.appendChild(val);
+    grid.appendChild(row);
+  }
+  mount.appendChild(grid);
+
+  const localNet = snap.doSkarbca;
+  const localCosts = snap.utrzymanieBudynkow + snap.utrzymanieGarnizonu;
+  const foot = el('div', 'muted');
+  foot.style.cssText = 'font-size:0.68em;margin-top:0.35em;';
+  foot.innerHTML =
+    `Przychód miasta do skarbca: <b>${signed(localNet)}</b>/turę · `
+    + `koszty lokalne (budynki+garnizon): <b>−${localCosts}</b>/turę · `
+    + `nauka z miasta: <b>${signed(snap.nauka)}</b>/turę (osobny bank).`;
+  mount.appendChild(foot);
 }
 
 /** @deprecated używane przez testy / kompat — prefer renderEkonomiaStrip */
@@ -4047,9 +4322,9 @@ function buildTopBarRekruciDetailCard(
   const intro = el('div', 'dc-note');
   intro.style.fontStyle = 'normal';
   intro.textContent =
-    'Pula rekrutów tego miasta — werb jednostki zużywa rekrutów (Manpower), nie ludność miasta ' +
-    '(wyjątek: Zwiadowca — 0 kosztu Manpower). ' +
-    'Co turę pula rośnie (regen), chyba że miasto jest oblężone.';
+    'Pula rekrutów tego miasta (składnik sumy imperium). Werb jednostki zużywa rekrutów ' +
+    'z puli całej cywilizacji; z tego miasta schodzi tylko −1 obywatel. ' +
+    'Zwiadowca — 0 kosztu Manpower. Co turę pula rośnie (regen), chyba że miasto jest oblężone.';
   card.appendChild(intro);
 
   appendDetailSection(card, 'Stan puli');
@@ -4202,13 +4477,43 @@ function buildTopBarZlotoDetailCard(
   const intro = el('div', 'dc-note');
   intro.style.fontStyle = 'normal';
   intro.textContent =
-    'Skarbiec imperium to gotówka na wykupy, rekrutację za złoto i utrzymanie. Dopisek +X to netto pieniędzy z tego miasta co turę.';
+    'Skarbiec imperium to gotówka na wykupy, rekrutację za złoto i utrzymanie. Poniżej: bilans całego państwa oraz wpływ tego miasta.';
   card.appendChild(intro);
+
+  const moneySnap = cfg.getCityMoneySnap?.(city.id);
+
+  appendDetailSection(card, 'Skarbiec imperium (bilans / turę)');
+  const gImp = appendDetailGrid(card);
+  const wplywy = empire.bogactwoWplywyBrutto ?? 0;
+  const handel = empire.bogactwoHandel ?? 0;
+  const utrzB = empire.bogactwoUtrzymanieBudynkow ?? 0;
+  const utrzJ = empire.bogactwoUtrzymanieJednostek ?? 0;
+  const netto = empire.bogactwoRate ?? empire.zlotoRate ?? 0;
+  gridDetailRow(gImp, 'Stan skarbca', `${skarb}`);
+  gridDetailRow(gImp, 'Wpływy brutto', signed(wplywy - handel));
+  gridDetailRow(gImp, 'Handel ze szlaków', signed(handel));
+  gridDetailRow(gImp, 'Utrzymanie budynków', utrzB > 0 ? `−${utrzB}` : '—');
+  gridDetailRow(gImp, 'Utrzymanie jednostek', utrzJ > 0 ? `−${utrzJ}` : '—');
+  gridDetailRow(gImp, 'Netto / turę', signed(netto));
+
+  appendDetailSection(card, 'Ten gród — przychody i koszty lokalne');
+  const gCity = appendDetailGrid(card);
+  if (moneySnap) {
+    gridDetailRow(gCity, 'Pieniądz brutto', signed(moneySnap.pieniadzBrutto));
+    gridDetailRow(gCity, 'Mnożnik zamożności W', `×${moneySnap.wealthMnoznik.toFixed(2)}`);
+    gridDetailRow(gCity, 'Handel ze szlaków', signed(moneySnap.handelZeSzlakow));
+    gridDetailRow(gCity, '→ Do skarbca imperium', signed(moneySnap.doSkarbca));
+    gridDetailRow(gCity, 'Utrzymanie budynków', moneySnap.utrzymanieBudynkow > 0 ? `−${moneySnap.utrzymanieBudynkow}` : '—');
+    gridDetailRow(gCity, 'Utrzymanie garnizonu', moneySnap.utrzymanieGarnizonu > 0 ? `−${moneySnap.utrzymanieGarnizonu}` : '—');
+    gridDetailRow(gCity, 'Nauka (osobny bank)', signed(moneySnap.nauka));
+  } else {
+    gridDetailRow(gCity, 'Wpływ do skarbca', signed(cityMoney));
+  }
 
   appendDetailSection(card, 'Co widzisz na pasku');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Duża liczba 💰', `${skarb} — skarbiec całego państwa`);
-  gridDetailRow(g0, 'Dopisek +X', `${signed(cityMoney)} — netto z tego grodu`);
+  gridDetailRow(g0, 'Dopisek +X', `${signed(cityMoney)} — netto z tego grodu do skarbca`);
 
   appendDetailSection(card, 'Skąd bierze się pieniądz (to miasto)');
   const g1 = appendDetailGrid(card);
@@ -4460,6 +4765,9 @@ const CS_RES_STRIP_ORDER: readonly string[] = [
  *  żeby UI surowców był obecny od tury 1 (C-SURUI=A, Maciej 2026-07-24). */
 const CS_RES_STRIP_CORE: ReadonlySet<string> = new Set(['drewno', 'kamien']);
 
+/** Rozmiar ikon surowców na pasku budowy/rekrutacji (2× względem pierwotnych 16px). */
+const CS_RES_STRIP_ICON_PX = 32;
+
 /**
  * SUROW-UI-B1: pasek „ikona + ilość" surowców magazynowanych (pula PAŃSTWA ownera) —
  * forma uproszczona wg mockupu (Total War-style, bez przyrostu/turę — w mieście liczy
@@ -4479,7 +4787,7 @@ function appendCityResourceStockStrip(mount: HTMLElement, city: City): void {
     const chip = el('span', 'civ-cs-res-chip');
     chip.title = label;
     const ic = el('span', 'civ-cs-res-chip-ic');
-    ic.innerHTML = mapResourceIconSvg(label, 16);
+    ic.innerHTML = mapResourceIconSvg(label, CS_RES_STRIP_ICON_PX);
     chip.appendChild(ic);
     const val = el('b');
     val.textContent = String(e.v);
@@ -4509,7 +4817,7 @@ function appendRecruitMilitaryResourceStrip(mount: HTMLElement, city: City): voi
   const chip = el('span', 'civ-cs-res-chip');
   chip.title = `${label} — pula państwa`;
   const ic = el('span', 'civ-cs-res-chip-ic');
-  ic.innerHTML = mapResourceIconSvg(label, 16);
+  ic.innerHTML = mapResourceIconSvg(label, CS_RES_STRIP_ICON_PX);
   chip.appendChild(ic);
   const val = el('b');
   val.textContent = String(qty);
@@ -4727,6 +5035,59 @@ function buildingBonusChipsHtml(def: BuildingDef, buildings: readonly BuildingDe
   return chips.join('');
 }
 
+function buildingOwnedLevel(def: BuildingDef, city: City): number {
+  const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+  return buildingLevelForEpoch(
+    def.epokaWejscia,
+    epoch,
+    def.maksPoziom,
+    def.poziomTechGate ?? null,
+    techs,
+  );
+}
+
+function sumOwnedBuildingsUpkeep(built: readonly string[], data: GameData, city: City): number {
+  let sum = 0;
+  for (const id of built) {
+    const def = data.buildings.find(b => b.id === id);
+    if (!def) continue;
+    sum += buildingUpkeep(def as unknown as BuildingRecord, buildingOwnedLevel(def, city));
+  }
+  return sum;
+}
+
+/** Skompresowane chipy bonusów zbudowanego budynku (poziom epoki miasta). */
+function buildingOwnedBonusCompactHtml(
+  def: BuildingDef,
+  level: number,
+  buildings: readonly BuildingDef[],
+  opts?: { max?: number; iconSize?: BrandIconSize; compact?: boolean },
+): string {
+  const max = opts?.max ?? (opts?.compact ? 3 : 5);
+  const iconSize = opts?.iconSize ?? (opts?.compact ? 8 : 10);
+  const chips: string[] = [];
+  for (const y of YIELD_BRAND) {
+    if (chips.length >= max) break;
+    const val = buildingEffectAtLevel(def.baza[y.key] ?? 0, def.przyrost[y.key] ?? 0, level);
+    if (val === 0) continue;
+    chips.push(
+      `<span class="bld-owned-chip">${val > 0 ? '+' : ''}${val}${yieldBrandIconHtml(y.brandId, iconSize)}</span>`,
+    );
+  }
+  const role = mnoznikRoleForBuildingId(def.id);
+  if (role && chips.length < max) {
+    const cumulative = cumulativeMnoznikForBuildingId(def.id, buildings);
+    if (cumulative !== 0) {
+      chips.push(`<span class="bld-owned-chip">+${cumulative}%</span>`);
+    }
+  }
+  if (chips.length === 0) return '';
+  return opts?.compact
+    ? chips.join('<span class="bld-owned-sep">·</span>')
+    : chips.join('');
+}
+
 /**
  * TEMAT #6 / SUROW-CIV-01: chip(y) kosztu surowcowego budynku (koszt_surowce w
  * buildings.json, np. cegła/ceramika) obok kosztów Pracy/Pieniądza — czerwony gdy
@@ -4749,6 +5110,200 @@ function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefined): s
   return chips.join('');
 }
 
+const BUILDING_UPKEEP_ZERO_LABEL = 'utrzymanie zero';
+
+function formatBuildingUpkeepGridValue(upkeep: number): string {
+  if (upkeep === 0) return BUILDING_UPKEEP_ZERO_LABEL;
+  return `${upkeep} ${cityPanelChipIconWrap('res-treasury', 14)}`;
+}
+
+function formatBuildingUpkeepRowHtml(upkeep: number, compact: boolean): string {
+  if (upkeep === 0) return BUILDING_UPKEEP_ZERO_LABEL;
+  return compact
+    ? `−${upkeep}${cityPanelChipIconWrap('res-treasury', 8)}`
+    : `−${upkeep}${cityPanelChipIconWrap('res-treasury', 10)}/t`;
+}
+
+function formatBuildingUpkeepTotalHtml(totalUpkeep: number): string {
+  if (totalUpkeep === 0) {
+    return `Utrzymanie łącznie: <b>${BUILDING_UPKEEP_ZERO_LABEL}</b>`;
+  }
+  return `Utrzymanie łącznie: <b>−${totalUpkeep}</b>${cityPanelChipIconWrap('res-treasury', 12)}/turę`;
+}
+
+interface BuildingReqChip {
+  label: string;
+  met: boolean;
+  iconHtml?: string;
+}
+
+function buildingLocationRequirementMet(
+  lokalizacja: 'stolica' | 'region' | undefined,
+  isCapital: boolean | undefined,
+): boolean {
+  if (lokalizacja === 'stolica') return isCapital === true;
+  if (lokalizacja === 'region') return isCapital === false;
+  return true;
+}
+
+/** Warunki budowy z oceną spełnienia (niebieski = OK, czerwony = brak). */
+function buildingRequirementChips(
+  def: BuildingDef,
+  city: City | undefined,
+  data: GameData,
+  ctx: AvailabilityContext,
+  unlockedTechs: readonly string[],
+): BuildingReqChip[] {
+  const chips: BuildingReqChip[] = [];
+  const techSet = new Set(unlockedTechs);
+  const built = ctx.builtBuildingIds ?? [];
+  const buildings = data.buildings;
+  const gateLabels = ctx.empireActiveResourceLabels !== undefined
+    ? ctx.empireActiveResourceLabels
+    : (ctx.activeResourceLabels ?? []);
+  const pool = city !== undefined
+    ? ownerSurowcePoolFor(city)
+    : (ctx.empireResourceStock ?? {});
+
+  const tech = (def.techUnlock ?? '').trim();
+  if (tech && tech !== '-' && tech !== '—') {
+    const steps = missingTechSteps(data, tech, techSet);
+    const met = steps.length === 0;
+    chips.push({
+      label: met ? `Badanie: ${tech}` : `Badanie: ${steps.join(' → ')}`,
+      met,
+      iconHtml: techIconHintSpan(tech),
+    });
+  }
+
+  const parentId = def.upgradeFrom?.trim();
+  if (parentId) {
+    const parentName = parentBuildingName(data, parentId) ?? parentId;
+    const met = built.includes(parentId)
+      || isBuildingSupersededByUpgrade(parentId, built, buildings);
+    chips.push({ label: `Rozbudowa: ${parentName}`, met });
+  }
+
+  const cityPrereq = CITY_BUILDING_PREREQ[def.id];
+  if (cityPrereq) {
+    const ids = typeof cityPrereq === 'string' ? [cityPrereq] : [...cityPrereq];
+    const names = ids.map(id => findBuildingDef(data, id)?.nazwa ?? id);
+    const met = cityBuildingPrereqMet(
+      cityPrereq, built, buildings, isBuildingSupersededByUpgrade,
+    );
+    const label = names.length > 1
+      ? `W mieście: ${names.join(' lub ')}`
+      : `W mieście: ${names[0]}`;
+    chips.push({ label, met });
+  }
+
+  for (const label of buildingRequiredActiveLabels(def)) {
+    const met = empireResourceLabelSatisfied(
+      label, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock,
+    );
+    const accessHint = isAccessOnlyResourceLabel(label)
+      ? `Dostęp (źródło): ${label}`
+      : `Dostęp: ${label}`;
+    chips.push({ label: accessHint, met });
+  }
+
+  if (def.id === PIEC_HUTNICZY_BUILDING_ID) {
+    chips.push({
+      label: 'Kopalnia miedzi w imperium',
+      met: empireHasKopalniaMiedzi(ctx.placedImprovements),
+    });
+  }
+
+  if (WATER_ACCESS_BUILDING_IDS.has(def.id)) {
+    chips.push({
+      label: 'Wybrzeże lub rzeka przy mieście',
+      met: ctx.cityHasCoastOrRiver === true,
+    });
+  }
+
+  if (def.lokalizacja === 'stolica' || def.lokalizacja === 'region') {
+    chips.push({
+      label: def.lokalizacja === 'stolica' ? 'Tylko stolica' : 'Tylko poza stolicą',
+      met: buildingLocationRequirementMet(def.lokalizacja, ctx.isCapital),
+    });
+  }
+
+  const stockCost = buildingStockCost(def);
+  for (const [k, need] of Object.entries(stockCost)) {
+    const have = pool[k] ?? 0;
+    chips.push({
+      label: `Magazyn: ${need} ${stockResourceLabel(k)} (masz ${have})`,
+      met: have >= need,
+    });
+  }
+
+  const accessReq = (def.wymagania && !isEmptyDataVal(def.wymagania)) ? String(def.wymagania) : '';
+  if (accessReq && chips.length === 0) {
+    chips.push({ label: accessReq, met: false });
+  }
+
+  return chips;
+}
+
+/** Czy gracz może TERAZ kliknąć Buduj — wszystkie chipy wymagań spełnione (tech, dostęp, magazyn…). */
+function buildingCanBuildNow(
+  def: BuildingDef,
+  city: City,
+  data: GameData,
+  ctx: AvailabilityContext,
+  techs: readonly string[],
+): boolean {
+  const chips = buildingRequirementChips(def, city, data, ctx, techs);
+  return chips.length === 0 || chips.every(c => c.met);
+}
+
+/**
+ * Sortuje pulę budynków: najpierw te, które można wybudować teraz, potem zablokowane
+ * (np. brak surowców w magazynie). W obrębie tieru zachowuje kolejność wejściową
+ * (koszt → nazwa z buildableProduction).
+ */
+function sortProductionItemsByBuildability(
+  items: readonly ProductionItem[],
+  city: City,
+  data: GameData,
+  ctx: AvailabilityContext,
+  techs: readonly string[],
+): ProductionItem[] {
+  const buildable: ProductionItem[] = [];
+  const blocked: ProductionItem[] = [];
+  for (const item of items) {
+    const def = findBuildingDef(data, item.id);
+    if (def && buildingCanBuildNow(def, city, data, ctx, techs)) buildable.push(item);
+    else blocked.push(item);
+  }
+  return [...buildable, ...blocked];
+}
+
+function buildingRequirementChipsHtml(chips: BuildingReqChip[]): string {
+  return chips.map(c => {
+    const cls = c.met ? 'bld-req-chip met' : 'bld-req-chip unmet';
+    const icon = c.iconHtml ?? '';
+    return `<span class="${cls}">${icon}${c.label}</span>`;
+  }).join('');
+}
+
+function appendBuildingRequirementsBlock(
+  parent: HTMLElement,
+  def: BuildingDef,
+  city: City | undefined,
+  data: GameData,
+  ctx: AvailabilityContext,
+  unlockedTechs: readonly string[],
+): boolean {
+  const chips = buildingRequirementChips(def, city, data, ctx, unlockedTechs);
+  if (chips.length === 0) return false;
+  parent.appendChild(el('div', 'bld-infocard-eyebrow req', 'Wymagane'));
+  const wrap = el('div', 'bld-infocard-chips');
+  wrap.innerHTML = buildingRequirementChipsHtml(chips);
+  parent.appendChild(wrap);
+  return true;
+}
+
 function parentBuildingName(data: GameData, upgradeFromId: string | undefined): string | null {
   const id = upgradeFromId?.trim();
   if (!id) return null;
@@ -4769,6 +5324,8 @@ function buildBuildingInfocard(
     buildLabel?: 'Buduj' | 'Ulepsz';
     upgrade?: boolean;
     city?: City;
+    ctx?: AvailabilityContext;
+    techs?: readonly string[];
   },
 ): HTMLDivElement {
   const card = el('div', 'bld-infocard');
@@ -4799,20 +5356,27 @@ function buildBuildingInfocard(
     chips.innerHTML = chipsHtml;
     bd.appendChild(chips);
   }
-  // WYMAGANE — surowce z magazynu (czerwone gdy brak) + dostęp „w zasięgu" (las/ruda/kamień…).
-  const stockChipsHtml = buildingStockCostChipsHtml(def, opts?.city);
-  const accessReq = (def.wymagania && !isEmptyDataVal(def.wymagania)) ? String(def.wymagania) : '';
-  if (stockChipsHtml || accessReq) {
-    bd.appendChild(el('div', 'bld-infocard-eyebrow req', 'Wymagane'));
-    if (stockChipsHtml) {
-      const stockChips = el('div', 'bld-infocard-chips');
-      stockChips.innerHTML = stockChipsHtml;
-      bd.appendChild(stockChips);
-    }
-    if (accessReq) {
-      const acc = el('div', 'bld-infocard-req-access');
-      acc.textContent = '⛰️ ' + accessReq;   // dane z buildings.json (zaufane) — textContent, bez innerHTML
-      bd.appendChild(acc);
+  // WYMAGANE — badania / budynki / surowce (niebieski = spełnione, czerwony = brak).
+  const techs = opts?.techs ?? (opts?.city ? (cfg.getUnlockedTechs?.(opts.city.ownerId) ?? []) : []);
+  const ctx = opts?.ctx ?? (opts?.city ? productionCtxForCity(opts.city) : undefined);
+  const hasReqBlock = ctx
+    ? appendBuildingRequirementsBlock(bd, def, opts?.city, data, ctx, techs)
+    : false;
+  if (!hasReqBlock) {
+    const stockChipsHtml = buildingStockCostChipsHtml(def, opts?.city);
+    const accessReq = (def.wymagania && !isEmptyDataVal(def.wymagania)) ? String(def.wymagania) : '';
+    if (stockChipsHtml || accessReq) {
+      bd.appendChild(el('div', 'bld-infocard-eyebrow req', 'Wymagane'));
+      if (stockChipsHtml) {
+        const stockChips = el('div', 'bld-infocard-chips');
+        stockChips.innerHTML = stockChipsHtml;
+        bd.appendChild(stockChips);
+      }
+      if (accessReq) {
+        const acc = el('div', 'bld-infocard-req-access');
+        acc.textContent = '⛰️ ' + accessReq;
+        bd.appendChild(acc);
+      }
     }
   }
 
@@ -4853,7 +5417,7 @@ function buildBuildingInfocard(
     const tag = el('div', 'bld-catalog-ready-tag');
     tag.textContent = opts.readyTag;
     bd.appendChild(tag);
-  } else if (opts?.lockHint) {
+  } else if (opts?.lockHint && !hasReqBlock) {
     const lock = el('div', 'bld-infocard-lock');
     lock.innerHTML = opts.lockHint;
     bd.appendChild(lock);
@@ -5102,7 +5666,11 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
   const workCost = buildingWorkCost(baseWork, undefined, pace, ownerId, difficulty);
   gridDetailRow(gCost, 'Koszt budowy', `${workCost} ${cityPanelChipIconWrap('res-work', 14)}`);
   if (def.przyrostKosztu) gridDetailRow(gCost, 'Przyrost kosztu', `+${def.przyrostKosztu} ${cityPanelChipIconWrap('res-work', 14)} / poziom`);
-  gridDetailRow(gCost, 'Utrzymanie', `${def.utrzymanie} ${cityPanelChipIconWrap('res-treasury', 14)}`);
+  gridDetailRow(
+    gCost,
+    'Utrzymanie',
+    formatBuildingUpkeepGridValue(buildingUpkeep(def as unknown as BuildingRecord, 1)),
+  );
   if (def.przyrostUtrzymania) gridDetailRow(gCost, 'Przyrost utrzym.', `+${def.przyrostUtrzymania} ${cityPanelChipIconWrap('res-treasury', 14)} / poziom`);
   const stockCostDetail = buildingStockCost(def);
   if (Object.keys(stockCostDetail).length > 0) {
@@ -5137,6 +5705,169 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
     const note = el('div', 'dc-note');
     note.textContent = def.uwagi;
     card.appendChild(note);
+  }
+  return card;
+}
+
+/**
+ * Karta szczegółów budynku w zakładce Budowa — pełne info (bonusy, koszty,
+ * utrzymanie, wymagania, epoka) w panelu bocznym po najechaniu / kliknięciu.
+ * Na liście zostaje tylko ikona + nazwa + Buduj.
+ */
+function buildBuildingBuildTabDetailCard(
+  def: BuildingDef,
+  data: GameData,
+  city: City | undefined,
+  opts?: {
+    item?: ProductionItem;
+    praca?: number;
+    skarb?: number;
+    lockHint?: string;
+    locked?: boolean;
+    buildLabel?: 'Buduj' | 'Ulepsz';
+    upgrade?: boolean;
+    ctx?: AvailabilityContext;
+    techs?: readonly string[];
+  },
+): HTMLDivElement {
+  const card = buildBuildingDetailCard(def, data);
+
+  const techs = opts?.techs ?? (city ? (cfg.getUnlockedTechs?.(city.ownerId) ?? []) : []);
+  const ctx = opts?.ctx ?? (city ? productionCtxForCity(city) : undefined);
+  let hasReqBlock = false;
+  if (ctx) {
+    const reqMount = el('div');
+    reqMount.style.cssText = 'padding:0 0.85em 0.35em;';
+    hasReqBlock = appendBuildingRequirementsBlock(reqMount, def, city, data, ctx, techs);
+    if (hasReqBlock) {
+      card.insertBefore(reqMount, card.children[1] ?? null);
+    }
+  }
+
+  if (opts?.lockHint && !hasReqBlock) {
+    const lock = el('div', 'dc-note');
+    lock.style.cssText = 'color:#d36b5e;font-style:normal;margin-bottom:0.35em;';
+    lock.textContent = opts.lockHint;
+    card.insertBefore(lock, card.children[1] ?? null);
+  }
+
+  if (!hasReqBlock) {
+    const stockChipsHtml = city ? buildingStockCostChipsHtml(def, city) : '';
+    const accessReq = (def.wymagania && !isEmptyDataVal(def.wymagania)) ? String(def.wymagania) : '';
+    if (stockChipsHtml || accessReq) {
+      appendDetailSection(card, 'Wymagane do budowy');
+      if (stockChipsHtml) {
+        const chips = el('div', 'bld-infocard-chips');
+        chips.style.marginBottom = '0.35em';
+        chips.innerHTML = stockChipsHtml;
+        card.appendChild(chips);
+      }
+      if (accessReq) {
+        const acc = el('div', 'dc-note');
+        acc.style.fontStyle = 'normal';
+        acc.textContent = accessReq;
+        card.appendChild(acc);
+      }
+    }
+  }
+
+  const chipsHtml = buildingBonusChipsHtml(def, data.buildings);
+  if (chipsHtml) {
+    appendDetailSection(card, 'Daje (skrót)');
+    const chips = el('div', 'bld-infocard-chips');
+    chips.innerHTML = chipsHtml;
+    card.appendChild(chips);
+  }
+
+  const parentName = parentBuildingName(data, def.upgradeFrom);
+  if (parentName) {
+    appendDetailSection(card, 'Łańcuch');
+    const note = el('div', 'dc-note');
+    note.style.fontStyle = 'normal';
+    note.textContent = `Rozbudowa z: ${parentName}`;
+    card.appendChild(note);
+  }
+
+  if (opts?.item && city && !opts.locked) {
+    const act = el('div', 'bld-detail-actions');
+    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const workIc = cityPanelChipIconWrap('res-work', 12);
+    const cost = el('div', 'bld-infocard-cost');
+    cost.style.cssText = 'flex:1 1 100%;margin-bottom:0.2em;';
+    cost.innerHTML = `Koszt kolejki: ${opts.item.koszt}${workIc}${e !== null ? ' · ~' + e + ' ' + tury(e) : ''}`;
+    act.appendChild(cost);
+    const btnWrap = el('div', 'civ-v-bld-btns');
+    appendBuildActionButtons(btnWrap, city, opts.item, opts.skarb, opts.buildLabel ?? 'Buduj', opts.upgrade);
+    act.appendChild(btnWrap);
+    card.appendChild(act);
+  } else if (!opts?.locked && opts?.item) {
+    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const workIc = cityPanelChipIconWrap('res-work', 12);
+    const note = el('div', 'dc-note');
+    note.style.fontStyle = 'normal';
+    note.textContent = `Koszt: ${opts.item.koszt} pracy${e !== null ? ' · ~' + e + ' ' + tury(e) : ''}`;
+    card.appendChild(note);
+  }
+
+  return card;
+}
+
+function buildWonderBuildTabDetailCard(w: WonderBuildTypeInfo, city: City): HTMLDivElement {
+  const card = el('div', 'detail-card');
+  card.appendChild(el('div', 'dc-h', `<span>${w.label}</span>`));
+  appendDetailSection(card, 'Cud świata');
+  const g = appendDetailGrid(card);
+  gridDetailRow(g, 'Typ', w.dostep === 'R' ? 'Wyścig' : 'Ekskluzywny');
+  gridDetailRow(g, 'Epoka', epochLabelNum(w.epokaWejscia));
+  gridDetailRow(g, 'Limit', 'max 1 na świecie');
+  gridDetailRow(g, 'Koszt', `${w.kosztPraca} pracy`);
+  if (w.lockHint) {
+    const note = el('div', 'dc-note');
+    note.style.fontStyle = 'normal';
+    note.textContent = w.lockHint;
+    card.appendChild(note);
+  }
+  if (!w.queued) {
+    const act = el('div', 'bld-detail-actions');
+    const bBuild = el('button', 'btn btn-sm btn-b', 'Buduj');
+    bBuild.title = `Dodaj do kolejki produkcji · ${w.kosztPraca} pracy`;
+    bBuild.addEventListener('click', () => {
+      cfg.onBuildWonder?.(city.id, w.id);
+      rerender();
+    });
+    act.appendChild(bBuild);
+    card.appendChild(act);
+  }
+  return card;
+}
+
+function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLDivElement {
+  const card = el('div', 'detail-card');
+  const built = cfg.getBuiltBuildingIds?.(city.id);
+  card.appendChild(el('div', 'dc-h',
+    `<span>Budynki w mieście${built ? ' (' + built.length + ')' : ''}</span>`));
+  if (!data) {
+    card.appendChild(el('div', 'dc-note', 'Brak danych gry'));
+    return card;
+  }
+  if (!built || built.length === 0) {
+    card.appendChild(el('div', 'dc-note', '(brak — zbuduj pierwszy)'));
+    return card;
+  }
+  const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
+  const summary = el('div', 'bld-owned-summary');
+  summary.innerHTML =
+    formatBuildingUpkeepTotalHtml(totalUpkeep) +
+  ` · kliknij budynek — pełne szczegóły`;
+  card.appendChild(summary);
+  const groups = groupBuiltBuildingIds(built, data.buildings);
+  for (const { grupa, ids } of groups) {
+    if (ids.length === 0) continue;
+    appendDetailSection(card, grupa);
+    const list = el('div');
+    list.style.cssText = 'display:flex;flex-direction:column;gap:0.1em;margin-bottom:0.28em;';
+    for (const id of ids) appendOwnedBuildingRow(list, id, data, city);
+    card.appendChild(list);
   }
   return card;
 }
@@ -5244,29 +5975,102 @@ function appendBuildableItemRow(
   data: GameData,
   opts: { praca: number; skarb: number | undefined; buildLabel: 'Buduj' | 'Ulepsz'; upgrade?: boolean },
 ): void {
-  const wrap = el('div', 'bld-infocard-wrap');
   const def = findBuildingDef(data, item.id);
-  if (def) {
-    wrap.appendChild(buildBuildingInfocard(def, data, {
+  if (!def) {
+    const row = el('div', 'item-row');
+    row.textContent = item.nazwa;
+    scroll.appendChild(row);
+    return;
+  }
+
+  const row = el('div', 'bld-compact-row');
+  const ic = el('div', 'bld-compact-ic');
+  fillIconElement(ic, buildingIconHtml(def));
+  row.appendChild(ic);
+  const name = el('span', 'bld-compact-name');
+  name.textContent = def.nazwa;
+  row.appendChild(name);
+
+  const stockCost = buildingStockCostForItem(item);
+  const missing = missingStockFor(ownerSurowcePoolFor(city), stockCost);
+  const stockOk = Object.keys(missing).length === 0;
+  const actions = el('div', 'bld-compact-actions');
+  const bBuild = el('button', 'btn btn-sm btn-b', opts.buildLabel);
+  (bBuild as HTMLButtonElement).disabled = !stockOk;
+  bBuild.title = stockOk
+    ? `Dodaj do kolejki · ${item.koszt} pracy`
+    : 'Brakuje w magazynie: ' + Object.entries(missing)
+      .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
+      .join(', ');
+  bBuild.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!stockOk) return;
+    addItem(city, item, opts.upgrade ? { upgrade: true } : undefined);
+  });
+  actions.appendChild(bBuild);
+  row.appendChild(actions);
+
+  attachHoverDetail(
+    row,
+    () => buildBuildingBuildTabDetailCard(def, data, city, {
       item,
-      city,
       praca: opts.praca,
       skarb: opts.skarb,
       buildLabel: opts.buildLabel,
       upgrade: opts.upgrade,
-    }));
+      ctx: productionCtxForCity(city),
+      techs: cfg.getUnlockedTechs?.(city.ownerId) ?? [],
+    }),
+    220,
+    'left',
+  );
+  scroll.appendChild(row);
+}
+
+function appendWonderCompactRow(scroll: HTMLElement, w: WonderBuildTypeInfo, city: City): void {
+  const row = el('div', 'bld-compact-row');
+  const ic = el('div', 'bld-compact-ic');
+  fillIconElement(ic, wonderCardIconSvg());
+  row.appendChild(ic);
+  const name = el('span', 'bld-compact-name');
+  name.textContent = w.label;
+  row.appendChild(name);
+
+  const actions = el('div', 'bld-compact-actions');
+  if (w.queued) {
+    const tag = el('span', 'muted');
+    tag.style.fontSize = '0.68em';
+    tag.textContent = 'W kolejce';
+    actions.appendChild(tag);
   } else {
-    const row = el('div', 'item-row');
-    row.textContent = item.nazwa;
-    wrap.appendChild(row);
+    const bBuild = el('button', 'btn btn-sm btn-b', 'Buduj');
+    bBuild.title = `Dodaj do kolejki · ${w.kosztPraca} pracy`;
+    bBuild.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cfg.onBuildWonder?.(city.id, w.id);
+      rerender();
+    });
+    actions.appendChild(bBuild);
   }
-  scroll.appendChild(wrap);
+  row.appendChild(actions);
+
+  attachHoverDetail(row, () => buildWonderBuildTabDetailCard(w, city), 220, 'left');
+  scroll.appendChild(row);
 }
 
 function recruitManpowerCost(city: City, typeId: string): number {
   const ep = cfg.getEpoch?.(city.ownerId) ?? 1;
   const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
   return unitManpowerCostForType(typeId, ep, maxMult);
+}
+
+/** Czy imperium ma wystarczającą pulę rekrutów na werb (fallback: pula miasta). */
+function empireRekruciAffordable(city: City, mpCost: number): boolean {
+  if (mpCost <= 0) return true;
+  const empireTotal = cfg.getEmpireRekruciTotal?.(city.ownerId);
+  if (empireTotal != null) return empireTotal >= mpCost;
+  const mpSnap = cfg.getManpowerSnapshot?.(city.id);
+  return !mpSnap || mpSnap.manpowerBiezacy >= mpCost;
 }
 
 /**
@@ -5299,8 +6103,7 @@ function appendUnitRecruitCard(
   const udef = findUnitDef(data, item.id);
   if (!udef) return;
   const mpCost = recruitManpowerCost(city, item.id);
-  const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  const canMp = mpCost <= 0 || !mpSnap || mpSnap.manpowerBiezacy >= mpCost;
+  const canMp = empireRekruciAffordable(city, mpCost);
   // JEDNOSTKI-SUROWIEC-01: blokada rekrutacji gdy pula PAŃSTWA ownera nie pokrywa
   // Surowiec/Surowiec (ilość) tej jednostki — identyczny wzorzec jak canMp powyżej.
   const stockCost = unitStockCost(udef);
@@ -5332,8 +6135,7 @@ function recruitUnit(city: City, item: ProductionItem): void {
   const skarb = cfg.getTreasury?.(city.ownerId);
   if (skarb !== undefined && skarb < item.koszt) return;
   const mpCost = recruitManpowerCost(city, item.id);
-  const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  if (mpCost > 0 && mpSnap && mpSnap.manpowerBiezacy < mpCost) return;
+  if (!empireRekruciAffordable(city, mpCost)) return;
   if (cfg.onPurchaseUnit) {
     cfg.onPurchaseUnit(city.id, item.id, item.koszt);
   } else {
@@ -5748,23 +6550,47 @@ function appendCatalogBuildingRow(
   entry: BuildingCatalogEntry,
   def: BuildingDef | undefined,
   data: GameData,
+  city: City,
+  prodCtx: AvailabilityContext,
+  techs: readonly string[],
   lockHint: string,
   opts?: { forceLocked?: boolean },
 ): void {
-  const wrap = el('div', 'bld-infocard-wrap');
   const previewLocked = opts?.forceLocked === true;
-  if (def) {
-    wrap.appendChild(buildBuildingInfocard(def, data, {
-      locked: previewLocked || entry.status === 'locked',
-      lockHint: previewLocked || entry.status === 'locked' ? lockHint : undefined,
-      readyTag: !previewLocked && entry.status === 'ready' ? 'Można budować' : undefined,
-    }));
-  } else {
+  if (!def) {
     const row = el('div', 'item-row');
     row.textContent = entry.nazwa;
-    wrap.appendChild(row);
+    scroll.appendChild(row);
+    return;
   }
-  scroll.appendChild(wrap);
+
+  const row = el('div', 'bld-compact-row is-locked');
+  const ic = el('div', 'bld-compact-ic');
+  fillIconElement(ic, buildingIconHtml(def));
+  row.appendChild(ic);
+  const name = el('span', 'bld-compact-name');
+  name.textContent = def.nazwa;
+  row.appendChild(name);
+
+  if (!previewLocked && entry.status === 'ready') {
+    const tag = el('span', 'bld-catalog-ready-tag');
+    tag.style.marginLeft = 'auto';
+    tag.textContent = 'Można budować';
+    row.appendChild(tag);
+  }
+
+  attachHoverDetail(
+    row,
+    () => buildBuildingBuildTabDetailCard(def, data, city, {
+      locked: previewLocked || entry.status === 'locked',
+      lockHint: previewLocked || entry.status === 'locked' ? lockHint : undefined,
+      ctx: prodCtx,
+      techs,
+    }),
+    220,
+    'left',
+  );
+  scroll.appendChild(row);
 }
 
 function renderBuildList(
@@ -5772,7 +6598,7 @@ function renderBuildList(
   city: City,
   data: GameData | null,
   view: CityView | null,
-  opts?: { visibleRows?: number },
+  opts?: { visibleRows?: number; scrollFill?: boolean },
 ): void {
   mount.innerHTML = '';
   const titleRow = el('div');
@@ -5804,7 +6630,13 @@ function renderBuildList(
   const civBonusy = cfg.getCivBonusy?.(city.ownerId) ?? [];
   const prodState = getProd(city.id);
   const prodCtx = productionCtxForCity(city);
-  const items = buildableProduction(city, data, techs, prodCtx);
+  const items = sortProductionItemsByBuildability(
+    buildableProduction(city, data, techs, prodCtx),
+    city,
+    data,
+    prodCtx,
+    techs,
+  );
   // R-CUDA-TAB: cuda dostępne DZIŚ tej cywilizacji (już przefiltrowane w silniku —
   // main.ts listBuildableWondersForOwner(0)/wonderHudEntries) — jedyne miejsce budowy
   // cudów, zastępuje dawny osobny katalog „Cuda świata” w lewym menu.
@@ -5845,24 +6677,30 @@ function renderBuildList(
   const fullEraPreview = showEraBuildingPreview;
   const previewEntries = collectEraPreviewEntries(data, techs, prodCtx, fullEraPreview);
 
-  if (items.length === 0 && ups.length === 0 && wonders.length === 0 && previewEntries.length === 0) {
+  const sortedUps = sortProductionItemsByBuildability(ups, city, data, prodCtx, techs);
+
+  if (items.length === 0 && sortedUps.length === 0 && wonders.length === 0 && previewEntries.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak budynków — zbadaj technologie)'));
     return;
   }
 
   const scroll = createScrollList(
     'list-scroll',
-    opts?.visibleRows != null ? { visible: opts.visibleRows } : undefined,
+    opts?.scrollFill
+      ? { fill: true }
+      : opts?.visibleRows != null
+        ? { visible: opts.visibleRows, rowEm: LIST_ROW_HEIGHT_COMPACT }
+        : undefined,
   );
   for (const it of items) {
     appendBuildableItemRow(scroll, city, it, data, { praca, skarb, buildLabel: 'Buduj' });
   }
-  if (ups.length > 0) {
+  if (sortedUps.length > 0) {
     const h = el('div', 'muted');
     h.style.cssText = 'font-size:0.72em;margin:0.35em 0 0.2em;padding-top:0.25em;border-top:1px solid var(--border);';
     h.textContent = 'Ulepsz';
     scroll.appendChild(h);
-    for (const u of ups) {
+    for (const u of sortedUps) {
       appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true });
     }
   }
@@ -5872,7 +6710,7 @@ function renderBuildList(
     h.textContent = 'Cuda świata';
     scroll.appendChild(h);
     for (const w of wonders) {
-      scroll.appendChild(buildWonderInfocard(w, city));
+      appendWonderCompactRow(scroll, w, city);
     }
   }
   if (previewEntries.length > 0) {
@@ -5893,7 +6731,7 @@ function renderBuildList(
       const lockHint = fullEraPreview && def
         ? formatBuildingPreviewHint(def, data, techs)
         : formatBuildingCatalogLockHint(entry, data, techs);
-      appendCatalogBuildingRow(scroll, entry, def, data, lockHint, {
+      appendCatalogBuildingRow(scroll, entry, def, data, city, prodCtx, techs, lockHint, {
         forceLocked: fullEraPreview || entry.status === 'locked',
       });
     }
@@ -6027,18 +6865,37 @@ function buildUpgradeBonusDetailCard(
   return card;
 }
 
-/** Jeden wiersz budynku w panelu „Budynki w mieście" (GRUPY-BUDYNKOW, 2026-07-25). */
-function appendOwnedBuildingRow(target: HTMLElement, id: string, data: GameData): void {
+/** Jeden wiersz budynku w panelu „Budynki w mieście" — skrót utrzymania + bonusów. */
+function appendOwnedBuildingRow(
+  target: HTMLElement,
+  id: string,
+  data: GameData,
+  city?: City,
+  opts?: { compact?: boolean },
+): void {
+  const compact = opts?.compact === true;
   const def = data.buildings.find(b => b.id === id);
-  const row = el('div', 'bld');
-  appendBuildingInlineIcon(row, def);
-  const bn = el('span', 'bn');
+  const row = el('div', compact ? 'bld-owned-row bld-owned-row--tight' : 'bld-owned-row');
+  const hd = el('div', 'bld-owned-hd');
+  appendBuildingInlineIcon(hd, def);
+  const bn = el('span', 'bld-owned-name');
   bn.textContent = def ? def.nazwa : id;
   if (def && (def.upgradeFrom ?? '').trim().length > 0) {
     const chain = upgradeChainSteps(def.id, data.buildings);
     bn.title = chain.map(c => c.nazwa).join(' → ');
   }
-  row.appendChild(bn);
+  hd.appendChild(bn);
+  if (def && city) {
+    const level = buildingOwnedLevel(def, city);
+    if (!compact && (level > 1 || def.maksPoziom > 1)) {
+      const lv = el('span', 'bld-owned-lvl');
+      lv.textContent = `L${level}`;
+      lv.title = `Poziom ${level}${def.nazwyPoziomow[level - 1] ? ' · ' + def.nazwyPoziomow[level - 1] : ''}`;
+      hd.appendChild(lv);
+    } else if (compact && level > 1) {
+      bn.textContent = `${def.nazwa} L${level}`;
+    }
+  }
   if (def && (def.upgradeFrom ?? '').trim().length > 0) {
     const upBtn = el('button', 'bld-upg');
     upBtn.type = 'button';
@@ -6046,8 +6903,32 @@ function appendOwnedBuildingRow(target: HTMLElement, id: string, data: GameData)
     upBtn.title = 'Skład bonusów upgrade';
     upBtn.setAttribute('aria-label', `Skład bonusów ${def.nazwa}`);
     attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data), { delayMs: 260, sideHint: 'left' });
-    row.appendChild(upBtn);
+    hd.appendChild(upBtn);
   }
+  row.appendChild(hd);
+
+  if (def && city) {
+    const level = buildingOwnedLevel(def, city);
+    const tail = el('div', 'bld-owned-tail');
+    const upkeep = buildingUpkeep(def as unknown as BuildingRecord, level);
+    const upSpan = el('span', 'bld-owned-upkeep' + (upkeep === 0 ? ' muted' : ''));
+    upSpan.innerHTML = formatBuildingUpkeepRowHtml(upkeep, compact);
+    tail.appendChild(upSpan);
+    const bonusHtml = buildingOwnedBonusCompactHtml(def, level, data.buildings, { compact });
+    if (bonusHtml) {
+      const bon = el('span', 'bld-owned-bonus');
+      bon.innerHTML = bonusHtml;
+      tail.appendChild(bon);
+    }
+    if (tail.childElementCount > 0) row.appendChild(tail);
+    attachHoverDetail(row, () => buildBuildingDetailCard(def, data), 280, 'left');
+    row.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('.bld-upg')) return;
+      e.stopPropagation();
+      showHoverDetailNow(row, () => buildBuildingDetailCard(def, data), 'left');
+    });
+  }
+
   target.appendChild(row);
 }
 
@@ -6064,14 +6945,31 @@ function renderBuildingsOwned(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
-  opts?: { visibleRows?: number; scrollFill?: boolean },
+  opts?: { visibleRows?: number; scrollFill?: boolean; compact?: boolean },
 ): void {
   mount.innerHTML = '';
+  const compact = opts?.compact === true;
+  if (compact) mount.classList.add('bld-owned-compact-mount');
   const built = cfg.getBuiltBuildingIds?.(city.id);
-  mount.appendChild(el('div', 'ptitle',
-    `<span>Budynki w mieście${built ? ' (' + built.length + ')' : ''}</span>${built ? '' : PH()}`));
+  const builtCount = built?.length ?? 0;
+  let titleHtml = compact
+    ? `<span>Budynki (${builtCount})</span>`
+    : `<span>Budynki w mieście${built ? ' (' + built.length + ')' : ''}</span>${built ? '' : PH()}`;
+  if (built && data && built.length > 0 && compact) {
+    const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
+    titleHtml += totalUpkeep === 0
+      ? `<span class="bld-owned-title-upkeep">· ${BUILDING_UPKEEP_ZERO_LABEL}</span>`
+      : `<span class="bld-owned-title-upkeep">· −${totalUpkeep}${cityPanelChipIconWrap('res-treasury', 9)}</span>`;
+  }
+  mount.appendChild(el('div', 'ptitle', titleHtml));
   if (built && data) {
-    if (built.length === 0) { mount.appendChild(el('div', 'muted', '(brak — zbuduj pierwszy)')); return; }
+    if (built.length === 0) { mount.appendChild(el('div', 'muted', '(brak)')); return; }
+    if (!compact) {
+      const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
+      const summary = el('div', 'bld-owned-summary');
+      summary.innerHTML = formatBuildingUpkeepTotalHtml(totalUpkeep);
+      mount.appendChild(summary);
+    }
     const scroll = opts?.scrollFill
       ? createScrollList('list-scroll', { fill: true })
       : opts?.visibleRows != null
@@ -6081,20 +6979,23 @@ function renderBuildingsOwned(
     const groups = groupBuiltBuildingIds(built, data.buildings);
     for (const { grupa, ids } of groups) {
       const isEmpty = ids.length === 0;
+      if (compact && isEmpty) continue;
       const details = el('details', `bld-group${isEmpty ? ' bld-group-empty' : ''}`);
       details.open = !isEmpty;
       const summary = el('summary', 'bld-group-h');
-      summary.textContent = isEmpty ? `${grupa} — brak` : `${grupa} (${ids.length})`;
+      summary.textContent = isEmpty ? `${grupa} —` : `${grupa} (${ids.length})`;
       details.appendChild(summary);
       if (isEmpty) {
-        details.appendChild(el('div', 'muted bld-group-empty-note', '(brak zbudowanych budynków w tej grupie)'));
+        if (!compact) {
+          details.appendChild(el('div', 'muted bld-group-empty-note', '(brak)'));
+        }
       } else {
-        for (const id of ids) appendOwnedBuildingRow(details, id, data);
+        for (const id of ids) appendOwnedBuildingRow(details, id, data, city, { compact });
       }
       target.appendChild(details);
     }
     if (scroll) mount.appendChild(scroll);
-  } else {
+  } else if (!compact) {
     ['Spichlerz', 'Cegielnia', 'Targowisko', 'Świątynia'].forEach(n =>
       mount.appendChild(el('div', 'bld', `${cityPanelChipIconWrap('cp-buildings', 14)}<span class="bn">${n}</span>`)));
   }
@@ -6116,23 +7017,49 @@ function renderSplitPane(
   mount.appendChild(split);
 }
 
+function renderOwnedBuildingsBar(mount: HTMLElement, city: City, data: GameData | null): void {
+  mount.innerHTML = '';
+  const built = cfg.getBuiltBuildingIds?.(city.id);
+  const count = built?.length ?? 0;
+  const bar = el('button', 'bld-owned-bar');
+  bar.type = 'button';
+  bar.setAttribute('aria-label', `Budynki w mieście (${count}) — pokaż szczegóły`);
+  const left = el('span');
+  left.innerHTML = `${cityPanelChipIconWrap('cp-buildings', 16)}<span>Budynki w mieście (${count})</span>`;
+  left.style.cssText = 'display:inline-flex;align-items:center;gap:0.4em;';
+  bar.appendChild(left);
+  const chev = el('span', 'bld-owned-chevron');
+  chev.textContent = 'ℹ szczegóły';
+  bar.appendChild(chev);
+  bar.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showHoverDetailNow(bar, () => buildOwnedBuildingsDetailCard(city, data), 'left');
+  });
+  attachHoverDetail(bar, () => buildOwnedBuildingsDetailCard(city, data), 280, 'left');
+  mount.appendChild(bar);
+}
+
 function renderBuildSplitPanel(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
   view: CityView | null,
 ): void {
-  renderSplitPane(
-    mount,
-    row => renderBuildList(
-      appendPanel(row, 'cs-build'),
-      city,
-      data,
-      view,
-      { visibleRows: LIST_SCROLL_VISIBLE_CATALOG },
-    ),
-    row => renderBuildingsOwned(appendPanel(row, 'cs-owned'), city, data, { scrollFill: true }),
+  mount.innerHTML = '';
+  const pane = el('div', 'civ-v-build-pane');
+  const mainCol = el('div', 'civ-v-build-main');
+  renderBuildList(
+    appendPanel(mainCol, 'cs-build'),
+    city,
+    data,
+    view,
+    { scrollFill: true },
   );
+  pane.appendChild(mainCol);
+  const barCol = el('div', 'civ-v-build-owned-bar');
+  renderBuildingsOwned(appendPanel(barCol, 'cs-owned'), city, data, { scrollFill: true, compact: true });
+  pane.appendChild(barCol);
+  mount.appendChild(pane);
 }
 
 function renderTopBarGarrison(mount: HTMLElement, city: City): void {
@@ -6176,7 +7103,7 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
       `<span class="gi">${cityPanelChipIconWrap('tb-army', 14)}</span><span class="gn">${u.nazwa}</span>` +
       `<span class="hpb"><span class="hpf ${low ? 'hpl' : ''}" style="width:${pct}%"></span></span>`;
     chip.title = `${u.nazwa} · ${hp}/${max} HP`
-      + (isHidden ? ' · ukryta w garnizonie (Ufort.)' : '');
+      + (isHidden ? ' · w koszarach (ufortyfikowana)' : '');
     // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jedyny sposób na wyprowadzenie
     // trwale ufortyfikowanej jednostki bez rozkazu ruchu z listy armii.
     if (isHidden && cfg.onLeaveGarrison) {
@@ -6782,6 +7709,19 @@ function ownerCities(city: City): City[] {
   return list.length > 0 ? list : [city];
 }
 
+/** Kolejność nawigacji , . — od lewej do prawej na mapie (świat X, potem Z). */
+function ownerCitiesForNav(city: City): City[] {
+  const list = ownerCities(city);
+  if (list.length < 2) return list;
+  return [...list].sort((a, b) => {
+    const aw = axialToWorld(a.q, a.r, HEX_R);
+    const bw = axialToWorld(b.q, b.r, HEX_R);
+    if (Math.abs(aw.x - bw.x) > 0.01) return aw.x - bw.x;
+    if (Math.abs(aw.z - bw.z) > 0.01) return aw.z - bw.z;
+    return a.name.localeCompare(b.name, 'pl');
+  });
+}
+
 /** Tytuł miasta w panelu — dopisek miasto-państwo dla obcych klastrowych (Maciej 2026-07-07). */
 function cityPanelTitle(city: City): string {
   return formatCityMapLabel(city);
@@ -6789,15 +7729,20 @@ function cityPanelTitle(city: City): string {
 
 function switchCity(dir: -1 | 1): void {
   if (activeCity === null) return;
-  const list = ownerCities(activeCity);
+  const list = ownerCitiesForNav(activeCity);
   if (list.length < 2) return;
   const idx = list.findIndex(c => c.id === activeCity!.id);
+  if (idx < 0) return;
   const next = list[(idx + dir + list.length) % list.length];
-  if (next) {
-    activeCity = next;
-    cfg.onSwitchCity?.(next.id);
-    rerender();
-  }
+  if (!next || next.id === activeCity.id) return;
+  activeCity = next;
+  cfg.onSwitchCity?.(next.id);
+  rerender();
+}
+
+/** Nawigacja , . / strzałki — eksport dla skrótów klawiszowych w cityUxFrame. */
+export function navigateCityPanel(dir: -1 | 1): void {
+  switchCity(dir);
 }
 
 function headerOrderBadge(city: City): string {
@@ -7007,7 +7952,7 @@ function buildCityOnlyW3StatItems(city: City, view: CityView, data: GameData | n
   const cityRel = Math.round(relSt?.przyrostWiernych ?? 0);
   const relCls = cityRel > 0 ? 'gold' : cityRel < 0 ? 'red' : '';
 
-  const parts: string[] = [
+  const economyRow = [
     w3CityChip(
       cityPanelChipIcon('res-work', 20),
       'Praca',
@@ -7035,6 +7980,9 @@ function buildCityOnlyW3StatItems(city: City, view: CityView, data: GameData | n
       `Netto pieniędzy tego miasta → skarbiec · ${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)}`,
       goldSplits,
     ),
+  ].join('');
+
+  const cultureRow = [
     w3CityChip(
       cityPanelChipIcon('res-culture', 20),
       'Kultura',
@@ -7059,9 +8007,12 @@ function buildCityOnlyW3StatItems(city: City, view: CityView, data: GameData | n
       'nauka',
       `Nauka generowana w tym mieście`,
     ),
-  ];
+  ].join('');
 
-  return parts.join('<span class="civ-v-w3-chip-sep"></span>');
+  return (
+    '<div class="civ-v-w3-chips-row">' + economyRow + '</div>' +
+    '<div class="civ-v-w3-chips-row">' + cultureRow + '</div>'
+  );
 }
 
 function buildCityResourceStatItems(
@@ -7231,20 +8182,22 @@ function renderCivResourceTopBar(
   onClose?: () => void,
 ): void {
   const items = buildCityResourceStatItems(city, view, map, data, true);
+  const chipsStacked = view ? ' civ-v-w3-chips-stacked' : '';
   const multi = ownerCities(city).length > 1;
   const navDis = multi ? '' : 'disabled';
   mount.innerHTML =
     `<div class="civ-v-top-stack">` +
     `<div class="civ-v-w3-city-badge">` +
-    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-prev" ${navDis} title="Poprzednie miasto">‹</button>` +
+    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-prev" ${navDis} title="Poprzednie miasto (, lub ←)" aria-label="Poprzednie miasto">,</button>` +
     `<span class="civ-v-w3-city-name">${cityPanelTitle(city)}</span>` +
-    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-next" ${navDis} title="Następne miasto">›</button>` +
+    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-next" ${navDis} title="Następne miasto (. lub →)" aria-label="Następne miasto">.</button>` +
     `<span class="civ-v-w3-city-pop">${city.population}</span>` +
     capitalBadgeOrButtonHtml(city) +
     `</div>` +
     `<div class="civ-v-resource-bar civ-v-resource-bar-w3">` +
-    `<div class="civ-v-w3-chips civ-v-w3-chips-city">${items}</div>` +
+    `<div class="civ-v-w3-chips civ-v-w3-chips-city${chipsStacked}">${items}</div>` +
     `</div>` +
+    `<div id="civ-v-garrison-row" class="civ-v-garrison-inline"></div>` +
     `<div class="civ-v-exit-top-row">` +
     `<button type="button" class="civ-v-exit-map-btn" id="civ-v-map-close" title="Wróć na mapę świata (Esc)">` +
     `<span class="civ-v-exit-ic">${cityPanelBrandIcon('menu-exit', 24)}</span>` +
@@ -7254,12 +8207,22 @@ function renderCivResourceTopBar(
     `</div>` +
     `</div>`;
   mount.querySelector('#civ-v-map-close')?.addEventListener('click', () => closeCityView(onClose));
-  mount.querySelector('#civ-v-city-prev')?.addEventListener('click', () => switchCity(-1));
-  mount.querySelector('#civ-v-city-next')?.addEventListener('click', () => switchCity(1));
+  mount.querySelector('#civ-v-city-prev')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    switchCity(-1);
+  });
+  mount.querySelector('#civ-v-city-next')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    switchCity(1);
+  });
   mount.querySelector('#civ-v-set-capital')?.addEventListener('click', () => {
     cfg.onSetCapital?.(city.id);
     rerender();
   });
+  const garrisonRow = mount.querySelector('#civ-v-garrison-row') as HTMLElement | null;
+  if (garrisonRow) renderTopBarGarrison(garrisonRow, city);
   wireTopBarStatDetails(mount, city, view, map, data);
 }
 

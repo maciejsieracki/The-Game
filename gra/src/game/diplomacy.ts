@@ -201,8 +201,8 @@ export const DIPLOMACY_PARAMS = {
   progNapZaufanie:                 40,
   /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
   progNapRelacja:                  50,
-  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża (Maciej 2026-07-21: 40 @ normal) */
-  progHandelRelacja:               40,
+  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
+  progHandelRelacja:               0,
   /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
   progSojuszPartnerRwMin:          0.4,
   progSojuszPartnerRwMax:          0.7,
@@ -423,13 +423,12 @@ export const DIPLOMACY_DIFFICULTY_DELTA: Record<GameDifficulty, number> = {
   hard:   10,
 };
 
-/** Progi Relacji (0–200) — bramki traktatów/umów. */
+/** Progi Relacji (0–200) — bramki traktatów/umów. Handel (progHandelRelacja) celowo poza listą — stały próg z JSON, bez ±trudność. */
 const DIPLO_RELATION_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
   'progMinimalnyRelacja',
   'progSojuszRelacja',
   'progUmowaMinRelacja',
   'progNapRelacja',
-  'progHandelRelacja',
   'progGraniceRelacja',
   'progPoboczneHandel',
   'progPoboczneWojna',

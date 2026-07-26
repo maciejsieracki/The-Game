@@ -69,11 +69,11 @@ const dipNormal = getEffectiveDiplomacyParams('normal');
 const dipEasy = getEffectiveDiplomacyParams('easy');
 const dipHard = getEffectiveDiplomacyParams('hard');
 ok(dipNormal.progNapRelacja === 50, 'normal progNapRelacja 50');
-ok(dipNormal.progHandelRelacja === 40, 'normal progHandelRelacja 40');
+ok(dipNormal.progHandelRelacja === 0, 'normal progHandelRelacja 0');
 ok(dipEasy.progNapRelacja === 40, 'easy progNapRelacja 40');
-ok(dipEasy.progHandelRelacja === 30, 'easy progHandelRelacja 30');
+ok(dipEasy.progHandelRelacja === 0, 'easy progHandelRelacja 0');
 ok(dipHard.progNapRelacja === 60, 'hard progNapRelacja 60');
-ok(dipHard.progHandelRelacja === 50, 'hard progHandelRelacja 50');
+ok(dipHard.progHandelRelacja === 0, 'hard progHandelRelacja 0 (bez skali trudnosci)');
 ok(dipNormal.progNapZaufanie === 40, 'normal progNapZaufanie 40');
 ok(dipEasy.progNapZaufanie === 30, 'easy progNapZaufanie 30');
 ok(dipHard.progNapZaufanie === 50, 'hard progNapZaufanie 50');
@@ -262,12 +262,11 @@ r = evaluateProposal(prop('handel', 0, 1, { givePn: 250, receivePn: 100 }), ctx(
 }));
 ok(r.accepted && r.oneShotTrade, 'handel fair strict PN rel 45');
 
-// 9a Handel reject Rel 39 @ normal
-r = evaluateProposal(prop('handel', 0, 1, { goldOnce: 100 }), ctx({
+// 9a Handel accept Rel 39 @ normal (dawniej odrzucone przy progu 40)
+r = evaluateProposal(prop('handel', 0, 1, { givePn: 300, receivePn: 100 }), ctx({
   relation: rel(20, 19),
-  fairTradeValue: 100,
 }));
-ok(!r.accepted, 'handel reject relacja 39 normal');
+ok(r.accepted, 'handel accept relacja 39 normal (progHandelRelacja=0)');
 
 // 9b Handel accept Rel 40 @ normal
 r = evaluateProposal(prop('handel', 0, 1, { givePn: 250, receivePn: 100 }), ctx({
@@ -284,12 +283,12 @@ ok(r.accepted, 'NAP accept rel 40 zauf 5 easy');
 r = evaluateProposal(prop('nap'), ctx({ relation: rel(20, 19), difficulty: 'easy' }));
 ok(!r.accepted, 'NAP reject relacja 39 easy');
 
-// 9d Handel easy — accept 30
-r = evaluateProposal(prop('handel', 0, 1, { givePn: 350, receivePn: 100 }), ctx({
-  relation: rel(20, 10),
+// 9d Handel easy — ten sam próg Relacji co normal (progHandelRelacja nie skaluje się z trudnością)
+r = evaluateProposal(prop('handel', 0, 1, { givePn: 300, receivePn: 100 }), ctx({
+  relation: rel(20, 19),
   difficulty: 'easy',
 }));
-ok(r.accepted, 'handel accept relacja 30 easy');
+ok(r.accepted, 'handel accept relacja 39 easy (progHandelRelacja=0)');
 
 // 10 Handel unfair (strict PN W4-A)
 r = evaluateProposal(prop('handel', 0, 1, { givePn: 50, receivePn: 100 }), ctx({ relation: rel(25, 20) }));
@@ -338,7 +337,7 @@ ok(!r.accepted && r.reason.includes('Zaufanie'), 'tech reject zauf 25 rel 45');
 // 13 Granice wojskowe — Rel >= 100 AND Zaufanie >= 45
 r = evaluateProposal(prop('granice', 0, 1, { borderMilitary: true }), ctx({
   relation: rel(50, 60),
-  responderRespekt: 60,
+  proposerRespekt: 60,
 }));
 ok(r.accepted && r.deal?.rodzaj === 'prawo_wojskowe_przemarszu', 'granice wojskowe');
 

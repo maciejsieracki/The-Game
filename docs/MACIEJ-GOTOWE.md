@@ -4,7 +4,60 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-## [00:05] ✅ Gotowe — stash merge + deploy ROBOCZA `0de2599c` (main push)
+## [23:38] ✅ Gotowe — deploy ROBOCZA FALA 25 (`1636f388`)
+
+| | |
+|---|---|
+| **Gdzie** | `gra-robocza/START.html` → `Gra-ROBOCZA.html` · md5 `1636f388b512b008a2b95a6a46d8bdb9` |
+| **Co** | Kultura/religia: bez podwójnej kary „Obca kultura"; miasta założone 100% kultury; podbój tej samej kultury (Grecka→Grecka) = pełna zgodność + religia państwa; panel Kultura/Religia ze składem % |
+| **Testy** | tsc 0 · manpower 44/44 · ai-test 246/246 · map-attack-city 8/8 · society-breakdown 40/40 · VERIFY OK |
+
+---
+
+## [23:28] ✅ Gotowe — deploy ROBOCZA FALA 24 (`4a8745eb`)
+
+| | |
+|---|---|
+| **Gdzie** | `gra-robocza/START.html` → `Gra-ROBOCZA.html` · md5 `4a8745eb332dbc9c3bd280e530ce60c7` |
+| **Co** | Wszystko z F23 + **Manpower imperium** (rekrutacja tylko z puli cywilizacji, bez spadku obywateli; zwrot MP do imperium) |
+| **Testy** | tsc 0 · manpower 44/44 · ai-test 246/246 · map-attack-city 8/8 |
+
+---
+
+## [23:21] ✅ Gotowe — deploy ROBOCZA FALA 23 (`e5972875`)
+
+| | |
+|---|---|
+| **Gdzie** | `gra-robocza/START.html` → `Gra-ROBOCZA.html` · md5 `e5972875918e6e57c67657e2041674d2` |
+| **Co** | Alert produkcji (tylko gdy jest co wybrać; ✕ + fingerprint; bez auto-budowy) · lista miast „Kolejka pusta" warunkowo · baner zasobów miasta 2×3 · klik w miasto przy jednostce → marsz (0 ruchu = podgląd trasy) · P-AI-011 + C-AI w bundlu |
+| **Testy** | tsc 0 · ai-test 246/246 · map-attack-city 8/8 |
+
+---
+
+## [23:15] ✅ Gotowe — AI proaktywny handel (P-AI-011, kod w `gra/src`, bez deploy)
+
+| | |
+|---|---|
+| **Co** | Deficyt surowców (magazyn + kolejka budowy + niski spichlerz) → AI kupuje u partnera · `zaproponuj_audiencje` (HUD + auto-kontakt + propozycja na stole) · handel przed sojuszem/paktem · cena z marginesem archetypu (`handlowosc`) · hint „X handluje z Y" · miasta-państwa: krótszy cooldown przy deficycie |
+| **Pliki** | `ai-resource-needs.ts`, `ai.ts`, `main.ts`, `diplomacy-layers.ts`, `diplomacy-resource-trade-pick.ts`, `diplomacy-economy.ts` |
+| **Testy** | tsc 0 · ai-test 246/246 · diplomacy-proposal 66/66 · resource-trade-pick 9/9 · ai-resource-needs 4/4 · diplomacy-layers 17/17 |
+| **Deploy** | ⏸️ czeka na **deploy** do `gra-robocza/` |
+
+---
+
+## [22:40] ✅ Gotowe — pakiet C-AI: rozwój + wojna + ekspansja (kod w `gra/src`, bez deploy)
+
+| | |
+|---|---|
+| **Decyzje** | C-AI-WOJNA-Q1/ EKSP-Q1/Q2 / PAKIET-Q1–Q3 / MOC-Q1–Q3 (wszystkie A lub B/C wg formularza) |
+| **Naprawione błędy** | Usunięty osadnik z AI · founding przez `foundCityAt` (panel budowy) · wojna wymagana przed atakiem AI↔AI · dyplomacja przed ruchem |
+| **Rozwój** | Cel #1 Mocy co 3 tury · `ekspansywnosc`/`sklonnoscDoPodboju` z civ-ai.json · sąsiad ≤8 hex · agresywne cyw. eksplorują |
+| **Pliki** | `ai.ts`, `main.ts`, `civ-ai-data.ts`, `ai-war-gate-test.cjs` |
+| **Spec** | `docs/decyzje/C-AI-ROZWOJ-PAKIET-2026-07-26.md` |
+| **Deploy** | ⏸️ czeka na build do `gra-robocza/` (powiedz **deploy** gdy chcesz w grze) |
+
+---
+
 
 | | |
 |---|---|

@@ -11,7 +11,41 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `61cd43ad` — 2026-07-26 18:21 · FALA 22: GORZYSTOSC OBNIZONA DO ~12% — **AKTUALNA**
+## ROBOCZA `1636f388` — 2026-07-26 23:38 · FALA 25: KULTURA/RELIGIA + PANEL SKŁAD — **AKTUALNA**
+- md5 (pelne): `1636f388b512b008a2b95a6a46d8bdb9` · stempel: `ROBOCZA · 2026-07-26 23:38`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0).
+- **Co nowego:**
+  - **Kultura — bez podwójnej kary:** usunięta druga linia „Obca kultura −2"; jedna pozycja **„Kultura"** w rozpisce Szczęścia.
+  - **Miasta założone = 100% kultury właściciela** — presja sąsiadów nie obniża udziału.
+  - **Podbój tego samego okręgu kulturowego** (np. Ateny→Sparta, obie Grecka) = od razu 100% kultury + religia państwa zdobywcy.
+  - **Okręg kulturowy** porównywany po `typCywilizacji`, nie po nazwie państwa.
+  - **Presja kultury:** silniejsze imperium podnosi udział własnej kultury (naprawa błędu obu gałęzi spadku).
+  - **Panel miasta — Kultura:** sekcja „Skład kultury" (% właściciela / obca + konwersja).
+  - **Panel miasta — Religia:** „Religia państwa" + „Skład wyznawców" z %.
+- **Bramki:** tsc 0 · manpower-test 44/44 · ai-test 246/246 · map-attack-city 8/8 · society-breakdown 40/40.
+
+## ROBOCZA `4a8745eb` — 2026-07-26 23:28 · FALA 24: MANPOWER IMPERIUM + FALA 23 — **ZASTĄPIONA**
+- md5 (pelne): `4a8745eb332dbc9c3bd280e530ce60c7` · stempel: `ROBOCZA · 2026-07-26 23:28`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0).
+- **Co nowego (kumulatywnie od F22):**
+  - **Manpower imperium (Maciej 2026-07-26):** werb/anulowanie/rozwiązanie jednostki — tylko pula rekrutów cywilizacji (suma po miastach); **bez** spadku obywateli przy rekrutacji; zwrot MP do puli imperium, nie do miasta rekrutującego.
+  - Alert produkcji (warunkowy, ✕ + fingerprint, bez auto-budowy) · baner zasobów miasta 2×3 · klik w miasto przy jednostce → marsz · P-AI-011 + C-AI.
+- **Bramki:** tsc 0 · manpower-test 44/44 · ai-test 246/246 · map-attack-city 8/8.
+
+## ROBOCZA `e5972875` — 2026-07-26 23:21 · FALA 23: PRODUKCJA + UI MIASTA + MARSZ + AI HANDEL — **ZASTĄPIONA**
+- md5 (pelne): `e5972875918e6e57c67657e2041674d2` · stempel: `ROBOCZA · 2026-07-26 23:21`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest. HEAD roboczy `cba0a39` (lokalne zmiany w `gra/src`, niezacommitowane).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0).
+- **Co nowego:**
+  - **Alert „Produkcja: … / Kolejka pusta"** tylko gdy `cityHasActionableProduction` (budynki, jednostki, ulepszenia poziomu, cuda — ta sama logika co panel). ✕ zamyka i zapisuje fingerprint opcji; wraca po zmianie możliwości lub po opróżnieniu kolejki. Lista miast: „Kolejka pusta" tylko wtedy samo. Auto-budowa (`budowaTryb=auto`) — bez alertu.
+  - **Panel miasta — baner zasobów 2×3:** Praca/Żywność/Skarbiec nad Kulturą/Religią/Nauką, wyrównane w jednym banerze.
+  - **Klik w miasto przy zaznaczonej jednostce:** zawsze `planMarchTo` (także przy 0 ruchu — podgląd trasy); panel miasta tylko bez zaznaczenia. Obcy gród: atak jeśli możliwy, inaczej marsz na sąsiedni heks.
+  - **P-AI-011 + pakiet C-AI** (proaktywny handel, audiencja AI, margines ceny, rozwój/wojna/ekspansja) — kod w bundlu.
+- **Bramki:** tsc 0 · ai-test 246/246 · map-attack-city 8/8 · logic-test 207/208 (pre: garnizon visibility).
+
+## ROBOCZA `61cd43ad` — 2026-07-26 18:21 · FALA 22: GORZYSTOSC OBNIZONA DO ~12% — **ZASTĄPIONA**
 - md5 (pelne): `61cd43ad517642a6bb92494a633871e5` · stempel: `ROBOCZA · 2026-07-26 18:21`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `668229a`.
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0).

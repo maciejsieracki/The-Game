@@ -25,6 +25,8 @@ export interface EndScreenSideStats {
 
 export interface EndScreen1EParams {
   playerWon: boolean;
+  /** Strona gracza — do poprawnego „Twoje straty" vs „Straty wroga". Domyślnie atk. */
+  playerSide?: 'atk' | 'def';
   winnerLabel: string;
   battleTitle: string;
   atk: EndScreenSideStats;
@@ -123,8 +125,11 @@ export function showEndScreen1E(
     : 'radial-gradient(400px 160px at 50% 0%,rgba(200,64,64,0.16),transparent)';
 
   const loot = p.lootGold ?? 0;
-  const atkLost = Math.max(0, p.atk.hpMax - p.atk.hp);
-  const defLost = Math.max(0, p.def.hpMax - p.def.hp);
+  const playerSide = p.playerSide ?? 'atk';
+  const playerStats = playerSide === 'atk' ? p.atk : p.def;
+  const enemyStats = playerSide === 'atk' ? p.def : p.atk;
+  const playerLost = Math.max(0, playerStats.hpMax - playerStats.hp);
+  const enemyLost = Math.max(0, enemyStats.hpMax - enemyStats.hp);
 
   const card = document.createElement('div');
   Object.assign(card.style, {
@@ -149,8 +154,8 @@ export function showEndScreen1E(
       `<div class="tnum" style="font-size:12px;color:${BATTLE_TEXT_DIM};margin-top:5px;">${p.battleTitle}</div>` +
     `</div>` +
     `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 30px 20px;">` +
-      statTileHtml('−' + atkLost, 'Twoje straty', BATTLE_PLAYER_TEXT, 'rgba(58,106,208,0.35)', 'rgba(58,106,208,0.07)') +
-      statTileHtml('−' + defLost, 'Straty wroga', BATTLE_ENEMY_TEXT, 'rgba(200,64,64,0.35)', 'rgba(200,64,64,0.07)') +
+      statTileHtml('−' + playerLost, 'Twoje straty', BATTLE_PLAYER_TEXT, 'rgba(58,106,208,0.35)', 'rgba(58,106,208,0.07)') +
+      statTileHtml('−' + enemyLost, 'Straty wroga', BATTLE_ENEMY_TEXT, 'rgba(200,64,64,0.35)', 'rgba(200,64,64,0.07)') +
       statTileHtml(
         loot > 0 ? '+' + loot : '0',
         loot > 0 ? (p.lootNote ?? 'Łupy · złoto') : 'Łupy',

@@ -163,5 +163,21 @@ function mapWith(...hexes) {
   ok(M.buildingResourceGateMet({ id: 'cegielnia' }, ['Glina']), 'cegielnia OK gdy Glina active');
 }
 
+// --- SUROW-CIV-02 (Maciej 2026-07-26): magazyn państwa vs dostęp-only ---
+{
+  ok(
+    M.buildingResourceGateMet({ id: 'stolarnia' }, [], undefined, { drewno: 5 }),
+    'stolarnia OK gdy drewno w magazynie państwa (bez aktywnego źródła)',
+  );
+  ok(
+    !M.buildingResourceGateMet({ id: 'spichlerz_ii' }, [], undefined, { sol: 99 }),
+    'spichlerz II: zapas soli w magazynie NIE zastępuje bramki dostępu',
+  );
+  ok(
+    M.buildingResourceGateMet({ id: 'spichlerz_ii' }, ['Sól'], undefined, {}),
+    'spichlerz II OK gdy Sól aktywna w imperium (bez zapasu)',
+  );
+}
+
 console.log('\ndeposit-building-gate: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail ? 1 : 0);

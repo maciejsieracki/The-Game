@@ -231,6 +231,24 @@ export function canAiProposeTradeAgreement(
 /** Cooldown proaktywnej propozycji handlu surowcem — co N tur, per para. PLACEHOLDER: N=8. */
 export const AI_RESOURCE_TRADE_PROPOSAL_COOLDOWN_TURNS = 8;
 
+/** Cooldown krótszy przy deficycie (pilność zakupu). */
+export const AI_RESOURCE_TRADE_DEFICIT_COOLDOWN_TURNS = 4;
+
+/** Cooldown dla miast-państw przy krytycznym deficycie. */
+export const AI_RESOURCE_TRADE_CITYSTATE_URGENT_COOLDOWN_TURNS = 3;
+
+/** Cooldown prośby AI o audiencję (inicjatywa handlowa bez kontaktu gracza). */
+export const AI_AUDIENCE_REQUEST_COOLDOWN_TURNS = 10;
+
+export function canAiRequestAudience(
+  currentTurn: number,
+  lastRequestTurn: number | undefined,
+  cooldownTurns: number = AI_AUDIENCE_REQUEST_COOLDOWN_TURNS,
+): boolean {
+  if (lastRequestTurn == null || lastRequestTurn <= 0) return true;
+  return currentTurn >= lastRequestTurn + cooldownTurns;
+}
+
 /** Domyślny czas trwania cyklicznej umowy surowcowej proponowanej przez AI (tur). PLACEHOLDER: 10. */
 export const AI_RESOURCE_TRADE_DEFAULT_TURNS = 10;
 

@@ -17,9 +17,11 @@ import { Nakladka }     from '../types/hex';
 import type { GameData } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance, computePath, keyOf } from '../units/setup';
+import { hexDistance, computePath, computeReachable, keyOf } from '../units/setup';
 import type { City }       from './cities';
 import { canFoundCity }    from './cities';
+import { evaluateFoundCityAffordance } from './city-founding';
+import type { CivAiProfile } from './civ-ai-data';
 import type { ImprovementKey } from '../render/improvements';
 import type { TerritoryNode } from '../map/territory';
 import { cityTerritoryRadius } from '../map/territory';
@@ -47,10 +49,11 @@ export interface AICmdMove {
   toR: number;
 }
 
-/** Found a city at the unit's current position. */
-export interface AICmdFoundCity {
-  type: 'foundCity';
-  unitId: string;
+/** Found a city at (q, r) via panel budowy (foundCityAt — bez osadnika). */
+export interface AICmdFoundCityAt {
+  type: 'foundCityAt';
+  q: number;
+  r: number;
 }
 
 /** Attack an enemy unit. */
@@ -95,7 +98,7 @@ export interface AICmdEndTurn {
 /** Union of all AI command types. */
 export type AICommand =
   | AICmdMove
-  | AICmdFoundCity
+  | AICmdFoundCityAt
   | AICmdAttack
   | AICmdBuild
   | AICmdBuildImprovement
@@ -274,6 +277,11 @@ export interface AITurnOpts {
    */
   pracaAvailable?: number;
   /**
+   * P-AI-011 (Maciej 2026-07-26): surowce ilościowe z zapasem < 1 pakietu handlowego.
+   * Silnik (main.ts) — priorytet: (1) handel, (2) budowa/ulepszenie pod brak.
+   */
+  resourceDeficitKeys?: readonly string[];
+  /**
    * D-IMPROVEMENTS: epoka TEGO AI (main.ts `empireEpochForOwner(ownerId)`) --
    * wymagane przez qualifier dla hodowli Inków (bydło/owce poza lamą dopiero
    * od epoki 3, patrz livestock-unlock.ts). Domyślnie 1 gdy brak.
@@ -296,6 +304,17 @@ export interface AITurnOpts {
    * Gdy brak — brak filtra (testy lane / stare save).
    */
   canEngageOwner?: (targetOwnerId: number) => boolean;
+  /**
+   * C-AI-PAKIET (2026-07-26): profil z civ-ai.json per typ cywilizacji —
+   * ekspansywnosc i sklonnoscDoPodboju sterują ekspansją i agresją wojskową.
+   */
+  civAiProfile?: Pick<CivAiProfile, 'ekspansywnosc' | 'sklonnoscDoPodboju'>;
+  /** Bieżąca tura (silnik) — cel #1 Mocy co 3 tury. */
+  currentTurn?: number;
+  /** Pozycja w rankingu Mocy (1 = najsilniejszy; silnik: computeAbsolutePowerRank). */
+  powerRank?: number;
+  /** Moc państwa ownerId — do wyboru słabszego celu wojskowego (C-AI-MOC-Q2=A). */
+  powerOfOwner?: (ownerId: number) => number;
 }
 
 /** Bramka walki AI — domyślnie przepuszcza (testy bez silnika). */
@@ -630,6 +649,70 @@ function firstStep(
 }
 
 // ---------------------------------------------------------------------------
+// Early-game scout race (wioski / domki z prezentami)
+// ---------------------------------------------------------------------------
+
+/** Pełne cywilizacje: min. tyle zwiadowców w fazie startowej (nie dotyczy państw-miast). */
+export const AI_EARLY_SCOUT_TARGET = 2;
+const SCOUT_TYPE_ID = 'Zwiadowca';
+
+export function isScoutUnit(unit: RuntimeUnit): boolean {
+  return unit.typeId === SCOUT_TYPE_ID || unit.category === 'zwiadowca';
+}
+
+export function countPlayerScouts(allUnits: readonly RuntimeUnit[], playerId: number): number {
+  return allUnits.filter(u => u.ownerId === playerId && isScoutUnit(u)).length;
+}
+
+/** Faza wyścigu o neutralne wioski — pełna cywilizacja, przed ekspansją poza region startowy. */
+function isVillageExploreRacePhase(opts: AITurnOpts, myCities: AICity[]): boolean {
+  return !opts.defensiveCopy && myCities.length < 3;
+}
+
+/**
+ * Krok ruchu zwiadowcy: najpierw najbliższa wolna wioska, potem heks coraz dalej od stolicy.
+ */
+function planScoutExploreStep(
+  unit: RuntimeUnit,
+  map: GameMap,
+  myCities: AICity[],
+  units: RuntimeUnit[],
+  villages: { q: number; r: number }[],
+): { q: number; r: number } | null {
+  const villageTarget = findNearestVillage(unit, villages);
+  if (villageTarget !== null) {
+    const towardVillage = firstStep(unit, map, villageTarget.q, villageTarget.r, units);
+    if (towardVillage !== null) return towardVillage;
+  }
+  if (myCities.length === 0) return null;
+  const home = nearest(unit.q, unit.r, myCities, c => c.q, c => c.r);
+  if (home === undefined) return null;
+  const homeDist = hexDistance(unit.q, unit.r, home.q, home.r);
+  const occ = occupiedExcluding(units, unit.id);
+  const reachable = computeReachable(unit, map, occ);
+  reachable.delete(keyOf(unit.q, unit.r));
+  let bestKey: string | null = null;
+  let bestDist = homeDist;
+  for (const key of reachable) {
+    const parts = key.split(',');
+    if (parts.length !== 2) continue;
+    const q = Number(parts[0]);
+    const r = Number(parts[1]);
+    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+    const d = hexDistance(q, r, home.q, home.r);
+    if (d > bestDist) {
+      bestDist = d;
+      bestKey = key;
+    }
+  }
+  if (bestKey === null) return null;
+  const parts = bestKey.split(',');
+  const destQ = Number(parts[0]);
+  const destR = Number(parts[1]);
+  return firstStep(unit, map, destQ, destR, units);
+}
+
+// ---------------------------------------------------------------------------
 // Terrain yield heuristic (city founding -- Spec-AI §3.3)
 // ---------------------------------------------------------------------------
 
@@ -640,6 +723,7 @@ function hexCityScore(
   r: number,
   data: GameData,
   enemyCities: AICity[],
+  opts?: Pick<AITurnOpts, 'resourceDeficitKeys'>,
 ): number {
   const foodPts    = getAiParam(data, 'ekspansja_heurystyka_zywnosc_pkt', 3);
   const workPts    = getAiParam(data, 'ekspansja_heurystyka_praca_pkt', 2);
@@ -666,6 +750,11 @@ function hexCityScore(
   if (work  >= 2) score += workPts;
   if (trade >= 1) score += tradePts;
   if (hex.rzeka.obecna) score += riverPts;
+
+  const deficits = opts?.resourceDeficitKeys ?? [];
+  if (deficits.includes('glina') && hex.nakladka === Nakladka.ZlozeGliny) score += resPts * 2;
+  if (deficits.includes('ruda') && hex.nakladka === Nakladka.ZlozeRudy) score += resPts * 2;
+  if (deficits.includes('drewno') && hex.nakladka === Nakladka.Las) score += resPts * 2;
 
   // Resource overlay bonus (ore, clay = settlement value)
   if (hex.nakladka === Nakladka.ZlozeGliny || hex.nakladka === Nakladka.ZlozeRudy) {
@@ -720,7 +809,10 @@ function chooseCityProduction(
   // Archetype delta: +/- 20 per unit of mod
   // Difficulty bonus: bonusProdukcja scales economy score (higher difficulty = more efficient AI)
   const diffProdBonus = Math.round(difficultyParams.bonusProdukcja * 200); // e.g. +10% -> +20 pts, +25% -> +50 pts
-  const economyScore  = 100 + mods.ekonomia * 20 + diffProdBonus;
+  const powerGoalBoost = opts.currentTurn !== undefined
+    && opts.currentTurn % 3 === 0
+    && (opts.powerRank ?? 1) > 1;
+  const economyScore  = 100 + mods.ekonomia * 20 + diffProdBonus + (powerGoalBoost ? 40 : 0);
   const militaryScore = 100 + mods.wojsko   * 20;
   const defenseScore  = 100 + mods.obrona   * 20;
 
@@ -772,9 +864,10 @@ function chooseCityProduction(
     if (!built.includes('spichlerz')) {
       candidates.push({ id: 'spichlerz', score: 250 });
     }
-    // Settler if < 3 cities (państwa-kopie nigdy nie ekspandują)
-    if (myCities.length < 3 && !opts.defensiveCopy) {
-      candidates.push({ id: 'Osadnik', score: 200 });
+    // Wyścig o wioski (Maciej 2026-07-26): pełne cywilizacje budują min. 2 zwiadowców.
+    // Państwa-miasta (defensiveCopy) — wyłączone.
+    if (!opts.defensiveCopy && countPlayerScouts(allUnits, playerId) < AI_EARLY_SCOUT_TARGET) {
+      candidates.push({ id: SCOUT_TYPE_ID, score: 320 + economyScore });
     }
     // Defensive unit if city is unguarded
     const cityGuard = allUnits.filter(
@@ -799,7 +892,6 @@ function chooseCityProduction(
         candidates.push({ id: b, score: 140 + economyScore });
       }
     }
-    if (!opts.defensiveCopy) candidates.push({ id: 'Osadnik', score: 100 });
   }
 
   // ZADANIE 2 (Maciej 2026-07-23, correctness): priorytet konwertery-przed-konsumentami.
@@ -844,6 +936,22 @@ function chooseCityProduction(
         candidates.push({ id: converterId, score: consumer.score + 1 });
       }
       candidates[consumerIdx]!.score = consumer.score - 1;
+    }
+  }
+
+  // P-AI-011: deficyt surowca → priorytet budynku wytwarzającego / przetwarzającego.
+  const deficitKeys = opts.resourceDeficitKeys;
+  if (deficitKeys?.length) {
+    for (const resKey of deficitKeys) {
+      for (const buildingId of AI_BUILDING_FOR_DEFICIT[resKey] ?? []) {
+        if (built.includes(buildingId)) continue;
+        const idx = candidates.findIndex(c => c.id === buildingId);
+        if (idx >= 0) {
+          candidates[idx]!.score += 85;
+        } else {
+          candidates.push({ id: buildingId, score: 200 + economyScore });
+        }
+      }
     }
   }
 
@@ -1016,6 +1124,38 @@ const AI_IMPROVEMENT_PRIORITY: readonly ImprovementKey[] = [
   'wyrab',
 ];
 
+/** P-AI-011: ulepszenie terenu pod brakujący surowiec (priorytet po handlu). */
+const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKey[]>> = {
+  drewno: ['tartak', 'wyrab'],
+  kamien: ['kamieniolom'],
+  glina: ['glinianka'],
+  ruda: ['kopalnia', 'kopalnia_miedzi'],
+};
+
+/** P-AI-011: budynki miejskie pod brakujący surowiec. */
+const AI_BUILDING_FOR_DEFICIT: Readonly<Record<string, readonly string[]>> = {
+  drewno: ['stolarnia'],
+  glina: ['garncarnia', 'cegielnia'],
+  kamien: ['kamieniarski'],
+  ruda: ['kuznia'],
+  cegla: ['cegielnia'],
+  braz: ['odlewnia_brazu'],
+  ceramika: ['garncarnia'],
+};
+
+function improvementPriorityForDeficits(
+  base: readonly ImprovementKey[],
+  deficitKeys: readonly string[] | undefined,
+): ImprovementKey[] {
+  if (!deficitKeys?.length) return [...base];
+  const boost = new Set<ImprovementKey>();
+  for (const key of deficitKeys) {
+    for (const imp of AI_IMPROVEMENT_FOR_DEFICIT[key] ?? []) boost.add(imp);
+  }
+  if (boost.size === 0) return [...base];
+  return [...base.filter(k => boost.has(k)), ...base.filter(k => !boost.has(k))];
+}
+
 /**
  * TEMAT #8: próg zachowania zasobu lasu dla `wyrab`. AI buduje wyrąb na heksie
  * TYLKO gdy w promieniu miasta (candidateHexes -- ten sam zbiór co reszta typów)
@@ -1120,7 +1260,7 @@ function planCityImprovements(
       })
       .sort((a, b) => (a.q - b.q) || (a.r - b.r));
 
-    for (const key of AI_IMPROVEMENT_PRIORITY) {
+    for (const key of improvementPriorityForDeficits(AI_IMPROVEMENT_PRIORITY, opts.resourceDeficitKeys)) {
       const meta = getImprovementMeta(key);
       if (!meta) continue;
       if (meta.kosztPraca > pracaLeft) continue;
@@ -1174,13 +1314,80 @@ function planCityImprovements(
 }
 
 // ---------------------------------------------------------------------------
-// Unit helpers
+// City founding (C-AI-EKSP-Q1/Q2 — panel budowy, bez osadnika)
 // ---------------------------------------------------------------------------
 
-/** True if unit is a settler (category osadnik). */
-function isSettler(unit: RuntimeUnit): boolean {
-  return unit.category === 'osadnik';
+/** Deterministyczny RNG do remisu miast-źródeł (playerId + turn). */
+function aiFoundingRand(playerId: number, turn: number): () => number {
+  let seed = playerId * 10007 + turn * 7919;
+  return () => {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    return seed / 0x7fffffff;
+  };
 }
+
+/**
+ * C-AI-EKSP-Q1=A: max 1 miasto/turę/cywilizację przez foundCityAt (koszt Pracy+ludność).
+ * C-AI-EKSP-Q2=A: blokada gdy clusterConsolidationPhase (cele w clusterStateTargets).
+ * defensiveCopy: brak founding (Maciej 2026-07-20).
+ */
+export function planCityFounding(
+  playerId: number,
+  cities: AICity[],
+  map: GameMap,
+  data: GameData,
+  opts: AITurnOpts,
+  minCityDist: number,
+): AICmdFoundCityAt | null {
+  if (opts.defensiveCopy) return null;
+  const clusterConsolidationPhase = (opts.clusterStateTargets ?? []).length > 0;
+  if (clusterConsolidationPhase) return null;
+
+  const myCities = cities.filter(c => c.ownerId === playerId);
+  const treasuryPraca = opts.pracaAvailable ?? 0;
+  const turn = opts.currentTurn ?? 0;
+  const aff = evaluateFoundCityAffordance(
+    treasuryPraca,
+    myCities,
+    playerId,
+    { rand: aiFoundingRand(playerId, turn) },
+  );
+  if (!aff.ok) return null;
+
+  const enemyCities = cities.filter(c => c.ownerId !== playerId);
+  const targetHex = findCityFoundingHex(map, cities, enemyCities, data, minCityDist, opts);
+  if (targetHex === null) return null;
+
+  const { ok } = canFoundCity(targetHex.q, targetHex.r, cities, map);
+  if (!ok) return null;
+
+  return { type: 'foundCityAt', q: targetHex.q, r: targetHex.r };
+}
+
+/** Czy wróg jest sąsiadem w promieniu 8 hex od terytorium własnego (C-AI-MOC-Q2=A). */
+function isEnemyNearOwnTerritory(
+  enemyQ: number,
+  enemyR: number,
+  myCities: AICity[],
+  map: GameMap,
+  maxDist = 8,
+): boolean {
+  for (const city of myCities) {
+    const node = { q: city.q, r: city.r, pop: city.population, level: 1 };
+    const radius = cityTerritoryRadius(node);
+    for (const key of hexKeysWithinRadius(city.q, city.r, radius + maxDist, map)) {
+      const parts = key.split(',');
+      const hq = Number(parts[0]);
+      const hr = Number(parts[1]);
+      if (hexDistance(enemyQ, enemyR, hq, hr) <= maxDist) return true;
+    }
+  }
+  return myCities.some(c => hexDistance(enemyQ, enemyR, c.q, c.r) <= maxDist);
+}
+
+// ---------------------------------------------------------------------------
+// Unit helpers
+// ---------------------------------------------------------------------------
 
 /** True if unit is ranged (lucznik, procarz, oszczepnik). */
 function isRanged(unit: RuntimeUnit): boolean {
@@ -1290,9 +1497,20 @@ export function decideAITurn(
   );
   const clusterConsolidationPhase = clusterTargetOwnerIds.size > 0;
   const clusterEnemyCities = engageableEnemyCities.filter(c => clusterTargetOwnerIds.has(c.ownerId));
+  const sklonnoscPodboju = opts.civAiProfile?.sklonnoscDoPodboju ?? 2;
+  const skipPatrol = sklonnoscPodboju >= 4;
+  const villageExploreRace = isVillageExploreRacePhase(opts, myCities);
 
   // (archetyp + trudność policzone na górze funkcji — wspólne dla obu ścieżek)
   const minCityDist = getAiParam(data, 'ekspansja_min_dystans_miast', 5);
+
+  // -------------------------------------------------------------------------
+  // Step 1b: CITY FOUNDING — max 1/turę (C-AI-EKSP-Q1)
+  // -------------------------------------------------------------------------
+  const foundingCmd = planCityFounding(playerId, cities, map, data, opts, minCityDist);
+  if (foundingCmd !== null) {
+    commands.push(foundingCmd);
+  }
 
   // -------------------------------------------------------------------------
   // Step 2: PRODUCTION -- one build command per city
@@ -1315,15 +1533,17 @@ export function decideAITurn(
 
   // -------------------------------------------------------------------------
   // Step 4: UNIT MOVEMENT AND ATTACK
-  // Sort: super first, then military, then settlers
+  // Sort: super first, then military
   // -------------------------------------------------------------------------
   const sortedUnits = [...myUnits].sort((a, b) => {
+    if (villageExploreRace) {
+      const scoutA = isScoutUnit(a) ? 0 : 1;
+      const scoutB = isScoutUnit(b) ? 0 : 1;
+      if (scoutA !== scoutB) return scoutA - scoutB;
+    }
     const superA = a.category === 'super' ? 0 : 1;
     const superB = b.category === 'super' ? 0 : 1;
-    if (superA !== superB) return superA - superB;
-    const milA = isSettler(a) ? 1 : 0;
-    const milB = isSettler(b) ? 1 : 0;
-    return milA - milB;
+    return superA - superB;
   });
 
   // Track which units received at least one action command this turn (for fallback).
@@ -1347,58 +1567,27 @@ export function decideAITurn(
     return neutralVillagesCache;
   };
 
-  // findSettlerTarget nie zależy od konkretnego osadnika (tylko od map/cities/
-  // enemyCities/data/minCityDist/opts — stałych w obrębie tego wywołania decideAITurn),
-  // więc przy wielu osadnikach tego samego gracza wynik jest identyczny za każdym razem.
-  // Liczymy pełny skan mapy x miast co najwyżej raz na turę (leniwie — tylko jeśli
-  // jakiś osadnik faktycznie tego potrzebuje), zamiast per osadnik (#29).
-  let settlerTargetComputed = false;
-  let cachedSettlerTarget: { q: number; r: number } | null = null;
-  const getSettlerTarget = (unit: RuntimeUnit): { q: number; r: number } | null => {
-    if (!settlerTargetComputed) {
-      cachedSettlerTarget = findSettlerTarget(unit, map, cities, enemyCities, data, minCityDist, opts);
-      settlerTargetComputed = true;
-    }
-    return cachedSettlerTarget;
-  };
+  // C-AI-MOC-Q2=A: cele wojskowe w promieniu 8 hex od własnego terytorium
+  const expansionEnemyCities = engageableEnemyCities.filter(
+    ec => isEnemyNearOwnTerritory(ec.q, ec.r, myCities, map, 8),
+  );
 
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
 
-    // Settlers — faza 2 dopiero po konsolidacji klastra
-    if (isSettler(unit)) {
-      if (clusterConsolidationPhase) {
-        applyIdleFallback(unit, map, myCities, units, commands);
-        if (commands.length > cmdsBefore) unitActed.add(unit.id);
-        continue;
-      }
+    if (unit.ruchLeft <= 0) continue;
 
-      const { ok: canFound } = canFoundCity(unit.q, unit.r, cities, map);
-      if (canFound) {
-        commands.push({ type: 'foundCity', unitId: unit.id });
+    // Zwiadowcy: wyścig o wioski — poza logiką bojową (nie atakują, nie patrolują „do domu").
+    if (isScoutUnit(unit)) {
+      const step = planScoutExploreStep(unit, map, myCities, units, getNeutralVillages());
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
         unitActed.add(unit.id);
-        continue;
       }
-
-      const bestTarget = getSettlerTarget(unit);
-      if (bestTarget !== null) {
-        const step = firstStep(unit, map, bestTarget.q, bestTarget.r, units);
-        if (step !== null) {
-          commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
-          unitActed.add(unit.id);
-        }
-      }
-      // Settler fallback (4f) below — fall through to shared fallback block
-      if (commands.length > cmdsBefore) continue;
-
-      // Settler idle fallback: move toward nearest own city or map center
-      applyIdleFallback(unit, map, myCities, units, commands);
-      if (commands.length > cmdsBefore) unitActed.add(unit.id);
       continue;
     }
 
     // Military
-    if (unit.ruchLeft <= 0) continue;
 
     // 4b: adjacent enemy unit -> attack (tylko engageable — np. gracz tylko w wojnie)
     const adjacentEnemy = engageableEnemyUnits.find(
@@ -1422,21 +1611,36 @@ export function decideAITurn(
       continue;
     }
 
-    // 4c: march toward enemy city — faza 1: najpierw państwa w klastrze, potem reszta
-    const citiesForMarch = clusterConsolidationPhase && clusterEnemyCities.length > 0
-      ? clusterEnemyCities
-      : engageableEnemyCities;
+    // Faza startowa: wioski przed marszem na obce miasta (wyścig o prezenty).
+    if (villageExploreRace) {
+      const villageTarget = findNearestVillage(unit, getNeutralVillages());
+      if (villageTarget !== null) {
+        const step = firstStep(unit, map, villageTarget.q, villageTarget.r, units);
+        if (step !== null) {
+          commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+          unitActed.add(unit.id);
+          continue;
+        }
+      }
+    }
+
+    // 4c: march toward enemy city — faza 1: najpierw państwa w klastrze, potem sąsiedzi (8 hex)
+    const citiesForMarch = (() => {
+      if (clusterConsolidationPhase && clusterEnemyCities.length > 0) return clusterEnemyCities;
+      if (expansionEnemyCities.length > 0) return expansionEnemyCities;
+      return engageableEnemyCities;
+    })();
+    const powerOf = opts.powerOfOwner;
     const targetCity = (() => {
       if (citiesForMarch.length === 0) return undefined;
-      if (difficultyParams.celObranie <= 0) {
-        return nearest(unit.q, unit.r, citiesForMarch, c => c.q, c => c.r);
-      }
       let bestScore = -Infinity;
       let bestCity: typeof citiesForMarch[0] | undefined;
       for (const ec of citiesForMarch) {
         const dist = hexDistance(unit.q, unit.r, ec.q, ec.r);
-        const popPenalty = difficultyParams.celObranie * (10 / Math.max((ec as { population?: number }).population ?? 2, 1));
-        const score = -dist + popPenalty;
+        const enemyPower = powerOf ? powerOf(ec.ownerId) : ((ec as { population?: number }).population ?? 2);
+        const weaknessBonus = (difficultyParams.celObranie + (sklonnoscPodboju >= 4 ? 0.3 : 0))
+          * (100 / Math.max(enemyPower, 1));
+        const score = -dist + weaknessBonus;
         if (score > bestScore) { bestScore = score; bestCity = ec; }
       }
       return bestCity;
@@ -1495,8 +1699,9 @@ export function decideAITurn(
       }
     }
 
-    // 4e: patrol near own city (§2.1 priority 4)
-    if (myCities.length > 0) {
+    // 4e: patrol near own city (§2.1 priority 4) — pomijany przy wysokiej sklonnoscDoPodboju
+    // oraz w fazie wyścigu o wioski (wojsko ma iść po prezenty, nie stać przy murach).
+    if (!skipPatrol && !villageExploreRace && myCities.length > 0) {
       const homeCity = nearest(unit.q, unit.r, myCities, c => c.q, c => c.r);
       if (homeCity !== undefined && hexDistance(unit.q, unit.r, homeCity.q, homeCity.r) > 2) {
         const step = firstStep(unit, map, homeCity.q, homeCity.r, units);
@@ -1620,14 +1825,13 @@ function decideDefensiveCopyTurn(
   for (const city of myCities) {
     homeGuardCount.set(
       city.id,
-      myUnits.filter(u => !isSettler(u) && hexDistance(u.q, u.r, city.q, city.r) <= 1).length,
+      myUnits.filter(u => hexDistance(u.q, u.r, city.q, city.r) <= 1).length,
     );
   }
 
   let reinforcementsSentThisTurn = 0;
 
   for (const unit of myUnits) {
-    if (isSettler(unit)) continue;
     if (unit.ruchLeft <= 0) continue;
 
     const adjacentEnemy = nonSisterEnemyUnits.find(
@@ -1719,9 +1923,9 @@ function decideDefensiveCopyTurn(
 /**
  * Scans map hexes and returns the highest-scoring land hex for city founding.
  * Must be >= minCityDist from all existing cities.
+ * (Dawniej findSettlerTarget — reuse heurystyki bez jednostki osadnika.)
  */
-function findSettlerTarget(
-  settler: RuntimeUnit,
+function findCityFoundingHex(
   map: GameMap,
   allCities: AICity[],
   enemyCities: AICity[],
@@ -1731,6 +1935,10 @@ function findSettlerTarget(
 ): { q: number; r: number } | null {
   let bestScore = -Infinity;
   let bestHex: { q: number; r: number } | null = null;
+  const ekspansjaScale = 1 + (opts.civAiProfile?.ekspansywnosc ?? 0) * 0.1;
+  const powerGoalBoost = opts.currentTurn !== undefined
+    && opts.currentTurn % 3 === 0
+    && (opts.powerRank ?? 1) > 1;
 
   for (const key of Object.keys(map.hexes)) {
     const hex = map.hexes[key];
@@ -1744,14 +1952,15 @@ function findSettlerTarget(
     const tooClose = allCities.some(c => hexDistance(q, r, c.q, c.r) < minCityDist);
     if (tooClose) continue;
 
-    let score = hexCityScore(hex, q, r, data, enemyCities);
+    let score = hexCityScore(hex, q, r, data, enemyCities, opts) * ekspansjaScale;
+    if (powerGoalBoost) score += 25;
 
     // pkt3: cluster bias — prefer hexes inside clusterCenter+clusterRadius
     // Faza 2: po konsolidacji klastra — nadal preferuj wnętrze regionu.
     if (opts.clusterCenter !== undefined && opts.clusterRadius !== undefined) {
       const distToCenter = hexDistance(q, r, opts.clusterCenter.q, opts.clusterCenter.r);
       if (distToCenter <= opts.clusterRadius) {
-        score += 50; // strong bonus for hexes inside the cluster
+        score += 50 * ekspansjaScale; // strong bonus for hexes inside the cluster
       } else {
         score -= 20; // mild penalty for hexes outside the cluster
       }
@@ -1762,9 +1971,6 @@ function findSettlerTarget(
       bestHex = { q, r };
     }
   }
-
-  // Suppress unused-variable lint: settler is kept in signature for symmetry with opts
-  void settler;
 
   return bestHex;
 }
@@ -2030,6 +2236,7 @@ import {
 } from './diplomacy';
 import type { Relation, AIDiplomacyContext } from './diplomacy';
 import type { GameDifficulty } from './difficulty-cost';
+import { TypCywilizacji } from '../types/player';
 import {
   AI_TRADE_GOLD_MAX,
   AI_TRIBUTE_PEACE_MAX,
@@ -2039,6 +2246,9 @@ import {
   canAiProposeOneShotGoldGift,
   canAiProposeTradeAgreement,
   canAiProposeResourceTrade,
+  canAiRequestAudience,
+  AI_RESOURCE_TRADE_DEFICIT_COOLDOWN_TURNS,
+  AI_RESOURCE_TRADE_CITYSTATE_URGENT_COOLDOWN_TURNS,
   capAiGoldOffer,
 } from './diplomacy-economy';
 
@@ -2137,11 +2347,29 @@ export interface RelacjaWejscie {
     zaplataTyp: 'zloto' | 'praca';
     zaplataPerTura: number;
     turns: number;
+    /** Z perspektywy AI-proponenta: sprzedaje lub kupuje surowiec. */
+    kierunek?: 'sprzedaz' | 'zakup';
+    powod?: 'deficyt' | 'nadwyzka';
   };
   /** Czy z partnerem już trwa cykliczna umowa surowcowa (main.ts: activeDeals). */
   hasActiveResourceTradeDeal?: boolean;
   /** Tura ostatniej PROAKTYWNEJ propozycji handlu surowcem (cooldown per para). */
   lastResourceTradeProposalTurn?: number;
+  /** Typ cywilizacji partnera (ikonaId / TypCywilizacji) — aiDiplomacyStance per nacja. */
+  partnerTypCywilizacji?: string;
+  /** Czy aktywny pakt nieagresji z partnerem (main.ts: activeDeals). */
+  hasNapTreaty?: boolean;
+  /**
+   * P-AI-011 / proaktywny handel: czy gracz formalnie nawiązał kontakt w audiencji.
+   * Dotyczy partnerId === '0' (gracz). Bez kontaktu AI może wysłać zaproponuj_audiencje.
+   */
+  contactEstablished?: boolean;
+  /** Czy partner (gracz) jest odkryty na mapie z perspektywy tego AI. */
+  mapContact?: boolean;
+  /** Partner to miasto-państwo (uproszczona dyplomacja). */
+  isMinorCivPartner?: boolean;
+  /** Tura ostatniej prośby o audiencję u gracza (cooldown). */
+  lastAudienceRequestTurn?: number;
 }
 
 /**
@@ -2172,6 +2400,21 @@ export interface DiplomacjaInputs {
   skarbiecGold?: number;
   /** Bieżąca tura — wymagana do cooldownu jednorazowych darów. */
   currentTurn?: number;
+  /**
+   * C-AI-MOC-Q1: sklonnoscDoPodboju z civ-ai.json (1–10).
+   * >= 4 → agresywniejsze cele wojenne (obniżone progi wypowiedzenia).
+   */
+  sklonnoscDoPodboju?: number;
+  /** Typ cywilizacji AI (TypCywilizacji / ikonaId) — zamiast stubów grecy/rzym. */
+  myTypCywilizacji?: string;
+  /** Surowa agresywność 1–10 z civ-ai.json (profil dyplomatyczny). */
+  agresywnoscRaw?: number;
+  /** Tolerancja ryzyka 1–10 z civ-ai.json (niższa = ostrożniejsza dyplomacja). */
+  tolerancjaRyzyka?: number;
+  /** Pełna warstwa dyplomacji (nie miasto-państwo) — paki/sojusze wielostronne. */
+  fullDiplomacyLayer?: boolean;
+  /** To AI jest miastem-państwem (częstszy handel przy deficycie). */
+  isMinorCivSelf?: boolean;
 }
 
 /**
@@ -2193,6 +2436,14 @@ export type AIDiplomacyCommand =
       type: 'zaproponuj_handel_surowiec'; targetId: string; powod: string;
       surowiecKey: string; label: string; pakietyPerTura: number;
       zaplataTyp: 'zloto' | 'praca'; zaplataPerTura: number; turns: number;
+      kierunek?: 'sprzedaz' | 'zakup';
+      powodHandlu?: 'deficyt' | 'nadwyzka';
+    }
+  | { type: 'zaproponuj_pakt'; targetId: string; powod: string; turns?: number }
+  | {
+      type: 'zaproponuj_audiencje'; targetId: string; powod: string;
+      /** Krótki powód dla HUD (np. „chcą handlować”). */
+      motive?: string;
     };
 
 /**
@@ -2274,6 +2525,103 @@ export function loadDefaultAIDiplomacyProgs(difficulty: GameDifficulty = 'normal
 }
 
 // ---------------------------------------------------------------------------
+// Profil dyplomatyczny per typ cywilizacji (civ-ai.json)
+// ---------------------------------------------------------------------------
+
+/** Modyfikatory progów decideAIDiplomacy wg profilu pokojowego / agresywnego. */
+export interface DiplomacyCivBias {
+  peaceful: boolean;
+  aggressive: boolean;
+  /** Dodatnie = wyższy próg siły do wojny (trudniej wypowiedzieć). */
+  warSilaBonus: number;
+  /** Dodatnie = wyższy próg agresji do wojny. */
+  warAgresjaBonus: number;
+  /** Obniża wymaganą Relację na handel / umowę / pakt (pkt). */
+  tradeScoreEase: number;
+  /** Obniża próg willingnessAlly na sojusz (0..1). */
+  allyThresholdEase: number;
+  /** Obniża próg Relacji na pakt nieagresji (pkt). */
+  napScoreEase: number;
+  /** Pokojowe cywilizacje nie żądają haraczu proaktywnie. */
+  skipTributeDemand: boolean;
+  /** Czy AI proponuje pakt nieagresji zamiast eskalacji. */
+  proposeNap: boolean;
+  /** Obniża minimalny respekt (%) do żądania trybutu. */
+  tributeRespektEase: number;
+  /** Mnożnik progWojnaAgresja dla minimalnej agresji przy trybucie. */
+  tributeAgresjaFactor: number;
+}
+
+/**
+ * Klasyfikuje profil dyplomatyczny AI na podstawie civ-ai.json
+ * (agresywnosc, sklonnoscDoPodboju, tolerancjaRyzyka).
+ */
+export function resolveDiplomacyCivBias(
+  agresja: number,
+  sklonnoscDoPodboju: number = 2,
+  agresywnoscRaw?: number,
+  tolerancjaRyzyka?: number,
+): DiplomacyCivBias {
+  const pod = sklonnoscDoPodboju;
+  const risk = tolerancjaRyzyka ?? 5;
+  // Pokojowy/agresywny profil wymaga danych z civ-ai.json (agresywnoscRaw);
+  // bez nich archetyp agresja 0..1 nie zmienia biasu (testy / miasta-państwa).
+  const peaceful = agresywnoscRaw != null
+    ? agresywnoscRaw <= 3 && pod <= 2
+    : false;
+  const aggressive = agresywnoscRaw != null
+    ? agresywnoscRaw >= 7 || pod >= 4
+    : pod >= 4;
+
+  const neutral: DiplomacyCivBias = {
+    peaceful: false,
+    aggressive: false,
+    warSilaBonus: 0,
+    warAgresjaBonus: 0,
+    tradeScoreEase: 0,
+    allyThresholdEase: 0,
+    napScoreEase: 0,
+    skipTributeDemand: false,
+    proposeNap: false,
+    tributeRespektEase: 0,
+    tributeAgresjaFactor: 0.5,
+  };
+
+  if (peaceful) {
+    return {
+      peaceful: true,
+      aggressive: false,
+      warSilaBonus: 0.08,
+      warAgresjaBonus: 0.10,
+      tradeScoreEase: 15,
+      allyThresholdEase: 0.10,
+      napScoreEase: 12,
+      skipTributeDemand: true,
+      proposeNap: true,
+      tributeRespektEase: 0,
+      tributeAgresjaFactor: 0.5,
+    };
+  }
+  if (aggressive) {
+    const riskWar = risk >= 7 ? 0.04 : 0;
+    return {
+      peaceful: false,
+      aggressive: true,
+      warSilaBonus: -(0.06 + riskWar),
+      warAgresjaBonus: -(0.08 + riskWar * 0.5),
+      tradeScoreEase: -10,
+      allyThresholdEase: -0.08,
+      napScoreEase: 0,
+      skipTributeDemand: false,
+      proposeNap: false,
+      tributeRespektEase: 10,
+      tributeAgresjaFactor: 0.35,
+    };
+  }
+  return neutral;
+}
+
+// ---------------------------------------------------------------------------
 // decideAIDiplomacy
 // ---------------------------------------------------------------------------
 
@@ -2328,6 +2676,13 @@ export function decideAIDiplomacy(
     ...params,
   };
 
+  const bias = resolveDiplomacyCivBias(
+    inp.agresja,
+    inp.sklonnoscDoPodboju ?? 2,
+    inp.agresywnoscRaw,
+    inp.tolerancjaRyzyka,
+  );
+
   const komendy: AIDiplomacyCommand[] = [];
 
   for (const rel of inp.relacje) {
@@ -2346,17 +2701,27 @@ export function decideAIDiplomacy(
       turnsAtWar:   rel.stanWojny ? 5 : 0,  // heurystyka – wystarczy do oceny peaceW
     };
 
-    // Stub gracza AI – aiDiplomacyStance wymaga Player, ale korzysta tylko z typCywilizacji.
-    // Używamy objektu z typCywilizacji = 'grecy' jako bezpiecznego domyślnego (archetype neutral).
-    // Silnik v0.2 może podać pełny obiekt Player przez param.
-    const stubAIPlayer  = { typCywilizacji: 'grecy' as unknown } as Parameters<typeof aiDiplomacyStance>[0];
-    const stubOtherPlayer = { typCywilizacji: 'rzym' as unknown } as Parameters<typeof aiDiplomacyStance>[1];
+    // Stub gracza AI — aiDiplomacyStance wymaga Player z prawdziwym typem cywilizacji.
+    const aiTyp = (inp.myTypCywilizacji ?? 'grecy') as TypCywilizacji;
+    const partnerTyp = (rel.partnerTypCywilizacji ?? 'rzymianie') as TypCywilizacji;
+    const stubAIPlayer  = { typCywilizacji: aiTyp } as Parameters<typeof aiDiplomacyStance>[0];
+    const stubOtherPlayer = { typCywilizacji: partnerTyp } as Parameters<typeof aiDiplomacyStance>[1];
 
     const stance = aiDiplomacyStance(stubAIPlayer, stubOtherPlayer, rel.relation, ctx);
     const score  = relationScore(rel.relation);
     const { progMinimalnyRelacja } = getEffectiveDiplomacyParams(difficulty);
     // Efektywna agresja z uwzglednieniem mnoznika trudnosci (T4=B: spryt AI)
     const effAgresja = Math.min(1, inp.agresja * agresjaMnoznik);
+    // C-AI-MOC-Q1: wysoka sklonnoscDoPodboju → łatwiej wypowiada wojnę
+    const podbojBoost = (inp.sklonnoscDoPodboju ?? 2) >= 4 ? 0.12 : 0;
+    const effProgWojnaSila = Math.max(
+      0.3,
+      p.progWojnaSila - podbojBoost + bias.warSilaBonus,
+    );
+    const effProgWojnaAgresja = Math.max(
+      0.15,
+      p.progWojnaAgresja - podbojBoost * 0.5 + bias.warAgresjaBonus,
+    );
 
     // ---- Priorytet 1: oferuj_trybut_za_pokoj (b. słaby w trakcie wojny) ----
     if (rel.stanWojny && rw <= p.progTrybutKrytyczny) {
@@ -2382,19 +2747,120 @@ export function decideAIDiplomacy(
       continue;
     }
 
-    // ---- Priorytet 3: zadaj_trybut (b. silny, !stanWojny, agresja srednia; preferable over war) ----
-    const dipTrybut = getEffectiveDiplomacyParams(difficulty);
-    const proposerRespektPct = Math.round(100 * rw);
+    const currentTurnForTrade = inp.currentTurn ?? 0;
+    const tradeRelMin = Math.max(0, p.progHandelRelacjaMin - bias.tradeScoreEase);
+
+    const resOffer = rel.resourceTradeOffer;
+    const isDeficitTrade = resOffer?.kierunek === 'zakup' || resOffer?.powod === 'deficyt';
+    const tradeCooldownTurns = (() => {
+      if (isDeficitTrade && (inp.isMinorCivSelf || rel.isMinorCivPartner)) {
+        return AI_RESOURCE_TRADE_CITYSTATE_URGENT_COOLDOWN_TURNS;
+      }
+      if (isDeficitTrade) return AI_RESOURCE_TRADE_DEFICIT_COOLDOWN_TURNS;
+      return undefined;
+    })();
+
+    // ---- Priorytet 2a: prośba o audiencję (inicjatywa AI — przed handlem) ----
+    const wantsTradeAudience = resOffer != null && !rel.hasActiveResourceTradeDeal;
     if (
       !rel.stanWojny
-      && proposerRespektPct > dipTrybut.progTrybutZadanieMinRespekt
-      && effAgresja >= p.progWojnaAgresja * 0.5
-      && effAgresja < p.progTrybutAgresjaMax
+      && rel.partnerId === '0'
+      && rel.contactEstablished === false
+      && rel.mapContact !== false
+      && wantsTradeAudience
+      && score >= tradeRelMin
+      && canAiRequestAudience(currentTurnForTrade, rel.lastAudienceRequestTurn)
+    ) {
+      const motive = resOffer?.kierunek === 'zakup'
+        ? `chcą handlować (${resOffer?.label ?? 'surowiec'})`
+        : 'chcą handlować';
+      komendy.push({
+        type:     'zaproponuj_audiencje',
+        targetId: rel.partnerId,
+        powod:    `Prośba o audiencję — ${motive}`,
+        motive,
+      });
+      continue;
+    }
+
+    // ---- Priorytet 2b: handel surowcem (P-AI-011 — deficyt przed eskalacją) ----
+    /** Handel (w tym zakup surowca) od Relacji >= 0 — progHandelRelacja w diplomacy.json. */
+    const tradeScoreForRes = tradeRelMin;
+    const canAffordBuy = !isDeficitTrade
+      || resOffer?.zaplataTyp !== 'zloto'
+      || (inp.skarbiecGold ?? 0) >= (resOffer?.zaplataPerTura ?? 0);
+    if (
+      !rel.stanWojny
+      && resOffer != null
+      && !rel.hasActiveResourceTradeDeal
+      && canAffordBuy
+      && score >= tradeScoreForRes
+      && (rel.contactEstablished !== false || rel.partnerId !== '0')
+      && canAiProposeResourceTrade(
+        currentTurnForTrade,
+        rel.lastResourceTradeProposalTurn,
+        tradeCooldownTurns,
+      )
+    ) {
+      const zaplataLabel = resOffer.zaplataTyp === 'praca' ? 'Praca' : '¤';
+      const verb = resOffer.kierunek === 'zakup'
+        ? `Kupię od ciebie ${resOffer.label}`
+        : `Nadwyżka ${resOffer.label} — oferujemy sprzedaż`;
+      komendy.push({
+        type:     'zaproponuj_handel_surowiec',
+        targetId: rel.partnerId,
+        powod:    `${verb}: ${resOffer.pakietyPerTura} pakiet(y)/turę` +
+          ` za ${resOffer.zaplataPerTura} ${zaplataLabel}/turę przez ${resOffer.turns} tur` +
+          (isDeficitTrade ? ' (deficyt surowca)' : ''),
+        surowiecKey: resOffer.surowiecKey,
+        label: resOffer.label,
+        pakietyPerTura: resOffer.pakietyPerTura,
+        zaplataTyp: resOffer.zaplataTyp,
+        zaplataPerTura: resOffer.zaplataPerTura,
+        turns: resOffer.turns,
+        kierunek: resOffer.kierunek,
+        powodHandlu: resOffer.powod,
+      });
+      continue;
+    }
+
+    // ---- Priorytet 3: zadaj_trybut (b. silny, !stanWojny; agresywne cywilizacje częściej) ----
+    const dipTrybut = getEffectiveDiplomacyParams(difficulty);
+    const proposerRespektPct = Math.round(100 * rw);
+    const tributeRespektMin = dipTrybut.progTrybutZadanieMinRespekt - bias.tributeRespektEase;
+    const tributeAgresjaMin = p.progWojnaAgresja * bias.tributeAgresjaFactor;
+    const tributeAgresjaMax = bias.aggressive ? 0.95 : p.progTrybutAgresjaMax;
+    if (
+      !rel.stanWojny
+      && !bias.skipTributeDemand
+      && proposerRespektPct > tributeRespektMin
+      && (!bias.aggressive || rw >= p.progTrybut)
+      && effAgresja >= tributeAgresjaMin
+      && effAgresja < tributeAgresjaMax
     ) {
       komendy.push({
         type:     'zadaj_trybut',
         targetId: rel.partnerId,
-        powod:    `Respekt ${proposerRespektPct} > ${dipTrybut.progTrybutZadanieMinRespekt}, srednia agresja (effAgresja=${effAgresja.toFixed(2)} < 0.75): zadamy trybut zamiast wojny`,
+        powod:    `Respekt ${proposerRespektPct} > ${tributeRespektMin}, agresja profilu (effAgresja=${effAgresja.toFixed(2)}): zadamy trybut zamiast wojny`,
+      });
+      continue;
+    }
+
+    // ---- Priorytet 3b: zaproponuj_pakt (pokojowe cywilizacje — przed eskalacją) ----
+    const dipP = getEffectiveDiplomacyParams(difficulty);
+    if (
+      !rel.stanWojny
+      && (inp.fullDiplomacyLayer !== false)
+      && bias.proposeNap
+      && !rel.hasNapTreaty
+      && score >= dipP.progNapRelacja - bias.napScoreEase
+      && rel.relation.zaufanie >= dipP.progNapZaufanie - (bias.peaceful ? 5 : 0)
+    ) {
+      komendy.push({
+        type:     'zaproponuj_pakt',
+        targetId: rel.partnerId,
+        powod:    `Profil pokojowy (Relacja=${score} >= progNap=${dipP.progNapRelacja - bias.napScoreEase}): proponujemy pakt nieagresji`,
+        turns:    15,
       });
       continue;
     }
@@ -2407,8 +2873,8 @@ export function decideAIDiplomacy(
     if (
       !rel.stanWojny &&
       stance.willingnessWar > 0 &&
-      rw >= p.progWojnaSila &&
-      effAgresja >= p.progWojnaAgresja &&
+      rw >= effProgWojnaSila &&
+      effAgresja >= effProgWojnaAgresja &&
       score < progMinimalnyRelacja
     ) {
       komendy.push({
@@ -2420,7 +2886,6 @@ export function decideAIDiplomacy(
     }
 
     // ---- Priorytet 5: zaproponuj_sojusz ----
-    const dipP = getEffectiveDiplomacyParams(difficulty);
     const aiMilRatio = rw >= 1 ? 99 : rw <= 0 ? 0.01 : rw / (1 - rw);
     const aiRespekt = Math.round(rw * 100);
     const partnerRespekt = Math.round((1 - rw) * 100);
@@ -2430,7 +2895,7 @@ export function decideAIDiplomacy(
       partnerRespekt,
       dipP,
     );
-    const minSojuszAlly = p.progSojusz - sojuszAdj.ease.allyThresholdDelta + sojuszAdj.penaltyAlly;
+    const minSojuszAlly = p.progSojusz - sojuszAdj.ease.allyThresholdDelta + sojuszAdj.penaltyAlly - bias.allyThresholdEase;
     const minSojuszScore = diplomacyTreatyMinRelacja(
       dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore,
       dipP,
@@ -2466,15 +2931,14 @@ export function decideAIDiplomacy(
     // AI dokleja drobny jednorazowy oslodzik w zlocie -- uproszczenie
     // computeQuickDealBasket (ktory wymaga introspekcji realnych zasobow per-owner,
     // dostepnej tylko w main.ts, nie w tej czystej funkcji).
-    const currentTurnForTrade = inp.currentTurn ?? 0;
     if (
       !rel.stanWojny &&
       !rel.hasHandelTreaty &&
       rel.hasTradeConnection === true &&
-      score >= p.progHandelRelacjaMin &&
+      score >= tradeRelMin &&
       canAiProposeTradeAgreement(currentTurnForTrade, rel.lastTradeAgreementProposalTurn)
     ) {
-      const closeToThreshold = score < p.progHandelRelacjaMin + AI_TRADE_AGREEMENT_SWEETENER_MARGIN;
+      const closeToThreshold = score < tradeRelMin + AI_TRADE_AGREEMENT_SWEETENER_MARGIN;
       const sweetenerRaw = closeToThreshold
         ? capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_AGREEMENT_SWEETENER_MAX)
         : 0;
@@ -2482,39 +2946,9 @@ export function decideAIDiplomacy(
       komendy.push({
         type:     'zaproponuj_umowe_handlowa',
         targetId: rel.partnerId,
-        powod:    `Relacja=${score} >= prog=${p.progHandelRelacjaMin}, polaczenie tras mozliwe, brak aktywnej umowy` +
+        powod:    `Relacja=${score} >= prog=${tradeRelMin}, polaczenie tras mozliwe, brak aktywnej umowy` +
           (sweetenerGold ? `: dokladamy oslodzik ${sweetenerGold} ¤ (Relacja blisko progu)` : ': proponujemy stala Umowe Handlowa'),
         sweetenerGold,
-      });
-      continue;
-    }
-
-    // ---- Priorytet 5c: zaproponuj_handel_surowiec (HANDEL-SUROWCE-CYKL, 2026-07-24) ----
-    // AI proaktywnie proponuje CYKLICZNĄ sprzedaż nadwyżki surowca (co turę, X tur)
-    // — ownerId-agnostyczne: ten sam kod trafia gracz↔AI I AI↔AI (main.ts oblicza
-    // rel.resourceTradeOffer identycznie dla obu wywołań decideAIDiplomacy). Wymaga
-    // realnej nadwyżki dostarczonej przez wywołującego (main.ts pickResourceSurplusForOwnerPair);
-    // bez pola (undefined) — AI NIE proponuje (bezpieczny brak zachowania).
-    if (
-      !rel.stanWojny &&
-      rel.resourceTradeOffer != null &&
-      !rel.hasActiveResourceTradeDeal &&
-      score >= p.progHandelRelacjaMin &&
-      canAiProposeResourceTrade(currentTurnForTrade, rel.lastResourceTradeProposalTurn)
-    ) {
-      const offer = rel.resourceTradeOffer;
-      const zaplataLabel = offer.zaplataTyp === 'praca' ? 'Praca' : '¤';
-      komendy.push({
-        type:     'zaproponuj_handel_surowiec',
-        targetId: rel.partnerId,
-        powod:    `Nadwyżka ${offer.label}: oferujemy ${offer.pakietyPerTura} pakiet(y)/turę` +
-          ` za ${offer.zaplataPerTura} ${zaplataLabel}/turę przez ${offer.turns} tur`,
-        surowiecKey: offer.surowiecKey,
-        label: offer.label,
-        pakietyPerTura: offer.pakietyPerTura,
-        zaplataTyp: offer.zaplataTyp,
-        zaplataPerTura: offer.zaplataPerTura,
-        turns: offer.turns,
       });
       continue;
     }
@@ -2523,8 +2957,12 @@ export function decideAIDiplomacy(
     // Warunki: !stanWojny, willingnessTrade >= PROG_HANDEL(0.5), handlowosc >= 0.4.
     // Cel: AI proponuje handel gdy relacja co najmniej neutralna i archetyp jest handlowy.
     // dyplomacjaAktywnosc skaluje willingnessTrade analogicznie do sojuszu powyzej.
-    const handlowosc = inp.handlowosc ?? p.progHandelArchetypeMin;
+    const handlowoscBase = inp.handlowosc ?? p.progHandelArchetypeMin;
+    const handlowosc = bias.peaceful
+      ? Math.min(1, handlowoscBase + 0.15)
+      : handlowoscBase;
     const effWillingnessTrade = Math.min(1, stance.willingnessTrade * dyplomacjaAktywnosc);
+    const effProgHandel = bias.peaceful ? Math.max(0.3, p.progHandel - 0.08) : p.progHandel;
     const giftTurn = inp.currentTurn ?? 0;
     const giftCooldownOk = canAiProposeOneShotGoldGift(
       giftTurn,
@@ -2540,9 +2978,9 @@ export function decideAIDiplomacy(
       !rel.stanWojny &&
       giftCooldownOk &&
       tradeGold > 0 &&
-      effWillingnessTrade >= p.progHandel &&
+      effWillingnessTrade >= effProgHandel &&
       handlowosc >= p.progHandelArchetypeMin &&
-      score > p.progHandelRelacjaMin
+      score > tradeRelMin
     ) {
       komendy.push({
         type:     'zaproponuj_handel',

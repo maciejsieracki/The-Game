@@ -228,12 +228,40 @@ function miniRow(cells: string[], grid: string): string {
   return `<div class="civ-emp-mini-r" style="grid-template-columns:${grid}">${c}</div>`;
 }
 
-function cityEconMiniSkarbiec(rows: EmpireDetailSnap['cityEcon']): string {
+function cityEconMiniSkarbiec(
+  rows: EmpireDetailSnap['cityEcon'],
+  economy: EmpireDetailSnap['economy'],
+): string {
   if (rows.length === 0) return '<div class="civ-emp-empty">Brak miast — dochód pojawi się po założeniu osiedli.</div>';
-  const grid = '1fr 1fr';
-  let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'PIENIĄDZ'], grid)}`;
-  for (const c of rows) h += miniRow([esc(c.name), signedTxt(c.pieniadz)], grid);
-  h += '</div><div class="civ-emp-foot">Suma wierszy = dochód miast. Utrzymanie budynków i wojska schodzi ze skarbca imperium osobno.</div>';
+
+  const wplywy = economy.bogactwoWplywyBrutto ?? 0;
+  const handel = economy.bogactwoHandel ?? 0;
+  const daninaBud = wplywy - handel;
+  const utrzB = economy.bogactwoUtrzymanieBudynkow ?? 0;
+  const utrzJ = economy.bogactwoUtrzymanieJednostek ?? 0;
+  const netto = economy.bogactwoRate ?? 0;
+
+  const sumGrid = '1fr auto';
+  let h = '<div class="civ-emp-mini">';
+  h += miniHeader(['SKARBIEC IMPERIUM — bilans / turę', ''], sumGrid);
+  h += miniRow(['Wpływy brutto (danina + budynki)', signedTxt(daninaBud)], sumGrid);
+  h += miniRow(['Handel ze szlaków', signedTxt(handel)], sumGrid);
+  h += miniRow(['Utrzymanie budynków', signedTxt(-utrzB)], sumGrid);
+  h += miniRow(['Utrzymanie jednostek', signedTxt(-utrzJ)], sumGrid);
+  h += miniRow(['<b>Netto skarbiec</b>', `<b>${signedTxt(netto)}</b>`], sumGrid);
+  h += '</div>';
+
+  const grid = '1fr 0.7fr 0.9fr';
+  h += `<div class="civ-emp-mini" style="margin-top:8px">${miniHeader(['MIASTO', 'DO SKARBCA', 'UTRZYMANIE'], grid)}`;
+  for (const c of rows) {
+    h += miniRow([
+      esc(c.name),
+      signedTxt(c.pieniadz),
+      c.utrzymanieBudynkow ? signedTxt(-c.utrzymanieBudynkow) : '—',
+    ], grid);
+  }
+  h += '</div>';
+  h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie budynków i wojska schodzi ze skarbca imperium — suma w bilansie u góry. Jednostki na mapie = koszt imperium, nie per miasto w tabeli.</div>';
   return h;
 }
 
@@ -287,7 +315,7 @@ function cityPoborMiniRekruci(
     h += miniRow([esc(c.name), String(c.rekruci), String(c.rekruciMax),
       `<span style="color:#78c95a">+${c.regenPerTurn}</span>`], grid);
   }
-  h += '</div><div class="civ-emp-foot">Werb jednostki zużywa rekrutów z puli miasta. Pasek = wypełnienie puli względem maksimum imperium.</div>';
+  h += '</div><div class="civ-emp-foot">Werb jednostki zużywa rekrutów z puli całej cywilizacji (suma miast). Pasek = wypełnienie puli względem maksimum imperium.</div>';
   return h;
 }
 
@@ -584,7 +612,7 @@ function render(): void {
     { id: 'rekruci', lbl: 'Rekruci (pula werbu)', stock: e.rekruciLabel ?? String(p.rekruci), rate: 0, gold: true, noRate: true },
   ];
   const detailFor: Record<string, string> = {
-    skarbiec: cityEconMiniSkarbiec(ce),
+    skarbiec: cityEconMiniSkarbiec(ce, e),
     praca: cityEconMiniPraca(ce, e.pracaUpkeep),
     nauka: cityEconMiniNauka(ce),
     ludnosc: cityPoborMiniLudnosc(cp),

@@ -3484,3 +3484,27 @@ w komórce → glina niemożliwa; leży w generacji rzek).
 ⚠️ Skutek uboczny do oceny właściciela: miedź −34%, żelazo −34%, złoto −55%.
 **Sesja lokalna: pull na dysk właściciela, testuj `61cd43ad`.**
 CZEKAM-NA: decyzja Macieja o gęstości złóż po obniżeniu górzystości.
+
+## [23:21 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `e5972875` (FALA 23)
+**md5 `e5972875918e6e57c67657e2041674d2`**, stempel `ROBOCZA · 2026-07-26 23:21`. VERIFY OK.
+Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (ostrzeżenie npm).
+Nowe: alert produkcji (tylko gdy coś do wyboru, ✕ + fingerprint, bez auto-budowy), baner zasobów miasta 2×3,
+klik w miasto przy zaznaczonej jednostce → marsz (nawet 0 ruchu), P-AI-011 + pakiet C-AI w bundlu.
+Bramki: tsc 0 · ai-test 246/246 · logic 207/208 (pre garnizon).
+**Sesja lokalna: pull / synchronizuj dysk, testuj `e5972875` przez `gra-robocza/START.html`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [23:28 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `4a8745eb` (FALA 24)
+**md5 `4a8745eb332dbc9c3bd280e530ce60c7`**, stempel `ROBOCZA · 2026-07-26 23:28`. VERIFY OK (manifest + 6 PLAYTEST).
+Wynik `vite build` exit 0. Kumulatywnie: FALA 23 + **Manpower imperium** (werb tylko z puli cywilizacji, bez −obywatel;
+zwrot MP do imperium przy anulowaniu/rozwiązaniu). Bramki: tsc 0 · manpower 44/44 · ai-test 246/246.
+**Sesja lokalna: pull / sync dysk, testuj `4a8745eb` — `gra-robocza/START.html`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [23:38 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `1636f388` (FALA 25)
+**md5 `1636f388b512b008a2b95a6a46d8bdb9`**, stempel `ROBOCZA · 2026-07-26 23:38`. **VERIFY OK** (manifest + 6 PLAYTEST).
+Wynik `vite build` exit 0. POLE-BITWY: build pominięty (ostrzeżenie npm).
+Nowe: kultura/religia — bez podwójnej kary „Obca kultura"; miasta założone 100% kultury; podbój tego samego okręgu kulturowego = pełna zgodność + religia państwa; panel Kultura/Religia ze składem %.
+Bramki: tsc 0 · manpower 44/44 · ai-test 246/246 · map-attack-city 8/8 · society-breakdown 40/40.
+**Sesja lokalna: pull / sync dysk, testuj `1636f388` — `gra-robocza/START.html`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.

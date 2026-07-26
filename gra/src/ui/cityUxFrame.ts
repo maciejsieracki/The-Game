@@ -6,6 +6,7 @@ import type { GameMap } from '../types/map';
 import {
   paintCityPanelSections,
   clearCityPanelUxMode,
+  navigateCityPanel,
   type CityPanelUxMounts,
 } from './cityPanel';
 import { getActiveDetailDockWidths, HOVER_DETAIL_DOCK_W } from './hoverDetailDock';
@@ -14,13 +15,14 @@ import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 let frameRoot: HTMLDivElement | null = null;
 let mounts: CityPanelUxMounts | null = null;
 
-const TOP_H = 132;
+const TOP_H = 96;
 const ICON_BAR_H = 0;
 const LEFT_W = 340;
 /** Lewy panel danych (produkcja) + rail produkcji po jego prawej krawędzi. */
 const LEFT_MARGIN = 32;
 const LEFT_RAIL_GAP = 16;
-const LEFT_RAIL_TOP = TOP_H + 16;
+/** Panele boczne startują blisko górnej krawędzi — pasek miasta jest wyśrodkowany, rogi są wolne. */
+const LEFT_RAIL_TOP = 10;
 const LEFT_ICON_RAIL_W = 56;
 const RIGHT_MARGIN = 32;
 const RIGHT_RAIL_GAP = 16;
@@ -44,11 +46,11 @@ function ensureFrameStyles(): void {
   background:radial-gradient(ellipse 62% 58% at 48% 54%,rgba(6,8,12,0.06) 0%,rgba(6,8,12,0.18) 48%,rgba(6,8,12,0.62) 82%,rgba(6,8,12,0.78) 100%);
   box-shadow:inset 0 0 90px 28px rgba(0,0,0,0.38);}
 .civ-ux-top{position:fixed;top:0;left:0;right:0;height:auto;min-height:${TOP_H}px;z-index:403;pointer-events:auto;overflow:visible;
-  display:flex;align-items:flex-start;justify-content:center;padding:12px max(210px,13vw) 6px 32px;}
+  display:flex;align-items:flex-start;justify-content:center;padding:5px 12px 4px 12px;}
 .civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:100%;box-sizing:border-box;}
 .civ-ux-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:${LEFT_MARGIN}px;bottom:0;width:min(24vw,${LEFT_W}px);min-width:280px;z-index:401;
-  pointer-events:auto;overflow-y:auto;overflow-x:hidden;padding:0.32rem 0.4rem 0.48rem;
+  pointer-events:auto;overflow-y:auto;overflow-x:hidden;padding:0.18rem 0.4rem 0.48rem;
   display:flex;flex-direction:column;background:transparent;border:none;box-shadow:none;}
 .civ-ux-left-icon-rail{position:fixed;top:${LEFT_RAIL_TOP}px;
   left:calc(${LEFT_MARGIN}px + min(24vw,${LEFT_W}px) + var(--civ-detail-dock-left-w,0px) + ${LEFT_RAIL_GAP}px);
@@ -85,7 +87,7 @@ function ensureFrameStyles(): void {
   background:linear-gradient(180deg,rgba(18,24,32,0.97),rgba(8,10,16,0.97));
   border:2px solid rgba(232,216,138,0.42);border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,0.6);
   display:flex;flex-direction:column;}
-.civ-ux-right > .civ-ux-panel-scope{flex:1;min-height:0;width:100%;height:100%;display:flex;flex-direction:column;padding:0.28rem 0.36rem 0.42rem;}
+.civ-ux-right > .civ-ux-panel-scope{flex:1;min-height:0;width:100%;height:100%;display:flex;flex-direction:column;padding:0.18rem 0.36rem 0.42rem;}
 .civ-ux-map-chrome{position:fixed;inset:0;z-index:406;pointer-events:none;}
 .civ-ux-map-mask{display:none;}
 .civ-ux-left::-webkit-scrollbar,.civ-ux-right::-webkit-scrollbar{width:6px;}
@@ -97,14 +99,32 @@ function ensureFrameStyles(): void {
 let frameOnClose: (() => void) | null = null;
 let cityUxEscHandler: ((e: KeyboardEvent) => void) | null = null;
 
+function cityUxKeyboardBlockedTarget(e: KeyboardEvent): boolean {
+  const t = e.target;
+  if (!(t instanceof HTMLElement)) return false;
+  return !!t.closest('input, textarea, select, [contenteditable="true"]');
+}
+
 function bindCityUxEscClose(): void {
   unbindCityUxEscClose();
   cityUxEscHandler = (e: KeyboardEvent) => {
-    if (e.key !== 'Escape' || frameRoot === null || frameOnClose === null) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    const close = frameOnClose;
-    close();
+    if (frameRoot === null) return;
+    if (e.key === 'Escape' && frameOnClose !== null) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      frameOnClose();
+      return;
+    }
+    if (cityUxKeyboardBlockedTarget(e)) return;
+    if (e.key === 'ArrowLeft' || e.key === ',' || e.code === 'Comma') {
+      e.preventDefault();
+      navigateCityPanel(-1);
+      return;
+    }
+    if (e.key === 'ArrowRight' || e.key === '.' || e.code === 'Period') {
+      e.preventDefault();
+      navigateCityPanel(1);
+    }
   };
   document.addEventListener('keydown', cityUxEscHandler, true);
 }

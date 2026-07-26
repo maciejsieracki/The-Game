@@ -4,6 +4,6 @@ export {
   filterDiplomacyCommandsForEstablishedContact,
   diplomacyLayerForOwner,
   barbarianWarRelation,
-} from "/home/user/The-Game/gra/src/game/diplomacy-layers";
-export { BARBARIAN_OWNER_ID } from "/home/user/The-Game/gra/src/game/barbarians";
-export type { AIDiplomacyCommand } from "/home/user/The-Game/gra/src/game/ai";
+} from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/diplomacy-layers";
+export { BARBARIAN_OWNER_ID } from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/barbarians";
+export type { AIDiplomacyCommand } from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/ai";

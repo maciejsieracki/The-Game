@@ -365,12 +365,17 @@ export function findCityOnHex(cities: City[], q: number, r: number): City | unde
   return cities.find(c => c.q === q && c.r === r);
 }
 
+export interface CityCaptureOpts {
+  civKeyForOwner?: (ownerId: number) => string;
+}
+
 export function applyCityCaptureAfterBattle(
   city: City,
   atkRoster: RuntimeUnit[],
   atkOwner: number,
   units: RuntimeUnit[],
   anchorId: string | number = atkRoster[0]?.id ?? '',
+  captureOpts?: CityCaptureOpts,
 ): RuntimeUnit | null {
   const prevOwner = city.ownerId;
   for (let i = units.length - 1; i >= 0; i--) {
@@ -399,6 +404,8 @@ export function applyCityCaptureAfterBattle(
   city.ownerId = atkOwner;
   city.oblegane = false;
   if (city.rebelState) city.rebelState = false;
-  onCityCapturedCulture(city, atkOwner, prevOwner);
+  onCityCapturedCulture(city, atkOwner, prevOwner, {
+    civKeyForOwner: captureOpts?.civKeyForOwner,
+  });
   return lead;
 }

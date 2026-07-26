@@ -762,7 +762,7 @@ export function availableProduction(
       && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
-    const gateLabels = ctx.empireActiveResourceLabels?.length
+    const gateLabels = ctx.empireActiveResourceLabels !== undefined
       ? ctx.empireActiveResourceLabels
       : ctx.activeResourceLabels;
     if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
@@ -1477,7 +1477,7 @@ export function eraBuildingCatalog(
     // komunikatu, bo status tu zostawal 'ready', a "Jeszcze zablokowane" pokazuje tylko
     // status==='locked'. Ten sam gateLabels co w availableProduction (empire-wide etykieta ma
     // pierwszenstwo nad per-miasto, patrz komentarz tam).
-    const gateLabels = ctx.empireActiveResourceLabels?.length
+    const gateLabels = ctx.empireActiveResourceLabels !== undefined
       ? ctx.empireActiveResourceLabels
       : ctx.activeResourceLabels;
     const resourceOk = buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)
