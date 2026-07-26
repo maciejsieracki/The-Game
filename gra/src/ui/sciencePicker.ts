@@ -20,6 +20,7 @@ import { techIconSvg } from './techIcons';
 import type { ScienceHubEntry, ScienceHubPlanEntry, ScienceHubProgress } from './scienceHubHud';
 import { refreshScienceHubIfOpen } from './scienceHubHud';
 import { buildHubTechEntries } from './scienceHubSnapshotLogic';
+import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 
 // ---------------------------------------------------------------------------
 // Typy wewnętrzne (dane z tech.json)
@@ -938,8 +939,9 @@ let displayMode: 'legacy' | 'dock' = 'legacy';
 let focusTechId: string | null = null;
 let onTreeCloseHook: (() => void) | null = null;
 
-const HUB_LEFT = 'calc(58px + 10px + min(24vw, 340px) + 8px)';
-const TOP_H = 56;
+/** Dock drzewka stoi obok panelu Badań (scienceHubHud, PANEL_W=340) — patrz sidePanelLayout.ts. */
+const HUB_LEFT = `calc(${SIDE_PANEL_LEFT} + min(24vw, 340px) + 8px)`;
+const TOP_H = SIDE_PANEL_TOP;
 const BOTTOM_H = 'calc(56px + 2mm)';
 
 // ---------------------------------------------------------------------------
@@ -958,7 +960,7 @@ function ensureStyles(): void {
   position:fixed;inset:0;z-index:400;display:flex;align-items:flex-start;justify-content:center;
   background:rgba(0,0,0,0.78);backdrop-filter:blur(3px);overflow-y:auto;padding:20px 10px 40px;}
 .civ-sci-overlay.dock{
-  z-index:314;inset:auto;left:${HUB_LEFT};top:${TOP_H}px;bottom:${BOTTOM_H};right:12px;
+  z-index:314;inset:auto;left:${HUB_LEFT};top:${TOP_H};bottom:${BOTTOM_H};right:12px;
   background:transparent;backdrop-filter:none;overflow:hidden;padding:0;pointer-events:none;}
 .civ-sci{
   --gold:#e0b24a;--muted:#9aa6b6;--sub:#c0c8d4;--sci:#6bc4e8;

@@ -12,6 +12,7 @@ import {
   tierBadgeHtml,
 } from './diploUiSkin';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
+import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 
 export interface DiploListEntry {
   id: string;
@@ -38,17 +39,17 @@ export interface DiploListHudApi {
 }
 
 const STYLE_ID = 'civ-diplo-list-hud-css-1e';
-const TOP_H = 56;
+const TOP_H = SIDE_PANEL_TOP;
 const BOTTOM_BAR_H = 56;
 const PANEL_W = 440;
-const LEFT_INSET = 'calc(58px + 10px)';
+const LEFT_INSET = SIDE_PANEL_LEFT;
 
 function ensureStyles(): void {
   ensureDiploBrandScope();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 ${DIPLO_1E_SHARED_CSS}
-.civ-diplo-list-hud{position:fixed;top:${TOP_H}px;left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
+.civ-diplo-list-hud{position:fixed;top:${TOP_H};left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
   width:min(28vw,${PANEL_W}px);min-width:280px;max-width:calc(100vw - ${LEFT_INSET} - 12px);z-index:311;display:none;flex-direction:column;
   pointer-events:auto;overflow:hidden;
   background:linear-gradient(180deg,rgba(8,10,18,.97),rgba(6,8,14,.94));

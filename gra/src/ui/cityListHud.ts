@@ -4,6 +4,7 @@
  */
 
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
+import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 
 export interface CityListEntry {
   id: string;
@@ -33,16 +34,16 @@ export interface CityListHudApi {
 }
 
 const STYLE_ID = 'civ-city-list-hud-css-v2';
-const TOP_H = 56;
+const TOP_H = SIDE_PANEL_TOP;
 const BOTTOM_BAR_H = 56;
 const PANEL_W = 340;
-/** Szerokość toolbara mapy + margines — lista nie zasłania przycisków. */
-const LEFT_INSET = 'calc(58px + 10px)';
+/** Prawa krawędź toolbara mapy + margines (sidePanelLayout.ts) — lista nie zasłania przycisków. */
+const LEFT_INSET = SIDE_PANEL_LEFT;
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-city-list-hud{position:fixed;top:${TOP_H}px;left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
+.civ-city-list-hud{position:fixed;top:${TOP_H};left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
   width:min(24vw,${PANEL_W}px);min-width:260px;max-width:calc(100vw - ${LEFT_INSET} - 12px);z-index:311;display:none;flex-direction:column;
   pointer-events:auto;overflow:hidden;
   background:linear-gradient(90deg,rgba(6,10,20,0.97) 0%,rgba(8,14,28,0.92) 88%,rgba(8,14,28,0.85) 100%);

@@ -7,6 +7,7 @@ import { markdownToHtml } from './markdownLite';
 import { wikiBookIcon } from './icons/wikiBookIcon';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
+import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 
 export interface WikiHubHudConfig {
   onClose?: () => void;
@@ -55,11 +56,11 @@ const PORADNIK = wikiBundle.poradnik as PoradnikChapter[];
 const ENCY = wikiBundle.encyklopedia as EncyEntry[];
 
 const STYLE_ID = 'civ-wiki-hub-hud-css-w2full';
-const TOP_H = 56;
+const TOP_H = SIDE_PANEL_TOP;
 const BOTTOM_BAR_H = 56;
 /** 340px — ten sam wzorzec co scienceHub / diploList (handoff W-WIKI-1). */
 const PANEL_W = 340;
-const LEFT_INSET = 'calc(58px + 10px)';
+const LEFT_INSET = SIDE_PANEL_LEFT;
 
 function depthMetaLabel(d: Depth): string {
   if (d === 's') return 'Skrót';
@@ -72,7 +73,7 @@ function ensureStyles(): void {
   document.getElementById('civ-wiki-hub-hud-css-v1')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-wiki-hub{position:fixed;top:${TOP_H}px;left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
+.civ-wiki-hub{position:fixed;top:${TOP_H};left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
   width:min(24vw,${PANEL_W}px);min-width:300px;max-width:calc(100vw - ${LEFT_INSET} - 12px);z-index:405;
   display:none;flex-direction:column;pointer-events:auto;overflow:hidden;
   ${CIV_BRAND_SCOPE_VARS}

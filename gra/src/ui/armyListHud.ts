@@ -5,6 +5,7 @@
 
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { brandIconSvg } from './icons/brandAssets';
+import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 import { formatJednostkiCount, formatZaznaczArmieLabel } from './formatPl';
 
 export interface ArmyListEntry {
@@ -40,15 +41,15 @@ export interface ArmyListHudApi {
 }
 
 const STYLE_ID = 'civ-army-list-hud-css-v1';
-const TOP_H = 56;
+const TOP_H = SIDE_PANEL_TOP;
 const BOTTOM_BAR_H = 56;
 const PANEL_W = 340;
-const LEFT_INSET = 'calc(58px + 10px)';
+const LEFT_INSET = SIDE_PANEL_LEFT;
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-army-list-hud{position:fixed;top:${TOP_H}px;left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
+.civ-army-list-hud{position:fixed;top:${TOP_H};left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
   width:min(24vw,${PANEL_W}px);min-width:260px;max-width:calc(100vw - ${LEFT_INSET} - 12px);z-index:311;display:none;flex-direction:column;
   pointer-events:auto;overflow:hidden;
   background:linear-gradient(90deg,rgba(6,10,20,0.97) 0%,rgba(8,14,28,0.92) 88%,rgba(8,14,28,0.85) 100%);
@@ -78,9 +79,12 @@ function ensureStyles(): void {
 .civ-army-list-hud .al-name{font-size:1.05em;font-weight:700;color:var(--gold);line-height:1.2;}
 .civ-army-list-hud .al-hex{font-size:0.78em;color:var(--muted);margin-top:0.12em;}
 .civ-army-list-hud .al-detail{font-size:0.78em;color:#d4cba0;margin-top:0.18em;line-height:1.35;}
-.civ-army-list-hud .al-mvbar{height:5px;background:rgba(0,0,0,.35);border-radius:3px;margin-top:0.28em;overflow:hidden;}
-.civ-army-list-hud .al-mvbar i{display:block;height:100%;background:linear-gradient(90deg,#1a6020,#50b070);transition:width .2s;}
-.civ-army-list-hud .al-hpbar{height:5px;background:rgba(0,0,0,.35);border-radius:3px;margin-top:0.22em;overflow:hidden;}
+.civ-army-list-hud .al-bar-lbl{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:0.68em;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:0.32em;}
+.civ-army-list-hud .al-bar-lbl .al-bar-val{color:#d4d9e2;font-weight:700;text-transform:none;letter-spacing:0;}
+.civ-army-list-hud .al-mvbar{height:5px;background:rgba(0,0,0,.35);border-radius:3px;margin-top:0.14em;overflow:hidden;}
+.civ-army-list-hud .al-mvbar i{display:block;height:100%;background:linear-gradient(90deg,#1d4e8f,#6fb0f0);transition:width .2s;}
+.civ-army-list-hud .al-hpbar{height:5px;background:rgba(0,0,0,.35);border-radius:3px;margin-top:0.14em;overflow:hidden;}
 .civ-army-list-hud .al-hpbar i{display:block;height:100%;transition:width .2s,background-color .2s;}
 .civ-army-list-hud .al-meta{font-size:0.72em;color:var(--muted);margin-top:0.1em;}
 .civ-army-list-hud .al-hint{font-size:0.72em;color:var(--muted);font-style:italic;margin-top:0.45em;line-height:1.4;}
@@ -175,9 +179,15 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
           + (a.unitCount > 1 ? ' · ' + formatJednostkiCount(a.unitCount) : '');
         body.appendChild(hex);
         if (typeof a.hpMax === 'number' && a.hpMax > 0) {
-          const pct = Math.max(0, Math.min(100, Math.round(((a.hp ?? 0) / a.hpMax) * 100)));
+          const hpVal = Math.round(a.hp ?? 0);
+          const hpMax = Math.round(a.hpMax);
+          const pct = Math.max(0, Math.min(100, Math.round((hpVal / hpMax) * 100)));
           // Czerwień (ranna armia) → zieleń (pełne zdrowie), interpolacja po hue HSL.
           const hue = Math.round(pct * 1.2);
+          const hpLbl = document.createElement('div');
+          hpLbl.className = 'al-bar-lbl';
+          hpLbl.innerHTML = '<span>Zdrowie</span><span class="al-bar-val">' + hpVal + '/' + hpMax + '</span>';
+          body.appendChild(hpLbl);
           const hpbar = document.createElement('div');
           hpbar.className = 'al-hpbar';
           hpbar.title = 'Zdrowie: ' + pct + '%';
@@ -188,9 +198,15 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
           body.appendChild(hpbar);
         }
         if (typeof a.ruchMax === 'number' && a.ruchMax > 0) {
-          const pct = Math.max(0, Math.min(100, Math.round(((a.ruchLeft ?? 0) / a.ruchMax) * 100)));
+          const ruchVal = a.ruchLeft ?? 0;
+          const pct = Math.max(0, Math.min(100, Math.round((ruchVal / a.ruchMax) * 100)));
+          const mvLbl = document.createElement('div');
+          mvLbl.className = 'al-bar-lbl';
+          mvLbl.innerHTML = '<span>Ruch</span><span class="al-bar-val">' + ruchVal + '/' + a.ruchMax + '</span>';
+          body.appendChild(mvLbl);
           const mvbar = document.createElement('div');
           mvbar.className = 'al-mvbar';
+          mvbar.title = 'Ruch: ' + ruchVal + ' z ' + a.ruchMax;
           const fill = document.createElement('i');
           fill.style.width = pct + '%';
           mvbar.appendChild(fill);

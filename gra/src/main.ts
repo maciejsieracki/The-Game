@@ -2133,7 +2133,9 @@ async function boot(): Promise<void> {
         q: city.q,
         r: city.r,
         ruch,
-        ruchLeft: 0,
+        // C-TURA-Q1 = A (Maciej 2026-07-26) — patrz komentarz przy drugim miejscu narodzin
+        // jednostki (faza rekrutacji na przełomie tur). Jedna reguła dla obu ścieżek.
+        ruchLeft: ruch,
         pancerzBonusProc: birthProgress.pancerzBonusProc,
         parametryBonusProc: birthProgress.parametryBonusProc,
       });
@@ -5731,6 +5733,12 @@ async function boot(): Promise<void> {
         return;
       }
       selectPlayerUnit(newUnitId);
+      // C-TURA-Q1 = A: kamera leci do świeżej jednostki — bez tego pierścień zaznaczenia
+      // rysował się poza kadrem i jednostka wyglądała na „pokazaną, ale niezaznaczoną"
+      // (cyklowanie jednostek klawiszem robi to samo, main.ts ~3235).
+      const { x, z } = axialToWorld(u.q, u.r, HEX_R);
+      const { dist } = camCtrl.getFocusState();
+      camCtrl.focusAt(x, z, dist);
     }
 
     /** Po fazie AI: pokaż jednostki ukończone w ticku end-turn (produkcja/rekrutacja). */
@@ -14654,7 +14662,12 @@ async function boot(): Promise<void> {
                   q: city.q,
                   r: city.r,
                   ruch,
-                  ruchLeft: 0,
+                  // C-TURA-Q1 = A (Maciej 2026-07-26): jednostka gotowa na przełomie tur ma
+                  // PEŁNE punkty ruchu w turze, w której się pojawia. Wcześniej rodziła się
+                  // z 0 pkt ruchu/turę, a reset ruchu (u.ruchLeft = u.ruch) leci PRZED
+                  // turn++ — więc świeża jednostka stała bezczynnie całą nową turę.
+                  // Warunek jest owner-agnostyczny (city.ownerId), więc parytet AI zachowany.
+                  ruchLeft: ruch,
                   pancerzBonusProc: recBirthProgress.pancerzBonusProc,
                   parametryBonusProc: recBirthProgress.parametryBonusProc,
                 });

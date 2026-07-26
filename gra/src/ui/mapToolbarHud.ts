@@ -39,17 +39,27 @@ export interface MapToolbarHudApi {
 
 const STYLE_ID = 'civ-map-toolbar-hud-css-w2ring2';
 
+/**
+ * Geometria toolbara — jedyne źródło prawdy dla pozycji lewego paska medalionów.
+ * Panele otwierane z toolbara (Miasta/Badania/Dyplomacja/Wojsko/Civpedia — patrz
+ * `sidePanelLayout.ts`) liczą swój `left`/`top` na podstawie TYCH stałych, żeby nie
+ * nachodzić na przyciski ani na górny pasek chipów (hud.ts, `.civ-hud-banner-left`).
+ */
+export const TOOLBAR_LEFT_PX = 22;
+export const TOOLBAR_TOP_PX = 104;
+export const TOOLBAR_BTN_PX = 52;
+
 function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-map-toolbar-hud-css-v2')?.remove();
   document.getElementById('civ-map-toolbar-hud-css-w2')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-map-toolbar{position:fixed;top:104px;left:22px;z-index:310;
+.civ-map-toolbar{position:fixed;top:${TOOLBAR_TOP_PX}px;left:${TOOLBAR_LEFT_PX}px;z-index:310;
   ${CIV_BRAND_SCOPE_VARS}
   display:flex;flex-direction:column;gap:12px;padding:0;
   background:transparent;border:none;width:auto;font:11px var(--civ-font-ui);}
-.civ-map-toolbar .tb{position:relative;width:52px;height:52px;border-radius:50%;cursor:pointer;padding:0;
+.civ-map-toolbar .tb{position:relative;width:${TOOLBAR_BTN_PX}px;height:${TOOLBAR_BTN_PX}px;border-radius:50%;cursor:pointer;padding:0;
   border:2px solid var(--tg-gold-dim);background:var(--tg-medallion-bg);
   box-shadow:inset 0 2px 4px rgba(232,216,138,.16),0 4px 10px rgba(0,0,0,.55);
   color:var(--civ-gold-primary);display:flex;align-items:center;justify-content:center;
