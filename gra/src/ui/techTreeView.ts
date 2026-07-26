@@ -293,7 +293,7 @@ function lockReasons(node: TreeNode, s: TtvState): string[] {
 // Style (tokeny 1E z makiety: złoto #e8d88a, granat, Georgia, tabular-nums)
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-ttv-css-v1';
+const STYLE_ID = 'civ-ttv-css-v2';
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -302,7 +302,7 @@ function ensureStyles(): void {
   background:radial-gradient(1200px 700px at 50% 0%,#10141f,#080a12 75%);
   color:#e8e0c8;font-family:'Segoe UI',Tahoma,sans-serif;}
 .civ-ttv-overlay *{box-sizing:border-box;margin:0;padding:0;}
-.civ-ttv-hd{display:flex;align-items:center;gap:16px;padding:10px 22px;flex-shrink:0;
+.civ-ttv-hd{position:relative;display:flex;align-items:center;gap:16px;padding:10px 22px;flex-shrink:0;
   border-bottom:1px solid rgba(232,216,138,.2);
   background:linear-gradient(90deg,rgba(232,216,138,.08),transparent 45%);}
 .civ-ttv-hd .emb{width:40px;height:40px;border-radius:50%;flex-shrink:0;
@@ -318,6 +318,18 @@ function ensureStyles(): void {
 .civ-ttv-close{background:none;border:1px solid rgba(232,216,138,.3);border-radius:8px;color:#c8b898;
   font-size:16px;width:34px;height:34px;line-height:1;cursor:pointer;flex-shrink:0;}
 .civ-ttv-close:hover{color:#e8d88a;border-color:#e8d88a;}
+/* Powrót na mapę — wyśrodkowany na samej górze (Maciej 2026-07-26: „przenieść na środek
+   i wyjustować na samej górze", „raczej to powinien być symbol wróć a nie wyjdź"). */
+.civ-ttv-back{position:absolute;left:50%;top:9px;transform:translateX(-50%);z-index:4;
+  display:inline-flex;align-items:center;gap:9px;padding:8px 18px 8px 14px;cursor:pointer;
+  background:linear-gradient(180deg,rgba(232,216,138,.18),rgba(232,216,138,.05));
+  border:1px solid rgba(232,216,138,.55);border-radius:999px;color:#f4e6a8;
+  font-family:Georgia,serif;font-size:14.5px;letter-spacing:.05em;
+  box-shadow:0 3px 12px rgba(0,0,0,.5);}
+.civ-ttv-back:hover{border-color:#f4e6a8;color:#fff3c4;
+  background:linear-gradient(180deg,rgba(232,216,138,.3),rgba(232,216,138,.1));}
+.civ-ttv-back .ar{font-size:17px;line-height:1;}
+.civ-ttv-back .k{font-size:10.5px;color:#a99a72;letter-spacing:.14em;}
 .civ-ttv-vp{position:relative;flex:1;overflow:hidden;cursor:grab;touch-action:none;min-height:0;}
 .civ-ttv-vp.grabbing{cursor:grabbing;}
 .civ-ttv-world{position:absolute;left:0;top:0;width:${WORLD_W}px;height:${WORLD_H}px;transform-origin:0 0;}
@@ -857,6 +869,51 @@ function onKeyDownCapture(e: KeyboardEvent): void {
   hideTechTreeView();
 }
 
+// ---------------------------------------------------------------------------
+// Escape w pełnym ekranie (Maciej 2026-07-26)
+// Objaw: gdy gra działa w pełnym ekranie, pierwszy Escape wychodził z pełnego ekranu,
+// a dopiero drugi zamykał drzewko — właściciel chce odwrotnej kolejności.
+// Przeglądarka konsumuje Escape w pełnym ekranie ZANIM zdarzenie trafi do strony, więc
+// samym listenerem tego nie odwrócimy. Jedyne czyste wyjście: Keyboard Lock API
+// (`navigator.keyboard.lock(['Escape'])`) — na czas otwartego drzewka Escape trafia do gry,
+// a wyjście z pełnego ekranu zostaje pod PRZYTRZYMANYM Escape (zachowanie przeglądarki).
+// Blokadę zdejmujemy przy zamknięciu drzewka, więc na mapie Escape znów wychodzi z pełnego
+// ekranu. Gdy API nie ma (nie-Chromium) — zostaje stan sprzed zmiany plus widoczny „Wróć".
+// ---------------------------------------------------------------------------
+
+interface KeyboardLockApi {
+  lock(keyCodes?: readonly string[]): Promise<void>;
+  unlock(): void;
+}
+
+function keyboardLockApi(): KeyboardLockApi | null {
+  const nav = navigator as Navigator & { keyboard?: KeyboardLockApi };
+  const kb = nav.keyboard;
+  if (kb === undefined || typeof kb.lock !== 'function' || typeof kb.unlock !== 'function') return null;
+  return kb;
+}
+
+let escapeLocked = false;
+
+function lockEscape(): void {
+  if (escapeLocked) return;
+  const kb = keyboardLockApi();
+  if (kb === null) return;
+  escapeLocked = true;
+  void kb.lock(['Escape']).catch(() => {
+    // Odrzucone (brak pełnego ekranu / brak uprawnienia) — nic nie psuje, Escape działa jak dotąd.
+    escapeLocked = false;
+  });
+}
+
+function unlockEscape(): void {
+  if (!escapeLocked) return;
+  escapeLocked = false;
+  const kb = keyboardLockApi();
+  if (kb === null) return;
+  try { kb.unlock(); } catch { /* brak wsparcia — stan i tak wracamy do domyślnego */ }
+}
+
 function bindViewportInteractions(): void {
   if (vpEl === null) return;
   const vp = vpEl;
@@ -960,9 +1017,10 @@ function buildDom(): void {
     + '<span class="li"><span class="sw" style="background:#0c1626;border:1.5px solid #8fb6e0"></span>w trakcie</span>'
     + '<span class="li"><span class="sw" style="background:#20242e;border:1.5px solid rgba(200,138,122,.5);opacity:.6"></span>zablokowana</span>'
     + '</div>'
-    + '<button type="button" class="civ-ttv-close" aria-label="Zamknij drzewko (Esc)" title="Zamknij (Esc)">✕</button>';
+    + '<button type="button" class="civ-ttv-back" aria-label="Wróć na mapę (Esc)" title="Wróć na mapę (Esc)">'
+    + '<span class="ar" aria-hidden="true">←</span><span>Wróć</span><span class="k">ESC</span></button>';
   overlayEl.appendChild(hd);
-  hd.querySelector('.civ-ttv-close')?.addEventListener('click', () => hideTechTreeView());
+  hd.querySelector('.civ-ttv-back')?.addEventListener('click', () => hideTechTreeView());
 
   // Viewport + świat
   vpEl = document.createElement('div');
@@ -1058,6 +1116,7 @@ export function showTechTreeView(ownerId: number = 0): void {
   render();
   fitToView();
   document.addEventListener('keydown', onKeyDownCapture, true);
+  lockEscape();
 }
 
 /** Ukryj graf (bez usuwania z DOM). */
@@ -1066,6 +1125,7 @@ export function hideTechTreeView(): void {
   hideCard();
   if (overlayEl !== null) overlayEl.style.display = 'none';
   document.removeEventListener('keydown', onKeyDownCapture, true);
+  unlockEscape();
 }
 
 export function isTechTreeViewOpen(): boolean {
