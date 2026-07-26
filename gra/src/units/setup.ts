@@ -81,6 +81,25 @@ export interface RuntimeUnit {
    *  tury, ownerId-agnostyczne). Trwałe między turami poza tym — nic innego nie
    *  czyści tego pola automatycznie. */
   sentry?: boolean;
+  /** DYSPOZYCJA Macieja 2026-07-26 ("fortyfikacja w polu"): jednostka ufortyfikowana
+   *  POZA hexem własnego miasta (akcja „Ufortyfikuj" gdy cityAtUnit(u) nie zwraca
+   *  własnego miasta -- w tym KAŻDA jednostka oblegająca, bo oblegający stoją przy
+   *  murze, nigdy na hexie miasta -- patrz commitBesiege w main.ts). CELOWO OSOBNE
+   *  pole od inGarnizon (garnizon miasta = zaopatrzenie + ukrycie na mapie; to pole
+   *  NIE ukrywa jednostki, zostaje widoczna i częścią normalnego stosu). Ustawianie
+   *  zeruje ruchLeft na resztę tury (main.ts akcja 'fortify'); NIE przerywa oblężenia
+   *  -- oblegaCityId zostaje nietknięte, oblężenie leci dalej normalnie. Zdejmowane
+   *  automatycznie przy rozkazie ruchu (exitFieldFortify w game/armyMerge.ts, wołane
+   *  z main.ts startAnimatedMove, analogicznie do exitGarnizon) lub ręcznie (ponowne
+   *  kliknięcie „Ufortyfikuj" -> „Zdejmij fortyfikację", bez kosztu ruchu, parytet
+   *  z Czuwaj/Obudź). Daje bonus Obrony (combat-params.json "oblężenie".
+   *  fortify_obrona_bonus, patrz game/city-defense.ts fieldFortifyDefenseBonus) we
+   *  WSZYSTKICH trzech ścieżkach walki (Auto/taktyczna/Pomiń). Stare zapisy bez pola
+   *  = undefined = false (bez bonusu) -- jak każde inne pole opcjonalne tutaj.
+   *  PARYTET AI: pole i bonus są ownerId-agnostyczne (dostępne AI identycznie jak
+   *  graczowi), ale AI dziś NIE PODEJMUJE decyzji o wejściu w ten stan (brak logiki
+   *  w ai.ts/siegeAi.ts) -- patrz raport zadania. */
+  ufortyfikowanyWPolu?: boolean;
   /**
    * ŚCIEŻKA A — Pancerz (2026-07-25, patrz game/unit-building-bonuses.ts).
    * Najlepszy % kumulacyjny bonusu Pancerza, jaki ta jednostka KIEDYKOLWIEK

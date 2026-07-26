@@ -916,6 +916,15 @@ function isBarbarian(ownerId) {
   return ownerId === BARBARIAN_OWNER_ID;
 }
 
+// src/game/city-defense.ts
+function cityGatedTerrainMultiplier(hasMur, terrain, terrainData) {
+  if (!hasMur) return 1;
+  const terrNorm = normTerrain(terrain);
+  const isElevation = terrNorm.includes("wzg") || terrNorm.includes("gor");
+  if (!isElevation) return 1;
+  return terrainDefenseMultiplier(terrain, "", terrainData);
+}
+
 // src/game/unit-power.ts
 var DEFAULT_COEFF = {
   chargeDivisor: 2,
@@ -1363,7 +1372,9 @@ function veteranScaledDef(u, unitDefFor) {
   const def = unitDefFor(u);
   const frac = veteranCombatBonusFrac(u);
   if (!frac) return def;
-  return applyVeteranFracToCombatUnit(def, frac);
+  const scaled = applyVeteranFracToCombatUnit(def, frac);
+  const { fieldPower: _staleFieldPower, ...rest } = scaled;
+  return rest;
 }
 function rosterFieldPowerM(roster, unitDefFor) {
   return sumRosterFieldM(roster.map((u) => ({ typeId: u.typeId, def: veteranScaledDef(u, unitDefFor) })));
@@ -1372,14 +1383,10 @@ function effectiveDefenderM(defRoster, terrain, structBonusPct, atkLeadDef, unit
   const split = sumRosterFieldMSplit(
     defRoster.map((u) => ({ typeId: u.typeId, def: veteranScaledDef(u, unitDefFor) }))
   );
-  const terrMult = terrainDefenseMultiplier(
-    terrain,
-    String(atkLeadDef["Rola (linia)"] ?? ""),
-    terrainCombatData
-  );
-  const structMult = 1 + structBonusPct / 100;
-  const terrAdjAttack = split.attack * terrMult;
-  const terrAdjDefense = split.defense * terrMult * structMult;
+  const cityTerrMult = cityGatedTerrainMultiplier(false, terrain, terrainCombatData);
+  const combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100;
+  const terrAdjAttack = split.attack;
+  const terrAdjDefense = split.defense * (1 + combinedDefPct / 100);
   return Math.round((terrAdjAttack + terrAdjDefense) * 10) / 10;
 }
 function preBattleSzanseAtkPct(atkRoster, defRoster, terrain, structBonusPct, unitDefFor, terrainCombatData) {

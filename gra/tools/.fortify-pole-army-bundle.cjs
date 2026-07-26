@@ -17,15 +17,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.siege-defenders-entry.ts
-var siege_defenders_entry_exports = {};
-__export(siege_defenders_entry_exports, {
-  canCaptureCityWithoutBattle: () => canCaptureCityWithoutBattle,
-  defenderUnitsNearCity: () => defenderUnitsNearCity,
-  hasCityDefenders: () => hasCityDefenders,
-  survivorsLiveSet: () => survivorsLiveSet
+// tools/.fortify-pole-army-entry.ts
+var fortify_pole_army_entry_exports = {};
+__export(fortify_pole_army_entry_exports, {
+  enterFieldFortify: () => enterFieldFortify,
+  exitFieldFortify: () => exitFieldFortify,
+  exitGarnizon: () => exitGarnizon
 });
-module.exports = __toCommonJS(siege_defenders_entry_exports);
+module.exports = __toCommonJS(fortify_pole_army_entry_exports);
 
 // data/terrain-improvements.json
 var terrain_improvements_default = {
@@ -369,18 +368,6 @@ var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
 // src/units/setup.ts
-var CIVILIAN_CATEGORIES = /* @__PURE__ */ new Set(["osadnik", "robotnik", "zwiadowca"]);
-var CIVILIAN_TYPE_IDS = /* @__PURE__ */ new Set(["Zwiadowca", "Osadnik", "Robotnik"]);
-function isCivilianUnit(u) {
-  if (CIVILIAN_CATEGORIES.has(u.category)) return true;
-  return CIVILIAN_TYPE_IDS.has(u.typeId);
-}
-function hexDistance(aq, ar, bq, br) {
-  const dq = Math.abs(aq - bq);
-  const dr = Math.abs(ar - br);
-  const ds = Math.abs(-aq - ar - (-bq - br));
-  return Math.max(dq, dr, ds);
-}
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -392,325 +379,25 @@ var DEFAULT_TERRAIN_COSTS = {
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
-// src/units/battleRoster.ts
-function shouldIncludeInBattleRoster(u, ctx) {
-  if (!isCivilianUnit(u)) return true;
-  if (ctx.side === "attacker") return u.id === ctx.anchor.id;
-  return u.q === ctx.battleHex.q && u.r === ctx.battleHex.r;
+// src/game/armyMerge.ts
+function exitGarnizon(u) {
+  if (u.inGarnizon !== true) return false;
+  u.inGarnizon = false;
+  u.sentry = false;
+  return true;
 }
-function collectDefRosterNearCity(city, allUnits) {
-  const anchorOnCity = allUnits.find(
-    (u) => u.q === city.q && u.r === city.r
-  );
-  const anchor = anchorOnCity ?? {
-    id: "__city_hex__",
-    ownerId: allUnits.find((u) => hexDistance(u.q, u.r, city.q, city.r) <= 1)?.ownerId ?? -1,
-    typeId: "__anchor__",
-    category: "domyslny",
-    q: city.q,
-    r: city.r,
-    ruch: 0,
-    ruchLeft: 0
-  };
-  const ctx = {
-    side: "defender",
-    anchor,
-    battleHex: { q: city.q, r: city.r }
-  };
-  const out = [];
-  const seen = /* @__PURE__ */ new Set();
-  for (const u of allUnits) {
-    if (hexDistance(u.q, u.r, city.q, city.r) > 1) continue;
-    if (!shouldIncludeInBattleRoster(u, ctx)) continue;
-    if (seen.has(u.id)) continue;
-    seen.add(u.id);
-    out.push(u);
-  }
-  return out;
+function enterFieldFortify(u) {
+  u.ufortyfikowanyWPolu = true;
+  u.ruchLeft = 0;
 }
-
-// data/epoka-ludnosc-manpower.json
-var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
-  _formuly: {
-    ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
-    manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
-  },
-  epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
-    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
-    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
-    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
-    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 16e3 },
-    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 32e3 },
-    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 64e3 },
-    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e4 },
-    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e4 },
-    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e4 }
-  ]
-};
-
-// data/miasto-params.json
-var miasto_params_default = {
-  min_dystans_miast: {
-    wartosc: 5,
-    jednostka: "heksy",
-    opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
-  },
-  jednostka_koszt_ludnosci: {
-    wartosc: 0,
-    jednostka: "ludnosc",
-    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
-  },
-  manpower_regen_proc_max_tura: {
-    wartosc: 2,
-    jednostka: "% max/ture",
-    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +200/ture. Pusta pula \u224850 tur do pelna. manpower.tickManpowerRegen."
-  },
-  manpower_regen_blok_oblezenie: {
-    wartosc: 1,
-    jednostka: "0/1",
-    opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
-  },
-  jednostka_koszt_domyslny: {
-    wartosc: 10,
-    jednostka: "Praca",
-    opis: "Domyslny koszt Pracy jednostki, gdy brak pola 'Pieniadz (koszt)' w units.json i brak dopasowania roli. production.DEFAULT_UNIT_COST."
-  },
-  zaloz_miasto_koszt_praca: {
-    wartosc: 20,
-    jednostka: "Praca",
-    opis: "Koszt za\u0142o\u017Cenia miasta z mapy (tryb Budowa) \u2014 jak historyczny Osadnik (B1 Maciej 2026-06-29). Pierwsze miasto onboarding = 0 (Silnik)."
-  },
-  zaloz_miasto_koszt_ludnosci: {
-    wartosc: 1,
-    jednostka: "ludnosc",
-    opis: "Ludno\u015B\u0107 pobierana przy za\u0142o\u017Ceniu kolejnego miasta (jak Osadnik Ludno\u015B\u0107=1)."
-  },
-  jednostka_koszt_rola_wsparcie: {
-    wartosc: 12,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Wsparcie', gdy brak 'Pieniadz (koszt)'."
-  },
-  jednostka_koszt_rola_dystans: {
-    wartosc: 8,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Dystans' (jednostki dystansowe)."
-  },
-  jednostka_koszt_rola_wrecz: {
-    wartosc: 10,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Wrecz' (piechota wrecz)."
-  },
-  jednostka_koszt_rola_konnica: {
-    wartosc: 16,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Konnica'."
-  },
-  zasieg_okolicy_miasta: {
-    wartosc: 10,
-    jednostka: "pola/strona",
-    opis: "Promien okolicy roboczej miasta (pola na plony) z kazdej strony = 10 (bylo 5; ROZSZERZONE o +5 z kazdej strony, decyzja Naster). ~21x21 ~331 heksow. Tu przydzielasz mieszkancow; to tez zasieg budowy miasta."
-  },
-  zasieg_okolicy_max: {
-    wartosc: 15,
-    jednostka: "pola/strona",
-    opis: "Maksymalny promien okolicy miasta (cap) w modelu: cityRangeForPopulation(pop)=max(zasieg_okolicy_baza, min(pop,cap)). Maciej 2026-06-27: start min 5, rosnie 1:1 z pop."
-  },
-  praca_udzial_budynki: {
-    wartosc: 0.7,
-    jednostka: "udzial [0..1]",
-    opis: "Q4: czesc Pracy miasta do kolejki budynkow; reszta -> globalna pula Pracy w skarbcu."
-  },
-  bonus_obrona_mur_proc: {
-    wartosc: 200,
-    jednostka: "% Obrony",
-    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
-  },
-  bonus_obrona_cytadela_proc: {
-    wartosc: 100,
-    jednostka: "% Obrony (dodatkowo do muru)",
-    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
-  },
-  bonus_obrona_baszta_proc: {
-    wartosc: 100,
-    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
-    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
-  },
-  zasieg_okolicy_baza: {
-    wartosc: 5,
-    jednostka: "pola/strona",
-    opis: "Minimalny promien okolicy przy populacji 1..4 (start miasta = 5 heksow). Czytane przez okolica.cityRangeForPopulation (Maciej 2026-06-27)."
-  },
-  zasieg_okolicy_pop5: {
-    wartosc: 10,
-    jednostka: "pola/strona",
-    opis: "[LEGACY - nieuzywane od 2026-06-25] Zasieg okolicy przy populacji >= 5 (stary model schodkowy). Zachowane dla wstecznej zgodnosci parsowania."
-  },
-  zasieg_okolicy_pop10: {
-    wartosc: 15,
-    jednostka: "pola/strona",
-    opis: "[LEGACY - nieuzywane od 2026-06-25] Zasieg okolicy przy populacji >= 10 (stary model schodkowy). Zachowane dla wstecznej zgodnosci parsowania."
-  },
-  udzial_output_produkcja: {
-    wartosc: 0.4,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia PRODUKCJA. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  },
-  udzial_output_pieniadz: {
-    wartosc: 0.3,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia PIENIADZ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  },
-  udzial_output_nauka: {
-    wartosc: 0.2,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia NAUKA. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  },
-  udzial_output_rozwoj: {
-    wartosc: 0.1,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia ROZWOJ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  }
-};
-
-// src/game/manpower.ts
-var ROWS = epoka_ludnosc_manpower_default.epoki;
-
-// src/game/building-resource-gate.ts
-var LABEL_BY_ASCII = {
-  drewno: "Drewno",
-  kamien: "Kamie\u0144",
-  glina: "Glina",
-  ruda: "Ruda",
-  zelazo: "\u017Belazo",
-  stal: "Stal",
-  braz: "Br\u0105z",
-  sol: "S\xF3l",
-  cegla: "Ceg\u0142a",
-  ceramika: "Ceramika"
-};
-var ASCII_BY_LABEL = Object.fromEntries(
-  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
-);
-
-// src/game/production.ts
-var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
-var DEFAULT_COST_BY_ROLE = {
-  Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
-  Dystans: miasto_params_default.jednostka_koszt_rola_dystans?.wartosc ?? 8,
-  "Wr\u0119cz": miasto_params_default.jednostka_koszt_rola_wrecz?.wartosc ?? 10,
-  // melee role key
-  Wrecz: miasto_params_default.jednostka_koszt_rola_wrecz?.wartosc ?? 10,
-  Konnica: miasto_params_default.jednostka_koszt_rola_konnica?.wartosc ?? 16
-};
-var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
-var DEFAULT_OUTPUT_SHARES = Object.freeze({
-  produkcja: miasto_params_default.udzial_output_produkcja?.wartosc ?? 0.4,
-  pieniadz: miasto_params_default.udzial_output_pieniadz?.wartosc ?? 0.3,
-  nauka: miasto_params_default.udzial_output_nauka?.wartosc ?? 0.2,
-  rozwoj: miasto_params_default.udzial_output_rozwoj?.wartosc ?? 0.1
-});
-
-// data/combat-params.json
-var combat_params_default = {
-  _opis: "Panel-C \u017Ar\xF3d\u0142o prawdy \xB7 panele-sterowania/export-c.py \xB7 Macierz v2 + SS5l + obl\u0119zenie + AI obl\u0119\u017Cenia",
-  macierz_v2: {
-    hit_base: 35,
-    hit_min: 8,
-    hit_max: 90,
-    dmg_scale: 10,
-    pancerz_divisor: 200,
-    max_rounds: 200
-  },
-  tw_v3: {
-    hit_base: 40,
-    hit_min: 15,
-    hit_max: 75,
-    max_rounds: 200
-  },
-  ss5l_legacy: {
-    hit_base: 50,
-    hit_per_point: 5,
-    hit_min: 10,
-    hit_max: 90,
-    max_rounds: 30
-  },
-  counter_multiplier: 1.5,
-  river_attack_mult: 0.75,
-  brod: {
-    _opis: "C-BTL-BROD-Q1 wariant C -- mechanika brodu (Ford) na planszy bitwy taktycznej (battleScene.ts). karaAtak/karaObrona sa numerycznie te same co river_attack_mult (0.75=1-0.25) ale to OSOBNY, dedykowany dla brodu wpis (tamten zasila swiatowy resolveCombat/instant-resolve dla starcia z obronca-na-rzece; ten zasila per-tile Ford w bitwie taktycznej -- oba moga byc strojone niezaleznie w przyszlosci).",
-    ruchMult: 0.5,
-    karaAtak: 0.25,
-    karaObrona: 0.25,
-    bonusObronaBrzegu: 0.15
-  },
-  obl\u0119\u017Cenie: {
-    _opis: "wall_base_obrona / wall_per_level_obrona ZEROWANE (Maciej 2026-07-25): obrona miasta dziala WYLACZNIE procentowo (miasto-params.json bonus_obrona_mur_proc=200 / bonus_obrona_cytadela_proc=100, konsumowane przez main.ts structureDefenseBonusFor + combat.ts structureDefBonusPct + battleScene onWallWalkway). Plaski bonus Obrony/Pancerza z muru w game/siege.ts (cityDefenseBonus) dublowal ten procent -- zneutralizowany tutaj zamiast w kodzie, zeby wallLevel/hasWalls (obecnosc muru) nadal dzialaly bez zmian. Pola zostawione (nie usuniete) dla zgodnosci z SiegeParams/wallParamsFromBuildings.",
-    wall_base_obrona: 0,
-    wall_per_level_obrona: 0,
-    wall_max_level: 10,
-    wall_pancerz_fraction: 0.5,
-    hill_defense_mult: 1.5,
-    mountain_defense_mult: 1.75,
-    fortify_obrona_bonus: 2,
-    militia_pop_fraction: 0.2,
-    militia_strength_fraction: 0.5,
-    siege_max_rounds: 30
-  },
-  siege_ai: {
-    t1_assault_ratio: 1.8,
-    t2_build_min_ratio: 1.4,
-    t3_starve_min_ratio: 1.1,
-    t2_max_wait_turns: 5,
-    units_per_extra_machine: 10
-  },
-  unit_power: {
-    _opis: "Moc jednostki M \u2014 Panel-C Stale-moc \xB7 mirror unit-power.ts",
-    charge_divisor: 2,
-    missile_divisor: 2,
-    hp_field_divisor: 2,
-    hp_siege_divisor: 10
-  }
-};
-
-// src/game/combat.ts
-var TW = combat_params_default.tw_v3;
-var COUNTER_MULT = combat_params_default.counter_multiplier;
-
-// src/game/siege.ts
-var OBL = combat_params_default["obl\u0119\u017Cenie"];
-var WALL_BASE_OBRONA = OBL.wall_base_obrona;
-var WALL_PER_LEVEL_OBRONA = OBL.wall_per_level_obrona;
-var WALL_MAX_LEVEL = OBL.wall_max_level;
-var WALL_PANCERZ_FRACTION = OBL.wall_pancerz_fraction;
-var HILL_DEFENSE_MULT = OBL.hill_defense_mult;
-var MOUNTAIN_DEFENSE_MULT = OBL.mountain_defense_mult;
-var FORTIFY_OBRONA_BONUS = OBL.fortify_obrona_bonus;
-var MILITIA_POP_FRACTION = OBL.militia_pop_fraction;
-var MILITIA_STRENGTH_FRACTION = OBL.militia_strength_fraction;
-var SIEGE_MAX_ROUNDS = OBL.siege_max_rounds;
-
-// src/game/siegeDefenders.ts
-function defenderUnitsNearCity(city, units) {
-  return collectDefRosterNearCity(city, units).filter((u) => u.ownerId === city.ownerId);
-}
-function hasCityDefenders(city, units) {
-  if ((city.garnizon ?? 0) > 0) return true;
-  return defenderUnitsNearCity(city, units).length > 0;
-}
-function canCaptureCityWithoutBattle(city, units) {
-  return !hasCityDefenders(city, units);
-}
-function survivorsLiveSet(survivors) {
-  if (!survivors || survivors.length === 0) return null;
-  return new Set(survivors.map((s) => s.id));
+function exitFieldFortify(u) {
+  if (u.ufortyfikowanyWPolu !== true) return false;
+  u.ufortyfikowanyWPolu = false;
+  return true;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  canCaptureCityWithoutBattle,
-  defenderUnitsNearCity,
-  hasCityDefenders,
-  survivorsLiveSet
+  enterFieldFortify,
+  exitFieldFortify,
+  exitGarnizon
 });

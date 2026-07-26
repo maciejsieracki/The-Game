@@ -197,7 +197,7 @@ import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
   getActiveSiegeCityId, setSiegePanelBesiegerCount,
 } from './ui/siegeMapPanel';
-import { makeMilitia, type SiegeCity, type SiegeUnit } from './game/siege';
+import { makeMilitia, FORTIFY_OBRONA_BONUS, type SiegeCity, type SiegeUnit } from './game/siege';
 import {
   decideAISiegeStance,
   EMPTY_SIEGE_AI_STATE,
@@ -236,6 +236,8 @@ import {
   unitsOnCityHexForLaw,
   activeUnitStack,
   exitGarnizon,
+  enterFieldFortify,
+  exitFieldFortify,
 } from './game/armyMerge';
 import {
   resolveMapUnitCursor,
@@ -486,7 +488,11 @@ import {
   bestBuildingProgressAfterCityVisit, buildingProgressWouldChange,
   unitPancerzBonusFrac, unitParametryBonusFrac, unitBuildingBonusLabel,
 } from './game/unit-building-bonuses';
-import { cityWallDefenseBonusPercent, cityGatedTerrainMultiplier } from './game/city-defense';
+import {
+  cityWallDefenseBonusPercent,
+  cityGatedTerrainMultiplier,
+  fieldFortifyDefenseBonus,
+} from './game/city-defense';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
   type TradeGoodEntry,
@@ -8183,6 +8189,25 @@ async function boot(): Promise<void> {
       return n;
     }
 
+    /**
+     * Jedno miejsce, jedna flaga — predykat „liczy się jako obozowanie" dla
+     * znizki żywnościowej (zywnosc_jednostka_oboz, ×0,5, economy-upkeep.ts).
+     * DZIŚ = WYŁĄCZNIE garnizon miasta (RuntimeUnit.inGarnizon, C-GARN-Q1).
+     * Fortyfikacja W POLU (RuntimeUnit.ufortyfikowanyWPolu) CELOWO NIE liczy
+     * się tu jeszcze -- dyspozycja Macieja 2026-07-26: zniżka dla oblegających
+     * zmieniłaby bilans oblężenia (2,0 -> 1,0 żywności/turę) i pytanie o to już
+     * poszło do właściciela, nierozstrzygnięte (patrz PYTANIA-OTWARTE.md).
+     * PUNKT ZACZEPIENIA na przyszłą decyzję: gdy padnie „tak", cała zmiana to
+     * JEDNA linia poniżej:
+     *   return u.inGarnizon === true || u.ufortyfikowanyWPolu === true;
+     * Używane w DWÓCH miejscach (projectPlayerFoodNetRate + turn-tick ekonomii
+     * gracza) -- scalone w jedną funkcję właśnie po to, żeby przyszła zmiana
+     * była jednym miejscem, nie dwoma kopiami tego samego warunku.
+     */
+    function isCampingForFoodDiscount(u: Pick<RuntimeUnit, 'inGarnizon'>): boolean {
+      return u.inGarnizon === true;
+    }
+
     function projectPlayerFoodMaxCap(): number {
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       return computeEmpireFoodMaxCap(countPlayerSpichlerze(), efParams);
@@ -8200,10 +8225,11 @@ async function boot(): Promise<void> {
         .map(u => ({
           ownerId: u.ownerId,
           typeId: u.typeId,
-          // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka ufortyfikowana/w
-          // garnizonie miasta (RuntimeUnit.inGarnizon) zjada połowę żywności
-          // (zywnosc_jednostka_oboz), zgodnie z decyzją o połączeniu obu mnożników.
-          camping: u.inGarnizon === true,
+          // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka w garnizonie
+          // miasta zjada połowę żywności (zywnosc_jednostka_oboz) -- patrz
+          // isCampingForFoodDiscount() (punkt zaczepienia na ewentualną znizkę
+          // dla fortyfikacji w polu, dziś CELOWO wyłączoną).
+          camping: isCampingForFoodDiscount(u),
           onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForFoodProj) === u.ownerId,
         }));
       const kosztArmii = militaryFoodConsumption(playerUnits, upkeepParams, unitFoodTbl);
@@ -9743,6 +9769,18 @@ async function boot(): Promise<void> {
       const hasPlan = plannedMarches.has(active.id);
       if (siegeCity) {
         actions.push({ id: 'siege-hold', label: 'Oblega', disabled: true });
+        // DYSPOZYCJA Macieja 2026-07-26 ("oblezenie + fortyfikacja"): jednostka
+        // oblegajaca MOZE sie ufortyfikowac W POLU bez zdejmowania oblezenia --
+        // ruchLeft jest juz 0 (patrz commitBesiege/turn-loop), wiec przycisk
+        // NIGDY nie jest disabled przez brak ruchu (nie ma co dalej odjac).
+        // Zdjecie fortyfikacji (ponowny klik) tez nie kosztuje ruchu -- parytet
+        // z Czuwaj/Obudz i Opusc garnizon.
+        const isFieldFortifiedSiege = active.ufortyfikowanyWPolu === true;
+        actions.push({
+          id: 'fortify',
+          label: isFieldFortifiedSiege ? 'Zdejmij fortyfikację' : 'Ufortyfikuj',
+          disabled: false,
+        });
       } else if (hasPlan) {
         actions.push({
           id: 'march-stop',
@@ -9756,11 +9794,18 @@ async function boot(): Promise<void> {
         // playerStackAt), przycisk zamienia się w "Opuść garnizon" — bez
         // zużycia ruchu, żeby raz ufortyfikowana jednostka NIE była trwale
         // niesterowalna z tego panelu.
+        // DYSPOZYCJA 2026-07-26: analogicznie dla fortyfikacji W POLU (poza
+        // hexem wlasnego miasta, RuntimeUnit.ufortyfikowanyWPolu) -- "Zdejmij
+        // fortyfikacje" bez kosztu ruchu, tak samo jak "Opusc garnizon".
         const isGarnizoned = active.inGarnizon === true;
+        const isFieldFortified = active.ufortyfikowanyWPolu === true;
+        const alreadyFortifiedSomehow = isGarnizoned || isFieldFortified;
         actions.push({
           id: 'fortify',
-          label: isGarnizoned ? 'Opuść garnizon' : 'Ufortyfikuj',
-          disabled: isGarnizoned ? false : stackRuch <= 0,
+          label: isGarnizoned
+            ? 'Opuść garnizon'
+            : isFieldFortified ? 'Zdejmij fortyfikację' : 'Ufortyfikuj',
+          disabled: alreadyFortifiedSomehow ? false : stackRuch <= 0,
         });
         // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
         // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
@@ -10220,6 +10265,34 @@ async function boot(): Promise<void> {
                 selectPlayerUnit(u.id, true);
                 return;
               }
+              // DYSPOZYCJA Macieja 2026-07-26 ("oblezenie + fortyfikacja"): jednostka
+              // oblegajaca (RuntimeUnit.oblegaCityId) moze sie ufortyfikowac W POLU
+              // BEZ zdejmowania oblezenia -- oblegaCityId zostaje nietkniete, wiec
+              // oblezenie leci dalej normalnie (licznik tur / zuzycie magazynu /
+              // kapitulacja, main.ts turn-loop). Dziala na CALYM widocznym stosie
+              // oblegajacych na tym hexie (playerStackAt), jak Czuwaj.
+              if (u.oblegaCityId) {
+                const siegeStack = playerStackAt(u);
+                if (u.ufortyfikowanyWPolu === true) {
+                  for (const su of siegeStack) exitFieldFortify(su);
+                  showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119 (obl\u0119\u017cenie trwa)', 2500);
+                } else {
+                  for (const su of siegeStack) enterFieldFortify(su);
+                  showHintMessage(u.typeId + ' ufortyfikowany w polu (obl\u0119\u017cenie trwa)', 2800);
+                }
+                refreshD1bHud();
+                return;
+              }
+              // Jednostka juz ufortyfikowana W POLU poza oblezeniem (np. w marszu,
+              // na wlasnym terytorium poza miastem) -- zdjecie bez kosztu ruchu,
+              // parytet z "Opusc garnizon"/"Obudz".
+              if (u.ufortyfikowanyWPolu === true) {
+                const fieldStack = playerStackAt(u);
+                for (const su of fieldStack) exitFieldFortify(su);
+                showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119', 2000);
+                refreshD1bHud();
+                return;
+              }
               clearPlannedMarch(u.id);
               syncStackRuchLeft(stack, 0);
               reachable = new Set<string>();
@@ -10237,7 +10310,12 @@ async function boot(): Promise<void> {
                 );
                 clearPlayerUnitSelection();
               } else {
-                showHintMessage('Ufortyfikowano (ruch zu\u017cyty)', 2000);
+                // DYSPOZYCJA 2026-07-26: fortyfikacja W POLU byla dotad czysto
+                // kosmetyczna (zuzywala ruch, nic nie ustawiala) -- teraz realny
+                // stan (RuntimeUnit.ufortyfikowanyWPolu), na calym widocznym
+                // stosie na tym hexie (jak Czuwaj), z bonusem Obrony w walce.
+                for (const su of stack) enterFieldFortify(su);
+                showHintMessage(u.typeId + ' ufortyfikowany w polu (ruch zu\u017cyty)', 2500);
               }
               refreshD1bHud();
             } else if (actionId === 'disband') {
@@ -10804,6 +10882,11 @@ async function boot(): Promise<void> {
       const garnizonCity = u.inGarnizon === true ? cityAtUnit(u) : undefined;
       if (exitGarnizon(u) && garnizonCity) syncGarnizonForCity(garnizonCity);
       const stack = playerStackAt(u);
+      // DYSPOZYCJA Macieja 2026-07-26: rozkaz ruchu zdejmuje fortyfikację W
+      // POLU automatycznie -- analogicznie do exitGarnizon powyżej, ale na
+      // CAŁYM stosie (fortyfikacja w polu jest ustawiana na całym widocznym
+      // stosie, patrz akcja 'fortify' powyżej), nie tylko na `u`.
+      for (const su of stack) exitFieldFortify(su);
       const startPl = unitRenderer.getTokenPlacement(u.q, u.r);
       const startWP: Waypoint = {
         x: startPl.x,
@@ -11922,6 +12005,27 @@ async function boot(): Promise<void> {
       return rest;
     }
 
+    /**
+     * DYSPOZYCJA Macieja 2026-07-26 ("oblezenie + fortyfikacja w polu"):
+     * veteranScaledDefFor(u) + flat bonus Obrony (fieldFortifyDefenseBonus,
+     * game/city-defense.ts) gdy RuntimeUnit.ufortyfikowanyWPolu -- TA SAMA
+     * sciezka wpiecia co weteran powyzej (Auto-walka moca nie przechodzi przez
+     * BattleUnit, wiec potrzebuje WLASNEGO punktu wpiecia). Usuwa `fieldPower`
+     * po doliczeniu bonusu z tego samego powodu co veteranScaledDefFor (cache
+     * z eksportu units.json ignorowalby przeskalowane pole meleeDefence --
+     * patrz PULAPKA w komentarzu powyzej).
+     */
+    function fortifyFieldScaledDefFor(u: RuntimeUnit): any {
+      const scaled = veteranScaledDefFor(u);
+      if (u.ufortyfikowanyWPolu !== true) return scaled;
+      const baseObrona = typeof scaled.meleeDefence === 'number' ? scaled.meleeDefence : 0;
+      const { fieldPower: _staleFieldPower2, ...rest } = scaled;
+      return {
+        ...rest,
+        meleeDefence: fieldFortifyDefenseBonus(baseObrona, true, FORTIFY_OBRONA_BONUS),
+      };
+    }
+
     /** Return max HP from a unit def (TW v3 `health`). */
     function unitHealth(def: any): number {
       return normFieldVal(def['health'] ?? def['Health'], 30);
@@ -11964,6 +12068,11 @@ async function boot(): Promise<void> {
         // TRZECI SYSTEM (weterani, decyzja wlasciciela 78, game/veteran.ts):
         // ownerId-agnostyczne, identyczne dla gracza i AI.
         veteranBonusFrac: veteranCombatBonusFrac(u),
+        // DYSPOZYCJA Macieja 2026-07-26 ("oblezenie + fortyfikacja w polu"):
+        // z RuntimeUnit.ufortyfikowanyWPolu -- ownerId-agnostyczne, identyczne
+        // dla gracza i AI. Konsumowane przez battleScene.ts _singleBlow oraz
+        // computeInstantResult (fieldFortifyDefenseBonus, game/city-defense.ts).
+        fortifiedInField: u.ufortyfikowanyWPolu === true,
       };
     }
 
@@ -12379,8 +12488,12 @@ async function boot(): Promise<void> {
       // mnożniki różnych czynników, kolejność mnożenia nie zmienia wyniku
       // matematycznie, ale weteran musi skalować BAZOWĄ Obronę/Atak, na
       // której dopiero mur/teren nakładają swój procent -- nie odwrotnie).
+      // DYSPOZYCJA 2026-07-26: fortifyFieldScaledDefFor dolicza flat bonus
+      // Obrony (fieldFortifyDefenseBonus) NA WIERZCHU premii weterana, gdy
+      // RuntimeUnit.ufortyfikowanyWPolu -- ta sama sciezka wpiecia, ozywia
+      // combat-params.json "oblężenie".fortify_obrona_bonus w ścieżce Auto.
       const split = sumRosterFieldMSplit(
-        defRoster.map(u => ({ typeId: u.typeId, def: veteranScaledDefFor(u) })),
+        defRoster.map(u => ({ typeId: u.typeId, def: fortifyFieldScaledDefFor(u) })),
       );
       const { isCity, hasMur } = cityWallStatusAtHex(q, r);
       let terrAdjAttack: number;
@@ -14102,13 +14215,12 @@ async function boot(): Promise<void> {
             ownerId: u.ownerId,
             typeId:  u.typeId,
             // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): łączymy mnożnik terytorialny
-            // (C-GLOD-Q2=B) z połową żywności dla jednostki ufortyfikowanej/w garnizonie
-            // miasta. Stan "obozuje" osobno nie istnieje w silniku (audyt: brak enum/pola) —
-            // jedyny istniejący stan tego typu to RuntimeUnit.inGarnizon (ustawiane akcją
-            // "Ufortyfikuj" WYŁĄCZNIE na hexie własnego miasta, patrz cityAtUnit()).
-            // Mnożniki się składają multiplikatywnie: ufortyfikowana we własnym kraju =
-            // 1,0 (teren) x 0,5 (garnizon) = 0,5 żywności/turę.
-            camping: u.inGarnizon === true,
+            // (C-GLOD-Q2=B) z połową żywności dla jednostki w garnizonie miasta --
+            // patrz isCampingForFoodDiscount() (punkt zaczepienia na ewentualną
+            // znizkę dla fortyfikacji w polu, dziś CELOWO wyłączoną, pytanie u
+            // właściciela). Mnożniki się składają multiplikatywnie: garnizon we
+            // własnym kraju = 1,0 (teren) x 0,5 (garnizon) = 0,5 żywności/turę.
+            camping: isCampingForFoodDiscount(u),
             onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForFood) === u.ownerId,
           }));
           const ownerCivMap = new Map<number, string>();

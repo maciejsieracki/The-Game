@@ -72,7 +72,11 @@ import {
   veteranMoraleBazoweUp,
   veteranMoraleUcieczkiDown,
 } from '../game/veteran';
-import { cityWallDefenseBonusPercent, cityGatedTerrainMultiplier } from '../game/city-defense';
+import {
+  cityWallDefenseBonusPercent,
+  cityGatedTerrainMultiplier,
+  fieldFortifyDefenseBonus,
+} from '../game/city-defense';
 import { buildUnitModel } from '../render/units';
 import { refreshInstancedPickBounds } from '../input/picker';
 import {
@@ -362,6 +366,17 @@ export interface BattleUnit {
    * literals bez tego pola zachowuja dokladnie dawne zachowanie).
    */
   veteranBonusFrac?: number;
+  /**
+   * Fortyfikacja W POLU (dyspozycja Maciej 2026-07-26, "oblezenie + fortyfikacja").
+   * Wypelniane przez main.ts runtimeToBattleUnit() z RuntimeUnit.ufortyfikowanyWPolu
+   * -- OSOBNE od garnizonu miasta/muru (ktory ma wlasny procentowy system, patrz
+   * onWallWalkway/wallDefenseTotalProc). Konsumowane przez _singleBlow (bitwa
+   * taktyczna) i computeInstantResult ("Pomin") -- flat bonus Obrony, NIGDY Atak
+   * (jak bonus muru C-COMBAT-Q1), przez fieldFortifyDefenseBonus (game/city-defense.ts).
+   * Domyslnie undefined/false -- bezpieczne dla wszystkich istniejacych wywolan
+   * (synthetic/test BattleUnit literals bez tego pola zachowuja dawne zachowanie).
+   */
+  fortifiedInField?: boolean;
 }
 
 /** Siege-mode options: add a wall across the defender's end of the field. */
@@ -830,6 +845,15 @@ const BROD_RUCH_MULT   = BROD.ruchMult;             // 0.5 -> half speed while w
 const BROD_KARA_ATAK   = BROD.karaAtak;              // 0.25 -> -25% Atak while fighting in a ford
 const BROD_KARA_OBRONA = BROD.karaObrona;            // 0.25 -> -25% Obrona while fighting in a ford
 const BROD_BONUS_BRZEG = BROD.bonusObronaBrzegu;     // 0.15 -> +15% Obrona defending the shore vs a ford attacker
+// C-FORT-POLE-Q1 (Maciej 2026-07-26, "oblezenie + fortyfikacja w polu"): flat
+// Obrona bonus for a unit BattleUnit.fortifiedInField (from RuntimeUnit.
+// ufortyfikowanyWPolu). Revives combat-params.json "oblężenie".fortify_obrona_bonus
+// (today 2 Obrona points) -- until now read ONLY by siegeAi.ts for AI strength
+// estimation, never applied in real combat (see task report). Applied via
+// fieldFortifyDefenseBonus (game/city-defense.ts) so this file, _singleBlow and
+// computeInstantResult, and main.ts effectiveDefenderM all use the SAME formula
+// (parity with the wall-bonus pattern, cityGatedTerrainMultiplier above).
+const FORTIFY_OBRONA_BONUS_FIELD: number = combatParamsData['oblężenie'].fortify_obrona_bonus;
 // Small tie-breaking penalty added to the cavalry tile-scoring functions below
 // (the only existing "score a candidate tile" AI logic in this file) so a
 // rider prefers a same-progress dry tile over stopping to fight IN a ford.
@@ -7497,7 +7521,14 @@ export class BattleScene {
       { pancerz: defender.bu.pancerzBonusFrac ?? 0, other: defender.bu.parametryBonusFrac ?? 0 },
     );
 
-    const defMeleeDef = applyMultiplier(cuD.meleeDefence, defMods.obrona);
+    // C-FORT-POLE-Q1 (Maciej 2026-07-26): fortyfikacja W POLU dolicza flat
+    // bonus Obrony PRZED terenem/brodem (fieldFortifyDefenseBonus, jak
+    // premia budynkowa powyzej -- dziala WYLACZNIE na Obronie, nigdy Atak).
+    const defMeleeDef = fieldFortifyDefenseBonus(
+      applyMultiplier(cuD.meleeDefence, defMods.obrona),
+      defender.bu.fortifiedInField === true,
+      FORTIFY_OBRONA_BONUS_FIELD,
+    );
     const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac));
     const defFinalObrona = defEffObrona * terrDefMult * defFordMlt * shoreBonusMlt;
     const atkMelee       = applyMultiplier(cuA.meleeAttack, atkMods.atk) * terrRiverMlt;
@@ -18188,6 +18219,17 @@ function computeInstantResult(
         : 1;
       const structBonusPctForPair = (defOnWall ? wallDefenseTotalProc : 0)
         + (isCityDefense ? (cityTerrMult - 1) * 100 : 0);
+
+      // C-FORT-POLE-Q1 (Maciej 2026-07-26), skip-resolve parity: same flat
+      // Obrona bonus as _singleBlow when the defender is fortified in the
+      // field (BattleUnit.fortifiedInField) -- added BEFORE the ford/shore
+      // multipliers below (and before resolveCombat's own terrain/structure
+      // multipliers), so it scales with them exactly like the wall bonus does.
+      if (d.ru.bu.fortifiedInField === true) {
+        cu_d.meleeDefence = fieldFortifyDefenseBonus(
+          cu_d.meleeDefence, true, FORTIFY_OBRONA_BONUS_FIELD,
+        );
+      }
 
       // C-BTL-BROD-Q1 (wariant C), skip-resolve parity: pre-scale the
       // defender's Obrona for the ford penalty / shore bonus the animated

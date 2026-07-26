@@ -68,6 +68,36 @@ export function exitGarnizon(u: RuntimeUnit): boolean {
   return true;
 }
 
+/**
+ * Fortyfikacja W POLU (Maciej 2026-07-26, dyspozycja "oblężenie + fortyfikacja") --
+ * OSOBNA od garnizonu miasta (inGarnizon powyżej): nie ukrywa jednostkę, działa
+ * poza hexem własnego miasta (w tym KAŻDA jednostka oblegająca -- oblegający stoją
+ * przy murze, hexDistance===1, nigdy na samym hexie miasta, patrz main.ts
+ * commitBesiege). Mutuje `u` w miejscu.
+ *
+ * enterFieldFortify: zeruje ruchLeft (koszt = CAŁY pozostały ruch tury, zgodnie
+ * ze słowami właściciela -- nie tylko część) i ustawia flagę. NIE dotyka
+ * oblegaCityId -- jednostka oblegająca zostaje w oblężeniu (main.ts turn-loop
+ * i tak zeruje jej ruchLeft co turę, patrz `if (u.oblegaCityId) u.ruchLeft = 0`,
+ * więc to nie jest dodatkowa kara dla oblegających, tylko formalność zgodna z
+ * jednostką NIE oblegającą, która wchodzi w ten stan z realnym ruchem do stracenia).
+ */
+export function enterFieldFortify(u: RuntimeUnit): void {
+  u.ufortyfikowanyWPolu = true;
+  u.ruchLeft = 0;
+}
+
+/**
+ * Zdejmuje fortyfikację w polu -- BEZ kosztu ruchu (parytet z "Czuwaj"/"Obudź" i
+ * exitGarnizon powyżej: wyjście z trybu nigdy nie kosztuje, tylko wejście).
+ * Zwraca `true`, jeśli coś się rzeczywiście zmieniło (jak exitGarnizon).
+ */
+export function exitFieldFortify(u: RuntimeUnit): boolean {
+  if (u.ufortyfikowanyWPolu !== true) return false;
+  u.ufortyfikowanyWPolu = false;
+  return true;
+}
+
 /** Najmocniejsza jednostka stosu (Atak → id). */
 export function pickStackRepresentative(
   stack: RuntimeUnit[],

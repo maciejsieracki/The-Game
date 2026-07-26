@@ -116,3 +116,34 @@ export function cityGatedTerrainMultiplier(
   if (!isElevation) return 1.0;
   return terrainDefenseMultiplier(terrain, '', terrainData as TerrainEntry[]);
 }
+
+/**
+ * fieldFortifyDefenseBonus (Maciej 2026-07-26, dyspozycja "oblężenie +
+ * fortyfikacja w polu"): dolicza flat bonus Obrony (combat-params.json
+ * "oblężenie".fortify_obrona_bonus, dziś 2 pkt Obrony) do jednostce oznaczonej
+ * RuntimeUnit.ufortyfikowanyWPolu=true -- OSOBNE od garnizonu miasta/muru
+ * (powyżej w tym pliku), ożywia parametr dotąd czytany WYŁĄCZNIE przez
+ * siegeAi.ts do oceny siły AI, nigdy w realnej walce (patrz raport zadania).
+ *
+ * Zwraca Obronę PO dodaniu bonusu, PRZED mnożnikiem terenu/muru -- wołający
+ * MUSI pomnożyć wynik przez własny mnożnik terenu osobno (dokładnie tak jak
+ * game/siege.ts cityDefenseBonus/applyCityBonus robi to dla garnizonu miasta:
+ * `(Obrona + obronaBonus) * terrainMult` -- ZERO nowej matematyki, ten sam
+ * wzorzec: bonus fortyfikacji SKALUJE się razem z terenem, tak jak baza Obrony).
+ * Działa WYŁĄCZNIE na Obronie (nigdy Atak) -- jak bonus muru (C-COMBAT-Q1).
+ *
+ * Wołane z TRZECH miejsc (parytet ze wzorem muru/cityGatedTerrainMultiplier
+ * powyżej): main.ts effectiveDefenderM (Auto-walka mocą), battleScene.ts
+ * _singleBlow (bitwa taktyczna), battleScene.ts computeInstantResult ("Pomiń").
+ *
+ * PARYTET AI: czysta funkcja, ownerId-agnostyczna -- identyczny bonus dla
+ * gracza i AI, gdy tylko flaga jest ustawiona (choć AI dziś NIE PODEJMUJE
+ * decyzji o wejściu w ten stan -- brak logiki w ai.ts/siegeAi.ts, patrz raport).
+ */
+export function fieldFortifyDefenseBonus(
+  baseObrona: number,
+  isFortifiedInField: boolean,
+  fortifyObronaBonus: number,
+): number {
+  return isFortifiedInField ? baseObrona + fortifyObronaBonus : baseObrona;
+}
