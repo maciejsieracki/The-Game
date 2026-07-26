@@ -784,6 +784,18 @@ wymienił jako kandydata).
   w świetle nowego strumienia, żeby nie karać reputacji dwa razy za to samo. **To blokuje start
   implementacji Dźwigni 1** — przegląd najpierw.
 
+- **§9.7 skrajne wartości Zaufania = A — PROSTE PRZYCIĘCIE 0–100.** Bez malejącego przyrostu przy
+  granicach i bez bufora nadwyżki. Wracamy do tematu tylko wtedy, gdy playtest pokaże, że wszyscy
+  partnerzy siedzą na maksymalnym Zaufaniu (przy §9.2 = bez limitu przyrostu zobaczymy to szybko).
+- **§9.8 i §9.9 — rozstrzygnięcia techniczne integratora** (właściciel zgodził się, żeby nie zajmować
+  nimi jego czasu; gdyby miał inne zdanie, wystarczy powiedzieć):
+  - **§9.8 zaokrąglanie:** wartości ułamkowe strumienia **akumulujemy jako ułamek**, tak jak działa
+    dziś `wspolnaReligia_zaufanie_perTura = 0,5` — zero zaokrąglania na wejściu, zaokrąglenie tylko
+    przy wyświetlaniu (wspólny `formatLiczbaPl`, patrz commit 6667cfa).
+  - **§9.9 odświeżanie W:** wartość Wiarygodności liczona **na żywo raz na turę**, tuż przed
+    `tickDiplomacy`, bez osobnego cache — lista zdarzeń jest krótka (jedno zdarzenie na czyn), więc
+    koszt jest pomijalny, a cache wymagałby jawnego miejsca unieważniania przy każdym nowym zdarzeniu.
+
 ### Nadal nierozstrzygnięte — nie zgadywać, nie wdrażać, dopóki Maciej nie odpowie.
 
 1. **Niespójność „NAP jako bezterminowy".** W kodzie NAP ZAWSZE ma termin (10–20 tur) — przykład Macieja
