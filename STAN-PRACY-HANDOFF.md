@@ -266,12 +266,13 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 
 **⚠️ KOREKTA starego handoffu:** notatka o „21 porażkach `logic-test`" i „`combat-test` rzuca wyjątek" jest **NIEAKTUALNA** — oba **naprawione 2026-07-20** i zielone (203/203, 6/6). Zweryfikowane na baseline.
 
-**Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji) — stan 2026-07-25:**
+**Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji) — stan 2026-07-26 (audyt weryfikacyjny):**
 - `currency-test.cjs` → **5 porażek** (dot. `pieniadzZPracy`/Efekt2 i mnożnika per-cyw). Zweryfikowane identycznie na baseline `git stash`.
 - `map-gen-regression-test.cjs` — progi czasowe „AC" (generacja <5s/<15s) FAIL na wolnej maszynie = pomiar wydajności, nie regresja.
-- `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs` — po jednej porażce (próg wzrostu populacji / dopasowanie kategorii auto-budowy) — zgłoszone przez subagenta linearyzacji, patrz `dyspozycje/BACKLOG-PRZYSZLOSC.md` §B.8.
-- `upgrade-budynki-test.cjs` — **2 porażki** (nowe, doszły 2026-07-25).
-- `deposit-building-gate-test.cjs` — **2 porażki** (nowe, doszły 2026-07-25).
+- **KOREKTA 2026-07-26:** `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs`, `upgrade-budynki-test.cjs`, `deposit-building-gate-test.cjs` figurowały tu jako czerwone (wpis 2026-07-25) — **audyt zweryfikował przez faktyczne uruchomienie z `gra/`, że wszystkie pięć są dziś ZIELONE**: `upgrade-budynki-test.cjs` 48/48, `deposit-building-gate-test.cjs` 34/34, `akwedukt-popcap-test.cjs` 5/5, `auto-manage-test.cjs` 29/29, `growthmult-compound-test.cjs` 24/24. Zdjęte z listy.
+- `relief-grid-coverage-test.cjs` — **2 pass / 4 fail** (stan 2026-07-26). **W NAPRAWIE na mocy decyzji C-MAPA-Q1=B** (osobny agent dostraja generator w `gra/src/map/**`), nie stan docelowy. Przyczyna: konsekwencja decyzji 63 (limit 10 heksów na spójne skupisko Gór/Wzgórz) — kilka osobnych skupisk może wpaść do jednej komórki siatki reliefu, więc limit skupiska i próg per komórka mierzą różne rzeczy (dokumentacja w kodzie: `gra/src/map/gen-helpers.ts:1961-1964`).
+- `fair-play-grid-test.cjs` — **3 pass / 5 fail** (stan 2026-07-26). **W NAPRAWIE na mocy decyzji C-MAPA-Q1=B**, ten sam mechanizm co wyżej. Punkt odniesienia zmierzony 2026-07-26 (do porównania po naprawie): 56 gór w najgorszej komórce siatki przy dopuszczalnych 25, 95 wzgórz przy dopuszczalnych 37 (Standard kontynenty).
+- `map-deposits-era-test.cjs` — **był przestarzały** (asercjonował starą regułę terenu złóż: miedź na Górach), sprzeczny z regułą obowiązującą od 2026-07-25 (miedź na **Wzgórzach**, żelazo na **Górach**, `gen-helpers.ts:6734,6740`). **Naprawiony 2026-07-26** — zaktualizowano asercje testu do obowiązującej reguły, dziś **16/16 zielony**.
 
 **Inne znane problemy / długi:**
 - **Bug rzeka↔mgła** — rzeka znika przy budowie miasta, wraca po wyłączeniu mgły wojny. ⚠️ Możliwe, że zmiana „wybrzeże=woda" (2026-07-20) to zmieniła — **do weryfikacji wzrokowej**.
