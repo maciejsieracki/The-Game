@@ -113,7 +113,13 @@ ok(qRzym('owce', 1, 1), 'ABC-18: owce buildable on zloze owiec (pierwsze pastwis
 ok(!qRzym('owce', 1, 0), 'owce NOT on flat');
 ok(qInka('tarasy', 0, 1), 'AC-M2: tarasy inkowie wzgorza');
 ok(qChiny('tarasy', 0, 1), 'AC-M2: tarasy chinczycy wzgorza');
-ok(qRzym('tarasy', 0, 1), 'T-TECH-4: tarasy rzym wzgorza po Rolnictwie');
+// C-TARASY-Q1 (Maciej 2026-07-26): qualifies() surowy (ten plik, gra/src/map/**) NIE sprawdza
+// cywilizacji -- to zamierzone, gra/src/map/** zablokowana rownoleglym zleceniem gorzystosci.
+// Bramka per-cywilizacja (tylko Chinczycy+Inkowie) jest OGOLNA (isImprovementAllowedForCiv,
+// game/terrain-improvements.ts) i wpieta OSOBNO przez wolajacych spoza map/**: main.ts
+// (refreshBuildApi) dla gracza, ai.ts (planCityImprovements) dla AI -- patrz
+// tarasy-cywilizacje-test.cjs dla weryfikacji tej faktycznej bramki gracz+AI.
+ok(qRzym('tarasy', 0, 1), 'surowy qualifies() ignoruje cywilizacje (teren OK) -- bramka jest wyzej');
 ok(qInka('irygacja', 0, 2), 'irygacja river hex');
 ok(qInka('irygacja', 6, 2), 'irygacja pustynia przy rzece');
 ok(!qInka('bydlo', 6, 0), 'AC-M6: bydlo NOT pustynia');

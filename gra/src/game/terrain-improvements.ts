@@ -12,7 +12,14 @@ export type ImprovementBonusKey =
 
 export type ImprovementBonus = Partial<Record<ImprovementBonusKey, number>>;
 
-type ImprovementRow = { bonus?: ImprovementBonus; nazwa?: string; surowiec_ilosc_tura?: number };
+type ImprovementRow = {
+  bonus?: ImprovementBonus;
+  nazwa?: string;
+  surowiec_ilosc_tura?: number;
+  /** Ograniczenie do wybranych cywilizacji (typCywilizacji z civs.json) — pole ogólny,
+   *  patrz `isImprovementAllowedForCiv` niżej. Brak / pusta lista = wszystkie cywilizacje. */
+  cywilizacje?: readonly string[];
+};
 
 const IMPROVEMENTS = improvementsJson as Record<string, ImprovementRow>;
 
@@ -180,6 +187,35 @@ export function improvementKeysForHex(
 
 export function improvementDisplayName(key: string): string {
   return IMPROVEMENTS[key]?.nazwa ?? key;
+}
+
+// ---------------------------------------------------------------------------
+// C-TARASY-Q1 (Maciej 2026-07-26): mechanizm OGÓLNY ograniczania ulepszeń terenu
+// do wybranych cywilizacji — pole `cywilizacje` (lista typCywilizacji z civs.json)
+// w terrain-improvements.json. Konwencja identyczna z cudami świata (wonders.json
+// WonderDef.cywilizacje + wonders-data.ts canCivBuildWonder: `.includes(typCywilizacji)`),
+// NIE jest wyjątkiem tylko dla Tarasów — dowolne przyszłe ulepszenie civ-locked
+// dodaje to samo pole w JSON, bez zmian w kodzie. Wywoływane symetrycznie dla
+// gracza i AI przez wołających spoza gra/src/map/** (main.ts refreshBuildApi,
+// game/ai.ts planCityImprovements) — ten moduł jest PURE i nie zależy od
+// map/improvement-build.ts (zablokowanego równoległym zleceniem górzystości).
+// ---------------------------------------------------------------------------
+
+/** Lista cywilizacji (typCywilizacji), do których ograniczone jest ulepszenie — undefined = brak ograniczenia. */
+export function improvementAllowedCivs(key: string): readonly string[] | undefined {
+  return IMPROVEMENTS[key]?.cywilizacje;
+}
+
+/** Czy cywilizacja `typCywilizacji` (np. 'chinczycy', 'inkowie') może budować dane ulepszenie terenu. */
+export function isImprovementAllowedForCiv(
+  key: string,
+  typCywilizacji: string | undefined | null,
+): boolean {
+  const allowed = improvementAllowedCivs(key);
+  if (!allowed || allowed.length === 0) return true;
+  const t = (typCywilizacji ?? '').trim().toLowerCase();
+  if (!t) return false;
+  return allowed.some(c => c.trim().toLowerCase() === t);
 }
 
 // ---------------------------------------------------------------------------

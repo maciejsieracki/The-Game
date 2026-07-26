@@ -763,3 +763,22 @@ Maciej podejrzewał, że „AI nie umie przesunąć żywności na armię i armia
 
 **Do decyzji ABC:** czy AI dostaje automatyczne zarządzanie suwakiem, czy głód obowiązuje wszystkich,
 czy jedno i drugie. Naprawa dotyka `main.ts` i zmienia balans — nie robić po cichu.
+
+---
+
+## [ZNALEZIONE PRZY OKAZJI] `ai-improvements-test.cjs` i `food-hodowla-test.cjs` — 2 porażki PRE-ISTNIEJĄCE, potwierdzone na czystym HEAD (sesja C-TARASY-Q1, 2026-07-26)
+
+Przy pracy nad C-TARASY-Q1 (Tarasy uprawne tylko Chińczycy+Inkowie) uruchomiono pełny zestaw bramek
+dotykających `game/ai.ts` i `game/terrain-improvements.ts`. Dwa testy SPOZA wymaganych bramek zlecenia
+(`tsc`, `logic-test`, `ai-test`, `civ-visual-test` — wszystkie zielone) wykazały porażki:
+
+- `tools/ai-improvements-test.cjs` test #7 „wyrab pominiety dla AI (mapa samego lasu)" — oczekiwano 0
+  `buildImprovement`, silnik zwraca 1.
+- `tools/food-hodowla-test.cjs` — 2 porażki: „AC-E3: Model B — bydlo w zasięgu → active Trzoda" i
+  „AC-E5: bydlo w zasięgu → active Trzoda".
+
+**Zweryfikowane jako NIEZALEŻNE od tej sesji:** odtworzone identycznie w izolowanym `git worktree` na
+czystym `HEAD` (`0847205`, bez jakichkolwiek zmian roboczych — ani C-TARASY-Q1, ani równoległych sesji).
+Nie są regresją tej pracy; nie były na liście znanych porażek w `CLAUDE.md`/handoffie w chwili startu
+sesji — ktoś powinien je tam dopisać albo zbadać przy najbliższej okazji. Nie naprawiano (poza zakresem
+zlecenia C-TARASY-Q1).

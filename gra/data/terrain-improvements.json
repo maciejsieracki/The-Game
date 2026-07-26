@@ -197,11 +197,13 @@
     },
     "surowiecOdblokowany": null,
     "teren": "Wzgórza",
-    "warunek": "Wzgórze w terytorium; solo; +żywność; nie na złożu",
+    "warunek": "Wzgórze w terytorium; solo; +żywność; nie na złożu; UNIKALNE kulturowe (tylko Chińczycy + Inkowie)",
     "koszt_praca": 25,
     "tech": "Rolnictwo",
     "odblokowuje": "",
-    "uwagi": "T-TECH-4 Maciej 2026-07-04: po Rolnictwie — wszystkie cywilizacje"
+    "cywilizacje": ["chinczycy", "inkowie"],
+    "cywilizacje_uwaga": "Pole ogólne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) — czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dostępne dla wszystkich cywilizacji.",
+    "uwagi": "C-TARASY-Q1 Maciej 2026-07-26: cofnięcie T-TECH-4 (2026-07-04, 'po Rolnictwie — wszystkie cywilizacje') — zgodność historyczna: chińskie tarasy ryżowe i andyjskie tarasy Inków. Od teraz WYŁĄCZNIE Chińczycy + Inkowie (po Rolnictwie)."
   },
   "lodzie_rybackie": {
     "nazwa": "Łodzie rybackie",

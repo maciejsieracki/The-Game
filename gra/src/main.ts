@@ -639,7 +639,7 @@ import {
   toggleWikiHubHud,
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, type AICommand, type AiSliderSettings } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, type AICommand, type AiSliderSettings } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
@@ -9681,6 +9681,18 @@ async function boot(): Promise<void> {
             continue;
           }
 
+          // N4 (§2, §8) — seam decyzyjny "odmawiam": PRZED 2026-07-26 ta gałąź nie
+          // istniała i silnik wymuszał join bezwarunkowo, więc kara N4 nigdy nie mogła
+          // się odpalić (hak niżej był gotowy, ale martwy). `aiHonorsAllianceWarObligation`
+          // (game/ai.ts) ownerId-agnostyczna (parytet) — dziś ZAWSZE zwraca true (honoruje),
+          // więc zachowanie jest identyczne jak dotąd; realna heurystyka odmowy i ścieżka
+          // decyzji gracza w UI to osobne, celowo odłożone zadania (patrz raport wdrożeniowy).
+          // Odmowa = NIE dołączamy do joinedWarOwnerIds -> ally "wpada" w pętlę N4 niżej,
+          // która już poprawnie liczy karę i zrywa traktat WYŁĄCZNIE odmawiającemu.
+          if (!aiHonorsAllianceWarObligation(allyId, ob.mustDeclareWarOn, attackerId, victimId)) {
+            continue;
+          }
+
           if (allyId === 0) {
             const targetLabel = ownerDiploLabel(ob.mustDeclareWarOn);
             showHintMessage('Sojusznik wymaga wojny z: ' + targetLabel, 4500);
@@ -9717,12 +9729,11 @@ async function boot(): Promise<void> {
       // N4 (§2, §8) — odmowa pomocy sojusznikowi na wezwanie obowiązku sojuszniczego.
       // Kara WYŁĄCZNIE dla odmawiającego (nigdy dla opuszczonego sojusznika, §6 pkt 3).
       // Hak wpięty w TO SAMO miejsce, które silnik już dziś woła, żeby wykryć kto się
-      // nie stawił (obligatedAllies \ joinedWarOwnerIds) — pętla wyżej dziś ZAWSZE
-      // egzekwuje udział (brak realnej ścieżki odmowy dla gracza/AI), więc ten hak
-      // pozostaje strukturalnie gotowy, ale nieaktywowany, dopóki gdzieś w silniku nie
-      // powstanie faktyczna decyzja "odmawiam" — patrz raport wdrożeniowy (poza
-      // zakresem tej fali, analogicznie do Dźwigni 2–4: brakujący prerekwizyt to inna,
-      // większa funkcja AI, nie ten projekt).
+      // nie stawił (obligatedAllies \ joinedWarOwnerIds) — pętla wyżej TERAZ konsultuje
+      // `aiHonorsAllianceWarObligation` (game/ai.ts) PRZED wymuszeniem joina, więc ally,
+      // dla którego ta funkcja zwróci false, "wpada" właśnie tutaj. Dziś funkcja zawsze
+      // zwraca true (zero zmiany w rozgrywce) — realna heurystyka odmowy (AI) i ścieżka
+      // decyzji gracza w UI to celowo odłożone zadania, patrz raport wdrożeniowy.
       for (const ob of obligations) {
         for (const allyId of ob.obligatedAllies) {
           if (joinedWarOwnerIds.includes(allyId)) continue;

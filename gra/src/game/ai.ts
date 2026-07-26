@@ -32,6 +32,7 @@ import {
 import { buildImprovementQualifier, type ImprovementBuildState } from '../map/improvement-build';
 import { hexKeysWithinRadius } from './okolica';
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
+import { isImprovementAllowedForCiv } from './terrain-improvements';
 import { buildingStockCost } from './building-stock-cost';
 
 // ---------------------------------------------------------------------------
@@ -1124,6 +1125,13 @@ function planCityImprovements(
       if (!meta) continue;
       if (meta.kosztPraca > pracaLeft) continue;
       if (!isImprovementTechUnlocked(key, researchedTechs)) continue;
+      // C-TARASY-Q1 (Maciej 2026-07-26): parytet AI — bramka OGÓLNA per cywilizacja
+      // (pole `cywilizacje` w terrain-improvements.json, np. Tarasy = tylko Chińczycy+
+      // Inkowie). Ownera-agnostyczna (civArchetype, nie ownerId) — identyczna reguła
+      // jak dla gracza (main.ts refreshBuildApi). qualifies() (map/improvement-build.ts)
+      // NIE sprawdza tego pola -- ten moduł jest poza gra/src/map/** (zablokowanym
+      // równoległym zleceniem górzystości), więc bramka wpięta tu.
+      if (!isImprovementAllowedForCiv(key, civArchetype)) continue;
 
       // TEMAT #8: zachowanie zasobu lasu -- wyrąb usuwa las TRWALE (zero Math.random,
       // liczone deterministycznie z candidateHexes -- ten sam zbiór, w tej samej kolejności
@@ -2186,6 +2194,41 @@ export type AIDiplomacyCommand =
       surowiecKey: string; label: string; pakietyPerTura: number;
       zaplataTyp: 'zloto' | 'praca'; zaplataPerTura: number; turns: number;
     };
+
+/**
+ * N4 (WIARYGODNOSC-SPECYFIKACJA.md §2/§8) — czy `allyId` HONORUJE dziś wezwanie
+ * obowiązku sojuszniczego (dołącza do wojny z `mustDeclareWarOn`) czy ODMAWIA.
+ * Wołane z `main.ts:applyAllianceObligationsOnWar` dla KAŻDEGO obligatedAlly,
+ * PRZED dotychczasowym wymuszonym dołączeniem — do 2026-07-26 silnik ZAWSZE
+ * wymuszał join, więc ścieżka "odmawiam" (a razem z nią kara N4, gotowa
+ * i poprawnie liczona) nigdy nie mogła się odpalić.
+ *
+ * Zakres TEJ fali — WYŁĄCZNIE seam decyzyjny: silnik teraz PYTA zamiast
+ * bezwarunkowo wymuszać. Domyślna polityka poniżej jest ZAWSZE `true`
+ * (honoruje) — identyczna z dotychczasowym wymuszonym zachowaniem, zero
+ * zmiany w dzisiejszej rozgrywce/balansie AI. Prawdziwa heurystyka odmowy
+ * (np. własna siła militarna względem `mustDeclareWarOn`, liczba już
+ * toczonych wojen, archetyp agresji, Wiarygodność proszącego sojusznika) to
+ * osobna decyzja gameplayowa/balansowa wymagająca ABC z właścicielem —
+ * CELOWO POZA zakresem tej fali (patrz raport wdrożeniowy Wiarygodności,
+ * Zadanie 3, dla dokładnego zakresu: plik/funkcja/co trzeba dorobić).
+ *
+ * Parytet (§6 pkt 2): czysta funkcja nad gołym `allyId` — nie rozgałęzia się
+ * po ownerId===0, więc ta sama funkcja obsłuży też decyzję gracza W CHWILI,
+ * gdy stanie się osiągalna w UI (dziś main.ts nigdy jej nie woła z
+ * allyId===0 — sojusznik w `applyAllianceObligationsOnWar` jest zawsze
+ * stroną TRZECIĄ względem pary attacker/victim, a każda dzisiejsza wojna ma
+ * gracza po jednej z tych dwóch stron, nigdy jako trzeci sojusznik — patrz
+ * raport wdrożeniowy dla pełnego wyprowadzenia).
+ */
+export function aiHonorsAllianceWarObligation(
+  _allyId: number,
+  _mustDeclareWarOn: number,
+  _attackerId: number,
+  _victimId: number,
+): boolean {
+  return true;
+}
 
 // ---------------------------------------------------------------------------
 // Opcjonalne overridy progów (dla testów lub trudności)
