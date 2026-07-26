@@ -83,7 +83,7 @@ import { pixelToHex, unitAt, keyOf } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
 import { runScoutsAutoExplore } from './game/scout-auto-explore';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
-import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_BUDOWA_TRYB, type City, type BudowaFocus } from './game/cities';
+import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, type City, type BudowaFocus } from './game/cities';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
 import { canUnitOccupyCityHex, addForeignCityBlocks } from './game/city-hex-movement';
 import {
@@ -544,6 +544,7 @@ import {
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
   relationScore, sisterAllianceDiplomacyParams, sisterAllianceEligible,
+  isOwnerAtWarInRelations,
   type Relation, type AIDiplomacyContext, type PotegaKomponenty, type TickCtx,
   type DiplomaticEvent, type DiplomacyParams,
 } from './game/diplomacy';
@@ -622,7 +623,7 @@ import {
   toggleWikiHubHud,
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, type AICommand } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, type AICommand, type AiSliderSettings } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
@@ -4392,6 +4393,14 @@ async function boot(): Promise<void> {
      *  ai_rush_jednostka_rezerwa_zlota / ai_rush_jednostka_max_na_ture) --
      *  patrz loadAiRushParams (game/ai.ts). Wartosci bez zmian (100 / 1). */
     const aiRushParams = loadAiRushParams(data.econParams, _menuDifficulty);
+    /** R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A, PARYTET AI): dotąd AI nigdy nie
+     *  ruszało suwakami żywność/Praca/Handel -- siedziało na wartościach startowych całą
+     *  partię. Stan suwaków AI PER OWNER (nie per-miasto -- AI ustawia jedną politykę dla
+     *  całego imperium, tak samo jak gracz zwykle robi ręcznie); `lastChangeTurn` zasila
+     *  zabezpieczenie przed oscylacją (decideAIEconomySliders, game/ai.ts, minOdstepTur).
+     *  Progi/kroki: econ-params.json globalne.ai_suwaki_* (loadAiSliderParams). */
+    const aiSliderStateByOwner = new Map<number, AiSliderSettings & { lastChangeTurn: number | null }>();
+    const aiSliderParams = loadAiSliderParams(data.econParams, _menuDifficulty);
     /** D-IMPROVEMENTS: pula Pracy AI (symetryczna do aiSkarbiecByOwner) -- zasilana z
      *  aiEcon.doPuli w bloku bankowania AI (patrz sumEconomyForOwner), zużywana przy
      *  budowie ulepszeń terenu (planCityImprovements w game/ai.ts). Podpięta pod
@@ -6880,21 +6889,19 @@ async function boot(): Promise<void> {
       return { frac, wariant };
     }
 
-    function isPlayerAtWar(): boolean {
-      for (const [key, rel] of diplomacyRelations.entries()) {
-        if ((rel as { status?: string }).status !== 'wojna') continue;
-        const parts = key.split('_').map(Number);
-        if (parts.length !== 2) continue;
-        const [a, b] = parts;
-        // C-BARB-Q1 (Maciej 2026-07-26): barbarzyńcy są ZAWSZE w "wojnie" (nowa
-        // realna relacja w diplomacyRelations, patrz getDiploRelation) -- to NIE
-        // jest wojna cywilizacyjna gracza (zadowolenie/war-weariness itd.), więc
-        // nie liczy się tutaj. Zero regresji: przed tą zmianą para barbarzyńca-X
-        // nigdy nie miała status='wojna' w tej mapie.
-        if (isBarbarian(a!) || isBarbarian(b!)) continue;
-        if (a === 0 || b === 0) return true;
-      }
-      return false;
+    /**
+     * PARYTET AI (R-WOJNA-KARA-PARYTET, 2026-07-26): czy `ownerId` (gracz LUB
+     * dowolne AI/miasto-państwo) jest w stanie wojny z kimkolwiek. Uogólnienie
+     * dawnego `isPlayerAtWar()` (liczyło TYLKO ownerId 0) -- kara za wojnę w
+     * `evaluateOrderFromBreakdown` (patrz `atWar:` niżej) ma dotyczyć każdego
+     * właściciela miasta, nie tylko gracza. Logika (parsowanie klucza "a_b" +
+     * wykluczenie barbarzyńców) jest teraz w `isOwnerAtWarInRelations`
+     * (game/diplomacy.ts, CZYSTA funkcja, testy w
+     * tools/war-happiness-parity-test.cjs) -- tu tylko podpięcie do
+     * `diplomacyRelations` tej rozgrywki.
+     */
+    function isOwnerAtWar(ownerId: number): boolean {
+      return isOwnerAtWarInRelations(ownerId, diplomacyRelations);
     }
 
     /** Ukryty garnizon (Ufort.) — konsumpcja żywności, oblężenie. */
@@ -14615,7 +14622,10 @@ async function boot(): Promise<void> {
               const conquestNoGarPen = conquestNoGarrisonLawPenalty(
                 ownCultureShare, foreignReligionDominant, gCountLaw, data.societyParams, difficulty,
               );
-              const playerAtWar = city.ownerId === 0 && isPlayerAtWar();
+              // PARYTET AI (R-WOJNA-KARA-PARYTET): kara za wojnę w porządku miasta
+              // dotyczy właściciela TEGO miasta, nie tylko gracza (ownerId 0) — patrz
+              // `isOwnerAtWar` (dawne `isPlayerAtWar`, zawsze zwracało false dla AI).
+              const ownerAtWar = isOwnerAtWar(city.ownerId);
               const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities, 10, capitalCityIdForOwner(0));
               const revoltParams = loadRevoltParams(data.societyParams, difficulty);
 
@@ -14630,7 +14640,7 @@ async function boot(): Promise<void> {
                   haWealth,
                   haCuda,
                   podzialHandlu: podzial,
-                  atWar: playerAtWar,
+                  atWar: ownerAtWar,
                   hasSwiatynia: builtIds.includes('swiatynia'),
                   hasAmfiteatr: builtIds.includes('teatr') || builtIds.includes('akademia'),
                   ownCultureShare,
@@ -14975,6 +14985,58 @@ async function boot(): Promise<void> {
               // przerwie async (np. animacja bitwy), żeby nie odblokować drugiego zakupu
               // w tej samej turze.
               if (!isCommandResume) aiUnitGoldRushBoughtByOwner.set(ownerId, 0);
+              // R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): raz na turę tego ownera
+              // (NIE przy wznowieniu po przerwie async -- isCommandResume -- inaczej dwie
+              // korekty tej samej tury by się zliczyły), czysta decyzja decideAIEconomySliders
+              // (game/ai.ts) czyta stan (zapasy żywności państwa + czy owner jest w wojnie z
+              // kimkolwiek, isOwnerAtWar -- ta sama definicja co kara za wojnę wyżej) i, gdy
+              // changed===true, zapisuje docelowe suwaki na WSZYSTKICH miastach tego ownera
+              // (polityka imperium, nie per-miasto).
+              if (!isCommandResume) {
+                const sliderSt = aiSliderStateByOwner.get(ownerId) ?? {
+                  procentRozwoj:  DEFAULT_PROCENT_ROZWOJ,
+                  procentBudynki: DEFAULT_PODZIAL_PRACY.procentBudynki,
+                  procentNauka:   DEFAULT_PODZIAL_HANDLU.procentNauka,
+                  lastChangeTurn: null,
+                };
+                const sliderDecision = decideAIEconomySliders(
+                  {
+                    zapasyPanstwa: getEmpireFoodReserve(ownerId),
+                    atWar: isOwnerAtWar(ownerId),
+                    turn,
+                    lastSliderChangeTurn: sliderSt.lastChangeTurn,
+                    current: {
+                      procentRozwoj:  sliderSt.procentRozwoj,
+                      procentBudynki: sliderSt.procentBudynki,
+                      procentNauka:   sliderSt.procentNauka,
+                    },
+                  },
+                  aiSliderParams,
+                );
+                if (sliderDecision.changed) {
+                  const naukaDelta = sliderDecision.procentNauka - sliderSt.procentNauka;
+                  for (const c of cities) {
+                    if (c.ownerId !== ownerId) continue;
+                    c.procentRozwoj = sliderDecision.procentRozwoj;
+                    c.podzialPracy = { procentBudynki: sliderDecision.procentBudynki };
+                    const baseSplit = c.podzialHandlu ?? DEFAULT_PODZIAL_HANDLU;
+                    const pieniadz = Math.max(0, Math.min(100, baseSplit.procentPieniadz - naukaDelta));
+                    c.podzialHandlu = {
+                      procentNauka:    sliderDecision.procentNauka,
+                      procentPieniadz: pieniadz,
+                      procentLuksus:   Math.max(0, 100 - sliderDecision.procentNauka - pieniadz),
+                    };
+                  }
+                  aiSliderStateByOwner.set(ownerId, {
+                    procentRozwoj:  sliderDecision.procentRozwoj,
+                    procentBudynki: sliderDecision.procentBudynki,
+                    procentNauka:   sliderDecision.procentNauka,
+                    lastChangeTurn: turn,
+                  });
+                } else {
+                  aiSliderStateByOwner.set(ownerId, sliderSt);
+                }
+              }
             // R-TRUDNOSC-1 (Maciej 2026-07-24 rozszerzenie): PER-OWNER, nie globalne --
             // miasta-państwa (defensiveCopy) dostają poziom z suwaka miast-państw, zwykłe AI
             // z głównej trudności (patrz aiDiffLevelForOwner). Zasila opts.poziomTrudnosci

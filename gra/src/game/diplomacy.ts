@@ -27,6 +27,7 @@ import {
   resolveArchetypeAggression,
   resolveArchetypeTrade,
 } from './civ-ai-data';
+import { isBarbarian } from './barbarians';
 
 // ---------------------------------------------------------------------------
 // Re-exported Relation interface (spec-aligned alias over RelacjaDyplomatyczna)
@@ -52,6 +53,40 @@ export interface Relation {
    *   'neutralni'= no significant relationship yet (no contact / early game)
    */
   status: 'wojna' | 'pokoj' | 'sojusz' | 'neutralni';
+}
+
+/**
+ * R-WOJNA-KARA-PARYTET (Maciej 2026-07-26, PARYTET AI): czy `ownerId` (gracz
+ * LUB dowolne AI/miasto-państwo) jest aktualnie w stanie wojny z kimkolwiek.
+ * `relations` to dokładnie main.ts `diplomacyRelations` (klucz "a_b", wartości
+ * z polem `status`) -- ta sama mapa co reszta silnika dyplomacji, żadnej
+ * osobnej ścieżki danych. Wcześniej (do 2026-07-26) main.ts miał lokalny
+ * `isPlayerAtWar()`, który sprawdzał TYLKO ownerId 0 -- kara za wojnę w
+ * `evaluateOrderFromBreakdown` (game/society-breakdown.ts, pole `atWar`) była
+ * więc naliczana WYŁĄCZNIE graczowi; miasta AI/miast-państw nigdy jej nie
+ * odczuwały. Ta funkcja jest ownerId-agnostyczna (parametr, nie stała) i
+ * zastępuje dawną wersję dla dowolnego ownera.
+ *
+ * Barbarzyńcy są pominięci (C-BARB-Q1, Maciej 2026-07-26): mają ZAWSZE
+ * status='wojna' w tej mapie (patrz `barbarianWarRelation`), ale to nie jest
+ * wojna cywilizacyjna licząca się do zadowolenia/war-weariness.
+ *
+ * Czysta funkcja -- brak DOM/silnika, testowalna wprost
+ * (tools/war-happiness-parity-test.cjs).
+ */
+export function isOwnerAtWarInRelations(
+  ownerId: number,
+  relations: ReadonlyMap<string, Pick<Relation, 'status'>>,
+): boolean {
+  for (const [key, rel] of relations.entries()) {
+    if (rel.status !== 'wojna') continue;
+    const parts = key.split('_').map(Number);
+    if (parts.length !== 2) continue;
+    const [a, b] = parts;
+    if (isBarbarian(a!) || isBarbarian(b!)) continue;
+    if (a === ownerId || b === ownerId) return true;
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------

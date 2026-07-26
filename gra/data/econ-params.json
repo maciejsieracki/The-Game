@@ -526,6 +526,41 @@
       "jednostka": "szt./ownera/turę",
       "opis": "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): twardy cap liczby rush-zakupow jednostek za zloto na jednego AI-ownera w jednej turze (shouldAIRushBuyUnit, game/ai.ts) -- zapobiega farmieniu skarbca. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_MAX_PER_TURN, wartosc bez zmian)."
     },
+    "ai_suwaki_deficyt_zywnosc_prog": {
+      "easy": 0,
+      "normal": 0,
+      "hard": 0,
+      "jednostka": "Żywność (zapasy państwa, pkt)",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): próg zapasów Żywności PAŃSTWA (getEmpireFoodReserve(ownerId)) tego ownera, PONIŻEJ którego decideAIEconomySliders (game/ai.ts) przesuwa suwak świeżej żywności (procentRozwoj) w stronę wyżywienia armii. Ta sama wartość na wszystkich trudnościach (zero zapasów = pierwszy sygnał deficytu). PLACEHOLDER do strojenia po playteście."
+    },
+    "ai_suwaki_nadwyzka_zywnosc_prog": {
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
+      "jednostka": "Żywność (zapasy państwa, pkt)",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): próg WYRAŹNEJ nadwyżki zapasów Żywności PAŃSTWA (getEmpireFoodReserve(ownerId)), POWYŻEJ którego decideAIEconomySliders (game/ai.ts) wraca suwakiem świeżej żywności (procentRozwoj) w stronę rozwoju miast. Ta sama wartość na wszystkich trudnościach. PLACEHOLDER do strojenia po playteście."
+    },
+    "ai_suwaki_krok_zywnosc_rozwoj": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "pkt % suwaka procentRozwoj / korekta",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): wielkość jednej korekty suwaka świeżej żywności (city.procentRozwoj) w decideAIEconomySliders (game/ai.ts) -- zgodne z krokiem suwaka gracza (HANDEL_PCT_STEP, cities.ts). Ta sama wartość na wszystkich trudnościach. PLACEHOLDER do strojenia po playteście."
+    },
+    "ai_suwaki_krok_praca_nauka": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "pkt % suwaka procentBudynki/procentNauka / korekta",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): wielkość jednej korekty suwaków Pracy (podzialPracy.procentBudynki) i Handlu (podzialHandlu.procentNauka) w decideAIEconomySliders (game/ai.ts) -- wojna przesuwa oba suwaki ku Pracy, pokój ku Nauce. Ta sama wartość na wszystkich trudnościach. PLACEHOLDER do strojenia po playteście."
+    },
+    "ai_suwaki_min_odstep_tur": {
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
+      "jednostka": "tury",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): minimalny odstęp między kolejnymi korektami suwaków tego ownera w decideAIEconomySliders (game/ai.ts) -- zabezpieczenie przed oscylacją suwaka tam-i-z-powrotem co turę. Ta sama wartość na wszystkich trudnościach."
+    },
     "skarbiec_centralny_lokalizacja": {
       "easy": "stolica",
       "normal": "stolica",

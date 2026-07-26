@@ -2583,3 +2583,138 @@ export function loadAiRushParams(
     maxPerTurn: read('ai_rush_jednostka_max_na_ture',   1),
   };
 }
+
+// ---------------------------------------------------------------------------
+// R-AI-SUWAKI (decyzja Maciej 2026-07-26, C-AI-SUWAKI=A): dotąd AI siedziało na
+// wartościach startowych suwaków (podział świeżej żywności / Pracy / Handlu)
+// przez całą partię -- zero odwołań do procentRozwoj/podzialHandlu/podzialPracy
+// w tym module. Poniższa funkcja jest CZYSTYM predykatem (wejście: stan
+// gospodarki + stan wojny tego ownera, wyjście: docelowe ustawienia trzech
+// suwaków), wzorowana na shouldAIRushBuyUnit powyżej -- testowalna bez silnika
+// (tools/ai-slider-test.cjs). main.ts (pętla AI per-owner, raz na turę) woła ją
+// z getEmpireFoodReserve(ownerId)/isOwnerAtWar(ownerId) i, gdy changed===true,
+// zapisuje wynik na WSZYSTKICH miastach tego ownera -- polityka na poziomie
+// imperium (AI nie mikrozarządza suwakami per miasto, tak samo jak gracz
+// zwykle ustawia je raz dla całego państwa).
+// ---------------------------------------------------------------------------
+
+/** Bieżące/docelowe ustawienia trzech suwaków ekonomii AI (wszystkie 0-100 pkt %). */
+export interface AiSliderSettings {
+  /** Suwak świeżej żywności: % na wzrost miast (reszta -> zapasy armii państwa, city.procentRozwoj). */
+  procentRozwoj: number;
+  /** Suwak Pracy: % Pracy na kolejkę budynków/jednostek (reszta -> pula państwa, podzialPracy.procentBudynki). */
+  procentBudynki: number;
+  /** Suwak Handlu: % udziału Nauki (Pieniądz dopełnia do 100, Luksus bez zmian, podzialHandlu.procentNauka). */
+  procentNauka: number;
+}
+
+/** Wejście heurystyki AI-suwaki: stan gospodarki + stan wojny tego ownera (bez dostępu do silnika). */
+export interface AiSliderInputs {
+  /** Zapasy żywności PAŃSTWA tego ownera (Żywność, pkt) -- getEmpireFoodReserve(ownerId); może być ujemne (deficyt). */
+  zapasyPanstwa: number;
+  /** Czy ten owner jest w stanie wojny z kimkolwiek (parytet: isOwnerAtWar(ownerId) w main.ts, barbarzyńcy pominięci). */
+  atWar: boolean;
+  /** Bieżąca tura gry. */
+  turn: number;
+  /** Ostatnia tura, w której AI zmieniło którykolwiek z trzech suwaków (null = jeszcze nigdy w tej partii). */
+  lastSliderChangeTurn: number | null;
+  /** Bieżące ustawienia suwaków tego ownera (wynik poprzedniej korekty lub wartości startowe miasta). */
+  current: AiSliderSettings;
+}
+
+/** Nazwane progi/kroki heurystyki AI-suwaki (ładowane z econ-params.json globalne.ai_suwaki_*). */
+export interface AiSliderParams {
+  /** Próg deficytu zapasów Żywności państwa (Żywność, pkt) -- poniżej AI przesuwa suwak żywności ku armii. */
+  deficytZapasowProg: number;
+  /** Próg WYRAŹNEJ nadwyżki zapasów Żywności państwa (Żywność, pkt) -- powyżej AI wraca suwakiem ku rozwojowi miast. */
+  nadwyzkaZapasowProg: number;
+  /** Krok jednej korekty suwaka świeżej żywności (procentRozwoj), pkt % na korektę. */
+  krokProcentRozwoj: number;
+  /** Krok jednej korekty suwaków Pracy/Handlu (procentBudynki / procentNauka), pkt % na korektę. */
+  krokProcentPracaNauka: number;
+  /** Minimalny odstęp między kolejnymi korektami suwaków tego ownera, tury (zabezpieczenie przed oscylacją). */
+  minOdstepTur: number;
+}
+
+/** Wynik heurystyki: docelowe ustawienia + czy cokolwiek się zmieniło w tej turze (cooldown/brak wyzwalacza -> false). */
+export interface AiSliderDecision extends AiSliderSettings {
+  changed: boolean;
+}
+
+/**
+ * R-AI-SUWAKI: czysta funkcja decyzyjna AI dla trzech suwaków ekonomii
+ * (świeża żywność / Praca / Handel). Reguła zatwierdzona przez właściciela
+ * (Maciej 2026-07-26, C-AI-SUWAKI=A):
+ *   - zapasy żywności państwa < `deficytZapasowProg` -> suwak żywności w stronę
+ *     wyżywienia armii (`procentRozwoj -= krokProcentRozwoj`);
+ *   - zapasy żywności państwa > `nadwyzkaZapasowProg` (WYRAŹNA nadwyżka) ->
+ *     suwak żywności z powrotem w stronę rozwoju miast (`procentRozwoj += krokProcentRozwoj`);
+ *   - wojna (`atWar`) -> więcej Pracy w budynkach/jednostkach
+ *     (`procentBudynki += krokProcentPracaNauka`) i mniej Nauki
+ *     (`procentNauka -= krokProcentPracaNauka`); pokój -- odwrotnie;
+ *   - żadna korekta nie zachodzi częściej niż raz na `minOdstepTur` tur
+ *     (zabezpieczenie przed oscylacją suwaka tam-i-z-powrotem co turę) --
+ *     liczone WSPÓLNIE dla wszystkich trzech suwaków tego ownera (jeden
+ *     `lastSliderChangeTurn`), nie osobno per suwak.
+ * Wszystkie wartości suwaków są przycinane do [0, 100]. Testy bez silnika:
+ * tools/ai-slider-test.cjs.
+ */
+export function decideAIEconomySliders(
+  inp: AiSliderInputs,
+  params: AiSliderParams,
+): AiSliderDecision {
+  const turnsSinceChange = inp.lastSliderChangeTurn === null
+    ? Number.POSITIVE_INFINITY
+    : inp.turn - inp.lastSliderChangeTurn;
+
+  let { procentRozwoj, procentBudynki, procentNauka } = inp.current;
+  let changed = false;
+
+  if (turnsSinceChange >= params.minOdstepTur) {
+    if (inp.zapasyPanstwa < params.deficytZapasowProg) {
+      const next = Math.max(0, procentRozwoj - params.krokProcentRozwoj);
+      if (next !== procentRozwoj) { procentRozwoj = next; changed = true; }
+    } else if (inp.zapasyPanstwa > params.nadwyzkaZapasowProg) {
+      const next = Math.min(100, procentRozwoj + params.krokProcentRozwoj);
+      if (next !== procentRozwoj) { procentRozwoj = next; changed = true; }
+    }
+
+    if (inp.atWar) {
+      const nextBudynki = Math.min(100, procentBudynki + params.krokProcentPracaNauka);
+      if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
+      const nextNauka = Math.max(0, procentNauka - params.krokProcentPracaNauka);
+      if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
+    } else {
+      const nextBudynki = Math.max(0, procentBudynki - params.krokProcentPracaNauka);
+      if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
+      const nextNauka = Math.min(100, procentNauka + params.krokProcentPracaNauka);
+      if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
+    }
+  }
+
+  return { procentRozwoj, procentBudynki, procentNauka, changed };
+}
+
+/**
+ * R-AI-SUWAKI: wczytuje progi/kroki z econ-params.json (globalne.ai_suwaki_*),
+ * ten sam wzorzec co loadAiRushParams powyżej -- brakujący/niepoprawny wiersz
+ * nigdy nie psuje tury (fallback na wartości domyślne poniżej).
+ */
+export function loadAiSliderParams(
+  raw: { globalne?: Record<string, RawAiRushRow> },
+  difficulty: EconDifficulty,
+): AiSliderParams {
+  const g = raw.globalne ?? {};
+  const read = (key: string, fallback: number): number => {
+    const row = g[key];
+    const v   = row ? row[difficulty] : undefined;
+    return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+  };
+  return {
+    deficytZapasowProg:    read('ai_suwaki_deficyt_zywnosc_prog',  0),
+    nadwyzkaZapasowProg:   read('ai_suwaki_nadwyzka_zywnosc_prog', 50),
+    krokProcentRozwoj:     read('ai_suwaki_krok_zywnosc_rozwoj',   10),
+    krokProcentPracaNauka: read('ai_suwaki_krok_praca_nauka',      10),
+    minOdstepTur:          read('ai_suwaki_min_odstep_tur',        3),
+  };
+}
