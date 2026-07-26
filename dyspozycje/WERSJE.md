@@ -11,7 +11,19 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `ce54be5b` — 2026-07-26 17:22 · FALA 19: DWA BLEDY BLOKUJACE + WIARYGODNOSC — **AKTUALNA**
+## ROBOCZA `0dc317f2` — 2026-07-26 · FALA 20: SKARBIEC I PRACA NETTO — **AKTUALNA**
+- md5 (pelne): `0dc317f28114bcfd86238aa706fc8910` · VERIFY OK, 6 bundli PLAYTEST, manifest 10 pozycji.
+- Zbudowane z HEAD `6e1e0e4`.
+- **Co nowego:** liczba przy Skarbcu pokazywala WPLYWY BRUTTO (Danina/Podatek + pieniadz
+  z budynkow + Handel), a skarbiec rosl o NETTO — po odjeciu utrzymania budynkow i jednostek.
+  Stad „+6 na chipie, +1 realnie". Ten sam blad mial chip PRACY (brak odjecia utrzymania
+  ulepszen surowcowych). Nauka i Zywnosc sprawdzone — bez tej wady.
+  Tooltipy chipow pokazuja teraz pelne rozbicie z nazwami i jednostkami, wiec widac,
+  gdzie znika roznica.
+- **Bramki:** tsc 0 · hud-skarbiec 7/7 (nowy) · currency 32/32 · upkeep 67/67 ·
+  plony-budynkow 68/68 · korupcja 18/18 · logic 208/208 · wire-ekonomia 37/37 · ai 239/239.
+
+## ROBOCZA `ce54be5b` — 2026-07-26 17:22 · FALA 19: DWA BLEDY BLOKUJACE + WIARYGODNOSC — **ZASTĄPIONA**
 - md5 (pelne): `ce54be5b062f229cf77871597774573a` · stempel: `ROBOCZA · 2026-07-26 17:22`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `7931364`.
 - **Naprawione oba bledy blokujace zgloszone w playtescie:**

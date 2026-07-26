@@ -3441,3 +3441,10 @@ zapis gry) + naprawiona atomowość handlu cyklicznego; **generator map** z now�
 ⚠️ `fair-play-grid-test` 3/8 — udowodniona sprzeczność progów z decyzją 80A, czeka na decyzję.
 **Sesja lokalna: pull na dysk właściciela, testuj `ce54be5b`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `0dc317f2` (FALA 20)
+**md5 `0dc317f28114bcfd86238aa706fc8910`**, VERIFY OK, HEAD `6e1e0e4`.
+Naprawione: liczba przy Skarbcu i Pracy pokazywala wplywy brutto zamiast netto — brakowalo
+utrzymania budynkow i jednostek („+6 na chipie, +1 realnie"). Tooltipy pokazuja pelne rozbicie.
+**Sesja lokalna: pull na dysk wlasciciela, testuj `0dc317f2`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
