@@ -11,7 +11,28 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `17ca0a4f` — 2026-07-26 16:24 · FALA 17: DECYZJE ABC + PARYTET AI — **AKTUALNA**
+## ROBOCZA `2f928932` — 2026-07-26 17:05 · FALA 18: NEGOCJACJE NA ZYWO + MUZYKA — **AKTUALNA**
+- md5 (pelne): `2f9289326f96147eab74f7403d306924` · stempel: `ROBOCZA · <pre-stamp> · 2026-07-26 17:05`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- Zbudowane z czystego HEAD `a0847fd` w osobnym worktree. Trwajace prace (generator map,
+  regresja cofania jednostek, blokada Spichlerza) **NIE** weszly do tego bundla.
+- **Co nowego wzgledem `17ca0a4f`:**
+  - **Negocjacje dyplomatyczne NA ZYWO** (R-DYP-NEGOCJACJE-NA-ZYWO) — po playtescie wlasciciel
+    odrzucil model „propozycja czeka na ture AI". Teraz AI odpowiada natychmiast w tym samym
+    oknie audiencji: przyjmuje, odrzuca albo kontruje; gracz odpowiada i domyka rozmowe na
+    miejscu. Zadna regula silnika nie ruszona — zmienil sie wylacznie moment rozstrzygania.
+    Naprawione przy okazji: przyjecie i odrzucenie nie odswiezaly okna audiencji; komunikaty
+    mowia teraz, czego dotyczyla propozycja.
+  - **Start muzyki w menu glownym** (R-MUZYKA-OPOZNIENIE) — utwor startuje po gotowosci
+    odtwarzacza, ale nie wczesniej niz po 2500 ms (parametr menu.muzyka_opoznienie_startu_ms),
+    wiec przegladarka nie scina juz poczatku. Dotyczy wylacznie pierwszego startu po wejsciu
+    na strone.
+- **Znane, jeszcze NIENAPRAWIONE w tym bundlu** (zgloszenia z playtestu, zlecenia w toku):
+  jednostka bywa przenoszona w nieoczekiwane miejsce po zakonczeniu tury; Spichlerz
+  niedostepny mimo odkrytej technologii.
+- **Bramki:** tsc 0 · diplomacy-negotiation-table 39/39 · ai 239/239 · logic 208/208.
+
+## ROBOCZA `17ca0a4f` — 2026-07-26 16:24 · FALA 17: DECYZJE ABC + PARYTET AI — **ZASTĄPIONA**
 - md5 (pelne): `17ca0a4f3ed09a2daf955667a17cf4a1` · stempel: `ROBOCZA · f9125052 · 2026-07-26 16:24`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - Zbudowane z czystego HEAD `3c17ce5` w osobnym worktree — praca nad generatorem map

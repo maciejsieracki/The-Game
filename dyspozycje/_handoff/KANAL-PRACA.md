@@ -3418,3 +3418,13 @@ ufortyfikowanych · realna fortyfikacja w polu i podczas oblężenia · AI rusza
 dla miast AI · garnizon znów sterowalny · odznaki weterana · 54a/54b · Targowisko · wersja 0.9.
 **Sesja lokalna: pull na dysk właściciela, testuj `17ca0a4f`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [17:05 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `2f928932` (FALA 18)
+**md5 `2f9289326f96147eab74f7403d306924`**, stempel `ROBOCZA · 2026-07-26 17:05`. VERIFY OK.
+Z czystego HEAD `a0847fd`. Nowe: **negocjacje dyplomatyczne na zywo** (AI odpowiada natychmiast
+w oknie audiencji — wlasciciel odrzucil model odroczonej odpowiedzi) oraz **opoznienie startu
+muzyki w menu** (po gotowosci odtwarzacza, nie wczesniej niz 2500 ms).
+⚠️ W tym bundlu NADAL wystepuja dwa zgloszone bledy, zlecenia w toku: jednostka przenoszona
+w nieoczekiwane miejsce po zakonczeniu tury oraz Spichlerz niedostepny mimo odkrytej technologii.
+**Sesja lokalna: pull na dysk wlasciciela, testuj `2f928932`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
