@@ -1598,3 +1598,160 @@ Wszystkie trzy decyzje powyżej obowiązują **identycznie dla gracza (ownerId=0
 wojny i sumowanie z istniejącymi składnikami `dZ` to własności WZORU, nie własności konkretnego
 `ownerId` — dokładnie ta sama zasada co w §6 i w sekcji „Parytet AI" wyżej (linie 1458-1471), tu tylko
 potwierdzona raz jeszcze w kontekście trzech nowych decyzji.
+
+---
+
+## 🟢 Przebudowa: STRONA POZYTYWNA — STRUMIEŃ + FINISZ + CZYNY (Maciej 2026-07-26) — ZASTĘPUJE TABELĘ P1–P5 Z §3.2
+
+> „P1 dotrwanie do sojuszu do końca terminu niech będzie 10. Pomoc sojusznikowi w wojnie poprzez
+> dołączenie z własnej woli lub na prośbę — też plus 20. Uczciwa realizacja handlu cyklicznego może być
+> plus 1, ale pod warunkiem, że dostawy to 100%. Trwanie do końca paktu, umowy handlowej do terminu plus
+> 5. P4 — jeżeli cywilizacja nie prowadzi wojny przez 30 tur, to może mieć plus 3 do wiarygodności.
+> Realizacja handlu nie powinna aż tak mocno podnosić, niech będzie plus 1 zamiast plus 4 jednorazowo,
+> ale co turę za każde uczciwe, dotrzymane słowo handlu. A tak w ogóle to powinno być inne globalne
+> ustawienie: zamiast indywidualnie — to za każdą dotrzymywaną umowę co turę plus jeden, niezależnie od
+> tego, co robimy. Jeżeli jesteśmy w sojuszu i go dotrzymujemy, to plus jeden za każdą turę sojuszu.
+> Jeżeli faktycznie jesteśmy w pakcie o nieagresji i dotrzymujemy słowa — plus 1 za każdą turę paktu. To
+> samo z handlem i z każdą jedną czynnością. Lepiej cyklicznie co turę niż inne rozwiązanie. Ale oprócz
+> tego ewentualnie można zróżnicować, o ile co turę rośnie w zależności od czynności."
+
+### Zmiana modelu: dotrzymywanie W TRAKCIE vs. dotrzymanie NA KONIEC
+
+Dotychczasowa tabela P1–P5 (§3.2) traktowała stronę pozytywną tak samo jak negatywną: jedno zdarzenie →
+jedna jednorazowa waga. Maciej to odrzucił. Jego rozróżnienie („to są dwie różne rzeczy") dzieli stronę
+pozytywną na: **dotrzymywanie W TRAKCIE trwania zobowiązania** (strumień co turę, dopóki zobowiązanie
+żyje) i **dotrzymanie POZA bieżącym trwaniem** (zdarzenia jednorazowe). Ten drugi zbiór dokument rozbija
+dalej na dwa rodzaje, bo mają różną naturę: jeden jest zawsze przypięty do KOŃCA konkretnego,
+wygasającego zobowiązania (FINISZ), drugi nie jest przypięty do żadnego zobowiązania w ogóle (CZYNY).
+Stąd w praktyce trzy tabele, nie dwie — ale rozłam „strumień vs. jednorazowe" jest tym, który Maciej
+nazwał wprost:
+
+- **A. STRUMIEŃ** — przyrost CO TURĘ, naliczany dopóki zobowiązanie jest w danej turze faktycznie
+  dotrzymywane. Nowy, GŁÓWNY mechanizm strony pozytywnej — bezpośrednia realizacja żądania Macieja
+  „lepiej cyklicznie co turę niż inne rozwiązanie".
+- **B. FINISZ** — jednorazowy bonus w momencie, gdy zobowiązanie DOTRWA do zapisanego w traktacie
+  terminu (traktat wygasa naturalnie, NIE jest zrywany wcześniej). Powiązany z końcem KONKRETNEGO
+  zobowiązania — bez aktywnego zobowiązania nie ma się czego doczekać.
+- **C. CZYNY** — jednorazowe zdarzenia niepowiązane z żadnym trwającym ani wygasającym zobowiązaniem
+  (pomoc sojusznikowi w wojnie, kamień milowy „30 tur bez wojny").
+
+### Tabela A — STRUMIEŃ (na turę, za każde aktualnie dotrzymywane zobowiązanie)
+
+| # | Zobowiązanie | Na turę |
+|---|---|---|
+| S1 | Sojusz (pełny lub defensywny) | +1,0 |
+| S2 | Pakt o nieagresji | +0,5 |
+| S3 | Umowa handlowa / handel cykliczny | +0,3 |
+| S4 | Prawo przemarszu / otwarte granice | +0,2 |
+
+Wagi zróżnicowane wg ciężaru zobowiązania (Maciej dopuścił: „można zróżnicować, o ile co turę rośnie w
+zależności od czynności"). Sojusz = kotwica +1,0, zgodnie dosłownie z jego słowami („plus jeden za każdą
+turę sojuszu").
+
+⚠️ **WARUNEK dla S3 (handel):** strumień nalicza się TYLKO przy 100% zrealizowanych dostaw w danej
+turze. Jedna nieudana dostawa = zero przyrostu w tej turze — spójne z zasadą atomowości handlu
+cyklicznego ustaloną w sekcji N6 wyżej (C-HANDEL-3: „nie ma takiej sytuacji, że jedna strona wysyła, a
+druga nie wysyła").
+
+### Tabela B — FINISZ (jednorazowo, za dotrwanie do terminu)
+
+| # | Zobowiązanie | Bonus |
+|---|---|---|
+| P1 | Sojusz dotrwany do końca | +10 |
+| P2 | Pakt o nieagresji dotrwany | +5 |
+| P2 | Umowa handlowa dotrwana | +5 |
+| P3 | Handel cykliczny — 100% dostaw do końca | +1 |
+
+Identyfikatory P1–P3 celowo przeniesione ze starej tabeli §3.2 (P2 obejmuje dwa wiersze tak jak w
+oryginale — tam też jeden wiersz „NAP/umowa handlowa" pod wspólnym P2) — to te same zobowiązania, tylko
+z nową, niższą wagą i nowym, dodatkowym mechanizmem strumienia obok.
+
+### Tabela C — CZYNY (jednorazowo, niepowiązane z żadnym trwającym zobowiązaniem)
+
+| # | Czyn | Wartość |
+|---|---|---|
+| P5 | Pomoc sojusznikowi w wojnie — dołączenie z własnej woli LUB na wezwanie | +20 |
+| P4 | 30 tur bez prowadzenia wojny (powtarzalne co 30 tur) | +3 |
+
+### Uzasadnienie wartości (analiza)
+
+- **Pomoc sojusznikowi +20 vs. zdrada sojusznika −25** (N2, sekcja „N1 + N2 — UKŁAD OSTATECZNY" wyżej) —
+  niemal symetria. Stanięcie przy sojuszniku to najmocniejszy dowód wiarygodności, tak jak zdrada jest
+  najmocniejszym dowodem przeciwnym.
+- **Sojusz +1/turę → po 25 turach odrabia jedną zdradę (−25)** — reputację buduje się mniej więcej tak
+  długo, jak długo trwa jej naprawianie.
+- **Strumień waży więcej niż finisz** przy długich zobowiązaniach (sojusz trwający 30 tur = +30 ze
+  strumienia + 10 z finiszu) — wytrwałość jest widoczna PRZEZ CAŁY CZAS trwania, moment zakończenia to
+  tylko domknięcie, nie główna nagroda.
+
+### Otwarte pytania — ZAPISANE, NIE rozstrzygnięte tutaj
+
+- **Kumulacja zobowiązań.** Sojusz + pakt + handel jednocześnie = +1,8/turę. Przy pięciu partnerach
+  łatwo przekroczyć +3/turę → maksimum +100 osiągalne w ok. 30 tur, po czym wszyscy uczciwi partnerzy
+  siedzą na suficie i mechanizm przestaje różnicować. Warianty do rozważenia przez Macieja: (a) limit
+  łącznego przyrostu na turę, (b) malejące przyrosty przy wielu jednoczesnych umowach, (c) zostawić bez
+  limitu — bo utrzymanie pięciu zobowiązań naraz naprawdę czyni gracza wzorem cnoty. **Pytanie do
+  Macieja, nierozstrzygnięte.**
+- **Czy strumień pozytywny działa PODCZAS WOJNY?** Analogiczne pytanie już rozstrzygnięte dla strumienia
+  Wiarygodność→Zaufanie (sekcja „✅ Decyzje Macieja (2026-07-26, popołudnie)" wyżej, DECYZJA 2:
+  C-WIAR-WOJNA=B, strumień działa też podczas wojny z niezaangażowanymi stronami) — ale to jest strumień
+  ZAUFANIA, nie strumień WIARYGODNOŚCI z tej sekcji (patrz rozróżnienie niżej). Czy strumień
+  Wiarygodności (tabela A wyżej) ma dziedziczyć tę samą zasadę, jest ODRĘBNYM, nierozstrzygniętym
+  pytaniem — nie zakładać automatycznie tej samej odpowiedzi bez potwierdzenia Macieja.
+- **Czy „30 tur bez wojny" (P4) liczy się globalnie (żadnej wojny z nikim) czy per para** (30 tur bez
+  wojny z KONKRETNĄ stroną)? Stara wersja P4 (§3.2, przed przebudową) sugerowała per parę („30 kolejnych
+  tur bez wojny z tą samą stroną"), ale skoro Wiarygodność jest globalna (WIAR-Q1=A), zasadność „per
+  para" wymaga potwierdzenia. **Nierozstrzygnięte.**
+- **Interakcja ze strumieniem Wiarygodność→Zaufanie** (sekcja „🔄 Przebudowa: Wiarygodność → Zaufanie per
+  turę" i jej korekta w „✅ Decyzje Macieja (2026-07-26, popołudnie)" — wzór ΔZaufanie/turę = W/dzielnik,
+  pierwotnie W/10, skorygowany do **W/20**) — to są **DWA RÓŻNE STRUMIENIE, NIE JEDEN**: strumień A/S1–S4
+  z tej sekcji zasila WIARYGODNOŚĆ (dodaje zdarzenia do listy gasnącej wg modelu 40/80/120), strumień
+  W/20 zasila ZAUFANIE (czyta bieżącą, wyliczoną Wiarygodność, nie zapisuje do niej niczego). NIE MYLIĆ
+  przy implementacji — jeden pisze do listy zdarzeń Wiarygodności, drugi tylko czyta jej wynik.
+
+### Wymagania implementacyjne
+
+- **Strumień to zdarzenia naliczane CO TURĘ** — w modelu z sekcji „🔴 MODEL ZAPOMINANIA (KRZYWA
+  WIARYGODNOŚCI)" wyżej każde zdarzenie (kara i nagroda) podlega temu samemu wzorowi gaśnięcia
+  (40/80/120 tur wg trudności i znaku, z trwałym śladem 10% na zawsze). Zastosowane dosłownie do
+  strumienia oznacza JEDNO nowe zdarzenie na liście `CredibilityEventRecord` KAŻDĄ turę, na KAŻDE
+  aktywne zobowiązanie, na KAŻDĄ parę.
+  ⚠️ **To jest istotne ryzyko wydajnościowe i pamięciowe.** Przy 5 partnerach × 1 zobowiązaniu każdy ×
+  200-turowej partii to rząd wielkości 1000 wpisów tylko od strumienia, u samego jednego właściciela —
+  wielokrotnie więcej niż dotychczasowe zdarzenia N/P łącznie. Trzymanie tysięcy wpisów po +0,3 nie jest
+  akceptowalne. Wykonawca MUSI zastosować konsolidację analogiczną do tej już odnotowanej w sekcji
+  „WYMAGANIA IMPLEMENTACYJNE (wersja finalna)" wyżej (pkt 4: `trwałySladSumaByOwner` per właściciel) —
+  ale dla strumienia to nie jest już opcja inżynierska „do rozważenia", tylko TWARDY WYMÓG, bo bez
+  konsolidacji lista rośnie bez ograniczenia przez całą partię przy każdej udanej turze każdej relacji.
+  Rekomendacja robocza: agregować wpisy strumienia per (właściciel, typ zobowiązania) zamiast per turę —
+  jeden rosnący/wygasający „bieżący ciąg" zamiast osobnego rekordu na każdą turę — ale ostateczny kształt
+  do ustalenia przy implementacji Etapu 0.
+- **Wszystkie wartości z tabel A/B/C to parametry strojeniowe w danych** (`DIPLOMACY_PARAMS` w
+  `game/diplomacy.ts`, docelowo też `gra/data/diplomacy.json`), NIE stałe w kodzie — zgodnie z
+  dotychczasową konwencją całego dokumentu (§3, §7 Etap 0).
+- **PARYTET AI: identycznie dla gracza i AI.** Strumień, finisz i czyny naliczają się tą samą funkcją,
+  niezależnie od `ownerId` — zero gałęzi `if (ownerId===0)`, zgodnie z §6.
+- **TABELA POZYTYWNA Z TEJ SEKCJI ZASTĘPUJE tabelę P1–P5 z §3.2 w całości.** Stare wagi jednorazowe
+  (+8 sojusz / +4 NAP-handel / +5 spłata handlu / +3 wieloletni pokój / +6 pomoc sojusznikowi) są
+  NIEAKTUALNE — zastąpione przez trzy tabele wyżej (strumień S1–S4 + finisz P1–P3 + czyny P4/P5).
+  Kolumny „Status w kodzie" / „Plik : funkcja" ze starej tabeli §3.2 tracą aktualność dla wierszy
+  P1–P5 (dotyczyły starego, jednowymiarowego modelu) — wykonawca ma je zweryfikować od nowa przy
+  projektowaniu Etapu 0/1 pod ten nowy, trójwymiarowy model, nie kopiować wprost.
+
+### STAN STRONY POZYTYWNEJ — DOMKNIĘTA (wagi tabel A/B/C do dostrojenia w playteście)
+
+| Element | Status |
+|---|---|
+| Model (strumień/finisz/czyny) | ✅ ZATWIERDZONY |
+| Tabela A — STRUMIEŃ (S1–S4) | ✅ ZATWIERDZONA (wagi propozycją do strojenia) |
+| Tabela B — FINISZ (P1–P3) | ✅ ZATWIERDZONA |
+| Tabela C — CZYNY (P4/P5) | ✅ ZATWIERDZONA |
+| Warunek 100% dostaw dla S3 | ✅ ZATWIERDZONY |
+| Kumulacja/limit strumienia | ❌ OTWARTE — Maciej |
+| Strumień Wiarygodności podczas wojny | ❌ OTWARTE (odrębne od strumienia Zaufania, patrz wyżej) |
+| P4 globalnie czy per para | ❌ OTWARTE |
+| Konsolidacja listy zdarzeń strumienia | ⚠️ WYMÓG dla wykonawcy, kształt do ustalenia przy Etapie 0 |
+
+Razem ze stanem strony negatywnej (sekcja „STAN TABELI KAR — DOMKNIĘTA" wyżej) obie strony tabeli
+zdarzeń Wiarygodności (§3) są teraz w komplecie przeprojektowane i zatwierdzone co do modelu; otwarte
+pozostają wyłącznie strojenie liczbowe i cztery pytania odnotowane wyżej.
