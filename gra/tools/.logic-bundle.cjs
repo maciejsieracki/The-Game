@@ -2032,6 +2032,9 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
   let changed = false;
   const placed = /* @__PURE__ */ new Set();
   let guard = 0;
+  if (land.length === 73 && want === "mountain") {
+    console.error(`[TRACE-ENTER] land=${land.length} want=${want} minCount=${minCount} countFn()=${countFn()}`);
+  }
   while (countFn() < minCount && guard++ < land.length + 8) {
     const protectHighland = want === "mountain" && countHighlandsInCell(land, hexes) <= MIN_HIGHLANDS_COPPER_CELL;
     const protectMountain = want === "highland" && countMountainsInCell(land, hexes) <= MIN_MOUNTAINS_IRON_CELL;
@@ -2168,6 +2171,9 @@ function ensureMassIronGridCoverage(hexes, scratch, tier, width, height, massSet
   const ironSize = ironCoverageCellSize(tier);
   const minIronLand = minLandHexesForReliefCell(ironSize);
   const eligibleCells = [...landHexesByCoverageCell(massSet, ironSize).values()].filter((land) => land.length >= minIronLand);
+  if (massSet.size > 300) {
+    console.error(`[TRACE-MASS] ensureMassIronGridCoverage massSet.size=${massSet.size} eligibleCells=${eligibleCells.length}`);
+  }
   let fixed = 0;
   if (!skipCap) {
     for (const land of eligibleCells) {
@@ -20646,6 +20652,41 @@ var econ_params_default = {
       hard: 1,
       jednostka: "szt./ownera/tur\u0119",
       opis: "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): twardy cap liczby rush-zakupow jednostek za zloto na jednego AI-ownera w jednej turze (shouldAIRushBuyUnit, game/ai.ts) -- zapobiega farmieniu skarbca. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_MAX_PER_TURN, wartosc bez zmian)."
+    },
+    ai_suwaki_deficyt_zywnosc_prog: {
+      easy: 0,
+      normal: 0,
+      hard: 0,
+      jednostka: "\u017Bywno\u015B\u0107 (zapasy pa\u0144stwa, pkt)",
+      opis: "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): pr\xF3g zapas\xF3w \u017Bywno\u015Bci PA\u0143STWA (getEmpireFoodReserve(ownerId)) tego ownera, PONI\u017BEJ kt\xF3rego decideAIEconomySliders (game/ai.ts) przesuwa suwak \u015Bwie\u017Cej \u017Cywno\u015Bci (procentRozwoj) w stron\u0119 wy\u017Cywienia armii. Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach (zero zapas\xF3w = pierwszy sygna\u0142 deficytu). PLACEHOLDER do strojenia po playte\u015Bcie."
+    },
+    ai_suwaki_nadwyzka_zywnosc_prog: {
+      easy: 50,
+      normal: 50,
+      hard: 50,
+      jednostka: "\u017Bywno\u015B\u0107 (zapasy pa\u0144stwa, pkt)",
+      opis: "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): pr\xF3g WYRA\u0179NEJ nadwy\u017Cki zapas\xF3w \u017Bywno\u015Bci PA\u0143STWA (getEmpireFoodReserve(ownerId)), POWY\u017BEJ kt\xF3rego decideAIEconomySliders (game/ai.ts) wraca suwakiem \u015Bwie\u017Cej \u017Cywno\u015Bci (procentRozwoj) w stron\u0119 rozwoju miast. Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach. PLACEHOLDER do strojenia po playte\u015Bcie."
+    },
+    ai_suwaki_krok_zywnosc_rozwoj: {
+      easy: 10,
+      normal: 10,
+      hard: 10,
+      jednostka: "pkt % suwaka procentRozwoj / korekta",
+      opis: "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): wielko\u015B\u0107 jednej korekty suwaka \u015Bwie\u017Cej \u017Cywno\u015Bci (city.procentRozwoj) w decideAIEconomySliders (game/ai.ts) -- zgodne z krokiem suwaka gracza (HANDEL_PCT_STEP, cities.ts). Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach. PLACEHOLDER do strojenia po playte\u015Bcie."
+    },
+    ai_suwaki_krok_praca_nauka: {
+      easy: 10,
+      normal: 10,
+      hard: 10,
+      jednostka: "pkt % suwaka procentBudynki/procentNauka / korekta",
+      opis: "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): wielko\u015B\u0107 jednej korekty suwak\xF3w Pracy (podzialPracy.procentBudynki) i Handlu (podzialHandlu.procentNauka) w decideAIEconomySliders (game/ai.ts) -- wojna przesuwa oba suwaki ku Pracy, pok\xF3j ku Nauce. Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach. PLACEHOLDER do strojenia po playte\u015Bcie."
+    },
+    ai_suwaki_min_odstep_tur: {
+      easy: 3,
+      normal: 3,
+      hard: 3,
+      jednostka: "tury",
+      opis: "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): minimalny odst\u0119p mi\u0119dzy kolejnymi korektami suwak\xF3w tego ownera w decideAIEconomySliders (game/ai.ts) -- zabezpieczenie przed oscylacj\u0105 suwaka tam-i-z-powrotem co tur\u0119. Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach."
     },
     skarbiec_centralny_lokalizacja: {
       easy: "stolica",
