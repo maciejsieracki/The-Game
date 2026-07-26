@@ -827,7 +827,7 @@ export function reapplyForestOverlay(
 
       const minForest = typ === 'pangea' ? 0 : 1;
       const target = Math.max(minForest, Math.round(eligible.length * share * zoneShareMul));
-      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * 0.18)));
+      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * FOREST_OVERLAY_CAP_FRAC)));
 
       for (let i = 0; i < Math.min(cap, eligible.length); i++) {
         hexes[eligible[i]!.k]!.nakladka = Nakladka.Las;
@@ -1228,12 +1228,28 @@ export function landPartitionKeysForDistribution(
   return groupLandMassKeys(hexes);
 }
 
-/** Udział heksów z lasem na suche ląd per partycja — ~2× poprzedniego (medium ≈ 36%). */
+/**
+ * Udział heksów z lasem na suche ląd per partycja/komórka (przed sufitem cap i przed
+ * ubytkiem z późniejszych przebiegów reliefu/wybrzeża). Skalibrowane empirycznie
+ * (2026-07-26, dobór iteracyjny skryptem pomiarowym) tak, by ZMIERZONE pokrycie (Las /
+ * Łąka+Równina+Wzgórza na całej mapie) wyszło Mało≈40% · Normalnie≈60% · Dużo≈80%.
+ */
 const FOREST_SHARE_OF_DRY_LAND: Record<DensityTier, number> = {
-  low: 0.22,
-  medium: 0.36,
-  high: 0.50,
+  low: 0.38,
+  medium: 0.58,
+  high: 0.95,
 };
+
+/**
+ * Twardy sufit nakładki lasu w komórce (ułamek eligible) — niezależny od tieru, gwarantuje
+ * polany nawet przy `high` (5 pkt proc. eligible zawsze bez lasu w każdej komórce). MUSI być
+ * >= najwyższej wartości `FOREST_SHARE_OF_DRY_LAND`, inaczej dominuje nad share i tiery stają
+ * się nierozróżnialne (bug sprzed 2026-07-26: cap=0.18 < wszystkie share, więc low/medium/high
+ * dawały ten sam wynik ~15-19%). Dla `low`/`medium` cap nie ingeruje poza strefą umiarkowaną
+ * (tam `zoneShareMul`=1.35 może i tak podbić target ponad cap — zamierzone, bo strefa
+ * umiarkowana ma z założenia gęstszy las).
+ */
+const FOREST_OVERLAY_CAP_FRAC = 0.95;
 
 function applyReliefToLandKeys(
   hexes: Record<string, Hex>,
