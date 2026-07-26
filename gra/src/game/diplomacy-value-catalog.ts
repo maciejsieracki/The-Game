@@ -322,6 +322,27 @@ export type PnRelacjaParams = {
   dobra_wola_min_nadmiar_pn?: number;
   dobra_wola_tur?: number;
   dobra_wola_zaufanie_per_tura?: number;
+  /**
+   * WIARYGODNOSC-SPECYFIKACJA.md §5 Dźwignia 2 (decyzja właściciela WIAR-9.5b=B,
+   * 2026-07-26): NIE budujemy nowego sufitu Zaufania — Wiarygodność CYWILIZACJI
+   * (globalna, sprawcy DARU/nadwyżki handlowej — proposerId) obniża TEN limit
+   * zamiast go zastępować. Reputacja dodatnia (W>=0, pasma "Uczciwy"/"Wzór
+   * cnoty") NIE zmienia limitu — zostaje `max_zaufanie_na_ture` (dzisiejsze 5) —
+   * kara dotyczy WYŁĄCZNIE złej reputacji, nigdy nagrody za dobrą (wprost wg
+   * zlecenia). Cztery pasma limitu (pkt Zaufania/turę):
+   *   W ∈ [0,100]                                          → max_zaufanie_na_ture (bez zmian, dziś 5)
+   *   W ∈ (DIPLOMACY_PARAMS.wiarygodnoscProgWiarolomny, 0)  → wiarygodnosc_limit_zaufanie_chwiejny
+   *   W ∈ (wiarygodnosc_limit_prog_dno, DIPLOMACY_PARAMS.wiarygodnoscProgWiarolomny] → wiarygodnosc_limit_zaufanie_wiarolomny
+   *   W ∈ [-100, wiarygodnosc_limit_prog_dno]              → wiarygodnosc_limit_zaufanie_dno
+   * Granica "Chwiejny/Wiarołomny" reużywa `DIPLOMACY_PARAMS.wiarygodnoscProgWiarolomny`
+   * (§1, próg pasma "Wiarołomny", dziś -40) — jedna definicja granicy pasm, nie
+   * duplikat; TYLKO dolny próg "dna" (wiarygodnosc_limit_prog_dno) jest nowym,
+   * osobnym parametrem tej dźwigni.
+   */
+  wiarygodnosc_limit_zaufanie_chwiejny?: number;
+  wiarygodnosc_limit_zaufanie_wiarolomny?: number;
+  wiarygodnosc_limit_zaufanie_dno?: number;
+  wiarygodnosc_limit_prog_dno?: number;
 };
 
 const DEFAULT_PROG_DAR_RELACJA = 30;
@@ -331,6 +352,12 @@ const DEFAULT_DOBRA_WOLA_TUR = 3;
 const DEFAULT_PN_NA_ZAUFANIE = 100;
 const DEFAULT_MAX_ZAUFANIE_NA_TURE = 5;
 const DEFAULT_MIN_NADMIAR = 1;
+
+/** Dźwignia 2 (§5, WIAR-9.5b=B) — siatka domyślna, patrz komentarz `PnRelacjaParams` wyżej. */
+const DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY = 3;
+const DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY = 1;
+const DEFAULT_WIARYGODNOSC_LIMIT_DNO = 0;
+const DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO = -70;
 
 type PnRelacjaBlock = PnRelacjaParams & {
   dobra_wola_po_wymianie?: boolean;
@@ -374,6 +401,22 @@ function loadPnRelacjaParams(): PnRelacjaLoaded {
       typeof block.dobra_wola_zaufanie_per_tura === 'number' && block.dobra_wola_zaufanie_per_tura > 0
         ? block.dobra_wola_zaufanie_per_tura
         : 1,
+    wiarygodnosc_limit_zaufanie_chwiejny:
+      typeof block.wiarygodnosc_limit_zaufanie_chwiejny === 'number' && block.wiarygodnosc_limit_zaufanie_chwiejny >= 0
+        ? block.wiarygodnosc_limit_zaufanie_chwiejny
+        : DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY,
+    wiarygodnosc_limit_zaufanie_wiarolomny:
+      typeof block.wiarygodnosc_limit_zaufanie_wiarolomny === 'number' && block.wiarygodnosc_limit_zaufanie_wiarolomny >= 0
+        ? block.wiarygodnosc_limit_zaufanie_wiarolomny
+        : DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY,
+    wiarygodnosc_limit_zaufanie_dno:
+      typeof block.wiarygodnosc_limit_zaufanie_dno === 'number' && block.wiarygodnosc_limit_zaufanie_dno >= 0
+        ? block.wiarygodnosc_limit_zaufanie_dno
+        : DEFAULT_WIARYGODNOSC_LIMIT_DNO,
+    wiarygodnosc_limit_prog_dno:
+      typeof block.wiarygodnosc_limit_prog_dno === 'number'
+        ? block.wiarygodnosc_limit_prog_dno
+        : DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO,
   };
 }
 
@@ -409,6 +452,36 @@ export function diplomacyPnToZaufanieDelta(
   const cfg = { ..._pnRelacja, ...params };
   if (surplusPn < cfg.min_nadmiar_pn) return 0;
   return Math.max(0, Math.floor(surplusPn / cfg.pn_na_zaufanie));
+}
+
+/**
+ * Dźwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md §5, decyzja WIAR-9.5b=B) — limit
+ * Zaufania kupowalnego darem/nadwyżką handlową NA TURĘ, w funkcji Wiarygodności
+ * SPRAWCY daru/handlu (proposerId — ten, kto usiłuje "kupić" Zaufanie, nie
+ * odbiorca). Nie budujemy nowego sufitu: to WYŁĄCZNIE modyfikacja istniejącego
+ * `max_zaufanie_na_ture` — reputacja dodatnia (W>=0) NIE zmienia niczego
+ * (zostaje dzisiejsze 5/turę), zła reputacja zawęża okno kupowania Zaufania:
+ *
+ *   W ∈ [0, 100]                                        → max_zaufanie_na_ture (bez zmian)
+ *   W ∈ (wiarygodnoscProgWiarolomny, 0)                 → wiarygodnosc_limit_zaufanie_chwiejny
+ *   W ∈ (wiarygodnosc_limit_prog_dno, wiarygodnoscProgWiarolomny] → wiarygodnosc_limit_zaufanie_wiarolomny
+ *   W ∈ [-100, wiarygodnosc_limit_prog_dno]             → wiarygodnosc_limit_zaufanie_dno
+ *
+ * Klamruje W wejściowe do −100…+100 (§4 pkt 10 specyfikacji — obowiązkowe
+ * wszędzie, gdzie W wchodzi do wzoru). Czysta funkcja — `ownerId` nie wchodzi
+ * w żadnej postaci (parytet); wywołujący (main.ts) dobiera Wiarygodność
+ * właściwego ownera (proposerId) przed wywołaniem.
+ */
+export function diplomacyMaxZaufanieNaTureForWiarygodnosc(
+  wiarygodnoscProposera: number,
+  params: PnRelacjaParams = _pnRelacja,
+): number {
+  const cfg = { ..._pnRelacja, ...params };
+  const w = Math.min(100, Math.max(-100, wiarygodnoscProposera));
+  if (w >= 0) return cfg.max_zaufanie_na_ture;
+  if (w > DIPLOMACY_PARAMS.wiarygodnoscProgWiarolomny) return cfg.wiarygodnosc_limit_zaufanie_chwiejny;
+  if (w > cfg.wiarygodnosc_limit_prog_dno) return cfg.wiarygodnosc_limit_zaufanie_wiarolomny;
+  return cfg.wiarygodnosc_limit_zaufanie_dno;
 }
 
 /**

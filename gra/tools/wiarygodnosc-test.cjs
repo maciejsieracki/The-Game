@@ -49,7 +49,12 @@ fs.writeFileSync(
   tickCredibilityStreamEntry,
   sumaWiarygodnosciCalkowita,
 } from '../src/game/diplomacy-credibility';
-export { DIPLOMACY_PARAMS, tickDiplomacy } from '../src/game/diplomacy';\n`,
+export { DIPLOMACY_PARAMS, tickDiplomacy } from '../src/game/diplomacy';
+export {
+  diplomacyMaxZaufanieNaTureForWiarygodnosc,
+  diplomacyPnRelacjaParams,
+  diplomacyClampTrustGainNaTure,
+} from '../src/game/diplomacy-value-catalog';\n`,
   'utf8',
 );
 
@@ -364,6 +369,63 @@ function freshRdip(zaufanie, status) {
   const after = WC.tickDiplomacy(before, { turn: 1, wiarygodnoscSelf: 100000 });
   ok(approxEqual(after.zaufanie, 10 + 100 / P.wiarygodnoscZaufanieDzielnikPerTura), `tickDiplomacy: klamruje W>100 przed dzieleniem (got ${after.zaufanie})`);
   ok(approxEqual(after.zaufanie, WC.strumienWiarygodnoscDoZaufania(100000) + 10), 'tickDiplomacy: spójne ze strumienWiarygodnoscDoZaufania (ta sama formuła)');
+}
+
+// ---------------------------------------------------------------------------
+// 9) Dźwignia 2 (§5, WIAR-9.5b=B) — limit Zaufania kupowalnego na turę zależny
+//    od Wiarygodności SPRAWCY (proposera), nie od Wiarygodności odbiorcy.
+//    Reputacja dodatnia = limit dzisiejszy (5), nietknięty; zła reputacja
+//    zawęża limit w czterech pasmach (siatka §5 raportu wdrożeniowego).
+// ---------------------------------------------------------------------------
+
+{
+  const pn = WC.diplomacyPnRelacjaParams();
+  ok(pn.max_zaufanie_na_ture === 5, 'pn_relacja.max_zaufanie_na_ture domyślnie 5 (dzisiejszy, nietknięty)');
+  ok(pn.wiarygodnosc_limit_zaufanie_chwiejny === 3, 'siatka Dźwigni 2: pasmo Chwiejny = 3 pkt Zaufania/turę');
+  ok(pn.wiarygodnosc_limit_zaufanie_wiarolomny === 1, 'siatka Dźwigni 2: pasmo Wiarołomny (górne) = 1 pkt Zaufania/turę');
+  ok(pn.wiarygodnosc_limit_zaufanie_dno === 0, 'siatka Dźwigni 2: dno (W<=-70) = 0 pkt Zaufania/turę');
+  ok(pn.wiarygodnosc_limit_prog_dno === -70, 'siatka Dźwigni 2: próg dna = -70');
+
+  // Reputacja dodatnia/zero -> limit BEZ ZMIAN (kara złej reputacji, nigdy nagroda za dobrą).
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(100) === 5, 'W=+100 (Wzór cnoty) -> limit 5, bez zmian');
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(40) === 5, 'W=+40 (próg Wzór cnoty) -> limit 5');
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(1) === 5, 'W=+1 (Uczciwy) -> limit 5');
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(0) === 5, 'W=0 (brak historii) -> limit 5, NIE obniżony');
+
+  // Pasmo Chwiejny: W<0 i > próg Wiarołomny (-40).
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(-1) === 3, 'W=-1 (Chwiejny) -> limit 3');
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(-39) === 3, 'W=-39 (Chwiejny, granica) -> limit 3');
+
+  // Pasmo Wiarołomny górne: -70 < W <= -40.
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(-40) === 1, 'W=-40 (próg Wiarołomny) -> limit 1');
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(-69) === 1, 'W=-69 (Wiarołomny, tuż nad dnem) -> limit 1');
+
+  // Dno: W <= -70 -> zakup Zaufania darem/nadwyżką całkowicie zablokowany.
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(-70) === 0, 'W=-70 (próg dna) -> limit 0');
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(-100) === 0, 'W=-100 (dno skali) -> limit 0');
+
+  // Monotoniczność: im niższe W, tym limit nigdy nie rośnie.
+  const grid = [100, 40, 0, -1, -39, -40, -69, -70, -100].map(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc);
+  let monotone = true;
+  for (let i = 1; i < grid.length; i++) if (grid[i] > grid[i - 1]) monotone = false;
+  ok(monotone, `siatka Dźwigni 2 monotonicznie nierosnąca wraz ze spadkiem W (got ${grid.join(',')})`);
+
+  // Klamrowanie wejścia (§4 pkt 10 — obowiązkowe wszędzie, gdzie W wchodzi do wzoru).
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(100000) === 5, 'W>100 klamrowane do +100 -> limit 5');
+  ok(WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(-100000) === 0, 'W<-100 klamrowane do -100 -> limit 0');
+
+  // diplomacyClampTrustGainNaTure respektuje limit nadpisany przez params (tak jak
+  // main.ts.applyPnTrustForPair go przekazuje, patrz applyPnTrustForPair) — sufit
+  // realnie egzekwowany dla proponenta Wiarołomnego (-70<W<=-40 -> limit 1), nie
+  // tylko poprawnie WYLICZONY.
+  const wiarolomnyLimit = WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(-50); // pasmo Wiarołomny -> 1
+  ok(wiarolomnyLimit === 1, 'W=-50 (Wiarołomny) -> limit wyliczony = 1');
+  const clamped = WC.diplomacyClampTrustGainNaTure(5, 0, { max_zaufanie_na_ture: wiarolomnyLimit });
+  ok(clamped === 1, `diplomacyClampTrustGainNaTure honoruje limit obniżony przez Dźwignię 2 (got ${clamped}, want 1)`);
+  const clampedDno = WC.diplomacyClampTrustGainNaTure(5, 0, {
+    max_zaufanie_na_ture: WC.diplomacyMaxZaufanieNaTureForWiarygodnosc(-100),
+  });
+  ok(clampedDno === 0, `diplomacyClampTrustGainNaTure: proponent na dnie (W=-100) -> 0 Zaufania kupowalnego (got ${clampedDno})`);
 }
 
 console.log(`wiarygodnosc-test: ${pass} pass, ${fail} fail`);
