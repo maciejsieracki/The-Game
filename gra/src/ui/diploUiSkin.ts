@@ -133,12 +133,12 @@ export function dipCloseBtnHtml(title = 'Zamknij'): string {
 export const DIPLO_1E_SHARED_CSS = `
 ${CIV_BRAND_SCOPE_VARS}
 .dip-pennant{width:48px;height:60px;flex-shrink:0;display:flex;justify-content:center;padding-top:7px;
-  clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%);
-  border:1px solid rgba(232,216,138,.5);box-shadow:0 4px 10px rgba(0,0,0,.35);}
+  box-sizing:border-box;clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%);
+  background:transparent;border:2px solid rgba(232,216,138,.5);box-shadow:0 4px 10px rgba(0,0,0,.35);}
 .dip-pennant-lg{width:56px;height:68px;padding-top:8px;}
-.dip-pennant.gold{background:linear-gradient(180deg,#e0c04a,#9a7420);}
-.dip-pennant.neutral{background:linear-gradient(180deg,#4a7fb0,#26456a);}
-.dip-pennant.war{background:linear-gradient(180deg,var(--tg-red,#c84040),#7a2828);}
+.dip-pennant.gold{border-color:#e0c04a;}
+.dip-pennant.neutral{border-color:#4a7fb0;}
+.dip-pennant.war{border-color:var(--tg-red,#c84040);}
 .dip-pennant-inner{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
 .dip-pennant.gold .dip-pennant-inner{background:#2a2208;color:#f0e0a0;}
 .dip-pennant.neutral .dip-pennant-inner{background:#e8f0f8;color:#0e2038;}

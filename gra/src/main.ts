@@ -428,9 +428,11 @@ import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
   startIntroMusic, stopIntroMusic,
   startAmbience, stopAmbience, setAmbienceVolume, setAmbienceWaterView,
+  startMarch, stopMarch, setMarchVolume, playMarchAccent,
 } from './audio/muzyka-antyczna';
 import { loadMusicPrefs, saveMusicPrefs } from './audio/musicPrefs';
 import { loadAmbiencePrefs, saveAmbiencePrefs } from './audio/ambiencePrefs';
+import { loadSfxPrefs, saveSfxPrefs } from './audio/sfxPrefs';
 import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
 import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
@@ -3477,6 +3479,16 @@ async function boot(): Promise<void> {
             : formatArmiaLabel(group.length);
         const ruchLeft = Math.min(...group.map(u => u.ruchLeft));
         const ruchMax = Math.max(...group.map(u => u.ruch));
+        // Suma HP stosu: armia = stos, więc pokazujemy łączny stan zdrowia
+        // (np. 34/50), a nie zdrowie pojedynczej jednostki wiodącej.
+        let hp = 0;
+        let hpMax = 0;
+        for (const u of group) {
+          const udef = unitDefFor(u);
+          const unitMaxHp = unitHealth(udef);
+          hp += u.hp ?? unitMaxHp;
+          hpMax += unitMaxHp;
+        }
         out.push({
           id: lead.id,
           name,
@@ -3488,6 +3500,8 @@ async function boot(): Promise<void> {
           metaLine: types.length > 1 ? types.join(', ') : undefined,
           ruchLeft,
           ruchMax,
+          hp,
+          hpMax,
         });
       }
       out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
@@ -4143,6 +4157,7 @@ async function boot(): Promise<void> {
     function resetStuckInteractiveState(): void {
       anim = null;
       isAnimating = false;
+      stopMarch(); // SFX marsz: nie zostawiaj pętli grającej po wymuszonym resecie
       forceVisibleUnitId = null;
       hideGamePauseMenu();
       hideSaveLoadDialog();
@@ -5251,12 +5266,31 @@ async function boot(): Promise<void> {
     let ambienceVolumeState = _ambiencePrefsAtBoot.volume;
     setAmbienceVolume(ambienceVolumeState);
 
+    // --- Odgłosy jednostek / marsz (CZWARTY, niezależny kanał audio — sekcja
+    // "SFX JEDNOSTEK" w audio/muzyka-antyczna.ts + audio/sfxPrefs.ts). Osobny
+    // od muzyki I od odgłosów natury: gracz musi móc wyciszyć marsz bez utraty
+    // ptaków/wiatru (TEMAT: "delikatny dźwięk marszu"). W przeciwieństwie do
+    // muzyki/ambience marsz NIE gra ciągle — startuje reaktywnie z
+    // startAnimatedMove() (ruch gracza po mapie) i milknie na końcu animacji;
+    // AI oraz auto-eksploracja zwiadowców dostają jednorazowy akcent
+    // (playMarchAccent), nie pętlę — patrz miejsca wywołania niżej.
+    // `sfxUnitsEnabled` (WŁ/WYCISZ) jest CELOWO ulotny — ten sam wzorzec co
+    // C-AUD-Q5=A/TEMAT #9 (musicEnabled/ambienceEnabled powyżej): wyciszenie z
+    // menu pauzy dotyczy tylko bieżącej rozgrywki, resetowane do WŁ. w
+    // startGameMusic() niżej. Głośność (`volume`) ZOSTAJE trwała.
+    const _sfxPrefsAtBoot = loadSfxPrefs();
+    let sfxUnitsEnabled = true;
+    let sfxVolumeState = _sfxPrefsAtBoot.volume;
+    setMarchVolume(sfxVolumeState);
+
     /** Startuje muzykę tła po geście startowym gry, jeśli gracz jej nie wyłączył (setEra zawsze).
      *  Pierwsza rzecz: gasi intro (ekrany przed rozgrywką) — to dokładny moment
      *  przejścia menu->rozgrywka, patrz resumeIntroMusic() / openStartupMainMenu().
      *  Tu też startują odgłosy natury (jeśli gracz ich nie wyłączył) — ten sam
      *  moment startu co muzyka gry, ale kanał całkiem niezależny (patrz sekcja
-     *  AMBIENCE w audio/muzyka-antyczna.ts). */
+     *  AMBIENCE w audio/muzyka-antyczna.ts). Odgłosy jednostek (marsz) nie
+     *  wymagają jawnego startu tutaj (reaktywne, patrz komentarz wyżej) — tylko
+     *  reset przełącznika WŁ., jak dla muzyki/ambience. */
     function startGameMusic(mood: 'mapa' | 'bitwa' = 'mapa'): void {
       // C-AUD-Q5=A: nowa rozgrywka zawsze startuje z muzyką WŁ. — wyciszenie
       // dokonane w POPRZEDNIEJ rozgrywce (przełącznik w menu pauzy) jest
@@ -5266,6 +5300,8 @@ async function boot(): Promise<void> {
       // natury WŁ. — wyciszenie z POPRZEDNIEJ rozgrywki jest ulotne (patrz
       // audio/ambiencePrefs.ts).
       ambienceEnabled = true;
+      // Ten sam wzorzec dla odgłosów jednostek (marsz) — patrz audio/sfxPrefs.ts.
+      sfxUnitsEnabled = true;
       stopIntroMusic();
       setEra(player.era);
       if (musicEnabled) startMusic(mood);
@@ -9736,6 +9772,23 @@ async function boot(): Promise<void> {
         saveAmbiencePrefs({ volume: ambienceVolumeState });
         setAmbienceVolume(v);
       },
+      getSfxEnabled: () => sfxUnitsEnabled,
+      getSfxVolume: () => sfxVolumeState,
+      onSfxToggle: (enabled) => {
+        // Ten sam wzorzec co C-AUD-Q5=A/TEMAT #9: `enabled` jest ulotny
+        // (tylko bieżąca rozgrywka) — celowo NIE wchodzi do saveSfxPrefs
+        // (patrz audio/sfxPrefs.ts). Marsz nie ma "startu" analogicznego do
+        // startAmbience() (reaktywny — patrz startGameMusic()) — wyłączenie
+        // w trakcie trwającej animacji musi jednak uciszyć NATYCHMIAST.
+        sfxUnitsEnabled = enabled;
+        saveSfxPrefs({ volume: sfxVolumeState });
+        if (!enabled) stopMarch();
+      },
+      onSfxVolumeChange: (v) => {
+        sfxVolumeState = v;
+        saveSfxPrefs({ volume: sfxVolumeState });
+        setMarchVolume(v);
+      },
       getAutosaveFreq: () => getAutosaveFrequency(),
       onAutosaveFreqChange: (turns) => {
         setAutosaveFrequency(turns);
@@ -10596,6 +10649,12 @@ async function boot(): Promise<void> {
       };
       isAnimating = true;
       forceVisibleUnitId = u.id;
+      // SFX marsz: pętla trwa dokładnie tyle, co animacja (start tu, stop przy
+      // jej zakończeniu/przerwaniu — patrz oba miejsca z `isAnimating = false`
+      // niżej). `stack.length` = gęstość kroków (marchImpulsesForVoices w
+      // muzyka-antyczna.ts) — zawsze WŁASNA jednostka gracza, więc bez
+      // sprawdzania widoczności (gracz zawsze widzi swój ruch).
+      if (sfxUnitsEnabled) startMarch(stack.length);
       unitRenderer.setSelectionHex(moveDestQ, moveDestR, u.ownerId);
       syncUnitsRender();
       unitRenderer.clearPathRoute();
@@ -11298,9 +11357,18 @@ async function boot(): Promise<void> {
         const stackOnCity = visibleStackOnHex(units, hit.q, hit.r, 0);
         if (stackOnCity.length > 0) {
           const rep = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore) ?? stackOnCity[0]!;
+          // Łączny % HP stosu (suma hp / suma maxHp) — spójne z etykietą „Armia — N jednostek”.
+          const stackHpSum = stackOnCity.reduce(
+            (sum, u) => sum + (u.hp ?? unitHealth(unitDefFor(u))), 0,
+          );
+          const stackMaxHpSum = stackOnCity.reduce(
+            (sum, u) => sum + unitHealth(unitDefFor(u)), 0,
+          );
           showCityUnitPick({
             cityName: clickedCity.name,
+            cityPopulation: clickedCity.population,
             unitLabel: rep.typeId,
+            unitHealthPercent: stackMaxHpSum > 0 ? (stackHpSum / stackMaxHpSum) * 100 : undefined,
             stackCount: stackOnCity.length,
             onCity: () => openCityPanelForPlayer(clickedCity),
             onUnit: () => selectPlayerUnit(rep.id),
@@ -13658,6 +13726,7 @@ async function boot(): Promise<void> {
           }
           anim = null;
           isAnimating = false;
+          stopMarch(); // SFX marsz: animacja ucięta (koniec tury) — ucisz pętlę
         }
         // Zwiadowcy gracza: auto-zwiedzanie nieużytego ruchu (mgła + kontakt z obcymi).
         {
@@ -13665,6 +13734,9 @@ async function boot(): Promise<void> {
           if (scoutExplore.movedUnitIds.length > 0) {
             syncUnitsRender();
             refreshFog();
+            // SFX marsz: ruch BEZ animacji (teleport) — jednorazowy akcent, nie
+            // pętla. Zawsze jednostki gracza -> bez sprawdzania widoczności.
+            if (sfxUnitsEnabled) playMarchAccent(scoutExplore.movedUnitIds.length);
           }
         }
         evictForeignUnitsFromCityHexes();
@@ -14959,6 +15031,16 @@ async function boot(): Promise<void> {
             }
             } // !isCommandResume
 
+            // SFX marsz — AI: pozycja jednostki AI zmienia się TU natychmiast (zero
+            // animacji, patrz cmd.type==='move' niżej), więc dostaje jednorazowy
+            // akcent (playMarchAccent), nie pętlę marszu. Widoczność liczona RAZ na
+            // ownera (nie per-ruch — koszt currentVisible() rósłby z liczbą ruchów AI
+            // w turze; gracz i tak się nie rusza w trakcie fazy AI, więc się nie
+            // starzeje w praktyce) — poza mgłą wojny CISZA (inaczej gracz słyszałby
+            // niewidzialne armie, co zdradza informację i brzmi jak błąd).
+            // fogOn===false -> mgła wyłączona (playtest/debug) -> traktuj jako "widać".
+            const aiVisNow = fogOn ? currentVisible() : null;
+
             for (let ci = cmdStart; ci < commands.length; ci++) {
               const cmd = commands[ci]!;
               try {
@@ -14984,6 +15066,9 @@ async function boot(): Promise<void> {
                     u.ruchLeft = 0;
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     applyEmbarkStateAfterMove([u], map);
+                    if (sfxUnitsEnabled && (aiVisNow === null || aiVisNow.has(keyOf(last.q, last.r)))) {
+                      playMarchAccent(1);
+                    }
                   }
                   continue;
                 }
@@ -15385,6 +15470,9 @@ async function boot(): Promise<void> {
                 seaBarbs, playerUnitsForBarbs, cities, raidTargets, map, seaBarbParams, turn,
               ));
             }
+            // SFX marsz — barbarzyńcy: ta sama logika co AI wyżej (jednorazowy
+            // akcent, widoczność liczona raz dla całego ticku barbarzyńców).
+            const barbVisNow = fogOn ? currentVisible() : null;
             for (const bcmd of barbCmds) {
               try {
                 const bu = units.find(u => u.id === bcmd.unitId);
@@ -15396,6 +15484,9 @@ async function boot(): Promise<void> {
                   bu.ruchLeft = 0;
                   // TEMAT #15: woda -> zaokrętowanie, ląd -> desant.
                   applyEmbarkStateAfterMove([bu], map);
+                  if (sfxUnitsEnabled && (barbVisNow === null || barbVisNow.has(keyOf(bcmd.toQ, bcmd.toR)))) {
+                    playMarchAccent(1);
+                  }
                 } else if (bcmd.type === 'raid') {
                   // TEMAT #15: rajd Ludów Morza — wejście + zniszczenie ulepszenia.
                   const raidKey = keyOf(bcmd.toQ, bcmd.toR);
@@ -15409,6 +15500,9 @@ async function boot(): Promise<void> {
                   bu.r = bcmd.toR;
                   bu.ruchLeft = 0;
                   applyEmbarkStateAfterMove([bu], map);
+                  if (sfxUnitsEnabled && (barbVisNow === null || barbVisNow.has(raidKey))) {
+                    playMarchAccent(1);
+                  }
                   console.log(`[Ludy Morza] Rajd: zniszczono '${destroyed}' @ (${bcmd.toQ},${bcmd.toR})`);
                   showHintMessage(`Rajd Ludów Morza — zniszczone ulepszenie: ${destroyed}!`, 4500);
                 } else if (bcmd.type === 'attack') {
@@ -15614,6 +15708,7 @@ async function boot(): Promise<void> {
           }
           anim = null;
           isAnimating = false;
+          stopMarch(); // SFX marsz: animacja dobiegła końca — krótki fade-out (patrz stopMarch())
           forceVisibleUnitId = null;
 
           refreshFog();

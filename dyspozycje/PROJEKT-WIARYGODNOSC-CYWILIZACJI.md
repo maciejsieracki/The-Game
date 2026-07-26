@@ -1,0 +1,1889 @@
+# PROJEKT: Wiarygodność Cywilizacji
+
+(MASTER, 2026-07-26 · zlecenie Macieja 2026-07-25 — „element wiarygodności obok Zaufania i Respektu,
+mierzący jak często cywilizacja łamie zasady lub dotrzymuje słowa" · dokument projektowy, ZERO KODU ·
+wykonawca wdrożenia: osobna sesja, na podstawie tego pliku, bez dopytywania)
+
+Poprzedzone pełnym audytem istniejącego systemu dyplomacji (`gra/src/game/diplomacy*.ts` — 13 modułów,
+5462 linii, `gra/src/types/diplomacy.ts`, `gra/data/diplomacy.json`, `gra/src/ui/diplomacy*.ts`,
+fragmenty `main.ts` związane z dyplomacją). Wszystkie odwołania do kodu w tym dokumencie są realne —
+sprawdzone przez czytanie plików, nie przez domysł.
+
+---
+
+## 0. Streszczenie
+
+Dziś gra ma dwa wymiary relacji dyplomatycznej: **Zaufanie** (per para, wolnozmienne, „jak Cię lubię")
+i **Respekt** (per para, ale w praktyce PRZELICZANY na żywo z relatywnej potęgi militarno-gospodarczej,
+„jak bardzo się Ciebie boję/szanuję"). Żaden z nich nie odpowiada na pytanie Macieja: *czy ta
+cywilizacja w ogóle DOTRZYMUJE SŁOWA*. **Wiarygodność** to nowy, trzeci wymiar — **globalny per
+cywilizacja** (nie per para), wolnozmienny, **publiczny** (widoczny dla wszystkich, nie tylko strony
+umowy), napędzany WYŁĄCZNIE zdarzeniami „dotrzymał/złamał", niezależny od siły militarnej czy
+bieżących sympatii.
+
+Kluczowe ustalenie z audytu: **duża część zdarzeń, których Wiarygodność miałaby dotyczyć, jest dziś
+w kodzie zdefiniowana, ale NIGDY nie wywoływana** (`'zdrada'`, `'wspolny_wrog'`, `'pomoc_sojusznikowi'`,
+`'wygrana_bitwa'`, `'przewaga_militarna'` — zero wywołań w `main.ts`, zweryfikowane grepem). To nie jest
+problem tego projektu — to fakt, który ten projekt musi jawnie nazwać, bo część „haków" dla Wiarygodności
+trzeba będzie dopiero dobudować, nie tylko podłączyć się pod istniejące.
+
+---
+
+## 1. Czym Wiarygodność różni się od Zaufania i Respektu
+
+| Wymiar | Zakres | Co mierzy | Zmienność | Widoczność | Gdzie żyje dziś w kodzie |
+|---|---|---|---|---|---|
+| **Respekt** | per para, ale symetryczny („Ty patrzysz na mnie" + „ja patrzę na Ciebie" = 100) | Jak silny jestem WZGLĘDEM Ciebie TERAZ (moc militarna/gospodarcza/miasta/epoka) | Szybka — przelicza się **na żywo co turę** z `computePotegaNacji`, nie jest ledgerem zdarzeń | Per para (choć bazuje na obiektywnej potędze, która i tak jest publiczna) | `game/diplomacy.ts:1277` (`computePotegaNacji`), `:1320` (`computeRespekt`, wzór ratio-share: `round(100·potęga_self/(potęga_self+potęga_partner))`) |
+| **Zaufanie** | per para (`RelacjaDyplomatyczna` między graczem A i B) | Jak bardzo Cię TERAZ lubię — nastawienie budowane wspólną historią z TOBĄ | Średnia — dryfuje co turę (`tickDiplomacy`) + skoki jednorazowe (`applyDiplomaticEvent`) | **Tylko strona pary** — inny gracz nie widzi Twojego Zaufania do kogoś trzeciego | `types/diplomacy.ts:59-103` (`RelacjaDyplomatyczna.zaufanie`), `game/diplomacy.ts:44-55` (`Relation`, slim), `main.ts:4116` (`diplomacyRelations: Map<string, Relation>`, klucz = para) |
+| **Wiarygodność (NOWY)** | **globalny per cywilizacja** (nie para) | Twoja HISTORIA dotrzymywania słowa — fakty, nie sympatie | Wolna — tylko dyskretne zdarzenia „dotrzymał/złamał" + powolna regeneracja | **PUBLICZNA — widzi ją każda odkryta cywilizacja**, niezależnie czy miała z Tobą kiedykolwiek umowę | do zbudowania — patrz §7 |
+
+**Kluczowa różnica w jednym zdaniu:** Respekt pyta „czy się Ciebie bać", Zaufanie pyta „czy Cię lubię
+TERAZ (w tej jednej relacji)", Wiarygodność pyta „czy dotrzymujesz słowa W OGÓLE (wobec wszystkich)".
+Zerwanie paktu z Grekami dziś obniża Zaufanie WYŁĄCZNIE w relacji gracz↔Grecja — Egipt, Rzym i Chiny
+nic o tym „nie wiedzą" mechanicznie. Wiarygodność ma to zmienić: ten sam incydent ma osłabić Twoją
+reputację u WSZYSTKICH, bo to fakt o Tobie, nie o relacji z jedną stroną.
+
+**Uwaga porządkująca (żeby nie pomylić z istniejącym mechanizmem):** `civ-ai-data.ts` ma już statyczne
+cechy archetypu per typ cywilizacji — `lojalnosc`, `pamietliwosc` (`game/civ-ai-data.ts:54-59`,
+`DiplomacyPerNacjaRow`), wyświetlane jako tagi „Lojalny"/„Zdradziecki" w `diplomacy-display.ts:27-73`
+(`TAG_RULES`). To są **stałe cechy charakteru per TYP cywilizacji** (np. wszyscy Zulusi mają tę samą
+`lojalnosc` z Excela) — coś jak skłonność, nie historia. Wiarygodność to coś zupełnie innego: **dynamiczny
+zapis FAKTYCZNYCH czynów TEJ KONKRETNEJ instancji cywilizacji w TEJ KONKRETNEJ partii**. Nie mylić i nie
+zastępować jednego drugim.
+
+---
+
+## 2. Skala, wartość startowa, prezentacja
+
+**Skala: 0–100** (spójna z Zaufaniem/Respektem — gracz już rozumie tę konwencję).
+
+**Wartość startowa: 70** (nie 50) — REKOMENDACJA. Uzasadnienie: nowa cywilizacja zasługuje na domniemanie
+uczciwości (jak w realnym świecie — nikt nie zaczyna jako podejrzany), a 70 daje zarówno margines do
+wzrostu (do „Wzoru cnoty") jak i bufor do spadku zanim wpadnie w strefę kłopotów. Start=50 (środek skali)
+byłby bardziej „neutralny", ale słabiej się gra — gracz startowałby psychologicznie w połowie strefy
+„Chwiejny", co nie licuje z ideą, że trzeba ZASŁUŻYĆ na złą reputację.
+
+**Etykiety słowne** (dokładnie te cztery, w tej kolejności — zaproponowane przez Macieja, przyjęte
+wprost):
+
+| Zakres | Etykieta | Znaczenie dla gracza |
+|---|---|---|
+| 0–24 | **Wiarołomny** | AI traktuje każdą propozycję z podejrzliwością; sojusze/pakty praktycznie niedostępne |
+| 25–49 | **Chwiejny** | Historia ma rysy; umowy wymagają dodatkowych ustępstw (wyższe progi) |
+| 50–74 | **Uczciwy** | Domyślny, „normalny" stan — start gry tu (70) |
+| 75–100 | **Wzór cnoty** | Premia — łatwiej o sojusze, AI chętniej ufa nawet przy niskim bieżącym Zaufaniu |
+
+**Prezentacja w UI** — patrz §7 (etap UI) po szczegóły plików; skrót koncepcji:
+- **Globalny badge przy nazwie/tytule cywilizacji** (nie w sekcji „Relacje z Tobą", bo to nie jest
+  atrybut relacji, tylko atrybut CYWILIZACJI) — w audiencji (`ui/diplomacyAudience.ts`) obok
+  `da-civtitle` (linia 617 dla rozmówcy, 583 dla gracza), analogicznie do istniejącego paska Respekt
+  ale WIZUALNIE odróżniony (inny kolor/ikona), żeby gracz nie pomylił „ile mnie lubi" z „czy dotrzymuje
+  słowa".
+- **Kolumna w rankingu Potęgi** (`ui/powerOverlayHud.ts:17-22`, `PowerRankingRow`) — bo to też jest
+  globalna, porównywalna między cywilizacjami statystyka, tak jak Potęga.
+- **Tooltip z liczbą zdarzeń** — analogicznie do `respektTooltipPl()` (`diplomacy-display.ts:192-194`)
+  i do rejestru czynników `buildRelationBreakdown` (`game/diplomacy-factors.ts:147-188`, wzór „za co
+  Cię lubią/nie lubią" — dla Wiarygodności potrzebny osobny, ale analogiczny rejestr, patrz §7).
+
+---
+
+## 3. Tabela zdarzeń — za co +, za co −
+
+Wagi to **PROPOZYCJE do strojenia przez Macieja w playteście** (jak każdy parametr w `DIPLOMACY_PARAMS`).
+Skala celowo MNIEJSZA niż jednorazowe delty Zaufania (które są per-para, -50..+15) — bo każde zdarzenie
+Wiarygodności rezonuje jednocześnie u WSZYSTKICH odkrytych cywilizacji, więc pojedynczy incydent nie
+powinien być tak drastyczny jak w relacji 1:1.
+
+Kolumna **Status w kodzie**: ✅ ISTNIEJE = hak już działa, trzeba tylko DOPISAĆ wywołanie funkcji
+Wiarygodności obok istniejącego; ❌ WYMAGA NOWEGO HAKA = zdarzenie nie jest dziś w ogóle wykrywane
+przez silnik (albo typ eventu istnieje w `DiplomaticEvent`, ale nikt go nie wywołuje).
+
+### 3.1 Negatywne (łamanie zasad)
+
+| # | Zdarzenie | Waga (propozycja) | Status | Plik : funkcja | Uwagi |
+|---|---|---|---|---|---|
+| N1 | **ATAK Z ZASKOCZENIA — atak bez wypowiedzenia wojny** *(NIE „zdrada" — patrz §N1 spec)* (kontrahent zaatakowany mimo statusu ≠ 'wojna') | **−25** | ❌ WYMAGA NOWEGO HAKA | Event `'zdrada'` zdefiniowany w `game/diplomacy.ts:596-631` (typ) i `:699-703` (delta −50 Zaufania, ustawia `status='wojna'`) — **zero wywołań w `main.ts`** (potwierdzone grepem). Silnik dziś nie odróżnia „zaatakowałem bez ostrzeżenia" od zwykłego `wojna_wypowiedziana`. Trzeba znaleźć punkt inicjacji walki (combat entry point) i sprawdzić, czy dopuszcza atak na cel, z którym `getDiploRelation(a,b).status !== 'wojna'` — jeśli tak, to jest dokładnie ten hak. | Najcięższa pojedyncza kara — złamanie fundamentalnej reguły wojny |
+| N2 | **Zerwanie traktatu WYMUSZONE wojną** (wypowiedzenie wojny mimo aktywnego NAP/sojuszu/otwartych granic z ofiarą) | **−18** (JEDNAKOWO dla gracza i AI — patrz §6 o parytecie) | ✅ ISTNIEJE (Zaufanie), Wiarygodność DOPISAĆ | `main.ts:8510-8521` (`breakTreatiesOnWar(a,b,breakerIsPlayer)`) → dziś aplikuje `'zlamana_obietnica'` (gracz, −40 Zaufania) / `'zlamana_obietnica_ai'` (AI, −20 Zaufania) przez `applyDiploEventTracked`. Wywoływane z: deklaracja wojny gracza (`main.ts:9031`), AI (`main.ts:14834`), kaskada obowiązków sojuszniczych (`main.ts:8550`). | To obejmuje też „atak na własnego sojusznika" (atak = wypowiedzenie wojny, `BREAK_ON_WAR` w `diplomacy-treaties.ts:239-247` zawiera oba typy sojuszu) |
+| N3 | **Atak zaraz po podpisaniu pokoju** (nowa wojna z TĄ SAMĄ stroną < 10 tur od zawarcia pokoju) | dodatkowe **−12** (NA WIERZCHU kary N2/N1) | ❌ WYMAGA NOWEGO HAKA | Dziś pokój (`status='pokoj'`) nie jest `ActiveDeal` — nie ma pola `zawartaTura` jak traktaty (`diplomacy-treaties.ts:39-50`, `ActiveDeal.zawartaTura`). `'pokoj'` event aplikowany w `main.ts:7703` i `:9049`, ale bez zapisu KIEDY. Trzeba dopisać pole np. `pokojOdTury?: number` do `DiploPairMeta` (`game/diplomacy-pn-engine.ts:20-23`, dziś ma tylko `trustPnGainedThisTurn`/`dobraWolaRemainingTur`) i sprawdzać różnicę tur przy N1/N2. | Najbardziej „gracz to poczuje" zdarzenie — świeży pokój złamany w kilka tur |
+| N4 | **Odmowa dołączenia do wojny sojuszniczej** (sojusznik NIE wypełnia obowiązku Sojuszu Pełnego/Defensywnego) | **−10** | ❌ WYMAGA NOWEGO HAKA (wykrycie już jest, kara nie) | `treatiesBrokenByRefusal()` (`game/diplomacy-treaties.ts:217-231`) i `applyAllianceObligationsOnWar` (`main.ts:8523-8577`) **już wykrywają** kto się nie stawił (`brokenTreatyIds`, linia 8560) i zrywają traktat — ale **nie aplikują dziś żadnej kary Zaufania/Wiarygodności** za samą odmowę, tylko usuwają sojusz. | Realna luka w istniejącym kodzie, niezależnie od tego projektu |
+| N5 | **Dobrowolne zerwanie traktatu** (przycisk „Zerwij", bez wojny) | **−6** (traktat NAP/sojusz/granice/wasal) / **−4** (umowa handlowa, lżejsze) | ✅ ISTNIEJE (Zaufanie), Wiarygodność DOPISAĆ | `main.ts:8181-8205` (`breakTreatyVoluntarily(dealId)`) → `'zerwanie_traktatu'` (−15 Zaufania) lub `'zerwanie_handlu'` (−10 Zaufania) przez `applyDiploEventTracked` (linia 8193). | Świadoma decyzja BEZ przemocy — stąd lżejsza waga niż N2 |
+| N6 | **Niedotrzymanie handlu cyklicznego** (brak dostawy z powodu braku zapasów, ≥3 tury z rzędu) | **−2** za próg (nie za pojedynczy pech) | ❌ WYMAGA NOWEGO HAKA | `main.ts:8595-8627` (`tickCyclicResourceTradeDeals`) — komentarz w kodzie wprost: „brak zapasów dawcy tę turę — pomijamy też zapłatę... deal NIE jest zrywany" (linia 8588-8590, 8616). **Zero kary dziś.** Trzeba dopisać licznik nieudanych dostaw per `HandelSurowiecCyklicznyItem` (rozszerzyć strukturę albo trzymać osobną mapę `dealId → nieudaneDostawyZRzedu`). | Próg 3 zapobiega karaniu za jednorazowy pech (np. wojna zjadła zapas) |
+| N7 | **Nieautoryzowany przemarsz** (marsz przez cudze terytorium bez otwartych granic/prawa wojskowego) | **−2** jednorazowo przy wykryciu (NIE co turę) | ✅ ISTNIEJE (Zaufanie, per-turę) | `game/diplomacy-border-march.ts` (cała logika) + `main.ts:2605` (komunikat „Nieautoryzowany przemarsz: −X Zauf./para"). Dziś kara Zaufania nalicza się CO TURĘ obecności — Wiarygodność powinna dostać tylko JEDNORAZOWY odpis przy pierwszym wykryciu w danej „wizycie", inaczej zdominuje inne zdarzenia. | Najlżejsze przewinienie w tabeli — stąd też jedyne z zasadą „raz, nie co turę" |
+
+### 3.2 Pozytywne (dotrzymywanie słowa)
+
+| # | Zdarzenie | Waga (propozycja) | Status | Plik : funkcja | Uwagi |
+|---|---|---|---|---|---|
+| P1 | **Dotrwanie sojuszu do końca terminu** (traktat wygasł naturalnie, NIE zerwany) | **+8** | ❌ WYMAGA NOWEGO HAKA | `expireTreaties()` (`game/diplomacy-treaties.ts:155-157`) i `runDiplomacyTurnTick()` (`main.ts:8629-8637`) dziś **cicho usuwają** wygasły traktat (`activeDeals = expireTreaties(activeDeals, turn)`) — zero eventu. Wzorzec do naśladowania: main.ts już porównuje `dealsBeforeExpire` z `activeDeals` po filtrze (linia 8632-8636) żeby posprzątać `zlozeGrants` — dokładnie w tym miejscu dopisać wykrycie „ten traktat wygasł NATURALNIE" i naliczyć Wiarygodność. | Najcięższe zobowiązanie dotrzymane = największa pozytywna waga |
+| P2 | **Dotrwanie NAP/umowy handlowej do końca terminu** | **+4** | ❌ WYMAGA NOWEGO HAKA (ten sam hak co P1) | jw. | Lżejsze zobowiązanie niż sojusz |
+| P3 | **Spłata całego handlu cyklicznego** (≥90% zaplanowanych dostaw faktycznie zrealizowanych do wygaśnięcia) | **+5** | ❌ WYMAGA NOWEGO HAKA | Potrzebny licznik zrealizowanych dostaw (`result.moved > 0`, `main.ts:8616`) vs oczekiwanych — ten sam mechanizm co N6, ale liczony na koniec (przy wygaśnięciu deala z §P1/P2). | Nagroda symetryczna do kary N6 |
+| P4 | **Wieloletni pokój** (30 kolejnych tur bez wojny z tą samą stroną, kamień milowy powtarzalny) | **+3** co 30 tur | ❌ WYMAGA NOWEGO HAKA (częściowo pokrewne istniejącemu) | `pokoj_zaufanie_perTura` (+1/turę, `game/diplomacy.ts:108`, naliczane w `tickDiplomacy` przez `resolvePokojTrustTier`, wołane z `main.ts:14731`) już nagradza Zaufanie CIĄGLE — ale nie ma jednorazowego „kamienia milowego" dla Wiarygodności. Wzorzec do naśladowania: zanik `urazyHistoryczne` co 20 tur (`turn % 20 === 0`, `game/diplomacy.ts:1425-1433`) — tu analogicznie `turn % 30 === 0` + licznik kolejnych tur pokoju per para (nowe pole w `DiploPairMeta`). | Wymaga licznika nieprzerwanych tur pokoju, nie tylko flagi |
+| P5 | **Pomoc sojusznikowi w wojnie** (faktyczne dołączenie do wojny na wezwanie obowiązku sojuszniczego) | **+6** | ❌ WYMAGA NOWEGO HAKA (częściowo — wykrycie już istnieje) | Event `'pomoc_sojusznikowi'` zdefiniowany (`game/diplomacy.ts:69-70` param `pomocSojusznikowi_zaufanie=10`, `:722-725` w `applyDiplomaticEvent`) — **zero wywołań**. Miejsce wpięcia: `applyAllianceObligationsOnWar` (`main.ts:8523-8577`) już wie DOKŁADNIE kto faktycznie dołączył (`joinedWarOwnerIds.push(allyId)`, linie 8531/8556) — brakuje tylko wywołania `applyDiploEventTracked(...,'pomoc_sojusznikowi')` + odpowiednika Wiarygodności w TYM SAMYM miejscu, bo dane już tam są. | Najtańszy do wdrożenia z nowych haków pozytywnych — dane już policzone |
+
+### 3.3 Zdarzenia świadomie POMINIĘTE w tabeli (i dlaczego)
+
+- **Szpiegostwo wykryte** (`szpiegWykryty_zaufanie: −15` w `DIPLOMACY_PARAMS`) — w grze **nie ma dziś
+  żadnego systemu szpiegostwa** (zero wzmianek o „szpieg" w `main.ts`). Event czysto aspiracyjny, poza
+  zakresem tego projektu — nie dodawać haka Wiarygodności do czegoś, co nie istnieje.
+- **Ultimatum spełnione/bezpodstawne** — akcja `'ultimatum'` istnieje w `evaluateProposal`
+  (`game/diplomacy-proposals.ts`), ale odpowiadające jej eventy `'ultimatum_spelnione'`/
+  `'ultimatum_bezpodstawne'` **nie są wywoływane w `main.ts`** (zweryfikowane grepem). Podobna sytuacja
+  jak N1/P5 — do rozważenia w przyszłej fali, nie w tej (Maciej nie wymienił ultimatum jako kandydata).
+- **Wojna z uzasadnieniem (`wojna_casus_belli`)** — dziś silnik ZAWSZE stosuje `'wojna_wypowiedziana'`
+  (pełna kara), nigdy `'wojna_casus_belli'` (łagodniejsza wersja z uzasadnieniem). To osobny temat
+  (odróżnienie wojny sprowokowanej od nieprowokowanej) — WARTO go rozważyć przy N1/N2, bo wojna w
+  ODWECIE za czyjeś złamanie paktu nie powinna obciążać WŁASNEJ Wiarygodności tak samo jak wojna z
+  zaskoczenia. Flagowane jako możliwe dopracowanie etapu 1 (§7), nie twardy wymóg.
+
+---
+
+## 4. Wpływ na Zaufanie — mechanika
+
+Dwa niezależne mechanizmy, oba PROPOZYCJE do przetestowania (patrz też pytanie WIAR-Q3 w §8 — decyduje
+czy wdrażamy oba, czy tylko pierwszy).
+
+### 4.1 Modyfikator tempa (miękki wpływ — dotyka WSZYSTKICH par jednocześnie)
+
+Niska Wiarygodność = trudniej budować Zaufanie i łatwiej je stracić; wysoka = odwrotnie. Dwa
+mnożniki, stosowane do delt Zaufania w `tickDiplomacy` (`game/diplomacy.ts:1403`, per-turowe) oraz
+`applyDiplomaticEvent` (`game/diplomacy.ts:646`, jednorazowe):
+
+```
+mnoznikWzrostu(wiarygodność) = clamp(0.5 + wiarygodność/100, 0.5, 1.5)   // stosowany do dZ > 0
+mnoznikSpadku (wiarygodność) = clamp(1.5 − wiarygodność/100, 0.5, 1.5)   // stosowany do dZ < 0
+```
+
+Przykład przy starcie (wiarygodność=70): wzrost ×1.2, spadek ×0.8 — „Uczciwy" gracz buduje relacje
+nieco szybciej i traci je nieco wolniej niż neutralne ×1.0. Przy wiarygodności=10 („Wiarołomny"):
+wzrost ×0.6, spadek ×1.4 — każdy dobry gest buduje Zaufanie WOLNIEJ, każdy zły incydent boli MOCNIEJ.
+
+**Zaleta tej konstrukcji:** dotyka tylko 2 funkcji rdzenia (`tickDiplomacy`, `applyDiplomaticEvent`) —
+WSZYSTKIE miejsca, które już czytają wynikowe Zaufanie (`evaluateProposal`, `aiDiplomacyStance`,
+`decideAIDiplomacy`, UI) dostają efekt Wiarygodności **automatycznie**, bez zmian w sobie.
+
+### 4.2 Progi blokujące (twardy wpływ — tylko na najcięższych bramkach)
+
+Dwie konkretne bramki, gdzie sama Wiarygodność (niezależnie od aktualnego Zaufania/Relacji) decyduje:
+
+1. **Sojusz (Pełny/Defensywny)** — `game/diplomacy-proposals.ts:371-420` (case `'sojusz_defensywny'`/
+   `'sojusz_pelny'` w `evaluateProposal`). Dopisać warunek: `if ((ctx.proposerWiarygodnosc ?? 70) < 35)
+   return { accepted:false, reason:'Zbyt niska Wiarygodność na sojusz' }` — **przed** istniejącymi
+   sprawdzeniami Zaufania/Relacji (linie 398-412), bo to twardsza bramka niż one.
+2. **Wasalizacja/żądanie trybutu** — `game/diplomacy-proposals.ts:422-461` (case `'trybut_zadanie'`).
+   Analogiczny warunek na `responderWiarygodnosc < 25` — cel nie podda się „ochronie" kogoś, kto
+   regularnie łamie słowo (fabularne uzasadnienie: „nie wierzę, że dotrzymasz układu").
+
+`ProposalEvalContext` (`game/diplomacy-proposals.ts:115-140`) dostaje dwa nowe opcjonalne pola:
+`proposerWiarygodnosc?: number`, `responderWiarygodnosc?: number` — wypełniane w `main.ts`
+dokładnie tam, gdzie dziś liczone jest `proposerRespekt`/`responderRespekt`
+(`buildProposalEvalContext`, `main.ts:8697-8738`), tą samą funkcją, dla obu kierunków identycznie.
+
+---
+
+## 5. Regeneracja / zapominanie
+
+Rekomendacja (patrz uzasadnienie w pytaniu WIAR-Q2, §8): **pasywna regeneracja do wartości bazowej
+(70) z „blizną" po ciężkich zdarzeniach**.
+
+```
+KAŻDA TURA:
+  jeśli licznikBlizny > 0:  licznikBlizny -= 1   // zamrożona regeneracja
+  inaczej:
+    jeśli wiarygodność < 70:  wiarygodność = min(70, wiarygodność + 0.1)   // dryf w górę do bazy
+    jeśli wiarygodność > 70:  wiarygodność = max(70, wiarygodność − 0.1)   // dryf w dół do bazy (tak, też!)
+
+PO ZDARZENIU N1 (zdrada) LUB N2 (zerwanie wymuszone wojną):
+  licznikBlizny = max(licznikBlizny, 20)   // regeneracja zamrożona na 20 tur
+```
+
+Uzasadnienie kierunku dryfu w OBIE strony (nie tylko w górę): Wiarygodność „Wzór cnoty" zdobyta serią
+dobrych czynów na początku gry nie powinna trwać WIECZNIE bez podtrzymania — jeśli cywilizacja przestaje
+zawierać/dotrzymywać umów (bo np. nie ma już z kim), jej reputacja powinna powoli spłaszczać się do
+neutralnego poziomu, a nie zostawać permanentnym bonusem za stare zasługi. To symetryczne z dryfem w
+górę dla „Wiarołomnych" (szansa na odkupienie) — jeden wzór, dwa kierunki.
+
+Wzorzec do naśladowania w kodzie: dokładnie ten sam styl co zanik `urazyHistoryczne` w `tickDiplomacy`
+(`game/diplomacy.ts:1422-1433`, tam zanik co 20 tur o stały krok ku zero — tu zanik co turę o 0.1 ku 70).
+
+**Tempo (0.1/turę) i próg blizny (20 tur) to PROPOZYCJE do strojenia** — przy 0.1/turę pełny powrót od
+skrajności (0 lub 100) do bazy (70) zajmuje ok. 700 tur bez blizny, co jest celowo WOLNE (Wiarygodność
+ma być „wolnozmienna", jak chciał Maciej) — w praktyce gracz odzyska Uczciwy status głównie przez
+POZYTYWNE zdarzenia z §3.2, nie przez czekanie.
+
+---
+
+## 6. Parytet AI
+
+Zasada nadrzędna projektu (CLAUDE.md Civ, zasada „JAK PRACOWAĆ Z WŁAŚCICIELEM" pkt 2 i konwencja
+`AUDYT-PARYTET-AI-2026-07-24.md`): **mechanizm musi działać identycznie dla gracza (ownerId=0) i
+każdego AI (ownerId≠0), kod ownerId-agnostyczny, zero gałęzi `if (ownerId===0)`.**
+
+Jak to się przekłada na Wiarygodność konkretnie:
+
+1. **Przechowywanie: jedna wspólna mapa, nie osobne pola gracza/AI.** Wzorzec identyczny jak
+   `aiSkarbiecByOwner` (`main.ts:4140`, `Map<number, number>`) — ALE tam gracz ma OSOBNE pole
+   `player.skarbiec` obok mapy AI (bo historycznie tak wyewoluowało — `main.ts:12136-12141` ma
+   rozgałęzienie `ownerId === 0 ? player.skarbiec : aiSkarbiecByOwner.get(ownerId)`). **Dla
+   Wiarygodności REKOMENDACJA: JEDNA mapa `wiarygodnoscByOwner: Map<number, number>` obejmująca
+   TAKŻE ownerId=0**, bez osobnego pola na graczu — nie powielać tego rozgałęzienia, bo Wiarygodność
+   nie ma dziś żadnego istniejącego pola na `player`, więc nie ma czego naśladować niepotrzebnie.
+2. **Waga zdarzenia NIE różni się gracz/AI** — w przeciwieństwie do dzisiejszej kary Zaufania
+   (`zlamanaPaktGracz_zaufanie=-40` vs `zlamanaPaktAI_zaufanie=-20`, `game/diplomacy.ts:76-78`,
+   świadoma asymetria specyficzna dla per-parowego Zaufania), **Wiarygodność jako publiczna, globalna
+   metryka powinna karać/nagradzać JEDNAKOWO niezależnie kto złamał słowo** — inaczej to nie jest
+   „parytet", tylko kolejna ukryta preferencja. Tabela w §3 celowo ma JEDNĄ wagę per zdarzenie, bez
+   kolumny gracz/AI.
+3. **Wszystkie haki zdarzeń już dziś przyjmują `ownerId` jako goły parametr** — potwierdzone czytaniem
+   kodu: `breakTreatiesOnWar(a: number, b: number, breakerIsPlayer: boolean)` (main.ts:8510),
+   `breakTreatyVoluntarily(dealId: string)` (main.ts:8181, bierze strony z `deal.strony` — dwie liczby),
+   `applyAllianceObligationsOnWar(attackerId: number, victimId: number)` (main.ts:8523),
+   `tickCyclicResourceTradeDeals()` (main.ts:8595, `sellerOwnerId`/`buyerOwnerId` — dowolna kombinacja,
+   komentarz w kodzie explicite: „ownerId-agnostyczne... gracz(0) LUB dowolne AI, w dowolnej
+   kombinacji", `diplomacy-treaties.ts:19-23`). **Dopisanie wywołania funkcji Wiarygodności w tych
+   miejscach jest z definicji ownerId-agnostyczne**, bo cała otaczająca funkcja już jest.
+4. **AI musi REAGOWAĆ na Wiarygodność gracza — i na wiarygodność INNYCH AI, tą samą ścieżką.**
+   `buildProposalEvalContext` (`main.ts:8697-8738`) już dziś liczy `proposerRespekt`/`responderRespekt`
+   dla DOWOLNEJ pary `proposerId`/`responderId` (nie tylko gracz↔AI) — dopisanie
+   `proposerWiarygodnosc: wiarygodnoscByOwner.get(proposerId) ?? 70` w TYM SAMYM miejscu automatycznie
+   działa dla gracz→AI, AI→gracz I AI→AI (o ile AI↔AI w ogóle korzysta z `evaluateProposal` — dziś ma
+   węższy zakres niż gracz↔AI, odnotowane jako already-known ograniczenie w
+   `AUDYT-PARYTET-AI-2026-07-24.md` punkt 3, NIE do naprawy w tym projekcie).
+5. **Test parytetu przy wdrożeniu (patrz §7 bramki):** ten sam event (np. N2, zerwanie wymuszone
+   wojną) zaaplikowany raz z `breakerIsPlayer=true`, raz z `breakerIsPlayer=false`, musi dać
+   **identyczną deltę Wiarygodności** (−18 w obu przypadkach) — mimo że dzisiejsza kara Zaufania w tym
+   samym wywołaniu CELOWO się różni (−40 vs −20). To rozróżnienie (Zaufanie może być asymetryczne,
+   Wiarygodność nie) jest świadome i warte jednej linii komentarza w kodzie przy wdrożeniu, żeby
+   przyszły audyt parytetu nie zgłosił tego jako „luki".
+
+---
+
+## 7. Plan wdrożenia w krokach
+
+### Etap 0 — RDZEŃ (dane + typy, zero UI, zero haków)
+
+- **Nowy plik** `game/diplomacy-credibility.ts` (pure moduł, wzorowany na `game/diplomacy-factors.ts` —
+  zero DOM/THREE, zero side-effects):
+  - `WIARYGODNOSC_START = 70`
+  - `type WiarygodnoscBand = 'wiarolomny' | 'chwiejny' | 'uczciwy' | 'wzor_cnoty'`
+  - `function wiarygodnoscBand(w: number): WiarygodnoscBand` + `function wiarygodnoscLabelPl(w: number): string`
+    (4 etykiety z §2)
+  - `type CredibilityEvent = 'zdrada_bez_wypowiedzenia' | 'zlamanie_paktu_wojna' | 'atak_po_pokoju' |
+    'odmowa_obowiazku_sojuszu' | 'zerwanie_dobrowolne_traktat' | 'zerwanie_dobrowolne_handel' |
+    'niedotrzymanie_handlu_cyklicznego' | 'nieautoryzowany_przemarsz' | 'dotrwanie_sojuszu' |
+    'dotrwanie_traktatu' | 'splata_handlu_cyklicznego' | 'wieloletni_pokoj' | 'pomoc_sojusznikowi_realna'`
+  - `function applyCredibilityEvent(current: number, event: CredibilityEvent, params): { next: number;
+    delta: number; blizna: boolean }` (czysta funkcja, klamruje [0,100], zwraca czy zdarzenie zakłada
+    bliznę wg §5)
+  - `function tickCredibility(current: number, licznikBlizny: number): { next: number;
+    nastepnyLicznikBlizny: number }` (dryf ±0.1/turę do bazy 70, patrz §5)
+  - `function tempoMnoznikZaufania(wiarygodnosc: number, kierunek: 'wzrost'|'spadek'): number` (wzory §4.1)
+- **Rozszerzyć `DIPLOMACY_PARAMS`** (`game/diplomacy.ts:65-242`) o wagi z §3 jako osobne stałe (np.
+  `wiarygodnoscZdrada: -25`, `wiarygodnoscZlamaniePaktu: -18`, ...) — spójnie z istniejącą konwencją
+  (jedna płaska struktura, eksportowana też do `gra/data/diplomacy.json` przez Panel-D Excela — poza
+  zakresem tego dokumentu, ale zaznaczyć w kodzie żeby integrator Excela wiedział o nowych kluczach).
+- **`main.ts`**: `const wiarygodnoscByOwner = new Map<number, number>();` obok `aiSkarbiecByOwner`
+  (`main.ts:4140`) + `const wiarygodnoscBlizna = new Map<number, number>();` (licznik tur blizny per
+  ownerId) + helpery `getWiarygodnosc(ownerId)` (domyślnie `WIARYGODNOSC_START` jeśli brak wpisu, wzorem
+  `defaultNeutralRelation()` przy `diplomacyRelations` — `main.ts:4167-4170`) / `setWiarygodnosc(ownerId, v)`.
+
+### Etap 1 — HAKI ZDARZEŃ (wpinanie w istniejące i nowe miejsca z §3)
+
+Kolejność od najtańszych (dane już policzone) do najdroższych (nowy stan do śledzenia):
+
+1. **P5 (pomoc sojusznikowi)** — `main.ts:8523-8577` (`applyAllianceObligationsOnWar`), dopisać
+   `applyDiploEventTracked(..., 'pomoc_sojusznikowi')` (Zaufanie, luka niezależna od tego projektu) ORAZ
+   `bumpWiarygodnosc(allyId, 'pomoc_sojusznikowi_realna')` przy `joinedWarOwnerIds.push(allyId)`
+   (linie 8531, 8556).
+2. **N4 (odmowa obowiązku sojuszu)** — tamże, w bloku `treatiesBrokenByRefusal` (linie 8560-8577), dla
+   każdego `allyId` z `playerRefusalAllies`/analogicznego zbioru dla AI, `bumpWiarygodnosc(allyId,
+   'odmowa_obowiazku_sojuszu')`.
+3. **N2 (zerwanie wymuszone wojną)** — `main.ts:8510-8521` (`breakTreatiesOnWar`), dopisać
+   `bumpWiarygodnosc(breakerOwnerId, 'zlamanie_paktu_wojna')` — UWAGA: `breakTreatiesOnWar(a,b,
+   breakerIsPlayer)` dziś nie ma jawnego `breakerOwnerId`, tylko flagę bool — trzeba przekazać, KTÓRY z
+   `a`/`b` jest łamiącym (dziś to zawsze ten deklarujący wojnę, dostępne u wywołującego).
+4. **N5 (zerwanie dobrowolne)** — `main.ts:8181-8205` (`breakTreatyVoluntarily`), analogicznie do
+   istniejącego `applyDiploEventTracked`, `bumpWiarygodnosc(a, 'zerwanie_dobrowolne_traktat'|'_handel')`
+   (stronę `a` jako inicjatora zerwania trzeba ustalić z UI — dziś funkcja nie rozróżnia kto kliknął
+   „Zerwij", zakładając że to zawsze gracz; przy AI potrzeba odpowiednika).
+5. **N7 (nieautoryzowany przemarsz)** — `game/diplomacy-border-march.ts` + `main.ts:2605`, dopisać
+   flagę „już naliczono Wiarygodność dla tej wizyty" (żeby nie bić co turę), `bumpWiarygodnosc(ownerId,
+   'nieautoryzowany_przemarsz')` tylko przy przejściu z 0 → >0 tur obecności.
+6. **N1 (zdrada bez wypowiedzenia)** — **wymaga najpierw namierzenia** punktu inicjacji walki w
+   `main.ts` (funkcja rozpoczynająca combat między dwoma `ownerId`) i sprawdzenia, czy dopuszcza atak
+   przy `status !== 'wojna'`. Jeśli tak — to jest hak; jeśli engine już dziś wymusza wypowiedzenie wojny
+   przed atakiem, N1 nigdy się nie zdarzy i można go pominąć w V1 (odnotować w meldunku wdrożeniowym,
+   NIE zgadywać).
+7. **N3 (atak po pokoju)** — wymaga nowego pola `pokojOdTury?: number` w `DiploPairMeta`
+   (`game/diplomacy-pn-engine.ts:20-23`), ustawianego przy `'pokoj'` event (`main.ts:7703`, `:9049`),
+   czytanego w N2/N1 przy obliczaniu dodatkowej kary.
+8. **N6 + P3 (handel cykliczny — niedotrzymanie/spłata)** — `main.ts:8595-8627`
+   (`tickCyclicResourceTradeDeals`), dopisać licznik `nieudaneDostawyZRzedu` per `dealId` (nowa mapa
+   `Map<string, number>`) inkrementowany gdy `result.moved <= 0` (linia 8616), zerowany przy udanej
+   dostawie; przy 3 z rzędu → N6; przy wygaśnięciu deala ze skutecznością ≥90% → P3 (wymaga też licznika
+   `dostawyOgolem`/`dostawyUdane` per deal).
+9. **P1 + P2 (dotrwanie traktatu/sojuszu)** — `main.ts:8629-8637` (`runDiplomacyTurnTick`), w miejscu
+   gdzie już dziś porównywane jest `dealsBeforeExpire` z `activeDeals` po `expireTreaties` (linie
+   8630-8636) — dla każdego deala co ZNIKNĄŁ przez wygaśnięcie (nie przez `removeTreatiesById` z powodu
+   zerwania/wojny — te już usunięte WCZEŚNIEJ w innych funkcjach, więc nie trafią tu podwójnie),
+   `bumpWiarygodnosc` obu stron wg P1 (sojusz) lub P2 (NAP/handel).
+10. **P4 (wieloletni pokój)** — nowe pole `turyPokojuZRzedu?: number` w `DiploPairMeta`, inkrementowane
+    co turę gdy `status==='pokoj'` bez przerwy, zerowane przy wojnie; `turn % 30 === 0` sprawdzenie
+    analogiczne do zaniku `urazyHistoryczne`.
+
+### Etap 2 — WPŁYW NA ZAUFANIE (tempo + progi, §4)
+
+- `tickDiplomacy` (`game/diplomacy.ts:1403`) — dodać opcjonalny parametr (np. w `TickCtx` albo osobny
+  argument, bo to funkcja pure bez dostępu do `wiarygodnoscByOwner`) `wiarygodnoscSelf?: number`,
+  zastosować `mnoznikWzrostu`/`mnoznikSpadku` do `dZ` przed clampem.
+- `applyDiplomaticEvent` (`game/diplomacy.ts:646`) — analogicznie, nowy opcjonalny parametr.
+- `evaluateProposal` (`game/diplomacy-proposals.ts:332`) — rozszerzyć `ProposalEvalContext` o
+  `proposerWiarygodnosc?`/`responderWiarygodnosc?`, dodać dwie twarde bramki z §4.2 (sojusz, trybut).
+- `buildProposalEvalContext` (`main.ts:8697-8738`) — wypełnić nowe pola `ctx`, tą samą funkcją co
+  `proposerRespekt`/`responderRespekt` już tam liczone (linie 8701-8702).
+- AI-vs-gracz blok `decideAIDiplomacy` (`main.ts:14690-14850`, `DiplomacjaInputs` w `game/ai.ts:2142`) —
+  opcjonalnie dopisać pole `wiarygodnoscPartnera?: number` do `RelacjaWejscie`, użyte do skalowania
+  `progWojnaSila`/`progTrybut` (niska Wiarygodność partnera = AI łatwiej decyduje się na wojnę/trybut).
+  To rozszerzenie NIŻSZEGO priorytetu niż `evaluateProposal` — może wejść w kolejnej fali.
+
+### Etap 3 — SAVE/LOAD
+
+- **Snapshot** (`main.ts:13268-13332`, blok `meta:{...}`) — dopisać
+  `wiarygodnoscByOwner: Array.from(wiarygodnoscByOwner.entries())` i `wiarygodnoscBlizna:
+  Array.from(wiarygodnoscBlizna.entries())`, dokładnie jak `aiSkarbiecByOwner: Array.from(...)`
+  (`main.ts:13332`).
+- **Restore** (`main.ts:17308-17328`) — mirror wzorca `aiSkarbiecByOwner` (linie 17311-17314):
+  ```
+  wiarygodnoscByOwner.clear();
+  const saved = saved.meta?.wiarygodnoscByOwner as Array<[number, number]> | undefined;
+  if (saved) for (const [oid, v] of saved) wiarygodnoscByOwner.set(oid, v);
+  ```
+  analogicznie dla `wiarygodnoscBlizna`.
+- **Czyszczenie przy eliminacji cywilizacji** — `main.ts:12397-12404` już czyści `diplomacyRelations`/
+  `diplomacyPairMeta`/`diplomacyFactorLog` dla wyeliminowanego `ownerId` w tym samym bloku; dopisać
+  `wiarygodnoscByOwner.delete(ownerId)` i `wiarygodnoscBlizna.delete(ownerId)` tamże (cywilizacja, która
+  przestała istnieć, nie ma już reputacji do śledzenia).
+- **Reset nowej gry** — wszystkie miejsca gdzie dziś jest `diplomacyRelations.clear()` bez odpowiadającego
+  restore (main.ts:16132, 16381, 16606, 16805 — reset przy nowej grze/menu) potrzebują też
+  `wiarygodnoscByOwner.clear()` + `wiarygodnoscBlizna.clear()`.
+
+### Etap 4 — UI
+
+- **Audiencja** (`ui/diplomacyAudience.ts`) — nowy globalny badge przy `da-civtitle` gracza (linia 583)
+  i rozmówcy (linia 617), NIE w sekcji „Relacje z Tobą" (linie 625-630, tam żyją Zaufanie/Respekt —
+  per-parowe). Nowa funkcja `wiarygodnoscBadgeHtml(value: number): string`, tooltip z etykietą pasma
+  (§2) + ewentualnie liczbą ostatnich zdarzeń (rejestr, patrz niżej).
+- **Panel relacji** (`ui/diplomacyPanel.ts`) — `renderRow` (linie 202-229), dopisać wartość
+  Wiarygodności do `cd-stats` (linia 212-214) albo osobny mały badge obok `tierBadge`.
+- **Ranking Potęgi** (`ui/powerOverlayHud.ts`) — `PowerRankingRow` (linie 17-22), dodać opcjonalne pole
+  `wiarygodnosc?: number`, wyświetlane jako dodatkowa kolumna w tabeli rankingu (spójne z ideą, że to
+  globalna, porównywalna statystyka jak Potęga).
+- **Tooltip** — nowa funkcja `wiarygodnoscTooltipPl(): string` w `diplomacy-display.ts`, analogiczna do
+  `respektTooltipPl()` (linie 192-194).
+- **Rejestr czynników (opcjonalnie, V2)** — analogicznie do `buildRelationBreakdown`
+  (`game/diplomacy-factors.ts:147-188`, „za co Cię lubią/nie lubią") można dorobić globalny rejestr
+  `Map<number, CredibilityLogEntry[]>` per cywilizacja, żeby audiencja pokazywała „za co Twoja
+  Wiarygodność jest taka, jaka jest" — NIE traktować jako wymóg V1, tylko naturalne rozszerzenie gdy
+  rdzeń zadziała (ten sam wzorzec co `diplomacyFactorLog`, `main.ts:4125`).
+
+### Etap 5 — REAKCJE AI (parytet, patrz §6)
+
+- Wpięcie `proposerWiarygodnosc`/`responderWiarygodnosc` do `buildProposalEvalContext`
+  (`main.ts:8697-8738`) — jedna zmiana, działa dla wszystkich par korzystających z `evaluateProposal`.
+- Test manualny parytetu (patrz bramki niżej): to samo zdarzenie z ownerId=0 (gracz) i ownerId=N (AI)
+  jako sprawca musi dać identyczną deltę Wiarygodności.
+
+### Bramki (testy do przejścia przed uznaniem etapu za gotowy)
+
+- `npx tsc --noEmit` = 0 błędów (z katalogu `gra`).
+- Nowy harness `tools/wiarygodnosc-test.cjs` (wzorem `tools/tech-tree-test.cjs`), pokrywający:
+  - `applyCredibilityEvent` klamruje wynik do [0,100] dla skrajnych wartości wejściowych.
+  - `tempoMnoznikZaufania` zwraca dokładnie 1.0 przy wiarygodności=50 (środek), 1.5/0.5 na krańcach —
+    **UWAGA**: przy starcie=70 wzory z §4.1 dają 1.2/0.8, nie 1.0/1.0 — jeśli to niepożądane, do
+    przemyślenia razem z Maciejem czy neutralny punkt wzorów powinien być 50 (środek skali) czy 70
+    (wartość startowa); dokument zakłada 50 jako neutralny punkt WZORU (skala), 70 jako WARTOŚĆ
+    STARTOWĄ (inny byt) — to świadomy wybór, nie błąd, ale wart jednego zdania w meldunku wdrożeniowym.
+  - `wiarygodnoscLabelPl`/`wiarygodnoscBand` zwraca poprawne pasmo na granicach (24/25, 49/50, 74/75).
+  - Save/load roundtrip: `Array<[number, number]>` → `Map` → z powrotem, wartości niezmienione.
+  - **Test parytetu** (kluczowy, wzorem metodyki `AUDYT-PARYTET-AI-2026-07-24.md`): ten sam event
+    zaaplikowany z `ownerId=0` i `ownerId=5` daje identyczną deltę Wiarygodności (funkcja czysta,
+    `ownerId` nigdzie nie wchodzi do wzoru — tylko do wyboru KTÓREGO wpisu w mapie aktualizujemy).
+- Test Macieja (manualny playtest, po wdrożeniu UI): (a) zerwij traktat jako gracz → Wiarygodność
+  gracza spada, widoczna u WSZYSTKICH odkrytych AI w audiencji (nie tylko u partnera zerwania) —
+  **to jest test odróżniający Wiarygodność od Zaufania**, kluczowy dla całego projektu; (b) AI o niskiej
+  Wiarygodności ma trudniej zawrzeć sojusz z INNYM AI (parytet, jeśli AI↔AI korzysta z tej samej
+  bramki); (c) dotrwanie NAP do końca bez zerwania podnosi Wiarygodność; (d) save/load zachowuje
+  wartość i licznik blizny.
+
+---
+
+## 8. Pytania ABC do Macieja
+
+Trzy fundamentalne rozwidlenia, które trzeba rozstrzygnąć PRZED napisaniem kodu rdzenia (Etap 0) — zmiana
+odpowiedzi później oznacza przepisanie modelu danych, save/load i wszystkich haków.
+
+### [TEMAT: Wiarygodność Cywilizacji] WIAR-Q1 — Zakres: globalna per cywilizacja czy per para?
+
+**Sytuacja:** Dziś Zaufanie i Respekt są przechowywane PER PARA graczy — `RelacjaDyplomatyczna` między
+graczem A i graczem B, w `main.ts` trzymana jako `Map<string, Relation>` kluczowana parą (np. "0_3" dla
+gracza i AI o ownerId=3). Inna cywilizacja (np. AI o ownerId=5) nie ma dziś żadnego wglądu w to, jak
+gracz traktuje AI o ownerId=3 — mechanicznie to dwie zupełnie osobne liczby. W briefie Maciej opisał
+Wiarygodność jako coś, co „widzą wszyscy, nie tylko strona umowy" — to jest DOKŁADNIE odwrotność
+dzisiejszego modelu Zaufania.
+
+**Cel pytania:** Ustalić model przechowywania Wiarygodności — jedna liczba per cywilizacja (globalna,
+widoczna dla wszystkich) czy N liczb per cywilizacja (po jednej na każdą parę, jak dziś Zaufanie) — zanim
+napiszę strukturę danych rdzenia.
+
+**Dlaczego teraz:** To fundamentalna decyzja architektoniczna. Zmiana z globalnej na per-parową (albo
+odwrotnie) PO napisaniu kodu oznacza przepisanie: struktury danych w `main.ts`, formatu save/load,
+wszystkich 13 haków zdarzeń z §3, i UI. Taniej zdecydować raz, na starcie.
+
+**A. Globalna per cywilizacja** (`Map<ownerId, liczba>`, jedna wartość na cywilizację, widoczna dla
+wszystkich odkrytych stron).
+- Za: Dokładnie zgodne z opisem Macieja — „widzą ją wszyscy, nie tylko strona umowy" to dosłowny cytat
+  z briefu.
+- Za: Prostszy model — jeden hak zapisuje jedną liczbę, wszystkie strony (UI, AI innych cywilizacji)
+  czytają z TEJ SAMEJ mapy; N razy mniej danych w save niż model per-parowy przy N cywilizacjach.
+- Przeciw: Traci niuans — złamanie słowa wobec JEDNEJ, słabej strony obciąża reputację tak samo jak
+  złamanie wobec silnego rywala; nie ma rozróżnienia „zawsze dotrzymuję słowa silnym, zdradzam tylko
+  słabych".
+- Przeciw: Cywilizacja, która skrzywdziła TYLKO jedną stronę (np. w uzasadnionej wojnie obronnej), jest
+  ukarana w oczach WSZYSTKICH pozostałych — może być odbierane jako niesprawiedliwe przez gracza.
+
+**B. Per para** (jak dzisiejsze Zaufanie — osobna wartość Wiarygodności dla każdej relacji).
+- Za: Spójne z istniejącym wzorcem `RelacjaDyplomatyczna` — mniej nowego kodu, bo można dobudować pole
+  obok `zaufanie`/`respekt` zamiast tworzyć całkiem nową strukturę danych.
+- Za: Precyzyjniejsze — kara/nagroda trafia dokładnie w relację, której dotyczy, bez efektów ubocznych
+  na inne strony.
+- Przeciw: Wprost łamie zamysł Macieja z briefu — „publiczna, widzą wszyscy" przestaje być prawdą.
+- Przeciw: N-krotnie więcej danych do przechowania i przeliczania (N-1 wartości Wiarygodności zamiast
+  1 na cywilizację) bez wyraźnej korzyści gameplayowej wobec opcji A.
+
+**C. Hybryda** (wartość globalna jako rdzeń mechaniki + lekki kontekstowy modyfikator per-para w UI,
+np. etykieta „ostatnio złamał słowo wobec Ciebie" bez osobnej liczby).
+- Za: Daje smaczek kontekstowy w UI („Twój rywal jest ogólnie Uczciwy, ale Tobie akurat zdradził pakt")
+  bez komplikowania rdzenia — sama liczba pozostaje globalna (A), warstwa kosmetyczna jest opcjonalna.
+- Za: Można dobudować w V2 bez przepisywania fundamentu, jeśli okaże się potrzebna.
+- Przeciw: Dodatkowa złożoność UI na starcie bez pewności, że jest faktycznie potrzebna — ryzyko
+  budowania czegoś „na wszelki wypadek".
+- Przeciw: Ryzyko rozjazdu między tym co silnik LICZY (globalnie) a tym co UI POKAZUJE (kontekstowo) —
+  gracz może się pogubić, dlaczego liczba się nie zgadza z opisem.
+
+**Rekomendacja: A** — dokładnie zgodne z opisem zamysłu Macieja w briefie („widzą ją wszyscy") i
+najprostsze do wdrożenia; zasada „najprostsze rozwiązanie spełniające wymaganie wygrywa" (CLAUDE.md Civ
+pkt 5) wskazuje jednoznacznie na A. Cały ten dokument (§1-§7) jest napisany pod założeniem A — gdyby padło
+B lub C, wymaga to przepisania §7 (plan wdrożenia).
+
+**Formularz:**
+- A — Globalna per cywilizacja (Rekomendacja)
+- B — Per para (jak Zaufanie)
+- C — Hybryda (globalna + kontekst UI)
+
+---
+
+### [TEMAT: Wiarygodność Cywilizacji] WIAR-Q2 — Czy Wiarygodność odbudowuje się z czasem?
+
+**Sytuacja:** Zaufanie ma dziś dwa mechanizmy czasowe: stały dryf w górę co turę (`tickDiplomacy`,
++1 do +3/turę zależnie od tieru pokoju — pakt/sojusz/sam kontakt pokojowy) ORAZ osobno zanikające
+`urazyHistoryczne` (−2 co 20 tur, ku zero, `game/diplomacy.ts:1422-1433`). Wiarygodność jako „historia"
+nie ma dziś żadnego odpowiednika — trzeba zdecydować, czy w ogóle się regeneruje, zanim napiszę wzór do
+`tickDiplomacy`-podobnej funkcji.
+
+**Cel pytania:** Ustalić, czy Wiarygodność dryfuje z powrotem do wartości bazowej (70) z czasem
+samoistnie, i czy poważne zdarzenia (zdrada, złamanie paktu przez wojnę) zostawiają tymczasową „bliznę"
+spowalniającą tę regenerację.
+
+**Dlaczego teraz:** Bezpośrednio determinuje kształt wzoru w rdzeniu (Etap 0, §7) i to, ile dodatkowego
+stanu (liczników) trzeba przechowywać i zapisywać w save. Zmiana tej decyzji później = przepisanie
+funkcji `tickCredibility` i formatu save.
+
+**A. Brak regeneracji** — Wiarygodność zmienia się WYŁĄCZNIE przez zdarzenia z §3 (rośnie z dobrych
+czynów, spada ze złych), zero pasywnego dryfu w żadną stronę.
+- Za: Najprostsze wdrożenie — zero dodatkowego kodu w pętli tury, zero dodatkowego stanu do
+  zapisywania.
+- Za: Realistyczna metafora — reputacja w prawdziwym świecie nie znika sama z siebie, trzeba ją
+  aktywnie odbudować czynami, nie czasem.
+- Przeciw: Cywilizacja, która zawiniła RAZ, wcześnie w grze, może utknąć nisko na resztę partii, jeśli
+  akurat nie ma z kim zawierać nowych umów (np. otoczona wrogami) — brak jakiejkolwiek ścieżki wyjścia.
+- Przeciw: Mniej grywalne — kara za jeden błąd na starcie partii płaci się do samego końca, co może
+  frustrować bardziej niż uczyć.
+
+**B. Pasywna regeneracja do bazy** — stały dryf ±0.1/turę w stronę wartości bazowej (70), niezależnie
+od zdarzeń.
+- Za: Daje każdej stronie (gracz i AI) szansę na odbudowę reputacji bez konieczności podejmowania
+  dodatkowych akcji — mechanika „wybacz i zapomnij" z czasem.
+- Za: Matematycznie najprostszy dodatek do rdzenia — jedna linia w tick, dokładnie wzorem już
+  istniejącego zaniku `urazyHistoryczne`.
+- Przeciw: Przy niedostrojonym tempie ciężkie zdarzenie (np. zdrada, −25) można „przeczekać" w
+  kilkanaście-kilkadziesiąt tur bez żadnej dalszej konsekwencji, co osłabia wagę samego zdarzenia w
+  odczuciu gracza.
+- Przeciw: Wymaga starannego strojenia tempa — za szybko i kara traci sens, za wolno i wraca problem
+  z opcji A.
+
+**C. Regeneracja z „blizną"** — jak B (dryf ±0.1/turę do bazy), ale po zdarzeniach N1/N2 (zdrada,
+złamanie paktu wojną) regeneracja jest ZAMROŻONA na 20 tur, zanim wróci normalne tempo.
+- Za: Najbardziej zniuansowane — świeża zdrada faktycznie boli DŁUŻEJ niż drobne uchybienie (np.
+  nieautoryzowany przemarsz), co lepiej oddaje intuicję „poważne złamanie słowa pamięta się dłużej".
+- Za: Chroni przed efektem „przeczekaj karę i graj dalej jakby nic się nie stało" z opcji B, bez
+  całkowitej rezygnacji z szansy na odkupienie jak w opcji A.
+- Przeciw: Najbardziej złożone z trzech — dodatkowy stan (licznik tur blizny per cywilizacja) do
+  przechowania, zapisania w save i przywrócenia przy wczytaniu.
+- Przeciw: Więcej do przetestowania i wytłumaczenia w UI — gracz może nie rozumieć, czemu pasek się nie
+  rusza mimo dobrych czynów (dopóki blizna nie wygaśnie), bez czytelnego komunikatu w interfejsie.
+
+**Rekomendacja: C** — daje grywalność (realna szansa na odkupienie, zgodnie z uwagą Macieja, że to
+„ważne dla grywalności") bez trywializowania kary za naprawdę poważne zdarzenia; koszt dodatkowej
+złożoności jest niewielki (jeden licznik per cywilizacja, wzorowany na istniejącym mechanizmie zaniku
+urazów).
+
+**Formularz:**
+- C — Regeneracja z blizną (Rekomendacja)
+- A — Brak regeneracji
+- B — Pasywna regeneracja bez blizny
+
+---
+
+### [TEMAT: Wiarygodność Cywilizacji] WIAR-Q3 — Twarde blokady umów czy tylko modyfikator tempa Zaufania?
+
+**Sytuacja:** Dzisiejsze bramki akcji dyplomatycznych (`evaluateProposal` w
+`game/diplomacy-proposals.ts`, `aiDiplomacyStance` i `decideAIDiplomacy` w `game/diplomacy.ts`/
+`game/ai.ts`) sprawdzają WYŁĄCZNIE Zaufanie, Relację ogólną i Respekt (np. „Zaufanie ≥ 91 wymagane do
+Sojuszu", `progSojuszZaufanie`). Żadna z tych bramek nie ma dziś pojęcia o „historii dotrzymywania
+słowa" — nawet cywilizacja, która złamała każdy pakt w grze, może zawrzeć nowy sojusz, jeśli tylko
+bieżące Zaufanie/Relacja są wystarczająco wysokie (np. po serii darów).
+
+**Cel pytania:** Zdecydować, czy niska Wiarygodność ma TWARDO blokować niektóre umowy niezależnie od
+Zaufania (np. AI nigdy nie zawrze sojuszu z kimś poniżej progu Wiarygodności, choćby Zaufanie było
+maksymalne), czy ma WYŁĄCZNIE spowalniać/przyspieszać naturalny wzrost Zaufania — bez żadnych twardych
+blokad osobno.
+
+**Dlaczego teraz:** Decyduje o rozmiarze zmian w Etapie 2 (§7). Sam modyfikator tempa dotyka TYLKO
+dwóch funkcji rdzenia (`tickDiplomacy`, `applyDiplomaticEvent`) i propaguje się automatycznie wszędzie
+indziej. Twarde progi wymagają osobnych zmian w KAŻDYM miejscu bramkującym z osobna (kilka gałęzi w
+`evaluateProposal`, `aiDiplomacyStance`, `decideAIDiplomacy`) — więcej miejsc, więcej ryzyka pominięcia
+jednego z nich (a to akurat byłaby realna luka w parytecie AI, gdyby np. dotknąć bramkę gracz→AI, a
+zapomnieć o AI→AI).
+
+**A. Tylko modyfikator tempa** (miękki wpływ) — Wiarygodność nigdy niczego wprost nie blokuje, tylko
+zmienia szybkość budowania/tracenia Zaufania (wzory z §4.1).
+- Za: Minimalna powierzchnia zmian — dwie funkcje rdzenia, cała reszta systemu (`evaluateProposal`,
+  `aiDiplomacyStance`, `decideAIDiplomacy`) działa BEZ ŻADNYCH zmian, bo i tak czyta już zmodyfikowane
+  Zaufanie.
+- Za: Zero ryzyka, że gracz lub AI utknie CAŁKOWICIE zablokowany bez żadnej ścieżki do sojuszu/paktu —
+  zawsze jest droga, tylko wolniejsza.
+- Przeciw: Słabszy sygnał fabularny dla gracza — komunikat „Twoja Wiarygodność jest fatalna" nie
+  przekłada się na nic namacalnego poza „trochę wolniej", co może wydawać się niespójne z ciężarem
+  gatunkowym tej statystyki.
+- Przeciw: Przy wystarczająco wysokim Zaufaniu z innych źródeł (np. hojne dary) można efektywnie
+  „przekupić" złą reputację bez żadnej twardej konsekwencji — osłabia znaczenie Wiarygodności jako
+  osobnego wymiaru.
+
+**B. Tylko twarde progi** (bez modyfikatora tempa) — osobny warunek (np. „Wiarygodność ≥ 30") dodany do
+każdej bramki traktatowej z osobna; Zaufanie liczy się dokładnie jak dziś, bez zmian.
+- Za: Czytelny, jednoznaczny komunikat dla gracza — „Twoja Wiarygodność jest za niska na sojusz", brak
+  niejasności dlaczego coś się nie udało.
+- Za: Mocniejszy mechanicznie sygnał — Wiarygodność realnie COŚ blokuje, nie tylko spowalnia w tle.
+- Przeciw: Trzeba dotknąć KAŻDĄ bramkę osobno (NAP, Sojusz Defensywny, Sojusz Pełny, żądanie trybutu w
+  `evaluateProposal`, plus `aiDiplomacyStance`, plus `decideAIDiplomacy`) — więcej miejsc do zmiany,
+  większe ryzyko pominięcia jednego (realna regresja parytetu AI, jeśli akurat pominięta gałąź dotyczy
+  AI↔AI).
+- Przeciw: Bez modyfikatora tempa Zaufanie i Wiarygodność żyją całkowicie osobno — słabszy związek
+  przyczynowy między „złamałem słowo" a „trudniej mi teraz w ogóle budować jakiekolwiek relacje" (nie
+  tylko te zablokowane progiem).
+
+**C. Oba naraz** — modyfikator tempa WSZĘDZIE (jak A) + twarde progi TYLKO na 2 najcięższych bramkach
+(Sojusz Pełny/Defensywny oraz żądanie Wasalizacji/Trybutu — akcje typu „zaufaj mi bezgranicznie").
+- Za: Najbogatszy mechanicznie wynik — miękki wpływ wszędzie (spójność przyczynowa) + jednoznaczny
+  twardy sygnał dokładnie tam, gdzie ma to największe uzasadnienie fabularne (kto zawrze sojusz albo
+  odda się pod ochronę seryjnego łamacza słowa?).
+- Za: Koszt wdrożenia bliższy opcji A niż pełnej opcji B — tylko 2 dodatkowe bramki do zmiany zamiast
+  wszystkich, więc ryzyko pominięcia jest dużo mniejsze niż w B.
+- Przeciw: Dwa mechanizmy działające jednocześnie w jednym systemie oznaczają więcej do przetestowania
+  i wytłumaczenia graczowi — dwie różne przyczyny, dla których coś może się nie udać (niskie Zaufanie
+  vs zbyt niska Wiarygodność).
+- Przeciw: Trzeba pilnować spójności liczbowej między obydwoma mechanizmami przy wartościach granicznych
+  (np. Wiarygodność tuż nad progiem 35, ale modyfikator tempa i tak drastycznie spowalnia realne
+  osiągnięcie potrzebnego Zaufania) — ryzyko, że gracz techniczne „przejdzie" jeden warunek, a i tak
+  utknie na drugim, bez jasnego zrozumienia dlaczego.
+
+**Rekomendacja: C** — najlepszy stosunek efektu do kosztu wdrożenia: automatyczna propagacja
+modyfikatora tempa (jak w A) zapewnia spójność przyczynową wszędzie, a jednoznaczna twarda blokada
+dokładnie na dwóch najcięższych bramkach (jak wycinek z B) daje czytelny sygnał fabularny bez
+konieczności przerabiania WSZYSTKICH gałęzi `evaluateProposal`/`aiDiplomacyStance`/`decideAIDiplomacy`.
+
+**Formularz:**
+- C — Oba naraz: tempo wszędzie + twarde progi na 2 bramkach (Rekomendacja)
+- A — Tylko modyfikator tempa
+- B — Tylko twarde progi
+
+---
+
+*Koniec dokumentu. Wdrożenie zaczyna się od Etapu 0 (§7) DOPIERO po odpowiedzi na WIAR-Q1 (bez niej nie
+da się zaprojektować struktury danych rdzenia) — WIAR-Q2 i WIAR-Q3 wpływają na kształt Etapów 0/2, ale
+brak odpowiedzi na nie można tymczasowo zastąpić rekomendacjami (C, C) oznaczonymi jako
+`[ZAŁOŻENIE — do potwierdzenia]` w kodzie, żeby nie blokować startu prac nad Etapem 0-1.*
+
+---
+
+## ✅ DECYZJE MACIEJA (2026-07-25) — ZATWIERDZONE, realizować wg nich
+
+| Pytanie | Decyzja | Co to znaczy dla implementacji |
+|---|---|---|
+| **WIAR-Q1** zasięg | **A — GLOBALNA** | Jedna wartość na cywilizację, publiczna (widzą wszyscy). NIE per para. Struktura: mapa ownerId→wartość, wzorem `aiSkarbiecByOwner`. |
+| **WIAR-Q2** regeneracja | **C — DRYF + BLIZNA** | Powolny powrót do bazy z czasem, ALE ciężkie zdarzenia (zdrada sojusznika, atak mimo paktu) trwale obniżają SUFIT. Odkupienie możliwe, najgorsze czyny ważą do końca partii. |
+| **WIAR-Q3** wpływ na Zaufanie | **C — TEMPO + PROGI** | Modyfikator tempa (niska wiarygodność: zaufanie rośnie wolniej, spada szybciej) ORAZ twarde progi blokujące na 2 najcięższych bramkach (sojusz, pakt o nieagresji). |
+
+**Status:** projekt ZATWIERDZONY do implementacji. Realizacja wg planu etapowego (rdzeń → haki → wpływ na Zaufanie → save/load → UI → reakcje AI).
+**Parytet AI obowiązuje** — mechanizm identyczny dla gracza i AI, kod ownerId-agnostic.
+**Uwaga wykonawcza:** część haków zdarzeń NIE ISTNIEJE w kodzie (oznaczone w tabeli zdarzeń) — trzeba je zbudować, nie tylko dopiąć.
+
+### Decyzje uzupełniające (2026-07-26, druga tura)
+
+| Pytanie | Decyzja | Dla implementacji |
+|---|---|---|
+| **WIAR-Q4** widoczność | **A — JAWNA ZAWSZE** | Wiarygodność każdej cywilizacji widoczna dla gracza od początku, bez warunku kontaktu. Symetria: AI reaguje na reputację gracza, gracz widzi ich. Wchodzi do UI obok Zaufania i Respektu. |
+| **WIAR-Q5** surowość | **B — UMIARKOWANIE** | Zdrada wyraźnie boli, ale reputację da się odbudować (spójne z WIAR-Q2=C: blizna zostaje, gra idzie dalej). Wagi dobrać tak, by JEDNA zdrada nie zamykała ścieżki dyplomatycznej, ale była odczuwalna przez wiele tur. Konkretne liczby = do strojenia w playteście. |
+| **WIAR-Q6** start | **A — WSZYSCY 70** | Jednakowa wartość startowa dla gracza i wszystkich AI. Bez różnicowania per cywilizacja ani per trudność — różnice biorą się wyłącznie z czynów. |
+
+**Komplet decyzji: Q1=A (globalna) · Q2=C (dryf+blizna) · Q3=C (tempo+progi) · Q4=A (jawna) · Q5=B (umiarkowanie) · Q6=A (start 70 dla wszystkich).**
+Otwarte do strojenia w playteście (nie blokuje startu prac): konkretne wagi zdarzeń, tempo dryfu, wysokość progów blokujących.
+
+---
+
+## 🔴 ZMIANA SKALI + decyzje trzeciej tury (2026-07-26) — NADRZĘDNE wobec wcześniejszych zapisów
+
+### SKALA: −100 … +100 (BYŁO 0–100 — nieaktualne!)
+Maciej: „wiarygodność powinna mieć też ujemny wskaźnik od plus sto do minus sto".
+Powód projektowy: na skali 0–100 zero znaczyłoby jednocześnie „nieznany" i „potwór". Na nowej skali:
+- **+100** Wzór cnoty · **+40…+99** Uczciwy · **−39…+39** Chwiejny/nieznany · **−100…−40** Wiarołomny
+- **0 = brak historii** (nic nie udowodniłeś w żadną stronę)
+
+### WARTOŚĆ STARTOWA — zależna od POZIOMU TRUDNOŚCI (decyzja Macieja)
+| Poziom | Start | Sens |
+|---|---|---|
+| **Łatwy** | **+40** | świat zakłada dobre intencje — sojusze dostępne od razu |
+| **Normalny** | **+20** | lekki kredyt zaufania |
+| **Trudny** | **0** | zero kredytu — reputację trzeba zapracować, próg sojuszu (W≥0) stoi dokładnie na starcie |
+Dotyczy gracza I wszystkich AI jednakowo (parytet). Bez różnicowania per cywilizacja.
+
+### CZTERY DŹWIGNIE WPŁYWU NA ZAUFANIE (wszystkie zatwierdzone)
+
+**1. Mnożnik tempa** — wiarygodność nie zmienia zaufania wprost, zmienia jego dynamikę:
+`wzrostMult = 1 + (W/100)×0,5` · `spadekMult = 1 − (W/100)×0,5`
+- W=+100 → zaufanie rośnie ×1,5, spada ×0,5 (wybaczają Ci)
+- W=0 → ×1,0 / ×1,0
+- W=−100 → rośnie ×0,5, spada ×1,5 (przy pierwszej okazji)
+
+**2. WPŁYW NA ISTNIEJĄCY SUFIT ZAUFANIA** ⚠️ **KOREKTA Macieja 2026-07-26:**
+> „zaufanie ma już swój sufit i nie można go kupować w nadmiarze darami. Ale Ty nie miałeś zajmować się zaufaniem, tylko wiarygodnością. **Nie zmieniamy już tego, co jest, tylko dostosuj do wiarygodności.**"
+
+**NIE PROJEKTUJEMY nowego sufitu ani nie ruszamy mechaniki Zaufania.** Sufit zaufania i ochrona przed kupowaniem go darami **JUŻ ISTNIEJĄ i działają** — zostają nietknięte.
+Rola Wiarygodności: **wchodzi jako WEJŚCIE do istniejącego mechanizmu sufitu**, obniżając go dla cywilizacji o złej reputacji. Implementacja: znaleźć miejsce, gdzie sufit zaufania jest dziś wyliczany, i dołożyć tam człon zależny od W — bez zmiany reszty wzoru i bez dotykania pozostałych ścieżek zaufania.
+⚠️ ZASADA DLA WYKONAWCY: wszystkie cztery dźwignie mają być **doczepione do istniejących mechanizmów**, nie zastępować ich. Jeśli w trakcie implementacji okaże się, że dźwignia wymaga przebudowy Zaufania — ZATRZYMAJ SIĘ i zapytaj Macieja, zamiast przebudowywać.
+
+**3. Twarde progi** (Q3=C) — poniżej wartości AI odmawia z zasady, bez negocjacji, NIEZALEŻNIE od zaufania i Respektu:
+- **Sojusz** wymaga W ≥ 0 · **Pakt o nieagresji** wymaga W ≥ −40
+
+**4. PIERWSZY KONTAKT** (Maciej: TAK) — startowe nastawienie nowo spotkanej cywilizacji zależy od reputacji gracza. Zdrada na drugim końcu mapy = chłodne powitanie u nowego sąsiada.
+⚠️ To realizuje sens decyzji „globalna" — bez tego wiarygodność byłaby drugą kopią Zaufania.
+
+### DRYF / ZAPOMINANIE KAR — zróżnicowany trudnością (Maciej 2026-07-26)
+Maciej: „musisz przyjąć jakiś współczynnik, o jaki ta wiarygodność się poprawia — kary są zapominane; trzeba to zróżnicować w zależności od poziomu trudności."
+
+**PROPOZYCJA WYJŚCIOWA [ZAŁOŻENIE — do strojenia w playteście]:**
+| Poziom | Tempo odbudowy | Odrobienie −50 → start |
+|---|---|---|
+| **Łatwy** | **+1,0 pkt / turę** (10 pkt / 10 tur) | ~50–90 tur |
+| **Normalny** | **+0,4 pkt / turę** (10 pkt / 25 tur) | ~125–150 tur |
+| **Trudny** | **+0,2 pkt / turę** (10 pkt / 50 tur) | ~250 tur (praktycznie na całą partię) |
+
+**ZASADY DRYFU (ważne dla implementacji):**
+1. **Dryf działa TYLKO W GÓRĘ, w stronę wartości startowej** — zapominane są KARY, zgodnie ze słowami Macieja. Wypracowana reputacja powyżej bazy NIE zanika (dobre czyny się nie „przedawniają").
+2. Dryf zatrzymuje się na wartości startowej danego poziomu trudności (nie ciągnie w górę bez końca).
+3. **BLIZNA (Q2=C) ogranicza dryf:** ciężkie zdarzenia (zdrada sojusznika, atak mimo paktu) trwale obniżają SUFIT, do którego dryf może dociągnąć. Czyli: kary się zapominają, ale najgorsze czyny zostawiają trwały ślad. Głębokość blizny też może zależeć od trudności — [do rozstrzygnięcia przy implementacji].
+
+### KOMPLET DECYZJI (stan 2026-07-26)
+Q1=A globalna · Q2=C dryf+blizna · Q3=C tempo+progi · Q4=A jawna zawsze · Q5=B umiarkowana surowość · Q6→**ZMIENIONE: start zależny od trudności (+40/+20/0)** · skala **−100…+100** · sufit zaufania TAK · pierwszy kontakt TAK · dryf zróżnicowany trudnością.
+
+**Otwarte do strojenia w playteście:** dokładne wagi 13 zdarzeń, dokładne tempo dryfu, wysokość progów, głębokość blizny, krzywa sufitu zaufania.
+
+---
+
+## 🔷 N1 — PEŁNA SPECYFIKACJA MECHANIKI (Maciej 2026-07-26) — NADRZĘDNA
+
+### Zmiana nazwy
+**N1 nie nazywa się „zdrada" — nazywa się ATAK Z ZASKOCZENIA.**
+Powód (Maciej): zdrada = złamanie istniejącego zobowiązania (to N2 — atak mimo paktu/sojuszu). Atak na cywilizację neutralną lub pokojową to co innego: nie łamiesz umowy, łamiesz obyczaj wojenny. Etykieta w UI, komunikatach i logu: **„Atak z zaskoczenia"**.
+
+### Stan obecny = BUG UX (do naprawy niezależnie od Wiarygodności)
+Dziś gracz może zaatakować cywilizację, z którą **nie jest w stanie wojny**, i:
+- nie dostaje ŻADNEGO ostrzeżenia ani pytania,
+- nie ma nawet komunikatu „czy wypowiedzieć wojnę?",
+- wojna po prostu się dzieje.
+Maciej: *„w tej chwili można zaatakować, nie wypowiadając wojny, i nawet nie ma komunikatu"*. To trzeba naprawić — gracz musi wiedzieć, co robi.
+
+### Docelowa mechanika
+
+**KROK 1 — kliknięcie ataku na cel spoza wojny** (status ≠ 'wojna': neutralny, pokój, pakt, sojusz)
+→ pojawia się MODAL POTWIERDZENIA z jasnym wyborem i konsekwencją:
+
+| Opcja | Skutek |
+|---|---|
+| **„Wypowiedz wojnę"** | wojna wypowiedziana, atak NIE następuje w tej turze |
+| **„Atakuj bez wypowiedzenia"** | wojna deklarowana automatycznie + **atak natychmiast** + **kara N1 (−25 Wiarygodności)** |
+| **„Anuluj"** | nic się nie dzieje |
+
+⚠️ Modal MUSI jawnie pokazać koszt: *„Atak bez wypowiedzenia wojny = Atak z zaskoczenia, −25 Wiarygodności u WSZYSTKICH cywilizacji"*. Maciej: *„trzeba dać informację zwrotną graczowi, żeby wiedział, że jeżeli nie odczeka tury, to zapłaci karę"*.
+
+**KROK 2 — reguła jednej tury karencji**
+Po wypowiedzeniu wojny trzeba **odczekać JEDNĄ turę**. Atak w kolejnej turze i później = **czysty, bez kary**.
+Atak w TEJ SAMEJ turze, w której wypowiedziano wojnę = **traktowany jak atak z zaskoczenia** (kara N1).
+→ Wymaga zapisania numeru tury wypowiedzenia wojny per para (pole typu `wojnaOdTury` w `DiploPairMeta`) — ta sama struktura przyda się do N3 (atak zaraz po pokoju), więc zrobić raz i wspólnie.
+
+**KROK 3 — brak obejścia**
+Atak bez wypowiedzenia **i tak deklaruje wojnę z automatu** (jak dziś) — gracz nie może „atakować bez konsekwencji dyplomatycznych". Różnica polega wyłącznie na karze Wiarygodności.
+
+### PARYTET AI (zasada nadrzędna)
+Reguła obowiązuje AI **identycznie**: AI atakujące w turze wypowiedzenia wojny płaci tę samą karę. AI nie ma modala (nie klika), ale ma tę samą bramkę czasową w logice decyzji — inaczej gracz byłby karany za coś, co AI robi bezkarnie.
+
+### Kolejność wdrożenia
+1. **Modal ostrzegawczy + reguła 1 tury** — wartość sama w sobie (dziś gracz atakuje na ślepo). Może powstać PRZED Wiarygodnością; wtedy modal nie pokazuje jeszcze kary, tylko pyta o wypowiedzenie wojny.
+2. **Kara N1** — dopina się do tego samego miejsca, gdy Wiarygodność wejdzie do kodu.
+
+### Otwarte (do decyzji Macieja)
+**Wojna w ODWECIE** — czy wypowiedzenie wojny w odpowiedzi na czyjeś złamanie paktu ma obciążać własną Wiarygodność? Warianty: A) nie obciąża przez N tur od cudzego przewinienia · B) obciąża o połowę · C) bez wyjątków. **Nierozstrzygnięte.**
+
+---
+
+## 🔷 N1 + N2 — UKŁAD OSTATECZNY (Maciej 2026-07-26, NADRZĘDNY nad wszystkim powyżej)
+
+### Nazwa N1 (ostateczna)
+**N1 = „WYPOWIEDZENIE WOJNY BEZ OSTRZEŻENIA"**
+(NIE „zdrada" — zdrada to złamanie zobowiązania, czyli N2. NIE „atak z zaskoczenia" — poprzednia robocza nazwa, odrzucona.)
+
+### Zasada porządkująca (uzasadnienie Macieja)
+> „Nie może być wypowiedzenie wojny neutralnemu graczowi bardziej karane niż wypowiedzenie wojny sojusznikowi."
+
+W poprzedniej wersji tabeli N1 (neutralny) = −25 był SUROWSZY niż N2 (sojusznik) = −18 — niespójność wykryta przez Macieja. Poprawione.
+
+### N1 — brak ostrzeżenia: **−10** (było −25)
+Kara wyłącznie za **sposób** rozpoczęcia wojny, niezależny od tego, KOGO atakujemy.
+Nalicza się, gdy atak nastąpi bez wypowiedzenia wojny ALBO w tej samej turze, w której ją wypowiedziano (brak karencji 1 tury — mechanika opisana w sekcji „N1 — PEŁNA SPECYFIKACJA" wyżej: modal potwierdzenia, karencja, automatyczna deklaracja wojny, parytet AI).
+
+### N2 — złamane zobowiązanie: ROZBITE NA DWA POZIOMY
+| Zobowiązanie złamane wypowiedzeniem wojny | Waga |
+|---|---|
+| **Pakt o nieagresji (NAP)** | **−18** |
+| **Sojusz** (pełny lub defensywny) | **−25** |
+
+Kara za **to, komu** wypowiadamy wojnę — im większe zobowiązanie, tym większa.
+
+### KARY SIĘ SUMUJĄ (kluczowe dla implementacji)
+N1 i N2 to **dwa niezależne wymiary**: N1 = *jak* zaczynasz wojnę, N2 = *wobec kogo*. Nakładają się:
+
+| Sytuacja | N1 | N2 | **Razem** |
+|---|---|---|---|
+| Neutralny — wojna wypowiedziana, odczekana tura | — | — | **0** |
+| Neutralny — atak natychmiast | −10 | — | **−10** |
+| NAP — wypowiedzenie poprawne (z karencją) | — | −18 | **−18** |
+| NAP — atak natychmiast | −10 | −18 | **−28** |
+| Sojusznik — wypowiedzenie poprawne | — | −25 | **−25** |
+| **Sojusznik — atak natychmiast** | −10 | −25 | **−35** (maksimum w tabeli) |
+
+### Zasady N1 obowiązują TAKŻE przy N2
+Maciej: *„N2 się zgadza, ale przy zastosowaniu zasad N1."*
+Modal potwierdzenia i karencja 1 tury dotyczą **każdego** wypowiedzenia wojny — również sojusznikowi i partnerowi NAP. Modal w takich przypadkach musi pokazać **pełny rachunek** (np. „Sojusznik + brak ostrzeżenia = −35 Wiarygodności"), żeby gracz widział prawdziwy koszt przed kliknięciem.
+
+### Skutek dla reszty tabeli
+Maksymalna pojedyncza kara to teraz **−35** (sojusznik + brak ostrzeżenia). Pozostałe wagi (N3…N7, P1…P5) BEZ ZMIAN — hierarchia zachowana, bo N4 (odmowa pomocy sojusznikowi) = −10 pozostaje poniżej złamania sojuszu wojną.
+
+---
+
+## 🔷 N3–N7 — ZATWIERDZONE Z DOPRECYZOWANIAMI (Maciej 2026-07-26)
+
+### ⭐ ZASADA NADRZĘDNA: ŻADNEJ KARY BEZ UPRZEDZENIA
+Wyłoniona z uwag Macieja do N1 i N7, obowiązuje **CAŁY mechanizm**:
+> Gracz nie może stracić Wiarygodności za czyn, o którego konsekwencji nie został uprzedzony PRZED jego wykonaniem.
+
+Maciej (N7): *„trzeba do gry wprowadzić ostrzeżenie, że wchodzisz na cudze terytorium — czy na pewno chcesz. Bo w tej chwili gra tego nie robi. **Gracz nie będzie wiedział, za co traci zaufanie i wiarygodność.**"*
+
+Konsekwencja dla wykonawcy: **każde zdarzenie karzące, które gracz wywołuje świadomym kliknięciem, musi mieć modal/ostrzeżenie z jawnym kosztem.** Kary naliczane pasywnie (np. N6 — niedostarczony handel) muszą mieć czytelny komunikat w momencie naliczenia. Wdrożenie kary BEZ ostrzeżenia = niepełne wdrożenie.
+
+### N3 — atak zaraz po pokoju: **ZATWIERDZONE bez zmian** (−12 dodatkowo, próg <10 tur)
+
+### N4 — odmowa pomocy sojusznikowi na wezwanie: **ZATWIERDZONE** (−10)
+Przypomnienie: to realna luka w istniejącym kodzie — gra dziś wykrywa, kto się nie stawił (`treatiesBrokenByRefusal`), zrywa sojusz, ale **nie nakłada żadnej kary**.
+
+### N5 — dobrowolne zerwanie traktatu: **WARUNKOWE** ⚠️ ZMIANA
+Maciej: *„przy założeniu, że to ten traktat był CZASOWY. Jeżeli był zwykłym, to nie ma żadnej kary."*
+
+| Rodzaj traktatu | Kara przy zerwaniu |
+|---|---|
+| **Czasowy** (zawarty na określoną liczbę tur) | **−6** (traktat) / **−4** (umowa handlowa) |
+| **Zwykły/bezterminowy** | **BRAK KARY** |
+
+Uzasadnienie: zobowiązanie na czas określony to obietnica z terminem — zerwanie przed czasem łamie słowo. Umowa bezterminowa jest z natury wypowiadalna.
+⚠️ **DO SPRAWDZENIA PRZY IMPLEMENTACJI:** czy `ActiveDeal` (`diplomacy-treaties.ts:39-50`) rozróżnia traktaty czasowe od bezterminowych. Jest tam `zawartaTura`; trzeba ustalić, czy istnieje pole z długością/terminem wygaśnięcia. Jeśli WSZYSTKIE traktaty są dziś czasowe — kara obowiązuje zawsze i warunek jest bezprzedmiotowy (odnotować). Jeśli NIE MA rozróżnienia — zgłosić Maciejowi przed wdrożeniem.
+
+### N6 — niedotrzymanie handlu cyklicznego: **ZATWIERDZONE** (−2 po 3 turach z rzędu)
+⚠️ **ALE Maciej zgłasza do weryfikacji zachowanie samej wymiany:**
+> *„Zakładam, że jeżeli mamy handel cykliczny i jedna z cywilizacji nie ma surowca, to po prostu wymiana się nie dokonuje — a nie że jedni dostają, a drudzy nie dostają."*
+
+Czyli wymiana ma być **SYMETRYCZNA**: brak surowca u jednej strony = transakcja nie dochodzi do skutku **w obie strony**. Niedopuszczalne, żeby jedna strona dostała towar/zapłatę, a druga nie.
+→ Zlecona osobna weryfikacja w kodzie (`tickCyclicResourceTradeDeals`, main.ts ~8595-8627). Jeśli dziś jest asymetria — to BUG do naprawy niezależnie od Wiarygodności.
+
+### N7 — nieautoryzowany przemarsz: **ZATWIERDZONE + WYMÓG OSTRZEŻENIA** (−2 jednorazowo)
+Maciej: gra **musi ostrzec** przed wejściem na cudze terytorium.
+Docelowo: przy próbie ruchu jednostki na heks obcego terytorium bez otwartych granic/prawa przemarszu → **modal potwierdzenia** z jawnym kosztem („wejście bez zgody: −Zaufanie co turę, −2 Wiarygodności").
+Opcje: „Wejdź mimo to" / „Anuluj". Rozważyć opcję „nie pytaj ponownie w tej turze/wizycie", żeby nie irytować przy dłuższym marszu — ale koszt musi być pokazany przynajmniej raz.
+⚠️ To ostrzeżenie ma wartość SAMO W SOBIE — dziś gracz traci zaufanie, nie wiedząc dlaczego. Może powstać przed Wiarygodnością.
+
+### Podsumowanie statusu tabeli kar
+N1 ✅ (−10, przemianowane) · N2 ✅ (rozbite: NAP −18 / sojusz −25) · N3 ✅ (−12) · N4 ✅ (−10) · N5 ✅ **warunkowo — tylko traktaty czasowe** · N6 ✅ (−2) **+ weryfikacja symetrii wymiany** · N7 ✅ (−2) **+ wymóg ostrzeżenia**
+**Strona pozytywna P1–P5 — jeszcze nieprzejrzana przez Macieja.**
+
+### N7 — uzupełnienia (Maciej 2026-07-26, druga tura)
+
+**1. Braku zgody na przemarsz nie da się dziś naprawić w grze — trzeba to umożliwić.**
+Maciej: *„gdzie brakuje jeszcze zgody na przemarsz przez cudze terytorium, powinno być to możliwe w ustawieniach"*.
+Czyli: gracz, który zobaczy ostrzeżenie „wchodzisz na cudze terytorium", musi mieć **realną alternatywę** — możliwość wynegocjowania prawa przemarszu, zamiast wyłącznie wyboru „wejdź i płać" albo „zawróć".
+⚠️ DO SPRAWDZENIA PRZY IMPLEMENTACJI: prawo wojskowego przemarszu **istnieje** jako typ propozycji dyplomatycznej (`diplomacy-proposals.ts`, case `'granice'`, bramka Respektu `progGraniceWojskoweRespekt` — naprawiana w audycie #46). Ustalić:
+- czy gracz ma do niego **dostęp w UI** (czy da się je zaproponować z panelu dyplomacji), czy tylko AI je proponuje,
+- czy w ustawieniach/kreatorze jest opcja globalna dotycząca granic,
+- czego dokładnie brakuje, żeby gracz mógł o nie wystąpić.
+Jeśli ścieżka istnieje — modal ostrzegawczy powinien do niej **odsyłać** („możesz poprosić o prawo przemarszu w dyplomacji"). Jeśli nie istnieje — trzeba ją dorobić, inaczej kara N7 jest nieuczciwa (karzemy za coś, czego nie da się legalnie załatwić).
+
+**2. ZWIADOWCY WYKLUCZENI z reguły N7.**
+Maciej: *„skauci powinni być wykluczeni z tej reguły"*.
+Jednostki zwiadowcze (Zwiadowca i analogiczne — sprawdzić rolę/typ w `units.json`; kandydat: rola „Zwiad"/kategoria zwiadowcza) **nie naruszają terytorium**: ani nie tracą Wiarygodności (N7), ani nie wywołują modala ostrzegawczego, ani — DO POTWIERDZENIA — nie powinny naliczać istniejącej kary Zaufania za przemarsz.
+Uzasadnienie projektowe: zwiad to podstawowa mechanika wczesnej gry; blokowanie go dyplomatycznie zablokowałoby eksplorację, a wysyłanie zwiadowcy nie jest aktem wrogim jak marsz armii.
+⚠️ DO ROZSTRZYGNIĘCIA PRZY IMPLEMENTACJI: czy wykluczenie obejmuje TYLKO Wiarygodność (N7), czy także istniejącą karę Zaufania z `diplomacy-border-march.ts`. Rekomendacja: **oba** — inaczej gracz nadal traci Zaufanie za zwiad i zasada „bez kary za zwiad" jest połowiczna. Ale to zmiana w ISTNIEJĄCEJ mechanice Zaufania → zgodnie z korektą Macieja („nie zmieniamy tego, co jest") **zapytać przed wdrożeniem**.
+**PARYTET AI:** wykluczenie dotyczy zwiadowców AI tak samo jak gracza.
+
+### N4 — DOPRECYZOWANIE (Maciej 2026-07-26): odmowa = zerwanie + kara TYLKO dla winnego
+
+Maciej: *„Jeżeli sojusznik odmawia czynności, do której się zobowiązał, to po prostu sojusz jest zrywany plus kara dla tego, **którego jest winą to zerwanie**. Nie po to zawiera się sojusze, żeby nie dotrzymać słowa."*
+
+**Mechanika (dwie części, obie obowiązkowe):**
+1. **Sojusz zostaje zerwany** — to już dziś działa (`treatiesBrokenByRefusal` → `brokenTreatyIds`, main.ts ~8560).
+2. **Karę Wiarygodności ponosi WYŁĄCZNIE odmawiający** — dziś nie ma jej wcale (luka).
+
+⚠️ **KRYTYCZNE DLA IMPLEMENTACJI — asymetria kary:**
+Zerwanie sojuszu ma DWIE strony, ale winna jest JEDNA. **Opuszczony sojusznik NIE MOŻE dostać żadnej kary** za to, że jego sojusz przestał istnieć — on jest ofiarą, nie sprawcą.
+Ryzyko: istniejący kod zrywania traktatów może aplikować zdarzenia „symetrycznie" na parę (wzorzec `applyDiploEventTracked(a,b,...)`). Przy dopinaniu Wiarygodności **trzeba jawnie sprawdzić, komu przypisywana jest wina** i naliczyć odpis tylko jemu. To samo dotyczy N2 i N5 — sprawca ≠ para.
+
+**Waga — do potwierdzenia przez Macieja.** Obecna propozycja **−10**. Argument za podniesieniem do **−15**: odmowa pomocy unieważnia cały sens sojuszu („nie po to zawiera się sojusze"), a dziś −10 zrównuje ją z... niczym w tabeli — jest lżejsza niż dobrowolne zerwanie traktatu czasowego (−6) tylko dwukrotnie, przy nieporównywalnie większej szkodzie dla sojusznika, który liczył na pomoc w wojnie. Hierarchia przy −15: atak na sojusznika −25 > odmowa pomocy −15 > zerwanie traktatu czasowego −6. **Decyzja: Maciej.**
+
+**PARYTET AI:** AI odmawiające pomocy płaci identycznie. Sprawdzić, czy AI w ogóle ma dziś ścieżkę odmowy (czy zawsze dołącza), bo jeśli tylko gracz może odmówić — to złamany parytet.
+
+---
+
+## ✅ DECYZJE ABC — pakiet 2026-07-26 (C-WIAR-N4 / SKAUT / ODWET)
+
+### C-WIAR-N4 = **B** — odmowa pomocy sojusznikowi: **−15** (było −10)
+Uzasadnienie: odmowa unieważnia cały sens sojuszu. Hierarchia po zmianie:
+**atak na sojusznika −25 > odmowa pomocy −15 > dobrowolne zerwanie traktatu czasowego −6.**
+
+### C-WIAR-SKAUT = **A** — zwiadowcy wyłączeni z OBU kar
+Zwiad **nie kosztuje nic**: ani Wiarygodności (N7), ani **istniejącej kary Zaufania** za przemarsz.
+⚠️ To jedyny zatwierdzony wyjątek od zasady „nie zmieniamy istniejących mechanizmów" — Maciej wyraził zgodę świadomie, po przedstawieniu tego kosztu w wariancie A. Wykonawca ma prawo dotknąć `diplomacy-border-march.ts` **wyłącznie w tym zakresie** (dodanie wyjątku dla jednostek zwiadowczych), nic więcej.
+Obowiązuje **parytet AI** — zwiadowcy AI też wyłączeni.
+⚠️ Do ustalenia przy implementacji: jak rozpoznać „zwiadowcę" (rola/typ w `units.json` — Zwiadowca i jednostki narodowe go zastępujące). Kryterium ma być oparte na polu danych, nie na nazwie jednostki (nazwy różnią się między nacjami).
+
+### C-WIAR-ODWET = **A** — odwet nie obciąża Wiarygodności przez N tur od cudzego przewinienia
+Wojna wypowiedziana w odpowiedzi na czyjeś złamanie zobowiązania **nie nalicza N1 ani N2** przez okno N tur.
+**Propozycja N = 10 tur** [ZAŁOŻENIE — do strojenia; spójne z progiem N3 „atak zaraz po pokoju"].
+
+**Wymagania implementacyjne:**
+1. Trzeba zapamiętać **kto i kiedy zawinił wobec kogo** — pole typu `ostatniePrzewinienieWobecNas: { turn, typ }` w `DiploPairMeta` (ta sama struktura co `wojnaOdTury` z N1 i `pokojOdTury` z N3 — **zbudować raz, wspólnie**).
+2. Okno liczy się od tury przewinienia sprawcy, nie od wykrycia.
+3. Które przewinienia otwierają prawo do odwetu: **N1, N2, N4** (napaść, złamanie zobowiązania wojną, odmowa pomocy). NIE otwierają: N5–N7 (za drobne — inaczej powstaje luka „sprowokuj przemarsz, dostań darmową wojnę").
+4. **PARYTET AI:** AI korzysta z tego samego prawa do odwetu.
+⚠️ Ryzyko nadużycia odnotowane w wariancie A: gracz może próbować sprowokować drobne przewinienie, by uzyskać „darmową wojnę" — ograniczenie do N1/N2/N4 (czyny ciężkie, trudne do sprowokowania) jest właśnie zabezpieczeniem przed tym.
+
+### STAN TABELI KAR — DOMKNIĘTA ✅
+| # | Zdarzenie | Waga |
+|---|---|---|
+| N1 | Wypowiedzenie wojny bez ostrzeżenia | −10 |
+| N2 | Wypowiedzenie wojny mimo NAP | −18 |
+| N2 | Wypowiedzenie wojny mimo SOJUSZU | −25 |
+| N3 | Atak zaraz po pokoju (<10 tur) | −12 dodatkowo |
+| N4 | Odmowa pomocy sojusznikowi | **−15** |
+| N5 | Dobrowolne zerwanie traktatu **czasowego** | −6 / −4 handel |
+| N6 | Niedotrzymanie handlu cyklicznego (3 tury) | −2 |
+| N7 | Nieautoryzowany przemarsz (bez zwiadowców) | −2 |
+| — | Maksimum jednorazowe: sojusznik + brak ostrzeżenia | **−35** |
+Wyjątek: **odwet** (do 10 tur od cudzego N1/N2/N4) — N1 i N2 nie naliczane.
+
+**POZOSTAJE DO PRZEJRZENIA: strona pozytywna P1–P5.**
+
+---
+
+## 🔷 N6 — HANDEL CYKLICZNY: WERYFIKACJA KODU + DECYZJE OSTATECZNE (Maciej 2026-07-26)
+
+Domyka otwartą notatkę przy N6 wyżej („Zlecona osobna weryfikacja w kodzie... Jeśli dziś jest asymetria
+— to BUG do naprawy niezależnie od Wiarygodności.") — weryfikacja wykonana, wynik: asymetria
+POTWIERDZONA, poniżej pełny werdykt i decyzje Macieja co robić dalej.
+
+### Werdykt audytu kodu (2026-07-26)
+
+Sprawdzono `tickCyclicResourceTradeDeals` (`main.ts` ~8631-8663) + `transferSurowiecIlosc`
+(`game/diplomacy-basket-transfer.ts:210-266`) + `buildHandelSurowiecCykliczny`
+(`game/diplomacy-proposals.ts:293-326`).
+
+**WERDYKT: CZĘŚCIOWO ASYMETRYCZNE.** Siedem ustaleń:
+
+1. ✅ **Pełny brak zapasu** (wariant surowiec-za-złoto/Pracę) — SYMETRYCZNE, działa poprawnie:
+   `if (result.moved <= 0) continue;` (`main.ts:8652`) pomija też zapłatę. Nikt nic nie dostaje, nikt nie
+   płaci.
+2. ❌ **BARTER surowiec-za-surowiec** — NAJPOWAŻNIEJSZY BUG. `buildHandelSurowiecCykliczny` tworzy DWA
+   NIEZALEŻNE obiekty `HandelSurowiecCyklicznyItem` (A→B i B→A), a pętla tickowa iteruje po nich jako po
+   niepowiązanych pozycjach. Brak zapasu u strony A → item A→B pomijany, ale item B→A wykonuje się w
+   pełni. Strona B oddaje towar ZA DARMO. Ścieżka osiągalna z UI (`diplomacyTradeBasket`, oba koszyki +
+   tryb per_turn). AI↔AI nie tworzy barteru (zawsze jeden kierunek za złoto), więc dotyczy deali z
+   udziałem gracza.
+3. ❌ **Zapłata Pracą przy niedoborze kupującego** — `setOwnerPracaPool` klampuje do 0 przy odejmowaniu,
+   ale dawcy dodaje PEŁNĄ zadeklarowaną kwotę → **Praca jest kreowana z niczego**. To naruszenie bilansu
+   zasobów, nie tylko asymetria handlu.
+4. ❌ **Zapłata złotem przy niedoborze kupującego** — transfer surowca wykonuje się PRZED sprawdzeniem
+   wypłacalności; `applyOneShotGoldTransfer` zwraca `ok:false` i nic nie przelewa → kupujący dostaje
+   towar ZA DARMO.
+5. ❌ **Dostawa częściowa** — `transferSurowiecIlosc` robi transfer częściowy („ile jest, tyle bierz"), a
+   zapłata to STAŁA kwota za cały pakiet → kupujący płaci pełną cenę za ułamek dostawy.
+6. **Licznik nieudanych dostaw NIE ISTNIEJE** — trzeba zbudować od zera (potrzebny pod karę N6 i nagrodę
+   P3). `result.moved` nie przeżywa do następnej tury.
+7. **Parytet AI zachowany** — brak rozgałęzień `ownerId === 0` w tym mechanizmie.
+
+### C-HANDEL-1 = **B** — bugi naprawiamy RAZEM z wdrożeniem Wiarygodności
+
+Jeden przebieg przez ten sam kod (nie osobna naprawa wcześniej, potem Wiarygodność drugi raz w tych
+samych funkcjach).
+
+### C-HANDEL-2 = **A** — transfer surowca tylko przy wypłacalności kupującego
+
+Brak środków u kupującego = wymiana się nie odbywa, symetrycznie do braku towaru u sprzedawcy.
+Odrzucone: kredyt kupiecki z długiem; zostawienie jak jest.
+
+### C-HANDEL-3 — ZASADA NADRZĘDNA HANDLU (cytat Macieja, dosłownie)
+
+> „Takie sytuacje nie mogą występować w grze. Handel zawsze musi się odbywać tylko wtedy, kiedy obie
+> strony mają to, co mają dostarczyć. Jeżeli druga strona tego nie dostarcza, to nie ma wymiany. A jedyna
+> sytuacja, która może mieć miejsce to fakt, że umawiamy się na cykliczną jakąś sprzedaż i ona z jakiegoś
+> powodu nie dochodzi. Ale nie ma takiej sytuacji, że jedna strona wysyła, a druga nie wysyła. Jeżeli
+> jedna ze stron nie ma czegoś, to nie ma wymiany ani po jednej, ani po drugiej stronie. Ale karana jest
+> ta, która nie dostarczyła."
+
+**Reguły implementacyjne wynikające z cytatu:**
+
+1. **ATOMOWOŚĆ** — wymiana albo dochodzi do skutku W CAŁOŚCI (obie strony), albo NIE DOCHODZI WCALE.
+   Zero stanów pośrednich. Dziś kod robi odwrotnie: przesuwa surowiec, POTEM próbuje zapłatę — trzeba
+   odwrócić kolejność (patrz pkt 2).
+2. **Kolejność sprawdzeń** — warunek wykonania sprawdzany dla OBU stron ZANIM cokolwiek zostanie
+   przesunięte: najpierw walidacja (czy sprzedawca ma zapas ORAZ czy kupujący ma środki/surowiec do
+   zapłaty), dopiero potem — i tylko jeśli oba warunki spełnione — faktyczny transfer w obie strony.
+   Dziś jest odwrotnie (transfer surowca → potem próba zapłaty), to jest źródło ustaleń 3 i 4 z audytu.
+3. **Dotyczy WSZYSTKICH wariantów płatności jednakowo:**
+   - surowiec-za-złoto,
+   - surowiec-za-Pracę,
+   - surowiec-za-surowiec (barter) — **dwa itemy `HandelSurowiecCyklicznyItem` (A→B i B→A) muszą być
+     SPRZĘGNIĘTE w jedną atomową transakcję**, nie iterowane osobno jak dziś (to naprawia ustalenie 2 —
+     najpoważniejszy bug audytu).
+4. **Dostawa częściowa jest niedopuszczalna.** Skoro wymiana jest atomowa, nie ma „5 z 20". Albo pełna
+   zadeklarowana ilość zostaje dostarczona, albo transakcja w tej turze w ogóle się nie odbywa. To
+   rozstrzyga wcześniejsze pytanie o skalowanie zapłaty do wielkości częściowej dostawy (ustalenie 5
+   audytu) — problem znika, bo częściowych dostaw po prostu nie ma. `transferSurowiecIlosc` w trybie
+   handlu cyklicznego nie powinien już zwracać częściowego `moved` jako sukces — albo bierze całość, albo
+   nic.
+5. **Jedyny dopuszczalny scenariusz niepowodzenia:** umowa cykliczna nie dochodzi do skutku w danej
+   turze — **obie strony bez zmian** (jak dziś działa czysty brak zapasu, ustalenie 1 audytu — to jest
+   już poprawny wzorzec, rozszerzyć go na wszystkie warianty).
+6. **Kara (N6) obciąża WYŁĄCZNIE stronę, która nie dostarczyła** — nie obie, nie parę. Spójne z zasadą z
+   N4 wyżej („kara dla tego, którego jest winą"). Przy barterze, gdzie obie strony coś dostarczają, może
+   się zdarzyć że winne są OBIE (obie bez zapasu tej samej tury) — wtedy obie dostają karę niezależnie, bo
+   każda z osobna nie dostarczyła swojej części; ale strona, która MIAŁA zapas i była gotowa dostarczyć,
+   nigdy nie jest karana za to, że transakcja nie doszła do skutku z winy drugiej strony.
+7. **Licznik nieudanych dostaw** (ustalenie 6 audytu, do zbudowania od zera) ma liczyć TURY, w których
+   wymiana nie doszła do skutku **z winy danej strony** — nie tury, w których dana strona była
+   „poszkodowana" brakiem partnera. Struktura per `dealId` (lub per strona w barterze) musi rozróżniać
+   winnego od ofiary, żeby próg N6 (3 tury z rzędu) trafiał we właściwą stronę.
+8. **Parytet AI** — identycznie dla gracza i AI: te same warunki walidacji, ta sama atomowość, ta sama
+   zasada „kara wyłącznie dla winnego", zero gałęzi `ownerId === 0`.
+
+### ⚠️ Weryfikacja do wykonania: „Praca z niczego" (ustalenie 3 audytu)
+
+Ustalenie 3 (`setOwnerPracaPool` klampuje odbiorcy do 0, ale dawcy dodaje pełną zadeklarowaną kwotę) to
+**naruszenie bilansu zasobów w grze**, nie tylko asymetria handlu — Praca powstaje znikąd. Po naprawie
+atomowości (reguła 1-2 wyżej, walidacja PRZED transferem) ten konkretny bug **znika samoistnie**, bo
+transfer Pracy przy niewypłacalności kupującego po prostu się nie wykona. Mimo to **wykonawca ma to
+JAWNIE zweryfikować testem** (np. w `tools/wiarygodnosc-test.cjs` albo osobnym harnessie dla handlu
+cyklicznego) — nie zakładać, że zniknięcie jest automatyczne bez potwierdzenia.
+
+### Status
+
+C-HANDEL-1/2/3 ZATWIERDZONE do realizacji WSPÓLNIE z wdrożeniem Wiarygodności (Etap 1, hak N6+P3, §7
+wyżej — `main.ts:8595-8627`, `tickCyclicResourceTradeDeals`). Naprawa atomowości handlu cyklicznego i
+podłączenie kar/nagród Wiarygodności to JEDEN przebieg przez ten sam kod, nie dwa osobne.
+
+---
+
+## 🔴 MODEL ZAPOMINANIA (KRZYWA WIARYGODNOŚCI) — DECYZJA OSTATECZNA PO DWÓCH KOREKTACH TEGO SAMEGO DNIA (Maciej 2026-07-26) — NADRZĘDNA wobec §5 i sekcji „DRYF / ZAPOMINANIE KAR"
+
+⚠️ **Ta decyzja zmieniała się trzykrotnie w ciągu jednej sesji z Maciejem** (czasy zapomnienia, a potem
+sam kształt krzywej — czy gaśnie do zera czy zostawia trwały ślad). Poniżej pełna ścieżka cytatów w
+kolejności chronologicznej, ale **licz się WYŁĄCZNIE z sekcją „MODEL FINALNY DO IMPLEMENTACJI" niżej** —
+wcześniejsze warianty zostają w dokumencie jako ślad decyzji, nie jako obowiązująca specyfikacja.
+
+**Cytat 1 (pierwotna decyzja, krzywa liniowa per zdarzenie):**
+> „C-WIAR-KRZYWA A, ale różnie w zależności od poziomu trudności. Na przykład przy poziomie trudnym może
+> być 40 tur zapomnienia, przy normalnym 30, a przy łatwym 20 tur. I tak spada o procent od wartości
+> pierwotnej, zmniejszając daną karę do zera. Za to przy pozytywnych kwestiach wszędzie zeruje się to do
+> zera po 40 turach dla łatwego poziomu, po 30 dla normalnego i po 20 dla trudnego. Czyli niestety
+> zarówno pozytywne, jak i negatywne czynności ulegają zapomnieniu. Tak działa świat."
+
+**Cytat 2 (korekta C-WIAR-TEMPO — czasy ×3):**
+> „C-WIAR-TEMPO — wiesz co? Dotychczasowe moje współczynniki zmieńmy na inne. 40/80/120 zamiast
+> 20/30/40."
+
+**Cytat 3 (korekta ostateczna — krzywa NIE gaśnie do zera, tylko do trwałej podłogi 10%):**
+> „Wiesz co, myślę sobie, że jednak powinniśmy wrócić do tego śladu i 10% kary na plus i na minus
+> powinno zostawać w historii na zawsze."
+
+---
+
+### MODEL FINALNY DO IMPLEMENTACJI
+
+**C-WIAR-KRZYWA = A** — każde zdarzenie Wiarygodności (kara N1–N7 albo nagroda P1–P5, patrz §3) gaśnie
+**NIEZALEŻNIE od pozostałych**, własnym licznikiem tur, LINIOWO, jako procent swojej wartości pierwotnej
+— ale **NIE do zera**. Krzywa zatrzymuje się na **trwałej podłodze 10% wartości pierwotnej, która
+zostaje NA ZAWSZE, do końca partii**. To zastępuje model „jedna liczba + dryf do bazy" z §5 i sekcji
+„DRYF / ZAPOMINANIE KAR" wyżej — Wiarygodność przestaje być pojedynczym stanem, staje się **sumą:
+wartości startowej + trwałych śladów wszystkich przeszłych zdarzeń + jeszcze wygasających części
+zdarzeń świeższych**.
+
+### TABELA CZASÓW ZAPOMNIENIA — wersja OSTATECZNA (40/80/120, było 20/30/40) — odwrócenie kara↔nagroda BEZ ZMIAN
+
+| Poziom trudności | Kary (zdarzenia negatywne) | Nagrody (zdarzenia pozytywne) |
+|---|---|---|
+| **Łatwy** | **40 tur** (2,5%/turę) | **120 tur** (0,833%/turę) |
+| **Normalny** | **80 tur** (1,25%/turę) | **80 tur** (1,25%/turę) |
+| **Trudny** | **120 tur** (0,833%/turę) | **40 tur** (2,5%/turę) |
+
+⚠️ Wcześniejsza tabela 20/30/40 (widoczna wyżej w tym dokumencie, jeśli ktoś czyta wersję pośrednią z
+historii) **jest NIEAKTUALNA** — Maciej trzykrotnie wydłużył czasy (C-WIAR-TEMPO). Procenty/turę policzone
+jako `100% / liczbaTur` (np. 100/40 = 2,5%, 100/80 = 1,25%, 100/120 ≈ 0,833%) — to tempo, z jakim
+multiplikator schodzi od 100% do podłogi 10% (patrz wzór niżej), nie tempo schodzenia do zera.
+
+**Sens odwrócenia (uzasadnienie Macieja, BEZ ZMIAN mimo zmiany skali czasów) — poziom trudności to
+charakter świata, nie tylko liczba:**
+- **Trudny** = świat surowy i niewdzięczny: zdradę pamięta **120 tur**, przysługę zapomina po **40**.
+- **Łatwy** = świat wybaczający i wdzięczny: zdradę zapomina po **40 turach**, dobro pamięta **120**.
+- **Normalny** = symetryczny (80/80) — brak stronniczości w żadną stronę.
+
+**Uwaga projektowa (czemu ×3, nie kosmetyka):** przy tej skali Wiarygodność **waży przez WIĘKSZOŚĆ
+partii, nie jest epizodem** — pojedyncza zdrada sojusznika na trudnym poziomie ciąży świeżą częścią
+kary przez **120 tur**, a nawet po wygaśnięciu zostawia trwały ślad na zawsze (patrz niżej). To świadomy
+wybór Macieja — wcześniejsze 40 tur (maksimum starej tabeli) uznał za zbyt krótkie dla wagi, jaką ma mieć
+ta statystyka.
+
+### Wzór finalny — podłoga 10%, NIE zero
+
+```
+wartośćBieżąca(zdarzenie, tura) =
+    zdarzenie.wartośćPierwotna
+    × max(0,10 ; 1 − (tura − zdarzenie.turaWystąpienia) / czasZapomnienia(zdarzenie.znak, poziomTrudności))
+
+Wiarygodność(właściciel, tura) = wartośćStartowa(poziomTrudności)
+                                  + Σ wartośćBieżąca(zdarzenie, tura)  dla WSZYSTKICH zdarzeń tego
+                                                                          właściciela (nawet dawno
+                                                                          wygasłych do podłogi)
+```
+
+Mnożnik `max(0,10 ; …)` nigdy nie schodzi poniżej 0,10 — po `tura − turaWystąpienia ≥ czasZapomnienia`
+zdarzenie **NIE znika**, tylko zamraża się na 10% swojej pierwotnej wartości i zostaje tam do końca
+partii. Dla UI/koncepcji ten sam wynik można rozbić na dwie sumy (matematycznie równoważne wzorowi
+wyżej, ale czytelniejsze dla gracza — patrz punkt UI niżej):
+
+```
+Wiarygodność = wartośćStartowa
+             + Σ trwałySlad(zdarzenie)      // = 0,10 × wartośćPierwotna, LICZONE OD RAZU PO
+                                             //   OSIĄGNIĘCIU PODŁOGI, NA ZAWSZE
+             + Σ aktywnaCzęść(zdarzenie, tura)  // pozostała, jeszcze wygasająca część (0–90% ponad ślad)
+```
+
+### Przykłady (z wag §3, waga = wartość pierwotna zdarzenia)
+
+| Zdarzenie | Wartość świeża | Trwały ślad po wygaśnięciu |
+|---|---|---|
+| Zdrada sojusznika / złamanie paktu wojną — sojusz (N2) | −25 | **−2,5 na zawsze** |
+| Wypowiedzenie wojny bez ostrzeżenia (N1) | −10 | **−1 na zawsze** |
+| Odmowa pomocy sojusznikowi (N4, C-WIAR-N4=B) | −15 | **−1,5 na zawsze** |
+| Dotrwanie sojuszu do końca (P1) | +8 | **+0,8 na zawsze** |
+| Pomoc sojusznikowi w wojnie (P5) | +6 | **+0,6 na zawsze** |
+
+### ⚠️ ZMIANA WOBEC WCZEŚNIEJSZYCH ZAPISÓW W TYM DOKUMENCIE — jawne anulowanie (stan OSTATECZNY)
+
+1. **„Dryf działa TYLKO W GÓRĘ" (sekcja „DRYF / ZAPOMINANIE KAR" wyżej, pkt 1: „zapominane są KARY;
+   wypracowana reputacja powyżej bazy NIE zanika, dobre czyny się nie przedawniają") — JEST ANULOWANE.**
+   Nagrody gasną tak samo jak kary (aż do podłogi 10%, nie niżej) — asymetria jest wyłącznie w CZASIE
+   zapomnienia (tabela wyżej), nie w tym, CZY coś w ogóle ulega zapomnieniu. Bez zmian względem
+   pierwszej wersji tej decyzji.
+2. **BLIZNA — historia decyzji w ramach JEDNEJ sesji, DWA zwroty:**
+   - Najpierw uznano: skoro zdarzenia gasną do zera, oryginalna blizna z WIAR-Q2=C (§5/§8 — trwałe
+     obniżenie SUFITU po N1/N2, zamrożenie regeneracji na 20 tur) staje się bezprzedmiotowa →
+     robocze rozstrzygnięcie „C-WIAR-BLIZNA = A, blizna znika" — i Maciej to WPROST potwierdził.
+   - Potem Maciej to **odwrócił** (Cytat 3): blizna WRACA, ale w **nowej, jednolitej postaci**, inaczej
+     zbudowanej niż oryginalna z WIAR-Q2=C — nie jako obniżenie sufitu tylko dla N1/N2, tylko jako
+     **trwały ślad 10% KAŻDEGO zdarzenia, kary i nagrody jednakowo, wbudowany wprost we wzór krzywej**
+     (nie osobny licznik/mechanizm nałożony NA krzywą, jak w oryginale).
+   - **Rozstrzygnięcie ostateczne: C-WIAR-BLIZNA — ani A, ani żadna z pierwotnych opcji A/B/C z
+     WIAR-Q2 dosłownie.** Nowy, czwarty wariant: podłoga 10% w samym wzorze krzywej zapominania, opisana
+     wyżej. Historyczne zapisy (§5 „PO ZDARZENIU N1/N2: licznikBlizny = max(...,20)", tabela WIAR-Q2 w
+     sekcji „DECYZJE MACIEJA (2026-07-25)", i wcześniejsza wersja TEJ sekcji z „C-WIAR-BLIZNA=A") **zostają
+     w dokumencie jako ślad historii decyzji, NIE obowiązują wykonawcy** — traktować jako nieaktualne.
+3. **Wcześniejsza propozycja tempa dryfu w punktach na turę (+1,0 / +0,4 / +0,2 pkt/turę, sekcja
+   „DRYF / ZAPOMINANIE KAR" wyżej) JEST ZASTĄPIONA** tabelą czasów zapomnienia wyżej (40/80/120). Nie ma
+   już jednego globalnego tempa dryfu — jest czas zapomnienia PER ZDARZENIE, zależny od jego znaku i
+   poziomu trudności, ORAZ trwały ślad 10% po wygaśnięciu.
+
+### KONSEKWENCJA — stan spoczynku Wiarygodności PRZESTAJE być samą wartością startową
+
+To jest sedno ostatniej korekty. We wcześniejszej wersji tej decyzji (model „do zera") stan spoczynku po
+wygaśnięciu wszystkich zdarzeń wracał dokładnie do wartości startowej poziomu trudności. **Teraz to
+nieprawda** — skoro każde zdarzenie zostawia trwały ślad 10%, naturalnym poziomem po długiej grze jest:
+
+```
+wartośćStartowa(poziomTrudności) + suma WSZYSTKICH trwałych śladów nagromadzonych przez całą partię
+```
+
+Reputacja **przestaje być w pełni odzyskiwalna** — życiorys cywilizacji (dobry i zły) trwale przesuwa jej
+punkt równowagi, nawet gdy chwilowe („świeże") zdarzenia już dawno wygasły do podłogi.
+
+---
+
+### WYMAGANIA IMPLEMENTACYJNE (wersja finalna)
+
+1. **Model danych: LISTA zdarzeń per właściciel, nie jedna liczba.** Zastępuje prosty
+   `wiarygodnoscByOwner: Map<number, number>` z planu Etapu 0 (§7) strukturą typu
+   `wiarygodnoscZdarzeniaByOwner: Map<number, CredibilityEventRecord[]>`, gdzie
+   `CredibilityEventRecord = { typ: CredibilityEvent; wartoscPierwotna: number; turaWystapienia: number;
+   znak: 'kara' | 'nagroda' }`. Bieżąca Wiarygodność to funkcja WYLICZANA z listy (wzór wyżej), nie
+   osobno trzymane pole — inaczej dwa źródła prawdy mogą się rozjechać.
+2. **Wartość bieżąca = wartość pierwotna × max(0,10 ; 1 − minęłoTur/czasZapomnienia).** Mnożnik nigdy nie
+   schodzi poniżej 0,10 — to samo w sobie realizuje trwały ślad, bez osobnego mechanizmu „blizny" nałożonego
+   na wynik. Działa identycznie dla kar (wartość pierwotna ujemna) i nagród (dodatnia), bo znak niesie
+   sama `wartośćPierwotna`.
+3. **Zdarzenia NIE są usuwane z listy po osiągnięciu podłogi** — w przeciwieństwie do poprzedniej wersji
+   tego wymogu (sprzątanie po wygaśnięciu). Zdarzenie na podłodze 10% zostaje aktywnym, trwałym wkładem do
+   sumy do końca partii.
+4. **Decyzja implementacyjna DO PODJĘCIA PRZEZ WYKONAWCĘ (Maciej nie rozstrzygnął, tylko zlecił
+   zanotowanie):** czy po osiągnięciu podłogi 10% zdarzenie zostaje w PEŁNEJ liście (prostsze, ale lista
+   rośnie bez końca przez całą partię — potencjalnie setki wpisów w długiej grze) czy jest
+   **konsolidowane** do jednej sumy `trwałySladSumaByOwner: Map<number, number>` per właściciel (lepsza
+   wydajność i mniejszy save), z osobnym zachowaniem rozbicia „co się na to złożyło" WYŁĄCZNIE jeśli UI
+   (punkt 7 niżej) ma to pokazywać w rejestrze czynników. Obie opcje są poprawne matematycznie — różnica
+   jest czysto inżynierska (pamięć/wydajność vs szczegółowość UI).
+5. **Czas zapomnienia = dwa osobne parametry** (nie jeden): funkcja znaku zdarzenia (kara/nagroda) ORAZ
+   poziomu trudności — 6 wartości (3 poziomy × 2 znaki): 40/80/120 wg tabeli wyżej.
+6. **Wartości procentowe/czasy/podłoga 10% = parametry strojeniowe w danych, NIE stałe w kodzie.**
+   Kandydat: `DIPLOMACY_PARAMS` w `gra/src/game/diplomacy.ts` (tam już żyją inne wagi/progi dyplomacji,
+   §3 wyżej) — albo osobna sekcja w `gra/data/diplomacy.json`, jeśli integrator Excela (Panel-D, §7
+   Etap 0) ma je docelowo stroić z panelu. Do ustalenia przy implementacji które z dwóch miejsc.
+7. **Save/load — lista zdarzeń (lub lista + skonsolidowana suma śladów, wg punktu 4) MUSI wejść do
+   zapisu gry**, analogicznie do wzorca `aiSkarbiecByOwner` (§7 Etap 3, `main.ts:13268-13332` snapshot /
+   `main.ts:17308-17328` restore) — bez tego po wczytaniu gry Wiarygodność „skacze". To ZASTĘPUJE zapis
+   `wiarygodnoscBlizna` z pierwotnego planu §7 Etap 0/3 — w jej miejsce wchodzi serializacja listy
+   zdarzeń (i/lub sumy trwałych śladów) per `ownerId`. **Rozmiar save rośnie z długością partii** —
+   konsekwencja punktu 3/4, do uwzględnienia przy testach wydajności.
+8. **Parytet AI — identycznie dla gracza i AI, kod ownerId-agnostyczny.** Funkcja wyliczająca wartość
+   bieżącą i sumę nie zna `ownerId` (czysta funkcja nad listą + numerem bieżącej tury) — `ownerId` służy
+   wyłącznie do wyboru, do której listy w mapie sięgnąć. Zgodne z zasadą parytetu z §6.
+9. **UI — REKOMENDACJA MOCNA (podniesiona z „opcjonalne V2" na „silnie zalecane"), bo teraz ma realne
+   uzasadnienie mechaniczne:** skoro Wiarygodność już NIGDY w pełni nie wraca do wartości startowej,
+   gracz musi rozumieć DLACZEGO — bez tego „mimo dobrego zachowania pasek się nie rusza" wygląda jak
+   błąd, nie jak zamierzona mechanika. Pokazać rozbicie: **„trwały życiorys" (suma śladów 10%, na stałe)
+   vs „bieżące uczynki" (świeże, jeszcze wygasające zdarzenia)** — np. *„zdrada sojusznika: −2,5 na
+   stałe (dawne zdarzenie, w pełni wygasłe) + jeszcze aktywna kara −6,2 z −25, wygasa za 34 tury"*.
+   Naturalne rozszerzenie rekomendacji „Rejestr czynników (opcjonalnie, V2)" z §7 Etap 4 — planowany
+   `CredibilityLogEntry[]` to dokładnie ta sama lista zdarzeń.
+
+### ⚠️ Otwarte pytania / ryzyka przy tym modelu — DO POTWIERDZENIA PRZEZ MACIEJA, NIE rozstrzygnięte tutaj
+
+- **Kumulacja trwałych śladów bez limitu.** 10 zdrad sojusznika × (−2,5 trwałego śladu) = −25 na stałe;
+  40 takich zdrad = −100, czyli DNO całej skali wyłącznie ze śladów, bez żadnego aktywnego świeżego
+  zdarzenia. Czy to zamierzone (seryjny zdrajca ma TRWALE zrujnowaną reputację do końca partii — zgodne
+  z duchem „historia zostaje na zawsze") czy jednak potrzebny górny/dolny limit na SUMĘ trwałych śladów,
+  żeby jedna bardzo długa/agresywna partia nie „wypłaszczyła" skali do skrajności na stałe? **Pytanie do
+  Macieja, nierozstrzygnięte.**
+- **Twarde klamrowanie sumy końcowej do −100…+100 — TERAZ OBOWIĄZKOWE, nie tylko rekomendacja.** Skoro
+  trwałe ślady kumulują się bez naturalnej górnej granicy przez całą partię, `Wiarygodność(właściciel,
+  tura)` MUSI być klamrowana do zakresu skali (sekcja „ZMIANA SKALI" wyżej) na etapie WYŚWIETLANIA i
+  WSZĘDZIE tam, gdzie liczba wchodzi do wzorów §4 (mnożniki tempa, progi blokujące) — inaczej przy
+  długiej partii z wieloma zdarzeniami wartość może realnie uciec poza −100…+100 i zepsuć wzory, które
+  zakładają ten zakres.
+- **Długość partii a dominacja śladów nad bieżącym zachowaniem.** Przy bardzo długiej grze suma trwałych
+  śladów może z czasem przeważyć nad wartością startową i bieżącymi (świeżymi) zdarzeniami — gracz o
+  długiej, ale w większości dobrej historii z pojedynczym poważnym potknięciem może utknąć bliżej środka
+  skali niż intuicja by podpowiadała. Odnotowane jako obserwacja do sprawdzenia w playteście, NIE do
+  rozstrzygania teraz.
+- **Ten model wymaga przepisania planu Etapu 0 (§7)** — funkcje `applyCredibilityEvent`/
+  `tickCredibility` zaprojektowane pod wcześniejsze wersje (jedna liczba + blizna, potem lista gasnąca
+  do zera) nie pasują wprost do modelu z trwałą podłogą 10%; wykonawca powinien zaktualizować §7 PRZED
+  napisaniem kodu rdzenia, nie w trakcie.
+- **Relacja z „pierwszym kontaktem" (§ „CZTERY DŹWIGNIE WPŁYWU NA ZAUFANIE", pkt 4 wyżej)** — nowo
+  spotkana cywilizacja ma zobaczyć aktualną (wyliczoną z listy, WŁĄCZNIE z trwałymi śladami) Wiarygodność
+  gracza — mechanika się nie zmienia, ale warto to jednym zdaniem potwierdzić przy implementacji.
+- **Zmiana poziomu trudności w trakcie partii (jeśli w ogóle możliwa w tej grze)** — nieodnotowana jako
+  obsługiwana funkcja; jeśli nie istnieje, temat jest bezprzedmiotowy. Odnotowane wyłącznie dla
+  kompletności, NIE do rozwiązywania teraz.
+
+---
+
+## 🔄 Przebudowa: Wiarygodność → Zaufanie per turę (2026-07-26)
+
+> „Jeżeli jakaś cywilizacja ma wiarygodność na poziomie 10, to zaufanie powinno rosnąć o 1 co każdą turę
+> z daną cywilizacją, którą ona spotka. Jeżeli ma 50, to o 5 co każdą turę. A jeżeli ma −10, to powinno
+> spadać o 1 co każdą turę. Jak ma −50, to o 5 co każdą turę. Więc jeżeli ktoś ma dobrą wiarygodność, to
+> systematycznie rośnie zaufanie; jeżeli ma słabą wiarygodność, to systematycznie z wszystkimi
+> cywilizacjami spada."
+
+### Wzór
+
+**ΔZaufanie na turę = Wiarygodność / 10**, naliczane jednocześnie z KAŻDĄ poznaną cywilizacją.
+
+| Wiarygodność | ΔZaufanie/turę |
+|---|---|
+| +10 | +1 |
+| +50 | +5 |
+| +100 | +10 |
+| −10 | −1 |
+| −50 | −5 |
+| −100 | −10 |
+
+### ⚠️ ANULOWANIE Dźwigni 1 (mnożnik tempa)
+
+Ten mechanizm **ZASTĘPUJE** wcześniejszą Dźwignię 1 opisaną w §4.1 i w sekcji „CZTERY DŹWIGNIE WPŁYWU NA
+ZAUFANIE" wyżej — mnożnik tempa:
+
+```
+wzrostMult(W) = 1 + (W/100)×0,5
+spadekMult(W) = 1 − (W/100)×0,5
+```
+
+(dawniej też pod postacią `mnoznikWzrostu/mnoznikSpadku = clamp(0.5 ± W/100, 0.5, 1.5)` z pierwszej wersji
+§4.1) **jest niniejszym ANULOWANY.** Wiarygodność nie ma już mnożyć delty Zaufania — ma ją **bezpośrednio
+zwiększać/zmniejszać** co turę, niezależnie od pozostałych składników `dZ`. Dźwignie 2 (wpływ na sufit
+Zaufania), 3 (twarde progi) i 4 (pierwszy kontakt) z tej samej sekcji **nie są tym ruszane** — dotyczy to
+WYŁĄCZNIE Dźwigni 1. Czy dźwignie 2–4 mają zostać w mocy razem z nowym strumieniem, potwierdza Maciej
+(patrz „Ryzyka i pytania otwarte" niżej).
+
+---
+
+### Wyniki weryfikacji w kodzie
+
+**1. Istniejące per-turowe składniki Zaufania w `tickDiplomacy` i kolizja z nowym strumieniem**
+
+`tickDiplomacy` (`game/diplomacy.ts:1403-1452`) sumuje `dZ` z kilku niezależnych źródeł, sterowanych
+flagami `TickCtx` ustawianymi przez wywołującego w `main.ts`:
+
+```ts
+// game/diplomacy.ts:1406-1420
+let dZ = 0;
+if (ctx.aktywnyHandel)        dZ += p.handel_zaufanie_perTura;        // +1
+switch (peaceTier) {
+  case 'sojusz': dZ += p.sojusz_zaufanie_perTura; break;               // +3
+  case 'nap':    dZ += p.nap_zaufanie_perTura; break;                  // +2
+  case 'pokoj':  dZ += p.pokoj_zaufanie_perTura; break;                // +1
+}
+if (ctx.dobraWolaAktywna)     dZ += p.dobraWola_zaufanie_perTura;      // +1
+if (ctx.wspolnyWrog)          dZ += p.wspolnyWrog_zaufanie_perTura;    // +1
+if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura; // +0.5
+if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;// -0.5
+if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;// -2
+```
+
+Wagi z `DIPLOMACY_PARAMS` (`game/diplomacy.ts:100-122`, sekcja „per-turn Zaufanie deltas"):
+`handel_zaufanie_perTura=1`, `sojusz_zaufanie_perTura=3`, `nap_zaufanie_perTura=2`,
+`pokoj_zaufanie_perTura=1` (**dokładnie ten składnik, o który pytał Maciej — potwierdzone: +1/turę
+podczas samego pokojowego kontaktu**), `dobraWola_zaufanie_perTura=1`, `wspolnyWrog_zaufanie_perTura=1`,
+`wspolnaReligia_zaufanie_perTura=0.5`, `odmiennaReligia_zaufanie_perTura=-0.5`,
+`ekspansjaGranica_zaufanie_perTura=-2`.
+
+`peaceTier` (sojusz/nap/pokoj) jest **wzajemnie wykluczający** (jeden `switch`) i wyliczany przez
+`resolvePokojTrustTier` (`game/diplomacy-treaties.ts:275-292`):
+
+```ts
+// game/diplomacy-treaties.ts:275-292
+export function resolvePokojTrustTier(
+  state: readonly ActiveDeal[], ownerA: number, ownerB: number,
+  opts: { contactEstablished: boolean; atWar: boolean },
+): PokojTrustTier | undefined {
+  if (opts.atWar) return undefined;
+  const [p0, p1] = pairKey(ownerA, ownerB);
+  const pairDeals = state.filter(d => d.strony[0] === p0 && d.strony[1] === p1);
+  if (pairDeals.some(d => isAllianceKind(normalizeTreatyKind(d.rodzaj)))) return 'sojusz';
+  if (pairDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji)) return 'nap';
+  if (opts.contactEstablished) return 'pokoj';
+  return undefined;
+}
+```
+
+**Kolizja z nowym strumieniem: TAK, realna.** Nowy strumień „ΔZaufanie/turę = W/10" ma być naliczany
+**dodatkowo, co turę, dla każdej poznanej cywilizacji** — dokładnie ten sam mechanizm miejsca wpięcia
+(`dZ` w `tickDiplomacy`) co `pokoj_zaufanie_perTura` i pozostałe składniki wyżej. Przy dobrej Wiarygodności
+(np. +50 → +5/turę) nowy strumień jest 5× większy niż istniejący maksymalny tier pokoju (sojusz, +3/turę)
+i nakłada się na niego SUMARYCZNIE (oba dodają się do tego samego `dZ`), a nie go zastępuje — bez decyzji
+Macieja to podwójne liczenie „bycia w pokoju/sojuszu" dwoma niezależnymi mechanizmami jednocześnie.
+
+**2. Cap/floor Zaufania**
+
+TAK, istnieje i jest jednoznaczny: `clamp(rdip.zaufanie + dZ, 0, 100)` (`game/diplomacy.ts:1442`),
+zgodnie z deklaracją typu `RelacjaDyplomatyczna.zaufanie`: „zakres 0–100" (`types/diplomacy.ts:65-70`).
+Klamrowanie działa niezależnie od wielkości `dZ` w danej turze — więc **nowy strumień +10/turę przy
+Wiarygodności=+100 zostanie bezpiecznie ucięty na 100** tym samym mechanizmem co dziś (nie trzeba nowego
+klampowania w `tickDiplomacy`). Trzeba jednak pamiętać: to klamruje WYNIK Zaufania (0–100), nie sam
+strumień — przy skrajnych wartościach kilka źródeł `dZ` naraz (np. sojusz +3 i nowy strumień +10) i tak
+wyląduje w tym samym clamp, więc efekt kumulacji jest niewidoczny w logach per-składnik (brak dziś
+rejestru „ile z tej tury przyszło z Wiarygodności a ile z tieru pokoju").
+
+**3. Zakres par: wszystkie czy tylko poznane/odkryte?**
+
+TYLKO odkryte. Pętla wywołująca `tickDiplomacy` dla pary gracz↔AI jest jawnie bramkowana:
+
+```ts
+// main.ts:14757-14760
+try {
+  if (!diplomaticallyDiscoveredOwners.has(ownerId)) {
+    // Brak odkrycia na mapie — zero dyplomacji wobec gracza (w tym darów).
+  } else {
+  /* ... tickDiplomacy wywoływane tutaj, main.ts:14820 ... */
+```
+
+Dodatkowo sam tier `'pokoj'` (ten odpowiadający `pokoj_zaufanie_perTura`) wymaga osobno
+`contactEstablished` (`diplomaticContactEstablished.has(ownerId)`, przekazywane w
+`main.ts:14803-14806`) — więc nawet w obrębie odkrytych par, sam pokojowy +1/turę nie naliczy się bez
+nawiązanego kontaktu dyplomatycznego (`resolvePokojTrustTier`, `game/diplomacy-treaties.ts:290`). Model
+danych ma też pole `RelacjaDyplomatyczna.kontaktNawiazany: boolean` (`types/diplomacy.ts:92-96`, „Bez
+kontaktu żadne dalsze akcje dyplomatyczne nie są możliwe").
+
+**Uwaga dodatkowa:** ten konkretny blok (`main.ts:14756-14822`) tickuje WYŁĄCZNIE parę gracz(0)↔AI. Dla
+AI↔AI dokument wyżej (§6 pkt 4, cytując `AUDYT-PARYTET-AI-2026-07-24.md` pkt 3) już odnotowuje, że
+dyplomacja AI↔AI ma dziś węższy zakres niż gracz↔AI — to samo ograniczenie dotyczy więc i nowego
+strumienia „ΔZaufanie/turę = W/10", jeśli ma dotyczyć też par AI↔AI.
+
+**4. Czy działa też podczas wojny, czy tylko podczas pokoju?**
+
+TYLKO podczas pokoju — potwierdzone wprost w kodzie. `resolvePokojTrustTier` zwraca `undefined`
+natychmiast przy `atWar`:
+
+```ts
+// game/diplomacy-treaties.ts:281
+if (opts.atWar) return undefined;
+```
+
+a flaga `atWar` jest przekazywana z rzeczywistego stanu relacji: `atWar: relStatus === 'wojna'`
+(`main.ts:14805`, gdzie `relStatus = (relWithRespekt as Relation).status`). Gdy `atWar===true`, żaden z
+trzech tierów (`sojusz`/`nap`/`pokoj`) się nie uruchamia, więc `pokoj_zaufanie_perTura` (i całe `dZ` z tej
+gałęzi `switch`) jest zerowe podczas wojny. Pozostałe składniki `dZ` (`aktywnyHandel`, `dobraWola`,
+`wspolnyWrog`, religia, ekspansja) NIE mają analogicznego jawnego sprawdzenia `atWar` wewnątrz
+`tickDiplomacy` — są sterowane wyłącznie przez to, co przekaże wywołujący w `TickCtx` (w praktyce np.
+`aktywnyHandel` i tak zwykle wygasa przy wojnie przez `breakTreatiesOnWar`, ale to efekt uboczny gdzie
+indziej, nie sprawdzenie w samym `tickDiplomacy`).
+
+**5. Plik parametrów strojeniowych `DIPLOMACY_PARAMS`**
+
+Istnieje: `export const DIPLOMACY_PARAMS = {...} as const` (`game/diplomacy.ts:65-242`), płaska struktura
+z sekcjami (one-shot Zaufanie/Respekt, „per-turn Zaufanie deltas (co ture)" na liniach 100-122, progi,
+wartości startowe, mnożniki globalne). Istnieje też odpowiadający plik danych `gra/data/diplomacy.json`
+(potwierdzone — plik obecny w repo), zasilany z panelu Excela `Dyplomacja.xlsx` przez
+`loadDiplomacyParams` (`game/diplomacy.ts:252+`, „bridge data/diplomacy.json → model parameter
+overrides"). **Nowy dzielnik „10" powinien wylądować jako nowa stała w tej samej sekcji „per-turn
+Zaufanie deltas"**, np. `wiarygodnoscZaufanieDzielnikPerTura: 10` (obok `pokoj_zaufanie_perTura` na
+linii 108) — zgodnie z istniejącą konwencją „żadnych twardych stałych w kodzie, wszystko w
+`DIPLOMACY_PARAMS` + roundtrip do `diplomacy.json`/Excela".
+
+---
+
+### Ryzyka i pytania otwarte (do rozstrzygnięcia przez Macieja)
+
+- **Wojna czy tylko pokój?** Sama nazwa `pokoj_zaufanie_perTura` i cała logika `resolvePokojTrustTier`
+  sugerują „tylko pokój" (patrz pkt 4 wyżej), ale brief Macieja („systematycznie z wszystkimi
+  cywilizacjami spada" przy złej Wiarygodności) da się czytać i jako uniwersalny, także podczas wojny —
+  nierozstrzygnięte, wymaga jednoznacznej decyzji.
+- **Dublowanie z `pokoj_zaufanie_perTura` (i pozostałymi składnikami `dZ`).** Potwierdzone w kodzie (pkt 1
+  wyżej): nowy strumień dodawałby się do tego samego `dZ` co istniejące `pokoj_zaufanie_perTura` (+1),
+  `nap_zaufanie_perTura` (+2), `sojusz_zaufanie_perTura` (+3) i reszta. Do zdecydowania: **zsumować**
+  (nowy strumień jako dodatkowy, niezależny składnik `dZ`), **zastąpić** (nowy strumień wypiera istniejące
+  tiery pokoju — usunąć/wyzerować `pokoj_zaufanie_perTura` itp.), czy **wykluczać się wzajemnie** (jeśli
+  aktywny nowy strumień, tiery pokoju się nie liczą, i odwrotnie)?
+- **Los Dźwigni 2–4** (sufit Zaufania, twarde progi sojuszu/NAP, pierwszy kontakt — sekcja „CZTERY
+  DŹWIGNIE" wyżej). Zadanie każe anulować wyłącznie Dźwignię 1 (mnożnik tempa) — czy 2, 3 i 4 zostają w
+  mocy RÓWNOLEGLE z nowym bezpośrednim strumieniem, czy też wymagają przeglądu w świetle tej zmiany
+  (zwłaszcza Dźwignia 2 „wpływ na sufit Zaufania" — koncepcyjnie bliska nowemu mechanizmowi, bo oba
+  dotyczą tego, jak Wiarygodność ogranicza Zaufanie)?
+- **Sufit/podłoga Zaufania przy skrajnych wartościach.** Klamrowanie `clamp(zaufanie+dZ, 0, 100)`
+  (`game/diplomacy.ts:1442`) technicznie obsłuży każdą wielkość `dZ`, w tym +10/turę — ale czy to
+  wystarczające zachowanie, czy przy Wiarygodności bliskiej ±100 chcemy czegoś subtelniejszego (np.
+  malejący krańcowy przyrost blisko granic, żeby nie było „ściany" 0/100 osiąganej w kilka tur)? Do
+  potwierdzenia: brak dziś żadnego mechanizmu diminishing returns w `tickDiplomacy` poza samym clampem.
+- **Dzielnik „10" jako parametr strojeniowy.** Potwierdzone (pkt 5 wyżej): `DIPLOMACY_PARAMS`
+  (`game/diplomacy.ts:65-242`) to właściwe miejsce, sekcja „per-turn Zaufanie deltas" (linie 100-122) —
+  czy Maciej chce to jako osobną stałą teraz, czy zostawić jako twardą wartość „10" do czasu playtestu?
+- **Skala Wiarygodności a skala Zaufania.** Wiarygodność jest dziś (po „ZMIANIE SKALI" wyżej) na skali
+  −100…+100, a Zaufanie pozostaje na 0–100. Dzielnik „/10" daje więc zakres −10…+10 na turę względem
+  Zaufania 0–100 — matematycznie spójne, ale warto potwierdzić, że to zamierzona proporcja (przy
+  Wiarygodności skrajnej +100, pełne wypełnienie Zaufania od zera zajmie ok. 10 tur, co jest bardzo
+  szybkie w porównaniu do istniejących tempów +1..+3/turę) — czy to zamierzone, czy dzielnik „10" wymaga
+  przeszacowania w świetle istniejących tempów.
+- **Miejsce integracji: `tickDiplomacy` czy osobna funkcja?** Dokument (§7, Etap 2) już zakładał wpięcie
+  Wiarygodności w `tickDiplomacy` (`game/diplomacy.ts:1403`) i `applyDiplomaticEvent`
+  (`game/diplomacy.ts:646`) jako MNOŻNIK (Dźwignia 1, teraz anulowana). Nowy bezpośredni strumień
+  wymaga innego kształtu integracji — prawdopodobnie nowy opcjonalny parametr `wiarygodnoscSelf?: number`
+  w `TickCtx` (`game/diplomacy.ts:1356-1378`) dodający `wiarygodnoscSelf/10` do `dZ` — ale to wymaga
+  jawnej decyzji projektowej, nie tylko podłączenia mnożnika.
+- **Zaokrąglanie.** Przy niskich wartościach Wiarygodności (np. +5 → +0,5/turę) wynik nie jest liczbą
+  całkowitą — czy akumuluje się jako ułamek (jak dziś `wspolnaReligia_zaufanie_perTura=0.5`), czy
+  zaokrąglać w którymś kierunku? Istniejący kod toleruje ułamki w `dZ` (patrz `0.5`/`-0.5` wyżej), więc
+  prawdopodobnie nieproblematyczne, ale niepotwierdzone czy to zamierzone dla nowego strumienia.
+- **Zgodność z nowym MODELEM ZAPOMINANIA (sekcja wyżej, „🔴 MODEL ZAPOMINANIA (KRZYWA WIARYGODNOŚCI)",
+  2026-07-26).** Ta sekcja zastąpiła prosty model „jedna liczba Wiarygodności" modelem listy gasnących
+  zdarzeń — Wiarygodność(właściciel, tura) jest teraz WYLICZANA z sumy aktywnych zdarzeń, nie stałym
+  polem. Wzór „ΔZaufanie/turę = Wiarygodność/10" z tej sekcji pozostaje formalnie spójny (bierze bieżącą,
+  wyliczoną wartość W), ale trzeba potwierdzić: czy przelicznik W→ΔZaufanie ma czytać W wyliczone NA ŻYWO
+  z listy zdarzeń co turę (kosztowniejsze, ale zawsze aktualne), czy z jakiejś zserializowanej/cache'owanej
+  wartości odświeżanej raz na turę (taniej, ale wymaga jawnego miejsca odświeżenia PRZED wywołaniem
+  `tickDiplomacy` dla wszystkich par).
+
+---
+
+### Parytet AI
+
+Zgodnie z zasadą nadrzędną projektu (§6 wyżej, `AUDYT-PARYTET-AI-2026-07-24.md`): mechanizm „ΔZaufanie/turę
+= Wiarygodność/10" musi działać **identycznie dla gracza (ownerId=0) i każdego AI (ownerId≠0)**, kod
+ownerId-agnostyczny, **zero gałęzi `if (ownerId===0)`**. Konkretnie:
+- Wzór `W/10` nie może różnicować się w zależności od tego, czyja to Wiarygodność (gracza czy AI) ani czyje
+  to Zaufanie jest modyfikowane.
+- Naliczanie „dla KAŻDEJ poznanej cywilizacji" musi obejmować pary AI↔AI tam, gdzie silnik w ogóle je
+  obsługuje (patrz zastrzeżenie w pkt 3 wyżej — dziś dyplomacja AI↔AI ma węższy zakres niż gracz↔AI, znana
+  luka z audytu parytetu, nie do naprawy w tym zadaniu, ale nie do pogłębiania nowym kodem
+  gracz-only).
+- Test parytetu przy wdrożeniu (wzorem §7 „Bramki" wyżej): ta sama Wiarygodność (np. W=50) zaaplikowana raz
+  jako `ownerId=0`, raz jako `ownerId=N`, musi dać identyczny wpływ +5/turę na odpowiednie relacje.
+
+---
+
+## ✅ Decyzje Macieja (2026-07-26, popołudnie) — KORYGUJĄ sekcję „🔄 Przebudowa: Wiarygodność → Zaufanie
+## per turę" wyżej
+
+Poniższe trzy decyzje są **nadrzędne wobec** sekcji „🔄 Przebudowa: Wiarygodność → Zaufanie per turę
+(2026-07-26)" (linie 1241-1471 wyżej) w punktach, gdzie ta sekcja zostawiła pytanie otwarte lub wzór
+„na propozycję". Sekcja wyżej NIE jest tym anulowana w całości — jej weryfikacja kodu (`tickDiplomacy`,
+`resolvePokojTrustTier`, `DIPLOMACY_PARAMS`, zasięg par odkrytych/AI↔AI) pozostaje aktualna i wiążąca;
+zmienia się tylko dzielnik, zachowanie podczas wojny i status pytania o sumowanie, jak niżej.
+
+### DECYZJA 1 — C-WIAR-SKALA: dzielnik **20**, nie 10
+
+Cytat Macieja:
+
+> „C-WIAR-SKALA — OK. Zmieniliśmy o połowę ten wzrost, z 10 na 5 przy wiarygodności 100, pozostałe
+> proporcjonalnie."
+
+**Koryguje wzór z sekcji wyżej.** Wzór „ΔZaufanie na turę = Wiarygodność / 10" (§ „Wzór", linia 1251)
+zastąpić przez:
+
+**ΔZaufanie na turę = Wiarygodność / 20**
+
+| Wiarygodność | ΔZaufanie/turę |
+|---|---|
+| +100 | **+5,0** |
+| +50 | +2,5 |
+| +20 | +1,0 |
+| +10 | +0,5 |
+| 0 | 0 |
+| −10 | −0,5 |
+| −50 | −2,5 |
+| −100 | **−5,0** |
+
+**Uzasadnienie (dopisane do meldunku, nie od Macieja wprost, ale wynika z jego audytu proporcji):**
+weryfikacja kodu (patrz „Wyniki weryfikacji w kodzie" pkt 1 wyżej) wykazała, że wszystkie istniejące
+per-turowe składniki Zaufania razem dają **+1…+3** (`tickDiplomacy`, `game/diplomacy.ts:1403-1452`:
+handel +1, sojusz +3 / NAP +2 / pokój +1, dobra wola +1, wspólny wróg +1, religia ±0,5, ekspansja przy
+granicy −2). Przy dzielniku /10 strumień dawałby do +10/turę — **trzykrotnie więcej niż wszystko inne
+razem**, co uczyniłoby pozostałe mechanizmy nieistotnymi (Wiarygodność zdominowałaby cały tick). Przy
+/20 Wiarygodność pozostaje NAJSILNIEJSZYM pojedynczym czynnikiem (+5 vs. +3 dla samego sojuszu), ale
+współgra z resztą zamiast ją zastępować.
+
+**Status dzielnika:** PARAMETR STROJENIOWY w danych, NIE stała w kodzie — tam gdzie sekcja wyżej (pkt 5,
+„Plik parametrów strojeniowych") już wskazała miejsce: `DIPLOMACY_PARAMS` (`game/diplomacy.ts:65-242`,
+sekcja „per-turn Zaufanie deltas", linie 100-122) lub odpowiadający wpis w `gra/data/diplomacy.json`.
+Nazwa stałej z propozycji sekcji wyżej (`wiarygodnoscZaufanieDzielnikPerTura`) zostaje — zmienia się
+tylko jej WARTOŚĆ (20, nie 10).
+
+### DECYZJA 2 — C-WIAR-WOJNA = B: strumień działa TAKŻE podczas wojny
+
+Cytat Macieja (dosłownie):
+
+> „C-WIAR-WOJNA B — nie ma znaczenia. Jeżeli ktoś nam wypowiedział wojnę, a niekoniecznie my ją
+> wypowiedzieliśmy, lub wypowiedzieliśmy ją, ale zgodnie z zasadami prowadzenia wojny, nie zrywając
+> żadnego paktu — to nie widzę żadnego powodu, żebyśmy nie zyskiwali na wiarygodności z innymi
+> cywilizacjami, jeżeli na przykład wobec nich jesteśmy sojusznikami i tak dalej."
+
+**Rozstrzyga pierwsze pytanie otwarte z sekcji wyżej** („Wojna czy tylko pokój?", linie 1408-1411).
+
+**ZASADA: prowadzenie wojny z jedną cywilizacją NIE blokuje przyrostu Zaufania z pozostałymi
+(niezaangażowanymi) cywilizacjami.**
+
+Uzasadnienie Macieja: wojna prowadzona uczciwie (wypowiedziana zgodnie z zasadami, bez zrywania paktów)
+NIE jest przewinieniem — więc nie ma powodu, by zawieszała budowanie reputacji wobec sojuszników i
+innych partnerów, którzy w tym konflikcie nie uczestniczą.
+
+**⚠️ To ZMIENIA dzisiejsze zachowanie silnika**, potwierdzone w kodzie w sekcji wyżej (pkt 4, „Czy działa
+też podczas wojny, czy tylko podczas pokoju?"): `resolvePokojTrustTier` zwraca `undefined` natychmiast
+przy `atWar` (`game/diplomacy-treaties.ts:281`, `if (opts.atWar) return undefined;`), czyli dziś cały
+tier pokoju (`pokoj_zaufanie_perTura` i cała gałąź `sojusz`/`nap`/`pokoj`) zeruje się w wojnie —
+per-turowe Zaufanie z tej gałęzi nalicza się TYLKO w pokoju. **Nowy strumień Wiarygodności (W/20) ma tę
+bramkę OMIJAĆ** — być niezależny od stanu wojny z kimkolwiek innym, wpięty jako osobny składnik `dZ` w
+`tickDiplomacy`, nie przechodzący przez `resolvePokojTrustTier`.
+
+**⚠️ PODPYTANIE DO ROZSTRZYGNIĘCIA PRZEZ MACIEJA (zapisane, NIE rozstrzygnięte tutaj):**
+
+Maciej uzasadnił decyzję wyłącznie w odniesieniu do „innych cywilizacji" (tych, z którymi NIE walczymy).
+Nie wypowiedział się wprost o parze, z którą TRWA WOJNA. Dwa możliwe odczytania:
+
+- **(a)** strumień działa ze WSZYSTKIMI, łącznie z aktualnym przeciwnikiem (dosłowne „działa zawsze") —
+  konsekwencja: wysoka Wiarygodność buduje Zaufanie nawet u wroga, z którym się aktualnie walczy;
+- **(b)** strumień działa ze wszystkimi PARAMI, w których nie ma stanu wojny — wojna z X blokuje
+  przyrost tylko z X, nie z resztą (ściślej zgodne z literalnym brzmieniem uzasadnienia „z innymi
+  cywilizacjami").
+
+Oba warianty zapisane jako pytanie otwarte — wykonawca wdrożenia NIE wybiera sam, czeka na odpowiedź
+Macieja przed Etapem 2 (§7 wyżej, wpięcie do `tickDiplomacy`).
+
+### DECYZJA 3 — C-WIAR-SUMA = A: strumień DODAJE SIĘ (ROZSTRZYGNIĘTE, dopisane w toku tego samego dnia)
+
+Maciej rozstrzygnął drugie pytanie otwarte z sekcji wyżej („Dublowanie z `pokoj_zaufanie_perTura`...",
+linie 1412-1417): **strumień z Wiarygodności DODAJE SIĘ do istniejących per-turowych składników
+Zaufania. Nie zastępuje żadnego z nich.**
+
+- `pokoj_zaufanie_perTura` (+1), sojusz (+3) / NAP (+2), handel (+1), dobra wola (+1), wspólny wróg
+  (+1), religia (±0,5), ekspansja przy granicy (−2) — **wszystkie zostają nietknięte**, bez zmian w
+  wagach ani logice.
+- Strumień Wiarygodności (W/20) jest **nowym, niezależnym składnikiem** doliczanym do tej samej sumy
+  `dZ` w `tickDiplomacy` (`game/diplomacy.ts:1403-1452`), obok istniejących linii `dZ += ...`.
+- Zgodne z nadrzędną zasadą Macieja „nie zmieniamy tego, co jest — tylko dostosuj do wiarygodności":
+  nic nie kasujemy z istniejącej logiki, dokładamy jeden dodatkowy człon do sumy.
+
+**Konsekwencja do zapisania (obserwacja do playtestu, NIE korekta — Maciej świadomie wybrał wariant
+sumujący):** przy jednoczesnym pokoju + sojuszu + aktywnym handlu + Wiarygodności +100, suma per-turowa
+może wynieść ok. **+3 (istniejące: sojusz +3, handel +1, dobra wola +1 — górna granica przykładowa,
+niekoniecznie wszystkie naraz) + 5 (nowy strumień) ≈ +8/turę lub więcej** w skrajnym, sprzyjającym
+przypadku. Przy clampie Zaufania 0–100 (`game/diplomacy.ts:1442`) oznacza to teoretyczne dojście do
+maksimum w rzędzie **~13 tur** od zera przy stale utrzymanym maksimum wszystkich składników naraz —
+w praktyce wolniej, bo nie wszystkie tiery/warunki są aktywne jednocześnie od pierwszej tury kontaktu.
+Do sprawdzenia w playteście, czy to tempo jest pożądane — nie proponować korekty na tym etapie
+dokumentu.
+
+### Przypomnienie — pozostaje otwarte
+
+**C-WIAR-WOJNA, podpytanie (a)/(b) powyżej** — jedyne z trzech pierwotnych pytań otwartych sekcji wyżej,
+które NIE zostało jeszcze w pełni rozstrzygnięte (samo „czy działa podczas wojny" = TAK, ale „czy też z
+aktualnym przeciwnikiem" = nierozstrzygnięte). Reszta pytań otwartych z sekcji „Ryzyka i pytania otwarte"
+(Los Dźwigni 2–4, sufit/podłoga przy skrajnych wartościach, zaokrąglanie, zgodność z modelem
+zapominania, miejsce integracji) pozostaje bez zmian względem stanu opisanego wyżej — nie były
+przedmiotem dzisiejszych trzech decyzji.
+
+### Parytet AI (przypomnienie, bez zmian względem §6 i sekcji wyżej)
+
+Wszystkie trzy decyzje powyżej obowiązują **identycznie dla gracza (ownerId=0) i każdego AI
+(ownerId≠0)** — kod ownerId-agnostyczny, zero gałęzi `if (ownerId===0)`. Dzielnik 20, działanie podczas
+wojny i sumowanie z istniejącymi składnikami `dZ` to własności WZORU, nie własności konkretnego
+`ownerId` — dokładnie ta sama zasada co w §6 i w sekcji „Parytet AI" wyżej (linie 1458-1471), tu tylko
+potwierdzona raz jeszcze w kontekście trzech nowych decyzji.
+
+---
+
+## 🟢 Przebudowa: STRONA POZYTYWNA — STRUMIEŃ + FINISZ + CZYNY (Maciej 2026-07-26) — ZASTĘPUJE TABELĘ P1–P5 Z §3.2
+
+> „P1 dotrwanie do sojuszu do końca terminu niech będzie 10. Pomoc sojusznikowi w wojnie poprzez
+> dołączenie z własnej woli lub na prośbę — też plus 20. Uczciwa realizacja handlu cyklicznego może być
+> plus 1, ale pod warunkiem, że dostawy to 100%. Trwanie do końca paktu, umowy handlowej do terminu plus
+> 5. P4 — jeżeli cywilizacja nie prowadzi wojny przez 30 tur, to może mieć plus 3 do wiarygodności.
+> Realizacja handlu nie powinna aż tak mocno podnosić, niech będzie plus 1 zamiast plus 4 jednorazowo,
+> ale co turę za każde uczciwe, dotrzymane słowo handlu. A tak w ogóle to powinno być inne globalne
+> ustawienie: zamiast indywidualnie — to za każdą dotrzymywaną umowę co turę plus jeden, niezależnie od
+> tego, co robimy. Jeżeli jesteśmy w sojuszu i go dotrzymujemy, to plus jeden za każdą turę sojuszu.
+> Jeżeli faktycznie jesteśmy w pakcie o nieagresji i dotrzymujemy słowa — plus 1 za każdą turę paktu. To
+> samo z handlem i z każdą jedną czynnością. Lepiej cyklicznie co turę niż inne rozwiązanie. Ale oprócz
+> tego ewentualnie można zróżnicować, o ile co turę rośnie w zależności od czynności."
+
+### Zmiana modelu: dotrzymywanie W TRAKCIE vs. dotrzymanie NA KONIEC
+
+Dotychczasowa tabela P1–P5 (§3.2) traktowała stronę pozytywną tak samo jak negatywną: jedno zdarzenie →
+jedna jednorazowa waga. Maciej to odrzucił. Jego rozróżnienie („to są dwie różne rzeczy") dzieli stronę
+pozytywną na: **dotrzymywanie W TRAKCIE trwania zobowiązania** (strumień co turę, dopóki zobowiązanie
+żyje) i **dotrzymanie POZA bieżącym trwaniem** (zdarzenia jednorazowe). Ten drugi zbiór dokument rozbija
+dalej na dwa rodzaje, bo mają różną naturę: jeden jest zawsze przypięty do KOŃCA konkretnego,
+wygasającego zobowiązania (FINISZ), drugi nie jest przypięty do żadnego zobowiązania w ogóle (CZYNY).
+Stąd w praktyce trzy tabele, nie dwie — ale rozłam „strumień vs. jednorazowe" jest tym, który Maciej
+nazwał wprost:
+
+- **A. STRUMIEŃ** — przyrost CO TURĘ, naliczany dopóki zobowiązanie jest w danej turze faktycznie
+  dotrzymywane. Nowy, GŁÓWNY mechanizm strony pozytywnej — bezpośrednia realizacja żądania Macieja
+  „lepiej cyklicznie co turę niż inne rozwiązanie".
+- **B. FINISZ** — jednorazowy bonus w momencie, gdy zobowiązanie DOTRWA do zapisanego w traktacie
+  terminu (traktat wygasa naturalnie, NIE jest zrywany wcześniej). Powiązany z końcem KONKRETNEGO
+  zobowiązania — bez aktywnego zobowiązania nie ma się czego doczekać.
+- **C. CZYNY** — jednorazowe zdarzenia niepowiązane z żadnym trwającym ani wygasającym zobowiązaniem
+  (pomoc sojusznikowi w wojnie, kamień milowy „30 tur bez wojny").
+
+### Tabela A — STRUMIEŃ (na turę, za każde aktualnie dotrzymywane zobowiązanie)
+
+| # | Zobowiązanie | Na turę |
+|---|---|---|
+| S1 | Sojusz (pełny lub defensywny) | +1,0 |
+| S2 | Pakt o nieagresji | +0,5 |
+| S3 | Umowa handlowa / handel cykliczny | +0,3 |
+| S4 | Prawo przemarszu / otwarte granice | +0,2 |
+
+Wagi zróżnicowane wg ciężaru zobowiązania (Maciej dopuścił: „można zróżnicować, o ile co turę rośnie w
+zależności od czynności"). Sojusz = kotwica +1,0, zgodnie dosłownie z jego słowami („plus jeden za każdą
+turę sojuszu").
+
+⚠️ **WARUNEK dla S3 (handel):** strumień nalicza się TYLKO przy 100% zrealizowanych dostaw w danej
+turze. Jedna nieudana dostawa = zero przyrostu w tej turze — spójne z zasadą atomowości handlu
+cyklicznego ustaloną w sekcji N6 wyżej (C-HANDEL-3: „nie ma takiej sytuacji, że jedna strona wysyła, a
+druga nie wysyła").
+
+### Tabela B — FINISZ (jednorazowo, za dotrwanie do terminu)
+
+| # | Zobowiązanie | Bonus |
+|---|---|---|
+| P1 | Sojusz dotrwany do końca | +10 |
+| P2 | Pakt o nieagresji dotrwany | +5 |
+| P2 | Umowa handlowa dotrwana | +5 |
+| P3 | Handel cykliczny — 100% dostaw do końca | +1 |
+
+Identyfikatory P1–P3 celowo przeniesione ze starej tabeli §3.2 (P2 obejmuje dwa wiersze tak jak w
+oryginale — tam też jeden wiersz „NAP/umowa handlowa" pod wspólnym P2) — to te same zobowiązania, tylko
+z nową, niższą wagą i nowym, dodatkowym mechanizmem strumienia obok.
+
+### Tabela C — CZYNY (jednorazowo, niepowiązane z żadnym trwającym zobowiązaniem)
+
+| # | Czyn | Wartość |
+|---|---|---|
+| P5 | Pomoc sojusznikowi w wojnie — dołączenie z własnej woli LUB na wezwanie | +20 |
+| P4 | 30 tur bez prowadzenia wojny (powtarzalne co 30 tur) | +3 |
+
+### Uzasadnienie wartości (analiza)
+
+- **Pomoc sojusznikowi +20 vs. zdrada sojusznika −25** (N2, sekcja „N1 + N2 — UKŁAD OSTATECZNY" wyżej) —
+  niemal symetria. Stanięcie przy sojuszniku to najmocniejszy dowód wiarygodności, tak jak zdrada jest
+  najmocniejszym dowodem przeciwnym.
+- **Sojusz +1/turę → po 25 turach odrabia jedną zdradę (−25)** — reputację buduje się mniej więcej tak
+  długo, jak długo trwa jej naprawianie.
+- **Strumień waży więcej niż finisz** przy długich zobowiązaniach (sojusz trwający 30 tur = +30 ze
+  strumienia + 10 z finiszu) — wytrwałość jest widoczna PRZEZ CAŁY CZAS trwania, moment zakończenia to
+  tylko domknięcie, nie główna nagroda.
+
+### Otwarte pytania — ZAPISANE, NIE rozstrzygnięte tutaj
+
+- **Kumulacja zobowiązań.** Sojusz + pakt + handel jednocześnie = +1,8/turę. Przy pięciu partnerach
+  łatwo przekroczyć +3/turę → maksimum +100 osiągalne w ok. 30 tur, po czym wszyscy uczciwi partnerzy
+  siedzą na suficie i mechanizm przestaje różnicować. Warianty do rozważenia przez Macieja: (a) limit
+  łącznego przyrostu na turę, (b) malejące przyrosty przy wielu jednoczesnych umowach, (c) zostawić bez
+  limitu — bo utrzymanie pięciu zobowiązań naraz naprawdę czyni gracza wzorem cnoty. **Pytanie do
+  Macieja, nierozstrzygnięte.**
+- **Czy strumień pozytywny działa PODCZAS WOJNY?** Analogiczne pytanie już rozstrzygnięte dla strumienia
+  Wiarygodność→Zaufanie (sekcja „✅ Decyzje Macieja (2026-07-26, popołudnie)" wyżej, DECYZJA 2:
+  C-WIAR-WOJNA=B, strumień działa też podczas wojny z niezaangażowanymi stronami) — ale to jest strumień
+  ZAUFANIA, nie strumień WIARYGODNOŚCI z tej sekcji (patrz rozróżnienie niżej). Czy strumień
+  Wiarygodności (tabela A wyżej) ma dziedziczyć tę samą zasadę, jest ODRĘBNYM, nierozstrzygniętym
+  pytaniem — nie zakładać automatycznie tej samej odpowiedzi bez potwierdzenia Macieja.
+- **Czy „30 tur bez wojny" (P4) liczy się globalnie (żadnej wojny z nikim) czy per para** (30 tur bez
+  wojny z KONKRETNĄ stroną)? Stara wersja P4 (§3.2, przed przebudową) sugerowała per parę („30 kolejnych
+  tur bez wojny z tą samą stroną"), ale skoro Wiarygodność jest globalna (WIAR-Q1=A), zasadność „per
+  para" wymaga potwierdzenia. **Nierozstrzygnięte.**
+- **Interakcja ze strumieniem Wiarygodność→Zaufanie** (sekcja „🔄 Przebudowa: Wiarygodność → Zaufanie per
+  turę" i jej korekta w „✅ Decyzje Macieja (2026-07-26, popołudnie)" — wzór ΔZaufanie/turę = W/dzielnik,
+  pierwotnie W/10, skorygowany do **W/20**) — to są **DWA RÓŻNE STRUMIENIE, NIE JEDEN**: strumień A/S1–S4
+  z tej sekcji zasila WIARYGODNOŚĆ (dodaje zdarzenia do listy gasnącej wg modelu 40/80/120), strumień
+  W/20 zasila ZAUFANIE (czyta bieżącą, wyliczoną Wiarygodność, nie zapisuje do niej niczego). NIE MYLIĆ
+  przy implementacji — jeden pisze do listy zdarzeń Wiarygodności, drugi tylko czyta jej wynik.
+
+### Wymagania implementacyjne
+
+- **Strumień to zdarzenia naliczane CO TURĘ** — w modelu z sekcji „🔴 MODEL ZAPOMINANIA (KRZYWA
+  WIARYGODNOŚCI)" wyżej każde zdarzenie (kara i nagroda) podlega temu samemu wzorowi gaśnięcia
+  (40/80/120 tur wg trudności i znaku, z trwałym śladem 10% na zawsze). Zastosowane dosłownie do
+  strumienia oznacza JEDNO nowe zdarzenie na liście `CredibilityEventRecord` KAŻDĄ turę, na KAŻDE
+  aktywne zobowiązanie, na KAŻDĄ parę.
+  ⚠️ **To jest istotne ryzyko wydajnościowe i pamięciowe.** Przy 5 partnerach × 1 zobowiązaniu każdy ×
+  200-turowej partii to rząd wielkości 1000 wpisów tylko od strumienia, u samego jednego właściciela —
+  wielokrotnie więcej niż dotychczasowe zdarzenia N/P łącznie. Trzymanie tysięcy wpisów po +0,3 nie jest
+  akceptowalne. Wykonawca MUSI zastosować konsolidację analogiczną do tej już odnotowanej w sekcji
+  „WYMAGANIA IMPLEMENTACYJNE (wersja finalna)" wyżej (pkt 4: `trwałySladSumaByOwner` per właściciel) —
+  ale dla strumienia to nie jest już opcja inżynierska „do rozważenia", tylko TWARDY WYMÓG, bo bez
+  konsolidacji lista rośnie bez ograniczenia przez całą partię przy każdej udanej turze każdej relacji.
+  Rekomendacja robocza: agregować wpisy strumienia per (właściciel, typ zobowiązania) zamiast per turę —
+  jeden rosnący/wygasający „bieżący ciąg" zamiast osobnego rekordu na każdą turę — ale ostateczny kształt
+  do ustalenia przy implementacji Etapu 0.
+- **Wszystkie wartości z tabel A/B/C to parametry strojeniowe w danych** (`DIPLOMACY_PARAMS` w
+  `game/diplomacy.ts`, docelowo też `gra/data/diplomacy.json`), NIE stałe w kodzie — zgodnie z
+  dotychczasową konwencją całego dokumentu (§3, §7 Etap 0).
+- **PARYTET AI: identycznie dla gracza i AI.** Strumień, finisz i czyny naliczają się tą samą funkcją,
+  niezależnie od `ownerId` — zero gałęzi `if (ownerId===0)`, zgodnie z §6.
+- **TABELA POZYTYWNA Z TEJ SEKCJI ZASTĘPUJE tabelę P1–P5 z §3.2 w całości.** Stare wagi jednorazowe
+  (+8 sojusz / +4 NAP-handel / +5 spłata handlu / +3 wieloletni pokój / +6 pomoc sojusznikowi) są
+  NIEAKTUALNE — zastąpione przez trzy tabele wyżej (strumień S1–S4 + finisz P1–P3 + czyny P4/P5).
+  Kolumny „Status w kodzie" / „Plik : funkcja" ze starej tabeli §3.2 tracą aktualność dla wierszy
+  P1–P5 (dotyczyły starego, jednowymiarowego modelu) — wykonawca ma je zweryfikować od nowa przy
+  projektowaniu Etapu 0/1 pod ten nowy, trójwymiarowy model, nie kopiować wprost.
+
+### STAN STRONY POZYTYWNEJ — DOMKNIĘTA (wagi tabel A/B/C do dostrojenia w playteście)
+
+| Element | Status |
+|---|---|
+| Model (strumień/finisz/czyny) | ✅ ZATWIERDZONY |
+| Tabela A — STRUMIEŃ (S1–S4) | ✅ ZATWIERDZONA (wagi propozycją do strojenia) |
+| Tabela B — FINISZ (P1–P3) | ✅ ZATWIERDZONA |
+| Tabela C — CZYNY (P4/P5) | ✅ ZATWIERDZONA |
+| Warunek 100% dostaw dla S3 | ✅ ZATWIERDZONY |
+| Kumulacja/limit strumienia | ❌ OTWARTE — Maciej |
+| Strumień Wiarygodności podczas wojny | ❌ OTWARTE (odrębne od strumienia Zaufania, patrz wyżej) |
+| P4 globalnie czy per para | ❌ OTWARTE |
+| Konsolidacja listy zdarzeń strumienia | ⚠️ WYMÓG dla wykonawcy, kształt do ustalenia przy Etapie 0 |
+
+Razem ze stanem strony negatywnej (sekcja „STAN TABELI KAR — DOMKNIĘTA" wyżej) obie strony tabeli
+zdarzeń Wiarygodności (§3) są teraz w komplecie przeprojektowane i zatwierdzone co do modelu; otwarte
+pozostają wyłącznie strojenie liczbowe i cztery pytania odnotowane wyżej.
+
+---
+
+## 🔷 N3 — ROZSZERZENIE: KARA TAKŻE PO JEDNOSTRONNYM ZAKOŃCZENIU POROZUMIENIA BEZTERMINOWEGO (Maciej 2026-07-26)
+
+> „Atak zaraz po pokoju powinien być rozszerzony na atak po zakończeniu umowy, z wyłączeniem umów
+> terminowych. Czyli jeżeli umowa terminowa się kończy między nami — czy do pokoju, czy do porozumienia
+> o pakcie o nieagresji — to możemy atakować następnej tury. Ale jeżeli to było nieczasowe ustalenie, na
+> przykład sojusz czy jakiekolwiek inne ustalenie typu pakt o nieagresji, i anulujemy to, to nie tylko
+> karę powinniśmy dostać za anulowanie — ale jeżeli zaatakujemy w ciągu dziesięciu tur od zakończonego
+> przez nas porozumienia, to też mamy karę. Czyli atak zaraz po pokoju powinien też dotyczyć umowy o
+> pakcie nieagresji przez 10 tur. A jeżeli to była umowa czasowa, to możemy turę po zakończeniu tej umowy
+> atakować bez kary."
+
+### Nowa reguła
+
+Kara N3 (**−12**, dodatkowa, na wierzchu N1/N2 — patrz sekcja „N1 + N2 — UKŁAD OSTATECZNY" wyżej) obejmuje
+teraz NIE TYLKO atak w ciągu 10 tur od zawarcia pokoju (reguła pierwotna, bez zmian), ale także **atak w
+ciągu 10 tur od JEDNOSTRONNEGO ZAKOŃCZENIA przez nas porozumienia bezterminowego** (sojusz, pakt o
+nieagresji — o ile w ogóle bezterminowy, patrz weryfikacja niżej — lub inne bezterminowe ustalenie).
+
+### Kluczowe rozróżnienie
+
+| Jak zakończyło się porozumienie | Kiedy wolno zaatakować bez kary N3 |
+|---|---|
+| **Umowa TERMINOWA wygasła naturalnie** (dobiegła końca terminu) | **następna tura** — zero karencji, dotrzymaliśmy słowa do końca |
+| **Porozumienie BEZTERMINOWE anulowane przez nas** | dopiero **po 10 turach**; atak wcześniej = N3 (−12) |
+| **Pokój zawarty** (stan po wojnie) | dopiero po 10 turach (reguła pierwotna, bez zmian) |
+
+### Uzasadnienie projektowe
+
+Wygaśnięcie umowy terminowej to dotrzymanie słowa do końca — nie ma powodu do karencji. Jednostronne
+zerwanie bezterminowego porozumienia, po którym natychmiast następuje atak, to jawnie zaplanowana
+agresja — „zrywam, żeby uderzyć". Stąd kara sumuje się z karą za samo zerwanie.
+
+### Przykładowy rachunek (sumowanie kar)
+
+Anulowanie bezterminowego paktu o nieagresji + atak w 3. turze po anulowaniu:
+
+| Składnik | Waga |
+|---|---|
+| Kara za samo zerwanie (N5 — o ile obowiązuje, patrz sprzeczność niżej) | zależne od rozstrzygnięcia konfliktu N3↔N5 |
+| N3 — atak w oknie 10 tur od zakończenia porozumienia | **−12** |
+| N1/N2 — kara za sam sposób wypowiedzenia wojny (brak ostrzeżenia / złamanie zobowiązania NAP lub sojuszu) | −10 / −18 / −25 wg tabeli N1+N2 |
+| **RAZEM (przykład: NAP, zerwany bezterminowy, atak natychmiastowy bez ostrzeżenia)** | kara zerwania + (−12) + (−28 dla NAP+brak ostrzeżenia) |
+
+### ⚠️ SPRZECZNOŚĆ DO JAWNEGO ZGŁOSZENIA — NIE ROZSTRZYGNIĘTA TUTAJ
+
+Ta decyzja **koliduje z wcześniejszą decyzją Macieja o N5**, zapisaną w tym samym dokumencie (sekcja
+„N3–N7 — ZATWIERDZONE Z DOPRECYZOWANIAMI" wyżej):
+
+- **Wcześniej (N5):** „dobrowolne zerwanie traktatu — WARUNKOWE: kara TYLKO dla traktatów CZASOWYCH.
+  Traktat zwykły/bezterminowy → **BRAK KARY**." Uzasadnienie zapisane tam: umowa bezterminowa jest z
+  natury wypowiadalna.
+- **Teraz (N3 rozszerzone):** anulowanie porozumienia **BEZTERMINOWEGO** ma dawać karę („nie tylko karę
+  powinniśmy dostać za anulowanie, ale jeżeli zaatakujemy…").
+
+Te dwa zapisy się wykluczają. **Trzy możliwe odczytania — NIE wybrano żadnego:**
+
+**(a)** N5 zmienia się — kara za samo zerwanie obowiązuje też przy porozumieniach bezterminowych
+(wcześniejsza decyzja N5 zostaje tym samym anulowana).
+
+**(b)** N5 zostaje bez zmian (bezterminowe bez kary za samo zerwanie), a nowa reguła dodaje WYŁĄCZNIE
+karencję 10 tur na atak — czyli „zerwać wolno bez kary, ale nie wolno od razu uderzyć".
+
+**(c)** rozróżnienie zależy od typu porozumienia: sojusz zawsze karany przy zerwaniu, pakt o nieagresji
+nie.
+
+⚠️ **Wykonawca NIE MOŻE wdrażać tej części (kara za samo zerwanie porozumienia bezterminowego) do czasu
+rozstrzygnięcia przez Macieja.** Reguła karencji 10 tur na atak (N3 rozszerzone) sama w sobie NIE jest
+sporna i można ją projektować równolegle — sporne jest wyłącznie to, czy samo zerwanie bezterminowego
+porozumienia (niezależnie od późniejszego ataku) ma dodatkowo kosztować.
+
+### Wymagania implementacyjne
+
+Wymaga zapamiętania per para: **tury zakończenia porozumienia**, **jego typu** (terminowe/bezterminowe) i
+**kto je zakończył**. To ta sama struktura co `wojnaOdTury` (N1, sekcja „N1 — PEŁNA SPECYFIKACJA" wyżej) i
+`pokojOdTury` (N3 pierwotne, sekcja „N3–N7 — ZATWIERDZONE" wyżej) — **zbudować raz, wspólnie**, jako
+rozszerzenie `DiploPairMeta` (`game/diplomacy-pn-engine.ts:20-23` — dziś ma WYŁĄCZNIE
+`trustPnGainedThisTurn` i `dobraWolaRemainingTur`, żadne z trzech pól `wojnaOdTury`/`pokojOdTury`/nowego
+pola zakończenia porozumienia jeszcze nie istnieje w kodzie — wszystkie trzy to praca do wykonania w
+jednym przebiegu przez ten sam plik).
+
+**PARYTET AI:** identycznie dla gracza i AI — to samo zdarzenie (anulowanie bezterminowego porozumienia +
+atak w oknie 10 tur) zaaplikowane raz z inicjatorem-graczem, raz z inicjatorem-AI, musi dać identyczną
+karę N3.
+
+### ✅ Weryfikacja w kodzie: czy `ActiveDeal` rozróżnia traktaty terminowe od bezterminowych
+
+**WYNIK: TAK, rozróżnienie ISTNIEJE w kodzie już dziś — i to nie wszystkie traktaty są terminowe.**
+Reguła NIE jest bezprzedmiotowa, ale weryfikacja ujawniła niespójność między przykładem Macieja w cytacie
+i tym, jak silnik faktycznie buduje pakt o nieagresji (patrz ⚠️ niżej).
+
+Pole `ActiveDeal.wygasaTura: number | null` (`game/diplomacy-treaties.ts:44`) JEST dokładnie tym
+rozróżnieniem: `null` = bezterminowe, liczba = tura wygaśnięcia (terminowe). Już dziś aktywnie
+wykorzystywane przez `expireTreaties` (`game/diplomacy-treaties.ts:156`:
+`state.filter(d => d.wygasaTura === null || d.wygasaTura > turn)`) i `tickDiplomacy`
+(`game/diplomacy.ts:1438`, ten sam warunek) do decydowania, które traktaty wygasają naturalnie.
+
+Sprawdzono WSZYSTKIE miejsca budowania deali (`buildDeal(...)`, `game/diplomacy-proposals.ts`, oraz
+odpowiedniki w `main.ts`) — rozkład wg typu traktatu:
+
+| Typ traktatu | `wygasaTura` w kodzie dziś | Miejsca |
+|---|---|---|
+| **Sojusz** (defensywny/pełny, w tym sojusz sióstr AI↔AI) | **ZAWSZE `null` (bezterminowe)** | `diplomacy-proposals.ts:417`, `:892` (`resolvePlayerAcceptsAiPending`), `main.ts:8384` (sojusz sióstr) |
+| **Otwarte granice / Prawo wojskowego przemarszu** | **ZAWSZE `null` (bezterminowe)** | `diplomacy-proposals.ts:670-675` |
+| **Wasalizacja/Trybut** (przez `'wasal'`) | **ZAWSZE `null` (bezterminowe)** | `diplomacy-proposals.ts:703-708` |
+| **Wasalizacja/Trybut** (przez `'trybut_zadanie'`/`'trybut_oferta'`) | **MIESZANE** — zależy od `payload.turns` (może być `null` lub liczba) | `diplomacy-proposals.ts:454`, `:483`, `:957`, `:976` |
+| **Pakt o nieagresji (NAP)** | **ZAWSZE liczba (terminowe), NIGDY `null`** — `turns = clamp(payload.turns ?? 15, 10, 20)`, więc zawsze 10–20 tur | `diplomacy-proposals.ts:360-366` |
+| **Umowa handlowa** (jednorazowa propozycja gracza, akceptacja propozycji AI, AI↔AI cykliczna) | **ZAWSZE liczba (terminowe)** — `turn + clampDealTurns(...)`, domyślnie 15 tur, zakres 1–20 | `diplomacy-proposals.ts:531-536`, `:566-571`, `:941-946`; `main.ts:8525` |
+
+**⚠️ Niespójność do zgłoszenia Maciejowi:** w cytacie Maciej podaje pakt o nieagresji jako PRZYKŁAD
+porozumienia „nieczasowego" („jakiekolwiek inne ustalenie typu pakt o nieagresji"). W kodzie dziś jest
+odwrotnie — **NAP jest jedynym traktatem, który NIGDY nie może być bezterminowy** (zawsze 10–20 tur,
+`diplomacy-proposals.ts:360`). Sojusz i otwarte granice/prawo przemarszu są bezterminowe ZAWSZE; NAP jest
+terminowy ZAWSZE. Konsekwencja: przy dosłownym czytaniu obecnego kodu, **anulowanie NAP przed czasem
+zawsze trafia do gałęzi „zerwanie umowy terminowej"** (N5, kara −6/−4 jeśli N5 obowiązuje — bez sporu, bo
+N5 już dziś karze zerwanie czasowych) i NIGDY nie wejdzie w nową gałąź „bezterminowe zerwane
+jednostronnie" opisaną w tej sekcji — bo w dzisiejszym silniku NAP bezterminowy po prostu nie istnieje.
+Scenariusz z cytatu Macieja („anulujemy pakt o nieagresji jako porozumienie bezterminowe") dziś w
+praktyce dotyczyłby WYŁĄCZNIE Sojuszu (i technicznie Otwartych Granic/Prawa Przemarszu, Wasalizacji przez
+`'wasal'`) — NIE NAP, dopóki albo (i) NAP nie zostanie przebudowany tak, by dopuszczał wariant
+bezterminowy, albo (ii) Maciej potwierdzi, że mimo przykładu w cytacie chodziło mu o zasadę ogólną
+(„każde bezterminowe porozumienie, jakiekolwiek by nie było"), a NAP akurat po prostu nie kwalifikuje się
+dziś do tej kategorii i przykład w wypowiedzi był ilustracyjny, nie dosłowny. **Do potwierdzenia przez
+Macieja przed implementacją** — nie rozstrzygać samodzielnie, które traktaty realnie wchodzą w zakres tej
+reguły.
+
+**Wniosek dla wykonawcy:** reguła NIE jest bezprzedmiotowa (istnieją dziś w kodzie traktaty bezterminowe:
+sojusz, otwarte granice/prawo przemarszu, wasalizacja przez `'wasal'`) — ale zakres stosowania
+(„czy NAP też", zgodnie z literalnym przykładem Macieja) wymaga wyjaśnienia, bo koliduje z tym, jak NAP
+jest dziś zaimplementowany.

@@ -3357,3 +3357,20 @@ HANDEL (trasy handlowe), nie Daninę — decyzja właściciela.
 od reszty i bez widocznej procy. Oba przechodzą pomiary, ale wyglądem budzą moje zastrzeżenia.
 **Sesja lokalna: pull na dysk właściciela, testuj `3cf111ce`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+<!-- ===== wpisy drugiego integratora doklejone przy scaleniu 2026-07-26 ===== -->
+
+## [2026-07-26] SESJA LOKALNA (Fable) → WSZYSCY — deploy ROBOCZA `076e3c0b` (uwagi playtestu, BEZ lasów)
+
+Weszło: dźwięk marszu jednostek (nowy kanał SFX mapy — sfxPrefs.ts + wiersz w menu pauzy), przycisk pełnego ekranu w HUD, nazewnictwo Danina/Podatek w panelu miasta, Murarstwo 28.
+⚠️ **Lasy WYCOFANE z tego builda** (revert `9a86e42` commita `e4c3e33`) — decyzja Macieja: pokrycie 83% ma być zrobione inaczej, przez istniejące parametry poziomów lasu w kreatorze. Wraz z rewertem cofnął się też twardy wymóg lasu przy starcie — **ryzyko startu bez drewna WRACA do czasu nowego rozwiązania**.
+Bramki: tsc=0, map-gen PASS, combat/tech/research zielone. Wypchnięte na main.
+
+---
+
+## [2026-07-26] SESJA LOKALNA (Fable) → WSZYSCY — deploy ROBOCZA `c08b5fcc`
+
+Uwagi z playtestu Macieja + lasy. Weszło: naprawa paska w pełnym ekranie (przyczyna: `renderer.setSize()` nadpisywał styl canvasu pikselami — canvas zamrożony na rozmiarze startowym; naprawia też zwykły resize okna), obramówka zamiast niebieskiego tła w dyplomacji, HP w liście armii, populacja/%HP na kaflach modalu wyboru heksa, oraz **działający suwak gęstości lasu** (Mało 38 / Normalnie 58 / Dużo 77% — wcześniej ~15% niezależnie od wyboru, bo cap 0.18 dławił parametr tierów).
+Bramki wszystkie zielone. Wypchnięte na main.
+⚠️ Przy poziomie „Mało" ryzyko startu bez lasu w zasięgu miasta NADAL istnieje — mechanizm gwarancji został świadomie wycofany wcześniej (revert `9a86e42`) i nie wrócił.
+📋 Trwa projektowanie mechanizmu WIARYGODNOŚCI CYWILIZACJI — komplet decyzji Macieja w `dyspozycje/WIARYGODNOSC-SPECYFIKACJA.md` (nowa, czysta specyfikacja) oraz historia w `PROJEKT-WIARYGODNOSC-CYWILIZACJI.md`. Implementacja przewidziana dla orkiestratora — wchodzi w `diplomacy-*.ts` i `main.ts`.

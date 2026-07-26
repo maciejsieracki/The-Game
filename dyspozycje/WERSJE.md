@@ -9,6 +9,36 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
+
+<!-- ===== WPISY DRUGIEGO INTEGRATORA (galaz main) — doklejone przy scaleniu 2026-07-26 ===== -->
+
+## ROBOCZA `c08b5fcc` — 2026-07-26 · naprawy UI z playtestu + lasy wg ustawienia — **AKTUALNA**
+
+- **Pełny ekran naprawiony** — przyczyną paska u dołu NIE był element HUD, tylko canvas 3D zamrożony na rozmiarze z chwili startu (`renderer.setSize()` nadpisywał `canvas.style` pikselami, kasując 100%/100% z main.ts). Edge-pan wyłączał się, bo kursor wyjeżdżał poza obszar canvasu przed prawdziwą krawędzią. Fix w `render/scene.ts` (updateStyle=false + nasłuch `fullscreenchange`). **Efekt uboczny: naprawia też skalowanie przy zwykłej zmianie rozmiaru okna.**
+- **Dyplomacja** — niebieskie kwadratowe tło pod godłem państwa → obramówka w tym samym kolorze (`.dip-pennant`, jeden wspólny komponent = poprawione w liście relacji i toolbarze naraz).
+- **Lista armii** — dograne HP (suma stosu), widać ranne armie bez wchodzenia w każdą.
+- **Modal „CO WYBIERASZ?"** — populacja miasta i % HP jednostki na kaflach.
+- **LASY wg ustawienia w kreatorze** — suwak „Las" wreszcie działa: **Mało 38% · Normalnie 58% · Dużo 77%** (było ~15% niezależnie od wyboru). Przyczyna: zahardkodowany cap `0.18` dominował nad parametrem tierów; wyniesiony do `FOREST_OVERLAY_CAP_FRAC=0.95`. Zero nowego kodu, tylko istniejące wartości. ⚠️ Przy „Mało" ryzyko startu bez lasu w promieniu 5 NADAL istnieje (mechanizm gwarancji świadomie niedodany).
+- **Bramki:** tsc=0 · map-gen-regression PASS (determinizm) · combat 6/6 · tech-tree 19/0 · research 33/33 · unit-replace 10/10.
+- Commity: `f4f6dd9` (4 naprawy UI), `b2f48bc` (lasy).
+
+## ROBOCZA `076e3c0b` — 2026-07-26 · uwagi z playtestu Macieja (BEZ lasów)
+
+- **Zawartość:** dźwięk marszu jednostek (nowy 4. kanał SFX mapy, synteza 0 MB, skalowany wielkością armii, cisza za mgłą wojny, przełącznik „Odgłosy jednostek") · przycisk PEŁNEGO EKRANU w HUD (funkcji wcześniej nie było) · „Podział handlu" → **Danina** / po Mennicy **Podatek** · Murarstwo 5→28 (długa gra 20→112, jak przed 24.07).
+- **CELOWO BEZ LASÓW:** commit `e4c3e33` (pokrycie 14→83% + wymóg lasu przy starcie) **wycofany** rewertem `9a86e42` — Maciej: „będziemy je zmieniać inaczej". Praca zachowana w historii, do ponownego użycia.
+- **Bramki:** tsc=0 · map-gen-regression PASS · combat 6/6 · tech-tree 19/0 · research 33/33.
+- Commity: `0645e92` (Murarstwo+Danina+pełny ekran+dyspozycje), `bfa51c0` (marsz), `9a86e42` (revert lasów).
+
+## ROBOCZA `b1f16a59` — 2026-07-25 · FALA 10.1: fix błędnego „mnożnika" Pałacu
+
+- **Zawartość:** cała FALA 10 (patrz niżej) **+ poprawka danych**: trzy tiery Pałacu miały w `baza.mnoznik` wartość równą DOKŁADNIE swojej kulturze (5/5, 8/8, 11/11, przyrost 0) — pomyłka przy wpisywaniu danych, wykryta przy weryfikacji z Maciejem. Pole `mnoznik` NIE jest konsumowane przez silnik ekonomii (czytane tylko do wyświetlenia chipa „×5 mnożnik" w panelu miasta), więc karta Pałacu obiecywała bonus, którego gra nie stosuje. Wyzerowane dla `palac`/`palac_ii`/`palac_iii` — chip znika, realne bonusy (kultura + zadowolenie, które silnik faktycznie liczy) bez zmian.
+- **Potwierdzone przez Macieja koszty i bonusy Pałacu:** I (Kamień) 8 drewna / 40 pracy · kultura 5 (+3/poz.), zadowolenie 2 (+1/poz.) — II (Brąz) 8 drewna+8 kamienia / 60 pracy · kultura 8 (+5), zadow. 3 (+2) — III (Żelazo) 8 drewna+8 kamienia+6 cegły / 90 pracy · kultura 11 (+7), zadow. 5 (+2). Maks. poziom 10, ulepszane kolejno I→II→III.
+- **Bramki:** tsc 0 · tech-tree 19/19 · VERIFY OK.
+- **md5:** `b1f16a595b17a2cb37955cc8de4b2fc8` · pieczątka `b1f16a59`. Zastępuje `99837b91`.
+- **ZNANY DŁUG (do decyzji):** pozostałe 11 budynków też ma niezerowy `mnoznik` (kuźnia 5, karawanseraj 8, koszary 5, wielka kuźnia 23, akademia wojskowa 20, warsztat oblężniczy 10, akademia 10, pretorium 5, lazaret 5, kuźnia żelaza 8, targowisko +3/poz.) — tam wartości NIE są duplikatem kultury (wyglądają na zamierzoną, ale NIGDY NIEZAIMPLEMENTOWANĄ mechanikę). Silnik ich nie konsumuje. Do rozstrzygnięcia: zaimplementować mnożnik jako realną mechanikę czy usunąć z kart.
+
+
+<!-- ===== WPISY SESJI CHMUROWEJ (galaz claude/sprawdzenie-funkcjonalnosci) ===== -->
 ## ROBOCZA `3cf111ce` — 2026-07-26 06:02 · FALA 14: jednostki Brazu wpiete + bonus cudow zasila Handel — **AKTUALNA**
 - md5 (pelne): `3cf111ced9515fe4263cde7a75ddc692` · stempel z menu: `ROBOCZA · 8c897b6c · 2026-07-26 06:02`
 - Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. **VERIFY OK.**
