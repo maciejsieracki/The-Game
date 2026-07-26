@@ -599,6 +599,83 @@ bliska nowemu mechanizmowi) — patrz pytania otwarte, §9.
 
 ---
 
+## 5a. PRZEGLĄD DŹWIGNI 2–4 (WIAR-9.5 = C)
+
+Przegląd wykonany na **kodzie**, nie na dokumentach źródłowych (audyt 2026-07-26, blokujący start Etapu
+implementacji Dźwigni 1 zgodnie z decyzją właściciela §9.5). Wniosek najważniejszy na wstępie: **Dźwignie
+2, 3 i 4 dziś NIE ISTNIEJĄ w kodzie** — żadna z nich nie czyta Wiarygodności, bo pole to nigdzie w
+`main.ts`/`diplomacy-proposals.ts`/`diplomacy-layers.ts` nie jest jeszcze przekazywane. Jedyny fragment
+gotowy do użycia to sam Etap 1: typy + funkcje czyste w `game/diplomacy-credibility.ts` i stałe w
+`DIPLOMACY_PARAMS` (`game/diplomacy.ts:280-376`). To zmienia charakter przeglądu: nie chodzi o „dwa
+działające mechanizmy się nakładają", tylko o „dwie jeszcze niezbudowane dźwignie mają zaprojektowane
+role, które się semantycznie pokrywają — zanim ktokolwiek napisze kod".
+
+### Tabela stanu faktycznego
+
+| Dźwignia | Stan w kodzie DZIŚ | Gdzie CZYTANE | Zależność od W dziś |
+|---|---|---|---|
+| **1 — strumień W→Zaufanie** | Wzór gotowy jako czysta funkcja, **NIE wpięty** do ticku | `strumienWiarygodnoscDoZaufania(w)` = `clamp(w,-100,100)/20`, `game/diplomacy-credibility.ts:317-320`. `TickCtx` (`game/diplomacy.ts:1490-1512`) **nie ma** pola `wiarygodnoscSelf`; `tickDiplomacy` (`:1537-1586`) liczy `dZ` wyłącznie z flag handlu/pokoju/religii/ekspansji — zero odniesienia do W. | Tak (wzór istnieje), ale nieużywany |
+| **2 — sufit Zaufania** | **Brak jakiejkolwiek formuły zależnej od W.** Jedyny realny „sufit" to stały `clamp(rdip.zaufanie + dZ, 0, 100)` (`game/diplomacy.ts:1576`) — identyczny dla każdej cywilizacji, niezależnie od reputacji. Drugi, węższy mechanizm „ochrony przed kupowaniem Zaufania darami" to `diplomacyClampTrustGainNaTure` (`game/diplomacy-value-catalog.ts:418-426`), limit **`max_zaufanie_na_ture` = 5 pkt Zaufania/turę** (`gra/data/diplomacy.json:162`) — ale dotyczy WYŁĄCZNIE zysku z nadwyżki PN (dary/handel, `diplomacy-pn-engine.ts`), nie całego `dZ`, i też nie zależy od W. | Brak sufitu zależnego od W do „obniżenia" — trzeba by go dopiero zaprojektować |
+| **3 — twarde progi traktatów** | **Nieużywane.** Stałe `wiarygodnoscProgSojuszMin: 0` i `wiarygodnoscProgNapMin: -40` już istnieją w `DIPLOMACY_PARAMS` (`game/diplomacy.ts:373,375`), ale `ProposalEvalContext` (`game/diplomacy-proposals.ts:115-140`) **nie ma** pól `proposerWiarygodnosc`/`responderWiarygodnosc` — case `'nap'` (`:347-369`) i case `'sojusz_defensywny'`/`'sojusz_pelny'` (`:371-420`) sprawdzają wyłącznie Zaufanie/Relację/Respekt/militaryRatio, zero odniesienia do W. | Zero — parametry przygotowane, ale martwe |
+| **4 — pierwszy kontakt** | **Nieużywane.** Startowe Zaufanie liczą `initialRelation` (`game/diplomacy.ts:1232-1258`) i `startRelationForPair` (`game/diplomacy-layers.ts:34-47`): `startZaufanie` (20 pkt, normal) + korekta typu cywilizacji (rywalizacja ten sam typ / różnica kulturowa) + korekta trudności dla miast-państw (`CITY_STATE_TRUST_DELTA_BY_DIFFICULTY`, `diplomacy-layers.ts:69-73`). Zero odniesienia do W globalnego żadnej ze stron. | Zero |
+
+**Rozstrzygnięcie kwestii NAP terminowy/bezterminowy (potrzebne dla Dźwigni 3, decyzje 9.1/9.10):** case
+`'nap'` w `diplomacy-proposals.ts:360` liczy `const turns = clamp(payload.turns ?? 15, 10, 20)` i buduje
+`deal` zawsze z `ctx.turn + turns` jako datą wygaśnięcia (`:361-367`) — **nigdy `null`**. Kod NIE rozróżnia
+dziś wariantu terminowego/bezterminowego dla NAP: nie istnieje żadna gałąź, która przekazałaby `null`
+(bezterminowy), mimo że `buildDeal`/`wygasaTura: number | null` (`diplomacy-treaties.ts:44`) obsługuje
+`null` poprawnie dla innych traktatów (Sojusz zawsze dostaje `null`, `:417`). Wdrożenie decyzji 9.1 (dwa
+warianty NAP) wymaga nowej gałęzi w tym case; dopiero wtedy „NAP bezterminowy jako druga twarda bramka
+Dźwigni 3" (decyzja 9.10=A) będzie miało do czego się odnieść w kodzie.
+
+### Wyliczenie z punktu 4 — strumień vs sufit dla W = −60 / 0 / +60
+
+Punkt wyjścia do naliczeń: `ΔZaufanie/turę = W/20` (Dźwignia 1, wzór §5) oraz jedyny REALNY dziś sufit —
+stały `clamp(0,100)`, ten sam dla każdej wartości W. Tury-do-ściany liczone od `startZaufanie = 20 pkt`
+(wartość startowa Zaufania, poziom normalny, `DIPLOMACY_PARAMS.startZaufanie`, `game/diplomacy.ts:176`) —
+przykładowy punkt odniesienia, nie założenie o konkretnej partii.
+
+| Wiarygodność (W) | Strumień ΔZaufanie/turę (W÷20) | Sufit Dźwigni 2 DZIŚ | Tury do ściany (od Zaufanie=20 pkt) | „Strumień pcha, sufit ścina" DZIŚ? |
+|---|---|---|---|---|
+| **−60 pkt** | **−3,0 pkt Zaufania/turę** | 100 (stały, niezależny od W) — ale realna ściana to **dolna** granica 0 | ~7 tur do Zaufanie=0 pkt | **Nie** — ściana (0) i tak jest niezależna od W; nie ma „obcięcia" specyficznego dla złej reputacji |
+| **0 pkt** | **0,0 pkt Zaufania/turę** | 100 | strumień nie porusza Zaufania wcale (napędzają je inne składniki `dZ`) | Nie dotyczy |
+| **+60 pkt** | **+3,0 pkt Zaufania/turę** | 100 (stały) | ~27 tur do Zaufanie=100 pkt | **Nie** — sufit=100 nie jest obniżony przez brak reputacji, bo Dźwignia 2 nie istnieje |
+
+**Wniosek kluczowy:** DZIŚ sytuacja „strumień pcha w górę, sufit ścina" **nie może wystąpić** — mechanicznie,
+bo Dźwignia 2 nie czyta W w żadnej formie; jedyna ściana to stały `clamp(0,100)`, identyczna dla
+Wiarygodności +100 i −100. Ale **w chwili, gdy Dźwignia 2 zostanie zaimplementowana dosłownie wg §5**
+(„sufit zależny od W, obniżający się dla cywilizacji o złej reputacji"), sytuacja opisana w zadaniu
+**powstanie z konstrukcji, automatycznie** — bo obie dźwignie będą czytać TĘ SAMĄ liczbę W i wpływać na
+TĘ SAMĄ zmienną (Zaufanie) w tym samym kierunku: zła reputacja jednocześnie (a) ciągnie Zaufanie w dół
+strumieniem I (b) obniża pułap, do którego Zaufanie może dojść mimo silnych innych składników `dZ`
+(sojusz +3, handel +1, dary…). To jest dokładnie ryzyko, które zablokowało start (decyzja 9.5=C) — audyt
+kodu je **potwierdza jako realne**, nie jako fałszywy alarm: nie dlatego, że dwa działające dziś mechanizmy
+kolidują, ale dlatego, że tak zaprojektowana Dźwignia 2 z definicji dubluje pracę, którą już wykonuje
+Dźwignia 1.
+
+### Odpowiedź na punkt 5 — czy któraś dźwignia karze drugi raz za to samo zdarzenie
+
+**Nie, żadna dźwignia 2–4 nie nalicza dodatkowego zdarzenia do rejestru Wiarygodności** — dźwignie 2–4 w
+swojej specyfikacji WYŁĄCZNIE **czytają** już wyliczoną wartość W jako wejście do innego mechanizmu
+(sufit, brama, wartość startowa); żadna z nich nie dopisuje nowego `CredibilityEventRecord` ani nie zmienia
+sumy Wiarygodności. Kary N1–N7 i nagrody FINISZ/CZYNY są liczone raz, w jednym rejestrze
+(`wiarygodnoscZdarzeniaByOwner`, §4) — dźwignie 2–4 nie dublują tego rejestru.
+
+Jest natomiast **redundancja na poziomie SKUTKU, nie na poziomie zdarzenia** — dotyczy wyłącznie pary
+Dźwignia 1 ↔ Dźwignia 2 (opisana wyżej): obie tłumaczą jedną intencję produktową („zła reputacja utrudnia
+wysokie Zaufanie") dwoma niezależnymi mechanizmami działającymi na tę samą zmienną w tym samym kierunku.
+Dźwignia 3 (twarde progi) i Dźwignia 4 (pierwszy kontakt) **nie dublują strumienia** w tym sensie — działają
+w innych domenach czasowych/strukturalnych:
+- Dźwignia 3 to jednorazowy, binarny gate w momencie PROPOZYCJI traktatu (nie ciągły wpływ na wartość
+  Zaufania) — sprawdza W bezpośrednio, niezależnie od Zaufania/Respektu (`NIEZALEŻNIE od Zaufania i
+  Respektu`, §5), więc nawet gdyby strumień już obniżył Zaufanie, gate i tak zadziała identycznie; to
+  redundancja typu „pas i szelki" (backstop), nie podwójna kara za to samo zdarzenie.
+- Dźwignia 4 ustawia WARTOŚĆ POCZĄTKOWĄ w chwili kontaktu (jednorazowy stan wyjściowy), a strumień działa
+  dopiero PO kontakcie, per turę — to złożenie „stan początkowy + dryf", standardowy wzorzec, nie
+  podwójne liczenie tego samego zdarzenia.
+
+---
+
 ## 6. ZASADY NADRZĘDNE (obowiązują CAŁY mechanizm)
 
 1. **Żadnej kary bez uprzedzenia** — patrz §2. Modal/ostrzeżenie z jawnym kosztem PRZED akcją gracza;
