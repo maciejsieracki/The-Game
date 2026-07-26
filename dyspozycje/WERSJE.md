@@ -11,7 +11,38 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `2f928932` — 2026-07-26 17:05 · FALA 18: NEGOCJACJE NA ZYWO + MUZYKA — **AKTUALNA**
+## ROBOCZA `ce54be5b` — 2026-07-26 17:22 · FALA 19: DWA BLEDY BLOKUJACE + WIARYGODNOSC — **AKTUALNA**
+- md5 (pelne): `ce54be5b062f229cf77871597774573a` · stempel: `ROBOCZA · 2026-07-26 17:22`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `7931364`.
+- **Naprawione oba bledy blokujace zgloszone w playtescie:**
+  - **Jednostka przenoszona w nieoczekiwane miejsce** — przyczyna NIE byla w garnizonie ani
+    fortyfikacji (obie przesledzone i wykluczone), tylko w oknie „Polaczenie armii": klik
+    w przyciemnione tlo i Escape dzialaly jak swiadome „Zostaw osobno", a ta akcja FIZYCZNIE
+    odsuwa jednostke w strone heksu wyjscia (albo na sasiedni wolny, gdy oryginalny zajety).
+    Modal wyskakuje odroczony na przelomie tury — czyli gdy gracz klika w mape po kolejny
+    rozkaz. Stad trzy warianty objawu naraz. Blad istnial od 2026-07-22.
+  - **Spichlerz niedostepny mimo odkrytej technologii** — bramka byla poprawna (wymaga dostepu
+    do Ceramiki), ale katalog budynkow NIGDY nie sprawdzal bramki surowcowej, wiec budynek
+    dostawal status „gotowy" i znikal z sekcji „Jeszcze zablokowane" bez zadnego komunikatu.
+    Dotyczylo OSMIU budynkow: Garncarnia, Stolarnia, Warsztat kamieniarski, Cegielnia, Kuznia,
+    Mennica, Odlewnia brazu/Piec hutniczy, Spichlerz II.
+- **Wiarygodnosc cywilizacji — etapy 2-4 wpiete w silnik**: rejestr zdarzen i strumienia
+  przechodzacy przez zapis gry, kary N1-N7 (N1/N3 w jedynym wspolnym punkcie rozstrzygania
+  potyczki, wiec parytet AI z konstrukcji), nagrody S1-S4/P1-P3/P4, oraz Dzwignia 1 —
+  reputacja realnie wplywa na Zaufanie co ture (W/20, poza aktualnym przeciwnikiem wojennym).
+  Przy okazji naprawiona atomowosc handlu cyklicznego: walidacja obu stron przed transferem,
+  barter jako jedna para, wina liczona wylacznie stronie winnej.
+- **Generator map — nowa kolejnosc krokow** (teren → rzeki → lasy → surowce). Zmiana parametrow
+  lasu przestaje przestawiac losowanie gor i zloz. Naprawione pokrycie reliefu (test 2/6 → 6/6).
+  Gorzystosc 19,16-20,58% (srednia 19,53%), determinizm i ujscia rzek bez zmian.
+- **Bramki:** tsc 0 · logic 208/208 · ai 239/239 · wiarygodnosc 63/63 · spichlerz-widocznosc
+  45/45 · army-merge-dismiss 16/16 · relief-grid-coverage 6/6 · world-density 31/31 ·
+  zloto 43/43 · deposit-coast 20/20 · map-quality-forest-parity 101/101.
+- **Znane, NIEROZWIAZANE:** `fair-play-grid-test` 3/8 — udowodniona sprzecznosc arytmetyczna
+  miedzy progami testu (~10% sufitu gestosci) a decyzja 80A (gorzystosc 19,3%). Wymaga decyzji
+  wlasciciela, nie poprawki kodu.
+
+## ROBOCZA `2f928932` — 2026-07-26 17:05 · FALA 18: NEGOCJACJE NA ZYWO + MUZYKA — **ZASTĄPIONA**
 - md5 (pelne): `2f9289326f96147eab74f7403d306924` · stempel: `ROBOCZA · <pre-stamp> · 2026-07-26 17:05`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - Zbudowane z czystego HEAD `a0847fd` w osobnym worktree. Trwajace prace (generator map,

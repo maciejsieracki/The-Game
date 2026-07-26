@@ -3428,3 +3428,16 @@ muzyki w menu** (po gotowosci odtwarzacza, nie wczesniej niz 2500 ms).
 w nieoczekiwane miejsce po zakonczeniu tury oraz Spichlerz niedostepny mimo odkrytej technologii.
 **Sesja lokalna: pull na dysk wlasciciela, testuj `2f928932`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [17:22 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `ce54be5b` (FALA 19)
+**md5 `ce54be5b062f229cf77871597774573a`**, stempel `ROBOCZA · 2026-07-26 17:22`. VERIFY OK. HEAD `7931364`.
+Naprawione OBA błędy blokujące z playtestu: przenoszenie jednostki (przyczyna: modal „Połączenie
+armii" traktował klik w tło i Escape jak „Zostaw osobno", a ta akcja fizycznie odsuwa jednostkę —
+błąd od 2026-07-22) oraz niedostępny Spichlerz (katalog budynków nie sprawdzał bramki surowcowej —
+dotyczyło ośmiu budynków).
+Nowe: **Wiarygodność cywilizacji etapy 2-4** wpięte w silnik (kary, nagrody, wpływ na Zaufanie,
+zapis gry) + naprawiona atomowość handlu cyklicznego; **generator map** z nową kolejnością kroków
+(teren → rzeki → lasy → surowce) i naprawionym pokryciem reliefu.
+⚠️ `fair-play-grid-test` 3/8 — udowodniona sprzeczność progów z decyzją 80A, czeka na decyzję.
+**Sesja lokalna: pull na dysk właściciela, testuj `ce54be5b`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
