@@ -693,3 +693,73 @@ Suwak podziału (Nauka / Skarbiec / Zamożność) jest dziś **per miasto** — 
   w `gra/src/main.ts` (`handelIncome`, ok. linii 8046)
 - Sekcja Daniny/Podatku w mieście: `gra/src/ui/cityPanel.ts`, etykiety przez `game/danina-nazwa.ts`
 - Bonus cudów `handel_procent` (5 cudów) zasila Handel, nie Daninę — decyzja z 2026-07-26
+
+---
+
+## ZNALEZISKO 86 (2026-07-26) — „Szczegóły bitwy" nie pokazują poziomu zniszczeń
+**STATUS: ZDIAGNOZOWANE.** Zgłoszone przez Macieja na zrzucie z tury 11.
+
+**Objaw:** panel „Szczegóły bitwy" pokazuje przy jednostce `19 → 13`, ale gracz nie wie, czy 13 to dużo,
+czy mało — brak odniesienia do maksimum.
+
+**Diagnoza (fakty z kodu):**
+- `gra/src/battle/endDetails1E.ts:85-88` renderuje `hpBefore → hpAfter` jako **liczby bezwzględne**,
+  a kolumnę podpisuje „ludzi po bitwie".
+- **`maxHp` NIGDY nie dociera do tego panelu** — grep po `maxHp` w `endDetails1E.ts` i `endScreen1E.ts`
+  daje **zero trafień**. Typ `EndDetailsUnitRow` (linie 26-32) ma tylko `hpBefore`/`hpAfter`.
+- Tymczasem **drugi ekran po bitwie już to robi dobrze**: `gra/src/ui/postBattleSummary.ts:239-240`
+  pokazuje `HP 62% → 41%` i rysuje pasek o szerokości `hpBeforePct`, bo `gra/src/game/battle-summary.ts:78`
+  liczy `pct(snap.hp, snap.maxHp)`.
+
+**Czyli gra UMIE pokazać poziom zniszczeń — tylko na innym ekranie.** To nie brak mechaniki, to brak
+przekazania jednej liczby (`maxHp`) do drugiego panelu.
+
+**Powiązanie:** prawdopodobnie ta sama rodzina co stare zgłoszenie **R-BITWA-STRATY**
+(`REJESTR-PROSB-I-ZADAN.md`) — „pasek siły/HP w panelu armii świata pokazuje pełny, nie odzwierciedla
+strat". Wtedy subagent nie odtworzył objawu i temat utknął na braku repro. Teraz jest konkretny zrzut.
+
+---
+
+## ZNALEZISKO 87 (2026-07-26) — przestarzałe ekrany do przerobienia przez designera
+**STATUS: DO PRZEKAZANIA DESIGNEROWI.** Maciej zgłasza kolejno, w trakcie playtestu.
+
+| Ekran | Co jest nie tak |
+|---|---|
+| **Panel BADANIA** | przestarzały — drzewko technologii zostało dawno wymienione, panel go nie odzwierciedla |
+| **Panel widoku miast na mapie głównej** | przestarzały (lista „MIASTA" z jednym wierszem i tekstem pomocy) |
+| **Panel dyplomacji** | pod ikoną państwa jest niebieskie kwadratowe tło — **albo je usunąć, albo zamienić na obramówkę w tym kolorze** |
+| **„MIASTO ZDOBYTE"** | przestarzałe okno po zdobyciu miasta |
+| **Karta Mennicy** | mockup v1 wysłany; kierunek: oczyścić, mniej informacji, szczegóły na tooltipach, minimalizm |
+
+**Rozstrzygnięcia właściciela do karty Mennicy v2** (2026-07-26) — wzorzec także dla pozostałych kart:
+1. **„Śpi" sygnalizuje sam mnożnik** — przekreślone ×1,5 → żywe ×1,0. **Nie wygaszać całej karty**,
+   bo plon i rozbudowa dalej działają. Wygaszenie zarezerwowane dla stanu „niezbudowana" + kłódka.
+2. **Warunki asymetrycznie:** spełnione zwinięte w cichą linię „3 z 4", niespełnione **głośne,
+   z podpowiedzią co zrobić**.
+3. **Ikona jest już w kanonie:** `gra/src/ui/icons/brand/buildings/bld-mennica.svg` — emoji do wyrzucenia.
+4. **Oczyścić kartę** — informacje dodatkowe na tooltipy, wygląd maksymalnie przejrzysty.
+
+---
+
+## ZNALEZISKO 88 (2026-07-26) — głód armii: podwójne złamanie parytetu AI
+**STATUS: ZDIAGNOZOWANE, czeka na decyzję ABC. NIE naprawiać bez niej — zmienia balans każdej partii.**
+
+Maciej podejrzewał, że „AI nie umie przesunąć żywności na armię i armia głoduje". Kod mówi coś
+**odwrotnego i gorszego** — parytet jest złamany w DWÓCH miejscach naraz, oba na korzyść AI:
+
+| | Gracz | AI |
+|---|---|---|
+| Może przesunąć żywność na zapasy armii | tak | **nie** |
+| Traci HP przy ujemnych zapasach | **tak, −8% maxHP/turę (normal)** | **nie, nigdy** |
+
+**Dowody:**
+1. Domyślny podział to **100% na rozwój miast, 0% na armię** (`DEFAULT_PROCENT_ROZWOJ = 100`).
+   Jedyne miejsce zmieniające go to `main.ts:3777-3779` z twardą bramką `if (city.ownerId !== 0) return;`.
+   W całym `ai.ts` **nie ma ani jednego odwołania** do podziału żywności.
+2. Atrycja z głodu (`main.ts:13795-13800`): `if (getEmpireFoodReserve(0) < 0)` oraz
+   `applyArmyStarvationHpLoss(units, 0, …)` — **oba z zahardkodowanym `0`**, czyli tylko gracz.
+   Rachunek `advanceEmpireFood` liczy się poprawnie dla wszystkich właścicieli, zapasy AI schodzą
+   na minus, ale **nic się z tym nie dzieje**.
+
+**Do decyzji ABC:** czy AI dostaje automatyczne zarządzanie suwakiem, czy głód obowiązuje wszystkich,
+czy jedno i drugie. Naprawa dotyka `main.ts` i zmienia balans — nie robić po cichu.
