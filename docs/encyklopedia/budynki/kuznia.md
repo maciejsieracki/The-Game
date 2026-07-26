@@ -1,11 +1,11 @@
-# Kuznia
+# Kuźnia brązu
 
 ## Metadane
 
 | Pole | Wartość |
 |------|---------|
 | **id** | `kuznia` |
-| **tytuł** | Kuznia |
+| **tytuł** | Kuźnia brązu |
 | **kategoria** | Miasto — budowa |
 | **poradnik_ref** | `docs/PORADNIK-GRACZA/45-katalog-budynkow.md` |
 | **json_ref** | `buildings.json` |
@@ -15,14 +15,14 @@
 
 ## Wiki‑S
 
-**Kuznia** — budynek (Produkcja+Wojsko), epoka Brąz. Koszt od **30** pracy, utrzymanie **2** ¤/t. Technologia **Brązownictwo**.
+**Kuźnia brązu** — budynek (Produkcja+Wojsko), epoka Brąz. Koszt od **30** pracy, utrzymanie **2** ¤/t. Technologia **Brązownictwo**.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Kuznia wzmacnia miasto w kategorii **Produkcja+Wojsko**. Poziom 1: **+6 pracy** (+3 na poziom), **+1 złota** (+0 na poziom), **+5 % mnożnika handlu** (+2 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
+Kuźnia brązu wzmacnia miasto w kategorii **Produkcja+Wojsko**. Poziom 1: **+6 pracy** (+3 na poziom), **+1 złota** (+0 na poziom), **+5 % mnożnika Daniny** (+2 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 30 pracy
 - **Każdy kolejny poziom:** +10 pracy
@@ -46,9 +46,9 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 30 | **3 tur** | +6 pracy, +1 złota, +5 % mnożnika handlu | 2 ¤/t |
+| Poziom 1 | 30 | **3 tur** | +6 pracy, +1 złota, +5 % mnożnika Daniny | 2 ¤/t |
 | Poziom 2 | 40 | **4 tur** | więcej (patrz niżej) | 2 ¤/t |
-| Poziom 3 | 50 | — | **+12 pracy, +1 złota, +9 % mnożnika handlu** | 2 ¤/t |
+| Poziom 3 | 50 | — | **+12 pracy, +1 złota, +9 % mnożnika Daniny** | 2 ¤/t |
 
 Przy +1 złota/t, utrzymanie 2 ¤/t → netto **+-1 ¤/t**. Koszt 30 pracy przy 10/t ≈ **3 tur** pracy — złotem „zwraca się" po ok. **30 tur** (uproszczenie, bez inflacji).
 

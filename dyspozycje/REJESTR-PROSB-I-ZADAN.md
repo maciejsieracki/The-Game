@@ -240,3 +240,123 @@ Pełny zapis zasady → `STAN-PRACY-HANDOFF.md` §9 (sekcja „ZAPARKOWANE DO CZ
 - **13B** — „spłuczka" (kij umgobo) w Impi — poprawić **przy robieniu epoki Brązu**, nie teraz.
 - **14A** — **zmierzyć FPS** na dużej bitwie przed wejściem w kolejne epoki (modele ~3× cięższe, brak instancjonowania).
 - **OTWARTE:** 15 (Karawanseraj — epoka), 16 (martwa `obrona: 2` w Pretorium).
+
+## PYTANIE 15 — Karawanseraj (anachronizm epoki) — ODPOWIEDŹ: **B = USUNĄĆ Z GRY**
+Maciej 2026-07-25: „15b". Karawanseraj stoi w danych w epoce Brązu (`epokaWejscia: 2`), a historycznie to budynek
+średniowieczny (szlaki karawanowe, Persja/Anatolia, ~X-XV w.). Zamiast przenosić i parkować — **usuwamy całkowicie**,
+tak jak Lazaret (commit 3228fb1). Do usunięcia: wpis w `gra/data/buildings.json`, ikona, Civpedia/poradnik/encyklopedia,
+odwołania w panelach Excel i dokumentacji, powiązanie `techUnlock: "Handel"` (sprawdzić czy tech nie zostaje pusty).
+Efekt uboczny: znika 1 z 4 żywych wycieków `mnoznik` (8% → 19% na poz. 10).
+
+## PYTANIE 16 — Pretorium: martwe `obrona` — ODPOWIEDŹ: **A = USUNĄĆ** (+ audyt pozostałych bonusów)
+Maciej 2026-07-25: „16a ale sprawdźmy, jakie inne bonusy ma pretorium."
+`baza.obrona: 2` / `przyrost.obrona: 1` — silnik NIE czyta `obrona` z budynków (obrona miasta wyłącznie procentowa:
+mur 200%, Cytadela 300%) → wyzerować, spójnie z decyzją 2A dla murów i Cytadeli.
+**Pełny stan Pretorium (audyt na żądanie):**
+| pole | wartość | status |
+|---|---|---|
+| kategoria | Administracja | — |
+| epokaWejscia | 3 (Żelazo), techUnlock „Prawo" | ŻYWE |
+| baza.praca | 2 | ŻYWE (praca miasta) |
+| baza.pieniadz | 3 | ŻYWE (dochód) |
+| baza.zadowolenie | 1 | ŻYWE |
+| baza.obrona | 2 | **MARTWE → do zera (16A)** |
+| baza.mnoznik | 5 | **do zera** (decyzja 6: budynek rządowy jak Pałac) |
+| przyrost.* | praca 1 / pieniądz 2 / zadow. 1 / obrona 1 / mnoznik 2 | żywe po przejściu na model liniowy; obrona+mnoznik do zera |
+| kosztBudowy 75 (+15/poz.), utrzymanie 3 (+1) | — | ŻYWE |
+| koszt_surowce | cegła 9 | ŻYWE |
+| uwagi | „bonus do utrzymania porządku (garnizon); mnożnik % do przychodu podatkowego" | **OPIS NIEZGODNY Z KODEM** — garnizonu nie ma, mnożnik idzie na Pracę a nie na podatki; opis do przepisania po zmianie |
+
+## ZASADA MODELI (Maciej 2026-07-25)
+„Tylko wyjątkowo za moją zgodą możesz użyć Opus 5 albo Fable 5." → **wszystkie prace zlecane subagentom na Sonnet 5**;
+Opus/Fable wyłącznie po wyraźnej zgodzie właściciela.
+
+## R-LINEARYZACJA (2026-07-25) — ZAMKNIĘTE: ×1,10 zlikwidowane
+Odpowiedź Macieja na pytanie 10: „parametry pałacu miały rosnąć o jeden w każdym z wypadków, a nie o dziesięć procent.
+To dziesięć procent do likwidacji, usunięcia, żeby już nie było śladów w grze."
+**Wdrożone przez subagenta Sonnet 5:**
+- `buildingEffectAtLevel(baza, przyrost, poziom) = baza + przyrost × (poziom−1)` — zamiast `baza × 1,10^(poziom−1)`
+- koszt budowy: `kosztBudowy + przyrostKosztu × (poziom−1)`; utrzymanie: `utrzymanie + przyrostUtrzymania × (poziom−1)`
+- usunięty parametr `budynek_mnoznik_poziomu` z `gra/data/miasto-params.json` i stała `BUILDING_LEVEL_FACTOR`
+- `maksPoziom` urealniony w 37 budynkach: epoka 1 → 3, epoka 2 → 2, epoka 3 → 1 (koniec fikcyjnego „10")
+- UI przycina listę `nazwyPoziomow` do realnego `maksPoziom`
+**Skutek liczbowy:** Pałac kultura 5→11 na poziomie 3 (wcześniej compound dawał 5→6). Rodzina `przyrost*` z martwej stała się ŻYWA.
+Bramki: tsc 0, tech-tree 19/19, research 33/33, logic-test 207/208 (1 porażka mapgen — osobne zadanie).
+
+## R-COMBAT-TEST (2026-07-25) — ZAMKNIĘTE: nic do naprawy
+Zlecona naprawa „zepsutego harnessu `counterTyp`" okazała się bezprzedmiotowa — naprawiono go już commitem `496dd53` (2026-07-19/20).
+Test daje **6/6 pass**, exit 0, bez wyjątku. Nieaktualny był zapis w `CLAUDE.md` („~21 porażek logic-test", „combat-test rzuca wyjątkiem")
+— poprawiony. Uwaga na przyszłość: asercje `combat-test.cjs` są sanity-checkami strukturalnymi, NIE porównaniem z oczekiwanymi
+wynikami bitew — test nie wykryje błędów balansu, tylko awarie.
+
+## PYTANIA 18–20 (2026-07-25) — ZADANE, CZEKAJĄ NA ODPOWIEDŹ
+Pełna forma ABC w `dyspozycje/PYTANIA-OTWARTE.md`:
+- **18** profil Pretorium po sprzątnięciu (rek. A: zadowolenie 1→3)
+- **19** utrzymanie budynków — zróżnicowane czy płaskie (rek. A: włączyć dane, flat tylko jako domyślna)
+- **20** Targowisko — co z bonusem handlowym, który nigdy nie działał (rek. A: przenieść do bazowego pieniądza)
+Szkice paczki 2 (21 `odblokowuje`, 22 Wielka Kuźnia, 23 odznaki ulepszeń) — tamże.
+Backlog przyszłościowy: **`dyspozycje/BACKLOG-PRZYSZLOSC.md`**.
+
+## R-LUCZNIK-NUBIJSKI (2026-07-25) — WDROŻONE
+Decyzja Macieja: Egipt w epoce Brązu dostaje **Łucznika nubijskiego** zastępującego Łucznika.
+**Parametry podane przez właściciela:** zasięg 5 · atak dystansowy 7 · 16 pocisków · Health 50 · Ruch 3.
+**Parametry dobrane przez subagenta — DO ZATWIERDZENIA przez właściciela:**
+koszt 20 pieniądza (Łucznik akadyjski ma 16 — nubijski ma lepszy zasięg, atak, pociski i marsz) · utrzymanie 2 ·
+ludność 1 · brak wymaganego surowca (żaden łucznik w grze nie kosztuje brązu — łuk to drewno) ·
+atak/uderzenie/obrona 4/2/6 (standard łuczników) · ruch w bitwie 4 · próg dezercji 0,4 · widok 2 ·
+pancerz/przebicie 2/2 · kara z flanki/tyłu 50%/80% · morale 85/25 · tech „Łucznictwo" · klasa Specjalna/Distance ·
+epoki „Brąz;Żelazo" · missileAttack 6 (o 1 wyżej niż akadyjski) · fieldPower 16.
+**Ważne ustalenie techniczne:** sam wpis „W zamian za" w `units.json` NIE wystarcza — produkcja jednostek specjalnych
+filtruje dodatkowo przez listę `bonusy[].typ = "jednostka_specjalna"` w `gra/data/civs.json`. Bez dopisania nazwy do tej
+listy jednostka w ogóle nie pojawia się w produkcji. Dopisane (precedens: Sumerowie mają tam i Łucznika sumeryjskiego,
+i akadyjskiego). **Model 3D:** tymczasowo model łucznika egipskiego; dedykowany model nubijski do zrobienia osobno.
+
+## R-MAPGEN-GLINA (2026-07-25) — NAPRAWIONE, logic-test 208/208
+Pre-istniejąca porażka `mapgen: deposits obey terrain rules` była **realnym błędem generatora**, nie nieaktualną asercją.
+Reguła gliny (`gen-helpers.ts`): glina TYLKO na lądzie z prawdziwą rzeką. Główna ścieżka losowania ją respektowała,
+ale **konsolidacyjna ścieżka fair-play** (`ensureDepositGridCoverage` → `forceDepositInCell` → `pickDepositBootstrapHex`)
+wymuszała glinę na dowolnym heksie lądowym, ignorując regułę. Stary komentarz nazywał to „akceptowalnym wyjątkiem" —
+bez żadnego umocowania w decyzji właściciela. Naprawiono generator (bootstrap zwraca `null`, gdy w komórce nie ma
+zgodnego heksu — dopuszczalne, bo fair-play wymaga ≥85% pokrycia, nie 100%), asercji testu NIE rozluźniono.
+Sąsiednie złoża (miedź/żelazo/węgiel/konie) bezpieczne — `prepareTerrainForDeposit` wymusza teren PRZED złożem.
+**Zauważone przy okazji (osobny temat):** `fair-play-grid-test.cjs` ma pre-istniejące porażki — klastry gór/wzgórz
+za duże, pokrycie złóż 75% < 85% na „Standard Ziemia".
+
+## R-PRAWO-ADMINISTRACJA (2026-07-25) — decyzje Macieja 26B, 27A, 28
+**26 = B** — bazy wyższych tierów podnoszone tak, żeby awans zawsze wygrywał (nie zerujemy przyrostu).
+**27 = A** — Prawo z Pałacu rośnie z tierem.
+**28** — Pretorium = **70% wartości Pałacu III**; wcześniej ustalone: Ratusz = 70% Pretorium, Sąd = 50% Pretorium.
+
+**Docelowa siatka Prawa (łatwy / normalny / trudny):**
+| Budynek | easy | normal | hard | % skali w Żelazie (100 pkt) |
+|---|---|---|---|---|
+| Pałac I | 45 | 35 | 28 | 35% |
+| Pałac II | 58 | 45 | 36 | 45% |
+| Pałac III | 71 | 55 | 44 | 55% |
+| Pretorium (70% P3) | 50 | 38 | 31 | 38% |
+| Ratusz (70% Pretorium) | 35 | 27 | 22 | 27% |
+| Sąd (50% Pretorium) | 25 | 19 | 16 | 19% |
+| Dom Starszyzny (70% P1) — gdy powstanie | 31 | 24 | 20 | — |
+| Dwór Zarządcy (70% P2) — gdy powstanie | 41 | 31 | 25 | — |
+| Garnizon (za jednostkę, max 5) — bez zmian | 25 | 20 | 15 | 20% każda |
+
+**KONSEKWENCJA ZGŁOSZONA WŁAŚCICIELOWI:** miasto z Pretorium + Ratuszem + Sądem zbiera 84 pkt Prawa
+bez ani jednej jednostki wojska (dziś te same trzy budynki dają 16). Garnizon przestaje być koniecznością,
+staje się uzupełnieniem. Właściciel podtrzymał regułę 70% — wdrażamy.
+
+**Do rozstrzygnięcia osobno:** Ratusz nie istnieje jako budynek (parametr gotowy, `hasRatusz` nigdy nie jest true).
+Przy trzech szczeblach administracji lokalnej byłoby sześć budynków administracyjnych (Dom Starszyzny, Dwór Zarządcy,
+Ratusz, Trybunał, Sąd, Pretorium) w grze o trzech epokach — patrz pytania 29–31.
+
+## NOWE PROŚBY 2026-07-25 (popołudnie/wieczór) — model budynków, jeszcze bez R-ID w tabeli głównej
+
+Zapisane tu, żeby nie zgubić się (zasada procesu tego pliku) — pełny opis każdej w
+`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md`. Żadna nie jest wdrożona w kodzie.
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-BASZTA | 2026-07-25 | Nowy budynek obronny epoki Żelaza „Baszta" (+100% Obrony, stoi obok Murów+Cytadeli, nie zastępuje) — nazwa ZATWIERDZONA. | **DO WDROŻENIA** (decyzja gotowa, kod nietknięty) | Pytanie 41 = B. Wpis w `buildings.json` + ikona + Civpedia/poradnik + panel Excel. |
+| R-AWANS-MODEL | 2026-07-25 | Ogólna reguła: łańcuchy budynków dzielą się na „w górę" (następca kasuje poprzednika, stała wartość per tier, rośnie tylko przez awans) i „w bok" (oba stoją obok siebie, wartości przyrostowe). | **WDROŻONE (kod)** — commit `2354fb7` (usunięte `upgradeFrom` z `fort`/`akademia`/`akademia_wojskowa`/`swiatynia`, wartości następcy rozdzielone: Akademia nauka 9→6/kultura 7→5, Akademia wojskowa praca 5→3, Świątynia kultura 3→2/zadowolenie 3→2) | Pytanie 25 = B (per łańcuch). 6 łańcuchów „w górę" (Pałac, Dom Starszyzny→Dwór Zarządcy→Pretorium, Kuźnia, Spichlerz, Port, Piec hutniczy), 4 „w bok" — pełna lista `DECYZJE-BUDYNKI-2026-07-25.md` §1. **Nie zdeployowane do ROBOCZA** — tylko commit na gałęzi roboczej. |
+| R-PANEL-GRUPY | 2026-07-25 | Panel miasta: budynki grupowane w 8 grup dziedzinowych (Prawo i administracja / Wojsko i obrona / Handel i pieniądz / Nauka i kultura / Wiara / Zdrowie / Produkcja surowców / Żywność); klik grupy rozwija budynki; budynek-następca „w górę" rozwija listę zastąpionych. | **WDROŻONE (kod)** — commit `2354fb7`: pole `grupa` w `buildings.json`+`BuildingDef` (dane, nie hardkod UI), wszystkie 38 budynków pokryte, test `grupy-budynkow` 74/74 | Nie zdeployowane do ROBOCZA. |
+| R-STOLICA-REGION | 2026-07-25 | Pałac I/II/III wyłącznie w stolicy; Dom Starszyzny/Dwór Zarządcy/Pretorium wyłącznie poza stolicą; Trybunał i Sąd wszędzie. | **DO WDROŻENIA** (decyzja gotowa, kod nietknięty) | Dziś istnieje tylko warunek „Pałac=stolica"; brak mechanizmu odwrotnego („tylko poza stolicą"). |
+| R-PRAWO-SIATKA-V2 | 2026-07-25 | Siatka Prawa dla Dom Starszyzny/Dwór Zarządcy zmieniona z „70% swojego odpowiednika (Pałac I/II)" na „50%/60% Pałacu III" — patrz `R-PRAWO-ADMINISTRACJA` wyżej dla starych liczb. | **DO WDROŻENIA** (zmiana wartości, poprzednia wersja liczb ZASTĄPIONA) | Pełna tabela `DECYZJE-BUDYNKI-2026-07-25.md` §4. |

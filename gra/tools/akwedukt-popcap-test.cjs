@@ -51,7 +51,9 @@ const atCap = {
 const r1 = populationGrowth(atCap, 50, params);
 assert(!r1.wzrost && r1.nowaLudnosc === 5, 'pop 5 bez akweduktu — brak wzrostu do 6');
 
-const below = { ...atCap, ludnosc: 4, magazynZywnosci: 40 };
+// Prog wzrostu = 20 + ludnosc*progWzrostuWspolczynnik (baza 20, nie 10 -- economy.ts:970).
+// ludnosc=4 -> prog=20+4*8=52; magazynZywnosci=50 + zywnoscNetto=10 = 60 >= 52.
+const below = { ...atCap, ludnosc: 4, magazynZywnosci: 50 };
 const r2 = populationGrowth(below, 10, params);
 assert(r2.wzrost && r2.nowaLudnosc === 5, 'pop 4 z buforem — wzrost do 5');
 

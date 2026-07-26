@@ -203,7 +203,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -334,6 +334,21 @@ var terrain_improvements_default = {
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
   },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+  },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
     epoka: 2,
@@ -404,11 +419,6 @@ var miasto_params_default = {
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
-  budynek_mnoznik_poziomu: {
-    wartosc: 1.1,
-    jednostka: "x / poziom",
-    opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
-  },
   jednostka_koszt_ludnosci: {
     wartosc: 0,
     jednostka: "ludnosc",
@@ -477,7 +487,17 @@ var miasto_params_default = {
   bonus_obrona_mur_proc: {
     wartosc: 200,
     jednostka: "% Obrony",
-    opis: "Miasto Z MUREM daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje game/siege.ts + battleScene (defensa miasta). Miasto bez muru = brak tego bonusu."
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -519,8 +539,24 @@ var miasto_params_default = {
 // src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 
+// src/game/building-resource-gate.ts
+var LABEL_BY_ASCII = {
+  drewno: "Drewno",
+  kamien: "Kamie\u0144",
+  glina: "Glina",
+  ruda: "Ruda",
+  zelazo: "\u017Belazo",
+  stal: "Stal",
+  braz: "Br\u0105z",
+  sol: "S\xF3l",
+  cegla: "Ceg\u0142a",
+  ceramika: "Ceramika"
+};
+var ASCII_BY_LABEL = Object.fromEntries(
+  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+
 // src/game/production.ts
-var BUILDING_LEVEL_FACTOR = miasto_params_default.budynek_mnoznik_poziomu?.wartosc ?? 1.1;
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
   Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
@@ -541,8 +577,8 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
 // src/game/cities.ts
 var DEFAULT_PODZIAL_HANDLU = {
   procentNauka: 20,
-  procentPieniadz: 70,
-  procentLuksus: 10
+  procentPieniadz: 60,
+  procentLuksus: 20
 };
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
@@ -678,6 +714,12 @@ function loadRevoltParams(society, difficulty = "normal") {
     graceTurns: pickSociety(block, "porzadek_grace_tur_bunt", difficulty, REVOLT_GRACE_TURNS)
   };
 }
+function resolvePalacTier(input) {
+  const t = input.palacTier;
+  if (t === 1 || t === 2 || t === 3) return t;
+  if (input.hasPalac) return 1;
+  return 0;
+}
 function clampPct(x, cap) {
   if (!Number.isFinite(x)) return 0;
   return Math.min(cap, Math.max(0, Math.round(x * 10) / 10));
@@ -694,29 +736,22 @@ function prawMaxForEra(era) {
   const e = Number.isFinite(era) ? Math.max(1, Math.floor(era)) : 1;
   return PRAWMAX_DEFAULTS[e] ?? PRAWMAX_DEFAULTS[3] ?? 24;
 }
+var ZAMOZNOSC_SIATKA_KEY = "szczescie_siatka_zamoznosc";
+var ZAMOZNOSC_SIATKA_DEFAULT = {
+  easy: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  normal: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+  hard: [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7]
+};
 function luksusHappinessBonus(procentLuksus, society, difficulty = "normal") {
   const sz = society?.szczescie ?? {};
   const luks = Number.isFinite(procentLuksus) ? procentLuksus : 0;
-  const tiers = [
-    [70, "szczescie_bonus_luksus_70"],
-    [60, "szczescie_bonus_luksus_60"],
-    [50, "szczescie_bonus_luksus_50"],
-    [40, "szczescie_bonus_luksus_40"],
-    [30, "szczescie_bonus_luksus_30"]
-  ];
-  const defaults = {
-    szczescie_bonus_luksus_30: 1,
-    szczescie_bonus_luksus_40: 2,
-    szczescie_bonus_luksus_50: 3,
-    szczescie_bonus_luksus_60: 4,
-    szczescie_bonus_luksus_70: 5
-  };
-  for (const [threshold, key] of tiers) {
-    if (luks >= threshold) {
-      return pickSociety(sz, key, difficulty, defaults[key] ?? 0);
-    }
+  const idx = Math.min(9, Math.max(0, Math.floor(luks / 10)));
+  const row = sz[ZAMOZNOSC_SIATKA_KEY];
+  const arr = row?.[difficulty];
+  if (Array.isArray(arr) && typeof arr[idx] === "number" && Number.isFinite(arr[idx])) {
+    return arr[idx];
   }
-  return 0;
+  return ZAMOZNOSC_SIATKA_DEFAULT[difficulty][idx] ?? 0;
 }
 function podzialLuksus(city) {
   const p = city ?? DEFAULT_PODZIAL_HANDLU;
@@ -773,6 +808,8 @@ function computeHappinessBreakdown(input, society = null) {
   const luksBonus = luksusHappinessBonus(luksPct, society, diff);
   if (luksBonus > 0) {
     lines.push({ id: "niskie_podatki", label: `Niskie podatki (Zamo\u017Cno\u015B\u0107 ${luksPct}%)`, value: luksBonus });
+  } else if (luksBonus < 0) {
+    lines.push({ id: "wysokie_podatki", label: `Wysokie podatki (Zamo\u017Cno\u015B\u0107 ${luksPct}%)`, value: luksBonus });
   }
   if (input.atWar) {
     const v = pickSociety(szBlock, "szczescie_kara_wojna", diff, -3);
@@ -797,15 +834,6 @@ function computeHappinessBreakdown(input, society = null) {
     const v = pickSociety(szBlock, "szczescie_bonus_stolica_easy", diff, 1);
     if (v) lines.push({ id: "stolica_easy", label: "Stolica imperium (easy)", value: v });
   }
-  const baseLuks = DEFAULT_PODZIAL_HANDLU.procentLuksus;
-  if (luksPct < baseLuks) {
-    const levels = Math.floor((baseLuks - luksPct) / 10);
-    if (levels > 0) {
-      const per = pickSociety(szBlock, "szczescie_kara_wysokie_podatki", diff, -1);
-      const v = per * levels;
-      if (v) lines.push({ id: "wysokie_podatki", label: "Wysokie podatki", value: v });
-    }
-  }
   const netto = lines.reduce((s, l) => s + l.value, 0);
   const szMax = szMaxForEra(era);
   const szPct = pctFromNetto(netto, szMax, SZ_PCT_CAP);
@@ -827,21 +855,36 @@ function computeLawBreakdown(input, society = null) {
       value: perUnit * effective
     });
   }
-  if (input.hasRatusz) {
-    const v = pickSociety(prBlock, "prawo_ratusz", diff, 3);
-    if (v) lines.push({ id: "ratusz", label: "Ratusz", value: v });
+  if (input.hasDomStarszyzny) {
+    const v = pickSociety(prBlock, "prawo_dom_starszyzny", diff, 28);
+    if (v) lines.push({ id: "dom_starszyzny", label: "Dom Starszyzny", value: v });
+  }
+  if (input.hasDworZarzadcy) {
+    const v = pickSociety(prBlock, "prawo_dwor_zarzadcy", diff, 33);
+    if (v) lines.push({ id: "dwor_zarzadcy", label: "Dw\xF3r Zarz\u0105dcy", value: v });
   }
   if (input.hasPretorium) {
     const v = pickSociety(prBlock, "prawo_pretorium", diff, 2);
     if (v) lines.push({ id: "pretorium", label: "Pretorium", value: v });
   }
+  if (input.hasTrybunal) {
+    const v = pickSociety(prBlock, "prawo_trybunal", diff, 17);
+    if (v) lines.push({ id: "trybunal", label: "Trybuna\u0142", value: v });
+  }
   if (input.hasSad) {
     const v = pickSociety(prBlock, "prawo_sad", diff, 2);
     if (v) lines.push({ id: "sad", label: "S\u0105d", value: v });
   }
-  if (input.hasPalac) {
-    const v = pickSociety(prBlock, "prawo_palac", diff, 35);
-    if (v) lines.push({ id: "palac", label: "Pa\u0142ac", value: v });
+  const palacTier = resolvePalacTier(input);
+  if (palacTier === 1 || palacTier === 2 || palacTier === 3) {
+    const palacByTier = {
+      1: { key: "prawo_palac", fallback: 35, label: "Pa\u0142ac" },
+      2: { key: "prawo_palac_ii", fallback: 45, label: "Pa\u0142ac II" },
+      3: { key: "prawo_palac_iii", fallback: 55, label: "Pa\u0142ac III" }
+    };
+    const { key, fallback, label } = palacByTier[palacTier];
+    const v = pickSociety(prBlock, key, diff, fallback);
+    if (v) lines.push({ id: "palac", label, value: v });
   }
   if (input.brakGarnizonuKara) {
     const v = pickSociety(prBlock, "prawo_kara_brak_garnizonu", diff, -2);

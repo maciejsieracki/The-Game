@@ -13,7 +13,7 @@ Ekonomia imperium to wspólna kasa państwa: złoto, żywność na wojsko, tempo
 
 | Źródło | Skąd |
 |--------|------|
-| **Podatki** | Suwak **handlu** w każdym mieście — część na złoto (Część VI §38.1) |
+| **Podatki** | Suwak **Daniny** w każdym mieście — część na złoto (Część VI §38.1) |
 | **Pola** | Profile **Podatki** / zrównoważone w okolicy (Część VII §43.3) |
 | **Handel dyplomatyczny** | Umowy z innymi państwami (Część XII) |
 | **Jednorazowo** | Prezenty, trybut, łup (jeśli mechanika aktywna w buildzie) |
@@ -43,6 +43,49 @@ Skarbiec (tura N+1) ≈ skarbiec (tura N) + przychody − utrzymanie
 | Tooltip (jeśli jest) | Rozbicie dochodów i kosztów per kategoria |
 
 **Złoto ≠ bogactwo.** **Bogactwo** (luksus) to osobny wiersz — wpływa na szczęście i zamożność, ale **nie** zastępuje skarbca (Część VI §37, Część III §14.5).
+
+### 49.3a. Korupcja — strata Daniny z odległości i rozmiaru imperium
+
+**Korupcja obniża wyłącznie Daninę (potem Podatek) — nigdy Pracę.** Miasto traci procent Daniny netto rosnący z dwoma czynnikami:
+
+| Parametr | Łatwy | Normalny | Trudny | Jednostka |
+|---|---|---|---|---|
+| Współczynnik dystansu | 0,5 | 1 | 1,5 | pkt proc. straty Daniny **na każde pole** odległości od stolicy |
+| Współczynnik liczby miast | 0,5 | 0,5 | 1 | pkt proc. straty Daniny **na każde miasto** posiadane przez tego właściciela |
+| Sufit straty | 38% | 50% | 62% | maksymalny % straty Daniny w jednym mieście |
+
+Stolica ma dystans **0**, ale **nie jest zwolniona** z części „liczba miast” — nawet stolica jedynego miasta traci trochę, jeśli współczynnik liczby miast > 0.
+
+**Redukcja korupcji — trzy budynki, każdy po 30 punktów procentowych, addytywnie:**
+
+| Budynek | Gdzie działa |
+|---------|--------------|
+| **Sąd** | W mieście, w którym stoi |
+| **Pretorium** | Tylko w regionie (nie stolica) |
+| **Pałac** | Tylko w stolicy |
+
+Realne maksimum redukcji to **60 punktów procentowych** — żadne miasto nie ma jednocześnie Pałacu (tylko stolica) i Pretorium (tylko region), więc najwyżej dwa z trzech budynków naraz (Sąd + Pałac w stolicy, albo Sąd + Pretorium w regionie).
+
+### 49.3b. Mennica, Waluta i zmiana nazwy Danina → Podatek
+
+Gdy cywilizacja **odkryje Walutę** i zbuduje **Mennicę w stolicy**, dzieją się dwie rzeczy naraz, dla **całej** cywilizacji (wszystkich miast tego właściciela):
+
+1. **Nazwa strumienia** zmienia się z **Danina** na **Podatek** — sama etykieta, liczby się nie zmieniają.
+2. **Mnożnik Mennicy** przemnaża **całą Daninę/Podatek netto** cywilizacji:
+
+| Trudność | Łatwy | Normalny | Trudny |
+|---|---|---|---|
+| Mnożnik Mennicy | ×2,0 | ×1,5 | ×1,0 |
+
+**Warunek dodatkowy — dostęp do złota.** Mennica wymaga **dostępu do złota** (własna Kopalnia złota na złożu **albo** szlak handlowy z cywilizacją posiadającą złoto). Gdy dostęp do złota zostaje utracony (złoże podbite, kopalnia zniszczona, szlak zerwany):
+
+- Mnożnik Mennicy **znika** (przestaje działać, nie mnoży już Daniny).
+- Nazwa wraca z **Podatek** na **Danina**.
+- **Budynek Mennicy zostaje** — nie jest burzony — i **budzi się sam**, z powrotem na Podatek i mnożnikiem, gdy dostęp do złota wróci.
+
+### 49.3c. Co jeszcze wchodzi do puli Daniny
+
+**Pieniądz z budynków** (np. Targowisko) oraz **Pieniądz z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do **puli Daniny netto miasta** i dzielą się tym samym suwakiem 60/20/20 (Część VI §38.1), zamiast omijać podział.
 
 ### 49.4. Strategie gracza
 
@@ -141,7 +184,7 @@ Wszystkie miasta **składają** punkty badań do **jednej puli** państwa:
 
 | Źródło nauki | Gdzie ustawiasz |
 |--------------|-----------------|
-| Suwak handlu (% na naukę) | Zakładka **Miasto** w każdym centrum |
+| Suwak Daniny (% na naukę) | Zakładka **Miasto** w każdym centrum |
 | Budynki | Biblioteka, Akademia… |
 | Cuda / bonusy | Rzadkie mnożniki |
 
@@ -172,7 +215,7 @@ Część tech jest **wyszarzona**, dopóki nie awansujesz epoki. Awans epoki odb
 
 ### Przykład liczbowy
 
-2 miasta: **+6** i **+4** badań/t + suwak **20%** z handlu **30** = **+6** → łącznie **+16**/turę.
+2 miasta: **+6** i **+4** badań/t + suwak **20%** z Daniny **30** = **+6** → łącznie **+16**/turę.
 Tech koszt **80** → ukończenie za **5** tur przy stałym tempie.
 
 ### Strategia gracza
@@ -274,11 +317,10 @@ Surowce **logistyczne** (drewno, kamień, glina, ruda, ruda żelaza, **cegła**,
 
 Zanim ta zmiana weszła (do 2026-07-23), baza wynosiła **100** i traktowano ją per miasto (`city.surowce`); brąz/żelazo/hodowla były wtedy tylko flagą dostępu civ-wide. Dziś **wszystkie** wymienione surowce logistyczne dzielą jeden wspólny model: produkcja lokalna, cap i realne zużycie (koszty budynków §53.2 niżej, koszty jednostek Część VII §47.2a) — **wspólne dla całego imperium**.
 
-Od 2026-07-23 **10 budynków epoki Brązu/Żelaza** mają realny **koszt materiałowy** pobierany z tej puli państwa przy zapisaniu do kolejki (placeholdery cenowe, do strojenia w panelu):
+Od 2026-07-23 **9 budynków epoki Brązu/Żelaza** mają realny **koszt materiałowy** pobierany z tej puli państwa przy zapisaniu do kolejki (placeholdery cenowe, do strojenia w panelu):
 
 | Budynek | Koszt surowca |
 |---------|----------------|
-| Karawanseraj | 4 ceramiki |
 | Świątynia | 6 ceramiki |
 | Biblioteka | 5 ceramiki |
 | Spichlerz II | 10 cegły |
@@ -298,11 +340,11 @@ Brak materiału w **puli państwa** **blokuje** wejście do kolejki (karta budyn
 **Dochód** ma dwa niezależne składniki, oba do skarbca **czysto** (pomijają suwak Wealth):
 
 1. **Wzór dystansowy** — baza + dystans × mnożnik, z podłogą (placeholdery `econ-params.json`: baza 8 ¤/turę, +0,4 ¤/heks, podłoga 1 ¤/turę). Obie strony trasy zarabiają pełną kwotę.
-2. **+5% do Handlu za każdą aktywną trasę** — osobny, kumulatywny mnożnik miasta (nie łączony z bonusem Targowiska/Waluty, żeby uniknąć podwójnego liczenia).
+2. **+5% do Daniny za każdą aktywną trasę handlową** — osobny, kumulatywny mnożnik miasta (nie łączony z bonusem Targowiska/Waluty, żeby uniknąć podwójnego liczenia).
 
 **Dostęp do surowca** — aktywna trasa daje też dostęp do **brązu, żelaza lub konia**, których nie masz u siebie (Handel E3b) — czysta pochodna trasy: zerwanie traktatu lub wojna **automatycznie cofa** dostęp. Panel miasta pokazuje adnotację „szlak handlowy z **X**" przy takim surowcu.
 
-**Limit tras na miasto** = liczba zbudowanych budynków handlowych (Targowisko/Karawanseraj/Port/Port wielki) — więcej budynków, więcej równoległych tras.
+**Limit tras na miasto** = liczba zbudowanych budynków handlowych (Targowisko/Port/Port wielki) — więcej budynków, więcej równoległych tras.
 
 **Powiadomienia** — toast + wpis w Wydarzeniach przy powstaniu **nowej** trasy i przy jej **zerwaniu** (z podanym powodem: koniec traktatu, wojna, zerwane połączenie terenowe).
 
@@ -332,7 +374,7 @@ Transfer bierze surowiec **od największych zapasów dawcy** i dostarcza do **st
 1. Odkryj **góry** zwiadowcą przed Brązem — tam są złoża miedzi/rudy/żelaza.
 2. Po wejściu w epokę — postaw **kopalnię** na złożu (po Murarstwie), nie tylko odkryj tech.
 3. Planuj **Cegielnię/Garncarnię** zanim zaczniesz kolejkować Mury, Akwedukt czy Cytadelę — bez cegły/ceramiki w magazynie kolejka stoi.
-4. Zawrzyj **Umowę Handlową** z sąsiadem w pokoju, zanim zbudujesz drugi Karawanseraj — bez niej szlak i tak nie powstanie; brak brązu/żelaza u siebie to często tańsze rozwiązanie niż czekanie na własne złoże.
+4. Zawrzyj **Umowę Handlową** z sąsiadem w pokoju, zanim zbudujesz drugi budynek handlowy — bez niej szlak i tak nie powstanie; brak brązu/żelaza u siebie to często tańsze rozwiązanie niż czekanie na własne złoże.
 5. Nadwyżkę drewna/kamienia/gliny — sprzedawaj w koszyku dyplomacji zamiast trzymać martwy zapas.
 
 
@@ -358,7 +400,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 | Zasób | Gdzie widzisz | Główna dźwignia gracza |
 |-------|---------------|-------------------------|
-| **Złoto** | Pasek ¤ | Suwak handlu, mniejsze utrzymanie |
+| **Złoto** | Pasek ¤ | Suwak Daniny, mniejsze utrzymanie |
 | **Żywność** | Pasek + Spichlerz | Farmy, suwak wojska/wzrost, Spichlerz (B5) |
 | **Praca** | Pasek | Tartaki, profil Produkcja w okolicy |
 | **Nauka** | Pasek Badania | Biblioteki, % nauki w suwaku |
@@ -370,7 +412,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -383,4 +425,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część VIII · rev. G · 2026-07-24 (§53.2: magazyn surowców przepisany z modelu per-miasto na pulę CAŁEGO PAŃSTWA, baza 100→500 + 100/Magazyn addytywnie, SUROW-CIV-01) · rev. F 2026-07-23 (§51.2 wzór kosztu tech poprawiony, §53 surowce przepisane: dostęp złoże+ulepszenie, magazyn miasta, koszty materiałowe budynków, dostęp przez szlak, handel pakietami) · pierwotnie rev. E 2026-07-03 · decyzje: B5, E2, E3, B-SUROW-BUD, C-DYP-SUROWCE, SUROW-CIV-01 · dane: `econ-params.json`, `buildings.json`, `resource-access.ts`, `economy-upkeep.ts` · spis §49–53*
+*Poradnik‑L · Część VIII · rev. H · 2026-07-26 (domyślny podział Daniny poprawiony z błędnego 70/20/10 na kanoniczne 60/20/20; dodane §49.3a Korupcja, §49.3b Mennica/Waluta/Danina→Podatek, §49.3c pula Daniny z budynków i Targowiska) · rev. G 2026-07-24 (§53.2: magazyn surowców przepisany z modelu per-miasto na pulę CAŁEGO PAŃSTWA, baza 100→500 + 100/Magazyn addytywnie, SUROW-CIV-01) · rev. F 2026-07-23 (§51.2 wzór kosztu tech poprawiony, §53 surowce przepisane: dostęp złoże+ulepszenie, magazyn miasta, koszty materiałowe budynków, dostęp przez szlak, handel pakietami) · pierwotnie rev. E 2026-07-03 · decyzje: B5, E2, E3, B-SUROW-BUD, C-DYP-SUROWCE, SUROW-CIV-01, D1, D4, 65B/66B, PYTANIE 83 · dane: `econ-params.json`, `buildings.json`, `resource-access.ts`, `economy-upkeep.ts`, `economy.ts`, `danina-nazwa.ts` · spis §49–53*

@@ -1954,6 +1954,156 @@ export function ensureReliefGridCoverage(
  */
 const MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.40;
 
+/**
+ * Twardy limit rozmiaru SPÓJNEGO skupiska Gór (i osobno Wzgórz) — Maciej 2026-07-25,
+ * PYTANIE 63 (`dyspozycje/PYTANIE-OTWARTE.md`): wielkie pasma odcinały całym cywilizacjom
+ * dostęp do złóż (miedź/żelazo/złoto), bo złoto jest tylko w Górach/Wzgórzach i celowo NIE
+ * jest na liście FAIR_PLAY_DEPOSIT_IDS. Limit dotyczy skupiska (flood fill po sąsiedztwie
+ * heksowym, TEN SAM typ terenu), NIE komórki siatki fair-play (to inna metryka, patrz
+ * fair-play-grid-test.cjs — limit skupiska nie gwarantuje przejścia tego testu, bo kilka
+ * osobnych skupisk może wpaść do jednej komórki).
+ */
+const MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
+
+/**
+ * Odstęp (heksy, BFS w bfsExpandExclusion) NOWEGO mini-skupiska (regrowLostMountainClusters) od
+ * KAŻDEGO już istniejącego heksu Gór/Wzgórz — Maciej 2026-07-25, PYTANIE 80. bfsExpandExclusion
+ * wyklucza WSZYSTKO w promieniu ≤ tej wartości, więc nowy heks trafia na dystans ŚCIŚLE większy
+ * — przy 1 to dystans ≥2 od istniejącego reliefu, co WYSTARCZA, żeby flood-fill (który łączy
+ * TYLKO bezpośrednio sąsiadujące heksy, dystans=1) nigdy nie zrósł nowego mini-skupiska ze
+ * starym. Teren jest już gęsto usiany reliefem (~14% lądu to Gory/Wzgorza rozsiane wszędzie) —
+ * większy odstęp (próbowano 3) wykluczał niemal całą wolną przestrzeń i regrow odzyskiwał
+ * ułamek deficytu (zmierzone: deficyt ~400-550 heksów/mapę, odzysk raptem 12-40). 1 to
+ * matematyczne minimum bezpieczeństwa (patrz wyżej) — maksymalizuje dostępną przestrzeń.
+ */
+const MOUNTAIN_RANGE_REGROW_MIN_GAP = 1;
+
+/**
+ * Mnożnik celu regrowLostMountainClusters — Maciej 2026-07-25, PYTANIE 80. Pierwsza wersja (jedna
+ * wspólna strefa zakazana Gór+Wzgórz, patrz isExcludedForRegrow) odzyskiwała tylko ~66-93%
+ * zadanego deficytu (średnio ~83%), więc próbowano mnożnik >1 żeby to skompensować. Po podziale
+ * strefy zakazanej PER TYP (Gory i Wzgorza osobno) odzysk jest już bliski 100% zadanego celu —
+ * mnożnik >1 PRZESTRZELIWAŁ (zmierzone: 1.25 dawało udział ~20.2% zamiast ~19%). 1.0 = odzyskaj
+ * dokładnie tyle, ile przycięło capMountainRangeClusterSize, ani heksa więcej.
+ */
+const MOUNTAIN_RANGE_REGROW_TARGET_MULT = 1.0;
+
+/** Długość spaceru mini-skupiska odzyskującego ląd (regrowLostMountainClusters) — krótsza niż
+ * zwykłe pasmo (dlugoscMin/Max ~11-14), bo to osobne, mniejsze ognisko, nie pasmo główne. */
+const MOUNTAIN_RANGE_REGROW_LEN_MIN = 4;
+const MOUNTAIN_RANGE_REGROW_LEN_MAX = 8;
+
+/**
+ * Flood fill spójnego skupiska JEDNEGO typu terenu (Gory ALBO Wzgorza, nie razem) po całej
+ * mapie — używane przez capMountainRangeClusterSize. Deterministyczna kolejność (klucze
+ * posortowane) — nie zależy od kolejności iteracji Object.keys(hexes).
+ */
+function findSameTerrainClusters(hexes: Record<string, Hex>, terrain: TerenBazowy): string[][] {
+  const visited = new Set<string>();
+  const clusters: string[][] = [];
+  const keys = Object.keys(hexes).sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const hex = hexes[key];
+    if (!hex || hex.terenBazowy !== terrain) continue;
+    const cluster: string[] = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop()!;
+      cluster.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk)) continue;
+        const nh = hexes[nk];
+        if (!nh || nh.terenBazowy !== terrain) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+
+/** Składowe spójne WEWNĄTRZ zbioru `remaining` (podzbiór jednego skupiska w trakcie przycinania). */
+function connectedComponentsWithin(remaining: Set<string>): string[][] {
+  const visited = new Set<string>();
+  const comps: string[][] = [];
+  const keys = [...remaining].sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const comp: string[] = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop()!;
+      comp.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk) || !remaining.has(nk)) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    comps.push(comp);
+  }
+  return comps;
+}
+
+/**
+ * Egzekwuje twardy limit `maxSize` na rozmiar spójnego skupiska terenu `terrain` — dla każdego
+ * skupiska większego niż limit, deterministycznie zdejmuje heksy (najsłabszy mtnNoise pierwszy,
+ * remis rozstrzyga klucz heksu) aż WSZYSTKIE pozostałe składowe (po ewentualnym rozpadzie
+ * skupiska) mieszczą się w limicie. Zdjęty heks wraca do `fallbackTerrain` (Równina) i traci
+ * nakładkę/złoże — tak samo jak istniejący sanity-cap ~40% wyżej w tym pliku.
+ *
+ * Działa na FINALNYM stanie `hexes` (wołane na końcu growMountainRanges, PO sanity-capie
+ * ~40%) — łapie więc też duże skupiska powstałe ze zrośnięcia się z floor-reliefem
+ * ensureReliefGridCoverage (ta funkcja jest wołana PRZED growMountainRanges w generator.ts),
+ * nie tylko z tego, co dołożyła sama growMountainRanges.
+ *
+ * Determinizm: zero Math.random/Date.now — wyłącznie scratch.mtnNoise (policzony wcześniej
+ * z zasianego szumu) i porównania kluczy stringowych.
+ */
+function capMountainRangeClusterSize(
+  hexes: Record<string, Hex>,
+  scratch: Map<string, TerrainScratch>,
+  terrain: TerenBazowy,
+  fallbackTerrain: TerenBazowy,
+  maxSize: number,
+): number {
+  let reverted = 0;
+  const clusters = findSameTerrainClusters(hexes, terrain);
+  for (const cluster of clusters) {
+    if (cluster.length <= maxSize) continue;
+    const remaining = new Set(cluster);
+    for (;;) {
+      const comps = connectedComponentsWithin(remaining).sort((a, b) => b.length - a.length);
+      const biggest = comps[0];
+      if (!biggest || biggest.length <= maxSize) break;
+      const sorted = [...biggest].sort((a, b) => {
+        const na = scratch.get(a)?.mtnNoise ?? 0;
+        const nb = scratch.get(b)?.mtnNoise ?? 0;
+        if (na !== nb) return na - nb; // najsłabszy szum najpierw
+        return a < b ? -1 : a > b ? 1 : 0; // remis: deterministyczny klucz
+      });
+      const victim = sorted[0]!;
+      remaining.delete(victim);
+      const hex = hexes[victim];
+      if (hex) {
+        hex.terenBazowy = fallbackTerrain;
+        hex.nakladka = Nakladka.Brak;
+        delete (hex as HexWithZloze).zloze;
+      }
+      reverted++;
+    }
+  }
+  return reverted;
+}
+
 /** Kandydaci na seed pasma w masie lądu: preferują wysoki mtnNoise + deterministyczna domieszka rand(). */
 function mountainRangeSeedCandidates(
   mass: string[],
@@ -2012,6 +2162,254 @@ function walkMountainRange(
     path.push(cur);
   }
   return path;
+}
+
+/**
+ * Rozszerza `excluded` o wszystkie heksy w promieniu `minDist` (BFS po sąsiedztwie heksowym) od
+ * heksów `sources` — używane przez regrowLostMountainClusters do wyznaczenia "strefy zakazanej"
+ * wokół istniejącego reliefu JEDNEGO typu (Gory ALBO Wzgorza — wołane osobno dla każdego, patrz
+ * niżej), żeby nowe mini-skupiska tego typu nigdy się z nim nie stykały. Mutuje `excluded` w
+ * miejscu. Deterministyczne (BFS, zero losowości) — kolejność `sources` nie wpływa na wynikowy
+ * zbiór (tylko na kolejność odwiedzania), więc A=B zostaje niezależnie od tego, w jakiej
+ * kolejności wołający poda źródła.
+ */
+function bfsExpandExclusion(
+  hexes: Record<string, Hex>,
+  excluded: Set<string>,
+  sources: string[],
+  minDist: number,
+): void {
+  const queue: Array<{ k: string; d: number }> = [];
+  for (const k of sources) {
+    if (!excluded.has(k)) excluded.add(k);
+    queue.push({ k, d: 0 });
+  }
+  let head = 0;
+  while (head < queue.length) {
+    const { k, d } = queue[head++]!;
+    if (d >= minDist) continue;
+    const { q, r } = parseHexKey(k);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (excluded.has(nk)) continue;
+      if (!hexes[nk]) continue;
+      excluded.add(nk);
+      queue.push({ k: nk, d: d + 1 });
+    }
+  }
+}
+
+/**
+ * Czy heks `k` (z jego WŁASNYM mtnNoise `n`) jest wykluczony jako miejsce nowego mini-skupiska —
+ * Maciej 2026-07-25, PYTANIE 80. Wyklucza WEDŁUG PROSPEKTYWNEGO typu terenu (ten sam próg
+ * mtnTh/hiTh co reszta reliefu decyduje, czy `k` zostanie Górami czy Wzgórzami, GDYBY go
+ * umieścić) — heks, który skończy jako Góry, sprawdza TYLKO strefę zakazaną wokół istniejących
+ * Gór (excludedGory); heks kończący jako Wzgórza sprawdza TYLKO strefę wokół istniejących Wzgórz
+ * (excludedWzgorza). To ważne, bo flood-fill (capMountainRangeClusterSize) liczy skupiska Gór i
+ * Wzgórz OSOBNO — nowe Góry mogą bezpiecznie stanąć tuż obok istniejących Wzgórz (różne typy,
+ * nigdy się nie zleją), więc dzielenie stref zakazanych wg typu prawie DWUKROTNIE zwiększa
+ * dostępną przestrzeń względem jednej wspólnej strefy dla obu typów naraz (zmierzone empirycznie
+ * — patrz komentarz przy regrowLostMountainClusters). Heks poniżej obu progów ("przerwa" w
+ * paśmie, nie zostanie reliefem) nigdy nie jest wykluczony — i tak nie wpływa na żadne skupisko.
+ */
+function isExcludedForRegrow(
+  k: string,
+  n: number,
+  mtnTh: number,
+  hiTh: number,
+  excludedGory: Set<string>,
+  excludedWzgorza: Set<string>,
+): boolean {
+  if (n > mtnTh) return excludedGory.has(k);
+  if (n > hiTh) return excludedWzgorza.has(k);
+  return false;
+}
+
+/**
+ * Wariant walkMountainRange, który dodatkowo NIGDY nie wchodzi na heks wykluczony przez
+ * isExcludedForRegrow (strefa zakazana wokół istniejącego reliefu, PER TYP — patrz
+ * regrowLostMountainClusters) — poza tym identyczna logika (najwyższy mtnNoise + domieszka
+ * rand(), nigdy nie zawraca).
+ */
+function walkMountainRangeAvoiding(
+  hexes: Record<string, Hex>,
+  scratch: Map<string, TerrainScratch>,
+  width: number,
+  height: number,
+  rand: () => number,
+  start: string,
+  steps: number,
+  mtnTh: number,
+  hiTh: number,
+  excludedGory: Set<string>,
+  excludedWzgorza: Set<string>,
+): string[] {
+  const path: string[] = [];
+  const visited = new Set<string>([start]);
+  let cur = start;
+  for (let i = 0; i < steps; i++) {
+    const { q, r } = parseHexKey(cur);
+    const candidates = HEX_DIRECTIONS
+      .map(([dq, dr]) => hexKey(q + dq, r + dr))
+      .filter((k) => {
+        if (visited.has(k)) return false;
+        const hex = hexes[k];
+        if (!hex) return false;
+        const { q: nq, r: nr } = parseHexKey(k);
+        if (!isReliefCandidateHex(hex, nq, nr, width, height)) return false;
+        const n = scratch.get(k)?.mtnNoise ?? 0;
+        return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+      })
+      .map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.3 }))
+      .sort((a, b) => b.n - a.n);
+    if (candidates.length === 0) break;
+    cur = candidates[0]!.k;
+    visited.add(cur);
+    path.push(cur);
+  }
+  return path;
+}
+
+/**
+ * Odzyskuje ląd utracony przy przycinaniu przerośniętych skupisk (capMountainRangeClusterSize)
+ * — Maciej 2026-07-25, PYTANIE 80 (po PYTANIU 63 — limit 10 heksów/skupisko ZOSTAJE, nienaruszalny).
+ * Cel: przywrócić udział Gór+Wzgórz w lądzie sprzed limitu (~19%) generując WIĘCEJ mniejszych,
+ * osobnych ognisk zamiast tracić teren przy przycinaniu wielkich, zrośniętych pasm.
+ *
+ * Zamiast po prostu skasować nadmiarowe heksy (jak robił dotąd capMountainRangeClusterSize),
+ * ten krok dosiewa TYLE SAMO heksów jako NOWE mini-skupiska — krótszy spacer
+ * (MOUNTAIN_RANGE_REGROW_LEN_MIN/MAX, 4-8 zamiast 11-14) wymuszony z dala
+ * (MOUNTAIN_RANGE_REGROW_MIN_GAP heksów, BFS przez bfsExpandExclusion, OSOBNO dla Gór i Wzgórz —
+ * patrz isExcludedForRegrow) od heksów TEGO SAMEGO typu — więc z definicji nie stykają się z
+ * niczym i capMountainRangeClusterSize (wołany ponownie po tej funkcji, patrz growMountainRanges)
+ * ich nie przytnie.
+ *
+ * Dlaczego nie wystarczyło po prostu podkręcić liczbę zwykłych pasm (większe maxPasmNaMase /
+ * mniejsze hexyNaPasmo w mapGenMountainRangeParams) — zmierzone empirycznie PRZED wdrożeniem tej
+ * funkcji: kandydaci na seed pasma (mountainRangeSeedCandidates) sortują po najwyższym mtnNoise,
+ * który jest skoncentrowany wokół TEGO SAMEGO grzbietu co istniejące pasmo/podłoga
+ * ensureReliefGridCoverage — dodatkowe pasma po prostu dorastały do tego samego zrośniętego
+ * bloku, a capMountainRangeClusterSize przycinał go z powrotem do 10 (efekt sieciowy zerowy:
+ * udział został ~13.8%, liczba skupisk Gór bez zmian — 181 vs 181). Wymuszony odstęp od
+ * istniejącego reliefu w TEJ funkcji omija ten mechanizm — nowe ognisko fizycznie NIE MOŻE
+ * dorosnąć do istniejącego bloku. Pierwsza wersja (jedna wspólna strefa zakazana dla Gór+Wzgórz)
+ * odzyskiwała tylko ułamek deficytu, bo ląd jest już gęsto usiany reliefem (~14%) — dzielenie
+ * strefy PER TYP (isExcludedForRegrow) prawie podwoiło odzysk.
+ *
+ * Determinizm: zero Math.random/Date.now — wyłącznie przekazany rand(), wołany w ustalonej
+ * kolejności (masy w TEJ SAMEJ kolejności co główna pętla growMountainRanges, potem próby po
+ * kolei, round-robin po masach) — ten sam seed = ta sama sekwencja wywołań rand() = identyczny
+ * wynik (A=B).
+ *
+ * Zwraca liczbę faktycznie odzyskanych heksów (może być < `deficit`, jeśli zabraknie miejsca
+ * z dala od istniejącego reliefu — pętla ma twardy limit prób bez postępu, nie jest nieskończona).
+ */
+function regrowLostMountainClusters(
+  hexes: Record<string, Hex>,
+  scratch: Map<string, TerrainScratch>,
+  width: number,
+  height: number,
+  rand: () => number,
+  masses: string[][],
+  mtnTh: number,
+  hiTh: number,
+  deficit: number,
+): number {
+  if (deficit <= 0 || masses.length === 0) return 0;
+
+  const excludedGory = new Set<string>();
+  const excludedWzgorza = new Set<string>();
+  const initialGory: string[] = [];
+  const initialWzgorza: string[] = [];
+  for (const key of Object.keys(hexes).sort()) {
+    const hex = hexes[key]!;
+    if (hex.terenBazowy === TerenBazowy.Gory) initialGory.push(key);
+    else if (hex.terenBazowy === TerenBazowy.Wzgorza) initialWzgorza.push(key);
+  }
+  bfsExpandExclusion(hexes, excludedGory, initialGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  bfsExpandExclusion(hexes, excludedWzgorza, initialWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+
+  let recovered = 0;
+  let massIdx = 0;
+  let attemptsSinceProgress = 0;
+  const maxAttemptsSinceProgress = masses.length * 40 + 200;
+
+  while (recovered < deficit && attemptsSinceProgress < maxAttemptsSinceProgress) {
+    const mass = masses[massIdx % masses.length]!;
+    massIdx++;
+
+    const seedCandidates = mass
+      .filter((k) => {
+        const hex = hexes[k];
+        if (!hex) return false;
+        if (
+          hex.terenBazowy !== TerenBazowy.Laka
+          && hex.terenBazowy !== TerenBazowy.Rownina
+          && hex.terenBazowy !== TerenBazowy.Pustynia
+        ) return false;
+        const { q, r } = parseHexKey(k);
+        if (!isReliefCandidateHex(hex, q, r, width, height)) return false;
+        const n = scratch.get(k)?.mtnNoise ?? 0;
+        return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+      })
+      .map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.15 }))
+      .sort((a, b) => b.n - a.n);
+
+    if (seedCandidates.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+
+    const seedKey = seedCandidates[0]!.k;
+    const len = MOUNTAIN_RANGE_REGROW_LEN_MIN
+      + Math.floor(rand() * (MOUNTAIN_RANGE_REGROW_LEN_MAX - MOUNTAIN_RANGE_REGROW_LEN_MIN + 1));
+    const path = [seedKey, ...walkMountainRangeAvoiding(
+      hexes, scratch, width, height, rand, seedKey, len, mtnTh, hiTh, excludedGory, excludedWzgorza,
+    )];
+
+    const placedGory: string[] = [];
+    const placedWzgorza: string[] = [];
+    for (const k of path) {
+      const hex = hexes[k];
+      if (!hex) continue;
+      if (
+        hex.terenBazowy !== TerenBazowy.Laka
+        && hex.terenBazowy !== TerenBazowy.Rownina
+        && hex.terenBazowy !== TerenBazowy.Pustynia
+      ) continue;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      if (isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza)) continue;
+      if (n > mtnTh) {
+        hex.terenBazowy = TerenBazowy.Gory;
+        hex.nakladka = Nakladka.Brak;
+        delete (hex as HexWithZloze).zloze;
+        placedGory.push(k);
+        recovered++;
+      } else if (n > hiTh) {
+        hex.terenBazowy = TerenBazowy.Wzgorza;
+        hex.nakladka = Nakladka.Brak;
+        delete (hex as HexWithZloze).zloze;
+        placedWzgorza.push(k);
+        recovered++;
+      }
+    }
+
+    if (placedGory.length === 0 && placedWzgorza.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    attemptsSinceProgress = 0;
+    if (placedGory.length > 0) {
+      bfsExpandExclusion(hexes, excludedGory, placedGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (placedWzgorza.length > 0) {
+      bfsExpandExclusion(hexes, excludedWzgorza, placedWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+
+    if (recovered >= deficit) break;
+  }
+
+  return recovered;
 }
 
 /**
@@ -2220,6 +2618,44 @@ export function growMountainRanges(
       mountainous--;
     }
   }
+
+  // Twardy limit rozmiaru spójnego skupiska (Maciej 2026-07-25, PYTANIE 63): max
+  // MAX_MOUNTAIN_RANGE_CLUSTER_SIZE (10) heksów Gór i osobno 10 heksów Wzgórz w jednym
+  // skupisku sąsiadujących heksów TEGO SAMEGO typu terenu — żeby komputer rozkładał pasma
+  // równomiernie i wszystkie cywilizacje miały dostęp do gór (złoża miedzi/żelaza/złota).
+  // Na samym końcu, na finalnym stanie reliefu (po sanity-capie ~40% wyżej) — to ostatnie
+  // miejsce w pipeline, w którym Gory/Wzgorza jeszcze się zmieniają (patrz generator.ts:
+  // "relief... jest już finalny" zaraz po tym wywołaniu), więc łapie też duże skupiska
+  // powstałe ze zrośnięcia z floor-reliefem ensureReliefGridCoverage (wołane PRZED tą
+  // funkcją), nie tylko z tego, co dołożyła sama growMountainRanges.
+  const mtnReverted = capMountainRangeClusterSize(
+    hexes, scratch, TerenBazowy.Gory, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
+  const hiReverted = capMountainRangeClusterSize(
+    hexes, scratch, TerenBazowy.Wzgorza, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
+
+  // Odzyskaj ląd utracony w przycinaniu wyżej (Maciej 2026-07-25, PYTANIE 80: "przywrócić
+  // ilość terenu górskiego, generując WIĘCEJ mniejszych skupisk" — limit 10 heksów/skupisko
+  // z PYTANIA 63 zostaje, ale udział Gór+Wzgórz w lądzie ma wrócić do ~19% sprzed limitu).
+  // Patrz regrowLostMountainClusters: nowe mini-skupiska rosną z dala od istniejącego reliefu,
+  // więc nie zostaną zjedzone przez capMountainRangeClusterSize poniżej.
+  regrowLostMountainClusters(
+    hexes, scratch, width, height, rand, masses, mtnTh, hiTh,
+    Math.round((mtnReverted + hiReverted) * MOUNTAIN_RANGE_REGROW_TARGET_MULT),
+  );
+
+  // Siatka bezpieczeństwa: regrowLostMountainClusters z definicji trzyma nowe mini-skupiska z
+  // dala od istniejącego reliefu (MOUNTAIN_RANGE_REGROW_MIN_GAP), więc w normalnych warunkach
+  // nic tu nie przytnie — ale wołamy ponownie, żeby limit 10 heksów pozostał TWARDĄ, bezwyjątkową
+  // gwarancją niezależnie od brzegowych przypadków (np. dwa mini-skupiska z RÓŻNYCH wywołań tej
+  // funkcji w tej samej masie stykające się stycznie przez naprzemienne BFS-y).
+  capMountainRangeClusterSize(
+    hexes, scratch, TerenBazowy.Gory, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
+  capMountainRangeClusterSize(
+    hexes, scratch, TerenBazowy.Wzgorza, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
 
   return addedByThisRun.length;
 }
@@ -6266,11 +6702,15 @@ export type HexWithZloze = Hex & { zloze?: string; zlozeMinEra?: number };
  * - bydlo -> Nakladka.ZlozeBydla na Łąka/Równina (złoże = ulepszenie bydło)
  * - wegiel-> hex.zloze='wegiel' na Gory
  * - sol   -> hex.zloze='sol' na Pustynia/Rownina (NIE wybrzeże — woda bez surowców)
+ * - zloto -> hex.zloze='zloto' na Wzgórza/Góry (złoto żyłowe, jak historyczne złoża
+ *   Nubii/Anatolii/Iberii — Maciej 2026-07-25: „mennica potrzebuje złota w terenie”).
+ *   CELOWO NIE w FAIR_PLAY_DEPOSIT_IDS — złoto ma być RZADKIE, o które się rywalizuje,
+ *   nie gwarantowany zasób każdego imperium (patrz rarity niżej — niższa niż miedź/żelazo).
  * Bydło / owce — złoże na mapie = implicit ulepszenie hodowli (render + plony).
  * Morze/wybrzeże: brak złóż; ryby = przyszłe ulepszenie „łodzie rybackie”, nie nakładka.
  */
 export interface DepositRule {
-  id: 'miedz' | 'zelazo' | 'glina' | 'konie' | 'wegiel' | 'owce' | 'bydlo' | 'sol';
+  id: 'miedz' | 'zelazo' | 'glina' | 'konie' | 'wegiel' | 'owce' | 'bydlo' | 'sol' | 'zloto';
   /** Wartosc Nakladka do ustawienia (lub null gdy uzywamy pola `zloze`). */
   nakladka: Nakladka | null;
   /** Predykat: czy ten heks moze przyjac to zloze. */
@@ -6335,6 +6775,19 @@ const BASE_DEPOSIT_RULES: DepositRule[] = [
     requiresCoastalLand: true,
     rarity: 0.12,
   },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: 'zloto',
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy)
+      && (h.terenBazowy === TerenBazowy.Wzgorza || h.terenBazowy === TerenBazowy.Gory),
+    rarity: 0.03,
+  },
 ];
 
 const _depositRarities = mapGenAllDepositRarities();
@@ -6377,7 +6830,7 @@ export function placeDeposits(
 
   const counts: Record<string, number> = {
     miedz: 0, zelazo: 0, glina: 0, konie: 0, wegiel: 0,
-    owce: 0, bydlo: 0, sol: 0,
+    owce: 0, bydlo: 0, sol: 0, zloto: 0,
   };
 
   for (const key of keys) {
@@ -6514,17 +6967,25 @@ function pickDepositBootstrapHex(
   const ranked = land
     .filter(([q, r]) => {
       const hex = hexes[hexKey(q, r)];
-      return hex && hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze;
+      if (!hex || hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+        return false;
+      }
+      // 'glina' nie wymusza już terenu (TEMAT 12, patrz prepareTerrainForDeposit) — jej regula
+      // wymaga prawdziwej h.rzeka.obecna, ktorej bootstrap nie moze wytworzyc (geometria rzek
+      // jest juz finalna na tym etapie; TEMAT 12 usunelo fabrykowanie falszywej rzeka.obecna).
+      // Bootstrap MUSI wiec nadal respektowac rule.allowedOn dla gliny — w przeciwnym razie
+      // zloze ladowaloby na hexie bez rzeki i lamalo DEPOSIT_RULES (logic-test: "deposits obey
+      // terrain rules"). Dla pozostalych id w tej funkcji (zelazo/miedz/wegiel/konie/bydlo)
+      // prepareTerrainForDeposit ponizej wymusza wlasciwy teren, wiec rule.allowedOn zawsze
+      // bedzie spelnione PO forsowaniu — nie trzeba filtrowac ich tutaj z gory.
+      if (rule.id === 'glina' && !rule.allowedOn(hex)) return false;
+      return true;
     })
     .map(([q, r]) => ({ q, r, score: rand() }))
     .sort((a, b) => b.score - a.score);
   if (ranked.length === 0) return null;
   const spot = ranked[0]!;
   prepareTerrainForDeposit(hexes[hexKey(spot.q, spot.r)]!, rule);
-  // TEMAT 12 (2026-07-24): USUNIĘTA fabrykacja fałszywej rzeka.obecna=true na hexie bez
-  // prawdziwej geometrii rzeki (brak krawedzie) — psuło render/logikę (hex „z rzeką" bez
-  // koryta). Bootstrap gliny może więc wylądować na hexie bez rzeki (rzadki fallback fair-play,
-  // gdy cała komórka nie ma ani jednego hexa z prawdziwą rzeką) — akceptowalny wyjątek.
   return [spot.q, spot.r];
 }
 
@@ -6629,6 +7090,24 @@ export function ensureDepositGridCoverage(
       if (passFixed === 0) break;
     }
   }
+
+  // Bezpiecznik dla twardego limitu skupiska (Maciej 2026-07-25, PYTANIE 63): bootstrap
+  // powyżej (pickDepositBootstrapHex → prepareTerrainForDeposit) w RZADKICH przypadkach
+  // (komórka bez ŻADNEGO istniejącego heksu Gór/Wzgórz na 'zelazo'/'miedz') wymusza NOWY
+  // heks Gór/Wzgórz PO tym, jak growMountainRanges już przyciął skupiska do
+  // MAX_MOUNTAIN_RANGE_CLUSTER_SIZE — może więc doszyć jeden heks do już przyciętego
+  // skupiska i przebić limit o 1. To JEDYNE miejsce w pipeline (poza growMountainRanges),
+  // gdzie teren bywa wymuszany na Gory/Wzgorza (patrz prepareTerrainForDeposit), więc
+  // powtórzenie cappingu tutaj domyka regułę właściciela na całej mapie. Brak `scratch` w
+  // sygnaturze tej funkcji (nie zmieniamy generator.ts) — pusta mapa oznacza remis rozstrzyga
+  // wyłącznie klucz heksu (nadal w pełni deterministyczne, zero Math.random).
+  capMountainRangeClusterSize(
+    hexes, new Map(), TerenBazowy.Gory, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
+  capMountainRangeClusterSize(
+    hexes, new Map(), TerenBazowy.Wzgorza, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
+
   return fixed;
 }
 

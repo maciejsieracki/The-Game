@@ -62,11 +62,12 @@ function ok(cond, msg) {
 
 console.log('\n[society-breakdown-test]\n');
 
-// Luksus bonus tiers
-eq(M.luksusHappinessBonus(25, null, 'normal'), 0, 'luksus 25% -> 0');
-eq(M.luksusHappinessBonus(30, null, 'normal'), 1, 'luksus 30% -> +1');
-eq(M.luksusHappinessBonus(50, null, 'normal'), 3, 'luksus 50% -> +3');
-eq(M.luksusHappinessBonus(70, null, 'normal'), 5, 'luksus 70% -> +5');
+// Luksus bonus — nowa siatka co 10 p.p. (Maciej 2026-07-25). Bracket = floor(pct/10):
+// normal = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8] dla dziesiątek 0..9.
+eq(M.luksusHappinessBonus(25, null, 'normal'), 1, 'luksus 25% (bracket 20-29, idx2) -> +1');
+eq(M.luksusHappinessBonus(30, null, 'normal'), 2, 'luksus 30% (bracket 30-39, idx3) -> +2');
+eq(M.luksusHappinessBonus(50, null, 'normal'), 4, 'luksus 50% (bracket 50-59, idx5) -> +4');
+eq(M.luksusHappinessBonus(70, null, 'normal'), 6, 'luksus 70% (bracket 70-79, idx7) -> +6');
 
 // Law garnizon
 const law = M.computeLawBreakdown({ garnizonCount: 5, era: 2 }, null);
@@ -141,7 +142,11 @@ eq(buckets.zadowoleni + buckets.kontentni + buckets.niezadowoleni, 10, 'buckets 
   const podzial = { procentNauka: 20, procentPieniadz: 70, procentLuksus: 10 };
   const base = { era: 1, population: 1, buildingZadowolenie: 0, podzialHandlu: podzial, garnizonCount: 0 };
   const scenarios = [
-    { diff: 'easy', haKult: 3, haRel: 3, target: 72, band: 'Spokój' },
+    // target podniesiony z 72 -> 80 (Maciej 2026-07-25): nowa siatka Sz od Zamożności daje
+    // na easy +2 pkt Sz przy udziale Zamożności 10% (bracket 10-19, easy[1]=2), podczas gdy
+    // stara siatka (progi od 30% wzwyż) dawała 0 poniżej 30% — PorPct realnie = 79,9% (era1
+    // SzMax=14, +2 pkt Sz = +100*2/14 ≈ +14,3 p.p. Sz%, ważone wagaSz=0,55 -> ok. +7,9 p.p. PorPct).
+    { diff: 'easy', haKult: 3, haRel: 3, target: 80, band: 'Spokój' },
     { diff: 'normal', haKult: 2, haRel: 2, target: 58, band: 'Napięcie' },
     { diff: 'hard', haKult: 1, haRel: 1, target: 34, band: 'Niepokój' },
   ];

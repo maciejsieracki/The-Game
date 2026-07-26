@@ -28,6 +28,7 @@ import * as THREE from 'three';
 import { resolveCombat } from '../game/combat';
 import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef } from '../game/combat';
+import { applyVeteranFracToCombatUnit } from '../game/veteran';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { axialToWorld, HEX_R, SQRT3 } from '../render/hexutil';
 import { buildUnitModel } from '../render/units';
@@ -44,6 +45,11 @@ export interface BattleUnit {
   stats: any;
   hp: number;
   maxHp: number;
+  /** Sciezki ulepszen jednostek (2026-07-25) -- patrz battleScene.ts BattleUnit. */
+  pancerzBonusFrac?: number;
+  parametryBonusFrac?: number;
+  /** TRZECI SYSTEM -- weterani (2026-07-25) -- patrz battleScene.ts BattleUnit / game/veteran.ts. */
+  veteranBonusFrac?: number;
 }
 
 export interface ManualBattleOpts {
@@ -141,10 +147,12 @@ function norm(v: unknown, fallback: number): number {
 
 function toCombatUnit(bu: BattleUnit): CombatUnit {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
-  return combatUnitFromDef(s, {
+  const cu = combatUnitFromDef(s, {
     typNazwa: (s['Jednostka'] as string) ?? bu.kategoria,
     hp: bu.hp,
   });
+  // TRZECI SYSTEM (weterani) -- patrz battleScene.ts toCombatUnit / game/veteran.ts.
+  return applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac ?? 0);
 }
 
 /** Punkty ruchu w bitwie dla jednostki (heksy/ture). Domyslnie 3, min 1. */
@@ -1032,6 +1040,8 @@ export class ManualBattle {
       counters: this.counters,
       attackerCivBonusy: this.attackerCivBonusy,
       defenderCivBonusy: this.defenderCivBonusy,
+      attackerBuildingBonus: { pancerz: attacker.bu.pancerzBonusFrac ?? 0, other: attacker.bu.parametryBonusFrac ?? 0 },
+      defenderBuildingBonus: { pancerz: defender.bu.pancerzBonusFrac ?? 0, other: defender.bu.parametryBonusFrac ?? 0 },
     });
 
     this.log.push(

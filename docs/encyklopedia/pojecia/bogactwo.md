@@ -10,7 +10,7 @@
 
 ## Wiki‑S
 
-**Bogactwo** to luksus warstwy społecznej — **nie to samo co złoto** na pasku mapy. Rośnie z suwaka **zamożności** w handlu; daje poziom **W** i mnożnik wpływający na szczęście i dochody luksusowe.
+**Bogactwo** to luksus warstwy społecznej — **nie to samo co złoto** na pasku mapy. Rośnie z suwaka **zamożności** w Daninie (dawniej: „handlu" — patrz [`suwak-handlu.md`](suwak-handlu.md)); daje poziom **W** i mnożnik wpływający na szczęście i dochody luksusowe.
 
 ---
 
@@ -21,7 +21,7 @@
 | | Złoto | Bogactwo |
 |---|-------|----------|
 | Gdzie | Pasek mapy | Panel miasta + pasek |
-| Źródło | Podatki, targi | Luksus z handlu |
+| Źródło | Danina (Podatek), targi | Luksus z Daniny |
 | Wpływ | Skarbiec, rekrutacja | Poziom W, szczęście |
 
 ### Poziom W (normal, uproszczenie)
@@ -32,7 +32,7 @@ Próg awansu ≈ **4,5 × (L+1) × epoka** jednostek luksusu w puli. Cap poziomu
 
 ## Przykład liczbowy
 
-**Miasto** daje **4 luksus/t** (40% zamożności z 10 handlu/t). Pula rośnie o **4/t**.
+**Miasto** daje **4 luksus/t** (40% zamożności z 10 Daniny netto/t). Pula rośnie o **4/t**.
 
 Próg poziomu **1→2** (epoka 1, normal): ok. **4,5×2×1 = 9** jednostek w puli → awans po **~3 tury** (9÷4).
 

@@ -154,7 +154,7 @@ Widzisz tylko heksy w zasięgu wzroku startowych jednostek. Rzeki i wybrzeża mo
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -198,7 +198,7 @@ W panelu dyplomacji każdy wpis to **jedno miasto** z własną nazwą (np. „Sp
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -244,7 +244,7 @@ Startowa paczka zasobów i jednostek zależy od **epoki i trudności** razem (de
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -313,7 +313,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 

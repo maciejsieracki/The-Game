@@ -27,8 +27,9 @@ Górny i dolny pasek ekranu mapy to **pulpit dowodzenia** — tu widzisz, czy im
 
 **Złoto** (symbol ¤) to skarbiec państwa — na rekrutację, utrzymanie budynków, utrzymanie wojska i przyspieszenie produkcji. Przyrost co turę to **netto**: podatki i handel minus utrzymanie.
 
-- **Podatki** — wynik suwaka handlu w każdym mieście (złoto vs nauka vs luksus).
+- **Podatki** — wynik suwaka Daniny w każdym mieście, domyślnie **60% skarbiec / 20% nauka / 20% zamożność** (Część VI §38.1). Strumień nazywa się **Danina**, a po odkryciu Waluty i budowie Mennicy w stolicy — **Podatek** (Część VIII §49.3b).
 - **Handel** — umowy dyplomatyczne i trasy między miastami (Część XII).
+- **Korupcja** — pomniejsza Daninę/Podatek z odległych miast i przy dużym imperium; **nie dotyka** Pracy (Część VIII §49.3a).
 - **Utrzymanie** — suma budynków i jednostek; przy dużej armii netto bywa ujemne mimo bogatych miast.
 
 **Złoto ≠ bogactwo.** Bogactwo (luksus) to osobny wiersz (§14.5) — wpływa na szczęście i warstwę zamożności, ale nie zastępuje skarbca.
@@ -53,13 +54,13 @@ Przyrost pracy bierze się z pól (tartak, kamieniołom, kopalnia…) i z budynk
 
 **Badania** pokazują tempo nauki **+X na turę**, nazwę **aktualnie badanej** technologii i pasek **%** do ukończenia. **Klik** w ten wiersz otwiera **drzewko technologii** (Część IX).
 
-- Nauka płynie z budynków (Biblioteka, Akademia) i z części suwaka handlu (nauka %).
+- Nauka płynie z budynków (Biblioteka, Akademia) i z części suwaka Daniny (nauka %).
 - Po zbadaniu tech odblokowuje budynki, jednostki i ulepszenia — szare pozycje na listach znikają.
 - Gdy gra wymaga wyboru nowej technologii, pojawia się chip **blocking** w dolnym pasku (§16.4).
 
 ### 14.5. Bogactwo
 
-**Bogactwo** (luksus) to osobny licznik — nie wydajesz go jak złota. Rośnie z części suwaka handlu przełączonej na **luksus** w miastach. Wpływa na warstwę **zamożności** w panelu Miasto (Część VI §37) i na szczęście w bogatszych miastach.
+**Bogactwo** (luksus) to osobny licznik — nie wydajesz go jak złota. Rośnie z części suwaka Daniny przełączonej na **luksus** w miastach. Wpływa na warstwę **zamożności** w panelu Miasto (Część VI §37) i na szczęście w bogatszych miastach.
 
 ### 14.6. Ludność
 

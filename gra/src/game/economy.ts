@@ -40,7 +40,7 @@ export type { HexCoords } from '../types/hex';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import terrainYieldsData from '../../data/terrain-yields.json';
 import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
-import { buildingEffectAtLevel, BUILDING_LEVEL_FACTOR, cityPracaInteger, splitPraca } from './production';
+import { buildingEffectAtLevel, cityPracaInteger, splitPraca, buildingLevelForEpoch } from './production';
 import { applyImprovementBonuses, oreYieldFromImprovements } from './terrain-improvements';
 
 // ---------------------------------------------------------------------------
@@ -108,19 +108,45 @@ export interface EconParams {
   budynekTargowiskoBonusHandlu:     number;
   budynekBibliotekaBonusNauki:      number;  // Biblioteka -> +Nauka% (master par.2a)
   /**
+   * ZADANIE 2 (Maciej 2026-07-25, decyzja 4): Akademia -> +Nauka% LOKALNIE, w tej
+   * samej konwencji co Biblioteka (stackuje addytywnie: (1 + biblioteka% + akademia%)).
+   * Biblioteka NIE dotknięta -- zostaje przy +50%. Placeholder 10% na wszystkich
+   * poziomach trudności (econ-params budynek_akademia_bonus_nauki).
+   */
+  budynekAkademiaBonusNauki:        number;
+  /**
    * Zadanie 2 (2026-07-23): Garncarnia -> +Zywnosc% LOKALNIE (tylko w miescie gdzie
    * stoi), stackuje addytywnie za kazda sztuke: ×(1 + wartosc × liczbaGarncarni).
    * PLACEHOLDER 10% (econ-params.json budynek_garncarnia_bonus_zywnosci_lokalnie).
    */
   budynekGarncarniaBonusZywnosci:   number;
-  budynekMennicaMnoznik:            number;  // Mennica: Handel->Pieniadz x mnoznik (par.2.3)
   /**
-   * E1 Zadanie 1: Mennica mnoznik Handel->Pieniadz AKTYWNY DOPIERO gdy Waluta odkryta
-   * (globalne.mennica_mnoznik_po_walucie). Wartosci wlasciciela: easy 2 / normal 1.5 / hard 1.
-   * Bramka (budynek + tech) liczona przez wolajacego (turn-economy.ts), nie tutaj.
+   * NIEUŻYWANE od 2026-07-25 (decyzja Maciej): dawna wartość bazowa Mennicy
+   * (budynek_mennica_mnoznik), praktycznie martwa już wcześniej -- efekt Mennicy
+   * jest teraz w całości opisany przez mennicaMnoznikPoWalucie poniżej. Pole
+   * zostawione w schemacie (parsowane z JSON) dla zgodności starych zapisów/
+   * narzędzi, ale kod go już nigdzie nie konsumuje.
+   */
+  budynekMennicaMnoznik:            number;
+  /**
+   * JEDYNY mnożnik Handlu netto po scaleniu (Maciej 2026-07-25): mnoży CAŁY
+   * handelNetto miasta (Skarb + Nauka + Zamożność razem, PRZED podziałem
+   * suwakiem) TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest
+   * zbudowana w tym mieście (bramka AND liczona przez wołającego -- ctx.maMennica
+   * && ctx.walutaOdkryta w cityYieldPerTurn). Wartości właściciela: easy x2,0 /
+   * normal x1,5 / hard x1,0 (brak efektu). Dawne DWA osobne mnożniki (waluta_mnoznik
+   * na cały Handel przy samym techu; mennica_mnoznik_po_walucie tylko na strumień
+   * Pieniądza) zostały scalone w ten jeden -- patrz CityYieldContext.walutaOdkryta.
    */
   mennicaMnoznikPoWalucie:          number;
-  walutaMnoznik:                    number;  // Efekt 1: handelNetto x mnoznik gdy walutaOdkryta (domyslnie 2)
+  /**
+   * NIEUŻYWANE od 2026-07-25 (decyzja Maciej): dawny Efekt 1 "sam tech Waluty
+   * daje x2 na cały Handel netto, bez wymogu Mennicy" -- zastąpiony przez
+   * mennicaMnoznikPoWalucie (wymaga Mennicy + Waluty, wartość różna per trudność).
+   * Pole zostawione w schemacie (parsowane z JSON) dla zgodności, kod go
+   * już nigdzie nie konsumuje w formule Efektu 1.
+   */
+  walutaMnoznik:                    number;
   targowiskoPracaMnoznik:           number;  // Efekt 2: doPuli x mnoznik -> Pieniadz gdy maTargowisko+waluta (domyslnie 2)
   suwaakHandelNaukaDefault:         number;
   suwaakHandelPieniadz:             number;
@@ -191,10 +217,11 @@ export function loadEconParams(
     budynekCegielniBonusPracy:      read(bu, 'budynek_cegielnia_bonus_pracy', 0.25),
     budynekTargowiskoBonusHandlu:   read(bu, 'budynek_targowisko_bonus_handlu', 0.5),
     budynekBibliotekaBonusNauki:    read(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
+    budynekAkademiaBonusNauki:      read(bu, 'budynek_akademia_bonus_nauki', 0.10),
     budynekGarncarniaBonusZywnosci: read(bu, 'budynek_garncarnia_bonus_zywnosci_lokalnie', 0.10),
-    budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),
-    mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5),
-    walutaMnoznik:                  read(bu, 'waluta_mnoznik', 2),
+    budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),      // NIEUZYWANE 2026-07-25
+    mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5), // JEDYNY mnoznik Efektu 1
+    walutaMnoznik:                  read(bu, 'waluta_mnoznik', 2),               // NIEUZYWANE 2026-07-25
     targowiskoPracaMnoznik:         read(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       read(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           read(em, 'suwak_handel_pieniadz_domyslnie', 30),
@@ -283,6 +310,19 @@ export interface CityYieldResult {
   pracaTerenu:    number;
   pracaBudynkow:  number;
   pieniadzZPracy: number;  // Efekt 2: doPuli * targowiskoPracaMnoznik (0 gdy brak Targowiska/Waluty)
+  /**
+   * Decyzja 67B (Maciej 2026-07-25, cytat: "Budynki, jeżeli miały wcześniej handel...
+   * powinny go dawać nie bezpośrednio do skarbca, tylko do puli, do podziału"). Suma
+   * SUROWA (przed-mnoznikowa, przed podzialem suwakiem) Pieniadza z bazy budynkow
+   * (Σ buildingValue(record, level, 'pieniadz')) -- WYLACZNIE pole informacyjne do
+   * UI/debug (panel miasta "ile Pieniadza z budynkow"), analogicznie do pieniadzZPracy
+   * powyzej. Ta wartosc NIE trafia juz bezposrednio do `pieniadz` (patrz Step 3/8
+   * nizej) -- wchodzi do handelBazowy PRZED Targowiskiem/civHandelMult/trasami/
+   * korupcja/Waluta+Mennica, dokladnie jak pieniadzZPracy (D5), i dopiero POTEM jest
+   * dzielona suwakiem Nauka/Pieniadz/Luksus razem z reszta Daniny. Realny wplyw
+   * mnoznikow/podzialu widac w polu `pieniadz` (i `nauka`/`luksus`), NIE tutaj.
+   */
+  pieniadzBudynkow: number;
   /**
    * E1 Zadanie 2: surowce logistyczne zebrane z pol tej tury (przed magazynem/converterami).
    * Drewno/kamien/glina maja numeryczny plon terenu/ulepszen (tileYield); glina dodana
@@ -438,10 +478,7 @@ export function buildingValue(
   level: number,
   key: BuildingYieldKey,
 ): number {
-  // Compound scaling per spec/decyzja Naster: baza * 1.10^(level-1)
-  // Uses buildingEffectAtLevel from production.ts (single source of BUILDING_LEVEL_FACTOR).
-  // The legacy `przyrost` field is no longer used for yield scaling.
-  return Math.floor(buildingEffectAtLevel(b.baza[key], level));
+  return Math.floor(buildingEffectAtLevel(b.baza[key], b.przyrost[key], level));
 }
 
 /** Każdy zbudowany budynek daje +1 szczęścia (decyzja Macieja 2026-07-22). */
@@ -503,6 +540,39 @@ export interface CityBuildingEntry {
   level:  number;
 }
 
+/**
+ * Zbuduj CityBuildingEntry[] (record+level) z listy zbudowanych id budynkow miasta.
+ * JEDYNE zrodlo prawdy uzywane przez wszystkie wywolania cityYieldPerTurn (silnik
+ * advanceCityEconomy, podglad previewCityEconomy, panel "Bilans plonow" cityPanel.ts)
+ * -- zeby plony budynkow (Praca/Pieniadz/Zywnosc/Nauka/Kultura/Zadowolenie) liczyly
+ * sie identycznie wszedzie (2026-07-25, naprawa "budynki nie licza sie w silniku").
+ *
+ * Poziom liczony przez buildingLevelForEpoch() (production.ts) -- NIE wlasny wzor:
+ * uwzglednia epokaWejscia, maksPoziom i opcjonalny poziomTechGate. Nieznane id
+ * (brak w katalogu) sa pomijane, tak samo jak w sumBuildingHappinessFromBuiltIds.
+ */
+export function cityBuildingEntriesFromBuiltIds(
+  builtIds: readonly string[],
+  catalog: readonly BuildingRecord[],
+  cityEpoch: number,
+  unlockedTechs?: ReadonlySet<string> | readonly string[] | null,
+): CityBuildingEntry[] {
+  const entries: CityBuildingEntry[] = [];
+  for (const bid of builtIds) {
+    const record = catalog.find(b => b.id === bid);
+    if (!record) continue;
+    const level = buildingLevelForEpoch(
+      record.epokaWejscia,
+      cityEpoch,
+      record.maksPoziom,
+      record.poziomTechGate as Record<string, string> | null | undefined,
+      unlockedTechs,
+    );
+    entries.push({ record, level });
+  }
+  return entries;
+}
+
 export interface CityYieldContext {
   /**
    * Effective military food consumption this turn for units at this city
@@ -510,8 +580,13 @@ export interface CityYieldContext {
    */
   wojskoZuzycieZywnosci: number;
   /**
-   * Corruption/waste loss fraction [0, cap].
-   * Use corruptionRate() to compute; pass 0 for the capital in a 1-city empire.
+   * Corruption/waste loss fraction [0, cap]. D1 (Maciej 2026-07-25): affects ONLY
+   * handelNetto (Danina/Podatek) below, NEVER Praca. Compute via corruptionRate()
+   * (dystansOdStolicy, liczbaWszystkichMiast, params), then multiply by
+   * (1 - corruptionBuildingReduction(builtIds)) for Sad/Pretorium/Palac (D4) --
+   * caller (turn-economy.ts) does this BEFORE building this ctx. NOTE: even the
+   * capital in a 1-city empire is NOT automatically 0 -- korupcjaWspolczynnikMiast
+   * still applies (liczbaWszystkichMiast >= 1), only dystansOdStolicy is 0 for it.
    */
   strataFraction: number;
   maMlyn:         boolean;
@@ -519,22 +594,42 @@ export interface CityYieldContext {
   maTargowisko:   boolean;
   /** Biblioteka present -> +Nauka%. Optional so existing ctx literals stay valid. */
   maBiblioteka?:  boolean;
+  /**
+   * ZADANIE 2 (2026-07-25): Akademia present -> +Nauka% (osobny param od Biblioteki,
+   * stackuje addytywnie). Optional so existing ctx literals stay valid.
+   */
+  maAkademia?:    boolean;
+  /**
+   * Mennica (Mint) zbudowana GDZIEKOLWIEK W IMPERIUM tego właściciela (NIE
+   * "w tym mieście" -- zmiana Maciej 2026-07-25, pytanie 71/C: "moneta bita w
+   * jednym miejscu obsługuje obieg całego państwa", w parze z decyzją B, że
+   * Mennica stoi WYŁĄCZNIE w stolicy). Wołający (turn-economy.ts, cityPanel.ts)
+   * liczy to jako union budynków po WSZYSTKICH miastach tego ownera -- economy.ts
+   * samo nie zna innych miast, dostaje gotowy boolean. Sam ten flag nic nie
+   * mnoży -- jest jednym z DWÓCH warunków (obok walutaOdkryta) bramki Efektu 1
+   * (patrz niżej). Dawne osobne pole `mennicaMnoznik` (mnożnik TYLKO na strumień
+   * Pieniądza) zostało USUNIĘTE 2026-07-25 (decyzja Maciej) -- efekt jest teraz
+   * jeden, scalony w Efekcie 1 poniżej, i wymaga Mennicy + Waluty razem.
+   */
   maMennica:      boolean;
   /**
-   * Mint (Mennica) trade->money multiplier (from econ-params budynek_mennica_mnoznik).
-   * Pass 1.0 when Mennica is absent or tech Waluta not yet researched.
-   */
-  mennicaMnoznik: number;
-  /**
    * Waluta (currency tech) discovered by this player.
-   * Efekt 1: handelNetto *= walutaMnoznik (domyslnie x2) when true.
-   * Efekt 2: doPuli (Praca surplus) -> Pieniadz x targowiskoPracaMnoznik gdy maTargowisko && walutaOdkryta.
+   * Efekt 1 (SCALONY, decyzja Maciej 2026-07-25): handelNetto *= mennicaMnoznikPoWalucie
+   * (easy x2,0 / normal x1,5 / hard x1,0 -- BRAK efektu na hard) TYLKO gdy
+   * walutaOdkryta ORAZ maMennica są oba prawdziwe. Sam tech Waluty już NIE
+   * wystarcza -- to jest sedno zmiany; przedtem (do 2026-07-24) sam tech dawał
+   * już x2 niezależnie od trudności i budynku, a Mennica mnożyła osobno tylko
+   * strumień Pieniądza -- oba stare efekty są teraz jednym.
+   * Efekt 2 (bez zmian): doPuli (Praca surplus) -> Pieniadz x targowiskoPracaMnoznik gdy maTargowisko && walutaOdkryta.
    * Optional; defaults to false so existing ctx literals remain valid.
    */
   walutaOdkryta?: boolean;
   /**
-   * Per-cyw override for Efekt 1 (mnoznikHandelPieniadz z civs.json, 1.7-2.4).
-   * Gdy ustawione i walutaOdkryta, zastepuje params.walutaMnoznik dla tego miasta.
+   * Per-cyw/religia override for Efekt 1 bazy (mnoznikHandelPieniadz z civs.json,
+   * 1.7-2.4, lub religionTradeWalutaOverride). Gdy ustawione, zastepuje
+   * params.mennicaMnoznikPoWalucie jako WARTOŚĆ mnożnika -- NIE omija bramki
+   * walutaOdkryta && maMennica powyżej (bramka decyduje CZY mnożyć, override
+   * decyduje O ILE).
    */
   walutaMnoznikOverride?: number;
   /** RDY-01: mnoznik na Handel z bonusu cyw (np. Grecy +15%). Domyslnie 1. */
@@ -600,6 +695,71 @@ export function mnoznikHandelPieniadzForCiv(
   return fallback;
 }
 
+/**
+ * Raw civs.json mnoznikHandelPieniadz lookup that DISTINGUISHES "civ not found /
+ * field missing" (returns undefined) from "civ found with a valid value" -- used
+ * by mnoznikHandelPieniadzForCivByDifficulty() below to decide whether the
+ * difficulty delta should apply (only to a REAL per-civ value, never to the
+ * already-difficulty-scaled fallback).
+ */
+function mnoznikHandelPieniadzRawForCiv(
+  civKey: string | null | undefined,
+  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+): number | undefined {
+  if (!civKey || !civs?.cywilizacje?.length) return undefined;
+  const key = civKey.toLowerCase();
+  for (const row of civs.cywilizacje) {
+    if (!row) continue;
+    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja]
+      .filter((s): s is string => typeof s === 'string' && s.length > 0)
+      .map(s => s.toLowerCase());
+    if (!ids.includes(key)) continue;
+    const v = row.mnoznikHandelPieniadz;
+    return (typeof v === 'number' && Number.isFinite(v) && v > 0) ? v : undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Difficulty delta applied on top of the civs.json mnoznikHandelPieniadz value
+ * (decyzja Maciej 2026-07-25, pytanie 69 -- "mnoznik cywilizacyjny skalowany
+ * poziomem trudnosci"): "Zostawmy go jako obowiazujacy dla poziomu normal.
+ * Wersja easy bedzie miala pol punktu wiecej [...] wersja hard pol punktu
+ * mniej." The civs.json number IS the normal-difficulty value; we NEVER edit
+ * civs.json itself -- the +0.5 / -0.5 scaling lives only here.
+ */
+const MNOZNIK_HANDEL_TRUDNOSC_DELTA: Record<Difficulty, number> = {
+  easy:   0.5,
+  normal: 0,
+  hard:   -0.5,
+};
+
+/**
+ * Per-nacja mnoznik Handel->Pieniadz SKALOWANY TRUDNOSCIA (Maciej 2026-07-25,
+ * pytanie 69). civs.json niesie wartosc dla poziomu normal (1.7-2.6); tutaj
+ * doliczamy +0.5 (easy) / -0.5 (hard). Zastepuje dawna regule "2/1.5/1 dla
+ * wszystkich cywilizacji" -- ta zostaje TYLKO jako `fallbackScaled` (przekaz
+ * przez wolajacego z params.mennicaMnoznikPoWalucie, ktory JUZ niesie
+ * poprawna skale per trudnosc w econ-params.json), dla cywilizacji BEZ wpisu
+ * w civs.json ("cywilizacja bez wpisu dostaje wartosc zapasowa, tez
+ * skalowana trudnoscia" -- spelnione, bo fallbackScaled juz jest per-trudnosc).
+ *
+ * WAZNE: `fallbackScaled` NIE dostaje drugiej warstwy delty tutaj -- gdyby
+ * dolozyc +0.5/-0.5 na juz-przeskalowanej wartosci (np. easy=2.0), wyszloby
+ * podwojne skalowanie (2.5 zamiast 2.0). Delta dziala WYLACZNIE na surowej
+ * wartosci civs.json (poziom normal).
+ */
+export function mnoznikHandelPieniadzForCivByDifficulty(
+  civKey: string | null | undefined,
+  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+  difficulty: Difficulty,
+  fallbackScaled: number,
+): number {
+  const raw = mnoznikHandelPieniadzRawForCiv(civKey, civs);
+  if (raw === undefined) return fallbackScaled;
+  return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
+}
+
 /** Bonusy ekonomii z wiersza cywilizacji (civs.json). */
 export function civBonusyForCivKey(
   civKey: string | null | undefined,
@@ -644,18 +804,39 @@ export function civEconomyYieldMultipliers(
  * Steps (Spec-ekonomia.md ss.1.2, 1.3, 1.4, 2.1, 3.1):
  *   1. Sum terrain yields from workedTiles.
  *   2. Apply Mlyn multiplier on tile Praca; Cegielnia bonus on gross tile Praca.
- *   3. Apply Targowisko bonus on tile Handel.
- *   4. Sum building BASE outputs (praca, pieniadz, zywnosc, nauka, kultura, zadowolenie).
- *      Buildings are a direct source of Praca and Pieniadz (par. 8e rule 3).
- *   5. Apply non-combat building mnoznik% to combined Praca.
- *   6. Apply corruption/waste (strataFraction) to gross Praca and Handel.
- *   7. Split Handel via trade slider into Nauka / Pieniadz / Luksus.
- *   8. Apply Mennica multiplier to Pieniadz; Biblioteka bonus to Nauka.
- *   9. Add building direct Pieniadz + specialist Poborca bonuses.
- *  10. Apply Garncarnia +Zywnosc% (lokalnie, per miasto, ctx.liczbaGarncarni) to
+ *   3'. Sum building BASE outputs (praca, pieniadz, zywnosc, nauka, kultura, zadowolenie)
+ *      -- PRZESUNIETE przed dawny Step 3 (D5, 2026-07-25): pracaBudynkow jest
+ *      potrzebne juz tutaj, bo pracaNetto -> doPuli -> pieniadzZPracy (Efekt 2:
+ *      Targowisko+Waluta, Praca "wystawiona na handel") musi wejsc do Handlu PRZED
+ *      jego mnoznikami, nie po nich. Buildings are a direct source of Praca i Pieniadz.
+ *   3. Apply Targowisko bonus, civHandelMult, trasy handlowe -- do (tile Handel +
+ *      pieniadzZPracy + pieniadzBudynkow) RAZEM, D5/decyzja 67B (Maciej 2026-07-25,
+ *      cytat D5: "Pieniądz z konwersji pracy wchodzi do daniny... i jest potem
+ *      mnożony przez walutę i mennicę i wszystkie inne wskaźniki handlu"; cytat 67B:
+ *      "Budynki, jeżeli miały wcześniej handel... powinny go dawać nie bezpośrednio
+ *      do skarbca, tylko do puli, do podziału"). Ani pieniadzZPracy, ani
+ *      pieniadzBudynkow NIE sa juz osobnymi strumieniami doklejanymi po fakcie --
+ *      oba sa czescia bazy Handlu/Daniny u zrodla.
+ *   5. Apply corruption/waste (strataFraction) do calego Handlu/Daniny (juz z
+ *      pieniadzZPracy i pieniadzBudynkow w srodku) -- D1: Praca NIGDY nie jest tym
+ *      dotknieta.
+ *   6. Split Handel via trade slider into Nauka / Pieniadz / Luksus.
+ *   7. Apply Mennica multiplier to caly Handel (w tym pieniadzZPracy i
+ *      pieniadzBudynkow); Biblioteka bonus to Nauka.
+ *   8. Add specialist Poborca bonus do Pieniadza (jedyny strumien Pieniadza, ktory
+ *      nadal omija podzial suwakiem -- poza zakresem decyzji 67B).
+ *   9. Apply Garncarnia +Zywnosc% (lokalnie, per miasto, ctx.liczbaGarncarni) to
  *      gross food, THEN compute net food = gross food - (population + military).
  *
  * All fractional results are floored.
+ *
+ * UWAGA (2026-07-25): dawny "Step 5" (baza.mnoznik budynkow niewojskowych -> % do
+ * Pracy) zostal CALKOWICIE USUNIETY — byl martwy/blednie policzony (patrz
+ * dyspozycje/AUDYT-MARTWE-PARAMETRY-BUDYNKOW.md). Pole `mnoznik` w buildings.json
+ * zyje teraz WYLACZNIE jako zrodlo % dla dwoch sciezek ulepszen jednostek
+ * (Pancerz / Parametry miekkie) — patrz gra/src/game/unit-building-bonuses.ts.
+ * Praca miasta to odtad WYLACZNIE suma Praca(teren) + Praca(budynki), bez zadnego
+ * globalnego mnoznika procentowego.
  */
 export function cityYieldPerTurn(
   city: EconomyCity,
@@ -700,25 +881,10 @@ export function cityYieldPerTurn(
     pracaBruttoTerenu = pracaBruttoTerenu * (1 + params.budynekCegielniBonusPracy);
   }
 
-  // --- Step 3: Targowisko bonus on tile Handel (Spec ss.1.3) ---
-  let handelBrutto: number;
-  if (ctx.maTargowisko) {
-    handelBrutto = handelTerenu * (1 + params.budynekTargowiskoBonusHandlu);
-  } else {
-    handelBrutto = handelTerenu;
-  }
-  const civHandelMult = ctx.civHandelMult ?? 1;
-  if (civHandelMult !== 1) {
-    handelBrutto *= civHandelMult;
-  }
-  // Handel E3: +5% Handlu za kazda AKTYWNA trase handlowa miasta, kumulatywnie
-  // (1 + 0.05*n). Osobny, jawny czynnik -- patrz CityYieldContext.liczbaAktywnychTrasHandlowych.
-  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
-  if (liczbaTrasHandlowych > 0) {
-    handelBrutto *= (1 + 0.05 * liczbaTrasHandlowych);
-  }
-
-  // --- Step 4: Sum building BASE outputs ---
+  // --- Step 3 (przesuniete PRZED dawny Step 3 -- patrz D5 nizej): Sum building
+  // BASE outputs. Musi powstac TERAZ (a nie po handlu, jak dawniej), bo pracaBudynkow
+  // jest potrzebne do pracaBruttoLacznie -> pracaNetto -> doPuli -> pieniadzZPracy,
+  // ktore z kolei musza wejsc do handelBrutto PRZED jego mnoznikami (patrz D5).
   let pracaBudynkow    = 0;
   let pieniadzBudynkow = 0;
   let zywnoscBudynkow  = 0;
@@ -735,67 +901,111 @@ export function cityYieldPerTurn(
     zadBudynkow      += buildingHappinessAtLevel(record, level);
   }
 
-  // --- Step 5: Sum non-combat mnoznik% and apply to combined Praca ---
-  let totalMnoznikProc = 0;
-  for (const { record, level } of cityBuildings) {
-    const kat = record.kategoria;
-    if (!kat.includes('Wojsko') && !kat.includes('Obrona')) {
-      totalMnoznikProc += buildingValue(record, level, 'mnoznik');
-    }
-  }
-  const mnoznikFactor = 1 + totalMnoznikProc / 100;
-  const pracaBruttoLacznie = (pracaBruttoTerenu + pracaBudynkow) * mnoznikFactor;
+  // Dawne "mnoznik% -> Praca" USUNIETE 2026-07-25 — patrz komentarz funkcji powyzej.
+  // Praca miasta to czysta suma teren+budynki, bez mnoznika.
+  const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
+  // D1 (Maciej 2026-07-25): "Korupcja ma dotykać tylko i wyłącznie daniny, a potem
+  // podatku, nie pracy." -- Praca NIGDY nie jest mnozona przez strate korupcji
+  // (patrz Step 5 nizej, ktory strata dotyka tylko Handel/Danine).
+  const pracaNetto = pracaBruttoLacznie;
 
-  // --- Step 6: Apply corruption/waste ---
+  // D5 (Maciej 2026-07-25, PYTANIE 76=B, POPRAWKA tego samego dnia -- cytat wlasciciela:
+  // "Pieniądz z konwersji pracy wchodzi do daniny, później do podatku i jest potem
+  // mnożony przez walutę i mennicę i wszystkie inne wskaźniki handlu... zamieniamy to
+  // na równowartość podatku"). To NIE jest osobny strumien doklejany do gotowej puli --
+  // to Praca WYSTAWIONA NA HANDEL, wiec wchodzi do Daniny U ZRODLA, na tych samych
+  // prawach co Danina z terenu, i przechodzi przez WSZYSTKIE mnozniki Handlu ponizej
+  // (Targowisko, civHandelMult, trasy handlowe, korupcja, Waluta+Mennica) -- dokladnie
+  // tak samo jak reszta Daniny. Dlatego liczymy je TU, PRZED Step 3 (Targowisko itd.),
+  // a nie po nich jak w bledej wersji D5 sprzed poprawki.
+  const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
+  const pctPracaBudynki = city.podziałPracy.procentBudynki / 100;
+  const pracaInt = cityPracaInteger(pracaNetto);
+  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
+  const pieniadzZPracy = (ctx.maTargowisko && walutaOdkrytaOnly)
+    ? Math.floor(doPuli * params.targowiskoPracaMnoznik)
+    : 0;
+
+  // --- Step 3: Targowisko bonus na Handel (Spec ss.1.3) -- baza TERAZ zawiera
+  // pieniadzZPracy (D5) ORAZ pieniadzBudynkow (decyzja 67B, Maciej 2026-07-25: Pieniadz
+  // z budynkow NIE trafia wprost do skarbca, tylko do puli do podzialu), wiec premia
+  // Targowiska/civHandelMult/trasy handlowe dzialaja na Danine terenowa + budynkowa +
+  // konwersje Pracy RAZEM, jak jedna wartosc. ---
+  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
+  let handelBrutto: number;
+  if (ctx.maTargowisko) {
+    handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
+  } else {
+    handelBrutto = handelBazowy;
+  }
+  const civHandelMult = ctx.civHandelMult ?? 1;
+  if (civHandelMult !== 1) {
+    handelBrutto *= civHandelMult;
+  }
+  // Handel E3: +5% Handlu za kazda AKTYWNA trase handlowa miasta, kumulatywnie
+  // (1 + 0.05*n). Osobny, jawny czynnik -- patrz CityYieldContext.liczbaAktywnychTrasHandlowych.
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= (1 + 0.05 * liczbaTrasHandlowych);
+  }
+
+  // --- Step 5 (renumbered from 6): Apply corruption/waste -- dotyczy WYLACZNIE
+  // handelBrutto (ktory juz zawiera pieniadzZPracy, D5 powyzej), NIGDY Pracy (D1). ---
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
-  const pracaNetto        = pracaBruttoLacznie * (1 - strata);
   const handelNettoRaw    = handelBrutto       * (1 - strata);
-  // Efekt 1 (Waluta): gdy walutaOdkryta, caly handelNetto jest mnozony x walutaMnoznik (domyslnie x2).
-  // Dziala na cala pule PRZED podzialem na Nauka/Pieniadz/Luksus, wiec nauka i wealth z handlu tez rosna x2.
-  const walutaActive = ctx.walutaOdkryta === true;
-  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.walutaMnoznik;
+  // Efekt 1 SCALONY (Waluta + Mennica, decyzja Maciej 2026-07-25): caly handelNetto
+  // jest mnozony x mennicaMnoznikPoWalucie (easy x2,0 / normal x1,5 / hard x1,0) TYLKO
+  // gdy walutaOdkryta ORAZ maMennica sa oba prawdziwe -- sam tech Waluty juz NIE
+  // wystarcza. Dziala na cala pule PRZED podzialem na Nauka/Pieniadz/Luksus (wiec i na
+  // pieniadzZPracy juz wtopiony w handelBrutto, D5 powyzej) -- nauka i zamoznosc z
+  // handlu (oraz z konwersji Pracy) rosna razem ze Skarbem (decyzja: wariant A).
+  const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
+  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto   = handelNettoRaw * walutaMnoznikAktywny;
 
-  // --- Step 7+8: Trade slider -> Nauka / Pieniadz / Luksus; apply mint multiplier ---
+  // --- Step 6+7: Trade slider -> Nauka / Pieniadz / Luksus ---
+  // Dawny osobny mnoznik ctx.mennicaMnoznik (Handel->Pieniadz, TYLKO strumien
+  // Pieniadza) zostal USUNIETY 2026-07-25 -- Mennica jest teraz jednym z dwoch
+  // warunkow bramki Efektu 1 powyzej (handelNetto), wiec mnozy juz i tak Skarb+
+  // Nauke+Zamoznosc razem; osobne mnozenie tutaj dublowaloby efekt.
   const pctNauka    = city.podziałHandlu.procentNauka    / 100;
   const pctPieniadz = city.podziałHandlu.procentPieniadz / 100;
   const pctLuksus   = city.podziałHandlu.procentLuksus   / 100;
 
   const naukaZHandlu    = Math.floor(handelNetto * pctNauka);
-  const pieniadzZHandlu = Math.floor(
-    handelNetto * pctPieniadz * ctx.mennicaMnoznik
-  );
+  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
   // Luksus stream (Spec ss.2.1/2.2): feeds Zadowolenie downstream (society lane).
   const luksusZHandlu   = Math.floor(handelNetto * pctLuksus);
 
   // Biblioteka: +Nauka% applied to the city's local science (master par.2a).
-  const naukaBonusFactor = ctx.maBiblioteka ? (1 + params.budynekBibliotekaBonusNauki) : 1;
+  // Akademia (ZADANIE 2, 2026-07-25, decyzja 4): +Nauka% osobny, stackuje ADDYTYWNIE
+  // z Biblioteka -- (1 + bibliotekaBonus + akademiaBonus), NIE (1+b)*(1+a). Kolejnosc
+  // nie zmieniona: premia dziala PO zsumowaniu plonow budynkow (naukaBudynkow), wiec
+  // mnozy takze wlasne 6 pkt Nauki Akademii -- ten sam efekt co Biblioteka ma dzis.
+  const naukaBonusFactor = 1
+    + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0)
+    + (ctx.maAkademia   ? params.budynekAkademiaBonusNauki   : 0);
   const naukaLokalnaRaw  = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult     = ctx.civNaukaMult ?? 1;
   const naukaLokalna     = civNaukaMult !== 1
     ? Math.floor(naukaLokalnaRaw * civNaukaMult)
     : naukaLokalnaRaw;
 
-  // --- Step 9: Total Pieniadz = from trade + from buildings + specialists + Efekt 2 ---
-  // Efekt 2 (Targowisko + Waluta): pula-Praca (doPuli) -> Pieniadz x targowiskoPracaMnoznik.
-  // doPuli = pracaNetto * (1 - podziałPracy.procentBudynki/100) -- computed by caller (splitPraca).
-  // Tutaj obliczamy wewnetrznie z pracaNetto i suwaka, zeby wynik był w CityYieldResult.
-  const pctPracaBudynki = city.podziałPracy.procentBudynki / 100;
-  const pracaInt = cityPracaInteger(pracaNetto);
-  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
-  const pieniadzZPracy = (ctx.maTargowisko && walutaActive)
-    ? Math.floor(doPuli * params.targowiskoPracaMnoznik)
-    : 0;
-
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
+  // --- Step 8: Total Pieniadz = from trade (handelNetto juz zawiera pieniadzZPracy
+  // ORAZ pieniadzBudynkow, wtopione w Step 3, D5/67B powyzej -- przeszly przez
+  // WSZYSTKIE mnozniki Handlu: Targowisko, civHandelMult, trasy, korupcja, Waluta+
+  // Mennica -- i podzial suwakiem) + specialist Poborca. Decyzja 67B: pieniadzBudynkow
+  // NIE jest juz doliczany tu osobno -- inaczej liczylby sie PODWOJNIE (raz w
+  // pieniadzZHandlu przez handelBazowy, drugi raz tutaj).
+  let pieniadzTotal = pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === 'poborca') {
       pieniadzTotal += 2;
     }
   }
 
-  // --- Step 10: Net food ---
+  // --- Step 9: Net food ---
   // Garncarnia (Zadanie 2, 2026-07-23): +Zywnosc% LOKALNIE po zsumowaniu bazowej
   // Zywnosci (teren+budynki), PRZED odjeciem konsumpcji. Stackuje za kazda sztuke
   // zbudowana w TYM miescie (civ-wide NIE dotyczy -- patrz Stolarnia/Warsztat kamieniarski
@@ -821,6 +1031,7 @@ export function cityYieldPerTurn(
     pracaTerenu:    Math.floor(pracaBruttoTerenu),
     pracaBudynkow:  Math.floor(pracaBudynkow),
     pieniadzZPracy,
+    pieniadzBudynkow: Math.floor(pieniadzBudynkow),
     drewnoTerenu:   Math.floor(drewnoTerenu),
     kamienTerenu:   Math.floor(kamienTerenu),
     glinaTerenu:    Math.floor(glinaTerenu),
@@ -963,6 +1174,36 @@ export function corruptionRate(
                   + liczbaWszystkichMiast * params.korupcjaWspolczynnikMiast;
   const capPct = params.korupcjaCap * 100;  // korupcjaCap is a fraction
   return Math.min(capPct, strataPct) / 100;
+}
+
+/** Building ids that reduce corruption when present IN THIS CITY (D4, Maciej 2026-07-25). */
+const KORUPCJA_REDUKCJA_BUDYNKI = ['sad', 'pretorium', 'palac'] as const;
+/** Reduction per building, as a fraction of the base corruption rate (30 punktow procentowych). */
+const KORUPCJA_REDUKCJA_NA_BUDYNEK = 0.30;
+/**
+ * Naturalny sufit sumy redukcji to 0.60 (Sad + Palac w stolicy, albo Sad + Pretorium
+ * w regionie -- Palac ma lokalizacja:"stolica", Pretorium lokalizacja:"region", wiec
+ * zaden budynek nie moze wystapic w obu miejscach naraz). Mimo to jawny Math.min
+ * ponizej zabezpiecza przed przyszla zmiana danych (D4, Maciej 2026-07-25).
+ */
+const KORUPCJA_REDUKCJA_SUFIT = 0.60;
+
+/**
+ * Decyzja 59 + Pałac (D4, Maciej 2026-07-25): Sąd, Pretorium i Pałac redukują korupcję,
+ * każdy o 30 punktów procentowych, ADDYTYWNIE, TYLKO w mieście w ktorym stoja (nie
+ * globalnie w imperium). Redukcja dziala jako mnoznik na strataBazowa z corruptionRate():
+ *   strataPoRedukcji = strataBazowa * (1 - sumaRedukcji).
+ * PARYTET AI: wywolujacy stosuje ta sama funkcje identycznie dla gracza i AI.
+ *
+ * @param builtIds - identyfikatory budynkow zbudowanych W TYM MIEScie (nie w imperium)
+ * @returns ulamek redukcji [0, 0.60]
+ */
+export function corruptionBuildingReduction(builtIds: readonly string[]): number {
+  let suma = 0;
+  for (const id of KORUPCJA_REDUKCJA_BUDYNKI) {
+    if (builtIds.includes(id)) suma += KORUPCJA_REDUKCJA_NA_BUDYNEK;
+  }
+  return Math.min(KORUPCJA_REDUKCJA_SUFIT, suma);
 }
 
 // ---------------------------------------------------------------------------

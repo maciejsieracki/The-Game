@@ -13,7 +13,7 @@ const BUNDLE = path.resolve(__dirname, '.eko-tech-p3-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
 export {
-  empireHasPopalniaBrazu, cityHasPiecHutniczy, hasBrazAccess,
+  empireHasKopalniaMiedzi, cityHasPiecHutniczy, hasBrazAccess,
   PIEC_HUTNICZY_BUILDING_ID,
 } from '../src/game/braz-access';
 export { availableProduction } from '../src/game/production';
@@ -41,15 +41,17 @@ function ok(c, m) {
   else { fail++; console.error('  FAIL:', m); }
 }
 
-const placedWithPopalnia = new Map([['1,0', 'popalnia_brazu']]);
+// Popalnia brazu -> przemianowana na Kopalnia miedzi (przebudowa modelu brazu,
+// empireHasPopalniaBrazu -> empireHasKopalniaMiedzi, klucz ulepszenia 'kopalnia_miedzi').
+const placedWithPopalnia = new Map([['1,0', 'kopalnia_miedzi']]);
 const placedEmpty = new Map();
 
 // braz-access helpers
-ok(!M.empireHasPopalniaBrazu(placedEmpty), 'brak popalni w imperium');
-ok(M.empireHasPopalniaBrazu(placedWithPopalnia), 'popalnia w imperium');
+ok(!M.empireHasKopalniaMiedzi(placedEmpty), 'brak kopalni miedzi w imperium');
+ok(M.empireHasKopalniaMiedzi(placedWithPopalnia), 'kopalnia miedzi w imperium');
 ok(M.cityHasPiecHutniczy(['odlewnia_brazu']), 'miasto ma piec');
-ok(!M.hasBrazAccess(placedWithPopalnia, []), 'AND: popalnia bez pieca = brak brązu');
-ok(M.hasBrazAccess(placedWithPopalnia, ['odlewnia_brazu']), 'AND: popalnia + piec = brąz');
+ok(!M.hasBrazAccess(placedWithPopalnia, []), 'AND: kopalnia miedzi bez pieca = brak brązu');
+ok(M.hasBrazAccess(placedWithPopalnia, ['odlewnia_brazu']), 'AND: kopalnia miedzi + piec = brąz');
 
 // ABC-13 nazwa
 {

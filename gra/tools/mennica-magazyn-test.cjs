@@ -81,11 +81,14 @@ const beNormal = M.buildEconParams(gameData, 'normal');
 eq(beNormal.mennicaMnoznikPoWalucie, 1.5, 'buildEconParams (turn-economy.ts): normal = 1.5 (parity z loadEconParams)');
 
 // ---------------------------------------------------------------------------
-// B. Zadanie 1: formula gate -- mnoznik Mennicy dziala tylko gdy ctx.mennicaMnoznik>1 przekazany
-//    (samą formułę handel->pieniadz w economy.ts juz kryje currency-test.cjs; tu weryfikujemy
-//    ze wartosc 1.5 z JSON faktycznie podnosi dochod wzgledem mnoznika=1, na tych samych danych).
+// B. EFEKT 1 SCALONY (decyzja Maciej 2026-07-25): mnoznik Handlu netto dziala
+//    tylko gdy ctx.maMennica ORAZ ctx.walutaOdkryta sa oba prawdziwe -- dawne
+//    osobne pole ctx.mennicaMnoznik (mnoznik TYLKO na strumien Pieniadza)
+//    zostalo usuniete, gate jest teraz w cityYieldPerTurn (economy.ts) sam,
+//    bez potrzeby przekazywania wartosci mnoznika z zewnatrz (samą formułę
+//    kryje tez currency-test.cjs; tu weryfikujemy real econ-params.json).
 // ---------------------------------------------------------------------------
-console.log('\n-- B. cityYieldPerTurn: mennicaMnoznik z parametru realnie podnosi Skarb --');
+console.log('\n-- B. cityYieldPerTurn: Efekt 1 scalony (Waluta+Mennica) realnie podnosi Skarb --');
 function makeCity(overrides) {
   return Object.assign({
     id: 'c1', ludnosc: 3, zdrowie: 0, czyStolica: true,
@@ -99,23 +102,24 @@ function makeCtx(overrides) {
   return Object.assign({
     wojskoZuzycieZywnosci: 0, strataFraction: 0,
     maMlyn: false, maCegielnia: false, maTargowisko: false, maBiblioteka: false,
-    maMennica: true, mennicaMnoznik: 1, walutaOdkryta: true,
+    maMennica: true, walutaOdkryta: true,
   }, overrides);
 }
 const rTile = { terenBazowy: 'rownina', nakladka: 'brak', maRzeke: false };
 const tiles6 = Array(6).fill(rTile);
 const city = makeCity();
 
-const yldNoMnoznik = M.cityYieldPerTurn(city, tiles6, [], pNormal, makeCtx({ mennicaMnoznik: 1 }));
-const yldConMnoznik = M.cityYieldPerTurn(city, tiles6, [], pNormal, makeCtx({ mennicaMnoznik: pNormal.mennicaMnoznikPoWalucie }));
-assert(yldConMnoznik.pieniadz > yldNoMnoznik.pieniadz,
-  `Mennica ×${pNormal.mennicaMnoznikPoWalucie}: pieniadz wzrasta wzgledem mnoznika=1 (${yldConMnoznik.pieniadz} > ${yldNoMnoznik.pieniadz})`);
+const yldNoMennica  = M.cityYieldPerTurn(city, tiles6, [], pNormal, makeCtx({ maMennica: false }));
+const yldConMennica = M.cityYieldPerTurn(city, tiles6, [], pNormal, makeCtx({ maMennica: true }));
+assert(yldConMennica.pieniadz > yldNoMennica.pieniadz,
+  `Mennica ×${pNormal.mennicaMnoznikPoWalucie}: pieniadz wzrasta wzgledem braku Mennicy (${yldConMennica.pieniadz} > ${yldNoMennica.pieniadz})`);
 
-// Przyklad liczbowy (normal, 6 pol Rownina: handel=6, walutaOdkryta=true -> Efekt1
-// x2 (walutaMnoznik) -> handelNetto=12; %Skarb=70): bez mnoznika Mennicy floor(12*0.70)=8;
-// z Mennica x1.5 po Walucie: floor(12*0.70*1.5)=floor(12.6)=12 -- dokladnie +50%.
-eq(yldNoMnoznik.pieniadz, 8, 'przyklad: bez Mennicy aktywnej -> pieniadz=8 (tylko Efekt1 Waluty)');
-eq(yldConMnoznik.pieniadz, 12, 'przyklad: Mennica x1.5 PO Walucie -> pieniadz=12 (+50% wzgledem 8)');
+// Przyklad liczbowy (normal, real econ-params.json, 6 pol Rownina: handel=6, brak
+// Targowiska -> handelBrutto=6; bez Mennicy mnoznik=1 (mimo walutaOdkryta=true, to
+// jest sedno decyzji 2026-07-25) -> handelNetto=6, %Skarb=70 -> floor(6*0.70)=4;
+// z Mennica+Waluta: handelNetto=6*1.5=9 -> floor(9*0.70)=6 -- dokladnie +50%.
+eq(yldNoMennica.pieniadz, 4, 'przyklad: Waluta bez Mennicy -> pieniadz=4 (mnoznik=1, brak efektu -- sedno decyzji)');
+eq(yldConMennica.pieniadz, 6, 'przyklad: Mennica x1.5 + Waluta -> pieniadz=6 (+50% wzgledem 4)');
 
 // ---------------------------------------------------------------------------
 // C. Zadanie 1: bramka AND (budynek + tech) -- pelna sciezka przez advanceCityEconomy
@@ -152,10 +156,25 @@ const walutaOnly = runTick([], true).tick;                       // Waluta bez M
 const mennicaOnly = runTick(['mennica'], false).tick;             // Mennica bez Waluty
 const both       = runTick(['mennica'], true).tick;               // Mennica + Waluta -> gate ON
 
-eq(walutaOnly.pieniadzBrutto >= base.pieniadzBrutto, true,
-  'Waluta bez Mennicy: nie mniej niz baseline (mnoznik Efekt1 dziala niezaleznie)');
-eq(mennicaOnly.pieniadzBrutto, base.pieniadzBrutto,
-  'Mennica BEZ Waluty: brak zmiany wzgledem baseline (bramka AND -- Mennica nieaktywna)');
+eq(walutaOnly.pieniadzBrutto, base.pieniadzBrutto,
+  'Waluta BEZ Mennicy: BRAK zmiany wzgledem baseline (sedno decyzji 2026-07-25 -- sam tech juz nie wystarcza)');
+// Mennica BEZ Waluty: bramka AND Efektu 1 (multiplikator Daniny netto) jest NIEaktywna,
+// ale Mennica jako budynek nadal daje wlasny bazowy plon Pieniadza (baza.pieniadz=3 w
+// buildings.json, wpiety do silnika naprawa "plony budynkow" FALA 11 2026-07-25).
+//
+// AKTUALIZACJA 2026-07-25 (noc), decyzja wlasciciela 67B: 3 -> 2.
+// Wczesniej ten test zakladal, ze Pieniadz z budynku trafia 1:1 do skarbca, wiec delta
+// rownala sie pelnym 3 pkt Pieniadza/ture. Po decyzji 67B ("budynki powinny dawac handel
+// nie bezposrednio do skarbca, tylko do puli, do podzialu") plon Pieniadza budynku wchodzi
+// do Daniny BAZOWEJ i dzieli sie suwakiem miasta na Nauke/Skarbiec/Zamoznosc. Przy
+// domyslnym podziale 20/60/20 (decyzja 74A) do strumienia Pieniadza trafia 60% tego plonu,
+// a wynik jest zaokraglany w dol na ZSUMOWANEJ puli (nie na samym wkladzie budynku) --
+// stad calkowita delta 2, a nie 1,8 czy 3.
+//
+// Test nadal dowodzi dokladnie tego, co mial dowodzic: multiplikator Efektu 1 NIE przecieka
+// przy samej Mennicy bez Waluty. Gdyby przeciekal, delta bylaby wielokrotnie wyzsza.
+eq(mennicaOnly.pieniadzBrutto - base.pieniadzBrutto, 2,
+  'Mennica BEZ Waluty: delta = tylko wlasny plon budynku po podziale suwakiem (67B), multiplikator Efektu 1 NIEaktywny (bramka AND)');
 assert(both.pieniadzBrutto > walutaOnly.pieniadzBrutto,
   `Mennica + Waluta: dochod wyzszy niz sama Waluta (${both.pieniadzBrutto} > ${walutaOnly.pieniadzBrutto})`);
 

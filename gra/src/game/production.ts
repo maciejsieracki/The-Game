@@ -13,7 +13,7 @@
  * unit-testable (see tools/logic-test.cjs).
  *
  * Design (PROJEKT-GRY-master.md sec.8, sec.8e):
- *   - Building cost          : kosztBudowy * 1.10^(level-1)  (compound, decyzja Naster; przyrostKosztu legacy)
+ *   - Building cost          : kosztBudowy + przyrostKosztu * (level-1)  (liniowy, decyzja Naster 2026-07-25)
  *   - Building availability   : kategoria belongs to current epoch (epokaWejscia
  *                               <= city epoch), its techUnlock is researched (or
  *                               empty). Max 1 szt. na typ w miescie — znika gdy
@@ -65,6 +65,7 @@ import { hasZelazoAccess } from './zelazo-access';
 import {
   buildingResourceGateMet,
   CITY_BUILDING_PREREQ,
+  cityBuildingPrereqMet,
   WATER_ACCESS_BUILDING_IDS,
 } from './building-resource-gate';
 import {
@@ -161,15 +162,8 @@ export function epochNumber(epoka: string | null | undefined): number {
 }
 
 // ---------------------------------------------------------------------------
-// Building level + compound scaling
+// Building level + linear scaling
 // ---------------------------------------------------------------------------
-
-/**
- * Compound growth factor per building level (decyzja Naster): a building gains
- * one level per epoch and every stat -- and its build cost -- grows +10% each
- * level, compounded.  Replaces the legacy linear `przyrost` / `przyrostKosztu`.
- */
-export const BUILDING_LEVEL_FACTOR = (miastoParams.budynek_mnoznik_poziomu?.wartosc as number) ?? 1.10;
 
 /**
  * Building level derived from a city's epoch: 1 at the building's entry epoch,
@@ -205,10 +199,13 @@ export function buildingLevelForEpoch(
   return level;
 }
 
-/** Compound-scaled value of a building base stat at `level`: baza * 1.10^(level-1). */
-export function buildingEffectAtLevel(baza: number, level: number): number {
+/**
+ * Linear value of a building base stat at `level`: baza + przyrost * (level-1).
+ * Level 1 returns `baza` unchanged (no growth bonus yet).
+ */
+export function buildingEffectAtLevel(baza: number, przyrost: number, level: number): number {
   const n = Math.max(1, Math.floor(level));
-  return baza * Math.pow(BUILDING_LEVEL_FACTOR, n - 1);
+  return baza + przyrost * (n - 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -270,7 +267,7 @@ function findUnit(data: ProductionData, id: string): UnitDef | undefined {
 /**
  * Total Praca cost of one item.
  *
- *   building : kosztBudowy * 1.10^(level - 1)  (compound; przyrostKosztu legacy)
+ *   building : kosztBudowy + przyrostKosztu * (level - 1)  (liniowy, decyzja Naster 2026-07-25)
  *              `cityLevelOrEpoch` is interpreted as the level the building would
  *              be built at (1-based).  Level <= 1 yields the flat kosztBudowy.
  *   unit     : its "Pieniadz (koszt)" (or a per-role default).  `cityLevelOrEpoch`
@@ -289,7 +286,8 @@ export function itemCost(
     const b = findBuilding(data, id);
     if (!b) return 0;
     const level = Number.isFinite(cityLevelOrEpoch) ? Math.max(1, Math.floor(cityLevelOrEpoch)) : 1;
-    return Math.round(b.kosztBudowy * Math.pow(BUILDING_LEVEL_FACTOR, level - 1));
+    const przyrostKosztu = Number.isFinite(b.przyrostKosztu) ? b.przyrostKosztu : 0;
+    return Math.round(b.kosztBudowy + przyrostKosztu * (level - 1));
   }
   const u = findUnit(data, id);
   if (!u) return 0;
@@ -425,6 +423,31 @@ export interface AvailabilityContext {
    * mapę, ten moduł jest pure-logic) — patrz main.ts `cityHasCoastOrRiverAccess`.
    */
   cityHasCoastOrRiver?: boolean;
+  /**
+   * ADMIN-STOLICA (decyzja Macieja 2026-07-25): czy TO miasto jest stolicą TEGO
+   * właściciela — bramka budynków z `BuildingDef.lokalizacja` ('stolica' = tylko
+   * tu, np. Pałac I/II/III; 'region' = tylko poza stolicą, np. Dom Starszyzny/
+   * Dwór Zarządcy/Pretorium). Musi być liczone jednym, spójnym źródłem prawdy —
+   * `capitalCityIdForOwner(ownerId)` (main.ts) / `cfg.getCapitalCityId` (cityPanel.ts),
+   * NIGDY osobną heurystyką — patrz uwaga przy turn-economy.ts `isCapital`
+   * (liczone tam jako "pierwsze miasto w tablicy `cities`", które NIE uwzględnia
+   * przeniesienia stolicy gracza/AI — to inne, starsze źródło, tu celowo nieużywane).
+   * `undefined` = nieznane → oba kierunki bramki blokują budynek (fail-safe:
+   * budynku ograniczonego lokalizacją nie pokazujemy, dopóki wołający nie poda
+   * jednoznacznej odpowiedzi). WYLICZANE identycznie dla gracza i AI (ownerId
+   * to zwykły parametr `capitalCityIdForOwner`, bez gałęzi po ownerId) — PARYTET AI.
+   */
+  isCapital?: boolean;
+}
+
+/** Czy budynek wolno postawić w tym mieście wg `BuildingDef.lokalizacja` (ADMIN-STOLICA). */
+function buildingLocationAllowed(
+  lokalizacja: 'stolica' | 'region' | undefined,
+  isCapital: boolean | undefined,
+): boolean {
+  if (lokalizacja === 'stolica') return isCapital === true;
+  if (lokalizacja === 'region') return isCapital === false;
+  return true;
 }
 
 /**
@@ -588,6 +611,29 @@ export function applyCompletedBuildingIds(
   return next;
 }
 
+/**
+ * Decyzja 55B (Maciej 2026-07-25, "odblokowuje ozywic"): po ukonczeniu budynku
+ * zwraca nazwe flagi City do ustawienia na true (np. 'maMur' dla Murow), odczytana
+ * z buildings.json pola `odblokowuje` -- zamiast hardkodu `id === 'mury'`.
+ * null = budynek nie odblokowuje zadnej flagi City.
+ *
+ * UWAGA (regresja 'fort'): przed ta zmiana ukonczenie 'fort' (Cytadela) ustawialo
+ * TAKZE maMur=true obok wlasnego odblokowuje='maFort'. To bylo nadmiarowe: 'fort'
+ * ma twardy prerekwyzyt 'mury' w TYM SAMYM miescie (CITY_BUILDING_PREREQ w
+ * building-resource-gate.ts, sprawdzany przy KOLEJKOWANIU produkcji) -- Mury
+ * musza wiec byc juz ukonczone (i maMur juz ustawione) zanim Fort w ogole moze
+ * zostac ukonczony w tym miescie. Usuniecie dodatkowego `|| id==='fort'` nie
+ * zmienia wiec zadnego realnego przebiegu gry, tylko usuwa martwa nadmiarowosc.
+ */
+export function buildingUnlockFlagFor(
+  completedBuildingId: string,
+  buildings: readonly { id: string; odblokowuje?: string }[],
+): string | null {
+  const def = buildings.find(b => b.id === completedBuildingId);
+  const flag = def?.odblokowuje?.trim();
+  return flag ? flag : null;
+}
+
 /** Czy typ budynku jest juz w kolejce (ulepszenie — zbudowany moze byc). */
 export function buildingTypeQueued(
   buildingId: string,
@@ -703,7 +749,15 @@ export function availableProduction(
     }
 
     const tech = (b.techUnlock ?? '').trim();
-    if (tech.length > 0 && !techs.has(tech)) continue;
+    // BUGFIX (ADMIN-STOLICA 2026-07-25): blank-tech marker w buildings.json bywa zapisany
+    // jako '-' (Pałac I/II/III, Dom Starszyzny — "dostępny od startu, bez badań"), tak samo
+    // jak dla jednostek (patrz uwaga niżej przy units.json Tech). BEZ tej drugiej formy
+    // techUnlock='-' byłby czytany jako WYMAGANA technologia o nazwie "-", której żaden gracz
+    // nigdy nie odkryje (nie istnieje w tech.json) — Pałac (i teraz Dom Starszyzny) nigdy nie
+    // pojawiałby się w produkcji, niezależnie od bramki stolica/region niżej. Pre-istniejący
+    // bug w tym module (jednostki już miały tę samą poprawkę, budynki — nie).
+    if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) continue;
+    if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID
       && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
@@ -715,12 +769,13 @@ export function availableProduction(
       continue;
     }
     // TEMAT 8 Q2 (2026-07-24): budynek wymaga innego budynku W TYM MIEŚCIE (np. Warsztat
-    // oblężniczy → Koszary, Łaźnia publiczna → Studnia). Akceptuje też upgrade prerekwizytu
-    // (np. Koszary→Akademia wojskowa), ten sam wzorzec co bramka Koszar dla jednostek epoki
-    // Brązu niżej — inaczej upgrade odbierałby miastu już zdobyte prawo budowy.
-    const cityPrereq = CITY_BUILDING_PREREQ[b.id];
-    if (cityPrereq && !builtList.includes(cityPrereq)
-      && !isBuildingSupersededByUpgrade(cityPrereq, builtList, data.buildings)) {
+    // oblężniczy → Koszary LUB Akademia wojskowa, Łaźnia publiczna → Studnia). Od
+    // GRUPY-BUDYNKOW (2026-07-25) Koszary/Akademia wojskowa stoją w mieście niezależnie
+    // (nie w relacji upgradeFrom) — `cityBuildingPrereqMet` akceptuje KTÓRYKOLWIEK z
+    // dozwolonych id-ów (CITY_BUILDING_PREREQ może być tablicą), plus dawny fallback
+    // "upgrade prerekwizytu" (`isBuildingSupersededByUpgrade`) dla par, które nadal są
+    // w łańcuchu — inaczej upgrade/rozdzielenie odbierałoby miastu już zdobyte prawo budowy.
+    if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
       continue;
     }
     // TEMAT 8 Q2: Port/Port wielki wymagają wybrzeża LUB rzeki w zasięgu TEGO miasta.
@@ -1361,6 +1416,12 @@ export interface BuildingCatalogEntry {
   /** Wymagana tech, której gracz jeszcze nie ma (pusta = brak wymogu tech). */
   missingTech: string;
   wymagania: string;
+  /**
+   * ADMIN-STOLICA: powód blokady z lokalizacji miasta (niezależny od tech) —
+   * 'stolica' gdy budynek wymaga stolicy a miasto jest regionalne, 'region' gdy
+   * odwrotnie. `undefined` = lokalizacja nie jest powodem blokady.
+   */
+  locationBlocked?: 'stolica' | 'region';
 }
 
 /**
@@ -1392,14 +1453,34 @@ export function eraBuildingCatalog(
       difficulty,
     );
     const tech = (b.techUnlock ?? '').trim();
-    const techOk = tech.length === 0 || techs.has(tech);
+    // BUGFIX (ADMIN-STOLICA 2026-07-25): patrz uwaga w availableProduction — '-'/'—' są
+    // blank-tech markery (Pałac I/II/III, Dom Starszyzny), nie nazwy realnej technologii.
+    const techOk = tech.length === 0 || tech === '-' || tech === '—' || techs.has(tech);
+
+    const locationOk = buildingLocationAllowed(b.lokalizacja, ctx.isCapital);
+    // REGRESJA-KOLEJNOSC (2026-07-25 wieczor): eraBuildingCatalog liczy status wylacznie z
+    // tech/lokalizacji -- budynek zablokowany WYLACZNIE brakujacym prerekwizytem miejskim
+    // (CITY_BUILDING_PREREQ, np. Akademia bez Biblioteki) zostawal 'ready' mimo ze
+    // availableProduction (buildableProduction) i tak go odrzuca -- znikal z panelu bez
+    // zadnego komunikatu (ani na liscie "Dostepne", ani w "Jeszcze zablokowane", bo ta druga
+    // sekcja pokazuje tylko status==='locked'). Ta sama luka istniala juz wczesniej dla
+    // warsztat_oblezniczy/laznia_publiczna -- naprawiona tu raz dla wszystkich wpisow mapy.
+    const prereqOk = cityBuildingPrereqMet(
+      CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade,
+    );
 
     let status: BuildingCatalogStatus = 'ready';
+    let locationBlocked: 'stolica' | 'region' | undefined;
     if (buildingTypeQueued(b.id, queue)) {
       status = 'queued';
     } else if (!b.wielokrotny && builtList.includes(b.id)) {
       status = 'built';
     } else if (!techOk) {
+      status = 'locked';
+    } else if (!locationOk) {
+      status = 'locked';
+      locationBlocked = b.lokalizacja;
+    } else if (!prereqOk) {
       status = 'locked';
     }
 
@@ -1411,6 +1492,7 @@ export function eraBuildingCatalog(
       status,
       missingTech: !techOk ? tech : '',
       wymagania: (b.wymagania ?? '').trim(),
+      locationBlocked,
     });
   }
 

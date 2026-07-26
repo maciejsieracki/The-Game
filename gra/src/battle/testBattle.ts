@@ -1,19 +1,13 @@
 /**
  * testBattle.ts
  *
- * DATA + builder for the "T"-key TEST BATTLE (the watched auto-battle).
- *
- * Master's decision (B9): the test-battle COMPOSITION lives in the BATTLE lane,
- * not in main.ts. This module owns:
+ * DATA + builder for preset battles (named army compositions + terrain),
+ * used by main.ts::launchBigPresetBattle() for the BITWA-DUZA / OBLEZENIE-DUZE
+ * playtest routes (army vs army, straight into BattleScene, no world map).
+ * This module owns:
  *   - a small, readable block of PRESETS (named army compositions + terrain), and
  *   - buildTestArmies(units, preset?) which turns a preset into the two armies
  *     (BattleUnit[] each) that battleScene.ts consumes.
- *
- * battleScene.ts calls buildTestArmies() as a BRIDGE: main.ts still hands the
- * scene its canned 4 Legionista vs 4 Falanga roster on "T"; the scene detects
- * that canned signature and rebuilds BOTH armies from the DEFAULT preset here,
- * so "T" works without touching main.ts. (SILNIK can later make main.ts call
- * buildTestArmies() directly in one line -- out of this lane.)
  *
  * NO THREE.js / DOM here -- pure data + lookups, so it is trivially testable and
  * shares nothing with the renderer. Unit NAMES are the exact "Jednostka" strings
@@ -70,7 +64,7 @@ export interface BattlePreset {
 /** The preset keys understood by buildTestArmies(). */
 export type PresetName = 'maly' | 'duzy' | 'rzym_grecja' | 'konnica' | 'oblezenie' | 'maciej_playtest' | 'bitwa_duza_pole' | 'oblezenie_duze';
 
-/** The DEFAULT preset used by the "T" battle when none is named. */
+/** The DEFAULT preset used when none is named. */
 export const DEFAULT_PRESET: PresetName = 'rzym_grecja';
 
 /**

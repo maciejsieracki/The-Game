@@ -22,7 +22,7 @@
 ## Wiki‑M
 
 ### Co robi
-Koszary wzmacnia miasto w kategorii **Wojsko**. Poziom 1: **+2 pracy** (+1 na poziom), **+5 % mnożnika handlu** (+2 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
+Koszary wzmacnia miasto w kategorii **Wojsko**. Poziom 1: **+2 pracy** (+1 na poziom), **+5 % mnożnika Daniny** (+2 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 25 pracy
 - **Każdy kolejny poziom:** +10 pracy
@@ -45,9 +45,9 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 25 | **3 tur** | +2 pracy, +5 % mnożnika handlu | 2 ¤/t |
+| Poziom 1 | 25 | **3 tur** | +2 pracy, +5 % mnożnika Daniny | 2 ¤/t |
 | Poziom 2 | 35 | **4 tur** | więcej (patrz niżej) | 2 ¤/t |
-| Poziom 3 | 45 | — | **+4 pracy, +9 % mnożnika handlu** | 2 ¤/t |
+| Poziom 3 | 45 | — | **+4 pracy, +9 % mnożnika Daniny** | 2 ¤/t |
 
 +2 pracy/t — przy koszcie 25 pracy inwestycja „wraca" w **13 tur** (jeśli cała nowa praca idzie w kolejkę).
 

@@ -113,10 +113,45 @@ export interface EmpireTradeRouteRow {
   income: number;
 }
 
+/**
+ * DYSPOZYCJA 85 (Maciej 2026-07-26): surowiec, do którego gracz ma dostęp DZIĘKI
+ * aktywnej trasie handlowej z obcą cywilizacją (trade-routes.ts TradeRouteResourceGrant,
+ * pierwszy/deterministyczny grant per surowiec — patrz firstTradeRouteResourceGrant).
+ * Panel Handel = handel międzynarodowy i tylko on, więc to jedyne miejsce, gdzie ten
+ * fakt jest pokazywany graczowi (miasto go już NIE pokazuje — 🔗/tradeSources usunięte
+ * z cityPanel.ts przy tym samym zadaniu).
+ */
+export interface EmpireTradeResourceGrantRow {
+  resourceKey: string;
+  label: string;
+  partnerLabel: string;
+}
+
 /** Zbiorczy widok imperium: suma dochodu + rozpiska aktywnych tras (żeton HUD „Handel"). */
 export interface EmpireTradeSnap {
   totalIncome: number;
   routes: EmpireTradeRouteRow[];
+  /**
+   * Decyzje 65B/66B (Maciej 2026-07-25, "Handel -> Danina -> Podatek"): etykieta
+   * strumienia miasta (dawny "Handel" z pól) dla gracza (ownerId=0) -- ten
+   * panel jest zawsze widokiem WLASNEGO imperium gracza (trasy sa zawsze
+   * gracz<->obcy, patrz komentarz przy EmpireTradeRouteRow). Uzywana wylacznie
+   * do zdania "+5% Daniny/Podatku z pól" w renderHandelSection (empireDetailPanel.ts)
+   * -- NIE do nazwy sekcji "Handel — szlaki handlowe", ktora zostaje bez zmian
+   * (to trasy z obcymi cywilizacjami). Patrz game/danina-nazwa.ts.
+   */
+  daninaLabel: 'Danina' | 'Podatek';
+  /**
+   * CUDA-HANDEL-01 (Maciej 2026-07-26) + DYSPOZYCJA 85: suma % bonusu cudów świata
+   * "handel_procent" gracza (ownerId=0), addytywna, w punktach procentowych (15 = +15%).
+   * Ląd = tylko wpisy "cel":"handel" (Petra, Brama wszystkich narodów, Pałac Weiyang).
+   * Morze = "cel":"handel" ORAZ "handel_morski" (dolicza się Kamień Ha'amonga, Kolos
+   * Rodyjski) — zgodnie z sumWonderTradeRouteBonusForOwner (wonders-data.ts).
+   */
+  wonderBonusLadPct: number;
+  wonderBonusMorzePct: number;
+  /** Surowce "z trasy" aktywne DLA GRACZA teraz (pusta lista = brak). */
+  resourceGrants: EmpireTradeResourceGrantRow[];
 }
 
 export interface EmpireDetailSnap {

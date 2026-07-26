@@ -20,6 +20,7 @@ import {
   buildIrygacja, buildPoleIrygowane, buildFort, buildPosterunek,
   buildDrogaNawierzchnia, buildDrogaBrukowanaNawierzchnia, ULEPSZENIA_P3B_LAYOUT,
 } from './ulepszenia-modele-p3b';
+import { buildKopalniaZlota } from './kopalnia-zlota-opus5';
 
 function mat(c: number): THREE.MeshLambertMaterial {
   return new THREE.MeshLambertMaterial({ color: c, flatShading: true });
@@ -409,6 +410,9 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
     g.add(f, buildTrzoda(), buildZagrodaDodatki()); // wycofano buildPastwiskoZwierzeta (model pokazowy) → trzoda N-NE
   },
   kopalnia_miedzi: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
+  // WŁASNY model 3D (Opus 5, 2026-07-25) — koniec reużycia buildKopalnia(). Model jest już
+  // zorientowany przodem do kamery (+Z), więc BEZ rotacji z ULEPSZENIA_P2_LAYOUT.
+  kopalnia_zlota: g => { g.add(buildKopalniaZlota()); },
 };
 
 export function buildRobloxImprovement(key: ImprovementKey, ownerCol = 0xffd54a): THREE.Group {

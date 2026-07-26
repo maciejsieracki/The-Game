@@ -208,7 +208,8 @@ var map_gen_params_default = {
     glina: { rarity: 0.1 },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    sol: { rarity: 0.12 }
+    sol: { rarity: 0.12 },
+    zloto: { rarity: 0.03 }
   },
   metal_deposit_min_era: {
     miedz: 2,
@@ -254,36 +255,39 @@ var FALLBACK_DEPOSIT_RARITY = {
   wegiel: 0.1,
   owce: 0.08,
   bydlo: 0.07,
-  sol: 0.12
+  sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03
 };
 function tierKey(t) {
   return t;
 }
 function mapGenDefaultSight() {
-  var _a10, _b3;
-  const v = (_b3 = (_a10 = map_gen_params_default.mgla) == null ? void 0 : _a10.default_sight_jednostki) == null ? void 0 : _b3.wartosc;
+  var _a9, _b3;
+  const v = (_b3 = (_a9 = map_gen_params_default.mgla) == null ? void 0 : _a9.default_sight_jednostki) == null ? void 0 : _b3.wartosc;
   return typeof v === "number" && v > 0 ? v : FALLBACK_SIGHT;
 }
 function mapGenResourceMult(tier) {
-  var _a10;
-  const m = (_a10 = map_gen_params_default.gestosc) == null ? void 0 : _a10.surowce_mult;
+  var _a9;
+  const m = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.surowce_mult;
   return (m == null ? void 0 : m[tierKey(tier)]) ?? FALLBACK_RESOURCE_MULT[tier];
 }
 function mapGenResourceBaselineRarity() {
-  var _a10;
-  const v = (_a10 = map_gen_params_default.gestosc) == null ? void 0 : _a10.baseline_rarity_mult;
+  var _a9;
+  const v = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.baseline_rarity_mult;
   return typeof v === "number" && v > 0 ? v : FALLBACK_BASELINE_RARITY;
 }
 function mapGenMaxRiversBase(tier) {
-  var _a10;
-  const g = (_a10 = map_gen_params_default.gestosc) == null ? void 0 : _a10.rzeki_max_mala_mapa;
+  var _a9;
+  const g = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.rzeki_max_mala_mapa;
   const k = tierKey(tier);
   if (g && typeof g[k] === "number") return g[k];
   return FALLBACK_RIVERS[tier];
 }
 function mapGenRiverScale(size) {
-  var _a10;
-  const rs = (_a10 = map_gen_params_default.gestosc) == null ? void 0 : _a10.river_scale;
+  var _a9;
+  const rs = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.river_scale;
   const lut = {
     mala: "mala",
     srednia: "srednia",
@@ -295,37 +299,37 @@ function mapGenRiverScale(size) {
   return typeof v === "number" && v > 0 ? v : FALLBACK_RIVER_SCALE[size];
 }
 function mapGenDesertThreshold(tier) {
-  var _a10;
-  const d = (_a10 = map_gen_params_default.gestosc) == null ? void 0 : _a10.desert_noise_threshold;
+  var _a9;
+  const d = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.desert_noise_threshold;
   const k = tierKey(tier);
   if (d && typeof d[k] === "number") return d[k];
   return FALLBACK_DESERT[tier];
 }
 function mapGenForestThreshold(tier) {
-  var _a10;
-  const f = (_a10 = map_gen_params_default.gestosc) == null ? void 0 : _a10.forest_noise_threshold;
+  var _a9;
+  const f = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.forest_noise_threshold;
   const k = tierKey(tier);
   if (f && typeof f[k] === "number") return f[k];
   return FALLBACK_FOREST[tier];
 }
 function mapGenMountainThreshold(tier) {
-  var _a10;
-  const m = (_a10 = map_gen_params_default.gestosc) == null ? void 0 : _a10.mountain_noise_threshold;
+  var _a9;
+  const m = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.mountain_noise_threshold;
   const k = tierKey(tier);
   if (m && typeof m[k] === "number") return m[k];
   return FALLBACK_MOUNTAIN[tier];
 }
 function mapGenHighlandThreshold(tier) {
-  var _a10;
-  const h = (_a10 = map_gen_params_default.gestosc) == null ? void 0 : _a10.highland_noise_threshold;
+  var _a9;
+  const h = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.highland_noise_threshold;
   const k = tierKey(tier);
   if (h && typeof h[k] === "number") return h[k];
   return FALLBACK_HIGHLAND[tier];
 }
 function mapGenMountainRangeParams(tier) {
-  var _a10;
+  var _a9;
   const fb = FALLBACK_MOUNTAIN_RANGE[tier];
-  const src = (_a10 = map_gen_params_default.gestosc) == null ? void 0 : _a10.pasma_gorskie;
+  const src = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.pasma_gorskie;
   const row = src == null ? void 0 : src[tierKey(tier)];
   if (!row) return { ...fb };
   const dlugoscMin = typeof row.dlugosc_min === "number" && row.dlugosc_min > 0 ? row.dlugosc_min : fb.dlugoscMin;
@@ -339,8 +343,8 @@ function mapGenMountainRangeParams(tier) {
   };
 }
 function mapGenRozmiarDims() {
-  var _a10;
-  const src = (_a10 = map_gen_params_default.generator) == null ? void 0 : _a10.rozmiar_dims;
+  var _a9;
+  const src = (_a9 = map_gen_params_default.generator) == null ? void 0 : _a9.rozmiar_dims;
   const out = { ...FALLBACK_ROZMIAR };
   if (!src) return out;
   for (const key of Object.keys(out)) {
@@ -462,26 +466,26 @@ function skalaRow(menuLabel) {
   return void 0;
 }
 function eStartPlayerCivId() {
-  var _a10;
-  return ((_a10 = R.defaulty) == null ? void 0 : _a10.player_civ_id) ?? "rzymianie";
+  var _a9;
+  return ((_a9 = R.defaulty) == null ? void 0 : _a9.player_civ_id) ?? "rzymianie";
 }
 function eStartEpochId() {
-  var _a10;
-  return ((_a10 = R.defaulty) == null ? void 0 : _a10.start_epoch_id) ?? "kamien";
+  var _a9;
+  return ((_a9 = R.defaulty) == null ? void 0 : _a9.start_epoch_id) ?? "kamien";
 }
 function eStartRenderQualityBundled() {
-  var _a10;
-  const q = ((_a10 = R.defaulty) == null ? void 0 : _a10.render_quality_bundled) ?? "medium";
+  var _a9;
+  const q = ((_a9 = R.defaulty) == null ? void 0 : _a9.render_quality_bundled) ?? "medium";
   if (q === "low" || q === "high") return q;
   return "medium";
 }
 function eStartTypyCywilizacji(menuLabel) {
-  var _a10;
-  return (_a10 = skalaRow(menuLabel)) == null ? void 0 : _a10.typy_cywilizacji;
+  var _a9;
+  return (_a9 = skalaRow(menuLabel)) == null ? void 0 : _a9.typy_cywilizacji;
 }
 function eStartMiastaPanstwa(menuLabel) {
-  var _a10;
-  return (_a10 = skalaRow(menuLabel)) == null ? void 0 : _a10.miasta_panstwa;
+  var _a9;
+  return (_a9 = skalaRow(menuLabel)) == null ? void 0 : _a9.miasta_panstwa;
 }
 
 // src/map/newGameMapDefaults.ts
@@ -1549,8 +1553,8 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
   const partitions = landPartitionKeysForDistribution(hexes, typ, continentOf, nContinents);
   for (const part of partitions) {
     const massSet = new Set(part.filter((k) => {
-      var _a10;
-      return ((_a10 = hexes[k]) == null ? void 0 : _a10.terenBazowy) !== "morze" /* Morze */;
+      var _a9;
+      return ((_a9 = hexes[k]) == null ? void 0 : _a9.terenBazowy) !== "morze" /* Morze */;
     }));
     for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
       if (land.length < minLand) continue;
@@ -1560,8 +1564,8 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
         if (mapHeight && climateZoneAt(q, r, mapHeight) === "arid") return false;
         return true;
       }).map(([q, r]) => {
-        var _a10;
-        return { k: hexKey(q, r), n: ((_a10 = scratch.get(hexKey(q, r))) == null ? void 0 : _a10.forNoise) ?? 0 };
+        var _a9;
+        return { k: hexKey(q, r), n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.forNoise) ?? 0 };
       }).sort((a, b) => b.n - a.n);
       if (eligible.length === 0) continue;
       const mid = land[Math.floor(land.length / 2)];
@@ -1569,7 +1573,7 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
       const zoneShareMul = cellZone === "temperate" ? 1.35 : 1;
       const minForest = typ === "pangea" ? 0 : 1;
       const target = Math.max(minForest, Math.round(eligible.length * share * zoneShareMul));
-      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * 0.18)));
+      const cap = Math.min(target, Math.max(2, Math.ceil(eligible.length * FOREST_OVERLAY_CAP_FRAC)));
       for (let i = 0; i < Math.min(cap, eligible.length); i++) {
         hexes[eligible[i].k].nakladka = "las" /* Las */;
         assigned++;
@@ -1828,10 +1832,11 @@ function landPartitionKeysForDistribution(hexes, typ, continentOf, nContinents) 
   return groupLandMassKeys(hexes);
 }
 var FOREST_SHARE_OF_DRY_LAND = {
-  low: 0.22,
-  medium: 0.36,
-  high: 0.5
+  low: 0.38,
+  medium: 0.58,
+  high: 0.95
 };
+var FOREST_OVERLAY_CAP_FRAC = 0.95;
 function applyReliefToLandKeys(hexes, scratch, tier, keys, width, height) {
   if (keys.length === 0) return;
   applyIronMountainsToLandKeys(hexes, scratch, tier, keys, width, height);
@@ -1865,10 +1870,10 @@ function applyIronMountainsToLandKeys(hexes, scratch, tier, keys, width, height)
       if (!hex || hex.terenBazowy === "gory" /* Gory */) return false;
       return isReliefCandidateHex(hex, q, r, width, height);
     }).map(([q, r]) => {
-      var _a10;
+      var _a9;
       return {
         k: hexKey(q, r),
-        n: ((_a10 = scratch.get(hexKey(q, r))) == null ? void 0 : _a10.mtnNoise) ?? 0
+        n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0
       };
     }).sort((a, b) => b.n - a.n);
     if (candidates.length === 0) continue;
@@ -1893,10 +1898,10 @@ function applyCopperHighlandsToLandKeys(hexes, scratch, tier, keys, width, heigh
       if (!hex || hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
       return isReliefCandidateHex(hex, q, r, width, height);
     }).map(([q, r]) => {
-      var _a10;
+      var _a9;
       return {
         k: hexKey(q, r),
-        n: ((_a10 = scratch.get(hexKey(q, r))) == null ? void 0 : _a10.mtnNoise) ?? 0
+        n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0
       };
     }).sort((a, b) => b.n - a.n);
     if (candidates.length === 0) continue;
@@ -1971,18 +1976,18 @@ function minLandHexesForReliefCell(cellSize) {
   return Math.max(8, Math.floor(cellSize * 0.32));
 }
 function countMountainsInCell(cellLand, hexes) {
-  var _a10;
+  var _a9;
   let n = 0;
   for (const [q, r] of cellLand) {
-    if (((_a10 = hexes[hexKey(q, r)]) == null ? void 0 : _a10.terenBazowy) === "gory" /* Gory */) n++;
+    if (((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "gory" /* Gory */) n++;
   }
   return n;
 }
 function countHighlandsInCell(cellLand, hexes) {
-  var _a10;
+  var _a9;
   let n = 0;
   for (const [q, r] of cellLand) {
-    if (((_a10 = hexes[hexKey(q, r)]) == null ? void 0 : _a10.terenBazowy) === "wzgorza" /* Wzgorza */) n++;
+    if (((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "wzgorza" /* Wzgorza */) n++;
   }
   return n;
 }
@@ -2009,9 +2014,9 @@ function pickReliefForceHex(land, hexes, scratch, width, height, want, avoid, ra
     }
     return true;
   }).map(([q, r]) => {
-    var _a10;
+    var _a9;
     const k = hexKey(q, r);
-    let score = ((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0;
+    let score = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
     if (want === "highland") score *= 0.9;
     score += Math.min(8, hexBorderDistance(q, r, width, height)) * 0.04;
     if (hexes[k].terenBazowy === "wybrzeze" /* Wybrzeze */) score -= 0.15;
@@ -2067,8 +2072,8 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
         if (want === "highland" && hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
         return true;
       }).map(([q, r]) => {
-        var _a10;
-        return { q, r, n: ((_a10 = scratch.get(hexKey(q, r))) == null ? void 0 : _a10.mtnNoise) ?? 0 };
+        var _a9;
+        return { q, r, n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0 };
       }).sort((a, b) => b.n - a.n);
       if (ranked.length === 0) break;
       spot = [ranked[0].q, ranked[0].r];
@@ -2112,11 +2117,11 @@ function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
   const baseMaxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
   const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
   const mountains = land.filter(([q, r]) => {
-    var _a10;
-    return ((_a10 = hexes[hexKey(q, r)]) == null ? void 0 : _a10.terenBazowy) === "gory" /* Gory */;
+    var _a9;
+    return ((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "gory" /* Gory */;
   }).map(([q, r]) => {
-    var _a10;
-    return { q, r, n: ((_a10 = scratch.get(hexKey(q, r))) == null ? void 0 : _a10.mtnNoise) ?? 0 };
+    var _a9;
+    return { q, r, n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0 };
   }).sort((a, b) => a.n - b.n);
   let changed = false;
   while (mountains.length > maxMtn && mountains.length > MIN_MOUNTAINS_IRON_CELL) {
@@ -2133,11 +2138,11 @@ function capHighlandOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
   const baseMaxHi = spreadOnly ? reliefSpreadCapHighland(tier, land.length) : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
   const maxHi = baseMaxHi * RELIEF_OVERFLOW_CAP_MULT;
   const highlands = land.filter(([q, r]) => {
-    var _a10;
-    return ((_a10 = hexes[hexKey(q, r)]) == null ? void 0 : _a10.terenBazowy) === "wzgorza" /* Wzgorza */;
+    var _a9;
+    return ((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "wzgorza" /* Wzgorza */;
   }).map(([q, r]) => {
-    var _a10;
-    return { q, r, n: ((_a10 = scratch.get(hexKey(q, r))) == null ? void 0 : _a10.mtnNoise) ?? 0 };
+    var _a9;
+    return { q, r, n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0 };
   }).sort((a, b) => a.n - b.n);
   let changed = false;
   while (highlands.length > maxHi && highlands.length > MIN_HIGHLANDS_COPPER_CELL) {
@@ -2232,6 +2237,93 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
   return fixed;
 }
 var MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.4;
+var MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
+var MOUNTAIN_RANGE_REGROW_MIN_GAP = 1;
+var MOUNTAIN_RANGE_REGROW_TARGET_MULT = 1;
+var MOUNTAIN_RANGE_REGROW_LEN_MIN = 4;
+var MOUNTAIN_RANGE_REGROW_LEN_MAX = 8;
+function findSameTerrainClusters(hexes, terrain) {
+  const visited = /* @__PURE__ */ new Set();
+  const clusters = [];
+  const keys = Object.keys(hexes).sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const hex = hexes[key];
+    if (!hex || hex.terenBazowy !== terrain) continue;
+    const cluster = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      cluster.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk)) continue;
+        const nh = hexes[nk];
+        if (!nh || nh.terenBazowy !== terrain) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+function connectedComponentsWithin(remaining) {
+  const visited = /* @__PURE__ */ new Set();
+  const comps = [];
+  const keys = [...remaining].sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const comp = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      comp.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk) || !remaining.has(nk)) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    comps.push(comp);
+  }
+  return comps;
+}
+function capMountainRangeClusterSize(hexes, scratch, terrain, fallbackTerrain, maxSize) {
+  let reverted = 0;
+  const clusters = findSameTerrainClusters(hexes, terrain);
+  for (const cluster of clusters) {
+    if (cluster.length <= maxSize) continue;
+    const remaining = new Set(cluster);
+    for (; ; ) {
+      const comps = connectedComponentsWithin(remaining).sort((a, b) => b.length - a.length);
+      const biggest = comps[0];
+      if (!biggest || biggest.length <= maxSize) break;
+      const sorted = [...biggest].sort((a, b) => {
+        var _a9, _b3;
+        const na = ((_a9 = scratch.get(a)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+        const nb = ((_b3 = scratch.get(b)) == null ? void 0 : _b3.mtnNoise) ?? 0;
+        if (na !== nb) return na - nb;
+        return a < b ? -1 : a > b ? 1 : 0;
+      });
+      const victim = sorted[0];
+      remaining.delete(victim);
+      const hex = hexes[victim];
+      if (hex) {
+        hex.terenBazowy = fallbackTerrain;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+      }
+      reverted++;
+    }
+  }
+  return reverted;
+}
 function mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand) {
   return mass.filter((k) => {
     const hex = hexes[k];
@@ -2239,8 +2331,8 @@ function mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand) 
     const { q, r } = parseHexKey(k);
     return isReliefCandidateHex(hex, q, r, width, height);
   }).map((k) => {
-    var _a10;
-    return { k, n: (((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0) + rand() * 0.15 };
+    var _a9;
+    return { k, n: (((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0) + rand() * 0.15 };
   }).sort((a, b) => b.n - a.n);
 }
 function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
@@ -2256,8 +2348,8 @@ function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
       const { q: nq, r: nr } = parseHexKey(k);
       return isReliefCandidateHex(hex, nq, nr, width, height);
     }).map((k) => {
-      var _a10;
-      return { k, n: (((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0) + rand() * 0.3 };
+      var _a9;
+      return { k, n: (((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0) + rand() * 0.3 };
     }).sort((a, b) => b.n - a.n);
     if (candidates.length === 0) break;
     cur = candidates[0].k;
@@ -2266,8 +2358,149 @@ function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
   }
   return path;
 }
+function bfsExpandExclusion(hexes, excluded, sources, minDist) {
+  const queue = [];
+  for (const k of sources) {
+    if (!excluded.has(k)) excluded.add(k);
+    queue.push({ k, d: 0 });
+  }
+  let head = 0;
+  while (head < queue.length) {
+    const { k, d } = queue[head++];
+    if (d >= minDist) continue;
+    const { q, r } = parseHexKey(k);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (excluded.has(nk)) continue;
+      if (!hexes[nk]) continue;
+      excluded.add(nk);
+      queue.push({ k: nk, d: d + 1 });
+    }
+  }
+}
+function isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  if (n > mtnTh) return excludedGory.has(k);
+  if (n > hiTh) return excludedWzgorza.has(k);
+  return false;
+}
+function walkMountainRangeAvoiding(hexes, scratch, width, height, rand, start, steps, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  const path = [];
+  const visited = /* @__PURE__ */ new Set([start]);
+  let cur = start;
+  for (let i = 0; i < steps; i++) {
+    const { q, r } = parseHexKey(cur);
+    const candidates = HEX_DIRECTIONS.map(([dq, dr]) => hexKey(q + dq, r + dr)).filter((k) => {
+      var _a9;
+      if (visited.has(k)) return false;
+      const hex = hexes[k];
+      if (!hex) return false;
+      const { q: nq, r: nr } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, nq, nr, width, height)) return false;
+      const n = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => {
+      var _a9;
+      return { k, n: (((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0) + rand() * 0.3 };
+    }).sort((a, b) => b.n - a.n);
+    if (candidates.length === 0) break;
+    cur = candidates[0].k;
+    visited.add(cur);
+    path.push(cur);
+  }
+  return path;
+}
+function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses, mtnTh, hiTh, deficit) {
+  var _a9;
+  if (deficit <= 0 || masses.length === 0) return 0;
+  const excludedGory = /* @__PURE__ */ new Set();
+  const excludedWzgorza = /* @__PURE__ */ new Set();
+  const initialGory = [];
+  const initialWzgorza = [];
+  for (const key of Object.keys(hexes).sort()) {
+    const hex = hexes[key];
+    if (hex.terenBazowy === "gory" /* Gory */) initialGory.push(key);
+    else if (hex.terenBazowy === "wzgorza" /* Wzgorza */) initialWzgorza.push(key);
+  }
+  bfsExpandExclusion(hexes, excludedGory, initialGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  bfsExpandExclusion(hexes, excludedWzgorza, initialWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  let recovered = 0;
+  let massIdx = 0;
+  let attemptsSinceProgress = 0;
+  const maxAttemptsSinceProgress = masses.length * 40 + 200;
+  while (recovered < deficit && attemptsSinceProgress < maxAttemptsSinceProgress) {
+    const mass = masses[massIdx % masses.length];
+    massIdx++;
+    const seedCandidates = mass.filter((k) => {
+      var _a10;
+      const hex = hexes[k];
+      if (!hex) return false;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) return false;
+      const { q, r } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, q, r, width, height)) return false;
+      const n = ((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => {
+      var _a10;
+      return { k, n: (((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0) + rand() * 0.15 };
+    }).sort((a, b) => b.n - a.n);
+    if (seedCandidates.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    const seedKey = seedCandidates[0].k;
+    const len = MOUNTAIN_RANGE_REGROW_LEN_MIN + Math.floor(rand() * (MOUNTAIN_RANGE_REGROW_LEN_MAX - MOUNTAIN_RANGE_REGROW_LEN_MIN + 1));
+    const path = [seedKey, ...walkMountainRangeAvoiding(
+      hexes,
+      scratch,
+      width,
+      height,
+      rand,
+      seedKey,
+      len,
+      mtnTh,
+      hiTh,
+      excludedGory,
+      excludedWzgorza
+    )];
+    const placedGory = [];
+    const placedWzgorza = [];
+    for (const k of path) {
+      const hex = hexes[k];
+      if (!hex) continue;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) continue;
+      const n = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+      if (isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza)) continue;
+      if (n > mtnTh) {
+        hex.terenBazowy = "gory" /* Gory */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedGory.push(k);
+        recovered++;
+      } else if (n > hiTh) {
+        hex.terenBazowy = "wzgorza" /* Wzgorza */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedWzgorza.push(k);
+        recovered++;
+      }
+    }
+    if (placedGory.length === 0 && placedWzgorza.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    attemptsSinceProgress = 0;
+    if (placedGory.length > 0) {
+      bfsExpandExclusion(hexes, excludedGory, placedGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (placedWzgorza.length > 0) {
+      bfsExpandExclusion(hexes, excludedWzgorza, placedWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (recovered >= deficit) break;
+  }
+  return recovered;
+}
 function growMountainRanges(hexes, scratch, tier, width, height, rand) {
-  var _a10, _b3, _c3;
+  var _a9, _b3, _c3;
   const params = mapGenMountainRangeParams(tier);
   const mtnTh = mapGenMountainThreshold(tier);
   const hiTh = mapGenHighlandThreshold(tier);
@@ -2295,7 +2528,7 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
         if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) {
           continue;
         }
-        const n = ((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0;
+        const n = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
         if (n > mtnTh) {
           addedByThisRun.push({ k, n, wasHighland: false, prev: hex.terenBazowy });
           hex.terenBazowy = "gory" /* Gory */;
@@ -2399,6 +2632,45 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
       mountainous--;
     }
   }
+  const mtnReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  const hiReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  regrowLostMountainClusters(
+    hexes,
+    scratch,
+    width,
+    height,
+    rand,
+    masses,
+    mtnTh,
+    hiTh,
+    Math.round((mtnReverted + hiReverted) * MOUNTAIN_RANGE_REGROW_TARGET_MULT)
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return addedByThisRun.length;
 }
 function assignContinentIndices(width, height, centers) {
@@ -2730,7 +3002,7 @@ function findDryLandTouchingSea(hexes) {
   return bad;
 }
 function sanitizeCoastHexes(hexes) {
-  var _a10;
+  var _a9;
   const valid = /* @__PURE__ */ new Set();
   const queue = [];
   for (const [key, hex] of Object.entries(hexes)) {
@@ -2755,7 +3027,7 @@ function sanitizeCoastHexes(hexes) {
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
       if (valid.has(nk)) continue;
-      if (((_a10 = hexes[nk]) == null ? void 0 : _a10.terenBazowy) === "wybrzeze" /* Wybrzeze */) {
+      if (((_a9 = hexes[nk]) == null ? void 0 : _a9.terenBazowy) === "wybrzeze" /* Wybrzeze */) {
         valid.add(nk);
         queue.push(nk);
       }
@@ -3093,11 +3365,11 @@ function thickenCoastAndSmoothInlets(hexes, width, height, coastWidth = 2) {
   return changed;
 }
 function flattenFalseCoastalRiverNotches(hexes, width, height) {
-  var _a10, _b3;
+  var _a9, _b3;
   const toFlatten = [];
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy !== "wybrzeze" /* Wybrzeze */) continue;
-    if ((_a10 = hex.rzeka) == null ? void 0 : _a10.obecna) continue;
+    if ((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna) continue;
     const { q, r } = parseHexKey(key);
     if (isInMapBorder(q, r, width, height)) continue;
     let morzeN = 0;
@@ -3409,10 +3681,10 @@ function isReliefTerrain(t) {
   return t === "gory" /* Gory */ || t === "wzgorza" /* Wzgorza */;
 }
 function canRiverFlowThrough(hex, cellKey, sourceKey, blockExisting = false, allowKey) {
-  var _a10;
+  var _a9;
   if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
   if (isReliefTerrain(hex.terenBazowy)) return cellKey === sourceKey;
-  if (blockExisting && ((_a10 = hex.rzeka) == null ? void 0 : _a10.obecna) && cellKey !== allowKey) return false;
+  if (blockExisting && ((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna) && cellKey !== allowKey) return false;
   return true;
 }
 function riverStepDir(from, to) {
@@ -3805,12 +4077,12 @@ function neighborDirIndex(q, r, nq, nr) {
   return -1;
 }
 function markRiverEdge(hexes, q, r, edgeIdx) {
-  var _a10;
+  var _a9;
   if (edgeIdx < 0) return;
   const hex = hexes[hexKey(q, r)];
   if (!hex || hex.terenBazowy === "morze" /* Morze */) return;
   if (!isRiverLandTerrain(hex.terenBazowy) && hex.terenBazowy !== "wybrzeze" /* Wybrzeze */) return;
-  const edges = ((_a10 = hex.rzeka) == null ? void 0 : _a10.krawedzie) ?? [];
+  const edges = ((_a9 = hex.rzeka) == null ? void 0 : _a9.krawedzie) ?? [];
   if (!edges.includes(edgeIdx)) edges.push(edgeIdx);
   hex.rzeka = { obecna: edges.length > 0, krawedzie: edges };
 }
@@ -3850,19 +4122,19 @@ function riverSegmentEdgeMarks(hexes, a, b) {
   return out;
 }
 function trimRiverPathRings(hexes, path) {
-  var _a10;
+  var _a9;
   if (path.length < 3) return path;
   const priorCount = /* @__PURE__ */ new Map();
   const laid = /* @__PURE__ */ new Map();
   const totalOnHex = (key) => {
-    var _a11;
+    var _a10;
     return (priorCount.get(key) ?? (() => {
-      var _a12, _b3;
+      var _a11, _b3;
       const h = hexes[key];
-      const c = ((_b3 = (_a12 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a12.krawedzie) == null ? void 0 : _b3.length) ?? 0;
+      const c = ((_b3 = (_a11 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a11.krawedzie) == null ? void 0 : _b3.length) ?? 0;
       priorCount.set(key, c);
       return c;
-    })()) + (((_a11 = laid.get(key)) == null ? void 0 : _a11.size) ?? 0);
+    })()) + (((_a10 = laid.get(key)) == null ? void 0 : _a10.size) ?? 0);
   };
   const hadPrior = (key) => {
     if (!priorCount.has(key)) totalOnHex(key);
@@ -3871,7 +4143,7 @@ function trimRiverPathRings(hexes, path) {
   for (let i = 0; i < path.length - 1; i++) {
     const marks = riverSegmentEdgeMarks(hexes, path[i], path[i + 1]);
     for (const m of marks) {
-      const already = ((_a10 = laid.get(m.key)) == null ? void 0 : _a10.has(m.edge)) ?? false;
+      const already = ((_a9 = laid.get(m.key)) == null ? void 0 : _a9.has(m.edge)) ?? false;
       if (already) continue;
       const cur = totalOnHex(m.key);
       const limit = hadPrior(m.key) ? 4 : 3;
@@ -3897,9 +4169,9 @@ function appendJunctionDownstreamHex(path, down) {
   return [...path, { q: down.q, r: down.r }];
 }
 function networkDownstreamNeighbor(hexes, junction, approach) {
-  var _a10, _b3;
+  var _a9, _b3;
   const jh = hexes[hexKey(junction.q, junction.r)];
-  const edges = (_a10 = jh == null ? void 0 : jh.rzeka) == null ? void 0 : _a10.krawedzie;
+  const edges = (_a9 = jh == null ? void 0 : jh.rzeka) == null ? void 0 : _a9.krawedzie;
   if (!edges || edges.length === 0) return void 0;
   for (const edgeIdx of edges) {
     const dir = HEX_DIRECTIONS[edgeIdx];
@@ -3913,19 +4185,19 @@ function networkDownstreamNeighbor(hexes, junction, approach) {
   return void 0;
 }
 function stripRiverMarksFromOpenSea(hexes) {
-  var _a10;
+  var _a9;
   let n = 0;
   for (const hex of Object.values(hexes)) {
-    if (hex.terenBazowy !== "morze" /* Morze */ || !((_a10 = hex.rzeka) == null ? void 0 : _a10.obecna)) continue;
+    if (hex.terenBazowy !== "morze" /* Morze */ || !((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna)) continue;
     hex.rzeka = { obecna: false, krawedzie: [] };
     n++;
   }
   return n;
 }
 function clearRiverMarks(hexes) {
-  var _a10;
+  var _a9;
   for (const hex of Object.values(hexes)) {
-    if ((_a10 = hex.rzeka) == null ? void 0 : _a10.obecna) hex.rzeka = { obecna: false, krawedzie: [] };
+    if ((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna) hex.rzeka = { obecna: false, krawedzie: [] };
   }
 }
 function tributaryCountForLength(pathLen) {
@@ -4056,10 +4328,10 @@ function landHexesByCoverageCell(massSet, cellSize) {
 }
 var MAIN_RIVER_GRID_STRIDE = 3;
 function cellHasRiverHex(cellLand, hexes) {
-  var _a10;
+  var _a9;
   for (const [q, r] of cellLand) {
     const h = hexes[hexKey(q, r)];
-    if ((_a10 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a10.obecna) return true;
+    if ((_a9 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a9.obecna) return true;
   }
   return false;
 }
@@ -4072,15 +4344,15 @@ function isSparseMainCoverageCell(land, cellSize) {
   return cq % MAIN_RIVER_GRID_STRIDE === 0 && cr % MAIN_RIVER_GRID_STRIDE === 0;
 }
 function collectRiverHexKeys(hexes) {
-  var _a10;
+  var _a9;
   const keys = /* @__PURE__ */ new Set();
   for (const [k, h] of Object.entries(hexes)) {
-    if ((_a10 = h.rzeka) == null ? void 0 : _a10.obecna) keys.add(k);
+    if ((_a9 = h.rzeka) == null ? void 0 : _a9.obecna) keys.add(k);
   }
   return keys;
 }
 function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oceanConnected) {
-  var _a10, _b3;
+  var _a9, _b3;
   const ocean = oceanConnected ?? oceanConnectedWaterKeys(hexes, width, height);
   const riverHexes = collectRiverHexKeys(hexes);
   const reached = /* @__PURE__ */ new Set();
@@ -4100,7 +4372,7 @@ function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oce
     const k = queue.shift();
     const { q, r } = parseHexKey(k);
     const h = hexes[k];
-    if (!((_b3 = (_a10 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a10.krawedzie) == null ? void 0 : _b3.length)) continue;
+    if (!((_b3 = (_a9 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a9.krawedzie) == null ? void 0 : _b3.length)) continue;
     for (const edgeIdx of h.rzeka.krawedzie) {
       const dir = HEX_DIRECTIONS[edgeIdx];
       if (!dir) continue;
@@ -4114,7 +4386,7 @@ function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oce
   return reached;
 }
 function pruneOrphanRiverPaths(hexes, paths, kinds, width, height) {
-  var _a10;
+  var _a9;
   let curPaths = paths.slice();
   let curKinds = kinds.slice();
   for (let iter = 0; iter < 10; iter++) {
@@ -4154,7 +4426,7 @@ function pruneOrphanRiverPaths(hexes, paths, kinds, width, height) {
         const end = p[p.length - 1];
         const eh = hexes[hexKey(end.q, end.r)];
         let closed = false;
-        for (const ei of ((_a10 = eh == null ? void 0 : eh.rzeka) == null ? void 0 : _a10.krawedzie) ?? []) {
+        for (const ei of ((_a9 = eh == null ? void 0 : eh.rzeka) == null ? void 0 : _a9.krawedzie) ?? []) {
           const dir = HEX_DIRECTIONS[ei];
           if (!dir) continue;
           const owners = hexToPaths.get(hexKey(end.q + dir[0], end.r + dir[1]));
@@ -4226,11 +4498,11 @@ function rankNetworkJunctionCandidates(sq, sr, junctionKeys, seaDist, maxLen, ra
   return out.slice(0, 8);
 }
 function cellHasMainRiverSource(cellLand, paths, kinds) {
-  var _a10;
+  var _a9;
   const cellSet = new Set(cellLand.map(([q, r]) => hexKey(q, r)));
   for (let i = 0; i < paths.length; i++) {
     if (kinds[i] !== "main") continue;
-    const p0 = (_a10 = paths[i]) == null ? void 0 : _a10[0];
+    const p0 = (_a9 = paths[i]) == null ? void 0 : _a9[0];
     if (p0 && cellSet.has(hexKey(p0.q, p0.r))) return true;
   }
   return false;
@@ -4548,13 +4820,13 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
   return { paths: riverPaths, kinds: riverKinds };
 }
 function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, rand, riversTier = "medium", minLen = 4, maxLen = 40) {
-  var _a10;
+  var _a9;
   const seaDist = buildSeaDistanceField(hexes);
   const oceanConnected = oceanConnectedWaterKeys(hexes, width, height);
   const openOceanDist = buildOpenOceanDistanceField(hexes, width, height, oceanConnected);
   const usedSources = /* @__PURE__ */ new Set();
   for (let i = 0; i < riverPaths.length; i++) {
-    const p0 = (_a10 = riverPaths[i]) == null ? void 0 : _a10[0];
+    const p0 = (_a9 = riverPaths[i]) == null ? void 0 : _a9[0];
     if (p0) usedSources.add(hexKey(p0.q, p0.r));
   }
   const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 8).sort((a, b) => b.length - a.length);
@@ -4718,9 +4990,12 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "glina",
     nakladka: "zloze_gliny" /* ZlozeGliny */,
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
     allowedOn: (h) => {
-      var _a10;
-      return isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || isLandTerrain(h.terenBazowy) && ((_a10 = h.rzeka) == null ? void 0 : _a10.obecna) === true);
+      var _a9;
+      return isDryLandTerrain(h.terenBazowy) && ((_a9 = h.rzeka) == null ? void 0 : _a9.obecna) === true;
     },
     rarity: 0.1
   },
@@ -4743,8 +5018,25 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "sol",
     nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "pustynia" /* Pustynia */ || h.terenBazowy === "rownina" /* Rownina */),
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
     rarity: 0.12
+  },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: "zloto",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    rarity: 0.03
   }
 ];
 var _depositRarities = mapGenAllDepositRarities();
@@ -4767,7 +5059,8 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
     wegiel: 0,
     owce: 0,
     bydlo: 0,
-    sol: 0
+    sol: 0,
+    zloto: 0
   };
   for (const key of keys) {
     const hex = hexes[key];
@@ -4775,8 +5068,10 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
     if (hex.nakladka !== "brak" /* Brak */) continue;
     if (hex.zloze) continue;
     if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) continue;
+    const [depQ, depR] = key.split(",").map(Number);
     for (const rule of rules) {
       if (!rule.allowedOn(hex)) continue;
+      if (rule.requiresCoastalLand && !isCoastalLandHex(hexes, depQ, depR)) continue;
       if (rand() < Math.min(1, rule.rarity * baselineMult * resourceMult)) {
         if (rule.nakladka !== null) {
           hex.nakladka = rule.nakladka;
@@ -4820,9 +5115,8 @@ function cellCarriesDepositType(cellLand, hexes, id) {
   return false;
 }
 function hexCanAcceptDeposit(hex, rule, allowForestClear) {
-  if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-    return false;
-  }
+  if (hex.terenBazowy === "morze" /* Morze */) return false;
+  if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
   if (hex.zloze) return false;
   if (hex.nakladka !== "brak" /* Brak */) {
     if (!allowForestClear || hex.nakladka !== "las" /* Las */) return false;
@@ -4851,17 +5145,11 @@ function prepareTerrainForDeposit(hex, rule) {
     case "owce":
       hex.terenBazowy = "wzgorza" /* Wzgorza */;
       break;
-    case "glina":
-      hex.terenBazowy = "laka" /* Laka */;
-      break;
     case "konie":
       hex.terenBazowy = "rownina" /* Rownina */;
       break;
     case "bydlo":
       hex.terenBazowy = "laka" /* Laka */;
-      break;
-    case "sol":
-      hex.terenBazowy = "pustynia" /* Pustynia */;
       break;
     default:
       break;
@@ -4870,14 +5158,15 @@ function prepareTerrainForDeposit(hex, rule) {
 function pickDepositBootstrapHex(land, hexes, rule, rand) {
   const ranked = land.filter(([q, r]) => {
     const hex = hexes[hexKey(q, r)];
-    return hex && hex.terenBazowy !== "morze" /* Morze */ && hex.terenBazowy !== "wybrzeze" /* Wybrzeze */;
+    if (!hex || hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      return false;
+    }
+    if (rule.id === "glina" && !rule.allowedOn(hex)) return false;
+    return true;
   }).map(([q, r]) => ({ q, r, score: rand() })).sort((a, b) => b.score - a.score);
   if (ranked.length === 0) return null;
   const spot = ranked[0];
   prepareTerrainForDeposit(hexes[hexKey(spot.q, spot.r)], rule);
-  if (rule.id === "glina") {
-    hexes[hexKey(spot.q, spot.r)].rzeka = { ...hexes[hexKey(spot.q, spot.r)].rzeka ?? {}, obecna: true };
-  }
   return [spot.q, spot.r];
 }
 function forceDepositInCell(land, hexes, id, rand) {
@@ -4895,10 +5184,10 @@ function pickDepositForceHex(land, hexes, rule, rand) {
       const hex = hexes[hexKey(q, r)];
       return hex != null && hexCanAcceptDeposit(hex, rule, allowForestClear);
     }).map(([q, r]) => {
-      var _a10;
+      var _a9;
       let score = 0;
       const hex = hexes[hexKey(q, r)];
-      if (rule.id === "glina" && ((_a10 = hex.rzeka) == null ? void 0 : _a10.obecna)) score += 2;
+      if (rule.id === "glina" && ((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna)) score += 2;
       if (rule.id === "glina" && hex.terenBazowy === "laka" /* Laka */) score += 1;
       score += rand() * 0.2;
       return { q, r, score };
@@ -4909,9 +5198,9 @@ function pickDepositForceHex(land, hexes, rule, rand) {
   return tryPick(false) ?? tryPick(true);
 }
 function cellHasForest(cellLand, hexes) {
-  var _a10;
+  var _a9;
   for (const [q, r] of cellLand) {
-    if (((_a10 = hexes[hexKey(q, r)]) == null ? void 0 : _a10.nakladka) === "las" /* Las */) return true;
+    if (((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.nakladka) === "las" /* Las */) return true;
   }
   return false;
 }
@@ -4922,8 +5211,8 @@ function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, r
   let fixed = 0;
   for (const part of partitions) {
     const massSet = new Set(part.filter((k) => {
-      var _a10;
-      return ((_a10 = hexes[k]) == null ? void 0 : _a10.terenBazowy) !== "morze" /* Morze */;
+      var _a9;
+      return ((_a9 = hexes[k]) == null ? void 0 : _a9.terenBazowy) !== "morze" /* Morze */;
     }));
     for (let pass = 0; pass < 6; pass++) {
       let passFixed = 0;
@@ -4937,6 +5226,20 @@ function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, r
       if (passFixed === 0) break;
     }
   }
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return fixed;
 }
 function ensureForestGridCoverage(hexes, scratch, forestTier, _typ, _continentOf, _nContinents, rand) {
@@ -4954,11 +5257,11 @@ function ensureForestGridCoverage(hexes, scratch, forestTier, _typ, _continentOf
           const h = hexes[hexKey(q, r)];
           return h && isForestEligibleTerrain(h.terenBazowy) && h.nakladka === "brak" /* Brak */;
         }).map(([q, r]) => {
-          var _a10;
+          var _a9;
           return {
             q,
             r,
-            score: (((_a10 = scratch.get(hexKey(q, r))) == null ? void 0 : _a10.forNoise) ?? 0) + rand() * 0.15
+            score: (((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.forNoise) ?? 0) + rand() * 0.15
           };
         }).sort((a, b) => b.score - a.score);
         if (eligible.length === 0) continue;
@@ -5276,7 +5579,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -5407,6 +5710,21 @@ var terrain_improvements_default = {
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
   },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+  },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
     epoka: 2,
@@ -5436,10 +5754,10 @@ var LEGACY_KEY_ALIASES = {
 };
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
 function normalizeImprovementKey(raw) {
-  var _a10;
+  var _a9;
   if (!raw || raw === "brak") return void 0;
   const key = LEGACY_KEY_ALIASES[raw] ?? raw;
-  return ((_a10 = IMPROVEMENTS[key]) == null ? void 0 : _a10.bonus) !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
+  return ((_a9 = IMPROVEMENTS[key]) == null ? void 0 : _a9.bonus) !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
 }
 function improvementBonusForKey(key) {
   const row = IMPROVEMENTS[key];
@@ -5513,8 +5831,8 @@ function territoryResourceYieldForImprovement(key, zloze) {
   }
 }
 function improvementKeysForHex(hex) {
-  var _a10;
-  if ((_a10 = hex.ulepszenia) == null ? void 0 : _a10.length) {
+  var _a9;
+  if ((_a9 = hex.ulepszenia) == null ? void 0 : _a9.length) {
     const keys = hex.ulepszenia.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
     return [...new Set(keys)];
   }
@@ -5528,7 +5846,13 @@ var RESOURCE_UPKEEP_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
   "kopalnia",
   "kopalnia_miedzi",
   "warzelnia_soli",
-  "stadnina"
+  "stadnina",
+  // Maciej 2026-07-25: Kopalnia złota jest czysto DOSTĘPOWA (jak warzelnia_soli/stadnina —
+  // nie w TERRITORY_YIELD_IMPROVEMENTS powyżej, bez ilości/turę), ale tak jak inne ulepszenia
+  // surowcowe płaci utrzymanie Pracy civ-wide (decyzja modelowa tej sesji — spójność z
+  // istniejącym wzorcem "dostęp bez wydobycia" = warzelnia_soli/stadnina, do potwierdzenia
+  // przy playteście jeśli balans wymaga innej wartości).
+  "kopalnia_zlota"
 ]);
 
 // src/map/road-movement.ts
@@ -5536,8 +5860,8 @@ var ROAD_MOVE_SPEED_MULT = 3;
 var ROAD_MIN_MOVE_COST = 1 / 3;
 var RAW = terrain_improvements_default;
 function cobblestoneMoveBonus() {
-  var _a10;
-  return ((_a10 = RAW.droga_brukowana) == null ? void 0 : _a10.bonus_ruch) ?? 2;
+  var _a9;
+  return ((_a9 = RAW.droga_brukowana) == null ? void 0 : _a9.bonus_ruch) ?? 2;
 }
 function applyRoadMovementModifier(cost, hex) {
   if (cost === Infinity) return Infinity;
@@ -5684,10 +6008,10 @@ function terrainMoveCost(hex) {
   return applyRoadMovementModifier(cost, hex);
 }
 function computeReachable(unit, map, occupied, costFn = terrainMoveCost) {
-  var _a10, _b3;
+  var _a9, _b3;
   const reachable = /* @__PURE__ */ new Set();
   const startKey = keyOf(unit.q, unit.r);
-  const startHexHasRiver = ((_b3 = (_a10 = map.hexes[startKey]) == null ? void 0 : _a10.rzeka) == null ? void 0 : _b3.obecna) === true;
+  const startHexHasRiver = ((_b3 = (_a9 = map.hexes[startKey]) == null ? void 0 : _a9.rzeka) == null ? void 0 : _b3.obecna) === true;
   const budget = unit.ruchLeft + (startHexHasRiver ? RIVER_MOVE_BONUS : 0);
   const dist = /* @__PURE__ */ new Map();
   dist.set(startKey, 0);
@@ -5885,8 +6209,8 @@ function hexAt(map, q, r) {
   return map.hexes[keyOf(q, r)];
 }
 function hasRiver(map, q, r) {
-  var _a10, _b3;
-  return ((_b3 = (_a10 = hexAt(map, q, r)) == null ? void 0 : _a10.rzeka) == null ? void 0 : _b3.obecna) === true;
+  var _a9, _b3;
+  return ((_b3 = (_a9 = hexAt(map, q, r)) == null ? void 0 : _a9.rzeka) == null ? void 0 : _b3.obecna) === true;
 }
 function isArable(tb) {
   return tb === "laka" /* Laka */ || tb === "rownina" /* Rownina */;
@@ -5957,7 +6281,7 @@ function findBestPlayerStartHex(map) {
 var DEFAULT_WIDTH = 36;
 var DEFAULT_HEIGHT = 28;
 function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, typ = "kontynenty", genOpts) {
-  var _a10, _b3, _c3, _d3;
+  var _a9, _b3, _c3, _d3;
   const effectiveSeed = seed || 42;
   const wgn = resolveWorldGenNumbers(genOpts);
   const landFraction = resolveLandFraction(genOpts, typ);
@@ -6081,7 +6405,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
-  const reliefTier = ((_a10 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _a10.relief) ?? ((_b3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _b3.rivers) ?? "medium";
+  const reliefTier = ((_a9 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _a9.relief) ?? ((_b3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _b3.rivers) ?? "medium";
   const forestTier = ((_c3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _c3.forest) ?? "medium";
   reapplyLandTerrain(hexes, terrainScratch, effectiveSeed, terrainTh, height, reliefTier);
   if (typ !== "pangea") {
@@ -6128,9 +6452,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     purgeOceanInsideEarthLandMask(hexes, width, height);
   }
   finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 2);
-  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
-  finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 1);
   ensureReliefGridCoverage(
     hexes,
     terrainScratch,
@@ -6143,7 +6464,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     rand
   );
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
@@ -6174,10 +6494,12 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     wgn.riverTrace.maxLen
   );
   stripRiverMarksFromOpenSea(hexes);
-  stripDepositsFromWater(hexes);
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   flattenFalseCoastalRiverNotches(hexes, width, height);
+  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
+  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+  stripDepositsFromWater(hexes);
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
     minDist: 5,
@@ -6412,11 +6734,6 @@ var miasto_params_default = {
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
-  budynek_mnoznik_poziomu: {
-    wartosc: 1.1,
-    jednostka: "x / poziom",
-    opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
-  },
   jednostka_koszt_ludnosci: {
     wartosc: 0,
     jednostka: "ludnosc",
@@ -6485,7 +6802,17 @@ var miasto_params_default = {
   bonus_obrona_mur_proc: {
     wartosc: 200,
     jednostka: "% Obrony",
-    opis: "Miasto Z MUREM daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje game/siege.ts + battleScene (defensa miasta). Miasto bez muru = brak tego bonusu."
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -6532,8 +6859,8 @@ var DEFAULT_REGEN = {
   blockWhenBesieged: true
 };
 function loadManpowerRegenParams(raw = miasto_params_default) {
-  var _a10, _b3;
-  const pct = (_a10 = raw.manpower_regen_proc_max_tura) == null ? void 0 : _a10.wartosc;
+  var _a9, _b3;
+  const pct = (_a9 = raw.manpower_regen_proc_max_tura) == null ? void 0 : _a9.wartosc;
   const block = (_b3 = raw.manpower_regen_blok_oblezenie) == null ? void 0 : _b3.wartosc;
   return {
     regenProcMaxPerTurn: typeof pct === "number" && pct >= 0 ? pct : DEFAULT_REGEN.regenProcMaxPerTurn,
@@ -6617,9 +6944,24 @@ function refreshManpowerAfterPopChange(city, epoka, previousPop, maxMult = 1) {
   return max;
 }
 
+// src/game/building-resource-gate.ts
+var LABEL_BY_ASCII = {
+  drewno: "Drewno",
+  kamien: "Kamie\u0144",
+  glina: "Glina",
+  ruda: "Ruda",
+  zelazo: "\u017Belazo",
+  stal: "Stal",
+  braz: "Br\u0105z",
+  sol: "S\xF3l",
+  cegla: "Ceg\u0142a",
+  ceramika: "Ceramika"
+};
+var ASCII_BY_LABEL = Object.fromEntries(
+  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+
 // src/game/production.ts
-var _a;
-var BUILDING_LEVEL_FACTOR = ((_a = miasto_params_default.budynek_mnoznik_poziomu) == null ? void 0 : _a.wartosc) ?? 1.1;
 function buildingLevelForEpoch(epokaWejscia, cityEpoch, maksPoziom, poziomTechGate, unlockedTechs) {
   const lvl = Math.floor(cityEpoch) - Math.floor(epokaWejscia) + 1;
   const cap = Number.isFinite(maksPoziom) && maksPoziom > 0 ? Math.floor(maksPoziom) : 1;
@@ -6635,23 +6977,23 @@ function buildingLevelForEpoch(epokaWejscia, cityEpoch, maksPoziom, poziomTechGa
   }
   return level;
 }
-function buildingEffectAtLevel(baza, level) {
+function buildingEffectAtLevel(baza, przyrost, level) {
   const n = Math.max(1, Math.floor(level));
-  return baza * Math.pow(BUILDING_LEVEL_FACTOR, n - 1);
+  return baza + przyrost * (n - 1);
 }
-var _a2;
-var DEFAULT_UNIT_COST = ((_a2 = miasto_params_default.jednostka_koszt_domyslny) == null ? void 0 : _a2.wartosc) ?? 10;
-var _a3, _b, _c, _d, _e;
+var _a;
+var DEFAULT_UNIT_COST = ((_a = miasto_params_default.jednostka_koszt_domyslny) == null ? void 0 : _a.wartosc) ?? 10;
+var _a2, _b, _c, _d, _e;
 var DEFAULT_COST_BY_ROLE = {
-  Wsparcie: ((_a3 = miasto_params_default.jednostka_koszt_rola_wsparcie) == null ? void 0 : _a3.wartosc) ?? 12,
+  Wsparcie: ((_a2 = miasto_params_default.jednostka_koszt_rola_wsparcie) == null ? void 0 : _a2.wartosc) ?? 12,
   Dystans: ((_b = miasto_params_default.jednostka_koszt_rola_dystans) == null ? void 0 : _b.wartosc) ?? 8,
   "Wr\u0119cz": ((_c = miasto_params_default.jednostka_koszt_rola_wrecz) == null ? void 0 : _c.wartosc) ?? 10,
   // melee role key
   Wrecz: ((_d = miasto_params_default.jednostka_koszt_rola_wrecz) == null ? void 0 : _d.wartosc) ?? 10,
   Konnica: ((_e = miasto_params_default.jednostka_koszt_rola_konnica) == null ? void 0 : _e.wartosc) ?? 16
 };
-var _a4;
-var UNIT_POPULATION_COST = ((_a4 = miasto_params_default.jednostka_koszt_ludnosci) == null ? void 0 : _a4.wartosc) ?? 1;
+var _a3;
+var UNIT_POPULATION_COST = ((_a3 = miasto_params_default.jednostka_koszt_ludnosci) == null ? void 0 : _a3.wartosc) ?? 1;
 function cityPracaInteger(raw) {
   return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 0;
 }
@@ -6661,9 +7003,9 @@ function splitPraca(cityPraca, udzialBudynki) {
   const doBudynkow = Math.round(total * u);
   return { doBudynkow, doPuli: total - doBudynkow };
 }
-var _a5, _b2, _c2, _d2;
+var _a4, _b2, _c2, _d2;
 var DEFAULT_OUTPUT_SHARES = Object.freeze({
-  produkcja: ((_a5 = miasto_params_default.udzial_output_produkcja) == null ? void 0 : _a5.wartosc) ?? 0.4,
+  produkcja: ((_a4 = miasto_params_default.udzial_output_produkcja) == null ? void 0 : _a4.wartosc) ?? 0.4,
   pieniadz: ((_b2 = miasto_params_default.udzial_output_pieniadz) == null ? void 0 : _b2.wartosc) ?? 0.3,
   nauka: ((_c2 = miasto_params_default.udzial_output_nauka) == null ? void 0 : _c2.wartosc) ?? 0.2,
   rozwoj: ((_d2 = miasto_params_default.udzial_output_rozwoj) == null ? void 0 : _d2.wartosc) ?? 0.1
@@ -6772,7 +7114,7 @@ var TERRAIN_YIELDS = buildTerrainYields();
 var RIVER_MODIFIER = terrainModifier("Rzeka");
 var FOREST_MODIFIER = terrainModifier("Las (nak\u0142adka)");
 function tileYield(tile) {
-  var _a10;
+  var _a9;
   const base = TERRAIN_YIELDS[tile.terenBazowy] ?? ZERO_YIELD;
   let zywnosc = base.zywnosc;
   let praca = base.praca;
@@ -6803,7 +7145,7 @@ function tileYield(tile) {
     ruda: 0,
     ruda_zelaza: 0
   };
-  const impKeys = ((_a10 = tile.ulepszeniaKeys) == null ? void 0 : _a10.length) ? tile.ulepszeniaKeys : tile.ulepszenieKey ? [tile.ulepszenieKey] : [];
+  const impKeys = ((_a9 = tile.ulepszeniaKeys) == null ? void 0 : _a9.length) ? tile.ulepszeniaKeys : tile.ulepszenieKey ? [tile.ulepszenieKey] : [];
   if (impKeys.length) {
     applyImprovementBonuses(out, impKeys);
     out.zywnosc = Math.max(0, out.zywnosc);
@@ -6819,16 +7161,55 @@ function tileYield(tile) {
   return out;
 }
 function buildingValue(b, level, key) {
-  return Math.floor(buildingEffectAtLevel(b.baza[key], level));
+  return Math.floor(buildingEffectAtLevel(b.baza[key], b.przyrost[key], level));
 }
 var BUILDING_HAPPINESS_BASE_PER_BUILDING = 1;
 function buildingHappinessAtLevel(b, level) {
   const extra = typeof b.baza.zadowolenie === "number" && b.baza.zadowolenie !== 0 ? buildingValue(b, level, "zadowolenie") : 0;
   return BUILDING_HAPPINESS_BASE_PER_BUILDING + extra;
 }
+function cityBuildingEntriesFromBuiltIds(builtIds, catalog, cityEpoch, unlockedTechs) {
+  const entries = [];
+  for (const bid of builtIds) {
+    const record = catalog.find((b) => b.id === bid);
+    if (!record) continue;
+    const level = buildingLevelForEpoch(
+      record.epokaWejscia,
+      cityEpoch,
+      record.maksPoziom,
+      record.poziomTechGate,
+      unlockedTechs
+    );
+    entries.push({ record, level });
+  }
+  return entries;
+}
+function mnoznikHandelPieniadzRawForCiv(civKey, civs) {
+  var _a9;
+  if (!civKey || !((_a9 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a9.length)) return void 0;
+  const key = civKey.toLowerCase();
+  for (const row of civs.cywilizacje) {
+    if (!row) continue;
+    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja].filter((s) => typeof s === "string" && s.length > 0).map((s) => s.toLowerCase());
+    if (!ids.includes(key)) continue;
+    const v = row.mnoznikHandelPieniadz;
+    return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : void 0;
+  }
+  return void 0;
+}
+var MNOZNIK_HANDEL_TRUDNOSC_DELTA = {
+  easy: 0.5,
+  normal: 0,
+  hard: -0.5
+};
+function mnoznikHandelPieniadzForCivByDifficulty(civKey, civs, difficulty, fallbackScaled) {
+  const raw = mnoznikHandelPieniadzRawForCiv(civKey, civs);
+  if (raw === void 0) return fallbackScaled;
+  return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
+}
 function civBonusyForCivKey(civKey, civs) {
-  var _a10;
-  if (!civKey || !((_a10 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a10.length)) return [];
+  var _a9;
+  if (!civKey || !((_a9 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a9.length)) return [];
   const key = civKey.toLowerCase();
   for (const row of civs.cywilizacje) {
     if (!row) continue;
@@ -6881,20 +7262,6 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   if (ctx.maCegielnia) {
     pracaBruttoTerenu = pracaBruttoTerenu * (1 + params.budynekCegielniBonusPracy);
   }
-  let handelBrutto;
-  if (ctx.maTargowisko) {
-    handelBrutto = handelTerenu * (1 + params.budynekTargowiskoBonusHandlu);
-  } else {
-    handelBrutto = handelTerenu;
-  }
-  const civHandelMult = ctx.civHandelMult ?? 1;
-  if (civHandelMult !== 1) {
-    handelBrutto *= civHandelMult;
-  }
-  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
-  if (liczbaTrasHandlowych > 0) {
-    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
-  }
   let pracaBudynkow = 0;
   let pieniadzBudynkow = 0;
   let zywnoscBudynkow = 0;
@@ -6909,39 +7276,45 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     kulturaBudynkow += buildingValue(record, level, "kultura");
     zadBudynkow += buildingHappinessAtLevel(record, level);
   }
-  let totalMnoznikProc = 0;
-  for (const { record, level } of cityBuildings) {
-    const kat = record.kategoria;
-    if (!kat.includes("Wojsko") && !kat.includes("Obrona")) {
-      totalMnoznikProc += buildingValue(record, level, "mnoznik");
-    }
+  const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
+  const pracaNetto = pracaBruttoLacznie;
+  const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
+  const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
+  const pracaInt = cityPracaInteger(pracaNetto);
+  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
+  const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
+  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
+  let handelBrutto;
+  if (ctx.maTargowisko) {
+    handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
+  } else {
+    handelBrutto = handelBazowy;
   }
-  const mnoznikFactor = 1 + totalMnoznikProc / 100;
-  const pracaBruttoLacznie = (pracaBruttoTerenu + pracaBudynkow) * mnoznikFactor;
+  const civHandelMult = ctx.civHandelMult ?? 1;
+  if (civHandelMult !== 1) {
+    handelBrutto *= civHandelMult;
+  }
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
+  }
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
-  const pracaNetto = pracaBruttoLacznie * (1 - strata);
   const handelNettoRaw = handelBrutto * (1 - strata);
-  const walutaActive = ctx.walutaOdkryta === true;
-  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.walutaMnoznik;
+  const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
+  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto = handelNettoRaw * walutaMnoznikAktywny;
   const pctNauka = city.podzia\u0142Handlu.procentNauka / 100;
   const pctPieniadz = city.podzia\u0142Handlu.procentPieniadz / 100;
   const pctLuksus = city.podzia\u0142Handlu.procentLuksus / 100;
   const naukaZHandlu = Math.floor(handelNetto * pctNauka);
-  const pieniadzZHandlu = Math.floor(
-    handelNetto * pctPieniadz * ctx.mennicaMnoznik
-  );
+  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
   const luksusZHandlu = Math.floor(handelNetto * pctLuksus);
-  const naukaBonusFactor = ctx.maBiblioteka ? 1 + params.budynekBibliotekaBonusNauki : 1;
+  const naukaBonusFactor = 1 + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0) + (ctx.maAkademia ? params.budynekAkademiaBonusNauki : 0);
   const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult = ctx.civNaukaMult ?? 1;
   const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
-  const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
-  const pracaInt = cityPracaInteger(pracaNetto);
-  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
-  const pieniadzZPracy = ctx.maTargowisko && walutaActive ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
+  let pieniadzTotal = pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === "poborca") {
       pieniadzTotal += 2;
@@ -6966,6 +7339,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     pracaTerenu: Math.floor(pracaBruttoTerenu),
     pracaBudynkow: Math.floor(pracaBudynkow),
     pieniadzZPracy,
+    pieniadzBudynkow: Math.floor(pieniadzBudynkow),
     drewnoTerenu: Math.floor(drewnoTerenu),
     kamienTerenu: Math.floor(kamienTerenu),
     glinaTerenu: Math.floor(glinaTerenu),
@@ -7003,6 +7377,21 @@ function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
     nowyMagazynZywnosci = maSpichlerz || maSpichlerzII ? Math.floor(nowyMagazynZywnosci * retainFrac) : 0;
   }
   return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
+}
+function corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params) {
+  const strataPct = dystansOdStolicy * params.korupcjaWspolczynnikDystansu + liczbaWszystkichMiast * params.korupcjaWspolczynnikMiast;
+  const capPct = params.korupcjaCap * 100;
+  return Math.min(capPct, strataPct) / 100;
+}
+var KORUPCJA_REDUKCJA_BUDYNKI = ["sad", "pretorium", "palac"];
+var KORUPCJA_REDUKCJA_NA_BUDYNEK = 0.3;
+var KORUPCJA_REDUKCJA_SUFIT = 0.6;
+function corruptionBuildingReduction(builtIds) {
+  let suma = 0;
+  for (const id of KORUPCJA_REDUKCJA_BUDYNKI) {
+    if (builtIds.includes(id)) suma += KORUPCJA_REDUKCJA_NA_BUDYNEK;
+  }
+  return Math.min(KORUPCJA_REDUKCJA_SUFIT, suma);
 }
 
 // src/game/culture-religion.ts
@@ -7473,7 +7862,7 @@ function ownerResourceCapacityPerType(magazynCount, p = DEFAULT_OWNER_STORAGE_PA
   return p.bazaSurowcePanstwo + p.bonusSurowceNaBudynek * cnt;
 }
 function reconcileOwnerResourceCaps(cities, capForOwner) {
-  var _a10, _b3;
+  var _a9, _b3;
   const byOwner = /* @__PURE__ */ new Map();
   for (const c of cities) {
     if (!c.surowce) continue;
@@ -7490,15 +7879,15 @@ function reconcileOwnerResourceCaps(cities, capForOwner) {
     }
     for (const key of keys) {
       let total = 0;
-      for (const c of ownerCities) total += ((_a10 = c.surowce) == null ? void 0 : _a10[key]) ?? 0;
+      for (const c of ownerCities) total += ((_a9 = c.surowce) == null ? void 0 : _a9[key]) ?? 0;
       let excess = total - cap;
       if (excess <= 0) continue;
       const holders = ownerCities.filter((c) => {
-        var _a11;
-        return (((_a11 = c.surowce) == null ? void 0 : _a11[key]) ?? 0) > 0;
+        var _a10;
+        return (((_a10 = c.surowce) == null ? void 0 : _a10[key]) ?? 0) > 0;
       }).sort((a, b) => {
-        var _a11, _b4;
-        const diff = (((_a11 = b.surowce) == null ? void 0 : _a11[key]) ?? 0) - (((_b4 = a.surowce) == null ? void 0 : _b4[key]) ?? 0);
+        var _a10, _b4;
+        const diff = (((_a10 = b.surowce) == null ? void 0 : _a10[key]) ?? 0) - (((_b4 = a.surowce) == null ? void 0 : _b4[key]) ?? 0);
         if (diff !== 0) return diff;
         return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
       });
@@ -7524,12 +7913,13 @@ function loadUpkeepParams(raw, difficulty = "normal") {
   };
 }
 function buildingUpkeep(building, level, flatOverride) {
-  if (typeof flatOverride === "number" && Number.isFinite(flatOverride)) {
-    return flatOverride;
-  }
   const lvl = level >= 1 ? level : 1;
-  const base = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
-  return Math.floor(buildingEffectAtLevel(base, lvl));
+  if (!Number.isFinite(building.utrzymanie)) {
+    return typeof flatOverride === "number" && Number.isFinite(flatOverride) ? flatOverride : 0;
+  }
+  const base = building.utrzymanie;
+  const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
+  return Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
 }
 function totalBuildingUpkeep(buildings, flatOverride) {
   let sum = 0;
@@ -7616,8 +8006,8 @@ var DEFAULT_OKOLICA_FOCUS = "zrownowazone";
 var DEFAULT_OKOLICA_TRYB = "auto";
 var DEFAULT_PODZIAL_HANDLU = {
   procentNauka: 20,
-  procentPieniadz: 70,
-  procentLuksus: 10
+  procentPieniadz: 60,
+  procentLuksus: 20
 };
 var DEFAULT_PODZIAL_PRACY = {
   procentBudynki: 70
@@ -7647,8 +8037,8 @@ function freshCityPodzial() {
     podzialPracy: { ...DEFAULT_PODZIAL_PRACY }
   };
 }
-var _a6;
-var MIN_CITY_DISTANCE = ((_a6 = miasto_params_default.min_dystans_miast) == null ? void 0 : _a6.wartosc) ?? 5;
+var _a5;
+var MIN_CITY_DISTANCE = ((_a5 = miasto_params_default.min_dystans_miast) == null ? void 0 : _a5.wartosc) ?? 5;
 var MIN_CITY_DISTANCE_START_CITY_STATE = 3;
 function canFoundCity(q, r, cities, map, opts) {
   const key = `${q},${r}`;
@@ -7820,12 +8210,12 @@ function reconcileAllWorkedTiles(cities, territoryNodes) {
 }
 
 // src/game/okolica.ts
+var _a6;
+var OKOLICA_RADIUS = ((_a6 = miasto_params_default.zasieg_okolicy_miasta) == null ? void 0 : _a6.wartosc) ?? 5;
 var _a7;
-var OKOLICA_RADIUS = ((_a7 = miasto_params_default.zasieg_okolicy_miasta) == null ? void 0 : _a7.wartosc) ?? 5;
+var CITY_RANGE_MIN = ((_a7 = miasto_params_default.zasieg_okolicy_baza) == null ? void 0 : _a7.wartosc) ?? 5;
 var _a8;
-var CITY_RANGE_MIN = ((_a8 = miasto_params_default.zasieg_okolicy_baza) == null ? void 0 : _a8.wartosc) ?? 5;
-var _a9;
-var CITY_RANGE_CAP = ((_a9 = miasto_params_default.zasieg_okolicy_max) == null ? void 0 : _a9.wartosc) ?? 15;
+var CITY_RANGE_CAP = ((_a8 = miasto_params_default.zasieg_okolicy_max) == null ? void 0 : _a8.wartosc) ?? 15;
 function cityRangeForPopulation(population) {
   const pop = Number.isFinite(population) ? Math.floor(population) : 0;
   if (pop <= 0) return 0;
@@ -9525,7 +9915,7 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": 12,
     "W zamian za": "\u0141ucznik",
     "Super-jednostka": "\u2014",
-    Uwagi: "propozycja; jednostka specjalna; \u0142uk kompozytowy (\u0142uk refleksyjny); silniejszy dystans ni\u017C standardowy \u0142ucznik | BALANCE: Koszt\u219114, Pociski\u219312",
+    Uwagi: "propozycja; jednostka specjalna; \u0142uk dwuwypuk\u0142y (self bow); silniejszy dystans ni\u017C standardowy \u0142ucznik | BALANCE: Koszt\u219114, Pociski\u219312",
     "Rola (linia)": "Dystans",
     Pancerz: 2,
     Przebicie: 2,
@@ -9726,6 +10116,62 @@ var units_default = [
     fieldPower: 64.5
   },
   {
+    Jednostka: "\u0141ucznik nubijski",
+    Epoka: "Br\u0105z",
+    Kultura: "Egipt",
+    Tech: "\u0141ucznictwo",
+    "Pieni\u0105dz (koszt)": 20,
+    Ludno\u015B\u0107: 1,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
+    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
+    "\u017Cywno\u015B\u0107/tur\u0119": 1,
+    Atak: 4,
+    Uderzenie: 2,
+    Obrona: 6,
+    Ruch: 3,
+    "Ruch w bitwie (heksy)": 4,
+    Health: 50,
+    "Pr\xF3g dezercji (% health)": 0.4,
+    "Widok pola": 2,
+    "Atak dystansowy": 7,
+    "Zasi\u0119g ataku (hex)": 5,
+    "Ilo\u015B\u0107 pocisk\xF3w": 16,
+    "W zamian za": "\u0141ucznik",
+    "Super-jednostka": "\u2014",
+    Uwagi: 'propozycja; jednostka specjalna Egiptu (Br\u0105z); \u0142ucznik nubijski z Ta-Seti ("Kraina \u0141uku", Nubia) \u2014 nie myli\u0107 z Numidami (jazda, \u017Belazo, inny region); zast\u0119puje \u0141ucznika; najwi\u0119kszy zasi\u0119g i najliczniejszy ko\u0142czan w\u015Br\xF3d \u0142ucznik\xF3w Br\u0105zu, szybszy marsz (Ruch 3) | UWAGA KOORDYNATORA: Koszt 20, Utrzymanie 2, Pancerz/Przebicie/Obrona/Ruch-w-bitwie i staty TW v3 (meleeAttack/meleeDefence/weaponDamage/piercing/armor/chargeBonus/health/missileAttack) dobrane przez subagenta wzorem \u0141ucznika akadyjskiego \u2014 do zatwierdzenia przez w\u0142a\u015Bciciela. Model 3D: buildNubianArcherOpus5 (braz-lucznik-nubijski-opus5.ts) \u2014 dedykowany model, luk dlugi self-bow, karnacja ciemniejsza niz Egipt, przepaska skorzana.',
+    "Rola (linia)": "Dystans",
+    Pancerz: 2,
+    Przebicie: 2,
+    "Kara obrony z flanki (%)": 50,
+    "Kara obrony z ty\u0142u (%)": 80,
+    "Morale bazowe": 85,
+    "Morale ucieczki": 25,
+    "Nazwa EN": "Nubian Archer",
+    Typ: "Distance",
+    Klasa: "Specjalna",
+    Nacja: "Egipt",
+    "Bonus vs Swordsman %": 0,
+    "Bonus vs Spearman %": 0,
+    "Bonus vs Falangite %": 0,
+    "Bonus vs Offensive %": 0,
+    "Bonus vs Distance %": 0,
+    "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
+    "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
+    meleeAttack: 1,
+    meleeDefence: 2,
+    weaponDamage: 0,
+    piercing: 0,
+    armor: 1,
+    chargeBonus: 0,
+    health: 18,
+    missileAttack: 6,
+    fieldPower: 16
+  },
+  {
     Jednostka: "\u0141ucznik sumeryjski",
     Epoka: "Kamie\u0144",
     Kultura: "Sumerowie",
@@ -9749,7 +10195,7 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": 14,
     "W zamian za": "\u0141ucznik",
     "Super-jednostka": "\u2014",
-    Uwagi: "propozycja; jednostka specjalna; \u0142ucznik pieszny z \u0142ukiem kompozytowym; solidny dystans, fundament armii sumeryjskiej",
+    Uwagi: "propozycja; jednostka specjalna; \u0142ucznik pieszny z \u0142ukiem prostym; solidny dystans, fundament armii sumeryjskiej",
     "Rola (linia)": "Dystans",
     Pancerz: 2,
     Przebicie: 2,
@@ -10607,7 +11053,7 @@ var units_default = [
     "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
     "Zast\u0105p specjalnie": "\u2014",
-    "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z;\u017Belazo",
+    "Dost\u0119pna w epokach": "Kamie\u0144",
     meleeAttack: 0,
     meleeDefence: 0,
     weaponDamage: 0,
@@ -10619,6 +11065,64 @@ var units_default = [
     wallAttack: 14,
     fieldPower: 352.5,
     siegePower: 85
+  },
+  {
+    Jednostka: "Taran okuty",
+    Epoka: "Br\u0105z",
+    Kultura: null,
+    Tech: "Br\u0105zownictwo",
+    "Pieni\u0105dz (koszt)": 18,
+    Ludno\u015B\u0107: 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
+    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
+    "\u017Cywno\u015B\u0107/tur\u0119": 1,
+    Atak: 4,
+    Uderzenie: 12,
+    Obrona: 2,
+    Ruch: 1,
+    "Ruch w bitwie (heksy)": 2,
+    Health: 3e3,
+    "Pr\xF3g dezercji (% health)": null,
+    "Widok pola": 1,
+    "Atak dystansowy": 0,
+    "Zasi\u0119g ataku (hex)": "\u2014",
+    "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
+    "W zamian za": "\u2014",
+    "Super-jednostka": "\u2014",
+    Uwagi: "Machina obl\u0119\u017Cnicza epoki Br\u0105zu; nast\u0119pca Taranu (kamiennego) \u2014 k\u0142oda na KO\u0141ACH zamiast p\u0142\xF3z, g\u0142owica OKUTA BR\u0104ZEM, za\u0142oga pod przeno\u015Bnym daszkiem ze sk\xF3r; \u0142amie BRAM\u0118 i mur (wysokie Przebicie/Uderzenie), s\u0142aba vs jednostki; budowana podczas obl\u0119\u017Cenia (1 tura); niez\u0142omny (machina nie routuje) | PLACEHOLDER: liczby do strojenia w playte\u015Bcie",
+    "Rola (linia)": "Obl\u0119\u017Cnicza",
+    Pancerz: 8,
+    Przebicie: 10,
+    "Kara obrony z flanki (%)": "\u2014",
+    "Kara obrony z ty\u0142u (%)": "\u2014",
+    "Morale bazowe": 100,
+    "Morale ucieczki": null,
+    "Nazwa EN": "Bronze-Shod Ram",
+    Typ: "Siege",
+    Klasa: "Specjalna",
+    Nacja: "",
+    "Bonus vs Swordsman %": 0,
+    "Bonus vs Spearman %": 0,
+    "Bonus vs Falangite %": 0,
+    "Bonus vs Offensive %": 0,
+    "Bonus vs Distance %": 0,
+    "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
+    "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
+    meleeAttack: 0,
+    meleeDefence: 0,
+    weaponDamage: 0,
+    piercing: 1,
+    armor: 1,
+    chargeBonus: 1,
+    health: 750,
+    missileAttack: 0,
+    wallAttack: 18,
+    fieldPower: 377.5,
+    siegePower: 94
   },
   {
     Jednostka: "Katapulta",
@@ -12128,8 +12632,9 @@ var buildings_default = [
     id: "stolarnia",
     nazwa: "Stolarnia",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [
       "Warsztat drewna",
       "Stolarnia",
@@ -12166,7 +12671,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "las w zasiegu",
+    wymagania: "Drewno w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
     uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
     techUnlock: "Obr\xF3bka drewna",
     koszt_surowce: {
@@ -12177,8 +12682,9 @@ var buildings_default = [
     id: "kamieniarski",
     nazwa: "Warsztat kamieniarski",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 4,
@@ -12204,20 +12710,20 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "kamien w zasiegu",
-    uwagi: "",
+    wymagania: "Kamie\u0144 w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    uwagi: "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     techUnlock: "Murarstwo",
     koszt_surowce: {
-      drewno: 3,
-      kamien: 3
+      drewno: 6
     }
   },
   {
     id: "kuznia",
-    nazwa: "Kuznia",
+    nazwa: "Ku\u017Ania br\u0105zu",
     kategoria: "Produkcja+Wojsko",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 6,
@@ -12227,7 +12733,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 5
+      mnoznik: 15
     },
     przyrost: {
       praca: 3,
@@ -12237,26 +12743,27 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 2
+      mnoznik: 0
     },
     kosztBudowy: 30,
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "ruda miedzi w zasi\u0119gu (kopalnia miedzi)",
-    uwagi: "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
+    wymagania: "Ruda (mied\u017A) w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
+    uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%). Nazwa wyswietlana zmieniona z 'Kuznia' na 'Ku\u017Ania br\u0105zu' (Maciej 2026-07-25) -- identyfikator 'kuznia' BEZ ZMIAN (wsteczna zgodnosc zapisow). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Kuznia zelaza, nie sama z epoka. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc (kolejny tier w kolejnej epoce), obecnie martwe.",
     techUnlock: "Br\u0105zownictwo",
     koszt_surowce: {
-      drewno: 4,
-      kamien: 4
+      drewno: 6,
+      kamien: 6
     }
   },
   {
     id: "odlewnia_brazu",
     nazwa: "Piec hutniczy",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 5,
@@ -12282,23 +12789,24 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Popalnia br\u0105zu w imperium + ruda + drewno",
-    uwagi: "ABC-13: Piec hutniczy (br\u0105z); upgrade \u2192 Odlewnia \u017Celaza. Dost\u0119p br\u0105z = Popalnia (mapa) + ten budynek. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
+    wymagania: "Kopalnia miedzi w imperium (twardy wym\xF3g terenowy \u2014 jedyny wyj\u0105tek od regu\u0142y, decyzja w\u0142a\u015Bciciela Temat 8 Q3)",
+    uwagi: "ABC-13: Piec hutniczy (br\u0105z); upgrade \u2192 Odlewnia \u017Celaza. Dost\u0119p br\u0105z = Popalnia (mapa) + ten budynek. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23). LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "Br\u0105zownictwo",
     koszt_surowce: {
-      kamien: 6,
-      cegla: 4
+      drewno: 6,
+      kamien: 8
     }
   },
   {
     id: "odlewnia_zelaza",
     nazwa: "Odlewnia \u017Celaza",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
-      praca: 8,
+      praca: 12,
       pieniadz: 1,
       zywnosc: 0,
       nauka: 0,
@@ -12322,20 +12830,21 @@ var buildings_default = [
     utrzymanie: 3,
     przyrostUtrzymania: 1,
     wymagania: "upgrade Odlewni br\u0105zu",
-    uwagi: "ABC-7: suma bonus\xF3w z Odlewni br\u0105zu + \u017Celazo; placeholder receptury",
+    uwagi: "ABC-7: suma bonus\xF3w z Odlewni br\u0105zu + \u017Celazo; placeholder receptury. Decyzja 42A (Maciej 2026-07-25): Praca 8 -> 12 pkt/tur\u0119 -- awans z Pieca hutniczego (8 pkt) dawa\u0142 dawniej 0 netto mimo kosztu 35 pkt Pracy budowy, teraz awans faktycznie si\u0119 op\u0142aca. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "Hutnictwo \u017Celaza",
     upgradeFrom: "odlewnia_brazu",
     koszt_surowce: {
-      cegla: 8,
-      braz: 4
+      drewno: 8,
+      cegla: 10
     }
   },
   {
     id: "targowisko",
     nazwa: "Targowisko (Rynek)",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [
       "Targowisko",
       "Rynek",
@@ -12383,8 +12892,9 @@ var buildings_default = [
     id: "port",
     nazwa: "Port handlowy",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 1,
@@ -12410,19 +12920,21 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "wybrzeze morskie lub rzeka",
-    uwagi: "",
+    wymagania: "Wybrze\u017Ce morskie lub rzeka w zasi\u0119gu tego miasta",
+    uwagi: "LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Port wielki. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "\u017Begluga",
     koszt_surowce: {
-      drewno: 10
+      drewno: 12,
+      kamien: 6
     }
   },
   {
     id: "port_wielki",
     nazwa: "Port wielki",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 2,
@@ -12448,59 +12960,22 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Portu handlowego; wybrze\u017Ce",
-    uwagi: "ABC-20 B: suma bonus\xF3w Port + Port wielki w JSON",
+    wymagania: "upgrade Portu handlowego; wybrze\u017Ce morskie lub rzeka w zasi\u0119gu tego miasta",
+    uwagi: "ABC-20 B: suma bonus\xF3w Port + Port wielki w JSON. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. Budowla portowa epoki \u017Belaza -> drewno+kamie\u0144 (nie drewno+ceg\u0142a), zeby miasto bez zloza gliny nie zostalo bez portu.",
     techUnlock: "In\u017Cynieria",
     upgradeFrom: "port",
     koszt_surowce: {
-      cegla: 10,
-      braz: 4
-    }
-  },
-  {
-    id: "karawanseraj",
-    nazwa: "Karawanseraj",
-    kategoria: "Pieniadz",
-    epokaWejscia: 2,
-    maksPoziom: 10,
-    nazwyPoziomow: [],
-    baza: {
-      praca: 0,
-      pieniadz: 6,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 8
-    },
-    przyrost: {
-      praca: 0,
-      pieniadz: 3,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 3
-    },
-    kosztBudowy: 25,
-    przyrostKosztu: 10,
-    utrzymanie: 2,
-    przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)",
-    techUnlock: "Handel",
-    koszt_surowce: {
-      cegla: 4
+      drewno: 12,
+      kamien: 10
     }
   },
   {
     id: "spichlerz",
     nazwa: "Spichlerz",
     kategoria: "Zywnosc",
+    grupa: "\u017Bywno\u015B\u0107",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -12527,19 +13002,19 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100",
+    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
-      drewno: 5,
-      kamien: 3
+      drewno: 8
     }
   },
   {
     id: "spichlerz_ii",
     nazwa: "Spichlerz II",
     kategoria: "Zywnosc",
+    grupa: "\u017Bywno\u015B\u0107",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 1,
     upgradeFrom: "spichlerz",
     nazwyPoziomow: [],
     baza: {
@@ -12567,18 +13042,20 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 0,
     wymagania: "upgrade ze Spichlerza I",
-    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie",
+    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "Warzelnia soli",
     koszt_surowce: {
-      cegla: 10
+      drewno: 8,
+      kamien: 10
     }
   },
   {
     id: "garncarnia",
     nazwa: "Garncarnia",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 3,
@@ -12605,19 +13082,19 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "glina w zasiegu",
-    uwagi: "ABC-6: glina+drewno\u2192ceramika (paliwo usuniete 2026-07-23)",
+    uwagi: "ABC-6: glina+drewno\u2192ceramika (paliwo usuniete 2026-07-23). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
-      drewno: 4,
-      kamien: 2
+      drewno: 6
     }
   },
   {
     id: "cegielnia",
     nazwa: "Cegielnia",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 4,
@@ -12647,16 +13124,17 @@ var buildings_default = [
     uwagi: "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
     techUnlock: "Garncarstwo",
     koszt_surowce: {
-      drewno: 4,
-      kamien: 4
+      drewno: 6,
+      kamien: 6
     }
   },
   {
     id: "kamienne_kregi",
     nazwa: "Kamienne kr\u0119gi",
     kategoria: "Religia",
+    grupa: "Wiara",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -12683,7 +13161,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Upgrade \u2192 \u015Awi\u0105tynia.",
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. \u015Awi\u0105tynia stoi teraz obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie nast\u0119pca w upgradeFrom. WYJ\u0104TEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali \u0142ama\u0142by zgodno\u015B\u0107 historyczn\u0105).",
     techUnlock: "Mistycyzm",
     koszt_surowce: {
       kamien: 8
@@ -12693,20 +13171,11 @@ var buildings_default = [
     id: "swiatynia",
     nazwa: "\u015Awi\u0105tynia",
     kategoria: "Religia",
+    grupa: "Wiara",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
-      praca: 0,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 3,
-      zadowolenie: 3,
-      obrona: 0,
-      mnoznik: 0
-    },
-    przyrost: {
       praca: 0,
       pieniadz: 0,
       zywnosc: 0,
@@ -12716,24 +13185,35 @@ var buildings_default = [
       obrona: 0,
       mnoznik: 0
     },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 1,
+      zadowolenie: 1,
+      obrona: 0,
+      mnoznik: 0
+    },
     kosztBudowy: 25,
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Kamiennych kr\u0119g\xF3w",
-    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
+    wymagania: "Wybudowane Kamienne kr\u0119gi w tym mie\u015Bcie",
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY -- konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. GRUPY-BUDYNKOW (Maciej 2026-07-25): \u015Awi\u0105tynia to NIEZALEZNY budynek obok Kamiennych kregow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Kultura/Zadowolenie rozdzielone (3=1+2 wzgledem Kamiennych kregow, oba pola), zeby wklad Kamiennych kregow nie liczyl sie dwa razy.",
     techUnlock: "Religia",
-    upgradeFrom: "kamienne_kregi",
     koszt_surowce: {
-      cegla: 6
+      drewno: 6,
+      kamien: 8
     }
   },
   {
     id: "biblioteka",
     nazwa: "Biblioteka",
     kategoria: "Nauka",
+    grupa: "Nauka i kultura",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [
       "Skryptorium",
       "Biblioteka",
@@ -12771,21 +13251,23 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "3a: poziom 6 (Obserwatorium) i wyzej wymaga odkrycia technologii Astronomia \u2014 patrz poziomTechGate.",
+    uwagi: "3a: poziom 6 (Obserwatorium) i wyzej wymaga odkrycia technologii Astronomia \u2014 patrz poziomTechGate. Akademia stoi obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Nauka/Kultura rozdzielone, by nie liczy\u0107 wk\u0142adu Biblioteki dwa razy.",
     techUnlock: "Pismo",
     poziomTechGate: {
       "6": "Astronomia"
     },
     koszt_surowce: {
-      cegla: 5
+      drewno: 6,
+      kamien: 6
     }
   },
   {
     id: "studnia",
     nazwa: "Studnia",
     kategoria: "Zdrowie",
+    grupa: "Zdrowie",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -12812,18 +13294,19 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "Studnia miejska \u2014 dost\u0119p do czystej wody (+Zdrowie proxy). Osobno: \u0141a\u017Ania publiczna (termy rzymskie, epoka \u017Belaza).",
+    uwagi: "Studnia miejska \u2014 dost\u0119p do czystej wody (+Zdrowie proxy). Osobno: \u0141a\u017Ania publiczna (termy rzymskie, epoka \u017Belaza). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     techUnlock: "Gospodarka wodna",
     koszt_surowce: {
-      kamien: 5
+      drewno: 5
     }
   },
   {
     id: "akwedukt",
     nazwa: "Akwedukt",
     kategoria: "Zdrowie",
+    grupa: "Zdrowie",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -12853,15 +13336,17 @@ var buildings_default = [
     uwagi: "T-TECH-6: zdrowie++ i cap ludno\u015Bci (turn-economy)",
     techUnlock: "Budownictwo",
     koszt_surowce: {
-      cegla: 12
+      drewno: 6,
+      kamien: 12
     }
   },
   {
     id: "mennica",
     nazwa: "Mennica",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -12887,20 +13372,22 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "T-TECH-6: mnoznik handlu\u2192pieni\u0105dz (economy.ts)",
+    wymagania: "Tylko w stolicy. Dost\u0119p do Z\u0142ota (w\u0142asna Kopalnia z\u0142ota gdziekolwiek w imperium ALBO aktywny szlak handlowy z cywilizacj\u0105 posiadaj\u0105c\u0105 z\u0142oto) + wybudowane Targowisko w stolicy",
+    uwagi: "T-TECH-6: mnoznik handlu\u2192pieni\u0105dz (economy.ts), imperium-wide gdy Waluta odkryta (pytanie 71/C). Maciej 2026-07-25: bramka z\u0142ota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mie\u015Bcie (CITY_BUILDING_PREREQ, decyzja 54c=A). Pytanie 70/B (2026-07-25): Mennica WY\u0141\u0104CZNIE w stolicy, jedna sztuka na cywilizacj\u0119 (wynika automatycznie z 'lokalizacja':'stolica' -- jedna stolica na cywilizacj\u0119). Stare zapisy z Mennic\u0105 w mie\u015Bcie regionalnym NIE s\u0105 cofane -- budynek zostaje, bramka dotyczy tylko budowania NOWYCH.",
     techUnlock: "Waluta",
+    lokalizacja: "stolica",
     koszt_surowce: {
-      kamien: 6,
-      braz: 3
+      drewno: 6,
+      kamien: 8
     }
   },
   {
     id: "mury",
     nazwa: "Mury",
     kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -12909,7 +13396,7 @@ var buildings_default = [
       nauka: 0,
       kultura: 0,
       zadowolenie: 0,
-      obrona: 5,
+      obrona: 0,
       mnoznik: 0
     },
     przyrost: {
@@ -12919,7 +13406,7 @@ var buildings_default = [
       nauka: 0,
       kultura: 0,
       zadowolenie: 0,
-      obrona: 3,
+      obrona: 0,
       mnoznik: 0
     },
     kosztBudowy: 35,
@@ -12927,19 +13414,21 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "",
+    uwagi: "Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200% Obrony broniacym sie jednostkom -- patrz miasto-params.json bonus_obrona_mur_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony. Cytadela stoi teraz obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie nast\u0119pca w upgradeFrom. Od 2026-07-25 dochodzi TRZECI niezale\u017Cny budynek obronny -- Baszta (+100% dodatkowo, decyzja 41B).",
     techUnlock: "Budownictwo",
     odblokowuje: "maMur",
     koszt_surowce: {
-      cegla: 15
+      drewno: 8,
+      kamien: 16
     }
   },
   {
     id: "koszary",
     nazwa: "Koszary",
     kategoria: "Wojsko",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 2,
@@ -12949,7 +13438,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 5
+      mnoznik: 20
     },
     przyrost: {
       praca: 1,
@@ -12959,27 +13448,27 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 2
+      mnoznik: 0
     },
     kosztBudowy: 25,
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie",
+    uwagi: "Mnoznik = +20% parametry miekkie (Sciezka B, wszystko poza Pancerzem) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Akademia wojskowa/Warsztat oblezniczy, max +50%). Akademia wojskowa stoi obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Praca rozdzielona, by nie liczy\u0107 wk\u0142adu Koszar dwa razy.",
     techUnlock: "Wojskowo\u015B\u0107",
     koszt_surowce: {
-      drewno: 6,
-      kamien: 6,
-      braz: 4
+      drewno: 8,
+      kamien: 8
     }
   },
   {
     id: "magazyn",
     nazwa: "Magazyn",
     kategoria: "Produkcja+Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 1,
@@ -13009,16 +13498,17 @@ var buildings_default = [
     uwagi: "",
     techUnlock: "Handel",
     koszt_surowce: {
-      drewno: 8,
-      kamien: 4
+      drewno: 10,
+      kamien: 6
     }
   },
   {
     id: "stela",
     nazwa: "Stela / Pomnik",
     kategoria: "Kultura",
+    grupa: "Nauka i kultura",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 3,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -13045,7 +13535,7 @@ var buildings_default = [
     utrzymanie: 0,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "Nie wymaga utrzymania",
+    uwagi: "Nie wymaga utrzymania. WYJ\u0104TEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali \u0142ama\u0142by zgodno\u015B\u0107 historyczn\u0105).",
     techUnlock: "Murarstwo",
     koszt_surowce: {
       kamien: 6
@@ -13055,8 +13545,9 @@ var buildings_default = [
     id: "palac",
     nazwa: "Pa\u0142ac",
     kategoria: "Kultura/Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 1,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [
       "Dom wodza",
       "Dwor",
@@ -13070,7 +13561,7 @@ var buildings_default = [
       kultura: 5,
       zadowolenie: 2,
       obrona: 0,
-      mnoznik: 5
+      mnoznik: 0
     },
     przyrost: {
       praca: 0,
@@ -13087,8 +13578,9 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "-",
-    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bramka drewno; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II",
+    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bramka drewno; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "-",
+    lokalizacja: "stolica",
     koszt_surowce: {
       drewno: 8
     }
@@ -13097,8 +13589,9 @@ var buildings_default = [
     id: "palac_ii",
     nazwa: "Pa\u0142ac II",
     kategoria: "Kultura/Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 1,
     upgradeFrom: "palac",
     nazwyPoziomow: [],
     baza: {
@@ -13109,7 +13602,7 @@ var buildings_default = [
       kultura: 8,
       zadowolenie: 3,
       obrona: 0,
-      mnoznik: 8
+      mnoznik: 0
     },
     przyrost: {
       praca: 0,
@@ -13126,19 +13619,21 @@ var buildings_default = [
     utrzymanie: 3,
     przyrostUtrzymania: 1,
     wymagania: "upgrade Pa\u0142ac I",
-    uwagi: "B-PALAC-TIER II (Br\u0105z): bramka drewno+kamie\u0144; bonus \xD71,5 wzgl\u0119dem I; upgrade\u2192Pa\u0142ac III",
+    uwagi: "B-PALAC-TIER II (Br\u0105z): bramka drewno+kamie\u0144; bonus \xD71,5 wzgl\u0119dem I; upgrade\u2192Pa\u0142ac III. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "-",
+    lokalizacja: "stolica",
     koszt_surowce: {
-      drewno: 8,
-      kamien: 8
+      drewno: 10,
+      kamien: 10
     }
   },
   {
     id: "palac_iii",
     nazwa: "Pa\u0142ac III",
     kategoria: "Kultura/Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     upgradeFrom: "palac_ii",
     nazwyPoziomow: [],
     baza: {
@@ -13149,7 +13644,7 @@ var buildings_default = [
       kultura: 11,
       zadowolenie: 5,
       obrona: 0,
-      mnoznik: 11
+      mnoznik: 0
     },
     przyrost: {
       praca: 0,
@@ -13166,20 +13661,22 @@ var buildings_default = [
     utrzymanie: 5,
     przyrostUtrzymania: 2,
     wymagania: "upgrade Pa\u0142ac II",
-    uwagi: "B-PALAC-TIER III (\u017Belazo): bramka drewno+kamie\u0144+ceg\u0142a; bonus \xD72,25 wzgl\u0119dem I (\xD71,5\xB2)",
+    uwagi: "B-PALAC-TIER III (\u017Belazo): bramka drewno+ceg\u0142a; bonus \xD72,25 wzgl\u0119dem I (\xD71,5\xB2). LANCUCH W GORE: maksPoziom=1 (koniec lancucha, jak Pretorium) -- wartosc stala, epoki 4+ jeszcze nie ma.",
     techUnlock: "-",
+    lokalizacja: "stolica",
     koszt_surowce: {
-      drewno: 8,
-      kamien: 8,
-      cegla: 6
+      drewno: 10,
+      cegla: 14
     }
   },
   {
     id: "kuznia_zelaza",
     nazwa: "Ku\u017Ania \u017Celaza",
     kategoria: "Produkcja+Wojsko",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
+    upgradeFrom: "kuznia",
     nazwyPoziomow: [],
     baza: {
       praca: 8,
@@ -13189,7 +13686,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 8
+      mnoznik: 15
     },
     przyrost: {
       praca: 4,
@@ -13199,27 +13696,28 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 3
+      mnoznik: 0
     },
     kosztBudowy: 60,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "zelazo w zasiegu",
+    wymagania: "upgrade Ku\u017Ani br\u0105zu; zelazo w zasiegu",
     wymaganySurowiec: "zelazo",
-    uwagi: "Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza",
+    uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia brazu/Wielka Kuznia, max +45%); wymaga dostepu do zelaza. NAPRAWIONE OGNIWO (decyzja Maciej 2026-07-25): dopisano upgradeFrom='kuznia' -- Ku\u017Ania \u017Celaza zast\u0119puje teraz Ku\u017Ani\u0119 br\u0105zu (jak Pa\u0142ac), zamiast sta\u0107 obok niej w mie\u015Bcie. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Wielka Kuznia. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "Hutnictwo \u017Celaza",
     koszt_surowce: {
-      cegla: 6,
-      braz: 4
+      drewno: 8,
+      cegla: 10
     }
   },
   {
     id: "wielka_kuznia",
     nazwa: "Wielka Ku\u017Ania",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 4,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 20,
@@ -13229,7 +13727,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 23
+      mnoznik: 15
     },
     przyrost: {
       praca: 9,
@@ -13239,7 +13737,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 7
+      mnoznik: 0
     },
     kosztBudowy: 90,
     przyrostKosztu: 18,
@@ -13247,16 +13745,21 @@ var buildings_default = [
     przyrostUtrzymania: 2,
     wymagania: "upgrade Ku\u017Ani \u017Celaza; stal w zasi\u0119gu",
     wymaganySurowiec: "stal",
-    uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania; suma bonus\xF3w w JSON",
+    uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze. LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce. Koszt surowcowy dodany wg SPEC-KOSZTY-SUROWCOWE-BUDYNKOW (epoka klasyczna, poza zasiegiem dzisiejszej gry o 3 epokach): drewno+cegla.",
     techUnlock: "Obr\xF3bka \u017Celaza",
-    upgradeFrom: "kuznia_zelaza"
+    upgradeFrom: "kuznia_zelaza",
+    koszt_surowce: {
+      drewno: 12,
+      cegla: 16
+    }
   },
   {
     id: "fort",
     nazwa: "Cytadela",
     kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -13265,7 +13768,7 @@ var buildings_default = [
       nauka: 0,
       kultura: 0,
       zadowolenie: 0,
-      obrona: 15,
+      obrona: 0,
       mnoznik: 0
     },
     przyrost: {
@@ -13275,29 +13778,70 @@ var buildings_default = [
       nauka: 0,
       kultura: 0,
       zadowolenie: 0,
-      obrona: 8,
+      obrona: 0,
       mnoznik: 0
     },
     kosztBudowy: 70,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Mur\xF3w",
-    uwagi: "ABC-22 C: Cytadela = upgrade Mur\xF3w (1 slot). Mapa = osobny Fort terenowy. Suma Mury+Cytadela w JSON.",
+    wymagania: "Wybudowane Mury w tym mie\u015Bcie",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Cytadela to NIEZALEZNY budynek obok Murow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno; REGRESJA-KOLEJNOSC (Maciej 2026-07-25 wieczor) przywrocila wymog kolejnosci -- Mury musza byc wybudowane w tym miescie PRZED Cytadela (CITY_BUILDING_PREREQ w building-resource-gate.ts), tylko sam upgradeFrom (zastepowanie w builtIds) zostal usuniety. Mapa = osobny Fort terenowy (inny byt). Obrona miasta WYLACZNIE procentowa: Mury +200%, Cytadela +100% dodatkowo (razem +300% gdy oba w miescie), a od 2026-07-25 Baszta +100% dodatkowo (razem +400% z kompletem trzech) -- patrz miasto-params.json bonus_obrona_mur_proc / bonus_obrona_cytadela_proc / bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor (game/city-defense.ts, juz odporne na wspolobecnosc wielu id w cityBuilt). Ten wpis nie niesie juz platowego bonusu Obrony. Budowla obronna epoki \u017Belaza -> drewno+kamie\u0144 (nie drewno+ceg\u0142a), zeby miasto bez zloza gliny nie zostalo bez obrony.",
     techUnlock: "In\u017Cynieria",
     odblokowuje: "maFort",
-    upgradeFrom: "mury",
     koszt_surowce: {
-      cegla: 18,
-      zelazo: 6
+      drewno: 10,
+      kamien: 20
+    }
+  },
+  {
+    id: "baszta",
+    nazwa: "Baszta",
+    kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
+    epokaWejscia: 3,
+    maksPoziom: 1,
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 70,
+    przyrostKosztu: 15,
+    utrzymanie: 3,
+    przyrostUtrzymania: 1,
+    wymagania: "",
+    uwagi: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny, dokladany obok Murow i Cytadeli (nie zastepuje ich, brak upgradeFrom). Obrona miasta WYLACZNIE procentowa: +100% Obrony broniacym sie jednostkom, DODATKOWO ponad Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech = +400% -- patrz miasto-params.json bonus_obrona_baszta_proc + main.ts structureDefenseBonusFor / game/city-defense.ts. Buduje sie NIEZALEZNIE od Murow/Cytadeli (brak wymogu kolejnosci) i w stolicy, i w regionach (brak pola lokalizacja). Koszt surowcowy w skali Cytadeli (ten sam rzad wielkosci bonusu +100%): drewno+kamien, budowla obronna epoki \u017Belaza.",
+    techUnlock: "In\u017Cynieria",
+    odblokowuje: "maBaszta",
+    koszt_surowce: {
+      drewno: 10,
+      kamien: 20
     }
   },
   {
     id: "warsztat_oblezniczy",
     nazwa: "Warsztat obl\u0119\u017Cniczy",
     kategoria: "Wojsko",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 4,
@@ -13317,34 +13861,35 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 3
+      mnoznik: 0
     },
     kosztBudowy: 65,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "wymaga Koszary",
-    uwagi: "Odblokowuje budow\u0119 Katapulty w mie\u015Bcie (maWarsztatOblezniczy). Taran i Wie\u017Ca = in-siege przy obl\u0119\u017Ceniu \u2014 styk UNITS",
+    wymagania: "Wybudowane Koszary (lub ich upgrade \u2014 Akademia wojskowa) w tym mie\u015Bcie",
+    uwagi: "Mnoznik = +10% parametry miekkie (Sciezka B) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Koszary/Akademia wojskowa). Odblokowuje budow\u0119 Katapulty w mie\u015Bcie (maWarsztatOblezniczy). Taran i Wie\u017Ca = in-siege przy obl\u0119\u017Ceniu \u2014 styk UNITS. Budowla obronna epoki \u017Belaza -> drewno+kamie\u0144 (nie drewno+ceg\u0142a).",
     techUnlock: "Obl\u0119\u017Cnictwo",
     odblokowuje: "maWarsztatOblezniczy",
     koszt_surowce: {
-      cegla: 8,
-      zelazo: 6
+      drewno: 10,
+      kamien: 10
     }
   },
   {
     id: "akademia",
     nazwa: "Akademia",
     kategoria: "Nauka",
+    grupa: "Nauka i kultura",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
       pieniadz: 0,
       zywnosc: 0,
-      nauka: 9,
-      kultura: 7,
+      nauka: 6,
+      kultura: 5,
       zadowolenie: 3,
       obrona: 0,
       mnoznik: 10
@@ -13363,11 +13908,11 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Biblioteki (merge Teatr)",
-    uwagi: "ABC-21 B: merge Biblioteka+Akademia+Teatr \u2014 suma w JSON; Teatr ukryty z produkcji",
+    wymagania: "Wybudowana Biblioteka w tym mie\u015Bcie",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia to NIEZALEZNY budynek obok Biblioteki (nie zastepuje jej, upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura rozdzielone (9=3+6, 7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa razy. Teatr nadal ukryty z produkcji i wliczony w Akademie (merge bez zmian, ABC-21 B).",
     techUnlock: "Filozofia",
-    upgradeFrom: "biblioteka",
     koszt_surowce: {
+      drewno: 8,
       cegla: 14
     }
   },
@@ -13375,8 +13920,9 @@ var buildings_default = [
     id: "teatr",
     nazwa: "Teatr",
     kategoria: "Kultura",
+    grupa: "Nauka i kultura",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -13407,6 +13953,7 @@ var buildings_default = [
     techUnlock: "Filozofia",
     suppressed: true,
     koszt_surowce: {
+      drewno: 8,
       cegla: 10
     }
   },
@@ -13414,8 +13961,9 @@ var buildings_default = [
     id: "sad",
     nazwa: "S\u0105d",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -13445,25 +13993,110 @@ var buildings_default = [
     uwagi: "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
     techUnlock: "Prawo",
     koszt_surowce: {
-      cegla: 8
+      drewno: 6,
+      cegla: 10
+    }
+  },
+  {
+    id: "dom_starszyzny",
+    nazwa: "Dom Starszyzny",
+    kategoria: "Administracja",
+    grupa: "Prawo i administracja",
+    epokaWejscia: 1,
+    maksPoziom: 1,
+    nazwyPoziomow: [],
+    baza: {
+      praca: 1,
+      pieniadz: 1,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 2,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 25,
+    przyrostKosztu: 5,
+    utrzymanie: 1,
+    przyrostUtrzymania: 1,
+    wymagania: "",
+    uwagi: "Administracja lokalna miast regionalnych (poza stolic\u0105), poziom 1: Dom Starszyzny. \u0141a\u0144cuch zast\u0119powania jak Pa\u0142ac: Dom Starszyzny \u2192 Dw\xF3r Zarz\u0105dcy \u2192 Pretorium. G\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa miasta regionalnego (prawo_dom_starszyzny, society-params.json). Decyzja Macieja 2026-07-25 (podzia\u0142 stolica/region). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Dw\xF3r Zarz\u0105dcy. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe (juz 0, brak zmiany liczbowej).",
+    techUnlock: "-",
+    lokalizacja: "region",
+    koszt_surowce: {
+      drewno: 6
+    }
+  },
+  {
+    id: "dwor_zarzadcy",
+    nazwa: "Dw\xF3r Zarz\u0105dcy",
+    kategoria: "Administracja",
+    grupa: "Prawo i administracja",
+    epokaWejscia: 2,
+    maksPoziom: 1,
+    upgradeFrom: "dom_starszyzny",
+    nazwyPoziomow: [],
+    baza: {
+      praca: 1,
+      pieniadz: 2,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 3,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 45,
+    przyrostKosztu: 9,
+    utrzymanie: 2,
+    przyrostUtrzymania: 1,
+    wymagania: "upgrade Dom Starszyzny",
+    uwagi: "Administracja lokalna miast regionalnych (poza stolic\u0105), poziom 2: Dw\xF3r Zarz\u0105dcy \u2014 zast\u0119puje Dom Starszyzny. G\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa miasta regionalnego (prawo_dwor_zarzadcy, society-params.json); dalszy awans \u2192 Pretorium. Decyzja Macieja 2026-07-25 (podzia\u0142 stolica/region). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pretorium. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe (juz 0, brak zmiany liczbowej).",
+    techUnlock: "Kodeks",
+    lokalizacja: "region",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 6
     }
   },
   {
     id: "pretorium",
     nazwa: "Pretorium",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
+    upgradeFrom: "dwor_zarzadcy",
     nazwyPoziomow: [],
     baza: {
       praca: 2,
       pieniadz: 3,
       zywnosc: 0,
       nauka: 0,
-      kultura: 0,
-      zadowolenie: 1,
-      obrona: 2,
-      mnoznik: 5
+      kultura: 5,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
     },
     przyrost: {
       praca: 1,
@@ -13471,27 +14104,30 @@ var buildings_default = [
       zywnosc: 0,
       nauka: 0,
       kultura: 0,
-      zadowolenie: 1,
-      obrona: 1,
-      mnoznik: 2
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
     },
     kosztBudowy: 75,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
+    wymagania: "upgrade Dw\xF3r Zarz\u0105dcy",
+    uwagi: "Administracja lokalna miast regionalnych (poza stolic\u0105), poziom 3 (\u017Belazo): Pretorium \u2014 zast\u0119puje Dw\xF3r Zarz\u0105dcy, koniec \u0142a\u0144cucha (jak Pa\u0142ac III w stolicy). G\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa miasta regionalnego (prawo_pretorium, society-params.json). Garnizon liczy si\u0119 do Prawa sam (prawo_garnizon_per_jednostka) \u2014 Pretorium nie daje mu dodatkowego bonusu; dawny zapis o mno\u017Cniku podatkowym nie mia\u0142 pokrycia w kodzie (pole martwe, wyzerowane 2026-07-25). LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce.",
     techUnlock: "Prawo",
+    lokalizacja: "region",
     koszt_surowce: {
-      cegla: 9
+      drewno: 8,
+      cegla: 10
     }
   },
   {
     id: "trybunal",
     nazwa: "Trybuna\u0142",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 2,
-    maksPoziom: 10,
+    maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -13521,15 +14157,17 @@ var buildings_default = [
     uwagi: "3a: wczesna administracja \u2014 +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
     techUnlock: "Kodeks",
     koszt_surowce: {
-      cegla: 8
+      drewno: 6,
+      kamien: 8
     }
   },
   {
     id: "laznia_publiczna",
     nazwa: "\u0141a\u017Ania publiczna",
     kategoria: "Zdrowie",
+    grupa: "Zdrowie",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
       praca: 0,
@@ -13555,57 +14193,24 @@ var buildings_default = [
     przyrostKosztu: 12,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "wymaga Studnia",
+    wymagania: "Wybudowana Studnia w tym mie\u015Bcie",
     uwagi: "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy \u2014 zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     techUnlock: "Medycyna",
     koszt_surowce: {
-      cegla: 10
+      drewno: 8,
+      cegla: 12
     }
-  },
-  {
-    id: "lazaret",
-    nazwa: "Lazaret",
-    kategoria: "Zdrowie+Wojsko",
-    epokaWejscia: 5,
-    maksPoziom: 10,
-    nazwyPoziomow: [],
-    baza: {
-      praca: 0,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 1,
-      kultura: 0,
-      zadowolenie: 1,
-      obrona: 0,
-      mnoznik: 5
-    },
-    przyrost: {
-      praca: 0,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 1,
-      kultura: 0,
-      zadowolenie: 1,
-      obrona: 0,
-      mnoznik: 2
-    },
-    kosztBudowy: 55,
-    przyrostKosztu: 12,
-    utrzymanie: 2,
-    przyrostUtrzymania: 1,
-    wymagania: "",
-    uwagi: "Regeneracja HP jednostek stacjonujacych w miescie; mnoznik % do tempa regeneracji - styk UNITS. PARKOWANIE: budynek epoki Sredniowiecze (epokaWejscia=4); poza cap v0.1 (max epoka=3=Zelazo) -- nie usuwamy, aktywuje sie w pozniejszej epoce. techUnlock docelowo tech sredniowieczna (zostaje Medycyna jako placeholder; nie wymyslac nowej techy przed decyzja Macieja).",
-    techUnlock: "Medycyna"
   },
   {
     id: "akademia_wojskowa",
     nazwa: "Akademia wojskowa",
     kategoria: "Wojsko",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 3,
-    maksPoziom: 10,
+    maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
-      praca: 5,
+      praca: 3,
       pieniadz: 2,
       zywnosc: 0,
       nauka: 0,
@@ -13622,19 +14227,18 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 6
+      mnoznik: 0
     },
     kosztBudowy: 80,
     przyrostKosztu: 18,
     utrzymanie: 4,
     przyrostUtrzymania: 2,
-    wymagania: "upgrade Koszar",
-    uwagi: "Upgrade Koszary \u2192 Akademia wojskowa; suma bonus\xF3w w JSON; bramka elit UNITS",
+    wymagania: "Wybudowane Koszary w tym mie\u015Bcie",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia wojskowa to NIEZALEZNY budynek obok Koszar (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Praca rozdzielona (5=2+3 wzgledem Koszar), zeby wklad Koszar nie liczyl sie dwa razy. Mnoznik = +20% parametry miekkie (Sciezka B) -- TERAZ kumuluje sie z Koszarami wprost (oba obecne w miescie = +40%, razem z Warsztatem oblezniczym +50%); bramka elit UNITS.",
     techUnlock: "Sztuka wojenna",
-    upgradeFrom: "koszary",
     koszt_surowce: {
-      cegla: 12,
-      zelazo: 6
+      drewno: 10,
+      cegla: 14
     }
   }
 ];
@@ -13767,7 +14371,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "kamien, ruda",
       "Odblokowuje budynek": "Warsztat kamieniarski; Stela / Pomnik",
-      "Koszt nauki": 5,
+      "Koszt nauki": 28,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Kopalnia, Kamienio\u0142om, Posterunek (Stra\u017Cnica)"
     },
@@ -13883,7 +14487,7 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Garncarstwo + Murarstwo + Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Odlewnia br\u0105zu; Kuznia; Jednostki: W\u0142\xF3cznik, Wojownik z mieczem i tarcz\u0105, Impi, Wojownik z toporem, Wojownik z khopesh, W\u0142\xF3cznik sumeryjski, Wojownik myke\u0144ski, Wojownik Sherden, Halabardnik Shang, Wie\u017Ca obl\u0119\u017Cnicza, Wojownik tyrre\u0144ski, Wojownik szekelesz",
+      "Odblokowuje budynek": "Odlewnia br\u0105zu; Ku\u017Ania br\u0105zu; Jednostki: W\u0142\xF3cznik, Wojownik z mieczem i tarcz\u0105, Impi, Wojownik z toporem, Wojownik z khopesh, W\u0142\xF3cznik sumeryjski, Wojownik myke\u0144ski, Wojownik Sherden, Halabardnik Shang, Wie\u017Ca obl\u0119\u017Cnicza, Wojownik tyrre\u0144ski, Wojownik szekelesz",
       "Koszt nauki": 90,
       Uwagi: "ko\u0144czy Epok\u0119 1; ABC-7: Popalnia br\u0105zu na mapie",
       "Odblokowuje ulepszenie terenu": "Popalnia br\u0105zu",
@@ -13976,7 +14580,7 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Pismo + \u017Begluga",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Karawanseraj; Magazyn",
+      "Odblokowuje budynek": "Magazyn",
       "Koszt nauki": 148,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
@@ -13989,7 +14593,7 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Pismo + Religia",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Trybuna\u0142",
+      "Odblokowuje budynek": "Trybuna\u0142; Dw\xF3r Zarz\u0105dcy",
       "Koszt nauki": 124,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
@@ -14017,8 +14621,8 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Mennica",
       "Koszt nauki": 200,
-      Uwagi: "ko\u0144czy Epok\u0119 2 (Pieni\u0105dz); T-TECH-6: Mennica v1.0",
-      "Odblokowuje ulepszenie terenu": null
+      Uwagi: "ko\u0144czy Epok\u0119 2 (Pieni\u0105dz); T-TECH-6: Mennica v1.0; ZLOTO 2026-07-25: Mennica dodatkowo wymaga dost\u0119pu do Z\u0142ota (Kopalnia z\u0142ota) + Targowiska w mie\u015Bcie",
+      "Odblokowuje ulepszenie terenu": "Kopalnia z\u0142ota"
     },
     {
       Technologia: "Astronomia",
@@ -14055,9 +14659,9 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "Budownictwo",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Fort",
+      "Odblokowuje budynek": "Fort; Cytadela; Baszta",
       "Koszt nauki": 260,
-      Uwagi: "Fort = NOWY budynek (obrona terenu, zasi\u0119g 10, +100% obrona przy obozowaniu \u2014 zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniej\u0105cego Akweduktu",
+      Uwagi: "Fort = NOWY budynek (obrona terenu, zasi\u0119g 10, +100% obrona przy obozowaniu \u2014 zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniej\u0105cego Akweduktu. Baszta (decyzja 41B, 2026-07-25) -- trzeci budynek obronny miasta, obok Cytadeli, ta sama technologia.",
       "Odblokowuje ulepszenie terenu": null
     },
     {
@@ -14179,6 +14783,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.3,
       ikonaId: "grecy",
+      wodzowiePula: ["Perykles", "Temistokles", "Miltiades", "Kimon", "Solon", "Kleistenes", "Lizander", "Epaminondas", "Pelopidas", "Alkibiades"],
       wodzowie: {
         kamien: "Minos",
         braz: "Agamemnon",
@@ -14210,7 +14815,7 @@ var civs_default = {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.15,
-          opis: "Morskie szlaki handlowe: +15% z\u0142ota z port\xF3w i dr\xF3g morskich (Korynt, Ateny)",
+          opis: "Morskie szlaki handlowe: +15% Daniny z port\xF3w i dr\xF3g morskich (Korynt, Ateny)",
           realizuje: "ekonomia"
         },
         {
@@ -14352,6 +14957,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2,
       ikonaId: "rzymianie",
+      wodzowiePula: ["Kamillus", "Cyncynat", "Fabiusz Maksymus", "Katon Starszy", "Emiliusz Paulus", "Klaudiusz", "Waleriusz", "Korneliusz", "Serwiliusz", "Fulwiusz"],
       wodzowie: {
         kamien: "Romulus",
         braz: "Numa Pompiliusz",
@@ -14530,6 +15136,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.4,
       ikonaId: "chinczycy",
+      wodzowiePula: ["Cheng Tang", "Wu Ding", "Wen Wang", "Zhou Gong", "Goujian", "Fuchai", "Hel\xFC", "Ksiaze Mu", "Ksiaze Huan", "Zhuang"],
       wodzowie: {
         kamien: "Huang Di",
         braz: "Yu Wielki",
@@ -14695,6 +15302,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.9,
       ikonaId: "inkowie",
+      wodzowiePula: ["Sinchi Roca", "Lloque Yupanqui", "Mayta Capac", "Capac Yupanqui", "Inca Roca", "Yahuar Huacac", "Tupac Yupanqui", "Huayna Capac", "Atahualpa", "Huascar"],
       wodzowie: {
         kamien: "Manco C\xE1pac",
         braz: "Wirakocza Inka",
@@ -14862,6 +15470,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.8,
       ikonaId: "zulusi",
+      wodzowiePula: ["Dingane", "Mpande", "Ndaba", "Jama", "Punga", "Mageba", "Zwide", "Sobhuza", "Dingiswayo", "Langalibalele"],
       wodzowie: {
         kamien: "Zulu kaMalandela",
         braz: "Senzangakhona",
@@ -15027,6 +15636,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.1,
       ikonaId: "egipt",
+      wodzowiePula: ["Dzeser", "Snofru", "Chefren", "Mykerinos", "Pepi II", "Mentuhotep II", "Amenemhat I", "Totmes III", "Amenhotep III", "Echnaton"],
       wodzowie: {
         kamien: "Narmer",
         braz: "Chufu",
@@ -15054,6 +15664,7 @@ var civs_default = {
           cel: "piechota",
           wartosc: [
             "\u0141ucznik egipski",
+            "\u0141ucznik nubijski",
             "Rydwan egipski",
             "Wojownik z khopesh",
             "Wojownik z \u017Celaznym khopesh"
@@ -15193,6 +15804,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.2,
       ikonaId: "sumer",
+      wodzowiePula: ["Etana", "Enmerkar", "Lugalbanda", "Dumuzi", "Eannatum", "Lugalzagesi", "Meskalamdug", "Mesannepada", "Enannatum", "Entemena"],
       wodzowie: {
         kamien: "Alulim",
         braz: "Gilgamesz",
@@ -15360,6 +15972,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.9,
       ikonaId: "celtowie",
+      wodzowiePula: ["Dumnoryks", "Divitiakus", "Cassivellaunus", "Kunobelinos", "Orgetoryks", "Kastyk", "Ambioryks", "Indutiomaros", "Tasgetios", "Litawikus"],
       wodzowie: {
         kamien: "Ambigatos",
         braz: "Brennus",
@@ -15525,6 +16138,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.7,
       ikonaId: "germanie",
+      wodzowiePula: ["Marbod", "Segestes", "Segimer", "Inguiomer", "Chariovalda", "Katualda", "Nasua", "Cimberius", "Boioryks", "Teutobod"],
       wodzowie: {
         kamien: "Mannus",
         braz: "Ariowist",
@@ -15688,6 +16302,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.4,
       ikonaId: "harappa",
+      wodzowiePula: ["Vasu", "Bharata", "Divodasa", "Sudas", "Trasadasyu", "Mandhatri", "Purukutsa", "Kuvalashva", "Anaranya", "Trishanku"],
       wodzowie: {
         kamien: "Starszy z Mehrgarh",
         braz: "Kap\u0142an-Kr\xF3l z Mohend\u017Co-Daro",
@@ -15700,7 +16315,7 @@ var civs_default = {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.15,
-          opis: "Szlaki lokalne: +15% z\u0142ota z handlu w miastach",
+          opis: "Szlaki lokalne: +15% Daniny miast",
           realizuje: "ekonomia"
         },
         {
@@ -15853,6 +16468,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2,
       ikonaId: "hetyci",
+      wodzowiePula: ["Tudhalija I", "Arnuwanda I", "Mursili I", "Muwatalli II", "Hantili I", "Zidanta I", "Ammuna", "Telipinu", "Tahurwaili", "Alluwamna"],
       wodzowie: {
         kamien: "Labarna I",
         braz: "Hattusili I",
@@ -16018,6 +16634,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.8,
       ikonaId: "slowianie",
+      wodzowiePula: ["Piast", "Siemowit", "Lestek", "Siemomysl", "Popiel", "Przemysl", "Ziemowit", "Choscisko", "Wiszymir", "Leszek"],
       wodzowie: {
         kamien: "Lech",
         braz: "Krak",
@@ -16182,6 +16799,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.3,
       ikonaId: "babilonia",
+      wodzowiePula: ["Sumu-la-El", "Sabium", "Apil-Sin", "Sin-muballit", "Samsu-iluna", "Abi-eszuh", "Ammi-ditana", "Ammi-saduqa", "Samsu-ditana", "Kurigalzu I"],
       wodzowie: {
         kamien: "Sumu-abum",
         braz: "Hammurabi",
@@ -16201,7 +16819,7 @@ var civs_default = {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.1,
-          opis: "Rynek Euphratu: +10% z\u0142ota",
+          opis: "Rynek Euphratu: +10% Daniny miast",
           realizuje: "ekonomia"
         },
         {
@@ -16347,6 +16965,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.7,
       ikonaId: "asyria",
+      wodzowiePula: ["Szamszi-Adad I", "Adad-nirari I", "Salmanasar I", "Tukulti-Ninurta I", "Aszur-uballit I", "Sargon II", "Asarhaddon", "Aszurnasirpal II", "Salmanasar III", "Sennacheryb"],
       wodzowie: {
         kamien: "Puzur-Aszur I",
         braz: "Tiglat-Pileser I",
@@ -16512,6 +17131,7 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.6,
       ikonaId: "fenicjanie",
+      wodzowiePula: ["Ahiram", "Ittobaal I", "Baal-Eser I", "Matten I", "Pygmalion", "Abibaal", "Elibaal", "Szipitbaal", "Mago I", "Hazdrubal"],
       wodzowie: {
         kamien: "Agenor",
         braz: "Hiram I",
@@ -16524,14 +17144,14 @@ var civs_default = {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.25,
-          opis: "Szlaki morskie: +25% z\u0142ota z port\xF3w",
+          opis: "Szlaki morskie: +25% Daniny z port\xF3w",
           realizuje: "ekonomia"
         },
         {
           typ: "bonus_zloto",
           cel: "handel",
           wartosc: 0.1,
-          opis: "Purpura: +10% handlu",
+          opis: "Purpura: +10% Daniny",
           realizuje: "ekonomia"
         },
         {
@@ -19531,22 +20151,22 @@ var econ_params_default = {
       easy: 20,
       normal: 20,
       hard: 20,
-      jednostka: "%",
-      opis: "Domy\u015Blny udzia\u0142 strumienia Nauka (= BADANIA) w podziale Handlu netto. Default 20% (Maciej 2026-06-25)."
+      jednostka: "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Nauka (= BADANIA) w podziale Daniny netto nowego miasta. 20% (Maciej 2026-06-25, potwierdzone przy decyzji 74 = A z 2026-07-25 \u2014 ten strumie\u0144 zostaje bez zmian)."
     },
     suwak_handel_pieniadz_domyslnie: {
-      easy: 70,
-      normal: 70,
-      hard: 70,
-      jednostka: "%",
-      opis: "Domy\u015Blny udzia\u0142 strumienia Pieni\u0105dz (= SKARBIEC/podatek) w podziale Handlu netto. Default 70% (Maciej 2026-06-25)."
+      easy: 60,
+      normal: 60,
+      hard: 60,
+      jednostka: "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Pieni\u0105dz (= SKARBIEC) w podziale Daniny netto nowego miasta. Obni\u017Cony 70% \u2192 60% decyzj\u0105 Maciej 2026-07-25 (PYTANIE 74 = A); te 10 punkt\xF3w procentowych przesz\u0142o na Zamo\u017Cno\u015B\u0107, \u017Ceby nowe miasto nie startowa\u0142o z ujemnym Szcz\u0119\u015Bciem na trudnym."
     },
     suwak_handel_luksus_domyslnie: {
-      easy: 10,
-      normal: 10,
-      hard: 10,
-      jednostka: "%",
-      opis: "Domy\u015Blny udzia\u0142 strumienia Zamo\u017Cno\u015B\u0107 (Wealth) w podziale Handlu netto. Default 10% (Maciej 2026-06-25). Luksus \u2260 surowiec \u2014 osobna kategoria elitarna (poza gr\u0105 v1)."
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Zamo\u017Cno\u015B\u0107 (Wealth) w podziale Daniny netto nowego miasta. Podniesiony 10% \u2192 20% decyzj\u0105 Maciej 2026-07-25 (PYTANIE 74 = A). Pow\xF3d: 20% to dok\u0142adnie pr\xF3g utrzymania poziomu Zamo\u017Cno\u015Bci (20% pieni\u0105dza miasta przy poziomie 0), wi\u0119c poziom Zamo\u017Cno\u015Bci rusza z miejsca bez r\u0119cznej interwencji; w nowej siatce Szcz\u0119\u015Bcia przedzia\u0142 20-29% daje +1 pkt Szcz\u0119\u015Bcia na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%)."
     },
     suwak_praca_budynki_domyslnie: {
       easy: 70,
@@ -19598,25 +20218,25 @@ var econ_params_default = {
       opis: "U\u0142amek netto \u017Cywno\u015Bci armii odk\u0142adany do zapas\xF3w pa\u0144stwa gdy w imperium jest \u22651 Spichlerz (100%). Limit pojemno\u015Bci = spichlerz_pojemnosc \xD7 liczba Spichlerzy."
     },
     korupcja_wspolczynnik_dystansu: {
-      easy: 1,
-      normal: 2,
-      hard: 3,
-      jednostka: "per pole",
-      opis: "Strata% += Dystans_od_Stolicy \xD7 warto\u015B\u0107. Im wi\u0119kszy, tym dotkliwsza korupcja. [PT]"
+      easy: 0.5,
+      normal: 1,
+      hard: 1.5,
+      jednostka: "punkty procentowe straty Daniny/Podatku na ka\u017Cde pole odleg\u0142o\u015Bci od stolicy",
+      opis: 'Korupcja \u2014 wsp\xF3\u0142czynnik dystansu. Strata% Daniny (po wynalezieniu Waluty: Podatku) += Dystans_od_Stolicy [pola] \xD7 warto\u015B\u0107. NIE dotyczy Pracy (decyzja Maciej 2026-07-25: korupcja obci\u0105\u017Ca wy\u0142\u0105cznie Danin\u0119/Podatek). Warto\u015Bci obni\u017Cone o 50% wobec pierwotnych 1 / 2 / 3 (decyzja Maciej 2026-07-25: \u201Ezbyt rygorystyczne\u2026 maj\u0105 mie\u0107 wp\u0142yw, ale nie by\u0107 druzgoc\u0105ce"). [PT]'
     },
     korupcja_wspolczynnik_miast: {
-      easy: 1,
-      normal: 1,
-      hard: 2,
-      jednostka: "per miasto",
-      opis: "Strata% += Liczba_Miast \xD7 warto\u015B\u0107. Ka\u017Cde nowe miasto podnosi korupcj\u0119 globalnie. [PT]"
+      easy: 0.5,
+      normal: 0.5,
+      hard: 1,
+      jednostka: "punkty procentowe straty Daniny/Podatku na ka\u017Cde miasto w imperium",
+      opis: "Korupcja \u2014 wsp\xF3\u0142czynnik liczby miast. Strata% Daniny (po Walucie: Podatku) += Liczba_Miast \xD7 warto\u015B\u0107; obci\u0105\u017Ca ka\u017Cde miasto, tak\u017Ce stolic\u0119. NIE dotyczy Pracy. Warto\u015Bci obni\u017Cone o 50% wobec pierwotnych 1 / 1 / 2 (decyzja Maciej 2026-07-25). [PT]"
     },
     korupcja_cap: {
       easy: 38,
       normal: 50,
       hard: 62,
-      jednostka: "%",
-      opis: "Maksymalna strata z tytu\u0142u korupcji/marnotrawstwa (cap = 50%). [PT]"
+      jednostka: "% \u2014 maksymalna strata Daniny/Podatku w jednym mie\u015Bcie",
+      opis: "Korupcja \u2014 sufit straty. G\xF3rne ograniczenie \u0142\u0105cznej straty z dystansu i liczby miast. BEZ ZMIAN 2026-07-25 \u2014 Maciej obni\u017Cy\u0142 o 50% dwa WSP\xD3\u0141CZYNNIKI (dystansu i miast), sufitu nie wymienia\u0142; po obni\u017Cce sufit i tak jest praktycznie nieosi\u0105galny (normal wymaga Dystans + 0,5\xD7Liczba_Miast \u2265 50). [PT]"
     }
   },
   budynki: {
@@ -19681,21 +20301,28 @@ var econ_params_default = {
       normal: 1,
       hard: 0,
       jednostka: "\xD7",
-      opis: "Mno\u017Cnik Mennicy (Handel\u2192Pieni\u0105dz). Docelowo \xD71,5\u2013\xD72,0 po upgrade. [PT]"
+      opis: "NIEU\u017BYWANE (decyzja Maciej 2026-07-25) \u2014 by\u0142o ju\u017C martwe wcze\u015Bniej (\u017Caden kod go nie konsumowa\u0142). Efekt Mennicy jest teraz w ca\u0142o\u015Bci opisany przez globalne.mennica_mnoznik_po_walucie (jeden mno\u017Cnik na ca\u0142y Handel netto, aktywny gdy Waluta odkryta ORAZ Mennica zbudowana). Zostawione tylko dla zgodno\u015Bci starych zapis\xF3w/narz\u0119dzi \u2014 kod (economy.ts, turn-economy.ts) go ju\u017C nie czyta."
     },
     budynek_biblioteka_bonus_nauki: {
-      easy: 0.62,
-      normal: 0.5,
-      hard: 0.38,
-      jednostka: "%",
-      opis: "Premia Biblioteki do Nauki lokalnie (+50%). [PT \u2014 do strojenia]"
+      easy: 0.37,
+      normal: 0.3,
+      hard: 0.23,
+      jednostka: "u\u0142amek \u2014 premia do Nauki miasta (0,30 = +30% Nauki tego miasta na tur\u0119)",
+      opis: 'Premia Biblioteki do Nauki miasta. Obni\u017Cona +50% \u2192 +30% (normalny) decyzj\u0105 Maciej 2026-07-25 (PYTANIE 75 = C). Pow\xF3d: dot\u0105d ta\u0144sza i wcze\u015Bniejsza Biblioteka dawa\u0142a PI\u0118CIOKROTNIE wi\u0119cej ni\u017C dro\u017Csza Akademia (+50% vs +10%) \u2014 logika by\u0142a odwr\xF3cona. Skalowanie trudno\u015Bci\u0105 w konwencji pliku (\u0142atwy \xD71,24 / trudny \xD70,76). Stackuje ADDYTYWNIE z premi\u0105 Akademii: Nauka \xD7 (1 + premia Biblioteki + premia Akademii) = \xD71,50 na normalnym przy obu budynkach (Biblioteka i Akademia to para \u201Ew bok" \u2014 stoj\u0105 obok siebie, \u017Cadna nie zast\u0119puje drugiej).'
+    },
+    budynek_akademia_bonus_nauki: {
+      easy: 0.25,
+      normal: 0.2,
+      hard: 0.15,
+      jednostka: "u\u0142amek \u2014 premia do Nauki miasta (0,20 = +20% Nauki tego miasta na tur\u0119)",
+      opis: "Premia Akademii do Nauki miasta. Podniesiona +10% \u2192 +20% (normalny) decyzj\u0105 Maciej 2026-07-25 (PYTANIE 75 = C) i obj\u0119ta skalowaniem trudno\u015Bci\u0105 (\u0142atwy \xD71,24 / trudny \xD70,76), kt\xF3rego wcze\u015Bniej nie mia\u0142a. Pow\xF3d: Akademia jest dro\u017Csza i p\xF3\u017Aniejsza od Biblioteki, wi\u0119c musi dawa\u0107 wyra\u017Anie mniej ni\u017C Biblioteka tylko dlatego, \u017Ce jest drugim krokiem \u2014 a nie pi\u0119ciokrotnie mniej. Stackuje ADDYTYWNIE z premi\u0105 Biblioteki: Nauka \xD7 (1 + 0,30 + 0,20) = \xD71,50 na normalnym."
     },
     waluta_mnoznik: {
       easy: 2,
       normal: 2,
       hard: 2,
       jednostka: "\xD7",
-      opis: "Efekt 1 (Waluta tech): mnoznik na caly handelNetto miasta gdy walutaOdkryta=true (\xD72 na cala pule Handlu przed podzialem). Dotyczy wszystkich miast automatycznie po wynalezieniu Waluty."
+      opis: "NIEU\u017BYWANE (decyzja Maciej 2026-07-25): dawny Efekt 1 'sam tech Waluty odkryty \u2192 \xD72 na ca\u0142y Handel netto, bez wymogu Mennicy, jednakowo na wszystkich trudno\u015Bciach' \u2014 ZAST\u0104PIONY przez globalne.mennica_mnoznik_po_walucie (wymaga Waluty ORAZ Mennicy zbudowanej w mie\u015Bcie; warto\u015B\u0107 r\xF3\u017Cna per trudno\u015B\u0107: easy \xD72 / normal \xD71,5 / hard \xD71 czyli brak efektu). Zostawione tylko dla zgodno\u015Bci starych zapis\xF3w/narz\u0119dzi \u2014 kod (economy.ts, turn-economy.ts) go ju\u017C nie czyta w formule Efektu 1."
     },
     targowisko_praca_na_pieniadz_mnoznik: {
       easy: 2,
@@ -19737,7 +20364,7 @@ var econ_params_default = {
       normal: 1,
       hard: 2,
       jednostka: "Pieni\u0105dz/tur\u0119",
-      opis: "Koszt utrzymania ka\u017Cdego budynku (niezr\xF3\u017Cnicowany w v0.1). [PT]"
+      opis: "Domy\u015Blna stawka utrzymania TYLKO dla budynku bez w\u0142asnego wpisu `utrzymanie` w buildings.json. Od 2026-07-25 (decyzja w\u0142a\u015Bciciela 19=A) silnik czyta utrzymanie z danych ka\u017Cdego budynku (0\u20135 Pieni\u0105dz/tur\u0119, zr\xF3\u017Cnicowane per budynek) \u2014 ta warto\u015B\u0107 NIE nadpisuje ich, jest wy\u0142\u0105cznie zabezpieczeniem na wypadek brakuj\u0105cego wpisu. Dzi\u015B wszystkie 39 budynk\xF3w maj\u0105 w\u0142asn\u0105 warto\u015B\u0107, wi\u0119c ta stawka faktycznie si\u0119 nie stosuje. [PT]"
     }
   },
   teren_mapa: {
@@ -19911,7 +20538,7 @@ var econ_params_default = {
       normal: 1.5,
       hard: 1,
       jednostka: "\xD7",
-      opis: "Mno\u017Cnik Mennicy (Handel\u2192Pieni\u0105dz) aktywny TYLKO gdy Mennica zbudowana ORAZ technologia Waluta odkryta w mie\u015Bcie. Warto\u015Bci w\u0142a\u015Bciciela (Q5=A, 2026-07-20): easy \xD72 / normal \xD71,5 / hard \xD71 (hard = bez bonusu, ale nie zeruje dochodu). Wcze\u015Bniej 1.88/1.5/1.12 mimo \u017Ce mennicaMnoznik by\u0142 zahardkodowany na 1 w turn-economy.ts (Mennica nic nie robi\u0142a) \u2014 naprawione E1 zadanie 1."
+      opis: "JEDYNY mno\u017Cnik Handlu netto (decyzja Maciej 2026-07-25, w\u0105tek 'scalenie mno\u017Cnik\xF3w'): mno\u017Cy CA\u0141Y handelNetto miasta (Skarb + Nauka + Zamo\u017Cno\u015B\u0107 razem, PRZED podzia\u0142em suwakiem) aktywny TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest zbudowana w tym mie\u015Bcie (bramka AND \u2014 sam tech Waluty ju\u017C NIE wystarcza). Warto\u015Bci w\u0142a\u015Bciciela: easy \xD72,0 / normal \xD71,5 / hard \xD71,0 (hard = brak efektu, nie zeruje dochodu). Poprzednio (do 2026-07-24) istnia\u0142y DWA osobne mno\u017Cniki: `budynki.waluta_mnoznik` (\xD72 na ca\u0142y Handel przy samym techu, bez Mennicy) + ten parametr (mno\u017Cy\u0142 TYLKO strumie\u0144 Pieni\u0105dza). Oba zosta\u0142y scalone w ten jeden efekt \u2014 `waluta_mnoznik` zostaje w pliku oznaczony jako nieu\u017Cywany."
     },
     luksus_przelicznik_zadowolenie: {
       easy: 4,
@@ -20012,6 +20639,13 @@ var econ_params_default = {
       hard: 1,
       jednostka: "pieniadz/ture",
       opis: "Handel E3: dolna podloga dochodu dystansowego -- aktywna trasa nigdy nie daje mniej niz to, nawet przy dystansie bliskim progowi max."
+    },
+    handel_ilosc_na_ture_na_szlak: {
+      easy: 4,
+      normal: 4,
+      hard: 4,
+      jednostka: "sztuk surowca na ture na jeden szlak handlowy",
+      opis: "Sufit przepustowosci WYMIANY SUROWCOW na pojedynczym szlaku handlowym (game/trade-routes.ts, dawny hardkod capacityPerRoutePerTurn=4, PLACEHOLDER, dlug techniczny TODO(econ-params) przeniesiony do danych bez zmiany wartosci): maksymalna ilosc JEDNEGO surowca, jaka JEDEN szlak moze przeniesc w JEDNA ture od cywilizacji z nadwyzka do cywilizacji z niedoborem. Ta sama wartosc na wszystkich trudnosciach (parametr geografii/gameplayu jednego szlaku, nie skalowania ekonomicznego trudnoscia) -- kalibrowana tak, by jeden szlak dowozil surowiec w tempie porownywalnym do WYDAJNOSCI JEDNEJ Cegielni (budynek_cegielnia_przepustowosc, fallback 3 szt./ture, converters.ts), a nie zalewal partnera handlowego ponad jego wlasna produkcje."
     }
   },
   handel_surowce: {
@@ -21248,47 +21882,12 @@ var society_params_default = {
       jednostka: "pkt Zadowolenia",
       opis: "Dodatkowa kara Sz gdy po podboju jednocze\u015Bnie obca kultura (<50%) i obca dominuj\u0105ca religia. [B-KULT-REL]"
     },
-    szczescie_kara_wysokie_podatki: {
-      easy: 0,
-      normal: -1,
-      hard: -2,
-      jednostka: "pkt/poziom",
-      opis: "Kara Zadowolenia za ka\u017Cdy poziom powy\u017Cej bazowej stawki podatkowej (wy\u017Csze podatki \u2192 gniew). [PT \u2014 do strojenia]"
-    },
-    szczescie_bonus_luksus_30: {
-      easy: 2,
-      normal: 1,
-      hard: 0,
-      jednostka: "pkt Sz",
-      opis: "Bonus Szcz\u0119\u015Bcia gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 (suwak handlu) \u2265 30% \u2014 niskie podatki. [B2-narzedzia-stabilizacji]"
-    },
-    szczescie_bonus_luksus_40: {
-      easy: 3,
-      normal: 2,
-      hard: 1,
-      jednostka: "pkt Sz",
-      opis: "Bonus Sz gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 (suwak handlu) \u2265 40%."
-    },
-    szczescie_bonus_luksus_50: {
-      easy: 4,
-      normal: 3,
-      hard: 2,
-      jednostka: "pkt Sz",
-      opis: "Bonus Sz gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 \u2265 50%."
-    },
-    szczescie_bonus_luksus_60: {
-      easy: 5,
-      normal: 4,
-      hard: 3,
-      jednostka: "pkt Sz",
-      opis: "Bonus Sz gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 \u2265 60%."
-    },
-    szczescie_bonus_luksus_70: {
-      easy: 6,
-      normal: 5,
-      hard: 4,
-      jednostka: "pkt Sz",
-      opis: "Bonus Sz gdy udzia\u0142 Zamo\u017Cno\u015B\u0107 \u2265 70% (max suwaka)."
+    szczescie_siatka_zamoznosc: {
+      easy: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      normal: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+      hard: [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7],
+      jednostka: "pkt Szcz\u0119\u015Bcia miasta/tur\u0119",
+      opis: "NOWA SIATKA (Maciej 2026-07-25, decyzja w\u0142a\u015Bciciela): co 10 punkt\xF3w procentowych udzia\u0142u Zamo\u017Cno\u015Bci w podziale Daniny netto (suwak handlu miasta) = 1 pkt Szcz\u0119\u015Bcia. Indeks tablicy = dziesi\u0105tka udzia\u0142u: 0=0\u20139%, 1=10\u201319%, 2=20\u201329%, \u2026 8=80\u201389%, 9=90\u2013100% (suwak si\u0119ga 100%, decyzja 72A). Warto\u015Bci ujemne w indeksach 0\u20131 (normal) i 0\u20132 (hard) to KARA za zbyt niski udzia\u0142 Zamo\u017Cno\u015Bci \u2014 nowo\u015B\u0107, celowa decyzja w\u0142a\u015Bciciela. Zast\u0119puje star\u0105, rzadk\u0105 siatk\u0119 (5 prog\xF3w co 10\u201320 pkt proc. od 30% wzwy\u017C, bez kary) i stary mechanizm szczescie_kara_wysokie_podatki (usuni\u0119ty 2026-07-25 \u2014 dublowa\u0142 kar\u0119 poni\u017Cej progu bazowego; nowa siatka mierzy to samo zjawisko w spos\xF3b ci\u0105g\u0142y na ca\u0142ym zakresie 0\u2013100%, patrz society-breakdown.ts:luksusHappinessBonus)."
     },
     szczescie_prog_bunt: {
       easy: 4,
@@ -21802,33 +22401,61 @@ var society_params_default = {
       jednostka: "jednostki",
       opis: "Max jednostek liczonych do Prawa (5 \u2192 PrawPct\u2248100%)."
     },
-    prawo_ratusz: {
-      easy: 8,
-      normal: 6,
-      hard: 4,
+    prawo_dom_starszyzny: {
+      easy: 36,
+      normal: 28,
+      hard: 22,
       jednostka: "pkt Prawa",
-      opis: "Bonus Prawa z Ratusza (gdy wpi\u0119ty w budynki)."
+      opis: "Bonus Prawa z Domu Starszyzny \u2014 administracja lokalna miast regionalnych, poziom 1 (Kamie\u0144); 50% warto\u015Bci Pa\u0142acu III (decyzja Macieja 2026-07-25, \u0142a\u0144cuch Dom Starszyzny \u2192 Dw\xF3r Zarz\u0105dcy \u2192 Pretorium, zast\u0119powanie jak Pa\u0142ac)."
+    },
+    prawo_dwor_zarzadcy: {
+      easy: 43,
+      normal: 33,
+      hard: 26,
+      jednostka: "pkt Prawa",
+      opis: "Bonus Prawa z Dworu Zarz\u0105dcy \u2014 administracja lokalna miast regionalnych, poziom 2 (Br\u0105z), zast\u0119puje Dom Starszyzny; 60% warto\u015Bci Pa\u0142acu III (decyzja Macieja 2026-07-25)."
     },
     prawo_pretorium: {
-      easy: 6,
-      normal: 5,
-      hard: 3,
+      easy: 50,
+      normal: 38,
+      hard: 31,
       jednostka: "pkt Prawa",
-      opis: "Bonus Prawa z Pretorium."
+      opis: "Bonus Prawa z Pretorium \u2014 70% warto\u015Bci Pa\u0142acu III (decyzja Macieja 2026-07-25, Pytanie 28)."
+    },
+    prawo_trybunal: {
+      easy: 22,
+      normal: 17,
+      hard: 13,
+      jednostka: "pkt Prawa",
+      opis: "Bonus Prawa z Trybuna\u0142u \u2014 dost\u0119pny wsz\u0119dzie (stolica i region), niezale\u017Cny od \u0142a\u0144cucha administracji lokalnej; 50% warto\u015Bci Dworu Zarz\u0105dcy (decyzja Macieja 2026-07-25). Wcze\u015Bniej Trybuna\u0142 w og\xF3le nie by\u0142 wpi\u0119ty w system Prawa (hasTrybunal nie istnia\u0142o)."
     },
     prawo_sad: {
-      easy: 6,
-      normal: 5,
-      hard: 3,
+      easy: 25,
+      normal: 19,
+      hard: 16,
       jednostka: "pkt Prawa",
-      opis: "Bonus Prawa z S\u0105du."
+      opis: "Bonus Prawa z S\u0105du \u2014 50% warto\u015Bci Pretorium (decyzja Macieja 2026-07-25, Pytanie 28)."
     },
     prawo_palac: {
       easy: 45,
       normal: 35,
       hard: 28,
       jednostka: "pkt Prawa",
-      opis: "Pa\u0142ac \u2014 g\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa (\u22481,75\xD7 jednostka garnizonu; PT 2026-07)."
+      opis: "Pa\u0142ac I \u2014 g\u0142\xF3wne \u017Ar\xF3d\u0142o Prawa (\u22481,75\xD7 jednostka garnizonu; PT 2026-07). Prawo z Pa\u0142acu ro\u015Bnie z tierem (decyzja Macieja 2026-07-25, Pytanie 27=A) \u2014 patrz prawo_palac_ii, prawo_palac_iii."
+    },
+    prawo_palac_ii: {
+      easy: 58,
+      normal: 45,
+      hard: 36,
+      jednostka: "pkt Prawa",
+      opis: "Pa\u0142ac II \u2014 Prawo ro\u015Bnie z tierem Pa\u0142acu (decyzja Macieja 2026-07-25, Pytanie 27=A)."
+    },
+    prawo_palac_iii: {
+      easy: 71,
+      normal: 55,
+      hard: 44,
+      jednostka: "pkt Prawa",
+      opis: "Pa\u0142ac III \u2014 Prawo ro\u015Bnie z tierem Pa\u0142acu; Pretorium = 70% tej warto\u015Bci (decyzja Macieja 2026-07-25, Pytania 27=A i 28)."
     },
     prawo_kara_brak_garnizonu: {
       easy: -1,
@@ -22162,7 +22789,7 @@ var wonders_default = {
         ],
         specjalne: [
           { typ: "magazyn_pojemnosc", wartosc: 6, opis: "+6 pojemno\u015B\u0107 handlu/surowc\xF3w (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z tras handlowych (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 5, opis: "+5 Wp\u0142ywu \u2014 karawany Nabatejczyk\xF3w (cywilizacja)" }
         ]
       }
@@ -22202,7 +22829,7 @@ var wonders_default = {
           { typTerenu: "laka", kultura: 2, warunek: "hex_sasiad_wybrzeze" }
         ],
         specjalne: [
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.15, opis: "+15% Pieni\u0105dza z handlu morskiego (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych morskich (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 3, opis: "+3 Wp\u0142ywu (cywilizacja)" }
         ]
       },
@@ -22224,7 +22851,7 @@ var wonders_default = {
         miasto: { pieniadz: 3, kultura: 3 },
         specjalne: [
           { typ: "magazyn_pojemnosc", wartosc: 8, opis: "+8 pojemno\u015B\u0107 surowc\xF3w / trade capacity (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.2, opis: "+20% Pieni\u0105dza z port\xF3w (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.2, opis: "+20% Handlu \u2014 dochodu z tras handlowych morskich, korzystaj\u0105cych z port\xF3w (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 6, opis: "+6 Wp\u0142ywu \u2014 Rhodos, w\u0119ze\u0142 morski (cywilizacja)" }
         ]
       }
@@ -22396,7 +23023,7 @@ var wonders_default = {
         miasto: { kultura: 3, pieniadz: 3 },
         specjalne: [
           { typ: "wojna_wsparcie", wartosc: 3, opis: "+3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z tras handlowych (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 10, opis: "+10 Wp\u0142ywu \u2014 satrapie i go\u015Bcie narod\xF3w (cywilizacja)" },
           { typ: "relacje_zaufanie", wartosc: 3, opis: "+3 Zaufanie u pa\u0144stw z aktywnym handlem (cywilizacja)" }
         ]
@@ -22419,7 +23046,7 @@ var wonders_default = {
         miasto: { kultura: 3, zadowolenie: 3, pieniadz: 3 },
         specjalne: [
           { typ: "dyplomacja_wp\u0142yw", wartosc: 12, opis: "+12 Wp\u0142ywu \u2014 cesarski dw\xF3r Chang'an (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z handlu (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "relacje_zaufanie", wartosc: 4, opis: "+4 bazowe Zaufanie (cywilizacja)" }
         ]
       },
@@ -22939,8 +23566,8 @@ function applyWonderCityYields(yld, bonus) {
   if (bonus.praca) yld.praca += bonus.praca;
 }
 function civDisplayNameForKey(civKey, civs) {
-  var _a10;
-  if (!civKey || !((_a10 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a10.length)) return null;
+  var _a9;
+  if (!civKey || !((_a9 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a9.length)) return null;
   const key = civKey.toLowerCase();
   for (const row of civs.cywilizacje) {
     if (!row) continue;
@@ -22949,8 +23576,8 @@ function civDisplayNameForKey(civKey, civs) {
   }
   return null;
 }
-function religionTradeWalutaOverride(cityReligion, ownerCivKey, builtIds, walutaOdkryta, civs, societyParams, difficulty) {
-  if (!walutaOdkryta || !builtIds.includes("mennica") || !cityReligion) return void 0;
+function religionTradeWalutaOverride(cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty) {
+  if (!walutaOdkryta || !maMennicaEmpireWide || !cityReligion) return void 0;
   const civName = civDisplayNameForKey(ownerCivKey, civs);
   if (!civName) return void 0;
   const rp = loadReligionParams(societyParams, difficulty);
@@ -22962,6 +23589,26 @@ function religionTradeWalutaOverride(cityReligion, ownerCivKey, builtIds, waluta
     true
   );
   return trade.applied ? trade.multiplier : void 0;
+}
+function ownersWithMennica(cities, builtByCity) {
+  const owners = /* @__PURE__ */ new Set();
+  for (const c of cities) {
+    if ((builtByCity.get(c.id) ?? []).includes("mennica")) owners.add(c.ownerId);
+  }
+  return owners;
+}
+function resolveWalutaMnoznikOverride(cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty, fallbackScaled) {
+  const religionOverride = religionTradeWalutaOverride(
+    cityReligion,
+    ownerCivKey,
+    maMennicaEmpireWide,
+    walutaOdkryta,
+    civs,
+    societyParams,
+    difficulty
+  );
+  if (religionOverride !== void 0) return religionOverride;
+  return mnoznikHandelPieniadzForCivByDifficulty(ownerCivKey, civs, difficulty, fallbackScaled);
 }
 function buildEconParams(data2, difficulty = "normal") {
   const raw = data2.econParams;
@@ -22989,10 +23636,14 @@ function buildEconParams(data2, difficulty = "normal") {
     budynekCegielniBonusPracy: num(bu, "budynek_cegielnia_bonus_pracy", 0.25),
     budynekTargowiskoBonusHandlu: num(bu, "budynek_targowisko_bonus_handlu", 0.5),
     budynekBibliotekaBonusNauki: num(bu, "budynek_biblioteka_bonus_nauki", 0.5),
+    budynekAkademiaBonusNauki: num(bu, "budynek_akademia_bonus_nauki", 0.1),
     budynekGarncarniaBonusZywnosci: num(bu, "budynek_garncarnia_bonus_zywnosci_lokalnie", 0.1),
     budynekMennicaMnoznik: num(bu, "budynek_mennica_mnoznik", 1),
+    // NIEUZYWANE 2026-07-25 (patrz economy.ts)
     mennicaMnoznikPoWalucie: num(gl, "mennica_mnoznik_po_walucie", 1.5),
+    // JEDYNY mnoznik Efektu 1 (Waluta+Mennica scalone)
     walutaMnoznik: num(bu, "waluta_mnoznik", 2),
+    // NIEUZYWANE 2026-07-25 (patrz economy.ts)
     targowiskoPracaMnoznik: num(bu, "targowisko_praca_na_pieniadz_mnoznik", 2),
     suwaakHandelNaukaDefault: num(em, "suwak_handel_nauka_domyslnie", 60),
     suwaakHandelPieniadz: num(em, "suwak_handel_pieniadz_domyslnie", 30),
@@ -23055,9 +23706,9 @@ function cityHasWaterAccess(city, map) {
     return s;
   })();
   function hexHasRiver(q, r) {
-    var _a10;
+    var _a9;
     const hex = map.hexes[`${q},${r}`];
-    if ((_a10 = hex == null ? void 0 : hex.rzeka) == null ? void 0 : _a10.obecna) return true;
+    if ((_a9 = hex == null ? void 0 : hex.rzeka) == null ? void 0 : _a9.obecna) return true;
     if (riverHexSet.has(`${q},${r}`)) return true;
     for (const [dq, dr] of HEX_NEIGHBORS2) {
       if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;
@@ -23259,11 +23910,11 @@ function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pa
 function getCityFood(city) {
   return readCityFoodBufferFromCity(city);
 }
-function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map()) {
-  var _a10;
+function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map(), resolveOwnerZlotoAccess = () => true) {
+  var _a9;
   const gameDifficulty = difficulty;
   const params = buildEconParams(data2, difficulty);
-  const noBuildings = [];
+  const buildingCatalog = data2.buildings;
   const territoryNodes = buildTerritoryNodesFromCities(cities);
   reconcileAllWorkedTiles(cities, territoryNodes);
   const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
@@ -23327,6 +23978,15 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     difficulty
   );
   const capitalSeen = /* @__PURE__ */ new Set();
+  const mennicaOwners = ownersWithMennica(cities, builtByCity);
+  const capitalCoordsByOwner = /* @__PURE__ */ new Map();
+  const cityCountByOwner = /* @__PURE__ */ new Map();
+  for (const c of cities) {
+    if (!capitalCoordsByOwner.has(c.ownerId)) {
+      capitalCoordsByOwner.set(c.ownerId, { q: c.q, r: c.r });
+    }
+    cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
+  }
   const result = {
     perCity: [],
     cities: 0,
@@ -23360,35 +24020,50 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     const walutaOdkryta = ownerTech.has("Waluta") || ownerTech.has("waluta");
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const walutaMnoznikOverride = religionTradeWalutaOverride(
+    const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
+    const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
+    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
-      builtIds,
+      maMennicaEmpireWide,
       walutaOdkryta,
       data2.civs,
       data2.societyParams,
-      difficulty
+      difficulty,
+      params.mennicaMnoznikPoWalucie
     );
     const ownerBonusy = ownerCivKey ? civBonusyForCivKey(ownerCivKey, data2.civs) : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    const capCoords = capitalCoordsByOwner.get(city.ownerId);
+    const dystansOdStolicy = isCapital || !capCoords ? 0 : hexDistance(city.q, city.r, capCoords.q, capCoords.r);
+    const liczbaWszystkichMiast = cityCountByOwner.get(city.ownerId) ?? 1;
+    const strataBazowa = corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params);
+    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
+    const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx = {
       wojskoZuzycieZywnosci: 0,
       // B5: wojsko → zapasy państwa (advanceEmpireFood)
-      strataFraction: 0,
-      // no distance-corruption tracking yet
+      strataFraction,
       maMlyn: builtIds.includes("mlyn"),
       maCegielnia: builtIds.includes("cegielnia"),
       maTargowisko: builtIds.includes("targowisko"),
       maBiblioteka: builtIds.includes("biblioteka"),
-      maMennica: builtIds.includes("mennica"),
-      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
-      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
-      mennicaMnoznik: builtIds.includes("mennica") && walutaOdkryta ? params.mennicaMnoznikPoWalucie : 1,
+      maAkademia: builtIds.includes("akademia"),
+      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
+      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
+      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
+      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
+      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
+      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
+      // maMennicaEmpireWide juz zawiera bramke dostepu do zlota -- gdy brak, false
+      // mimo ze budynek dalej stoi (nie jest burzony).
+      maMennica: maMennicaEmpireWide,
       walutaOdkryta,
-      // P1b: mnoznik Handel->Pieniadz gdy Waluta zbadana
+      // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
       walutaMnoznikOverride,
-      // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
+      // per-cyw skalowany trudnoscia (lub override religii)
       civHandelMult,
       // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,
@@ -23398,7 +24073,8 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: builtIds.filter((id) => id === "garncarnia").length
     };
-    const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
@@ -23421,7 +24097,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     city.wealthState = { poziom: wt.poziom, pula: wt.pula };
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
     const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
-    const udzialBudynki = (((_a10 = city.podzialPracy) == null ? void 0 : _a10.procentBudynki) ?? params.suwaakPracaBudynki) / 100;
+    const udzialBudynki = (((_a9 = city.podzialPracy) == null ? void 0 : _a9.procentBudynki) ?? params.suwaakPracaBudynki) / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
     if (ctx.maTargowisko && walutaOdkryta) {
       const pieniadzZPracyPoSplit = Math.floor(doPuli * params.targowiskoPracaMnoznik);
@@ -23635,6 +24311,7 @@ function createPlayerState() {
     zbadane: /* @__PURE__ */ new Set(),
     badana: null,
     playerResearchTargetId: null,
+    researchQueue: [],
     era: 1,
     pieniadzMnoznik: 1,
     tempoGry: "standardowa",
@@ -23799,8 +24476,19 @@ function researchStep(state, techs, gate, difficulty = "normal") {
       era: state.era
     });
     state.playerResearchTargetId = null;
-    const nextAvail = availableTechs(techs, state.zbadane, gate);
-    state.badana = nextAvail.length > 0 ? techId(nextAvail[0]) : null;
+    while (state.researchQueue.length > 0) {
+      const queuedId = state.researchQueue.shift();
+      if (state.zbadane.has(queuedId)) continue;
+      if (!targetAllowed(queuedId)) continue;
+      state.playerResearchTargetId = queuedId;
+      break;
+    }
+    if (state.playerResearchTargetId !== null) {
+      state.badana = state.playerResearchTargetId;
+    } else {
+      const nextAvail = availableTechs(techs, state.zbadane, gate);
+      state.badana = nextAvail.length > 0 ? techId(nextAvail[0]) : null;
+    }
   }
   return { completed, badana: state.badana };
 }
@@ -23871,8 +24559,9 @@ var combat_params_default = {
     bonusObronaBrzegu: 0.15
   },
   obl\u0119\u017Cenie: {
-    wall_base_obrona: 5,
-    wall_per_level_obrona: 3,
+    _opis: "wall_base_obrona / wall_per_level_obrona ZEROWANE (Maciej 2026-07-25): obrona miasta dziala WYLACZNIE procentowo (miasto-params.json bonus_obrona_mur_proc=200 / bonus_obrona_cytadela_proc=100, konsumowane przez main.ts structureDefenseBonusFor + combat.ts structureDefBonusPct + battleScene onWallWalkway). Plaski bonus Obrony/Pancerza z muru w game/siege.ts (cityDefenseBonus) dublowal ten procent -- zneutralizowany tutaj zamiast w kodzie, zeby wallLevel/hasWalls (obecnosc muru) nadal dzialaly bez zmian. Pola zostawione (nie usuniete) dla zgodnosci z SiegeParams/wallParamsFromBuildings.",
+    wall_base_obrona: 0,
+    wall_per_level_obrona: 0,
     wall_max_level: 10,
     wall_pancerz_fraction: 0.5,
     hill_defense_mult: 1.5,
@@ -23923,9 +24612,9 @@ var MILITIA_POP_FRACTION = OBL.militia_pop_fraction;
 var MILITIA_STRENGTH_FRACTION = OBL.militia_strength_fraction;
 var SIEGE_MAX_ROUNDS = OBL.siege_max_rounds;
 function wallParamsFromBuildings(buildings) {
-  var _a10, _b3;
+  var _a9, _b3;
   const mury = buildings.find((b) => b && b.id === "mury");
-  const base = (_a10 = mury == null ? void 0 : mury.baza) == null ? void 0 : _a10.obrona;
+  const base = (_a9 = mury == null ? void 0 : mury.baza) == null ? void 0 : _a9.obrona;
   const per = (_b3 = mury == null ? void 0 : mury.przyrost) == null ? void 0 : _b3.obrona;
   return {
     wallBaseObrona: typeof base === "number" ? base : WALL_BASE_OBRONA,
@@ -23949,7 +24638,7 @@ function cityDefenseBonus(city, params = {}) {
   const fortifyBonus = params.fortifyObronaBonus ?? FORTIFY_OBRONA_BONUS;
   const hasWalls = city.hasWalls ?? city.wallLevel > 0;
   const level = hasWalls ? Math.max(1, Math.min(WALL_MAX_LEVEL, city.wallLevel || 1)) : 0;
-  const wallObrona = hasWalls ? Math.round(buildingEffectAtLevel(wallBase, level)) : 0;
+  const wallObrona = hasWalls ? Math.round(buildingEffectAtLevel(wallBase, wallPer, level)) : 0;
   const wallPancerz = Math.round(wallObrona * wallPancFrac);
   const fortify = city.fortified ? fortifyBonus : 0;
   const terrainMult = terrainDefenseMult(city.terrain ?? "", hillMult, mtnMult);

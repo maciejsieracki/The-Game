@@ -22,7 +22,7 @@
 ## Wiki‑M
 
 ### Co robi
-Pretorium wzmacnia miasto w kategorii **Administracja**. Poziom 1: **+2 pracy** (+1 na poziom), **+3 złota** (+2 na poziom), **+1 pkt szczęścia** (+1 na poziom), **+2 obrony** (+1 na poziom), **+5 % mnożnika handlu** (+2 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
+Pretorium wzmacnia miasto w kategorii **Administracja**. Poziom 1: **+2 pracy** (+1 na poziom), **+3 złota** (+2 na poziom), **+1 pkt szczęścia** (+1 na poziom), **+2 obrony** (+1 na poziom), **+5 % mnożnika Daniny** (+2 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 75 pracy
 - **Każdy kolejny poziom:** +15 pracy
@@ -46,9 +46,9 @@ Buduj **przed** przekroczeniem progu zagęszczenia (pop > 4) lub po podboju obce
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 75 | **8 tur** | +2 pracy, +3 złota, +1 pkt szczęścia, +2 obrony, +5 % mnożnika handlu | 3 ¤/t |
+| Poziom 1 | 75 | **8 tur** | +2 pracy, +3 złota, +1 pkt szczęścia, +2 obrony, +5 % mnożnika Daniny | 3 ¤/t |
 | Poziom 2 | 90 | **9 tur** | więcej (patrz niżej) | 3 ¤/t |
-| Poziom 3 | 105 | — | **+4 pracy, +7 złota, +3 pkt szczęścia, +4 obrony, +9 % mnożnika handlu** | 3 ¤/t |
+| Poziom 3 | 105 | — | **+4 pracy, +7 złota, +3 pkt szczęścia, +4 obrony, +9 % mnożnika Daniny** | 3 ¤/t |
 
 Przy +3 złota/t, utrzymanie 3 ¤/t → netto **+0 ¤/t**. Koszt 75 pracy przy 10/t ≈ **8 tur** pracy — złotem „zwraca się" po ok. **75 tur** (uproszczenie, bez inflacji).
 

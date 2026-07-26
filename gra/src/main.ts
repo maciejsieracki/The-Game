@@ -98,8 +98,10 @@ import {
   getWondersData,
   sumWonderCityYieldsForOwner,
   hasAnyWonderCityYield,
+  sumWonderTradeRouteBonusForOwner,
   type WonderDef,
   type WonderYieldBonus,
+  type WonderTradeRouteMedium,
 } from './game/wonders-data';
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
@@ -125,7 +127,7 @@ import {
 } from './game/diplomacy-layers';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch } from './game/owner-epoch';
-import { cityHasPalacLine } from './game/building-upgrades';
+import { cityPalacTier } from './game/building-upgrades';
 import {
   evaluateOrderFromBreakdown,
   updateRevoltGrace,
@@ -245,24 +247,32 @@ import {
   computeTradeRouteResourceGrants,
   hasTradeRouteResourceAccess,
   firstTradeRouteResourceGrant,
+  TRADE_ROUTE_RESOURCE_KEYS,
   loadTradeRouteParams,
   loadTradeRouteIncomeParams,
   diffTradeRoutes,
   findCityConnection,
   tradeRouteDistanceIncome,
   citiesHaveTradeConnection,
+  computeTradeRouteResourceFlow,
+  loadTradeRouteResourceFlowParams,
   type TradeRoute,
   type TradeRouteCityRef,
   type TradeRouteParams,
   type TradeRouteIncomeParams,
   type TradeRouteResourceGrant,
   type TradeRouteResourceKey,
+  type TradeRouteStockFlowResourceKey,
 } from './game/trade-routes';
 import {
   empireHasKopalniaMiedzi,
   cityHasPiecHutniczy,
   KOPALNIA_MIEDZI_KEY,
 } from './game/braz-access';
+import {
+  empireHasKopalniaZlota,
+  placedImprovementsWithZlotoTradeGrant,
+} from './game/zloto-access';
 import { computeEmpireLivestockUnlocks } from './game/livestock-unlock';
 import {
   createPlayerState,
@@ -405,7 +415,7 @@ import { buildWioska, buildObozBarbarzyncow, WIOSKA_OBOZ_LAYOUT } from './render
 // GRAFIKA-TEREN-2: tarasy = wzgórze (wariant 0/3) + schodkowe półki NA garbie (nie mini-dysk w sektorze).
 import { buildWzgorze, rotacjaDlaHeksa } from './render/teren-gory-wzgorza';
 import { buildTarasy, tarasyWariantDlaHeksa } from './render/tarasy-model';
-import { foodLayerFromAnimalDeposit, improvementKeysForHex } from './game/terrain-improvements';
+import { foodLayerFromAnimalDeposit, improvementKeysForHex, normalizeImprovementKey } from './game/terrain-improvements';
 import { isLivestockAllowed } from './game/livestock-unlock';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
@@ -449,12 +459,19 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, availableProduction, availableReplacementsFor,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
+  buildingUnlockFlagFor,
   type CityProduction, type AvailabilityContext } from './game/production';
+import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
 import {
   buildingStockCost, unitStockCost, canAffordBuildingStock,
   ownerResourceStockAll, deductBuildingStockCostAcrossCities, creditOwnerResourceStock,
 } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
+import {
+  bestBuildingProgressAfterCityVisit, buildingProgressWouldChange,
+  unitPancerzBonusFrac, unitParametryBonusFrac, unitBuildingBonusLabel,
+} from './game/unit-building-bonuses';
+import { cityWallDefenseBonusPercent } from './game/city-defense';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
   type TradeGoodEntry,
@@ -629,6 +646,7 @@ import { showNewGameFlow, hideNewGameFlow, isNewGameFlowOpen, type NewGameParams
 import type { TempoGry } from './game/tech-tempo';
 import type { GameDifficulty } from './game/difficulty-cost';
 import { scaledResearchCost } from './game/difficulty-cost';
+import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel } from './game/veteran';
 import {
   showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
   type DiploRelation, type KnownWarBetweenCivs, type DiplomacyPanelConfig,
@@ -1902,6 +1920,19 @@ async function boot(): Promise<void> {
       return sumWonderCityYieldsForOwner(wonderIdsOwnedBy(ownerId), empireEpochForOwner(ownerId));
     }
 
+    /**
+     * CUDA-HANDEL-01 (Maciej 2026-07-26): suma % bonusu "handel_procent" cudów
+     * właściciela dla dane medium trasy (0 gdy brak) — resolver wstrzyknięty do
+     * computeTradeRouteIncomeByCity (trade-routes.ts) i do liczenia chipu HUD
+     * "Handel". OwnerId-agnostyczny (parytet AI, patrz wonders-data.ts nagłówek
+     * sekcji CUDA-HANDEL-01) — gracz i AI liczeni identycznie.
+     */
+    function wonderTradeRouteBonusForOwner(ownerId: number, medium: WonderTradeRouteMedium): number {
+      return sumWonderTradeRouteBonusForOwner(
+        wonderIdsOwnedBy(ownerId), empireEpochForOwner(ownerId), medium,
+      );
+    }
+
     /** Mapa ownerId -> suma bonusy.miasto, do previewCityEconomy/advanceCityEconomy. */
     function buildWonderCityYieldsByOwnerMap(ownerIds: Iterable<number>): Map<number, WonderYieldBonus> {
       const out = new Map<number, WonderYieldBonus>();
@@ -2015,7 +2046,11 @@ async function boot(): Promise<void> {
       if (completed.kind === 'budynek') {
         const blt = cityBuilt.get(cityId) ?? [];
         cityBuilt.set(cityId, applyCompletedBuildingIds(blt, completed.id, data.buildings));
-        if (completed.id === 'mury' || completed.id === 'fort') city.maMur = true;
+        // Decyzja 55B ("odblokowuje ozywic"): flaga City czytana z danych
+        // (buildings.json pole `odblokowuje`), nie z hardkodu id. Patrz
+        // buildingUnlockFlagFor (game/production.ts) po analize regresji 'fort'.
+        const unlockFlag = buildingUnlockFlagFor(completed.id, data.buildings);
+        if (unlockFlag) (city as unknown as Record<string, boolean>)[unlockFlag] = true;
         if (completed.id === 'spichlerz' && city.ownerId === 0) updateHud();
         console.log(`[Produkcja] Tura ${turn} ${city.name}: budynek ${completed.id}`);
         return { prod: prodAfterAdvance };
@@ -2043,6 +2078,12 @@ async function boot(): Promise<void> {
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
       const newUnitId = 'prod_' + turn + '_' + cityId + '_' + Math.random().toString(36).slice(2);
+      // Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts): jednostka
+      // rodzi sie juz na poziomie budynkow miasta, w ktorym powstala (Pancerz/
+      // parametry miekkie); ownerId-agnostyczne -- dziala identycznie dla gracza i AI.
+      const birthProgress = bestBuildingProgressAfterCityVisit(
+        undefined, cityBuilt.get(cityId), data.buildings,
+      );
       units.push({
         id: newUnitId,
         ownerId: city.ownerId,
@@ -2052,6 +2093,8 @@ async function boot(): Promise<void> {
         r: city.r,
         ruch,
         ruchLeft: 0,
+        pancerzBonusProc: birthProgress.pancerzBonusProc,
+        parametryBonusProc: birthProgress.parametryBonusProc,
       });
       maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
       if (city.ownerId === 0) {
@@ -2448,13 +2491,32 @@ async function boot(): Promise<void> {
     }
 
     // -------------------------------------------------------------------
-    // Temat #4 (Handel E3b): dostęp do surowca civ-wide (braz/zelazo/kon)
+    // Temat #4 (Handel E3b): dostęp do surowca civ-wide (braz/zelazo/kon/cegla)
     // przez trasę handlową — patrz trade-routes.ts computeTradeRouteResourceGrants
     // dla architektury (liczone na bieżąco, nie zapisywane).
     // -------------------------------------------------------------------
 
     /** Klucz syntetycznego wpisu — patrz placedImprovementsWithBrazTradeGrant. */
     const TRADE_GRANT_BRAZ_SYNTHETIC_KEY = '__trasa_braz__';
+
+    /**
+     * Empire-wide: czy WŁASNE terytorium ownera ma Gliniankę (źródło Gliny do Cegielni),
+     * gdziekolwiek w imperium — analogicznie do empireHasKopalniaMiedzi (braz-access.ts)
+     * dla brązu. Glinianka może stanąć WYŁĄCZNIE na złożu Gliny (improvement-build.ts,
+     * case 'glinianka'), więc sama obecność klucza ulepszenia wystarcza — bez potrzeby
+     * osobnego odczytu `zloze` pod spodem (jak przy Kopalni, gdzie jeden typ ulepszenia
+     * obsługuje kilka złóż).
+     */
+    function empireHasGlinianka(
+      placedImprovements: ReadonlyMap<string, PlacedLayers>,
+    ): boolean {
+      for (const layers of placedImprovements.values()) {
+        for (const raw of layers) {
+          if (normalizeImprovementKey(raw) === 'glinianka') return true;
+        }
+      }
+      return false;
+    }
 
     /**
      * Czy WŁASNE imperium ownera ma dostęp do `key` BEZ handlu — wejście do
@@ -2478,6 +2540,19 @@ async function boot(): Promise<void> {
           if (c.ownerId === ownerId && hasZelazoAccess(hasKopalniaZelazo, cityBuilt.get(c.id) ?? [])) return true;
         }
         return false;
+      }
+      if (key === 'cegla') {
+        if (!empireHasGlinianka(ownImprovements)) return false;
+        for (const c of cities) {
+          if (c.ownerId === ownerId && (cityBuilt.get(c.id) ?? []).includes('cegielnia')) return true;
+        }
+        return false;
+      }
+      if (key === 'zloto') {
+        // Złoto (PYTANIE 77=A): sama Kopalnia złota gdziekolwiek w imperium wystarcza —
+        // bez dodatkowego budynku "hutniczego", inaczej niż braz/zelazo/cegla wyżej
+        // (patrz nagłówek zloto-access.ts: "wystarczy tylko dostęp").
+        return empireHasKopalniaZlota(ownImprovements);
       }
       // 'kon'
       return computeEmpireLivestockUnlocks(ownImprovements, map, String(ownerId)).has('kon');
@@ -2509,6 +2584,64 @@ async function boot(): Promise<void> {
       const augmented = new Map(ownImprovements);
       augmented.set(TRADE_GRANT_BRAZ_SYNTHETIC_KEY, [KOPALNIA_MIEDZI_KEY]);
       return augmented;
+    }
+
+    /**
+     * Doklejа OBA syntetyczne granty "z trasy" naraz — brąz (placedImprovementsWithBrazTradeGrant
+     * wyżej) i złoto (placedImprovementsWithZlotoTradeGrant, zloto-access.ts) — w JEDNYM miejscu
+     * zamiast wołać dwie funkcje osobno w każdym z 8 miejsc budujących AvailabilityContext /
+     * placedImprovements (audyt PYTANIE 77=A, domknięcie wpięcia 2026-07-25). Bezpieczne przez
+     * prostą kompozycję: obie funkcje augmentujące pracują na KOPII mapy pod własnym, różnym
+     * syntetycznym kluczem (TRADE_GRANT_BRAZ_SYNTHETIC_KEY vs TRADE_GRANT_ZLOTO_SYNTHETIC_KEY) —
+     * żadnej kolizji, żadnej wiedzy jednej funkcji o drugiej. Gdy żaden grant nie jest aktywny,
+     * zwraca DOKŁADNIE `ownImprovements` bez żadnej kopii (obie funkcje mają ten sam early-return).
+     */
+    function placedImprovementsWithTradeGrants(
+      ownerId: number,
+      ownImprovements: Map<string, PlacedLayers>,
+    ): ReadonlyMap<string, string | readonly string[]> {
+      const withBraz = placedImprovementsWithBrazTradeGrant(ownerId, ownImprovements);
+      const hasZlotoGrant = hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'zloto');
+      return placedImprovementsWithZlotoTradeGrant(withBraz, hasZlotoGrant);
+    }
+
+    /**
+     * PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie
+     * dostępu do złota." Dostęp AKTUALNY = własna Kopalnia złota gdziekolwiek w
+     * imperium (ownerHasNativeResourceAccess, 'zloto') ALBO aktywny grant "z
+     * trasy" (hasTradeRouteResourceAccess, tradeRouteResourceGrants — ten sam
+     * stan przeliczany co turę przez recomputeTradeRouteResourceGrants). Czyste
+     * OR — dokładnie ten sam warunek, który dziś odblokowuje BUDOWĘ Mennicy
+     * (building-resource-gate.ts), tylko tu decyduje o tym, czy Mennica JUŻ
+     * ZBUDOWANA nadal działa. Zero gałęzi po ownerId — parytet AI z definicji
+     * (obie wołane funkcje są już ownerId-agnostyczne).
+     */
+    function ownerHasZlotoAccessNow(ownerId: number): boolean {
+      return ownerHasNativeResourceAccess(ownerId, 'zloto')
+        || hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'zloto');
+    }
+
+    /**
+     * Resolver "dostęp do złota" MEMOIZOWANY per owner — do wpięcia w
+     * advanceCityEconomy/previewCityEconomy (turn-economy.ts), które wołają go
+     * RAZ per miasto ale chcemy policzyć realnie tylko RAZ per właściciela na
+     * tick (ownerHasZlotoAccessNow skanuje placedImprovements całego imperium —
+     * kosztowne, żeby liczyć je ponownie dla każdego miasta tej samej cywilizacji).
+     * Ten sam wzorzec cache co ownerResourceCapFor w turn-economy.ts. Nowy Map
+     * TWORZONY PRZY KAŻDYM WYWOŁANIU tej fabryki — wołający ma wywołać ją raz na
+     * początku tury/przeliczenia HUD, nie trzymać jednej instancji między turami
+     * (stan mógłby się zestarzeć po zerwaniu szlaku/utracie kopalni).
+     */
+    function makeOwnerZlotoAccessResolver(): (ownerId: number) => boolean {
+      const cache = new Map<number, boolean>();
+      return (ownerId: number): boolean => {
+        let v = cache.get(ownerId);
+        if (v === undefined) {
+          v = ownerHasZlotoAccessNow(ownerId);
+          cache.set(ownerId, v);
+        }
+        return v;
+      };
     }
 
     /** empireHasKopalniaNaZlozuZelaza własne LUB grant "z trasy" na zelazo. */
@@ -2845,6 +2978,33 @@ async function boot(): Promise<void> {
       return raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
+    /**
+     * Decyzja 81=A (2026-07-25): etykieta Danina/Podatek DLA TEGO KONKRETNEGO
+     * HEKSU -- wg WLASCICIELA TERYTORIUM (territoryOwnerAtLive), nie gracza
+     * patrzacego. Ten sam wzorzec liczenia jak buildEmpireTradeSnap (ok. linii
+     * 7719): stolica ownera (capitalCityIdForOwner) + jego odkryte technologie
+     * (unlockedTechsForOwner) + jego AKTUALNY dostep do zlota
+     * (ownerHasZlotoAccessNow) -- jedna sciezka liczenia bramki, zeby panel
+     * miasta i tooltip heksu nigdy nie rozjechaly sie w odpowiedzi na to samo
+     * pytanie (dokladnie ten rozjazd juz raz naprawialismy przy mnozniku
+     * cywilizacyjnym).
+     * Heks NICZYJ (poza terytorium kazdej cywilizacji) -> brak wlasciciela,
+     * bramka nie ma czego sprawdzic -> zawsze "Danina" (jawnie, nie tylko
+     * przez fallback domyslny w tooltipie).
+     * Reszta tooltipa (rozbicie plonow) juz dzis pokazuje pelne dane dla
+     * DOWOLNEGO heksu, w tym obcego/wrogiego, bez ukrywania -- wiec etykieta
+     * rowniez pokazuje realny stan WLASCICIELA heksu (parytet z reszta panelu,
+     * nie stan gracza patrzacego).
+     */
+    function hexDaninaLabelAt(q: number, r: number): 'Danina' | 'Podatek' {
+      const ownerId = territoryOwnerAtLive(q, r);
+      if (ownerId === null) return 'Danina';
+      const capId = capitalCityIdForOwner(ownerId);
+      const walutaOdkryta = unlockedTechsForOwner(ownerId).includes('Waluta');
+      const hasMennicaWStolicy = mennicaWStolicy(capId, capId ? cityBuilt.get(capId) : undefined);
+      return resolveDaninaLabel(walutaOdkryta, hasMennicaWStolicy, ownerHasZlotoAccessNow(ownerId));
+    }
+
     /** D17=A: panel kontekstowy — pole mapy + opcjonalnie jednostka na tym heksie. */
     function buildHexContextPanelMessage(): string | null {
       if (!isWorldMapUnitMode() || lastBHex === null) return null;
@@ -2858,6 +3018,7 @@ async function boot(): Promise<void> {
         cityName: cityOn?.name ?? null,
         cityIsCityState: cityOn != null && cityOn.ownerId !== 0 && !!cityOn.startCityState,
         currentEra: player.era,
+        daninaLabel: hexDaninaLabelAt(lastBHex.q, lastBHex.r),
         esc: hudHtmlEsc,
       });
     }
@@ -2880,6 +3041,8 @@ async function boot(): Promise<void> {
         maxHp: unitHealth(def),
         category: u.category,
         inGarnizon: u.inGarnizon,
+        buildingBonusLabel: unitBuildingBonusLabel(u),
+        veteranBadgeLabel: veteranBadgeLabel(veteranLevel(u)),
         esc: hudHtmlEsc,
       });
     }
@@ -3138,7 +3301,7 @@ async function boot(): Promise<void> {
         // Temat #4: grant "z trasy" dolicza się AND-owo (braz syntetycznie,
         // zelazo OR-em) — patrz placedImprovementsWithBrazTradeGrant/
         // hasKopalniaNaZlozuZelazaOrTradeGrant.
-        placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
+        placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
         // audyt #11: "Zastąp" nie może dać drugiej żywej Super-jednostka -- ta sama
         // bramka co productionCtxForCity (cityPanel.ts).
@@ -3166,7 +3329,7 @@ async function boot(): Promise<void> {
         builtBuildingIds: Array.from(builtUnion),
         civBonusy: civBonusyForOwnerId(0),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
-        placedImprovements: placedImprovementsWithBrazTradeGrant(0, ownImprovements),
+        placedImprovements: placedImprovementsWithTradeGrants(0, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(0, ownImprovements),
         // audyt #11: jak wyżej (replaceAvailabilityCtxForCity) — całe terytorium gracza.
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === 0).map(x => x.typeId)),
@@ -3587,7 +3750,7 @@ async function boot(): Promise<void> {
               kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
             },
             map,
-            placedImprovementsWithBrazTradeGrant(oid, ownImprovements),
+            placedImprovementsWithTradeGrants(oid, ownImprovements),
             empireEpochForOwner(oid),
             { builtIds, ownerId: String(oid), empireLivestockUnlocks },
           );
@@ -3599,6 +3762,9 @@ async function boot(): Promise<void> {
           if (brazSrc && access.active.includes('Brąz')) tradeSources['Brąz'] = brazSrc;
           const konSrc = tradeRouteResourceSourceLabel(oid, 'kon');
           if (konSrc && access.active.includes('Koń')) tradeSources['Koń'] = konSrc;
+          // PYTANIE 77=A: Złoto "z trasy" — identyczny wzorzec jak Brąz/Koń wyżej.
+          const zlotoSrc = tradeRouteResourceSourceLabel(oid, 'zloto');
+          if (zlotoSrc && access.active.includes('Złoto')) tradeSources['Złoto'] = zlotoSrc;
           return Object.keys(tradeSources).length ? { ...access, tradeSources } : access;
         },
         getEmpireResourceAccess: (ownerId: number) => empireActiveResourceLabelsForOwner(ownerId),
@@ -4096,7 +4262,7 @@ async function boot(): Promise<void> {
           epoch: empireEpochForOwner(city.ownerId),
           civBonusy: civBonusyForOwnerId(city.ownerId),
           civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-          placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
+          placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
           hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
           // Parytet z ręczną budową gracza (Maciej 2026-07-24): bramka B-SUROW-BUD dostaje te same
           // wejścia — aktywne źródła + budynki imperium + ZAPAS puli państwa (bramka spełniona zapasem).
@@ -4106,6 +4272,10 @@ async function boot(): Promise<void> {
           // TEMAT 8 Q2 (2026-07-24): parytet — Port/Port wielki dostają tu tę samą bramkę
           // wybrzeże/rzeka co ręczna budowa gracza (cityPanel.ts) i AI (main.ts cmd 'build').
           cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+          // ADMIN-STOLICA (2026-07-25): parytet — ta sama bramka stolica/region (Pałac vs
+          // Dom Starszyzny/Dwór Zarządcy/Pretorium) co ręczna budowa i AI, jedno źródło
+          // prawdy capitalCityIdForOwner (nie duplikat heurystyki turn-economy.ts).
+          isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
         },
       });
       if (!item) return null;
@@ -4895,6 +5065,34 @@ async function boot(): Promise<void> {
             showHintMessage(su.typeId + ' obudzony — wróg w polu widzenia!', 3000);
           }
         }
+      }
+    }
+
+    /**
+     * Ścieżki ulepszeń jednostek (2026-07-25, unit-building-bonuses.ts, wariant A
+     * właściciela): jednostka dostaje bonus Pancerza/parametrów miękkich NIE
+     * TYLKO przy wyprodukowaniu, ale też gdy WEJDZIE do miasta posiadającego
+     * dany budynek — liczy się najlepsze miasto, jakie kiedykolwiek odwiedziła.
+     * Zamiast łapać każdą ścieżkę ruchu (animowany marsz gracza, teleport AI,
+     * merge/split stosów, embarkacja…) osobno, sprawdzamy RAZ NA KONIEC KAŻDEJ
+     * TURY każdą jednostkę stojącą na heksie WŁASNEGO miasta — dokładnie tak
+     * samo jak wakeSentryUnitsOnEnemyContact() powyżej, z tym samym komentarzem
+     * "pozycje wszystkich jednostek (gracz + AI) są już finalne dla tej tury".
+     * CAŁKOWICIE ownerId-agnostyczne — PARYTET AI: brak gałęzi „tylko gracz",
+     * miasta-państwa i AI awansują swoje jednostki dokładnie tak samo.
+     */
+    function applyCityVisitBuildingBonuses(): void {
+      if (units.length === 0 || cities.length === 0) return;
+      // Miasto (q,r) -> City, żeby uniknąć O(units*cities) find() w pętli.
+      const cityByHex = new Map<string, City>();
+      for (const c of cities) cityByHex.set(keyOf(c.q, c.r), c);
+      for (const u of units) {
+        const c = cityByHex.get(keyOf(u.q, u.r));
+        if (!c || c.ownerId !== u.ownerId) continue;
+        if (!buildingProgressWouldChange(u, cityBuilt.get(c.id), data.buildings)) continue;
+        const next = bestBuildingProgressAfterCityVisit(u, cityBuilt.get(c.id), data.buildings);
+        u.pancerzBonusProc = next.pancerzBonusProc;
+        u.parametryBonusProc = next.parametryBonusProc;
       }
     }
 
@@ -7573,6 +7771,13 @@ async function boot(): Promise<void> {
      * refreshTradeRoutes) + dochód każdej + suma. Panel miasta (cityPanel.ts
      * buildTradeRoutesDetailCard) pokazuje to samo per-miasto; tu jest agregat.
      */
+    /** DYSPOZYCJA 85: etykiety PL surowców "z trasy" (trade-routes.ts TradeRouteResourceKey) —
+     *  wyłącznie do panelu Handel (empireDetailPanel.ts), nie dubluje LABEL_BY_ASCII
+     *  (building-resource-gate.ts), które nie zawiera 'kon'/'zloto'. */
+    const TRADE_ROUTE_RESOURCE_KEY_LABELS: Record<TradeRouteResourceKey, string> = {
+      braz: 'Brąz', zelazo: 'Żelazo', kon: 'Koń', cegla: 'Cegła', zloto: 'Złoto',
+    };
+
     function buildEmpireTradeSnap(): EmpireDetailSnap['trade'] {
       const incomeParams = loadTradeRouteIncomeParams(
         data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
@@ -7583,6 +7788,13 @@ async function boot(): Promise<void> {
         .map(r => {
           const myCity = cities.find(c => c.id === r.fromCityId);
           const partnerCity = cities.find(c => c.id === r.toCityId);
+          // CUDA-HANDEL-01 (2026-07-26) + DYSPOZYCJA 85: dochód pokazany w panelu Handel
+          // musi zgadzać się z realnym wpisem do skarbca I z chipem HUD „Handel"
+          // (ta sama formuła co niżej przy `handelIncome`, patrz komentarz tam) —
+          // inaczej trzy miejsca pokazywałyby trzy różne liczby dla tego samego dochodu.
+          const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
+          const base = tradeRouteDistanceIncome(r.dystans, incomeParams);
+          const income = bonus === 0 ? base : Math.floor(base * (1 + bonus));
           return {
             id: r.id,
             cityName: myCity?.name ?? r.fromCityId,
@@ -7590,12 +7802,38 @@ async function boot(): Promise<void> {
             partnerOwnerLabel: ownerDiploLabel(r.toOwnerId),
             medium: r.medium,
             dystans: r.dystans,
-            income: tradeRouteDistanceIncome(r.dystans, incomeParams),
+            income,
           };
         })
         .sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));
       const totalIncome = routes.reduce((s, r) => s + r.income, 0);
-      return { totalIncome, routes };
+      // Decyzje 65B/66B: panel imperium jest zawsze widokiem gracza (ownerId=0),
+      // wiec etykieta Danina/Podatek liczona jest dla ownerId=0 -- patrz
+      // EmpireTradeSnap.daninaLabel (empireDetailTypes.ts).
+      const playerCapitalId = capitalCityIdForOwner(0);
+      const walutaOdkrytaPlayer = unlockedTechsForOwner(0).includes('Waluta');
+      const daninaLbl = resolveDaninaLabel(
+        walutaOdkrytaPlayer,
+        mennicaWStolicy(playerCapitalId, playerCapitalId ? cityBuilt.get(playerCapitalId) : undefined),
+        // PYTANIE 83=B: nazwa wraca na "Danina" gdy gracz straci dostęp do złota.
+        ownerHasZlotoAccessNow(0),
+      );
+      // DYSPOZYCJA 85: bonus % cudów handel_procent gracza, osobno ląd/morze (foot panelu).
+      const wonderBonusLadPct = Math.round(wonderTradeRouteBonusForOwner(0, 'lad') * 100);
+      const wonderBonusMorzePct = Math.round(wonderTradeRouteBonusForOwner(0, 'morze') * 100);
+      // DYSPOZYCJA 85: surowce, do których gracz ma dostęp DZIĘKI aktywnej trasie —
+      // zebrane tu (panel Handel), USUNIĘTE z panelu miasta (patrz cityPanel.ts).
+      const resourceGrants: EmpireDetailSnap['trade']['resourceGrants'] = [];
+      for (const key of TRADE_ROUTE_RESOURCE_KEYS) {
+        const grant = firstTradeRouteResourceGrant(tradeRouteResourceGrants, 0, key);
+        if (!grant) continue;
+        resourceGrants.push({
+          resourceKey: key,
+          label: TRADE_ROUTE_RESOURCE_KEY_LABELS[key],
+          partnerLabel: ownerDiploLabel(grant.viaOwnerId),
+        });
+      }
+      return { totalIncome, routes, daninaLabel: daninaLbl, wonderBonusLadPct, wonderBonusMorzePct, resourceGrants };
     }
 
     function openEmpireDetailFromHud(section?: string): void {
@@ -7848,6 +8086,8 @@ async function boot(): Promise<void> {
         buildAllTerritoryNodes(),
         undefined,
         buildWonderCityYieldsByOwnerMap([0]),
+        // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — projekcja gracza.
+        makeOwnerZlotoAccessResolver(),
       );
       const cityFoods = preview.perCity
         .filter(tk => tk.ownerId === 0 && !tk.oblegany)
@@ -7898,6 +8138,8 @@ async function boot(): Promise<void> {
         buildAllTerritoryNodes(),
         undefined,
         buildWonderCityYieldsByOwnerMap([0]),
+        // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — HUD gracza.
+        makeOwnerZlotoAccessResolver(),
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
       _lastPracaRate = playerEcon.doPuli;
@@ -7980,7 +8222,11 @@ async function boot(): Promise<void> {
       let handelRouteCount = 0;
       for (const r of tradeRoutes) {
         if (r.status !== 'polaczony') continue;
-        handelIncome += tradeRouteDistanceIncome(r.dystans, handelIncomeParams);
+        // CUDA-HANDEL-01: chip HUD musi odzwierciedlać ten sam bonus % cudów, co
+        // realny wpis do skarbca (tradeIncomeByCity) — inaczej HUD i skarbiec by się rozjechały.
+        const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
+        const base = tradeRouteDistanceIncome(r.dystans, handelIncomeParams);
+        handelIncome += bonus === 0 ? base : Math.floor(base * (1 + bonus));
         handelRouteCount++;
       }
       return {
@@ -10043,9 +10289,12 @@ async function boot(): Promise<void> {
       getOwnerColor: civColorFn,
       getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
       getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
+      // PYTANIE 83=B: panel miasta musi patrzeć na dokładnie ten sam dostęp do
+      // złota co silnik (turn-economy.ts resolveOwnerZlotoAccess) -- jedna funkcja.
+      getOwnerHasZlotoAccess: (ownerId: number) => ownerHasZlotoAccessNow(ownerId),
       // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
       // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
-      getPlacedImprovements: () => placedImprovementsWithBrazTradeGrant(0, placedImprovementsForOwner(0)),
+      getPlacedImprovements: () => placedImprovementsWithTradeGrants(0, placedImprovementsForOwner(0)),
       getProduction: (cityId: string) => {
         const p = cityProd.get(cityId);
         return p ? { ...p, kolejka: [...p.kolejka] } : null;
@@ -11334,18 +11583,23 @@ async function boot(): Promise<void> {
 
     // Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25) -- data-driven z
     // miasto-params.json, nie hardkodowane. Mur = MUR_BONUS_PROC (200%); Cytadela
-    // (budynek 'fort', upgrade Murow) dodaje CYTADELA_BONUS_PROC (100%) PONAD mur,
-    // czyli miasto z Cytadela -> 300% lacznie. Zob. tez battleScene.ts (onWallWalkway).
+    // (budynek 'fort', upgrade Murow) dodaje CYTADELA_BONUS_PROC (100%) PONAD mur;
+    // Baszta (decyzja 41B, 2026-07-25 -- trzeci budynek obronny, "w bok") dodaje
+    // BASZTA_BONUS_PROC (100%) PONAD to wszystko -- miasto z Mury+Cytadela+Baszta
+    // -> 400% lacznie. Arytmetyka scalona w game/city-defense.ts (uzywana tu ORAZ
+    // w battleScene.ts onWallWalkway, zeby oba tryby liczyly to samo). Zob. tez
+    // battleScene.ts (onWallWalkway).
     const MUR_BONUS_PROC = (miastoParams.bonus_obrona_mur_proc?.wartosc as number) ?? 200;
     const CYTADELA_BONUS_PROC = (miastoParams.bonus_obrona_cytadela_proc?.wartosc as number) ?? 100;
+    const BASZTA_BONUS_PROC = (miastoParams.bonus_obrona_baszta_proc?.wartosc as number) ?? 100;
 
     /**
      * structureDefenseBonusFor (STEP E) -- bonusy obronne za mape/budowle.
      *
      * Zwraca najwyzszy bonus procentowy dla broniaceego sie (defender) na podanej
      * pozycji (q, r). Hierarchia (najwyzszy wygrywa, nie kumuluja sie):
-     *   miasto z murem + Cytadela (City.maMur + budynek 'fort' w cityBuilt) -> 300%
-     *   miasto z samym murem (City.maMur, brak budynku 'fort') -> 200%
+     *   miasto z budynkami obronnymi (Mury/Cytadela/Baszta w cityBuilt) -> patrz
+     *     cityWallDefenseBonusPercent (game/city-defense.ts) -- do 400% z komplet
      *   fort (ulepszenie TERENOWE 'fort' na mapie -- INNY byt niz budynek Cytadela
      *     o tym samym id! budynek miasta to buildings.json id='fort'/nazwa='Cytadela';
      *     to tutaj to hex.ulepszenie==='fort', stawiane poza miastem) -> 100%
@@ -11357,19 +11611,14 @@ async function boot(): Promise<void> {
      * terytorium jako obozujaca (zgodnie z ustaleniem w handoffie UNITS).
      */
     function structureDefenseBonusFor(q: number, r: number): number {
-      // Sprawdz czy bronicacy jest w miescie z murem
+      // Sprawdz czy bronicacy jest w miescie z budynkiem obronnym (Mury/Cytadela/Baszta)
       const cityOnHex = cities.find(c => c.q === q && c.r === r);
-      if (cityOnHex && (cityOnHex as any).maMur === true) {
-        // Cytadela = upgrade budynku 'mury' -> podmienia jego ID na 'fort' w
-        // cityBuilt (miasto z Cytadela NIE ma juz 'mury' na liscie budynkow).
-        // maMur zostaje true dla obu (main.ts ustawia ja przy ukonczeniu
-        // 'mury' LUB 'fort' -- patrz applyCompletedBuildingIds), wiec
-        // rozroznienie mur/Cytadela robimy tu, po budynku 'fort' w cityBuilt.
+      if (cityOnHex) {
         const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
-        if (builtIds.includes('fort')) {
-          return MUR_BONUS_PROC + CYTADELA_BONUS_PROC; // mur+Cytadela = 200+100 = 300%
-        }
-        return MUR_BONUS_PROC; // sam mur +200%
+        const wallBonus = cityWallDefenseBonusPercent(builtIds, {
+          mur: MUR_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
+        });
+        if (wallBonus > 0) return wallBonus;
       }
 
       // Sprawdz ulepszenie terenu na tym heksie (Fort NA MAPIE -- ulepszenie
@@ -11466,6 +11715,14 @@ async function boot(): Promise<void> {
         stats: def,
         hp,
         maxHp,
+        // Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts):
+        // najlepszy % kiedykolwiek osiagniety przez TE jednostke, niezalezny
+        // od miasta produkujacego bitwe -- ownerId-agnostyczne (gracz i AI).
+        pancerzBonusFrac: unitPancerzBonusFrac(u),
+        parametryBonusFrac: unitParametryBonusFrac(u),
+        // TRZECI SYSTEM (weterani, decyzja wlasciciela 78, game/veteran.ts):
+        // ownerId-agnostyczne, identyczne dla gracza i AI.
+        veteranBonusFrac: veteranCombatBonusFrac(u),
       };
     }
 
@@ -11493,6 +11750,7 @@ async function boot(): Promise<void> {
         maxHp: hp,
         atak: unitAtak(def),
         moc: armyFieldPower(def),
+        veteranBadge: veteranBadgeLabel(veteranLevel(u)),
       };
     }
 
@@ -12969,7 +13227,7 @@ async function boot(): Promise<void> {
             // structureDefenseBonusFor dla ten sam rozroznienie na mapie swiata.
             siege: {
               defCiv: ikonaIdToBronzeCiv(defCivId),
-              cytadela: (cityBuilt.get(city.id) ?? []).includes('fort'),
+              builtBuildingIds: cityBuilt.get(city.id) ?? [],
             },
             attackerCivBonusy: civBonusyForOwnerId(atkRosterRef[0]?.ownerId ?? 0),
             defenderCivBonusy: civBonusyForOwnerId(defRosterRef[0]?.ownerId ?? 0),
@@ -13051,10 +13309,6 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * launchTestBattle — legacy dev preset (4× Hastati vs 4× Falanga).
-     * Skrót T usunięty 2026-07-06 — bitwy tylko z mapy / playtestów / preBattle.
-     */
-    /**
      * DUŻA bitwa z presetu → prosto do BattleScene (arena taktyczna, armia vs
      * armia), z pominięciem mapy świata. BITWA-DUZA = pole; OBLEZENIE-DUZE = mur.
      */
@@ -13079,7 +13333,10 @@ async function boot(): Promise<void> {
         defenderEra: player.era,
         onCancel: () => setMood('mapa'),
       };
-      if (siege) bOpts.siege = { defCiv: 'grecja' };
+      // builtBuildingIds: ['mury'] -- preset/playtest bez realnego miasta w
+      // cityBuilt; zachowuje dawne domyslne zachowanie (zawsze +200% mur w
+      // trybie oblezenia preset) sprzed refaktoru na cityWallDefenseBonusPercent.
+      if (siege) bOpts.siege = { defCiv: 'grecja', builtBuildingIds: ['mury'] };
       // Ten preset to jednocześnie pierwszy gest gracza w tym trybie playtest
       // (patrz doStartPlaytestWalkaMapy: gałąź bitwaDuza/oblezDuze returnuje
       // przed startGameMusic) — więc epoka + muzyka startują tu wprost w 'bitwa'.
@@ -13096,212 +13353,6 @@ async function boot(): Promise<void> {
         setMood('mapa');
         bs.dispose();
       });
-    }
-
-    function launchTestBattle(): void {
-      const PLAYER_COLOR  = 0xffd54a;
-      const ENEMY_COLOR   = 0xc84040;
-
-      if (playtestWalkaActive) {
-        showHintMessage('Playtest 1v1: użyj kliku wroga na mapie', 3500);
-        return;
-      }
-
-      // --- Look up Hastati and Falanga from data.units ---
-      // The 'Jednostka' field in the JSON is plain ASCII for these two units.
-      let legDef: any = (data.units as any[]).find((u: any) => u['Jednostka'] === 'Hastati');
-      let falDef: any = (data.units as any[]).find((u: any) => u['Jednostka'] === 'Falanga');
-
-      // Fallback: first unit whose category resolves to 'miecznik'
-      if (!legDef) {
-        legDef = (data.units as any[]).find((u: any) => {
-          const nm: string = u['Jednostka'] ?? '';
-          const rl: string = u['Rola (linia)'] ?? '';
-          const isSup: boolean = u['Super-jednostka'] === 'TAK';
-          return categoryOf(nm, rl, isSup, u['Typ']) === 'miecznik';
-        });
-        console.warn('[launchTestBattle] Hastati not found, using fallback:', legDef?.['Jednostka'] ?? 'NONE');
-      }
-      // Fallback: first unit whose category resolves to 'wlocznik'
-      if (!falDef) {
-        falDef = (data.units as any[]).find((u: any) => {
-          const nm: string = u['Jednostka'] ?? '';
-          const rl: string = u['Rola (linia)'] ?? '';
-          const isSup: boolean = u['Super-jednostka'] === 'TAK';
-          return categoryOf(nm, rl, isSup, u['Typ']) === 'wlocznik';
-        });
-        console.warn('[launchTestBattle] Falanga not found, using fallback:', falDef?.['Jednostka'] ?? 'NONE');
-      }
-
-      // Last-resort hardcoded stubs if data has neither
-      if (!legDef) {
-        legDef = {
-          'Jednostka': 'Hastati',
-          'Rola (linia)': 'Wręcz',
-          'Próg dezercji (% health)': 0.15,
-          'Zasięg ataku (hex)': 2,
-          'Ilość pocisków': 2,
-          'Ruch w bitwie (heksy)': 3,
-          'Kara obrony z flanki (%)': 15,
-          'Kara obrony z tyłu (%)': 30,
-          meleeAttack: 8, meleeDefence: 7, weaponDamage: 8,
-          armor: 9, piercing: 4, chargeBonus: 8, health: 19, missileAttack: 15,
-        };
-      }
-      if (!falDef) {
-        falDef = {
-          'Jednostka': 'Falanga',
-          'Rola (linia)': 'Wręcz',
-          'Próg dezercji (% health)': 0.2,
-          'Zasięg ataku (hex)': null,
-          'Ilość pocisków': null,
-          'Ruch w bitwie (heksy)': 3,
-          'Kara obrony z flanki (%)': 50,
-          'Kara obrony z tyłu (%)': 80,
-          meleeAttack: 5, meleeDefence: 10, weaponDamage: 5,
-          armor: 6, piercing: 2, chargeBonus: 6, health: 25, missileAttack: 0,
-        };
-      }
-
-      // --- Build 4 attacker BattleUnit (Hastati) ---
-      const legHp  = unitHealth(legDef);
-      const legAtk = unitAtak(legDef);
-      // categoryOf uses normalised name -- 'Hastati' matches 'hastati' -> 'legionista'
-      const legKat = 'miecznik';
-      const attackerUnits: BattleUnit[] = [0, 1, 2, 3].map((i): BattleUnit => ({
-        id: 'atk' + i,
-        nazwa: 'Hastati',
-        kategoria: legKat,
-        ownerColor: PLAYER_COLOR,
-        stats: legDef,
-        hp: legHp,
-        maxHp: legHp,
-      }));
-
-      // --- Build 4 defender BattleUnit (Falanga) ---
-      const falHp  = unitHealth(falDef);
-      const falAtk = unitAtak(falDef);
-      // categoryOf: 'Falanga' matches 'falanga' -> 'wlocznik'
-      const falKat = 'wlocznik';
-      const defenderUnits: BattleUnit[] = [0, 1, 2, 3].map((i): BattleUnit => ({
-        id: 'def' + i,
-        nazwa: 'Falanga',
-        kategoria: falKat,
-        ownerColor: ENEMY_COLOR,
-        stats: falDef,
-        hp: falHp,
-        maxHp: falHp,
-      }));
-
-      // --- TERRAIN: first player unit's hex, else 'Rownina' ---
-      const playerRaw = units.filter(u => u.ownerId === 0);
-      let teren = 'Rownina';
-      if (playerRaw.length > 0) {
-        const firstUnit = playerRaw[0]!;
-        const hexKey = keyOf(firstUnit.q, firstUnit.r);
-        const hex = map.hexes[hexKey];
-        if (hex && hex.terenBazowy) teren = hex.terenBazowy as string;
-      }
-
-      // --- szanseAtkPct: M armii (auto-walka v2b) ---
-      const mAtkDemo = armyFieldPower(legDef) * attackerUnits.length;
-      const mDefRaw = armyFieldPower(falDef) * defenderUnits.length;
-      const terrMultDemo = terrainDefenseMultiplier(
-        teren,
-        String(legDef['Rola (linia)'] ?? ''),
-        terrainCombatData as unknown as TerrainEntry[],
-      );
-      const mDefDemo = Math.round(mDefRaw * terrMultDemo * 10) / 10;
-      const szanseAtkPct = autoBattleWinPct(mAtkDemo, mDefDemo);
-
-      // --- PreBattleInfo ---
-      const pbInfo: PreBattleInfo = {
-        atakujacy: {
-          nazwa: 'Rzym (Legion)',
-          cywilizacja: 'Rzym',
-          civId: 'rzymianie',
-          era: player.era,
-          units: attackerUnits.map((bu): PreBattleUnit => ({
-            nazwa:     bu.nazwa,
-            kategoria: bu.kategoria,
-            hp:        bu.hp,
-            maxHp:     bu.maxHp,
-            atak:      legAtk,
-            moc:       armyFieldPower(legDef),
-          })),
-        },
-        obronca: {
-          nazwa: 'Grecja (Falanga)',
-          cywilizacja: 'Grecja',
-          civId: 'grecy',
-          era: player.era,
-          units: defenderUnits.map((bu): PreBattleUnit => ({
-            nazwa:     bu.nazwa,
-            kategoria: bu.kategoria,
-            hp:        bu.hp,
-            maxHp:     bu.maxHp,
-            atak:      falAtk,
-            moc:       armyFieldPower(falDef),
-          })),
-        },
-        teren,
-        szanseAtkPct,
-        miejsce: teren,
-        tura: turn,
-        canRetreat: true,
-      };
-
-      // --- Open pre-battle overlay ---
-      showPreBattle(pbInfo, {
-        onAuto: () => {
-          // Quick auto-resolve via resolveCombat on lead units
-          const atkLead = attackerUnits[0];
-          const defLead = defenderUnits[0];
-          if (atkLead && defLead) {
-            const cu_atk = battleUnitToCombatUnit(atkLead);
-            const cu_def = battleUnitToCombatUnit(defLead);
-            const result = resolveCombat(cu_atk, cu_def, {
-              defenderTerrain: teren,
-              attackerCivBonusy: civBonusyForOwnerId(0),
-              defenderCivBonusy: civBonusyForCivKey('grecy', data.civs),
-            });
-            const winnerLabel =
-              result.winner === 'attacker' ? pbInfo.atakujacy.nazwa :
-              result.winner === 'defender' ? pbInfo.obronca.nazwa   : 'Remis';
-            showHintMessage(
-              'Bitwa (auto): <b>' + winnerLabel + '</b> wygrywa' +
-              ' \xb7 Rundy: ' + result.rounds,
-              4000,
-            );
-          } else {
-            showHintMessage('Bitwa (auto): brak jednostek bojowych', 3000);
-          }
-        },
-        onBattlefield: () => {
-          setMood('bitwa');
-          const bs = new BattleScene({
-            attacker: attackerUnits,
-            defender: defenderUnits,
-            teren,
-            data,
-            deploy: true,
-            attackerCivBonusy: civBonusyForOwnerId(0),
-            defenderCivBonusy: civBonusyForOwnerId(1),
-            onCancel: () => setMood('mapa'),
-          });
-          bs.play((res) => {
-            const winnerLabel =
-              res.winner === 'atakujacy' ? pbInfo.atakujacy.nazwa : pbInfo.obronca.nazwa;
-            showHintMessage('Bitwa: <b>' + winnerLabel + '</b> wygrywa', 4000);
-            setMood('mapa');
-            bs.dispose();
-          });
-        },
-        onCancel: () => {
-          // preBattle hides itself on button click; nothing extra needed
-        },
-        onSave: () => doQuickSave(false),
-      }, { defaultAction: 'manual' });
     }
 
     /** Domyślna nazwa sejwu z kontekstu bieżącej rozgrywki (stolica, rok, mapa, trudność). */
@@ -13778,11 +13829,36 @@ async function boot(): Promise<void> {
           } catch (eTradeGrant) {
             console.error('[Handel] Blad przeliczania grantow z trasy:', eTradeGrant);
           }
+          // Handel E3c (PYTANIE 53=B, Maciej 2026-07-25): przepływ ILOŚCIOWY surowca
+          // (braz/zelazo/cegla — patrz TRADE_ROUTE_STOCK_FLOW_KEYS) przez aktywne trasy,
+          // NIEZALEŻNY od grantu dostępu wyżej (ten zostaje boolean-bramką jednostek).
+          // Surowiec REALNIE ubywa nadawcy i przybywa odbiorcy w puli PAŃSTWA (ta sama
+          // pula co koszt_surowce budynków, building-stock-cost.ts) — dzięki temu np.
+          // dowieziona Cegła faktycznie zasila budowę, nie tylko "odblokowuje" ją.
+          try {
+            const tradeFlowParams = loadTradeRouteResourceFlowParams(
+              data.econParams as unknown as Parameters<typeof loadTradeRouteResourceFlowParams>[0],
+              _menuDifficulty,
+            );
+            const ownerStockForTradeFlow = (ownerId: number, key: TradeRouteStockFlowResourceKey): number =>
+              ownerResourceStockAll(cities, ownerId)[key] ?? 0;
+            const tradeFlows = computeTradeRouteResourceFlow(tradeRoutes, ownerStockForTradeFlow, tradeFlowParams);
+            for (const flow of tradeFlows) {
+              deductBuildingStockCostAcrossCities(cities, flow.fromOwnerId, { [flow.resourceKey]: flow.amount });
+              creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount);
+            }
+          } catch (eTradeFlow) {
+            console.error('[Handel] Blad przeplywu ilosciowego surowca przez trase:', eTradeFlow);
+          }
           const tradeIncomeParams = loadTradeRouteIncomeParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
             _menuDifficulty,
           );
-          const tradeIncomeByCity = computeTradeRouteIncomeByCity(tradeRoutes, tradeIncomeParams);
+          // CUDA-HANDEL-01: 3. argument = bonus % "handel_procent" cudów, per owner/medium
+          // trasy (0 gdy brak cudu) — ownerId-agnostyczny, patrz wonderTradeRouteBonusForOwner.
+          const tradeIncomeByCity = computeTradeRouteIncomeByCity(
+            tradeRoutes, tradeIncomeParams, wonderTradeRouteBonusForOwner,
+          );
           // TEMAT #5: powiadomienia WYDARZENIA o powstaniu/zerwaniu szlaku (tylko gracz;
           // tradeRoutes zawiera WYLACZNIE trasy gracz<->obcy, AI<->AI tu nie istnieje).
           try {
@@ -13803,6 +13879,8 @@ async function boot(): Promise<void> {
             cityRelig,
             // CUDA-EKON-01: dotyczy gracza I AI (ownerId-agnostic) — patrz raport C-CUDA-BONUS=A.
             buildWonderCityYieldsByOwnerMap(cities.map(c => c.ownerId)),
+            // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — real tick, gracz + AI.
+            makeOwnerZlotoAccessResolver(),
           );
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -14286,10 +14364,12 @@ async function boot(): Promise<void> {
                   era: empireEpochForOwner(city.ownerId),
                   population: city.population,
                   garnizonCount: gCountLaw,
-                  hasRatusz: builtIds.includes('ratusz'),
+                  hasDomStarszyzny: builtIds.includes('dom_starszyzny'),
+                  hasDworZarzadcy: builtIds.includes('dwor_zarzadcy'),
                   hasPretorium: builtIds.includes('pretorium'),
+                  hasTrybunal: builtIds.includes('trybunal'),
                   hasSad: builtIds.includes('sad'),
-                  hasPalac: cityHasPalacLine(builtIds),
+                  palacTier: cityPalacTier(builtIds),
                   brakGarnizonuKara: city.population >= 6 && gCountLaw === 0,
                   conquestNoGarrisonPenalty: conquestNoGarPen,
                   stolicaEasyBonus: stolicaBonus,
@@ -14416,7 +14496,7 @@ async function boot(): Promise<void> {
                         epoch: empireEpochForOwner(city.ownerId),
                         civBonusy: civBonusyForOwnerId(city.ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-                        placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
+                        placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
                         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
                         // TEMAT 8 Q2 (2026-07-24, parytet AI/Zarządca z tryAutoEnqueueBuild):
                         // bez tych 4 pól bramki surowcowe/terenowe (Glina/Ceramika/Sól/Drewno/
@@ -14426,6 +14506,8 @@ async function boot(): Promise<void> {
                         empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
                         empireResourceStock: citySurowceSumForOwner(city.ownerId),
                         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+                        // ADMIN-STOLICA (2026-07-25): parytet — patrz uwaga w tryAutoEnqueueBuild.
+                        isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
                       },
                     },
                   );
@@ -14517,6 +14599,9 @@ async function boot(): Promise<void> {
                 const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
                 const isSuper = def['Super-jednostka'] === 'TAK';
                 const newUnitId = 'rec_' + turn + '_' + cid + '_' + Math.random().toString(36).slice(2);
+                const recBirthProgress = bestBuildingProgressAfterCityVisit(
+                  undefined, cityBuilt.get(cid), data.buildings,
+                );
                 units.push({
                   id: newUnitId,
                   ownerId: city.ownerId,
@@ -14526,6 +14611,8 @@ async function boot(): Promise<void> {
                   r: city.r,
                   ruch,
                   ruchLeft: 0,
+                  pancerzBonusProc: recBirthProgress.pancerzBonusProc,
+                  parametryBonusProc: recBirthProgress.parametryBonusProc,
                 });
                 maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
                 if (city.ownerId === 0) {
@@ -15095,7 +15182,7 @@ async function boot(): Promise<void> {
                         productionQueue: prod0.kolejka,
                         civBonusy: civBonusyForOwnerId(ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
-                        placedImprovements: placedImprovementsWithBrazTradeGrant(ownerId, ownImprovements),
+                        placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
                         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
                         // audyt #11: AI też podlega limitowi 1 żywej Super-jednostka.
                         aliveUnitTypeNames: new Set(
@@ -15113,6 +15200,10 @@ async function boot(): Promise<void> {
                         empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
                         empireResourceStock: citySurowceSumForOwner(ownerId),
                         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+                        // ADMIN-STOLICA (2026-07-25, PARYTET AI): parytet — patrz uwaga w
+                        // tryAutoEnqueueBuild; jedno źródło prawdy capitalCityIdForOwner,
+                        // identyczne dla ownerId=0 (gracz) i każdej cywilizacji AI.
+                        isCapital: capitalCityIdForOwner(ownerId) === city.id,
                       },
                     );
                     const buildAllowed = allowed.some(
@@ -15533,6 +15624,7 @@ async function boot(): Promise<void> {
         // finalne dla tej tury — teraz sprawdzamy, czy jakaś śpiąca (sentry)
         // jednostka ma wroga w polu widzenia i trzeba ją obudzić.
         wakeSentryUnitsOnEnemyContact();
+        applyCityVisitBuildingBonuses();
         executePlannedMarchesEndTurn();
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();
@@ -15925,9 +16017,11 @@ async function boot(): Promise<void> {
       getOwnerColor: civColorFn,
         getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
+        // PYTANIE 83=B: jedna funkcja co silnik (turn-economy.ts resolveOwnerZlotoAccess).
+        getOwnerHasZlotoAccess: (ownerId: number) => ownerHasZlotoAccessNow(ownerId),
         // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
         // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
-        getPlacedImprovements: () => placedImprovementsWithBrazTradeGrant(0, placedImprovementsForOwner(0)),
+        getPlacedImprovements: () => placedImprovementsWithTradeGrants(0, placedImprovementsForOwner(0)),
         getProduction: (cityId: string) => {
           const p = cityProd.get(cityId);
           return p ? { ...p, kolejka: [...p.kolejka] } : null;

@@ -44,7 +44,7 @@ Ulepszenia płacisz **pracą** z puli imperium — **nie złotem** (przyspieszen
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -79,7 +79,7 @@ Skrót kategorii (szczegóły w katalogu):
 ### Przykład liczbowy
 
 Farma **20** pracy, **+2** 🍞 (bonus ulepszenia normal) + pole **3** 🍞 = **5** 🍞/t z heksu.
-Droga **15** pracy → **+1** handel; przy handlu **10** brutto daje **+1** dodatkowy.
+Droga **15** pracy → **+1** Daniny; przy Daninie **10** brutto daje **+1** dodatkowy.
 
 ### Strategia gracza
 
@@ -119,7 +119,7 @@ Po zbadaniu pozycje pojawiają się **od razu** w trybie budowy i w zakładce **
 ### Przykład liczbowy
 
 Farma **20** pracy, **+2** 🍞 (bonus ulepszenia normal) + pole **3** 🍞 = **5** 🍞/t z heksu.
-Droga **15** pracy → **+1** handel; przy handlu **10** brutto daje **+1** dodatkowy.
+Droga **15** pracy → **+1** Daniny; przy Daninie **10** brutto daje **+1** dodatkowy.
 
 ### Strategia gracza
 
@@ -155,7 +155,7 @@ Pełna tabela warunków — apendyks B.7 spisu treści i kolumna **Warunek** w [
 ### Przykład liczbowy
 
 Farma **20** pracy, **+2** 🍞 (bonus ulepszenia normal) + pole **3** 🍞 = **5** 🍞/t z heksu.
-Droga **15** pracy → **+1** handel; przy handlu **10** brutto daje **+1** dodatkowy.
+Droga **15** pracy → **+1** Daniny; przy Daninie **10** brutto daje **+1** dodatkowy.
 
 ### Strategia gracza
 
@@ -193,7 +193,7 @@ Infrastruktura może mieć **utrzymanie** w danych balansu — sprawdź tooltip 
 ### Przykład liczbowy
 
 Farma **20** pracy, **+2** 🍞 (bonus ulepszenia normal) + pole **3** 🍞 = **5** 🍞/t z heksu.
-Droga **15** pracy → **+1** handel; przy handlu **10** brutto daje **+1** dodatkowy.
+Droga **15** pracy → **+1** Daniny; przy Daninie **10** brutto daje **+1** dodatkowy.
 
 ### Strategia gracza
 
@@ -219,7 +219,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -247,7 +247,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 

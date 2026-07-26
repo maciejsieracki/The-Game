@@ -33,10 +33,13 @@ import { buildHorse } from './kon-nowy-model';
 import { GAME_MAP_RENDER_STYLE, terrainVisualForStyle } from './mapRenderStyle';
 import type { RuntimeUnit } from '../units/setup';
 import type { StackDisplayInfo } from '../game/armyMerge';
+// Odznaki ulepszeń budynkowych na żetonie (Maciej 2026-07-25, pytanie 57 = A+B:
+// kropki przy żetonie ORAZ kolorowa obwódka). Zasoby to singletony modułu —
+// NIE trafiają do userData['mats'], patrz nagłówek unitUpgradeBadges.ts.
+import { syncUnitUpgradeBadges } from './unitUpgradeBadges';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
-// Zulu i łucznicy Egipt/Sumer NIE są jeszcze wpięci — czekają na decyzje właściciela.
 import {
   buildWojownikOpus5,
   buildOszczepnikOpus5,
@@ -45,9 +48,23 @@ import {
 } from './kamien-bazowe-opus5';
 import { buildMaceWarriorOpus5, buildInkaJavelineerOpus5 } from './kamien-inka-opus5';
 import { buildBatteringRamOpus5, buildZuluJavelineerOpus5 } from './kamien-zulu-taran-opus5';
+import { buildEgyptianArcherOpus5, buildSumerianArcherOpus5 } from './kamien-lucznicy-opus5';
+import { buildNubianArcherOpus5 } from './braz-lucznik-nubijski-opus5';
 // BRĄZ OPUS 5 (Maciej 2026-07-25): taran epoki Brązu na KOŁACH — nie może być
 // tym samym modelem co płozowy taran Kamienia (koło ~3500 p.n.e.).
 import { buildTaranOkutyOpus5 } from './braz-taran-opus5';
+// BRĄZ OPUS 5 — komplet jednostek bazowych epoki Brązu (Maciej 2026-07-26:
+// „wpinaj jednostki brązu"). Wszystkie cztery to jednostki DOSTĘPNE DLA
+// WSZYSTKICH CYWILIZACJI (Kultura=null w units.json), więc dispatch po NAZWIE
+// jest dokładny — warianty kulturowe (sumeryjski, inkaski, egipski…) mają
+// własne, wcześniejsze wpisy w buildNamedUnit i nie są tu przechwytywane.
+import { buildWlocznikBrazOpus5 } from './braz-wlocznik-opus5';
+import { buildMiecznikBrazOpus5 } from './braz-miecznik-opus5';
+import { buildProcarzBrazOpus5 } from './braz-procarz-opus5';
+import { buildRydwanWolyBrazOpus5 } from './braz-rydwan-woly-opus5';
+// ŻELAZO OPUS 5 — Hastati republikański (units.json: „Hastati", Epoka=Żelazo,
+// Nacja=Rzym) — zastępuje wariant z hastati-falangita.ts.
+import { buildHastatiOpus5 } from './hastati-opus5';
 import {
   buildProcarz as newBuildProcarz,
   buildWlocznik as newBuildWlocznik,
@@ -59,8 +76,6 @@ import {
   buildSuperInca as newBuildSuperInca,
 } from './jednostki-p2-inka';
 import {
-  buildEgyptianArcher as newBuildEgyptianArcher,
-  buildSumerianArcher as newBuildSumerianArcher,
   buildAkkadianArcher as newBuildAkkadianArcher,
   buildAssyrianArcher,
 } from './jednostki-p3-dystans';
@@ -1143,6 +1158,10 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('rydwan sumeryjski') || n.includes('sumerian chariot')) return buildSumerianChariot(ownerColor_);
   // EGIPT ------------------------------------------------------------------
   if (n.includes('lucznik egipski') || n.includes('egyptian archer')) return buildEgyptianArcher(ownerColor_);
+  // Łucznik nubijski (Brąz, Egipt, zastępuje Łucznika): dedykowany model
+  // (braz-lucznik-nubijski-opus5.ts) — Ta-Seti "Kraina Łuku", ciemna karnacja,
+  // długi prosty łuk self-bow wyraźnie dłuższy niż egipski, skórzana przepaska.
+  if (n.includes('lucznik nubijski') || n.includes('nubian archer')) return buildNubianArcherOpus5(ownerColor_);
   if (n.includes('wojownik z khopesh') || n.includes('khopesh warrior')) return buildKhopeshWarrior(ownerColor_);
   if (n.includes('rydwan egipski') || n.includes('egyptian chariot')) return buildEgyptianChariot(ownerColor_);
   // INKA -------------------------------------------------------------------
@@ -1154,6 +1173,16 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('jezdziec chinski') || n.includes('chinese cavalry')) return buildChineseCavalry(ownerColor_);
   // KUSZNIK (CROSSBOWMAN) --------------------------------------------------
   if (n.includes('kusznik') || n.includes('crossbowman')) return buildCrossbowman(ownerColor_);
+  // BRĄZ — JEDNOSTKI BAZOWE (Kultura=null, dostępne wszystkim cywilizacjom) --
+  // Dopasowanie po PEŁNEJ nazwie (===), nie po fragmencie: warianty kulturowe
+  // („Włócznik sumeryjski", „Procarz (Huaracoc)", „Rydwan egipski"…) mają
+  // własne wpisy wyżej i muszą zachować swoje modele. units.json: „Włócznik"/
+  // „Spearman", „Wojownik z mieczem i tarczą"/„Swordsman", „Procarz"/„Slinger",
+  // „Rydwan (woły)"/„Ox Chariot" — wszystkie Epoka=Brąz.
+  if (n === 'wlocznik' || n === 'spearman') return buildWlocznikBrazOpus5(ownerColor_);
+  if (n === 'wojownik z mieczem i tarcza' || n === 'swordsman') return buildMiecznikBrazOpus5(ownerColor_);
+  if (n === 'procarz' || n === 'slinger') return buildProcarzBrazOpus5(ownerColor_);
+  if (n === 'rydwan (woly)' || n === 'rydwan woly' || n === 'ox chariot') return buildRydwanWolyBrazOpus5(ownerColor_);
   // MACHINY OBLĘŻNICZE -------------------------------------------------------
   // UWAGA: „taran okuty" (Brąz, na kołach) MUSI być sprawdzony PRZED ogólnym
   // 'taran', inaczej przechwyci go płozowy taran epoki Kamienia.
@@ -1165,7 +1194,9 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('wojownik tyrrenski') || n.includes('tyrrenski') || n.includes('tyrrhenian warrior') || n.includes('tyrrhenian')) return buildTyrrhenian(ownerColor_);
   if (n.includes('wojownik szekelesz') || n.includes('szekelesz') || n.includes('shekelesh warrior') || n.includes('shekelesh')) return buildShekelesh(ownerColor_);
   // RZYM ŻELAZO — Hastati (własny model republikański) -----------------------
-  if (n.includes('hastati')) return buildHastati(ownerColor_);
+  // OPUS 5 (Maciej 2026-07-26): wariant hastati-opus5.ts zastępuje starszy
+  // model z hastati-falangita.ts (buildHastati poniżej zostaje jako rezerwa).
+  if (n.includes('hastati')) return buildHastatiOpus5(ownerColor_);
   // GRAFIKA-JEDNOSTKI: nowe bespoke modele (p3 Asyria + p8a Bliski Wschod +
   // p8b) — CELOWO przed sekcja Legionu ponizej, zeby "Legion Rzymski"
   // zwrocil wlasny model zanim zadziala linia zabijajaca 'legion'.
@@ -1570,12 +1601,14 @@ function buildSumerianSpearman(ownerColor_: number): THREE.Group {
 }
 
 /**
- * Łucznik sumeryjski — composite bow, fleece-trimmed kaunakes, copper conical
- * helm.  Distinct from generic (green) archer via teal robe + copper helm.
+ * Łucznik sumeryjski — Mezopotamia wczesnodynastyczna (kaunakes w 4 poziomach,
+ * narzuta z runa barwionego na terakotę, luk prosty, groty liściaste).
  */
 function buildSumerianArcher(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p3-dystans.ts).
-  return newBuildSumerianArcher(ownerColor_);
+  // KAMIEŃ OPUS 5 (Maciej 2026-07-25): deleguje do wariantu OPUS 5
+  // (kamien-lucznicy-opus5.ts) — zgodność historyczna z epoką Kamienia
+  // (bez luku kompozytowego, bez metalu), rozróżnialny od Egiptu.
+  return buildSumerianArcherOpus5(ownerColor_);
 }
 
 /**
@@ -1783,12 +1816,14 @@ function buildSumerianChariot(ownerColor_: number): THREE.Group {
 // --- EGIPT SPECIALS --------------------------------------------------------
 
 /**
- * Łucznik egipski — composite bow, white linen kilt, blue striped nemes
- * headcloth (distinct from the green generic archer and the Akkadian).
+ * Łucznik egipski — Egipt predynastyczny (luk dwuwypukły / double-convex,
+ * shendyt lniany, pióro strusia w opasce, groty poprzeczne z krzemienia).
  */
 function buildEgyptianArcher(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p3-dystans.ts).
-  return newBuildEgyptianArcher(ownerColor_);
+  // KAMIEŃ OPUS 5 (Maciej 2026-07-25): deleguje do wariantu OPUS 5
+  // (kamien-lucznicy-opus5.ts) — zgodność historyczna z epoką Kamienia
+  // (bez luku kompozytowego, bez nemes, bez metalu).
+  return buildEgyptianArcherOpus5(ownerColor_);
 }
 
 /**
@@ -4686,6 +4721,14 @@ export class UnitRenderer {
         this._registerToken(unit.id, group);
         this.scene.add(group);
       }
+
+      // Odznaki ulepszeń budynkowych (Pancerz + Parametry) — kropki + kolorowa
+      // obwódka. Wołane PO ewentualnej przebudowie żetonu, dla KAŻDEJ jednostki
+      // (gracz i AI identycznie — PARYTET AI, zero warunków na ownerId).
+      // Funkcja jest idempotentna: przy niezmienionym poziomie kończy się
+      // porównaniem jednej liczby, więc bezpiecznie stoi w pętli sync().
+      const tokenObj = this.tokens.get(unit.id);
+      if (tokenObj) syncUnitUpgradeBadges(tokenObj, unit);
     }
 
     // Remove tokens whose units are gone

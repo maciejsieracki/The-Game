@@ -6,10 +6,9 @@
 
 - [Stolarnia](budynki/stolarnia.md)
 - [Warsztat kamieniarski](budynki/kamieniarski.md)
-- [Kuznia](budynki/kuznia.md)
+- [Kuźnia brązu](budynki/kuznia.md)
 - [Targowisko (Rynek)](budynki/targowisko.md)
 - [Port handlowy](budynki/port.md)
-- [Karawanseraj](budynki/karawanseraj.md)
 - [Spichlerz](budynki/spichlerz.md)
 - [Swiatynia](budynki/swiatynia.md)
 - [Biblioteka](budynki/biblioteka.md)

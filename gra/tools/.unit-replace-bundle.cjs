@@ -109,11 +109,6 @@ var miasto_params_default = {
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
-  budynek_mnoznik_poziomu: {
-    wartosc: 1.1,
-    jednostka: "x / poziom",
-    opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
-  },
   jednostka_koszt_ludnosci: {
     wartosc: 0,
     jednostka: "ludnosc",
@@ -182,7 +177,17 @@ var miasto_params_default = {
   bonus_obrona_mur_proc: {
     wartosc: 200,
     jednostka: "% Obrony",
-    opis: "Miasto Z MUREM daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje game/siege.ts + battleScene (defensa miasta). Miasto bez muru = brak tego bonusu."
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -390,7 +395,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -521,6 +526,21 @@ var terrain_improvements_default = {
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
   },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+  },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
     epoka: 2,
@@ -603,27 +623,54 @@ var LABEL_BY_ASCII = {
   cegla: "Ceg\u0142a",
   ceramika: "Ceramika"
 };
-var ERA_ACCESS_LABELS = {
-  1: ["Drewno"],
-  2: ["Drewno", "Kamie\u0144"],
-  3: ["Drewno", "Kamie\u0144", "Ceg\u0142a"],
-  4: ["Drewno", "Kamie\u0144", "Ceg\u0142a"]
-};
 var DEPOSIT_LINKED_BUILDING_LABELS = {
   garncarnia: ["Glina"],
   cegielnia: ["Glina"],
   spichlerz: ["Ceramika"],
-  spichlerz_ii: ["S\xF3l"]
+  spichlerz_ii: ["S\xF3l"],
+  stolarnia: ["Drewno"],
+  kamieniarski: ["Kamie\u0144"],
+  kuznia: ["Ruda"],
+  // ZLOTO (Maciej 2026-07-25): Mennica wymaga dostępu do Złota (empire-wide, Kopalnia złota
+  // gdziekolwiek w imperium — game/zloto-access.ts empireHasKopalniaZlota, dolane do
+  // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
+  // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
+  // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
+  // PYTANIE 77=A (Maciej 2026-07-25): dostęp = własna Kopalnia złota ALBO aktywny szlak
+  // handlowy z cywilizacją, która ma złoto (jak koń) — bramka TU jest bez zmian (nadal
+  // sam sprawdza tylko obecność etykiety 'Złoto' w `activeLabels`); rozszerzenie jest
+  // WYŻEJ w łańcuchu, w zloto-access.ts (placedImprovementsWithZlotoTradeGrant), WPIĘTE
+  // w main.ts (placedImprovementsWithTradeGrants, domknięcie 2026-07-25 wieczór) —
+  // szlak handlowy realnie odblokowuje Mennicę bez własnej Kopalni złota.
+  mennica: ["Z\u0142oto"]
 };
-function empireLabelSatisfied(label, activeLabels, empireBuiltIds) {
+var CITY_BUILDING_PREREQ = {
+  warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
+  laznia_publiczna: "studnia",
+  akademia: "biblioteka",
+  fort: "mury",
+  akademia_wojskowa: "koszary",
+  swiatynia: "kamienne_kregi",
+  // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
+  // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
+  mennica: "targowisko"
+};
+function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
+  if (!prereq) return true;
+  const ids = typeof prereq === "string" ? [prereq] : prereq;
+  return ids.some((id) => builtList.includes(id) || isSuperseded(id, builtList, buildings));
+}
+var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"]);
+var ASCII_BY_LABEL = Object.fromEntries(
+  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+function empireLabelSatisfied(label, activeLabels, empireBuiltIds, empireStock) {
   if (activeLabels.includes(label)) return true;
   if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
   if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
+  const asciiKey = ASCII_BY_LABEL[label];
+  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
   return false;
-}
-function eraAccessLabels(epokaWejscia) {
-  if (epokaWejscia >= 4) return ERA_ACCESS_LABELS[4] ?? [];
-  return ERA_ACCESS_LABELS[epokaWejscia] ?? [];
 }
 function buildingRequiredActiveLabels(building) {
   const out = /* @__PURE__ */ new Set();
@@ -631,20 +678,18 @@ function buildingRequiredActiveLabels(building) {
   if (hard) hard.forEach((l) => out.add(l));
   const key = building.wymaganySurowiec?.trim().toLowerCase();
   if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
-  for (const l of eraAccessLabels(building.epokaWejscia ?? 1)) out.add(l);
   return [...out];
 }
-function buildingResourceGateMet(building, activeLabels, empireBuiltIds) {
+function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireStock) {
   const required = buildingRequiredActiveLabels(building);
   if (required.length === 0) return true;
   const active = activeLabels ?? [];
-  return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds));
+  return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
 }
 
 // src/game/building-upgrades.ts
-var SUPPRESSED_FROM_PRODUCTION = /* @__PURE__ */ new Set(["teatr"]);
 function isBuildingSuppressedFromProduction(building) {
-  return SUPPRESSED_FROM_PRODUCTION.has(building.id) || building.suppressed === true;
+  return building.suppressed === true;
 }
 function upgradeProductionDisplayName(target, buildings) {
   const from = (target.upgradeFrom ?? "").trim();
@@ -670,7 +715,6 @@ function epochNumber(epoka) {
   const n = EPOCH_BY_NAME[epoka];
   return typeof n === "number" ? n : 1;
 }
-var BUILDING_LEVEL_FACTOR = miasto_params_default.budynek_mnoznik_poziomu?.wartosc ?? 1.1;
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
   Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
@@ -704,11 +748,17 @@ function itemCost(kind, id, data, cityLevelOrEpoch) {
     const b = findBuilding(data, id);
     if (!b) return 0;
     const level = Number.isFinite(cityLevelOrEpoch) ? Math.max(1, Math.floor(cityLevelOrEpoch)) : 1;
-    return Math.round(b.kosztBudowy * Math.pow(BUILDING_LEVEL_FACTOR, level - 1));
+    const przyrostKosztu = Number.isFinite(b.przyrostKosztu) ? b.przyrostKosztu : 0;
+    return Math.round(b.kosztBudowy + przyrostKosztu * (level - 1));
   }
   const u = findUnit(data, id);
   if (!u) return 0;
   return unitCostFromDef(u);
+}
+function buildingLocationAllowed(lokalizacja, isCapital) {
+  if (lokalizacja === "stolica") return isCapital === true;
+  if (lokalizacja === "region") return isCapital === false;
+  return true;
 }
 var GLOBAL_BUILDING_PROD_MULT = 0.5;
 function buildingWorkCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
@@ -817,12 +867,19 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
       if (buildingTypeCommitted(b.id, builtList, queue)) continue;
     }
     const tech = (b.techUnlock ?? "").trim();
-    if (tech.length > 0 && !techs.has(tech)) continue;
+    if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
+    if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
     const gateLabels = ctx.empireActiveResourceLabels?.length ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
-    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds)) {
+    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
+      continue;
+    }
+    if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
+      continue;
+    }
+    if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
       continue;
     }
     items.push({
@@ -858,7 +915,7 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     const tech = (u.Tech ?? "").toString().trim();
     if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
     if (epochNumber(u.Epoka) === 2 && !built.has("koszary") && !isBuildingSupersededByUpgrade("koszary", builtList, data.buildings)) continue;
-    const surowiec = (u.Surowiec ?? "").toString().trim().toLowerCase();
+    const surowiec = stripDiacritics((u.Surowiec ?? "").toString().trim());
     if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) {
       continue;
     }
@@ -905,7 +962,7 @@ function availableReplacementsFor(currentUnitName, data, unlockedTechs, ctx = {}
     const tech = (u.Tech ?? "").toString().trim();
     if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) return false;
     if (epochNumber(u.Epoka) === 2 && !built.has("koszary") && !isBuildingSupersededByUpgrade("koszary", builtList, data.buildings)) return false;
-    const surowiec = (u.Surowiec ?? "").toString().trim().toLowerCase();
+    const surowiec = stripDiacritics((u.Surowiec ?? "").toString().trim());
     if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) return false;
     if (surowiec === "zelazo" && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) return false;
     if (u["Super-jednostka"] === "TAK" && ctx.aliveUnitTypeNames?.has(u.Jednostka)) return false;

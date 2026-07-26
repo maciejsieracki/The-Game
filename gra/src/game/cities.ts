@@ -48,11 +48,20 @@ export type BudowaTryb = 'auto' | 'reczny';
 export const DEFAULT_BUDOWA_FOCUS: BudowaFocus = 'zrownowazone';
 export const DEFAULT_BUDOWA_TRYB: BudowaTryb = 'reczny';
 
-/** Domyslny podzial Handlu — zgodny z buildEconParams / econ-params.json normal (20/70/10). */
+/**
+ * Domyslny podzial Daniny netto nowego miasta — zgodny z econ-params.json
+ * (suwak_handel_*_domyslnie, wszystkie poziomy trudnosci).
+ *
+ * 20% Nauka / 60% Skarbiec / 20% Zamoznosc — decyzja Maciej 2026-07-25 (PYTANIE 74 = A),
+ * podniesione z dawnych 20/70/10. Powod: 20% Zamoznosci to dokladnie prog utrzymania
+ * poziomu Zamoznosci (20% pieniadza miasta przy poziomie 0), wiec poziom rusza z miejsca
+ * bez recznej interwencji; w nowej siatce Szczescia przedzial 20-29% daje +1 pkt Szczescia
+ * na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%).
+ */
 export const DEFAULT_PODZIAL_HANDLU: Readonly<CityPodzialHandlu> = {
   procentNauka:    20,
-  procentPieniadz: 70,
-  procentLuksus:   10,
+  procentPieniadz: 60,
+  procentLuksus:   20,
 };
 
 /** Domyslny podzial Pracy — zgodny z buildEconParams (70% budynki). */
@@ -134,8 +143,39 @@ export interface City {
    * bez zmian, to osobny mechanizm (boolean dostep, nie ilosc).
    */
   surowce?: Record<string, number>;
-  /** Ustawiane po zbudowaniu budynku 'mury'; +200% obrony liczy UNITS/silnik. */
+  /**
+   * Ustawiane po zbudowaniu budynku 'mury' (odblokowuje='maMur' w buildings.json).
+   * Bramkuje TRYB oblezenia na mapie swiata (game/mapSiegeDetect.ts
+   * classifyCityAttack/canInitiateSiege/detectAutoSiegeOnCity) oraz tag "Mur
+   * miejski" w UI (siegeMapPanel.ts, cityAttackChoice.ts). NIE steruje bonusem
+   * procentowym Obrony -- ten liczy sie osobno z cityBuilt (game/city-defense.ts
+   * cityWallDefenseBonusPercent), niezaleznie od tej flagi.
+   */
   maMur?: boolean;
+  /**
+   * Ustawiane po zbudowaniu budynku 'fort'/Cytadela (odblokowuje='maFort').
+   * REZERWA -- decyzja wlasciciela 2026-07-25 (PYTANIE 82 = A). Flaga jest
+   * ustawiana z pola `odblokowuje` w danych, ale swiadomie nie jest jeszcze
+   * przez nic odczytywana: premie obronne licza sie z listy zbudowanych
+   * budynkow (game/city-defense.ts cityWallDefenseBonusPercent), niezaleznie
+   * od tej flagi. Zostawiona pod przyszla mechanike oblezenia.
+   */
+  maFort?: boolean;
+  /**
+   * Ustawiane po zbudowaniu budynku 'baszta' (odblokowuje='maBaszta').
+   * REZERWA -- decyzja wlasciciela 2026-07-25 (PYTANIE 82 = A), jak przy
+   * maFort powyzej: swiadomie jeszcze nieodczytywana, premia Baszty liczy sie
+   * z cityBuilt (game/city-defense.ts). Zostawiona pod przyszla mechanike.
+   */
+  maBaszta?: boolean;
+  /**
+   * Ustawiane po zbudowaniu budynku 'warsztat_oblezniczy'
+   * (odblokowuje='maWarsztatOblezniczy'). REZERWA -- decyzja wlasciciela
+   * 2026-07-25 (PYTANIE 82 = A): swiadomie jeszcze nieodczytywana,
+   * odblokowanie Katapulty sprawdza budynek bezposrednio (cityBuilt /
+   * CITY_BUILDING_PREREQ), nie te flage. Zostawiona pod przyszla mechanike.
+   */
+  maWarsztatOblezniczy?: boolean;
   /**
    * Czy miasto jest aktualnie oblegane (flaga ustawiana przez UNITS/SILNIK).
    * Gdy true: turn-economy nie nalicza dochodu zywnosci z pol;

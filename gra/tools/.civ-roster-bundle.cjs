@@ -113,7 +113,7 @@ function assignAiCivTypes(input) {
   const out = /* @__PURE__ */ new Map();
   const fallback = allCivIds.find((id) => id && id !== playerCivId) ?? "grecy";
   sorted.forEach((ownerId, idx) => {
-    out.set(ownerId, shuffledAi[idx] ?? fallback);
+    out.set(ownerId, shuffledAi.length > 0 ? shuffledAi[idx % shuffledAi.length] : fallback);
   });
   return out;
 }

@@ -144,7 +144,7 @@ Każdy typ ma **trzy linie bonusów** w macierzy balansu:
 
 1. **Walka** — atak, obrona, morale, bonus w terenie, oblężenie.
 2. **Miasto / produkcja** — koszt budynków, szybkość budowy, wzrost ludności.
-3. **Ekonomia / mapa** — handel, nauka, pobór, złoto z portów.
+3. **Ekonomia / mapa** — Danina, nauka, pobór, złoto z portów.
 
 Bonusy **mnożą** lub **dodają** do wartości bazowych — nie zastępują Spichlerza, suwaków ani technologii (decyzja B5).
 
@@ -153,7 +153,7 @@ Bonusy **mnożą** lub **dodają** do wartości bazowych — nie zastępują Spi
 #### Grecy — tarcza i handel morski
 
 - **+20% obrony piechoty** (formacja frontalna — Falanga).
-- **+15% złota** z handlu morskiego i portów.
+- **+15% Daniny** z portów i szlaków morskich (Korynt, Ateny).
 - **−15% odnowy poboru** — wolniejsze uzupełnianie rekrutów.
 - **Profil:** defensywny, dobry na wybrzeżu; słabsza mobilizacja.
 
@@ -217,7 +217,7 @@ Bonusy **mnożą** lub **dodają** do wartości bazowych — nie zastępują Spi
 
 | Styl gry | Typy do rozważenia |
 |----------|-------------------|
-| Handel i złoto | Grecy, Rzym (umiarkowany), Sumer |
+| Danina i złoto | Grecy, Rzym (umiarkowany), Sumer |
 | Nauka / rakieta | Inkowie, Chińczycy, Sumer |
 | Wczesna wojna | Zulusi, Celtowie, Germanie |
 | Oblężenie i linia | Sumer, Grecy, Rzym |
@@ -365,7 +365,7 @@ Każdy typ cywilizacji ma teraz **imię władcy** przypisane per epoka (`civs.js
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 

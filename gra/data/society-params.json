@@ -263,47 +263,12 @@
       "jednostka": "pkt Zadowolenia",
       "opis": "Dodatkowa kara Sz gdy po podboju jednocześnie obca kultura (<50%) i obca dominująca religia. [B-KULT-REL]"
     },
-    "szczescie_kara_wysokie_podatki": {
-      "easy": 0,
-      "normal": -1,
-      "hard": -2,
-      "jednostka": "pkt/poziom",
-      "opis": "Kara Zadowolenia za każdy poziom powyżej bazowej stawki podatkowej (wyższe podatki → gniew). [PT — do strojenia]"
-    },
-    "szczescie_bonus_luksus_30": {
-      "easy": 2,
-      "normal": 1,
-      "hard": 0,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Szczęścia gdy udział Zamożność (suwak handlu) ≥ 30% — niskie podatki. [B2-narzedzia-stabilizacji]"
-    },
-    "szczescie_bonus_luksus_40": {
-      "easy": 3,
-      "normal": 2,
-      "hard": 1,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Sz gdy udział Zamożność (suwak handlu) ≥ 40%."
-    },
-    "szczescie_bonus_luksus_50": {
-      "easy": 4,
-      "normal": 3,
-      "hard": 2,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Sz gdy udział Zamożność ≥ 50%."
-    },
-    "szczescie_bonus_luksus_60": {
-      "easy": 5,
-      "normal": 4,
-      "hard": 3,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Sz gdy udział Zamożność ≥ 60%."
-    },
-    "szczescie_bonus_luksus_70": {
-      "easy": 6,
-      "normal": 5,
-      "hard": 4,
-      "jednostka": "pkt Sz",
-      "opis": "Bonus Sz gdy udział Zamożność ≥ 70% (max suwaka)."
+    "szczescie_siatka_zamoznosc": {
+      "easy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "normal": [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+      "hard": [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7],
+      "jednostka": "pkt Szczęścia miasta/turę",
+      "opis": "NOWA SIATKA (Maciej 2026-07-25, decyzja właściciela): co 10 punktów procentowych udziału Zamożności w podziale Daniny netto (suwak handlu miasta) = 1 pkt Szczęścia. Indeks tablicy = dziesiątka udziału: 0=0–9%, 1=10–19%, 2=20–29%, … 8=80–89%, 9=90–100% (suwak sięga 100%, decyzja 72A). Wartości ujemne w indeksach 0–1 (normal) i 0–2 (hard) to KARA za zbyt niski udział Zamożności — nowość, celowa decyzja właściciela. Zastępuje starą, rzadką siatkę (5 progów co 10–20 pkt proc. od 30% wzwyż, bez kary) i stary mechanizm szczescie_kara_wysokie_podatki (usunięty 2026-07-25 — dublował karę poniżej progu bazowego; nowa siatka mierzy to samo zjawisko w sposób ciągły na całym zakresie 0–100%, patrz society-breakdown.ts:luksusHappinessBonus)."
     },
     "szczescie_prog_bunt": {
       "easy": 4,
@@ -817,33 +782,61 @@
       "jednostka": "jednostki",
       "opis": "Max jednostek liczonych do Prawa (5 → PrawPct≈100%)."
     },
-    "prawo_ratusz": {
-      "easy": 8,
-      "normal": 6,
-      "hard": 4,
+    "prawo_dom_starszyzny": {
+      "easy": 36,
+      "normal": 28,
+      "hard": 22,
       "jednostka": "pkt Prawa",
-      "opis": "Bonus Prawa z Ratusza (gdy wpięty w budynki)."
+      "opis": "Bonus Prawa z Domu Starszyzny — administracja lokalna miast regionalnych, poziom 1 (Kamień); 50% wartości Pałacu III (decyzja Macieja 2026-07-25, łańcuch Dom Starszyzny → Dwór Zarządcy → Pretorium, zastępowanie jak Pałac)."
+    },
+    "prawo_dwor_zarzadcy": {
+      "easy": 43,
+      "normal": 33,
+      "hard": 26,
+      "jednostka": "pkt Prawa",
+      "opis": "Bonus Prawa z Dworu Zarządcy — administracja lokalna miast regionalnych, poziom 2 (Brąz), zastępuje Dom Starszyzny; 60% wartości Pałacu III (decyzja Macieja 2026-07-25)."
     },
     "prawo_pretorium": {
-      "easy": 6,
-      "normal": 5,
-      "hard": 3,
+      "easy": 50,
+      "normal": 38,
+      "hard": 31,
       "jednostka": "pkt Prawa",
-      "opis": "Bonus Prawa z Pretorium."
+      "opis": "Bonus Prawa z Pretorium — 70% wartości Pałacu III (decyzja Macieja 2026-07-25, Pytanie 28)."
+    },
+    "prawo_trybunal": {
+      "easy": 22,
+      "normal": 17,
+      "hard": 13,
+      "jednostka": "pkt Prawa",
+      "opis": "Bonus Prawa z Trybunału — dostępny wszędzie (stolica i region), niezależny od łańcucha administracji lokalnej; 50% wartości Dworu Zarządcy (decyzja Macieja 2026-07-25). Wcześniej Trybunał w ogóle nie był wpięty w system Prawa (hasTrybunal nie istniało)."
     },
     "prawo_sad": {
-      "easy": 6,
-      "normal": 5,
-      "hard": 3,
+      "easy": 25,
+      "normal": 19,
+      "hard": 16,
       "jednostka": "pkt Prawa",
-      "opis": "Bonus Prawa z Sądu."
+      "opis": "Bonus Prawa z Sądu — 50% wartości Pretorium (decyzja Macieja 2026-07-25, Pytanie 28)."
     },
     "prawo_palac": {
       "easy": 45,
       "normal": 35,
       "hard": 28,
       "jednostka": "pkt Prawa",
-      "opis": "Pałac — główne źródło Prawa (≈1,75× jednostka garnizonu; PT 2026-07)."
+      "opis": "Pałac I — główne źródło Prawa (≈1,75× jednostka garnizonu; PT 2026-07). Prawo z Pałacu rośnie z tierem (decyzja Macieja 2026-07-25, Pytanie 27=A) — patrz prawo_palac_ii, prawo_palac_iii."
+    },
+    "prawo_palac_ii": {
+      "easy": 58,
+      "normal": 45,
+      "hard": 36,
+      "jednostka": "pkt Prawa",
+      "opis": "Pałac II — Prawo rośnie z tierem Pałacu (decyzja Macieja 2026-07-25, Pytanie 27=A)."
+    },
+    "prawo_palac_iii": {
+      "easy": 71,
+      "normal": 55,
+      "hard": 44,
+      "jednostka": "pkt Prawa",
+      "opis": "Pałac III — Prawo rośnie z tierem Pałacu; Pretorium = 70% tej wartości (decyzja Macieja 2026-07-25, Pytania 27=A i 28)."
     },
     "prawo_kara_brak_garnizonu": {
       "easy": -1,

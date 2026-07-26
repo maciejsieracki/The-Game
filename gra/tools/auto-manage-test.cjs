@@ -137,9 +137,14 @@ const dataMinimal = {
 // --- tests -----------------------------------------------------------------
 console.log('\n[auto-manage-test] Running tests...\n');
 
+// TEMAT 8 (2026-07-24): Stolarnia wymaga aktywnego dostepu do etykiety "Drewno" w imperium
+// (building-resource-gate.ts DEPOSIT_LINKED_BUILDING_LABELS) -- bez tego kontekstu bramka
+// odrzuca kandydata i pickAutoBuildItem zwraca null. Fixture dostarcza aktywna etykiete.
+const ctxWithDrewno = { ctx: { activeResourceLabels: ['Drewno'] } };
+
 // Test 1: wynik jest obiektem z poprawnymi kluczami
 console.log('1. Struktura zwracanego obiektu');
-const result1 = autoManageCity(cityBase, map, emptyProd, dataMinimal, { yieldOf });
+const result1 = autoManageCity(cityBase, map, emptyProd, dataMinimal, { yieldOf, ...ctxWithDrewno });
 assert(typeof result1 === 'object' && result1 !== null, 'result is an object');
 assert('workedTiles' in result1, 'result has workedTiles');
 assert('enqueue' in result1,     'result has enqueue');
@@ -262,8 +267,13 @@ const dataWzrost = {
   ],
   units: [],
 };
+// TEMAT 8 (2026-07-24): Spichlerz wymaga aktywnego dostepu do etykiety "Ceramika" w imperium
+// (decyzja Temat 8 z 2026-07-24) -- bez niej bramka odrzuca kandydata (podobnie Stolarnia/Drewno).
 const cityWzrost = { ...cityBase, budowaTryb: 'auto', budowaFocus: 'wzrost' };
-const r16 = pickAutoBuildItem(cityWzrost, emptyProd, dataWzrost, { unlockedTechs: [], ctx: { epoch: 1 } });
+const r16 = pickAutoBuildItem(cityWzrost, emptyProd, dataWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
 eq(r16 && r16.id, 'spichlerz', 'wzrost -> spichlerz');
 
 // --- summary ---------------------------------------------------------------

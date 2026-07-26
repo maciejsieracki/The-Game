@@ -12,6 +12,7 @@ import { hexNeighborCoords, isCivilianUnit } from '../units/setup';
 import { syncStackRuchLeft } from './armyMerge';
 import { applyLossPctToRoster } from './auto-battle-power';
 import type { UnitPowerInput } from './unit-power';
+import { registerBattleSurvived } from './veteran';
 
 export type MapBattleWinner = 'atakujacy' | 'obronca' | 'remis';
 
@@ -286,6 +287,38 @@ function spendAttackMpOnLive(
   }
 }
 
+/**
+ * TRZECI SYSTEM (weterani, 2026-07-25, game/veteran.ts) -- JEDYNY wspólny
+ * punkt zliczania "przeżytej bitwy" dla WSZYSTKICH trybów starć w grze:
+ * applyPostBattleMap() jest już -- z nagłówka tego pliku -- "wspólnym
+ * skutkiem walki na mapie (auto + ręczna 3D)", wołanym z main.ts
+ * applyMapBattleOutcome() zarówno dla auto-resolve mapy (lossAtkPct/
+ * lossDefPct), ręcznej bitwy 3D animowanej i "pomiń animację"
+ * (manualSurvivors), JAK I szturmu oblężniczego (siegeContext -- ta sama
+ * funkcja, tylko z cityOnBattleHex ustawionym). Jedno wywołanie tutaj
+ * pokrywa więc wszystkie tryby naraz -- nie trzeba osobnego haka w
+ * main.ts/siege.ts/battleScene.ts.
+ *
+ * Każda jednostka z atkRoster+defRoster, która PRZEŻYŁA (jest nadal w
+ * `input.units` PO applyAutoLosses/applyManualSurvivors, czyli martwe już
+ * usunięte), dostaje +1 do licznika przeżytych bitew (sufit 2, patrz
+ * registerBattleSurvived). Liczy się RAZ na bitwę, niezależnie od wyniku
+ * (wygrana/przegrana/remis) -- przegrywający, który się wycofał, też
+ * "przeżył starcie" w rozumieniu zadania. Cywile (Osadnik/Robotnik/
+ * Zwiadowca) pomijani -- doświadczenie bojowe dotyczy jednostek walczących.
+ * ownerId-agnostyczne -- identyczny warunek dla gracza i AI (PARYTET AI).
+ */
+function registerVeteranProgressAfterBattle(input: PostBattleMapInput): void {
+  const ids = new Set<string | number>();
+  for (const ref of input.atkRoster) ids.add(ref.id);
+  for (const ref of input.defRoster) ids.add(ref.id);
+  for (const id of ids) {
+    const u = liveUnit(input.units, id);
+    if (!u || isCivilianUnit(u)) continue;
+    u.battlesSurvived = registerBattleSurvived(u);
+  }
+}
+
 export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResult {
   const removedIds: string[] = [];
 
@@ -295,6 +328,8 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
     const dead = applyAutoLosses(input);
     dead.forEach(id => removedIds.push(id));
   }
+
+  registerVeteranProgressAfterBattle(input);
 
   if (input.winner === 'atakujacy') {
     if (input.cityOnBattleHex) wipeDefenderOnCityCenter(input);

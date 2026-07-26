@@ -9,6 +9,37 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
+
+
+## ROBOCZA `7c7ae9a0` — 2026-07-26 12:18 · FALA 15: SCALENIE OBU INTEGRATOROW — **AKTUALNA**
+- md5 (pelne): `7c7ae9a018b174425ff9e99698f286c9` · stempel: `ROBOCZA · 5755d741 · 2026-07-26 12:18`
+- **VERIFY OK.** Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+- **TO PIERWSZY BUNDLE ZAWIERAJACY PRACE OBU INTEGRATOROW.** Do tej pory istnialy dwa rozne
+  `gra-robocza/Gra-ROBOCZA.html` — jeden na `main` (drugi integrator), drugi na galezi
+  `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (sesja chmurowa). Wlasciciel widzial tylko ten
+  z `main`, wiec fale 12-14 sesji chmurowej NIGDY nie trafily do jego playtestu.
+- **Z galezi main (drugi integrator):** naprawa suwaka lasu (40/60/80% — przyczyna byla
+  zahardkodowanym sufitem 0,18 mniejszym od wszystkich progow, wiec tiery byly nierozroznialne),
+  pasek w pelnym ekranie, tlo ikony dyplomacji, HP w liscie armii, dzwiek marszu jednostek,
+  menu pauzy, koszt Murarstwa 28.
+- **Z galezi sesji chmurowej (fale 12-14):** korupcja ozywiona (byla zahardkodowana na 0%),
+  Pieniadz z budynkow i z konwersji Pracy do puli Daniny, domyslny podzial 20/60/20,
+  nowa siatka Szczescia z kara ponizej 10%, Biblioteka +30%/Akademia +20%, Mennica tylko
+  w stolicy + zasypianie bez zlota, zloto na szlakach, system weteranow, limit 10 heksow
+  na skupisko gorskie przy gorzystosci 19,3%, 5 modeli jednostek wpietych, model Kopalni
+  zlota, odznaki ulepszen na zetonach, bonus cudow zasilajacy Handel, nazewnictwo
+  Danina/Podatek, Wyjdz w menu glownym, wersja 0.9.
+- **KONFLIKT MERYTORYCZNY ROZSTRZYGNIETY PRZEZ WLASCICIELA:** obaj integratorzy wdrozyli
+  decyzje 65B/66B niezaleznie. Maciej 2026-07-26: „ok twoja glebsza" — obowiazuje wersja
+  sesji chmurowej. Powod widoczny w kodzie: bramka z `main` nie sprawdzala ani wymogu
+  STOLICY (66B), ani dostepu do ZLOTA (83B).
+- **Bramki po scaleniu:** tsc 0 bledow · logic 208/208 · combat 6/6 · currency 32/32 ·
+  plony-budynkow 68/68 · korupcja 18/18 · praca-na-pieniadz 23/23 · zloto-szlak 45/45 ·
+  weterani 47/47 · mennica-uspienie 47/47 · danina-podatek-nazwa 15/15 · tooltip-ui 13/13 ·
+  cuda-handel 26/26 · szczescie-zamoznosc 60/60 · unit-replace 10/10 · dispatch-check OK.
+
+<!-- ===== WPISY DRUGIEGO INTEGRATORA (galaz main) — doklejone przy scaleniu 2026-07-26 ===== -->
+
 ## ROBOCZA `c08b5fcc` — 2026-07-26 · naprawy UI z playtestu + lasy wg ustawienia — **AKTUALNA**
 
 - **Pełny ekran naprawiony** — przyczyną paska u dołu NIE był element HUD, tylko canvas 3D zamrożony na rozmiarze z chwili startu (`renderer.setSize()` nadpisywał `canvas.style` pikselami, kasując 100%/100% z main.ts). Edge-pan wyłączał się, bo kursor wyjeżdżał poza obszar canvasu przed prawdziwą krawędzią. Fix w `render/scene.ts` (updateStyle=false + nasłuch `fullscreenchange`). **Efekt uboczny: naprawia też skalowanie przy zwykłej zmianie rozmiaru okna.**
@@ -27,6 +58,212 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 - Commity: `0645e92` (Murarstwo+Danina+pełny ekran+dyspozycje), `bfa51c0` (marsz), `9a86e42` (revert lasów).
 
 ## ROBOCZA `b1f16a59` — 2026-07-25 · FALA 10.1: fix błędnego „mnożnika" Pałacu
+
+- **Zawartość:** cała FALA 10 (patrz niżej) **+ poprawka danych**: trzy tiery Pałacu miały w `baza.mnoznik` wartość równą DOKŁADNIE swojej kulturze (5/5, 8/8, 11/11, przyrost 0) — pomyłka przy wpisywaniu danych, wykryta przy weryfikacji z Maciejem. Pole `mnoznik` NIE jest konsumowane przez silnik ekonomii (czytane tylko do wyświetlenia chipa „×5 mnożnik" w panelu miasta), więc karta Pałacu obiecywała bonus, którego gra nie stosuje. Wyzerowane dla `palac`/`palac_ii`/`palac_iii` — chip znika, realne bonusy (kultura + zadowolenie, które silnik faktycznie liczy) bez zmian.
+- **Potwierdzone przez Macieja koszty i bonusy Pałacu:** I (Kamień) 8 drewna / 40 pracy · kultura 5 (+3/poz.), zadowolenie 2 (+1/poz.) — II (Brąz) 8 drewna+8 kamienia / 60 pracy · kultura 8 (+5), zadow. 3 (+2) — III (Żelazo) 8 drewna+8 kamienia+6 cegły / 90 pracy · kultura 11 (+7), zadow. 5 (+2). Maks. poziom 10, ulepszane kolejno I→II→III.
+- **Bramki:** tsc 0 · tech-tree 19/19 · VERIFY OK.
+- **md5:** `b1f16a595b17a2cb37955cc8de4b2fc8` · pieczątka `b1f16a59`. Zastępuje `99837b91`.
+- **ZNANY DŁUG (do decyzji):** pozostałe 11 budynków też ma niezerowy `mnoznik` (kuźnia 5, karawanseraj 8, koszary 5, wielka kuźnia 23, akademia wojskowa 20, warsztat oblężniczy 10, akademia 10, pretorium 5, lazaret 5, kuźnia żelaza 8, targowisko +3/poz.) — tam wartości NIE są duplikatem kultury (wyglądają na zamierzoną, ale NIGDY NIEZAIMPLEMENTOWANĄ mechanikę). Silnik ich nie konsumuje. Do rozstrzygnięcia: zaimplementować mnożnik jako realną mechanikę czy usunąć z kart.
+
+
+<!-- ===== WPISY SESJI CHMUROWEJ (galaz claude/sprawdzenie-funkcjonalnosci) ===== -->
+## ROBOCZA `3cf111ce` — 2026-07-26 06:02 · FALA 14: jednostki Brazu wpiete + bonus cudow zasila Handel — **AKTUALNA**
+- md5 (pelne): `3cf111ced9515fe4263cde7a75ddc692` · stempel z menu: `ROBOCZA · 8c897b6c · 2026-07-26 06:02`
+- Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. **VERIFY OK.**
+- **Co weszlo:**
+  - **PIEC MODELI JEDNOSTEK WPIETYCH** (dotad istnialy w repo, ale zaden zywy kod ich nie
+    importowal): Wlocznik, Wojownik z mieczem i tarcza, Procarz, Rydwan (woly) — wszystkie
+    epoka Brazu — oraz Hastati (epoka Zelaza, Rzym; model zastapil wczesniejszy
+    z `hastati-falangita.ts`).
+    - **Poprawka Wlocznika przed wpieciem:** wysokosc **0,999 -> 0,870 x HEX_R** (byl o jedna
+      trzecia wyzszy od reszty serii i odstawal jak tyczka); tarcza przeniesiona z nadgarstka
+      przy biodrze na srodek przedramienia, kryje tors od pasa po bark.
+    - **SPROSTOWANIE:** w meldunku FALA 13 napisalem, ze wlocznia siega 0,999 w POZIOMIE
+      i wchodzi na sasiednie pola. To byla moja bledna interpretacja pomiaru — 0,999 bylo
+      WYSOKOSCIA, maks. promien poziomy wynosil 0,321 przy limicie 0,866.
+    - Dopasowanie do jednostek po PELNEJ nazwie, nie po fragmencie. Nowy test
+      `wpiecie-dispatch-check` 14/14 ma piec asercji NEGATYWNYCH potwierdzajacych, ze warianty
+      kulturowe (Wlocznik sumeryjski, Procarz (Huaracoc), Rydwan egipski, Tyrski miecznik,
+      Miecznik galijski) zachowaly wlasne modele.
+  - **Bonus cudow `handel_procent` ozywiony** (decyzja wlasciciela 2026-07-26: „handel nie
+    danine"). Dotad ZADEN kod go nie konsumowal — czwarta martwa obietnica w tym projekcie.
+    Zasila **Handel**, czyli dochod z tras handlowych z obcymi cywilizacjami, a **NIE Danine**
+    (dochod miasta oddawany wladcy). Piec cudow: Petra 0,15 · Kamien Ha'amonga 0,15 ·
+    Kolos Rodyjski 0,20 · Brama wszystkich narodow 0,15 · Palac Weiyang 0,15.
+    Kumulacja **addytywna** (spojnie z premiami budynkow i redukcja korupcji).
+    Teksty w Poradniku i encyklopedii poprawione.
+- **Bramki:** tsc 0 bledow · logic 208/208 · combat 6/6 · unit-replace 10/10 ·
+  wpiecie-dispatch-check 14/14 (NOWY) · cuda-handel 26/26 (NOWY) · trade-grant 60/60 ·
+  zloto-szlak 45/45 · currency 32/32 · mennica-uspienie 47/47 · danina-podatek-nazwa 15/15.
+- **DO OGLEDZIN WLASCICIELA — dwa zastrzezenia integratora do wpietych modeli:**
+  1. **Rydwan (woly) nie czyta sie jako rydwan** pod katem kamery 52 stopni — wyglada jak
+     stojaca postac, nie widac ani zaprzegu, ani wozu.
+  2. **Procarz jest wyraznie drobniejszy od reszty i nie widac u niego procy** — ta sama wada
+     wracala juz trzy razy (proca czytana raz jako pochodnia, raz jako sztywny prostokat).
+  Oba przechodza wszystkie pomiary (mieszcza sie w obrysie, stopy na y=0), ale pomiar
+  to nie to samo co czytelnosc.
+
+## ROBOCZA `9fc91af8` — 2026-07-26 00:12 · FALA 13: nazewnictwo Danina/Podatek, Mennica ze zlotem, odznaki i Kopalnia zlota — **ZASTAPIONA** (-> `3cf111ce`)
+- md5 (pelne): `9fc91af8bec6561fd6d2d2afa4bf2e95` · stempel z menu: `ROBOCZA · c06affa9 · 2026-07-26 00:12`
+- Odswiezone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. **VERIFY OK.** 34 250 545 B.
+- **Co weszlo (decyzje 55B, 57, 65B, 66B, 81A, 82A, 83B + dlugi techniczne):**
+  - **Zmiana nazwy Handel -> Danina -> Podatek.** Jeden wspolny modul `game/danina-nazwa.ts`
+    rozstrzyga nazwe; przelacza na **Podatek** dla CALEJ cywilizacji dopiero gdy Waluta odkryta
+    ORAZ Mennica stoi **w stolicy**. Strumien z tras handlowych swiadomie zostaje **Handlem**.
+    Objelo tez **plon pojedynczego heksu** (decyzja 81A) — tooltip przelacza sie dynamicznie.
+  - **Mennica zasypia po utracie dostepu do zlota** (83B): mnoznik Daniny wraca do x1,0,
+    nazwa wraca na Danine. Budynek NIE jest burzony i budzi sie sam po odzyskaniu dostepu.
+    Panel miasta mowi graczowi, DLACZEGO Mennica nie dziala i co zrobic.
+  - **Odznaki ulepszen budynkowych na zetonach** (57 A+B): kropki przy podstawie + kolorowa
+    obwodka; skala wyprowadzona z realnych maksimow (Pancerz 45 pkt proc. + Parametry 50 =
+    95, trzy tercje: granice 31 i 63). Wizualnie odrozniane od gwiazdek weterana (kule przy
+    podstawie vs bryly nad glowa; zloto zarezerwowane dla weterana).
+  - **Wlasny model 3D Kopalni zlota** — koniec reuzycia Kopalni miedzi. Odkrywka z plytkim
+    szybem, trojnog z koszem, rynna pluczkowa z runem owczym, sadzawka, misa batea.
+    Po rundzie korekty czyta sie jako ZLOTO takze w skali mapy (weryfikacja na renderze
+    200x200 px, czyli tyle pikseli, ile pole naprawde dostaje w grze).
+  - **Pole `odblokowuje` ozywione** (55B): koniec hardkodu `id === 'mury'`, flagi czytane
+    z danych. Trzy flagi (maFort/maBaszta/maWarsztatOblezniczy) zostaja jako **rezerwa**
+    (decyzja 82A) — jawnie udokumentowana, zeby nikt nie usunal ich jako martwego kodu.
+  - **Stala przepustowosci szlaku** przeniesiona do `econ-params.json`
+    (`handel_szlaki.handel_ilosc_na_ture_na_szlak` = 4 sztuki surowca na ture na szlak).
+  - **Martwy kod usuniety**: `buildingEffectAtLevel`, `formatYieldLine`, `ICON_LABELS_PL`.
+  - **Dokumentacja doprowadzona do kanonu**: Poradnik gracza i encyklopedia — 50 wystapien
+    zmienionych na Danine (74 swiadomie zostawione jako Handel), przykłady liczbowe
+    przeliczone z 70/20/10 na **20/60/20**, dopisane cztery reguly, ktorych Poradnik
+    w ogole nie opisywal (korupcja, Mennica/Podatek, pula Daniny z budynkow, weterani).
+    Opisy bonusow 5 cywilizacji mowia wreszcie o Daninie, a nie o zlocie z handlu.
+- **Bramki:** tsc 0 bledow · logic 208/208 · combat 6/6 · currency 32/32 · plony-budynkow 68/68 ·
+  korupcja 18/18 · praca-na-pieniadz 23/23 · zloto-szlak 45/45 · weterani 47/47 ·
+  mennica-uspienie 47/47 (NOWY) · mennica-magazyn 41/41 · danina-podatek-nazwa 15/15 (NOWY) ·
+  danina-podatek-tooltip-ui 13/13 (NOWY) · szczescie-zamoznosc 60/60 · society-breakdown 40/40 ·
+  upgrade-budynki 48/48 · deposit-building-gate 34/34 · trade-grant 60/60.
+- **Co NIE weszlo:** 5 modeli jednostek Brazu (istnieja, NIEWPIETE — czekaja na ogledziny
+  wlasciciela, material w `dyspozycje/podglad-modeli-braz/`), pomiar FPS, panele Excel.
+- **DO OGLEDZIN NA PLAYTESCIE:** (1) czy mapa nie jest za drobno cetkowana po limicie
+  10 heksow na skupisko; (2) nowe liczby w panelu miasta — trzy strumienie przestaly omijac
+  suwak, wiec Skarbiec dostaje mniej niz dotad, a Nauka i Zamoznosc wiecej.
+- **ZNALEZISKO DO DECYZJI:** cuda o bonusie typu `handel_procent` (`wonders.json`) — typ
+  NIGDZIE nie jest konsumowany przez kod. Kolejna martwa obietnica; nie wiadomo, czy mialy
+  zasilac Danine czy Handel.
+
+## ROBOCZA `0f9ce758` — 2026-07-25 22:33 · FALA 12: domknięcie ekonomii (Danina/korupcja/Mennica), złoto na szlakach, weterani, limit skupisk górskich — **AKTUALNA**
+- md5 (pełne): `0f9ce758973fb53490fb79fdecda7bc7` · stempel z menu: `ROBOCZA · 9600d931 · 2026-07-25 22:33`
+  (stempel nosi md5 pliku SPRZED wstrzyknięcia stempla — tak jak poprzednie wydania; manifest i VERIFY
+  operują na md5 pliku finalnego `0f9ce758`)
+- Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST (MAPA, MIASTO, OBLEZENIE-3v3, ODSKOK-OBLEZENIE,
+  ODSKOK, WALKA) + `ROBOCZA-MANIFEST.json`. **VERIFY OK.** Rozmiar 34 240 798 B.
+- **Co weszło (decyzje właściciela 63, 67B, 73–80):**
+  - **Korupcja ożywiona** — dotąd zahardkodowana na 0% w obu miejscach liczących ekonomię tury. Obciąża
+    **wyłącznie Daninę/Podatek, NIE Pracę**. Współczynniki obniżone o 50%: dystans 0,5/1/1,5 pkt proc. straty
+    na pole od stolicy, liczba miast 0,5/0,5/1 pkt proc. na miasto (easy/normal/hard). Sufit 38/50/62% bez zmian.
+    Sąd, Pretorium i Pałac redukują po 30 pkt proc., addytywnie (realne maksimum 60 pkt proc.).
+  - **67B — Pieniądz z budynków wchodzi do puli Daniny**, nie wprost do skarbca (budynek 60 pkt Pieniądza/turę:
+    było Skarbiec 60/Nauka 0/Zamożność 0, jest 36/12/12 przy suwaku 20/60/20).
+  - **76B + korekta właściciela — konwersja Pracy na Pieniądz** (Targowisko + Waluta) wchodzi do Daniny
+    **u źródła** i przechodzi przez wszystkie mnożniki handlu, łącznie z Walutą i Mennicą.
+  - **74A — domyślny podział Daniny nowego miasta 20% Nauka / 60% Skarbiec / 20% Zamożność** (było 20/70/10);
+    poprawione TRZY źródła tej wartości (econ-params.json, game/cities.ts, ui/cityPanel.ts).
+  - **Nowa siatka Szczęścia od udziału Zamożności** — 10 przedziałów po 10 pkt proc., z KARĄ poniżej 10%
+    (easy +1…+10, normal −1…+8, hard −2…+7 pkt Szczęścia/turę). Usunięty stary mechanizm „wysokie podatki",
+    który dublował karę.
+  - **75C — premia Biblioteki do Nauki miasta 0,37/0,30/0,23**, premia Akademii **0,25/0,20/0,15** (łącznie ×1,50
+    na normalnym; było ×1,60 przy odwróconej logice, gdzie tańsza Biblioteka dawała 5× więcej niż Akademia).
+  - **66B/71A — Mennica tylko w stolicy**, mnożnik działa na całe imperium; mnożnik cywilizacji z `civs.json`
+    = poziom normal, easy +0,5 / hard −0,5. **Naprawiony rozjazd panel/silnik** (Fenicjanie: panel ×2,6,
+    silnik ×1,5 — silnik w ogóle nie czytał mnożnika cywilizacji).
+  - **77A — złoto na szlakach handlowych jako surowiec typu „dostęp"** (jak koń, bez przepływu sztuk do
+    magazynu). Bez tego cywilizacja bez złoża złota nigdy nie zbudowałaby Mennicy.
+  - **78 — system weteranów** (trzeci system rozwoju jednostek): poziom 1 = statystyki z JSON, poziom 2 po
+    1. przeżytej bitwie +10%, weteran po 2. bitwie +20%; pancerz wyłączony; Morale ucieczki i Próg dezercji
+    **obniżane** ×0,90 / ×0,80.
+  - **63 + 80A — limit 10 heksów Gór i 10 heksów Wzgórz w spójnym skupisku** przy przywróconej górzystości
+    lądu 19,3% (największe skupisko: 218 → 10 heksów; pokrycie złóż mapa Ziemia z powrotem 75%).
+  - **61A/64A — usunięty martwy kod** testowej bitwy (ok. 260 linii, `battle-smoke.cjs`, `facing.ts`,
+    `launchTestBattle`).
+- **Bramki:** tsc 0 błędów · logic 208/208 · combat 6/6 · currency 32/32 · plony-budynkow 68/68 ·
+  korupcja 18/18 · praca-na-pieniadz 23/23 · zloto-szlak 45/45 · weterani 47/47 · szczescie-zamoznosc 60/60 ·
+  society-breakdown 40/40 · determinizm generatora PASS (hash A=B), 775/775 rzek z ujściem do realnego morza.
+- **Co NIE weszło:** zmiana nazwy Handel→Danina→Podatek (65B/66B, 204 wystąpienia w UI), ożywienie pola
+  `odblokowuje` (55B), odznaki ulepszeń na żetonach (57 A+B), 5 modeli jednostek Brązu (istnieją, niewpięte),
+  własny model 3D Kopalni złota.
+- **DO OGLĘDZIN:** rozkład skupisk Gór (5 map): 953 skupiska 1–2 heksowe, 111 po 3–5, 38 po 6–8, 70 po 9–10.
+  Mapa może wyglądać „cętkowanie" — rozsypane pojedyncze szczyty pochodzą z szumu reliefu, nie z limitu.
+
+## ROBOCZA `98b1403a` — 2026-07-25 · FALA 11.1: przywrócony wymóg kolejności budowania — **ZASTĄPIONA** (→ `0f9ce758`)
+
+- **Wymóg „najpierw poprzednik" wrócił.** Likwidacja „awansu bocznego" (FALA 11) usunęła pole `upgradeFrom`
+  z czterech par budynków, a **razem z nim zniknął wymóg kolejności budowania** — dało się postawić Akademię
+  w mieście, które nigdy nie miało Biblioteki. Dopisane do `CITY_BUILDING_PREREQ`:
+  Akademia ← Biblioteka · Cytadela ← Mury · Akademia wojskowa ← Koszary · Świątynia ← Kamienne kręgi.
+- **FIX pre-istniejącej luki:** `eraBuildingCatalog` w ogóle nie sprawdzał prerekwizytu budynkowego, więc budynek
+  zablokowany brakiem poprzednika **znikał z panelu bez żadnego komunikatu**, zamiast trafić do sekcji
+  „Jeszcze zablokowane" z tekstem „🔒 Wybudowana Biblioteka w tym mieście". Dotyczyło to również Warsztatu
+  oblężniczego i Łaźni publicznej, czyli było widoczne dla gracza już przed dzisiejszymi zmianami.
+- **Bramki:** tsc 0 · nowy prereq-budynkow 42/42 · grupy-budynkow 80/80 · koszty-surowcowe 117/117 ·
+  plony-budynkow 47/47 · unit-building-bonuses 76/76 · administracja-stolica 48/48 · prawo-palac-tier 30/30 ·
+  society-breakdown 40/40 · logic 208/208 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · VERIFY OK.
+- **md5:** `98b1403ac94d335015e5c28411155909` · pieczątka `98b1403a`. Zastępuje `dd1ec38e`.
+- **Nie weszło:** modele jednostek epoki Brązu (Włócznik, Miecznik, Procarz, Rydwan na wołach) — pliki istnieją
+  w repo, ale **NIE są wpięte do dispatchu**, bo właściciel ocenił serię jako uwstecznienie. Praca przeniesiona
+  na subagentów Opus 5 i przerwana na jego prośbę (limit). Gra renderuje te jednostki starymi modelami.
+
+## ROBOCZA `dd1ec38e` — 2026-07-25 · FALA 11: przebudowa systemu budynków + naprawa martwych plonów — ZASTĄPIONA
+
+- **KRYTYCZNA NAPRAWA — plony budynków nigdy nie docierały do silnika.** `cityYieldPerTurn()` była wołana
+  z **pustą tablicą budynków** we wszystkich trzech miejscach (`turn-economy.ts` preview i advance,
+  `cityPanel.ts` „Bilans plonów"). Od 2026-07-09 **żaden budynek nie dawał Pracy, Pieniądza, Żywności,
+  Nauki ani Kultury** — całą gospodarkę niosło wyłącznie pole wokół miasta. Zmierzony skutek naprawy
+  (miasto Żelaza, pełna zabudowa): Praca 12→**78**, Pieniądz 8→**98**, Nauka 2→**21**, Kultura 0→**36**,
+  Żywność 2→**8**. Zadowolenie NIE dubluje się — pole z tej funkcji nigdy nie było propagowane dalej,
+  żywym kanałem pozostaje `sumBuildingHappinessFromBuiltIds`; asercja regresyjna dopisana.
+- **Model awansu budynków rozdzielony na dwa rodzaje** (decyzja Macieja):
+  **w górę** (następca kasuje poprzednika, stała wartość per tier, `maksPoziom: 1`): Pałac I/II/III ·
+  Dom Starszyzny→Dwór Zarządcy→Pretorium · Kuźnia brązu→Kuźnia żelaza→Wielka Kuźnia · Spichlerz→Spichlerz II ·
+  Port handlowy→Port wielki · Piec hutniczy→Odlewnia żelaza;
+  **w bok** (oba stoją obok siebie, wartości rozdzielone żeby nie liczyć podwójnie): Mury+Cytadela+Baszta ·
+  Biblioteka+Akademia · Koszary+Akademia wojskowa · Kamienne kręgi+Świątynia.
+  Rozdzielone: Akademia nauka 9→6 i kultura 7→5, Akademia wojskowa praca 5→3, Świątynia kultura 3→2 i zadow. 3→2.
+- **Panel miasta: osiem grup dziedzinowych** zamiast płaskiej listy 39 budynków (Prawo i administracja ·
+  Wojsko i obrona · Handel i pieniądz · Nauka i kultura · Wiara · Zdrowie · Produkcja surowców · Żywność).
+  Przypisanie grupy jest **danymi**, nie hardkodem UI.
+- **Stolica kontra regiony:** Pałac I/II/III wyłącznie w stolicy, nowy łańcuch **Dom Starszyzny → Dwór Zarządcy →
+  Pretorium** wyłącznie poza stolicą, Trybunał i Sąd wszędzie. **FIX pre-istniejącego buga:** budynki z pustym
+  `techUnlock` nie miały obsługi znacznika pustego, przez co **Pałac nigdy nie pojawiał się na liście produkcji**.
+- **Prawo — nowa siatka** (pkt Prawa, łatwy/normalny/trudny; skala Kamień 50 = 100%, Brąz 75, Żelazo 100):
+  Pałac I 45/35/28 · Pałac II 58/45/36 · Pałac III 71/55/44 · Dom Starszyzny 36/28/22 · Dwór Zarządcy 43/33/26 ·
+  Pretorium 50/38/31 · Trybunał 22/17/13 (wcześniej NIE był wpięty w Prawo) · Sąd 25/19/16.
+  Zasada: Pretorium = 70% Pałacu III, Dwór Zarządcy 60%, Dom Starszyzny 50%, Sąd 50% Pretorium.
+- **Obrona miasta:** nowy budynek **Baszta** (+100%). Mury 200% + Cytadela 100% + Baszta 100% = **400%**.
+  Arytmetyka scalona w jednej funkcji `city-defense.ts` dla mapy świata i bitwy interaktywnej
+  (wcześniej dublowana osobno w `main.ts` i `battleScene.ts`).
+- **Dwie ścieżki ulepszeń jednostek z budynków:** Pancerz (Kuźnia brązu 15% → Kuźnia żelaza 30% → Wielka
+  Kuźnia 45%, suma po łańcuchu) i parametry miękkie (Koszary 20 + Akademia wojskowa 20 + Warsztat oblężniczy
+  10 = 50%). Jednostka pamięta **najlepsze odwiedzone własne miasto**, bonus trwały, parytet AI.
+- **Koszty surowcowe wg epok:** Kamień = drewno (wyjątek: Kamienne kręgi i Stela na kamieniu), Brąz =
+  drewno+kamień, Żelazo = drewno+cegła (obrona i port: drewno+kamień). **Brąz i żelazo jako surowiec budowlany
+  usunięte z całej gry.** Powód: cegła powstaje tylko z gliny, a glina tylko przy rzece — sześć budynków Brązu
+  i wszystkie Żelaza były nieosiągalne dla cywilizacji bez rzeki.
+- **Cegła wchodzi na szlaki handlowe** (obok brązu, żelaza, koni). Uwaga: budynki pobierają cegłę **ilościowo**
+  z puli cywilizacji, a szlak przekazuje **dostęp**, więc do pełnego zadziałania decyzji brakuje jeszcze bramki
+  po stronie budynków — do rozstrzygnięcia z Maciejem.
+- **Usunięte z gry:** Karawanseraj (anachronizm — budynek średniowieczny w Brązie), Ratusz (martwy parametr
+  Prawa bez budynku; wróci jako szczebel po Pretorium w średniowieczu). Wcześniej tej doby: Lazaret.
+- **Jednostki:** **Łucznik nubijski** (Brąz, Egipt — zasięg 5, atak dystansowy 7, 16 pocisków, 50 zdrowia,
+  ruch 3) z **dedykowanym modelem 3D** (84 mesh / 1052 tri, długi łuk self-bow, ciemna karnacja, pióro strusia).
+  Wpięte modele Opus 5 łuczników Egiptu i Sumeru. Tarcza Zulu przeskalowana z 2,07 na 1,49 wysokości tułowia.
+- **Naprawa generatora map:** ścieżka „fair play" wymuszała glinę na heksie bez rzeki, łamiąc własną regułę —
+  `logic-test.cjs` wrócił z 207/208 na **208/208**.
+- **Bramki:** tsc 0 · koszty-surowcowe 117/117 (nowy) · grupy-budynkow 80/80 (nowy) · plony-budynkow 47/47 (nowy) ·
+  unit-building-bonuses 76/76 · administracja-stolica 48/48 (nowy) · prawo-palac-tier 30/30 (nowy) ·
+  society-breakdown 40/40 · logic 208/208 · upkeep 58/58 · building-happiness 8/8 · tech-tree 19/19 ·
+  research 33/33 · unit-replace 10/10 · combat 6/6 · post-battle-map 25/25 · VERIFY OK.
+- **md5:** `dd1ec38e0b277765e710e6ae48601b73` · pieczątka `dd1ec38e`. Zastępuje `b1f16a59`.
+- **UWAGA DO PLAYTESTU:** ekonomia zmieniła się skokowo (patrz naprawa plonów) — to jest główna rzecz do ogrania.
+  Stare zapisy wczytają się, ale miasta z Akademią bez Biblioteki dostaną mniej Nauki, a budynki z łańcuchów
+  „w górę" spadną do wartości jednego poziomu.
+
+## ROBOCZA `b1f16a59` — 2026-07-25 · FALA 10.1: fix błędnego „mnożnika" Pałacu — ZASTĄPIONA
 
 - **Zawartość:** cała FALA 10 (patrz niżej) **+ poprawka danych**: trzy tiery Pałacu miały w `baza.mnoznik` wartość równą DOKŁADNIE swojej kulturze (5/5, 8/8, 11/11, przyrost 0) — pomyłka przy wpisywaniu danych, wykryta przy weryfikacji z Maciejem. Pole `mnoznik` NIE jest konsumowane przez silnik ekonomii (czytane tylko do wyświetlenia chipa „×5 mnożnik" w panelu miasta), więc karta Pałacu obiecywała bonus, którego gra nie stosuje. Wyzerowane dla `palac`/`palac_ii`/`palac_iii` — chip znika, realne bonusy (kultura + zadowolenie, które silnik faktycznie liczy) bez zmian.
 - **Potwierdzone przez Macieja koszty i bonusy Pałacu:** I (Kamień) 8 drewna / 40 pracy · kultura 5 (+3/poz.), zadowolenie 2 (+1/poz.) — II (Brąz) 8 drewna+8 kamienia / 60 pracy · kultura 8 (+5), zadow. 3 (+2) — III (Żelazo) 8 drewna+8 kamienia+6 cegły / 90 pracy · kultura 11 (+7), zadow. 5 (+2). Maks. poziom 10, ulepszane kolejno I→II→III.

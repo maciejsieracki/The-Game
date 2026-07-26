@@ -54,10 +54,25 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
 Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — odpowiadaj po polsku**. Podejmuje decyzje produktowe/gameplayowe; od Ciebie oczekuje architektury, analizy i wykonania. Woli **ustrukturyzowany, analityczny wywód** (tabele, numerowane sekcje) niż ściany tekstu.
 
 1. **KAŻDA decyzja gameplayowa/produktowa/architektoniczna → PEŁNA FORMA ABC.** Struktura pytania, dokładnie w tej kolejności: nagłówek `[TEMAT: …]` + **ID** (np. `C-MAP-Q1`) · **Sytuacja** (co jest DZIŚ w grze, pełne nazwy, zero skrótów) · **Cel pytania** · **Dlaczego teraz** (blokada/ryzyko) · **A / B / C** — każda opcja z opisem + **Za (≥2)** + **Przeciw (≥2)** · **Rekomendacja** (zawsze litera + jedno zdanie) · **formularz Ask na samym końcu** (tylko krótkie etykiety, rekomendacja pierwsza z dopiskiem „(Rekomendacja)"). **Max 3 pytania na turę** (dłuższa kolejka → `[PACZKA 1/N]`, następna dopiero po odpowiedzi). Po odpowiedzi: **ECHO** → potwierdź „wdrażaj?" → działaj po „Tak". Hasło **`format`** lub **`ABC`** = natychmiast przepisz pytanie w pełnej formie. Pełna specyfikacja: `dyspozycje/PAMIEC-ROBOCZA-CIV.md`.
-2. **Deleguj wykonanie subagentom na Sonnet 5** (`Agent`, `model: "sonnet"`; `general-purpose` do pracy w repo, `Explore` do read-only reconu). Opus rezerwuj dla wyjątkowo złożonych zadań. Główna pętla zostaje do: rozmowy, dekompozycji, syntezy i decyzji ABC. Subagentowi dawaj samodzielny prompt: ścieżki, bramki, zakaz `npm run build`, zakaz commita/deployu.
-3. **Publikacja tylko na wyraźny sygnał.** `git push` i deploy do wersji roboczej **wyłącznie** gdy Maciej powie („pushuj", „deploy", „wdrażaj") — on jest jedyną bramką publikacji i jedynym playtesterem.
-4. **Nie zgaduj przy niejednoznaczności** — zrób resztę, a sporny punkt opisz i zapytaj. Ta zasada wielokrotnie uchroniła projekt przed kosztownymi błędami.
-5. **Nie twórz problemów, których nie ma.** Maciej kilkakrotnie korygował nadmierne komplikowanie („znajdujesz problemy, których nie ma"). Najprostsze rozwiązanie spełniające wymaganie wygrywa.
+2. **⛔ ZAKAZ OTWIERANIA NOWYCH WĄTKÓW PYTANIAMI (Maciej, 2026-07-25).** Wolno zadawać **wyłącznie pytania
+   doprecyzowujące do wątku, który AKTUALNIE prowadzimy**. Pytań otwierających nowy temat **NIE ZADAJESZ**,
+   dopóki Maciej sam nie powie, że można. Znalezione przy okazji problemy **zapisujesz cicho** do
+   `dyspozycje/PYTANIA-OTWARTE.md` i **nie wspominasz o nich w czacie**. Powód (jego słowa): „ja odpowiadam na jedno,
+   a ty generujesz kolejnych pięć… nie jesteśmy w stanie zakończyć jednego, a ty wyciągasz kolejne".
+   **Kończymy jeden temat, dopiero potem następny.** Nie mieszaj wątków w jednej odpowiedzi.
+3. **KAŻDA LICZBA MUSI MIEĆ NAZWANY PARAMETR I JEDNOSTKĘ (Maciej, 2026-07-25).** Zakaz pisania „baza 16",
+   „przyrost +7", „daje 35" bez powiedzenia CZEGO dotyczy liczba. Zawsze: **czego** (Kultura / Praca / Prawo /
+   Pieniądz / Zadowolenie / Obrona), **w jakiej jednostce** (pkt na turę, %, pkt Prawa) i **w jakim kontekście**
+   (poziom, epoka, poziom trudności). Nagłówek kolumny „Baza" jest zakazany — ma być „Kultura (baza)".
+   Jego słowa: „wpisujesz baza, ale baza do czego? potem chodzimy po omacku".
+4. **Deleguj wykonanie subagentom na Sonnet 5** (`Agent`, `model: "sonnet"`; `general-purpose` do pracy w repo, `Explore` do read-only reconu). **Opus 5 i Fable 5 wyłącznie za wyraźną zgodą Macieja** (2026-07-25) — domyślnie wszystko na Sonnet 5.
+   **WYJĄTEK — ZGODA STAŁA (Maciej, 2026-07-25):** *„Jednostki i render musisz dawać do subagentów Opus 5, bo Sonnet sobie z tym nie poradzi."* → **modele 3D jednostek i cała praca w `gra/src/render/**` idą na Opus 5.**
+   Powód praktyczny: Sonnet poprawnie dobiera detale historyczne, ale nie ocenia proporcji i czytelności bryły
+   z kąta kamery gry — modele wychodziły za niskie (0,62–0,64 zamiast 0,75 HEX_R), broń nieczytelna albo
+   wystająca poza obrys heksu, tarcze niewidoczne. Każdy wymagał 2–3 rund poprawek po oględzinach zrzutu. Główna pętla zostaje do: rozmowy, dekompozycji, syntezy i decyzji ABC. Subagentowi dawaj samodzielny prompt: ścieżki, bramki, zakaz `npm run build`, zakaz commita/deployu.
+5. **Publikacja tylko na wyraźny sygnał.** `git push` i deploy do wersji roboczej **wyłącznie** gdy Maciej powie („pushuj", „deploy", „wdrażaj") — on jest jedyną bramką publikacji i jedynym playtesterem.
+6. **Nie zgaduj przy niejednoznaczności** — zrób resztę, a sporny punkt opisz i zapytaj. Ta zasada wielokrotnie uchroniła projekt przed kosztownymi błędami.
+7. **Nie twórz problemów, których nie ma.** Maciej kilkakrotnie korygował nadmierne komplikowanie („znajdujesz problemy, których nie ma"). Najprostsze rozwiązanie spełniające wymaganie wygrywa.
 
 ## STRUKTURA
 - `gra/src` — kod TS (`game/`, `map/`, `render/`, `ui/`) · `gra/data` — JSON (kanon danych gry)
@@ -68,7 +83,7 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
 ## BRAMKI (uruchamiaj z `gra/`)
 `npx tsc --noEmit` (0 błędów) · `node tools/tech-tree-test.cjs` · `node tools/research-test.cjs` · `node tools/unit-replace-test.cjs` · `node tools/map-gen-regression-test.cjs` (determinizm A=B + 0 rzek bez ujścia).
 
-**Znane PRE-ISTNIEJĄCE porażki (NIE regresja, nie „naprawiaj przy okazji"):** `logic-test.cjs` (~21 porażek — nieaktualne fixtury Brązownictwa), `combat-test.cjs` (rzuca wyjątek — zepsuty harness `counterTyp`). Szczegóły i pełna lista znanych problemów: **handoff §7**.
+**Znane PRE-ISTNIEJĄCE porażki (NIE regresja, nie „naprawiaj przy okazji") — stan 2026-07-25 (wieczór):** `logic-test.cjs` **208/208** — porażka `mapgen: deposits obey terrain rules` NAPRAWIONA (generator, nie test; `R-MAPGEN-GLINA`). Nadal otwarte: `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs` — po jednej porażce progu populacji / dopasowania fixtury; **nowe dziś:** `upgrade-budynki-test.cjs` **2 porażki**, `deposit-building-gate-test.cjs` **2 porażki**. **`combat-test.cjs` jest NAPRAWIONY i zielony (6/6)** — harness `counterTyp` naprawiono commitem `496dd53`; stary zapis o „~21 porażkach" i „rzuca wyjątkiem" był nieaktualny. Szczegóły: **handoff §7**.
 
 ## Login demo (do playtestu)
 Bundle z `gra-robocza/` (np. `START.html`) — otwiera hub playtestów.

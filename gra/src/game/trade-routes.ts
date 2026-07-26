@@ -19,7 +19,7 @@
  *     co turę: filtr obcy właściciel + pokój (nie wojna) + AKTYWNA Umowa Handlowa
  *     (RodzajTraktatu.UmowaHandlowa — decyzja właściciela C-HANDEL-UMOWA=B,
  *     2026-07-23: sam pokój już NIE wystarcza, trasa wymaga zawartego traktatu),
- *     limit tras na miasto = liczba budynków handlowych (Targowisko/Karawanseraj/
+ *     limit tras na miasto = liczba budynków handlowych (Targowisko/
  *     Port/Port wielki).
  *   - Dochód = DWA SKŁADNIKI (wpięte oddzielnie):
  *     (1) składnik dystansowy (tradeRouteDistanceIncome / computeTradeRouteIncomeByCity)
@@ -29,6 +29,12 @@
  *     (2) +5% Handlu za każde aktywne połączenie miasta (computeTradeRouteCountByCity)
  *         — osobny, jawny mnożnik w economy.ts (cityYieldPerTurn), NIE łączony z
  *         Targowiskiem/civHandelMult, żeby uniknąć podwójnego liczenia.
+ *
+ * CUDA-HANDEL-01 (Maciej 2026-07-26): bonus cudów świata "handel_procent"
+ * (wonders.json, bonusy.specjalne) mnoży WYŁĄCZNIE składnik (1) — dochód
+ * dystansowy — nigdy Daninę/Podatek. Patrz sumWonderTradeRouteBonusForOwner
+ * w wonders-data.ts (wylicza sumę % per owner/medium) i 3. argument
+ * computeTradeRouteIncomeByCity niżej (resolver wstrzyknięty przez main.ts).
  *
  * Pure logic — bez DOM, bez THREE, bez side effects (poza cache'em w WeakMap,
  * patrz niżej).
@@ -450,9 +456,13 @@ export function loadTradeRouteParams(
  * Port/Port wielki to upgrade tej samej linii (upgradeFrom w buildings.json) —
  * builtByCity zawiera po upgrade WYŁĄCZNIE 'port_wielki', więc nie ma ryzyka
  * podwójnego liczenia tego samego budynku.
+ *
+ * Karawanseraj usunięty z gry (decyzja właściciela 2026-07-25, odpowiedź „15b" —
+ * anachronizm, budynek średniowieczny błędnie stał w epoce Brązu). Limit tras
+ * nadal działa: Targowisko/Port/Port wielki zostają.
  */
 export const TRADE_BUILDING_IDS: ReadonlySet<string> = new Set([
-  'targowisko', 'karawanseraj', 'port', 'port_wielki',
+  'targowisko', 'port', 'port_wielki',
 ]);
 
 /** Limit tras handlowych danego miasta = liczba zbudowanych budynków handlowych. */
@@ -736,17 +746,33 @@ export function loadTradeRouteIncomeParams(
  * Q8=B, obie strony zarabiają, bez podziału. Miasto uczestniczące w wielu
  * trasach sumuje wkłady. Do wpięcia w turn-economy.ts jako "pieniadzZTras"
  * (dochód czysto do skarbca, pomija Wealth — patrz advanceCityEconomy).
+ *
+ * CUDA-HANDEL-01 (Maciej 2026-07-26): `wonderTradeBonusForOwner` — resolver
+ * wstrzyknięty przez wołającego (main.ts, sumWonderTradeRouteBonusForOwner z
+ * wonders-data.ts), ten sam wzorzec co resolveOwnerEra/resolveOwnerZlotoAccess
+ * gdzie indziej w projekcie — ten moduł CELOWO nie zna wonders-data.ts (uniknięcie
+ * zależności cyklicznej i zachowanie trade-routes.ts jako pure logic bez wiedzy
+ * o cudach). Zwraca sumę % bonusu "handel_procent" (addytywna kumulacja, patrz
+ * wonders-data.ts) dla danego ownera i medium tej KONKRETNEJ trasy — liczony
+ * OSOBNO dla każdej strony (fromCityId wg route.ownerId, toCityId wg
+ * route.toOwnerId), bo obaj właściciele mogą mieć różne cuda. Domyślnie 0 (brak
+ * bonusu) — zachowuje dokładnie dawne zachowanie dla wywołań bez 3. argumentu.
  */
 export function computeTradeRouteIncomeByCity(
   routes: readonly TradeRoute[],
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+  wonderTradeBonusForOwner: (ownerId: number, medium: TradeRouteMedium) => number = () => 0,
 ): Map<string, number> {
   const out = new Map<string, number>();
   for (const route of routes) {
     if (route.status !== 'polaczony') continue;
-    const income = tradeRouteDistanceIncome(route.dystans, params);
-    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + income);
-    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + income);
+    const baseIncome = tradeRouteDistanceIncome(route.dystans, params);
+    const fromMult = 1 + wonderTradeBonusForOwner(route.ownerId, route.medium);
+    const toMult   = 1 + wonderTradeBonusForOwner(route.toOwnerId, route.medium);
+    const fromIncome = fromMult === 1 ? baseIncome : Math.floor(baseIncome * fromMult);
+    const toIncome   = toMult === 1 ? baseIncome : Math.floor(baseIncome * toMult);
+    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + fromIncome);
+    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + toIncome);
   }
   return out;
 }
@@ -823,13 +849,31 @@ export function diffTradeRoutes(
 
 /**
  * Surowce civ-wide, których dostęp może "przeciekać" przez aktywną trasę handlową.
- * Odpowiadają trzem silnikowym bramkom dostępu: braz-access.ts (hasBrazAccess),
+ * Odpowiadają pięciu silnikowym bramkom dostępu: braz-access.ts (hasBrazAccess),
  * zelazo-access.ts (hasZelazoAccess), livestock-unlock.ts (computeEmpireLivestockUnlocks
- * — tylko 'kon', jedyny surowiec hodowlany z civ-wide odblokowaniem, Model B).
+ * — tylko 'kon', jedyny surowiec hodowlany z civ-wide odblokowaniem, Model B), 'cegla'
+ * (decyzja właściciela 40=B, 2026-07-25): Cegielnia wymaga Gliny, a złoże Gliny
+ * występuje wyłącznie na lądzie z rzeką — cywilizacja bez takiego terenu była trwale
+ * odcięta od epoki Żelaza (dziewięć budynków tej epoki kosztuje Cegłę), bez żadnego
+ * środka poza jednorazową transakcją dyplomatyczną. Dostęp natywny do 'cegla' liczy
+ * wołający (main.ts, ownerHasNativeResourceAccess) tym samym wzorcem AND co brąz:
+ * empire-wide źródło Gliny (Glinianka na złożu Gliny, gdziekolwiek w imperium) ORAZ
+ * Cegielnia zbudowana w KTÓRYMKOLWIEK mieście tego właściciela.
+ *
+ * 'zloto' (PYTANIE 77=A, Maciej 2026-07-25): Mennica wymaga dostępu do Złota
+ * (game/zloto-access.ts empireHasKopalniaZlota), ale złoże złota ma rarity=3% i NIE
+ * jest w FAIR_PLAY_DEPOSIT_IDS (map/gen-helpers.ts) — generator nie gwarantuje go
+ * żadnej cywilizacji. Bez trasy jako alternatywnej ścieżki dostępu, cywilizacja bez
+ * złota w zasięgu nigdy nie zbudowałaby Mennicy i nigdy nie weszłaby w etap Podatku
+ * (mnożnik Daniny netto po Walucie) — dokładnie ta sama pułapka co Cegła wyżej,
+ * rozstrzygnięta tym samym mechanizmem: dostęp TAK/NIE, BEZ przepływu ilościowego
+ * (patrz TRADE_ROUTE_STOCK_FLOW_KEYS niżej — złoto tam CELOWO nie występuje, złoto
+ * nigdy nie było i nadal nie jest magazynowane w City.surowce).
  */
-export type TradeRouteResourceKey = 'braz' | 'zelazo' | 'kon';
+export type TradeRouteResourceKey = 'braz' | 'zelazo' | 'kon' | 'cegla' | 'zloto';
 
-export const TRADE_ROUTE_RESOURCE_KEYS: readonly TradeRouteResourceKey[] = ['braz', 'zelazo', 'kon'];
+export const TRADE_ROUTE_RESOURCE_KEYS: readonly TradeRouteResourceKey[] =
+  ['braz', 'zelazo', 'kon', 'cegla', 'zloto'];
 
 /**
  * Jeden przyznany dostęp "z trasy": `ownerId` (odbiorca) korzysta z dostępu, jaki
@@ -914,4 +958,214 @@ export function firstTradeRouteResourceGrant(
   return grants
     .filter(g => g.ownerId === ownerId && g.resourceKey === resourceKey)
     .sort((a, b) => a.routeId.localeCompare(b.routeId))[0];
+}
+
+// ---------------------------------------------------------------------------
+// E3c: przepływ ILOŚCIOWY surowca przez trasę handlową (PYTANIE 53 = B, decyzja
+// właściciela 2026-07-25).
+//
+// Kontekst: computeTradeRouteResourceGrants (wyżej) daje tylko dostęp TAK/NIE —
+// to wystarcza jako bramka produkcji jednostek (Brąz/Żelazo/Koń), ale NIE zasila
+// magazynu surowca zużywanego ILOŚCIOWO przez `koszt_surowce` budynków
+// (building-stock-cost.ts) — Cegielnia produkuje Cegłę tylko z Gliny, a złoże
+// Gliny bywa nieosiągalne geograficznie (brak lądu z rzeką) dla całej
+// cywilizacji. Ta sekcja DODAJE realny transfer ilości do puli PAŃSTWA
+// odbiorcy — NIE zastępuje grantu dostępu powyżej (Brąz/Żelazo/Koń jako
+// bramka jednostek zostają dokładnie takie, jak są).
+//
+// ROZPOZNANIE PRZED KODOWANIEM (wymagane zadaniem): magazyn surowców jest JUŻ
+// pulą PAŃSTWA (SUROW-CIV-01, Maciej 2026-07-24, patrz building-stock-cost.ts
+// ownerResourceStockAll — suma City.surowce po WSZYSTKICH miastach jednego
+// ownera). Oznacza to, że WEWNĄTRZ jednej cywilizacji przepływ przez trasę nie
+// miałby żadnego efektu: surowiec miasta A tej samej cywilizacji jest już
+// identycznie dostępny miastu B (ta sama pula). Przepływ ilościowy ma sens
+// WYŁĄCZNIE MIĘDZY RÓŻNYMI cywilizacjami — a to jest dokładnie zbiór tras, jaki
+// w ogóle istnieje: refreshTradeRoutes tworzy WYŁĄCZNIE pary
+// gracz(ownerId=0)<->obca cywilizacja, własne<->własne nigdy nie tworzy trasy
+// (patrz nagłówek refreshTradeRoutes). Funkcja niżej tego nie zakłada na twardo
+// (czyta route.ownerId/toOwnerId jak leci) — gdyby kiedyś doszły trasy
+// AI<->AI, zadziała identycznie, bez żadnej gałęzi po ownerId (parytet AI).
+// ---------------------------------------------------------------------------
+
+/**
+ * Podzbiór TRADE_ROUTE_RESOURCE_KEYS, który ma realną reprezentację ILOŚCIOWĄ
+ * w City.surowce (building-stock-cost.ts STOCK_RESOURCE_LABEL) — 'kon' jest
+ * WYŁĄCZONY celowo: to czysty odblokownik civ-wide (computeEmpireLivestockUnlocks),
+ * bez żadnego magazynu sztuk do przenoszenia; przepływ ilościowy dla 'kon' nie
+ * ma więc żadnego sensownego znaczenia i pozostaje wyłącznie boolean-grantem.
+ *
+ * 'zloto' jest WYŁĄCZONE z tego samego powodu co 'kon' (PYTANIE 77=A, Maciej
+ * 2026-07-25): złoto to surowiec WYŁĄCZNIE DOSTĘPOWY — brak jakiegokolwiek pola w
+ * City.surowce / ownerResourceStockAll (patrz zloto-access.ts, nagłówek pliku),
+ * więc "przepływ ilościowy" nie miałby żadnego magazynu do zasilenia. Szlak handlowy
+ * z posiadaczem złota ma dawać WYŁĄCZNIE prawo do budowy Mennicy (jak koń dla
+ * jednostek) — ANI JEDNEJ sztuki złota nie wolno dokładać do żadnej puli.
+ */
+export type TradeRouteStockFlowResourceKey = Exclude<TradeRouteResourceKey, 'kon' | 'zloto'>;
+
+export const TRADE_ROUTE_STOCK_FLOW_KEYS: readonly TradeRouteStockFlowResourceKey[] =
+  ['braz', 'zelazo', 'cegla'];
+
+/** Parametry przepływu ilościowego (data/econ-params.json — patrz loader niżej). */
+export interface TradeRouteResourceFlowParams {
+  /**
+   * Minimalny zapas surowca (per właściciel, per surowiec), który NIGDY nie jest
+   * eksportowany — właściciel oddaje przez trasę wyłącznie nadwyżkę PONAD ten
+   * próg. Odpowiada ISTNIEJĄCEMU, dotąd NIEKONSUMOWANEMU kluczowi
+   * econ-params.json → ekonomia_miasta.handel_surowiec_min_stock (ABC-15,
+   * Maciej 2026-07-04, opis: „handel surowcem dopiero gdy stock ≥ wartość; 1
+   * szt. zostaje = dostęp"). Ten mechanizm jest jego PIERWSZYM realnym
+   * zastosowaniem w kodzie (patrz loadTradeRouteResourceFlowParams).
+   */
+  minStockReserve: number;
+  /**
+   * Maks. ilość JEDNEGO surowca, jaką JEDEN szlak może przenieść w JEDNĄ turę
+   * (sztuk surowca/turę/szlak). Czytane z econ-params.json →
+   * handel_szlaki.handel_ilosc_na_ture_na_szlak (przeniesione z dawnego
+   * hardkodu w kodzie — patrz komentarz przy DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS).
+   * Brak zapisu w danych oznaczałby brak przepustowości, co odtwarzałoby
+   * pierwotny problem (cegła dojeżdża, ale nieograniczoną ilością na turę —
+   * de facto znów "z powietrza", tylko opóźnione o rozruch pierwszej tury).
+   */
+  capacityPerRoutePerTurn: number;
+}
+
+/**
+ * Wartości domyślne (fallback gdy dane brakują/są uszkodzone).
+ * `capacityPerRoutePerTurn = 4`: throughput Cegielni to
+ * `budynek_cegielnia_przepustowosc` (fallback 3 szt./turę, converters.ts) —
+ * jeden szlak niosący 4 szt./turę odpowiada mniej więcej WYDAJNOŚCI JEDNEJ
+ * Cegielni, czyli odciętej cywilizacji dowozi surowiec w tempie porównywalnym
+ * do posiadania własnej Cegielni, a nie w tempie zalewającym partnera handlowego
+ * ponad jego własną produkcję. Wartość PRZENIESIONA do
+ * data/econ-params.json (handel_szlaki.handel_ilosc_na_ture_na_szlak,
+ * dług techniczny TODO(econ-params) zamknięty — było przeniesienie stałej,
+ * nie strojenie: 4/4/4 na wszystkich trudnościach, bez zmiany balansu).
+ */
+export const DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS: TradeRouteResourceFlowParams = {
+  minStockReserve: 2,
+  capacityPerRoutePerTurn: 4,
+};
+
+interface RawEconParamsJsonMinStock {
+  ekonomia_miasta?: Record<string, RawParamRow>;
+  handel_szlaki?: Record<string, RawParamRow>;
+}
+
+/**
+ * Wczytaj minStockReserve z econ-params.json (ekonomia_miasta.handel_surowiec_min_stock,
+ * ABC-15) — ten sam klucz na wszystkich poziomach trudności do 2026-07-25 (2 szt.),
+ * ale czytany PER difficulty na wypadek przyszłego dostrojenia. capacityPerRoutePerTurn
+ * czytany z handel_szlaki.handel_ilosc_na_ture_na_szlak (przeniesione z hardkodu —
+ * patrz komentarz przy DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS powyżej).
+ */
+export function loadTradeRouteResourceFlowParams(
+  raw: RawEconParamsJsonMinStock,
+  difficulty: Difficulty,
+): TradeRouteResourceFlowParams {
+  const grp = raw.ekonomia_miasta ?? {};
+  const row = grp['handel_surowiec_min_stock'];
+  const v = row ? row[difficulty] : undefined;
+  const minStockReserve = typeof v === 'number' && Number.isFinite(v)
+    ? v
+    : DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.minStockReserve;
+
+  const szlakiGrp = raw.handel_szlaki ?? {};
+  const capRow = szlakiGrp['handel_ilosc_na_ture_na_szlak'];
+  const capV = capRow ? capRow[difficulty] : undefined;
+  const capacityPerRoutePerTurn = typeof capV === 'number' && Number.isFinite(capV)
+    ? capV
+    : DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.capacityPerRoutePerTurn;
+
+  return {
+    minStockReserve,
+    capacityPerRoutePerTurn,
+  };
+}
+
+/**
+ * Jeden przyznany transfer ilościowy — `amount` (zawsze > 0, liczba całkowita)
+ * ma zostać ODJĘTY z puli państwa `fromOwnerId` (nadawca — ma nadwyżkę) i
+ * DODANY do puli państwa `toOwnerId` (odbiorca), przez wywołującego (main.ts)
+ * — ten moduł tylko WYLICZA, nigdy nie mutuje żadnego stanu gry (spójne z resztą
+ * pliku: pure logic, bez side effects poza cache'em detekcji).
+ */
+export interface TradeRouteResourceFlow {
+  routeId: string;
+  resourceKey: TradeRouteStockFlowResourceKey;
+  /** Właściciel, któremu surowiec REALNIE UBYWA z puli państwa. */
+  fromOwnerId: number;
+  /** Właściciel, któremu surowiec REALNIE PRZYBYWA w puli państwa. */
+  toOwnerId: number;
+  /** Ilość (szt., liczba całkowita > 0). */
+  amount: number;
+}
+
+/**
+ * Wylicza transfery ilościowe surowca dla wszystkich aktywnych tras. Model:
+ * dla KAŻDEJ trasy `status === 'polaczony'` i KAŻDEGO surowca z
+ * TRADE_ROUTE_STOCK_FLOW_KEYS, strona z WIĘKSZYM zapasem (wg `ownerStock`,
+ * civ-wide) eksportuje nadwyżkę PONAD `params.minStockReserve` do strony z
+ * mniejszym zapasem, maks. `params.capacityPerRoutePerTurn` na tę jedną trasę.
+ *
+ * `ownerStock` to WEJŚCIOWY snapshot (główny wołający liczy go z
+ * ownerResourceStockAll, building-stock-cost.ts) — ale funkcja utrzymuje
+ * WEWNĘTRZNY ledger aktualizowany PO KAŻDYM przyznanym transferze, żeby jeden
+ * właściciel z wieloma trasami do różnych partnerów nigdy nie "wyeksportował"
+ * więcej niż realnie ma nadwyżki w jednej turze (surowiec realnie ubywa —
+ * zasada #2 zadania). Kolejność przetwarzania tras jest deterministyczna
+ * (sort po `id`), więc wynik jest powtarzalny przy tym samym wejściu — w tym
+ * IDENTYCZNY niezależnie od tego, który `ownerId` jest "graczem" (parytet AI,
+ * zasada #4 zadania: zero gałęzi po ownerId).
+ *
+ * Zwraca tylko transfery z `amount > 0` (Math.floor — surowiec liczy się w
+ * sztukach całkowitych, zgodnie z resztą City.surowce).
+ */
+export function computeTradeRouteResourceFlow(
+  routes: readonly TradeRoute[],
+  ownerStock: (ownerId: number, key: TradeRouteStockFlowResourceKey) => number,
+  params: TradeRouteResourceFlowParams = DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS,
+  resourceKeys: readonly TradeRouteStockFlowResourceKey[] = TRADE_ROUTE_STOCK_FLOW_KEYS,
+): TradeRouteResourceFlow[] {
+  const flows: TradeRouteResourceFlow[] = [];
+
+  const ledger = new Map<string, number>();
+  const ledgerKey = (ownerId: number, key: TradeRouteStockFlowResourceKey): string => `${ownerId}|${key}`;
+  const stockOf = (ownerId: number, key: TradeRouteStockFlowResourceKey): number => {
+    const lk = ledgerKey(ownerId, key);
+    if (!ledger.has(lk)) ledger.set(lk, ownerStock(ownerId, key));
+    return ledger.get(lk)!;
+  };
+  const applyDelta = (ownerId: number, key: TradeRouteStockFlowResourceKey, delta: number): void => {
+    ledger.set(ledgerKey(ownerId, key), stockOf(ownerId, key) + delta);
+  };
+
+  const sortedRoutes = routes
+    .filter(r => r.status === 'polaczony')
+    .slice()
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  for (const route of sortedRoutes) {
+    for (const key of resourceKeys) {
+      const ownerStockNow = stockOf(route.ownerId, key);
+      const toOwnerStockNow = stockOf(route.toOwnerId, key);
+      if (ownerStockNow === toOwnerStockNow) continue;
+
+      const fromOwnerId = ownerStockNow > toOwnerStockNow ? route.ownerId : route.toOwnerId;
+      const toOwnerId   = fromOwnerId === route.ownerId ? route.toOwnerId : route.ownerId;
+      const donorStock  = Math.max(ownerStockNow, toOwnerStockNow);
+
+      const surplus = donorStock - params.minStockReserve;
+      if (surplus <= 0) continue;
+
+      const amount = Math.floor(Math.min(params.capacityPerRoutePerTurn, surplus));
+      if (amount <= 0) continue;
+
+      applyDelta(fromOwnerId, key, -amount);
+      applyDelta(toOwnerId, key, amount);
+      flows.push({ routeId: route.id, resourceKey: key, fromOwnerId, toOwnerId, amount });
+    }
+  }
+
+  return flows;
 }

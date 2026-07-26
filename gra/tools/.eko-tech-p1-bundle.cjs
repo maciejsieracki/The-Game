@@ -64,6 +64,71 @@ function buildingGateMet(tech, gate) {
   if (!reqId) return true;
   return empireBuiltSet(gate).has(reqId);
 }
+var PL_DIACRITICS = {
+  "\u0105": "a",
+  "\u0107": "c",
+  "\u0119": "e",
+  "\u0142": "l",
+  "\u0144": "n",
+  "\xF3": "o",
+  "\u015B": "s",
+  "\u017A": "z",
+  "\u017C": "z"
+};
+function slugifyImprovementLabel(label) {
+  return label.trim().toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_DIACRITICS[c] ?? c).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
+function empireImprovementSet(gate) {
+  const src = gate.empireImprovementKeys;
+  if (!src) return /* @__PURE__ */ new Set();
+  return src instanceof Set ? src : new Set(src);
+}
+function improvementGateMet(tech, gate) {
+  const label = tech["wymagane ulepszenie"];
+  if (label == null) return true;
+  const trimmed = String(label).trim();
+  if (!trimmed || BRAK_PREREQ.has(trimmed.toLowerCase())) return true;
+  const wanted = slugifyImprovementLabel(trimmed);
+  if (!wanted) return true;
+  return empireImprovementSet(gate).has(wanted);
+}
+function researchGatesMet(tech, gate) {
+  return buildingGateMet(tech, gate) && improvementGateMet(tech, gate);
+}
+var NUMER_EPOKI = {
+  kamien: 1,
+  braz: 2,
+  zelazo: 3
+};
+function epochNumber(tech) {
+  const raw = tech.Epoka;
+  if (raw == null) return null;
+  const norm = String(raw).trim().toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_DIACRITICS[c] ?? c);
+  const n = NUMER_EPOKI[norm];
+  return typeof n === "number" ? n : null;
+}
+function epochGateMet(tech, techData, done) {
+  const e = epochNumber(tech);
+  if (e == null) return true;
+  for (const other of techData) {
+    const oe = epochNumber(other);
+    if (oe == null) continue;
+    if (oe < e && !done.has(other.Technologia)) return false;
+  }
+  return true;
+}
+function epochTierGateMet(tech, techData, done) {
+  const e = epochNumber(tech);
+  const p = tech.Poziom;
+  if (e == null || typeof p !== "number" || !Number.isFinite(p)) return true;
+  for (const other of techData) {
+    if (epochNumber(other) !== e) continue;
+    const op = other.Poziom;
+    if (typeof op !== "number" || !Number.isFinite(op)) continue;
+    if (op < p && !done.has(other.Technologia)) return false;
+  }
+  return true;
+}
 function parsePrerequisites(wyrazenie) {
   if (wyrazenie == null) return [];
   const trimmed = wyrazenie.trim();
@@ -83,7 +148,9 @@ function availableTechs(state, techData, gate) {
     if (done.has(tech.Technologia)) continue;
     const prereqs = prerequisitesOf(tech);
     if (!prereqs.every((p) => done.has(p))) continue;
-    if (gate && !buildingGateMet(tech, gate)) continue;
+    if (!epochGateMet(tech, techData, done)) continue;
+    if (!epochTierGateMet(tech, techData, done)) continue;
+    if (gate && !researchGatesMet(tech, gate)) continue;
     result.push(tech.Technologia);
   }
   return result;
@@ -94,11 +161,49 @@ function canResearch(state, techData, techId2, gate) {
   if (!tech) return false;
   const done = new Set(state.ukonczone);
   if (!prerequisitesOf(tech).every((p) => done.has(p))) return false;
-  if (gate && !buildingGateMet(tech, gate)) return false;
+  if (!epochGateMet(tech, techData, done)) return false;
+  if (!epochTierGateMet(tech, techData, done)) return false;
+  if (gate && !researchGatesMet(tech, gate)) return false;
   return true;
 }
 function createResearchState() {
   return { ukonczone: [], biezace: null, postep: 0 };
+}
+
+// src/game/building-cost-tempo.ts
+var KOSZT_BUDYNKOW_PACE = {
+  niski: 1,
+  normalny: 2,
+  wysoki: 4
+};
+function applyBuildingCostPace(bazowyKoszt, pace) {
+  const mnoznik = typeof pace === "number" ? pace : KOSZT_BUDYNKOW_PACE[pace];
+  return Math.max(1, Math.round(bazowyKoszt * mnoznik));
+}
+
+// src/game/unit-cost-tempo.ts
+var KOSZT_JEDNOSTEK_PACE = {
+  niski: 1,
+  normalny: 2,
+  wysoki: 4
+};
+function applyUnitCostPace(bazowyKoszt, pace) {
+  const mnoznik = typeof pace === "number" ? pace : KOSZT_JEDNOSTEK_PACE[pace];
+  return Math.max(1, Math.round(bazowyKoszt * mnoznik));
+}
+
+// src/game/difficulty-cost.ts
+function isPlayerOwner(ownerId) {
+  return ownerId === 0;
+}
+function getCostMultiplierForOwner(ownerId, difficulty) {
+  if (difficulty === "normal") return 1;
+  if (difficulty === "easy") return isPlayerOwner(ownerId) ? 1 : 2;
+  return isPlayerOwner(ownerId) ? 2 : 1;
+}
+function applyDifficultyCostMultiplier(costAfterPace, ownerId, difficulty) {
+  const mult = getCostMultiplierForOwner(ownerId, difficulty);
+  return Math.max(1, Math.round(costAfterPace * mult));
 }
 
 // src/game/civ-bonuses.ts
@@ -121,23 +226,23 @@ function buildingCostAfterCivDiscount(baseCost, bonusy) {
 
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = 10% manpowerNaLudka (koszt rekrutacji 1 jednostki).",
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
   _formuly: {
     ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
     manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka"
+    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
   },
   epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 100 },
-    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 200 },
-    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 400 },
-    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 800 },
-    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 1600 },
-    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 3200 },
-    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 6400 },
-    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e3 },
-    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e3 },
-    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e3 }
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
+    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
+    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
+    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
+    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 16e3 },
+    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 32e3 },
+    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 64e3 },
+    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e4 },
+    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e4 },
+    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e4 }
   ]
 };
 
@@ -148,20 +253,15 @@ var miasto_params_default = {
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
-  budynek_mnoznik_poziomu: {
-    wartosc: 1.1,
-    jednostka: "x / poziom",
-    opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
-  },
   jednostka_koszt_ludnosci: {
-    wartosc: 1,
+    wartosc: 0,
     jednostka: "ludnosc",
-    opis: "Ile ludnosci kosztuje miasto ukonczenie jednostki z kolejki (rekrutacja). production.populationCostOf; odjecie + clamp do min.1 robi petla tury."
+    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   manpower_regen_proc_max_tura: {
-    wartosc: 10,
+    wartosc: 2,
     jednostka: "% max/ture",
-    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +1000/ture. Pusta pula \u224810 tur do pelna. manpower.tickManpowerRegen."
+    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +200/ture. Pusta pula \u224850 tur do pelna. manpower.tickManpowerRegen."
   },
   manpower_regen_blok_oblezenie: {
     wartosc: 1,
@@ -221,7 +321,17 @@ var miasto_params_default = {
   bonus_obrona_mur_proc: {
     wartosc: 200,
     jednostka: "% Obrony",
-    opis: "Miasto Z MUREM daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje game/siege.ts + battleScene (defensa miasta). Miasto bez muru = brak tego bonusu."
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -272,7 +382,8 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol"
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -281,8 +392,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -301,19 +412,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -339,8 +450,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -366,9 +477,10 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "klucz 'ruda' wg Surowiec='Ruda' w resources.json; brak pola id \u2014 propozycja EKONOMIA, wymaga uzgodnienia z DANE",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wydobycie rudy do magazynu",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
     tech: "Murarstwo",
     odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
@@ -377,10 +489,12 @@ var terrain_improvements_default = {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
-      praca: 1
+      praca: 1,
+      glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "klucz 'glina' wg Surowiec='Glina' w resources.json; brak pola id \u2014 propozycja EKONOMIA",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 5,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -395,7 +509,8 @@ var terrain_improvements_default = {
       kamien: 1
     },
     surowiecOdblokowany: "kamien",
-    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba",
+    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    surowiec_ilosc_tura: 4,
     teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
     warunek: "budulec \u2014 mury, budynki",
     koszt_praca: 22,
@@ -424,12 +539,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -442,12 +557,13 @@ var terrain_improvements_default = {
       praca: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "v0.1: tylko dost\u0119p boolean (panel Surowce) \u2014 bez liczenia ilo\u015Bci w magazynie",
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
+    surowiec_ilosc_tura: 4,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
     tech: "Obr\xF3bka drewna",
-    odblokowuje: "Deski (z budynkiem miejskim Tartak)"
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
   },
   tarasy: {
     nazwa: "Tarasy uprawne",
@@ -487,8 +603,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "z\u0142o\u017Ce soli (Pustynia/R\xF3wnina \u2014 hex.zloze=sol)",
-    warunek: "s\xF3l (konserwacja \u017Cywno\u015Bci + handel); bez wybrze\u017Ca bez z\u0142o\u017Ca",
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
     tech: "Garncarstwo",
     odblokowuje: "S\xF3l"
@@ -506,7 +622,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -538,15 +654,17 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wst\u0119pne przetwarzanie rudy (przed Odlewni\u0105 w mie\u015Bcie)",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
@@ -588,7 +706,7 @@ function normalizeImprovementKey(raw) {
 
 // src/game/braz-access.ts
 var PIEC_HUTNICZY_BUILDING_ID = "odlewnia_brazu";
-var POPALNIA_BRAZU_KEY = "popalnia_brazu";
+var KOPALNIA_MIEDZI_KEY = "kopalnia_miedzi";
 function improvementKeysOnPlaced(imp) {
   if (typeof imp === "string") {
     const k = normalizeImprovementKey(imp);
@@ -596,11 +714,11 @@ function improvementKeysOnPlaced(imp) {
   }
   return imp.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
 }
-function empireHasPopalniaBrazu(placedImprovements) {
+function empireHasKopalniaMiedzi(placedImprovements) {
   if (!placedImprovements?.size) return false;
   for (const imp of placedImprovements.values()) {
     for (const key of improvementKeysOnPlaced(imp)) {
-      if (key === POPALNIA_BRAZU_KEY) return true;
+      if (key === KOPALNIA_MIEDZI_KEY) return true;
     }
   }
   return false;
@@ -609,7 +727,78 @@ function cityHasPiecHutniczy(builtIds) {
   return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza");
 }
 function hasBrazAccess(placedImprovements, builtIds) {
-  return empireHasPopalniaBrazu(placedImprovements) && cityHasPiecHutniczy(builtIds);
+  return empireHasKopalniaMiedzi(placedImprovements) && cityHasPiecHutniczy(builtIds);
+}
+
+// src/game/zelazo-access.ts
+var ODLEWNIA_ZELAZA_BUILDING_ID = "odlewnia_zelaza";
+function cityHasOdlewniaZelaza(builtIds) {
+  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID);
+}
+function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
+  return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
+}
+
+// src/game/building-resource-gate.ts
+var LABEL_BY_ASCII = {
+  drewno: "Drewno",
+  kamien: "Kamie\u0144",
+  glina: "Glina",
+  ruda: "Ruda",
+  zelazo: "\u017Belazo",
+  stal: "Stal",
+  braz: "Br\u0105z",
+  sol: "S\xF3l",
+  cegla: "Ceg\u0142a",
+  ceramika: "Ceramika"
+};
+var DEPOSIT_LINKED_BUILDING_LABELS = {
+  garncarnia: ["Glina"],
+  cegielnia: ["Glina"],
+  spichlerz: ["Ceramika"],
+  spichlerz_ii: ["S\xF3l"],
+  stolarnia: ["Drewno"],
+  kamieniarski: ["Kamie\u0144"],
+  kuznia: ["Ruda"]
+};
+var CITY_BUILDING_PREREQ = {
+  warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
+  laznia_publiczna: "studnia",
+  akademia: "biblioteka",
+  fort: "mury",
+  akademia_wojskowa: "koszary",
+  swiatynia: "kamienne_kregi"
+};
+function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
+  if (!prereq) return true;
+  const ids = typeof prereq === "string" ? [prereq] : prereq;
+  return ids.some((id) => builtList.includes(id) || isSuperseded(id, builtList, buildings));
+}
+var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"]);
+var ASCII_BY_LABEL = Object.fromEntries(
+  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+function empireLabelSatisfied(label, activeLabels, empireBuiltIds, empireStock) {
+  if (activeLabels.includes(label)) return true;
+  if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
+  if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
+  const asciiKey = ASCII_BY_LABEL[label];
+  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  return false;
+}
+function buildingRequiredActiveLabels(building) {
+  const out = /* @__PURE__ */ new Set();
+  const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
+  if (hard) hard.forEach((l) => out.add(l));
+  const key = building.wymaganySurowiec?.trim().toLowerCase();
+  if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
+  return [...out];
+}
+function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireStock) {
+  const required = buildingRequiredActiveLabels(building);
+  if (required.length === 0) return true;
+  const active = activeLabels ?? [];
+  return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
 }
 
 // src/game/building-upgrades.ts
@@ -636,12 +825,11 @@ var EPOCH_BY_NAME = {
   "\u017Belazo": 3
   // matches data key (U+017B)
 };
-function epochNumber(epoka) {
+function epochNumber2(epoka) {
   if (epoka == null) return 1;
   const n = EPOCH_BY_NAME[epoka];
   return typeof n === "number" ? n : 1;
 }
-var BUILDING_LEVEL_FACTOR = miasto_params_default.budynek_mnoznik_poziomu?.wartosc ?? 1.1;
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
   Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
@@ -653,8 +841,9 @@ var DEFAULT_COST_BY_ROLE = {
 };
 function unitCostFromDef(def) {
   const raw = def["Pieni\u0105dz (koszt)"];
-  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
-    return raw;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    if (raw > 0) return raw;
+    if (raw === 0 && def["Super-jednostka"] === "TAK") return 0;
   }
   const rola = def["Rola (linia)"];
   if (rola != null) {
@@ -674,11 +863,33 @@ function itemCost(kind, id, data, cityLevelOrEpoch) {
     const b = findBuilding(data, id);
     if (!b) return 0;
     const level = Number.isFinite(cityLevelOrEpoch) ? Math.max(1, Math.floor(cityLevelOrEpoch)) : 1;
-    return Math.round(b.kosztBudowy * Math.pow(BUILDING_LEVEL_FACTOR, level - 1));
+    const przyrostKosztu = Number.isFinite(b.przyrostKosztu) ? b.przyrostKosztu : 0;
+    return Math.round(b.kosztBudowy + przyrostKosztu * (level - 1));
   }
   const u = findUnit(data, id);
   if (!u) return 0;
   return unitCostFromDef(u);
+}
+function buildingLocationAllowed(lokalizacja, isCapital) {
+  if (lokalizacja === "stolica") return isCapital === true;
+  if (lokalizacja === "region") return isCapital === false;
+  return true;
+}
+var GLOBAL_BUILDING_PROD_MULT = 0.5;
+function buildingWorkCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
+  const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
+  const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
+  const afterGlobal = Math.max(1, Math.round(afterPace * GLOBAL_BUILDING_PROD_MULT));
+  return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
+}
+function unitMoneyCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
+  let koszt = baseCost;
+  const recDisc = civRecruitmentDiscount(civBonusy);
+  if (recDisc > 0) {
+    koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
+  }
+  const afterPace = pace ? applyUnitCostPace(koszt, pace) : koszt;
+  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
 }
 function civRecruitmentDiscount(bonusy) {
   if (!bonusy?.length) return 0;
@@ -733,14 +944,17 @@ function civSpecialUnitNameTokens(bonusy) {
   const tokens = [];
   for (const b of bonusy) {
     if (b.typ !== "jednostka_specjalna") continue;
-    const raw = String(b.wartosc ?? "").trim();
-    if (!raw) continue;
-    for (const part of raw.split("/")) {
-      const trimmed = part.trim();
-      if (!trimmed) continue;
-      tokens.push(trimmed);
-      const primary = trimmed.split("(")[0]?.trim();
-      if (primary && primary !== trimmed) tokens.push(primary);
+    const rawValues = Array.isArray(b.wartosc) ? b.wartosc.map((v) => String(v ?? "")) : [String(b.wartosc ?? "")];
+    for (const rawValue of rawValues) {
+      const raw = rawValue.trim();
+      if (!raw) continue;
+      for (const part of raw.split("/")) {
+        const trimmed = part.trim();
+        if (!trimmed) continue;
+        tokens.push(trimmed);
+        const primary = trimmed.split("(")[0]?.trim();
+        if (primary && primary !== trimmed) tokens.push(primary);
+      }
     }
   }
   return tokens;
@@ -764,6 +978,8 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
   const queue = ctx.productionQueue ?? [];
   const techs = new Set(unlockedTechs);
   const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
+  const ownerId = ctx.ownerId ?? 0;
+  const difficulty = ctx.difficulty ?? "normal";
   const items = [];
   for (const b of data.buildings) {
     if (b.epokaWejscia > epoch) continue;
@@ -777,23 +993,37 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
       if (buildingTypeCommitted(b.id, builtList, queue)) continue;
     }
     const tech = (b.techUnlock ?? "").trim();
-    if (tech.length > 0 && !techs.has(tech)) continue;
-    if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasPopalniaBrazu(ctx.placedImprovements)) {
+    if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
+    if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
+    if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
+      continue;
+    }
+    const gateLabels = ctx.empireActiveResourceLabels?.length ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
+    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
+      continue;
+    }
+    if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
+      continue;
+    }
+    if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
       continue;
     }
     items.push({
       kind: "budynek",
       id: b.id,
       nazwa: upgradeProductionDisplayName(b, data.buildings),
-      koszt: buildingCostAfterCivDiscount(
+      koszt: buildingWorkCost(
         itemCost("budynek", b.id, data, level),
-        ctx.civBonusy
+        ctx.civBonusy,
+        ctx.buildingCostPace,
+        ownerId,
+        difficulty
       )
     });
   }
   const built = new Set(builtList);
   for (const u of data.units) {
-    if (epochNumber(u.Epoka) > epoch) continue;
+    if (epochNumber2(u.Epoka) > epoch) continue;
     const nacja = (u.Nacja ?? "").toString().trim();
     if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) continue;
     const zamiast = (u["W zamian za"] ?? "").toString().trim();
@@ -809,17 +1039,23 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
       if (replacedBySpec) continue;
     }
     const tech = (u.Tech ?? "").toString().trim();
-    if (tech.length > 0 && tech !== "-" && !techs.has(tech)) continue;
-    if (epochNumber(u.Epoka) === 2 && !built.has("koszary")) continue;
-    const surowiec = (u.Surowiec ?? "").toString().trim().toLowerCase();
+    if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
+    if (epochNumber2(u.Epoka) === 2 && !built.has("koszary") && !isBuildingSupersededByUpgrade("koszary", builtList, data.buildings)) continue;
+    const surowiec = stripDiacritics((u.Surowiec ?? "").toString().trim());
     if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) {
       continue;
     }
-    let koszt = itemCost("jednostka", u.Jednostka, data, 1);
-    const recDisc = civRecruitmentDiscount(ctx.civBonusy);
-    if (recDisc > 0) {
-      koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
+    if (surowiec === "zelazo" && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) {
+      continue;
     }
+    if (u["Super-jednostka"] === "TAK" && ctx.aliveUnitTypeNames?.has(u.Jednostka)) continue;
+    const koszt = unitMoneyCost(
+      itemCost("jednostka", u.Jednostka, data, 1),
+      ctx.civBonusy,
+      ctx.kosztJednostekPace,
+      ownerId,
+      difficulty
+    );
     items.push({
       kind: "jednostka",
       id: u.Jednostka,
@@ -844,9 +1080,13 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
 
 // src/game/playerState.ts
 function asResearchGate(g) {
-  return { empireBuiltIds: g.empireBuiltIds, buildings: g.buildings };
+  return {
+    empireBuiltIds: g.empireBuiltIds,
+    buildings: g.buildings,
+    empireImprovementKeys: g.empireImprovementKeys
+  };
 }
-var NO_PREREQ = "\u2014";
+var BRAK_PREREQ2 = /* @__PURE__ */ new Set(["", "-", "\u2014", "\u2013", "brak", "none"]);
 function createPlayerState() {
   return {
     skarbiec: 0,
@@ -854,9 +1094,13 @@ function createPlayerState() {
     zbadane: /* @__PURE__ */ new Set(),
     badana: null,
     playerResearchTargetId: null,
+    researchQueue: [],
     era: 1,
     pieniadzMnoznik: 1,
     tempoGry: "standardowa",
+    buildingCostPace: "niski",
+    kosztJednostekPace: "niski",
+    wzrostLudnosciPace: "wysoki",
     civType: "grecy",
     // default: Grecy; nadpisywany przez applyMenuParams
     civBonusy: [],
@@ -869,18 +1113,65 @@ function techId(t) {
 }
 function parsePrereqs(t) {
   const raw = (t["Wymaga (prereq)"] ?? "").trim();
-  if (raw === "" || raw === NO_PREREQ) return [];
-  return raw.split("+").map((s) => s.trim()).filter((s) => s.length > 0 && s !== NO_PREREQ);
+  if (raw === "" || BRAK_PREREQ2.has(raw.toLowerCase())) return [];
+  return raw.split("+").map((s) => s.trim()).filter((s) => s.length > 0 && !BRAK_PREREQ2.has(s.toLowerCase()));
 }
 function prereqsMet(t, researched) {
   return parsePrereqs(t).every((p) => researched.has(p));
+}
+var PL_DIAKRYTYKI_EPOKA = {
+  "\u0105": "a",
+  "\u0107": "c",
+  "\u0119": "e",
+  "\u0142": "l",
+  "\u0144": "n",
+  "\xF3": "o",
+  "\u015B": "s",
+  "\u017A": "z",
+  "\u017C": "z"
+};
+var NUMER_EPOKI2 = {
+  kamien: 1,
+  braz: 2,
+  zelazo: 3
+};
+function epochNumber3(t) {
+  const raw = t.Epoka;
+  if (raw == null) return null;
+  const norm = String(raw).trim().toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_DIAKRYTYKI_EPOKA[c] ?? c);
+  const n = NUMER_EPOKI2[norm];
+  return typeof n === "number" ? n : null;
+}
+function epochGateMet2(t, techs, done) {
+  const e = epochNumber3(t);
+  if (e == null) return true;
+  for (const other of techs) {
+    const oe = epochNumber3(other);
+    if (oe == null) continue;
+    if (oe < e && !done.has(techId(other))) return false;
+  }
+  return true;
+}
+function epochTierGateMet2(t, techs, done) {
+  const e = epochNumber3(t);
+  const p = t.Poziom;
+  if (e == null || typeof p !== "number" || !Number.isFinite(p)) return true;
+  for (const other of techs) {
+    if (epochNumber3(other) !== e) continue;
+    const op = other.Poziom;
+    if (typeof op !== "number" || !Number.isFinite(op)) continue;
+    if (op < p && !done.has(techId(other))) return false;
+  }
+  return true;
 }
 function availableTechs2(techs, researched, gate) {
   return techs.filter((t) => {
     const id = techId(t);
     if (id === "" || researched.has(id)) return false;
     if (!prereqsMet(t, researched)) return false;
-    if (gate && !buildingGateMet(t, asResearchGate(gate))) return false;
+    if (!epochGateMet2(t, techs, researched)) return false;
+    if (!epochTierGateMet2(t, techs, researched)) return false;
+    if (gate && !researchGatesMet(t, asResearchGate(gate))) return false;
     return true;
   });
 }
@@ -889,7 +1180,9 @@ function setPlayerResearchTarget(state, techId2, techs, gate) {
   if (!def) return false;
   if (state.zbadane.has(techId2)) return false;
   if (!prereqsMet(def, state.zbadane)) return false;
-  if (gate && !buildingGateMet(def, asResearchGate(gate))) return false;
+  if (!epochGateMet2(def, techs, state.zbadane)) return false;
+  if (!epochTierGateMet2(def, techs, state.zbadane)) return false;
+  if (gate && !researchGatesMet(def, asResearchGate(gate))) return false;
   state.playerResearchTargetId = techId2;
   return true;
 }

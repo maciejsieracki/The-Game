@@ -91,6 +91,10 @@ function resolveOwnerBaseName(input) {
   const cleanCiv = civDisplayName && !isTechnicalOwnerLabel(civDisplayName) ? stripCityStateSuffix(civDisplayName) : void 0;
   const cleanCached = cached && !isTechnicalOwnerLabel(cached) ? stripCityStateSuffix(cached) : void 0;
   if (isClusterCapital && cleanCiv) return cleanCiv;
+  if (isCityState && cleanCity && cleanCiv && cleanCity !== cleanCiv) {
+    return `${cleanCity}${CITY_STATE_SEPARATOR}${cleanCiv}`;
+  }
+  if (isCityState && cleanCiv) return cleanCiv;
   if (isCityState && cleanCity) return cleanCity;
   if (!isCityState && cleanCiv) return cleanCiv;
   if (cleanCached) return cleanCached;

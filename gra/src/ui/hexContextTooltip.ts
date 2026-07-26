@@ -20,6 +20,7 @@ import {
   labelsForImprovementUnlock,
 } from '../game/resource-access';
 import { formatEntityDisplayName } from '../game/display-names';
+import type { DaninaLabel } from '../game/danina-nazwa';
 import {
   brandIconSvg,
   mapResourceIconSvg,
@@ -54,13 +55,31 @@ const TEREN_LABEL: Record<TerenBazowy, string> = {
 
 type YieldKey = keyof Pick<TileYield, 'zywnosc' | 'praca' | 'handel' | 'drewno' | 'kamien'>;
 
+/**
+ * Decyzja wlasciciela 81=A (2026-07-25): plon heksu "Handel" -> "Danina" (a po
+ * Walucie+Mennicy w stolicy -> "Podatek", jak w panelu miasta,
+ * game/danina-nazwa.ts). Ten plik NIE liczy bramki sam -- nie ma tu dostepu do
+ * stanu cywilizacji (miasta/technologie/dostep do zlota). Etykieta jest wiec
+ * LICZONA WYZEJ, w main.ts (buildHexContextPanelMessage / hexDaninaLabelAt --
+ * ten sam wzorzec co buildEmpireTradeSnap: capitalCityIdForOwner +
+ * unlockedTechsForOwner + ownerHasZlotoAccessNow) i przekazywana tutaj GOTOWA
+ * jako input.daninaLabel. Brak pola w inpucie (np. wolajacy, ktory nie policzyl
+ * jeszcze wlasciciela) -> bezpieczny fallback "Danina" (patrz
+ * buildHexContextTooltipHtml).
+ */
 const YIELD_ROWS: ReadonlyArray<{ key: YieldKey; label: string }> = [
   { key: 'zywnosc', label: 'Żywność' },
   { key: 'praca', label: 'Praca' },
-  { key: 'handel', label: 'Handel' },
+  { key: 'handel', label: 'Danina' },
   { key: 'drewno', label: 'Drewno' },
   { key: 'kamien', label: 'Kamień' },
 ];
+
+/** Wiersze plonow z etykieta "handel" podmieniona na aktualna Danina/Podatek. */
+function yieldRowsFor(daninaLbl: DaninaLabel): ReadonlyArray<{ key: YieldKey; label: string }> {
+  if (daninaLbl === 'Danina') return YIELD_ROWS;
+  return YIELD_ROWS.map((row) => (row.key === 'handel' ? { ...row, label: daninaLbl } : row));
+}
 
 const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
@@ -150,12 +169,15 @@ function yieldParts(hex: Hex): YieldPart[] {
 }
 
 /** Rozbicie per typ surowca: baza + modyfikatory = suma. */
-function formatYieldBreakdownHtml(hex: Hex): string {
+function formatYieldBreakdownHtml(
+  hex: Hex,
+  rows: ReadonlyArray<{ key: YieldKey; label: string }> = YIELD_ROWS,
+): string {
   const parts = yieldParts(hex);
   const total = fullTileYield(hex);
   const lines: string[] = [];
 
-  for (const { key, label } of YIELD_ROWS) {
+  for (const { key, label } of rows) {
     const icon = yieldIconHtml(key);
     const baseVal = parts[0]?.delta[key] ?? 0;
     const mods = parts.slice(1)
@@ -235,12 +257,20 @@ export interface HexContextTooltipInput {
   /** Miasto-państwo klastra — dopisek w etykiecie (Maciej 2026-07-07). */
   cityIsCityState?: boolean;
   currentEra?: number;
+  /**
+   * Decyzja 81=A: etykieta Danina/Podatek dla plonu "handel" TEGO heksu,
+   * juz policzona przez wolajacego (patrz komentarz przy YIELD_ROWS powyzej).
+   * Brak pola (np. heks bez wyznaczonego wlasciciela) -> domyslnie "Danina".
+   */
+  daninaLabel?: DaninaLabel;
   esc: (raw: string) => string;
 }
 
 export function buildHexContextTooltipHtml(input: HexContextTooltipInput): string {
   const { q, r, hex, esc, cityName } = input;
   const era = input.currentEra ?? 99;
+  const daninaLbl: DaninaLabel = input.daninaLabel ?? 'Danina';
+  const yieldRows = yieldRowsFor(daninaLbl);
   const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(String(hex.terenBazowy));
   const resources = collectResourceLabels(hex, era);
   const built = builtImprovementKeys(hex);
@@ -289,7 +319,7 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   }
 
   lines.push('<div class="cp-yield-head">Plony — rozbicie</div>');
-  lines.push(formatYieldBreakdownHtml(hex));
+  lines.push(formatYieldBreakdownHtml(hex, yieldRows));
   lines.push(`<div class="cp-total">Razem: ${formatYieldLine(fullTileYield(hex), '0')}</div>`);
 
   if (possible.length > 0) {
@@ -319,6 +349,23 @@ export interface UnitContextTooltipInput {
   maxHp: number;
   category?: string;
   inGarnizon?: boolean;
+  /**
+   * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts):
+   * etykieta typu "Pancerz +30% · Parametry +20%" (unitBuildingBonusLabel()),
+   * lub pusty string / undefined gdy jednostka nie zdobyla jeszcze zadnego
+   * bonusu budynkowego. Pokazuje graczowi SKAD wynikaja podniesione staty.
+   */
+  buildingBonusLabel?: string;
+  /**
+   * TRZECI SYSTEM -- doświadczenie bojowe / weterani (2026-07-25,
+   * game/veteran.ts). Etykieta gotowa z veteranBadgeLabel(), np.
+   * "★★ Doświadczony +10%" / "★★★ Weteran +20%"; undefined/pusty string na
+   * poziomie 1 (Rekrut, brak odznaki -- świadomie, patrz veteran.ts).
+   * Renderowana OSOBNĄ linią, złotym stylem inline -- WIZUALNIE ODRÓŻNIALNA
+   * od buildingBonusLabel (odznaki budynkowe: kropki + kolorowa obwódka na
+   * żetonie, tekst "Pancerz +X% · Parametry +Y%" bez specjalnego koloru tutaj).
+   */
+  veteranBadgeLabel?: string;
   esc: (raw: string) => string;
 }
 
@@ -334,6 +381,14 @@ export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string 
   }
   if (u.category) {
     lines.push(subLine('Typ', u.esc(u.category)));
+  }
+  if (u.veteranBadgeLabel) {
+    lines.push(
+      `<div class="cp-sub cp-veteran" style="color:#f4d35e;font-weight:600;">${u.esc(u.veteranBadgeLabel)}</div>`,
+    );
+  }
+  if (u.buildingBonusLabel) {
+    lines.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));
   }
   if (u.inGarnizon) {
     lines.push(subLine('Status', 'w garnizonie miasta'));

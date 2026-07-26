@@ -15,7 +15,7 @@ Podsumowanie **netto co turę** z pól i budynków przypisanych do tego miasta:
 
 - **Żywność** — czy miasto karmi wzrost i udział wojska.
 - **Praca** — ile trafia do kolejki budowy i na mapę (przez suwaki).
-- **Złoto** — podatki z pól i handel lokalny (reszta przez suwak handlu w zakładce Miasto).
+- **Złoto** — Danina z pól i z miasta (reszta przez suwak Daniny w zakładce Miasto; po Walucie i Mennicy w stolicy nazywana Podatkiem).
 
 **Wskazówka:** Otwieraj **Plony** po podboju — nowe miasto często ma zerowe przypisanie pól i stoi w miejscu mimo dużej populacji.
 
@@ -40,7 +40,7 @@ Pusta produkcja w ważnym mieście może wywołać chip **blocking** — dolny p
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -71,7 +71,7 @@ Ulepszenia: tartak, kamieniołom, kopalnia, glinianka; budynki: stolarnia, kuźn
 
 ### 43.3. Złoto z pól
 
-Profile **Podatki** i **Zrównoważone** kierują heksy na wyższy dochód złota z terenu. Handel międzymiastowy i karawanseraj to już budynki + dyplomacja — nie pojedynczy heks.
+Profile **Podatki** i **Zrównoważone** kierują heksy na wyższy dochód złota z terenu. Handel międzymiastowy to już budynki + dyplomacja — nie pojedynczy heks.
 
 ### 43.4. Typ terenu
 
@@ -79,7 +79,7 @@ Profile **Podatki** i **Zrównoważone** kierują heksy na wyższy dochód złot
 
 ### 43.5. Cuda
 
-Cud z bonusem ×3 mnoży wybrane plony **per miasto** w zasięgu. Po zbudowaniu cudu absolut w epoce — bonus wygasa, zostaje turystyka (+handel).
+Cud z bonusem ×3 mnoży wybrane plony **per miasto** w zasięgu. Po zbudowaniu cudu absolut w epoce — bonus wygasa, zostaje turystyka (+Danina).
 
 
 ### Przykład liczbowy
@@ -134,7 +134,7 @@ Duża kolejka budynków + profil Produkcja = wolniejszy wzrost pól. Planuj: naj
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -156,7 +156,7 @@ Pełny katalog z tabelą i kartami Wiki: [`45-katalog-budynkow.md`](45-katalog-b
 | Kategoria | Po co |
 |-----------|-------|
 | Produkcja | Praca, czasem złoto (stolarnia, kuźnia, wielka kuźnia) |
-| Pieniądz | Targowisko, port, karawanseraj |
+| Pieniądz | Targowisko, port |
 | Żywność | Spichlerz |
 | Nauka | Biblioteka, Akademia |
 | Kultura | Świątynia, teatr, pałac, stela |
@@ -184,13 +184,13 @@ Szare na liście = brak tech. Przykłady: Murarstwo → kamieniarski; Brązownic
 Dwa osobne mechanizmy działają razem:
 
 - **Dostęp** do surowca na mapie (miedź, żelazo, koń, drewno…) — nadal **tak/nie** po złożu + ulepszeniu na heksie (Część VIII §53.1), nie magazyn sztuk.
-- **Koszt materiałowy** — **10 budynków** epoki Brązu/Żelazo (Karawanseraj, Świątynia, Biblioteka, Spichlerz II, Akwedukt, Pretorium, Łaźnia publiczna, Akademia, Mury, Cytadela) pobierają **cegłę** lub **ceramikę** z magazynu miasta przy wejściu do kolejki — realne odejmowanie sztuk, nie flaga. Pełna tabela kosztów i strategia — Część VIII §53.2.
+- **Koszt materiałowy** — **9 budynków** epoki Brązu/Żelazo (Świątynia, Biblioteka, Spichlerz II, Akwedukt, Pretorium, Łaźnia publiczna, Akademia, Mury, Cytadela) pobierają **cegłę** lub **ceramikę** z magazynu miasta przy wejściu do kolejki — realne odejmowanie sztuk, nie flaga. Pełna tabela kosztów i strategia — Część VIII §53.2.
 
 **To dlatego Cegielnia i Garncarnia wreszcie mają sens** — bez zapasu cegły/ceramiki karta budynku pokazuje brakujący chip surowca i nie wejdzie do kolejki, nawet przy pełnej puli Pracy.
 
 ### 45.6. Przyrost i mnożniki
 
-Budynki dają stały przyrost (żywność, nauka…) lub **mnożnik %** (kuźnia → silniejsze jednostki z miasta, karawanseraj → handel lądowy). Kumulują się z suwakami z Części VI.
+Budynki dają stały przyrost (żywność, nauka…) lub **mnożnik %** (kuźnia → silniejsze jednostki z miasta, targowisko → mnożnik Daniny miasta). Kumulują się z suwakami z Części VI.
 
 **Wskazówka:** Pałac — jeden na miasto, fundament kultury; Spichlerz — pierwszy w imperium przed masową rekrutacją.
 
@@ -360,7 +360,7 @@ Jednostka w mieście nie blokuje kolejki — ale **rekrut zużywa ludność**, k
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 
@@ -386,7 +386,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 

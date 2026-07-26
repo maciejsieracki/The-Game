@@ -64,6 +64,13 @@ import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef, unitRowStat } from '../game/combat';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { applyMultiplier, civCombatStatMultipliers } from '../game/civ-bonuses';
+import { mergeBuildingBonusIntoStatMultipliers } from '../game/unit-building-bonuses';
+import {
+  applyVeteranFracToCombatUnit,
+  veteranMoraleBazoweUp,
+  veteranMoraleUcieczkiDown,
+} from '../game/veteran';
+import { cityWallDefenseBonusPercent } from '../game/city-defense';
 import { buildUnitModel } from '../render/units';
 import {
   BTerrain,
@@ -75,7 +82,6 @@ import {
 } from './battle-terrain';
 import combatParamsData from '../../data/combat-params.json';
 import miastoParamsData from '../../data/miasto-params.json';
-import { buildTestArmies } from './testBattle';
 import { buildSiegeWall, attachRowBreachPanels } from './siegeWall';
 import type { BronzeCiv } from '../render/bronzeCity';
 import {
@@ -331,6 +337,28 @@ export interface BattleUnit {
   stats: any;
   hp: number;
   maxHp: number;
+  /**
+   * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts).
+   * Ulamkowy bonus Pancerza (Sciezka A: Kuznia/Kuznia zelaza/Wielka Kuznia)
+   * wg NAJLEPSZEGO miasta ta jednostka kiedykolwiek odwiedzila. Wypelniane
+   * przez main.ts runtimeToBattleUnit() z RuntimeUnit.pancerzBonusProc;
+   * domyslnie undefined/0 -- bezpieczne dla wszystkich istniejacych wywolan
+   * (synthetic/test BattleUnit literals bez tego pola).
+   */
+  pancerzBonusFrac?: number;
+  /** Jak wyzej, Sciezka B (parametry miekkie: wszystko poza Pancerzem). */
+  parametryBonusFrac?: number;
+  /**
+   * TRZECI SYSTEM -- doswiadczenie bojowe / weterani (2026-07-25, game/veteran.ts).
+   * Ulamek premii (0 / 0.10 / 0.20) wg poziomu (Rekrut/Doswiadczony/Weteran).
+   * Wypelniane przez main.ts runtimeToBattleUnit() z RuntimeUnit.battlesSurvived
+   * (via veteranCombatBonusFrac()) -- ANALOGICZNIE do pancerzBonusFrac/
+   * parametryBonusFrac powyzej, ale NIEZALEZNY, trzeci system (nie miesza sie
+   * z tamtymi -- patrz naglowek game/veteran.ts). Domyslnie undefined/0 --
+   * bezpieczne dla wszystkich istniejacych wywolan (synthetic/test BattleUnit
+   * literals bez tego pola zachowuja dokladnie dawne zachowanie).
+   */
+  veteranBonusFrac?: number;
 }
 
 /** Siege-mode options: add a wall across the defender's end of the field. */
@@ -344,14 +372,15 @@ export interface SiegeOpts {
    */
   defCiv?: BronzeCiv;
   /**
-   * Maciej 2026-07-25: true gdy broniace sie miasto ma wybudowana Cytadele
-   * (budynek 'fort', upgrade Murow -- NIE mylic z ulepszeniem terenowym
-   * 'fort' na mapie). Podnosi bonus obrony na koronie muru (onWallWalkway)
-   * z +200% (sam mur) do +300% (mur+Cytadela) -- miasto-params.json
-   * bonus_obrona_mur_proc / bonus_obrona_cytadela_proc. Domyslnie false
-   * (sam mur) dla wstecznej zgodnosci callerow, ktorzy tego nie ustawiaja.
+   * Maciej 2026-07-25 (rozszerzone 41B -- Baszta): lista id budynkow FIZYCZNIE
+   * obecnych w broniacym sie miescie (City.cityBuilt), np. ['mury', 'fort',
+   * 'baszta']. Steruje bonusem obrony na koronie muru (onWallWalkway) przez
+   * cityWallDefenseBonusPercent (game/city-defense.ts) -- +200% (sam mur),
+   * +300% (mur+Cytadela, budynek 'fort'), +400% (mur+Cytadela+Baszta).
+   * Domyslnie undefined/puste (brak bonusu ponad zero) dla wstecznej
+   * zgodnosci callerow, ktorzy tego nie ustawiaja.
    */
-  cytadela?: boolean;
+  builtBuildingIds?: readonly string[];
 }
 
 export interface BattleOpts {
@@ -1168,10 +1197,14 @@ function normCounters(raw: any[]): any[] {
 
 function toCombatUnit(bu: BattleUnit): CombatUnit {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
-  return combatUnitFromDef(s, {
+  const cu = combatUnitFromDef(s, {
     typNazwa: (s['Jednostka'] as string) ?? bu.kategoria,
     hp: bu.hp,
   });
+  // TRZECI SYSTEM (weterani): jedyny wspolny punkt budowy CombatUnit w tym
+  // pliku (animowana bitwa PLUS "pomin animacje" -- oba wolaja toCombatUnit),
+  // wiec przeskalowanie tutaj pokrywa obie sciezki na raz. Patrz game/veteran.ts.
+  return applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac ?? 0);
 }
 
 /** Battle movement points (tiles / turn). Default DEFAULT_BATTLE_MOVE, min 1. */
@@ -1421,7 +1454,11 @@ function moraleBaseFor(bu: BattleUnit): number {
   const raw = statField(s, 'Morale bazowe', 'Morale bazowe');
   const v = typeof raw === 'number' ? raw : parseFloat(String(raw));
   if (!Number.isFinite(v)) return MORALE_START;
-  return Math.max(10, Math.min(300, v));
+  const base = Math.max(10, Math.min(300, v));
+  // TRZECI SYSTEM (weterani, 2026-07-25 -- korekta wlasciciela wieczorem):
+  // "Morale bazowe" idzie W GORE (wyzej = lepiej) -- +10%/+20%, Math.ceil
+  // gwarantuje widoczny efekt nawet dla malych wartosci. Patrz game/veteran.ts.
+  return veteranMoraleBazoweUp(base, bu.veteranBonusFrac ?? 0);
 }
 
 /** Per-unit ABSOLUTE morale level at which the unit breaks + flees ('Morale ucieczki'). */
@@ -1430,7 +1467,12 @@ function fleeMoraleFor(bu: BattleUnit): number {
   const raw = statField(s, 'Morale ucieczki', 'Morale ucieczki');
   const v = typeof raw === 'number' ? raw : parseFloat(String(raw));
   if (!Number.isFinite(v)) return 25;
-  return Math.max(0, Math.min(295, v));
+  const base = Math.max(0, Math.min(295, v));
+  // TRZECI SYSTEM (weterani): "Morale ucieczki" jest polem ODWROCONYM (nizej
+  // = trudniej uciec) -- idzie W DOL -- x0.90/x0.80, Math.floor + podloga
+  // bezpieczenstwa gwarantuja widoczny efekt bez zejscia do zera/ujemnych.
+  // Patrz game/veteran.ts (korekta wlasciciela 2026-07-25 wieczorem).
+  return veteranMoraleUcieczkiDown(base, bu.veteranBonusFrac ?? 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -1800,56 +1842,6 @@ interface FloatLabel {
 }
 
 // ---------------------------------------------------------------------------
-// Default TEST-BATTLE composition (the "T" key battle) -- BRIDGE to testBattle.ts
-//
-// The test-battle composition + terrain are DATA owned by src/battle/testBattle.ts
-// (its PRESETS / buildTestArmies). main.ts::launchTestBattle() lives outside this
-// module's edit lane, so on "T" it still hands us its canned 4 Legionista vs 4
-// Falanga roster. We DETECT that exact canned signature here and, when seen,
-// rebuild BOTH armies from testBattle's DEFAULT preset ("rzym_grecja" = 60 per
-// side / 120 total) using the real stat rows from data.units. Any OTHER battle
-// (a real in-game fight) passes through completely unchanged.
-//
-// NOTE for SILNIK: this detect-and-swap is only a bridge so "T" works without
-// editing main.ts. main.ts can later build the test battle directly in ONE line
-//   const { attacker, defender, teren } = buildTestArmies(data.units);
-// and drop the canned 4v4 roster entirely -- that change is out of this lane.
-// ---------------------------------------------------------------------------
-
-/**
- * If `opts` is the canned launchTestBattle roster (4 Legionista vs 4 Falanga,
- * ids atk0..atkN / def0..defN), return a fresh BattleOpts whose two armies are
- * rebuilt from testBattle's default preset (buildTestArmies). Otherwise return
- * `opts` unchanged.
- */
-function expandTestBattleComposition(opts: BattleOpts): BattleOpts {
-  const a = opts.attacker ?? [];
-  const d = opts.defender ?? [];
-  const units = (opts.data && (opts.data as any).units) as any[] | undefined;
-
-  // Accept both old name ('Legionista') and new name ('Hastati') for backward compat.
-  const isCannedSide = (arr: BattleUnit[], idPrefix: string, names: string[]): boolean =>
-    arr.length > 0 &&
-    arr.length <= 8 && // launchTestBattle ships exactly 4; allow a little slack
-    arr.every(u => new RegExp('^' + idPrefix + '\\d+$').test(u.id) && names.includes(u.nazwa));
-
-  const canned =
-    Array.isArray(units) &&
-    isCannedSide(a, 'atk', ['Hastati', 'Legionista']) &&
-    isCannedSide(d, 'def', ['Falanga']);
-
-  if (!canned) return opts;
-
-  // Build the spec'd test battle from testBattle.ts (DEFAULT preset).
-  const armies = buildTestArmies(units!);
-
-  // Safety: if the build produced nothing (data missing), keep the originals.
-  if (armies.attacker.length === 0 || armies.defender.length === 0) return opts;
-
-  return { ...opts, attacker: armies.attacker, defender: armies.defender, teren: armies.teren };
-}
-
-// ---------------------------------------------------------------------------
 // BattleScene
 // ---------------------------------------------------------------------------
 
@@ -2178,9 +2170,10 @@ export class BattleScene {
   private siegeWallRowHi: number = -1;
   /**
    * Obrona multiplier for a defender standing on the wall walkway (onWallWalkway).
-   * 1 + bonus_obrona_mur_proc/100 (mur, default), or 1 + (mur+Cytadela)/100 when
-   * opts.siege.cytadela is true (Maciej 2026-07-25 -- miasto-params.json
-   * bonus_obrona_mur_proc/bonus_obrona_cytadela_proc). Set once in the constructor.
+   * 1 + cityWallDefenseBonusPercent(opts.siege.builtBuildingIds, ...)/100 --
+   * +200% (mur), +300% (mur+Cytadela), +400% (mur+Cytadela+Baszta), decyzja
+   * 41B (Maciej 2026-07-25 -- miasto-params.json bonus_obrona_mur_proc /
+   * bonus_obrona_cytadela_proc / bonus_obrona_baszta_proc). Set once in the constructor.
    */
   private wallDefenseMult: number = 1;
   /**
@@ -2363,10 +2356,6 @@ export class BattleScene {
 
   // -------------------------------------------------------------------------
   constructor(opts: BattleOpts) {
-    // Default test battle ("T"): swap the canned 4v4 roster for the spec'd
-    // 20 Legionista + 10 Oszczepnik + 10 Lucznik per side. No-op for real fights.
-    opts = expandTestBattleComposition(opts);
-
     this.onCancelCb  = opts.onCancel ?? null;
     this.terrain     = opts.teren;
     const d: any     = opts.data ?? {};
@@ -2378,12 +2367,18 @@ export class BattleScene {
     this._attackerCivLabel = opts.attackerCivLabel?.trim() || 'Gracz';
     this._defenderCivLabel = opts.defenderCivLabel?.trim() || 'Przeciwnik';
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
-    // Wall/Cytadela defence multiplier (Maciej 2026-07-25) -- data-driven from
-    // miasto-params.json, not hardcoded. +200% (mur) or +300% (mur+Cytadela).
+    // Wall/Cytadela/Baszta defence multiplier (Maciej 2026-07-25, rozszerzone
+    // 41B) -- data-driven from miasto-params.json, not hardcoded. +200% (mur),
+    // +300% (mur+Cytadela) or +400% (mur+Cytadela+Baszta). Scalone w
+    // cityWallDefenseBonusPercent (game/city-defense.ts) -- ta sama funkcja co
+    // main.ts structureDefenseBonusFor (mapa swiata), zeby oba tryby liczyly to samo.
     {
       const murProc = (miastoParamsData as any)?.bonus_obrona_mur_proc?.wartosc ?? 200;
       const cytadelaProc = (miastoParamsData as any)?.bonus_obrona_cytadela_proc?.wartosc ?? 100;
-      const totalProc = murProc + (opts.siege?.cytadela ? cytadelaProc : 0);
+      const basztaProc = (miastoParamsData as any)?.bonus_obrona_baszta_proc?.wartosc ?? 100;
+      const totalProc = cityWallDefenseBonusPercent(opts.siege?.builtBuildingIds, {
+        mur: murProc, cytadela: cytadelaProc, baszta: basztaProc,
+      });
       this.wallDefenseMult = 1 + totalProc / 100;
     }
     this._defenderSideLabel = opts.defenderSideLabel?.trim() || '';
@@ -7286,10 +7281,12 @@ export class BattleScene {
     // "Teren" rows by name, so the per-blow math stays canonical -- only WHICH
     // tile's terrain feeds each modifier changed (was a single battlefield-wide
     // terrain before). Facing/flank (B7) is applied first, exactly as before.
-    // SIEGE v2: a defender standing on the wall walkway gets the wall/Cytadela
-    // defence bonus (Maciej 2026-07-25: +200% mur-only, +300% mur+Cytadela --
-    // this.wallDefenseMult, computed once in the constructor from opts.siege.cytadela
-    // + miasto-params.json bonus_obrona_mur_proc/bonus_obrona_cytadela_proc).
+    // SIEGE v2: a defender standing on the wall walkway gets the wall/Cytadela/
+    // Baszta defence bonus (Maciej 2026-07-25, rozszerzone 41B: +200% mur-only,
+    // +300% mur+Cytadela, +400% mur+Cytadela+Baszta -- this.wallDefenseMult,
+    // computed once in the constructor from opts.siege.builtBuildingIds via
+    // cityWallDefenseBonusPercent + miasto-params.json bonus_obrona_mur_proc/
+    // bonus_obrona_cytadela_proc/bonus_obrona_baszta_proc).
     // NIE uzywamy 'Wzgorza' (+50%) — stosujemy jawny mnoznik muru dla onWallWalkway.
     const defTerrain = defender.onWallWalkway
       ? 'Plaskie (rownina/laka)'   // teren bazowy (x1.0) — mnoznik muru dodany ponizej
@@ -7336,16 +7333,25 @@ export class BattleScene {
       this.engaged.add(key);
     }
 
-    const atkMods = civCombatStatMultipliers(atkBonusy, cuA, {
-      side: 'attacker',
-      terrain: defTerrain,
-      isChargeRound: isCharge,
-    });
-    const defMods = civCombatStatMultipliers(defBonusy, cuD, {
-      side: 'defender',
-      terrain: defTerrain,
-      isChargeRound: isCharge,
-    });
+    // Sciezki ulepszen jednostek (2026-07-25): bonus PER-JEDNOSTKA (nie per-strona
+    // jak bonusy cyw) -- czytany wprost z BattleUnit.pancerzBonusFrac/parametryBonusFrac
+    // (main.ts runtimeToBattleUnit ustawia je z RuntimeUnit przy wejsciu do bitwy).
+    const atkMods = mergeBuildingBonusIntoStatMultipliers(
+      civCombatStatMultipliers(atkBonusy, cuA, {
+        side: 'attacker',
+        terrain: defTerrain,
+        isChargeRound: isCharge,
+      }),
+      { pancerz: attacker.bu.pancerzBonusFrac ?? 0, other: attacker.bu.parametryBonusFrac ?? 0 },
+    );
+    const defMods = mergeBuildingBonusIntoStatMultipliers(
+      civCombatStatMultipliers(defBonusy, cuD, {
+        side: 'defender',
+        terrain: defTerrain,
+        isChargeRound: isCharge,
+      }),
+      { pancerz: defender.bu.pancerzBonusFrac ?? 0, other: defender.bu.parametryBonusFrac ?? 0 },
+    );
 
     const defMeleeDef = applyMultiplier(cuD.meleeDefence, defMods.obrona);
     const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac));
@@ -18012,6 +18018,10 @@ function computeInstantResult(
         attackerPosition: arc,
         attackerCivBonusy,
         defenderCivBonusy,
+        // Sciezki ulepszen jednostek (2026-07-25): tryb "pomin animacje" korzysta
+        // z tego samego resolveCombat -- musi dostac ten sam per-jednostkowy bonus.
+        attackerBuildingBonus: { pancerz: a.ru.bu.pancerzBonusFrac ?? 0, other: a.ru.bu.parametryBonusFrac ?? 0 },
+        defenderBuildingBonus: { pancerz: d.ru.bu.pancerzBonusFrac ?? 0, other: d.ru.bu.parametryBonusFrac ?? 0 },
       });
       for (const line of res.log) log.push(line);
 

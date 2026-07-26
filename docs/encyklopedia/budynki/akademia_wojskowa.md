@@ -22,7 +22,7 @@
 ## Wiki‑M
 
 ### Co robi
-Akademia wojskowa wzmacnia miasto w kategorii **Wojsko**. Poziom 1: **+3 pracy** (+1 na poziom), **+2 złota** (+1 na poziom), **+15 % mnożnika handlu** (+4 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**18** od poprzedniego), ale daje większy przyrost.
+Akademia wojskowa wzmacnia miasto w kategorii **Wojsko**. Poziom 1: **+3 pracy** (+1 na poziom), **+2 złota** (+1 na poziom), **+15 % mnożnika Daniny** (+4 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**18** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 80 pracy
 - **Każdy kolejny poziom:** +18 pracy
@@ -46,9 +46,9 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 80 | **8 tur** | +3 pracy, +2 złota, +15 % mnożnika handlu | 4 ¤/t |
+| Poziom 1 | 80 | **8 tur** | +3 pracy, +2 złota, +15 % mnożnika Daniny | 4 ¤/t |
 | Poziom 2 | 98 | **10 tur** | więcej (patrz niżej) | 4 ¤/t |
-| Poziom 3 | 116 | — | **+5 pracy, +4 złota, +23 % mnożnika handlu** | 4 ¤/t |
+| Poziom 3 | 116 | — | **+5 pracy, +4 złota, +23 % mnożnika Daniny** | 4 ¤/t |
 
 Przy +2 złota/t, utrzymanie 4 ¤/t → netto **+-2 ¤/t**. Koszt 80 pracy przy 10/t ≈ **8 tur** pracy — złotem „zwraca się" po ok. **80 tur** (uproszczenie, bez inflacji).
 

@@ -294,6 +294,21 @@
     "odblokowuje": "Odlewnia brązu (budynek miejski)",
     "uwagi": "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze złożem rudy"
   },
+  "kopalnia_zlota": {
+    "nazwa": "Kopalnia złota",
+    "epoka": 2,
+    "bonus": {
+      "praca": 2
+    },
+    "surowiecOdblokowany": null,
+    "surowiecOdblokowany_uwaga": "Maciej 2026-07-25: złoto jest surowcem DOSTĘPOWYM — bez magazynowania, bez ilości/turę. W przeciwieństwie do Kopalni miedzi/kopalni na złożu żelaza, ta Kopalnia NIE zasila żadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) — liczy się wyłącznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    "teren": "Wzgórza, Góry, złoże złota (hex.zloze=zloto)",
+    "warunek": "dostęp imperium do Złota (bramka Mennicy) — bez wydobycia ilościowego",
+    "koszt_praca": 22,
+    "tech": "Waluta",
+    "odblokowuje": "Mennica (dostęp do Złota, obok Targowiska w tym mieście)",
+    "uwagi": "Maciej 2026-07-25: „złoto potraktujemy jako surowiec, do którego wystarczy tylko dostęp — nie trzeba budować wielu kopalni”. Wzorowana na Kopalni miedzi (kopalnia_miedzi) — dedykowane ulepszenie, tylko na hex.zloze=zloto."
+  },
   "posterunek": {
     "nazwa": "Posterunek (Strażnica)",
     "epoka": 2,

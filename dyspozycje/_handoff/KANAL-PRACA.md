@@ -3299,7 +3299,66 @@ DŁUG: 11 innych budynków ma niezerowy `mnoznik` (nie-duplikat kultury) — mec
 sesja lokalna: „push" — pull `b1f16a59` na dysk właściciela.
 CZEKAM-NA: decyzja Macieja ws. mnożnika pozostałych 11 budynków
 
----
+## [17:30 PL, 2026-07-25] CHMURA → LOKALNA — deploy ROBOCZA `dd1ec38e` (FALA 11: budynki + naprawa plonów)
+Wdeployowana ROBOCZA **md5 `dd1ec38e0b277765e710e6ae48601b73`**, pieczątka `dd1ec38e`, zastępuje `b1f16a59`.
+Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST (MAPA, MIASTO, WALKA, ODSKOK, ODSKOK-OBLEZENIE, OBLEZENIE-3v3)
++ `ROBOCZA-MANIFEST.json`. VERIFY OK. Bramki zielone (16 testów, w tym 5 nowych).
+**Co weszło:** naprawa krytyczna — plony budynków od 2026-07-09 NIE docierały do silnika (miasto Żelaza:
+Praca 12→78, Pieniądz 8→98, Kultura 0→36); podział awansu na „w górę"/„w bok"; osiem grup budynków w panelu
+miasta; Pałac tylko w stolicy, łańcuch Dom Starszyzny→Dwór Zarządcy→Pretorium tylko w regionach; nowa siatka
+Prawa; Baszta (+100%, razem 400% obrony); koszty surowcowe wg epok bez brązu i żelaza; cegła na szlakach;
+usunięty Karawanseraj i Ratusz; Łucznik nubijski z własnym modelem 3D.
+**Sesja lokalna: pull na dysk właściciela, testuj `dd1ec38e`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [19:15 PL, 2026-07-25] CHMURA → LOKALNA — deploy ROBOCZA `98b1403a` (FALA 11.1)
+Wdeployowana ROBOCZA **md5 `98b1403ac94d335015e5c28411155909`**, pieczątka `98b1403a`, zastępuje `dd1ec38e`.
+Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. VERIFY OK, 13 bramek zielonych.
+**Co weszło:** przywrócony wymóg kolejności budowania (Akademia←Biblioteka, Cytadela←Mury, Akademia
+wojskowa←Koszary, Świątynia←Kamienne kręgi) — zniknął dziś przy likwidacji „awansu bocznego"; plus naprawa
+luki, przez którą budynek zablokowany brakiem poprzednika znikał z panelu bez komunikatu.
+**Co NIE weszło:** modele jednostek epoki Brązu — pliki w repo, niewpięte do dispatchu (właściciel ocenił
+serię Sonnetową jako uwstecznienie; praca przeniesiona na Opus 5, przerwana na jego prośbę).
+**Sesja lokalna: pull na dysk właściciela, testuj `98b1403a`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [22:33 PL, 2026-07-25] CHMURA → LOKALNA — deploy ROBOCZA `0f9ce758` (FALA 12)
+Wdeployowana ROBOCZA **md5 `0f9ce758973fb53490fb79fdecda7bc7`**, pieczątka w menu `ROBOCZA · 9600d931 · 2026-07-25 22:33`
+(pieczątka nosi md5 sprzed wstrzyknięcia stempla — tak jak poprzednie wydania). Zastępuje `98b1403a`.
+Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. **VERIFY OK.**
+**Co weszło:** domknięcie ekonomii — korupcja ożywiona (tylko Danina, współczynniki −50%), Pieniądz z budynków
+i z konwersji Pracy wchodzi do puli Daniny przed mnożnikami (67B + 76B), domyślny podział 20/60/20, nowa siatka
+Szczęścia z karą poniżej 10% udziału Zamożności, Biblioteka +30%/Akademia +20% do Nauki, Mennica tylko w stolicy
+z naprawionym rozjazdem panel/silnik, złoto na szlakach jako dostęp, **system weteranów** (+10%/+20%, morale
+ucieczki i próg dezercji w dół), limit 10 heksów na skupisko górskie przy górzystości 19,3%.
+**Co NIE weszło:** rename Handel→Danina→Podatek, `odblokowuje`, odznaki na żetonach, 5 modeli jednostek Brązu.
+**Sesja lokalna: pull na dysk właściciela, testuj `0f9ce758`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [00:12 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `9fc91af8` (FALA 13)
+Wdeployowana ROBOCZA **md5 `9fc91af8bec6561fd6d2d2afa4bf2e95`**, pieczątka `ROBOCZA · c06affa9 · 2026-07-26 00:12`.
+Zastępuje `0f9ce758`. Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest. **VERIFY OK.**
+**Co weszło:** zmiana nazwy Handel→Danina→Podatek (z bramką Waluta + Mennica w stolicy; trasy handlowe
+zostają Handlem), Mennica zasypia po utracie dostępu do złota i mówi w panelu dlaczego, odznaki ulepszeń
+na żetonach jednostek, własny model 3D Kopalni złota, ożywione pole `odblokowuje`, stała przepustowości
+szlaku w danych, usunięty martwy kod, Poradnik i encyklopedia przeliczone na podział 20/60/20.
+**Co NIE weszło:** 5 modeli jednostek Brązu — gotowe, ale NIEWPIĘTE, czekają na oględziny właściciela
+(zrzuty + pomiary + rekomendacje: `dyspozycje/podglad-modeli-braz/`).
+**Sesja lokalna: pull na dysk właściciela, testuj `9fc91af8`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [06:02 PL, 2026-07-26] CHMURA → LOKALNA — deploy ROBOCZA `3cf111ce` (FALA 14)
+Wdeployowana ROBOCZA **md5 `3cf111ced9515fe4263cde7a75ddc692`**, pieczątka `ROBOCZA · 8c897b6c · 2026-07-26 06:02`.
+Zastępuje `9fc91af8`. Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest. **VERIFY OK.**
+**Co weszło:** pięć modeli jednostek WPIĘTYCH (Włócznik — po poprawce wysokości 0,999→0,870 HEX_R i tarczy;
+Wojownik z mieczem i tarczą, Procarz, Rydwan (woły), Hastati); bonus cudów `handel_procent` ożywiony i zasila
+HANDEL (trasy handlowe), nie Daninę — decyzja właściciela.
+**Do oględzin właściciela:** Rydwan na wołach nie czyta się jako rydwan pod kątem kamery; Procarz drobniejszy
+od reszty i bez widocznej procy. Oba przechodzą pomiary, ale wyglądem budzą moje zastrzeżenia.
+**Sesja lokalna: pull na dysk właściciela, testuj `3cf111ce`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+<!-- ===== wpisy drugiego integratora doklejone przy scaleniu 2026-07-26 ===== -->
 
 ## [2026-07-26] SESJA LOKALNA (Fable) → WSZYSCY — deploy ROBOCZA `076e3c0b` (uwagi playtestu, BEZ lasów)
 
@@ -3315,3 +3374,17 @@ Uwagi z playtestu Macieja + lasy. Weszło: naprawa paska w pełnym ekranie (przy
 Bramki wszystkie zielone. Wypchnięte na main.
 ⚠️ Przy poziomie „Mało" ryzyko startu bez lasu w zasięgu miasta NADAL istnieje — mechanizm gwarancji został świadomie wycofany wcześniej (revert `9a86e42`) i nie wrócił.
 📋 Trwa projektowanie mechanizmu WIARYGODNOŚCI CYWILIZACJI — komplet decyzji Macieja w `dyspozycje/WIARYGODNOSC-SPECYFIKACJA.md` (nowa, czysta specyfikacja) oraz historia w `PROJEKT-WIARYGODNOSC-CYWILIZACJI.md`. Implementacja przewidziana dla orkiestratora — wchodzi w `diplomacy-*.ts` i `main.ts`.
+
+## [12:18 PL, 2026-07-26] CHMURA → LOKALNA + DRUGI INTEGRATOR — deploy ROBOCZA `7c7ae9a0` (FALA 15, SCALENIE)
+**To pierwszy bundle zawierający pracę OBU integratorów.** Do tej pory istniały dwa różne
+`gra-robocza/Gra-ROBOCZA.html` — jeden na `main`, drugi na gałęzi sesji chmurowej. Właściciel widział
+tylko ten z `main`, więc fale 12–14 sesji chmurowej nigdy nie trafiły do playtestu.
+**md5 `7c7ae9a018b174425ff9e99698f286c9`**, pieczątka `ROBOCZA · 5755d741 · 2026-07-26 12:18`. VERIFY OK.
+**Konflikt merytoryczny:** obaj wdrożyliśmy decyzje 65B/66B (Danina/Podatek). Maciej rozstrzygnął:
+„ok twoja głębsza" — obowiązuje wersja sesji chmurowej (bramka z `main` nie sprawdzała stolicy ani złota).
+**Praca drugiego integratora zachowana w całości** — suwak lasu, pełny ekran, dyplomacja, HP w armii,
+dźwięk marszu, menu pauzy, Murarstwo.
+**DO DRUGIEGO INTEGRATORA:** przed kolejną pracą zrób `git pull` TEJ gałęzi, nie tylko `main` —
+inaczej znów rozjedziemy się na tych samych plikach.
+**Sesja lokalna: pull na dysk właściciela, testuj `7c7ae9a0`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.

@@ -444,10 +444,12 @@ export function reconcileOwnerResourceCaps(
 
 /**
  * Difficulty-resolved maintenance parameters (from econ-params.json).
- *   - budynekUtrzymanieFlat : if set, every building costs this flat amount
- *     (econ-params budynki.utrzymanie_budynek = 1, "niezroznicowany w v0.1").
- *     Set to `undefined` to use each building's own utrzymanie /
- *     przyrostUtrzymania from buildings.json (post-v0.1 differentiated balance).
+ *   - budynekUtrzymanieFlat : DEFAULT cost used only for a building with no
+ *     (finite) `utrzymanie` entry in buildings.json (econ-params
+ *     budynki.utrzymanie_budynek = 1/1/2 easy/normal/hard). Every real building
+ *     record carries its own utrzymanie -- see buildingUpkeep() -- so this is
+ *     a safety-net default, NOT an override of per-building data (R-UTRZYMANIE-
+ *     ZROZNICOWANE 2026-07-25, decyzja wlasciciela 19=A).
  *   - jednostkaUtrzymanieStd : default gold upkeep for a unit with no table /
  *     category entry (econ-params globalne.utrzymanie_jednostka_standard = 1).
  *   - zywnoscJednostkaRuch : food/turn for a unit marching or in garrison
@@ -471,9 +473,9 @@ export const DEFAULT_UPKEEP_PARAMS: UpkeepParams = {
 };
 
 /**
- * Read UpkeepParams from the raw econ-params.json blob.  In v0.1 the building
- * cost is the flat panel value (budynki.utrzymanie_budynek); pass the result
- * through with budynekUtrzymanieFlat cleared if you want per-building costs.
+ * Read UpkeepParams from the raw econ-params.json blob. budynekUtrzymanieFlat
+ * is the DEFAULT for a building with no per-building utrzymanie entry (see
+ * buildingUpkeep()) -- it no longer overrides buildings.json data (2026-07-25).
  */
 export function loadUpkeepParams(
   raw: RawEconParamsForUpkeep,
@@ -497,23 +499,33 @@ export interface BuildingInstanceLike {
 }
 
 /**
- * Gold upkeep for one building at a level (Spec s.6.1 + decyzja Naster compound +10%).
- *   flat override set  -> flatOverride (v0.1 "niezroznicowany")
- *   otherwise          -> floor(utrzymanie * 1.10^(level-1))  [compound, mirrors buildingValue]
- * Level clamped to >= 1.  The legacy `przyrostUtrzymania` field is no longer
- * used for upkeep scaling -- compound replaces it.
+ * Gold upkeep for one building at a level (Spec s.6.1; R-UTRZYMANIE-ZROZNICOWANE
+ * 2026-07-25, decyzja wlasciciela 19=A: "zadnej plaskiej stawki, kazdy budynek
+ * musi miec wartosc swojego utrzymania").
+ *
+ *   building.utrzymanie is a finite number (INCLUDING 0, e.g. Stela/Pomnik --
+ *   decyzja 45=B, "pomnik nie wymaga obslugi")
+ *     -> floor(utrzymanie + przyrostUtrzymania * (level-1))  [per-building, liniowy]
+ *   building.utrzymanie missing / not finite (no entry in buildings.json)
+ *     -> flatOverride if given, else 0  [DEFAULT ONLY, never an override of real data]
+ *
+ * `0` is a valid, finite per-building value in JavaScript -- Number.isFinite(0)
+ * is true -- so a building explicitly costing 0 (Stela) is never mistaken for
+ * "no entry" and never falls back to the flat default. Level clamped to >= 1.
  */
 export function buildingUpkeep(
   building: BuildingRecord,
   level: number,
   flatOverride?: number,
 ): number {
-  if (typeof flatOverride === 'number' && Number.isFinite(flatOverride)) {
-    return flatOverride;
+  const lvl = level >= 1 ? level : 1;
+  if (!Number.isFinite(building.utrzymanie)) {
+    // No per-building value in data -> flat value is a DEFAULT, not an override.
+    return (typeof flatOverride === 'number' && Number.isFinite(flatOverride)) ? flatOverride : 0;
   }
-  const lvl  = level >= 1 ? level : 1;
-  const base = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
-  return Math.floor(buildingEffectAtLevel(base, lvl));
+  const base   = building.utrzymanie;
+  const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
+  return Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
 }
 
 /** Total gold building upkeep for a set of building instances (Spec s.6.1). */

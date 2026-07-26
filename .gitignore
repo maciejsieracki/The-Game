@@ -48,3 +48,7 @@ desktop.ini
 *.swp
 *~
 .claude/worktrees/
+
+# tymczasowe artefakty narzedziowe (bundle testowe sa juz sledzone, wiec ich nie ignorujemy)
+gra/tmp-*.ts
+gra/tools/.probe-*

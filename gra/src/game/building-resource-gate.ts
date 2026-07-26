@@ -55,19 +55,71 @@ const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>
   stolarnia: ['Drewno'],
   kamieniarski: ['Kamień'],
   kuznia: ['Ruda'],
+  // ZLOTO (Maciej 2026-07-25): Mennica wymaga dostępu do Złota (empire-wide, Kopalnia złota
+  // gdziekolwiek w imperium — game/zloto-access.ts empireHasKopalniaZlota, dolane do
+  // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
+  // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
+  // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
+  // PYTANIE 77=A (Maciej 2026-07-25): dostęp = własna Kopalnia złota ALBO aktywny szlak
+  // handlowy z cywilizacją, która ma złoto (jak koń) — bramka TU jest bez zmian (nadal
+  // sam sprawdza tylko obecność etykiety 'Złoto' w `activeLabels`); rozszerzenie jest
+  // WYŻEJ w łańcuchu, w zloto-access.ts (placedImprovementsWithZlotoTradeGrant), WPIĘTE
+  // w main.ts (placedImprovementsWithTradeGrants, domknięcie 2026-07-25 wieczór) —
+  // szlak handlowy realnie odblokowuje Mennicę bez własnej Kopalni złota.
+  mennica: ['Złoto'],
 };
 
 /**
  * TEMAT 8 Q2: budynek wymaga innego budynku wybudowanego W TYM SAMYM MIEŚCIE (nie imperium).
- * Wartość = id budynku-prerekwizytu w buildings.json. Sprawdzane w `production.ts` (tam jest
- * per-city `builtList` + `isBuildingSupersededByUpgrade`, żeby np. upgrade Koszary→Akademia
- * wojskowa nie odbierał miastu prawa do Warsztatu oblężniczego — ten sam wzorzec co bramka
- * Koszar dla jednostek epoki Brązu, `production.ts` ok. linii 752).
+ * Wartość = id budynku-prerekwizytu w buildings.json, LUB tablica id-ów gdy więcej niż jeden
+ * budynek spełnia ten sam wymóg tematyczny (np. Warsztat oblężniczy ↔ Koszary/Akademia
+ * wojskowa). Sprawdzane w `production.ts` przez `cityBuildingPrereqMet` niżej.
+ *
+ * GRUPY-BUDYNKOW (Maciej 2026-07-25, likwidacja "awansu bocznego"): Koszary i Akademia
+ * wojskowa NIE są już w relacji upgradeFrom (oba stoją w mieście osobno) — dawny mechanizm
+ * "akceptuje też upgrade prerekwizytu" przez `isBuildingSupersededByUpgrade('koszary', ...)`
+ * przestał działać dla tej pary (nic już nie ma upgradeFrom='koszary'), a miasto MOŻE dziś
+ * mieć Akademię wojskową bez nigdy niezbudowanych Koszar. Warsztat oblężniczy musi więc nadal
+ * być dostępny, gdy w mieście stoi KTÓRYKOLWIEK z dwóch budynków treningowych — stąd tablica
+ * zamiast pojedynczego id.
+ *
+ * REGRESJA-KOLEJNOSC (Maciej 2026-07-25, wieczór): likwidacja "awansu bocznego" (usunięcie
+ * `upgradeFrom` z czterech par: Biblioteka/Akademia, Mury/Cytadela, Koszary/Akademia wojskowa,
+ * Kamienne kręgi/Świątynia) skasowała PRZY OKAZJI wymóg kolejności budowy, którego istnienia
+ * nikt nie planował usuwać — dało się postawić Akademię bez Biblioteki. Właściciel: "budynek
+ * wcześniejszy musi być wybudowany, żeby wybudować kolejny", dla WSZYSTKICH par z dawnym
+ * awansem bocznym. Stąd cztery dopiski niżej (semantyka OR nie ma tu znaczenia — pojedynczy
+ * id — ale funkcja i tak akceptuje tablicę, gdyby kiedyś przybył drugi wariant poprzednika).
  */
-export const CITY_BUILDING_PREREQ: Readonly<Record<string, string>> = {
-  warsztat_oblezniczy: 'koszary',
+export const CITY_BUILDING_PREREQ: Readonly<Record<string, string | readonly string[]>> = {
+  warsztat_oblezniczy: ['koszary', 'akademia_wojskowa'],
   laznia_publiczna: 'studnia',
+  akademia: 'biblioteka',
+  fort: 'mury',
+  akademia_wojskowa: 'koszary',
+  swiatynia: 'kamienne_kregi',
+  // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
+  // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
+  mennica: 'targowisko',
 };
+
+/**
+ * Czy `builtList` (budynki TEGO miasta) spełnia prerekwizyt `prereq` — dowolny z jego id-ów
+ * jest wystarczający (semantyka OR), z akceptacją dawnego mechanizmu "upgrade prerekwizytu"
+ * (`isBuildingSupersededByUpgrade`) dla id-ów, które nadal są w relacji upgradeFrom (np. gdyby
+ * kiedyś wróciła para z awansem bocznym) — funkcja jest neutralna względem tego, które id-y są
+ * dziś niezależne, a które w łańcuchu.
+ */
+export function cityBuildingPrereqMet(
+  prereq: string | readonly string[] | undefined,
+  builtList: readonly string[],
+  buildings: readonly { id: string; upgradeFrom?: string }[],
+  isSuperseded: (id: string, builtList: readonly string[], buildings: readonly { id: string; upgradeFrom?: string }[]) => boolean,
+): boolean {
+  if (!prereq) return true;
+  const ids = typeof prereq === 'string' ? [prereq] : prereq;
+  return ids.some(id => builtList.includes(id) || isSuperseded(id, builtList, buildings));
+}
 
 /**
  * TEMAT 8 Q2: budynek wymaga wybrzeża morskiego LUB rzeki w zasięgu TEGO miasta (teren, nie

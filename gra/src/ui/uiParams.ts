@@ -58,7 +58,14 @@ export interface UiPanelMiasta {
 
 /** Parameters consumed by the main menu (mainMenu.ts). */
 export interface UiMenu {
+  /** Numer wersji pokazywany w menu i w stopce, np. „0.5”. Jedno źródło prawdy. */
   wersja: string;
+  /**
+   * Etap rozwoju pokazywany w stopce obok numeru, np. „alfa”, „beta”, „” dla wydania.
+   * Wprowadzony 2026-07-26 (Maciej: „to już nie jest prototyp 0.1”), bo stopka miała
+   * zahardkodowane „prototyp v0.1”, niezależne od `wersja` w danych.
+   */
+  etap?: string;
   ustawienia: UiMenuSetting[];
 }
 

@@ -64,6 +64,9 @@ const FALLBACK_METAL_ERA: Record<string, number> = { miedz: 2, zelazo: 3, wegiel
 const FALLBACK_DEPOSIT_RARITY: Partial<Record<string, number>> = {
   miedz: 0.10, zelazo: 0.08, glina: 0.10, konie: 0.10, wegiel: 0.10,
   owce: 0.08, bydlo: 0.07, sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03,
 };
 
 function tierKey(t: DensityTier): 'low' | 'medium' | 'high' {

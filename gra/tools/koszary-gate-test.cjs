@@ -242,10 +242,12 @@ console.log('\n6. purchasableUnits takze respektuje gate Koszar');
     'purchasableUnits: Wojownik Brazu pojawia sie z Koszarami');
 }
 
-// --- Test G: lazaret not available at epoch 3 (epokaWejscia=5) ------------
-console.log('\n7. Lazaret niedostepny przy epoch=3 (epokaWejscia=5 po zmianie)');
+// --- Test G: Lazaret USUNIETY z gry calkowicie (Maciej) --------------------
+// Asercje istnienia/epoki/dostepnosci Lazaretu usuniete -- budynek nie istnieje
+// juz w buildings.json. Zostaje WYLACZNIE zabezpieczenie regresyjne: gdyby ktos
+// kiedys przypadkiem przywrocil id='lazaret', nie ma prawa pojawic sie w epoce 3.
+console.log('\n7. Lazaret usuniety z gry -- zabezpieczenie przed przywroceniem');
 {
-  // Load real buildings.json to verify the live data
   let buildingsJson;
   try {
     buildingsJson = require('../data/buildings.json');
@@ -254,22 +256,11 @@ console.log('\n7. Lazaret niedostepny przy epoch=3 (epokaWejscia=5 po zmianie)')
     buildingsJson = null;
   }
   if (buildingsJson) {
-    const lazaret = buildingsJson.find(b => b.id === 'lazaret');
-    assert(lazaret !== undefined, 'lazaret istnieje w buildings.json');
-    assert(lazaret && lazaret.epokaWejscia === 5,
-      'lazaret epokaWejscia === 5 (Sredniowiecze, parking)',
-      'got ' + (lazaret && lazaret.epokaWejscia));
-
     const dataReal = { buildings: buildingsJson, units: [] };
     const atEpoch3 = availableProduction(CITY, dataReal, [], { epoch: 3, builtBuildingIds: [] });
     assert(!atEpoch3.some(i => i.id === 'lazaret'),
-      'lazaret NIE pojawia sie przy epoch=3 (cap v0.1)',
+      'lazaret NIE pojawia sie przy epoch=3 (usuniety z gry / cap v0.1)',
       'items=' + JSON.stringify(atEpoch3.map(i => i.id)));
-
-    const atEpoch4 = availableProduction(CITY, dataReal, ['Medycyna'], { epoch: 5, builtBuildingIds: [] });
-    assert(atEpoch4.some(i => i.id === 'lazaret'),
-      'lazaret pojawia sie przy epoch=5 + tech Medycyna (future)',
-      'items=' + JSON.stringify(atEpoch4.map(i => i.id)));
   }
 }
 

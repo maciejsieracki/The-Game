@@ -5,6 +5,10 @@
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
 > ⛔ **ZASADA PROCESU (2026-07-24):** KAŻDA prośba Macieja, która ma skończyć się zmianą, MUSI trafić do [`dyspozycje/REJESTR-PROSB-I-ZADAN.md`](dyspozycje/REJESTR-PROSB-I-ZADAN.md) — jedynego rejestru statusu próśb (żeby nic z czatu nie ginęło; zdarzyło się realnie). Sprawdzaj i aktualizuj go przy każdej prośbie.
+> ⛔ **TRZY ZASADY PROCESU (2026-07-25):** (1) zakaz otwierania nowych wątków pytaniami — tylko doprecyzowanie
+> bieżącego wątku, reszta cicho do `dyspozycje/PYTANIA-OTWARTE.md`; (2) każda liczba ma nazwany parametr +
+> jednostkę + kontekst (zakaz gołego „baza 16"); (3) Opus 5/Fable 5 wyłącznie za wyraźną zgodą Macieja, domyślnie
+> Sonnet 5. Pełny zapis: `CLAUDE.md` §„Jak pracować z właścicielem" pkt 2–4, `dyspozycje/PAMIEC-ROBOCZA-CIV.md` §1a.
 > Powstał, bo notatki robocze asystenta żyją lokalnie na maszynie właściciela i **nie są widoczne z chmury** — tylko ten plik jedzie z repozytorium.
 
 ---
@@ -143,6 +147,38 @@ Sesja chmurowa, w większości autonomiczna (zgoda `AUTONOMIA=A`). Wykonanie del
 
 ---
 
+### 3a-4. SESJA DOKUMENTACYJNA 2026-07-25 — decyzje budynkowe + rejestr problemów (bez zmian w kodzie)
+
+Ta sesja pracowała **wyłącznie w dokumentacji** (`CLAUDE.md`, `STAN-PRACY-HANDOFF.md`, `dyspozycje/**`) — zero
+zmian w `gra/`, na wyraźne polecenie (trzej inni subagenci pracowali równolegle na kodzie). Cel: zapisać
+decyzje o modelu budynków podjęte dziś w rozmowie z Maciejem + spisać napotkane problemy i ich naprawy, żeby
+nic nie umknęło przyszłym sesjom; oraz sprawdzić, czy trzy nowe zasady procesu (2026-07-25) są widoczne we
+wszystkich plikach, gdzie takie zasady żyją.
+
+- **[`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md`](dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md)** — model rozwoju
+  budynków (awans „w górę" vs „w bok"), panel miasta (8 grup dziedzinowych), stolica-vs-regiony, siatka Prawa,
+  obrona miasta procentowa (Mury+Cytadela+Baszta=400%), dwie ścieżki ulepszeń jednostek, koszty surowcowe wg
+  epok, oraz zbiór pozostałych rozstrzygnięć (Karawanseraj/Lazaret/Ratusz/Stela/utrzymanie/Pretorium). Numeracja
+  pytań ciągła z `PYTANIA-OTWARTE.md`/`REJESTR-PROSB-I-ZADAN.md`. Ta sesja sama nie dotykała `gra/`, ale
+  RÓWNOLEGLE inne sesje wdrożyły część tych decyzji w kodzie na gałęzi roboczej (commit `2354fb7`: podział
+  łańcuchów „w górę"/„w bok" + osiem grup dziedzinowych w panelu miasta) — **NIE zdeployowane do ROBOCZA**;
+  reszta (Baszta, siatka Prawa, stolica/regiony, utrzymanie zróżnicowane) czeka na kolejną sesję kodową.
+  Aktualny status per punkt: koniec pliku decyzji, sekcja „Skrót statusu wdrożenia".
+- **[`dyspozycje/PROBLEMY-I-ROZWIAZANIA-2026-07-25.md`](dyspozycje/PROBLEMY-I-ROZWIAZANIA-2026-07-25.md)** —
+  10 problemów w formacie objaw→przyczyna→rozwiązanie→nauka (plony budynków nie docierały do silnika, Pałac
+  niewidoczny w produkcji, mnożnik budynków martwy/źle skierowany, obrona miasta liczona podwójnie, cegła
+  blokująca budowę bez rzeki, generator map łamiący własną regułę gliny, jednostka unikalna wymagająca wpisu
+  w dwóch plikach, proporcje tarczy Zulu, anachronizmy w danych, opisy `uwagi` niezgodne z kodem).
+- **Sprawdzone trzy nowe zasady procesu** (zakaz nowych wątków / liczba+parametr+jednostka+kontekst /
+  Opus-Fable za zgodą): uzupełnione w `dyspozycje/PAMIEC-ROBOCZA-CIV.md` §1a (brakowały) i
+  `dyspozycje/BACKLOG-PRZYSZLOSC.md` §E (brakowały dwie z trzech — model Sonnet 5 już tam był). Już były
+  w `CLAUDE.md`.
+- **Spójność:** poprawiony nieaktualny opis modelu budynków w §9 niżej (patrz adnotacja przy „ZAPARKOWANE DO
+  CZASU KOLEJNYCH EPOK") + oznaczone statusy Pytań 18/19 w `PYTANIA-OTWARTE.md` i `BACKLOG-PRZYSZLOSC.md` +
+  zaktualizowana lista pre-istniejących porażek testów w §7 niżej i w `CLAUDE.md` (208/208 + 2 nowe testy).
+
+---
+
 ## 4. ✅ CO WESZŁO W SESJI 2026-07-20 (szczegóły + decyzje)
 
 Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach — NIE pytaj o nie ponownie (§9).
@@ -214,7 +250,7 @@ node tools/tech-tree-test.cjs        # 19/19
 node tools/research-test.cjs         # 33/33
 node tools/unit-replace-test.cjs     # 10/10
 node tools/map-gen-regression-test.cjs   # determinizm A=B + 0 rzek bez ujścia
-node tools/logic-test.cjs            # 203/203  (NAPRAWIONE 2026-07-20)
+node tools/logic-test.cjs            # 208/208  (203/203 naprawione 2026-07-20; porażka mapgen-gliny naprawiona 2026-07-25, R-MAPGEN-GLINA)
 node tools/combat-test.cjs           # 6/6      (NAPRAWIONE 2026-07-20)
 node tools/barbarians-test.cjs       # 74/74
 node tools/villages-test.cjs         # 31/31
@@ -230,9 +266,12 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 
 **⚠️ KOREKTA starego handoffu:** notatka o „21 porażkach `logic-test`" i „`combat-test` rzuca wyjątek" jest **NIEAKTUALNA** — oba **naprawione 2026-07-20** i zielone (203/203, 6/6). Zweryfikowane na baseline.
 
-**Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji):**
+**Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji) — stan 2026-07-25:**
 - `currency-test.cjs` → **5 porażek** (dot. `pieniadzZPracy`/Efekt2 i mnożnika per-cyw). Zweryfikowane identycznie na baseline `git stash`.
 - `map-gen-regression-test.cjs` — progi czasowe „AC" (generacja <5s/<15s) FAIL na wolnej maszynie = pomiar wydajności, nie regresja.
+- `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs` — po jednej porażce (próg wzrostu populacji / dopasowanie kategorii auto-budowy) — zgłoszone przez subagenta linearyzacji, patrz `dyspozycje/BACKLOG-PRZYSZLOSC.md` §B.8.
+- `upgrade-budynki-test.cjs` — **2 porażki** (nowe, doszły 2026-07-25).
+- `deposit-building-gate-test.cjs` — **2 porażki** (nowe, doszły 2026-07-25).
 
 **Inne znane problemy / długi:**
 - **Bug rzeka↔mgła** — rzeka znika przy budowie miasta, wraca po wyłączeniu mgły wojny. ⚠️ Możliwe, że zmiana „wybrzeże=woda" (2026-07-20) to zmieniła — **do weryfikacji wzrokowej**.
@@ -284,7 +323,9 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 
 ### 🅿️ ZAPARKOWANE DO CZASU KOLEJNYCH EPOK (Maciej 2026-07-25) — NIE RUSZAĆ
 **Zasada: 1 poziom budynku = 1 epoka**, każdy poziom z INNYMI surowcami.
-Przykład wzorcowy — Pałac: `palac` (Kamień, drewno) → `palac_ii` (Brąz, drewno+kamień) → `palac_iii` (Żelazo, drewno+kamień+cegła). To jest model docelowy i **działa poprawnie**.
+Przykład wzorcowy — Pałac: `palac` (Kamień, drewno) → `palac_ii` (Brąz, drewno+kamień) → `palac_iii` (Żelazo, drewno+kamień+cegła). Te trzy tiery istnieją i są poprawne jako podział na epoki.
+
+**⚠️ AKTUALIZACJA (2026-07-25, później tego samego dnia) — poprzedni zapis „model docelowy, działa poprawnie" był NIEPEŁNY dla łańcuchów „w górę".** Pełny, aktualny model rozwoju budynków (rozróżnienie awansu „w górę" — następca kasuje poprzednika, stała wartość per tier, rośnie TYLKO przez awans — vs awansu „w bok" — oba budynki stoją obok siebie naprawdę) jest w **[`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md`](dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md) §1**. Skrót różnicy: Pałac to łańcuch „w górę" (Dom Starszyzny→Dwór Zarządcy→Pretorium, Kuźnia brązu→Kuźnia żelaza→Wielka Kuźnia, Spichlerz→Spichlerz II, Port→Port wielki, Piec hutniczy→Odlewnia żelaza — też „w górę"), a Mury+Cytadela+Baszta / Biblioteka+Akademia / Koszary+Akademia wojskowa / Kamienne kręgi+Świątynia idą „w bok" (nie zastępują się). Status wdrożenia w kodzie: NIE sprawdzony w tej sesji dla wszystkich sześciu łańcuchów „w górę" — patrz plik decyzji.
 
 **⛔ NIE projektujemy poziomów budynków „na zapas".** Kolejny poziom/tier budynku powstaje **dopiero wtedy, gdy realnie dochodzi kolejna epoka** — nie wcześniej.
 Maciej (dosłownie): „Każdy poziom jest dla następnej epoki… Jak będziemy rozwijać kolejne epoki, to robimy kolejny poziom pałacu. Po co teraz to robić?"

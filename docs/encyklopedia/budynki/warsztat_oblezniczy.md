@@ -22,7 +22,7 @@
 ## Wiki‑M
 
 ### Co robi
-Warsztat oblężniczy wzmacnia miasto w kategorii **Wojsko**. Poziom 1: **+4 pracy** (+2 na poziom), **+2 złota** (+1 na poziom), **+10 % mnożnika handlu** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
+Warsztat oblężniczy wzmacnia miasto w kategorii **Wojsko**. Poziom 1: **+4 pracy** (+2 na poziom), **+2 złota** (+1 na poziom), **+10 % mnożnika Daniny** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 65 pracy
 - **Każdy kolejny poziom:** +15 pracy
@@ -46,9 +46,9 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 65 | **7 tur** | +4 pracy, +2 złota, +10 % mnożnika handlu | 3 ¤/t |
+| Poziom 1 | 65 | **7 tur** | +4 pracy, +2 złota, +10 % mnożnika Daniny | 3 ¤/t |
 | Poziom 2 | 80 | **8 tur** | więcej (patrz niżej) | 3 ¤/t |
-| Poziom 3 | 95 | — | **+8 pracy, +4 złota, +16 % mnożnika handlu** | 3 ¤/t |
+| Poziom 3 | 95 | — | **+8 pracy, +4 złota, +16 % mnożnika Daniny** | 3 ¤/t |
 
 Przy +2 złota/t, utrzymanie 3 ¤/t → netto **+-1 ¤/t**. Koszt 65 pracy przy 10/t ≈ **7 tur** pracy — złotem „zwraca się" po ok. **65 tur** (uproszczenie, bez inflacji).
 

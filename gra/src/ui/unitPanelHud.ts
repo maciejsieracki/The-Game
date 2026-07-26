@@ -29,6 +29,22 @@ export interface UnitPanelState {
   hp: number;
   hpMax: number;
   actions: UnitPanelAction[];
+  /**
+   * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts):
+   * etykieta "Pancerz +30% · Parametry +20%" (unitBuildingBonusLabel()), lub
+   * undefined/pusty string gdy jednostka nie zdobyla jeszcze zadnego bonusu.
+   */
+  buildingBonusLabel?: string;
+  /**
+   * TRZECI SYSTEM -- doświadczenie bojowe / weterani (2026-07-25,
+   * game/veteran.ts). Etykieta gotowa z veteranBadgeLabel(), np.
+   * "★★ Doświadczony +10%" / "★★★ Weteran +20%"; undefined/pusty string na
+   * poziomie 1 (Rekrut, "brak odznaki" -- świadomie, patrz veteran.ts).
+   * WIZUALNIE ODRÓŻNIALNE od buildingBonusLabel (odznaki budynkowe) --
+   * renderowane osobną linią ze złotą klasą ".veteran-badge" (gwiazdki),
+   * nie mieszane w jeden string z "Pancerz +X% · Parametry +Y%".
+   */
+  veteranBadgeLabel?: string;
 }
 
 export interface UnitPanelHudConfig {
@@ -70,6 +86,8 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-unit-panel .actions{display:flex;flex-wrap:wrap;gap:6px;}
 .civ-unit-panel .act-danger{border-color:rgba(200,64,64,.45)!important;color:#ffb0b0!important;}
 .civ-unit-panel .act-danger:hover:not(:disabled){border-color:rgba(200,64,64,.65)!important;color:#ffd0d0!important;}
+.civ-unit-panel .veteran-badge{margin:6px 0 0;font-size:0.72em;font-weight:600;letter-spacing:.03em;
+  color:#f4d35e;text-shadow:0 0 6px rgba(244,211,94,.35);}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -107,6 +125,12 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
       + '</div>'
       + '<div class="mu-hp-lbl"><span>HP</span><span>' + u.hp + ' / ' + u.hpMax + '</span></div>'
       + '<div class="mu-hp-bar"><i style="width:' + hpPct + '%"></i></div>'
+      + (u.veteranBadgeLabel
+        ? '<div class="veteran-badge">' + esc(u.veteranBadgeLabel) + '</div>'
+        : '')
+      + (u.buildingBonusLabel
+        ? '<div class="sub" style="margin:6px 0 0;">' + esc(u.buildingBonusLabel) + '</div>'
+        : '')
       + '<div class="actions">';
     for (const a of u.actions) {
       let cls = a.primary ? 'mu-gold-btn' : 'mu-muted-btn';

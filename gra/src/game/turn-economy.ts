@@ -52,13 +52,16 @@ import {
   populationGrowth,
   civBonusyForCivKey,
   civEconomyYieldMultipliers,
+  mnoznikHandelPieniadzForCivByDifficulty,
   tileYield,
   type EconParams,
   type EconomyCity,
   type WorkedTile,
-  type CityBuildingEntry,
   type CityYieldContext,
   type BuildingRecord,
+  cityBuildingEntriesFromBuiltIds,
+  corruptionRate,
+  corruptionBuildingReduction,
 } from './economy';
 import {
   improvementKeysForHex,
@@ -179,17 +182,24 @@ function civDisplayNameForKey(
   return null;
 }
 
-/** B-KULT-REL-Q3A — mnożnik handlu z religii (gate: Waluta + Mennica + dominująca wiara). */
+/**
+ * B-KULT-REL-Q3A — mnożnik handlu z religii (gate: Waluta + Mennica + dominująca
+ * wiara). Maciej 2026-07-25 (pytanie 71/C): Mennica stoi wyłącznie w stolicy,
+ * więc bramka "Mennica" tutaj musi być IMPERIUM-WIDE (czy właściciel ma Mennicę
+ * GDZIEKOLWIEK), nie "w tym mieście" — spójnie z resztą Efektu 1 (patrz
+ * economy.ts CityYieldContext.maMennica). Wołający liczy union po miastach raz
+ * per tick i przekazuje gotowy boolean.
+ */
 function religionTradeWalutaOverride(
   cityReligion: ReligionState | undefined,
   ownerCivKey: string | undefined,
-  builtIds: readonly string[],
+  maMennicaEmpireWide: boolean,
   walutaOdkryta: boolean,
   civs: GameData['civs'],
   societyParams: GameData['societyParams'],
   difficulty: Difficulty,
 ): number | undefined {
-  if (!walutaOdkryta || !builtIds.includes('mennica') || !cityReligion) return undefined;
+  if (!walutaOdkryta || !maMennicaEmpireWide || !cityReligion) return undefined;
   const civName = civDisplayNameForKey(ownerCivKey, civs);
   if (!civName) return undefined;
   const rp = loadReligionParams(societyParams, difficulty);
@@ -197,6 +207,48 @@ function religionTradeWalutaOverride(
     cityReligion, civName, civs as unknown as import('./culture-religion').CivsDataLike, rp, true,
   );
   return trade.applied ? trade.multiplier : undefined;
+}
+
+/**
+ * Właściciele (ownerId), którzy mają Mennicę zbudowaną w KTÓRYMKOLWIEK ze swoich
+ * miast -- liczone RAZ na tick (Maciej 2026-07-25, pytanie 71/C: skoro Mennica
+ * stoi wyłącznie w stolicy, bramka Efektu 1 musi sprawdzać całe imperium, nie
+ * "to miasto", inaczej żadne miasto poza stolicą nie dostałoby mnożnika).
+ */
+function ownersWithMennica(
+  cities: ReadonlyArray<{ id: string; ownerId: number }>,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+): Set<number> {
+  const owners = new Set<number>();
+  for (const c of cities) {
+    if ((builtByCity.get(c.id) ?? []).includes('mennica')) owners.add(c.ownerId);
+  }
+  return owners;
+}
+
+/**
+ * Wartość Efektu 1 (mnożnik Handel netto) gdy bramka jest otwarta: override z
+ * religii (dominująca wiara, patrz religionTradeWalutaOverride) ma pierwszeństwo;
+ * w przeciwnym razie mnożnik CYWILIZACYJNY skalowany trudnością (Maciej
+ * 2026-07-25, pytanie 69) -- ZASTĘPUJE dawną płaską regułę "2/1.5/1 dla
+ * wszystkich", która żyje teraz tylko jako `fallbackScaled` dla cywilizacji bez
+ * wpisu w civs.json.
+ */
+function resolveWalutaMnoznikOverride(
+  cityReligion: ReligionState | undefined,
+  ownerCivKey: string | undefined,
+  maMennicaEmpireWide: boolean,
+  walutaOdkryta: boolean,
+  civs: GameData['civs'],
+  societyParams: GameData['societyParams'],
+  difficulty: Difficulty,
+  fallbackScaled: number,
+): number | undefined {
+  const religionOverride = religionTradeWalutaOverride(
+    cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty,
+  );
+  if (religionOverride !== undefined) return religionOverride;
+  return mnoznikHandelPieniadzForCivByDifficulty(ownerCivKey, civs, difficulty, fallbackScaled);
 }
 
 // ---------------------------------------------------------------------------
@@ -253,10 +305,11 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     budynekCegielniBonusPracy:      num(bu, 'budynek_cegielnia_bonus_pracy', 0.25),
     budynekTargowiskoBonusHandlu:   num(bu, 'budynek_targowisko_bonus_handlu', 0.5),
     budynekBibliotekaBonusNauki:    num(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
+    budynekAkademiaBonusNauki:      num(bu, 'budynek_akademia_bonus_nauki', 0.10),
     budynekGarncarniaBonusZywnosci: num(bu, 'budynek_garncarnia_bonus_zywnosci_lokalnie', 0.10),
-    budynekMennicaMnoznik:          num(bu, 'budynek_mennica_mnoznik', 1),
-    mennicaMnoznikPoWalucie:        num(gl, 'mennica_mnoznik_po_walucie', 1.5),
-    walutaMnoznik:                  num(bu, 'waluta_mnoznik', 2),
+    budynekMennicaMnoznik:          num(bu, 'budynek_mennica_mnoznik', 1),      // NIEUZYWANE 2026-07-25 (patrz economy.ts)
+    mennicaMnoznikPoWalucie:        num(gl, 'mennica_mnoznik_po_walucie', 1.5), // JEDYNY mnoznik Efektu 1 (Waluta+Mennica scalone)
+    walutaMnoznik:                  num(bu, 'waluta_mnoznik', 2),               // NIEUZYWANE 2026-07-25 (patrz economy.ts)
     targowiskoPracaMnoznik:         num(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       num(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           num(em, 'suwak_handel_pieniadz_domyslnie', 30),
@@ -1051,6 +1104,18 @@ export interface EconUnit {
 
 export type OwnerEraResolver = (ownerId: number) => number;
 export type OwnerTechResolver = (ownerId: number) => ReadonlySet<string>;
+/**
+ * PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
+ * do złota." Wołający (main.ts) liczy TO RAZ PER OWNER PER TICK (memoizowany
+ * resolver -- ten sam wzorzec co ownerResourceCapFor w advanceCityEconomy niżej),
+ * łącząc dostęp natywny (empireHasKopalniaZlota) ORAZ dostęp "z trasy" (grant
+ * handlowy 'zloto') -- main.ts zna oba, ten moduł celowo nie zna placedImprovements
+ * ani tras handlowych (pure per-city economy, patrz nagłówek pliku). Domyślny
+ * resolver (gdy wołający go nie poda -- testy/tools sprzed tej decyzji) zwraca
+ * zawsze `true`, żeby NIE zmieniać zachowania istniejących wywołań, które o
+ * dostępie do złota jeszcze nie wiedzą (żaden regres w tools/*.cjs).
+ */
+export type OwnerZlotoAccessResolver = (ownerId: number) => boolean;
 
 /**
  * Live preview of per-city yields — same formulas as advanceCityEconomy, but
@@ -1074,9 +1139,11 @@ export function previewCityEconomy(
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
   /** CUDA-EKON-01: ownerId -> suma bonusy.miasto cudów ukończonych (× każde miasto ownera). */
   wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
+  /** PYTANIE 83=B: dostęp do złota per owner (patrz OwnerZlotoAccessResolver powyżej). */
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver = () => true,
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
-  const noBuildings: CityBuildingEntry[] = [];
+  const buildingCatalog = data.buildings as unknown as BuildingRecord[];
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
   const wealthParams = loadWealthParams(
     data.econParams as unknown as import('./wealth').RawWealthParamsJson,
@@ -1089,6 +1156,24 @@ export function previewCityEconomy(
 
   const perCity: CityEconomyTick[] = [];
   const capitalSeen = new Set<number>();
+  // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie 70/B)
+  // -> bramka Efektu 1 musi patrzeć na CAŁE imperium ownera, nie tylko to miasto.
+  // Liczone RAZ na tick, nie per-city.
+  const mennicaOwners = ownersWithMennica(cities, builtByCity);
+  // D2 (Maciej 2026-07-25): pre-pass dla korupcji -- wspolrzedne "stolicy" per owner wg
+  // TEJ SAMEJ heurystyki co isCapital nizej (pierwsze miasto ownera w tablicy `cities`;
+  // ten modul nie ma dostepu do autorytatywnego capitalCityIdForOwner z main.ts). Musi
+  // powstac PRZED glowna petla, bo miasto regionalne moze byc iterowane przed swoja
+  // stolica. Rownolegle: liczbaWszystkichMiast per owner (PARYTET AI -- ta sama liczba
+  // dla gracza i AI, zero galezi po ownerId).
+  const capitalCoordsByOwner = new Map<number, { q: number; r: number }>();
+  const cityCountByOwner = new Map<number, number>();
+  for (const c of cities) {
+    if (!capitalCoordsByOwner.has(c.ownerId)) {
+      capitalCoordsByOwner.set(c.ownerId, { q: c.q, r: c.r });
+    }
+    cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
+  }
 
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
@@ -1114,33 +1199,60 @@ export function previewCityEconomy(
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const walutaMnoznikOverride = religionTradeWalutaOverride(
+    const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
+    // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
+    // do złota. Mnożnik znika, Podatek wraca do Daniny." Budynek NIE jest burzony
+    // (maMennicaBuiltEmpireWide zostaje true) -- tylko EFEKT śpi, gdy cywilizacja
+    // aktualnie nie ma dostępu do złota (ani własna Kopalnia złota, ani szlak).
+    // resolveOwnerZlotoAccess to memoizowany resolver ownera (RAZ per owner per tick,
+    // main.ts) -- patrz OwnerZlotoAccessResolver powyżej.
+    const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
+    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
-      builtIds,
+      maMennicaEmpireWide,
       walutaOdkryta,
       data.civs,
       data.societyParams,
       difficulty,
+      params.mennicaMnoznikPoWalucie,
     );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
+    // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
+    // wlasciciel rejestruje swoje pierwsze miasto w pre-passie powyzej). D4: redukcja
+    // Sad/Pretorium/Palac TYLKO w tym miescie, mnozona na strataBazowa. PARYTET AI --
+    // brak galezi po ownerId.
+    const capCoords = capitalCoordsByOwner.get(city.ownerId);
+    const dystansOdStolicy = (isCapital || !capCoords)
+      ? 0
+      : hexDistance(city.q, city.r, capCoords.q, capCoords.r);
+    const liczbaWszystkichMiast = cityCountByOwner.get(city.ownerId) ?? 1;
+    const strataBazowa = corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params);
+    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
+    const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx: CityYieldContext = {
       wojskoZuzycieZywnosci: 0,
-      strataFraction: 0,
+      strataFraction,
       maMlyn: builtIds.includes('mlyn'),
       maCegielnia: builtIds.includes('cegielnia'),
       maTargowisko: builtIds.includes('targowisko'),
       maBiblioteka: builtIds.includes('biblioteka'),
-      maMennica: builtIds.includes('mennica'),
-      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
-      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
-      mennicaMnoznik: (builtIds.includes('mennica') && walutaOdkryta)
-        ? params.mennicaMnoznikPoWalucie
-        : 1,
+      maAkademia: builtIds.includes('akademia'),
+      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
+      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
+      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
+      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
+      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
+      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
+      // maMennicaEmpireWide juz zawiera bramke dostepu do zlota (patrz wyzej) --
+      // gdy zlota brak, ta flaga jest false mimo ze budynek dalej stoi.
+      maMennica: maMennicaEmpireWide,
       walutaOdkryta,
       walutaMnoznikOverride,
       civHandelMult,
@@ -1150,7 +1262,12 @@ export function previewCityEconomy(
       liczbaGarncarni: builtIds.filter(id => id === 'garncarnia').length,
     };
 
-    const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
+    // Naprawa 2026-07-25: budynki miasta -> plony flat (Praca/Pieniadz/Zywnosc/Nauka/
+    // Kultura) przez cityBuildingEntriesFromBuiltIds (economy.ts) -- ta sama funkcja
+    // uzywana w advanceCityEconomy i cityPanel "Bilans plonow", zeby podglad HUD
+    // pokazywal identyczne liczby co realny silnik tury.
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
@@ -1263,10 +1380,12 @@ export function advanceCityEconomy(
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
   /** CUDA-EKON-01: ownerId -> suma bonusy.miasto cudów ukończonych (× każde miasto ownera). */
   wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
+  /** PYTANIE 83=B: dostęp do złota per owner (patrz OwnerZlotoAccessResolver powyżej). */
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver = () => true,
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
-  const noBuildings: CityBuildingEntry[] = [];
+  const buildingCatalog = data.buildings as unknown as BuildingRecord[];
 
   const territoryNodes = buildTerritoryNodesFromCities(cities);
   reconcileAllWorkedTiles(cities, territoryNodes);
@@ -1357,6 +1476,24 @@ export function advanceCityEconomy(
 
   // Track the first city seen per owner -> treat as that owner's capital.
   const capitalSeen = new Set<number>();
+  // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie 70/B)
+  // -> bramka Efektu 1 musi patrzeć na CAŁE imperium ownera, nie tylko to miasto.
+  // Liczone RAZ na tick, nie per-city.
+  const mennicaOwners = ownersWithMennica(cities, builtByCity);
+  // D2 (Maciej 2026-07-25): pre-pass dla korupcji -- wspolrzedne "stolicy" per owner wg
+  // TEJ SAMEJ heurystyki co isCapital nizej (pierwsze miasto ownera w tablicy `cities`;
+  // ten modul nie ma dostepu do autorytatywnego capitalCityIdForOwner z main.ts). Musi
+  // powstac PRZED glowna petla, bo miasto regionalne moze byc iterowane przed swoja
+  // stolica. Rownolegle: liczbaWszystkichMiast per owner (PARYTET AI -- ta sama liczba
+  // dla gracza i AI, zero galezi po ownerId).
+  const capitalCoordsByOwner = new Map<number, { q: number; r: number }>();
+  const cityCountByOwner = new Map<number, number>();
+  for (const c of cities) {
+    if (!capitalCoordsByOwner.has(c.ownerId)) {
+      capitalCoordsByOwner.set(c.ownerId, { q: c.q, r: c.r });
+    }
+    cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
+  }
 
   const result: EconomyTickResult = {
     perCity:        [],
@@ -1403,35 +1540,62 @@ export function advanceCityEconomy(
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const walutaMnoznikOverride = religionTradeWalutaOverride(
+    const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
+    // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
+    // do złota. Mnożnik znika, Podatek wraca do Daniny." Budynek NIE jest burzony
+    // (maMennicaBuiltEmpireWide zostaje true) -- tylko EFEKT śpi, gdy cywilizacja
+    // aktualnie nie ma dostępu do złota (ani własna Kopalnia złota, ani szlak).
+    // resolveOwnerZlotoAccess to memoizowany resolver ownera (RAZ per owner per tick,
+    // main.ts) -- patrz OwnerZlotoAccessResolver powyżej.
+    const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
+    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
-      builtIds,
+      maMennicaEmpireWide,
       walutaOdkryta,
       data.civs,
       data.societyParams,
       difficulty,
+      params.mennicaMnoznikPoWalucie,
     );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
+    // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
+    // wlasciciel rejestruje swoje pierwsze miasto w pre-passie powyzej). D4: redukcja
+    // Sad/Pretorium/Palac TYLKO w tym miescie, mnozona na strataBazowa. PARYTET AI --
+    // brak galezi po ownerId.
+    const capCoords = capitalCoordsByOwner.get(city.ownerId);
+    const dystansOdStolicy = (isCapital || !capCoords)
+      ? 0
+      : hexDistance(city.q, city.r, capCoords.q, capCoords.r);
+    const liczbaWszystkichMiast = cityCountByOwner.get(city.ownerId) ?? 1;
+    const strataBazowa = corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params);
+    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
+    const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx: CityYieldContext = {
       wojskoZuzycieZywnosci: 0,   // B5: wojsko → zapasy państwa (advanceEmpireFood)
-      strataFraction:        0,   // no distance-corruption tracking yet
+      strataFraction,
       maMlyn:                builtIds.includes('mlyn'),
       maCegielnia:           builtIds.includes('cegielnia'),
       maTargowisko:          builtIds.includes('targowisko'),
       maBiblioteka:          builtIds.includes('biblioteka'),
-      maMennica:             builtIds.includes('mennica'),
-      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
-      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
-      mennicaMnoznik:        (builtIds.includes('mennica') && walutaOdkryta)
-        ? params.mennicaMnoznikPoWalucie
-        : 1,
-      walutaOdkryta,         // P1b: mnoznik Handel->Pieniadz gdy Waluta zbadana
-      walutaMnoznikOverride, // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
+      maAkademia:            builtIds.includes('akademia'),
+      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
+      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
+      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
+      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
+      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
+      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
+      // maMennicaEmpireWide juz zawiera bramke dostepu do zlota -- gdy brak, false
+      // mimo ze budynek dalej stoi (nie jest burzony).
+      maMennica:             maMennicaEmpireWide,
+      walutaOdkryta,         // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
+      walutaMnoznikOverride, // per-cyw skalowany trudnoscia (lub override religii)
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
       liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych, // Handel E3: +5%/trasa
@@ -1439,7 +1603,11 @@ export function advanceCityEconomy(
       liczbaGarncarni:       builtIds.filter(id => id === 'garncarnia').length,
     };
 
-    const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
+    // Naprawa 2026-07-25: budynki miasta -> plony flat (Praca/Pieniadz/Zywnosc/Nauka/
+    // Kultura) przez cityBuildingEntriesFromBuiltIds (economy.ts) -- jedyne zrodlo,
+    // wspoldzielone z previewCityEconomy i cityPanel "Bilans plonow".
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
 
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);

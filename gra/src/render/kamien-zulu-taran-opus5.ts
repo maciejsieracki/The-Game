@@ -74,6 +74,17 @@
  *     w ziemię) i dwa węzły rzemienne mocujące kij do plecionki. Od tyłu
  *     i z boku kij nadal widać — funkcja konstrukcyjna zachowana.
  *
+ * A3b. GABARYT TARCZY — DOMKNIĘCIE (ta sesja). Poprzednia wersja miała
+ *     KZ_SH_B tak dużą, że pełna wysokość tarczy wychodziła na ~2,07x
+ *     wysokości tułowia (KZ_TORSO_H) — powyżej normy dla „pełnej tarczy
+ *     bojowej" (1,3–1,6x). Zamiast przeliczać osobno każdy hardkodowany
+ *     offset (łaty, plecionka, umgobo, węzły, chwyt — wszystkie tuned pod
+ *     starą wielkość), skaluję CAŁĄ podgrupę `sh` jednym współczynnikiem
+ *     (0.72) wokół jej własnego środka, pokrywającego się z uchwytem w
+ *     dłoni — proporcje względne (owal 1:1,96, rozstaw łat/przepletów/
+ *     umgobo) zostają identyczne, zmienia się tylko skala całości. Wynik:
+ *     ~1,49x wysokości tułowia, tarcza nadal wyższa niż szersza.
+ *
  * A4. UMBO = BŁĄD, USUNIĘTE. Obecny model ma na tarczy „umbo" (wypukły
  *     przetłok w kolorze gracza). Tarcze Nguni NIE MAJĄ umba — to element
  *     śródziemnomorski (grecki/rzymski). Usuwam; kolor gracza przenoszę
@@ -699,6 +710,14 @@ export function buildZuluJavelineerOpus5(ownerColor_: number): THREE.Group {
   const gripBar = new THREE.Mesh(getKZGripBar(), mWoodLt);
   gripBar.position.set(0, -0.036 * HEX_R, -0.038 * HEX_R);
   sh.add(gripBar);
+  // SKALA CAŁOŚCI (pkt A3b): przy KZ_SH_A/B jak wyżej tarcza wychodzi na
+  // ~2,07x wysokości tułowia (KZ_TORSO_H) — za duża wobec normy "pełnej
+  // tarczy bojowej" 1,3-1,6x. Skalujemy CAŁĄ podgrupę `sh` (rant+lico+łaty+
+  // plecionka+umgobo+węzły+chwyt) jednym współczynnikiem wokół jej własnego
+  // środka (pokrywającego się z uchwytem w dłoni) — proporcje i rozstaw
+  // wszystkich elementów względem siebie zostają nietknięte, zmienia się
+  // tylko rozmiar całości. Wynik: 2*KZ_SH_B*0.72 / KZ_TORSO_H ≈ 1,49x.
+  sh.scale.setScalar(0.72);
   group.add(sh);
 
   // ═══ WIĄZKA 3 ZAPASOWYCH OSZCZEPÓW (pkt A2 — „Ilość pocisków: 10") ═══════

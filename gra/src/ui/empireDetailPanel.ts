@@ -7,6 +7,7 @@ import type { EmpireDetailSnap, EmpireResourceRow } from './empireDetailTypes';
 import { formatObywateleLabel } from '../game/manpower';
 import { mocLabel, mocWithValue } from './power-labels';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
+import { daninaLabelGenitive } from '../game/danina-nazwa';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 
 const STYLE_ID = 'civ-empire-panel-css';
@@ -431,12 +432,35 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     h += `</div>`;
   } else {
     h += `<div class="civ-emp-note" style="font-style:italic">Brak aktywnych tras handlowych. Wymagany: budynek handlowy `
-      + `(Targowisko/Karawanseraj/Port) w mieście + zawarta Umowa Handlowa z obcą cywilizacją w zasięgu (bez wojny).</div>`;
+      + `(Targowisko/Port) w mieście + zawarta Umowa Handlowa z obcą cywilizacją w zasięgu (bez wojny).</div>`;
+  }
+
+  // DYSPOZYCJA 85 (Maciej 2026-07-26): bonus cudów świata "handel_procent" (Petra,
+  // Kamień Ha'amonga, Kolos Rodyjski, Brama wszystkich narodów, Pałac Weiyang) —
+  // już wliczony w dochód powyżej (CUDA-HANDEL-01), tu tylko pokazany jako czynnik.
+  if (t.wonderBonusLadPct > 0 || t.wonderBonusMorzePct > 0) {
+    h += `<div class="civ-emp-kult-line">Bonus cudów świata: `
+      + `<b class="gold">+${t.wonderBonusLadPct}%</b> ląd`
+      + (t.wonderBonusMorzePct !== t.wonderBonusLadPct ? ` · <b class="gold">+${t.wonderBonusMorzePct}%</b> morze` : '')
+      + ` (już wliczone w dochód tras powyżej)</div>`;
+  }
+
+  // DYSPOZYCJA 85: surowce, do których gracz ma dostęp DZIĘKI aktywnej trasie
+  // handlowej — zebrane tu (panel Handel = handel międzynarodowy i tylko on),
+  // USUNIĘTE z panelu miasta (tam było 🔗/tradeSources per surowiec).
+  if (t.resourceGrants.length > 0) {
+    h += `<div class="civ-emp-res-lbl" style="margin-top:10px">Surowce z wymiany handlowej</div>`;
+    const grid2 = '1fr 1fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['SUROWIEC', 'PARTNER'], grid2)}`;
+    for (const g of t.resourceGrants) {
+      h += miniRow([esc(g.label), esc(g.partnerLabel)], grid2);
+    }
+    h += `</div>`;
   }
 
   h += `<div class="civ-emp-foot">Dochód trasy = max(podłoga, bazowy − dystans×współczynnik), kredytowany w pełnej kwocie `
-    + `OBU miastom trasy. Każda aktywna trasa dodaje też +5% Handlu z pól tego miasta (osobno od Targowiska, nie w tej sumie). `
-    + `Szczegóły i warunki per miasto — panel miasta → Plony i handel → Szlaki handlowe.</div>`;
+    + `OBU miastom trasy. Każda aktywna trasa dodaje też +5% ${daninaLabelGenitive(t.daninaLabel)} z pól tego miasta (osobno od Targowiska, nie w tej sumie). `
+    + `Szczegóły i warunki per miasto — panel miasta → Plony i ${t.daninaLabel.toLowerCase()} → Podział ${daninaLabelGenitive(t.daninaLabel)}.</div>`;
   h += `</div>`;
   return h;
 }

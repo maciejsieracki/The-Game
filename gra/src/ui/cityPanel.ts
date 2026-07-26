@@ -61,7 +61,6 @@ import {
   setPaused,
   buildingProductionItem,
   buildingLevelForEpoch,
-  buildingEffectAtLevel,
   buildingWorkCost,
   itemCost,
   splitPraca,
@@ -92,9 +91,11 @@ import {
   buildingStatSummaryLines,
   cityHasBibliotekaLine,
   cityHasAmfiteatrLine,
-  cityHasPalacLine,
+  cityPalacTier,
+  groupBuiltBuildingIds,
 } from '../game/building-upgrades';
 import { getCityFoodSplit, getEmpireFoodMaxCap } from '../game/empire-food';
+import { daninaLabel, mennicaWStolicy, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
 import type { CityManpowerSnapshot } from '../game/manpower';
 import { civManpowerMaxMult, formatManpower, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
@@ -130,11 +131,8 @@ import {
 } from '../game/turn-economy';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { tileYield } from '../game/economy';
+import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
 import {
-  tradeRouteDistanceIncome,
-  loadTradeRouteIncomeParams,
-  DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
-  TRADE_BUILDING_IDS,
   type TradeRoute,
 } from '../game/trade-routes';
 import { normalizeImprovementKey } from '../game/terrain-improvements';
@@ -157,9 +155,11 @@ import {
   cityYieldPerTurn,
   cityPopulationCap,
   sumBuildingHappinessFromBuiltIds,
-  mnoznikHandelPieniadzForCiv,
+  cityBuildingEntriesFromBuiltIds,
+  mnoznikHandelPieniadzForCivByDifficulty,
   civEconomyYieldMultipliers,
   type CityYieldContext,
+  type BuildingRecord,
 } from '../game/economy';
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
@@ -196,6 +196,15 @@ export interface CityPanelConfig {
   getEpoch?: (ownerId: number) => number;
   getUnlockedTechs?: (ownerId: number) => string[];
   getBuiltBuildingIds?: (cityId: string) => string[];
+  /**
+   * PYTANIE 83=B (Maciej 2026-07-25): dostęp do złota TERAZ dla tego ownera
+   * (własna Kopalnia złota gdziekolwiek w imperium ALBO aktywny szlak handlowy
+   * z posiadaczem złota) -- ta sama funkcja co silnik (main.ts
+   * ownerHasZlotoAccessNow / OwnerZlotoAccessResolver w turn-economy.ts).
+   * Brak hooka -> domyślnie `true` (stare zachowanie: bramka Mennicy patrzy
+   * tylko na Waluta+budynek, jak przed wprowadzeniem 83/B).
+   */
+  getOwnerHasZlotoAccess?: (ownerId: number) => boolean;
   getProduction?: (cityId: string) => CityProduction | null;
   setProduction?: (cityId: string, prod: CityProduction) => void;
   getCityBuildingFlags?: (cityId: string) => Partial<CityYieldContext>;
@@ -276,6 +285,10 @@ export interface CityPanelConfig {
    * Temat #4 (Handel E3b): opcjonalny `tradeSources` — mapa etykieta -> opis źródła
    * (np. "szlak handlowy z Rzym"), gdy dostęp do tej etykiety pochodzi (częściowo lub
    * całkowicie) z aktywnej trasy handlowej, nie z własnej infrastruktury.
+   * DYSPOZYCJA 85 (Maciej 2026-07-26): `tradeSources` zostaje w kształcie danych (main.ts
+   * nadal je liczy), ale panel miasta (cityPanel.ts normalizeResourceAccess) już go NIE
+   * czyta/wyświetla -- to info o handlu międzynarodowym, przeniesione do panelu Handel
+   * (empireDetailPanel.ts, sekcja "Surowce z wymiany handlowej").
    */
   getResourceAccess?: (cityId: string) => string[] | {
     potential: string[];
@@ -561,11 +574,16 @@ function setShowEraBuildingPreview(on: boolean): void {
   } catch { /* ignore */ }
 }
 
-/** Domyslny podzial Handlu (decyzja Maciej 1A: 70/20/10). */
+/**
+ * Domyslny podzial Daniny netto nowego miasta — MUSI byc zgodny z
+ * DEFAULT_PODZIAL_HANDLU w game/cities.ts oraz z econ-params.json.
+ * 20% Nauka / 60% Skarbiec / 20% Zamoznosc (decyzja Maciej 2026-07-25, PYTANIE 74 = A;
+ * dawniej 20/70/10).
+ */
 const DEFAULT_PODZIAL_HANDLU: PodzialHandluSplit = {
-  procentPieniadz: 70,
+  procentPieniadz: 60,
   procentNauka: 20,
-  procentLuksus: 10,
+  procentLuksus: 20,
 };
 
 /** Domyslny podzial Pracy (70% budynki). */
@@ -579,31 +597,6 @@ const HANDEL_ZAMOZNOSC_LABEL = 'Zamożność';
  * TODO(produkt): pełny model korupcji — od czego zależy, czy gracz może redukować (budynek, tech, porządek).
  */
 const HANDEL_KORUPCJA_PCT_PLACEHOLDER = 5;
-
-/**
- * Nazewnictwo strumienia „Skarb” z podziału handlu (WYŁĄCZNIE etykieta UI — sam podział,
- * wzory i mnożnik zostają bez zmian). Ten sam warunek steruje już mnożnikiem Mennicy
- * w turn-economy.ts (`builtIds.includes('mennica') && walutaOdkryta`) i w
- * `buildHandelDetailCard` niżej („mennica (×1, brak Waluty lub Mennicy)”):
- *   - brak Mennicy ZBUDOWANEJ w mieście LUB brak odkrytej technologii Waluta → „Danina”.
- *   - Mennica zbudowana ORAZ Waluta odkryta (mnożnik aktywny)              → „Podatek”.
- */
-function isMennicaAktywna(city: City): boolean {
-  const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-  const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
-  return built.includes('mennica') && walutaOdkryta;
-}
-
-/** Dopełniaczowa forma nazwy strumienia — „daniny” / „podatku” (do fraz typu „suwaki podziału ___”). */
-function handelStreamLabelGenetiv(city: City): string {
-  return isMennicaAktywna(city) ? 'podatku' : 'daniny';
-}
-
-/** „Podział daniny” / „Podział podatku” — dynamiczny nagłówek sekcji podziału handlu (zależny od Mennicy+Waluty). */
-function podzialHandluHeading(city: City): string {
-  return `Podział ${isMennicaAktywna(city) ? 'podatku' : 'daniny'}`;
-}
 
 interface HandelChipEstimates {
   brutto: number;
@@ -794,10 +787,26 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // (getBuiltBuildingIds/getUnlockedTechs/getCivKey/getCivBonusy używane już np. w buildHandelDetailCard).
     const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
     const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
-    const maMennica = built.includes('mennica');
+    // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie
+    // 70/B) -> bramka Efektu 1 patrzy na CAŁE imperium, nie tylko to miasto.
+    // PYTANIE 83=B: budynek "stoi" nawet bez złota (nie burzymy go), ale EFEKT
+    // (mnożnik) śpi bez aktualnego dostępu do złota -- dokładnie
+    // maMennicaEmpireWide z turn-economy.ts (maMennicaBuiltEmpireWide &&
+    // resolveOwnerZlotoAccess). ctx.maMennica poniżej idzie właśnie do
+    // cityYieldPerTurn tak samo jak silnik, więc musi być tym samym warunkiem.
+    const maMennica = ownerHasMennica(city.ownerId) && (cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true);
     const civKey = cfg.getCivKey?.(city.ownerId);
+    // Efekt 1 SCALONY (2026-07-25) + pytanie 69 (2026-07-25): mnoznik cywilizacyjny
+    // (civs.json mnoznikHandelPieniadz) SKALOWANY TRUDNOSCIA (+0,5 easy / -0,5 hard).
+    // ZASTĘPUJE dawna plaska regule "2/1.5/1 dla wszystkich" -- ta zostaje TYLKO
+    // jako fallbackScaled (params.mennicaMnoznikPoWalucie, juz per-trudnosc) dla
+    // cywilizacji bez wpisu w civs.json. Musi być IDENTYCZNE ze silnikiem tury
+    // (resolveWalutaMnoznikOverride w turn-economy.ts) — inaczej panel znów
+    // rozjeżdża się z realnym dochodem (rozjazd wykryty i naprawiony 2026-07-25).
+    // bramka maMennica&&walutaOdkryta w cityYieldPerTurn i tak decyduje CZY ten
+    // mnoznik w ogole zadziala, wiec ustawienie go tutaj nie omija Mennicy.
     const walutaMnoznikOverride = walutaOdkryta && civKey
-      ? mnoznikHandelPieniadzForCiv(civKey, cfg.data?.civs, params.walutaMnoznik)
+      ? mnoznikHandelPieniadzForCivByDifficulty(civKey, cfg.data?.civs, cfg.difficulty ?? 'normal', params.mennicaMnoznikPoWalucie)
       : undefined;
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
@@ -807,9 +816,11 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       maCegielnia: built.includes('cegielnia'),
       maTargowisko: built.includes('targowisko'),
       maBiblioteka: built.includes('biblioteka'),
+      maAkademia: built.includes('akademia'),
+      // Efekt 1 SCALONY: maMennica jest jednym z dwoch warunkow bramki w
+      // cityYieldPerTurn (razem z walutaOdkryta) -- osobne pole `mennicaMnoznik`
+      // (mnoznik TYLKO na strumien Pieniadza) zostalo usuniete 2026-07-25.
       maMennica,
-      // Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (jak w silniku).
-      mennicaMnoznik: maMennica && walutaOdkryta ? params.mennicaMnoznikPoWalucie : 1,
       walutaOdkryta,
       walutaMnoznikOverride,
       civHandelMult,
@@ -818,7 +829,11 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       liczbaGarncarni: built.filter(id => id === 'garncarnia').length,
     };
     const ctx: CityYieldContext = { ...base, ...(cfg.getCityBuildingFlags?.(city.id) ?? {}) };
-    const y = cityYieldPerTurn(econCity, worked, [], params, ctx);
+    // Naprawa 2026-07-25: plony budynkow (Praca/Pieniadz/Zywnosc/Nauka/Kultura) -- ta sama
+    // funkcja co silnik (turn-economy.ts), zeby "Bilans plonow" nie pokazywal 0 z budynkow.
+    const era = cfg.getEpoch?.(city.ownerId) ?? 1;
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(built, data.buildings as unknown as BuildingRecord[], era, techs);
+    const y = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     // Porządek (B2-Q6): silnik mnoży plony PO cityYieldPerTurn, PRZED Wealth/splitPraca
     // (turn-economy.ts applyOrderYieldMults) — panel musi odtworzyć to samo, inaczej
     // Bilans plonów rozjeżdża się z silnikiem gdy miasto ma karę/bonus Porządku.
@@ -870,6 +885,46 @@ function ownerHasSpichlerz(ownerId: number): boolean {
     if (ids.includes('spichlerz')) return true;
   }
   return false;
+}
+
+/**
+ * Czy właściciel ma Mennicę zbudowaną GDZIEKOLWIEK w imperium (nie tylko w
+ * tym mieście) -- Maciej 2026-07-25, pytanie 71/C: Mennica stoi wyłącznie w
+ * stolicy (pytanie 70/B), więc bramka Efektu 1 (Waluta+Mennica) musi patrzeć
+ * na całe imperium, inaczej żadne miasto poza stolicą nie dostałoby mnożnika.
+ * Spójne z turn-economy.ts ownersWithMennica() (ten sam union, liczony po
+ * stronie panelu zamiast silnika tury).
+ */
+function ownerHasMennica(ownerId: number): boolean {
+  const cities = cfg.getCities?.() ?? [];
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    const ids = cfg.getBuiltBuildingIds?.(c.id) ?? [];
+    if (ids.includes('mennica')) return true;
+  }
+  return false;
+}
+
+/**
+ * Decyzje 65B/66B (Maciej 2026-07-25, "Handel -> Danina -> Podatek"): etykieta
+ * widoczna dla gracza dla strumienia dochodu miasta oddawanego wladcy (dawny
+ * "Handel" w tym panelu -- handelBrutto/handelNetto). "Podatek" TYLKO gdy
+ * Waluta odkryta ORAZ Mennica zbudowana W STOLICY tej cywilizacji (nie
+ * gdziekolwiek w imperium jak `ownerHasMennica` powyzej, uzywana dla mnoznika
+ * Efektu 1 -- to inny mechanizm, patrz game/danina-nazwa.ts). PARYTET AI:
+ * dziala identycznie dla kazdego ownerId. Jedna funkcja -- wolaj wszedzie w
+ * tym pliku zamiast liczyc bramke osobno.
+ */
+function daninaLabelForCity(city: City): DaninaLabel {
+  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+  const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
+  const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;
+  const builtAtCapital = capitalId ? (cfg.getBuiltBuildingIds?.(capitalId) ?? []) : [];
+  // PYTANIE 83=B: trzeci argument -- dostęp do złota TERAZ, ta sama funkcja co
+  // silnik (cfg.getOwnerHasZlotoAccess -> main.ts ownerHasZlotoAccessNow).
+  // Brak dostępu -> nazwa wraca na "Danina", mimo że Mennica fizycznie stoi.
+  const maDostepDoZlota = cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true;
+  return daninaLabel(walutaOdkryta, mennicaWStolicy(capitalId, builtAtCapital), maDostepDoZlota);
 }
 
 function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
@@ -1405,6 +1460,13 @@ function ensureStyles(): void {
 .civ-cs .bi{font-size:0.95em;width:1.3em;text-align:center;} .civ-cs .bn{flex:1;font-size:0.84em;}
 .civ-cs .bld-upg{flex:0 0 auto;margin-left:auto;padding:0 0.35em;background:transparent;border:none;color:var(--gold);cursor:pointer;font-size:0.95em;line-height:1;}
 .civ-cs .bld-upg:hover{color:#fff;}
+.civ-cs .bld-group{margin-bottom:0.22em;}
+.civ-cs .bld-group>.bld,.civ-cs .bld-group>.bld-group-empty-note{margin-left:0.15em;}
+.civ-cs .bld-group-h{cursor:pointer;font-size:0.82em;font-weight:700;color:var(--fg);padding:0.16em 0.3em;
+  background:var(--panel2);border:1px solid var(--border);border-radius:3px;margin-bottom:0.16em;user-select:none;}
+.civ-cs .bld-group-h:hover{color:var(--gold);}
+.civ-cs .bld-group-empty>.bld-group-h{color:var(--muted);font-weight:400;background:transparent;border-style:dashed;}
+.civ-cs .bld-group-empty-note{font-size:0.72em;padding-left:0.5em;}
 .civ-cs .be{font-size:0.74em;color:var(--green);} .civ-cs .bm{font-size:0.74em;color:var(--red);margin-left:auto;}
 .civ-cs .ybox{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:0.4em 0.5em;}
 .civ-cs .yn{font-size:0.74em;color:var(--muted);} .civ-cs .yv{font-size:1.4em;font-weight:700;line-height:1.1;}
@@ -2146,10 +2208,12 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       era,
       population: city.population,
       garnizonCount: gCount,
-      hasRatusz: builtIds.includes('ratusz'),
+      hasDomStarszyzny: builtIds.includes('dom_starszyzny'),
+      hasDworZarzadcy: builtIds.includes('dwor_zarzadcy'),
       hasPretorium: builtIds.includes('pretorium'),
+      hasTrybunal: builtIds.includes('trybunal'),
       hasSad: builtIds.includes('sad'),
-      hasPalac: cityHasPalacLine(builtIds),
+      palacTier: cityPalacTier(builtIds),
       brakGarnizonuKara: !playtestSandbox && city.population >= 6 && gCount === 0,
       stolicaEasyBonus: stolicaBonus,
     },
@@ -2333,12 +2397,13 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
 
   appendDetailSection(card, 'Zależności — jak to się łączy');
   appendDetailFormula(card, 'PorPct ≈ waga_Sz × SzPct + waga_Prawo × PrawPct');
+  const daninaLbl = daninaLabelForCity(city);
   appendDetailAlgo(card, 'Łańcuch przyczynowy', [
-    'Suwak Zamożność (handel) → wyższy udział zamożności → wyższe Szczęście (niskie podatki).',
+    `Suwak Zamożność (${daninaLbl.toLowerCase()}) → wyższy udział zamożności → wyższe Szczęście (niskie podatki).`,
     'Budynki (Teatr, Łaźnia, Świątynia…) i kultura/religia → stały plus do Szczęścia.',
     'Zamożność W (poziom) → bonus zadowolenia z bogactwa obywateli.',
     'Garnizon w mieście → głównie Prawo (do 100% przy 5+ jednostkach), nie Szczęście.',
-    'Ratusz, Pretorium, Sąd → trwały plus do Prawa.',
+    'Dom Starszyzny / Dwór Zarządcy / Pretorium (region) lub Pałac (stolica), Trybunał, Sąd → trwały plus do Prawa.',
     'Duże miasto bez garnizonu → kara Prawa.',
     'PorPct spada → kary na pracę, pieniądz, naukę, wzrost; przy skrajnym spadku bunt.',
     'Sz i Prawo są niezależne — możesz podnieść jedno bez drugiego (np. wojsko bez obniżki podatków).',
@@ -2346,7 +2411,7 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
 
   appendDetailSection(card, 'Progi PorPct (efekty gameplay)');
   const gt = appendDetailGrid(card);
-  gridDetailRow(gt, '≥90% Ład', 'Bonus praca ×1,10, handel ×1,10');
+  gridDetailRow(gt, '≥90% Ład', `Bonus praca ×1,10, ${daninaLbl.toLowerCase()} ×1,10`);
   gridDetailRow(gt, '70–89% Spokój', 'Brak kar');
   gridDetailRow(gt, '50–69% Napięcie', 'Praca ×0,95');
   gridDetailRow(gt, '30–49% Niepokój', 'Kary ~×0,85 plony, wzrost ×0,75');
@@ -2361,7 +2426,8 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
     `(obecnie ${podzial.procentLuksus}% — im wyżej, tym więcej zamożności z handlu zamiast skarbca/nauki). ` +
     'Długoterminowo: Teatr, Łaźnia, wyższe W.<br><br>' +
     `<b>Podnieś Prawo:</b> stacjonuj wojsko w mieście (obecnie ${gCount} jedn. w garnizonie) ` +
-    'lub buduj Ratusz / Pretorium / Sąd.<br><br>' +
+    'lub rozwijaj administrację lokalną (Dom Starszyzny → Dwór Zarządcy → Pretorium; ' +
+    'Pałac w stolicy), Trybunał albo Sąd.<br><br>' +
     '<span class="muted">Kompromis: więcej zamożności = mniej 💰 i nauki teraz, ale spokojniejsze miasto. ' +
     'Wojsko w mieście = wyższe Prawo, ale koszt utrzymania armii.</span>',
   );
@@ -2451,33 +2517,34 @@ function normalizeResourceAccess(
   potential: string[];
   active: string[];
   legacy: boolean;
-  tradeSources: Record<string, string>;
 } {
-  if (!raw) return { potential: [], active: [], legacy: false, tradeSources: {} };
-  if (Array.isArray(raw)) return { potential: [], active: raw, legacy: true, tradeSources: {} };
+  if (!raw) return { potential: [], active: [], legacy: false };
+  if (Array.isArray(raw)) return { potential: [], active: raw, legacy: true };
   return {
     potential: raw.potential ?? [],
     active: raw.active ?? [],
     legacy: false,
-    tradeSources: raw.tradeSources ?? {},
   };
+  // DYSPOZYCJA 85 (Maciej 2026-07-26): `raw.tradeSources` (którego szlak handlowy
+  // przyznał dostęp do tego surowca) już NIE jest odczytywany tutaj -- to jest
+  // informacja o handlu międzynarodowym, a ta należy WYŁĄCZNIE do panelu Handel
+  // (empireDetailPanel.ts), nie do panelu miasta. main.ts nadal może zwracać to
+  // pole (getResourceAccess) -- po prostu nie jest tu już konsumowane.
 }
 
 function appendSurowceGrid(
   parent: HTMLElement,
   labels: string[],
   mode: 'active' | 'potential',
-  tradeSources: Record<string, string> = {},
 ): void {
   if (labels.length === 0) return;
   const grid = el('div', 'civ-w4-surowce-grid');
   for (const nazwa of labels) {
     const row = el('span', `civ-w4-surowce-item ${mode}`);
-    const src = tradeSources[nazwa];
     row.title = mode === 'active'
-      ? (src ? `${nazwa} — dostęp aktywny (${src})` : `${nazwa} — dostęp aktywny (ulepszenie / bramka spełniona)`)
+      ? `${nazwa} — dostęp aktywny (ulepszenie / bramka spełniona)`
       : `${nazwa} — złoże w zasięgu (potencjał — zbuduj ulepszenie)`;
-    row.innerHTML = `${resourceBrandIconHtml(nazwa)}<span>${nazwa}${src ? ' 🔗' : ''}</span>`;
+    row.innerHTML = `${resourceBrandIconHtml(nazwa)}<span>${nazwa}</span>`;
     grid.appendChild(row);
   }
   parent.appendChild(grid);
@@ -2486,14 +2553,14 @@ function appendSurowceGrid(
 function renderSurowce(mount: HTMLElement, city: City): void {
   mount.innerHTML = '';
   const raw = cfg.getResourceAccess?.(city.id);
-  const { potential, active, legacy, tradeSources } = normalizeResourceAccess(raw);
+  const { potential, active, legacy } = normalizeResourceAccess(raw);
   const wrap = el('div', 'civ-w4-surowce-foot');
   const hd = el('div', 'civ-w4-surowce-hd');
   hd.innerHTML =
     '<span class="civ-w4-surowce-title">Surowce w zasięgu</span>' +
     '<span class="civ-w4-surowce-detail gold">i szczegóły</span>';
   wrap.appendChild(hd);
-  attachHoverDetail(hd, () => buildSurowceDetailCard(potential, active, legacy, tradeSources), 220);
+  attachHoverDetail(hd, () => buildSurowceDetailCard(potential, active, legacy), 220);
 
   const preview = ['Trzoda', 'Glina', 'Koń', 'Sól'];
   const hasSplit = raw !== undefined && !legacy;
@@ -2509,7 +2576,7 @@ function renderSurowce(mount: HTMLElement, city: City): void {
       const subA = el('div', 'civ-w4-surowce-sub');
       subA.textContent = 'Dostęp aktywny';
       wrap.appendChild(subA);
-      appendSurowceGrid(wrap, active, 'active', tradeSources);
+      appendSurowceGrid(wrap, active, 'active');
     }
     if (potential.length > 0) {
       const subP = el('div', 'civ-w4-surowce-sub');
@@ -2519,7 +2586,7 @@ function renderSurowce(mount: HTMLElement, city: City): void {
     }
   } else {
     const items = raw !== undefined ? active : preview;
-    appendSurowceGrid(wrap, items, 'active', tradeSources);
+    appendSurowceGrid(wrap, items, 'active');
   }
 
   if (raw === undefined) {
@@ -2536,7 +2603,6 @@ function buildSurowceDetailCard(
   potential: string[],
   active: string[],
   legacy: boolean,
-  tradeSources: Record<string, string> = {},
 ): HTMLDivElement {
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Surowce — szczegóły</span>'));
@@ -2544,14 +2610,13 @@ function buildSurowceDetailCard(
   intro.style.fontStyle = 'normal';
   intro.textContent = legacy
     ? 'Surowce na mapie w zasięgu miasta odblokowują budynki i bonusy (ikona = dostęp). v0.1: tylko boolean dostęp — ilości w wersji 2.0.'
-    : 'Potencjał (szare) = złoże widoczne w zasięgu — jeszcze nieużywalne. Dostęp aktywny = po ulepszeniu terenu na tym heksie (lub wyjątkach: tartak, kamieniołom, warzelnia na wybrzeżu, hodowla bez złoża). Brąz wymaga Popalni + Piec hutniczy. 🔗 = dostęp (częściowo) z aktywnej trasy handlowej.';
+    : 'Potencjał (szare) = złoże widoczne w zasięgu — jeszcze nieużywalne. Dostęp aktywny = po ulepszeniu terenu na tym heksie (lub wyjątkach: tartak, kamieniołom, warzelnia na wybrzeżu, hodowla bez złoża). Brąz wymaga Popalni + Piec hutniczy.';
   card.appendChild(intro);
   if (active.length > 0) {
     appendDetailSection(card, legacy ? 'Lista' : 'Dostęp aktywny');
     const g = appendDetailGrid(card);
     for (const n of active) {
-      const src = tradeSources[n];
-      gridDetailRow(g, resourceBrandIconHtml(n), src ? `${n} — ${src}` : n);
+      gridDetailRow(g, resourceBrandIconHtml(n), n);
     }
   }
   if (!legacy && potential.length > 0) {
@@ -3159,7 +3224,7 @@ function appendW4PctMetricBlock(
 
 function renderEkonomiaStrip(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
-  mount.appendChild(el('div', 'ptitle', '<span>Plony i handel</span>'));
+  mount.appendChild(el('div', 'ptitle', `<span>Plony i ${daninaLabelForCity(city).toLowerCase()}</span>`));
   if (!view) {
     mount.appendChild(el('div', 'muted', 'Brak danych gry'));
     return;
@@ -3182,7 +3247,7 @@ function appendPodzialHandlu(
 ): void {
   if (!opts?.skipSubhd) {
     const sub = el('div', 'subhd');
-    sub.textContent = podzialHandluHeading(city);
+    sub.textContent = `Podział ${daninaLabelGenitive(daninaLabelForCity(city))}`;
     mount.appendChild(sub);
   }
 
@@ -3243,7 +3308,7 @@ function appendPodzialHandlu(
 /** @deprecated używane przez testy / kompat — prefer renderEkonomiaStrip */
 function renderPodzialHandlu(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
-  mount.appendChild(el('div', 'ptitle', `<span>${podzialHandluHeading(city)}</span>`));
+  mount.appendChild(el('div', 'ptitle', '<span>Podział Handlu</span>'));
   appendPodzialHandlu(mount, city, view, data);
 }
 
@@ -3320,6 +3385,8 @@ function buildWealthDetailCard(
   const prog = wealthProg(ws.poziom, epoch, p);
   const mnoz = wealthMnoznik(ws.poziom, p);
   const szcz = wealthZadowolenie(ws.poziom, p);
+  const daninaLbl = daninaLabelForCity(city);
+  const daninaLblGen = daninaLabelGenitive(daninaLbl);
   const rown = wealthRownowaga(ws.poziom, epoch, p);
   const podzial = readPodzialHandlu(city, gameData());
   const pctSpol = podzial.procentLuksus;
@@ -3343,7 +3410,7 @@ function buildWealthDetailCard(
   intro.style.fontStyle = 'normal';
   intro.textContent =
     'Pasek w panelu pokazuje tylko postęp puli do następnego poziomu W — jak spichlerz dla wzrostu ludności. ' +
-    'Część handlu (suwak Zamożność) trafia do puli; wyższy W mnoży pieniądze do skarbca, ale utrzymanie W też kosztuje.';
+    `Część ${daninaLblGen} (suwak Zamożność) trafia do puli; wyższy W mnoży pieniądze do skarbca, ale utrzymanie W też kosztuje.`;
   card.appendChild(intro);
 
   appendDetailSection(card, 'Co oznaczają liczby');
@@ -3375,7 +3442,7 @@ function buildWealthDetailCard(
 
   appendDetailSection(card, 'Skąd bierze się pula');
   const g2 = appendDetailGrid(card);
-  gridDetailRow(g2, `Suwak ${HANDEL_ZAMOZNOSC_LABEL}`, `${pctSpol}% udziału handlu`);
+  gridDetailRow(g2, `Suwak ${HANDEL_ZAMOZNOSC_LABEL}`, `${pctSpol}% udziału ${daninaLblGen}`);
   if (miastoMoney !== null) {
     gridDetailRow(g2, 'Pieniądz miasta', `${signed(miastoMoney)} 💰`);
     if (spolEst !== null) gridDetailRow(g2, '→ do puli zamożności', `~${signed(spolEst)}`);
@@ -3396,16 +3463,16 @@ function buildWealthDetailCard(
   gridDetailRow(g3, 'Szczęście', `W=0: ${p.karaZero}; co 10 poziomów W: +${p.zadowolenieNa10pkt}`);
 
   appendDetailAlgo(card, 'Kolejność ticku zamożności', [
-    `Wejście: strumień z handlu = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
+    `Wejście: strumień z ${daninaLblGen} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
     'Koszt utrzymania = rownowaga(W) × pieniądz brutto miasta tej tury.',
-    'Pula += wpływ z handlu − utrzymanie. Gdy pula < 0 → pula=0 i W−1.',
+    `Pula += wpływ z ${daninaLblGen} − utrzymanie. Gdy pula < 0 → pula=0 i W−1.`,
     'Dopóki pula ≥ próg awansu i W < cap: W+1, pula −= próg, pula ×= zachowanie po awansie.',
     'Mnożnik skarbca rośnie z poziomem W — stosowany do pieniędzy miasta (nie do nauki).',
   ]);
 
   appendDetailAlgo(card, 'Skąd bierze się wpływ do puli', [
-    'Handel brutto z pól + bonus Targowiska → handelNetto (po korupcji, opcjonalnie ×Waluta).',
-    `${podzialHandluHeading(city)}: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
+    `${daninaLbl} brutto z pól + bonus Targowiska → handelNetto (po korupcji, opcjonalnie ×Waluta).`,
+    `Podział ${daninaLblGen}: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
     `Więcej % na Skarb = mniej ${HANDEL_ZAMOZNOSC_LABEL} = wolniejszy W, ale więcej 💰 od razu.`,
     `Więcej % na ${HANDEL_ZAMOZNOSC_LABEL} = szybszy W, ale mniej gotówki — ×Skarb rośnie z opóźnieniem.`,
   ]);
@@ -4105,6 +4172,8 @@ function buildTopBarZlotoDetailCard(
   const split = readPodzialHandlu(city, data);
   const est = estimateHandelChips(view, split);
   const ws = city.wealthState ?? freshWealthState();
+  const daninaLbl = daninaLabelForCity(city);
+  const daninaLblGen = daninaLabelGenitive(daninaLbl);
 
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>💰 Pieniądz — co to znaczy</span>'));
@@ -4122,17 +4191,17 @@ function buildTopBarZlotoDetailCard(
   appendDetailSection(card, 'Skąd bierze się pieniądz (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Plony + budynki', 'Targowisko, Mennica, podatki z pól — patrz okolica.');
-  gridDetailRow(g1, podzialHandluHeading(city), `${split.procentPieniadz}% Skarb · ${split.procentNauka}% Nauka · ${split.procentLuksus}% Zamożność`);
+  gridDetailRow(g1, `Podział ${daninaLblGen}`, `${split.procentPieniadz}% Skarb · ${split.procentNauka}% Nauka · ${split.procentLuksus}% Zamożność`);
   if (est.netto) {
-    gridDetailRow(g1, 'Handel netto (szac.)', `~${est.netto} → split suwaków`);
+    gridDetailRow(g1, `${daninaLbl} netto (szac.)`, `~${est.netto} → split suwaków`);
     gridDetailRow(g1, '→ do Skarbu', est.skarb ? `~+${est.skarb}` : '—');
   }
-  gridDetailRow(g1, 'Zamożność W', `W${ws.poziom} — część handlu karmi pulę W (mnożnik podatków)`);
+  gridDetailRow(g1, 'Zamożność W', `W${ws.poziom} — część ${daninaLblGen} karmi pulę W (mnożnik podatków)`);
 
   appendDetailFormula(card, 'pieniadzNetto = podatki + handel_netto + budynki − utrzymanie');
   appendDetailFormula(card, 'Skarbiec += Σ pieniadzNetto_miast − wydatki');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
-    `Prawa kolumna → „${podzialHandluHeading(city)}”: Skarb vs Nauka vs Zamożność.`,
+    `Prawa kolumna → „Podział ${daninaLblGen}”: Skarb vs Nauka vs Zamożność.`,
     'Prawa kolumna → „Zamożność”: pasek puli W.',
     'Lewa kolumna → Wykup / Rekrutuj za złoto ze skarbca.',
   ]);
@@ -4178,7 +4247,7 @@ function buildTopBarNaukaDetailCard(
   appendDetailFormula(card, 'nauka += plony + budynki + % handlu');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
     'Panel badań (mapa) — wydajesz bank na tech.',
-    `${podzialHandluHeading(city)} → więcej % na Naukę = szybsze tech, mniej złota.`,
+    'Podział handlu → więcej % na Naukę = szybsze tech, mniej złota.',
     'Buduj Bibliotekę, przypisuj 👤 na pola z nauką.',
   ]);
   return card;
@@ -4606,21 +4675,8 @@ function yieldBrandIconHtml(brandId: string, size: BrandIconSize = 14): string {
   return cityPanelChipIconWrap(brandId, size);
 }
 
-function formatYieldLine(b: BuildingDef['baza'], p: BuildingDef['przyrost']): string {
-  const parts: string[] = [];
-  for (const y of YIELD_BRAND) {
-    const base = b[y.key] ?? 0;
-    const inc = p[y.key] ?? 0;
-    if (base !== 0 || inc !== 0) {
-      const incStr = inc !== 0 ? ` (+${inc}/poz.)` : '';
-      parts.push(`${base >= 0 ? '+' : ''}${base} ${yieldBrandIconHtml(y.brandId)}${incStr}`);
-    }
-  }
-  return parts.join(' · ') || '—';
-}
-
 /** Chipy bonusów (max 3) — mockup Poziom B budynków 1E. */
-function buildingBonusChipsHtml(def: BuildingDef, max = 3): string {
+function buildingBonusChipsHtml(def: BuildingDef, buildings: readonly BuildingDef[], max = 3): string {
   const chips: string[] = [];
   for (const y of YIELD_BRAND) {
     if (chips.length >= max) break;
@@ -4632,9 +4688,18 @@ function buildingBonusChipsHtml(def: BuildingDef, max = 3): string {
       `<span class="bld-infocard-chip">${yieldBrandIconHtml(y.brandId, 13)}${val} ${y.label.toLowerCase()}</span>`,
     );
   }
-  if (def.baza.mnoznik || def.przyrost.mnoznik) {
-    if (chips.length < max) {
-      chips.push(`<span class="bld-infocard-chip">×${def.baza.mnoznik ?? 1} mnożnik</span>`);
+  // Sciezki ulepszen jednostek (2026-07-25, druga tura -- suma lancucha
+  // upgradeFrom): mnoznik nie idzie juz do Pracy -- pokaz PRAWDZIWY,
+  // SKUMULOWANY efekt (Pancerz / Parametry, wlasny % + cala sciezka
+  // poprzednikow) tylko dla 6 rozpoznanych budynkow; dla reszty
+  // (Targowisko/Akademia/Pretorium) mnoznik jest odtad calkowicie martwy,
+  // wiec chip znika (nie obiecujemy nieistniejacego).
+  const role = mnoznikRoleForBuildingId(def.id);
+  if (role) {
+    const cumulative = cumulativeMnoznikForBuildingId(def.id, buildings);
+    if (cumulative !== 0 && chips.length < max) {
+      const label = role === 'pancerz' ? 'Pancerz' : 'Parametry';
+      chips.push(`<span class="bld-infocard-chip">+${cumulative}% ${label}</span>`);
     }
   }
   return chips.join('');
@@ -4705,7 +4770,7 @@ function buildBuildingInfocard(
   const bd = el('div', 'bld-infocard-bd');
   // DAJE (efekty) — bonusy budynku, wyraźnie oddzielone od tego, co jest WYMAGANE do budowy
   // (Maciej 2026-07-24: gracz musi wiedzieć, czego mu brakuje i dlaczego nie może budować).
-  const chipsHtml = buildingBonusChipsHtml(def);
+  const chipsHtml = buildingBonusChipsHtml(def, data.buildings);
   if (chipsHtml) {
     bd.appendChild(el('div', 'bld-infocard-eyebrow', 'Daje'));
     const chips = el('div', 'bld-infocard-chips');
@@ -4989,9 +5054,20 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
       gridDetailRow(gYield, y.label, `${base >= 0 ? '+' : ''}${base} ${yieldBrandIconHtml(y.brandId)}${incStr}`);
     }
   }
-  if (def.baza.mnoznik || def.przyrost.mnoznik) {
-    anyYield = true;
-    gridDetailRow(gYield, 'Mnożnik', `baza ${def.baza.mnoznik} · +${def.przyrost.mnoznik}/poz.`);
+  // Sciezki ulepszen jednostek (2026-07-25, druga tura -- suma lancucha
+  // upgradeFrom): jak w buildingBonusChipsHtml powyzej -- mnoznik nie idzie juz
+  // do Pracy, wiec pokazujemy PRAWDZIWY SKUMULOWANY efekt tylko dla 6
+  // rozpoznanych budynkow (Pancerz / Parametry); dla reszty jest martwy -> ukryty.
+  {
+    const role = mnoznikRoleForBuildingId(def.id);
+    if (role) {
+      const cumulative = cumulativeMnoznikForBuildingId(def.id, data.buildings);
+      if (cumulative !== 0) {
+        anyYield = true;
+        const label = role === 'pancerz' ? 'Pancerz (jednostki, trwale)' : 'Parametry poza Pancerzem (jednostki, trwale)';
+        gridDetailRow(gYield, label, `+${cumulative}%`);
+      }
+    }
   }
   if (!anyYield) gridDetailRow(gYield, 'Efekty', '—');
 
@@ -5020,7 +5096,9 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
     appendDetailSection(card, 'Poziomy');
     const gLvl = appendDetailGrid(card);
     gridDetailRow(gLvl, 'Maks. poziom', String(def.maksPoziom));
-    const names = def.nazwyPoziomow.filter(Boolean);
+    // Przytnij WYŚWIETLANIE do maksPoziom -- nazwyPoziomow bywa dłuższe w danych
+    // (zarezerwowane pod przyszłe epoki), ale pokazujemy tylko realnie osiągalne.
+    const names = def.nazwyPoziomow.slice(0, def.maksPoziom).filter(Boolean);
     if (names.length) gridDetailRow(gLvl, 'Nazwy', names.join(' → '));
   }
 
@@ -5511,6 +5589,8 @@ function formatBuildingCatalogLockHint(
   if (entry.status === 'built') return 'Już wybudowany w tym mieście';
   if (entry.status === 'queued') return '⏳ W kolejce produkcji';
   if (entry.status === 'ready') return '';
+  if (entry.locationBlocked === 'stolica') return '🔒 Tylko w stolicy';
+  if (entry.locationBlocked === 'region') return '🔒 Tylko poza stolicą';
 
   const parts: string[] = [];
   let techIc = '';
@@ -5596,6 +5676,11 @@ function productionCtxForCity(city: City): AvailabilityContext {
     empireBuiltIds,
     empireResourceStock: cfg.getEmpireStock?.(city.ownerId),
     cityHasCoastOrRiver: cfg.getCityHasCoastOrRiver?.(city.id) ?? false,
+    // ADMIN-STOLICA (2026-07-25): jedno źródło prawdy o stolicy — capitalCityIdForOwner
+    // (main.ts), tu przez cfg.getCapitalCityId (patrz getCapitalCityId doc powyżej —
+    // wyznaczona stolica z fallbackiem na najstarsze miasto, NIE heurystyka
+    // turn-economy.ts "pierwsze miasto w tablicy"). Ownerid-agnostyczne (parytet AI).
+    isCapital: (cfg.getCapitalCityId?.(city.ownerId) ?? null) === city.id,
   };
 }
 
@@ -5898,7 +5983,7 @@ function buildUpgradeBonusDetailCard(
     }
   }
   appendDetailSection(card, 'Statystyki (silnik)');
-  const stats = buildingStatSummaryLines(def);
+  const stats = buildingStatSummaryLines(def, data.buildings);
   if (stats.length === 0) {
     const note = el('div', 'dc-note');
     note.textContent = 'Brak statów bazowych w definicji.';
@@ -5910,6 +5995,39 @@ function buildUpgradeBonusDetailCard(
   return card;
 }
 
+/** Jeden wiersz budynku w panelu „Budynki w mieście" (GRUPY-BUDYNKOW, 2026-07-25). */
+function appendOwnedBuildingRow(target: HTMLElement, id: string, data: GameData): void {
+  const def = data.buildings.find(b => b.id === id);
+  const row = el('div', 'bld');
+  appendBuildingInlineIcon(row, def);
+  const bn = el('span', 'bn');
+  bn.textContent = def ? def.nazwa : id;
+  if (def && (def.upgradeFrom ?? '').trim().length > 0) {
+    const chain = upgradeChainSteps(def.id, data.buildings);
+    bn.title = chain.map(c => c.nazwa).join(' → ');
+  }
+  row.appendChild(bn);
+  if (def && (def.upgradeFrom ?? '').trim().length > 0) {
+    const upBtn = el('button', 'bld-upg');
+    upBtn.type = 'button';
+    upBtn.textContent = '↗';
+    upBtn.title = 'Skład bonusów upgrade';
+    upBtn.setAttribute('aria-label', `Skład bonusów ${def.nazwa}`);
+    attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data), { delayMs: 260, sideHint: 'left' });
+    row.appendChild(upBtn);
+  }
+  target.appendChild(row);
+}
+
+/**
+ * Panel „Budynki w mieście" — GRUPY-BUDYNKOW (Maciej 2026-07-25): zamiast
+ * płaskiej listy do 38 budynków, osiem grup dziedzinowych (`<details>`,
+ * kliknięcie rozwija). Przypisanie budynek→grupa czyta się z danych
+ * (BuildingDef.grupa, patrz data/loader.ts) — grupowanie samo w sobie jest
+ * WYŁĄCZNIE prezentacją, nie zmienia żadnej wartości silnika. Grupa bez
+ * zbudowanych budynków zostaje widoczna (wymóg #3 zadania), ale w stanie
+ * odróżnionym (`bld-group-empty`, zwinięta, „— brak —").
+ */
 function renderBuildingsOwned(
   mount: HTMLElement,
   city: City,
@@ -5928,27 +6046,20 @@ function renderBuildingsOwned(
         ? createScrollList('list-scroll', { visible: opts.visibleRows })
         : null;
     const target = scroll ?? mount;
-    for (const id of built) {
-      const def = data.buildings.find(b => b.id === id);
-      const row = el('div', 'bld');
-      appendBuildingInlineIcon(row, def);
-      const bn = el('span', 'bn');
-      bn.textContent = def ? def.nazwa : id;
-      if (def && (def.upgradeFrom ?? '').trim().length > 0) {
-        const chain = upgradeChainSteps(def.id, data.buildings);
-        bn.title = chain.map(c => c.nazwa).join(' → ');
+    const groups = groupBuiltBuildingIds(built, data.buildings);
+    for (const { grupa, ids } of groups) {
+      const isEmpty = ids.length === 0;
+      const details = el('details', `bld-group${isEmpty ? ' bld-group-empty' : ''}`);
+      details.open = !isEmpty;
+      const summary = el('summary', 'bld-group-h');
+      summary.textContent = isEmpty ? `${grupa} — brak` : `${grupa} (${ids.length})`;
+      details.appendChild(summary);
+      if (isEmpty) {
+        details.appendChild(el('div', 'muted bld-group-empty-note', '(brak zbudowanych budynków w tej grupie)'));
+      } else {
+        for (const id of ids) appendOwnedBuildingRow(details, id, data);
       }
-      row.appendChild(bn);
-      if (def && (def.upgradeFrom ?? '').trim().length > 0) {
-        const upBtn = el('button', 'bld-upg');
-        upBtn.type = 'button';
-        upBtn.textContent = '↗';
-        upBtn.title = 'Skład bonusów upgrade';
-        upBtn.setAttribute('aria-label', `Skład bonusów ${def.nazwa}`);
-        attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data), { delayMs: 260, sideHint: 'left' });
-        row.appendChild(upBtn);
-      }
-      target.appendChild(row);
+      target.appendChild(details);
     }
     if (scroll) mount.appendChild(scroll);
   } else {
@@ -6192,7 +6303,7 @@ function buildOkolicaDetailCard(
   gridDetailRow(g3, 'Profil auto', focusLbl[focus] ?? focus);
   gridDetailRow(g3, 'Tryb', tryb === 'reczny' ? 'Ręczny 👤 na mapie' : 'Automatyczny');
 
-  appendDetailFormula(card, 'score = w🌾×żywność + w🔨×praca + w💰×handel');
+  appendDetailFormula(card, `score = w🌾×żywność + w🔨×praca + w💰×${daninaLabelForCity(city).toLowerCase()}`);
   appendDetailFormula(card, 'Zasięg: r = min(max(5, populacja), 15)');
 
   appendDetailAlgo(card, 'Auto-przydział pól (assignWorkedTiles)', [
@@ -6825,10 +6936,11 @@ function buildCityOnlyW3StatItems(city: City, view: CityView, data: GameData | n
   const goldCls = view.pieniadz > 0 ? 'green' : view.pieniadz < 0 ? 'red' : '';
   const skarbHandel = est.skarb;
   const wealthHandel = est.zam;
+  const daninaLblChip = daninaLabelForCity(city);
   const goldSplits =
     `<span class="civ-v-w3-chip-splits">` +
-    w3SplitSpan(skarbHandel, 'gold', 'Handel → skarbiec imperium') +
-    w3SplitSpan(wealthHandel, 'purple', 'Handel → pula zamożności (W)', 'W') +
+    w3SplitSpan(skarbHandel, 'gold', `${daninaLblChip} → skarbiec imperium`) +
+    w3SplitSpan(wealthHandel, 'purple', `${daninaLblChip} → pula zamożności (W)`, 'W') +
     `</span>`;
 
   const foodSplit = cityFoodSplit(view);
@@ -6871,7 +6983,7 @@ function buildCityOnlyW3StatItems(city: City, view: CityView, data: GameData | n
       signed(view.pieniadz),
       goldCls,
       'zloto',
-      `Netto pieniędzy tego miasta → skarbiec · handel → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)}`,
+      `Netto pieniędzy tego miasta → skarbiec · ${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)}`,
       goldSplits,
     ),
     w3CityChip(
@@ -7119,9 +7231,13 @@ function renderCityIconRightRail(mount: HTMLElement, city: City): void {
   const iconMount = el('div', 'civ-v-icon-rail-mount');
   iconMount.id = 'cs-icon-rail-right';
   scope.appendChild(iconMount);
-  // Tab „handel”: nazwa strumienia Skarbu (Danina/Podatek) zależy od Mennicy+Waluty — patrz podzialHandluHeading.
+  // Decyzje 65B/66B: tytul zakladki 'handel' (tooltip ikony) odzwierciedla
+  // Danina/Podatek tej cywilizacji -- CITY_PANEL_ICONS_RIGHT jest stalym
+  // modulowym configiem, wiec podmieniamy title per-render zamiast trzymac
+  // dynamiczny tekst w stalej.
+  const daninaLbl = daninaLabelForCity(city);
   const items = CITY_PANEL_ICONS_RIGHT.map(item => item.id === 'handel'
-    ? { ...item, title: `${podzialHandluHeading(city)} i zamożność — suwaki Skarb / Nauka / Zamożność` }
+    ? { ...item, title: `Podział ${daninaLabelGenitive(daninaLbl)} i zamożność — suwaki Skarb / Nauka / Zamożność` }
     : item);
   renderCityIconRail(iconMount, items, true, true);
 }
@@ -7155,25 +7271,58 @@ function buildHandelDetailCard(
   const params = data ? buildEconParams(data, cfg.difficulty ?? 'normal') : null;
   const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
   const maTargowisko = built.includes('targowisko');
-  const maMennica = built.includes('mennica');
+  // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie
+  // 70/B) -> bramka Efektu 1 patrzy na CAŁE imperium, nie tylko to miasto.
+  // maMennicaBudynek = budynek fizycznie istnieje (nie burzymy go po utracie
+  // złota -- "budynek stoi, efekt śpi", ten sam wzorzec co
+  // maMennicaBuiltEmpireWide w turn-economy.ts). Rozdzielone od maDostepDoZlota
+  // (PYTANIE 83=B), zeby ponizej dalo sie rozroznic w tekscie DLACZEGO mnoznik
+  // nie dziala: brak Mennicy vs brak Waluty vs Mennica usnieta bez zlota.
+  const maMennicaBudynek = ownerHasMennica(city.ownerId);
+  const maDostepDoZlota = cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true;
   const maBiblioteka = cityHasBibliotekaLine(built);
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
   const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
-  // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (turn-economy.ts).
+  // Zadanie 1 (E1) + PYTANIE 83=B: Mennica dziala TYLKO gdy zbudowana
+  // (gdziekolwiek w imperium) ORAZ Waluta odkryta ORAZ cywilizacja MA TERAZ
+  // dostep do zlota (turn-economy.ts maMennicaEmpireWide && walutaOdkryta) --
+  // identyczna bramka jak silnik, zeby panel nigdy nie pokazywal aktywnego
+  // mnoznika, ktorego silnik juz nie liczy.
+  const maMennica = maMennicaBudynek && maDostepDoZlota;
   const mennicaAktywna = maMennica && walutaOdkryta;
-  const mennicaMnoznikTxt = params ? `×${params.mennicaMnoznikPoWalucie}` : '×?';
-  const handelHeading = mennicaAktywna ? 'Podział podatku' : 'Podział daniny';
-  const handelStreamNazwa = mennicaAktywna ? 'podatek' : 'daninę';
+  // Mennica fizycznie stoi + Waluta odkryta, ale mnoznik SPI bo brak zlota TERAZ.
+  const mennicaSpiZBrakuZlota = maMennicaBudynek && walutaOdkryta && !maDostepDoZlota;
+  // Pytanie 69 (2026-07-25): tekst pokazuje mnoznik CYWILIZACYJNY skalowany
+  // trudnoscia (ten sam co realnie liczy silnik), nie plaski params.mennicaMnoznikPoWalucie.
+  const civKeyForMennicaTxt = cfg.getCivKey?.(city.ownerId);
+  const mennicaMnoznikVal = params
+    ? mnoznikHandelPieniadzForCivByDifficulty(civKeyForMennicaTxt, cfg.data?.civs, cfg.difficulty ?? 'normal', params.mennicaMnoznikPoWalucie)
+    : undefined;
+  const mennicaMnoznikTxt = mennicaMnoznikVal !== undefined ? `×${mennicaMnoznikVal}` : '×?';
   const est = estimateHandelChips(view, split);
+  // Decyzje 65B/66B: etykieta widoczna dla gracza (Danina domyslnie, Podatek gdy
+  // Waluta+Mennica W STOLICY -- scislejsze niz `mennicaAktywna` powyzej, ktore
+  // opisuje REALNY mnoznik ekonomiczny (gdziekolwiek w imperium, patrz komentarz
+  // przy `maMennica`) i NIE jest tu zmieniane.
+  const daninaLbl = daninaLabelForCity(city);
+  const daninaLblGen = daninaLabelGenitive(daninaLbl);
+  const daninaLblAcc = daninaLabelAccusative(daninaLbl);
+  // DYSPOZYCJA 85 (Maciej 2026-07-26): premia za trasy handlowe realnie mnoży
+  // handelBrutto w silniku (economy.ts, ctx.liczbaAktywnychTrasHandlowych, +5%/trasa
+  // -- NIE ruszane tutaj). W UI zostaje WYŁĄCZNIE ta jedna zbiorcza linia (bez listy
+  // szlaków, bez nazw partnerów, bez dochodu ze szlaków — to przeniesione do panelu
+  // Handel, empireDetailPanel.ts, zgodnie z zasadą rozdziału z dyspozycji).
+  const aktywneTrasyCount = activeTradeRouteCountForCity(city);
+  const premiaTrasPct = aktywneTrasyCount * TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE;
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
-  head.innerHTML = `<span>${handelHeading} — szczegóły</span>`;
+  head.innerHTML = `<span>Podział ${daninaLblGen} — szczegóły</span>`;
   card.appendChild(head);
 
   const intro = el('div', 'dc-note');
   setNoteHtml(intro,
-    `Handel z pól okolicy zasila ${handelStreamNazwa} 💰 — osobny strumień. Najpierw odejmujemy stratę (korupcję), potem suwaki dzielą resztę między skarbiec, naukę i ${HANDEL_ZAMOZNOSC_LABEL.toLowerCase()}. Suma suwaków = 100%, kroki 10%.`,
+    `${daninaLbl} z pól okolicy to osobny strumień 💰. Najpierw odejmujemy stratę (korupcję), potem suwaki dzielą resztę między skarbiec, naukę i ${HANDEL_ZAMOZNOSC_LABEL.toLowerCase()}. Suma suwaków = 100%, kroki 10%.`,
   );
   card.appendChild(intro);
 
@@ -7182,46 +7331,77 @@ function buildHandelDetailCard(
   todo.innerHTML =
     '<b class="gold">Do rozkminienia (v2):</b> skąd bierze się korupcja (dystans od stolicy, liczba miast, epoka, porządek, tech?), ' +
     'czy gracz może ją obniżać, czy pokazujemy ją per miasto czy imperium. ' +
-    `Na razie w UI: stałe <b>${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%</b> handlu brutto — placeholder, nie wpływa jeszcze na silnik w prototypie.`;
+    `Na razie w UI: stałe <b>${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%</b> ${daninaLblGen} brutto — placeholder, nie wpływa jeszcze na silnik w prototypie.`;
   card.appendChild(todo);
+
+  // PYTANIE 83=B: Mennica fizycznie stoi (nie burzymy jej), ale mnoznik SPI bez
+  // aktualnego dostepu do zlota -- gracz musi wiedziec DLACZEGO i CO zrobic.
+  if (mennicaSpiZBrakuZlota) {
+    const mennicaWarn = el('div', 'dc-note');
+    mennicaWarn.style.cssText = 'font-style:normal;border-left:2px solid #e08a8a;padding-left:0.45em;margin-top:0.35em;color:#f0c8c8;';
+    mennicaWarn.textContent =
+      'Mennica nieaktywna: brak dostępu do złota (własna Kopalnia złota albo szlak handlowy z posiadaczem złota). ' +
+      'Zdobądź dostęp do złota, żeby mnożnik znów zadziałał — budynek nie jest burzony, tylko czeka.';
+    card.appendChild(mennicaWarn);
+  }
 
   appendDetailSection(card, 'Korupcja (placeholder)');
   const g0 = appendDetailGrid(card);
-  gridDetailRow(g0, 'Handel brutto (szac.)', est.brutto ? `~${est.brutto}` : '—');
+  gridDetailRow(g0, `${daninaLbl} brutto (szac.)`, est.brutto ? `~${est.brutto}` : '—');
   gridDetailRow(g0, 'Strata korupcji', `−${est.korupcja} (${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto)`);
-  gridDetailRow(g0, 'Handel netto', est.netto ? `~${est.netto} → split suwaków` : '—');
+  gridDetailRow(g0, `${daninaLbl} netto`, est.netto ? `~${est.netto} → split suwaków` : '—');
   if (params) {
     gridDetailRow(g0, 'Silnik (docelowo)', `dystans×${params.korupcjaWspolczynnikDystansu} + miasta×${params.korupcjaWspolczynnikMiast}, cap ${Math.round(params.korupcjaCap * 100)}%`);
   }
+  gridDetailRow(
+    g0,
+    'Premia za trasy handlowe',
+    aktywneTrasyCount > 0
+      ? `+${premiaTrasPct}% (${aktywneTrasyCount} aktywnych) — już w brutto powyżej`
+      : 'brak aktywnych tras',
+  );
 
   appendDetailSection(card, 'Aktualny podział');
   const g1 = appendDetailGrid(card);
-  gridDetailRow(g1, 'Skarb', `${split.procentPieniadz}%${est.skarb ? ` · ~+${est.skarb} z handlu` : ''}`);
-  gridDetailRow(g1, 'Nauka', `${split.procentNauka}%${est.nauka ? ` · ~+${est.nauka} z handlu` : ''}`);
+  gridDetailRow(g1, 'Skarb', `${split.procentPieniadz}%${est.skarb ? ` · ~+${est.skarb} z ${daninaLblGen}` : ''}`);
+  gridDetailRow(g1, 'Nauka', `${split.procentNauka}%${est.nauka ? ` · ~+${est.nauka} z ${daninaLblGen}` : ''}`);
   gridDetailRow(g1, HANDEL_ZAMOZNOSC_LABEL, `${split.procentLuksus}%${est.zam ? ` · ~+${est.zam} → pula` : ' → pula'}`);
   if (view) {
-    gridDetailRow(g1, 'Uwaga', '* Pieniądz i Nauka zawierają też budynki (chipy = tylko udział z handlu netto)');
+    gridDetailRow(g1, 'Uwaga', `* Pieniądz i Nauka zawierają też budynki (chipy = tylko udział z ${daninaLblGen} netto)`);
   }
 
-  appendDetailFormula(card, 'handelBrutto = Σ handel pól' + (maTargowisko ? ' × (1 + bonus Targowiska)' : ''));
+  appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól`
+    + (maTargowisko ? ' × (1 + bonus Targowiska)' : '')
+    + (aktywneTrasyCount > 0 ? ' × (1 + premia tras handlowych)' : ''));
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)`);
-  appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (params ? ' × mnożnik Waluty (jeśli zbadana)' : ''));
-  appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki');
-  appendDetailFormula(card, `skarb_z_handlu = floor(handelNetto × %Skarb${mennicaAktywna ? ` × mennica (${mennicaMnoznikTxt})` : ' × mennica (×1, brak Waluty lub Mennicy)'})`);
-  appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności`);
+  appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
+    mennicaAktywna
+      ? ` × Waluta+Mennica (${mennicaMnoznikTxt})`
+      : mennicaSpiZBrakuZlota
+        ? ' × ×1 (Mennica śpi — brak dostępu do złota)'
+        : ' × ×1 (brak Waluty lub Mennicy)'
+  ));
+  appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki  ← już zawiera mnożnik Waluty+Mennicy powyżej');
+  appendDetailFormula(card, 'skarb_z_handlu = floor(handelNetto × %Skarb)  ← już zawiera mnożnik Waluty+Mennicy powyżej');
+  appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności  ← też już zawiera mnożnik`);
 
-  appendDetailAlgo(card, `Algorytm podziału ${mennicaAktywna ? 'podatku' : 'daniny'} (cityYieldPerTurn)`, [
-    'Zbierz handel ze wszystkich obrabianych pól + centrum miasta.',
+  appendDetailAlgo(card, `Algorytm podziału ${daninaLblGen} (cityYieldPerTurn)`, [
+    `Zbierz ${daninaLblAcc} ze wszystkich obrabianych pól + centrum miasta.`,
     maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
+    aktywneTrasyCount > 0
+      ? `Trasy handlowe: +${premiaTrasPct}% do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
+      : 'Bez aktywnych tras handlowych — brak premii do handelBrutto.',
     `Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
-    'Technologia Waluta mnoży handelNetto (także Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ').',
+    'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
     mennicaAktywna
-      ? `Mennica mnoży część Skarb z handlu ${mennicaMnoznikTxt} (aktywna: zbudowana + Waluta odkryta).`
-      : maMennica
-        ? 'Mennica zbudowana, ale bez Waluty jeszcze nie mnoży Skarbu (bramka: budynek + technologia).'
-        : 'Bez Mennicy — Skarb z handlu bez mnożnika.',
-    maBiblioteka ? 'Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z handlu).' : 'Nauka = wyłącznie udział z handlu + budynki.',
+      ? `Mennica + Waluta razem mnożą całe ${daninaLbl} netto ${mennicaMnoznikTxt} (Skarb, Nauka i ${HANDEL_ZAMOZNOSC_LABEL} rosną razem).`
+      : mennicaSpiZBrakuZlota
+        ? `Mennica zbudowana i Waluta odkryta, ale mnożnik ŚPI: brak dostępu do złota (własna Kopalnia złota albo szlak handlowy z posiadaczem złota) — wraca sam po odzyskaniu dostępu.`
+        : maMennicaBudynek
+          ? 'Mennica zbudowana, ale bez Waluty jeszcze nic nie mnoży (bramka: budynek + technologia, obie wymagane).'
+          : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
+    maBiblioteka ? `Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z ${daninaLblGen}).` : `Nauka = wyłącznie udział z ${daninaLblGen} + budynki.`,
     `${HANDEL_ZAMOZNOSC_LABEL} nie trafia do skarbca — idzie do puli zamożności miasta.`,
     'Na końcu: mnożnik W mnoży cały pieniądz miasta (Skarb + budynki + Targowisko).',
   ]);
@@ -7237,22 +7417,23 @@ function buildHandelDetailCard(
   const note = el('div', 'dc-note');
   note.style.fontStyle = 'normal';
   note.textContent =
-    'Handel, zamożność, Spichlerz/wzrost i porządek — ustawienia w tej kolumnie wpływają na każdą turę. ' +
-    `${handelHeading} jest per miasto; suwak żywności armii — globalny dla całego państwa.`;
+    `${daninaLbl}, zamożność, Spichlerz/wzrost i porządek — ustawienia w tej kolumnie wpływają na każdą turę. ` +
+    `Podział ${daninaLblGen} jest per miasto; suwak żywności armii — globalny dla całego państwa.`;
   card.appendChild(note);
   return card;
 }
 
 function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
-  appendSectionTitleWithDetails(mount, `<span>${podzialHandluHeading(city)}</span>`, () => buildHandelDetailCard(city, view, data));
+  const daninaLbl = daninaLabelForCity(city);
+  appendSectionTitleWithDetails(mount, `<span>Podział ${daninaLabelGenitive(daninaLbl)}</span>`, () => buildHandelDetailCard(city, view, data));
   const split = readPodzialHandlu(city, data);
   const est = estimateHandelChips(view, split);
   if (view) {
     appendTabIndicators(mount, [
       {
         icon: cityPanelChipIcon('cp-trade', 14),
-        label: 'Handel',
+        label: daninaLbl,
         value: `${est.netto}`,
         cls: 'gold',
         title: `Brutto ~${est.brutto} · korupcja −${est.korupcja}`,
@@ -7273,172 +7454,22 @@ function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView
 /** E7 — bonus Handlu na trasę (musi zgadzać się z hardcoded 0.05 w game/economy.ts cityYieldPerTurn). */
 const TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE = 5;
 
-interface TradeRouteRowInfo {
-  route: TradeRoute;
-  otherCityId: string;
-  otherOwnerId: number;
-  otherCityName: string;
-  otherOwnerLabel: string;
-  income: number;
-}
-
-function tradeRoutesForCity(city: City, data: GameData | null): TradeRouteRowInfo[] {
+/**
+ * DYSPOZYCJA 85 (Maciej 2026-07-26): panel miasta NIE pokazuje już listy szlaków/
+ * partnerów/dochodu z tras (to poszło do panelu Handel — imperium, empireDetailPanel.ts).
+ * Tu zostaje WYŁĄCZNIE liczba aktywnych tras tego miasta — potrzebna do JEDNEJ linii
+ * "premia za trasy handlowe: +X%" w rozbiciu Podatku/Daniny (ta premia realnie mnoży
+ * handelBrutto w silniku, patrz economy.ts ctx.liczbaAktywnychTrasHandlowych — silnik
+ * NIE jest tu ruszany, tylko odczytany ten sam fakt co silnik już liczy).
+ */
+function activeTradeRouteCountForCity(city: City): number {
   const all = cfg.getTradeRoutes?.() ?? [];
-  const incomeParams = data
-    ? loadTradeRouteIncomeParams(
-        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
-        cfg.difficulty ?? 'normal',
-      )
-    : DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
-  const cities = cfg.getCities?.() ?? [];
-
-  const out: TradeRouteRowInfo[] = [];
+  let n = 0;
   for (const route of all) {
     if (route.status !== 'polaczony') continue;
-    const isFrom = route.fromCityId === city.id;
-    const isTo = route.toCityId === city.id;
-    if (!isFrom && !isTo) continue;
-    const otherCityId = isFrom ? route.toCityId : route.fromCityId;
-    const otherOwnerId = isFrom ? route.toOwnerId : route.ownerId;
-    const otherCity = cities.find(c => c.id === otherCityId);
-    out.push({
-      route,
-      otherCityId,
-      otherOwnerId,
-      otherCityName: otherCity?.name ?? otherCityId,
-      otherOwnerLabel: cfg.getOwnerLabel?.(otherOwnerId) ?? `Cywilizacja ${otherOwnerId}`,
-      income: tradeRouteDistanceIncome(route.dystans, incomeParams),
-    });
+    if (route.fromCityId === city.id || route.toCityId === city.id) n++;
   }
-  // Najkrótsze (najbardziej dochodowe) trasy pierwsze — deterministyczny tie-break po id.
-  out.sort((a, b) => a.route.dystans - b.route.dystans || a.route.id.localeCompare(b.route.id));
-  return out;
-}
-
-function buildTradeRoutesDetailCard(city: City, rows: TradeRouteRowInfo[], data: GameData | null): HTMLDivElement {
-  const incomeParams = data
-    ? loadTradeRouteIncomeParams(
-        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
-        cfg.difficulty ?? 'normal',
-      )
-    : DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
-  const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-  const maBudynekHandlowy = built.some(id => TRADE_BUILDING_IDS.has(id));
-  const limit = built.filter(id => TRADE_BUILDING_IDS.has(id)).length;
-
-  const card = el('div', 'detail-card');
-  const head = el('div', 'dc-h');
-  head.innerHTML = `<span>${cityPanelChipIconWrap('cp-trade', 14)} Szlaki handlowe — szczegóły</span>`;
-  card.appendChild(head);
-
-  const intro = el('div', 'dc-note');
-  setNoteHtml(intro,
-    'Szlak handlowy łączy to miasto z obcym miastem (cywilizacja spoza tej, nie w wojnie, ' +
-    'z zawartą Umową Handlową). Każda aktywna trasa daje osobny dochód (zależny od dystansu) ' +
-    `ORAZ mnoży Handel z pól o +${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}%.`,
-  );
-  card.appendChild(intro);
-
-  appendDetailSection(card, 'Limit i warunki');
-  const g0 = appendDetailGrid(card);
-  gridDetailRow(g0, 'Budynek handlowy', maBudynekHandlowy ? 'Tak' : 'Brak — trasy niemożliwe');
-  gridDetailRow(g0, 'Limit tras miasta', `${limit} (= liczba budynków: Targowisko/Karawanseraj/Port)`);
-  gridDetailRow(g0, 'Aktywne trasy', `${rows.length} / ${limit}`);
-  gridDetailRow(g0, 'Warunek partnera', 'Miasto obcej cywilizacji, bez wojny, w zasięgu (ląd/morze), z zawartą Umową Handlową');
-
-  appendDetailFormula(card, `dochódTrasy = max(${incomeParams.dochodPodloga}, floor(${incomeParams.dochodBazowy} − dystans × ${incomeParams.dochodNaDystans}))`);
-  appendDetailFormula(card, `mnożnikHandlu = 1 + ${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE / 100} × liczbaAktywnychTras (osobno od Targowiska)`);
-
-  if (rows.length > 0) {
-    appendDetailSection(card, 'Rozpiska tras');
-    const g1 = appendDetailGrid(card);
-    for (const r of rows) {
-      gridDetailRow(
-        g1,
-        `${r.otherCityName} (${r.otherOwnerLabel})`,
-        `${r.route.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.route.dystans} heks. · +${r.income}/turę`,
-      );
-    }
-  }
-
-  appendDetailAlgo(card, 'Skąd biorą się trasy (refreshTradeRoutes, co turę)', [
-    'Filtr: tylko gracz ↔ obca cywilizacja (własne miasta między sobą nigdy nie tworzą trasy).',
-    'Filtr pokoju: wojna z danym właścicielem zrywa/blokuje trasę z jego miastami.',
-    'Filtr traktatu: wymaga aktywnej Umowy Handlowej z tym właścicielem — sam pokój już nie wystarcza; zerwanie umowy zrywa trasę.',
-    'Limit slotów na miasto = liczba zbudowanych budynków handlowych (obie strony trasy muszą mieć wolny slot).',
-    'Dystans ≤ próg (ląd/morze); dla morza wymagany Port w OBU miastach i ciągła droga wodna.',
-    'Istniejące trasy mają priorytet nad nowymi kandydaturami (stabilność między turami); wśród nowych wygrywają najbliższe.',
-  ]);
-
-  return card;
-}
-
-function renderTradeRoutesPanel(mount: HTMLElement, city: City, data: GameData | null): void {
-  mount.innerHTML = '';
-  const rows = tradeRoutesForCity(city, data);
-
-  appendSectionTitleWithDetails(
-    mount,
-    '<span>Szlaki handlowe</span>',
-    () => buildTradeRoutesDetailCard(city, rows, data),
-  );
-
-  const bonusPct = rows.length * TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE;
-  const totalIncome = rows.reduce((s, r) => s + r.income, 0);
-  appendTabIndicators(mount, [
-    {
-      icon: cityPanelChipIcon('cp-trade', 14),
-      label: 'Aktywne trasy',
-      value: `${rows.length}`,
-      cls: rows.length > 0 ? 'gold' : 'muted',
-    },
-    ...(rows.length > 0
-      ? [
-          {
-            icon: cityPanelChipIcon('chip-trend-up', 14),
-            label: 'Bonus Handlu',
-            value: `+${bonusPct}%`,
-            cls: 'green',
-            title: `+${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}% za każdą z ${rows.length} aktywnych tras`,
-          },
-          {
-            icon: cityPanelChipIcon('res-treasury', 14),
-            label: 'Dochód z tras',
-            value: `+${totalIncome}`,
-            cls: 'gold',
-          },
-        ]
-      : []),
-  ]);
-
-  if (rows.length === 0) {
-    const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-    const maBudynekHandlowy = built.some(id => TRADE_BUILDING_IDS.has(id));
-    const missingTreatyWith = cfg.getTradeTreatyMissingPartners?.(city.id) ?? [];
-    const hint = el('div', 'muted');
-    if (missingTreatyWith.length > 0) {
-      hint.textContent = `Brak tras — połączenie i pokój są, ale wymaga Umowy Handlowej z ${missingTreatyWith.join(', ')}.`;
-    } else if (maBudynekHandlowy) {
-      hint.textContent = 'Brak tras — brak w zasięgu obcego miasta (bez wojny), z którym dałoby się połączyć.';
-    } else {
-      hint.textContent = 'Brak tras — potrzebny budynek handlowy (Targowisko/Karawanseraj/Port) i połączone obce miasto w pokoju.';
-    }
-    mount.appendChild(hint);
-    return;
-  }
-
-  const list = el('div', 'col');
-  for (const r of rows) {
-    const row = el('div', 'rsb');
-    const mediumLabel = r.route.medium === 'morze' ? 'Morze' : 'Ląd';
-    row.innerHTML =
-      `<span>${r.otherCityName} <span class="muted">(${r.otherOwnerLabel})</span></span>` +
-      `<span class="chip"><span class="cv">${mediumLabel}</span></span>` +
-      `<span class="muted">${r.route.dystans} heks.</span>` +
-      `<span class="gold val">+${r.income}/turę</span>`;
-    list.appendChild(row);
-  }
-  mount.appendChild(list);
+  return n;
 }
 
 function renderCivMapChrome(mount: HTMLElement, city: City, _onClose?: () => void): void {
@@ -7610,7 +7641,6 @@ const CITY_PANEL_ICONS_LEFT: { id: CityPanelProductionTab; iconId: string; title
 
 const CITY_PANEL_ICONS_RIGHT: { id: CityPanelCityParamTab; iconId: string; title: string }[] = [
   { id: 'spichlerz', iconId: 'cp-granary', title: 'Spichlerz' },
-  // 'handel'.title = fallback; renderCityIconRightRail() nadpisuje go dynamicznie (Danina/Podatek — patrz podzialHandluHeading).
   { id: 'handel', iconId: 'cp-trade', title: 'Podział handlu i zamożność — suwaki Skarb / Nauka / Zamożność' },
   { id: 'praca', iconId: 'cp-labor', title: 'Podział pracy — budynki i ulepszenia' },
   { id: 'porzadek', iconId: 'cp-order', title: 'Społeczeństwo i porządek' },
@@ -7756,17 +7786,14 @@ function renderRightPanelTab(
     case 'handel':
       withW4TabCard(mount, undefined, city, body => {
         const hint = el('div', 'civ-handel-tab-hint');
-        hint.textContent = `Suwaki podziału ${handelStreamLabelGenetiv(city)} (Skarb · Nauka · Zamożność) i poziom zamożności — przewiń, jeśli nie mieści się na ekranie.`;
+        hint.textContent = `Suwaki podziału ${daninaLabelGenitive(daninaLabelForCity(city))} (Skarb · Nauka · Zamożność) i poziom zamożności — przewiń, jeśli nie mieści się na ekranie.`;
         body.appendChild(hint);
         const slidersHost = el('div', 'civ-handel-sliders-host');
         const wealthHost = el('div', 'civ-handel-wealth-host');
-        const tradeRoutesHost = el('div', 'civ-handel-wealth-host');
         body.appendChild(slidersHost);
         body.appendChild(wealthHost);
-        body.appendChild(tradeRoutesHost);
         renderHandelSlidersPanel(slidersHost, city, view, data);
         renderWealth(wealthHost, city, data, view);
-        renderTradeRoutesPanel(tradeRoutesHost, city, data);
       }, { scrollable: true });
       break;
     case 'praca':

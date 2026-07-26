@@ -59,7 +59,7 @@ Hasła powstają **z rozdziałów poradnika** — poniżej mapa kategorii (pełn
 Skarbiec · Utrzymanie · Żywność wojska · Nauka imperium · Surowiec · Handel · Punty wartości handlowej
 
 ### Kategoria: Miasto — ludność i stabilność
-Populacja · Wzrost ludności · Zdrowie · Szczęście · Porządek · Prawo · Bunt · Bogactwo · Suwak handlu · Suwak pracy · Suwak żywności · Trzy grupy mieszkańców · Kultura w mieście · Religia w mieście · Auto-zarządca · Spichlerz (wpływ na miasto)
+Populacja · Wzrost ludności · Zdrowie · Szczęście · Porządek · Prawo · Bunt · Bogactwo · Suwak Daniny · Suwak pracy · Suwak żywności · Trzy grupy mieszkańców · Kultura w mieście · Religia w mieście · Auto-zarządca · Spichlerz (wpływ na miasto)
 
 ### Kategoria: Miasto — budowa, plony i wojsko
 Zakładka Plony · Zakładka Okolica · Zakładka Produkcja · Budynek · Kolejka budowy · Przyspieszenie za złoto · Rekrutacja · Garnizon · Osiedle
@@ -475,7 +475,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 **14.5.** **Bogactwo**
 - Luksus państwa — **nie** to samo co złoto
 - Wartość + przyrost na turę
-- Skąd wpływa: suwak handlu w miastach (luksus %)
+- Skąd wpływa: suwak Daniny w miastach (luksus %)
 - Tooltip → szczegóły w panelu miasta (§37)
 
 **14.6.** **Ludność**
@@ -922,7 +922,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 **35.2.** Rozpiska czynników — co podnosi szczęście (+)
 - Świątynia, amfiteatr / rozrywka
 - Luksus / bogactwo — pula na mieszkańca
-- Niskie podatki (duży udział luksusu w suwaku handlu)
+- Niskie podatki (duży udział luksusu w suwaku Daniny)
 - Nasza religia dominuje w mieście
 - Nasza kultura dominuje w mieście
 - Bonus małego miasta (niskie zagęszczenie)
@@ -933,7 +933,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Wojna — zmęczenie wojenne państwa
 - Obca kultura dominuje
 - Obca religia dominuje
-- Wysokie podatki (suwak handlu — mało luksusu)
+- Wysokie podatki (suwak Daniny — mało luksusu)
 
 **35.4.** Gdzie widać szczęście
 - **Tylko** w panelu miasta (zakładka Miasto)
@@ -993,13 +993,13 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 **37.2.** Panel bogactwa w mieście
 - Poziom bogactwa (W)
-- Pula luksusu — skąd wpływa (suwak handlu → udział luksusu)
+- Pula luksusu — skąd wpływa (suwak Daniny → udział luksusu)
 - Próg następnego poziomu
 - Mnożnik dochodu z luksusu
 - Wpływ poziomu na szczęście (§35.2)
 
 **37.3.** Suwak społeczeństwa / luksus (powiązanie z §38.1)
-- Więcej luksusu w handlu → wyższe bogactwo, często wyższe szczęście
+- Więcej luksusu w Daninie → wyższe bogactwo, często wyższe szczęście
 - Mniej luksusu → więcej złota i nauki, ryzyko niezadowolenia
 
 **37.4.** Trudność a bogactwo
@@ -1011,13 +1011,14 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 ---
 
-### 38. Suwaki podziału — handel, praca, żywność
+### 38. Suwaki podziału — Danina, praca, żywność
 
-**38.1.** Suwak **Handel** (podatki / handel netto)
-- Trzy kierunki: **złoto · nauka · luksus (bogactwo)**
-- Domyślnie: **70% złoto · 20% nauka · 10% luksus**
-- Wpływ na szczęście: duży udział luksusu = bonus; mały = kara wysokich podatków
-- Wpływ na skarbiec imperium i tempo badań
+**38.1.** Suwak **Daniny** (podatki / Danina netto; nazwa pliku Wiki historyczna „suwak handlu")
+- Trzy kierunki: **skarbiec (złoto) · nauka · luksus (bogactwo)**
+- Domyślnie: **60% skarbiec · 20% nauka · 20% luksus** (identycznie na wszystkich trudnościach)
+- Nazwa zmienia się na **Podatek** po Walucie + Mennicy w stolicy (§49.3b, Część VIII)
+- Wpływ na szczęście: 10 przedziałów po 10 p.p. udziału luksusu, tabela pełna w §35.2a — duży udział = bonus; mały = kara wysokich podatków
+- Wpływ na skarbiec imperium i tempo badań; korupcja (§49.3a) i mnożnik Mennicy działają na całą pulę
 - Ustawienie **osobno dla każdego miasta**
 
 **38.2.** Suwak **Praca** (podział pracy miasta)
@@ -1040,7 +1041,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 **38.5.** Strategie gracza — przykłady
 - Miasto graniczne: więcej prawa, wojsko, umiarkowane podatki
-- Miasto naukowe: więcej nauki w handlu, budynki kulturalne
+- Miasto naukowe: więcej nauki w Daninie, budynki kulturalne
 - Miasto rolnicze: żywność na rozwój, okolica na plony
 
 ---
@@ -1125,7 +1126,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Limity — czego auto-zarządca **nie** zrobi (np. nie wzniesie cudu)
 
 **41.5.** Wiki — hasła powiązane
-- Auto-zarządca · Suwak handlu · Suwak pracy · Suwak żywności (osobne karty Wiki‑M)
+- Auto-zarządca · Suwak Daniny · Suwak pracy · Suwak żywności (osobne karty Wiki‑M)
 
 ---
 
@@ -1172,7 +1173,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 **43.3.** Skąd bierze się złoto z pól
 - Profile okolicy „Podatki" / zrównoważone
 - Ulepszenia i złoża (gdy dostępne)
-- Handel — część idzie przez suwak handlu, nie bezpośrednio z heksu
+- Handel — część idzie przez suwak Daniny, nie bezpośrednio z heksu
 
 **43.4.** Typ terenu a plon
 - Łąka, las, wzgórze, pustynia, morze — różne bazowe plony
@@ -1336,7 +1337,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 ### 49. Skarbiec państwa (Złoto)
 
 **49.1.** Przychody co turę — skąd bierze się złoto
-- Podatki z miast — wynik suwaka handlu (złoto vs nauka vs luksus)
+- Podatki z miast — wynik suwaka Daniny (złoto vs nauka vs luksus)
 - Handel z innymi państwami — umowy dyplomatyczne
 - Jednorazowe wpływy: prezenty, trybut, łup z bitew (jeśli w grze)
 - Przyrost netto widzisz na pasku zasobów jako **+X na turę**
@@ -1352,6 +1353,20 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Ujemny przyrost — ostrzeżenie: brak ¤ blokuje rush i czasem rekrutację
 - Tooltip na pasku — rozbicie dochodów i kosztów (jeśli w UI)
 - Złoto ≠ bogactwo — luksus to osobna mechanika (Część VI §37)
+
+**49.3a.** Korupcja — strata Daniny z dystansu i liczby miast
+- Rośnie ze współczynnikiem dystansu od stolicy i współczynnikiem liczby miast (łatwy/normalny/trudny — różne wartości)
+- Sufit straty: 38% / 50% / 62% (łatwy/normalny/trudny)
+- Dotyczy **wyłącznie** Daniny/Podatku — Praca nigdy nie jest objęta
+- Redukcja: Sąd, Pretorium, Pałac — po 30 p.p. każdy, addytywnie, realny sufit 60 p.p.
+
+**49.3b.** Mennica, Waluta i Danina → Podatek
+- Waluta odkryta + Mennica w stolicy → nazwa całej cywilizacji zmienia się na **Podatek**
+- Mnożnik Mennicy na całą Daninę/Podatek: ×2,0 / ×1,5 / ×1,0 (łatwy/normalny/trudny)
+- Wymaga dostępu do złota (kopalnia własna lub szlak handlowy) — bez dostępu mnożnik śpi, nazwa wraca na Daninę, budynek zostaje
+
+**49.3c.** Co jeszcze wchodzi do puli Daniny
+- Pieniądz z budynków i z zamiany Pracy przez Targowisko — trafia do puli Daniny, dzieli się suwakiem 60/20/20
 
 **49.4.** Strategie gracza — zarządzanie skarbcem
 - Wczesna gra: utrzymanie niskie, unikaj pustego skarbca przed wojnou
@@ -1396,7 +1411,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 **51.1.** Wspólna pula imperium — jak działa nauka
 - Wszystkie miasta **składają** punkty badań do jednej puli państwa
-- Suwak handlu w każdym mieście — część produkcji idzie na naukę (domyślnie 20%)
+- Suwak Daniny w każdym mieście — część produkcji idzie na naukę (domyślnie 20%)
 - Budynki (biblioteka, akademia…) — stały bonus + na turę
 - Tempo widzisz na pasku: **+X badań** i pasek % do aktualnej technologii
 
@@ -1811,6 +1826,13 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Doświadczenie / bonusy cywilizacji (jeśli wpięte)
 - Łup — status v1.0 (złoto, punkty siły)
 - Przycisk **Kontynuuj** — powrót na mapę strategiczną
+
+**65.2a.** Doświadczenie i weterani — trzy poziomy
+- Poziom 1 Rekrut (0 bitew, 0%) → poziom 2 Doświadczony (1 przeżyta bitwa, +10%) → poziom 3 Weteran (2+ przeżyte, +20%, sufit)
+- Premie liczone od bazy, NIE kumulują się między poziomami
+- W górę: atak/obrona wręcz, obrażenia broni, przebicie, szarża, zdrowie, atak dystansowy
+- W dół (im niżej tym lepiej): Morale ucieczki, Próg dezercji (% zdrowia)
+- Bez zmian na żadnym poziomie: Pancerz
 
 **65.3.** Fan-out — pierścień po bitwie
 - Jednostki rozkładają się na **pierścień** wokół heksu bitwy
@@ -2327,7 +2349,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - Każda cywilizacja — **3 linie** bonusów (macierz 9×3)
 
 **84.2.** Przykłady bonusów — jak czytać opis
-- **Mnożnik handlu** — więcej złota z suwaka handlu
+- **Mnożnik handlu** — więcej złota z suwaka Daniny
 - **% nauki** — szybsze badania z miast
 - **XP armii** — jednostki szybciej zyskują doświadczenie (jeśli wpięte)
 - **Morale** — bonus w walce przy spełnionym warunku
@@ -2866,7 +2888,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - **Złoto** — skarbiec państwa; płacisz rekrutację, utrzymanie, rush
 - **Bogactwo** — luksus warstwy społecznej; wpływa na szczęście, nie na skarbiec
 - Oba widoczne na ekranie — różne ikony i tooltips
-- Suwak handlu — dzieli produkcję między złoto, naukę, luksus
+- Suwak Daniny — dzieli produkcję między złoto, naukę, luksus
 
 **A.1.2.** Praca, badania, żywność, ludność
 - **Praca** — budowa budynków i ulepszeń terenu
@@ -3157,7 +3179,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 ### C.3. Bogactwo — poziom W i mnożnik
 
 **C.3.1.** Pula luksusu → poziom W
-- Skąd: suwak handlu, % luksusu
+- Skąd: suwak Daniny, % luksusu
 - Progi poziomów W — tabela
 
 **C.3.2.** Mnożnik dochodu luksusu
@@ -3168,7 +3190,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - W — panel miasta · ¤ — skarbiec imperium
 
 **C.3.4.** Przykład
-- 70/20/10 suwak → W rośnie wolniej niż przy 50/20/30
+- 60/20/20 suwak (domyślny) → W rośnie wolniej niż przy 40/20/40
 
 ---
 

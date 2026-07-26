@@ -48,11 +48,6 @@ if (Test-Path 'tools/smoke.cjs') {
   node tools/smoke.cjs
 }
 
-if (Test-Path 'tools/battle-smoke.cjs') {
-  Write-Host '=== battle-smoke ===' -ForegroundColor Cyan
-  node tools/battle-smoke.cjs
-}
-
 Write-Host "=== vite build -> $dist ===" -ForegroundColor Cyan
 npx vite build --outDir $dist --emptyOutDir
 

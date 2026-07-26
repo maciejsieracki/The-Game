@@ -173,9 +173,9 @@ const routesD1 = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1, NO_WAR,
 eq(routesD1.length, 1, 'D1: limit=1 po stronie gracza -> tylko jedna trasa');
 eq(routesD1[0].toCityId, 'fD1', 'D1: wygrywa blizszy kandydat (dystans 3 < 4)');
 
-// D1-bis: podniesienie limitu gracza do 2 (Targowisko + Karawanseraj) -> obie trasy.
+// D1-bis: podniesienie limitu gracza do 2 (Targowisko + Port wielki) -> obie trasy.
 const builtD1b = new Map([
-  ['pD',  ['targowisko', 'karawanseraj']], // limit 2
+  ['pD',  ['targowisko', 'port_wielki']], // limit 2
   ['fD1', ['targowisko']],
   ['fD2', ['targowisko']],
 ]);

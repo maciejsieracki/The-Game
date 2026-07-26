@@ -29,6 +29,31 @@ Maciej wymaga **pełnej formy** dla KAŻDEJ decyzji gameplayowej/produktowej/arc
 
 ---
 
+## 1a. TRZY ZASADY PROCESU DOŁOŻONE 2026-07-25 (obowiązują razem z formatem ABC wyżej)
+
+**1. Zakaz otwierania nowych wątków pytaniami.** Wolno zadawać **wyłącznie pytania doprecyzowujące do wątku,
+który Maciej AKTUALNIE prowadzi**. Pytania otwierające nowy temat — dopiero gdy on sam powie, że można.
+Problem znaleziony przy okazji (nie dotyczący bieżącego wątku) zapisuje się **cicho** do
+`dyspozycje/PYTANIA-OTWARTE.md` i **nie wspomina się o nim w czacie**. Jego słowa: „ja odpowiadam na jedno,
+a ty generujesz kolejnych pięć… nie jesteśmy w stanie zakończyć jednego, a ty wyciągasz kolejne". Kończymy
+jeden temat, dopiero potem następny — nie mieszamy wątków w jednej odpowiedzi.
+
+**2. Każda liczba musi mieć nazwany parametr, jednostkę i kontekst.** Zakaz pisania „baza 16", „przyrost +7",
+„daje 35" bez powiedzenia, **czego** liczba dotyczy. Zawsze trzy rzeczy razem: **czego** (Kultura / Praca /
+Prawo / Pieniądz / Zadowolenie / Obrona…), **w jakiej jednostce** (pkt na turę, %, pkt Prawa) i **w jakim
+kontekście** (poziom, epoka, poziom trudności). Nagłówek kolumny samo „Baza" jest zakazany — ma być np.
+„Kultura (baza)". Jego słowa: „wpisujesz baza, ale baza do czego? potem chodzimy po omacku". Dotyczy też
+tabel w tym pliku i we wszystkich plikach `dyspozycje/*.md` — nie tylko rozmowy w czacie.
+
+**3. Opus 5 i Fable 5 wyłącznie za wyraźną zgodą Macieja.** Domyślnie każda praca (kod, dane, analiza, audyt)
+leci na subagentów **Sonnet 5**. Zmiana modelu na Opus/Fable wymaga jego wyraźnej zgody w bieżącej rozmowie —
+nie domyślaj się, że skomplikowany temat kwalifikuje się automatycznie.
+
+**Gdzie te trzy zasady muszą być widoczne** (sprawdzaj przy każdej większej aktualizacji dokumentacji):
+`CLAUDE.md` §„Jak pracować z właścicielem" (pkt 2–4) · ten plik (wyżej) · `dyspozycje/BACKLOG-PRZYSZLOSC.md` §E.
+
+---
+
 ## 2. MODEL WERSJI (tiery)
 - **ROBOCZA** — tu iterujemy każdą pracę; nowe fixy/grafika/FPS lądują tu do testu. To jedyny cel zwykłego deployu.
 - **KANON** — jedna bieżąca, pewna wersja. Promocja dopiero, gdy ROBOCZA sprawdzona.

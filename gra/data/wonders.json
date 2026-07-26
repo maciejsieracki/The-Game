@@ -231,7 +231,7 @@
         ],
         "specjalne": [
           { "typ": "magazyn_pojemnosc", "wartosc": 6, "opis": "+6 pojemność handlu/surowców (cywilizacja)" },
-          { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Pieniądza z tras handlowych (cywilizacja)" },
+          { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "dyplomacja_wpływ", "wartosc": 5, "opis": "+5 Wpływu — karawany Nabatejczyków (cywilizacja)" }
         ]
       }
@@ -259,7 +259,7 @@
           { "typTerenu": "laka", "kultura": 2, "warunek": "hex_sasiad_wybrzeze" }
         ],
         "specjalne": [
-          { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.15, "opis": "+15% Pieniądza z handlu morskiego (cywilizacja)" },
+          { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych morskich (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "dyplomacja_wpływ", "wartosc": 3, "opis": "+3 Wpływu (cywilizacja)" }
         ]
       },
@@ -281,7 +281,7 @@
         "miasto": { "pieniadz": 3, "kultura": 3 },
         "specjalne": [
           { "typ": "magazyn_pojemnosc", "wartosc": 8, "opis": "+8 pojemność surowców / trade capacity (cywilizacja)" },
-          { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.2, "opis": "+20% Pieniądza z portów (cywilizacja)" },
+          { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.2, "opis": "+20% Handlu — dochodu z tras handlowych morskich, korzystających z portów (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "dyplomacja_wpływ", "wartosc": 6, "opis": "+6 Wpływu — Rhodos, węzeł morski (cywilizacja)" }
         ]
       }
@@ -441,7 +441,7 @@
         "miasto": { "kultura": 3, "pieniadz": 3 },
         "specjalne": [
           { "typ": "wojna_wsparcie", "wartosc": 3, "opis": "+3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja)" },
-          { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Pieniądza z tras handlowych (cywilizacja)" },
+          { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "dyplomacja_wpływ", "wartosc": 10, "opis": "+10 Wpływu — satrapie i goście narodów (cywilizacja)" },
           { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie u państw z aktywnym handlem (cywilizacja)" }
         ]
@@ -464,7 +464,7 @@
         "miasto": { "kultura": 3, "zadowolenie": 3, "pieniadz": 3 },
         "specjalne": [
           { "typ": "dyplomacja_wpływ", "wartosc": 12, "opis": "+12 Wpływu — cesarski dwór Chang'an (cywilizacja)" },
-          { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Pieniądza z handlu (cywilizacja)" },
+          { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta" },
           { "typ": "relacje_zaufanie", "wartosc": 4, "opis": "+4 bazowe Zaufanie (cywilizacja)" }
         ]
       },

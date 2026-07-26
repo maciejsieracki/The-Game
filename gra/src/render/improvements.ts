@@ -8,10 +8,16 @@ import * as THREE from 'three';
 import { GAME_MAP_RENDER_STYLE, type MapRenderStyle, buildStyleTarasyTerrace } from './mapRenderStyle';
 import { buildRobloxImprovement, buildRobloxFoodStack } from './robloxImprovements';
 import { placeLivestockPair } from './styleResources';
+import { buildKopalniaZlota } from './kopalnia-zlota-opus5';
 
+// ZLOTO-Q1 (Maciej 2026-07-25, wprowadzenie złota): 'kopalnia_zlota' dopisane jako typ +
+// metadane + dispatch. Model 3D ma od 2026-07-25 WŁASNĄ bryłę (render/kopalnia-zlota-opus5.ts,
+// Opus 5) — wcześniejsze tymczasowe reużycie kopalniaMiedzi() zostało wycofane w OBU rejestrach
+// (ten plik + robloxImprovements.ts).
 export type ImprovementKey =
   | 'farma' | 'bydlo' | 'owce' | 'lama' | 'kopalnia' | 'kamieniolom' | 'oboz_lowiecki' | 'wyrab' | 'tartak'
   | 'lodzie_rybackie' | 'droga' | 'droga_brukowana' | 'posterunek' | 'stadnina' | 'pastwisko' | 'kopalnia_miedzi'
+  | 'kopalnia_zlota'
   | 'irygacja' | 'pole_irygowane' | 'glinianka' | 'warzelnia_soli' | 'tarasy' | 'fort';
 
 export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }[] = [
@@ -24,6 +30,7 @@ export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }
   { key: 'stadnina', label: 'Stadnina', epoka: 2 },
   { key: 'kopalnia', label: 'Kopalnia żelaza', epoka: 1 }, { key: 'kamieniolom', label: 'Kamieniołom', epoka: 1 },
   { key: 'kopalnia_miedzi', label: 'Kopalnia miedzi', epoka: 2 },
+  { key: 'kopalnia_zlota', label: 'Kopalnia złota', epoka: 2 },
   { key: 'oboz_lowiecki', label: 'Obóz łowiecki', epoka: 1 }, { key: 'wyrab', label: 'Wyrąb', epoka: 1 },
   { key: 'tartak', label: 'Tartak', epoka: 1 },
   { key: 'lodzie_rybackie', label: 'Łodzie rybackie', epoka: 1 }, { key: 'droga', label: 'Droga', epoka: 1 },
@@ -365,6 +372,10 @@ export function buildImprovement(
     case 'posterunek': return straznica(ownerCol);
     case 'pastwisko': return bydlo();
     case 'kopalnia_miedzi': return kopalniaMiedzi();
+    // WŁASNY model 3D (Opus 5, 2026-07-25) — koniec reużycia Kopalni miedzi.
+    // Odkrywka z płytkim szybem: trójnóg z koszem, rynna płuczkowa z runem,
+    // sadzawka, misa ze złotym pyłem. Uzasadnienie historyczne w nagłówku pliku.
+    case 'kopalnia_zlota': return buildKopalniaZlota();
   }
 }
 
@@ -382,7 +393,7 @@ const CAT_ANGLE_DEG: Record<string, number> = {
 // Kamieniołom ma WŁASNY bok (kamien=300°), NIE w 'surowiec' — bo od 2026-07-24 współistnieje
 // z kopalnią rudy na tym samym heksie (C-SUR kamień=b); w jednym sektorze modele rysują się w
 // tym samym punkcie, więc rozdzielenie kątów zapobiega nachodzeniu grafik kamieniołom↔kopalnia.
-const SUROWIEC_KEYS = new Set(['kopalnia', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi']);
+const SUROWIEC_KEYS = new Set(['kopalnia', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi', 'kopalnia_zlota']);
 const PASTWISKO_KEYS = new Set(['bydlo', 'owce', 'lama', 'pastwisko']);
 const FORT_KEYS = new Set(['fort', 'posterunek']);
 const DROGA_KEYS = new Set(['droga', 'droga_brukowana']);

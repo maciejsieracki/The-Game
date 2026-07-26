@@ -3,7 +3,7 @@
 > **Poradnik gracza (Pełny)** · Część XV §94–96 · dane: `gra/data/wonders.json`
 > Pełne karty Wiki: `docs/encyklopedia/cuda/` · mechanika: [`15-kultura-religia-cuda.md`](15-kultura-religia-cuda.md)
 
-W epoce Antyku (Kamień–Brąz–Żelazo) każda cywilizacja ma **cud wyłączny (E)** oraz dostęp do **trzech wyścigów (R)**: Wyrocznia (Kamień), Kamień Ha'amonga (Brąz), Brama wszystkich narodów (Żelazo). Cud stawiasz na **heksie w terytorium**; koszt to **praca**; utrzymanie — **złoto** co turę. Bonusy miasta działają **× każde miasto**. Po **absolut** (koniec epoki 6) efekty wygasają — zostaje ruina (+10 handlu).
+W epoce Antyku (Kamień–Brąz–Żelazo) każda cywilizacja ma **cud wyłączny (E)** oraz dostęp do **trzech wyścigów (R)**: Wyrocznia (Kamień), Kamień Ha'amonga (Brąz), Brama wszystkich narodów (Żelazo). Cud stawiasz na **heksie w terytorium**; koszt to **praca**; utrzymanie — **złoto** co turę. Bonusy miasta działają **× każde miasto**. Po **absolut** (koniec epoki 6) efekty wygasają — zostaje ruina (+10 Daniny).
 
 ## Typy dostępu
 
@@ -104,7 +104,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Petra
 
-**Petra** — Fenicjanie, epoka **Kamień**. Tech: **Murarstwo, Wymiana**; teren: **pustynia**. Koszt **165** pracy. +6 pojemność handlu/surowców (cywilizacja); +15% Pieniądza z tras handlowych (cywilizacja)
+**Petra** — Fenicjanie, epoka **Kamień**. Tech: **Murarstwo, Wymiana**; teren: **pustynia**. Koszt **165** pracy. +6 pojemność handlu/surowców (cywilizacja); +15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta
 
 
 ### Przykład liczbowy
@@ -116,7 +116,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Kolos Rodyjski
 
-**Kolos Rodyjski** — Grecy, epoka **Brąz**. Tech: **Żegluga**; teren: **wybrzeże**. Koszt **230** pracy. +8 pojemność surowców / trade capacity (cywilizacja); +20% Pieniądza z portów (cywilizacja)
+**Kolos Rodyjski** — Grecy, epoka **Brąz**. Tech: **Żegluga**; teren: **wybrzeże**. Koszt **230** pracy. +8 pojemność surowców / trade capacity (cywilizacja); +20% Handlu — dochodu z tras handlowych morskich, korzystających z portów (cywilizacja); NIE zwiększa Daniny miasta
 
 
 ### Przykład liczbowy
@@ -200,7 +200,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Pałac Weiyang
 
-**Pałac Weiyang** — Chińczycy, epoka **Żelazo**. Tech: **Wymiana, Murarstwo**; teren: **łąka**. Koszt **290** pracy. +12 Wpływu — cesarski dwór Chang'an (cywilizacja); +15% Pieniądza z handlu (cywilizacja)
+**Pałac Weiyang** — Chińczycy, epoka **Żelazo**. Tech: **Wymiana, Murarstwo**; teren: **łąka**. Koszt **290** pracy. +12 Wpływu — cesarski dwór Chang'an (cywilizacja); +15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta
 
 
 ### Przykład liczbowy
@@ -252,7 +252,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Kamień Ha'amonga
 
-**Kamień Ha'amonga** — wyścig epoki **Brąz**. Tech: **Żegluga**. +15% Pieniądza z handlu morskiego (cywilizacja); +3 Wpływu (cywilizacja)
+**Kamień Ha'amonga** — wyścig epoki **Brąz**. Tech: **Żegluga**. +15% Handlu — dochodu z tras handlowych morskich (cywilizacja); NIE zwiększa Daniny miasta; +3 Wpływu (cywilizacja)
 
 
 ### Przykład liczbowy
@@ -264,7 +264,7 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Brama wszystkich narodów
 
-**Brama wszystkich narodów** — wyścig epoki **Żelazo**. Tech: **Inżynieria, Wojskowosc**. +3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja); +15% Pieniądza z tras handlowych (cywilizacja)
+**Brama wszystkich narodów** — wyścig epoki **Żelazo**. Tech: **Inżynieria, Wojskowosc**. +3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja); +15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta
 
 
 ### Przykład liczbowy

@@ -121,17 +121,41 @@ const UP = U.DEFAULT_UPKEEP_PARAMS;
 eq(UP.zywnoscJednostkaRuch, 1, 's6.3: default unit food marching 1');
 eq(UP.zywnoscJednostkaOboz, 0.5, 's6.3: default unit food camping 0.5');
 
-// s.6.1 building upkeep (flat override = v0.1 niezroznicowany)
-eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0 }, 1, 1), 1, 's6.1: flat override 1');
-// without override: compound floor(utrzymanie * 1.10^(level-1)) [decyzja Naster, mirrors buildingValue]
-// level 1: floor(1 * 1.10^0) = 1; level 2: floor(1 * 1.10) = 1; level 3: floor(1 * 1.21) = 1
-eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 1), 1, 's6.1: compound lvl1 = 1');
-eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 3), 1, 's6.1: compound lvl3 = floor(1.21) = 1');
-// higher base: utrzymanie=10, level 3 -> floor(10 * 1.21) = 12
-eq(U.buildingUpkeep({ utrzymanie: 10, przyrostUtrzymania: 2 }, 3), 12, 's6.1: compound base10 lvl3 = floor(12.1) = 12');
+// s.6.1 building upkeep -- R-UTRZYMANIE-ZROZNICOWANE (2026-07-25, decyzja
+// wlasciciela 19=A): kazdy budynek placi WLASNE utrzymanie z danych; flatOverride
+// (budynki.utrzymanie_budynek z econ-params.json) jest wylacznie DOMYSLNA wartoscia
+// dla budynku BEZ wlasnego wpisu -- nigdy nie nadpisuje realnej wartosci.
+// building.utrzymanie=1 + flatOverride=1 -- oba dają 1, ten przypadek nie odroznia
+// starego (nadpisanie) od nowego (per-budynek) zachowania -- patrz test ponizej.
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0 }, 1, 1), 1, 's6.1: utrzymanie=1 (flatOverride rowny, nie odrozniajacy)');
+// without override: liniowy floor(utrzymanie + przyrostUtrzymania * (level-1)) [decyzja Naster 2026-07-25, mirrors buildingValue]
+// level 1: floor(1 + 0) = 1; level 3: floor(1 + 0.5*2) = floor(2) = 2
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 1), 1, 's6.1: linear lvl1 = 1');
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 3), 2, 's6.1: linear lvl3 = floor(2.0) = 2');
+// higher base: utrzymanie=10, przyrostUtrzymania=2, level 3 -> floor(10 + 2*2) = 14
+eq(U.buildingUpkeep({ utrzymanie: 10, przyrostUtrzymania: 2 }, 3), 14, 's6.1: linear base10 lvl3 = floor(14) = 14');
 // 12 buildings flat 1 = 12 (spec s.8.4 example)
 const blds = Array.from({ length: 12 }, () => ({ record: { utrzymanie: 1, przyrostUtrzymania: 0 }, level: 1 }));
 eq(U.totalBuildingUpkeep(blds, 1), 12, 's8.4: 12 buildings * 1 = 12');
+
+// --- ZADANIE 1 (2026-07-25): flat override PRZESTAJE nadpisywac dane budynku ---
+// budynek z utrzymanie:5 kosztuje 5, NIE stawke domyslna 1 (easy/normal) ani 2 (hard).
+eq(U.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 0 }, 1, 1), 5, 'ZAD1: utrzymanie=5 kosztuje 5, nie flat=1 (easy/normal)');
+eq(U.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 0 }, 1, 2), 5, 'ZAD1 (hard): utrzymanie=5 kosztuje 5, nie flat=2 -- plaska stawka trudna nie nadpisuje danych');
+// Stela/Pomnik: utrzymanie=0 to WARTOSC z danych (decyzja 45=B, "pomnik nie wymaga
+// obslugi"), NIE "brak wpisu" -- 0 jest falsy w JS ale Number.isFinite(0)===true,
+// wiec NIE wolno go zastapic stawka domyslna.
+eq(U.buildingUpkeep({ utrzymanie: 0, przyrostUtrzymania: 0 }, 1, 1), 0, 'ZAD1: Stela utrzymanie=0 kosztuje 0, nie flat default (easy/normal)');
+eq(U.buildingUpkeep({ utrzymanie: 0, przyrostUtrzymania: 0 }, 1, 2), 0, 'ZAD1 (hard): Stela utrzymanie=0 kosztuje 0, nie flat default=2');
+eq(U.buildingUpkeep({ utrzymanie: 0, przyrostUtrzymania: 0 }, 3, 2), 0, 'ZAD1: Stela poziom 3, wciaz 0 (przyrost=0)');
+// budynek BEZ pola utrzymanie w danych (undefined -> not finite) -> flatOverride
+// jest DOMYSLNA wartoscia (nigdy sytuacja dzis w buildings.json -- wszystkie 39
+// budynkow maja wlasny wpis -- ale kod musi to obsluzyc bezpiecznie).
+eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1, 1), 1, 'ZAD1: budynek bez wpisu utrzymanie -> flat default 1 (easy/normal)');
+eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1, 2), 2, 'ZAD1 (hard): budynek bez wpisu utrzymanie -> flat default 2');
+eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1), 0, 'ZAD1: budynek bez wpisu utrzymanie i bez flat default -> 0 (bezpieczny fallback)');
+// utrzymanie=NaN traktowane jak "brak wpisu" (nie moze wygenerowac NaN w wyniku)
+eq(U.buildingUpkeep({ utrzymanie: NaN, przyrostUtrzymania: 0 }, 1, 1), 1, 'ZAD1: utrzymanie=NaN traktowane jak brak wpisu -> flat default');
 
 // s.6.2 unit upkeep: typeId table > category default > standard
 const tbl = U.buildUnitUpkeepTable([{ Jednostka: 'Hetairoi', 'Utrzymanie (Pieniadz/ture)': 3 }]);

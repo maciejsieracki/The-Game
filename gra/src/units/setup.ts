@@ -81,6 +81,40 @@ export interface RuntimeUnit {
    *  tury, ownerId-agnostyczne). Trwałe między turami poza tym — nic innego nie
    *  czyści tego pola automatycznie. */
   sentry?: boolean;
+  /**
+   * ŚCIEŻKA A — Pancerz (2026-07-25, patrz game/unit-building-bonuses.ts).
+   * Najlepszy % kumulacyjny bonusu Pancerza, jaki ta jednostka KIEDYKOLWIEK
+   * osiągnęła (przy produkcji LUB wchodząc do miasta z Kuźnią/Kuźnią żelaza/
+   * Wielką Kuźnią). Trwałe — nie znika po wyjściu z miasta ani zburzeniu
+   * budynku; tylko rośnie (max), nigdy nie maleje. Ownerid-agnostyczne
+   * (gracz i AI identycznie). Stare zapisy bez pola = undefined = 0% (brak
+   * bonusu) — patrz unitPancerzBonusProc() w unit-building-bonuses.ts, KAŻDY
+   * odczyt tego pola MUSI iść przez te funkcje, nie odczytywać wprost. */
+  pancerzBonusProc?: number;
+  /**
+   * ŚCIEŻKA B — parametry miękkie, wszystko POZA Pancerzem (atak, obrona,
+   * atak dystansowy, zdrowie, uderzenie/szarża). Analogicznie do
+   * pancerzBonusProc, ale z Koszar/Akademii wojskowej/Warsztatu oblężniczego.
+   * Niezależna od pancerzBonusProc — jednostka może mieć różny postęp na
+   * każdej ścieżce. Stare zapisy bez pola = 0% — patrz unitParametryBonusProc(). */
+  parametryBonusProc?: number;
+  /**
+   * TRZECI SYSTEM -- doświadczenie bojowe / weterani (2026-07-25, decyzja
+   * właściciela, patrz game/veteran.ts). Liczba PRZEŻYTYCH bitew (starć
+   * rozstrzygniętych, w których jednostka brała udział i PRZEŻYŁA — zginęła
+   * = nie awansuje), zliczana WSPÓLNIE dla wszystkich trybów starć
+   * (mapa/pole bitwy/szturm) w JEDNYM miejscu -- post-battle-map.ts
+   * applyPostBattleMap() / registerVeteranProgressAfterBattle(), ownerId-
+   * -agnostyczne (PARYTET AI: ten sam kod dla gracza i AI). Sufit 2
+   * (poziom 3 = maks, "nie projektujemy na zapas" — patrz
+   * VETERAN_MAX_BATTLES_TRACKED). Niezależne od pancerzBonusProc /
+   * parametryBonusProc (systemy budynkowe) -- trzeci, osobny system, nie
+   * zastępuje ani nie miesza się z tamtymi. Stare zapisy bez pola = 0 =
+   * poziom 1 (Rekrut), zero premii -- patrz veteranBattlesSurvived()
+   * w game/veteran.ts, KAŻDY odczyt tego pola MUSI iść przez tę funkcję
+   * (lub veteranLevel()/veteranCombatBonusFrac()), nie odczytywać wprost.
+   */
+  battlesSurvived?: number;
 }
 
 /** Kategorie cywilne — bez utrzymania, bez głodu wojska, bez ataku miast. */

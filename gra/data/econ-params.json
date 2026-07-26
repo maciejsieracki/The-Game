@@ -60,22 +60,22 @@
       "easy": 20,
       "normal": 20,
       "hard": 20,
-      "jednostka": "%",
-      "opis": "Domyślny udział strumienia Nauka (= BADANIA) w podziale Handlu netto. Default 20% (Maciej 2026-06-25)."
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Nauka (= BADANIA) w podziale Daniny netto nowego miasta. 20% (Maciej 2026-06-25, potwierdzone przy decyzji 74 = A z 2026-07-25 — ten strumień zostaje bez zmian)."
     },
     "suwak_handel_pieniadz_domyslnie": {
-      "easy": 70,
-      "normal": 70,
-      "hard": 70,
-      "jednostka": "%",
-      "opis": "Domyślny udział strumienia Pieniądz (= SKARBIEC/podatek) w podziale Handlu netto. Default 70% (Maciej 2026-06-25)."
+      "easy": 60,
+      "normal": 60,
+      "hard": 60,
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Pieniądz (= SKARBIEC) w podziale Daniny netto nowego miasta. Obniżony 70% → 60% decyzją Maciej 2026-07-25 (PYTANIE 74 = A); te 10 punktów procentowych przeszło na Zamożność, żeby nowe miasto nie startowało z ujemnym Szczęściem na trudnym."
     },
     "suwak_handel_luksus_domyslnie": {
-      "easy": 10,
-      "normal": 10,
-      "hard": 10,
-      "jednostka": "%",
-      "opis": "Domyślny udział strumienia Zamożność (Wealth) w podziale Handlu netto. Default 10% (Maciej 2026-06-25). Luksus ≠ surowiec — osobna kategoria elitarna (poza grą v1)."
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Zamożność (Wealth) w podziale Daniny netto nowego miasta. Podniesiony 10% → 20% decyzją Maciej 2026-07-25 (PYTANIE 74 = A). Powód: 20% to dokładnie próg utrzymania poziomu Zamożności (20% pieniądza miasta przy poziomie 0), więc poziom Zamożności rusza z miejsca bez ręcznej interwencji; w nowej siatce Szczęścia przedział 20-29% daje +1 pkt Szczęścia na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%)."
     },
     "suwak_praca_budynki_domyslnie": {
       "easy": 70,
@@ -127,25 +127,25 @@
       "opis": "Ułamek netto żywności armii odkładany do zapasów państwa gdy w imperium jest ≥1 Spichlerz (100%). Limit pojemności = spichlerz_pojemnosc × liczba Spichlerzy."
     },
     "korupcja_wspolczynnik_dystansu": {
-      "easy": 1,
-      "normal": 2,
-      "hard": 3,
-      "jednostka": "per pole",
-      "opis": "Strata% += Dystans_od_Stolicy × wartość. Im większy, tym dotkliwsza korupcja. [PT]"
+      "easy": 0.5,
+      "normal": 1,
+      "hard": 1.5,
+      "jednostka": "punkty procentowe straty Daniny/Podatku na każde pole odległości od stolicy",
+      "opis": "Korupcja — współczynnik dystansu. Strata% Daniny (po wynalezieniu Waluty: Podatku) += Dystans_od_Stolicy [pola] × wartość. NIE dotyczy Pracy (decyzja Maciej 2026-07-25: korupcja obciąża wyłącznie Daninę/Podatek). Wartości obniżone o 50% wobec pierwotnych 1 / 2 / 3 (decyzja Maciej 2026-07-25: „zbyt rygorystyczne… mają mieć wpływ, ale nie być druzgocące\"). [PT]"
     },
     "korupcja_wspolczynnik_miast": {
-      "easy": 1,
-      "normal": 1,
-      "hard": 2,
-      "jednostka": "per miasto",
-      "opis": "Strata% += Liczba_Miast × wartość. Każde nowe miasto podnosi korupcję globalnie. [PT]"
+      "easy": 0.5,
+      "normal": 0.5,
+      "hard": 1,
+      "jednostka": "punkty procentowe straty Daniny/Podatku na każde miasto w imperium",
+      "opis": "Korupcja — współczynnik liczby miast. Strata% Daniny (po Walucie: Podatku) += Liczba_Miast × wartość; obciąża każde miasto, także stolicę. NIE dotyczy Pracy. Wartości obniżone o 50% wobec pierwotnych 1 / 1 / 2 (decyzja Maciej 2026-07-25). [PT]"
     },
     "korupcja_cap": {
       "easy": 38,
       "normal": 50,
       "hard": 62,
-      "jednostka": "%",
-      "opis": "Maksymalna strata z tytułu korupcji/marnotrawstwa (cap = 50%). [PT]"
+      "jednostka": "% — maksymalna strata Daniny/Podatku w jednym mieście",
+      "opis": "Korupcja — sufit straty. Górne ograniczenie łącznej straty z dystansu i liczby miast. BEZ ZMIAN 2026-07-25 — Maciej obniżył o 50% dwa WSPÓŁCZYNNIKI (dystansu i miast), sufitu nie wymieniał; po obniżce sufit i tak jest praktycznie nieosiągalny (normal wymaga Dystans + 0,5×Liczba_Miast ≥ 50). [PT]"
     }
   },
   "budynki": {
@@ -210,21 +210,28 @@
       "normal": 1,
       "hard": 0,
       "jednostka": "×",
-      "opis": "Mnożnik Mennicy (Handel→Pieniądz). Docelowo ×1,5–×2,0 po upgrade. [PT]"
+      "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25) — było już martwe wcześniej (żaden kod go nie konsumował). Efekt Mennicy jest teraz w całości opisany przez globalne.mennica_mnoznik_po_walucie (jeden mnożnik na cały Handel netto, aktywny gdy Waluta odkryta ORAZ Mennica zbudowana). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta."
     },
     "budynek_biblioteka_bonus_nauki": {
-      "easy": 0.62,
-      "normal": 0.5,
-      "hard": 0.38,
-      "jednostka": "%",
-      "opis": "Premia Biblioteki do Nauki lokalnie (+50%). [PT — do strojenia]"
+      "easy": 0.37,
+      "normal": 0.3,
+      "hard": 0.23,
+      "jednostka": "ułamek — premia do Nauki miasta (0,30 = +30% Nauki tego miasta na turę)",
+      "opis": "Premia Biblioteki do Nauki miasta. Obniżona +50% → +30% (normalny) decyzją Maciej 2026-07-25 (PYTANIE 75 = C). Powód: dotąd tańsza i wcześniejsza Biblioteka dawała PIĘCIOKROTNIE więcej niż droższa Akademia (+50% vs +10%) — logika była odwrócona. Skalowanie trudnością w konwencji pliku (łatwy ×1,24 / trudny ×0,76). Stackuje ADDYTYWNIE z premią Akademii: Nauka × (1 + premia Biblioteki + premia Akademii) = ×1,50 na normalnym przy obu budynkach (Biblioteka i Akademia to para „w bok\" — stoją obok siebie, żadna nie zastępuje drugiej)."
+    },
+    "budynek_akademia_bonus_nauki": {
+      "easy": 0.25,
+      "normal": 0.2,
+      "hard": 0.15,
+      "jednostka": "ułamek — premia do Nauki miasta (0,20 = +20% Nauki tego miasta na turę)",
+      "opis": "Premia Akademii do Nauki miasta. Podniesiona +10% → +20% (normalny) decyzją Maciej 2026-07-25 (PYTANIE 75 = C) i objęta skalowaniem trudnością (łatwy ×1,24 / trudny ×0,76), którego wcześniej nie miała. Powód: Akademia jest droższa i późniejsza od Biblioteki, więc musi dawać wyraźnie mniej niż Biblioteka tylko dlatego, że jest drugim krokiem — a nie pięciokrotnie mniej. Stackuje ADDYTYWNIE z premią Biblioteki: Nauka × (1 + 0,30 + 0,20) = ×1,50 na normalnym."
     },
     "waluta_mnoznik": {
       "easy": 2,
       "normal": 2,
       "hard": 2,
       "jednostka": "×",
-      "opis": "Efekt 1 (Waluta tech): mnoznik na caly handelNetto miasta gdy walutaOdkryta=true (×2 na cala pule Handlu przed podzialem). Dotyczy wszystkich miast automatycznie po wynalezieniu Waluty."
+      "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25): dawny Efekt 1 'sam tech Waluty odkryty → ×2 na cały Handel netto, bez wymogu Mennicy, jednakowo na wszystkich trudnościach' — ZASTĄPIONY przez globalne.mennica_mnoznik_po_walucie (wymaga Waluty ORAZ Mennicy zbudowanej w mieście; wartość różna per trudność: easy ×2 / normal ×1,5 / hard ×1 czyli brak efektu). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta w formule Efektu 1."
     },
     "targowisko_praca_na_pieniadz_mnoznik": {
       "easy": 2,
@@ -266,7 +273,7 @@
       "normal": 1,
       "hard": 2,
       "jednostka": "Pieniądz/turę",
-      "opis": "Koszt utrzymania każdego budynku (niezróżnicowany w v0.1). [PT]"
+      "opis": "Domyślna stawka utrzymania TYLKO dla budynku bez własnego wpisu `utrzymanie` w buildings.json. Od 2026-07-25 (decyzja właściciela 19=A) silnik czyta utrzymanie z danych każdego budynku (0–5 Pieniądz/turę, zróżnicowane per budynek) — ta wartość NIE nadpisuje ich, jest wyłącznie zabezpieczeniem na wypadek brakującego wpisu. Dziś wszystkie 39 budynków mają własną wartość, więc ta stawka faktycznie się nie stosuje. [PT]"
     }
   },
   "teren_mapa": {
@@ -440,7 +447,7 @@
       "normal": 1.5,
       "hard": 1,
       "jednostka": "×",
-      "opis": "Mnożnik Mennicy (Handel→Pieniądz) aktywny TYLKO gdy Mennica zbudowana ORAZ technologia Waluta odkryta w mieście. Wartości właściciela (Q5=A, 2026-07-20): easy ×2 / normal ×1,5 / hard ×1 (hard = bez bonusu, ale nie zeruje dochodu). Wcześniej 1.88/1.5/1.12 mimo że mennicaMnoznik był zahardkodowany na 1 w turn-economy.ts (Mennica nic nie robiła) — naprawione E1 zadanie 1."
+      "opis": "JEDYNY mnożnik Handlu netto (decyzja Maciej 2026-07-25, wątek 'scalenie mnożników'): mnoży CAŁY handelNetto miasta (Skarb + Nauka + Zamożność razem, PRZED podziałem suwakiem) aktywny TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest zbudowana w tym mieście (bramka AND — sam tech Waluty już NIE wystarcza). Wartości właściciela: easy ×2,0 / normal ×1,5 / hard ×1,0 (hard = brak efektu, nie zeruje dochodu). Poprzednio (do 2026-07-24) istniały DWA osobne mnożniki: `budynki.waluta_mnoznik` (×2 na cały Handel przy samym techu, bez Mennicy) + ten parametr (mnożył TYLKO strumień Pieniądza). Oba zostały scalone w ten jeden efekt — `waluta_mnoznik` zostaje w pliku oznaczony jako nieużywany."
     },
     "luksus_przelicznik_zadowolenie": {
       "easy": 4,
@@ -541,6 +548,13 @@
       "hard": 1,
       "jednostka": "pieniadz/ture",
       "opis": "Handel E3: dolna podloga dochodu dystansowego -- aktywna trasa nigdy nie daje mniej niz to, nawet przy dystansie bliskim progowi max."
+    },
+    "handel_ilosc_na_ture_na_szlak": {
+      "easy": 4,
+      "normal": 4,
+      "hard": 4,
+      "jednostka": "sztuk surowca na ture na jeden szlak handlowy",
+      "opis": "Sufit przepustowosci WYMIANY SUROWCOW na pojedynczym szlaku handlowym (game/trade-routes.ts, dawny hardkod capacityPerRoutePerTurn=4, PLACEHOLDER, dlug techniczny TODO(econ-params) przeniesiony do danych bez zmiany wartosci): maksymalna ilosc JEDNEGO surowca, jaka JEDEN szlak moze przeniesc w JEDNA ture od cywilizacji z nadwyzka do cywilizacji z niedoborem. Ta sama wartosc na wszystkich trudnosciach (parametr geografii/gameplayu jednego szlaku, nie skalowania ekonomicznego trudnoscia) -- kalibrowana tak, by jeden szlak dowozil surowiec w tempie porownywalnym do WYDAJNOSCI JEDNEJ Cegielni (budynek_cegielnia_przepustowosc, fallback 3 szt./ture, converters.ts), a nie zalewal partnera handlowego ponad jego wlasna produkcje."
     }
   },
   "handel_surowce": {

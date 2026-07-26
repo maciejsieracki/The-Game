@@ -1641,6 +1641,9 @@ console.log('\n--- T9d: decideAIDiplomacy - b. slaby w wojnie -> oferuj_trybut_z
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
     agresja: 0.4,
+    // skarbiecGold wymagane -- bez niego peaceGold=capAiGoldOffer(0,...)=0 i AI spada
+    // do gałęzi nizszego priorytetu (zaproponuj_pokoj) zamiast oferuj_trybut_za_pokoj.
+    skarbiecGold: 100,
     relacje: [{
       partnerId: 'zul-1',
       relation: { zaufanie: 5, respekt: 5, status: 'wojna' },
@@ -1721,6 +1724,8 @@ console.log('\n--- T9h: decideAIDiplomacy - wiele relacji mieszanych -> komendy 
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
     agresja: 0.75,
+    // skarbiecGold wymagane dla oferuj_trybut_za_pokoj (partner A) -- patrz T9d.
+    skarbiecGold: 100,
     relacje: [
       { partnerId: 'A', relation: { zaufanie: 5, respekt: 5, status: 'wojna' }, respektWzgledny: 0.15, stanWojny: true },
       { partnerId: 'B', relation: { zaufanie: 80, respekt: 50, status: 'pokoj' }, respektWzgledny: 0.52, stanWojny: false },
@@ -1779,14 +1784,16 @@ console.log('\n--- T9j: decideAIDiplomacy - powod jest niepustym stringiem ---')
 
 console.log('\n--- T2S-a: zaproponuj_sojusz gdy rowny partner + willingnessAlly >= PROG_SOJUSZ ---');
 {
-  // Scenariusz: rowny partner (rw=0.55 in [0.4,0.7]), wysoka relacja (zaufanie=70, score=130)
+  // Scenariusz: rowny partner (rw=0.55 in [0.4,0.7]), wysoka relacja.
+  // Realne progi sojuszu (data/diplomacy.json): progSojuszZaufanie=91, progSojuszRelacja=151
+  // -- zaufanie=95, respekt=70 (score=165) przekracza oba z zapasem.
   // allyW wyliczone przez aiDiplomacyStance >= PROG_SOJUSZ(0.6) -> zaproponuj_sojusz
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
     agresja: 0.4,
     relacje: [{
       partnerId: 'grecy-1',
-      relation: { zaufanie: 70, respekt: 60, status: 'pokoj' },
+      relation: { zaufanie: 95, respekt: 70, status: 'pokoj' },
       respektWzgledny: 0.55,
       stanWojny: false,
     }],
@@ -2209,9 +2216,10 @@ console.log('\n--- T7D-a: defensiveCopy -> brak foundCity i build ---');
     civType: 'chinczycy',
   });
   const found = result.filter(c => c.type === 'foundCity');
-  const builds = result.filter(c => c.type === 'build');
+  // Miasta-panstwa (defensiveCopy) maja od 2026-07-21 pelny rozwoj gospodarczy (decyzja
+  // Maciej) -- emitowanie komend 'build' jest wiec poprawne i NIE jest testowane tutaj.
+  // Wciaz nie zakladaja nowych miast (found.length===0 ponizej).
   assert(found.length === 0, 'T7D-a: defensiveCopy nie emituje foundCity');
-  assert(builds.length === 0, 'T7D-a: defensiveCopy nie emituje build');
   eq(result[result.length - 1].type, 'endTurn', 'T7D-a: endTurn na koncu');
 }
 
@@ -2329,6 +2337,8 @@ console.log('\n--- T10b: miasto-panstwo po odkryciu -> simplified, handel mozliw
     agresja: 0.3,
     handlowosc: 0.7,
     epoka: 'kamien',
+    // skarbiecGold wymagane -- zaproponuj_handel wymaga tradeGold>0 (capAiGoldOffer), patrz T9d.
+    skarbiecGold: 100,
   });
   const filtered = filterDiplomacyCommandsForLayer(rawCmds, layer);
   assert(filtered.some(c => c.type === 'zaproponuj_handel'), `T10b: zaproponuj_handel po odkryciu; got: ${JSON.stringify(filtered.map(c => c.type))}`);

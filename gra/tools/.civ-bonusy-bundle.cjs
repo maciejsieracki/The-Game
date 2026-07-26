@@ -332,23 +332,23 @@ function isCombatModifierBonus(b) {
 
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = 10% manpowerNaLudka (koszt rekrutacji 1 jednostki).",
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
   _formuly: {
     ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
     manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka"
+    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
   },
   epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 100 },
-    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 200 },
-    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 400 },
-    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 800 },
-    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 1600 },
-    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 3200 },
-    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 6400 },
-    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e3 },
-    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e3 },
-    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e3 }
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
+    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
+    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
+    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
+    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 16e3 },
+    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 32e3 },
+    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 64e3 },
+    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e4 },
+    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e4 },
+    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e4 }
   ]
 };
 
@@ -359,20 +359,15 @@ var miasto_params_default = {
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
-  budynek_mnoznik_poziomu: {
-    wartosc: 1.1,
-    jednostka: "x / poziom",
-    opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
-  },
   jednostka_koszt_ludnosci: {
-    wartosc: 1,
+    wartosc: 0,
     jednostka: "ludnosc",
-    opis: "Ile ludnosci kosztuje miasto ukonczenie jednostki z kolejki (rekrutacja). production.populationCostOf; odjecie + clamp do min.1 robi petla tury."
+    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   manpower_regen_proc_max_tura: {
-    wartosc: 10,
+    wartosc: 2,
     jednostka: "% max/ture",
-    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +1000/ture. Pusta pula \u224810 tur do pelna. manpower.tickManpowerRegen."
+    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +200/ture. Pusta pula \u224850 tur do pelna. manpower.tickManpowerRegen."
   },
   manpower_regen_blok_oblezenie: {
     wartosc: 1,
@@ -432,7 +427,17 @@ var miasto_params_default = {
   bonus_obrona_mur_proc: {
     wartosc: 200,
     jednostka: "% Obrony",
-    opis: "Miasto Z MUREM daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje game/siege.ts + battleScene (defensa miasta). Miasto bez muru = brak tego bonusu."
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -483,7 +488,8 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol"
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -492,8 +498,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -577,9 +583,10 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "klucz 'ruda' wg Surowiec='Ruda' w resources.json; brak pola id \u2014 propozycja EKONOMIA, wymaga uzgodnienia z DANE",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wydobycie rudy do magazynu",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
     tech: "Murarstwo",
     odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
@@ -588,10 +595,12 @@ var terrain_improvements_default = {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
-      praca: 1
+      praca: 1,
+      glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "klucz 'glina' wg Surowiec='Glina' w resources.json; brak pola id \u2014 propozycja EKONOMIA",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 5,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -606,7 +615,8 @@ var terrain_improvements_default = {
       kamien: 1
     },
     surowiecOdblokowany: "kamien",
-    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba",
+    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    surowiec_ilosc_tura: 4,
     teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
     warunek: "budulec \u2014 mury, budynki",
     koszt_praca: 22,
@@ -635,7 +645,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -653,12 +663,13 @@ var terrain_improvements_default = {
       praca: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "v0.1: tylko dost\u0119p boolean (panel Surowce) \u2014 bez liczenia ilo\u015Bci w magazynie",
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
+    surowiec_ilosc_tura: 4,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
     tech: "Obr\xF3bka drewna",
-    odblokowuje: "Deski (z budynkiem miejskim Tartak)"
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
   },
   tarasy: {
     nazwa: "Tarasy uprawne",
@@ -698,8 +709,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "z\u0142o\u017Ce soli (Pustynia/R\xF3wnina \u2014 hex.zloze=sol)",
-    warunek: "s\xF3l (konserwacja \u017Cywno\u015Bci + handel); bez wybrze\u017Ca bez z\u0142o\u017Ca",
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
     tech: "Garncarstwo",
     odblokowuje: "S\xF3l"
@@ -756,12 +767,29 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wst\u0119pne przetwarzanie rudy (przed Odlewni\u0105 w mie\u015Bcie)",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+  },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
   },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
@@ -787,7 +815,15 @@ var terrain_improvements_default = {
 
 // src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
+var LEGACY_KEY_ALIASES = {
+  pastwisko: "bydlo"
+};
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
+function normalizeImprovementKey(raw) {
+  if (!raw || raw === "brak") return void 0;
+  const key = LEGACY_KEY_ALIASES[raw] ?? raw;
+  return IMPROVEMENTS[key]?.bonus !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
+}
 function improvementBonusForKey(key) {
   const row = IMPROVEMENTS[key];
   if (!row?.bonus) return {};
@@ -802,6 +838,23 @@ function applyImprovementBonus(yld, improvementKey) {
   if (b.pieniadz) yld.handel += b.pieniadz;
   if (b.drewno) yld.drewno += b.drewno;
   if (b.kamien) yld.kamien += b.kamien;
+  if (b.glina) yld.glina += b.glina;
+}
+var ORE_YIELD_PER_MINE = 2;
+function oreYieldFromImprovements(improvementKeys, zloze) {
+  let ruda = 0;
+  let ruda_zelaza = 0;
+  const z = zloze?.trim().toLowerCase();
+  for (const raw of improvementKeys) {
+    const key = normalizeImprovementKey(raw);
+    if (key === "kopalnia_miedzi") {
+      ruda += ORE_YIELD_PER_MINE;
+    } else if (key === "kopalnia") {
+      if (z === "zelazo") ruda_zelaza += ORE_YIELD_PER_MINE;
+      else ruda += ORE_YIELD_PER_MINE;
+    }
+  }
+  return { ruda, ruda_zelaza };
 }
 function applyImprovementBonuses(yld, improvementKeys) {
   for (const key of improvementKeys) {
@@ -809,11 +862,41 @@ function applyImprovementBonuses(yld, improvementKeys) {
   }
 }
 
+// src/game/building-resource-gate.ts
+var LABEL_BY_ASCII = {
+  drewno: "Drewno",
+  kamien: "Kamie\u0144",
+  glina: "Glina",
+  ruda: "Ruda",
+  zelazo: "\u017Belazo",
+  stal: "Stal",
+  braz: "Br\u0105z",
+  sol: "S\xF3l",
+  cegla: "Ceg\u0142a",
+  ceramika: "Ceramika"
+};
+var ASCII_BY_LABEL = Object.fromEntries(
+  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+
+// src/game/unit-building-bonuses.ts
+function mergeBuildingBonusIntoStatMultipliers(mods, bonus) {
+  if (!bonus) return mods;
+  if (bonus.pancerz) mods.pancerz += bonus.pancerz;
+  if (bonus.other) {
+    mods.atk += bonus.other;
+    mods.obrona += bonus.other;
+    mods.uderzenie += bonus.other;
+    mods.rangedAtk += bonus.other;
+    mods.health += bonus.other;
+  }
+  return mods;
+}
+
 // src/game/production.ts
-var BUILDING_LEVEL_FACTOR = miasto_params_default.budynek_mnoznik_poziomu?.wartosc ?? 1.1;
-function buildingEffectAtLevel(baza, level) {
+function buildingEffectAtLevel(baza, przyrost, level) {
   const n = Math.max(1, Math.floor(level));
-  return baza * Math.pow(BUILDING_LEVEL_FACTOR, n - 1);
+  return baza + przyrost * (n - 1);
 }
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
@@ -826,8 +909,9 @@ var DEFAULT_COST_BY_ROLE = {
 };
 function unitCostFromDef(def) {
   const raw = def["Pieni\u0105dz (koszt)"];
-  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
-    return raw;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    if (raw > 0) return raw;
+    if (raw === 0 && def["Super-jednostka"] === "TAK") return 0;
   }
   const rola = def["Rola (linia)"];
   if (rola != null) {
@@ -857,6 +941,15 @@ function civRecruitmentDiscount(bonusy) {
   return 0;
 }
 var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
+function cityPracaInteger(raw) {
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 0;
+}
+function splitPraca(cityPraca, udzialBudynki) {
+  const total = cityPracaInteger(cityPraca);
+  const u = Math.min(1, Math.max(0, Number.isFinite(udzialBudynki) ? udzialBudynki : 1));
+  const doBudynkow = Math.round(total * u);
+  return { doBudynkow, doPuli: total - doBudynkow };
+}
 function unitPurchaseCost(def, civBonusy, kosztJednostekPace, ownerId = 0, difficulty = "normal") {
   return unitMoneyCost(unitCostFromDef(def), civBonusy, kosztJednostekPace, ownerId, difficulty);
 }
@@ -872,6 +965,7 @@ var KEY_PROG_WZROSTU = "pr\xF3g_wzrostu_wspolczynnik";
 function loadEconParams(raw, difficulty) {
   const em = raw.ekonomia_miasta ?? {};
   const bu = raw.budynki ?? {};
+  const gl = raw.globalne ?? {};
   const d = difficulty;
   const read = (group, key, fallback) => {
     const row = group[key];
@@ -893,8 +987,14 @@ function loadEconParams(raw, difficulty) {
     budynekCegielniBonusPracy: read(bu, "budynek_cegielnia_bonus_pracy", 0.25),
     budynekTargowiskoBonusHandlu: read(bu, "budynek_targowisko_bonus_handlu", 0.5),
     budynekBibliotekaBonusNauki: read(bu, "budynek_biblioteka_bonus_nauki", 0.5),
+    budynekAkademiaBonusNauki: read(bu, "budynek_akademia_bonus_nauki", 0.1),
+    budynekGarncarniaBonusZywnosci: read(bu, "budynek_garncarnia_bonus_zywnosci_lokalnie", 0.1),
     budynekMennicaMnoznik: read(bu, "budynek_mennica_mnoznik", 1),
+    // NIEUZYWANE 2026-07-25
+    mennicaMnoznikPoWalucie: read(gl, "mennica_mnoznik_po_walucie", 1.5),
+    // JEDYNY mnoznik Efektu 1
     walutaMnoznik: read(bu, "waluta_mnoznik", 2),
+    // NIEUZYWANE 2026-07-25
     targowiskoPracaMnoznik: read(bu, "targowisko_praca_na_pieniadz_mnoznik", 2),
     suwaakHandelNaukaDefault: read(em, "suwak_handel_nauka_domyslnie", 60),
     suwaakHandelPieniadz: read(em, "suwak_handel_pieniadz_domyslnie", 30),
@@ -903,7 +1003,7 @@ function loadEconParams(raw, difficulty) {
     suwaakPracaTeren: read(em, "suwak_praca_teren_domyslnie", 30)
   };
 }
-var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 var TERRAIN_NAME_TO_ENUM = {
   "\u0141\u0105ka": "laka" /* Laka */,
   "R\xF3wnina": "rownina" /* Rownina */,
@@ -919,7 +1019,12 @@ function terrainRowToTileYield(row) {
     praca: Number(row["Praca"] ?? 0),
     handel: Number(row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
-    kamien: Number(row["Kamie\u0144"] ?? 0)
+    kamien: Number(row["Kamie\u0144"] ?? 0),
+    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
+    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
+    glina: 0,
+    ruda: 0,
+    ruda_zelaza: 0
   };
 }
 function buildTerrainYields() {
@@ -944,6 +1049,9 @@ function tileYield(tile) {
   let handel = base.handel;
   let drewno = base.drewno;
   let kamien = base.kamien;
+  let glina = base.glina;
+  let ruda = 0;
+  let ruda_zelaza = 0;
   if (tile.nakladka === "las" /* Las */) {
     zywnosc += FOREST_MODIFIER.zywnosc;
     praca += FOREST_MODIFIER.praca;
@@ -960,7 +1068,10 @@ function tileYield(tile) {
     praca: Math.max(0, praca),
     handel: Math.max(0, handel),
     drewno: Math.max(0, drewno),
-    kamien: Math.max(0, kamien)
+    kamien: Math.max(0, kamien),
+    glina: Math.max(0, glina),
+    ruda: 0,
+    ruda_zelaza: 0
   };
   const impKeys = tile.ulepszeniaKeys?.length ? tile.ulepszeniaKeys : tile.ulepszenieKey ? [tile.ulepszenieKey] : [];
   if (impKeys.length) {
@@ -970,11 +1081,20 @@ function tileYield(tile) {
     out.handel = Math.max(0, out.handel);
     out.drewno = Math.max(0, out.drewno);
     out.kamien = Math.max(0, out.kamien);
+    out.glina = Math.max(0, out.glina);
+    const ore = oreYieldFromImprovements(impKeys, tile.zloze);
+    out.ruda += ore.ruda;
+    out.ruda_zelaza += ore.ruda_zelaza;
   }
   return out;
 }
 function buildingValue(b, level, key) {
-  return Math.floor(buildingEffectAtLevel(b.baza[key], level));
+  return Math.floor(buildingEffectAtLevel(b.baza[key], b.przyrost[key], level));
+}
+var BUILDING_HAPPINESS_BASE_PER_BUILDING = 1;
+function buildingHappinessAtLevel(b, level) {
+  const extra = typeof b.baza.zadowolenie === "number" && b.baza.zadowolenie !== 0 ? buildingValue(b, level, "zadowolenie") : 0;
+  return BUILDING_HAPPINESS_BASE_PER_BUILDING + extra;
 }
 function civBonusyForCivKey(civKey, civs) {
   if (!civKey || !civs?.cywilizacje?.length) return [];
@@ -1005,11 +1125,21 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   let zywnoscTerenu = 0;
   let pracaTerenu = 0;
   let handelTerenu = 0;
+  let drewnoTerenu = 0;
+  let kamienTerenu = 0;
+  let glinaTerenu = 0;
+  let rudaTerenu = 0;
+  let rudaZelazaTerenu = 0;
   for (const tile of workedTiles) {
     const y = tileYield(tile);
     zywnoscTerenu += y.zywnosc;
     pracaTerenu += y.praca;
     handelTerenu += y.handel;
+    drewnoTerenu += y.drewno;
+    kamienTerenu += y.kamien;
+    glinaTerenu += y.glina;
+    rudaTerenu += y.ruda;
+    rudaZelazaTerenu += y.ruda_zelaza;
   }
   let pracaBruttoTerenu;
   if (ctx.maMlyn) {
@@ -1019,16 +1149,6 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   }
   if (ctx.maCegielnia) {
     pracaBruttoTerenu = pracaBruttoTerenu * (1 + params.budynekCegielniBonusPracy);
-  }
-  let handelBrutto;
-  if (ctx.maTargowisko) {
-    handelBrutto = handelTerenu * (1 + params.budynekTargowiskoBonusHandlu);
-  } else {
-    handelBrutto = handelTerenu;
-  }
-  const civHandelMult = ctx.civHandelMult ?? 1;
-  if (civHandelMult !== 1) {
-    handelBrutto *= civHandelMult;
   }
   let pracaBudynkow = 0;
   let pieniadzBudynkow = 0;
@@ -1042,50 +1162,60 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     zywnoscBudynkow += buildingValue(record, level, "zywnosc");
     naukaBudynkow += buildingValue(record, level, "nauka");
     kulturaBudynkow += buildingValue(record, level, "kultura");
-    zadBudynkow += buildingValue(record, level, "zadowolenie");
+    zadBudynkow += buildingHappinessAtLevel(record, level);
   }
-  let totalMnoznikProc = 0;
-  for (const { record, level } of cityBuildings) {
-    const kat = record.kategoria;
-    if (!kat.includes("Wojsko") && !kat.includes("Obrona")) {
-      totalMnoznikProc += buildingValue(record, level, "mnoznik");
-    }
+  const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
+  const pracaNetto = pracaBruttoLacznie;
+  const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
+  const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
+  const pracaInt = cityPracaInteger(pracaNetto);
+  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
+  const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
+  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
+  let handelBrutto;
+  if (ctx.maTargowisko) {
+    handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
+  } else {
+    handelBrutto = handelBazowy;
   }
-  const mnoznikFactor = 1 + totalMnoznikProc / 100;
-  const pracaBruttoLacznie = (pracaBruttoTerenu + pracaBudynkow) * mnoznikFactor;
+  const civHandelMult = ctx.civHandelMult ?? 1;
+  if (civHandelMult !== 1) {
+    handelBrutto *= civHandelMult;
+  }
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
+  }
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
-  const pracaNetto = pracaBruttoLacznie * (1 - strata);
   const handelNettoRaw = handelBrutto * (1 - strata);
-  const walutaActive = ctx.walutaOdkryta === true;
-  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.walutaMnoznik;
+  const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
+  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto = handelNettoRaw * walutaMnoznikAktywny;
   const pctNauka = city.podzia\u0142Handlu.procentNauka / 100;
   const pctPieniadz = city.podzia\u0142Handlu.procentPieniadz / 100;
   const pctLuksus = city.podzia\u0142Handlu.procentLuksus / 100;
   const naukaZHandlu = Math.floor(handelNetto * pctNauka);
-  const pieniadzZHandlu = Math.floor(
-    handelNetto * pctPieniadz * ctx.mennicaMnoznik
-  );
+  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
   const luksusZHandlu = Math.floor(handelNetto * pctLuksus);
-  const naukaBonusFactor = ctx.maBiblioteka ? 1 + params.budynekBibliotekaBonusNauki : 1;
+  const naukaBonusFactor = 1 + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0) + (ctx.maAkademia ? params.budynekAkademiaBonusNauki : 0);
   const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult = ctx.civNaukaMult ?? 1;
   const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
-  const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
-  const doPuli = Math.floor(Math.floor(pracaNetto) * (1 - pctPracaBudynki));
-  const pieniadzZPracy = ctx.maTargowisko && walutaActive ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
+  let pieniadzTotal = pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === "poborca") {
       pieniadzTotal += 2;
     }
   }
-  const zywnoscBrutto = zywnoscTerenu + zywnoscBudynkow;
+  const zywnoscBruttoBaza = zywnoscTerenu + zywnoscBudynkow;
+  const liczbaGarncarni = ctx.liczbaGarncarni ?? 0;
+  const garncarniaMnoznikZywnosci = 1 + params.budynekGarncarniaBonusZywnosci * liczbaGarncarni;
+  const zywnoscBrutto = zywnoscBruttoBaza * garncarniaMnoznikZywnosci;
   const zywnoscZuzyta = city.ludnosc * params.zywnoscZuzytkaPopulacja + ctx.wojskoZuzycieZywnosci;
   const zywnoscNetto = zywnoscBrutto - zywnoscZuzyta;
   return {
-    praca: Math.floor(pracaNetto),
+    praca: pracaInt,
     pieniadz: Math.floor(pieniadzTotal),
     zywnosc: Math.floor(zywnoscNetto),
     nauka: naukaLokalna,
@@ -1096,7 +1226,35 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     handelBrutto: Math.floor(handelBrutto),
     pracaTerenu: Math.floor(pracaBruttoTerenu),
     pracaBudynkow: Math.floor(pracaBudynkow),
-    pieniadzZPracy
+    pieniadzZPracy,
+    pieniadzBudynkow: Math.floor(pieniadzBudynkow),
+    drewnoTerenu: Math.floor(drewnoTerenu),
+    kamienTerenu: Math.floor(kamienTerenu),
+    glinaTerenu: Math.floor(glinaTerenu),
+    rudaTerenu: Math.floor(rudaTerenu),
+    rudaZelazaTerenu: Math.floor(rudaZelazaTerenu)
+  };
+}
+
+// src/game/veteran.ts
+function round4(x) {
+  return Math.round(x * 1e4) / 1e4;
+}
+function applyVeteranFracToCombatUnit(cu, frac) {
+  if (!frac) return cu;
+  const up = 1 + frac;
+  const progRaw = cu["Prog dezercji (% health)"];
+  const progScaled = progRaw === null || progRaw === void 0 ? progRaw : round4(progRaw * (1 - frac));
+  return {
+    ...cu,
+    meleeAttack: cu.meleeAttack * up,
+    meleeDefence: cu.meleeDefence * up,
+    weaponDamage: cu.weaponDamage * up,
+    piercing: cu.piercing * up,
+    chargeBonus: cu.chargeBonus * up,
+    health: cu.health * up,
+    missileAttack: cu.missileAttack * up,
+    "Prog dezercji (% health)": progScaled
   };
 }
 
@@ -1126,9 +1284,17 @@ var combat_params_default = {
   },
   counter_multiplier: 1.5,
   river_attack_mult: 0.75,
+  brod: {
+    _opis: "C-BTL-BROD-Q1 wariant C -- mechanika brodu (Ford) na planszy bitwy taktycznej (battleScene.ts). karaAtak/karaObrona sa numerycznie te same co river_attack_mult (0.75=1-0.25) ale to OSOBNY, dedykowany dla brodu wpis (tamten zasila swiatowy resolveCombat/instant-resolve dla starcia z obronca-na-rzece; ten zasila per-tile Ford w bitwie taktycznej -- oba moga byc strojone niezaleznie w przyszlosci).",
+    ruchMult: 0.5,
+    karaAtak: 0.25,
+    karaObrona: 0.25,
+    bonusObronaBrzegu: 0.15
+  },
   obl\u0119\u017Cenie: {
-    wall_base_obrona: 5,
-    wall_per_level_obrona: 3,
+    _opis: "wall_base_obrona / wall_per_level_obrona ZEROWANE (Maciej 2026-07-25): obrona miasta dziala WYLACZNIE procentowo (miasto-params.json bonus_obrona_mur_proc=200 / bonus_obrona_cytadela_proc=100, konsumowane przez main.ts structureDefenseBonusFor + combat.ts structureDefBonusPct + battleScene onWallWalkway). Plaski bonus Obrony/Pancerza z muru w game/siege.ts (cityDefenseBonus) dublowal ten procent -- zneutralizowany tutaj zamiast w kodzie, zeby wallLevel/hasWalls (obecnosc muru) nadal dzialaly bez zmian. Pola zostawione (nie usuniete) dla zgodnosci z SiegeParams/wallParamsFromBuildings.",
+    wall_base_obrona: 0,
+    wall_per_level_obrona: 0,
     wall_max_level: 10,
     wall_pancerz_fraction: 0.5,
     hill_defense_mult: 1.5,
@@ -1250,10 +1416,12 @@ function isRangedUnit(unit) {
   return (unit.missileAttack ?? 0) > 0;
 }
 function negatesCharge(unit) {
-  const n = unit.typNazwa.toLowerCase();
-  return n.includes("wlocznik") || n.includes("w\u0142\xF3cznik") || n.includes("falanga") || n.includes("impi") || n.includes("wloczn");
+  const t = unit.counterTyp.toLowerCase();
+  return t === "spearman" || t === "falangite";
 }
 function resolveCombat(attacker, defender, opts = {}) {
+  attacker = applyVeteranFracToCombatUnit(attacker, opts.attackerVeteranBonusFrac ?? 0);
+  defender = applyVeteranFracToCombatUnit(defender, opts.defenderVeteranBonusFrac ?? 0);
   const rng = opts.rng ?? (() => Math.random());
   const position = opts.attackerPosition ?? "front";
   const maxRounds = opts.maxRounds ?? TW.max_rounds;
@@ -1263,16 +1431,22 @@ function resolveCombat(attacker, defender, opts = {}) {
   const defenderTerrain = opts.defenderTerrain ?? "";
   const log = [];
   const routed = [];
-  const atkBaseMods = civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
-    side: "attacker",
-    terrain: defenderTerrain,
-    isChargeRound: false
-  });
-  const defBaseMods = civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
-    side: "defender",
-    terrain: defenderTerrain,
-    isChargeRound: false
-  });
+  const atkBaseMods = mergeBuildingBonusIntoStatMultipliers(
+    civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
+      side: "attacker",
+      terrain: defenderTerrain,
+      isChargeRound: false
+    }),
+    opts.attackerBuildingBonus
+  );
+  const defBaseMods = mergeBuildingBonusIntoStatMultipliers(
+    civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
+      side: "defender",
+      terrain: defenderTerrain,
+      isChargeRound: false
+    }),
+    opts.defenderBuildingBonus
+  );
   const atkMelee0 = applyMultiplier(attacker.meleeAttack, atkBaseMods.atk);
   const atkObrona0 = applyMultiplier(attacker.meleeDefence, atkBaseMods.obrona);
   const atkPanc0 = applyMultiplier(attacker.armor, atkBaseMods.pancerz);
@@ -1380,16 +1554,22 @@ function resolveCombat(attacker, defender, opts = {}) {
       }
       const isCharge = meleeRound === 1 && !defBracing;
       const phaseLabel = isCharge ? "Szarza" : "Zwarcie";
-      const atkRoundMods = civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
-        side: "attacker",
-        terrain: defenderTerrain,
-        isChargeRound: isCharge
-      });
-      const defRoundMods = civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
-        side: "defender",
-        terrain: defenderTerrain,
-        isChargeRound: isCharge
-      });
+      const atkRoundMods = mergeBuildingBonusIntoStatMultipliers(
+        civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
+          side: "attacker",
+          terrain: defenderTerrain,
+          isChargeRound: isCharge
+        }),
+        opts.attackerBuildingBonus
+      );
+      const defRoundMods = mergeBuildingBonusIntoStatMultipliers(
+        civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
+          side: "defender",
+          terrain: defenderTerrain,
+          isChargeRound: isCharge
+        }),
+        opts.defenderBuildingBonus
+      );
       const roundAtkMelee = applyMultiplier(attacker.meleeAttack, atkRoundMods.atk) * terrRiverMult;
       const roundAtkCharge = applyMultiplier(attacker.chargeBonus, atkRoundMods.uderzenie);
       const roundDefMelee = applyMultiplier(defender.meleeAttack, defRoundMods.atk);

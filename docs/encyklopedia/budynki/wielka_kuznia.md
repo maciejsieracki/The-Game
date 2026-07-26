@@ -22,13 +22,13 @@
 ## Wiki‑M
 
 ### Co robi
-Wielka Kuźnia wzmacnia miasto w kategorii **Produkcja**. Poziom 1: **+12 pracy** (+5 na poziom), **+3 złota** (+2 na poziom), **+15 % mnożnika handlu** (+4 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**18** od poprzedniego), ale daje większy przyrost.
+Wielka Kuźnia wzmacnia miasto w kategorii **Produkcja**. Poziom 1: **+12 pracy** (+5 na poziom), **+3 złota** (+2 na poziom), **+15 % mnożnika Daniny** (+4 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**18** od poprzedniego), ale daje większy przyrost.
 ### Koszty
 - **Budowa poz. 1:** 90 pracy
 - **Każdy kolejny poziom:** +18 pracy
 - **Utrzymanie:** 4 ¤/turę (+2 ¤/poziom)
 - Technologia **Hutnictwo żelaza**.
-Warunek: zelazo i stal w zasiegu; wymaga Kuznia zelaza.
+Warunek: zelazo i stal w zasiegu; wymaga Kuźni żelaza.
 - **Uwaga:** Mnoznik % dotyczy sily i kosztu produkcji wszystkich jednostek w miescie; wymaga dostepu do stali
 ### Strategia gracza
 Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.
@@ -46,9 +46,9 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 
 | Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
 |------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 90 | **9 tur** | +12 pracy, +3 złota, +15 % mnożnika handlu | 4 ¤/t |
+| Poziom 1 | 90 | **9 tur** | +12 pracy, +3 złota, +15 % mnożnika Daniny | 4 ¤/t |
 | Poziom 2 | 108 | **11 tur** | więcej (patrz niżej) | 4 ¤/t |
-| Poziom 3 | 126 | — | **+22 pracy, +7 złota, +23 % mnożnika handlu** | 4 ¤/t |
+| Poziom 3 | 126 | — | **+22 pracy, +7 złota, +23 % mnożnika Daniny** | 4 ¤/t |
 
 Przy +3 złota/t, utrzymanie 4 ¤/t → netto **+-1 ¤/t**. Koszt 90 pracy przy 10/t ≈ **9 tur** pracy — złotem „zwraca się" po ok. **90 tur** (uproszczenie, bez inflacji).
 

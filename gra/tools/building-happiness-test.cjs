@@ -61,7 +61,10 @@ const swiatynia = buildings.find(b => b.id === 'swiatynia');
 const studnia = buildings.find(b => b.id === 'studnia');
 
 eq(M.buildingHappinessAtLevel(mury, 1), 1, 'Mury (zadowolenie 0) -> +1');
-eq(M.buildingHappinessAtLevel(swiatynia, 1), 4, 'Świątynia (zadowolenie 3) -> 3+1=4');
+// GRUPY-BUDYNKOW (Maciej 2026-07-25): Świątynia.baza.zadowolenie rozdzielone z 3 do 2
+// (Kamienne kręgi 1 + Świątynia 2 = 3 łącznie, bo oba budynki stoją teraz obok siebie
+// zamiast Świątyni zastępującej Kamienne kręgi) -- patrz buildings.json + handoff §7.
+eq(M.buildingHappinessAtLevel(swiatynia, 1), 3, 'Świątynia (zadowolenie 2 po rozdzieleniu) -> 2+1=3');
 
 // Hipotetyczny budynek z zadowolenie 2 w JSON -> efekt 3
 const hypo = { ...swiatynia, baza: { ...swiatynia.baza, zadowolenie: 2 } };
@@ -69,18 +72,18 @@ eq(M.buildingHappinessAtLevel(hypo, 1), 3, 'Budynek z zadowolenie 2 -> 2+1=3');
 
 const threeIds = ['mury', 'swiatynia', 'studnia'];
 const sum = M.sumBuildingHappinessFromBuiltIds(threeIds, buildings, () => 1);
-// mury:1 + swiatynia:4 + studnia:1+1=2 => 7 (3 base + bonusy z JSON)
+// mury:1 + swiatynia:3 + studnia:1+1=2 => 6 (3 base + bonusy z JSON)
 const studniaExpected = M.buildingHappinessAtLevel(studnia, 1);
-const expected = 1 + 4 + studniaExpected;
+const expected = 1 + 3 + studniaExpected;
 eq(sum, expected, '3 budynki: suma base (+1 each) + ich zadowolenie');
-eq(sum, 7, '3 budynki (mury+swiatynia+studnia lvl1) -> 7');
+eq(sum, 6, '3 budynki (mury+swiatynia+studnia lvl1) -> 6');
 
 const breakdown = M.computeHappinessBreakdown({
   population: 5,
   buildingZadowolenie: sum,
 }, null);
 const budLine = breakdown.lines.find(l => l.id === 'budynki');
-eq(budLine?.value, 7, 'breakdown budynki line = 7');
+eq(budLine?.value, 6, 'breakdown budynki line = 6');
 ok(budLine?.label.includes('+1'), 'breakdown label mentions +1 per building');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed\n');

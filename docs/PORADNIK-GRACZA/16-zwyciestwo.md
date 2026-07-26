@@ -38,7 +38,7 @@ Warunki szczegółowe:
 1. **Wszystkie technologie** w zakresie gry v1.0 (epoki Kamień + Brąz + Żelazo w drzewku) muszą być **zbadane**.
 2. **Rakieta z robotami** — projekt końcowy: odpowiednia technologia **oraz** produkcja / wystrzelenie (flaga w silniku gry).
 
-**Nie musisz** dominować militarnie — możesz wygrać nauką przy mniejszej armii, jeśli masz spokojnych sąsiadów i silną produkcję badań (Biblioteka, Akademia, suwak nauki w handlu).
+**Nie musisz** dominować militarnie — możesz wygrać nauką przy mniejszej armii, jeśli masz spokojnych sąsiadów i silną produkcję badań (Biblioteka, Akademia, suwak nauki w Daninie).
 
 **Strategia naukowa:**
 
@@ -163,7 +163,7 @@ Możesz **mieszać** — silna armia chroni cię, gdy AI goni w naukę.
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
 
 ### Strategia gracza
 

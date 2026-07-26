@@ -13,7 +13,6 @@
     "targowisko": "bld-targowisko",
     "port": "bld-port",
     "port_wielki": "bld-port_wielki",
-    "karawanseraj": "bld-karawanseraj",
     "mennica": "bld-mennica",
     "spichlerz": "bld-spichlerz",
     "magazyn": "bld-magazyn",
@@ -24,6 +23,8 @@
     "palac": "bld-palac",
     "palac_ii": "bld-palac",
     "palac_iii": "bld-palac",
+    "dom_starszyzny": "bld-palac",
+    "dwor_zarzadcy": "bld-palac",
     "biblioteka": "bld-biblioteka",
     "akademia": "bld-akademia",
     "studnia": "bld-studnia",
@@ -31,11 +32,12 @@
     "laznia_publiczna": "bld-laznia_publiczna",
     "mury": "bld-mury",
     "fort": "bld-fort",
+    "baszta": "bld-fort",
     "koszary": "bld-koszary",
     "warsztat_oblezniczy": "bld-warsztat_oblezniczy",
     "akademia_wojskowa": "bld-akademia_wojskowa",
     "sad": "bld-sad",
-    "pretorium": "bld-pretorium",
+    "pretorium": "bld-palac",
     "_default": "bld-default"
   }
 }

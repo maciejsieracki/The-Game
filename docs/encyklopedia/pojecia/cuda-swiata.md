@@ -30,7 +30,9 @@ Pełnoekranowy ekran „Cuda świata" — karty pogrupowane w pasma wg **epoki w
 
 ### Bonusy (kanon 2026)
 
-Cztery kategorie bonusów w `wonders.json`: **miasto** (yield/turę × KAŻDE miasto imperium, mnożnik ×3 vs v0.1), **teren** (modyfikator pól danego typu w terytorium), **specjalne/cywilizacja** (jednorazowe lub % na poziomie całego imperium — wpływ dyplomatyczny, zaufanie, wsparcie wojenne, % handlu/nauki/produkcji…), **hex** (tylko pole samego cudu). Cuda **NIE dają Mocy** — Moc pochodzi wyłącznie z odkryć technologii (decyzja Maciej 2026-06-26).
+Cztery kategorie bonusów w `wonders.json`: **miasto** (yield/turę × KAŻDE miasto imperium, mnożnik ×3 vs v0.1), **teren** (modyfikator pól danego typu w terytorium), **specjalne/cywilizacja** (jednorazowe lub % na poziomie całego imperium — wpływ dyplomatyczny, zaufanie, wsparcie wojenne, % Handlu z tras handlowych/nauki/produkcji…), **hex** (tylko pole samego cudu). Cuda **NIE dają Mocy** — Moc pochodzi wyłącznie z odkryć technologii (decyzja Maciej 2026-06-26).
+
+**Handel_procent (CUDA-HANDEL-01, Maciej 2026-07-26):** bonus % zwiększa WYŁĄCZNIE dochód z tras handlowych (Handel — `game/trade-routes.ts`), NIGDY Daninę/Podatek miasta. Zasięg: wszystkie trasy właściciela cudu (imperium), nie tylko miasto-nosiciel. Kumulacja kilku cudów tego typu: addytywna.
 
 ### Wygaśnięcie po „absolut"
 

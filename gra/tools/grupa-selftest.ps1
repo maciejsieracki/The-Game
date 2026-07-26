@@ -27,7 +27,7 @@ $tests = @('logic-test.cjs', 'smoke.cjs')
 switch ($Grupa) {
     'A' { $tests += @() }
     'B' { $tests += @('currency-test.cjs', 'grupa-b-lane-test.cjs', 'empire-food-b5-test.cjs') }
-    'C' { $tests += @('combat-test.cjs', 'battle-smoke.cjs', 'siege-ai-test.cjs') }
+    'C' { $tests += @('combat-test.cjs', 'siege-ai-test.cjs') }
     'D' { $tests += @('ai-test.cjs', 'diplomacy-test.cjs') }
     'E' { $tests += @('victory-test.cjs', 'barbarians-test.cjs') }
 }

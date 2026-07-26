@@ -129,7 +129,8 @@ var map_gen_params_default = {
     glina: { rarity: 0.1 },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    sol: { rarity: 0.12 }
+    sol: { rarity: 0.12 },
+    zloto: { rarity: 0.03 }
   },
   metal_deposit_min_era: {
     miedz: 2,
@@ -174,7 +175,10 @@ var FALLBACK_DEPOSIT_RARITY = {
   wegiel: 0.1,
   owce: 0.08,
   bydlo: 0.07,
-  sol: 0.12
+  sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03
 };
 function tierKey(t) {
   return t;
@@ -959,12 +963,17 @@ var EARTH_MASK_ROWS = [
 
 // src/map/earth-land-mask.ts
 var EARTH_PLAYABLE_BORDER = 2;
-var EARTH_NORTH_OCEAN_REF_ROWS = 30;
-var EARTH_NORTH_OCEAN_REF_INNER_H = 115;
-var EARTH_TEMPLATE_NR_LAND_MAX = 0.74;
+var EARTH_POLAR_OCEAN_REF_ROWS = 30;
+var EARTH_POLAR_OCEAN_REF_INNER_H = 115;
 function earthNorthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthSouthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthPolarOceanRows(height) {
   const innerH = earthPlayableInnerHeight(height);
-  return Math.max(2, Math.round(EARTH_NORTH_OCEAN_REF_ROWS * innerH / EARTH_NORTH_OCEAN_REF_INNER_H));
+  return Math.max(2, Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H));
 }
 function earthPlayableInnerHeight(height) {
   const b = EARTH_PLAYABLE_BORDER;
@@ -973,6 +982,11 @@ function earthPlayableInnerHeight(height) {
 function earthPlayableInnerWidth(width) {
   const b = EARTH_PLAYABLE_BORDER;
   return Math.max(1, width - 1 - 2 * b);
+}
+function earthLandMapRows(height) {
+  const innerH = earthPlayableInnerHeight(height);
+  const polar = earthPolarOceanRows(height);
+  return Math.max(1, innerH - polar * 2);
 }
 function bitAt(x, y) {
   const xi = Math.min(EARTH_MASK_W - 1, Math.max(0, x));
@@ -1000,16 +1014,17 @@ function earthHexToTemplateNorm(q, r, width, height) {
   const innerW = earthPlayableInnerWidth(width);
   const innerH = earthPlayableInnerHeight(height);
   const north = earthNorthOceanRows(height);
-  if (r - b < north) return null;
-  const landSpan = Math.max(1, innerH - north);
-  const pr = (r - b - north) / landSpan;
+  const south = earthSouthOceanRows(height);
+  const relR = r - b;
+  if (relR < north) return null;
+  if (relR >= innerH - south) return null;
+  const landRows = earthLandMapRows(height);
+  const pr = (relR - north) / Math.max(1, landRows - 1);
   const pq = (q - b) / innerW;
-  const { minX, minY, maxX } = EARTH_MASK_BBOX;
-  const templateMaxY = Math.min(EARTH_MASK_BBOX.maxY, EARTH_TEMPLATE_NR_LAND_MAX);
-  const templateMinY = minY;
+  const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   return {
     nq: minX + pq * (maxX - minX),
-    nr: templateMinY + pr * (templateMaxY - templateMinY)
+    nr: minY + pr * (maxY - minY)
   };
 }
 function earthSubsampleGrid(width, height) {
@@ -1029,13 +1044,10 @@ function earthLandFractionThreshold(width, height) {
 function earthTemplateLandAt(q, r, width, height) {
   const t = earthHexToTemplateNorm(q, r, width, height);
   if (!t) return 0;
-  const b = EARTH_PLAYABLE_BORDER;
   const innerW = earthPlayableInnerWidth(width);
-  const innerH = earthPlayableInnerHeight(height);
-  const { minX, minY, maxX } = EARTH_MASK_BBOX;
-  const templateMaxY = Math.min(EARTH_MASK_BBOX.maxY, EARTH_TEMPLATE_NR_LAND_MAX);
+  const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   const cellW = (maxX - minX) / innerW;
-  const cellH = (templateMaxY - minY) / Math.max(1, innerH - earthNorthOceanRows(height));
+  const cellH = (maxY - minY) / Math.max(1, earthLandMapRows(height));
   const steps = earthSubsampleGrid(width, height);
   if (steps <= 1) return sampleEarthTemplateLand(t.nq, t.nr);
   let landHits = 0;
@@ -2094,6 +2106,92 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
   return fixed;
 }
 var MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.4;
+var MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
+var MOUNTAIN_RANGE_REGROW_MIN_GAP = 1;
+var MOUNTAIN_RANGE_REGROW_TARGET_MULT = 1;
+var MOUNTAIN_RANGE_REGROW_LEN_MIN = 4;
+var MOUNTAIN_RANGE_REGROW_LEN_MAX = 8;
+function findSameTerrainClusters(hexes, terrain) {
+  const visited = /* @__PURE__ */ new Set();
+  const clusters = [];
+  const keys = Object.keys(hexes).sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const hex = hexes[key];
+    if (!hex || hex.terenBazowy !== terrain) continue;
+    const cluster = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      cluster.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk)) continue;
+        const nh = hexes[nk];
+        if (!nh || nh.terenBazowy !== terrain) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+function connectedComponentsWithin(remaining) {
+  const visited = /* @__PURE__ */ new Set();
+  const comps = [];
+  const keys = [...remaining].sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const comp = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      comp.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk) || !remaining.has(nk)) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    comps.push(comp);
+  }
+  return comps;
+}
+function capMountainRangeClusterSize(hexes, scratch, terrain, fallbackTerrain, maxSize) {
+  let reverted = 0;
+  const clusters = findSameTerrainClusters(hexes, terrain);
+  for (const cluster of clusters) {
+    if (cluster.length <= maxSize) continue;
+    const remaining = new Set(cluster);
+    for (; ; ) {
+      const comps = connectedComponentsWithin(remaining).sort((a, b) => b.length - a.length);
+      const biggest = comps[0];
+      if (!biggest || biggest.length <= maxSize) break;
+      const sorted = [...biggest].sort((a, b) => {
+        const na = scratch.get(a)?.mtnNoise ?? 0;
+        const nb = scratch.get(b)?.mtnNoise ?? 0;
+        if (na !== nb) return na - nb;
+        return a < b ? -1 : a > b ? 1 : 0;
+      });
+      const victim = sorted[0];
+      remaining.delete(victim);
+      const hex = hexes[victim];
+      if (hex) {
+        hex.terenBazowy = fallbackTerrain;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+      }
+      reverted++;
+    }
+  }
+  return reverted;
+}
 function mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand) {
   return mass.filter((k) => {
     const hex = hexes[k];
@@ -2121,6 +2219,138 @@ function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
     path.push(cur);
   }
   return path;
+}
+function bfsExpandExclusion(hexes, excluded, sources, minDist) {
+  const queue = [];
+  for (const k of sources) {
+    if (!excluded.has(k)) excluded.add(k);
+    queue.push({ k, d: 0 });
+  }
+  let head = 0;
+  while (head < queue.length) {
+    const { k, d } = queue[head++];
+    if (d >= minDist) continue;
+    const { q, r } = parseHexKey(k);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (excluded.has(nk)) continue;
+      if (!hexes[nk]) continue;
+      excluded.add(nk);
+      queue.push({ k: nk, d: d + 1 });
+    }
+  }
+}
+function isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  if (n > mtnTh) return excludedGory.has(k);
+  if (n > hiTh) return excludedWzgorza.has(k);
+  return false;
+}
+function walkMountainRangeAvoiding(hexes, scratch, width, height, rand, start, steps, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  const path = [];
+  const visited = /* @__PURE__ */ new Set([start]);
+  let cur = start;
+  for (let i = 0; i < steps; i++) {
+    const { q, r } = parseHexKey(cur);
+    const candidates = HEX_DIRECTIONS.map(([dq, dr]) => hexKey(q + dq, r + dr)).filter((k) => {
+      if (visited.has(k)) return false;
+      const hex = hexes[k];
+      if (!hex) return false;
+      const { q: nq, r: nr } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, nq, nr, width, height)) return false;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.3 })).sort((a, b) => b.n - a.n);
+    if (candidates.length === 0) break;
+    cur = candidates[0].k;
+    visited.add(cur);
+    path.push(cur);
+  }
+  return path;
+}
+function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses, mtnTh, hiTh, deficit) {
+  if (deficit <= 0 || masses.length === 0) return 0;
+  const excludedGory = /* @__PURE__ */ new Set();
+  const excludedWzgorza = /* @__PURE__ */ new Set();
+  const initialGory = [];
+  const initialWzgorza = [];
+  for (const key of Object.keys(hexes).sort()) {
+    const hex = hexes[key];
+    if (hex.terenBazowy === "gory" /* Gory */) initialGory.push(key);
+    else if (hex.terenBazowy === "wzgorza" /* Wzgorza */) initialWzgorza.push(key);
+  }
+  bfsExpandExclusion(hexes, excludedGory, initialGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  bfsExpandExclusion(hexes, excludedWzgorza, initialWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  let recovered = 0;
+  let massIdx = 0;
+  let attemptsSinceProgress = 0;
+  const maxAttemptsSinceProgress = masses.length * 40 + 200;
+  while (recovered < deficit && attemptsSinceProgress < maxAttemptsSinceProgress) {
+    const mass = masses[massIdx % masses.length];
+    massIdx++;
+    const seedCandidates = mass.filter((k) => {
+      const hex = hexes[k];
+      if (!hex) return false;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) return false;
+      const { q, r } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, q, r, width, height)) return false;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.15 })).sort((a, b) => b.n - a.n);
+    if (seedCandidates.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    const seedKey = seedCandidates[0].k;
+    const len = MOUNTAIN_RANGE_REGROW_LEN_MIN + Math.floor(rand() * (MOUNTAIN_RANGE_REGROW_LEN_MAX - MOUNTAIN_RANGE_REGROW_LEN_MIN + 1));
+    const path = [seedKey, ...walkMountainRangeAvoiding(
+      hexes,
+      scratch,
+      width,
+      height,
+      rand,
+      seedKey,
+      len,
+      mtnTh,
+      hiTh,
+      excludedGory,
+      excludedWzgorza
+    )];
+    const placedGory = [];
+    const placedWzgorza = [];
+    for (const k of path) {
+      const hex = hexes[k];
+      if (!hex) continue;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) continue;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      if (isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza)) continue;
+      if (n > mtnTh) {
+        hex.terenBazowy = "gory" /* Gory */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedGory.push(k);
+        recovered++;
+      } else if (n > hiTh) {
+        hex.terenBazowy = "wzgorza" /* Wzgorza */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedWzgorza.push(k);
+        recovered++;
+      }
+    }
+    if (placedGory.length === 0 && placedWzgorza.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    attemptsSinceProgress = 0;
+    if (placedGory.length > 0) {
+      bfsExpandExclusion(hexes, excludedGory, placedGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (placedWzgorza.length > 0) {
+      bfsExpandExclusion(hexes, excludedWzgorza, placedWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (recovered >= deficit) break;
+  }
+  return recovered;
 }
 function growMountainRanges(hexes, scratch, tier, width, height, rand) {
   const params = mapGenMountainRangeParams(tier);
@@ -2254,6 +2484,45 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
       mountainous--;
     }
   }
+  const mtnReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  const hiReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  regrowLostMountainClusters(
+    hexes,
+    scratch,
+    width,
+    height,
+    rand,
+    masses,
+    mtnTh,
+    hiTh,
+    Math.round((mtnReverted + hiReverted) * MOUNTAIN_RANGE_REGROW_TARGET_MULT)
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return addedByThisRun.length;
 }
 function assignContinentIndices(width, height, centers) {
@@ -4555,7 +4824,10 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "glina",
     nakladka: "zloze_gliny" /* ZlozeGliny */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || isLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true),
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
     rarity: 0.1
   },
   {
@@ -4577,8 +4849,25 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "sol",
     nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "pustynia" /* Pustynia */ || h.terenBazowy === "rownina" /* Rownina */),
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
     rarity: 0.12
+  },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: "zloto",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    rarity: 0.03
   }
 ];
 var _depositRarities = mapGenAllDepositRarities();
@@ -4601,7 +4890,8 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
     wegiel: 0,
     owce: 0,
     bydlo: 0,
-    sol: 0
+    sol: 0,
+    zloto: 0
   };
   for (const key of keys) {
     const hex = hexes[key];
@@ -4609,8 +4899,10 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
     if (hex.nakladka !== "brak" /* Brak */) continue;
     if (hex.zloze) continue;
     if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) continue;
+    const [depQ, depR] = key.split(",").map(Number);
     for (const rule of rules) {
       if (!rule.allowedOn(hex)) continue;
+      if (rule.requiresCoastalLand && !isCoastalLandHex(hexes, depQ, depR)) continue;
       if (rand() < Math.min(1, rule.rarity * baselineMult * resourceMult)) {
         if (rule.nakladka !== null) {
           hex.nakladka = rule.nakladka;
@@ -4654,9 +4946,8 @@ function cellCarriesDepositType(cellLand, hexes, id) {
   return false;
 }
 function hexCanAcceptDeposit(hex, rule, allowForestClear) {
-  if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-    return false;
-  }
+  if (hex.terenBazowy === "morze" /* Morze */) return false;
+  if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
   if (hex.zloze) return false;
   if (hex.nakladka !== "brak" /* Brak */) {
     if (!allowForestClear || hex.nakladka !== "las" /* Las */) return false;
@@ -4685,17 +4976,11 @@ function prepareTerrainForDeposit(hex, rule) {
     case "owce":
       hex.terenBazowy = "wzgorza" /* Wzgorza */;
       break;
-    case "glina":
-      hex.terenBazowy = "laka" /* Laka */;
-      break;
     case "konie":
       hex.terenBazowy = "rownina" /* Rownina */;
       break;
     case "bydlo":
       hex.terenBazowy = "laka" /* Laka */;
-      break;
-    case "sol":
-      hex.terenBazowy = "pustynia" /* Pustynia */;
       break;
     default:
       break;
@@ -4704,14 +4989,15 @@ function prepareTerrainForDeposit(hex, rule) {
 function pickDepositBootstrapHex(land, hexes, rule, rand) {
   const ranked = land.filter(([q, r]) => {
     const hex = hexes[hexKey(q, r)];
-    return hex && hex.terenBazowy !== "morze" /* Morze */ && hex.terenBazowy !== "wybrzeze" /* Wybrzeze */;
+    if (!hex || hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      return false;
+    }
+    if (rule.id === "glina" && !rule.allowedOn(hex)) return false;
+    return true;
   }).map(([q, r]) => ({ q, r, score: rand() })).sort((a, b) => b.score - a.score);
   if (ranked.length === 0) return null;
   const spot = ranked[0];
   prepareTerrainForDeposit(hexes[hexKey(spot.q, spot.r)], rule);
-  if (rule.id === "glina") {
-    hexes[hexKey(spot.q, spot.r)].rzeka = { ...hexes[hexKey(spot.q, spot.r)].rzeka ?? {}, obecna: true };
-  }
   return [spot.q, spot.r];
 }
 function forceDepositInCell(land, hexes, id, rand) {
@@ -4766,6 +5052,20 @@ function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, r
       if (passFixed === 0) break;
     }
   }
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return fixed;
 }
 function ensureForestGridCoverage(hexes, scratch, forestTier, _typ, _continentOf, _nContinents, rand) {
@@ -5102,7 +5402,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -5232,6 +5532,21 @@ var terrain_improvements_default = {
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+  },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
   },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
@@ -5448,9 +5763,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     purgeOceanInsideEarthLandMask(hexes, width, height);
   }
   finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 2);
-  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
-  finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 1);
   ensureReliefGridCoverage(
     hexes,
     terrainScratch,
@@ -5463,7 +5775,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     rand
   );
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
@@ -5494,10 +5805,12 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     wgn.riverTrace.maxLen
   );
   stripRiverMarksFromOpenSea(hexes);
-  stripDepositsFromWater(hexes);
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   flattenFalseCoastalRiverNotches(hexes, width, height);
+  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
+  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+  stripDepositsFromWater(hexes);
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
     minDist: 5,

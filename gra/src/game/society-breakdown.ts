@@ -91,11 +91,28 @@ export interface LawBreakdownInput {
   population?: number;
   /** Jednostki stacjonujące w mieście (garnizon). */
   garnizonCount: number;
-  hasRatusz?: boolean;
+  /** Dom Starszyzny — administracja lokalna miast regionalnych, poziom 1 (ADMIN-STOLICA). */
+  hasDomStarszyzny?: boolean;
+  /** Dwór Zarządcy — administracja lokalna miast regionalnych, poziom 2, zastępuje Dom Starszyzny. */
+  hasDworZarzadcy?: boolean;
   hasPretorium?: boolean;
   hasSad?: boolean;
-  /** Pałac — główne źródło Prawa cywilizacyjnego (≠ garnizon). */
+  /** Trybunał — dostępny wszędzie (stolica i region); dotąd nie był wpięty w system Prawa. */
+  hasTrybunal?: boolean;
+  /**
+   * Pałac — główne źródło Prawa cywilizacyjnego (≠ garnizon).
+   * @deprecated Użyj `palacTier` (1/2/3). Zostaje dla wstecznej zgodności — jeśli
+   * podano `hasPalac: true` bez `palacTier`, liczy się jak tier 1 (stara wartość).
+   */
   hasPalac?: boolean;
+  /**
+   * Który tier Pałacu stoi w mieście (B-PALAC-TIER-PRAWO, decyzja Macieja 2026-07-25,
+   * Pytanie 27=A: Prawo z Pałacu rośnie z tierem). `null`/`undefined` = brak Pałacu
+   * (chyba że `hasPalac: true` — patrz wyżej). Gdy miasto miałoby kilka wpisów
+   * pałacowych naraz, przekaż tu najwyższy tier — liczy się TYLKO jeden wpis Pałacu,
+   * nigdy suma.
+   */
+  palacTier?: 1 | 2 | 3 | null;
   brakGarnizonuKara?: boolean;
   /** Kara Prawa: niestabilny podbój bez garnizonu. */
   conquestNoGarrisonPenalty?: number;
@@ -210,6 +227,18 @@ export function loadRevoltParams(
   };
 }
 
+/**
+ * Rozstrzyga tier Pałacu (1/2/3) z pól `palacTier` / `hasPalac` (wsteczna zgodność —
+ * B-PALAC-TIER-PRAWO). 0 = brak Pałacu. `palacTier` ma pierwszeństwo; `hasPalac: true`
+ * bez `palacTier` = tier 1 (stara wartość, żeby żaden istniejący wywołujący się nie wywrócił).
+ */
+function resolvePalacTier(input: Pick<LawBreakdownInput, 'palacTier' | 'hasPalac'>): 0 | 1 | 2 | 3 {
+  const t = input.palacTier;
+  if (t === 1 || t === 2 || t === 3) return t;
+  if (input.hasPalac) return 1;
+  return 0;
+}
+
 function clampPct(x: number, cap: number): number {
   if (!Number.isFinite(x)) return 0;
   return Math.min(cap, Math.max(0, Math.round(x * 10) / 10));
@@ -230,7 +259,26 @@ export function prawMaxForEra(era: number): number {
   return PRAWMAX_DEFAULTS[e] ?? PRAWMAX_DEFAULTS[3] ?? 24;
 }
 
-/** Bonus Sz od udziału Luksus % (Maciej B2-narzedzia-stabilizacji). */
+/** Klucz JSON siatki Sz od udziału Zamożności (dziesięć przedziałów co 10 p.p.). */
+const ZAMOZNOSC_SIATKA_KEY = 'szczescie_siatka_zamoznosc';
+
+/**
+ * Fallback siatki, gdy brak `szczescie_siatka_zamoznosc` w danych (nie powinno się zdarzyć
+ * w grze — society-params.json zawsze ją niesie). Indeks 0 = 0–9% … indeks 9 = 90–100%.
+ * Wartości identyczne z JSON (Maciej 2026-07-25, nowa siatka Sz od Zamożności).
+ */
+const ZAMOZNOSC_SIATKA_DEFAULT: Record<Difficulty, number[]> = {
+  easy: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  normal: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+  hard: [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7],
+};
+
+/**
+ * Bonus/kara Sz od udziału Zamożności w podziale Daniny netto (Maciej 2026-07-25, nowa
+ * siatka — decyzja właściciela). Co 10 p.p. udziału = 1 pkt Szczęścia; poniżej 10% udziału
+ * to KARA (wartość ujemna) na normal/hard. Zero zahardkodowanych progów w kodzie poza
+ * fallbackiem na wypadek braku danych — same wartości zawsze z `society.szczescie[ZAMOZNOSC_SIATKA_KEY]`.
+ */
 export function luksusHappinessBonus(
   procentLuksus: number,
   society: SocietyParamsLike | null | undefined,
@@ -238,26 +286,13 @@ export function luksusHappinessBonus(
 ): number {
   const sz = (society?.szczescie ?? {}) as Record<string, RawParamRow>;
   const luks = Number.isFinite(procentLuksus) ? procentLuksus : 0;
-  const tiers: [number, string][] = [
-    [70, 'szczescie_bonus_luksus_70'],
-    [60, 'szczescie_bonus_luksus_60'],
-    [50, 'szczescie_bonus_luksus_50'],
-    [40, 'szczescie_bonus_luksus_40'],
-    [30, 'szczescie_bonus_luksus_30'],
-  ];
-  const defaults: Record<string, number> = {
-    szczescie_bonus_luksus_30: 1,
-    szczescie_bonus_luksus_40: 2,
-    szczescie_bonus_luksus_50: 3,
-    szczescie_bonus_luksus_60: 4,
-    szczescie_bonus_luksus_70: 5,
-  };
-  for (const [threshold, key] of tiers) {
-    if (luks >= threshold) {
-      return pickSociety(sz, key, difficulty, defaults[key] ?? 0);
-    }
+  const idx = Math.min(9, Math.max(0, Math.floor(luks / 10)));
+  const row = sz[ZAMOZNOSC_SIATKA_KEY];
+  const arr = row?.[difficulty];
+  if (Array.isArray(arr) && typeof arr[idx] === 'number' && Number.isFinite(arr[idx])) {
+    return arr[idx] as number;
   }
-  return 0;
+  return ZAMOZNOSC_SIATKA_DEFAULT[difficulty][idx] ?? 0;
 }
 
 function podzialLuksus(city?: CityPodzialHandlu): number {
@@ -324,6 +359,8 @@ export function computeHappinessBreakdown(
   const luksBonus = luksusHappinessBonus(luksPct, society, diff);
   if (luksBonus > 0) {
     lines.push({ id: 'niskie_podatki', label: `Niskie podatki (Zamożność ${luksPct}%)`, value: luksBonus });
+  } else if (luksBonus < 0) {
+    lines.push({ id: 'wysokie_podatki', label: `Wysokie podatki (Zamożność ${luksPct}%)`, value: luksBonus });
   }
 
   if (input.atWar) {
@@ -350,15 +387,10 @@ export function computeHappinessBreakdown(
     if (v) lines.push({ id: 'stolica_easy', label: 'Stolica imperium (easy)', value: v });
   }
 
-  const baseLuks = DEFAULT_PODZIAL_HANDLU.procentLuksus;
-  if (luksPct < baseLuks) {
-    const levels = Math.floor((baseLuks - luksPct) / 10);
-    if (levels > 0) {
-      const per = pickSociety(szBlock, 'szczescie_kara_wysokie_podatki', diff, -1);
-      const v = per * levels;
-      if (v) lines.push({ id: 'wysokie_podatki', label: 'Wysokie podatki', value: v });
-    }
-  }
+  // Stary mechanizm "wysokie podatki" (próg DEFAULT_PODZIAL_HANDLU.procentLuksus, kara co
+  // 10 p.p. poniżej) USUNIĘTY 2026-07-25 — dublował się z karą już wbudowaną w nową siatkę
+  // szczescie_siatka_zamoznosc powyżej (patrz raport zadania: przy udziale 5% na normalu
+  // oba mechanizmy naraz dawały -2 pkt Sz, sama nowa siatka daje poprawne -1 pkt).
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
   const szMax = szMaxForEra(era);
@@ -392,21 +424,36 @@ export function computeLawBreakdown(
     });
   }
 
-  if (input.hasRatusz) {
-    const v = pickSociety(prBlock, 'prawo_ratusz', diff, 3);
-    if (v) lines.push({ id: 'ratusz', label: 'Ratusz', value: v });
+  if (input.hasDomStarszyzny) {
+    const v = pickSociety(prBlock, 'prawo_dom_starszyzny', diff, 28);
+    if (v) lines.push({ id: 'dom_starszyzny', label: 'Dom Starszyzny', value: v });
+  }
+  if (input.hasDworZarzadcy) {
+    const v = pickSociety(prBlock, 'prawo_dwor_zarzadcy', diff, 33);
+    if (v) lines.push({ id: 'dwor_zarzadcy', label: 'Dwór Zarządcy', value: v });
   }
   if (input.hasPretorium) {
     const v = pickSociety(prBlock, 'prawo_pretorium', diff, 2);
     if (v) lines.push({ id: 'pretorium', label: 'Pretorium', value: v });
   }
+  if (input.hasTrybunal) {
+    const v = pickSociety(prBlock, 'prawo_trybunal', diff, 17);
+    if (v) lines.push({ id: 'trybunal', label: 'Trybunał', value: v });
+  }
   if (input.hasSad) {
     const v = pickSociety(prBlock, 'prawo_sad', diff, 2);
     if (v) lines.push({ id: 'sad', label: 'Sąd', value: v });
   }
-  if (input.hasPalac) {
-    const v = pickSociety(prBlock, 'prawo_palac', diff, 35);
-    if (v) lines.push({ id: 'palac', label: 'Pałac', value: v });
+  const palacTier = resolvePalacTier(input);
+  if (palacTier === 1 || palacTier === 2 || palacTier === 3) {
+    const palacByTier: Record<1 | 2 | 3, { key: string; fallback: number; label: string }> = {
+      1: { key: 'prawo_palac', fallback: 35, label: 'Pałac' },
+      2: { key: 'prawo_palac_ii', fallback: 45, label: 'Pałac II' },
+      3: { key: 'prawo_palac_iii', fallback: 55, label: 'Pałac III' },
+    };
+    const { key, fallback, label } = palacByTier[palacTier];
+    const v = pickSociety(prBlock, key, diff, fallback);
+    if (v) lines.push({ id: 'palac', label, value: v });
   }
 
   if (input.brakGarnizonuKara) {
