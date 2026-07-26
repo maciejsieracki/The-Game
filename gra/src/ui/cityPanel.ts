@@ -163,6 +163,8 @@ import {
 } from '../game/economy';
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
+// Formatowanie liczb do wyświetlenia (obcięcie śmieci zmiennoprzecinkowych) — Maciej 2026-07-26.
+import { signedPl } from './formatPl';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -545,7 +547,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, html?: 
   }
   return n;
 }
-function signed(n: number): string { return (n > 0 ? '+' : '') + String(n); }
+function signed(n: number): string { return signedPl(n); }
 function tury(n: number): string {
   const a = Math.abs(n), m10 = a % 10, m100 = a % 100;
   if (a === 1) return 'tura';
@@ -5705,6 +5707,16 @@ function collectEraPreviewEntries(
   );
   return catalog.filter(e => {
     if (built.has(e.id) || queued.has(e.id)) return false;
+    // ADMIN-STOLICA (Maciej 2026-07-26 playtest): budynek z `lokalizacja: 'stolica'|'region'`
+    // odrzucony WYŁĄCZNIE przez bramkę lokalizacji (locationBlocked) nigdy nie stanie się
+    // budowalny w TYM mieście — to ograniczenie jest trwałe (nie "jeszcze niedostępne", jak
+    // brak tech/surowca/budynku-warunku), więc karta w ogóle nie trafia na listę (ani do
+    // "Jeszcze zablokowane", ani do "Podgląd epoki"/"Podgląd badań" — tam też byłaby myląca,
+    // bo formatBuildingPreviewHint nie zna bramki lokalizacji i pokazałby "Badania OK").
+    // eraBuildingCatalog (production.ts) CELOWO nadal zwraca ten wpis jako status='locked' +
+    // locationBlocked — to surowe źródło prawdy silnika (testowane wprost w
+    // administracja-stolica-test.cjs); filtrowanie dla UI robimy tutaj, jednym miejscem.
+    if (e.locationBlocked) return false;
     if (fullEraPreview) return true;
     return e.status === 'locked';
   });
