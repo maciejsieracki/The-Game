@@ -916,3 +916,110 @@ Wojna wypowiedziana w odpowiedzi na czyjeś złamanie zobowiązania **nie nalicz
 Wyjątek: **odwet** (do 10 tur od cudzego N1/N2/N4) — N1 i N2 nie naliczane.
 
 **POZOSTAJE DO PRZEJRZENIA: strona pozytywna P1–P5.**
+
+---
+
+## 🔷 N6 — HANDEL CYKLICZNY: WERYFIKACJA KODU + DECYZJE OSTATECZNE (Maciej 2026-07-26)
+
+Domyka otwartą notatkę przy N6 wyżej („Zlecona osobna weryfikacja w kodzie... Jeśli dziś jest asymetria
+— to BUG do naprawy niezależnie od Wiarygodności.") — weryfikacja wykonana, wynik: asymetria
+POTWIERDZONA, poniżej pełny werdykt i decyzje Macieja co robić dalej.
+
+### Werdykt audytu kodu (2026-07-26)
+
+Sprawdzono `tickCyclicResourceTradeDeals` (`main.ts` ~8631-8663) + `transferSurowiecIlosc`
+(`game/diplomacy-basket-transfer.ts:210-266`) + `buildHandelSurowiecCykliczny`
+(`game/diplomacy-proposals.ts:293-326`).
+
+**WERDYKT: CZĘŚCIOWO ASYMETRYCZNE.** Siedem ustaleń:
+
+1. ✅ **Pełny brak zapasu** (wariant surowiec-za-złoto/Pracę) — SYMETRYCZNE, działa poprawnie:
+   `if (result.moved <= 0) continue;` (`main.ts:8652`) pomija też zapłatę. Nikt nic nie dostaje, nikt nie
+   płaci.
+2. ❌ **BARTER surowiec-za-surowiec** — NAJPOWAŻNIEJSZY BUG. `buildHandelSurowiecCykliczny` tworzy DWA
+   NIEZALEŻNE obiekty `HandelSurowiecCyklicznyItem` (A→B i B→A), a pętla tickowa iteruje po nich jako po
+   niepowiązanych pozycjach. Brak zapasu u strony A → item A→B pomijany, ale item B→A wykonuje się w
+   pełni. Strona B oddaje towar ZA DARMO. Ścieżka osiągalna z UI (`diplomacyTradeBasket`, oba koszyki +
+   tryb per_turn). AI↔AI nie tworzy barteru (zawsze jeden kierunek za złoto), więc dotyczy deali z
+   udziałem gracza.
+3. ❌ **Zapłata Pracą przy niedoborze kupującego** — `setOwnerPracaPool` klampuje do 0 przy odejmowaniu,
+   ale dawcy dodaje PEŁNĄ zadeklarowaną kwotę → **Praca jest kreowana z niczego**. To naruszenie bilansu
+   zasobów, nie tylko asymetria handlu.
+4. ❌ **Zapłata złotem przy niedoborze kupującego** — transfer surowca wykonuje się PRZED sprawdzeniem
+   wypłacalności; `applyOneShotGoldTransfer` zwraca `ok:false` i nic nie przelewa → kupujący dostaje
+   towar ZA DARMO.
+5. ❌ **Dostawa częściowa** — `transferSurowiecIlosc` robi transfer częściowy („ile jest, tyle bierz"), a
+   zapłata to STAŁA kwota za cały pakiet → kupujący płaci pełną cenę za ułamek dostawy.
+6. **Licznik nieudanych dostaw NIE ISTNIEJE** — trzeba zbudować od zera (potrzebny pod karę N6 i nagrodę
+   P3). `result.moved` nie przeżywa do następnej tury.
+7. **Parytet AI zachowany** — brak rozgałęzień `ownerId === 0` w tym mechanizmie.
+
+### C-HANDEL-1 = **B** — bugi naprawiamy RAZEM z wdrożeniem Wiarygodności
+
+Jeden przebieg przez ten sam kod (nie osobna naprawa wcześniej, potem Wiarygodność drugi raz w tych
+samych funkcjach).
+
+### C-HANDEL-2 = **A** — transfer surowca tylko przy wypłacalności kupującego
+
+Brak środków u kupującego = wymiana się nie odbywa, symetrycznie do braku towaru u sprzedawcy.
+Odrzucone: kredyt kupiecki z długiem; zostawienie jak jest.
+
+### C-HANDEL-3 — ZASADA NADRZĘDNA HANDLU (cytat Macieja, dosłownie)
+
+> „Takie sytuacje nie mogą występować w grze. Handel zawsze musi się odbywać tylko wtedy, kiedy obie
+> strony mają to, co mają dostarczyć. Jeżeli druga strona tego nie dostarcza, to nie ma wymiany. A jedyna
+> sytuacja, która może mieć miejsce to fakt, że umawiamy się na cykliczną jakąś sprzedaż i ona z jakiegoś
+> powodu nie dochodzi. Ale nie ma takiej sytuacji, że jedna strona wysyła, a druga nie wysyła. Jeżeli
+> jedna ze stron nie ma czegoś, to nie ma wymiany ani po jednej, ani po drugiej stronie. Ale karana jest
+> ta, która nie dostarczyła."
+
+**Reguły implementacyjne wynikające z cytatu:**
+
+1. **ATOMOWOŚĆ** — wymiana albo dochodzi do skutku W CAŁOŚCI (obie strony), albo NIE DOCHODZI WCALE.
+   Zero stanów pośrednich. Dziś kod robi odwrotnie: przesuwa surowiec, POTEM próbuje zapłatę — trzeba
+   odwrócić kolejność (patrz pkt 2).
+2. **Kolejność sprawdzeń** — warunek wykonania sprawdzany dla OBU stron ZANIM cokolwiek zostanie
+   przesunięte: najpierw walidacja (czy sprzedawca ma zapas ORAZ czy kupujący ma środki/surowiec do
+   zapłaty), dopiero potem — i tylko jeśli oba warunki spełnione — faktyczny transfer w obie strony.
+   Dziś jest odwrotnie (transfer surowca → potem próba zapłaty), to jest źródło ustaleń 3 i 4 z audytu.
+3. **Dotyczy WSZYSTKICH wariantów płatności jednakowo:**
+   - surowiec-za-złoto,
+   - surowiec-za-Pracę,
+   - surowiec-za-surowiec (barter) — **dwa itemy `HandelSurowiecCyklicznyItem` (A→B i B→A) muszą być
+     SPRZĘGNIĘTE w jedną atomową transakcję**, nie iterowane osobno jak dziś (to naprawia ustalenie 2 —
+     najpoważniejszy bug audytu).
+4. **Dostawa częściowa jest niedopuszczalna.** Skoro wymiana jest atomowa, nie ma „5 z 20". Albo pełna
+   zadeklarowana ilość zostaje dostarczona, albo transakcja w tej turze w ogóle się nie odbywa. To
+   rozstrzyga wcześniejsze pytanie o skalowanie zapłaty do wielkości częściowej dostawy (ustalenie 5
+   audytu) — problem znika, bo częściowych dostaw po prostu nie ma. `transferSurowiecIlosc` w trybie
+   handlu cyklicznego nie powinien już zwracać częściowego `moved` jako sukces — albo bierze całość, albo
+   nic.
+5. **Jedyny dopuszczalny scenariusz niepowodzenia:** umowa cykliczna nie dochodzi do skutku w danej
+   turze — **obie strony bez zmian** (jak dziś działa czysty brak zapasu, ustalenie 1 audytu — to jest
+   już poprawny wzorzec, rozszerzyć go na wszystkie warianty).
+6. **Kara (N6) obciąża WYŁĄCZNIE stronę, która nie dostarczyła** — nie obie, nie parę. Spójne z zasadą z
+   N4 wyżej („kara dla tego, którego jest winą"). Przy barterze, gdzie obie strony coś dostarczają, może
+   się zdarzyć że winne są OBIE (obie bez zapasu tej samej tury) — wtedy obie dostają karę niezależnie, bo
+   każda z osobna nie dostarczyła swojej części; ale strona, która MIAŁA zapas i była gotowa dostarczyć,
+   nigdy nie jest karana za to, że transakcja nie doszła do skutku z winy drugiej strony.
+7. **Licznik nieudanych dostaw** (ustalenie 6 audytu, do zbudowania od zera) ma liczyć TURY, w których
+   wymiana nie doszła do skutku **z winy danej strony** — nie tury, w których dana strona była
+   „poszkodowana" brakiem partnera. Struktura per `dealId` (lub per strona w barterze) musi rozróżniać
+   winnego od ofiary, żeby próg N6 (3 tury z rzędu) trafiał we właściwą stronę.
+8. **Parytet AI** — identycznie dla gracza i AI: te same warunki walidacji, ta sama atomowość, ta sama
+   zasada „kara wyłącznie dla winnego", zero gałęzi `ownerId === 0`.
+
+### ⚠️ Weryfikacja do wykonania: „Praca z niczego" (ustalenie 3 audytu)
+
+Ustalenie 3 (`setOwnerPracaPool` klampuje odbiorcy do 0, ale dawcy dodaje pełną zadeklarowaną kwotę) to
+**naruszenie bilansu zasobów w grze**, nie tylko asymetria handlu — Praca powstaje znikąd. Po naprawie
+atomowości (reguła 1-2 wyżej, walidacja PRZED transferem) ten konkretny bug **znika samoistnie**, bo
+transfer Pracy przy niewypłacalności kupującego po prostu się nie wykona. Mimo to **wykonawca ma to
+JAWNIE zweryfikować testem** (np. w `tools/wiarygodnosc-test.cjs` albo osobnym harnessie dla handlu
+cyklicznego) — nie zakładać, że zniknięcie jest automatyczne bez potwierdzenia.
+
+### Status
+
+C-HANDEL-1/2/3 ZATWIERDZONE do realizacji WSPÓLNIE z wdrożeniem Wiarygodności (Etap 1, hak N6+P3, §7
+wyżej — `main.ts:8595-8627`, `tickCyclicResourceTradeDeals`). Naprawa atomowości handlu cyklicznego i
+podłączenie kar/nagród Wiarygodności to JEDEN przebieg przez ten sam kod, nie dwa osobne.
