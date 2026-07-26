@@ -1537,6 +1537,21 @@ export function cellHasReliefPackage(
   return cellHasMountain(cellLand, hexes) && cellHasHighland(cellLand, hexes);
 }
 
+/**
+ * Liczba heksów w komórce, które w OGÓLE mogą stać się reliefem (nie Morze/Wybrzeże — ta sama
+ * reguła co isReliefCandidateHex, bez bufora brzegu mapy, bo tu nie mamy width/height). Komórka
+ * czysto przybrzeżna (wąski półwysep — same Wybrzeże) fizycznie NIE MA gdzie postawić 2 Gór/
+ * Wzgórz; liczenie jej do "potrzebuje floor" byłoby wymaganiem niespełnialnym z definicji.
+ */
+function eligibleReliefLandCount(land: Array<[number, number]>, hexes: Record<string, Hex>): number {
+  let n = 0;
+  for (const [q, r] of land) {
+    const tb = hexes[hexKey(q, r)]?.terenBazowy;
+    if (tb !== undefined && tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze) n++;
+  }
+  return n;
+}
+
 export function ironGridCoverageRatio(
   massLandKeys: string[],
   hexes: Record<string, Hex>,
@@ -1547,7 +1562,7 @@ export function ironGridCoverageRatio(
   let need = 0;
   let hit = 0;
   for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-    if (land.length < minLand) continue;
+    if (eligibleReliefLandCount(land, hexes) < minLand) continue;
     need++;
     if (cellHasIronPackage(land, hexes)) hit++;
   }
@@ -1564,7 +1579,7 @@ export function copperGridCoverageRatio(
   let need = 0;
   let hit = 0;
   for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-    if (land.length < minLand) continue;
+    if (eligibleReliefLandCount(land, hexes) < minLand) continue;
     need++;
     if (cellHasCopperPackage(land, hexes)) hit++;
   }
@@ -2102,6 +2117,32 @@ function capMountainRangeClusterSize(
     }
   }
   return reverted;
+}
+
+/**
+ * Siatka bezpieczeństwa PO ponownym wywołaniu ensureReliefGridCoverage na finalnej geografii
+ * (Maciej 2026-07-26, C-MAPA-Q1=B) — patrz generator.ts, wołane tuż przed lasem, PO finalnych
+ * rzekach/wybrzeżu. Force*InCell (floor 2 Gór/2 Wzgórz na komórkę) dokłada pojedyncze heksy do
+ * deficytowych komórek bez sprawdzania sąsiedztwa — w rzadkim przypadku mógłby doklejić się do
+ * istniejącego pasma i przebić limit skupiska (Maciej 2026-07-25, PYTANIE 63: max 10 heksów Gór
+ * i osobno 10 Wzgórz w spójnym skupisku, NIENARUSZALNY). Osobna funkcja (nie wewnątrz
+ * ensureReliefGridCoverage) — TO wywołanie musi zostać OPCJONALNE i wołane tylko RAZ (na końcu
+ * pipeline'u), żeby nie zaburzać wczesnego wywołania ensureReliefGridCoverage (Przebieg 3g,
+ * PRZED growMountainRanges) — capping relief TAM, zanim pasma w ogóle wyrosły, zmieniałby
+ * kandydatów na seed pasm (mountainRangeSeedCandidates) i przesuwał zużycie rand() w
+ * growMountainRanges, co kaskadowo zmieniałoby geografię (wybrzeże/rzeki) dalej w pipeline —
+ * zmierzone empirycznie: dodanie cappingu do OBU wywołań zmieniało fragmentację mas lądu.
+ */
+export function capReliefClusterSizeSafetyNet(
+  hexes: Record<string, Hex>,
+  scratch: Map<string, TerrainScratch>,
+): void {
+  capMountainRangeClusterSize(
+    hexes, scratch, TerenBazowy.Gory, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
+  capMountainRangeClusterSize(
+    hexes, scratch, TerenBazowy.Wzgorza, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
 }
 
 /** Kandydaci na seed pasma w masie lądu: preferują wysoki mtnNoise + deterministyczna domieszka rand(). */

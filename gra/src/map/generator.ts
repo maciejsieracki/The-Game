@@ -48,6 +48,7 @@ import {
   reapplyForestOverlay,
   applyReliefByNoiseRank,
   ensureReliefGridCoverage,
+  capReliefClusterSizeSafetyNet,
   growMountainRanges,
   applyMarginalLandZoneCaps,
   rebalanceLandFractionWithMargins,
@@ -301,7 +302,6 @@ export function generateMap(
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
   applyReliefByNoiseRank(hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones);
-  reapplyForestOverlay(hexes, terrainScratch, terrainTh, typ, forestTier, zoneOf, nZones, height);
   enforceMapBorderOcean(hexes, width, height);
   if (typ !== 'pangea') {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
@@ -359,7 +359,6 @@ export function generateMap(
   // rzeka.obecna, więc jeden konsolidowany przebieg złóż po rzekach zastępuje dawne dwa
   // przebiegi placeDeposits/ensureDepositGridCoverage rozsiane wokół reliefu). ─────────────
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
-  ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   // ── Przebieg 3h-pre: ostatni purge wody→ląd PRZED rzekami (B0.1 — nie kasować ujść) ─
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
@@ -411,8 +410,51 @@ export function generateMap(
   // ujścia i nigdy ich nie ruszać.
   flattenFalseCoastalRiverNotches(hexes, width, height);
 
-  // ── Przebieg 3i: złoża DOPIERO po finalnych rzekach i finalnym wybrzeżu (TEMAT 12,
-  // 2026-07-24, Maciej) — glina wymaga prawdziwej h.rzeka.obecna (rzeki wcześniej nie
+  // ── Przebieg 3h-relief-final: domknij siatkę fair play reliefu (floor: min 2 Gór/2 Wzgórz na
+  // komórkę) PONOWNIE, na PRAWDZIWIE finalnej geografii (po wybrzeżu, po rzekach) — Maciej
+  // 2026-07-26 (audyt C-MAPA-Q1=B). Pierwsze wywołanie (Przebieg 3g, wyżej) liczy floor na
+  // masach lądu SPRZED thickenCoastAndSmoothInlets/purgeStrayLandOutsideEarthMask/enforceMap-
+  // BorderOcean — te przebiegi wybrzeża potrafią rozdrobnić jedną dużą masę na kilka mniejszych,
+  // a fragment po podziale może wypaść bez własnego minimum 2 Gór / 2 Wzgórz w komórce
+  // (dokładnie to mierzy relief-grid-coverage-test.cjs — per-masa, na finalnym stanie). Wołanie
+  // ponownie tutaj, gdy ląd/morze jest już całkowicie zamknięte, domyka te przypadki.
+  // Kolejność: NAJPIERW cap skupisk (na wypadek gdyby rozdrobnienie mas lądu powyżej scaliło
+  // coś w skupisko >10 — patrz capReliefClusterSizeSafetyNet), DOPIERO POTEM floor — odwrotna
+  // kolejność (floor, potem cap) potrafiłaby cofnąć WŁASNY dopiero co dołożony heks floor-a,
+  // jeśli wypadł jako najsłabszy szum w sąsiedztwie istniejącego skupiska (zmierzone empirycznie:
+  // cap-po-floor kasował dokładnie te heksy, które floor przed chwilą dołożył).
+  //
+  // UWAGA (C-MAPA-Q1=B, audyt drugiej połowy zlecenia): próbowano DODATKOWO domknąć limit
+  // fair-play-grid-test.cjs per komórka (max Gór/Wzgórz na komórkę 25×25, patrz fair-play-grid-
+  // test.cjs) przez cap+regrow analogiczny do powyższego. Cofnięte — matematycznie sprzeczne
+  // z twardym wymogiem górzystości lądu ~19,3% (decyzja 80A, zakres 19,0-20,2%): limit fair-play
+  // (max(3,ceil(land*0.04)) Gór + max(3,ceil(land*0.06)) Wzgórz na komórkę 25×25) daje SUFIT
+  // ~10% gęstości reliefu na KAŻDEJ komórce — a skoro większość lądu dużego kontynentu to
+  // komórki blisko pełne (~625 heksów), globalna górzystość NIE MOŻE przekroczyć tego sufitu
+  // (zmierzone: wymuszenie limitu zbiło górzystość z ~19,3% do ~9,4-9,8% na 5 seedach). Te dwa
+  // wymagania się wykluczają — to jest opisane w raporcie zlecenia, nie naprawiać "przy okazji"
+  // bez decyzji właściciela.
+  capReliefClusterSizeSafetyNet(hexes, terrainScratch);
+  ensureReliefGridCoverage(
+    hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
+  );
+
+  // ── Przebieg 3h-las: las DOPIERO po finalnym terenie (relief/pasma) i finalnych rzekach
+  // (Maciej 2026-07-26: "najpierw teren [wzgórza, góry, pustynie...], dopiero później rzeki,
+  // a na samym końcu lasy i surowce") — teren bazowy i relief (growMountainRanges) są już
+  // finalne, rzeki też, więc las nie konsumuje już rand() PRZED górami/rzekami: zmiana suwaka
+  // Las przestaje przesuwać PRNG dla kroków wcześniejszych (dawny bug: zmiana tieru lasu
+  // przesuwała stan generatora dla wszystkiego co szło PO nim, w tym pasma górskie i rzeki —
+  // teraz obie te rzeczy są już policzone ZANIM las w ogóle zawoła rand()). Dodatkowa korzyść:
+  // las nie jest już masowo kasowany przez późniejszy rozrost pasm górskich (growMountainRanges
+  // konwertuje Łąka/Równina/Pustynia na Góry/Wzgórza i zeruje nakładkę) — dawniej część lasu
+  // z reapplyForestOverlay (wołanego PRZED growMountainRanges) była zaraz potem nadpisywana.
+  reapplyForestOverlay(hexes, terrainScratch, terrainTh, typ, forestTier, zoneOf, nZones, height);
+  ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
+
+  // ── Przebieg 3i: złoża DOPIERO po finalnych rzekach, finalnym wybrzeżu i finalnym lesie
+  // (TEMAT 12, 2026-07-24, Maciej; kolejność las→złoża potwierdzona 2026-07-26) — glina wymaga
+  // prawdziwej h.rzeka.obecna (rzeki wcześniej nie
   // istniały — placeDeposits() był wołany PRZED generateRivers, więc gałąź rzeki w regule
   // gliny była martwym kodem), sól wymaga finalnego (już domkniętego) Wybrzeża. Jeden
   // konsolidowany przebieg wystarcza — relief (w tym pasma górskie z growMountainRanges) jest
@@ -455,6 +497,15 @@ export function generateMap(
   if (typ === 'ziemia') {
     enforceEarthTemplateOnHexes(hexes, width, height);
     purgeOceanInsideEarthLandMask(hexes, width, height);
+    // Ten krok potrafi jeszcze raz rozdrobnić masy lądu (Maciej 2026-07-26, audyt C-MAPA-Q1=B) —
+    // dopiero TU geografia (ląd/morze) jest naprawdę ostateczna dla typu 'ziemia'. Domykamy
+    // siatkę fair play reliefu (floor) RAZ JESZCZE na tym stanie, żeby fragment odcięty przez
+    // szablon Ziemi nie wypadł bez własnego minimum 2 Gór / 2 Wzgórz w komórce (relief-grid-
+    // coverage-test.cjs liczy to per-masa, na finalnym stanie). Kolejność cap→floor jak wyżej.
+    capReliefClusterSizeSafetyNet(hexes, terrainScratch);
+    ensureReliefGridCoverage(
+      hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
+    );
   }
 
   return {
