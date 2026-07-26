@@ -45,22 +45,22 @@ function ensureFrameStyles(): void {
 .civ-ux-dim-full{position:fixed;inset:0;z-index:298;pointer-events:none;
   background:radial-gradient(ellipse 62% 58% at 48% 54%,rgba(6,8,12,0.06) 0%,rgba(6,8,12,0.18) 48%,rgba(6,8,12,0.62) 82%,rgba(6,8,12,0.78) 100%);
   box-shadow:inset 0 0 90px 28px rgba(0,0,0,0.38);}
-.civ-ux-top{position:fixed;top:0;left:0;right:0;height:auto;min-height:${TOP_H}px;z-index:403;pointer-events:auto;overflow:visible;
+.civ-ux-top{position:fixed;top:0;left:0;right:0;height:auto;min-height:${TOP_H}px;z-index:403;pointer-events:none;overflow:visible;
   display:flex;align-items:flex-start;justify-content:center;padding:5px 12px 4px 12px;}
-.civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;}
-.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:100%;box-sizing:border-box;}
+.civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:100%;box-sizing:border-box;pointer-events:auto;}
 .civ-ux-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:${LEFT_MARGIN}px;bottom:0;width:min(24vw,${LEFT_W}px);min-width:280px;z-index:401;
   pointer-events:auto;overflow-y:auto;overflow-x:hidden;padding:0.18rem 0.4rem 0.48rem;
   display:flex;flex-direction:column;background:transparent;border:none;box-shadow:none;}
 .civ-ux-left-icon-rail{position:fixed;top:${LEFT_RAIL_TOP}px;
   left:calc(${LEFT_MARGIN}px + min(24vw,${LEFT_W}px) + var(--civ-detail-dock-left-w,0px) + ${LEFT_RAIL_GAP}px);
-  width:${LEFT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - 24px);z-index:401;pointer-events:auto;overflow:visible;
+  width:${LEFT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - 24px);z-index:405;pointer-events:auto;overflow:visible;
   display:flex;flex-direction:column;align-items:center;padding:0;
   background:transparent;border:none;box-shadow:none;transition:left .22s ease;}
 .civ-ux-left-icon-rail .civ-ux-panel-scope{width:100%;height:auto;display:flex;flex-direction:column;align-items:center;}
 .civ-ux-right-icon-rail{position:fixed;top:${LEFT_RAIL_TOP}px;
   right:calc(${RIGHT_MARGIN}px + min(26vw,${RIGHT_W}px) + var(--civ-detail-dock-w,0px) + ${RIGHT_RAIL_GAP}px);
-  width:${RIGHT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - 24px);z-index:401;pointer-events:auto;overflow:visible;
+  width:${RIGHT_ICON_RAIL_W}px;height:auto;max-height:calc(100vh - ${LEFT_RAIL_TOP}px - 24px);z-index:405;pointer-events:auto;overflow:visible;
   display:flex;flex-direction:column;align-items:center;padding:0;
   background:transparent;border:none;box-shadow:none;transition:right .22s ease;}
 .civ-ux-right-icon-rail .civ-ux-panel-scope{width:100%;height:auto;display:flex;flex-direction:column;align-items:center;}
@@ -118,11 +118,13 @@ function bindCityUxEscClose(): void {
     if (cityUxKeyboardBlockedTarget(e)) return;
     if (e.key === 'ArrowLeft' || e.key === ',' || e.code === 'Comma') {
       e.preventDefault();
+      e.stopImmediatePropagation();
       navigateCityPanel(-1);
       return;
     }
     if (e.key === 'ArrowRight' || e.key === '.' || e.code === 'Period') {
       e.preventDefault();
+      e.stopImmediatePropagation();
       navigateCityPanel(1);
     }
   };

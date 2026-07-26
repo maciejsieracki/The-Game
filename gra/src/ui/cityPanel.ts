@@ -1804,7 +1804,7 @@ function ensureStyles(): void {
   box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;max-width:100%;}
 .civ-v-w3-city-nav{display:inline-flex;align-items:center;justify-content:center;min-width:1.75em;min-height:1.75em;
   padding:0 0.22em;border:none;border-radius:7px;background:rgba(232,216,138,0.08);color:#e8d88a;
-  font-size:1.55em;font-weight:700;line-height:1;cursor:pointer;opacity:0.92;font-family:inherit;
+  font-size:1.15em;font-weight:700;line-height:1;cursor:pointer;opacity:0.92;font-family:inherit;
   flex-shrink:0;pointer-events:auto;}
 .civ-v-w3-city-nav:hover:not(:disabled){opacity:1;color:#fff8e0;background:rgba(232,216,138,0.18);}
 .civ-v-w3-city-nav:disabled{opacity:0.25;cursor:default;background:transparent;}
@@ -7709,7 +7709,7 @@ function ownerCities(city: City): City[] {
   return list.length > 0 ? list : [city];
 }
 
-/** Kolejność nawigacji , . — od lewej do prawej na mapie (świat X, potem Z). */
+/** Kolejność nawigacji między miastami — od lewej do prawej na mapie (świat X, potem Z). */
 function ownerCitiesForNav(city: City): City[] {
   const list = ownerCities(city);
   if (list.length < 2) return list;
@@ -7740,7 +7740,7 @@ function switchCity(dir: -1 | 1): void {
   rerender();
 }
 
-/** Nawigacja , . / strzałki — eksport dla skrótów klawiszowych w cityUxFrame. */
+/** Nawigacja ← → — eksport dla skrótów klawiszowych w cityUxFrame. */
 export function navigateCityPanel(dir: -1 | 1): void {
   switchCity(dir);
 }
@@ -8188,9 +8188,9 @@ function renderCivResourceTopBar(
   mount.innerHTML =
     `<div class="civ-v-top-stack">` +
     `<div class="civ-v-w3-city-badge">` +
-    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-prev" ${navDis} title="Poprzednie miasto (, lub ←)" aria-label="Poprzednie miasto">,</button>` +
+    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-prev" ${navDis} title="Poprzednie miasto (←)" aria-label="Poprzednie miasto">‹</button>` +
     `<span class="civ-v-w3-city-name">${cityPanelTitle(city)}</span>` +
-    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-next" ${navDis} title="Następne miasto (. lub →)" aria-label="Następne miasto">.</button>` +
+    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-next" ${navDis} title="Następne miasto (→)" aria-label="Następne miasto">›</button>` +
     `<span class="civ-v-w3-city-pop">${city.population}</span>` +
     capitalBadgeOrButtonHtml(city) +
     `</div>` +

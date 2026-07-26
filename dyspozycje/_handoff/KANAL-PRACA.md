@@ -3519,3 +3519,11 @@ Nowe: bitwa (obrona/deployPlayerSide, win/loss, manual), ekrany końca bitwy (pl
 Bramki: tsc 0 · diplomacy-negotiation-table 39/39 · fair-play-grid **8/8** · relief-grid-coverage **6/6** · upkeep 67/67.
 **Sesja lokalna: pull / sync dysk, testuj `81b1d467` — `gra-robocza/START.html`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [00:08 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `a2436938` (FALA 27)
+**md5 `a243693882d297d687273e10f01074f7`**, stempel `ROBOCZA · 2026-07-27 00:08`. **VERIFY OK** (certutil md5 HTML = manifest).
+Wynik `vite build` exit 0. POLE-BITWY: pominięty. Publish: inject przez temp (OneDrive lock na bezpośrednim WriteAllText).
+Nowe: panel miasta — klikalne ikony zakładek (pointer-events + z-index 405); nawigacja miast `‹`/`›` + klawisze ←/→.
+Bramki: tsc 0 · smoke OK · logic 207/208 (pre garnizon).
+**Sesja lokalna: pull / sync dysk, testuj `a2436938` — `gra-robocza/START.html`.**
+CZEKAM-NA: Maciej — playtest panelu miasta (taby + nawigacja miast).

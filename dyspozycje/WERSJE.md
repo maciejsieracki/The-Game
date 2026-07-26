@@ -11,7 +11,16 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `81b1d467` — 2026-07-26 23:52 · FALA 26: BITWA + DYPLOMACJA + MAPA 18% — **AKTUALNA**
+## ROBOCZA `a2436938` — 2026-07-27 00:08 · FALA 27: PANEL MIASTA UX — **AKTUALNA**
+- md5 (pelne): `a243693882d297d687273e10f01074f7` · stempel: `ROBOCZA · 2026-07-27 00:08`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock przy inject).
+- **Co nowego:**
+  - **Panel miasta — ikony zakładek:** `pointer-events` — górny pasek `none`, tylko `.civ-v-top-stack` i szyny ikon `auto`; z-index szyn 405 (klikalne taby lewa/prawa).
+  - **Nawigacja między miastami:** przyciski `‹` / `›` zamiast `,` / `.`; skróty klawiszowe `←` / `→` (+ `,` / `.`) w `cityUxFrame`.
+- **Bramki:** tsc 0 · smoke OK · logic 207/208 (pre garnizon).
+
+## ROBOCZA `81b1d467` — 2026-07-26 23:52 · FALA 26: BITWA + DYPLOMACJA + MAPA 18% — **ZASTĄPIONA**
 - md5 (pelne): `81b1d46795ddbaa51f6167a49b85857d` · stempel: `ROBOCZA · 2026-07-26 23:52`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (ostrzeżenie npm).
