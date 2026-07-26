@@ -85,7 +85,17 @@ export interface HudState {
   kultura: number;
   kulturaRate?: number;
   bogactwo: number;
+  /** Przyrost Skarbca NETTO/turę (wplywy - utrzymanie budynkow - utrzymanie jednostek).
+   *  Rozbicie do podpowiedzi chipu w polach ponizej (NAPRAWA HUD-SKARBIEC, Maciej 2026-07-26). */
   bogactwoRate?: number;
+  /** Wplywy BRUTTO/turę (Danina/Podatek + pieniadz z budynkow + Handel ze szlakow), przed utrzymaniem. */
+  bogactwoWplywyBrutto?: number;
+  /** Czesc wplywow brutto pochodzaca z dochodu dystansowego tras handlowych (ta sama liczba co chip „Handel"). */
+  bogactwoHandel?: number;
+  /** Utrzymanie budynkow/turę (Pieniadz) — odjete od wplywow brutto przy koncu tury. */
+  bogactwoUtrzymanieBudynkow?: number;
+  /** Utrzymanie jednostek/turę (Pieniadz) — odjete od wplywow brutto przy koncu tury. */
+  bogactwoUtrzymanieJednostek?: number;
   ludnosc: number;
   ludnoscRate?: number;
   /** A1-Q15 / P-C3 — Moc (absolutna, P-A). Kod: objectivePower. */
@@ -500,6 +510,45 @@ function slowoTuraHud(n: number): string {
 }
 
 /**
+ * NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26, zgłoszenie z playtestu, bundle
+ * 2f928932): tooltip chipu „Skarbiec" rozbija liczbę „+N" na składniki, żeby
+ * gracz widział skąd się bierze przyrost/spadek — wpływy (Danina/Podatek +
+ * budynki, Handel ze szlaków) minus utrzymanie (budynki, jednostki). Suma
+ * składników równa się dokładnie wyświetlanemu „+N" (oba liczone z tych samych
+ * pól HudState, patrz main.ts buildHudState()).
+ */
+function skarbiecChipTitle(s: HudState): string {
+  const base = 'Skarbiec — bilans na turę';
+  const wplywyBrutto = s.bogactwoWplywyBrutto ?? 0;
+  const handel = s.bogactwoHandel ?? 0;
+  const daninaIBudynki = wplywyBrutto - handel;
+  const utrzymanieBudynkow = s.bogactwoUtrzymanieBudynkow ?? 0;
+  const utrzymanieJednostek = s.bogactwoUtrzymanieJednostek ?? 0;
+  const netto = s.bogactwoRate ?? 0;
+  return `${base}: Danina/Podatek i budynki: ${signed(daninaIBudynki)} pkt Pieniądza`
+    + ` · Handel ze szlaków: ${signed(handel)} pkt Pieniądza`
+    + ` · Utrzymanie budynków: ${signed(-utrzymanieBudynkow)} pkt Pieniądza`
+    + ` · Utrzymanie jednostek: ${signed(-utrzymanieJednostek)} pkt Pieniądza`
+    + ` · Razem netto: ${signed(netto)} pkt Pieniądza. Kliknij po szczegóły.`;
+}
+
+/**
+ * NAPRAWA HUD-PRACA (Maciej 2026-07-26, ten sam wzorzec/zgłoszenie co Skarbiec):
+ * tooltip chipu „Praca" rozbija „+N" na wpływ brutto do puli imperium minus
+ * utrzymanie ulepszeń surowcowych (civ-wide/turę). pracaRate jest już NETTO
+ * (main.ts), więc brutto = pracaRate + pracaUpkeep.
+ */
+function pracaChipTitle(s: HudState): string {
+  const base = 'Praca — bilans na turę';
+  const netto = s.pracaRate ?? 0;
+  const utrzymanie = s.pracaUpkeep ?? 0;
+  const wplywBrutto = netto + utrzymanie;
+  return `${base}: Wpływ do puli imperium: ${signed(wplywBrutto)} pkt Pracy`
+    + ` · Utrzymanie ulepszeń surowcowych: ${signed(-utrzymanie)} pkt Pracy`
+    + ` · Razem netto: ${signed(netto)} pkt Pracy. Kliknij po szczegóły.`;
+}
+
+/**
  * C-GLOD-Q1=A (Maciej 2026-07-26): tooltip chipu „Armia" — poza opisem stałym,
  * ostrzeżenie z wyprzedzeniem podczas karencji ("za N tur") LUB potwierdzenie,
  * że atrycja HP już trwa, gdy karencja minęła.
@@ -551,7 +600,7 @@ function renderBarD1B(s: HudState): string {
       value: String(s.bogactwo),
       rate: signed(s.bogactwoRate ?? 0),
       act: 'skarbiec',
-      title: 'Skarbiec — kliknij po szczegóły',
+      title: skarbiecChipTitle(s),
     }),
     chip6cSep(),
     chip6cHtml({
@@ -561,7 +610,7 @@ function renderBarD1B(s: HudState): string {
       rate: signed(s.pracaRate),
       rateWarn: s.pracaRate < 0,
       act: 'praca',
-      title: 'Praca — kliknij po szczegóły',
+      title: pracaChipTitle(s),
     }),
     chip6cSep(),
     chip6cHtml({

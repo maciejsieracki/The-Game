@@ -252,6 +252,8 @@ import {
   sumEconomyForOwner,
   sumEconomyForPlayerCities,
   previewCityEconomy,
+  previewOwnerUpkeep,
+  computePracaUpkeepByOwner,
   computeTerritoryResourceYieldByCity,
   ownerResourceCap,
   cityHasWaterAccess,
@@ -5805,7 +5807,18 @@ async function boot(): Promise<void> {
     let _lastWealthMnoznik: number = 1;
     let _lastNaukaRate: number = 0;
     let _lastLudnoscRate: number = 0;
+    /** NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26): _lastBogactwoRate to teraz przyrost
+     *  NETTO Skarbca/turę (wplywy - utrzymanie budynkow - utrzymanie jednostek) --
+     *  dokladnie to, o ile realnie zmieni sie player.skarbiec. _lastPieniadzRate
+     *  ponizej zostaje jako wplywy BRUTTO (suma Pieniadza z miast, sprzed odjecia
+     *  utrzymania) -- uzywane do bankowania (main.ts blok "Bank treasury") oraz do
+     *  rozbicia w podpowiedzi chipu, NIE do samego wyswietlanego "+N". */
     let _lastBogactwoRate: number = 0;
+    /** Rozbicie Skarbca do podpowiedzi chipu (main.ts "Bank treasury" + refreshLiveEmpireRates
+     *  licza je identycznie -- upkeepBalance / previewOwnerUpkeep, Spec s.6.4). */
+    let _lastBogactwoHandel: number = 0;
+    let _lastBogactwoUtrzymanieBudynkow: number = 0;
+    let _lastBogactwoUtrzymanieJednostek: number = 0;
     /** Live brutto żywności imperium (preview) — gdy brak ticku po endTurn. */
     let _liveFoodBrutto: number = 0;
     /** Ostatni tick ekonomii per miasto gracza (HUD imperium). */
@@ -8892,11 +8905,37 @@ async function boot(): Promise<void> {
         makeOwnerZlotoAccessResolver(),
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
-      _lastPracaRate = playerEcon.doPuli;
       _lastPieniadzRate = playerEcon.pieniadz;
       _lastNaukaRate = playerEcon.nauka;
       _lastKulturaRate = playerEcon.kultura;
-      _lastBogactwoRate = playerEcon.pieniadz;
+      // NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26): "+N" przy Skarbcu musi byc realna
+      // projekcja NETTO (wplywy - utrzymanie budynkow - utrzymanie jednostek), nie
+      // samym przychodem -- inaczej HUD obiecuje wiecej niz realnie wpada do Skarbca
+      // po zakonczeniu tury (main.ts blok "Bank treasury" nizej odejmuje dokladnie
+      // te sama pare liczb z econ.upkeepByOwner). previewOwnerUpkeep liczy je TYMI
+      // SAMYMI prymitywami (upkeepBalance), tylko przed koncem tury.
+      const playerEconUnitsForUpkeep: EconUnit[] = units
+        .filter(u => u.ownerId === 0)
+        .map(u => ({ ownerId: u.ownerId, typeId: u.typeId, camping: false, onOwnTerritory: true }));
+      const bogactwoUpkeepPreview = previewOwnerUpkeep(
+        0, playerCities, data, _menuDifficulty, cityBuilt, playerEconUnitsForUpkeep,
+        player.era, player.zbadane, empireEpochForOwner, unlockedTechSetForOwner,
+      );
+      _lastBogactwoHandel = playerEcon.pieniadzZTras;
+      _lastBogactwoUtrzymanieBudynkow = bogactwoUpkeepPreview.utrzymanieBudynki;
+      _lastBogactwoUtrzymanieJednostek = bogactwoUpkeepPreview.utrzymanieJednostki;
+      _lastBogactwoRate = playerEcon.pieniadz - bogactwoUpkeepPreview.utrzymanieRazem;
+      // NAPRAWA HUD-PRACA (ten sam wzorzec, ta sama zgloszenie): "+N" przy Pracy
+      // liczylo tylko doPuli (wplyw brutto do puli imperium), pomijajac utrzymanie
+      // Pracy za ulepszenia surowcowe (computePracaUpkeepByOwner, civ-wide/ture),
+      // ktore playerPracaPool realnie odejmuje pod koniec tury (main.ts, blok
+      // "ZADANIE 1" nizej). computePracaUpkeepByOwner to ta sama czysta funkcja
+      // uzywana w advanceCityEconomy -- brak ryzyka rozjazdu z realnym tickiem.
+      const pracaUpkeepPreview = computePracaUpkeepByOwner(
+        map, buildAllTerritoryNodes(), data, _menuDifficulty,
+      ).get(0) ?? 0;
+      _lastPracaUpkeep = pracaUpkeepPreview;
+      _lastPracaRate = playerEcon.doPuli - pracaUpkeepPreview;
       let brutto = 0;
       for (const tk of preview.perCity) {
         if (tk.ownerId !== 0 || tk.oblegany) continue;
@@ -8990,7 +9029,7 @@ async function boot(): Promise<void> {
         glodWojska: isArmyStarving(0),
         zywnoscKarencjaZaTur: foodStarvationCountdown ?? undefined,
         zloto: Math.floor(player.skarbiec),
-        zlotoRate: Math.floor(_lastPieniadzRate),
+        zlotoRate: Math.floor(_lastBogactwoRate),
         // BUGFIX 2026-07-10: Math.floor tutaj obcinal np. 1.8 -> 1 (zamiast 2), mimo
         // ze silnik (splitPraca, production.ts) juz liczy doPuli jako cala liczbe
         // sumujaca sie z doBudynkow do calkowitej Pracy miasta. Math.round zostaje
@@ -9004,7 +9043,14 @@ async function boot(): Promise<void> {
         kultura: Math.floor(_lastKultura),
         kulturaRate: Math.floor(_lastKulturaRate),
         bogactwo: Math.floor(player.skarbiec),
-        bogactwoRate: Math.floor(_lastPieniadzRate),
+        // NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26): "+N" = NETTO (wplywy - utrzymanie),
+        // nie same wplywy -- patrz komentarz przy refreshLiveEmpireRates() i "Bank
+        // treasury" w bloku ticku tury. Rozbicie do podpowiedzi w polach ponizej.
+        bogactwoRate: Math.floor(_lastBogactwoRate),
+        bogactwoWplywyBrutto: Math.floor(_lastPieniadzRate),
+        bogactwoHandel: Math.floor(_lastBogactwoHandel),
+        bogactwoUtrzymanieBudynkow: Math.floor(_lastBogactwoUtrzymanieBudynkow),
+        bogactwoUtrzymanieJednostek: Math.floor(_lastBogactwoUtrzymanieJednostek),
         ludnosc: pop,
         ludnoscRate: Math.floor(_lastLudnoscRate),
         religionStock: relAgg.stateAdherents,
@@ -9619,6 +9665,13 @@ async function boot(): Promise<void> {
             applyDiploEventTracked(allyId, ob.mustDeclareWarOn, getDiploRelation(allyId, ob.mustDeclareWarOn), 'wojna_wypowiedziana'),
           );
           joinedWarOwnerIds.push(allyId);
+
+          // P5 (§3 tabela C, §8) — "Pomoc sojusznikowi w wojnie… LUB na wezwanie": allyId
+          // faktycznie dołączył (nie odmówił, patrz N4 niżej) do wojny swojego sojusznika.
+          // Nagroda dla allyId (ten, kto pomaga), NIE dla attackerId/victimId (to ich własna
+          // wojna, nie akt pomocy). Wyłącznie ta gałąź — branch "już był w stanie wojny"
+          // (wyżej) to brak zmiany stanu, nie świeży akt dołączenia, więc nie nalicza.
+          appendWiarygodnoscEvent(allyId, 'pomoc_sojusznikowi_realna', _diplomacyParams().wiarygodnoscP5PomocSojusznikowi);
         }
       }
 
@@ -12491,11 +12544,17 @@ async function boot(): Promise<void> {
           const stackMaxHpSum = stackOnCity.reduce(
             (sum, u) => sum + unitHealth(unitDefFor(u)), 0,
           );
+          // Ruch stosu: min. ruchLeft / maks. ruch spośród jednostek na heksie
+          // (ta sama konwencja co armyListHud/ArmyListEntry, patrz linia ~3600-3601).
+          const stackRuchLeft = Math.min(...stackOnCity.map(u => u.ruchLeft));
+          const stackRuchMax = Math.max(...stackOnCity.map(u => u.ruch));
           showCityUnitPick({
             cityName: clickedCity.name,
             cityPopulation: clickedCity.population,
             unitLabel: rep.typeId,
             unitHealthPercent: stackMaxHpSum > 0 ? (stackHpSum / stackMaxHpSum) * 100 : undefined,
+            unitRuchLeft: stackRuchLeft,
+            unitRuchMax: stackRuchMax,
             stackCount: stackOnCity.length,
             onCity: () => openCityPanelForPlayer(clickedCity),
             onUnit: () => selectPlayerUnit(rep.id),
@@ -15472,6 +15531,14 @@ async function boot(): Promise<void> {
                 );
               }
             }
+            // NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26): utrwal SKŁADNIKI realnego bilansu
+            // tej tury (nie tylko rate.pieniadz), zeby "+N" przy Skarbcu na HUD (po tym
+            // ticku, przed nastepnym refreshLiveEmpireRates) i jego rozbicie w podpowiedzi
+            // pokazywaly dokladnie to co wlasnie zaszlo, a nie sama projekcje.
+            _lastBogactwoHandel = playerEcon.pieniadzZTras;
+            _lastBogactwoUtrzymanieBudynkow = playerBalance?.utrzymanieBudynki ?? 0;
+            _lastBogactwoUtrzymanieJednostek = playerBalance?.utrzymanieJednostki ?? 0;
+            _lastBogactwoRate = pieniadzGracza - (playerBalance?.utrzymanieRazem ?? 0);
 
             // Bank skarbca AI — per owner (nie econ.total*)
             const aiOwnerIds = new Set<number>();
@@ -16008,6 +16075,13 @@ async function boot(): Promise<void> {
                 _lastPraca = playerPracaPool;
               }
               _lastPracaUpkeep = playerUpkeep;
+              // NAPRAWA HUD-PRACA (Maciej 2026-07-26, ten sam wzorzec co Skarbiec): do
+              // tego miejsca _lastPracaRate byl SUMA BRUTTO poolGain/overflowToPool z
+              // petli per-miasto powyzej (patrz "poolGain"/"overflowToPool" wyzej) --
+              // realny playerPracaPool wlasnie zmalal o playerUpkeep (linia powyzej), a
+              // wyswietlany "+N" tego nie odzwierciedlal. Odejmujemy TU, RAZ, po tym jak
+              // pula juz zostala pomniejszona -- zeby "+N" = realna zmiana puli tej tury.
+              _lastPracaRate -= playerUpkeep;
               for (const [oid, up] of econ.pracaUpkeepByOwner) {
                 if (oid === 0 || up <= 0) continue;
                 const cur = aiPracaPoolByOwner.get(oid) ?? 0;
@@ -17797,7 +17871,12 @@ async function boot(): Promise<void> {
       playerPracaPool = 0;
       _lastPraca = 0;
       _lastPracaRate = 0;
+      _lastPracaUpkeep = 0;
       _lastPieniadzRate = 0;
+      _lastBogactwoRate = 0;
+      _lastBogactwoHandel = 0;
+      _lastBogactwoUtrzymanieBudynkow = 0;
+      _lastBogactwoUtrzymanieJednostek = 0;
       _lastNaukaRate = 0;
       _lastKulturaRate = 0;
       _lastLudnoscRate = 0;
@@ -18914,6 +18993,11 @@ async function boot(): Promise<void> {
       _lastPraca = playerPracaPool;
       _lastPieniadzRate = 0;
       _lastPracaRate = 0;
+      _lastPracaUpkeep = 0;
+      _lastBogactwoRate = 0;
+      _lastBogactwoHandel = 0;
+      _lastBogactwoUtrzymanieBudynkow = 0;
+      _lastBogactwoUtrzymanieJednostek = 0;
       _lastNaukaRate = 0;
       _lastKulturaRate = 0;
       _lastLudnoscRate = 0;

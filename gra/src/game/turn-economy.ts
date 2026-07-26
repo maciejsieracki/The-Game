@@ -1362,6 +1362,70 @@ export function previewCityEconomy(
   return { perCity };
 }
 
+/**
+ * Live preview of one owner's gold upkeep balance (building + unit maintenance,
+ * Spec s.6.4) — same primitives as advanceCityEconomy's real end-of-turn tick
+ * (upkeepBalance over buildingsByOwner/econUnits, s.1878-1913 below), but pure
+ * and read-only, so it can run BEFORE end of turn (HUD "Skarbiec" chip rate).
+ *
+ * NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26, zgloszenie z playtestu, bundle
+ * 2f928932): HUD-owy chip Skarbca pokazywal WPLYWY BRUTTO (suma Pieniadza z
+ * miast, playerEcon.pieniadz) jako "przyrost/ture", pomijajac utrzymanie
+ * budynkow i jednostek ktore Skarbiec realnie odejmuje przy koncu tury (main.ts
+ * "Bank treasury" blok, `player.skarbiec -= playerBalance.utrzymanieRazem`).
+ * Ta funkcja daje wolajacemu (main.ts refreshLiveEmpireRates) dokladnie te same
+ * dwie sumy PRZED koncem tury, zeby wyswietlany "+N" byl realna projekcja
+ * netto, nie samym przychodem.
+ *
+ * `econUnits` celowo tego samego typu co advanceCityEconomy uzywa (EconUnit,
+ * bez pola `category`) -- upkeepBalance/totalUnitUpkeep i tak dostaje go przez
+ * `as unknown as UnitUpkeepLike[]` (identycznie jak nizej w advanceCityEconomy),
+ * wiec zachowanie (dopasowanie po typeId / fallback standardowy) jest IDENTYCZNE
+ * w podglodzie i w realnym ticku -- zaden rozjazd z powodu innego ksztaltu danych.
+ * PARYTET AI: ownerId to zwykly parametr, zero galezi warunkowych po jego wartosci.
+ */
+export function previewOwnerUpkeep(
+  ownerId: number,
+  cities: ReadonlyArray<City>,
+  data: GameData,
+  difficulty: Difficulty = 'normal',
+  builtByCity: ReadonlyMap<string, readonly string[]> = new Map(),
+  econUnits: ReadonlyArray<EconUnit> = [],
+  playerEra: number = 1,
+  playerZbadane: ReadonlySet<string> = new Set(),
+  resolveOwnerEra?: OwnerEraResolver,
+  resolveOwnerTech?: OwnerTechResolver,
+): UpkeepBalance {
+  const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
+  const upkeepParams  = loadUpkeepParams(rawEconParams, difficulty);
+  const unitUpkeepTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
+
+  const buildings: BuildingInstanceLike[] = [];
+  for (const city of cities) {
+    if (city.ownerId !== ownerId) continue;
+    const builtIds = builtByCity.get(city.id) ?? [];
+    if (builtIds.length === 0) continue;
+    const ownerEra = resolveOwnerEra
+      ? resolveOwnerEra(city.ownerId)
+      : (city.ownerId === 0 ? playerEra : 1);
+    const ownerTech = resolveOwnerTech
+      ? resolveOwnerTech(city.ownerId)
+      : playerZbadane;
+    for (const bid of builtIds) {
+      const bdef = data.buildings.find(b => b.id === bid);
+      if (!bdef) continue;
+      const level = buildingLevelForEpoch(
+        bdef.epokaWejscia, ownerEra, bdef.maksPoziom, bdef.poziomTechGate, ownerTech,
+      );
+      buildings.push({ record: bdef as unknown as BuildingRecord, level });
+    }
+  }
+  const ounits = econUnits.filter(u => u.ownerId === ownerId) as unknown as UnitUpkeepLike[];
+  // `income` nie jest tu potrzebny (wolacy chce tylko utrzymanieBudynki/Jednostki/Razem,
+  // nie salda) -- 0 jest neutralne, wplywa wylacznie na pola saldo/deficyt ponizej.
+  return upkeepBalance(0, buildings, ounits, unitUpkeepTbl, upkeepParams);
+}
+
 export function advanceCityEconomy(
   cities: City[],
   map: GameMap,
