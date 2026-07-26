@@ -14,7 +14,7 @@ import {
   hasCityDefenders,
 } from '../game/siegeDefenders';
 import type { TerrainEntry } from '../game/combat';
-import { terrainDefenseMultiplier } from '../game/combat';
+import { cityGatedTerrainMultiplier } from '../game/city-defense';
 import {
   autoBattleWinPct,
   resolveAutoBattleByPower,
@@ -213,20 +213,22 @@ function effectiveDefenderM(
   // Wyrównane identycznie: sumRosterFieldMSplit dzieli M na attack/defense,
   // structMult mnożony TYLKO przez defense.
   //
-  // UWAGA — punkt 3 (mnożnik terenu) WSTRZYMANY (aktualizacja zlecenia
-  // 2026-07-26): terrMult celowo zostaje na CAŁYM M, jak przed zmianą (patrz
-  // main.ts effectiveDefenderM dla identycznego uzasadnienia).
+  // C-COMBAT-Q2 (Maciej, 2026-07-26): domyka punkt 3 (kiedyś "WSTRZYMANY") --
+  // bonus terenu w obronie MIASTA liczy się WYŁĄCZNIE gdy miasto ma mur. Ta
+  // ścieżka obsługuje WYŁĄCZNIE miasto BEZ MURU (validateOpenCityFieldBattle
+  // odrzuca city.maMur), więc hasMur jest tu ZAWSZE false -->
+  // cityGatedTerrainMultiplier upraszcza się do stałej 1.0 (żaden teren, w tym
+  // wzniesienie, nie daje bonusu) -- dokładnie jak main.ts effectiveDefenderM
+  // (gałąź miasta), z którą ta funkcja musi liczyć identycznie (patrz tam po
+  // pełne uzasadnienie kombinacji ADDYTYWNEJ struct%+teren% i zerowego bonusu
+  // terenu na część Ataku obrońcy).
   const split = sumRosterFieldMSplit(
     defRoster.map(u => ({ typeId: u.typeId, def: veteranScaledDef(u, unitDefFor) })),
   );
-  const terrMult = terrainDefenseMultiplier(
-    terrain,
-    String(atkLeadDef['Rola (linia)'] ?? ''),
-    terrainCombatData as TerrainEntry[],
-  );
-  const structMult = 1 + structBonusPct / 100;
-  const terrAdjAttack = split.attack * terrMult;
-  const terrAdjDefense = split.defense * terrMult * structMult;
+  const cityTerrMult = cityGatedTerrainMultiplier(false, terrain, terrainCombatData as TerrainEntry[]);
+  const combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100;
+  const terrAdjAttack = split.attack;
+  const terrAdjDefense = split.defense * (1 + combinedDefPct / 100);
   return Math.round((terrAdjAttack + terrAdjDefense) * 10) / 10;
 }
 
@@ -464,6 +466,12 @@ export function launchFieldBattleFromMap(
         teren: plan.terrain,
         data: deps.battleData,
         deploy: true,
+        // C-COMBAT-Q2 (Maciej 2026-07-26): to ZAWSZE obrona miasta BEZ MURU
+        // (validateOpenCityFieldBattle odrzuca city.maMur) -- battleScene.ts
+        // gate'uje bonus terenu (Wzgorza/Gory) na obrone miasta wylacznie gdy
+        // ma mur; tu hasMur jest zawsze false, wiec bonus terenu wychodzi 0,
+        // zgodnie z tabela decyzji ("Miasto bez budynku obronnego" -> 0%).
+        cityDefense: true,
         attackerCivBonusy: deps.civBonusyForOwnerId(atkLead.ownerId),
         defenderCivBonusy: deps.civBonusyForOwnerId(defLead.ownerId),
         attackerCivLabel: pbInfo.atakujacy.cywilizacja,

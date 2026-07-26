@@ -33,6 +33,9 @@
  * trzecia warstwa byla dobrym momentem na scalenie w jeden, testowalny modul.
  */
 
+import { normTerrain, terrainDefenseMultiplier } from './combat';
+import type { TerrainEntry } from './combat';
+
 export interface CityDefenseBonusParams {
   /** bonus_obrona_mur_proc (miasto-params.json) -- baza, zwykle 200. */
   mur: number;
@@ -64,4 +67,52 @@ export function cityWallDefenseBonusPercent(
   }
   if (hasBaszta) total += params.baszta;
   return total;
+}
+
+/**
+ * cityGatedTerrainMultiplier (C-COMBAT-Q2, Maciej 2026-07-26 -- decyzja
+ * "bonus terenu przy obronie MIASTA dolicza sie WYLACZNIE gdy miasto ma mur"):
+ *
+ * Zwraca mnoznik terenu dla obrony MIASTA, gated na dwa warunki jednoczesnie:
+ *   1. Miasto MUSI miec budynek obronny (Mury / Cytadela / Baszta) -- `hasMur`
+ *      (dowolny z trzech, patrz cityWallDefenseBonusPercent powyzej > 0).
+ *      Miasto BEZ zadnego z nich -> zawsze 1.0 (brak bonusu), niezaleznie od
+ *      terenu -- uzasadnienie wlasciciela: jednostki miasta bez murow wychodza
+ *      w pole i biją sie na plaskim gruncie, wiec wzgorze pod miastem nie ma
+ *      czego chronic.
+ *   2. Z terenow liczy sie WYLACZNIE wzniesienie (Wzgorza; teoretycznie Gory,
+ *      choc miasta nie da sie na nich zalozyc) -- Las, Rzeka i pozostale
+ *      tereny NIE dodaja nic do obrony miasta, nawet z murem. Wartosc dla
+ *      wzniesienia to DOKLADNIE terrainDefenseMultiplier() (1.5 Wzgorza /
+ *      1.75 Gory) -- ta sama liczba co bitwa w polu, tylko GATED (patrz #1)
+ *      i zawezona do elewacji (patrz #2).
+ *
+ * WAZNE -- kombinacja z bonusem strukturalnym (mur/Cytadela/Baszta) jest
+ * ADDYTYWNA w punktach procentowych (Razem = Bonus_strukturalny% +
+ * Bonus_terenu%), NIE mnozona -- patrz tabela w zadaniu (Mury+wzgorze:
+ * 200%+50%=250%, NIE 200%*150%=350%). Wywolujacy MUSI wiec kombinowac wynik
+ * tej funkcji jako `(cityGatedTerrainMultiplier(...) - 1) * 100` procentowych
+ * punktow DODANYCH do structBonusPct -- NIE jako dodatkowy mnoznik obok
+ * structMult (tak jak dzieje sie to dzis dla bitwy w polu, ktora zostaje BEZ
+ * ZMIAN -- tam teren i struktura (fort/posterunek) nadal MNOZA sie, patrz
+ * main.ts effectiveDefenderM galaz "bitwa w polu").
+ *
+ * Bitwy w polu (poza miastem) NIE wolaja tej funkcji w ogole -- zachowuja
+ * pelny, niegated terrainDefenseMultiplier() (las/wzgorze/brod dzialaja jak
+ * dzis). Ta funkcja jest wolana WYLACZNIE ze sciezek obrony MIASTA (Auto --
+ * main.ts effectiveDefenderM + mapFieldBattle.ts duplikat; taktyczna --
+ * battleScene.ts _singleBlow; "Pomin" -- battleScene.ts computeInstantResult).
+ *
+ * PARYTET AI: czysta funkcja bez ownerId -- identyczna dla gracza i AI.
+ */
+export function cityGatedTerrainMultiplier(
+  hasMur: boolean,
+  terrain: string,
+  terrainData: readonly TerrainEntry[],
+): number {
+  if (!hasMur) return 1.0;
+  const terrNorm = normTerrain(terrain);
+  const isElevation = terrNorm.includes('wzg') || terrNorm.includes('gor');
+  if (!isElevation) return 1.0;
+  return terrainDefenseMultiplier(terrain, '', terrainData as TerrainEntry[]);
 }

@@ -11,6 +11,17 @@
 // Catches any JS error or unhandled promise and shows it as a red overlay
 // so a black screen never silently hides what went wrong.
 
+/** C-GLOD-Q1=A (Maciej 2026-07-26): odmiana „tura" w bierniku dla ostrzeżenia
+ *  karencji głodu wojska ("za 1 turę" / "za 2 tury" / "za 5 tur"). */
+function slowoTura(n: number): string {
+  const a = Math.abs(n);
+  if (a === 1) return 'turę';
+  const m10 = a % 10;
+  const m100 = a % 100;
+  if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return 'tury';
+  return 'tur';
+}
+
 function showErr(msg: string): void {
   let el = document.getElementById('__err_overlay__') as HTMLDivElement | null;
   if (!el) {
@@ -473,7 +484,7 @@ import {
   bestBuildingProgressAfterCityVisit, buildingProgressWouldChange,
   unitPancerzBonusFrac, unitParametryBonusFrac, unitBuildingBonusLabel,
 } from './game/unit-building-bonuses';
-import { cityWallDefenseBonusPercent } from './game/city-defense';
+import { cityWallDefenseBonusPercent, cityGatedTerrainMultiplier } from './game/city-defense';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
   type TradeGoodEntry,
@@ -499,6 +510,7 @@ import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadiu
 import {
   advanceEmpireFood, bindEmpireFoodRuntime, freshEmpireFoodState,
   buildEmpireFoodParams, getLastEmpireFoodTick, getEmpireFoodReserve, getEmpireFoodMaxCap, getEmpireFoodSplit, isArmyStarving,
+  getArmyStarvationCountdown,
   computeEmpireFoodNetDelta, computeEmpireFoodNetDeltaFromCityFoods, getCityFoodSplit, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
   type EmpireFoodState,
 } from './game/empire-food';
@@ -8137,9 +8149,17 @@ async function boot(): Promise<void> {
     function projectPlayerFoodNetRate(): number {
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
+      // C-GLOD-Q2=B (Maciej 2026-07-26): mnożnik terytorialny w projekcji HUD —
+      // territoryNodes budowane RAZ, nie per jednostka (wydajność).
+      const territoryNodesForFoodProj = buildAllTerritoryNodes();
       const playerUnits: EconUnit[] = units
         .filter(u => u.ownerId === 0)
-        .map(u => ({ ownerId: u.ownerId, typeId: u.typeId, camping: false }));
+        .map(u => ({
+          ownerId: u.ownerId,
+          typeId: u.typeId,
+          camping: false,
+          onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForFoodProj) === u.ownerId,
+        }));
       const kosztArmii = militaryFoodConsumption(playerUnits, upkeepParams, unitFoodTbl);
       const playerCities = cities.filter(c => c.ownerId === 0 && !c.oblegane);
       const preview = previewCityEconomy(
@@ -8265,6 +8285,10 @@ async function boot(): Promise<void> {
       const foodReserve = Math.floor(getEmpireFoodReserve(0));
       const foodMaxCap = projectPlayerFoodMaxCap();
       const foodNetRate = Math.floor(projectPlayerFoodNetRate());
+      // ZADANIE 5 (Maciej 2026-07-26): ostrzeżenie z wyprzedzeniem — ile tur do startu
+      // atrycji HP wojska, gdy zapasy państwa są ujemne ale karencja jeszcze nie minęła.
+      const glodWojskaKarencjaTurHud = buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaKarencjaTur;
+      const foodStarvationCountdown = getArmyStarvationCountdown(0, glodWojskaKarencjaTurHud);
       const stateRel = ownerReligionForOwnerId(0);
       const relAgg = aggregateReligionEmpire(
         pc.map(c => ({
@@ -8307,6 +8331,7 @@ async function boot(): Promise<void> {
         zywnoscMax: foodMaxCap,
         zywnoscRate: foodNetRate,
         glodWojska: isArmyStarving(0),
+        zywnoscKarencjaZaTur: foodStarvationCountdown ?? undefined,
         zloto: Math.floor(player.skarbiec),
         zlotoRate: Math.floor(_lastPieniadzRate),
         // BUGFIX 2026-07-10: Math.floor tutaj obcinal np. 1.8 -> 1 (zamiast 2), mimo
@@ -11686,6 +11711,25 @@ async function boot(): Promise<void> {
      * toggle "stand-by" traktujemy kazda jednostke na polu budowli we wlasnym
      * terytorium jako obozujaca (zgodnie z ustaleniem w handoffie UNITS).
      */
+    /**
+     * cityWallStatusAtHex (C-COMBAT-Q2, Maciej 2026-07-26) -- czy heks (q,r) to
+     * miasto, i czy TO miasto ma jakikolwiek budynek obronny (Mury/Cytadela/
+     * Baszta). Uzywane przez effectiveDefenderM, zeby odroznic obrone MIASTA
+     * (gdzie bonus terenu ma byc GATED -- patrz cityGatedTerrainMultiplier,
+     * game/city-defense.ts) od bitwy w polu (bez zmian). `isCity=false` dla
+     * kazdego innego heksu (w tym fort/posterunek terenowe -- te NIE sa
+     * "obrona miasta", zostaja bez zmian per decyzja wlasciciela).
+     */
+    function cityWallStatusAtHex(q: number, r: number): { isCity: boolean; hasMur: boolean } {
+      const cityOnHex = cities.find(c => c.q === q && c.r === r);
+      if (!cityOnHex) return { isCity: false, hasMur: false };
+      const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
+      const wallBonus = cityWallDefenseBonusPercent(builtIds, {
+        mur: MUR_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
+      });
+      return { isCity: true, hasMur: wallBonus > 0 };
+    }
+
     function structureDefenseBonusFor(q: number, r: number): number {
       // Sprawdz czy bronicacy jest w miescie z budynkiem obronnym (Mury/Cytadela/Baszta)
       const cityOnHex = cities.find(c => c.q === q && c.r === r);
@@ -11869,17 +11913,24 @@ async function boot(): Promise<void> {
       };
     }
 
-    /** Szanse preBattle = prognoza auto-walki M v2b (identyczny stos co Auto). */
+    /**
+     * Szanse preBattle = prognoza auto-walki M v2b (identyczny stos co Auto).
+     * `defQ`/`defR` -- pozycja broniącego się rostera (C-COMBAT-Q2: gate bonusu
+     * terenu w obronie miasta, patrz effectiveDefenderM) -- podgląd MUSI liczyć
+     * identycznie jak Auto, żeby "Szacunkowa przewaga" nie kłamała.
+     */
     function preBattleSzanseAtkPct(
       atkRoster: RuntimeUnit[],
       defRoster: RuntimeUnit[],
       terrain: string,
       structBonusPct: number,
+      defQ: number,
+      defR: number,
       atkSiegeBonus: number = 0,
     ): number {
       const aLeadDef = unitDefFor(atkRoster[0]!);
       const mAtk = rosterFieldPowerM(atkRoster) + atkSiegeBonus;
-      const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef);
+      const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef, defQ, defR);
       return autoBattleWinPct(mAtk, mDef);
     }
 
@@ -11931,7 +11982,7 @@ async function boot(): Promise<void> {
       const dHex4 = map.hexes[dHexKey4];
       const dTeren4: string = dHex4 ? (dHex4.terenBazowy as string) : 'Rownina';
       const dStructBonus4 = structureDefenseBonusFor(defUnit.q, defUnit.r);
-      const szanse4 = preBattleSzanseAtkPct(atkRoster, defRoster, dTeren4, dStructBonus4);
+      const szanse4 = preBattleSzanseAtkPct(atkRoster, defRoster, dTeren4, dStructBonus4, defUnit.q, defUnit.r);
       const defCivLabel = ownerDiploLabel(defUnit.ownerId);
       const placeInfo = fieldBattlePlaceInfo(defUnit.q, defUnit.r, dTeren4, 0);
       const pbInfo4: PreBattleInfo = {
@@ -11993,7 +12044,7 @@ async function boot(): Promise<void> {
           const atkLead = atkRosterRef[0]!;
           const aLeadDef = unitDefFor(atkLead);
           const mAtk = rosterFieldPowerM(atkRosterRef);
-          const mDef = effectiveDefenderM(defRosterRef, dTeren4, dStructBonus4, aLeadDef);
+          const mDef = effectiveDefenderM(defRosterRef, dTeren4, dStructBonus4, aLeadDef, defUnit.q, defUnit.r);
           const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
 
           if (powerRes.winner === 'none') {
@@ -12213,6 +12264,8 @@ async function boot(): Promise<void> {
       terrain: string,
       structBonusPct: number,
       atkLeadDef: Record<string, unknown>,
+      q: number,
+      r: number,
     ): number {
       // C-COMBAT-Q1 (Maciej, 2026-07-26): bonus muru/Cytadeli/Baszty ma podnosić
       // WYŁĄCZNIE Obronę obrońcy, nigdy Atak — zgodnie z bitwą taktyczną
@@ -12222,14 +12275,22 @@ async function boot(): Promise<void> {
       // sumRosterFieldMSplit (unit-power.ts armyFieldPowerSplit) i strukturalny
       // structMult mnożymy TYLKO przez część obronną.
       //
-      // UWAGA — punkt 3 (mnożnik terenu terrainDefenseMultiplier) WSTRZYMANY
-      // na wyraźne polecenie właściciela (aktualizacja zlecenia 2026-07-26):
-      // terrMult celowo zostaje na CAŁYM M (atak+obrona), dokładnie jak przed
-      // tą zmianą — nie zwężamy jego zakresu teraz, bo właściciel rozważa inną
-      // regułę (teren liczy się tylko z murem + tylko wzniesienie). Gdy
-      // structMult=1 (brak murów) całość redukuje się do
-      // (attack+defense)*terrMult*embarkMult = raw*terrMult*embarkMult,
-      // bit-for-bit jak przed zmianą.
+      // C-COMBAT-Q2 (Maciej, 2026-07-26): domyka punkt 3 z komentarza powyżej
+      // (kiedyś "WSTRZYMANY") -- bonus terenu przy OBRONIE MIASTA dolicza się
+      // WYŁĄCZNIE gdy miasto ma mur, i tylko z wzniesienia (Wzgórza/Góry) --
+      // patrz cityGatedTerrainMultiplier (game/city-defense.ts). `q`/`r` to
+      // pozycja BRONIĄCEGO się rostera -- pozwala rozstrzygnąć, czy to w ogóle
+      // obrona miasta (cityWallStatusAtHex), bo structBonusPct sam w sobie
+      // bywa >0 też dla fort/posterunek W POLU (poza miastem), gdzie reguła
+      // NIE obowiązuje (bitwa w polu zostaje BEZ ZMIAN -- pełny, niegated
+      // terrainDefenseMultiplier na całym M, dokładnie jak przed tą decyzją).
+      // Kombinacja bonusu strukturalnego i terenu w obronie MIASTA jest
+      // ADDYTYWNA w punktach procentowych (Razem = struct% + teren%, patrz
+      // tabela w zadaniu -- Mury+wzgórze = 200%+50%=250%, NIE 200%*150%=350%),
+      // więc dla miasta terrMult (na CAŁYM M) znika -- zastępuje go jeden
+      // combinedDefMult zastosowany WYŁĄCZNIE na część Obrony (jak structMult
+      // dziś), a część Ataku obrońcy nie dostaje już żadnego bonusu terenu w
+      // obronie miasta (teren "nie chroni" ofensywnej składowej obrońcy).
       // Audyt weteranów 2026-07-26: def przez veteranScaledDefFor (patrz
       // rosterFieldPowerM powyżej) -- premia weterana wchodzi PRZED terrMult/
       // structMult (kolejność uzasadniona w raporcie zadania: to niezależne
@@ -12239,18 +12300,35 @@ async function boot(): Promise<void> {
       const split = sumRosterFieldMSplit(
         defRoster.map(u => ({ typeId: u.typeId, def: veteranScaledDefFor(u) })),
       );
-      const terrMult = terrainDefenseMultiplier(
-        terrain,
-        String(atkLeadDef['Rola (linia)'] ?? ''),
-        terrainCombatData as unknown as TerrainEntry[],
-      );
-      const structMult = 1 + structBonusPct / 100;
-      const terrAdjAttack = split.attack * terrMult;
-      const terrAdjDefense = split.defense * terrMult * structMult;
+      const { isCity, hasMur } = cityWallStatusAtHex(q, r);
+      let terrAdjAttack: number;
+      let terrAdjDefense: number;
+      if (isCity) {
+        const cityTerrMult = cityGatedTerrainMultiplier(
+          hasMur,
+          terrain,
+          terrainCombatData as unknown as TerrainEntry[],
+        );
+        const combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100;
+        terrAdjAttack = split.attack;
+        terrAdjDefense = split.defense * (1 + combinedDefPct / 100);
+      } else {
+        // Bitwa w polu (poza miastem) -- BEZ ZMIAN: mnożnik terenu na CAŁYM M
+        // (atak+obrona), mnożnik struktury (fort/posterunek) TYLKO na obronę,
+        // MNOŻONE (nie dodawane) -- dokładnie jak przed tą decyzją.
+        const terrMult = terrainDefenseMultiplier(
+          terrain,
+          String(atkLeadDef['Rola (linia)'] ?? ''),
+          terrainCombatData as unknown as TerrainEntry[],
+        );
+        const structMult = 1 + structBonusPct / 100;
+        terrAdjAttack = split.attack * terrMult;
+        terrAdjDefense = split.defense * terrMult * structMult;
+      }
       // TEMAT #15: obrońca zaokrętowany (bitwa na wodzie) — obrona ×0,5 (−50%).
-      // Poza zakresem decyzji C-COMBAT-Q1 (dotyczy muru) — zachowanie embarkMult
-      // NIE zmienione: nadal mnoży całość (atak+obrona), tak jak przed tą
-      // zmianą, mimo że komentarz mówi "obrona x0,5" (patrz raport).
+      // Poza zakresem decyzji C-COMBAT-Q1/Q2 (dotyczą muru/terenu) — zachowanie
+      // embarkMult NIE zmienione: nadal mnoży całość (atak+obrona), tak jak
+      // przed tą zmianą, mimo że komentarz mówi "obrona x0,5" (patrz raport).
       const embarkMult = defRoster[0]?.embarked === true ? EMBARK_DEFENSE_MULT : 1;
       return Math.round((terrAdjAttack + terrAdjDefense) * embarkMult * 10) / 10;
     }
@@ -12268,7 +12346,7 @@ async function boot(): Promise<void> {
       const start = atkStart ?? snapshotRosterPositions(atkRoster);
       const aLeadDef = unitDefFor(atkRoster[0]!);
       const mAtk = rosterFieldPowerM(atkRoster);
-      const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef);
+      const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef, battleQ, battleR);
       const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
       if (powerRes.winner === 'none') return powerRes;
 
@@ -12311,7 +12389,7 @@ async function boot(): Promise<void> {
 
       const atkLead = atkRosterRef[0]!;
       const defLead = defRosterRef[0]!;
-      const szanse = preBattleSzanseAtkPct(atkRosterRef, defRosterRef, terrain, structBonusPct);
+      const szanse = preBattleSzanseAtkPct(atkRosterRef, defRosterRef, terrain, structBonusPct, battleQ, battleR);
       const atkOwner = atkLead.ownerId;
       const atkCivLabel = atkOwner === 0 ? 'Gracz' : ownerDiploLabel(atkOwner);
       const defCivLabel = defLead.ownerId === 0 ? 'Gracz' : ownerDiploLabel(defLead.ownerId);
@@ -12367,7 +12445,7 @@ async function boot(): Promise<void> {
         try {
           const aLeadDef = unitDefFor(atkLead);
           const mAtk = rosterFieldPowerM(atkRosterRef);
-          const mDef = effectiveDefenderM(defRosterRef, terrain, structBonusPct, aLeadDef);
+          const mDef = effectiveDefenderM(defRosterRef, terrain, structBonusPct, aLeadDef, battleQ, battleR);
           const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
           if (powerRes.winner === 'none') {
             showHintMessage('Bitwa: brak sił bojowych w składzie', 3000);
@@ -13179,7 +13257,7 @@ async function boot(): Promise<void> {
         const atkStartSnap = snapshotRosterPositions(atkRoster);
         const aLeadDef = unitDefFor(atkRoster[0]!);
         const mAtk = rosterFieldPowerM(atkRoster) + rosterSiegeMachinePowerM(atkRoster);
-        const mDef = effectiveDefenderM(defRoster, dTeren, dStructBonus, aLeadDef);
+        const mDef = effectiveDefenderM(defRoster, dTeren, dStructBonus, aLeadDef, city.q, city.r);
         const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
         if (powerRes.winner === 'none') return;
 
@@ -13264,6 +13342,8 @@ async function boot(): Promise<void> {
         defRoster,
         dTeren,
         dStructBonus,
+        city.q,
+        city.r,
         rosterSiegeMachinePowerM(atkRoster),
       );
 
@@ -13326,7 +13406,7 @@ async function boot(): Promise<void> {
           const atkLead = atkRosterRef[0]!;
           const aLeadDef = unitDefFor(atkLead);
           const mAtk = rosterFieldPowerM(atkRosterRef) + rosterSiegeMachinePowerM(atkRosterRef);
-          const mDef = effectiveDefenderM(defRosterRef, dTeren, dStructBonus, aLeadDef);
+          const mDef = effectiveDefenderM(defRosterRef, dTeren, dStructBonus, aLeadDef, city!.q, city!.r);
           const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
           if (powerRes.winner === 'none') {
             showHintMessage('Szturm: brak sił bojowych w składzie', 3000);
@@ -13932,10 +14012,23 @@ async function boot(): Promise<void> {
         // Wrapped defensively so a data anomaly can never break the turn loop.
         try {
           // Map runtime units to the minimal EconUnit shape for upkeep/food accounting.
+          // C-GLOD-Q2=B (Maciej 2026-07-26): mnożnik terytorialny (własne x1,0 / poza x2,0)
+          // -- territoryNodes budowane RAZ dla całej tury, nie per jednostka (wydajność:
+          // to leci co turę po WSZYSTKICH jednostkach na mapie).
+          const territoryNodesForFood = buildAllTerritoryNodes();
           const econUnits: EconUnit[] = units.map(u => ({
             ownerId: u.ownerId,
             typeId:  u.typeId,
-            camping: false,  // no camping state in v0.1; all units treated as marching
+            // DECYZJA (Maciej 2026-07-26, przy okazji C-GLOD-Q2=B): `camping` (obozowanie,
+            // zywnosc_jednostka_oboz = 0.5/turę) POZOSTAJE świadomie martwy w tym zadaniu —
+            // silnik nie ma jeszcze pojęcia "jednostka obozuje" (v0.1, brak stanu ruchu/akcji
+            // do tego dedykowanego). Wprowadzenie prawdziwego stanu obozowania to osobna
+            // decyzja produktowa (kiedy jednostka "obozuje" vs "maszeruje"?), poza zakresem
+            // karencji/mnożnika terytorialnego zleconych tutaj. Różnicowanie tempa idzie
+            // WYŁĄCZNIE przez mnożnik terytorialny (onOwnTerritory, C-GLOD-Q2=B) -- prostszy,
+            // jawnie wybrany przez właściciela wariant.
+            camping: false,
+            onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForFood) === u.ownerId,
           }));
           const ownerCivMap = new Map<number, string>();
           ownerCivMap.set(0, (player.civType as string) || 'grecy');
@@ -14041,54 +14134,88 @@ async function boot(): Promise<void> {
           try {
             const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
             const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
-            advanceEmpireFood(econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl);
-            if (getEmpireFoodReserve(0) < 0) {
-              showHintMessage('Głód wojska — zapasy państwa ujemne!', 3000);
+            const efTickResult = advanceEmpireFood(econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl);
+
+            // NAPRAWA PARYTETU (Maciej 2026-07-26, bez pytania — luka, nie decyzja):
+            // atrycja HP z głodu leciała WYŁĄCZNIE dla ownerId===0 (gracz), więc AI miało
+            // efektywnie darmową armię mimo ujemnych zapasów państwa. Teraz identycznie dla
+            // KAŻDEGO właściciela. C-GLOD-Q1=A: atrycja startuje dopiero gdy tick.glodWojskaAtrycjaAktywna
+            // (karencja glodWojskaKarencjaTur tur ujemnych zapasów z rzędu minęła — empire-food.ts).
+            const allDestroyedIds: string[] = [];
+            let playerDamagedCount = 0;
+            let playerDestroyedCount = 0;
+
+            for (const tick of efTickResult.perOwner) {
+              if (!tick.glodWojskaAtrycjaAktywna) continue;
               const starv = applyArmyStarvationHpLoss(
                 units,
-                0,
+                tick.ownerId,
                 efParams.glodWojskaHpFrac,
                 (typeId) => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {}),
               );
-              if (starv.damagedCount > 0) {
-                refreshFog();
+              if (tick.ownerId === 0) {
+                playerDamagedCount += starv.damagedCount;
+                playerDestroyedCount += starv.destroyedIds.length;
               }
-              if (starv.destroyedIds.length > 0) {
-                // #72: sprzątanie oblężenia/garnizonu jak w disbandPlayerUnit — jednostka
-                // ginąca z głodu nie może zostawić za sobą wiszącego oblegaCityId ani
-                // zawyżonego licznika city.garnizon.
-                const destroyedSet = new Set(starv.destroyedIds);
-                const siegeCityIdsAffected = new Set<string>();
-                const garnizonCitiesAffected = new Map<string, City>();
-                for (const u of units) {
-                  if (!destroyedSet.has(u.id)) continue;
-                  if (u.oblegaCityId) siegeCityIdsAffected.add(u.oblegaCityId);
-                  if (u.inGarnizon === true) {
-                    const c = cityAtUnit(u);
-                    if (c) garnizonCitiesAffected.set(c.id, c);
+              if (starv.destroyedIds.length > 0) allDestroyedIds.push(...starv.destroyedIds);
+            }
+
+            if (playerDamagedCount > 0) refreshFog();
+
+            if (allDestroyedIds.length > 0) {
+              // #72: sprzątanie oblężenia/garnizonu jak w disbandPlayerUnit — jednostka
+              // ginąca z głodu nie może zostawić za sobą wiszącego oblegaCityId ani
+              // zawyżonego licznika city.garnizon. Zbiorczo dla WSZYSTKICH właścicieli
+              // (parytet) w jednym przebiegu — wydajność, jeden sprzęt na turę.
+              const destroyedSet = new Set(allDestroyedIds);
+              const siegeCityIdsAffected = new Set<string>();
+              const garnizonCitiesAffected = new Map<string, City>();
+              for (const u of units) {
+                if (!destroyedSet.has(u.id)) continue;
+                if (u.oblegaCityId) siegeCityIdsAffected.add(u.oblegaCityId);
+                if (u.inGarnizon === true) {
+                  const c = cityAtUnit(u);
+                  if (c) garnizonCitiesAffected.set(c.id, c);
+                }
+              }
+              for (let i = units.length - 1; i >= 0; i--) {
+                if (destroyedSet.has(units[i]!.id)) units.splice(i, 1);
+              }
+              syncUnitsRender();
+              for (const siegeCityId of siegeCityIdsAffected) {
+                const stillMarked = units.some(x => x.oblegaCityId === siegeCityId);
+                if (!stillMarked) {
+                  const sc = cities.find(c => c.id === siegeCityId);
+                  if (sc?.oblegane) {
+                    const bId = sc.oblegajacyOwnerId ?? siegeBesiegerByCity.get(siegeCityId);
+                    const adj = bId !== undefined && units.some(
+                      x => x.ownerId === bId && hexDistance(x.q, x.r, sc.q, sc.r) === 1,
+                    );
+                    if (!adj) endMapSiege(siegeCityId);
                   }
                 }
-                for (let i = units.length - 1; i >= 0; i--) {
-                  if (destroyedSet.has(units[i]!.id)) units.splice(i, 1);
+              }
+              for (const c of garnizonCitiesAffected.values()) syncGarnizonForCity(c);
+            }
+
+            // --- Komunikaty HUD gracza (tylko ownerId===0 — AI głoduje po cichu) ---
+            if (playerDestroyedCount > 0) {
+              showHintMessage(`Głód: utracono ${playerDestroyedCount} jednostek`, 3500);
+            } else if (playerDamagedCount > 0) {
+              showHintMessage(`Głód wojska: −${Math.round(efParams.glodWojskaHpFrac * 100)}% max HP u ${playerDamagedCount} jednostek`, 2800);
+            } else {
+              // ZADANIE 5 (Maciej 2026-07-26): ostrzeżenie Z WYPRZEDZENIEM w trakcie karencji —
+              // inaczej mechanizm karencji działa po cichu przez glodWojskaKarencjaTur tur, zanim
+              // gracz cokolwiek zobaczy.
+              const playerTick = efTickResult.byOwner.get(0);
+              if (playerTick && playerTick.zapasyPo < 0) {
+                const pozostaleTury = Math.max(0, efParams.glodWojskaKarencjaTur - playerTick.turyUjemnychZapasowPo);
+                if (pozostaleTury > 0) {
+                  showHintMessage(
+                    `Głód wojska za ${pozostaleTury} ${slowoTura(pozostaleTury)} — zapasy państwa ujemne!`,
+                    3000,
+                  );
                 }
-                syncUnitsRender();
-                for (const siegeCityId of siegeCityIdsAffected) {
-                  const stillMarked = units.some(x => x.oblegaCityId === siegeCityId);
-                  if (!stillMarked) {
-                    const sc = cities.find(c => c.id === siegeCityId);
-                    if (sc?.oblegane) {
-                      const bId = sc.oblegajacyOwnerId ?? siegeBesiegerByCity.get(siegeCityId);
-                      const adj = bId !== undefined && units.some(
-                        x => x.ownerId === bId && hexDistance(x.q, x.r, sc.q, sc.r) === 1,
-                      );
-                      if (!adj) endMapSiege(siegeCityId);
-                    }
-                  }
-                }
-                for (const c of garnizonCitiesAffected.values()) syncGarnizonForCity(c);
-                showHintMessage(`Głód: utracono ${starv.destroyedIds.length} jednostek`, 3500);
-              } else if (starv.damagedCount > 0) {
-                showHintMessage(`Głód wojska: −${Math.round(efParams.glodWojskaHpFrac * 100)}% max HP u ${starv.damagedCount} jednostek`, 2800);
               }
             }
           } catch (errEf) {
@@ -14184,6 +14311,10 @@ async function boot(): Promise<void> {
 
           // --- N3: TURA OBLEZENIA — atrycja garnizonu + kapitulacja z głodu (przejęcie miasta) ---
           try {
+            // NAPRAWA PARYTETU TRUDNOŚCI (Maciej 2026-07-26): dawniej literał 0.08 tutaj
+            // rozjeżdżał się z glod_wojska_hp_frac na łatwym/trudnym (6%/10%) — podpięty
+            // parametr, liczony RAZ dla całej tury (nie per miasto oblężone).
+            const glodWojskaHpFracOblezenie = buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaHpFrac;
             for (const tick of econ.perCity) {
               if (!tick.oblegany) continue;
               const oblCity = cities.find(c => c.id === tick.cityId);
@@ -14202,7 +14333,7 @@ async function boot(): Promise<void> {
                 const starv = applyArmyStarvationHpLoss(
                   realGarnizonUnits,
                   oblCity.ownerId,
-                  0.08,
+                  glodWojskaHpFracOblezenie,
                   (typeId) => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {}),
                 );
                 if (starv.destroyedIds.length > 0) {

@@ -72,7 +72,7 @@ import {
   veteranMoraleBazoweUp,
   veteranMoraleUcieczkiDown,
 } from '../game/veteran';
-import { cityWallDefenseBonusPercent } from '../game/city-defense';
+import { cityWallDefenseBonusPercent, cityGatedTerrainMultiplier } from '../game/city-defense';
 import { buildUnitModel } from '../render/units';
 import { refreshInstancedPickBounds } from '../input/picker';
 import {
@@ -404,6 +404,17 @@ export interface BattleOpts {
   onCancel?: () => void;
   /** When set, activates siege mode: a wall + gate are placed near the defender. */
   siege?: SiegeOpts;
+  /**
+   * C-COMBAT-Q2 (Maciej 2026-07-26): true when the DEFENDER is defending a
+   * CITY hex -- walled (siege set, always implies this too) OR wall-less
+   * (potyczka polowa o miasto bez muru, mapFieldBattle.ts's launchFieldBattleFromMap,
+   * which never sets `siege`). Gates the Wzgorza/Gory terrain bonus so it only
+   * counts for city defense when the city HAS a wall (cityGatedTerrainMultiplier,
+   * game/city-defense.ts) -- see _singleBlow / computeInstantResult. Omit/false
+   * for plain field battles (unit vs unit, no city on the hex) -- terrain keeps
+   * its full, ungated effect exactly as before (bez zmian, decyzja wlasciciela).
+   */
+  cityDefense?: boolean;
   /** Gdy true — faza rozstawiania poprzedza walke; gracz ustawia formacje przed walka. */
   deploy?: boolean;
   /** Ktora strone gracz rozstawia/recznie prowadzi (domyslnie atakujacy). */
@@ -2194,6 +2205,16 @@ export class BattleScene {
    */
   private wallDefenseTotalProc: number = 0;
   /**
+   * C-COMBAT-Q2 (Maciej 2026-07-26): true when the DEFENDER is defending a
+   * CITY hex (walled or not) -- see BattleOpts.cityDefense doc for the full
+   * rationale. `opts.siege != null` always implies this (every real siege
+   * caller today only ever sets `siege` for an actual walled city), so this
+   * is the OR of the explicit flag and siege presence. Set once in the
+   * constructor; gates cityGatedTerrainMultiplier in _singleBlow /
+   * computeInstantResult ("Pomiń").
+   */
+  private isCityDefenseBattle: boolean = false;
+  /**
    * SIEGE v2: set of row values where a friendly siege tower has reached the
    * wall base (col = siegeWallCol-1). Attacking infantry adjacent to a tower
    * at these rows may "climb" onto the wall walkway.
@@ -2384,6 +2405,8 @@ export class BattleScene {
     this._attackerCivLabel = opts.attackerCivLabel?.trim() || 'Gracz';
     this._defenderCivLabel = opts.defenderCivLabel?.trim() || 'Przeciwnik';
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
+    // C-COMBAT-Q2 (Maciej 2026-07-26): patrz doc na polu isCityDefenseBattle.
+    this.isCityDefenseBattle = opts.cityDefense === true || opts.siege != null;
     // Wall/Cytadela/Baszta defence multiplier (Maciej 2026-07-25, rozszerzone
     // 41B) -- data-driven from miasto-params.json, not hardcoded. +200% (mur),
     // +300% (mur+Cytadela) or +400% (mur+Cytadela+Baszta). Scalone w
@@ -3303,6 +3326,7 @@ export class BattleScene {
       this.attackerCivBonusy,
       this.defenderCivBonusy,
       this.wallDefenseTotalProc,
+      this.isCityDefenseBattle,
     );
     for (const line of result.log) this.log.push(line);
     this._endWinner = result.winner;
@@ -7394,8 +7418,26 @@ export class BattleScene {
       ? 'Plaskie (rownina/laka)'   // teren bazowy (x1.0) — mnoznik muru dodany ponizej
       : this.terrainMap.combatTerrainName(defender.q, defender.r);
     const atkTerrain = this.terrainMap.combatTerrainName(attacker.q, attacker.r);
-    const terrDefMult  = defender.onWallWalkway
-      ? this.wallDefenseMult  // mur=200% -> x3.0, mur+Cytadela=300% -> x4.0
+    // C-COMBAT-Q2 (Maciej 2026-07-26): bonus terenu w obronie MIASTA liczy sie
+    // WYLACZNIE z wzniesienia i WYLACZNIE gdy miasto ma mur -- gated przez
+    // cityGatedTerrainMultiplier (game/city-defense.ts), TYLKO gdy to w ogole
+    // obrona miasta (this.isCityDefenseBattle -- walled siege LUB potyczka o
+    // miasto bez muru, patrz BattleOpts.cityDefense). Bitwa w polu (poza
+    // miastem) zostaje BEZ ZMIAN: pelny, niegated terrainDefenseMultiplier.
+    // Kombinacja z bonusem muru jest ADDYTYWNA w punktach procentowych (Razem =
+    // struct% + teren%, patrz main.ts effectiveDefenderM dla pelnego
+    // uzasadnienia) -- dla defender.onWallWalkway ELEWACJA pochodzi z terenu
+    // BAZOWEGO miasta (this.terrain, np. 'wzgorza'), bo sama korona muru jest
+    // celowo plaska; dla obroncy NIE na murze (dziedziniec podczas oblezenia,
+    // lub kazdy obronca miasta bez muru) elewacja pochodzi z JEGO WLASNEGO
+    // kafla bitewnego (defTerrain), dokladnie tak precyzyjnie jak dzis.
+    const hasMur = this.wallDefenseTotalProc > 0;
+    const cityElevationTerrain = defender.onWallWalkway ? this.terrain : defTerrain;
+    const cityTerrMult = this.isCityDefenseBattle
+      ? cityGatedTerrainMultiplier(hasMur, cityElevationTerrain, this.terrainData)
+      : 1;
+    const terrDefMult = this.isCityDefenseBattle
+      ? 1 + ((defender.onWallWalkway ? this.wallDefenseTotalProc : 0) + (cityTerrMult - 1) * 100) / 100
       : terrainDefenseMultiplier(defTerrain, cuA.rola, this.terrainData);
     // River-crossing Atak penalty (SS5j, pre-existing): the ATTACKER's own
     // tile decides this -- -25% Atak when it is wading a Ford (river_attack_mult
@@ -18067,6 +18109,11 @@ function computeInstantResult(
   // resolveCombat jako structureDefBonusPct dla obrońców onWallWalkway --
   // wcześniej "Pomiń" w ogóle nie stosował tego bonusu (rozjazd z _singleBlow).
   wallDefenseTotalProc: number = 0,
+  // C-COMBAT-Q2 (Maciej, 2026-07-26): BattleScene.isCityDefenseBattle -- gate
+  // bonusu terenu w obronie miasta (patrz komentarz przy defOnWall nizej).
+  // Domyslnie false = bez zmian dla kazdego istniejacego wywolania (bitwa w
+  // polu, poza miastem).
+  isCityDefense: boolean = false,
 ): { winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[] } {
   const log: string[] = [];
 
@@ -18114,7 +18161,33 @@ function computeInstantResult(
       const defTerrain = defOnWall
         ? 'Plaskie (rownina/laka)'
         : (terrainMap ? terrainMap.combatTerrainName(d.ru.q, d.ru.r) : terrain);
-      const structBonusPctForPair = defOnWall ? wallDefenseTotalProc : 0;
+
+      // C-COMBAT-Q2 (Maciej, 2026-07-26): bonus terenu w obronie MIASTA liczy
+      // sie WYLACZNIE z wzniesienia i WYLACZNIE gdy miasto ma mur -- gated
+      // przez cityGatedTerrainMultiplier (game/city-defense.ts), TYLKO gdy to
+      // w ogole obrona miasta (isCityDefense -- walled siege LUB potyczka o
+      // miasto bez muru). Bitwa w polu zostaje BEZ ZMIAN (defTerrain ponizej
+      // przekazywany do resolveCombat bez zadnej podmiany -- pelny, niegated
+      // terrainDefenseMultiplier jak dzis). Kombinacja z bonusem muru jest
+      // ADDYTYWNA w punktach procentowych -- patrz main.ts effectiveDefenderM
+      // dla pelnego uzasadnienia (Razem = struct% + teren%, NIE mnozone).
+      // ELEWACJA: dla obroncy NA murze pochodzi z terenu BAZOWEGO miasta
+      // (parametr `terrain`, np. 'wzgorza' -- korona muru sama w sobie jest
+      // plaska); dla obroncy NIE na murze (dziedziniec podczas oblezenia, lub
+      // kazdy obronca miasta bez muru) pochodzi z JEGO WLASNEGO kafla
+      // bitewnego (defTerrain), dokladnie tak precyzyjnie jak terrain zwykly.
+      // `defenderTerrainDefMultOverride` (combat.ts) podmienia WYLACZNIE
+      // wewnetrzny terrDefMult resolveCombat -- defTerrain nizej (przekazywany
+      // jako defenderTerrain) zostaje NIETKNIETY, wiec kontekst bonusow cyw
+      // (civCombatStatMultipliers) i kara Atak przy przekraczaniu rzeki
+      // (terrainRiverAttackMultiplier) dalej widza REALNY teren.
+      const hasMur = wallDefenseTotalProc > 0;
+      const cityElevationTerrain = defOnWall ? terrain : defTerrain;
+      const cityTerrMult = isCityDefense
+        ? cityGatedTerrainMultiplier(hasMur, cityElevationTerrain, terrainData)
+        : 1;
+      const structBonusPctForPair = (defOnWall ? wallDefenseTotalProc : 0)
+        + (isCityDefense ? (cityTerrMult - 1) * 100 : 0);
 
       // C-BTL-BROD-Q1 (wariant C), skip-resolve parity: pre-scale the
       // defender's Obrona for the ford penalty / shore bonus the animated
@@ -18151,6 +18224,11 @@ function computeInstantResult(
         // C-COMBAT-Q1 (Maciej, 2026-07-26): bonus muru/Cytadeli/Baszty, dopiety
         // do "Pomiń" -- patrz defOnWall/structBonusPctForPair powyżej.
         structureDefBonusPct: structBonusPctForPair,
+        // C-COMBAT-Q2 (Maciej, 2026-07-26): w obronie miasta neutralizuje
+        // wewnetrzny terrDefMult resolveCombat (elewacja juz policzona wyzej,
+        // dodana ADDYTYWNIE do structBonusPctForPair) -- undefined dla bitwy w
+        // polu (isCityDefense=false), czyli zero regresji tam.
+        defenderTerrainDefMultOverride: isCityDefense ? 1 : undefined,
         // Sciezki ulepszen jednostek (2026-07-25): tryb "pomin animacje" korzysta
         // z tego samego resolveCombat -- musi dostac ten sam per-jednostkowy bonus.
         attackerBuildingBonus: { pancerz: a.ru.bu.pancerzBonusFrac ?? 0, other: a.ru.bu.parametryBonusFrac ?? 0 },

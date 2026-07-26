@@ -236,6 +236,22 @@ export interface ResolveCombatOpts {
   terrainData?: TerrainEntry[];
 
   /**
+   * C-COMBAT-Q2 (Maciej 2026-07-26): gdy podane, ZASTĘPUJE wewnętrznie liczony
+   * terrainDefenseMultiplier(defenderTerrain, attacker.rola, terrainData) tą
+   * WŁASNĄ wartością przy liczeniu defFinalObrona -- używane przez obronę
+   * MIASTA (cityGatedTerrainMultiplier, game/city-defense.ts), gdzie bonus
+   * terenu ma liczyć się WYŁĄCZNIE z wzniesienia i WYŁĄCZNIE gdy miasto ma
+   * mur, niezależnie od tego, co terrainDefenseMultiplier zwróciłby dla
+   * surowego defenderTerrain (np. Las). NIE wpływa na inne użycia
+   * defenderTerrain w tej funkcji (kontekst bonusów cyw
+   * civCombatStatMultipliers, kara Atak przy przekraczaniu rzeki
+   * terrainRiverAttackMultiplier) -- tylko na terrDefMult poniżej. Domyślnie
+   * undefined = zachowanie bez zmian (zero regresji dla wszystkich
+   * istniejących wywołań, w tym bitwy w polu, która zostaje bez zmian).
+   */
+  defenderTerrainDefMultOverride?: number;
+
+  /**
    * Direction from which the attacker engages the defender.
    * 'front' = no penalty, 'flank' = flank penalty, 'rear' = rear penalty.
    * Default: 'front'.
@@ -792,8 +808,10 @@ export function resolveCombat(
   const ctrAtkVsDef = counterMultiplier(attacker.counterTyp, defender.counterTyp, counters);
   const ctrDefVsAtk = counterMultiplier(defender.counterTyp, attacker.counterTyp, counters);
 
-  // Terrain: defence multiplier for defender
-  const terrDefMult = terrainDefenseMultiplier(defenderTerrain, attacker.rola, terrainData);
+  // Terrain: defence multiplier for defender (C-COMBAT-Q2: city defense
+  // callers override this via opts.defenderTerrainDefMultOverride -- see doc
+  // comment on that field; every other caller keeps the raw, ungated lookup).
+  const terrDefMult = opts.defenderTerrainDefMultOverride ?? terrainDefenseMultiplier(defenderTerrain, attacker.rola, terrainData);
 
   // Terrain: river attack penalty for attacker
   const terrRiverMult = terrainRiverAttackMultiplier(defenderTerrain, terrainData);
