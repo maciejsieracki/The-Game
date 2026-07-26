@@ -76,19 +76,28 @@ export function buildStartPreview(input: BuildStartPreviewInput): StartPreview {
   const rivalsShort = sameTypeRivalNames.slice(0, 3).join(', ')
     + (sameTypeRivalNames.length > 3 ? '…' : '');
 
+  // NAZEWNICTWO WIDOCZNE DLA GRACZA (Maciej 2026-07-26): słowo „typ" ZNIKA z tekstów gry.
+  // Jego słowa: „typy to są w budce z piwem" — po polsku „typy" czyta się jak „faceci",
+  // więc „13 obcych typów na mapie" brzmiało jak z ulicy, a nie jak opis świata gry.
+  // Docelowe brzmienie zadane przez właściciela:
+  //   „Stolica Ateny, 7 rywali miast-państw, 13 obcych cywilizacji na mapie".
+  // Zniknął też przedrostek „Klaster <cywilizacja>:" — właściciel go nie chciał.
+  // UWAGA: liczby zostają CYFRAMI, bo są dynamiczne (zależą od rozmiaru mapy). Zapis
+  // słowny wymagałby polskiej odmiany liczebnika przez przypadki („dwóch/pięciu/siedmiu
+  // rywali"), co przy zmiennej wartości jest osobnym zadaniem — patrz raport dla właściciela.
   const modelLine =
-    `Klaster ${civLabel}: stolica ${playerCapitalName}, `
-    + `${rivalN} rywali tego typu`
-    + (foreignTypes > 0 ? ` · ${foreignTypes} obcych typów na mapie` : '');
+    `Stolica ${playerCapitalName}, `
+    + `${rivalN} rywali miast-państw`
+    + (foreignTypes > 0 ? `, ${foreignTypes} obcych cywilizacji na mapie` : '');
 
   const modelDetail =
-    'Start w klastrze twojego typu: pierwsze miasto = '
+    'Start we własnym regionie: pierwsze miasto = '
     + playerCapitalName
-    + '. Wokół ciebie miasta-kopie tego samego typu ('
+    + '. Wokół ciebie rywalizujące miasta-państwa tej samej cywilizacji ('
     + rivalsShort
     + ') — do pokonania. '
     + (foreignTypes > 0
-      ? `Na mapie także ${foreignTypes} obcych typów (własne klastry miast-kopii) — do podbicia; pełna dyplomacja po kontakcie.`
+      ? `Na mapie także ${foreignTypes} obcych cywilizacji (każda z własnym regionem miast-państw) — do podbicia; pełna dyplomacja po kontakcie.`
       : '');
 
   return {
@@ -106,10 +115,11 @@ export function buildStartPreview(input: BuildStartPreviewInput): StartPreview {
 /** Wiersze podsumowania na ekranie Generowanie (kreator). */
 export function startPreviewSummaryRows(p: StartPreview): Array<[string, string]> {
   const rows: Array<[string, string]> = [
+    // Nazewnictwo bez slowa „typ" (Maciej 2026-07-26) — patrz komentarz przy modelLine wyzej.
     ['Stolica (start)', p.playerCapitalName],
-    ['Rywale tego typu', String(p.sameTypeRivalCount) + ' miast-państw · ' + p.sameTypeRivalNames.slice(0, 4).join(', ') + (p.sameTypeRivalNames.length > 4 ? '…' : '')],
-    ['Typy na mapie', String(p.activeTypesOnMap) + ' (obce: ' + String(p.foreignTypesCount) + ')'],
-    ['Model startu', 'Klaster + miasta-kopie typu'],
+    ['Rywalizujące miasta-państwa', String(p.sameTypeRivalCount) + ' · ' + p.sameTypeRivalNames.slice(0, 4).join(', ') + (p.sameTypeRivalNames.length > 4 ? '…' : '')],
+    ['Cywilizacje na mapie', String(p.activeTypesOnMap) + ' (obcych: ' + String(p.foreignTypesCount) + ')'],
+    ['Model startu', 'Własny region + rywalizujące miasta-państwa'],
   ];
   return rows;
 }
