@@ -11,18 +11,22 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `b87481fc` — 2026-07-26 23:49 · FALA 26: BITWA + DYPLOMACJA + MAPA 18% — **AKTUALNA**
-- md5 (pelne): `b87481fca6f9632ad3a6eebea90438c8` · stempel: `ROBOCZA · 2026-07-26 23:49`
+## ROBOCZA `96f307ce` — 2026-07-26 23:50 · FALA 26: BITWA + DYPLOMACJA + MAPA 18% — **AKTUALNA**
+- md5 (pelne): `96f307ce2447236558bad2914fabeccd` · stempel: `ROBOCZA · 2026-07-26 23:50`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (ostrzeżenie npm).
 - **Co nowego (sesja F26):**
-  - **Bitwa (battleScene):** poprawione ustawienie obrony, ekran wygranej/przegranej, tryb manualny.
-  - **Ekrany końca bitwy:** `endScreen1E` + `endDetails1E` — spójność z wynikiem walki.
-  - **Panel miasta:** sortowanie list + Skarbiec (jeśli zbudowany) w banerze zasobów.
-  - **Dyplomacja:** negocjacje w `main.ts` + audiencja; handel od relacji neutralnej (`progHandelRelacja=0`).
-  - **Mapa:** górzystość medium ~18% lądu (`relief_overflow_cap_frac` 0,06 Góry + 0,09 Wzgórza w `map-gen-params.json`).
-  - **Ekonomia:** `economy-upkeep` + panel imperium (`empireDetailPanel`) — korekty wyświetlania.
-- **Bramki:** tsc 0 · diplomacy-negotiation-table 39/39 · fair-play-grid **8/8** · relief-grid-coverage **6/6**.
+  - **Bitwa (battleScene):** obrona (`deployPlayerSide`), win/loss (`_playerWonFromBattleWinner`), manual (`_autoBattleSuspended`).
+  - **Ekrany końca bitwy:** `endScreen1E` + `endDetails1E` — statystyki po stronie gracza (`playerSide`).
+  - **Panel miasta:** `sortProductionItemsByBuildability` + Skarbiec w banerze zasobów.
+  - **Dyplomacja:** kontrpropozycja przez `onCounterNegotiation` (audiencja + `main.ts`); handel od relacji neutralnej.
+  - **Mapa:** górzystość medium ~18% lądu (`relief_overflow_cap_frac` 0,06 Góry + 0,09 Wzgórza — decyzja właściciela).
+  - **Ekonomia:** `economy-upkeep` + panel imperium (`empireDetailPanel`) — korekty wyświetlania skarbca.
+- **Bramki:** tsc 0 · diplomacy-negotiation-table 39/39 · fair-play-grid **8/8** · relief-grid-coverage **6/6** · upkeep 67/67 · map-gen-regression determinizm PASS (timing standard 5,41s — pre).
+
+## ROBOCZA `b87481fc` — 2026-07-26 23:49 · FALA 26 (próba publish) — **ZASTĄPIONA**
+- md5 (pelne): `b87481fca6f9632ad3a6eebea90438c8` · stempel: `ROBOCZA · 2026-07-26 23:49`
+- Zastąpiona przez `96f307ce` (ponowny build+publish po autoryzacji deploy).
 
 ## ROBOCZA `1636f388` — 2026-07-26 23:38 · FALA 25: KULTURA/RELIGIA + PANEL SKŁAD — **ZASTĄPIONA**
 - md5 (pelne): `1636f388b512b008a2b95a6a46d8bdb9` · stempel: `ROBOCZA · 2026-07-26 23:38`
