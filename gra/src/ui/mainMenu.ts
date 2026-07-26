@@ -249,6 +249,40 @@ let moreOpen = false;
 let morePanelEl: HTMLElement | null = null;
 let moreToggleEl: HTMLButtonElement | null = null;
 
+/**
+ * Ekran pożegnalny — pokazywany, gdy przeglądarka odmówi zamknięcia karty.
+ *
+ * Powód istnienia: `window.close()` działa wyłącznie na oknie otwartym skryptem. Kartę, którą
+ * użytkownik otworzył sam, może zamknąć tylko on. Bez tego ekranu przycisk „Wyjdź" sprawiałby
+ * wrażenie zepsutego — a taki właśnie był przed 2026-07-26 (pusta funkcja `onQuit`).
+ */
+function showFarewellScreen(): void {
+  if (document.getElementById('civ-farewell')) return;
+  const box = document.createElement('div');
+  box.id = 'civ-farewell';
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-modal', 'true');
+  box.style.cssText =
+    'position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;' +
+    'background:rgba(6,8,14,0.96);font-family:Georgia,"Times New Roman",serif;color:#e8d88a;' +
+    'text-align:center;padding:24px;';
+  box.innerHTML =
+    '<div style="max-width:520px">' +
+      '<div style="font-size:30px;letter-spacing:.08em;margin-bottom:14px">THE GAME</div>' +
+      '<div style="font-size:17px;color:#c8b898;line-height:1.6;margin-bottom:10px">' +
+        'Dziękujemy za grę. Postęp jest zapisany.</div>' +
+      '<div style="font-family:\'Segoe UI\',Tahoma,sans-serif;font-size:13.5px;color:#8a8070;line-height:1.6">' +
+        'Przeglądarka nie pozwala stronie zamknąć karty, którą otworzyłeś samodzielnie — ' +
+        'zamknij ją klawiszem <b style="color:#c8b898">Ctrl + W</b> albo krzyżykiem karty.</div>' +
+      '<button id="civ-farewell-back" type="button" style="margin-top:22px;font-family:\'Segoe UI\',Tahoma,sans-serif;' +
+        'font-size:13px;padding:9px 20px;border-radius:6px;background:transparent;color:#e8d88a;' +
+        'border:2px solid #e8d88a;cursor:pointer">Wróć do menu</button>' +
+    '</div>';
+  document.body.appendChild(box);
+  const back = box.querySelector('#civ-farewell-back') as HTMLButtonElement | null;
+  back?.addEventListener('click', () => box.remove());
+}
+
 function closeMore(): void {
   moreOpen = false;
   morePanelEl?.classList.remove('open');
@@ -301,6 +335,7 @@ function renderSettings(grid: HTMLElement): void {
 function build(): void {
   if (rootEl === null) return;
   const ver = cfg.version ?? UI_PARAMS.menu.wersja;
+  const etap = (UI_PARAMS.menu.etap ?? '').trim();
   const hasSave = cfg.hasSave?.() ?? false;
   moreOpen = false;
   rootEl.innerHTML = '';
@@ -321,7 +356,11 @@ function build(): void {
       '<div class="sub">Wersja ' + ver + '</div>' +
       '<div class="menu" id="cm-buttons"></div>' +
       '<div class="more-panel" id="cm-more"></div>' +
-      '<div class="footer">The Game · prototyp v0.1</div>' +
+      // Wersja NIE jest już zahardkodowana (Maciej 2026-07-26: „to już nie jest prototyp 0.1").
+      // Jedno źródło prawdy: data/ui-params.json → menu.wersja + menu.etap. Dotąd numer stał
+      // w DWÓCH miejscach naraz (tu jako „prototyp v0.1” i w danych jako „0.1”) — zmiana
+      // w danych nie ruszała stopki.
+      '<div class="footer">The Game · ' + etap + ' ' + ver + '</div>' +
     '</div>' +
     '<div class="screen" id="cm-settings">' +
       '<div class="sh"><h2>Ustawienia</h2></div>' +
@@ -345,6 +384,23 @@ function build(): void {
   moreToggleEl = btn('Więcej &#9662;', '', false, true, toggleMore, '', 'menu-more');
   buttons.appendChild(moreToggleEl);
 
+  // WYJDŹ — pozycja MENU GŁÓWNEGO (Maciej 2026-07-26), nie podpozycja „Więcej".
+  //
+  // Ograniczenie przeglądarki, którego nie da się obejść: `window.close()` działa TYLKO na
+  // oknie otwartym skryptem (`window.open`). Karty otwartej ręcznie przez użytkownika żadna
+  // strona nie zamknie — to zabezpieczenie przeglądarki, nie brak implementacji. Dlatego
+  // próbujemy zamknąć, a gdy przeglądarka odmówi (okno nadal istnieje po tiku), pokazujemy
+  // jednoznaczny ekran pożegnalny zamiast udawać, że przycisk nie zadziałał.
+  buttons.appendChild(btn('Wyjdź', '', false, true, () => {
+    closeMore();
+    cfg.onQuit?.();
+    try { window.close(); } catch { /* przeglądarka odmówiła — obsłużone niżej */ }
+    window.setTimeout(() => {
+      if (window.closed) return;              // udało się — nic więcej nie robimy
+      showFarewellScreen();
+    }, 120);
+  }, '', 'menu-exit'));
+
   morePanelEl = shell.querySelector('#cm-more') as HTMLElement;
   morePanelEl.appendChild(btn(
     'Kontynuuj',
@@ -365,7 +421,9 @@ function build(): void {
     'menu-save',
   ));
   morePanelEl.appendChild(btn('O grze', '', false, true, () => { closeMore(); cfg.onAbout?.(); }, '', 'menu-info'));
-  morePanelEl.appendChild(btn('Wyjdź', '', false, true, () => { closeMore(); cfg.onQuit?.(); }, '', 'menu-exit'));
+  // „Wyjdź" NIE jest już pozycją w „Więcej" (Maciej 2026-07-26): tam zachowywał się jak „wróć",
+  // bo jedyne, co realnie robił, to closeMore() — cfg.onQuit było PUSTĄ funkcją
+  // (main.ts: „future - na stronie nie ma gdzie wyjść"). Teraz stoi w menu głównym, poniżej.
 
   if (cfg.onPerfTest) {
     morePanelEl.appendChild(btn(
