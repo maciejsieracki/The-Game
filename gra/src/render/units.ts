@@ -37,6 +37,10 @@ import type { StackDisplayInfo } from '../game/armyMerge';
 // kropki przy żetonie ORAZ kolorowa obwódka). Zasoby to singletony modułu —
 // NIE trafiają do userData['mats'], patrz nagłówek unitUpgradeBadges.ts.
 import { syncUnitUpgradeBadges } from './unitUpgradeBadges';
+// Odznaki poziomu weterana na żetonie (dokończenie tej samej decyzji 57,
+// 2026-07-26) — złote gwiazdki NAD GŁOWĄ, w miejscu zarezerwowanym wtedy jako
+// VETERAN_BADGE_RESERVED_Y. Zasoby to singletony modułu, jak wyżej.
+import { syncUnitVeteranBadges } from './unitVeteranBadges';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -4745,7 +4749,13 @@ export class UnitRenderer {
       // Funkcja jest idempotentna: przy niezmienionym poziomie kończy się
       // porównaniem jednej liczby, więc bezpiecznie stoi w pętli sync().
       const tokenObj = this.tokens.get(unit.id);
-      if (tokenObj) syncUnitUpgradeBadges(tokenObj, unit);
+      if (tokenObj) {
+        syncUnitUpgradeBadges(tokenObj, unit);
+        // Odznaka poziomu weterana (game/veteran.ts) — DRUGI, niezależny system:
+        // złote gwiazdki nad głową figurki. Poziom 1 (Rekrut) nie dostaje nic.
+        // Tak samo dla gracza i AI — PARYTET AI, zero warunków na ownerId.
+        syncUnitVeteranBadges(tokenObj, unit);
+      }
     }
 
     // Remove tokens whose units are gone

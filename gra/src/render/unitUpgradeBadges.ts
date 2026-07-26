@@ -39,10 +39,10 @@
  *   pełny komplet 6 budynków                  95 pp → 3 kropki
  *
  * ── ODRÓŻNIENIE OD GWIAZDEK WETERANA (game/veteran.ts) ────────────────────
- * To DWA NIEZALEŻNE systemy i gracz nie może ich mylić. Stan na 2026-07-25:
- * gwiazdki weterana NIE są jeszcze rysowane na żetonie mapy (grep po
- * src/render/** = 0 trafień) — zostawiam im wolne miejsce, patrz
- * VETERAN_BADGE_RESERVED_Y poniżej. Rozróżnienie na trzech osiach naraz:
+ * To DWA NIEZALEŻNE systemy i gracz nie może ich mylić. Stan na 2026-07-26:
+ * gwiazdki weterana SĄ już rysowane — render/unitVeteranBadges.ts, dokładnie
+ * w miejscu zarezerwowanym tu jako VETERAN_BADGE_RESERVED_Y (poniżej).
+ * Rozróżnienie na trzech osiach naraz:
  *   1. POZYCJA — ulepszenia budynkowe siedzą PRZY PODSTAWIE żetonu (obwódka
  *      na ziemi + kropki przed stopami); gwiazdki weterana mają zarezerwowane
  *      miejsce NAD GŁOWĄ figurki. Żadnego kontaktu wizualnego.
@@ -194,12 +194,15 @@ const UPG_DOT_Z       = 0.600 * HEX_R;
 const UPG_DOT_SPACING = 0.175 * HEX_R;
 
 /**
- * ZAREZERWOWANE MIEJSCE NA GWIAZDKI WETERANA (game/veteran.ts, 1–3 gwiazdki).
+ * MIEJSCE NA GWIAZDKI WETERANA (game/veteran.ts, 2–3 gwiazdki) — od 2026-07-26
+ * WYKORZYSTANE przez render/unitVeteranBadges.ts (ten moduł jest jedynym
+ * właścicielem tej stałej; unitVeteranBadges.ts ją importuje, żeby wysokość
+ * miała jedno źródło prawdy).
  * Odznaki ulepszeń trzymają się PODSTAWY żetonu (maks. y = UPG_RING_HEIGHT +
  * UPG_DOT_Y + UPG_DOT_R ≈ 0.14·HEX_R), więc cała przestrzeń nad głową figurki
- * (~0.58·HEX_R) jest wolna. Kto będzie wdrażał render gwiazdek: wstaw je na tej
- * wysokości, wyśrodkowane w x, ZŁOTE i o gwiaździstym obrysie — wtedy oba
- * systemy pozostają rozróżnialne pozycją, kształtem i kolorem naraz.
+ * (~0.58·HEX_R) jest wolna. Gwiazdki stoją na tej wysokości, wyśrodkowane w x,
+ * ZŁOTE i o gwiaździstym obrysie — oba systemy pozostają rozróżnialne pozycją,
+ * kształtem i kolorem naraz.
  * Wysokość 0.92·HEX_R jest WYŻEJ niż czaszka głodu (0.78·HEX_R, sprite
  * półprzezroczysty, tylko przy głodzie) i wyżej niż badge stosu (0.55·HEX_R),
  * więc gwiazdki nie wejdą w kolizję z żadnym istniejącym elementem żetonu.
