@@ -398,7 +398,7 @@ var wonders_default = {
         ],
         specjalne: [
           { typ: "magazyn_pojemnosc", wartosc: 6, opis: "+6 pojemno\u015B\u0107 handlu/surowc\xF3w (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z tras handlowych (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 5, opis: "+5 Wp\u0142ywu \u2014 karawany Nabatejczyk\xF3w (cywilizacja)" }
         ]
       }
@@ -438,7 +438,7 @@ var wonders_default = {
           { typTerenu: "laka", kultura: 2, warunek: "hex_sasiad_wybrzeze" }
         ],
         specjalne: [
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.15, opis: "+15% Pieni\u0105dza z handlu morskiego (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych morskich (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 3, opis: "+3 Wp\u0142ywu (cywilizacja)" }
         ]
       },
@@ -460,7 +460,7 @@ var wonders_default = {
         miasto: { pieniadz: 3, kultura: 3 },
         specjalne: [
           { typ: "magazyn_pojemnosc", wartosc: 8, opis: "+8 pojemno\u015B\u0107 surowc\xF3w / trade capacity (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.2, opis: "+20% Pieni\u0105dza z port\xF3w (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.2, opis: "+20% Handlu \u2014 dochodu z tras handlowych morskich, korzystaj\u0105cych z port\xF3w (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 6, opis: "+6 Wp\u0142ywu \u2014 Rhodos, w\u0119ze\u0142 morski (cywilizacja)" }
         ]
       }
@@ -632,7 +632,7 @@ var wonders_default = {
         miasto: { kultura: 3, pieniadz: 3 },
         specjalne: [
           { typ: "wojna_wsparcie", wartosc: 3, opis: "+3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z tras handlowych (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 10, opis: "+10 Wp\u0142ywu \u2014 satrapie i go\u015Bcie narod\xF3w (cywilizacja)" },
           { typ: "relacje_zaufanie", wartosc: 3, opis: "+3 Zaufanie u pa\u0144stw z aktywnym handlem (cywilizacja)" }
         ]
@@ -655,7 +655,7 @@ var wonders_default = {
         miasto: { kultura: 3, zadowolenie: 3, pieniadz: 3 },
         specjalne: [
           { typ: "dyplomacja_wp\u0142yw", wartosc: 12, opis: "+12 Wp\u0142ywu \u2014 cesarski dw\xF3r Chang'an (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z handlu (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "relacje_zaufanie", wartosc: 4, opis: "+4 bazowe Zaufanie (cywilizacja)" }
         ]
       },

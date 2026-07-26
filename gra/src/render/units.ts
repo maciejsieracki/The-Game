@@ -53,6 +53,18 @@ import { buildNubianArcherOpus5 } from './braz-lucznik-nubijski-opus5';
 // BRĄZ OPUS 5 (Maciej 2026-07-25): taran epoki Brązu na KOŁACH — nie może być
 // tym samym modelem co płozowy taran Kamienia (koło ~3500 p.n.e.).
 import { buildTaranOkutyOpus5 } from './braz-taran-opus5';
+// BRĄZ OPUS 5 — komplet jednostek bazowych epoki Brązu (Maciej 2026-07-26:
+// „wpinaj jednostki brązu"). Wszystkie cztery to jednostki DOSTĘPNE DLA
+// WSZYSTKICH CYWILIZACJI (Kultura=null w units.json), więc dispatch po NAZWIE
+// jest dokładny — warianty kulturowe (sumeryjski, inkaski, egipski…) mają
+// własne, wcześniejsze wpisy w buildNamedUnit i nie są tu przechwytywane.
+import { buildWlocznikBrazOpus5 } from './braz-wlocznik-opus5';
+import { buildMiecznikBrazOpus5 } from './braz-miecznik-opus5';
+import { buildProcarzBrazOpus5 } from './braz-procarz-opus5';
+import { buildRydwanWolyBrazOpus5 } from './braz-rydwan-woly-opus5';
+// ŻELAZO OPUS 5 — Hastati republikański (units.json: „Hastati", Epoka=Żelazo,
+// Nacja=Rzym) — zastępuje wariant z hastati-falangita.ts.
+import { buildHastatiOpus5 } from './hastati-opus5';
 import {
   buildProcarz as newBuildProcarz,
   buildWlocznik as newBuildWlocznik,
@@ -1161,6 +1173,16 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('jezdziec chinski') || n.includes('chinese cavalry')) return buildChineseCavalry(ownerColor_);
   // KUSZNIK (CROSSBOWMAN) --------------------------------------------------
   if (n.includes('kusznik') || n.includes('crossbowman')) return buildCrossbowman(ownerColor_);
+  // BRĄZ — JEDNOSTKI BAZOWE (Kultura=null, dostępne wszystkim cywilizacjom) --
+  // Dopasowanie po PEŁNEJ nazwie (===), nie po fragmencie: warianty kulturowe
+  // („Włócznik sumeryjski", „Procarz (Huaracoc)", „Rydwan egipski"…) mają
+  // własne wpisy wyżej i muszą zachować swoje modele. units.json: „Włócznik"/
+  // „Spearman", „Wojownik z mieczem i tarczą"/„Swordsman", „Procarz"/„Slinger",
+  // „Rydwan (woły)"/„Ox Chariot" — wszystkie Epoka=Brąz.
+  if (n === 'wlocznik' || n === 'spearman') return buildWlocznikBrazOpus5(ownerColor_);
+  if (n === 'wojownik z mieczem i tarcza' || n === 'swordsman') return buildMiecznikBrazOpus5(ownerColor_);
+  if (n === 'procarz' || n === 'slinger') return buildProcarzBrazOpus5(ownerColor_);
+  if (n === 'rydwan (woly)' || n === 'rydwan woly' || n === 'ox chariot') return buildRydwanWolyBrazOpus5(ownerColor_);
   // MACHINY OBLĘŻNICZE -------------------------------------------------------
   // UWAGA: „taran okuty" (Brąz, na kołach) MUSI być sprawdzony PRZED ogólnym
   // 'taran', inaczej przechwyci go płozowy taran epoki Kamienia.
@@ -1172,7 +1194,9 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('wojownik tyrrenski') || n.includes('tyrrenski') || n.includes('tyrrhenian warrior') || n.includes('tyrrhenian')) return buildTyrrhenian(ownerColor_);
   if (n.includes('wojownik szekelesz') || n.includes('szekelesz') || n.includes('shekelesh warrior') || n.includes('shekelesh')) return buildShekelesh(ownerColor_);
   // RZYM ŻELAZO — Hastati (własny model republikański) -----------------------
-  if (n.includes('hastati')) return buildHastati(ownerColor_);
+  // OPUS 5 (Maciej 2026-07-26): wariant hastati-opus5.ts zastępuje starszy
+  // model z hastati-falangita.ts (buildHastati poniżej zostaje jako rezerwa).
+  if (n.includes('hastati')) return buildHastatiOpus5(ownerColor_);
   // GRAFIKA-JEDNOSTKI: nowe bespoke modele (p3 Asyria + p8a Bliski Wschod +
   // p8b) — CELOWO przed sekcja Legionu ponizej, zeby "Legion Rzymski"
   // zwrocil wlasny model zanim zadziala linia zabijajaca 'legion'.

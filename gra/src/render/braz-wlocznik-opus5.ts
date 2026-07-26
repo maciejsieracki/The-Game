@@ -34,18 +34,25 @@
  * gwardzista. Wymóg właściciela: żadnej zbroi płytowej, żadnych oznaczeń
  * rangi, żadnego pióropusza — to ma czytać się jako szeregowiec.
  *
- * W1. BROŃ GŁÓWNA: włócznia ok. 2–2,3 m (relacja do wzrostu figurki
- *     ~0,60×HEX_R: całość włóczni od tylca po grot = 0,865×HEX_R, tj.
- *     ~1,44× wzrostu — proporcja realnej włóczni piechura wobec człowieka).
+ * W1. BROŃ GŁÓWNA: włócznia ok. 2 m. Całość włóczni od tylca (y=0, ostrze
+ *     dotyka ziemi) po czubek grota = 0,748×HEX_R w skali lokalnej, czyli
+ *     0,870×HEX_R po WB_FIGURE_SCALE — tyle samo, ile ma zaakceptowany
+ *     Łucznik nubijski (0,871×HEX_R). Włócznia jest ok. 1,16× wyższa od
+ *     sylwetki, czyli wystaje nad hełm mniej więcej o głowę: proporcja
+ *     realnej włóczni piechura, a nie tyczka nad polem.
+ *     KOREKTA 2026-07-26: drzewce skrócone 0,660 → 0,549×HEX_R, bo przy
+ *     poprzedniej długości czubek grota sięgał 0,999×HEX_R — model był o
+ *     jedną trzecią wyższy od reszty serii i łamał normę „sylwetka ~0,75,
+ *     broń nie wyżej niż odniesienie".
  *     Grot BRĄZOWY, LISCIASTY (ten sam profil geometryczny co grot
  *     oszczepu z kamien-bazowe-opus5.ts, przeskalowany), osadzony na
  *     drzewcu TULEJKĄ (bronze socket/kołnierz) — NIE trzpieniem wbitym na
  *     styk jak w dzisiejszym modelu — plus DWA OWINIĘCIA RZEMIENIEM w
  *     miejscu osadzenia (zabezpieczenie przed rozłupaniem drzewca, szeroko
  *     poświadczone na brązowych grotach włóczni z całej Eurazji tej epoki).
- *     Drzewce znacznie DŁUŻSZE niż w dzisiejszym modelu (0,66×HEX_R vs
- *     0,56×HEX_R) i niż oszczep Oszczepnika z epoki Kamienia (0,52×HEX_R,
- *     jednoręczny miotany, więc krótszy i grubszy w chwycie). Mały brązowy
+ *     Drzewce (0,549×HEX_R) nadal dłuższe niż oszczep Oszczepnika z epoki
+ *     Kamienia (0,52×HEX_R, jednoręczny miotany, więc krótszy i grubszy
+ *     w chwycie), ale już nie przerastające serii. Mały brązowy
  *     tylec (ferrule) do wbicia w ziemię — praktyczny element piechura
  *     stojącego w szyku, NIE ozdoba.
  * W2. TARCZA: OKRĄGŁA, kryta SKÓRĄ WOŁOWĄ na drewnianej ramie (rant z
@@ -64,6 +71,12 @@
  *     przedramię) — NIE grecki podwójny system porpax/antilabe (to
  *     hoplicki wynalazek epoki Żelaza, ok. VIII w. p.n.e. — anachronizm dla
  *     Brązu).
+ *     KOREKTA 2026-07-26: tarcza siedziała na wysokości BIODRA (środek
+ *     y≈0,350, przy opuszczonej ręce) — wyglądała, jakby wisiała na udzie.
+ *     Lewa ręka jest teraz zgięta w łokciu (przedramię w górę i do przodu),
+ *     a tarcza zamocowana na ŚRODKU PRZEDRAMIENIA (środek y≈0,390) — kryje
+ *     tors od pasa po bark, jak tarczę realnie się nosi i jak ma ją
+ *     zaakceptowany Miecznik brązowy.
  * W3. HEŁM: prosty BRĄZOWY HEŁM W FORMIE CZAPY — niska kopuła (wysokość
  *     wyraźnie mniejsza niż średnica, w przeciwieństwie do wysokiego
  *     ostrego stożka dzisiejszego modelu) + wąski rant u podstawy. BEZ
@@ -283,7 +296,7 @@ function getWBCord():     THREE.BoxGeometry { return (gWBCord     ||= new THREE.
 function getWBBead():     THREE.BoxGeometry { return (gWBBead     ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.016 * HEX_R, 0.012 * HEX_R)); }
 function getWBSheath():   THREE.BoxGeometry { return (gWBSheath   ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.078 * HEX_R, 0.014 * HEX_R)); }
 function getWBKnifeHlt(): THREE.BoxGeometry { return (gWBKnifeHlt ||= new THREE.BoxGeometry(0.024 * HEX_R, 0.024 * HEX_R, 0.014 * HEX_R)); }
-function getWBShaft():    THREE.CylinderGeometry { return (gWBShaft    ||= new THREE.CylinderGeometry(0.012 * HEX_R, 0.014 * HEX_R, 0.660 * HEX_R, 8, 1)); }
+function getWBShaft():    THREE.CylinderGeometry { return (gWBShaft    ||= new THREE.CylinderGeometry(0.012 * HEX_R, 0.014 * HEX_R, 0.549 * HEX_R, 8, 1)); }
 function getWBSocket():   THREE.CylinderGeometry { return (gWBSocket   ||= new THREE.CylinderGeometry(0.016 * HEX_R, 0.019 * HEX_R, 0.044 * HEX_R, 8, 1)); }
 function getWBBind():     THREE.BoxGeometry { return (gWBBind     ||= new THREE.BoxGeometry(0.019 * HEX_R, 0.017 * HEX_R, 0.019 * HEX_R)); }
 function getWBGripWrap(): THREE.BoxGeometry { return (gWBGripWrap ||= new THREE.BoxGeometry(0.017 * HEX_R, 0.040 * HEX_R, 0.017 * HEX_R)); }
@@ -586,17 +599,19 @@ export function buildWlocznikBrazOpus5(ownerColor_: number): THREE.Group {
   const atV = (y: number): THREE.Vector3 => new THREE.Vector3(spearX, y * HEX_R, spearZ);
 
   wbAlong(group, getWBGripWrap(), mLeatherDk, atV(armR.wrist.y / HEX_R), WB_UP);   // owinięcie w dłoni, na wysokości chwytu
-  wbAlong(group, getWBShaft(), mWood, atV(0.380), WB_UP);       // drzewce: 0.050..0.710 (dłuższe niż dziś)
-  wbAlong(group, getWBSocket(), mBronze, atV(0.732), WB_UP);    // tulejka brązowa (osadzenie grota): 0.710..0.754
-  wbAlong(group, getWBBind(), mLeatherDk, atV(0.706), WB_UP);   // owinięcie rzemienne 1 (tył tulejki)
-  wbAlong(group, getWBBind(), mLeatherDk, atV(0.748), WB_UP);   // owinięcie rzemienne 2 (przód tulejki)
+  wbAlong(group, getWBShaft(), mWood, atV(0.3245), WB_UP);      // drzewce: 0.050..0.599
+  wbAlong(group, getWBSocket(), mBronze, atV(0.621), WB_UP);    // tulejka brązowa (osadzenie grota): 0.599..0.643
+  wbAlong(group, getWBBind(), mLeatherDk, atV(0.595), WB_UP);   // owinięcie rzemienne 1 (tył tulejki)
+  wbAlong(group, getWBBind(), mLeatherDk, atV(0.637), WB_UP);   // owinięcie rzemienne 2 (przód tulejki)
 
   // Grot (wbMakeLeafHeadGeo) jest zakotwiczony w y=0 (podstawa/trzpień), NIE
   // wyśrodkowany — position = PODSTAWA grota, rozciąga się dalej ku górze
   // o `len` (jak makeLeafPointGeo w kamien-bazowe-opus5.ts / oszczepnik).
-  // Podstawa y=0.744 (zachodzi na przód tulejki) => czubek przy y=0.744+0.115=0.859.
+  // Podstawa y=0.633 (zachodzi na przód tulejki) => czubek przy y=0.633+0.115=0.748;
+  // po WB_FIGURE_SCALE (1.163) całkowita wysokość tokenu = 0.748*1.163 ≈ 0.87×HEX_R,
+  // czyli dokładnie tyle co zaakceptowany Łucznik nubijski (0.871×HEX_R).
   const headMesh = new THREE.Mesh(getWBHead2(), mBronzeLt);
-  headMesh.position.copy(atV(0.744));
+  headMesh.position.copy(atV(0.633));
   group.add(headMesh);   // WB_Y_UP === kierunek grota => bez rotacji (oś już pionowa)
 
   const butt = new THREE.Mesh(getWBButt(), mBronze);           // tylec: ostrze DOTYKA ziemi (y=0)
@@ -605,12 +620,20 @@ export function buildWlocznikBrazOpus5(ownerColor_: number): THREE.Group {
   group.add(butt);
 
   // ═══ LEWE (+X) RAMIĘ + TARCZA OKRĄGŁA KRYTA SKÓRĄ WOŁOWĄ ═════════════════
-  const armL = wbBuildArm(group, WB_SHLD_X, 0.52, 1.05, mSkin, mSkin, null);
+  // Ramię ZGIĘTE W ŁOKCIU: ramię zwisa prawie pionowo (thU=0.28), przedramię
+  // idzie W GÓRĘ I DO PRZODU (thF=2.00 > π/2 => składowa Y dodatnia) — czyli
+  // pozycja, w której realnie nosi się tarczę. Tarcza siedzi na ŚRODKU
+  // PRZEDRAMIENIA (nie na nadgarstku, nie na biodrze), więc pas naramienny i
+  // poduszka opierają się o rękę: „broń i oporządzenie na osi ręki".
+  const armL = wbBuildArm(group, WB_SHLD_X, 0.28, 2.00, mSkin, mSkin, null);
+  // środek przedramienia = nadgarstek cofnięty o połowę długości przedramienia
+  // wzdłuż osi przedramienia (armL.axis wskazuje od łokcia do nadgarstka).
+  const shAnchor = armL.wrist.clone().addScaledVector(armL.axis, -WB_FOREARM_L * 0.5);
   const sh = new THREE.Group();
   sh.position.set(
-    armL.wrist.x - 0.040 * HEX_R,
-    armL.wrist.y + 0.052 * HEX_R,
-    armL.wrist.z + 0.048 * HEX_R,
+    shAnchor.x - 0.030 * HEX_R,   // lekko do wewnątrz — pole tarczy kryje tors
+    shAnchor.y + 0.036 * HEX_R,   // środek tarczy ~y=0.390 => kryje od pasa po bark
+    shAnchor.z + 0.038 * HEX_R,   // przed przedramieniem (poduszka dotyka ręki)
   );
   sh.rotation.y = -0.20;
 

@@ -222,7 +222,7 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
@@ -353,6 +353,21 @@ var terrain_improvements_default = {
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
   },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+  },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
     epoka: 2,
@@ -465,6 +480,21 @@ function improvementKeysForHex(hex) {
   const single = normalizeImprovementKey(String(hex.ulepszenie ?? "brak"));
   return single ? [single] : [];
 }
+var RESOURCE_UPKEEP_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
+  "tartak",
+  "kamieniolom",
+  "glinianka",
+  "kopalnia",
+  "kopalnia_miedzi",
+  "warzelnia_soli",
+  "stadnina",
+  // Maciej 2026-07-25: Kopalnia złota jest czysto DOSTĘPOWA (jak warzelnia_soli/stadnina —
+  // nie w TERRITORY_YIELD_IMPROVEMENTS powyżej, bez ilości/turę), ale tak jak inne ulepszenia
+  // surowcowe płaci utrzymanie Pracy civ-wide (decyzja modelowa tej sesji — spójność z
+  // istniejącym wzorcem "dostęp bez wydobycia" = warzelnia_soli/stadnina, do potwierdzenia
+  // przy playteście jeśli balans wymaga innej wartości).
+  "kopalnia_zlota"
+]);
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -608,11 +638,6 @@ var miasto_params_default = {
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
-  budynek_mnoznik_poziomu: {
-    wartosc: 1.1,
-    jednostka: "x / poziom",
-    opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
-  },
   jednostka_koszt_ludnosci: {
     wartosc: 0,
     jednostka: "ludnosc",
@@ -681,7 +706,17 @@ var miasto_params_default = {
   bonus_obrona_mur_proc: {
     wartosc: 200,
     jednostka: "% Obrony",
-    opis: "Miasto Z MUREM daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje game/siege.ts + battleScene (defensa miasta). Miasto bez muru = brak tego bonusu."
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -812,8 +847,24 @@ function refreshManpowerAfterPopChange(city, epoka, previousPop, maxMult = 1) {
   return max;
 }
 
+// src/game/building-resource-gate.ts
+var LABEL_BY_ASCII = {
+  drewno: "Drewno",
+  kamien: "Kamie\u0144",
+  glina: "Glina",
+  ruda: "Ruda",
+  zelazo: "\u017Belazo",
+  stal: "Stal",
+  braz: "Br\u0105z",
+  sol: "S\xF3l",
+  cegla: "Ceg\u0142a",
+  ceramika: "Ceramika"
+};
+var ASCII_BY_LABEL = Object.fromEntries(
+  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+
 // src/game/production.ts
-var BUILDING_LEVEL_FACTOR = miasto_params_default.budynek_mnoznik_poziomu?.wartosc ?? 1.1;
 function buildingLevelForEpoch(epokaWejscia, cityEpoch, maksPoziom, poziomTechGate, unlockedTechs) {
   const lvl = Math.floor(cityEpoch) - Math.floor(epokaWejscia) + 1;
   const cap = Number.isFinite(maksPoziom) && maksPoziom > 0 ? Math.floor(maksPoziom) : 1;
@@ -829,9 +880,9 @@ function buildingLevelForEpoch(epokaWejscia, cityEpoch, maksPoziom, poziomTechGa
   }
   return level;
 }
-function buildingEffectAtLevel(baza, level) {
+function buildingEffectAtLevel(baza, przyrost, level) {
   const n = Math.max(1, Math.floor(level));
-  return baza * Math.pow(BUILDING_LEVEL_FACTOR, n - 1);
+  return baza + przyrost * (n - 1);
 }
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
@@ -891,8 +942,55 @@ function readCityFoodBuffer(magazynZywnosci) {
   }
   return 0;
 }
-function resourceStorageCapacityPerType(maMagazyn, p) {
-  return maMagazyn ? p.bazaSurowce * p.mnoznikMagazynu : p.bazaSurowce;
+var DEFAULT_OWNER_STORAGE_PARAMS = {
+  bazaSurowcePanstwo: 500,
+  bonusSurowceNaBudynek: 100
+};
+function loadOwnerStorageParams(raw, difficulty = "normal") {
+  const g = raw.globalne;
+  return {
+    bazaSurowcePanstwo: readNum(g, "magazyn_baza_surowce", difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo),
+    bonusSurowceNaBudynek: readNum(g, "magazyn_bonus_surowce_na_budynek", difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bonusSurowceNaBudynek)
+  };
+}
+function ownerResourceCapacityPerType(magazynCount, p = DEFAULT_OWNER_STORAGE_PARAMS) {
+  const cnt = Number.isFinite(magazynCount) && magazynCount > 0 ? Math.floor(magazynCount) : 0;
+  return p.bazaSurowcePanstwo + p.bonusSurowceNaBudynek * cnt;
+}
+function reconcileOwnerResourceCaps(cities, capForOwner) {
+  const byOwner = /* @__PURE__ */ new Map();
+  for (const c of cities) {
+    if (!c.surowce) continue;
+    const list = byOwner.get(c.ownerId) ?? [];
+    list.push(c);
+    byOwner.set(c.ownerId, list);
+  }
+  for (const [ownerId, ownerCities] of byOwner) {
+    const cap = capForOwner(ownerId);
+    if (!Number.isFinite(cap) || cap < 0) continue;
+    const keys = /* @__PURE__ */ new Set();
+    for (const c of ownerCities) {
+      for (const k of Object.keys(c.surowce ?? {})) keys.add(k);
+    }
+    for (const key of keys) {
+      let total = 0;
+      for (const c of ownerCities) total += c.surowce?.[key] ?? 0;
+      let excess = total - cap;
+      if (excess <= 0) continue;
+      const holders = ownerCities.filter((c) => (c.surowce?.[key] ?? 0) > 0).sort((a, b) => {
+        const diff = (b.surowce?.[key] ?? 0) - (a.surowce?.[key] ?? 0);
+        if (diff !== 0) return diff;
+        return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+      });
+      for (const c of holders) {
+        if (excess <= 0) break;
+        const have = c.surowce?.[key] ?? 0;
+        const take = Math.min(have, excess);
+        c.surowce[key] = have - take;
+        excess -= take;
+      }
+    }
+  }
 }
 function loadUpkeepParams(raw, difficulty = "normal") {
   const em = raw.ekonomia_miasta;
@@ -906,12 +1004,13 @@ function loadUpkeepParams(raw, difficulty = "normal") {
   };
 }
 function buildingUpkeep(building, level, flatOverride) {
-  if (typeof flatOverride === "number" && Number.isFinite(flatOverride)) {
-    return flatOverride;
-  }
   const lvl = level >= 1 ? level : 1;
-  const base = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
-  return Math.floor(buildingEffectAtLevel(base, lvl));
+  if (!Number.isFinite(building.utrzymanie)) {
+    return typeof flatOverride === "number" && Number.isFinite(flatOverride) ? flatOverride : 0;
+  }
+  const base = building.utrzymanie;
+  const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
+  return Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
 }
 function totalBuildingUpkeep(buildings, flatOverride) {
   let sum = 0;
@@ -998,8 +1097,8 @@ var DEFAULT_OKOLICA_FOCUS = "zrownowazone";
 var DEFAULT_OKOLICA_TRYB = "auto";
 var DEFAULT_PODZIAL_HANDLU = {
   procentNauka: 20,
-  procentPieniadz: 70,
-  procentLuksus: 10
+  procentPieniadz: 60,
+  procentLuksus: 20
 };
 var DEFAULT_PODZIAL_PRACY = {
   procentBudynki: 70
@@ -1262,12 +1361,50 @@ function tileYield(tile) {
   return out;
 }
 function buildingValue(b, level, key) {
-  return Math.floor(buildingEffectAtLevel(b.baza[key], level));
+  return Math.floor(buildingEffectAtLevel(b.baza[key], b.przyrost[key], level));
 }
 var BUILDING_HAPPINESS_BASE_PER_BUILDING = 1;
 function buildingHappinessAtLevel(b, level) {
   const extra = typeof b.baza.zadowolenie === "number" && b.baza.zadowolenie !== 0 ? buildingValue(b, level, "zadowolenie") : 0;
   return BUILDING_HAPPINESS_BASE_PER_BUILDING + extra;
+}
+function cityBuildingEntriesFromBuiltIds(builtIds, catalog, cityEpoch, unlockedTechs) {
+  const entries = [];
+  for (const bid of builtIds) {
+    const record = catalog.find((b) => b.id === bid);
+    if (!record) continue;
+    const level = buildingLevelForEpoch(
+      record.epokaWejscia,
+      cityEpoch,
+      record.maksPoziom,
+      record.poziomTechGate,
+      unlockedTechs
+    );
+    entries.push({ record, level });
+  }
+  return entries;
+}
+function mnoznikHandelPieniadzRawForCiv(civKey, civs) {
+  if (!civKey || !civs?.cywilizacje?.length) return void 0;
+  const key = civKey.toLowerCase();
+  for (const row of civs.cywilizacje) {
+    if (!row) continue;
+    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja].filter((s) => typeof s === "string" && s.length > 0).map((s) => s.toLowerCase());
+    if (!ids.includes(key)) continue;
+    const v = row.mnoznikHandelPieniadz;
+    return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : void 0;
+  }
+  return void 0;
+}
+var MNOZNIK_HANDEL_TRUDNOSC_DELTA = {
+  easy: 0.5,
+  normal: 0,
+  hard: -0.5
+};
+function mnoznikHandelPieniadzForCivByDifficulty(civKey, civs, difficulty, fallbackScaled) {
+  const raw = mnoznikHandelPieniadzRawForCiv(civKey, civs);
+  if (raw === void 0) return fallbackScaled;
+  return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
 }
 function civBonusyForCivKey(civKey, civs) {
   if (!civKey || !civs?.cywilizacje?.length) return [];
@@ -1323,20 +1460,6 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   if (ctx.maCegielnia) {
     pracaBruttoTerenu = pracaBruttoTerenu * (1 + params.budynekCegielniBonusPracy);
   }
-  let handelBrutto;
-  if (ctx.maTargowisko) {
-    handelBrutto = handelTerenu * (1 + params.budynekTargowiskoBonusHandlu);
-  } else {
-    handelBrutto = handelTerenu;
-  }
-  const civHandelMult = ctx.civHandelMult ?? 1;
-  if (civHandelMult !== 1) {
-    handelBrutto *= civHandelMult;
-  }
-  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
-  if (liczbaTrasHandlowych > 0) {
-    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
-  }
   let pracaBudynkow = 0;
   let pieniadzBudynkow = 0;
   let zywnoscBudynkow = 0;
@@ -1351,39 +1474,45 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     kulturaBudynkow += buildingValue(record, level, "kultura");
     zadBudynkow += buildingHappinessAtLevel(record, level);
   }
-  let totalMnoznikProc = 0;
-  for (const { record, level } of cityBuildings) {
-    const kat = record.kategoria;
-    if (!kat.includes("Wojsko") && !kat.includes("Obrona")) {
-      totalMnoznikProc += buildingValue(record, level, "mnoznik");
-    }
+  const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
+  const pracaNetto = pracaBruttoLacznie;
+  const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
+  const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
+  const pracaInt = cityPracaInteger(pracaNetto);
+  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
+  const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
+  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
+  let handelBrutto;
+  if (ctx.maTargowisko) {
+    handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
+  } else {
+    handelBrutto = handelBazowy;
   }
-  const mnoznikFactor = 1 + totalMnoznikProc / 100;
-  const pracaBruttoLacznie = (pracaBruttoTerenu + pracaBudynkow) * mnoznikFactor;
+  const civHandelMult = ctx.civHandelMult ?? 1;
+  if (civHandelMult !== 1) {
+    handelBrutto *= civHandelMult;
+  }
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
+  }
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
-  const pracaNetto = pracaBruttoLacznie * (1 - strata);
   const handelNettoRaw = handelBrutto * (1 - strata);
-  const walutaActive = ctx.walutaOdkryta === true;
-  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.walutaMnoznik;
+  const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
+  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto = handelNettoRaw * walutaMnoznikAktywny;
   const pctNauka = city.podzia\u0142Handlu.procentNauka / 100;
   const pctPieniadz = city.podzia\u0142Handlu.procentPieniadz / 100;
   const pctLuksus = city.podzia\u0142Handlu.procentLuksus / 100;
   const naukaZHandlu = Math.floor(handelNetto * pctNauka);
-  const pieniadzZHandlu = Math.floor(
-    handelNetto * pctPieniadz * ctx.mennicaMnoznik
-  );
+  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
   const luksusZHandlu = Math.floor(handelNetto * pctLuksus);
-  const naukaBonusFactor = ctx.maBiblioteka ? 1 + params.budynekBibliotekaBonusNauki : 1;
+  const naukaBonusFactor = 1 + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0) + (ctx.maAkademia ? params.budynekAkademiaBonusNauki : 0);
   const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult = ctx.civNaukaMult ?? 1;
   const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
-  const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
-  const pracaInt = cityPracaInteger(pracaNetto);
-  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
-  const pieniadzZPracy = ctx.maTargowisko && walutaActive ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
+  let pieniadzTotal = pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === "poborca") {
       pieniadzTotal += 2;
@@ -1408,6 +1537,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     pracaTerenu: Math.floor(pracaBruttoTerenu),
     pracaBudynkow: Math.floor(pracaBudynkow),
     pieniadzZPracy,
+    pieniadzBudynkow: Math.floor(pieniadzBudynkow),
     drewnoTerenu: Math.floor(drewnoTerenu),
     kamienTerenu: Math.floor(kamienTerenu),
     glinaTerenu: Math.floor(glinaTerenu),
@@ -1445,6 +1575,21 @@ function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
     nowyMagazynZywnosci = maSpichlerz || maSpichlerzII ? Math.floor(nowyMagazynZywnosci * retainFrac) : 0;
   }
   return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
+}
+function corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params) {
+  const strataPct = dystansOdStolicy * params.korupcjaWspolczynnikDystansu + liczbaWszystkichMiast * params.korupcjaWspolczynnikMiast;
+  const capPct = params.korupcjaCap * 100;
+  return Math.min(capPct, strataPct) / 100;
+}
+var KORUPCJA_REDUKCJA_BUDYNKI = ["sad", "pretorium", "palac"];
+var KORUPCJA_REDUKCJA_NA_BUDYNEK = 0.3;
+var KORUPCJA_REDUKCJA_SUFIT = 0.6;
+function corruptionBuildingReduction(builtIds) {
+  let suma = 0;
+  for (const id of KORUPCJA_REDUKCJA_BUDYNKI) {
+    if (builtIds.includes(id)) suma += KORUPCJA_REDUKCJA_NA_BUDYNEK;
+  }
+  return Math.min(KORUPCJA_REDUKCJA_SUFIT, suma);
 }
 
 // src/game/converters.ts
@@ -2206,7 +2351,7 @@ var wonders_default = {
         ],
         specjalne: [
           { typ: "magazyn_pojemnosc", wartosc: 6, opis: "+6 pojemno\u015B\u0107 handlu/surowc\xF3w (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z tras handlowych (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 5, opis: "+5 Wp\u0142ywu \u2014 karawany Nabatejczyk\xF3w (cywilizacja)" }
         ]
       }
@@ -2246,7 +2391,7 @@ var wonders_default = {
           { typTerenu: "laka", kultura: 2, warunek: "hex_sasiad_wybrzeze" }
         ],
         specjalne: [
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.15, opis: "+15% Pieni\u0105dza z handlu morskiego (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych morskich (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 3, opis: "+3 Wp\u0142ywu (cywilizacja)" }
         ]
       },
@@ -2268,7 +2413,7 @@ var wonders_default = {
         miasto: { pieniadz: 3, kultura: 3 },
         specjalne: [
           { typ: "magazyn_pojemnosc", wartosc: 8, opis: "+8 pojemno\u015B\u0107 surowc\xF3w / trade capacity (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.2, opis: "+20% Pieni\u0105dza z port\xF3w (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.2, opis: "+20% Handlu \u2014 dochodu z tras handlowych morskich, korzystaj\u0105cych z port\xF3w (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 6, opis: "+6 Wp\u0142ywu \u2014 Rhodos, w\u0119ze\u0142 morski (cywilizacja)" }
         ]
       }
@@ -2440,7 +2585,7 @@ var wonders_default = {
         miasto: { kultura: 3, pieniadz: 3 },
         specjalne: [
           { typ: "wojna_wsparcie", wartosc: 3, opis: "+3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z tras handlowych (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "dyplomacja_wp\u0142yw", wartosc: 10, opis: "+10 Wp\u0142ywu \u2014 satrapie i go\u015Bcie narod\xF3w (cywilizacja)" },
           { typ: "relacje_zaufanie", wartosc: 3, opis: "+3 Zaufanie u pa\u0144stw z aktywnym handlem (cywilizacja)" }
         ]
@@ -2463,7 +2608,7 @@ var wonders_default = {
         miasto: { kultura: 3, zadowolenie: 3, pieniadz: 3 },
         specjalne: [
           { typ: "dyplomacja_wp\u0142yw", wartosc: 12, opis: "+12 Wp\u0142ywu \u2014 cesarski dw\xF3r Chang'an (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Pieni\u0105dza z handlu (cywilizacja)" },
+          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
           { typ: "relacje_zaufanie", wartosc: 4, opis: "+4 bazowe Zaufanie (cywilizacja)" }
         ]
       },
@@ -2795,8 +2940,8 @@ function civDisplayNameForKey(civKey, civs) {
   }
   return null;
 }
-function religionTradeWalutaOverride(cityReligion, ownerCivKey, builtIds, walutaOdkryta, civs, societyParams, difficulty) {
-  if (!walutaOdkryta || !builtIds.includes("mennica") || !cityReligion) return void 0;
+function religionTradeWalutaOverride(cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty) {
+  if (!walutaOdkryta || !maMennicaEmpireWide || !cityReligion) return void 0;
   const civName = civDisplayNameForKey(ownerCivKey, civs);
   if (!civName) return void 0;
   const rp = loadReligionParams(societyParams, difficulty);
@@ -2808,6 +2953,26 @@ function religionTradeWalutaOverride(cityReligion, ownerCivKey, builtIds, waluta
     true
   );
   return trade.applied ? trade.multiplier : void 0;
+}
+function ownersWithMennica(cities, builtByCity) {
+  const owners = /* @__PURE__ */ new Set();
+  for (const c of cities) {
+    if ((builtByCity.get(c.id) ?? []).includes("mennica")) owners.add(c.ownerId);
+  }
+  return owners;
+}
+function resolveWalutaMnoznikOverride(cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty, fallbackScaled) {
+  const religionOverride = religionTradeWalutaOverride(
+    cityReligion,
+    ownerCivKey,
+    maMennicaEmpireWide,
+    walutaOdkryta,
+    civs,
+    societyParams,
+    difficulty
+  );
+  if (religionOverride !== void 0) return religionOverride;
+  return mnoznikHandelPieniadzForCivByDifficulty(ownerCivKey, civs, difficulty, fallbackScaled);
 }
 function buildEconParams(data2, difficulty = "normal") {
   const raw = data2.econParams;
@@ -2835,10 +3000,14 @@ function buildEconParams(data2, difficulty = "normal") {
     budynekCegielniBonusPracy: num(bu, "budynek_cegielnia_bonus_pracy", 0.25),
     budynekTargowiskoBonusHandlu: num(bu, "budynek_targowisko_bonus_handlu", 0.5),
     budynekBibliotekaBonusNauki: num(bu, "budynek_biblioteka_bonus_nauki", 0.5),
+    budynekAkademiaBonusNauki: num(bu, "budynek_akademia_bonus_nauki", 0.1),
     budynekGarncarniaBonusZywnosci: num(bu, "budynek_garncarnia_bonus_zywnosci_lokalnie", 0.1),
     budynekMennicaMnoznik: num(bu, "budynek_mennica_mnoznik", 1),
+    // NIEUZYWANE 2026-07-25 (patrz economy.ts)
     mennicaMnoznikPoWalucie: num(gl, "mennica_mnoznik_po_walucie", 1.5),
+    // JEDYNY mnoznik Efektu 1 (Waluta+Mennica scalone)
     walutaMnoznik: num(bu, "waluta_mnoznik", 2),
+    // NIEUZYWANE 2026-07-25 (patrz economy.ts)
     targowiskoPracaMnoznik: num(bu, "targowisko_praca_na_pieniadz_mnoznik", 2),
     suwaakHandelNaukaDefault: num(em, "suwak_handel_nauka_domyslnie", 60),
     suwaakHandelPieniadz: num(em, "suwak_handel_pieniadz_domyslnie", 30),
@@ -3028,6 +3197,36 @@ function computeTerritoryResourceYieldByCity(cities, map, territoryNodes) {
   }
   return out;
 }
+function countResourceUpkeepImprovementsByOwner(map, territoryNodes) {
+  const out = /* @__PURE__ */ new Map();
+  for (const hexKey2 of Object.keys(map.hexes)) {
+    const hex = map.hexes[hexKey2];
+    if (!hex) continue;
+    const impKeys = improvementKeysForHex(hex);
+    if (!impKeys.length) continue;
+    let n = 0;
+    for (const key of impKeys) {
+      if (RESOURCE_UPKEEP_IMPROVEMENT_KEYS.has(key)) n += 1;
+    }
+    if (n === 0) continue;
+    const { q, r } = hex.coords;
+    const owner = territoryOwnerAt(q, r, territoryNodes);
+    if (owner == null) continue;
+    out.set(owner, (out.get(owner) ?? 0) + n);
+  }
+  return out;
+}
+function loadResourceImprovementUpkeepCost(data2, difficulty) {
+  const raw = data2.econParams;
+  return loadThroughput(raw, "ulepszenie_surowcowe_upkeep_praca", difficulty, 1);
+}
+function computePracaUpkeepByOwner(map, territoryNodes, data2, difficulty) {
+  const counts = countResourceUpkeepImprovementsByOwner(map, territoryNodes);
+  const cost = loadResourceImprovementUpkeepCost(data2, difficulty);
+  const out = /* @__PURE__ */ new Map();
+  for (const [owner, n] of counts) out.set(owner, n * cost);
+  return out;
+}
 function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
   return {
     id: city.id,
@@ -3082,13 +3281,14 @@ function sumEconomyForOwner(result, ownerId) {
   }
   return { pieniadz, nauka, doPuli, praca, kultura, pieniadzZTras };
 }
-function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map()) {
+function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map(), resolveOwnerZlotoAccess = () => true) {
   const gameDifficulty = difficulty;
   const params = buildEconParams(data2, difficulty);
-  const noBuildings = [];
+  const buildingCatalog = data2.buildings;
   const territoryNodes = buildTerritoryNodesFromCities(cities);
   reconcileAllWorkedTiles(cities, territoryNodes);
   const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
+  const pracaUpkeepByOwner = computePracaUpkeepByOwner(map, territoryNodes, data2, difficulty);
   const rawEconParams = data2.econParams;
   const upkeepParams = loadUpkeepParams(rawEconParams, difficulty);
   const storageParams = loadStorageParams(rawEconParams, difficulty);
@@ -3117,6 +3317,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
   );
   const stolarniaCountByOwner = /* @__PURE__ */ new Map();
   const kamieniarskiCountByOwner = /* @__PURE__ */ new Map();
+  const magazynCountByOwner = /* @__PURE__ */ new Map();
   for (const c of cities) {
     const bIds = builtByCity.get(c.id) ?? [];
     if (bIds.includes("stolarnia")) {
@@ -3125,6 +3326,18 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     if (bIds.includes("kamieniarski")) {
       kamieniarskiCountByOwner.set(c.ownerId, (kamieniarskiCountByOwner.get(c.ownerId) ?? 0) + 1);
     }
+    if (bIds.includes("magazyn")) {
+      magazynCountByOwner.set(c.ownerId, (magazynCountByOwner.get(c.ownerId) ?? 0) + 1);
+    }
+  }
+  const ownerStorageParams = loadOwnerStorageParams(rawEconParams, difficulty);
+  const ownerResCapByOwner = /* @__PURE__ */ new Map();
+  function ownerResourceCapFor(ownerId) {
+    const cached = ownerResCapByOwner.get(ownerId);
+    if (cached !== void 0) return cached;
+    const cap = ownerResourceCapacityPerType(magazynCountByOwner.get(ownerId) ?? 0, ownerStorageParams);
+    ownerResCapByOwner.set(ownerId, cap);
+    return cap;
   }
   const healthParams = loadHealthParams(
     data2.societyParams,
@@ -3135,6 +3348,15 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     difficulty
   );
   const capitalSeen = /* @__PURE__ */ new Set();
+  const mennicaOwners = ownersWithMennica(cities, builtByCity);
+  const capitalCoordsByOwner = /* @__PURE__ */ new Map();
+  const cityCountByOwner = /* @__PURE__ */ new Map();
+  for (const c of cities) {
+    if (!capitalCoordsByOwner.has(c.ownerId)) {
+      capitalCoordsByOwner.set(c.ownerId, { q: c.q, r: c.r });
+    }
+    cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
+  }
   const result = {
     perCity: [],
     cities: 0,
@@ -3147,7 +3369,8 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     totalPracaPula: 0,
     growth: 0,
     starved: 0,
-    upkeepByOwner: /* @__PURE__ */ new Map()
+    upkeepByOwner: /* @__PURE__ */ new Map(),
+    pracaUpkeepByOwner
   };
   const incomeByOwner = /* @__PURE__ */ new Map();
   for (const city of cities) {
@@ -3167,35 +3390,50 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     const walutaOdkryta = ownerTech.has("Waluta") || ownerTech.has("waluta");
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const walutaMnoznikOverride = religionTradeWalutaOverride(
+    const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
+    const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
+    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
-      builtIds,
+      maMennicaEmpireWide,
       walutaOdkryta,
       data2.civs,
       data2.societyParams,
-      difficulty
+      difficulty,
+      params.mennicaMnoznikPoWalucie
     );
     const ownerBonusy = ownerCivKey ? civBonusyForCivKey(ownerCivKey, data2.civs) : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    const capCoords = capitalCoordsByOwner.get(city.ownerId);
+    const dystansOdStolicy = isCapital || !capCoords ? 0 : hexDistance(city.q, city.r, capCoords.q, capCoords.r);
+    const liczbaWszystkichMiast = cityCountByOwner.get(city.ownerId) ?? 1;
+    const strataBazowa = corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params);
+    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
+    const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx = {
       wojskoZuzycieZywnosci: 0,
       // B5: wojsko → zapasy państwa (advanceEmpireFood)
-      strataFraction: 0,
-      // no distance-corruption tracking yet
+      strataFraction,
       maMlyn: builtIds.includes("mlyn"),
       maCegielnia: builtIds.includes("cegielnia"),
       maTargowisko: builtIds.includes("targowisko"),
       maBiblioteka: builtIds.includes("biblioteka"),
-      maMennica: builtIds.includes("mennica"),
-      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
-      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
-      mennicaMnoznik: builtIds.includes("mennica") && walutaOdkryta ? params.mennicaMnoznikPoWalucie : 1,
+      maAkademia: builtIds.includes("akademia"),
+      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
+      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
+      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
+      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
+      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
+      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
+      // maMennicaEmpireWide juz zawiera bramke dostepu do zlota -- gdy brak, false
+      // mimo ze budynek dalej stoi (nie jest burzony).
+      maMennica: maMennicaEmpireWide,
       walutaOdkryta,
-      // P1b: mnoznik Handel->Pieniadz gdy Waluta zbadana
+      // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
       walutaMnoznikOverride,
-      // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
+      // per-cyw skalowany trudnoscia (lub override religii)
       civHandelMult,
       // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,
@@ -3205,7 +3443,8 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: builtIds.filter((id) => id === "garncarnia").length
     };
-    const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
@@ -3329,8 +3568,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
-    const maMagazyn = builtIds.includes("magazyn");
-    const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
+    const resCap = ownerResourceCapFor(city.ownerId);
     if (!city.surowce) city.surowce = {};
     const citySurowce = city.surowce;
     const terrYield = territoryResourceByCity.get(city.id);
@@ -3391,6 +3629,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     if (grow.wzrost) result.growth += 1;
     if (grow.ubytek) result.starved += 1;
   }
+  reconcileOwnerResourceCaps(cities, ownerResourceCapFor);
   const ownerIds = /* @__PURE__ */ new Set([
     ...cities.map((c) => c.ownerId),
     ...econUnits.map((u) => u.ownerId)
@@ -3524,7 +3763,8 @@ var map_gen_params_default = {
     glina: { rarity: 0.1 },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    sol: { rarity: 0.12 }
+    sol: { rarity: 0.12 },
+    zloto: { rarity: 0.03 }
   },
   metal_deposit_min_era: {
     miedz: 2,
@@ -3569,7 +3809,10 @@ var FALLBACK_DEPOSIT_RARITY = {
   wegiel: 0.1,
   owce: 0.08,
   bydlo: 0.07,
-  sol: 0.12
+  sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03
 };
 function tierKey(t) {
   return t;
@@ -4354,6 +4597,31 @@ var EARTH_MASK_ROWS = [
 
 // src/map/earth-land-mask.ts
 var EARTH_PLAYABLE_BORDER = 2;
+var EARTH_POLAR_OCEAN_REF_ROWS = 30;
+var EARTH_POLAR_OCEAN_REF_INNER_H = 115;
+function earthNorthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthSouthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthPolarOceanRows(height) {
+  const innerH = earthPlayableInnerHeight(height);
+  return Math.max(2, Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H));
+}
+function earthPlayableInnerHeight(height) {
+  const b = EARTH_PLAYABLE_BORDER;
+  return Math.max(1, height - 1 - 2 * b);
+}
+function earthPlayableInnerWidth(width) {
+  const b = EARTH_PLAYABLE_BORDER;
+  return Math.max(1, width - 1 - 2 * b);
+}
+function earthLandMapRows(height) {
+  const innerH = earthPlayableInnerHeight(height);
+  const polar = earthPolarOceanRows(height);
+  return Math.max(1, innerH - polar * 2);
+}
 function bitAt(x, y) {
   const xi = Math.min(EARTH_MASK_W - 1, Math.max(0, x));
   const yi = Math.min(EARTH_MASK_H - 1, Math.max(0, y));
@@ -4377,10 +4645,16 @@ function sampleEarthTemplateLand(nq, nr) {
 function earthHexToTemplateNorm(q, r, width, height) {
   const b = EARTH_PLAYABLE_BORDER;
   if (q < b || r < b || q >= width - b || r >= height - b) return null;
-  const innerW = Math.max(1, width - 1 - 2 * b);
-  const innerH = Math.max(1, height - 1 - 2 * b);
+  const innerW = earthPlayableInnerWidth(width);
+  const innerH = earthPlayableInnerHeight(height);
+  const north = earthNorthOceanRows(height);
+  const south = earthSouthOceanRows(height);
+  const relR = r - b;
+  if (relR < north) return null;
+  if (relR >= innerH - south) return null;
+  const landRows = earthLandMapRows(height);
+  const pr = (relR - north) / Math.max(1, landRows - 1);
   const pq = (q - b) / innerW;
-  const pr = (r - b) / innerH;
   const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   return {
     nq: minX + pq * (maxX - minX),
@@ -4404,12 +4678,10 @@ function earthLandFractionThreshold(width, height) {
 function earthTemplateLandAt(q, r, width, height) {
   const t = earthHexToTemplateNorm(q, r, width, height);
   if (!t) return 0;
-  const b = EARTH_PLAYABLE_BORDER;
-  const innerW = Math.max(1, width - 1 - 2 * b);
-  const innerH = Math.max(1, height - 1 - 2 * b);
+  const innerW = earthPlayableInnerWidth(width);
   const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   const cellW = (maxX - minX) / innerW;
-  const cellH = (maxY - minY) / innerH;
+  const cellH = (maxY - minY) / Math.max(1, earthLandMapRows(height));
   const steps = earthSubsampleGrid(width, height);
   if (steps <= 1) return sampleEarthTemplateLand(t.nq, t.nr);
   let landHits = 0;
@@ -5468,6 +5740,92 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
   return fixed;
 }
 var MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.4;
+var MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
+var MOUNTAIN_RANGE_REGROW_MIN_GAP = 1;
+var MOUNTAIN_RANGE_REGROW_TARGET_MULT = 1;
+var MOUNTAIN_RANGE_REGROW_LEN_MIN = 4;
+var MOUNTAIN_RANGE_REGROW_LEN_MAX = 8;
+function findSameTerrainClusters(hexes, terrain) {
+  const visited = /* @__PURE__ */ new Set();
+  const clusters = [];
+  const keys = Object.keys(hexes).sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const hex = hexes[key];
+    if (!hex || hex.terenBazowy !== terrain) continue;
+    const cluster = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      cluster.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk)) continue;
+        const nh = hexes[nk];
+        if (!nh || nh.terenBazowy !== terrain) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+function connectedComponentsWithin(remaining) {
+  const visited = /* @__PURE__ */ new Set();
+  const comps = [];
+  const keys = [...remaining].sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const comp = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      comp.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk) || !remaining.has(nk)) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    comps.push(comp);
+  }
+  return comps;
+}
+function capMountainRangeClusterSize(hexes, scratch, terrain, fallbackTerrain, maxSize) {
+  let reverted = 0;
+  const clusters = findSameTerrainClusters(hexes, terrain);
+  for (const cluster of clusters) {
+    if (cluster.length <= maxSize) continue;
+    const remaining = new Set(cluster);
+    for (; ; ) {
+      const comps = connectedComponentsWithin(remaining).sort((a, b) => b.length - a.length);
+      const biggest = comps[0];
+      if (!biggest || biggest.length <= maxSize) break;
+      const sorted = [...biggest].sort((a, b) => {
+        const na = scratch.get(a)?.mtnNoise ?? 0;
+        const nb = scratch.get(b)?.mtnNoise ?? 0;
+        if (na !== nb) return na - nb;
+        return a < b ? -1 : a > b ? 1 : 0;
+      });
+      const victim = sorted[0];
+      remaining.delete(victim);
+      const hex = hexes[victim];
+      if (hex) {
+        hex.terenBazowy = fallbackTerrain;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+      }
+      reverted++;
+    }
+  }
+  return reverted;
+}
 function mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand) {
   return mass.filter((k) => {
     const hex = hexes[k];
@@ -5495,6 +5853,138 @@ function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
     path.push(cur);
   }
   return path;
+}
+function bfsExpandExclusion(hexes, excluded, sources, minDist) {
+  const queue = [];
+  for (const k of sources) {
+    if (!excluded.has(k)) excluded.add(k);
+    queue.push({ k, d: 0 });
+  }
+  let head = 0;
+  while (head < queue.length) {
+    const { k, d } = queue[head++];
+    if (d >= minDist) continue;
+    const { q, r } = parseHexKey(k);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (excluded.has(nk)) continue;
+      if (!hexes[nk]) continue;
+      excluded.add(nk);
+      queue.push({ k: nk, d: d + 1 });
+    }
+  }
+}
+function isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  if (n > mtnTh) return excludedGory.has(k);
+  if (n > hiTh) return excludedWzgorza.has(k);
+  return false;
+}
+function walkMountainRangeAvoiding(hexes, scratch, width, height, rand, start, steps, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  const path = [];
+  const visited = /* @__PURE__ */ new Set([start]);
+  let cur = start;
+  for (let i = 0; i < steps; i++) {
+    const { q, r } = parseHexKey(cur);
+    const candidates = HEX_DIRECTIONS.map(([dq, dr]) => hexKey(q + dq, r + dr)).filter((k) => {
+      if (visited.has(k)) return false;
+      const hex = hexes[k];
+      if (!hex) return false;
+      const { q: nq, r: nr } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, nq, nr, width, height)) return false;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.3 })).sort((a, b) => b.n - a.n);
+    if (candidates.length === 0) break;
+    cur = candidates[0].k;
+    visited.add(cur);
+    path.push(cur);
+  }
+  return path;
+}
+function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses, mtnTh, hiTh, deficit) {
+  if (deficit <= 0 || masses.length === 0) return 0;
+  const excludedGory = /* @__PURE__ */ new Set();
+  const excludedWzgorza = /* @__PURE__ */ new Set();
+  const initialGory = [];
+  const initialWzgorza = [];
+  for (const key of Object.keys(hexes).sort()) {
+    const hex = hexes[key];
+    if (hex.terenBazowy === "gory" /* Gory */) initialGory.push(key);
+    else if (hex.terenBazowy === "wzgorza" /* Wzgorza */) initialWzgorza.push(key);
+  }
+  bfsExpandExclusion(hexes, excludedGory, initialGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  bfsExpandExclusion(hexes, excludedWzgorza, initialWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  let recovered = 0;
+  let massIdx = 0;
+  let attemptsSinceProgress = 0;
+  const maxAttemptsSinceProgress = masses.length * 40 + 200;
+  while (recovered < deficit && attemptsSinceProgress < maxAttemptsSinceProgress) {
+    const mass = masses[massIdx % masses.length];
+    massIdx++;
+    const seedCandidates = mass.filter((k) => {
+      const hex = hexes[k];
+      if (!hex) return false;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) return false;
+      const { q, r } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, q, r, width, height)) return false;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.15 })).sort((a, b) => b.n - a.n);
+    if (seedCandidates.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    const seedKey = seedCandidates[0].k;
+    const len = MOUNTAIN_RANGE_REGROW_LEN_MIN + Math.floor(rand() * (MOUNTAIN_RANGE_REGROW_LEN_MAX - MOUNTAIN_RANGE_REGROW_LEN_MIN + 1));
+    const path = [seedKey, ...walkMountainRangeAvoiding(
+      hexes,
+      scratch,
+      width,
+      height,
+      rand,
+      seedKey,
+      len,
+      mtnTh,
+      hiTh,
+      excludedGory,
+      excludedWzgorza
+    )];
+    const placedGory = [];
+    const placedWzgorza = [];
+    for (const k of path) {
+      const hex = hexes[k];
+      if (!hex) continue;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) continue;
+      const n = scratch.get(k)?.mtnNoise ?? 0;
+      if (isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza)) continue;
+      if (n > mtnTh) {
+        hex.terenBazowy = "gory" /* Gory */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedGory.push(k);
+        recovered++;
+      } else if (n > hiTh) {
+        hex.terenBazowy = "wzgorza" /* Wzgorza */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedWzgorza.push(k);
+        recovered++;
+      }
+    }
+    if (placedGory.length === 0 && placedWzgorza.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    attemptsSinceProgress = 0;
+    if (placedGory.length > 0) {
+      bfsExpandExclusion(hexes, excludedGory, placedGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (placedWzgorza.length > 0) {
+      bfsExpandExclusion(hexes, excludedWzgorza, placedWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (recovered >= deficit) break;
+  }
+  return recovered;
 }
 function growMountainRanges(hexes, scratch, tier, width, height, rand) {
   const params = mapGenMountainRangeParams(tier);
@@ -5628,6 +6118,45 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
       mountainous--;
     }
   }
+  const mtnReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  const hiReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  regrowLostMountainClusters(
+    hexes,
+    scratch,
+    width,
+    height,
+    rand,
+    masses,
+    mtnTh,
+    hiTh,
+    Math.round((mtnReverted + hiReverted) * MOUNTAIN_RANGE_REGROW_TARGET_MULT)
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return addedByThisRun.length;
 }
 function assignContinentIndices(width, height, centers) {
@@ -7929,7 +8458,10 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "glina",
     nakladka: "zloze_gliny" /* ZlozeGliny */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || isLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true),
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
     rarity: 0.1
   },
   {
@@ -7951,8 +8483,25 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "sol",
     nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "pustynia" /* Pustynia */ || h.terenBazowy === "rownina" /* Rownina */),
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
     rarity: 0.12
+  },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: "zloto",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    rarity: 0.03
   }
 ];
 var _depositRarities = mapGenAllDepositRarities();
@@ -7975,7 +8524,8 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
     wegiel: 0,
     owce: 0,
     bydlo: 0,
-    sol: 0
+    sol: 0,
+    zloto: 0
   };
   for (const key of keys) {
     const hex = hexes[key];
@@ -7983,8 +8533,10 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
     if (hex.nakladka !== "brak" /* Brak */) continue;
     if (hex.zloze) continue;
     if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) continue;
+    const [depQ, depR] = key.split(",").map(Number);
     for (const rule of rules) {
       if (!rule.allowedOn(hex)) continue;
+      if (rule.requiresCoastalLand && !isCoastalLandHex(hexes, depQ, depR)) continue;
       if (rand() < Math.min(1, rule.rarity * baselineMult * resourceMult)) {
         if (rule.nakladka !== null) {
           hex.nakladka = rule.nakladka;
@@ -8028,9 +8580,8 @@ function cellCarriesDepositType(cellLand, hexes, id) {
   return false;
 }
 function hexCanAcceptDeposit(hex, rule, allowForestClear) {
-  if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-    return false;
-  }
+  if (hex.terenBazowy === "morze" /* Morze */) return false;
+  if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
   if (hex.zloze) return false;
   if (hex.nakladka !== "brak" /* Brak */) {
     if (!allowForestClear || hex.nakladka !== "las" /* Las */) return false;
@@ -8059,17 +8610,11 @@ function prepareTerrainForDeposit(hex, rule) {
     case "owce":
       hex.terenBazowy = "wzgorza" /* Wzgorza */;
       break;
-    case "glina":
-      hex.terenBazowy = "laka" /* Laka */;
-      break;
     case "konie":
       hex.terenBazowy = "rownina" /* Rownina */;
       break;
     case "bydlo":
       hex.terenBazowy = "laka" /* Laka */;
-      break;
-    case "sol":
-      hex.terenBazowy = "pustynia" /* Pustynia */;
       break;
     default:
       break;
@@ -8078,14 +8623,15 @@ function prepareTerrainForDeposit(hex, rule) {
 function pickDepositBootstrapHex(land, hexes, rule, rand) {
   const ranked = land.filter(([q, r]) => {
     const hex = hexes[hexKey(q, r)];
-    return hex && hex.terenBazowy !== "morze" /* Morze */ && hex.terenBazowy !== "wybrzeze" /* Wybrzeze */;
+    if (!hex || hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      return false;
+    }
+    if (rule.id === "glina" && !rule.allowedOn(hex)) return false;
+    return true;
   }).map(([q, r]) => ({ q, r, score: rand() })).sort((a, b) => b.score - a.score);
   if (ranked.length === 0) return null;
   const spot = ranked[0];
   prepareTerrainForDeposit(hexes[hexKey(spot.q, spot.r)], rule);
-  if (rule.id === "glina") {
-    hexes[hexKey(spot.q, spot.r)].rzeka = { ...hexes[hexKey(spot.q, spot.r)].rzeka ?? {}, obecna: true };
-  }
   return [spot.q, spot.r];
 }
 function forceDepositInCell(land, hexes, id, rand) {
@@ -8140,6 +8686,20 @@ function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, r
       if (passFixed === 0) break;
     }
   }
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return fixed;
 }
 function ensureForestGridCoverage(hexes, scratch, forestTier, _typ, _continentOf, _nContinents, rand) {
@@ -8484,9 +9044,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     purgeOceanInsideEarthLandMask(hexes, width, height);
   }
   finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 2);
-  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
-  finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 1);
   ensureReliefGridCoverage(
     hexes,
     terrainScratch,
@@ -8499,7 +9056,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     rand
   );
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
-  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
@@ -8530,10 +9086,12 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     wgn.riverTrace.maxLen
   );
   stripRiverMarksFromOpenSea(hexes);
-  stripDepositsFromWater(hexes);
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   flattenFalseCoastalRiverNotches(hexes, width, height);
+  placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
+  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+  stripDepositsFromWater(hexes);
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
     minDist: 5,
@@ -8553,6 +9111,10 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   for (const site of villageSites) {
     const hex = hexes[`${site.q},${site.r}`];
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
+  }
+  if (typ === "ziemia") {
+    enforceEarthTemplateOnHexes(hexes, width, height);
+    purgeOceanInsideEarthLandMask(hexes, width, height);
   }
   return {
     szerokoscQ: width,
