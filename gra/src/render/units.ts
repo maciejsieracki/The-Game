@@ -1173,6 +1173,23 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('jezdziec chinski') || n.includes('chinese cavalry')) return buildChineseCavalry(ownerColor_);
   // KUSZNIK (CROSSBOWMAN) --------------------------------------------------
   if (n.includes('kusznik') || n.includes('crossbowman')) return buildCrossbowman(ownerColor_);
+  // KAMIEŃ — JEDNOSTKA BAZOWA „Wojownik" (Kultura=null, wszystkie cywilizacje) --
+  // BUG 2026-07-26 (zgłoszenie właściciela: „miasta-państwa używają starych
+  // grafik dla jednostek typu kamienia"). units.json daje „Wojownik" pole
+  // Typ="Swordsman", więc categoryOf() (units/setup.ts, fallback po „Typ")
+  // zwracało kategorię 'miecznik' → buildCategoryModel('miecznik') → STARY
+  // newBuildMiecznik z jednostki-p1-rdzen.ts. Nowy model Kamienia
+  // buildWojownikOpus5 wisiał WYŁĄCZNIE na gałęzi 'domyslny'/default, do której
+  // żadna realna jednostka nie trafiała. Objaw był widoczny głównie na
+  // miastach-państwach, bo AI „kopia_typu_obronna" (game/ai.ts, gałąź
+  // defensiveCopy) rekrutuje niemal wyłącznie 'Wojownik' — ale dotyczyło
+  // TAK SAMO gracza i pełnych cywilizacji AI (dispatch nie zna ownerId).
+  // Dopasowanie po PEŁNEJ nazwie (===), więc warianty („Wojownik z maczugą
+  // (Chaska)", „Wojownik germański", „Wojownik mykeński"…) zachowują swoje
+  // modele — mają własne wpisy wyżej/niżej. „Warrior" = Nazwa EN z units.json.
+  // Pozostałe bazowe jednostki Kamienia (Oszczepnik/Łucznik/Zwiadowca/Taran)
+  // trafiają w Opus 5 poprawnie przez kategorię i NIE wymagają wpisu.
+  if (n === 'wojownik' || n === 'warrior') return buildWojownikOpus5(ownerColor_);
   // BRĄZ — JEDNOSTKI BAZOWE (Kultura=null, dostępne wszystkim cywilizacjom) --
   // Dopasowanie po PEŁNEJ nazwie (===), nie po fragmencie: warianty kulturowe
   // („Włócznik sumeryjski", „Procarz (Huaracoc)", „Rydwan egipski"…) mają
