@@ -752,3 +752,47 @@ Reguła obowiązuje AI **identycznie**: AI atakujące w turze wypowiedzenia wojn
 
 ### Otwarte (do decyzji Macieja)
 **Wojna w ODWECIE** — czy wypowiedzenie wojny w odpowiedzi na czyjeś złamanie paktu ma obciążać własną Wiarygodność? Warianty: A) nie obciąża przez N tur od cudzego przewinienia · B) obciąża o połowę · C) bez wyjątków. **Nierozstrzygnięte.**
+
+---
+
+## 🔷 N1 + N2 — UKŁAD OSTATECZNY (Maciej 2026-07-26, NADRZĘDNY nad wszystkim powyżej)
+
+### Nazwa N1 (ostateczna)
+**N1 = „WYPOWIEDZENIE WOJNY BEZ OSTRZEŻENIA"**
+(NIE „zdrada" — zdrada to złamanie zobowiązania, czyli N2. NIE „atak z zaskoczenia" — poprzednia robocza nazwa, odrzucona.)
+
+### Zasada porządkująca (uzasadnienie Macieja)
+> „Nie może być wypowiedzenie wojny neutralnemu graczowi bardziej karane niż wypowiedzenie wojny sojusznikowi."
+
+W poprzedniej wersji tabeli N1 (neutralny) = −25 był SUROWSZY niż N2 (sojusznik) = −18 — niespójność wykryta przez Macieja. Poprawione.
+
+### N1 — brak ostrzeżenia: **−10** (było −25)
+Kara wyłącznie za **sposób** rozpoczęcia wojny, niezależny od tego, KOGO atakujemy.
+Nalicza się, gdy atak nastąpi bez wypowiedzenia wojny ALBO w tej samej turze, w której ją wypowiedziano (brak karencji 1 tury — mechanika opisana w sekcji „N1 — PEŁNA SPECYFIKACJA" wyżej: modal potwierdzenia, karencja, automatyczna deklaracja wojny, parytet AI).
+
+### N2 — złamane zobowiązanie: ROZBITE NA DWA POZIOMY
+| Zobowiązanie złamane wypowiedzeniem wojny | Waga |
+|---|---|
+| **Pakt o nieagresji (NAP)** | **−18** |
+| **Sojusz** (pełny lub defensywny) | **−25** |
+
+Kara za **to, komu** wypowiadamy wojnę — im większe zobowiązanie, tym większa.
+
+### KARY SIĘ SUMUJĄ (kluczowe dla implementacji)
+N1 i N2 to **dwa niezależne wymiary**: N1 = *jak* zaczynasz wojnę, N2 = *wobec kogo*. Nakładają się:
+
+| Sytuacja | N1 | N2 | **Razem** |
+|---|---|---|---|
+| Neutralny — wojna wypowiedziana, odczekana tura | — | — | **0** |
+| Neutralny — atak natychmiast | −10 | — | **−10** |
+| NAP — wypowiedzenie poprawne (z karencją) | — | −18 | **−18** |
+| NAP — atak natychmiast | −10 | −18 | **−28** |
+| Sojusznik — wypowiedzenie poprawne | — | −25 | **−25** |
+| **Sojusznik — atak natychmiast** | −10 | −25 | **−35** (maksimum w tabeli) |
+
+### Zasady N1 obowiązują TAKŻE przy N2
+Maciej: *„N2 się zgadza, ale przy zastosowaniu zasad N1."*
+Modal potwierdzenia i karencja 1 tury dotyczą **każdego** wypowiedzenia wojny — również sojusznikowi i partnerowi NAP. Modal w takich przypadkach musi pokazać **pełny rachunek** (np. „Sojusznik + brak ostrzeżenia = −35 Wiarygodności"), żeby gracz widział prawdziwy koszt przed kliknięciem.
+
+### Skutek dla reszty tabeli
+Maksymalna pojedyncza kara to teraz **−35** (sojusznik + brak ostrzeżenia). Pozostałe wagi (N3…N7, P1…P5) BEZ ZMIAN — hierarchia zachowana, bo N4 (odmowa pomocy sojusznikowi) = −10 pozostaje poniżej złamania sojuszu wojną.
