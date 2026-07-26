@@ -456,12 +456,21 @@ export function reconcileOwnerResourceCaps(
  *     (econ-params ekonomia_miasta.zywnosc_jednostka_ruch = 1; Spec s.6.3).
  *   - zywnoscJednostkaOboz : food/turn for a camping unit
  *     (econ-params ekonomia_miasta.zywnosc_jednostka_oboz = 0.5; Spec s.6.3).
+ *   - zywnoscMnoznikTerytorium : consumption multiplier on the unit's OWN
+ *     territory (econ-params ekonomia_miasta.zywnosc_mnoznik_terytorium_wlasne
+ *     = 1.0; C-GLOD-Q2=B, Maciej 2026-07-26).
+ *   - zywnoscMnoznikPozaTerytorium : consumption multiplier OFF the unit's own
+ *     territory -- simplified, no road/no-man's-land/wall/stack distinction
+ *     (econ-params ekonomia_miasta.zywnosc_mnoznik_poza_terytorium = 2.0;
+ *     C-GLOD-Q2=B, Maciej 2026-07-26).
  */
 export interface UpkeepParams {
   budynekUtrzymanieFlat?:  number;
   jednostkaUtrzymanieStd:  number;
   zywnoscJednostkaRuch:    number;
   zywnoscJednostkaOboz:    number;
+  zywnoscMnoznikTerytorium:       number;
+  zywnoscMnoznikPozaTerytorium:   number;
 }
 
 /** Spec s.6 defaults (normal difficulty). */
@@ -470,6 +479,8 @@ export const DEFAULT_UPKEEP_PARAMS: UpkeepParams = {
   jednostkaUtrzymanieStd: 1,
   zywnoscJednostkaRuch:   1,
   zywnoscJednostkaOboz:   0.5,
+  zywnoscMnoznikTerytorium:     1,
+  zywnoscMnoznikPozaTerytorium: 2,
 };
 
 /**
@@ -489,6 +500,8 @@ export function loadUpkeepParams(
     jednostkaUtrzymanieStd: readNum(g, 'utrzymanie_jednostka_standard', difficulty, 1),
     zywnoscJednostkaRuch:   readNum(em, 'zywnosc_jednostka_ruch',       difficulty, 1),
     zywnoscJednostkaOboz:   readNum(em, 'zywnosc_jednostka_oboz',       difficulty, 0.5),
+    zywnoscMnoznikTerytorium:     readNum(em, 'zywnosc_mnoznik_terytorium_wlasne', difficulty, 1),
+    zywnoscMnoznikPozaTerytorium: readNum(em, 'zywnosc_mnoznik_poza_terytorium',   difficulty, 2),
   };
 }
 
@@ -650,11 +663,20 @@ export interface UnitFoodLike {
   typeId?: string;
   /** true = the unit is camping (obozuje) this turn -> half food. */
   camping: boolean;
+  /** C-GLOD-Q2=B (Maciej 2026-07-26): true = unit stands on its OWNER's own
+   *  territory (mult zywnoscMnoznikTerytorium, default x1.0); false = anywhere
+   *  else (mult zywnoscMnoznikPozaTerytorium, default x2.0) -- simplified, no
+   *  road/no-man's-land/wall/stack-size distinction (owner's explicit choice).
+   *  Omitted (old call sites / tests) => defaults to own-territory (x1.0), so
+   *  behaviour is unchanged unless the caller explicitly opts in. */
+  onOwnTerritory?: boolean;
 }
 
 /**
  * Koszt żywności jednej jednostki (Spec s.6.3 + units.json „żywność/turę").
  * Zwiadowca i inne wyjątki = 0 w tabeli; brak wpisu → zywnoscJednostkaRuch/oboz.
+ * C-GLOD-Q2=B: wynik dodatkowo mnożony przez stawkę terytorialną (x1,0 własne /
+ * x2,0 poza własnym).
  */
 export function unitFoodPerTurn(
   unit: UnitFoodLike,
@@ -668,9 +690,13 @@ export function unitFoodPerTurn(
   if (base <= 0) return 0;
   if (unit.camping) {
     const ratio = p.zywnoscJednostkaOboz / (p.zywnoscJednostkaRuch || 1);
-    return base * ratio;
+    base = base * ratio;
   }
-  return base;
+  const onOwnTerritory = unit.onOwnTerritory ?? true;
+  const mnoznikTerytorium = onOwnTerritory
+    ? (p.zywnoscMnoznikTerytorium ?? 1)
+    : (p.zywnoscMnoznikPozaTerytorium ?? 2);
+  return base * mnoznikTerytorium;
 }
 
 /** Build typeId -> food/turn from units.json rows. */

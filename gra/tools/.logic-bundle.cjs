@@ -1997,30 +1997,6 @@ function cellHasIronPackage(cellLand, hexes) {
 function cellHasCopperPackage(cellLand, hexes) {
   return countHighlandsInCell(cellLand, hexes) >= MIN_HIGHLANDS_COPPER_CELL;
 }
-function ironGridCoverageRatio(massLandKeys, hexes, cellSize) {
-  const massSet = new Set(massLandKeys);
-  const minLand = minLandHexesForReliefCell(cellSize);
-  let need = 0;
-  let hit = 0;
-  for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-    if (land.length < minLand) continue;
-    need++;
-    if (cellHasIronPackage(land, hexes)) hit++;
-  }
-  return need > 0 ? hit / need : 1;
-}
-function copperGridCoverageRatio(massLandKeys, hexes, cellSize) {
-  const massSet = new Set(massLandKeys);
-  const minLand = minLandHexesForReliefCell(cellSize);
-  let need = 0;
-  let hit = 0;
-  for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-    if (land.length < minLand) continue;
-    need++;
-    if (cellHasCopperPackage(land, hexes)) hit++;
-  }
-  return need > 0 ? hit / need : 1;
-}
 function pickReliefForceHex(land, hexes, scratch, width, height, want, avoid, rand, protectHighland = false, protectMountain = false) {
   const ranked = land.filter(([q, r]) => {
     const k = hexKey(q, r);
@@ -2259,6 +2235,22 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
     if (passFixed === 0) break;
   }
   return fixed;
+}
+function capReliefClusterSizeSafetyNet(hexes, scratch) {
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
 }
 var MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.4;
 var MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
@@ -6436,7 +6428,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
   applyReliefByNoiseRank(hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones);
-  reapplyForestOverlay(hexes, terrainScratch, terrainTh, typ, forestTier, zoneOf, nZones, height);
   enforceMapBorderOcean(hexes, width, height);
   if (typ !== "pangea") {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
@@ -6487,28 +6478,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     nZones,
     rand
   );
-  if (process.env.MAPGEN_DEBUG_RELIEF) {
-    const dbgIronSize = ironCoverageCellSize(reliefTier);
-    const dbgCopperSize = copperCoverageCellSize(reliefTier);
-    for (const mass of groupLandMassKeys(hexes)) {
-      if (mass.length < 150) continue;
-      const iron = ironGridCoverageRatio(mass, hexes, dbgIronSize);
-      const copper = copperGridCoverageRatio(mass, hexes, dbgCopperSize);
-      console.error(`[DBG pre-growMountainRanges] mass ${mass.length}: iron=${(iron * 100).toFixed(0)}% copper=${(copper * 100).toFixed(0)}%`);
-    }
-  }
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
-  if (process.env.MAPGEN_DEBUG_RELIEF) {
-    const dbgIronSize = ironCoverageCellSize(reliefTier);
-    const dbgCopperSize = copperCoverageCellSize(reliefTier);
-    for (const mass of groupLandMassKeys(hexes)) {
-      if (mass.length < 150) continue;
-      const iron = ironGridCoverageRatio(mass, hexes, dbgIronSize);
-      const copper = copperGridCoverageRatio(mass, hexes, dbgCopperSize);
-      console.error(`[DBG post-growMountainRanges] mass ${mass.length}: iron=${(iron * 100).toFixed(0)}% copper=${(copper * 100).toFixed(0)}%`);
-    }
-  }
-  ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
   thickenCoastAndSmoothInlets(hexes, width, height, 2);
@@ -6541,6 +6511,20 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   flattenFalseCoastalRiverNotches(hexes, width, height);
+  ensureReliefGridCoverage(
+    hexes,
+    terrainScratch,
+    reliefTier,
+    width,
+    height,
+    typ,
+    zoneOf,
+    nZones,
+    rand
+  );
+  capReliefClusterSizeSafetyNet(hexes, terrainScratch);
+  reapplyForestOverlay(hexes, terrainScratch, terrainTh, typ, forestTier, zoneOf, nZones, height);
+  ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
   ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   stripDepositsFromWater(hexes);
@@ -7953,7 +7937,9 @@ function loadUpkeepParams(raw, difficulty = "normal") {
     budynekUtrzymanieFlat: readNum(bu, "utrzymanie_budynek", difficulty, 1),
     jednostkaUtrzymanieStd: readNum(g, "utrzymanie_jednostka_standard", difficulty, 1),
     zywnoscJednostkaRuch: readNum(em, "zywnosc_jednostka_ruch", difficulty, 1),
-    zywnoscJednostkaOboz: readNum(em, "zywnosc_jednostka_oboz", difficulty, 0.5)
+    zywnoscJednostkaOboz: readNum(em, "zywnosc_jednostka_oboz", difficulty, 0.5),
+    zywnoscMnoznikTerytorium: readNum(em, "zywnosc_mnoznik_terytorium_wlasne", difficulty, 1),
+    zywnoscMnoznikPozaTerytorium: readNum(em, "zywnosc_mnoznik_poza_terytorium", difficulty, 2)
   };
 }
 function buildingUpkeep(building, level, flatOverride) {
@@ -20238,7 +20224,28 @@ var econ_params_default = {
       normal: 0.08,
       hard: 0.1,
       jednostka: "u\u0142amek maxHP",
-      opis: "Atrycja HP jednostek na mapie gdy zapasy pa\u0144stwa < 0 po koszcie armii (\u22128% maxHP/tura normal)."
+      opis: "Atrycja HP jednostek na mapie gdy zapasy pa\u0144stwa < 0 po koszcie armii, PO karencji glod_wojska_karencja_tur (\u22128% maxHP/tura normal). Identycznie dla gracza i AI (parytet, Maciej 2026-07-26)."
+    },
+    glod_wojska_karencja_tur: {
+      easy: 3,
+      normal: 3,
+      hard: 3,
+      jednostka: "tury",
+      opis: "C-GLOD-Q1=A (Maciej 2026-07-26, wariant A): liczba kolejnych tur Z RZ\u0118DU z ujemnymi zapasami pa\u0144stwa, zanim ruszy atrycja HP wojska (glod_wojska_hp_frac). Domy\u015Blny suwak \u017Cywno\u015Bci (suwak_zywnosc_rozwoj_domyslnie) NIE zmieniony przy tej decyzji. Bez r\xF3\u017Cnicowania mi\u0119dzy poziomami trudno\u015Bci \u2014 sama karencja to 3 tury wsz\u0119dzie."
+    },
+    zywnosc_mnoznik_terytorium_wlasne: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "mno\u017Cnik",
+      opis: "C-GLOD-Q2=B (Maciej 2026-07-26): mno\u017Cnik zu\u017Cycia \u017Cywno\u015Bci jednostki wojskowej stoj\u0105cej na W\u0141ASNYM terytorium (bez zmian wzgl\u0119dem stawki bazowej zywnosc_jednostka_ruch/oboz)."
+    },
+    zywnosc_mnoznik_poza_terytorium: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "mno\u017Cnik",
+      opis: "C-GLOD-Q2=B (Maciej 2026-07-26, wariant uproszczony): mno\u017Cnik zu\u017Cycia \u017Cywno\u015Bci jednostki wojskowej stoj\u0105cej POZA w\u0142asnym terytorium \u2014 bez rozr\xF3\u017Cniania dr\xF3g, ziemi niczyjej, mur\xF3w ani liczby jednostek w stosie (decyzja w\u0142a\u015Bciciela: prosty wariant)."
     },
     spichlerz_pojemnosc_zapasow_panstwa: {
       easy: 120,

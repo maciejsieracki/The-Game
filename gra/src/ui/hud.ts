@@ -76,6 +76,10 @@ export interface HudState {
   zywnoscRate?: number;
   /** true → czerwony alert głodu wojska na HUD mapy. */
   glodWojska?: boolean;
+  /** C-GLOD-Q1=A (Maciej 2026-07-26): liczba tur do startu atrycji HP wojska (karencja
+   *  jeszcze trwa, zapasy już ujemne); undefined = nie dotyczy (zapasy nieujemne lub
+   *  atrycja już aktywna teraz — patrz glodWojska). Ostrzeżenie z wyprzedzeniem w chipie „Armia". */
+  zywnoscKarencjaZaTur?: number;
   nauka: number;
   naukaRate?: number;
   kultura: number;
@@ -485,6 +489,30 @@ function formatFoodHudLabel(s: HudState): string {
   return s.zywnoscLabel;
 }
 
+/** Odmiana „tura" w bierniku ("za 1 turę" / "za 2 tury" / "za 5 tur"). */
+function slowoTuraHud(n: number): string {
+  const a = Math.abs(n);
+  if (a === 1) return 'turę';
+  const m10 = a % 10;
+  const m100 = a % 100;
+  if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return 'tury';
+  return 'tur';
+}
+
+/**
+ * C-GLOD-Q1=A (Maciej 2026-07-26): tooltip chipu „Armia" — poza opisem stałym,
+ * ostrzeżenie z wyprzedzeniem podczas karencji ("za N tur") LUB potwierdzenie,
+ * że atrycja HP już trwa, gdy karencja minęła.
+ */
+function armiaChipTitle(s: HudState): string {
+  const base = 'Armia — zaopatrzenie (żywność), ludność i rekruci — klik po szczegóły';
+  if (s.glodWojska) return `${base}. Głód wojska: atrycja HP trwa!`;
+  if (s.zywnoscKarencjaZaTur != null && s.zywnoscKarencjaZaTur > 0) {
+    return `${base}. Głód wojska za ${s.zywnoscKarencjaZaTur} ${slowoTuraHud(s.zywnoscKarencjaZaTur)} — zapasy państwa ujemne!`;
+  }
+  return base;
+}
+
 function hudIc(id: IconId): string {
   return iconHtml(id, 24) || '';
 }
@@ -578,7 +606,7 @@ function renderBarD1B(s: HudState): string {
       rate: signed(s.zywnoscRate ?? 0),
       rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0),
       act: 'zywnosc',
-      title: 'Armia — zaopatrzenie (żywność), ludność i rekruci — klik po szczegóły',
+      title: armiaChipTitle(s),
     }),
     chip6cSep(),
     chip6cHtml({

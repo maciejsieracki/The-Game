@@ -103,7 +103,28 @@
       "normal": 0.08,
       "hard": 0.1,
       "jednostka": "ułamek maxHP",
-      "opis": "Atrycja HP jednostek na mapie gdy zapasy państwa < 0 po koszcie armii (−8% maxHP/tura normal)."
+      "opis": "Atrycja HP jednostek na mapie gdy zapasy państwa < 0 po koszcie armii, PO karencji glod_wojska_karencja_tur (−8% maxHP/tura normal). Identycznie dla gracza i AI (parytet, Maciej 2026-07-26)."
+    },
+    "glod_wojska_karencja_tur": {
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
+      "jednostka": "tury",
+      "opis": "C-GLOD-Q1=A (Maciej 2026-07-26, wariant A): liczba kolejnych tur Z RZĘDU z ujemnymi zapasami państwa, zanim ruszy atrycja HP wojska (glod_wojska_hp_frac). Domyślny suwak żywności (suwak_zywnosc_rozwoj_domyslnie) NIE zmieniony przy tej decyzji. Bez różnicowania między poziomami trudności — sama karencja to 3 tury wszędzie."
+    },
+    "zywnosc_mnoznik_terytorium_wlasne": {
+      "easy": 1.0,
+      "normal": 1.0,
+      "hard": 1.0,
+      "jednostka": "mnożnik",
+      "opis": "C-GLOD-Q2=B (Maciej 2026-07-26): mnożnik zużycia żywności jednostki wojskowej stojącej na WŁASNYM terytorium (bez zmian względem stawki bazowej zywnosc_jednostka_ruch/oboz)."
+    },
+    "zywnosc_mnoznik_poza_terytorium": {
+      "easy": 2.0,
+      "normal": 2.0,
+      "hard": 2.0,
+      "jednostka": "mnożnik",
+      "opis": "C-GLOD-Q2=B (Maciej 2026-07-26, wariant uproszczony): mnożnik zużycia żywności jednostki wojskowej stojącej POZA własnym terytorium — bez rozróżniania dróg, ziemi niczyjej, murów ani liczby jednostek w stosie (decyzja właściciela: prosty wariant)."
     },
     "spichlerz_pojemnosc_zapasow_panstwa": {
       "easy": 120,

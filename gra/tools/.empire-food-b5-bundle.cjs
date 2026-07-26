@@ -893,7 +893,9 @@ function loadUpkeepParams(raw, difficulty = "normal") {
     budynekUtrzymanieFlat: readNum(bu, "utrzymanie_budynek", difficulty, 1),
     jednostkaUtrzymanieStd: readNum(g, "utrzymanie_jednostka_standard", difficulty, 1),
     zywnoscJednostkaRuch: readNum(em, "zywnosc_jednostka_ruch", difficulty, 1),
-    zywnoscJednostkaOboz: readNum(em, "zywnosc_jednostka_oboz", difficulty, 0.5)
+    zywnoscJednostkaOboz: readNum(em, "zywnosc_jednostka_oboz", difficulty, 0.5),
+    zywnoscMnoznikTerytorium: readNum(em, "zywnosc_mnoznik_terytorium_wlasne", difficulty, 1),
+    zywnoscMnoznikPozaTerytorium: readNum(em, "zywnosc_mnoznik_poza_terytorium", difficulty, 2)
   };
 }
 function buildingUpkeep(building, level, flatOverride) {
@@ -978,9 +980,11 @@ function unitFoodPerTurn(unit, p, foodTable = {}) {
   if (base <= 0) return 0;
   if (unit.camping) {
     const ratio = p.zywnoscJednostkaOboz / (p.zywnoscJednostkaRuch || 1);
-    return base * ratio;
+    base = base * ratio;
   }
-  return base;
+  const onOwnTerritory = unit.onOwnTerritory ?? true;
+  const mnoznikTerytorium = onOwnTerritory ? p.zywnoscMnoznikTerytorium ?? 1 : p.zywnoscMnoznikPozaTerytorium ?? 2;
+  return base * mnoznikTerytorium;
 }
 function militaryFoodConsumption(units, p, foodTable = {}) {
   let sum = 0;
@@ -1015,6 +1019,7 @@ function buildEmpireFoodParams(raw, difficulty = "normal") {
   return {
     procentRozwojDefault: pick(section.suwak_zywnosc_rozwoj_domyslnie, difficulty, 100),
     glodWojskaHpFrac: pick(section.glod_wojska_hp_frac, difficulty, 0.08),
+    glodWojskaKarencjaTur: pick(section.glod_wojska_karencja_tur, difficulty, 3),
     armiaOdkladBezSpichlerza: pick(section.armia_odklad_bez_spichlerza, difficulty, 0.5),
     armiaOdkladZeSpichlerzem: pick(section.armia_odklad_ze_spichlerzem, difficulty, 1),
     spichlerzPojemnoscZapasowPanstwa: pick(section.spichlerz_pojemnosc_zapasow_panstwa, difficulty, 100)
@@ -1051,7 +1056,7 @@ function getCityFoodSplit(city, defaultPct = 100) {
   return clampFoodSplitPct(city.procentRozwoj ?? defaultPct);
 }
 function freshEmpireFoodState(procentRozwojDefault = 100) {
-  return { zapasyPanstwa: 0, procentRozwoj: procentRozwojDefault };
+  return { zapasyPanstwa: 0, procentRozwoj: procentRozwojDefault, turyUjemnychZapasow: 0 };
 }
 function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}) {
   const spichlerzCountByOwner = /* @__PURE__ */ new Map();
@@ -1114,6 +1119,9 @@ function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}) 
     if (Number.isFinite(maxZapasyFinite) && zapasyPo > maxZapasyFinite) zapasyPo = maxZapasyFinite;
     st.zapasyPanstwa = zapasyPo;
     _maxCapByOwner.set(ownerId, maxZapasy);
+    const turyUjemnychZapasowPrzed = st.turyUjemnychZapasow ?? 0;
+    const turyUjemnychZapasowPo = zapasyPo < 0 ? turyUjemnychZapasowPrzed + 1 : 0;
+    st.turyUjemnychZapasow = turyUjemnychZapasowPo;
     const tick = {
       ownerId,
       zywnoscBrutto: brutto,
@@ -1122,7 +1130,9 @@ function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}) 
       kosztArmii,
       zapasyPrzed,
       zapasyPo,
-      glodWojska: zapasyPo < 0
+      glodWojska: zapasyPo < 0,
+      turyUjemnychZapasowPo,
+      glodWojskaAtrycjaAktywna: turyUjemnychZapasowPo >= params.glodWojskaKarencjaTur
     };
     perOwner.push(tick);
     byOwner.set(ownerId, tick);
@@ -1144,10 +1154,7 @@ function getEmpireFoodSplit(ownerId) {
   return _statesRef.get(ownerId)?.procentRozwoj ?? 100;
 }
 function isArmyStarving(ownerId) {
-  const t = _lastTicks.get(ownerId);
-  if (t?.glodWojska) return true;
-  const st = _statesRef.get(ownerId);
-  return (st?.zapasyPanstwa ?? 0) < 0;
+  return _lastTicks.get(ownerId)?.glodWojskaAtrycjaAktywna ?? false;
 }
 function _setLastEmpireFoodTicks(ticks) {
   _lastTicks = ticks;

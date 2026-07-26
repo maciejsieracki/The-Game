@@ -8,11 +8,21 @@ import { militaryFoodConsumption } from './economy-upkeep';
 export interface EmpireFoodState {
   zapasyPanstwa: number;
   procentRozwoj: number;
+  /** C-GLOD-Q1=A (Maciej 2026-07-26): licznik kolejnych tur Z RZĘDU z zapasyPanstwa < 0 —
+   *  karencja przed atrycją HP wojska. Zeruje się w chwili, gdy zapasy wracają >= 0.
+   *  Przetrwa zapis/odczyt gry — pole zapisywane 1:1 razem z resztą EmpireFoodState
+   *  (main.ts: `empireFoodStates: Array.from(empireFoodStates.entries())`). Stare zapisy
+   *  bez tego pola wczytują się z `?? 0` (patrz advanceEmpireFood) — brak regresji. */
+  turyUjemnychZapasow: number;
 }
 
 export interface EmpireFoodParams {
   procentRozwojDefault: number;
   glodWojskaHpFrac:     number;
+  /** C-GLOD-Q1=A (Maciej 2026-07-26): liczba kolejnych tur ujemnych zapasów państwa,
+   *  zanim ruszy atrycja HP wojska (econ-params ekonomia_miasta.glod_wojska_karencja_tur,
+   *  domyślnie 3 tury na każdym poziomie trudności — decyzja właściciela bez różnicowania). */
+  glodWojskaKarencjaTur: number;
   /** Ułamek netto żywności armii odkładany bez Spichlerza w imperium (domyślnie 50%). */
   armiaOdkladBezSpichlerza: number;
   /** Ułamek netto żywności armii odkładany ze Spichlerzem (domyślnie 100%). */
@@ -29,7 +39,14 @@ export interface EmpireFoodTick {
   kosztArmii:    number;
   zapasyPrzed:   number;
   zapasyPo:      number;
+  /** true = zapasyPo < 0 W TEJ turze (bez karencji — sam fakt deficytu). Niezmienione
+   *  znaczenie (regresja B5): dla atrycji HP patrz `glodWojskaAtrycjaAktywna`. */
   glodWojska:    boolean;
+  /** C-GLOD-Q1=A: wartość licznika (state.turyUjemnychZapasow) PO tym ticku. */
+  turyUjemnychZapasowPo: number;
+  /** C-GLOD-Q1=A: true = karencja minęła, atrycja HP realnie startuje TĘ turę
+   *  (turyUjemnychZapasowPo >= params.glodWojskaKarencjaTur). */
+  glodWojskaAtrycjaAktywna: boolean;
 }
 
 export interface EmpireFoodTickResult {
@@ -52,12 +69,14 @@ export function buildEmpireFoodParams(
     ekonomia_miasta?: {
       suwak_zywnosc_rozwoj_domyslnie?: RawParamRow;
       glod_wojska_hp_frac?: RawParamRow;
+      glod_wojska_karencja_tur?: RawParamRow;
       armia_odklad_bez_spichlerza?: RawParamRow;
       armia_odklad_ze_spichlerzem?: RawParamRow;
       spichlerz_pojemnosc_zapasow_panstwa?: RawParamRow;
     };
     suwak_zywnosc_rozwoj_domyslnie?: RawParamRow;
     glod_wojska_hp_frac?: RawParamRow;
+    glod_wojska_karencja_tur?: RawParamRow;
     armia_odklad_bez_spichlerza?: RawParamRow;
     armia_odklad_ze_spichlerzem?: RawParamRow;
     spichlerz_pojemnosc_zapasow_panstwa?: RawParamRow;
@@ -68,6 +87,7 @@ export function buildEmpireFoodParams(
   return {
     procentRozwojDefault: pick(section.suwak_zywnosc_rozwoj_domyslnie, difficulty, 100),
     glodWojskaHpFrac:     pick(section.glod_wojska_hp_frac, difficulty, 0.08),
+    glodWojskaKarencjaTur: pick(section.glod_wojska_karencja_tur, difficulty, 3),
     armiaOdkladBezSpichlerza: pick(section.armia_odklad_bez_spichlerza, difficulty, 0.5),
     armiaOdkladZeSpichlerzem: pick(section.armia_odklad_ze_spichlerzem, difficulty, 1),
     spichlerzPojemnoscZapasowPanstwa: pick(section.spichlerz_pojemnosc_zapasow_panstwa, difficulty, 100),
@@ -146,7 +166,7 @@ export function getCityFoodSplit(
 }
 
 export function freshEmpireFoodState(procentRozwojDefault = 100): EmpireFoodState {
-  return { zapasyPanstwa: 0, procentRozwoj: procentRozwojDefault };
+  return { zapasyPanstwa: 0, procentRozwoj: procentRozwojDefault, turyUjemnychZapasow: 0 };
 }
 
 export function advanceEmpireFood(
@@ -228,6 +248,14 @@ export function advanceEmpireFood(
     st.zapasyPanstwa = zapasyPo;
     _maxCapByOwner.set(ownerId, maxZapasy);
 
+    // C-GLOD-Q1=A (Maciej 2026-07-26): licznik tur ujemnych zapasów Z RZĘDU — zeruje
+    // się natychmiast, gdy zapasy wracają >= 0; atrycja HP rusza dopiero gdy licznik
+    // osiąga glodWojskaKarencjaTur (domyślnie 3). `?? 0` — obrona przed starym stanem
+    // gry / fixture testową bez tego pola (patrz freshEmpireFoodState).
+    const turyUjemnychZapasowPrzed = st.turyUjemnychZapasow ?? 0;
+    const turyUjemnychZapasowPo = zapasyPo < 0 ? turyUjemnychZapasowPrzed + 1 : 0;
+    st.turyUjemnychZapasow = turyUjemnychZapasowPo;
+
     const tick: EmpireFoodTick = {
       ownerId,
       zywnoscBrutto: brutto,
@@ -237,6 +265,8 @@ export function advanceEmpireFood(
       zapasyPrzed,
       zapasyPo,
       glodWojska: zapasyPo < 0,
+      turyUjemnychZapasowPo,
+      glodWojskaAtrycjaAktywna: turyUjemnychZapasowPo >= params.glodWojskaKarencjaTur,
     };
     perOwner.push(tick);
     byOwner.set(ownerId, tick);
@@ -268,11 +298,25 @@ export function getEmpireFoodSplit(ownerId: number): number {
   return _statesRef.get(ownerId)?.procentRozwoj ?? 100;
 }
 
+/**
+ * true = atrycja HP z głodu jest AKTYWNA TERAZ dla tego ownera (karencja
+ * glodWojskaKarencjaTur tur minęła — C-GLOD-Q1=A, Maciej 2026-07-26). Zanim
+ * karencja minie, zapasy mogą już być ujemne (patrz EmpireFoodTick.glodWojska /
+ * getArmyStarvationCountdown) bez realnej straty HP jeszcze.
+ */
 export function isArmyStarving(ownerId: number): boolean {
+  return _lastTicks.get(ownerId)?.glodWojskaAtrycjaAktywna ?? false;
+}
+
+/**
+ * Liczba tur do startu atrycji HP (karencja), albo `null` gdy nie dotyczy
+ * (zapasy nieujemne LUB atrycja już aktywna teraz). Dla HUD — ostrzeżenie
+ * "Głód wojska za N tur" (ZADANIE 5, Maciej 2026-07-26).
+ */
+export function getArmyStarvationCountdown(ownerId: number, karencjaTur: number): number | null {
   const t = _lastTicks.get(ownerId);
-  if (t?.glodWojska) return true;
-  const st = _statesRef.get(ownerId);
-  return (st?.zapasyPanstwa ?? 0) < 0;
+  if (!t || t.zapasyPo >= 0 || t.glodWojskaAtrycjaAktywna) return null;
+  return Math.max(1, karencjaTur - t.turyUjemnychZapasowPo);
 }
 
 export function getLastEmpireFoodTick(ownerId: number): EmpireFoodTick | undefined {

@@ -1100,6 +1100,10 @@ export interface EconUnit {
   ownerId: number;
   typeId:  string;
   camping: boolean;
+  /** C-GLOD-Q2=B (Maciej 2026-07-26): true = unit stoi na WŁASNYM terytorium
+   *  (mnożnik zużycia żywności x1,0), false = poza (x2,0). Brak pola = domyślnie
+   *  własne terytorium -- patrz UnitFoodLike w economy-upkeep.ts. */
+  onOwnTerritory?: boolean;
 }
 
 export type OwnerEraResolver = (ownerId: number) => number;
