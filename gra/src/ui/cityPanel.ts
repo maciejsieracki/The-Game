@@ -133,10 +133,6 @@ import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { tileYield } from '../game/economy';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
 import {
-  tradeRouteDistanceIncome,
-  loadTradeRouteIncomeParams,
-  DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
-  TRADE_BUILDING_IDS,
   type TradeRoute,
 } from '../game/trade-routes';
 import { normalizeImprovementKey } from '../game/terrain-improvements';
@@ -289,6 +285,10 @@ export interface CityPanelConfig {
    * Temat #4 (Handel E3b): opcjonalny `tradeSources` — mapa etykieta -> opis źródła
    * (np. "szlak handlowy z Rzym"), gdy dostęp do tej etykiety pochodzi (częściowo lub
    * całkowicie) z aktywnej trasy handlowej, nie z własnej infrastruktury.
+   * DYSPOZYCJA 85 (Maciej 2026-07-26): `tradeSources` zostaje w kształcie danych (main.ts
+   * nadal je liczy), ale panel miasta (cityPanel.ts normalizeResourceAccess) już go NIE
+   * czyta/wyświetla -- to info o handlu międzynarodowym, przeniesione do panelu Handel
+   * (empireDetailPanel.ts, sekcja "Surowce z wymiany handlowej").
    */
   getResourceAccess?: (cityId: string) => string[] | {
     potential: string[];
@@ -2517,33 +2517,34 @@ function normalizeResourceAccess(
   potential: string[];
   active: string[];
   legacy: boolean;
-  tradeSources: Record<string, string>;
 } {
-  if (!raw) return { potential: [], active: [], legacy: false, tradeSources: {} };
-  if (Array.isArray(raw)) return { potential: [], active: raw, legacy: true, tradeSources: {} };
+  if (!raw) return { potential: [], active: [], legacy: false };
+  if (Array.isArray(raw)) return { potential: [], active: raw, legacy: true };
   return {
     potential: raw.potential ?? [],
     active: raw.active ?? [],
     legacy: false,
-    tradeSources: raw.tradeSources ?? {},
   };
+  // DYSPOZYCJA 85 (Maciej 2026-07-26): `raw.tradeSources` (którego szlak handlowy
+  // przyznał dostęp do tego surowca) już NIE jest odczytywany tutaj -- to jest
+  // informacja o handlu międzynarodowym, a ta należy WYŁĄCZNIE do panelu Handel
+  // (empireDetailPanel.ts), nie do panelu miasta. main.ts nadal może zwracać to
+  // pole (getResourceAccess) -- po prostu nie jest tu już konsumowane.
 }
 
 function appendSurowceGrid(
   parent: HTMLElement,
   labels: string[],
   mode: 'active' | 'potential',
-  tradeSources: Record<string, string> = {},
 ): void {
   if (labels.length === 0) return;
   const grid = el('div', 'civ-w4-surowce-grid');
   for (const nazwa of labels) {
     const row = el('span', `civ-w4-surowce-item ${mode}`);
-    const src = tradeSources[nazwa];
     row.title = mode === 'active'
-      ? (src ? `${nazwa} — dostęp aktywny (${src})` : `${nazwa} — dostęp aktywny (ulepszenie / bramka spełniona)`)
+      ? `${nazwa} — dostęp aktywny (ulepszenie / bramka spełniona)`
       : `${nazwa} — złoże w zasięgu (potencjał — zbuduj ulepszenie)`;
-    row.innerHTML = `${resourceBrandIconHtml(nazwa)}<span>${nazwa}${src ? ' 🔗' : ''}</span>`;
+    row.innerHTML = `${resourceBrandIconHtml(nazwa)}<span>${nazwa}</span>`;
     grid.appendChild(row);
   }
   parent.appendChild(grid);
@@ -2552,14 +2553,14 @@ function appendSurowceGrid(
 function renderSurowce(mount: HTMLElement, city: City): void {
   mount.innerHTML = '';
   const raw = cfg.getResourceAccess?.(city.id);
-  const { potential, active, legacy, tradeSources } = normalizeResourceAccess(raw);
+  const { potential, active, legacy } = normalizeResourceAccess(raw);
   const wrap = el('div', 'civ-w4-surowce-foot');
   const hd = el('div', 'civ-w4-surowce-hd');
   hd.innerHTML =
     '<span class="civ-w4-surowce-title">Surowce w zasięgu</span>' +
     '<span class="civ-w4-surowce-detail gold">i szczegóły</span>';
   wrap.appendChild(hd);
-  attachHoverDetail(hd, () => buildSurowceDetailCard(potential, active, legacy, tradeSources), 220);
+  attachHoverDetail(hd, () => buildSurowceDetailCard(potential, active, legacy), 220);
 
   const preview = ['Trzoda', 'Glina', 'Koń', 'Sól'];
   const hasSplit = raw !== undefined && !legacy;
@@ -2575,7 +2576,7 @@ function renderSurowce(mount: HTMLElement, city: City): void {
       const subA = el('div', 'civ-w4-surowce-sub');
       subA.textContent = 'Dostęp aktywny';
       wrap.appendChild(subA);
-      appendSurowceGrid(wrap, active, 'active', tradeSources);
+      appendSurowceGrid(wrap, active, 'active');
     }
     if (potential.length > 0) {
       const subP = el('div', 'civ-w4-surowce-sub');
@@ -2585,7 +2586,7 @@ function renderSurowce(mount: HTMLElement, city: City): void {
     }
   } else {
     const items = raw !== undefined ? active : preview;
-    appendSurowceGrid(wrap, items, 'active', tradeSources);
+    appendSurowceGrid(wrap, items, 'active');
   }
 
   if (raw === undefined) {
@@ -2602,7 +2603,6 @@ function buildSurowceDetailCard(
   potential: string[],
   active: string[],
   legacy: boolean,
-  tradeSources: Record<string, string> = {},
 ): HTMLDivElement {
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Surowce — szczegóły</span>'));
@@ -2610,14 +2610,13 @@ function buildSurowceDetailCard(
   intro.style.fontStyle = 'normal';
   intro.textContent = legacy
     ? 'Surowce na mapie w zasięgu miasta odblokowują budynki i bonusy (ikona = dostęp). v0.1: tylko boolean dostęp — ilości w wersji 2.0.'
-    : 'Potencjał (szare) = złoże widoczne w zasięgu — jeszcze nieużywalne. Dostęp aktywny = po ulepszeniu terenu na tym heksie (lub wyjątkach: tartak, kamieniołom, warzelnia na wybrzeżu, hodowla bez złoża). Brąz wymaga Popalni + Piec hutniczy. 🔗 = dostęp (częściowo) z aktywnej trasy handlowej.';
+    : 'Potencjał (szare) = złoże widoczne w zasięgu — jeszcze nieużywalne. Dostęp aktywny = po ulepszeniu terenu na tym heksie (lub wyjątkach: tartak, kamieniołom, warzelnia na wybrzeżu, hodowla bez złoża). Brąz wymaga Popalni + Piec hutniczy.';
   card.appendChild(intro);
   if (active.length > 0) {
     appendDetailSection(card, legacy ? 'Lista' : 'Dostęp aktywny');
     const g = appendDetailGrid(card);
     for (const n of active) {
-      const src = tradeSources[n];
-      gridDetailRow(g, resourceBrandIconHtml(n), src ? `${n} — ${src}` : n);
+      gridDetailRow(g, resourceBrandIconHtml(n), n);
     }
   }
   if (!legacy && potential.length > 0) {
@@ -7308,6 +7307,13 @@ function buildHandelDetailCard(
   const daninaLbl = daninaLabelForCity(city);
   const daninaLblGen = daninaLabelGenitive(daninaLbl);
   const daninaLblAcc = daninaLabelAccusative(daninaLbl);
+  // DYSPOZYCJA 85 (Maciej 2026-07-26): premia za trasy handlowe realnie mnoży
+  // handelBrutto w silniku (economy.ts, ctx.liczbaAktywnychTrasHandlowych, +5%/trasa
+  // -- NIE ruszane tutaj). W UI zostaje WYŁĄCZNIE ta jedna zbiorcza linia (bez listy
+  // szlaków, bez nazw partnerów, bez dochodu ze szlaków — to przeniesione do panelu
+  // Handel, empireDetailPanel.ts, zgodnie z zasadą rozdziału z dyspozycji).
+  const aktywneTrasyCount = activeTradeRouteCountForCity(city);
+  const premiaTrasPct = aktywneTrasyCount * TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE;
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
@@ -7347,6 +7353,13 @@ function buildHandelDetailCard(
   if (params) {
     gridDetailRow(g0, 'Silnik (docelowo)', `dystans×${params.korupcjaWspolczynnikDystansu} + miasta×${params.korupcjaWspolczynnikMiast}, cap ${Math.round(params.korupcjaCap * 100)}%`);
   }
+  gridDetailRow(
+    g0,
+    'Premia za trasy handlowe',
+    aktywneTrasyCount > 0
+      ? `+${premiaTrasPct}% (${aktywneTrasyCount} aktywnych) — już w brutto powyżej`
+      : 'brak aktywnych tras',
+  );
 
   appendDetailSection(card, 'Aktualny podział');
   const g1 = appendDetailGrid(card);
@@ -7357,7 +7370,9 @@ function buildHandelDetailCard(
     gridDetailRow(g1, 'Uwaga', `* Pieniądz i Nauka zawierają też budynki (chipy = tylko udział z ${daninaLblGen} netto)`);
   }
 
-  appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól` + (maTargowisko ? ' × (1 + bonus Targowiska)' : ''));
+  appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól`
+    + (maTargowisko ? ' × (1 + bonus Targowiska)' : '')
+    + (aktywneTrasyCount > 0 ? ' × (1 + premia tras handlowych)' : ''));
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)`);
   appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
     mennicaAktywna
@@ -7373,6 +7388,9 @@ function buildHandelDetailCard(
   appendDetailAlgo(card, `Algorytm podziału ${daninaLblGen} (cityYieldPerTurn)`, [
     `Zbierz ${daninaLblAcc} ze wszystkich obrabianych pól + centrum miasta.`,
     maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
+    aktywneTrasyCount > 0
+      ? `Trasy handlowe: +${premiaTrasPct}% do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
+      : 'Bez aktywnych tras handlowych — brak premii do handelBrutto.',
     `Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
     'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
@@ -7436,172 +7454,22 @@ function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView
 /** E7 — bonus Handlu na trasę (musi zgadzać się z hardcoded 0.05 w game/economy.ts cityYieldPerTurn). */
 const TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE = 5;
 
-interface TradeRouteRowInfo {
-  route: TradeRoute;
-  otherCityId: string;
-  otherOwnerId: number;
-  otherCityName: string;
-  otherOwnerLabel: string;
-  income: number;
-}
-
-function tradeRoutesForCity(city: City, data: GameData | null): TradeRouteRowInfo[] {
+/**
+ * DYSPOZYCJA 85 (Maciej 2026-07-26): panel miasta NIE pokazuje już listy szlaków/
+ * partnerów/dochodu z tras (to poszło do panelu Handel — imperium, empireDetailPanel.ts).
+ * Tu zostaje WYŁĄCZNIE liczba aktywnych tras tego miasta — potrzebna do JEDNEJ linii
+ * "premia za trasy handlowe: +X%" w rozbiciu Podatku/Daniny (ta premia realnie mnoży
+ * handelBrutto w silniku, patrz economy.ts ctx.liczbaAktywnychTrasHandlowych — silnik
+ * NIE jest tu ruszany, tylko odczytany ten sam fakt co silnik już liczy).
+ */
+function activeTradeRouteCountForCity(city: City): number {
   const all = cfg.getTradeRoutes?.() ?? [];
-  const incomeParams = data
-    ? loadTradeRouteIncomeParams(
-        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
-        cfg.difficulty ?? 'normal',
-      )
-    : DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
-  const cities = cfg.getCities?.() ?? [];
-
-  const out: TradeRouteRowInfo[] = [];
+  let n = 0;
   for (const route of all) {
     if (route.status !== 'polaczony') continue;
-    const isFrom = route.fromCityId === city.id;
-    const isTo = route.toCityId === city.id;
-    if (!isFrom && !isTo) continue;
-    const otherCityId = isFrom ? route.toCityId : route.fromCityId;
-    const otherOwnerId = isFrom ? route.toOwnerId : route.ownerId;
-    const otherCity = cities.find(c => c.id === otherCityId);
-    out.push({
-      route,
-      otherCityId,
-      otherOwnerId,
-      otherCityName: otherCity?.name ?? otherCityId,
-      otherOwnerLabel: cfg.getOwnerLabel?.(otherOwnerId) ?? `Cywilizacja ${otherOwnerId}`,
-      income: tradeRouteDistanceIncome(route.dystans, incomeParams),
-    });
+    if (route.fromCityId === city.id || route.toCityId === city.id) n++;
   }
-  // Najkrótsze (najbardziej dochodowe) trasy pierwsze — deterministyczny tie-break po id.
-  out.sort((a, b) => a.route.dystans - b.route.dystans || a.route.id.localeCompare(b.route.id));
-  return out;
-}
-
-function buildTradeRoutesDetailCard(city: City, rows: TradeRouteRowInfo[], data: GameData | null): HTMLDivElement {
-  const incomeParams = data
-    ? loadTradeRouteIncomeParams(
-        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
-        cfg.difficulty ?? 'normal',
-      )
-    : DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
-  const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-  const maBudynekHandlowy = built.some(id => TRADE_BUILDING_IDS.has(id));
-  const limit = built.filter(id => TRADE_BUILDING_IDS.has(id)).length;
-
-  const card = el('div', 'detail-card');
-  const head = el('div', 'dc-h');
-  head.innerHTML = `<span>${cityPanelChipIconWrap('cp-trade', 14)} Szlaki handlowe — szczegóły</span>`;
-  card.appendChild(head);
-
-  const intro = el('div', 'dc-note');
-  setNoteHtml(intro,
-    'Szlak handlowy łączy to miasto z obcym miastem (cywilizacja spoza tej, nie w wojnie, ' +
-    'z zawartą Umową Handlową). Każda aktywna trasa daje osobny dochód (zależny od dystansu) ' +
-    `ORAZ mnoży ${daninaLabelAccusative(daninaLabelForCity(city))} z pól o +${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}%.`,
-  );
-  card.appendChild(intro);
-
-  appendDetailSection(card, 'Limit i warunki');
-  const g0 = appendDetailGrid(card);
-  gridDetailRow(g0, 'Budynek handlowy', maBudynekHandlowy ? 'Tak' : 'Brak — trasy niemożliwe');
-  gridDetailRow(g0, 'Limit tras miasta', `${limit} (= liczba budynków: Targowisko/Port)`);
-  gridDetailRow(g0, 'Aktywne trasy', `${rows.length} / ${limit}`);
-  gridDetailRow(g0, 'Warunek partnera', 'Miasto obcej cywilizacji, bez wojny, w zasięgu (ląd/morze), z zawartą Umową Handlową');
-
-  appendDetailFormula(card, `dochódTrasy = max(${incomeParams.dochodPodloga}, floor(${incomeParams.dochodBazowy} − dystans × ${incomeParams.dochodNaDystans}))`);
-  appendDetailFormula(card, `mnożnikHandlu = 1 + ${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE / 100} × liczbaAktywnychTras (osobno od Targowiska)`);
-
-  if (rows.length > 0) {
-    appendDetailSection(card, 'Rozpiska tras');
-    const g1 = appendDetailGrid(card);
-    for (const r of rows) {
-      gridDetailRow(
-        g1,
-        `${r.otherCityName} (${r.otherOwnerLabel})`,
-        `${r.route.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.route.dystans} heks. · +${r.income}/turę`,
-      );
-    }
-  }
-
-  appendDetailAlgo(card, 'Skąd biorą się trasy (refreshTradeRoutes, co turę)', [
-    'Filtr: tylko gracz ↔ obca cywilizacja (własne miasta między sobą nigdy nie tworzą trasy).',
-    'Filtr pokoju: wojna z danym właścicielem zrywa/blokuje trasę z jego miastami.',
-    'Filtr traktatu: wymaga aktywnej Umowy Handlowej z tym właścicielem — sam pokój już nie wystarcza; zerwanie umowy zrywa trasę.',
-    'Limit slotów na miasto = liczba zbudowanych budynków handlowych (obie strony trasy muszą mieć wolny slot).',
-    'Dystans ≤ próg (ląd/morze); dla morza wymagany Port w OBU miastach i ciągła droga wodna.',
-    'Istniejące trasy mają priorytet nad nowymi kandydaturami (stabilność między turami); wśród nowych wygrywają najbliższe.',
-  ]);
-
-  return card;
-}
-
-function renderTradeRoutesPanel(mount: HTMLElement, city: City, data: GameData | null): void {
-  mount.innerHTML = '';
-  const rows = tradeRoutesForCity(city, data);
-
-  appendSectionTitleWithDetails(
-    mount,
-    '<span>Szlaki handlowe</span>',
-    () => buildTradeRoutesDetailCard(city, rows, data),
-  );
-
-  const bonusPct = rows.length * TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE;
-  const totalIncome = rows.reduce((s, r) => s + r.income, 0);
-  appendTabIndicators(mount, [
-    {
-      icon: cityPanelChipIcon('cp-trade', 14),
-      label: 'Aktywne trasy',
-      value: `${rows.length}`,
-      cls: rows.length > 0 ? 'gold' : 'muted',
-    },
-    ...(rows.length > 0
-      ? [
-          {
-            icon: cityPanelChipIcon('chip-trend-up', 14),
-            label: `Bonus ${daninaLabelForCity(city) === 'Podatek' ? 'Podatku' : 'Daniny'}`,
-            value: `+${bonusPct}%`,
-            cls: 'green',
-            title: `+${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}% za każdą z ${rows.length} aktywnych tras`,
-          },
-          {
-            icon: cityPanelChipIcon('res-treasury', 14),
-            label: 'Dochód z tras',
-            value: `+${totalIncome}`,
-            cls: 'gold',
-          },
-        ]
-      : []),
-  ]);
-
-  if (rows.length === 0) {
-    const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-    const maBudynekHandlowy = built.some(id => TRADE_BUILDING_IDS.has(id));
-    const missingTreatyWith = cfg.getTradeTreatyMissingPartners?.(city.id) ?? [];
-    const hint = el('div', 'muted');
-    if (missingTreatyWith.length > 0) {
-      hint.textContent = `Brak tras — połączenie i pokój są, ale wymaga Umowy Handlowej z ${missingTreatyWith.join(', ')}.`;
-    } else if (maBudynekHandlowy) {
-      hint.textContent = 'Brak tras — brak w zasięgu obcego miasta (bez wojny), z którym dałoby się połączyć.';
-    } else {
-      hint.textContent = 'Brak tras — potrzebny budynek handlowy (Targowisko/Port) i połączone obce miasto w pokoju.';
-    }
-    mount.appendChild(hint);
-    return;
-  }
-
-  const list = el('div', 'col');
-  for (const r of rows) {
-    const row = el('div', 'rsb');
-    const mediumLabel = r.route.medium === 'morze' ? 'Morze' : 'Ląd';
-    row.innerHTML =
-      `<span>${r.otherCityName} <span class="muted">(${r.otherOwnerLabel})</span></span>` +
-      `<span class="chip"><span class="cv">${mediumLabel}</span></span>` +
-      `<span class="muted">${r.route.dystans} heks.</span>` +
-      `<span class="gold val">+${r.income}/turę</span>`;
-    list.appendChild(row);
-  }
-  mount.appendChild(list);
+  return n;
 }
 
 function renderCivMapChrome(mount: HTMLElement, city: City, _onClose?: () => void): void {
@@ -7922,13 +7790,10 @@ function renderRightPanelTab(
         body.appendChild(hint);
         const slidersHost = el('div', 'civ-handel-sliders-host');
         const wealthHost = el('div', 'civ-handel-wealth-host');
-        const tradeRoutesHost = el('div', 'civ-handel-wealth-host');
         body.appendChild(slidersHost);
         body.appendChild(wealthHost);
-        body.appendChild(tradeRoutesHost);
         renderHandelSlidersPanel(slidersHost, city, view, data);
         renderWealth(wealthHost, city, data, view);
-        renderTradeRoutesPanel(tradeRoutesHost, city, data);
       }, { scrollable: true });
       break;
     case 'praca':

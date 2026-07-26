@@ -247,6 +247,7 @@ import {
   computeTradeRouteResourceGrants,
   hasTradeRouteResourceAccess,
   firstTradeRouteResourceGrant,
+  TRADE_ROUTE_RESOURCE_KEYS,
   loadTradeRouteParams,
   loadTradeRouteIncomeParams,
   diffTradeRoutes,
@@ -7734,6 +7735,13 @@ async function boot(): Promise<void> {
      * refreshTradeRoutes) + dochód każdej + suma. Panel miasta (cityPanel.ts
      * buildTradeRoutesDetailCard) pokazuje to samo per-miasto; tu jest agregat.
      */
+    /** DYSPOZYCJA 85: etykiety PL surowców "z trasy" (trade-routes.ts TradeRouteResourceKey) —
+     *  wyłącznie do panelu Handel (empireDetailPanel.ts), nie dubluje LABEL_BY_ASCII
+     *  (building-resource-gate.ts), które nie zawiera 'kon'/'zloto'. */
+    const TRADE_ROUTE_RESOURCE_KEY_LABELS: Record<TradeRouteResourceKey, string> = {
+      braz: 'Brąz', zelazo: 'Żelazo', kon: 'Koń', cegla: 'Cegła', zloto: 'Złoto',
+    };
+
     function buildEmpireTradeSnap(): EmpireDetailSnap['trade'] {
       const incomeParams = loadTradeRouteIncomeParams(
         data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
@@ -7744,6 +7752,13 @@ async function boot(): Promise<void> {
         .map(r => {
           const myCity = cities.find(c => c.id === r.fromCityId);
           const partnerCity = cities.find(c => c.id === r.toCityId);
+          // CUDA-HANDEL-01 (2026-07-26) + DYSPOZYCJA 85: dochód pokazany w panelu Handel
+          // musi zgadzać się z realnym wpisem do skarbca I z chipem HUD „Handel"
+          // (ta sama formuła co niżej przy `handelIncome`, patrz komentarz tam) —
+          // inaczej trzy miejsca pokazywałyby trzy różne liczby dla tego samego dochodu.
+          const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
+          const base = tradeRouteDistanceIncome(r.dystans, incomeParams);
+          const income = bonus === 0 ? base : Math.floor(base * (1 + bonus));
           return {
             id: r.id,
             cityName: myCity?.name ?? r.fromCityId,
@@ -7751,7 +7766,7 @@ async function boot(): Promise<void> {
             partnerOwnerLabel: ownerDiploLabel(r.toOwnerId),
             medium: r.medium,
             dystans: r.dystans,
-            income: tradeRouteDistanceIncome(r.dystans, incomeParams),
+            income,
           };
         })
         .sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));
@@ -7767,7 +7782,22 @@ async function boot(): Promise<void> {
         // PYTANIE 83=B: nazwa wraca na "Danina" gdy gracz straci dostęp do złota.
         ownerHasZlotoAccessNow(0),
       );
-      return { totalIncome, routes, daninaLabel: daninaLbl };
+      // DYSPOZYCJA 85: bonus % cudów handel_procent gracza, osobno ląd/morze (foot panelu).
+      const wonderBonusLadPct = Math.round(wonderTradeRouteBonusForOwner(0, 'lad') * 100);
+      const wonderBonusMorzePct = Math.round(wonderTradeRouteBonusForOwner(0, 'morze') * 100);
+      // DYSPOZYCJA 85: surowce, do których gracz ma dostęp DZIĘKI aktywnej trasie —
+      // zebrane tu (panel Handel), USUNIĘTE z panelu miasta (patrz cityPanel.ts).
+      const resourceGrants: EmpireDetailSnap['trade']['resourceGrants'] = [];
+      for (const key of TRADE_ROUTE_RESOURCE_KEYS) {
+        const grant = firstTradeRouteResourceGrant(tradeRouteResourceGrants, 0, key);
+        if (!grant) continue;
+        resourceGrants.push({
+          resourceKey: key,
+          label: TRADE_ROUTE_RESOURCE_KEY_LABELS[key],
+          partnerLabel: ownerDiploLabel(grant.viaOwnerId),
+        });
+      }
+      return { totalIncome, routes, daninaLabel: daninaLbl, wonderBonusLadPct, wonderBonusMorzePct, resourceGrants };
     }
 
     function openEmpireDetailFromHud(section?: string): void {
