@@ -7653,7 +7653,11 @@ const CITY_PANEL_ICONS_LEFT: { id: CityPanelProductionTab; iconId: string; title
 
 const CITY_PANEL_ICONS_RIGHT: { id: CityPanelCityParamTab; iconId: string; title: string }[] = [
   { id: 'spichlerz', iconId: 'cp-granary', title: 'Spichlerz' },
-  { id: 'handel', iconId: 'cp-trade', title: 'Podział handlu i zamożność — suwaki Skarb / Nauka / Zamożność' },
+  // Tytuł poniżej to fallback modułowej stałej — DYSPOZYCJA 85 (Maciej 2026-07-26):
+  // realny tooltip gracza podmienia renderCityIconRightRail() na "Podział daniny/podatku"
+  // (daninaLabelGenitive), więc ten string nigdy nie trafia na ekran. Celowo bez słowa
+  // "handel" mimo to — Handel jest WYŁĄCZNIE zakładką imperium, nie miasta.
+  { id: 'handel', iconId: 'cp-trade', title: 'Podział daniny/podatku i zamożność — suwaki Skarb / Nauka / Zamożność' },
   { id: 'praca', iconId: 'cp-labor', title: 'Podział pracy — budynki i ulepszenia' },
   { id: 'porzadek', iconId: 'cp-order', title: 'Społeczeństwo i porządek' },
   { id: 'zdrowie', iconId: 'cp-health', title: 'Zdrowie miasta' },

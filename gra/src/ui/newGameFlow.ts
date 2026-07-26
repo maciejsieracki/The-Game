@@ -1423,7 +1423,12 @@ function render(): void {
     em.innerHTML = newGameIntroEmblemSvg(44);
     intro.appendChild(em);
     intro.appendChild(el('div', 'big', 'NOWA GRA'));
-    intro.appendChild(el('div', 'sub', 'Gra cywilizacyjna 4X \u2022 v0.1 \u2022 Kamień, Brąz &amp; Żelazo'));
+    // Wersja NIE jest już zahardkodowana (Maciej 2026-07-26: „to już nie jest prototyp 0.1”).
+    // To samo źródło co mainMenu.ts (UI_PARAMS.menu.wersja/etap z data/ui-params.json) —
+    // drugie miejsce, pominięte przy poprzedniej poprawce stopki menu głównego.
+    const introEtap = (UI_PARAMS.menu.etap ?? '').trim();
+    const introVer = UI_PARAMS.menu.wersja;
+    intro.appendChild(el('div', 'sub', `Gra cywilizacyjna 4X \u2022 ${introEtap} v${introVer} \u2022 Kamień, Brąz &amp; Żelazo`));
     const cta = el('button', 'cta-hero', 'Rozpocznij konfigurację \u2192');
     cta.addEventListener('click', () => { curStep = 2; render(); });
     intro.appendChild(cta);
