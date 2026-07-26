@@ -875,3 +875,44 @@ Ryzyko: istniejący kod zrywania traktatów może aplikować zdarzenia „symetr
 **Waga — do potwierdzenia przez Macieja.** Obecna propozycja **−10**. Argument za podniesieniem do **−15**: odmowa pomocy unieważnia cały sens sojuszu („nie po to zawiera się sojusze"), a dziś −10 zrównuje ją z... niczym w tabeli — jest lżejsza niż dobrowolne zerwanie traktatu czasowego (−6) tylko dwukrotnie, przy nieporównywalnie większej szkodzie dla sojusznika, który liczył na pomoc w wojnie. Hierarchia przy −15: atak na sojusznika −25 > odmowa pomocy −15 > zerwanie traktatu czasowego −6. **Decyzja: Maciej.**
 
 **PARYTET AI:** AI odmawiające pomocy płaci identycznie. Sprawdzić, czy AI w ogóle ma dziś ścieżkę odmowy (czy zawsze dołącza), bo jeśli tylko gracz może odmówić — to złamany parytet.
+
+---
+
+## ✅ DECYZJE ABC — pakiet 2026-07-26 (C-WIAR-N4 / SKAUT / ODWET)
+
+### C-WIAR-N4 = **B** — odmowa pomocy sojusznikowi: **−15** (było −10)
+Uzasadnienie: odmowa unieważnia cały sens sojuszu. Hierarchia po zmianie:
+**atak na sojusznika −25 > odmowa pomocy −15 > dobrowolne zerwanie traktatu czasowego −6.**
+
+### C-WIAR-SKAUT = **A** — zwiadowcy wyłączeni z OBU kar
+Zwiad **nie kosztuje nic**: ani Wiarygodności (N7), ani **istniejącej kary Zaufania** za przemarsz.
+⚠️ To jedyny zatwierdzony wyjątek od zasady „nie zmieniamy istniejących mechanizmów" — Maciej wyraził zgodę świadomie, po przedstawieniu tego kosztu w wariancie A. Wykonawca ma prawo dotknąć `diplomacy-border-march.ts` **wyłącznie w tym zakresie** (dodanie wyjątku dla jednostek zwiadowczych), nic więcej.
+Obowiązuje **parytet AI** — zwiadowcy AI też wyłączeni.
+⚠️ Do ustalenia przy implementacji: jak rozpoznać „zwiadowcę" (rola/typ w `units.json` — Zwiadowca i jednostki narodowe go zastępujące). Kryterium ma być oparte na polu danych, nie na nazwie jednostki (nazwy różnią się między nacjami).
+
+### C-WIAR-ODWET = **A** — odwet nie obciąża Wiarygodności przez N tur od cudzego przewinienia
+Wojna wypowiedziana w odpowiedzi na czyjeś złamanie zobowiązania **nie nalicza N1 ani N2** przez okno N tur.
+**Propozycja N = 10 tur** [ZAŁOŻENIE — do strojenia; spójne z progiem N3 „atak zaraz po pokoju"].
+
+**Wymagania implementacyjne:**
+1. Trzeba zapamiętać **kto i kiedy zawinił wobec kogo** — pole typu `ostatniePrzewinienieWobecNas: { turn, typ }` w `DiploPairMeta` (ta sama struktura co `wojnaOdTury` z N1 i `pokojOdTury` z N3 — **zbudować raz, wspólnie**).
+2. Okno liczy się od tury przewinienia sprawcy, nie od wykrycia.
+3. Które przewinienia otwierają prawo do odwetu: **N1, N2, N4** (napaść, złamanie zobowiązania wojną, odmowa pomocy). NIE otwierają: N5–N7 (za drobne — inaczej powstaje luka „sprowokuj przemarsz, dostań darmową wojnę").
+4. **PARYTET AI:** AI korzysta z tego samego prawa do odwetu.
+⚠️ Ryzyko nadużycia odnotowane w wariancie A: gracz może próbować sprowokować drobne przewinienie, by uzyskać „darmową wojnę" — ograniczenie do N1/N2/N4 (czyny ciężkie, trudne do sprowokowania) jest właśnie zabezpieczeniem przed tym.
+
+### STAN TABELI KAR — DOMKNIĘTA ✅
+| # | Zdarzenie | Waga |
+|---|---|---|
+| N1 | Wypowiedzenie wojny bez ostrzeżenia | −10 |
+| N2 | Wypowiedzenie wojny mimo NAP | −18 |
+| N2 | Wypowiedzenie wojny mimo SOJUSZU | −25 |
+| N3 | Atak zaraz po pokoju (<10 tur) | −12 dodatkowo |
+| N4 | Odmowa pomocy sojusznikowi | **−15** |
+| N5 | Dobrowolne zerwanie traktatu **czasowego** | −6 / −4 handel |
+| N6 | Niedotrzymanie handlu cyklicznego (3 tury) | −2 |
+| N7 | Nieautoryzowany przemarsz (bez zwiadowców) | −2 |
+| — | Maksimum jednorazowe: sojusznik + brak ostrzeżenia | **−35** |
+Wyjątek: **odwet** (do 10 tur od cudzego N1/N2/N4) — N1 i N2 nie naliczane.
+
+**POZOSTAJE DO PRZEJRZENIA: strona pozytywna P1–P5.**
