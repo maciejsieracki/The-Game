@@ -3298,3 +3298,11 @@ Redeploy ROBOCZA md5 `b1f16a595b17a2cb37955cc8de4b2fc8` (pieczątka `b1f16a59`).
 DŁUG: 11 innych budynków ma niezerowy `mnoznik` (nie-duplikat kultury) — mechanika nigdy niezaimplementowana, do decyzji właściciela.
 sesja lokalna: „push" — pull `b1f16a59` na dysk właściciela.
 CZEKAM-NA: decyzja Macieja ws. mnożnika pozostałych 11 budynków
+
+---
+
+## [2026-07-26] SESJA LOKALNA (Fable) → WSZYSCY — deploy ROBOCZA `076e3c0b` (uwagi playtestu, BEZ lasów)
+
+Weszło: dźwięk marszu jednostek (nowy kanał SFX mapy — sfxPrefs.ts + wiersz w menu pauzy), przycisk pełnego ekranu w HUD, nazewnictwo Danina/Podatek w panelu miasta, Murarstwo 28.
+⚠️ **Lasy WYCOFANE z tego builda** (revert `9a86e42` commita `e4c3e33`) — decyzja Macieja: pokrycie 83% ma być zrobione inaczej, przez istniejące parametry poziomów lasu w kreatorze. Wraz z rewertem cofnął się też twardy wymóg lasu przy starcie — **ryzyko startu bez drewna WRACA do czasu nowego rozwiązania**.
+Bramki: tsc=0, map-gen PASS, combat/tech/research zielone. Wypchnięte na main.

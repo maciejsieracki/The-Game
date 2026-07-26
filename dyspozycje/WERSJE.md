@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `b1f16a59` — 2026-07-25 · FALA 10.1: fix błędnego „mnożnika" Pałacu — **AKTUALNA**
+## ROBOCZA `076e3c0b` — 2026-07-26 · uwagi z playtestu Macieja (BEZ lasów) — **AKTUALNA**
+
+- **Zawartość:** dźwięk marszu jednostek (nowy 4. kanał SFX mapy, synteza 0 MB, skalowany wielkością armii, cisza za mgłą wojny, przełącznik „Odgłosy jednostek") · przycisk PEŁNEGO EKRANU w HUD (funkcji wcześniej nie było) · „Podział handlu" → **Danina** / po Mennicy **Podatek** · Murarstwo 5→28 (długa gra 20→112, jak przed 24.07).
+- **CELOWO BEZ LASÓW:** commit `e4c3e33` (pokrycie 14→83% + wymóg lasu przy starcie) **wycofany** rewertem `9a86e42` — Maciej: „będziemy je zmieniać inaczej". Praca zachowana w historii, do ponownego użycia.
+- **Bramki:** tsc=0 · map-gen-regression PASS · combat 6/6 · tech-tree 19/0 · research 33/33.
+- Commity: `0645e92` (Murarstwo+Danina+pełny ekran+dyspozycje), `bfa51c0` (marsz), `9a86e42` (revert lasów).
+
+## ROBOCZA `b1f16a59` — 2026-07-25 · FALA 10.1: fix błędnego „mnożnika" Pałacu
 
 - **Zawartość:** cała FALA 10 (patrz niżej) **+ poprawka danych**: trzy tiery Pałacu miały w `baza.mnoznik` wartość równą DOKŁADNIE swojej kulturze (5/5, 8/8, 11/11, przyrost 0) — pomyłka przy wpisywaniu danych, wykryta przy weryfikacji z Maciejem. Pole `mnoznik` NIE jest konsumowane przez silnik ekonomii (czytane tylko do wyświetlenia chipa „×5 mnożnik" w panelu miasta), więc karta Pałacu obiecywała bonus, którego gra nie stosuje. Wyzerowane dla `palac`/`palac_ii`/`palac_iii` — chip znika, realne bonusy (kultura + zadowolenie, które silnik faktycznie liczy) bez zmian.
 - **Potwierdzone przez Macieja koszty i bonusy Pałacu:** I (Kamień) 8 drewna / 40 pracy · kultura 5 (+3/poz.), zadowolenie 2 (+1/poz.) — II (Brąz) 8 drewna+8 kamienia / 60 pracy · kultura 8 (+5), zadow. 3 (+2) — III (Żelazo) 8 drewna+8 kamienia+6 cegły / 90 pracy · kultura 11 (+7), zadow. 5 (+2). Maks. poziom 10, ulepszane kolejno I→II→III.
