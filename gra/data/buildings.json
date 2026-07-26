@@ -372,8 +372,8 @@
     "przyrostKosztu": 8,
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
-    "wymagania": "",
-    "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    "wymagania": "Dostęp do Ceramiki w imperium (wybudowana Garncarnia gdziekolwiek w imperium ALBO zapas Ceramiki w puli państwa)",
+    "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): pole 'wymagania' bylo puste, wiec gdy bramka Ceramika nie byla spelniona, budynek znikal z panelu bez zadnego komunikatu (eraBuildingCatalog nie sprawdzal tej bramki w ogole -- naprawione w production.ts, patrz komentarz R-BUD-SPICHLERZ-ZNIKA tamze). Tekst tu teraz zasila formatBuildingCatalogLockHint w cityPanel.ts.",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
       "drewno": 8
@@ -412,8 +412,8 @@
     "przyrostKosztu": 12,
     "utrzymanie": 2,
     "przyrostUtrzymania": 0,
-    "wymagania": "upgrade ze Spichlerza I",
-    "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    "wymagania": "Upgrade ze Spichlerza I + dostęp do Soli w imperium (własne złoże ALBO zapas Soli w puli państwa)",
+    "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     "techUnlock": "Warzelnia soli",
     "koszt_surowce": {
       "drewno": 8,

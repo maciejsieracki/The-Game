@@ -17,14 +17,13 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.prereq-budynkow-entry.ts
-var prereq_budynkow_entry_exports = {};
-__export(prereq_budynkow_entry_exports, {
-  CITY_BUILDING_PREREQ: () => CITY_BUILDING_PREREQ,
+// tools/.spichlerz-widocznosc-entry.ts
+var spichlerz_widocznosc_entry_exports = {};
+__export(spichlerz_widocznosc_entry_exports, {
   buildableProduction: () => buildableProduction,
   eraBuildingCatalog: () => eraBuildingCatalog
 });
-module.exports = __toCommonJS(prereq_budynkow_entry_exports);
+module.exports = __toCommonJS(spichlerz_widocznosc_entry_exports);
 
 // src/game/building-cost-tempo.ts
 var KOSZT_BUDYNKOW_PACE = {
@@ -1029,7 +1028,6 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
 });
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  CITY_BUILDING_PREREQ,
   buildableProduction,
   eraBuildingCatalog
 });

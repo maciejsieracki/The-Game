@@ -994,6 +994,8 @@ function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
       data.buildings,
       isBuildingSupersededByUpgrade
     );
+    const gateLabels = ctx.empireActiveResourceLabels?.length ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
+    const resourceOk = buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock) && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
     let status = "ready";
     let locationBlocked;
     if (buildingTypeQueued(b.id, queue)) {
@@ -1006,6 +1008,8 @@ function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
       status = "locked";
       locationBlocked = b.lokalizacja;
     } else if (!prereqOk) {
+      status = "locked";
+    } else if (!resourceOk) {
       status = "locked";
     }
     entries.push({

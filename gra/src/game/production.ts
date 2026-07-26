@@ -1468,6 +1468,20 @@ export function eraBuildingCatalog(
     const prereqOk = cityBuildingPrereqMet(
       CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade,
     );
+    // R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26, zgloszenie blokujace): ta sama luka jak
+    // REGRESJA-KOLEJNOSC powyzej, tylko dla DRUGIEJ bramki, ktorej eraBuildingCatalog nigdy nie
+    // sprawdzal -- dostep do surowca zlozowego/przetworzonego (buildingResourceGateMet, np.
+    // Spichlerz wymaga aktywnej etykiety Ceramika/Garncarni) i twardy wyjatek Piec hutniczy
+    // (empireHasKopalniaMiedzi). availableProduction/buildableProduction juz je odrzucaly
+    // poprawnie (linie ~765-770 wyzej) -- budynek po prostu znikal z panelu bez zadnego
+    // komunikatu, bo status tu zostawal 'ready', a "Jeszcze zablokowane" pokazuje tylko
+    // status==='locked'. Ten sam gateLabels co w availableProduction (empire-wide etykieta ma
+    // pierwszenstwo nad per-miasto, patrz komentarz tam).
+    const gateLabels = ctx.empireActiveResourceLabels?.length
+      ? ctx.empireActiveResourceLabels
+      : ctx.activeResourceLabels;
+    const resourceOk = buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)
+      && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
 
     let status: BuildingCatalogStatus = 'ready';
     let locationBlocked: 'stolica' | 'region' | undefined;
@@ -1481,6 +1495,8 @@ export function eraBuildingCatalog(
       status = 'locked';
       locationBlocked = b.lokalizacja;
     } else if (!prereqOk) {
+      status = 'locked';
+    } else if (!resourceOk) {
       status = 'locked';
     }
 
