@@ -6,6 +6,8 @@
 import type { EmpireDetailSnap, EmpireResourceRow } from './empireDetailTypes';
 import { formatObywateleLabel } from '../game/manpower';
 import { mocLabel, mocWithValue } from './power-labels';
+// Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
+import { signedPl } from './formatPl';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
 export type { EmpireDetailSnap } from './empireDetailTypes';
@@ -291,7 +293,7 @@ function cityPoborMiniRekruci(
 
 function signedTxt(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '—';
-  return (n > 0 ? '+' : '') + String(n);
+  return signedPl(n);
 }
 
 /**

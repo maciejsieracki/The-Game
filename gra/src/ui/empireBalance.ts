@@ -10,6 +10,9 @@
  * Source: literalny UTF-8 dla polskich napisow.
  */
 
+// Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
+import { signedPl } from './formatPl';
+
 export interface EmpireBalance {
   praca: number;
   pieniadz: number;
@@ -59,7 +62,7 @@ function ensureStyles(): void {
   document.head.appendChild(s);
 }
 
-function signed(n: number): string { return (n > 0 ? '+' : '') + String(n); }
+function signed(n: number): string { return signedPl(n); }
 
 function row(icon: string, label: string, value: number, colorClass: string): string {
   const head = icon ? icon + ' ' + label : label;

@@ -22,6 +22,8 @@ import {
   type MinimapWorkerOverlayHooks,
 } from './minimapHud';
 import { naukaHudWordHtml } from './naukaLabel';
+// Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
+import { signedPl } from './formatPl';
 import {
   createSidePanelHud,
   type SidePanelEvent,
@@ -469,7 +471,7 @@ function res(icon: string, val: string, lbl: string, rate?: string, rateO?: bool
   return r;
 }
 
-function signed(n: number): string { return (n > 0 ? '+' : '') + String(n); }
+function signed(n: number): string { return signedPl(n); }
 
 /** Pierścień Nauki: postęp bieżącej tech (nie epoki). buildHudState ustawia researchProgress. */
 function resolveResearchProgress(s: HudState): number {
