@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../../gra/tools/.prawo-palac-tier-entry.ts
+// tools/.prawo-palac-tier-entry.ts
 var prawo_palac_tier_entry_exports = {};
 __export(prawo_palac_tier_entry_exports, {
   cityHasPalacLine: () => cityHasPalacLine,
@@ -26,7 +26,7 @@ __export(prawo_palac_tier_entry_exports, {
 });
 module.exports = __toCommonJS(prawo_palac_tier_entry_exports);
 
-// ../../../gra/data/terrain-improvements.json
+// data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
     opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
@@ -360,14 +360,14 @@ var terrain_improvements_default = {
   }
 };
 
-// ../../../gra/src/game/terrain-improvements.ts
+// src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
 
-// ../../../gra/src/map/road-movement.ts
+// src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
-// ../../../gra/src/units/setup.ts
+// src/units/setup.ts
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -379,7 +379,7 @@ var DEFAULT_TERRAIN_COSTS = {
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
-// ../../../gra/data/epoka-ludnosc-manpower.json
+// data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
   _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
   _formuly: {
@@ -401,7 +401,7 @@ var epoka_ludnosc_manpower_default = {
   ]
 };
 
-// ../../../gra/data/miasto-params.json
+// data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
     wartosc: 5,
@@ -525,10 +525,10 @@ var miasto_params_default = {
   }
 };
 
-// ../../../gra/src/game/manpower.ts
+// src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 
-// ../../../gra/src/game/building-resource-gate.ts
+// src/game/building-resource-gate.ts
 var LABEL_BY_ASCII = {
   drewno: "Drewno",
   kamien: "Kamie\u0144",
@@ -545,7 +545,7 @@ var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
 
-// ../../../gra/src/game/building-upgrades.ts
+// src/game/building-upgrades.ts
 function cityHasPalacLine(builtIds) {
   return builtIds.includes("palac") || builtIds.includes("palac_ii") || builtIds.includes("palac_iii");
 }
@@ -556,7 +556,7 @@ function cityPalacTier(builtIds) {
   return null;
 }
 
-// ../../../gra/src/game/production.ts
+// src/game/production.ts
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
 var DEFAULT_COST_BY_ROLE = {
   Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
@@ -574,10 +574,10 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
   rozwoj: miasto_params_default.udzial_output_rozwoj?.wartosc ?? 0.1
 });
 
-// ../../../gra/src/game/cities.ts
+// src/game/cities.ts
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
-// ../../../gra/src/game/order.ts
+// src/game/order.ts
 var FALLBACK_ORDER_PARAMS = Object.freeze({
   wagaSzczescie: 0.5,
   wagaPrawo: 0.5,
@@ -593,7 +593,7 @@ var FALLBACK_ORDER_PARAMS = Object.freeze({
   bonusHandelT2: 0.1
 });
 
-// ../../../gra/src/game/society-breakdown.ts
+// src/game/society-breakdown.ts
 var PRAWMAX_DEFAULTS = { 1: 50, 2: 75, 3: 100 };
 var PRAW_PCT_CAP = 100;
 function pickOsiedlePopBonus(block, key, pop, difficulty, legacyFlatFallback = 0) {
