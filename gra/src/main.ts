@@ -511,6 +511,7 @@ import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappi
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, availableProduction, availableReplacementsFor,
+  buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued,
   type CityProduction, type AvailabilityContext } from './game/production';
@@ -8639,6 +8640,85 @@ async function boot(): Promise<void> {
       };
     }
 
+    function cityHasAffordableLevelUpgrade(city: City, ctx: AvailabilityContext): boolean {
+      const built = ctx.builtBuildingIds ?? [];
+      const queue = ctx.productionQueue ?? [];
+      const techs = unlockedTechsForOwner(city.ownerId);
+      const epoch = ctx.epoch ?? 1;
+      const civBonusy = ctx.civBonusy ?? [];
+      const pool = ownerSurowcePoolFor(city.ownerId);
+      const seen = new Set<string>();
+      for (const id of built) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const def = data.buildings.find(b => b.id === id);
+        if (!def || def.maksPoziom <= 1) continue;
+        if (buildingTypeQueued(id, queue)) continue;
+        const targetLevel = buildingLevelForEpoch(
+          def.epokaWejscia, epoch, def.maksPoziom, def.poziomTechGate, techs,
+        );
+        if (targetLevel <= 1) continue;
+        const item = buildingProductionItem(
+          id,
+          data,
+          targetLevel,
+          civBonusy,
+          ctx.buildingCostPace ?? 'niski',
+          city.ownerId,
+          ctx.difficulty ?? 'normal',
+        );
+        if (!item) continue;
+        if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
+        return true;
+      }
+      return false;
+    }
+
+    function cityHasAffordableBuildingEnqueue(city: City, ctx: AvailabilityContext): boolean {
+      const techs = unlockedTechsForOwner(city.ownerId);
+      const pool = ownerSurowcePoolFor(city.ownerId);
+      for (const item of buildableProduction(city, data, techs, ctx)) {
+        const def = data.buildings.find(b => b.id === item.id);
+        if (!def) continue;
+        if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
+        return true;
+      }
+      return cityHasAffordableLevelUpgrade(city, ctx);
+    }
+
+    function cityHasAffordableUnitRecruitment(city: City, ctx: AvailabilityContext): boolean {
+      if (city.ownerId !== 0) return false;
+      const techs = unlockedTechsForOwner(city.ownerId);
+      const treasury = player.skarbiec;
+      const pool = ownerSurowcePoolFor(city.ownerId);
+      const ep = empireEpochForOwner(city.ownerId);
+      const mpMaxMult = civManpowerMaxMult(civBonusyForOwnerId(city.ownerId));
+      for (const item of purchasableUnits(city, data, techs, ctx)) {
+        if (treasury < item.koszt) continue;
+        const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
+        if (!unitDef) continue;
+        if (!canAffordBuildingStock(pool, unitStockCost(unitDef))) continue;
+        if (!canAffordUnitManpowerEmpire(
+          cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMaxMult, item.id,
+        )) continue;
+        return true;
+      }
+      return false;
+    }
+
+    function cityHasAffordableWonderEnqueue(city: City): boolean {
+      if (city.ownerId !== 0) return false;
+      const wonders = listBuildableWondersForOwner(0);
+      if (wonders.length === 0) return false;
+      const prod = cityProd.get(city.id);
+      const queuedWonderIds = new Set(
+        (prod?.kolejka ?? [])
+          .map(it => parseWonderProdId(it.id))
+          .filter((id): id is string => id != null),
+      );
+      return wonders.some(w => !queuedWonderIds.has(w.id));
+    }
+
     function cityHasLevelUpgradeOptions(city: City, ctx: AvailabilityContext): boolean {
       const built = ctx.builtBuildingIds ?? [];
       const queue = ctx.productionQueue ?? [];
@@ -8673,20 +8753,44 @@ async function boot(): Promise<void> {
     function productionOptionsFingerprint(city: City): string {
       const ctx = productionAvailabilityCtxForCity(city);
       const techs = unlockedTechsForOwner(city.ownerId);
-      const ids = availableProduction(city, data, techs, ctx).map(it => it.id).sort();
-      const wonders = city.ownerId === 0 ? listBuildableWondersForOwner(0).length : 0;
-      const ups = cityHasLevelUpgradeOptions(city, ctx) ? 1 : 0;
-      return ids.join(',') + '|w' + wonders + '|u' + ups;
+      const pool = ownerSurowcePoolFor(city.ownerId);
+      const affordIds: string[] = [];
+      for (const item of buildableProduction(city, data, techs, ctx)) {
+        const def = data.buildings.find(b => b.id === item.id);
+        if (!def) continue;
+        if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
+        affordIds.push(item.id);
+      }
+      const unitIds: string[] = [];
+      if (city.ownerId === 0) {
+        const treasury = player.skarbiec;
+        const ep = empireEpochForOwner(city.ownerId);
+        const mpMaxMult = civManpowerMaxMult(civBonusyForOwnerId(city.ownerId));
+        for (const item of purchasableUnits(city, data, techs, ctx)) {
+          if (treasury < item.koszt) continue;
+          const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
+          if (!unitDef) continue;
+          if (!canAffordBuildingStock(pool, unitStockCost(unitDef))) continue;
+          if (!canAffordUnitManpowerEmpire(
+            cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMaxMult, item.id,
+          )) continue;
+          unitIds.push(item.id);
+        }
+      }
+      const wonders = cityHasAffordableWonderEnqueue(city)
+        ? listBuildableWondersForOwner(0).map(w => w.id).sort()
+        : [];
+      const ups = cityHasAffordableLevelUpgrade(city, ctx) ? 1 : 0;
+      return affordIds.sort().join(',') + '|u:' + unitIds.sort().join(',') + '|w:' + wonders.join(',') + '|up:' + ups;
     }
 
-    /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta z powodu). */
+    /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta) — tylko realnie dostępne teraz. */
     function cityHasActionableProduction(city: City): boolean {
       if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'auto') return false;
       const ctx = productionAvailabilityCtxForCity(city);
-      const techs = unlockedTechsForOwner(city.ownerId);
-      if (availableProduction(city, data, techs, ctx).length > 0) return true;
-      if (cityHasLevelUpgradeOptions(city, ctx)) return true;
-      if (city.ownerId === 0 && listBuildableWondersForOwner(0).length > 0) return true;
+      if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;
+      if (cityHasAffordableUnitRecruitment(city, ctx)) return true;
+      if (cityHasAffordableWonderEnqueue(city)) return true;
       return false;
     }
 
@@ -12956,20 +13060,6 @@ async function boot(): Promise<void> {
         return c ? effectivePodzialHandlu(c) : null;
       },
       getOwnerDefaultPodzialHandlu: (ownerId: number) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
-      getPodzialHandluOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandluOverride === true,
-      onPodzialHandluOverrideChange: (cityId: string, useOverride: boolean) => {
-        const c = cities.find(ct => ct.id === cityId);
-        if (!c || c.ownerId !== 0) return;
-        if (useOverride) {
-          c.podzialHandluOverride = true;
-          c.podzialHandlu = { ...effectivePodzialHandlu(c) };
-        } else {
-          c.podzialHandluOverride = false;
-          delete c.podzialHandlu;
-        }
-        markCityStateDirty();
-        updateHud();
-      },
       getPodzialPracy: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracy ?? null,
       onPodzialHandluChange: (cityId: string, split) => {
         const c = cities.find(ct => ct.id === cityId);
@@ -19441,20 +19531,6 @@ async function boot(): Promise<void> {
           return c ? effectivePodzialHandlu(c) : null;
         },
         getOwnerDefaultPodzialHandlu: (ownerId: number) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
-        getPodzialHandluOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandluOverride === true,
-        onPodzialHandluOverrideChange: (cityId: string, useOverride: boolean) => {
-          const c = cities.find(ct => ct.id === cityId);
-          if (!c || c.ownerId !== 0) return;
-          if (useOverride) {
-            c.podzialHandluOverride = true;
-            c.podzialHandlu = { ...effectivePodzialHandlu(c) };
-          } else {
-            c.podzialHandluOverride = false;
-            delete c.podzialHandlu;
-          }
-          markCityStateDirty();
-          updateHud();
-        },
         getPodzialPracy: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracy ?? null,
         onPodzialHandluChange: (cityId: string, split) => {
           const c = cities.find(ct => ct.id === cityId);

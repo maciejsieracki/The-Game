@@ -11,7 +11,20 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `95021308` — 2026-07-28 00:05 — FALA 44: bonus koszar/kuźnia przy wejściu do miasta + toast — **AKTUALNA**
+## ROBOCZA `12ee2a1f` — 2026-07-28 00:35 — FALA 45: UI produkcja/dyplomacja/drzewko tech + HUD — **AKTUALNA**
+- md5 (pelne): `12ee2a1f3df5abc97d1e452f7ec22f26` · stempel: `ROBOCZA · 2026-07-28 00:35`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- Wynik `vite build` exit 0. POLE-BITWY: bez zmian.
+- **Co nowego (FALA 45):**
+  - **Wydarzenia produkcji:** symbol tylko gdy coś realnie można wyprodukować (surowce/skarbiec/rekruci).
+  - **Minimapa:** usunięte przyciski dev F/M (skróty klawiatury zostają).
+  - **Drzewko technologii:** Wróć ESC w lewym górnym rogu; bez ikony i linii technicznej pod tytułem.
+  - **Umowa handlowa:** podgląd Oferujemy|Oferują jak w oczekujących propozycjach; naprawione podsumowanie Jednorazowo/Co turę.
+  - **Panel miasta / HUD:** kolejka pusta ukryta, auto-budowa ikony, zamożność kompakt, zoom UI scale.
+- **Bramki:** tsc 0 · diplomacy-display 26/26 · logic 206/208 (pre-istniejące).
+
+## ROBOCZA `95021308` — 2026-07-28 00:05 — FALA 44: bonus koszar/kuźnia przy wejściu do miasta + toast — **ZASTĄPIONA**
 - md5 (pelne): `95021308eb1eb918bc95149d6928a8ef` · stempel: `ROBOCZA · 2026-07-28 00:05`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 8 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).

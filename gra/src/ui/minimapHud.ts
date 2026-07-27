@@ -76,7 +76,7 @@ export interface MinimapHudConfig {
   onMinimapClick?: (q: number, r: number) => void;
   /** Opcjonalne warstwy zasięgu (🎭 kultura, ⛪ religia). */
   layers?: MinimapLayerHooks;
-  /** Playtest/dev: batony F/M (tylko gdy przekazane — brak w produkcji). */
+  /** Playtest/dev: FoW F / ląd M — tylko klawiatura (bez przycisków w HUD). */
   playtestFog?: MinimapPlaytestFogHooks;
   /** Toggle ikon 👤 — pola z robotnikami na mapie świata. */
   workerOverlay?: MinimapWorkerOverlayHooks;
@@ -282,8 +282,6 @@ function ensureStyles(): void {
   color:#e8d88a;display:flex;align-items:center;justify-content:center;}
 .civ-minimap-tools .mini-tool-btn:hover{border-color:rgba(232,216,138,.55);}
 .civ-minimap-tools .mini-tool-btn.on{background:rgba(232,216,138,.12);border-color:var(--tg-gold-primary,#e8d88a);}
-.civ-minimap-tools .mini-tool-btn.mini-fog-dev{font:700 14px/1 Segoe UI,Tahoma,sans-serif;letter-spacing:0;}
-.civ-minimap-tools .mini-tool-sep{height:1px;background:rgba(232,216,138,.22);margin:4px 2px;}
 .civ-minimap-tools .mini-tool-btn svg{width:20px;height:20px;display:block;}
 `;
   const s = document.createElement('style');
@@ -317,43 +315,8 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
   let searchBtn: HTMLButtonElement | null = null;
   let territoryBtn: HTMLButtonElement | null = null;
   let workerBtn: HTMLButtonElement | null = null;
-  let fogFullBtn: HTMLButtonElement | null = null;
-  let landRevealBtn: HTMLButtonElement | null = null;
-  let fogToolsSep: HTMLDivElement | null = null;
-
-  function ensurePlaytestFogButtons(): void {
-    const P = config.playtestFog;
-    if (!P) return;
-    if (!fogFullBtn) {
-      fogFullBtn = document.createElement('button');
-      fogFullBtn.type = 'button';
-      fogFullBtn.className = 'mini-tool-btn mini-fog-dev';
-      fogFullBtn.title = 'FoW wyłączone (dev F) — cała mapa, wolniejsze';
-      fogFullBtn.textContent = 'F';
-      fogFullBtn.onclick = () => P.onToggleFogFull();
-      tools.appendChild(fogFullBtn);
-    }
-    if (!landRevealBtn) {
-      landRevealBtn = document.createElement('button');
-      landRevealBtn.type = 'button';
-      landRevealBtn.className = 'mini-tool-btn mini-fog-dev';
-      landRevealBtn.title = 'Odkryj ląd (dev M) — kontynent widoczny, ocean ukryty';
-      landRevealBtn.textContent = 'M';
-      landRevealBtn.onclick = () => P.onToggleLandReveal();
-      tools.appendChild(landRevealBtn);
-    }
-    if (!fogToolsSep) {
-      fogToolsSep = document.createElement('div');
-      fogToolsSep.className = 'mini-tool-sep';
-      fogToolsSep.setAttribute('aria-hidden', 'true');
-      tools.appendChild(fogToolsSep);
-    }
-    fogFullBtn.classList.toggle('on', P.isFogFullOff());
-    landRevealBtn.classList.toggle('on', P.isLandReveal());
-  }
 
   function ensureToolButtons(): void {
-    ensurePlaytestFogButtons();
     const L = config.layers;
     const W = config.workerOverlay;
     if (W?.onToggleWorkers && !workerBtn) {

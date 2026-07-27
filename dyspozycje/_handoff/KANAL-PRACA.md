@@ -3785,3 +3785,11 @@ CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).
 **Zaktualizowano:** `STAN-PRACY-HANDOFF.md` §3a-6 · `C-UPGRADE-TRIGGER.md` · `C-UPGRADE-KUMULACJA.md` · `C-OBCE-JEDN-Q2.md` · `STATUS-WDROZEN-AGENT-2026-07-28.md` · `REJESTR-DECYZJI` · `MAPA-PYTAN-OPEN` · `PAMIEC-ROBOCZA-CIV.md`.
 **Start sesji:** czytaj `STAN-PRACY-HANDOFF.md` → `STATUS-WDROZEN-AGENT-2026-07-28.md`.
 CZEKAM-NA: nic.
+
+## [00:35] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 45
+
+**md5:** `12ee2a1f3df5abc97d1e452f7ec22f26` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** wydarzenia produkcji (tylko gdy możliwa) · minimapa bez F/M · drzewko tech (Wróć lewo) · koszyk handlu 2 kolumny · panel miasta/HUD.
+**Bramki:** tsc 0 · diplomacy-display 26/26 · logic 206/208 (pre) · VERIFY OK.
+**Push:** na prośbę Macieja „deploy do roboczej".
+CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).

@@ -26,7 +26,11 @@ import unitsJson from '../../data/units.json';
 import techJson from '../../data/tech.json';
 import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
 import { brandIconSvg } from './icons/brandAssets';
-import { techIconSvg } from './techIcons';
+import {
+  renderBasketItemValueHtml,
+} from './diplomacyDealDisplay';
+import type { BasketItemFormatCtx } from '../game/diplomacy-display';
+import { formatBasketListBrief } from '../game/diplomacy-display';
 
 export type TradeBasketMode = 'trade' | 'gift' | 'treaty';
 
@@ -72,8 +76,32 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-sub{font-size:0.75em;color:#8a8070;margin-bottom:10px;line-height:1.45;}
 .civ-diplo-basket .cdb-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .civ-diplo-basket.cdb-gift .cdb-cols{grid-template-columns:1fr;}
+.civ-diplo-basket .cdb-deal-preview{margin-bottom:12px;}
+.civ-diplo-basket .da-deal-table{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.civ-diplo-basket .da-deal-col{border:1px solid rgba(232,216,138,.16);border-radius:8px;padding:8px 9px;
+  background:linear-gradient(180deg,rgba(18,22,32,.85),rgba(8,10,16,.75));min-width:0;}
+.civ-diplo-basket .da-deal-col-we{border-color:rgba(110,150,220,.28);}
+.civ-diplo-basket .da-deal-col-they{border-color:rgba(90,208,122,.32);}
+.civ-diplo-basket .da-deal-col-head{font-size:0.72em;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  text-align:center;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06);}
+.civ-diplo-basket .da-deal-col-we .da-deal-col-head{color:#8ab4e8;}
+.civ-diplo-basket .da-deal-col-they .da-deal-col-head{color:#7ad0a0;}
+.civ-diplo-basket .da-deal-col-body{display:flex;flex-direction:column;gap:5px;min-height:32px;}
+.civ-diplo-basket .da-deal-item{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;line-height:1.35;font-size:0.92em;}
+.civ-diplo-basket .da-deal-res-ic{display:inline-flex;align-items:center;flex-shrink:0;opacity:.95;}
+.civ-diplo-basket .da-deal-res-ic svg{display:block;}
+.civ-diplo-basket .da-deal-amt{font-weight:600;color:#f0e8d8;}
+.civ-diplo-basket .da-deal-per{font-size:0.92em;color:#9ad4b0;}
+.civ-diplo-basket .da-deal-once{font-size:0.88em;color:#8a8070;}
+.civ-diplo-basket .da-deal-total{flex-basis:100%;font-size:0.82em;color:#c8b890;margin-top:2px;}
+.civ-diplo-basket .da-deal-sched-foot{margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);
+  font-size:0.82em;color:#b8a888;text-align:center;}
+.civ-diplo-basket .da-deal-empty{color:#6a6058;font-style:italic;font-size:0.88em;}
+.civ-diplo-basket .cdb-deal-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
+.civ-diplo-basket .cdb-deal-row .da-deal-item{flex:1;min-width:0;}
 .civ-diplo-basket .cdb-col{border:1px solid rgba(232,216,138,.2);border-radius:8px;padding:10px;}
-.civ-diplo-basket .cdb-col-title{font-size:0.78em;color:#e8d88a;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em;}
+.civ-diplo-basket .cdb-col-title{font-size:0.72em;color:#a8a090;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em;}
+.civ-diplo-basket .cdb-deal-settings{margin:10px 0 4px;display:flex;flex-direction:column;gap:8px;}
 .civ-diplo-basket .cdb-item{display:flex;justify-content:space-between;align-items:center;gap:8px;
   padding:5px 7px;margin:3px 0;border-radius:6px;background:rgba(40,48,60,0.45);font-size:0.78em;}
 .civ-diplo-basket .cdb-item-pn{color:#e8d88a;white-space:nowrap;}
@@ -467,39 +495,6 @@ function resourceTradeModeHtml(mode: 'once' | 'per_turn', visible: boolean): str
   );
 }
 
-function itemLabel(item: BasketItem, ctx: NegotiationModalContext): string {
-  const typLabel = TYP_LABELS[item.typ] ?? item.typ;
-  switch (item.typ) {
-    case 'zloto':
-    case 'praca':
-      return typLabel + ': ' + (item.ilosc ?? 0);
-    case 'zywnosc': {
-      const city = ctx.cityOptions?.find(c => c.id === item.cityId);
-      return typLabel + ' — ' + (city?.label ?? item.cityId ?? '?') + ': ' + (item.ilosc ?? 0);
-    }
-    case 'zloze':
-      return typLabel + ': ' + item.id;
-    case 'tech':
-      return typLabel + ': ' + item.id;
-    case 'jednostka':
-      return typLabel + ': ' + item.id;
-    case 'surowiec_boolean':
-      return typLabel + ': ' + item.id;
-    case 'surowiec_ilosc': {
-      const pakiet = diplomacyHandelSurowcePakietWielkosc();
-      const pakiety = item.ilosc ?? 1;
-      return typLabel + ': ' + item.id + ' ×' + pakiet + ' (pakiet) × ' + pakiety
-        + ' = ' + (pakiety * pakiet) + ' szt.';
-    }
-    default:
-      return typLabel;
-  }
-}
-
-function itemPn(item: BasketItem, ctx: NegotiationModalContext): number | null {
-  return diplomacySumPn(toPnItems([item], ctx));
-}
-
 function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mode: TradeBasketMode): string {
   if (mode === 'gift' && side === 'receive') return '';
 
@@ -590,25 +585,58 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   );
 }
 
-function itemsListHtml(items: BasketItem[], ctx: NegotiationModalContext, side: 'give' | 'receive'): string {
-  if (items.length === 0) {
-    return '<div style="color:#7a8494;font-size:0.72em;padding:4px 0">Brak pozycji</div>';
+function editableDealItemsHtml(
+  items: BasketItem[],
+  side: 'give' | 'receive',
+  resourceTradeMode: 'once' | 'per_turn',
+  dealTurns: number,
+): string {
+  if (items.length === 0) return '<span class="da-deal-empty">—</span>';
+  const fmtCtx: BasketItemFormatCtx = {
+    perTurn: resourceTradeMode === 'per_turn',
+    turns: dealTurns,
+  };
+  return items.map((item, idx) => (
+    '<div class="cdb-deal-row" data-side="' + side + '" data-idx="' + idx + '">' +
+      '<div class="da-deal-item">' + renderBasketItemValueHtml(item, fmtCtx) + '</div>' +
+      '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń">×</button>' +
+    '</div>'
+  )).join('');
+}
+
+function dealSideColumnHtml(
+  head: string,
+  colClass: string,
+  items: BasketItem[],
+  side: 'give' | 'receive',
+  resourceTradeMode: 'once' | 'per_turn',
+  dealTurns: number,
+): string {
+  return (
+    '<div class="da-deal-col ' + colClass + '">' +
+      '<div class="da-deal-col-head">' + esc(head) + '</div>' +
+      '<div class="da-deal-col-body" data-list="' + side + '">' +
+        editableDealItemsHtml(items, side, resourceTradeMode, dealTurns) +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function tradeDealPreviewHtml(
+  giveItems: BasketItem[],
+  receiveItems: BasketItem[],
+  resourceTradeMode: 'once' | 'per_turn',
+  dealTurns: number,
+): string {
+  let html = '<div class="cdb-deal-preview"><div class="da-deal-table">';
+  html += dealSideColumnHtml('Oferujemy', 'da-deal-col-we', giveItems, 'give', resourceTradeMode, dealTurns);
+  html += dealSideColumnHtml('Oferują', 'da-deal-col-they', receiveItems, 'receive', resourceTradeMode, dealTurns);
+  html += '</div>';
+  if (resourceTradeMode === 'per_turn' && dealTurns > 0) {
+    html += '<div class="da-deal-sched-foot">Wymiana co turę przez ' + dealTurns + ' tur</div>';
   }
-  return items.map((item, idx) => {
-    const pn = itemPn(item, ctx);
-    const pnStr = pn != null ? pn + ' PN' : '? PN';
-    const techIcHtml = item.typ === 'tech' ? (techIconSvg(item.id ?? '', 13) ?? '') : '';
-    const techIcWrap = techIcHtml
-      ? '<span style="display:inline-flex;width:13px;height:13px;vertical-align:-2px;margin-right:4px">' + techIcHtml + '</span>'
-      : '';
-    return (
-      '<div class="cdb-item" data-side="' + side + '" data-idx="' + idx + '">' +
-        '<span>' + techIcWrap + esc(itemLabel(item, ctx)) + '</span>' +
-        '<span class="cdb-item-pn">' + pnStr + '</span>' +
-        '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń">×</button>' +
-      '</div>'
-    );
-  }).join('');
+  html += '</div>';
+  return html;
 }
 
 function summaryHtml(
@@ -616,6 +644,8 @@ function summaryHtml(
   giveItems: BasketItem[],
   receiveItems: BasketItem[],
   ctx: NegotiationModalContext,
+  resourceTradeMode: 'once' | 'per_turn',
+  dealTurns: number,
 ): string {
   const rel = ctx.relacjaTotal ?? 0;
   const trustGained = ctx.trustPnGainedThisTurn ?? 0;
@@ -655,16 +685,27 @@ function summaryHtml(
       // (nadmiar PN → Zaufanie od razu) vs CO TURĘ (dobra wola + — jeśli oferta ma dostęp
       // do surowców/złóż — Zaufanie z aktywnej Umowy handlowej przez czas jej trwania).
       // Same liczby co wyżej, tylko pogrupowane + jeden werdykt z uzasadnieniem.
+      const fmtCtx: BasketItemFormatCtx = {
+        perTurn: resourceTradeMode === 'per_turn',
+        turns: dealTurns,
+      };
       const oneShot: string[] = [];
-      if (preview.deltaZaufanie > 0) oneShot.push('+' + preview.deltaZaufanie + ' Zaufania');
       const perTurn: string[] = [];
+      if (resourceTradeMode === 'per_turn') {
+        if (giveItems.length > 0) perTurn.push('Oddajemy: ' + formatBasketListBrief(giveItems, fmtCtx));
+        if (receiveItems.length > 0) perTurn.push('Dostajemy: ' + formatBasketListBrief(receiveItems, fmtCtx));
+      } else {
+        if (giveItems.length > 0) oneShot.push('Oddajemy: ' + formatBasketListBrief(giveItems, fmtCtx));
+        if (receiveItems.length > 0) oneShot.push('Dostajemy: ' + formatBasketListBrief(receiveItems, fmtCtx));
+      }
+      if (preview.deltaZaufanie > 0) oneShot.push('+' + preview.deltaZaufanie + ' Zaufania');
       if (dobraWola.active) perTurn.push('+' + dobraWola.zaufaniePerTura + ' Zaufania/turę × ' + dobraWola.tur + ' tur');
       if (basketHasResourceAccess(giveItems, receiveItems)) {
         perTurn.push('+' + diplomacyHandelZaufaniePerTura() + ' Zaufania/turę (trwa umowa handlowa)');
       }
       html += '<div class="cdb-split">' +
-        '<div>Jednorazowo: <b>' + (oneShot.length > 0 ? oneShot.join(', ') : '—') + '</b></div>' +
-        '<div>Co turę: <b>' + (perTurn.length > 0 ? perTurn.join(', ') : '—') + '</b></div>' +
+        '<div>Jednorazowo: <b>' + (oneShot.length > 0 ? oneShot.join(' · ') : '—') + '</b></div>' +
+        '<div>Co turę: <b>' + (perTurn.length > 0 ? perTurn.join(' · ') : '—') + '</b></div>' +
       '</div>';
 
       let verdict: string;
@@ -808,18 +849,24 @@ function renderBasket(
 
   const giveCol =
     '<div class="cdb-col">' +
-      '<div class="cdb-col-title">Co oddaję</div>' +
-      '<div class="cdb-items" data-list="give">' + itemsListHtml(giveItems, ctx, 'give') + '</div>' +
+      '<div class="cdb-col-title">Dodaj do oferty</div>' +
       (blocked ? '' : buildAddForm('give', ctx, basketModeForForm)) +
     '</div>';
 
   const recvCol = showReceiveCol
     ? '<div class="cdb-col">' +
-        '<div class="cdb-col-title">Co dostaję</div>' +
-        '<div class="cdb-items" data-list="receive">' + itemsListHtml(receiveItems, ctx, 'receive') + '</div>' +
+        '<div class="cdb-col-title">Dodaj do kontrpropozycji</div>' +
         (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm)) +
       '</div>'
     : '';
+
+  const dealPreview = showReceiveCol && !blocked
+    ? tradeDealPreviewHtml(giveItems, receiveItems, resourceTradeMode, dealTurns)
+    : (mode === 'gift' && !blocked
+      ? '<div class="cdb-deal-preview"><div class="da-deal-table">' +
+        dealSideColumnHtml('Co oddajesz', 'da-deal-col-we', giveItems, 'give', 'once', dealTurns) +
+        '</div></div>'
+      : '');
 
   const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
   // HANDEL-SUROWCE-CYKL (2026-07-24): koszyk z surowcem ILOŚCIOWYM, bez trwałego
@@ -836,6 +883,13 @@ function renderBasket(
     ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
     : 'Surowiec i zapłata płyną CO TURĘ przez wybrany czas. Deal znika po wygaśnięciu, zerwaniu traktatu lub wojnie.';
 
+  const dealSettings = (blocked || !showReceiveCol)
+    ? ''
+    : '<div class="cdb-deal-settings">' +
+        resourceTradeModeHtml(resourceTradeMode, showResModeSelector) +
+        dealDurationHtml(dealTurns, showDealDuration, dealDurationLabel, dealDurationSub) +
+      '</div>';
+
   const validation = validateBasketForm(
     mode, action.id, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, !!blocked, treatyState,
   );
@@ -850,7 +904,7 @@ function renderBasket(
   const basketOptClose = mode === 'treaty' && !blocked ? '</div>' : '';
   const summaryBlock = mode === 'treaty'
     ? treatySummaryHtml(giveItems, receiveItems, ctx)
-    : summaryHtml(mode, giveItems, receiveItems, ctx);
+    : summaryHtml(mode, giveItems, receiveItems, ctx, resourceTradeMode, dealTurns);
 
   box.className = 'civ-diplo-basket' + (mode === 'gift' ? ' cdb-gift' : '');
   box.innerHTML =
@@ -859,10 +913,10 @@ function renderBasket(
     blocked +
     treatyHtml +
     basketOptIntro +
+    dealPreview +
     (blocked ? '' : '<div class="cdb-cols">' + giveCol + recvCol + '</div>') +
+    dealSettings +
     basketOptClose +
-    (blocked ? '' : resourceTradeModeHtml(resourceTradeMode, showResModeSelector)) +
-    (blocked ? '' : dealDurationHtml(dealTurns, showDealDuration, dealDurationLabel, dealDurationSub)) +
     (blocked ? '' : summaryBlock) +
     invalidHtml +
     '<div class="cdb-btns">' +

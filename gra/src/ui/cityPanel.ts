@@ -387,10 +387,6 @@ export interface CityPanelConfig {
   getPodzialHandlu?: (cityId: string) => PodzialHandluSplit | null;
   /** Domyślny podział imperium (DYSPOZYCJA-85-SUWAK). */
   getOwnerDefaultPodzialHandlu?: (ownerId: number) => PodzialHandluSplit | null;
-  /** Czy miasto ma własny override suwaka Daniny/Podatku. */
-  getPodzialHandluOverride?: (cityId: string) => boolean;
-  /** Przełącz override per miasto (false = wróć do domyślnego imperium). */
-  onPodzialHandluOverrideChange?: (cityId: string, useOverride: boolean) => void;
   /** Biezacy podzial Pracy per miasto (opcjonalnie). */
   getPodzialPracy?: (cityId: string) => PodzialPracySplit | null;
   /** Gracz zmienil suwaki Handlu — silnik zapisuje na City i przelicza plony. */
@@ -721,10 +717,6 @@ function readPodzialHandlu(city: City, data: GameData | null): PodzialHandluSpli
   if (fromHook) return normalizePodzialHandlu(fromHook);
   const ownerDefault = readOwnerDefaultPodzialHandlu(city, data);
   return resolveCityPodzialHandlu(city, ownerDefault);
-}
-
-function readPodzialHandluOverride(city: City): boolean {
-  return cfg.getPodzialHandluOverride?.(city.id) ?? !!city.podzialHandluOverride;
 }
 
 function readOwnerDefaultPodzialHandlu(city: City, data: GameData | null): PodzialHandluSplit {
@@ -1333,6 +1325,12 @@ function setOkolicaProfileButtonContent(btn: HTMLButtonElement, iconId: string, 
     : label;
 }
 
+function setOkolicaProfileButtonIconOnly(btn: HTMLButtonElement, iconId: string, size: BrandIconSize = 20): void {
+  btn.classList.add('okolica-profile-btn', 'okolica-profile-btn-ic-only');
+  const ic = okolicaProfileIconHtml(iconId, size);
+  btn.innerHTML = ic ? `<span class="okolica-profile-glyph">${ic}</span>` : '?';
+}
+
 function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-city-screen-css-v2')?.remove();
@@ -1714,10 +1712,16 @@ function ensureStyles(): void {
 .civ-cs .praca-split-info .psi-lbl{display:inline-flex;align-items:center;gap:0.12em;}
 .civ-cs .chip .cl{display:inline-flex;align-items:center;gap:0.1em;}
 .civ-cs .wealth-grid{display:flex;flex-wrap:wrap;gap:0.22em;}
-.civ-cs .wealth-compact-row{margin:0.08em 0 0.32em;}
-.civ-cs .wealth-compact-inner{display:flex;align-items:center;justify-content:space-between;gap:0.45em;flex-wrap:wrap;
-  padding:0.28em 0.45em;background:var(--panel2);border:1px solid var(--border);border-radius:4px;}
+.civ-cs .wealth-compact-row{margin:0.06em 0 0.22em;}
+.civ-cs .wealth-compact-inner{display:flex;align-items:center;gap:0.22em;flex-wrap:nowrap;
+  padding:0.2em 0.32em;background:var(--panel2);border:1px solid var(--border);border-radius:4px;}
 .civ-cs .wealth-compact-inner.hover-detail-anchor{cursor:help;}
+.civ-cs .wealth-compact-stat{display:inline-flex;align-items:center;gap:0.1em;padding:0.1em 0.22em;
+  border:1px solid rgba(232,216,138,0.2);border-radius:4px;font-size:0.68em;line-height:1;cursor:help;flex:0 0 auto;background:rgba(0,0,0,0.12);}
+.civ-cs .wealth-compact-stat b{font-weight:700;font-size:0.95em;}
+.civ-cs .wealth-compact-stat .wealth-compact-ic{font-weight:700;color:var(--gold);font-size:0.9em;min-width:0.85em;text-align:center;}
+.civ-cs .wealth-compact-inner .wealth-compact-bar{flex:1 1 4.5em;min-width:3.8em;height:1.05em;margin:0;}
+.civ-cs .wealth-compact-inner .wealth-compact-bar .fbtxt{font-size:0.88em;padding:0 0.2em;}
 .civ-detail-scope .detail-card.wealth-detail-card{font-size:0.84em;line-height:1.42;}
 .civ-detail-scope .detail-card.wealth-detail-card .dc-grid{grid-template-columns:minmax(7.5em,0.95fr) 1.05fr;}
 .civ-detail-scope .detail-card.wealth-detail-card .dc-formula{font-size:0.88em;color:var(--gold);font-family:Consolas,'Courier New',monospace;margin:0.2em 0 0.35em;padding:0.25em 0.4em;
@@ -1760,10 +1764,10 @@ function ensureStyles(): void {
   padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
 .civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1280px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
 .civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:wrap;width:100%;}
-.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.28rem 0.42rem;
-  padding:0.28rem 0.7rem;border-radius:12px;
+.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.32rem 0.48rem;
+  padding:0.38rem 0.82rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
-  flex:0 1 auto;min-width:0;max-width:min(42vw,460px);}
+  flex:0 1 auto;min-width:0;max-width:min(48vw,560px);}
 .civ-v-w3-chips-flank.civ-v-w3-chips-left{justify-content:flex-end;}
 .civ-v-w3-chips-flank.civ-v-w3-chips-right{justify-content:flex-start;}
 .civ-v-top-line{display:flex;align-items:center;justify-content:center;gap:0.65rem;flex-wrap:wrap;width:100%;}
@@ -1806,26 +1810,26 @@ function ensureStyles(): void {
 .civ-v-w3-chips-stacked .civ-v-w3-chip{justify-content:center;width:100%;max-width:100%;min-width:0;
   flex-wrap:wrap;row-gap:0.08rem;}
 .civ-v-w3-chips-stacked.civ-v-w3-chips-city{width:100%;}
-.civ-v-w3-chip{display:inline-flex;align-items:center;gap:0.42rem;white-space:nowrap;flex-shrink:0;
-  font-size:0.78em;line-height:1;border:none;background:transparent;padding:0.12em 0.18em;margin:0;
+.civ-v-w3-chip{display:inline-flex;align-items:center;gap:0.48rem;white-space:nowrap;flex-shrink:0;
+  font-size:1.56em;line-height:1.2;border:none;background:transparent;padding:0.14em 0.2em;margin:0;
   cursor:pointer;border-radius:4px;font-family:inherit;color:inherit;}
 .civ-v-w3-chip:hover{background:rgba(212,175,90,0.1);}
 .civ-v-w3-chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
-.civ-v-w3-chip-icon{display:flex;align-items:center;justify-content:center;color:#e8d88a;font-size:1.05em;line-height:1;}
-.civ-v-w3-chip-icon .civ-v-loaf-ic{width:1.05em;height:1.15em;}
+.civ-v-w3-chip-icon{display:flex;align-items:center;justify-content:center;color:#e8d88a;font-size:1.15em;line-height:1;}
+.civ-v-w3-chip-icon .civ-v-loaf-ic{width:1.2em;height:1.3em;}
 .civ-v-w3-sci-med{display:inline-flex;align-items:center;justify-content:center;
   width:1.35em;height:1.35em;border-radius:50%;flex-shrink:0;
   background:radial-gradient(circle at 35% 30%,#8fb6e0,#3a5f8a);border:1px solid #26456a;}
 .civ-v-w3-sci-med .civ-science-owl-ic{width:0.82em;height:0.82em;color:#0a1628;}
 .civ-v-w3-chip-icon .civ-science-owl-ic{width:1.05em;height:1.05em;color:#0a1628;}
-.civ-v-w3-chip-lbl{font-size:0.92em;color:#8a8070;}
-.civ-v-w3-chip-val{font-size:1.05em;font-weight:700;color:#e8d88a;}
+.civ-v-w3-chip-lbl{font-size:0.95em;color:#a8a090;font-weight:600;}
+.civ-v-w3-chip-val{font-size:1.08em;font-weight:700;color:#e8d88a;}
 .civ-v-w3-chip-val.blue{color:#7cb4e4;}
 .civ-v-w3-chip-val.green{color:var(--green);}
 .civ-v-w3-chip-val.red{color:var(--red);}
 .civ-v-w3-chip-sep{width:1px;height:1.45em;background:rgba(232,216,138,0.2);flex-shrink:0;}
 .civ-v-w3-chip-splits{display:inline-flex;align-items:center;gap:0.22em;margin-left:0.12em;}
-.civ-v-w3-split{font-size:0.68em;font-weight:700;line-height:1;opacity:0.95;}
+.civ-v-w3-split{font-size:0.82em;font-weight:700;line-height:1;opacity:0.95;}
 .civ-v-w3-split.gold{color:var(--gold);}
 .civ-v-w3-split.blue{color:#7cb4e4;}
 .civ-v-w3-split.purple{color:#c894e8;}
@@ -2120,13 +2124,14 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-ux-panel-scope.civ-cs .ptitle{margin-bottom:0.22em;padding-bottom:0.14em;}
 .civ-ux-panel-scope.civ-cs .food-grow-block{margin:0.15em 0 0.22em;}
 .civ-ux-panel-scope.civ-cs .okolica-toolbar{margin:0.12em 0 0.18em;}
-.civ-ux-panel-scope.civ-cs .budowa-toolbar{flex-wrap:wrap;overflow-x:visible;overflow-y:visible;align-items:flex-start;gap:0.2em 0.35em;}
-.civ-ux-panel-scope.civ-cs .budowa-toolbar > .muted{flex:0 0 100%;margin-right:0;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar{flex-wrap:nowrap;overflow-x:auto;overflow-y:visible;align-items:center;gap:0;margin:0.06em 0 0.18em;}
 .civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex:1 1 100%;width:100%;min-width:0;gap:0.18em 0.24em;}
+  display:flex;flex-wrap:nowrap;flex:1 1 auto;width:100%;min-width:0;gap:0.12em;justify-content:flex-start;}
 .civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles button{
-  font-size:0.66em;padding:0.1em 0.26em;width:100%;box-sizing:border-box;justify-content:center;}
-.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles button.okolica-profile-btn{gap:0.24em;padding:0.12em 0.32em;}
+  font-size:0.66em;padding:0;width:auto;min-width:0;flex:0 0 auto;box-sizing:border-box;justify-content:center;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles button.okolica-profile-btn-ic-only{
+  padding:0.18em;border-radius:4px;line-height:0;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-profile-btn-ic-only .okolica-profile-glyph{width:1.35em;height:1.35em;}
 .civ-v-left-col{display:flex!important;flex-direction:column!important;flex:1;min-height:0;width:100%;gap:0;}
 .civ-v-right-col{display:flex!important;flex-direction:column!important;flex:1;min-height:0;width:100%;height:100%!important;gap:0;}
 .civ-v-right-head{flex:0 0 auto;padding-bottom:0.38em;margin-bottom:0.28em;border-bottom:1px solid rgba(212,175,90,0.28);}
@@ -3330,6 +3335,59 @@ function appendTabIndicators(mount: HTMLElement, chips: TabIndicatorChip[]): voi
   mount.appendChild(row);
 }
 
+function appendWealthCompactStrip(
+  mount: HTMLElement,
+  opts: {
+    poziom: number;
+    atCap: boolean;
+    cap: number;
+    epoch: number;
+    mnoz: number;
+    szBonus: number;
+    pula: number;
+    prog: number;
+    pct: number;
+  },
+): void {
+  const row = el('div', 'wealth-compact-row');
+  const inner = el('div', 'wealth-compact-inner');
+  const mkStat = (html: string, title: string, cls = '') => {
+    const s = el('span', `wealth-compact-stat ${cls}`.trim());
+    s.innerHTML = html;
+    s.title = title;
+    return s;
+  };
+
+  inner.appendChild(mkStat(
+    `<span class="wealth-compact-ic">W</span><b class="gold">${opts.atCap ? `${opts.poziom}↑` : opts.poziom}</b>`,
+    opts.atCap
+      ? `Poziom zamożności W${opts.poziom} — maksimum w epoce ${opts.epoch} (cap W${opts.cap})`
+      : `Poziom zamożności W${opts.poziom} (max W${opts.cap} w epoce ${opts.epoch})`,
+  ));
+  inner.appendChild(mkStat(
+    `${cityPanelChipIconWrap('res-treasury', 14)}<b class="blue">×${opts.mnoz.toFixed(2)}</b>`,
+    `Mnożnik Pieniądza do skarbca: ×${opts.mnoz.toFixed(2)} przy poziomie W${opts.poziom}`,
+  ));
+  inner.appendChild(mkStat(
+    `${cityPanelChipIconWrap('chip-happiness', 14)}<b class="happy">+${Math.round(opts.szBonus)}</b>`,
+    `Bonus Zadowolenia (Szczęście) z poziomu W${opts.poziom}: +${Math.round(opts.szBonus)}`,
+    'happy',
+  ));
+
+  const track = el('div', 'food-grow-track wealth-compact-bar');
+  const barLabel = opts.atCap ? 'MAX' : `${Math.round(opts.pula)}/${Math.round(opts.prog)}`;
+  track.title = opts.atCap
+    ? `Pula zamożności — osiągnięto max W${opts.poziom} w epoce ${opts.epoch}`
+    : `Pula zamożności: ${Math.round(opts.pula)} / ${Math.round(opts.prog)} Pieniądza do awansu na W${opts.poziom + 1}`;
+  track.innerHTML =
+    `<div class="food-grow-fill" style="width:${opts.pct}%"></div>` +
+    `<span class="fbtxt">${barLabel}</span>`;
+  inner.appendChild(track);
+
+  row.appendChild(inner);
+  mount.appendChild(row);
+}
+
 function shortIndLabel(text: string, max = 13): string {
   const t = text.trim();
   return t.length <= max ? t : `${t.slice(0, max - 1)}…`;
@@ -3553,38 +3611,9 @@ function appendPodzialHandlu(
   }
 
   const split = readPodzialHandlu(city, data);
-  const useOverride = readPodzialHandluOverride(city);
   const player = city.ownerId === 0;
-  const editable = player && !!cfg.onPodzialHandluChange && useOverride;
+  const editable = player && !!cfg.onPodzialHandluChange;
   const est = estimateHandelChips(view, split);
-
-  if (player && cfg.onPodzialHandluOverrideChange) {
-    const overrideRow = el('div', 'handel-override-row');
-    overrideRow.style.cssText = 'display:flex;align-items:center;gap:0.45em;margin:0.35em 0 0.5em;font-size:0.72em;';
-    const chk = document.createElement('input');
-    chk.type = 'checkbox';
-    chk.id = `handel-override-${city.id}`;
-    chk.checked = useOverride;
-    const lbl = document.createElement('label');
-    lbl.htmlFor = chk.id;
-    lbl.textContent = 'Własny podział (zamiast domyślnego imperium)';
-    lbl.style.cursor = 'pointer';
-    chk.addEventListener('change', () => {
-      cfg.onPodzialHandluOverrideChange?.(city.id, chk.checked);
-      rerender();
-    });
-    overrideRow.appendChild(chk);
-    overrideRow.appendChild(lbl);
-    mount.appendChild(overrideRow);
-    if (!useOverride) {
-      const hint = el('div', 'muted');
-      hint.style.cssText = 'font-size:0.68em;margin-bottom:0.35em;';
-      const def = readOwnerDefaultPodzialHandlu(city, data);
-      hint.textContent =
-        `Domyślne imperium: ${def.procentPieniadz}% Skarb · ${def.procentNauka}% Nauka · ${def.procentLuksus}% Zamożność`;
-      mount.appendChild(hint);
-    }
-  }
 
   const grid = el('div', 'handel-chip-grid');
   grid.innerHTML =
@@ -3698,45 +3727,24 @@ function renderWealth(mount: HTMLElement, city: City, data: GameData | null, vie
 
   const cap = wealthCap(epoch, wealthParams);
   const prog = wealthProg(ws.poziom, epoch, wealthParams);
-  const progRounded = Math.round(prog);
   const atCap = ws.poziom >= cap;
   const mnoz = wealthMnoznik(ws.poziom, wealthParams);
   const szBonus = wealthZadowolenie(ws.poziom, wealthParams);
   const pct = atCap ? 100 : (prog > 0
     ? Math.round(Math.min(100, Math.max(0, (ws.pula / prog) * 100)))
     : 0);
-  const zamIn = view ? estimateHandelChips(view, readPodzialHandlu(city, data)).zam : 0;
-  const etaW = !atCap && prog > ws.pula && zamIn > 0
-    ? Math.max(1, Math.ceil((prog - ws.pula) / zamIn))
-    : null;
 
-  appendTabIndicators(mount, [
-    {
-      icon: 'W',
-      label: 'Poziom',
-      value: atCap ? `W${ws.poziom} MAX` : `W${ws.poziom}`,
-      cls: 'gold',
-    },
-    { icon: '×', label: 'Skarb', value: mnoz.toFixed(2), cls: 'blue', title: 'Mnożnik pieniądza ze zamożności' },
-    { icon: cityPanelChipIcon('chip-happiness', 14), label: 'Sz', value: `+${Math.round(szBonus)}`, cls: 'happy', title: 'Bonus szczęścia z poziomu W' },
-    {
-      icon: cityPanelChipIcon('chip-map', 14),
-      label: 'Do W+1',
-      value: atCap ? 'MAX' : (etaW != null ? `~${etaW} ${tury(etaW)}` : '—'),
-      cls: atCap ? 'muted' : 'gold',
-      title: 'Szacunek przy obecnym udziale Zamożności z handlu',
-    },
-  ]);
-
-  const block = el('div', 'food-grow-block');
-  const track = el('div', 'food-grow-track');
-  const barLabel = atCap ? 'MAX' : `${Math.round(ws.pula)} / ${progRounded}`;
-  track.innerHTML =
-    `<div class="food-grow-fill" style="width:${pct}%"></div>` +
-    `<span class="food-grow-loaf" aria-hidden="true">${cityPanelChipIconWrap('res-treasury', 14)}</span>` +
-    `<span class="fbtxt">${barLabel}</span>`;
-  block.appendChild(track);
-  mount.appendChild(block);
+  appendWealthCompactStrip(mount, {
+    poziom: ws.poziom,
+    atCap,
+    cap,
+    epoch,
+    mnoz,
+    szBonus,
+    pula: ws.pula,
+    prog,
+    pct,
+  });
 }
 
 function buildWealthDetailCard(
@@ -3758,6 +3766,12 @@ function buildWealthDetailCard(
   const miastoMoney = view?.pieniadz ?? null;
   const spolEst = miastoMoney !== null ? Math.round(miastoMoney * pctSpol / 100) : null;
   const utrzymEst = miastoMoney !== null ? Math.round(rown * miastoMoney) : null;
+  const data = gameData();
+  const zamIn = view && data ? estimateHandelChips(view, readPodzialHandlu(city, data)).zam : 0;
+  const atCap = ws.poziom >= cap;
+  const etaW = !atCap && prog > ws.pula && zamIn > 0
+    ? Math.max(1, Math.ceil((prog - ws.pula) / zamIn))
+    : null;
 
   const card = el('div', 'detail-card wealth-detail-card');
   const head = el('div', 'dc-h');
@@ -3798,6 +3812,11 @@ function buildWealthDetailCard(
     : `→ W${ws.poziom + 1}: ${Math.round(ws.pula)} / ${Math.round(prog)} (${Math.round(prog > 0 ? (ws.pula / prog) * 100 : 0)}%)`);
   gridDetailRow(g1, 'Mnożnik skarbca', `×${mnoz.toFixed(2)}`);
   gridDetailRow(g1, 'Wpływ na szczęście', `${signed(szcz)} zadowolonych`);
+  gridDetailRow(g1, 'Szac. do W+1', atCap
+    ? 'Maks. poziom w tej epoce'
+    : (etaW != null
+      ? `~${etaW} ${tury(etaW)} przy obecnym udziale ${HANDEL_ZAMOZNOSC_LABEL} z handlu (~${zamIn}/turę)`
+      : '— (brak wpływu do puli lub brak danych tury)'));
 
   appendDetailSection(card, 'Wzory');
   appendDetailFormula(card, `×Skarb = max(1, 1 + (W−1) × ${p.mnoznikNaPoziom})`);
@@ -6305,6 +6324,7 @@ function recruitUnit(city: City, item: ProductionItem): void {
 function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean, opts?: { w4?: boolean }): void {
   const prod = getProd(city.id);
   const rq = prod.rekrutacja ?? [];
+  if (rq.length === 0) return;
   const data = gameData();
   const wrap = el('div');
   wrap.style.cssText = opts?.w4
@@ -6318,11 +6338,7 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
     qh.style.cssText = 'font-size:0.78em;font-weight:700;margin-bottom:0.22em;';
   }
   wrap.appendChild(qh);
-  if (rq.length === 0) {
-    const none = el('span', 'muted', '— brak —');
-    none.style.fontSize = '0.75em';
-    wrap.appendChild(none);
-  } else {
+  {
     const sc = createScrollList(opts?.w4 ? 'unit-w4-scroll' : 'recruit-scroll', { visible: RECRUIT_QUEUE_VISIBLE, rowEm: 4.2 });
     for (let i = 0; i < rq.length; i++) {
       const it = rq[i]!;
@@ -6401,17 +6417,14 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
 /** Kolejka budynków (pozycje 2+ w kolejce produkcji). */
 function appendBuildQueueSection(mount: HTMLElement, city: City, player: boolean): void {
   const prod = getProd(city.id);
+  if (prod.kolejka.length <= 1) return;
   const data = gameData();
   const qWrap = el('div');
   qWrap.style.cssText = 'margin-bottom:0.42em;padding-bottom:0.35em;border-bottom:1px solid var(--border);';
   const qh = el('div', 'gold', 'Kolejka budowy:');
   qh.style.cssText = 'font-size:0.78em;font-weight:700;margin-bottom:0.22em;';
   qWrap.appendChild(qh);
-  if (prod.kolejka.length <= 1) {
-    const none = el('span', 'muted', '— brak dalszych pozycji —');
-    none.style.fontSize = '0.75em';
-    qWrap.appendChild(none);
-  } else {
+  {
     const sc = createScrollList('build-queue-scroll', {
       visible: BUILD_QUEUE_VISIBLE,
       rowEm: 2.75,
@@ -6455,12 +6468,20 @@ function appendBuildQueueSection(mount: HTMLElement, city: City, player: boolean
 
 function renderProd(mount: HTMLElement, city: City, view: CityView | null): void {
   mount.innerHTML = '';
-  mount.appendChild(el('div', 'ptitle', '<span>Produkcja</span>'));
   const prod = getProd(city.id);
   const front = frontItem(prod);
   const praca = view ? view.praca : 0;
   const player = city.ownerId === 0; // AI cities -> read-only (no build/queue controls)
   const data = gameData();
+  const hasBuildQueue = prod.kolejka.length > 1;
+  const hasRecruitQueue = (prod.rekrutacja ?? []).length > 0;
+  const hasAutoToolbar = !!(player && cfg.getBudowaState?.(city.id));
+  if (!front && !hasBuildQueue && !hasRecruitQueue && !hasAutoToolbar) {
+    mount.style.display = 'none';
+    return;
+  }
+  mount.style.display = '';
+  mount.appendChild(el('div', 'ptitle', '<span>Produkcja</span>'));
 
   // B7: obie kolejki na górze sekcji Produkcja (wszystkie zakładki lewego raila)
   appendBuildQueueSection(mount, city, player);
@@ -6470,11 +6491,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     const bState = cfg.getBudowaState(city.id);
     if (bState) {
       const bToolbar = el('div', 'okolica-toolbar budowa-toolbar');
-      bToolbar.style.cssText = 'margin:0.12em 0 0.35em;';
-      const bLabel = el('span', 'muted');
-      bLabel.style.cssText = 'font-size:0.72em;margin-right:0.35em;white-space:nowrap;';
-      bLabel.textContent = 'Auto budowa:';
-      bToolbar.appendChild(bLabel);
+      bToolbar.style.cssText = 'margin:0.06em 0 0.18em;';
       const bProfiles = el('div', 'okolica-toolbar-profiles');
       appendBudowaToolbarProfiles(bProfiles, city, bState.focus, bState.tryb);
       bToolbar.appendChild(bProfiles);
@@ -6482,20 +6499,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     }
   }
 
-  if (!front) {
-    const empty = el('div', 'muted');
-    const bTryb = cfg.getBudowaState?.(city.id)?.tryb;
-    if (bTryb === 'auto') {
-      const bf = cfg.getBudowaState?.(city.id)?.focus ?? 'zrownowazone';
-      empty.innerHTML =
-        `Auto budowa (${BUDOWA_FOCUS_TITLE[bf]}) — następny budynek wybierze zarządca` +
-        ' (pusta kolejka, uzupełnienie na końcu tury).';
-    } else {
-      empty.innerHTML =
-        `Kolejka pusta — wybierz ${cityPanelChipIconWrap('cp-buildings', 14)} Buduj lub ${cityPanelChipIconWrap('cp-recruit', 14)} Rekrut.`;
-    }
-    mount.appendChild(empty);
-  } else {
+  if (front) {
     const paused = getProd(city.id).wstrzymana === true;
     const e = paused ? null : etaTurns(front.koszt, prod.postep, praca);
     const pct = front.koszt > 0 ? Math.round(Math.min(1, prod.postep / front.koszt) * 100) : 100;
@@ -8705,7 +8709,7 @@ function appendBudowaToolbarProfiles(
     const b = document.createElement('button');
     b.type = 'button';
     b.className = tryb !== 'reczny' && id === focus ? 'on' : '';
-    setOkolicaProfileButtonContent(b, BUDOWA_FOCUS_BRAND[id], BUDOWA_FOCUS_SHORT[id]);
+    setOkolicaProfileButtonIconOnly(b, BUDOWA_FOCUS_BRAND[id]);
     b.title = BUDOWA_FOCUS_TITLE[id];
     b.disabled = !cfg.onBudowaFocusChange;
     b.addEventListener('click', () => { cfg.onBudowaFocusChange?.(city.id, id); rerender(); });
@@ -8715,8 +8719,8 @@ function appendBudowaToolbarProfiles(
     const recBtn = document.createElement('button');
     recBtn.type = 'button';
     recBtn.className = 'reczny' + (tryb === 'reczny' ? ' on' : '');
-    setOkolicaProfileButtonContent(recBtn, 'chip-manpower', 'Ręczny');
-    recBtn.title = 'Ręczny wybór budynków w kolejce';
+    setOkolicaProfileButtonIconOnly(recBtn, 'chip-manpower');
+    recBtn.title = 'Ręczny — własny wybór budynków w kolejce';
     recBtn.addEventListener('click', () => { cfg.onBudowaEnterManual?.(city.id); rerender(); });
     wrap.appendChild(recBtn);
   }

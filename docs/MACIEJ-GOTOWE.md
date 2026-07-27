@@ -1,3 +1,13 @@
+## [00:35] ✅ Gotowe — FALA 45 UI (produkcja, dyplomacja, drzewko, HUD)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Wydarzenia** | „Produkcja" tylko gdy coś realnie można wybrać (surowce/skarbiec/rekruci) |
+| **Minimapa** | bez przycisków F/M (klawisze F i M nadal działają) |
+| **Drzewko tech** | Wróć ESC obok tytułu; bez dziwnej ikony i linii technicznej |
+| **Umowa handlowa** | Oferujemy \| Oferują jak w oczekujących propozycjach; podsumowanie Co turę naprawione |
+| **Deploy** | ROBOCZA `12ee2a1f` · VERIFY OK · `gra-robocza/START.html` |
+
 ## [00:05] ✅ Gotowe — FALA 44 bonus koszar/kuźnia przy wejściu do miasta
 
 | Co | Efekt w grze |

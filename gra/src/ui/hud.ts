@@ -362,6 +362,94 @@ function toggleFullscreen(): void {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Powiększenie UI (Maciej 2026-07-28) — jak Ctrl +/- w przeglądarce; obok ⛶.
+// Skaluje cały dokument (canvas + HUD + panele). Zapamiętuje wybór w localStorage.
+// ---------------------------------------------------------------------------
+
+const UI_ZOOM_STORAGE_KEY = 'civ-ui-zoom-v1';
+const UI_ZOOM_MIN = 0.85;
+const UI_ZOOM_MAX = 1.5;
+const UI_ZOOM_STEP = 0.05;
+
+let uiZoomLevel = 1;
+
+function loadUiZoom(): number {
+  try {
+    const raw = localStorage.getItem(UI_ZOOM_STORAGE_KEY);
+    if (raw === null) return 1;
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n)) return 1;
+    return Math.min(UI_ZOOM_MAX, Math.max(UI_ZOOM_MIN, Math.round(n * 100) / 100));
+  } catch {
+    return 1;
+  }
+}
+
+function persistUiZoom(): void {
+  try {
+    localStorage.setItem(UI_ZOOM_STORAGE_KEY, String(uiZoomLevel));
+  } catch {
+    /* prywatny tryb / blokada storage */
+  }
+}
+
+function applyUiZoom(): void {
+  const root = document.documentElement;
+  const body = document.body;
+  const z = uiZoomLevel;
+  if (z === 1) {
+    root.classList.remove('civ-ui-zoom-active');
+    root.style.removeProperty('--civ-ui-zoom');
+    root.style.zoom = '';
+    body.style.width = '';
+    body.style.height = '';
+    body.style.transform = '';
+    body.style.transformOrigin = '';
+    body.style.overflow = '';
+    window.dispatchEvent(new Event('resize'));
+    return;
+  }
+  // transform + odwrotna szerokość — skala wizualna bez „uciekania” menu poza viewport
+  // (zoom na <html> powiększa layout poza oknem; transform trzyma wszystko w kadrze).
+  root.classList.add('civ-ui-zoom-active');
+  root.style.setProperty('--civ-ui-zoom', String(z));
+  root.style.zoom = '';
+  body.style.width = `${100 / z}vw`;
+  body.style.height = `${100 / z}vh`;
+  body.style.transform = `scale(${z})`;
+  body.style.transformOrigin = 'top left';
+  body.style.overflow = 'hidden';
+  window.dispatchEvent(new Event('resize'));
+}
+
+function setUiZoom(next: number): void {
+  uiZoomLevel = Math.min(UI_ZOOM_MAX, Math.max(UI_ZOOM_MIN, Math.round(next * 100) / 100));
+  persistUiZoom();
+  applyUiZoom();
+  renderBar();
+}
+
+function stepUiZoom(delta: number): void {
+  setUiZoom(uiZoomLevel + delta);
+}
+
+function renderZoomControls(): string {
+  const pct = Math.round(uiZoomLevel * 100);
+  const atMin = uiZoomLevel <= UI_ZOOM_MIN + 1e-6;
+  const atMax = uiZoomLevel >= UI_ZOOM_MAX - 1e-6;
+  return '<div class="civ-hud-zoom" title="Powiększenie całej gry (85%–150%) — menu pozostaje w kadrze">'
+    + `<button type="button" class="b-zoom" data-act="zoom-out" aria-label="Pomniejsz"${atMin ? ' disabled' : ''}>−</button>`
+    + `<span class="civ-hud-zoom-pct" aria-live="polite">${pct}%</span>`
+    + `<button type="button" class="b-zoom" data-act="zoom-in" aria-label="Powiększ"${atMax ? ' disabled' : ''}>+</button>`
+    + '</div>';
+}
+
+function ensureUiZoomApplied(): void {
+  uiZoomLevel = loadUiZoom();
+  applyUiZoom();
+}
+
 const useD1BLayout = (): boolean => cfg?.onExecutePending !== undefined || cfg?.mapToolbar !== undefined;
 
 const MINI_W = 280;
@@ -371,15 +459,28 @@ const MINI_H = 170;
 // Style
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-hud-css-w2ring2';
+const STYLE_ID = 'civ-hud-css-w2ring3';
 function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-hud-css')?.remove();
   document.getElementById('civ-hud-css-w2')?.remove();
   document.getElementById('civ-hud-css-w2b')?.remove();
   document.getElementById('civ-hud-css-w2full')?.remove();
+  document.getElementById('civ-hud-css-w2ring2')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
+html.civ-ui-zoom-active{overflow:hidden;width:100%;height:100%;}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:10px;max-width:min(38vw,480px);}
+html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:10px;max-width:min(38vw,520px);}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-shell{padding:7px 10px;}
+html.civ-ui-zoom-active .civ-hud .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
+html.civ-ui-zoom-active .civ-hud .civ-hud-chip-lbl{display:none;}
+html.civ-ui-zoom-active .civ-hud .civ-hud-chip-sep{height:18px;margin:0 4px;}
+html.civ-ui-zoom-active .civ-hud .power-center{min-width:210px;padding:9px 14px 7px;}
+html.civ-ui-zoom-active .civ-hud .power-center .p-epoch{font-size:11px;margin-bottom:5px;}
+html.civ-ui-zoom-active .civ-hud .power-center .p-val-num{font-size:21px;}
+html.civ-ui-zoom-active .civ-hud .b-menu,
+html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-spacing:.12em;}
 .civ-hud{position:fixed;inset:0;z-index:310;pointer-events:none;
   ${CIV_BRAND_SCOPE_VARS}
   --orange:var(--tg-orange);--green:var(--tg-green);--blue:var(--civ-science);--muted:var(--civ-text-muted);}
@@ -421,6 +522,17 @@ function ensureStyles(): void {
   font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;cursor:pointer;font-family:var(--civ-font-ui);}
 .civ-hud .b-menu:hover{filter:brightness(1.06);border-color:rgba(232,216,138,.55);}
 .civ-hud .b-menu svg{width:16px;height:16px;}
+.civ-hud .civ-hud-zoom{display:inline-flex;align-items:stretch;flex-shrink:0;
+  border-radius:9px;border:1px solid rgba(232,216,138,.35);
+  background:linear-gradient(180deg,#161c28,#0a0d14);overflow:hidden;}
+.civ-hud .b-zoom{display:inline-flex;align-items:center;justify-content:center;width:34px;height:42px;
+  border:none;background:transparent;color:var(--civ-gold-primary);
+  font-size:18px;font-weight:700;line-height:1;cursor:pointer;font-family:var(--civ-font-ui);}
+.civ-hud .b-zoom:hover:not(:disabled){background:rgba(232,216,138,.1);}
+.civ-hud .b-zoom:disabled{opacity:.35;cursor:default;}
+.civ-hud .civ-hud-zoom-pct{min-width:40px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--civ-text-muted);letter-spacing:.02em;padding:0 2px;border-left:1px solid rgba(232,216,138,.2);
+  border-right:1px solid rgba(232,216,138,.2);}
 .civ-hud .b-wiki{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
   border-radius:9px;border:1px solid rgba(168,200,120,.38);cursor:pointer;font-family:var(--civ-font-ui);
   background:linear-gradient(180deg,#161c28,#0a0d14);color:var(--civ-wiki-accent,#a8c878);
@@ -479,6 +591,8 @@ function ensureStyles(): void {
   z-index:407;flex-direction:column;align-items:stretch;gap:5px;max-width:148px;}
 .civ-hud.is-city-view .hud-right-cluster .hud-right{flex-direction:column;align-items:stretch;gap:5px;}
 .civ-hud.is-city-view .hud-right-cluster .b-menu{height:36px;padding:0 10px;font-size:10px;letter-spacing:.12em;justify-content:center;}
+.civ-hud.is-city-view .civ-hud-zoom .b-zoom{height:36px;width:30px;font-size:16px;}
+.civ-hud.is-city-view .civ-hud-zoom-pct{min-width:34px;font-size:10px;}
 .civ-mini{position:fixed;left:20px;bottom:20px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
 .civ-mini-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#9aa6b6;font:11px monospace;text-align:center;}
 .civ-fs-hint{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;
@@ -844,6 +958,7 @@ function renderBarD1B(s: HudState): string {
     + rightChips.join('') + '</div></div>'
     + '<div class="hud-right">'
     + wikiBtn
+    + renderZoomControls()
     + fsBtn
     + menuBtn
     + '</div></div>';
@@ -878,6 +993,8 @@ function handleHudBarAction(act: string): void {
   else if (act === 'wiki') cfg.onOpenWiki?.();
   else if (act === 'menu') cfg.onOpenMenu?.();
   else if (act === 'fullscreen') toggleFullscreen();
+  else if (act === 'zoom-in') stepUiZoom(UI_ZOOM_STEP);
+  else if (act === 'zoom-out') stepUiZoom(-UI_ZOOM_STEP);
   else if (act === 'power') {
     hideEmpireOverlay();
     hidePowerOverlay();
@@ -1258,6 +1375,7 @@ export function showHud(config: HudConfig): void {
   destroyD1BModules();
   ensureStyles();
   ensureFullscreenListener();
+  ensureUiZoomApplied();
   if (barEl === null) {
     barEl = document.createElement('div');
     barEl.className = 'civ-hud';

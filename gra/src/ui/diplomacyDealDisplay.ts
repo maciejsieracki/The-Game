@@ -33,7 +33,7 @@ function goldIconHtml(size = 16): string {
   return svg ? `<span class="da-deal-res-ic">${svg}</span>` : '';
 }
 
-function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemFormatCtx): string {
+export function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemFormatCtx): string {
   const perTurn = ctx.perTurn === true;
   const turns = ctx.turns;
 
@@ -84,7 +84,7 @@ function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemFormatCtx): 
   }
 }
 
-function renderBasketListHtml(items: readonly BasketItem[] | undefined, ctx: BasketItemFormatCtx): string {
+export function renderBasketListHtml(items: readonly BasketItem[] | undefined, ctx: BasketItemFormatCtx): string {
   if (!items?.length) return '<span class="da-deal-empty">—</span>';
   return items.map(i => `<div class="da-deal-item">${renderBasketItemValueHtml(i, ctx)}</div>`).join('');
 }
@@ -117,6 +117,37 @@ export function renderNegotiationDealHtml(
   html += '</div>';
   if (split.schedule) {
     html += `<div class="da-deal-sched-foot">${esc(split.schedule)}</div>`;
+  }
+  return html;
+}
+
+/** Podgląd oferty w koszyku handlu — ten sam układ co w „Oczekujące propozycje". */
+export function renderTradeBasketDealPreviewHtml(
+  weOffer: readonly BasketItem[],
+  theyOffer: readonly BasketItem[],
+  opts: { resourceTradeMode?: 'once' | 'per_turn'; turns?: number } = {},
+): string {
+  const ctx: BasketItemFormatCtx = {
+    perTurn: opts.resourceTradeMode === 'per_turn',
+    turns: opts.turns,
+  };
+  let html = '<div class="da-deal-table">';
+  html += '<div class="da-deal-col da-deal-col-we">';
+  html += '<div class="da-deal-col-head">Oferujemy</div>';
+  html += `<div class="da-deal-col-body">${renderBasketListHtml(weOffer, ctx)}</div>`;
+  html += '</div>';
+  html += '<div class="da-deal-col da-deal-col-they">';
+  html += '<div class="da-deal-col-head">Oferują</div>';
+  html += `<div class="da-deal-col-body">${renderBasketListHtml(theyOffer, ctx)}</div>`;
+  html += '</div>';
+  html += '</div>';
+  const turns = opts.turns;
+  if (opts.resourceTradeMode === 'per_turn') {
+    if (turns != null && turns > 0) {
+      html += `<div class="da-deal-sched-foot">Wymiana co turę przez ${turns} tur</div>`;
+    } else {
+      html += '<div class="da-deal-sched-foot">Wymiana co turę</div>';
+    }
   }
   return html;
 }

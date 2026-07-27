@@ -305,12 +305,8 @@ function ensureStyles(): void {
 .civ-ttv-hd{position:relative;display:flex;align-items:center;gap:16px;padding:10px 22px;flex-shrink:0;
   border-bottom:1px solid rgba(232,216,138,.2);
   background:linear-gradient(90deg,rgba(232,216,138,.08),transparent 45%);}
-.civ-ttv-hd .emb{width:40px;height:40px;border-radius:50%;flex-shrink:0;
-  background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid #e8d88a;
-  display:flex;align-items:center;justify-content:center;color:#f4e6a8;}
-.civ-ttv-hd .emb svg{width:20px;height:20px;}
+.civ-ttv-hd-left{display:flex;align-items:center;gap:14px;flex-shrink:0;}
 .civ-ttv-hd h2{font-family:Georgia,serif;font-size:19px;font-weight:600;color:#e8d88a;line-height:1.1;white-space:nowrap;}
-.civ-ttv-hd .m{font-size:11px;color:#8a8070;margin-top:2px;white-space:nowrap;}
 .civ-ttv-hd .sp{flex:1;}
 .civ-ttv-lgd{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:#c8b898;}
 .civ-ttv-lgd .li{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
@@ -318,14 +314,12 @@ function ensureStyles(): void {
 .civ-ttv-close{background:none;border:1px solid rgba(232,216,138,.3);border-radius:8px;color:#c8b898;
   font-size:16px;width:34px;height:34px;line-height:1;cursor:pointer;flex-shrink:0;}
 .civ-ttv-close:hover{color:#e8d88a;border-color:#e8d88a;}
-/* Powrót na mapę — wyśrodkowany na samej górze (Maciej 2026-07-26: „przenieść na środek
-   i wyjustować na samej górze", „raczej to powinien być symbol wróć a nie wyjdź"). */
-.civ-ttv-back{position:absolute;left:50%;top:9px;transform:translateX(-50%);z-index:4;
-  display:inline-flex;align-items:center;gap:9px;padding:8px 18px 8px 14px;cursor:pointer;
+/* Powrót na mapę — lewy górny róg obok tytułu. */
+.civ-ttv-back{display:inline-flex;align-items:center;gap:9px;padding:7px 16px 7px 12px;cursor:pointer;flex-shrink:0;
   background:linear-gradient(180deg,rgba(232,216,138,.18),rgba(232,216,138,.05));
   border:1px solid rgba(232,216,138,.55);border-radius:999px;color:#f4e6a8;
-  font-family:Georgia,serif;font-size:14.5px;letter-spacing:.05em;
-  box-shadow:0 3px 12px rgba(0,0,0,.5);}
+  font-family:Georgia,serif;font-size:14px;letter-spacing:.05em;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);}
 .civ-ttv-back:hover{border-color:#f4e6a8;color:#fff3c4;
   background:linear-gradient(180deg,rgba(232,216,138,.3),rgba(232,216,138,.1));}
 .civ-ttv-back .ar{font-size:17px;line-height:1;}
@@ -481,7 +475,6 @@ function esc(s: string): string {
 const SVG_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="M4.5 12.5 10 18 19.5 7"></path></svg>';
 const SVG_CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M8 5l8 7-8 7"></path></svg>';
 const SVG_LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>';
-const SVG_EMB = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="5" cy="12" r="2.2"></circle><circle cx="12" cy="5" r="2.2"></circle><circle cx="12" cy="19" r="2.2"></circle><circle cx="19" cy="12" r="2.2"></circle><path d="M7 11 10 6M7 13l3 5M14 6l3 5M14 18l3-5"></path></svg>';
 const SVG_FIT = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"></path></svg>';
 
 function epochIconIdFor(epoka: string): string {
@@ -1007,18 +1000,18 @@ function buildDom(): void {
   const hd = document.createElement('div');
   hd.className = 'civ-ttv-hd';
   hd.innerHTML =
-    `<span class="emb">${SVG_EMB}</span>`
-    + '<div><h2>Badania — drzewo technologii</h2>'
-    + '<div class="m">Kamień → Brąz → Żelazo · oś: Poziom 1–9 · bramki AND · zależności opisowo (bez krawędzi)</div></div>'
+    '<div class="civ-ttv-hd-left">'
+    + '<button type="button" class="civ-ttv-back" aria-label="Wróć na mapę (Esc)" title="Wróć na mapę (Esc)">'
+    + '<span class="ar" aria-hidden="true">←</span><span>Wróć</span><span class="k">ESC</span></button>'
+    + '<h2>Badania — drzewo technologii</h2>'
+    + '</div>'
     + '<span class="sp"></span>'
     + '<div class="civ-ttv-lgd">'
     + '<span class="li"><span class="sw" style="background:rgba(232,216,138,.25);border:1.5px solid rgba(232,216,138,.6)"></span>odkryta</span>'
     + '<span class="li"><span class="sw" style="background:#161c28;border:1.5px solid #f4e6a8;box-shadow:0 0 6px rgba(232,216,138,.5)"></span>dostępna</span>'
     + '<span class="li"><span class="sw" style="background:#0c1626;border:1.5px solid #8fb6e0"></span>w trakcie</span>'
     + '<span class="li"><span class="sw" style="background:#20242e;border:1.5px solid rgba(200,138,122,.5);opacity:.6"></span>zablokowana</span>'
-    + '</div>'
-    + '<button type="button" class="civ-ttv-back" aria-label="Wróć na mapę (Esc)" title="Wróć na mapę (Esc)">'
-    + '<span class="ar" aria-hidden="true">←</span><span>Wróć</span><span class="k">ESC</span></button>';
+    + '</div>';
   overlayEl.appendChild(hd);
   hd.querySelector('.civ-ttv-back')?.addEventListener('click', () => hideTechTreeView());
 
