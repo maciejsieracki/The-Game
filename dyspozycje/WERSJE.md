@@ -12,7 +12,7 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 ## ROBOCZA `a616a6dd` — 2026-07-27 17:50 — FALA 39: karta jednostki + staty efektywne — **AKTUALNA**
-- md5 (pelne): `a616a6dda7d9ed165d328411e19f8e19` · stempel: `ROBOCZA · 2026-07-27 17:50` · commit: `(po commit)`
+- md5 (pelne): `a616a6dda7d9ed165d328411e19f8e19` · stempel: `ROBOCZA · 2026-07-27 17:50` · commit: `42da6f1`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html`
 - Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive/inject retry OK).
