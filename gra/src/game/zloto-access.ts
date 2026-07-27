@@ -1,30 +1,34 @@
 /**
- * zloto-access.ts — dostęp do złota (decyzja właściciela 2026-07-25).
+ * zloto-access.ts — Złoto w magazynie państwa (PYTANIE-84-R9, U-13, Maciej 2026-07-27).
  *
- * Maciej: „Mennica będzie potrzebować surowca w terenie — złoto (...) złoto potraktujemy
- * jako surowiec, do którego wystarczy tylko dostęp — nie trzeba budować wielu kopalni, nie
- * będzie składowane jako oddzielny surowiec. Po prostu jest dostęp, więc możemy bić monety."
+ * Kanon:
+ *  - Kopalnia złota → Złoto/turę do magazynu państwa (B4: 1/t na kopalnię).
+ *  - Mennica (stolica, Waluta + Targowisko): zużywa 1 Złoto/turę ze skarbca, gdy działa
+ *    mnożnik handlu→Pieniądz (U-13). UI: „Złoto (surowiec)" ≠ „Pieniądz (skarbiec)".
+ *  - Bramka budowy / runtime (R3=B): wystarczy zapas w puli imperium — kopalnia na mapie
+ *    nie jest wymagana, jeśli jest stock.
+ *  - Szlaki handlowe (U-3): dostarczają sztuki do magazynu państwa (trade-routes.ts),
+ *    NIE syntetyczny wpis „dostępu" w placedImprovements.
  *
- * Model — najbliższy wzorzec to brąz (braz-access.ts / empireHasKopalniaMiedzi): SKANUJEMY
- * WSZYSTKIE placedImprovements imperium (gdziekolwiek w cywilizacji, nie tylko zasięg jednego
- * miasta) i sprawdzamy, czy jest wśród nich ukończona Kopalnia złota. W przeciwieństwie do
- * brązu, złoto NIE wymaga dodatkowego budynku „hutniczego" w mieście (Piec hutniczy) — sama
- * Kopalnia gdziekolwiek w imperium wystarcza („wystarczy tylko dostęp"). Dlatego to prostszy
- * przypadek niż brąz i bliższy niż żelazo (zelazo-access.ts): 'kopalnia_zlota' to DEDYKOWANE
- * ulepszenie (jak 'kopalnia_miedzi' — depositAllowsPlayerImprovement dopuszcza je WYŁĄCZNIE
- * na hex.zloze==='zloto', map/improvement-build.ts), więc sama obecność klucza ulepszenia w
- * placedImprovements wystarcza — bez potrzeby odczytu złoża pod spodem (inaczej niż przy
- * generycznej 'kopalnia', która obsługuje i żelazo, i węgiel, i zwykłą rudę).
- *
- * Złoto NIE jest magazynowane — brak jakiegokolwiek pola w City.surowce / ownerResourceStockAll
- * / kosztach budowy. Jedyny efekt dostępu: etykieta „Złoto" w aktywnych surowcach imperium
- * (game/resource-access.ts collectActiveAccess, analogicznie do hasBrazAccess) → bramka
- * budynku Mennica (DEPOSIT_LINKED_BUILDING_LABELS w building-resource-gate.ts).
+ * Zastępuje model ACCESS_ONLY (2026-07-25): złoto jest magazynowane w City.surowce.zloto
+ * (suma civ-wide — building-stock-cost.ts ownerResourceStockAll).
  */
 import { normalizeImprovementKey } from './terrain-improvements';
 
 /** Id dedykowanego ulepszenia „Kopalnia złota" (terrain-improvements.json). */
 export const KOPALNIA_ZLOTA_KEY = 'kopalnia_zlota';
+
+/** Klucz ASCII w City.surowce / puli państwa. */
+export const ZLOTO_STOCK_KEY = 'zloto';
+
+/** Etykieta PL (bramki budynków, panel surowców). */
+export const ZLOTO_LABEL = 'Złoto';
+
+/** Produkcja z jednej Kopalni złota → magazyn państwa (PYTANIE-84-B4). */
+export const KOPALNIA_ZLOTA_YIELD_PER_TURN = 1;
+
+/** Zużycie Mennicy przy aktywnym mnożniku Waluta+Mennica (PYTANIE-84-U-13). */
+export const MENNICA_ZLOTO_DRAIN_PER_TURN = 1;
 
 function improvementKeysOnPlaced(imp: string | readonly string[]): string[] {
   if (typeof imp === 'string') {
@@ -37,87 +41,105 @@ function improvementKeysOnPlaced(imp: string | readonly string[]): string[] {
 }
 
 /**
- * Czy imperium ma ukończoną Kopalnię złota GDZIEKOLWIEK na mapie (jak empireHasKopalniaMiedzi
- * dla brązu — braz-access.ts) — NIE filtrujemy po zasięgu jednego miasta. Wołający (main.ts /
- * resource-access.ts) przekazuje już przefiltrowaną per-owner mapę (placedImprovementsForOwner),
- * więc ta funkcja jest ownerId-agnostyczna z założenia (parytet AI).
+ * Liczba ukończonych Kopalni złota w imperium (źródło produkcji mapowej 1/t każda).
+ * Wołający przekazuje mapę placedImprovements przefiltrowaną per owner.
+ */
+export function countKopalnieZlota(
+  placedImprovements?: ReadonlyMap<string, string | readonly string[]> | null,
+): number {
+  if (!placedImprovements?.size) return 0;
+  let n = 0;
+  for (const imp of placedImprovements.values()) {
+    for (const key of improvementKeysOnPlaced(imp)) {
+      if (key === KOPALNIA_ZLOTA_KEY) n++;
+    }
+  }
+  return n;
+}
+
+/**
+ * Czy imperium ma co najmniej jedną Kopalnię złota na mapie.
+ * Zachowane dla kompatybilności API (resource-access, main.ts) — oznacza aktywne
+ * ŹRÓDŁO produkcji, nie sam zapas w skarbcu.
  */
 export function empireHasKopalniaZlota(
   placedImprovements?: ReadonlyMap<string, string | readonly string[]> | null,
 ): boolean {
-  if (!placedImprovements?.size) return false;
-  for (const imp of placedImprovements.values()) {
-    for (const key of improvementKeysOnPlaced(imp)) {
-      if (key === KOPALNIA_ZLOTA_KEY) return true;
-    }
-  }
-  return false;
+  return countKopalnieZlota(placedImprovements) > 0;
+}
+
+/** Zapas Złota w magazynie państwa (suma City.surowce.zloto po imperium). */
+export function empireZlotoStock(
+  empireStock?: Readonly<Record<string, number>> | null,
+): number {
+  if (!empireStock) return 0;
+  const v = empireStock[ZLOTO_STOCK_KEY];
+  return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0;
+}
+
+/** Czy w puli państwa jest jakiekolwiek Złoto (R3=B — bramka budowy Mennicy). */
+export function ownerHasZlotoStock(
+  empireStock?: Readonly<Record<string, number>> | null,
+): boolean {
+  return empireZlotoStock(empireStock) > 0;
+}
+
+/**
+ * Czy Mennica może zużyć Złoto w tej turze (mnożnik handlu→Pieniądz).
+ * `graceActive` = łaska 1 tury po wyczerpaniu zapasu (mennica-zloto-grace.ts).
+ */
+export function ownerCanFeedMennica(
+  empireStock?: Readonly<Record<string, number>> | null,
+  graceActive = false,
+): boolean {
+  if (graceActive) return true;
+  return empireZlotoStock(empireStock) >= MENNICA_ZLOTO_DRAIN_PER_TURN;
+}
+
+/**
+ * Zastępuje stary resolver „dostępu do złota" (resolveOwnerZlotoAccess w main.ts /
+ * turn-economy.ts): true gdy wystarczy zapasu LUB trwa łaska po utracie stocku.
+ */
+export function resolveOwnerZlotoFromStock(
+  ownerId: number,
+  empireStock: Readonly<Record<string, number>> | undefined,
+  graceResolver?: (ownerId: number) => boolean,
+): boolean {
+  const grace = graceResolver?.(ownerId) === true;
+  return ownerCanFeedMennica(empireStock, grace);
+}
+
+/**
+ * Pobiera MENNICA_ZLOTO_DRAIN_PER_TURN ze skarbca państwa po turze z aktywnym
+ * mnożnikiem. Gdy brak wystarczającego zapasu — zwraca niezmieniony obiekt.
+ */
+export function deductMennicaZlotoDrain(
+  empireStock: Readonly<Record<string, number>>,
+): Record<string, number> {
+  const current = empireStock[ZLOTO_STOCK_KEY] ?? 0;
+  if (current < MENNICA_ZLOTO_DRAIN_PER_TURN) return { ...empireStock };
+  return {
+    ...empireStock,
+    [ZLOTO_STOCK_KEY]: current - MENNICA_ZLOTO_DRAIN_PER_TURN,
+  };
 }
 
 // ---------------------------------------------------------------------------
-// PYTANIE 77 = A (Maciej 2026-07-25): złoto wchodzi na szlaki handlowe jako
-// surowiec DOSTĘPOWY, dokładnie jak koń — szlak handlowy z cywilizacją posiadającą
-// złoto odblokowuje budowę Mennicy, BEZ przepływu sztuk do magazynu (złoto nadal
-// nigdzie nie jest magazynowane, patrz nagłówek pliku). 'zloto' dołączony do
-// TRADE_ROUTE_RESOURCE_KEYS (trade-routes.ts) — CELOWO NIE do
-// TRADE_ROUTE_STOCK_FLOW_KEYS (żadnego przepływu ilościowego).
-//
-// WIRING W main.ts — DOPIĘTY (2026-07-25 wieczór, domknięcie po odblokowaniu pliku):
-//   1. `ownerHasNativeResourceAccess` — gałąź `if (key === 'zloto') return
-//      empireHasKopalniaZlota(ownImprovements);` dopisana.
-//   2. Wszystkie 8 miejsc, które wołały `placedImprovementsWithBrazTradeGrant`, teraz
-//      wołają `placedImprovementsWithTradeGrants(ownerId, ownImprovements)` — nowa
-//      funkcja pomocnicza w main.ts, która składa OBA granty (brąz + złoto) w jednym
-//      miejscu (doklejа `placedImprovementsWithZlotoTradeGrant` na wyniku
-//      `placedImprovementsWithBrazTradeGrant`), zamiast dublować wywołanie w każdym
-//      z 8 miejsc. `recomputeTradeRouteResourceGrants` nie wymagał zmiany — jest
-//      generyczny po `TRADE_ROUTE_RESOURCE_KEYS`, które już zawiera 'zloto'.
+// Legacy API (main.ts — do migracji na stock + trade flow w osobnym batchu)
 // ---------------------------------------------------------------------------
 
 /**
- * Klucz syntetycznego wpisu do `placedImprovements` — analogiczny do
- * `TRADE_GRANT_BRAZ_SYNTHETIC_KEY` w main.ts (`placedImprovementsWithBrazTradeGrant`).
- * BEZPIECZNY dokładnie z tego samego powodu: `empireHasKopalniaZlota` (wyżej) skanuje
- * WYŁĄCZNIE wartości mapy, nigdy klucza/heksa pod spodem — więc syntetyczny wpis pod
- * nieistniejącym na mapie kluczem poprawnie symuluje "imperium ma dostęp do złota"
- * bez fałszowania żadnego realnego heksa (inne odczyty tej samej mapy filtrują
- * `if (!map.hexes[hexKey]) continue`, patrz resource-access.ts collectActiveAccess —
- * syntetyczny klucz jest tam po prostu pomijany przy skanie hexesInCitySight).
+ * @deprecated PYTANIE-84-U3: szlaki dostarczają stock, nie syntetyczny dostęp.
+ * Zachowane dla kompatybilności sygnatury main.ts — zwraca wejście bez zmian.
  */
 export const TRADE_GRANT_ZLOTO_SYNTHETIC_KEY = '__trasa_zloto__';
 
 /**
- * Kopiuje `placedImprovements` i (gdy `hasTradeGrant` jest true) dokleja syntetyczny
- * wpis 'kopalnia_zlota' pod `TRADE_GRANT_ZLOTO_SYNTHETIC_KEY` — dzięki temu KAŻDY
- * wołający `empireHasKopalniaZlota` na wyniku tej funkcji widzi dostęp "z trasy"
- * dokładnie tak, jakby imperium miało własną Kopalnię złota, bez żadnej zmiany w
- * `empireHasKopalniaZlota` samym (istniejąca sygnatura zachowana co do joty — zero
- * ryzyka regresji dla wołających, którzy jeszcze nie wiedzą o trasach).
- *
- * `hasTradeGrant` liczy WOŁAJĄCY (main.ts — zna `tradeRouteResourceGrants`, ten
- * moduł celowo nie zna stanu tras, tylko placedImprovements — pure logic, jak reszta
- * pliku). Gdy `hasTradeGrant` jest false, zwraca DOKŁADNIE `placedImprovements` bez
- * kopiowania (brak zbędnej alokacji w gorącej ścieżce per-city/per-turę).
- *
- * Funkcja jest PURE i ownerId-agnostyczna (parytet AI, zasada #5 zadania) — wołający
- * decyduje o `hasTradeGrant` PRZED wywołaniem, tu nie ma żadnej gałęzi po ownerId.
- *
- * ZERWANIE SZLAKU (decyzja robocza integratora, DO POTWIERDZENIA przez Macieja —
- * patrz raport zadania): `hasTradeGrant` to migawka BIEŻĄCEGO stanu trasy — gdy
- * szlak zniknie, kolejne wywołanie zwróci mapę BEZ syntetycznego wpisu, więc dostęp
- * do budowy NOWEJ Mennicy znika. Mennica JUŻ ZBUDOWANA nie jest tym dotknięta: bramka
- * (buildingResourceGateMet / production.ts) sprawdza WYŁĄCZNIE listę BUDOWALNYCH
- * pozycji (continue gdy bramka nie spełniona) — nigdy nie usuwa budynku z
- * `builtBuildingIds` już postawionego w mieście (ten sam wzorzec co przy "starym
- * zapisie" bez złota, patrz tools/zloto-test.cjs sekcja H: "bramka dotyczy WYŁĄCZNIE
- * nowego budowania, nie unieważnia istniejącego").
+ * @deprecated Patrz TRADE_GRANT_ZLOTO_SYNTHETIC_KEY — no-op do czasu migracji main.ts.
  */
 export function placedImprovementsWithZlotoTradeGrant(
   placedImprovements: ReadonlyMap<string, string | readonly string[]>,
-  hasTradeGrant: boolean,
+  _hasTradeGrant: boolean,
 ): ReadonlyMap<string, string | readonly string[]> {
-  if (!hasTradeGrant) return placedImprovements;
-  const augmented = new Map(placedImprovements);
-  augmented.set(TRADE_GRANT_ZLOTO_SYNTHETIC_KEY, [KOPALNIA_ZLOTA_KEY]);
-  return augmented;
+  return placedImprovements;
 }

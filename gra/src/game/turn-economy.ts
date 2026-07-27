@@ -10,13 +10,14 @@
  * Why an adapter:
  *   The runtime City (game/cities.ts) is sparse: { id, ownerId, q, r, name,
  *   population, magazynZywnosci? }.  economy.ts works on a richer EconomyCity.
- *   We map runtime -> EconomyCity each turn, run cityYieldPerTurn() and
- *   populationGrowth(), then write the results back onto the runtime City.
+ *   We map runtime -> EconomyCity each turn, run cityYieldPerTurn(), then
+ *   compute local food balance (PYTANIE-85). Population growth runs centrally
+ *   after advanceEmpireFood via applyCentralFoodPopulationGrowth (empire-food.ts).
  *
  * Scope (task 13B):
  *   - Real terrain-driven yields from the city centre + its 6 neighbour hexes.
- *   - Population growth / starvation driven by net food, with a persisted food
- *     store (magazynZywnosci) so surplus accumulates across turns.
+ *   - Population growth / starvation: PYTANIE-85 central path (empire-food +
+ *     population-growth-v85). magazynZywnosci kept for save compat only.
  *   - Aggregate per-owner yields (food / production / money / science / culture)
  *     are returned for HUD display.  There is no Player/treasury/science runtime
  *     state yet, so those streams are reported, not banked -- that is a later task.
@@ -49,7 +50,6 @@ import type { City, CityPodzialHandlu } from './cities';
 import { resolveCityPodzialHandlu } from './empire-handel-split';
 import {
   cityYieldPerTurn,
-  populationGrowth,
   civBonusyForCivKey,
   civEconomyYieldMultipliers,
   mnoznikHandelPieniadzForCivByDifficulty,
@@ -77,11 +77,13 @@ import {
   loadUpkeepParams,
   buildUnitUpkeepTable,
   upkeepBalance,
+  unitFoodPerTurn,
   loadOwnerStorageParams,
   ownerResourceCapacityPerType,
   reconcileOwnerResourceCaps,
   type UpkeepParams,
   type UnitFoodLike,
+  type UnitFoodTable,
   type UnitUpkeepLike,
   type UpkeepBalance,
   type StorageParams,
@@ -92,17 +94,37 @@ import {
   runConverters,
   loadThroughput,
   DEFAULT_CONVERTER_RECIPES,
+  converterBuildingIdForRecipe,
+  computeGarncarniaSurplusBonus,
   type RawConverterParamsJson,
 } from './converters';
+import {
+  ownerResourceStockAll,
+  ownerResourceStock,
+  creditOwnerResourceStock,
+  assignOwnerResourceStockFromPool,
+} from './building-stock-cost';
 import {
   splitPraca,
   cityPracaInteger,
   buildingLevelForEpoch,
 } from './production';
 import {
+  builtIdsForSpichlerzYields,
   filterRuntimeActiveBuiltIds,
+  paySpichlerzDrainForCity,
+  resolveSpichlerzCityBonusState,
+  spichlerzArmyFoodCostMultiplier,
+  spichlerzHealthBonus,
+  SPICHLERZ_DRAIN_CERAMIKA_PER_TURN,
   type BuildingRuntimeGateOptions,
+  type SpichlerzCityBonusState,
 } from './building-resource-gate';
+import {
+  deductMennicaZlotoDrain,
+  empireZlotoStock,
+  MENNICA_ZLOTO_DRAIN_PER_TURN,
+} from './zloto-access';
 import {
   advanceWealth,
   loadWealthParams,
@@ -127,7 +149,13 @@ import {
   type ReligionState,
 } from './culture-religion';
 import type { OrderYieldMults } from './order';
-import { getCityFoodSplit } from './empire-food';
+import {
+  buildRationParams,
+  computeCityRationCost,
+  computeGrowthPercentV85,
+  getCityRationLevel,
+  type RationParams,
+} from './population-growth-v85';
 import { pickOsiedlePopBonus, osiedlePopLabel } from './society-breakdown';
 import { hexDistance } from '../units/setup';
 import { type WonderYieldBonus } from './wonders-data';
@@ -336,6 +364,7 @@ interface HealthParams {
   akwedukt:         number;  // bonus: wybudowany Akwedukt
   studnia:          number;  // bonus: Studnia
   targowisko:       number;  // bonus: Targowisko
+  lazniaPubliczna:  number;  // bonus: Łaźnia publiczna (PYTANIE-85-Q9)
   ceramika:         number;  // bonus: Ceramika
   /** D-START-OSIEDLE: bonus zdrowia malejący pop 1→4. */
   osiedlePopBonus:  (pop: number) => number;
@@ -404,6 +433,7 @@ function loadHealthParams(
     akwedukt:         rd('zdrowie_akwedukt', 4),
     studnia:          rd('zdrowie_studnia', 2),
     targowisko:       rd('zdrowie_targowisko', 2),
+    lazniaPubliczna:  rd('zdrowie_laznia_publiczna', 5),
     ceramika:         rd('zdrowie_ceramika', 1),
     osiedlePopBonus: (pop: number) => {
       const legacy = pop <= progZagoszczenia ? legacyMaleMiasto : 0;
@@ -465,6 +495,9 @@ function computeCityHealth(
   hp: HealthParams,
   hasWaterAccess?: boolean,
   mapCtx?: CityHealthMapContext,
+  spichlerzZdrowieBonus = 0,
+  /** U-14bA: nadwyżka Ceramiki w imperium po drain Spichlerza (tylko miasto z Garncarnią). */
+  garncarniaSurplusZdrowie = 0,
 ): number {
   let z = 0;
 
@@ -479,14 +512,14 @@ function computeCityHealth(
   const maStudnie    = builtIds.includes('studnia');
   const maTargowisko = builtIds.includes('targowisko');
   const maAkwedukt   = builtIds.includes('akwedukt');
-  const maCeramike   = builtIds.includes('garncarnia');
+  const maLaznia     = builtIds.includes('laznia_publiczna');
 
   // Bonusy
   if (maRzeke)      z += hp.rzeka;
   if (maAkwedukt)   z += hp.akwedukt;
   if (maStudnie)    z += hp.studnia;
   if (maTargowisko) z += hp.targowisko;
-  if (maCeramike)   z += hp.ceramika;
+  if (maLaznia)     z += hp.lazniaPubliczna;
 
   // Bonus osiedla (pop 1–4, malejący — D-START-OSIEDLE)
   const osiedleV = hp.osiedlePopBonus(ludnosc);
@@ -506,6 +539,9 @@ function computeCityHealth(
     if (vicinity.hasLas) z += hp.bonusLas;
     if (vicinity.hasBagno) z += hp.karaBagno;
   }
+
+  if (spichlerzZdrowieBonus) z += spichlerzZdrowieBonus;
+  if (garncarniaSurplusZdrowie) z += garncarniaSurplusZdrowie;
 
   return Math.round(z);  // zwracamy integer (pkt zdrowia)
 }
@@ -545,13 +581,12 @@ export function computeCityHealthBreakdown(
   const maStudnie    = builtIds.includes('studnia');
   const maTargowisko = builtIds.includes('targowisko');
   const maAkwedukt   = builtIds.includes('akwedukt');
-  const maCeramike   = builtIds.includes('garncarnia');
-
+  const maLaznia     = builtIds.includes('laznia_publiczna');
   if (maRzeke)      lines.push({ label: 'Rzeka', value: hp.rzeka });
   if (maAkwedukt)   lines.push({ label: 'Akwedukt', value: hp.akwedukt });
   if (maStudnie)    lines.push({ label: 'Studnia', value: hp.studnia });
   if (maTargowisko) lines.push({ label: 'Targowisko', value: hp.targowisko });
-  if (maCeramike)   lines.push({ label: 'Ceramika', value: hp.ceramika });
+  if (maLaznia)     lines.push({ label: 'Łaźnia publiczna', value: hp.lazniaPubliczna });
 
   const osiedleV = hp.osiedlePopBonus(ludnosc);
   if (osiedleV) {
@@ -760,6 +795,48 @@ export function computeTerritoryResourceYieldByCity(
 }
 
 // ---------------------------------------------------------------------------
+// PYTANIE-84 R5+D2: Stolarnia — +10%/szt. na wpływie drewna z mapy (addytywnie).
+// Źródła: Tartak (terrYield) + Las na obrabianym polu (workedDrewno).
+// ---------------------------------------------------------------------------
+
+/** Mnożnik wpływu drewna z mapy: 1 + bonus×liczbaStolarni (addytywnie). */
+export function stolarniaDrewnoMapInflowMult(
+  stolarniaCount: number,
+  bonusPerBuilding: number,
+): number {
+  const n = Math.max(0, Math.floor(stolarniaCount));
+  return 1 + bonusPerBuilding * n;
+}
+
+/** floor(baza × mnożnik Stolarnii) — wpływ do magazynu państwa z mapy. */
+export function applyStolarniaDrewnoMapInflow(
+  baseDrewno: number,
+  stolarniaCount: number,
+  bonusPerBuilding: number,
+): number {
+  if (!Number.isFinite(baseDrewno) || baseDrewno <= 0) return 0;
+  return Math.floor(baseDrewno * stolarniaDrewnoMapInflowMult(stolarniaCount, bonusPerBuilding));
+}
+
+/** Drewno z obrabianych pól (nakładka Las) — wpływ do magazynu państwa. */
+export function computeWorkedDrewnoByCity(
+  cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'ownerId' | 'population'>>,
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[],
+): ReadonlyMap<string, number> {
+  const out = new Map<string, number>();
+  for (const city of cities) {
+    const worked = cityWorkedTilesForEconomy(city as City, map, territoryNodes);
+    let sum = 0;
+    for (const tile of worked) {
+      sum += tileYield(tile).drewno;
+    }
+    if (sum > 0) out.set(city.id, sum);
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe.
 // Wariant B: −1 Praca/turę PER OWNER (nie per-city -- płynie z globalnej puli
 // produkcji cywilizacji, patrz playerPracaPool/aiPracaPoolByOwner w main.ts) za
@@ -952,8 +1029,24 @@ export interface CityEconomyTick {
   maSpichlerz:    boolean;
   /** B-SPIC: tier II — cap 150, bufor 70%. */
   maSpichlerzII?: boolean;
-  /** B5: % netto żywności tego miasta na wzrost ludności (reszta → zapasy armii). */
-  procentRozwoj:  number;
+  /** PYTANIE-84 U-5: tor Ceramiki aktywny w tym mieście (drain B6/B8). */
+  spichlerzCeramika?: boolean;
+  /** PYTANIE-84 U-5: tor Soli aktywny w tym mieście (drain B7). */
+  spichlerzSol?: boolean;
+  /** @deprecated PYTANIE-85 — suwak zastąpiony racjami. */
+  procentRozwoj?: number;
+  /** PYTANIE-85: produkcja brutto (teren + budynki). */
+  zywnoscBrutto?: number;
+  /** PYTANIE-85: koszt racji (pop × żywność/rację). */
+  kosztRacji?: number;
+  /** PYTANIE-85: bilans lokalny = brutto − racje. */
+  bilansLokalny?: number;
+  /** PYTANIE-85: poziom racji 1|2|3. */
+  poziomRacji?: number;
+  /** PYTANIE-85: łączny WZROST% (szacunek bez Szczęścia jeśli brak). */
+  wzrostProcent?: number;
+  /** PYTANIE-85: ułamkowy bufor wzrostu po turze. */
+  wzrostUlamkowyPo?: number;
 }
 
 /** Aggregate of one full economy tick across all processed cities. */
@@ -1128,12 +1221,132 @@ export type OwnerActiveLabelsResolver = (ownerId: number) => readonly string[];
 /** PYTANIE-84: suma City.surowce po imperium (magazyn państwa per typ). */
 export type OwnerEmpireStockResolver = (ownerId: number) => Readonly<Record<string, number>>;
 
+/** PYTANIE-84 U-10: ostatni tick — bonus wojska z Soli (≥1 Spichlerz II płaci). */
+let _spichlerzSolArmyByOwner = new Map<number, boolean>();
+/** Miasta z aktywną Solią w tym ticku (garnizon ½ żywności U-10B). */
+let _spichlerzSolCityIdsByOwner = new Map<number, ReadonlySet<string>>();
+
+export function spichlerzSolArmyBonusActive(ownerId: number): boolean {
+  return _spichlerzSolArmyByOwner.get(ownerId) ?? false;
+}
+
+export function spichlerzSolPayingCityIds(ownerId: number): ReadonlySet<string> {
+  return _spichlerzSolCityIdsByOwner.get(ownerId) ?? new Set<string>();
+}
+
+/**
+ * Koszt żywności armii z mnożnikami Spichlerza II / Sól (U-10B).
+ * Wołający musi przekazać inGarnizon + garrisonCityId na jednostkach garnizonu.
+ */
+export function militaryFoodConsumptionWithSpichlerz(
+  units: ReadonlyArray<EconUnit & { inGarnizon?: boolean; garrisonCityId?: string }>,
+  ownerId: number,
+  upkeep: UpkeepParams,
+  foodTable: UnitFoodTable = {},
+  opts?: {
+    solArmyOverride?: boolean;
+    solCityIdsOverride?: ReadonlySet<string>;
+  },
+): number {
+  const solArmy = opts?.solArmyOverride ?? spichlerzSolArmyBonusActive(ownerId);
+  const solCities = opts?.solCityIdsOverride ?? spichlerzSolPayingCityIds(ownerId);
+  let sum = 0;
+  for (const u of units) {
+    if (u.ownerId !== ownerId) continue;
+    const base = unitFoodPerTurn(u, upkeep, foodTable);
+    const mult = spichlerzArmyFoodCostMultiplier({
+      solArmyBonusActive: solArmy,
+      onOwnTerritory: u.onOwnTerritory ?? true,
+      isGarrisonInSolCity: !!(u.inGarnizon && u.garrisonCityId && solCities.has(u.garrisonCityId)),
+    });
+    sum += base * mult;
+  }
+  return sum;
+}
+
+function resolveSpichlerzForCity(
+  cities: ReadonlyArray<City>,
+  ownerId: number,
+  builtIds: readonly string[],
+  dryRun: boolean,
+): SpichlerzCityBonusState {
+  const drain = paySpichlerzDrainForCity(cities, ownerId, builtIds, dryRun);
+  return resolveSpichlerzCityBonusState(builtIds, drain);
+}
+
+/** Symulacja puli Ceramiki po drainach Spichlerzy w imperium (dry-run, bez mutacji). */
+function simulateCeramikaAfterSpichlerzDrains(
+  cities: ReadonlyArray<City>,
+  ownerId: number,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+): number {
+  let ceramika = ownerResourceStock(cities, ownerId, 'ceramika');
+  for (const city of cities) {
+    if (city.ownerId !== ownerId) continue;
+    const builtIds = builtByCity.get(city.id) ?? [];
+    const hasSpichlerz = builtIds.includes('spichlerz') || builtIds.includes('spichlerz_ii');
+    if (hasSpichlerz && ceramika >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN) {
+      ceramika -= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
+    }
+  }
+  return ceramika;
+}
+
+/** U-14bA: +Zdrowie z nadwyżki Ceramiki po drain Spichlerza (per owner, miasto z Garncarnią). */
+function computeGarncarniaSurplusZdrowieByOwner(
+  cities: ReadonlyArray<City>,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+  hp: HealthParams,
+  /** true po tickEmpireResourcePipeline (drain już w puli); false w podglądzie HUD. */
+  stockAlreadyDrained = false,
+): Map<number, number> {
+  const out = new Map<number, number>();
+  const ownerIds = new Set(cities.map(c => c.ownerId));
+  for (const ownerId of ownerIds) {
+    let maGarncarnie = false;
+    for (const city of cities) {
+      if (city.ownerId !== ownerId) continue;
+      if ((builtByCity.get(city.id) ?? []).includes('garncarnia')) {
+        maGarncarnie = true;
+        break;
+      }
+    }
+    const ceramikaAfter = stockAlreadyDrained
+      ? ownerResourceStock(cities, ownerId, 'ceramika')
+      : simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity);
+    const { zdrowieBonus } = computeGarncarniaSurplusBonus({
+      ceramikaPoDrainSpichlerza: ceramikaAfter,
+      maGarncarnie,
+      zdrowieNaSztuke: hp.ceramika,
+    });
+    out.set(ownerId, zdrowieBonus);
+  }
+  return out;
+}
+
+/** PYTANIE-85: bilans żywności miasta (brutto − racje). */
+function computeCityFoodBalanceV85(
+  zywnoscBrutto: number,
+  population: number,
+  city: Pick<City, 'poziomRacji' | 'procentRozwoj'>,
+  rationParams: RationParams,
+): { kosztRacji: number; bilansLokalny: number; poziomRacji: number } {
+  const poziomRacji = getCityRationLevel(city);
+  const kosztRacji = computeCityRationCost(population, poziomRacji as 1 | 2 | 3, rationParams);
+  return {
+    kosztRacji,
+    bilansLokalny: zywnoscBrutto - kosztRacji,
+    poziomRacji,
+  };
+}
+
 function runtimeActiveBuiltIdsForCity(
   builtIds: readonly string[],
   ownerId: number,
   resolveOwnerActiveLabels: OwnerActiveLabelsResolver | undefined,
   resolveOwnerEmpireStock: OwnerEmpireStockResolver | undefined,
   resolveOwnerZlotoAccess: OwnerZlotoAccessResolver | undefined,
+  empireStockOverride?: Readonly<Record<string, number>>,
 ): readonly string[] {
   if (!resolveOwnerActiveLabels) return builtIds;
   const gateOptions: BuildingRuntimeGateOptions = {
@@ -1143,9 +1356,141 @@ function runtimeActiveBuiltIdsForCity(
   return filterRuntimeActiveBuiltIds(
     builtIds,
     resolveOwnerActiveLabels(ownerId),
-    resolveOwnerEmpireStock?.(ownerId),
+    empireStockOverride ?? resolveOwnerEmpireStock?.(ownerId),
     gateOptions,
   );
+}
+
+/**
+ * PYTANIE-84 R1/R2/R3/Q5 — rdzeń magazynu państwa (przed plonami miast, po reconcile cap z poprzedniej tury):
+ *   (1) wpływ z mapy → pula imperium (Stolarnia/Warsztat mnożą drewno/kamień — D2);
+ *   (2) konwertery / odlewnie czytają i zapisują wspólną pulę (ownerResourceStockAll);
+ *   (3) Spichlerz drain B6/B7/B8 (U-5/U-11) — przed plonami tej tury (R2).
+ *
+ * HANDOFF main.ts: wołający advanceCityEconomy bez zmian — pipeline wewnątrz ticku.
+ */
+function tickEmpireResourcePipeline(
+  cities: City[],
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+  territoryResourceByCity: TerritoryResourceYieldByCity,
+  workedDrewnoByCity: ReadonlyMap<string, number>,
+  stolarniaCountByOwner: ReadonlyMap<number, number>,
+  kamieniarskiCountByOwner: ReadonlyMap<number, number>,
+  stolarniaBonusDrewnaCiv: number,
+  kamieniarskiBonusKamieniaCiv: number,
+  converterThroughputs: Record<string, number>,
+  ownerResourceCapFor: (ownerId: number) => number,
+  resolveOwnerActiveLabels?: OwnerActiveLabelsResolver,
+  resolveOwnerZlotoAccess?: OwnerZlotoAccessResolver,
+): Map<string, SpichlerzCityBonusState> {
+  const ownerIds = new Set(cities.map(c => c.ownerId));
+
+  // Faza 1 (R2): wpływ z mapy do magazynu państwa — przed konwerterami.
+  for (const city of cities) {
+    const terrYield = territoryResourceByCity.get(city.id);
+    const ownerId = city.ownerId;
+    const cap = ownerResourceCapFor(ownerId);
+    const stolarniaCount = stolarniaCountByOwner.get(ownerId) ?? 0;
+    const kamienMult = 1 + kamieniarskiBonusKamieniaCiv * (kamieniarskiCountByOwner.get(ownerId) ?? 0);
+
+    const creditTerritory = (key: TerritoryResourceKey, raw: number | undefined, mult = 1): void => {
+      if (raw == null || !(raw > 0)) return;
+      creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw * mult), cap);
+    };
+
+    // PYTANIE-84 R5+D2: Tartak (terrYield) + Las (workedDrewno) × Stolarnia addytywnie.
+    const drewnoMapBase = (terrYield?.drewno ?? 0) + (workedDrewnoByCity.get(city.id) ?? 0);
+    const drewnoCredit = applyStolarniaDrewnoMapInflow(
+      drewnoMapBase,
+      stolarniaCount,
+      stolarniaBonusDrewnaCiv,
+    );
+    if (drewnoCredit > 0) {
+      creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, cap);
+    }
+
+    if (!terrYield) continue;
+    creditTerritory('kamien', terrYield.kamien, kamienMult);
+    creditTerritory('glina', terrYield.glina);
+    creditTerritory('ruda', terrYield.ruda);
+    creditTerritory('ruda_zelaza', terrYield.ruda_zelaza);
+    creditTerritory('sol', terrYield.sol);
+    creditTerritory('zloto', terrYield.zloto);
+    creditTerritory('kon', terrYield.kon);
+  }
+
+  // Faza 2 (R2/Q5): budynki przetwórcze / odlewnie ze skarbca państwa (R3=B).
+  for (const ownerId of ownerIds) {
+    const cap = ownerResourceCapFor(ownerId);
+    let pool: Record<string, number> = { ...ownerResourceStockAll(cities, ownerId) };
+
+    for (const city of cities) {
+      if (city.ownerId !== ownerId) continue;
+      const builtIds = builtByCity.get(city.id) ?? [];
+      const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
+        builtIds,
+        ownerId,
+        resolveOwnerActiveLabels,
+        undefined,
+        resolveOwnerZlotoAccess,
+        pool,
+      );
+      const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter(r =>
+        runtimeBuiltIds.includes(converterBuildingIdForRecipe(r)),
+      );
+      if (activeRecipes.length === 0) continue;
+
+      const convResult = runConverters(
+        activeRecipes,
+        pool,
+        converterThroughputs,
+        () => cap,
+      );
+      pool = convResult.stores;
+    }
+
+    assignOwnerResourceStockFromPool(cities, ownerId, pool);
+  }
+
+  // Faza 3 (PYTANIE-84 U-5/U-10/U-11): drain Spichlerza ze skarbca po świeżej produkcji/konwersji.
+  const spichlerzByCity = new Map<string, SpichlerzCityBonusState>();
+  _spichlerzSolArmyByOwner.clear();
+  _spichlerzSolCityIdsByOwner.clear();
+  for (const city of cities) {
+    const builtIds = builtByCity.get(city.id) ?? [];
+    const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false);
+    const state = resolveSpichlerzCityBonusState(builtIds, drain);
+    spichlerzByCity.set(city.id, state);
+    if (state.solActive) {
+      _spichlerzSolArmyByOwner.set(city.ownerId, true);
+      const prev = new Set(_spichlerzSolCityIdsByOwner.get(city.ownerId) ?? []);
+      prev.add(city.id);
+      _spichlerzSolCityIdsByOwner.set(city.ownerId, prev);
+    }
+  }
+  return spichlerzByCity;
+}
+
+/**
+ * PYTANIE-84-U-13: po plonach miast (mnożnik Mennicy już policzony) — pobierz 1 Złoto/t
+ * ze skarbca państwa. Tura łaski (grace): efekt bez zużycia, gdy brak zapasu w puli.
+ */
+function applyMennicaZlotoDrainForOwners(
+  cities: City[],
+  mennicaOwners: ReadonlySet<number>,
+  resolveOwnerTech: OwnerTechResolver | undefined,
+  playerZbadane: ReadonlySet<string>,
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver,
+): void {
+  for (const ownerId of mennicaOwners) {
+    const ownerTech = resolveOwnerTech ? resolveOwnerTech(ownerId) : playerZbadane;
+    const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
+    if (!walutaOdkryta) continue;
+    if (!resolveOwnerZlotoAccess(ownerId)) continue;
+    const pool = ownerResourceStockAll(cities, ownerId);
+    if (empireZlotoStock(pool) < MENNICA_ZLOTO_DRAIN_PER_TURN) continue;
+    assignOwnerResourceStockFromPool(cities, ownerId, deductMennicaZlotoDrain(pool));
+  }
 }
 
 /**
@@ -1189,8 +1534,7 @@ export function previewCityEconomy(
     (data as unknown as Record<string, unknown>).societyParams,
     difficulty,
   );
-
-  const perCity: CityEconomyTick[] = [];
+  const rationParams = buildRationParams(rawEconParams, difficulty);
   const capitalSeen = new Set<number>();
   // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie 70/B)
   // -> bramka Efektu 1 musi patrzeć na CAŁE imperium ownera, nie tylko to miasto.
@@ -1211,6 +1555,12 @@ export function previewCityEconomy(
     cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
   }
 
+  const garncarniaSurplusZdrowieByOwner = computeGarncarniaSurplusZdrowieByOwner(
+    cities, builtByCity, healthParams, false,
+  );
+
+  const perCity: CityEconomyTick[] = [];
+
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
@@ -1224,13 +1574,21 @@ export function previewCityEconomy(
       resolveOwnerEmpireStock,
       resolveOwnerZlotoAccess,
     );
+    const spichlerzState = resolveSpichlerzForCity(cities, city.ownerId, builtIds, true);
     const hasWater = cityHasWaterAccess(city, map);
-    const zdrowie = computeCityHealth(city.population, worked, runtimeBuiltIds, healthParams, hasWater, { city, map });
+    const garncarniaZdrowie = runtimeBuiltIds.includes('garncarnia')
+      ? (garncarniaSurplusZdrowieByOwner.get(city.ownerId) ?? 0)
+      : 0;
+    const zdrowie = computeCityHealth(
+      city.population, worked, runtimeBuiltIds, healthParams, hasWater, { city, map },
+      spichlerzHealthBonus(spichlerzState),
+      garncarniaZdrowie,
+    );
 
-    const maSpichlerzII = runtimeBuiltIds.includes('spichlerz_ii');
-    const maSpichlerz = maSpichlerzII || runtimeBuiltIds.includes('spichlerz');
+    const maSpichlerzII = spichlerzState.maSpichlerzIIPop;
+    const maSpichlerz = spichlerzState.maSpichlerzPop;
     const maAkwedukt = runtimeBuiltIds.includes('akwedukt');
-    const pctRozwoj = getCityFoodSplit(city);
+    const poziomRacji = getCityRationLevel(city);
     const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital, zdrowie,
@@ -1314,11 +1672,16 @@ export function previewCityEconomy(
     // Kultura) przez cityBuildingEntriesFromBuiltIds (economy.ts) -- ta sama funkcja
     // uzywana w advanceCityEconomy i cityPanel "Bilans plonow", zeby podglad HUD
     // pokazywal identyczne liczby co realny silnik tury.
-    const cityBuildings = cityBuildingEntriesFromBuiltIds(runtimeBuiltIds, buildingCatalog, ownerEra, ownerTech);
+    // U-22B: efektywny id Spichlerza (I vs II + Zadowolenie z JSON) zamiast surowych builtIds.
+    const yieldBuiltIds = builtIdsForSpichlerzYields(runtimeBuiltIds, spichlerzState);
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(yieldBuiltIds, buildingCatalog, ownerEra, ownerTech);
     const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
+    const zywnoscBrutto = yld.zywnoscBrutto;
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams);
+    yld.zywnosc = foodBal.bilansLokalny;
     // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty.
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
 
@@ -1368,10 +1731,27 @@ export function previewCityEconomy(
         magazynPoTurze: getCityFood(city),
         maSpichlerz,
         maSpichlerzII,
-        procentRozwoj: pctRozwoj,
+        spichlerzCeramika: spichlerzState.ceramikaActive,
+        spichlerzSol: spichlerzState.solActive,
+        procentRozwoj: poziomRacji * 33,
+        zywnoscBrutto: 0,
+        kosztRacji: 0,
+        bilansLokalny: 0,
+        poziomRacji,
       });
       continue;
     }
+
+    const growthPreview = computeGrowthPercentV85({
+      population: city.population,
+      poziomRacji: foodBal.poziomRacji as 1 | 2 | 3,
+      zdrowie,
+      szczescieNetto: 0,
+      wealthPoziom: wt.poziom,
+      spichlerzState,
+      civKey: ownerCivByOwnerId.get(city.ownerId) ?? null,
+      rationParams,
+    });
 
     perCity.push({
       cityId: city.id,
@@ -1379,7 +1759,7 @@ export function previewCityEconomy(
       praca: yld.praca,
       pieniadz: pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto: yld.pieniadz,
-      zywnoscNetto: yld.zywnosc,
+      zywnoscNetto: foodBal.bilansLokalny,
       nauka: yld.nauka,
       luksus: yld.luksus,
       kultura: yld.kultura,
@@ -1396,10 +1776,18 @@ export function previewCityEconomy(
       pieniadzZTras,
       oblegany: false,
       obleganyGlod: false,
-      magazynPoTurze: getCityFood(city),
+      magazynPoTurze: city.wzrostUlamkowy ?? 0,
       maSpichlerz,
       maSpichlerzII,
-      procentRozwoj: pctRozwoj,
+      spichlerzCeramika: spichlerzState.ceramikaActive,
+      spichlerzSol: spichlerzState.solActive,
+      procentRozwoj: poziomRacji * 33,
+      zywnoscBrutto,
+      kosztRacji: foodBal.kosztRacji,
+      bilansLokalny: foodBal.bilansLokalny,
+      poziomRacji,
+      wzrostProcent: growthPreview.total,
+      wzrostUlamkowyPo: city.wzrostUlamkowy ?? 0,
     });
   }
 
@@ -1525,6 +1913,7 @@ export function advanceCityEconomy(
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
   const upkeepParams  = loadUpkeepParams(rawEconParams, difficulty);
   const storageParams = loadStorageParams(rawEconParams, difficulty);
+  const rationParams = buildRationParams(rawEconParams, difficulty);
 
   // Build unit upkeep lookup table once per tick.
   const unitUpkeepTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
@@ -1643,6 +2032,27 @@ export function advanceCityEconomy(
   // --- Per-owner income accumulators (for upkeep balance after city loop) ---
   const incomeByOwner = new Map<number, number>();
 
+  // PYTANIE-84 R2: wpływ mapy → konwertery → drain Spichlerza PRZED plonami miast.
+  const workedDrewnoByCity = computeWorkedDrewnoByCity(cities, map, territoryNodes);
+  const spichlerzByCity = tickEmpireResourcePipeline(
+    cities,
+    builtByCity,
+    territoryResourceByCity,
+    workedDrewnoByCity,
+    stolarniaCountByOwner,
+    kamieniarskiCountByOwner,
+    stolarniaBonusDrewnaCiv,
+    kamieniarskiBonusKamieniaCiv,
+    converterThroughputs,
+    ownerResourceCapFor,
+    resolveOwnerActiveLabels,
+    resolveOwnerZlotoAccess,
+  );
+
+  const garncarniaSurplusZdrowieByOwner = computeGarncarniaSurplusZdrowieByOwner(
+    cities, builtByCity, healthParams, true,
+  );
+
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
@@ -1657,14 +2067,24 @@ export function advanceCityEconomy(
       resolveOwnerZlotoAccess,
     );
 
+    const spichlerzState = spichlerzByCity.get(city.id)
+      ?? resolveSpichlerzCityBonusState(builtIds, { ceramikaPaid: false, solPaid: false });
+
     // WIRE 1: oblicz zdrowie miasta (D17-A: dostęp do wody z mapy, nie tylko pól plonów)
     const hasWater = cityHasWaterAccess(city, map);
-    const zdrowie = computeCityHealth(city.population, worked, runtimeBuiltIds, healthParams, hasWater, { city, map });
+    const garncarniaZdrowie = runtimeBuiltIds.includes('garncarnia')
+      ? (garncarniaSurplusZdrowieByOwner.get(city.ownerId) ?? 0)
+      : 0;
+    const zdrowie = computeCityHealth(
+      city.population, worked, runtimeBuiltIds, healthParams, hasWater, { city, map },
+      spichlerzHealthBonus(spichlerzState),
+      garncarniaZdrowie,
+    );
 
-    const maSpichlerzII = runtimeBuiltIds.includes('spichlerz_ii');
-    const maSpichlerz = maSpichlerzII || runtimeBuiltIds.includes('spichlerz');
+    const maSpichlerzII = spichlerzState.maSpichlerzIIPop;
+    const maSpichlerz = spichlerzState.maSpichlerzPop;
     const maAkwedukt  = runtimeBuiltIds.includes('akwedukt');
-    const pctRozwoj = getCityFoodSplit(city);
+    const poziomRacji = getCityRationLevel(city);
     const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital, zdrowie,
@@ -1747,12 +2167,17 @@ export function advanceCityEconomy(
     // Naprawa 2026-07-25: budynki miasta -> plony flat (Praca/Pieniadz/Zywnosc/Nauka/
     // Kultura) przez cityBuildingEntriesFromBuiltIds (economy.ts) -- jedyne zrodlo,
     // wspoldzielone z previewCityEconomy i cityPanel "Bilans plonow".
-    const cityBuildings = cityBuildingEntriesFromBuiltIds(runtimeBuiltIds, buildingCatalog, ownerEra, ownerTech);
+    // U-22B: efektywny id Spichlerza (I vs II + Zadowolenie z JSON) zamiast surowych builtIds.
+    const yieldBuiltIds = builtIdsForSpichlerzYields(runtimeBuiltIds, spichlerzState);
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(yieldBuiltIds, buildingCatalog, ownerEra, ownerTech);
     const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
 
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
+    const zywnoscBrutto = yld.zywnoscBrutto;
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams);
+    yld.zywnosc = foodBal.bilansLokalny;
     // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty
     // ekonomii/Pracy (nie dotyka economy.ts ani formul terenu/ulepszen powyzej).
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
@@ -1836,7 +2261,13 @@ export function advanceCityEconomy(
         magazynPoTurze,
         maSpichlerz,
         maSpichlerzII,
-        procentRozwoj: pctRozwoj,
+        spichlerzCeramika: spichlerzState.ceramikaActive,
+        spichlerzSol: spichlerzState.solActive,
+        procentRozwoj: poziomRacji * 33,
+        zywnoscBrutto: 0,
+        kosztRacji: 0,
+        bilansLokalny: 0,
+        poziomRacji,
       };
       result.perCity.push(tick);
 
@@ -1856,41 +2287,24 @@ export function advanceCityEconomy(
       continue;
     }
 
-    // --- Normalna sciezka (nie oblegane) -- BEZ ZMIAN wzgledem oryginalu ---
-
-    // growthMult (7.4): scale food inflow BEFORE populationGrowth so the
-    // threshold crossing is affected.  growthMult < 1 under unrest slows growth
-    // (food accumulates slower); growthMult > 1 speeds it up.  Default = 1 (no effect).
-    const surplus = Math.max(0, yld.zywnosc) * (pctRozwoj / 100);
-    const deficit = Math.min(0, yld.zywnosc);
-    const zywnoscDoRozwoju = surplus + deficit;
-    const growthMult = growthMultByCity.get(city.id) ?? 1;
-    const zywnoscDlaWzrostu = growthMult !== 1
-      ? zywnoscDoRozwoju * growthMult
-      : zywnoscDoRozwoju;
-
-    const wzrostThresholdMult = getPopulationGrowthThresholdMultiplier(
-      city.ownerId,
-      wzrostLudnosciPace,
-      gameDifficulty,
-    );
-    const grow = populationGrowth(econCity, zywnoscDlaWzrostu, params, wzrostThresholdMult);
+    // --- Normalna sciezka (nie oblegane) — PYTANIE-85: bilans lokalny, wzrost po centrali ---
 
     const before = city.population;
-
-    // --- write results back onto the runtime city ---
-    city.population = grow.nowaLudnosc;
-
-    if (grow.nowaLudnosc !== before) {
-      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc, territoryNodes);
-    }
+    const growthPreview = computeGrowthPercentV85({
+      population: city.population,
+      poziomRacji: foodBal.poziomRacji as 1 | 2 | 3,
+      zdrowie,
+      szczescieNetto: 0,
+      wealthPoziom: wt.poziom,
+      spichlerzState,
+      civKey: ownerCivKey ?? null,
+      rationParams,
+    });
 
     const ownerEpoka = ownerEra;
     const mpMults = civManpowerMults(ownerBonusy);
     if (city.manpower === undefined) {
       city.manpower = cityManpowerMax(city.population, ownerEpoka, mpMults.maxMult);
-    } else if (grow.nowaLudnosc !== before) {
-      city.manpower = refreshManpowerAfterPopChange(city, ownerEpoka, before, mpMults.maxMult);
     }
     city.manpower = tickManpowerRegen(
       city,
@@ -1900,69 +2314,9 @@ export function advanceCityEconomy(
       mpMults.maxMult,
     );
 
-    // Clamp bufor wzrostu to capacity (s.7.1 — nadwyżka ponad cap ginie).
-    // Cap >= próg wzrostu: inaczej przy cap=20 i progu=22 miasto utknęło by na +1/t.
-    const foodCap = growthFoodStorageCap(
-      city.population, maSpichlerz, params, storageParams,
-      wzrostLudnosciPace, city.ownerId, gameDifficulty,
-    );
-    city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
-    magazynPoTurze = city.magazynZywnosci;
+    magazynPoTurze = city.wzrostUlamkowy ?? 0;
 
-    // Accumulate income for upkeep balance (pieniadz po Wealth + dochod z tras -- Handel E3).
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
-
-    // --- Converters (s.1.5) -- run after terrain yield, per-city (Zadanie 2 E1) ---
-    // City.surowce jest teraz realnym polem runtime (game/cities.ts).
-    //
-    // SUROW-TERYT-01 (Maciej 2026-07-23): surowce logistyczne (drewno/kamien/glina/
-    // ruda/ruda_zelaza) NIE plyna juz z yld.*Terenu (ktore zalezaly od workedTiles --
-    // pola obsadzone populacja). Zamiast tego kazde ZBUDOWANE ulepszenie w terytorium
-    // wlasciciela produkuje stala stawke/ture, niezaleznie od obsadzenia -- patrz
-    // computeTerritoryResourceYieldByCity (liczone raz dla calej tury, powyzej petli).
-    // Zywnosc i Praca ZOSTAJA przy modelu workedTiles (yld.zywnosc/yld.praca -- bez zmian).
-    // SUROW-CIV-01 (Maciej 2026-07-24): resCap uzywany jako sufit PODCZAS produkcji/
-    // konwersji w TYM miescie jest teraz capem CALEGO PANSTWA (nie per-miasto x5 jak
-    // dawniej) -- prawdziwe ograniczenie to SUMA po miastach ownera, egzekwowana RAZ
-    // na ture PO petli (reconcileOwnerResourceCaps, patrz nizej). Uzycie capu panstwa
-    // tutaj tylko zapobiega patologicznemu wzrostowi w jednej turze; nie blokuje
-    // pojedynczego miasta ponizej realnej pojemnosci panstwa.
-    const resCap = ownerResourceCapFor(city.ownerId);
-    if (!city.surowce) city.surowce = {};
-    const citySurowce: Record<string, number> = city.surowce;
-    // Produkcja per-ulepszenie (SUROW-TERYT-01, f136c09) × mnoznik civ-wide bonusow
-    // (Stolarnia drewno / Warsztat kamieniarski kamien, Zadanie 2 2026-07-23): stala liczba
-    // sztuk tego ownera (policzona przed petla) → mnoznik ten sam dla kazdego miasta ownera
-    // = odpowiednik przemnozenia SUMY drewna/kamienia imperium przez (1 + 0.10 × liczba_ownera).
-    const terrYield = territoryResourceByCity.get(city.id);
-    const drewnoMultCiv = 1 + stolarniaBonusDrewnaCiv * (stolarniaCountByOwner.get(city.ownerId) ?? 0);
-    const kamienMultCiv = 1 + kamieniarskiBonusKamieniaCiv * (kamieniarskiCountByOwner.get(city.ownerId) ?? 0);
-    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + Math.floor((terrYield?.drewno ?? 0) * drewnoMultCiv));
-    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + Math.floor((terrYield?.kamien ?? 0) * kamienMultCiv));
-    citySurowce.glina  = Math.min(resCap, (citySurowce.glina ?? 0) + (terrYield?.glina ?? 0));
-
-    // Ruda miedzi / ruda żelaza — numeryczny stock do łańcucha konwerterów (audit 9a0ca985).
-    citySurowce.ruda = Math.min(resCap, (citySurowce.ruda ?? 0) + (terrYield?.ruda ?? 0));
-    citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + (terrYield?.ruda_zelaza ?? 0));
-
-    // Uruchamiamy tylko konwertery, ktorych budynek jest FAKTYCZNIE wybudowany w tym
-    // miescie (inaczej drewno konwertowaloby sie samoistnie bez Cegielni/Garncarni/...).
-    // Uwaga: 'tartak' i 'huta' (id w DEFAULT_CONVERTER_RECIPES) nie maja dzis
-    // odpowiednika w buildings.json (Tartak istnieje tylko jako ulepszenie terenu;
-    // Huta w ogole nie istnieje -- zastapiona przez 'odlewnia_brazu') -- te dwie
-    // receptury pozostaja wiec nieaktywne, to pre-istniejacy stan danych, nie regresja.
-    const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter(r =>
-      runtimeBuiltIds.includes(r.buildingId ?? r.id),
-    );
-    if (activeRecipes.length > 0) {
-      const convResult = runConverters(
-        activeRecipes,
-        citySurowce,
-        converterThroughputs,
-        () => resCap,
-      );
-      city.surowce = convResult.stores;
-    }
 
     const tick: CityEconomyTick = {
       cityId:            city.id,
@@ -1970,14 +2324,14 @@ export function advanceCityEconomy(
       praca:             yld.praca,
       pieniadz:          pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto:    yld.pieniadz,
-      zywnoscNetto:      yld.zywnosc,
+      zywnoscNetto:      foodBal.bilansLokalny,
       nauka:             yld.nauka,
       luksus:            yld.luksus,
       kultura:           yld.kultura,
       ludnoscPrzed:      before,
-      ludnoscPo:         grow.nowaLudnosc,
-      wzrost:            grow.wzrost,
-      ubytek:            grow.ubytek,
+      ludnoscPo:         before,
+      wzrost:            false,
+      ubytek:            false,
       zdrowie,
       doBudynkow,
       doPuli,
@@ -1990,7 +2344,15 @@ export function advanceCityEconomy(
       magazynPoTurze,
       maSpichlerz,
       maSpichlerzII,
-      procentRozwoj: pctRozwoj,
+      spichlerzCeramika: spichlerzState.ceramikaActive,
+      spichlerzSol: spichlerzState.solActive,
+      procentRozwoj: poziomRacji * 33,
+      zywnoscBrutto,
+      kosztRacji: foodBal.kosztRacji,
+      bilansLokalny: foodBal.bilansLokalny,
+      poziomRacji,
+      wzrostProcent: growthPreview.total,
+      wzrostUlamkowyPo: city.wzrostUlamkowy ?? 0,
     };
     result.perCity.push(tick);
 
@@ -2000,18 +2362,20 @@ export function advanceCityEconomy(
     result.totalNauka      += yld.nauka;
     result.totalLuksus     += yld.luksus;
     result.totalKultura    += yld.kultura;
-    result.totalZywnosc    += yld.zywnosc;
+    result.totalZywnosc    += foodBal.bilansLokalny;
     result.totalPracaPula  += doPuli;
-    if (grow.wzrost) result.growth  += 1;
-    if (grow.ubytek) result.starved += 1;
   }
 
-  // SUROW-CIV-01 (Maciej 2026-07-24): RAZ na ture, PO ze produkcja+konwersja lokalna
-  // (petla powyzej) sie zakonczyla -- klamruj SUME city.surowce po miastach KAZDEGO
-  // ownera do capu panstwa (ownerResourceCapFor). OWNERID-AGNOSTIC: reconcileOwnerResourceCaps
-  // iteruje po WSZYSTKICH ownerId obecnych w `cities` (gracz i kazda cywilizacja AI
-  // identycznie) -- zero galezi "tylko gracz". Nadwyzka ginie z miast o najwiekszym
-  // zapasie danego typu najpierw (deterministycznie, patrz komentarz w economy-upkeep.ts).
+  // PYTANIE-84-U-13: drain Mennicy po plonach (łaska = efekt bez pobrania Złota).
+  applyMennicaZlotoDrainForOwners(
+    cities,
+    mennicaOwners,
+    resolveOwnerTech,
+    playerZbadane,
+    resolveOwnerZlotoAccess,
+  );
+
+  // SUROW-CIV-01: klamruj sumę city.surowce po pipeline (teren + konwertery + drain Spichlerza).
   reconcileOwnerResourceCaps(cities, ownerResourceCapFor);
 
   // --- Compute upkeep balance per owner (s.6.4 / s.8.4) ---

@@ -79,6 +79,7 @@ export {
   filterRuntimeActiveBuiltIds,
   hasDepositRuntimeGate,
   DEPOSIT_RUNTIME_GATED_BUILDING_IDS,
+  type SpichlerzCityBonusState,
 } from './building-resource-gate';
 
 /** What kind of thing a city can produce. */
@@ -1473,8 +1474,10 @@ export function eraBuildingCatalog(
     );
     // R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26, zgloszenie blokujace): ta sama luka jak
     // REGRESJA-KOLEJNOSC powyzej, tylko dla DRUGIEJ bramki, ktorej eraBuildingCatalog nigdy nie
-    // sprawdzal -- dostep do surowca zlozowego/przetworzonego (buildingResourceGateMet, np.
-    // Spichlerz wymaga aktywnej etykiety Ceramika/Garncarni) i twardy wyjatek Piec hutniczy
+    // sprawdzal -- dostep do surowca zlozowego/przetworzonego (buildingResourceGateMet) i twardy
+    // wyjatek Piec hutniczy. PYTANIE-84 U-24B: Spichlerz I bez bramki Ceramika przy budowie
+    // (brak wpisu w DEPOSIT_LINKED) — drain B6 dopiero po postawieniu (building-resource-gate).
+    // Spichlerz II nadal wymaga Soli do upgrade (DEPOSIT_LINKED). Piec hutniczy
     // (empireHasKopalniaMiedzi). availableProduction/buildableProduction juz je odrzucaly
     // poprawnie (linie ~765-770 wyzej) -- budynek po prostu znikal z panelu bez zadnego
     // komunikatu, bo status tu zostawal 'ready', a "Jeszcze zablokowane" pokazuje tylko

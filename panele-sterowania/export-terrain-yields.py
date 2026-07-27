@@ -19,7 +19,7 @@ DATA = os.path.join(ROOT, "gra", "data")
 DEFAULT_XLSX = os.path.join(os.path.dirname(__file__), "Panel-A.xlsx")
 YIELDS_PATH = os.path.join(DATA, "terrain-yields.json")
 
-EDITABLE_FIELDS = ("Żywność", "Praca", "Handel", "Uwagi")
+EDITABLE_FIELDS = ("Żywność", "Praca", "Podatek", "Uwagi")
 COL_KEY = 1
 COL_START = 2
 COL_UWAGI = 5
@@ -52,10 +52,16 @@ def coerce(old, val):
     return nv if nv else None, nv != old_s
 
 
+def _podatek_val(row):
+    return row.get("Podatek", row.get("Handel", 0))
+
+
 def recalc_suma(row):
     if "Suma" not in row:
         return False
-    total = sum(int(row.get(f, 0) or 0) for f in ("Żywność", "Praca", "Handel", "Drewno", "Kamień"))
+    total = sum(int(row.get(f, 0) or 0) for f in ("Żywność", "Praca")) + int(_podatek_val(row) or 0) + sum(
+        int(row.get(f, 0) or 0) for f in ("Drewno", "Kamień")
+    )
     if row["Suma"] == total:
         return False
     row["Suma"] = total
@@ -72,7 +78,7 @@ def read_sheet_rows(ws, key_header):
         rows[key] = {
             "Żywność": ws.cell(r, COL_START).value,
             "Praca": ws.cell(r, COL_START + 1).value,
-            "Handel": ws.cell(r, COL_START + 2).value,
+            "Podatek": ws.cell(r, COL_START + 2).value,
             "Uwagi": ws.cell(r, COL_UWAGI).value,
         }
     return rows
@@ -87,8 +93,9 @@ def overlay_section(json_rows, excel_rows, key_field):
         src = excel_rows[key]
         row_changed = False
         for field in EDITABLE_FIELDS:
-            old = row.get(field)
-            nv, did = coerce(old, src.get(field))
+            old = row.get(field, _podatek_val(row) if field == "Podatek" else None)
+            src_field = field
+            nv, did = coerce(old, src.get(src_field, src.get("Handel") if field == "Podatek" else None))
             if did:
                 row[field] = nv
                 row_changed = True

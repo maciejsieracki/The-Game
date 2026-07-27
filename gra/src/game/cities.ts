@@ -11,6 +11,7 @@ import type { RuntimeUnit } from '../units/setup';
 import { hexDistance } from '../units/setup';
 import { freshWealthState, type WealthState } from './wealth';
 import { readCityFoodBuffer } from './economy-upkeep';
+import { ensureCityRationDefaults } from './population-growth-v85';
 import type { SiegeMachinesState } from './siegeMachines';
 import miastoParams from '../../data/miasto-params.json';
 export interface CityPodzialHandlu {
@@ -153,6 +154,7 @@ export function ensureCitySaveDefaults(city: City): void {
   if (!city.budowaTryb) city.budowaTryb = DEFAULT_BUDOWA_TRYB;
   const buf = readCityFoodBuffer(city.magazynZywnosci);
   if (city.magazynZywnosci !== buf) city.magazynZywnosci = buf;
+  ensureCityRationDefaults(city);
   // E1 Zadanie 2: magazyn surowcow logistycznych (drewno/kamien/glina/ruda) -- pole
   // addytywne, opcjonalne; brak bumpu SAVE_VERSION. Stary zapis (bez pola) dostaje
   // pusty magazyn.
@@ -238,9 +240,16 @@ export interface City {
   /** Per-miasto suwak Pracy; brak = global default w toEconomyCity. */
   podzialPracy?: CityPodzialPracy;
   /**
+   * PYTANIE-85: poziom racji żywności 1|2|3 (zastępuje suwak procentRozwoj).
+   */
+  poziomRacji?: 1 | 2 | 3;
+  /** PYTANIE-85: skumulowany ułamkowy przyrost ludności. */
+  wzrostUlamkowy?: number;
+  /** PYTANIE-85: licznik tur bez dopłaty z centrali (głód). */
+  turyBezDoplaty?: number;
+  /**
+   * @deprecated PYTANIE-85 — migrowane do poziomRacji przy wczytaniu zapisu.
    * Per-miasto suwak podziału świeżej żywności: % na wzrost ludności (bufor 🍞).
-   * Reszta (100 − procentRozwoj) idzie do zapasów armii państwa. Brak w starym zapisie
-   * → migrateCityFoodSplits w silniku (legacy empireFoodStates.procentRozwoj).
    */
   procentRozwoj?: number;
   /** Profil skupienia pól okolicy (auto-assign). */

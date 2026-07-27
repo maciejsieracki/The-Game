@@ -26,6 +26,16 @@
  *    (`PIEC_HUTNICZY_BUILDING_ID`) — NIE w tym module.
  */
 import type { BuildingDef } from '../data/loader';
+import {
+  deductBuildingStockCostAcrossCities,
+  ownerResourceStock,
+  type StockCitySource,
+} from './building-stock-cost';
+import {
+  MENNICA_ZLOTO_DRAIN_PER_TURN,
+  ownerCanFeedMennica,
+  ZLOTO_LABEL,
+} from './zloto-access';
 
 const LABEL_BY_ASCII: Record<string, string> = {
   drewno: 'Drewno',
@@ -38,6 +48,8 @@ const LABEL_BY_ASCII: Record<string, string> = {
   sol: 'Sól',
   cegla: 'Cegła',
   ceramika: 'Ceramika',
+  zloto: ZLOTO_LABEL,
+  kon: 'Koń',
 };
 
 /**
@@ -51,23 +63,15 @@ const LABEL_BY_ASCII: Record<string, string> = {
 const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>> = {
   garncarnia: ['Glina'],
   cegielnia: ['Glina'],
-  spichlerz: ['Ceramika'],
+  // PYTANIE-84-U-24: Spichlerz I — brak bramki Ceramika przy budowie; drain B6 po postawieniu.
+  // spichlerz — celowo brak wpisu (bonusy z drain co turę, patrz sekcja Spichlerz niżej).
   spichlerz_ii: ['Sól'],
   stolarnia: ['Drewno'],
   kamieniarski: ['Kamień'],
   kuznia: ['Ruda'],
-  // ZLOTO (Maciej 2026-07-25): Mennica wymaga dostępu do Złota (empire-wide, Kopalnia złota
-  // gdziekolwiek w imperium — game/zloto-access.ts empireHasKopalniaZlota, dolane do
-  // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
-  // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
-  // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
-  // PYTANIE 77=A (Maciej 2026-07-25): dostęp = własna Kopalnia złota ALBO aktywny szlak
-  // handlowy z cywilizacją, która ma złoto (jak koń) — bramka TU jest bez zmian (nadal
-  // sam sprawdza tylko obecność etykiety 'Złoto' w `activeLabels`); rozszerzenie jest
-  // WYŻEJ w łańcuchu, w zloto-access.ts (placedImprovementsWithZlotoTradeGrant), WPIĘTE
-  // w main.ts (placedImprovementsWithTradeGrants, domknięcie 2026-07-25 wieczór) —
-  // szlak handlowy realnie odblokowuje Mennicę bez własnej Kopalni złota.
-  mennica: ['Złoto'],
+  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
+  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  mennica: [ZLOTO_LABEL],
 };
 
 /**
@@ -148,11 +152,10 @@ const ASCII_BY_LABEL: Record<string, string> = Object.fromEntries(
 );
 
 /**
- * Surowce „tylko dostęp" — bramka NIE spełnia się samym zapasem w puli państwa (Maciej 2026-07-26).
- * Wymagają aktywnego źródła w imperium (np. warzelnia soli, kopalnia złota / handel).
- * Ilościowy koszt budowy (`koszt_surowce`) to osobna ścieżka — magazyn państwa.
+ * Surowce „tylko dostęp" — bramka NIE spełnia się samym zapasem w puli państwa.
+ * PYTANIE-84 R4=A: Złoto, Sól, Koń — magazyn państwa (jak Ruda); zestaw pusty.
  */
-export const ACCESS_ONLY_RESOURCE_LABELS: ReadonlySet<string> = new Set(['Sól', 'Złoto']);
+export const ACCESS_ONLY_RESOURCE_LABELS: ReadonlySet<string> = new Set();
 
 export function isAccessOnlyResourceLabel(label: string): boolean {
   return ACCESS_ONLY_RESOURCE_LABELS.has(label);
@@ -161,7 +164,7 @@ export function isAccessOnlyResourceLabel(label: string): boolean {
 /**
  * Bramka spełniona etykietą, gdy: aktywne ŹRÓDŁO surowca w imperium (activeLabels), LUB
  * budynek-konwerter (Cegielnia/Garncarnia), LUB — dla surowców magazynowanych — zapas puli
- * państwa (`empireStock` > 0). Wyjątki ACCESS_ONLY (Sól, Złoto): tylko aktywne źródło.
+ * państwa (`empireStock` > 0). ACCESS_ONLY puste od PYTANIE-84-R4 (Sól/Złoto/Koń = stock).
  * Dokładną ILOŚĆ kosztu budowy egzekwuje osobno `koszt_surowce` (civ-wide magazyn).
  */
 /** Czy pojedyncza etykieta surowca jest spełniona (źródło / konwerter / zapas państwa). */
@@ -224,22 +227,30 @@ export const DEPOSIT_RUNTIME_GATED_BUILDING_IDS: readonly string[] = Object.free
   Object.keys(DEPOSIT_LINKED_BUILDING_LABELS),
 );
 
+/** Spichlerz I/II — bonusy z drain (U-5), nie z DEPOSIT_LINKED runtime gate. */
+const SPICHLERZ_RUNTIME_EXCLUDED = new Set(['spichlerz', 'spichlerz_ii']);
+
 export function hasDepositRuntimeGate(buildingId: string): boolean {
+  if (SPICHLERZ_RUNTIME_EXCLUDED.has(buildingId)) return false;
   return Object.prototype.hasOwnProperty.call(DEPOSIT_LINKED_BUILDING_LABELS, buildingId);
 }
 
 export interface BuildingRuntimeGateOptions {
-  /** Właściciel imperium — wymagany dla specjalnej bramki Mennicy (PYTANIE 77/83). */
+  /** Właściciel imperium — wymagany dla bramki Mennicy (łaska + stock). */
   ownerId?: number;
-  /** Dostęp do złota (natywna kopalnia LUB szlak) — wspólne API z turn-economy/main.ts. */
+  /**
+   * PYTANIE-84-U-13: czy owner ma wystarczająco Złota w skarbcu LUB łaskę po utracie
+   * (mennica-zloto-grace.ts). Gdy brak — runtime gate Mennicy patrzy na empireStock.
+   * Zachowana nazwa dla kompatybilności z turn-economy.ts / main.ts.
+   */
   resolveOwnerZlotoAccess?: (ownerId: number) => boolean;
 }
 
 /**
- * PYTANIE-84 (Maciej 2026-07-27, hybryda): runtime gate per budynek z DEPOSIT_LINKED.
- *  - DOSTĘP (ACCESS_ONLY: Sól, Złoto): tylko aktywne źródło — natychmiastowe uśpienie.
- *  - MAGAZYN (pozostałe etykiety): aktywne źródło LUB zapas państwa > 0.
- *  - Mennica: Złoto przez resolveOwnerZlotoAccess (handel + kopalnia), nie sam zapas.
+ * PYTANIE-84 (Maciej 2026-07-27): runtime gate per budynek z DEPOSIT_LINKED.
+ *  - DOSTĘP (ACCESS_ONLY — dziś puste): tylko aktywne źródło.
+ *  - MAGAZYN (pozostałe etykiety, w tym Złoto): aktywne źródło LUB zapas państwa > 0.
+ *  - Mennica runtime: resolveOwnerZlotoAccess (stock + łaska) LUB ownerCanFeedMennica(stock).
  *  - Ceramika/Cegła: liczone z runtimeActiveBuiltIds (Garncarnia/Cegielnia muszą być aktywne).
  */
 function empireLabelSatisfiedAtRuntime(
@@ -258,6 +269,16 @@ function empireLabelSatisfiedAtRuntime(
   return false;
 }
 
+function mennicaRuntimeGateMet(
+  empireStock: Readonly<Record<string, number>> | undefined,
+  options?: BuildingRuntimeGateOptions,
+): boolean {
+  if (options?.resolveOwnerZlotoAccess && options.ownerId !== undefined) {
+    return options.resolveOwnerZlotoAccess(options.ownerId);
+  }
+  return ownerCanFeedMennica(empireStock);
+}
+
 export function buildingRuntimeGateMet(
   building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null },
   activeLabels: readonly string[] | undefined,
@@ -265,8 +286,8 @@ export function buildingRuntimeGateMet(
   empireStock?: Readonly<Record<string, number>>,
   options?: BuildingRuntimeGateOptions,
 ): boolean {
-  if (building.id === 'mennica' && options?.resolveOwnerZlotoAccess && options.ownerId !== undefined) {
-    return options.resolveOwnerZlotoAccess(options.ownerId);
+  if (building.id === 'mennica') {
+    return mennicaRuntimeGateMet(empireStock, options);
   }
   const required = buildingRequiredActiveLabels(building);
   if (required.length === 0) return true;
@@ -310,4 +331,166 @@ export function filterRuntimeActiveBuiltIds(
     }
   }
   return [...active];
+}
+
+/** Eksport stałej drain Mennicy dla turn-economy / main (bez magic number). */
+export { MENNICA_ZLOTO_DRAIN_PER_TURN };
+
+// ---------------------------------------------------------------------------
+// PYTANIE-84 U-5 / U-10 / U-11 — Spichlerz: dwa tory (Ceramika lokalnie, Sól imperium)
+// Drain B6/B7/B8 ze skarbca państwa po wpływie surowców w tej samej turze (R2).
+// ---------------------------------------------------------------------------
+
+/** B6/B8 — Spichlerz I i II (tor ludności). */
+export const SPICHLERZ_DRAIN_CERAMIKA_PER_TURN = 5;
+/** B7 — Spichlerz II (tor wojska, imperium-wide gdy ≥1 płaci). */
+export const SPICHLERZ_DRAIN_SOL_PER_TURN = 5;
+
+export interface SpichlerzDrainPayResult {
+  ceramikaPaid: boolean;
+  solPaid: boolean;
+}
+
+/** Stan bonusów Spichlerza w mieście po próbie drain w tej turze. */
+export interface SpichlerzCityBonusState {
+  /** Ceramika opłacona — bonus ludności lokalnie (U-5). */
+  ceramikaActive: boolean;
+  /** Sól opłacona (tylko II) — ten budynek płaci Sól (U-5/U-10 garnizon). */
+  solActive: boolean;
+  /** Tier I populacji: Ceramika bez pełnego II (U-11: II bez Soli = jak I). */
+  maSpichlerzPop: boolean;
+  /** Tier II populacji: II + oba surowce (U-12: +10 Zdrowia, 70% bufor). */
+  maSpichlerzIIPop: boolean;
+}
+
+/**
+ * Pobiera drain Spichlerza z puli państwa ownera (B6/B7/B8).
+ * `dryRun=true` — tylko sprawdzenie zapasu (podgląd HUD), bez mutacji City.surowce.
+ */
+export function paySpichlerzDrainForCity<T extends StockCitySource>(
+  cities: readonly T[],
+  ownerId: number,
+  builtIds: readonly string[],
+  dryRun = false,
+): SpichlerzDrainPayResult {
+  const hasI = builtIds.includes('spichlerz');
+  const hasII = builtIds.includes('spichlerz_ii');
+  if (!hasI && !hasII) return { ceramikaPaid: false, solPaid: false };
+
+  let ceramikaPaid = false;
+  let solPaid = false;
+
+  if (ownerResourceStock(cities, ownerId, 'ceramika') >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN) {
+    if (!dryRun) {
+      deductBuildingStockCostAcrossCities(cities, ownerId, {
+        ceramika: SPICHLERZ_DRAIN_CERAMIKA_PER_TURN,
+      });
+    }
+    ceramikaPaid = true;
+  }
+
+  if (hasII && ownerResourceStock(cities, ownerId, 'sol') >= SPICHLERZ_DRAIN_SOL_PER_TURN) {
+    if (!dryRun) {
+      deductBuildingStockCostAcrossCities(cities, ownerId, {
+        sol: SPICHLERZ_DRAIN_SOL_PER_TURN,
+      });
+    }
+    solPaid = true;
+  }
+
+  return { ceramikaPaid, solPaid };
+}
+
+/** Mapuje wynik drain → flagi bonusów (U-5, U-11). */
+export function resolveSpichlerzCityBonusState(
+  builtIds: readonly string[],
+  drain: SpichlerzDrainPayResult,
+): SpichlerzCityBonusState {
+  const hasII = builtIds.includes('spichlerz_ii');
+  const hasI = builtIds.includes('spichlerz');
+  if (!hasI && !hasII) {
+    return {
+      ceramikaActive: false,
+      solActive: false,
+      maSpichlerzPop: false,
+      maSpichlerzIIPop: false,
+    };
+  }
+  const ceramikaActive = drain.ceramikaPaid;
+  const solActive = hasII && drain.solPaid;
+  const maSpichlerzIIPop = hasII && ceramikaActive && solActive;
+  const maSpichlerzPop = ceramikaActive && !maSpichlerzIIPop;
+  return { ceramikaActive, solActive, maSpichlerzPop, maSpichlerzIIPop };
+}
+
+/** @deprecated PYTANIE-85 — Spichlerz daje % wzrostu, nie pkt Zdrowia. Zwraca 0. */
+export function spichlerzHealthBonus(_state: SpichlerzCityBonusState): number {
+  return 0;
+}
+
+/** PYTANIE-85-Q4: +1% tier I (Ceramika), +2% pełny II, 0 bez drainu. */
+export function spichlerzGrowthBonusPercent(state: SpichlerzCityBonusState): number {
+  if (state.maSpichlerzIIPop) return 2;
+  if (state.maSpichlerzPop) return 1;
+  return 0;
+}
+
+/**
+ * U-22B: +Zadowolenie z pola `baza.zadowolenie` w JSON Spichlerza II (+2) — tylko lokalnie
+ * w mieście z działającym II (oba surowce opłacone). Tier I / II bez Soli → 0 z JSON.
+ */
+export function spichlerzHappinessBonusFromJson(
+  state: SpichlerzCityBonusState,
+  jsonBonus = 2,
+): number {
+  return state.maSpichlerzIIPop ? jsonBonus : 0;
+}
+
+/**
+ * U-22B: zamienia `spichlerz` / `spichlerz_ii` w builtIds na jeden efektywny id do yieldów
+ * z buildings.json (cityBuildingEntriesFromBuiltIds). Pełny II → spichlerz_ii (+2 Zadowolenie);
+ * tier I (Ceramika, U-11 II bez Soli) → spichlerz; brak drain → pomija oba.
+ */
+export function builtIdsForSpichlerzYields(
+  builtIds: readonly string[],
+  state: SpichlerzCityBonusState,
+): string[] {
+  const effective = state.maSpichlerzIIPop
+    ? 'spichlerz_ii'
+    : state.maSpichlerzPop
+      ? 'spichlerz'
+      : null;
+  const out: string[] = [];
+  let spichlerzMapped = false;
+  for (const id of builtIds) {
+    if (id === 'spichlerz' || id === 'spichlerz_ii') {
+      if (!spichlerzMapped && effective) {
+        out.push(effective);
+        spichlerzMapped = true;
+      }
+      continue;
+    }
+    out.push(id);
+  }
+  return out;
+}
+
+/** Cap zapasów armii 🍞 per miasto — U-22B, stare reguły empire-food.ts. */
+export const SPICHLERZ_EMPIRE_CAP_I = 100;
+export const SPICHLERZ_EMPIRE_CAP_II_FULL = 150;
+
+/**
+ * U-10B: mnożnik kosztu żywności jednostki (nakładany na wynik unitFoodPerTurn).
+ * - Armia poza terytorium: 2→1 gdy ≥1 Spichlerz II płaci Sól (imperium).
+ * - Garnizon w mieście płacącym Sól: ½ żywności.
+ */
+export function spichlerzArmyFoodCostMultiplier(opts: {
+  solArmyBonusActive: boolean;
+  onOwnTerritory: boolean;
+  isGarrisonInSolCity: boolean;
+}): number {
+  let m = 1;
+  if (!opts.onOwnTerritory && opts.solArmyBonusActive) m *= 0.5;
+  if (opts.isGarrisonInSolCity) m *= 0.5;
+  return m;
 }

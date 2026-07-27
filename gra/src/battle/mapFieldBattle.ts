@@ -108,6 +108,8 @@ export interface MapFieldBattleLaunchDeps {
   ) => void;
   clearBattleUiState: () => void;
   createBattleScene: (opts: BattleOpts) => { play: (cb: (res: BattleResult) => void) => void; dispose: () => void };
+  /** Głód wojska — opcje do BattleOpts (PYTANIE-85). */
+  armyHungerBattleOpts?: (atkOwnerId: number, defOwnerId: number) => Pick<BattleOpts, 'attackerArmyHungry' | 'defenderArmyHungry' | 'armyHungerStatMult'>;
   registerMilitiaDef?: (id: string, def: Record<string, unknown>) => void;
   onQuickSave?: () => boolean;
 }
@@ -484,6 +486,7 @@ export function launchFieldBattleFromMap(
         defenderIsCityState: pbInfo.obronca.isCityState,
         attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
         defenderIsBarbarian: pbInfo.obronca.isBarbarian,
+        ...(deps.armyHungerBattleOpts?.(atkLead.ownerId, defLead.ownerId) ?? {}),
         onCancel: () => setMood('mapa'),
       });
       bs.play((res) => {

@@ -50,8 +50,8 @@ Pełny audyt + backlog: `docs/CURSOR-ARCHITEKTURA.md`, `docs/CURSOR-BACKLOG.md`,
 |---|---|---|---|
 | **Master Orkiestrator** | Composer 2.5 | Agent (hub) | **NIE** — plan + weryfikacja · [`MASTER-WATCH.md`](docs/obieg/MASTER-WATCH.md) |
 | **Grupa F** | **Composer 2.5** | Agent (osobna zakładka) | **TAK** |
-| **Lane A–E** | **Composer 2.5** (`composer-2.5-fast`) | Agent / Task | **NIE** |
-| **Subagent testów** | **composer-2.5-fast** | Task w **czacie Master** (hub) | **NIE** |
+| **Lane A–E** | **Composer 2.5** (`composer-2.5`) | Agent / Task | **NIE** |
+| **Subagent testów** | **composer-2.5** | Task w **czacie Master** (hub) | **NIE** |
 | **Review przed ACK** | **Subagent readonly** (Master wywołuje) | APPROVE/BLOCK — **bez Opus** |
 | **Decydent** | Maciej | — | **NIE** |
 
@@ -108,7 +108,7 @@ Efekt: ~80% tańszy self-check lane'a. Dziś tylko `EKONOMIA-STAN.md` — pozost
 ### 5.2a Routing modeli — drogi decyduje, tani wykonuje (Maciej 2026-06-28)
 **Reguła szczegółowa:** `.cursor/rules/model-routing.mdc` (alwaysApply).
 - **Mocny model (Master):** diagnoza, decyzje, projekt mechanizmu, weryfikacja, routing.
-- **Subagent `composer-2.5-fast`:** każda mechaniczna robota wieloplikowa (masowe edycje, wpięcia wg wzoru, refaktory, eksporty), gdy nie wymaga decyzji.
+- **Subagent `composer-2.5`:** każda mechaniczna robota wieloplikowa (masowe edycje, wpięcia wg wzoru, refaktory, eksporty), gdy nie wymaga decyzji. **NIE** `composer-2.5-fast` (Maciej 2026-07-27).
 - **Próg delegacji (OBOWIĄZKOWO subagent):** > 3 pliki „wg wzoru" **lub** > ~50 linii czystego wykonania **lub** zadanie samodzielne/odizolowane. Wyjątek: 1–3 drobne edycje splecione z myśleniem, pliki już w kontekście.
 
 ### 5.3 Kiedy subagent, kiedy który czat (model 2026-06-30)

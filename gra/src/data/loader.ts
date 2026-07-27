@@ -249,7 +249,9 @@ export interface TerrainTypeDef {
   Teren: string;
   Żywność: number | null;
   Praca: number | null;
-  Handel: number | null;
+  Podatek?: number | null;
+  /** @deprecated użyj Podatek — zachowane dla starych JSON/Excel */
+  Handel?: number | null;
   Drewno: number | null;
   Kamień: number | null;
   Suma: number | null;

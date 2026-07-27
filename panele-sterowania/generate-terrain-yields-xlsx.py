@@ -18,8 +18,8 @@ DATA = os.path.join(ROOT, "gra", "data")
 OUT = os.path.join(os.path.dirname(__file__), "Panel-A-Plony-Terenu.xlsx")
 
 INFO_TEXT = "Edycja → w czacie: eksportuj plony terenu"
-HDR_BASE = ["Teren", "Żywność", "Praca", "Handel", "Uwagi"]
-HDR_MOD = ["Modyfikator", "Żywność", "Praca", "Handel", "Uwagi"]
+HDR_BASE = ["Teren", "Żywność", "Praca", "Podatek", "Uwagi"]
+HDR_MOD = ["Modyfikator", "Żywność", "Praca", "Podatek", "Uwagi"]
 HDR_FILL = PatternFill("solid", fgColor="1F4E79")
 HDR_FONT = Font(bold=True, color="FFFFFF", size=10)
 INFO_FONT = Font(bold=True, size=11, color="1F4E79")
@@ -56,7 +56,7 @@ def write_table_sheet(ws, title, headers, rows, key_field):
         ws.cell(idx, 1, row.get(key_field, ""))
         ws.cell(idx, 2, row.get("Żywność", 0))
         ws.cell(idx, 3, row.get("Praca", 0))
-        ws.cell(idx, 4, row.get("Handel", 0))
+        ws.cell(idx, 4, row.get("Podatek", row.get("Handel", 0)))
         uwagi = row.get("Uwagi")
         ws.cell(idx, 5, uwagi if uwagi is not None else "")
         ws.cell(idx, 5).alignment = Alignment(wrap_text=True, vertical="top")

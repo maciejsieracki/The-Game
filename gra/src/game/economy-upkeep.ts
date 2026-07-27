@@ -300,7 +300,8 @@ export function onCityConquered(
 // A2. CIV-WIDE RESOURCE STORAGE (SUROW-CIV-01, decyzja Macieja 2026-07-24)
 //
 // Zmiana modelu: pojemnosc magazynu surowcow PRZETWORZONYCH/logistycznych
-// (drewno/kamien/glina/ruda/ruda_zelaza/cegla/braz/zelazo/stal -- NIE Zywnosc,
+// (drewno/kamien/glina/ruda/ruda_zelaza/cegla/ceramika/braz/zelazo/stal/
+//  sol/zloto/kon -- PYTANIE-84-U20; NIE Zywnosc,
 // ktora zostaje przy modelu per-miasto powyzej, Spichlerz bez zmian) jest teraz
 // PULA PANSTWA (civ-wide, per ownerId), nie per-miasto:
 //   cap(typ) = bazaSurowcePanstwo + bonusSurowceNaBudynek * (liczba budynkow
@@ -338,6 +339,26 @@ export const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = {
   bazaSurowcePanstwo:    500,
   bonusSurowceNaBudynek: 100,
 };
+
+/**
+ * Surowce objęte capem magazynu państwa (SUROW-CIV-01 + PYTANIE-84-U20):
+ * cap(typ) = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek × liczba Magazynów
+ * (dziś 500 + 100×Magazyn per typ). Żywność (Spichlerz) — osobny model per-miasto.
+ */
+export const OWNER_CAPPED_RESOURCE_KEYS = [
+  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza',
+  'cegla', 'ceramika', 'braz', 'zelazo', 'stal',
+  'sol', 'zloto', 'kon',
+] as const;
+
+export type OwnerCappedResourceKey = typeof OWNER_CAPPED_RESOURCE_KEYS[number];
+
+const OWNER_CAPPED_RESOURCE_KEY_SET = new Set<string>(OWNER_CAPPED_RESOURCE_KEYS);
+
+/** Czy typ surowca podlega capowi magazynu państwa (500 + 100×Magazyn). */
+export function isOwnerCappedResourceKey(key: string): key is OwnerCappedResourceKey {
+  return OWNER_CAPPED_RESOURCE_KEY_SET.has(key);
+}
 
 /**
  * Read OwnerStorageParams from the raw econ-params.json blob (globalne.magazyn_*).
@@ -410,7 +431,9 @@ export function reconcileOwnerResourceCaps(
 
     const keys = new Set<string>();
     for (const c of ownerCities) {
-      for (const k of Object.keys(c.surowce ?? {})) keys.add(k);
+      for (const k of Object.keys(c.surowce ?? {})) {
+        if (isOwnerCappedResourceKey(k)) keys.add(k);
+      }
     }
 
     for (const key of keys) {

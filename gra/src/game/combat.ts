@@ -3,6 +3,7 @@ import { applyMultiplier, civCombatStatMultipliers } from './civ-bonuses';
 import type { BuildingCombatBonus } from './unit-building-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from './unit-building-bonuses';
 import { applyVeteranFracToCombatUnit } from './veteran';
+import { applyArmyHungerStatMultToCombatUnit } from './army-starvation';
 import combatParamsRaw from '../../data/combat-params.json';
 
 /** Panel-C: stałe walki (export-c.py → combat-params.json). */
@@ -346,6 +347,18 @@ export interface ResolveCombatOpts {
 
   /** Jak wyzej, dla broniacego. */
   defenderVeteranBonusFrac?: number;
+
+  /**
+   * Głód wojska (PYTANIE-85): zapasy państwa < 0 po koszcie armii — osłabienie
+   * statów bojowych (bez armor) przez armyHungerStatMult. Stosowane po weteranie.
+   */
+  attackerArmyHungry?: boolean;
+
+  /** Jak wyżej, dla broniącego. */
+  defenderArmyHungry?: boolean;
+
+  /** Mnożnik statów przy głodzie wojska (domyślnie 0.75). */
+  armyHungerStatMult?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -733,6 +746,14 @@ export function resolveCombat(
   // zmiennoprzecinkowego dla wszystkich istniejacych wywolan).
   attacker = applyVeteranFracToCombatUnit(attacker, opts.attackerVeteranBonusFrac ?? 0);
   defender = applyVeteranFracToCombatUnit(defender, opts.defenderVeteranBonusFrac ?? 0);
+
+  const hungerMult = opts.armyHungerStatMult ?? 0.75;
+  if (opts.attackerArmyHungry) {
+    attacker = applyArmyHungerStatMultToCombatUnit(attacker, hungerMult);
+  }
+  if (opts.defenderArmyHungry) {
+    defender = applyArmyHungerStatMultToCombatUnit(defender, hungerMult);
+  }
 
   const rng = opts.rng ?? (() => Math.random());
   const position: AttackerPosition = opts.attackerPosition ?? 'front';

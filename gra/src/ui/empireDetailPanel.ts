@@ -3,7 +3,13 @@
  * Wygląd: mockup „Panel Moc imperium v3" (1E, 2026-07-06) — RESKIN, nic nie usunięte.
  * Dane: EmpireDetailSnap.
  */
-import type { EmpireDetailSnap, EmpireResourceRow } from './empireDetailTypes';
+import {
+  buildUchwalaSolSpichlerzII,
+  type EmpireDetailSnap,
+  type EmpireFoodSnap,
+  type EmpireResourceRow,
+  type EmpireUchwalaRow,
+} from './empireDetailTypes';
 import { formatObywateleLabel } from '../game/manpower';
 import { mocLabel, mocWithValue } from './power-labels';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
@@ -22,7 +28,7 @@ export interface EmpireHandelSplitUiConfig {
 
 let handelSplitUi: EmpireHandelSplitUiConfig = {};
 
-/** DYSPOZYCJA-85-SUWAK: globalny domyślny podział Daniny/Podatku w panelu imperium. */
+/** DYSPOZYCJA-85-SUWAK: globalny domyślny podział podatku w panelu imperium. */
 export function configureEmpireHandelSplit(cfg: EmpireHandelSplitUiConfig): void {
   handelSplitUi = { ...handelSplitUi, ...cfg };
 }
@@ -32,7 +38,7 @@ function renderDefaultHandelSplitSection(): string {
   const onChange = handelSplitUi.onOwnerDefaultChange;
   if (!getDef || !onChange) return '';
   const split = normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
-  const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Danina';
+  const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-handel-split';
   let h = `<div class="civ-emp-sect" data-section="ekonomia-handel-split" id="${id}">`
     + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ ${esc(daninaLbl.toUpperCase())}</div>`
@@ -138,6 +144,13 @@ function ensureStyles(): void {
 .civ-emp-bonus{font-size:12px;color:#b8c4d8;line-height:1.45;padding:6px 8px;margin-top:6px;
   border-left:2px solid #3a5572;background:#171e2a;border-radius:0 6px 6px 0;}
 .civ-emp-bonus .tag{font-size:9px;color:#7a8a9a;text-transform:uppercase;margin-left:6px;}
+.civ-emp-uchwaly{margin-top:10px;}
+.civ-emp-uchwaly-title{font-size:10px;letter-spacing:1.1px;color:#d9a441;font-weight:600;margin-bottom:6px;}
+.civ-emp-uchwala{font-size:12px;color:#d4e4f4;line-height:1.45;padding:8px 10px;margin-top:6px;
+  border-left:3px solid #d9a441;background:#1a2430;border-radius:0 6px 6px 0;}
+.civ-emp-uchwala .nm{font-weight:600;color:#e8ebf0;}
+.civ-emp-uchwala .tag{font-size:9px;color:#a89060;text-transform:uppercase;margin-left:6px;}
+.civ-emp-uchwala .fx{display:block;margin-top:4px;color:#b8c4d8;}
 .civ-emp-moc-big{font-size:20px;font-weight:800;color:#d9a441;margin-top:8px;}
 .civ-emp-moc-sub{font-size:12px;color:#9aa4b2;margin-top:3px;}
 .civ-emp-moc-sub b{color:#d9a441;}
@@ -319,7 +332,7 @@ function cityEconMiniSkarbiec(
   const sumGrid = '1fr auto';
   let h = '<div class="civ-emp-mini">';
   h += miniHeader(['SKARBIEC IMPERIUM — bilans / turę', ''], sumGrid);
-  h += miniRow(['Wpływy brutto (danina + budynki)', signedTxt(daninaBud)], sumGrid);
+  h += miniRow(['Wpływy brutto (podatek + budynki)', signedTxt(daninaBud)], sumGrid);
   h += miniRow(['Handel ze szlaków', signedTxt(handel)], sumGrid);
   h += miniRow(['Utrzymanie budynków', signedTxt(-utrzB)], sumGrid);
   h += miniRow(['Utrzymanie jednostek', signedTxt(-utrzJ)], sumGrid);
@@ -397,6 +410,95 @@ function cityPoborMiniRekruci(
 function signedTxt(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '—';
   return signedPl(n);
+}
+
+/** PYTANIE-85 — wartość żywności z emoji 🍞 (np. „+72 🍞", „−48 🍞"). */
+function foodSignedTxt(n: number, forceSign = true): string {
+  if (!Number.isFinite(n)) return '—';
+  const r = Math.round(n);
+  if (r === 0) return '0 🍞';
+  if (!forceSign) return `${r} 🍞`;
+  return `${r > 0 ? '+' : ''}${r} 🍞`;
+}
+
+/** PYTANIE-85 — wiersz podsumowania tury Spichlerza centralnego. */
+function foodSummaryRow(label: string, value: number, opts?: { expense?: boolean; pool?: boolean }): string {
+  const cls = value > 0 ? 'pos' : value < 0 ? 'neg' : 'z';
+  let display: string;
+  if (opts?.expense) {
+    display = `−${Math.abs(Math.round(value))} 🍞`;
+  } else if (opts?.pool) {
+    display = `+${Math.round(value)} 🍞`;
+  } else {
+    display = foodSignedTxt(value);
+  }
+  return `<div class="civ-emp-zrow brd" style="padding:6px 0">`
+    + `<span class="lbl">${esc(label)}</span>`
+    + `<span class="val"><span class="d ${cls}">${display}</span></span></div>`;
+}
+
+/**
+ * PYTANIE-85 — Spichlerz centralny: nagłówek magazynu, podsumowanie tury
+ * (kanoniczne etykiety) + tabela miast.
+ */
+function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
+  const capPart = food.maxCap > 0 ? ` / ${food.maxCap}` : '';
+  const pct = food.maxCap > 0
+    ? Math.max(0, Math.min(100, Math.round((food.zapasy / food.maxCap) * 100)))
+    : 0;
+  const barCls = food.zapasy < 0 ? 'low' : (pct >= 95 ? 'warn' : 'fill');
+
+  let h = `<div class="civ-emp-sect" data-section="spichlerz-centralny">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">SPICHLERZ CENTRALNY</div>`
+    + `<div class="civ-emp-kult-line" style="font-size:14px;margin-bottom:6px">`
+    + `W magazynie: <b>${food.zapasy}${capPart} 🍞</b></div>`;
+  if (food.maxCap > 0) {
+    h += `<div class="civ-emp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
+  }
+  if (food.glodWojska) {
+    h += `<div class="civ-emp-note" style="color:#e07a7a;margin-bottom:8px">`
+      + `<b>Głód wojska</b> — magazyn centralny na minusie po koszcie armii.</div>`;
+  }
+
+  const t = food.tick;
+  if (t) {
+    h += `<div class="civ-emp-res-lbl" style="margin-top:10px">Podsumowanie ostatniej tury</div>`;
+    h += foodSummaryRow('Uprawa i hodowla', t.uprawaHodowla);
+    h += foodSummaryRow('Wyżywienie ludności', t.wyzwienieLudnosci, { expense: true });
+    h += foodSummaryRow('Nadwyżka', t.nadwyzka);
+    h += foodSummaryRow('Pomoc miastom', t.pomocMiastom, { expense: true });
+    h += foodSummaryRow('Spichlerz stolicy', t.spichlerzStolicy, { pool: true });
+    h += foodSummaryRow('Wojsko', t.wojsko, { expense: true });
+    h += foodSummaryRow('Przyrost zapasów', t.przyrostZapasow);
+  } else {
+    h += `<div class="civ-emp-note" style="margin-top:10px;font-style:italic">`
+      + `Podsumowanie tury pojawi się po zakończeniu pierwszej tury.</div>`;
+  }
+
+  if (food.perCityRows.length > 0) {
+    const grid = '1.1fr 0.7fr 0.8fr 0.65fr 0.6fr';
+    h += `<div class="civ-emp-res-lbl" style="margin-top:14px">Miasta</div>`;
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'PRODUKCJA', 'KOSZT RACJI', 'BILANS', 'WZROST%'], grid)}`;
+    for (const row of food.perCityRows) {
+      const bilansCls = row.bilans > 0 ? 'pos' : row.bilans < 0 ? 'neg' : 'z';
+      const bilansTxt = row.bilans === 0 ? '0' : `${row.bilans > 0 ? '+' : ''}${Math.round(row.bilans)}`;
+      const wzrostTxt = `${Math.round(row.wzrostProcent)}%`;
+      const fedMark = row.nakarmione === false ? ' <span style="color:#e07a7a" title="Miasto nie nakarmione z centrali">⚠</span>' : '';
+      h += miniRow([
+        esc(row.name) + fedMark,
+        String(Math.round(row.produkcja)),
+        String(Math.round(row.kosztRacji)),
+        `<span class="d ${bilansCls}">${bilansTxt}</span>`,
+        wzrostTxt,
+      ], grid);
+    }
+    h += `</div>`;
+  }
+
+  h += `<div class="civ-emp-foot">Magazyn centralny: nadwyżki miast trafiają do puli, niedobory są pokrywane stamtąd. `
+    + `Kolejność: dopłaty do miast → wojsko → zmiana zapasów. Wzrost ludności zależy od racji i bonusów lokalnych — nie z nadwyżki centralnej.</div>`;
+  h += `</div>`;
+  return h;
 }
 
 /**
@@ -546,8 +648,8 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   }
 
   sur += `<div class="civ-emp-res-foodnote"><span class="k">Żywność</span>`
-    + `<span>ma osobny model — <b>Spichlerz</b> per miasto (mnożnik pojemności), nie wchodzi do wspólnej `
-    + `puli państwa. Pokazywana w chipie HUD „Zaopatrzenie", nie tutaj.</span></div>`;
+    + `<span>ma osobny <b>magazyn centralny</b> — chip HUD „Armia" · panel Spichlerz centralny. `
+    + `Nie wchodzi do wspólnej puli surowców powyżej.</span></div>`;
 
   sur += `<div class="civ-emp-res-legend">`
     + `<span><i class="good"></i> nadwyżka / rośnie</span>`
@@ -633,6 +735,29 @@ function scrollToSection(section: string | null | undefined): void {
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+/** U-23A: aktywne uchwały z global.uchwaly lub flagi HUD (fallback bez main.ts). */
+function resolveActiveUchwaly(snap: EmpireDetailSnap): EmpireUchwalaRow[] {
+  const fromGlobal = (snap.global.uchwaly ?? []).filter(u => u.aktywna);
+  if (fromGlobal.length > 0) return fromGlobal;
+  if (snap.economy.uchwalaSolAktywna) {
+    return [buildUchwalaSolSpichlerzII(true, snap.economy.uchwalaSolSpichlerzIICount)];
+  }
+  return [];
+}
+
+function renderUchwalyHtml(uchwaly: EmpireUchwalaRow[]): string {
+  if (uchwaly.length === 0) return '';
+  let h = `<div class="civ-emp-uchwaly" data-section="uchwaly">`
+    + `<div class="civ-emp-uchwaly-title">UCHWAŁY CYWILIZACYJNE</div>`;
+  for (const u of uchwaly) {
+    h += `<div class="civ-emp-uchwala">`
+      + `<span class="nm">${esc(u.nazwa)}</span><span class="tag">${esc(u.zrodlo)}</span>`
+      + `<span class="fx">${esc(u.opis)}</span></div>`;
+  }
+  h += `</div>`;
+  return h;
+}
+
 function render(): void {
   if (root === null || bodyEl === null || getSnap === null) return;
   const snap = getSnap();
@@ -642,6 +767,8 @@ function render(): void {
   const p = snap.power;
   const ce = snap.cityEcon;
   const cp = snap.cityPobor;
+  const uchwaly = resolveActiveUchwaly(snap);
+  const uchwalyHtml = renderUchwalyHtml(uchwaly);
 
   // — PARAMETRY GLOBALNE (zachowane, reskin) —
   const bonusHtml = g.bonusy.map(b =>
@@ -656,7 +783,7 @@ function render(): void {
     + `<div class="civ-emp-chip wide"><div class="k">Religia państwowa</div><div class="v">${esc(g.religiaPanstwowa)}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Badania</div><div class="v">${esc(e.badana ?? '—')}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Bonus startowy</div><div class="v">${esc(g.bonusStartowy)}</div></div>`
-    + `</div>${bonusHtml}</div>`;
+    + `</div>${bonusHtml}${uchwalyHtml}</div>`;
 
   // — MOC IMPERIUM —
   let moc = `<div class="civ-emp-sect sep" data-section="moc">`
@@ -707,7 +834,7 @@ function render(): void {
   // — ZASOBY IMPERIUM —
   type EconRow = { id: string; lbl: string; stock: string; rate: number; gold?: boolean; noRate?: boolean };
   const econRows: EconRow[] = [
-    { id: 'zywnosc', lbl: 'Żywność armii (zapasy)', stock: e.zywnoscLabel + (e.zywnoscMax ? ` / ${e.zywnoscMax}` : ''), rate: e.zywnoscRate ?? 0 },
+    { id: 'zywnosc', lbl: 'Magazyn centralny', stock: e.zywnoscLabel + (e.zywnoscMax ? ` / ${e.zywnoscMax}` : '') + ' 🍞', rate: e.zywnoscRate ?? 0 },
     { id: 'praca', lbl: 'Praca (pula)', stock: String(e.praca), rate: e.pracaRate },
     { id: 'skarbiec', lbl: 'Skarbiec', stock: String(e.bogactwo), rate: e.bogactwoRate ?? 0 },
     { id: 'nauka', lbl: 'Bank nauki', stock: String(Math.floor(e.nauka)), rate: e.naukaRate ?? 0 },
@@ -722,6 +849,7 @@ function render(): void {
     nauka: cityEconMiniNauka(ce),
     ludnosc: cityPoborMiniLudnosc(cp),
     rekruci: cityPoborMiniRekruci(cp, p),
+    zywnosc: renderSpichlerzCentralnySection(snap.food),
   };
   let zasoby = `<div class="civ-emp-sect sep" data-section="ekonomia">`
     + `<div class="civ-emp-eyebrow" style="margin-bottom:8px">ZASOBY IMPERIUM (STAN + PRZYROST)</div>`;
@@ -742,12 +870,14 @@ function render(): void {
   if (!onlyEconId) zasoby += renderDefaultHandelSplitSection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
-  // — ARMIA (Maciej 2026-07-24: dawne „Zaopatrzenie" → „Armia") — żywność armii + ludność + rekruci.
+  // — ARMIA (Maciej 2026-07-24: dawne „Zaopatrzenie" → „Armia") — magazyn centralny + ludność + rekruci.
   const ARMIA_IDS = new Set(['zywnosc', 'ludnosc', 'rekruci']);
   let armia = `<div class="civ-emp-sect sep" data-section="armia">`
     + `<div class="civ-emp-eyebrow" style="margin-bottom:8px">ARMIA</div>`;
+  // PYTANIE-85: Spichlerz centralny na górze bloku Armia (zamiast starego wiersza „żywność armii").
+  armia += renderSpichlerzCentralnySection(snap.food);
   for (const r of econRows) {
-    if (!ARMIA_IDS.has(r.id)) continue;
+    if (!ARMIA_IDS.has(r.id) || r.id === 'zywnosc') continue;
     const detail = detailFor[r.id];
     const val = r.noRate
       ? `<b${r.gold ? ' class="gold"' : ''}>${esc(r.stock)}</b>`
@@ -756,7 +886,10 @@ function render(): void {
       + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
     if (detail) armia += `<div data-section="econ-${r.id}">${detail}</div>`;
   }
-  armia += `<div class="civ-emp-foot">Zaopatrzenie (żywność armii) · ludność (baza rekrutacji) · rekruci — wojsko w jednym miejscu.</div></div>`;
+  if (uchwaly.length > 0) {
+    armia += renderUchwalyHtml(uchwaly);
+  }
+  armia += `<div class="civ-emp-foot">Magazyn centralny · ludność (baza rekrutacji) · rekruci — wojsko w jednym miejscu.</div></div>`;
 
   // — KULTURA IMPERIUM —
   let kult = `<div class="civ-emp-sect sep" data-section="kultura">`

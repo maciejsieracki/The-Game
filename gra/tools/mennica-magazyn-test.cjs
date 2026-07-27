@@ -253,7 +253,7 @@ assert(!buildingIds.has('tartak'), 'potwierdzenie: brak budynku "tartak" w build
 assert(!buildingIds.has('huta'), 'potwierdzenie: brak budynku "huta" w buildings.json (recepta nieaktywna, duplikat odlewnia_brazu)');
 assert(!buildingIds.has('mielerz'), 'Mielerz NIE istnieje juz w buildings.json (usuniety 2026-07-23)');
 assert(buildingIds.has('cegielnia') && buildingIds.has('garncarnia') && buildingIds.has('odlewnia_brazu'),
-  'Cegielnia/Garncarnia/odlewnia_brazu MAJA budynek (Garncarnia = dostep Ceramiki, BEZ receptury konwertera)');
+  'Cegielnia/Garncarnia/odlewnia_brazu MAJA budynek (Garncarnia = konwerter Ceramiki, PYTANIE-84)');
 
 // ---------------------------------------------------------------------------
 // G. GLINA-Q1=A (2026-07-20): glinianka daje 2 glina/ture, dokladnie jak drewno/kamien
@@ -271,25 +271,21 @@ const yldClay = M.cityYieldPerTurn(city, [clayTile, clayTile], [], pNormal, make
 eq(yldClay.glinaTerenu, 4, 'cityYieldPerTurn: 2 pola z glinianka -> glinaTerenu = 4 (2 x 2/ture)');
 
 // ---------------------------------------------------------------------------
-// H. Cegielnia oziywa: glina+drewno -> cegla; Garncarnia NIE konwertuje (Maciej 2026-07-23:
-// Ceramika = tylko dostep, receptura 'garncarnia' USUNIETA z DEFAULT_CONVERTER_RECIPES,
-// patrz converters.ts). Paliwo usuniete (Zadanie 1) -- Cegielnia bierze drewno 1:1;
+// H. Cegielnia + Garncarnia produkują z gliny+drewna (PYTANIE-84 U-14);
 // odlewnia_brazu NIE bez rudy.
 // ---------------------------------------------------------------------------
-console.log('\n-- H. Cegielnia produkuje z gliny+drewna; Garncarnia = dostep (bez konwersji); odlewnia_brazu NIE bez rudy --');
+console.log('\n-- H. Cegielnia + Garncarnia produkują; odlewnia_brazu NIE bez rudy --');
 
-// Cegielnia + Garncarnia zbudowane, magazyn glina+drewno -- TYLKO Cegielnia ma recepture
-// aktywna (Garncarnia usunieta z katalogu konwerterow); glina=8 z zapasem.
 const withCegielniaGarncarnia = simulateConverterTick(
   ['cegielnia', 'garncarnia'],
-  { glina: 8, drewno: 8 },
+  { glina: 20, drewno: 20 },
 );
 assert(withCegielniaGarncarnia.stores.cegla > 0,
   `Cegielnia: cegla > 0 przy glina+drewno obecnych (got ${withCegielniaGarncarnia.stores.cegla})`);
-eq(withCegielniaGarncarnia.stores.ceramika, undefined,
-  'Garncarnia: BRAK ceramiki w magazynie (Maciej 2026-07-23: dostep, nie stock -- receptura usunieta)');
-assert(withCegielniaGarncarnia.stores.glina < 8,
-  'Cegielnia+Garncarnia: glina zmalala (skonsumowana przez Cegielnie -- Garncarnia nie konwertuje)');
+assert(withCegielniaGarncarnia.stores.ceramika > 0,
+  `Garncarnia: ceramika > 0 przy glina+drewno (got ${withCegielniaGarncarnia.stores.ceramika})`);
+assert(withCegielniaGarncarnia.stores.glina < 20,
+  'Cegielnia+Garncarnia: glina zmalala (skonsumowana przez oba konwertery)');
 
 // Bez budynkow: mimo obecnosci gliny+drewna w magazynie nic sie nie produkuje (gating builtIds).
 const withoutBuildings = simulateConverterTick([], { glina: 8, drewno: 8 });
@@ -301,12 +297,12 @@ eq(withoutBuildings.stores.glina, 8, 'brak budynkow: glina niezmieniona');
 // braz NIE rosnie (limitWejscia=0 bo have('ruda')=0), niezaleznie od gliny/cegielni/garncarni.
 const withOdlewniaNoOre = simulateConverterTick(
   ['odlewnia_brazu', 'cegielnia', 'garncarnia'],
-  { glina: 8, drewno: 8 },
+  { glina: 20, drewno: 20 },
 );
 eq(withOdlewniaNoOre.stores.braz, undefined,
   'odlewnia_brazu zbudowana ale brak rudy w magazynie -> braz NIE rosnie (undefined, brak-wejscia)');
-assert(withOdlewniaNoOre.stores.cegla > 0 && withOdlewniaNoOre.stores.ceramika === undefined,
-  'odlewnia_brazu bez rudy NIE blokuje Cegielni (nadal produkuje z gliny+drewna); ceramika brak (dostep, nie stock)');
+assert(withOdlewniaNoOre.stores.cegla > 0 && withOdlewniaNoOre.stores.ceramika > 0,
+  'odlewnia_brazu bez rudy NIE blokuje Cegielni ani Garncarni');
 
 // Sanity: gdyby ruda BYLA w magazynie (nie zbierana dzis, ale receptura istnieje), odlewnia
 // zadzialalaby -- potwierdza, ze brak braz wyzej wynika z braku rudy, nie ze zlej receptury.

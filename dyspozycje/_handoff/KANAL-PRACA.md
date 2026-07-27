@@ -3711,3 +3711,36 @@ CZEKAM-NA: C-OBCE-JEDN-Q2 render (Opus, osobna sesja).
 Bramki: tsc 0 · converters 33 · koszty 119 · upgrade 49 · grupy 83 · tech-tree 19/19.
 **Testuj `71dffa40` — `gra-robocza/START.html` (Ctrl+F5 · Nowa gra).**
 CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku jeśli push z chmury).
+
+## [22:40] SESJA → MACIEJ — PYTANIE-85: 5 subagentów równolegle, deploy powolny
+
+Plan: `dyspozycje/_handoff/PYTANIE-85-DEPLOY-PLAN.md`
+| Batch | Q | Subagent |
+| P85-B1 silnik centrali | Q1,Q2,Q6,Q7 | tick + testy |
+| P85-B2 wzrost % | Q4,Q5,Q8,Q9 | Spichlerz/civ/zdrowie |
+| P85-B3 UI miasto | — | racje 1/2/3 |
+| P85-B4 UI centrala | — | etykiety Spichlerz |
+| P85-B5 głód wojska | — | 75% statów bez armor |
+
+**Deploy:** dopiero po `push` od Macieja, paczka po paczce (B1→B5).
+CZEKAM-NA: meldunki subagentów → scalenie → propozycja pierwszego deploy B1.
+
+## [23:15] SESJA → MACIEJ — PYTANIE-85: status subagentów po scaleniu
+
+| Batch | Status | Dowód |
+| P85-B1 silnik | ✅ kod | `applyPostCentralPopulationGrowth` w `main.ts` · `population-growth-v85-test` 11/11 |
+| P85-B2 wzrost % | ⚠️ agent padł (resource_exhausted) | `population-growth-v85-bonus-test` 13/13 — logika wygląda na gotową |
+| P85-B3 UI miasto | ✅ kod | `cityPanel.ts` batony Racja 1/2/3 |
+| P85-B4 UI centrala | ✅ kod | `empireDetailPanel.ts` + `hud.ts` etykiety PYTANIE-85 |
+| P85-B5 głód wojska | ✅ kod | `army-hunger-combat-test` 13/13 |
+
+**Bramka:** `tsc --noEmit` 0 błędów (po scaleniu importów).
+**Robocza:** nadal `71dffa40` — cały PYTANIE-85 + P84-stock w `gra/src`, bez deploy.
+CZEKAM-NA: Maciej `push` (propozycja: najpierz P84-stock + B5 poza żywnością, potem pełny P85).
+
+## [23:01] SESJA → MACIEJ — FALA 41 deploy ROBOCZA `c1e7a596`
+
+**md5:** `c1e7a5968dce012936d4925d05999d82` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** PYTANIE-85 (żywność/racje/wzrost/Spichlerz centralny) + Podatek (nazwa+plony) + bonus Podatek na ulepszeniach (Excel) + głód wojska 75%.
+**Bramki:** tsc 0 · P85 11+13+17 · army-hunger 13 · podatek 15+12.
+CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).

@@ -187,8 +187,12 @@ function mapWith(...hexes) {
     'stolarnia OK gdy drewno w magazynie państwa (bez aktywnego źródła)',
   );
   ok(
-    !M.buildingResourceGateMet({ id: 'spichlerz_ii' }, [], undefined, { sol: 99 }),
-    'spichlerz II: zapas soli w magazynie NIE zastępuje bramki dostępu',
+    M.buildingResourceGateMet({ id: 'spichlerz_ii' }, [], undefined, { sol: 99 }),
+    'spichlerz II: zapas Soli w magazynie państwa spełnia bramkę (PYTANIE-84 R4)',
+  );
+  ok(
+    !M.buildingResourceGateMet({ id: 'spichlerz_ii' }, [], undefined, {}),
+    'spichlerz II: brak Soli w magazynie i brak źródła → blokada',
   );
   ok(
     M.buildingResourceGateMet({ id: 'spichlerz_ii' }, ['Sól'], undefined, {}),
@@ -207,12 +211,12 @@ function mapWith(...hexes) {
     'runtime: stolarnia działa z drewnem w magazynie państwa',
   );
   ok(
-    !M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99 }),
-    'runtime: spichlerz II śpi bez aktywnej Soli (dostęp-only)',
+    M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99 }),
+    'runtime: spichlerz II działa z Solą w magazynie państwa',
   );
   ok(
-    M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, ['Sól'], [], {}),
-    'runtime: spichlerz II działa gdy Sól aktywna',
+    !M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], {}),
+    'runtime: spichlerz II śpi bez Soli w magazynie',
   );
   ok(
     !M.buildingRuntimeGateMet(
@@ -230,14 +234,14 @@ function mapWith(...hexes) {
     {},
   );
   ok(!active.includes('garncarnia'), 'runtime filter: garncarnia śpi bez gliny i bez dostępu');
-  ok(!active.includes('spichlerz'), 'runtime filter: spichlerz śpi gdy garncarnia nieaktywna');
+  ok(active.includes('spichlerz'), 'runtime filter: spichlerz I bez bramki Ceramiki (U-24) — zawsze aktywny');
   const active2 = M.filterRuntimeActiveBuiltIds(
     ['garncarnia', 'spichlerz'],
     [],
     { glina: 5 },
   );
   ok(active2.includes('garncarnia') && active2.includes('spichlerz'),
-    'runtime filter: spichlerz działa gdy garncarnia aktywna (Ceramika z budynku)');
+    'runtime filter: garncarnia+spichlerz przy zapasie Gliny w magazynie państwa');
 }
 
 console.log('\ndeposit-building-gate: ' + pass + ' pass, ' + fail + ' fail');

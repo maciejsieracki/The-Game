@@ -1,9 +1,11 @@
 /**
- * army-starvation.ts — głód wojska (B5-Q1): −hpFrac max HP co turę gdy zapasy państwa < 0.
- * SILNIK wywołuje po advanceEmpireFood gdy isArmyStarving(ownerId).
- * Jednostki cywilne (zwiadowca/osadnik/robotnik) są pomijane.
+ * army-starvation.ts — głód wojska (B5-Q1 / PYTANIE-85):
+ *   • isArmyHungry (empire-food) → osłabienie statów bojowych (applyArmyHungerStatMultToCombatUnit)
+ *   • isArmyStarving (empire-food) → atrycja HP (applyArmyStarvationHpLoss)
+ * Jednostki cywilne są pomijane przy atrycji HP.
  */
 import { isCivilianUnit } from '../units/setup';
+import type { CombatUnit } from './combat';
 
 export interface StarvationUnit {
   id: string;
@@ -19,6 +21,34 @@ export interface StarvationResult {
   destroyedIds: string[];
   /** Liczba jednostek, którym zmniejszono HP. */
   damagedCount: number;
+}
+
+function round4(x: number): number {
+  return Math.round(x * 10000) / 10000;
+}
+
+/**
+ * Osłabia staty bojowe jednostki głodnej armii (mult < 1).
+ * Skaluje te same pola co weteran (w górę), bez armor.
+ * Prog dezercji — odwrotnie (wyższy = dezercja wcześniej): ×(2 − mult).
+ */
+export function applyArmyHungerStatMultToCombatUnit(cu: CombatUnit, mult: number): CombatUnit {
+  if (mult >= 1 || mult <= 0) return cu;
+  const progRaw = cu['Prog dezercji (% health)'];
+  const progScaled = progRaw === null || progRaw === undefined
+    ? progRaw
+    : round4(progRaw * (2 - mult));
+  return {
+    ...cu,
+    meleeAttack: cu.meleeAttack * mult,
+    meleeDefence: cu.meleeDefence * mult,
+    weaponDamage: cu.weaponDamage * mult,
+    piercing: cu.piercing * mult,
+    chargeBonus: cu.chargeBonus * mult,
+    health: cu.health * mult,
+    missileAttack: cu.missileAttack * mult,
+    'Prog dezercji (% health)': progScaled,
+  };
 }
 
 /**

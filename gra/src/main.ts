@@ -263,6 +263,7 @@ import type { CityNode, TerritoryNode } from './map/territory';
 import type { GameMap } from './types/map';
 import {
   advanceCityEconomy, type EconUnit,
+  buildEconParams,
   computeCityHealthBreakdown, cityWorkedTilesForEconomy, workedHexCoordsForCity,
   sumEconomyForOwner,
   sumEconomyForPlayerCities,
@@ -272,6 +273,9 @@ import {
   computeTerritoryResourceYieldByCity,
   ownerResourceCap,
   cityHasWaterAccess,
+  militaryFoodConsumptionWithSpichlerz,
+  spichlerzSolArmyBonusActive,
+  applyStolarniaDrewnoMapInflow,
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
@@ -304,6 +308,7 @@ import {
 } from './game/braz-access';
 import {
   empireHasKopalniaZlota,
+  ownerHasZlotoStock,
   placedImprovementsWithZlotoTradeGrant,
 } from './game/zloto-access';
 import { computeEmpireLivestockUnlocks } from './game/livestock-unlock';
@@ -419,7 +424,7 @@ import {
   isEmpireDetailPanelOpen,
   configureEmpireHandelSplit,
 } from './ui/empireDetailPanel';
-import type { EmpireDetailSnap, EmpireResourceRow } from './ui/empireDetailTypes';
+import type { EmpireDetailSnap, EmpireFoodSnap, EmpireResourceRow } from './ui/empireDetailTypes';
 import {
   collectCultureRangeHexKeys,
   collectReligionRangeHexKeys,
@@ -569,13 +574,21 @@ import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadiu
          religionCompositionBreakdown,
          isEmptyReligionState, type CivsDataLike } from './game/culture-religion';
 import {
+  applyPostCentralPopulationGrowth,
+  ensureCityRationDefaults,
+  migrateProcentRozwojToPoziomRacji,
+  type PoziomRacji,
+} from './game/population-growth-v85';
+import {
   advanceEmpireFood, bindEmpireFoodRuntime, freshEmpireFoodState,
-  buildEmpireFoodParams, getLastEmpireFoodTick, getEmpireFoodReserve, getEmpireFoodMaxCap, getEmpireFoodSplit, isArmyStarving,
+  buildEmpireFoodParams, getLastEmpireFoodTick, getEmpireFoodReserve, getEmpireFoodMaxCap,
+  isArmyStarving, isArmyHungry,
   getArmyStarvationCountdown,
-  computeEmpireFoodNetDelta, computeEmpireFoodNetDeltaFromCityFoods, getCityFoodSplit, clampFoodSplitPct, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
+  clearLastEmpireFoodTicks,
   type EmpireFoodState,
+  type EmpireFoodTickResult,
 } from './game/empire-food';
-import { loadUpkeepParams, buildUnitFoodTable, militaryFoodConsumption, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -2821,7 +2834,9 @@ async function boot(): Promise<void> {
      * (obie wołane funkcje są już ownerId-agnostyczne).
      */
     function ownerHasZlotoAccessNow(ownerId: number): boolean {
-      return ownerHasNativeResourceAccess(ownerId, 'zloto')
+      // PYTANIE-84-U-13: zapas w skarbcu LUB Kopalnia złota LUB grant z trasy handlowej.
+      return ownerHasZlotoStock(ownerResourceStockAll(cities, ownerId))
+        || ownerHasNativeResourceAccess(ownerId, 'zloto')
         || hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'zloto');
     }
 
@@ -3071,14 +3086,14 @@ async function boot(): Promise<void> {
       clearMennicaZlotoGraceState(mennicaZlotoGraceState);
       empireFoodStates.clear();
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
-      empireFoodStates.set(0, freshEmpireFoodState(efParams.procentRozwojDefault));
+      empireFoodStates.set(0, freshEmpireFoodState());
       for (const ai of aiStartHexes) {
         if (!empireFoodStates.has(ai.ownerId)) {
-          empireFoodStates.set(ai.ownerId, freshEmpireFoodState(efParams.procentRozwojDefault));
+          empireFoodStates.set(ai.ownerId, freshEmpireFoodState());
         }
       }
       bindEmpireFoodRuntime(empireFoodStates);
-      syncCityFoodSplitsFromEmpire();
+      migrateCityRationsFromSave();
     }
 
     function initOwnerDefaultPodzialHandlu(): void {
@@ -3096,15 +3111,15 @@ async function boot(): Promise<void> {
     }
 
     function empireFoodDefaultPct(): number {
-      return buildEmpireFoodParams(data.econParams, _menuDifficulty).procentRozwojDefault;
+      return 100; // @deprecated PYTANIE-85 — suwak procentRozwoj usunięty
     }
 
-    /** Stary zapis: empireFoodStates.procentRozwoj → każde miasto osobno (B5 per-city slider). */
-    function syncCityFoodSplitsFromEmpire(): void {
-      const def = empireFoodDefaultPct();
+    function migrateCityRationsFromSave(): void {
       for (const city of cities) {
-        if (city.procentRozwoj !== undefined) continue;
-        city.procentRozwoj = empireFoodStates.get(city.ownerId)?.procentRozwoj ?? def;
+        if (city.poziomRacji === undefined && city.procentRozwoj !== undefined) {
+          city.poziomRacji = migrateProcentRozwojToPoziomRacji(city.procentRozwoj);
+        }
+        ensureCityRationDefaults(city);
       }
     }
 
@@ -3292,13 +3307,8 @@ async function boot(): Promise<void> {
      * rowniez pokazuje realny stan WLASCICIELA heksu (parytet z reszta panelu,
      * nie stan gracza patrzacego).
      */
-    function hexDaninaLabelAt(q: number, r: number): 'Danina' | 'Podatek' {
-      const ownerId = territoryOwnerAtLive(q, r);
-      if (ownerId === null) return 'Danina';
-      const capId = capitalCityIdForOwner(ownerId);
-      const walutaOdkryta = unlockedTechsForOwner(ownerId).includes('Waluta');
-      const hasMennicaWStolicy = mennicaWStolicy(capId, capId ? cityBuilt.get(capId) : undefined);
-      return resolveDaninaLabel(walutaOdkryta, hasMennicaWStolicy, ownerZlotoAccessForMennicaEffective(ownerId));
+    function hexDaninaLabelAt(_q: number, _r: number): 'Podatek' {
+      return 'Podatek';
     }
 
     /** D17=A: panel kontekstowy — pole mapy + opcjonalnie jednostka na tym heksie. */
@@ -4392,11 +4402,11 @@ async function boot(): Promise<void> {
         getOrderYieldMults: (cityId: string) => orderMultMap.get(cityId) ?? null,
         getEmpireFoodState: (oid: number) => empireFoodStates.get(oid) ?? null,
         getEmpireFoodTick: (oid: number) => getLastEmpireFoodTick(oid) ?? null,
-        onCityFoodSplitChange: (cityId: string, pct: number) => {
+        onCityRationChange: (cityId: string, level: PoziomRacji) => {
           const city = cities.find(c => c.id === cityId);
           if (!city || city.ownerId !== 0) return;
-          city.procentRozwoj = Math.min(100, Math.max(0, pct));
-          markCityStateDirty(); // D10: podział żywności (wojsko vs miasto) → przelicz
+          city.poziomRacji = level;
+          markCityStateDirty();
           updateHud();
         },
         getCultureState: (cityId: string) => {
@@ -6615,7 +6625,7 @@ async function boot(): Promise<void> {
         display.visibleIds.add(forceVisibleUnitId);
       }
       // MAP-Q1: czaszka głodu — tylko jednostki wojskowe (nie zwiadowca/osadnik/robotnik),
-      // gdy państwo głoduje wg isArmyStarving().
+      // gdy państwo głoduje wg isArmyHungry() (osłabienie statów, przed atrycją HP).
       const unitById = new Map<string, RuntimeUnit>();
       for (const u of src) unitById.set(u.id, u);
       const starvingOwnerCache = new Map<number, boolean>();
@@ -6624,7 +6634,7 @@ async function boot(): Promise<void> {
         if (!rep || isCivilianUnit(rep)) continue;
         let starving = starvingOwnerCache.get(rep.ownerId);
         if (starving === undefined) {
-          starving = isArmyStarving(rep.ownerId);
+          starving = isArmyHungry(rep.ownerId);
           starvingOwnerCache.set(rep.ownerId, starving);
         }
         if (starving) {
@@ -7975,15 +7985,15 @@ async function boot(): Promise<void> {
       }, durationMs);
     }
 
-    /** Po pierwszej jednostce gracza — przypomnienie o suwaku żywności armii (Maciej 2026-07-03). */
+    /** Po pierwszej jednostce gracza — przypomnienie o magazynie centralnym (PYTANIE-85). */
     function maybeHintArmyFoodOnFirstPlayerUnit(ownerId: number): void {
       if (ownerId !== 0 || playerArmyFoodHintShown) return;
       playerArmyFoodHintShown = true;
-      const allGrowth = cities.filter(c => c.ownerId === 0).every(c => getCityFoodSplit(c) >= 100);
-      if (!allGrowth) return;
+      const reserve = getEmpireFoodReserve(0);
+      if (reserve >= 0) return;
       showHintMessage(
-        'Masz wojsko — przesuń suwak żywności w stronę <b>Armia</b> (panel miasta). ' +
-        'Inaczej jednostki tracą 8% max HP co turę. Zapasy państwa wymagają budynku Spichlerz.',
+        'Masz wojsko, a magazyn centralny jest ujemny — wojsko może głodować. ' +
+        'Zwiększ produkcję żywności lub zmniejsz racje w miastach.',
         8000,
       );
     }
@@ -9020,6 +9030,37 @@ async function boot(): Promise<void> {
       };
     }
 
+    function buildEmpireFoodSnap(): EmpireFoodSnap {
+      const tick = getLastEmpireFoodTick(0);
+      const zapasy = Math.floor(getEmpireFoodReserve(0));
+      const maxCap = getEmpireFoodMaxCap(0) || projectPlayerFoodMaxCap();
+      const cityNameById = new Map(cities.filter(c => c.ownerId === 0).map(c => [c.id, c.name]));
+      const perCityRows = (tick?.perCityRows ?? []).map(r => ({
+        cityId: r.cityId,
+        name: cityNameById.get(r.cityId) ?? r.name,
+        produkcja: r.produkcja,
+        kosztRacji: r.kosztRacji,
+        bilans: r.bilans,
+        wzrostProcent: r.wzrostProcent,
+        nakarmione: r.nakarmione,
+      }));
+      return {
+        zapasy,
+        maxCap,
+        glodWojska: tick?.glodWojska,
+        tick: tick ? {
+          uprawaHodowla: tick.uprawaHodowla,
+          wyzwienieLudnosci: tick.wyzwienieLudnosci,
+          nadwyzka: tick.nadwyzka,
+          pomocMiastom: tick.pomocMiastom,
+          spichlerzStolicy: tick.spichlerzStolicy,
+          wojsko: tick.wojsko,
+          przyrostZapasow: tick.przyrostZapasow,
+        } : undefined,
+        perCityRows,
+      };
+    }
+
     function buildEmpireDetailSnap(): EmpireDetailSnap {
       const economy = buildHudState();
       const cult = buildCultureOverlayData();
@@ -9136,6 +9177,7 @@ async function boot(): Promise<void> {
         cityPobor,
         resources: buildEmpireResourceRows(0),
         trade: buildEmpireTradeSnap(),
+        food: buildEmpireFoodSnap(),
       };
     }
 
@@ -9720,34 +9762,24 @@ async function boot(): Promise<void> {
     }
 
     function projectPlayerFoodMaxCap(): number {
+      const cap = getEmpireFoodMaxCap(0);
+      if (cap > 0) return cap;
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
-      return computeEmpireFoodMaxCap(countPlayerSpichlerze(), efParams);
+      return efParams.centralCapBaza;
     }
 
-    /** Projekcja +X/t zapasów armii — bieżący suwak, nie stary tick. */
+    /** Projekcja przyrostu magazynu centralnego (PYTANIE-85). */
     function projectPlayerFoodProjection(): {
       netRate: number;
       wplywDoZapasow: number;
       kosztArmii: number;
+      uchwalaSolAktywna: boolean;
+      uchwalaSolSpichlerzIICount: number;
     } {
-      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
       // C-GLOD-Q2=B (Maciej 2026-07-26): mnożnik terytorialny w projekcji HUD —
       // territoryNodes budowane RAZ, nie per jednostka (wydajność).
       const territoryNodesForFoodProj = buildAllTerritoryNodes();
-      const playerUnits: EconUnit[] = units
-        .filter(u => u.ownerId === 0)
-        .map(u => ({
-          ownerId: u.ownerId,
-          typeId: u.typeId,
-          // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka w garnizonie
-          // miasta zjada połowę żywności (zywnosc_jednostka_oboz) -- patrz
-          // isCampingForFoodDiscount() (punkt zaczepienia na ewentualną znizkę
-          // dla fortyfikacji w polu, dziś CELOWO wyłączoną).
-          camping: isCampingForFoodDiscount(u),
-          onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForFoodProj) === u.ownerId,
-        }));
-      const kosztArmii = militaryFoodConsumption(playerUnits, upkeepParams, unitFoodTbl);
       const playerCities = cities.filter(c => c.ownerId === 0 && !c.oblegane);
       const preview = previewCityEconomy(
         playerCities,
@@ -9773,31 +9805,60 @@ async function boot(): Promise<void> {
         makeOwnerEmpireStockResolver(),
         ownerDefaultPodzialHandlu,
       );
-      const cityFoods = preview.perCity
-        .filter(tk => tk.ownerId === 0 && !tk.oblegany)
-        .map(tk => {
-          const c = cities.find(x => x.id === tk.cityId);
-          return {
-            zywnoscNetto: Math.max(0, tk.zywnoscNetto),
-            procentRozwoj: c ? getCityFoodSplit(c) : tk.procentRozwoj,
-          };
-        });
-      let wplywDoZapasow = 0;
-      for (const c of cityFoods) {
-        const z = Math.max(0, c.zywnoscNetto);
-        const pct = clampFoodSplitPct(c.procentRozwoj);
-        wplywDoZapasow += z * (1 - pct / 100);
+      const solCityIds = new Set<string>();
+      let uchwalaSolSpichlerzIICount = 0;
+      for (const tk of preview.perCity) {
+        if (tk.ownerId !== 0 || !tk.spichlerzSol) continue;
+        solCityIds.add(tk.cityId);
+        uchwalaSolSpichlerzIICount++;
       }
-      const netRate = computeEmpireFoodNetDeltaFromCityFoods(
-        cityFoods,
-        kosztArmii,
-        countPlayerSpichlerze(),
-        efParams,
+      const uchwalaSolAktywna = solCityIds.size > 0 || spichlerzSolArmyBonusActive(0);
+      const playerUnits: (EconUnit & { inGarnizon?: boolean; garrisonCityId?: string })[] = units
+        .filter(u => u.ownerId === 0)
+        .map(u => ({
+          ownerId: u.ownerId,
+          typeId: u.typeId,
+          // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka w garnizonie
+          // miasta zjada połowę żywności (zywnosc_jednostka_oboz) -- patrz
+          // isCampingForFoodDiscount() (punkt zaczepienia na ewentualną znizkę
+          // dla fortyfikacji w polu, dziś CELOWO wyłączoną).
+          camping: isCampingForFoodDiscount(u),
+          onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForFoodProj) === u.ownerId,
+          inGarnizon: u.inGarnizon === true,
+          garrisonCityId: u.inGarnizon ? cityAtUnit(u)?.id : undefined,
+        }));
+      const kosztArmii = militaryFoodConsumptionWithSpichlerz(
+        playerUnits,
+        0,
+        upkeepParams,
+        unitFoodTbl,
+        { solArmyOverride: uchwalaSolAktywna, solCityIdsOverride: solCityIds },
       );
+      const reserve = getEmpireFoodReserve(0);
+      let central = reserve;
+      let sumSurplus = 0;
+      let sumDeficit = 0;
+      for (const tk of preview.perCity) {
+        if (tk.ownerId !== 0 || tk.oblegany) continue;
+        const bilans = tk.bilansLokalny ?? tk.zywnoscNetto;
+        if (bilans >= 0) {
+          sumSurplus += bilans;
+          central += bilans;
+        } else {
+          sumDeficit += -bilans;
+        }
+      }
+      if (sumDeficit > 0) {
+        central -= Math.min(sumDeficit, Math.max(0, central));
+      }
+      central -= kosztArmii;
+      const netRate = central - reserve;
       return {
         netRate,
-        wplywDoZapasow: Math.round(wplywDoZapasow),
+        wplywDoZapasow: Math.round(sumSurplus),
         kosztArmii,
+        uchwalaSolAktywna,
+        uchwalaSolSpichlerzIICount,
       };
     }
 
@@ -9957,7 +10018,7 @@ async function boot(): Promise<void> {
         zywnoscRate: foodNetRate,
         zywnoscWplywMiast: foodProj.wplywDoZapasow,
         zywnoscKosztWojska: foodProj.kosztArmii,
-        glodWojska: isArmyStarving(0),
+        glodWojska: isArmyHungry(0),
         zywnoscKarencjaZaTur: foodStarvationCountdown ?? undefined,
         zloto: Math.floor(player.skarbiec),
         zlotoRate: Math.floor(_lastBogactwoRate),
@@ -10010,6 +10071,8 @@ async function boot(): Promise<void> {
         surowceAlert: resourceAlertCount > 0,
         handelIncome,
         handelRouteCount,
+        uchwalaSolAktywna: foodProj.uchwalaSolAktywna,
+        uchwalaSolSpichlerzIICount: foodProj.uchwalaSolSpichlerzIICount,
       };
     }
 
@@ -14482,6 +14545,17 @@ async function boot(): Promise<void> {
         // dla gracza i AI. Konsumowane przez battleScene.ts _singleBlow oraz
         // computeInstantResult (fieldFortifyDefenseBonus, game/city-defense.ts).
         fortifiedInField: u.ufortyfikowanyWPolu === true,
+        armyHungry: isArmyHungry(u.ownerId) && !isCivilianUnit(u),
+      };
+    }
+
+    /** Opcje głodu wojska do BattleOpts (PYTANIE-85). */
+    function armyHungerBattleOpts(atkOwnerId: number, defOwnerId: number): Pick<BattleOpts, 'attackerArmyHungry' | 'defenderArmyHungry' | 'armyHungerStatMult'> {
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      return {
+        attackerArmyHungry: isArmyHungry(atkOwnerId),
+        defenderArmyHungry: isArmyHungry(defOwnerId),
+        armyHungerStatMult: efParams.glodWojskaStatMult,
       };
     }
 
@@ -14742,6 +14816,7 @@ async function boot(): Promise<void> {
             defenderIsCityState: pbInfo4.obronca.isCityState,
             attackerIsBarbarian: pbInfo4.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo4.obronca.isBarbarian,
+            ...armyHungerBattleOpts(atkLead.ownerId, defLead.ownerId),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -15125,6 +15200,7 @@ async function boot(): Promise<void> {
             defenderIsCityState: pbInfo.obronca.isCityState,
             attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo.obronca.isBarbarian,
+            ...armyHungerBattleOpts(atkLead.ownerId, defLead.ownerId),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -15787,6 +15863,7 @@ async function boot(): Promise<void> {
       applyMapBattleOutcomeWithSummary,
       clearBattleUiState: clearMapBattleUiState,
       createBattleScene: (opts: BattleOpts) => new BattleScene(opts),
+      armyHungerBattleOpts,
       registerMilitiaDef: (id: string, def: Record<string, unknown>) => {
         militiaDefOverrides.set(id, def);
       },
@@ -16128,6 +16205,7 @@ async function boot(): Promise<void> {
             defenderIsCityState: pbInfo.obronca.isCityState,
             attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo.obronca.isBarbarian,
+            ...armyHungerBattleOpts(atkRosterRef[0]?.ownerId ?? 0, defRosterRef[0]?.ownerId ?? 0),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -16699,7 +16777,8 @@ async function boot(): Promise<void> {
           // -- territoryNodes budowane RAZ dla całej tury, nie per jednostka (wydajność:
           // to leci co turę po WSZYSTKICH jednostkach na mapie).
           const territoryNodesForFood = buildAllTerritoryNodes();
-          const econUnits: EconUnit[] = units.map(u => ({
+          let lastEfTickResult: EmpireFoodTickResult | null = null;
+          const econUnits: (EconUnit & { inGarnizon?: boolean; garrisonCityId?: string })[] = units.map(u => ({
             ownerId: u.ownerId,
             typeId:  u.typeId,
             // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): łączymy mnożnik terytorialny
@@ -16710,6 +16789,8 @@ async function boot(): Promise<void> {
             // własnym kraju = 1,0 (teren) x 0,5 (garnizon) = 0,5 żywności/turę.
             camping: isCampingForFoodDiscount(u),
             onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForFood) === u.ownerId,
+            inGarnizon: u.inGarnizon === true,
+            garrisonCityId: u.inGarnizon ? cityAtUnit(u)?.id : undefined,
           }));
           const ownerCivMap = new Map<number, string>();
           ownerCivMap.set(0, (player.civType as string) || 'grecy');
@@ -16845,7 +16926,10 @@ async function boot(): Promise<void> {
           try {
             const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
             const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
-            const efTickResult = advanceEmpireFood(econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl);
+            lastEfTickResult = advanceEmpireFood(
+              econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl, cityBuilt,
+            );
+            const efTickResult = lastEfTickResult;
 
             // NAPRAWA PARYTETU (Maciej 2026-07-26, bez pytania — luka, nie decyzja):
             // atrycja HP z głodu leciała WYŁĄCZNIE dla ownerId===0 (gracz), więc AI miało
@@ -16949,9 +17033,25 @@ async function boot(): Promise<void> {
             if (pracaGrant > 0) {
               // Maciej 2026-07-24: wyrąb daje DREWNO (surowiec do puli państwa), nie Pracę —
               // koszt 5 Pracy na start (pobrany osobno), a plon to 5 drewna z wyciętego lasu.
-              creditOwnerResourceStock(cities, 0, 'drewno', pracaGrant);
+              // PYTANIE-84 R5+D2: ten sam bonus Stolarnii co Tartak/Las w tickEmpireResourcePipeline.
+              const ownerId = st.ownerId;
+              let stolarniaCount = 0;
+              for (const c of cities) {
+                if (c.ownerId !== ownerId) continue;
+                if ((cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCount++;
+              }
+              const stolarniaBonus = loadThroughput(
+                data.econParams as unknown as Parameters<typeof loadThroughput>[0],
+                'budynek_stolarnia_bonus_drewna_civ',
+                _menuDifficulty,
+                0.10,
+              );
+              const drewnoCredit = applyStolarniaDrewnoMapInflow(
+                pracaGrant, stolarniaCount, stolarniaBonus,
+              );
+              creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit);
               showHintMessage(
-                'Wyrąb: +' + pracaGrant + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
+                'Wyrąb: +' + drewnoCredit + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
                 2000,
               );
             }
@@ -17643,6 +17743,38 @@ async function boot(): Promise<void> {
                 console.log(`[Rekrutacja] Tura ${turn} ${city.name}: ${rec.id} gotowa @ (${city.q},${city.r})`);
               }
             }
+            // PYTANIE-85: wzrost ułamkowy + głód po Szczęściu (Porządek) i centrali.
+            if (lastEfTickResult) {
+              const happinessByCityId = new Map<string, number>();
+              for (const [cid, st] of cityOrderState) happinessByCityId.set(cid, st.szczescie);
+              const spichlerzByCity = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
+              for (const city of cities) {
+                const tick = econ.perCity.find(t => t.cityId === city.id);
+                spichlerzByCity.set(city.id, {
+                  ceramikaActive: tick?.spichlerzCeramika ?? false,
+                  solActive: tick?.spichlerzSol ?? false,
+                  maSpichlerzPop: tick?.maSpichlerz ?? false,
+                  maSpichlerzIIPop: tick?.maSpichlerzII ?? false,
+                });
+              }
+              const efParamsGrowth = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+              applyPostCentralPopulationGrowth({
+                cities,
+                econ,
+                efResult: lastEfTickResult,
+                map,
+                territoryNodes: territoryNodesForFood,
+                econParams: buildEconParams(data, _menuDifficulty),
+                rationParams: efParamsGrowth.rationParams,
+                ownerCivByOwnerId: ownerCivMap,
+                spichlerzByCity,
+                happinessByCityId,
+                builtByCity: cityBuilt,
+                ownerEraByOwner: new Map(
+                  [...new Set(cities.map(c => c.ownerId))].map(oid => [oid, empireEpochForOwner(oid)]),
+                ),
+              });
+            }
             // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe --
             // odjęcie RAZ na turę (nie per-miasto) z globalnej puli produkcji, PO tym jak
             // pętla per-miasto powyżej dodała tegoroczne doPuli/overflow (playerPracaPool /
@@ -17760,6 +17892,7 @@ async function boot(): Promise<void> {
                   }));
                   for (const c of cities) {
                     if (c.ownerId !== ownerId) continue;
+                    c.poziomRacji = migrateProcentRozwojToPoziomRacji(sliderDecision.procentRozwoj);
                     c.procentRozwoj = sliderDecision.procentRozwoj;
                     c.podzialPracy = { procentBudynki: sliderDecision.procentBudynki };
                     c.podzialHandluOverride = false;
@@ -20067,7 +20200,7 @@ async function boot(): Promise<void> {
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       clearLastEmpireFoodTicks();
       empireFoodStates.clear();
-      empireFoodStates.set(0, freshEmpireFoodState(efParams.procentRozwojDefault));
+      empireFoodStates.set(0, freshEmpireFoodState());
       bindEmpireFoodRuntime(empireFoodStates);
 
       foundCityMode = false;
@@ -20275,7 +20408,7 @@ async function boot(): Promise<void> {
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       clearLastEmpireFoodTicks();
       empireFoodStates.clear();
-      empireFoodStates.set(0, freshEmpireFoodState(efParams.procentRozwojDefault));
+      empireFoodStates.set(0, freshEmpireFoodState());
       bindEmpireFoodRuntime(empireFoodStates);
 
       playerPracaPool = preset.pracaStart;
@@ -20665,7 +20798,7 @@ async function boot(): Promise<void> {
         initEmpireFoodStates();
       }
       bindEmpireFoodRuntime(empireFoodStates);
-      syncCityFoodSplitsFromEmpire();
+      migrateCityRationsFromSave();
       ownerDefaultPodzialHandlu.clear();
       const savedHandel = saved.meta?.ownerDefaultPodzialHandlu as Array<[number, CityPodzialHandlu]> | undefined;
       migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, savedHandel);

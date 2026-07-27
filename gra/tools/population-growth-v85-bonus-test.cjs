@@ -1,0 +1,148 @@
+'use strict';
+/**
+ * population-growth-v85-bonus-test.cjs — PYTANIE-85 Batch P85-B2 (Q4,Q5,Q8,Q9)
+ * Run: cd gra && node tools/population-growth-v85-bonus-test.cjs
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
+
+const ENTRY = path.resolve(__dirname, '.population-growth-v85-bonus-entry.ts');
+const BUNDLE = path.resolve(__dirname, '.population-growth-v85-bonus-bundle.cjs');
+
+fs.writeFileSync(ENTRY, `
+export {
+  computeGrowthPercentV85,
+  buildRationParams,
+} from '../src/game/population-growth-v85';
+export {
+  spichlerzGrowthBonusPercent,
+  resolveSpichlerzCityBonusState,
+} from '../src/game/building-resource-gate';
+`, 'utf8');
+
+try {
+  esbuild.buildSync({
+    entryPoints: [ENTRY],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    target: 'node18',
+    outfile: BUNDLE,
+    logLevel: 'silent',
+    resolveExtensions: ['.ts', '.js', '.json'],
+  });
+} catch (e) {
+  console.error('[population-growth-v85-bonus-test] bundle failed:', e.message || e);
+  process.exit(1);
+}
+
+const M = require(BUNDLE);
+const society = require('../data/society-params.json');
+
+let passed = 0;
+let failed = 0;
+
+function eq(a, b, msg) {
+  if (a === b) { passed++; console.log('  [OK] ' + msg); }
+  else { failed++; console.error('  [FAIL] ' + msg + ' got=' + a + ' want=' + b); }
+}
+function ok(cond, msg) {
+  if (cond) { passed++; console.log('  [OK] ' + msg); }
+  else { failed++; console.error('  [FAIL] ' + msg); }
+}
+
+const rationParams = M.buildRationParams(society, 'normal');
+
+function baseInput(overrides = {}) {
+  return {
+    population: 4,
+    poziomRacji: 2,
+    zdrowie: 0,
+    szczescieNetto: 0,
+    wealthPoziom: 1,
+    spichlerzState: {
+      ceramikaActive: false,
+      solActive: false,
+      maSpichlerzPop: false,
+      maSpichlerzIIPop: false,
+    },
+    civKey: null,
+    rationParams,
+    ...overrides,
+  };
+}
+
+console.log('\n[population-growth-v85-bonus-test]\n');
+
+// Q4: Spichlerz bez surowca = 0% ze spichlerza
+console.log('--- Q4 Spichlerz ---');
+{
+  const noDrain = M.resolveSpichlerzCityBonusState(['spichlerz'], { ceramikaPaid: false, solPaid: false });
+  eq(M.spichlerzGrowthBonusPercent(noDrain), 0, 'Spichlerz bez drain → 0% ze spichlerza');
+  const bd = M.computeGrowthPercentV85(baseInput({ spichlerzState: noDrain }));
+  eq(bd.spichlerz, 0, 'breakdown.spichlerz = 0 bez drain');
+}
+
+// Q4: II + Ceramika only = +1%
+{
+  const iiCeramika = M.resolveSpichlerzCityBonusState(['spichlerz_ii'], { ceramikaPaid: true, solPaid: false });
+  eq(M.spichlerzGrowthBonusPercent(iiCeramika), 1, 'Spichlerz II + Ceramika only → +1%');
+  const bd = M.computeGrowthPercentV85(baseInput({ spichlerzState: iiCeramika }));
+  eq(bd.spichlerz, 1, 'breakdown.spichlerz = 1 (II ceramika only)');
+}
+
+// Q4: pełny II = +2%
+{
+  const fullII = M.resolveSpichlerzCityBonusState(['spichlerz_ii'], { ceramikaPaid: true, solPaid: true });
+  eq(M.spichlerzGrowthBonusPercent(fullII), 2, 'Spichlerz II pełny → +2%');
+}
+
+// Q5: Chiny lud_wzrost_proc +0.05 → +5 p.p.
+console.log('--- Q5 cywilizacja addytywnie ---');
+{
+  const bd = M.computeGrowthPercentV85(baseInput({ civKey: 'chinczycy' }));
+  eq(bd.cywilizacja, 5, 'Chiny +0.05 → +5 p.p. cywilizacja');
+  eq(bd.total, bd.racje + bd.maleMiasto + bd.spichlerz + bd.zdrowie + bd.szczescie + bd.cywilizacja,
+    'total = suma składników breakdown');
+}
+
+// Q8: brak capa — suma >20% dozwolona
+console.log('--- Q8 brak capa ---');
+{
+  const fullII = M.resolveSpichlerzCityBonusState(['spichlerz_ii'], { ceramikaPaid: true, solPaid: true });
+  const bd = M.computeGrowthPercentV85(baseInput({
+    population: 1,
+    poziomRacji: 3,
+    spichlerzState: fullII,
+    civKey: 'chinczycy',
+    zdrowie: 35,
+  }));
+  // racje 7 + maleMiasto 5 + spichlerz 2 + zdrowie 3 + cywilizacja 5 = 22
+  ok(bd.total > 20, 'suma WZROST% >20% bez capa (got=' + bd.total + ')');
+  eq(bd.total, 22, 'total = 22% (7+5+2+3+5)');
+}
+
+// Q9: zdrowie 25 → floor(25/10)×1% = +2%
+console.log('--- Q9 Zdrowie → wzrost% ---');
+{
+  const bd = M.computeGrowthPercentV85(baseInput({ zdrowie: 25 }));
+  eq(bd.zdrowie, 2, 'zdrowie 25 pkt → +2% wzrostu (floor÷10)');
+}
+
+// Składniki nazwane w breakdown
+{
+  const bd = M.computeGrowthPercentV85(baseInput({ poziomRacji: 2, population: 3 }));
+  eq(bd.racje, 5, 'racje poziom 2 → 5%');
+  eq(bd.maleMiasto, 3, 'maleMiasto pop=3 → max(0,6-3)=3');
+  ok(
+    ['total', 'racje', 'maleMiasto', 'spichlerz', 'zdrowie', 'szczescie', 'cywilizacja']
+      .every(k => typeof bd[k] === 'number'),
+    'GrowthPercentBreakdown ma wszystkie pola nazwane',
+  );
+}
+
+console.log('\n--- wynik: ' + passed + ' pass, ' + failed + ' fail ---\n');
+process.exit(failed > 0 ? 1 : 0);

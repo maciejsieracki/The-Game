@@ -37,6 +37,10 @@ const BUNDLE_FILE = path.resolve(__dirname, '.unit-stock-cost-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   unitStockCost,
+  unitRequiresMountHorseStock,
+  MOUNT_UNIT_HORSE_STOCK_COST,
+  MOUNT_UNIT_HORSE_STOCK_KEY,
+  MOUNT_HORSE_EXEMPT_UNIT,
   ownerResourceStock, ownerResourceStockAll,
   deductBuildingStockCostAcrossCities, creditOwnerResourceStock,
   canAffordBuildingStock, missingStockFor,
@@ -228,6 +232,65 @@ console.log('\n-- D. Zwrot (anulowanie rekrutacji): creditOwnerResourceStock prz
   }
   const afterRefund = M.ownerResourceStock(cities, 3, 'braz');
   eq(afterRefund, before, 'zwrot po anulowaniu: suma panstwa przywrocona dokladnie do stanu sprzed poboru (6+2=8=before)');
+}
+
+// ===========================================================================
+// E. PYTANIE-84 U-15: jednostki Typ Mount +5 Koni (oprócz Rydwan woły)
+// ===========================================================================
+console.log('\n-- E. PYTANIE-84 U-15: koszt +5 Koni dla Typ Mount (wyjątek Rydwan woły) --');
+{
+  const konnica = units.find(u => u.Jednostka === 'Konnica');
+  const rydwanWoly = units.find(u => u.Jednostka === 'Rydwan (woły)');
+  const wojownik = units.find(u => u.Jednostka === 'Wojownik');
+  assert(!!konnica, 'units.json: Konnica istnieje');
+  assert(!!rydwanWoly, 'units.json: Rydwan (woły) istnieje');
+  assert(!!wojownik, 'units.json: Wojownik istnieje');
+
+  eq(M.MOUNT_UNIT_HORSE_STOCK_COST, 5, 'MOUNT_UNIT_HORSE_STOCK_COST = 5');
+  eq(M.MOUNT_UNIT_HORSE_STOCK_KEY, 'kon', "MOUNT_UNIT_HORSE_STOCK_KEY = 'kon'");
+  eq(M.MOUNT_HORSE_EXEMPT_UNIT, 'Rydwan (woły)', 'wyjątek: Rydwan (woły)');
+
+  if (konnica) {
+    assert(M.unitRequiresMountHorseStock(konnica), 'Konnica wymaga Koni');
+    deepEq(
+      M.unitStockCost(konnica),
+      { braz: 2, kon: 5 },
+      'Konnica: Brąz 2 + Konie 5 ze skarbca',
+    );
+  }
+  if (rydwanWoly) {
+    assert(!M.unitRequiresMountHorseStock(rydwanWoly), 'Rydwan (woły) bez kosztu Koni');
+    deepEq(
+      M.unitStockCost(rydwanWoly),
+      { braz: 2 },
+      'Rydwan (woły): tylko Brąz, bez Koni',
+    );
+  }
+  if (wojownik) {
+    assert(!M.unitRequiresMountHorseStock(wojownik), 'Wojownik (nie Mount) bez Koni');
+    deepEq(M.unitStockCost(wojownik), {}, 'Wojownik: brak kosztu magazynowego');
+  }
+
+  const mountUnits = units.filter(u => u.Typ === 'Mount');
+  const mountExceptWoly = mountUnits.filter(u => u.Jednostka !== 'Rydwan (woły)');
+  assert(mountUnits.length >= 2, 'units.json: co najmniej 2 jednostki Mount');
+  for (const u of mountExceptWoly) {
+    const cost = M.unitStockCost(u);
+    eq(cost.kon, 5, `${u.Jednostka}: +5 Koni (Typ Mount)`);
+  }
+
+  // Blokada rekrutu gdy brak Koni w puli państwa (Konnica: braz 2 + kon 5).
+  const cities = makeCities([
+    { id: 'm1', ownerId: 0, surowce: { braz: 10, kon: 4 } },
+  ]);
+  const cost = M.unitStockCost(konnica);
+  const pool = M.ownerResourceStockAll(cities, 0);
+  assert(!M.canAffordBuildingStock(pool, cost), 'brak 5 Koni (jest 4) -> blokada rekrutu');
+  cities[0].surowce.kon = 5;
+  assert(
+    M.canAffordBuildingStock(M.ownerResourceStockAll(cities, 0), cost),
+    '5 Koni + Brąz -> rekrut dozwolony',
+  );
 }
 
 // --- summary ---------------------------------------------------------------

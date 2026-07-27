@@ -370,7 +370,7 @@ function terrainRowToTileYield(row: TerrainTypeDef | TerrainModifierDef): TileYi
   return {
     zywnosc: Number(row['Żywność'] ?? 0),
     praca:   Number(row['Praca'] ?? 0),
-    handel:  Number(row['Handel'] ?? 0),
+    handel:  Number(row['Podatek'] ?? row['Handel'] ?? 0),
     drewno:  Number(row['Drewno'] ?? 0),
     kamien:  Number(row['Kamień'] ?? 0),
     // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu

@@ -21,32 +21,40 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var danina_podatek_nazwa_entry_exports = {};
 __export(danina_podatek_nazwa_entry_exports, {
   daninaLabel: () => daninaLabel,
+  daninaLabelAccusative: () => daninaLabelAccusative,
   daninaLabelForOwnerByCityList: () => daninaLabelForOwnerByCityList,
+  daninaLabelGenitive: () => daninaLabelGenitive,
   isPodatekActive: () => isPodatekActive,
   mennicaWStolicy: () => mennicaWStolicy
 });
 module.exports = __toCommonJS(danina_podatek_nazwa_entry_exports);
 
 // src/game/danina-nazwa.ts
-function isPodatekActive(walutaOdkryta, mennicaWStolicy2, maDostepDoZlota = true) {
-  return walutaOdkryta === true && mennicaWStolicy2 === true && maDostepDoZlota === true;
+function daninaLabelGenitive(_label) {
+  return "podatku";
 }
-function daninaLabel(walutaOdkryta, mennicaWStolicy2, maDostepDoZlota = true) {
-  return isPodatekActive(walutaOdkryta, mennicaWStolicy2, maDostepDoZlota) ? "Podatek" : "Danina";
+function daninaLabelAccusative(_label) {
+  return "podatek";
+}
+function isPodatekActive(_walutaOdkryta, _mennicaWStolicy, _maDostepDoZlota) {
+  return true;
+}
+function daninaLabel(_walutaOdkryta, _mennicaWStolicy, _maDostepDoZlota) {
+  return "Podatek";
 }
 function mennicaWStolicy(capitalCityId, builtBuildingIdsForCapital) {
   if (!capitalCityId) return false;
   return (builtBuildingIdsForCapital ?? []).includes("mennica");
 }
-function daninaLabelForOwnerByCityList(ownerId, walutaOdkryta, cities, builtByCity, capitalCityId, maDostepDoZlota = true) {
-  const capId = capitalCityId ?? cities.find((c) => c.ownerId === ownerId)?.id ?? null;
-  const hasMennicaWStolicy = mennicaWStolicy(capId, capId ? builtByCity.get(capId) : void 0);
-  return daninaLabel(walutaOdkryta, hasMennicaWStolicy, maDostepDoZlota);
+function daninaLabelForOwnerByCityList(_ownerId, _walutaOdkryta, _cities, _builtByCity, _capitalCityId, _maDostepDoZlota) {
+  return "Podatek";
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   daninaLabel,
+  daninaLabelAccusative,
   daninaLabelForOwnerByCityList,
+  daninaLabelGenitive,
   isPodatekActive,
   mennicaWStolicy
 });

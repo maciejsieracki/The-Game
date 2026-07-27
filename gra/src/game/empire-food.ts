@@ -1,61 +1,90 @@
 /**
- * empire-food.ts — implementacja ticku zapasów państwa (B5-Q1=A, B5-Q2=A).
+ * empire-food.ts — centralny magazyn żywności (PYTANIE-85).
+ *
+ * Kolejność tury: suma bilansów lokalnych → nadwyżki do centrali → dopłaty miastom
+ * → koszt wojska → zmiana stanu magazynu. Wzrost ludności w population-growth-v85.ts.
  */
 import type { EconomyTickResult, EconUnit } from './turn-economy';
 import type { UpkeepParams, UnitFoodTable } from './economy-upkeep';
-import { militaryFoodConsumption } from './economy-upkeep';
+import { militaryFoodConsumptionWithSpichlerz } from './turn-economy';
+import { SPICHLERZ_EMPIRE_CAP_I, SPICHLERZ_EMPIRE_CAP_II_FULL, resolveSpichlerzCityBonusState } from './building-resource-gate';
+import type { SpichlerzCityBonusState } from './building-resource-gate';
+import {
+  buildRationParams,
+  type GrowthPercentBreakdown,
+  type RationParams,
+} from './population-growth-v85';
 
 export interface EmpireFoodState {
+  /** Centralny magazyn żywności imperium (PYTANIE-85). */
   zapasyPanstwa: number;
-  procentRozwoj: number;
-  /** C-GLOD-Q1=A (Maciej 2026-07-26): licznik kolejnych tur Z RZĘDU z zapasyPanstwa < 0 —
-   *  karencja przed atrycją HP wojska. Zeruje się w chwili, gdy zapasy wracają >= 0.
-   *  Przetrwa zapis/odczyt gry — pole zapisywane 1:1 razem z resztą EmpireFoodState
-   *  (main.ts: `empireFoodStates: Array.from(empireFoodStates.entries())`). Stare zapisy
-   *  bez tego pola wczytują się z `?? 0` (patrz advanceEmpireFood) — brak regresji. */
+  /** @deprecated migracja — nie używane w logice V85. */
+  procentRozwoj?: number;
   turyUjemnychZapasow: number;
 }
 
 export interface EmpireFoodParams {
-  procentRozwojDefault: number;
-  glodWojskaHpFrac:     number;
-  /** C-GLOD-Q1=A (Maciej 2026-07-26): liczba kolejnych tur ujemnych zapasów państwa,
-   *  zanim ruszy atrycja HP wojska (econ-params ekonomia_miasta.glod_wojska_karencja_tur,
-   *  domyślnie 3 tury na każdym poziomie trudności — decyzja właściciela bez różnicowania). */
+  /** Baza capu magazynu centralnego 🍞. */
+  centralCapBaza: number;
+  /** Dodatek capu za każdy budynek Magazyn w imperium. */
+  centralCapBonusMagazyn: number;
+  glodWojskaHpFrac: number;
   glodWojskaKarencjaTur: number;
-  /** Ułamek netto żywności armii odkładany bez Spichlerza w imperium (domyślnie 50%). */
-  armiaOdkladBezSpichlerza: number;
-  /** Ułamek netto żywności armii odkładany ze Spichlerzem (domyślnie 100%). */
-  armiaOdkladZeSpichlerzem: number;
-  /** B5-SP: pojemność zapasów armii na 1 Spichlerz w imperium (domyślnie 100). */
-  spichlerzPojemnoscZapasowPanstwa: number;
+  /** Mnożnik statów bojowych (bez armor) gdy glodWojska — domyślnie 0.75. */
+  glodWojskaStatMult: number;
+  rationParams: RationParams;
+}
+
+export interface EmpireFoodCityRow {
+  cityId: string;
+  name: string;
+  produkcja: number;
+  kosztRacji: number;
+  bilans: number;
+  wzrostProcent: number;
+  nakarmione: boolean;
+  breakdown?: GrowthPercentBreakdown;
 }
 
 export interface EmpireFoodTick {
-  ownerId:       number;
-  zywnoscBrutto: number;
-  doRozwoju:     number;
-  doPanstwa:     number;
-  kosztArmii:    number;
-  zapasyPrzed:   number;
-  zapasyPo:      number;
-  /** true = zapasyPo < 0 W TEJ turze (bez karencji — sam fakt deficytu). Niezmienione
-   *  znaczenie (regresja B5): dla atrycji HP patrz `glodWojskaAtrycjaAktywna`. */
-  glodWojska:    boolean;
-  /** C-GLOD-Q1=A: wartość licznika (state.turyUjemnychZapasow) PO tym ticku. */
+  ownerId: number;
+  /** Uprawa i hodowla — suma produkcji brutto miast. */
+  uprawaHodowla: number;
+  /** Wyżywienie ludności — suma kosztów racji. */
+  wyzwienieLudnosci: number;
+  /** Nadwyżka — produkcja − wyżywienie (przed dopłatami). */
+  nadwyzka: number;
+  /** Pomoc miastom — dopłaty z magazynu do miast na minusie. */
+  pomocMiastom: number;
+  /** Spichlerz stolicy — pula po pomocy miastom, przed wojskiem. */
+  spichlerzStolicy: number;
+  /** Wojsko — koszt żywności armii. */
+  wojsko: number;
+  /** Przyrost zapasów — zmiana stanu magazynu w tej turze. */
+  przyrostZapasow: number;
+  zapasyPrzed: number;
+  zapasyPo: number;
+  maxCap: number;
+  kosztArmii: number;
+  glodWojska: boolean;
   turyUjemnychZapasowPo: number;
-  /** C-GLOD-Q1=A: true = karencja minęła, atrycja HP realnie startuje TĘ turę
-   *  (turyUjemnychZapasowPo >= params.glodWojskaKarencjaTur). */
   glodWojskaAtrycjaAktywna: boolean;
+  /** @deprecated alias do uprawaHodowla */
+  zywnoscBrutto: number;
+  /** @deprecated */
+  doRozwoju: number;
+  /** @deprecated */
+  doPanstwa: number;
+  perCityRows: EmpireFoodCityRow[];
+  fedByCityId: Map<string, boolean>;
 }
 
 export interface EmpireFoodTickResult {
   perOwner: EmpireFoodTick[];
-  byOwner:  Map<number, EmpireFoodTick>;
+  byOwner: Map<number, EmpireFoodTick>;
 }
 
 type Difficulty = 'easy' | 'normal' | 'hard';
-
 interface RawParamRow { easy?: number; normal?: number; hard?: number; }
 
 function pick(row: RawParamRow | undefined, d: Difficulty, fallback: number): number {
@@ -66,107 +95,70 @@ function pick(row: RawParamRow | undefined, d: Difficulty, fallback: number): nu
 
 export function buildEmpireFoodParams(
   raw: {
-    ekonomia_miasta?: {
-      suwak_zywnosc_rozwoj_domyslnie?: RawParamRow;
-      glod_wojska_hp_frac?: RawParamRow;
-      glod_wojska_karencja_tur?: RawParamRow;
-      armia_odklad_bez_spichlerza?: RawParamRow;
-      armia_odklad_ze_spichlerzem?: RawParamRow;
-      spichlerz_pojemnosc_zapasow_panstwa?: RawParamRow;
-    };
-    suwak_zywnosc_rozwoj_domyslnie?: RawParamRow;
+    ekonomia_miasta?: Record<string, RawParamRow>;
+    globalne?: Record<string, RawParamRow>;
     glod_wojska_hp_frac?: RawParamRow;
     glod_wojska_karencja_tur?: RawParamRow;
-    armia_odklad_bez_spichlerza?: RawParamRow;
-    armia_odklad_ze_spichlerzem?: RawParamRow;
-    spichlerz_pojemnosc_zapasow_panstwa?: RawParamRow;
+    glod_wojska_stat_mult?: RawParamRow;
+    magazyn_centralny_baza_zywnosc?: RawParamRow;
+    magazyn_centralny_bonus_zywnosc_na_budynek?: RawParamRow;
   },
   difficulty: Difficulty = 'normal',
 ): EmpireFoodParams {
-  const section = raw.ekonomia_miasta ?? raw;
+  const em = raw.ekonomia_miasta ?? raw;
+  const gl = raw.globalne ?? raw;
   return {
-    procentRozwojDefault: pick(section.suwak_zywnosc_rozwoj_domyslnie, difficulty, 100),
-    glodWojskaHpFrac:     pick(section.glod_wojska_hp_frac, difficulty, 0.08),
-    glodWojskaKarencjaTur: pick(section.glod_wojska_karencja_tur, difficulty, 3),
-    armiaOdkladBezSpichlerza: pick(section.armia_odklad_bez_spichlerza, difficulty, 0.5),
-    armiaOdkladZeSpichlerzem: pick(section.armia_odklad_ze_spichlerzem, difficulty, 1),
-    spichlerzPojemnoscZapasowPanstwa: pick(section.spichlerz_pojemnosc_zapasow_panstwa, difficulty, 100),
+    centralCapBaza: pick(
+      gl.magazyn_centralny_baza_zywnosc ?? em.magazyn_centralny_baza_zywnosc,
+      difficulty, 500,
+    ),
+    centralCapBonusMagazyn: pick(
+      gl.magazyn_centralny_bonus_zywnosc_na_budynek ?? em.magazyn_centralny_bonus_zywnosc_na_budynek,
+      difficulty, 100,
+    ),
+    glodWojskaHpFrac: pick(em.glod_wojska_hp_frac, difficulty, 0.08),
+    glodWojskaKarencjaTur: pick(em.glod_wojska_karencja_tur, difficulty, 3),
+    glodWojskaStatMult: pick(em.glod_wojska_stat_mult, difficulty, 0.75),
+    rationParams: buildRationParams(raw, difficulty),
   };
 }
 
-/** Netto zmiana zapasów armii po koszcie wojska i współczynniku odkładania. */
-function armyFoodDepositDelta(
-  doPanstwa: number,
-  kosztArmii: number,
-  depositFrac: number,
-): number {
-  const net = doPanstwa - kosztArmii;
-  if (net >= 0) return Math.round(net * depositFrac);
-  return net;
+export function freshEmpireFoodState(_procentRozwojDefault = 100): EmpireFoodState {
+  return { zapasyPanstwa: 0, turyUjemnychZapasow: 0 };
 }
 
-/**
- * Projekcja Δ zapasów armii (ta sama formuła co advanceEmpireFood, bez zapisu stanu).
- * HUD i panel miasta używają bieżącego suwaka — nie ostatniego ticku z poprzedniej tury/gry.
- */
-export function computeEmpireFoodNetDelta(
-  brutto: number,
-  kosztArmii: number,
-  pctRozwoj: number,
-  spichlerzCount: number,
-  params: EmpireFoodParams,
-): number {
-  const pct = clampFoodSplitPct(pctRozwoj);
-  const doPanstwa = brutto - brutto * (pct / 100);
-  const depositFrac = spichlerzCount > 0
-    ? params.armiaOdkladZeSpichlerzem
-    : params.armiaOdkladBezSpichlerza;
-  return armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
-}
-
-/** HUD: suma wkładów miast z indywidualnymi suwakami (nie jeden % imperium). */
-export function computeEmpireFoodNetDeltaFromCityFoods(
-  cityFoods: ReadonlyArray<{ zywnoscNetto: number; procentRozwoj: number }>,
-  kosztArmii: number,
-  spichlerzCount: number,
-  params: EmpireFoodParams,
-): number {
-  let doPanstwa = 0;
-  for (const c of cityFoods) {
-    const z = Math.max(0, c.zywnoscNetto);
-    const pct = clampFoodSplitPct(c.procentRozwoj);
-    doPanstwa += z * (1 - pct / 100);
+function countMagazynByOwner(
+  perCity: EconomyTickResult['perCity'],
+  builtByCity?: ReadonlyMap<string, readonly string[]>,
+): Map<number, number> {
+  const out = new Map<number, number>();
+  if (!builtByCity) return out;
+  const seen = new Set<string>();
+  for (const tick of perCity) {
+    if (seen.has(tick.cityId)) continue;
+    seen.add(tick.cityId);
+    if ((builtByCity.get(tick.cityId) ?? []).includes('magazyn')) {
+      out.set(tick.ownerId, (out.get(tick.ownerId) ?? 0) + 1);
+    }
   }
-  const depositFrac = spichlerzCount > 0
-    ? params.armiaOdkladZeSpichlerzem
-    : params.armiaOdkladBezSpichlerza;
-  return armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
+  return out;
 }
 
-/** Max zapasów armii = pojemność × liczba Spichlerzy; 0 gdy brak Spichlerza. */
-export function computeEmpireFoodMaxCap(
-  spichlerzCount: number,
+function computeCentralFoodCap(
+  ownerId: number,
+  perCity: EconomyTickResult['perCity'],
+  magazynCount: number,
   params: EmpireFoodParams,
 ): number {
-  return spichlerzCount > 0
-    ? spichlerzCount * params.spichlerzPojemnoscZapasowPanstwa
-    : 0;
-}
-
-export function clampFoodSplitPct(n: number): number {
-  return Math.min(100, Math.max(0, n));
-}
-
-/** Per-miasto suwak wzrost vs armia. Brak pola → defaultPct (migrateCityFoodSplits przy load). */
-export function getCityFoodSplit(
-  city: { procentRozwoj?: number },
-  defaultPct = 100,
-): number {
-  return clampFoodSplitPct(city.procentRozwoj ?? defaultPct);
-}
-
-export function freshEmpireFoodState(procentRozwojDefault = 100): EmpireFoodState {
-  return { zapasyPanstwa: 0, procentRozwoj: procentRozwojDefault, turyUjemnychZapasow: 0 };
+  let spichlerzCap = 0;
+  for (const tick of perCity) {
+    if (tick.ownerId !== ownerId || tick.oblegany) continue;
+    if (tick.maSpichlerzII) spichlerzCap += SPICHLERZ_EMPIRE_CAP_II_FULL;
+    else if (tick.maSpichlerz) spichlerzCap += SPICHLERZ_EMPIRE_CAP_I;
+  }
+  return params.centralCapBaza
+    + params.centralCapBonusMagazyn * magazynCount
+    + spichlerzCap;
 }
 
 export function advanceEmpireFood(
@@ -176,33 +168,11 @@ export function advanceEmpireFood(
   upkeep: UpkeepParams,
   params: EmpireFoodParams,
   foodTable: UnitFoodTable = {},
+  builtByCity?: ReadonlyMap<string, readonly string[]>,
 ): EmpireFoodTickResult {
-  const spichlerzCountByOwner = new Map<number, number>();
-  const spichlerzCapByOwner = new Map<number, number>();
-  for (const tick of econ.perCity) {
-    if (tick.maSpichlerzII) {
-      spichlerzCountByOwner.set(
-        tick.ownerId,
-        (spichlerzCountByOwner.get(tick.ownerId) ?? 0) + 1,
-      );
-      spichlerzCapByOwner.set(
-        tick.ownerId,
-        (spichlerzCapByOwner.get(tick.ownerId) ?? 0) + 150,
-      );
-    } else if (tick.maSpichlerz) {
-      spichlerzCountByOwner.set(
-        tick.ownerId,
-        (spichlerzCountByOwner.get(tick.ownerId) ?? 0) + 1,
-      );
-      spichlerzCapByOwner.set(
-        tick.ownerId,
-        (spichlerzCapByOwner.get(tick.ownerId) ?? 0) + params.spichlerzPojemnoscZapasowPanstwa,
-      );
-    }
-  }
-
+  const magazynCountByOwner = countMagazynByOwner(econ.perCity, builtByCity);
   const perOwner: EmpireFoodTick[] = [];
-  const byOwner  = new Map<number, EmpireFoodTick>();
+  const byOwner = new Map<number, EmpireFoodTick>();
 
   const ownerIds = new Set<number>([
     ...econ.perCity.map(t => t.ownerId),
@@ -211,62 +181,94 @@ export function advanceEmpireFood(
   ]);
 
   for (const ownerId of ownerIds) {
-    const st = states.get(ownerId) ?? freshEmpireFoodState(params.procentRozwojDefault);
+    const st = states.get(ownerId) ?? freshEmpireFoodState();
     if (!states.has(ownerId)) states.set(ownerId, st);
 
-    let bruttoSum = 0;
-    let doRozwoju = 0;
-    let doPanstwa = 0;
+    const zapasyPrzed = st.zapasyPanstwa;
+    let central = zapasyPrzed;
+    let uprawaHodowla = 0;
+    let wyzwienieLudnosci = 0;
+    let pomocMiastom = 0;
+    const deficits: Array<{ cityId: string; need: number; name: string }> = [];
+    const perCityRows: EmpireFoodCityRow[] = [];
+    const fedByCityId = new Map<string, boolean>();
+
     for (const tick of econ.perCity) {
       if (tick.ownerId !== ownerId || tick.oblegany) continue;
-      const z = Math.max(0, tick.zywnoscNetto);
-      const pctRozwoj = clampFoodSplitPct(
-        tick.procentRozwoj ?? st.procentRozwoj ?? params.procentRozwojDefault,
-      );
-      bruttoSum += z;
-      doRozwoju += z * (pctRozwoj / 100);
-      doPanstwa += z * (1 - pctRozwoj / 100);
+      const produkcja = tick.zywnoscBrutto ?? Math.max(0, tick.zywnoscNetto + (tick.kosztRacji ?? 0));
+      const kosztRacji = tick.kosztRacji ?? 0;
+      const bilans = tick.bilansLokalny ?? (produkcja - kosztRacji);
+      uprawaHodowla += produkcja;
+      wyzwienieLudnosci += kosztRacji;
+
+      perCityRows.push({
+        cityId: tick.cityId,
+        name: tick.cityId,
+        produkcja,
+        kosztRacji,
+        bilans,
+        wzrostProcent: tick.wzrostProcent ?? 0,
+        nakarmione: false,
+      });
+
+      if (bilans >= 0) {
+        central += bilans;
+        fedByCityId.set(tick.cityId, true);
+      } else {
+        deficits.push({ cityId: tick.cityId, need: -bilans, name: tick.cityId });
+      }
     }
-    doRozwoju = Math.round(doRozwoju);
-    doPanstwa = Math.round(doPanstwa);
-    const brutto = bruttoSum;
 
-    const ownerUnits = units.filter(u => u.ownerId === ownerId);
-    const kosztArmii = militaryFoodConsumption(ownerUnits, upkeep, foodTable);
+    for (const d of deficits) {
+      const covered = Math.min(d.need, Math.max(0, central));
+      central -= covered;
+      pomocMiastom += covered;
+      const fed = covered >= d.need;
+      fedByCityId.set(d.cityId, fed);
+      const row = perCityRows.find(r => r.cityId === d.cityId);
+      if (row) row.nakarmione = fed;
+    }
 
-    const zapasyPrzed = st.zapasyPanstwa;
-    const spichlerzCount = spichlerzCountByOwner.get(ownerId) ?? 0;
-    const depositFrac = spichlerzCount > 0
-      ? params.armiaOdkladZeSpichlerzem
-      : params.armiaOdkladBezSpichlerza;
-    const maxZapasy = spichlerzCapByOwner.get(ownerId) ?? 0;
-    const maxZapasyFinite = maxZapasy > 0 ? maxZapasy : Number.POSITIVE_INFINITY;
+    const nadwyzka = uprawaHodowla - wyzwienieLudnosci;
+    const spichlerzStolicy = central;
+    const kosztArmii = militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable);
+    central -= kosztArmii;
+    const przyrostZapasow = central - zapasyPrzed;
 
-    let zapasyPo = zapasyPrzed + armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
-    if (Number.isFinite(maxZapasyFinite) && zapasyPo > maxZapasyFinite) zapasyPo = maxZapasyFinite;
+    const maxCap = computeCentralFoodCap(
+      ownerId, econ.perCity, magazynCountByOwner.get(ownerId) ?? 0, params,
+    );
+    if (central > maxCap) central = maxCap;
+    if (central < 0) central = central; // ujemne zapasy dozwolone (głód wojska)
 
-    st.zapasyPanstwa = zapasyPo;
-    _maxCapByOwner.set(ownerId, maxZapasy);
+    st.zapasyPanstwa = central;
+    _maxCapByOwner.set(ownerId, maxCap);
 
-    // C-GLOD-Q1=A (Maciej 2026-07-26): licznik tur ujemnych zapasów Z RZĘDU — zeruje
-    // się natychmiast, gdy zapasy wracają >= 0; atrycja HP rusza dopiero gdy licznik
-    // osiąga glodWojskaKarencjaTur (domyślnie 3). `?? 0` — obrona przed starym stanem
-    // gry / fixture testową bez tego pola (patrz freshEmpireFoodState).
     const turyUjemnychZapasowPrzed = st.turyUjemnychZapasow ?? 0;
-    const turyUjemnychZapasowPo = zapasyPo < 0 ? turyUjemnychZapasowPrzed + 1 : 0;
+    const turyUjemnychZapasowPo = central < 0 ? turyUjemnychZapasowPrzed + 1 : 0;
     st.turyUjemnychZapasow = turyUjemnychZapasowPo;
 
     const tick: EmpireFoodTick = {
       ownerId,
-      zywnoscBrutto: brutto,
-      doRozwoju,
-      doPanstwa,
-      kosztArmii,
+      uprawaHodowla,
+      wyzwienieLudnosci,
+      nadwyzka,
+      pomocMiastom,
+      spichlerzStolicy,
+      wojsko: kosztArmii,
+      przyrostZapasow,
       zapasyPrzed,
-      zapasyPo,
-      glodWojska: zapasyPo < 0,
+      zapasyPo: central,
+      maxCap,
+      kosztArmii,
+      glodWojska: central < 0,
       turyUjemnychZapasowPo,
       glodWojskaAtrycjaAktywna: turyUjemnychZapasowPo >= params.glodWojskaKarencjaTur,
+      zywnoscBrutto: uprawaHodowla,
+      doRozwoju: 0,
+      doPanstwa: nadwyzka,
+      perCityRows,
+      fedByCityId,
     };
     perOwner.push(tick);
     byOwner.set(ownerId, tick);
@@ -275,6 +277,8 @@ export function advanceEmpireFood(
   _setLastEmpireFoodTicks(byOwner);
   return { perOwner, byOwner };
 }
+
+// --- Runtime accessors (HUD) ---
 
 let _lastTicks = new Map<number, EmpireFoodTick>();
 let _statesRef = new Map<number, EmpireFoodState>();
@@ -288,31 +292,28 @@ export function getEmpireFoodReserve(ownerId: number): number {
   return _statesRef.get(ownerId)?.zapasyPanstwa ?? 0;
 }
 
-/** B5-SP: max zapasów armii (100 × Spichlerze); 0 = brak limitu (imperium bez Spichlerza). */
 export function getEmpireFoodMaxCap(ownerId: number): number {
-  const cap = _maxCapByOwner.get(ownerId) ?? 0;
-  return cap > 0 ? cap : 0;
+  return _maxCapByOwner.get(ownerId) ?? 0;
 }
 
-export function getEmpireFoodSplit(ownerId: number): number {
-  return _statesRef.get(ownerId)?.procentRozwoj ?? 100;
+/** @deprecated PYTANIE-85 — suwak usunięty. */
+export function getEmpireFoodSplit(_ownerId: number): number {
+  return 100;
 }
 
 /**
- * true = atrycja HP z głodu jest AKTYWNA TERAZ dla tego ownera (karencja
- * glodWojskaKarencjaTur tur minęła — C-GLOD-Q1=A, Maciej 2026-07-26). Zanim
- * karencja minie, zapasy mogą już być ujemne (patrz EmpireFoodTick.glodWojska /
- * getArmyStarvationCountdown) bez realnej straty HP jeszcze.
+ * Głód wojska — osłabienie statów bojowych (bez armor) gdy zapasy < 0 po koszcie armii.
+ * Wcześniejsze niż isArmyStarving (atrycja HP po karencji).
  */
+export function isArmyHungry(ownerId: number): boolean {
+  return _lastTicks.get(ownerId)?.glodWojska ?? false;
+}
+
+/** Atrycja HP wojska — aktywna PO karencji glodWojskaKarencjaTur tur ujemnych zapasów. */
 export function isArmyStarving(ownerId: number): boolean {
   return _lastTicks.get(ownerId)?.glodWojskaAtrycjaAktywna ?? false;
 }
 
-/**
- * Liczba tur do startu atrycji HP (karencja), albo `null` gdy nie dotyczy
- * (zapasy nieujemne LUB atrycja już aktywna teraz). Dla HUD — ostrzeżenie
- * "Głód wojska za N tur" (ZADANIE 5, Maciej 2026-07-26).
- */
 export function getArmyStarvationCountdown(ownerId: number, karencjaTur: number): number | null {
   const t = _lastTicks.get(ownerId);
   if (!t || t.zapasyPo >= 0 || t.glodWojskaAtrycjaAktywna) return null;
@@ -327,8 +328,57 @@ export function _setLastEmpireFoodTicks(ticks: Map<number, EmpireFoodTick>): voi
   _lastTicks = ticks;
 }
 
-/** Nowa gra / reset — usuń ticki z poprzedniej sesji (inaczej HUD pokazuje stary +X/t). */
 export function clearLastEmpireFoodTicks(): void {
   _lastTicks = new Map();
   _maxCapByOwner = new Map();
 }
+
+/** @deprecated PYTANIE-85 */
+export function computeEmpireFoodNetDelta(
+  brutto: number,
+  kosztArmii: number,
+  _pctRozwoj: number,
+  _spichlerzCount: number,
+  _params: EmpireFoodParams,
+): number {
+  return brutto - kosztArmii;
+}
+
+/** @deprecated PYTANIE-85 */
+export function computeEmpireFoodNetDeltaFromCityFoods(
+  cityFoods: ReadonlyArray<{ zywnoscNetto: number; procentRozwoj?: number }>,
+  kosztArmii: number,
+  _spichlerzCount: number,
+  _params: EmpireFoodParams,
+): number {
+  let sum = 0;
+  for (const c of cityFoods) sum += c.zywnoscNetto;
+  return sum - kosztArmii;
+}
+
+/** @deprecated PYTANIE-85 */
+export function computeEmpireFoodMaxCap(
+  _spichlerzCount: number,
+  params: EmpireFoodParams,
+): number {
+  return params.centralCapBaza;
+}
+
+/** @deprecated */
+export function clampFoodSplitPct(n: number): number {
+  return Math.min(100, Math.max(0, n));
+}
+
+/** @deprecated */
+export function getCityFoodSplit(
+  city: { procentRozwoj?: number; poziomRacji?: number },
+  _defaultPct = 100,
+): number {
+  return city.poziomRacji !== undefined ? city.poziomRacji * 33 : 100;
+}
+
+export {
+  applyPostCentralPopulationGrowth,
+  applyPostCentralPopulationGrowth as applyCentralFoodPopulationGrowth,
+  type PostCentralGrowthOpts as ApplyCentralFoodGrowthOpts,
+} from './population-growth-v85';

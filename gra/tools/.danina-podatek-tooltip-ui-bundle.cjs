@@ -21,8 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var danina_podatek_tooltip_ui_entry_exports = {};
 __export(danina_podatek_tooltip_ui_entry_exports, {
   buildHexContextTooltipHtml: () => buildHexContextTooltipHtml,
-  daninaLabel: () => daninaLabel,
-  mennicaWStolicy: () => mennicaWStolicy
+  daninaLabel: () => daninaLabel
 });
 module.exports = __toCommonJS(danina_podatek_tooltip_ui_entry_exports);
 
@@ -33,17 +32,17 @@ var terrain_yields_default = {
       Teren: "\u0141\u0105ka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 1,
-      Handel: 1,
+      Podatek: 2,
       Drewno: 1,
       Kamie\u0144: 0,
-      Suma: 6,
+      Suma: 7,
       Uwagi: null
     },
     {
       Teren: "R\xF3wnina",
       \u017Bywno\u015B\u0107: 2,
       Praca: 2,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 2,
       Kamie\u0144: 1,
       Suma: 8,
@@ -53,7 +52,7 @@ var terrain_yields_default = {
       Teren: "Wzg\xF3rza",
       \u017Bywno\u015B\u0107: 1,
       Praca: 3,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 2,
       Suma: 8,
@@ -63,7 +62,7 @@ var terrain_yields_default = {
       Teren: "G\xF3ry",
       \u017Bywno\u015B\u0107: 0,
       Praca: 4,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 5,
       Suma: 11,
@@ -73,7 +72,7 @@ var terrain_yields_default = {
       Teren: "Wybrze\u017Ce",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 7,
@@ -83,7 +82,7 @@ var terrain_yields_default = {
       Teren: "Morze",
       \u017Bywno\u015B\u0107: 2,
       Praca: 0,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 4,
@@ -93,11 +92,21 @@ var terrain_yields_default = {
       Teren: "Pustynia",
       \u017Bywno\u015B\u0107: 0,
       Praca: 0,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 1,
       Uwagi: null
+    },
+    {
+      Teren: "Polarny",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 0,
+      Podatek: 0,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 0,
+      Uwagi: "Strefa polarna (\u015Bnieg) \u2014 niezamieszkana, C-MAP-Q3b"
     }
   ],
   terrain_modifiers: [
@@ -105,24 +114,467 @@ var terrain_yields_default = {
       Modyfikator: "Rzeka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 7,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +7 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Suma: 8,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +8 \u2014 mocny, mo\u017Cna stonowa\u0107"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
       \u017Bywno\u015B\u0107: -1,
       Praca: 3,
-      Handel: -1,
+      Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
-      Suma: 4,
-      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
+      Suma: 7,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
   ]
 };
+
+// data/terrain-improvements.json
+var terrain_improvements_default = {
+  _meta: {
+    opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
+    bonus_pola: "zywnosc | praca | handel | pieniadz | kamien | drewno (na obrabiane pole)",
+    epoka: "1=Kamien, 2=Braz, 3=Zelazo",
+    decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
+    kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
+    decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+  },
+  farma: {
+    nazwa: "Farma",
+    epoka: 1,
+    bonus: {
+      zywnosc: 3,
+      praca: 3,
+      handel: 3
+    },
+    surowiecOdblokowany: null,
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
+    koszt_praca: 20,
+    tech: "Rolnictwo",
+    odblokowuje: ""
+  },
+  irygacja: {
+    nazwa: "Irygacja",
+    epoka: 2,
+    bonus: {
+      zywnosc: 5,
+      praca: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: null,
+    teren: "\u0141\u0105ka, R\xF3wnina, Pustynia",
+    warunek: "TYLKO pole s\u0105siaduj\u0105ce z rzek\u0105 (1 pole) lub na rzece \u2014 BRAK \u0142a\u0144cuch\xF3w; kluczowa nad Nilem",
+    koszt_praca: 30,
+    tech: "Irygacja",
+    odblokowuje: ""
+  },
+  bydlo: {
+    nazwa: "Trzoda",
+    epoka: 1,
+    bonus: {
+      zywnosc: 2,
+      praca: 4,
+      handel: 3
+    },
+    surowiecOdblokowany: "bydlo",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
+    teren: "\u0141\u0105ka, R\xF3wnina",
+    warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
+    koszt_praca: 20,
+    tech: "Oswojenie zwierz\u0105t",
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
+  },
+  owce: {
+    nazwa: "Owce",
+    epoka: 1,
+    bonus: {
+      zywnosc: 1,
+      praca: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: "owce",
+    surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
+    teren: "Wzg\xF3rza",
+    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    koszt_praca: 20,
+    tech: "Oswojenie zwierz\u0105t",
+    odblokowuje: "Owce (we\u0142na / jedzenie)"
+  },
+  lama: {
+    nazwa: "Lama",
+    epoka: 1,
+    bonus: {
+      zywnosc: 1,
+      praca: 3,
+      handel: 3
+    },
+    surowiecOdblokowany: "lama",
+    surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
+    koszt_praca: 20,
+    tech: "Oswojenie zwierz\u0105t",
+    odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
+  },
+  stadnina: {
+    nazwa: "Stadnina",
+    epoka: 2,
+    bonus: {
+      praca: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: "kon",
+    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Ko\u0144 do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture.",
+    surowiec_ilosc_tura: 1,
+    teren: "\u0141\u0105ka, R\xF3wnina",
+    warunek: "solo; tylko heks ze z\u0142o\u017Cem konia w terytorium",
+    koszt_praca: 28,
+    tech: "Je\u017Adziectwo",
+    odblokowuje: "Ko\u0144 (jednostki konne)"
+  },
+  kopalnia: {
+    nazwa: "Kopalnia",
+    epoka: 1,
+    bonus: {
+      praca: 2,
+      handel: 3
+    },
+    surowiecOdblokowany: "ruda",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
+    koszt_praca: 25,
+    tech: "Murarstwo",
+    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
+  },
+  glinianka: {
+    nazwa: "Glinianka",
+    epoka: 2,
+    bonus: {
+      praca: 1,
+      glina: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: "glina",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 20,
+    teren: "z\u0142o\u017Ce Gliny",
+    warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
+    koszt_praca: 20,
+    tech: "Garncarstwo",
+    odblokowuje: "Ceg\u0142a (budynki br\u0105zu)"
+  },
+  kamieniolom: {
+    nazwa: "Kamienio\u0142om",
+    epoka: 1,
+    bonus: {
+      praca: 1,
+      kamien: 1,
+      handel: 2
+    },
+    surowiecOdblokowany: "kamien",
+    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    surowiec_ilosc_tura: 4,
+    teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
+    warunek: "budulec \u2014 mury, budynki",
+    koszt_praca: 22,
+    tech: "Murarstwo",
+    odblokowuje: "Kamie\u0144 (mury / budynki)"
+  },
+  oboz_lowiecki: {
+    nazwa: "Ob\xF3z \u0142owiecki",
+    epoka: 1,
+    bonus: {
+      zywnosc: 1,
+      pieniadz: 1,
+      praca: 1,
+      handel: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 \u2014 brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
+    teren: "Las / dzika zwierzyna",
+    warunek: "dzika zwierzyna",
+    koszt_praca: 18,
+    tech: "\u0141owiectwo",
+    odblokowuje: ""
+  },
+  wyrab: {
+    nazwa: "Wyr\u0105b",
+    typ: "wycinka",
+    epoka: 1,
+    bonus: {
+      handel: 1
+    },
+    surowiecOdblokowany: null,
+    teren: "Las",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
+    koszt_praca: 5,
+    tech: null,
+    wycinka: {
+      praca_per_tura: 5,
+      tury: 1,
+      usuwa_nakladke: "las"
+    },
+    odblokowuje: ""
+  },
+  tartak: {
+    nazwa: "Tartak",
+    typ: "ulepszenie",
+    epoka: 1,
+    bonus: {
+      praca: 3,
+      handel: 3
+    },
+    surowiecOdblokowany: "drewno",
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
+    surowiec_ilosc_tura: 20,
+    teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
+    warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
+    koszt_praca: 25,
+    tech: "Obr\xF3bka drewna",
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
+  },
+  tarasy: {
+    nazwa: "Tarasy uprawne",
+    epoka: 2,
+    bonus: {
+      zywnosc: 3,
+      praca: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: null,
+    teren: "Wzg\xF3rza",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
+    koszt_praca: 25,
+    tech: "Rolnictwo",
+    odblokowuje: "",
+    cywilizacje: [
+      "chinczycy",
+      "inkowie"
+    ],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
+  },
+  lodzie_rybackie: {
+    nazwa: "\u0141odzie rybackie",
+    epoka: 1,
+    bonus: {
+      zywnosc: 2,
+      praca: 3,
+      handel: 3
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
+    teren: "Wybrze\u017Ce, Morze (ryby)",
+    warunek: "\u0142awica ryb",
+    koszt_praca: 20,
+    tech: "\u017Begluga",
+    odblokowuje: ""
+  },
+  warzelnia_soli: {
+    nazwa: "Warzelnia soli",
+    epoka: 2,
+    bonus: {
+      pieniadz: 1,
+      zywnosc: 1,
+      praca: 1,
+      handel: 3
+    },
+    surowiecOdblokowany: "sol",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja S\xF3l do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 \u017Bywno\u015B\u0107, +1 Pieni\u0105dz) zostaje obok surowca_ilosc_tura.",
+    surowiec_ilosc_tura: 10,
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
+    koszt_praca: 20,
+    tech: "Garncarstwo",
+    odblokowuje: "S\xF3l"
+  },
+  fort: {
+    nazwa: "Fort",
+    epoka: 3,
+    bonus: {},
+    surowiecOdblokowany: null,
+    bonus_obrona_proc: 100,
+    bonus_wymaga_obozowania: true,
+    zasieg_pol: 10,
+    zasieg_terytorium: 10,
+    zasieg_kontroli: 10,
+    teren: "dowolny l\u0105d w terytorium",
+    warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
+    koszt_praca: 25,
+    tech: "Wojskowo\u015B\u0107",
+    odblokowuje: "",
+    uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
+  },
+  droga: {
+    nazwa: "Droga",
+    epoka: 1,
+    bonus: {
+      handel: 1
+    },
+    surowiecOdblokowany: null,
+    teren: "ka\u017Cdy przejezdny heks",
+    warunek: "\u0142\u0105czy TYLKO miasta i posterunki (MAPA pilnuje); +szybko\u015B\u0107 ruchu jednostek",
+    koszt_praca: 15,
+    tech: "Ko\u0142o",
+    odblokowuje: ""
+  },
+  droga_brukowana: {
+    nazwa: "Droga brukowana",
+    typ: "ulepszenie",
+    epoka: 3,
+    bonus: {
+      handel: 2
+    },
+    bonus_ruch: 2,
+    surowiecOdblokowany: null,
+    upgradeFrom: "droga",
+    teren: "hex z Drogi",
+    warunek: "upgrade Drogi; +2 ruch jednostek; ta sama sie\u0107 dr\xF3g co Droga",
+    koszt_praca: 25,
+    tech: "Drogi brukowane",
+    odblokowuje: "",
+    uwagi: "T-TECH-9 Maciej 2026-07-04"
+  },
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
+    epoka: 2,
+    bonus: {
+      praca: 2,
+      handel: 5
+    },
+    surowiecOdblokowany: "ruda",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
+    koszt_praca: 22,
+    tech: "Br\u0105zownictwo",
+    odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
+    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+  },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2,
+      handel: 10
+    },
+    surowiecOdblokowany: "zloto",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Z\u0142oto do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/tur\u0119. Mennica zu\u017Cywa 1 Z\u0142oto/tur\u0119 ze skarbca przy mno\u017Cniku handlu\u2192Pieni\u0105dz (U-13).",
+    surowiec_ilosc_tura: 1,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "z\u0142o\u017Ce z\u0142ota \u2014 produkcja do magazynu pa\u0144stwa",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (Z\u0142oto w skarbcu + Targowisko w stolicy)",
+    uwagi: "PYTANIE-84: z\u0142oto magazynowane (game/zloto-access.ts). Dodatkowe kopalnie \u2192 nadwy\u017Cka na handel/eksport (U-13)."
+  },
+  posterunek: {
+    nazwa: "Posterunek (Stra\u017Cnica)",
+    epoka: 2,
+    bonus: {},
+    surowiecOdblokowany: null,
+    bonus_obrona_proc: 50,
+    bonus_wymaga_obozowania: true,
+    zasieg_pol: 5,
+    zasieg_terytorium: 5,
+    teren: "l\u0105d w/na kraw\u0119dzi w\u0142asnego zasi\u0119gu",
+    warunek: "NIE miasto, BEZ plon\xF3w; ROZSZERZA zasi\u0119g terytorium o promie\u0144 5 p\xF3l; odkrywa mg\u0142\u0119; w\u0119ze\u0142 sieci dr\xF3g; +50% Obrony jednostkom obozuj\u0105cym na polu",
+    koszt_praca: 30,
+    tech: "-",
+    tech_uwaga: "T-TECH-3 Maciej 2026-06-26: bramka AND w kodzie \u2014 Obr\xF3bka drewna + Murarstwo (improvement-tech.ts IMPROVEMENT_MULTI_TECH_REQ)",
+    odblokowuje: "",
+    uwagi: "Br\u0105z (epoka 2); zasieg_terytorium=5; +50% Obrona w trybie obozowania (decyzja Naster 2026-06-25)"
+  },
+  _miasto_zasieg_ref: {
+    _komentarz: "NOTA (nie ulepsz. terenu): miasto ma zasieg_terytorium=10 (stale, wg dyspozycji EKONOMIA 2026-06-25); helper: okolica.cityRangeForPopulation \u2014 pop<5 r5, pop>=5 r10, pop>=10 r15 (wg memory civ-zasieg-miasta-dynamiczny); zasieg_terytorium=10 to wartosc poczatkowa/bazowa dla zasladania kolejnych miast"
+  }
+};
+
+// src/game/terrain-improvements.ts
+var IMPROVEMENTS = terrain_improvements_default;
+var LEGACY_KEY_ALIASES = {
+  pastwisko: "bydlo"
+};
+var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
+function normalizeImprovementKey(raw) {
+  if (!raw || raw === "brak") return void 0;
+  const key = LEGACY_KEY_ALIASES[raw] ?? raw;
+  return IMPROVEMENTS[key]?.bonus !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
+}
+function improvementBonusForKey(key) {
+  const row = IMPROVEMENTS[key];
+  if (!row?.bonus) return {};
+  return { ...row.bonus };
+}
+function applyImprovementBonus(yld, improvementKey) {
+  if (!improvementKey) return;
+  const b = improvementBonusForKey(improvementKey);
+  if (b.zywnosc) yld.zywnosc += b.zywnosc;
+  if (b.praca) yld.praca += b.praca;
+  if (b.handel) yld.handel += b.handel;
+  if (b.pieniadz) yld.handel += b.pieniadz;
+  if (b.drewno) yld.drewno += b.drewno;
+  if (b.kamien) yld.kamien += b.kamien;
+  if (b.glina) yld.glina += b.glina;
+}
+var ORE_YIELD_PER_MINE = 2;
+function oreYieldFromImprovements(improvementKeys, zloze) {
+  let ruda = 0;
+  let ruda_zelaza = 0;
+  const z = zloze?.trim().toLowerCase();
+  for (const raw of improvementKeys) {
+    const key = normalizeImprovementKey(raw);
+    if (key === "kopalnia_miedzi") {
+      ruda += ORE_YIELD_PER_MINE;
+    } else if (key === "kopalnia") {
+      if (z === "zelazo") ruda_zelaza += ORE_YIELD_PER_MINE;
+      else ruda += ORE_YIELD_PER_MINE;
+    }
+  }
+  return { ruda, ruda_zelaza };
+}
+function applyImprovementBonuses(yld, improvementKeys) {
+  for (const key of improvementKeys) {
+    applyImprovementBonus(yld, key);
+  }
+}
+function improvementKeysForHex(hex) {
+  if (hex.ulepszenia?.length) {
+    const keys = hex.ulepszenia.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
+    return [...new Set(keys)];
+  }
+  const single = normalizeImprovementKey(String(hex.ulepszenie ?? "brak"));
+  return single ? [single] : [];
+}
+function improvementDisplayName(key) {
+  return IMPROVEMENTS[key]?.nazwa ?? key;
+}
+
+// src/map/road-movement.ts
+var ROAD_MIN_MOVE_COST = 1 / 3;
+
+// src/units/setup.ts
+var DEFAULT_TERRAIN_COSTS = {
+  ["laka" /* Laka */]: 1,
+  ["rownina" /* Rownina */]: 1,
+  ["pustynia" /* Pustynia */]: 1,
+  ["wybrzeze" /* Wybrzeze */]: Infinity,
+  ["wzgorza" /* Wzgorza */]: 2,
+  ["gory" /* Gory */]: Infinity,
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
+};
+var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
@@ -167,6 +619,13 @@ var miasto_params_default = {
     wartosc: 1,
     jednostka: "0/1",
     opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
+  },
+  manpower_uzupelnienie_hp_proc_max_tura: {
+    easy: 25,
+    normal: 20,
+    hard: 15,
+    jednostka: "% maxHP/tura",
+    opis: "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP \xD7 warto\u015B\u0107/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP \xD7 kosztJednostki). Przy braku MP \u2014 leczenie cz\u0119\u015Bciowe do dost\u0119pnej puli. manpower.tickManpowerUnitReplenishment."
   },
   jednostka_koszt_domyslny: {
     wartosc: 10,
@@ -273,399 +732,8 @@ var miasto_params_default = {
 // src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 
-// data/terrain-improvements.json
-var terrain_improvements_default = {
-  _meta: {
-    opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
-    bonus_pola: "zywnosc | praca | handel | pieniadz | kamien | drewno (na obrabiane pole)",
-    epoka: "1=Kamien, 2=Braz, 3=Zelazo",
-    decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
-    kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
-    decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
-  },
-  farma: {
-    nazwa: "Farma",
-    epoka: 1,
-    bonus: {
-      zywnosc: 3
-    },
-    surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
-    koszt_praca: 20,
-    tech: "Rolnictwo",
-    odblokowuje: ""
-  },
-  irygacja: {
-    nazwa: "Irygacja",
-    epoka: 2,
-    bonus: {
-      zywnosc: 5
-    },
-    surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina, Pustynia",
-    warunek: "TYLKO pole s\u0105siaduj\u0105ce z rzek\u0105 (1 pole) lub na rzece \u2014 BRAK \u0142a\u0144cuch\xF3w; kluczowa nad Nilem",
-    koszt_praca: 30,
-    tech: "Irygacja",
-    odblokowuje: ""
-  },
-  bydlo: {
-    nazwa: "Trzoda",
-    epoka: 1,
-    bonus: {
-      zywnosc: 2,
-      praca: 3
-    },
-    surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
-    koszt_praca: 20,
-    tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
-  },
-  owce: {
-    nazwa: "Owce",
-    epoka: 1,
-    bonus: {
-      zywnosc: 1,
-      praca: 2
-    },
-    surowiecOdblokowany: "owce",
-    surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
-    koszt_praca: 20,
-    tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Owce (we\u0142na / jedzenie)"
-  },
-  lama: {
-    nazwa: "Lama",
-    epoka: 1,
-    bonus: {
-      zywnosc: 1,
-      praca: 3
-    },
-    surowiecOdblokowany: "lama",
-    surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "Wzg\xF3rza, G\xF3ry",
-    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
-    koszt_praca: 20,
-    tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
-  },
-  stadnina: {
-    nazwa: "Stadnina",
-    epoka: 2,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: "kon",
-    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo",
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "solo; tylko heks ze z\u0142o\u017Cem konia w terytorium",
-    koszt_praca: 28,
-    tech: "Je\u017Adziectwo",
-    odblokowuje: "Ko\u0144 (jednostki konne)"
-  },
-  kopalnia: {
-    nazwa: "Kopalnia",
-    epoka: 1,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
-    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
-    koszt_praca: 25,
-    tech: "Murarstwo",
-    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
-  },
-  glinianka: {
-    nazwa: "Glinianka",
-    epoka: 2,
-    bonus: {
-      praca: 1,
-      glina: 2
-    },
-    surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 5,
-    teren: "z\u0142o\u017Ce Gliny",
-    warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
-    koszt_praca: 20,
-    tech: "Garncarstwo",
-    odblokowuje: "Ceg\u0142a (budynki br\u0105zu)"
-  },
-  kamieniolom: {
-    nazwa: "Kamienio\u0142om",
-    epoka: 1,
-    bonus: {
-      praca: 1,
-      kamien: 1
-    },
-    surowiecOdblokowany: "kamien",
-    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
-    surowiec_ilosc_tura: 4,
-    teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
-    warunek: "budulec \u2014 mury, budynki",
-    koszt_praca: 22,
-    tech: "Murarstwo",
-    odblokowuje: "Kamie\u0144 (mury / budynki)"
-  },
-  oboz_lowiecki: {
-    nazwa: "Ob\xF3z \u0142owiecki",
-    epoka: 1,
-    bonus: {
-      zywnosc: 1,
-      pieniadz: 1
-    },
-    surowiecOdblokowany: null,
-    surowiecOdblokowany_uwaga: "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 \u2014 brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
-    teren: "Las / dzika zwierzyna",
-    warunek: "dzika zwierzyna",
-    koszt_praca: 18,
-    tech: "\u0141owiectwo",
-    odblokowuje: ""
-  },
-  wyrab: {
-    nazwa: "Wyr\u0105b",
-    typ: "wycinka",
-    epoka: 1,
-    bonus: {},
-    surowiecOdblokowany: null,
-    teren: "Las",
-    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
-    koszt_praca: 5,
-    tech: null,
-    wycinka: {
-      praca_per_tura: 5,
-      tury: 1,
-      usuwa_nakladke: "las"
-    },
-    odblokowuje: ""
-  },
-  tartak: {
-    nazwa: "Tartak",
-    typ: "ulepszenie",
-    epoka: 1,
-    bonus: {
-      praca: 3
-    },
-    surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
-    surowiec_ilosc_tura: 4,
-    teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
-    warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
-    koszt_praca: 25,
-    tech: "Obr\xF3bka drewna",
-    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
-  },
-  tarasy: {
-    nazwa: "Tarasy uprawne",
-    epoka: 2,
-    bonus: {
-      zywnosc: 3
-    },
-    surowiecOdblokowany: null,
-    teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
-    koszt_praca: 25,
-    tech: "Rolnictwo",
-    odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
-  },
-  lodzie_rybackie: {
-    nazwa: "\u0141odzie rybackie",
-    epoka: 1,
-    bonus: {
-      zywnosc: 2,
-      praca: 3
-    },
-    surowiecOdblokowany: null,
-    surowiecOdblokowany_uwaga: "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
-    teren: "Wybrze\u017Ce, Morze (ryby)",
-    warunek: "\u0142awica ryb",
-    koszt_praca: 20,
-    tech: "\u017Begluga",
-    odblokowuje: ""
-  },
-  warzelnia_soli: {
-    nazwa: "Warzelnia soli",
-    epoka: 2,
-    bonus: {
-      pieniadz: 1,
-      zywnosc: 1
-    },
-    surowiecOdblokowany: "sol",
-    surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
-    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
-    koszt_praca: 20,
-    tech: "Garncarstwo",
-    odblokowuje: "S\xF3l"
-  },
-  fort: {
-    nazwa: "Fort",
-    epoka: 3,
-    bonus: {},
-    surowiecOdblokowany: null,
-    bonus_obrona_proc: 100,
-    bonus_wymaga_obozowania: true,
-    zasieg_pol: 10,
-    zasieg_terytorium: 10,
-    zasieg_kontroli: 10,
-    teren: "dowolny l\u0105d w terytorium",
-    warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
-    koszt_praca: 25,
-    tech: "Wojskowo\u015B\u0107",
-    odblokowuje: "",
-    uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
-  },
-  droga: {
-    nazwa: "Droga",
-    epoka: 1,
-    bonus: {
-      handel: 1
-    },
-    surowiecOdblokowany: null,
-    teren: "ka\u017Cdy przejezdny heks",
-    warunek: "\u0142\u0105czy TYLKO miasta i posterunki (MAPA pilnuje); +szybko\u015B\u0107 ruchu jednostek",
-    koszt_praca: 15,
-    tech: "Ko\u0142o",
-    odblokowuje: ""
-  },
-  droga_brukowana: {
-    nazwa: "Droga brukowana",
-    typ: "ulepszenie",
-    epoka: 3,
-    bonus: {},
-    bonus_ruch: 2,
-    surowiecOdblokowany: null,
-    upgradeFrom: "droga",
-    teren: "hex z Drogi",
-    warunek: "upgrade Drogi; +2 ruch jednostek; ta sama sie\u0107 dr\xF3g co Droga",
-    koszt_praca: 25,
-    tech: "Drogi brukowane",
-    odblokowuje: "",
-    uwagi: "T-TECH-9 Maciej 2026-07-04"
-  },
-  kopalnia_miedzi: {
-    nazwa: "Kopalnia miedzi",
-    epoka: 2,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
-    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
-    koszt_praca: 22,
-    tech: "Br\u0105zownictwo",
-    odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
-    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
-  },
-  kopalnia_zlota: {
-    nazwa: "Kopalnia z\u0142ota",
-    epoka: 2,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: null,
-    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
-    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
-    koszt_praca: 22,
-    tech: "Waluta",
-    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
-    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
-  },
-  posterunek: {
-    nazwa: "Posterunek (Stra\u017Cnica)",
-    epoka: 2,
-    bonus: {},
-    surowiecOdblokowany: null,
-    bonus_obrona_proc: 50,
-    bonus_wymaga_obozowania: true,
-    zasieg_pol: 5,
-    zasieg_terytorium: 5,
-    teren: "l\u0105d w/na kraw\u0119dzi w\u0142asnego zasi\u0119gu",
-    warunek: "NIE miasto, BEZ plon\xF3w; ROZSZERZA zasi\u0119g terytorium o promie\u0144 5 p\xF3l; odkrywa mg\u0142\u0119; w\u0119ze\u0142 sieci dr\xF3g; +50% Obrony jednostkom obozuj\u0105cym na polu",
-    koszt_praca: 30,
-    tech: "-",
-    tech_uwaga: "T-TECH-3 Maciej 2026-06-26: bramka AND w kodzie \u2014 Obr\xF3bka drewna + Murarstwo (improvement-tech.ts IMPROVEMENT_MULTI_TECH_REQ)",
-    odblokowuje: "",
-    uwagi: "Br\u0105z (epoka 2); zasieg_terytorium=5; +50% Obrona w trybie obozowania (decyzja Naster 2026-06-25)"
-  },
-  _miasto_zasieg_ref: {
-    _komentarz: "NOTA (nie ulepsz. terenu): miasto ma zasieg_terytorium=10 (stale, wg dyspozycji EKONOMIA 2026-06-25); helper: okolica.cityRangeForPopulation \u2014 pop<5 r5, pop>=5 r10, pop>=10 r15 (wg memory civ-zasieg-miasta-dynamiczny); zasieg_terytorium=10 to wartosc poczatkowa/bazowa dla zasladania kolejnych miast"
-  }
-};
-
-// src/game/terrain-improvements.ts
-var IMPROVEMENTS = terrain_improvements_default;
-var LEGACY_KEY_ALIASES = {
-  pastwisko: "bydlo"
-};
-var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
-function normalizeImprovementKey(raw) {
-  if (!raw || raw === "brak") return void 0;
-  const key = LEGACY_KEY_ALIASES[raw] ?? raw;
-  return IMPROVEMENTS[key]?.bonus !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
-}
-function improvementBonusForKey(key) {
-  const row = IMPROVEMENTS[key];
-  if (!row?.bonus) return {};
-  return { ...row.bonus };
-}
-function applyImprovementBonus(yld, improvementKey) {
-  if (!improvementKey) return;
-  const b = improvementBonusForKey(improvementKey);
-  if (b.zywnosc) yld.zywnosc += b.zywnosc;
-  if (b.praca) yld.praca += b.praca;
-  if (b.handel) yld.handel += b.handel;
-  if (b.pieniadz) yld.handel += b.pieniadz;
-  if (b.drewno) yld.drewno += b.drewno;
-  if (b.kamien) yld.kamien += b.kamien;
-  if (b.glina) yld.glina += b.glina;
-}
-var ORE_YIELD_PER_MINE = 2;
-function oreYieldFromImprovements(improvementKeys, zloze) {
-  let ruda = 0;
-  let ruda_zelaza = 0;
-  const z = zloze?.trim().toLowerCase();
-  for (const raw of improvementKeys) {
-    const key = normalizeImprovementKey(raw);
-    if (key === "kopalnia_miedzi") {
-      ruda += ORE_YIELD_PER_MINE;
-    } else if (key === "kopalnia") {
-      if (z === "zelazo") ruda_zelaza += ORE_YIELD_PER_MINE;
-      else ruda += ORE_YIELD_PER_MINE;
-    }
-  }
-  return { ruda, ruda_zelaza };
-}
-function applyImprovementBonuses(yld, improvementKeys) {
-  for (const key of improvementKeys) {
-    applyImprovementBonus(yld, key);
-  }
-}
-function improvementKeysForHex(hex) {
-  if (hex.ulepszenia?.length) {
-    const keys = hex.ulepszenia.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
-    return [...new Set(keys)];
-  }
-  const single = normalizeImprovementKey(String(hex.ulepszenie ?? "brak"));
-  return single ? [single] : [];
-}
-function improvementDisplayName(key) {
-  return IMPROVEMENTS[key]?.nazwa ?? key;
-}
+// src/game/zloto-access.ts
+var ZLOTO_LABEL = "Z\u0142oto";
 
 // src/game/building-resource-gate.ts
 var LABEL_BY_ASCII = {
@@ -678,10 +746,28 @@ var LABEL_BY_ASCII = {
   braz: "Br\u0105z",
   sol: "S\xF3l",
   cegla: "Ceg\u0142a",
-  ceramika: "Ceramika"
+  ceramika: "Ceramika",
+  zloto: ZLOTO_LABEL,
+  kon: "Ko\u0144"
+};
+var DEPOSIT_LINKED_BUILDING_LABELS = {
+  garncarnia: ["Glina"],
+  cegielnia: ["Glina"],
+  // PYTANIE-84-U-24: Spichlerz I — brak bramki Ceramika przy budowie; drain B6 po postawieniu.
+  // spichlerz — celowo brak wpisu (bonusy z drain co turę, patrz sekcja Spichlerz niżej).
+  spichlerz_ii: ["S\xF3l"],
+  stolarnia: ["Drewno"],
+  kamieniarski: ["Kamie\u0144"],
+  kuznia: ["Ruda"],
+  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
+  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  mennica: [ZLOTO_LABEL]
 };
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
+  Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
 );
 
 // src/game/production.ts
@@ -711,13 +797,14 @@ var TERRAIN_NAME_TO_ENUM = {
   "G\xF3ry": "gory" /* Gory */,
   "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
   "Morze": "morze" /* Morze */,
-  "Pustynia": "pustynia" /* Pustynia */
+  "Pustynia": "pustynia" /* Pustynia */,
+  "Polarny": "polarny" /* Polarny */
 };
 function terrainRowToTileYield(row) {
   return {
     zywnosc: Number(row["\u017Bywno\u015B\u0107"] ?? 0),
     praca: Number(row["Praca"] ?? 0),
-    handel: Number(row["Handel"] ?? 0),
+    handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
     // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
@@ -6897,8 +6984,14 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.03, highland: 0.07 },
-      medium: { mountain: 0.06, highland: 0.11 },
+      low: { mountain: 0.045, highland: 0.105 },
+      medium: { mountain: 0.075, highland: 0.125 },
+      high: { mountain: 0.18, highland: 0.27 }
+    },
+    relief_overflow_cap_frac: {
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
+      low: { mountain: 0.045, highland: 0.075 },
+      medium: { mountain: 0.05, highland: 0.085 },
       high: { mountain: 0.12, highland: 0.18 }
     },
     pasma_gorskie: {
@@ -7118,21 +7211,6 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
-// src/map/road-movement.ts
-var ROAD_MIN_MOVE_COST = 1 / 3;
-
-// src/units/setup.ts
-var DEFAULT_TERRAIN_COSTS = {
-  ["laka" /* Laka */]: 1,
-  ["rownina" /* Rownina */]: 1,
-  ["pustynia" /* Pustynia */]: 1,
-  ["wybrzeze" /* Wybrzeze */]: Infinity,
-  ["wzgorza" /* Wzgorza */]: 2,
-  ["gory" /* Gory */]: Infinity,
-  ["morze" /* Morze */]: Infinity
-};
-var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
-
 // src/map/generator.ts
 var ROZMIAR_DIMS = mapGenRozmiarDims();
 
@@ -7150,7 +7228,6 @@ var RIVER_SCALE_BY_SIZE = {
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
-var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,
@@ -7169,7 +7246,8 @@ var ELEVATION_RANK = {
   ["pustynia" /* Pustynia */]: 3,
   ["rownina" /* Rownina */]: 4,
   ["wzgorza" /* Wzgorza */]: 5,
-  ["gory" /* Gory */]: 6
+  ["gory" /* Gory */]: 6,
+  ["polarny" /* Polarny */]: 2
 };
 var BASE_DEPOSIT_RULES = [
   {
@@ -7260,7 +7338,8 @@ var TERRAIN_SURFACE_Y = {
   ["rownina" /* Rownina */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.02,
   ["pustynia" /* Pustynia */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.08,
   ["wzgorza" /* Wzgorza */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.18,
-  ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32
+  ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32,
+  ["polarny" /* Polarny */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.04
 };
 var ROBLOX_TERRAIN_VIS = {
   ["morze" /* Morze */]: { height: 0.3, yOffset: 0 },
@@ -7271,7 +7350,8 @@ var ROBLOX_TERRAIN_VIS = {
   /** Pustynia = profil wzgórza (Maciej 2026-07-04: nie zalewa morze). */
   ["pustynia" /* Pustynia */]: { height: 0.42, yOffset: 0.08 },
   ["wzgorza" /* Wzgorza */]: { height: 0.42, yOffset: 0.08 },
-  ["gory" /* Gory */]: { height: 0.46, yOffset: 0.12 }
+  ["gory" /* Gory */]: { height: 0.46, yOffset: 0.12 },
+  ["polarny" /* Polarny */]: { height: 0.36, yOffset: 0.06 }
 };
 var COAST_WATER_CAP_THICKNESS = 0.038 * 1.15;
 var CIV_TERRAIN_VIS = {
@@ -7281,7 +7361,8 @@ var CIV_TERRAIN_VIS = {
   ["rownina" /* Rownina */]: { height: 0.45, yOffset: 0.08 },
   ["pustynia" /* Pustynia */]: { height: 0.42, yOffset: 0.08 },
   ["wzgorza" /* Wzgorza */]: { height: 0.7, yOffset: 0.15 },
-  ["gory" /* Gory */]: { height: 1.2, yOffset: 0.4 }
+  ["gory" /* Gory */]: { height: 1.2, yOffset: 0.4 },
+  ["polarny" /* Polarny */]: { height: 0.38, yOffset: 0.06 }
 };
 var TERRAIN_CIV = {
   ["morze" /* Morze */]: 2054790,
@@ -7290,7 +7371,8 @@ var TERRAIN_CIV = {
   ["rownina" /* Rownina */]: 11121239,
   ["pustynia" /* Pustynia */]: 14270841,
   ["wzgorza" /* Wzgorza */]: 5209396,
-  ["gory" /* Gory */]: 10133929
+  ["gory" /* Gory */]: 10133929,
+  ["polarny" /* Polarny */]: 15265525
 };
 var TERRAIN_ROBLOX = {
   ["morze" /* Morze */]: 5608621,
@@ -7300,7 +7382,8 @@ var TERRAIN_ROBLOX = {
   ["rownina" /* Rownina */]: 11586174,
   ["pustynia" /* Pustynia */]: 14731406,
   ["wzgorza" /* Wzgorza */]: 8300658,
-  ["gory" /* Gory */]: 10332340
+  ["gory" /* Gory */]: 10332340,
+  ["polarny" /* Polarny */]: 15659768
 };
 var TERRAIN_MINECRAFT = {
   ["morze" /* Morze */]: 2842280,
@@ -7309,7 +7392,8 @@ var TERRAIN_MINECRAFT = {
   ["rownina" /* Rownina */]: 7249987,
   ["pustynia" /* Pustynia */]: 14402396,
   ["wzgorza" /* Wzgorza */]: 4880946,
-  ["gory" /* Gory */]: 9080985
+  ["gory" /* Gory */]: 9080985,
+  ["polarny" /* Polarny */]: 14476526
 };
 
 // src/render/pastwisko-modele.ts
@@ -7413,6 +7497,24 @@ var FALLBACK_RELIGION_PARAMS = Object.freeze({
   konwersjaSwiatyniaPct: 4,
   konwersjaKregiPct: 2
 });
+
+// src/game/economy-upkeep.ts
+var OWNER_CAPPED_RESOURCE_KEYS = [
+  "drewno",
+  "kamien",
+  "glina",
+  "ruda",
+  "ruda_zelaza",
+  "cegla",
+  "ceramika",
+  "braz",
+  "zelazo",
+  "stal",
+  "sol",
+  "zloto",
+  "kon"
+];
+var OWNER_CAPPED_RESOURCE_KEY_SET = new Set(OWNER_CAPPED_RESOURCE_KEYS);
 
 // src/game/cities.ts
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
@@ -7664,19 +7766,16 @@ var TEREN_LABEL = {
   ["gory" /* Gory */]: "G\xF3ry",
   ["wybrzeze" /* Wybrzeze */]: "Wybrze\u017Ce",
   ["morze" /* Morze */]: "Morze",
-  ["pustynia" /* Pustynia */]: "Pustynia"
+  ["pustynia" /* Pustynia */]: "Pustynia",
+  ["polarny" /* Polarny */]: "Polarny"
 };
 var YIELD_ROWS = [
   { key: "zywnosc", label: "\u017Bywno\u015B\u0107" },
   { key: "praca", label: "Praca" },
-  { key: "handel", label: "Danina" },
+  { key: "handel", label: "Podatek" },
   { key: "drewno", label: "Drewno" },
   { key: "kamien", label: "Kamie\u0144" }
 ];
-function yieldRowsFor(daninaLbl) {
-  if (daninaLbl === "Danina") return YIELD_ROWS;
-  return YIELD_ROWS.map((row) => row.key === "handel" ? { ...row, label: daninaLbl } : row);
-}
 var RIVER_BONUS = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 var FOREST_BONUS = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 function formatYieldLine(y, empty = "\u2014") {
@@ -7813,8 +7912,7 @@ function listTerrainPossibleImprovements(hex) {
 function buildHexContextTooltipHtml(input) {
   const { q, r, hex, esc, cityName } = input;
   const era = input.currentEra ?? 99;
-  const daninaLbl = input.daninaLabel ?? "Danina";
-  const yieldRows = yieldRowsFor(daninaLbl);
+  const yieldRows = YIELD_ROWS;
   const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(String(hex.terenBazowy));
   const resources = collectResourceLabels(hex, era);
   const built = builtImprovementKeys(hex);
@@ -7867,26 +7965,24 @@ function buildHexContextTooltipHtml(input) {
   if (cityName) {
     const label = formatEntityDisplayName({ baseName: cityName, isCityState: input.cityIsCityState });
     lines.push(subLine("Miasto", esc(label)));
+    if (input.cityOwnerLabel) {
+      lines.push(subLine("W\u0142a\u015Bciciel", esc(input.cityOwnerLabel)));
+    }
+    if (input.cityPopulation != null) {
+      lines.push(subLine("Ludno\u015B\u0107", String(Math.round(input.cityPopulation))));
+    }
   }
   return lines.join("");
 }
 
 // src/game/danina-nazwa.ts
-function isPodatekActive(walutaOdkryta, mennicaWStolicy2, maDostepDoZlota = true) {
-  return walutaOdkryta === true && mennicaWStolicy2 === true && maDostepDoZlota === true;
-}
-function daninaLabel(walutaOdkryta, mennicaWStolicy2, maDostepDoZlota = true) {
-  return isPodatekActive(walutaOdkryta, mennicaWStolicy2, maDostepDoZlota) ? "Podatek" : "Danina";
-}
-function mennicaWStolicy(capitalCityId, builtBuildingIdsForCapital) {
-  if (!capitalCityId) return false;
-  return (builtBuildingIdsForCapital ?? []).includes("mennica");
+function daninaLabel(_walutaOdkryta, _mennicaWStolicy, _maDostepDoZlota) {
+  return "Podatek";
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   buildHexContextTooltipHtml,
-  daninaLabel,
-  mennicaWStolicy
+  daninaLabel
 });
 /*! Bundled license information:
 

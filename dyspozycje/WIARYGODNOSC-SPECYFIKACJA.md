@@ -925,6 +925,7 @@ wymienił jako kandydata).
 | WIAR-Q6 (start) | zmienione: **zależny od trudności** (+40/+20/0), nie „wszyscy 70" |
 | Skala | **−100…+100** (nie 0–100) |
 | C-WIAR-N4 | **B — odmowa pomocy sojusznikowi: −15** |
+| C-WIAR-N4-AI | **B — AI może odmówić pomocy sojusznikowi (heurystyka; nie zawsze honoruje)** → `docs/decyzje/C-WIAR-N4-AI.md` |
 | C-WIAR-SKAUT | **A — zwiadowcy wyłączeni z obu kar** |
 | C-WIAR-ODWET | **A — odwet nie karze N1/N2 przez 10 tur** |
 | C-HANDEL-1/2/3 | **B / A / zasada atomowości** — naprawa handlu RAZEM z Wiarygodnością |

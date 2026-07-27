@@ -5,8 +5,8 @@
  * City.surowce (game/cities.ts) BEZ żadnego odbiorcy.
  *
  * Opcjonalne pole `koszt_surowce` w buildings.json (np. { "cegla": 12 }): dodatkowy
- * koszt budynku pobierany z magazynu MIASTA (City.surowce) — NIEZALEŻNY od kosztu
- * Pracy (production.ts itemCost/buildingWorkCost). Pobierany RAZ, przy starcie
+ * koszt budynku pobierany z MAGAZYNU PAŃSTWA (suma City.surowce — PYTANIE-84 D3/R3),
+ * NIEZALEŻNY od kosztu Pracy (production.ts itemCost/buildingWorkCost). Pobierany RAZ, przy starcie
  * budowy (enqueue do kolejki produkcji), nie przy ukończeniu — patrz wołający:
  *   - gracz : ui/cityPanel.ts addItem()
  *   - AI    : main.ts (cmd.type === 'build' handler) + opcjonalny pre-filtr
@@ -31,7 +31,7 @@ export function buildingStockCost(
   return out;
 }
 
-/** Ile brakuje w magazynie miasta dla każdego surowca kosztu (0 lub brak wpisu = wystarcza). */
+/** Ile brakuje w puli państwa dla każdego surowca kosztu (0 lub brak wpisu = wystarcza). */
 export function missingStockFor(
   citySurowce: Record<string, number> | undefined,
   cost: Record<string, number>,
@@ -45,7 +45,7 @@ export function missingStockFor(
   return missing;
 }
 
-/** Czy magazyn miasta pokrywa cały koszt surowcowy budynku (pusty koszt => zawsze true). */
+/** Czy pula państwa pokrywa cały koszt surowcowy budynku (pusty koszt => zawsze true). */
 export function canAffordBuildingStock(
   citySurowce: Record<string, number> | undefined,
   cost: Record<string, number>,
@@ -85,7 +85,19 @@ export const STOCK_RESOURCE_LABEL: Readonly<Record<string, string>> = {
   braz: 'Brąz',
   zelazo: 'Żelazo',
   stal: 'Stal',
+  sol: 'Sól',
+  zloto: 'Złoto (surowiec)',
+  kon: 'Koń',
 };
+
+/**
+ * Klucze magazynu państwa (City.surowce, suma civ-wide) — PYTANIE-84 R4/R6/R9/R10, U-20.
+ */
+export const EMPIRE_STOCK_RESOURCE_KEYS: readonly string[] = [
+  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza',
+  'cegla', 'ceramika', 'braz', 'zelazo', 'stal',
+  'sol', 'zloto', 'kon',
+] as const;
 
 export function stockResourceLabel(key: string): string {
   return STOCK_RESOURCE_LABEL[key] ?? key;
@@ -220,6 +232,30 @@ export function creditOwnerResourceStock<T extends StockCitySource>(
   return toAdd;
 }
 
+/**
+ * PYTANIE-84 R1: zapisuje pulę państwa (jeden skarbiec) z powrotem do City.surowce.
+ * Zeruje zapasy ownera, potem rozdziela `pool` przez creditOwnerResourceStock (najmniejsze
+ * miasto pierwsze — spójne z resztą API magazynu państwa).
+ */
+export function assignOwnerResourceStockFromPool<T extends StockCitySource>(
+  cities: ReadonlyArray<T>,
+  ownerId: number,
+  pool: Readonly<Record<string, number>>,
+): void {
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    if (!c.surowce) continue;
+    for (const k of Object.keys(c.surowce)) {
+      delete c.surowce[k];
+    }
+  }
+  for (const [key, amount] of Object.entries(pool)) {
+    if (typeof amount === 'number' && Number.isFinite(amount) && amount > 0) {
+      creditOwnerResourceStock(cities, ownerId, key, amount);
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // JEDNOSTKI-SUROWIEC-01 (decyzja Macieja 2026-07-24): jednostki z units.json
 // (pola `Surowiec` / `Surowiec (ilość)`) konsumuja PULE PANSTWA identycznie jak
@@ -239,24 +275,56 @@ function stripDiacriticsLower(s: string): string {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
 }
 
+/** PYTANIE-84 U-15 / R10: koszt Koni ze skarbca państwa przy rekrucie jednostek jezdnych. */
+export const MOUNT_UNIT_HORSE_STOCK_COST = 5;
+export const MOUNT_UNIT_HORSE_STOCK_KEY = 'kon';
+/** Jednostka wyłączona z kosztu Koni (rydwan na wołach, nie konie). */
+export const MOUNT_HORSE_EXEMPT_UNIT = 'Rydwan (woły)';
+
+/** Minimalny kształt jednostki dla kosztu magazynowego (units.json). */
+export interface UnitStockCostSource {
+  Jednostka?: string | null;
+  Typ?: string | null;
+  Surowiec?: string | null;
+  'Surowiec (ilość)'?: number | null;
+}
+
+/** Czy jednostka wymaga +5 Koni ze skarbca państwa (Typ Mount, oprócz Rydwan woły). */
+export function unitRequiresMountHorseStock(
+  unit: UnitStockCostSource | null | undefined,
+): boolean {
+  if (!unit) return false;
+  if ((unit.Typ ?? '').toString().trim() !== 'Mount') return false;
+  const name = (unit.Jednostka ?? '').toString().trim();
+  return name !== MOUNT_HORSE_EXEMPT_UNIT;
+}
+
 /**
  * Koszt surowcowy jednostki (units.json `Surowiec` / `Surowiec (ilość)`), zmapowany
  * na klucz ASCII zgodny z City.surowce (np. 'Brąz' -> 'braz', 'Żelazo' -> 'zelazo').
  * Zwraca {} gdy Surowiec pusty/'-'/null lub ilość <= 0 (brak kosztu -- zachowanie
  * zero-regresji dla jednostek bez surowca, np. Osadnik/Robotnik).
+ *
+ * PYTANIE-84 U-15: jednostki `Typ: Mount` (oprócz Rydwan woły) dostają dodatkowo
+ * +5 Koni (`kon`) ze skarbca państwa obok kosztu Surowiec z units.json.
  * Pure -- bez DOM.
  */
 export function unitStockCost(
-  unit: { Surowiec?: string | null; 'Surowiec (ilość)'?: number | null } | null | undefined,
+  unit: UnitStockCostSource | null | undefined,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   if (!unit) return out;
   const rawName = (unit.Surowiec ?? '').toString().trim();
-  if (!rawName || rawName === '-') return out;
-  const ilosc = unit['Surowiec (ilość)'];
-  if (typeof ilosc !== 'number' || !Number.isFinite(ilosc) || ilosc <= 0) return out;
-  const key = stripDiacriticsLower(rawName);
-  if (!key) return out;
-  out[key] = ilosc;
+  if (rawName && rawName !== '-') {
+    const ilosc = unit['Surowiec (ilość)'];
+    if (typeof ilosc === 'number' && Number.isFinite(ilosc) && ilosc > 0) {
+      const key = stripDiacriticsLower(rawName);
+      if (key) out[key] = ilosc;
+    }
+  }
+  if (unitRequiresMountHorseStock(unit)) {
+    out[MOUNT_UNIT_HORSE_STOCK_KEY] =
+      (out[MOUNT_UNIT_HORSE_STOCK_KEY] ?? 0) + MOUNT_UNIT_HORSE_STOCK_COST;
+  }
   return out;
 }

@@ -20,6 +20,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.conv-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   loadThroughput, DEFAULT_CONVERTER_RECIPES, runConverter, runConverters,
+  computeGarncarniaSurplusBonus,
 } from '../src/game/converters';
 `, 'utf8');
 
@@ -33,9 +34,13 @@ let passed = 0, failed = 0;
 function assert(cond, msg) { if (cond) passed++; else { failed++; console.error('  FAIL:', msg); } }
 function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
 
-eq(C.DEFAULT_CONVERTER_RECIPES.length, 8, 'kanon 2026-07-27: 8 receptur (odlewnia multi-receptura, bez wielka_kuznia stal)');
+eq(C.DEFAULT_CONVERTER_RECIPES.length, 9, 'PYTANIE-84: 9 receptur (garncarnia→ceramika przywrócona)');
 assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'tartak'), 'B-SUROW-BUD-03: brak tartak→deski');
-assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'garncarnia'), 'Maciej 2026-07-23: brak garncarnia→ceramika (dostep, nie stock)');
+const garncarnia = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'garncarnia');
+assert(!!garncarnia, 'PYTANIE-84 U-14: garncarnia→ceramika w katalogu');
+assert(!Object.prototype.hasOwnProperty.call(garncarnia.inputs, 'ceramika'),
+  'U-14: Garncarnia NIE zużywa Ceramiki (tylko glina+drewno)');
+eq(garncarnia.throughputFallback, 6, 'PYTANIE-84-B5: przepustowość Garncarnia fallback 6/t');
 assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'mielerz'), 'Zadanie 1 (2026-07-23): Mielerz usuniety calkowicie');
 assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'wielka_kuznia'), 'Maciej 2026-07-27: brak wielka_kuznia→stal (tylko pancerz)');
 assert(
@@ -98,6 +103,33 @@ eq(parallel.perBuilding.cegielnia.produced, 2, 'parallel: cegielnia 2 cegla (2 g
 eq(parallel.perBuilding.huta.produced, 3, 'parallel: huta 3 braz (throughput limituje, ruda/drewno starcza)');
 eq(parallel.stores.braz, 3, 'parallel: final braz 3');
 eq(parallel.stores.drewno, 6 - 2 - 3, 'parallel: drewno zuzyte przez oba konwertery (1/cykl kazdy)');
+
+// Garncarnia: 1 glina + 1 drewno -> 1 ceramika, 6/t (PYTANIE-84-B5)
+r = C.runConverter(garncarnia, { glina: 10, drewno: 10 }, 6, 50);
+eq(r.produced, 6, 'garncarnia: 6 ceramika (throughput limit)');
+eq(r.stores.ceramika, 6, 'garncarnia: ceramika +6');
+eq(r.stores.glina, 4, 'garncarnia: glina 10-6=4');
+assert(!Object.prototype.hasOwnProperty.call(r.consumed, 'ceramika'),
+  'garncarnia: ceramika NIE w consumed');
+
+// U-14bA: nadwyżka po drain Spichlerza -> +Zdrowie (domyślnie)
+const u14b = C.computeGarncarniaSurplusBonus({ ceramikaPoDrainSpichlerza: 3, maGarncarnie: true });
+eq(u14b.zdrowieBonus, 3, 'U-14bA: 3 nadwyżki -> +3 Zdrowia');
+eq(u14b.zadowolenieBonus, 0, 'U-14bA domyślnie: brak Zadowolenia');
+eq(u14b.nadwyzkaSztuk, 3, 'U-14bA: nadwyzkaSztuk=3');
+
+const u14bZero = C.computeGarncarniaSurplusBonus({ ceramikaPoDrainSpichlerza: 0, maGarncarnie: true });
+eq(u14bZero.zdrowieBonus, 0, 'U-14bA: brak nadwyżki -> 0 Zdrowia');
+
+const u14bNoGarnc = C.computeGarncarniaSurplusBonus({ ceramikaPoDrainSpichlerza: 5, maGarncarnie: false });
+eq(u14bNoGarnc.zdrowieBonus, 0, 'U-14bA: bez Garncarni -> 0 (nawet przy stocku)');
+
+// Zapas: efekt zadowolenie (U-14b — przyszły suwak)
+const u14bZad = C.computeGarncarniaSurplusBonus({
+  ceramikaPoDrainSpichlerza: 2, maGarncarnie: true, efekt: 'zadowolenie', zadowolenieNaSztuke: 1,
+});
+eq(u14bZad.zadowolenieBonus, 2, 'U-14b zapas: efekt zadowolenie -> +2');
+eq(u14bZad.zdrowieBonus, 0, 'U-14b zapas: efekt zadowolenie -> 0 zdrowia');
 
 eq(C.loadThroughput({}, 'budynek_cegielnia_przepustowosc', 'normal', 2), 2, 'load: missing -> fallback');
 

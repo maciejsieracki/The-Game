@@ -860,15 +860,13 @@ export function diffTradeRoutes(
  * empire-wide źródło Gliny (Glinianka na złożu Gliny, gdziekolwiek w imperium) ORAZ
  * Cegielnia zbudowana w KTÓRYMKOLWIEK mieście tego właściciela.
  *
- * 'zloto' (PYTANIE 77=A, Maciej 2026-07-25): Mennica wymaga dostępu do Złota
- * (game/zloto-access.ts empireHasKopalniaZlota), ale złoże złota ma rarity=3% i NIE
- * jest w FAIR_PLAY_DEPOSIT_IDS (map/gen-helpers.ts) — generator nie gwarantuje go
- * żadnej cywilizacji. Bez trasy jako alternatywnej ścieżki dostępu, cywilizacja bez
- * złota w zasięgu nigdy nie zbudowałaby Mennicy i nigdy nie weszłaby w etap Podatku
- * (mnożnik Daniny netto po Walucie) — dokładnie ta sama pułapka co Cegła wyżej,
- * rozstrzygnięta tym samym mechanizmem: dostęp TAK/NIE, BEZ przepływu ilościowego
- * (patrz TRADE_ROUTE_STOCK_FLOW_KEYS niżej — złoto tam CELOWO nie występuje, złoto
- * nigdy nie było i nadal nie jest magazynowane w City.surowce).
+ * 'zloto' (PYTANIE-84-R4=A, U-3=A, U-13): Złoto w magazynie państwa; szlaki
+ * dostarczają sztuki/turę (TRADE_ROUTE_STOCK_FLOW_KEYS) — wysoka wartość wymiany.
+ * Boolean-grant nadal odblokowuje natywny dostęp (empireHasKopalniaZlota), gdy
+ * partner ma kopalnię, a odbiorca nie.
+ *
+ * 'sol' (PYTANIE-84-R4=A, U-3=A): Sól w magazynie państwa — przepływ ilościowy
+ * przez TRADE_ROUTE_STOCK_FLOW_KEYS (boolean-grant: dopięcie w main.ts osobno).
  */
 export type TradeRouteResourceKey = 'braz' | 'zelazo' | 'kon' | 'cegla' | 'zloto';
 
@@ -961,17 +959,12 @@ export function firstTradeRouteResourceGrant(
 }
 
 // ---------------------------------------------------------------------------
-// E3c: przepływ ILOŚCIOWY surowca przez trasę handlową (PYTANIE 53 = B, decyzja
-// właściciela 2026-07-25).
+// E3c: przepływ ILOŚCIOWY surowca przez trasę handlową (PYTANIE-84-U3=A,
+// U-16: bez limitu przepustowości trasy).
 //
-// Kontekst: computeTradeRouteResourceGrants (wyżej) daje tylko dostęp TAK/NIE —
-// to wystarcza jako bramka produkcji jednostek (Brąz/Żelazo/Koń), ale NIE zasila
-// magazynu surowca zużywanego ILOŚCIOWO przez `koszt_surowce` budynków
-// (building-stock-cost.ts) — Cegielnia produkuje Cegłę tylko z Gliny, a złoże
-// Gliny bywa nieosiągalne geograficznie (brak lądu z rzeką) dla całej
-// cywilizacji. Ta sekcja DODAJE realny transfer ilości do puli PAŃSTWA
-// odbiorcy — NIE zastępuje grantu dostępu powyżej (Brąz/Żelazo/Koń jako
-// bramka jednostek zostają dokładnie takie, jak są).
+// Kontekst: computeTradeRouteResourceGrants (wyżej) daje dostęp TAK/NIE —
+// bramka produkcji jednostek (Brąz/Żelazo/Koń). Ta sekcja transferuje sztuki
+// do magazynu państwa (w tym Złoto, Sól, Koń, Cegła, Brąz, Żelazo).
 //
 // ROZPOZNANIE PRZED KODOWANIEM (wymagane zadaniem): magazyn surowców jest JUŻ
 // pulą PAŃSTWA (SUROW-CIV-01, Maciej 2026-07-24, patrz building-stock-cost.ts
@@ -988,63 +981,34 @@ export function firstTradeRouteResourceGrant(
 // ---------------------------------------------------------------------------
 
 /**
- * Podzbiór TRADE_ROUTE_RESOURCE_KEYS, który ma realną reprezentację ILOŚCIOWĄ
- * w City.surowce (building-stock-cost.ts STOCK_RESOURCE_LABEL) — 'kon' jest
- * WYŁĄCZONY celowo: to czysty odblokownik civ-wide (computeEmpireLivestockUnlocks),
- * bez żadnego magazynu sztuk do przenoszenia; przepływ ilościowy dla 'kon' nie
- * ma więc żadnego sensownego znaczenia i pozostaje wyłącznie boolean-grantem.
- *
- * 'zloto' jest WYŁĄCZONE z tego samego powodu co 'kon' (PYTANIE 77=A, Maciej
- * 2026-07-25): złoto to surowiec WYŁĄCZNIE DOSTĘPOWY — brak jakiegokolwiek pola w
- * City.surowce / ownerResourceStockAll (patrz zloto-access.ts, nagłówek pliku),
- * więc "przepływ ilościowy" nie miałby żadnego magazynu do zasilenia. Szlak handlowy
- * z posiadaczem złota ma dawać WYŁĄCZNIE prawo do budowy Mennicy (jak koń dla
- * jednostek) — ANI JEDNEJ sztuki złota nie wolno dokładać do żadnej puli.
+ * Surowce z przepływem ILOŚCIOWYM przez szlak do magazynu państwa (PYTANIE-84-U3=A,
+ * U-16: bez osobnego limitu przepustowości trasy — tylko nadwyżka ponad minStockReserve).
+ * W tym Złoto, Sól, Koń (R4=A) oraz Brąz, Żelazo, Cegła. 'sol' tylko tutaj (stock),
+ * nie w TRADE_ROUTE_RESOURCE_KEYS — etykieta grantu w main.ts do osobnego wdrożenia.
  */
-export type TradeRouteStockFlowResourceKey = Exclude<TradeRouteResourceKey, 'kon' | 'zloto'>;
+export type TradeRouteStockFlowResourceKey = TradeRouteResourceKey | 'sol';
 
 export const TRADE_ROUTE_STOCK_FLOW_KEYS: readonly TradeRouteStockFlowResourceKey[] =
-  ['braz', 'zelazo', 'cegla'];
+  ['braz', 'zelazo', 'kon', 'cegla', 'zloto', 'sol'];
 
 /** Parametry przepływu ilościowego (data/econ-params.json — patrz loader niżej). */
 export interface TradeRouteResourceFlowParams {
   /**
    * Minimalny zapas surowca (per właściciel, per surowiec), który NIGDY nie jest
    * eksportowany — właściciel oddaje przez trasę wyłącznie nadwyżkę PONAD ten
-   * próg. Odpowiada ISTNIEJĄCEMU, dotąd NIEKONSUMOWANEMU kluczowi
-   * econ-params.json → ekonomia_miasta.handel_surowiec_min_stock (ABC-15,
-   * Maciej 2026-07-04, opis: „handel surowcem dopiero gdy stock ≥ wartość; 1
-   * szt. zostaje = dostęp"). Ten mechanizm jest jego PIERWSZYM realnym
-   * zastosowaniem w kodzie (patrz loadTradeRouteResourceFlowParams).
+   * próg. Odpowiada kluczowi econ-params.json →
+   * ekonomia_miasta.handel_surowiec_min_stock (ABC-15).
+   *
+   * PYTANIE-84-U16: brak osobnej „przepustowości szlaków" (usunięte
+   * capacityPerRoutePerTurn) — transfer = cała nadwyżka ponad rezerwę, bez
+   * limitu na trasę; ogranicza tylko produkcja z mapy/budynków partnera.
    */
   minStockReserve: number;
-  /**
-   * Maks. ilość JEDNEGO surowca, jaką JEDEN szlak może przenieść w JEDNĄ turę
-   * (sztuk surowca/turę/szlak). Czytane z econ-params.json →
-   * handel_szlaki.handel_ilosc_na_ture_na_szlak (przeniesione z dawnego
-   * hardkodu w kodzie — patrz komentarz przy DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS).
-   * Brak zapisu w danych oznaczałby brak przepustowości, co odtwarzałoby
-   * pierwotny problem (cegła dojeżdża, ale nieograniczoną ilością na turę —
-   * de facto znów "z powietrza", tylko opóźnione o rozruch pierwszej tury).
-   */
-  capacityPerRoutePerTurn: number;
 }
 
-/**
- * Wartości domyślne (fallback gdy dane brakują/są uszkodzone).
- * `capacityPerRoutePerTurn = 4`: throughput Cegielni to
- * `budynek_cegielnia_przepustowosc` (fallback 3 szt./turę, converters.ts) —
- * jeden szlak niosący 4 szt./turę odpowiada mniej więcej WYDAJNOŚCI JEDNEJ
- * Cegielni, czyli odciętej cywilizacji dowozi surowiec w tempie porównywalnym
- * do posiadania własnej Cegielni, a nie w tempie zalewającym partnera handlowego
- * ponad jego własną produkcję. Wartość PRZENIESIONA do
- * data/econ-params.json (handel_szlaki.handel_ilosc_na_ture_na_szlak,
- * dług techniczny TODO(econ-params) zamknięty — było przeniesienie stałej,
- * nie strojenie: 4/4/4 na wszystkich trudnościach, bez zmiany balansu).
- */
+/** Wartości domyślne (fallback gdy dane brakują/są uszkodzone). */
 export const DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS: TradeRouteResourceFlowParams = {
   minStockReserve: 2,
-  capacityPerRoutePerTurn: 4,
 };
 
 interface RawEconParamsJsonMinStock {
@@ -1054,10 +1018,8 @@ interface RawEconParamsJsonMinStock {
 
 /**
  * Wczytaj minStockReserve z econ-params.json (ekonomia_miasta.handel_surowiec_min_stock,
- * ABC-15) — ten sam klucz na wszystkich poziomach trudności do 2026-07-25 (2 szt.),
- * ale czytany PER difficulty na wypadek przyszłego dostrojenia. capacityPerRoutePerTurn
- * czytany z handel_szlaki.handel_ilosc_na_ture_na_szlak (przeniesione z hardkodu —
- * patrz komentarz przy DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS powyżej).
+ * ABC-15) — czytany PER difficulty na wypadek przyszłego dostrojenia.
+ * PYTANIE-84-U16: handel_ilosc_na_ture_na_szlak usunięty — brak limitu trasy.
  */
 export function loadTradeRouteResourceFlowParams(
   raw: RawEconParamsJsonMinStock,
@@ -1070,17 +1032,7 @@ export function loadTradeRouteResourceFlowParams(
     ? v
     : DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.minStockReserve;
 
-  const szlakiGrp = raw.handel_szlaki ?? {};
-  const capRow = szlakiGrp['handel_ilosc_na_ture_na_szlak'];
-  const capV = capRow ? capRow[difficulty] : undefined;
-  const capacityPerRoutePerTurn = typeof capV === 'number' && Number.isFinite(capV)
-    ? capV
-    : DEFAULT_TRADE_ROUTE_RESOURCE_FLOW_PARAMS.capacityPerRoutePerTurn;
-
-  return {
-    minStockReserve,
-    capacityPerRoutePerTurn,
-  };
+  return { minStockReserve };
 }
 
 /**
@@ -1105,8 +1057,8 @@ export interface TradeRouteResourceFlow {
  * Wylicza transfery ilościowe surowca dla wszystkich aktywnych tras. Model:
  * dla KAŻDEJ trasy `status === 'polaczony'` i KAŻDEGO surowca z
  * TRADE_ROUTE_STOCK_FLOW_KEYS, strona z WIĘKSZYM zapasem (wg `ownerStock`,
- * civ-wide) eksportuje nadwyżkę PONAD `params.minStockReserve` do strony z
- * mniejszym zapasem, maks. `params.capacityPerRoutePerTurn` na tę jedną trasę.
+ * civ-wide) eksportuje CAŁĄ nadwyżkę PONAD `params.minStockReserve` do strony
+ * z mniejszym zapasem (PYTANIE-84-U16: bez limitu przepustowości trasy).
  *
  * `ownerStock` to WEJŚCIOWY snapshot (główny wołający liczy go z
  * ownerResourceStockAll, building-stock-cost.ts) — ale funkcja utrzymuje
@@ -1158,7 +1110,7 @@ export function computeTradeRouteResourceFlow(
       const surplus = donorStock - params.minStockReserve;
       if (surplus <= 0) continue;
 
-      const amount = Math.floor(Math.min(params.capacityPerRoutePerTurn, surplus));
+      const amount = Math.floor(surplus);
       if (amount <= 0) continue;
 
       applyDelta(fromOwnerId, key, -amount);

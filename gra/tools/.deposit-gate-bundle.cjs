@@ -40,8 +40,8 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -121,7 +121,8 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "kon",
-    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo",
+    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Ko\u0144 do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture.",
+    surowiec_ilosc_tura: 1,
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "solo; tylko heks ze z\u0142o\u017Cem konia w terytorium",
     koszt_praca: 28,
@@ -151,8 +152,8 @@ var terrain_improvements_default = {
       glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 5,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 20,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -215,8 +216,8 @@ var terrain_improvements_default = {
       praca: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
-    surowiec_ilosc_tura: 4,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
+    surowiec_ilosc_tura: 20,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -262,7 +263,8 @@ var terrain_improvements_default = {
       zywnosc: 1
     },
     surowiecOdblokowany: "sol",
-    surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja S\xF3l do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 \u017Bywno\u015B\u0107, +1 Pieni\u0105dz) zostaje obok surowca_ilosc_tura.",
+    surowiec_ilosc_tura: 10,
     teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
     warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
@@ -336,14 +338,15 @@ var terrain_improvements_default = {
     bonus: {
       praca: 2
     },
-    surowiecOdblokowany: null,
-    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    surowiecOdblokowany: "zloto",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Z\u0142oto do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/tur\u0119. Mennica zu\u017Cywa 1 Z\u0142oto/tur\u0119 ze skarbca przy mno\u017Cniku handlu\u2192Pieni\u0105dz (U-13).",
+    surowiec_ilosc_tura: 1,
     teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
-    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    warunek: "z\u0142o\u017Ce z\u0142ota \u2014 produkcja do magazynu pa\u0144stwa",
     koszt_praca: 22,
     tech: "Waluta",
-    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
-    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+    odblokowuje: "Mennica (Z\u0142oto w skarbcu + Targowisko w stolicy)",
+    uwagi: "PYTANIE-84: z\u0142oto magazynowane (game/zloto-access.ts). Dodatkowe kopalnie \u2192 nadwy\u017Cka na handel/eksport (U-13)."
   },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
@@ -7365,7 +7368,7 @@ function empireHasKopalniaMiedzi(placedImprovements) {
   return false;
 }
 function cityHasPiecHutniczy(builtIds) {
-  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza");
+  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza") || builtIds.includes("wielka_odlewnia");
 }
 function hasBrazAccess(placedImprovements, builtIds) {
   return empireHasKopalniaMiedzi(placedImprovements) && cityHasPiecHutniczy(builtIds);
@@ -7374,10 +7377,45 @@ function hasBrazAccess(placedImprovements, builtIds) {
 // src/game/zelazo-access.ts
 var ODLEWNIA_ZELAZA_BUILDING_ID = "odlewnia_zelaza";
 function cityHasOdlewniaZelaza(builtIds) {
-  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID);
+  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID) || builtIds.includes("wielka_odlewnia");
 }
 function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
   return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
+}
+
+// src/game/zloto-access.ts
+var KOPALNIA_ZLOTA_KEY = "kopalnia_zlota";
+var ZLOTO_STOCK_KEY = "zloto";
+var ZLOTO_LABEL = "Z\u0142oto";
+var MENNICA_ZLOTO_DRAIN_PER_TURN = 1;
+function improvementKeysOnPlaced2(imp) {
+  if (typeof imp === "string") {
+    const k = normalizeImprovementKey(imp);
+    return k ? [k] : [];
+  }
+  return imp.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
+}
+function countKopalnieZlota(placedImprovements) {
+  if (!placedImprovements?.size) return 0;
+  let n = 0;
+  for (const imp of placedImprovements.values()) {
+    for (const key of improvementKeysOnPlaced2(imp)) {
+      if (key === KOPALNIA_ZLOTA_KEY) n++;
+    }
+  }
+  return n;
+}
+function empireHasKopalniaZlota(placedImprovements) {
+  return countKopalnieZlota(placedImprovements) > 0;
+}
+function empireZlotoStock(empireStock) {
+  if (!empireStock) return 0;
+  const v = empireStock[ZLOTO_STOCK_KEY];
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
+}
+function ownerCanFeedMennica(empireStock, graceActive = false) {
+  if (graceActive) return true;
+  return empireZlotoStock(empireStock) >= MENNICA_ZLOTO_DRAIN_PER_TURN;
 }
 
 // src/game/building-resource-gate.ts
@@ -7391,28 +7429,22 @@ var LABEL_BY_ASCII = {
   braz: "Br\u0105z",
   sol: "S\xF3l",
   cegla: "Ceg\u0142a",
-  ceramika: "Ceramika"
+  ceramika: "Ceramika",
+  zloto: ZLOTO_LABEL,
+  kon: "Ko\u0144"
 };
 var DEPOSIT_LINKED_BUILDING_LABELS = {
   garncarnia: ["Glina"],
   cegielnia: ["Glina"],
-  spichlerz: ["Ceramika"],
+  // PYTANIE-84-U-24: Spichlerz I — brak bramki Ceramika przy budowie; drain B6 po postawieniu.
+  // spichlerz — celowo brak wpisu (bonusy z drain co turę, patrz sekcja Spichlerz niżej).
   spichlerz_ii: ["S\xF3l"],
   stolarnia: ["Drewno"],
   kamieniarski: ["Kamie\u0144"],
   kuznia: ["Ruda"],
-  // ZLOTO (Maciej 2026-07-25): Mennica wymaga dostępu do Złota (empire-wide, Kopalnia złota
-  // gdziekolwiek w imperium — game/zloto-access.ts empireHasKopalniaZlota, dolane do
-  // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
-  // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
-  // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
-  // PYTANIE 77=A (Maciej 2026-07-25): dostęp = własna Kopalnia złota ALBO aktywny szlak
-  // handlowy z cywilizacją, która ma złoto (jak koń) — bramka TU jest bez zmian (nadal
-  // sam sprawdza tylko obecność etykiety 'Złoto' w `activeLabels`); rozszerzenie jest
-  // WYŻEJ w łańcuchu, w zloto-access.ts (placedImprovementsWithZlotoTradeGrant), WPIĘTE
-  // w main.ts (placedImprovementsWithTradeGrants, domknięcie 2026-07-25 wieczór) —
-  // szlak handlowy realnie odblokowuje Mennicę bez własnej Kopalni złota.
-  mennica: ["Z\u0142oto"]
+  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
+  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  mennica: [ZLOTO_LABEL]
 };
 var CITY_BUILDING_PREREQ = {
   warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
@@ -7438,7 +7470,7 @@ var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"])
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
-var ACCESS_ONLY_RESOURCE_LABELS = /* @__PURE__ */ new Set(["S\xF3l", "Z\u0142oto"]);
+var ACCESS_ONLY_RESOURCE_LABELS = /* @__PURE__ */ new Set();
 function empireLabelSatisfied(label, activeLabels, empireBuiltIds, empireStock) {
   if (activeLabels.includes(label)) return true;
   if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
@@ -7466,7 +7498,9 @@ function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireS
 var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
   Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
 );
+var SPICHLERZ_RUNTIME_EXCLUDED = /* @__PURE__ */ new Set(["spichlerz", "spichlerz_ii"]);
 function hasDepositRuntimeGate(buildingId) {
+  if (SPICHLERZ_RUNTIME_EXCLUDED.has(buildingId)) return false;
   return Object.prototype.hasOwnProperty.call(DEPOSIT_LINKED_BUILDING_LABELS, buildingId);
 }
 function empireLabelSatisfiedAtRuntime(label, activeLabels, runtimeActiveBuiltIds, empireStock) {
@@ -7479,9 +7513,15 @@ function empireLabelSatisfiedAtRuntime(label, activeLabels, runtimeActiveBuiltId
   }
   return false;
 }
-function buildingRuntimeGateMet(building, activeLabels, runtimeActiveBuiltIds, empireStock, options) {
-  if (building.id === "mennica" && options?.resolveOwnerZlotoAccess && options.ownerId !== void 0) {
+function mennicaRuntimeGateMet(empireStock, options) {
+  if (options?.resolveOwnerZlotoAccess && options.ownerId !== void 0) {
     return options.resolveOwnerZlotoAccess(options.ownerId);
+  }
+  return ownerCanFeedMennica(empireStock);
+}
+function buildingRuntimeGateMet(building, activeLabels, runtimeActiveBuiltIds, empireStock, options) {
+  if (building.id === "mennica") {
+    return mennicaRuntimeGateMet(empireStock, options);
   }
   const required = buildingRequiredActiveLabels(building);
   if (required.length === 0) return true;
@@ -7867,6 +7907,24 @@ var FALLBACK_RELIGION_PARAMS = Object.freeze({
   konwersjaKregiPct: 2
 });
 
+// src/game/economy-upkeep.ts
+var OWNER_CAPPED_RESOURCE_KEYS = [
+  "drewno",
+  "kamien",
+  "glina",
+  "ruda",
+  "ruda_zelaza",
+  "cegla",
+  "ceramika",
+  "braz",
+  "zelazo",
+  "stal",
+  "sol",
+  "zloto",
+  "kon"
+];
+var OWNER_CAPPED_RESOURCE_KEY_SET = new Set(OWNER_CAPPED_RESOURCE_KEYS);
+
 // src/game/cities.ts
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
@@ -8036,25 +8094,6 @@ var NAKLADKI_ZWIERZECZE = /* @__PURE__ */ new Set([
 ]);
 function hasAnimalDeposit(nakladka) {
   return NAKLADKI_ZWIERZECZE.has(nakladka);
-}
-
-// src/game/zloto-access.ts
-var KOPALNIA_ZLOTA_KEY = "kopalnia_zlota";
-function improvementKeysOnPlaced2(imp) {
-  if (typeof imp === "string") {
-    const k = normalizeImprovementKey(imp);
-    return k ? [k] : [];
-  }
-  return imp.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
-}
-function empireHasKopalniaZlota(placedImprovements) {
-  if (!placedImprovements?.size) return false;
-  for (const imp of placedImprovements.values()) {
-    for (const key of improvementKeysOnPlaced2(imp)) {
-      if (key === KOPALNIA_ZLOTA_KEY) return true;
-    }
-  }
-  return false;
 }
 
 // src/game/resource-access.ts

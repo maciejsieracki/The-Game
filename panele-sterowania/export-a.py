@@ -280,7 +280,7 @@ PLONY_TYPE_SLUG = {
 }
 PLONY_MOD_SLUG = {"rzeka": "Rzeka", "las": "Las (nakładka)"}
 PLONY_FIELD = {
-    "zywnosc": "Żywność", "praca": "Praca", "handel": "Handel",
+    "zywnosc": "Żywność", "praca": "Praca", "podatek": "Podatek", "handel": "Podatek",
     "drewno": "Drewno", "kamien": "Kamień",
 }
 RUCH_COST_KEY = {

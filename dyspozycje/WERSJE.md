@@ -11,7 +11,20 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `71dffa40` — 2026-07-27 18:32 — FALA 40: łańcuch odlewni + tech tree — **AKTUALNA**
+## ROBOCZA `c1e7a596` — 2026-07-27 23:01 — FALA 41: PYTANIE-85 żywność + Podatek + ulepszenia — **AKTUALNA**
+- md5 (pelne): `c1e7a5968dce012936d4925d05999d82` · stempel: `ROBOCZA · 2026-07-27 23:01` · commit: `68395cc`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive).
+- **Co nowego (FALA 41):**
+  - **PYTANIE-85:** centralny magazyn żywności, racje 1/2/3, wzrost % ułamkowy po Szczęściu, panel Spichlerz centralny, batony racji w mieście.
+  - **Podatek:** strumień z pól terenu zawsze „Podatek" (bez Danina/Mennica); `terrain-yields.json` kolumna Podatek (Łąka 2, Rzeka +3, Las +2).
+  - **Ulepszenia (Excel Maciej):** bonus Podatek na 17 ulepszeniach terenu (`terrain-improvements.json`, 24 pola).
+  - **Głód wojska:** 75% statów bojowych (pancerz bez zmian) gdy zapasy < 0.
+  - **P84-stock:** Sól/Złoto/Koń magazyn, Stolarnia/Warsztat civ bonus (jeśli w src).
+- **Bramki:** tsc 0 · population-growth-v85 11/11 · bonus 13/13 · empire-food-b5 17/17 · army-hunger 13/13 · podatek-nazwa 15/15 · podatek-tooltip 12/12.
+
+## ROBOCZA `71dffa40` — 2026-07-27 18:32 — FALA 40: łańcuch odlewni + tech tree — **ZASTĄPIONA**
 - md5 (pelne): `71dffa407fd2d3bce734f0ee8c281cf2` · stempel: `ROBOCZA · 2026-07-27 18:32` · commit: `540d920`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html`

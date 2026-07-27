@@ -3,6 +3,40 @@
  */
 import type { HudState } from './hud';
 
+/** PYTANIE-84-U23A — uchwała imperium (perk widoczny, gdy ≥1 Spichlerz II płaci Sól). */
+export const UCHWALA_SOL_SPICHLERZ_II_ID = 'uchwala-sol-spichlerz-ii';
+
+export interface EmpireUchwalaRow {
+  id: string;
+  /** Krótka nazwa uchwały (nagłówek w panelu). */
+  nazwa: string;
+  /** Efekt w grze — pełne zdanie, z jednostkami (pkt Żywności/turę). */
+  opis: string;
+  /** Źródło mechaniki (np. „Spichlerz II · Sól"). */
+  zrodlo: string;
+  aktywna: boolean;
+}
+
+/** Kanon tekstu U-23A (PYTANIE-84-R8 / U-10). */
+export function buildUchwalaSolSpichlerzII(
+  aktywna: boolean,
+  spichlerzIISolCount?: number,
+): EmpireUchwalaRow {
+  const count = Math.max(0, spichlerzIISolCount ?? 0);
+  const countNote = count > 0
+    ? ` Aktywne Spichlerze II płacące Sól: ${count}.`
+    : '';
+  return {
+    id: UCHWALA_SOL_SPICHLERZ_II_ID,
+    nazwa: 'Solanka zapasowa',
+    opis: aktywna
+      ? `Armia poza własnym terytorium zużywa 1 pkt Żywności/turę zamiast 2 (bonus imperium).${countNote}`
+      : 'Nieaktywna — wymaga co najmniej jednego Spichlerza II z dostępem do Soli w magazynie państwa (5 Soli/turę).',
+    zrodlo: 'Spichlerz II · Sól',
+    aktywna,
+  };
+}
+
 export interface EmpireGlobalParams {
   civName: string;
   civEmoji: string;
@@ -11,6 +45,8 @@ export interface EmpireGlobalParams {
   bonusStartowy: string;
   religiaPanstwowa: string;
   bonusy: Array<{ opis: string; realizuje: string }>;
+  /** U-23A: aktywne uchwały cywilizacyjne (perki imperium poza bonusami z civs.json). */
+  uchwaly?: EmpireUchwalaRow[];
 }
 
 export interface EmpireResourceRow {
@@ -156,15 +192,11 @@ export interface EmpireTradeSnap {
   totalIncome: number;
   routes: EmpireTradeRouteRow[];
   /**
-   * Decyzje 65B/66B (Maciej 2026-07-25, "Handel -> Danina -> Podatek"): etykieta
-   * strumienia miasta (dawny "Handel" z pól) dla gracza (ownerId=0) -- ten
-   * panel jest zawsze widokiem WLASNEGO imperium gracza (trasy sa zawsze
-   * gracz<->obcy, patrz komentarz przy EmpireTradeRouteRow). Uzywana wylacznie
-   * do zdania "+5% Daniny/Podatku z pól" w renderHandelSection (empireDetailPanel.ts)
-   * -- NIE do nazwy sekcji "Handel — szlaki handlowe", ktora zostaje bez zmian
-   * (to trasy z obcymi cywilizacjami). Patrz game/danina-nazwa.ts.
+   * Etykieta strumienia podatkowego z pól miasta (zawsze "Podatek" od 2026-07-27).
+   * Używana w zdaniu "+5% podatku z pól" w renderHandelSection — NIE do nazwy
+   * sekcji "Handel — szlaki handlowe" (trasy z obcymi cywilizacjami).
    */
-  daninaLabel: 'Danina' | 'Podatek';
+  daninaLabel: 'Podatek';
   /**
    * CUDA-HANDEL-01 (Maciej 2026-07-26) + DYSPOZYCJA 85: suma % bonusu cudów świata
    * "handel_procent" gracza (ownerId=0), addytywna, w punktach procentowych (15 = +15%).
@@ -178,6 +210,35 @@ export interface EmpireTradeSnap {
   resourceGrants: EmpireTradeResourceGrantRow[];
 }
 
+/** PYTANIE-85 — wiersz tabeli miast w Spichlerzu centralnym. */
+export interface EmpireFoodCityUiRow {
+  cityId: string;
+  name: string;
+  produkcja: number;
+  kosztRacji: number;
+  bilans: number;
+  wzrostProcent: number;
+  nakarmione?: boolean;
+}
+
+/** PYTANIE-85 — podsumowanie tury + stan magazynu centralnego żywności. */
+export interface EmpireFoodSnap {
+  zapasy: number;
+  maxCap: number;
+  glodWojska?: boolean;
+  /** Rozbicie ostatniej tury (brak przed pierwszym tickiem). */
+  tick?: {
+    uprawaHodowla: number;
+    wyzwienieLudnosci: number;
+    nadwyzka: number;
+    pomocMiastom: number;
+    spichlerzStolicy: number;
+    wojsko: number;
+    przyrostZapasow: number;
+  };
+  perCityRows: EmpireFoodCityUiRow[];
+}
+
 export interface EmpireDetailSnap {
   global: EmpireGlobalParams;
   economy: HudState;
@@ -187,4 +248,6 @@ export interface EmpireDetailSnap {
   cityPobor: EmpireCityPoborRow[];
   resources: EmpireResourceRow[];
   trade: EmpireTradeSnap;
+  /** PYTANIE-85 — Spichlerz centralny (magazyn żywności imperium). */
+  food: EmpireFoodSnap;
 }

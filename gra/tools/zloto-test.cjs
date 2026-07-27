@@ -8,7 +8,7 @@
  *   C. Kopalnia złota na złożu daje imperium dostęp; bez kopalni / bez złoża — brak dostępu;
  *   D. Mennica niedostępna bez dostępu do złota; dostępna z dostępem (+ Targowisko + tech);
  *   E. Mennica niedostępna bez Targowiska w mieście (mimo dostępu do złota);
- *   F. złoto NIE pojawia się w City.surowce ani w kosztach budowy (asercja pilnująca);
+ *   F. złoto W magazynie państwa (PYTANIE-84-R9) + asercje pilnujące kosztów budowy;
  *   G. parytet AI: identyczny wynik dla dwóch różnych ownerId;
  *   H. stary zapis (mapa/miasto bez złóż złota) wczytuje się bez wyjątku, Mennica już
  *      zbudowana nie znika.
@@ -52,6 +52,7 @@ esbuild.buildSync({
 const M = require(BUNDLE);
 const rawBuildings = JSON.parse(fs.readFileSync(path.join(GRA, 'data/buildings.json'), 'utf8'));
 const rawTerrainImprovements = JSON.parse(fs.readFileSync(path.join(GRA, 'data/terrain-improvements.json'), 'utf8'));
+const rawResources = JSON.parse(fs.readFileSync(path.join(GRA, 'data/resources.json'), 'utf8'));
 const DATA = { buildings: rawBuildings, units: [] };
 
 let pass = 0, fail = 0;
@@ -214,17 +215,23 @@ console.log('-- D+E. bramka Mennicy (złoto + Targowisko) --');
 }
 
 // ===========================================================================
-// F. Złoto NIE jest surowcem magazynowanym -- asercja pilnująca danych.
+// F. Złoto W magazynie państwa (PYTANIE-84-R9) — asercja pilnująca danych.
 // ===========================================================================
-console.log('-- F. złoto nie jest magazynowane (asercja pilnująca) --');
+console.log('-- F. złoto magazynowane w skarbcu państwa (PYTANIE-84-R9) --');
 {
-  // (1) terrain-improvements.json: kopalnia_zlota NIE deklaruje produkcji surowca logistycznego.
   const kz = rawTerrainImprovements['kopalnia_zlota'];
   ok(!!kz, 'terrain-improvements.json ma wpis kopalnia_zlota');
-  ok(kz.surowiecOdblokowany == null,
-    `kopalnia_zlota.surowiecOdblokowany jest null/brak (ma: ${JSON.stringify(kz && kz.surowiecOdblokowany)})`);
-  ok(kz.surowiec_ilosc_tura == null,
-    `kopalnia_zlota.surowiec_ilosc_tura jest brak (ma: ${JSON.stringify(kz && kz.surowiec_ilosc_tura)})`);
+  ok(kz.surowiecOdblokowany === 'zloto',
+    `kopalnia_zlota.surowiecOdblokowany = zloto (ma: ${JSON.stringify(kz && kz.surowiecOdblokowany)})`);
+  ok(kz.surowiec_ilosc_tura === 1,
+    `kopalnia_zlota.surowiec_ilosc_tura = 1 (ma: ${JSON.stringify(kz && kz.surowiec_ilosc_tura)})`);
+
+  const stad = rawTerrainImprovements['stadnina'];
+  ok(stad?.surowiec_ilosc_tura === 1, 'stadnina: 1 Koń/t do magazynu państwa');
+
+  const zlotoRes = rawResources.find(r => r.Surowiec === 'Złoto');
+  ok(!!zlotoRes, 'resources.json: wpis Złoto istnieje');
+  ok((zlotoRes.Uwagi || '').includes('zloto'), 'resources.json Złoto: klucz stock zloto w uwagach');
 
   // (2) żaden budynek w buildings.json nie ma 'zloto' w koszt_surowce.
   let buildingsWithGoldCost = 0;

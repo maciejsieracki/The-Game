@@ -890,6 +890,9 @@ Ryzyko: istniejący kod zrywania traktatów może aplikować zdarzenia „symetr
 Uzasadnienie: odmowa unieważnia cały sens sojuszu. Hierarchia po zmianie:
 **atak na sojusznika −25 > odmowa pomocy −15 > dobrowolne zerwanie traktatu czasowego −6.**
 
+### C-WIAR-N4-AI = **B** (2026-07-27) — AI **może odmówić** pomocy sojusznikowi
+Heurystyka w `aiHonorsAllianceWarObligation` (dziś zawsze `true`). Odmowa → ten sam N4 (−15 W, zerwanie sojuszu, kara tylko odmawiającemu). Szczegóły: `docs/decyzje/C-WIAR-N4-AI.md`.
+
 ### C-WIAR-SKAUT = **A** — zwiadowcy wyłączeni z OBU kar
 Zwiad **nie kosztuje nic**: ani Wiarygodności (N7), ani **istniejącej kary Zaufania** za przemarsz.
 ⚠️ To jedyny zatwierdzony wyjątek od zasady „nie zmieniamy istniejących mechanizmów" — Maciej wyraził zgodę świadomie, po przedstawieniu tego kosztu w wariancie A. Wykonawca ma prawo dotknąć `diplomacy-border-march.ts` **wyłącznie w tym zakresie** (dodanie wyjątku dla jednostek zwiadowczych), nic więcej.

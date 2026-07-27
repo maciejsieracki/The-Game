@@ -760,7 +760,7 @@ function hexCityScore(
     const rawRow = tyRow as unknown as Record<string, number | null | string>;
     food  = (rawRow['Zywnosc']   as number | null) ?? (rawRow['Żywność'] as number | null) ?? 0;
     work  = (rawRow['Praca']     as number | null) ?? 0;
-    trade = (rawRow['Handel']    as number | null) ?? 0;
+    trade = (rawRow['Podatek'] as number | null) ?? (rawRow['Handel'] as number | null) ?? 0;
   }
 
   let score = 0;

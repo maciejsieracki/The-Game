@@ -771,3 +771,13 @@ czystym `HEAD` (`0847205`, bez jakichkolwiek zmian roboczych — ani C-TARASY-Q1
 Nie są regresją tej pracy; nie były na liście znanych porażek w `CLAUDE.md`/handoffie w chwili startu
 sesji — ktoś powinien je tam dopisać albo zbadać przy najbliższej okazji. Nie naprawiano (poza zakresem
 zlecenia C-TARASY-Q1).
+
+---
+
+## [ZNALEZIONE PRZY OKAZJI] PYTANIE-84 U-10B × C-GARN-Q1 — podwójny rabat garnizonu w mieście z Solią (2026-07-27)
+
+Po wpięciu follow-up Spichlerza (`militaryFoodConsumptionWithSpichlerz`): garnizon w mieście płacącym Sól
+może dostać **dwa** mnożniki ×0,5 — `camping` w `unitFoodPerTurn` (C-GARN-Q1) **oraz**
+`isGarrisonInSolCity` w `spichlerzArmyFoodCostMultiplier` (U-10B) → łącznie **0,25×** kosztu żywności
+na własnym terytorium. Pytanie do Macieja: U-10B **zastępuje** ogólny rabat garnizonu, czy **stackuje**?
+Plik: `turn-economy.ts` · `economy-upkeep.ts`.

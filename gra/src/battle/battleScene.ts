@@ -76,6 +76,7 @@ import {
   veteranMoraleBazoweUp,
   veteranMoraleUcieczkiDown,
 } from '../game/veteran';
+import { applyArmyHungerStatMultToCombatUnit } from '../game/army-starvation';
 import {
   cityWallDefenseBonusPercent,
   cityGatedTerrainMultiplier,
@@ -381,6 +382,11 @@ export interface BattleUnit {
    * (synthetic/test BattleUnit literals bez tego pola zachowuja dawne zachowanie).
    */
   fortifiedInField?: boolean;
+  /**
+   * Głód wojska (PYTANIE-85): państwo właściciela ma ujemne zapasy po koszcie armii.
+   * Osłabia staty bojowe (bez armor) w toCombatUnit — patrz army-starvation.ts.
+   */
+  armyHungry?: boolean;
 }
 
 /** Siege-mode options: add a wall across the defender's end of the field. */
@@ -480,6 +486,12 @@ export interface BattleOpts {
   attackerSideLabel?: string;
   /** Etykieta składu broniącego. */
   defenderSideLabel?: string;
+  /** Głód wojska atakującego (zapasy < 0 po koszcie armii). */
+  attackerArmyHungry?: boolean;
+  /** Głód wojska broniącego. */
+  defenderArmyHungry?: boolean;
+  /** Mnożnik statów bojowych przy głodzie wojska (domyślnie 0.75). */
+  armyHungerStatMult?: number;
 }
 
 export interface BattleResult {
@@ -1240,7 +1252,11 @@ function normCounters(raw: any[]): any[] {
   return out;
 }
 
-function toCombatUnit(bu: BattleUnit): CombatUnit {
+function toCombatUnit(
+  bu: BattleUnit,
+  armyHungerStatMult = 0.75,
+  skipHunger = false,
+): CombatUnit {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
   const cu = combatUnitFromDef(s, {
     typNazwa: (s['Jednostka'] as string) ?? bu.kategoria,
@@ -1249,7 +1265,11 @@ function toCombatUnit(bu: BattleUnit): CombatUnit {
   // TRZECI SYSTEM (weterani): jedyny wspolny punkt budowy CombatUnit w tym
   // pliku (animowana bitwa PLUS "pomin animacje" -- oba wolaja toCombatUnit),
   // wiec przeskalowanie tutaj pokrywa obie sciezki na raz. Patrz game/veteran.ts.
-  return applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac ?? 0);
+  let scaled = applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac ?? 0);
+  if (bu.armyHungry && !skipHunger) {
+    scaled = applyArmyHungerStatMultToCombatUnit(scaled, armyHungerStatMult);
+  }
+  return scaled;
 }
 
 /** Battle movement points (tiles / turn). Default DEFAULT_BATTLE_MOVE, min 1. */
@@ -2394,6 +2414,7 @@ export class BattleScene {
   private counters:    any[];
   private attackerCivBonusy: readonly CivBonusEntry[] = [];
   private defenderCivBonusy: readonly CivBonusEntry[] = [];
+  private armyHungerStatMult = 0.75;
 
   // Procedural per-tile battle terrain (B8). Drives rendering, per-tile move
   // cost / passability and the per-tile defender terrain fed to the combat math.
@@ -2426,6 +2447,7 @@ export class BattleScene {
     this.counters    = normCounters(d.counters ?? []);
     this.attackerCivBonusy = opts.attackerCivBonusy ?? [];
     this.defenderCivBonusy = opts.defenderCivBonusy ?? [];
+    this.armyHungerStatMult = opts.armyHungerStatMult ?? 0.75;
     this._attackerCivLabel = opts.attackerCivLabel?.trim() || 'Gracz';
     this._defenderCivLabel = opts.defenderCivLabel?.trim() || 'Przeciwnik';
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
@@ -3352,6 +3374,7 @@ export class BattleScene {
       this.defenderCivBonusy,
       this.wallDefenseTotalProc,
       this.isCityDefenseBattle,
+      this.armyHungerStatMult,
     );
     for (const line of result.log) this.log.push(line);
     this._endWinner = result.winner;
@@ -7447,8 +7470,8 @@ export class BattleScene {
     // AUDIO: a melee blow connecting = a metallic clash (ranged shots have their
     // own "whoosh" at firing in _doRangedAttack, so don't double up here).
     if (!ranged) this._sfxMelee();
-    const cuA = toCombatUnit(attacker.bu);
-    const cuD = toCombatUnit(defender.bu);
+    const cuA = toCombatUnit(attacker.bu, this.armyHungerStatMult);
+    const cuD = toCombatUnit(defender.bu, this.armyHungerStatMult);
 
     // PER-TILE terrain (B8). The defender's OWN tile decides its terrain defence
     // bonus (hills / forest give the SS5j +50% via terrainDefenseMultiplier);
@@ -8228,7 +8251,7 @@ export class BattleScene {
     // before it breaks). Threshold kept >=0.
     let flee = ru.fleeMorale;
     const terr = this.terrainMap.combatTerrainName(ru.q, ru.r);
-    const cu = toCombatUnit(ru.bu);
+    const cu = toCombatUnit(ru.bu, this.armyHungerStatMult);
     if (terrainDefenseMultiplier(terr, cu.rola, this.terrainData) > 1) {
       flee = Math.max(0, ru.fleeMorale - MORALE_TERRAIN_RESIST);
     }
@@ -18203,6 +18226,7 @@ function computeInstantResult(
   // Domyslnie false = bez zmian dla kazdego istniejacego wywolania (bitwa w
   // polu, poza miastem).
   isCityDefense: boolean = false,
+  armyHungerStatMult: number = 0.75,
 ): { winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[] } {
   const log: string[] = [];
 
@@ -18224,8 +18248,8 @@ function computeInstantResult(
       const d = lD[i % lD.length];
       if (!a || !d || a.hp <= 0 || d.hp <= 0) continue;
 
-      const cu_a = toCombatUnit(a.ru.bu);
-      const cu_d = toCombatUnit(d.ru.bu);
+      const cu_a = toCombatUnit(a.ru.bu, armyHungerStatMult, true);
+      const cu_d = toCombatUnit(d.ru.bu, armyHungerStatMult, true);
       cu_a.health = a.hp;
       cu_d.health = d.hp;
 
@@ -18333,6 +18357,9 @@ function computeInstantResult(
         // z tego samego resolveCombat -- musi dostac ten sam per-jednostkowy bonus.
         attackerBuildingBonus: { pancerz: a.ru.bu.pancerzBonusFrac ?? 0, other: a.ru.bu.parametryBonusFrac ?? 0 },
         defenderBuildingBonus: { pancerz: d.ru.bu.pancerzBonusFrac ?? 0, other: d.ru.bu.parametryBonusFrac ?? 0 },
+        attackerArmyHungry: a.ru.bu.armyHungry === true,
+        defenderArmyHungry: d.ru.bu.armyHungry === true,
+        armyHungerStatMult,
       });
       for (const line of res.log) log.push(line);
 

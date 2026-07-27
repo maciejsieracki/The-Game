@@ -28,6 +28,13 @@
       "jednostka": "pkt Zdrowia",
       "opis": "Bonus Zdrowia z wybudowanego Targowiska (handel świeżą żywnością i artykułami). [PT]"
     },
+    "zdrowie_laznia_publiczna": {
+      "easy": 6,
+      "normal": 5,
+      "hard": 4,
+      "jednostka": "pkt Zdrowia",
+      "opis": "Bonus Zdrowia z Łaźni publicznej (PYTANIE-85-Q9). Wzrost przez floor(Zdrowie÷10)×1%."
+    },
     "zdrowie_ceramika": {
       "easy": 2,
       "normal": 1,

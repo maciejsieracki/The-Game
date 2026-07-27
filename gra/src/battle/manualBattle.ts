@@ -29,6 +29,7 @@ import { resolveCombat } from '../game/combat';
 import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef } from '../game/combat';
 import { applyVeteranFracToCombatUnit } from '../game/veteran';
+import { applyArmyHungerStatMultToCombatUnit } from '../game/army-starvation';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { axialToWorld, HEX_R, SQRT3 } from '../render/hexutil';
 import { buildUnitModel } from '../render/units';
@@ -50,6 +51,8 @@ export interface BattleUnit {
   parametryBonusFrac?: number;
   /** TRZECI SYSTEM -- weterani (2026-07-25) -- patrz battleScene.ts BattleUnit / game/veteran.ts. */
   veteranBonusFrac?: number;
+  /** Głód wojska (PYTANIE-85) — osłabienie statów bojowych bez armor. */
+  armyHungry?: boolean;
 }
 
 export interface ManualBattleOpts {
@@ -71,6 +74,8 @@ export interface ManualBattleOpts {
   attackerCivBonusy?: readonly CivBonusEntry[];
   /** RDY-01 / D4-Q3: bonusy cyw wroga (obronca). */
   defenderCivBonusy?: readonly CivBonusEntry[];
+  /** Mnożnik statów bojowych przy głodzie wojska (domyślnie 0.75). */
+  armyHungerStatMult?: number;
 }
 
 export interface ManualBattleResult {
@@ -145,14 +150,18 @@ function norm(v: unknown, fallback: number): number {
   return isNaN(n) ? fallback : n;
 }
 
-function toCombatUnit(bu: BattleUnit): CombatUnit {
+function toCombatUnit(bu: BattleUnit, armyHungerStatMult = 0.75): CombatUnit {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
   const cu = combatUnitFromDef(s, {
     typNazwa: (s['Jednostka'] as string) ?? bu.kategoria,
     hp: bu.hp,
   });
   // TRZECI SYSTEM (weterani) -- patrz battleScene.ts toCombatUnit / game/veteran.ts.
-  return applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac ?? 0);
+  let scaled = applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac ?? 0);
+  if (bu.armyHungry) {
+    scaled = applyArmyHungerStatMultToCombatUnit(scaled, armyHungerStatMult);
+  }
+  return scaled;
 }
 
 /** Punkty ruchu w bitwie dla jednostki (heksy/ture). Domyslnie 3, min 1. */
@@ -473,6 +482,7 @@ export class ManualBattle {
   private counters:    any[];
   private attackerCivBonusy: readonly CivBonusEntry[] = [];
   private defenderCivBonusy: readonly CivBonusEntry[] = [];
+  private armyHungerStatMult = 0.75;
 
   // ------------------------------------------------------------------------
   constructor(opts: ManualBattleOpts) {
@@ -484,6 +494,7 @@ export class ManualBattle {
     this.counters    = opts.data?.counters ?? [];
     this.attackerCivBonusy = opts.attackerCivBonusy ?? [];
     this.defenderCivBonusy = opts.defenderCivBonusy ?? [];
+    this.armyHungerStatMult = opts.armyHungerStatMult ?? 0.75;
 
     // ---- Overlay + UI ----
     this.overlay = document.createElement('div');
@@ -1030,8 +1041,8 @@ export class ManualBattle {
     attacker.group.rotation.y = (dw.x >= aw.x) ? 0 : Math.PI;
     defender.group.rotation.y = (aw.x >  dw.x) ? 0 : Math.PI;
 
-    const cuA = toCombatUnit(attacker.bu);
-    const cuD = toCombatUnit(defender.bu);
+    const cuA = toCombatUnit(attacker.bu, this.armyHungerStatMult);
+    const cuD = toCombatUnit(defender.bu, this.armyHungerStatMult);
     const result: CombatResult = resolveCombat(cuA, cuD, {
       maxRounds: 30,
       attackerMoved: true,

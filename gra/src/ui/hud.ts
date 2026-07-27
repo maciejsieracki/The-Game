@@ -95,7 +95,7 @@ export interface HudState {
   /** Przyrost Skarbca NETTO/turę (wplywy - utrzymanie budynkow - utrzymanie jednostek).
    *  Rozbicie do podpowiedzi chipu w polach ponizej (NAPRAWA HUD-SKARBIEC, Maciej 2026-07-26). */
   bogactwoRate?: number;
-  /** Wplywy BRUTTO/turę (Danina/Podatek + pieniadz z budynkow + Handel ze szlakow), przed utrzymaniem. */
+  /** Wplywy BRUTTO/turę (Podatek + pieniadz z budynkow + Handel ze szlakow), przed utrzymaniem. */
   bogactwoWplywyBrutto?: number;
   /** Czesc wplywow brutto pochodzaca z dochodu dystansowego tras handlowych (ta sama liczba co chip „Handel"). */
   bogactwoHandel?: number;
@@ -148,6 +148,13 @@ export interface HudState {
   handelIncome?: number;
   /** Liczba aktywnych tras handlowych gracza (do tytułu chipa). */
   handelRouteCount?: number;
+  /**
+   * PYTANIE-84-U23A: bonus solny Spichlerza II (≥1 płaci Sól) — żywność armii poza
+   * własnym terytorium 2→1 pkt/turę. Ustawia silnik w buildHudState (main.ts).
+   */
+  uchwalaSolAktywna?: boolean;
+  /** Ile Spichlerzy II faktycznie płaci Sól w tej turze (do tooltipu / panelu). */
+  uchwalaSolSpichlerzIICount?: number;
 }
 
 export interface HudConfig {
@@ -510,8 +517,9 @@ function resolveResearchProgress(s: HudState): number {
 
 function formatFoodHudLabel(s: HudState): string {
   const max = s.zywnoscMax;
-  if (max != null && max > 0) return `${s.zywnoscLabel} / ${max}`;
-  return s.zywnoscLabel;
+  const base = `${s.zywnoscLabel} 🍞`;
+  if (max != null && max > 0) return `${s.zywnoscLabel} / ${max} 🍞`;
+  return base;
 }
 
 /** Odmiana „tura" w bierniku ("za 1 turę" / "za 2 tury" / "za 5 tur"). */
@@ -527,7 +535,7 @@ function slowoTuraHud(n: number): string {
 /**
  * NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26, zgłoszenie z playtestu, bundle
  * 2f928932): tooltip chipu „Skarbiec" rozbija liczbę „+N" na składniki, żeby
- * gracz widział skąd się bierze przyrost/spadek — wpływy (Danina/Podatek +
+ * gracz widział skąd się bierze przyrost/spadek — wpływy (Podatek +
  * budynki, Handel ze szlaków) minus utrzymanie (budynki, jednostki). Suma
  * składników równa się dokładnie wyświetlanemu „+N" (oba liczone z tych samych
  * pól HudState, patrz main.ts buildHudState()).
@@ -540,7 +548,7 @@ function skarbiecChipTitle(s: HudState): string {
   const utrzymanieBudynkow = s.bogactwoUtrzymanieBudynkow ?? 0;
   const utrzymanieJednostek = s.bogactwoUtrzymanieJednostek ?? 0;
   const netto = s.bogactwoRate ?? 0;
-  return `${base}: Danina/Podatek i budynki: ${signed(daninaIBudynki)} pkt Pieniądza`
+  return `${base}: Podatek i budynki: ${signed(daninaIBudynki)} pkt Pieniądza`
     + ` · Handel ze szlaków: ${signed(handel)} pkt Pieniądza`
     + ` · Utrzymanie budynków: ${signed(-utrzymanieBudynkow)} pkt Pieniądza`
     + ` · Utrzymanie jednostek: ${signed(-utrzymanieJednostek)} pkt Pieniądza`
@@ -573,24 +581,27 @@ function naukaChipTitle(s: HudState): string {
 }
 
 /**
- * C-GLOD-Q1=A (Maciej 2026-07-26): tooltip chipu „Armia" — duża liczba = Zapasy
- * państwa, zielone +N = bilans netto/turę, rozbicie jak Skarbiec (wpływ miast,
- * koszt wojska). Ostrzeżenia głodu z wyprzedzeniem lub atrycji HP.
+ * PYTANIE-85: tooltip chipu „Armia" — W magazynie (Spichlerz centralny),
+ * rozbicie ostatniej tury jeśli dostępne, ostrzeżenia głodu wojska.
  */
 function armiaChipTitle(s: HudState): string {
   const maxPart = s.zywnoscMax != null && s.zywnoscMax > 0 ? ` / ${s.zywnoscMax}` : '';
   const netto = s.zywnoscRate ?? 0;
   const wplyw = s.zywnoscWplywMiast ?? 0;
   const koszt = s.zywnoscKosztWojska ?? 0;
-  let title = `Armia — zaopatrzenie wojsk`
-    + ` · Duża liczba: ${s.zywnoscLabel}${maxPart} pkt Żywności (Zapasy państwa)`
-    + ` · Zielone +N: ${signed(netto)} pkt Żywności/turę (bilans netto zapasów)`
-    + ` · Wpływ miast do zapasów: ${signed(wplyw)} pkt Żywności/turę`
-    + ` · Koszt utrzymania wojska: ${signed(-koszt)} pkt Żywności/turę`
-    + ` · Razem netto: ${signed(netto)} pkt Żywności/turę`;
+  let title = `Armia — Spichlerz centralny`
+    + ` · W magazynie: ${s.zywnoscLabel}${maxPart} 🍞`
+    + ` · Przyrost zapasów (prognoza): ${signed(netto)} 🍞/turę`
+    + ` · Nadwyżka miast → centrala: ${signed(wplyw)} 🍞/turę`
+    + ` · Wojsko: ${signed(-koszt)} 🍞/turę`;
   if (s.glodWojska) title += ` · Głód wojska: atrycja HP trwa!`;
   else if (s.zywnoscKarencjaZaTur != null && s.zywnoscKarencjaZaTur > 0) {
-    title += ` · Głód wojska za ${s.zywnoscKarencjaZaTur} ${slowoTuraHud(s.zywnoscKarencjaZaTur)} — zapasy państwa ujemne!`;
+    title += ` · Głód wojska za ${s.zywnoscKarencjaZaTur} ${slowoTuraHud(s.zywnoscKarencjaZaTur)} — magazyn ujemny!`;
+  }
+  if (s.uchwalaSolAktywna) {
+    const n = s.uchwalaSolSpichlerzIICount ?? 1;
+    title += ` · Uchwała „Solanka zapasowa" (Spichlerz II · Sól): armia poza terytorium 2→1 🍞/turę`
+      + (n > 1 ? ` · ${n}× Spichlerz II` : '');
   }
   return `${title} · Kliknij po szczegóły.`;
 }

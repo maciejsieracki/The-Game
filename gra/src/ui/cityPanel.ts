@@ -113,8 +113,22 @@ import {
   cityPalacTier,
   groupBuiltBuildingIds,
 } from '../game/building-upgrades';
-import { getCityFoodSplit, getEmpireFoodMaxCap } from '../game/empire-food';
-import { daninaLabel, mennicaWStolicy, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
+import { getEmpireFoodMaxCap } from '../game/empire-food';
+import {
+  buildRationParams,
+  computeCityRationCost,
+  computeGrowthPercentV85,
+  getCityRationLevel,
+  rationFoodCostPerPop,
+  rationGrowthPercent,
+  type GrowthPercentBreakdown,
+  type PoziomRacji,
+} from '../game/population-growth-v85';
+import {
+  paySpichlerzDrainForCity,
+  resolveSpichlerzCityBonusState,
+} from '../game/building-resource-gate';
+import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
 import type { CityManpowerSnapshot } from '../game/manpower';
 import { civManpowerMaxMult, formatManpower, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
@@ -143,8 +157,6 @@ import {
   cityWorkedTilesForEconomy,
   toEconomyCity,
   computeCityHealthBreakdown,
-  readCityFoodBufferFromCity,
-  growthFoodThreshold,
   type CityHealthLine,
   type Difficulty,
 } from '../game/turn-economy';
@@ -299,7 +311,7 @@ export interface CityPanelConfig {
     stateReligion?: string | null;
     sklad?: { name: string; pct: number; count: number }[];
   } | null;
-  /** B5-Q1=A — zapasy państwa (global per owner); suwak split jest per miasto (city.procentRozwoj). */
+  /** PYTANIE-85 — centralny magazyn żywności imperium. */
   getEmpireFoodState?: (ownerId: number) => EmpireFoodState | null;
   /** Mnożnik wzrostu z Porządku (z poprzedniej tury — jak w silniku). */
   getGrowthMult?: (cityId: string) => number;
@@ -314,7 +326,8 @@ export interface CityPanelConfig {
   /** Suma rekrutów (Manpower) imperium — werb jednostki zużywa tę pulę. */
   getEmpireRekruciTotal?: (ownerId: number) => number;
   getEmpireFoodTick?: (ownerId: number) => EmpireFoodTick | null;
-  onCityFoodSplitChange?: (cityId: string, procentRozwoj: number) => void;
+  /** PYTANIE-85 — gracz wybiera rację 1|2|3 w panelu miasta. */
+  onCityRationChange?: (cityId: string, poziomRacji: PoziomRacji) => void;
   /** Okolica 4C — profile + ręczna korekta. */
   getOkolicaState?: (cityId: string) => {
     focus: OkolicaFocus;
@@ -746,8 +759,17 @@ function readPodzialPracy(city: City, data: GameData | null): PodzialPracySplit 
 
 interface CityView {
   praca: number; pieniadz: number; nauka: number; kultura: number;
-  zywnoscNetto: number; maSpichlerz: boolean; maAkwedukt: boolean;
-  magazyn: number; progWzrostu: number;
+  /** PYTANIE-85: bilans lokalny = produkcja − racje (wyświetlany jako żywność netto). */
+  zywnoscNetto: number;
+  /** Produkcja brutto żywności (pola + budynki, przed racjami). */
+  zywnoscBrutto: number;
+  kosztRacji: number;
+  bilansLokalny: number;
+  poziomRacji: PoziomRacji;
+  wzrostProcent: number;
+  growthBreakdown: GrowthPercentBreakdown;
+  wzrostUlamkowy: number;
+  maSpichlerz: boolean; maAkwedukt: boolean;
   /** Max ludność bez Akweduktu (parametr gry). */
   popCapBezAkweduktu: number;
   /** Max ludność z Akweduktem (parametr gry, normal=15). */
@@ -756,16 +778,6 @@ interface CityView {
   popCapAktualny: number;
   /** Wzrost zablokowany — ludność ≥ aktualny cap. */
   atPopCap: boolean;
-  /** Żywność/turę idąca do bufora wzrostu (po suwaku tego miasta; z bonusami wzrostu/zdrowia). */
-  zywnoscDoWzrostu: number;
-  /**
-   * Żywność/turę tego miasta przeznaczona na zapasy armii państwa = wkład miasta do
-   * `doPanstwa` silnika (empire-food.ts): max(0, netto) × (100 − %wzrost)/100.
-   * BUGFIX 2026-07-10: liczone jako REALNY udział z suwaka (NIE rezyduał
-   * `netto − zywnoscDoWzrostu`, który schodził na minus, bo zywnoscDoWzrostu ma
-   * bonusy growthMult×healthMod i przekracza netto). 0% armii ⇒ 0 (nie widmowe −2).
-   */
-  zywnoscDoArmii: number;
 }
 
 /** Snapshot imperium do paska zasobów w widoku miasta (spójny z HudState). */
@@ -910,34 +922,45 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       if (orderMult.kulturaMult !== 1) y.kultura *= orderMult.kulturaMult;
     }
     y.praca = cityPracaInteger(y.praca);
-    const pctRozwoj = getCityFoodSplit(city);
-    const growthMult = cfg.getGrowthMult?.(city.id) ?? 1;
-    const healthMod = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
-    const zywnoscDoWzrostu = Math.floor(y.zywnosc * (pctRozwoj / 100) * growthMult * healthMod);
-    // BUGFIX 2026-07-10 (widmowa „Armia −2"): udział miasta na zapasy armii = wkład do
-    // doPanstwa silnika (empire-food.ts): max(0, netto) × (100 − %wzrost)/100. Bez armii
-    // i przy 100% wzrostu daje 0 (nie rezyduał netto−zywnoscDoWzrostu, który był ujemny
-    // przez bonusy growthMult×healthMod zawyżające zywnoscDoWzrostu ponad netto).
-    const zywnoscDoArmii = Math.round(Math.max(0, y.zywnosc) * ((100 - pctRozwoj) / 100));
-    const magazyn = readCityFoodBufferFromCity(city);
-    const wzrostPace = cfg.getWzrostLudnosciPace?.() ?? 'wysoki';
+    const zywnoscBrutto = y.zywnosc;
+    const rationParams = buildRationParams(data.econParams, cfg.difficulty ?? 'normal');
+    const poziomRacji = getCityRationLevel(city);
+    const kosztRacji = computeCityRationCost(city.population, poziomRacji, rationParams);
+    const bilansLokalny = zywnoscBrutto - kosztRacji;
+    const allCities = cfg.getCities?.() ?? [];
+    const spichlerzDrain = paySpichlerzDrainForCity(allCities, city.ownerId, built, true);
+    const spichlerzState = resolveSpichlerzCityBonusState(built, spichlerzDrain);
+    const { state: ordState } = resolveOrderState(city, data);
+    const ws = city.wealthState ?? freshWealthState();
+    const growthBreakdown = computeGrowthPercentV85({
+      population: city.population,
+      poziomRacji,
+      zdrowie,
+      szczescieNetto: ordState.szczescie ?? 0,
+      wealthPoziom: ws.poziom ?? 0,
+      spichlerzState,
+      civKey: cfg.getCivKey?.(city.ownerId) ?? null,
+      rationParams,
+    });
     const popCapBezAkweduktu = params.akweduktProgLudnosci;
     const popCapZAkweduktem = params.akweduktMaxLudnosci;
     const popCapAktualny = cityPopulationCap(maAkwedukt, params);
     const atPopCap = city.population >= popCapAktualny;
     return {
       praca: y.praca, pieniadz: y.pieniadz, nauka: y.nauka, kultura: y.kultura,
-      zywnoscNetto: y.zywnosc, maSpichlerz, maAkwedukt,
-      magazyn,
-      progWzrostu: growthFoodThreshold(
-        city.population, params, wzrostPace, city.ownerId, cfg.getDifficulty?.() ?? 'normal',
-      ),
+      zywnoscNetto: bilansLokalny,
+      zywnoscBrutto,
+      kosztRacji,
+      bilansLokalny,
+      poziomRacji,
+      wzrostProcent: growthBreakdown.total,
+      growthBreakdown,
+      wzrostUlamkowy: city.wzrostUlamkowy ?? 0,
+      maSpichlerz, maAkwedukt,
       popCapBezAkweduktu,
       popCapZAkweduktem,
       popCapAktualny,
       atPopCap,
-      zywnoscDoWzrostu,
-      zywnoscDoArmii,
     };
   } catch { return null; }
 }
@@ -971,25 +994,10 @@ function ownerHasMennica(ownerId: number): boolean {
 }
 
 /**
- * Decyzje 65B/66B (Maciej 2026-07-25, "Handel -> Danina -> Podatek"): etykieta
- * widoczna dla gracza dla strumienia dochodu miasta oddawanego wladcy (dawny
- * "Handel" w tym panelu -- handelBrutto/handelNetto). "Podatek" TYLKO gdy
- * Waluta odkryta ORAZ Mennica zbudowana W STOLICY tej cywilizacji (nie
- * gdziekolwiek w imperium jak `ownerHasMennica` powyzej, uzywana dla mnoznika
- * Efektu 1 -- to inny mechanizm, patrz game/danina-nazwa.ts). PARYTET AI:
- * dziala identycznie dla kazdego ownerId. Jedna funkcja -- wolaj wszedzie w
- * tym pliku zamiast liczyc bramke osobno.
+ * Etykieta strumienia podatkowego miasta — zawsze "Podatek" (decyzja 2026-07-27).
  */
-function daninaLabelForCity(city: City): DaninaLabel {
-  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-  const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
-  const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;
-  const builtAtCapital = capitalId ? (cfg.getBuiltBuildingIds?.(capitalId) ?? []) : [];
-  // PYTANIE 83=B: trzeci argument -- dostęp do złota TERAZ, ta sama funkcja co
-  // silnik (cfg.getOwnerHasZlotoAccess -> main.ts ownerHasZlotoAccessNow).
-  // Brak dostępu -> nazwa wraca na "Danina", mimo że Mennica fizycznie stoi.
-  const maDostepDoZlota = cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true;
-  return daninaLabel(walutaOdkryta, mennicaWStolicy(capitalId, builtAtCapital), maDostepDoZlota);
+function daninaLabelForCity(_city: City): DaninaLabel {
+  return daninaLabel();
 }
 
 function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
@@ -1011,106 +1019,24 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   };
 }
 
-/** Podział netto żywności miasta (suwak miasta: wzrost vs armia). */
-function cityFoodSplit(view: CityView): { total: number; doWzrostu: number; doArmii: number } {
-  const total = Math.round(view.zywnoscNetto);
-  const doWzrostu = Math.round(view.zywnoscDoWzrostu);
-  // BUGFIX 2026-07-10: „doArmii" = realny udział na armię z suwaka (view.zywnoscDoArmii),
-  // a NIE rezyduał total−doWzrostu (który był ujemny mimo braku armii, bo doWzrostu ma
-  // bonusy wzrostu/zdrowia przekraczające netto). Jedno źródło prawdy spójne z silnikiem.
-  return { total, doWzrostu, doArmii: view.zywnoscDoArmii };
+/** Bilans żywności miasta (PYTANIE-85: produkcja − racje). */
+function cityFoodSplit(view: CityView): { total: number; produkcja: number; racje: number } {
+  const produkcja = Math.round(view.zywnoscBrutto);
+  const racje = Math.round(view.kosztRacji);
+  const total = Math.round(view.bilansLokalny);
+  return { total, produkcja, racje };
 }
 
-function snapFoodSplitPct(n: number): number {
-  return Math.max(0, Math.min(100, Math.round(n)));
+function rationButtonLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {
+  const cost = rationFoodCostPerPop(level, params);
+  const grow = rationGrowthPercent(level, params);
+  return `${cost} 🍞/miesz. · ${grow}%`;
 }
 
-/** Custom drag suwaka wzrost vs armia — pointer events, bez native range. */
-function attachFoodSplitBar(
-  barWrap: HTMLElement,
-  initialPct: number,
-  onChange: (pct: number) => void,
-  onCommit: () => void,
-): void {
-  const gBar = barWrap.querySelector('[data-food-bar="wzrost"]') as HTMLElement | null;
-  const aBar = barWrap.querySelector('[data-food-bar="armia"]') as HTMLElement | null;
-  const handle = el('div', 'food-split-handle');
-  barWrap.appendChild(handle);
-
-  let currentPct = snapFoodSplitPct(initialPct);
-
-  const syncVisual = (pct: number) => {
-    const u = 100 - pct;
-    if (gBar) gBar.style.width = `${pct}%`;
-    if (aBar) aBar.style.width = `${u}%`;
-    handle.style.left = `${pct}%`;
-    barWrap.setAttribute('aria-valuenow', String(pct));
-  };
-  syncVisual(currentPct);
-
-  barWrap.setAttribute('role', 'slider');
-  barWrap.tabIndex = 0;
-  barWrap.setAttribute('aria-valuemin', '0');
-  barWrap.setAttribute('aria-valuemax', '100');
-  barWrap.setAttribute('aria-label', 'Podział żywności: wzrost miast versus armia');
-
-  const pctFromClientX = (clientX: number): number => {
-    const rect = barWrap.getBoundingClientRect();
-    if (rect.width <= 0) return currentPct;
-    return snapFoodSplitPct(((clientX - rect.left) / rect.width) * 100);
-  };
-
-  const apply = (pct: number, notify: boolean) => {
-    if (pct === currentPct) return;
-    currentPct = pct;
-    syncVisual(pct);
-    if (notify) onChange(pct);
-  };
-
-  let dragging = false;
-
-  const finishDrag = () => {
-    if (!dragging) return;
-    dragging = false;
-    barWrap.classList.remove('food-split-bar--dragging');
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', onPointerUp);
-    window.removeEventListener('pointercancel', onPointerUp);
-    onCommit();
-  };
-
-  const onPointerMove = (e: PointerEvent) => {
-    if (!dragging) return;
-    apply(pctFromClientX(e.clientX), true);
-  };
-
-  const onPointerUp = () => finishDrag();
-
-  const startDrag = (e: PointerEvent) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    dragging = true;
-    barWrap.classList.add('food-split-bar--dragging');
-    barWrap.setPointerCapture(e.pointerId);
-    apply(pctFromClientX(e.clientX), true);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-    window.addEventListener('pointercancel', onPointerUp);
-  };
-
-  barWrap.addEventListener('pointerdown', startDrag);
-
-  barWrap.addEventListener('keydown', (e) => {
-    let next = currentPct;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = snapFoodSplitPct(currentPct - 1);
-    else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = snapFoodSplitPct(currentPct + 1);
-    else if (e.key === 'Home') next = 0;
-    else if (e.key === 'End') next = 100;
-    else return;
-    e.preventDefault();
-    apply(next, true);
-    onCommit();
-  });
+function growthBreakdownRow(label: string, value: number, showZero = false): string {
+  if (!showZero && value === 0) return '';
+  const cls = value > 0 ? 'pos' : value < 0 ? 'neg' : 'muted';
+  return `<div class="growth-bd-row ${cls}"><span>${label}</span><span>${signed(value)}%</span></div>`;
 }
 
 function resolveEmpireSnap(city: City, map: GameMap | null, data: GameData | null): EmpireHudSnap {
@@ -1577,6 +1503,24 @@ function ensureStyles(): void {
 .civ-cs .food-split-handle{position:absolute;top:-3px;bottom:-3px;width:14px;margin-left:-7px;border-radius:4px;background:linear-gradient(180deg,#faf0c8 0%,#e8d070 35%,#a9861f 100%);border:1px solid #6a5212;box-shadow:0 1px 6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.35);cursor:ew-resize;z-index:2;touch-action:none;pointer-events:none;}
 .civ-cs .food-split-bar:focus-visible{outline:2px solid rgba(232,216,138,.55);outline-offset:2px;}
 .civ-cs .food-split-labels{display:flex;justify-content:space-between;font-size:0.66em;color:var(--muted);margin-bottom:0.12em;}
+.civ-cs .ration-btn-row{display:flex;gap:0.35em;margin:0.38em 0;}
+.civ-cs .ration-btn{flex:1;padding:0.42em 0.3em;border:1px solid var(--border);border-radius:6px;background:var(--panel2);cursor:pointer;text-align:center;font-size:0.7em;line-height:1.35;color:var(--fg);}
+.civ-cs .ration-btn:hover{border-color:rgba(232,216,138,.45);}
+.civ-cs .ration-btn.on{border-color:var(--gold);background:rgba(232,216,138,.12);box-shadow:0 0 0 1px rgba(232,216,138,.18) inset;}
+.civ-cs .ration-btn:disabled{opacity:.55;cursor:default;}
+.civ-cs .ration-btn-title{display:block;font-weight:700;margin-bottom:0.12em;}
+.civ-cs .ration-btn-sub{display:block;font-size:0.92em;color:var(--muted);}
+.civ-cs .food-bilans-row{display:flex;justify-content:space-between;align-items:center;gap:0.35em;font-size:0.76em;margin:0.28em 0 0.12em;padding:0.35em 0.45em;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,.02);}
+.civ-cs .food-bilans-row .pos{color:var(--green);}
+.civ-cs .food-bilans-row .neg{color:var(--red);}
+.civ-cs .growth-bd-block{margin-top:0.42em;padding-top:0.35em;border-top:1px solid rgba(232,216,138,.14);}
+.civ-cs .growth-bd-hd{font-size:0.66em;letter-spacing:.12em;text-transform:uppercase;color:#a08030;margin-bottom:0.28em;}
+.civ-cs .growth-bd-total{font-size:1.05em;font-weight:700;color:var(--gold);margin-bottom:0.22em;}
+.civ-cs .growth-bd-row{display:flex;justify-content:space-between;gap:0.5em;font-size:0.74em;line-height:1.55;}
+.civ-cs .growth-bd-row.pos{color:#7ad0a0;}
+.civ-cs .growth-bd-row.neg{color:#e08a8a;}
+.civ-cs .growth-bd-row.muted{color:var(--muted);}
+.civ-cs .growth-frac{font-size:0.68em;color:var(--muted);margin-top:0.18em;}
 .civ-cs .praca-split-bar{display:flex;height:26px;background:rgba(255,255,255,0.08);border:1px solid rgba(232,216,138,0.18);border-radius:7px;overflow:hidden;position:relative;margin-bottom:0.38em;}
 .civ-cs .praca-split-b{background:linear-gradient(90deg,#a08030,#e8d88a);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#2e2708;font-weight:700;}
 .civ-cs .praca-split-u{background:linear-gradient(90deg,#3a6ad0,#5a9bd4);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#08121e;font-weight:700;}
@@ -2749,8 +2693,8 @@ function buildZdrowieDetailCard(
     card.appendChild(el('div', 'dc-note', 'Brak modyfikatorów zdrowotnych w tym mieście.'));
   }
   appendDetailAlgo(card, 'Wpływ na rozgrywkę', [
-    'Modyfikator zdrowia skaluje przyrost żywności do bufora wzrostu (effectiveFlow).',
-    'Wyższe zdrowie = szybszy wzrost; ujemne = wolniejszy lub głód.',
+    'Zdrowie dodaje do WZROST%: floor(Zdrowie ÷ 10) × 1 p.p.',
+    'Wyższe zdrowie = szybszy wzrost ludności; ujemne = wolniejszy.',
     'Część składników pochodzi z budynków, terenu okolicy i stanu wojny/chorób.',
   ]);
   return card;
@@ -4110,237 +4054,187 @@ function renderBilans(mount: HTMLElement, view: CityView | null): void {
 function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): void {
   mount.innerHTML = '';
   mount.style.display = '';
-  const title = view?.maSpichlerz ? 'Spichlerz' : 'Wzrost ludności';
-  appendSectionTitleWithDetails(mount, `<span>${title}</span>`, () => {
+  const data = gameData();
+  appendSectionTitleWithDetails(mount, '<span>Wyżywienie i wzrost</span>', () => {
     const st = cfg.getEmpireFoodState?.(city.ownerId);
     const tick = cfg.getEmpireFoodTick?.(city.ownerId);
-    return buildSpichlerzDetailCard(city, view!, st, tick);
+    return view ? buildRacjeWzrostDetailCard(city, view, st, tick, data) : el('div', 'muted', '—');
   });
-  if (!view) { mount.appendChild(el('div', 'muted', '—')); return; }
+  if (!view || !data) { mount.appendChild(el('div', 'muted', '—')); return; }
 
-  const prog = Math.round(view.progWzrostu);
-  const mag = Math.round(view.magazyn);
-  const pct = Math.max(0, Math.min(100, Math.round((mag / Math.max(1, prog)) * 100)));
-  const st = cfg.getEmpireFoodState?.(city.ownerId);
-  const tick = cfg.getEmpireFoodTick?.(city.ownerId);
-  const pctRozwoj = getCityFoodSplit(city);
-  const pctArmia = 100 - pctRozwoj;
+  const rationParams = buildRationParams(data.econParams, cfg.difficulty ?? 'normal');
   const foodSplit = cityFoodSplit(view);
-  const doWzrostu = foodSplit.doWzrostu;
-  const doArmii = foodSplit.doArmii;
+  const bilansCls = foodSplit.total > 0 ? 'green' : foodSplit.total < 0 ? 'red' : 'gold';
+  const bd = view.growthBreakdown;
   const atPopCap = view.atPopCap;
-  const eta = atPopCap ? null : etaTurns(prog, mag, Math.max(0, doWzrostu));
-  const reserve = st?.zapasyPanstwa;
-  const starving = tick?.glodWojska ?? (reserve != null && reserve < 0);
-  const foodCls = foodSplit.total > 0 ? 'green' : foodSplit.total < 0 ? 'red' : 'gold';
+  const tick = cfg.getEmpireFoodTick?.(city.ownerId);
+  const cityRow = tick?.perCityRows?.find(r => r.cityId === city.id);
+  const fed = cityRow?.nakarmione ?? foodSplit.total >= 0;
 
-  const spichlerzChips: TabIndicatorChip[] = [
+  const chips: TabIndicatorChip[] = [
     { icon: cityPanelChipIcon('res-population', 14), label: 'Ludność', value: String(city.population), cls: 'gold' },
-    {
-      icon: cityPanelChipIcon('chip-map', 14),
-      label: 'Do +1',
-      value: atPopCap ? 'Cap' : (eta != null ? `~${eta} ${tury(eta)}` : '—'),
-      cls: atPopCap ? 'red' : (eta != null ? 'green' : 'muted'),
-      title: atPopCap
-        ? (view.maAkwedukt
-          ? `Cap ${view.popCapAktualny} — max z Akweduktem; nadwyżka żywności idzie do armii lub przepada`
-          : `Bez Akweduktu max ${view.popCapBezAkweduktu} mieszk. — zbuduj Akwedukt, by rosnąć dalej`)
-        : 'Szacunek przy obecnym napływie do bufora',
-    },
     {
       icon: loafIconHtml('civ-v-loaf-chip'),
       label: 'Produkcja',
-      value: `${signed(foodSplit.total)}/t`,
-      cls: foodCls,
-      title: 'Netto żywności tego miasta na turę',
+      value: `${signed(foodSplit.produkcja)}/t`,
+      cls: foodSplit.produkcja > 0 ? 'green' : foodSplit.produkcja < 0 ? 'red' : 'muted',
+      title: 'Uprawa i hodowla w tym mieście (brutto)',
     },
     {
       icon: loafIconHtml('civ-v-loaf-chip'),
-      label: 'Wzrost',
-      value: signed(doWzrostu),
-      cls: doWzrostu > 0 ? 'gold' : doWzrostu < 0 ? 'red' : 'muted',
-      title: 'Część produkcji idąca do bufora wzrostu ludności',
+      label: 'Racje',
+      value: `−${foodSplit.racje}/t`,
+      cls: 'red',
+      title: `Koszt wyżywienia przy Racji ${view.poziomRacji}`,
     },
     {
-      icon: cityPanelChipIcon('tb-army', 14),
-      label: 'Armia',
-      value: signed(doArmii),
-      cls: starving ? 'red' : doArmii > 0 ? 'blue' : doArmii < 0 ? 'red' : 'muted',
-      title: 'Część produkcji idąca do zapasów armii państwa',
+      icon: loafIconHtml('civ-v-loaf-chip'),
+      label: 'Bilans',
+      value: `${signed(foodSplit.total)}/t`,
+      cls: bilansCls,
+      title: 'Produkcja − racje = bilans lokalny',
     },
-    { icon: '▣', label: 'Bufor', value: `${mag}/${prog}`, cls: 'gold', title: 'Stan bufora wzrostu w tym grodzie' },
+    {
+      icon: cityPanelChipIcon('chip-map', 14),
+      label: 'WZROST%',
+      value: `${view.wzrostProcent}%`,
+      cls: view.wzrostProcent > 0 ? 'gold' : 'muted',
+      title: 'Łączny procent wzrostu ludności w tej turze',
+    },
   ];
-  if (view.maSpichlerz) {
-    spichlerzChips.push({ icon: cityPanelChipIcon('chip-grain', 14), label: 'Spichlerz', value: 'w mieście', cls: 'green' });
-  } else if (ownerHasSpichlerz(city.ownerId)) {
-    spichlerzChips.push({ icon: cityPanelChipIcon('chip-grain', 14), label: 'Spichlerz', value: 'imperium', cls: 'gold' });
-  }
-  if (starving) {
-    spichlerzChips.push({ icon: cityPanelChipIcon('chip-warning', 14), label: 'Armia', value: 'głód', cls: 'red' });
+  if (!fed) {
+    chips.push({
+      icon: cityPanelChipIcon('chip-warning', 14),
+      label: 'Głód',
+      value: 'brak dopłaty',
+      cls: 'red',
+      title: 'Miasto na minusie bez pokrycia z magazynu centralnego — brak wzrostu',
+    });
   }
   if (atPopCap) {
-    spichlerzChips.push({
+    chips.push({
       icon: cityPanelChipIcon('cp-buildings', 14),
       label: 'Limit',
       value: `max ${view.popCapAktualny}`,
       cls: 'red',
       title: view.maAkwedukt
-        ? `Cap ${view.popCapAktualny} z Akweduktem — wzrost zablokowany`
-        : `Bez Akweduktu miasto nie rośnie powyżej ${view.popCapBezAkweduktu} — zbuduj Akwedukt (Zdrowie)`,
+        ? `Cap ${view.popCapAktualny} z Akweduktem`
+        : `Bez Akweduktu max ${view.popCapBezAkweduktu}`,
     });
   } else if (view.maAkwedukt) {
-    spichlerzChips.push({
+    chips.push({
       icon: cityPanelChipIcon('cp-buildings', 14),
       label: 'Akwedukt',
       value: `cap ${view.popCapZAkweduktem}`,
       cls: 'green',
-      title: `Z Akweduktem miasto może rosnąć do ${view.popCapZAkweduktem} mieszkańców`,
     });
   }
-  appendTabIndicators(mount, spichlerzChips);
+  appendTabIndicators(mount, chips);
+
+  const bilans = el('div', 'food-bilans-row');
+  bilans.innerHTML =
+    `<span>Produkcja <span class="pos">${signed(foodSplit.produkcja)}</span> − racje <span class="neg">−${foodSplit.racje}</span></span>` +
+    `<span class="${bilansCls}">= ${signed(foodSplit.total)} 🍞/t</span>`;
+  mount.appendChild(bilans);
 
   const player = city.ownerId === 0;
-  const sliderEditable = player && !!cfg.onCityFoodSplitChange;
-
-  const block = el('div', 'food-grow-block');
-  const track = el('div', 'food-grow-track');
-  track.innerHTML =
-    `<div class="food-grow-fill" style="width:${pct}%"></div>` +
-    `<span class="food-grow-loaf" aria-hidden="true">${loafIconHtml()}</span>`;
-  block.appendChild(track);
-
-  const pair = el('div', 'food-stat-pair');
-  const statW = el('div', 'food-stat');
-  statW.innerHTML =
-    `<span class="food-stat-lbl">${loafIconHtml('civ-v-loaf-chip')} Wzrost</span>` +
-    `<span class="food-stat-val gold">${mag} / ${prog}</span>`;
-  const statA = el('div', 'food-stat');
-  statA.style.textAlign = 'right';
-  const armyCls = tick?.glodWojska ? 'red' : '';
-  statA.innerHTML =
-    `<span class="food-stat-lbl">${cityPanelChipIconWrap('tb-army', 14)} Armia</span>` +
-    `<span class="food-stat-val ${armyCls}">${signed(doArmii)}/t</span>`;
-  pair.appendChild(statW);
-  pair.appendChild(statA);
-  block.appendChild(pair);
-  mount.appendChild(block);
-
-  const splitWrap = el('div', 'food-split-wrap');
-  const labels = el('div', 'food-split-labels');
-  labels.innerHTML = `<span>${loafIconHtml('civ-v-loaf-chip')} Wzrost</span><span>${cityPanelChipIconWrap('tb-army', 14)} Armia</span>`;
-  splitWrap.appendChild(labels);
-
-  const barWrap = el('div', 'food-split-bar');
-  barWrap.innerHTML =
-    `<div class="food-split-g" data-food-bar="wzrost" style="width:${pctRozwoj}%"></div>` +
-    `<div class="food-split-a" data-food-bar="armia" style="width:${pctArmia}%"></div>`;
-  splitWrap.appendChild(barWrap);
-
-  if (sliderEditable) {
-    barWrap.classList.add('food-split-bar--interactive');
-    attachFoodSplitBar(
-      barWrap,
-      pctRozwoj,
-      (v) => cfg.onCityFoodSplitChange?.(city.id, v),
-      () => rerender(),
-    );
-  } else if (st) {
-    barWrap.classList.add('food-split-bar--ro');
+  const rationEditable = player && !!cfg.onCityRationChange;
+  const btnRow = el('div', 'ration-btn-row');
+  ([1, 2, 3] as const).forEach((level) => {
+    const btn = el('button', `ration-btn${view.poziomRacji === level ? ' on' : ''}`);
+    btn.type = 'button';
+    btn.disabled = !rationEditable;
+    btn.innerHTML =
+      `<span class="ration-btn-title">Racja ${level}</span>` +
+      `<span class="ration-btn-sub">${rationButtonLabel(level, rationParams)}</span>`;
+    btn.title = `Ustaw rację ${level} — koszt i wzrost na mieszkańca`;
+    if (rationEditable) {
+      btn.addEventListener('click', () => {
+        if (view.poziomRacji === level) return;
+        cfg.onCityRationChange?.(city.id, level);
+        rerender();
+      });
+    }
+    btnRow.appendChild(btn);
+  });
+  mount.appendChild(btnRow);
+  if (!rationEditable && player) {
     const ro = el('div', 'muted');
-    ro.style.cssText = 'font-size:0.62em;text-align:center;padding:0.2em 0;';
-    ro.textContent = player ? 'Suwak — po wpieciu silnika.' : 'Tylko podgląd.';
-    splitWrap.appendChild(ro);
+    ro.style.cssText = 'font-size:0.62em;text-align:center;';
+    ro.textContent = 'Batony racji — po wpieciu silnika.';
+    mount.appendChild(ro);
   }
-  mount.appendChild(splitWrap);
+
+  const growBlock = el('div', 'growth-bd-block');
+  growBlock.innerHTML =
+    `<div class="growth-bd-hd">WZROST ludności</div>` +
+    `<div class="growth-bd-total">Łącznie ${view.wzrostProcent}%</div>` +
+    growthBreakdownRow('Racje', bd.racje, true) +
+    growthBreakdownRow('Małe miasto', bd.maleMiasto) +
+    growthBreakdownRow('Spichlerz', bd.spichlerz) +
+    growthBreakdownRow('Zdrowie', bd.zdrowie) +
+    growthBreakdownRow('Szczęście', bd.szczescie) +
+    growthBreakdownRow('Cywilizacja', bd.cywilizacja) +
+    `<div class="growth-frac">Ułamek wzrostu: ${view.wzrostUlamkowy.toFixed(2)} (kumuluje się co turę)</div>`;
+  mount.appendChild(growBlock);
 }
 
-function buildSpichlerzDetailCard(
+function buildRacjeWzrostDetailCard(
   city: City,
   view: CityView,
   st: EmpireFoodState | null | undefined,
   tick: EmpireFoodTick | null | undefined,
+  data: GameData | null,
 ): HTMLDivElement {
-  const data = gameData();
-  const params = data ? buildEconParams(data, cfg.difficulty ?? 'normal') : null;
-  const coeff = params?.progWzrostuWspolczynnik ?? 16;
-  const spichlerzKeep = params ? Math.round(params.spichlerzZachowaniePoPrzroscie * 100) : 50;
-  const prog = Math.round(view.progWzrostu);
-  const mag = Math.round(view.magazyn);
-  const eta = etaTurns(prog, mag, Math.max(0, view.zywnoscDoWzrostu));
-  const hasSpichlerz = ownerHasSpichlerz(city.ownerId);
-  const pctRozwoj = getCityFoodSplit(city);
-  const pctArmia = 100 - pctRozwoj;
-  const reserve = st?.zapasyPanstwa;
-  const doArmii = view.zywnoscDoArmii;   // BUGFIX 2026-07-10: realny udział, nie rezyduał netto−wzrost
-  const starving = tick?.glodWojska ?? (reserve != null && reserve < 0);
-
+  const rationParams = data ? buildRationParams(data.econParams, cfg.difficulty ?? 'normal') : null;
+  const foodSplit = cityFoodSplit(view);
   const card = el('div', 'detail-card');
-  const head = el('div', 'dc-h');
-  head.innerHTML = '<span>Spichlerz — szczegóły</span>';
-  card.appendChild(head);
-
+  card.appendChild(el('div', 'dc-h', '<span>Wyżywienie i wzrost — szczegóły</span>'));
   const intro = el('div', 'dc-note');
   setNoteHtml(intro,
-    'Bufor 🍞 kumuluje się w każdym mieście osobno. Suwak tego miasta dzieli jego świeżą żywność między wzrost ludności a zapasy armii państwa.',
+    'Lokalnie: produkcja żywności minus koszt racji = bilans miasta. Nadwyżka trafia do magazynu centralnego, niedobór jest pokrywany stamtąd.',
   );
   card.appendChild(intro);
 
-  appendDetailSection(card, 'Bufor wzrostu (to miasto)');
+  appendDetailSection(card, 'Bilans lokalny (to miasto)');
   const g1 = appendDetailGrid(card);
-  gridDetailRow(g1, 'Próg', `${city.population} → ${city.population + 1}: ${prog} 🍞`);
-  gridDetailRow(g1, 'Bufor', `${mag} / ${prog}`);
-  gridDetailRow(g1, 'Przyrost', `+${Math.round(view.zywnoscDoWzrostu)} 🍞`);
-  gridDetailRow(g1, 'ETA', view.atPopCap ? `Cap — max ${view.popCapAktualny}` : (eta != null ? `~${eta} ${tury(eta)}` : '—'));
-  gridDetailRow(
-    g1,
-    'Limit ludności',
-    view.maAkwedukt
-      ? `max ${view.popCapZAkweduktem} z Akweduktem${view.atPopCap ? ' (osiągnięty)' : ''}`
-      : `max ${view.popCapBezAkweduktu} bez Akweduktu${view.atPopCap ? ' (osiągnięty)' : ''}`,
-  );
-  gridDetailRow(g1, 'Spichlerz w mieście', view.maSpichlerz ? `tak (po wzroście ${spichlerzKeep}% bufora)` : 'nie (po wzroście bufor=0)');
-
-  appendDetailFormula(card, `Próg(N) = 20 + N × ${coeff}`);
-  appendDetailFormula(card, 'Bufor += zywnoscDoWzrostu × modyfikator_zdrowia');
-  appendDetailFormula(card, `Po wzroście: bufor = ${view.maSpichlerz ? `floor(bufor × ${spichlerzKeep}%)` : '0'}`);
-
-  appendDetailAlgo(card, 'Algorytm wzrostu (populationGrowth)', [
-    `zywnoscDoWzrostu = zywnoscNetto_miasta × ${pctRozwoj}% (suwak miasta).`,
-    'effectiveFlow = zywnoscDoWzrostu × max(0, 1 + zdrowie × wsp_zdrowia).',
-    'Bufor += floor(effectiveFlow). Gdy bufor ≥ próg i ludność < cap → +1 mieszkaniec.',
-    'Deficyt: bufor maleje; bufor=0 i nadal deficyt → −1 ludność (min 1).',
-    'Cap bez Akweduktu = akwedukt_prog_ludnosci; z Akweduktem = akwedukt_max_ludnosci (normal 5 / 15).',
-  ]);
-
-  appendDetailSection(card, 'Armia (całe państwo)');
-  const g2 = appendDetailGrid(card);
-  gridDetailRow(g2, 'Suwak', `${pctRozwoj}% wzrost · ${100 - pctRozwoj}% armia`);
-  if (tick) {
-    gridDetailRow(g2, 'Żywność brutto', `+${Math.round(tick.zywnoscBrutto)} 🍞 (suma miast)`);
-    gridDetailRow(g2, '→ wzrost miast', `+${Math.round(tick.doRozwoju)} 🍞`);
-    gridDetailRow(g2, '→ armia', `+${Math.round(tick.doPanstwa)} 🍞`);
-    gridDetailRow(g2, 'Koszt armii', `−${Math.round(tick.kosztArmii)}`);
-  } else {
-    gridDetailRow(g2, 'Armia (miasto)', `+${Math.max(0, doArmii)}`);
+  gridDetailRow(g1, 'Produkcja brutto', `${signed(foodSplit.produkcja)} 🍞/t`);
+  gridDetailRow(g1, 'Koszt racji', `−${foodSplit.racje} 🍞/t (Racja ${view.poziomRacji})`);
+  gridDetailRow(g1, 'Bilans', `${signed(foodSplit.total)} 🍞/t`);
+  if (rationParams) {
+    gridDetailRow(g1, 'Racja 1/2/3', `${rationButtonLabel(1, rationParams)} · ${rationButtonLabel(2, rationParams)} · ${rationButtonLabel(3, rationParams)}`);
   }
 
-  appendDetailFormula(card, 'doRozwoju = Σ zywnoscNetto_miast × %wzrost');
-  appendDetailFormula(card, 'doArmii = brutto − doRozwoju');
-  appendDetailFormula(card, hasSpichlerz
-    ? 'Zapasy += 100% × (doArmii − kosztArmii); max = pojemność Spichlerzy'
-    : 'Zapasy += 50% × (doArmii − kosztArmii); bez limitu pojemności');
+  appendDetailSection(card, 'WZROST% — składniki');
+  const g2 = appendDetailGrid(card);
+  const bd = view.growthBreakdown;
+  gridDetailRow(g2, 'Racje', `${signed(bd.racje)}%`);
+  gridDetailRow(g2, 'Małe miasto', `${signed(bd.maleMiasto)}%`);
+  gridDetailRow(g2, 'Spichlerz', `${signed(bd.spichlerz)}%`);
+  gridDetailRow(g2, 'Zdrowie', `${signed(bd.zdrowie)}%`);
+  gridDetailRow(g2, 'Szczęście', `${signed(bd.szczescie)}%`);
+  gridDetailRow(g2, 'Cywilizacja', `${signed(bd.cywilizacja)}%`);
+  gridDetailRow(g2, 'Łącznie', `${view.wzrostProcent}%`);
+  gridDetailRow(g2, 'Ułamek wzrostu', view.wzrostUlamkowy.toFixed(2));
 
-  appendDetailAlgo(card, 'Tick zapasów armii (advanceEmpireFood)', [
-    'Brutto = suma dodatniej zywnoscNetto ze wszystkich miast (pomijane oblężone).',
-    `doRozwoju = brutto × ${pctRozwoj}%; reszta idzie do armii w tej turze.`,
-    'kosztArmii = militaryFoodConsumption(jednostki na mapie).',
-    hasSpichlerz
-      ? 'Ze Spichlerzem: odkłada 100% netto (doArmii − koszt); limit = 100 🍞 × liczba Spichlerzy.'
-      : 'Bez Spichlerza: odkłada 50% netto od startu gry; reszta przepada; brak limitu zapasów.',
-    'Ujemne zapasy = głód wojska (−HP co turę).',
-    'Spichlerz w mieście NIE wpływa na % odkładania — liczy się dowolny Spichlerz w imperium.',
+  appendDetailFormula(card, 'bilans = produkcja_brutto − (ludność × koszt_racji)');
+  appendDetailFormula(card, 'wzrost_ludności = ludność × WZROST% / 100 (ułamki kumulują się)');
+
+  if (tick) {
+    appendDetailSection(card, 'Magazyn centralny (ostatnia tura)');
+    const g3 = appendDetailGrid(card);
+    gridDetailRow(g3, 'Uprawa i hodowla', `+${Math.round(tick.uprawaHodowla)} 🍞`);
+    gridDetailRow(g3, 'Wyżywienie ludności', `−${Math.round(tick.wyzwienieLudnosci)} 🍞`);
+    gridDetailRow(g3, 'Pomoc miastom', `−${Math.round(tick.pomocMiastom)} 🍞`);
+    gridDetailRow(g3, 'Wojsko', `−${Math.round(tick.wojsko)} 🍞`);
+    gridDetailRow(g3, 'W magazynie', `${Math.round(st?.zapasyPanstwa ?? tick.zapasyPo)} / ${Math.round(tick.maxCap)} 🍞`);
+  }
+
+  appendDetailAlgo(card, 'Gdzie zarządzać', [
+    'Batony Racja 1/2/3 — koszt żywności i tempo wzrostu tego miasta.',
+    'Magazyn centralny — panel imperium (Spichlerz stolicy).',
+    'Pola 🌾 w okolicy — podnoszą produkcję brutto.',
   ]);
-
   return card;
 }
 
@@ -4351,18 +4245,10 @@ function buildTopBarZywnoscDetailCard(
   empire: EmpireHudSnap,
   data: GameData | null,
 ): HTMLDivElement {
-  const st = cfg.getEmpireFoodState?.(city.ownerId);
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
-  const cityNet = Math.round(view.zywnoscNetto);
-  const pctRozwoj = getCityFoodSplit(city);
-  const pctArmia = 100 - pctRozwoj;
-  const doWzrostu = Math.round(view.zywnoscDoWzrostu);
-  const doArmiiMiasto = view.zywnoscDoArmii;   // BUGFIX 2026-07-10: realny udział, nie rezyduał netto−wzrost
-  const hasSpichlerz = ownerHasSpichlerz(city.ownerId);
-  const params = data ? buildEconParams(data, cfg.difficulty ?? 'normal') : null;
-  const coeff = params?.progWzrostuWspolczynnik ?? 16;
-  const prog = Math.round(view.progWzrostu);
-  const mag = Math.round(view.magazyn);
+  const st = cfg.getEmpireFoodState?.(city.ownerId);
+  const foodSplit = cityFoodSplit(view);
+  const rationParams = data ? buildRationParams(data.econParams, cfg.difficulty ?? 'normal') : null;
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
@@ -4372,56 +4258,45 @@ function buildTopBarZywnoscDetailCard(
   const intro = el('div', 'dc-note');
   intro.style.fontStyle = 'normal';
   intro.textContent =
-    'Wkład tego miasta w produkcję żywności (zielony dopisek +X). ' +
-    'Zapasy armii całego państwa — tylko na HUD mapy (górny pasek).';
+    'Bilans lokalny tego miasta: produkcja żywności minus koszt racji. Nadwyżka idzie do magazynu centralnego.';
   card.appendChild(intro);
 
   appendDetailSection(card, 'Co widzisz na pasku miasta');
   const g0 = appendDetailGrid(card);
-  gridDetailRow(g0, 'Zielony dopisek', `${signed(cityNet)} — netto z tego miasta (pola + budynki − koszty)`);
-  gridDetailRow(g0, 'Bufor vs zapasy', 'Bufor wzrostu = w tym grodzie; zapasy armii = HUD mapy (osobny licznik).');
+  gridDetailRow(g0, 'Zielony dopisek', `${signed(foodSplit.total)} — bilans lokalny (produkcja − racje)`);
+  gridDetailRow(g0, 'WZROST%', `${view.wzrostProcent}% — tempo wzrostu ludności`);
 
   appendDetailSection(card, 'Skąd bierze się żywność (to miasto)');
   const g1 = appendDetailGrid(card);
-  gridDetailRow(g1, 'Pola i okolica', 'Obrabiane heksy (🌾), ulepszenia, hodowla — patrz mapa okolicy po prawej.');
-  gridDetailRow(g1, 'Budynki', 'Spichlerz, Targowisko, Świątynia itd. — plony z kart budynków.');
-  gridDetailRow(g1, 'Netto', `${signed(cityNet)} 🍞 — suma po kosztach utrzymania miasta.`);
-  gridDetailRow(g1, '→ na wzrost', `${signed(doWzrostu)} (${pctRozwoj}% suwaka miasta)`);
-  gridDetailRow(g1, '→ na armię', `${signed(doArmiiMiasto)} (${pctArmia}% suwaka miasta)`);
-
-  appendDetailSection(card, 'Bufor wzrostu ludności (osobno!)');
-  const g2 = appendDetailGrid(card);
-  gridDetailRow(g2, 'Bufor miasta', `${mag} / ${prog} 🍞 — liczy się tylko w tym grodzie`);
-  gridDetailRow(g2, 'Próg wzrostu', `${prog} 🍞 na +1 mieszkańca (20 + ${city.population} × ${coeff})`);
-  gridDetailRow(g2, 'Spichlerz', view.maSpichlerz
-    ? 'tak — po wzroście zostaje 50% bufora miasta'
-    : 'nie — po wzroście bufor zeruje się');
-
-  appendDetailSection(card, 'Całe państwo (tick żywności)');
-  const g3 = appendDetailGrid(card);
-  gridDetailRow(g3, 'Suwak miasta', `${pctRozwoj}% wzrost · ${pctArmia}% armia`);
-  if (tick) {
-    gridDetailRow(g3, 'Produkcja brutto', `+${Math.round(tick.zywnoscBrutto)} (suma miast, bez oblężonych)`);
-    gridDetailRow(g3, '→ wzrost miast', `+${Math.round(tick.doRozwoju)}`);
-    gridDetailRow(g3, '→ armia', `+${Math.round(tick.doPanstwa)}`);
-    gridDetailRow(g3, 'Koszt wojska', `−${Math.round(tick.kosztArmii)}`);
+  gridDetailRow(g1, 'Produkcja brutto', `${signed(foodSplit.produkcja)} 🍞/t`);
+  gridDetailRow(g1, 'Koszt racji', `−${foodSplit.racje} 🍞/t (Racja ${view.poziomRacji})`);
+  gridDetailRow(g1, 'Bilans lokalny', `${signed(foodSplit.total)} 🍞/t`);
+  if (rationParams) {
+    gridDetailRow(g1, 'Racja aktywna', rationButtonLabel(view.poziomRacji, rationParams));
   }
-  gridDetailRow(g3, 'Spichlerz w imperium', hasSpichlerz
-    ? 'tak — odkładasz 100% netto armii (limit pojemności)'
-    : 'nie — odkładasz 50% netto armii od startu (bez limitu)');
 
-  appendDetailFormula(card, 'zywnoscNetto = plony_pól + budynki − utrzymanie_miasta');
-  appendDetailFormula(card, `doWzrostu = zywnoscNetto × ${pctRozwoj}% (× bonus wzrostu/zdrowia)`);
-  appendDetailFormula(card, `doArmii_miasto = max(0, zywnoscNetto) × ${pctArmia}%`);
-  appendDetailFormula(card, hasSpichlerz
-    ? 'zapasy_armii += 100% × (doArmii − koszt_wojska); cap ze Spichlerzy'
-    : 'zapasy_armii += 50% × (doArmii − koszt_wojska); reszta przepada');
+  appendDetailSection(card, 'WZROST ludności');
+  const g2 = appendDetailGrid(card);
+  const bd = view.growthBreakdown;
+  gridDetailRow(g2, 'Łącznie', `${view.wzrostProcent}%`);
+  gridDetailRow(g2, 'Ułamek', view.wzrostUlamkowy.toFixed(2));
+  gridDetailRow(g2, 'Składniki', `racje ${bd.racje}% · małe miasto ${bd.maleMiasto}% · Spichlerz ${bd.spichlerz}%`);
+
+  if (tick) {
+    appendDetailSection(card, 'Magazyn centralny (ostatnia tura)');
+    const g3 = appendDetailGrid(card);
+    gridDetailRow(g3, 'W magazynie', `${Math.round(st?.zapasyPanstwa ?? tick.zapasyPo)} / ${Math.round(tick.maxCap)} 🍞`);
+    gridDetailRow(g3, 'Pomoc miastom', `−${Math.round(tick.pomocMiastom)} 🍞`);
+    gridDetailRow(g3, 'Wojsko', `−${Math.round(tick.wojsko)} 🍞`);
+  }
+
+  appendDetailFormula(card, 'bilans = produkcja_brutto − koszt_racji');
+  appendDetailFormula(card, 'wzrost = ludność × WZROST% / 100');
 
   appendDetailAlgo(card, 'Gdzie zarządzać', [
-    'Prawa kolumna → „Spichlerz”: bufor 🍞 i suwak wzrost vs armia.',
+    'Prawa kolumna → Wyżywienie i wzrost: batony Racja 1/2/3.',
     'Mapa okolicy → przypisz 👤 na pola żywnościowe (🌾).',
-    'Garnizon na pasku → wojsko w mieście podnosi koszt żywności armii.',
-    'Ujemne zapasy armii = głód wojska (obrażenia co turę).',
+    'Magazyn centralny → panel imperium (Spichlerz stolicy).',
   ]);
 
   return card;
@@ -4466,13 +4341,6 @@ function buildTopBarLudnoscDetailCard(
   map: GameMap | null,
 ): HTMLDivElement {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
-  const params = data ? buildEconParams(data, cfg.difficulty ?? 'normal') : null;
-  const coeff = params?.progWzrostuWspolczynnik ?? 16;
-  const prog = view ? Math.round(view.progWzrostu) : 20 + city.population * coeff;
-  const mag = view ? Math.round(view.magazyn) : (city.magazynZywnosci ?? 0);
-  const eta = view && view.zywnoscDoWzrostu > 0
-    ? etaTurns(prog, mag, Math.max(0, view.zywnoscDoWzrostu))
-    : null;
   const health = data && map
     ? resolveCityHealth(city, map, data)
     : null;
@@ -4483,23 +4351,25 @@ function buildTopBarLudnoscDetailCard(
   intro.style.fontStyle = 'normal';
   intro.textContent =
     'Liczba przy nazwie miasta to wyłącznie mieszkańcy tego grodu — nie całego państwa. ' +
-    'Wpływa na próg wzrostu, limit pól do pracy (👤) i koszty utrzymania.';
+    'Wpływa na koszt racji, limit pól do pracy (👤) i koszty utrzymania.';
   card.appendChild(intro);
 
   appendDetailSection(card, 'Co widzisz na pasku');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Duża liczba 👥', `${city.population} — ludność tego miasta`);
   gridDetailRow(g0, 'Epoka', String(epoch));
-  gridDetailRow(g0, 'Różnica', 'Brak dopisku +X — to statystyka lokalna, nie imperium.');
+  gridDetailRow(g0, 'WZROST%', view ? `${view.wzrostProcent}%` : '—');
 
   if (view) {
-    appendDetailSection(card, 'Wzrost ludności');
+    appendDetailSection(card, 'Wzrost ludności (PYTANIE-85)');
     const g1 = appendDetailGrid(card);
-    gridDetailRow(g1, 'Bufor 🍞', `${mag} / ${prog} — osobny licznik wzrostu (nie zapasy armii)`);
-    gridDetailRow(g1, 'Próg +1', `${prog} 🍞 (20 + ${city.population} × ${coeff})`);
-    gridDetailRow(g1, 'Przyrost', `+${Math.round(view.zywnoscDoWzrostu)} 🍞 idzie do bufora (po suwaku armii)`);
-    gridDetailRow(g1, 'ETA wzrostu', eta != null ? `~${eta} ${tury(eta)}` : '— (brak nadwyżki żywności)');
-    gridDetailRow(g1, 'Spichlerz', view.maSpichlerz ? 'tak — po wzroście zostaje 50% bufora' : 'nie — bufor zeruje się po +1');
+    gridDetailRow(g1, 'Racja', `Racja ${view.poziomRacji}`);
+    gridDetailRow(g1, 'WZROST%', `${view.wzrostProcent}%`);
+    gridDetailRow(g1, 'Ułamek wzrostu', view.wzrostUlamkowy.toFixed(2));
+    gridDetailRow(g1, 'Bilans żywności', `${signed(view.bilansLokalny)} 🍞/t`);
+    if (view.atPopCap) {
+      gridDetailRow(g1, 'Limit', `max ${view.popCapAktualny} mieszkańców`);
+    }
   }
 
   if (health) {
@@ -4511,12 +4381,10 @@ function buildTopBarLudnoscDetailCard(
     }
   }
 
-  appendDetailFormula(card, 'Próg(N) = 20 + N × wsp_wzrostu');
-  appendDetailFormula(card, 'Bufor += zywnoscDoWzrostu × modyfikator_zdrowia');
+  appendDetailFormula(card, 'wzrost = ludność × WZROST% / 100 (ułamki kumulują się)');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
-    'Prawa kolumna → „Spichlerz”: pasek bufora 🍞.',
+    'Prawa kolumna → Wyżywienie i wzrost: batony Racja 1/2/3.',
     'Mapa okolicy → max 👤 obok centrum = populacja (kto pracuje pola).',
-    'Więcej mieszkańców = wyższy próg kolejnego wzrostu.',
   ]);
   return card;
 }
@@ -8220,8 +8088,8 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
   const foodCls = foodSplit.total > 0 ? 'green' : foodSplit.total < 0 ? 'red' : '';
   const foodSplits =
     `<span class="civ-v-w3-chip-splits">` +
-    w3SplitSpan(foodSplit.doWzrostu, 'gold', 'Żywność → wzrost ludności (bufor miasta)') +
-    w3SplitSpan(foodSplit.doArmii, 'blue', 'Żywność → zapasy armii państwa') +
+    w3SplitSpan(foodSplit.produkcja, 'gold', 'Produkcja żywności (brutto)') +
+    w3SplitSpan(-foodSplit.racje, 'red', 'Koszt racji mieszkańców') +
     `</span>`;
 
   const kultCls = view.kultura > 0 ? 'gold' : view.kultura < 0 ? 'red' : '';
@@ -8247,7 +8115,7 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
       signed(foodSplit.total),
       foodCls,
       'zywnosc',
-      `Netto żywności tego miasta · wzrost ${signed(foodSplit.doWzrostu)} · armia ${signed(foodSplit.doArmii)}`,
+      `Bilans żywności: produkcja ${signed(foodSplit.produkcja)} − racje ${foodSplit.racje} = ${signed(foodSplit.total)} · WZROST ${view.wzrostProcent}%`,
       foodSplits,
     ),
     w3CityChip(
@@ -8531,13 +8399,10 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
     mount.appendChild(el('div', 'muted', 'Brak danych ekonomii'));
     return;
   }
-  const growPct = view.progWzrostu > 0
-    ? Math.min(100, Math.round((view.magazyn / view.progWzrostu) * 100))
-    : 0;
   const grow = el('div', 'civ-v-growth');
   grow.innerHTML =
-    `<div class="civ-v-growth-lbl">Wzrost · ${view.magazyn}/${Math.round(view.progWzrostu)} ${loafIconHtml('civ-v-loaf-chip')}</div>` +
-    `<div class="bwrap"><div class="bfill" style="width:${growPct}%;background:linear-gradient(90deg,#2a6a2a,#6bbf59)"></div></div>`;
+    `<div class="civ-v-growth-lbl">WZROST · ${view.wzrostProcent}% ${loafIconHtml('civ-v-loaf-chip')}</div>` +
+    `<div class="muted" style="font-size:0.68em;margin-top:0.12em">Racja ${view.poziomRacji} · ułamek ${view.wzrostUlamkowy.toFixed(2)}</div>`;
   mount.appendChild(grow);
 }
 
@@ -8696,8 +8561,8 @@ function buildHandelDetailCard(
   const note = el('div', 'dc-note');
   note.style.fontStyle = 'normal';
   note.textContent =
-    `${daninaLbl}, zamożność, Spichlerz/wzrost i porządek — ustawienia w tej kolumnie wpływają na każdą turę. ` +
-    `Podział ${daninaLblGen} jest per miasto; suwak żywności armii — globalny dla całego państwa.`;
+    `${daninaLbl}, zamożność, racje/wzrost i porządek — ustawienia w tej kolumnie wpływają na każdą turę. ` +
+    `Podział ${daninaLblGen} jest per miasto; racje żywności — per miasto (batony 1/2/3).`;
   card.appendChild(note);
   return card;
 }
@@ -8932,7 +8797,7 @@ const CITY_PANEL_ICONS_LEFT: { id: CityPanelProductionTab; iconId: string; title
 ];
 
 const CITY_PANEL_ICONS_RIGHT: { id: CityPanelCityParamTab; iconId: string; title: string }[] = [
-  { id: 'spichlerz', iconId: 'cp-granary', title: 'Spichlerz' },
+  { id: 'spichlerz', iconId: 'cp-granary', title: 'Wyżywienie i wzrost — racje 1/2/3' },
   // Tytuł poniżej to fallback modułowej stałej — DYSPOZYCJA 85 (Maciej 2026-07-26):
   // realny tooltip gracza podmienia renderCityIconRightRail() na "Podział daniny/podatku"
   // (daninaLabelGenitive), więc ten string nigdy nie trafia na ekran. Celowo bez słowa

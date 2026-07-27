@@ -80,7 +80,7 @@ DEPOSIT_RARITY_DEFAULT = {
 METAL_DEPOSIT_MIN_ERA = {"miedz": 2, "zelazo": 3}
 
 YIELD_FIELDS = (
-    ("zywnosc", "Żywność"), ("praca", "Praca"), ("handel", "Handel"),
+    ("zywnosc", "Żywność"), ("praca", "Praca"), ("podatek", "Podatek"),
     ("drewno", "Drewno"), ("kamien", "Kamień"),
 )
 TEREN_SLUG = {
@@ -428,13 +428,16 @@ def flatten_plony_terenow(yields_data):
         teren = row.get("Teren", "")
         slug = TEREN_SLUG.get(teren, teren.lower())
         for fk, col in YIELD_FIELDS:
-            if col not in row:
+            val = row.get(col)
+            if val is None and fk == "podatek":
+                val = row.get("Handel")
+            if val is None and col not in row:
                 continue
             seq += 1
             out.append({
                 "id": f"A-PLON-{seq:03d}",
                 "key": f"plony.types.{slug}.{fk}",
-                "value": row[col],
+                "value": val,
                 "opis": f"{teren} — bazowy plon {fk}",
                 "jednostka": "pkt/turę",
                 "zakres": "0–8 typowo",
@@ -445,13 +448,16 @@ def flatten_plony_terenow(yields_data):
         mod = row.get("Modyfikator", "")
         mslug = MOD_SLUG.get(mod, mod.lower())
         for fk, col in YIELD_FIELDS:
-            if col not in row:
+            val = row.get(col)
+            if val is None and fk == "podatek":
+                val = row.get("Handel")
+            if val is None and col not in row:
                 continue
             seq += 1
             out.append({
                 "id": f"A-PLON-{seq:03d}",
                 "key": f"plony.mod.{mslug}.{fk}",
-                "value": row[col],
+                "value": val,
                 "opis": f"Modyfikator {mod} — {fk}",
                 "jednostka": "pkt/turę",
                 "zakres": "-3…+5",

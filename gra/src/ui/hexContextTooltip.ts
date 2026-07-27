@@ -57,30 +57,17 @@ const TEREN_LABEL: Record<TerenBazowy, string> = {
 type YieldKey = keyof Pick<TileYield, 'zywnosc' | 'praca' | 'handel' | 'drewno' | 'kamien'>;
 
 /**
- * Decyzja wlasciciela 81=A (2026-07-25): plon heksu "Handel" -> "Danina" (a po
- * Walucie+Mennicy w stolicy -> "Podatek", jak w panelu miasta,
- * game/danina-nazwa.ts). Ten plik NIE liczy bramki sam -- nie ma tu dostepu do
- * stanu cywilizacji (miasta/technologie/dostep do zlota). Etykieta jest wiec
- * LICZONA WYZEJ, w main.ts (buildHexContextPanelMessage / hexDaninaLabelAt --
- * ten sam wzorzec co buildEmpireTradeSnap: capitalCityIdForOwner +
- * unlockedTechsForOwner + ownerHasZlotoAccessNow) i przekazywana tutaj GOTOWA
- * jako input.daninaLabel. Brak pola w inpucie (np. wolajacy, ktory nie policzyl
- * jeszcze wlasciciela) -> bezpieczny fallback "Danina" (patrz
- * buildHexContextTooltipHtml).
+ * Decyzja Macieja (2026-07-27): plon heksu strumienia podatkowego (klucz silnika
+ * `handel`) nazywa się zawsze **Podatek**. Etykieta może być przekazana przez
+ * wolającego (main.ts) — domyślnie też "Podatek".
  */
 const YIELD_ROWS: ReadonlyArray<{ key: YieldKey; label: string }> = [
   { key: 'zywnosc', label: 'Żywność' },
   { key: 'praca', label: 'Praca' },
-  { key: 'handel', label: 'Danina' },
+  { key: 'handel', label: 'Podatek' },
   { key: 'drewno', label: 'Drewno' },
   { key: 'kamien', label: 'Kamień' },
 ];
-
-/** Wiersze plonow z etykieta "handel" podmieniona na aktualna Danina/Podatek. */
-function yieldRowsFor(daninaLbl: DaninaLabel): ReadonlyArray<{ key: YieldKey; label: string }> {
-  if (daninaLbl === 'Danina') return YIELD_ROWS;
-  return YIELD_ROWS.map((row) => (row.key === 'handel' ? { ...row, label: daninaLbl } : row));
-}
 
 const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
@@ -263,9 +250,8 @@ export interface HexContextTooltipInput {
   cityPopulation?: number | null;
   currentEra?: number;
   /**
-   * Decyzja 81=A: etykieta Danina/Podatek dla plonu "handel" TEGO heksu,
-   * juz policzona przez wolajacego (patrz komentarz przy YIELD_ROWS powyzej).
-   * Brak pola (np. heks bez wyznaczonego wlasciciela) -> domyslnie "Danina".
+   * Etykieta strumienia podatkowego (zawsze "Podatek" od 2026-07-27); opcjonalna
+   * dla kompatybilności wołających.
    */
   daninaLabel?: DaninaLabel;
   esc: (raw: string) => string;
@@ -274,8 +260,7 @@ export interface HexContextTooltipInput {
 export function buildHexContextTooltipHtml(input: HexContextTooltipInput): string {
   const { q, r, hex, esc, cityName } = input;
   const era = input.currentEra ?? 99;
-  const daninaLbl: DaninaLabel = input.daninaLabel ?? 'Danina';
-  const yieldRows = yieldRowsFor(daninaLbl);
+  const yieldRows = YIELD_ROWS;
   const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(String(hex.terenBazowy));
   const resources = collectResourceLabels(hex, era);
   const built = builtImprovementKeys(hex);

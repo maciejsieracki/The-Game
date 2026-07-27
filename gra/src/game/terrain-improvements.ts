@@ -99,7 +99,7 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 // ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od tego czy heks
 // jest obsadzony populacja (workedTiles) -- patrz turn-economy.ts
 // computeTerritoryResourceYieldByCity. Dotyczy WYLACZNIE surowcow wydobywanych
-// (drewno/kamien/glina/ruda/ruda_zelaza); Zywnosc i Praca zostaja przy modelu
+// (drewno/kamien/glina/ruda/ruda_zelaza/sol/zloto/kon — PYTANIE-84-U20); Zywnosc i Praca
 // workedTiles (BEZ ZMIAN).
 //
 // Stawki: pole "surowiec_ilosc_tura" w terrain-improvements.json per ulepszenie.
@@ -110,16 +110,19 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 // nie stawka docelowa; do dalszego strojenia w panelu Excel jesli potrzeba.
 // ---------------------------------------------------------------------------
 
-export type TerritoryResourceKey = 'drewno' | 'kamien' | 'glina' | 'ruda' | 'ruda_zelaza';
+export type TerritoryResourceKey =
+  | 'drewno' | 'kamien' | 'glina' | 'ruda' | 'ruda_zelaza'
+  | 'sol' | 'zloto' | 'kon';
 
 export interface TerritoryResourceYield {
   resourceKey: TerritoryResourceKey;
   amount: number;
 }
 
-/** Ulepszenia ktore produkuja surowiec logistyczny niezaleznie od workerow. */
+/** Ulepszenia produkujące surowiec do magazynu państwa niezależnie od workerów (SUROW-TERYT-01). */
 const TERRITORY_YIELD_IMPROVEMENTS: ReadonlySet<string> = new Set([
   'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia',
+  'warzelnia_soli', 'stadnina', 'kopalnia_zlota',
 ]);
 
 /** Fallback bezpieczenstwa gdy JSON nie ma pola `surowiec_ilosc_tura` (wszystkie 5
@@ -135,7 +138,7 @@ function territoryYieldAmountForKey(key: string): number {
 /**
  * Surowiec + ilosc/ture produkowane przez `key` (ulepszenie terenu), niezaleznie od
  * obsadzenia pola populacja. Zwraca null gdy ulepszenie nie produkuje surowca
- * logistycznego (np. Farma, Droga, Stadnina -- kon zostaje czystym dostepem).
+ * do magazynu państwa (np. Farma, Droga).
  * `zloze` rozstrzyga ruda vs ruda_zelaza pod Kopalnia (jak oreYieldFromImprovements).
  */
 export function territoryResourceYieldForImprovement(
@@ -144,15 +147,17 @@ export function territoryResourceYieldForImprovement(
 ): TerritoryResourceYield | null {
   const norm = normalizeImprovementKey(key);
   if (!norm || !TERRITORY_YIELD_IMPROVEMENTS.has(norm)) return null;
-  const amount = territoryYieldAmountForKey(norm);
   switch (norm) {
-    case 'tartak':          return { resourceKey: 'drewno', amount };
-    case 'kamieniolom':     return { resourceKey: 'kamien', amount };
-    case 'glinianka':       return { resourceKey: 'glina',  amount };
-    case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount };
+    case 'tartak':          return { resourceKey: 'drewno', amount: territoryYieldAmountForKey(norm) };
+    case 'kamieniolom':     return { resourceKey: 'kamien', amount: territoryYieldAmountForKey(norm) };
+    case 'glinianka':       return { resourceKey: 'glina',  amount: territoryYieldAmountForKey(norm) };
+    case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount: territoryYieldAmountForKey(norm) };
+    case 'warzelnia_soli':  return { resourceKey: 'sol',    amount: territoryYieldAmountForKey(norm) };
+    case 'stadnina':        return { resourceKey: 'kon',    amount: 1 }; // PYTANIE-84-B3
+    case 'kopalnia_zlota':  return { resourceKey: 'zloto',  amount: 1 }; // PYTANIE-84-B4
     case 'kopalnia': {
       const z = zloze?.trim().toLowerCase();
-      return { resourceKey: z === 'zelazo' ? 'ruda_zelaza' : 'ruda', amount };
+      return { resourceKey: z === 'zelazo' ? 'ruda_zelaza' : 'ruda', amount: territoryYieldAmountForKey(norm) };
     }
     default: return null;
   }
@@ -230,10 +235,6 @@ export function isImprovementAllowedForCiv(
 export const RESOURCE_UPKEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set([
   'tartak', 'kamieniolom', 'glinianka', 'kopalnia', 'kopalnia_miedzi',
   'warzelnia_soli', 'stadnina',
-  // Maciej 2026-07-25: Kopalnia złota jest czysto DOSTĘPOWA (jak warzelnia_soli/stadnina —
-  // nie w TERRITORY_YIELD_IMPROVEMENTS powyżej, bez ilości/turę), ale tak jak inne ulepszenia
-  // surowcowe płaci utrzymanie Pracy civ-wide (decyzja modelowa tej sesji — spójność z
-  // istniejącym wzorcem "dostęp bez wydobycia" = warzelnia_soli/stadnina, do potwierdzenia
-  // przy playteście jeśli balans wymaga innej wartości).
+  // PYTANIE-84-B4: Kopalnia złota produkuje zloto/t do magazynu państwa (TERRITORY_YIELD powyżej).
   'kopalnia_zlota',
 ]);

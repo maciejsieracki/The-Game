@@ -1,5 +1,5 @@
 ---
-description: Routing modeli — drogi model decyduje, tani (composer-2.5-fast subagent) wykonuje. Oszczędność tokenów.
+description: Routing modeli — drogi model decyduje, subagent composer-2.5 wykonuje. Oszczędność tokenów.
 globs:
   - "**/*"
 alwaysApply: true
@@ -7,18 +7,20 @@ alwaysApply: true
 
 # Routing modeli — oszczędność tokenów (NIENEGOCJOWALNE)
 
-**Zasada (Maciej 2026-06-28):** mocny model myśli i decyduje, tani model wykonuje mechaniczną robotę. Każdą mechaniczną pracę wieloplikową **deleguj do subagenta `composer-2.5-fast`** — nie rób jej drogim modelem.
+**Zasada (Maciej 2026-06-28, korekta 2026-07-27):** mocny model myśli i decyduje, subagent wykonuje mechaniczną robotę. Każdą mechaniczną pracę wieloplikową **deleguj do subagenta `composer-2.5`** — nie rób jej drogim modelem.
+
+**⛔ `composer-2.5-fast` — NIE UŻYWAĆ** (Maciej 2026-07-27: za drogi). Jedyny model subagenta implementacyjnego: **`composer-2.5`**.
 
 ## Podział
 
 | Warstwa | Kto | Zakres |
 |---|---|---|
 | **Diagnoza / decyzje / projekt / weryfikacja / routing** | **mocny model (Master, ja)** | analiza wąskich gardeł, architektura mechanizmów, decyzje ABC, ocena raportów, kierowanie ruchem |
-| **Wykonanie mechaniczne** | **subagent `composer-2.5-fast`** (Task) | masowe edycje wg wzoru, wpięcia wg kontraktu, refaktory, eksporty danych, przepisywanie wielu plików, powtarzalne poprawki |
+| **Wykonanie mechaniczne** | **subagent `composer-2.5`** (Task) | masowe edycje wg wzoru, wpięcia wg kontraktu, refaktory, eksporty danych, przepisywanie wielu plików, powtarzalne poprawki |
 
 ## Próg delegacji (kiedy OBOWIĄZKOWO subagent)
 
-Zanim zaczniesz wykonywać sam, sprawdź — jeśli **którekolwiek TAK** → najpierw odpal subagenta `composer-2.5-fast`:
+Zanim zaczniesz wykonywać sam, sprawdź — jeśli **którekolwiek TAK** → najpierw odpal subagenta `composer-2.5`:
 
 1. Edycja **> 3 plików** „wg wzoru" (ten sam typ zmiany w wielu miejscach)?
 2. **> ~50 linii** czystego wykonania bez decyzji po drodze?
@@ -31,7 +33,7 @@ Zanim zaczniesz wykonywać sam, sprawdź — jeśli **którekolwiek TAK** → na
 
 ## Jak delegować
 
-- `Task` z `subagent_type` implementacyjnym, model `composer-2.5-fast`.
+- `Task` z `subagent_type` implementacyjnym, model **`composer-2.5`** (nigdy `composer-2.5-fast`).
 - Daj subagentowi **pełny kontekst w prompcie** (nie zna historii czatu): pliki, wzór zmiany, AC, zakazy (np. NIE ruszaj `main.ts` jeśli to nie Integrator).
 - Po powrocie subagenta — **mocny model weryfikuje** wynik (spójność, AC) przed zamknięciem.
 

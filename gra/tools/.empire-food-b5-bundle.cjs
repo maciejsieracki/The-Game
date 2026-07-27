@@ -26,40 +26,607 @@ __export(empire_food_b5_entry_exports, {
   bindEmpireFoodRuntime: () => bindEmpireFoodRuntime,
   buildEmpireFoodParams: () => buildEmpireFoodParams,
   clearLastEmpireFoodTicks: () => clearLastEmpireFoodTicks,
-  computeEmpireFoodMaxCap: () => computeEmpireFoodMaxCap,
-  computeEmpireFoodNetDelta: () => computeEmpireFoodNetDelta,
-  computeEmpireFoodNetDeltaFromCityFoods: () => computeEmpireFoodNetDeltaFromCityFoods,
   freshEmpireFoodState: () => freshEmpireFoodState,
-  getCityFoodSplit: () => getCityFoodSplit,
   getEmpireFoodMaxCap: () => getEmpireFoodMaxCap,
-  getEmpireFoodSplit: () => getEmpireFoodSplit,
   isArmyStarving: () => isArmyStarving
 });
 module.exports = __toCommonJS(empire_food_b5_entry_exports);
 
-// src/game/population-growth-tempo.ts
-var WZROST_LUDNOSCI_PACE = {
-  wysoki: 1,
-  normalny: 2,
-  wolny: 4
+// data/terrain-improvements.json
+var terrain_improvements_default = {
+  _meta: {
+    opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
+    bonus_pola: "zywnosc | praca | handel | pieniadz | kamien | drewno (na obrabiane pole)",
+    epoka: "1=Kamien, 2=Braz, 3=Zelazo",
+    decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
+    kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
+    decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+  },
+  farma: {
+    nazwa: "Farma",
+    epoka: 1,
+    bonus: {
+      zywnosc: 3,
+      praca: 3,
+      handel: 3
+    },
+    surowiecOdblokowany: null,
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
+    koszt_praca: 20,
+    tech: "Rolnictwo",
+    odblokowuje: ""
+  },
+  irygacja: {
+    nazwa: "Irygacja",
+    epoka: 2,
+    bonus: {
+      zywnosc: 5,
+      praca: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: null,
+    teren: "\u0141\u0105ka, R\xF3wnina, Pustynia",
+    warunek: "TYLKO pole s\u0105siaduj\u0105ce z rzek\u0105 (1 pole) lub na rzece \u2014 BRAK \u0142a\u0144cuch\xF3w; kluczowa nad Nilem",
+    koszt_praca: 30,
+    tech: "Irygacja",
+    odblokowuje: ""
+  },
+  bydlo: {
+    nazwa: "Trzoda",
+    epoka: 1,
+    bonus: {
+      zywnosc: 2,
+      praca: 4,
+      handel: 3
+    },
+    surowiecOdblokowany: "bydlo",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
+    teren: "\u0141\u0105ka, R\xF3wnina",
+    warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
+    koszt_praca: 20,
+    tech: "Oswojenie zwierz\u0105t",
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
+  },
+  owce: {
+    nazwa: "Owce",
+    epoka: 1,
+    bonus: {
+      zywnosc: 1,
+      praca: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: "owce",
+    surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
+    teren: "Wzg\xF3rza",
+    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    koszt_praca: 20,
+    tech: "Oswojenie zwierz\u0105t",
+    odblokowuje: "Owce (we\u0142na / jedzenie)"
+  },
+  lama: {
+    nazwa: "Lama",
+    epoka: 1,
+    bonus: {
+      zywnosc: 1,
+      praca: 3,
+      handel: 3
+    },
+    surowiecOdblokowany: "lama",
+    surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
+    koszt_praca: 20,
+    tech: "Oswojenie zwierz\u0105t",
+    odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
+  },
+  stadnina: {
+    nazwa: "Stadnina",
+    epoka: 2,
+    bonus: {
+      praca: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: "kon",
+    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Ko\u0144 do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture.",
+    surowiec_ilosc_tura: 1,
+    teren: "\u0141\u0105ka, R\xF3wnina",
+    warunek: "solo; tylko heks ze z\u0142o\u017Cem konia w terytorium",
+    koszt_praca: 28,
+    tech: "Je\u017Adziectwo",
+    odblokowuje: "Ko\u0144 (jednostki konne)"
+  },
+  kopalnia: {
+    nazwa: "Kopalnia",
+    epoka: 1,
+    bonus: {
+      praca: 2,
+      handel: 3
+    },
+    surowiecOdblokowany: "ruda",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
+    koszt_praca: 25,
+    tech: "Murarstwo",
+    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
+  },
+  glinianka: {
+    nazwa: "Glinianka",
+    epoka: 2,
+    bonus: {
+      praca: 1,
+      glina: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: "glina",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 20,
+    teren: "z\u0142o\u017Ce Gliny",
+    warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
+    koszt_praca: 20,
+    tech: "Garncarstwo",
+    odblokowuje: "Ceg\u0142a (budynki br\u0105zu)"
+  },
+  kamieniolom: {
+    nazwa: "Kamienio\u0142om",
+    epoka: 1,
+    bonus: {
+      praca: 1,
+      kamien: 1,
+      handel: 2
+    },
+    surowiecOdblokowany: "kamien",
+    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    surowiec_ilosc_tura: 4,
+    teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
+    warunek: "budulec \u2014 mury, budynki",
+    koszt_praca: 22,
+    tech: "Murarstwo",
+    odblokowuje: "Kamie\u0144 (mury / budynki)"
+  },
+  oboz_lowiecki: {
+    nazwa: "Ob\xF3z \u0142owiecki",
+    epoka: 1,
+    bonus: {
+      zywnosc: 1,
+      pieniadz: 1,
+      praca: 1,
+      handel: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 \u2014 brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
+    teren: "Las / dzika zwierzyna",
+    warunek: "dzika zwierzyna",
+    koszt_praca: 18,
+    tech: "\u0141owiectwo",
+    odblokowuje: ""
+  },
+  wyrab: {
+    nazwa: "Wyr\u0105b",
+    typ: "wycinka",
+    epoka: 1,
+    bonus: {
+      handel: 1
+    },
+    surowiecOdblokowany: null,
+    teren: "Las",
+    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
+    koszt_praca: 5,
+    tech: null,
+    wycinka: {
+      praca_per_tura: 5,
+      tury: 1,
+      usuwa_nakladke: "las"
+    },
+    odblokowuje: ""
+  },
+  tartak: {
+    nazwa: "Tartak",
+    typ: "ulepszenie",
+    epoka: 1,
+    bonus: {
+      praca: 3,
+      handel: 3
+    },
+    surowiecOdblokowany: "drewno",
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
+    surowiec_ilosc_tura: 20,
+    teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
+    warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
+    koszt_praca: 25,
+    tech: "Obr\xF3bka drewna",
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
+  },
+  tarasy: {
+    nazwa: "Tarasy uprawne",
+    epoka: 2,
+    bonus: {
+      zywnosc: 3,
+      praca: 2,
+      handel: 2
+    },
+    surowiecOdblokowany: null,
+    teren: "Wzg\xF3rza",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
+    koszt_praca: 25,
+    tech: "Rolnictwo",
+    odblokowuje: "",
+    cywilizacje: [
+      "chinczycy",
+      "inkowie"
+    ],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
+  },
+  lodzie_rybackie: {
+    nazwa: "\u0141odzie rybackie",
+    epoka: 1,
+    bonus: {
+      zywnosc: 2,
+      praca: 3,
+      handel: 3
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
+    teren: "Wybrze\u017Ce, Morze (ryby)",
+    warunek: "\u0142awica ryb",
+    koszt_praca: 20,
+    tech: "\u017Begluga",
+    odblokowuje: ""
+  },
+  warzelnia_soli: {
+    nazwa: "Warzelnia soli",
+    epoka: 2,
+    bonus: {
+      pieniadz: 1,
+      zywnosc: 1,
+      praca: 1,
+      handel: 3
+    },
+    surowiecOdblokowany: "sol",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja S\xF3l do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 \u017Bywno\u015B\u0107, +1 Pieni\u0105dz) zostaje obok surowca_ilosc_tura.",
+    surowiec_ilosc_tura: 10,
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
+    koszt_praca: 20,
+    tech: "Garncarstwo",
+    odblokowuje: "S\xF3l"
+  },
+  fort: {
+    nazwa: "Fort",
+    epoka: 3,
+    bonus: {},
+    surowiecOdblokowany: null,
+    bonus_obrona_proc: 100,
+    bonus_wymaga_obozowania: true,
+    zasieg_pol: 10,
+    zasieg_terytorium: 10,
+    zasieg_kontroli: 10,
+    teren: "dowolny l\u0105d w terytorium",
+    warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
+    koszt_praca: 25,
+    tech: "Wojskowo\u015B\u0107",
+    odblokowuje: "",
+    uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
+  },
+  droga: {
+    nazwa: "Droga",
+    epoka: 1,
+    bonus: {
+      handel: 1
+    },
+    surowiecOdblokowany: null,
+    teren: "ka\u017Cdy przejezdny heks",
+    warunek: "\u0142\u0105czy TYLKO miasta i posterunki (MAPA pilnuje); +szybko\u015B\u0107 ruchu jednostek",
+    koszt_praca: 15,
+    tech: "Ko\u0142o",
+    odblokowuje: ""
+  },
+  droga_brukowana: {
+    nazwa: "Droga brukowana",
+    typ: "ulepszenie",
+    epoka: 3,
+    bonus: {
+      handel: 2
+    },
+    bonus_ruch: 2,
+    surowiecOdblokowany: null,
+    upgradeFrom: "droga",
+    teren: "hex z Drogi",
+    warunek: "upgrade Drogi; +2 ruch jednostek; ta sama sie\u0107 dr\xF3g co Droga",
+    koszt_praca: 25,
+    tech: "Drogi brukowane",
+    odblokowuje: "",
+    uwagi: "T-TECH-9 Maciej 2026-07-04"
+  },
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
+    epoka: 2,
+    bonus: {
+      praca: 2,
+      handel: 5
+    },
+    surowiecOdblokowany: "ruda",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
+    koszt_praca: 22,
+    tech: "Br\u0105zownictwo",
+    odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
+    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+  },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2,
+      handel: 10
+    },
+    surowiecOdblokowany: "zloto",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Z\u0142oto do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/tur\u0119. Mennica zu\u017Cywa 1 Z\u0142oto/tur\u0119 ze skarbca przy mno\u017Cniku handlu\u2192Pieni\u0105dz (U-13).",
+    surowiec_ilosc_tura: 1,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "z\u0142o\u017Ce z\u0142ota \u2014 produkcja do magazynu pa\u0144stwa",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (Z\u0142oto w skarbcu + Targowisko w stolicy)",
+    uwagi: "PYTANIE-84: z\u0142oto magazynowane (game/zloto-access.ts). Dodatkowe kopalnie \u2192 nadwy\u017Cka na handel/eksport (U-13)."
+  },
+  posterunek: {
+    nazwa: "Posterunek (Stra\u017Cnica)",
+    epoka: 2,
+    bonus: {},
+    surowiecOdblokowany: null,
+    bonus_obrona_proc: 50,
+    bonus_wymaga_obozowania: true,
+    zasieg_pol: 5,
+    zasieg_terytorium: 5,
+    teren: "l\u0105d w/na kraw\u0119dzi w\u0142asnego zasi\u0119gu",
+    warunek: "NIE miasto, BEZ plon\xF3w; ROZSZERZA zasi\u0119g terytorium o promie\u0144 5 p\xF3l; odkrywa mg\u0142\u0119; w\u0119ze\u0142 sieci dr\xF3g; +50% Obrony jednostkom obozuj\u0105cym na polu",
+    koszt_praca: 30,
+    tech: "-",
+    tech_uwaga: "T-TECH-3 Maciej 2026-06-26: bramka AND w kodzie \u2014 Obr\xF3bka drewna + Murarstwo (improvement-tech.ts IMPROVEMENT_MULTI_TECH_REQ)",
+    odblokowuje: "",
+    uwagi: "Br\u0105z (epoka 2); zasieg_terytorium=5; +50% Obrona w trybie obozowania (decyzja Naster 2026-06-25)"
+  },
+  _miasto_zasieg_ref: {
+    _komentarz: "NOTA (nie ulepsz. terenu): miasto ma zasieg_terytorium=10 (stale, wg dyspozycji EKONOMIA 2026-06-25); helper: okolica.cityRangeForPopulation \u2014 pop<5 r5, pop>=5 r10, pop>=10 r15 (wg memory civ-zasieg-miasta-dynamiczny); zasieg_terytorium=10 to wartosc poczatkowa/bazowa dla zasladania kolejnych miast"
+  }
 };
 
-// src/game/difficulty-cost.ts
-function isPlayerOwner(ownerId) {
-  return ownerId === 0;
+// src/game/terrain-improvements.ts
+var IMPROVEMENTS = terrain_improvements_default;
+var LEGACY_KEY_ALIASES = {
+  pastwisko: "bydlo"
+};
+var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
+function normalizeImprovementKey(raw) {
+  if (!raw || raw === "brak") return void 0;
+  const key = LEGACY_KEY_ALIASES[raw] ?? raw;
+  return IMPROVEMENTS[key]?.bonus !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
 }
-function getPopulationGrowthDifficultyMultiplier(ownerId, difficulty) {
-  if (difficulty === "normal") return 1;
-  if (difficulty === "easy") return isPlayerOwner(ownerId) ? 1 : 2;
-  return isPlayerOwner(ownerId) ? 2 : 0.5;
+function improvementBonusForKey(key) {
+  const row = IMPROVEMENTS[key];
+  if (!row?.bonus) return {};
+  return { ...row.bonus };
 }
-function getPopulationGrowthThresholdMultiplier(ownerId, pace, difficulty) {
-  const paceMult = typeof pace === "number" ? pace : WZROST_LUDNOSCI_PACE[pace];
-  return paceMult * getPopulationGrowthDifficultyMultiplier(ownerId, difficulty);
+function applyImprovementBonus(yld, improvementKey) {
+  if (!improvementKey) return;
+  const b = improvementBonusForKey(improvementKey);
+  if (b.zywnosc) yld.zywnosc += b.zywnosc;
+  if (b.praca) yld.praca += b.praca;
+  if (b.handel) yld.handel += b.handel;
+  if (b.pieniadz) yld.handel += b.pieniadz;
+  if (b.drewno) yld.drewno += b.drewno;
+  if (b.kamien) yld.kamien += b.kamien;
+  if (b.glina) yld.glina += b.glina;
 }
-function applyPopulationGrowthThreshold(baseThreshold, ownerId, pace, difficulty) {
-  const mult = getPopulationGrowthThresholdMultiplier(ownerId, pace, difficulty);
-  return Math.max(1, Math.round(baseThreshold * mult));
+var ORE_YIELD_PER_MINE = 2;
+function oreYieldFromImprovements(improvementKeys, zloze) {
+  let ruda = 0;
+  let ruda_zelaza = 0;
+  const z = zloze?.trim().toLowerCase();
+  for (const raw of improvementKeys) {
+    const key = normalizeImprovementKey(raw);
+    if (key === "kopalnia_miedzi") {
+      ruda += ORE_YIELD_PER_MINE;
+    } else if (key === "kopalnia") {
+      if (z === "zelazo") ruda_zelaza += ORE_YIELD_PER_MINE;
+      else ruda += ORE_YIELD_PER_MINE;
+    }
+  }
+  return { ruda, ruda_zelaza };
+}
+function applyImprovementBonuses(yld, improvementKeys) {
+  for (const key of improvementKeys) {
+    applyImprovementBonus(yld, key);
+  }
+}
+var TERRITORY_YIELD_IMPROVEMENTS = /* @__PURE__ */ new Set([
+  "tartak",
+  "kamieniolom",
+  "glinianka",
+  "kopalnia_miedzi",
+  "kopalnia",
+  "warzelnia_soli",
+  "stadnina",
+  "kopalnia_zlota"
+]);
+var TERRITORY_YIELD_DEFAULT_AMOUNT = 2;
+function territoryYieldAmountForKey(key) {
+  const row = IMPROVEMENTS[key];
+  const v = row?.surowiec_ilosc_tura;
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : TERRITORY_YIELD_DEFAULT_AMOUNT;
+}
+function territoryResourceYieldForImprovement(key, zloze) {
+  const norm = normalizeImprovementKey(key);
+  if (!norm || !TERRITORY_YIELD_IMPROVEMENTS.has(norm)) return null;
+  switch (norm) {
+    case "tartak":
+      return { resourceKey: "drewno", amount: territoryYieldAmountForKey(norm) };
+    case "kamieniolom":
+      return { resourceKey: "kamien", amount: territoryYieldAmountForKey(norm) };
+    case "glinianka":
+      return { resourceKey: "glina", amount: territoryYieldAmountForKey(norm) };
+    case "kopalnia_miedzi":
+      return { resourceKey: "ruda", amount: territoryYieldAmountForKey(norm) };
+    case "warzelnia_soli":
+      return { resourceKey: "sol", amount: territoryYieldAmountForKey(norm) };
+    case "stadnina":
+      return { resourceKey: "kon", amount: 1 };
+    case "kopalnia_zlota":
+      return { resourceKey: "zloto", amount: 1 };
+    case "kopalnia": {
+      const z = zloze?.trim().toLowerCase();
+      return { resourceKey: z === "zelazo" ? "ruda_zelaza" : "ruda", amount: territoryYieldAmountForKey(norm) };
+    }
+    default:
+      return null;
+  }
+}
+function improvementKeysForHex(hex) {
+  if (hex.ulepszenia?.length) {
+    const keys = hex.ulepszenia.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
+    return [...new Set(keys)];
+  }
+  const single = normalizeImprovementKey(String(hex.ulepszenie ?? "brak"));
+  return single ? [single] : [];
+}
+var RESOURCE_UPKEEP_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
+  "tartak",
+  "kamieniolom",
+  "glinianka",
+  "kopalnia",
+  "kopalnia_miedzi",
+  "warzelnia_soli",
+  "stadnina",
+  // PYTANIE-84-B4: Kopalnia złota produkuje zloto/t do magazynu państwa (TERRITORY_YIELD powyżej).
+  "kopalnia_zlota"
+]);
+
+// src/map/road-movement.ts
+var ROAD_MIN_MOVE_COST = 1 / 3;
+
+// src/units/setup.ts
+var CIVILIAN_CATEGORIES = /* @__PURE__ */ new Set(["osadnik", "robotnik", "zwiadowca"]);
+var CIVILIAN_TYPE_IDS = /* @__PURE__ */ new Set(["Zwiadowca", "Osadnik", "Robotnik"]);
+function isCivilianUnit(u) {
+  if (CIVILIAN_CATEGORIES.has(u.category)) return true;
+  return CIVILIAN_TYPE_IDS.has(u.typeId);
+}
+function hexDistance(aq, ar, bq, br) {
+  const dq = Math.abs(aq - bq);
+  const dr = Math.abs(ar - br);
+  const ds = Math.abs(-aq - ar - (-bq - br));
+  return Math.max(dq, dr, ds);
+}
+var DEFAULT_TERRAIN_COSTS = {
+  ["laka" /* Laka */]: 1,
+  ["rownina" /* Rownina */]: 1,
+  ["pustynia" /* Pustynia */]: 1,
+  ["wybrzeze" /* Wybrzeze */]: Infinity,
+  ["wzgorza" /* Wzgorza */]: 2,
+  ["gory" /* Gory */]: Infinity,
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
+};
+var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+
+// src/game/wealth.ts
+var FALLBACK_WEALTH_PARAMS = {
+  capNaEpoke: 10,
+  progNaPoziom: 4.5,
+  mnoznikNaPoziom: 0.15,
+  utrzymanieBaza: 0.2,
+  utrzymaniePrzyCap: 0.4,
+  zachowaniePoAwansie: 0.5,
+  zadowolenieNa10pkt: 1,
+  karaZero: 0,
+  immunitetTur: 5
+};
+function loadWealthParams(raw, difficulty = "normal") {
+  const g = raw.wealth ?? {};
+  const read = (key, fallback) => {
+    const row = g[key];
+    const v = row ? row[difficulty] : void 0;
+    return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+  };
+  return {
+    capNaEpoke: read("wealth_cap_na_epoke", FALLBACK_WEALTH_PARAMS.capNaEpoke),
+    progNaPoziom: read("wealth_prog_na_poziom", FALLBACK_WEALTH_PARAMS.progNaPoziom),
+    mnoznikNaPoziom: read("wealth_mnoznik_na_poziom", FALLBACK_WEALTH_PARAMS.mnoznikNaPoziom),
+    utrzymanieBaza: read("wealth_utrzymanie_baza", FALLBACK_WEALTH_PARAMS.utrzymanieBaza),
+    utrzymaniePrzyCap: read("wealth_utrzymanie_przy_cap", FALLBACK_WEALTH_PARAMS.utrzymaniePrzyCap),
+    zachowaniePoAwansie: read("wealth_zachowanie_po_awansie", FALLBACK_WEALTH_PARAMS.zachowaniePoAwansie),
+    zadowolenieNa10pkt: read("wealth_zadowolenie_na_10pkt", FALLBACK_WEALTH_PARAMS.zadowolenieNa10pkt),
+    karaZero: read("wealth_kara_zero", FALLBACK_WEALTH_PARAMS.karaZero),
+    immunitetTur: read("wealth_immunitet_tur", FALLBACK_WEALTH_PARAMS.immunitetTur)
+  };
+}
+function wealthCap(epoka, p) {
+  return Math.max(0, Math.floor(epoka)) * p.capNaEpoke;
+}
+function wealthMnoznik(poziom, p) {
+  return Math.max(1, 1 + (poziom - 1) * p.mnoznikNaPoziom);
+}
+function wealthZadowolenie(poziom, p) {
+  if (poziom <= 0) return p.karaZero;
+  return Math.floor(poziom / 10) * p.zadowolenieNa10pkt;
+}
+function wealthRownowaga(poziom, epoka, p) {
+  const cap = wealthCap(epoka, p);
+  if (cap <= 0) return p.utrzymaniePrzyCap;
+  const frac = Math.min(1, Math.max(0, poziom / cap));
+  return p.utrzymanieBaza + frac * (p.utrzymaniePrzyCap - p.utrzymanieBaza);
+}
+function wealthProg(poziom, epoka, p) {
+  return p.progNaPoziom * (poziom + 1) * Math.max(1, Math.floor(epoka));
+}
+function advanceWealth(state, spoleczMoney, miastoMoney, epoka, p, opts) {
+  const cap = wealthCap(epoka, p);
+  let poziom = Math.min(cap, Math.max(0, Math.floor(state.poziom)));
+  let pula = Math.max(0, Number.isFinite(state.pula) ? state.pula : 0);
+  const minPoz = Math.max(0, Math.floor(opts?.minPoziom ?? 0));
+  const spol = Number.isFinite(spoleczMoney) ? Math.max(0, spoleczMoney) : 0;
+  const M = Number.isFinite(miastoMoney) ? Math.max(0, miastoMoney) : 0;
+  const decay = wealthRownowaga(poziom, epoka, p) * M;
+  pula += spol - decay;
+  let spadek = 0;
+  if (pula < 0) {
+    pula = 0;
+    if (poziom > minPoz) {
+      poziom -= 1;
+      spadek = 1;
+    }
+  }
+  let awans = 0;
+  while (poziom < cap) {
+    const prog = wealthProg(poziom, epoka, p);
+    if (pula >= prog) {
+      pula -= prog;
+      poziom += 1;
+      pula = Math.floor(pula * p.zachowaniePoAwansie);
+      awans += 1;
+    } else {
+      break;
+    }
+  }
+  return {
+    poziom,
+    pula,
+    mnoznik: wealthMnoznik(poziom, p),
+    zadowolenie: wealthZadowolenie(poziom, p),
+    awans,
+    spadek
+  };
+}
+function freshWealthState() {
+  return { poziom: 1, pula: 0 };
 }
 
 // data/epoka-ludnosc-manpower.json
@@ -105,6 +672,13 @@ var miasto_params_default = {
     wartosc: 1,
     jednostka: "0/1",
     opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
+  },
+  manpower_uzupelnienie_hp_proc_max_tura: {
+    easy: 25,
+    normal: 20,
+    hard: 15,
+    jednostka: "% maxHP/tura",
+    opis: "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP \xD7 warto\u015B\u0107/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP \xD7 kosztJednostki). Przy braku MP \u2014 leczenie cz\u0119\u015Bciowe do dost\u0119pnej puli. manpower.tickManpowerUnitReplenishment."
   },
   jednostka_koszt_domyslny: {
     wartosc: 10,
@@ -215,6 +789,94 @@ var DEFAULT_REGEN = {
   regenProcMaxPerTurn: 2,
   blockWhenBesieged: true
 };
+var DEFAULT_REPLENISH_PCT = {
+  easy: 25,
+  normal: 20,
+  hard: 15
+};
+function loadManpowerReplenishParams(difficulty = "normal", raw = miasto_params_default) {
+  const row = raw.manpower_uzupelnienie_hp_proc_max_tura;
+  const pick4 = (key) => {
+    const v = row?.[key];
+    if (typeof v === "number" && Number.isFinite(v) && v >= 0) return v;
+    const fb = row?.normal;
+    if (typeof fb === "number" && Number.isFinite(fb) && fb >= 0) return fb;
+    return DEFAULT_REPLENISH_PCT[key];
+  };
+  return { healPctMaxPerTurn: Math.min(100, pick4(difficulty)) };
+}
+function isUnitInBesiegedLocation(unit, cities) {
+  if (unit.q == null || unit.r == null) return false;
+  const city = cities.find((c) => c.q === unit.q && c.r === unit.r);
+  if (!city || city.ownerId !== unit.ownerId) return false;
+  return city.oblegane === true;
+}
+function replenishmentUnitSortKey(unit, cities) {
+  if (isUnitInBesiegedLocation(unit, cities)) return 2;
+  if (unit.inGarnizon === true) return 0;
+  return 1;
+}
+function manpowerHealCapForTurn(maxHp, curHp, params) {
+  if (maxHp <= 0 || curHp <= 0 || curHp >= maxHp) return 0;
+  const cap = Math.floor(maxHp * params.healPctMaxPerTurn / 100);
+  return Math.max(0, Math.min(cap, maxHp - curHp));
+}
+function manpowerCostForHeal(healHp, maxHp, unitCost) {
+  if (healHp <= 0 || maxHp <= 0 || unitCost <= 0) return 0;
+  return Math.min(unitCost, Math.ceil(healHp / maxHp * unitCost));
+}
+function maxAffordableManpowerHeal(desiredHeal, maxHp, unitCost, availableMp) {
+  if (desiredHeal <= 0 || maxHp <= 0 || unitCost <= 0 || availableMp <= 0) return 0;
+  return Math.min(desiredHeal, Math.floor(availableMp * maxHp / unitCost));
+}
+function tickManpowerUnitReplenishment(cities, units, difficulty, resolveOwnerEra, resolveOwnerBonusy, getMaxHp, rawMiastoParams) {
+  const params = loadManpowerReplenishParams(difficulty, rawMiastoParams);
+  if (params.healPctMaxPerTurn <= 0 || units.length === 0) {
+    return { healedCount: 0, totalMpSpent: 0 };
+  }
+  const byOwner = /* @__PURE__ */ new Map();
+  for (const u of units) {
+    if (isCivilianUnit(u)) continue;
+    const list = byOwner.get(u.ownerId) ?? [];
+    list.push(u);
+    byOwner.set(u.ownerId, list);
+  }
+  let healedCount = 0;
+  let totalMpSpent = 0;
+  for (const [ownerId, ownerUnits] of byOwner) {
+    const epoka = resolveOwnerEra(ownerId);
+    const maxMult = civManpowerMaxMult(resolveOwnerBonusy(ownerId));
+    let empireMp = empireManpowerCurrent(cities, ownerId, epoka, maxMult);
+    if (empireMp <= 0) continue;
+    const sorted = [...ownerUnits].sort((a, b) => {
+      const keyDiff = replenishmentUnitSortKey(a, cities) - replenishmentUnitSortKey(b, cities);
+      return keyDiff !== 0 ? keyDiff : a.id.localeCompare(b.id);
+    });
+    for (const u of sorted) {
+      if (isUnitInBesiegedLocation(u, cities)) continue;
+      const maxHp = u.hpMax ?? getMaxHp(u.typeId);
+      if (maxHp <= 0) continue;
+      if (u.hpMax == null) u.hpMax = maxHp;
+      const curHp = u.hp == null ? maxHp : u.hp;
+      if (u.hp == null) u.hp = curHp;
+      if (curHp <= 0 || curHp >= maxHp) continue;
+      const unitCost = unitManpowerCostForType(u.typeId, epoka, maxMult);
+      if (unitCost <= 0 || isScoutTypeId(u.typeId)) continue;
+      const desiredHeal = manpowerHealCapForTurn(maxHp, curHp, params);
+      if (desiredHeal <= 0) continue;
+      const healHp = maxAffordableManpowerHeal(desiredHeal, maxHp, unitCost, empireMp);
+      if (healHp <= 0) continue;
+      const mpCost = manpowerCostForHeal(healHp, maxHp, unitCost);
+      if (mpCost <= 0) continue;
+      if (!deductManpowerFromEmpire(cities, ownerId, epoka, mpCost, maxMult)) continue;
+      empireMp -= mpCost;
+      totalMpSpent += mpCost;
+      u.hp = Math.min(maxHp, curHp + healHp);
+      healedCount++;
+    }
+  }
+  return { healedCount, totalMpSpent };
+}
 function loadManpowerRegenParams(raw = miasto_params_default) {
   const pct = raw.manpower_regen_proc_max_tura?.wartosc;
   const block = raw.manpower_regen_blok_oblezenie?.wartosc;
@@ -278,467 +940,162 @@ function epokaManpowerRow(epoka) {
 function clampLudki(population) {
   return Math.max(1, Math.floor(population) || 1);
 }
+function cityLudnoscAbsolutna(ludki, epoka) {
+  const row = epokaManpowerRow(epoka);
+  return clampLudki(ludki) * row.ludekNaLudka;
+}
 function cityManpowerMax(ludki, epoka, maxMult = 1) {
   const row = epokaManpowerRow(epoka);
   return scaledManpower(clampLudki(ludki) * row.manpowerNaLudka, maxMult);
+}
+var SCOUT_TYPE_ID = "Zwiadowca";
+function isScoutTypeId(typeId) {
+  return typeId === SCOUT_TYPE_ID;
+}
+function unitManpowerCost(epoka, maxMult = 1) {
+  return scaledManpower(epokaManpowerRow(epoka).manpowerNaJednostke, maxMult);
+}
+function unitManpowerCostForType(typeId, epoka, maxMult = 1) {
+  if (isScoutTypeId(typeId)) return 0;
+  return unitManpowerCost(epoka, maxMult);
 }
 function cityManpowerCurrent(city, epoka, maxMult = 1) {
   const max = cityManpowerMax(city.population, epoka, maxMult);
   if (city.manpower === void 0 || !Number.isFinite(city.manpower)) return max;
   return Math.max(0, Math.min(max, Math.floor(city.manpower)));
 }
-function refreshManpowerAfterPopChange(city, epoka, previousPop, maxMult = 1) {
-  const max = cityManpowerMax(city.population, epoka, maxMult);
-  const cur = cityManpowerCurrent(city, epoka, maxMult);
-  if (previousPop !== void 0 && previousPop !== city.population) {
-    const oldMax = cityManpowerMax(previousPop, epoka, maxMult);
-    if (city.population > previousPop) {
-      return Math.min(max, cur + (max - oldMax));
-    }
-    return Math.min(cur, max);
+function empirePoborTotals(cities, ownerId, epoka, maxMult = 1) {
+  let sumaLudkow = 0;
+  let ludnoscAbsolutna = 0;
+  let rekruci = 0;
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    sumaLudkow += clampLudki(c.population);
+    ludnoscAbsolutna += cityLudnoscAbsolutna(c.population, epoka);
+    rekruci += cityManpowerCurrent(c, epoka, maxMult);
   }
-  return max;
+  return { sumaLudkow, ludnoscAbsolutna, rekruci, poborRaw: ludnoscAbsolutna + rekruci };
+}
+function empireManpowerCurrent(cities, ownerId, epoka, maxMult = 1) {
+  return empirePoborTotals(cities, ownerId, epoka, maxMult).rekruci;
+}
+function deductManpowerFromEmpire(cities, ownerId, epoka, amount, maxMult = 1) {
+  if (amount <= 0) return true;
+  if (empireManpowerCurrent(cities, ownerId, epoka, maxMult) < amount) return false;
+  let remaining = amount;
+  const ownerCities = cities.filter((c) => c.ownerId === ownerId);
+  const sorted = [...ownerCities].sort((a, b) => {
+    const curDiff = cityManpowerCurrent(b, epoka, maxMult) - cityManpowerCurrent(a, epoka, maxMult);
+    return curDiff !== 0 ? curDiff : a.id.localeCompare(b.id);
+  });
+  for (const c of sorted) {
+    if (remaining <= 0) break;
+    const cur = cityManpowerCurrent(c, epoka, maxMult);
+    const take = Math.min(cur, remaining);
+    if (take > 0) {
+      c.manpower = cur - take;
+      remaining -= take;
+    }
+  }
+  return remaining <= 0;
 }
 
-// data/terrain-improvements.json
-var terrain_improvements_default = {
-  _meta: {
-    opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
-    bonus_pola: "zywnosc | praca | handel | pieniadz | kamien | drewno (na obrabiane pole)",
-    epoka: "1=Kamien, 2=Braz, 3=Zelazo",
-    decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
-    kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
-    decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
-  },
-  farma: {
-    nazwa: "Farma",
-    epoka: 1,
-    bonus: {
-      zywnosc: 3
-    },
-    surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
-    koszt_praca: 20,
-    tech: "Rolnictwo",
-    odblokowuje: ""
-  },
-  irygacja: {
-    nazwa: "Irygacja",
-    epoka: 2,
-    bonus: {
-      zywnosc: 5
-    },
-    surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina, Pustynia",
-    warunek: "TYLKO pole s\u0105siaduj\u0105ce z rzek\u0105 (1 pole) lub na rzece \u2014 BRAK \u0142a\u0144cuch\xF3w; kluczowa nad Nilem",
-    koszt_praca: 30,
-    tech: "Irygacja",
-    odblokowuje: ""
-  },
-  bydlo: {
-    nazwa: "Trzoda",
-    epoka: 1,
-    bonus: {
-      zywnosc: 2,
-      praca: 3
-    },
-    surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
-    koszt_praca: 20,
-    tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
-  },
-  owce: {
-    nazwa: "Owce",
-    epoka: 1,
-    bonus: {
-      zywnosc: 1,
-      praca: 2
-    },
-    surowiecOdblokowany: "owce",
-    surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
-    koszt_praca: 20,
-    tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Owce (we\u0142na / jedzenie)"
-  },
-  lama: {
-    nazwa: "Lama",
-    epoka: 1,
-    bonus: {
-      zywnosc: 1,
-      praca: 3
-    },
-    surowiecOdblokowany: "lama",
-    surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "Wzg\xF3rza, G\xF3ry",
-    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
-    koszt_praca: 20,
-    tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
-  },
-  stadnina: {
-    nazwa: "Stadnina",
-    epoka: 2,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: "kon",
-    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo",
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "solo; tylko heks ze z\u0142o\u017Cem konia w terytorium",
-    koszt_praca: 28,
-    tech: "Je\u017Adziectwo",
-    odblokowuje: "Ko\u0144 (jednostki konne)"
-  },
-  kopalnia: {
-    nazwa: "Kopalnia",
-    epoka: 1,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
-    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
-    koszt_praca: 25,
-    tech: "Murarstwo",
-    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
-  },
-  glinianka: {
-    nazwa: "Glinianka",
-    epoka: 2,
-    bonus: {
-      praca: 1,
-      glina: 2
-    },
-    surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 5,
-    teren: "z\u0142o\u017Ce Gliny",
-    warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
-    koszt_praca: 20,
-    tech: "Garncarstwo",
-    odblokowuje: "Ceg\u0142a (budynki br\u0105zu)"
-  },
-  kamieniolom: {
-    nazwa: "Kamienio\u0142om",
-    epoka: 1,
-    bonus: {
-      praca: 1,
-      kamien: 1
-    },
-    surowiecOdblokowany: "kamien",
-    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
-    surowiec_ilosc_tura: 4,
-    teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
-    warunek: "budulec \u2014 mury, budynki",
-    koszt_praca: 22,
-    tech: "Murarstwo",
-    odblokowuje: "Kamie\u0144 (mury / budynki)"
-  },
-  oboz_lowiecki: {
-    nazwa: "Ob\xF3z \u0142owiecki",
-    epoka: 1,
-    bonus: {
-      zywnosc: 1,
-      pieniadz: 1
-    },
-    surowiecOdblokowany: null,
-    surowiecOdblokowany_uwaga: "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 \u2014 brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
-    teren: "Las / dzika zwierzyna",
-    warunek: "dzika zwierzyna",
-    koszt_praca: 18,
-    tech: "\u0141owiectwo",
-    odblokowuje: ""
-  },
-  wyrab: {
-    nazwa: "Wyr\u0105b",
-    typ: "wycinka",
-    epoka: 1,
-    bonus: {},
-    surowiecOdblokowany: null,
-    teren: "Las",
-    warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
-    koszt_praca: 5,
-    tech: null,
-    wycinka: {
-      praca_per_tura: 5,
-      tury: 1,
-      usuwa_nakladke: "las"
-    },
-    odblokowuje: ""
-  },
-  tartak: {
-    nazwa: "Tartak",
-    typ: "ulepszenie",
-    epoka: 1,
-    bonus: {
-      praca: 3
-    },
-    surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
-    surowiec_ilosc_tura: 4,
-    teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
-    warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
-    koszt_praca: 25,
-    tech: "Obr\xF3bka drewna",
-    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
-  },
-  tarasy: {
-    nazwa: "Tarasy uprawne",
-    epoka: 2,
-    bonus: {
-      zywnosc: 3
-    },
-    surowiecOdblokowany: null,
-    teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
-    koszt_praca: 25,
-    tech: "Rolnictwo",
-    odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
-  },
-  lodzie_rybackie: {
-    nazwa: "\u0141odzie rybackie",
-    epoka: 1,
-    bonus: {
-      zywnosc: 2,
-      praca: 3
-    },
-    surowiecOdblokowany: null,
-    surowiecOdblokowany_uwaga: "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
-    teren: "Wybrze\u017Ce, Morze (ryby)",
-    warunek: "\u0142awica ryb",
-    koszt_praca: 20,
-    tech: "\u017Begluga",
-    odblokowuje: ""
-  },
-  warzelnia_soli: {
-    nazwa: "Warzelnia soli",
-    epoka: 2,
-    bonus: {
-      pieniadz: 1,
-      zywnosc: 1
-    },
-    surowiecOdblokowany: "sol",
-    surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
-    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
-    koszt_praca: 20,
-    tech: "Garncarstwo",
-    odblokowuje: "S\xF3l"
-  },
-  fort: {
-    nazwa: "Fort",
-    epoka: 3,
-    bonus: {},
-    surowiecOdblokowany: null,
-    bonus_obrona_proc: 100,
-    bonus_wymaga_obozowania: true,
-    zasieg_pol: 10,
-    zasieg_terytorium: 10,
-    zasieg_kontroli: 10,
-    teren: "dowolny l\u0105d w terytorium",
-    warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
-    koszt_praca: 25,
-    tech: "Wojskowo\u015B\u0107",
-    odblokowuje: "",
-    uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
-  },
-  droga: {
-    nazwa: "Droga",
-    epoka: 1,
-    bonus: {
-      handel: 1
-    },
-    surowiecOdblokowany: null,
-    teren: "ka\u017Cdy przejezdny heks",
-    warunek: "\u0142\u0105czy TYLKO miasta i posterunki (MAPA pilnuje); +szybko\u015B\u0107 ruchu jednostek",
-    koszt_praca: 15,
-    tech: "Ko\u0142o",
-    odblokowuje: ""
-  },
-  droga_brukowana: {
-    nazwa: "Droga brukowana",
-    typ: "ulepszenie",
-    epoka: 3,
-    bonus: {},
-    bonus_ruch: 2,
-    surowiecOdblokowany: null,
-    upgradeFrom: "droga",
-    teren: "hex z Drogi",
-    warunek: "upgrade Drogi; +2 ruch jednostek; ta sama sie\u0107 dr\xF3g co Droga",
-    koszt_praca: 25,
-    tech: "Drogi brukowane",
-    odblokowuje: "",
-    uwagi: "T-TECH-9 Maciej 2026-07-04"
-  },
-  kopalnia_miedzi: {
-    nazwa: "Kopalnia miedzi",
-    epoka: 2,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
-    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
-    koszt_praca: 22,
-    tech: "Br\u0105zownictwo",
-    odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
-    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
-  },
-  kopalnia_zlota: {
-    nazwa: "Kopalnia z\u0142ota",
-    epoka: 2,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: null,
-    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
-    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
-    koszt_praca: 22,
-    tech: "Waluta",
-    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
-    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
-  },
-  posterunek: {
-    nazwa: "Posterunek (Stra\u017Cnica)",
-    epoka: 2,
-    bonus: {},
-    surowiecOdblokowany: null,
-    bonus_obrona_proc: 50,
-    bonus_wymaga_obozowania: true,
-    zasieg_pol: 5,
-    zasieg_terytorium: 5,
-    teren: "l\u0105d w/na kraw\u0119dzi w\u0142asnego zasi\u0119gu",
-    warunek: "NIE miasto, BEZ plon\xF3w; ROZSZERZA zasi\u0119g terytorium o promie\u0144 5 p\xF3l; odkrywa mg\u0142\u0119; w\u0119ze\u0142 sieci dr\xF3g; +50% Obrony jednostkom obozuj\u0105cym na polu",
-    koszt_praca: 30,
-    tech: "-",
-    tech_uwaga: "T-TECH-3 Maciej 2026-06-26: bramka AND w kodzie \u2014 Obr\xF3bka drewna + Murarstwo (improvement-tech.ts IMPROVEMENT_MULTI_TECH_REQ)",
-    odblokowuje: "",
-    uwagi: "Br\u0105z (epoka 2); zasieg_terytorium=5; +50% Obrona w trybie obozowania (decyzja Naster 2026-06-25)"
-  },
-  _miasto_zasieg_ref: {
-    _komentarz: "NOTA (nie ulepsz. terenu): miasto ma zasieg_terytorium=10 (stale, wg dyspozycji EKONOMIA 2026-06-25); helper: okolica.cityRangeForPopulation \u2014 pop<5 r5, pop>=5 r10, pop>=10 r15 (wg memory civ-zasieg-miasta-dynamiczny); zasieg_terytorium=10 to wartosc poczatkowa/bazowa dla zasladania kolejnych miast"
+// src/game/building-stock-cost.ts
+function ownerResourceStockAll(cities, ownerId) {
+  const pool = {};
+  for (const c of cities) {
+    if (c.ownerId !== ownerId || !c.surowce) continue;
+    for (const [k, v] of Object.entries(c.surowce)) {
+      if (typeof v === "number" && Number.isFinite(v)) {
+        pool[k] = (pool[k] ?? 0) + v;
+      }
+    }
   }
-};
+  return pool;
+}
+function ownerResourceStock(cities, ownerId, key) {
+  let total = 0;
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    total += c.surowce?.[key] ?? 0;
+  }
+  return total;
+}
+function deductBuildingStockCostAcrossCities(cities, ownerId, cost) {
+  const ownerCities = cities.filter((c) => c.ownerId === ownerId);
+  for (const [key, needRaw] of Object.entries(cost)) {
+    let need = needRaw;
+    if (!(need > 0)) continue;
+    const holders = ownerCities.filter((c) => (c.surowce?.[key] ?? 0) > 0).sort((a, b) => {
+      const diff = (b.surowce?.[key] ?? 0) - (a.surowce?.[key] ?? 0);
+      if (diff !== 0) return diff;
+      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+    });
+    for (const c of holders) {
+      if (need <= 0) break;
+      const have = c.surowce?.[key] ?? 0;
+      const take = Math.min(have, need);
+      if (!c.surowce) c.surowce = {};
+      c.surowce[key] = have - take;
+      need -= take;
+    }
+  }
+}
+function creditOwnerResourceStock(cities, ownerId, key, amount, capPerType) {
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+  const ownerCities = cities.filter((c) => c.ownerId === ownerId);
+  if (ownerCities.length === 0) return 0;
+  let toAdd = amount;
+  if (typeof capPerType === "number" && Number.isFinite(capPerType)) {
+    const current = ownerResourceStock(cities, ownerId, key);
+    toAdd = Math.max(0, Math.min(toAdd, capPerType - current));
+  }
+  if (toAdd <= 0) return 0;
+  const target = [...ownerCities].sort((a, b) => {
+    const diff = (a.surowce?.[key] ?? 0) - (b.surowce?.[key] ?? 0);
+    if (diff !== 0) return diff;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  })[0];
+  if (!target.surowce) target.surowce = {};
+  target.surowce[key] = (target.surowce[key] ?? 0) + toAdd;
+  return toAdd;
+}
+function assignOwnerResourceStockFromPool(cities, ownerId, pool) {
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    if (!c.surowce) continue;
+    for (const k of Object.keys(c.surowce)) {
+      delete c.surowce[k];
+    }
+  }
+  for (const [key, amount] of Object.entries(pool)) {
+    if (typeof amount === "number" && Number.isFinite(amount) && amount > 0) {
+      creditOwnerResourceStock(cities, ownerId, key, amount);
+    }
+  }
+}
 
-// src/game/terrain-improvements.ts
-var IMPROVEMENTS = terrain_improvements_default;
-var LEGACY_KEY_ALIASES = {
-  pastwisko: "bydlo"
-};
-var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
-function normalizeImprovementKey(raw) {
-  if (!raw || raw === "brak") return void 0;
-  const key = LEGACY_KEY_ALIASES[raw] ?? raw;
-  return IMPROVEMENTS[key]?.bonus !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
+// src/game/zloto-access.ts
+var ZLOTO_STOCK_KEY = "zloto";
+var ZLOTO_LABEL = "Z\u0142oto";
+var MENNICA_ZLOTO_DRAIN_PER_TURN = 1;
+function empireZlotoStock(empireStock) {
+  if (!empireStock) return 0;
+  const v = empireStock[ZLOTO_STOCK_KEY];
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
 }
-function improvementBonusForKey(key) {
-  const row = IMPROVEMENTS[key];
-  if (!row?.bonus) return {};
-  return { ...row.bonus };
+function ownerCanFeedMennica(empireStock, graceActive = false) {
+  if (graceActive) return true;
+  return empireZlotoStock(empireStock) >= MENNICA_ZLOTO_DRAIN_PER_TURN;
 }
-function applyImprovementBonus(yld, improvementKey) {
-  if (!improvementKey) return;
-  const b = improvementBonusForKey(improvementKey);
-  if (b.zywnosc) yld.zywnosc += b.zywnosc;
-  if (b.praca) yld.praca += b.praca;
-  if (b.handel) yld.handel += b.handel;
-  if (b.pieniadz) yld.handel += b.pieniadz;
-  if (b.drewno) yld.drewno += b.drewno;
-  if (b.kamien) yld.kamien += b.kamien;
-  if (b.glina) yld.glina += b.glina;
+function deductMennicaZlotoDrain(empireStock) {
+  const current = empireStock[ZLOTO_STOCK_KEY] ?? 0;
+  if (current < MENNICA_ZLOTO_DRAIN_PER_TURN) return { ...empireStock };
+  return {
+    ...empireStock,
+    [ZLOTO_STOCK_KEY]: current - MENNICA_ZLOTO_DRAIN_PER_TURN
+  };
 }
-var ORE_YIELD_PER_MINE = 2;
-function oreYieldFromImprovements(improvementKeys, zloze) {
-  let ruda = 0;
-  let ruda_zelaza = 0;
-  const z = zloze?.trim().toLowerCase();
-  for (const raw of improvementKeys) {
-    const key = normalizeImprovementKey(raw);
-    if (key === "kopalnia_miedzi") {
-      ruda += ORE_YIELD_PER_MINE;
-    } else if (key === "kopalnia") {
-      if (z === "zelazo") ruda_zelaza += ORE_YIELD_PER_MINE;
-      else ruda += ORE_YIELD_PER_MINE;
-    }
-  }
-  return { ruda, ruda_zelaza };
-}
-function applyImprovementBonuses(yld, improvementKeys) {
-  for (const key of improvementKeys) {
-    applyImprovementBonus(yld, key);
-  }
-}
-var TERRITORY_YIELD_IMPROVEMENTS = /* @__PURE__ */ new Set([
-  "tartak",
-  "kamieniolom",
-  "glinianka",
-  "kopalnia_miedzi",
-  "kopalnia"
-]);
-var TERRITORY_YIELD_DEFAULT_AMOUNT = 2;
-function territoryYieldAmountForKey(key) {
-  const row = IMPROVEMENTS[key];
-  const v = row?.surowiec_ilosc_tura;
-  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : TERRITORY_YIELD_DEFAULT_AMOUNT;
-}
-function territoryResourceYieldForImprovement(key, zloze) {
-  const norm = normalizeImprovementKey(key);
-  if (!norm || !TERRITORY_YIELD_IMPROVEMENTS.has(norm)) return null;
-  const amount = territoryYieldAmountForKey(norm);
-  switch (norm) {
-    case "tartak":
-      return { resourceKey: "drewno", amount };
-    case "kamieniolom":
-      return { resourceKey: "kamien", amount };
-    case "glinianka":
-      return { resourceKey: "glina", amount };
-    case "kopalnia_miedzi":
-      return { resourceKey: "ruda", amount };
-    case "kopalnia": {
-      const z = zloze?.trim().toLowerCase();
-      return { resourceKey: z === "zelazo" ? "ruda_zelaza" : "ruda", amount };
-    }
-    default:
-      return null;
-  }
-}
-function improvementKeysForHex(hex) {
-  if (hex.ulepszenia?.length) {
-    const keys = hex.ulepszenia.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
-    return [...new Set(keys)];
-  }
-  const single = normalizeImprovementKey(String(hex.ulepszenie ?? "brak"));
-  return single ? [single] : [];
-}
-var RESOURCE_UPKEEP_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
-  "tartak",
-  "kamieniolom",
-  "glinianka",
-  "kopalnia",
-  "kopalnia_miedzi",
-  "warzelnia_soli",
-  "stadnina",
-  // Maciej 2026-07-25: Kopalnia złota jest czysto DOSTĘPOWA (jak warzelnia_soli/stadnina —
-  // nie w TERRITORY_YIELD_IMPROVEMENTS powyżej, bez ilości/turę), ale tak jak inne ulepszenia
-  // surowcowe płaci utrzymanie Pracy civ-wide (decyzja modelowa tej sesji — spójność z
-  // istniejącym wzorcem "dostęp bez wydobycia" = warzelnia_soli/stadnina, do potwierdzenia
-  // przy playteście jeśli balans wymaga innej wartości).
-  "kopalnia_zlota"
-]);
 
 // src/game/building-resource-gate.ts
 var LABEL_BY_ASCII = {
@@ -751,11 +1108,171 @@ var LABEL_BY_ASCII = {
   braz: "Br\u0105z",
   sol: "S\xF3l",
   cegla: "Ceg\u0142a",
-  ceramika: "Ceramika"
+  ceramika: "Ceramika",
+  zloto: ZLOTO_LABEL,
+  kon: "Ko\u0144"
+};
+var DEPOSIT_LINKED_BUILDING_LABELS = {
+  garncarnia: ["Glina"],
+  cegielnia: ["Glina"],
+  // PYTANIE-84-U-24: Spichlerz I — brak bramki Ceramika przy budowie; drain B6 po postawieniu.
+  // spichlerz — celowo brak wpisu (bonusy z drain co turę, patrz sekcja Spichlerz niżej).
+  spichlerz_ii: ["S\xF3l"],
+  stolarnia: ["Drewno"],
+  kamieniarski: ["Kamie\u0144"],
+  kuznia: ["Ruda"],
+  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
+  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  mennica: [ZLOTO_LABEL]
 };
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
+var ACCESS_ONLY_RESOURCE_LABELS = /* @__PURE__ */ new Set();
+function buildingRequiredActiveLabels(building) {
+  const out = /* @__PURE__ */ new Set();
+  const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
+  if (hard) hard.forEach((l) => out.add(l));
+  const key = building.wymaganySurowiec?.trim().toLowerCase();
+  if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
+  return [...out];
+}
+var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
+  Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
+);
+var SPICHLERZ_RUNTIME_EXCLUDED = /* @__PURE__ */ new Set(["spichlerz", "spichlerz_ii"]);
+function hasDepositRuntimeGate(buildingId) {
+  if (SPICHLERZ_RUNTIME_EXCLUDED.has(buildingId)) return false;
+  return Object.prototype.hasOwnProperty.call(DEPOSIT_LINKED_BUILDING_LABELS, buildingId);
+}
+function empireLabelSatisfiedAtRuntime(label, activeLabels, runtimeActiveBuiltIds, empireStock) {
+  if (activeLabels.includes(label)) return true;
+  if (label === "Ceg\u0142a" && runtimeActiveBuiltIds.includes("cegielnia")) return true;
+  if (label === "Ceramika" && runtimeActiveBuiltIds.includes("garncarnia")) return true;
+  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
+    const asciiKey = ASCII_BY_LABEL[label];
+    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  }
+  return false;
+}
+function mennicaRuntimeGateMet(empireStock, options) {
+  if (options?.resolveOwnerZlotoAccess && options.ownerId !== void 0) {
+    return options.resolveOwnerZlotoAccess(options.ownerId);
+  }
+  return ownerCanFeedMennica(empireStock);
+}
+function buildingRuntimeGateMet(building, activeLabels, runtimeActiveBuiltIds, empireStock, options) {
+  if (building.id === "mennica") {
+    return mennicaRuntimeGateMet(empireStock, options);
+  }
+  const required = buildingRequiredActiveLabels(building);
+  if (required.length === 0) return true;
+  const active = activeLabels ?? [];
+  return required.every(
+    (label) => empireLabelSatisfiedAtRuntime(label, active, runtimeActiveBuiltIds, empireStock)
+  );
+}
+function filterRuntimeActiveBuiltIds(builtIds, activeLabels, empireStock, options) {
+  const active = /* @__PURE__ */ new Set();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const id of builtIds) {
+      if (active.has(id)) continue;
+      if (!hasDepositRuntimeGate(id)) {
+        active.add(id);
+        changed = true;
+        continue;
+      }
+      if (buildingRuntimeGateMet(
+        { id, epokaWejscia: 1 },
+        activeLabels,
+        [...active],
+        empireStock,
+        options
+      )) {
+        active.add(id);
+        changed = true;
+      }
+    }
+  }
+  return [...active];
+}
+var SPICHLERZ_DRAIN_CERAMIKA_PER_TURN = 5;
+var SPICHLERZ_DRAIN_SOL_PER_TURN = 5;
+function paySpichlerzDrainForCity(cities, ownerId, builtIds, dryRun = false) {
+  const hasI = builtIds.includes("spichlerz");
+  const hasII = builtIds.includes("spichlerz_ii");
+  if (!hasI && !hasII) return { ceramikaPaid: false, solPaid: false };
+  let ceramikaPaid = false;
+  let solPaid = false;
+  if (ownerResourceStock(cities, ownerId, "ceramika") >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN) {
+    if (!dryRun) {
+      deductBuildingStockCostAcrossCities(cities, ownerId, {
+        ceramika: SPICHLERZ_DRAIN_CERAMIKA_PER_TURN
+      });
+    }
+    ceramikaPaid = true;
+  }
+  if (hasII && ownerResourceStock(cities, ownerId, "sol") >= SPICHLERZ_DRAIN_SOL_PER_TURN) {
+    if (!dryRun) {
+      deductBuildingStockCostAcrossCities(cities, ownerId, {
+        sol: SPICHLERZ_DRAIN_SOL_PER_TURN
+      });
+    }
+    solPaid = true;
+  }
+  return { ceramikaPaid, solPaid };
+}
+function resolveSpichlerzCityBonusState(builtIds, drain) {
+  const hasII = builtIds.includes("spichlerz_ii");
+  const hasI = builtIds.includes("spichlerz");
+  if (!hasI && !hasII) {
+    return {
+      ceramikaActive: false,
+      solActive: false,
+      maSpichlerzPop: false,
+      maSpichlerzIIPop: false
+    };
+  }
+  const ceramikaActive = drain.ceramikaPaid;
+  const solActive = hasII && drain.solPaid;
+  const maSpichlerzIIPop = hasII && ceramikaActive && solActive;
+  const maSpichlerzPop = ceramikaActive && !maSpichlerzIIPop;
+  return { ceramikaActive, solActive, maSpichlerzPop, maSpichlerzIIPop };
+}
+function spichlerzHealthBonus(_state) {
+  return 0;
+}
+function spichlerzGrowthBonusPercent(state) {
+  if (state.maSpichlerzIIPop) return 2;
+  if (state.maSpichlerzPop) return 1;
+  return 0;
+}
+function builtIdsForSpichlerzYields(builtIds, state) {
+  const effective = state.maSpichlerzIIPop ? "spichlerz_ii" : state.maSpichlerzPop ? "spichlerz" : null;
+  const out = [];
+  let spichlerzMapped = false;
+  for (const id of builtIds) {
+    if (id === "spichlerz" || id === "spichlerz_ii") {
+      if (!spichlerzMapped && effective) {
+        out.push(effective);
+        spichlerzMapped = true;
+      }
+      continue;
+    }
+    out.push(id);
+  }
+  return out;
+}
+var SPICHLERZ_EMPIRE_CAP_I = 100;
+var SPICHLERZ_EMPIRE_CAP_II_FULL = 150;
+function spichlerzArmyFoodCostMultiplier(opts) {
+  let m = 1;
+  if (!opts.onOwnTerritory && opts.solArmyBonusActive) m *= 0.5;
+  if (opts.isGarrisonInSolCity) m *= 0.5;
+  return m;
+}
 
 // src/game/production.ts
 function buildingLevelForEpoch(epokaWejscia, cityEpoch, maksPoziom, poziomTechGate, unlockedTechs) {
@@ -822,9 +1339,6 @@ function loadStorageParams(raw, difficulty = "normal") {
     mnoznikMagazynu: readNum(g, "magazyn_mnoznik_spichlerz", difficulty, DEFAULT_STORAGE_PARAMS.mnoznikMagazynu)
   };
 }
-function foodStorageCapacity(maSpichlerz, p) {
-  return maSpichlerz ? p.bazaZywnosc * p.mnoznikMagazynu : p.bazaZywnosc;
-}
 function readCityFoodBuffer(magazynZywnosci) {
   if (typeof magazynZywnosci === "number" && Number.isFinite(magazynZywnosci)) {
     return Math.max(0, magazynZywnosci);
@@ -839,6 +1353,25 @@ var DEFAULT_OWNER_STORAGE_PARAMS = {
   bazaSurowcePanstwo: 500,
   bonusSurowceNaBudynek: 100
 };
+var OWNER_CAPPED_RESOURCE_KEYS = [
+  "drewno",
+  "kamien",
+  "glina",
+  "ruda",
+  "ruda_zelaza",
+  "cegla",
+  "ceramika",
+  "braz",
+  "zelazo",
+  "stal",
+  "sol",
+  "zloto",
+  "kon"
+];
+var OWNER_CAPPED_RESOURCE_KEY_SET = new Set(OWNER_CAPPED_RESOURCE_KEYS);
+function isOwnerCappedResourceKey(key) {
+  return OWNER_CAPPED_RESOURCE_KEY_SET.has(key);
+}
 function loadOwnerStorageParams(raw, difficulty = "normal") {
   const g = raw.globalne;
   return {
@@ -863,7 +1396,9 @@ function reconcileOwnerResourceCaps(cities, capForOwner) {
     if (!Number.isFinite(cap) || cap < 0) continue;
     const keys = /* @__PURE__ */ new Set();
     for (const c of ownerCities) {
-      for (const k of Object.keys(c.surowce ?? {})) keys.add(k);
+      for (const k of Object.keys(c.surowce ?? {})) {
+        if (isOwnerCappedResourceKey(k)) keys.add(k);
+      }
     }
     for (const key of keys) {
       let total = 0;
@@ -986,13 +1521,6 @@ function unitFoodPerTurn(unit, p, foodTable = {}) {
   const mnoznikTerytorium = onOwnTerritory ? p.zywnoscMnoznikTerytorium ?? 1 : p.zywnoscMnoznikPozaTerytorium ?? 2;
   return base * mnoznikTerytorium;
 }
-function militaryFoodConsumption(units, p, foodTable = {}) {
-  let sum = 0;
-  for (const u of units) {
-    sum += unitFoodPerTurn(u, p, foodTable);
-  }
-  return sum;
-}
 function upkeepBalance(income, buildings, units, unitUpkeepTbl, p) {
   const utrzymanieBudynki = totalBuildingUpkeep(buildings, p.budynekUtrzymanieFlat);
   const utrzymanieJednostki = totalUnitUpkeep(units, unitUpkeepTbl, p.jednostkaUtrzymanieStd);
@@ -1008,304 +1536,6 @@ function upkeepBalance(income, buildings, units, unitUpkeepTbl, p) {
   };
 }
 
-// src/game/empire-food.ts
-function pick(row, d, fallback) {
-  if (!row) return fallback;
-  const v = row[d];
-  return Number.isFinite(v) ? v : fallback;
-}
-function buildEmpireFoodParams(raw, difficulty = "normal") {
-  const section = raw.ekonomia_miasta ?? raw;
-  return {
-    procentRozwojDefault: pick(section.suwak_zywnosc_rozwoj_domyslnie, difficulty, 100),
-    glodWojskaHpFrac: pick(section.glod_wojska_hp_frac, difficulty, 0.08),
-    glodWojskaKarencjaTur: pick(section.glod_wojska_karencja_tur, difficulty, 3),
-    armiaOdkladBezSpichlerza: pick(section.armia_odklad_bez_spichlerza, difficulty, 0.5),
-    armiaOdkladZeSpichlerzem: pick(section.armia_odklad_ze_spichlerzem, difficulty, 1),
-    spichlerzPojemnoscZapasowPanstwa: pick(section.spichlerz_pojemnosc_zapasow_panstwa, difficulty, 100)
-  };
-}
-function armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac) {
-  const net = doPanstwa - kosztArmii;
-  if (net >= 0) return Math.round(net * depositFrac);
-  return net;
-}
-function computeEmpireFoodNetDelta(brutto, kosztArmii, pctRozwoj, spichlerzCount, params) {
-  const pct = clampFoodSplitPct(pctRozwoj);
-  const doPanstwa = brutto - brutto * (pct / 100);
-  const depositFrac = spichlerzCount > 0 ? params.armiaOdkladZeSpichlerzem : params.armiaOdkladBezSpichlerza;
-  return armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
-}
-function computeEmpireFoodNetDeltaFromCityFoods(cityFoods, kosztArmii, spichlerzCount, params) {
-  let doPanstwa = 0;
-  for (const c of cityFoods) {
-    const z = Math.max(0, c.zywnoscNetto);
-    const pct = clampFoodSplitPct(c.procentRozwoj);
-    doPanstwa += z * (1 - pct / 100);
-  }
-  const depositFrac = spichlerzCount > 0 ? params.armiaOdkladZeSpichlerzem : params.armiaOdkladBezSpichlerza;
-  return armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
-}
-function computeEmpireFoodMaxCap(spichlerzCount, params) {
-  return spichlerzCount > 0 ? spichlerzCount * params.spichlerzPojemnoscZapasowPanstwa : 0;
-}
-function clampFoodSplitPct(n) {
-  return Math.min(100, Math.max(0, n));
-}
-function getCityFoodSplit(city, defaultPct = 100) {
-  return clampFoodSplitPct(city.procentRozwoj ?? defaultPct);
-}
-function freshEmpireFoodState(procentRozwojDefault = 100) {
-  return { zapasyPanstwa: 0, procentRozwoj: procentRozwojDefault, turyUjemnychZapasow: 0 };
-}
-function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}) {
-  const spichlerzCountByOwner = /* @__PURE__ */ new Map();
-  const spichlerzCapByOwner = /* @__PURE__ */ new Map();
-  for (const tick of econ.perCity) {
-    if (tick.maSpichlerzII) {
-      spichlerzCountByOwner.set(
-        tick.ownerId,
-        (spichlerzCountByOwner.get(tick.ownerId) ?? 0) + 1
-      );
-      spichlerzCapByOwner.set(
-        tick.ownerId,
-        (spichlerzCapByOwner.get(tick.ownerId) ?? 0) + 150
-      );
-    } else if (tick.maSpichlerz) {
-      spichlerzCountByOwner.set(
-        tick.ownerId,
-        (spichlerzCountByOwner.get(tick.ownerId) ?? 0) + 1
-      );
-      spichlerzCapByOwner.set(
-        tick.ownerId,
-        (spichlerzCapByOwner.get(tick.ownerId) ?? 0) + params.spichlerzPojemnoscZapasowPanstwa
-      );
-    }
-  }
-  const perOwner = [];
-  const byOwner = /* @__PURE__ */ new Map();
-  const ownerIds = /* @__PURE__ */ new Set([
-    ...econ.perCity.map((t) => t.ownerId),
-    ...states.keys(),
-    ...units.map((u) => u.ownerId)
-  ]);
-  for (const ownerId of ownerIds) {
-    const st = states.get(ownerId) ?? freshEmpireFoodState(params.procentRozwojDefault);
-    if (!states.has(ownerId)) states.set(ownerId, st);
-    let bruttoSum = 0;
-    let doRozwoju = 0;
-    let doPanstwa = 0;
-    for (const tick2 of econ.perCity) {
-      if (tick2.ownerId !== ownerId || tick2.oblegany) continue;
-      const z = Math.max(0, tick2.zywnoscNetto);
-      const pctRozwoj = clampFoodSplitPct(
-        tick2.procentRozwoj ?? st.procentRozwoj ?? params.procentRozwojDefault
-      );
-      bruttoSum += z;
-      doRozwoju += z * (pctRozwoj / 100);
-      doPanstwa += z * (1 - pctRozwoj / 100);
-    }
-    doRozwoju = Math.round(doRozwoju);
-    doPanstwa = Math.round(doPanstwa);
-    const brutto = bruttoSum;
-    const ownerUnits = units.filter((u) => u.ownerId === ownerId);
-    const kosztArmii = militaryFoodConsumption(ownerUnits, upkeep, foodTable);
-    const zapasyPrzed = st.zapasyPanstwa;
-    const spichlerzCount = spichlerzCountByOwner.get(ownerId) ?? 0;
-    const depositFrac = spichlerzCount > 0 ? params.armiaOdkladZeSpichlerzem : params.armiaOdkladBezSpichlerza;
-    const maxZapasy = spichlerzCapByOwner.get(ownerId) ?? 0;
-    const maxZapasyFinite = maxZapasy > 0 ? maxZapasy : Number.POSITIVE_INFINITY;
-    let zapasyPo = zapasyPrzed + armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
-    if (Number.isFinite(maxZapasyFinite) && zapasyPo > maxZapasyFinite) zapasyPo = maxZapasyFinite;
-    st.zapasyPanstwa = zapasyPo;
-    _maxCapByOwner.set(ownerId, maxZapasy);
-    const turyUjemnychZapasowPrzed = st.turyUjemnychZapasow ?? 0;
-    const turyUjemnychZapasowPo = zapasyPo < 0 ? turyUjemnychZapasowPrzed + 1 : 0;
-    st.turyUjemnychZapasow = turyUjemnychZapasowPo;
-    const tick = {
-      ownerId,
-      zywnoscBrutto: brutto,
-      doRozwoju,
-      doPanstwa,
-      kosztArmii,
-      zapasyPrzed,
-      zapasyPo,
-      glodWojska: zapasyPo < 0,
-      turyUjemnychZapasowPo,
-      glodWojskaAtrycjaAktywna: turyUjemnychZapasowPo >= params.glodWojskaKarencjaTur
-    };
-    perOwner.push(tick);
-    byOwner.set(ownerId, tick);
-  }
-  _setLastEmpireFoodTicks(byOwner);
-  return { perOwner, byOwner };
-}
-var _lastTicks = /* @__PURE__ */ new Map();
-var _statesRef = /* @__PURE__ */ new Map();
-var _maxCapByOwner = /* @__PURE__ */ new Map();
-function bindEmpireFoodRuntime(states) {
-  _statesRef = states;
-}
-function getEmpireFoodMaxCap(ownerId) {
-  const cap = _maxCapByOwner.get(ownerId) ?? 0;
-  return cap > 0 ? cap : 0;
-}
-function getEmpireFoodSplit(ownerId) {
-  return _statesRef.get(ownerId)?.procentRozwoj ?? 100;
-}
-function isArmyStarving(ownerId) {
-  return _lastTicks.get(ownerId)?.glodWojskaAtrycjaAktywna ?? false;
-}
-function _setLastEmpireFoodTicks(ticks) {
-  _lastTicks = ticks;
-}
-function clearLastEmpireFoodTicks() {
-  _lastTicks = /* @__PURE__ */ new Map();
-  _maxCapByOwner = /* @__PURE__ */ new Map();
-}
-
-// src/map/road-movement.ts
-var ROAD_MIN_MOVE_COST = 1 / 3;
-
-// src/units/setup.ts
-var CIVILIAN_CATEGORIES = /* @__PURE__ */ new Set(["osadnik", "robotnik", "zwiadowca"]);
-var CIVILIAN_TYPE_IDS = /* @__PURE__ */ new Set(["Zwiadowca", "Osadnik", "Robotnik"]);
-function isCivilianUnit(u) {
-  if (CIVILIAN_CATEGORIES.has(u.category)) return true;
-  return CIVILIAN_TYPE_IDS.has(u.typeId);
-}
-function hexDistance(aq, ar, bq, br) {
-  const dq = Math.abs(aq - bq);
-  const dr = Math.abs(ar - br);
-  const ds = Math.abs(-aq - ar - (-bq - br));
-  return Math.max(dq, dr, ds);
-}
-var DEFAULT_TERRAIN_COSTS = {
-  ["laka" /* Laka */]: 1,
-  ["rownina" /* Rownina */]: 1,
-  ["pustynia" /* Pustynia */]: 1,
-  ["wybrzeze" /* Wybrzeze */]: Infinity,
-  ["wzgorza" /* Wzgorza */]: 2,
-  ["gory" /* Gory */]: Infinity,
-  ["morze" /* Morze */]: Infinity
-};
-var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
-
-// src/game/wealth.ts
-var FALLBACK_WEALTH_PARAMS = {
-  capNaEpoke: 10,
-  progNaPoziom: 4.5,
-  mnoznikNaPoziom: 0.15,
-  utrzymanieBaza: 0.2,
-  utrzymaniePrzyCap: 0.4,
-  zachowaniePoAwansie: 0.5,
-  zadowolenieNa10pkt: 1,
-  karaZero: 0,
-  immunitetTur: 5
-};
-function loadWealthParams(raw, difficulty = "normal") {
-  const g = raw.wealth ?? {};
-  const read = (key, fallback) => {
-    const row = g[key];
-    const v = row ? row[difficulty] : void 0;
-    return typeof v === "number" && Number.isFinite(v) ? v : fallback;
-  };
-  return {
-    capNaEpoke: read("wealth_cap_na_epoke", FALLBACK_WEALTH_PARAMS.capNaEpoke),
-    progNaPoziom: read("wealth_prog_na_poziom", FALLBACK_WEALTH_PARAMS.progNaPoziom),
-    mnoznikNaPoziom: read("wealth_mnoznik_na_poziom", FALLBACK_WEALTH_PARAMS.mnoznikNaPoziom),
-    utrzymanieBaza: read("wealth_utrzymanie_baza", FALLBACK_WEALTH_PARAMS.utrzymanieBaza),
-    utrzymaniePrzyCap: read("wealth_utrzymanie_przy_cap", FALLBACK_WEALTH_PARAMS.utrzymaniePrzyCap),
-    zachowaniePoAwansie: read("wealth_zachowanie_po_awansie", FALLBACK_WEALTH_PARAMS.zachowaniePoAwansie),
-    zadowolenieNa10pkt: read("wealth_zadowolenie_na_10pkt", FALLBACK_WEALTH_PARAMS.zadowolenieNa10pkt),
-    karaZero: read("wealth_kara_zero", FALLBACK_WEALTH_PARAMS.karaZero),
-    immunitetTur: read("wealth_immunitet_tur", FALLBACK_WEALTH_PARAMS.immunitetTur)
-  };
-}
-function wealthCap(epoka, p) {
-  return Math.max(0, Math.floor(epoka)) * p.capNaEpoke;
-}
-function wealthMnoznik(poziom, p) {
-  return Math.max(1, 1 + (poziom - 1) * p.mnoznikNaPoziom);
-}
-function wealthZadowolenie(poziom, p) {
-  if (poziom <= 0) return p.karaZero;
-  return Math.floor(poziom / 10) * p.zadowolenieNa10pkt;
-}
-function wealthRownowaga(poziom, epoka, p) {
-  const cap = wealthCap(epoka, p);
-  if (cap <= 0) return p.utrzymaniePrzyCap;
-  const frac = Math.min(1, Math.max(0, poziom / cap));
-  return p.utrzymanieBaza + frac * (p.utrzymaniePrzyCap - p.utrzymanieBaza);
-}
-function wealthProg(poziom, epoka, p) {
-  return p.progNaPoziom * (poziom + 1) * Math.max(1, Math.floor(epoka));
-}
-function advanceWealth(state, spoleczMoney, miastoMoney, epoka, p, opts) {
-  const cap = wealthCap(epoka, p);
-  let poziom = Math.min(cap, Math.max(0, Math.floor(state.poziom)));
-  let pula = Math.max(0, Number.isFinite(state.pula) ? state.pula : 0);
-  const minPoz = Math.max(0, Math.floor(opts?.minPoziom ?? 0));
-  const spol = Number.isFinite(spoleczMoney) ? Math.max(0, spoleczMoney) : 0;
-  const M = Number.isFinite(miastoMoney) ? Math.max(0, miastoMoney) : 0;
-  const decay = wealthRownowaga(poziom, epoka, p) * M;
-  pula += spol - decay;
-  let spadek = 0;
-  if (pula < 0) {
-    pula = 0;
-    if (poziom > minPoz) {
-      poziom -= 1;
-      spadek = 1;
-    }
-  }
-  let awans = 0;
-  while (poziom < cap) {
-    const prog = wealthProg(poziom, epoka, p);
-    if (pula >= prog) {
-      pula -= prog;
-      poziom += 1;
-      pula = Math.floor(pula * p.zachowaniePoAwansie);
-      awans += 1;
-    } else {
-      break;
-    }
-  }
-  return {
-    poziom,
-    pula,
-    mnoznik: wealthMnoznik(poziom, p),
-    zadowolenie: wealthZadowolenie(poziom, p),
-    awans,
-    spadek
-  };
-}
-function freshWealthState() {
-  return { poziom: 1, pula: 0 };
-}
-
-// src/game/cities.ts
-var DEFAULT_OKOLICA_FOCUS = "zrownowazone";
-var DEFAULT_OKOLICA_TRYB = "auto";
-var HANDEL_PCT_STEP = 10;
-function snapHandelPct(n) {
-  return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
-}
-function normalizePodzialHandlu(split) {
-  let p = snapHandelPct(split.procentPieniadz);
-  let n = snapHandelPct(split.procentNauka);
-  let l = snapHandelPct(split.procentLuksus);
-  let sum = p + n + l;
-  if (sum !== 100) {
-    l = Math.max(0, Math.min(100, l + (100 - sum)));
-    sum = p + n + l;
-    if (sum !== 100) {
-      n = Math.max(0, Math.min(100, n + (100 - sum)));
-    }
-  }
-  return { procentPieniadz: p, procentNauka: n, procentLuksus: l };
-}
-var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
-
 // data/terrain-yields.json
 var terrain_yields_default = {
   terrain_types: [
@@ -1313,17 +1543,17 @@ var terrain_yields_default = {
       Teren: "\u0141\u0105ka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 1,
-      Handel: 1,
+      Podatek: 2,
       Drewno: 1,
       Kamie\u0144: 0,
-      Suma: 6,
+      Suma: 7,
       Uwagi: null
     },
     {
       Teren: "R\xF3wnina",
       \u017Bywno\u015B\u0107: 2,
       Praca: 2,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 2,
       Kamie\u0144: 1,
       Suma: 8,
@@ -1333,7 +1563,7 @@ var terrain_yields_default = {
       Teren: "Wzg\xF3rza",
       \u017Bywno\u015B\u0107: 1,
       Praca: 3,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 2,
       Suma: 8,
@@ -1343,7 +1573,7 @@ var terrain_yields_default = {
       Teren: "G\xF3ry",
       \u017Bywno\u015B\u0107: 0,
       Praca: 4,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 5,
       Suma: 11,
@@ -1353,7 +1583,7 @@ var terrain_yields_default = {
       Teren: "Wybrze\u017Ce",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 7,
@@ -1363,7 +1593,7 @@ var terrain_yields_default = {
       Teren: "Morze",
       \u017Bywno\u015B\u0107: 2,
       Praca: 0,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 4,
@@ -1373,11 +1603,21 @@ var terrain_yields_default = {
       Teren: "Pustynia",
       \u017Bywno\u015B\u0107: 0,
       Praca: 0,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 1,
       Uwagi: null
+    },
+    {
+      Teren: "Polarny",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 0,
+      Podatek: 0,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 0,
+      Uwagi: "Strefa polarna (\u015Bnieg) \u2014 niezamieszkana, C-MAP-Q3b"
     }
   ],
   terrain_modifiers: [
@@ -1385,21 +1625,21 @@ var terrain_yields_default = {
       Modyfikator: "Rzeka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 7,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +7 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Suma: 8,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +8 \u2014 mocny, mo\u017Cna stonowa\u0107"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
       \u017Bywno\u015B\u0107: -1,
       Praca: 3,
-      Handel: -1,
+      Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
-      Suma: 4,
-      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
+      Suma: 7,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
   ]
 };
@@ -1413,13 +1653,14 @@ var TERRAIN_NAME_TO_ENUM = {
   "G\xF3ry": "gory" /* Gory */,
   "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
   "Morze": "morze" /* Morze */,
-  "Pustynia": "pustynia" /* Pustynia */
+  "Pustynia": "pustynia" /* Pustynia */,
+  "Polarny": "polarny" /* Polarny */
 };
 function terrainRowToTileYield(row) {
   return {
     zywnosc: Number(row["\u017Bywno\u015B\u0107"] ?? 0),
     praca: Number(row["Praca"] ?? 0),
-    handel: Number(row["Handel"] ?? 0),
+    handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
     // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
@@ -1675,37 +1916,6 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     rudaZelazaTerenu: Math.floor(rudaZelazaTerenu)
   };
 }
-function cityPopulationCap(maAkwedukt, params) {
-  return maAkwedukt ? params.akweduktMaxLudnosci : params.akweduktProgLudnosci;
-}
-function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
-  const { ludnosc, zdrowie, maSpichlerz, maSpichlerzII, maAkwedukt, magazynZywnosci } = city;
-  const healthModifier = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
-  const effectiveFlow = zywnoscNetto >= 0 ? zywnoscNetto * healthModifier : zywnoscNetto;
-  const popCap = cityPopulationCap(maAkwedukt, params);
-  let nowaLudnosc = ludnosc;
-  let nowyMagazynZywnosci = magazynZywnosci;
-  let wzrost = false;
-  let ubytek = false;
-  nowyMagazynZywnosci = magazynZywnosci + Math.floor(effectiveFlow);
-  if (nowyMagazynZywnosci < 0) {
-    nowyMagazynZywnosci = 0;
-    if (ludnosc > 1) {
-      nowaLudnosc = ludnosc - 1;
-      ubytek = true;
-    }
-    return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
-  }
-  const baseThreshold = 20 + ludnosc * params.progWzrostuWspolczynnik;
-  const threshold = Math.max(1, Math.round(baseThreshold * wzrostThresholdMult));
-  if (nowyMagazynZywnosci >= threshold && ludnosc < popCap) {
-    nowaLudnosc = ludnosc + 1;
-    wzrost = true;
-    const retainFrac = maSpichlerzII ? 0.7 : maSpichlerz ? params.spichlerzZachowaniePoPrzroscie : 0;
-    nowyMagazynZywnosci = maSpichlerz || maSpichlerzII ? Math.floor(nowyMagazynZywnosci * retainFrac) : 0;
-  }
-  return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
-}
 function corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params) {
   const strataPct = dystansOdStolicy * params.korupcjaWspolczynnikDystansu + liczbaWszystkichMiast * params.korupcjaWspolczynnikMiast;
   const capPct = params.korupcjaCap * 100;
@@ -1722,72 +1932,2648 @@ function corruptionBuildingReduction(builtIds) {
   return Math.min(KORUPCJA_REDUKCJA_SUFIT, suma);
 }
 
-// src/game/converters.ts
-function loadThroughput(raw, paramKey, difficulty, fallback) {
-  const bu = raw.budynki ?? {};
-  const row = bu[paramKey];
-  const v = row ? row[difficulty] : void 0;
-  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
-}
-var DEFAULT_CONVERTER_RECIPES = [
-  { id: "cegielnia", inputs: { glina: 2, drewno: 1 }, output: "cegla", outputAmount: 1, throughputParamKey: "budynek_cegielnia_przepustowosc", throughputFallback: 3 },
-  // 'garncarnia' USUNIETA (Maciej 2026-07-23): Ceramika = tylko dostep (Garncarnia
-  // zbudowana), nie sztuki w magazynie -- patrz komentarz kanonu powyzej.
-  // 'mielerz' USUNIETY (Maciej 2026-07-23): Paliwo usuniete calkowicie; konwertery biora drewno 1:1.
-  { id: "huta", inputs: { ruda: 1, drewno: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
-  { id: "odlewnia_brazu", inputs: { ruda: 1, drewno: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
-  { id: "odlewnia_zelaza", inputs: { ruda_zelaza: 1, drewno: 1 }, output: "zelazo", outputAmount: 1, throughputParamKey: "budynek_odlewnia_zelaza_przepustowosc", throughputFallback: 1 },
-  { id: "wielka_kuznia", inputs: { zelazo: 1, drewno: 1 }, output: "stal", outputAmount: 1, throughputParamKey: "budynek_wielka_kuznia_przepustowosc", throughputFallback: 1 }
-];
-function runConverter(recipe, stores, throughput, outputCapacity) {
-  const have = (k) => {
-    const v = stores[k];
-    return typeof v === "number" && Number.isFinite(v) ? v : 0;
-  };
-  const tput = Number.isFinite(throughput) && throughput > 0 ? Math.floor(throughput) : 0;
-  let limitWejscia = Infinity;
-  for (const k of Object.keys(recipe.inputs)) {
-    const perCykl = recipe.inputs[k];
-    if (perCykl === void 0 || perCykl <= 0) continue;
-    limitWejscia = Math.min(limitWejscia, Math.floor(have(k) / perCykl));
-  }
-  if (!Number.isFinite(limitWejscia)) limitWejscia = 0;
-  const wolne = Math.max(0, outputCapacity - have(recipe.output));
-  const limitWyjscia = recipe.outputAmount > 0 ? Math.floor(wolne / recipe.outputAmount) : 0;
-  const cykle = Math.max(0, Math.min(tput, limitWejscia, limitWyjscia));
-  const nowe = { ...stores };
-  const consumed = {};
-  if (cykle > 0) {
-    for (const k of Object.keys(recipe.inputs)) {
-      const used = (recipe.inputs[k] ?? 0) * cykle;
-      nowe[k] = have(k) - used;
-      consumed[k] = used;
+// data/civ-matrix.json
+var civ_matrix_default = {
+  _meta: {
+    version: "1.0",
+    source: "Cyw-macierz (11 arkuszy Cyw-01..11)",
+    formula_mul_proc: "wynik = baza * (1 + wartosc)",
+    formula_mul_abs: "wynik = baza * wartosc",
+    formula_add: "wynik = baza + wartosc",
+    formula_flag: "wartosc 1 = aktywny warunek",
+    kolumny: 113,
+    cywilizacje: 15
+  },
+  paramDefs: {
+    meta_epoka_kamien: {
+      domena: "meta",
+      jednostka: "flag_0_1",
+      modul: "start-preview.ts",
+      formula: "flag"
+    },
+    meta_epoka_braz: {
+      domena: "meta",
+      jednostka: "flag_0_1",
+      modul: "start-preview.ts",
+      formula: "flag"
+    },
+    meta_epoka_zelazo: {
+      domena: "meta",
+      jednostka: "flag_0_1",
+      modul: "start-preview.ts",
+      formula: "flag"
+    },
+    meta_mnoznik_waluta: {
+      domena: "meta",
+      jednostka: "absolut",
+      modul: "economy.ts",
+      formula: "mul_abs"
+    },
+    meta_tier_roster: {
+      domena: "meta",
+      jednostka: "absolut",
+      modul: "civ-roster.ts",
+      formula: "mul_abs"
+    },
+    walka_atak_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_lukownicy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_obleczenie: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_morska: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_wszystkie: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_lukownicy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_obleczenie: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_morska: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_pancerz_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_pancerz_lukownicy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_pancerz_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_pancerz_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_uderzenie_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_uderzenie_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_uderzenie_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_dystans_lukownicy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_dystans_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_hp_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_hp_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_hp_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_ruch_bitwa_proc: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_zasieg_proc: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_oblezenie_proc: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_koszt_rekrutacji_proc: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_teren_las: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_teren_las: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_terytorium_wlasne: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_terytorium_wlasne: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_w_murze: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_w_murze: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_runda_szarzy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_runda_szarzy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_teren_wybrzeze: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_teren_wybrzeze: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    spec_Atak: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Obrazenia: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Obrona: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Uderzenie: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Pancerz: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Przebicie: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Health: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Atak_dystansowy: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Zasieg_hex: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Pociski: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Ruch_bitwa: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Ruch_mapa: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Widok: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Dezercja_proc: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Morale: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Koszt_pieniadz: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Utrzymanie: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Zywnosc_ture: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    eko_praca_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_pieniadz_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_pieniadz_port_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_zywnosc_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_nauka_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_kultura_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_luksus_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_zadowolenie_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_handel_brutto_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_korupcja_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    prod_koszt_budynku_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    prod_koszt_jednostki_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    prod_szybkosc_budynku_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    prod_szybkosc_jednostki_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    prod_rush_koszt_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    lud_wzrost_proc: {
+      domena: "ludnosc",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    lud_spadek_proc: {
+      domena: "ludnosc",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    lud_zdrowie_proc: {
+      domena: "ludnosc",
+      jednostka: "ulamek",
+      modul: "turn-economy.ts",
+      formula: "mul_proc"
+    },
+    lud_zadowolenie_bazowe: {
+      domena: "ludnosc",
+      jednostka: "absolut",
+      modul: "culture-religion.ts",
+      formula: "add"
+    },
+    lud_limit_populacji: {
+      domena: "ludnosc",
+      jednostka: "absolut",
+      modul: "cities.ts",
+      formula: "add"
+    },
+    mp_regen_proc: {
+      domena: "manpower",
+      jednostka: "ulamek",
+      modul: "manpower.ts",
+      formula: "mul_proc"
+    },
+    mp_max_proc: {
+      domena: "manpower",
+      jednostka: "ulamek",
+      modul: "manpower.ts",
+      formula: "mul_proc"
+    },
+    mp_koszt_jednostki_proc: {
+      domena: "manpower",
+      jednostka: "ulamek",
+      modul: "manpower.ts",
+      formula: "mul_proc"
+    },
+    wealth_cap_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "wealth.ts",
+      formula: "mul_proc"
+    },
+    wealth_mnoznik_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "wealth.ts",
+      formula: "mul_proc"
+    },
+    kultura_naplyw_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "culture-religion.ts",
+      formula: "mul_proc"
+    },
+    religia_spread_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "culture-religion.ts",
+      formula: "mul_proc"
+    },
+    porzadek_produkcja_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    porzadek_pieniadz_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    porzadek_nauka_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    porzadek_kultura_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    porzadek_wzrost_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    obl_obrona_miasta_proc: {
+      domena: "obleczenie",
+      jednostka: "ulamek",
+      modul: "siege.ts",
+      formula: "mul_proc"
+    },
+    obl_mur_proc: {
+      domena: "obleczenie",
+      jednostka: "ulamek",
+      modul: "siege.ts",
+      formula: "mul_proc"
+    },
+    obl_machines_proc: {
+      domena: "obleczenie",
+      jednostka: "ulamek",
+      modul: "siegeMachines.ts",
+      formula: "mul_proc"
+    },
+    dip_sklonnosc_sojusze: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_lojalnosc: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_prog_wojny: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_pamietliwosc: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_otwartosc_handel: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_nastawienie_bazowe: {
+      domena: "dyplomacja",
+      jednostka: "absolut",
+      modul: "diplomacy.ts",
+      formula: "add"
+    },
+    dip_agresja_archetyp: {
+      domena: "dyplomacja",
+      jednostka: "ulamek_0_1",
+      modul: "diplomacy.ts",
+      formula: "mul_abs"
+    },
+    dip_handlowosc_archetyp: {
+      domena: "dyplomacja",
+      jednostka: "ulamek_0_1",
+      modul: "diplomacy.ts",
+      formula: "mul_abs"
+    },
+    ai_agresywnosc: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_ekspansywnosc: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_priorytet_militarny: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_priorytet_ekonomia: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_priorytet_nauka: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_tolerancja_ryzyka: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_sklonnosc_podboju: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_profil_obronna: {
+      domena: "ai",
+      jednostka: "flag_0_1",
+      modul: "civ-ai-data.ts",
+      formula: "flag"
     }
-    nowe[recipe.output] = have(recipe.output) + recipe.outputAmount * cykle;
-  }
-  let reason = "ok";
-  if (cykle === 0) {
-    if (tput === 0) reason = "zero-przepustowosci";
-    else if (limitWejscia === 0) reason = "brak-wejscia";
-    else if (limitWyjscia === 0) reason = "pelny-magazyn";
-    else reason = "brak-wejscia";
-  }
-  return { produced: cykle * recipe.outputAmount, cykle, consumed, stores: nowe, reason };
+  },
+  defaults: {
+    meta_epoka_kamien: 0,
+    meta_epoka_braz: 0,
+    meta_epoka_zelazo: 0,
+    meta_mnoznik_waluta: 2,
+    meta_tier_roster: 1,
+    walka_atak_piechota: 0,
+    walka_atak_lukownicy: 0,
+    walka_atak_kawaleria: 0,
+    walka_atak_rydwany: 0,
+    walka_atak_obleczenie: 0,
+    walka_atak_morska: 0,
+    walka_atak_wszystkie: 0,
+    walka_obrona_piechota: 0,
+    walka_obrona_lukownicy: 0,
+    walka_obrona_kawaleria: 0,
+    walka_obrona_rydwany: 0,
+    walka_obrona_obleczenie: 0,
+    walka_obrona_morska: 0,
+    walka_pancerz_piechota: 0,
+    walka_pancerz_lukownicy: 0,
+    walka_pancerz_kawaleria: 0,
+    walka_pancerz_rydwany: 0,
+    walka_uderzenie_piechota: 0,
+    walka_uderzenie_kawaleria: 0,
+    walka_uderzenie_rydwany: 0,
+    walka_dystans_lukownicy: 0,
+    walka_dystans_rydwany: 0,
+    walka_hp_piechota: 0,
+    walka_hp_kawaleria: 0,
+    walka_hp_rydwany: 0,
+    walka_ruch_bitwa_proc: 0,
+    walka_zasieg_proc: 0,
+    walka_oblezenie_proc: 0,
+    walka_koszt_rekrutacji_proc: 0,
+    walka_atak_piechota_teren_las: 0,
+    walka_obrona_piechota_teren_las: 0,
+    walka_atak_piechota_terytorium_wlasne: 0,
+    walka_obrona_piechota_terytorium_wlasne: 0,
+    walka_atak_piechota_w_murze: 0,
+    walka_obrona_piechota_w_murze: 0,
+    walka_atak_piechota_runda_szarzy: 0,
+    walka_obrona_piechota_runda_szarzy: 0,
+    walka_atak_piechota_teren_wybrzeze: 0,
+    walka_obrona_piechota_teren_wybrzeze: 0,
+    spec_Atak: 0,
+    spec_Obrazenia: 0,
+    spec_Obrona: 0,
+    spec_Uderzenie: 0,
+    spec_Pancerz: 0,
+    spec_Przebicie: 0,
+    spec_Health: 0,
+    spec_Atak_dystansowy: 0,
+    spec_Zasieg_hex: 0,
+    spec_Pociski: 0,
+    spec_Ruch_bitwa: 0,
+    spec_Ruch_mapa: 0,
+    spec_Widok: 0,
+    spec_Dezercja_proc: 0,
+    spec_Morale: 0,
+    spec_Koszt_pieniadz: 0,
+    spec_Utrzymanie: 0,
+    spec_Zywnosc_ture: 0,
+    eko_praca_proc: 0,
+    eko_pieniadz_proc: 0,
+    eko_pieniadz_port_proc: 0,
+    eko_zywnosc_proc: 0,
+    eko_nauka_proc: 0,
+    eko_kultura_proc: 0,
+    eko_luksus_proc: 0,
+    eko_zadowolenie_proc: 0,
+    eko_handel_brutto_proc: 0,
+    eko_korupcja_proc: 0,
+    prod_koszt_budynku_proc: 0,
+    prod_koszt_jednostki_proc: 0,
+    prod_szybkosc_budynku_proc: 0,
+    prod_szybkosc_jednostki_proc: 0,
+    prod_rush_koszt_proc: 0,
+    lud_wzrost_proc: 0,
+    lud_spadek_proc: 0,
+    lud_zdrowie_proc: 0,
+    lud_zadowolenie_bazowe: 0,
+    lud_limit_populacji: 10,
+    mp_regen_proc: 0,
+    mp_max_proc: 0,
+    mp_koszt_jednostki_proc: 0,
+    wealth_cap_proc: 0,
+    wealth_mnoznik_proc: 0,
+    kultura_naplyw_proc: 0,
+    religia_spread_proc: 0,
+    porzadek_produkcja_proc: 0,
+    porzadek_pieniadz_proc: 0,
+    porzadek_nauka_proc: 0,
+    porzadek_kultura_proc: 0,
+    porzadek_wzrost_proc: 0,
+    obl_obrona_miasta_proc: 0,
+    obl_mur_proc: 0,
+    obl_machines_proc: 0,
+    dip_sklonnosc_sojusze: 5,
+    dip_lojalnosc: 5,
+    dip_prog_wojny: 5,
+    dip_pamietliwosc: 5,
+    dip_otwartosc_handel: 5,
+    dip_nastawienie_bazowe: 50,
+    dip_agresja_archetyp: 0.5,
+    dip_handlowosc_archetyp: 0.5,
+    ai_agresywnosc: 5,
+    ai_ekspansywnosc: 5,
+    ai_priorytet_militarny: 5,
+    ai_priorytet_ekonomia: 5,
+    ai_priorytet_nauka: 5,
+    ai_tolerancja_ryzyka: 5,
+    ai_sklonnosc_podboju: 5,
+    ai_profil_obronna: 0
+  },
+  cywilizacje: [
+    {
+      Cywilizacja: "Grecy",
+      typCywilizacji: "grecy",
+      ikonaId: "grecy",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.3,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0.2,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 48,
+        spec_Obrazenia: 45,
+        spec_Obrona: 100,
+        spec_Uderzenie: 70,
+        spec_Pancerz: 85,
+        spec_Przebicie: 15,
+        spec_Health: 100,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 1,
+        spec_Widok: 1,
+        spec_Dezercja_proc: 0.2,
+        spec_Morale: 75,
+        spec_Koszt_pieniadz: 18,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.02,
+        eko_pieniadz_proc: 0.15,
+        eko_pieniadz_port_proc: 0.15,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0.15,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: -0.15,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 6,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 4,
+        dip_pamietliwosc: 6,
+        dip_otwartosc_handel: 8,
+        dip_nastawienie_bazowe: 59,
+        dip_agresja_archetyp: 0.4,
+        dip_handlowosc_archetyp: 0.75,
+        ai_agresywnosc: 4,
+        ai_ekspansywnosc: 3,
+        ai_priorytet_militarny: 5,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 6,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 2,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Rzymianie",
+      typCywilizacji: "rzymianie",
+      ikonaId: "rzymianie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0.15,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0.15,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 0,
+        spec_Obrazenia: 0,
+        spec_Obrona: 0,
+        spec_Uderzenie: 0,
+        spec_Pancerz: 0,
+        spec_Przebicie: 0,
+        spec_Health: 0,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 0,
+        spec_Ruch_mapa: 0,
+        spec_Widok: 0,
+        spec_Dezercja_proc: 0,
+        spec_Morale: 0,
+        spec_Koszt_pieniadz: 0,
+        spec_Utrzymanie: 0,
+        spec_Zywnosc_ture: 0,
+        eko_praca_proc: 0,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0.2,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0.35,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 2,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 8,
+        dip_pamietliwosc: 7,
+        dip_otwartosc_handel: 5,
+        dip_nastawienie_bazowe: 44,
+        dip_agresja_archetyp: 0.75,
+        dip_handlowosc_archetyp: 0.5,
+        ai_agresywnosc: 8,
+        ai_ekspansywnosc: 5,
+        ai_priorytet_militarny: 6,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 8,
+        ai_sklonnosc_podboju: 4,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Chi\u0144czycy",
+      typCywilizacji: "chinczycy",
+      ikonaId: "chinczycy",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.4,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: -0.05,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0.15,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0.2,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 8,
+        spec_Obrazenia: 0,
+        spec_Obrona: 4,
+        spec_Uderzenie: 4,
+        spec_Pancerz: 2,
+        spec_Przebicie: 2,
+        spec_Health: 20,
+        spec_Atak_dystansowy: 10,
+        spec_Zasieg_hex: 4,
+        spec_Pociski: 14,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.4,
+        spec_Morale: 85,
+        spec_Koszt_pieniadz: 20,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.03,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0.05,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 8,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 2,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 8,
+        dip_nastawienie_bazowe: 66,
+        dip_agresja_archetyp: 0.2,
+        dip_handlowosc_archetyp: 0.85,
+        ai_agresywnosc: 2,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 4,
+        ai_priorytet_ekonomia: 6,
+        ai_priorytet_nauka: 6,
+        ai_tolerancja_ryzyka: 2,
+        ai_sklonnosc_podboju: 1,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Inkowie",
+      typCywilizacji: "inkowie",
+      ikonaId: "inkowie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.9,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: -0.15,
+        walka_atak_rydwany: -0.15,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0.2,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 8,
+        spec_Obrazenia: 0,
+        spec_Obrona: 4,
+        spec_Uderzenie: 8,
+        spec_Pancerz: 2,
+        spec_Przebicie: 6,
+        spec_Health: 40,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 3,
+        spec_Widok: 3,
+        spec_Dezercja_proc: 0.1,
+        spec_Morale: 100,
+        spec_Koszt_pieniadz: 26,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: -0.03,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0.15,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 6,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 4,
+        dip_pamietliwosc: 6,
+        dip_otwartosc_handel: 2,
+        dip_nastawienie_bazowe: 45,
+        dip_agresja_archetyp: 0.45,
+        dip_handlowosc_archetyp: 0.25,
+        ai_agresywnosc: 4,
+        ai_ekspansywnosc: 3,
+        ai_priorytet_militarny: 5,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Zulusi",
+      typCywilizacji: "zulusi",
+      ikonaId: "zulusi",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.8,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: -0.1,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0.2,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0.1,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 3,
+        spec_Obrazenia: 0,
+        spec_Obrona: 6,
+        spec_Uderzenie: 6,
+        spec_Pancerz: 4,
+        spec_Przebicie: 2,
+        spec_Health: 70,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 4,
+        spec_Widok: 4,
+        spec_Dezercja_proc: 0.15,
+        spec_Morale: 100,
+        spec_Koszt_pieniadz: 16,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: -0.03,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0.1,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: -0.05,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 1,
+        dip_lojalnosc: 5,
+        dip_prog_wojny: 9,
+        dip_pamietliwosc: 8,
+        dip_otwartosc_handel: 2,
+        dip_nastawienie_bazowe: 32,
+        dip_agresja_archetyp: 0.9,
+        dip_handlowosc_archetyp: 0.2,
+        ai_agresywnosc: 9,
+        ai_ekspansywnosc: 4,
+        ai_priorytet_militarny: 8,
+        ai_priorytet_ekonomia: 4,
+        ai_priorytet_nauka: 4,
+        ai_tolerancja_ryzyka: 9,
+        ai_sklonnosc_podboju: 5,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Egipt",
+      typCywilizacji: "egipt",
+      ikonaId: "egipt",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.1,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0.2,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0.15,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 10,
+        spec_Obrazenia: 0,
+        spec_Obrona: 8,
+        spec_Uderzenie: 8,
+        spec_Pancerz: 6,
+        spec_Przebicie: 4,
+        spec_Health: 85,
+        spec_Atak_dystansowy: 6,
+        spec_Zasieg_hex: 2,
+        spec_Pociski: 6,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 3,
+        spec_Widok: 3,
+        spec_Dezercja_proc: 0.1,
+        spec_Morale: 120,
+        spec_Koszt_pieniadz: 0,
+        spec_Utrzymanie: 0,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.01,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0.05,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 6,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 4,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 6,
+        dip_nastawienie_bazowe: 56,
+        dip_agresja_archetyp: 0.35,
+        dip_handlowosc_archetyp: 0.6,
+        ai_agresywnosc: 4,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 5,
+        ai_priorytet_ekonomia: 6,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 2,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Sumerowie",
+      typCywilizacji: "sumer",
+      ikonaId: "sumer",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.2,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0.2,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0.2,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0.15,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 10,
+        spec_Obrazenia: 0,
+        spec_Obrona: 8,
+        spec_Uderzenie: 8,
+        spec_Pancerz: 6,
+        spec_Przebicie: 4,
+        spec_Health: 85,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.1,
+        spec_Morale: 120,
+        spec_Koszt_pieniadz: 0,
+        spec_Utrzymanie: 0,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.01,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 7,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 3,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 6,
+        dip_nastawienie_bazowe: 59,
+        dip_agresja_archetyp: 0.3,
+        dip_handlowosc_archetyp: 0.65,
+        ai_agresywnosc: 3,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 4,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 8,
+        ai_tolerancja_ryzyka: 3,
+        ai_sklonnosc_podboju: 2,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Celtowie",
+      typCywilizacji: "celtowie",
+      ikonaId: "celtowie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.9,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0.4,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 0,
+        spec_Obrazenia: 0,
+        spec_Obrona: 0,
+        spec_Uderzenie: 0,
+        spec_Pancerz: 0,
+        spec_Przebicie: 0,
+        spec_Health: 0,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 0,
+        spec_Ruch_mapa: 0,
+        spec_Widok: 0,
+        spec_Dezercja_proc: 0,
+        spec_Morale: 0,
+        spec_Koszt_pieniadz: 0,
+        spec_Utrzymanie: 0,
+        spec_Zywnosc_ture: 0,
+        eko_praca_proc: -0.02,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 4,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 6,
+        dip_pamietliwosc: 6,
+        dip_otwartosc_handel: 4,
+        dip_nastawienie_bazowe: 44,
+        dip_agresja_archetyp: 0.6,
+        dip_handlowosc_archetyp: 0.35,
+        ai_agresywnosc: 6,
+        ai_ekspansywnosc: 4,
+        ai_priorytet_militarny: 8,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 4,
+        ai_tolerancja_ryzyka: 6,
+        ai_sklonnosc_podboju: 4,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Germanie",
+      typCywilizacji: "germanie",
+      ikonaId: "germanie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.7,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0.25,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0.4,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 45,
+        spec_Obrazenia: 45,
+        spec_Obrona: 38,
+        spec_Uderzenie: 20,
+        spec_Pancerz: 20,
+        spec_Przebicie: 10,
+        spec_Health: 45,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.4,
+        spec_Morale: 50,
+        spec_Koszt_pieniadz: 10,
+        spec_Utrzymanie: 1,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: -0.02,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: -0.05,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 4,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 6,
+        dip_pamietliwosc: 7,
+        dip_otwartosc_handel: 3,
+        dip_nastawienie_bazowe: 41,
+        dip_agresja_archetyp: 0.65,
+        dip_handlowosc_archetyp: 0.3,
+        ai_agresywnosc: 6,
+        ai_ekspansywnosc: 4,
+        ai_priorytet_militarny: 8,
+        ai_priorytet_ekonomia: 4,
+        ai_priorytet_nauka: 4,
+        ai_tolerancja_ryzyka: 6,
+        ai_sklonnosc_podboju: 4,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Harappa",
+      typCywilizacji: "harappa",
+      ikonaId: "harappa",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 0,
+        meta_epoka_zelazo: 0,
+        meta_mnoznik_waluta: 2.4,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: -0.08,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0.15,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 56,
+        spec_Obrazenia: 56,
+        spec_Obrona: 89.6,
+        spec_Uderzenie: 44.8,
+        spec_Pancerz: 61.6,
+        spec_Przebicie: 22.4,
+        spec_Health: 72.8,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.3,
+        spec_Morale: 65,
+        spec_Koszt_pieniadz: 16,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.04,
+        eko_pieniadz_proc: 0.15,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0.15,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 7,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 2,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 8,
+        dip_nastawienie_bazowe: 58,
+        dip_agresja_archetyp: 0.25,
+        dip_handlowosc_archetyp: 0.7,
+        ai_agresywnosc: 2,
+        ai_ekspansywnosc: 3,
+        ai_priorytet_militarny: 4,
+        ai_priorytet_ekonomia: 7,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Hetyci",
+      typCywilizacji: "hetyci",
+      ikonaId: "hetyci",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 0,
+        meta_mnoznik_waluta: 2,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0.2,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0.15,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 6.9,
+        spec_Obrazenia: 0,
+        spec_Obrona: 2.3,
+        spec_Uderzenie: 9.2,
+        spec_Pancerz: 2.3,
+        spec_Przebicie: 4.6,
+        spec_Health: 103.5,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 6,
+        spec_Ruch_mapa: 4,
+        spec_Widok: 4,
+        spec_Dezercja_proc: 0.3,
+        spec_Morale: 100,
+        spec_Koszt_pieniadz: 28,
+        spec_Utrzymanie: 3,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: -0.05,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 5,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 5,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 5,
+        dip_nastawienie_bazowe: 52,
+        dip_agresja_archetyp: 0.45,
+        dip_handlowosc_archetyp: 0.5,
+        ai_agresywnosc: 5,
+        ai_ekspansywnosc: 3,
+        ai_priorytet_militarny: 6,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 4,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "S\u0142owianie",
+      typCywilizacji: "slowianie",
+      ikonaId: "slowianie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 0,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.8,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0.15,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 57,
+        spec_Obrazenia: 57,
+        spec_Obrona: 91.2,
+        spec_Uderzenie: 45.6,
+        spec_Pancerz: 62.7,
+        spec_Przebicie: 22.8,
+        spec_Health: 74.1,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.3,
+        spec_Morale: 65,
+        spec_Koszt_pieniadz: 16,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: -0.05,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0.03,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0.1,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 4,
+        dip_lojalnosc: 5,
+        dip_prog_wojny: 6,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 4,
+        dip_nastawienie_bazowe: 48,
+        dip_agresja_archetyp: 0.55,
+        dip_handlowosc_archetyp: 0.4,
+        ai_agresywnosc: 6,
+        ai_ekspansywnosc: 4,
+        ai_priorytet_militarny: 6,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Babilonia",
+      typCywilizacji: "babilonia",
+      ikonaId: "babilonia",
+      tier: 2,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 0,
+        meta_mnoznik_waluta: 2.3,
+        meta_tier_roster: 2,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 50.85,
+        spec_Obrazenia: 50.85,
+        spec_Obrona: 42.94,
+        spec_Uderzenie: 22.6,
+        spec_Pancerz: 22.6,
+        spec_Przebicie: 11.3,
+        spec_Health: 50.85,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.4,
+        spec_Morale: 50,
+        spec_Koszt_pieniadz: 10,
+        spec_Utrzymanie: 1,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0,
+        eko_pieniadz_proc: 0.1,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0.15,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0.1,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 6,
+        dip_lojalnosc: 5,
+        dip_prog_wojny: 4,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 6,
+        dip_nastawienie_bazowe: 55,
+        dip_agresja_archetyp: 0.3,
+        dip_handlowosc_archetyp: 0.65,
+        ai_agresywnosc: 3,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 4,
+        ai_priorytet_ekonomia: 6,
+        ai_priorytet_nauka: 8,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 2,
+        ai_profil_obronna: 0
+      }
+    },
+    {
+      Cywilizacja: "Asyria",
+      typCywilizacji: "asyria",
+      ikonaId: "asyria",
+      tier: 2,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 0,
+        meta_mnoznik_waluta: 1.7,
+        meta_tier_roster: 2,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0.15,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0.2,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 30,
+        spec_Obrazenia: 35,
+        spec_Obrona: 20,
+        spec_Uderzenie: 10,
+        spec_Pancerz: 10,
+        spec_Przebicie: 15,
+        spec_Health: 30,
+        spec_Atak_dystansowy: 35,
+        spec_Zasieg_hex: 3,
+        spec_Pociski: 12,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.5,
+        spec_Morale: 40,
+        spec_Koszt_pieniadz: 6,
+        spec_Utrzymanie: 1,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: -0.02,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 2,
+        dip_lojalnosc: 4,
+        dip_prog_wojny: 9,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 3,
+        dip_nastawienie_bazowe: 38,
+        dip_agresja_archetyp: 0.8,
+        dip_handlowosc_archetyp: 0.25,
+        ai_agresywnosc: 8,
+        ai_ekspansywnosc: 5,
+        ai_priorytet_militarny: 8,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 5,
+        ai_profil_obronna: 0
+      }
+    },
+    {
+      Cywilizacja: "Fenicjanie",
+      typCywilizacji: "fenicjanie",
+      ikonaId: "fenicjanie",
+      tier: 2,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 0,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.6,
+        meta_tier_roster: 2,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: -0.05,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 50.4,
+        spec_Obrazenia: 50.4,
+        spec_Obrona: 42.56,
+        spec_Uderzenie: 22.4,
+        spec_Pancerz: 22.4,
+        spec_Przebicie: 11.2,
+        spec_Health: 50.4,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.4,
+        spec_Morale: 50,
+        spec_Koszt_pieniadz: 10,
+        spec_Utrzymanie: 1,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.05,
+        eko_pieniadz_proc: 0.35,
+        eko_pieniadz_port_proc: 0.25,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0.35,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 5,
+        dip_lojalnosc: 4,
+        dip_prog_wojny: 3,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 9,
+        dip_nastawienie_bazowe: 62,
+        dip_agresja_archetyp: 0.25,
+        dip_handlowosc_archetyp: 0.9,
+        ai_agresywnosc: 3,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 5,
+        ai_priorytet_ekonomia: 8,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 3,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 0
+      }
+    }
+  ]
+};
+
+// src/game/civ-matrix.ts
+var DATA = civ_matrix_default;
+function resolveRow(civKey) {
+  const key = civKey.toLowerCase();
+  return DATA.cywilizacje.find(
+    (c) => c.ikonaId.toLowerCase() === key || c.typCywilizacji.toLowerCase() === key || c.Cywilizacja.toLowerCase() === key
+  );
 }
-function runConverters(recipes, stores, throughputs, capacityOf) {
-  let cur = { ...stores };
-  const perBuilding = {};
-  for (const recipe of recipes) {
-    const tput = Object.prototype.hasOwnProperty.call(throughputs, recipe.id) ? throughputs[recipe.id] ?? recipe.throughputFallback : recipe.throughputFallback;
-    const res = runConverter(recipe, cur, tput, capacityOf(recipe.output));
-    cur = res.stores;
-    perBuilding[recipe.id] = res;
-  }
-  return { stores: cur, perBuilding };
+function civMatrixParam(civKey, paramId) {
+  const row = resolveRow(civKey);
+  if (!row) return DATA.defaults[paramId] ?? 0;
+  return row.params[paramId] ?? DATA.defaults[paramId] ?? 0;
 }
 
 // src/game/culture-religion.ts
-function pick2(row, difficulty, fallback) {
+function pick(row, difficulty, fallback) {
   if (row === void 0) return fallback;
   const v = row[difficulty];
   return typeof v === "number" && Number.isFinite(v) ? v : fallback;
@@ -1832,16 +4618,16 @@ function loadReligionParams(society, difficulty = "normal") {
   const r = society && society.religia || {};
   const f = FALLBACK_RELIGION_PARAMS;
   return {
-    progDominacjiPct: pick2(r.religia_prog_dominacji, difficulty, f.progDominacjiPct),
-    szybkoscSzerzeniaBazowa: pick2(r.religia_szybkosc_szerzenia_bazowa, difficulty, f.szybkoscSzerzeniaBazowa),
-    swiatyniaBonusSzerzenia: pick2(r.religia_swiatynia_bonus_szerzenia, difficulty, f.swiatyniaBonusSzerzenia),
-    szerzenieMaxDystans: pick2(r.religia_szerzenie_max_dystans, difficulty, f.szerzenieMaxDystans),
-    zadowolenieDominujaca: pick2(r.religia_zadowolenie_dominujaca, difficulty, f.zadowolenieDominujaca),
-    karaObca: pick2(r.religia_kara_obca, difficulty, f.karaObca),
-    karaBrakReligii: pick2(r.religia_kara_brak_religii, difficulty, f.karaBrakReligii),
-    konwersjaBazaPct: pick2(r.religia_konwersja_bazowa, difficulty, f.konwersjaBazaPct),
-    konwersjaSwiatyniaPct: pick2(r.religia_konwersja_swiatynia, difficulty, f.konwersjaSwiatyniaPct),
-    konwersjaKregiPct: pick2(r.religia_konwersja_kregi, difficulty, f.konwersjaKregiPct)
+    progDominacjiPct: pick(r.religia_prog_dominacji, difficulty, f.progDominacjiPct),
+    szybkoscSzerzeniaBazowa: pick(r.religia_szybkosc_szerzenia_bazowa, difficulty, f.szybkoscSzerzeniaBazowa),
+    swiatyniaBonusSzerzenia: pick(r.religia_swiatynia_bonus_szerzenia, difficulty, f.swiatyniaBonusSzerzenia),
+    szerzenieMaxDystans: pick(r.religia_szerzenie_max_dystans, difficulty, f.szerzenieMaxDystans),
+    zadowolenieDominujaca: pick(r.religia_zadowolenie_dominujaca, difficulty, f.zadowolenieDominujaca),
+    karaObca: pick(r.religia_kara_obca, difficulty, f.karaObca),
+    karaBrakReligii: pick(r.religia_kara_brak_religii, difficulty, f.karaBrakReligii),
+    konwersjaBazaPct: pick(r.religia_konwersja_bazowa, difficulty, f.konwersjaBazaPct),
+    konwersjaSwiatyniaPct: pick(r.religia_konwersja_swiatynia, difficulty, f.konwersjaSwiatyniaPct),
+    konwersjaKregiPct: pick(r.religia_konwersja_kregi, difficulty, f.konwersjaKregiPct)
   };
 }
 function totalAdherents(state) {
@@ -2090,98 +4876,197 @@ function resolveWorkedTiles(city, map, yieldOf, opts = {}) {
     wagi: wagiForFocus(focus)
   });
 }
-function yieldOfMapHex(map, q, r) {
-  const h = map.hexes[`${q},${r}`];
-  if (!h) return {};
-  const y = tileYield({
-    terenBazowy: h.terenBazowy,
-    nakladka: h.nakladka ?? "brak" /* Brak */,
-    maRzeke: !!(h.rzeka && h.rzeka.obecna),
-    ulepszenieKey: normalizeImprovementKey(String(h.ulepszenie ?? "brak"))
-  });
-  return { zywnosc: y.zywnosc, praca: y.praca, handel: y.handel };
+
+// src/game/population-growth-v85.ts
+var DEFAULT_POZIOM_RACJI = 2;
+function pick2(row, d, fallback) {
+  if (!row) return fallback;
+  const v = row[d];
+  return Number.isFinite(v) ? v : fallback;
 }
-function seedReczneFromAuto(city, map, territoryNodes) {
-  const pop = Math.max(0, Math.floor(city.population ?? 0));
-  if (pop <= 0) return {};
-  const radius = cityRangeForPopulation(pop);
-  const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
-  const tiles = assignWorkedTiles(city.q, city.r, pop, map, (q, r) => yieldOfMapHex(map, q, r), {
-    radius,
-    territoryNodes,
-    ownerId: city.ownerId,
-    wagi: wagiForFocus(focus)
-  });
-  const reczne = {};
-  for (const t of tiles) reczne[t.key] = 1;
-  return reczne;
+function buildRationParams(raw, difficulty = "normal") {
+  const section = raw.ekonomia_miasta ?? raw;
+  return {
+    racjeZywnosc1: pick2(section.racje_zywnosc_1, difficulty, 1),
+    racjeZywnosc2: pick2(section.racje_zywnosc_2, difficulty, 2),
+    racjeZywnosc3: pick2(section.racje_zywnosc_3, difficulty, 3),
+    racjeWzrostProc1: pick2(section.racje_wzrost_proc_1, difficulty, 3),
+    racjeWzrostProc2: pick2(section.racje_wzrost_proc_2, difficulty, 5),
+    racjeWzrostProc3: pick2(section.racje_wzrost_proc_3, difficulty, 7)
+  };
 }
-function countAssignedWorkers(reczne) {
-  return Object.values(reczne).filter((n) => n > 0).length;
+function clampPoziomRacji(n) {
+  if (n >= 3) return 3;
+  if (n <= 1) return 1;
+  return 2;
 }
-function pickDeterministicIndex(seed, length) {
-  if (length <= 0) return 0;
-  return (seed % length + length) % length;
+function migrateProcentRozwojToPoziomRacji(procentRozwoj) {
+  if (procentRozwoj === void 0) return DEFAULT_POZIOM_RACJI;
+  if (procentRozwoj >= 90) return 3;
+  if (procentRozwoj >= 50) return 2;
+  return 1;
 }
-function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter, territoryNodes) {
-  const tryb = city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
-  const pop = Math.max(0, Math.floor(popAfter));
-  if (popBefore === popAfter) return;
-  if (tryb !== "reczny") {
-    return;
-  }
-  const radius = cityRangeForPopulation(pop);
-  const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
-  const wagi = wagiForFocus(focus);
-  const workFilter = territoryNodes ? makeTerritoryWorkableFilter(territoryNodes, city.ownerId) : void 0;
-  const tiles = okolicaTiles(city.q, city.r, radius, map, workFilter);
-  const yieldOf = (q, r) => yieldOfMapHex(map, q, r);
-  let reczne = { ...city.okolicaReczne ?? {} };
-  if (popAfter > popBefore) {
-    if (countAssignedWorkers(reczne) === 0 && pop > 0) {
-      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map, territoryNodes);
-      return;
+function getCityRationLevel(city) {
+  if (city.poziomRacji !== void 0) return clampPoziomRacji(city.poziomRacji);
+  return migrateProcentRozwojToPoziomRacji(city.procentRozwoj);
+}
+function rationFoodCostPerPop(level, params) {
+  if (level === 3) return params.racjeZywnosc3;
+  if (level === 1) return params.racjeZywnosc1;
+  return params.racjeZywnosc2;
+}
+function rationGrowthPercent(level, params) {
+  if (level === 3) return params.racjeWzrostProc3;
+  if (level === 1) return params.racjeWzrostProc1;
+  return params.racjeWzrostProc2;
+}
+function computeCityRationCost(population, level, params) {
+  return Math.max(0, population) * rationFoodCostPerPop(level, params);
+}
+function computeGrowthPercentV85(input) {
+  const racje = rationGrowthPercent(input.poziomRacji, input.rationParams);
+  const maleMiasto = Math.max(0, 6 - input.population);
+  const spichlerz = spichlerzGrowthBonusPercent(input.spichlerzState);
+  const zdrowie = Math.floor(Math.max(0, input.zdrowie) / 10);
+  const happinessPool = input.szczescieNetto + Math.floor(Math.max(0, input.wealthPoziom) / 10);
+  const szczescie = Math.floor(happinessPool / 10);
+  const civRaw = input.civKey ? civMatrixParam(input.civKey, "lud_wzrost_proc") : 0;
+  const cywilizacja = Math.round(civRaw * 100);
+  const total = racje + maleMiasto + spichlerz + zdrowie + szczescie + cywilizacja;
+  return { total, racje, maleMiasto, spichlerz, zdrowie, szczescie, cywilizacja };
+}
+
+// src/game/cities.ts
+var DEFAULT_OKOLICA_FOCUS = "zrownowazone";
+var DEFAULT_OKOLICA_TRYB = "auto";
+var DEFAULT_PODZIAL_HANDLU = {
+  procentNauka: 20,
+  procentPieniadz: 60,
+  procentLuksus: 20
+};
+var HANDEL_PCT_STEP = 10;
+function snapHandelPct(n) {
+  return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
+}
+function normalizePodzialHandlu(split) {
+  let p = snapHandelPct(split.procentPieniadz);
+  let n = snapHandelPct(split.procentNauka);
+  let l = snapHandelPct(split.procentLuksus);
+  let sum = p + n + l;
+  if (sum !== 100) {
+    l = Math.max(0, Math.min(100, l + (100 - sum)));
+    sum = p + n + l;
+    if (sum !== 100) {
+      n = Math.max(0, Math.min(100, n + (100 - sum)));
     }
-    let need = pop - countAssignedWorkers(reczne);
-    let salt = 0;
-    while (need > 0) {
-      const free = tiles.filter((t) => (reczne[t.key] ?? 0) < 1);
-      if (free.length === 0) break;
-      const idx = pickDeterministicIndex(city.q * 997 + city.r * 991 + pop * 17 + salt, free.length);
-      reczne[free[idx].key] = 1;
-      need--;
-      salt++;
-    }
-    city.okolicaReczne = reczne;
-    return;
   }
-  if (popAfter < popBefore) {
-    let excess = countAssignedWorkers(reczne) - pop;
-    while (excess > 0) {
-      const keys = Object.keys(reczne).filter((k) => (reczne[k] ?? 0) > 0);
-      if (keys.length === 0) break;
-      let worstKey = null;
-      let worstScore = Infinity;
-      let worstDist = -1;
-      for (const key of keys) {
-        const t = tiles.find((x) => x.key === key);
-        if (!t) {
-          delete reczne[key];
-          excess--;
-          continue;
-        }
-        const s = tileScore(yieldOf(t.q, t.r), wagi);
-        if (s < worstScore || s === worstScore && t.dist > worstDist) {
-          worstScore = s;
-          worstDist = t.dist;
-          worstKey = key;
-        }
-      }
-      if (worstKey) delete reczne[worstKey];
-      excess--;
-    }
-    city.okolicaReczne = reczne;
+  return { procentPieniadz: p, procentNauka: n, procentLuksus: l };
+}
+var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
+
+// src/game/empire-handel-split.ts
+function resolveCityPodzialHandlu(city, ownerDefault, paramsFallback) {
+  if (city.podzialHandluOverride && city.podzialHandlu) {
+    return normalizePodzialHandlu(city.podzialHandlu);
   }
+  if (ownerDefault) {
+    return normalizePodzialHandlu(ownerDefault);
+  }
+  if (city.podzialHandlu) {
+    return normalizePodzialHandlu(city.podzialHandlu);
+  }
+  return normalizePodzialHandlu(paramsFallback ?? DEFAULT_PODZIAL_HANDLU);
+}
+
+// src/game/converters.ts
+function loadThroughput(raw, paramKey, difficulty, fallback) {
+  const bu = raw.budynki ?? {};
+  const row = bu[paramKey];
+  const v = row ? row[difficulty] : void 0;
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+var DEFAULT_CONVERTER_RECIPES = [
+  { id: "cegielnia", inputs: { glina: 2, drewno: 1 }, output: "cegla", outputAmount: 1, throughputParamKey: "budynek_cegielnia_przepustowosc", throughputFallback: 3 },
+  { id: "garncarnia", inputs: { glina: 1, drewno: 1 }, output: "ceramika", outputAmount: 1, throughputParamKey: "budynek_garncarnia_przepustowosc", throughputFallback: 6 },
+  // 'mielerz' USUNIĘTY (Maciej 2026-07-23): Paliwo usunięte całkowicie; konwertery biorą drewno 1:1.
+  { id: "huta", inputs: { ruda: 1, drewno: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
+  { id: "odlewnia_brazu", inputs: { ruda: 1, drewno: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
+  { id: "odlewnia_zelaza__braz", buildingId: "odlewnia_zelaza", inputs: { ruda: 1, drewno: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
+  { id: "odlewnia_zelaza__zelazo", buildingId: "odlewnia_zelaza", inputs: { ruda_zelaza: 1, drewno: 1 }, output: "zelazo", outputAmount: 1, throughputParamKey: "budynek_odlewnia_zelaza_przepustowosc", throughputFallback: 1 },
+  { id: "wielka_odlewnia__braz", buildingId: "wielka_odlewnia", inputs: { ruda: 1, drewno: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
+  { id: "wielka_odlewnia__zelazo", buildingId: "wielka_odlewnia", inputs: { ruda_zelaza: 1, drewno: 1 }, output: "zelazo", outputAmount: 1, throughputParamKey: "budynek_odlewnia_zelaza_przepustowosc", throughputFallback: 1 },
+  { id: "wielka_odlewnia__stal", buildingId: "wielka_odlewnia", inputs: { zelazo: 1, drewno: 1 }, output: "stal", outputAmount: 1, throughputParamKey: "budynek_wielka_odlewnia_przepustowosc", throughputFallback: 1 }
+];
+function runConverter(recipe, stores, throughput, outputCapacity) {
+  const have = (k) => {
+    const v = stores[k];
+    return typeof v === "number" && Number.isFinite(v) ? v : 0;
+  };
+  const tput = Number.isFinite(throughput) && throughput > 0 ? Math.floor(throughput) : 0;
+  let limitWejscia = Infinity;
+  for (const k of Object.keys(recipe.inputs)) {
+    const perCykl = recipe.inputs[k];
+    if (perCykl === void 0 || perCykl <= 0) continue;
+    limitWejscia = Math.min(limitWejscia, Math.floor(have(k) / perCykl));
+  }
+  if (!Number.isFinite(limitWejscia)) limitWejscia = 0;
+  const wolne = Math.max(0, outputCapacity - have(recipe.output));
+  const limitWyjscia = recipe.outputAmount > 0 ? Math.floor(wolne / recipe.outputAmount) : 0;
+  const cykle = Math.max(0, Math.min(tput, limitWejscia, limitWyjscia));
+  const nowe = { ...stores };
+  const consumed = {};
+  if (cykle > 0) {
+    for (const k of Object.keys(recipe.inputs)) {
+      const used = (recipe.inputs[k] ?? 0) * cykle;
+      nowe[k] = have(k) - used;
+      consumed[k] = used;
+    }
+    nowe[recipe.output] = have(recipe.output) + recipe.outputAmount * cykle;
+  }
+  let reason = "ok";
+  if (cykle === 0) {
+    if (tput === 0) reason = "zero-przepustowosci";
+    else if (limitWejscia === 0) reason = "brak-wejscia";
+    else if (limitWyjscia === 0) reason = "pelny-magazyn";
+    else reason = "brak-wejscia";
+  }
+  return { produced: cykle * recipe.outputAmount, cykle, consumed, stores: nowe, reason };
+}
+function converterBuildingIdForRecipe(recipe) {
+  return recipe.buildingId ?? recipe.id;
+}
+function computeGarncarniaSurplusBonus(input) {
+  const nadwyzka = input.maGarncarnie ? Math.max(0, Math.floor(input.ceramikaPoDrainSpichlerza)) : 0;
+  if (nadwyzka <= 0) {
+    return { zdrowieBonus: 0, zadowolenieBonus: 0, nadwyzkaSztuk: 0 };
+  }
+  const efekt = input.efekt ?? "zdrowie";
+  const zdrowieNaSztuke = input.zdrowieNaSztuke ?? 1;
+  const zadowolenieNaSztuke = input.zadowolenieNaSztuke ?? 0;
+  if (efekt === "zadowolenie") {
+    return {
+      zdrowieBonus: 0,
+      zadowolenieBonus: nadwyzka * zadowolenieNaSztuke,
+      nadwyzkaSztuk: nadwyzka
+    };
+  }
+  return {
+    zdrowieBonus: nadwyzka * zdrowieNaSztuke,
+    zadowolenieBonus: 0,
+    nadwyzkaSztuk: nadwyzka
+  };
+}
+function runConverters(recipes, stores, throughputs, capacityOf) {
+  let cur = { ...stores };
+  const perBuilding = {};
+  for (const recipe of recipes) {
+    const tputKey = recipe.id;
+    const tput = Object.prototype.hasOwnProperty.call(throughputs, tputKey) ? throughputs[tputKey] ?? recipe.throughputFallback : recipe.throughputFallback;
+    const res = runConverter(recipe, cur, tput, capacityOf(recipe.output));
+    cur = res.stores;
+    perBuilding[recipe.id] = res;
+  }
+  return { stores: cur, perBuilding };
 }
 
 // src/game/order.ts
@@ -3127,6 +6012,7 @@ function loadHealthParams(raw, difficulty) {
     akwedukt: rd("zdrowie_akwedukt", 4),
     studnia: rd("zdrowie_studnia", 2),
     targowisko: rd("zdrowie_targowisko", 2),
+    lazniaPubliczna: rd("zdrowie_laznia_publiczna", 5),
     ceramika: rd("zdrowie_ceramika", 1),
     osiedlePopBonus: (pop) => {
       const legacy = pop <= progZagoszczenia ? legacyMaleMiasto : 0;
@@ -3162,7 +6048,7 @@ function cityHasWaterAccess(city, map) {
   }
   return hexHasRiver(city.q, city.r);
 }
-function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess, mapCtx) {
+function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess, mapCtx, spichlerzZdrowieBonus = 0, garncarniaSurplusZdrowie = 0) {
   let z = 0;
   let maRzeke = hasWaterAccess === true;
   if (hasWaterAccess === void 0) {
@@ -3176,12 +6062,12 @@ function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess, mapCtx)
   const maStudnie = builtIds.includes("studnia");
   const maTargowisko = builtIds.includes("targowisko");
   const maAkwedukt = builtIds.includes("akwedukt");
-  const maCeramike = builtIds.includes("garncarnia");
+  const maLaznia = builtIds.includes("laznia_publiczna");
   if (maRzeke) z += hp.rzeka;
   if (maAkwedukt) z += hp.akwedukt;
   if (maStudnie) z += hp.studnia;
   if (maTargowisko) z += hp.targowisko;
-  if (maCeramike) z += hp.ceramika;
+  if (maLaznia) z += hp.lazniaPubliczna;
   const osiedleV = hp.osiedlePopBonus(ludnosc);
   if (osiedleV) z += osiedleV;
   if (ludnosc > hp.progZagoszczenia) {
@@ -3193,6 +6079,8 @@ function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess, mapCtx)
     if (vicinity.hasLas) z += hp.bonusLas;
     if (vicinity.hasBagno) z += hp.karaBagno;
   }
+  if (spichlerzZdrowieBonus) z += spichlerzZdrowieBonus;
+  if (garncarniaSurplusZdrowie) z += garncarniaSurplusZdrowie;
   return Math.round(z);
 }
 var HEX_NEIGHBORS = [
@@ -3279,6 +6167,26 @@ function computeTerritoryResourceYieldByCity(cities, map, territoryNodes) {
   }
   return out;
 }
+function stolarniaDrewnoMapInflowMult(stolarniaCount, bonusPerBuilding) {
+  const n = Math.max(0, Math.floor(stolarniaCount));
+  return 1 + bonusPerBuilding * n;
+}
+function applyStolarniaDrewnoMapInflow(baseDrewno, stolarniaCount, bonusPerBuilding) {
+  if (!Number.isFinite(baseDrewno) || baseDrewno <= 0) return 0;
+  return Math.floor(baseDrewno * stolarniaDrewnoMapInflowMult(stolarniaCount, bonusPerBuilding));
+}
+function computeWorkedDrewnoByCity(cities, map, territoryNodes) {
+  const out = /* @__PURE__ */ new Map();
+  for (const city of cities) {
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodes);
+    let sum = 0;
+    for (const tile of worked) {
+      sum += tileYield(tile).drewno;
+    }
+    if (sum > 0) out.set(city.id, sum);
+  }
+  return out;
+}
 function countResourceUpkeepImprovementsByOwner(map, territoryNodes) {
   const out = /* @__PURE__ */ new Map();
   for (const hexKey of Object.keys(map.hexes)) {
@@ -3309,7 +6217,12 @@ function computePracaUpkeepByOwner(map, territoryNodes, data2, difficulty) {
   for (const [owner, n] of counts) out.set(owner, n * cost);
   return out;
 }
-function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
+function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}, ownerDefaultPodzial) {
+  const paramsFallback = {
+    procentNauka: params.suwaakHandelNaukaDefault,
+    procentPieniadz: params.suwaakHandelPieniadz,
+    procentLuksus: params.suwaakHandelLuksus
+  };
   return {
     id: city.id,
     ludnosc: city.population,
@@ -3321,11 +6234,7 @@ function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
     magazynZywnosci: readCityFoodBufferFromCity(city),
     specjalisci: [],
     kolejkaProdukcji: [],
-    podzia\u0142Handlu: normalizePodzialHandlu(city.podzialHandlu ?? {
-      procentNauka: params.suwaakHandelNaukaDefault,
-      procentPieniadz: params.suwaakHandelPieniadz,
-      procentLuksus: params.suwaakHandelLuksus
-    }),
+    podzia\u0142Handlu: resolveCityPodzialHandlu(city, ownerDefaultPodzial, paramsFallback),
     podzia\u0142Pracy: city.podzialPracy ?? {
       procentBudynki: params.suwaakPracaBudynki
     }
@@ -3334,18 +6243,176 @@ function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
 function readCityFoodBufferFromCity(city) {
   return readCityFoodBuffer(city.magazynZywnosci);
 }
-function growthFoodThreshold(population, params, pace = "wysoki", ownerId = 0, difficulty = "normal") {
-  const base = 20 + population * params.progWzrostuWspolczynnik;
-  return applyPopulationGrowthThreshold(base, ownerId, pace, difficulty);
-}
-function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pace = "wysoki", ownerId = 0, difficulty = "normal") {
-  const base = foodStorageCapacity(maSpichlerz, storageParams);
-  return Math.max(base, growthFoodThreshold(population, params, pace, ownerId, difficulty));
-}
 function getCityFood(city) {
   return readCityFoodBufferFromCity(city);
 }
-function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map(), resolveOwnerZlotoAccess = () => true) {
+var _spichlerzSolArmyByOwner = /* @__PURE__ */ new Map();
+var _spichlerzSolCityIdsByOwner = /* @__PURE__ */ new Map();
+function spichlerzSolArmyBonusActive(ownerId) {
+  return _spichlerzSolArmyByOwner.get(ownerId) ?? false;
+}
+function spichlerzSolPayingCityIds(ownerId) {
+  return _spichlerzSolCityIdsByOwner.get(ownerId) ?? /* @__PURE__ */ new Set();
+}
+function militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable = {}, opts) {
+  const solArmy = opts?.solArmyOverride ?? spichlerzSolArmyBonusActive(ownerId);
+  const solCities = opts?.solCityIdsOverride ?? spichlerzSolPayingCityIds(ownerId);
+  let sum = 0;
+  for (const u of units) {
+    if (u.ownerId !== ownerId) continue;
+    const base = unitFoodPerTurn(u, upkeep, foodTable);
+    const mult = spichlerzArmyFoodCostMultiplier({
+      solArmyBonusActive: solArmy,
+      onOwnTerritory: u.onOwnTerritory ?? true,
+      isGarrisonInSolCity: !!(u.inGarnizon && u.garrisonCityId && solCities.has(u.garrisonCityId))
+    });
+    sum += base * mult;
+  }
+  return sum;
+}
+function simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity) {
+  let ceramika = ownerResourceStock(cities, ownerId, "ceramika");
+  for (const city of cities) {
+    if (city.ownerId !== ownerId) continue;
+    const builtIds = builtByCity.get(city.id) ?? [];
+    const hasSpichlerz = builtIds.includes("spichlerz") || builtIds.includes("spichlerz_ii");
+    if (hasSpichlerz && ceramika >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN) {
+      ceramika -= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
+    }
+  }
+  return ceramika;
+}
+function computeGarncarniaSurplusZdrowieByOwner(cities, builtByCity, hp, stockAlreadyDrained = false) {
+  const out = /* @__PURE__ */ new Map();
+  const ownerIds = new Set(cities.map((c) => c.ownerId));
+  for (const ownerId of ownerIds) {
+    let maGarncarnie = false;
+    for (const city of cities) {
+      if (city.ownerId !== ownerId) continue;
+      if ((builtByCity.get(city.id) ?? []).includes("garncarnia")) {
+        maGarncarnie = true;
+        break;
+      }
+    }
+    const ceramikaAfter = stockAlreadyDrained ? ownerResourceStock(cities, ownerId, "ceramika") : simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity);
+    const { zdrowieBonus } = computeGarncarniaSurplusBonus({
+      ceramikaPoDrainSpichlerza: ceramikaAfter,
+      maGarncarnie,
+      zdrowieNaSztuke: hp.ceramika
+    });
+    out.set(ownerId, zdrowieBonus);
+  }
+  return out;
+}
+function computeCityFoodBalanceV85(zywnoscBrutto, population, city, rationParams) {
+  const poziomRacji = getCityRationLevel(city);
+  const kosztRacji = computeCityRationCost(population, poziomRacji, rationParams);
+  return {
+    kosztRacji,
+    bilansLokalny: zywnoscBrutto - kosztRacji,
+    poziomRacji
+  };
+}
+function runtimeActiveBuiltIdsForCity(builtIds, ownerId, resolveOwnerActiveLabels, resolveOwnerEmpireStock, resolveOwnerZlotoAccess, empireStockOverride) {
+  if (!resolveOwnerActiveLabels) return builtIds;
+  const gateOptions = {
+    ownerId,
+    resolveOwnerZlotoAccess
+  };
+  return filterRuntimeActiveBuiltIds(
+    builtIds,
+    resolveOwnerActiveLabels(ownerId),
+    empireStockOverride ?? resolveOwnerEmpireStock?.(ownerId),
+    gateOptions
+  );
+}
+function tickEmpireResourcePipeline(cities, builtByCity, territoryResourceByCity, workedDrewnoByCity, stolarniaCountByOwner, kamieniarskiCountByOwner, stolarniaBonusDrewnaCiv, kamieniarskiBonusKamieniaCiv, converterThroughputs, ownerResourceCapFor, resolveOwnerActiveLabels, resolveOwnerZlotoAccess) {
+  const ownerIds = new Set(cities.map((c) => c.ownerId));
+  for (const city of cities) {
+    const terrYield = territoryResourceByCity.get(city.id);
+    const ownerId = city.ownerId;
+    const cap = ownerResourceCapFor(ownerId);
+    const stolarniaCount = stolarniaCountByOwner.get(ownerId) ?? 0;
+    const kamienMult = 1 + kamieniarskiBonusKamieniaCiv * (kamieniarskiCountByOwner.get(ownerId) ?? 0);
+    const creditTerritory = (key, raw, mult = 1) => {
+      if (raw == null || !(raw > 0)) return;
+      creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw * mult), cap);
+    };
+    const drewnoMapBase = (terrYield?.drewno ?? 0) + (workedDrewnoByCity.get(city.id) ?? 0);
+    const drewnoCredit = applyStolarniaDrewnoMapInflow(
+      drewnoMapBase,
+      stolarniaCount,
+      stolarniaBonusDrewnaCiv
+    );
+    if (drewnoCredit > 0) {
+      creditOwnerResourceStock(cities, ownerId, "drewno", drewnoCredit, cap);
+    }
+    if (!terrYield) continue;
+    creditTerritory("kamien", terrYield.kamien, kamienMult);
+    creditTerritory("glina", terrYield.glina);
+    creditTerritory("ruda", terrYield.ruda);
+    creditTerritory("ruda_zelaza", terrYield.ruda_zelaza);
+    creditTerritory("sol", terrYield.sol);
+    creditTerritory("zloto", terrYield.zloto);
+    creditTerritory("kon", terrYield.kon);
+  }
+  for (const ownerId of ownerIds) {
+    const cap = ownerResourceCapFor(ownerId);
+    let pool = { ...ownerResourceStockAll(cities, ownerId) };
+    for (const city of cities) {
+      if (city.ownerId !== ownerId) continue;
+      const builtIds = builtByCity.get(city.id) ?? [];
+      const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
+        builtIds,
+        ownerId,
+        resolveOwnerActiveLabels,
+        void 0,
+        resolveOwnerZlotoAccess,
+        pool
+      );
+      const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter(
+        (r) => runtimeBuiltIds.includes(converterBuildingIdForRecipe(r))
+      );
+      if (activeRecipes.length === 0) continue;
+      const convResult = runConverters(
+        activeRecipes,
+        pool,
+        converterThroughputs,
+        () => cap
+      );
+      pool = convResult.stores;
+    }
+    assignOwnerResourceStockFromPool(cities, ownerId, pool);
+  }
+  const spichlerzByCity = /* @__PURE__ */ new Map();
+  _spichlerzSolArmyByOwner.clear();
+  _spichlerzSolCityIdsByOwner.clear();
+  for (const city of cities) {
+    const builtIds = builtByCity.get(city.id) ?? [];
+    const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false);
+    const state = resolveSpichlerzCityBonusState(builtIds, drain);
+    spichlerzByCity.set(city.id, state);
+    if (state.solActive) {
+      _spichlerzSolArmyByOwner.set(city.ownerId, true);
+      const prev = new Set(_spichlerzSolCityIdsByOwner.get(city.ownerId) ?? []);
+      prev.add(city.id);
+      _spichlerzSolCityIdsByOwner.set(city.ownerId, prev);
+    }
+  }
+  return spichlerzByCity;
+}
+function applyMennicaZlotoDrainForOwners(cities, mennicaOwners, resolveOwnerTech, playerZbadane, resolveOwnerZlotoAccess) {
+  for (const ownerId of mennicaOwners) {
+    const ownerTech = resolveOwnerTech ? resolveOwnerTech(ownerId) : playerZbadane;
+    const walutaOdkryta = ownerTech.has("Waluta") || ownerTech.has("waluta");
+    if (!walutaOdkryta) continue;
+    if (!resolveOwnerZlotoAccess(ownerId)) continue;
+    const pool = ownerResourceStockAll(cities, ownerId);
+    if (empireZlotoStock(pool) < MENNICA_ZLOTO_DRAIN_PER_TURN) continue;
+    assignOwnerResourceStockFromPool(cities, ownerId, deductMennicaZlotoDrain(pool));
+  }
+}
+function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map(), resolveOwnerZlotoAccess = () => true, resolveOwnerActiveLabels, resolveOwnerEmpireStock, ownerDefaultPodzialHandluByOwner = /* @__PURE__ */ new Map(), manpowerHeal) {
   const gameDifficulty = difficulty;
   const params = buildEconParams(data2, difficulty);
   const buildingCatalog = data2.buildings;
@@ -3356,6 +6423,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
   const rawEconParams = data2.econParams;
   const upkeepParams = loadUpkeepParams(rawEconParams, difficulty);
   const storageParams = loadStorageParams(rawEconParams, difficulty);
+  const rationParams = buildRationParams(rawEconParams, difficulty);
   const unitUpkeepTbl = buildUnitUpkeepTable(data2.units);
   const rawForConverters = data2.econParams;
   const converterThroughputs = {};
@@ -3384,10 +6452,17 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
   const magazynCountByOwner = /* @__PURE__ */ new Map();
   for (const c of cities) {
     const bIds = builtByCity.get(c.id) ?? [];
-    if (bIds.includes("stolarnia")) {
+    const runtimeBIds = runtimeActiveBuiltIdsForCity(
+      bIds,
+      c.ownerId,
+      resolveOwnerActiveLabels,
+      resolveOwnerEmpireStock,
+      resolveOwnerZlotoAccess
+    );
+    if (runtimeBIds.includes("stolarnia")) {
       stolarniaCountByOwner.set(c.ownerId, (stolarniaCountByOwner.get(c.ownerId) ?? 0) + 1);
     }
-    if (bIds.includes("kamieniarski")) {
+    if (runtimeBIds.includes("kamieniarski")) {
       kamieniarskiCountByOwner.set(c.ownerId, (kamieniarskiCountByOwner.get(c.ownerId) ?? 0) + 1);
     }
     if (bIds.includes("magazyn")) {
@@ -3437,18 +6512,65 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     pracaUpkeepByOwner
   };
   const incomeByOwner = /* @__PURE__ */ new Map();
+  const workedDrewnoByCity = computeWorkedDrewnoByCity(cities, map, territoryNodes);
+  const spichlerzByCity = tickEmpireResourcePipeline(
+    cities,
+    builtByCity,
+    territoryResourceByCity,
+    workedDrewnoByCity,
+    stolarniaCountByOwner,
+    kamieniarskiCountByOwner,
+    stolarniaBonusDrewnaCiv,
+    kamieniarskiBonusKamieniaCiv,
+    converterThroughputs,
+    ownerResourceCapFor,
+    resolveOwnerActiveLabels,
+    resolveOwnerZlotoAccess
+  );
+  const garncarniaSurplusZdrowieByOwner = computeGarncarniaSurplusZdrowieByOwner(
+    cities,
+    builtByCity,
+    healthParams,
+    true
+  );
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
     const worked = cityWorkedTilesForEconomy(city, map, territoryNodes);
     const builtIds = builtByCity.get(city.id) ?? [];
+    const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
+      builtIds,
+      city.ownerId,
+      resolveOwnerActiveLabels,
+      resolveOwnerEmpireStock,
+      resolveOwnerZlotoAccess
+    );
+    const spichlerzState = spichlerzByCity.get(city.id) ?? resolveSpichlerzCityBonusState(builtIds, { ceramikaPaid: false, solPaid: false });
     const hasWater = cityHasWaterAccess(city, map);
-    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
-    const maSpichlerzII = builtIds.includes("spichlerz_ii");
-    const maSpichlerz = maSpichlerzII || builtIds.includes("spichlerz");
-    const maAkwedukt = builtIds.includes("akwedukt");
-    const pctRozwoj = getCityFoodSplit(city);
-    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maSpichlerzII, maAkwedukt });
+    const garncarniaZdrowie = runtimeBuiltIds.includes("garncarnia") ? garncarniaSurplusZdrowieByOwner.get(city.ownerId) ?? 0 : 0;
+    const zdrowie = computeCityHealth(
+      city.population,
+      worked,
+      runtimeBuiltIds,
+      healthParams,
+      hasWater,
+      { city, map },
+      spichlerzHealthBonus(spichlerzState),
+      garncarniaZdrowie
+    );
+    const maSpichlerzII = spichlerzState.maSpichlerzIIPop;
+    const maSpichlerz = spichlerzState.maSpichlerzPop;
+    const maAkwedukt = runtimeBuiltIds.includes("akwedukt");
+    const poziomRacji = getCityRationLevel(city);
+    const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
+    const econCity = toEconomyCity(
+      city,
+      params,
+      isCapital,
+      zdrowie,
+      { maSpichlerz, maSpichlerzII, maAkwedukt },
+      ownerDefaultPodzial
+    );
     const ownerEra = resolveOwnerEra ? resolveOwnerEra(city.ownerId) : city.ownerId === 0 ? playerEra : 1;
     const ownerTech = resolveOwnerTech ? resolveOwnerTech(city.ownerId) : playerZbadane;
     const walutaOdkryta = ownerTech.has("Waluta") || ownerTech.has("waluta");
@@ -3479,11 +6601,11 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       wojskoZuzycieZywnosci: 0,
       // B5: wojsko → zapasy państwa (advanceEmpireFood)
       strataFraction,
-      maMlyn: builtIds.includes("mlyn"),
-      maCegielnia: builtIds.includes("cegielnia"),
-      maTargowisko: builtIds.includes("targowisko"),
-      maBiblioteka: builtIds.includes("biblioteka"),
-      maAkademia: builtIds.includes("akademia"),
+      maMlyn: runtimeBuiltIds.includes("mlyn"),
+      maCegielnia: runtimeBuiltIds.includes("cegielnia"),
+      maTargowisko: runtimeBuiltIds.includes("targowisko"),
+      maBiblioteka: runtimeBuiltIds.includes("biblioteka"),
+      maAkademia: runtimeBuiltIds.includes("akademia"),
       // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
       // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
       // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
@@ -3505,13 +6627,17 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych,
       // Handel E3: +5%/trasa
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
-      liczbaGarncarni: builtIds.filter((id) => id === "garncarnia").length
+      liczbaGarncarni: runtimeBuiltIds.filter((id) => id === "garncarnia").length
     };
-    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const yieldBuiltIds = builtIdsForSpichlerzYields(runtimeBuiltIds, spichlerzState);
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(yieldBuiltIds, buildingCatalog, ownerEra, ownerTech);
     const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
+    const zywnoscBrutto = yld.zywnoscBrutto;
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams);
+    yld.zywnosc = foodBal.bilansLokalny;
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
     const prevWealth = city.wealthState ?? freshWealthState();
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
@@ -3576,7 +6702,13 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
         magazynPoTurze,
         maSpichlerz,
         maSpichlerzII,
-        procentRozwoj: pctRozwoj
+        spichlerzCeramika: spichlerzState.ceramikaActive,
+        spichlerzSol: spichlerzState.solActive,
+        procentRozwoj: poziomRacji * 33,
+        zywnoscBrutto: 0,
+        kosztRacji: 0,
+        bilansLokalny: 0,
+        poziomRacji
       };
       result.perCity.push(tick2);
       incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + tick2.pieniadz);
@@ -3590,28 +6722,21 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       result.totalPracaPula += doPuli;
       continue;
     }
-    const surplus = Math.max(0, yld.zywnosc) * (pctRozwoj / 100);
-    const deficit = Math.min(0, yld.zywnosc);
-    const zywnoscDoRozwoju = surplus + deficit;
-    const growthMult = growthMultByCity.get(city.id) ?? 1;
-    const zywnoscDlaWzrostu = growthMult !== 1 ? zywnoscDoRozwoju * growthMult : zywnoscDoRozwoju;
-    const wzrostThresholdMult = getPopulationGrowthThresholdMultiplier(
-      city.ownerId,
-      wzrostLudnosciPace,
-      gameDifficulty
-    );
-    const grow = populationGrowth(econCity, zywnoscDlaWzrostu, params, wzrostThresholdMult);
     const before = city.population;
-    city.population = grow.nowaLudnosc;
-    if (grow.nowaLudnosc !== before) {
-      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc, territoryNodes);
-    }
+    const growthPreview = computeGrowthPercentV85({
+      population: city.population,
+      poziomRacji: foodBal.poziomRacji,
+      zdrowie,
+      szczescieNetto: 0,
+      wealthPoziom: wt.poziom,
+      spichlerzState,
+      civKey: ownerCivKey ?? null,
+      rationParams
+    });
     const ownerEpoka = ownerEra;
     const mpMults = civManpowerMults(ownerBonusy);
     if (city.manpower === void 0) {
       city.manpower = cityManpowerMax(city.population, ownerEpoka, mpMults.maxMult);
-    } else if (grow.nowaLudnosc !== before) {
-      city.manpower = refreshManpowerAfterPopChange(city, ownerEpoka, before, mpMults.maxMult);
     }
     city.manpower = tickManpowerRegen(
       city,
@@ -3620,53 +6745,22 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       mpMults.regenMult,
       mpMults.maxMult
     );
-    const foodCap = growthFoodStorageCap(
-      city.population,
-      maSpichlerz,
-      params,
-      storageParams,
-      wzrostLudnosciPace,
-      city.ownerId,
-      gameDifficulty
-    );
-    city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
-    magazynPoTurze = city.magazynZywnosci;
+    magazynPoTurze = city.wzrostUlamkowy ?? 0;
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
-    const resCap = ownerResourceCapFor(city.ownerId);
-    if (!city.surowce) city.surowce = {};
-    const citySurowce = city.surowce;
-    const terrYield = territoryResourceByCity.get(city.id);
-    const drewnoMultCiv = 1 + stolarniaBonusDrewnaCiv * (stolarniaCountByOwner.get(city.ownerId) ?? 0);
-    const kamienMultCiv = 1 + kamieniarskiBonusKamieniaCiv * (kamieniarskiCountByOwner.get(city.ownerId) ?? 0);
-    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + Math.floor((terrYield?.drewno ?? 0) * drewnoMultCiv));
-    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + Math.floor((terrYield?.kamien ?? 0) * kamienMultCiv));
-    citySurowce.glina = Math.min(resCap, (citySurowce.glina ?? 0) + (terrYield?.glina ?? 0));
-    citySurowce.ruda = Math.min(resCap, (citySurowce.ruda ?? 0) + (terrYield?.ruda ?? 0));
-    citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + (terrYield?.ruda_zelaza ?? 0));
-    const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter((r) => builtIds.includes(r.id));
-    if (activeRecipes.length > 0) {
-      const convResult = runConverters(
-        activeRecipes,
-        citySurowce,
-        converterThroughputs,
-        () => resCap
-      );
-      city.surowce = convResult.stores;
-    }
     const tick = {
       cityId: city.id,
       ownerId: city.ownerId,
       praca: yld.praca,
       pieniadz: pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto: yld.pieniadz,
-      zywnoscNetto: yld.zywnosc,
+      zywnoscNetto: foodBal.bilansLokalny,
       nauka: yld.nauka,
       luksus: yld.luksus,
       kultura: yld.kultura,
       ludnoscPrzed: before,
-      ludnoscPo: grow.nowaLudnosc,
-      wzrost: grow.wzrost,
-      ubytek: grow.ubytek,
+      ludnoscPo: before,
+      wzrost: false,
+      ubytek: false,
       zdrowie,
       doBudynkow,
       doPuli,
@@ -3679,7 +6773,15 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       magazynPoTurze,
       maSpichlerz,
       maSpichlerzII,
-      procentRozwoj: pctRozwoj
+      spichlerzCeramika: spichlerzState.ceramikaActive,
+      spichlerzSol: spichlerzState.solActive,
+      procentRozwoj: poziomRacji * 33,
+      zywnoscBrutto,
+      kosztRacji: foodBal.kosztRacji,
+      bilansLokalny: foodBal.bilansLokalny,
+      poziomRacji,
+      wzrostProcent: growthPreview.total,
+      wzrostUlamkowyPo: city.wzrostUlamkowy ?? 0
     };
     result.perCity.push(tick);
     result.cities += 1;
@@ -3688,11 +6790,16 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     result.totalNauka += yld.nauka;
     result.totalLuksus += yld.luksus;
     result.totalKultura += yld.kultura;
-    result.totalZywnosc += yld.zywnosc;
+    result.totalZywnosc += foodBal.bilansLokalny;
     result.totalPracaPula += doPuli;
-    if (grow.wzrost) result.growth += 1;
-    if (grow.ubytek) result.starved += 1;
   }
+  applyMennicaZlotoDrainForOwners(
+    cities,
+    mennicaOwners,
+    resolveOwnerTech,
+    playerZbadane,
+    resolveOwnerZlotoAccess
+  );
   reconcileOwnerResourceCaps(cities, ownerResourceCapFor);
   const ownerIds = /* @__PURE__ */ new Set([
     ...cities.map((c) => c.ownerId),
@@ -3725,7 +6832,189 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
   }
+  if (manpowerHeal) {
+    tickManpowerUnitReplenishment(
+      cities,
+      manpowerHeal.units,
+      difficulty,
+      resolveOwnerEra ?? ((oid) => oid === 0 ? playerEra : 1),
+      (oid) => {
+        const key = ownerCivByOwnerId.get(oid);
+        return key ? civBonusyForCivKey(key, data2.civs) : [];
+      },
+      manpowerHeal.getMaxHp
+    );
+  }
   return result;
+}
+
+// src/game/empire-food.ts
+function pick3(row, d, fallback) {
+  if (!row) return fallback;
+  const v = row[d];
+  return Number.isFinite(v) ? v : fallback;
+}
+function buildEmpireFoodParams(raw, difficulty = "normal") {
+  const em = raw.ekonomia_miasta ?? raw;
+  const gl = raw.globalne ?? raw;
+  return {
+    centralCapBaza: pick3(
+      gl.magazyn_centralny_baza_zywnosc ?? em.magazyn_centralny_baza_zywnosc,
+      difficulty,
+      500
+    ),
+    centralCapBonusMagazyn: pick3(
+      gl.magazyn_centralny_bonus_zywnosc_na_budynek ?? em.magazyn_centralny_bonus_zywnosc_na_budynek,
+      difficulty,
+      100
+    ),
+    glodWojskaHpFrac: pick3(em.glod_wojska_hp_frac, difficulty, 0.08),
+    glodWojskaKarencjaTur: pick3(em.glod_wojska_karencja_tur, difficulty, 3),
+    glodWojskaStatMult: pick3(em.glod_wojska_stat_mult, difficulty, 0.75),
+    rationParams: buildRationParams(raw, difficulty)
+  };
+}
+function freshEmpireFoodState(_procentRozwojDefault = 100) {
+  return { zapasyPanstwa: 0, turyUjemnychZapasow: 0 };
+}
+function countMagazynByOwner(perCity, builtByCity) {
+  const out = /* @__PURE__ */ new Map();
+  if (!builtByCity) return out;
+  const seen = /* @__PURE__ */ new Set();
+  for (const tick of perCity) {
+    if (seen.has(tick.cityId)) continue;
+    seen.add(tick.cityId);
+    if ((builtByCity.get(tick.cityId) ?? []).includes("magazyn")) {
+      out.set(tick.ownerId, (out.get(tick.ownerId) ?? 0) + 1);
+    }
+  }
+  return out;
+}
+function computeCentralFoodCap(ownerId, perCity, magazynCount, params) {
+  let spichlerzCap = 0;
+  for (const tick of perCity) {
+    if (tick.ownerId !== ownerId || tick.oblegany) continue;
+    if (tick.maSpichlerzII) spichlerzCap += SPICHLERZ_EMPIRE_CAP_II_FULL;
+    else if (tick.maSpichlerz) spichlerzCap += SPICHLERZ_EMPIRE_CAP_I;
+  }
+  return params.centralCapBaza + params.centralCapBonusMagazyn * magazynCount + spichlerzCap;
+}
+function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}, builtByCity) {
+  const magazynCountByOwner = countMagazynByOwner(econ.perCity, builtByCity);
+  const perOwner = [];
+  const byOwner = /* @__PURE__ */ new Map();
+  const ownerIds = /* @__PURE__ */ new Set([
+    ...econ.perCity.map((t) => t.ownerId),
+    ...states.keys(),
+    ...units.map((u) => u.ownerId)
+  ]);
+  for (const ownerId of ownerIds) {
+    const st = states.get(ownerId) ?? freshEmpireFoodState();
+    if (!states.has(ownerId)) states.set(ownerId, st);
+    const zapasyPrzed = st.zapasyPanstwa;
+    let central = zapasyPrzed;
+    let uprawaHodowla = 0;
+    let wyzwienieLudnosci = 0;
+    let pomocMiastom = 0;
+    const deficits = [];
+    const perCityRows = [];
+    const fedByCityId = /* @__PURE__ */ new Map();
+    for (const tick2 of econ.perCity) {
+      if (tick2.ownerId !== ownerId || tick2.oblegany) continue;
+      const produkcja = tick2.zywnoscBrutto ?? Math.max(0, tick2.zywnoscNetto + (tick2.kosztRacji ?? 0));
+      const kosztRacji = tick2.kosztRacji ?? 0;
+      const bilans = tick2.bilansLokalny ?? produkcja - kosztRacji;
+      uprawaHodowla += produkcja;
+      wyzwienieLudnosci += kosztRacji;
+      perCityRows.push({
+        cityId: tick2.cityId,
+        name: tick2.cityId,
+        produkcja,
+        kosztRacji,
+        bilans,
+        wzrostProcent: tick2.wzrostProcent ?? 0,
+        nakarmione: false
+      });
+      if (bilans >= 0) {
+        central += bilans;
+        fedByCityId.set(tick2.cityId, true);
+      } else {
+        deficits.push({ cityId: tick2.cityId, need: -bilans, name: tick2.cityId });
+      }
+    }
+    for (const d of deficits) {
+      const covered = Math.min(d.need, Math.max(0, central));
+      central -= covered;
+      pomocMiastom += covered;
+      const fed = covered >= d.need;
+      fedByCityId.set(d.cityId, fed);
+      const row = perCityRows.find((r) => r.cityId === d.cityId);
+      if (row) row.nakarmione = fed;
+    }
+    const nadwyzka = uprawaHodowla - wyzwienieLudnosci;
+    const spichlerzStolicy = central;
+    const kosztArmii = militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable);
+    central -= kosztArmii;
+    const przyrostZapasow = central - zapasyPrzed;
+    const maxCap = computeCentralFoodCap(
+      ownerId,
+      econ.perCity,
+      magazynCountByOwner.get(ownerId) ?? 0,
+      params
+    );
+    if (central > maxCap) central = maxCap;
+    if (central < 0) central = central;
+    st.zapasyPanstwa = central;
+    _maxCapByOwner.set(ownerId, maxCap);
+    const turyUjemnychZapasowPrzed = st.turyUjemnychZapasow ?? 0;
+    const turyUjemnychZapasowPo = central < 0 ? turyUjemnychZapasowPrzed + 1 : 0;
+    st.turyUjemnychZapasow = turyUjemnychZapasowPo;
+    const tick = {
+      ownerId,
+      uprawaHodowla,
+      wyzwienieLudnosci,
+      nadwyzka,
+      pomocMiastom,
+      spichlerzStolicy,
+      wojsko: kosztArmii,
+      przyrostZapasow,
+      zapasyPrzed,
+      zapasyPo: central,
+      maxCap,
+      kosztArmii,
+      glodWojska: central < 0,
+      turyUjemnychZapasowPo,
+      glodWojskaAtrycjaAktywna: turyUjemnychZapasowPo >= params.glodWojskaKarencjaTur,
+      zywnoscBrutto: uprawaHodowla,
+      doRozwoju: 0,
+      doPanstwa: nadwyzka,
+      perCityRows,
+      fedByCityId
+    };
+    perOwner.push(tick);
+    byOwner.set(ownerId, tick);
+  }
+  _setLastEmpireFoodTicks(byOwner);
+  return { perOwner, byOwner };
+}
+var _lastTicks = /* @__PURE__ */ new Map();
+var _statesRef = /* @__PURE__ */ new Map();
+var _maxCapByOwner = /* @__PURE__ */ new Map();
+function bindEmpireFoodRuntime(states) {
+  _statesRef = states;
+}
+function getEmpireFoodMaxCap(ownerId) {
+  return _maxCapByOwner.get(ownerId) ?? 0;
+}
+function isArmyStarving(ownerId) {
+  return _lastTicks.get(ownerId)?.glodWojskaAtrycjaAktywna ?? false;
+}
+function _setLastEmpireFoodTicks(ticks) {
+  _lastTicks = ticks;
+}
+function clearLastEmpireFoodTicks() {
+  _lastTicks = /* @__PURE__ */ new Map();
+  _maxCapByOwner = /* @__PURE__ */ new Map();
 }
 
 // src/game/army-starvation.ts
@@ -3756,12 +7045,7 @@ function applyArmyStarvationHpLoss(units, ownerId, hpFrac, getMaxHp) {
   bindEmpireFoodRuntime,
   buildEmpireFoodParams,
   clearLastEmpireFoodTicks,
-  computeEmpireFoodMaxCap,
-  computeEmpireFoodNetDelta,
-  computeEmpireFoodNetDeltaFromCityFoods,
   freshEmpireFoodState,
-  getCityFoodSplit,
   getEmpireFoodMaxCap,
-  getEmpireFoodSplit,
   isArmyStarving
 });
