@@ -30,7 +30,7 @@ Barbarzyńcy: ikona frakcji (jak w oryginalnej opcji A) — do doprecyzowania pr
 
 ## Uwaga techniczna
 
-Dziś `render/unitUpgradeBadges.ts` łączy obie ścieżki w **kropki przy podstawie** żetonu. Decyzja Macieja wymaga **osobnych ikon koszar/kuźnia** po bokach gwiazdek — przy wdrożeniu dostosować lub zastąpić obecny układ kropek (patrz `C-OBCE-JEDN-KARTA.md`).
+Wdrożone w FALI 43: osobne ikony koszar/kuźnia po bokach gwiazdek (`unitPathFlankBadges.ts`); kolory brąz/srebro/złoto per poziom ścieżki (`tintBuildingSvg` — naprawa złotego `#e8d88a` w SVG). Stare kropki u podstawy usunięte.
 
 ## Status wdrożenia
 
@@ -38,6 +38,6 @@ Dziś `render/unitUpgradeBadges.ts` łączy obie ścieżki w **kropki przy podst
 |------|------|
 | **Właściciel** | ✅ FALA 43 `33c49486` |
 | **Portret/sygnet po lewej** | ✅ `unitOwnerMedallion.ts` |
-| **Ikony koszar/kuźnia przy gwiazdkach** | ✅ `unitPathFlankBadges.ts` |
+| **Ikony koszar/kuźnia przy gwiazdkach** | ✅ `unitPathFlankBadges.ts` (brąz/srebro/złoto) |
 | **Generał u góry** | ⏸ poza zakresem |
-| **Deploy** | czeka `działaj` · render 3D → subagent Opus (`gra/src/render/**`) |
+| **Deploy** | ✅ FALA 43 · VERIFY OK · `gra-robocza/START.html` |

@@ -3,7 +3,7 @@
 > **Source of truth routingu.** Agent **nie zadaje** pytania spoza swojej Grupy.  
 > Format ABC: `docs/decyzje/DYSPOZYCJA-STALA.md` §2.
 
-**Ostatnia synchronizacja:** 2026-07-27 (odpowiedzi + kod vs deploy → `STATUS-WDROZEN-AGENT-2026-07-27.md`)
+**Ostatnia synchronizacja:** 2026-07-28 (FALA 41–44 → `STATUS-WDROZEN-AGENT-2026-07-28.md` · `STAN-PRACY-HANDOFF.md` §3a-6)
 
 ### Kolejka ABC 2026-07-27 — odpowiedzi Macieja (źródło: pliki per ID)
 
@@ -29,8 +29,9 @@
 | PYTANIE-22 | **B** (56) | ZAMKNIĘTE | `PYTANIE-22.md` |
 | PYTANIE-23 | **A+B** (57) | 🟢 WDROŻONA | `PYTANIE-23.md` |
 | C-OBCE-JEDN-Q1 | A | 🟢 ZAMKNIĘTE | `C-OBCE-JEDN-Q1.md` |
-| C-OBCE-JEDN-Q2 | TW | 🟢 ZAMKNIĘTE | `C-OBCE-JEDN-Q2.md` |
+| C-OBCE-JEDN-Q2 | TW | 🟢 WDROŻONA · FALA 43 | `C-OBCE-JEDN-Q2.md` |
 | C-OBCE-JEDN-Q3 | A+B+C | 🟢 ZAMKNIĘTE | `C-OBCE-JEDN-Q3.md` |
+| C-UPGRADE-TRIGGER | A | 🟢 WDROŻONA · FALA 44 | `C-UPGRADE-TRIGGER.md` |
 
 Indeks zbiorczy: **`docs/decyzje/ABC-KOLEJKA-OTWARTE-2026-07-27.md`** · **PYTAJ TYLKO O:** `docs/decyzje/AUDYT-PYTAJ-TYLKO-O-2026-07-27.md`
 

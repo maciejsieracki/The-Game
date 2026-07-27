@@ -86,6 +86,13 @@ Każdy parametr rozgrywki mieszka w Excelu w `panele-sterowania/`; `export-{a..e
 ---
 
 ## 5. ZALEGŁE WĄTKI Z WCZEŚNIEJSZYCH SESJI
+
+**Sesja 2026-07-27/28 (zdeployowane FALA 41–44, commit `65e3ddd`, md5 `95021308`):**
+- Spichlerz U-12/U-25B + Garncarnia R7-C (FALA 42)
+- C-OBCE-JEDN-Q2 żeton mapy — medalion + koszary/kuźnia (FALA 43)
+- **C-UPGRADE-TRIGGER** — bonus budynków wojskowych przy wejściu do miasta + toast (FALA 44); kumulacja nadal 1A (`C-UPGRADE-KUMULACJA`)
+- Pełny zapis: `STAN-PRACY-HANDOFF.md` §3a-6 · `docs/decyzje/STATUS-WDROZEN-AGENT-2026-07-28.md`
+
 Aktualna kolejka pracy jest w `STAN-PRACY-HANDOFF.md` §8. Poniżej starsze, wciąż otwarte tematy, żeby nie zginęły:
 
 **Wydajność / render**

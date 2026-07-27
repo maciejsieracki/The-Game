@@ -1,6 +1,6 @@
 # STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-07-27** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-07-28** · Projekt: Civ „The Game"
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -26,7 +26,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-27 (NAJNOWSZY):** deploy ROBOCZA **`2c3804da`** (FALA 33). Skrót łańcucha: FALA 29 `e0238cc8` → FALA 30 `d9f2c1fa` → FALA 31 `f694dcba` → FALA 32 `e7c0655d` → FALA 33 **`2c3804da`** (garnizon + kultura + B-LAW-Q1 + C-MAP-Q3). **Nowa gra** (Ctrl+F5) dla mapy klimatycznej. POLE-BITWY: pominięty (OneDrive lock). **Rejestr wersji:** [`dyspozycje/WERSJE.md`](dyspozycje/WERSJE.md).
+**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`95021308`** (FALA 44). Skrót łańcucha: FALA 41 `c1e7a596` → FALA 42 `6714d76f` → FALA 43 `33c49486` → FALA 44 **`95021308`** (bonus Kuźnia/Koszary przy wejściu do miasta + toast). Commit: `65e3ddd`. **Nowa gra** (Ctrl+F5). POLE-BITWY: bez zmian (`a5a60f15`). **Rejestr wersji:** [`dyspozycje/WERSJE.md`](dyspozycje/WERSJE.md) · **Kanał:** [`dyspozycje/_handoff/KANAL-PRACA.md`](dyspozycje/_handoff/KANAL-PRACA.md).
+
+**Poprzedni stan (2026-07-27):** deploy ROBOCZA **`2c3804da`** (FALA 33). Skrót łańcucha: FALA 29 `e0238cc8` → FALA 30 `d9f2c1fa` → FALA 31 `f694dcba` → FALA 32 `e7c0655d` → FALA 33 **`2c3804da`** (garnizon + kultura + B-LAW-Q1 + C-MAP-Q3).
 
 **Poprzedni stan (2026-07-24 — sesja surowce/UI/miasta-państwa):** deploy ROBOCZA **`8dc09b8a`** (FALA 6.2). Skrót: FALA 5→6.2 (surowce jednostek, magazyn 500, handel MP, portret MP=symbol kultury). Szczegóły w **sekcji 3a-3**.
 
@@ -184,7 +186,7 @@ wszystkich plikach, gdzie takie zasady żyją.
 
 ---
 
-### 3a-5. CO WESZŁO 2026-07-27 (sesja UI miasta / mapa / dyplomacja / Manpower — NAJNOWSZE)
+### 3a-5. CO WESZŁO 2026-07-27 (sesja UI miasta / mapa / dyplomacja / Manpower)
 
 Sesja lokalna (Windows), trzy deploye FALA 29→31, wszystkie VERIFY OK. POLE-BITWY: build pominięty przy każdym deployu (OneDrive lock). Pełny zapis problem→przyczyna→naprawa poniżej — format dla kolejnych agentów.
 
@@ -238,6 +240,38 @@ Sesja lokalna (Windows), trzy deploye FALA 29→31, wszystkie VERIFY OK. POLE-BI
 
 ---
 
+### 3a-6. CO WESZŁO 2026-07-27/28 (sesja ekonomia + żeton jednostki + bonus budynków — **NAJNOWSZE**)
+
+Sesja lokalna (Windows), cztery deploye FALA 41→44, wszystkie VERIFY OK. POLE-BITWY: bez zmian od FALA 41 follow-up (`a5a60f15`). Pełny zapis w `dyspozycje/WERSJE.md` + `KANAL-PRACA.md` + `docs/MACIEJ-GOTOWE.md`.
+
+#### Deploye
+
+| FALA | md5 | commit | Zakres |
+|------|-----|--------|--------|
+| **41** | `c1e7a596` | `68395cc` | PYTANIE-85: żywność ludności + podatek + ulepszenia panelu |
+| **42** | `6714d76f` | `36cc3c3` | Spichlerz U-12 (Zdrowie+wzrost %) + U-25B (racja ×0,75/×0,50) + Garncarnia R7-C (nadwyżka Ceramiki → Zadowolenie) |
+| **43** | `33c49486` | `d8beff0` | **C-OBCE-JEDN-Q2:** medalion właściciela (lewo) + ikony koszar/kuźnia przy gwiazdkach weterana (brąz/srebro/złoto); usunięte kropki u podstawy żetonu |
+| **44** | `95021308` | `65e3ddd` | **C-UPGRADE-TRIGGER:** bonus Kuźnia/Koszary **natychmiast** przy wejściu/przejściu przez heks własnego miasta + **toast** graczowi |
+
+#### Decyzja Macieja — kiedy nalicza się bonus budynków wojskowych (FALA 44)
+
+| Było | Jest |
+|------|------|
+| Koniec tury — jednostka stoi na heksie własnego miasta | **Każdy heks własnego miasta na ścieżce ruchu** (wejście lub przejście) |
+| Brak komunikatu | **Toast** graczowi po przyroście bonusu |
+| Kumulacja ze wszystkich miast | **Bez zmian** — nadal **najlepsze odwiedzone miasto** per ścieżka (`C-UPGRADE-KUMULACJA` **1A**) |
+| Bonus trwały | **Bez zmian** — `pancerzBonusProc` / `parametryBonusProc` |
+| Rekrutacja w mieście | Bonus przy narodzinach (bez dodatkowego toastu) |
+| AI | Ten sam mechanizm, **bez UI** (parytet) |
+
+**Dokumentacja:** [`docs/decyzje/C-UPGRADE-TRIGGER.md`](docs/decyzje/C-UPGRADE-TRIGGER.md) · [`docs/decyzje/C-UPGRADE-KUMULACJA.md`](docs/decyzje/C-UPGRADE-KUMULACJA.md) · [`docs/decyzje/C-OBCE-JEDN-Q2.md`](docs/decyzje/C-OBCE-JEDN-Q2.md)
+
+**Kod:** `unit-building-bonuses.ts` (`applyCityVisitBonusGain`, `formatBuildingBonusGainHint`) · `main.ts` (`applyCityVisitBonusesAlongPath`, `applyCityVisitBonusesAtHex` — ruch gracza, AI, zwiadowcy, snap End Turn) · test `unit-building-bonuses-test.cjs` **82/82**.
+
+**Bramki FALA 44:** tsc 0 · unit-building-bonuses 82/82 · VERIFY OK.
+
+---
+
 ## 4. ✅ CO WESZŁO W SESJI 2026-07-20 (szczegóły + decyzje)
 
 Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach — NIE pytaj o nie ponownie (§9).
@@ -259,7 +293,9 @@ Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach �
 
 ## 5. ⏳ W TRAKCIE
 
-**2026-07-27 — NIC NIE JEST W TOKU** po deployu FALA 31 `f694dcba`. Drzewo czyste, wszystkie tematy sesji F29–F31 zamknięte i zdeployowane. Otwarte pozycje to wyłącznie: pre-istniejący fail `logic-test` garnizon (207/208), testy generatora mapy (`relief-grid`, `fair-play-grid` — osobny agent), POLE-BITWY bundle (OneDrive lock). Nic nie blokuje nowych tematów z §8.
+**2026-07-28 — NIC NIE JEST W TOKU** po deployu FALA 44 `95021308` (commit `65e3ddd`, push na `origin/main`). Drzewo czyste (poza auto-eksportem czatów). Otwarte pozycje niezwiązane z tą sesją: testy generatora mapy (`relief-grid`, `fair-play-grid`), POLE-BITWY bundle (OneDrive lock przy publish). Nic nie blokuje nowych tematów z §8.
+
+*(poprzedni) **2026-07-27 — NIC NIE JEST W TOKU** po deployu FALA 31 `f694dcba`.
 
 *(historyczny) 2026-07-24 — NIC NIE JEST W TOKU po FALA 6.2 `8dc09b8a`.*
 

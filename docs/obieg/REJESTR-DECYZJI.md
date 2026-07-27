@@ -47,7 +47,8 @@
 | **C-UNIT-CARD-Q1** | 2026-07-27 | **C** — atak/obrona efektywne duże + baza małym | E | 🔵 **W TRAKCIE** | `unit-card-stats.ts` · `unitCardStatus.ts` | |
 | **C-UNIT-CARD-Q2** | 2026-07-27 | **A** — max HP efektywne na karcie + pasek | E | 🔵 **W TRAKCIE** | j.w. | |
 | **C-UNIT-CARD-Q3** | 2026-07-27 | **A** — osobny wiersz Pancerz efektywny (parytet AI) | E | 🔵 **W TRAKCIE** | j.w. | |
-| **C-OBCE-JEDN-Q2** | 2026-07-27 | **A** — medalion właściciela (lewo) + koszary/kuźnia przy gwiazdkach | C | 🟢 **WDROŻONA** | FALA 43 `33c49486` · `unitOwnerMedallion.ts` · `unitPathFlankBadges.ts` |
+| **C-OBCE-JEDN-Q2** | 2026-07-27 | **TW** — medalion właściciela (lewo) + koszary/kuźnia przy gwiazdkach (brąz/srebro/złoto) | C | 🟢 **WDROŻONA** | FALA 43 `33c49486` · `unitOwnerMedallion.ts` · `unitPathFlankBadges.ts` |
+| **C-UPGRADE-TRIGGER** | 2026-07-27 | **A** — bonus Kuźnia/Koszary przy **wejściu/przejściu** przez heks własnego miasta + toast graczowi (nie koniec tury) | C+F | 🟢 **WDROŻONA** | FALA 44 `95021308` · `unit-building-bonuses.ts` · `main.ts` · test 82/82 · `docs/decyzje/C-UPGRADE-TRIGGER.md` |
 | **C-WIAR-N4-AI** | 2026-07-27 | **B** — AI rzadko odmawia pomocy sojuszniczej gdy osłabione; N4 −15 | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `alliance-war-obligation.ts` 14/14 |
 | **C-WIAR-D4** | 2026-07-27 | **A** — Dźwignia 4: start Zaufania + `round(W/20)` per strona (dzielnik 20) | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `diplomacy-credibility.ts` · wiarygodnosc-test |
 | **C-WIAR-N1-UX** | 2026-07-27 | **A** — modal 3 opcje: wypowiedz / atak bez ostrzeżenia / anuluj + podgląd kar | D+E | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `showWarConsentModal` |
