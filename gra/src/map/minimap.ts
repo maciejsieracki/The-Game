@@ -82,6 +82,7 @@ const TEREN_KEY: Record<TerenBazowy, string> = {
   [TerenBazowy.Wybrzeze]: 'Wybrzeze',
   [TerenBazowy.Morze]: 'Morze',
   [TerenBazowy.Pustynia]: 'Pustynia',
+  [TerenBazowy.Polarny]: 'Polarny',
 };
 
 const DEFAULT_CITY_COLOR = '#ffd479';

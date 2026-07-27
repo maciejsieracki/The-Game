@@ -58,6 +58,14 @@ const city = { ownCultureShare: 0.3 };
 CS.onCityCapturedCulture(city, 1, 0);
 eq(city.ownCultureShare, 0.7, 'capture preserves pressure mix (1-prev)');
 
+// 1b. Ten sam okręg kulturowy (oba klucze typCywilizacji grecy) = pełna zgodność, bez mixu
+const cityGreek = { ownCultureShare: 0.35, kulturaOwnShare: 0.35 };
+CS.onCityCapturedCulture(cityGreek, 1, 2, {
+  civKeyForOwner: () => 'grecy',
+});
+eq(cityGreek.ownCultureShare, undefined, 'same circle capture clears ownCultureShare');
+eq(cityGreek.kulturaOwnShare, undefined, 'same circle capture clears kulturaOwnShare');
+
 // 2. isConquestUnstable
 eq(CS.isConquestUnstable(0, true), true, 'unstable: 0% culture + foreign religion');
 eq(CS.isConquestUnstable(0.6, true), false, 'stable culture share blocks unstable');

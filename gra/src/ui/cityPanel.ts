@@ -163,6 +163,11 @@ import {
   porPctBand,
   POR_BAND_LABELS,
 } from '../game/society-breakdown';
+import {
+  applyPostCaptureLawOverride,
+  isPostCaptureLawActive,
+  postCaptureLawBannerLabel,
+} from '../game/post-capture-law';
 import { stolicaEasyBonusActive } from '../game/society-inputs';
 import { cultureHappiness, loadCultureParams, loadReligionParams, FALLBACK_RELIGION_PARAMS } from '../game/culture-religion';
 import { resolveOwnCultureShare } from '../game/society-inputs';
@@ -1820,7 +1825,7 @@ function ensureStyles(): void {
 .civ-v-resource-bar.civ-v-resource-bar-w3{display:flex;align-items:center;justify-content:center;gap:0.65rem;
   padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
 .civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1280px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
-.civ-v-top-flank-row{display:flex;align-items:center;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:wrap;width:100%;}
+.civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:wrap;width:100%;}
 .civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.28rem 0.42rem;
   padding:0.28rem 0.7rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
@@ -1833,6 +1838,8 @@ function ensureStyles(): void {
 .civ-v-exit-bottom-row .civ-v-exit-foot-hint{font-size:0.58em;color:#8b97a8;text-align:center;white-space:nowrap;}
 .civ-v-w3-bar-spacer{display:none;}
 .civ-v-w3-chips-city{margin-left:0;flex:0 0 auto;width:fit-content;max-width:100%;min-width:0;}
+.civ-v-w3-city-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:0.12rem;
+  flex-shrink:0;min-width:0;max-width:100%;width:fit-content;}
 .civ-v-w3-city-badge{display:inline-flex;align-items:center;gap:0.55rem;padding:0.45rem 1.05rem 0.45rem 0.75rem;
   border-radius:24px;background:linear-gradient(180deg,#151b26,#0a0d14);border:1.5px solid #e8d88a;
   box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;max-width:100%;}
@@ -1904,7 +1911,7 @@ function ensureStyles(): void {
   white-space:nowrap;align-self:center;padding-right:0;line-height:1;flex-shrink:0;}
 .civ-v-res-head{display:flex;align-items:center;gap:0.55rem;justify-self:start;min-width:0;max-width:min(44vw,520px);}
 .civ-v-garrison-inline{display:flex;align-items:center;justify-content:center;gap:0.42rem;min-width:0;overflow-x:auto;scrollbar-width:none;
-  padding:0.1rem 0;-ms-overflow-style:none;width:100%;}
+  padding:0.1rem 0;-ms-overflow-style:none;width:auto;max-width:100%;text-align:center;align-self:center;}
 .civ-v-garrison-inline::-webkit-scrollbar{display:none;}
 .civ-v-garrison-label{display:inline-flex;align-items:center;gap:0.28em;font-size:0.82em;font-weight:700;color:var(--text);
   letter-spacing:0.03em;flex-shrink:0;white-space:nowrap;cursor:help;}
@@ -2413,7 +2420,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
     difficulty, gameTurn, city, allCities, 10, cfg.getCapitalCityId?.(city.ownerId) ?? null,
   );
 
-  const ordPct = evaluateOrderFromBreakdown(
+  const ordPctRaw = evaluateOrderFromBreakdown(
     {
       difficulty,
       era,
@@ -2446,8 +2453,12 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
     difficulty,
   );
 
+  const ordPct = isPostCaptureLawActive(city)
+    ? applyPostCaptureLawOverride(ordPctRaw, city, data.societyParams, difficulty)
+    : ordPctRaw;
+
   const grace = city.revoltGraceRemaining;
-  const revoltWarning = grace != null && grace > 0;
+  const revoltWarning = !isPostCaptureLawActive(city) && grace != null && grace > 0;
 
   return {
     state: {
@@ -2464,6 +2475,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       revoltGraceRemaining: grace ?? undefined,
       revoltWarning: revoltWarning || undefined,
       rebelState: city.rebelState,
+      postCaptureLawTurnsRemaining: city.postCaptureLawTurnsRemaining,
     },
     fromEngine: false,
   };
@@ -2511,6 +2523,14 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     });
   } else if (state.rebelState) {
     orderChips.push({ icon: cityPanelChipIcon('chip-death', 14), label: 'Rebelia', value: 'aktywna', cls: 'red' });
+  } else if (state.postCaptureLawTurnsRemaining != null && state.postCaptureLawTurnsRemaining > 0) {
+    orderChips.push({
+      icon: cityPanelChipIcon('chip-garrison', 14),
+      label: 'Prawo',
+      value: `${state.postCaptureLawTurnsRemaining} tur`,
+      cls: 'green',
+      title: postCaptureLawBannerLabel(city) ?? 'Bonus Prawa po podboju',
+    });
   }
   appendTabIndicators(mount, orderChips);
 
@@ -7388,11 +7408,13 @@ const TEREN_COL: Record<TerenBazowy, string> = {
   [TerenBazowy.Morze]: '#0d2236', [TerenBazowy.Wybrzeze]: '#14506a',
   [TerenBazowy.Laka]: '#243a24', [TerenBazowy.Rownina]: '#3f3815',
   [TerenBazowy.Pustynia]: '#4a3a18', [TerenBazowy.Wzgorza]: '#3a2f18', [TerenBazowy.Gory]: '#2e2e2e',
+  [TerenBazowy.Polarny]: '#d8e4f0',
 };
 const TEREN_LETTER: Record<TerenBazowy, string> = {
   [TerenBazowy.Morze]: '~', [TerenBazowy.Wybrzeze]: '~',
   [TerenBazowy.Laka]: 'Ł', [TerenBazowy.Rownina]: 'R',
   [TerenBazowy.Pustynia]: 'P', [TerenBazowy.Wzgorza]: 'W', [TerenBazowy.Gory]: 'G',
+  [TerenBazowy.Polarny]: '❄',
 };
 function hexDist(q1: number, r1: number, q2: number, r2: number): number {
   const dq = q2 - q1, dr = r2 - r1;
@@ -8407,6 +8429,7 @@ function renderCivResourceTopBar(
     `<div class="civ-v-top-stack">` +
     `<div class="civ-v-top-flank-row">` +
     `<div class="civ-v-w3-chips-flank civ-v-w3-chips-left">${flank.left}</div>` +
+    `<div class="civ-v-w3-city-col">` +
     `<div class="civ-v-w3-city-badge">` +
     `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-prev" ${navDis} title="Poprzednie miasto (←)" aria-label="Poprzednie miasto">‹</button>` +
     `<span class="civ-v-w3-city-name">${cityPanelTitle(city)}</span>` +
@@ -8414,9 +8437,10 @@ function renderCivResourceTopBar(
     `<span class="civ-v-w3-city-pop">${city.population}</span>` +
     capitalBadgeOrButtonHtml(city) +
     `</div>` +
+    `<div id="civ-v-garrison-row" class="civ-v-garrison-inline"></div>` +
+    `</div>` +
     `<div class="civ-v-w3-chips-flank civ-v-w3-chips-right">${flank.right}</div>` +
     `</div>` +
-    `<div id="civ-v-garrison-row" class="civ-v-garrison-inline"></div>` +
     `</div>`;
   mount.querySelector('#civ-v-city-prev')?.addEventListener('click', (e) => {
     e.preventDefault();

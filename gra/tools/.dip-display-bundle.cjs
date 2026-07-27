@@ -6501,7 +6501,8 @@ var DEFAULT_TERRAIN_COSTS = {
   ["wybrzeze" /* Wybrzeze */]: Infinity,
   ["wzgorza" /* Wzgorza */]: 2,
   ["gory" /* Gory */]: Infinity,
-  ["morze" /* Morze */]: Infinity
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 

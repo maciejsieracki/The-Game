@@ -34,6 +34,38 @@ function isInOval(nx, ny) {
   return dx * dx + dy * dy <= 0.46;
 }
 
+/** C-MAP-Q3c: Antarktyda wyłączona — ląd redystrybuowany przez dilatację. */
+function isAntarctica(nx, ny) {
+  if (ny < 0.72) return false;
+  const dx = (nx - 0.52) * 2.2;
+  const dy = (ny - 0.855) * 4.5;
+  return dx * dx + dy * dy <= 1;
+}
+
+function dilateLandGrid(grid, w, h, iterations) {
+  let cur = grid.map((row) => row.split(''));
+  for (let iter = 0; iter < iterations; iter++) {
+    const next = cur.map((row) => row.slice());
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        if (cur[y][x] === '1') continue;
+        const nx = x / (w - 1);
+        const ny = y / (h - 1);
+        if (isAntarctica(nx, ny)) continue;
+        let adj = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (cur[y + dy][x + dx] === '1') adj++;
+          }
+        }
+        if (adj >= 4) next[y][x] = '1';
+      }
+    }
+    cur = next;
+  }
+  return cur.map((row) => row.join(''));
+}
+
 function sampleLand(src, sw, sh, nx, ny) {
   if (!isInOval(nx, ny)) return 0;
   const sx = Math.min(sw - 1, Math.max(0, Math.floor(nx * (sw - 1))));
@@ -63,7 +95,8 @@ function main() {
     for (let x = 0; x < OUT_W; x++) {
       const nx = x / (OUT_W - 1);
       const ny = y / (OUT_H - 1);
-      const land = sampleLand(data, sw, sh, nx, ny);
+      const landRaw = sampleLand(data, sw, sh, nx, ny);
+      const land = landRaw && !isAntarctica(nx, ny) ? 1 : 0;
       landCount += land;
       row += land ? '1' : '0';
       if (land) {
@@ -74,6 +107,28 @@ function main() {
       }
     }
     grid.push(row);
+  }
+
+  const dilated = dilateLandGrid(grid, OUT_W, OUT_H, 3);
+  grid.length = 0;
+  grid.push(...dilated);
+  landCount = 0;
+  for (const row of grid) {
+    for (const ch of row) landCount += ch === '1' ? 1 : 0;
+  }
+  minX = OUT_W;
+  minY = OUT_H;
+  maxX = 0;
+  maxY = 0;
+  for (let y = 0; y < OUT_H; y++) {
+    for (let x = 0; x < OUT_W; x++) {
+      if (grid[y][x] === '1') {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
   }
 
   const pad = 2;
@@ -93,6 +148,7 @@ function main() {
   const ts = `/**
  * AUTO-GENERATED — nie edytuj ręcznie.
  * Źródło: data/earth-mask-source.png (mockup Macieja, decyzja A 2026-07-04).
+ * C-MAP-Q3c: Antarktyda wyłączona, ląd redystrybuowany (dilatacja ×3).
  * Regeneracja: node tools/build-earth-mask.cjs
  */
 export const EARTH_MASK_W = ${OUT_W};

@@ -363,6 +363,7 @@ const TERRAIN_NAME_TO_ENUM: Record<string, TerenBazowy> = {
   'Wybrzeże': TerenBazowy.Wybrzeze,
   'Morze':    TerenBazowy.Morze,
   'Pustynia': TerenBazowy.Pustynia,
+  'Polarny':  TerenBazowy.Polarny,
 };
 
 function terrainRowToTileYield(row: TerrainTypeDef | TerrainModifierDef): TileYield {

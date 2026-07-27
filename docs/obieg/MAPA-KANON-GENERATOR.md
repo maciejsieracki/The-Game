@@ -68,3 +68,21 @@ Skrót:
 ## Playtest
 
 Ctrl+F5 → Nowa gra
+
+## Pasy klimatyczne (C-MAP-Q3, 2026-07-27)
+
+Od północy (r=0) do południa — **% wysokości mapy**:
+
+| Pas | Udział | Teren bazowy (bez gór/wzgórz) |
+|-----|--------|-------------------------------|
+| Polarny N | 5% | `polarny` (śnieg, niezamieszkany) |
+| Umiarkowany N | ~22.5% | głównie łąka |
+| Równiny N | 15% | 70% równina / 30% łąka |
+| Pustynia | 15% (środek) | 50% pustynia / 50% równina |
+| Równiny S | 15% | 70% równina / 30% łąka |
+| Umiarkowany S | ~22.5% | głównie łąka |
+| Polarny S | 5% | `polarny` |
+
+- Bufor oceanu N/S: **5% wysokości** (mapy proceduralne) · **~30 hex** (Ziemia)
+- Ziemia: **Antarktyda usunięta** z maski, ląd redystrybuowany (`build-earth-mask.cjs`)
+- Implementacja: `climateBandAt`, `applyClimateBandsToHexes` w `gen-helpers.ts`

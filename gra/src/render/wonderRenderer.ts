@@ -39,6 +39,7 @@ const CIV_TERRAIN_HEIGHT: Record<TerenBazowy, TerrainTopY> = {
   [TerenBazowy.Pustynia]: { height: 0.42, yOffset: 0.08 },
   [TerenBazowy.Wzgorza]:  { height: 0.70, yOffset: 0.15 },
   [TerenBazowy.Gory]:     { height: 1.20, yOffset: 0.40 },
+  [TerenBazowy.Polarny]:  { height: 0.38, yOffset: 0.06 },
 };
 
 function terrainTopY(hex: Hex, style: MapRenderStyle = GAME_MAP_RENDER_STYLE): number {

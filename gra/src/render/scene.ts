@@ -114,6 +114,7 @@ const TERRAIN_VISUALS: Record<TerenBazowy, TerenVisual> = {
   [TerenBazowy.Pustynia]:  { color: 0xd9c179, height: 0.42, yOffset: 0.08 },
   [TerenBazowy.Wzgorza]:   { color: 0x4f7d34, height: 0.55, yOffset: 0.10 },
   [TerenBazowy.Gory]:      { color: 0x9aa1a9, height: 0.60, yOffset: 0.20 },
+  [TerenBazowy.Polarny]:   { color: 0xe8eef5, height: 0.38, yOffset: 0.06 },
 };
 
 const FOREST_COLOR      = 0x1b5e20;

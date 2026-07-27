@@ -69,6 +69,16 @@
       "Kamień": 0,
       "Suma": 1,
       "Uwagi": null
+    },
+    {
+      "Teren": "Polarny",
+      "Żywność": 0,
+      "Praca": 0,
+      "Handel": 0,
+      "Drewno": 0,
+      "Kamień": 0,
+      "Suma": 0,
+      "Uwagi": "Strefa polarna (śnieg) — niezamieszkana, C-MAP-Q3b"
     }
   ],
   "terrain_modifiers": [

@@ -30,7 +30,10 @@ import {
   continentCenterCount,
   classifyTerrain,
   terrainCellBias,
-  climateZoneAt,
+  climateBandAt,
+  applyClimateBandsToHexes,
+  enforceLatitudinalOceanBuffer,
+  isInLatitudinalOceanBuffer,
   countLandSeaHexes,
   removeSmallInlandWaterPools,
   removeInlandWaterPools,
@@ -206,6 +209,9 @@ export function generateMap(
       if (isInMapBorder(q, r, width, height)) {
         landMask = 0;
       }
+      if (isInLatitudinalOceanBuffer(r, height, typ === 'ziemia')) {
+        landMask = 0;
+      }
 
       landScores.set(key, landMask);
 
@@ -226,7 +232,7 @@ export function generateMap(
           forNoise,
           desNoise,
           terrainTh,
-          climateZoneAt(q, r, height),
+          climateBandAt(q, r, height, typ === 'ziemia'),
           terrainCellBias(q, r, effectiveSeed),
         );
 
@@ -275,6 +281,7 @@ export function generateMap(
 
   // ── Przebieg 1d: docelowy udział lądu vs morze (preset typu + suwak zaawansowany) ─
   enforceMapBorderOcean(hexes, width, height);
+  enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   if ((typ === 'kontynenty' || typ === 'wyspy') && zoneOf) {
     applyLandFractionByContinent(hexes, landScores, zoneOf, nZones, landFraction, width, height);
     applyMarginalLandZoneCaps(hexes, landScores, width, height);
@@ -288,6 +295,7 @@ export function generateMap(
     rebalanceLandFractionWithMargins(hexes, landScores, landFraction, width, height);
   }
   enforceMapBorderOcean(hexes, width, height);
+  enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   if (typ !== 'pangea') {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
@@ -303,6 +311,7 @@ export function generateMap(
   }
   applyReliefByNoiseRank(hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones);
   enforceMapBorderOcean(hexes, width, height);
+  enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   if (typ !== 'pangea') {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
@@ -323,6 +332,7 @@ export function generateMap(
     purgeReliefValleyWater(hexes, width, height);
   }
   enforceMapBorderOcean(hexes, width, height);
+  enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
 
   // ── Przebieg 3d: docelowy udział lądu (po wypełnieniach wody→łąka) ─────────
@@ -340,6 +350,7 @@ export function generateMap(
   trimDeepOceanBays(hexes, width, height);
   finalizeCoastAndInlandWater(hexes, width, height, 2, coastOpts);
   enforceMapBorderOcean(hexes, width, height);
+  enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   if (typ === 'ziemia') {
     enforceEarthTemplateOnHexes(hexes, width, height);
     purgeOceanInsideEarthLandMask(hexes, width, height);
@@ -359,6 +370,8 @@ export function generateMap(
   // rzeka.obecna, więc jeden konsolidowany przebieg złóż po rzekach zastępuje dawne dwa
   // przebiegi placeDeposits/ensureDepositGridCoverage rozsiane wokół reliefu). ─────────────
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
+  applyClimateBandsToHexes(hexes, height, effectiveSeed, typ === 'ziemia');
+  enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   // ── Przebieg 3h-pre: ostatni purge wody→ląd PRZED rzekami (B0.1 — nie kasować ujść) ─
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
@@ -375,6 +388,7 @@ export function generateMap(
     applyCoastRing(hexes);
   }
   enforceMapBorderOcean(hexes, width, height);
+  enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   // ── Przebieg 3h: rzeki DOPIERO po finalnym wybrzeżu (Maciej: bufor 2 hex od morza) ─
   const riversTier = genOpts?.worldDensity?.rivers ?? 'medium';
   clearRiverMarks(hexes);

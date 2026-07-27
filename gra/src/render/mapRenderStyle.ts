@@ -148,6 +148,7 @@ export const TERRAIN_SURFACE_Y: Record<TerenBazowy, number> = {
   [TerenBazowy.Pustynia]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.08,
   [TerenBazowy.Wzgorza]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.18,
   [TerenBazowy.Gory]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32,
+  [TerenBazowy.Polarny]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.04,
 };
 
 /** Głębokość pasa piasku na lądzie — ~30% promienia od krawędzi w stronę morza. */
@@ -176,6 +177,7 @@ export const ROBLOX_TERRAIN_VIS: Record<TerenBazowy, TerrainVisualSpec> = {
   [TerenBazowy.Pustynia]:  { height: 0.42, yOffset: 0.08 },
   [TerenBazowy.Wzgorza]:   { height: 0.42, yOffset: 0.08 },
   [TerenBazowy.Gory]:      { height: 0.46, yOffset: 0.12 },
+  [TerenBazowy.Polarny]:   { height: 0.36, yOffset: 0.06 },
 };
 
 /** yOffset tak, by wierzchołek pryzmu = TERRAIN_SURFACE_Y (roblox) lub civ + lift. */
@@ -272,6 +274,7 @@ const CIV_TERRAIN_VIS: Record<TerenBazowy, TerrainVisualSpec> = {
   [TerenBazowy.Pustynia]: { height: 0.42, yOffset: 0.08 },
   [TerenBazowy.Wzgorza]:  { height: 0.70, yOffset: 0.15 },
   [TerenBazowy.Gory]:     { height: 1.20, yOffset: 0.40 },
+  [TerenBazowy.Polarny]:  { height: 0.38, yOffset: 0.06 },
 };
 
 /** Y górnej powierzchni hexa — ten sam model co buildScene (overlay zasięgu / okolica). */
@@ -444,6 +447,7 @@ const TERRAIN_CIV: Record<TerenBazowy, number> = {
   [TerenBazowy.Pustynia]: 0xd9c179,
   [TerenBazowy.Wzgorza]: 0x4f7d34,
   [TerenBazowy.Gory]: 0x9aa1a9,
+  [TerenBazowy.Polarny]: 0xe8eef5,
 };
 
 /** Piasek — cienka opaska na heksie Wybrzeże, krawędź w stronę lądu (tylko 3D). */
@@ -459,6 +463,7 @@ const TERRAIN_ROBLOX: Record<TerenBazowy, number> = {
   [TerenBazowy.Pustynia]: 0xe0c88e,
   [TerenBazowy.Wzgorza]: 0x7ea872,
   [TerenBazowy.Gory]: 0x9da8b4,
+  [TerenBazowy.Polarny]: 0xeef2f8,
 };
 
 const TERRAIN_MINECRAFT: Record<TerenBazowy, number> = {
@@ -469,6 +474,7 @@ const TERRAIN_MINECRAFT: Record<TerenBazowy, number> = {
   [TerenBazowy.Pustynia]: 0xdbc35c,
   [TerenBazowy.Wzgorza]: 0x4a7a32,
   [TerenBazowy.Gory]: 0x8a9099,
+  [TerenBazowy.Polarny]: 0xdce4ee,
 };
 
 export function styleTerrainColor(t: TerenBazowy, style: MapRenderStyle): number {

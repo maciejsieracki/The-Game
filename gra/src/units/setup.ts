@@ -336,6 +336,7 @@ const DEFAULT_TERRAIN_COSTS: Record<TerenBazowy, number> = {
   [TerenBazowy.Wzgorza]:  2,
   [TerenBazowy.Gory]:     Infinity,
   [TerenBazowy.Morze]:    Infinity,
+  [TerenBazowy.Polarny]:  Infinity,
 };
 
 /** Live cost table -- starts as a copy of defaults, overridable via configureTerrainMovement(). */

@@ -3590,3 +3590,21 @@ Nowe: dyplomacja — statystyki kart (gracz: moc/ranking/ludność/armia/wiarygo
 Bramki: tsc 0 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41.
 **Sesja lokalna: pull / sync dysk, testuj `e7c0655d` — `gra-robocza/START.html`.**
 CZEKAM-NA: nic.
+
+## [10:15 PL, 2026-07-27] LOKALNA → LOKALNA — kod gotowy, czeka FALA 33 (bez publishu)
+
+**Aktualna ROBOCZA:** md5 `e7c0655d` (FALA 32). W `gra/src/` gotowe, nie w bundlu:
+1. Garnizon wyśrodkowany pod badge miasta (`cityPanel.ts` CSS)
+2. Fix kultury: `ownCultureShare` zapisywane tylko przy aktywnym mixie (`main.ts`) — założone miasta / państwa-miasta trzymają 100% kultury właściciela
+3. **B-LAW-Q1:** Prawo 100% przez 5 tur (podbój) lub 10 tur (odbicie po buncie) — `post-capture-law.ts` + hooki w `main.ts` / `post-battle-map.ts`
+4. **C-MAP-Q3:** pasy klimatyczne (polarny/pustynia/równiny/umiarkowany), Ziemia bez Antarktydy, bufor oceanu N/S — `gen-helpers.ts` · `climate-band-test.cjs`
+Bramki: tsc 0 · post-capture-law 11/11 · conquest-stability 29/29 · culture-religion 65/65 · society-breakdown 40/40 · climate-band OK · map-gen rivers 717/717.
+CZEKAM-NA: Maciej — **deploy** (FALA 33). Po deploy: **Nowa gra** (Ctrl+F5) dla mapy.
+
+## [10:20 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `2c3804da` (FALA 33, VERIFY)
+**md5 `2c3804da371c027043b2669b535268c7`**, stempel `ROBOCZA · 2026-07-27 10:20`. **VERIFY OK** (manifest md5 = HTML).
+Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive lock). Pieczęć via temp (OneDrive lock bezpośredni zapis).
+Nowe: garnizon pod badge miasta · fix kultury ownCultureShare · B-LAW-Q1 Prawo 5/10 tur · C-MAP-Q3 strefy klimatyczne + polarny + Ziemia bez Antarktydy.
+Bramki: tsc 0 · post-capture-law 11/11 · climate-band OK · conquest 29/29 · society 40/40 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · deposit-building-gate 41/41.
+**Sesja lokalna: pull / sync dysk, testuj `2c3804da` — `gra-robocza/START.html`. Nowa gra (Ctrl+F5) dla mapy.**
+CZEKAM-NA: nic.

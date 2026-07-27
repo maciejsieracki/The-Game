@@ -2,7 +2,7 @@
  * Maska szablonu Ziemi (mockup Macieja, decyzja A 2026-07-04).
  * Korekta A-MAP-ZIEMIA-1 (Maciej B, 2026-07-24): symetryczne bufory oceanu
  * arktycznego na północy i południu (~30 hex na mapie standardowej, skalowane).
- * Pełny szablon lądu łącznie z Antarktydą — bez wycinania z maski.
+ * C-MAP-Q3c: Antarktyda usunięta z maski; ląd redystrybuowany przy build-earth-mask.
  *
  * ZAKRES: wyłącznie typ świata **Ziemia** (`typ === 'ziemia'` w silniku, menu kreatora
  * „Typ świata → Ziemia”). NIE dotyczy proceduralnych **Kontynentów**, Pangei ani Wysp.
@@ -39,6 +39,9 @@ function earthPolarOceanRows(height: number): number {
   const innerH = earthPlayableInnerHeight(height);
   return Math.max(2, Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H));
 }
+
+/** Eksport dla gen-helpers (bufor oceanu Ziemi ~30 hex na mapie standardowej). */
+export { earthPolarOceanRows };
 
 function earthPlayableInnerHeight(height: number): number {
   const b = EARTH_PLAYABLE_BORDER;

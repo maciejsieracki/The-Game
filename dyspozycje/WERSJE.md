@@ -11,7 +11,18 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `e7c0655d` — 2026-07-27 09:56 · FALA 32: DYPLO STATY + FOG CHŁOPKI + MUZYKA FADE — **AKTUALNA**
+## ROBOCZA `2c3804da` — 2026-07-27 10:20 · FALA 33: GARNIZON + KULTURA + PRAWO + KLIMAT — **AKTUALNA**
+- md5 (pelne): `2c3804da371c027043b2669b535268c7` · stempel: `ROBOCZA · 2026-07-27 10:20`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock). Pieczęć: inject via temp (OneDrive lock na bezpośrednim zapisie).
+- **Co nowego (sesja F33):**
+  - **Panel miasta:** garnizon wyśrodkowany pod badge ATENY/Stolica (`cityPanel.ts` CSS).
+  - **Kultura:** fix `ownCultureShare` — założone miasta / państwa-miasta trzymają 100% kultury właściciela od tury 2 (`main.ts`).
+  - **B-LAW-Q1:** Prawo 100% przez 5 tur (świeży podbój) lub 10 tur (odbicie po buncie) — `post-capture-law.ts`.
+  - **C-MAP-Q3:** pasy klimatyczne (polarny/pustynia/równiny/umiarkowany), Ziemia bez Antarktydy, bufor oceanu N/S — **Nowa gra** (Ctrl+F5).
+- **Bramki:** tsc 0 · post-capture-law 11/11 · climate-band OK · conquest-stability 29/29 · society-breakdown 40/40 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · deposit-building-gate 41/41 · map-gen rivers 717/717 determinism OK (AC czas marginalny).
+
+## ROBOCZA `e7c0655d` — 2026-07-27 09:56 · FALA 32: DYPLO STATY + FOG CHŁOPKI + MUZYKA FADE — **ZASTĄPIONA**
 - md5 (pelne): `e7c0655d6bee033503f6bc26c86534b2` · stempel: `ROBOCZA · 2026-07-27 09:56`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).

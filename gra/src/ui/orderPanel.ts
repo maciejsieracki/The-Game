@@ -37,6 +37,8 @@ export interface OrderState {
   revoltGraceRemaining?: number | null;
   revoltWarning?: boolean;
   rebelState?: boolean;
+  /** B-LAW-Q1: pozostałe tury bonusu Prawa 100% po podboju. */
+  postCaptureLawTurnsRemaining?: number;
 }
 
 export interface OrderPanelConfig {

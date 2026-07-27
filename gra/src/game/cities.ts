@@ -218,6 +218,12 @@ export interface City {
   revoltGraceRemaining?: number | null;
   /** Miasto pod kontrolą rebeliantów. */
   rebelState?: boolean;
+  /** Właściciel sprzed buntu (do wykrycia odbicia po rebelii — B-LAW-Q1). */
+  rebelPreviousOwnerId?: number;
+  /** Pozostałe tury bonusu Prawa 100% po podboju / odbiciu (B-LAW-Q1). */
+  postCaptureLawTurnsRemaining?: number;
+  /** true = odbicie po buncie (10 tur); false = świeży podbój (5 tur). */
+  wasRebellionReconquest?: boolean;
   /** Stan Wealth per miasto (D3). */
   wealthState?: WealthState;
   /** Skumulowana kultura miasta (UI / playtest). */

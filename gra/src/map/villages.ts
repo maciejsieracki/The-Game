@@ -100,7 +100,8 @@ function isVillageExcludedTerrain(t: TerenBazowy): boolean {
     t === TerenBazowy.Morze ||
     t === TerenBazowy.Wybrzeze ||
     t === TerenBazowy.Gory ||
-    t === TerenBazowy.Pustynia
+    t === TerenBazowy.Pustynia ||
+    t === TerenBazowy.Polarny
   );
 }
 

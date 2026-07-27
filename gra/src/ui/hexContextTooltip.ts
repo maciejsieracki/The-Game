@@ -51,6 +51,7 @@ const TEREN_LABEL: Record<TerenBazowy, string> = {
   [TerenBazowy.Wybrzeze]: 'Wybrzeże',
   [TerenBazowy.Morze]: 'Morze',
   [TerenBazowy.Pustynia]: 'Pustynia',
+  [TerenBazowy.Polarny]: 'Polarny',
 };
 
 type YieldKey = keyof Pick<TileYield, 'zywnosc' | 'praca' | 'handel' | 'drewno' | 'kamien'>;

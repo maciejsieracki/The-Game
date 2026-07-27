@@ -4,6 +4,38 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
+## [10:20] ✅ Gotowe — deploy ROBOCZA FALA 33 (`2c3804da`)
+
+| | |
+|---|---|
+| **Gdzie** | `gra-robocza/START.html` → `Gra-ROBOCZA.html` · md5 `2c3804da371c027043b2669b535268c7` |
+| **Co** | Garnizon pod badge miasta · fix kultury 100% (założone/państwa-miasta) · **B-LAW-Q1** Prawo 100% (5/10 tur po podboju) · **C-MAP-Q3** strefy klimatyczne + `polarny` + Ziemia bez Antarktydy |
+| **Testy** | tsc 0 · post-capture-law 11/11 · climate-band OK · conquest 29/29 · society 40/40 · manpower 62/62 · picker 140/140 · VERIFY OK |
+| **Uwaga** | **Nowa gra** (Ctrl+F5) dla mapy klimatycznej |
+
+---
+
+## [10:30] ⏸️ Czeka — deploy ROBOCZA FALA 33 (kod gotowy, bez publishu)
+
+| | |
+|---|---|
+| **Gdzie** | `gra/src/` — jeszcze **nie** w `gra-robocza/` (ostatnia ROBOCZA: FALA 32 `e7c0655d`) |
+| **Co** | **Garnizon** wyśrodkowany pod badge miasta · **fix kultury** (`ownCultureShare`) · **B-LAW-Q1** (Prawo 100%: 5/10 tur) · **C-MAP-Q3** strefy klimatyczne (polarny/pustynia/równiny/umiarkowany), bez Antarktydy na Ziemi, bufor oceanu N/S |
+| **Testy** | post-capture-law 11/11 · conquest-stability 29/29 · culture-religion 65/65 · society-breakdown 40/40 · climate-band OK · map-gen rivers 717/717 · tsc 0 |
+| **Uwaga** | generator standard ~5.08 s (próg AC 5 s — marginalnie) · **Nowa gra** po deploy (Ctrl+F5) |
+
+---
+
+## [10:15] ⏸️ Czeka — deploy ROBOCZA FALA 33 (kod gotowy, bez publishu)
+
+| | |
+|---|---|
+| **Gdzie** | `gra/src/` — jeszcze **nie** w `gra-robocza/` (ostatnia ROBOCZA: FALA 32 `e7c0655d`) |
+| **Co** | **Garnizon** wyśrodkowany pod badge miasta (`cityPanel.ts`) · **fix kultury** — założone/państwa-miasta trzymają Grecka 100% od tury 2 (`main.ts` ownCultureShare) · **B-LAW-Q1** — Prawo 100% przez 5 tur (podbój) / 10 tur (odbicie po buncie) (`post-capture-law.ts`) |
+| **Testy** | post-capture-law 11/11 · conquest-stability 29/29 · culture-religion 65/65 · society-breakdown 40/40 · tsc 0 |
+
+---
+
 ## [01:45] ✅ Gotowe — deploy ROBOCZA FALA 31 (`f694dcba`)
 
 | | |

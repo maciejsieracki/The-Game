@@ -21,7 +21,7 @@ import {
   mapGenReliefOverflowCapFrac,
 } from '../data/map-gen-params-loader';
 import { riverGridTraceMinLen, type DensityTier } from './newGameMapDefaults';
-import { earthTemplateLandAt } from './earth-land-mask';
+import { earthPolarOceanRows, earthTemplateLandAt } from './earth-land-mask';
 
 // ===========================================================================
 // 0. TYP SWIATA
@@ -134,35 +134,83 @@ export function hexKey(q: number, r: number): string {
   return `${q},${r}`;
 }
 
-/** Strefa klimatyczna wzdłuż osi r (Maciej A wąski, 2026-07-05). */
+/** @deprecated Używaj {@link ClimateBand} — zachowane dla kompatybilności renderu las-dżungla. */
 export type ClimateZone = 'arid' | 'tropical' | 'temperate';
 
-/** Połowa szerokości pasa suchego — 15% wysokości mapy (±7.5% od środka). */
-export const CLIMATE_ARID_HALF_FRAC = 0.075;
+/**
+ * Pas klimatyczny wzdłuż osi r (C-MAP-Q3, 2026-07-27).
+ * Procenty wysokości mapy od północy (r=0) do południa (r=height−1).
+ */
+export type ClimateBand =
+  | 'polar_north'
+  | 'temperate_north'
+  | 'plains_north'
+  | 'desert'
+  | 'plains_south'
+  | 'temperate_south'
+  | 'polar_south';
 
-/** Połowa szerokości pasów tropikalnych — do ~30% od środka mapy. */
-export const CLIMATE_TROPICAL_HALF_FRAC = 0.30;
+/** Polar 5% góra + 5% dół. */
+export const CLIMATE_POLAR_FRAC = 0.05;
+/** Pustynia środkowa 15% wysokości. */
+export const CLIMATE_DESERT_HALF_FRAC = 0.075;
+/** Równiny po obu stronach pustyni — po 15% wysokości (±7.5% od środka). */
+export const CLIMATE_PLAINS_HALF_FRAC = 0.075;
+
+/** Bufor oceanu u góry/dołu mapy proceduralnej — 5% wysokości (C-MAP-Q3c). */
+export const CLIMATE_PROCEDURAL_LAT_BUFFER_FRAC = 0.05;
 
 /**
- * Strefa klimatyczna heksa — oś r, środek mapy = pas suchy.
- * dist = |r − midRow| / (height/2).
+ * Pas klimatyczny heksa — ułamek wiersza r w **obszarze grywalnym** (po buforze oceanu N/S).
+ * Kolejność od północy: polar 5% · umiarkowany · równiny 15% · pustynia 15% · równiny 15% · umiarkowany · polar 5%.
  */
-export function climateZoneAt(_q: number, r: number, height: number): ClimateZone {
-  const midRow = (height - 1) / 2;
-  const dist = Math.abs(r - midRow) / (height / 2);
-  if (dist < CLIMATE_ARID_HALF_FRAC) return 'arid';
-  if (dist < CLIMATE_TROPICAL_HALF_FRAC) return 'tropical';
+export function climateBandAt(_q: number, r: number, height: number, isEarth = false): ClimateBand {
+  const buf = latitudinalOceanBufferRows(height, isEarth);
+  const innerH = Math.max(1, height - 2 * buf);
+  const relR = (r - buf) / Math.max(1, innerH - 1);
+  if (relR < 0 || relR > 1) {
+    return r < height / 2 ? 'polar_north' : 'polar_south';
+  }
+  if (relR < CLIMATE_POLAR_FRAC) return 'polar_north';
+  if (relR < 0.275) return 'temperate_north';
+  if (relR < 0.425) return 'plains_north';
+  if (relR < 0.575) return 'desert';
+  if (relR < 0.725) return 'plains_south';
+  if (relR < 1 - CLIMATE_POLAR_FRAC) return 'temperate_south';
+  return 'polar_south';
+}
+
+/** Kompatybilność wsteczna (render dżungli itd.). */
+export function climateZoneAt(q: number, r: number, height: number, isEarth = false): ClimateZone {
+  const band = climateBandAt(q, r, height, isEarth);
+  if (band === 'desert') return 'arid';
+  if (band === 'plains_south' || band === 'plains_north') return 'tropical';
   return 'temperate';
 }
 
-function climateForestThreshold(zone: ClimateZone | undefined, baseForTh: number): number {
-  if (zone === 'arid') return 1.1;
-  if (zone === 'temperate') return baseForTh - 0.06;
+export function isPolarClimateBand(band: ClimateBand): boolean {
+  return band === 'polar_north' || band === 'polar_south';
+}
+
+/** Wiersze oceanu wymuszone u góry i dołu mapy. */
+export function latitudinalOceanBufferRows(height: number, isEarth: boolean): number {
+  if (isEarth) return earthPolarOceanRows(height);
+  return Math.max(2, Math.round(height * CLIMATE_PROCEDURAL_LAT_BUFFER_FRAC));
+}
+
+export function isInLatitudinalOceanBuffer(r: number, height: number, isEarth: boolean): boolean {
+  const buf = latitudinalOceanBufferRows(height, isEarth);
+  return r < buf || r >= height - buf;
+}
+
+function climateForestThreshold(band: ClimateBand | undefined, baseForTh: number): number {
+  if (!band || band === 'desert' || isPolarClimateBand(band)) return 1.1;
+  if (band === 'temperate_north' || band === 'temperate_south') return baseForTh - 0.06;
   return baseForTh;
 }
 
-function canAssignClimateDesert(zone: ClimateZone | undefined): boolean {
-  return zone === undefined || zone === 'arid';
+function canAssignClimateDesert(band: ClimateBand | undefined): boolean {
+  return band === undefined || band === 'desert';
 }
 
 // ===========================================================================
@@ -682,12 +730,12 @@ export function classifyTerrain(
   forNoise: number,
   desNoise: number,
   thresholds?: TerrainClassifyThresholds,
-  climateZone?: ClimateZone,
+  climateBand?: ClimateBand,
   /** Lokalne przesunięcie progu Równina/Łąka per komórka — patrz terrainCellBias(). */
   cellBias = 0,
 ): TerrainResult {
   const desTh = thresholds?.desert ?? 0.63;
-  const forTh = climateForestThreshold(climateZone, thresholds?.forest ?? 0.58);
+  const forTh = climateForestThreshold(climateBand, thresholds?.forest ?? 0.58);
   const mtnTh = thresholds?.mountain ?? 0.75;
   const hiTh = thresholds?.highland ?? 0.60;
   const elevG = reliefElevGates(mtnTh);
@@ -706,7 +754,7 @@ export function classifyTerrain(
     } else if (isHighlands && elevContinental > elevG.highland) {
       terenBazowy = TerenBazowy.Wzgorza;
     } else if (
-      canAssignClimateDesert(climateZone) &&
+      canAssignClimateDesert(climateBand) &&
       desNoise > desTh &&
       elevContinental > 0.18 &&
       elevContinental < 0.45
@@ -721,7 +769,7 @@ export function classifyTerrain(
     // Las (nie na pustyni, nie na gorach). elevContinental bywa ~0 na heksach
     // „dopisanych” przy niskim udziale lądu — wtedy wystarczy landMask.
     if (
-      climateZone !== 'arid' &&
+      climateBand !== 'desert' &&
       terenBazowy !== TerenBazowy.Gory &&
       terenBazowy !== TerenBazowy.Pustynia &&
       forNoise > forTh &&
@@ -744,19 +792,19 @@ export function classifyTerrainFlat(
   forNoise: number,
   desNoise: number,
   thresholds?: TerrainClassifyThresholds,
-  climateZone?: ClimateZone,
+  climateBand?: ClimateBand,
   /** Lokalne przesunięcie progu Równina/Łąka per komórka — patrz terrainCellBias(). */
   cellBias = 0,
 ): TerrainResult {
   const desTh = thresholds?.desert ?? 0.63;
-  const forTh = climateForestThreshold(climateZone, thresholds?.forest ?? 0.58);
+  const forTh = climateForestThreshold(climateBand, thresholds?.forest ?? 0.58);
   let terenBazowy: TerenBazowy;
   let nakladka: Nakladka = Nakladka.Brak;
 
   if (elevContinental < 0.14) {
     terenBazowy = TerenBazowy.Laka;
   } else if (
-    canAssignClimateDesert(climateZone) &&
+    canAssignClimateDesert(climateBand) &&
     desNoise > desTh &&
     elevContinental > 0.18 &&
     elevContinental < 0.45
@@ -769,7 +817,7 @@ export function classifyTerrainFlat(
   }
 
   if (
-    climateZone !== 'arid' &&
+    climateBand !== 'desert' &&
     terenBazowy !== TerenBazowy.Pustynia &&
     forNoise > forTh &&
     (landMask > 0.04 || elevContinental > 0.14)
@@ -814,7 +862,7 @@ export function reapplyForestOverlay(
         .filter(([q, r]) => {
           const h = hexes[hexKey(q, r)];
           if (!h || !isForestEligibleTerrain(h.terenBazowy) || h.nakladka !== Nakladka.Brak) return false;
-          if (mapHeight && climateZoneAt(q, r, mapHeight) === 'arid') return false;
+          if (mapHeight && climateBandAt(q, r, mapHeight) === 'desert') return false;
           return true;
         })
         .map(([q, r]) => ({ k: hexKey(q, r), n: scratch.get(hexKey(q, r))?.forNoise ?? 0 }))
@@ -823,8 +871,8 @@ export function reapplyForestOverlay(
       if (eligible.length === 0) continue;
 
       const mid = land[Math.floor(land.length / 2)]!;
-      const cellZone = mapHeight ? climateZoneAt(mid[0], mid[1], mapHeight) : 'temperate';
-      const zoneShareMul = cellZone === 'temperate' ? 1.35 : 1.0;
+      const cellBand = mapHeight ? climateBandAt(mid[0], mid[1], mapHeight) : 'temperate_north';
+      const zoneShareMul = (cellBand === 'temperate_north' || cellBand === 'temperate_south') ? 1.35 : 1.0;
 
       const minForest = typ === 'pangea' ? 0 : 1;
       const target = Math.max(minForest, Math.round(eligible.length * share * zoneShareMul));
@@ -890,17 +938,17 @@ export function reapplyLandTerrain(
     if (!s) continue;
     landCount++;
     const { q, r } = hex.coords;
-    const climateZone = mapHeight ? climateZoneAt(q, r, mapHeight) : undefined;
+    const climateBand = mapHeight ? climateBandAt(q, r, mapHeight) : undefined;
     const cellBias = terrainCellBias(q, r, seed);
     const { terenBazowy: fullTb, nakladka: fullNak } = classifyTerrain(
       s.elevContinental, s.landMask, s.mtnNoise, s.forNoise, s.desNoise,
-      thresholds, climateZone, cellBias,
+      thresholds, climateBand, cellBias,
     );
     if (fullTb === TerenBazowy.Gory || fullTb === TerenBazowy.Wzgorza) {
       // Tymczasowo płasko — przywrócimy TOP-budżet kandydatów po mtnNoise (skupiska), nie wszystkie.
       const { terenBazowy: flatTb, nakladka: flatNak } = classifyTerrainFlat(
         s.elevContinental, s.landMask, s.mtnNoise, s.forNoise, s.desNoise,
-        thresholds, climateZone, cellBias,
+        thresholds, climateBand, cellBias,
       );
       hex.terenBazowy = flatTb;
       hex.nakladka = flatNak;
@@ -1203,7 +1251,8 @@ export function groupLandMassKeys(hexes: Record<string, Hex>): string[][] {
 
 function isForestEligibleTerrain(tb: TerenBazowy): boolean {
   return tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze
-    && tb !== TerenBazowy.Gory && tb !== TerenBazowy.Pustynia;
+    && tb !== TerenBazowy.Gory && tb !== TerenBazowy.Pustynia
+    && tb !== TerenBazowy.Polarny;
 }
 
 /**
@@ -2906,6 +2955,84 @@ function setHexToLaka(hex: Hex): void {
   delete (hex as HexWithZloze).zloze;
 }
 
+/** Wymusza morze w buforze 5% wysokości (proceduralne) lub ~30 hex (Ziemia, C-MAP-Q3c). */
+export function enforceLatitudinalOceanBuffer(
+  hexes: Record<string, Hex>,
+  width: number,
+  height: number,
+  isEarth: boolean,
+): number {
+  const buf = latitudinalOceanBufferRows(height, isEarth);
+  let converted = 0;
+  for (let r = 0; r < height; r++) {
+    if (r >= buf && r < height - buf) continue;
+    for (let q = 0; q < width; q++) {
+      const hex = hexes[hexKey(q, r)];
+      if (!hex || hex.terenBazowy === TerenBazowy.Morze) continue;
+      setHexToMorze(hex);
+      converted++;
+    }
+  }
+  return converted;
+}
+
+/** Losowy wybór terenu bazowego wg pasu klimatu (góry/wzgórza nie dotykane). */
+function climateBandBaseTerrain(band: ClimateBand, q: number, r: number, seed: number): TerenBazowy {
+  if (isPolarClimateBand(band)) return TerenBazowy.Polarny;
+  const h = hashInt3(q, r, seed);
+  switch (band) {
+    case 'desert':
+      return h < 0.5 ? TerenBazowy.Pustynia : TerenBazowy.Rownina;
+    case 'plains_north':
+    case 'plains_south':
+      return h < 0.7 ? TerenBazowy.Rownina : TerenBazowy.Laka;
+    case 'temperate_north':
+    case 'temperate_south':
+    default:
+      return h < 0.85 ? TerenBazowy.Laka : TerenBazowy.Rownina;
+  }
+}
+
+/**
+ * Nakłada pasy klimatyczne na ląd po reliefie (C-MAP-Q3).
+ * Góry/wzgórza/morze/wybrzeże pozostają bez zmian.
+ */
+export function applyClimateBandsToHexes(
+  hexes: Record<string, Hex>,
+  height: number,
+  seed: number,
+  isEarth = false,
+): number {
+  let n = 0;
+  for (const [key, hex] of Object.entries(hexes)) {
+    const { q, r } = parseHexKey(key);
+    const tb = hex.terenBazowy;
+    if (
+      tb === TerenBazowy.Morze
+      || tb === TerenBazowy.Wybrzeze
+      || tb === TerenBazowy.Gory
+      || tb === TerenBazowy.Wzgorza
+    ) {
+      continue;
+    }
+    const band = climateBandAt(q, r, height, isEarth);
+    const want = climateBandBaseTerrain(band, q, r, seed);
+    if (tb !== want) {
+      hex.terenBazowy = want;
+      if (want === TerenBazowy.Polarny || want === TerenBazowy.Pustynia) {
+        hex.nakladka = Nakladka.Brak;
+        delete (hex as HexWithZloze).zloze;
+      }
+      n++;
+    } else if (want === TerenBazowy.Polarny && hex.nakladka !== Nakladka.Brak) {
+      hex.nakladka = Nakladka.Brak;
+      delete (hex as HexWithZloze).zloze;
+      n++;
+    }
+  }
+  return n;
+}
+
 /**
  * Wymusza szablon Ziemi — poza maską zawsze morze (decyzja A, mockup Macieja).
  */
@@ -3493,8 +3620,8 @@ export function purgeDesertEnclaveWater(
       if (nh.terenBazowy === TerenBazowy.Pustynia) pustN++;
     }
     const hex = hexes[key]!;
-    const inArid = climateZoneAt(q, r, height) === 'arid';
-    hex.terenBazowy = inArid && (pustN >= 2 || (dryN > 0 && pustN >= dryN * 0.4))
+    const inDesert = climateBandAt(q, r, height) === 'desert';
+    hex.terenBazowy = inDesert && (pustN >= 2 || (dryN > 0 && pustN >= dryN * 0.4))
       ? TerenBazowy.Pustynia
       : TerenBazowy.Laka;
     hex.nakladka = Nakladka.Brak;
@@ -4143,6 +4270,7 @@ export const ELEVATION_RANK: Record<TerenBazowy, number> = {
   [TerenBazowy.Rownina]:  4,
   [TerenBazowy.Wzgorza]:  5,
   [TerenBazowy.Gory]:     6,
+  [TerenBazowy.Polarny]:  2,
 };
 
 /** Ile rzek na masę lądu — legacy helper (nieużywany przez generateRivers; siatka N×N decyduje). */
@@ -4179,7 +4307,7 @@ export function purgeOceanInsideEarthLandMask(
       if (!nh || nh.terenBazowy === TerenBazowy.Morze || nh.terenBazowy === TerenBazowy.Wybrzeze) continue;
       if (nh.terenBazowy === TerenBazowy.Pustynia) pustN++;
     }
-    hex.terenBazowy = climateZoneAt(q, r, height) === 'arid' && pustN >= 2
+    hex.terenBazowy = climateBandAt(q, r, height) === 'desert' && pustN >= 2
       ? TerenBazowy.Pustynia
       : TerenBazowy.Laka;
     hex.nakladka = Nakladka.Brak;

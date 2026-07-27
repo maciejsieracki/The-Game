@@ -7,6 +7,7 @@
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
 import { onCityCapturedCulture } from './conquest-stability';
+import { applyPostCaptureLawOnCapture } from './post-capture-law';
 import type { RuntimeUnit } from '../units/setup';
 import { hexNeighborCoords, isCivilianUnit } from '../units/setup';
 import { syncStackRuchLeft } from './armyMerge';
@@ -401,6 +402,7 @@ export function applyCityCaptureAfterBattle(
     if (live.oblegaCityId === city.id) delete live.oblegaCityId;
   }
 
+  applyPostCaptureLawOnCapture(city, atkOwner, prevOwner);
   city.ownerId = atkOwner;
   city.oblegane = false;
   if (city.rebelState) city.rebelState = false;

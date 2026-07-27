@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-27 (NAJNOWSZY — sesja UI miasta / mapa / dyplomacja / Manpower HP):** deploy ROBOCZA **`f694dcba`** (FALA 31, commit `53b9901`). Drzewo CZYSTE po deployu, **NIC nie jest w toku**. Cała praca sesji opisana w **sekcji 3a-5** poniżej. Skrót łańcucha deployów 2026-07-27: FALA 29 `e0238cc8` (`ba4dabd`) panel miasta UX + hex dblclick → FALA 30 `d9f2c1fa` (`f4a8d7c`) dyplomacja handel + sentry + AI perf → FALA 31 `f694dcba` (`53b9901`) wojna HUD + klik mapy + dyplo player card + **B-MP-Q1** HP heal z Manpower. POLE-BITWY: build pominięty (OneDrive lock). **Rejestr wersji:** [`dyspozycje/WERSJE.md`](dyspozycje/WERSJE.md).
+**Stan na 2026-07-27 (NAJNOWSZY):** deploy ROBOCZA **`2c3804da`** (FALA 33). Skrót łańcucha: FALA 29 `e0238cc8` → FALA 30 `d9f2c1fa` → FALA 31 `f694dcba` → FALA 32 `e7c0655d` → FALA 33 **`2c3804da`** (garnizon + kultura + B-LAW-Q1 + C-MAP-Q3). **Nowa gra** (Ctrl+F5) dla mapy klimatycznej. POLE-BITWY: pominięty (OneDrive lock). **Rejestr wersji:** [`dyspozycje/WERSJE.md`](dyspozycje/WERSJE.md).
 
 **Poprzedni stan (2026-07-24 — sesja surowce/UI/miasta-państwa):** deploy ROBOCZA **`8dc09b8a`** (FALA 6.2). Skrót: FALA 5→6.2 (surowce jednostek, magazyn 500, handel MP, portret MP=symbol kultury). Szczegóły w **sekcji 3a-3**.
 

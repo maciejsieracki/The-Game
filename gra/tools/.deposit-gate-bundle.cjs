@@ -374,6 +374,7 @@ var TerenBazowy = /* @__PURE__ */ ((TerenBazowy3) => {
   TerenBazowy3["Wybrzeze"] = "wybrzeze";
   TerenBazowy3["Morze"] = "morze";
   TerenBazowy3["Pustynia"] = "pustynia";
+  TerenBazowy3["Polarny"] = "polarny";
   return TerenBazowy3;
 })(TerenBazowy || {});
 var Nakladka = /* @__PURE__ */ ((Nakladka3) => {
@@ -6765,7 +6766,8 @@ var DEFAULT_TERRAIN_COSTS = {
   ["wybrzeze" /* Wybrzeze */]: Infinity,
   ["wzgorza" /* Wzgorza */]: 2,
   ["gory" /* Gory */]: Infinity,
-  ["morze" /* Morze */]: Infinity
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
@@ -6804,7 +6806,8 @@ var ELEVATION_RANK = {
   ["pustynia" /* Pustynia */]: 3,
   ["rownina" /* Rownina */]: 4,
   ["wzgorza" /* Wzgorza */]: 5,
-  ["gory" /* Gory */]: 6
+  ["gory" /* Gory */]: 6,
+  ["polarny" /* Polarny */]: 2
 };
 var BASE_DEPOSIT_RULES = [
   {
@@ -6895,7 +6898,8 @@ var TERRAIN_SURFACE_Y = {
   ["rownina" /* Rownina */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.02,
   ["pustynia" /* Pustynia */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.08,
   ["wzgorza" /* Wzgorza */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.18,
-  ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32
+  ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32,
+  ["polarny" /* Polarny */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.04
 };
 var ROBLOX_TERRAIN_VIS = {
   ["morze" /* Morze */]: { height: 0.3, yOffset: 0 },
@@ -6906,7 +6910,8 @@ var ROBLOX_TERRAIN_VIS = {
   /** Pustynia = profil wzgórza (Maciej 2026-07-04: nie zalewa morze). */
   ["pustynia" /* Pustynia */]: { height: 0.42, yOffset: 0.08 },
   ["wzgorza" /* Wzgorza */]: { height: 0.42, yOffset: 0.08 },
-  ["gory" /* Gory */]: { height: 0.46, yOffset: 0.12 }
+  ["gory" /* Gory */]: { height: 0.46, yOffset: 0.12 },
+  ["polarny" /* Polarny */]: { height: 0.36, yOffset: 0.06 }
 };
 var COAST_WATER_CAP_THICKNESS = 0.038 * 1.15;
 var CIV_TERRAIN_VIS = {
@@ -6916,7 +6921,8 @@ var CIV_TERRAIN_VIS = {
   ["rownina" /* Rownina */]: { height: 0.45, yOffset: 0.08 },
   ["pustynia" /* Pustynia */]: { height: 0.42, yOffset: 0.08 },
   ["wzgorza" /* Wzgorza */]: { height: 0.7, yOffset: 0.15 },
-  ["gory" /* Gory */]: { height: 1.2, yOffset: 0.4 }
+  ["gory" /* Gory */]: { height: 1.2, yOffset: 0.4 },
+  ["polarny" /* Polarny */]: { height: 0.38, yOffset: 0.06 }
 };
 var TERRAIN_CIV = {
   ["morze" /* Morze */]: 2054790,
@@ -6925,7 +6931,8 @@ var TERRAIN_CIV = {
   ["rownina" /* Rownina */]: 11121239,
   ["pustynia" /* Pustynia */]: 14270841,
   ["wzgorza" /* Wzgorza */]: 5209396,
-  ["gory" /* Gory */]: 10133929
+  ["gory" /* Gory */]: 10133929,
+  ["polarny" /* Polarny */]: 15265525
 };
 var TERRAIN_ROBLOX = {
   ["morze" /* Morze */]: 5608621,
@@ -6935,7 +6942,8 @@ var TERRAIN_ROBLOX = {
   ["rownina" /* Rownina */]: 11586174,
   ["pustynia" /* Pustynia */]: 14731406,
   ["wzgorza" /* Wzgorza */]: 8300658,
-  ["gory" /* Gory */]: 10332340
+  ["gory" /* Gory */]: 10332340,
+  ["polarny" /* Polarny */]: 15659768
 };
 var TERRAIN_MINECRAFT = {
   ["morze" /* Morze */]: 2842280,
@@ -6944,7 +6952,8 @@ var TERRAIN_MINECRAFT = {
   ["rownina" /* Rownina */]: 7249987,
   ["pustynia" /* Pustynia */]: 14402396,
   ["wzgorza" /* Wzgorza */]: 4880946,
-  ["gory" /* Gory */]: 9080985
+  ["gory" /* Gory */]: 9080985,
+  ["polarny" /* Polarny */]: 14476526
 };
 
 // src/render/pastwisko-modele.ts
@@ -7088,6 +7097,16 @@ var terrain_yields_default = {
       Kamie\u0144: 0,
       Suma: 1,
       Uwagi: null
+    },
+    {
+      Teren: "Polarny",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 0,
+      Handel: 0,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 0,
+      Uwagi: "Strefa polarna (\u015Bnieg) \u2014 niezamieszkana, C-MAP-Q3b"
     }
   ],
   terrain_modifiers: [
@@ -7717,7 +7736,8 @@ var TERRAIN_NAME_TO_ENUM = {
   "G\xF3ry": "gory" /* Gory */,
   "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
   "Morze": "morze" /* Morze */,
-  "Pustynia": "pustynia" /* Pustynia */
+  "Pustynia": "pustynia" /* Pustynia */,
+  "Polarny": "polarny" /* Polarny */
 };
 function terrainRowToTileYield(row) {
   return {

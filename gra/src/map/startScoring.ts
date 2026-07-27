@@ -40,7 +40,8 @@ function isArable(tb: TerenBazowy): boolean {
 function canFoundOnTerrain(tb: TerenBazowy): boolean {
   return tb !== TerenBazowy.Morze
     && tb !== TerenBazowy.Wybrzeze
-    && tb !== TerenBazowy.Gory;
+    && tb !== TerenBazowy.Gory
+    && tb !== TerenBazowy.Polarny;
 }
 
 /**
@@ -62,7 +63,7 @@ export function scoreCityStartHex(map: GameMap, q: number, r: number): number {
       score += 3;
       break;
     case TerenBazowy.Pustynia:
-      score += 1;
+      score -= 4;
       break;
     default:
       score += 2;

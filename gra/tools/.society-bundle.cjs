@@ -388,7 +388,8 @@ var DEFAULT_TERRAIN_COSTS = {
   ["wybrzeze" /* Wybrzeze */]: Infinity,
   ["wzgorza" /* Wzgorza */]: 2,
   ["gory" /* Gory */]: Infinity,
-  ["morze" /* Morze */]: Infinity
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
@@ -435,6 +436,13 @@ var miasto_params_default = {
     wartosc: 1,
     jednostka: "0/1",
     opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
+  },
+  manpower_uzupelnienie_hp_proc_max_tura: {
+    easy: 25,
+    normal: 20,
+    hard: 15,
+    jednostka: "% maxHP/tura",
+    opis: "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP \xD7 warto\u015B\u0107/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP \xD7 kosztJednostki). Przy braku MP \u2014 leczenie cz\u0119\u015Bciowe do dost\u0119pnej puli. manpower.tickManpowerUnitReplenishment."
   },
   jednostka_koszt_domyslny: {
     wartosc: 10,

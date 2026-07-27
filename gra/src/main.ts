@@ -149,6 +149,13 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import {
+  applyPostCaptureLawOnCapture,
+  applyPostCaptureLawOverride,
+  markCityRebellionStarted,
+  shouldSuppressRevoltDuringPostCaptureLaw,
+  tickPostCaptureLawEndOfTurn,
+} from './game/post-capture-law';
+import {
   buildPlaytestWalkaMapy,
   PLAYTEST_WALKA_SEED,
   collectPlaytestBattleRoster,
@@ -7800,6 +7807,7 @@ async function boot(): Promise<void> {
       const newOwner = besiegerOwnerForCity(city);
       if (newOwner !== null && newOwner !== city.ownerId) {
         const oldOwner = city.ownerId;
+        applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         city.ownerId = newOwner;
         if (city.rebelState) city.rebelState = false;
         city.population = Math.max(1, city.population);
@@ -16481,7 +16489,11 @@ async function boot(): Promise<void> {
                 rp,
               );
               ownCultureShare = convTick.ownCultureShare;
-              (city as { ownCultureShare?: number }).ownCultureShare = ownCultureShare;
+              // Założone miasta bez mixu — nie materializuj ownCultureShare (=1), inaczej
+              // po turze 1 cultureMixActive=true i presja sąsiadów obniża „Grecka 100%”.
+              if (cultureMixActive || ownCultureShare < 1) {
+                (city as { ownCultureShare?: number }).ownCultureShare = ownCultureShare;
+              }
               curRel = convTick.religionState;
               cityRelig.set(cid, curRel);
               foreignReligionDominant = isForeignReligionDominant(curRel, ownRel, rp);
@@ -16620,7 +16632,7 @@ async function boot(): Promise<void> {
               const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities, 10, capitalCityIdForOwner(0));
               const revoltParams = loadRevoltParams(data.societyParams, difficulty);
 
-              const ordPct = evaluateOrderFromBreakdown(
+              const ordPctRaw = evaluateOrderFromBreakdown(
                 {
                   difficulty,
                   era: empireEpochForOwner(city.ownerId),
@@ -16658,19 +16670,26 @@ async function boot(): Promise<void> {
                 difficulty,
               );
 
+              const postCaptureLawActive = shouldSuppressRevoltDuringPostCaptureLaw(city);
+              const ordPct = postCaptureLawActive
+                ? applyPostCaptureLawOverride(ordPctRaw, city, data.societyParams, difficulty)
+                : ordPctRaw;
+
               const orderEff = ordPct.effects;
               const tier = ordPct.tier;
               const conquestRevoltMult = conquestRevoltRiskMultiplier(
                 ownCultureShare, foreignReligionDominant, gCountLaw,
               );
-              const effectiveRevoltRisk = orderEff.revoltRisk * conquestRevoltMult;
+              const effectiveRevoltRisk = postCaptureLawActive
+                ? 0
+                : orderEff.revoltRisk * conquestRevoltMult;
 
               const osiedleImmune = isOsiedleRevoltImmune(
                 city.population, data.societyParams, difficulty,
               );
 
               let graceUpd;
-              if (osiedleImmune) {
+              if (osiedleImmune || postCaptureLawActive) {
                 city.revoltGraceRemaining = null;
                 graceUpd = {
                   revoltGraceRemaining: null,
@@ -16682,6 +16701,7 @@ async function boot(): Promise<void> {
                 graceUpd = updateRevoltGrace(city.revoltGraceRemaining, ordPct.porPct, revoltParams);
                 city.revoltGraceRemaining = graceUpd.revoltGraceRemaining;
                 if (graceUpd.shouldTriggerRebellion && city.ownerId === 0 && !city.rebelState) {
+                  markCityRebellionStarted(city);
                   city.rebelState = true;
                   city.ownerId = REBEL_FACTION_OWNER_ID;
                   console.log(`[Rebelia] Tura ${turn} ${city.name} → frakcja rebeliantów`);
@@ -16697,6 +16717,7 @@ async function boot(): Promise<void> {
               }
               if (
                 !osiedleImmune
+                && !postCaptureLawActive
                 && !graceUpd.revoltWarning
                 && !city.rebelState
                 && orderEff.revoltRisk > 0
@@ -16730,7 +16751,12 @@ async function boot(): Promise<void> {
                 revoltGraceRemaining: graceUpd.graceTurnsLeft,
                 revoltWarning: graceUpd.revoltWarning,
                 rebelState: city.rebelState,
+                postCaptureLawTurnsRemaining: city.postCaptureLawTurnsRemaining,
               });
+
+              if (postCaptureLawActive) {
+                tickPostCaptureLawEndOfTurn(city);
+              }
 
               orderValueMap.set(cid, ordPct.porPct);
               growthMultMap.set(cid, orderEff.growthMult);

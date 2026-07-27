@@ -17,6 +17,8 @@ export enum TerenBazowy {
   Wybrzeze = 'wybrzeze',
   Morze    = 'morze',
   Pustynia = 'pustynia',
+  /** Strefa polarna (śnieg) — niezamieszkana, C-MAP-Q3b. */
+  Polarny  = 'polarny',
 }
 
 /**
