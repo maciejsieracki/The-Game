@@ -6,7 +6,7 @@
 | **Kuźnie** | tylko pancerz +15/+30/+45%; stal usunięta z Wielkiej Kuźni |
 | **tech.json** | Hutnictwo żelaza · Obróbka żelaza — nazwy, wymagania, odblokowania |
 | **Testy** | converters 33/33 · koszty 119 · upgrade-budynki 49 · eko-p3 · spichlerz · grupy-budynkow |
-| **Deploy** | **bez** — czeka `push` |
+| **Deploy** | **`71dffa40`** · `gra-robocza/START.html` · commit `540d920` |
 
 Decyzja: `docs/decyzje/B-ODLEWNIA-KUZNIA-LANCUCH-2026-07-27.md`
 

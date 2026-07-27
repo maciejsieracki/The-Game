@@ -12,7 +12,7 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 ## ROBOCZA `71dffa40` — 2026-07-27 18:32 — FALA 40: łańcuch odlewni + tech tree — **AKTUALNA**
-- md5 (pelne): `71dffa407fd2d3bce734f0ee8c281cf2` · stempel: `ROBOCZA · 2026-07-27 18:32` · commit: `(po push)`
+- md5 (pelne): `71dffa407fd2d3bce734f0ee8c281cf2` · stempel: `ROBOCZA · 2026-07-27 18:32` · commit: `540d920`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html`
 - Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive stamp retry via TEMP OK).
