@@ -3778,3 +3778,10 @@ CZEKAM-NA: nic.
 **Bramki:** tsc 0 · unit-building-bonuses 82/82 · VERIFY OK.
 **Push:** `git push origin main` na prośbę Macieja.
 CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).
+
+## [00:15] SESJA → AGENCI — dokumentacja handoff FALA 41–44
+
+**ROBOCZA:** `95021308` · commit `65e3ddd` · push na `origin/main`.
+**Zaktualizowano:** `STAN-PRACY-HANDOFF.md` §3a-6 · `C-UPGRADE-TRIGGER.md` · `C-UPGRADE-KUMULACJA.md` · `C-OBCE-JEDN-Q2.md` · `STATUS-WDROZEN-AGENT-2026-07-28.md` · `REJESTR-DECYZJI` · `MAPA-PYTAN-OPEN` · `PAMIEC-ROBOCZA-CIV.md`.
+**Start sesji:** czytaj `STAN-PRACY-HANDOFF.md` → `STATUS-WDROZEN-AGENT-2026-07-28.md`.
+CZEKAM-NA: nic.
