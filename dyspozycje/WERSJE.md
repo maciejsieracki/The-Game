@@ -16,6 +16,7 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
 - Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive).
+- **Follow-up 2026-07-27 23:10:** POLE-BITWY odświeżony ręcznie (`a5a60f15`) · BITWA-DUZA + OBLEZENIE-DUZE skopiowane z FALA 41 (`e2641312`) · `START.html` zsynchronizowany.
 - **Co nowego (FALA 41):**
   - **PYTANIE-85:** centralny magazyn żywności, racje 1/2/3, wzrost % ułamkowy po Szczęściu, panel Spichlerz centralny, batony racji w mieście.
   - **Podatek:** strumień z pól terenu zawsze „Podatek" (bez Danina/Mennica); `terrain-yields.json` kolumna Podatek (Łąka 2, Rzeka +3, Las +2).

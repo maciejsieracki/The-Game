@@ -3744,3 +3744,11 @@ CZEKAM-NA: Maciej `push` (propozycja: najpierz P84-stock + B5 poza żywnością,
 **Zakres:** PYTANIE-85 (żywność/racje/wzrost/Spichlerz centralny) + Podatek (nazwa+plony) + bonus Podatek na ulepszeniach (Excel) + głód wojska 75%.
 **Bramki:** tsc 0 · P85 11+13+17 · army-hunger 13 · podatek 15+12.
 CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).
+
+## [23:10] SESJA → MACIEJ — FALA 41 follow-up: POLE-BITWY + playtesty duże + START.html
+
+**POLE-BITWY:** `a5a60f15f50075f51e2e3a8ab10c4097` (1.25 MB) — vite `oblezenie-bitwa.config.ts`, stamp ROBOCZA.
+**BITWA-DUZA / OBLEZENIE-DUZE:** `e264131202c270cce8903799aef8a1a9` — kopia `Gra-ROBOCZA.html` FALA 41 + stamp.
+**START.html:** FALA 41 `c1e7a596`, wszystkie card-meta zaktualizowane, link POLE-BITWY dodany.
+**PYTANIE-84 gap:** rdzeń R1–R3 + R4–R10 + U-5…U-25 w src — braki: U-12/U-25 pkt Zdrowia Spichlerza (zastąpione P85 wzrost %), ½ żywności ludności przy Spichlerzu.
+CZEKAM-NA: nic (bez push — Maciej nie prosił).
