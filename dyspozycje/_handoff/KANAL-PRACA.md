@@ -3686,4 +3686,12 @@ Bramki: tsc 0 · scout 10/10 · diplomacy-display 26/26.
 **Testuj `6691eb3e` — `gra-robocza/START.html`.**
 CZEKAM-NA: nic.
 
+## [17:32 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `08c676a5` (FALA 38, VERIFY)
+
+**md5 `08c676a56b568d59277d0a5e573a517a`**, stempel `ROBOCZA · 2026-07-27 17:32`. **VERIFY OK**.
+**DYSPOZYCJA-85-SUWAK=C:** globalny suwak imperium + override miasta + save/load.
+Bramki: tsc 0 · scout 10/10 · diplomacy 26/26 · deposit-gate 49/49 · mennica 49/49.
+**Testuj `08c676a5` — `gra-robocza/START.html`.**
+CZEKAM-NA: C-OBCE-JEDN-Q2 render (Opus, osobna sesja).
+
 ## [17:15 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `1d2eb0ba` (FALA 37, próbny) — ZASTĄPIONY

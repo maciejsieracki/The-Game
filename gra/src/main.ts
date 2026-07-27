@@ -4633,6 +4633,7 @@ async function boot(): Promise<void> {
     }
 
     initEmpireFoodStates();
+    initOwnerDefaultPodzialHandlu();
 
     // -----------------------------------------------------------------------
     // AI / Barbarians / Victory state
@@ -5308,6 +5309,8 @@ async function boot(): Promise<void> {
       cityRenderer.sync(cities, _cityRenderOpts());
 
       initEmpireFoodStates();
+      initOwnerDefaultPodzialHandlu();
+      migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, undefined);
       console.log(
         '[ClusterStart] typ=' + playerCivId +
         ' rywale=' + rywaleNaKlaster + ' (deferred)' +
@@ -9730,6 +9733,7 @@ async function boot(): Promise<void> {
         // PYTANIE-84: runtime gate dostęp/magazyn dla budynków złożowych.
         makeOwnerRuntimeActiveLabelsResolver(),
         makeOwnerEmpireStockResolver(),
+        ownerDefaultPodzialHandlu,
       );
       const cityFoods = preview.perCity
         .filter(tk => tk.ownerId === 0 && !tk.oblegany)
@@ -9800,6 +9804,7 @@ async function boot(): Promise<void> {
         // PYTANIE-84: runtime gate dostęp/magazyn dla budynków złożowych.
         makeOwnerRuntimeActiveLabelsResolver(),
         makeOwnerEmpireStockResolver(),
+        ownerDefaultPodzialHandlu,
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
       _lastPieniadzRate = playerEcon.pieniadz;
@@ -12631,6 +12636,23 @@ async function boot(): Promise<void> {
         },
       });
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
+      configureEmpireHandelSplit({
+        getOwnerDefault: (ownerId) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
+        onOwnerDefaultChange: (ownerId, split) => {
+          if (ownerId !== 0) return;
+          ownerDefaultPodzialHandlu.set(0, normalizePodzialHandlu(split));
+          markCityStateDirty();
+          updateHud();
+        },
+        getDaninaLabel: () => {
+          const capId = capitalCityIdForOwner(0);
+          return resolveDaninaLabel(
+            unlockedTechsForOwner(0).includes('Waluta'),
+            mennicaWStolicy(capId, capId ? cityBuilt.get(capId) : undefined),
+            ownerZlotoAccessForMennicaEffective(0),
+          );
+        },
+      });
     }
 
     function updateHud(): void {
@@ -12793,12 +12815,31 @@ async function boot(): Promise<void> {
           console.log(`[AutoManage] Wlaczono dla ${cityId}`);
         }
       },
-      getPodzialHandlu: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandlu ?? null,
+      getPodzialHandlu: (cityId: string) => {
+        const c = cities.find(ct => ct.id === cityId);
+        return c ? effectivePodzialHandlu(c) : null;
+      },
+      getOwnerDefaultPodzialHandlu: (ownerId: number) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
+      getPodzialHandluOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandluOverride === true,
+      onPodzialHandluOverrideChange: (cityId: string, useOverride: boolean) => {
+        const c = cities.find(ct => ct.id === cityId);
+        if (!c || c.ownerId !== 0) return;
+        if (useOverride) {
+          c.podzialHandluOverride = true;
+          c.podzialHandlu = { ...effectivePodzialHandlu(c) };
+        } else {
+          c.podzialHandluOverride = false;
+          delete c.podzialHandlu;
+        }
+        markCityStateDirty();
+        updateHud();
+      },
       getPodzialPracy: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracy ?? null,
       onPodzialHandluChange: (cityId: string, split) => {
         const c = cities.find(ct => ct.id === cityId);
         if (c && c.ownerId === 0) {
-          c.podzialHandlu = { ...split };
+          c.podzialHandluOverride = true;
+          c.podzialHandlu = normalizePodzialHandlu(split);
           markCityStateDirty(); // D10: podział podatków/handlu → przelicz
           updateHud();
         }
@@ -16210,6 +16251,7 @@ async function boot(): Promise<void> {
           loadCivId: _menuCivId,
           loadLandFraction: _lastNewGameParams?.landFractionPercent ?? 30,
           empireFoodStates: Array.from(empireFoodStates.entries()),
+          ownerDefaultPodzialHandlu: Array.from(ownerDefaultPodzialHandlu.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
           siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
@@ -16717,7 +16759,7 @@ async function boot(): Promise<void> {
             // PYTANIE-84: runtime gate dostęp/magazyn dla budynków złożowych.
             makeOwnerRuntimeActiveLabelsResolver(),
             makeOwnerEmpireStockResolver(),
-            new Map(),
+            ownerDefaultPodzialHandlu,
             {
               units: units.map(u => ({
                 id: u.id,
@@ -17228,7 +17270,7 @@ async function boot(): Promise<void> {
               // jedyny sensowny wpiecie punkt dla zadowolenia (CityYieldResult.zadowolenie
               // nie jest propagowane do CityEconomyTick, patrz turn-economy.ts).
               const haCuda = wonderCityYieldBonusForOwner(city.ownerId).zadowolenie ?? 0;
-              const podzial = city.podzialHandlu ?? DEFAULT_PODZIAL_HANDLU;
+              const podzial = effectivePodzialHandlu(city);
               const gCountLaw = lawGarrisonCountForCity(city);
               const conquestUnstablePen = conquestUnstableHappinessPenalty(
                 ownCultureShare, foreignReligionDominant, data.societyParams, difficulty,
@@ -17655,17 +17697,19 @@ async function boot(): Promise<void> {
                 );
                 if (sliderDecision.changed) {
                   const naukaDelta = sliderDecision.procentNauka - sliderSt.procentNauka;
+                  const baseSplit = ownerDefaultPodzialHandlu.get(ownerId) ?? DEFAULT_PODZIAL_HANDLU;
+                  const pieniadz = Math.max(0, Math.min(100, baseSplit.procentPieniadz - naukaDelta));
+                  ownerDefaultPodzialHandlu.set(ownerId, normalizePodzialHandlu({
+                    procentNauka:    sliderDecision.procentNauka,
+                    procentPieniadz: pieniadz,
+                    procentLuksus:   Math.max(0, 100 - sliderDecision.procentNauka - pieniadz),
+                  }));
                   for (const c of cities) {
                     if (c.ownerId !== ownerId) continue;
                     c.procentRozwoj = sliderDecision.procentRozwoj;
                     c.podzialPracy = { procentBudynki: sliderDecision.procentBudynki };
-                    const baseSplit = c.podzialHandlu ?? DEFAULT_PODZIAL_HANDLU;
-                    const pieniadz = Math.max(0, Math.min(100, baseSplit.procentPieniadz - naukaDelta));
-                    c.podzialHandlu = {
-                      procentNauka:    sliderDecision.procentNauka,
-                      procentPieniadz: pieniadz,
-                      procentLuksus:   Math.max(0, 100 - sliderDecision.procentNauka - pieniadz),
-                    };
+                    c.podzialHandluOverride = false;
+                    delete c.podzialHandlu;
                   }
                   aiSliderStateByOwner.set(ownerId, {
                     procentRozwoj:  sliderDecision.procentRozwoj,
@@ -19155,12 +19199,31 @@ async function boot(): Promise<void> {
             console.log(`[AutoManage] Wlaczono dla ${cityId}`);
           }
         },
-        getPodzialHandlu: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandlu ?? null,
+        getPodzialHandlu: (cityId: string) => {
+          const c = cities.find(ct => ct.id === cityId);
+          return c ? effectivePodzialHandlu(c) : null;
+        },
+        getOwnerDefaultPodzialHandlu: (ownerId: number) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
+        getPodzialHandluOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandluOverride === true,
+        onPodzialHandluOverrideChange: (cityId: string, useOverride: boolean) => {
+          const c = cities.find(ct => ct.id === cityId);
+          if (!c || c.ownerId !== 0) return;
+          if (useOverride) {
+            c.podzialHandluOverride = true;
+            c.podzialHandlu = { ...effectivePodzialHandlu(c) };
+          } else {
+            c.podzialHandluOverride = false;
+            delete c.podzialHandlu;
+          }
+          markCityStateDirty();
+          updateHud();
+        },
         getPodzialPracy: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracy ?? null,
         onPodzialHandluChange: (cityId: string, split) => {
           const c = cities.find(ct => ct.id === cityId);
           if (c && c.ownerId === 0) {
-            c.podzialHandlu = { ...split };
+            c.podzialHandluOverride = true;
+            c.podzialHandlu = normalizePodzialHandlu(split);
             markCityStateDirty(); // D10: podział podatków/handlu → przelicz
             updateHud();
           }
@@ -20549,6 +20612,9 @@ async function boot(): Promise<void> {
       }
       bindEmpireFoodRuntime(empireFoodStates);
       syncCityFoodSplitsFromEmpire();
+      ownerDefaultPodzialHandlu.clear();
+      const savedHandel = saved.meta?.ownerDefaultPodzialHandlu as Array<[number, CityPodzialHandlu]> | undefined;
+      migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, savedHandel);
       restoreMennicaZlotoGrace(
         mennicaZlotoGraceState,
         saved.meta?.mennicaZlotoGrace as MennicaZlotoGraceSave | undefined,

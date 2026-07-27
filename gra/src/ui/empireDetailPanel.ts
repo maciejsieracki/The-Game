@@ -69,9 +69,9 @@ function wireDefaultHandelSplitInputs(
       for (const other of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
         const k = other.dataset.handelKey as keyof CityPodzialHandlu;
         other.value = String(current[k]);
-      }
-      const pct = host.querySelector(`[data-pct="${k}"] b`);
+        const pct = host.querySelector(`[data-pct="${k}"] b`);
         if (pct) pct.textContent = `${current[k]}%`;
+      }
     });
   }
 }

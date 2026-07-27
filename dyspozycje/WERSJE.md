@@ -11,7 +11,17 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `6691eb3e` — 2026-07-27 17:25 — FALA 37: paczka ABC + ZNALEZISKO-86 — **AKTUALNA**
+## ROBOCZA `08c676a5` — 2026-07-27 17:32 — FALA 38: DYSPOZYCJA-85 globalny suwak — **AKTUALNA**
+- md5 (pelne): `08c676a56b568d59277d0a5e573a517a` · stempel: `ROBOCZA · 2026-07-27 17:32` · commit: *(po commit deploy)*
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html`
+- Wynik `vite build` exit 0. POLE-BITWY: pominięty (npm devdir warning).
+- **Co nowego (FALA 38):**
+  - **DYSPOZYCJA-85-SUWAK=C:** globalny domyślny podział Daniny/Podatku imperium + override per miasto (`empire-handel-split.ts`, `main.ts`, `empireDetailPanel.ts`, `cityPanel.ts`, save/load `meta.ownerDefaultPodzialHandlu`).
+- **Poza F38:** C-OBCE-JEDN-Q2 render (portret/sygnet) · R-MUZYKA · R-FULLSCREEN.
+- **Bramki:** tsc 0 · scout 10/10 · diplomacy-display 26/26 · deposit-gate 49/49 · mennica 49/49.
+
+## ROBOCZA `6691eb3e` — 2026-07-27 17:25 — FALA 37: paczka ABC + ZNALEZISKO-86 — **ZASTĄPIONA**
 - md5 (pelne): `6691eb3e920045a24f7be8f94216e1db` · stempel: `ROBOCZA · 2026-07-27 17:25` · commit: `a17b541`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html`

@@ -1,3 +1,12 @@
+## [17:32] ✅ Gotowe — deploy ROBOCZA FALA 38 (`08c676a5`)
+
+| Co | Status |
+|----|--------|
+| **DYSPOZYCJA-85-SUWAK** | globalny suwak imperium + override miasta |
+| **md5** | `08c676a5` · `gra-robocza/START.html` |
+
+**Poza bundlem:** C-OBCE-JEDN-Q2 render (portret/sygnet lewo) · R-MUZYKA · R-FULLSCREEN.
+
 ## [17:25] ✅ Gotowe — deploy ROBOCZA FALA 37 (`6691eb3e`)
 
 | Co | Status |

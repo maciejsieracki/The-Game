@@ -15,18 +15,21 @@
 - Każde miasto może mieć **opcjonalny override** (własny suwak) — gdy brak override, obowiązuje globalny.
 - Dotyczy podziału **Daniny/Podatku** (dawny „Handel" z pól), nie handlu międzynarodowego ze szlaków (osobna dyspozycja 85).
 
-## Stan kodu (audyt 2026-07-27)
+## Stan kodu (audyt 2026-07-27 → wdrożenie)
 
 | Element | Stan | Dowód |
 |---------|------|-------|
-| Suwak per miasto `city.podzialHandlu` | ✅ | `cities.ts`, `cityPanel.ts` |
-| Domyślne wartości z `econ-params` przy normalizacji | ✅ | `turn-economy.ts` `suwaakHandel*Default` |
-| Stałe `DEFAULT_PODZIAL_HANDLU` (20/60/20) przy founding | ✅ | `cities.ts` ~61 |
-| **Stan globalny gracza** (edytowalny suwak imperium) | ❌ | brak w `main.ts` / HUD / panelu imperium |
-| **Flaga override per miasto** | ❌ | każde miasto ma własny zapis bez „użyj globalnego" |
-| AI: polityka imperium na wszystkich miastach | ✅ | `main.ts` ~17368 (wzór do naśladowania dla gracza) |
+| Suwak per miasto + override | ✅ | `cityPanel.ts` — checkbox „Własny podział…" |
+| **Stan globalny gracza** | ✅ | `main.ts` — `ownerDefaultPodzialHandlu` + save/load |
+| **Panel imperium** — domyślny podział | ✅ | `empireDetailPanel.ts` — `configureEmpireHandelSplit()` |
+| **Flaga override per miasto** | ✅ | `cities.ts` — `podzialHandluOverride` |
+| Resolve efektywny podział | ✅ | `empire-handel-split.ts` — `resolveCityPodzialHandlu()` |
+| Ekonomia z mapą owner defaults | ✅ | `turn-economy.ts` — `ownerDefaultPodzialHandluByOwner` |
+| AI: polityka imperium | ✅ | `main.ts` — `decideAIEconomySliders` |
 
-**Werdykt kodu:** **ROZBIEŻNOŚĆ** — jest tylko per-miasto + stałe z JSON; brak globalnego domyślnego suwaka gracza z opcjonalnym override.
+**Werdykt kodu:** ✅ **ZGODNY** z opcją C (subagent [DYSPOZYCJA-85 suwak C](efcb9c89-61c0-408b-a2da-b20b49699ce9)).
+
+**Deploy:** ⏸ lokalnie gotowe — wire `main.ts` + fix `empireDetailPanel.ts` **niecommitowane**; wejdzie w **FALA 38** po sygnale Macieja.
 
 ## Co dalej
 
