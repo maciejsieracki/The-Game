@@ -11,7 +11,18 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `08c676a5` — 2026-07-27 17:32 — FALA 38: DYSPOZYCJA-85 globalny suwak — **AKTUALNA**
+## ROBOCZA `a616a6dd` — 2026-07-27 17:50 — FALA 39: karta jednostki + staty efektywne — **AKTUALNA**
+- md5 (pelne): `a616a6dda7d9ed165d328411e19f8e19` · stempel: `ROBOCZA · 2026-07-27 17:50` · commit: `(po commit)`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html`
+- Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive/inject retry OK).
+- **Co nowego (FALA 39):**
+  - **C-OBCE-JEDN-KARTA:** medalion właściciela · koszary · kuźnia · weteran · statusy (garnizon/czuwaj/fortyfikacja/oblężenie) — tooltip + army stack HUD (`unitCardStatus.ts`, `hexContextTooltip.ts`, `armyStackHud.ts`, `main.ts`).
+  - **C-UNIT-CARD-Q1–Q3:** atak/obrona/pancerz/HP **efektywne** na karcie (baza małym) — `unit-card-stats.ts`.
+- **Poza F39:** C-OBCE-JEDN-Q2 render 3D na żetonie · R-MUZYKA · R-FULLSCREEN.
+- **Bramki:** tsc 0 · vite build OK.
+
+## ROBOCZA `08c676a5` — 2026-07-27 17:32 — FALA 38: DYSPOZYCJA-85 globalny suwak — **ZASTĄPIONA**
 - md5 (pelne): `08c676a56b568d59277d0a5e573a517a` · stempel: `ROBOCZA · 2026-07-27 17:32` · commit: `001a4b1`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html`

@@ -9,6 +9,12 @@ import {
   MAP_UNIT_1E_SHARED_CSS,
 } from './mapUnitHudSkin';
 import { unitIconSvg } from './icons/brandAssets';
+import {
+  buildUnitCardStatusSectionHtml,
+  pathStatusRowHasChips,
+  UNIT_CARD_STATUS_CSS,
+  type UnitCardStatusInput,
+} from './unitCardStatus';
 
 export interface UnitPanelAction {
   id: string;
@@ -22,33 +28,25 @@ export interface UnitPanelState {
   name: string;
   subtitle: string;
   icon: string;
+  ownerEmblemHtml?: string;
   atk: number;
   def: number;
   mov: number;
   rng: number;
   hp: number;
   hpMax: number;
+  parametryPathPp?: number;
+  pancerzPathPp?: number;
   actions: UnitPanelAction[];
-  /**
-   * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts):
-   * etykieta "Pancerz +30% · Parametry +20%" (unitBuildingBonusLabel()), lub
-   * undefined/pusty string gdy jednostka nie zdobyla jeszcze zadnego bonusu.
-   */
   buildingBonusLabel?: string;
-  /**
-   * TRZECI SYSTEM -- doświadczenie bojowe / weterani (2026-07-25,
-   * game/veteran.ts). Etykieta gotowa z veteranBadgeLabel(), np.
-   * "★★ Doświadczony +10%" / "★★★ Weteran +20%"; undefined/pusty string na
-   * poziomie 1 (Rekrut, "brak odznaki" -- świadomie, patrz veteran.ts).
-   * WIZUALNIE ODRÓŻNIALNE od buildingBonusLabel (odznaki budynkowe) --
-   * renderowane osobną linią ze złotą klasą ".veteran-badge" (gwiazdki),
-   * nie mieszane w jeden string z "Pancerz +X% · Parametry +Y%".
-   */
   veteranBadgeLabel?: string;
-  /** Krótki tooltip na ★ (title HTML, C-OBCE-JEDN-Q3 C). */
   veteranStarsTooltip?: string;
-  /** C-OBCE-JEDN-Q3 B — wyjaśnienie pod odznaką (karta obca / własna). */
+  veteranExperienceLine?: string;
   veteranPanelExplanation?: string;
+  inGarnizon?: boolean;
+  sentry?: boolean;
+  ufortyfikowanyWPolu?: boolean;
+  oblegaCityName?: string;
 }
 
 export interface UnitPanelHudConfig {
@@ -90,8 +88,8 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-unit-panel .actions{display:flex;flex-wrap:wrap;gap:6px;}
 .civ-unit-panel .act-danger{border-color:rgba(200,64,64,.45)!important;color:#ffb0b0!important;}
 .civ-unit-panel .act-danger:hover:not(:disabled){border-color:rgba(200,64,64,.65)!important;color:#ffd0d0!important;}
-.civ-unit-panel .veteran-badge{margin:6px 0 0;font-size:0.72em;font-weight:600;letter-spacing:.03em;
-  color:#f4d35e;text-shadow:0 0 6px rgba(244,211,94,.35);}
+.civ-unit-panel .unit-status{margin:8px 0 0;}
+${UNIT_CARD_STATUS_CSS}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -117,7 +115,25 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
     }
     el.classList.add('open');
     const hpPct = u.hpMax > 0 ? Math.round((u.hp / u.hpMax) * 100) : 0;
-    let html = '<div class="hdr"><span class="ic">' + (u.icon || unitIconSvg(undefined)) + '</span>'
+    const emblem = u.ownerEmblemHtml
+      ? `<span class="uc-owner-emblem">${u.ownerEmblemHtml}</span>`
+      : `<span class="ic">${u.icon || unitIconSvg(undefined)}</span>`;
+    const statusInput: UnitCardStatusInput = {
+      parametryPathPp: u.parametryPathPp,
+      pancerzPathPp: u.pancerzPathPp,
+      veteranBadgeLabel: u.veteranBadgeLabel,
+      veteranStarsTooltip: u.veteranStarsTooltip,
+      veteranExperienceLine: u.veteranExperienceLine,
+      veteranPanelExplanation: u.veteranPanelExplanation,
+      inGarnizon: u.inGarnizon,
+      sentry: u.sentry,
+      ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
+      oblegaCityName: u.oblegaCityName,
+      esc,
+    };
+    const statusHtml = buildUnitCardStatusSectionHtml(statusInput);
+    const showBuildingLabel = u.buildingBonusLabel && !pathStatusRowHasChips(statusInput);
+    let html = '<div class="hdr">' + emblem
       + '<div class="info"><h2>' + esc(u.name) + '</h2><div class="sub">' + esc(u.subtitle) + '</div></div>'
       + mapUnitCloseBtnHtml('Zamknij panel')
       + '</div>'
@@ -129,16 +145,9 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
       + '</div>'
       + '<div class="mu-hp-lbl"><span>HP</span><span>' + u.hp + ' / ' + u.hpMax + '</span></div>'
       + '<div class="mu-hp-bar"><i style="width:' + hpPct + '%"></i></div>'
-      + (u.veteranBadgeLabel
-        ? '<div class="veteran-badge" title="' + esc(u.veteranStarsTooltip ?? u.veteranBadgeLabel) + '">'
-          + esc(u.veteranBadgeLabel) + '</div>'
-        : '')
-      + (u.veteranPanelExplanation
-        ? '<div class="sub veteran-edu" style="margin:4px 0 0;color:#c8b878;font-size:11px;">'
-          + esc(u.veteranPanelExplanation) + '</div>'
-        : '')
-      + (u.buildingBonusLabel
-        ? '<div class="sub" style="margin:6px 0 0;">' + esc(u.buildingBonusLabel) + '</div>'
+      + (statusHtml ? '<div class="unit-status">' + statusHtml + '</div>' : '')
+      + (showBuildingLabel
+        ? '<div class="sub" style="margin:6px 0 0;">' + esc(u.buildingBonusLabel!) + '</div>'
         : '')
       + '<div class="actions">';
     for (const a of u.actions) {

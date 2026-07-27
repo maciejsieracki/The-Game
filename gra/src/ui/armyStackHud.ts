@@ -5,6 +5,14 @@
 
 import type { UnitPanelAction } from './unitPanelHud';
 import {
+  buildUnitCardStatusSectionHtml,
+  UNIT_CARD_STATUS_CSS,
+  unitCardAtkDefLineHtml,
+  unitCardStatValueHtml,
+  type UnitCardStatusInput,
+} from './unitCardStatus';
+import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
+import {
   ensureMapUnitBrandScope,
   mapUnitBrandIconHtml,
   mapUnitCloseBtnHtml,
@@ -28,12 +36,24 @@ export interface ArmyStackHudState {
   hexLabel: string;
   unitCount: number;
   cards: ArmyStackCard[];
-  atk: number;
-  def: number;
+  /** Nazwa typu aktywnej jednostki (karta C-OBCE-JEDN-KARTA). */
+  displayName?: string;
+  ownerEmblemHtml?: string;
+  combat: UnitCardCombatDisplay;
   mov: number;
   rng: number;
   hp: number;
-  hpMax: number;
+  parametryPathPp?: number;
+  pancerzPathPp?: number;
+  veteranBadgeLabel?: string;
+  veteranStarsTooltip?: string;
+  veteranExperienceLine?: string;
+  veteranPanelExplanation?: string;
+  inGarnizon?: boolean;
+  sentry?: boolean;
+  ufortyfikowanyWPolu?: boolean;
+  oblegaCityName?: string;
+  buildingBonusLabel?: string;
   actions: UnitPanelAction[];
 }
 
@@ -102,14 +122,22 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-army-stack .ash-card-hp i{display:block;height:100%;background:linear-gradient(90deg,#1a6020,#50b070);}
 .civ-army-stack .ash-card-mv{font-size:0.62em;color:var(--civ-text-muted,#8a8070);text-align:center;margin-top:4px;
   letter-spacing:.04em;}
-.civ-army-stack .ash-body{padding:0 14px 12px;display:flex;gap:14px;align-items:flex-end;}
-.civ-army-stack .ash-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:1;}
-.civ-army-stack .ash-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:240px;}
+.civ-army-stack .ash-body{padding:0 14px 12px;display:flex;flex-direction:column;gap:8px;}
+.civ-army-stack .ash-stats-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;}
+.civ-army-stack .ash-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;flex:0 0 auto;min-width:120px;}
+.civ-army-stack .ash-stat-combat{flex:1;min-width:140px;font-size:0.72em;line-height:1.45;}
+.civ-army-stack .ash-stat-combat .l{color:var(--civ-text-muted,#8a8070);font-size:0.62em;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
+.civ-army-stack .ash-hp-lbl{display:flex;justify-content:space-between;font-size:0.65em;color:var(--civ-text-muted,#8a8070);}
+.civ-army-stack .ash-hp-bar{height:5px;background:rgba(0,0,0,.35);border-radius:2px;overflow:hidden;}
+.civ-army-stack .ash-hp-bar i{display:block;height:100%;background:linear-gradient(90deg,#1a6020,#50b070);}
+.civ-army-stack .ash-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;}
 .civ-army-stack .ash-act-danger{border-color:rgba(200,64,64,.45)!important;color:#ffb0b0!important;}
 .civ-army-stack .ash-act-danger:hover:not(:disabled){border-color:rgba(200,64,64,.65)!important;color:#ffd0d0!important;}
 .civ-army-stack .ash-act-icon{min-width:0;width:34px;height:34px;padding:0;flex:none;}
 .civ-army-stack .ash-act-ic{width:17px;height:17px;display:block;}
 .civ-army-stack .ash-act-ic svg{width:100%;height:100%;display:block;}
+.civ-army-stack .ash-status{padding:0 14px 8px;}
+${UNIT_CARD_STATUS_CSS}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -232,12 +260,40 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
     }
     html += '</div>';
 
-    html += '<div class="ash-body"><div class="ash-stats">'
-      + '<div class="mu-stat"><div class="l">Atak</div><div class="v">' + st.atk + '</div></div>'
-      + '<div class="mu-stat"><div class="l">Obrona</div><div class="v">' + st.def + '</div></div>'
+    const statusInput: UnitCardStatusInput = {
+      parametryPathPp: st.parametryPathPp,
+      pancerzPathPp: st.pancerzPathPp,
+      veteranBadgeLabel: st.veteranBadgeLabel,
+      veteranStarsTooltip: st.veteranStarsTooltip,
+      veteranExperienceLine: st.veteranExperienceLine,
+      veteranPanelExplanation: st.veteranPanelExplanation,
+      inGarnizon: st.inGarnizon,
+      sentry: st.sentry,
+      ufortyfikowanyWPolu: st.ufortyfikowanyWPolu,
+      oblegaCityName: st.oblegaCityName,
+      esc,
+    };
+    const statusHtml = buildUnitCardStatusSectionHtml(statusInput);
+
+    const hpMax = st.combat.hpMaxEffective;
+    const hpPct = hpMax > 0 ? Math.round((st.hp / hpMax) * 100) : 0;
+
+    html += '<div class="ash-body"><div class="ash-stats-row"><div class="ash-stat-combat">'
+      + '<div class="l">Atak / obrona</div><div class="v">' + unitCardAtkDefLineHtml(st.combat) + '</div></div>'
+      + '<div class="ash-stat-combat"><div class="l">Pancerz</div><div class="v">'
+      + unitCardStatValueHtml(st.combat.pancerzEffective, st.combat.pancerzBase) + '</div></div>'
+      + '<div class="ash-stats">'
       + '<div class="mu-stat"><div class="l">Ruch</div><div class="v">' + st.mov + '</div></div>'
       + '<div class="mu-stat"><div class="l">Zasięg</div><div class="v">' + st.rng + '</div></div>'
-      + '</div><div class="ash-actions">';
+      + '</div></div>';
+    html += '<div class="ash-hp-lbl"><span>Punkty życia</span><span>' + Math.round(st.hp) + ' / ' + hpMax
+      + (hpMax !== st.combat.hpMaxBase ? ' <span class="uc-stat-base">(baza ' + st.combat.hpMaxBase + ')</span>' : '')
+      + '</span></div>';
+    html += '<div class="ash-hp-bar"><i style="width:' + hpPct + '%"></i></div>';
+    if (statusHtml) {
+      html += '<div class="ash-status">' + statusHtml + '</div>';
+    }
+    html += '<div class="ash-actions">';
     for (const a of st.actions) {
       let cls = a.primary ? 'mu-gold-btn' : 'mu-muted-btn';
       if (a.danger) cls += ' ash-act-danger';

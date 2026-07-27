@@ -349,64 +349,27 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
 }
 
 import {
-  armorPathBadgeLevel,
-  softPathBadgeLevel,
-  type PathBadgeLevel,
-} from '../game/unit-building-bonuses';
-
-const PATH_BADGE_COLOR: Readonly<Record<1 | 2 | 3, string>> = {
-  1: '#c9762c',
-  2: '#9aa8b6',
-  3: '#e8c84a',
-};
-
-function pathBadgeChipHtml(
-  icon: string,
-  label: string,
-  level: PathBadgeLevel,
-  pct: number,
-  esc: (raw: string) => string,
-): string {
-  if (level === 0) return '';
-  const color = PATH_BADGE_COLOR[level];
-  return `<span class="cp-path-badge" style="color:${color};font-weight:600;">`
-    + `${icon} ${esc(label)} +${pct}%</span>`;
-}
-
-function buildPathStatusRowHtml(
-  softLevel: PathBadgeLevel,
-  softPct: number,
-  armorLevel: PathBadgeLevel,
-  armorPct: number,
-  veteranBadgeLabel: string | undefined,
-  veteranStarsTooltip: string | undefined,
-  esc: (raw: string) => string,
-): string {
-  const chips: string[] = [];
-  const koszary = pathBadgeChipHtml('🛡', 'Koszary', softLevel, softPct, esc);
-  if (koszary) chips.push(koszary);
-  if (veteranBadgeLabel) {
-    const tip = esc(veteranStarsTooltip ?? veteranBadgeLabel);
-    chips.push(
-      `<span class="cp-veteran" style="color:#f4d35e;font-weight:600;" title="${tip}">${esc(veteranBadgeLabel)}</span>`,
-    );
-  }
-  const kuznia = pathBadgeChipHtml('⚒', 'Kuźnia', armorLevel, armorPct, esc);
-  if (kuznia) chips.push(kuznia);
-  if (chips.length === 0) return '';
-  return `<div class="cp-sub cp-path-status">${chips.join(' · ')}</div>`;
-}
+  buildPathStatusRowHtml,
+  buildUnitExtraStatusLinesHtml,
+  buildUnitVeteranEducationHtml,
+  pathStatusRowHasChips,
+  unitCardAtkDefLineHtml,
+  unitCardStatValueHtml,
+  type UnitCardStatusInput,
+} from './unitCardStatus';
+import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
 
 export interface UnitContextTooltipInput {
   displayName: string;
+  /** Medalion portretu / sygnet właściciela (C-OBCE-JEDN-Q2). */
+  ownerEmblemHtml?: string;
   q: number;
   r: number;
   ruchLeft: number;
   ruchMax: number;
-  atak: number;
-  obrona: number;
+  /** Efektywne staty bojowe (C-UNIT-CARD-Q1–Q3). */
+  combat: UnitCardCombatDisplay;
   hp?: number;
-  maxHp: number;
   category?: string;
   inGarnizon?: boolean;
   /** Właściciel (obca jednostka) — etykieta cywilizacji / miasta-państwa. */
@@ -443,64 +406,87 @@ export interface UnitContextTooltipInput {
    * Gdy brak — buildUnitContextTooltipHtml samo nie pokazuje bloku edukacji.
    */
   veteranPanelExplanation?: string;
+  /** Linia doświadczenia bojowego (veteranExperienceLine). */
+  veteranExperienceLine?: string;
+  sentry?: boolean;
+  ufortyfikowanyWPolu?: boolean;
+  oblegaCityName?: string;
   esc: (raw: string) => string;
 }
 
+function formatCardHp(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+
+function unitCardStatusFromTooltip(u: UnitContextTooltipInput): UnitCardStatusInput {
+  return {
+    parametryPathPp: u.parametryPathPp,
+    pancerzPathPp: u.pancerzPathPp,
+    veteranBadgeLabel: u.veteranBadgeLabel,
+    veteranStarsTooltip: u.veteranStarsTooltip,
+    veteranExperienceLine: u.veteranExperienceLine,
+    veteranPanelExplanation: u.veteranPanelExplanation,
+    inGarnizon: u.inGarnizon,
+    sentry: u.sentry,
+    ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
+    oblegaCityName: u.oblegaCityName,
+    esc: u.esc,
+  };
+}
+
+function buildUnitHeadHtml(u: UnitContextTooltipInput): string {
+  const subs: string[] = [];
+  if (u.ownerLabel) subs.push(`Właściciel: ${u.esc(u.ownerLabel)}`);
+  if (u.relationLabel) subs.push(`Relacja: ${u.esc(u.relationLabel)}`);
+  const subHtml = subs.length
+    ? `<div class="uc-unit-head-sub">${subs.join(' · ')}</div>`
+    : '';
+  const emblem = u.ownerEmblemHtml
+    ? `<span class="uc-owner-emblem">${u.ownerEmblemHtml}</span>`
+    : '';
+  return `<div class="uc-unit-head cp-unit-head">${emblem}`
+    + `<div class="uc-unit-head-info"><b>${u.esc(u.displayName)}</b>${subHtml}</div></div>`;
+}
+
 export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string {
-  const lines: string[] = [
-    `<div class="cp-unit-head"><b>${u.esc(u.displayName)}</b></div>`,
-  ];
-  if (u.ownerLabel) {
-    lines.push(subLine('Właściciel', u.esc(u.ownerLabel)));
+  const statusInput = unitCardStatusFromTooltip(u);
+  const pathRow = buildPathStatusRowHtml(statusInput);
+  const hasPathChips = pathStatusRowHasChips(statusInput);
+
+  const lines: string[] = [buildUnitHeadHtml(u)];
+
+  if (u.hp != null && u.combat.hpMaxEffective > 0) {
+    const hpLine = `${Math.round(u.hp)}/${formatCardHp(u.combat.hpMaxEffective)}`
+      + (u.combat.hpMaxEffective !== u.combat.hpMaxBase
+        ? ` <span class="uc-stat-base">(baza ${formatCardHp(u.combat.hpMaxBase)})</span>`
+        : '');
+    lines.push(subLine('Punkty życia', hpLine));
   }
-  if (u.relationLabel) {
-    lines.push(subLine('Relacja', u.esc(u.relationLabel)));
-  }
-  lines.push(subLine('Heks', `(${u.q}, ${u.r})`));
+  lines.push(subLine('Atak / obrona', unitCardAtkDefLineHtml(u.combat)));
+  lines.push(subLine('Pancerz', unitCardStatValueHtml(u.combat.pancerzEffective, u.combat.pancerzBase)));
   if (!u.readOnly) {
     lines.push(subLine('Ruch', `${u.ruchLeft}/${u.ruchMax}`));
   }
-  lines.push(subLine('Atak / obrona', `${u.atak} / ${u.obrona}`));
-  if (u.hp != null && u.maxHp > 0) {
-    lines.push(subLine('Punkty życia', `${Math.round(u.hp)}/${u.maxHp}`));
-  }
-  if (u.category) {
-    lines.push(subLine('Typ', u.esc(u.category)));
-  }
-  const softPct = u.parametryPathPp ?? 0;
-  const armorPct = u.pancerzPathPp ?? 0;
-  const pathRow = buildPathStatusRowHtml(
-    softPathBadgeLevel({ parametryBonusProc: softPct }),
-    softPct,
-    armorPathBadgeLevel({ pancerzBonusProc: armorPct }),
-    armorPct,
-    u.veteranBadgeLabel,
-    u.veteranStarsTooltip,
-    u.esc,
-  );
+
   if (pathRow) {
-    lines.push(pathRow);
-    if (u.veteranPanelExplanation) {
-      lines.push(
-        `<div class="cp-sub cp-veteran-edu" style="color:#c8b878;font-size:11px;margin-top:2px;">${u.esc(u.veteranPanelExplanation)}</div>`,
-      );
-    }
+    lines.push(`<div class="cp-sub">${pathRow}</div>`);
   } else if (u.veteranBadgeLabel) {
     const tip = u.esc(u.veteranStarsTooltip ?? u.veteranBadgeLabel);
     lines.push(
-      `<div class="cp-sub cp-veteran" style="color:#f4d35e;font-weight:600;" title="${tip}">${u.esc(u.veteranBadgeLabel)}</div>`,
+      `<div class="cp-sub uc-veteran-badge" style="color:#f4d35e;font-weight:600;" title="${tip}">`
+        + `${u.esc(u.veteranBadgeLabel)}</div>`,
     );
-    if (u.veteranPanelExplanation) {
-      lines.push(
-        `<div class="cp-sub cp-veteran-edu" style="color:#c8b878;font-size:11px;margin-top:2px;">${u.esc(u.veteranPanelExplanation)}</div>`,
-      );
-    }
   }
-  if (u.buildingBonusLabel) {
+
+  const vetEdu = buildUnitVeteranEducationHtml(statusInput);
+  if (vetEdu) lines.push(`<div class="cp-sub">${vetEdu}</div>`);
+
+  const extra = buildUnitExtraStatusLinesHtml(statusInput);
+  if (extra) lines.push(`<div class="cp-sub">${extra}</div>`);
+
+  if (u.buildingBonusLabel && !hasPathChips) {
     lines.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));
   }
-  if (u.inGarnizon) {
-    lines.push(subLine('Status', 'w garnizonie miasta'));
-  }
+
   return lines.join('');
 }

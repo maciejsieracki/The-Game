@@ -3686,6 +3686,14 @@ Bramki: tsc 0 · scout 10/10 · diplomacy-display 26/26.
 **Testuj `6691eb3e` — `gra-robocza/START.html`.**
 CZEKAM-NA: nic.
 
+## [17:50 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `a616a6dd` (FALA 39, VERIFY)
+
+**md5 `a616a6dda7d9ed165d328411e19f8e19`**, stempel `ROBOCZA · 2026-07-27 17:50`. **VERIFY OK**.
+**C-OBCE-JEDN-KARTA** + **C-UNIT-CARD-Q1–Q3** (staty efektywne atak/obrona/pancerz/HP na karcie).
+Bramki: tsc 0 · vite build OK.
+**Testuj `a616a6dd` — `gra-robocza/START.html`.**
+CZEKAM-NA: nic.
+
 ## [17:32 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `08c676a5` (FALA 38, VERIFY)
 
 **md5 `08c676a56b568d59277d0a5e573a517a`**, stempel `ROBOCZA · 2026-07-27 17:32`. **VERIFY OK**.

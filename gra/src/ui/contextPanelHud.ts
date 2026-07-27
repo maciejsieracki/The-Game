@@ -3,6 +3,7 @@
  */
 
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+import { UNIT_CARD_STATUS_CSS } from './unitCardStatus';
 
 export interface ContextPanelHudConfig {
   /** Treść HTML; null / pusty → panel ukryty (D17=A). */
@@ -33,6 +34,7 @@ function ensureStyles(): void {
 .civ-context-panel .cp-msg .cp-sub{margin-top:0.35em;font-size:11px;color:var(--civ-text-muted,#a09880);line-height:1.45;}
 .civ-context-panel .cp-msg .cp-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
 .civ-context-panel .cp-msg .cp-total{margin-top:0.5em;font-size:12px;color:var(--civ-text-primary,#e8e0c8);}
+${UNIT_CARD_STATUS_CSS}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;

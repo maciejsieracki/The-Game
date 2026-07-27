@@ -233,7 +233,7 @@ import { showUnitReplacePicker } from './ui/unitReplacePicker';
 import { showCityCaptureNotice } from './ui/cityCaptureNotice';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
 import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
-import { unitIconSvg } from './ui/icons/brandAssets';
+import { unitIconSvg, brandIconSvg } from './ui/icons/brandAssets';
 import { techIconSvg } from './ui/techIcons';
 import {
   visibleStackOnHex,
@@ -531,6 +531,7 @@ import {
   unitPancerzBonusFrac, unitParametryBonusFrac, unitBuildingBonusLabel,
   unitPancerzBonusProc, unitParametryBonusProc,
 } from './game/unit-building-bonuses';
+import { unitCardCombatDisplay } from './game/unit-card-stats';
 import {
   cityWallDefenseBonusPercent,
   cityGatedTerrainMultiplier,
@@ -725,7 +726,7 @@ import { showNewGameFlow, hideNewGameFlow, isNewGameFlowOpen, type NewGameParams
 import type { TempoGry } from './game/tech-tempo';
 import type { GameDifficulty } from './game/difficulty-cost';
 import { scaledResearchCost } from './game/difficulty-cost';
-import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit, veteranHasVisibleBadge, veteranStarsTooltipText, veteranFirstEncounterHintHtml, veteranFirstEncounterJournalSubtitle, veteranUnitEducationFields } from './game/veteran';
+import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit, veteranHasVisibleBadge, veteranStarsTooltipText, veteranFirstEncounterHintHtml, veteranFirstEncounterJournalSubtitle, veteranUnitEducationFields, veteranExperienceLine } from './game/veteran';
 import {
   showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
   type DiploRelation, type KnownWarBetweenCivs, type DiplomacyPanelConfig,
@@ -735,6 +736,7 @@ import {
   showWarConsentModal, requestAutoCounterNegotiation,
   type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
 } from './ui/diplomacyAudience';
+import { civLeaderMedallionHtmlById } from './ui/diploUiSkin';
 import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
 import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
 import { actionUsesTradeBasket } from './ui/diplomacyTradeBasket';
@@ -3343,32 +3345,68 @@ async function boot(): Promise<void> {
       }).label;
     }
 
+    function unitOwnerMedallionHtml(ownerId: number): string {
+      if (isBarbarian(ownerId)) {
+        return `<span class="uc-owner-barb">${brandIconSvg('chip-death', 24)}</span>`;
+      }
+      return civLeaderMedallionHtmlById(
+        civKeyForOwner(ownerId),
+        civKolorHexFn(ownerId),
+        empireEpochForOwner(ownerId),
+        isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+      );
+    }
+
+    function unitCardStatusFields(u: RuntimeUnit) {
+      const vetEdu = veteranUnitEducationFields(u);
+      const siegeCity = u.oblegaCityId
+        ? cities.find(c => c.id === u.oblegaCityId)
+        : null;
+      return {
+        parametryPathPp: unitParametryBonusProc(u),
+        pancerzPathPp: unitPancerzBonusProc(u),
+        veteranBadgeLabel: vetEdu?.veteranBadgeLabel,
+        veteranStarsTooltip: vetEdu?.veteranStarsTooltip,
+        veteranExperienceLine: veteranExperienceLine(u),
+        veteranPanelExplanation: vetEdu?.veteranPanelExplanation,
+        inGarnizon: u.inGarnizon === true,
+        sentry: u.sentry === true,
+        ufortyfikowanyWPolu: u.ufortyfikowanyWPolu === true,
+        oblegaCityName: siegeCity?.name,
+        buildingBonusLabel: unitBuildingBonusLabel(u),
+      };
+    }
+
     function buildUnitContextTooltipForUnit(
       u: RuntimeUnit,
       opts: { readOnly?: boolean; ownerLabel?: string; relationLabel?: string } = {},
     ): string {
       const def = lookupUnitDef(u.typeId);
       const defName = String(def?.nazwa ?? def?.Nazwa ?? u.typeId);
-      const vetEdu = veteranUnitEducationFields(u);
+      const status = unitCardStatusFields(u);
+      const combat = unitCardCombatFor(u, def);
       return buildUnitContextTooltipHtml({
         displayName: defName,
+        ownerEmblemHtml: unitOwnerMedallionHtml(u.ownerId),
         q: u.q,
         r: u.r,
         ruchLeft: u.ruchLeft,
         ruchMax: u.ruch,
-        atak: unitAtak(def),
-        obrona: unitObrona(def),
+        combat,
         hp: u.hp,
-        maxHp: unitHealth(def),
         category: u.category,
-        inGarnizon: u.inGarnizon,
-        buildingBonusLabel: unitBuildingBonusLabel(u),
-        parametryPathPp: unitParametryBonusProc(u),
-        pancerzPathPp: unitPancerzBonusProc(u),
-        veteranBadgeLabel: vetEdu?.veteranBadgeLabel,
-        veteranStarsTooltip: vetEdu?.veteranStarsTooltip,
-        veteranPanelExplanation: vetEdu?.veteranPanelExplanation,
-        ownerLabel: opts.ownerLabel,
+        inGarnizon: status.inGarnizon,
+        buildingBonusLabel: status.buildingBonusLabel,
+        parametryPathPp: status.parametryPathPp,
+        pancerzPathPp: status.pancerzPathPp,
+        veteranBadgeLabel: status.veteranBadgeLabel,
+        veteranStarsTooltip: status.veteranStarsTooltip,
+        veteranExperienceLine: status.veteranExperienceLine,
+        veteranPanelExplanation: status.veteranPanelExplanation,
+        sentry: status.sentry,
+        ufortyfikowanyWPolu: status.ufortyfikowanyWPolu,
+        oblegaCityName: status.oblegaCityName,
+        ownerLabel: opts.ownerLabel ?? ownerDiploLabel(u.ownerId),
         relationLabel: opts.relationLabel,
         readOnly: opts.readOnly,
         esc: hudHtmlEsc,
@@ -11878,11 +11916,12 @@ async function boot(): Promise<void> {
       const stackRuch = stackRuchLeft(stack);
       const cards = stack.map(u => {
         const udef = lookupUnitDef(u.typeId);
-        const hpMax = unitHealth(udef);
+        const uCombat = unitCardCombatFor(u, udef);
+        const hpMax = uCombat.hpMaxEffective;
         const movMax = normFieldVal(udef['Ruch'], 2);
         return {
           id: u.id,
-          name: u.typeId,
+          name: String(udef?.nazwa ?? udef?.Nazwa ?? u.typeId),
           icon: unitIconSvg(udef, u.typeId),
           hp: u.hp ?? hpMax,
           hpMax,
@@ -11892,20 +11931,27 @@ async function boot(): Promise<void> {
         };
       });
       const def = lookupUnitDef(active.typeId);
+      const displayName = String(def?.nazwa ?? def?.Nazwa ?? active.typeId);
+      const combat = unitCardCombatFor(active, def);
+      const status = unitCardStatusFields(active);
       const siegeCity = active.oblegaCityId
         ? cities.find(c => c.id === active.oblegaCityId)
         : null;
+      const stackStatusBase = {
+        displayName,
+        ownerEmblemHtml: unitOwnerMedallionHtml(0),
+        ...status,
+      };
       if (isAwaitingFirstPlayerCity()) {
         return {
           hexLabel: '(' + active.q + ',' + active.r + ')',
           unitCount: stack.length,
           cards,
-          atk: unitAtak(def),
-          def: unitObrona(def),
+          ...stackStatusBase,
+          combat,
           mov: normFieldVal(def['Ruch'], 2),
           rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
-          hp: active.hp ?? unitHealth(def),
-          hpMax: unitHealth(def),
+          hp: active.hp ?? combat.hpMaxEffective,
           actions: [],
         };
       }
@@ -11983,12 +12029,11 @@ async function boot(): Promise<void> {
           : '(' + active.q + ',' + active.r + ')',
         unitCount: stack.length,
         cards,
-        atk: unitAtak(def),
-        def: unitObrona(def),
+        ...stackStatusBase,
+        combat,
         mov: normFieldVal(def['Ruch'], 2),
         rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
-        hp: active.hp ?? unitHealth(def),
-        hpMax: unitHealth(def),
+        hp: active.hp ?? combat.hpMaxEffective,
         actions,
       };
     }
@@ -14394,6 +14439,15 @@ async function boot(): Promise<void> {
     /** Return meleeDefence from a unit def. */
     function unitObrona(def: any): number {
       return normFieldVal(def['meleeDefence'], 0);
+    }
+
+    function unitCardCombatFor(u: RuntimeUnit, def: any) {
+      return unitCardCombatDisplay({
+        atak: unitAtak(def),
+        obrona: unitObrona(def),
+        hpMax: unitHealth(def),
+        pancerz: normFieldVal(def['armor'] ?? def['Pancerz'], 0),
+      }, u);
     }
 
     function combatFromDef(def: Record<string, unknown>, typeId: string, hp?: number): CombatUnit {

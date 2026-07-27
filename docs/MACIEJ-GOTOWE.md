@@ -1,3 +1,34 @@
+## [17:50] ✅ Gotowe — deploy ROBOCZA FALA 39 (`a616a6dd`)
+
+| Co | Status |
+|----|--------|
+| **Karta jednostki** | medalion · koszary · kuźnia · weteran · statusy |
+| **Staty efektywne** | Q1=C Q2=A Q3=A — atak/obrona/pancerz/HP |
+| **md5** | `a616a6dd` · `gra-robocza/START.html` |
+
+## [17:45] ✅ Gotowe — efektywne staty na karcie jednostki (C-UNIT-CARD-Q1–Q3)
+
+| Decyzja | Wybór | Efekt w grze |
+|---------|-------|--------------|
+| **Q1** | **C** | Atak/obrona: **efektywna liczba duża** + `baza X` małym |
+| **Q2** | **A** | Max HP efektywne + pasek (np. 28/36, baza 30) |
+| **Q3** | **A** | Osobny wiersz **Pancerz** (efektywny + baza) |
+
+Kod: `unit-card-stats.ts` · podpięte do tooltipu i paska armii. **Bez deployu** — czeka `push`.
+
+## [17:40] ✅ Gotowe — karta jednostki C-OBCE-JEDN-KARTA (kod, bez deploy)
+
+| Co | Status |
+|----|--------|
+| **Karta jednostki** | medalion właściciela · koszary · kuźnia · weteran · XP · garnizon/czuwaj/fortyfikacja/oblężenie |
+| **Panele** | tooltip kontekstowy · dolny pasek armii (`armyStackHud`) · `unitPanelHud` |
+| **Źródło bonusów** | `parametryBonusProc` / `pancerzBonusProc` z budynków — gracz + AI, ten sam mechanizm co walka |
+| **typecheck** | `npx tsc --noEmit` — 0 błędów |
+| **Poza zakresem** | render 3D na żetonie mapy (Q2) — osobno, gdy będzie Opus |
+
+Pliki: `gra/src/ui/unitCardStatus.ts` · `hexContextTooltip.ts` · `armyStackHud.ts` · `unitPanelHud.ts` · `main.ts`.  
+**Deploy do `gra-robocza/`** — na sygnał (`push` / `deploy`).
+
 ## [17:32] ✅ Gotowe — deploy ROBOCZA FALA 38 (`08c676a5`)
 
 | Co | Status |
