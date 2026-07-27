@@ -17,7 +17,7 @@ export {
   buildingRuntimeGateMet,
   filterRuntimeActiveBuiltIds,
 } from '../src/game/building-resource-gate';
-export { availableProduction } from '../src/game/production';
+export { buildableProduction, eraBuildingCatalog } from '../src/game/production';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
 
@@ -28,6 +28,8 @@ esbuild.buildSync({
 });
 
 const M = require(BUNDLE);
+const rawBuildings = JSON.parse(fs.readFileSync(path.join(GRA, 'data/buildings.json'), 'utf8'));
+const DATA = { buildings: rawBuildings, units: [] };
 const TB = M.TerenBazowy;
 const NK = M.Nakladka;
 
@@ -59,8 +61,8 @@ function mapWith(...hexes) {
   const split = M.getCityResourceAccessForCity(city, map, placed, 99);
   ok(split.active.includes('Glina'), 'glinianka na złożu gliny → active Glina');
   ok(!split.potential.includes('Glina'), 'Glina złoże → poza potencjałem panelu (magazynowe)');
-  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, split.active), 'garncarnia OK gdy Glina active');
-  ok(!M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'garncarnia zablokowana bez Glina');
+  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, split.active), 'buildingResourceGateMet: zawsze true (kanon magazyn)');
+  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'buildingResourceGateMet: brak dostępu nie blokuje budowy');
 }
 
 // --- miedź + kopalnia_miedzi ---
@@ -161,43 +163,27 @@ function mapWith(...hexes) {
   ok(M.improvementUnlockActiveOnHex('bydlo', { nakladka: NK.Brak }), 'bydlo active bez złoża');
 }
 
-// --- ZADANIE-2-WSTRZYMANE (Maciej 2026-07-25, tego samego wieczoru): polecenie zdjęcia
-// bramki dostępu do surowca ze stolarni/warsztatu kamieniarskiego/kuźni/garncarni/cegielni
-// zostało COFNIĘTE przez właściciela w trakcie tej samej sesji -- to zakłady przetwórcze:
-// "bez kopalni rudy nie ma kuźni, bez glinianki nie ma cegielni". DEPOSIT_LINKED_BUILDING_LABELS
-// w building-resource-gate.ts zostaje BEZ ZMIAN; testy niżej pilnują, żeby tych pięć budynków
-// nadal wymagało aktywnego dostępu do etykiety surowca w imperium (regresja tej bramki).
+// --- Kanon 2026-07-28: bramka budowy = magazyn państwa (koszt_surowce), nie dostęp do etykiety ---
 {
-  ok(!M.buildingResourceGateMet({ id: 'stolarnia' }, []), 'stolarnia zablokowana bez Drewna w imperium');
-  ok(M.buildingResourceGateMet({ id: 'stolarnia' }, ['Drewno']), 'stolarnia OK gdy Drewno active');
-  ok(!M.buildingResourceGateMet({ id: 'kamieniarski' }, []), 'warsztat kamieniarski zablokowany bez Kamienia w imperium');
-  ok(M.buildingResourceGateMet({ id: 'kamieniarski' }, ['Kamień']), 'warsztat kamieniarski OK gdy Kamień active');
-  ok(!M.buildingResourceGateMet({ id: 'kuznia' }, []), 'kuźnia (brązu) zablokowana bez Rudy w imperium');
-  ok(M.buildingResourceGateMet({ id: 'kuznia' }, ['Ruda']), 'kuźnia (brązu) OK gdy Ruda active');
-  ok(!M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'garncarnia zablokowana bez Gliny w imperium (regresja)');
-  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, ['Glina']), 'garncarnia OK gdy Glina active (regresja)');
-  ok(!M.buildingResourceGateMet({ id: 'cegielnia' }, []), 'cegielnia zablokowana bez Gliny w imperium');
-  ok(M.buildingResourceGateMet({ id: 'cegielnia' }, ['Glina']), 'cegielnia OK gdy Glina active');
-}
+  ok(M.buildingResourceGateMet({ id: 'stolarnia' }, []), 'buildingResourceGateMet: stolarnia bez dostępu — bramka otwarta');
+  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'buildingResourceGateMet: garncarnia bez Gliny — bramka otwarta');
+  ok(M.buildingResourceGateMet({ id: 'mennica' }, []), 'buildingResourceGateMet: mennica bez Złota — bramka otwarta');
 
-// --- SUROW-CIV-02 (Maciej 2026-07-26): magazyn państwa vs dostęp-only ---
-{
+  const CITY = { id: 'c1', q: 0, r: 0, ownerId: 0, population: 10 };
+  function prodCtx(overrides) {
+    return Object.assign({ epoch: 1, builtBuildingIds: [], productionQueue: [], isCapital: true, ownerId: 0 }, overrides);
+  }
+  const stolarniaTech = ['Obróbka drewna'];
   ok(
-    M.buildingResourceGateMet({ id: 'stolarnia' }, [], undefined, { drewno: 5 }),
-    'stolarnia OK gdy drewno w magazynie państwa (bez aktywnego źródła)',
+    M.buildableProduction(CITY, DATA, stolarniaTech, prodCtx()).some(it => it.id === 'stolarnia'),
+    'stolarnia w buildableProduction z samą tech (bez dostępu Drewna)',
   );
-  ok(
-    M.buildingResourceGateMet({ id: 'spichlerz_ii' }, [], undefined, { sol: 99 }),
-    'spichlerz II: zapas Soli w magazynie państwa spełnia bramkę (PYTANIE-84 R4)',
-  );
-  ok(
-    !M.buildingResourceGateMet({ id: 'spichlerz_ii' }, [], undefined, {}),
-    'spichlerz II: brak Soli w magazynie i brak źródła → blokada',
-  );
-  ok(
-    M.buildingResourceGateMet({ id: 'spichlerz_ii' }, ['Sól'], undefined, {}),
-    'spichlerz II OK gdy Sól aktywna w imperium (bez zapasu)',
-  );
+  const catNoStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx()).find(e => e.id === 'stolarnia');
+  ok(catNoStock && catNoStock.status === 'locked',
+    'stolarnia eraBuildingCatalog locked bez drewna w magazynie');
+  const catStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx({ empireResourceStock: { drewno: 10 } }));
+  ok(catStock.find(e => e.id === 'stolarnia')?.status === 'ready',
+    'stolarnia eraBuildingCatalog ready z drewnem w magazynie państwa');
 }
 
 // --- PYTANIE-84: runtime gate dostęp vs magazyn ---

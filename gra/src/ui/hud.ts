@@ -26,6 +26,7 @@ import { naukaHudWordHtml } from './naukaLabel';
 import { signedPl } from './formatPl';
 import {
   createSidePanelHud,
+  type ContextPanelData,
   type SidePanelEvent,
   type SidePanelEventKind,
 } from './sidePanelHud';
@@ -155,6 +156,10 @@ export interface HudState {
   uchwalaSolAktywna?: boolean;
   /** Ile Spichlerzy II faktycznie płaci Sól w tej turze (do tooltipu / panelu). */
   uchwalaSolSpichlerzIICount?: number;
+  /** Wojsko gracza na mapie (bez osadnika) — chip „Armia". */
+  armyUnitsOnMap?: number;
+  /** Suma odnowy puli rekrutów / turę (wszystkie miasta) — chip „Armia". */
+  rekruciRegenPerTurn?: number;
 }
 
 export interface HudConfig {
@@ -198,8 +203,15 @@ export interface HudConfig {
   /** E-map-worker-overlay: toggle 👤 na mapie świata. */
   minimapWorkerOverlay?: MinimapWorkerOverlayHooks;
 
-  /** D17=A: treść panelu kontekstowego (null = ukryty). */
+  /** D17=A: treść panelu kontekstowego (null = ukryty). @deprecated użyj getContextPanel */
   getContextPanelMessage?: () => string | null;
+
+  /** D17=A + redesign 2026-07-28: karta heks/jednostka w panelu bocznym. */
+  getContextPanel?: () => ContextPanelData | null;
+  onContextExpand?: () => void;
+  isContextExpanded?: () => boolean;
+  onContextAction?: (actionId: string) => void;
+  onContextSelectUnit?: (unitId: string) => void;
 
   /** Panel boczny (D1=C): wydarzenia z tury od silnika. */
   getEvents?: () => SidePanelEvent[];
@@ -694,20 +706,17 @@ function naukaChipTitle(s: HudState): string {
     + ` · Kliknij po szczegóły.`;
 }
 
-/**
- * PYTANIE-85: tooltip chipu „Armia" — W magazynie (Spichlerz centralny),
- * rozbicie ostatniej tury jeśli dostępne, ostrzeżenia głodu wojska.
- */
-function armiaChipTitle(s: HudState): string {
+/** Tooltip chipu „Spichlerz" — magazyn centralny żywności imperium. */
+function spichlerzChipTitle(s: HudState): string {
   const maxPart = s.zywnoscMax != null && s.zywnoscMax > 0 ? ` / ${s.zywnoscMax}` : '';
   const netto = s.zywnoscRate ?? 0;
   const wplyw = s.zywnoscWplywMiast ?? 0;
   const koszt = s.zywnoscKosztWojska ?? 0;
-  let title = `Armia — Spichlerz centralny`
+  let title = `Spichlerz — magazyn centralny żywności`
     + ` · W magazynie: ${s.zywnoscLabel}${maxPart} 🍞`
     + ` · Przyrost zapasów (prognoza): ${signed(netto)} 🍞/turę`
     + ` · Nadwyżka miast → centrala: ${signed(wplyw)} 🍞/turę`
-    + ` · Wojsko: ${signed(-koszt)} 🍞/turę`;
+    + ` · Koszt armii: ${signed(-koszt)} 🍞/turę`;
   if (s.glodWojska) title += ` · Głód wojska: atrycja HP trwa!`;
   else if (s.zywnoscKarencjaZaTur != null && s.zywnoscKarencjaZaTur > 0) {
     title += ` · Głód wojska za ${s.zywnoscKarencjaZaTur} ${slowoTuraHud(s.zywnoscKarencjaZaTur)} — magazyn ujemny!`;
@@ -717,6 +726,22 @@ function armiaChipTitle(s: HudState): string {
     title += ` · Uchwała „Solanka zapasowa" (Spichlerz II · Sól): armia poza terytorium 2→1 🍞/turę`
       + (n > 1 ? ` · ${n}× Spichlerz II` : '');
   }
+  return `${title} · Kliknij po szczegóły.`;
+}
+
+/** Tooltip chipu „Armia" — wojsko na mapie i pula rekrutów. */
+function armiaChipTitle(s: HudState): string {
+  const units = s.armyUnitsOnMap ?? 0;
+  const regen = s.rekruciRegenPerTurn ?? 0;
+  const koszt = s.zywnoscKosztWojska ?? 0;
+  const maxPart = s.zywnoscMax != null && s.zywnoscMax > 0 ? ` / ${s.zywnoscMax}` : '';
+  let title = `Armia — wojsko i rekruci`
+    + ` · Jednostki na mapie: ${units}`
+    + ` · Pula rekrutów: ${s.rekruciLabel ?? '—'}`
+    + ` · Odnowa puli: ${signed(regen)} rekr./turę`;
+  if (koszt > 0) title += ` · Koszt żywności armii: ${signed(-koszt)} 🍞/turę`;
+  title += ` · W magazynie państwa: ${s.zywnoscLabel}${maxPart} 🍞`;
+  if (s.glodWojska) title += ` · Głód wojska: atrycja HP trwa!`;
   return `${title} · Kliknij po szczegóły.`;
 }
 
@@ -842,6 +867,17 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     chip6cHtml({
+      iconId: 'res-food',
+      iconAssetId: 'cp-granary',
+      label: 'Spichlerz',
+      value: formatFoodHudLabel(s),
+      rate: signed(s.zywnoscRate ?? 0),
+      rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0),
+      act: 'spichlerz',
+      title: spichlerzChipTitle(s),
+    }),
+    chip6cSep(),
+    chip6cHtml({
       iconId: 'res-resources',
       label: 'Surowce',
       value: '',   // Maciej 2026-07-24: bez liczby na chipie (był „9/9") — sam żeton + klik po magazyn
@@ -852,9 +888,7 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     // DYSPOZYCJA 85 (Maciej 2026-07-26): Handel przeniesiony NA KONIEC, za Surowce.
-    // Kolejność paska: Skarbiec · Praca · Surowce · Handel. Powód porządkowy: Skarbiec, Praca
-    // i Surowce to zasoby WŁASNE imperium, a Handel to wymiana Z OBCYMI cywilizacjami — inna
-    // kategoria pojęciowa, więc stoi osobno na końcu, a nie w środku zasobów własnych.
+    // Kolejność paska: Skarbiec · Praca · Spichlerz · Surowce · Handel.
     chip6cHtml({
       iconId: 'res-trade',
       label: 'Handel',
@@ -877,12 +911,12 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     chip6cHtml({
-      iconId: 'res-food',
+      iconId: 'tb-army',
       label: 'Armia',
-      value: formatFoodHudLabel(s),
-      rate: signed(s.zywnoscRate ?? 0),
-      rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0),
-      act: 'zywnosc',
+      value: String(s.armyUnitsOnMap ?? 0),
+      rate: signed(s.rekruciRegenPerTurn ?? 0),
+      rateWarn: !!s.glodWojska,
+      act: 'armia',
       title: armiaChipTitle(s),
     }),
     chip6cSep(),
@@ -1011,7 +1045,8 @@ function handleHudBarAction(act: string): void {
       }
     }
   } else if (act === 'religia' || act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'
-    || act === 'ludnosc' || act === 'rekruci' || act === 'zywnosc' || act === 'surowce' || act === 'handel') {
+    || act === 'ludnosc' || act === 'rekruci' || act === 'spichlerz' || act === 'zywnosc' || act === 'armia'
+    || act === 'surowce' || act === 'handel') {
     hideEmpireOverlay();
     const section = empireSectionFromHudAct(act);
     if (cfg.onOpenEmpireDetail) cfg.onOpenEmpireDetail(section);
@@ -1230,7 +1265,20 @@ function mountSidePanel(): void {
   if (cfg === null || sidePanelApi !== null) return;
   sidePanelApi = createSidePanelHud({
     getEvents: cfg.getEvents,
-    getHexContext: () => cfg?.getContextPanelMessage?.() ?? null,
+    getContextPanel: cfg.getContextPanel
+      ?? (cfg.getContextPanelMessage
+        ? () => {
+          const html = cfg!.getContextPanelMessage?.() ?? null;
+          return html ? { kind: 'hex' as const, html } : null;
+        }
+        : undefined),
+    getHexContext: cfg.getContextPanelMessage
+      ? () => cfg!.getContextPanelMessage?.() ?? null
+      : undefined,
+    onContextExpand: cfg.onContextExpand,
+    isContextExpanded: cfg.isContextExpanded,
+    onContextAction: cfg.onContextAction,
+    onContextSelectUnit: cfg.onContextSelectUnit,
     onEventClick: cfg.onEventClick,
     onEventDismiss: cfg.onEventDismiss,
   });
@@ -1434,6 +1482,6 @@ export function hideHud(): void {
 export function isHudOpen(): boolean { return hudSessionActive; }
 
 export type { MinimapHexData, MinimapData, MinimapPlaytestFogHooks, MinimapWorkerOverlayHooks } from './minimapHud';
-export type { SidePanelEvent, SidePanelEventKind } from './sidePanelHud';
+export type { ContextPanelData, SidePanelEvent, SidePanelEventKind } from './sidePanelHud';
 export type { UnitPanelState } from './unitPanelHud';
 export type { BuildTypeInfo } from './buildModeHud';

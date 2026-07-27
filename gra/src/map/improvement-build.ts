@@ -700,6 +700,119 @@ export function galleryComboShowModel(
 }
 
 // ---------------------------------------------------------------------------
+// Podpowiedzi UX — tartak / wyrąb (las vs terytorium)
+// ---------------------------------------------------------------------------
+
+type ForestBuildKey = 'tartak' | 'wyrab';
+
+interface ForestPlacementScan {
+  /** Las z nakładką Las w terytorium gracza (dowolny teren). */
+  lasInPlayerTerritory: number;
+  /** Las kwalifikujący się do budowy danego typu. */
+  qualifyingInPlayerTerritory: number;
+  /** Las na mapie, ale poza zasięgiem miast gracza. */
+  lasOutsidePlayerReach: number;
+  /** Las w zasięgu, lecz należący do innej cywilizacji (overlap terytoriów). */
+  lasInEnemyTerritory: number;
+  /** Tartak: las gracza na terenie bez tartaku (góry, wybrzeże…). */
+  lasWrongTerrainForTartak: number;
+  /** Wyrąb: las gracza już w trakcie wycinki. */
+  lasBeingCleared: number;
+}
+
+function scanForestPlacement(
+  state: ImprovementBuildState,
+  key: ForestBuildKey,
+): ForestPlacementScan {
+  const { map, cityNodes } = state;
+  const playerOwnerIdNum = state.playerOwnerIdNum ?? 0;
+  const territoryNodes = state.territoryNodes ?? [];
+  const clearing = state.clearingHexKeys;
+  const out: ForestPlacementScan = {
+    lasInPlayerTerritory: 0,
+    qualifyingInPlayerTerritory: 0,
+    lasOutsidePlayerReach: 0,
+    lasInEnemyTerritory: 0,
+    lasWrongTerrainForTartak: 0,
+    lasBeingCleared: 0,
+  };
+
+  for (const hex of Object.values(map.hexes)) {
+    if (hex.nakladka !== Nakladka.Las) continue;
+    const { q, r } = hex.coords;
+    const hexKey = `${q},${r}`;
+    const inReach = cityNodes.length > 0 && isInTerritory(q, r, cityNodes);
+    if (!inReach) {
+      out.lasOutsidePlayerReach++;
+      continue;
+    }
+    const isPlayer = isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
+    if (!isPlayer) {
+      out.lasInEnemyTerritory++;
+      continue;
+    }
+    out.lasInPlayerTerritory++;
+
+    if (key === 'tartak' && !TARTAK_TERENY.has(hex.terenBazowy)) {
+      out.lasWrongTerrainForTartak++;
+      continue;
+    }
+    if (key === 'wyrab' && clearing?.has(hexKey)) {
+      out.lasBeingCleared++;
+      continue;
+    }
+    out.qualifyingInPlayerTerritory++;
+  }
+
+  return out;
+}
+
+/**
+ * Dokładna podpowiedź gdy tartak/wyrąb odblokowany technologicznie,
+ * ale brak heksa do postawienia — rozróżnia brak miasta, las poza terytorium,
+ * las wroga, zły teren (tartak) i trwającą wycinkę (wyrąb).
+ */
+export function getForestBuildBlockReason(
+  state: ImprovementBuildState,
+  key: ForestBuildKey,
+): string | null {
+  if (state.cityNodes.length === 0) {
+    return 'Najpierw załóż miasto — bez terytorium nie zbudujesz na lesie.';
+  }
+
+  const scan = scanForestPlacement(state, key);
+
+  if (scan.qualifyingInPlayerTerritory > 0) {
+    return null;
+  }
+
+  if (key === 'wyrab' && scan.lasInPlayerTerritory > 0 && scan.lasBeingCleared >= scan.lasInPlayerTerritory) {
+    return 'Wszystkie lasy w twoim terytorium są już w trakcie wycinki.';
+  }
+
+  if (key === 'tartak' && scan.lasWrongTerrainForTartak > 0 && scan.qualifyingInPlayerTerritory === 0) {
+    if (scan.lasWrongTerrainForTartak >= scan.lasInPlayerTerritory) {
+      return 'Las w twoim terytorium jest na górach lub wybrzeżu — tartak wymaga łąki, równiny lub wzgórza.';
+    }
+    return 'Część lasu w twoim terytorium jest na złym terenie — tartak stawia się na łące, równinie lub wzgórzu.';
+  }
+
+  if (scan.lasInEnemyTerritory > 0 && scan.lasInPlayerTerritory === 0) {
+    return 'Las w zasięgu miasta należy do innej cywilizacji — najpierw przejmij ten obszar.';
+  }
+
+  if (scan.lasOutsidePlayerReach > 0 && scan.lasInPlayerTerritory === 0) {
+    return 'Las widać na mapie, ale jest poza twoim terytorium. Powiększ miasto albo postaw posterunek bliżej lasu.';
+  }
+
+  if (scan.lasInPlayerTerritory === 0) {
+    return 'W twoim terytorium nie ma lasu — poszukaj zielonych pól z drzewami i rozszerz zasięg miasta.';
+  }
+
+  return 'Brak lasu w twoim terytorium';
+}
+
+// ---------------------------------------------------------------------------
 // Fabryka API
 // ---------------------------------------------------------------------------
 
@@ -774,7 +887,7 @@ export function createImprovementBuildApi(
       const canPlaceAny = getQualifyingHexes(key).length > 0;
       const territoryHint = unlocked && !canPlaceAny
         ? (key === 'wyrab' || key === 'tartak'
-          ? 'Brak lasu w twoim terytorium'
+          ? (getForestBuildBlockReason(state, key) ?? 'Brak lasu w twoim terytorium')
           : 'Brak heksów w twoim terytorium')
         : null;
       return {

@@ -22,9 +22,10 @@ var deposit_gate_entry_exports = {};
 __export(deposit_gate_entry_exports, {
   Nakladka: () => Nakladka,
   TerenBazowy: () => TerenBazowy,
-  availableProduction: () => availableProduction,
+  buildableProduction: () => buildableProduction,
   buildingResourceGateMet: () => buildingResourceGateMet,
   buildingRuntimeGateMet: () => buildingRuntimeGateMet,
+  eraBuildingCatalog: () => eraBuildingCatalog,
   filterRuntimeActiveBuiltIds: () => filterRuntimeActiveBuiltIds,
   getCityResourceAccessForCity: () => getCityResourceAccessForCity,
   improvementUnlockActiveOnHex: () => improvementUnlockActiveOnHex
@@ -47,7 +48,9 @@ var terrain_improvements_default = {
     nazwa: "Farma",
     epoka: 1,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
@@ -60,7 +63,9 @@ var terrain_improvements_default = {
     nazwa: "Irygacja",
     epoka: 2,
     bonus: {
-      zywnosc: 5
+      zywnosc: 5,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina, Pustynia",
@@ -74,7 +79,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 4,
+      handel: 3
     },
     surowiecOdblokowany: "bydlo",
     surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
@@ -89,7 +95,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
@@ -104,7 +111,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
@@ -118,7 +126,8 @@ var terrain_improvements_default = {
     nazwa: "Stadnina",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "kon",
     surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Ko\u0144 do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture.",
@@ -133,7 +142,8 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia",
     epoka: 1,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 3
     },
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
@@ -149,7 +159,8 @@ var terrain_improvements_default = {
     epoka: 2,
     bonus: {
       praca: 1,
-      glina: 2
+      glina: 2,
+      handel: 2
     },
     surowiecOdblokowany: "glina",
     surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
@@ -165,7 +176,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       praca: 1,
-      kamien: 1
+      kamien: 1,
+      handel: 2
     },
     surowiecOdblokowany: "kamien",
     surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
@@ -181,7 +193,9 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      pieniadz: 1
+      pieniadz: 1,
+      praca: 1,
+      handel: 2
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 \u2014 brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
@@ -195,7 +209,9 @@ var terrain_improvements_default = {
     nazwa: "Wyr\u0105b",
     typ: "wycinka",
     epoka: 1,
-    bonus: {},
+    bonus: {
+      handel: 1
+    },
     surowiecOdblokowany: null,
     teren: "Las",
     warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
@@ -213,7 +229,8 @@ var terrain_improvements_default = {
     typ: "ulepszenie",
     epoka: 1,
     bonus: {
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "drewno",
     surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
@@ -228,7 +245,9 @@ var terrain_improvements_default = {
     nazwa: "Tarasy uprawne",
     epoka: 2,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
@@ -236,7 +255,10 @@ var terrain_improvements_default = {
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje: [
+      "chinczycy",
+      "inkowie"
+    ],
     cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
     uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
@@ -245,7 +267,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
@@ -260,7 +283,9 @@ var terrain_improvements_default = {
     epoka: 2,
     bonus: {
       pieniadz: 1,
-      zywnosc: 1
+      zywnosc: 1,
+      praca: 1,
+      handel: 3
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja S\xF3l do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 \u017Bywno\u015B\u0107, +1 Pieni\u0105dz) zostaje obok surowca_ilosc_tura.",
@@ -305,7 +330,9 @@ var terrain_improvements_default = {
     nazwa: "Droga brukowana",
     typ: "ulepszenie",
     epoka: 3,
-    bonus: {},
+    bonus: {
+      handel: 2
+    },
     bonus_ruch: 2,
     surowiecOdblokowany: null,
     upgradeFrom: "droga",
@@ -320,7 +347,8 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 5
     },
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
@@ -336,7 +364,8 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia z\u0142ota",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 10
     },
     surowiecOdblokowany: "zloto",
     surowiecOdblokowany_uwaga: "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Z\u0142oto do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/tur\u0119. Mennica zu\u017Cywa 1 Z\u0142oto/tur\u0119 ze skarbca przy mno\u017Cniku handlu\u2192Pieni\u0105dz (U-13).",
@@ -7037,17 +7066,17 @@ var terrain_yields_default = {
       Teren: "\u0141\u0105ka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 1,
-      Handel: 1,
+      Podatek: 2,
       Drewno: 1,
       Kamie\u0144: 0,
-      Suma: 6,
+      Suma: 7,
       Uwagi: null
     },
     {
       Teren: "R\xF3wnina",
       \u017Bywno\u015B\u0107: 2,
       Praca: 2,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 2,
       Kamie\u0144: 1,
       Suma: 8,
@@ -7057,7 +7086,7 @@ var terrain_yields_default = {
       Teren: "Wzg\xF3rza",
       \u017Bywno\u015B\u0107: 1,
       Praca: 3,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 2,
       Suma: 8,
@@ -7067,7 +7096,7 @@ var terrain_yields_default = {
       Teren: "G\xF3ry",
       \u017Bywno\u015B\u0107: 0,
       Praca: 4,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 5,
       Suma: 11,
@@ -7077,7 +7106,7 @@ var terrain_yields_default = {
       Teren: "Wybrze\u017Ce",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 7,
@@ -7087,7 +7116,7 @@ var terrain_yields_default = {
       Teren: "Morze",
       \u017Bywno\u015B\u0107: 2,
       Praca: 0,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 4,
@@ -7097,7 +7126,7 @@ var terrain_yields_default = {
       Teren: "Pustynia",
       \u017Bywno\u015B\u0107: 0,
       Praca: 0,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 1,
@@ -7107,7 +7136,7 @@ var terrain_yields_default = {
       Teren: "Polarny",
       \u017Bywno\u015B\u0107: 0,
       Praca: 0,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 0,
@@ -7119,21 +7148,21 @@ var terrain_yields_default = {
       Modyfikator: "Rzeka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 7,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +7 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Suma: 8,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +8 \u2014 mocny, mo\u017Cna stonowa\u0107"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
       \u017Bywno\u015B\u0107: -1,
       Praca: 3,
-      Handel: -1,
+      Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
-      Suma: 4,
-      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
+      Suma: 7,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
   ]
 };
@@ -7383,6 +7412,24 @@ function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
   return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
 }
 
+// src/game/building-stock-cost.ts
+function buildingStockCost(building) {
+  const raw = building?.koszt_surowce;
+  const out = {};
+  if (!raw) return out;
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === "number" && Number.isFinite(v) && v > 0) out[k] = v;
+  }
+  return out;
+}
+function canAffordBuildingStock(citySurowce, cost) {
+  const have = citySurowce ?? {};
+  for (const [k, need] of Object.entries(cost)) {
+    if ((have[k] ?? 0) < need) return false;
+  }
+  return true;
+}
+
 // src/game/zloto-access.ts
 var KOPALNIA_ZLOTA_KEY = "kopalnia_zlota";
 var ZLOTO_STOCK_KEY = "zloto";
@@ -7471,16 +7518,6 @@ var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
 var ACCESS_ONLY_RESOURCE_LABELS = /* @__PURE__ */ new Set();
-function empireLabelSatisfied(label, activeLabels, empireBuiltIds, empireStock) {
-  if (activeLabels.includes(label)) return true;
-  if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
-  if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
-  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
-    const asciiKey = ASCII_BY_LABEL[label];
-    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
-  }
-  return false;
-}
 function buildingRequiredActiveLabels(building) {
   const out = /* @__PURE__ */ new Set();
   const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
@@ -7489,11 +7526,8 @@ function buildingRequiredActiveLabels(building) {
   if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
   return [...out];
 }
-function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireStock) {
-  const required = buildingRequiredActiveLabels(building);
-  if (required.length === 0) return true;
-  const active = activeLabels ?? [];
-  return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
+function buildingResourceGateMet(_building, _activeLabels, _empireBuiltIds, _empireStock) {
+  return true;
 }
 var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
   Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
@@ -7680,6 +7714,12 @@ function isBuildingSupersededByUpgrade(buildingId, builtIds, buildings) {
   }
   return false;
 }
+function buildingTypeQueued(buildingId, queue) {
+  for (const it of queue) {
+    if (it.kind === "budynek" && it.id === buildingId) return true;
+  }
+  return false;
+}
 function isBlankReplacement(zamiast) {
   return zamiast.length === 0 || zamiast === "-" || zamiast === "\u2014";
 }
@@ -7740,10 +7780,6 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
     if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
-      continue;
-    }
-    const gateLabels = ctx.empireActiveResourceLabels !== void 0 ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
-    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
       continue;
     }
     if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
@@ -7815,6 +7851,72 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
   return items;
 }
 var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
+function buildableProduction(city, data, unlockedTechs, ctx = {}) {
+  return availableProduction(city, data, unlockedTechs, ctx).filter((it) => it.kind === "budynek");
+}
+function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
+  const epoch = Number.isFinite(ctx.epoch) ? ctx.epoch : 1;
+  const level = Number.isFinite(ctx.buildingLevel) ? ctx.buildingLevel : 1;
+  const builtList = ctx.builtBuildingIds ?? [];
+  const queue = ctx.productionQueue ?? [];
+  const techs = new Set(unlockedTechs);
+  const ownerId = ctx.ownerId ?? 0;
+  const difficulty = ctx.difficulty ?? "normal";
+  const entries = [];
+  for (const b of data.buildings) {
+    if (b.epokaWejscia !== epoch) continue;
+    const koszt = buildingWorkCost(
+      itemCost("budynek", b.id, data, level),
+      ctx.civBonusy,
+      ctx.buildingCostPace,
+      ownerId,
+      difficulty
+    );
+    const tech = (b.techUnlock ?? "").trim();
+    const techOk = tech.length === 0 || tech === "-" || tech === "\u2014" || techs.has(tech);
+    const locationOk = buildingLocationAllowed(b.lokalizacja, ctx.isCapital);
+    const prereqOk = cityBuildingPrereqMet(
+      CITY_BUILDING_PREREQ[b.id],
+      builtList,
+      data.buildings,
+      isBuildingSupersededByUpgrade
+    );
+    const stockCost = buildingStockCost(b);
+    const resourceOk = canAffordBuildingStock(ctx.empireResourceStock, stockCost) && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
+    let status = "ready";
+    let locationBlocked;
+    if (buildingTypeQueued(b.id, queue)) {
+      status = "queued";
+    } else if (!b.wielokrotny && builtList.includes(b.id)) {
+      status = "built";
+    } else if (!techOk) {
+      status = "locked";
+    } else if (!locationOk) {
+      status = "locked";
+      locationBlocked = b.lokalizacja;
+    } else if (!prereqOk) {
+      status = "locked";
+    } else if (!resourceOk) {
+      status = "locked";
+    }
+    entries.push({
+      id: b.id,
+      nazwa: b.nazwa,
+      kategoria: b.kategoria,
+      koszt,
+      status,
+      missingTech: !techOk ? tech : "",
+      wymagania: (b.wymagania ?? "").trim(),
+      locationBlocked
+    });
+  }
+  const rank = { ready: 0, locked: 1, queued: 2, built: 3 };
+  entries.sort((a, b) => {
+    if (rank[a.status] !== rank[b.status]) return rank[a.status] - rank[b.status];
+    return a.nazwa.localeCompare(b.nazwa, "pl");
+  });
+  return entries;
+}
 var DEFAULT_OUTPUT_SHARES = Object.freeze({
   produkcja: miasto_params_default.udzial_output_produkcja?.wartosc ?? 0.4,
   pieniadz: miasto_params_default.udzial_output_pieniadz?.wartosc ?? 0.3,
@@ -7838,7 +7940,7 @@ function terrainRowToTileYield(row) {
   return {
     zywnosc: Number(row["\u017Bywno\u015B\u0107"] ?? 0),
     praca: Number(row["Praca"] ?? 0),
-    handel: Number(row["Handel"] ?? 0),
+    handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
     // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
@@ -8284,9 +8386,10 @@ function getCityResourceAccessForCity(city, map, placedImprovements, currentEra 
 0 && (module.exports = {
   Nakladka,
   TerenBazowy,
-  availableProduction,
+  buildableProduction,
   buildingResourceGateMet,
   buildingRuntimeGateMet,
+  eraBuildingCatalog,
   filterRuntimeActiveBuiltIds,
   getCityResourceAccessForCity,
   improvementUnlockActiveOnHex

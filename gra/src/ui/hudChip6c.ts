@@ -17,6 +17,8 @@ export type ChipMedVariant = 'gold' | 'science';
 
 export interface Chip6cOpts {
   iconId: IconId;
+  /** Nadpisanie assetu brand-book (np. cp-granary zamiast res-food). */
+  iconAssetId?: string;
   label: string;
   value: string;
   rate?: string;
@@ -34,11 +36,11 @@ const CHIP_ICON_ASSET_ALIAS: Partial<Record<IconId, string>> = {
   'res-resources': 'chip-crate',
 };
 
-function chipIconHtml(id: IconId, _medVariant: ChipMedVariant): string {
+function chipIconHtml(id: IconId, _medVariant: ChipMedVariant, assetOverride?: string): string {
   if (id === 'res-science' || id === 'tb-science') {
     return scienceOwlIconSized(17);
   }
-  const assetId = CHIP_ICON_ASSET_ALIAS[id] ?? id;
+  const assetId = assetOverride ?? CHIP_ICON_ASSET_ALIAS[id] ?? id;
   const svg = brandIconSvg(assetId, 24);
   if (!svg) return iconHtml(id, 24);
   return svg.replace('<svg ', '<svg class="civ-ic" ');
@@ -55,8 +57,8 @@ export function chip6cHtml(opts: Chip6cOpts): string {
   const rateCls = opts.rateWarn ? ' warn' : '';
   const showRing = opts.iconId === 'res-science' && opts.researchProgress !== undefined;
   const medInner = showRing
-    ? `${scienceProgressRingHtml(opts.researchProgress!, 30, 1)}<span class="civ-hud-chip-med-ic">${chipIconHtml(opts.iconId, med)}</span>`
-    : chipIconHtml(opts.iconId, med);
+    ? `${scienceProgressRingHtml(opts.researchProgress!, 30, 1)}<span class="civ-hud-chip-med-ic">${chipIconHtml(opts.iconId, med, opts.iconAssetId)}</span>`
+    : chipIconHtml(opts.iconId, med, opts.iconAssetId);
   const medCls = showRing ? `${med} civ-science-med-ring` : med;
   let html = `<span class="civ-hud-chip${clickCls}"${actAttr}>`
     + `<span class="civ-hud-chip-med ${medCls}">${medInner}</span>`

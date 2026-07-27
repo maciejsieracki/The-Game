@@ -41,16 +41,16 @@ __export(zloto_test_entry_exports, {
 module.exports = __toCommonJS(zloto_test_entry_exports);
 
 // src/types/hex.ts
-var TerenBazowy = /* @__PURE__ */ ((TerenBazowy4) => {
-  TerenBazowy4["Laka"] = "laka";
-  TerenBazowy4["Rownina"] = "rownina";
-  TerenBazowy4["Wzgorza"] = "wzgorza";
-  TerenBazowy4["Gory"] = "gory";
-  TerenBazowy4["Wybrzeze"] = "wybrzeze";
-  TerenBazowy4["Morze"] = "morze";
-  TerenBazowy4["Pustynia"] = "pustynia";
-  TerenBazowy4["Polarny"] = "polarny";
-  return TerenBazowy4;
+var TerenBazowy = /* @__PURE__ */ ((TerenBazowy3) => {
+  TerenBazowy3["Laka"] = "laka";
+  TerenBazowy3["Rownina"] = "rownina";
+  TerenBazowy3["Wzgorza"] = "wzgorza";
+  TerenBazowy3["Gory"] = "gory";
+  TerenBazowy3["Wybrzeze"] = "wybrzeze";
+  TerenBazowy3["Morze"] = "morze";
+  TerenBazowy3["Pustynia"] = "pustynia";
+  TerenBazowy3["Polarny"] = "polarny";
+  return TerenBazowy3;
 })(TerenBazowy || {});
 var Nakladka = /* @__PURE__ */ ((Nakladka3) => {
   Nakladka3["Brak"] = "brak";
@@ -5420,7 +5420,9 @@ var terrain_improvements_default = {
     nazwa: "Farma",
     epoka: 1,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
@@ -5433,7 +5435,9 @@ var terrain_improvements_default = {
     nazwa: "Irygacja",
     epoka: 2,
     bonus: {
-      zywnosc: 5
+      zywnosc: 5,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina, Pustynia",
@@ -5447,7 +5451,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 4,
+      handel: 3
     },
     surowiecOdblokowany: "bydlo",
     surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
@@ -5462,7 +5467,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
@@ -5477,7 +5483,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
@@ -5491,7 +5498,8 @@ var terrain_improvements_default = {
     nazwa: "Stadnina",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "kon",
     surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Ko\u0144 do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture.",
@@ -5506,7 +5514,8 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia",
     epoka: 1,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 3
     },
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
@@ -5522,7 +5531,8 @@ var terrain_improvements_default = {
     epoka: 2,
     bonus: {
       praca: 1,
-      glina: 2
+      glina: 2,
+      handel: 2
     },
     surowiecOdblokowany: "glina",
     surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
@@ -5538,7 +5548,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       praca: 1,
-      kamien: 1
+      kamien: 1,
+      handel: 2
     },
     surowiecOdblokowany: "kamien",
     surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
@@ -5554,7 +5565,9 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      pieniadz: 1
+      pieniadz: 1,
+      praca: 1,
+      handel: 2
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 \u2014 brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
@@ -5568,7 +5581,9 @@ var terrain_improvements_default = {
     nazwa: "Wyr\u0105b",
     typ: "wycinka",
     epoka: 1,
-    bonus: {},
+    bonus: {
+      handel: 1
+    },
     surowiecOdblokowany: null,
     teren: "Las",
     warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
@@ -5586,7 +5601,8 @@ var terrain_improvements_default = {
     typ: "ulepszenie",
     epoka: 1,
     bonus: {
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "drewno",
     surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
@@ -5601,7 +5617,9 @@ var terrain_improvements_default = {
     nazwa: "Tarasy uprawne",
     epoka: 2,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
@@ -5609,7 +5627,10 @@ var terrain_improvements_default = {
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje: [
+      "chinczycy",
+      "inkowie"
+    ],
     cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
     uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
@@ -5618,7 +5639,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
@@ -5633,7 +5655,9 @@ var terrain_improvements_default = {
     epoka: 2,
     bonus: {
       pieniadz: 1,
-      zywnosc: 1
+      zywnosc: 1,
+      praca: 1,
+      handel: 3
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja S\xF3l do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 \u017Bywno\u015B\u0107, +1 Pieni\u0105dz) zostaje obok surowca_ilosc_tura.",
@@ -5678,7 +5702,9 @@ var terrain_improvements_default = {
     nazwa: "Droga brukowana",
     typ: "ulepszenie",
     epoka: 3,
-    bonus: {},
+    bonus: {
+      handel: 2
+    },
     bonus_ruch: 2,
     surowiecOdblokowany: null,
     upgradeFrom: "droga",
@@ -5693,7 +5719,8 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 5
     },
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
@@ -5709,7 +5736,8 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia z\u0142ota",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 10
     },
     surowiecOdblokowany: "zloto",
     surowiecOdblokowany_uwaga: "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Z\u0142oto do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/tur\u0119. Mennica zu\u017Cywa 1 Z\u0142oto/tur\u0119 ze skarbca przy mno\u017Cniku handlu\u2192Pieni\u0105dz (U-13).",
@@ -6940,23 +6968,23 @@ var ImageUtils = class {
       const context = canvas.getContext("2d");
       context.drawImage(image, 0, 0, image.width, image.height);
       const imageData = context.getImageData(0, 0, image.width, image.height);
-      const data2 = imageData.data;
-      for (let i = 0; i < data2.length; i++) {
-        data2[i] = SRGBToLinear(data2[i] / 255) * 255;
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i++) {
+        data[i] = SRGBToLinear(data[i] / 255) * 255;
       }
       context.putImageData(imageData, 0, 0);
       return canvas;
     } else if (image.data) {
-      const data2 = image.data.slice(0);
-      for (let i = 0; i < data2.length; i++) {
-        if (data2 instanceof Uint8Array || data2 instanceof Uint8ClampedArray) {
-          data2[i] = Math.floor(SRGBToLinear(data2[i] / 255) * 255);
+      const data = image.data.slice(0);
+      for (let i = 0; i < data.length; i++) {
+        if (data instanceof Uint8Array || data instanceof Uint8ClampedArray) {
+          data[i] = Math.floor(SRGBToLinear(data[i] / 255) * 255);
         } else {
-          data2[i] = SRGBToLinear(data2[i]);
+          data[i] = SRGBToLinear(data[i]);
         }
       }
       return {
-        data: data2,
+        data,
         width: image.width,
         height: image.height
       };
@@ -6968,11 +6996,11 @@ var ImageUtils = class {
 };
 var _sourceId = 0;
 var Source = class {
-  constructor(data2 = null) {
+  constructor(data = null) {
     this.isSource = true;
     Object.defineProperty(this, "id", { value: _sourceId++ });
     this.uuid = generateUUID();
-    this.data = data2;
+    this.data = data;
     this.dataReady = true;
     this.version = 0;
   }
@@ -6988,20 +7016,20 @@ var Source = class {
       uuid: this.uuid,
       url: ""
     };
-    const data2 = this.data;
-    if (data2 !== null) {
+    const data = this.data;
+    if (data !== null) {
       let url;
-      if (Array.isArray(data2)) {
+      if (Array.isArray(data)) {
         url = [];
-        for (let i = 0, l = data2.length; i < l; i++) {
-          if (data2[i].isDataTexture) {
-            url.push(serializeImage(data2[i].image));
+        for (let i = 0, l = data.length; i < l; i++) {
+          if (data[i].isDataTexture) {
+            url.push(serializeImage(data[i].image));
           } else {
-            url.push(serializeImage(data2[i]));
+            url.push(serializeImage(data[i]));
           }
         }
       } else {
-        url = serializeImage(data2);
+        url = serializeImage(data);
       }
       output.url = url;
     }
@@ -9504,9 +9532,9 @@ var Object3D = class _Object3D extends EventDispatcher {
     function extractFromCache(cache) {
       const values = [];
       for (const key in cache) {
-        const data2 = cache[key];
-        delete data2.metadata;
-        values.push(data2);
+        const data = cache[key];
+        delete data.metadata;
+        values.push(data);
       }
       return values;
     }
@@ -10133,170 +10161,170 @@ var Material = class extends EventDispatcher {
         images: {}
       };
     }
-    const data2 = {
+    const data = {
       metadata: {
         version: 4.6,
         type: "Material",
         generator: "Material.toJSON"
       }
     };
-    data2.uuid = this.uuid;
-    data2.type = this.type;
-    if (this.name !== "") data2.name = this.name;
-    if (this.color && this.color.isColor) data2.color = this.color.getHex();
-    if (this.roughness !== void 0) data2.roughness = this.roughness;
-    if (this.metalness !== void 0) data2.metalness = this.metalness;
-    if (this.sheen !== void 0) data2.sheen = this.sheen;
-    if (this.sheenColor && this.sheenColor.isColor) data2.sheenColor = this.sheenColor.getHex();
-    if (this.sheenRoughness !== void 0) data2.sheenRoughness = this.sheenRoughness;
-    if (this.emissive && this.emissive.isColor) data2.emissive = this.emissive.getHex();
-    if (this.emissiveIntensity !== void 0 && this.emissiveIntensity !== 1) data2.emissiveIntensity = this.emissiveIntensity;
-    if (this.specular && this.specular.isColor) data2.specular = this.specular.getHex();
-    if (this.specularIntensity !== void 0) data2.specularIntensity = this.specularIntensity;
-    if (this.specularColor && this.specularColor.isColor) data2.specularColor = this.specularColor.getHex();
-    if (this.shininess !== void 0) data2.shininess = this.shininess;
-    if (this.clearcoat !== void 0) data2.clearcoat = this.clearcoat;
-    if (this.clearcoatRoughness !== void 0) data2.clearcoatRoughness = this.clearcoatRoughness;
+    data.uuid = this.uuid;
+    data.type = this.type;
+    if (this.name !== "") data.name = this.name;
+    if (this.color && this.color.isColor) data.color = this.color.getHex();
+    if (this.roughness !== void 0) data.roughness = this.roughness;
+    if (this.metalness !== void 0) data.metalness = this.metalness;
+    if (this.sheen !== void 0) data.sheen = this.sheen;
+    if (this.sheenColor && this.sheenColor.isColor) data.sheenColor = this.sheenColor.getHex();
+    if (this.sheenRoughness !== void 0) data.sheenRoughness = this.sheenRoughness;
+    if (this.emissive && this.emissive.isColor) data.emissive = this.emissive.getHex();
+    if (this.emissiveIntensity !== void 0 && this.emissiveIntensity !== 1) data.emissiveIntensity = this.emissiveIntensity;
+    if (this.specular && this.specular.isColor) data.specular = this.specular.getHex();
+    if (this.specularIntensity !== void 0) data.specularIntensity = this.specularIntensity;
+    if (this.specularColor && this.specularColor.isColor) data.specularColor = this.specularColor.getHex();
+    if (this.shininess !== void 0) data.shininess = this.shininess;
+    if (this.clearcoat !== void 0) data.clearcoat = this.clearcoat;
+    if (this.clearcoatRoughness !== void 0) data.clearcoatRoughness = this.clearcoatRoughness;
     if (this.clearcoatMap && this.clearcoatMap.isTexture) {
-      data2.clearcoatMap = this.clearcoatMap.toJSON(meta).uuid;
+      data.clearcoatMap = this.clearcoatMap.toJSON(meta).uuid;
     }
     if (this.clearcoatRoughnessMap && this.clearcoatRoughnessMap.isTexture) {
-      data2.clearcoatRoughnessMap = this.clearcoatRoughnessMap.toJSON(meta).uuid;
+      data.clearcoatRoughnessMap = this.clearcoatRoughnessMap.toJSON(meta).uuid;
     }
     if (this.clearcoatNormalMap && this.clearcoatNormalMap.isTexture) {
-      data2.clearcoatNormalMap = this.clearcoatNormalMap.toJSON(meta).uuid;
-      data2.clearcoatNormalScale = this.clearcoatNormalScale.toArray();
+      data.clearcoatNormalMap = this.clearcoatNormalMap.toJSON(meta).uuid;
+      data.clearcoatNormalScale = this.clearcoatNormalScale.toArray();
     }
-    if (this.dispersion !== void 0) data2.dispersion = this.dispersion;
-    if (this.iridescence !== void 0) data2.iridescence = this.iridescence;
-    if (this.iridescenceIOR !== void 0) data2.iridescenceIOR = this.iridescenceIOR;
-    if (this.iridescenceThicknessRange !== void 0) data2.iridescenceThicknessRange = this.iridescenceThicknessRange;
+    if (this.dispersion !== void 0) data.dispersion = this.dispersion;
+    if (this.iridescence !== void 0) data.iridescence = this.iridescence;
+    if (this.iridescenceIOR !== void 0) data.iridescenceIOR = this.iridescenceIOR;
+    if (this.iridescenceThicknessRange !== void 0) data.iridescenceThicknessRange = this.iridescenceThicknessRange;
     if (this.iridescenceMap && this.iridescenceMap.isTexture) {
-      data2.iridescenceMap = this.iridescenceMap.toJSON(meta).uuid;
+      data.iridescenceMap = this.iridescenceMap.toJSON(meta).uuid;
     }
     if (this.iridescenceThicknessMap && this.iridescenceThicknessMap.isTexture) {
-      data2.iridescenceThicknessMap = this.iridescenceThicknessMap.toJSON(meta).uuid;
+      data.iridescenceThicknessMap = this.iridescenceThicknessMap.toJSON(meta).uuid;
     }
-    if (this.anisotropy !== void 0) data2.anisotropy = this.anisotropy;
-    if (this.anisotropyRotation !== void 0) data2.anisotropyRotation = this.anisotropyRotation;
+    if (this.anisotropy !== void 0) data.anisotropy = this.anisotropy;
+    if (this.anisotropyRotation !== void 0) data.anisotropyRotation = this.anisotropyRotation;
     if (this.anisotropyMap && this.anisotropyMap.isTexture) {
-      data2.anisotropyMap = this.anisotropyMap.toJSON(meta).uuid;
+      data.anisotropyMap = this.anisotropyMap.toJSON(meta).uuid;
     }
-    if (this.map && this.map.isTexture) data2.map = this.map.toJSON(meta).uuid;
-    if (this.matcap && this.matcap.isTexture) data2.matcap = this.matcap.toJSON(meta).uuid;
-    if (this.alphaMap && this.alphaMap.isTexture) data2.alphaMap = this.alphaMap.toJSON(meta).uuid;
+    if (this.map && this.map.isTexture) data.map = this.map.toJSON(meta).uuid;
+    if (this.matcap && this.matcap.isTexture) data.matcap = this.matcap.toJSON(meta).uuid;
+    if (this.alphaMap && this.alphaMap.isTexture) data.alphaMap = this.alphaMap.toJSON(meta).uuid;
     if (this.lightMap && this.lightMap.isTexture) {
-      data2.lightMap = this.lightMap.toJSON(meta).uuid;
-      data2.lightMapIntensity = this.lightMapIntensity;
+      data.lightMap = this.lightMap.toJSON(meta).uuid;
+      data.lightMapIntensity = this.lightMapIntensity;
     }
     if (this.aoMap && this.aoMap.isTexture) {
-      data2.aoMap = this.aoMap.toJSON(meta).uuid;
-      data2.aoMapIntensity = this.aoMapIntensity;
+      data.aoMap = this.aoMap.toJSON(meta).uuid;
+      data.aoMapIntensity = this.aoMapIntensity;
     }
     if (this.bumpMap && this.bumpMap.isTexture) {
-      data2.bumpMap = this.bumpMap.toJSON(meta).uuid;
-      data2.bumpScale = this.bumpScale;
+      data.bumpMap = this.bumpMap.toJSON(meta).uuid;
+      data.bumpScale = this.bumpScale;
     }
     if (this.normalMap && this.normalMap.isTexture) {
-      data2.normalMap = this.normalMap.toJSON(meta).uuid;
-      data2.normalMapType = this.normalMapType;
-      data2.normalScale = this.normalScale.toArray();
+      data.normalMap = this.normalMap.toJSON(meta).uuid;
+      data.normalMapType = this.normalMapType;
+      data.normalScale = this.normalScale.toArray();
     }
     if (this.displacementMap && this.displacementMap.isTexture) {
-      data2.displacementMap = this.displacementMap.toJSON(meta).uuid;
-      data2.displacementScale = this.displacementScale;
-      data2.displacementBias = this.displacementBias;
+      data.displacementMap = this.displacementMap.toJSON(meta).uuid;
+      data.displacementScale = this.displacementScale;
+      data.displacementBias = this.displacementBias;
     }
-    if (this.roughnessMap && this.roughnessMap.isTexture) data2.roughnessMap = this.roughnessMap.toJSON(meta).uuid;
-    if (this.metalnessMap && this.metalnessMap.isTexture) data2.metalnessMap = this.metalnessMap.toJSON(meta).uuid;
-    if (this.emissiveMap && this.emissiveMap.isTexture) data2.emissiveMap = this.emissiveMap.toJSON(meta).uuid;
-    if (this.specularMap && this.specularMap.isTexture) data2.specularMap = this.specularMap.toJSON(meta).uuid;
-    if (this.specularIntensityMap && this.specularIntensityMap.isTexture) data2.specularIntensityMap = this.specularIntensityMap.toJSON(meta).uuid;
-    if (this.specularColorMap && this.specularColorMap.isTexture) data2.specularColorMap = this.specularColorMap.toJSON(meta).uuid;
+    if (this.roughnessMap && this.roughnessMap.isTexture) data.roughnessMap = this.roughnessMap.toJSON(meta).uuid;
+    if (this.metalnessMap && this.metalnessMap.isTexture) data.metalnessMap = this.metalnessMap.toJSON(meta).uuid;
+    if (this.emissiveMap && this.emissiveMap.isTexture) data.emissiveMap = this.emissiveMap.toJSON(meta).uuid;
+    if (this.specularMap && this.specularMap.isTexture) data.specularMap = this.specularMap.toJSON(meta).uuid;
+    if (this.specularIntensityMap && this.specularIntensityMap.isTexture) data.specularIntensityMap = this.specularIntensityMap.toJSON(meta).uuid;
+    if (this.specularColorMap && this.specularColorMap.isTexture) data.specularColorMap = this.specularColorMap.toJSON(meta).uuid;
     if (this.envMap && this.envMap.isTexture) {
-      data2.envMap = this.envMap.toJSON(meta).uuid;
-      if (this.combine !== void 0) data2.combine = this.combine;
+      data.envMap = this.envMap.toJSON(meta).uuid;
+      if (this.combine !== void 0) data.combine = this.combine;
     }
-    if (this.envMapRotation !== void 0) data2.envMapRotation = this.envMapRotation.toArray();
-    if (this.envMapIntensity !== void 0) data2.envMapIntensity = this.envMapIntensity;
-    if (this.reflectivity !== void 0) data2.reflectivity = this.reflectivity;
-    if (this.refractionRatio !== void 0) data2.refractionRatio = this.refractionRatio;
+    if (this.envMapRotation !== void 0) data.envMapRotation = this.envMapRotation.toArray();
+    if (this.envMapIntensity !== void 0) data.envMapIntensity = this.envMapIntensity;
+    if (this.reflectivity !== void 0) data.reflectivity = this.reflectivity;
+    if (this.refractionRatio !== void 0) data.refractionRatio = this.refractionRatio;
     if (this.gradientMap && this.gradientMap.isTexture) {
-      data2.gradientMap = this.gradientMap.toJSON(meta).uuid;
+      data.gradientMap = this.gradientMap.toJSON(meta).uuid;
     }
-    if (this.transmission !== void 0) data2.transmission = this.transmission;
-    if (this.transmissionMap && this.transmissionMap.isTexture) data2.transmissionMap = this.transmissionMap.toJSON(meta).uuid;
-    if (this.thickness !== void 0) data2.thickness = this.thickness;
-    if (this.thicknessMap && this.thicknessMap.isTexture) data2.thicknessMap = this.thicknessMap.toJSON(meta).uuid;
-    if (this.attenuationDistance !== void 0 && this.attenuationDistance !== Infinity) data2.attenuationDistance = this.attenuationDistance;
-    if (this.attenuationColor !== void 0) data2.attenuationColor = this.attenuationColor.getHex();
-    if (this.size !== void 0) data2.size = this.size;
-    if (this.shadowSide !== null) data2.shadowSide = this.shadowSide;
-    if (this.sizeAttenuation !== void 0) data2.sizeAttenuation = this.sizeAttenuation;
-    if (this.blending !== NormalBlending) data2.blending = this.blending;
-    if (this.side !== FrontSide) data2.side = this.side;
-    if (this.vertexColors === true) data2.vertexColors = true;
-    if (this.opacity < 1) data2.opacity = this.opacity;
-    if (this.transparent === true) data2.transparent = true;
-    if (this.blendSrc !== SrcAlphaFactor) data2.blendSrc = this.blendSrc;
-    if (this.blendDst !== OneMinusSrcAlphaFactor) data2.blendDst = this.blendDst;
-    if (this.blendEquation !== AddEquation) data2.blendEquation = this.blendEquation;
-    if (this.blendSrcAlpha !== null) data2.blendSrcAlpha = this.blendSrcAlpha;
-    if (this.blendDstAlpha !== null) data2.blendDstAlpha = this.blendDstAlpha;
-    if (this.blendEquationAlpha !== null) data2.blendEquationAlpha = this.blendEquationAlpha;
-    if (this.blendColor && this.blendColor.isColor) data2.blendColor = this.blendColor.getHex();
-    if (this.blendAlpha !== 0) data2.blendAlpha = this.blendAlpha;
-    if (this.depthFunc !== LessEqualDepth) data2.depthFunc = this.depthFunc;
-    if (this.depthTest === false) data2.depthTest = this.depthTest;
-    if (this.depthWrite === false) data2.depthWrite = this.depthWrite;
-    if (this.colorWrite === false) data2.colorWrite = this.colorWrite;
-    if (this.stencilWriteMask !== 255) data2.stencilWriteMask = this.stencilWriteMask;
-    if (this.stencilFunc !== AlwaysStencilFunc) data2.stencilFunc = this.stencilFunc;
-    if (this.stencilRef !== 0) data2.stencilRef = this.stencilRef;
-    if (this.stencilFuncMask !== 255) data2.stencilFuncMask = this.stencilFuncMask;
-    if (this.stencilFail !== KeepStencilOp) data2.stencilFail = this.stencilFail;
-    if (this.stencilZFail !== KeepStencilOp) data2.stencilZFail = this.stencilZFail;
-    if (this.stencilZPass !== KeepStencilOp) data2.stencilZPass = this.stencilZPass;
-    if (this.stencilWrite === true) data2.stencilWrite = this.stencilWrite;
-    if (this.rotation !== void 0 && this.rotation !== 0) data2.rotation = this.rotation;
-    if (this.polygonOffset === true) data2.polygonOffset = true;
-    if (this.polygonOffsetFactor !== 0) data2.polygonOffsetFactor = this.polygonOffsetFactor;
-    if (this.polygonOffsetUnits !== 0) data2.polygonOffsetUnits = this.polygonOffsetUnits;
-    if (this.linewidth !== void 0 && this.linewidth !== 1) data2.linewidth = this.linewidth;
-    if (this.dashSize !== void 0) data2.dashSize = this.dashSize;
-    if (this.gapSize !== void 0) data2.gapSize = this.gapSize;
-    if (this.scale !== void 0) data2.scale = this.scale;
-    if (this.dithering === true) data2.dithering = true;
-    if (this.alphaTest > 0) data2.alphaTest = this.alphaTest;
-    if (this.alphaHash === true) data2.alphaHash = true;
-    if (this.alphaToCoverage === true) data2.alphaToCoverage = true;
-    if (this.premultipliedAlpha === true) data2.premultipliedAlpha = true;
-    if (this.forceSinglePass === true) data2.forceSinglePass = true;
-    if (this.wireframe === true) data2.wireframe = true;
-    if (this.wireframeLinewidth > 1) data2.wireframeLinewidth = this.wireframeLinewidth;
-    if (this.wireframeLinecap !== "round") data2.wireframeLinecap = this.wireframeLinecap;
-    if (this.wireframeLinejoin !== "round") data2.wireframeLinejoin = this.wireframeLinejoin;
-    if (this.flatShading === true) data2.flatShading = true;
-    if (this.visible === false) data2.visible = false;
-    if (this.toneMapped === false) data2.toneMapped = false;
-    if (this.fog === false) data2.fog = false;
-    if (Object.keys(this.userData).length > 0) data2.userData = this.userData;
+    if (this.transmission !== void 0) data.transmission = this.transmission;
+    if (this.transmissionMap && this.transmissionMap.isTexture) data.transmissionMap = this.transmissionMap.toJSON(meta).uuid;
+    if (this.thickness !== void 0) data.thickness = this.thickness;
+    if (this.thicknessMap && this.thicknessMap.isTexture) data.thicknessMap = this.thicknessMap.toJSON(meta).uuid;
+    if (this.attenuationDistance !== void 0 && this.attenuationDistance !== Infinity) data.attenuationDistance = this.attenuationDistance;
+    if (this.attenuationColor !== void 0) data.attenuationColor = this.attenuationColor.getHex();
+    if (this.size !== void 0) data.size = this.size;
+    if (this.shadowSide !== null) data.shadowSide = this.shadowSide;
+    if (this.sizeAttenuation !== void 0) data.sizeAttenuation = this.sizeAttenuation;
+    if (this.blending !== NormalBlending) data.blending = this.blending;
+    if (this.side !== FrontSide) data.side = this.side;
+    if (this.vertexColors === true) data.vertexColors = true;
+    if (this.opacity < 1) data.opacity = this.opacity;
+    if (this.transparent === true) data.transparent = true;
+    if (this.blendSrc !== SrcAlphaFactor) data.blendSrc = this.blendSrc;
+    if (this.blendDst !== OneMinusSrcAlphaFactor) data.blendDst = this.blendDst;
+    if (this.blendEquation !== AddEquation) data.blendEquation = this.blendEquation;
+    if (this.blendSrcAlpha !== null) data.blendSrcAlpha = this.blendSrcAlpha;
+    if (this.blendDstAlpha !== null) data.blendDstAlpha = this.blendDstAlpha;
+    if (this.blendEquationAlpha !== null) data.blendEquationAlpha = this.blendEquationAlpha;
+    if (this.blendColor && this.blendColor.isColor) data.blendColor = this.blendColor.getHex();
+    if (this.blendAlpha !== 0) data.blendAlpha = this.blendAlpha;
+    if (this.depthFunc !== LessEqualDepth) data.depthFunc = this.depthFunc;
+    if (this.depthTest === false) data.depthTest = this.depthTest;
+    if (this.depthWrite === false) data.depthWrite = this.depthWrite;
+    if (this.colorWrite === false) data.colorWrite = this.colorWrite;
+    if (this.stencilWriteMask !== 255) data.stencilWriteMask = this.stencilWriteMask;
+    if (this.stencilFunc !== AlwaysStencilFunc) data.stencilFunc = this.stencilFunc;
+    if (this.stencilRef !== 0) data.stencilRef = this.stencilRef;
+    if (this.stencilFuncMask !== 255) data.stencilFuncMask = this.stencilFuncMask;
+    if (this.stencilFail !== KeepStencilOp) data.stencilFail = this.stencilFail;
+    if (this.stencilZFail !== KeepStencilOp) data.stencilZFail = this.stencilZFail;
+    if (this.stencilZPass !== KeepStencilOp) data.stencilZPass = this.stencilZPass;
+    if (this.stencilWrite === true) data.stencilWrite = this.stencilWrite;
+    if (this.rotation !== void 0 && this.rotation !== 0) data.rotation = this.rotation;
+    if (this.polygonOffset === true) data.polygonOffset = true;
+    if (this.polygonOffsetFactor !== 0) data.polygonOffsetFactor = this.polygonOffsetFactor;
+    if (this.polygonOffsetUnits !== 0) data.polygonOffsetUnits = this.polygonOffsetUnits;
+    if (this.linewidth !== void 0 && this.linewidth !== 1) data.linewidth = this.linewidth;
+    if (this.dashSize !== void 0) data.dashSize = this.dashSize;
+    if (this.gapSize !== void 0) data.gapSize = this.gapSize;
+    if (this.scale !== void 0) data.scale = this.scale;
+    if (this.dithering === true) data.dithering = true;
+    if (this.alphaTest > 0) data.alphaTest = this.alphaTest;
+    if (this.alphaHash === true) data.alphaHash = true;
+    if (this.alphaToCoverage === true) data.alphaToCoverage = true;
+    if (this.premultipliedAlpha === true) data.premultipliedAlpha = true;
+    if (this.forceSinglePass === true) data.forceSinglePass = true;
+    if (this.wireframe === true) data.wireframe = true;
+    if (this.wireframeLinewidth > 1) data.wireframeLinewidth = this.wireframeLinewidth;
+    if (this.wireframeLinecap !== "round") data.wireframeLinecap = this.wireframeLinecap;
+    if (this.wireframeLinejoin !== "round") data.wireframeLinejoin = this.wireframeLinejoin;
+    if (this.flatShading === true) data.flatShading = true;
+    if (this.visible === false) data.visible = false;
+    if (this.toneMapped === false) data.toneMapped = false;
+    if (this.fog === false) data.fog = false;
+    if (Object.keys(this.userData).length > 0) data.userData = this.userData;
     function extractFromCache(cache) {
       const values = [];
       for (const key in cache) {
-        const data3 = cache[key];
-        delete data3.metadata;
-        values.push(data3);
+        const data2 = cache[key];
+        delete data2.metadata;
+        values.push(data2);
       }
       return values;
     }
     if (isRootObject) {
       const textures = extractFromCache(meta.textures);
       const images = extractFromCache(meta.images);
-      if (textures.length > 0) data2.textures = textures;
-      if (images.length > 0) data2.images = images;
+      if (textures.length > 0) data.textures = textures;
+      if (images.length > 0) data.images = images;
     }
-    return data2;
+    return data;
   }
   clone() {
     return new this.constructor().copy(this);
@@ -12353,17 +12381,17 @@ var terrain_yields_default = {
       Teren: "\u0141\u0105ka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 1,
-      Handel: 1,
+      Podatek: 2,
       Drewno: 1,
       Kamie\u0144: 0,
-      Suma: 6,
+      Suma: 7,
       Uwagi: null
     },
     {
       Teren: "R\xF3wnina",
       \u017Bywno\u015B\u0107: 2,
       Praca: 2,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 2,
       Kamie\u0144: 1,
       Suma: 8,
@@ -12373,7 +12401,7 @@ var terrain_yields_default = {
       Teren: "Wzg\xF3rza",
       \u017Bywno\u015B\u0107: 1,
       Praca: 3,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 2,
       Suma: 8,
@@ -12383,7 +12411,7 @@ var terrain_yields_default = {
       Teren: "G\xF3ry",
       \u017Bywno\u015B\u0107: 0,
       Praca: 4,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 5,
       Suma: 11,
@@ -12393,7 +12421,7 @@ var terrain_yields_default = {
       Teren: "Wybrze\u017Ce",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 7,
@@ -12403,7 +12431,7 @@ var terrain_yields_default = {
       Teren: "Morze",
       \u017Bywno\u015B\u0107: 2,
       Praca: 0,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 4,
@@ -12413,7 +12441,7 @@ var terrain_yields_default = {
       Teren: "Pustynia",
       \u017Bywno\u015B\u0107: 0,
       Praca: 0,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 1,
@@ -12423,7 +12451,7 @@ var terrain_yields_default = {
       Teren: "Polarny",
       \u017Bywno\u015B\u0107: 0,
       Praca: 0,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 0,
@@ -12435,21 +12463,21 @@ var terrain_yields_default = {
       Modyfikator: "Rzeka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 7,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +7 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Suma: 8,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +8 \u2014 mocny, mo\u017Cna stonowa\u0107"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
       \u017Bywno\u015B\u0107: -1,
       Praca: 3,
-      Handel: -1,
+      Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
-      Suma: 4,
-      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
+      Suma: 7,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
   ]
 };
@@ -12699,6 +12727,24 @@ function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
   return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
 }
 
+// src/game/building-stock-cost.ts
+function buildingStockCost(building) {
+  const raw = building?.koszt_surowce;
+  const out = {};
+  if (!raw) return out;
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === "number" && Number.isFinite(v) && v > 0) out[k] = v;
+  }
+  return out;
+}
+function canAffordBuildingStock(citySurowce, cost) {
+  const have = citySurowce ?? {};
+  for (const [k, need] of Object.entries(cost)) {
+    if ((have[k] ?? 0) < need) return false;
+  }
+  return true;
+}
+
 // src/game/building-resource-gate.ts
 var LABEL_BY_ASCII = {
   drewno: "Drewno",
@@ -12751,31 +12797,6 @@ var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"])
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
-var ACCESS_ONLY_RESOURCE_LABELS = /* @__PURE__ */ new Set();
-function empireLabelSatisfied(label, activeLabels, empireBuiltIds, empireStock) {
-  if (activeLabels.includes(label)) return true;
-  if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
-  if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
-  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
-    const asciiKey = ASCII_BY_LABEL[label];
-    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
-  }
-  return false;
-}
-function buildingRequiredActiveLabels(building) {
-  const out = /* @__PURE__ */ new Set();
-  const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
-  if (hard) hard.forEach((l) => out.add(l));
-  const key = building.wymaganySurowiec?.trim().toLowerCase();
-  if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
-  return [...out];
-}
-function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireStock) {
-  const required = buildingRequiredActiveLabels(building);
-  if (required.length === 0) return true;
-  const active = activeLabels ?? [];
-  return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
-}
 var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
   Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
 );
@@ -12830,21 +12851,21 @@ function unitCostFromDef(def) {
   }
   return DEFAULT_UNIT_COST;
 }
-function findBuilding(data2, id) {
-  return data2.buildings.find((b) => b.id === id);
+function findBuilding(data, id) {
+  return data.buildings.find((b) => b.id === id);
 }
-function findUnit(data2, id) {
-  return data2.units.find((u) => u.Jednostka === id);
+function findUnit(data, id) {
+  return data.units.find((u) => u.Jednostka === id);
 }
-function itemCost(kind, id, data2, cityLevelOrEpoch) {
+function itemCost(kind, id, data, cityLevelOrEpoch) {
   if (kind === "budynek") {
-    const b = findBuilding(data2, id);
+    const b = findBuilding(data, id);
     if (!b) return 0;
     const level = Number.isFinite(cityLevelOrEpoch) ? Math.max(1, Math.floor(cityLevelOrEpoch)) : 1;
     const przyrostKosztu = Number.isFinite(b.przyrostKosztu) ? b.przyrostKosztu : 0;
     return Math.round(b.kosztBudowy + przyrostKosztu * (level - 1));
   }
-  const u = findUnit(data2, id);
+  const u = findUnit(data, id);
   if (!u) return 0;
   return unitCostFromDef(u);
 }
@@ -12944,7 +12965,7 @@ function unitMatchesSpecialName(unitName, tokens) {
   }
   return false;
 }
-function availableProduction(city, data2, unlockedTechs, ctx = {}) {
+function availableProduction(city, data, unlockedTechs, ctx = {}) {
   const epoch = Number.isFinite(ctx.epoch) ? ctx.epoch : 1;
   const level = Number.isFinite(ctx.buildingLevel) ? ctx.buildingLevel : 1;
   const builtList = ctx.builtBuildingIds ?? [];
@@ -12954,7 +12975,7 @@ function availableProduction(city, data2, unlockedTechs, ctx = {}) {
   const ownerId = ctx.ownerId ?? 0;
   const difficulty = ctx.difficulty ?? "normal";
   const items = [];
-  for (const b of data2.buildings) {
+  for (const b of data.buildings) {
     if (b.epokaWejscia > epoch) continue;
     if (isBuildingSuppressedFromProduction(b)) continue;
     const upgradeFrom = (b.upgradeFrom ?? "").trim();
@@ -12962,7 +12983,7 @@ function availableProduction(city, data2, unlockedTechs, ctx = {}) {
       if (!builtList.includes(upgradeFrom)) continue;
       if (buildingTypeCommitted(b.id, builtList, queue)) continue;
     } else {
-      if (isBuildingSupersededByUpgrade(b.id, builtList, data2.buildings)) continue;
+      if (isBuildingSupersededByUpgrade(b.id, builtList, data.buildings)) continue;
       if (buildingTypeCommitted(b.id, builtList, queue)) continue;
     }
     const tech = (b.techUnlock ?? "").trim();
@@ -12971,11 +12992,7 @@ function availableProduction(city, data2, unlockedTechs, ctx = {}) {
     if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
-    const gateLabels = ctx.empireActiveResourceLabels !== void 0 ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
-    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
-      continue;
-    }
-    if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data2.buildings, isBuildingSupersededByUpgrade)) {
+    if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
       continue;
     }
     if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
@@ -12984,9 +13001,9 @@ function availableProduction(city, data2, unlockedTechs, ctx = {}) {
     items.push({
       kind: "budynek",
       id: b.id,
-      nazwa: upgradeProductionDisplayName(b, data2.buildings),
+      nazwa: upgradeProductionDisplayName(b, data.buildings),
       koszt: buildingWorkCost(
-        itemCost("budynek", b.id, data2, level),
+        itemCost("budynek", b.id, data, level),
         ctx.civBonusy,
         ctx.buildingCostPace,
         ownerId,
@@ -12995,7 +13012,7 @@ function availableProduction(city, data2, unlockedTechs, ctx = {}) {
     });
   }
   const built = new Set(builtList);
-  for (const u of data2.units) {
+  for (const u of data.units) {
     if (epochNumber(u.Epoka) > epoch) continue;
     const nacja = (u.Nacja ?? "").toString().trim();
     if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) continue;
@@ -13004,7 +13021,7 @@ function availableProduction(city, data2, unlockedTechs, ctx = {}) {
     if (isReplacement) {
       if (!unitMatchesSpecialName(u.Jednostka, specTokens)) continue;
     } else if (specTokens.length > 0) {
-      const replacedBySpec = data2.units.some((su) => {
+      const replacedBySpec = data.units.some((su) => {
         const sz = (su["W zamian za"] ?? "").toString().trim();
         if (isBlankReplacement(sz) || sz !== u.Jednostka) return false;
         return unitMatchesSpecialName(su.Jednostka, specTokens);
@@ -13013,7 +13030,7 @@ function availableProduction(city, data2, unlockedTechs, ctx = {}) {
     }
     const tech = (u.Tech ?? "").toString().trim();
     if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
-    if (epochNumber(u.Epoka) === 2 && !built.has("koszary") && !isBuildingSupersededByUpgrade("koszary", builtList, data2.buildings)) continue;
+    if (epochNumber(u.Epoka) === 2 && !built.has("koszary") && !isBuildingSupersededByUpgrade("koszary", builtList, data.buildings)) continue;
     const surowiec = stripDiacritics((u.Surowiec ?? "").toString().trim());
     if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) {
       continue;
@@ -13023,7 +13040,7 @@ function availableProduction(city, data2, unlockedTechs, ctx = {}) {
     }
     if (u["Super-jednostka"] === "TAK" && ctx.aliveUnitTypeNames?.has(u.Jednostka)) continue;
     const koszt = unitMoneyCost(
-      itemCost("jednostka", u.Jednostka, data2, 1),
+      itemCost("jednostka", u.Jednostka, data, 1),
       ctx.civBonusy,
       ctx.kosztJednostekPace,
       ownerId,
@@ -13044,10 +13061,10 @@ function availableProduction(city, data2, unlockedTechs, ctx = {}) {
   return items;
 }
 var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
-function buildableProduction(city, data2, unlockedTechs, ctx = {}) {
-  return availableProduction(city, data2, unlockedTechs, ctx).filter((it) => it.kind === "budynek");
+function buildableProduction(city, data, unlockedTechs, ctx = {}) {
+  return availableProduction(city, data, unlockedTechs, ctx).filter((it) => it.kind === "budynek");
 }
-function eraBuildingCatalog(data2, unlockedTechs, ctx = {}) {
+function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
   const epoch = Number.isFinite(ctx.epoch) ? ctx.epoch : 1;
   const level = Number.isFinite(ctx.buildingLevel) ? ctx.buildingLevel : 1;
   const builtList = ctx.builtBuildingIds ?? [];
@@ -13056,10 +13073,10 @@ function eraBuildingCatalog(data2, unlockedTechs, ctx = {}) {
   const ownerId = ctx.ownerId ?? 0;
   const difficulty = ctx.difficulty ?? "normal";
   const entries = [];
-  for (const b of data2.buildings) {
+  for (const b of data.buildings) {
     if (b.epokaWejscia !== epoch) continue;
     const koszt = buildingWorkCost(
-      itemCost("budynek", b.id, data2, level),
+      itemCost("budynek", b.id, data, level),
       ctx.civBonusy,
       ctx.buildingCostPace,
       ownerId,
@@ -13071,11 +13088,11 @@ function eraBuildingCatalog(data2, unlockedTechs, ctx = {}) {
     const prereqOk = cityBuildingPrereqMet(
       CITY_BUILDING_PREREQ[b.id],
       builtList,
-      data2.buildings,
+      data.buildings,
       isBuildingSupersededByUpgrade
     );
-    const gateLabels = ctx.empireActiveResourceLabels !== void 0 ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
-    const resourceOk = buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock) && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
+    const stockCost = buildingStockCost(b);
+    const resourceOk = canAffordBuildingStock(ctx.empireResourceStock, stockCost) && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
     let status = "ready";
     let locationBlocked;
     if (buildingTypeQueued(b.id, queue)) {
@@ -13133,7 +13150,7 @@ function terrainRowToTileYield(row) {
   return {
     zywnosc: Number(row["\u017Bywno\u015B\u0107"] ?? 0),
     praca: Number(row["Praca"] ?? 0),
-    handel: Number(row["Handel"] ?? 0),
+    handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
     // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
@@ -13219,804 +13236,6 @@ var OWNER_CAPPED_RESOURCE_KEYS = [
   "kon"
 ];
 var OWNER_CAPPED_RESOURCE_KEY_SET = new Set(OWNER_CAPPED_RESOURCE_KEYS);
-
-// src/game/order.ts
-var FALLBACK_ORDER_PARAMS = Object.freeze({
-  wagaSzczescie: 0.5,
-  wagaPrawo: 0.5,
-  progT1: 0,
-  progT2: 6,
-  karaProdukcjaT1: -0.15,
-  karaPieniadzT1: -0.15,
-  karaNaukaT1: -0.1,
-  karaKulturaT1: -0.1,
-  karaWzrostT1: -0.25,
-  ryzykoBuntuT1: 0.05,
-  bonusProdukcjaT2: 0.1,
-  bonusHandelT2: 0.1
-});
-
-// data/wonders.json
-var wonders_default = {
-  _meta: {
-    opis: "Cuda \u015Bwiata \u2014 epoka Antyk (v0.1). Kanon Maciej 2026-06-26.",
-    dostep_E: "Wy\u0142\u0105czny \u2014 tylko wskazane pa\u0144stwa; max 1 na \u015Bwiat; inni nie widz\u0105 cudu w panelu.",
-    dostep_R: "Wy\u015Bcig \u2014 ka\u017Cde pa\u0144stwo z listy cywilizacje (wszystkie 15) uczestniczy; max 1 na \u015Bwiat.",
-    cuda_wyscigowe: ["wyrocznia", "hamonga", "brama_narodow"],
-    cuda_wyscigowe_epoka: {
-      "1": { id: "wyrocznia", nazwa: "Wyrocznia", epoka: "Kamie\u0144", profil: "kultura, mistycyzm" },
-      "2": { id: "hamonga", nazwa: "Kamie\u0144 Ha'amonga", epoka: "Br\u0105z", profil: "kultura, morze, rybo\u0142\xF3wstwo" },
-      "3": { id: "brama_narodow", nazwa: "Brama wszystkich narod\xF3w", epoka: "\u017Belazo", profil: "wojna, handel imperium" }
-    },
-    cuda_wyscigowe_uwaga: "Dok\u0142adnie 1 cud R na epok\u0119 Antyku; wszyscy 15 graczy widz\u0105 i mog\u0105 walczy\u0107; max 1 egzemplarz na \u015Bwiat.",
-    wszystkie_cywilizacje: [
-      "egipt",
-      "sumer",
-      "babilonia",
-      "grecy",
-      "hetyci",
-      "celtowie",
-      "harappa",
-      "fenicjanie",
-      "germanie",
-      "inkowie",
-      "chinczycy",
-      "rzymianie",
-      "asyria",
-      "zulusi",
-      "slowianie"
-    ],
-    epoka: "1=Kamie\u0144, 2=Br\u0105z, 3=\u017Belazo (Antyk); 4\u20136=\u015Aredniowiecze; 7+=Renesans i dalej",
-    wieki: {
-      antyk: { epoki: [1, 2, 3], opis: "Kamie\u0144\u2013Br\u0105z\u2013\u017Belazo; budowa cud\xF3w E/R z tego pliku" },
-      sredniowiecze: { epoki: [4, 5, 6], opis: "Cuda Antyku nadal daj\u0105 bonusy; nowe cuda \u015Bredniowieczne \u2014 osobny plik / era" },
-      renesans_plus: { epoki: [7, 8, 9, 10], opis: "Po absolut \u2014 efekty cud\xF3w Antyku wygas\u0142y" }
-    },
-    absolut: {
-      opis: "Ostatnia epoka imperium (w\u0142\u0105cznie), w kt\xF3rej aktywne s\u0105 bonusy cudu. Od epoki absolut+1 efekt wygasa (jednorazowe przy budowie \u2014 bez absolut).",
-      domyslnie_antyk: 6,
-      koniec_sredniowiecza: 6,
-      decyzja: "Maciej 2026-06-26: cuda Antyku + ich efekty znikaj\u0105 na koniec \u015Aredniowiecza (ep.6).",
-      po_absolut: {
-        decyzja: "Maciej D-CUD1: cud ZOSTAJE na mapie (nie zniszczony); wszystkie bonusy z JSON wygasaj\u0105.",
-        hex: "ruina/dekor \u2014 model widoczny",
-        utrzymanie_wygasly: "50pct",
-        utrzymanie_wygasly_opis: "Maciej D-CUD2=C: po absolut utrzymanie = floor(utrzymanie/2), min 0 (np. Piramidy 2\u21921)",
-        jedyny_efekt: {
-          typ: "handel_turystyka",
-          wartosc: 10,
-          opis: "+10 do handlu \u2014 cud jako atrakcja turystyczna (jedyny yield po absolut)"
-        }
-      },
-      silnik: "player.era > absolut \u2192 wy\u0142\u0105cz bonusy miasto/teren/hex/specjalne; zastosuj po_absolut.jedyny_efekt je\u015Bli aktywny"
-    },
-    budowa: "hex w terytorium (nie slot miasta)",
-    harappa_v1: "Antyk: tylko Stupa w Sanchi (E). Nalanda + Angkor Wat \u2192 parkowane (epoka 4+).",
-    chinczycy_v1: "Antyk: Terakotowa armia + Pa\u0142ac Weiyang (E). Wielki dzw\xF3n \u2192 parkowany (epoka 5+).",
-    celtowie_v1: "Antyk: Roquepertuse (E, epoka 3). Kopiec grobowy/Monks Mound \u2192 parkowany.",
-    koszt_jednostka: "Praca (jak budynki i ulepszenia terenu); budowa z puli Pracy najbli\u017Cszego miasta / skarbca.",
-    bonus_miasto: "Yield +/tur\u0119 \xD7 KA\u017BDE miasto (pieniadz, zywnosc, nauka, kultura, zadowolenie, praca, obrona_miejsca). Bez dzielnic Civ7.",
-    bonus_cywilizacja: "Tylko imperium \u2014 NIE sumowane w karcie miasta. Patrz lista bonus_cywilizacja_typy.",
-    bonus_cywilizacja_typy: {
-      dyplomacja_wp\u0142yw: "Wp\u0142yw / Influence (traktaty, ambasady)",
-      wojna_wsparcie: "Wsparcie we wszystkich wojnach",
-      relacje_zaufanie: "Zaufanie bazowe wobec innych nacji",
-      relacje_respekt: "Wynika z Mocy (odkrycia) \u2014 cuda NIE daj\u0105 Mocy (decyzja Maciej 2026-06-26)",
-      armia_xp: "Do\u015Bwiadczenie armii (%)",
-      armia_morale: "Morale imperium po bitwie / sta\u0142e",
-      walka_procent: "Atak/obrona/obl\u0119\u017Cenie (%) \u2014 jednostki poza miastem",
-      pobor_regen: "Regeneracja Manpower imperium (%)",
-      handel_procent: "Bonus % do tras handlowych / morskich",
-      nauka_procent: "Bonus % nauki imperium (nie flat per miasto)",
-      produkcja_procent: "Redukcja kosztu Pracy budynk\xF3w/ulepsze\u0144 (%)",
-      magazyn_pojemnosc: "Pojemno\u015B\u0107 zapas\xF3w / trade capacity globalna",
-      wzrost_ludnosci_procent: "Wzrost populacji we wszystkich miastach (%)",
-      jednorazowe: "Z\u0142oto przy zdarzeniu, darmowa jednostka, kultura z wydarze\u0144 narracyjnych",
-      fortyfikacja_mapa: "Bonus obrony na heksach fort\xF3w (mapa, nie yield miasta)",
-      handel_turystyka: "Po absolut: jedyny efekt wygas\u0142ego cudu \u2014 +N do handlu (atrakcja turystyczna)"
-    },
-    bonus_zasieg: "hex = tylko pole cudu; teren = heksy danego typu w terytorium (plony \u2192 miasto w\u0142a\u015Bciciela pola). BEZ dzielnic / sasiad-dzielnica.",
-    bonus_teren: "Modyfikator p\xF3l w terytorium (nie \xD7 ka\u017Cde miasto \u2014 tylko heksy spe\u0142niaj\u0105ce warunek).",
-    bonus_specjalne: "Implementacja bonus_cywilizacja \u2014 silnik cud\xF3w (v1.1+). Typ = klucz z bonus_cywilizacja_typy.",
-    kanon_bonusow_2026: "Maciej: yield miejski \xD73 vs v0.1 (\xD7 ka\u017Cde miasto). Wp\u0142yw, zaufanie, wojna, %, armia \u2192 cywilizacja. BEZ bonusu Mocy \u2014 Moc tylko z odkry\u0107.",
-    bonus_miasto_mnoznik: 3,
-    bonus_moc: "USUNI\u0118TE \u2014 Moc (P-A) pochodzi wy\u0142\u0105cznie z odkry\u0107 technologii; cuda nie dodaj\u0105 punkt\xF3w Mocy (Maciej 2026-06-26).",
-    kanon_tech_wejscie: "Maciej 2026-07-03: techUnlock cudu E \u2014 ka\u017Cdy wynalazek z epoki >= epokaWejscia pa\u0144stwa; p\xF3\u017Aniejsze epoki OK; zakaz tech wcze\u015Bniejszych ni\u017C debiut nacji."
-  },
-  cuda: [
-    {
-      id: "piramidy",
-      nazwa: "Piramidy",
-      dostep: "E",
-      cywilizacje: ["egipt"],
-      techUnlock: ["Murarstwo"],
-      wymagaTerenu: ["pustynia", "rzeka_sasiad"],
-      epokaWejscia: 1,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 160,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { pieniadz: 3, praca: 3 },
-        teren: [
-          { typTerenu: "pustynia", pieniadz: 2, praca: 2, warunek: "hex_sasiad_rzeka" },
-          { typTerenu: "rzeka_mala", pieniadz: 2, praca: 2 }
-        ],
-        specjalne: [
-          { typ: "kapital_pustynia", wartosc: 3, opis: "Stolica na pustyni: +3 Pieni\u0105dz/tur\u0119 (cywilizacja)" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 3, opis: "+3 Wp\u0142ywu \u2014 presti\u017C faraon\xF3w (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "wielka_stela",
-      nazwa: "Wielka stela",
-      dostep: "E",
-      cywilizacje: ["zulusi"],
-      techUnlock: ["Pismo"],
-      wymagaTerenu: ["rownina"],
-      epokaWejscia: 2,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 220,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { kultura: 3, pieniadz: 3 },
-        specjalne: [
-          { typ: "jednorazowe", cel: "zloto_przy_budowie_cudu", wartosc: 200, opis: "+200 Pieni\u0105dza przy uko\u0144czeniu kolejnego cudu (cywilizacja)" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 4, opis: "+4 Wp\u0142ywu \u2014 handel aksumski (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "wiszace_ogrody",
-      nazwa: "Wisz\u0105ce ogrody",
-      dostep: "E",
-      cywilizacje: ["babilonia"],
-      techUnlock: ["Pismo"],
-      wymagaTerenu: ["rzeka_sasiad"],
-      epokaWejscia: 2,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 150,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { zywnosc: 3 },
-        teren: [
-          { typTerenu: "farma", zywnosc: 2, warunek: "hex_sasiad_rzeka" }
-        ],
-        specjalne: [
-          { typ: "wzrost_ludnosci_procent", wartosc: 0.15, opis: "+15% wzrost populacji we wszystkich miastach (cywilizacja)" },
-          { typ: "relacje_zaufanie", wartosc: 2, opis: "+2 bazowe Zaufanie wobec s\u0105siad\xF3w (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "wyrocznia",
-      nazwa: "Wyrocznia",
-      dostep: "R",
-      cywilizacje: [
-        "egipt",
-        "sumer",
-        "babilonia",
-        "grecy",
-        "hetyci",
-        "celtowie",
-        "harappa",
-        "fenicjanie",
-        "germanie",
-        "inkowie",
-        "chinczycy",
-        "rzymianie",
-        "asyria",
-        "zulusi",
-        "slowianie"
-      ],
-      techUnlock: ["Mistycyzm"],
-      wymagaTerenu: ["trudny_teren"],
-      epokaWejscia: 1,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 180,
-      utrzymanie: 1,
-      bonusy: {
-        miasto: { kultura: 3 },
-        specjalne: [
-          { typ: "jednorazowe", cel: "kultura_wydarzenia", wartosc: 15, opis: "+15 Kultury za nagrody z wydarze\u0144 narracyjnych (cywilizacja)" },
-          { typ: "relacje_zaufanie", wartosc: 3, opis: "+3 Zaufanie \u2014 wyrocznia jako arbiter (cywilizacja)" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 2, opis: "+2 Wp\u0142ywu (cywilizacja)" }
-        ]
-      },
-      uwagi: "Jedyny cud wy\u015Bcigowy epoki Kamienia; sanktuarium / wyrocznia (Delphi, Dodona\u2026)"
-    },
-    {
-      id: "roquepertuse",
-      nazwa: "Roquepertuse",
-      nazwaAlt: "Sanktuarium celtyckie \u2014 portyk z niszami na czaszki (Velaux, Galia)",
-      dostep: "E",
-      cywilizacje: ["celtowie"],
-      techUnlock: ["In\u017Cynieria"],
-      wymagaTerenu: ["wzgorze", "trudny_teren"],
-      epokaWejscia: 3,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 290,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { kultura: 3, zadowolenie: 3 },
-        hex: { kultura: 6 },
-        specjalne: [
-          { typ: "walka_procent", cel: "piechota_szarza", wartosc: 0.15, opis: "+15% ataku piechoty przy pierwszym uderzeniu (cywilizacja)" },
-          { typ: "armia_morale", wartosc: 2, opis: "Kult g\u0142\xF3w: +2 Morale imperium przez 3 tury po wygranej bitwie obronnej (cywilizacja)" },
-          { typ: "jednorazowe", cel: "kultura_wydarzenia", wartosc: 10, opis: "+10 Kultury za \u015Bwi\u0119ta religijne (cywilizacja)" },
-          { typ: "wojna_wsparcie", wartosc: 1, opis: "+1 Wsparcia we wszystkich wojnach (cywilizacja)" }
-        ]
-      },
-      uwagi: "IV\u2013III w. p.n.e.; Prowansja; centrum ceremonialne (bez sta\u0142ej zabudowy mieszkalnej); zniszczone ~III w. p.n.e."
-    },
-    {
-      id: "stupa_sanchi",
-      nazwa: "Stupa w Sanchi",
-      dostep: "E",
-      cywilizacje: ["harappa"],
-      techUnlock: ["Religia"],
-      wymagaTerenu: ["rownina"],
-      epokaWejscia: 2,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 210,
-      utrzymanie: 1,
-      bonusy: {
-        miasto: { zadowolenie: 3, kultura: 3 },
-        specjalne: [
-          { typ: "kultura_z_nadwyzka_zadowolenia", wartosc: 2, opis: "+2 Kultury/tur\u0119 na ka\u017Cde 5 nadwy\u017Cki Zadowolenia w imperium (cywilizacja)" },
-          { typ: "relacje_zaufanie", wartosc: 4, opis: "+4 bazowe Zaufanie \u2014 dharmiczny spok\xF3j (cywilizacja)" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 2, opis: "+2 Wp\u0142ywu (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "petra",
-      nazwa: "Petra",
-      dostep: "E",
-      cywilizacje: ["fenicjanie"],
-      techUnlock: ["In\u017Cynieria"],
-      wymagaTerenu: ["pustynia"],
-      epokaWejscia: 2,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 165,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { pieniadz: 3 },
-        teren: [
-          { typTerenu: "pustynia", pieniadz: 2, praca: 2 }
-        ],
-        specjalne: [
-          { typ: "magazyn_pojemnosc", wartosc: 6, opis: "+6 pojemno\u015B\u0107 handlu/surowc\xF3w (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 5, opis: "+5 Wp\u0142ywu \u2014 karawany Nabatejczyk\xF3w (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "hamonga",
-      nazwa: "Kamie\u0144 Ha'amonga",
-      dostep: "R",
-      cywilizacje: [
-        "egipt",
-        "sumer",
-        "babilonia",
-        "grecy",
-        "hetyci",
-        "celtowie",
-        "harappa",
-        "fenicjanie",
-        "germanie",
-        "inkowie",
-        "chinczycy",
-        "rzymianie",
-        "asyria",
-        "zulusi",
-        "slowianie"
-      ],
-      techUnlock: ["\u017Begluga"],
-      wymagaTerenu: ["wybrzeze"],
-      epokaWejscia: 2,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 220,
-      utrzymanie: 1,
-      bonusy: {
-        miasto: { kultura: 3, zywnosc: 3 },
-        teren: [
-          { typTerenu: "lowie_rybackie", kultura: 2, zywnosc: 2 },
-          { typTerenu: "laka", kultura: 2, warunek: "hex_sasiad_wybrzeze" }
-        ],
-        specjalne: [
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych morskich (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 3, opis: "+3 Wp\u0142ywu (cywilizacja)" }
-        ]
-      },
-      uwagi: "Jedyny cud wy\u015Bcigowy epoki Br\u0105zu; megality nadmorskie, \u017Begluga"
-    },
-    {
-      id: "kolos",
-      nazwa: "Kolos Rodyjski",
-      dostep: "E",
-      cywilizacje: ["grecy"],
-      techUnlock: ["In\u017Cynieria"],
-      wymagaTerenu: ["wybrzeze"],
-      epokaWejscia: 3,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 230,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { pieniadz: 3, kultura: 3 },
-        specjalne: [
-          { typ: "magazyn_pojemnosc", wartosc: 8, opis: "+8 pojemno\u015B\u0107 surowc\xF3w / trade capacity (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel_morski", wartosc: 0.2, opis: "+20% Handlu \u2014 dochodu z tras handlowych morskich, korzystaj\u0105cych z port\xF3w (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 6, opis: "+6 Wp\u0142ywu \u2014 Rhodos, w\u0119ze\u0142 morski (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "osada_aschaffenburg",
-      nazwa: "Osada Aschaffenburg (hala d\u0119bowa)",
-      nazwaAlt: "Monumentalna budowla nad Menem, kultura late\u0144ska",
-      dostep: "E",
-      cywilizacje: ["germanie"],
-      techUnlock: ["In\u017Cynieria"],
-      wymagaTerenu: ["rzeka_sasiad"],
-      epokaWejscia: 3,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 300,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { praca: 3 },
-        teren: [
-          { typTerenu: "rzeka_sasiad", praca: 2, drewno: 2 }
-        ],
-        specjalne: [
-          { typ: "produkcja_procent", cel: "ulepszenia_drewno", wartosc: 0.15, opis: "\u221215% kosztu Pracy ulepsze\u0144 drewnianych (cywilizacja)" },
-          { typ: "walka_procent", cel: "obrona_terytorium", wartosc: 0.15, opis: "+15% obrony jednostek na w\u0142asnym terytorium (cywilizacja)" },
-          { typ: "pobor_regen", wartosc: 0.1, opis: "+10% regeneracji Manpower (cywilizacja)" }
-        ]
-      },
-      uwagi: "IV w. p.n.e.; pot\u0119\u017Cne d\u0119bowe belki nad Menem (Bawaria); kultura late\u0144ska"
-    },
-    {
-      id: "ziggurat",
-      nazwa: "Ziggurat / Piramida S\u0142o\u0144ca",
-      dostep: "E",
-      cywilizacje: ["sumer"],
-      techUnlock: ["Matematyka"],
-      wymagaTerenu: ["plaski_teren"],
-      epokaWejscia: 2,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 240,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { kultura: 6, nauka: 3 },
-        specjalne: [
-          { typ: "nauka_procent", cel: "nauka", wartosc: 0.15, opis: "+15% Nauki w imperium (cywilizacja)" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 4, opis: "+4 Wp\u0142ywu \u2014 kap\u0142ani-astronomowie (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "mundo_perdido",
-      nazwa: "\u015Awi\u0105tynia Mundo Perdido",
-      dostep: "E",
-      cywilizacje: ["inkowie"],
-      techUnlock: ["Matematyka", "Murarstwo"],
-      wymagaTerenu: ["tropiki"],
-      epokaWejscia: 2,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 220,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { nauka: 3, zadowolenie: 3 },
-        teren: [
-          { typTerenu: "tropiki", nauka: 2, zadowolenie: 2 }
-        ],
-        specjalne: [
-          { typ: "nauka_procent", cel: "nauka", wartosc: 0.2, opis: "+20% Nauki w imperium \u2014 kalendarz Maj\xF3w (cywilizacja)" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 3, opis: "+3 Wp\u0142ywu (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "terakotowa_armia",
-      nazwa: "Terakotowa armia",
-      dostep: "E",
-      cywilizacje: ["chinczycy"],
-      techUnlock: ["Wojskowo\u015B\u0107"],
-      wymagaTerenu: ["laka"],
-      epokaWejscia: 3,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 320,
-      utrzymanie: 3,
-      bonusy: {
-        miasto: { praca: 3 },
-        specjalne: [
-          { typ: "jednorazowe", cel: "dowodca_armii", wartosc: 1, opis: "Darmowy Dow\xF3dca armii przy uko\u0144czeniu (cywilizacja)" },
-          { typ: "armia_xp", wartosc: 0.25, opis: "+25% do\u015Bwiadczenia armii (cywilizacja)" },
-          { typ: "walka_procent", cel: "piechota", wartosc: 0.15, opis: "+15% ataku piechoty (cywilizacja)" },
-          { typ: "wojna_wsparcie", wartosc: 2, opis: "+2 Wsparcia we wszystkich wojnach (cywilizacja)" }
-        ]
-      },
-      uwagi: "Qin, ok. 246\u2013208 p.n.e.; grobowiec Qin Shi Huanga"
-    },
-    {
-      id: "koloseum",
-      nazwa: "Koloseum",
-      dostep: "E",
-      cywilizacje: ["rzymianie"],
-      techUnlock: ["In\u017Cynieria"],
-      wymagaTerenu: ["przy_miescie"],
-      epokaWejscia: 3,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 310,
-      utrzymanie: 3,
-      bonusy: {
-        miasto: { kultura: 3, zadowolenie: 6 },
-        specjalne: [
-          { typ: "produkcja_procent", cel: "budynki", wartosc: 0.15, opis: "\u221215% kosztu Produkcji budynk\xF3w (cywilizacja)" },
-          { typ: "relacje_zaufanie", wartosc: 3, opis: "+3 Zaufanie wewn\u0119trzne \u2014 panem et circenses (cywilizacja)" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 4, opis: "+4 Wp\u0142ywu \u2014 chwa\u0142a Rzymu (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "dur_sharrukin",
-      nazwa: "Dur-Sharrukin",
-      dostep: "E",
-      cywilizacje: ["asyria"],
-      techUnlock: ["Budownictwo", "Wojskowo\u015B\u0107"],
-      wymagaTerenu: ["przy_miescie"],
-      epokaWejscia: 2,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 260,
-      utrzymanie: 3,
-      bonusy: {
-        miasto: { obrona: 3 },
-        specjalne: [
-          { typ: "fortyfikacja_mapa", cel: "fort", wartosc: 5, opis: "+5 Obrony na heksach fortyfikacji (cywilizacja)" },
-          { typ: "walka_procent", cel: "obl\u0119\u017Cenie", wartosc: 0.15, opis: "+15% skuteczno\u015Bci obl\u0119\u017Cenia (cywilizacja)" },
-          { typ: "wojna_wsparcie", wartosc: 2, opis: "+2 Wsparcia we wszystkich wojnach (cywilizacja)" },
-          { typ: "relacje_zaufanie", wartosc: -2, opis: "\u22122 Zaufanie u s\u0105siad\xF3w \u2014 strach przed Asyri\u0105 (cywilizacja)" }
-        ]
-      }
-    },
-    {
-      id: "brama_narodow",
-      nazwa: "Brama wszystkich narod\xF3w",
-      dostep: "R",
-      cywilizacje: [
-        "egipt",
-        "sumer",
-        "babilonia",
-        "grecy",
-        "hetyci",
-        "celtowie",
-        "harappa",
-        "fenicjanie",
-        "germanie",
-        "inkowie",
-        "chinczycy",
-        "rzymianie",
-        "asyria",
-        "zulusi",
-        "slowianie"
-      ],
-      techUnlock: ["In\u017Cynieria", "Wojskowo\u015B\u0107"],
-      wymagaTerenu: ["przy_miescie"],
-      epokaWejscia: 3,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 280,
-      utrzymanie: 3,
-      bonusy: {
-        miasto: { kultura: 3, pieniadz: 3 },
-        specjalne: [
-          { typ: "wojna_wsparcie", wartosc: 3, opis: "+3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 10, opis: "+10 Wp\u0142ywu \u2014 satrapie i go\u015Bcie narod\xF3w (cywilizacja)" },
-          { typ: "relacje_zaufanie", wartosc: 3, opis: "+3 Zaufanie u pa\u0144stw z aktywnym handlem (cywilizacja)" }
-        ]
-      },
-      uwagi: "Persepolis / brama satrapii; jedyny cud wy\u015Bcigowy epoki \u017Belaza \u2014 odblokowanie po In\u017Cynierii"
-    },
-    {
-      id: "palac_weiyang",
-      nazwa: "Pa\u0142ac Weiyang",
-      dostep: "E",
-      cywilizacje: ["chinczycy"],
-      techUnlock: ["Wymiana", "Murarstwo"],
-      wymagaTerenu: ["laka"],
-      epokaWejscia: 3,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 290,
-      utrzymanie: 3,
-      bonusy: {
-        miasto: { kultura: 3, zadowolenie: 3, pieniadz: 3 },
-        specjalne: [
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 12, opis: "+12 Wp\u0142ywu \u2014 cesarski dw\xF3r Chang'an (cywilizacja)" },
-          { typ: "handel_procent", cel: "handel", wartosc: 0.15, opis: "+15% Handlu \u2014 dochodu z tras handlowych (cywilizacja); NIE zwi\u0119ksza Daniny miasta" },
-          { typ: "relacje_zaufanie", wartosc: 4, opis: "+4 bazowe Zaufanie (cywilizacja)" }
-        ]
-      },
-      uwagi: "Zachodnia Han, 200 p.n.e.; cesarz Gaozu"
-    },
-    {
-      id: "yerkapi",
-      nazwa: "Yerkap\u0131 (Brama w ziemi)",
-      nazwaAlt: "Brama Sfinks\xF3w, Hattusa",
-      dostep: "E",
-      cywilizacje: ["hetyci"],
-      techUnlock: ["Wojskowo\u015B\u0107"],
-      wymagaTerenu: ["wzgorze", "trudny_teren"],
-      epokaWejscia: 2,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 240,
-      utrzymanie: 2,
-      bonusy: {
-        miasto: { obrona: 3 },
-        hex: { obrona: 12 },
-        specjalne: [
-          { typ: "fortyfikacja_mapa", cel: "fort", wartosc: 5, opis: "+5 Obrony na heksach fortyfikacji (cywilizacja)" },
-          { typ: "walka_procent", cel: "rydwany", wartosc: 0.15, opis: "+15% ataku rydwan\xF3w (cywilizacja)" },
-          { typ: "wojna_wsparcie", wartosc: 2, opis: "+2 Wsparcia we wszystkich wojnach (cywilizacja)" },
-          { typ: "relacje_zaufanie", wartosc: 2, opis: "+2 Zaufanie u sojusznik\xF3w (cywilizacja)" }
-        ]
-      },
-      uwagi: "Nasyp ziemny + tunel sklepiony + Brama Sfinks\xF3w; kompleks obronno-sakralny Hattusy"
-    },
-    {
-      id: "posag_peruna",
-      nazwa: "Pos\u0105g Peruna",
-      dostep: "E",
-      cywilizacje: ["slowianie"],
-      techUnlock: ["Obr\xF3bka \u017Celaza"],
-      wymagaTerenu: ["wzgorze"],
-      epokaWejscia: 3,
-      absolut: 6,
-      maxNaSwiecie: 1,
-      kosztBudowy: 140,
-      utrzymanie: 1,
-      bonusy: {
-        miasto: { kultura: 3, zadowolenie: 3 },
-        hex: { kultura: 3 },
-        specjalne: [
-          { typ: "pobor_regen", wartosc: 0.15, opis: "+15% regeneracji Manpower (cywilizacja)" },
-          { typ: "walka_procent", cel: "piechota_las", wartosc: 0.15, opis: "+15% ataku piechoty w lesie (cywilizacja)" },
-          { typ: "relacje_zaufanie", wartosc: 3, opis: "+3 Zaufanie w\u015Br\xF3d plemion s\u0142owia\u0144skich (cywilizacja)" },
-          { typ: "dyplomacja_wp\u0142yw", wartosc: 2, opis: "+2 Wp\u0142ywu \u2014 kult Peruna (cywilizacja)" }
-        ]
-      }
-    }
-  ],
-  panstwa: {
-    egipt: {
-      nazwa: "Egipt",
-      cuda: [
-        { id: "piramidy", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    sumer: {
-      nazwa: "Sumerowie",
-      cuda: [
-        { id: "ziggurat", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    babilonia: {
-      nazwa: "Babilonia",
-      cuda: [
-        { id: "wiszace_ogrody", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    grecy: {
-      nazwa: "Grecy",
-      cuda: [
-        { id: "kolos", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    hetyci: {
-      nazwa: "Hetyci",
-      cuda: [
-        { id: "yerkapi", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    celtowie: {
-      nazwa: "Celtowie",
-      cuda: [
-        { id: "roquepertuse", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    harappa: {
-      nazwa: "Harappa",
-      cuda: [
-        { id: "stupa_sanchi", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    fenicjanie: {
-      nazwa: "Fenicjanie",
-      cuda: [
-        { id: "petra", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    germanie: {
-      nazwa: "Germanie",
-      cuda: [
-        { id: "osada_aschaffenburg", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    inkowie: {
-      nazwa: "Inkowie",
-      cuda: [
-        { id: "mundo_perdido", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    chinczycy: {
-      nazwa: "Chi\u0144czycy",
-      cuda: [
-        { id: "terakotowa_armia", dostep: "E", kolejnosc: 1 },
-        { id: "palac_weiyang", dostep: "E", kolejnosc: 2 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 3 },
-        { id: "hamonga", dostep: "R", kolejnosc: 4 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 5 }
-      ]
-    },
-    rzymianie: {
-      nazwa: "Rzymianie",
-      cuda: [
-        { id: "koloseum", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    asyria: {
-      nazwa: "Asyria",
-      cuda: [
-        { id: "dur_sharrukin", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    zulusi: {
-      nazwa: "Zulusi",
-      cuda: [
-        { id: "wielka_stela", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    },
-    slowianie: {
-      nazwa: "S\u0142owianie",
-      cuda: [
-        { id: "posag_peruna", dostep: "E", kolejnosc: 1 },
-        { id: "wyrocznia", dostep: "R", kolejnosc: 2 },
-        { id: "hamonga", dostep: "R", kolejnosc: 3 },
-        { id: "brama_narodow", dostep: "R", kolejnosc: 4 }
-      ]
-    }
-  },
-  parkowane_epoka4plus: [
-    {
-      id: "nalanda",
-      nazwa: "Nalanda",
-      dostep: "E",
-      cywilizacje: ["harappa"],
-      techUnlock: ["Pismo", "Matematyka"],
-      wymagaTerenu: ["rownina"],
-      epokaDocelowa: 4,
-      epokaDocelowaOpis: "V\u2013XIII w. n.e. \u2014 \u015Bredniowiecze; uniwersytet Gupt\xF3w/Harszy",
-      maxNaSwiecie: 1,
-      aktywne: false,
-      uwagi: "Przeniesione z Antyku 2026-06-26 \u2014 zbyt p\xF3\u017Ane na Harapp\u0119/Indus"
-    },
-    {
-      id: "angkor_wat",
-      nazwa: "Angkor Wat",
-      dostep: "E",
-      cywilizacje: ["harappa"],
-      techUnlock: ["Budownictwo"],
-      wymagaTerenu: ["rzeka_sasiad"],
-      epokaDocelowa: 5,
-      epokaDocelowaOpis: "ok. 1113\u20131150 n.e. \u2014 Khmer; przypisanie pa\u0144stwa do ustalenia",
-      maxNaSwiecie: 1,
-      aktywne: false,
-      uwagi: "Przeniesione z Antyku 2026-06-26 \u2014 \u015Bredniowiecze"
-    },
-    {
-      id: "wielki_dzwon",
-      nazwa: "Wielki dzw\xF3n (Yongle / Emile Bell)",
-      dostep: "E",
-      cywilizacje: ["chinczycy"],
-      techUnlock: ["Religia"],
-      wymagaTerenu: ["trudny_teren"],
-      epokaDocelowa: 6,
-      epokaDocelowaOpis: "Dzwon Ming (1403\u20131424, Yongle); \u015Bwi\u0105tynia Qing (1733) \u2014 poza Antykiem",
-      maxNaSwiecie: 1,
-      aktywne: false,
-      uwagi: "Przeniesione z Antyku 2026-06-26 \u2014 dynastie Ming/Qing"
-    },
-    {
-      id: "mauzoleum_teodoryka",
-      nazwa: "Mauzoleum Teodoryka",
-      dostep: "E",
-      cywilizacje: ["germanie"],
-      techUnlock: ["Murarstwo"],
-      wymagaTerenu: ["wybrzeze"],
-      epokaDocelowa: 4,
-      epokaDocelowaOpis: "VI w. n.e. \u2014 Ostrogoci, Ravenna; poza Antykiem",
-      maxNaSwiecie: 1,
-      aktywne: false,
-      uwagi: "Zast\u0105pione w Antyku przez Osad\u0119 Aschaffenburg (2026-06-26)"
-    },
-    {
-      id: "kopiec_grobowy",
-      nazwa: "Kopiec grobowy",
-      nazwaAlt: "Monks Mound (Mississippian)",
-      dostep: "E",
-      cywilizacje: ["celtowie"],
-      techUnlock: ["Rolnictwo", "Murarstwo"],
-      wymagaTerenu: ["rzeka_sasiad"],
-      epokaDocelowa: 1,
-      epokaDocelowaOpis: "Kultura missisipia\u0144ska \u2014 historycznie nie Galowie",
-      maxNaSwiecie: 1,
-      aktywne: false,
-      uwagi: "Zast\u0105pione przez Roquepertuse (2026-06-26); placeholder Monks Mound"
-    }
-  ]
-};
-
-// src/game/wonders-data.ts
-var data = wonders_default;
-var wonderById = new Map(data.cuda.map((w) => [w.id, w]));
 
 // src/game/cities.ts
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;

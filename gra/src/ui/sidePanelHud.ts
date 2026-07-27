@@ -5,6 +5,7 @@
 
 import { brandIconSvg } from './icons/brandAssets';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+import { UNIT_CONTEXT_PANEL_CSS } from './hexContextTooltip';
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
@@ -17,10 +18,27 @@ export interface SidePanelEvent {
   blocking?: boolean;
 }
 
+export type ContextPanelKind = 'hex' | 'unit';
+
+export interface ContextPanelData {
+  kind: ContextPanelKind;
+  html: string;
+  /** Jednostka — przycisk „Więcej szczegółów” w panelu bocznym. */
+  expandable?: boolean;
+  /** Przycisk rozwijania jest już w html (nad paskiem akcji). */
+  expandInHtml?: boolean;
+}
+
 export interface SidePanelHudConfig {
   getEvents?: () => SidePanelEvent[];
-  /** Karta „Pole mapy” nad wydarzeniami (dblclick heksu na mapie świata). */
+  /** @deprecated użyj getContextPanel */
   getHexContext?: () => string | null;
+  /** Karta kontekstu mapy (heks / jednostka) nad wydarzeniami. */
+  getContextPanel?: () => ContextPanelData | null;
+  onContextExpand?: () => void;
+  isContextExpanded?: () => boolean;
+  onContextAction?: (actionId: string) => void;
+  onContextSelectUnit?: (unitId: string) => void;
   onEventClick?: (id: string) => void;
   onEventDismiss?: (id: string) => void;
 }
@@ -31,7 +49,7 @@ export interface SidePanelHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-side-panel-hud-css-w2full';
+const STYLE_ID = 'civ-side-panel-hud-css-w3-unit';
 /** Wysokość stosu tury (Wykonaj + Koniec tury + etykieta) nad dolną krawędzią — mockup 1E strefa G. */
 const TURN_STACK_H = 172;
 
@@ -58,6 +76,7 @@ function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-side-panel-hud-css')?.remove();
   document.getElementById('civ-side-panel-hud-css-w2')?.remove();
+  document.getElementById('civ-side-panel-hud-css-w2full')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 .civ-side-panel{position:fixed;bottom:${TURN_STACK_H}px;right:20px;top:auto;z-index:310;width:300px;pointer-events:auto;
@@ -88,26 +107,33 @@ function ensureStyles(): void {
 .civ-side-panel .sp-close{font-size:10px;color:var(--civ-text-muted);cursor:pointer;padding:2px 4px;margin-left:auto;}
 .civ-side-panel .sp-close:hover{color:var(--civ-gold-primary);}
 .civ-side-panel .sp-placeholder{font-size:10px;color:#7a7055;text-align:right;padding:8px 4px;font-style:italic;line-height:1.4;}
-.civ-side-panel .sp-hex-card{padding:14px 16px;border-radius:10px;margin-bottom:10px;pointer-events:none;
+.civ-side-panel .sp-ctx-card{padding:14px 16px;border-radius:10px;margin-bottom:10px;
   background:linear-gradient(180deg,rgba(24,30,42,.98),rgba(10,12,18,.96));
   border:1px solid rgba(212,175,90,.38);box-shadow:0 6px 18px rgba(0,0,0,.45);}
-.civ-side-panel .sp-hex-head{font-size:10px;color:var(--civ-text-muted,#a09880);text-transform:uppercase;
+.civ-side-panel .sp-ctx-card.sp-ctx-interactive{pointer-events:auto;}
+.civ-side-panel .sp-ctx-head{font-size:10px;color:var(--civ-text-muted,#a09880);text-transform:uppercase;
   letter-spacing:.22em;margin-bottom:8px;text-align:right;}
-.civ-side-panel .sp-hex-card .cp-msg{font-size:12px;color:var(--civ-text-primary,#e8e0c8);line-height:1.55;text-align:left;}
-.civ-side-panel .sp-hex-card .cp-hero-names{font-size:15px;font-weight:700;color:var(--civ-gold-primary,#e8d88a);
+.civ-side-panel .sp-ctx-card .cp-msg{font-size:12px;color:var(--civ-text-primary,#e8e0c8);line-height:1.55;text-align:left;}
+.civ-side-panel .sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
+  border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);
+  color:var(--civ-gold-primary,#e8d88a);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  cursor:pointer;font-family:inherit;text-align:center;}
+.civ-side-panel .sp-ctx-expand:hover{border-color:rgba(212,175,90,.55);background:rgba(28,34,46,.9);}
+.civ-side-panel .sp-ctx-card .cp-hero-names{font-size:15px;font-weight:700;color:var(--civ-gold-primary,#e8d88a);
   line-height:1.4;margin-bottom:4px;}
-.civ-side-panel .sp-hex-card .cp-hero-sub{font-size:10px;color:var(--civ-text-muted,#a09880);margin-bottom:8px;}
-.civ-side-panel .sp-hex-card .cp-sub{margin-top:0.35em;font-size:11px;color:var(--civ-text-muted,#a09880);line-height:1.45;}
-.civ-side-panel .sp-hex-card .cp-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
-.civ-side-panel .sp-hex-card .cp-total{margin-top:0.5em;font-size:12px;color:var(--civ-text-primary,#e8e0c8);}
-.civ-side-panel .sp-hex-card .cp-yield-head{margin-top:0.65em;font-size:10px;text-transform:uppercase;
+.civ-side-panel .sp-ctx-card .cp-hero-sub{font-size:10px;color:var(--civ-text-muted,#a09880);margin-bottom:8px;}
+.civ-side-panel .sp-ctx-card .cp-sub{margin-top:0.35em;font-size:11px;color:var(--civ-text-muted,#a09880);line-height:1.45;}
+.civ-side-panel .sp-ctx-card .cp-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
+.civ-side-panel .sp-ctx-card .cp-total{margin-top:0.5em;font-size:12px;color:var(--civ-text-primary,#e8e0c8);}
+.civ-side-panel .sp-ctx-card .cp-yield-head{margin-top:0.65em;font-size:10px;text-transform:uppercase;
   letter-spacing:.18em;color:var(--civ-gold-primary,#c4b890);font-weight:600;}
-.civ-side-panel .sp-hex-card .cp-yield-row{margin-top:0.25em;font-size:11px;color:var(--civ-text-primary,#e8e0c8);line-height:1.45;}
-.civ-side-panel .sp-hex-card .cp-yield-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
-.civ-side-panel .sp-hex-card .cp-yield-detail{color:var(--civ-text-muted,#a09880);font-size:10px;}
-.civ-side-panel .sp-hex-card .cp-possible{margin-top:0.2em;font-size:10px;line-height:1.4;}
-.civ-side-panel .sp-hex-card .cp-unit-head{margin-top:0.65em;padding-top:0.55em;border-top:1px solid rgba(212,175,90,.22);}
-.civ-side-panel .sp-hex-card .cp-sep{height:1px;margin:0.55em 0;background:rgba(212,175,90,.22);}
+.civ-side-panel .sp-ctx-card .cp-yield-row{margin-top:0.25em;font-size:11px;color:var(--civ-text-primary,#e8e0c8);line-height:1.45;}
+.civ-side-panel .sp-ctx-card .cp-yield-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
+.civ-side-panel .sp-ctx-card .cp-yield-detail{color:var(--civ-text-muted,#a09880);font-size:10px;}
+.civ-side-panel .sp-ctx-card .cp-possible{margin-top:0.2em;font-size:10px;line-height:1.4;}
+.civ-side-panel .sp-ctx-card .cp-unit-head{margin-top:0.65em;padding-top:0.55em;border-top:1px solid rgba(212,175,90,.22);}
+.civ-side-panel .sp-ctx-card .cp-sep{height:1px;margin:0.55em 0;background:rgba(212,175,90,.22);}
+${UNIT_CONTEXT_PANEL_CSS}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -129,6 +155,20 @@ function kindClass(kind: SidePanelEventKind): string {
   return 'sp-' + kind;
 }
 
+function resolveContextPanel(config: SidePanelHudConfig): ContextPanelData | null {
+  const panel = config.getContextPanel?.() ?? null;
+  if (panel !== null && panel.html.trim() !== '') return panel;
+  const legacy = config.getHexContext?.() ?? null;
+  if (legacy !== null && legacy.trim() !== '') {
+    return { kind: 'hex', html: legacy };
+  }
+  return null;
+}
+
+function contextHeadLabel(kind: ContextPanelKind): string {
+  return kind === 'hex' ? 'Pole mapy — kliknięty heks' : 'Jednostka';
+}
+
 /** Montuje panel wydarzeń (mockup 1E strefa H). */
 export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi {
   ensureStyles();
@@ -136,16 +176,50 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   const el = document.createElement('div');
   el.className = 'civ-side-panel';
 
+  function bindContextInteractions(card: HTMLElement, ctx: ContextPanelData): void {
+    if (ctx.kind !== 'unit') return;
+    card.querySelector('[data-sp-expand]')?.addEventListener('click', () => {
+      config.onContextExpand?.();
+      render();
+    });
+    card.querySelectorAll('[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if ((btn as HTMLButtonElement).disabled) return;
+        const id = (btn as HTMLElement).getAttribute('data-act');
+        if (id) config.onContextAction?.(id);
+      });
+    });
+    card.querySelectorAll('[data-unit]').forEach(chip => {
+      const go = () => {
+        const id = (chip as HTMLElement).getAttribute('data-unit');
+        if (id) config.onContextSelectUnit?.(id);
+      };
+      chip.addEventListener('click', go);
+      chip.addEventListener('keydown', (ev: Event) => {
+        const ke = ev as KeyboardEvent;
+        if (ke.key === 'Enter') { ke.preventDefault(); go(); }
+      });
+    });
+  }
+
   function render(): void {
     const events = config.getEvents?.() ?? PLACEHOLDER_EVENTS;
     const isPlaceholder = config.getEvents === undefined;
-    const hexCtx = config.getHexContext?.() ?? null;
+    const ctx = resolveContextPanel(config);
+    const expanded = config.isContextExpanded?.() ?? false;
 
     let html = '';
-    if (hexCtx !== null && hexCtx.trim() !== '') {
-      html += '<div class="sp-hex-card">'
-        + '<div class="sp-hex-head">Pole mapy — kliknięty heks</div>'
-        + `<div class="cp-msg">${hexCtx}</div></div>`;
+    if (ctx !== null) {
+      const interactive = ctx.kind === 'unit';
+      const headHtml = `<div class="sp-ctx-head">${contextHeadLabel(ctx.kind)}</div>`;
+      html += `<div class="sp-ctx-card${interactive ? ' sp-ctx-interactive' : ''}">`
+        + headHtml
+        + `<div class="cp-msg">${ctx.html}</div>`;
+      if (ctx.kind === 'unit' && ctx.expandable && !ctx.expandInHtml) {
+        const label = expanded ? 'Mniej szczegółów' : 'Więcej szczegółów';
+        html += `<button type="button" class="sp-ctx-expand" data-sp-expand>${label}</button>`;
+      }
+      html += '</div>';
     }
 
     html += '<div class="sp-header">Wydarzenia</div>';
@@ -172,6 +246,11 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     }
 
     el.innerHTML = html;
+
+    if (ctx !== null) {
+      const card = el.querySelector('.sp-ctx-card');
+      if (card) bindContextInteractions(card as HTMLElement, ctx);
+    }
 
     el.querySelectorAll('.sp-event[data-id]').forEach(chip => {
       chip.addEventListener('click', (e: Event) => {

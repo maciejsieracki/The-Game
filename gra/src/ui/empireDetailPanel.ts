@@ -94,10 +94,11 @@ let pendingScrollSection: string | null = null;
 let activeSection: string | null = null;
 
 /** Sekcja/żeton → który TOP-LEVEL blok panelu pokazać. 'all' = cały panel. */
-function blockForSection(section: string | null): 'all' | 'parametry' | 'moc' | 'ekonomia' | 'kultura' | 'surowce' | 'armia' | 'handel' {
+function blockForSection(section: string | null): 'all' | 'parametry' | 'moc' | 'ekonomia' | 'kultura' | 'surowce' | 'spichlerz' | 'armia' | 'handel' {
   if (!section) return 'all';
-  if (section === 'ekonomia') return 'all';                         // ogólny przycisk „Imperium" = pełny widok
-  if (section === 'armia') return 'armia';                          // Armia = żywność armii + ludność + rekruci (Maciej 2026-07-24)
+  if (section === 'ekonomia') return 'all';
+  if (section === 'armia') return 'armia';
+  if (section === 'spichlerz') return 'spichlerz';
   if (section === 'surowce' || section.startsWith('econ-surowiec-')) return 'surowce';
   if (section === 'handel') return 'handel';                        // TEMAT 14 (Maciej 2026-07-24) — szlaki handlowe imperium
   if (section === 'kultura') return 'kultura';
@@ -648,7 +649,7 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   }
 
   sur += `<div class="civ-emp-res-foodnote"><span class="k">Żywność</span>`
-    + `<span>ma osobny <b>magazyn centralny</b> — chip HUD „Armia" · panel Spichlerz centralny. `
+    + `<span>ma osobny <b>magazyn centralny</b> — chip HUD „Spichlerz" · panel Spichlerz centralny. `
     + `Nie wchodzi do wspólnej puli surowców powyżej.</span></div>`;
 
   sur += `<div class="civ-emp-res-legend">`
@@ -834,7 +835,6 @@ function render(): void {
   // — ZASOBY IMPERIUM —
   type EconRow = { id: string; lbl: string; stock: string; rate: number; gold?: boolean; noRate?: boolean };
   const econRows: EconRow[] = [
-    { id: 'zywnosc', lbl: 'Magazyn centralny', stock: e.zywnoscLabel + (e.zywnoscMax ? ` / ${e.zywnoscMax}` : '') + ' 🍞', rate: e.zywnoscRate ?? 0 },
     { id: 'praca', lbl: 'Praca (pula)', stock: String(e.praca), rate: e.pracaRate },
     { id: 'skarbiec', lbl: 'Skarbiec', stock: String(e.bogactwo), rate: e.bogactwoRate ?? 0 },
     { id: 'nauka', lbl: 'Bank nauki', stock: String(Math.floor(e.nauka)), rate: e.naukaRate ?? 0 },
@@ -849,7 +849,6 @@ function render(): void {
     nauka: cityEconMiniNauka(ce),
     ludnosc: cityPoborMiniLudnosc(cp),
     rekruci: cityPoborMiniRekruci(cp, p),
-    zywnosc: renderSpichlerzCentralnySection(snap.food),
   };
   let zasoby = `<div class="civ-emp-sect sep" data-section="ekonomia">`
     + `<div class="civ-emp-eyebrow" style="margin-bottom:8px">ZASOBY IMPERIUM (STAN + PRZYROST)</div>`;
@@ -870,26 +869,37 @@ function render(): void {
   if (!onlyEconId) zasoby += renderDefaultHandelSplitSection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
-  // — ARMIA (Maciej 2026-07-24: dawne „Zaopatrzenie" → „Armia") — magazyn centralny + ludność + rekruci.
-  const ARMIA_IDS = new Set(['zywnosc', 'ludnosc', 'rekruci']);
+  // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
+  const spichlerz = renderSpichlerzCentralnySection(snap.food)
+    .replace('data-section="spichlerz-centralny"', 'data-section="spichlerz"')
+    .replace('class="civ-emp-sect"', 'class="civ-emp-sect sep"');
+
+  // — ARMIA — wojsko + rekruci; żywność tylko skrót zaopatrzenia (reszta w Spichlerzu).
+  const kosztWojska = Math.round(e.zywnoscKosztWojska ?? 0);
+  const maxZywnPart = e.zywnoscMax != null && e.zywnoscMax > 0 ? ` / ${e.zywnoscMax}` : '';
   let armia = `<div class="civ-emp-sect sep" data-section="armia">`
-    + `<div class="civ-emp-eyebrow" style="margin-bottom:8px">ARMIA</div>`;
-  // PYTANIE-85: Spichlerz centralny na górze bloku Armia (zamiast starego wiersza „żywność armii").
-  armia += renderSpichlerzCentralnySection(snap.food);
-  for (const r of econRows) {
-    if (!ARMIA_IDS.has(r.id) || r.id === 'zywnosc') continue;
-    const detail = detailFor[r.id];
-    const val = r.noRate
-      ? `<b${r.gold ? ' class="gold"' : ''}>${esc(r.stock)}</b>`
-      : `<b>${esc(r.stock)}</b> ${deltaHtml(r.rate)}`;
-    armia += `<div class="civ-emp-zrow${detail ? '' : ' brd'}" data-section="econ-${r.id}">`
-      + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
-    if (detail) armia += `<div data-section="econ-${r.id}">${detail}</div>`;
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:8px">ARMIA</div>`
+    + `<div class="civ-emp-zrow brd"><span class="lbl">Wojsko na mapie</span>`
+    + `<span class="val"><b>${p.unitsOnMap}</b> jednostek</span></div>`;
+  const rekrRow = econRows.find(r => r.id === 'rekruci');
+  if (rekrRow) {
+    armia += `<div class="civ-emp-zrow brd" data-section="econ-rekruci">`
+      + `<span class="lbl">${rekrRow.lbl}</span>`
+      + `<span class="val"><b class="gold">${esc(rekrRow.stock)}</b></span></div>`;
+    armia += `<div data-section="econ-rekruci">${detailFor.rekruci}</div>`;
+  }
+  armia += `<div class="civ-emp-res-lbl" style="margin-top:12px">Zaopatrzenie wojska</div>`
+    + `<div class="civ-emp-note">Koszt żywności armii: <b>−${kosztWojska} 🍞</b>/turę`
+    + ` · W magazynie państwa: <b>${esc(e.zywnoscLabel)}${maxZywnPart} 🍞</b></div>`;
+  if (e.glodWojska) {
+    armia += `<div class="civ-emp-note" style="color:#e07a7a"><b>Głód wojska</b> — uzupełnij Spichlerz centralny.</div>`;
+  } else if (e.zywnoscKarencjaZaTur != null && e.zywnoscKarencjaZaTur > 0) {
+    armia += `<div class="civ-emp-note" style="color:#e8c84a">Głód wojska za ${e.zywnoscKarencjaZaTur} tur — magazyn ujemny.</div>`;
   }
   if (uchwaly.length > 0) {
     armia += renderUchwalyHtml(uchwaly);
   }
-  armia += `<div class="civ-emp-foot">Magazyn centralny · ludność (baza rekrutacji) · rekruci — wojsko w jednym miejscu.</div></div>`;
+  armia += `<div class="civ-emp-foot">Pełna bilans żywności imperium — przycisk Spichlerz na lewym pasku. Ludność miast — zakładka Ludność.</div></div>`;
 
   // — KULTURA IMPERIUM —
   let kult = `<div class="civ-emp-sect sep" data-section="kultura">`
@@ -922,7 +932,8 @@ function render(): void {
   if (block === 'all' || block === 'parametry') body += params;
   if (block === 'all' || block === 'moc') body += moc;
   if (block === 'all' || block === 'ekonomia') body += zasoby;
-  if (block === 'armia') body += armia;   // tylko po kliknięciu żetonu Armia (na 'all' żywność/ludność/rekruci są już w zasoby)
+  if (block === 'spichlerz') body += spichlerz;
+  if (block === 'armia') body += armia;
   if (block === 'all' || block === 'kultura') body += kult;
   if (block === 'all' || block === 'surowce') body += sur;
   if (block === 'all' || block === 'handel') body += handel;
@@ -1025,6 +1036,7 @@ export function empireSectionFromHudAct(act: string): string | undefined {
     case 'moc': return 'moc';
     case 'nauka': return 'econ-nauka';
     case 'zywnosc':
+    case 'spichlerz': return 'spichlerz';
     case 'armia': return 'armia';
     case 'religia': return 'econ-religia';
     case 'empire': return 'ekonomia';

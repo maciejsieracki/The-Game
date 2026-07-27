@@ -2563,10 +2563,11 @@ async function boot(): Promise<void> {
     }
 
     // -----------------------------------------------------------------
-    // R-CUDA-TAB (2026-07-24): cuda budowane WYŁĄCZNIE z listy produkcji miasta
-    // (cityPanel.ts renderBuildList → getBuildableWonders/onBuildWonder), filtrowane
-    // do listBuildableWondersForOwner(0) — usunięto osobny katalog „Cuda świata”
-    // (wondersView.ts, WARIANT A, decyzja Maciej). Zero zmian logiki silnika.
+    // R-CUDA-TAB (2026-07-28, korekta Maciej): cuda budowane WYŁĄCZNIE z panelu
+    // „Budowa w terenie" (buildModeHud.ts → listWonders/onSelectWonder), filtrowane
+    // do listBuildableWondersForOwner(0) — usunięto osobny katalog „Cuda świata"
+    // (wondersView.ts) oraz sekcję cudów z panelu produkcji miasta (błędny wariant A
+    // z 2026-07-24). Kolejka produkcji miasta bez zmian (enqueueWonderForPlayer).
     // -----------------------------------------------------------------
 
     function escWonderHtml(s: string): string {
@@ -3291,6 +3292,9 @@ async function boot(): Promise<void> {
       return raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
+    /** Rozszerzona karta jednostki w panelu bocznym (Maciej 2026-07-28). */
+    let unitSideDetailExpanded = false;
+
     /**
      * Decyzja 81=A (2026-07-25): etykieta Danina/Podatek DLA TEGO KONKRETNEGO
      * HEKSU -- wg WLASCICIELA TERYTORIUM (territoryOwnerAtLive), nie gracza
@@ -3397,6 +3401,11 @@ async function boot(): Promise<void> {
       const defName = String(def?.nazwa ?? def?.Nazwa ?? u.typeId);
       const status = unitCardStatusFields(u);
       const combat = unitCardCombatFor(u, def);
+      const zasieg = normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0);
+      const expanded = unitSideDetailExpanded;
+      const stackState = !opts.readOnly && u.ownerId === 0
+        ? buildArmyStackHudStateInner()
+        : null;
       return buildUnitContextTooltipHtml({
         displayName: defName,
         ownerEmblemHtml: unitOwnerMedallionHtml(u.ownerId),
@@ -3407,10 +3416,16 @@ async function boot(): Promise<void> {
         combat,
         hp: u.hp,
         category: u.category,
+        zasieg,
+        expanded,
+        expandable: u.ownerId === 0 || opts.readOnly === true,
+        stackCards: expanded ? stackState?.cards : undefined,
+        actions: stackState?.actions,
         inGarnizon: status.inGarnizon,
         buildingBonusLabel: status.buildingBonusLabel,
         parametryPathPp: status.parametryPathPp,
         pancerzPathPp: status.pancerzPathPp,
+        veteranProgress: u,
         veteranBadgeLabel: status.veteranBadgeLabel,
         veteranStarsTooltip: status.veteranStarsTooltip,
         veteranExperienceLine: status.veteranExperienceLine,
@@ -3446,7 +3461,26 @@ async function boot(): Promise<void> {
       return null;
     }
 
-    function buildContextPanelMessage(): string | null {
+    function getContextPanelKind(): 'hex' | 'unit' | null {
+      const unitMsg = buildUnitContextPanelMessage();
+      const hexMsg = buildHexContextPanelMessage();
+      if (unitMsg && !hexMsg) return 'unit';
+      if (hexMsg && !unitMsg) return 'hex';
+      if (hexMsg && unitMsg) {
+        const inspectId = selectedId ?? foreignUnitInspectId;
+        const u = inspectId !== null ? units.find(x => x.id === inspectId) : undefined;
+        const sameHex = u && hexDetailHex && u.q === hexDetailHex.q && u.r === hexDetailHex.r;
+        return sameHex ? 'hex' : (unitMsg ? 'unit' : 'hex');
+      }
+      return null;
+    }
+
+    function buildContextPanelData(): {
+      kind: 'hex' | 'unit';
+      html: string;
+      expandable?: boolean;
+      expandInHtml?: boolean;
+    } | null {
       const hexMsg = buildHexContextPanelMessage();
       const unitMsg = buildUnitContextPanelMessage();
       if (hexMsg && unitMsg) {
@@ -3454,22 +3488,40 @@ async function boot(): Promise<void> {
         const u = inspectId !== null ? units.find(x => x.id === inspectId) : undefined;
         const sameHex = u && hexDetailHex && u.q === hexDetailHex.q && u.r === hexDetailHex.r;
         if (sameHex) {
-          return hexMsg + '<div class="cp-sep"></div>' + unitMsg;
+          return {
+            kind: 'hex',
+            html: hexMsg + '<div class="cp-sep"></div><div class="cp-unit-head">' + unitMsg + '</div>',
+          };
         }
       }
-      return hexMsg ?? unitMsg ?? null;
+      if (unitMsg) {
+        const ownSelected = selectedId !== null && units.some(x => x.id === selectedId && x.ownerId === 0);
+        return {
+          kind: 'unit',
+          html: unitMsg,
+          expandable: ownSelected || foreignUnitInspectId !== null,
+          expandInHtml: ownSelected || foreignUnitInspectId !== null,
+        };
+      }
+      if (hexMsg) return { kind: 'hex', html: hexMsg };
+      return null;
+    }
+
+    function buildContextPanelMessage(): string | null {
+      return buildContextPanelData()?.html ?? null;
     }
 
     function clearForeignUnitInspect(): void {
       if (foreignUnitInspectId === null) return;
       foreignUnitInspectId = null;
+      unitSideDetailExpanded = false;
       refreshD1bHud();
     }
 
     function inspectForeignUnit(u: RuntimeUnit): void {
       foreignUnitInspectId = u.id;
-      hexDetailHex = { q: u.q, r: u.r };
       lastBHex = { q: u.q, r: u.r };
+      unitSideDetailExpanded = false;
       refreshD1bHud();
     }
 
@@ -3481,6 +3533,7 @@ async function boot(): Promise<void> {
     /** Odznacz jednostkę bez kasowania zaplanowanych marszów (koniec tury gracza). */
     function clearPlayerUnitSelectionStateOnly(): void {
       selectedId = null;
+      unitSideDetailExpanded = false;
       reachable = new Set<string>();
       unitRenderer.clearHighlight();
       unitRenderer.clearPathRoute();
@@ -3580,6 +3633,7 @@ async function boot(): Promise<void> {
     function selectPlayerUnit(unitId: string, keepListOpen = false): void {
       const u = units.find(x => x.id === unitId);
       if (!u || u.ownerId !== 0) return;
+      unitSideDetailExpanded = false;
       const stack = playerStackAt(u);
       if (stack.length > 1) syncStackRuchLeft(stack);
       if (isCityPanelOpen()) hideCityPanelFull();
@@ -4668,17 +4722,6 @@ async function boot(): Promise<void> {
         getKosztJednostekPace: () => player.kosztJednostekPace ?? 'niski',
         getWzrostLudnosciPace: () => player.wzrostLudnosciPace ?? 'wysoki',
         getDifficulty: (): GameDifficulty => _menuDifficulty,
-        // R-CUDA-TAB (2026-07-24, decyzja Maciej WARIANT A): cuda budowane WYŁĄCZNIE
-        // z listy produkcji miasta — bez osobnego katalogu w lewym menu. Reużywa
-        // dokładnie tej samej, już filtrowanej per-civ listy (wonderHudEntries →
-        // listBuildableWondersForOwner(0)) i tej samej ścieżki enqueue
-        // (enqueueWonderForPlayer) co panel „Budowa ulepszeń" — zero nowej logiki
-        // silnika, zero zmian w AI (main.ts listBuildableWondersForOwner dla AI
-        // nietknięte).
-        getBuildableWonders: (_cityId: string) => wonderHudEntries(),
-        onBuildWonder: (_cityId: string, wonderId: string) => {
-          enqueueWonderForPlayer(wonderId);
-        },
       };
     }
 
@@ -6425,6 +6468,7 @@ async function boot(): Promise<void> {
       if (hexDetailHex === null && foreignUnitInspectId === null) return;
       hexDetailHex = null;
       foreignUnitInspectId = null;
+      unitSideDetailExpanded = false;
       refreshD1bHud();
     }
 
@@ -8777,11 +8821,8 @@ async function boot(): Promise<void> {
           unitIds.push(item.id);
         }
       }
-      const wonders = cityHasAffordableWonderEnqueue(city)
-        ? listBuildableWondersForOwner(0).map(w => w.id).sort()
-        : [];
       const ups = cityHasAffordableLevelUpgrade(city, ctx) ? 1 : 0;
-      return affordIds.sort().join(',') + '|u:' + unitIds.sort().join(',') + '|w:' + wonders.join(',') + '|up:' + ups;
+      return affordIds.sort().join(',') + '|u:' + unitIds.sort().join(',') + '|up:' + ups;
     }
 
     /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta) — tylko realnie dostępne teraz. */
@@ -8790,7 +8831,9 @@ async function boot(): Promise<void> {
       const ctx = productionAvailabilityCtxForCity(city);
       if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;
       if (cityHasAffordableUnitRecruitment(city, ctx)) return true;
-      if (cityHasAffordableWonderEnqueue(city)) return true;
+      // R-CUDA-TAB (2026-07-28): cuda tylko z Budowy w terenie — nie liczą się
+      // jako „pusta kolejka produkcji miasta" (inaczej wydarzenie otwiera panel
+      // miasta, gdzie cuda już nie ma → gracz widzi „wykrzaczoną" produkcję).
       return false;
     }
 
@@ -10144,6 +10187,12 @@ async function boot(): Promise<void> {
         handelIncome += bonus === 0 ? base : Math.floor(base * (1 + bonus));
         handelRouteCount++;
       }
+      const mpMults = civManpowerMultsForOwner(0);
+      let rekruciRegenPerTurn = 0;
+      for (const c of pc) {
+        rekruciRegenPerTurn += cityManpowerSnapshot(c, player.era, mpMults.regenMult, mpMults.maxMult).regenPerTurn;
+      }
+      const armyUnitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
       return {
         zywnoscLabel: String(foodReserve),
         zywnoscMax: foodMaxCap,
@@ -10205,6 +10254,8 @@ async function boot(): Promise<void> {
         handelRouteCount,
         uchwalaSolAktywna: foodProj.uchwalaSolAktywna,
         uchwalaSolSpichlerzIICount: foodProj.uchwalaSolSpichlerzIICount,
+        armyUnitsOnMap,
+        rekruciRegenPerTurn,
       };
     }
 
@@ -12103,6 +12154,11 @@ async function boot(): Promise<void> {
     }
 
     function buildArmyStackHudState(): ArmyStackHudState | null {
+      // Maciej 2026-07-28: akcje i stos przeniesione do rozszerzonego panelu bocznego.
+      return null;
+    }
+
+    function buildArmyStackHudStateInner(): ArmyStackHudState | null {
       if (selectedId === null) return null;
       const active = units.find(x => x.id === selectedId);
       if (!active || active.ownerId !== 0) return null;
@@ -12217,7 +12273,7 @@ async function boot(): Promise<void> {
         });
       }
       actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });
-      actions.push({ id: 'disband', label: 'Rozwi\u0105\u017c', danger: true });
+      actions.push({ id: 'disband', label: 'ROZWI\u0104\u017d', danger: true });
       return {
         hexLabel: siegeCity
           ? '(' + active.q + ',' + active.r + ') \u00b7 Oblega ' + siegeCity.name
@@ -12231,6 +12287,118 @@ async function boot(): Promise<void> {
         hp: active.hp ?? combat.hpMaxEffective,
         actions,
       };
+    }
+
+    function handleSelectedUnitHudAction(actionId: string): void {
+      if (isAwaitingFirstPlayerCity()) return;
+      const u = selectedId !== null ? units.find(x => x.id === selectedId) : null;
+      if (!u) return;
+      const stack = playerStackAt(u);
+      if (actionId === 'march-continue') {
+        continuePlannedMarchForSelected();
+      } else if (actionId === 'march-stop') {
+        stopPlannedMarchForSelected();
+      } else if (actionId === 'skip') {
+        clearPlannedMarch(u.id);
+        syncStackRuchLeft(stack, 0);
+        reachable = new Set<string>();
+        unitRenderer.clearHighlight();
+        unitRenderer.clearPathRoute();
+        refreshD1bHud();
+      } else if (actionId === 'unfortify-all') {
+        const leaveCity = cityAtUnit(u);
+        const garStack = garrisonUnitsOnHex(units, u.q, u.r, u.ownerId);
+        const n = garStack.length;
+        if (n === 0) return;
+        for (const su of garStack) exitGarnizon(su);
+        if (leaveCity) syncGarnizonForCity(leaveCity);
+        refreshFog();
+        syncUnitsRender();
+        refreshCityPanelIfOpen();
+        showHintMessage(
+          (n > 1 ? `${n} jednostek odfortyfikowano` : u.typeId + ' odfortyfikowano')
+            + ' \u2014 armia na heksie miasta'
+            + (leaveCity ? ' (' + leaveCity.name + ')' : ''),
+          2500,
+        );
+        selectPlayerUnit(u.id, true);
+      } else if (actionId === 'fortify') {
+        if (u.inGarnizon === true) {
+          const leaveCity = cityAtUnit(u);
+          if (!exitGarnizon(u)) return;
+          if (leaveCity) syncGarnizonForCity(leaveCity);
+          refreshFog();
+          syncUnitsRender();
+          refreshCityPanelIfOpen();
+          showHintMessage(
+            u.typeId + ' odfortyfikowano \u2014 jednostka na heksie miasta'
+              + (leaveCity ? ' (' + leaveCity.name + ')' : ''),
+            2500,
+          );
+          selectPlayerUnit(u.id, true);
+          return;
+        }
+        if (u.oblegaCityId) {
+          const siegeStack = playerStackAt(u);
+          if (u.ufortyfikowanyWPolu === true) {
+            for (const su of siegeStack) exitFieldFortify(su);
+            showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119 (obl\u0119\u017cenie trwa)', 2500);
+          } else {
+            for (const su of siegeStack) enterFieldFortify(su);
+            showHintMessage(u.typeId + ' ufortyfikowany w polu (obl\u0119\u017cenie trwa)', 2800);
+          }
+          refreshD1bHud();
+          return;
+        }
+        if (u.ufortyfikowanyWPolu === true) {
+          const fieldStack = playerStackAt(u);
+          for (const su of fieldStack) exitFieldFortify(su);
+          showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119', 2000);
+          refreshD1bHud();
+          return;
+        }
+        clearPlannedMarch(u.id);
+        syncStackRuchLeft(stack, 0);
+        reachable = new Set<string>();
+        unitRenderer.clearHighlight();
+        unitRenderer.clearPathRoute();
+        const city = cityAtUnit(u);
+        if (city !== undefined && u.ownerId === city.ownerId) {
+          for (const su of stack) su.inGarnizon = true;
+          syncGarnizonForCity(city);
+          refreshFog();
+          syncUnitsRender();
+          refreshCityPanelIfOpen();
+          const n = stack.length;
+          showHintMessage(
+            (n > 1 ? `Armia \u00d7${n} w garnizonie` : u.typeId + ' w garnizonie')
+              + ' \u2014 ' + city.name,
+            2800,
+          );
+          clearPlayerUnitSelection();
+        } else {
+          for (const su of stack) enterFieldFortify(su);
+          showHintMessage(u.typeId + ' ufortyfikowany w polu (ruch zu\u017cyty)', 2500);
+        }
+        refreshD1bHud();
+      } else if (actionId === 'disband') {
+        disbandPlayerUnit(u.id);
+      } else if (actionId === 'replace') {
+        openUnitReplacePicker(u);
+      } else if (actionId === 'sentry') {
+        const enteringSentry = u.sentry !== true;
+        if (enteringSentry) {
+          clearPlannedMarch(u.id);
+          syncStackRuchLeft(stack, 0);
+          for (const su of stack) su.sentry = true;
+          showHintMessage(u.typeId + ' czuwa (obudź ręcznie)', 2500);
+          clearPlayerUnitSelection();
+        } else {
+          for (const su of stack) su.sentry = false;
+          showHintMessage('Obudzono: ' + u.typeId, 2000);
+        }
+        refreshD1bHud();
+      }
     }
 
     function hasAnySaveSlot(): boolean {
@@ -12629,136 +12797,7 @@ async function boot(): Promise<void> {
             return findAdjacentEmptyHexes(units, u.q, u.r, isHexPassableForUnit).length > 0;
           },
           onSplit: () => openSplitPanelForSelected(),
-          onAction: (actionId) => {
-            if (isAwaitingFirstPlayerCity()) return;
-            const u = selectedId !== null ? units.find(x => x.id === selectedId) : null;
-            if (!u) return;
-            const stack = playerStackAt(u);
-            if (actionId === 'march-continue') {
-              continuePlannedMarchForSelected();
-            } else if (actionId === 'march-stop') {
-              stopPlannedMarchForSelected();
-            } else if (actionId === 'skip') {
-              clearPlannedMarch(u.id);
-              syncStackRuchLeft(stack, 0);
-              reachable = new Set<string>();
-              unitRenderer.clearHighlight();
-              unitRenderer.clearPathRoute();
-              refreshD1bHud();
-            } else if (actionId === 'unfortify-all') {
-              const leaveCity = cityAtUnit(u);
-              const garStack = garrisonUnitsOnHex(units, u.q, u.r, u.ownerId);
-              const n = garStack.length;
-              if (n === 0) return;
-              for (const su of garStack) exitGarnizon(su);
-              if (leaveCity) syncGarnizonForCity(leaveCity);
-              refreshFog();
-              syncUnitsRender();
-              refreshCityPanelIfOpen();
-              showHintMessage(
-                (n > 1 ? `${n} jednostek odfortyfikowano` : u.typeId + ' odfortyfikowano')
-                  + ' \u2014 armia na heksie miasta'
-                  + (leaveCity ? ' (' + leaveCity.name + ')' : ''),
-                2500,
-              );
-              selectPlayerUnit(u.id, true);
-            } else if (actionId === 'fortify') {
-              // C-GARN-Q1: "Odfortyfikuj" kończy ufortyfikowanie TYLKO wybranej
-              // jednostki — zostaje na heksie miasta, bez kosztu ruchu.
-              if (u.inGarnizon === true) {
-                const leaveCity = cityAtUnit(u);
-                if (!exitGarnizon(u)) return;
-                if (leaveCity) syncGarnizonForCity(leaveCity);
-                refreshFog();
-                syncUnitsRender();
-                refreshCityPanelIfOpen();
-                showHintMessage(
-                  u.typeId + ' odfortyfikowano \u2014 jednostka na heksie miasta'
-                    + (leaveCity ? ' (' + leaveCity.name + ')' : ''),
-                  2500,
-                );
-                selectPlayerUnit(u.id, true);
-                return;
-              }
-              // DYSPOZYCJA Macieja 2026-07-26 ("oblezenie + fortyfikacja"): jednostka
-              // oblegajaca (RuntimeUnit.oblegaCityId) moze sie ufortyfikowac W POLU
-              // BEZ zdejmowania oblezenia -- oblegaCityId zostaje nietkniete, wiec
-              // oblezenie leci dalej normalnie (licznik tur / zuzycie magazynu /
-              // kapitulacja, main.ts turn-loop). Dziala na CALYM widocznym stosie
-              // oblegajacych na tym hexie (playerStackAt), jak Czuwaj.
-              if (u.oblegaCityId) {
-                const siegeStack = playerStackAt(u);
-                if (u.ufortyfikowanyWPolu === true) {
-                  for (const su of siegeStack) exitFieldFortify(su);
-                  showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119 (obl\u0119\u017cenie trwa)', 2500);
-                } else {
-                  for (const su of siegeStack) enterFieldFortify(su);
-                  showHintMessage(u.typeId + ' ufortyfikowany w polu (obl\u0119\u017cenie trwa)', 2800);
-                }
-                refreshD1bHud();
-                return;
-              }
-              // Jednostka juz ufortyfikowana W POLU poza oblezeniem (np. w marszu,
-              // na wlasnym terytorium poza miastem) -- zdjecie bez kosztu ruchu,
-              // parytet z "Opusc garnizon"/"Obudz".
-              if (u.ufortyfikowanyWPolu === true) {
-                const fieldStack = playerStackAt(u);
-                for (const su of fieldStack) exitFieldFortify(su);
-                showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119', 2000);
-                refreshD1bHud();
-                return;
-              }
-              clearPlannedMarch(u.id);
-              syncStackRuchLeft(stack, 0);
-              reachable = new Set<string>();
-              unitRenderer.clearHighlight();
-              unitRenderer.clearPathRoute();
-              const city = cityAtUnit(u);
-              if (city !== undefined && u.ownerId === city.ownerId) {
-                for (const su of stack) su.inGarnizon = true;
-                syncGarnizonForCity(city);
-                refreshFog();
-                syncUnitsRender();
-                refreshCityPanelIfOpen();
-                const n = stack.length;
-                showHintMessage(
-                  (n > 1 ? `Armia \u00d7${n} w garnizonie` : u.typeId + ' w garnizonie')
-                    + ' \u2014 ' + city.name,
-                  2800,
-                );
-                clearPlayerUnitSelection();
-              } else {
-                // DYSPOZYCJA 2026-07-26: fortyfikacja W POLU byla dotad czysto
-                // kosmetyczna (zuzywala ruch, nic nie ustawiala) -- teraz realny
-                // stan (RuntimeUnit.ufortyfikowanyWPolu), na calym widocznym
-                // stosie na tym hexie (jak Czuwaj), z bonusem Obrony w walce.
-                for (const su of stack) enterFieldFortify(su);
-                showHintMessage(u.typeId + ' ufortyfikowany w polu (ruch zu\u017cyty)', 2500);
-              }
-              refreshD1bHud();
-            } else if (actionId === 'disband') {
-              disbandPlayerUnit(u.id);
-            } else if (actionId === 'replace') {
-              openUnitReplacePicker(u);
-            } else if (actionId === 'sentry') {
-              // C-SENTRY-Q1 wariant A: toggle -- wejście zużywa ruch całego stosu
-              // (jak Ufort./Pomiń), obudzenie NIE zużywa ruchu (gracz odzyskuje
-              // kontrolę od razu). Auto-budzenie na widok wroga: patrz
-              // wakeSentryUnitsOnEnemyContact() (koniec każdej tury).
-              const enteringSentry = u.sentry !== true;
-              if (enteringSentry) {
-                clearPlannedMarch(u.id);
-                syncStackRuchLeft(stack, 0);
-                for (const su of stack) su.sentry = true;
-                showHintMessage(u.typeId + ' czuwa (obudź ręcznie)', 2500);
-                clearPlayerUnitSelection();
-              } else {
-                for (const su of stack) su.sentry = false;
-                showHintMessage('Obudzono: ' + u.typeId, 2000);
-              }
-              refreshD1bHud();
-            }
-          },
+          onAction: handleSelectedUnitHudAction,
           onCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta),
           canCycleUnits: () => cyclablePlayerArmyLeads().length > 1,
           onClose: () => {
@@ -12814,6 +12853,14 @@ async function boot(): Promise<void> {
         },
         getWarsWithPlayer: collectWarsWithPlayer,
         getEvents: collectTurnEvents,
+        getContextPanel: () => buildContextPanelData(),
+        isContextExpanded: () => unitSideDetailExpanded,
+        onContextExpand: () => {
+          unitSideDetailExpanded = !unitSideDetailExpanded;
+          refreshD1bHud();
+        },
+        onContextSelectUnit: (id) => selectPlayerUnit(id, true),
+        onContextAction: handleSelectedUnitHudAction,
         getContextPanelMessage: () => buildContextPanelMessage(),
         onEventClick: (id) => {
           if (id.startsWith('war-')) {

@@ -177,6 +177,28 @@ export function applyFractionalGrowthV85(
   return { nowaLudnosc: pop, wzrostUlamkowy: frac, wzrost, ubytek };
 }
 
+/** Przyrost ułamkowy (sloty obywateli) w jednej turze przy nakarmieniu. */
+export function growthGainPerTurnSlots(
+  population: number,
+  growthPct: number,
+  fed: boolean,
+  atPopCap: boolean,
+): number {
+  if (!fed || growthPct <= 0 || atPopCap || population <= 0) return 0;
+  return population * growthPct / 100;
+}
+
+/** Ile tur do +1 obywatela przy stałym tempie (null = brak wzrostu). Ułamek <1 zostaje w buforze. */
+export function turnsUntilNextCitizen(
+  wzrostUlamkowy: number,
+  gainPerTurn: number,
+): number | null {
+  if (gainPerTurn <= 0) return null;
+  const frac = wzrostUlamkowy ?? 0;
+  if (frac >= 1) return 0;
+  return Math.ceil((1 - frac) / gainPerTurn);
+}
+
 /** Głód: 1 tura bez pełnej dopłaty → −1 ludność (min 1). */
 export function applyHungerPenaltyV85(
   population: number,

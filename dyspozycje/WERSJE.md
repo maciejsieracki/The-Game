@@ -11,7 +11,20 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `12ee2a1f` — 2026-07-28 00:35 — FALA 45: UI produkcja/dyplomacja/drzewko tech + HUD — **AKTUALNA**
+## ROBOCZA `4ef42265` — 2026-07-28 01:05 — FALA 46: Spichlerz/Armia HUD + panel jednostki + tartak/cuda — **AKTUALNA**
+- md5 (pelne): `4ef422657547260d564a082be463276a` · stempel: `ROBOCZA · 2026-07-28 01:05`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- Wynik `vite build` exit 0.
+- **Co nowego (FALA 46):**
+  - **Spichlerz** — nowy żeton lewy pasek (między Pracą a Surowcami): magazyn żywności, przyrost/turę, pełny panel.
+  - **Armia** — żeton pokazuje liczbę jednostek + odnowę rekrutów; panel bez spichlerza i bez duplikatu Ludności.
+  - **Panel jednostki** — kompaktowa karta po prawej, pasek akcji na dole, „Więcej szczegółów”, bez dolnego paska Armia.
+  - **Tartak/Wyrąb** — dokładniejsze komunikaty gdy las poza terytorium.
+  - **Cuda** — tylko z Budowy w terenie (nie z produkcji miasta).
+- **Bramki:** tsc 0.
+
+## ROBOCZA `12ee2a1f` — 2026-07-28 00:35 — FALA 45: UI produkcja/dyplomacja/drzewko tech + HUD — **ZASTĄPIONA**
 - md5 (pelne): `12ee2a1f3df5abc97d1e452f7ec22f26` · stempel: `ROBOCZA · 2026-07-28 00:35`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).

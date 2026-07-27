@@ -7,7 +7,9 @@ import {
   softPathBadgeLevel,
   type PathBadgeLevel,
 } from '../game/unit-building-bonuses';
+import { veteranLevel, type VeteranLevel, type VeteranProgress } from '../game/veteran';
 import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
+import { brandIconSvg } from './icons/brandAssets';
 
 export const PATH_BADGE_COLOR: Readonly<Record<1 | 2 | 3, string>> = {
   1: '#c9762c',
@@ -15,11 +17,18 @@ export const PATH_BADGE_COLOR: Readonly<Record<1 | 2 | 3, string>> = {
   3: '#e8c84a',
 };
 
+function pathBadgeColor(level: PathBadgeLevel): string {
+  if (level === 0) return '#5a5040';
+  return PATH_BADGE_COLOR[level];
+}
+
 export interface UnitCardStatusInput {
   /** % ścieżki B (parametry / koszary). */
   parametryPathPp?: number;
   /** % ścieżki A (pancerz / kuźnia). */
   pancerzPathPp?: number;
+  /** Doświadczenie bojowe (poziom 1–3) — opcjonalnie zamiast samej etykiety. */
+  veteranProgress?: VeteranProgress | null;
   veteranBadgeLabel?: string;
   veteranStarsTooltip?: string;
   veteranExperienceLine?: string;
@@ -64,6 +73,49 @@ export function pathBadgeChipHtml(
   const color = PATH_BADGE_COLOR[level];
   return `<span class="uc-path-badge" style="color:${color};font-weight:600;">`
     + `${icon} ${esc(label)} +${pct}%</span>`;
+}
+
+function pathLevelDotsHtml(level: PathBadgeLevel | VeteranLevel, activeColor: string): string {
+  const lvl = Math.max(0, Math.min(3, level));
+  const dots = ([1, 2, 3] as const).map((i) => {
+    const on = i <= lvl;
+    return `<span class="uc-lvl-dot${on ? ' on' : ''}"${on ? ` style="color:${activeColor}"` : ''}>●</span>`;
+  }).join('');
+  return `<span class="uc-lvl-dots">${dots}</span>`;
+}
+
+function pathIconCell(iconHtml: string, dotsHtml: string, title: string): string {
+  return `<span class="uc-path-icon" title="${title}">${iconHtml}${dotsHtml}</span>`;
+}
+
+/** Kompaktowy wiersz ikon: koszary · kuźnia · doświadczenie z poziomami 1-2-3. */
+export function buildPathLevelIconsRowHtml(input: UnitCardStatusInput): string {
+  const esc = input.esc;
+  const softLvl = softPathBadgeLevel({ parametryBonusProc: input.parametryPathPp ?? 0 });
+  const armorLvl = armorPathBadgeLevel({ pancerzBonusProc: input.pancerzPathPp ?? 0 });
+  const vetLvl = veteranLevel(input.veteranProgress ?? null);
+
+  const koszaryIc = brandIconSvg('bld-koszary', 16) || '🛡';
+  const kuzniaIc = brandIconSvg('bld-kuznia', 16) || '⚒';
+  const vetIc = '<span class="uc-vet-ic">★</span>';
+  const vetTip = input.veteranStarsTooltip
+    ? esc(input.veteranStarsTooltip)
+    : 'Doświadczenie bojowe';
+
+  const cells = [
+    pathIconCell(
+      `<span class="uc-path-ic">${koszaryIc}</span>`,
+      pathLevelDotsHtml(softLvl, pathBadgeColor(softLvl)),
+      'Wyszkolenie (koszary)',
+    ),
+    pathIconCell(
+      `<span class="uc-path-ic">${kuzniaIc}</span>`,
+      pathLevelDotsHtml(armorLvl, pathBadgeColor(armorLvl)),
+      'Pancerz ścieżka (kuźnia)',
+    ),
+    pathIconCell(vetIc, pathLevelDotsHtml(vetLvl, '#f4d35e'), vetTip),
+  ];
+  return `<div class="uc-path-icons-row">${cells.join('')}</div>`;
 }
 
 /** Wiersz koszary · kuźnia · weteran (kolejność OBOWIĄZKOWA). */
@@ -157,6 +209,14 @@ export function buildUnitCardStatusSectionHtml(input: UnitCardStatusInput): stri
 }
 
 export const UNIT_CARD_STATUS_CSS = `
+.uc-path-icons-row{display:flex;align-items:center;gap:12px;margin:8px 0 4px;flex-wrap:wrap;}
+.uc-path-icon{display:inline-flex;align-items:center;gap:4px;font-size:11px;line-height:1;}
+.uc-path-ic,.uc-vet-ic{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;}
+.uc-path-ic svg{width:16px;height:16px;display:block;}
+.uc-vet-ic{color:#f4d35e;font-size:13px;line-height:1;}
+.uc-lvl-dots{display:inline-flex;gap:1px;font-size:8px;letter-spacing:0;}
+.uc-lvl-dot{color:rgba(120,110,90,.45);}
+.uc-lvl-dot.on{color:inherit;}
 .uc-path-status{margin:6px 0 0;font-size:0.72em;line-height:1.45;letter-spacing:.02em;}
 .uc-path-badge,.uc-veteran-badge{white-space:nowrap;}
 .uc-veteran-xp{margin:4px 0 0;font-size:0.68em;color:#c8b878;line-height:1.4;}

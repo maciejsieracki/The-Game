@@ -25,18 +25,6 @@ import {
   ROAD_MOVE_SPEED_MULT as MAPA_ROAD_MULT,
 } from '../map/road-movement';
 
-// ---------------------------------------------------------------------------
-// River movement bonus
-// ---------------------------------------------------------------------------
-
-/**
- * Bonus movement points added to a unit's budget for the current turn when
- * it STARTS its move on a hex that has a river (hex.rzeka.obecna === true).
- * Rivers act as fast corridors: the unit can reach 4 further hexes this turn.
- * The bonus extends reach only -- it does not add stored ruchLeft points.
- */
-export const RIVER_MOVE_BONUS = 4;
-
 /** Droga (ulepszenie): ruch 3× szybszy — koszt wejścia ÷ 3 (Dijkstra używa ułamków). */
 export const ROAD_MOVE_SPEED_MULT = MAPA_ROAD_MULT;
 
@@ -534,8 +522,15 @@ export function hexNeighborCoords(q: number, r: number): Array<{ q: number; r: n
 // terrainMoveCost
 // ---------------------------------------------------------------------------
 
+/** Płaski koszt wejścia na lądowy heks z rzeką — ignoruje wzgórza, las i góry. */
+const RIVER_HEX_MOVE_COST = 1;
+
 /**
  * Returns the movement point cost to ENTER the given hex.
+ *
+ * Hex with river (hex.rzeka.obecna === true) on passable land:
+ *   flat {@link RIVER_HEX_MOVE_COST} — ignores Wzgorza, Las, Gory penalties.
+ *   Morze / Wybrzeze / Polarny stay impassable (embarkacja osobno).
  *
  * Base cost by terenBazowy (from the module-level cost table, configurable via
  * configureTerrainMovement()):
@@ -553,6 +548,14 @@ export function hexNeighborCoords(q: number, r: number): Array<{ q: number; r: n
  * hex.ulepszenie === DrogaBrukowana → bonus_ruch z JSON (domyślnie −2 od kosztu).
  */
 export function terrainMoveCost(hex: Hex): number {
+  if (hex.rzeka?.obecna === true) {
+    const tb = hex.terenBazowy;
+    if (tb === TerenBazowy.Morze || tb === TerenBazowy.Wybrzeze || tb === TerenBazowy.Polarny) {
+      return Infinity;
+    }
+    return applyRoadMovementModifier(RIVER_HEX_MOVE_COST, hex);
+  }
+
   const base = _terrainCosts[hex.terenBazowy] ?? 1;
   if (base === Infinity) return Infinity;
   let cost = base;
@@ -626,11 +629,8 @@ export function computeReachable(
   // Entry: [accumulatedCost, q, r]
   type Entry = [number, number, number];
 
-  // River bonus: if the unit starts on a hex with a river, extend its
-  // movement budget by RIVER_MOVE_BONUS for this turn only.
   const startKey = keyOf(unit.q, unit.r);
-  const startHexHasRiver = map.hexes[startKey]?.rzeka?.obecna === true;
-  const budget = unit.ruchLeft + (startHexHasRiver ? RIVER_MOVE_BONUS : 0);
+  const budget = unit.ruchLeft;
 
   const dist = new Map<string, number>();
   dist.set(startKey, 0);
@@ -707,7 +707,7 @@ export function computeReachable(
 
       const newCost = cost + movCost;
 
-      // Check if within budget (includes river bonus when applicable).
+      // Check if within movement budget.
       if (newCost <= budget) {
         const prevDist = dist.get(nKey);
         if (prevDist === undefined || newCost < prevDist) {
@@ -719,8 +719,8 @@ export function computeReachable(
     }
   }
 
-  // MIN-MOVE RULE: if the budget is at least 1 (covers river bonus too),
-  // any passable, unoccupied direct neighbor is reachable regardless of cost.
+  // MIN-MOVE RULE: if ruchLeft >= 1, any passable, unoccupied direct neighbor
+  // is reachable regardless of entry cost.
   if (budget >= 1) {
     for (const [dq, dr] of HEX_NEIGHBORS) {
       const nq = unit.q + dq;

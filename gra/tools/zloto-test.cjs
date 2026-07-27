@@ -196,15 +196,13 @@ console.log('-- D+E. bramka Mennicy (złoto + Targowisko) --');
   }
 
   ok(mennicaBuildable({}) === false,
-    'Mennica NIEDOSTĘPNA: brak Targowiska, brak dostępu do złota');
-  ok(mennicaBuildable({ builtBuildingIds: ['targowisko'] }) === false,
-    'Mennica NIEDOSTĘPNA: Targowisko OK, ale BRAK dostępu do złota');
-  ok(mennicaBuildable({ activeResourceLabels: ['Złoto'] }) === false,
-    'Mennica NIEDOSTĘPNA: dostęp do złota OK, ale BRAK Targowiska w mieście');
+    'Mennica NIEDOSTĘPNA: brak Targowiska w mieście');
+  ok(mennicaBuildable({ builtBuildingIds: ['targowisko'] }) === true,
+    'Mennica DOSTĘPNA: Targowisko w mieście + Waluta (bez dostępu do złota — kanon magazyn)');
   ok(mennicaBuildable({ builtBuildingIds: ['targowisko'], activeResourceLabels: ['Złoto'] }) === true,
-    'Mennica DOSTĘPNA: Targowisko w mieście + dostęp do złota + Waluta zbadana');
+    'Mennica DOSTĘPNA: Targowisko + dostęp złota nie jest już wymagany, ale nie blokuje');
   ok(mennicaBuildable({ builtBuildingIds: ['targowisko'], empireActiveResourceLabels: ['Złoto'] }) === true,
-    'Mennica DOSTĘPNA również przez empireActiveResourceLabels (unia miast imperium)');
+    'Mennica DOSTĘPNA również przez empireActiveResourceLabels (bez wymogu złota)');
 
   // Bez technologii Waluta -- niedostępna niezależnie od reszty.
   const itemsNoTech = M.buildableProduction(
@@ -288,11 +286,11 @@ console.log('-- G. parytet AI --');
     `Parytet AI: identyczna lista budynków dla ownerId=0 i ownerId=7 (gracz: ${JSON.stringify(idsPlayer)}, AI: ${JSON.stringify(idsAi)})`);
   ok(idsPlayer.includes('mennica'), 'Parytet AI: Mennica dostępna dla obu przy identycznym stanie (złoto+Targowisko+Waluta)');
 
-  // I odwrotnie -- bez dostępu do złota, obaj tak samo zablokowani.
-  const idsPlayerLocked = M.buildableProduction(CITY0, DATA, ['Waluta'], ctxFor(0, { activeResourceLabels: [] })).map(it => it.id);
-  const idsAiLocked = M.buildableProduction(CITY7, DATA, ['Waluta'], ctxFor(7, { activeResourceLabels: [] })).map(it => it.id);
-  ok(!idsPlayerLocked.includes('mennica') && !idsAiLocked.includes('mennica'),
-    'Parytet AI: bez dostępu do złota, Mennica niedostępna identycznie dla gracza i AI');
+  // Bez etykiety Złoto — Mennica nadal budowalna (kanon magazyn, Targowisko w ctx).
+  const idsPlayerNoGold = M.buildableProduction(CITY0, DATA, ['Waluta'], ctxFor(0, { activeResourceLabels: [] })).map(it => it.id);
+  const idsAiNoGold = M.buildableProduction(CITY7, DATA, ['Waluta'], ctxFor(7, { activeResourceLabels: [] })).map(it => it.id);
+  ok(idsPlayerNoGold.includes('mennica') && idsAiNoGold.includes('mennica'),
+    'Parytet AI: bez dostępu do złota, Mennica budowalna identycznie dla gracza i AI (kanon magazyn)');
 }
 
 // ===========================================================================

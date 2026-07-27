@@ -21,10 +21,25 @@ import {
 } from '../game/resource-access';
 import { formatEntityDisplayName } from '../game/display-names';
 import type { DaninaLabel } from '../game/danina-nazwa';
+import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
+import type { VeteranProgress } from '../game/veteran';
+import {
+  buildPathLevelIconsRowHtml,
+  buildUnitExtraStatusLinesHtml,
+  buildUnitVeteranEducationHtml,
+  pathStatusRowHasChips,
+  unitCardAtkDefLineHtml,
+  unitCardStatValueHtml,
+  UNIT_CARD_STATUS_CSS,
+  type UnitCardStatusInput,
+} from './unitCardStatus';
+import type { UnitPanelAction } from './unitPanelHud';
+import { buildUnitActionBarHtml, UNIT_ACTION_BAR_CSS } from './unitActionBarHtml';
 import {
   brandIconSvg,
   mapResourceIconSvg,
   terrainIconSvg,
+  unitIconSvg,
 } from './icons/brandAssets';
 
 /** Ikona plonu jako inline-SVG (reskin emoji 🍞🔨💰🪵🪨 → brand). */
@@ -333,17 +348,6 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   return lines.join('');
 }
 
-import {
-  buildPathStatusRowHtml,
-  buildUnitExtraStatusLinesHtml,
-  buildUnitVeteranEducationHtml,
-  pathStatusRowHasChips,
-  unitCardAtkDefLineHtml,
-  unitCardStatValueHtml,
-  type UnitCardStatusInput,
-} from './unitCardStatus';
-import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
-
 export interface UnitContextTooltipInput {
   displayName: string;
   /** Medalion portretu / sygnet właściciela (C-OBCE-JEDN-Q2). */
@@ -374,6 +378,8 @@ export interface UnitContextTooltipInput {
   parametryPathPp?: number;
   /** % ścieżki A (pancerz) — do ikon kuźni w wierszu statusów. */
   pancerzPathPp?: number;
+  /** Doświadczenie bojowe — poziom 1–3 z veteran.ts. */
+  veteranProgress?: VeteranProgress | null;
   /**
    * TRZECI SYSTEM -- doświadczenie bojowe / weterani (2026-07-25,
    * game/veteran.ts). Etykieta gotowa z veteranBadgeLabel(), np.
@@ -396,6 +402,25 @@ export interface UnitContextTooltipInput {
   sentry?: boolean;
   ufortyfikowanyWPolu?: boolean;
   oblegaCityName?: string;
+  /** Zasięg ataku (z definicji jednostki). */
+  zasieg?: number;
+  /** Kompakt (domyślnie) vs rozszerzony panel boczny. */
+  expanded?: boolean;
+  /** Pokaż przycisk „Więcej szczegółów” w treści (nad paskiem akcji). */
+  expandable?: boolean;
+  /** Karty jednostek na stosie (tylko expanded). */
+  stackCards?: ReadonlyArray<{
+    id: string;
+    name: string;
+    icon: string;
+    hp: number;
+    hpMax: number;
+    ruchLeft: number;
+    ruchMax: number;
+    active: boolean;
+  }>;
+  /** Przyciski akcji (kompakt + rozszerzony, na dole karty). */
+  actions?: ReadonlyArray<UnitPanelAction>;
   esc: (raw: string) => string;
 }
 
@@ -407,6 +432,7 @@ function unitCardStatusFromTooltip(u: UnitContextTooltipInput): UnitCardStatusIn
   return {
     parametryPathPp: u.parametryPathPp,
     pancerzPathPp: u.pancerzPathPp,
+    veteranProgress: u.veteranProgress,
     veteranBadgeLabel: u.veteranBadgeLabel,
     veteranStarsTooltip: u.veteranStarsTooltip,
     veteranExperienceLine: u.veteranExperienceLine,
@@ -433,45 +459,101 @@ function buildUnitHeadHtml(u: UnitContextTooltipInput): string {
     + `<div class="uc-unit-head-info"><b>${u.esc(u.displayName)}</b>${subHtml}</div></div>`;
 }
 
+function buildUnitExpandButtonHtml(expanded: boolean): string {
+  const label = expanded ? 'Mniej szczegółów' : 'Więcej szczegółów';
+  return `<button type="button" class="sp-ctx-expand" data-sp-expand>${label}</button>`;
+}
+
+function buildUnitStackCardsHtml(
+  cards: NonNullable<UnitContextTooltipInput['stackCards']>,
+  esc: (raw: string) => string,
+): string {
+  if (cards.length <= 1) return '';
+  let html = '<div class="sp-unit-stack">';
+  for (const c of cards) {
+    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}" data-unit="${esc(c.id)}" role="button" tabindex="0">`
+      + `<div class="sp-unit-stack-ic">${c.icon || unitIconSvg(undefined)}</div>`
+      + `<div class="sp-unit-stack-name">${esc(c.name)}</div>`
+      + `<div class="sp-unit-stack-meta">${Math.round(c.hp)}/${c.hpMax} · ${c.ruchLeft}/${c.ruchMax}</div>`
+      + '</div>';
+  }
+  return html + '</div>';
+}
+
+function buildUnitCompactStatsHtml(u: UnitContextTooltipInput): string {
+  const hpText = u.hp != null && u.combat.hpMaxEffective > 0
+    ? `${Math.round(u.hp)}/${formatCardHp(u.combat.hpMaxEffective)}`
+    : '—';
+  const movText = u.readOnly ? '' : `<span class="sp-unit-stat"><span class="sp-unit-stat-l">Ruch</span>`
+    + `<span class="sp-unit-stat-v">${u.ruchLeft}/${u.ruchMax}</span></span>`;
+  const rngVal = u.zasieg ?? 0;
+  const rngText = `<span class="sp-unit-stat"><span class="sp-unit-stat-l">Zasięg</span>`
+    + `<span class="sp-unit-stat-v">${rngVal}</span></span>`;
+  return '<div class="sp-unit-stats-grid">'
+    + `<span class="sp-unit-stat"><span class="sp-unit-stat-l">Atak / obrona</span>`
+    + `<span class="sp-unit-stat-v">${unitCardAtkDefLineHtml(u.combat)}</span></span>`
+    + `<span class="sp-unit-stat"><span class="sp-unit-stat-l">Pancerz</span>`
+    + `<span class="sp-unit-stat-v">${unitCardStatValueHtml(u.combat.pancerzEffective, u.combat.pancerzBase)}</span></span>`
+    + `<span class="sp-unit-stat"><span class="sp-unit-stat-l">HP</span>`
+    + `<span class="sp-unit-stat-v">${hpText}</span></span>`
+    + movText
+    + rngText
+    + '</div>';
+}
+
+export const UNIT_CONTEXT_PANEL_CSS = `
+${UNIT_CARD_STATUS_CSS}
+.sp-unit-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin:8px 0 4px;}
+.sp-unit-stat{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.35;}
+.sp-unit-stat-l{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--civ-text-muted,#a09880);}
+.sp-unit-stat-v{color:var(--civ-text-primary,#e8e0c8);}
+.sp-unit-stack{display:flex;gap:6px;overflow-x:auto;margin:10px 0 6px;padding-bottom:4px;scrollbar-width:thin;}
+.sp-unit-stack-card{flex:0 0 auto;width:76px;padding:6px 4px;border-radius:8px;cursor:pointer;
+  border:1px solid rgba(212,175,90,.22);background:rgba(16,20,28,.85);text-align:center;}
+.sp-unit-stack-card.on{border-color:rgba(212,175,90,.55);box-shadow:0 0 10px rgba(212,175,90,.12);}
+.sp-unit-stack-ic{font-size:18px;line-height:1;min-height:20px;}
+.sp-unit-stack-name{font-size:9px;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-unit-stack-meta{font-size:8px;color:var(--civ-text-muted,#8a8070);margin-top:3px;}
+${UNIT_ACTION_BAR_CSS}
+.sp-unit-card-body{display:flex;flex-direction:column;gap:0;}
+.sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
+  border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);
+  color:var(--civ-gold-primary,#e8d88a);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  cursor:pointer;font-family:inherit;text-align:center;}
+.sp-ctx-expand:hover{border-color:rgba(212,175,90,.55);background:rgba(28,34,46,.9);}
+`;
+
 export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string {
   const statusInput = unitCardStatusFromTooltip(u);
-  const pathRow = buildPathStatusRowHtml(statusInput);
-  const hasPathChips = pathStatusRowHasChips(statusInput);
-
+  const expanded = u.expanded === true;
   const lines: string[] = [buildUnitHeadHtml(u)];
 
-  if (u.hp != null && u.combat.hpMaxEffective > 0) {
-    const hpLine = `${Math.round(u.hp)}/${formatCardHp(u.combat.hpMaxEffective)}`
-      + (u.combat.hpMaxEffective !== u.combat.hpMaxBase
-        ? ` <span class="uc-stat-base">(baza ${formatCardHp(u.combat.hpMaxBase)})</span>`
-        : '');
-    lines.push(subLine('Punkty życia', hpLine));
-  }
-  lines.push(subLine('Atak / obrona', unitCardAtkDefLineHtml(u.combat)));
-  lines.push(subLine('Pancerz', unitCardStatValueHtml(u.combat.pancerzEffective, u.combat.pancerzBase)));
-  if (!u.readOnly) {
-    lines.push(subLine('Ruch', `${u.ruchLeft}/${u.ruchMax}`));
-  }
+  lines.push(buildUnitCompactStatsHtml(u));
+  lines.push(buildPathLevelIconsRowHtml(statusInput));
 
-  if (pathRow) {
-    lines.push(`<div class="cp-sub">${pathRow}</div>`);
-  } else if (u.veteranBadgeLabel) {
-    const tip = u.esc(u.veteranStarsTooltip ?? u.veteranBadgeLabel);
-    lines.push(
-      `<div class="cp-sub uc-veteran-badge" style="color:#f4d35e;font-weight:600;" title="${tip}">`
-        + `${u.esc(u.veteranBadgeLabel)}</div>`,
-    );
+  if (expanded) {
+    const extra = buildUnitExtraStatusLinesHtml(statusInput);
+    if (extra) lines.push(`<div class="cp-sub">${extra}</div>`);
+
+    const vetEdu = buildUnitVeteranEducationHtml(statusInput);
+    if (vetEdu) lines.push(`<div class="cp-sub">${vetEdu}</div>`);
+
+    if (u.buildingBonusLabel && !pathStatusRowHasChips(statusInput)) {
+      lines.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));
+    }
+
+    if (u.stackCards && u.stackCards.length > 1) {
+      lines.push(buildUnitStackCardsHtml(u.stackCards, u.esc));
+    }
   }
 
-  const vetEdu = buildUnitVeteranEducationHtml(statusInput);
-  if (vetEdu) lines.push(`<div class="cp-sub">${vetEdu}</div>`);
-
-  const extra = buildUnitExtraStatusLinesHtml(statusInput);
-  if (extra) lines.push(`<div class="cp-sub">${extra}</div>`);
-
-  if (u.buildingBonusLabel && !hasPathChips) {
-    lines.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));
+  if (u.expandable) {
+    lines.push(buildUnitExpandButtonHtml(expanded));
   }
 
-  return lines.join('');
+  if (u.actions && u.actions.length > 0) {
+    lines.push(buildUnitActionBarHtml(u.actions));
+  }
+
+  return `<div class="sp-unit-card-body">${lines.join('')}</div>`;
 }

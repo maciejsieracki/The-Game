@@ -6,6 +6,8 @@ export {
   buildRationParams,
   computeGrowthPercentV85,
   getCityRationLevel,
+  growthGainPerTurnSlots,
+  turnsUntilNextCitizen,
 } from '../src/game/population-growth-v85';
 export {
   advanceEmpireFood,

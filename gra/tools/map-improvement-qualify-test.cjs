@@ -18,6 +18,7 @@ export {
   isImprovementVisibleInBuildPanel,
   isFarmBaseTerrain,
   stripImprovementsWhenForestRemoved,
+  getForestBuildBlockReason,
 } from '../src/map/improvement-build';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
@@ -193,6 +194,68 @@ ok(qOverlap('wyrab', 2, 1), 'wyrab OK on player-owned forest');
 
 ok(M.stripImprovementsWhenForestRemoved(['farma', 'tartak', 'droga']).join(',') === 'farma,droga', 'strip tartak when forest removed');
 ok(M.stripImprovementsWhenForestRemoved(['tartak']).length === 0, 'strip tartak only hex');
+
+function forestHint(opts = {}) {
+  return M.getForestBuildBlockReason({
+    map: opts.map ?? map,
+    cityNodes: opts.cityNodes ?? cityNodes,
+    territoryNodes: opts.territoryNodes ?? playerTerritoryNodes,
+    playerOwnerIdNum: opts.playerOwnerIdNum ?? 0,
+    clearingHexKeys: opts.clearingHexKeys,
+  }, opts.key ?? 'tartak');
+}
+
+const miniCity = [{ q: 0, r: 0, pop: 10, level: 1 }];
+const miniTerritory = [{ q: 0, r: 0, pop: 10, level: 1, ownerId: 0 }];
+function miniMap(hexes) {
+  return { hexes, riverPaths: [], startPositions: [{ q: 0, r: 0 }] };
+}
+
+ok(forestHint({ cityNodes: [] })?.includes('załóż miasto'), 'forest hint: no city');
+
+ok(forestHint({
+  map: miniMap({ '0,0': mkHex(0, 0, TB.Rownina), '1,0': mkHex(1, 0, TB.Laka) }),
+  cityNodes: miniCity,
+  territoryNodes: miniTerritory,
+  key: 'tartak',
+})?.includes('terytorium nie ma lasu'),
+  'forest hint: no las in player territory');
+
+ok(forestHint({
+  map: miniMap({ '0,0': mkHex(0, 0, TB.Rownina), '20,0': mkHex(20, 0, TB.Laka, NK.Las) }),
+  cityNodes: miniCity,
+  territoryNodes: miniTerritory,
+  key: 'tartak',
+})?.includes('poza twoim terytorium'),
+  'forest hint: las visible but outside territory');
+
+ok(forestHint({
+  map: miniMap({ '0,0': mkHex(0, 0, TB.Rownina), '3,1': mkHex(3, 1, TB.Laka, NK.Las) }),
+  cityNodes: miniCity,
+  territoryNodes: miniTerritory,
+  key: 'wyrab',
+  clearingHexKeys: new Set(['3,1']),
+})?.includes('w trakcie wycinki'),
+  'forest hint: wyrab all forests clearing');
+
+ok(forestHint({
+  map: miniMap({ '0,0': mkHex(0, 0, TB.Rownina), '0,3': mkHex(0, 3, TB.Gory, NK.Las) }),
+  cityNodes: miniCity,
+  territoryNodes: miniTerritory,
+  key: 'tartak',
+})?.includes('górach'),
+  'forest hint: tartak las on gory');
+
+ok(forestHint({
+  map: miniMap({ '0,0': mkHex(0, 0, TB.Rownina), '4,0': mkHex(4, 0, TB.Laka, NK.Las) }),
+  cityNodes: miniCity,
+  territoryNodes: [
+    { q: 0, r: 0, pop: 10, level: 1, ownerId: 0 },
+    { q: 4, r: 0, pop: 10, level: 1, ownerId: 99 },
+  ],
+  key: 'wyrab',
+})?.includes('innej cywilizacji'),
+  'forest hint: enemy territory overlap');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

@@ -28,7 +28,9 @@ __export(population_growth_v85_entry_exports, {
   buildRationParams: () => buildRationParams,
   computeGrowthPercentV85: () => computeGrowthPercentV85,
   freshEmpireFoodState: () => freshEmpireFoodState,
-  getCityRationLevel: () => getCityRationLevel
+  getCityRationLevel: () => getCityRationLevel,
+  growthGainPerTurnSlots: () => growthGainPerTurnSlots,
+  turnsUntilNextCitizen: () => turnsUntilNextCitizen
 });
 module.exports = __toCommonJS(population_growth_v85_entry_exports);
 
@@ -3941,6 +3943,16 @@ function applyFractionalGrowthV85(city, growthPct, fed, maAkwedukt, econParams) 
   }
   return { nowaLudnosc: pop, wzrostUlamkowy: frac, wzrost, ubytek };
 }
+function growthGainPerTurnSlots(population, growthPct, fed, atPopCap) {
+  if (!fed || growthPct <= 0 || atPopCap || population <= 0) return 0;
+  return population * growthPct / 100;
+}
+function turnsUntilNextCitizen(wzrostUlamkowy, gainPerTurn) {
+  if (gainPerTurn <= 0) return null;
+  const frac = wzrostUlamkowy ?? 0;
+  if (frac >= 1) return 0;
+  return Math.ceil((1 - frac) / gainPerTurn);
+}
 function applyHungerPenaltyV85(population, fed, turyBezDoplaty) {
   if (fed) {
     return { nowaLudnosc: population, turyBezDoplaty: 0, ubytek: false };
@@ -5015,5 +5027,7 @@ function _setLastEmpireFoodTicks(ticks) {
   buildRationParams,
   computeGrowthPercentV85,
   freshEmpireFoodState,
-  getCityRationLevel
+  getCityRationLevel,
+  growthGainPerTurnSlots,
+  turnsUntilNextCitizen
 });

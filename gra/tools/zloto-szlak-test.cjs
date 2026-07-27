@@ -146,15 +146,15 @@ console.log('-- 1. własna Kopalnia złota, bez szlaków -> Mennica DOSTĘPNA --
 }
 
 // ===========================================================================
-// 2. Brak złoża, BEZ szlaków -> NIE MOŻE budować Mennicy.
+// 2. Brak złoża, BEZ szlaków -> Mennica BUDOWALNA (Targowisko w ctx, bez wymogu Złota).
 // ===========================================================================
-console.log('-- 2. brak złoża, brak szlaków -> Mennica NIEDOSTĘPNA --');
+console.log('-- 2. brak złoża, brak szlaków -> Mennica BUDOWALNA (kanon magazyn) --');
 {
   const placedNone = new Map();
   ok(M.empireHasKopalniaZlota(placedNone) === false, '2: empireHasKopalniaZlota -> false (brak kopalni)');
   const labels = activeLabelsFor(0, placedNone);
   ok(!labels.includes('Złoto'), '2: brak etykiety "Złoto" bez kopalni i bez szlaku');
-  ok(mennicaBuildable(0, labels) === false, '2: Mennica NIEBUDOWALNA -- brak dostępu do złota jakąkolwiek drogą');
+  ok(mennicaBuildable(0, labels) === true, '2: Mennica BUDOWALNA z Targowiskiem — dostęp do złota nie jest wymagany przy budowie');
 }
 
 // ===========================================================================
@@ -185,13 +185,12 @@ const labels3 = activeLabelsFor(0, augmented3);
 ok(labels3.includes('Złoto'), '3: etykieta "Złoto" aktywna WYŁĄCZNIE dzięki szlakowi (gracz sam nie ma kopalni)');
 ok(mennicaBuildable(0, labels3) === true, '3: Mennica BUDOWALNA dzięki dostępowi "z trasy", mimo braku własnego złoża');
 
-// Kontrola: bez augmentacji (hasTradeGrant=false) -- Mennica NIEDOSTĘPNA, żeby
-// upewnić się, że to właśnie augmentacja (nie coś innego w fixture) daje dostęp.
+// Kontrola: bez augmentacji grantu złota — Mennica nadal budowalna (Targowisko w ctx).
 const noAugment3 = M.placedImprovementsWithZlotoTradeGrant(playerPlacedNoGold, false);
 ok(noAugment3 === playerPlacedNoGold, '3: hasTradeGrant=false -> zwraca DOKŁADNIE ten sam obiekt (brak zbędnej kopii)');
 const labelsNoGrant3 = activeLabelsFor(0, noAugment3);
 ok(!labelsNoGrant3.includes('Złoto'), '3: (kontrola) bez grantu -- brak etykiety "Złoto"');
-ok(mennicaBuildable(0, labelsNoGrant3) === false, '3: (kontrola) bez grantu -- Mennica NIEBUDOWALNA');
+ok(mennicaBuildable(0, labelsNoGrant3) === true, '3: (kontrola) bez grantu -- Mennica nadal BUDOWALNA (kanon magazyn, nie dostęp)');
 
 // ===========================================================================
 // 4. Ten sam szlak NIE dodaje ani jednej sztuki złota do zapasów.
@@ -260,9 +259,9 @@ console.log('-- 5. parytet AI -- ta sama reguła dla ownerId != 0 --');
   eq(JSON.stringify(idsPlayer), JSON.stringify(idsAi),
     '5: parytet AI -- lista budynków identyczna dla gracza i AI przy identycznym dostępie "z trasy"');
 
-  // I odwrotnie -- bez grantu, oboje tak samo zablokowani.
-  ok(mennicaBuildable(0, activeLabelsFor(0, new Map())) === false, '5: (kontrola) gracz bez grantu -- zablokowany');
-  ok(mennicaBuildable(6, activeLabelsFor(6, new Map())) === false, '5: (kontrola) AI (owner 6) bez grantu -- identycznie zablokowany');
+  // Bez grantu złota — Mennica nadal budowalna (Targowisko w ctx, kanon magazyn).
+  ok(mennicaBuildable(0, activeLabelsFor(0, new Map())) === true, '5: (kontrola) gracz bez grantu -- Mennica budowalna (bez wymogu Złota)');
+  ok(mennicaBuildable(6, activeLabelsFor(6, new Map())) === true, '5: (kontrola) AI bez grantu -- identycznie budowalna');
 }
 
 // ===========================================================================
@@ -281,8 +280,8 @@ console.log('-- F. zerwanie szlaku: Mennica JUŻ ZBUDOWANA zostaje (nie znika) -
   const noGrantAfterBreak = M.placedImprovementsWithZlotoTradeGrant(playerPlacedNoGold, false);
   const labelsAfterBreak = activeLabelsFor(0, noGrantAfterBreak);
   ok(!labelsAfterBreak.includes('Złoto'), 'F: po zerwaniu szlaku -- brak etykiety "Złoto" (jak oczekiwano)');
-  ok(mennicaBuildable(0, labelsAfterBreak) === false,
-    'F: po zerwaniu szlaku -- NOWA Mennica NIEBUDOWALNA (nie ma się skąd wziąć drugi raz)');
+  ok(mennicaBuildable(0, labelsAfterBreak) === true,
+    'F: po zerwaniu szlaku -- NOWA Mennica nadal BUDOWALNA (bramka budowy = magazyn, nie dostęp Złota)');
 
   // Ale Mennica JUŻ ZBUDOWANA (builtBuildingIds zawiera 'mennica') nie znika --
   // eraBuildingCatalog dalej raportuje status='built', niezależnie od aktualnej

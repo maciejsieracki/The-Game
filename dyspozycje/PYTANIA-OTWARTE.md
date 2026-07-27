@@ -781,3 +781,21 @@ może dostać **dwa** mnożniki ×0,5 — `camping` w `unitFoodPerTurn` (C-GARN-
 `isGarrisonInSolCity` w `spichlerzArmyFoodCostMultiplier` (U-10B) → łącznie **0,25×** kosztu żywności
 na własnym terytorium. Pytanie do Macieja: U-10B **zastępuje** ogólny rabat garnizonu, czy **stackuje**?
 Plik: `turn-economy.ts` · `economy-upkeep.ts`.
+
+---
+
+## [ZNALEZIONE PRZY OKAZJI] Stopka „Surowce w zasięgu” — audyt UI (2026-07-28)
+
+Audyt [Surowce w zasięgu UI](95b85062-2770-4046-b26f-0c027e320930): sekcja celowo pokazuje tylko Koń/Sól/Złoto (filtr
+`CITY_PANEL_RANGE_DEPOSIT_LABELS`), dublowuje imperium + Budowa. Rekomendacja subagenta: **C** — usunąć stałą stopkę
+`#cs-surowce-foot`, przenieść skrót do zakładki Okolica (docelowo ikony złóż na mini-mapie). **Bez wdrożenia** do
+decyzji Macieja (A zostaw + doprecyzuj / B usuń / C zwiń do Okolicy).
+
+---
+
+## [ZNALEZIONE PRZY OKAZJI] Stolarnia bez Tartaku — czy przywrócić łańcuch B1? (2026-07-28)
+
+Audyt [Stolarnia tartak wymagania](b877b506-ac0b-4ca5-b98e-929b6e925510): dziś Stolarnia wymaga etykiety Drewno w imperium
+**lub** zapasu w magazynie (SUROW-CIV-02) — **nie** wymaga Tartaku jako prerekwizytu. Wyrąb → drewno w magazynie
+wystarcza. Jeśli Maciej chce kanon B1 (Tartak → aktywne Drewno → dopiero Stolarnia): zmiana w
+`building-resource-gate.ts` (bez aktywnego źródła, bez obejścia stock-only). **Bez wdrożenia** do decyzji.

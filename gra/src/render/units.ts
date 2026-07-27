@@ -4833,7 +4833,7 @@ export class UnitRenderer {
       if (tokenObj) {
         syncUnitUpgradeBadges(tokenObj, unit);
         syncUnitVeteranBadges(tokenObj, unit);
-        syncUnitOwnerMedallion(tokenObj, unit.ownerId);
+        syncUnitOwnerMedallion(tokenObj, unit.ownerId, this._resolveOwnerColor(unit.ownerId));
         syncUnitPathFlankBadges(tokenObj, unit);
       }
     }

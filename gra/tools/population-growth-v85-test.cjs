@@ -19,6 +19,8 @@ export {
   buildRationParams,
   computeGrowthPercentV85,
   getCityRationLevel,
+  growthGainPerTurnSlots,
+  turnsUntilNextCitizen,
 } from '../src/game/population-growth-v85';
 export {
   advanceEmpireFood,
@@ -161,6 +163,17 @@ const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJedn
   });
   ok(city.wzrostUlamkowy > 0, 'fed: fractional growth accumulates (3 × 5% = 0.15)');
   ok(city.population === 3, 'fed: no whole pop yet below 1.0 frac');
+}
+
+// --- ETA helpers ---
+{
+  ok(M.growthGainPerTurnSlots(1, 13, true, false) === 0.13, 'gainPerTurn: 1 pop × 13% = 0.13');
+  ok(M.growthGainPerTurnSlots(1, 13, false, false) === 0, 'gainPerTurn: unfed → 0');
+  ok(M.growthGainPerTurnSlots(1, 13, true, true) === 0, 'gainPerTurn: at cap → 0');
+  ok(M.turnsUntilNextCitizen(0.26, 0.13) === 6, 'ETA: ceil((1-0.26)/0.13) = 6');
+  ok(M.turnsUntilNextCitizen(0.9, 0.13) === 1, 'ETA: ceil((1-0.9)/0.13) = 1');
+  ok(M.turnsUntilNextCitizen(1.0, 0.13) === 0, 'ETA: frac >= 1 → 0 turns');
+  ok(M.turnsUntilNextCitizen(0.5, 0) === null, 'ETA: zero gain → null');
 }
 
 console.log(`population-growth-v85-test: ${passed} passed, ${failed} failed`);

@@ -190,9 +190,9 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ## 17. Lewy panel (toolbar mapy) — Cuda i Budowa
 
-### 17.1. Cuda świata — z listy budowy miasta (2026-07-24: usunięty osobny katalog)
+### 17.1. Cuda świata — z panelu Budowa w terenie (2026-07-28: korekta wejścia UI)
 
-**Nie ma** już osobnego ekranu/galerii Cudów otwieranego medalionem na toolbarze — Cuda buduje się **z listy budowy miasta** (sekcja „Cuda świata" w panelu Produkcja), a lista jest już **filtrowana per cywilizacja** (nie zobaczysz cudów zarezerwowanych dla innej cywilizacji ani niedostępnych w tym miejscu/epoce). Warunki budowy: technologia, teren, koszt pracy, często **jeden na świat** (typ E wyłączny lub R wyścigowy). Szczegóły — Część XV §94.
+**Nie ma** już osobnego ekranu/galerii Cudów otwieranego medalionem na toolbarze — Cuda buduje się **z panelu Budowa w terenie** na mapie (sekcja „Cuda świata" w trybie budowy), a lista jest już **filtrowana per cywilizacja** (nie zobaczysz cudów zarezerwowanych dla innej cywilizacji ani niedostępnych w tym miejscu/epoce). Warunki budowy: technologia, teren, koszt pracy, często **jeden na świat** (typ E wyłączny lub R wyścigowy). Szczegóły — Część XV §94.
 
 ### 17.2. Budowa (ulepszenia terenu)
 
@@ -387,4 +387,4 @@ Postaw **pierwszy Spichlerz** przed masową rekrutacją — jeden budynek w impe
 
 ---
 
-*Poradnik‑L · Część III · rev. G · 2026-07-24 (§14.2 magazyn surowców = pula 500 państwa + Magazyn; §17.1: Cuda świata = z listy budowy miasta, nie osobna galeria) · pierwotnie rev. F 2026-07-23, rev. E 2026-07-03 · źródła: `buildings.json`, `econ-params.json`, decyzja B5 (Spichlerz)*
+*Poradnik‑L · Część III · rev. G · 2026-07-28 (§14.2 magazyn surowców = pula 500 państwa + Magazyn; §17.1: Cuda świata = z panelu Budowa w terenie, nie osobna galeria) · pierwotnie rev. F 2026-07-23, rev. E 2026-07-03 · źródła: `buildings.json`, `econ-params.json`, decyzja B5 (Spichlerz)*

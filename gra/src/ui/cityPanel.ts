@@ -47,7 +47,6 @@ import {
   isCityUxFrameOpen,
 } from './cityUxFrame';
 import { setMapHudChromeSuppressed } from './hud';
-import type { WonderBuildTypeInfo } from './buildModeHud';
 import type { City } from '../game/cities';
 import { formatCityMapLabel } from '../game/display-names';
 import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb } from '../game/cities';
@@ -86,12 +85,9 @@ import {
   isBuildingSupersededByUpgrade,
 } from '../game/production';
 import {
-  buildingRequiredActiveLabels,
   CITY_BUILDING_PREREQ,
   cityBuildingPrereqMet,
   WATER_ACCESS_BUILDING_IDS,
-  empireResourceLabelSatisfied,
-  isAccessOnlyResourceLabel,
 } from '../game/building-resource-gate';
 import { CITY_PANEL_RANGE_DEPOSIT_LABELS } from '../game/resource-access';
 import { empireHasKopalniaMiedzi, PIEC_HUTNICZY_BUILDING_ID } from '../game/braz-access';
@@ -119,6 +115,8 @@ import {
   computeCityRationCost,
   computeGrowthPercentV85,
   getCityRationLevel,
+  growthGainPerTurnSlots,
+  turnsUntilNextCitizen,
   rationFoodCostPerPop,
   rationGrowthPercent,
   type GrowthPercentBreakdown,
@@ -130,7 +128,7 @@ import {
 } from '../game/building-resource-gate';
 import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
 import type { CityManpowerSnapshot } from '../game/manpower';
-import { civManpowerMaxMult, formatManpower, unitManpowerCostForType } from '../game/manpower';
+import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpower, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
 import {
   unitInfographicMedallionHtml,
@@ -449,14 +447,6 @@ export interface CityPanelConfig {
    * stolica, obecna stolica NIE oblegana) i wykonuje transfer; za darmo (Q1=A).
    */
   onSetCapital?: (cityId: string) => void;
-  /**
-   * R-CUDA-TAB (2026-07-24): cuda dostępne do zakolejkowania w PRODUKCJI tego miasta —
-   * już przefiltrowane przez silnik do cywilizacji gracza (main.ts listBuildableWondersForOwner(0)).
-   * Cuda NIE mają już osobnego katalogu w lewym menu — budowane wyłącznie stąd, jak budynki.
-   */
-  getBuildableWonders?: (cityId: string) => WonderBuildTypeInfo[];
-  /** Dodaj cud do kolejki produkcji (Praca) tego miasta — silnik: main.ts enqueueWonderForPlayer. */
-  onBuildWonder?: (cityId: string, wonderId: string) => void;
 }
 
 let cfg: CityPanelConfig = {};
@@ -1032,6 +1022,60 @@ function growthBreakdownRow(label: string, value: number, showZero = false): str
   return `<div class="growth-bd-row ${cls}"><span>${label}</span><span>${signed(value)}%</span></div>`;
 }
 
+function fmtDecPl(n: number, digits = 2): string {
+  return n.toFixed(digits).replace('.', ',');
+}
+
+function pluralTur(n: number): string {
+  if (n === 1) return 'turę';
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'tury';
+  return 'tur';
+}
+
+/** Postęp wzrostu (sloty + osoby) i ETA kolejnego obywatela — ułamek <1 zostaje w buforze. */
+function buildGrowthProgressUi(
+  population: number,
+  view: CityView,
+  epoch: number,
+  fed: boolean,
+  atPopCap: boolean,
+): { progressHtml: string; etaHtml: string; perTurnHtml: string } {
+  const frac = view.wzrostUlamkowy;
+  const osobNaObywatela = cityLudnoscAbsolutna(1, epoch);
+  const gainSlots = growthGainPerTurnSlots(population, view.wzrostProcent, fed, atPopCap);
+  const fracPeople = Math.round(frac * osobNaObywatela);
+  const gainPeople = Math.round(gainSlots * osobNaObywatela);
+
+  const progressHtml =
+  `<div class="growth-progress-main">Wzrost ludności: <strong>${fmtDecPl(frac)}</strong> / 1 obywatela` +
+  ` <span class="growth-progress-abs">(≈ ${formatManpower(fracPeople)} / ${formatManpower(osobNaObywatela)})</span></div>`;
+
+  let etaHtml = '';
+  if (atPopCap) {
+    etaHtml = '<div class="growth-eta warn">Limit ludności — brak kolejnego obywatela.</div>';
+  } else if (!fed) {
+    etaHtml = '<div class="growth-eta warn">Brak wzrostu — miasto nie jest w pełni nakarmione.</div>';
+  } else if (view.wzrostProcent <= 0) {
+    etaHtml = '<div class="growth-eta muted">WZROST% = 0 — brak kolejnego obywatela.</div>';
+  } else {
+    const turns = turnsUntilNextCitizen(frac, gainSlots);
+    if (turns === 0) {
+      etaHtml = '<div class="growth-eta ok">Kolejny obywatel w tej turze (bufor ≥ 1).</div>';
+    } else if (turns != null) {
+      etaHtml = `<div class="growth-eta ok">Kolejny obywatel za <strong>≈ ${turns}</strong> ${pluralTur(turns)}.</div>`;
+    }
+  }
+
+  const perTurnHtml = gainSlots > 0
+    ? `<div class="growth-per-turn">Tempo: +${fmtDecPl(gainSlots)} obywatela/t` +
+      ` (≈ +${formatManpower(gainPeople)}/t) — nadwyżka zostaje w buforze</div>`
+    : '';
+
+  return { progressHtml, etaHtml, perTurnHtml };
+}
+
 function resolveEmpireSnap(city: City, map: GameMap | null, data: GameData | null): EmpireHudSnap {
   const fromEngine = cfg.getEmpireHud?.(city.ownerId);
   if (fromEngine) return fromEngine;
@@ -1519,7 +1563,17 @@ function ensureStyles(): void {
 .civ-cs .growth-bd-row.pos{color:#7ad0a0;}
 .civ-cs .growth-bd-row.neg{color:#e08a8a;}
 .civ-cs .growth-bd-row.muted{color:var(--muted);}
-.civ-cs .growth-frac{font-size:0.68em;color:var(--muted);margin-top:0.18em;}
+.civ-cs .food-pop-hero{margin:0.1em 0 0.42em;padding:0.42em 0.5em;border-radius:9px;border:1px solid rgba(232,216,138,.22);background:rgba(232,216,138,.06);}
+.civ-cs .food-pop-hero .pop-slots{font-size:1.12em;font-weight:700;color:var(--gold);line-height:1.35;}
+.civ-cs .food-pop-hero .pop-abs{font-size:0.78em;color:var(--muted);margin-top:0.12em;}
+.civ-cs .growth-progress-block{margin-top:0.22em;padding-top:0.2em;border-top:1px dashed rgba(232,216,138,.12);}
+.civ-cs .growth-progress-main{font-size:0.76em;color:var(--text);line-height:1.45;}
+.civ-cs .growth-progress-abs{color:var(--muted);font-size:0.92em;}
+.civ-cs .growth-eta{font-size:0.74em;margin-top:0.2em;line-height:1.4;}
+.civ-cs .growth-eta.ok{color:#7ad0a0;}
+.civ-cs .growth-eta.warn{color:#e0a860;}
+.civ-cs .growth-eta.muted{color:var(--muted);}
+.civ-cs .growth-per-turn{font-size:0.66em;color:var(--muted);margin-top:0.14em;line-height:1.4;}
 .civ-cs .praca-split-bar{display:flex;height:26px;background:rgba(255,255,255,0.08);border:1px solid rgba(232,216,138,0.18);border-radius:7px;overflow:hidden;position:relative;margin-bottom:0.38em;}
 .civ-cs .praca-split-b{background:linear-gradient(90deg,#a08030,#e8d88a);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#2e2708;font-weight:700;}
 .civ-cs .praca-split-u{background:linear-gradient(90deg,#3a6ad0,#5a9bd4);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#08121e;font-weight:700;}
@@ -1712,16 +1766,20 @@ function ensureStyles(): void {
 .civ-cs .praca-split-info .psi-lbl{display:inline-flex;align-items:center;gap:0.12em;}
 .civ-cs .chip .cl{display:inline-flex;align-items:center;gap:0.1em;}
 .civ-cs .wealth-grid{display:flex;flex-wrap:wrap;gap:0.22em;}
-.civ-cs .wealth-compact-row{margin:0.06em 0 0.22em;}
-.civ-cs .wealth-compact-inner{display:flex;align-items:center;gap:0.22em;flex-wrap:nowrap;
-  padding:0.2em 0.32em;background:var(--panel2);border:1px solid var(--border);border-radius:4px;}
-.civ-cs .wealth-compact-inner.hover-detail-anchor{cursor:help;}
-.civ-cs .wealth-compact-stat{display:inline-flex;align-items:center;gap:0.1em;padding:0.1em 0.22em;
-  border:1px solid rgba(232,216,138,0.2);border-radius:4px;font-size:0.68em;line-height:1;cursor:help;flex:0 0 auto;background:rgba(0,0,0,0.12);}
-.civ-cs .wealth-compact-stat b{font-weight:700;font-size:0.95em;}
-.civ-cs .wealth-compact-stat .wealth-compact-ic{font-weight:700;color:var(--gold);font-size:0.9em;min-width:0.85em;text-align:center;}
-.civ-cs .wealth-compact-inner .wealth-compact-bar{flex:1 1 4.5em;min-width:3.8em;height:1.05em;margin:0;}
-.civ-cs .wealth-compact-inner .wealth-compact-bar .fbtxt{font-size:0.88em;padding:0 0.2em;}
+.civ-cs .wealth-compact-wrap{margin:0.06em 0 0.28em;padding:0.28em 0.34em;background:var(--panel2);border:1px solid var(--border);border-radius:6px;}
+.civ-cs .wealth-compact-badges{display:flex;align-items:center;gap:0.28em;flex-wrap:wrap;margin-bottom:0.28em;}
+.civ-cs .wealth-compact-stat{display:inline-flex;align-items:center;justify-content:center;gap:0.12em;
+  min-width:2.1em;padding:0.18em 0.38em;border:1px solid rgba(232,216,138,0.22);border-radius:5px;
+  font-size:0.78em;line-height:1;cursor:help;flex:0 0 auto;background:rgba(0,0,0,0.14);}
+.civ-cs .wealth-compact-stat b{font-weight:700;font-size:1em;}
+.civ-cs .wealth-compact-stat.wealth-w b{color:var(--gold);}
+.civ-cs .wealth-compact-stat.wealth-mnoz b{color:#8ec8f0;}
+.civ-cs .wealth-compact-stat.wealth-happy{padding:0.18em 0.32em;}
+.civ-cs .wealth-compact-bar{width:100%;height:1.15em;margin:0;}
+.civ-cs .wealth-compact-bar .fbtxt{font-size:0.82em;padding:0 0.25em;}
+.civ-cs .wealth-compact-eta{font-size:0.66em;color:var(--muted);margin-top:0.22em;line-height:1.35;}
+.civ-cs .wealth-compact-eta.ok{color:#7ad0a0;}
+.civ-cs .wealth-compact-eta.warn{color:#e0a860;}
 .civ-detail-scope .detail-card.wealth-detail-card{font-size:0.84em;line-height:1.42;}
 .civ-detail-scope .detail-card.wealth-detail-card .dc-grid{grid-template-columns:minmax(7.5em,0.95fr) 1.05fr;}
 .civ-detail-scope .detail-card.wealth-detail-card .dc-formula{font-size:0.88em;color:var(--gold);font-family:Consolas,'Courier New',monospace;margin:0.2em 0 0.35em;padding:0.25em 0.4em;
@@ -2846,8 +2904,7 @@ function buildSurowceDetailCard(
       'Budowa wymagająca surowców liczonych: wystarczy zapas w magazynie państwa (dowolne miasto).',
     ]
     : [
-      'Złoże w zasięgu tego miasta ≠ dostęp imperium — zbuduj ulepszenie na heksie.',
-      'Bramka „dostęp" (np. Sól, Złoto): aktywne źródło w imperium — bez wymogu ilości w magazynie.',
+      'Złoże w zasięgu tego miasta — podgląd mapy; nie warunek budowy w innym mieście.',
       'Koszt surowcowy budynku (`koszt_surowce`): tylko magazyn państwa (suma po wszystkich miastach).',
       'Wyjątki lokalne: Port (wybrzeże/rzeka przy tym mieście), prerekwizyty budynków w tym mieście.',
     ]);
@@ -3347,45 +3404,75 @@ function appendWealthCompactStrip(
     pula: number;
     prog: number;
     pct: number;
+    etaW: number | null;
+    zamIn: number;
+    daninaLblGen: string;
   },
 ): void {
-  const row = el('div', 'wealth-compact-row');
-  const inner = el('div', 'wealth-compact-inner');
-  const mkStat = (html: string, title: string, cls = '') => {
+  const wrap = el('div', 'wealth-compact-wrap');
+  const badges = el('div', 'wealth-compact-badges');
+  const mkStat = (html: string, title: string, cls: string) => {
     const s = el('span', `wealth-compact-stat ${cls}`.trim());
     s.innerHTML = html;
     s.title = title;
     return s;
   };
+  const nextW = opts.poziom + 1;
+  const mnozTxt = opts.mnoz.toFixed(2).replace('.', ',');
 
-  inner.appendChild(mkStat(
-    `<span class="wealth-compact-ic">W</span><b class="gold">${opts.atCap ? `${opts.poziom}↑` : opts.poziom}</b>`,
+  badges.appendChild(mkStat(
+    `<b>W${opts.poziom}</b>`,
     opts.atCap
-      ? `Poziom zamożności W${opts.poziom} — maksimum w epoce ${opts.epoch} (cap W${opts.cap})`
-      : `Poziom zamożności W${opts.poziom} (max W${opts.cap} w epoce ${opts.epoch})`,
+      ? `Poziom zamożności W${opts.poziom} — maksimum w epoce ${opts.epoch} (limit W${opts.cap}). Bogatsze miasto = wyższy mnożnik pieniędzy do skarbca i więcej szczęścia.`
+      : `Poziom zamożności W${opts.poziom} (limit W${opts.cap} w epoce ${opts.epoch}). Rośnie, gdy część ${opts.daninaLblGen} idzie na suwak „Zamożność” zamiast od razu do skarbca.`,
+    'wealth-w',
   ));
-  inner.appendChild(mkStat(
-    `${cityPanelChipIconWrap('res-treasury', 14)}<b class="blue">×${opts.mnoz.toFixed(2)}</b>`,
-    `Mnożnik Pieniądza do skarbca: ×${opts.mnoz.toFixed(2)} przy poziomie W${opts.poziom}`,
+  badges.appendChild(mkStat(
+    `${cityPanelChipIconWrap('res-treasury', 14)}<b>×${mnozTxt}</b>`,
+    `Mnożnik pieniędzy do skarbca przy W${opts.poziom}: ×${mnozTxt}. ` +
+    (opts.poziom <= 1
+      ? 'W1 = bez bonusu (×1,00). Każdy kolejny poziom W podnosi ten mnożnik.'
+      : `Wyższe W = więcej 💰 z tego samego handlu i podatków.`),
+    'wealth-mnoz',
   ));
-  inner.appendChild(mkStat(
-    `${cityPanelChipIconWrap('chip-happiness', 14)}<b class="happy">+${Math.round(opts.szBonus)}</b>`,
-    `Bonus Zadowolenia (Szczęście) z poziomu W${opts.poziom}: +${Math.round(opts.szBonus)}`,
-    'happy',
-  ));
+  const szStat = mkStat(
+    cityPanelChipIconWrap('chip-happiness', 14),
+    `Szczęście z zamożności: ${opts.szBonus >= 0 ? '+' : ''}${Math.round(opts.szBonus)}. ` +
+    'Co 10 poziomów W daje +1 szczęście (zadowolonych).',
+    'wealth-happy',
+  );
+  szStat.setAttribute('aria-label', `Szczęście z zamożności ${opts.szBonus >= 0 ? '+' : ''}${Math.round(opts.szBonus)}`);
+  badges.appendChild(szStat);
+  wrap.appendChild(badges);
 
   const track = el('div', 'food-grow-track wealth-compact-bar');
-  const barLabel = opts.atCap ? 'MAX' : `${Math.round(opts.pula)}/${Math.round(opts.prog)}`;
+  const barLabel = opts.atCap ? `W${opts.poziom} — MAX` : `${Math.round(opts.pula)} / ${Math.round(opts.prog)}`;
   track.title = opts.atCap
-    ? `Pula zamożności — osiągnięto max W${opts.poziom} w epoce ${opts.epoch}`
-    : `Pula zamożności: ${Math.round(opts.pula)} / ${Math.round(opts.prog)} Pieniądza do awansu na W${opts.poziom + 1}`;
+    ? `Osiągnięto najwyższą zamożność W${opts.poziom} w epoce ${opts.epoch}.`
+    : `Postęp do poziomu W${nextW}: zebrano ${Math.round(opts.pula)} z ${Math.round(opts.prog)} 💰 z udziału „Zamożność” w ${opts.daninaLblGen}. Nadwyżka zostaje w puli po awansie.`;
   track.innerHTML =
     `<div class="food-grow-fill" style="width:${opts.pct}%"></div>` +
     `<span class="fbtxt">${barLabel}</span>`;
-  inner.appendChild(track);
+  wrap.appendChild(track);
 
-  row.appendChild(inner);
-  mount.appendChild(row);
+  const eta = el('div', 'wealth-compact-eta');
+  if (opts.atCap) {
+    eta.textContent = `Najwyższa zamożność w epoce ${opts.epoch} (W${opts.poziom}).`;
+  } else if (opts.zamIn <= 0) {
+    eta.className += ' warn';
+    eta.textContent =
+      `Brak wpływu do puli — przesuń suwak „Zamożność” w podziale ${opts.daninaLblGen}, żeby rosnąć do W${nextW}.`;
+  } else if (opts.etaW != null) {
+    eta.className += ' ok';
+    eta.textContent =
+      `Kolejny poziom W${nextW} za ok. ${opts.etaW} ${tury(opts.etaW)}` +
+      ` (≈ +${opts.zamIn} 💰/turę do puli).`;
+  } else {
+    eta.textContent = `Cel: W${nextW} — potrzeba ${Math.round(opts.prog)} 💰 w puli.`;
+  }
+  wrap.appendChild(eta);
+
+  mount.appendChild(wrap);
 }
 
 function shortIndLabel(text: string, max = 13): string {
@@ -3733,6 +3820,11 @@ function renderWealth(mount: HTMLElement, city: City, data: GameData | null, vie
   const pct = atCap ? 100 : (prog > 0
     ? Math.round(Math.min(100, Math.max(0, (ws.pula / prog) * 100)))
     : 0);
+  const daninaLblGen = daninaLabelGenitive(daninaLabelForCity(city));
+  const zamIn = view && data ? estimateHandelChips(view, readPodzialHandlu(city, data)).zam : 0;
+  const etaW = !atCap && prog > ws.pula && zamIn > 0
+    ? Math.max(1, Math.ceil((prog - ws.pula) / zamIn))
+    : null;
 
   appendWealthCompactStrip(mount, {
     poziom: ws.poziom,
@@ -3744,6 +3836,9 @@ function renderWealth(mount: HTMLElement, city: City, data: GameData | null, vie
     pula: ws.pula,
     prog,
     pct,
+    etaW,
+    zamIn,
+    daninaLblGen,
   });
 }
 
@@ -3810,13 +3905,13 @@ function buildWealthDetailCard(
   gridDetailRow(g1, 'Postęp paska', ws.poziom >= cap
     ? 'Maks. poziom zamożności w tej epoce'
     : `→ W${ws.poziom + 1}: ${Math.round(ws.pula)} / ${Math.round(prog)} (${Math.round(prog > 0 ? (ws.pula / prog) * 100 : 0)}%)`);
-  gridDetailRow(g1, 'Mnożnik skarbca', `×${mnoz.toFixed(2)}`);
+  gridDetailRow(g1, 'Mnożnik skarbca', `×${mnoz.toFixed(2).replace('.', ',')}`);
   gridDetailRow(g1, 'Wpływ na szczęście', `${signed(szcz)} zadowolonych`);
-  gridDetailRow(g1, 'Szac. do W+1', atCap
+  gridDetailRow(g1, 'Kolejny poziom W', atCap
     ? 'Maks. poziom w tej epoce'
     : (etaW != null
-      ? `~${etaW} ${tury(etaW)} przy obecnym udziale ${HANDEL_ZAMOZNOSC_LABEL} z handlu (~${zamIn}/turę)`
-      : '— (brak wpływu do puli lub brak danych tury)'));
+      ? `W${ws.poziom + 1} za ok. ${etaW} ${tury(etaW)} przy ~${zamIn} 💰/turę do puli (udział „Zamożność” w ${daninaLblGen})`
+      : 'Brak wpływu do puli — zwiększ udział „Zamożność” w podziale handlu'));
 
   appendDetailSection(card, 'Wzory');
   appendDetailFormula(card, `×Skarb = max(1, 1 + (W−1) × ${p.mnoznikNaPoziom})`);
@@ -4099,9 +4194,19 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const cityRow = tick?.perCityRows?.find(r => r.cityId === city.id);
   const fed = cityRow?.nakarmione ?? foodSplit.total >= 0;
+  const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
+  const osobNaObywatela = cityLudnoscAbsolutna(1, epoch);
+  const growthUi = buildGrowthProgressUi(city.population, view, epoch, fed, atPopCap);
+
+  const popHero = el('div', 'food-pop-hero');
+  popHero.innerHTML =
+    `<div class="pop-slots">${cityPanelChipIcon('res-population', 14)} Ludność ${city.population}</div>` +
+    `<div class="pop-abs">≈ ${formatManpower(osobRazem)} osób` +
+    ` (1 obywatel = ${formatManpower(osobNaObywatela)})</div>`;
+  mount.appendChild(popHero);
 
   const chips: TabIndicatorChip[] = [
-    { icon: cityPanelChipIcon('res-population', 14), label: 'Ludność', value: String(city.population), cls: 'gold' },
     {
       icon: loafIconHtml('civ-v-loaf-chip'),
       label: 'Produkcja',
@@ -4204,7 +4309,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     growthBreakdownRow('Zdrowie', bd.zdrowie) +
     growthBreakdownRow('Szczęście', bd.szczescie) +
     growthBreakdownRow('Cywilizacja', bd.cywilizacja) +
-    `<div class="growth-frac">Ułamek wzrostu: ${view.wzrostUlamkowy.toFixed(2)} (kumuluje się co turę)</div>`;
+    `<div class="growth-progress-block">${growthUi.progressHtml}${growthUi.etaHtml}${growthUi.perTurnHtml}</div>`;
   mount.appendChild(growBlock);
 }
 
@@ -4217,6 +4322,9 @@ function buildRacjeWzrostDetailCard(
 ): HTMLDivElement {
   const rationParams = data ? buildRationParams(data.econParams, cfg.difficulty ?? 'normal') : null;
   const foodSplit = cityFoodSplit(view);
+  const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
+  const fed = tickRow?.nakarmione ?? foodSplit.total >= 0;
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Wyżywienie i wzrost — szczegóły</span>'));
   const intro = el('div', 'dc-note');
@@ -4224,6 +4332,13 @@ function buildRacjeWzrostDetailCard(
     'Lokalnie: produkcja żywności minus koszt racji = bilans miasta. Nadwyżka trafia do magazynu centralnego, niedobór jest pokrywany stamtąd.',
   );
   card.appendChild(intro);
+
+  appendDetailSection(card, 'Ludność miasta');
+  const g0 = appendDetailGrid(card);
+  const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
+  gridDetailRow(g0, 'Obywatele (sloty)', String(city.population));
+  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpower(osobRazem)} osób`);
+  gridDetailRow(g0, 'Skala epoki', `1 obywatel = ${formatManpower(cityLudnoscAbsolutna(1, epoch))}`);
 
   appendDetailSection(card, 'Bilans lokalny (to miasto)');
   const g1 = appendDetailGrid(card);
@@ -4244,10 +4359,21 @@ function buildRacjeWzrostDetailCard(
   gridDetailRow(g2, 'Szczęście', `${signed(bd.szczescie)}%`);
   gridDetailRow(g2, 'Cywilizacja', `${signed(bd.cywilizacja)}%`);
   gridDetailRow(g2, 'Łącznie', `${view.wzrostProcent}%`);
-  gridDetailRow(g2, 'Ułamek wzrostu', view.wzrostUlamkowy.toFixed(2));
+  gridDetailRow(g2, 'Postęp do +1 obywatela', `${fmtDecPl(view.wzrostUlamkowy)} / 1`);
+  const gainSlots = growthGainPerTurnSlots(city.population, view.wzrostProcent, fed, view.atPopCap);
+  const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
+  gridDetailRow(
+    g2,
+    'Kolejny obywatel',
+    view.atPopCap ? 'limit ludności'
+      : !fed ? 'brak — głód'
+        : turns === 0 ? 'w tej turze'
+          : turns != null ? `za ≈ ${turns} ${pluralTur(turns)}`
+            : '—',
+  );
 
   appendDetailFormula(card, 'bilans = produkcja_brutto − (ludność × koszt_racji)');
-  appendDetailFormula(card, 'wzrost_ludności = ludność × WZROST% / 100 (ułamki kumulują się)');
+  appendDetailFormula(card, 'wzrost = ludność × WZROST% / 100 — ułamek <1 zostaje w buforze na kolejną turę');
 
   if (tick) {
     appendDetailSection(card, 'Magazyn centralny (ostatnia tura)');
@@ -4373,6 +4499,7 @@ function buildTopBarLudnoscDetailCard(
   const health = data && map
     ? resolveCityHealth(city, map, data)
     : null;
+  const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
 
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>👥 Ludność — co to znaczy</span>'));
@@ -4385,16 +4512,32 @@ function buildTopBarLudnoscDetailCard(
 
   appendDetailSection(card, 'Co widzisz na pasku');
   const g0 = appendDetailGrid(card);
-  gridDetailRow(g0, 'Duża liczba 👥', `${city.population} — ludność tego miasta`);
+  gridDetailRow(g0, 'Duża liczba 👥', `${city.population} — obywatele (sloty) tego miasta`);
+  gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpower(osobRazem)} osób`);
   gridDetailRow(g0, 'Epoka', String(epoch));
   gridDetailRow(g0, 'WZROST%', view ? `${view.wzrostProcent}%` : '—');
 
   if (view) {
-    appendDetailSection(card, 'Wzrost ludności (PYTANIE-85)');
+    const foodSplit = cityFoodSplit(view);
+    const tick = cfg.getEmpireFoodTick?.(city.ownerId);
+    const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
+    const fed = tickRow?.nakarmione ?? foodSplit.total >= 0;
+    const gainSlots = growthGainPerTurnSlots(city.population, view.wzrostProcent, fed, view.atPopCap);
+    const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
+    appendDetailSection(card, 'Wzrost ludności');
     const g1 = appendDetailGrid(card);
     gridDetailRow(g1, 'Racja', `Racja ${view.poziomRacji}`);
     gridDetailRow(g1, 'WZROST%', `${view.wzrostProcent}%`);
-    gridDetailRow(g1, 'Ułamek wzrostu', view.wzrostUlamkowy.toFixed(2));
+    gridDetailRow(g1, 'Postęp do +1', `${fmtDecPl(view.wzrostUlamkowy)} / 1 obywatela`);
+    gridDetailRow(
+      g1,
+      'Kolejny obywatel',
+      view.atPopCap ? 'limit ludności'
+        : !fed ? 'brak — głód'
+          : turns === 0 ? 'w tej turze'
+            : turns != null ? `za ≈ ${turns} ${pluralTur(turns)}`
+              : '—',
+    );
     gridDetailRow(g1, 'Bilans żywności', `${signed(view.bilansLokalny)} 🍞/t`);
     if (view.atPopCap) {
       gridDetailRow(g1, 'Limit', `max ${view.popCapAktualny} mieszkańców`);
@@ -4410,7 +4553,7 @@ function buildTopBarLudnoscDetailCard(
     }
   }
 
-  appendDetailFormula(card, 'wzrost = ludność × WZROST% / 100 (ułamki kumulują się)');
+  appendDetailFormula(card, 'wzrost = ludność × WZROST% / 100 — ułamek <1 zostaje w buforze');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
     'Prawa kolumna → Wyżywienie i wzrost: batony Racja 1/2/3.',
     'Mapa okolicy → max 👤 obok centrum = populacja (kto pracuje pola).',
@@ -5235,9 +5378,6 @@ function buildingRequirementChips(
   const techSet = new Set(unlockedTechs);
   const built = ctx.builtBuildingIds ?? [];
   const buildings = data.buildings;
-  const gateLabels = ctx.empireActiveResourceLabels !== undefined
-    ? ctx.empireActiveResourceLabels
-    : (ctx.activeResourceLabels ?? []);
   const pool = city !== undefined
     ? ownerSurowcePoolFor(city)
     : (ctx.empireResourceStock ?? {});
@@ -5273,16 +5413,6 @@ function buildingRequirementChips(
       ? `W mieście: ${names.join(' lub ')}`
       : `W mieście: ${names[0]}`;
     chips.push({ label, met, kind: 'other' });
-  }
-
-  for (const label of buildingRequiredActiveLabels(def)) {
-    const met = empireResourceLabelSatisfied(
-      label, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock,
-    );
-    const accessHint = isAccessOnlyResourceLabel(label)
-      ? `Dostęp (źródło): ${label}`
-      : `Dostęp: ${label}`;
-    chips.push({ label: accessHint, met, kind: 'other' });
   }
 
   if (def.id === PIEC_HUTNICZY_BUILDING_ID) {
@@ -5327,7 +5457,7 @@ function buildingRequirementChips(
   return chips;
 }
 
-/** Czy gracz może TERAZ kliknąć Buduj — wszystkie chipy wymagań spełnione (tech, dostęp, magazyn…). */
+/** Czy gracz może TERAZ kliknąć Buduj — wszystkie chipy wymagań spełnione (tech, magazyn…). */
 function buildingCanBuildNow(
   def: BuildingDef,
   city: City,
@@ -5531,75 +5661,6 @@ function epochLabelNum(n: number): string {
 }
 
 /** Świątynia/kolumny — emblemat „Cuda świata” (KANON 1E, ten sam glif co dawny toolbar). */
-function wonderCardIconSvg(): string {
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">'
-    + '<path d="M12 3 4 9h16Z"></path><path d="M5 9v8M9.5 9v8M14.5 9v8M19 9v8"></path>'
-    + '<path d="M3 17h18v3H3Z"></path></svg>';
-}
-
-/**
- * R-CUDA-TAB (2026-07-24): karta cudu w liście „Dostępne do budowy” miasta —
- * ten sam wizualny język co bld-infocard (budynki), ale zasilana z osobnej listy
- * (main.ts wonderHudEntries / listBuildableWondersForOwner) bo cuda żyją w
- * gra/data/wonders.json, nie w data.buildings. Wpis pojawia się TYLKO gdy silnik
- * uzna cud za dostępny tej cywilizacji teraz (bez stanów locked/exclusive_other/built —
- * to filtruje już main.ts) — jedyny wybór gracza to Buduj / już w kolejce.
- */
-function buildWonderInfocard(w: WonderBuildTypeInfo, city: City): HTMLDivElement {
-  const card = el('div', 'bld-infocard');
-  const hd = el('div', 'bld-infocard-hd');
-  const ic = el('div', 'bld-infocard-ic');
-  fillIconElement(ic, wonderCardIconSvg());
-  hd.appendChild(ic);
-  const titWrap = el('div');
-  titWrap.style.cssText = 'flex:1;min-width:0;';
-  titWrap.innerHTML = `<div class="bld-infocard-title">${w.label}</div>`;
-  const cat = el('span', 'bld-infocard-cat');
-  cat.textContent = w.dostep === 'R' ? 'Cud — wyścig' : 'Cud — ekskluzywny';
-  titWrap.appendChild(cat);
-  hd.appendChild(titWrap);
-  card.appendChild(hd);
-
-  const bd = el('div', 'bld-infocard-bd');
-  const ft = el('div', 'bld-infocard-ft');
-  const era = el('span', 'bld-infocard-era');
-  era.innerHTML = `<span class="bld-infocard-era-dot"></span>Epoka ${epochLabelNum(w.epokaWejscia).toLowerCase()}`;
-  ft.appendChild(era);
-  const ftR = el('span');
-  ftR.textContent = 'max 1 na świecie';
-  ft.appendChild(ftR);
-  bd.appendChild(ft);
-
-  if (w.queued) {
-    const tag = el('div', 'bld-catalog-ready-tag');
-    tag.textContent = w.lockHint ?? 'Już w kolejce tego miasta';
-    bd.appendChild(tag);
-  } else {
-    const act = el('div', 'bld-infocard-actions');
-    const workIc = cityPanelChipIconWrap('res-work', 12);
-    const cost = el('div', 'bld-infocard-cost');
-    cost.innerHTML = `${w.kosztPraca}${workIc}`;
-    act.appendChild(cost);
-    const btnWrap = el('div', 'civ-v-bld-btns');
-    const bBuild = el('button', 'btn btn-sm btn-b', 'Buduj') as HTMLButtonElement;
-    applyBuildButtonVisualState(
-      bBuild,
-      true,
-      `Dodaj do kolejki produkcji · ${w.kosztPraca} pracy`,
-    );
-    bBuild.addEventListener('click', () => {
-      cfg.onBuildWonder?.(city.id, w.id);
-      rerender();
-    });
-    btnWrap.appendChild(bBuild);
-    act.appendChild(btnWrap);
-    bd.appendChild(act);
-  }
-
-  card.appendChild(bd);
-  return card;
-}
-
 function isEmptyDataVal(v: unknown): boolean {
   return v == null || v === '' || v === '—' || v === '-';
 }
@@ -5987,39 +6048,6 @@ function buildBuildingBuildTabDetailCard(
   return card;
 }
 
-function buildWonderBuildTabDetailCard(w: WonderBuildTypeInfo, city: City): HTMLDivElement {
-  const card = el('div', 'detail-card');
-  card.appendChild(el('div', 'dc-h', `<span>${w.label}</span>`));
-  appendDetailSection(card, 'Cud świata');
-  const g = appendDetailGrid(card);
-  gridDetailRow(g, 'Typ', w.dostep === 'R' ? 'Wyścig' : 'Ekskluzywny');
-  gridDetailRow(g, 'Epoka', epochLabelNum(w.epokaWejscia));
-  gridDetailRow(g, 'Limit', 'max 1 na świecie');
-  gridDetailRow(g, 'Koszt', `${w.kosztPraca} pracy`);
-  if (w.lockHint) {
-    const note = el('div', 'dc-note');
-    note.style.fontStyle = 'normal';
-    note.textContent = w.lockHint;
-    card.appendChild(note);
-  }
-  if (!w.queued) {
-    const act = el('div', 'bld-detail-actions');
-    const bBuild = el('button', 'btn btn-sm btn-b', 'Buduj') as HTMLButtonElement;
-    applyBuildButtonVisualState(
-      bBuild,
-      true,
-      `Dodaj do kolejki produkcji · ${w.kosztPraca} pracy`,
-    );
-    bBuild.addEventListener('click', () => {
-      cfg.onBuildWonder?.(city.id, w.id);
-      rerender();
-    });
-    act.appendChild(bBuild);
-    card.appendChild(act);
-  }
-  return card;
-}
-
 function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLDivElement {
   const card = el('div', 'detail-card');
   const built = cfg.getBuiltBuildingIds?.(city.id);
@@ -6197,41 +6225,6 @@ function appendBuildableItemRow(
     220,
     'left',
   );
-  scroll.appendChild(row);
-}
-
-function appendWonderCompactRow(scroll: HTMLElement, w: WonderBuildTypeInfo, city: City): void {
-  const row = el('div', `bld-compact-row${w.queued ? ' cannot-build-row' : ' can-build-row'}`);
-  const ic = el('div', 'bld-compact-ic');
-  fillIconElement(ic, wonderCardIconSvg());
-  row.appendChild(ic);
-  const name = el('span', 'bld-compact-name');
-  name.textContent = w.label;
-  row.appendChild(name);
-
-  const actions = el('div', 'bld-compact-actions');
-  if (w.queued) {
-    const tag = el('span', 'muted');
-    tag.style.fontSize = '0.68em';
-    tag.textContent = 'W kolejce';
-    actions.appendChild(tag);
-  } else {
-    const bBuild = el('button', 'btn btn-sm btn-b', 'Buduj') as HTMLButtonElement;
-    applyBuildButtonVisualState(
-      bBuild,
-      true,
-      `Dodaj do kolejki produkcji · ${w.kosztPraca} pracy`,
-    );
-    bBuild.addEventListener('click', (e) => {
-      e.stopPropagation();
-      cfg.onBuildWonder?.(city.id, w.id);
-      rerender();
-    });
-    actions.appendChild(bBuild);
-  }
-  row.appendChild(actions);
-
-  attachHoverDetail(row, () => buildWonderBuildTabDetailCard(w, city), 220, 'left');
   scroll.appendChild(row);
 }
 
@@ -6796,10 +6789,6 @@ function renderBuildList(
     prodCtx,
     techs,
   );
-  // R-CUDA-TAB: cuda dostępne DZIŚ tej cywilizacji (już przefiltrowane w silniku —
-  // main.ts listBuildableWondersForOwner(0)/wonderHudEntries) — jedyne miejsce budowy
-  // cudów, zastępuje dawny osobny katalog „Cuda świata” w lewym menu.
-  const wonders = cfg.getBuildableWonders?.(city.id) ?? [];
 
   const skarb = cfg.getTreasury?.(city.ownerId);
 
@@ -6838,7 +6827,7 @@ function renderBuildList(
 
   const sortedUps = sortProductionItemsByBuildability(ups, city, data, prodCtx, techs);
 
-  if (items.length === 0 && sortedUps.length === 0 && wonders.length === 0 && previewEntries.length === 0) {
+  if (items.length === 0 && sortedUps.length === 0 && previewEntries.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak budynków — zbadaj technologie)'));
     return;
   }
@@ -6861,15 +6850,6 @@ function renderBuildList(
     scroll.appendChild(h);
     for (const u of sortedUps) {
       appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true });
-    }
-  }
-  if (wonders.length > 0) {
-    const h = el('div', 'muted');
-    h.style.cssText = 'font-size:0.72em;margin:0.35em 0 0.2em;padding-top:0.25em;border-top:1px solid var(--border);';
-    h.textContent = 'Cuda świata';
-    scroll.appendChild(h);
-    for (const w of wonders) {
-      appendWonderCompactRow(scroll, w, city);
     }
   }
   if (previewEntries.length > 0) {
@@ -8406,17 +8386,29 @@ function renderCityIconRightRail(mount: HTMLElement, city: City): void {
 /** Prawy panel (góra): nazwa miasta, ludność, pasek wzrostu. */
 function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView | null): void {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   mount.innerHTML =
     `<div class="civ-v-city-name">${city.name}</div>` +
-    `<div class="civ-v-city-pop">${city.population} obywateli · epoka ${epoch}</div>`;
+    `<div class="civ-v-city-pop">${city.population} obywateli · ≈ ${formatManpower(osobRazem)} · epoka ${epoch}</div>`;
   if (!view) {
     mount.appendChild(el('div', 'muted', 'Brak danych ekonomii'));
     return;
   }
+  const foodSplit = cityFoodSplit(view);
+  const tick = cfg.getEmpireFoodTick?.(city.ownerId);
+  const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
+  const fed = tickRow?.nakarmione ?? foodSplit.total >= 0;
+  const gainSlots = growthGainPerTurnSlots(city.population, view.wzrostProcent, fed, view.atPopCap);
+  const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
+  const etaTxt = view.atPopCap ? 'limit'
+    : !fed ? 'brak wzrostu'
+      : turns === 0 ? 'w tej turze'
+        : turns != null ? `za ≈ ${turns} ${pluralTur(turns)}`
+          : '—';
   const grow = el('div', 'civ-v-growth');
   grow.innerHTML =
     `<div class="civ-v-growth-lbl">WZROST · ${view.wzrostProcent}% ${loafIconHtml('civ-v-loaf-chip')}</div>` +
-    `<div class="muted" style="font-size:0.68em;margin-top:0.12em">Racja ${view.poziomRacji} · ułamek ${view.wzrostUlamkowy.toFixed(2)}</div>`;
+    `<div class="muted" style="font-size:0.68em;margin-top:0.12em">Racja ${view.poziomRacji} · postęp ${fmtDecPl(view.wzrostUlamkowy)}/1 · ${etaTxt}</div>`;
   mount.appendChild(grow);
 }
 

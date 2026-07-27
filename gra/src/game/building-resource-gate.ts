@@ -162,12 +162,10 @@ export function isAccessOnlyResourceLabel(label: string): boolean {
 }
 
 /**
- * Bramka spełniona etykietą, gdy: aktywne ŹRÓDŁO surowca w imperium (activeLabels), LUB
- * budynek-konwerter (Cegielnia/Garncarnia), LUB — dla surowców magazynowanych — zapas puli
- * państwa (`empireStock` > 0). ACCESS_ONLY puste od PYTANIE-84-R4 (Sól/Złoto/Koń = stock).
- * Dokładną ILOŚĆ kosztu budowy egzekwuje osobno `koszt_surowce` (civ-wide magazyn).
+ * Czy pojedyncza etykieta surowca jest spełniona dla RUNTIME gate (nie bramki budowy).
+ * Kanon 2026-07-28: budowa = wyłącznie magazyn państwa (`koszt_surowce` + canAffordBuildingStock).
  */
-/** Czy pojedyncza etykieta surowca jest spełniona (źródło / konwerter / zapas państwa). */
+/** Czy pojedyncza etykieta surowca jest spełniona (źródło / konwerter / zapas państwa) — runtime. */
 export function empireResourceLabelSatisfied(
   label: string,
   activeLabels: readonly string[] | undefined,
@@ -210,16 +208,19 @@ export function buildingRequiredActiveLabels(building: Pick<BuildingDef, 'id' | 
   return [...out];
 }
 
+/**
+ * Kanon 2026-07-28 (Maciej): bramka BUDOWY nie używa już dostępu do etykiety surowca
+ * (deposit/zasięg/aktywne źródło). Warunek budowy = wystarczający stan magazynu państwa
+ * dla `koszt_surowce` (building-stock-cost.ts / production.ts / cityPanel.ts).
+ * Sygnatura zachowana dla kompatybilności wywołań — zawsze true.
+ */
 export function buildingResourceGateMet(
-  building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null },
-  activeLabels: readonly string[] | undefined,
-  empireBuiltIds?: readonly string[],
-  empireStock?: Readonly<Record<string, number>>,
+  _building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null },
+  _activeLabels?: readonly string[],
+  _empireBuiltIds?: readonly string[],
+  _empireStock?: Readonly<Record<string, number>>,
 ): boolean {
-  const required = buildingRequiredActiveLabels(building);
-  if (required.length === 0) return true;
-  const active = activeLabels ?? [];
-  return required.every(label => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
+  return true;
 }
 
 /** Id budynków z bramką runtime zależną od złoża/dostępu (PYTANIE-84). */

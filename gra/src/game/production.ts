@@ -63,11 +63,11 @@ import {
 } from './braz-access';
 import { hasZelazoAccess } from './zelazo-access';
 import {
-  buildingResourceGateMet,
   CITY_BUILDING_PREREQ,
   cityBuildingPrereqMet,
   WATER_ACCESS_BUILDING_IDS,
 } from './building-resource-gate';
+import { buildingStockCost, canAffordBuildingStock } from './building-stock-cost';
 import {
   isBuildingSuppressedFromProduction,
   upgradeProductionDisplayName,
@@ -764,12 +764,6 @@ export function availableProduction(
     if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID
       && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
-      continue;
-    }
-    const gateLabels = ctx.empireActiveResourceLabels !== undefined
-      ? ctx.empireActiveResourceLabels
-      : ctx.activeResourceLabels;
-    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
       continue;
     }
     // TEMAT 8 Q2 (2026-07-24): budynek wymaga innego budynku W TYM MIEŚCIE (np. Warsztat
@@ -1472,21 +1466,10 @@ export function eraBuildingCatalog(
     const prereqOk = cityBuildingPrereqMet(
       CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade,
     );
-    // R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26, zgloszenie blokujace): ta sama luka jak
-    // REGRESJA-KOLEJNOSC powyzej, tylko dla DRUGIEJ bramki, ktorej eraBuildingCatalog nigdy nie
-    // sprawdzal -- dostep do surowca zlozowego/przetworzonego (buildingResourceGateMet) i twardy
-    // wyjatek Piec hutniczy. PYTANIE-84 U-24B: Spichlerz I bez bramki Ceramika przy budowie
-    // (brak wpisu w DEPOSIT_LINKED) — drain B6 dopiero po postawieniu (building-resource-gate).
-    // Spichlerz II nadal wymaga Soli do upgrade (DEPOSIT_LINKED). Piec hutniczy
-    // (empireHasKopalniaMiedzi). availableProduction/buildableProduction juz je odrzucaly
-    // poprawnie (linie ~765-770 wyzej) -- budynek po prostu znikal z panelu bez zadnego
-    // komunikatu, bo status tu zostawal 'ready', a "Jeszcze zablokowane" pokazuje tylko
-    // status==='locked'. Ten sam gateLabels co w availableProduction (empire-wide etykieta ma
-    // pierwszenstwo nad per-miasto, patrz komentarz tam).
-    const gateLabels = ctx.empireActiveResourceLabels !== undefined
-      ? ctx.empireActiveResourceLabels
-      : ctx.activeResourceLabels;
-    const resourceOk = buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)
+    // Kanon 2026-07-28: bramka surowcowa katalogu = magazyn państwa (koszt_surowce), nie dostęp
+    // do etykiety. Piec hutniczy: twardy wyjątek terenowy (Kopalnia miedzi w imperium).
+    const stockCost = buildingStockCost(b);
+    const resourceOk = canAffordBuildingStock(ctx.empireResourceStock, stockCost)
       && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
 
     let status: BuildingCatalogStatus = 'ready';
