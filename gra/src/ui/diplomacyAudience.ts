@@ -23,6 +23,8 @@ import {
 } from './diplomacyNegotiationModal';
 import { actionUsesTradeBasket, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { leaderName } from './leaderPortraits';
+import { renderNegotiationDealHtml } from './diplomacyDealDisplay';
+import type { ProposalPayload } from '../game/diplomacy-proposals';
 
 export interface AudienceAction {
   id: string;
@@ -164,6 +166,8 @@ export interface PendingNegotiationRow {
   summary: string;
   /** Rozszerzony opis treści oferty (koszyk PN, kwoty) — ten sam tekst co summary dla handlu. */
   dealDetails?: string;
+  /** Surowy payload — do renderu HTML z ikonami surowców. */
+  dealPayload?: ProposalPayload;
   /** Prefill koszyka przy „Kontruj" (perspektywa gracza). */
   counterInitial?: TradeBasketInitial;
   round: number;
@@ -209,6 +213,8 @@ export interface DiplomacyAudienceConfig {
    * (kolumna „Aktywne traktaty"). Brak = przycisk pozostaje wyłączony ("wkrótce").
    */
   onBreakTreaty?: (dealId: string) => void;
+  /** Podgląd kar przed dobrowolnym zerwaniem traktatu (Wiarygodność / Zaufanie). */
+  previewBreakTreatyPenalties?: (dealId: string) => DiploPenaltyPreview | undefined;
   /** C-DYP-Q1=A: gracz Przyjmuje wpis stołu (id z pendingNegotiations), w którym to jego kolej. */
   onAcceptNegotiation?: (negotiationId: string) => void;
   /** C-DYP-Q1=A: gracz Odrzuca wpis stołu. */
@@ -406,6 +412,26 @@ ${DIPLO_1E_SHARED_CSS}
 .da-negot.incoming .da-nm .dir .da-dir-ic{color:#7ad0a0;}
 .da-negot .da-meta{font-size:0.62em;color:#8a8070;}
 .da-negot .da-deal-detail{font-size:0.7em;color:#e8e0c8;line-height:1.45;margin:2px 0 4px;}
+.da-deal-table{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 2px;}
+.da-deal-col{border:1px solid rgba(232,216,138,.16);border-radius:7px;padding:6px 7px;
+  background:linear-gradient(180deg,rgba(18,22,32,.85),rgba(8,10,16,.75));min-width:0;}
+.da-deal-col-we{border-color:rgba(110,150,220,.28);}
+.da-deal-col-they{border-color:rgba(90,208,122,.32);}
+.da-deal-col-head{font-size:0.62em;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  text-align:center;padding-bottom:5px;margin-bottom:5px;border-bottom:1px solid rgba(255,255,255,.06);}
+.da-deal-col-we .da-deal-col-head{color:#8ab4e8;}
+.da-deal-col-they .da-deal-col-head{color:#7ad0a0;}
+.da-deal-col-body{display:flex;flex-direction:column;gap:4px;min-height:28px;}
+.da-deal-item{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;line-height:1.35;}
+.da-deal-res-ic{display:inline-flex;align-items:center;flex-shrink:0;opacity:.95;}
+.da-deal-res-ic svg{display:block;}
+.da-deal-amt{font-weight:600;color:#f0e8d8;}
+.da-deal-per{font-size:0.92em;color:#9ad4b0;}
+.da-deal-once{font-size:0.88em;color:#8a8070;}
+.da-deal-total{flex-basis:100%;font-size:0.82em;color:#c8b890;padding-left:0;margin-top:2px;}
+.da-deal-sched-foot{margin-top:4px;padding-top:5px;border-top:1px solid rgba(255,255,255,.06);
+  font-size:0.88em;color:#b8a888;text-align:center;}
+.da-deal-empty{color:#6a6058;font-style:italic;}
 .da-negot .da-btnrow{display:flex;gap:6px;margin-top:2px;}
 .da-negot .da-btnrow button{flex:1;font-size:0.66em;padding:5px 6px;border-radius:6px;
   border:1px solid rgba(232,216,138,.3);background:rgba(232,216,138,.06);color:#e8e0c8;cursor:pointer;font-family:inherit;}
@@ -521,6 +547,14 @@ ${DIPLO_1E_SHARED_CSS}
   font:14px 'Segoe UI',Tahoma,sans-serif;}
 .civ-diplo-modal h3{margin:0 0 10px;font-family:Georgia,serif;font-size:1em;color:#e8d88a;}
 .civ-diplo-modal p{margin:0 0 14px;line-height:1.45;color:#c8b898;}
+.civ-diplo-modal .cd-penalty-wrap{margin:0 0 14px;padding:10px 12px;border-radius:8px;
+  border:1px solid rgba(224,122,122,0.35);background:rgba(80,24,24,0.22);}
+.civ-diplo-modal .cd-penalty-title{margin:0 0 8px;font-size:12px;font-weight:700;color:#e08a8a;}
+.civ-diplo-modal .cd-penalty-list{margin:0;padding-left:1.1em;font-size:12px;line-height:1.45;color:#d8b8b8;}
+.civ-diplo-modal .cd-penalty-list li{margin:0 0 4px;}
+.civ-diplo-modal .cd-penalty-list li:last-child{margin-bottom:0;}
+.civ-diplo-modal .cd-penalty-list b{color:#f0c0c0;}
+.civ-diplo-modal .cd-penalty-list .info{color:#c8b898;font-style:italic;}
 .civ-diplo-modal .cd-modal-btns{display:flex;gap:8px;justify-content:flex-end;}
 `;
   const s = document.createElement('style');
@@ -533,7 +567,108 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-export function showWarConfirmModal(civName: string, onConfirm: () => void): void {
+/** Wspólny typ podglądu kar (gra/game/diplomacy-penalty-preview.ts). */
+export interface DiploPenaltyPreviewLine {
+  kind: 'wiarygodnosc' | 'zaufanie' | 'info';
+  delta: number;
+  reason: string;
+}
+
+export interface DiploPenaltyPreview {
+  lines: DiploPenaltyPreviewLine[];
+  wiarygodnoscTotal: number;
+  zaufanieTotal: number;
+}
+
+function signedDelta(n: number): string {
+  return n > 0 ? `+${n}` : String(n);
+}
+
+function penaltyKindLabel(kind: DiploPenaltyPreviewLine['kind']): string {
+  if (kind === 'wiarygodnosc') return 'Wiarygodność';
+  if (kind === 'zaufanie') return 'Zaufanie';
+  return '';
+}
+
+function penaltyBlockHtml(preview: DiploPenaltyPreview | undefined): string {
+  if (!preview?.lines.length) return '';
+  const items = preview.lines.map((l) => {
+    if (l.kind === 'info') {
+      return '<li class="info">' + esc(l.reason) + '</li>';
+    }
+    return '<li><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b> — '
+      + esc(l.reason) + '</li>';
+  }).join('');
+  return '<div class="cd-penalty-wrap">' +
+    '<p class="cd-penalty-title">Czy na pewno? Skutki tej decyzji:</p>' +
+    '<ul class="cd-penalty-list">' + items + '</ul></div>';
+}
+
+export interface WarConsentModalOptions {
+  civName: string;
+  previewDeclareOnly: DiploPenaltyPreview;
+  previewDeclareAndAttack?: DiploPenaltyPreview;
+  /** Domyślnie true — false w audiencji (akcja 11, brak oczekującego ataku). */
+  showAttackOption?: boolean;
+  onDeclareOnly: () => void;
+  onDeclareAndAttack?: () => void;
+}
+
+/**
+ * C-WIAR-N1-UX=A — modal trzyopcjiowy przy ataku / wypowiedzeniu wojny poza stanem wojny.
+ * (1) Wypowiedz wojnę — bez ataku w tej turze · (2) Atakuj bez wypowiedzenia — wojna + atak + N1 · (3) Anuluj.
+ */
+export function showWarConsentModal(opts: WarConsentModalOptions): void {
+  const showAttack = opts.showAttackOption !== false && opts.onDeclareAndAttack != null;
+  if (modalOverlay !== null) modalOverlay.remove();
+  modalOverlay = document.createElement('div');
+  modalOverlay.className = 'civ-diplo-modal-overlay';
+  const attackBlock = showAttack
+    ? '<div class="cd-war-opt">' +
+        '<p class="cd-war-opt-title"><strong>Atakuj bez wypowiedzenia</strong> — wojna od razu i atak w tej turze</p>' +
+        penaltyBlockHtml(opts.previewDeclareAndAttack ?? opts.previewDeclareOnly) +
+      '</div>'
+    : '';
+  modalOverlay.innerHTML =
+    '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
+      '<h3>Konflikt z ' + esc(opts.civName) + '</h3>' +
+      '<p class="cd-war-lead">Nie jesteście w stanie wojny. Wybierz, jak chcesz postąpić:</p>' +
+      '<div class="cd-war-opt">' +
+        '<p class="cd-war-opt-title"><strong>Wypowiedz wojnę</strong> — bez ataku w tej turze (karencja N1)</p>' +
+        penaltyBlockHtml(opts.previewDeclareOnly) +
+      '</div>' +
+      attackBlock +
+      '<div class="cd-modal-btns cd-war-consent-btns">' +
+        '<button type="button" class="dip-gold-btn cd-war-declare-only">Wypowiedz wojnę</button>' +
+        (showAttack
+          ? '<button type="button" class="dip-gold-btn cd-war-attack-now" style="border-color:rgba(200,64,64,.5);color:#e08a8a;">Atakuj bez wypowiedzenia</button>'
+          : '') +
+        '<button type="button" class="dip-muted-btn cd-modal-cancel">Anuluj</button>' +
+      '</div></div>';
+  document.body.appendChild(modalOverlay);
+  const close = (): void => {
+    if (modalOverlay !== null) { modalOverlay.remove(); modalOverlay = null; }
+  };
+  modalOverlay.querySelector('.cd-modal-cancel')?.addEventListener('click', close);
+  modalOverlay.querySelector('.cd-war-declare-only')?.addEventListener('click', () => {
+    close();
+    opts.onDeclareOnly();
+  });
+  if (showAttack) {
+    modalOverlay.querySelector('.cd-war-attack-now')?.addEventListener('click', () => {
+      close();
+      opts.onDeclareAndAttack!();
+    });
+  }
+  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
+}
+
+/** @deprecated Użyj showWarConsentModal — zostawione dla kompatybilności (2 przyciski). */
+export function showWarConfirmModal(
+  civName: string,
+  onConfirm: () => void,
+  penaltyPreview?: DiploPenaltyPreview,
+): void {
   if (modalOverlay !== null) modalOverlay.remove();
   modalOverlay = document.createElement('div');
   modalOverlay.className = 'civ-diplo-modal-overlay';
@@ -541,6 +676,7 @@ export function showWarConfirmModal(civName: string, onConfirm: () => void): voi
     '<div class="civ-diplo-modal" role="dialog" aria-modal="true">' +
       '<h3>Wypowiedzieć wojnę?</h3>' +
       '<p>Na pewno wypowiadasz wojnę <strong>' + esc(civName) + '</strong>?</p>' +
+      penaltyBlockHtml(penaltyPreview) +
       '<div class="cd-modal-btns">' +
         '<button type="button" class="dip-muted-btn cd-modal-cancel">Anuluj</button>' +
         '<button type="button" class="dip-gold-btn cd-modal-ok" style="border-color:rgba(200,64,64,.5);color:#e08a8a;">Tak</button>' +
@@ -561,20 +697,17 @@ export function showWarConfirmModal(civName: string, onConfirm: () => void): voi
  */
 export function showBreakTreatyConfirmModal(
   treatyLabel: string,
-  penaltyLabel: string | undefined,
+  penaltyPreview: DiploPenaltyPreview | undefined,
   onConfirm: () => void,
 ): void {
   if (modalOverlay !== null) modalOverlay.remove();
   modalOverlay = document.createElement('div');
   modalOverlay.className = 'civ-diplo-modal-overlay';
-  const penaltyLine = penaltyLabel
-    ? '<p style="color:#e08a8a">Kara: ' + esc(penaltyLabel) + '</p>'
-    : '';
   modalOverlay.innerHTML =
     '<div class="civ-diplo-modal" role="dialog" aria-modal="true">' +
       '<h3>Zerwać traktat?</h3>' +
       '<p>Na pewno zrywasz: <strong>' + esc(treatyLabel) + '</strong>?</p>' +
-      penaltyLine +
+      penaltyBlockHtml(penaltyPreview) +
       '<div class="cd-modal-btns">' +
         '<button type="button" class="dip-muted-btn cd-modal-cancel">Anuluj</button>' +
         '<button type="button" class="dip-gold-btn cd-modal-ok" style="border-color:rgba(200,64,64,.5);color:#e08a8a;">Zerwij</button>' +
@@ -957,7 +1090,20 @@ function pendingNegotiationsColumnHtml(st: DiplomacyAudienceState): string {
     const cls = 'da-negot' + (r.direction === 'incoming' ? ' incoming' : '');
     const dirIcon = r.direction === 'incoming' ? dipBrandIconHtml('chip-warning', 11, 'da-dir-ic') : '';
     const dirLabel = r.direction === 'incoming' ? 'Ich propozycja — czeka na Ciebie' : 'Twoja propozycja';
-    const expLabel = r.expiresInTurns <= 0 ? 'wygasa w tej turze' : `ważna jeszcze ${r.expiresInTurns} tur`;
+    const expLabel = r.expiresInTurns <= 0
+      ? 'wygasa w tej turze'
+      : `ważna jeszcze ${r.expiresInTurns} ${r.expiresInTurns === 1 ? 'turę' : 'tur'}`;
+    const roundLabel = `Runda negocjacji ${r.round} z ${r.maxRounds}`;
+    const dealHtml = r.dealPayload
+      ? renderNegotiationDealHtml(r.dealPayload, {
+        incoming: r.direction === 'incoming',
+      })
+      : '';
+    const dealBlock = dealHtml
+      ? '<div class="da-deal-detail">' + dealHtml + '</div>'
+      : (r.dealDetails || r.summary
+        ? '<div class="da-deal-detail da-deal-plain">' + esc(r.dealDetails || r.summary) + '</div>'
+        : '');
     const btns = r.direction === 'incoming'
       ? (
         '<div class="da-btnrow">'
@@ -975,10 +1121,8 @@ function pendingNegotiationsColumnHtml(st: DiplomacyAudienceState): string {
     return (
       '<div class="' + cls + '">' +
         '<div class="da-nm"><span class="dir">' + dirIcon + esc(dirLabel) + '</span>' + esc(r.actionLabel) + '</div>' +
-        (r.dealDetails || r.summary
-          ? '<div class="da-deal-detail">' + esc(r.dealDetails || r.summary) + '</div>'
-          : '') +
-        '<div class="da-meta">runda ' + r.round + '/' + r.maxRounds + ' · ' + esc(expLabel) + '</div>' +
+        dealBlock +
+        '<div class="da-meta">' + esc(roundLabel) + ' · ' + esc(expLabel) + '</div>' +
         btns +
       '</div>'
     );
@@ -1137,7 +1281,7 @@ function render(): void {
       const treaty = (st.activeTreaties ?? []).find(t => t.id === dealId);
       showBreakTreatyConfirmModal(
         treaty?.label ?? 'Traktat',
-        treaty?.breakPenaltyLabel,
+        cfg.previewBreakTreatyPenalties?.(dealId),
         () => { cfg!.onBreakTreaty?.(dealId); },
       );
     });

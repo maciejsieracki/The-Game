@@ -714,7 +714,7 @@ import {
 } from './ui/diplomacyPanel';
 import {
   showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
-  showWarConfirmModal, requestAutoCounterNegotiation,
+  showWarConsentModal, requestAutoCounterNegotiation,
   type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
 } from './ui/diplomacyAudience';
 import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
@@ -5889,9 +5889,15 @@ async function boot(): Promise<void> {
         return;
       }
       const civName = ownerDiploLabel(targetOwnerId);
-      showWarConfirmModal(civName, () => {
-        if (playerDeclareWarOnOwner(targetOwnerId)) onAllowed();
-      }, buildWarPenaltyPreview(targetOwnerId, true));
+      showWarConsentModal({
+        civName,
+        previewDeclareOnly: buildWarPenaltyPreview(targetOwnerId, false),
+        previewDeclareAndAttack: buildWarPenaltyPreview(targetOwnerId, true),
+        onDeclareOnly: () => { playerDeclareWarOnOwner(targetOwnerId); },
+        onDeclareAndAttack: () => {
+          if (playerDeclareWarOnOwner(targetOwnerId)) onAllowed();
+        },
+      });
     }
 
     /** Panel kontekstowy mapy (heks + miasto) — po wyborze „Informacja" przy obcym mieście. */
@@ -11348,9 +11354,12 @@ async function boot(): Promise<void> {
       if (actionNeedsNegotiation(actionId)) return;
 
       if (actionId === '11') {
-        showWarConfirmModal(civName, () => {
-          playerDeclareWarOnOwner(ownerId);
-        }, buildWarPenaltyPreview(ownerId, false));
+        showWarConsentModal({
+          civName,
+          previewDeclareOnly: buildWarPenaltyPreview(ownerId, false),
+          showAttackOption: false,
+          onDeclareOnly: () => { playerDeclareWarOnOwner(ownerId); },
+        });
         return;
       }
 

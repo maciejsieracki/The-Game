@@ -10,7 +10,7 @@
 |----|--------|-------------------|------------------|
 | **C-WIAR-N4-AI** | 🔵 W TRAKCIE | **B** (2026-07-27) | `C-WIAR-N4-AI.md` |
 | **C-WIAR-D4** | 🟢 WDROŻONA | **A** (2026-07-27) | `C-WIAR-D4.md` |
-| **C-WIAR-N1-UX** | ⏸ OTWARTE | — | `C-WIAR-N1-UX.md` |
+| **C-WIAR-N1-UX** | 🟢 WDROŻONA | **A** (2026-07-27) | `C-WIAR-N1-UX.md` |
 | **P-AI-006** | ⏸ OTWARTE | — | `P-AI-006.md` |
 | **P-AI-007** | ⏸ OTWARTE | — | `P-AI-007.md` |
 | **P-AI-008** | ⏸ OTWARTE | — | `P-AI-008.md` |

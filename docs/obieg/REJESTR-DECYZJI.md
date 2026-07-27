@@ -46,6 +46,7 @@
 |---|---|---|---|---|---|---|
 | **C-WIAR-N4-AI** | 2026-07-27 | **B** — AI może odmówić (heurystyka: wojna / słaba moc / pokojowy / Zaufanie &lt;20); N4 −15 | D | 🔵 **W TRAKCIE** | `alliance-war-obligation.ts` · test 14/14 · `main.ts` | czeka deploy ROBOCZA |
 | **C-WIAR-D4** | 2026-07-27 | **A** — Dźwignia 4: start Zaufania + `round(W/20)` per strona (dzielnik 20) | D | 🟢 **WDROŻONA** | `diplomacy-credibility.ts` · `main.ts` · wiarygodnosc-test 90/90 | bez deploy ROBOCZA |
+| **C-WIAR-N1-UX** | 2026-07-27 | **A** — modal 3 opcje: wypowiedz / atak bez ostrzeżenia / anuluj + podgląd kar | D+E | 🟢 **WDROŻONA** | `showWarConsentModal` · `main.ts` withPlayerWarConsent | bez deploy ROBOCZA |
 | **B-PALAC-TIER** | 2026-07-24 | Pałac 3 tiery: I=drewno, II=drewno+kamień, III=drewno+kamień+cegła; bonus +50%/tier (×1,5) | B | 🟢 **WDROŻONA** | `buildings.json` · `cityHasPalacLine()` · robocza md5 `a85e7d3f…` | upgradeFrom łańcuch |
 | **B-RESEARCH-COST-MODEL** | 2026-07-24 | JSON pochłania dawniejszy global ×2; `GLOBAL_RESEARCH_COST_MULT=1`; Obróbka drewna/Murarstwo JSON=5 → 5/10/20 PN wg tempa | B | 🟢 **WDROŻONA** | `tech.json` · `difficulty-cost.ts` · robocza md5 `c77d2bc9…` | dyplomacja: JSON×tempo only |
 | **B-MP-Q1** | 2026-07-27 | **Q1a=B** % maxHP/turę (25/20/15) · **Q1b=A** częściowe leczenie · **Q1c** brak uzupełnienia w oblężonym mieście | B | 🟢 **WDROŻONA** | `manpower.ts` `tickManpowerUnitReplenishment` · `miasto-params.json` · `manpower-test.cjs` 62/62 · robocza md5 `f694dcba` (FALA 31) | garnizon przed polem — osobny temat |
