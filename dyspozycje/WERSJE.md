@@ -11,7 +11,18 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `f694dcba` — 2026-07-27 01:45 · FALA 31: WOJNA HUD + KLIK MAPY + DYPLO + MANPOWER HP — **AKTUALNA**
+## ROBOCZA `e7c0655d` — 2026-07-27 09:56 · FALA 32: DYPLO STATY + FOG CHŁOPKI + MUZYKA FADE — **AKTUALNA**
+- md5 (pelne): `e7c0655d6bee033503f6bc26c86534b2` · stempel: `ROBOCZA · 2026-07-27 09:56`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).
+- **Co nowego (sesja F32):**
+  - **Dyplomacja — statystyki:** karta gracza: moc/ranking/ludność/armia/wiarygodność; karty cywilizacji: ich ludność/armia + ich szacunek + nasz szacunek/zaufanie/relacja.
+  - **Mapa — fog chłopek:** `syncWorkerFieldOverlayFog` ukrywa kolorowe chłopki na czarnym nieodkrytym terenie.
+  - **Muzyka menu:** fade-in 5 s 0→100%, usunięty opóźniony start.
+  - **Dokumentacja:** handoff STAN-PRACY, KANAL-PRACA, REJESTR-DECYZJI, MACIEJ-GOTOWE, EKONOMIA-manpower-pobor.
+- **Bramki:** tsc 0 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41.
+
+## ROBOCZA `f694dcba` — 2026-07-27 01:45 · FALA 31: WOJNA HUD + KLIK MAPY + DYPLO + MANPOWER HP — **ZASTĄPIONA**
 - md5 (pelne): `f694dcba20acc6ed63866da4e3cd4672` · stempel: `ROBOCZA · 2026-07-27 01:45`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock).

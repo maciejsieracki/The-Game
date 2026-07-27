@@ -340,7 +340,7 @@ import type { Hex } from './types/hex';
 import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen } from './ui/cityPanel';
 import { tryCloseCityUxFrameFromKeyboard } from './ui/cityUxFrame';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
-import { syncWorkerFieldOverlay, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
+import { syncWorkerFieldOverlay, syncWorkerFieldOverlayFog, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
 import { isPointOverCityPanelUi } from './ui/cityUxFrame';
 import {
   buildHexContextTooltipHtml,
@@ -455,7 +455,7 @@ import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene'
 import type { WorldTerrainInput } from './battle/battle-terrain';
 import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
-  startIntroMusic, startIntroMusicDelayed, stopIntroMusic,
+  startIntroMusic, startIntroMusicWithFadeIn, stopIntroMusic,
   startAmbience, stopAmbience, setAmbienceVolume, setAmbienceWaterView,
   startMarch, stopMarch, setMarchVolume, playMarchAccent,
 } from './audio/muzyka-antyczna';
@@ -3695,6 +3695,11 @@ async function boot(): Promise<void> {
           tier: relationTier(rel),
           zaufanie: Math.round(Math.max(0, Math.min(100, rel.zaufanie ?? 0))),
           respekt: objectiveRespektPctToward(otherId),
+          theirRespekt: computeRespekt(objectivePowerForOwner(otherId), objectivePowerForOwner(0)),
+          population: cities.filter(c => c.ownerId === otherId).reduce((s, c) => s + c.population, 0),
+          armyCount: units.filter(u => u.ownerId === otherId).length,
+          cultureLabel: civCultureLabelForKey(civKeyForOwner(otherId)),
+          epochLabel: epochLabelForOwner(otherId),
           contactEstablished: diplomaticContactEstablished.has(otherId),
           activeTreaties: activeTreatyLabelsForPair(activeDeals, 0, otherId),
         });
@@ -3715,10 +3720,7 @@ async function boot(): Promise<void> {
       const lines = formatDiploPlayerSummaryLines({
         militaryPower: objectivePowerForOwner(0),
         powerRank: buildAbsolutePowerRank(),
-        treasuryGold: player.skarbiec,
-        goldPerTurn: _lastPieniadzRate,
-        culturePerTurn: _lastKulturaRate,
-        sciencePerTurn: _lastNaukaRate,
+        wiarygodnosc: getWiarygodnosc(0),
         population: playerCities.reduce((s, c) => s + c.population, 0),
         armyCount: units.filter(u => u.ownerId === 0).length,
       });
@@ -5875,6 +5877,7 @@ async function boot(): Promise<void> {
         syncResourceOverlayFog(vis, exploredForRender);
         syncImprovementMeshFog(vis, exploredForRender);
         syncSettlementMeshFog(vis, exploredForRender);
+        syncWorkerFieldOverlayFog(workerFieldOverlayGroup, vis, exploredForRender, true);
         syncUnitsRender(visibleUnitsList(vis));
         cityRenderer.applyFogVisibility(vis, true, 0);
         wonderRenderer.applyFogVisibility(vis, true);
@@ -5883,6 +5886,7 @@ async function boot(): Promise<void> {
         syncResourceOverlayFog(ALL_KEYS, ALL_KEYS);
         syncImprovementMeshFog(ALL_KEYS, ALL_KEYS);
         syncSettlementMeshFog(ALL_KEYS, ALL_KEYS);
+        syncWorkerFieldOverlayFog(workerFieldOverlayGroup, ALL_KEYS, ALL_KEYS, false);
         syncUnitsRender(visibleUnitsList(ALL_KEYS));
         cityRenderer.applyFogVisibility(ALL_KEYS, false, 0);
         wonderRenderer.applyFogVisibility(ALL_KEYS, false);
@@ -6091,13 +6095,9 @@ async function boot(): Promise<void> {
     }
     /** Czy playlista intro odtworzyła już swój pierwszy utwór w tej sesji
      *  strony. Wyłącznie NA STARCIE STRONY (pierwsze wejście do
-     *  openStartupMainMenu(), wprost z boot(), zanim przeglądarka na pewno
-     *  skończyła ładować/renderować) start jest opóźniony — patrz
-     *  resumeIntroMusic() niżej. Każdy KOLEJNY powrót do menu (z gry, po
-     *  bitwie itd.) nie ma problemu z ładowaniem, więc gra od razu, jak
-     *  dotychczas. Zgłoszenie właściciela: "przesuń start muzyki w menu
-     *  głównym o dwie, trzy sekundy, bo ścina początek, zanim się załaduje
-     *  przeglądarka" (R-MUZYKA-KONTEKST). */
+     *  openStartupMainMenu(), wprost z boot()) start ma fade-in 0→100% —
+     *  patrz resumeIntroMusic() niżej. Każdy KOLEJNY powrót do menu (z gry, po
+     *  bitwie itd.) gra od razu na pełnej głośności, jak dotychczas. */
     let introMusicStartedOnce = false;
     /** Uruchamia (lub wznawia) playlistę intro. Wołane za każdym razem, gdy
      *  pokazuje się ekran przedgrowy (patrz openStartupMainMenu()). CELOWO
@@ -6108,7 +6108,7 @@ async function boot(): Promise<void> {
     function resumeIntroMusic(): void {
       if (!introMusicStartedOnce) {
         introMusicStartedOnce = true;
-        startIntroMusicDelayed(UI_PARAMS.menu.muzyka_opoznienie_startu_ms);
+        startIntroMusicWithFadeIn(UI_PARAMS.menu.muzyka_fade_in_ms);
       } else {
         startIntroMusic();
       }
@@ -6611,6 +6611,12 @@ async function boot(): Promise<void> {
       });
       if (workedByOwner.size === 0) return;
       workerFieldOverlayGroup = syncWorkerFieldOverlay(scene, null, map, workedByOwner, 0);
+      const useFogRender = fogOn || revealAllLand;
+      if (useFogRender) {
+        syncWorkerFieldOverlayFog(workerFieldOverlayGroup, currentVisible(), fogExploredForRender(), true);
+      } else {
+        syncWorkerFieldOverlayFog(workerFieldOverlayGroup, ALL_KEYS, ALL_KEYS, false);
+      }
     }
 
     function toggleWorkerOverlayOnMap(): void {

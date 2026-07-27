@@ -1,6 +1,6 @@
 # STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-07-24** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-07-27** · Projekt: Civ „The Game"
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -26,7 +26,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-24 (NAJNOWSZY — sesja surowce/UI/miasta-państwa):** deploy ROBOCZA **`8dc09b8a`** (FALA 6.2, bundel md5 `8dc09b8ab2f709b567b65489f087e9a6`). `main` = `5a01ca6`, drzewo CZYSTE, **NIC nie jest w toku**. Cała praca sesji opisana w **sekcji 3a-3** poniżej. Skrót łańcucha deployów 2026-07-24: FALA 5 `c676b681` (surowiec jednostek + AI kupuje za złoto + fix bramki) → FALA 6 `666b2b75` (ikony surowców v4 + magazyn 500 + UI surowców + Cuda w mieście + proaktywność MP + AI-rush strojalny) → FALA 6.1 `3db42857` (cała dyplomacja MP pod suwak trudności) → FALA 6.2 `8dc09b8a` (handel surowcami z MP + portret MP=symbol kultury). Ostatnia decyzja: **R-MP-PORTRET = A** (miasta-państwa zostają z symbolem kultury — potwierdzone podglądem, bez zmian w kodzie). **Rejestr wszystkich próśb sesji: [`dyspozycje/REJESTR-PROSB-I-ZADAN.md`](dyspozycje/REJESTR-PROSB-I-ZADAN.md).**
+**Stan na 2026-07-27 (NAJNOWSZY — sesja UI miasta / mapa / dyplomacja / Manpower HP):** deploy ROBOCZA **`f694dcba`** (FALA 31, commit `53b9901`). Drzewo CZYSTE po deployu, **NIC nie jest w toku**. Cała praca sesji opisana w **sekcji 3a-5** poniżej. Skrót łańcucha deployów 2026-07-27: FALA 29 `e0238cc8` (`ba4dabd`) panel miasta UX + hex dblclick → FALA 30 `d9f2c1fa` (`f4a8d7c`) dyplomacja handel + sentry + AI perf → FALA 31 `f694dcba` (`53b9901`) wojna HUD + klik mapy + dyplo player card + **B-MP-Q1** HP heal z Manpower. POLE-BITWY: build pominięty (OneDrive lock). **Rejestr wersji:** [`dyspozycje/WERSJE.md`](dyspozycje/WERSJE.md).
+
+**Poprzedni stan (2026-07-24 — sesja surowce/UI/miasta-państwa):** deploy ROBOCZA **`8dc09b8a`** (FALA 6.2). Skrót: FALA 5→6.2 (surowce jednostek, magazyn 500, handel MP, portret MP=symbol kultury). Szczegóły w **sekcji 3a-3**.
 
 **Poprzedni stan (2026-07-23, wieczór, przebudowa surowców):** deploy ROBOCZA **`aa3c9b06`** (fala 3) — bydło/owce/lama NIE surowce + licznik magazynów w panelu imperium + CUDA-AI (AI buduje cuda) + #15 Ludy Morza (embarkacja+rajdy) + UMOWA-B (trasy wymagają traktatu). Branch na `f136c09`: model surowców (ceramika=dostęp, produkcja bez pracowników, licznik+tempo, stawki Tartak/Kamieniołom/Glinianka 4 · Kopalnie 2) + docs (`07bc172`: Civpedia+Poradnik+wikiBundle) — NIE w bundlu jeszcze, wejdą **falą 4**. **W TOKU (2 subagenty):** usunięcie Paliwa/Mielerza + bonusy Stolarni(+10% drewno civ)/Warsztatu(+10% kamień civ)/Garncarni(+10% żywność lok.) + koszty budynków; oraz symulacja bilansu surowców. **Wszystkie decyzje surowce/ekonomia + stan prac: [`dyspozycje/DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md`](dyspozycje/DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md).** ⛔ **ZASADA NADRZĘDNA (2026-07-24): PARYTET AI** — każda zmiana dla gracza obowiązuje tak samo dla AI, kod ownerId-agnostic (szczegóły w rejestrze decyzji, sekcja „ZASADA NADRZĘDNA"). Fala 4 zdeployowana `cd42837f` (przebudowa ekonomii surowców). W TOKU: magazyny=pula państwa (100+100/Magazyn) + handel surowcami w dyplomacji (za pieniądz/Pracę, jednorazowo lub przez X tur). OTWARTE (nie istnieje w kodzie, do decyzji): osobny poziom trudności per państwo/miasto vs globalny — dziś trudność jest jedna globalna.
 
@@ -64,10 +66,13 @@ git status --short
 
 ## 3. ✅ ZROBIONE I DZIAŁA W GRZE (zdeployowane do ROBOCZA)
 
-**Ostatni deploy: ROBOCZA `20239659`** (2026-07-21 sesja 2, na GitHubie). Łańcuch ostatnich deployów:
+**Ostatni deploy: ROBOCZA `f694dcba`** (2026-07-27, FALA 31). Łańcuch ostatnich deployów tej sesji:
+`e0238cc8` (FALA 29, panel miasta UX) → `d9f2c1fa` (FALA 30, dyplomacja+sentry+AI perf) → **`f694dcba`** (FALA 31, wojna HUD+klik mapy+dyplo+Manpower HP).
+
+*(historyczny łańcuch 2026-07-21):* ROBOCZA `20239659`. Łańcuch:
 `374c1067` → `a756d893` (podwojenie państw/miast + fix rzek + PPM) → `8bd30f48` (miasta-państwa aktywne) → `41d0a2ea` (przejęcie stolicy rdzeń) → `7c65681a` (przejęcie stolicy: przenieś + Power) → `0b59bf29` (AI buduje ulepszenia terenu) → `0251a5cf`/`454d7c52` (posiłki miast-państw wg trudności) → **`20239659`** (dyplomacja miast-państw wg trudności). Wcześniej (sesja 1): `74d85bc2` (mapa wybrzeże z morza) → `50448964` (render ujścia rzek) → `374c1067` (grafika żelaza + audio).
 
-### 3a. CO WESZŁO 2026-07-21 (najnowsze)
+### 3a. CO WESZŁO 2026-07-21
 
 **GRAFIKA-ŻELAZO** *(zlecenie integratora #1 z 2026-07-10 — czekało 10 dni na werdykt właściciela; dyspozycja `DYSPOZYCJA-GRAFIKA-JEDNOSTKI.md` §2b)*:
 - 4 nowe moduły w `gra/src/render/`: `jednostki-z1-mezopotamia`, `jednostki-z2-srodziemne`, `jednostki-z3-plemiona`, `galera-model` — **11 modeli jednostek żelaza** + **nowa Galera** (oko apotropaiczne, trójzębny taran, żagiel z emblematem gracza, 8 wioseł/burta) zastępująca ~90 linii geometrii ad-hoc.
@@ -179,6 +184,60 @@ wszystkich plikach, gdzie takie zasady żyją.
 
 ---
 
+### 3a-5. CO WESZŁO 2026-07-27 (sesja UI miasta / mapa / dyplomacja / Manpower — NAJNOWSZE)
+
+Sesja lokalna (Windows), trzy deploye FALA 29→31, wszystkie VERIFY OK. POLE-BITWY: build pominięty przy każdym deployu (OneDrive lock). Pełny zapis problem→przyczyna→naprawa poniżej — format dla kolejnych agentów.
+
+#### Deploye
+
+| FALA | md5 | commit | Zakres |
+|------|-----|--------|--------|
+| **29** | `e0238cc8` | `ba4dabd` | Nagłówek miasta flank · fix „i szczegóły" · rekrutacja bez HP w podtytule · kolory wymagań budynków · sekcja budynków 2× · hex detail dblclick · pieczęć build ukryta + ℹ toggle |
+| **30** | `d9f2c1fa` | `f4a8d7c` | Modal handlu dyplomacji (koszyk+tury) · sentry odznacza jednostkę · cache AI w pętli handlu |
+| **31** | `f694dcba` | `53b9901` | Wojna tylko w Wydarzeniach (bez paska) · klik mapy pickMapTarget · karta „Twoje państwo" · **B-MP-Q1** HP heal z Manpower |
+
+#### Panel miasta (FALA 29)
+
+| Problem | Przyczyna | Naprawa | Pliki |
+|---------|-----------|---------|-------|
+| Ikony zakładek nieklikalne | `.civ-ux-top` blokował `pointer-events` prawego raila | `pointer-events: none` na stosie top + panele `z-index: 410` | `cityPanel.ts`, CSS scope `.civ-cs` |
+| „i szczegóły" nie otwiera panelu | Ten sam konflikt warstw + `<span>` zamiast przycisków | Przyciski zamiast spanów + fix z-index | `cityPanel.ts`, `empireDetailPanel.ts` |
+| Zły układ nagłówka | Zasoby nie flankowały nazwy miasta | Layout flank: Praca/Żywność/Skarbiec lewo, Kultura/Religia/Nauka prawo; exit niżej | `cityPanel.ts` |
+| Wymagania budynków — białe chipy | CSS tylko pod `.civ-cs`, nie `.civ-detail-scope` | Rozszerzenie selektorów CSS na `.civ-detail-scope` | `cityPanel.ts` / style scope |
+| Pieczęć build zasłania UI | Overlay widoczny domyślnie | Ukryty domyślnie + toggle ℹ (`buildStampToggle.ts`) | `buildStampToggle.ts`, `main.ts` |
+| Sekcja „Posiadane budynki" za mała | Stała wysokość paska | 2× wysokość `.civ-v-build-owned-bar` | CSS panelu miasta |
+| Rekrutacja — zbędne HP w podtytule | Karta jednostki pokazywała staty w subtitle | Usunięte HP/stats z subtitle | `unitRecruitCard.ts` |
+
+#### Mapa / bitwa (FALA 29–31)
+
+| Problem | Przyczyna | Naprawa | Pliki |
+|---------|-----------|---------|-------|
+| Panel szczegółów heksu na single-click | Handler single-click | Double-click na heks (`main.ts`) | `main.ts` |
+| Sentry (Czuwaj) nie odznacza | Brak `clearPlayerUnitSelection` po sentry | Wywołanie `clearPlayerUnitSelection()` w handlerze sentry | `main.ts` |
+| Klik mapy trafia w zły cel / miss | Pick tylko terenu; offset jednostek na miastach; fallback y=0 | `pickMapTarget`, `pickUnitIdAt`, płaszczyzna wysokości terenu | `picker.ts`, `units.ts`, `main.ts` |
+
+#### Dyplomacja (FALA 28–31)
+
+| Problem | Przyczyna | Naprawa | Pliki |
+|---------|-----------|---------|-------|
+| Modal handlu pusty/zamrożony | Zły modal dla akcji 5 | Koszyk handlu + wybór tur + podsumowania + Esc | `diplomacyAudience.ts`, `diplomacyTradeBasket.ts` |
+| Bałagan paska wojny (czerwone zakładki per-cyw) | Stały pasek wojny w HUD | Usunięty pasek; wojna tylko w panelu Wydarzenia (`warEventLog`) | `hud.ts`, `main.ts` |
+| Karta „Twoje państwo" — nadmiar | Pokazywała traktaty/wojny | Uproszczona: moc/skarbiec/stawki/nauka/ludność/armia (bez traktatów/wojen) | `diplomacyPanel.ts` / audience |
+| Chipy paktów na liście cyw | Brak wizualizacji paktów | Chipy paktów na kartach cywilizacji (FALA 28) | `diplomacy-display.ts`, `diploListHud.ts`, `diploUiSkin.ts` |
+
+#### AI / ekonomia (FALA 30–31)
+
+| Problem | Przyczyna | Naprawa | Pliki |
+|---------|-----------|---------|-------|
+| Wolne tury AI (FALA 23+) | O(N²) skany handlu dyplomacji | Cache + early skip w pętli AI | `main.ts` |
+| **B-MP-Q1** — brak uzupełniania HP z Manpower | Mechanizm nie istniał | % max HP/turę wg trudności (25/20/15); częściowe MP; brak heal w oblężonym mieście | `manpower.ts`, `miasto-params.json`, `turn-economy.ts` |
+
+**Decyzja B-MP-Q1 (Maciej 2026-07-27):** Q1a=B (% maxHP), Q1b=A (częściowe leczenie), Q1c=brak w oblężeniu. Test: `manpower-test.cjs` **62/62**. Dokumentacja: [`dyspozycje/_scalone/EKONOMIA/EKONOMIA-manpower-pobor.md`](dyspozycje/_scalone/EKONOMIA/EKONOMIA-manpower-pobor.md) §Faza 3.
+
+**Bramki sesji (FALA 31):** tsc 0 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41 · logic **207/208** (pre-istniejący garnizon).
+
+---
+
 ## 4. ✅ CO WESZŁO W SESJI 2026-07-20 (szczegóły + decyzje)
 
 Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach — NIE pytaj o nie ponownie (§9).
@@ -200,7 +259,9 @@ Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach �
 
 ## 5. ⏳ W TRAKCIE
 
-**2026-07-24 — NIC NIE JEST W TOKU** po deployu FALA 6.2 `8dc09b8a` i commicie dokumentacyjnym `5a01ca6`. Drzewo czyste, wszystkie tematy sesji zamknięte. Otwarte pozycje to wyłącznie strojenie po playteście (stawki AI-rush, dystans drewna) i rzeczy zewnętrzne (ikona konia + portrety ANTYK od Design/właściciela) — nic nie blokuje nowej pracy.
+**2026-07-27 — NIC NIE JEST W TOKU** po deployu FALA 31 `f694dcba`. Drzewo czyste, wszystkie tematy sesji F29–F31 zamknięte i zdeployowane. Otwarte pozycje to wyłącznie: pre-istniejący fail `logic-test` garnizon (207/208), testy generatora mapy (`relief-grid`, `fair-play-grid` — osobny agent), POLE-BITWY bundle (OneDrive lock). Nic nie blokuje nowych tematów z §8.
+
+*(historyczny) 2026-07-24 — NIC NIE JEST W TOKU po FALA 6.2 `8dc09b8a`.*
 
 **(historyczny) 2026-07-23 — NIC NIE JEST W TOKU po deployu `6bb7fedc`** (faza 3 HUD, preBattle i dyplomacja ZDEPLOYOWANE; poniższy wpis historyczny) — HUD bitwy TW-v5 FAZA 3 w toku (sesja chmurowa, subagent): C-12 „Koniec bitwy" + C-23 „Szczegóły" wg makiety Design `POLE-BITWY-TW-v5` (klatki 4–5), unifikacja paneli 70%+blur, ikonowy dolny toolbar 46×46 z podpisem na hover, karty rosteru z medalionem typu. Dotyka: `gra/src/battle/battleScene.ts`, `battleHudTheme.ts`, `endDetails1E.ts`, `endScreen1E.ts`. Fazy 1–2 są zacommitowane (`0f1455e`, `4726e97`) i ZDEPLOYOWANE (`2c19fcb3`). Jeśli widzisz niezacommitowane zmiany w tych plikach — to faza 3, nie nadpisuj.
 
@@ -250,7 +311,9 @@ node tools/tech-tree-test.cjs        # 19/19
 node tools/research-test.cjs         # 33/33
 node tools/unit-replace-test.cjs     # 10/10
 node tools/map-gen-regression-test.cjs   # determinizm A=B + 0 rzek bez ujścia
-node tools/logic-test.cjs            # 208/208  (203/203 naprawione 2026-07-20; porażka mapgen-gliny naprawiona 2026-07-25, R-MAPGEN-GLINA)
+node tools/logic-test.cjs            # 207/208  (1 pre-istniejący fail garnizon — NIE regresja sesji F29–31)
+node tools/manpower-test.cjs         # 62/62    (FALA 31, B-MP-Q1 HP heal)
+node tools/picker-test.cjs           # 140/140  (FALA 31, pickMapTarget)
 node tools/combat-test.cjs           # 6/6      (NAPRAWIONE 2026-07-20)
 node tools/barbarians-test.cjs       # 74/74
 node tools/villages-test.cjs         # 31/31
@@ -266,7 +329,8 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 
 **⚠️ KOREKTA starego handoffu:** notatka o „21 porażkach `logic-test`" i „`combat-test` rzuca wyjątek" jest **NIEAKTUALNA** — oba **naprawione 2026-07-20** i zielone (203/203, 6/6). Zweryfikowane na baseline.
 
-**Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji) — stan 2026-07-26 (audyt weryfikacyjny):**
+**Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji) — stan 2026-07-27 (sesja F29–31):**
+- `logic-test.cjs` → **207/208** — 1 fail **garnizon** (pre-istniejący przed sesją F29–31; potwierdzony przy każdym deployu F29/F30/F31).
 - `currency-test.cjs` → **5 porażek** (dot. `pieniadzZPracy`/Efekt2 i mnożnika per-cyw). Zweryfikowane identycznie na baseline `git stash`.
 - `map-gen-regression-test.cjs` — progi czasowe „AC" (generacja <5s/<15s) FAIL na wolnej maszynie = pomiar wydajności, nie regresja.
 - **KOREKTA 2026-07-26:** `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs`, `upgrade-budynki-test.cjs`, `deposit-building-gate-test.cjs` figurowały tu jako czerwone (wpis 2026-07-25) — **audyt zweryfikował przez faktyczne uruchomienie z `gra/`, że wszystkie pięć są dziś ZIELONE**: `upgrade-budynki-test.cjs` 48/48, `deposit-building-gate-test.cjs` 34/34, `akwedukt-popcap-test.cjs` 5/5, `auto-manage-test.cjs` 29/29, `growthmult-compound-test.cjs` 24/24. Zdjęte z listy.
@@ -275,6 +339,7 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 - `map-deposits-era-test.cjs` — **był przestarzały** (asercjonował starą regułę terenu złóż: miedź na Górach), sprzeczny z regułą obowiązującą od 2026-07-25 (miedź na **Wzgórzach**, żelazo na **Górach**, `gen-helpers.ts:6734,6740`). **Naprawiony 2026-07-26** — zaktualizowano asercje testu do obowiązującej reguły, dziś **16/16 zielony**.
 
 **Inne znane problemy / długi:**
+- **POLE-BITWY bundle** — przy deployach F29–F31 build pominięty (OneDrive lock). Bundel bitewny w `gra-robocza/` może być niezsynchronizowany z ROBOCZA główną.
 - **Bug rzeka↔mgła** — rzeka znika przy budowie miasta, wraca po wyłączeniu mgły wojny. ⚠️ Możliwe, że zmiana „wybrzeże=woda" (2026-07-20) to zmieniła — **do weryfikacji wzrokowej**.
 - **Panele Excel** — kierunek jednostronny JSON→Excel; nie odpalać `export-*.py` (§2).
 - **„Zastąp"** — nie zweryfikowano wzrokowo ścieżki „jednostka w polu poza miastem" ani blokady przy braku środków.
@@ -379,6 +444,9 @@ Maciej (dosłownie): „Każdy poziom jest dla następnej epoki… Jak będziemy
 - **Handel surowcami z MP (`R-MP-HANDEL-SUROWCE`): A** — pełny parytet: gracz↔MP i AI↔MP, jednorazowo + cyklicznie, obie strony (AI↔MP gated na nadwyżkę).
 - **Portret miast-państw (`R-MP-PORTRET`, `C-MP-Q1`): A** — miasta-państwa pokazują **symbol kultury** (civIconSvg), nie zdjęcie-portret władcy; gracz/główne AI bez zmian; etykieta „Miasto · Kultura · miasto-państwo". Potwierdzone podglądem (dyplomacja + bitwa).
 - **MVP dotyk (`R-DOTYK-MVP`):** ODŁOŻONE („zajmiemy się później").
+
+**Sesja 2026-07-27 (UI miasta / mapa / dyplomacja / Manpower):**
+- **B-MP-Q1:** Q1a=B (% maxHP 25/20/15 wg trudności) · Q1b=A (częściowe leczenie przy braku pełnej puli MP) · Q1c=brak uzupełnienia HP w oblężonym mieście. Wdrożone FALA 31 `f694dcba`.
 
 **Wcześniejsze (nadal obowiązują):**
 - Wybrzeże jako pas — było 2 heksy (teraz jako WODA, §4 pkt 4). Kategoria kontr konnicy = „Mount". Kontra Procarz = podtyp „Slinger". Unikat Chin = „Jeździec chiński". „Zastąp" = całe terytorium, koszt tylko Pieniądz. Triari/Evocati = wymóg techu żelaza. Łańcuch żelaza = ogólna kopalnia na złożu + odlewnia żelaza.

@@ -3566,4 +3566,27 @@ Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive lock).
 Nowe: wojna bez stałego paska (tylko Wydarzenia) · klik heks/jednostka pickMapTarget+raycast · dyplomacja „Twoje państwo" (nauka/ludność/armia, bez traktatów/wojen) · manpower HP heal 25/20/15% + częściowe MP + blokada oblężenia.
 Bramki: tsc 0 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41 · logic 207/208 (pre garnizon).
 **Sesja lokalna: pull / sync dysk, testuj `f694dcba` — `gra-robocza/START.html`.**
-CZEKAM-NA: Maciej — playtest wojny HUD + klik mapy + dyplomacja + manpower HP.
+CZEKAM-NA: nic (sesja F29–31 zamknięta dokumentacyjnie).
+
+## [09:45 PL, 2026-07-27] LOKALNA → WSZYSCY — podsumowanie sesji FALA 29–31 (problem→przyczyna→naprawa)
+
+**Aktualna ROBOCZA:** md5 `f694dcba` (FALA 31). Wersje F29–F30 zastąpione. Pełny handoff: `STAN-PRACY-HANDOFF.md` §3a-5.
+
+**Panel miasta (F29):** nieklikalne ikony → `.civ-ux-top` blokował pointer-events → `pointer-events:none` + z-index 410 (`cityPanel.ts`). „i szczegóły" → ten sam konflikt warstw → przyciski + z-index. Nagłówek flank layout. Wymagania białe chipy → CSS tylko `.civ-cs` → rozszerzono na `.civ-detail-scope`. Pieczęć build → ukryta + toggle ℹ (`buildStampToggle.ts`). Budynki posiadane 2× wysokość. Rekrutacja → usunięte HP z subtitle (`unitRecruitCard.ts`).
+
+**Mapa (F29–F31):** hex detail single-click → double-click (`main.ts`). Sentry nie odznacza → `clearPlayerUnitSelection()` (`main.ts`). Klik miss → pick tylko teren + offset jednostek → `pickMapTarget`/`pickUnitIdAt` + płaszczyzna wysokości (`picker.ts`, `units.ts`, `main.ts`).
+
+**Dyplomacja (F28–F31):** modal handlu pusty → zły modal akcji 5 → koszyk+tury (`diplomacyAudience.ts`, `diplomacyTradeBasket.ts`). Pasek wojny → usunięty, tylko Wydarzenia (`hud.ts`, `main.ts`). „Twoje państwo" → bez traktatów/wojen, tylko moc/skarbiec/stawki/nauka/ludność/armia.
+
+**AI/Ekonomia (F30–F31):** wolne tury AI → O(N²) handel → cache+early skip (`main.ts`). **B-MP-Q1** → `tickManpowerUnitReplenishment`: 25/20/15% maxHP, częściowe MP, brak w oblężeniu (`manpower.ts`, `miasto-params.json`); test 62/62.
+
+**Znane otwarte (NIE regresja F29–31):** `logic-test` 207/208 (garnizon) · `relief-grid`/`fair-play-grid` (generator mapy, osobny agent) · POLE-BITWY bundle (OneDrive lock przy deployu).
+CZEKAM-NA: kolejne tematy z handoff §8.
+
+## [09:56 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `e7c0655d` (FALA 32, VERIFY)
+**md5 `e7c0655d6bee033503f6bc26c86534b2`**, stempel `ROBOCZA · 2026-07-27 09:56`. **VERIFY OK** (manifest md5 = HTML).
+Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive lock).
+Nowe: dyplomacja — statystyki kart (gracz: moc/ranking/ludność/armia/wiarygodność; cywile: ich ludność/armia + szacunek + nasz szacunek/zaufanie/relacja) · fog chłopek na nieodkrytym terenie (`syncWorkerFieldOverlayFog`) · muzyka menu fade-in 5 s 0→100% (bez opóźnienia) · handoff docs.
+Bramki: tsc 0 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · deposit-building-gate 41/41.
+**Sesja lokalna: pull / sync dysk, testuj `e7c0655d` — `gra-robocza/START.html`.**
+CZEKAM-NA: nic.

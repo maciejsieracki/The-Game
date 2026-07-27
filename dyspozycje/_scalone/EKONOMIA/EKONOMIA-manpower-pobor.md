@@ -99,6 +99,7 @@ Co koniec tury, **po odnowie puli Manpower** (`tickManpowerRegen`):
 - Jednostki cywilne pomijane. HP **nigdy nie spada** od tego mechanizmu (bitwa osobno).
 - Parametr: `miasto-params.json` → `manpower_uzupelnienie_hp_proc_max_tura`.
 - API: `tickManpowerUnitReplenishment()` w `manpower.ts`, wołane z `advanceCityEconomy()`.
+- **Wdrożone:** FALA 31 ROBOCZA md5 `f694dcba` (commit `53b9901`, 2026-07-27). Test: `manpower-test.cjs` **62/62**.
 
 ## Test
 

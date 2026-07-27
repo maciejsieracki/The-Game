@@ -4,6 +4,36 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
+## [01:45] ✅ Gotowe — deploy ROBOCZA FALA 31 (`f694dcba`)
+
+| | |
+|---|---|
+| **Gdzie** | `gra-robocza/START.html` → `Gra-ROBOCZA.html` · md5 `f694dcba20acc6ed63866da4e3cd4672` |
+| **Co** | Wojna bez stałego paska (tylko Wydarzenia) · klik mapy `pickMapTarget`+raycast · dyplomacja „Twoje państwo" (moc/skarbiec/stawki/nauka/ludność/armia) · **B-MP-Q1** HP heal z Manpower (25/20/15% maxHP, częściowe MP, brak w oblężeniu) |
+| **Testy** | tsc 0 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · logic 207/208 (pre garnizon) · VERIFY OK |
+
+---
+
+## [01:18] ✅ Gotowe — deploy ROBOCZA FALA 30 (`d9f2c1fa`)
+
+| | |
+|---|---|
+| **Gdzie** | `gra-robocza/START.html` → `Gra-ROBOCZA.html` · md5 `d9f2c1fa32cd9b8165c00de127339ab3` |
+| **Co** | Modal handlu dyplomacji (koszyk + wybór tur + podsumowania + Esc) · sentry odznacza jednostkę gracza · cache AI w pętli handlu (fix wolnych tur) |
+| **Testy** | tsc 0 · diplomacy-display 17/17 · diplomacy-negotiation-table 39/39 · manpower 44/44 · logic 207/208 (pre garnizon) · VERIFY OK |
+
+---
+
+## [01:01] ✅ Gotowe — deploy ROBOCZA FALA 29 (`e0238cc8`)
+
+| | |
+|---|---|
+| **Gdzie** | `gra-robocza/START.html` → `Gra-ROBOCZA.html` · md5 `e0238cc8114bfe065a55573a590c714e` |
+| **Co** | Nagłówek miasta flank layout · fix „i szczegóły" (z-index 410, pointer-events) · rekrutacja bez HP w podtytule · kolory wymagań budynków · sekcja budynków 2× · hex detail panel double-click · pieczęć build ukryta + ℹ toggle |
+| **Testy** | tsc 0 · manpower 44/44 · deposit-building-gate 41/41 · logic 207/208 (pre garnizon) · VERIFY OK |
+
+---
+
 ## [23:38] ✅ Gotowe — deploy ROBOCZA FALA 25 (`1636f388`)
 
 | | |

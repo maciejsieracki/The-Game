@@ -366,18 +366,10 @@ export function formatBasketListBrief(items: readonly BasketItem[] | undefined):
 export interface DiploPlayerSummaryInput {
   militaryPower: number;
   powerRank?: { rank: number; total: number };
-  treasuryGold?: number;
-  goldPerTurn?: number;
-  culturePerTurn?: number;
-  sciencePerTurn?: number;
+  /** Wiarygodność cywilizacji (0–100) — stat imperium, nie per-para. */
+  wiarygodnosc?: number;
   population?: number;
   armyCount?: number;
-}
-
-function signedPerTurn(value: number, unit: string): string {
-  const v = Math.round(value);
-  const sign = v > 0 ? '+' : '';
-  return `${sign}${v} ${unit}/turę`;
 }
 
 /** Linie statystyk gracza — spójne z kartami obcych cywilizacji (detail + meta). */
@@ -391,28 +383,72 @@ export function formatDiploPlayerSummaryLines(input: DiploPlayerSummaryInput): {
   if (input.powerRank && input.powerRank.total > 0) {
     detailParts.push(`Ranking mocy: ${input.powerRank.rank}. z ${input.powerRank.total}`);
   }
-  const metaParts: string[] = [];
-  if (input.treasuryGold !== undefined) {
-    metaParts.push(`Skarbiec: ${Math.floor(input.treasuryGold)} ¤`);
-  }
-  if (input.goldPerTurn !== undefined) {
-    metaParts.push(`Pieniądz: ${signedPerTurn(input.goldPerTurn, '¤')}`);
-  }
-  if (input.culturePerTurn !== undefined) {
-    metaParts.push(`Kultura: ${signedPerTurn(input.culturePerTurn, 'pkt')}`);
-  }
-  if (input.sciencePerTurn !== undefined) {
-    metaParts.push(`Nauka: ${signedPerTurn(input.sciencePerTurn, 'pkt')}`);
-  }
   if (input.population !== undefined) {
     detailParts.push(`Ludność: ${Math.floor(input.population)}`);
   }
   if (input.armyCount !== undefined) {
     detailParts.push(`Armia: ${input.armyCount}`);
   }
+  const metaParts: string[] = [];
+  if (input.wiarygodnosc !== undefined) {
+    metaParts.push(`Wiarygodność: ${Math.round(Math.max(0, Math.min(100, input.wiarygodnosc)))}`);
+  }
   return {
     detailLine: detailParts.join(' · '),
     metaLine: metaParts.join(' · '),
+  };
+}
+
+/** Dane wejściowe do karty obcej cywilizacji na liście dyplomacji. */
+export interface DiploCivListEntryInput {
+  cultureLabel?: string;
+  epochLabel?: string;
+  /** Ich strona — jak oni nas widzą (demografia + ich respekt wobec gracza). */
+  theirPopulation?: number;
+  theirArmyCount?: number;
+  theirRespektTowardPlayer?: number;
+  /** Nasza strona — jak my ich widzimy. */
+  ourRespektTowardThem?: number;
+  zaufanie?: number;
+  relationTierLabel?: string;
+}
+
+/** Linie karty obcej cywilizacji — kultura/epoka + dwie kropkowane sekcje statystyk. */
+export function formatDiploCivListLines(input: DiploCivListEntryInput): {
+  metaLine: string;
+  detailLine: string;
+  perspectiveLine: string;
+} {
+  const subtitleParts: string[] = [];
+  if (input.cultureLabel) subtitleParts.push(input.cultureLabel);
+  if (input.epochLabel) subtitleParts.push(input.epochLabel);
+
+  const theirParts: string[] = [];
+  if (input.theirPopulation !== undefined) {
+    theirParts.push(`Ludność: ${Math.floor(input.theirPopulation)}`);
+  }
+  if (input.theirArmyCount !== undefined) {
+    theirParts.push(`Armia: ${input.theirArmyCount}`);
+  }
+  if (input.theirRespektTowardPlayer !== undefined) {
+    theirParts.push(`Ich respekt: ${Math.round(input.theirRespektTowardPlayer)}`);
+  }
+
+  const ourParts: string[] = [];
+  if (input.ourRespektTowardThem !== undefined) {
+    ourParts.push(`Nasz respekt: ${Math.round(input.ourRespektTowardThem)}`);
+  }
+  if (input.zaufanie !== undefined) {
+    ourParts.push(`Zaufanie: ${Math.round(input.zaufanie)}`);
+  }
+  if (input.relationTierLabel) {
+    ourParts.push(`Relacja: ${input.relationTierLabel}`);
+  }
+
+  return {
+    metaLine: subtitleParts.join(' · '),
+    detailLine: theirParts.join(' · '),
+    perspectiveLine: ourParts.join(' · '),
   };
 }
 

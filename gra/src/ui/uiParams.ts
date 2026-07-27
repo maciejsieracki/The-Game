@@ -67,14 +67,12 @@ export interface UiMenu {
    */
   etap?: string;
   /**
-   * Opóźnienie (ms) przed startem PIERWSZEGO odtworzenia utworu playlisty intro
-   * (menu główne) na starcie strony — chroni początek nagrania przed ucięciem,
-   * gdy przeglądarka jeszcze kończy ładować/renderować stronę (zgłoszenie
-   * właściciela, R-MUZYKA-KONTEKST). Dotyczy WYŁĄCZNIE pierwszego uruchomienia
-   * po wejściu na stronę — kolejne przejścia w menu (powrót z gry, zmiana
-   * utworu) nie są tym opóźnieniem objęte. Patrz resumeIntroMusic() w main.ts.
+   * Czas (ms) liniowego podgłaśniania muzyki intro (menu główne) przy PIERWSZYM
+   * starcie strony: utwór startuje od razu przy głośności 0 i rośnie do
+   * poziomu z preferencji gracza przez ten czas. Kolejne powroty do menu nie
+   * używają fade-in. Patrz resumeIntroMusic() w main.ts.
    */
-  muzyka_opoznienie_startu_ms: number;
+  muzyka_fade_in_ms: number;
   ustawienia: UiMenuSetting[];
 }
 

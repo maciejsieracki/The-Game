@@ -7,9 +7,11 @@ import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
 import { axialToWorld, HEX_R } from './hexutil';
 import { GAME_MAP_RENDER_STYLE, terrainSurfaceTopY } from './mapRenderStyle';
+import { fogBrightnessForHex } from './fogDim';
 
 const WORKER_ICON_SCALE = 0.72;
 const WORKER_Y_OFFSET = 0.18;
+const WORKER_BASE_OPACITY = 0.9;
 
 /** Paleta właścicieli — zsynchronizowana z render/units.ts i render/cities.ts. */
 const OWNER_COLORS: number[] = [
@@ -100,11 +102,12 @@ function makeWorkerIconSprite(ownerId: number, playerOwnerId: number): THREE.Spr
   const mat = new THREE.SpriteMaterial({
     map: tex,
     transparent: true,
-    opacity: 0.9,
+    opacity: WORKER_BASE_OPACITY,
     depthTest: false,
     depthWrite: false,
     toneMapped: false,
   });
+  mat.userData.fogBaseOpacity = WORKER_BASE_OPACITY;
   const sprite = new THREE.Sprite(mat);
   sprite.renderOrder = 18;
   sprite.center.set(0.5, 0.5);
@@ -129,6 +132,7 @@ export function buildWorkerFieldOverlayGroup(
     if (t === TerenBazowy.Morze || t === TerenBazowy.Gory) continue;
 
     const sprite = makeWorkerIconSprite(ownerId, playerOwnerId);
+    sprite.userData.hexKey = key;
     const { x, z } = axialToWorld(q, r, HEX_R);
     sprite.position.set(x, hexTopY(map, q, r), z);
     group.add(sprite);
@@ -152,6 +156,27 @@ export function syncWorkerFieldOverlay(
   const next = buildWorkerFieldOverlayGroup(map, workedByOwner, playerOwnerId);
   scene.add(next);
   return next;
+}
+
+/** Ukrywa/przyciemnia ikony poza zasięgiem widzenia — jak syncResourceOverlayFog. */
+export function syncWorkerFieldOverlayFog(
+  group: THREE.Group | null,
+  vis: Set<string>,
+  exploredKeys: Set<string>,
+  fogActive: boolean,
+): void {
+  if (!group) return;
+  group.traverse((obj) => {
+    const sprite = obj as THREE.Sprite;
+    if (!sprite.material) return;
+    const hexKey = sprite.userData.hexKey as string | undefined;
+    if (!hexKey) return;
+    const mat = sprite.material as THREE.SpriteMaterial;
+    const baseOpacity = (mat.userData.fogBaseOpacity as number) ?? WORKER_BASE_OPACITY;
+    const bri = fogBrightnessForHex(hexKey, vis, exploredKeys, fogActive);
+    sprite.visible = bri > 0;
+    if (bri > 0) mat.opacity = baseOpacity * bri;
+  });
 }
 
 export function disposeWorkerFieldOverlayGroup(group: THREE.Group | null): void {

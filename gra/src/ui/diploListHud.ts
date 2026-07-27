@@ -2,6 +2,7 @@
  * diploListHud.ts — lista cywilizacji do dyplomacji (toolbar tb-diplomacy).
  */
 
+import { formatDiploCivListLines } from '../game/diplomacy-display';
 import { tierLabel } from './diplomacyPanel';
 import {
   civPennantHtml,
@@ -22,6 +23,8 @@ export interface DiploListEntry {
   tier: number;
   detailLine: string;
   metaLine?: string;
+  /** Nasza perspektywa relacji (druga kropkowana linia statystyk). */
+  perspectiveLine?: string;
   /** Aktywne traktaty z silnika (etykiety PL). */
   treatyLabels?: readonly string[];
 }
@@ -295,6 +298,12 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
           stats.textContent = e.detailLine;
           body.appendChild(stats);
         }
+        if (e.perspectiveLine) {
+          const perspective = document.createElement('div');
+          perspective.className = 'dl-meta';
+          perspective.textContent = e.perspectiveLine;
+          body.appendChild(perspective);
+        }
         row.appendChild(pennant.firstElementChild ?? pennant);
         row.appendChild(body);
         const go = () => {
@@ -393,11 +402,6 @@ export function destroyDiploListHud(): void {
   api = null;
 }
 
-/** Relacja widoczna w liście = Zaufanie + Respekt z mocy (jak audiencja). */
-function listRelTotal(zaufanie: number, respekt: number): number {
-  return Math.round(Math.max(0, Math.min(200, zaufanie + respekt)));
-}
-
 /** Pomocnik: wpis listy z relacji silnika. */
 export function diploListEntryFromRelation(rel: {
   ownerId?: number;
@@ -405,18 +409,31 @@ export function diploListEntryFromRelation(rel: {
   tier: number;
   zaufanie?: number;
   respekt?: number;
-  contactEstablished?: boolean;
+  theirRespekt?: number;
+  cultureLabel?: string;
+  epochLabel?: string;
+  population?: number;
+  armyCount?: number;
   activeTreaties?: readonly string[];
 }): DiploListEntry | null {
   if (rel.ownerId === undefined) return null;
-  const zauf = rel.zaufanie ?? 0;
-  const relTotal = listRelTotal(zauf, rel.respekt ?? 0);
+  const lines = formatDiploCivListLines({
+    cultureLabel: rel.cultureLabel,
+    epochLabel: rel.epochLabel,
+    theirPopulation: rel.population,
+    theirArmyCount: rel.armyCount,
+    theirRespektTowardPlayer: rel.theirRespekt,
+    ourRespektTowardThem: rel.respekt,
+    zaufanie: rel.zaufanie,
+    relationTierLabel: tierLabel(rel.tier),
+  });
   return {
     id: String(rel.ownerId),
     name: rel.civ,
     tier: rel.tier,
-    detailLine: 'Relacja: ' + relTotal + ' · Zaufanie: ' + zauf,
-    metaLine: rel.contactEstablished ? 'Audiencja — kontakt nawiązany' : 'Audiencja — nawiąż kontakt',
+    metaLine: lines.metaLine || undefined,
+    detailLine: lines.detailLine,
+    perspectiveLine: lines.perspectiveLine || undefined,
     treatyLabels: rel.activeTreaties?.length ? rel.activeTreaties : undefined,
   };
 }

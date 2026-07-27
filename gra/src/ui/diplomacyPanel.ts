@@ -50,8 +50,18 @@ export interface DiploRelation {
   tier: number;
   /** Zaufanie 0–100 (opcjonalne — jeśli dostarczone, wyświetlane). */
   zaufanie?: number;
-  /** Respekt / Strach 0–100 (opcjonalne). */
+  /** Respekt / Strach 0–100 (opcjonalne) — nasz respekt wobec tej cywilizacji. */
   respekt?: number;
+  /** Ich respekt wobec gracza (0–100). */
+  theirRespekt?: number;
+  /** Łączna ludność nacji (suma miast). */
+  population?: number;
+  /** Liczba jednostek wojskowych na mapie. */
+  armyCount?: number;
+  /** Etykieta okręgu kulturowego (np. „Grecka"). */
+  cultureLabel?: string;
+  /** Etykieta epoki (np. „Kamień"). */
+  epochLabel?: string;
   /** D3 audiencja — formalny kontakt nawiązany (D3-Q2A). */
   contactEstablished?: boolean;
   /** ikonaId nacji (z silnika). */

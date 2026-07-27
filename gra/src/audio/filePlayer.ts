@@ -82,7 +82,7 @@
 //
 // API modułu (używane WYŁĄCZNIE przez muzyka-antyczna.ts):
 //   kamienPlaylist, introPlaylist — obiekty FilePlaylist:
-//     hasTracks() / start() / stop() / setVolume(v: 0..1) / isPlaying()
+//     hasTracks() / start() / startWithFadeIn(fadeMs) / stop() / setVolume(v: 0..1) / isPlaying()
 // ============================================================================
 
 /** Długość przenikania między utworami (i między powtórzeniami tego samego
@@ -104,29 +104,17 @@ export interface FilePlaylist {
   hasTracks(): boolean;
   start(): void;
   /**
-   * Jak start(), ale odracza faktyczne odtworzenie PIERWSZEGO utworu: nie
-   * wcześniej niż `minDelayMs` PO WYWOŁANIU ORAZ nie wcześniej niż gdy ten
-   * utwór zgłosi gotowość do płynnego odtwarzania ('canplaythrough') —
-   * którykolwiek z tych dwóch warunków spełni się później. Zabezpieczenie
-   * przed brakiem 'canplaythrough' (np. rzadki przypadek przeglądarki): po
-   * `minDelayMs + STARTDELAY_SAFETY_MS` startuje mimo wszystko.
-   * Zastosowanie: WYŁĄCZNIE pierwsze uruchomienie playlisty intro na starcie
-   * strony (patrz resumeIntroMusic() w main.ts / R-MUZYKA-KONTEKST,
-   * parametr menu.muzyka_opoznienie_startu_ms w ui-params.json) — chroni
-   * początek nagrania przed ucięciem, gdy main thread jeszcze kończy
-   * ładować/renderować stronę. Po tym pierwszym starcie playlista działa
-   * dokładnie jak po zwykłym start() (crossfade, kolejne utwory - bez
-   * dodatkowego opóźnienia). No-op, jeśli już gra albo brak plików (jak start()).
+   * Jak start(), ale pierwszy utwór startuje OD RAZU przy głośności 0 i
+   * liniowo podgłaśnia się do poziomu docelowego (setVolume) przez `fadeMs`.
+   * Zastosowanie: pierwsze uruchomienie playlisty intro na starcie strony
+   * (patrz resumeIntroMusic() w main.ts, parametr menu.muzyka_fade_in_ms w
+   * ui-params.json). No-op, jeśli już gra albo brak plików (jak start()).
    */
-  startDelayed(minDelayMs: number): void;
+  startWithFadeIn(fadeMs: number): void;
   stop(): void;
   setVolume(v: number): void;
   isPlaying(): boolean;
 }
-
-/** Zabezpieczenie startDelayed(): ile dodatkowo (ponad minDelayMs) czekać na
- *  'canplaythrough', zanim start i tak nastąpi mimo braku tego zdarzenia. */
-const STARTDELAY_SAFETY_MS = 4000;
 
 /** Ta sama krzywa percepcyjna głośności co suwak w silniku syntezy (patrz
  *  volCurve w muzyka-antyczna.ts) — osobna kopia celowa: ten moduł ma zero
@@ -194,11 +182,11 @@ function createPlaylist(
   let crossfadeFromIdx: 0 | 1 = 0;
   let crossfadeToIdx: 0 | 1 = 1;
 
-  // Stan startDelayed() — patrz definicja niżej i komentarz w interfejsie FilePlaylist.
-  let startDelayTimer: number | null = null;
-  let startDelaySafetyTimer: number | null = null;
-  let startDelayReadyHandler: (() => void) | null = null;
-  let startDelayEl: HTMLAudioElement | null = null;
+  // Stan startWithFadeIn() — patrz definicja niżej.
+  let startFadeTimer: number | null = null;
+  let startFadeT0 = 0;
+  let startFadeDurSec = 0;
+  let startFadeActive = false;
 
   function hasTracks(): boolean { return trackUrls.length > 0; }
 
@@ -239,18 +227,20 @@ function createPlaylist(
     if (stopFadeTimer !== null) { window.clearInterval(stopFadeTimer); stopFadeTimer = null; }
   }
 
-  /** Anuluje ewentualne oczekiwanie startDelayed() w toku (timer opóźnienia,
-   *  zabezpieczenie i nasłuch 'canplaythrough') — wołane na początku stop(),
-   *  żeby stop() trafiający w okno oczekiwania nie skutkował spóźnionym
-   *  startem po fakcie. */
-  function clearStartDelay(): void {
-    if (startDelayTimer !== null) { window.clearTimeout(startDelayTimer); startDelayTimer = null; }
-    if (startDelaySafetyTimer !== null) { window.clearTimeout(startDelaySafetyTimer); startDelaySafetyTimer = null; }
-    if (startDelayReadyHandler && startDelayEl) {
-      startDelayEl.removeEventListener('canplaythrough', startDelayReadyHandler);
-    }
-    startDelayReadyHandler = null;
-    startDelayEl = null;
+  /** Anuluje rampę startWithFadeIn() — wołane na początku stop(). */
+  function clearStartFade(): void {
+    if (startFadeTimer !== null) { window.clearInterval(startFadeTimer); startFadeTimer = null; }
+    startFadeActive = false;
+  }
+
+  /** Liniowa rampa 0→poziom docelowy (volCurve(volume01)) podczas startWithFadeIn(). */
+  function startFadeStep(): void {
+    if (!playing || !startFadeActive) return;
+    const u = Math.min(1, (performance.now() - startFadeT0) / 1000 / startFadeDurSec);
+    const base = volCurve(volume01);
+    const el = els[activeIdx];
+    if (el) el.volume = base * u;
+    if (u >= 1) clearStartFade();
   }
 
   // Referencje do handlerów per-slot (A/B) — trzymane, żeby releaseEl() mógł
@@ -408,18 +398,12 @@ function createPlaylist(
     monitorTimer = window.setInterval(monitorTick, MONITOR_STEP_MS);
   }
 
-  /** Jak start(), ale odracza faktyczne odtworzenie pierwszego utworu do
-   *  późniejszego z dwóch momentów: upływu `minDelayMs` LUB zdarzenia
-   *  'canplaythrough' na tym utworze — patrz komentarz w interfejsie
-   *  FilePlaylist. `playing` jest ustawiane od razu (jak w start()), więc
-   *  isPlaying()/stop() traktują ten okres oczekiwania jako "już gra"
-   *  (analogicznie do zwykłego start(), gdzie decodowanie/pierwsza klatka
-   *  też nie jest natychmiastowa) — stop() w tym oknie po prostu anuluje
-   *  oczekiwanie (clearStartDelay()) zamiast odtwarzać dźwięk, który i tak
-   *  zaraz by ucichł. */
-  function startDelayed(minDelayMs: number): void {
+  /** Jak start(), ale pierwszy utwór gra od razu przy głośności 0 i liniowo
+   *  podgłaśnia się do poziomu docelowego przez `fadeMs` (patrz interfejs). */
+  function startWithFadeIn(fadeMs: number): void {
     if (!hasTracks() || playing) return;
     clearStopFade();
+    clearStartFade();
     playing = true;
     if (queue.length === 0) {
       queue = kolejnosc === 'stala'
@@ -430,45 +414,28 @@ function createPlaylist(
     }
     activeIdx = 0;
     const url = currentUrl();
+    if (url) {
+      const el = ensureEl(0);
+      el.src = url;
+      el.currentTime = 0;
+      el.volume = 0;
+      void el.play().catch(() => {
+        playing = false;
+        clearStartFade();
+      });
+    }
     clearMonitor();
     monitorTimer = window.setInterval(monitorTick, MONITOR_STEP_MS);
-    if (!url) return; // hasTracks()===true więc nie powinno się zdarzyć
-
-    const el = ensureEl(0);
-    el.src = url;
-    el.currentTime = 0;
-    el.volume = volCurve(volume01);
-
-    let timerDone = false;
-    let readyDone = false;
-    let started = false;
-
-    function tryStart(): void {
-      if (started || !playing || !timerDone || !readyDone) return;
-      started = true;
-      clearStartDelay();
-      el.volume = volCurve(volume01);
-      void el.play().catch(() => { playing = false; });
+    const durSec = Math.max(0, fadeMs) / 1000;
+    if (url && durSec > 0) {
+      startFadeActive = true;
+      startFadeT0 = performance.now();
+      startFadeDurSec = durSec;
+      startFadeTimer = window.setInterval(startFadeStep, RAMP_STEP_MS);
+    } else if (url) {
+      const el = els[0];
+      if (el) el.volume = volCurve(volume01);
     }
-
-    startDelayReadyHandler = (): void => { readyDone = true; tryStart(); };
-    startDelayEl = el;
-    el.addEventListener('canplaythrough', startDelayReadyHandler);
-
-    startDelayTimer = window.setTimeout(() => {
-      startDelayTimer = null;
-      timerDone = true;
-      tryStart();
-      // Zabezpieczenie: 'canplaythrough' czasem może nie nadejść (rzadki
-      // przypadek przeglądarki) — nie trzymaj ciszy w nieskończoność.
-      if (!started) {
-        startDelaySafetyTimer = window.setTimeout(() => {
-          startDelaySafetyTimer = null;
-          readyDone = true;
-          tryStart();
-        }, STARTDELAY_SAFETY_MS);
-      }
-    }, Math.max(0, minDelayMs));
   }
 
   /** Zatrzymuje playlistę: fade-out ~STOP_FADE_SEC (liniowy — gaśnie tylko
@@ -482,7 +449,7 @@ function createPlaylist(
     clearCrossfadeTimer();
     crossfading = false;
     clearStopFade();
-    clearStartDelay();
+    clearStartFade();
     const a = els[0];
     const b = els[1];
     if (!a && !b) return; // nigdy nie odtwarzano / już zwolnione
@@ -525,6 +492,10 @@ function createPlaylist(
    *  natychmiast do aktywnego elementu. */
   function setVolume(v: number): void {
     volume01 = Math.max(0, Math.min(1, v));
+    if (startFadeActive) {
+      startFadeStep();
+      return;
+    }
     if (!crossfading) {
       const el = els[activeIdx];
       if (el) el.volume = volCurve(volume01);
@@ -533,7 +504,7 @@ function createPlaylist(
 
   function isPlaying(): boolean { return playing; }
 
-  return { hasTracks, start, startDelayed, stop, setVolume, isPlaying };
+  return { hasTracks, start, startWithFadeIn, stop, setVolume, isPlaying };
 }
 
 // ---------------------------------------------------------------------------
