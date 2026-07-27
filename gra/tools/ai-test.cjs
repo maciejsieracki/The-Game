@@ -122,7 +122,7 @@ function makeGameData(aiParamsOverride = {}) {
       { id: 'spichlerz', nazwa: 'Spichlerz' }, { id: 'koszary', nazwa: 'Koszary' },
       { id: 'mury', nazwa: 'Mury' },
       { id: 'stolarnia', nazwa: 'Stolarnia' }, { id: 'cegielnia', nazwa: 'Cegielnia' },
-      { id: 'odlewnia_brazu', nazwa: 'Piec hutniczy' },
+      { id: 'odlewnia_brazu', nazwa: 'Odlewnia brązu' },
       { id: 'magazyn', nazwa: 'Magazyn' }, { id: 'targowisko', nazwa: 'Targowisko (Rynek)' },
     ],
     terrainYields: {

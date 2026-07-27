@@ -25,7 +25,7 @@
  * "🔒 Niedostępny".
  *
  * Ten test pilnuje regresji dla WSZYSTKICH budynków bramkowanych tym samym mechanizmem
- * (DEPOSIT_LINKED_BUILDING_LABELS + wyjątek Piec hutniczy), nie tylko Spichlerza — te same dwie
+ * (DEPOSIT_LINKED_BUILDING_LABELS + wyjątek Odlewnia brązu), nie tylko Spichlerza — te same dwie
  * bramki dotyczą też: garncarnia, cegielnia, spichlerz_ii, stolarnia, kamieniarski, kuznia,
  * mennica, odlewnia_brazu (piec hutniczy).
  *
@@ -167,7 +167,7 @@ function catalogEntry(id, techs, ctxOverrides) {
 
 // ===========================================================================
 // 3. Ta sama regresja dla budynków epoki Brązu (epoka 2): cegielnia (Glina), kuznia (Ruda),
-//    mennica (Złoto + Targowisko w mieście), odlewnia_brazu / Piec hutniczy (Kopalnia miedzi).
+//    mennica (Złoto + Targowisko w mieście), odlewnia_brazu / Odlewnia brązu (Kopalnia miedzi).
 // ===========================================================================
 {
   const epoch2 = { epoch: 2 };
@@ -212,12 +212,12 @@ function catalogEntry(id, techs, ctxOverrides) {
       'mennica: eraBuildingCatalog status=\'ready\' ze Złotem + Targowiskiem');
   }
 
-  // odlewnia_brazu / Piec hutniczy (twardy wyjątek terenowy: Kopalnia miedzi w imperium,
+  // odlewnia_brazu / Odlewnia brązu (twardy wyjątek terenowy: Kopalnia miedzi w imperium,
   // NIE etykieta -- sprawdzane przez placedImprovements, patrz braz-access.ts)
   {
     const techs = ['Brązownictwo'];
     ok(!buildIds(techs, epoch2).includes('odlewnia_brazu'),
-      'odlewnia_brazu (Piec hutniczy) NIEDOSTĘPNA bez Kopalni miedzi w imperium');
+      'odlewnia_brazu (Odlewnia brązu) NIEDOSTĘPNA bez Kopalni miedzi w imperium');
     ok(catalogEntry('odlewnia_brazu', techs, epoch2).status === 'locked',
       'odlewnia_brazu: eraBuildingCatalog status=\'locked\' bez Kopalni miedzi');
     const withMine = Object.assign(
@@ -225,7 +225,7 @@ function catalogEntry(id, techs, ctxOverrides) {
       epoch2,
     );
     ok(buildIds(techs, withMine).includes('odlewnia_brazu'),
-      'odlewnia_brazu (Piec hutniczy) DOSTĘPNA z Kopalnią miedzi w imperium (placedImprovements)');
+      'odlewnia_brazu (Odlewnia brązu) DOSTĘPNA z Kopalnią miedzi w imperium (placedImprovements)');
     ok(catalogEntry('odlewnia_brazu', techs, withMine).status === 'ready',
       'odlewnia_brazu: eraBuildingCatalog status=\'ready\' z Kopalnią miedzi w imperium');
   }

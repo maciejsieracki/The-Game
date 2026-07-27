@@ -228,11 +228,13 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
+    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
   lodzie_rybackie: {
     nazwa: "\u0141odzie rybackie",
@@ -394,7 +396,7 @@ function empireHasKopalniaMiedzi(placedImprovements) {
   return false;
 }
 function cityHasPiecHutniczy(builtIds) {
-  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza");
+  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza") || builtIds.includes("wielka_odlewnia");
 }
 function hasBrazAccess(placedImprovements, builtIds) {
   return empireHasKopalniaMiedzi(placedImprovements) && cityHasPiecHutniczy(builtIds);
@@ -454,6 +456,22 @@ function buildingCostAfterCivDiscount(baseCost, bonusy) {
   return Math.max(1, Math.floor(baseCost * (1 - disc)));
 }
 
+// src/map/road-movement.ts
+var ROAD_MIN_MOVE_COST = 1 / 3;
+
+// src/units/setup.ts
+var DEFAULT_TERRAIN_COSTS = {
+  ["laka" /* Laka */]: 1,
+  ["rownina" /* Rownina */]: 1,
+  ["pustynia" /* Pustynia */]: 1,
+  ["wybrzeze" /* Wybrzeze */]: Infinity,
+  ["wzgorza" /* Wzgorza */]: 2,
+  ["gory" /* Gory */]: Infinity,
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
+};
+var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
   _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
@@ -497,6 +515,13 @@ var miasto_params_default = {
     wartosc: 1,
     jednostka: "0/1",
     opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
+  },
+  manpower_uzupelnienie_hp_proc_max_tura: {
+    easy: 25,
+    normal: 20,
+    hard: 15,
+    jednostka: "% maxHP/tura",
+    opis: "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP \xD7 warto\u015B\u0107/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP \xD7 kosztJednostki). Przy braku MP \u2014 leczenie cz\u0119\u015Bciowe do dost\u0119pnej puli. manpower.tickManpowerUnitReplenishment."
   },
   jednostka_koszt_domyslny: {
     wartosc: 10,
@@ -606,7 +631,7 @@ var ROWS = epoka_ludnosc_manpower_default.epoki;
 // src/game/zelazo-access.ts
 var ODLEWNIA_ZELAZA_BUILDING_ID = "odlewnia_zelaza";
 function cityHasOdlewniaZelaza(builtIds) {
-  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID);
+  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID) || builtIds.includes("wielka_odlewnia");
 }
 function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
   return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
@@ -638,6 +663,12 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
   // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
   // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
+  // PYTANIE 77=A (Maciej 2026-07-25): dostęp = własna Kopalnia złota ALBO aktywny szlak
+  // handlowy z cywilizacją, która ma złoto (jak koń) — bramka TU jest bez zmian (nadal
+  // sam sprawdza tylko obecność etykiety 'Złoto' w `activeLabels`); rozszerzenie jest
+  // WYŻEJ w łańcuchu, w zloto-access.ts (placedImprovementsWithZlotoTradeGrant), WPIĘTE
+  // w main.ts (placedImprovementsWithTradeGrants, domknięcie 2026-07-25 wieczór) —
+  // szlak handlowy realnie odblokowuje Mennicę bez własnej Kopalni złota.
   mennica: ["Z\u0142oto"]
 };
 var CITY_BUILDING_PREREQ = {
@@ -649,7 +680,11 @@ var CITY_BUILDING_PREREQ = {
   swiatynia: "kamienne_kregi",
   // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
   // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
-  mennica: "targowisko"
+  mennica: "targowisko",
+  // DECYZJA 54a (Maciej 2026-07-25): Baszta wymaga Murów w tym samym mieście.
+  baszta: "mury",
+  // DECYZJA 54b (Maciej 2026-07-25): Akwedukt wymaga Studni w tym samym mieście.
+  akwedukt: "studnia"
 };
 function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
   if (!prereq) return true;
@@ -660,12 +695,15 @@ var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"])
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
+var ACCESS_ONLY_RESOURCE_LABELS = /* @__PURE__ */ new Set(["S\xF3l", "Z\u0142oto"]);
 function empireLabelSatisfied(label, activeLabels, empireBuiltIds, empireStock) {
   if (activeLabels.includes(label)) return true;
   if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
   if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
-  const asciiKey = ASCII_BY_LABEL[label];
-  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
+    const asciiKey = ASCII_BY_LABEL[label];
+    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  }
   return false;
 }
 function buildingRequiredActiveLabels(building) {
@@ -682,11 +720,13 @@ function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireS
   const active = activeLabels ?? [];
   return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
 }
+var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
+  Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
+);
 
 // src/game/building-upgrades.ts
-var SUPPRESSED_FROM_PRODUCTION = /* @__PURE__ */ new Set(["teatr"]);
 function isBuildingSuppressedFromProduction(building) {
-  return SUPPRESSED_FROM_PRODUCTION.has(building.id) || building.suppressed === true;
+  return building.suppressed === true;
 }
 function upgradeProductionDisplayName(target, buildings) {
   const from = (target.upgradeFrom ?? "").trim();
@@ -869,7 +909,7 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
-    const gateLabels = ctx.empireActiveResourceLabels?.length ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
+    const gateLabels = ctx.empireActiveResourceLabels !== void 0 ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
     if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
       continue;
     }

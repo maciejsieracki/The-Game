@@ -170,6 +170,12 @@ function ok(c, m) {
   ok(wk.upgradeFrom === 'kuznia_zelaza', 'wielka_kuznia upgradeFrom kuznia_zelaza');
 }
 
+// Odlewnia → Wielka odlewnia
+{
+  const wo = buildings.find(b => b.id === 'wielka_odlewnia');
+  ok(wo && wo.upgradeFrom === 'odlewnia_zelaza', 'wielka_odlewnia upgradeFrom odlewnia_zelaza');
+}
+
 // ABC-23: Drogi brukowane prereq
 {
   const drogi = techData.find(t => t.Technologia === 'Drogi brukowane');

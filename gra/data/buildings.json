@@ -130,7 +130,7 @@
   },
   {
     "id": "odlewnia_brazu",
-    "nazwa": "Piec hutniczy",
+    "nazwa": "Odlewnia brązu",
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
     "epokaWejscia": 2,
@@ -161,7 +161,7 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "Kopalnia miedzi w imperium (twardy wymóg terenowy — jedyny wyjątek od reguły, decyzja właściciela Temat 8 Q3)",
-    "uwagi": "ABC-13: Piec hutniczy (brąz); upgrade → Odlewnia żelaza. Dostęp brąz = Popalnia (mapa) + ten budynek. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23). LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    "uwagi": "Odlewnia brązu (tier1 łańcucha odlewni); upgrade → Odlewnia żelaza. Dostęp brąz = Kopalnia miedzi (mapa) + ten budynek. Konwerter: ruda+drewno→brąz. Piec hutniczy = rezerwowana nazwa na przyszłe epoki (NIE ten budynek). LANCUCH W GORE: maksPoziom=1 — wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza.",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
       "drewno": 6,
@@ -201,12 +201,54 @@
     "utrzymanie": 3,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Odlewni brązu",
-    "uwagi": "ABC-7: suma bonusów z Odlewni brązu + żelazo; placeholder receptury. Decyzja 42A (Maciej 2026-07-25): Praca 8 -> 12 pkt/turę -- awans z Pieca hutniczego (8 pkt) dawał dawniej 0 netto mimo kosztu 35 pkt Pracy budowy, teraz awans faktycznie się opłaca. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    "uwagi": "Upgrade Odlewni brązu → Odlewnia żelaza. Produkuje BRĄZ (jak tier1) + ŻELAZO równolegle (dwa konwertery, jeden slot). Decyzja 42A (Maciej 2026-07-25): Praca 8→12 pkt/turę. LANCUCH W GORE: maksPoziom=1 — awans na Wielka odlewnia.",
     "techUnlock": "Hutnictwo żelaza",
     "upgradeFrom": "odlewnia_brazu",
     "koszt_surowce": {
       "drewno": 8,
       "cegla": 10
+    }
+  },
+  {
+    "id": "wielka_odlewnia",
+    "nazwa": "Wielka odlewnia",
+    "kategoria": "Produkcja",
+    "grupa": "Produkcja surowców",
+    "epokaWejscia": 4,
+    "maksPoziom": 1,
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 18,
+      "pieniadz": 3,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 6,
+      "pieniadz": 1,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 80,
+    "przyrostKosztu": 15,
+    "utrzymanie": 4,
+    "przyrostUtrzymania": 2,
+    "wymagania": "upgrade Odlewni żelaza; dostęp do Stali w imperium (aktywne źródło lub zapas w magazynie państwa)",
+    "wymaganySurowiec": "stal",
+    "uwagi": "Upgrade Odlewnia żelaza → Wielka odlewnia. Produkuje BRĄZ + ŻELAZO + STAL (trzy konwertery, jeden slot). PARKOWANE: epokaWejscia=4. LANCUCH W GORE: maksPoziom=1 (koniec łańcucha odlewni). Wielka Kuźnia = tylko Pancerz, NIE stal.",
+    "techUnlock": "Obróbka żelaza",
+    "upgradeFrom": "odlewnia_zelaza",
+    "koszt_surowce": {
+      "drewno": 12,
+      "cegla": 14
     }
   },
   {
@@ -1116,7 +1158,7 @@
     "przyrostUtrzymania": 2,
     "wymagania": "Upgrade Kuźni żelaza; dostęp do Stali w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "wymaganySurowiec": "stal",
-    "uwagi": "Upgrade Kuźnia żelaza → Wielka Kuźnia. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze. LANCUCH W GORE: maksPoziom=1 (koniec lancucha) -- wartosc stala, kolejny tier dopiero w przyszlej epoce. Koszt surowcowy dodany wg SPEC-KOSZTY-SUROWCOWE-BUDYNKOW (epoka klasyczna, poza zasiegiem dzisiejszej gry o 3 epokach): drewno+cegla.",
+    "uwagi": "Upgrade Kuźnia żelaza → Wielka Kuźnia. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom). TYLKO pancerz — NIE produkuje stali (stal = Wielka odlewnia, Maciej 2026-07-27). PARKOWANE: epokaWejscia=4. LANCUCH W GORE: maksPoziom=1 (koniec lancucha kuźni).",
     "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "kuznia_zelaza",
     "koszt_surowce": {

@@ -21,7 +21,7 @@
  *    jest per-city `builtList` + `isBuildingSupersededByUpgrade`); (c) wybrzeże LUB rzeka w
  *    zasięgu TEGO miasta (teren — sprawdzane w `production.ts` przez `ctx.cityHasCoastOrRiver`,
  *    WYLICZONE przez main.ts, bo ten moduł jest pure-logic i nie zna mapy).
- *  - Q3: Piec hutniczy (`odlewnia_brazu`) zostaje jako jedyny hard id-lock — Kopalnia miedzi
+ *  - Q3: Odlewnia brązu (`odlewnia_brazu`) zostaje jako jedyny hard id-lock — Kopalnia miedzi
  *    w imperium, patrz `braz-access.ts` (`empireHasKopalniaMiedzi`) + `production.ts`
  *    (`PIEC_HUTNICZY_BUILDING_ID`) — NIE w tym module.
  */

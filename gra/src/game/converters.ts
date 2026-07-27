@@ -7,14 +7,17 @@
  *   - Ceramika = tylko dostep (Garncarnia zbudowana) -- receptura garncarni USUNIETA.
  *   - Paliwo USUNIETE calkowicie (Mielerz usuniety); konwertery biora DREWNO 1:1 zamiast paliwa.
  *   Cegielnia  | 2 glina + 1 drewno | 1 cegla    | 2/t (cel 3/t -- decyzja C-SUROW-CEGLA=A)
- *   Piec hutniczy | 1 ruda + 1 drewno | 1 braz  | 1/t
- *   Odlewnia żelaza | 1 ruda_zelaza + 1 drewno | 1 zelazo | 1/t
- *   Wielka kuźnia | 1 zelazo + 1 drewno | 1 stal  | 1/t
+ *   Odlewnia brązu | 1 ruda + 1 drewno | 1 braz  | 1/t
+ *   Odlewnia żelaza | braz (jak tier1) + żelazo (1 ruda_zelaza + 1 drewno) | 1/t kazdy
+ *   Wielka odlewnia | braz + żelazo + stal (1 zelazo + 1 drewno) | 1/t kazdy
  *   Stolarnia / Tartak — NIE konwertują (drewno TYP 1; deski wycofane).
  *   Garncarnia — NIE konwertuje (Maciej 2026-07-23): Ceramika przestaje być
  *     surowcem magazynowym. Garncarnia zbudowana = czysty DOSTĘP (etykieta
  *     'Ceramika' w main.ts empireActiveResourceLabelsForOwner + bramka
  *     building-resource-gate.ts Spichlerz), bez ilości w City.surowce.
+ *
+ * Lancuch odlewni (Maciej 2026-07-27): jeden slot, upgrade zastępuje poprzednik.
+ * Wielka Kuźnia = tylko Pancerz (+15% lancuch), NIE produkuje stali.
  */
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
@@ -38,7 +41,10 @@ export function loadThroughput(
 }
 
 export interface ConverterRecipe {
+  /** Unikalny klucz receptury (moze roznic sie od buildingId przy wielu receptach/budynek). */
   id:                 string;
+  /** Gdy ustawione — receptura dziala gdy ten budynek jest w runtimeBuiltIds (nie gdy id === budynek). */
+  buildingId?:        string;
   inputs:             Record<string, number>;
   output:             string;
   outputAmount:       number;
@@ -47,19 +53,21 @@ export interface ConverterRecipe {
 }
 
 /**
- * Domyslny zestaw receptur (SUROWCE-KANON 2026-07-23, zaktualizowany tego samego dnia:
- * PALIWO USUNIETE -- Mielerz skasowany, wszystkie receptury biora DREWNO 1:1 w miejsce
- * dawnego wejscia paliwo:1).
+ * Domyslny zestaw receptur (SUROWCE-KANON 2026-07-23, zaktualizowany 2026-07-27:
+ * lancuch odlewni multi-receptura; Wielka Kuźnia bez produkcji stali).
  */
 export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
-  { id: 'cegielnia',        inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',  throughputFallback: 3 },
+  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 3 },
   // 'garncarnia' USUNIETA (Maciej 2026-07-23): Ceramika = tylko dostep (Garncarnia
   // zbudowana), nie sztuki w magazynie -- patrz komentarz kanonu powyzej.
   // 'mielerz' USUNIETY (Maciej 2026-07-23): Paliwo usuniete calkowicie; konwertery biora drewno 1:1.
-  { id: 'huta',             inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',       throughputFallback: 1 },
-  { id: 'odlewnia_brazu',   inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',       throughputFallback: 1 },
-  { id: 'odlewnia_zelaza',  inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 1 },
-  { id: 'wielka_kuznia',    inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_kuznia_przepustowosc', throughputFallback: 1 },
+  { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 1 },
+  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 1 },
+  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 1 },
+  { id: 'odlewnia_zelaza__zelazo', buildingId: 'odlewnia_zelaza', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 1 },
+  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 1 },
+  { id: 'wielka_odlewnia__zelazo', buildingId: 'wielka_odlewnia', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 1 },
+  { id: 'wielka_odlewnia__stal',   buildingId: 'wielka_odlewnia', inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_odlewnia_przepustowosc',  throughputFallback: 1 },
 ];
 
 export type ConverterReason = 'ok' | 'brak-wejscia' | 'pelny-magazyn' | 'zero-przepustowosci';
@@ -125,6 +133,11 @@ export interface RunConvertersResult {
   perBuilding: Record<string, ConvertResult>;
 }
 
+/** Klucz budynku dla dopasowania receptury do runtimeBuiltIds. */
+export function converterBuildingIdForRecipe(recipe: ConverterRecipe): string {
+  return recipe.buildingId ?? recipe.id;
+}
+
 export function runConverters(
   recipes: ReadonlyArray<ConverterRecipe>,
   stores: Record<string, number>,
@@ -135,8 +148,9 @@ export function runConverters(
   const perBuilding: Record<string, ConvertResult> = {};
 
   for (const recipe of recipes) {
-    const tput = Object.prototype.hasOwnProperty.call(throughputs, recipe.id)
-      ? (throughputs[recipe.id] ?? recipe.throughputFallback)
+    const tputKey = recipe.id;
+    const tput = Object.prototype.hasOwnProperty.call(throughputs, tputKey)
+      ? (throughputs[tputKey] ?? recipe.throughputFallback)
       : recipe.throughputFallback;
     const res = runConverter(recipe, cur, tput, capacityOf(recipe.output));
     cur = res.stores;

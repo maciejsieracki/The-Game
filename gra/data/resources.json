@@ -9,7 +9,7 @@
     "Surowiec": "Drewno",
     "Typ": "surowy",
     "Źródło / budynek": "Las",
-    "Uwagi": "budulec; wejscie Tartaku i konwerterow (Cegielnia/Garncarnia/Piec hutniczy/Odlewnia zelaza/Wielka Kuznia) 1:1 zamiast dawnego Paliwa"
+    "Uwagi": "budulec; wejscie Tartaku i konwerterow (Cegielnia/Garncarnia/Odlewnia brązu/Odlewnia żelaza/Wielka odlewnia) 1:1 zamiast dawnego Paliwa"
   },
   {
     "Surowiec": "Kamień",
@@ -62,19 +62,19 @@
   {
     "Surowiec": "Brąz",
     "Typ": "przetworzony",
-    "Źródło / budynek": "Piec hutniczy (ruda+drewno)",
+    "Źródło / budynek": "Odlewnia brązu (ruda+drewno)",
     "Uwagi": "budulec + jednostki brazowe"
   },
   {
     "Surowiec": "Żelazo",
     "Typ": "surowy",
-    "Źródło / budynek": "złoże Ruda żelaza + Kuźnia żelaza",
-    "Uwagi": "model dostępu v0.1 = boolean (złoże w zasięgu + ulepszenie); odblokowuje tech Hutnictwo żelaza; prereq Kuźni żelaza"
+    "Źródło / budynek": "Odlewnia żelaza (ruda żelaza+drewno)",
+    "Uwagi": "dostęp: Kopalnia żelaza (mapa) + Odlewnia żelaza (miasto); odblokowuje tech Hutnictwo żelaza; Kuźnia żelaza = osobny slot (pancerz)"
   },
   {
     "Surowiec": "Stal",
     "Typ": "przetworzony",
-    "Źródło / budynek": "Wielka Kuźnia (żelazo+drewno)",
-    "Uwagi": "odblokowuje tech Obróbka żelaza; prereq Wielkiej Kuźni; model dostępu v0.1 = boolean"
+    "Źródło / budynek": "Wielka odlewnia (żelazo+drewno)",
+    "Uwagi": "odblokowuje tech Obróbka żelaza; Wielka Kuźnia = tylko pancerz (+45% łańcuch kuźni), bez produkcji stali"
   }
 ]

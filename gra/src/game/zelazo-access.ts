@@ -70,15 +70,12 @@ export function empireHasKopalniaNaZlozuZelaza(
 }
 
 /**
- * Odlewnia żelaza w mieście (lub jej upgrade w łańcuchu budynków — dziś brak: sprawdzone w
- * buildings.json 2026-07-19 — kuznia_zelaza i wielka_kuznia NIE są upgrade'em odlewni żelaza.
- * To DWA NIEZALEŻNE łańcuchy: odlewnia_brazu -> odlewnia_zelaza (upgradeFrom: 'odlewnia_brazu')
- * oraz kuznia_zelaza -> wielka_kuznia (upgradeFrom: 'kuznia_zelaza', NIE 'odlewnia_zelaza').
- * Żaden budynek w buildings.json nie ma dziś upgradeFrom === 'odlewnia_zelaza', więc na razie
- * tylko sam 'odlewnia_zelaza' zalicza tę bramkę — patrz RAPORT KOŃCOWY, punkt do decyzji.
+ * Odlewnia żelaza lub Wielka odlewnia (upgrade łańcucha odlewni — oba produkują żelazo).
+ * Niezależny łańcuch kuźni (kuznia → kuznia_zelaza → wielka_kuznia) = tylko Pancerz, bez żelaza.
  */
 export function cityHasOdlewniaZelaza(builtIds: readonly string[]): boolean {
-  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID);
+  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID)
+    || builtIds.includes('wielka_odlewnia');
 }
 
 /**

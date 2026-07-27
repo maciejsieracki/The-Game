@@ -197,7 +197,7 @@ function ok(c, m) {
     'Kuźnia brązu -> Kuźnia żelaza -> Wielka Kuźnia': ['kuznia', 'kuznia_zelaza', 'wielka_kuznia'],
     'Spichlerz -> Spichlerz II': ['spichlerz', 'spichlerz_ii'],
     'Port handlowy -> Port wielki': ['port', 'port_wielki'],
-    'Piec hutniczy -> Odlewnia żelaza': ['odlewnia_brazu', 'odlewnia_zelaza'],
+    'Odlewnia brązu -> Odlewnia żelaza -> Wielka odlewnia': ['odlewnia_brazu', 'odlewnia_zelaza', 'wielka_odlewnia'],
   };
   let totalMembers = 0;
   for (const [label, ids] of Object.entries(chains)) {
@@ -208,7 +208,7 @@ function ok(c, m) {
       ok(b && b.maksPoziom === 1, `${label}: "${id}" ma maksPoziom=1 (ma: ${b && b.maksPoziom})`);
     }
   }
-  ok(totalMembers === 15, `sanity: 15 budynkow w szesciu lancuchach "w gore" (ma: ${totalMembers})`);
+  ok(totalMembers === 16, `sanity: 16 budynkow w szesciu lancuchach "w gore" (ma: ${totalMembers})`);
 
   // Budynki SPOZA tych szesciu lancuchow nie sa ruszone -- rosna dalej z epoka
   // (przykladowa proba: budynki z wlasnym lancuchem "w bok" lub bez lancucha wcale).
@@ -228,10 +228,10 @@ function ok(c, m) {
 {
   const odlewniaZelaza = byId.get('odlewnia_zelaza');
   ok(odlewniaZelaza.baza.praca === 12, `Odlewnia żelaza: Praca = 12 pkt/turę (ma: ${odlewniaZelaza.baza.praca})`);
-  const piecHutniczy = byId.get('odlewnia_brazu');
-  ok(piecHutniczy.baza.praca === 5, 'sanity: Piec hutniczy (poprzednik) Praca niezmieniona (=5)');
-  ok(odlewniaZelaza.baza.praca > piecHutniczy.baza.praca,
-    'Awans Piec hutniczy -> Odlewnia żelaza faktycznie zwieksza Prace (nie 8->8 jak przed naprawa)');
+  const odlewniaBrązu = byId.get('odlewnia_brazu');
+  ok(odlewniaBrązu.baza.praca === 5, 'sanity: Odlewnia brązu (poprzednik) Praca niezmieniona (=5)');
+  ok(odlewniaZelaza.baza.praca > odlewniaBrązu.baza.praca,
+    'Awans Odlewnia brązu -> Odlewnia żelaza faktycznie zwieksza Prace (nie 8->8 jak przed naprawa)');
 }
 
 console.log(`\nkoszty-surowcowe-test: ${pass} pass, ${fail} fail`);

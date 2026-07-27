@@ -53,10 +53,10 @@ ok(M.cityHasPiecHutniczy(['odlewnia_brazu']), 'miasto ma piec');
 ok(!M.hasBrazAccess(placedWithPopalnia, []), 'AND: kopalnia miedzi bez pieca = brak brązu');
 ok(M.hasBrazAccess(placedWithPopalnia, ['odlewnia_brazu']), 'AND: kopalnia miedzi + piec = brąz');
 
-// ABC-13 nazwa
+// B-ODLEWNIA-2026-07-27: Odlewnia brązu (Piec hutniczy = rezerwa na przyszłe epoki)
 {
-  const piec = buildings.find(b => b.id === 'odlewnia_brazu');
-  ok(piec && piec.nazwa === 'Piec hutniczy', 'ABC-13 nazwa Piec hutniczy');
+  const odlewnia = buildings.find(b => b.id === 'odlewnia_brazu');
+  ok(odlewnia && odlewnia.nazwa === 'Odlewnia brązu', 'odlewnia_brazu nazwa Odlewnia brązu');
 }
 
 // production gates
@@ -71,7 +71,7 @@ const noPopalnia = M.availableProduction(city, data, techs, {
 });
 ok(
   !noPopalnia.some(it => it.kind === 'budynek' && it.id === M.PIEC_HUTNICZY_BUILDING_ID),
-  'Piec hutniczy ukryty bez Popalni',
+  'Odlewnia brązu ukryta bez Kopalni miedzi',
 );
 
 const withPopalniaNoPiec = M.availableProduction(city, data, techs, {
@@ -80,7 +80,7 @@ const withPopalniaNoPiec = M.availableProduction(city, data, techs, {
 });
 ok(
   withPopalniaNoPiec.some(it => it.kind === 'budynek' && it.id === M.PIEC_HUTNICZY_BUILDING_ID),
-  'Piec hutniczy dostępny po Popalni',
+  'Odlewnia brązu dostępna po Kopalni miedzi',
 );
 
 const bronzeUnit = units.find(u => (u.Surowiec ?? '').toLowerCase() === 'braz');

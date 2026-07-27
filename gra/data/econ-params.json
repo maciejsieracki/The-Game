@@ -280,7 +280,21 @@
       "normal": 1,
       "hard": 0,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Ruda+Drewno)→Brąz w Hucie na turę. [PT]"
+      "opis": "Maks konwersja (Ruda+Drewno)→Brąz w Odlewni brązu (i tier wyższy łańcucha odlewni) na turę. [PT]"
+    },
+    "budynek_odlewnia_zelaza_przepustowosc": {
+      "easy": 2,
+      "normal": 1,
+      "hard": 0,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Ruda żelaza+Drewno)→Żelazo w Odlewni żelaza / Wielka odlewnia na turę. [PT]"
+    },
+    "budynek_wielka_odlewnia_przepustowosc": {
+      "easy": 2,
+      "normal": 1,
+      "hard": 0,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Żelazo+Drewno)→Stal w Wielka odlewnia na turę (Maciej 2026-07-27: przeniesione z Wielka Kuźnia). [PT]"
     },
     "budynek_garncarnia_przepustowosc": {
       "easy": 2,

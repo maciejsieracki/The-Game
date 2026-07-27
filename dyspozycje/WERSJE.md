@@ -11,7 +11,20 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `a616a6dd` — 2026-07-27 17:50 — FALA 39: karta jednostki + staty efektywne — **AKTUALNA**
+## ROBOCZA `71dffa40` — 2026-07-27 18:32 — FALA 40: łańcuch odlewni + tech tree — **AKTUALNA**
+- md5 (pelne): `71dffa407fd2d3bce734f0ee8c281cf2` · stempel: `ROBOCZA · 2026-07-27 18:32` · commit: `(po push)`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html`
+- Wynik `vite build` exit 0. POLE-BITWY: pominięty (OneDrive stamp retry via TEMP OK).
+- **Co nowego (FALA 40):**
+  - **B-ODLEWNIA-2026-07-27:** Odlewnia brązu → Odlewnia żelaza (brąz+żelazo) → Wielka odlewnia (+stal); Wielka Kuźnia = tylko pancerz (+45% łańcuch).
+  - **tech.json:** Hutnictwo żelaza · Obróbka żelaza — wymagania, odblokowania, opisy.
+  - **converters.ts:** multi-receptura per odlewnia; stal usunięta z `wielka_kuznia`.
+  - **resources.json** + testy lane (converters 33, koszty 119, upgrade 49, grupy 83, eko-p3 8, tech-tree 19).
+- Decyzja: `docs/decyzje/B-ODLEWNIA-KUZNIA-LANCUCH-2026-07-27.md`
+- **Bramki:** tsc 0 · VERIFY OK.
+
+## ROBOCZA `a616a6dd` — 2026-07-27 17:50 — FALA 39: karta jednostki + staty efektywne — **ZASTĄPIONA**
 - md5 (pelne): `a616a6dda7d9ed165d328411e19f8e19` · stempel: `ROBOCZA · 2026-07-27 17:50` · commit: `42da6f1`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html`

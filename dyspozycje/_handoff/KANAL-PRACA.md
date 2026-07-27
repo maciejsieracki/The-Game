@@ -3703,3 +3703,11 @@ Bramki: tsc 0 · scout 10/10 · diplomacy 26/26 · deposit-gate 49/49 · mennica
 CZEKAM-NA: C-OBCE-JEDN-Q2 render (Opus, osobna sesja).
 
 ## [17:15 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `1d2eb0ba` (FALA 37, próbny) — ZASTĄPIONY
+
+## [18:32 PL, 2026-07-27] LOKALNA → Maciej — deploy ROBOCZA `71dffa40` (FALA 40, VERIFY)
+
+**md5 `71dffa407fd2d3bce734f0ee8c281cf2`**, stempel `ROBOCZA · 2026-07-27 18:32`. **VERIFY OK**.
+**B-ODLEWNIA-2026-07-27:** łańcuch odlewni (brąz→żelazo→stal) + tech tree + Wielka Kuźnia bez stali.
+Bramki: tsc 0 · converters 33 · koszty 119 · upgrade 49 · grupy 83 · tech-tree 19/19.
+**Testuj `71dffa40` — `gra-robocza/START.html` (Ctrl+F5 · Nowa gra).**
+CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku jeśli push z chmury).

@@ -1,4 +1,15 @@
-## [17:50] ✅ Gotowe — deploy ROBOCZA FALA 39 (`a616a6dd`)
+## [18:20] ✅ Gotowe — łańcuch odlewni + tech tree (B-ODLEWNIA-2026-07-27, kod bez deploy)
+
+| Co | Status |
+|----|--------|
+| **Odlewnie** | Odlewnia brązu → Odlewnia żelaza (brąz+żelazo) → Wielka odlewnia (+stal) |
+| **Kuźnie** | tylko pancerz +15/+30/+45%; stal usunięta z Wielkiej Kuźni |
+| **tech.json** | Hutnictwo żelaza · Obróbka żelaza — nazwy, wymagania, odblokowania |
+| **Testy** | converters 33/33 · koszty 119 · upgrade-budynki 49 · eko-p3 · spichlerz · grupy-budynkow |
+| **Deploy** | **bez** — czeka `push` |
+
+Decyzja: `docs/decyzje/B-ODLEWNIA-KUZNIA-LANCUCH-2026-07-27.md`
+
 
 | Co | Status |
 |----|--------|

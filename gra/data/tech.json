@@ -314,12 +314,12 @@
       "Epoka": "Brąz",
       "Poziom": 6,
       "Dostęp do surowca.": "Dostęp do żelazo",
-      "wymagany budynek": "Piec hutniczy",
+      "wymagany budynek": "Odlewnia brązu",
       "Wymaga (prereq)": "Brązownictwo",
       "Odblokowuje surowiec.": "żelazo",
-      "Odblokowuje budynek": "Kuźnia żelaza; Jednostki: Hastati, Falanga, Drużynnik, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski, Rydwan celtycki, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Jeździec z oszczepami",
+      "Odblokowuje budynek": "Odlewnia żelaza; Kuźnia żelaza; Jednostki: Hastati, Falanga, Drużynnik, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski, Rydwan celtycki, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Jeździec z oszczepami",
       "Koszt nauki": 240,
-      "Uwagi": "kończy Epokę 2 / otwiera Epokę 3; jednostki żelazne (Gaesatae, Soldurii, Wojownik germański itp.) — do zdefiniowania przez UNITS; Kuźnia żelaza = NOWY budynek dla EKONOMIA",
+      "Uwagi": "kończy Epokę 2 / otwiera Epokę 3; Odlewnia żelaza = upgrade Odlewni brązu (brąz+żelazo); Kuźnia żelaza = łańcuch pancerza (osobny slot)",
       "Odblokowuje ulepszenie terenu": null,
       "awansDoEpoki": 3
     },
@@ -409,9 +409,9 @@
       "wymagany budynek": "Kuźnia żelaza",
       "Wymaga (prereq)": "Hutnictwo żelaza + Drogi brukowane",
       "Odblokowuje surowiec.": "stal (prereq)",
-      "Odblokowuje budynek": "Wielka Kuźnia; Jednostki: Gaesatae, Soldurii, Wojownik germański, Berserker germański",
+      "Odblokowuje budynek": "Wielka odlewnia; Wielka Kuźnia; Jednostki: Gaesatae, Soldurii, Wojownik germański, Berserker germański",
       "Koszt nauki": 370,
-      "Uwagi": "Wielka Kuźnia = NOWY budynek (produkcja++, mnoznik jednostek++); stal = NOWY surowiec dla DANE (prereq dalszych epok); EKONOMIA dodaje surowiec; UNITS aktualizuje jednostki żelazne wyższego poziomu",
+      "Uwagi": "Wielka odlewnia = produkcja stal+metale (brąz+żelazo+stal); Wielka Kuźnia = tylko pancerz +45% łańcuch kuźni; stal = NOWY surowiec dla DANE (prereq dalszych epok)",
       "Odblokowuje ulepszenie terenu": null
     },
     {

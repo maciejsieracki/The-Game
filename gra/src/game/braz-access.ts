@@ -1,11 +1,12 @@
 /**
  * braz-access.ts — łańcuch brązu (ABC-12/13; Maciej 2026-07-09: brąz to STOP miedzi, NIE surowiec).
- * Dostęp do brązu = Kopalnia miedzi (mapa, imperium — źródło miedzi) AND Piec hutniczy (miasto).
- * Sama ruda / złoże w zasięgu ≠ brąz.
+ * Dostęp do brązu = Kopalnia miedzi (mapa, imperium — źródło miedzi) AND Odlewnia brązu (miasto
+ * lub upgrade: Odlewnia żelaza / Wielka odlewnia — te też produkują brąz).
+ * Sama ruda / złoże w zasięgu ≠ brąz. „Piec hutniczy" = rezerwowana nazwa na przyszłe epoki.
  */
 import { normalizeImprovementKey } from './terrain-improvements';
 
-/** Id budynku w JSON (nazwa wyświetlana: Piec hutniczy). */
+/** Id budynku tier1 łańcucha odlewni (nazwa wyświetlana: Odlewnia brązu). */
 export const PIEC_HUTNICZY_BUILDING_ID = 'odlewnia_brazu';
 
 /** Ulepszenie-źródło miedzi (dawniej „Popalnia brązu"). */
@@ -34,10 +35,11 @@ export function empireHasKopalniaMiedzi(
   return false;
 }
 
-/** Piec hutniczy lub jego upgrade (Odlewnia żelaza). */
+/** Odlewnia brązu lub dowolny upgrade łańcucha odlewni (produkują brąz). */
 export function cityHasPiecHutniczy(builtIds: readonly string[]): boolean {
   return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID)
-    || builtIds.includes('odlewnia_zelaza');
+    || builtIds.includes('odlewnia_zelaza')
+    || builtIds.includes('wielka_odlewnia');
 }
 
 /** Pełny dostęp do brązu — rekrut, konwerter, panel (gdy wired). */

@@ -79,155 +79,6 @@ function buildingCostAfterCivDiscount(baseCost, bonusy) {
   return Math.max(1, Math.floor(baseCost * (1 - disc)));
 }
 
-// data/epoka-ludnosc-manpower.json
-var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
-  _formuly: {
-    ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
-    manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
-  },
-  epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
-    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
-    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
-    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
-    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 16e3 },
-    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 32e3 },
-    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 64e3 },
-    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e4 },
-    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e4 },
-    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e4 }
-  ]
-};
-
-// data/miasto-params.json
-var miasto_params_default = {
-  min_dystans_miast: {
-    wartosc: 5,
-    jednostka: "heksy",
-    opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
-  },
-  jednostka_koszt_ludnosci: {
-    wartosc: 0,
-    jednostka: "ludnosc",
-    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
-  },
-  manpower_regen_proc_max_tura: {
-    wartosc: 2,
-    jednostka: "% max/ture",
-    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +200/ture. Pusta pula \u224850 tur do pelna. manpower.tickManpowerRegen."
-  },
-  manpower_regen_blok_oblezenie: {
-    wartosc: 1,
-    jednostka: "0/1",
-    opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
-  },
-  jednostka_koszt_domyslny: {
-    wartosc: 10,
-    jednostka: "Praca",
-    opis: "Domyslny koszt Pracy jednostki, gdy brak pola 'Pieniadz (koszt)' w units.json i brak dopasowania roli. production.DEFAULT_UNIT_COST."
-  },
-  zaloz_miasto_koszt_praca: {
-    wartosc: 20,
-    jednostka: "Praca",
-    opis: "Koszt za\u0142o\u017Cenia miasta z mapy (tryb Budowa) \u2014 jak historyczny Osadnik (B1 Maciej 2026-06-29). Pierwsze miasto onboarding = 0 (Silnik)."
-  },
-  zaloz_miasto_koszt_ludnosci: {
-    wartosc: 1,
-    jednostka: "ludnosc",
-    opis: "Ludno\u015B\u0107 pobierana przy za\u0142o\u017Ceniu kolejnego miasta (jak Osadnik Ludno\u015B\u0107=1)."
-  },
-  jednostka_koszt_rola_wsparcie: {
-    wartosc: 12,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Wsparcie', gdy brak 'Pieniadz (koszt)'."
-  },
-  jednostka_koszt_rola_dystans: {
-    wartosc: 8,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Dystans' (jednostki dystansowe)."
-  },
-  jednostka_koszt_rola_wrecz: {
-    wartosc: 10,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Wrecz' (piechota wrecz)."
-  },
-  jednostka_koszt_rola_konnica: {
-    wartosc: 16,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Konnica'."
-  },
-  zasieg_okolicy_miasta: {
-    wartosc: 10,
-    jednostka: "pola/strona",
-    opis: "Promien okolicy roboczej miasta (pola na plony) z kazdej strony = 10 (bylo 5; ROZSZERZONE o +5 z kazdej strony, decyzja Naster). ~21x21 ~331 heksow. Tu przydzielasz mieszkancow; to tez zasieg budowy miasta."
-  },
-  zasieg_okolicy_max: {
-    wartosc: 15,
-    jednostka: "pola/strona",
-    opis: "Maksymalny promien okolicy miasta (cap) w modelu: cityRangeForPopulation(pop)=max(zasieg_okolicy_baza, min(pop,cap)). Maciej 2026-06-27: start min 5, rosnie 1:1 z pop."
-  },
-  praca_udzial_budynki: {
-    wartosc: 0.7,
-    jednostka: "udzial [0..1]",
-    opis: "Q4: czesc Pracy miasta do kolejki budynkow; reszta -> globalna pula Pracy w skarbcu."
-  },
-  bonus_obrona_mur_proc: {
-    wartosc: 200,
-    jednostka: "% Obrony",
-    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
-  },
-  bonus_obrona_cytadela_proc: {
-    wartosc: 100,
-    jednostka: "% Obrony (dodatkowo do muru)",
-    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
-  },
-  bonus_obrona_baszta_proc: {
-    wartosc: 100,
-    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
-    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
-  },
-  zasieg_okolicy_baza: {
-    wartosc: 5,
-    jednostka: "pola/strona",
-    opis: "Minimalny promien okolicy przy populacji 1..4 (start miasta = 5 heksow). Czytane przez okolica.cityRangeForPopulation (Maciej 2026-06-27)."
-  },
-  zasieg_okolicy_pop5: {
-    wartosc: 10,
-    jednostka: "pola/strona",
-    opis: "[LEGACY - nieuzywane od 2026-06-25] Zasieg okolicy przy populacji >= 5 (stary model schodkowy). Zachowane dla wstecznej zgodnosci parsowania."
-  },
-  zasieg_okolicy_pop10: {
-    wartosc: 15,
-    jednostka: "pola/strona",
-    opis: "[LEGACY - nieuzywane od 2026-06-25] Zasieg okolicy przy populacji >= 10 (stary model schodkowy). Zachowane dla wstecznej zgodnosci parsowania."
-  },
-  udzial_output_produkcja: {
-    wartosc: 0.4,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia PRODUKCJA. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  },
-  udzial_output_pieniadz: {
-    wartosc: 0.3,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia PIENIADZ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  },
-  udzial_output_nauka: {
-    wartosc: 0.2,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia NAUKA. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  },
-  udzial_output_rozwoj: {
-    wartosc: 0.1,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia ROZWOJ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  }
-};
-
-// src/game/manpower.ts
-var ROWS = epoka_ludnosc_manpower_default.epoki;
-
 // data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
@@ -428,11 +279,13 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
+    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
   lodzie_rybackie: {
     nazwa: "\u0141odzie rybackie",
@@ -574,6 +427,178 @@ function normalizeImprovementKey(raw) {
   return IMPROVEMENTS[key]?.bonus !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
 }
 
+// src/map/road-movement.ts
+var ROAD_MIN_MOVE_COST = 1 / 3;
+
+// src/units/setup.ts
+var DEFAULT_TERRAIN_COSTS = {
+  ["laka" /* Laka */]: 1,
+  ["rownina" /* Rownina */]: 1,
+  ["pustynia" /* Pustynia */]: 1,
+  ["wybrzeze" /* Wybrzeze */]: Infinity,
+  ["wzgorza" /* Wzgorza */]: 2,
+  ["gory" /* Gory */]: Infinity,
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
+};
+var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+
+// data/epoka-ludnosc-manpower.json
+var epoka_ludnosc_manpower_default = {
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
+  _formuly: {
+    ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
+    manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
+    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
+  },
+  epoki: [
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
+    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
+    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
+    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
+    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 16e3 },
+    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 32e3 },
+    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 64e3 },
+    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e4 },
+    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e4 },
+    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e4 }
+  ]
+};
+
+// data/miasto-params.json
+var miasto_params_default = {
+  min_dystans_miast: {
+    wartosc: 5,
+    jednostka: "heksy",
+    opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
+  },
+  jednostka_koszt_ludnosci: {
+    wartosc: 0,
+    jednostka: "ludnosc",
+    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
+  },
+  manpower_regen_proc_max_tura: {
+    wartosc: 2,
+    jednostka: "% max/ture",
+    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +200/ture. Pusta pula \u224850 tur do pelna. manpower.tickManpowerRegen."
+  },
+  manpower_regen_blok_oblezenie: {
+    wartosc: 1,
+    jednostka: "0/1",
+    opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
+  },
+  manpower_uzupelnienie_hp_proc_max_tura: {
+    easy: 25,
+    normal: 20,
+    hard: 15,
+    jednostka: "% maxHP/tura",
+    opis: "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP \xD7 warto\u015B\u0107/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP \xD7 kosztJednostki). Przy braku MP \u2014 leczenie cz\u0119\u015Bciowe do dost\u0119pnej puli. manpower.tickManpowerUnitReplenishment."
+  },
+  jednostka_koszt_domyslny: {
+    wartosc: 10,
+    jednostka: "Praca",
+    opis: "Domyslny koszt Pracy jednostki, gdy brak pola 'Pieniadz (koszt)' w units.json i brak dopasowania roli. production.DEFAULT_UNIT_COST."
+  },
+  zaloz_miasto_koszt_praca: {
+    wartosc: 20,
+    jednostka: "Praca",
+    opis: "Koszt za\u0142o\u017Cenia miasta z mapy (tryb Budowa) \u2014 jak historyczny Osadnik (B1 Maciej 2026-06-29). Pierwsze miasto onboarding = 0 (Silnik)."
+  },
+  zaloz_miasto_koszt_ludnosci: {
+    wartosc: 1,
+    jednostka: "ludnosc",
+    opis: "Ludno\u015B\u0107 pobierana przy za\u0142o\u017Ceniu kolejnego miasta (jak Osadnik Ludno\u015B\u0107=1)."
+  },
+  jednostka_koszt_rola_wsparcie: {
+    wartosc: 12,
+    jednostka: "Praca",
+    opis: "Fallback kosztu Pracy dla roli 'Wsparcie', gdy brak 'Pieniadz (koszt)'."
+  },
+  jednostka_koszt_rola_dystans: {
+    wartosc: 8,
+    jednostka: "Praca",
+    opis: "Fallback kosztu Pracy dla roli 'Dystans' (jednostki dystansowe)."
+  },
+  jednostka_koszt_rola_wrecz: {
+    wartosc: 10,
+    jednostka: "Praca",
+    opis: "Fallback kosztu Pracy dla roli 'Wrecz' (piechota wrecz)."
+  },
+  jednostka_koszt_rola_konnica: {
+    wartosc: 16,
+    jednostka: "Praca",
+    opis: "Fallback kosztu Pracy dla roli 'Konnica'."
+  },
+  zasieg_okolicy_miasta: {
+    wartosc: 10,
+    jednostka: "pola/strona",
+    opis: "Promien okolicy roboczej miasta (pola na plony) z kazdej strony = 10 (bylo 5; ROZSZERZONE o +5 z kazdej strony, decyzja Naster). ~21x21 ~331 heksow. Tu przydzielasz mieszkancow; to tez zasieg budowy miasta."
+  },
+  zasieg_okolicy_max: {
+    wartosc: 15,
+    jednostka: "pola/strona",
+    opis: "Maksymalny promien okolicy miasta (cap) w modelu: cityRangeForPopulation(pop)=max(zasieg_okolicy_baza, min(pop,cap)). Maciej 2026-06-27: start min 5, rosnie 1:1 z pop."
+  },
+  praca_udzial_budynki: {
+    wartosc: 0.7,
+    jednostka: "udzial [0..1]",
+    opis: "Q4: czesc Pracy miasta do kolejki budynkow; reszta -> globalna pula Pracy w skarbcu."
+  },
+  bonus_obrona_mur_proc: {
+    wartosc: 200,
+    jednostka: "% Obrony",
+    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
+  },
+  bonus_obrona_cytadela_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru)",
+    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
+  },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
+  },
+  zasieg_okolicy_baza: {
+    wartosc: 5,
+    jednostka: "pola/strona",
+    opis: "Minimalny promien okolicy przy populacji 1..4 (start miasta = 5 heksow). Czytane przez okolica.cityRangeForPopulation (Maciej 2026-06-27)."
+  },
+  zasieg_okolicy_pop5: {
+    wartosc: 10,
+    jednostka: "pola/strona",
+    opis: "[LEGACY - nieuzywane od 2026-06-25] Zasieg okolicy przy populacji >= 5 (stary model schodkowy). Zachowane dla wstecznej zgodnosci parsowania."
+  },
+  zasieg_okolicy_pop10: {
+    wartosc: 15,
+    jednostka: "pola/strona",
+    opis: "[LEGACY - nieuzywane od 2026-06-25] Zasieg okolicy przy populacji >= 10 (stary model schodkowy). Zachowane dla wstecznej zgodnosci parsowania."
+  },
+  udzial_output_produkcja: {
+    wartosc: 0.4,
+    jednostka: "udzial [0..1]",
+    opis: "Domyslny udzial outputu miasta kierowany do strumienia PRODUKCJA. production.DEFAULT_OUTPUT_SHARES / splitOutput."
+  },
+  udzial_output_pieniadz: {
+    wartosc: 0.3,
+    jednostka: "udzial [0..1]",
+    opis: "Domyslny udzial outputu miasta kierowany do strumienia PIENIADZ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
+  },
+  udzial_output_nauka: {
+    wartosc: 0.2,
+    jednostka: "udzial [0..1]",
+    opis: "Domyslny udzial outputu miasta kierowany do strumienia NAUKA. production.DEFAULT_OUTPUT_SHARES / splitOutput."
+  },
+  udzial_output_rozwoj: {
+    wartosc: 0.1,
+    jednostka: "udzial [0..1]",
+    opis: "Domyslny udzial outputu miasta kierowany do strumienia ROZWOJ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
+  }
+};
+
+// src/game/manpower.ts
+var ROWS = epoka_ludnosc_manpower_default.epoki;
+
 // src/game/braz-access.ts
 var PIEC_HUTNICZY_BUILDING_ID = "odlewnia_brazu";
 var KOPALNIA_MIEDZI_KEY = "kopalnia_miedzi";
@@ -594,7 +619,7 @@ function empireHasKopalniaMiedzi(placedImprovements) {
   return false;
 }
 function cityHasPiecHutniczy(builtIds) {
-  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza");
+  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza") || builtIds.includes("wielka_odlewnia");
 }
 function hasBrazAccess(placedImprovements, builtIds) {
   return empireHasKopalniaMiedzi(placedImprovements) && cityHasPiecHutniczy(builtIds);
@@ -603,7 +628,7 @@ function hasBrazAccess(placedImprovements, builtIds) {
 // src/game/zelazo-access.ts
 var ODLEWNIA_ZELAZA_BUILDING_ID = "odlewnia_zelaza";
 function cityHasOdlewniaZelaza(builtIds) {
-  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID);
+  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID) || builtIds.includes("wielka_odlewnia");
 }
 function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
   return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
@@ -667,12 +692,15 @@ var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"])
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
+var ACCESS_ONLY_RESOURCE_LABELS = /* @__PURE__ */ new Set(["S\xF3l", "Z\u0142oto"]);
 function empireLabelSatisfied(label, activeLabels, empireBuiltIds, empireStock) {
   if (activeLabels.includes(label)) return true;
   if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
   if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
-  const asciiKey = ASCII_BY_LABEL[label];
-  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
+    const asciiKey = ASCII_BY_LABEL[label];
+    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  }
   return false;
 }
 function buildingRequiredActiveLabels(building) {
@@ -689,6 +717,9 @@ function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireS
   const active = activeLabels ?? [];
   return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
 }
+var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
+  Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
+);
 
 // src/game/building-upgrades.ts
 function isBuildingSuppressedFromProduction(building) {
@@ -881,7 +912,7 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
-    const gateLabels = ctx.empireActiveResourceLabels?.length ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
+    const gateLabels = ctx.empireActiveResourceLabels !== void 0 ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
     if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
       continue;
     }
@@ -984,7 +1015,7 @@ function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
       data.buildings,
       isBuildingSupersededByUpgrade
     );
-    const gateLabels = ctx.empireActiveResourceLabels?.length ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
+    const gateLabels = ctx.empireActiveResourceLabels !== void 0 ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
     const resourceOk = buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock) && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
     let status = "ready";
     let locationBlocked;

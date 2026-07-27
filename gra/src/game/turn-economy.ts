@@ -1951,7 +1951,9 @@ export function advanceCityEconomy(
     // odpowiednika w buildings.json (Tartak istnieje tylko jako ulepszenie terenu;
     // Huta w ogole nie istnieje -- zastapiona przez 'odlewnia_brazu') -- te dwie
     // receptury pozostaja wiec nieaktywne, to pre-istniejacy stan danych, nie regresja.
-    const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter(r => runtimeBuiltIds.includes(r.id));
+    const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter(r =>
+      runtimeBuiltIds.includes(r.buildingId ?? r.id),
+    );
     if (activeRecipes.length > 0) {
       const convResult = runConverters(
         activeRecipes,

@@ -58,9 +58,9 @@ function ok(c, m) {
 // C. Każdy budynek ma przypisaną grupę — jedną z ośmiu dozwolonych.
 // ===========================================================================
 {
-  // KOSZTY-SUROWCOWE (Maciej 2026-07-25): 39 budynków od dodania Baszty (decyzja
-  // 41B, trzeci niezależny budynek obronny) -- było 38 przed tą zmianą.
-  ok(buildings.length === 39, `buildings.json ma 39 budynków (ma: ${buildings.length})`);
+  // KOSZTY-SUROWCOWE (Maciej 2026-07-27): 40 budynków od dodania Wielkiej odlewni
+  // (było 39 po Baszcie 41B).
+  ok(buildings.length === 40, `buildings.json ma 40 budynków (ma: ${buildings.length})`);
   ok(M.BUILDING_GROUP_ORDER.length === 8, 'BUILDING_GROUP_ORDER ma dokładnie 8 grup');
   const allowed = new Set(M.BUILDING_GROUP_ORDER);
   let missing = [];
@@ -81,7 +81,7 @@ function ok(c, m) {
     'Nauka i kultura': 4,
     'Wiara': 2,
     'Zdrowie': 3,
-    'Produkcja surowców': 9,
+    'Produkcja surowców': 10,
     'Żywność': 2,
   };
   const counts = {};
@@ -90,7 +90,7 @@ function ok(c, m) {
     ok(counts[g] === n, `grupa "${g}" ma ${n} budynków (ma: ${counts[g] ?? 0})`);
   }
   const totalAssigned = Object.values(counts).reduce((a, b) => a + b, 0);
-  ok(totalAssigned === 39, `suma budynków we wszystkich grupach = 39 (ma: ${totalAssigned})`);
+  ok(totalAssigned === 40, `suma budynków we wszystkich grupach = 40 (ma: ${totalAssigned})`);
 }
 
 // ===========================================================================
@@ -173,7 +173,7 @@ function ok(c, m) {
   ok(pretChain.map(c => c.id).join(',') === 'dom_starszyzny,dwor_zarzadcy,pretorium', 'Pretorium: kolejność łańcucha dom_starszyzny→dwor_zarzadcy→pretorium');
 
   // Kuźnia żelaza rozwija Kuźnia brązu; Spichlerz II rozwija Spichlerz;
-  // Port wielki rozwija Port; Odlewnia żelaza rozwija Piec hutniczy.
+  // Port wielki rozwija Port; Odlewnia żelaza rozwija Odlewnię brązu.
   for (const [id, expectedPrev] of [
     ['kuznia_zelaza', 'kuznia'],
     ['spichlerz_ii', 'spichlerz'],
@@ -185,6 +185,13 @@ function ok(c, m) {
     const lines = M.upgradeCompositionLines(id, buildings);
     ok(lines.length > 0, `${id}: upgradeCompositionLines() niepuste (jest następcą)`);
   }
+
+  const wielkaOdlewniaChain = M.upgradeChainSteps('wielka_odlewnia', buildings);
+  ok(wielkaOdlewniaChain.length === 3, `Wielka odlewnia: łańcuch długości 3 (ma: ${wielkaOdlewniaChain.length})`);
+  ok(wielkaOdlewniaChain.map(c => c.id).join(',') === 'odlewnia_brazu,odlewnia_zelaza,wielka_odlewnia',
+    'Wielka odlewnia: kolejność odlewnia_brazu→odlewnia_zelaza→wielka_odlewnia');
+  ok(M.upgradeCompositionLines('wielka_odlewnia', buildings).length > 0,
+    'Wielka odlewnia: upgradeCompositionLines() niepuste');
 
   // Wielka Kuźnia rozwija DWOMA poprzednikami (Kuźnia żelaza, Kuźnia brązu) --
   // łańcuch pełny od naprawy ogniwa kuznia_zelaza->kuznia (ZADANIE 3), tak jak

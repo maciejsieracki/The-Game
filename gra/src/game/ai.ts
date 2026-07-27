@@ -945,9 +945,16 @@ export function chooseCityProduction(
       ['cegla', 'cegielnia'],
       ['braz', 'odlewnia_brazu'],
       ['zelazo', 'odlewnia_zelaza'],
+      ['stal', 'wielka_odlewnia'],
     ];
+    const CONVERTER_ALTERNATIVES: Readonly<Record<string, readonly string[]>> = {
+      braz: ['odlewnia_brazu', 'odlewnia_zelaza', 'wielka_odlewnia'],
+      zelazo: ['odlewnia_zelaza', 'wielka_odlewnia'],
+      stal: ['wielka_odlewnia'],
+    };
     for (const [resource, converterId] of CONVERTER_FOR_RESOURCE) {
-      if (built.includes(converterId)) continue; // konwerter już stoi -- surowiec płynie, nic do zrobienia
+      const alts = CONVERTER_ALTERNATIVES[resource];
+      if (alts?.some(id => built.includes(id))) continue; // konwerter (lub upgrade) już stoi
       const consumerIdx = candidates.findIndex(
         c => c.id !== converterId && (buildingStockCost(data.buildings.find(b => b.id === c.id))[resource] ?? 0) > 0,
       );
@@ -1168,6 +1175,8 @@ const AI_BUILDING_FOR_DEFICIT: Readonly<Record<string, readonly string[]>> = {
   ruda: ['kuznia'],
   cegla: ['cegielnia'],
   braz: ['odlewnia_brazu'],
+  zelazo: ['odlewnia_zelaza'],
+  stal: ['wielka_odlewnia'],
   ceramika: ['garncarnia'],
 };
 

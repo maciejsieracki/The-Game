@@ -134,7 +134,7 @@ export interface ResourceAccessCity {
 export interface ResourceAccessOptions {
   /** Właściciel heksów — do filtrowania odblokowań hodowli imperium. */
   ownerId?: string;
-  /** Budynki miasta — bramka brązu (Popalnia AND Piec hutniczy). */
+  /** Budynki miasta — bramka brązu (Kopalnia miedzi AND Odlewnia brązu). */
   builtIds?: readonly string[];
   /** Wstępnie obliczone odblokowania hodowli (opcjonalnie z main.ts). */
   empireLivestockUnlocks?: ReadonlySet<LivestockKey>;
