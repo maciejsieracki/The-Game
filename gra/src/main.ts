@@ -135,6 +135,7 @@ import {
   filterDiplomacyCommandsForEstablishedContact,
   playerDiplomacyActionAllowed,
   startRelationForPair,
+  applyWiarygodnoscD4ToRelation,
   applyCityStateDifficultyTrust,
 } from './game/diplomacy-layers';
 import { grantTechEpokWczesniejszych } from './game/research';
@@ -436,6 +437,7 @@ import { getMinimapData, computeViewport } from './map/minimap';
 import {
   createImprovementBuildApi,
   collectRoadKeys,
+  stripImprovementsWhenForestRemoved,
   type ImprovementBuildRequest,
   type ImprovementBuildCallbacks,
 } from './map/improvement-build';
@@ -474,6 +476,7 @@ import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './ga
 import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
 import miastoParams from '../data/miasto-params.json';
+import aiParamsRaw from '../data/ai-params.json';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -482,6 +485,7 @@ import {
 } from './game/auto-battle-power';
 import {
   applyPostBattleMap,
+  applyDefenderPreBattleRetreat,
   snapshotRosterPositions,
   findCityOnHex,
   applyCityCaptureAfterBattle,
@@ -549,7 +553,7 @@ import {
   advanceEmpireFood, bindEmpireFoodRuntime, freshEmpireFoodState,
   buildEmpireFoodParams, getLastEmpireFoodTick, getEmpireFoodReserve, getEmpireFoodMaxCap, getEmpireFoodSplit, isArmyStarving,
   getArmyStarvationCountdown,
-  computeEmpireFoodNetDelta, computeEmpireFoodNetDeltaFromCityFoods, getCityFoodSplit, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
+  computeEmpireFoodNetDelta, computeEmpireFoodNetDeltaFromCityFoods, getCityFoodSplit, clampFoodSplitPct, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
   type EmpireFoodState,
 } from './game/empire-food';
 import { loadUpkeepParams, buildUnitFoodTable, militaryFoodConsumption, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
@@ -599,7 +603,7 @@ import {
 import {
   civCultureLabelForKey,
   diplomacyPersonalityTags,
-  formatNegotiationDealSummary,
+  formatNegotiationDealPlayerSummary,
   formatDiploPlayerSummaryLines,
   formatPowerRelationLine,
   resolveFormalDiplomaticStatus,
@@ -665,7 +669,7 @@ import {
   toggleWikiHubHud,
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, type AICommand, type AiSliderSettings } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
@@ -731,12 +735,18 @@ import {
   normalizeTreatyKind, hydrateActiveDeals, addTreaty, resolvePokojTrustTier,
   type HandelSurowiecCyklicznyItem,
 } from './game/diplomacy-treaties';
+import { empireDiploResourceFlowPerTurn } from './game/empire-diplo-resource-flow';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
   tributeBreakPairsFromDeals, canAiProposeTradeAgreement,
   AI_RESOURCE_TRADE_DEFAULT_TURNS, AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
   canAiProposeResourceTrade,
 } from './game/diplomacy-economy';
+import {
+  formatDiploPenaltyShort,
+  previewVoluntaryTreatyBreakPenalties,
+  previewWarDeclarationPenalties,
+} from './game/diplomacy-penalty-preview';
 import { RodzajTraktatu } from './types/diplomacy';
 import {
   applyPnTrustToRelation,
@@ -893,6 +903,8 @@ async function boot(): Promise<void> {
       pathLen: number;
       cost: number;
       points: Waypoint[];
+      /** Hex coords per segment (points[1..] = pathHexes[0..]). */
+      pathHexes: { q: number; r: number }[];
       seg: number;
       t: number;
     }
@@ -1861,6 +1873,7 @@ async function boot(): Promise<void> {
         // miasta, zero drugiej implementacji.
         { id: 'zloto',       label: 'Złoto',       icon: '🪙', typ: 'surowy',  access: true },
       ];
+      const diploFlows = empireDiploResourceFlowPerTurn(activeDeals, ownerId);
       const rows: EmpireResourceRow[] = [];
       for (const c of CATALOG) {
         // Wiersze czystego dostępu (Sól/Koń/Ceramika/Złoto) NIE pokazują stocku — nawet
@@ -1908,12 +1921,19 @@ async function boot(): Promise<void> {
         // nic, powinno być zasugerowane, że jest miejsce na surowce, które są dostępem" —
         // więc od teraz wiersze dostępu ZOSTAJĄ zawsze, ze stanem dostep=false ("brak")
         // renderowanym przez resAccessHtml (empireDetailPanel.ts) zamiast znikać z panelu.
-        const ratePerTurn = c.access ? 0 : Math.floor((territoryRates[c.id] ?? 0) + (converterRates[c.id] ?? 0));
+        const production = c.access ? 0 : Math.floor((territoryRates[c.id] ?? 0) + (converterRates[c.id] ?? 0));
+        const flow = diploFlows[c.id];
+        const diploOut = flow?.outPerTurn ?? 0;
+        const diploIn = flow?.inPerTurn ?? 0;
+        const ratePerTurn = production - diploOut + diploIn;
         const cap = c.access ? undefined : empireCap;
         const capBase = c.access ? undefined : storageParams.bazaSurowcePanstwo;
         const capBonusPerMagazyn = c.access ? undefined : storageParams.bonusSurowceNaBudynek;
         rows.push({
           id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
+          rateProductionPerTurn: production,
+          ...(diploOut > 0 ? { rateDiploOutPerTurn: diploOut } : {}),
+          ...(diploIn > 0 ? { rateDiploInPerTurn: diploIn } : {}),
           cap, capBase, capBonusPerMagazyn, zrodlo,
         });
       }
@@ -3228,6 +3248,11 @@ async function boot(): Promise<void> {
 
     function clearPlayerUnitSelection(): void {
       if (selectedId !== null) clearPlannedMarch(selectedId);
+      clearPlayerUnitSelectionStateOnly();
+    }
+
+    /** Odznacz jednostkę bez kasowania zaplanowanych marszów (koniec tury gracza). */
+    function clearPlayerUnitSelectionStateOnly(): void {
       selectedId = null;
       reachable = new Set<string>();
       unitRenderer.clearHighlight();
@@ -3235,6 +3260,36 @@ async function boot(): Promise<void> {
       unitRenderer.clearSelectionHex();
       hoverKey = null;
       setArmyListSelectedId(null);
+      refreshD1bHud();
+    }
+
+    function focusCameraOnUnit(u: RuntimeUnit): void {
+      const { x, z } = axialToWorld(u.q, u.r, HEX_R);
+      const { dist } = camCtrl.getFocusState();
+      camCtrl.focusAt(x, z, dist);
+    }
+
+    /** Po zakończeniu tury: odśwież pierścień, zasięg i kamerę dla wybranej jednostki. */
+    function syncPlayerUnitSelectionOnMap(): void {
+      if (selectedId === null) return;
+      const u = units.find(x => x.id === selectedId);
+      if (!u || u.ownerId !== 0) return;
+      unitRenderer.setSelectionHex(u.q, u.r, u.ownerId);
+      if (isSiegeMapPanelOpen()) {
+        reachable = new Set<string>();
+        unitRenderer.clearHighlight();
+      } else if (stackCanMove(u)) {
+        reachable = reachableWithMergeTargets(u);
+        unitRenderer.setHighlight(reachable);
+      } else {
+        reachable = new Set<string>();
+        unitRenderer.clearHighlight();
+      }
+      if (plannedMarches.has(u.id)) {
+        refreshPlannedMarchPreview(u.id);
+      }
+      focusCameraOnUnit(u);
+      refreshD1bHud();
     }
 
     /** Odznacz jednostkę na mapie świata (Escape / PPM). */
@@ -3340,6 +3395,62 @@ async function boot(): Promise<void> {
       return out;
     }
 
+    /** Wszystkie armie gracza (1 wiodąca/heks) — garnizon, oblężenie, bez ruchu; kolejność przestrzenna. */
+    function cyclablePlayerArmyLeads(): RuntimeUnit[] {
+      const playerUnits = units.filter(u => u.ownerId === 0);
+      const stacks = new Map<string, RuntimeUnit[]>();
+      for (const u of playerUnits) {
+        const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+        const arr = stacks.get(key);
+        if (arr) arr.push(u);
+        else stacks.set(key, [u]);
+      }
+      const out: RuntimeUnit[] = [];
+      for (const group of stacks.values()) {
+        out.push(group[0]!);
+      }
+      out.sort((a, b) => {
+        const sa = a.q + a.r;
+        const sb = b.q + b.r;
+        if (sa !== sb) return sa - sb;
+        if (a.q !== b.q) return a.q - b.q;
+        return a.r - b.r;
+      });
+      return out;
+    }
+
+    function armyLeadHexKey(u: RuntimeUnit): string {
+      return u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+    }
+
+    /** Spacja / strzałki HUD — cykl po wszystkich armiach gracza (nie tylko z ruchem). */
+    function cycleToAdjacentPlayerUnit(afterId: string | null, delta: 1 | -1): void {
+      if (!isWorldMapUnitMode()) return;
+      const list = cyclablePlayerArmyLeads();
+      if (list.length === 0) {
+        clearPlayerUnitSelection();
+        return;
+      }
+      let cur = afterId === null ? (delta > 0 ? -1 : 0) : 0;
+      if (afterId !== null) {
+        const idxById = list.findIndex(u => u.id === afterId);
+        if (idxById >= 0) {
+          cur = idxById;
+        } else {
+          const selected = units.find(x => x.id === afterId);
+          if (selected) {
+            const key = armyLeadHexKey(selected);
+            const idxByHex = list.findIndex(u => armyLeadHexKey(u) === key);
+            if (idxByHex >= 0) cur = idxByHex;
+          }
+        }
+      }
+      const idx = (cur + delta + list.length) % list.length;
+      const next = list[idx]!;
+      selectPlayerUnit(next.id);
+      focusCameraOnUnit(next);
+    }
+
     /**
      * C: auto-cykl „bęben" — przejdź do następnej jednostki gracza z dostępnym ruchem
      * (po jednostce `afterId`). Gdy żadna nie ma już ruchu — odznacz (koniec cyklu).
@@ -3359,9 +3470,7 @@ async function boot(): Promise<void> {
       }
       const next = list[idx]!;
       selectPlayerUnit(next.id);
-      const { x, z } = axialToWorld(next.q, next.r, HEX_R);
-      const { dist } = camCtrl.getFocusState();
-      camCtrl.focusAt(x, z, dist);
+      focusCameraOnUnit(next);
     }
 
     /** Rozwiązanie jednostki gracza — usuwa z mapy, zwraca Manpower do puli imperium. */
@@ -4288,12 +4397,8 @@ async function boot(): Promise<void> {
               };
             });
         },
-        // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): "Opuść garnizon" przy
-        // jednostce w panelu miasta -- odwraca dokładnie to, co robi Ufort.
-        // (inGarnizon=false), PER JEDNOSTKA (symetrycznie do tego, że Ufort.
-        // ukrywa też tylko jedną wybraną jednostkę, nie cały widoczny stos).
-        // Jednostka wraca do zwykłego, widocznego stosu na heksie miasta —
-        // "Czuwaj"/"Rozwiąż" działają dalej bez dalszych zmian.
+        // C-GARN-Q1: odfortyfikowanie jednej jednostki z panelu miasta — zostaje
+        // na heksie miasta, widoczna na mapie ze sterowaniem ruchem.
         onLeaveGarrison: (unitId: string) => {
           const u = units.find(x => x.id === unitId);
           if (!u || u.ownerId !== 0 || u.inGarnizon !== true) return;
@@ -4305,9 +4410,31 @@ async function boot(): Promise<void> {
           refreshCityPanelIfOpen();
           refreshD1bHud();
           showHintMessage(
-            u.typeId + ' opuścił garnizon' + (city ? ' — ' + city.name : ''),
+            u.typeId + ' odfortyfikowano — jednostka na heksie miasta'
+              + (city ? ' (' + city.name + ')' : ''),
             2500,
           );
+          selectPlayerUnit(u.id, true);
+        },
+        onLeaveAllGarrison: (q: number, r: number) => {
+          const garStack = garrisonUnitsOnHex(units, q, r, 0);
+          if (garStack.length === 0) return;
+          const city = cities.find(c => c.q === q && c.r === r);
+          const n = garStack.length;
+          const leadId = garStack[0]!.id;
+          for (const su of garStack) exitGarnizon(su);
+          if (city) syncGarnizonForCity(city);
+          syncUnitsRender();
+          refreshFog();
+          refreshCityPanelIfOpen();
+          refreshD1bHud();
+          showHintMessage(
+            (n > 1 ? `${n} jednostek odfortyfikowano` : garStack[0]!.typeId + ' odfortyfikowano')
+              + ' — armia na heksie miasta'
+              + (city ? ' (' + city.name + ')' : ''),
+            2500,
+          );
+          selectPlayerUnit(leadId, true);
         },
         getBuildingCostPace: () => player.buildingCostPace ?? 'niski',
         getKosztJednostekPace: () => player.kosztJednostekPace ?? 'niski',
@@ -4752,7 +4879,11 @@ async function boot(): Promise<void> {
         return diplomacyRelations.get(key)!;
       }
       if (!diplomacyRelations.has(key)) {
-        diplomacyRelations.set(key, defaultNeutralRelation());
+        const base = defaultNeutralRelation();
+        diplomacyRelations.set(
+          key,
+          applyWiarygodnoscD4ToRelation(base, getWiarygodnosc(a), getWiarygodnosc(b)),
+        );
       }
       return diplomacyRelations.get(key)!;
     }
@@ -4960,7 +5091,13 @@ async function boot(): Promise<void> {
       zlozeGrants = [];
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
       _dipUnitSeq = 0;
-      for (const [oid, rel] of plan.startRelations) setDiploRelation(0, oid, rel);
+      for (const [oid, rel] of plan.startRelations) {
+        setDiploRelation(
+          0,
+          oid,
+          applyWiarygodnoscD4ToRelation(rel, getWiarygodnosc(0), getWiarygodnosc(oid)),
+        );
+      }
 
       let _scFounded = 0, _scRejected = 0;
       for (const sc of plan.spawnCities) {
@@ -5049,9 +5186,11 @@ async function boot(): Promise<void> {
         // cluster-start.ts / main.ts linia ~3223).
         setDiploRelation(
           0, ownerId,
-          // R-TRUDNOSC-1 (Maciej 2026-07-24): trudność MIAST-PAŃSTW (suwak osobny), nie
-          // głównej gry -- patrz _menuCityStateDifficulty (applyMenuParams).
-          applyCityStateDifficultyTrust(startRelationForPair(true), _menuCityStateDifficulty),
+          applyWiarygodnoscD4ToRelation(
+            applyCityStateDifficultyTrust(startRelationForPair(true), _menuCityStateDifficulty),
+            getWiarygodnosc(0),
+            getWiarygodnosc(ownerId),
+          ),
         );
 
         const c = foundCityAt(pos.q, pos.r, ownerId, cities, map, nazwa, true);
@@ -5752,7 +5891,7 @@ async function boot(): Promise<void> {
       const civName = ownerDiploLabel(targetOwnerId);
       showWarConfirmModal(civName, () => {
         if (playerDeclareWarOnOwner(targetOwnerId)) onAllowed();
-      });
+      }, buildWarPenaltyPreview(targetOwnerId, true));
     }
 
     /** Panel kontekstowy mapy (heks + miasto) — po wyborze „Informacja" przy obcym mieście. */
@@ -6207,13 +6346,6 @@ async function boot(): Promise<void> {
 
     /** Sync tokenów: 1 reprezentant/heks (najmocniejszy) + badge ×N. */
     function syncUnitsRender(list?: RuntimeUnit[]): void {
-      if (isCityPanelOpen()) {
-        unitRenderer.setForceVisibleUnitId(null);
-        unitRenderer.sync([], { visibleIds: new Set(), badgeByRepId: new Map() });
-        syncForestForUnits(new Set());
-        cityRenderer.syncStatChips(cities, _cityRenderOpts());
-        return;
-      }
       // FoW: bez jawnej listy filtruj wroga — syncUnitsRender() sam z siebie nie może
       // pokazać obcych poza bieżącym zasięgiem (regresja: czerwone pierścienie w czerni).
       const rawSrc = list ?? (fogOn ? visibleUnitsList(currentVisible()) : units);
@@ -7403,11 +7535,26 @@ async function boot(): Promise<void> {
       clearingMeshes.clear();
     }
 
+    function stripForestDependentImprovements(hexKey: string): void {
+      const prev = placedImprovements.get(hexKey) ?? [];
+      const next = stripImprovementsWhenForestRemoved(prev);
+      if (next.length === prev.length) return;
+      if (next.length) {
+        placedImprovements.set(hexKey, next);
+        syncHexUlepszenieFields(hexKey, next);
+      } else {
+        placedImprovements.delete(hexKey);
+        syncHexUlepszenieFields(hexKey, []);
+      }
+      spawnImprovementMesh(hexKey);
+    }
+
     function finalizeHexClearing(hexKey: string): void {
       const hex = map.hexes[hexKey];
       if (hex?.nakladka === Nakladka.Las) {
         hex.nakladka = Nakladka.Brak;
       }
+      stripForestDependentImprovements(hexKey);
       hideDecorAtHex(hexKey);
       removeClearingMesh(hexKey);
       rebuildResourceOverlays();
@@ -8163,6 +8310,9 @@ async function boot(): Promise<void> {
     /** Miasta, w których gracz zamknął (✕) alert pustej kolejki — fingerprint opcji produkcji. */
     const prodEmptyDismissFp = new Map<string, string>();
 
+    /** Wpisy WYDARZEŃ ukryte krzyżykiem do końca tury (propozycja dyplomatyczna wraca w następnej, jeśli nadal aktualna). */
+    const dismissedSidePanelEventIds = new Set<string>();
+
     function productionAvailabilityCtxForCity(city: City): AvailabilityContext {
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
       const prod0 = cityProd.get(city.id) ?? { kolejka: [], postep: 0 };
@@ -8419,7 +8569,7 @@ async function boot(): Promise<void> {
           kind: 'diplo',
         });
       }
-      return events;
+      return events.filter(e => !dismissedSidePanelEventIds.has(e.id));
     }
 
     /** C-DYP-Q1=A: klik na wpis stołu w kolejce zdarzeń — otwiera pełną Audiencję (stół), nie stary modal jednopozycyjny. */
@@ -9100,9 +9250,8 @@ async function boot(): Promise<void> {
     /** C-DYP-Q1=A: krótki opis WARUNKÓW aktualnie na stole (bez nowej wyceny — tylko odczyt payloadu). */
     function negotiationSummary(entry: PendingNegotiation): string {
       const p = entry.payload;
-      const basketDetail = formatNegotiationDealSummary(p, {
-        fromPlayerPerspective: entry.proposerOwnerId !== 0,
-      });
+      const incoming = entry.proposerOwnerId !== 0;
+      const basketDetail = formatNegotiationDealPlayerSummary(p, incoming);
       switch (entry.actionId) {
         case 'nap': return `Pakt nieagresji na ${p.turns ?? 15} tur`;
         case 'sojusz_defensywny': return 'Sojusz defensywny';
@@ -9155,6 +9304,7 @@ async function boot(): Promise<void> {
           actionLabel,
           summary: dealDetails,
           dealDetails,
+          dealPayload: p,
           round: entry.round,
           maxRounds: NEGOTIATION_MAX_ROUNDS,
           expiresInTurns: Math.max(0, entry.expiresTurn - turn),
@@ -9306,7 +9456,11 @@ async function boot(): Promise<void> {
     }
 
     /** Projekcja +X/t zapasów armii — bieżący suwak, nie stary tick. */
-    function projectPlayerFoodNetRate(): number {
+    function projectPlayerFoodProjection(): {
+      netRate: number;
+      wplywDoZapasow: number;
+      kosztArmii: number;
+    } {
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
       // C-GLOD-Q2=B (Maciej 2026-07-26): mnożnik terytorialny w projekcji HUD —
@@ -9355,12 +9509,27 @@ async function boot(): Promise<void> {
             procentRozwoj: c ? getCityFoodSplit(c) : tk.procentRozwoj,
           };
         });
-      return computeEmpireFoodNetDeltaFromCityFoods(
+      let wplywDoZapasow = 0;
+      for (const c of cityFoods) {
+        const z = Math.max(0, c.zywnoscNetto);
+        const pct = clampFoodSplitPct(c.procentRozwoj);
+        wplywDoZapasow += z * (1 - pct / 100);
+      }
+      const netRate = computeEmpireFoodNetDeltaFromCityFoods(
         cityFoods,
         kosztArmii,
         countPlayerSpichlerze(),
         efParams,
       );
+      return {
+        netRate,
+        wplywDoZapasow: Math.round(wplywDoZapasow),
+        kosztArmii,
+      };
+    }
+
+    function projectPlayerFoodNetRate(): number {
+      return projectPlayerFoodProjection().netRate;
     }
 
     /** Przelicz stawki imperium na HUD z bieżącego stanu miast (bez mutacji). */
@@ -9462,7 +9631,8 @@ async function boot(): Promise<void> {
       const power = objectivePowerForOwner(0);
       const foodReserve = Math.floor(getEmpireFoodReserve(0));
       const foodMaxCap = projectPlayerFoodMaxCap();
-      const foodNetRate = Math.floor(projectPlayerFoodNetRate());
+      const foodProj = projectPlayerFoodProjection();
+      const foodNetRate = Math.floor(foodProj.netRate);
       // ZADANIE 5 (Maciej 2026-07-26): ostrzeżenie z wyprzedzeniem — ile tur do startu
       // atrycji HP wojska, gdy zapasy państwa są ujemne ale karencja jeszcze nie minęła.
       const glodWojskaKarencjaTurHud = buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaKarencjaTur;
@@ -9508,6 +9678,8 @@ async function boot(): Promise<void> {
         zywnoscLabel: String(foodReserve),
         zywnoscMax: foodMaxCap,
         zywnoscRate: foodNetRate,
+        zywnoscWplywMiast: foodProj.wplywDoZapasow,
+        zywnoscKosztWojska: foodProj.kosztArmii,
         glodWojska: isArmyStarving(0),
         zywnoscKarencjaZaTur: foodStarvationCountdown ?? undefined,
         zloto: Math.floor(player.skarbiec),
@@ -9715,10 +9887,27 @@ async function boot(): Promise<void> {
      * → 'zerwanie_traktatu' (-15 Zaufania). ODRĘBNE od kary za zerwanie WYMUSZONE wojną
      * (breakTreatiesOnWar → 'zlamana_obietnica', -40 — inny, cięższy scenariusz, nietknięty).
      */
-    function treatyBreakPenaltyLabel(rodzaj: ActiveDeal['rodzaj']): string {
-      const k = normalizeTreatyKind(rodzaj);
-      if (k === RodzajTraktatu.UmowaHandlowa) return '-10 Zaufania';
-      return '-15 Zaufania';
+    function treatyBreakPenaltyLabel(deal: ActiveDeal): string {
+      return formatDiploPenaltyShort(
+        previewVoluntaryTreatyBreakPenalties(deal, _diplomacyParams()),
+      );
+    }
+
+    function buildWarPenaltyPreview(targetOwnerId: number, attackSameTurn = true) {
+      return previewWarDeclarationPenalties({
+        declarerId: 0,
+        targetId: targetOwnerId,
+        activeDeals,
+        params: _diplomacyParams(),
+        isRetaliation: isCredibilityRetaliation(0, targetOwnerId),
+        attackSameTurn,
+      });
+    }
+
+    function buildBreakTreatyPenaltyPreview(dealId: string) {
+      const deal = activeDeals.find(d => d.id === dealId);
+      if (!deal) return undefined;
+      return previewVoluntaryTreatyBreakPenalties(deal, _diplomacyParams());
     }
 
     /**
@@ -9798,7 +9987,7 @@ async function boot(): Promise<void> {
           label: treatyDisplayLabel(d.rodzaj),
           detail: d.wygasaTura !== null ? `wygasa t.${d.wygasaTura}` : undefined,
           sinceTurns: d.zawartaTura !== undefined ? Math.max(0, turn - d.zawartaTura) : undefined,
-          breakPenaltyLabel: treatyBreakPenaltyLabel(d.rodzaj),
+          breakPenaltyLabel: treatyBreakPenaltyLabel(d),
         }));
     }
 
@@ -10335,6 +10524,61 @@ async function boot(): Promise<void> {
       setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, ev));
     }
 
+    function aiSojuszObowiazekParam(key: string, fallback: number): number {
+      const v = (aiParamsRaw as Record<string, { wartosc?: number }>)[key]?.wartosc;
+      return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+    }
+
+    function countActiveWarsForOwner(ownerId: number): number {
+      let n = 0;
+      for (const oid of allPowerOwnerIds()) {
+        if (oid === ownerId) continue;
+        if (getDiploRelation(ownerId, oid).status === 'wojna') n++;
+      }
+      return n;
+    }
+
+    function peacefulArchetypeForOwner(ownerId: number): boolean {
+      if (ownerId === 0) return false;
+      const aiTyp = (aiOwnerCivMap.get(ownerId) ?? 'grecy') as TypCywilizacji;
+      const prof = civAiProfileForTyp(data, aiTyp);
+      const agresja = resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5, data);
+      return resolveDiplomacyCivBias(
+        agresja,
+        prof?.sklonnoscDoPodboju ?? 2,
+        prof?.agresywnosc,
+        prof?.tolerancjaRyzyka,
+      ).peaceful;
+    }
+
+    function buildAllianceWarObligationCtx(
+      allyId: number,
+      mustDeclareWarOn: number,
+      attackerId: number,
+      victimId: number,
+    ): AllianceWarObligationCtx {
+      const requestingAllyId = mustDeclareWarOn === attackerId ? victimId : attackerId;
+      const trustToRequestingAlly = getDiploRelation(allyId, requestingAllyId).zaufanie ?? 0;
+      return {
+        militaryRatio: militaryRatioAllyVsTarget(allyId, mustDeclareWarOn),
+        activeWarCount: countActiveWarsForOwner(allyId),
+        peacefulArchetype: peacefulArchetypeForOwner(allyId),
+        minRatioHonor: aiSojuszObowiazekParam('ai_sojusz_obowiazek_min_ratio', 0.55),
+        minRatioHonorPeaceful: aiSojuszObowiazekParam('ai_sojusz_obowiazek_min_ratio_pokojowy', 0.75),
+        maxWarsBeforeRefuse: aiSojuszObowiazekParam('ai_sojusz_obowiazek_max_wojny', 1),
+        trustToRequestingAlly,
+        minTrustHonor: aiSojuszObowiazekParam('ai_sojusz_obowiazek_min_zaufanie', 20),
+      };
+    }
+
+    function militaryRatioAllyVsTarget(allyId: number, targetId: number): number {
+      refreshObjectivePowerCache();
+      const allyPower = objectivePowerForOwner(allyId);
+      const enemyPower = objectivePowerForOwner(targetId);
+      if (enemyPower <= 0) return allyPower > 0 ? 2 : 1;
+      return allyPower / enemyPower;
+    }
+
     function applyAllianceObligationsOnWar(attackerId: number, victimId: number): void {
       const obligations = allianceObligationsForWarDeclaration(activeDeals, attackerId, victimId);
       const joinedWarOwnerIds: number[] = [attackerId, victimId];
@@ -10347,15 +10591,18 @@ async function boot(): Promise<void> {
             continue;
           }
 
-          // N4 (§2, §8) — seam decyzyjny "odmawiam": PRZED 2026-07-26 ta gałąź nie
-          // istniała i silnik wymuszał join bezwarunkowo, więc kara N4 nigdy nie mogła
-          // się odpalić (hak niżej był gotowy, ale martwy). `aiHonorsAllianceWarObligation`
-          // (game/ai.ts) ownerId-agnostyczna (parytet) — dziś ZAWSZE zwraca true (honoruje),
-          // więc zachowanie jest identyczne jak dotąd; realna heurystyka odmowy i ścieżka
-          // decyzji gracza w UI to osobne, celowo odłożone zadania (patrz raport wdrożeniowy).
-          // Odmowa = NIE dołączamy do joinedWarOwnerIds -> ally "wpada" w pętlę N4 niżej,
-          // która już poprawnie liczy karę i zrywa traktat WYŁĄCZNIE odmawiającemu.
-          if (!aiHonorsAllianceWarObligation(allyId, ob.mustDeclareWarOn, attackerId, victimId)) {
+          // N4 (§2, §8) — C-WIAR-N4-AI=B: heurystyka odmowy AI przed wymuszonym joinem.
+          const obCtx = buildAllianceWarObligationCtx(allyId, ob.mustDeclareWarOn, attackerId, victimId);
+          if (!aiHonorsAllianceWarObligation(allyId, ob.mustDeclareWarOn, attackerId, victimId, obCtx)) {
+            if (
+              allyId !== 0
+              && (attackerId === 0 || victimId === 0 || ob.mustDeclareWarOn === 0)
+            ) {
+              showHintMessage(
+                'Sojusznik ' + ownerDiploLabel(allyId) + ' odmawia pomocy — sojusz zerwany',
+                4500,
+              );
+            }
             continue;
           }
 
@@ -11103,7 +11350,7 @@ async function boot(): Promise<void> {
       if (actionId === '11') {
         showWarConfirmModal(civName, () => {
           playerDeclareWarOnOwner(ownerId);
-        });
+        }, buildWarPenaltyPreview(ownerId, false));
         return;
       }
 
@@ -11246,7 +11493,7 @@ async function boot(): Promise<void> {
             sinceTurns: dominantTreaty.zawartaTura !== undefined
               ? Math.max(0, turn - dominantTreaty.zawartaTura)
               : undefined,
-            breakPenaltyLabel: treatyBreakPenaltyLabel(dominantTreaty.rodzaj),
+            breakPenaltyLabel: treatyBreakPenaltyLabel(dominantTreaty),
           } : undefined;
           return {
             formalStatus,
@@ -11349,6 +11596,7 @@ async function boot(): Promise<void> {
           };
         },
         onBreakTreaty: (dealId: string) => breakTreatyVoluntarily(dealId),
+        previewBreakTreatyPenalties: (dealId: string) => buildBreakTreatyPenaltyPreview(dealId),
         onAcceptNegotiation: (negotiationId: string) => handleNegotiationAccept(negotiationId),
         onRejectNegotiation: (negotiationId: string) => handleNegotiationReject(negotiationId),
         onCounterNegotiation: (negotiationId: string, payload: NegotiationPayload) =>
@@ -11429,24 +11677,29 @@ async function boot(): Promise<void> {
         });
       }
       if (!siegeCity) {
-        // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): gdy jednostka jest już
-        // ufortyfikowana (zaznaczona z listy armii w lewym menu — patrz
-        // playerStackAt), przycisk zamienia się w "Opuść garnizon" — bez
-        // zużycia ruchu, żeby raz ufortyfikowana jednostka NIE była trwale
-        // niesterowalna z tego panelu.
-        // DYSPOZYCJA 2026-07-26: analogicznie dla fortyfikacji W POLU (poza
-        // hexem wlasnego miasta, RuntimeUnit.ufortyfikowanyWPolu) -- "Zdejmij
-        // fortyfikacje" bez kosztu ruchu, tak samo jak "Opusc garnizon".
+        // C-GARN-Q1: gdy jednostka jest w garnizonie miasta, przycisk
+        // "Odfortyfikuj" kończy ufortyfikowanie bez kosztu ruchu — jednostka
+        // zostaje na heksie miasta i wraca do normalnego sterowania.
         const isGarnizoned = active.inGarnizon === true;
         const isFieldFortified = active.ufortyfikowanyWPolu === true;
         const alreadyFortifiedSomehow = isGarnizoned || isFieldFortified;
         actions.push({
           id: 'fortify',
           label: isGarnizoned
-            ? 'Opuść garnizon'
+            ? 'Odfortyfikuj'
             : isFieldFortified ? 'Zdejmij fortyfikację' : 'Ufortyfikuj',
           disabled: alreadyFortifiedSomehow ? false : stackRuch <= 0,
         });
+        if (isGarnizoned) {
+          const garCount = garrisonUnitsOnHex(units, active.q, active.r, active.ownerId).length;
+          if (garCount > 1) {
+            actions.push({
+              id: 'unfortify-all',
+              label: 'Odfortyfikuj całą armię',
+              disabled: false,
+            });
+          }
+        }
         // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
         // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
         // jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
@@ -11890,25 +12143,36 @@ async function boot(): Promise<void> {
               unitRenderer.clearHighlight();
               unitRenderer.clearPathRoute();
               refreshD1bHud();
+            } else if (actionId === 'unfortify-all') {
+              const leaveCity = cityAtUnit(u);
+              const garStack = garrisonUnitsOnHex(units, u.q, u.r, u.ownerId);
+              const n = garStack.length;
+              if (n === 0) return;
+              for (const su of garStack) exitGarnizon(su);
+              if (leaveCity) syncGarnizonForCity(leaveCity);
+              refreshFog();
+              syncUnitsRender();
+              refreshCityPanelIfOpen();
+              showHintMessage(
+                (n > 1 ? `${n} jednostek odfortyfikowano` : u.typeId + ' odfortyfikowano')
+                  + ' \u2014 armia na heksie miasta'
+                  + (leaveCity ? ' (' + leaveCity.name + ')' : ''),
+                2500,
+              );
+              selectPlayerUnit(u.id, true);
             } else if (actionId === 'fortify') {
-              // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jednostka ju\u017c
-              // ufortyfikowana (wybrana z listy armii w lewym menu, gdzie jest
-              // teraz widoczna i zaznaczalna) -- ten sam przycisk staje si\u0119
-              // "Opu\u015b\u0107 garnizon" (patrz label w buildArmyStackHudState), bez
-              // zu\u017cycia ruchu, jak "Obud\u017a". Trzeci, r\u00f3wnoleg\u0142y spos\u00f3b wyj\u015bcia
-              // z garnizonu obok panelu miasta i rozkazu ruchu z listy armii.
+              // C-GARN-Q1: "Odfortyfikuj" kończy ufortyfikowanie TYLKO wybranej
+              // jednostki — zostaje na heksie miasta, bez kosztu ruchu.
               if (u.inGarnizon === true) {
                 const leaveCity = cityAtUnit(u);
-                const garStack = garrisonUnitsOnHex(units, u.q, u.r, u.ownerId);
-                for (const su of garStack) exitGarnizon(su);
+                if (!exitGarnizon(u)) return;
                 if (leaveCity) syncGarnizonForCity(leaveCity);
                 refreshFog();
                 syncUnitsRender();
                 refreshCityPanelIfOpen();
-                const n = garStack.length;
                 showHintMessage(
-                  (n > 1 ? `${n} jednostek opu\u015bci\u0142o garnizon` : u.typeId + ' opu\u015bci\u0142 garnizon')
-                    + (leaveCity ? ' \u2014 ' + leaveCity.name : ''),
+                  u.typeId + ' odfortyfikowano \u2014 jednostka na heksie miasta'
+                    + (leaveCity ? ' (' + leaveCity.name + ')' : ''),
                   2500,
                 );
                 selectPlayerUnit(u.id, true);
@@ -11993,6 +12257,8 @@ async function boot(): Promise<void> {
               refreshD1bHud();
             }
           },
+          onCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta),
+          canCycleUnits: () => cyclablePlayerArmyLeads().length > 1,
           onClose: () => {
             clearPlayerUnitSelection();
             refreshD1bHud();
@@ -12099,7 +12365,12 @@ async function boot(): Promise<void> {
               prodEmptyDismissFp.set(city.id, productionOptionsFingerprint(city));
               refreshD1bHud();
             }
+            return;
           }
+          // Propozycja pokoju / negocjacje / inne dyplo — ukryj do końca tury (✕ nie
+          // usuwa propozycji z inboxu; wraca w następnej turze, jeśli nadal aktualna).
+          dismissedSidePanelEventIds.add(id);
+          refreshD1bHud();
         },
       });
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
@@ -12588,6 +12859,7 @@ async function boot(): Promise<void> {
         pathLen: movePath.length,
         cost,
         points: [startWP, ...stepWPs],
+        pathHexes: movePath.map(h => ({ q: h.q, r: h.r })),
         seg: 0,
         t: 0,
       };
@@ -12671,6 +12943,7 @@ async function boot(): Promise<void> {
       };
 
       if (selectedId !== unitId) selectPlayerUnit(unitId, true);
+      focusCameraOnUnit(u);
       startAnimatedMove(u, result.movePath, last.q, last.r, result.cost);
       return true;
     }
@@ -12830,6 +13103,17 @@ async function boot(): Promise<void> {
 
       // Wioska znikła -- odśwież meshe (ta sama ścieżka co syncVillageMeshes w refreshFog).
       refreshFog();
+    }
+
+    /** Sprawdza nagrody wioski na każdym unikalnym heksie ścieżki (gracz). */
+    function checkVillageRewardsAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): void {
+      const seen = new Set<string>();
+      for (const h of hexes) {
+        const k = keyOf(h.q, h.r);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        checkVillageRewardAt(h.q, h.r);
+      }
     }
 
     /** Animowany ruch (merge / taktyka — natychmiast, bez planowania A3). */
@@ -14352,6 +14636,7 @@ async function boot(): Promise<void> {
         ? 'Twoja obrona (' + defRosterRef.length + ')'
         : defLead.typeId;
       const placeInfo = fieldBattlePlaceInfo(battleQ, battleR, terrain, 0);
+      const playerDefends = defRosterRef.some(u => u.ownerId === 0);
 
       const pbInfo: PreBattleInfo = {
         atakujacy: preBattleSideFromRoster(atkRosterRef, atkSideTitle, atkCivLabel),
@@ -14364,6 +14649,7 @@ async function boot(): Promise<void> {
         lokacja: placeInfo.lokacja,
         tura: turn,
         canRetreat: false,
+        defenderCanRetreat: playerDefends,
       };
 
       const atkStartSnap = snapshotRosterPositions(atkRosterRef);
@@ -14487,6 +14773,19 @@ async function boot(): Promise<void> {
         },
         onCancel: () => {
           hidePreBattle();
+          if (playerDefends) {
+            applyDefenderPreBattleRetreat({
+              units,
+              battleQ: battleHex.q,
+              battleR: battleHex.r,
+              atkRoster: atkRosterRef,
+              defRoster: defRosterRef,
+              isPassableHex: mapHexPassableForUnit,
+              isUnitAt: isOccupiedHex,
+            });
+            showHintMessage('Wycofano się z bitwy.', 3000);
+          }
+          finishIncomingBattleUi();
         },
         onSave: () => doQuickSave(false),
       }, { defaultAction: 'manual' });
@@ -14567,8 +14866,9 @@ async function boot(): Promise<void> {
           const lead = units.find(u => u.id === atkRoster[0]?.id) ?? null;
           refreshMapAfterCityCapture(lead);
           if (atkOwner === 0) {
-            showCityCaptureNotice(cityOnHex.name, {
-              subtitle: 'Potyczka wygrana — wojsko weszło na heks miasta.',
+            const capturedCity = cityOnHex;
+            showCityCaptureNotice(capturedCity.name, {
+              onEnterCity: () => openCityPanelForPlayer(capturedCity),
             });
           }
         }
@@ -15071,9 +15371,11 @@ async function boot(): Promise<void> {
       const lead = applyCityCaptureToMap(city, atkRoster, atkOwner, anchor);
       refreshMapAfterCityCapture(lead ?? anchor);
 
-      showCityCaptureNotice(city.name, {
-        subtitle: 'Brak obrońców — wojsko weszło do miasta bez walki i bez strat.',
-      });
+      if (atkOwner === 0) {
+        showCityCaptureNotice(city.name, {
+          onEnterCity: () => openCityPanelForPlayer(city),
+        });
+      }
     }
 
     function clearMapBattleUiState(): void {
@@ -15808,13 +16110,13 @@ async function boot(): Promise<void> {
         return;
       }
 
-      // --- Spacja: przejdź do następnej jednostki gracza z dostępnym ruchem (auto-cykl „bęben") ---
+      // --- Spacja: następna armia gracza (wszystkie stosy; nie tylko z ruchem) ---
       if (e.code === 'Space' || e.key === ' ') {
         const ae = document.activeElement as HTMLElement | null;
         if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
-        if (e.repeat || galleryOn || !isWorldMapUnitMode()) return;
+        if (e.repeat || galleryOn || isAnimating || endTurnInProgress || !isWorldMapUnitMode()) return;
         e.preventDefault();
-        cycleToNextMovableUnit(selectedId);
+        cycleToAdjacentPlayerUnit(selectedId, 1);
         return;
       }
 
@@ -15943,6 +16245,9 @@ async function boot(): Promise<void> {
             deductStackRuchLeft(stack, anim.cost);
             // TEMAT #15: woda -> zaokrętowanie, ląd -> zejście na ląd.
             applyEmbarkStateAfterMove(stack, map);
+            if (u.ownerId === 0 && anim.pathHexes.length > 0) {
+              checkVillageRewardsAlongPath(anim.pathHexes);
+            }
           }
           anim = null;
           isAnimating = false;
@@ -15950,7 +16255,17 @@ async function boot(): Promise<void> {
         }
         // Zwiadowcy gracza: auto-zwiedzanie nieużytego ruchu (mgła + kontakt z obcymi).
         {
-          const scoutExplore = runScoutsAutoExplore(units, map, explored, 0, unitSight);
+          const scoutExplore = runScoutsAutoExplore(
+            units,
+            map,
+            explored,
+            0,
+            unitSight,
+            Math.random,
+            (u) => {
+              if (u.ownerId === 0) checkVillageRewardAt(u.q, u.r);
+            },
+          );
           if (scoutExplore.movedUnitIds.length > 0) {
             syncUnitsRender();
             refreshFog();
@@ -15967,11 +16282,7 @@ async function boot(): Promise<void> {
           // Mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md): raz na turę na jednostkę.
           if (u.replaceUsedThisTurn) u.replaceUsedThisTurn = false;
         }
-        selectedId = null;
-        reachable = new Set<string>();
-        unitRenderer.clearHighlight();
-        unitRenderer.clearPathRoute();
-        hoverKey = null;
+        clearPlayerUnitSelectionStateOnly();
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
         turn++;
@@ -15980,6 +16291,7 @@ async function boot(): Promise<void> {
         villageEventLog.length = 0;
         // TEMAT #5: log tras handlowych — ta sama zasada (widoczny do końca tury bieżącej).
         tradeRouteEventLog.length = 0;
+        dismissedSidePanelEventIds.clear();
 
         // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
         if (turn % getAutosaveFrequency() === 0) doRotatingAutosave();
@@ -17788,6 +18100,7 @@ async function boot(): Promise<void> {
                       : 0;
                     aiPracaPoolByOwner.set(ownerId, poolBefore - koszt + refund);
                     hexForImprovement.nakladka = Nakladka.Brak;
+                    stripForestDependentImprovements(hexKey);
                     hideDecorAtHex(hexKey);
                     syncResourceOverlayAtHex(hexKey);
                     console.log(
@@ -18100,6 +18413,7 @@ async function boot(): Promise<void> {
           endTurnInProgress = false;
           flushDeferredPlayerUnitReveals();
           flushDeferredMergePrompts();
+          syncPlayerUnitSelectionOnMap();
         }
         })();
         return;
@@ -18157,6 +18471,7 @@ async function boot(): Promise<void> {
           const fromR = anim.fromR;
           const moveCost = anim.cost;
           const movedStackIds = anim.movingStackIds;
+          const pathHexes = anim.pathHexes;
           const u = units.find(x => x.id === finishedId);
           if (u) {
             const stack = movedStackIds
@@ -18181,7 +18496,11 @@ async function boot(): Promise<void> {
 
           // GRAFIKA-TEREN-2 / WIOSKI: jednostka gracza kończy ruch na wiosce -> nagroda + znika.
           if (u && u.ownerId === 0) {
-            checkVillageRewardAt(destQ, destR);
+            if (pathHexes.length > 0) {
+              checkVillageRewardsAlongPath(pathHexes);
+            } else {
+              checkVillageRewardAt(destQ, destR);
+            }
           }
 
           const entryCity = u && cities.find(

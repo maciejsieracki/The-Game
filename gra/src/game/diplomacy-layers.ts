@@ -6,6 +6,7 @@
 
 import type { AIDiplomacyCommand } from './ai';
 import { DIPLOMACY_PARAMS, type Relation } from './diplomacy';
+import { zaufaniePierwszyKontaktZD4 } from './diplomacy-credibility';
 import { isBarbarian } from './barbarians';
 
 export type DiplomacyLayer = 'simplified' | 'full' | 'pre_contact';
@@ -44,6 +45,34 @@ export function startRelationForPair(sameType: boolean): Relation {
     zaufanie: clamp(zaufanie, 0, 100),
     respekt: p.startRespekt,
     status: 'neutralni',
+  };
+}
+
+/**
+ * C-WIAR-D4=A — nakłada Dźwignię 4 na relację startową (pierwszy kontakt / lazy init).
+ * Symetrycznie: każda strona wnosi `round(W/20)` pkt Zaufania.
+ */
+export function startRelationForPairWithWiarygodnosc(
+  sameType: boolean,
+  wiarygodnoscOwnerA: number,
+  wiarygodnoscOwnerB: number,
+): Relation {
+  const base = startRelationForPair(sameType);
+  return {
+    ...base,
+    zaufanie: zaufaniePierwszyKontaktZD4(base.zaufanie, wiarygodnoscOwnerA, wiarygodnoscOwnerB),
+  };
+}
+
+/** D4 na gotowej relacji (np. po korekcie trudności miasta-państwa). */
+export function applyWiarygodnoscD4ToRelation(
+  rel: Relation,
+  wiarygodnoscOwnerA: number,
+  wiarygodnoscOwnerB: number,
+): Relation {
+  return {
+    ...rel,
+    zaufanie: zaufaniePierwszyKontaktZD4(rel.zaufanie, wiarygodnoscOwnerA, wiarygodnoscOwnerB),
   };
 }
 

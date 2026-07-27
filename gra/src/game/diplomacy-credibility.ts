@@ -361,3 +361,31 @@ export function strumienWiarygodnoscDoZaufania(w: number): number {
   const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
   return wKlamrowane / DIPLOMACY_PARAMS.wiarygodnoscZaufanieDzielnikPerTura;
 }
+
+// ---------------------------------------------------------------------------
+// §5 — Dźwignia 4: pierwszy kontakt — startowe Zaufanie od Wiarygodności (C-WIAR-D4=A)
+// ---------------------------------------------------------------------------
+
+/**
+ * Modyfikator startowego Zaufania (pkt) od globalnej Wiarygodności jednej strony przy
+ * pierwszym ustaleniu relacji: `round(W / dzielnik)` (dzielnik = 20, ten sam co Dźwignia 1).
+ */
+export function modyfikatorZaufaniaD4OdWiarygodnosci(w: number): number {
+  const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+  return Math.round(wKlamrowane / DIPLOMACY_PARAMS.wiarygodnoscZaufanieDzielnikPerTura);
+}
+
+/**
+ * Startowe Zaufanie pary po D4 — suma modyfikatorów obu stron (parytet gracz/AI).
+ * `baseZaufanie` = wynik startRelationForPair / defaultNeutralRelation itd.
+ */
+export function zaufaniePierwszyKontaktZD4(
+  baseZaufanie: number,
+  wiarygodnoscOwnerA: number,
+  wiarygodnoscOwnerB: number,
+): number {
+  const delta =
+    modyfikatorZaufaniaD4OdWiarygodnosci(wiarygodnoscOwnerA)
+    + modyfikatorZaufaniaD4OdWiarygodnosci(wiarygodnoscOwnerB);
+  return clamp(baseZaufanie + delta, 0, 100);
+}

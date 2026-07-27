@@ -45,6 +45,8 @@ fs.writeFileSync(
   credibilityStreamWeight,
   sumaStrumienia,
   strumienWiarygodnoscDoZaufania,
+  modyfikatorZaufaniaD4OdWiarygodnosci,
+  zaufaniePierwszyKontaktZD4,
   freshCredibilityStreamEntry,
   tickCredibilityStreamEntry,
   sumaWiarygodnosciCalkowita,
@@ -128,6 +130,19 @@ ok(WC.strumienWiarygodnoscDoZaufania(100000) === 100 / P.wiarygodnoscZaufanieDzi
   'strumienWiarygodnoscDoZaufania klamruje wejście > 100 przed dzieleniem');
 ok(WC.strumienWiarygodnoscDoZaufania(-100000) === -100 / P.wiarygodnoscZaufanieDzielnikPerTura,
   'strumienWiarygodnoscDoZaufania klamruje wejście < -100 przed dzieleniem');
+
+// ---------------------------------------------------------------------------
+// 1b) Dźwignia 4 — pierwszy kontakt (C-WIAR-D4=A): round(W/20) per strona
+// ---------------------------------------------------------------------------
+
+ok(WC.modyfikatorZaufaniaD4OdWiarygodnosci(0) === 0, 'D4: W=0 → 0 pkt');
+ok(WC.modyfikatorZaufaniaD4OdWiarygodnosci(20) === 1, 'D4: W=20 → +1 pkt');
+ok(WC.modyfikatorZaufaniaD4OdWiarygodnosci(-40) === -2, 'D4: W=-40 → -2 pkt');
+ok(WC.modyfikatorZaufaniaD4OdWiarygodnosci(100) === 5, 'D4: W=100 → +5 pkt (klamrowane)');
+ok(WC.zaufaniePierwszyKontaktZD4(15, 20, -40) === 14,
+  'D4 para: baza 15 +1 -2 = 14 (symetria obu stron)');
+ok(WC.zaufaniePierwszyKontaktZD4(98, 100, 100) === 100,
+  'D4 clamp górny 100');
 
 // ---------------------------------------------------------------------------
 // 2) Krzywa zapominania — t=0 pełna, t>=czasZapomnienia dokładnie podłoga, liniowość
