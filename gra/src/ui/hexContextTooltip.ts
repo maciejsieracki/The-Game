@@ -348,6 +348,55 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   return lines.join('');
 }
 
+import {
+  armorPathBadgeLevel,
+  softPathBadgeLevel,
+  type PathBadgeLevel,
+} from '../game/unit-building-bonuses';
+
+const PATH_BADGE_COLOR: Readonly<Record<1 | 2 | 3, string>> = {
+  1: '#c9762c',
+  2: '#9aa8b6',
+  3: '#e8c84a',
+};
+
+function pathBadgeChipHtml(
+  icon: string,
+  label: string,
+  level: PathBadgeLevel,
+  pct: number,
+  esc: (raw: string) => string,
+): string {
+  if (level === 0) return '';
+  const color = PATH_BADGE_COLOR[level];
+  return `<span class="cp-path-badge" style="color:${color};font-weight:600;">`
+    + `${icon} ${esc(label)} +${pct}%</span>`;
+}
+
+function buildPathStatusRowHtml(
+  softLevel: PathBadgeLevel,
+  softPct: number,
+  armorLevel: PathBadgeLevel,
+  armorPct: number,
+  veteranBadgeLabel: string | undefined,
+  veteranStarsTooltip: string | undefined,
+  esc: (raw: string) => string,
+): string {
+  const chips: string[] = [];
+  const koszary = pathBadgeChipHtml('🛡', 'Koszary', softLevel, softPct, esc);
+  if (koszary) chips.push(koszary);
+  if (veteranBadgeLabel) {
+    const tip = esc(veteranStarsTooltip ?? veteranBadgeLabel);
+    chips.push(
+      `<span class="cp-veteran" style="color:#f4d35e;font-weight:600;" title="${tip}">${esc(veteranBadgeLabel)}</span>`,
+    );
+  }
+  const kuznia = pathBadgeChipHtml('⚒', 'Kuźnia', armorLevel, armorPct, esc);
+  if (kuznia) chips.push(kuznia);
+  if (chips.length === 0) return '';
+  return `<div class="cp-sub cp-path-status">${chips.join(' · ')}</div>`;
+}
+
 export interface UnitContextTooltipInput {
   displayName: string;
   q: number;
@@ -360,6 +409,12 @@ export interface UnitContextTooltipInput {
   maxHp: number;
   category?: string;
   inGarnizon?: boolean;
+  /** Właściciel (obca jednostka) — etykieta cywilizacji / miasta-państwa. */
+  ownerLabel?: string;
+  /** Status relacji gracza z właścicielem (obca jednostka). */
+  relationLabel?: string;
+  /** Tylko odczyt — ukrywa ruch (podgląd obcej jednostki). */
+  readOnly?: boolean;
   /**
    * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts):
    * etykieta typu "Pancerz +30% · Parametry +20%" (unitBuildingBonusLabel()),
@@ -367,6 +422,10 @@ export interface UnitContextTooltipInput {
    * bonusu budynkowego. Pokazuje graczowi SKAD wynikaja podniesione staty.
    */
   buildingBonusLabel?: string;
+  /** % ścieżki B (parametry) — do ikon koszar w wierszu statusów. */
+  parametryPathPp?: number;
+  /** % ścieżki A (pancerz) — do ikon kuźni w wierszu statusów. */
+  pancerzPathPp?: number;
   /**
    * TRZECI SYSTEM -- doświadczenie bojowe / weterani (2026-07-25,
    * game/veteran.ts). Etykieta gotowa z veteranBadgeLabel(), np.
@@ -377,26 +436,65 @@ export interface UnitContextTooltipInput {
    * żetonie, tekst "Pancerz +X% · Parametry +Y%" bez specjalnego koloru tutaj).
    */
   veteranBadgeLabel?: string;
+  /** Krótki tooltip na ★ (title HTML). */
+  veteranStarsTooltip?: string;
+  /**
+   * C-OBCE-JEDN-Q3 B — pełniejsze wyjaśnienie do karty obcej jednostki (Q1).
+   * Gdy brak — buildUnitContextTooltipHtml samo nie pokazuje bloku edukacji.
+   */
+  veteranPanelExplanation?: string;
   esc: (raw: string) => string;
 }
 
 export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string {
   const lines: string[] = [
     `<div class="cp-unit-head"><b>${u.esc(u.displayName)}</b></div>`,
-    subLine('Heks', `(${u.q}, ${u.r})`),
-    subLine('Ruch', `${u.ruchLeft}/${u.ruchMax}`),
-    subLine('Atak / obrona', `${u.atak} / ${u.obrona}`),
   ];
+  if (u.ownerLabel) {
+    lines.push(subLine('Właściciel', u.esc(u.ownerLabel)));
+  }
+  if (u.relationLabel) {
+    lines.push(subLine('Relacja', u.esc(u.relationLabel)));
+  }
+  lines.push(subLine('Heks', `(${u.q}, ${u.r})`));
+  if (!u.readOnly) {
+    lines.push(subLine('Ruch', `${u.ruchLeft}/${u.ruchMax}`));
+  }
+  lines.push(subLine('Atak / obrona', `${u.atak} / ${u.obrona}`));
   if (u.hp != null && u.maxHp > 0) {
     lines.push(subLine('Punkty życia', `${Math.round(u.hp)}/${u.maxHp}`));
   }
   if (u.category) {
     lines.push(subLine('Typ', u.esc(u.category)));
   }
-  if (u.veteranBadgeLabel) {
+  const softPct = u.parametryPathPp ?? 0;
+  const armorPct = u.pancerzPathPp ?? 0;
+  const pathRow = buildPathStatusRowHtml(
+    softPathBadgeLevel({ parametryBonusProc: softPct }),
+    softPct,
+    armorPathBadgeLevel({ pancerzBonusProc: armorPct }),
+    armorPct,
+    u.veteranBadgeLabel,
+    u.veteranStarsTooltip,
+    u.esc,
+  );
+  if (pathRow) {
+    lines.push(pathRow);
+    if (u.veteranPanelExplanation) {
+      lines.push(
+        `<div class="cp-sub cp-veteran-edu" style="color:#c8b878;font-size:11px;margin-top:2px;">${u.esc(u.veteranPanelExplanation)}</div>`,
+      );
+    }
+  } else if (u.veteranBadgeLabel) {
+    const tip = u.esc(u.veteranStarsTooltip ?? u.veteranBadgeLabel);
     lines.push(
-      `<div class="cp-sub cp-veteran" style="color:#f4d35e;font-weight:600;">${u.esc(u.veteranBadgeLabel)}</div>`,
+      `<div class="cp-sub cp-veteran" style="color:#f4d35e;font-weight:600;" title="${tip}">${u.esc(u.veteranBadgeLabel)}</div>`,
     );
+    if (u.veteranPanelExplanation) {
+      lines.push(
+        `<div class="cp-sub cp-veteran-edu" style="color:#c8b878;font-size:11px;margin-top:2px;">${u.esc(u.veteranPanelExplanation)}</div>`,
+      );
+    }
   }
   if (u.buildingBonusLabel) {
     lines.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));

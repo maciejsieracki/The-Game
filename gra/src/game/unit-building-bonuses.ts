@@ -281,6 +281,31 @@ export function unitBuildingBonusLabel(unit: UnitBuildingProgress | null | undef
   return parts.join(' · ');
 }
 
+/** Maksimum ścieżki A (Pancerz / kuźnia) — do poziomów odznaki w karcie jednostki. */
+export const PATH_A_MAX_PP = 45;
+/** Maksimum ścieżki B (Parametry / koszary) — do poziomów odznaki w karcie jednostki. */
+export const PATH_B_MAX_PP = 50;
+
+export type PathBadgeLevel = 0 | 1 | 2 | 3;
+
+/** Poziom koloru (1–3) z % jednej ścieżki — osobno kuźnia i koszary (C-OBCE-JEDN-KARTA). */
+export function pathBadgeLevelFromPp(pp: number, maxPp: number): PathBadgeLevel {
+  if (!Number.isFinite(pp) || pp <= 0) return 0;
+  const t1 = Math.floor(maxPp / 3);
+  const t2 = Math.floor((maxPp * 2) / 3);
+  if (pp <= t1) return 1;
+  if (pp <= t2) return 2;
+  return 3;
+}
+
+export function armorPathBadgeLevel(unit: UnitBuildingProgress | null | undefined): PathBadgeLevel {
+  return pathBadgeLevelFromPp(unitPancerzBonusProc(unit), PATH_A_MAX_PP);
+}
+
+export function softPathBadgeLevel(unit: UnitBuildingProgress | null | undefined): PathBadgeLevel {
+  return pathBadgeLevelFromPp(unitParametryBonusProc(unit), PATH_B_MAX_PP);
+}
+
 // ---------------------------------------------------------------------------
 // Wpiecie w silnik walki (game/combat.ts + battle/battleScene.ts).
 //

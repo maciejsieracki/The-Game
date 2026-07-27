@@ -12,7 +12,11 @@ fs.writeFileSync(ENTRY, `
 export {
   getCityResourceAccessForCity, improvementUnlockActiveOnHex,
 } from '../src/game/resource-access';
-export { buildingResourceGateMet } from '../src/game/building-resource-gate';
+export {
+  buildingResourceGateMet,
+  buildingRuntimeGateMet,
+  filterRuntimeActiveBuiltIds,
+} from '../src/game/building-resource-gate';
 export { availableProduction } from '../src/game/production';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
@@ -190,6 +194,50 @@ function mapWith(...hexes) {
     M.buildingResourceGateMet({ id: 'spichlerz_ii' }, ['Sól'], undefined, {}),
     'spichlerz II OK gdy Sól aktywna w imperium (bez zapasu)',
   );
+}
+
+// --- PYTANIE-84: runtime gate dostęp vs magazyn ---
+{
+  ok(
+    !M.buildingRuntimeGateMet({ id: 'stolarnia' }, [], [], {}),
+    'runtime: stolarnia śpi bez Drewna i bez zapasu',
+  );
+  ok(
+    M.buildingRuntimeGateMet({ id: 'stolarnia' }, [], [], { drewno: 3 }),
+    'runtime: stolarnia działa z drewnem w magazynie państwa',
+  );
+  ok(
+    !M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99 }),
+    'runtime: spichlerz II śpi bez aktywnej Soli (dostęp-only)',
+  );
+  ok(
+    M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, ['Sól'], [], {}),
+    'runtime: spichlerz II działa gdy Sól aktywna',
+  );
+  ok(
+    !M.buildingRuntimeGateMet(
+      { id: 'mennica' },
+      ['Złoto'],
+      [],
+      {},
+      { ownerId: 0, resolveOwnerZlotoAccess: () => false },
+    ),
+    'runtime: mennica śpi bez dostępu złota (resolver, nie zapas)',
+  );
+  const active = M.filterRuntimeActiveBuiltIds(
+    ['garncarnia', 'spichlerz'],
+    [],
+    {},
+  );
+  ok(!active.includes('garncarnia'), 'runtime filter: garncarnia śpi bez gliny i bez dostępu');
+  ok(!active.includes('spichlerz'), 'runtime filter: spichlerz śpi gdy garncarnia nieaktywna');
+  const active2 = M.filterRuntimeActiveBuiltIds(
+    ['garncarnia', 'spichlerz'],
+    [],
+    { glina: 5 },
+  );
+  ok(active2.includes('garncarnia') && active2.includes('spichlerz'),
+    'runtime filter: spichlerz działa gdy garncarnia aktywna (Ceramika z budynku)');
 }
 
 console.log('\ndeposit-building-gate: ' + pass + ' pass, ' + fail + ' fail');

@@ -44,9 +44,23 @@
 
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
-| **C-WIAR-N4-AI** | 2026-07-27 | **B** — AI może odmówić (heurystyka: wojna / słaba moc / pokojowy / Zaufanie &lt;20); N4 −15 | D | 🔵 **W TRAKCIE** | `alliance-war-obligation.ts` · test 14/14 · `main.ts` | czeka deploy ROBOCZA |
-| **C-WIAR-D4** | 2026-07-27 | **A** — Dźwignia 4: start Zaufania + `round(W/20)` per strona (dzielnik 20) | D | 🟢 **WDROŻONA** | `diplomacy-credibility.ts` · `main.ts` · wiarygodnosc-test 90/90 | bez deploy ROBOCZA |
-| **C-WIAR-N1-UX** | 2026-07-27 | **A** — modal 3 opcje: wypowiedz / atak bez ostrzeżenia / anuluj + podgląd kar | D+E | 🟢 **WDROŻONA** | `showWarConsentModal` · `main.ts` withPlayerWarConsent | bez deploy ROBOCZA |
+| **C-WIAR-N4-AI** | 2026-07-27 | **B** — AI rzadko odmawia pomocy sojuszniczej gdy osłabione; N4 −15 | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `alliance-war-obligation.ts` 14/14 |
+| **C-WIAR-D4** | 2026-07-27 | **A** — Dźwignia 4: start Zaufania + `round(W/20)` per strona (dzielnik 20) | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `diplomacy-credibility.ts` · wiarygodnosc-test |
+| **C-WIAR-N1-UX** | 2026-07-27 | **A** — modal 3 opcje: wypowiedz / atak bez ostrzeżenia / anuluj + podgląd kar | D+E | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `showWarConsentModal` |
+| **P-AI-006** | 2026-07-27 | **C** — ekspansywność per nacja + rozszerzenie w `ai-expansion.ts` | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `civ-ai.json` · `ai-war-gate-test` |
+| **P-AI-007** | 2026-07-27 | **A** — priorytety Panel D na archetyp + Biblioteka/Akademia | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `ai-production-priorities.ts` |
+| **P-AI-008** | 2026-07-27 | **C** — zasięg zagrożenia 7 hex + Mury tylko gdy #1 Mocy | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `ai-threat-mode.ts` |
+| **R-MAPGEN-KOLEJNOSC-Q1** | 2026-07-27 | **B** — jeden moment lasu w pipeline (bez pośredniego w classifyTerrain) | A | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `generator.ts` |
+| **R-MAPGEN-KOLEJNOSC-Q2** | 2026-07-27 | **C** — ~15% górzystości lądu (tier Średni relief) | A | 🔵 **KOD OK** | kod w `gra/src` · ⏸ deploy FALA 37 |
+| **R-MAPGEN-KOLEJNOSC-Q3** | 2026-07-27 | **A** — wszystkie przebiegi floor reliefu; próg czasu testu 7 s | A | 🔵 **KOD OK** | kod w `gra/src` · ⏸ deploy FALA 37 |
+| **C-TEREN-IMPL-1** | 2026-07-27 | **A** — jeden deploy etapów 1–3 terenu bitwy | C | 🟢 **WDROŻONA** | FALA 36 `a74c3797` |
+| **C-TEREN-IMPL-2** | 2026-07-27 | **C** — obrona Gór +75% z JSON; koszt piechoty 2 | C | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `terrain-combat.json` |
+| **C-TEREN-IMPL-3** | 2026-07-27 | **B** — pełny wiersz TEREN w tooltipie jednostki | C+E | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `battleTerrainTooltip.ts` |
+| **R-BITWA-POWTORKA-I** | 2026-07-27 | **B** — po powtórce auto-grupa po typie (Konnica/Piechota/Łucznicy) | C | 🔵 **KOD OK** | `battleScene.ts` · ⏸ deploy FALA 37 (F36=stary snapshot) |
+| **C-ARMY-HUNGER-Q1** | 2026-07-27 | **A** — pełny parytet suwak+głód armii (gracz i AI) | C | 🟢 **WDROŻONA** | `glod-wojska-karencja-test.cjs` 39/39 |
+| **C-STRATY-HP-Q1** | 2026-07-27 | wyjaśnienie — nadreprezentacja siły AI; bez fixu | C | ZAMKNIĘTE | `C-STRATY-HP-Q1.md` |
+| **PYTANIE-20** | 2026-07-27 | **A** — Targowisko: efekt w Pieniądz, bez martwego mnożnika | B | ZAMKNIĘTE | `PYTANIE-20.md` · `buildings.json` |
+| **PYTANIE-84** | 2026-07-27 | **hybryda** — dostęp natychmiast / magazyn państwa dla surowców | B | 🟡 **ZAPISANA** | `PYTANIE-84.md` — czeka `działaj` |
 | **B-PALAC-TIER** | 2026-07-24 | Pałac 3 tiery: I=drewno, II=drewno+kamień, III=drewno+kamień+cegła; bonus +50%/tier (×1,5) | B | 🟢 **WDROŻONA** | `buildings.json` · `cityHasPalacLine()` · robocza md5 `a85e7d3f…` | upgradeFrom łańcuch |
 | **B-RESEARCH-COST-MODEL** | 2026-07-24 | JSON pochłania dawniejszy global ×2; `GLOBAL_RESEARCH_COST_MULT=1`; Obróbka drewna/Murarstwo JSON=5 → 5/10/20 PN wg tempa | B | 🟢 **WDROŻONA** | `tech.json` · `difficulty-cost.ts` · robocza md5 `c77d2bc9…` | dyplomacja: JSON×tempo only |
 | **B-MP-Q1** | 2026-07-27 | **Q1a=B** % maxHP/turę (25/20/15) · **Q1b=A** częściowe leczenie · **Q1c** brak uzupełnienia w oblężonym mieście | B | 🟢 **WDROŻONA** | `manpower.ts` `tickManpowerUnitReplenishment` · `miasto-params.json` · `manpower-test.cjs` 62/62 · robocza md5 `f694dcba` (FALA 31) | garnizon przed polem — osobny temat |

@@ -1,9 +1,18 @@
 # R-BITWA-POWTORKA-I — Powtórka bitwy a ręczne grupowanie jednostek
 
-**Status:** 🟢 WDROŻONA (2026-07-27)  
+**Status:** 🔵 **KOD GOTOWY** — ⏸ deploy czeka **FALA 37**  
 **Grupa:** C (walka / bitwa ręczna)  
 **Ekran:** [EKRAN: Bitwa ręczna 3D — faza rozstawiania]  
 **Alias rejestru:** **I** · `R-BITWA-POWTORKA` w `REJESTR-PROSB-I-ZADAN.md`
+
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 **Czat ABC** — implementacja opcji **B** zakończona w `gra/src` |
+| **Kod `gra/src`** | ✅ **GOTOWY** — `_autoGroupDeployByKind()` bez snapshotu |
+| **Deploy `gra-robocza`** | ⏸ **czeka FALA 37** — FALA 36 `a74c3797` ma jeszcze stary snapshot |
+| **Indeks** | `STATUS-WDROZEN-AGENT-2026-07-27.md` |
 
 ## Sytuacja
 
@@ -40,4 +49,4 @@ A (odtworzenie snapshotu) — Maciej wybrał **B**.
 
 - `gra/src/battle/battleScene.ts` — `_initDeployUI()` zawsze woła `_autoGroupDeployByKind()` (usunięty `_deployGroupSnapshot` / restore)
 - Warstwa: 🟡
-- Deploy: razem z batch bitwy na polecenie **deploy**
+- **Deploy:** ⏸ **czeka FALA 37** (FALA 36 `a74c3797` = stary snapshot)

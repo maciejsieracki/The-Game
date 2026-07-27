@@ -3,7 +3,36 @@
 > **Source of truth routingu.** Agent **nie zadaje** pytania spoza swojej Grupy.  
 > Format ABC: `docs/decyzje/DYSPOZYCJA-STALA.md` §2.
 
-**Ostatnia synchronizacja:** 2026-07-01 (licznik ↔ body · C3-Q1…Q10 ZAMKNIĘTE)
+**Ostatnia synchronizacja:** 2026-07-27 (odpowiedzi + kod vs deploy → `STATUS-WDROZEN-AGENT-2026-07-27.md`)
+
+### Kolejka ABC 2026-07-27 — odpowiedzi Macieja (źródło: pliki per ID)
+
+| ID | Litera | Status | Plik |
+|----|--------|--------|------|
+| C-WIAR-N4-AI | **B** | 🟢 WDROŻONA · FALA 36 | `C-WIAR-N4-AI.md` |
+| C-WIAR-D4 | **A** | 🟢 WDROŻONA · FALA 36 | `C-WIAR-D4.md` |
+| C-WIAR-N1-UX | **A** | 🟢 WDROŻONA · FALA 36 | `C-WIAR-N1-UX.md` |
+| P-AI-006 | **C** | 🟢 WDROŻONA · FALA 36 | `P-AI-006.md` |
+| P-AI-007 | **A** | 🟢 WDROŻONA · FALA 36 | `P-AI-007.md` |
+| P-AI-008 | **C** | 🟢 WDROŻONA · FALA 36 | `P-AI-008.md` |
+| R-MAPGEN-KOLEJNOSC-Q1 | **B** | 🟢 WDROŻONA · FALA 36 | `R-MAPGEN-KOLEJNOSC-Q1.md` |
+| R-MAPGEN-KOLEJNOSC-Q2 | **C** | 🔵 KOD OK · ⏸ F37 | `R-MAPGEN-KOLEJNOSC-Q2.md` |
+| R-MAPGEN-KOLEJNOSC-Q3 | **A** | 🔵 KOD OK · ⏸ F37 | `R-MAPGEN-KOLEJNOSC-Q3.md` |
+| C-TEREN-IMPL-1 | **A** | 🟢 WDROŻONA · FALA 36 | `C-TEREN-IMPL-1.md` |
+| C-TEREN-IMPL-2 | **C** | 🟢 WDROŻONA · FALA 36 | `C-TEREN-IMPL-2.md` |
+| C-TEREN-IMPL-3 | **B** | 🟢 WDROŻONA · FALA 36 | `C-TEREN-IMPL-3.md` |
+| R-BITWA-POWTORKA-I | **B** | 🔵 KOD OK · ⏸ F37 | `R-BITWA-POWTORKA-I.md` |
+| C-ARMY-HUNGER-Q1 | **A** | 🟢 WDROŻONA | `C-ARMY-HUNGER-Q1.md` |
+| C-STRATY-HP-Q1 | *(wyjaśnienie)* | ZAMKNIĘTE | `C-STRATY-HP-Q1.md` |
+| PYTANIE-20 | **A** | ZAMKNIĘTE | `PYTANIE-20.md` |
+| PYTANIE-21 | **B** (55) | 🟢 WDROŻONA | `PYTANIE-21.md` |
+| PYTANIE-22 | **B** (56) | ZAMKNIĘTE | `PYTANIE-22.md` |
+| PYTANIE-23 | **A+B** (57) | 🟢 WDROŻONA | `PYTANIE-23.md` |
+| C-OBCE-JEDN-Q1 | A | 🟢 ZAMKNIĘTE | `C-OBCE-JEDN-Q1.md` |
+| C-OBCE-JEDN-Q2 | TW | 🟢 ZAMKNIĘTE | `C-OBCE-JEDN-Q2.md` |
+| C-OBCE-JEDN-Q3 | A+B+C | 🟢 ZAMKNIĘTE | `C-OBCE-JEDN-Q3.md` |
+
+Indeks zbiorczy: **`docs/decyzje/ABC-KOLEJKA-OTWARTE-2026-07-27.md`** · **PYTAJ TYLKO O:** `docs/decyzje/AUDYT-PYTAJ-TYLKO-O-2026-07-27.md`
 
 ---
 

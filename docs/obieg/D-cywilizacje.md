@@ -138,6 +138,7 @@ Pełnego buildu całej gry **nie robisz** — to rola Integratora (ma wszystkie 
 - 🟢 **M jednostki → Power WPIĘTE** — kanon `3DAE1AA5…` / `5D965EB7…` (sprawdź MASTER-WATCH)
 
 ## 🧾 DECYZJE MACIEJA (świeże — echo, przed wdrożeniem)
+- **C-WIAR-N4-AI (2026-07-27):** **B** — AI **rzadko odmawia** gdy osłabione (wojna inna / słaba armia / niskie Zaufanie do proszącego); kara N4 −15. Handoff gotowy; kod `gra/` czeka (blokada równoległy agent). → `docs/decyzje/C-WIAR-N4-AI.md`
 - **C-AI-WOJNA-Q1 (2026-07-26):** **A** — dyplomacja przed ruchem AI; wypowiedzenie w tej turze, atak od następnej (karencja N1). → `docs/decyzje/C-AI-WOJNA-EKSPANSJA-2026-07-26.md`
 - **C-AI-EKSP-Q1 (2026-07-26):** **A** — max 1 miasto/turę/cyw., koszt Pracy+ludność z panelu budowy (bez osadnika). → j.w.
 - **C-AI-EKSP-Q2 (2026-07-26):** **A** — najpierw miasta-państwa w klastrze, potem zakładanie nowych miast. → j.w.

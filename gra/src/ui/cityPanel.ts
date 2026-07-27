@@ -51,7 +51,8 @@ import type { WonderBuildTypeInfo } from './buildModeHud';
 import type { City } from '../game/cities';
 import { formatCityMapLabel } from '../game/display-names';
 import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb } from '../game/cities';
-import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
+import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
+import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import { loadGameData, getTechDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
@@ -368,8 +369,14 @@ export interface CityPanelConfig {
    * UI podświetla te pola w kompaktowym podglądzie okolicy.
    */
   getWorkedTiles?: (cityId: string) => { q: number; r: number }[] | undefined;
-  /** Biezacy podzial Handlu per miasto (alternatywa dla pola na City). */
+  /** Biezacy podzial Handlu per miasto (efektywny — global lub override). */
   getPodzialHandlu?: (cityId: string) => PodzialHandluSplit | null;
+  /** Domyślny podział imperium (DYSPOZYCJA-85-SUWAK). */
+  getOwnerDefaultPodzialHandlu?: (ownerId: number) => PodzialHandluSplit | null;
+  /** Czy miasto ma własny override suwaka Daniny/Podatku. */
+  getPodzialHandluOverride?: (cityId: string) => boolean;
+  /** Przełącz override per miasto (false = wróć do domyślnego imperium). */
+  onPodzialHandluOverrideChange?: (cityId: string, useOverride: boolean) => void;
   /** Biezacy podzial Pracy per miasto (opcjonalnie). */
   getPodzialPracy?: (cityId: string) => PodzialPracySplit | null;
   /** Gracz zmienil suwaki Handlu — silnik zapisuje na City i przelicza plony. */
@@ -698,9 +705,17 @@ type CityWithSliders = City & {
 function readPodzialHandlu(city: City, data: GameData | null): PodzialHandluSplit {
   const fromHook = cfg.getPodzialHandlu?.(city.id);
   if (fromHook) return normalizePodzialHandlu(fromHook);
-  const ext = city as CityWithSliders;
-  const stored = ext.podzialHandlu ?? ext.podziałHandlu;
-  if (stored) return normalizePodzialHandlu(stored);
+  const ownerDefault = readOwnerDefaultPodzialHandlu(city, data);
+  return resolveCityPodzialHandlu(city, ownerDefault);
+}
+
+function readPodzialHandluOverride(city: City): boolean {
+  return cfg.getPodzialHandluOverride?.(city.id) ?? !!city.podzialHandluOverride;
+}
+
+function readOwnerDefaultPodzialHandlu(city: City, data: GameData | null): PodzialHandluSplit {
+  const fromHook = cfg.getOwnerDefaultPodzialHandlu?.(city.ownerId);
+  if (fromHook) return normalizePodzialHandlu(fromHook);
   if (data) {
     const params = buildEconParams(data, cfg.difficulty ?? 'normal');
     return normalizePodzialHandlu({
@@ -723,39 +738,6 @@ function readPodzialPracy(city: City, data: GameData | null): PodzialPracySplit 
     return { procentBudynki: snapHandelPct(params.suwaakPracaBudynki) };
   }
   return { procentBudynki: snapHandelPct(DEFAULT_PODZIAL_PRACY.procentBudynki) };
-}
-
-
-/** Redystrybucja pozostalych dwoch pol tak, by suma = 100 po zmianie jednego (kroki 10%). */
-function adjustHandelSplit(
-  current: PodzialHandluSplit,
-  changed: keyof PodzialHandluSplit,
-  newVal: number,
-): PodzialHandluSplit {
-  const next: PodzialHandluSplit = { ...current };
-  next[changed] = snapHandelPct(newVal);
-  const keys = (['procentPieniadz', 'procentNauka', 'procentLuksus'] as const)
-    .filter(k => k !== changed);
-  let remainder = 100 - next[changed];
-  if (remainder < 0) {
-    next[changed] = 100;
-    keys.forEach(k => { next[k] = 0; });
-    return next;
-  }
-  const [k0, k1] = keys;
-  if (k0 === undefined || k1 === undefined) return next;
-  const sumOthers = current[k0] + current[k1];
-  if (sumOthers <= 0) {
-    const half = Math.round(remainder / 2 / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
-    next[k0] = half;
-    next[k1] = remainder - half;
-    return next;
-  }
-  let v0 = snapHandelPct(remainder * current[k0] / sumOthers);
-  if (v0 > remainder) v0 = Math.floor(remainder / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
-  next[k0] = v0;
-  next[k1] = remainder - v0;
-  return next;
 }
 
 // ---------------------------------------------------------------------------
@@ -857,7 +839,12 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       { city, map },
     );
     const zdrowie = healthBd.total;
-    const econCity = toEconomyCity(city, params, isCapital(city), zdrowie, { maSpichlerz, maAkwedukt });
+    const ownerDefaultPodzial = readOwnerDefaultPodzialHandlu(city, data);
+    const econCity = toEconomyCity(
+      city, params, isCapital(city), zdrowie,
+      { maSpichlerz, maAkwedukt },
+      ownerDefaultPodzial,
+    );
     // #17 fix: base ctx miał flagi budynków/Waluty/bonusów cyw. na sztywno false/1/undefined,
     // więc Bilans plonów pomijał Młyn/Cegielnię/Targowisko/Bibliotekę/Mennicę, Walutę i bonusy
     // cyw. — panel pokazywał inne liczby niż silnik (turn-economy.ts tickCityEconomy). Odtwarzamy
@@ -3612,9 +3599,38 @@ function appendPodzialHandlu(
   }
 
   const split = readPodzialHandlu(city, data);
+  const useOverride = readPodzialHandluOverride(city);
   const player = city.ownerId === 0;
-  const editable = player && !!cfg.onPodzialHandluChange;
+  const editable = player && !!cfg.onPodzialHandluChange && useOverride;
   const est = estimateHandelChips(view, split);
+
+  if (player && cfg.onPodzialHandluOverrideChange) {
+    const overrideRow = el('div', 'handel-override-row');
+    overrideRow.style.cssText = 'display:flex;align-items:center;gap:0.45em;margin:0.35em 0 0.5em;font-size:0.72em;';
+    const chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.id = `handel-override-${city.id}`;
+    chk.checked = useOverride;
+    const lbl = document.createElement('label');
+    lbl.htmlFor = chk.id;
+    lbl.textContent = 'Własny podział (zamiast domyślnego imperium)';
+    lbl.style.cursor = 'pointer';
+    chk.addEventListener('change', () => {
+      cfg.onPodzialHandluOverrideChange?.(city.id, chk.checked);
+      rerender();
+    });
+    overrideRow.appendChild(chk);
+    overrideRow.appendChild(lbl);
+    mount.appendChild(overrideRow);
+    if (!useOverride) {
+      const hint = el('div', 'muted');
+      hint.style.cssText = 'font-size:0.68em;margin-bottom:0.35em;';
+      const def = readOwnerDefaultPodzialHandlu(city, data);
+      hint.textContent =
+        `Domyślne imperium: ${def.procentPieniadz}% Skarb · ${def.procentNauka}% Nauka · ${def.procentLuksus}% Zamożność`;
+      mount.appendChild(hint);
+    }
+  }
 
   const grid = el('div', 'handel-chip-grid');
   grid.innerHTML =

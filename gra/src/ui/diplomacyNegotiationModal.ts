@@ -84,7 +84,7 @@ export interface NegotiationModalContext {
 const STYLE_ID = 'civ-diplo-neg-css-1e';
 let overlay: HTMLDivElement | null = null;
 
-const NEGOTIATION_IDS = new Set(['2', '3', '4', '5', '6', '7', '8', '9', '12', '13']);
+const NEGOTIATION_IDS = new Set(['6', '7', '9']);
 
 export function actionNeedsNegotiation(actionId: string): boolean {
   return NEGOTIATION_IDS.has(actionId);
@@ -132,7 +132,7 @@ function esc(s: string): string {
  * Minimalna sekcja (nie pełny koszyk diplomacyTradeBasket.ts — patrz raport zadania):
  * jedno pole złota + jeden wybór surowca (dostęp LUB ilość) + ilość pakietów.
  */
-const SWEETENER_ACTION_IDS = new Set(['2', '3', '4', '8', '12']);
+const SWEETENER_ACTION_IDS = new Set<string>();
 
 function sweetenerSectionHtml(ctx: NegotiationModalContext): string {
   const goldMax = Math.max(0, Math.floor(ctx.playerSkarbiec ?? 0));

@@ -1,10 +1,10 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-07-25. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md` (1–17 odpowiedziane).
+Aktualizacja: 2026-07-27. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md` (1–17 odpowiedziane).
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ---
 
-## PYTANIE 18 — profil Pretorium po sprzątnięciu · STATUS: **ODPOWIEDZIANE 2026-07-25**
+## PYTANIE 18 — profil Pretorium po sprzątnięciu · STATUS: **WDROŻONE W DANYCH** (2026-07-25 decyzja · `buildings.json` pretorium)
 
 **Sytuacja.** Po wdrożeniu decyzji 16A (`obrona` → 0) i decyzji 6 (`mnoznik` → 0, jak przy Pałacu) Pretorium zostaje
 z bonusami **praca 2 / pieniądz 3 / zadowolenie 1** za cenę 75 pracy + 9 cegły + 3 utrzymania na turę.
@@ -40,11 +40,11 @@ bez mnożnika; opis przepisany na „administracja prowincji: pobór podatków i
 zamiejscowy", ma dawać Kulturę jak Pałac); pola `obrona` i `mnoznik` wyzerowane (spójnie z decyzją 16A i decyzją
 6 o Pretorium-jak-Pałac). To inne rozwiązanie niż warianty A/B/C wyżej (żaden nie proponował Kultury) —
 pełny zapis i uwaga o niedoprecyzowanych `Praca`/`Pieniądz`/`Zadowolenie` w
-`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md` §8. **Status wdrożenia:** decyzja zapisana, NIE wdrożona w kodzie.
+`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md` §8. **Status wdrożenia:** ✅ w `gra/data/buildings.json` — Kultura 5, obrona/mnoznik 0, praca 2, pieniądz 3, zadowolenie 0 (łańcuch regionalny). **BRAK ABC** — nie pytać o Praca/Pieniądz/Zadowolenie.
 
 ---
 
-## PYTANIE 19 — utrzymanie budynków: zróżnicowane czy płaskie? · STATUS: **ODPOWIEDZIANE 2026-07-25 = A**
+## PYTANIE 19 — utrzymanie budynków: zróżnicowane czy płaskie? · STATUS: **WDROŻONE W KODZIE** (2026-07-25 decyzja A · `economy-upkeep.ts`)
 
 **Sytuacja.** Każdy budynek ma w danych własne `utrzymanie` (0–5 na turę). **Silnik tego nie czyta** — `econ-params.json`
 ustawia płaską stawkę `utrzymanie_budynek` (łatwy 1 / normalny 1 / trudny 2), która **zawsze** wygrywa z wartością z danych
@@ -78,12 +78,13 @@ kolejnym przeglądzie, dokładnie tak jak mnożnik i `przyrost`.
 
 **ODPOWIEDŹ MACIEJA (2026-07-25):** **A** — utrzymanie budynków ma być zróżnicowane per budynek (z danych),
 nie płaska stawka. Zapisane jako osobne zadanie ekonomiczne (z testem) w
-`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md` §8. **Status wdrożenia:** decyzja zapisana, NIE wdrożona w kodzie —
-silnik dziś nadal czyta wyłącznie płaską stawkę `utrzymanie_budynek` (`economy-upkeep.ts:511`).
+`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md` §8. **Status wdrożenia:** ✅ `buildingUpkeep()` czyta `utrzymanie` z `buildings.json`; `utrzymanie_budynek` tylko fallback gdy brak wpisu. Test: `upkeep-test.cjs`. **BRAK ABC.**
 
 ---
 
-## PYTANIE 20 — Targowisko: bonus, którego nigdy nie było · STATUS: OTWARTE
+## PYTANIE 20 — Targowisko: bonus, którego nigdy nie było · **STATUS: ✅ ZAMKNIĘTE (A, wdrożone 2026-07-26; potwierdzenie Maciej 2026-07-27)**
+
+**Decyzja:** A — `baza.pieniadz` 5, `przyrost.pieniadz` 3, mnożnik=0. Osobno: premia Targowiska **+50% Handlu brutto** (`budynek_targowisko_bonus_handlu`). Mennica = osobny efekt **×1,5 Handlu netto** (nie mylić). `docs/decyzje/PYTANIE-20.md`.
 
 **Sytuacja.** Targowisko (Rynek) ma `baza.mnoznik: 0`, a cały zamierzony efekt handlowy siedzi w `przyrost.mnoznik: 3` —
 czyli w polu, którego silnik nie czytał. Efekt wynosił **zero na każdym poziomie, od zawsze**. Gracz widział chip
@@ -171,23 +172,17 @@ skalują. Nie wprowadzałem tu nowej asymetrii. Jeśli chcesz, żeby skalowała,
 
 # PACZKA 2 — pytania przygotowane, jeszcze nie zadane
 
-## PYTANIE 21 (szkic) — martwe pole `odblokowuje`
-Mury / Cytadela / Warsztat oblężniczy mają w danych `"odblokowuje": "maMur"/"maFort"/"maWarsztatOblezniczy"`, ale flagi
-ustawia hardkodowane porównanie `id === 'mury'` w `main.ts:2016`. Pole nie istnieje nawet w typie `BuildingDef`.
-Warianty: A — usunąć pole z danych; B — ożywić je (silnik czyta pole zamiast hardkodu); C — zostawić z komentarzem.
-Wstępna rekomendacja: **B** (dane sterują logiką, a nie hardkod po `id`), ale to nie pilne.
+## PYTANIE 21 — martwe pole `odblokowuje` · **STATUS: ✅ ZAMKNIĘTE (55B wdrożone)**
 
-## PYTANIE 22 (szkic) — Wielka Kuźnia: niespójna kategoria przy awansie
-Jedyny budynek, u którego mnożnik **działał**, bo jako jedyna kuźnia nie ma „+Wojsko" w polu `kategoria`. Skutek:
-Kuźnia żelaza 0% efektu → po awansie Wielka Kuźnia +23% do Pracy. Wygląda na literówkę. Budynek jest epoki 4
-(nieosiągalny w grze o 3 epokach) i nie ma `koszt_surowce` ani adnotacji „PARKOWANIE" (Lazaret ją miał).
-Warianty: A — poprawić kategorię i dopisać adnotację parkowania; B — zostawić do czasu epoki klasycznej; C — usunąć.
-Wstępna rekomendacja: **A**.
+Decyzja **B** — pole `odblokowuje` steruje flagami miasta (`production.ts`). `docs/decyzje/PYTANIE-21.md`.
 
-## PYTANIE 23 (szkic) — odznaki ulepszeń na żetonach jednostek
-Decyzja 11A: jednostki mają nosić odznakę pokazującą poziom ulepszenia. Do rozstrzygnięcia szczegóły prezentacji:
-ile poziomów widocznych, czy dwie ścieżki (pancerz 1–3 i parametry 1–3) mają osobne oznaczenia, czy odznaka ma być
-na żetonie na mapie świata, na modelu w bitwie, czy w obu miejscach.
+## PYTANIE 22 — Wielka Kuźnia · **STATUS: ✅ ZAMKNIĘTE (56 = B)**
+
+**56 = B** — kategoria i parkowanie do epoki klasycznej. `docs/decyzje/PYTANIE-22.md`.
+
+## PYTANIE 23 — odznaki ulepszeń · **STATUS: ✅ WDROŻONE (57 = A+B)**
+
+**57 = A+B** — kropki na żetonie + kolorowa obwódka (mapa). `docs/decyzje/PYTANIE-23.md`. (Nie 11A tarcza+miecz.)
 
 ---
 
@@ -495,7 +490,7 @@ Dwa nowe rozstrzygnięcia właściciela z tej rundy:
 
 **Sufit stał się praktycznie nieosiągalny** — na normalnym wymaga `Dystans + 0,5 × Liczba_Miast ≥ 50`.
 
-**Doprecyzowanie decyzji 59 (bez pytania właściciela — wynika z danych):** redukcja jest **addytywna**
+**Doprecyzowanie decyzji 59 (Maciej 2026-07-27, PYTANIE-59-DOP=B):** redukcja jest **addytywna**
 (`strata × (1 − suma_redukcji)`), a naturalny sufit to **0,60, nie 0,90** — bo `palac` ma `lokalizacja: "stolica"`,
 a `pretorium` ma `lokalizacja: "region"`, więc **żadne miasto nie może mieć obu naraz**. Maksimum w jednym
 mieście to Sąd + Pałac (stolica) albo Sąd + Pretorium (region).
@@ -546,8 +541,8 @@ Powód: bez tego cywilizacja bez złoża złota w zasięgu **nigdy nie zbuduje M
 Daniny i nigdy nie wejdzie w etap Podatku** — do końca partii, tak samo gracz jak AI. Złoże złota ma rzadkość
 3% pól kwalifikujących się (tylko Góry i Wzgórza) i celowo **nie jest** na liście `FAIR_PLAY_DEPOSIT_IDS`.
 To ta sama pułapka, którą właściciel rozstrzygnął dla cegły decyzją 53B.
-**DO POTWIERDZENIA przez właściciela:** przyjęto roboczo, że **zerwanie szlaku nie burzy już zbudowanej Mennicy**
-— blokuje tylko budowę nowej.
+**DO POTWIERDZENIA przez właściciela:** ~~przyjęto roboczo, że **zerwanie szlaku nie burzy już zbudowanej Mennicy**~~
+**Doprecyzowanie PYTANIE-77-DOP=B (Maciej 2026-07-27):** Mennica **nie burzy się**; efekt śpi **1 turę** po utracie dostępu do złota, potem pełne uśpienie (nadpisuje robocze 83=B natychmiast). Zapis: `docs/decyzje/PYTANIE-77-DOP.md`.
 
 ## DECYZJA 78 — system weteranów (Maciej 2026-07-25), wdrażana
 > „Jednostka, która wchodzi do walki ma statystyki tak jak w JSON-ach. Po pierwszej bitwie ma drugi poziom
@@ -608,8 +603,13 @@ jest pytaniem i łamie zasadę.
 
 ---
 
-## PYTANIE 84 (szkic, zapisane 2026-07-26) — czy inne budynki też mają zasypiać bez surowca?
-**STATUS: OTWARTE — czeka na decyzję ABC. Uwaga Macieja, zapisana zanim zdążyliśmy ją rozwinąć.**
+## PYTANIE 84 — budynki zależne od złoża · **STATUS: 🟡 ZAPISANA (model hybrydowy Maciej 2026-07-27)**
+
+**Decyzja (hybryda, nie czyste A/B/C):**
+- **Dostęp** (Mennica/Złoto, Sól, Konie…): brak dostępu → **natychmiast zasypia** (jak Mennica dziś).
+- **Magazyn państwa** (Drewno, Kamień, Glina, Ruda…): **reguła B** — produkcja z zapasu skarbca, zasypia po wyczerpaniu; może działać chwilę po utracie kopalni, jeśli zapas został.
+
+**Kod dziś:** runtime tylko Mennica; reszta — bramka przy budowie. Wdrożenie czeka na `działaj`. `docs/decyzje/PYTANIE-84.md`.
 
 > „Mamy chyba więcej budynków takich, które wymagają surowca do działania. Na przykład gliny i innych.
 > Teoretycznie też nie powinny działać w sytuacji, gdy nie mają dostępu. Chyba że działają na tym,
@@ -683,9 +683,9 @@ konstrukcyjnym, nie tylko nadmiarem. Przy wdrożeniu trzeba przejrzeć panel mia
 to, co dotyczy szlaków z obcymi, zamiast to przenosić i zostawiać kopię.
 
 ### Punkt do rozstrzygnięcia przy wdrożeniu
-Suwak podziału (Nauka / Skarbiec / Zamożność) jest dziś **per miasto** — każde miasto ma własny
-`podziałHandlu`. Dyspozycja mówi o globalności *handlu międzynarodowego*, nie suwaka. **Nie zakładać,
-że suwak też ma się uglobalnić** — to byłaby zmiana mechaniki, nie układu, i wymaga osobnej decyzji ABC.
+~~Suwak podziału (Nauka / Skarbiec / Zamożność) jest dziś **per miasto**~~ — **ROZSTRZYGNIĘTE 2026-07-27:**
+**DYSPOZYCJA-85-SUWAK = C** — globalny domyślny podział Daniny + opcjonalny override per miasto.
+Zapis: `docs/decyzje/DYSPOZYCJA-85-SUWAK.md`. Kod: ROZBIEŻNOŚĆ (brak globalnego suwaka gracza).
 
 ### Stan wyjściowy dla wdrażającego
 - Żetony paska zasobów: `gra/src/ui/hud.ts` (żeton „Handel” z `value: s.handelIncome`, ok. linii 439-444)
@@ -697,12 +697,13 @@ Suwak podziału (Nauka / Skarbiec / Zamożność) jest dziś **per miasto** — 
 ---
 
 ## ZNALEZISKO 86 (2026-07-26) — „Szczegóły bitwy" nie pokazują poziomu zniszczeń
-**STATUS: ZDIAGNOZOWANE.** Zgłoszone przez Macieja na zrzucie z tury 11.
+**STATUS: ✅ ZAMKNIĘTE — ZNALEZISKO-86 = A (Maciej 2026-07-27).** % HP + pasek jak `postBattleSummary`.
 
-**Objaw:** panel „Szczegóły bitwy" pokazuje przy jednostce `19 → 13`, ale gracz nie wie, czy 13 to dużo,
-czy mało — brak odniesienia do maksimum.
+**Decyzja:** A — panel „Szczegóły bitwy" ma pokazywać procent HP i pasek (wzorzec `postBattleSummary`), nie tylko liczby bezwzględne.
 
-**Diagnoza (fakty z kodu):**
+**Stan kodu:** CZĘŚCIOWO — `maxHp` już dociera (`battleScene.ts`, `endDetails1E.ts`); brakuje % i paska. Pełny zapis: `docs/decyzje/ZNALEZISKO-86.md`.
+
+~~Diagnoza historyczna (przed częściową naprawą maxHp):~~
 - `gra/src/battle/endDetails1E.ts:85-88` renderuje `hpBefore → hpAfter` jako **liczby bezwzględne**,
   a kolumnę podpisuje „ludzi po bitwie".
 - **`maxHp` NIGDY nie dociera do tego panelu** — grep po `maxHp` w `endDetails1E.ts` i `endScreen1E.ts`
@@ -742,27 +743,15 @@ strat". Wtedy subagent nie odtworzył objawu i temat utknął na braku repro. Te
 ---
 
 ## ZNALEZISKO 88 (2026-07-26) — głód armii: podwójne złamanie parytetu AI
-**STATUS: ZDIAGNOZOWANE, czeka na decyzję ABC. NIE naprawiać bez niej — zmienia balans każdej partii.**
+**STATUS: ✅ ZAMKNIĘTE — C-ARMY-HUNGER-Q1 = A (Maciej 2026-07-27).** Pełny parytet wdrożony.
 
-Maciej podejrzewał, że „AI nie umie przesunąć żywności na armię i armia głoduje". Kod mówi coś
-**odwrotnego i gorszego** — parytet jest złamany w DWÓCH miejscach naraz, oba na korzyść AI:
+**Decyzja:** A — Pełny parytet (suwak + głód). AI zarządza suwakiem żywności heurystyką
+(`decideAIEconomySliders`, bez UI); utrata HP przy głodzie armii dla **wszystkich** ownerId.
 
-| | Gracz | AI |
-|---|---|---|
-| Może przesunąć żywność na zapasy armii | tak | **nie** |
-| Traci HP przy ujemnych zapasach | **tak, −8% maxHP/turę (normal)** | **nie, nigdy** |
+**Dowód wdrożenia:** `docs/decyzje/C-ARMY-HUNGER-Q1.md` · kod `main.ts` (~16473, ~17338) · commit `5ef4c45`.
 
-**Dowody:**
-1. Domyślny podział to **100% na rozwój miast, 0% na armię** (`DEFAULT_PROCENT_ROZWOJ = 100`).
-   Jedyne miejsce zmieniające go to `main.ts:3777-3779` z twardą bramką `if (city.ownerId !== 0) return;`.
-   W całym `ai.ts` **nie ma ani jednego odwołania** do podziału żywności.
-2. Atrycja z głodu (`main.ts:13795-13800`): `if (getEmpireFoodReserve(0) < 0)` oraz
-   `applyArmyStarvationHpLoss(units, 0, …)` — **oba z zahardkodowanym `0`**, czyli tylko gracz.
-   Rachunek `advanceEmpireFood` liczy się poprawnie dla wszystkich właścicieli, zapasy AI schodzą
-   na minus, ale **nic się z tym nie dzieje**.
-
-**Do decyzji ABC:** czy AI dostaje automatyczne zarządzanie suwakiem, czy głód obowiązuje wszystkich,
-czy jedno i drugie. Naprawa dotyka `main.ts` i zmienia balans — nie robić po cichu.
+~~Diagnoza (historyczna, przed naprawą):~~ parytet był złamany w DWÓCH miejscach na korzyść AI
+(suwak tylko gracz + atrycja HP tylko ownerId===0). Naprawione.
 
 ---
 

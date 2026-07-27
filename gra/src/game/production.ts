@@ -74,9 +74,12 @@ import {
 } from './building-upgrades';
 import miastoParams from '../../data/miasto-params.json';
 
-// ---------------------------------------------------------------------------
-// Public types
-// ---------------------------------------------------------------------------
+export {
+  buildingRuntimeGateMet,
+  filterRuntimeActiveBuiltIds,
+  hasDepositRuntimeGate,
+  DEPOSIT_RUNTIME_GATED_BUILDING_IDS,
+} from './building-resource-gate';
 
 /** What kind of thing a city can produce. */
 export type ProductionKind = 'budynek' | 'jednostka';

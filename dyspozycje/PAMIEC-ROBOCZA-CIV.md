@@ -49,7 +49,13 @@ tabel w tym pliku i we wszystkich plikach `dyspozycje/*.md` — nie tylko rozmow
 leci na subagentów **Sonnet 5**. Zmiana modelu na Opus/Fable wymaga jego wyraźnej zgody w bieżącej rozmowie —
 nie domyślaj się, że skomplikowany temat kwalifikuje się automatycznie.
 
-**Gdzie te trzy zasady muszą być widoczne** (sprawdzaj przy każdej większej aktualizacji dokumentacji):
+**4. Odpowiedź ABC → najpierw plik, potem kod (Maciej 2026-07-27).** Gdy Maciej pisze `ID: litera`
+(np. `C-TEREN-IMPL-3: B`), agent **najpierw** zapisuje odpowiedź w `docs/decyzje/<ID>.md` + indeks
+`ABC-KOLEJKA-OTWARTE-*.md` (status 🟡 ZAPISANA), **dopiero potem** dotyka `gra/`. Inne sesje czytają
+repo, nie czat. **Dotyczy też odpowiedzi już udzielonych w czacie** — jeśli brakuje sekcji
+**„Odpowiedź Macieja"** w pliku, uzupełnij natychmiast (retroaktywnie). Szczegóły: `docs/decyzje/ABC-ZAPIS-PLIKOWY.md` §„Kolejność obowiązkowa".
+
+**Gdzie te cztery zasady muszą być widoczne** (sprawdzaj przy każdej większej aktualizacji dokumentacji):
 `CLAUDE.md` §„Jak pracować z właścicielem" (pkt 2–4) · ten plik (wyżej) · `dyspozycje/BACKLOG-PRZYSZLOSC.md` §E.
 
 ---

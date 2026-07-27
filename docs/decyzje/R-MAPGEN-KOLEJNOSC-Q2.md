@@ -1,8 +1,17 @@
 # R-MAPGEN-KOLEJNOSC-Q2 — Docelowa górzystość lądu (tier Średni relief)
 
-**Status:** ✅ WDROŻONA  
+**Status:** 🔵 **KOD GOTOWY** — ⏸ deploy czeka **FALA 37** (w roboczej `a74c3797` jeszcze stara wersja)  
 **Grupa:** A (mapa świata / generator)  
 **Ekran:** [TEMAT: Generator mapy — procent Gór i Wzgórz na lądzie]
+
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 **Czat ABC** — kod gotowy w `gra/src`; **nie** publishuj `gra-robocza/` |
+| **Kod `gra/src`** | ✅ **GOTOWY** — `map-gen-params.json` · fair-play 8/8 |
+| **Deploy `gra-robocza`** | ⏸ **czeka FALA 37** — poza FALA 36 |
+| **Indeks** | `STATUS-WDROZEN-AGENT-2026-07-27.md` |
 
 ## Sytuacja
 

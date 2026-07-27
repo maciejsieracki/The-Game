@@ -11,22 +11,44 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `a74c3797` — 2026-07-27 15:12 — FALA 36: PACZKA WDROŻEŃ BEZ ABC — **AKTUALNA**
-- md5 (pelne): `a74c3797e211532a457413e94fe28765` · stempel: `ROBOCZA · 2026-07-27 15:12`
+## ROBOCZA `6691eb3e` — 2026-07-27 17:25 — FALA 37: paczka ABC + ZNALEZISKO-86 — **AKTUALNA**
+- md5 (pelne): `6691eb3e920045a24f7be8f94216e1db` · stempel: `ROBOCZA · 2026-07-27 17:25` · commit: *(po commit deploy)*
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html`
+- Wynik `vite build` exit 0. POLE-BITWY: pominięty (npm devdir warning).
+- **Co nowego (FALA 37):**
+  - **ZNALEZISKO-86=A:** „Szczegóły bitwy" — % HP + pasek (`endDetails1E.ts`).
+  - **R-BITWA-POWTORKA-I=B:** powtórka = świeża auto-grupa (`battleScene.ts`).
+  - **R-MAPGEN-KOLEJNOSC-Q2/Q3:** relief ~15% + pełny floor.
+  - **PYTANIE-77-DOP=B:** łaska Mennicy 1 tura (`mennica-zloto-grace.ts` + `main.ts`).
+  - **PYTANIE-84:** runtime gate dostęp/magazyn (`building-resource-gate.ts`, `turn-economy.ts`).
+  - **R-DYP-STOL-A=C:** sekcje traktatu w koszyku (`diplomacyTradeBasket.ts`).
+  - **C-OBCE-JEDN Q3:** tooltip weterana + pierwszy kontakt (`veteran.ts`, `hexContextTooltip.ts`).
+  - **ECHO:** pliki decyzji ABC (bez nowego kodu poza powyższym).
+- **NIE w tej fali (czeka `działaj`):** C-OBCE-JEDN Q1–Q2 pełny panel · R-PIERWSZE-MIASTO · DYSPOZYCJA-85-SUWAK wire main · R-MUZYKA · R-FULLSCREEN.
+- **Bramki:** tsc 0 · scout 10/10 · diplomacy-display 26/26.
+
+## ROBOCZA `1d2eb0ba` — 2026-07-27 17:11 — FALA 37 (próbny build) — **ZASTĄPIONA**
+
+## ROBOCZA `a74c3797` — 2026-07-27 15:12 — FALA 36: PACZKA WDROŻEŃ BEZ ABC — **ZASTĄPIONA**
+- md5 (pelne): `a74c3797e211532a457413e94fe28765` · stempel: `ROBOCZA · 2026-07-27 15:12` · commit: `2632156`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html`
 - Wynik `vite build` exit 0. POLE-BITWY: pominięty (build oblezenie-bitwa fail npm devdir).
 - **Co nowego (FALA 36, batch bez nowego ABC):**
   - **Dyspozycja 85:** pasek zasobów `Skarbiec · Praca · Surowce · Handel`; handel międzynarodowy w chipie Handel.
-  - **Kultura/religia/presja** (B-KULT-REL, KULT-PRESJA, KULT-DYP) — silnik już w bundlu.
-  - **B-SPIC / B-SUROW-BUD** — dane + bramki surowców (deploy zbiorczy).
-  - **FALA 9 UI** (R-STARTPREVIEW, R-PANEL-DOCHOD, R-ARMIA, R-DRZEWO-TECH…) — scalone z F28–35.
-  - **FALA 34–35:** scout chatka, tartak, pre-battle retreat, odfortyfikowanie, HUD tooltips, cykl armii, baner po turze.
+  - **Kultura/religia/presja** (B-KULT-REL, KULT-PRESJA, KULT-DYP) — silnik w bundlu.
+  - **B-SPIC / B-SUROW-BUD** — dane + bramki surowców.
+  - **FALA 9 UI** (R-STARTPREVIEW, R-PANEL-DOCHOD, R-ARMIA, R-DRZEWO-TECH…) + **FALA 34–35** (scout, tartak, retreat, HUD, cykl armii…).
   - **C-WIAR-D4 + C-WIAR-N1-UX:** Dźwignia 4 Zaufanie + modal 3 opcje przed atakiem.
-  - **R-TEREN-DOPIAC:** teren bitwy 3 etapy (obrona Gór, Δ zasięg, koszty konnicy).
-  - **R-AI-SUWAKI:** `decideAIEconomySliders` dla AI (żywność/handlarz/praca).
-  - **R-DYP-STOL-A (część):** modal handlu dyplomacji + wyświetlanie statystyk imperium.
-  - **Bitwa:** snapshot grup przy „Rozegraj ponownie" (R-BITWA-POWTORKA-I).
-- **NIE w tej fali (osobne tematy):** R-MUZYKA-OPOZNIENIE, R-FULLSCREEN-PASEK, R-PIERWSZE-MIASTO (kod niekompletny).
+  - **C-WIAR-N4-AI=B:** AI rzadziej odmawia pomocy sojuszniczej gdy osłabione.
+  - **P-AI-006/007/008** — produkcja AI, zasięg ekspansji, mury.
+  - **R-MAPGEN-KOLEJNOSC-Q1–Q2** — pipeline lasu + relief ~15%.
+  - **R-TEREN-DOPIAC + C-TEREN-IMPL:** teren bitwy 3 etapy + tooltip TEREN.
+  - **R-AI-SUWAKI:** `decideAIEconomySliders` (żywność/handlarz/praca).
+  - **R-DYP-STOL-A (część):** modal handlu dyplomacji + statystyki imperium.
+  - **R-BITWA-POWTORKA-I:** powtórka bitwy — w F36 jeszcze stary snapshot; decyzja **B** (auto-grupa) w kodzie HEAD → **delta FALA 37**.
+- **NIE w tej fali:** R-MUZYKA-OPOZNIENIE · R-FULLSCREEN-PASEK · R-PIERWSZE-MIASTO · R-DYP-STOL-A pełny stół.
 - **Bramki:** tsc 0 · scout 10/10 · map-improvement 58/58 · diplomacy-display 26/26 · manpower 62/62 · post-capture-law 11/11 · culture-religion 65/65.
 
 ## ROBOCZA `2e606ae6` — 2026-07-27 12:15 — FALA 35: HUD UX + CYKL ARMII + BANER — **ZASTĄPIONA**

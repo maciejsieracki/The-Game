@@ -38,10 +38,9 @@ export interface CameraControllerOptions {
   /** Gdy true — nie obsługuj drag/zoom (np. kursor nad panelem miasta). */
   blockPointerAt?: (clientX: number, clientY: number) => boolean;
   /**
-   * C-EDGEPAN-Q1 (Rekomendacja A): edge-pan aktywny TYLKO gdy predykat zwraca true
-   * (np. gdy gracz ma zaznaczoną jednostkę — patrz main.ts cameraControllerOpts()).
-   * Brak funkcji = edge-pan całkowicie wyłączony (domyślne, bezpieczne dla innych
-   * użyć CameraController — np. podglądy bez zaznaczenia jednostek).
+   * C-EDGEPAN-Q1 = **B** (Maciej 2026-07-25): edge-pan aktywny na mapie świata,
+   * gdy predykat zwraca true (w main.ts: `isWorldMapUnitMode()` — nie wymaga
+   * zaznaczonej jednostki). Brak funkcji = edge-pan wyłączony.
    */
   edgePanActive?: () => boolean;
   /** Szerokość strefy krawędziowej ekranu w px, licząc od brzegu canvasu (domyślnie 32). */
@@ -233,8 +232,7 @@ export class CameraController {
   }
 
   // ── Edge-pan: przesuwanie mapy gdy kursor jest w wąskiej strefie przy krawędzi
-  // ekranu — patrz FEATURE C-EDGEPAN-Q1 (Rekomendacja A: aktywny tylko gdy
-  // opts.edgePanActive() zwraca true, np. gdy gracz ma zaznaczoną jednostkę).
+  // ekranu — C-EDGEPAN-Q1=B (zawsze na mapie świata, patrz main.ts edgePanActive).
   // Prędkość rośnie liniowo im bliżej samej krawędzi (0 na granicy strefy, max na
   // krawędzi viewportu). Kierunki = te same znaki co WASD (patrz update() niżej).
   private _edgePanDelta(): { dx: number; dz: number } | null {

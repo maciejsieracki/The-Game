@@ -132,6 +132,89 @@ export function veteranBadgeLabel(level: VeteranLevel): string {
   return stars + ' ' + veteranLevelLabel(level) + ' +' + pct + '%';
 }
 
+/** Poziom 2+ — jednostka ma widoczne gwiazdki weterana (C-OBCE-JEDN-Q3). */
+export function veteranHasVisibleBadge(level: VeteranLevel): boolean {
+  return level >= 2;
+}
+
+/** Krótki tooltip przy najechaniu na ★ (własne i obce, mapa + panel). */
+export function veteranStarsTooltipText(level: VeteranLevel): string {
+  if (!veteranHasVisibleBadge(level)) return '';
+  const pct = Math.round(VETERAN_BONUS_FRAC[level] * 100);
+  return (
+    'Doświadczenie bojowe: ' + veteranLevelLabel(level)
+    + ' (+' + pct + '% do ataku, obrony i HP; pancerz bez zmian). '
+    + 'Po każdej przeżytej bitwie jednostka awansuje — maks. ★★★ Weteran (+20%).'
+  );
+}
+
+/** Jedna linia do karty jednostki (własnej i obcej — C-OBCE-JEDN-Q1/Q3). */
+export function veteranExperienceLine(unit: VeteranProgress | null | undefined): string {
+  const battles = veteranBattlesSurvived(unit);
+  const level = veteranLevel(unit);
+  const starc = battles === 1 ? '1 starcie' : battles + ' starcia';
+  if (level === 1) {
+    return 'Doświadczenie bojowe: Rekrut (0 starć — brak premii)';
+  }
+  const pct = Math.round(VETERAN_BONUS_FRAC[level] * 100);
+  return (
+    'Doświadczenie bojowe: ' + veteranLevelLabel(level)
+    + ' (' + starc + ', +' + pct + '% do walki)'
+  );
+}
+
+/** Pełniejsze wyjaśnienie do panelu obcej jednostki (C-OBCE-JEDN-Q3 B). */
+export function veteranPanelExplanation(level: VeteranLevel): string {
+  if (!veteranHasVisibleBadge(level)) {
+    return 'Jednostka nie ma jeszcze doświadczenia bojowego — statystyki jak w karcie typu.';
+  }
+  const pct = Math.round(VETERAN_BONUS_FRAC[level] * 100);
+  return (
+    'Gwiazdki oznaczają doświadczenie z przeżytych bitew. '
+    + veteranLevelLabel(level) + ' daje +' + pct + '% do ataku, obrony, obrażeń i HP. '
+    + 'Pancerz pozostaje bez zmian. Doświadczony żołnierz rzadziej dezerteruje.'
+  );
+}
+
+/** Toast + dziennik przy pierwszym wrogu z ★≥2 (C-OBCE-JEDN-Q3 A). */
+export function veteranFirstEncounterHintHtml(): string {
+  return (
+    '<b>★ Doświadczeni wojownicy</b> — wroga jednostka ma gwiazdki: '
+    + 'przeżyła bitwy i bije mocniej niż rekrut. Najedź na ★ po szczegóły.'
+  );
+}
+
+/** Podtytuł wpisu w panelu WYDARZENIA (pierwsze spotkanie weterana wroga). */
+export function veteranFirstEncounterJournalSubtitle(): string {
+  return (
+    'Wrogie ★★/★★★ — premia do walki po przeżytych bitwach. '
+    + 'Kliknij obcą jednostkę po pełną kartę.'
+  );
+}
+
+/**
+ * Pola edukacji weterana do karty/tooltipu jednostki (C-OBCE-JEDN-Q3 B).
+ * Zwraca null na poziomie 1 (brak odznaki). Q1 wpinia w buildForeignUnitPanel.
+ */
+export function veteranUnitEducationFields(
+  unit: VeteranProgress | null | undefined,
+): {
+  veteranBadgeLabel: string;
+  veteranStarsTooltip: string;
+  veteranPanelExplanation: string;
+  veteranExperienceLine: string;
+} | null {
+  const level = veteranLevel(unit);
+  const badge = veteranBadgeLabel(level);
+  if (!badge) return null;
+  return {
+    veteranBadgeLabel: badge,
+    veteranStarsTooltip: veteranStarsTooltipText(level),
+    veteranPanelExplanation: veteranPanelExplanation(level),
+    veteranExperienceLine: veteranExperienceLine(unit),
+  };
+}
+
 /**
  * Nowa wartość battlesSurvived po jednym PRZEŻYTYM starciu (sufit
  * VETERAN_MAX_BATTLES_TRACKED). Wołający (post-battle-map.ts) jest

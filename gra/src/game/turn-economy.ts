@@ -45,8 +45,8 @@ import type { Hex } from '../types/hex';
 import type { GameMap } from '../types/map';
 import { Nakladka, TerenBazowy } from '../types/hex';
 import type { GameData } from '../data/loader';
-import type { City } from './cities';
-import { normalizePodzialHandlu } from './cities';
+import type { City, CityPodzialHandlu } from './cities';
+import { resolveCityPodzialHandlu } from './empire-handel-split';
 import {
   cityYieldPerTurn,
   populationGrowth,
@@ -99,6 +99,10 @@ import {
   cityPracaInteger,
   buildingLevelForEpoch,
 } from './production';
+import {
+  filterRuntimeActiveBuiltIds,
+  type BuildingRuntimeGateOptions,
+} from './building-resource-gate';
 import {
   advanceWealth,
   loadWealthParams,
@@ -832,7 +836,13 @@ export function toEconomyCity(
   isCapital: boolean,
   zdrowie: number = 0,
   buildings: { maSpichlerz?: boolean; maSpichlerzII?: boolean; maAkwedukt?: boolean } = {},
+  ownerDefaultPodzial?: CityPodzialHandlu,
 ): EconomyCity {
+  const paramsFallback: CityPodzialHandlu = {
+    procentNauka:    params.suwaakHandelNaukaDefault,
+    procentPieniadz: params.suwaakHandelPieniadz,
+    procentLuksus:   params.suwaakHandelLuksus,
+  };
   return {
     id:              city.id,
     ludnosc:         city.population,
@@ -844,11 +854,7 @@ export function toEconomyCity(
     magazynZywnosci: readCityFoodBufferFromCity(city),
     specjalisci:     [],
     kolejkaProdukcji: [],
-    podziałHandlu: normalizePodzialHandlu(city.podzialHandlu ?? {
-      procentNauka:    params.suwaakHandelNaukaDefault,
-      procentPieniadz: params.suwaakHandelPieniadz,
-      procentLuksus:   params.suwaakHandelLuksus,
-    }),
+    podziałHandlu: resolveCityPodzialHandlu(city, ownerDefaultPodzial, paramsFallback),
     podziałPracy: city.podzialPracy ?? {
       procentBudynki: params.suwaakPracaBudynki,
     },
@@ -1109,17 +1115,38 @@ export interface EconUnit {
 export type OwnerEraResolver = (ownerId: number) => number;
 export type OwnerTechResolver = (ownerId: number) => ReadonlySet<string>;
 /**
- * PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
- * do złota." Wołający (main.ts) liczy TO RAZ PER OWNER PER TICK (memoizowany
- * resolver -- ten sam wzorzec co ownerResourceCapFor w advanceCityEconomy niżej),
- * łącząc dostęp natywny (empireHasKopalniaZlota) ORAZ dostęp "z trasy" (grant
- * handlowy 'zloto') -- main.ts zna oba, ten moduł celowo nie zna placedImprovements
- * ani tras handlowych (pure per-city economy, patrz nagłówek pliku). Domyślny
- * resolver (gdy wołający go nie poda -- testy/tools sprzed tej decyzji) zwraca
- * zawsze `true`, żeby NIE zmieniać zachowania istniejących wywołań, które o
- * dostępie do złota jeszcze nie wiedzą (żaden regres w tools/*.cjs).
+ * PYTANIE 83=B (Maciej 2026-07-25) + PYTANIE-77-DOP=B (2026-07-27): dostęp do złota
+ * per owner — wołający liczy TO RAZ PER OWNER PER TICK (memoizowany resolver),
+ * łącząc dostęp natywny ORAZ grant handlowy ORAZ łaskę 1 tury po utracie
+ * (mennica-zloto-grace.ts / main.ts prepareMennicaZlotoGraceForTick).
  */
 export type OwnerZlotoAccessResolver = (ownerId: number) => boolean;
+
+/** PYTANIE-84: aktywne etykiety surowców imperium (źródła terenowe + granty handlowe). */
+export type OwnerActiveLabelsResolver = (ownerId: number) => readonly string[];
+
+/** PYTANIE-84: suma City.surowce po imperium (magazyn państwa per typ). */
+export type OwnerEmpireStockResolver = (ownerId: number) => Readonly<Record<string, number>>;
+
+function runtimeActiveBuiltIdsForCity(
+  builtIds: readonly string[],
+  ownerId: number,
+  resolveOwnerActiveLabels: OwnerActiveLabelsResolver | undefined,
+  resolveOwnerEmpireStock: OwnerEmpireStockResolver | undefined,
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver | undefined,
+): readonly string[] {
+  if (!resolveOwnerActiveLabels) return builtIds;
+  const gateOptions: BuildingRuntimeGateOptions = {
+    ownerId,
+    resolveOwnerZlotoAccess,
+  };
+  return filterRuntimeActiveBuiltIds(
+    builtIds,
+    resolveOwnerActiveLabels(ownerId),
+    resolveOwnerEmpireStock?.(ownerId),
+    gateOptions,
+  );
+}
 
 /**
  * Live preview of per-city yields — same formulas as advanceCityEconomy, but
@@ -1145,6 +1172,11 @@ export function previewCityEconomy(
   wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
   /** PYTANIE 83=B: dostęp do złota per owner (patrz OwnerZlotoAccessResolver powyżej). */
   resolveOwnerZlotoAccess: OwnerZlotoAccessResolver = () => true,
+  /** PYTANIE-84: runtime gate dostęp/magazyn — gdy podane, budynki z DEPOSIT_LINKED śpią bez surowca. */
+  resolveOwnerActiveLabels?: OwnerActiveLabelsResolver,
+  resolveOwnerEmpireStock?: OwnerEmpireStockResolver,
+  /** DYSPOZYCJA-85-SUWAK: domyślny podział Daniny/Podatku per owner. */
+  ownerDefaultPodzialHandluByOwner: ReadonlyMap<number, CityPodzialHandlu> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
@@ -1185,14 +1217,26 @@ export function previewCityEconomy(
 
     const worked = cityWorkedTilesForEconomy(city, map, territoryNodes);
     const builtIds = builtByCity.get(city.id) ?? [];
+    const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
+      builtIds,
+      city.ownerId,
+      resolveOwnerActiveLabels,
+      resolveOwnerEmpireStock,
+      resolveOwnerZlotoAccess,
+    );
     const hasWater = cityHasWaterAccess(city, map);
-    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
+    const zdrowie = computeCityHealth(city.population, worked, runtimeBuiltIds, healthParams, hasWater, { city, map });
 
-    const maSpichlerzII = builtIds.includes('spichlerz_ii');
-    const maSpichlerz = maSpichlerzII || builtIds.includes('spichlerz');
-    const maAkwedukt = builtIds.includes('akwedukt');
+    const maSpichlerzII = runtimeBuiltIds.includes('spichlerz_ii');
+    const maSpichlerz = maSpichlerzII || runtimeBuiltIds.includes('spichlerz');
+    const maAkwedukt = runtimeBuiltIds.includes('akwedukt');
     const pctRozwoj = getCityFoodSplit(city);
-    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maSpichlerzII, maAkwedukt });
+    const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
+    const econCity = toEconomyCity(
+      city, params, isCapital, zdrowie,
+      { maSpichlerz, maSpichlerzII, maAkwedukt },
+      ownerDefaultPodzial,
+    );
 
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
@@ -1242,11 +1286,11 @@ export function previewCityEconomy(
     const ctx: CityYieldContext = {
       wojskoZuzycieZywnosci: 0,
       strataFraction,
-      maMlyn: builtIds.includes('mlyn'),
-      maCegielnia: builtIds.includes('cegielnia'),
-      maTargowisko: builtIds.includes('targowisko'),
-      maBiblioteka: builtIds.includes('biblioteka'),
-      maAkademia: builtIds.includes('akademia'),
+      maMlyn: runtimeBuiltIds.includes('mlyn'),
+      maCegielnia: runtimeBuiltIds.includes('cegielnia'),
+      maTargowisko: runtimeBuiltIds.includes('targowisko'),
+      maBiblioteka: runtimeBuiltIds.includes('biblioteka'),
+      maAkademia: runtimeBuiltIds.includes('akademia'),
       // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
       // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
       // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
@@ -1263,14 +1307,14 @@ export function previewCityEconomy(
       civNaukaMult,
       liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
-      liczbaGarncarni: builtIds.filter(id => id === 'garncarnia').length,
+      liczbaGarncarni: runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
 
     // Naprawa 2026-07-25: budynki miasta -> plony flat (Praca/Pieniadz/Zywnosc/Nauka/
     // Kultura) przez cityBuildingEntriesFromBuiltIds (economy.ts) -- ta sama funkcja
     // uzywana w advanceCityEconomy i cityPanel "Bilans plonow", zeby podglad HUD
     // pokazywal identyczne liczby co realny silnik tury.
-    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(runtimeBuiltIds, buildingCatalog, ownerEra, ownerTech);
     const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
@@ -1450,6 +1494,11 @@ export function advanceCityEconomy(
   wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
   /** PYTANIE 83=B: dostęp do złota per owner (patrz OwnerZlotoAccessResolver powyżej). */
   resolveOwnerZlotoAccess: OwnerZlotoAccessResolver = () => true,
+  /** PYTANIE-84: runtime gate dostęp/magazyn — gdy podane, budynki z DEPOSIT_LINKED śpią bez surowca. */
+  resolveOwnerActiveLabels?: OwnerActiveLabelsResolver,
+  resolveOwnerEmpireStock?: OwnerEmpireStockResolver,
+  /** DYSPOZYCJA-85-SUWAK: domyślny podział Daniny/Podatku per owner. */
+  ownerDefaultPodzialHandluByOwner: ReadonlyMap<number, CityPodzialHandlu> = new Map(),
   /** Faza 3 Manpower: leczenie HP jednostek z puli imperium (po regen w pętli miast). */
   manpowerHeal?: {
     units: ManpowerHealUnit[];
@@ -1510,10 +1559,17 @@ export function advanceCityEconomy(
   const magazynCountByOwner = new Map<number, number>();
   for (const c of cities) {
     const bIds = builtByCity.get(c.id) ?? [];
-    if (bIds.includes('stolarnia')) {
+    const runtimeBIds = runtimeActiveBuiltIdsForCity(
+      bIds,
+      c.ownerId,
+      resolveOwnerActiveLabels,
+      resolveOwnerEmpireStock,
+      resolveOwnerZlotoAccess,
+    );
+    if (runtimeBIds.includes('stolarnia')) {
       stolarniaCountByOwner.set(c.ownerId, (stolarniaCountByOwner.get(c.ownerId) ?? 0) + 1);
     }
-    if (bIds.includes('kamieniarski')) {
+    if (runtimeBIds.includes('kamieniarski')) {
       kamieniarskiCountByOwner.set(c.ownerId, (kamieniarskiCountByOwner.get(c.ownerId) ?? 0) + 1);
     }
     if (bIds.includes('magazyn')) {
@@ -1593,16 +1649,28 @@ export function advanceCityEconomy(
 
     const worked    = cityWorkedTilesForEconomy(city, map, territoryNodes);
     const builtIds  = builtByCity.get(city.id) ?? [];
+    const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
+      builtIds,
+      city.ownerId,
+      resolveOwnerActiveLabels,
+      resolveOwnerEmpireStock,
+      resolveOwnerZlotoAccess,
+    );
 
     // WIRE 1: oblicz zdrowie miasta (D17-A: dostęp do wody z mapy, nie tylko pól plonów)
     const hasWater = cityHasWaterAccess(city, map);
-    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
+    const zdrowie = computeCityHealth(city.population, worked, runtimeBuiltIds, healthParams, hasWater, { city, map });
 
-    const maSpichlerzII = builtIds.includes('spichlerz_ii');
-    const maSpichlerz = maSpichlerzII || builtIds.includes('spichlerz');
-    const maAkwedukt  = builtIds.includes('akwedukt');
+    const maSpichlerzII = runtimeBuiltIds.includes('spichlerz_ii');
+    const maSpichlerz = maSpichlerzII || runtimeBuiltIds.includes('spichlerz');
+    const maAkwedukt  = runtimeBuiltIds.includes('akwedukt');
     const pctRozwoj = getCityFoodSplit(city);
-    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maSpichlerzII, maAkwedukt });
+    const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
+    const econCity = toEconomyCity(
+      city, params, isCapital, zdrowie,
+      { maSpichlerz, maSpichlerzII, maAkwedukt },
+      ownerDefaultPodzial,
+    );
 
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
@@ -1652,11 +1720,11 @@ export function advanceCityEconomy(
     const ctx: CityYieldContext = {
       wojskoZuzycieZywnosci: 0,   // B5: wojsko → zapasy państwa (advanceEmpireFood)
       strataFraction,
-      maMlyn:                builtIds.includes('mlyn'),
-      maCegielnia:           builtIds.includes('cegielnia'),
-      maTargowisko:          builtIds.includes('targowisko'),
-      maBiblioteka:          builtIds.includes('biblioteka'),
-      maAkademia:            builtIds.includes('akademia'),
+      maMlyn:                runtimeBuiltIds.includes('mlyn'),
+      maCegielnia:           runtimeBuiltIds.includes('cegielnia'),
+      maTargowisko:          runtimeBuiltIds.includes('targowisko'),
+      maBiblioteka:          runtimeBuiltIds.includes('biblioteka'),
+      maAkademia:            runtimeBuiltIds.includes('akademia'),
       // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
       // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
       // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
@@ -1673,13 +1741,13 @@ export function advanceCityEconomy(
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
       liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych, // Handel E3: +5%/trasa
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
-      liczbaGarncarni:       builtIds.filter(id => id === 'garncarnia').length,
+      liczbaGarncarni:       runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
 
     // Naprawa 2026-07-25: budynki miasta -> plony flat (Praca/Pieniadz/Zywnosc/Nauka/
     // Kultura) przez cityBuildingEntriesFromBuiltIds (economy.ts) -- jedyne zrodlo,
     // wspoldzielone z previewCityEconomy i cityPanel "Bilans plonow".
-    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(runtimeBuiltIds, buildingCatalog, ownerEra, ownerTech);
     const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
 
     const orderMult = orderMultByCity.get(city.id);
@@ -1883,7 +1951,7 @@ export function advanceCityEconomy(
     // odpowiednika w buildings.json (Tartak istnieje tylko jako ulepszenie terenu;
     // Huta w ogole nie istnieje -- zastapiona przez 'odlewnia_brazu') -- te dwie
     // receptury pozostaja wiec nieaktywne, to pre-istniejacy stan danych, nie regresja.
-    const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter(r => builtIds.includes(r.id));
+    const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter(r => runtimeBuiltIds.includes(r.id));
     if (activeRecipes.length > 0) {
       const convResult = runConverters(
         activeRecipes,

@@ -83,7 +83,12 @@ import { pixelToHex, unitAt, keyOf } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
 import { runScoutsAutoExplore } from './game/scout-auto-explore';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
-import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, type City, type BudowaFocus } from './game/cities';
+import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, normalizePodzialHandlu, type City, type BudowaFocus, type CityPodzialHandlu } from './game/cities';
+import {
+  migrateHandelSplitOnLoad,
+  resolveCityPodzialHandlu,
+  freshOwnerDefaultPodzialHandlu,
+} from './game/empire-handel-split';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
 import { canUnitOccupyCityHex, addForeignCityBlocks } from './game/city-hex-movement';
 import {
@@ -412,6 +417,7 @@ import {
   hideEmpireDetailPanel,
   refreshEmpireDetailPanel,
   isEmpireDetailPanelOpen,
+  configureEmpireHandelSplit,
 } from './ui/empireDetailPanel';
 import type { EmpireDetailSnap, EmpireResourceRow } from './ui/empireDetailTypes';
 import {
@@ -505,6 +511,17 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   type CityProduction, type AvailabilityContext } from './game/production';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
 import {
+  createMennicaZlotoGraceState,
+  clearMennicaZlotoGraceState,
+  prepareMennicaZlotoGraceForTick,
+  finalizeMennicaZlotoGraceAfterTick,
+  ownerZlotoAccessForMennica,
+  serializeMennicaZlotoGrace,
+  restoreMennicaZlotoGrace,
+  type MennicaZlotoGraceState,
+  type MennicaZlotoGraceSave,
+} from './game/mennica-zloto-grace';
+import {
   buildingStockCost, unitStockCost, canAffordBuildingStock,
   ownerResourceStockAll, deductBuildingStockCostAcrossCities, creditOwnerResourceStock,
 } from './game/building-stock-cost';
@@ -512,6 +529,7 @@ import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-a
 import {
   bestBuildingProgressAfterCityVisit, buildingProgressWouldChange,
   unitPancerzBonusFrac, unitParametryBonusFrac, unitBuildingBonusLabel,
+  unitPancerzBonusProc, unitParametryBonusProc,
 } from './game/unit-building-bonuses';
 import {
   cityWallDefenseBonusPercent,
@@ -707,7 +725,7 @@ import { showNewGameFlow, hideNewGameFlow, isNewGameFlowOpen, type NewGameParams
 import type { TempoGry } from './game/tech-tempo';
 import type { GameDifficulty } from './game/difficulty-cost';
 import { scaledResearchCost } from './game/difficulty-cost';
-import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit } from './game/veteran';
+import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit, veteranHasVisibleBadge, veteranStarsTooltipText, veteranFirstEncounterHintHtml, veteranFirstEncounterJournalSubtitle, veteranUnitEducationFields } from './game/veteran';
 import {
   showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
   type DiploRelation, type KnownWarBetweenCivs, type DiplomacyPanelConfig,
@@ -719,6 +737,7 @@ import {
 } from './ui/diplomacyAudience';
 import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
 import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
+import { actionUsesTradeBasket } from './ui/diplomacyTradeBasket';
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
@@ -976,6 +995,29 @@ async function boot(): Promise<void> {
       'box-shadow:0 6px 20px rgba(0,0,0,0.45)',
     ].join(';');
     document.body.appendChild(hintToast);
+
+    /** C-OBCE-JEDN-Q3 C: tooltip przy najechaniu na ★ weterana na mapie. */
+    const veteranBadgeTip = document.createElement('div');
+    veteranBadgeTip.id = 'civ-veteran-badge-tip';
+    veteranBadgeTip.style.cssText = [
+      'display:none', 'position:fixed', 'z-index:325', 'pointer-events:none',
+      'max-width:280px', 'padding:6px 10px', 'border-radius:6px',
+      'background:rgba(12,14,20,.94)', 'border:1px solid rgba(244,211,94,.35)',
+      'color:#e8e0c8', 'font:12px/1.35 var(--civ-font-ui,"Segoe UI",Tahoma,sans-serif)',
+      'box-shadow:0 4px 16px rgba(0,0,0,.55)',
+    ].join(';');
+    document.body.appendChild(veteranBadgeTip);
+
+    function hideVeteranBadgeTip(): void {
+      veteranBadgeTip.style.display = 'none';
+    }
+
+    function showVeteranBadgeTip(clientX: number, clientY: number, text: string): void {
+      veteranBadgeTip.textContent = text;
+      veteranBadgeTip.style.display = 'block';
+      veteranBadgeTip.style.left = (clientX + 14) + 'px';
+      veteranBadgeTip.style.top = (clientY + 14) + 'px';
+    }
 
     let d1bHudActive = false;
     /** Aktualnie otwarta audiencja dyplomatyczna (ownerId AI), null = zamknięta. */
@@ -2594,7 +2636,13 @@ async function boot(): Promise<void> {
     /** OBL-S4: staty milicji szturmowej (ephemeral, nie w units[]). */
     const militiaDefOverrides = new Map<string, Record<string, unknown>>();
     const empireFoodStates = new Map<number, EmpireFoodState>();
+    /** DYSPOZYCJA-85-SUWAK: domyślny podział Daniny/Podatku per owner (Skarb/Nauka/Zamożność). */
+    const ownerDefaultPodzialHandlu = new Map<number, CityPodzialHandlu>();
+    /** PYTANIE-77-DOP=B: łaska 1 tury Mennicy po utracie dostępu do złota (per owner). */
+    const mennicaZlotoGraceState: MennicaZlotoGraceState = createMennicaZlotoGraceState();
     let playerArmyFoodHintShown = false;
+    /** C-OBCE-JEDN-Q3 A: jednorazowa edukacja przy pierwszym wrogu z ★≥2 (save/load meta). */
+    let veteranEnemyEducationShown = false;
     const lastCityKulturaTick = new Map<string, number>();
     /** CUDA-AI: Praca/turę kierowana do budynków per miasto (econTick.doBudynkow),
      * migawka z ostatniego przelicznika ekonomii -- populowana razem z
@@ -2776,22 +2824,70 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * Resolver "dostęp do złota" MEMOIZOWANY per owner — do wpięcia w
-     * advanceCityEconomy/previewCityEconomy (turn-economy.ts), które wołają go
-     * RAZ per miasto ale chcemy policzyć realnie tylko RAZ per właściciela na
-     * tick (ownerHasZlotoAccessNow skanuje placedImprovements całego imperium —
-     * kosztowne, żeby liczyć je ponownie dla każdego miasta tej samej cywilizacji).
-     * Ten sam wzorzec cache co ownerResourceCapFor w turn-economy.ts. Nowy Map
-     * TWORZONY PRZY KAŻDYM WYWOŁANIU tej fabryki — wołający ma wywołać ją raz na
-     * początku tury/przeliczenia HUD, nie trzymać jednej instancji między turami
-     * (stan mógłby się zestarzeć po zerwaniu szlaku/utracie kopalni).
+     * PYTANIE-77-DOP=B: efektywny dostęp do złota dla Mennicy (mnożnik + Podatek).
+     * Natywny dostęp LUB pozostała łaska po utracie szlaku/kopalni.
+     * Budowa NOWEJ Mennicy nadal wymaga realnego dostępu (building-resource-gate).
      */
-    function makeOwnerZlotoAccessResolver(): (ownerId: number) => boolean {
+    function ownerZlotoAccessForMennicaEffective(ownerId: number): boolean {
+      return ownerZlotoAccessForMennica(ownerId, mennicaZlotoGraceState, ownerHasZlotoAccessNow);
+    }
+
+    /** Unikalne ownerId z miast na mapie (parytet gracz + AI). */
+    function ownerIdsOnMap(): number[] {
+      const ids = new Set<number>();
+      for (const c of cities) ids.add(c.ownerId);
+      return [...ids];
+    }
+
+    /**
+     * Resolver "dostęp do złota dla Mennicy" MEMOIZOWANY per owner — do wpięcia w
+     * advanceCityEconomy/previewCityEconomy (turn-economy.ts). Wołający MUSI
+     * najpierw uruchomić prepareMennicaZlotoGraceForTick (koniec tury, po
+     * recomputeTradeRouteResourceGrants). Ten sam wzorzec cache co
+     * ownerResourceCapFor w turn-economy.ts.
+     */
+    function makeOwnerZlotoAccessResolver(
+      accessFn: (ownerId: number) => boolean = ownerZlotoAccessForMennicaEffective,
+    ): (ownerId: number) => boolean {
       const cache = new Map<number, boolean>();
       return (ownerId: number): boolean => {
         let v = cache.get(ownerId);
         if (v === undefined) {
-          v = ownerHasZlotoAccessNow(ownerId);
+          v = accessFn(ownerId);
+          cache.set(ownerId, v);
+        }
+        return v;
+      };
+    }
+
+    /**
+     * PYTANIE-84: etykiety aktywne imperium + grant handlowy złota (wspólne API z Mennicą).
+     * Memoizowany per owner per tick — ten sam wzorzec co makeOwnerZlotoAccessResolver.
+     */
+    function empireRuntimeActiveLabelsForOwner(ownerId: number): string[] {
+      const labels = new Set(empireActiveResourceLabelsForOwner(ownerId));
+      if (ownerHasZlotoAccessNow(ownerId)) labels.add('Złoto');
+      return [...labels];
+    }
+
+    function makeOwnerRuntimeActiveLabelsResolver(): (ownerId: number) => readonly string[] {
+      const cache = new Map<number, readonly string[]>();
+      return (ownerId: number): readonly string[] => {
+        let v = cache.get(ownerId);
+        if (v === undefined) {
+          v = empireRuntimeActiveLabelsForOwner(ownerId);
+          cache.set(ownerId, v);
+        }
+        return v;
+      };
+    }
+
+    function makeOwnerEmpireStockResolver(): (ownerId: number) => Readonly<Record<string, number>> {
+      const cache = new Map<number, Readonly<Record<string, number>>>();
+      return (ownerId: number): Readonly<Record<string, number>> => {
+        let v = cache.get(ownerId);
+        if (v === undefined) {
+          v = ownerResourceStockAll(cities, ownerId);
           cache.set(ownerId, v);
         }
         return v;
@@ -2968,7 +3064,9 @@ async function boot(): Promise<void> {
 
     function initEmpireFoodStates(): void {
       playerArmyFoodHintShown = false;
+      veteranEnemyEducationShown = false;
       clearLastEmpireFoodTicks();
+      clearMennicaZlotoGraceState(mennicaZlotoGraceState);
       empireFoodStates.clear();
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       empireFoodStates.set(0, freshEmpireFoodState(efParams.procentRozwojDefault));
@@ -2979,6 +3077,20 @@ async function boot(): Promise<void> {
       }
       bindEmpireFoodRuntime(empireFoodStates);
       syncCityFoodSplitsFromEmpire();
+    }
+
+    function initOwnerDefaultPodzialHandlu(): void {
+      ownerDefaultPodzialHandlu.clear();
+      ownerDefaultPodzialHandlu.set(0, freshOwnerDefaultPodzialHandlu());
+      for (const ai of aiStartHexes) {
+        if (!ownerDefaultPodzialHandlu.has(ai.ownerId)) {
+          ownerDefaultPodzialHandlu.set(ai.ownerId, freshOwnerDefaultPodzialHandlu());
+        }
+      }
+    }
+
+    function effectivePodzialHandlu(city: City): CityPodzialHandlu {
+      return resolveCityPodzialHandlu(city, ownerDefaultPodzialHandlu.get(city.ownerId));
     }
 
     function empireFoodDefaultPct(): number {
@@ -3184,7 +3296,7 @@ async function boot(): Promise<void> {
       const capId = capitalCityIdForOwner(ownerId);
       const walutaOdkryta = unlockedTechsForOwner(ownerId).includes('Waluta');
       const hasMennicaWStolicy = mennicaWStolicy(capId, capId ? cityBuilt.get(capId) : undefined);
-      return resolveDaninaLabel(walutaOdkryta, hasMennicaWStolicy, ownerHasZlotoAccessNow(ownerId));
+      return resolveDaninaLabel(walutaOdkryta, hasMennicaWStolicy, ownerZlotoAccessForMennicaEffective(ownerId));
     }
 
     /** D17=A: panel kontekstowy — pole mapy + opcjonalnie jednostka na tym heksie. */
@@ -3209,12 +3321,35 @@ async function boot(): Promise<void> {
       });
     }
 
-    function buildUnitContextPanelMessage(): string | null {
-      if (!isWorldMapUnitMode() || selectedId === null) return null;
-      const u = units.find(x => x.id === selectedId);
-      if (!u || u.ownerId !== 0) return null;
+    function playerFormalRelationLabel(ownerId: number): string {
+      if (isBarbarian(ownerId)) return 'Wojna';
+      let hasAlliance = false;
+      let hasNap = false;
+      let hasTrade = false;
+      for (const d of activeDeals) {
+        if (!d.strony.includes(0) || !d.strony.includes(ownerId)) continue;
+        const k = normalizeTreatyKind(d.rodzaj);
+        if (isAllianceDealKind(d.rodzaj)) hasAlliance = true;
+        else if (k === RodzajTraktatu.PaktNieagresji) hasNap = true;
+        else if (k === RodzajTraktatu.UmowaHandlowa) hasTrade = true;
+      }
+      const rel = getDiploRelation(0, ownerId);
+      return resolveFormalDiplomaticStatus({
+        relationStatus: rel.status,
+        hasAlliance,
+        hasNap,
+        hasTrade,
+        contactEstablished: diplomaticContactEstablished.has(ownerId),
+      }).label;
+    }
+
+    function buildUnitContextTooltipForUnit(
+      u: RuntimeUnit,
+      opts: { readOnly?: boolean; ownerLabel?: string; relationLabel?: string } = {},
+    ): string {
       const def = lookupUnitDef(u.typeId);
       const defName = String(def?.nazwa ?? def?.Nazwa ?? u.typeId);
+      const vetEdu = veteranUnitEducationFields(u);
       return buildUnitContextTooltipHtml({
         displayName: defName,
         q: u.q,
@@ -3228,22 +3363,64 @@ async function boot(): Promise<void> {
         category: u.category,
         inGarnizon: u.inGarnizon,
         buildingBonusLabel: unitBuildingBonusLabel(u),
-        veteranBadgeLabel: veteranBadgeLabel(veteranLevel(u)),
+        parametryPathPp: unitParametryBonusProc(u),
+        pancerzPathPp: unitPancerzBonusProc(u),
+        veteranBadgeLabel: vetEdu?.veteranBadgeLabel,
+        veteranStarsTooltip: vetEdu?.veteranStarsTooltip,
+        veteranPanelExplanation: vetEdu?.veteranPanelExplanation,
+        ownerLabel: opts.ownerLabel,
+        relationLabel: opts.relationLabel,
+        readOnly: opts.readOnly,
         esc: hudHtmlEsc,
       });
+    }
+
+    function buildUnitContextPanelMessage(): string | null {
+      if (!isWorldMapUnitMode()) return null;
+      if (selectedId !== null) {
+        const own = units.find(x => x.id === selectedId);
+        if (own && own.ownerId === 0) {
+          return buildUnitContextTooltipForUnit(own);
+        }
+      }
+      if (foreignUnitInspectId !== null) {
+        const foreign = units.find(x => x.id === foreignUnitInspectId);
+        if (foreign && foreign.ownerId !== 0) {
+          return buildUnitContextTooltipForUnit(foreign, {
+            readOnly: true,
+            ownerLabel: ownerDiploLabel(foreign.ownerId),
+            relationLabel: playerFormalRelationLabel(foreign.ownerId),
+          });
+        }
+      }
+      return null;
     }
 
     function buildContextPanelMessage(): string | null {
       const hexMsg = buildHexContextPanelMessage();
       const unitMsg = buildUnitContextPanelMessage();
       if (hexMsg && unitMsg) {
-        const u = units.find(x => x.id === selectedId);
+        const inspectId = selectedId ?? foreignUnitInspectId;
+        const u = inspectId !== null ? units.find(x => x.id === inspectId) : undefined;
         const sameHex = u && hexDetailHex && u.q === hexDetailHex.q && u.r === hexDetailHex.r;
         if (sameHex) {
           return hexMsg + '<div class="cp-sep"></div>' + unitMsg;
         }
       }
       return hexMsg ?? unitMsg ?? null;
+    }
+
+    function clearForeignUnitInspect(): void {
+      if (foreignUnitInspectId === null) return;
+      foreignUnitInspectId = null;
+      refreshD1bHud();
+    }
+
+    function inspectForeignUnit(u: RuntimeUnit): void {
+      foreignUnitInspectId = u.id;
+      hexDetailHex = { q: u.q, r: u.r };
+      lastBHex = { q: u.q, r: u.r };
+      refreshD1bHud();
     }
 
     function clearPlayerUnitSelection(): void {
@@ -3278,7 +3455,7 @@ async function boot(): Promise<void> {
       if (isSiegeMapPanelOpen()) {
         reachable = new Set<string>();
         unitRenderer.clearHighlight();
-      } else if (stackCanMove(u)) {
+      } else if (stackCanMove(u) && !isAwaitingFirstPlayerCity()) {
         reachable = reachableWithMergeTargets(u);
         unitRenderer.setHighlight(reachable);
       } else {
@@ -3359,13 +3536,14 @@ async function boot(): Promise<void> {
       exitOkolicaMapMode();
       unitRenderer.clearPathRoute();
       hoverKey = null;
+      foreignUnitInspectId = null;
       selectedId = u.id;
       lastBHex = { q: u.q, r: u.r };
       if (isSiegeMapPanelOpen()) {
         reachable = new Set<string>();
         unitRenderer.clearHighlight();
       } else {
-        reachable = stackCanMove(u)
+        reachable = stackCanMove(u) && !isAwaitingFirstPlayerCity()
           ? reachableWithMergeTargets(u)
           : new Set<string>();
         unitRenderer.setHighlight(reachable);
@@ -6045,7 +6223,35 @@ async function boot(): Promise<void> {
       }
       if (d1bHudActive) refreshD1bHud();
       checkNewDiplomaticContacts();
+      checkVeteranEnemyFirstEncounter(vis);
       if (territoryBorderVisible) refreshTerritoryBorderOverlay();
+    }
+
+    /**
+     * C-OBCE-JEDN-Q3 A — pierwszy widoczny wróg z ★≥2: toast + wpis w WYDARZENIACH.
+     * Flaga veteranEnemyEducationShown trwa w save/meta (jednorazowo na grę).
+     */
+    function checkVeteranEnemyFirstEncounter(visible: ReadonlySet<string>): void {
+      if (veteranEnemyEducationShown || galleryOn) return;
+      for (const u of units) {
+        if (u.ownerId === 0) continue;
+        if (!visible.has(keyOf(u.q, u.r))) continue;
+        if (!veteranHasVisibleBadge(veteranLevel(u))) continue;
+        veteranEnemyEducationShown = true;
+        showHintMessage(veteranFirstEncounterHintHtml(), 6000);
+        if (!warEventLog.some(e => e.id === 'edu-veteran-enemy-q3')) {
+          warEventLog.unshift({
+            id: 'edu-veteran-enemy-q3',
+            icon: '★',
+            title: 'Doświadczeni wojownicy',
+            subtitle: veteranFirstEncounterJournalSubtitle(),
+            kind: 'info',
+          });
+          if (warEventLog.length > 8) warEventLog.length = 8;
+        }
+        refreshD1bHud();
+        return;
+      }
     }
 
     /** Dev/playtest: pełne wyłączenie FoW (F / baton obok minimapy). */
@@ -6097,6 +6303,8 @@ async function boot(): Promise<void> {
 
     // Game state
     let selectedId: string | null = null;
+    /** C-OBCE-JEDN-Q1=A — podgląd obcej jednostki bez zaznaczenia własnej. */
+    let foreignUnitInspectId: string | null = null;
     let reachable = new Set<string>();
     /** Jednostka w animacji ruchu — widoczna mimo ukrycia w stosie. */
     let forceVisibleUnitId: string | null = null;
@@ -6134,8 +6342,9 @@ async function boot(): Promise<void> {
      * `lastBHex` zostaje dla skrótu B = załóż miasto.
      */
     function hideHexContextPanel(): void {
-      if (hexDetailHex === null) return;
+      if (hexDetailHex === null && foreignUnitInspectId === null) return;
       hexDetailHex = null;
+      foreignUnitInspectId = null;
       refreshD1bHud();
     }
 
@@ -8939,8 +9148,8 @@ async function boot(): Promise<void> {
       const daninaLbl = resolveDaninaLabel(
         walutaOdkrytaPlayer,
         mennicaWStolicy(playerCapitalId, playerCapitalId ? cityBuilt.get(playerCapitalId) : undefined),
-        // PYTANIE 83=B: nazwa wraca na "Danina" gdy gracz straci dostęp do złota.
-        ownerHasZlotoAccessNow(0),
+        // PYTANIE 83=B + 77-DOP=B: nazwa wraca na "Danina" gdy brak efektywnego dostępu (łaska wliczona).
+        ownerZlotoAccessForMennicaEffective(0),
       );
       // DYSPOZYCJA 85: bonus % cudów handel_procent gracza, osobno ląd/morze (foot panelu).
       const wonderBonusLadPct = Math.round(wonderTradeRouteBonusForOwner(0, 'lad') * 100);
@@ -9290,7 +9499,7 @@ async function boot(): Promise<void> {
         const canCounter = direction === 'incoming' && canCounterNegotiation(entry);
         const p = entry.payload;
         let counterInitial: import('./ui/diplomacyTradeBasket').TradeBasketInitial | undefined;
-        if (canCounter && (uiActionId === '5' || uiActionId === '13')) {
+        if (canCounter && actionUsesTradeBasket(uiActionId)) {
           if (uiActionId === '5') {
             counterInitial = {
               giveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
@@ -9298,9 +9507,22 @@ async function boot(): Promise<void> {
               turns: p.turns,
               resourceTradeMode: p.resourceTradeMode,
             };
-          } else {
+          } else if (uiActionId === '13') {
             counterInitial = {
               giveItems: p.giveItems?.length ? [...p.giveItems] : undefined,
+            };
+          } else {
+            counterInitial = {
+              giveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
+              receiveItems: p.giveItems?.length ? [...p.giveItems] : undefined,
+              resourceTradeMode: p.resourceTradeMode,
+              turns: uiActionId === '2' ? p.turns : undefined,
+              allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
+              borderMilitary: p.borderMilitary,
+              goldPerTurn: p.goldPerTurn,
+              goldOnce: p.goldOnce,
+              tributeMode: entry.actionId === 'trybut_oferta' ? 'offer' : 'demand',
+              tributeTurns: uiActionId === '8' ? (p.turns ?? 0) : undefined,
             };
           }
         }
@@ -9505,6 +9727,9 @@ async function boot(): Promise<void> {
         buildWonderCityYieldsByOwnerMap([0]),
         // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — projekcja gracza.
         makeOwnerZlotoAccessResolver(),
+        // PYTANIE-84: runtime gate dostęp/magazyn dla budynków złożowych.
+        makeOwnerRuntimeActiveLabelsResolver(),
+        makeOwnerEmpireStockResolver(),
       );
       const cityFoods = preview.perCity
         .filter(tk => tk.ownerId === 0 && !tk.oblegany)
@@ -9572,6 +9797,9 @@ async function boot(): Promise<void> {
         buildWonderCityYieldsByOwnerMap([0]),
         // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — HUD gracza.
         makeOwnerZlotoAccessResolver(),
+        // PYTANIE-84: runtime gate dostęp/magazyn dla budynków złożowych.
+        makeOwnerRuntimeActiveLabelsResolver(),
+        makeOwnerEmpireStockResolver(),
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
       _lastPieniadzRate = playerEcon.pieniadz;
@@ -11662,6 +11890,20 @@ async function boot(): Promise<void> {
       const siegeCity = active.oblegaCityId
         ? cities.find(c => c.id === active.oblegaCityId)
         : null;
+      if (isAwaitingFirstPlayerCity()) {
+        return {
+          hexLabel: '(' + active.q + ',' + active.r + ')',
+          unitCount: stack.length,
+          cards,
+          atk: unitAtak(def),
+          def: unitObrona(def),
+          mov: normFieldVal(def['Ruch'], 2),
+          rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
+          hp: active.hp ?? unitHealth(def),
+          hpMax: unitHealth(def),
+          actions: [],
+        };
+      }
       const actions: ArmyStackHudState['actions'] = [];
       const hasPlan = plannedMarches.has(active.id);
       if (siegeCity) {
@@ -12059,7 +12301,9 @@ async function boot(): Promise<void> {
         buildMode: {
           listTypes: () => buildApi?.listTypes() ?? [],
           getActiveKey: () => activeImprovementKey,
+          isFoundCityOnly: () => isAwaitingFirstPlayerCity(),
           onSelectType: (key) => {
+            if (isAwaitingFirstPlayerCity()) return;
             foundCityMode = false;
             activeImprovementKey = key;
             refreshBuildApi();
@@ -12091,6 +12335,7 @@ async function boot(): Promise<void> {
           listWonders: () => wonderHudEntries(),
           getWonderTargetLabel: () => wonderHudTargetLabel(),
           onSelectWonder: (wonderId) => {
+            if (isAwaitingFirstPlayerCity()) return;
             foundCityMode = false;
             activeImprovementKey = null;
             refreshBuildHighlight();
@@ -12105,6 +12350,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           canMerge: () => {
+            if (isAwaitingFirstPlayerCity()) return false;
             if (selectedId === null) return false;
             const u = units.find(x => x.id === selectedId);
             if (!u || u.ownerId !== 0) return false;
@@ -12129,6 +12375,7 @@ async function boot(): Promise<void> {
             );
           },
           canSplit: () => {
+            if (isAwaitingFirstPlayerCity()) return false;
             if (selectedId === null) return false;
             const u = units.find(x => x.id === selectedId);
             if (!u || u.ownerId !== 0) return false;
@@ -12138,6 +12385,7 @@ async function boot(): Promise<void> {
           },
           onSplit: () => openSplitPanelForSelected(),
           onAction: (actionId) => {
+            if (isAwaitingFirstPlayerCity()) return;
             const u = selectedId !== null ? units.find(x => x.id === selectedId) : null;
             if (!u) return;
             const stack = playerStackAt(u);
@@ -12502,7 +12750,7 @@ async function boot(): Promise<void> {
       getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
       // PYTANIE 83=B: panel miasta musi patrzeć na dokładnie ten sam dostęp do
       // złota co silnik (turn-economy.ts resolveOwnerZlotoAccess) -- jedna funkcja.
-      getOwnerHasZlotoAccess: (ownerId: number) => ownerHasZlotoAccessNow(ownerId),
+      getOwnerHasZlotoAccess: (ownerId: number) => ownerZlotoAccessForMennicaEffective(ownerId),
       // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
       // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
       getPlacedImprovements: () => placedImprovementsWithTradeGrants(0, placedImprovementsForOwner(0)),
@@ -12757,6 +13005,10 @@ async function boot(): Promise<void> {
 
     function planMarchTo(destQ: number, destR: number, attackUnitId?: string): boolean {
       if (selectedId === null || isAnimating) return false;
+      if (isAwaitingFirstPlayerCity()) {
+        showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B).', 3500);
+        return false;
+      }
       if (isSiegeMapPanelOpen()) {
         showHintMessage(
           'Oblężenie — najpierw OBLEGAJ, Szturm lub Odwrót w panelu u dołu ekranu.',
@@ -12909,6 +13161,7 @@ async function boot(): Promise<void> {
 
     function executeMarchSegmentForUnit(unitId: string): boolean {
       if (isAnimating) return false;
+      if (isAwaitingFirstPlayerCity()) return false;
       const u = units.find(x => x.id === unitId);
       const dest = plannedMarches.get(unitId);
       if (!u || !dest || u.ownerId !== 0) return false;
@@ -13128,6 +13381,10 @@ async function boot(): Promise<void> {
     /** Animowany ruch (merge / taktyka — natychmiast, bez planowania A3). */
     function beginMoveSelectedUnitTo(destQ: number, destR: number): boolean {
       if (selectedId === null || isAnimating) return false;
+      if (isAwaitingFirstPlayerCity()) {
+        showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B).', 3500);
+        return false;
+      }
       if (isSiegeMapPanelOpen()) {
         showHintMessage(
           'Oblężenie — najpierw OBLEGAJ, Szturm lub Odwrót w panelu u dołu ekranu.',
@@ -13316,6 +13573,24 @@ async function boot(): Promise<void> {
     canvas.addEventListener('mousemove', (e: MouseEvent) => {
       if (galleryOn) return;
 
+      // C-OBCE-JEDN-Q3 C: tooltip na gwiazdkach weterana (własne i obce).
+      if (isWorldMapUnitMode() && !isPreBattleOpen()) {
+        const vetUid = unitRenderer.pickVeteranBadgeUnitIdAt(e.clientX, e.clientY, canvas, camera);
+        if (vetUid) {
+          const u = units.find(x => x.id === vetUid);
+          const tip = u ? veteranStarsTooltipText(veteranLevel(u)) : '';
+          if (tip) {
+            showVeteranBadgeTip(e.clientX, e.clientY, tip);
+          } else {
+            hideVeteranBadgeTip();
+          }
+        } else {
+          hideVeteranBadgeTip();
+        }
+      } else {
+        hideVeteranBadgeTip();
+      }
+
       // Tryb budowy — ghost miasta / ulepszenia + chip przy kursorze
       if (buildModeOpen && (foundCityMode || activeImprovementKey)) {
         handleBuildModeHover(e);
@@ -13383,6 +13658,7 @@ async function boot(): Promise<void> {
 
     canvas.addEventListener('mouseleave', () => {
       applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
+      hideVeteranBadgeTip();
     });
 
     canvas.addEventListener('mouseup', (e: MouseEvent) => {
@@ -13710,13 +13986,9 @@ async function boot(): Promise<void> {
           planMarchTo(hit.q, hit.r);
         }
       } else if (cu !== null && cu.ownerId !== 0) {
-        showHintMessage(
-          'Zaznacz swoją jednostkę obok wroga, potem kliknij wroga — pre-bitwa.',
-          4500,
-        );
-        clearPlayerUnitSelection();
-        refreshD1bHud();
+        inspectForeignUnit(cu);
       } else {
+        clearForeignUnitInspect();
         clearPlayerUnitSelection();
         refreshD1bHud();
       }
@@ -15938,6 +16210,7 @@ async function boot(): Promise<void> {
           loadCivId: _menuCivId,
           loadLandFraction: _lastNewGameParams?.landFractionPercent ?? 30,
           empireFoodStates: Array.from(empireFoodStates.entries()),
+          mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
           siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
           siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
@@ -15951,6 +16224,7 @@ async function boot(): Promise<void> {
           diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
           diplomaticallyDiscoveredOwners: Array.from(diplomaticallyDiscoveredOwners),
           diplomaticDiscoveryPopupShown: Array.from(diplomaticDiscoveryPopupShown),
+          veteranEnemyEducationShown,
           diplomacyDeals: activeDeals.slice(),
           // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta oczekująca
           // MUSI przetrwać zapis/odczyt (zlecenie właściciela pkt 1).
@@ -16422,6 +16696,13 @@ async function boot(): Promise<void> {
             console.error('[Handel] Blad powiadomien o trasach:', eTradeEv);
           }
 
+          const mapOwnerIds = ownerIdsOnMap();
+          const zlotoAccessForMennicaTick = prepareMennicaZlotoGraceForTick(
+            mennicaZlotoGraceState,
+            mapOwnerIds,
+            ownerHasZlotoAccessNow,
+          );
+
           const econ = advanceCityEconomy(
             cities, map, data, _menuDifficulty, econUnits, growthMultMap, cityBuilt,
             player.era, player.zbadane, ownerCivMap, orderMultMap,
@@ -16431,8 +16712,12 @@ async function boot(): Promise<void> {
             cityRelig,
             // CUDA-EKON-01: dotyczy gracza I AI (ownerId-agnostic) — patrz raport C-CUDA-BONUS=A.
             buildWonderCityYieldsByOwnerMap(cities.map(c => c.ownerId)),
-            // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — real tick, gracz + AI.
-            makeOwnerZlotoAccessResolver(),
+            // PYTANIE 83=B + 77-DOP=B: dostęp do złota dla Mennicy (łaska 1 tury po utracie).
+            makeOwnerZlotoAccessResolver(zlotoAccessForMennicaTick),
+            // PYTANIE-84: runtime gate dostęp/magazyn dla budynków złożowych.
+            makeOwnerRuntimeActiveLabelsResolver(),
+            makeOwnerEmpireStockResolver(),
+            new Map(),
             {
               units: units.map(u => ({
                 id: u.id,
@@ -16445,7 +16730,7 @@ async function boot(): Promise<void> {
                 r: u.r,
                 inGarnizon: u.inGarnizon,
               })),
-              getMaxHp: (typeId) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
+              getMaxHp: (typeId: string) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
             },
           );
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
@@ -16456,6 +16741,11 @@ async function boot(): Promise<void> {
             lastCityKulturaTick.set(tk.cityId, tk.kultura);
             aiWonderPracaTickByCity.set(tk.cityId, tk.doBudynkow);
           }
+          finalizeMennicaZlotoGraceAfterTick(
+            mennicaZlotoGraceState,
+            mapOwnerIds,
+            ownerHasZlotoAccessNow,
+          );
           try {
             const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
             const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
@@ -18530,7 +18820,8 @@ async function boot(): Promise<void> {
             const sel = units.find(x => x.id === finishedId);
             if (sel) {
               unitRenderer.setSelectionHex(sel.q, sel.r, sel.ownerId);
-              if (sel && stackCanMove(sel) && !isArmyMergePanelOpen() && !isArmySplitPanelOpen()) {
+              if (sel && stackCanMove(sel) && !isArmyMergePanelOpen() && !isArmySplitPanelOpen()
+                && !isAwaitingFirstPlayerCity()) {
                 reachable = reachableWithMergeTargets(sel);
                 unitRenderer.setHighlight(reachable);
               } else if (!isArmyMergePanelOpen() && !isArmySplitPanelOpen()) {
@@ -18822,7 +19113,7 @@ async function boot(): Promise<void> {
         getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
         // PYTANIE 83=B: jedna funkcja co silnik (turn-economy.ts resolveOwnerZlotoAccess).
-        getOwnerHasZlotoAccess: (ownerId: number) => ownerHasZlotoAccessNow(ownerId),
+        getOwnerHasZlotoAccess: (ownerId: number) => ownerZlotoAccessForMennicaEffective(ownerId),
         // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
         // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
         getPlacedImprovements: () => placedImprovementsWithTradeGrants(0, placedImprovementsForOwner(0)),
@@ -20245,6 +20536,7 @@ async function boot(): Promise<void> {
       if (savedDiscoveryPopups?.length) {
         for (const oid of savedDiscoveryPopups) diplomaticDiscoveryPopupShown.add(oid);
       }
+      veteranEnemyEducationShown = saved.meta?.veteranEnemyEducationShown === true;
       if (saved.diploRelations) {
         for (const [key, rel] of Object.entries(saved.diploRelations)) diplomacyRelations.set(key, rel as any);
       }
@@ -20257,6 +20549,10 @@ async function boot(): Promise<void> {
       }
       bindEmpireFoodRuntime(empireFoodStates);
       syncCityFoodSplitsFromEmpire();
+      restoreMennicaZlotoGrace(
+        mennicaZlotoGraceState,
+        saved.meta?.mennicaZlotoGrace as MennicaZlotoGraceSave | undefined,
+      );
       const savedPracaPool = saved.meta?.playerPracaPool as number | undefined;
       playerPracaPool = typeof savedPracaPool === 'number' ? savedPracaPool : 0;
       const playerCityCountOnLoad = cities.filter(c => c.ownerId === 0).length;

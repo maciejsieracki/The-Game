@@ -1,16 +1,22 @@
 # C-WIAR-N4-AI — Czy AI odmawia pomocy sojusznikowi?
 
-**Status:** 🔵 **W TRAKCIE** (kod w `gra/src`, test 14/14; czeka deploy ROBOCZA)  
+**Status:** 🟢 **WDROŻONA** — FALA 36 `a74c3797` (commit `2632156`)  
 **Grupa:** D (dyplomacja / AI)  
 **Powiązane:** C-WIAR-N4=B (−15 pkt Wiarygodności), N4 w `WIARYGODNOSC-SPECYFIKACJA.md`
 
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 **Czat ABC** — temat obsługujemy tutaj; **nie** publishuj `gra-robocza/` |
+| **Kod `gra/src`** | ✅ **GOTOWY** — `alliance-war-obligation.ts` · test 14/14 |
+| **Deploy `gra-robocza`** | ✅ **FALA 36** `a74c3797` (commit `2632156`) |
+| **Indeks** | `STATUS-WDROZEN-AGENT-2026-07-27.md` |
+
 ## Odpowiedź Macieja
 
-> **B** — Sztuczna inteligencja **odmawia rzadko**, gdy sama jest **osłabiona** (np. mało wojska, jest w wojnie z kimś innym lub ma niskie Zaufanie do proszącego) — wtedy płaci **−15 pkt Wiarygodności** jak gracz.
-
-Cytaty:
-- 2026-07-27 (wcześniej): `C-WIAR-N4-AI b` — bez deploy/commitu (równoległa sesja).
-- 2026-07-27 (potwierdzenie): `C-WIAR-N4-AI b`
+> **B** (2026-07-27) — Sztuczna inteligencja **odmawia rzadko**, gdy sama jest **osłabiona** (wojna / słaba moc / niskie Zaufanie) — wtedy **−15 pkt Wiarygodności** jak gracz.  
+> Cytat w czacie: `C-WIAR-N4-AI b` (bez deploy/commitu w tej samej sesji — równoległy agent).
 
 ## Co to znaczy w grze
 
@@ -40,7 +46,7 @@ Progi w `ai-params.json` — strojenie po deployu.
 
 - `gra/src/game/alliance-war-obligation.ts` · `ai.ts` · `main.ts` · `ai-params.json`
 - Test: `alliance-war-obligation-test.cjs` **14/14**
-- **Czeka:** deploy do `gra-robocza/` (na polecenie Macieja)
+- **Deploy:** FALA 36 `a74c3797` (commit `2632156`)
 
 ## Odrzucone warianty
 

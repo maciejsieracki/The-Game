@@ -218,3 +218,96 @@ export function buildingResourceGateMet(
   const active = activeLabels ?? [];
   return required.every(label => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
 }
+
+/** Id budynków z bramką runtime zależną od złoża/dostępu (PYTANIE-84). */
+export const DEPOSIT_RUNTIME_GATED_BUILDING_IDS: readonly string[] = Object.freeze(
+  Object.keys(DEPOSIT_LINKED_BUILDING_LABELS),
+);
+
+export function hasDepositRuntimeGate(buildingId: string): boolean {
+  return Object.prototype.hasOwnProperty.call(DEPOSIT_LINKED_BUILDING_LABELS, buildingId);
+}
+
+export interface BuildingRuntimeGateOptions {
+  /** Właściciel imperium — wymagany dla specjalnej bramki Mennicy (PYTANIE 77/83). */
+  ownerId?: number;
+  /** Dostęp do złota (natywna kopalnia LUB szlak) — wspólne API z turn-economy/main.ts. */
+  resolveOwnerZlotoAccess?: (ownerId: number) => boolean;
+}
+
+/**
+ * PYTANIE-84 (Maciej 2026-07-27, hybryda): runtime gate per budynek z DEPOSIT_LINKED.
+ *  - DOSTĘP (ACCESS_ONLY: Sól, Złoto): tylko aktywne źródło — natychmiastowe uśpienie.
+ *  - MAGAZYN (pozostałe etykiety): aktywne źródło LUB zapas państwa > 0.
+ *  - Mennica: Złoto przez resolveOwnerZlotoAccess (handel + kopalnia), nie sam zapas.
+ *  - Ceramika/Cegła: liczone z runtimeActiveBuiltIds (Garncarnia/Cegielnia muszą być aktywne).
+ */
+function empireLabelSatisfiedAtRuntime(
+  label: string,
+  activeLabels: readonly string[],
+  runtimeActiveBuiltIds: readonly string[],
+  empireStock: Readonly<Record<string, number>> | undefined,
+): boolean {
+  if (activeLabels.includes(label)) return true;
+  if (label === 'Cegła' && runtimeActiveBuiltIds.includes('cegielnia')) return true;
+  if (label === 'Ceramika' && runtimeActiveBuiltIds.includes('garncarnia')) return true;
+  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
+    const asciiKey = ASCII_BY_LABEL[label];
+    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  }
+  return false;
+}
+
+export function buildingRuntimeGateMet(
+  building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null },
+  activeLabels: readonly string[] | undefined,
+  runtimeActiveBuiltIds: readonly string[],
+  empireStock?: Readonly<Record<string, number>>,
+  options?: BuildingRuntimeGateOptions,
+): boolean {
+  if (building.id === 'mennica' && options?.resolveOwnerZlotoAccess && options.ownerId !== undefined) {
+    return options.resolveOwnerZlotoAccess(options.ownerId);
+  }
+  const required = buildingRequiredActiveLabels(building);
+  if (required.length === 0) return true;
+  const active = activeLabels ?? [];
+  return required.every(label =>
+    empireLabelSatisfiedAtRuntime(label, active, runtimeActiveBuiltIds, empireStock),
+  );
+}
+
+/**
+ * Filtruje builtIds do podzbioru aktywnych co turę (fixpoint — Ceramika/Cegła zależą
+ * od aktywnej Garncarni/Cegielni). Budynki bez DEPOSIT_LINKED przechodzą zawsze.
+ */
+export function filterRuntimeActiveBuiltIds(
+  builtIds: readonly string[],
+  activeLabels: readonly string[],
+  empireStock?: Readonly<Record<string, number>>,
+  options?: BuildingRuntimeGateOptions,
+): string[] {
+  const active = new Set<string>();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const id of builtIds) {
+      if (active.has(id)) continue;
+      if (!hasDepositRuntimeGate(id)) {
+        active.add(id);
+        changed = true;
+        continue;
+      }
+      if (buildingRuntimeGateMet(
+        { id, epokaWejscia: 1 },
+        activeLabels,
+        [...active],
+        empireStock,
+        options,
+      )) {
+        active.add(id);
+        changed = true;
+      }
+    }
+  }
+  return [...active];
+}

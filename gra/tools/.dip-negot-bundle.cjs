@@ -3513,7 +3513,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Grecy",
       agresywnosc: 4,
-      ekspansywnosc: 0,
+      ekspansywnosc: 3,
       priorytetMilitarny: 5,
       priorytetEkonomia: 5,
       priorytetNauka: 6,
@@ -3525,7 +3525,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Rzymianie",
       agresywnosc: 8,
-      ekspansywnosc: 0,
+      ekspansywnosc: 5,
       priorytetMilitarny: 6,
       priorytetEkonomia: 5,
       priorytetNauka: 5,
@@ -3537,7 +3537,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Chi\u0144czycy",
       agresywnosc: 2,
-      ekspansywnosc: 0,
+      ekspansywnosc: 2,
       priorytetMilitarny: 4,
       priorytetEkonomia: 6,
       priorytetNauka: 6,
@@ -3549,7 +3549,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Inkowie",
       agresywnosc: 4,
-      ekspansywnosc: 0,
+      ekspansywnosc: 3,
       priorytetMilitarny: 5,
       priorytetEkonomia: 5,
       priorytetNauka: 5,
@@ -3561,7 +3561,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Zulusi",
       agresywnosc: 9,
-      ekspansywnosc: 0,
+      ekspansywnosc: 4,
       priorytetMilitarny: 8,
       priorytetEkonomia: 4,
       priorytetNauka: 4,
@@ -3573,7 +3573,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Egipt",
       agresywnosc: 4,
-      ekspansywnosc: 0,
+      ekspansywnosc: 2,
       priorytetMilitarny: 5,
       priorytetEkonomia: 6,
       priorytetNauka: 5,
@@ -3585,7 +3585,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Sumerowie",
       agresywnosc: 3,
-      ekspansywnosc: 0,
+      ekspansywnosc: 2,
       priorytetMilitarny: 4,
       priorytetEkonomia: 5,
       priorytetNauka: 8,
@@ -3597,7 +3597,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Celtowie",
       agresywnosc: 6,
-      ekspansywnosc: 0,
+      ekspansywnosc: 4,
       priorytetMilitarny: 8,
       priorytetEkonomia: 5,
       priorytetNauka: 4,
@@ -3609,7 +3609,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Germanie",
       agresywnosc: 6,
-      ekspansywnosc: 0,
+      ekspansywnosc: 4,
       priorytetMilitarny: 8,
       priorytetEkonomia: 4,
       priorytetNauka: 4,
@@ -3621,7 +3621,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Harappa",
       agresywnosc: 2,
-      ekspansywnosc: 0,
+      ekspansywnosc: 3,
       priorytetMilitarny: 4,
       priorytetEkonomia: 7,
       priorytetNauka: 5,
@@ -3633,7 +3633,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Hetyci",
       agresywnosc: 5,
-      ekspansywnosc: 0,
+      ekspansywnosc: 3,
       priorytetMilitarny: 6,
       priorytetEkonomia: 5,
       priorytetNauka: 4,
@@ -3645,7 +3645,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "S\u0142owianie",
       agresywnosc: 6,
-      ekspansywnosc: 0,
+      ekspansywnosc: 4,
       priorytetMilitarny: 6,
       priorytetEkonomia: 5,
       priorytetNauka: 5,
@@ -3657,7 +3657,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Babilonia",
       agresywnosc: 4,
-      ekspansywnosc: 0,
+      ekspansywnosc: 2,
       priorytetMilitarny: 5,
       priorytetEkonomia: 5,
       priorytetNauka: 5,
@@ -3669,7 +3669,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Asyria",
       agresywnosc: 8,
-      ekspansywnosc: 0,
+      ekspansywnosc: 5,
       priorytetMilitarny: 8,
       priorytetEkonomia: 5,
       priorytetNauka: 5,
@@ -3681,7 +3681,7 @@ var civ_ai_default = {
     {
       Cywilizacja: "Fenicjanie",
       agresywnosc: 3,
-      ekspansywnosc: 0,
+      ekspansywnosc: 2,
       priorytetMilitarny: 5,
       priorytetEkonomia: 8,
       priorytetNauka: 5,
@@ -4084,7 +4084,8 @@ var DEFAULT_TERRAIN_COSTS = {
   ["wybrzeze" /* Wybrzeze */]: Infinity,
   ["wzgorza" /* Wzgorza */]: 2,
   ["gory" /* Gory */]: Infinity,
-  ["morze" /* Morze */]: Infinity
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 

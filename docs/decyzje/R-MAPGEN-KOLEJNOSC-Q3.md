@@ -1,8 +1,17 @@
 # R-MAPGEN-KOLEJNOSC-Q3 — Wieloetapowy floor reliefu (`ensureReliefGridCoverage`)
 
-**Status:** ✅ WDROŻONA  
+**Status:** 🔵 **KOD GOTOWY** — ⏸ deploy czeka **FALA 37**  
 **Grupa:** A (mapa świata / generator)  
 **Ekran:** [TEMAT: Generator mapy — czas generacji i pokrycie reliefu]
+
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 **Czat ABC** — kod gotowy w `gra/src`; **nie** publishuj `gra-robocza/` |
+| **Kod `gra/src`** | ✅ **GOTOWY** — floor relief bez skracania · `map-gen-regression-test` |
+| **Deploy `gra-robocza`** | ⏸ **czeka FALA 37** — poza FALA 36 |
+| **Indeks** | `STATUS-WDROZEN-AGENT-2026-07-27.md` |
 
 ## Sytuacja
 

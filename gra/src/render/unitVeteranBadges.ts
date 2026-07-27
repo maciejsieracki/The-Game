@@ -185,6 +185,8 @@ function getMatVeteranStarOutline(): THREE.MeshStandardMaterial {
 const UD_LEVEL = 'vetBadgeLevel';
 /** Klucz w userData żetonu — podgrupa z gwiazdkami (do podmiany/usunięcia). */
 const UD_GROUP = 'vetBadgeGroup';
+/** Na meshach gwiazdek — raycast tooltipu (C-OBCE-JEDN-Q3 C). */
+export const VETERAN_BADGE_HIT_UD = 'veteranBadgeHit';
 
 /** Rozstaw wyśrodkowany: 2 → [-s/2, +s/2]; 3 → [-s, 0, +s]. */
 function starOffsetsX(count: number): number[] {
@@ -213,10 +215,12 @@ function buildVeteranBadgeGroup(level: 2 | 3): THREE.Group {
     const outline = new THREE.Mesh(geo, matOut);
     outline.position.set(x, 0, STAR_OUTLINE_OFFSET_Z);
     outline.scale.set(STAR_OUTLINE_SCALE, STAR_OUTLINE_SCALE, 1);
+    outline.userData[VETERAN_BADGE_HIT_UD] = true;
     g.add(outline);
 
     const star = new THREE.Mesh(geo, mat);
     star.position.set(x, 0, 0);
+    star.userData[VETERAN_BADGE_HIT_UD] = true;
     g.add(star);
   }
   return g;

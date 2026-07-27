@@ -49,6 +49,11 @@ export {
   refreshTradeRoutes, computeTradeRouteResourceGrants, hasTradeRouteResourceAccess,
 } from '../src/game/trade-routes';
 export { daninaLabel, isPodatekActive, mennicaWStolicy } from '../src/game/danina-nazwa';
+export {
+  createMennicaZlotoGraceState,
+  prepareMennicaZlotoGraceForTick,
+  finalizeMennicaZlotoGraceAfterTick,
+} from '../src/game/mennica-zloto-grace';
 `, 'utf8');
 
 try {
@@ -173,6 +178,21 @@ function tick(ownerId, resolveOwnerZlotoAccess) {
     regional: econ.perCity.find(t => t.cityId === regionalSite.id),
   };
 }
+/** PYTANIE-77-DOP=B: symulacja prepare → tick → finalize (jak main.ts). */
+function tickWithGraceFlow(ownerId, hasAccessFn, graceState, ticks = 1) {
+  const ownerIds = [ownerId];
+  const out = [];
+  for (let i = 0; i < ticks; i++) {
+    const resolver = M.prepareMennicaZlotoGraceForTick(graceState, ownerIds, hasAccessFn);
+    out.push(tick(ownerId, resolver));
+    M.finalizeMennicaZlotoGraceAfterTick(graceState, ownerIds, hasAccessFn);
+  }
+  return out;
+}
+function primeHadZlotoAccess(ownerId, graceState, hadAccessFn) {
+  const ownerIds = [ownerId];
+  M.finalizeMennicaZlotoGraceAfterTick(graceState, ownerIds, hadAccessFn);
+}
 function daninaFor(ownerId, hasZloto) {
   return M.daninaLabel(true, M.mennicaWStolicy(capitalSite.id, builtBothWithMennica.get(capitalSite.id)), hasZloto);
 }
@@ -200,21 +220,24 @@ console.log('\n-- 1. wlasna Kopalnia zlota + Waluta + Mennica w stolicy -> dzial
 // 2. Ta sama cywilizacja TRACI Kopalnie zlota -> mnoznik x1,0, nazwa wraca na
 //    "Danina", a Mennica NADAL figuruje jako zbudowana.
 // ===========================================================================
-console.log('\n-- 2. utrata Kopalni zlota -> mnoznik spi, "Danina", Mennica nadal stoi --');
+console.log('\n-- 2. utrata Kopalni zlota -> 1 tura laski, potem spi, "Danina", Mennica nadal stoi --');
 {
   const placedLost = new Map(); // Kopalnia zniszczona/utracona -- mapa juz jej nie zawiera
   const hasGold2 = M.empireHasKopalniaZlota(placedLost);
   eq(hasGold2, false, '2: empireHasKopalniaZlota -> false (kopalnia utracona)');
-  const afterLoss = tick(0, () => hasGold2);
+  const graceState2 = M.createMennicaZlotoGraceState();
+  primeHadZlotoAccess(0, graceState2, () => true);
   const noEffectBaseline = tick(0, () => false);
-  eq(afterLoss.capital.pieniadzBrutto, noEffectBaseline.capital.pieniadzBrutto,
-    '2: po utracie dostepu -- pieniadzBrutto IDENTYCZNY jak baseline bez mnoznika (x1,0)');
-  eq(daninaFor(0, hasGold2), 'Danina', '2: etykieta wraca na "Danina" po utracie dostepu do zlota');
-  ok_builtStillHasMennica();
-  function ok_builtStillHasMennica() {
-    assert(builtBothWithMennica.get(capitalSite.id).includes('mennica'),
-      '2: Mennica NADAL figuruje w builtBuildingIds stolicy -- budynek NIE zostal zburzony');
-  }
+  const lossTicks = tickWithGraceFlow(0, () => hasGold2, graceState2, 2);
+  const afterLossGrace = lossTicks[0];
+  const afterLossSleep = lossTicks[1];
+  assert(afterLossGrace.capital.pieniadzBrutto > noEffectBaseline.capital.pieniadzBrutto,
+    `2: 1. tura po utracie -- mnoznik DZIALA (laska) (${afterLossGrace.capital.pieniadzBrutto} > ${noEffectBaseline.capital.pieniadzBrutto})`);
+  eq(afterLossSleep.capital.pieniadzBrutto, noEffectBaseline.capital.pieniadzBrutto,
+    '2: 2. tura bez dostepu -- pieniadzBrutto IDENTYCZNY jak baseline bez mnoznika (x1,0)');
+  eq(daninaFor(0, hasGold2), 'Danina', '2: etykieta "Danina" gdy brak natywnego dostepu (bez laski w UI mid-tick)');
+  assert(builtBothWithMennica.get(capitalSite.id).includes('mennica'),
+    '2: Mennica NADAL figuruje w builtBuildingIds stolicy -- budynek NIE zostal zburzony');
 }
 
 // ===========================================================================
@@ -269,10 +292,16 @@ console.log('\n-- 3. brak zloza + aktywny szlak -> dziala; po zerwaniu -> spi --
   const hasGold3Broken = M.empireHasKopalniaZlota(augmentedBroken);
   eq(hasGold3Broken, false, '3: dostep do zlota utracony po zerwaniu szlaku');
 
-  const afterBreak = tick(OWNER_SELF, () => hasGold3Broken);
-  eq(afterBreak.capital.pieniadzBrutto, noEffectBaseline3.capital.pieniadzBrutto,
-    '3: po zerwaniu szlaku -- mnoznik SPI (pieniadzBrutto = baseline bez efektu)');
-  eq(daninaFor(OWNER_SELF, hasGold3Broken), 'Danina', '3: etykieta wraca na "Danina" po zerwaniu szlaku');
+  const graceState3 = M.createMennicaZlotoGraceState();
+  primeHadZlotoAccess(OWNER_SELF, graceState3, () => hasGold3Connected);
+  const breakTicks = tickWithGraceFlow(OWNER_SELF, () => hasGold3Broken, graceState3, 2);
+  const afterBreakGrace = breakTicks[0];
+  const afterBreakSleep = breakTicks[1];
+  assert(afterBreakGrace.capital.pieniadzBrutto > noEffectBaseline3.capital.pieniadzBrutto,
+    `3: 1. tura po zerwaniu szlaku -- mnoznik DZIALA (laska) (${afterBreakGrace.capital.pieniadzBrutto} > ${noEffectBaseline3.capital.pieniadzBrutto})`);
+  eq(afterBreakSleep.capital.pieniadzBrutto, noEffectBaseline3.capital.pieniadzBrutto,
+    '3: 2. tura po zerwaniu -- mnoznik SPI (pieniadzBrutto = baseline bez efektu)');
+  eq(daninaFor(OWNER_SELF, hasGold3Broken), 'Danina', '3: etykieta "Danina" gdy brak natywnego grantu (bez laski w UI mid-tick)');
   assert(builtBothWithMennica.get(capitalSite.id).includes('mennica'),
     '3: Mennica NADAL zbudowana w stolicy mimo zerwania szlaku (budynek nietkniety)');
 

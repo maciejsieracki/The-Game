@@ -1,26 +1,42 @@
 # Kolejka ABC otwartych — audyt 2026-07-27
 
-**Aktualizacja:** 2026-07-27  
-**Standard zapisu:** `docs/decyzje/ABC-ZAPIS-PLIKOWY.md` — każde pytanie = osobny plik `docs/decyzje/<ID>.md` w pełnej formie ABC + **Odpowiedź Macieja** po ECHO.  
-**Źródło analiz:** subagenci sesji 2026-07-27 + audyt rejestru
+**Aktualizacja:** 2026-07-27 — odpowiedzi + kod vs deploy → `STATUS-WDROZEN-AGENT-2026-07-27.md`  
+**Ten czat ABC:** IDLE od 17:07 — wdrożenia C-OBCE i reszta → **subagent**  
+**Standard zapisu:** `docs/decyzje/ABC-ZAPIS-PLIKOWY.md`
 
 ## Indeks
 
-| ID | Status | Odpowiedź Macieja | Plik szczegółowy |
-|----|--------|-------------------|------------------|
-| **C-WIAR-N4-AI** | 🔵 W TRAKCIE | **B** (2026-07-27) | `C-WIAR-N4-AI.md` |
-| **C-WIAR-D4** | 🟢 WDROŻONA | **A** (2026-07-27) | `C-WIAR-D4.md` |
-| **C-WIAR-N1-UX** | 🟢 WDROŻONA | **A** (2026-07-27) | `C-WIAR-N1-UX.md` |
-| **P-AI-006** | ⏸ OTWARTE | — | `P-AI-006.md` |
-| **P-AI-007** | ⏸ OTWARTE | — | `P-AI-007.md` |
-| **P-AI-008** | ⏸ OTWARTE | — | `P-AI-008.md` |
-| **R-MAPGEN-KOLEJNOSC-Q1** | ⏸ OTWARTE | — | `R-MAPGEN-KOLEJNOSC-Q1.md` |
-| **R-MAPGEN-KOLEJNOSC-Q2** | ⏸ OTWARTE | — | `R-MAPGEN-KOLEJNOSC-Q2.md` |
-| **R-MAPGEN-KOLEJNOSC-Q3** | ⏸ OTWARTE | — | `R-MAPGEN-KOLEJNOSC-Q3.md` |
-| **C-TEREN-IMPL-1** | ⏸ OTWARTE | — | `C-TEREN-IMPL-1.md` |
-| **C-TEREN-IMPL-2** | ⏸ OTWARTE | — | `C-TEREN-IMPL-2.md` |
-| **C-TEREN-IMPL-3** | ⏸ OTWARTE | — | `C-TEREN-IMPL-3.md` |
-| **R-BITWA-POWTORKA-I** | ⛔ BRAK ABC | decyzja 2026-07-24 | `R-BITWA-POWTORKA-I.md` |
+| ID | Status | Odpowiedź | Kod | Deploy ROBOCZA | Plik |
+|----|--------|-----------|-----|----------------|------|
+| **C-WIAR-N4-AI** | 🟢 WDROŻONA | **B** | ✅ | ✅ F36 | `C-WIAR-N4-AI.md` |
+| **C-WIAR-D4** | 🟢 WDROŻONA | **A** | ✅ | ✅ F36 | `C-WIAR-D4.md` |
+| **C-WIAR-N1-UX** | 🟢 WDROŻONA | **A** | ✅ | ✅ F36 | `C-WIAR-N1-UX.md` |
+| **P-AI-006** | 🟢 WDROŻONA | **C** | ✅ | ✅ F36 | `P-AI-006.md` |
+| **P-AI-007** | 🟢 WDROŻONA | **A** | ✅ | ✅ F36 | `P-AI-007.md` |
+| **P-AI-008** | 🟢 WDROŻONA | **C** | ✅ | ✅ F36 | `P-AI-008.md` |
+| **R-MAPGEN-KOLEJNOSC-Q1** | 🟢 WDROŻONA | **B** | ✅ | ✅ F36 | `R-MAPGEN-KOLEJNOSC-Q1.md` |
+| **R-MAPGEN-KOLEJNOSC-Q2** | 🔵 KOD OK | **C** | ✅ | ⏸ F37 | `R-MAPGEN-KOLEJNOSC-Q2.md` |
+| **R-MAPGEN-KOLEJNOSC-Q3** | 🔵 KOD OK | **A** | ✅ | ⏸ F37 | `R-MAPGEN-KOLEJNOSC-Q3.md` |
+| **C-TEREN-IMPL-1** | 🟢 WDROŻONA | **A** | ✅ | ✅ F36 | `C-TEREN-IMPL-1.md` |
+| **C-TEREN-IMPL-2** | 🟢 WDROŻONA | **C** | ✅ | ✅ F36 | `C-TEREN-IMPL-2.md` |
+| **C-TEREN-IMPL-3** | 🟢 WDROŻONA | **B** | ✅ | ✅ F36 | `C-TEREN-IMPL-3.md` |
+| **R-BITWA-POWTORKA-I** | 🔵 KOD OK | **B** | ✅ | ⏸ F37 | `R-BITWA-POWTORKA-I.md` |
+| **C-ARMY-HUNGER-Q1** | 🟢 WDROŻONA | **A** | ✅ | ✅ F36 | `C-ARMY-HUNGER-Q1.md` |
+| **PYTANIE-20** | ZAMKNIĘTE | **A** | ✅ | ✅ wcześniej | `PYTANIE-20.md` |
+| **PYTANIE-84** | 🟡 ZAPISANA | hybryda | ❌ | — | `PYTANIE-84.md` |
+| **C-STRATY-HP-Q1** | ZAMKNIĘTE | wyjaśnienie | — | — | `C-STRATY-HP-Q1.md` |
+| **C-OBCE-JEDN-Q1** | 🟢 ZAMKNIĘTE | **A** | ❌ | — | `C-OBCE-JEDN-Q1.md` · 👷 subagent |
+| **C-OBCE-JEDN-Q2** | 🟢 ZAMKNIĘTE | **TW** | ❌ | — | `C-OBCE-JEDN-Q2.md` · 👷 subagent |
+| **C-OBCE-JEDN-Q3** | 🟢 ZAMKNIĘTE | **A+B+C** | ❌ | — | `C-OBCE-JEDN-Q3.md` · 👷 subagent |
+| **C-UPGRADE-KUMULACJA** | 🟢 WDROŻONA (1A) | najlepsze odwiedzone miasto | `C-UPGRADE-KUMULACJA.md` |
+| **C-MURY-MODEL** | 🟢 WDROŻONA (2A+3) | obrona %: mur +200%, cytadela +100% | `C-MURY-MODEL.md` |
+| **C-STRATY-HP-Q1** | ✅ ZAMKNIĘTE | nadreprezentacja obrońcy AI | `C-STRATY-HP-Q1.md` |
+| **C-FLANK** | 🟢 WDROŻONE | Q1=A auto, Q2=B wszystkie, Q3 front/bok/tył | `DECYZJE-AUTONOMICZNE` |
+| **C-BARB-Q1** | 🟢 WDROŻONE (B) | relacja wojna; zwiadowcy = osobne ABC | `C-BARB-Q1.md` |
+| **R-DYP-NEGOCJACJE-NA-ZYWO** | 🟢 WDROŻONE | negocjacje na żywo w audiencji | `R-DYP-NEGOCJACJE-NA-ZYWO.md` |
+| **C-RES-Q1..Q4** | 🟢 WDROŻONE | C,C,A,A | `DECYZJE-AUTONOMICZNE` |
+| **C-EDGEPAN-Q1** | 🟢 WDROŻONE (B) | edge-pan zawsze | `DECYZJE-AUTONOMICZNE` |
+
 
 **Bez ABC (tylko wdrożenie techniczne):** K1, K2, R-TEREN-DOPIAC (kod gotowy), R-DYP-IKONA-TLO, Pyt. 18, Pyt. 19.
 

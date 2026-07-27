@@ -285,7 +285,7 @@ Tooltip jednostki w brodzie pokazuje aktywny status w wierszu TEREN (kolor czerw
 
 ### 63.2. Wzgórze i góra
 
-**Wzgórze** — obrona ×1,5; **góra** — obrona ×1,75. Atak z dołu trudniejszy. Na planszy „góry"/„wzgórza" (§63.0) wzniesienia są też **gęściej rozmieszczone i wyższe** niż na pozostałych presetach — łatwiej o naturalną osłonę.
+**Wzgórze** — obrona ×1,5; **góra** — obrona ×1,75 (wartości w `terrain-combat.json`). Piechota na Górach: koszt ruchu **2** (jak na lądzie); konnica/rydwan — niedostępne. Atak z dołu trudniejszy. Na planszy „góry"/„wzgórza" (§63.0) wzniesienia są też **gęściej rozmieszczone i wyższe** niż na pozostałych presetach — łatwiej o naturalną osłonę.
 
 ### 63.3. Las, miasto, morze, pustynia, wybrzeże
 

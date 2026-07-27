@@ -41,7 +41,7 @@ import { syncUnitUpgradeBadges } from './unitUpgradeBadges';
 // Odznaki poziomu weterana na żetonie (dokończenie tej samej decyzji 57,
 // 2026-07-26) — złote gwiazdki NAD GŁOWĄ, w miejscu zarezerwowanym wtedy jako
 // VETERAN_BADGE_RESERVED_Y. Zasoby to singletony modułu, jak wyżej.
-import { syncUnitVeteranBadges } from './unitVeteranBadges';
+import { syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -4635,6 +4635,40 @@ export class UnitRenderer {
 
     const hits = raycaster.intersectObjects(roots, true);
     for (const h of hits) {
+      let obj: THREE.Object3D | null = h.object;
+      while (obj) {
+        const uid = obj.userData['unitId'];
+        if (typeof uid === 'string' && uid.length > 0) return uid;
+        obj = obj.parent;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Raycast na gwiazdki weterana — zwraca unitId gdy kursor trafia w ★ (C-OBCE-JEDN-Q3 C).
+   * Wołane tylko gdy potrzebny tooltip; nie zastępuje pickUnitIdAt (heks pod jednostką).
+   */
+  pickVeteranBadgeUnitIdAt(
+    clientX: number,
+    clientY: number,
+    canvas: HTMLCanvasElement,
+    camera: THREE.Camera,
+  ): string | null {
+    const rect = canvas.getBoundingClientRect();
+    const ndc = clientRectToNdc(clientX, clientY, rect);
+    if (!ndc) return null;
+
+    camera.updateMatrixWorld(true);
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), camera);
+
+    const roots = [...this.tokens.values()].filter((o) => o.visible);
+    if (roots.length === 0) return null;
+
+    const hits = raycaster.intersectObjects(roots, true);
+    for (const h of hits) {
+      if (!h.object.userData[VETERAN_BADGE_HIT_UD]) continue;
       let obj: THREE.Object3D | null = h.object;
       while (obj) {
         const uid = obj.userData['unitId'];

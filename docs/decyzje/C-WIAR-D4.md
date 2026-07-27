@@ -1,8 +1,17 @@
 # C-WIAR-D4 — Modyfikator startowego Zaufania od Wiarygodności (Dźwignia 4)
 
-**Status:** 🟢 **WDROŻONA** (kod w `gra/src`, bez deploy ROBOCZA)  
+**Status:** 🟢 **WDROŻONA** — FALA 36 `a74c3797`  
 **Grupa:** D (dyplomacja / Wiarygodność)  
 **Ekran:** [TEMAT: Wiarygodność cywilizacji — pierwszy kontakt dyplomatyczny]
+
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 **Czat ABC** — temat obsługujemy tutaj; **nie** publishuj `gra-robocza/` |
+| **Kod `gra/src`** | ✅ **GOTOWY** — `diplomacy-credibility.ts` · `wiarygodnosc-test` |
+| **Deploy `gra-robocza`** | ✅ **FALA 36** `a74c3797` (commit `2632156`) |
+| **Indeks** | `STATUS-WDROZEN-AGENT-2026-07-27.md` |
 
 ## Sytuacja
 
@@ -46,7 +55,8 @@ Opis: W &lt; 0 obniża startowe Zaufanie; W ≥ 0 bez bonusu (tylko kara za zł�
 
 ## Odpowiedź Macieja
 
-> **A** — Lekki sygnał: `round(W / 20)` pkt Zaufania na start (2026-07-27)
+> **C-WIAR-D4: A** — Lekki sygnał: `round(W / 20)` pkt Zaufania na start (2026-07-27).  
+> Cytat w czacie: `C-WIAR-D4: A`.
 
 ## Wdrożenie
 

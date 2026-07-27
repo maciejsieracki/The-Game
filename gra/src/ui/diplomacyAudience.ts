@@ -21,7 +21,7 @@ import {
   type NegotiationModalContext,
   type NegotiationPayload,
 } from './diplomacyNegotiationModal';
-import { actionUsesTradeBasket, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
+import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { leaderName } from './leaderPortraits';
 import { renderNegotiationDealHtml } from './diplomacyDealDisplay';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
@@ -258,7 +258,7 @@ function openCounterNegotiationModal(
   };
   if (actionUsesTradeBasket(row.uiActionId)) {
     showTradeBasketModal(
-      row.uiActionId === '13' ? 'gift' : 'trade',
+      getTradeBasketMode(row.uiActionId),
       syntheticAction,
       mergeBasketCtx(negCtx),
       (payload) => cfg!.onCounterNegotiation?.(row.id, payload),
@@ -1220,8 +1220,15 @@ function render(): void {
       if (action && action.enabled && cfg.getNegotiationContext) {
         const negCtx = cfg.getNegotiationContext(aid);
         if (negCtx && actionUsesTradeBasket(aid)) {
+          const incomingBasket = findIncomingNegotiationRow(st, aid);
+          if (incomingBasket) {
+            if (incomingBasket.canCounter) {
+              openCounterNegotiationModal(st, incomingBasket, mergeBasketCtx);
+            }
+            return;
+          }
           showTradeBasketModal(
-            aid === '13' ? 'gift' : 'trade',
+            getTradeBasketMode(aid),
             action,
             mergeBasketCtx(negCtx),
             (payload) => cfg!.onAction(cfg!.ownerId, aid, payload),
@@ -1350,5 +1357,5 @@ export function isDiplomacyAudienceOpen(): boolean {
 }
 
 export { type NegotiationPayload, type NegotiationModalContext } from './diplomacyNegotiationModal';
-export { showTradeBasketModal, hideTradeBasketModal, actionUsesTradeBasket } from './diplomacyTradeBasket';
+export { showTradeBasketModal, hideTradeBasketModal, actionUsesTradeBasket, getTradeBasketMode } from './diplomacyTradeBasket';
 export { showDiplomacyProposalBanner, hideDiplomacyProposalBanner } from './diplomacyProposalBanner';

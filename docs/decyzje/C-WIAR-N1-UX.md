@@ -1,8 +1,17 @@
 # C-WIAR-N1-UX — Modal trzyopcjiowy przy ataku poza wojną (N1)
 
-**Status:** 🟢 **WDROŻONA** (kod w `gra/src`, bez deploy ROBOCZA)  
+**Status:** 🟢 **WDROŻONA** — FALA 36 `a74c3797`  
 **Grupa:** D (dyplomacja / Wiarygodność) + E (UI-shell, modal walki)  
 **Ekran:** [TEMAT: Wiarygodność — inicjacja walki bez wypowiedzenia wojny]
+
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 **Czat ABC** — temat obsługujemy tutaj; **nie** publishuj `gra-robocza/` |
+| **Kod `gra/src`** | ✅ **GOTOWY** — `showWarConsentModal` · `withPlayerWarConsent` |
+| **Deploy `gra-robocza`** | ✅ **FALA 36** `a74c3797` (commit `2632156`) |
+| **Indeks** | `STATUS-WDROZEN-AGENT-2026-07-27.md` |
 
 ## Sytuacja
 
@@ -46,7 +55,8 @@ Opis: (1) wypowiedz wojnę bez ataku, (2) wypowiedz i atakuj teraz (z karą N1),
 
 ## Odpowiedź Macieja
 
-> **A** — Pełny modal trzyopcjiowy (2026-07-27)
+> **C-WIAR-N1-UX: A** — Pełny modal trzyopcjiowy (2026-07-27).  
+> Cytat w czacie: paczka ABC 2026-07-27 (wraz z `C-WIAR-D4: A`).
 
 ## Wdrożenie
 

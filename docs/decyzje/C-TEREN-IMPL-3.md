@@ -1,8 +1,17 @@
 # C-TEREN-IMPL-3 — Widoczność modyfikatorów terenu w UI bitwy
 
-**Status:** 🟢 WDROŻONA (2026-07-27)  
+**Status:** 🟢 **WDROŻONA** — FALA 36 `a74c3797` (2026-07-27)  
 **Grupa:** C (walka / bitwa ręczna 3D) + E (UI tooltip)  
 **Ekran:** [EKRAN: Bitwa ręczna 3D — tooltip heksa TEREN]
+
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 **Czat ABC** — temat obsługujemy tutaj; **nie** publishuj `gra-robocza/` |
+| **Kod `gra/src`** | ✅ **GOTOWY** — `battleTerrainTooltip.ts` · ETAP 4 test |
+| **Deploy `gra-robocza`** | ✅ **FALA 36** `a74c3797` (commit `2632156`) |
+| **Indeks** | `STATUS-WDROZEN-AGENT-2026-07-27.md` |
 
 ## Sytuacja
 
@@ -55,4 +64,4 @@ Opis: W tooltipie pokazać koszt ruchu i blokady (nieprzechodzialność); bonus 
 - `gra/src/battle/battleScene.ts` — `_unitTooltipHtml()` wpięty helper (jeden wiersz TEREN, efekty połączone „ · ")
 - Test: `gra/tools/teren-walki-etapy-test.cjs` ETAP 4
 - Warstwa: 🟡 (tooltip bitwy + silnik terenu)
-- Deploy: razem z paczką C-TEREN-IMPL-1=A na polecenie **deploy**
+- **Deploy:** FALA 36 `a74c3797` (commit `2632156`)

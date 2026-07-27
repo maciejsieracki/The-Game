@@ -1,8 +1,17 @@
 # C-TEREN-IMPL-2 — Kanon liczbowy: obrona Gór i koszt ruchu piechoty
 
-**Status:** ✅ WDROŻONA  
+**Status:** 🟢 **WDROŻONA** — FALA 36 `a74c3797` (commit `2632156`)  
 **Grupa:** C (walka / bitwa ręczna 3D)  
 **Ekran:** [EKRAN: Bitwa ręczna 3D — Góry, koszt ruchu piechoty]
+
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 **Czat ABC** — temat obsługujemy tutaj; **nie** publishuj `gra-robocza/` |
+| **Kod `gra/src`** | ✅ **GOTOWY** — `terrain-combat.json` +75% · koszt piechoty 2 |
+| **Deploy `gra-robocza`** | ✅ **FALA 36** `a74c3797` (commit `2632156`) |
+| **Indeks** | `STATUS-WDROZEN-AGENT-2026-07-27.md` |
 
 ## Sytuacja
 

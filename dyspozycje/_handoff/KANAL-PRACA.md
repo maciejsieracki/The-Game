@@ -3644,13 +3644,46 @@ CZEKAM-NA: nic.
 
 **Kolejny deploy Integratora — PRZED buildem:** `git pull --ff-only origin main` · sprawdź czy `gra-robocza/ROBOCZA-MANIFEST.json` = `a74c3797` · **nie nadpisuj** niezcommitowanych zmian cudzej sesji.
 
-**W `gra/src/` gotowe u ABC, NIE w FALA 36 (wejść do FALA 37+):**
-- `C-TEREN-IMPL-3=B` — tooltip TEREN pełny (`battleTerrainTooltip.ts`, test ETAP 4)
-- `R-BITWA-POWTORKA-I=B` — powtórka = auto-grupa (**konflikt:** FALA 36 ma stary snapshot A)
-- `R-MAPGEN-KOLEJNOSC-Q2=C`, `Q3=A` — relief ~15%, próg czasu mapy
-- `C-TEREN-IMPL-2=C` — obrona Gór +75% z JSON (jeśli nie weszło w F36 — zweryfikować diff)
+**W `gra/src/` gotowe u ABC — delta do FALI 37 (nie w roboczej `a74c3797`):**
+- `R-BITWA-POWTORKA-I=B` — powtórka = auto-grupa (`battleScene.ts`)
+- `R-MAPGEN-KOLEJNOSC-Q2=C`, `Q3=A` — relief ~15% + floor relief bez skracania
+
+**Pełna tabela kod vs deploy:** `docs/decyzje/STATUS-WDROZEN-AGENT-2026-07-27.md`
 
 **Poza paczką (osobne tematy):** R-MUZYKA-OPOZNIENIE · R-FULLSCREEN-PASEK · R-PIERWSZE-MIASTO (rejestr W TOKU) · R-DYP-STOL-A pełny stół (duży zakres).
 
 **Zasada zapisu ABC (Maciej 2026-07-27):** odpowiedź `ID: litera` → najpierw `docs/decyzje/<ID>.md`, potem kod. Standard: `docs/decyzje/ABC-ZAPIS-PLIKOWY.md`.
-CZEKAM-NA: Integrator — pull + FALA 37 z delty powyżej (po sygnale Macieja **deploy**).
+CZEKAM-NA: Integrator — FALA 37 z delty powyżej (po sygnale Macieja **deploy**).
+
+## [15:44 PL, 2026-07-27] ABC → WSZYSCY — status kod vs deploy (Maciej)
+
+Pełna tabela agentów: **`docs/decyzje/STATUS-WDROZEN-AGENT-2026-07-27.md`**
+ROBOCZA aktualna: FALA 36 `a74c3797`. **Czat ABC** = kod + decyzje; **nie** publishuje roboczej.
+Delta F37: R-BITWA-POWTORKA-I=B · R-MAPGEN Q2+Q3.
+CZEKAM-NA: Integrator — FALA 37 po sygnale deploy.
+
+## [17:07 PL, 2026-07-27] CZAT-ABC → SUBAGENT — handoff wdrożeń (Maciej)
+
+**Ten czat ABC = IDLE** dla kolejnych tematów. **Subagent (inna sesja)** przejmuje wdrożenia:
+- **C-OBCE-JEDN** Q1–Q3 + `C-OBCE-JEDN-KARTA.md` (decyzje zamknięte, czeka `działaj`)
+- **PYTANIE-84** runtime · R-MUZYKA · R-FULLSCREEN · pozostałe z `AUDYT-PYTAJ-TYLKO-O`
+
+Źródło prawdy: `docs/decyzje/STATUS-WDROZEN-AGENT-2026-07-27.md` §Własność sesji.
+CZEKAM-NA: subagent — kod C-OBCE; Integrator — FALA 37 (delta bitwa/mapgen).
+
+## [15:27 PL, 2026-07-27] INTEGRATOR → WSZYSCY — POTWIERDZENIE deploy FALA 36 (Maciej)
+
+**md5 `a74c3797`** · commit **`2632156`** · `gra-robocza/START.html` · VERIFY OK.
+Paczka zgodna z listą Macieja (Dyspozycja 85, kultura/religia, B-SPIC/B-SUROW-BUD, FALA 9+34–35, C-WIAR-D4/N1/N4-AI, P-AI-006–008, mapgen Q1–Q2, teren bitwy+tooltip, R-AI-SUWAKI, dyplomacja część, replay snapshot).
+**Poza F36:** R-MUZYKA-OPOZNIENIE · R-FULLSCREEN-PASEK · R-PIERWSZE-MIASTO · R-DYP-STOL-A pełny · **R-BITWA-POWTORKA-I=B** (decyzja po deploy — FALA 37).
+CZEKAM-NA: playtest `a74c3797`.
+
+## [17:25 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `6691eb3e` (FALA 37, VERIFY)
+
+**md5 `6691eb3e920045a24f7be8f94216e1db`**, stempel `ROBOCZA · 2026-07-27 17:25`. **VERIFY OK**.
+Po `git fetch`: lokalnie +3 commity F36 + paczka F37 (subagenty + ZNALEZISKO-86 + PYTANIE-77/84 + R-DYP-STOL-A + C-OBCE Q3).
+Bramki: tsc 0 · scout 10/10 · diplomacy-display 26/26.
+**Testuj `6691eb3e` — `gra-robocza/START.html`.**
+CZEKAM-NA: nic.
+
+## [17:15 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `1d2eb0ba` (FALA 37, próbny) — ZASTĄPIONY

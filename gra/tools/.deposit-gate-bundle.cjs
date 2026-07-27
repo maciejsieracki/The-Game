@@ -24,6 +24,8 @@ __export(deposit_gate_entry_exports, {
   TerenBazowy: () => TerenBazowy,
   availableProduction: () => availableProduction,
   buildingResourceGateMet: () => buildingResourceGateMet,
+  buildingRuntimeGateMet: () => buildingRuntimeGateMet,
+  filterRuntimeActiveBuiltIds: () => filterRuntimeActiveBuiltIds,
   getCityResourceAccessForCity: () => getCityResourceAccessForCity,
   improvementUnlockActiveOnHex: () => improvementUnlockActiveOnHex
 });
@@ -443,13 +445,13 @@ var map_gen_params_default = {
     },
     relief_land_fraction: {
       low: { mountain: 0.045, highland: 0.105 },
-      medium: { mountain: 0.09, highland: 0.165 },
+      medium: { mountain: 0.075, highland: 0.125 },
       high: { mountain: 0.18, highland: 0.27 }
     },
     relief_overflow_cap_frac: {
-      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224818% (0,06+0,09 \u2014 progi fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224830%. Rewizja 2026-07-26: w\u0142a\u015Bciciel \u2014 wi\u0119cej g\xF3r (~12%\u2192~18% g\xF3rzysto\u015Bci l\u0105du na medium).",
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
       low: { mountain: 0.045, highland: 0.075 },
-      medium: { mountain: 0.06, highland: 0.09 },
+      medium: { mountain: 0.05, highland: 0.085 },
       high: { mountain: 0.12, highland: 0.18 }
     },
     pasma_gorskie: {
@@ -7461,6 +7463,59 @@ function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireS
   const active = activeLabels ?? [];
   return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
 }
+var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
+  Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
+);
+function hasDepositRuntimeGate(buildingId) {
+  return Object.prototype.hasOwnProperty.call(DEPOSIT_LINKED_BUILDING_LABELS, buildingId);
+}
+function empireLabelSatisfiedAtRuntime(label, activeLabels, runtimeActiveBuiltIds, empireStock) {
+  if (activeLabels.includes(label)) return true;
+  if (label === "Ceg\u0142a" && runtimeActiveBuiltIds.includes("cegielnia")) return true;
+  if (label === "Ceramika" && runtimeActiveBuiltIds.includes("garncarnia")) return true;
+  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
+    const asciiKey = ASCII_BY_LABEL[label];
+    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  }
+  return false;
+}
+function buildingRuntimeGateMet(building, activeLabels, runtimeActiveBuiltIds, empireStock, options) {
+  if (building.id === "mennica" && options?.resolveOwnerZlotoAccess && options.ownerId !== void 0) {
+    return options.resolveOwnerZlotoAccess(options.ownerId);
+  }
+  const required = buildingRequiredActiveLabels(building);
+  if (required.length === 0) return true;
+  const active = activeLabels ?? [];
+  return required.every(
+    (label) => empireLabelSatisfiedAtRuntime(label, active, runtimeActiveBuiltIds, empireStock)
+  );
+}
+function filterRuntimeActiveBuiltIds(builtIds, activeLabels, empireStock, options) {
+  const active = /* @__PURE__ */ new Set();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const id of builtIds) {
+      if (active.has(id)) continue;
+      if (!hasDepositRuntimeGate(id)) {
+        active.add(id);
+        changed = true;
+        continue;
+      }
+      if (buildingRuntimeGateMet(
+        { id, epokaWejscia: 1 },
+        activeLabels,
+        [...active],
+        empireStock,
+        options
+      )) {
+        active.add(id);
+        changed = true;
+      }
+    }
+  }
+  return [...active];
+}
 
 // src/game/building-upgrades.ts
 function isBuildingSuppressedFromProduction(building) {
@@ -8192,6 +8247,8 @@ function getCityResourceAccessForCity(city, map, placedImprovements, currentEra 
   TerenBazowy,
   availableProduction,
   buildingResourceGateMet,
+  buildingRuntimeGateMet,
+  filterRuntimeActiveBuiltIds,
   getCityResourceAccessForCity,
   improvementUnlockActiveOnHex
 });

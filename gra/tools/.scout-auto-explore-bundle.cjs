@@ -911,8 +911,32 @@ var LABEL_BY_ASCII = {
   cegla: "Ceg\u0142a",
   ceramika: "Ceramika"
 };
+var DEPOSIT_LINKED_BUILDING_LABELS = {
+  garncarnia: ["Glina"],
+  cegielnia: ["Glina"],
+  spichlerz: ["Ceramika"],
+  spichlerz_ii: ["S\xF3l"],
+  stolarnia: ["Drewno"],
+  kamieniarski: ["Kamie\u0144"],
+  kuznia: ["Ruda"],
+  // ZLOTO (Maciej 2026-07-25): Mennica wymaga dostępu do Złota (empire-wide, Kopalnia złota
+  // gdziekolwiek w imperium — game/zloto-access.ts empireHasKopalniaZlota, dolane do
+  // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
+  // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
+  // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
+  // PYTANIE 77=A (Maciej 2026-07-25): dostęp = własna Kopalnia złota ALBO aktywny szlak
+  // handlowy z cywilizacją, która ma złoto (jak koń) — bramka TU jest bez zmian (nadal
+  // sam sprawdza tylko obecność etykiety 'Złoto' w `activeLabels`); rozszerzenie jest
+  // WYŻEJ w łańcuchu, w zloto-access.ts (placedImprovementsWithZlotoTradeGrant), WPIĘTE
+  // w main.ts (placedImprovementsWithTradeGrants, domknięcie 2026-07-25 wieczór) —
+  // szlak handlowy realnie odblokowuje Mennicę bez własnej Kopalni złota.
+  mennica: ["Z\u0142oto"]
+};
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
+);
+var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
+  Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
 );
 
 // src/game/production.ts

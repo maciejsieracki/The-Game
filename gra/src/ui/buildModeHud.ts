@@ -55,6 +55,8 @@ export interface BuildModeHudConfig {
   getFoundCityCostLabel?: () => string;
   /** Podpowiedź gdy założenie zablokowane (za mało P / ludności). */
   getFoundCityLockHint?: () => string | null;
+  /** R-PIERWSZE-MIASTO: tylko przycisk Załóż miasto (bez ulepszeń/cudów). */
+  isFoundCityOnly?: () => boolean;
 }
 
 export interface BuildModeHudApi {
@@ -176,14 +178,19 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     }
 
     const active = config.getActiveKey();
-    const types = config.listTypes().filter(t => t.key !== 'pole_irygowane');
+    const foundCityOnly = config.isFoundCityOnly?.() ?? false;
+    const types = foundCityOnly
+      ? []
+      : config.listTypes().filter(t => t.key !== 'pole_irygowane');
     const showFound = config.canFoundCity?.() ?? false;
     const foundActive = config.isFoundCityActive?.() ?? false;
     const bannerText = bannerEl.querySelector('#civ-build-banner-text');
     if (bannerText) {
       bannerText.textContent = foundActive
         ? '🏛️ ZAŁÓŻ MIASTO — kliknij podświetlony hex (ESC = wyjście)'
-        : '🔨 TRYB BUDOWY — wybierz ulepszenie, kliknij hex (ESC = wyjście)';
+        : foundCityOnly
+          ? '🏛️ ZAŁÓŻ PIERWSZE MIASTO — wybierz «Załóż miasto» w panelu'
+          : '🔨 TRYB BUDOWY — wybierz ulepszenie, kliknij hex (ESC = wyjście)';
     }
     let html = '';
     if (showFound) {
@@ -197,7 +204,9 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         + (fcLabel ? '<span class="meta">' + fcLabel + '</span>' : '')
         + '</div>';
     }
-    html += '<div class="lbl">Ulepszenia terenu</div>';
+    if (!foundCityOnly) {
+      html += '<div class="lbl">Ulepszenia terenu</div>';
+    }
     for (const t of types) {
       const locked = t.techUnlocked === false;
       const sel = t.key === active ? ' sel' : '';
@@ -217,27 +226,29 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         + '<span class="meta">' + (locked && hint ? (hintTechIcWrap + hint) : ('E' + t.epoka + ' · ' + costLabel + techHint)) + '</span></div>';
     }
 
-    const wonders = config.listWonders?.() ?? [];
-    const wonderTarget = config.getWonderTargetLabel?.() ?? null;
-    html += '<div class="civ-build-wonders-gap"></div>';
-    html += '<div class="lbl">Cuda świata</div>';
-    if (wonderTarget) {
-      html += '<div class="civ-build-wonders-sub">Kolejka produkcji: ' + wonderTarget + '</div>';
-    }
-    if (wonders.length === 0) {
-      html += '<div class="civ-build-wonders-empty">(brak dostępnych — zbadaj technologie lub poczekaj na epokę)</div>';
-    } else {
-      for (const w of wonders) {
-        const locked = w.queued === true;
-        const hint = w.lockHint ?? (locked ? 'Już w kolejce tego miasta' : null);
-        const tag = w.dostep === 'R' ? ' · wyścig' : '';
-        const costLabel = w.kosztPraca + ' P';
-        html += '<div class="civ-build-item wonder' + (locked ? ' locked' : '') + '" data-wonder-id="' + w.id + '"'
-          + (locked && hint ? ' data-lock-hint="' + hint.replace(/"/g, '&quot;') + '"' : '')
-          + ' title="' + (locked && hint ? hint : (w.label + ' — epoka ' + w.epokaWejscia)) + '">'
-          + '<span class="ic">🏛</span>'
-          + '<span>' + w.label + '</span>'
-          + '<span class="meta">' + (locked && hint ? hint : ('E' + w.epokaWejscia + ' · ' + costLabel + tag)) + '</span></div>';
+    if (!foundCityOnly) {
+      const wonders = config.listWonders?.() ?? [];
+      const wonderTarget = config.getWonderTargetLabel?.() ?? null;
+      html += '<div class="civ-build-wonders-gap"></div>';
+      html += '<div class="lbl">Cuda świata</div>';
+      if (wonderTarget) {
+        html += '<div class="civ-build-wonders-sub">Kolejka produkcji: ' + wonderTarget + '</div>';
+      }
+      if (wonders.length === 0) {
+        html += '<div class="civ-build-wonders-empty">(brak dostępnych — zbadaj technologie lub poczekaj na epokę)</div>';
+      } else {
+        for (const w of wonders) {
+          const locked = w.queued === true;
+          const hint = w.lockHint ?? (locked ? 'Już w kolejce tego miasta' : null);
+          const tag = w.dostep === 'R' ? ' · wyścig' : '';
+          const costLabel = w.kosztPraca + ' P';
+          html += '<div class="civ-build-item wonder' + (locked ? ' locked' : '') + '" data-wonder-id="' + w.id + '"'
+            + (locked && hint ? ' data-lock-hint="' + hint.replace(/"/g, '&quot;') + '"' : '')
+            + ' title="' + (locked && hint ? hint : (w.label + ' — epoka ' + w.epokaWejscia)) + '">'
+            + '<span class="ic">🏛</span>'
+            + '<span>' + w.label + '</span>'
+            + '<span class="meta">' + (locked && hint ? hint : ('E' + w.epokaWejscia + ' · ' + costLabel + tag)) + '</span></div>';
+        }
       }
     }
     el.innerHTML = html;

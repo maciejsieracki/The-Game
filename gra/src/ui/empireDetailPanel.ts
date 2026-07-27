@@ -10,7 +10,71 @@ import { mocLabel, mocWithValue } from './power-labels';
 import { signedPl } from './formatPl';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
+import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu } from '../game/cities';
+import type { CityPodzialHandlu } from '../game/cities';
 export type { EmpireDetailSnap } from './empireDetailTypes';
+
+export interface EmpireHandelSplitUiConfig {
+  getOwnerDefault?: (ownerId: number) => CityPodzialHandlu | null;
+  onOwnerDefaultChange?: (ownerId: number, split: CityPodzialHandlu) => void;
+  getDaninaLabel?: () => string;
+}
+
+let handelSplitUi: EmpireHandelSplitUiConfig = {};
+
+/** DYSPOZYCJA-85-SUWAK: globalny domyślny podział Daniny/Podatku w panelu imperium. */
+export function configureEmpireHandelSplit(cfg: EmpireHandelSplitUiConfig): void {
+  handelSplitUi = { ...handelSplitUi, ...cfg };
+}
+
+function renderDefaultHandelSplitSection(): string {
+  const getDef = handelSplitUi.getOwnerDefault;
+  const onChange = handelSplitUi.onOwnerDefaultChange;
+  if (!getDef || !onChange) return '';
+  const split = normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Danina';
+  const id = 'emp-handel-split';
+  let h = `<div class="civ-emp-sect" data-section="ekonomia-handel-split" id="${id}">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ ${esc(daninaLbl.toUpperCase())}</div>`
+    + `<div class="civ-emp-note">Nowe miasta dziedziczą ten podział. W panelu miasta możesz włączyć własny override.</div>`;
+  h += `<div class="civ-emp-mini" style="margin-top:8px">`;
+  for (const row of [
+    { key: 'procentPieniadz' as const, label: 'Skarb', cls: 'gold' },
+    { key: 'procentNauka' as const, label: 'Nauka', cls: 'blue' },
+    { key: 'procentLuksus' as const, label: 'Zamożność', cls: '' },
+  ]) {
+    h += `<div class="civ-emp-zrow" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:4px 0">`
+      + `<label style="font-size:12px"><span class="${row.cls}">${row.label}</span></label>`
+      + `<span data-pct="${row.key}"><b>${split[row.key]}%</b></span></div>`
+      + `<input type="range" min="0" max="100" step="${HANDEL_PCT_STEP}" value="${split[row.key]}" `
+      + `data-handel-key="${row.key}" style="width:100%;margin:0 0 6px" />`;
+  }
+  h += `</div><div class="civ-emp-foot">Suma = 100% · kroki ${HANDEL_PCT_STEP}% · dotyczy wszystkich miast bez własnego override.</div></div>`;
+  queueMicrotask(() => wireDefaultHandelSplitInputs(split, onChange));
+  return h;
+}
+
+function wireDefaultHandelSplitInputs(
+  initial: CityPodzialHandlu,
+  onChange: (ownerId: number, split: CityPodzialHandlu) => void,
+): void {
+  const host = document.getElementById('emp-handel-split');
+  if (!host) return;
+  let current = { ...initial };
+  for (const inp of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
+    inp.addEventListener('input', () => {
+      const key = inp.dataset.handelKey as keyof CityPodzialHandlu;
+      current = adjustHandelSplit(current, key, Number(inp.value));
+      onChange(0, { ...current });
+      for (const other of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
+        const k = other.dataset.handelKey as keyof CityPodzialHandlu;
+        other.value = String(current[k]);
+      }
+      const pct = host.querySelector(`[data-pct="${k}"] b`);
+        if (pct) pct.textContent = `${current[k]}%`;
+    });
+  }
+}
 
 const STYLE_ID = 'civ-empire-panel-css';
 let root: HTMLDivElement | null = null;
@@ -675,6 +739,7 @@ function render(): void {
       + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
     if (detail) zasoby += `<div data-section="econ-${r.id}">${detail}</div>`;
   }
+  if (!onlyEconId) zasoby += renderDefaultHandelSplitSection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
   // — ARMIA (Maciej 2026-07-24: dawne „Zaopatrzenie" → „Armia") — żywność armii + ludność + rekruci.

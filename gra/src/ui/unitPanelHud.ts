@@ -45,6 +45,10 @@ export interface UnitPanelState {
    * nie mieszane w jeden string z "Pancerz +X% · Parametry +Y%".
    */
   veteranBadgeLabel?: string;
+  /** Krótki tooltip na ★ (title HTML, C-OBCE-JEDN-Q3 C). */
+  veteranStarsTooltip?: string;
+  /** C-OBCE-JEDN-Q3 B — wyjaśnienie pod odznaką (karta obca / własna). */
+  veteranPanelExplanation?: string;
 }
 
 export interface UnitPanelHudConfig {
@@ -126,7 +130,12 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
       + '<div class="mu-hp-lbl"><span>HP</span><span>' + u.hp + ' / ' + u.hpMax + '</span></div>'
       + '<div class="mu-hp-bar"><i style="width:' + hpPct + '%"></i></div>'
       + (u.veteranBadgeLabel
-        ? '<div class="veteran-badge">' + esc(u.veteranBadgeLabel) + '</div>'
+        ? '<div class="veteran-badge" title="' + esc(u.veteranStarsTooltip ?? u.veteranBadgeLabel) + '">'
+          + esc(u.veteranBadgeLabel) + '</div>'
+        : '')
+      + (u.veteranPanelExplanation
+        ? '<div class="sub veteran-edu" style="margin:4px 0 0;color:#c8b878;font-size:11px;">'
+          + esc(u.veteranPanelExplanation) + '</div>'
         : '')
       + (u.buildingBonusLabel
         ? '<div class="sub" style="margin:6px 0 0;">' + esc(u.buildingBonusLabel) + '</div>'

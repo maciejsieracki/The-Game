@@ -95,17 +95,51 @@ export function normalizePodzialHandlu(split: CityPodzialHandlu): CityPodzialHan
   return { procentPieniadz: p, procentNauka: n, procentLuksus: l };
 }
 
-function freshCityPodzial(): { podzialHandlu: CityPodzialHandlu; podzialPracy: CityPodzialPracy } {
+/** Redystrybucja pozostałych dwóch pól tak, by suma = 100 po zmianie jednego (kroki 10%). */
+export function adjustHandelSplit(
+  current: CityPodzialHandlu,
+  changed: keyof CityPodzialHandlu,
+  newVal: number,
+): CityPodzialHandlu {
+  const next: CityPodzialHandlu = { ...current };
+  next[changed] = snapHandelPct(newVal);
+  const keys = (['procentPieniadz', 'procentNauka', 'procentLuksus'] as const)
+    .filter(k => k !== changed);
+  let remainder = 100 - next[changed];
+  if (remainder < 0) {
+    next[changed] = 100;
+    keys.forEach(k => { next[k] = 0; });
+    return next;
+  }
+  const [k0, k1] = keys;
+  if (k0 === undefined || k1 === undefined) return next;
+  const sumOthers = current[k0] + current[k1];
+  if (sumOthers <= 0) {
+    const half = Math.round(remainder / 2 / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
+    next[k0] = half;
+    next[k1] = remainder - half;
+    return next;
+  }
+  let v0 = snapHandelPct(remainder * current[k0] / sumOthers);
+  if (v0 > remainder) v0 = Math.floor(remainder / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
+  next[k0] = v0;
+  next[k1] = remainder - v0;
+  return next;
+}
+
+function freshCityPodzial(): { podzialPracy: CityPodzialPracy } {
   return {
-    podzialHandlu: { ...DEFAULT_PODZIAL_HANDLU },
     podzialPracy:  { ...DEFAULT_PODZIAL_PRACY },
   };
 }
 
 /** Uzupełnia brakujące pola podziału po wczytaniu starszego zapisu (SAVE_VERSION bez migracji). */
 export function ensureCityPodzialDefaults(city: City): void {
-  if (!city.podzialHandlu) city.podzialHandlu = { ...DEFAULT_PODZIAL_HANDLU };
-  else city.podzialHandlu = normalizePodzialHandlu(city.podzialHandlu);
+  if (city.podzialHandluOverride && city.podzialHandlu) {
+    city.podzialHandlu = normalizePodzialHandlu(city.podzialHandlu);
+  } else if (city.podzialHandluOverride && !city.podzialHandlu) {
+    city.podzialHandlu = { ...DEFAULT_PODZIAL_HANDLU };
+  }
   if (!city.podzialPracy) city.podzialPracy = { ...DEFAULT_PODZIAL_PRACY };
 }
 
@@ -194,7 +228,12 @@ export interface City {
   siegeCapitulationPending?: boolean;
   /** OBL-S5: kolejka machin oblężniczych (Taran / Wieża). */
   siegeMachines?: SiegeMachinesState;
-  /** Per-miasto suwak Handlu; brak = global default w toEconomyCity. */
+  /**
+   * Per-miasto override suwaka Daniny/Podatku (Skarb/Nauka/Zamożność).
+   * false/undefined = dziedziczy ownerDefaultPodzialHandlu imperium.
+   */
+  podzialHandluOverride?: boolean;
+  /** Własny podział — tylko gdy podzialHandluOverride === true. */
   podzialHandlu?: CityPodzialHandlu;
   /** Per-miasto suwak Pracy; brak = global default w toEconomyCity. */
   podzialPracy?: CityPodzialPracy;
@@ -316,7 +355,7 @@ export function foundCity(
     population: 1,
     wealthState: freshWealthState(),
     wealthImmunityRemaining: 5,
-    podzialHandlu: podzial.podzialHandlu,
+    podzialHandluOverride: false,
     podzialPracy:  podzial.podzialPracy,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ,
   };
@@ -346,7 +385,7 @@ export function foundCityAt(
     population: 1,
     wealthState: freshWealthState(),
     wealthImmunityRemaining: 5,
-    podzialHandlu: podzial.podzialHandlu,
+    podzialHandluOverride: false,
     podzialPracy:  podzial.podzialPracy,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ,
   };

@@ -4,6 +4,8 @@
 
 ## Zasada
 
+**Każda odpowiedź Macieja (litera A/B/C, hybryda, BRAK ABC, zamknięcie wyjaśnieniem)** musi trafić do pliku **natychmiast** — nie tylko w czacie. Inne sesje nie widzą historii rozmowy.
+
 Każde pytanie ABC (lub werdykt **BRAK ABC** z pełnym kontekstem) → **osobny plik**:
 
 `docs/decyzje/<ID>.md`
@@ -48,7 +50,23 @@ Opis: …
 
 ## Wdrożenie (po `działaj`)
 - pliki · testy · warstwa 🟢/🟡
+
+## Status wdrożenia (dla innych agentów)
+
+Każdy plik `<ID>.md` po implementacji dostaje tabelę (agent widzi ją bez czytania czatu):
+
+```markdown
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 Czat ABC — temat tutaj; **nie** publishuj `gra-robocza/` |
+| **Kod `gra/src`** | ✅ GOTOWY / ❌ brak |
+| **Deploy `gra-robocza`** | ✅ FALA N `md5` / ⏸ czeka FALA N+1 / — |
+| **Integrator** | Przed deploy: `git pull` + `WERSJE.md` + manifest |
 ```
+
+**Indeks zbiorczy:** `docs/decyzje/STATUS-WDROZEN-AGENT-2026-07-27.md` (aktualizuj przy każdej FALI).
 
 ## Po odpowiedzi Macieja (ECHO)
 

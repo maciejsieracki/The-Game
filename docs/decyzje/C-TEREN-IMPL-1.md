@@ -1,8 +1,17 @@
 # C-TEREN-IMPL-1 — Deploy terenu bitwy: jeden batch czy trzy etapy
 
-**Status:** ✅ WDROŻONA (decyzja)  
+**Status:** 🟢 **WDROŻONA** — FALA 36 `a74c3797` (commit `2632156`)  
 **Grupa:** C (walka / bitwa ręczna 3D)  
 **Ekran:** [EKRAN: Bitwa ręczna 3D — teren, etapy 1–3]
+
+## Status wdrożenia (dla innych agentów)
+
+| Etap | Stan |
+|------|------|
+| **Sesja** | 🔧 **Czat ABC** — temat obsługujemy tutaj; **nie** publishuj `gra-robocza/` |
+| **Kod `gra/src`** | ✅ **GOTOWY** — etapy 1–3 · `teren-walki-etapy` 26/26+ |
+| **Deploy `gra-robocza`** | ✅ **FALA 36** `a74c3797` (commit `2632156`) |
+| **Indeks** | `STATUS-WDROZEN-AGENT-2026-07-27.md` |
 
 ## Sytuacja
 

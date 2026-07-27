@@ -1,4 +1,184 @@
-﻿# Maciej — co jest gotowe (log agentów)
+## [17:25] ✅ Gotowe — deploy ROBOCZA FALA 37 (`6691eb3e`)
+
+| Co | Status |
+|----|--------|
+| **ZNALEZISKO-86** | % HP + pasek Szczegóły bitwy |
+| **PYTANIE-77/84** | Mennica łaska + runtime gate budynków |
+| **R-DYP-STOL-A** | sekcje traktatu w koszyku |
+| **ECHO ABC** | 20+ plików `docs/decyzje/` |
+| **md5** | `6691eb3e` · `gra-robocza/START.html` |
+
+**Nie w bundlu (czeka kod):** C-OBCE-JEDN Q1–Q2 pełny · R-PIERWSZE-MIASTO · DYSPOZYCJA-85 wire · R-MUZYKA · R-FULLSCREEN.
+
+## [17:10] ✅ Gotowe — ECHO C-OBCE-JEDN Q1–Q3 + karta jednostki
+
+| ID | Odpowiedź |
+|----|-----------|
+| **C-OBCE-JEDN-Q1** | **A** — pełny panel obcej jednostki + karta statusów |
+| **C-OBCE-JEDN-Q2** | **TW** — portret władcy / sygnet MP po lewej; generał u góry → przyszłość |
+| **C-OBCE-JEDN-Q3** | **A+B+C** — dziennik + karta + tooltip na ★ |
+| **C-OBCE-JEDN-KARTA** | ikony koszar (parametry) i kuźni (pancerz) brąz/srebro/złoto; na mapie po bokach gwiazdek |
+
+Pliki: `docs/decyzje/C-OBCE-JEDN-Q*.md` · `C-OBCE-JEDN-KARTA.md`. Wdrożenie czeka **`działaj`**.
+
+## [16:55] ✅ Gotowe — ECHO 6 decyzji (bez deploy)
+
+| ID | Odpowiedź | Kod |
+|----|-----------|-----|
+| **R-PIERWSZE-MIASTO** | B | CZĘŚCIOWO — brak blokady marszu i panelu 🔨 |
+| **R-DYP-STOL-A** | B+C | CZĘŚCIOWO — koszyk tylko handel/dar |
+| **ZNALEZISKO-86** | A | CZĘŚCIOWO — maxHp tak, brak % i paska |
+| **DYSPOZYCJA-85-SUWAK** | C | ROZBIEŻNOŚĆ — brak globalnego suwaka gracza |
+| **PYTANIE-59-DOP** | B | ZGODNY |
+| **PYTANIE-77-DOP** | B | ROZBIEŻNOŚĆ — kod ma 83=B natychmiast |
+
+Pliki: `docs/decyzje/R-PIERWSZE-MIASTO.md` … `PYTANIE-77-DOP.md` · audyt `AUDYT-PYTAJ-TYLKO-O-2026-07-27.md`.
+
+## [15:40] ✅ Gotowe — ABC zamknięte (bez nowego deploy)
+
+| ID | Odpowiedź | Stan |
+|----|-----------|------|
+| **C-ARMY-HUNGER-Q1** | **A** — pełny parytet (suwak AI + głód HP wszyscy) | kod już w `main.ts` (`5ef4c45`); testy 39/39 + 37/37; **czeka na deploy** |
+| **C-STRATY-HP-Q1** | zamknięte — nadreprezentacja siły obrońcy AI, nie bug strat | bez zmian kodu |
+
+## [15:12] ✅ Gotowe — deploy ROBOCZA FALA 36 (`a74c3797`)
+
+| Co | Gdzie |
+|---|---|
+| **Bundle** | `gra-robocza/START.html` → md5 **`a74c3797`** |
+| **Commit** | `2632156` — batch bez nowego ABC (Dyspozycja 85, kultura/presja, F34–35, Wiar D4/N1, teren bitwy, AI suwaki, dyplomacja część, mapgen, P-AI) |
+| **Nie w tej fali** | R-MUZYKA-OPOZNIENIE, R-FULLSCREEN-PASEK, R-PIERWSZE-MIASTO (kod niekompletny) |
+
+## [15:27] ✅ Gotowe — deploy ROBOCZA FALA 36
+
+| Pole | Wartość |
+|------|---------|
+| **md5** | `a74c3797` |
+| **commit** | `2632156` |
+| **Wejście** | `gra-robocza/START.html` |
+| **Paczka** | Dyspozycja 85 · kultura/religia · B-SPIC/B-SUROW-BUD · FALA 9+34–35 · C-WIAR-D4/N1/N4-AI · P-AI-006–008 · mapgen Q1–Q2 · teren bitwy+tooltip · R-AI-SUWAKI · dyplomacja (część) · replay snapshot |
+
+**Kolejna fala (czeka w `gra/src/`, nie w F36):** R-BITWA-POWTORKA-I=**B** (auto-grupa zamiast snapshot) · R-MAPGEN-Q3=A · ewent. doprecyzowania po playteście.
+
+## [15:35] ✅ Gotowe — R-BITWA-POWTORKA-I=B (powtórka = auto-grupa)
+
+| Co | Gdzie |
+|---|---|
+| **Decyzja** | B — „Rozegraj ponownie" → świeża auto-grupa Konnica/Piechota/Łucznicy |
+| **Kod** | `battleScene.ts` — usunięty snapshot grup, `_initDeployUI` zawsze auto-grupuje |
+| **Deploy** | batch bitwy na polecenie **deploy** |
+
+## [15:30] ✅ Gotowe — C-TEREN-IMPL-3=B (tooltip TEREN pełny)
+
+| Co | Gdzie |
+|---|---|
+| **Decyzja** | B — jeden wiersz TEREN z obroną %, Δ zasięg, koszt ruchu, blokada konnicy |
+| **Kod** | `battleTerrainTooltip.ts` + `_unitTooltipHtml` w `battleScene.ts` |
+| **Test** | `teren-walki-etapy-test.cjs` ETAP 4 (33/33) |
+| **Deploy** | razem z paczką terenu (IMPL-1+2+3) na polecenie **deploy** |
+
+## [15:25] ⏸️ Czeka — C-TEREN-IMPL-2=C (obrona Gór z JSON)
+
+| | |
+|---|---|
+| **Co** | `terrain-combat.json`: Góry **+75%** obrony, koszt piechoty **2** · `combat.ts` czyta % z JSON (bez hardcoded ×1,75) |
+| **Testy** | `teren-walki-etapy-test.cjs` **26/26** · `city-defense-terrain-gate-test.cjs` **31/31** · tsc 0 |
+| **Deploy** | razem z paczką terenu (C-TEREN-IMPL-1=A) na polecenie **deploy** |
+
+## [15:20] ⏸️ Czeka — C-TEREN-IMPL-1=A (teren bitwy — jeden deploy)
+
+| | |
+|---|---|
+| **Co** | Strategia publikacji: **jeden batch** (etapy 1–3 naraz) do `gra-robocza/` — bez rozbijania na 3 deploye |
+| **Kod** | ETAP 1 Góry ×1,75 obrony · ETAP 2 Δ Zasięg · ETAP 3 konnica Las ×2 / Góry blokada |
+| **Testy** | `teren-walki-etapy-test.cjs` **26/26** |
+| **Deploy** | na Twoje polecenie (**deploy**) — Integrator, jeden wpis `WERSJE.md` |
+
+## [15:15] ⏸️ Czeka — R-MAPGEN-KOLEJNOSC-Q3=A (floor reliefu — bez skracania pipeline)
+
+| | |
+|---|---|
+| **Co** | **2×** `ensureReliefGridCoverage` (mapa) / **3×** (Ziemia) — bez zmian; priorytet: poprawny efekt wg wytycznych, nie czas |
+| **Test wydajności** | próg standardowej mapy **5 s → 7 s** (czas ~6 s akceptowalny) |
+| **Testy** | relief-grid **6/6** · fair-play **8/8** · map-gen-regression **PASS** |
+| **Deploy** | na Twoje polecenie |
+
+**Paczka R-MAPGEN-KOLEJNOSC zamknięta** (Q1+B, Q2+C, Q3+A).
+
+## [15:10] ⏸️ Czeka — R-MAPGEN-KOLEJNOSC-Q2=C (górzystość ~15% — kod, bez deploy)
+
+| | |
+|---|---|
+| **Co** | Tier Średni relief: docelowa górzystość lądu **~15%** (Góry 5% + Wzgórza 8,5% sufit/komórka) · fair-play czyta progi z JSON |
+| **Zmierzone** | 5 seedów Standard: średnia **15,65%** (14,72–16,23%) |
+| **Testy** | fair-play **8/8** · relief-grid **6/6** · map-gen-regression **PASS** · tsc 0 |
+| **Deploy** | na Twoje polecenie |
+
+## [15:05] ⏸️ Czeka — R-MAPGEN-KOLEJNOSC-Q1=B (las — jeden etap w pipeline)
+
+| | |
+|---|---|
+| **Co** | Usunięty pośredni las z `classifyTerrain`/`classifyTerrainFlat` · kanoniczny las = `reapplyForestOverlay` po reliefie+rzekach |
+| **Testy** | fair-play **8/8** · relief-grid **6/6** · map-gen-regression **PASS** · tsc 0 |
+| **Deploy** | na Twoje polecenie |
+
+## [15:00] ⏸️ Czeka — P-AI-008=C (zagrożenie AI — kod, bez deploy)
+
+| | |
+|---|---|
+| **Co** | Zasięg zagrożenia **7 hex** · Mury w trybie zagrożenia tylko gdy AI **#1 Mocy** |
+| **Testy** | `ai-threat-mode-test.cjs` · tsc 0 |
+| **Deploy** | na Twoje polecenie |
+
+## [14:55] ⏸️ Czeka — P-AI-007=A (priorytety produkcji AI — kod, bez deploy)
+
+| | |
+|---|---|
+| **Co** | Panel D: `(priorytet−5)×15` pkt na wojsko/ekonomię/naukę **na** archetyp · Biblioteka + Akademia w puli produkcji |
+| **Testy** | `ai-production-priority-test.cjs` **5/5** · tsc 0 |
+| **Deploy** | na Twoje polecenie |
+
+## [14:50] ⏸️ Czeka — P-AI-006=C (tabela ekspansywności — potwierdź przed deployem)
+
+| | |
+|---|---|
+| **Co** | 15 wartości `ekspansywnosc` w `civ-ai.json` + sync macierz · silnik: rezerwa Pracy, bypass klastra (≥4), częstotliwość celu Mocy, kara poza klastrem |
+| **Testy** | `ai-war-gate-test.cjs` **23/23** · tsc 0 |
+| **Deploy** | dopiero po Twoim **OK tabeli** (litera C + „deploy" lub poprawki liczb w odpowiedzi) |
+
+## [13:55] ⏸️ Czeka — C-WIAR-N4-AI=B (kod w `gra/src`, bez deploy)
+
+| | |
+|---|---|
+| **Co** | AI **może odmówić** wojny sojuszniczej gdy: już w innej wojnie · za słaba moc (<55% celu, pokojowy <75%) → N4 −15 W, zerwanie sojuszu, komunikat HUD |
+| **Testy** | `alliance-war-obligation-test.cjs` **12/12** · tsc 0 |
+| **Uwaga** | Pełna heurystyka B: wojna · słaba moc · niskie Zaufanie (<20) do proszącego sojusznika |
+| **Deploy** | napisz **deploy** |
+
+## [13:50] ⏸️ Czeka — C-WIAR-N4-AI = B (kod po zwolnieniu `gra/`) — **ZASTĄPIONE** wpisem wyżej
+
+---
+
+## [12:15] ✅ Gotowe — deploy ROBOCZA FALA 35 (`2e606ae6`)
+
+| | |
+|---|---|
+| **Gdzie** | `gra-robocza/START.html` → `Gra-ROBOCZA.html` · md5 `2e606ae6f49e0f549cc337638939266e` |
+| **Co** | FALA 34 (chatka, tartak, wycofanie, odfortyfikowanie) + **baner po turze** · **tooltipsy HUD** · **Spacja/◀▶ cykl armii** |
+| **Testy** | tsc 0 · VERIFY OK |
+
+---
+
+## [12:00] ✅ Gotowe — deploy ROBOCZA FALA 34 (`1e7f4cad`)
+
+| | |
+|---|---|
+| **Gdzie** | `gra-robocza/START.html` → `Gra-ROBOCZA.html` · md5 `1e7f4cad0435fe00d8464d41a7faf8ff` |
+| **Co** | Scout fix chatki wioski · tartak tylko las + auto-usuwanie · wycofanie obrońcy · odfortyfikowanie garnizonu |
+| **Testy** | tsc 0 · scout-auto-explore 10/10 · map-improvement-qualify 58/58 · VERIFY OK |
+
+---
+# Maciej — co jest gotowe (log agentów)
 
 > **Jedna strona do przejrzenia.** Agenci dopisują **append-only** (najnowsze **na górze**).  
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  

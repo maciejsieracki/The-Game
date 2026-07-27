@@ -1,7 +1,7 @@
 /**
  * endDetails1E.ts — C-23 „Szczegóły bitwy" (Design TW v5, klatka 4).
  * Dwie kolumny ATK/OBR: nagłówek dowódcy + sekcje Zniszczone/Rozbite (rout)/
- * Ocalałe, każda jednostka jako wiersz ikona+nazwa+HP przed→po.
+ * Ocalałe, każda jednostka jako wiersz ikona+nazwa+pasek HP+% przed→po (ZNALEZISKO-86).
  */
 import {
   BATTLE_ENEMY,
@@ -84,30 +84,64 @@ const FATE_META: Record<EndDetailsUnitFate, { label: string; color: string }> = 
   survived: { label: 'Ocalałe', color: '#7ad0a0' },
 };
 
-/** ZNALEZISKO 86: „34/50 HP (−16)" — HP po bitwie / maksymalne HP, w nawiasie
- *  spadek tej bitwy (hpBefore − hpAfter). Bez spadku (pełne zdrowie) nawias
- *  pomijany, żeby nie zaśmiecać wiersza „(−0)". */
-function hpText(u: EndDetailsUnitRow): string {
+/** ZNALEZISKO-86: ten sam wzorzec co battle-summary.ts / postBattleSummary. */
+function hpPct(hp: number, maxHp: number): number {
+  if (maxHp <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((hp / maxHp) * 100)));
+}
+
+function hpPercents(u: EndDetailsUnitRow): { before: number; after: number } {
   const maxHp = Math.max(0, Math.round(u.maxHp));
-  const hpAfter = Math.max(0, Math.round(u.hpAfter));
-  const loss = Math.max(0, Math.round(u.hpBefore) - hpAfter);
-  const base = hpAfter + '/' + maxHp + ' HP' + (loss > 0 ? ' (−' + loss + ')' : '');
-  return u.fate === 'routed' ? base + ' · uciekli' : base;
+  const hpBefore = Math.max(0, Math.round(u.hpBefore));
+  const hpAfter = u.fate === 'destroyed' ? 0 : Math.max(0, Math.round(u.hpAfter));
+  return {
+    before: hpPct(hpBefore, maxHp),
+    after: hpPct(hpAfter, maxHp),
+  };
+}
+
+/** ZNALEZISKO-86: „HP 62% → 41%" — format jak postBattleSummary (pct względem maxHp). */
+function hpText(u: EndDetailsUnitRow): string {
+  const { before, after } = hpPercents(u);
+  const base = u.fate === 'destroyed'
+    ? 'HP ' + before + '% \u2192 0%'
+    : 'HP ' + before + '% \u2192 ' + after + '%';
+  return u.fate === 'routed' ? base + ' \u00B7 uciekli' : base;
+}
+
+/** ZNALEZISKO-86: mini-pasek HP (before = jasne tło, after = kolor sekcji). */
+function hpBarHtml(u: EndDetailsUnitRow, accentColor: string): string {
+  const { before, after } = hpPercents(u);
+  const afterWidth = u.fate === 'destroyed' ? 0 : after;
+  return (
+    '<div style="height:5px;border-radius:3px;overflow:hidden;position:relative;' +
+    'background:rgba(255,255,255,0.08);margin-top:4px;">' +
+    '<div style="position:absolute;inset:0;width:' + before + '%;background:rgba(255,255,255,0.14);' +
+    'border-radius:3px;"></div>' +
+    '<div style="position:absolute;left:0;top:0;bottom:0;width:' + afterWidth + '%;' +
+    'border-radius:3px;background:' + accentColor + ';"></div>' +
+    '</div>'
+  );
 }
 
 function unitRowHtml(u: EndDetailsUnitRow, color: string): string {
   const iconColor = rosterRowAccent(u.kind);
   const icon = resizeSvg(ROSTER_TYPE_SVG[u.kind], 15);
-  const right = hpText(u);
+  const hpLabel = hpText(u);
+  const bar = hpBarHtml(u, color);
   const bg = hexToRgba(color, u.fate === 'destroyed' ? 0.06 : 0.05);
   const border = hexToRgba(color, u.fate === 'survived' ? 0.16 : u.fate === 'routed' ? 0.18 : 0.2);
   return (
-    '<div class="tnum" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;' +
+    '<div class="tnum" style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:8px;' +
     'background:' + bg + ';border:1px solid ' + border + ';">' +
-    '<span style="color:' + iconColor + ';display:inline-flex;line-height:0;flex-shrink:0;">' + icon + '</span>' +
-    '<span style="flex:1;min-width:0;font-size:13px;color:' + BATTLE_TEXT + ';overflow:hidden;' +
-    'text-overflow:ellipsis;white-space:nowrap;">' + esc(u.name) + '</span>' +
-    '<span style="font-size:12px;color:' + color + ';white-space:nowrap;flex-shrink:0;">' + right + '</span>' +
+    '<span style="color:' + iconColor + ';display:inline-flex;line-height:0;flex-shrink:0;margin-top:2px;">' +
+    icon + '</span>' +
+    '<div style="flex:1;min-width:0;">' +
+    '<div style="font-size:13px;color:' + BATTLE_TEXT + ';overflow:hidden;text-overflow:ellipsis;' +
+    'white-space:nowrap;">' + esc(u.name) + '</div>' +
+    bar +
+    '<div style="font-size:11px;color:' + color + ';margin-top:3px;">' + hpLabel + '</div>' +
+    '</div>' +
     '</div>'
   );
 }
