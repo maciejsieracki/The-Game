@@ -12,7 +12,7 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 ## ROBOCZA `6691eb3e` — 2026-07-27 17:25 — FALA 37: paczka ABC + ZNALEZISKO-86 — **AKTUALNA**
-- md5 (pelne): `6691eb3e920045a24f7be8f94216e1db` · stempel: `ROBOCZA · 2026-07-27 17:25` · commit: *(po commit deploy)*
+- md5 (pelne): `6691eb3e920045a24f7be8f94216e1db` · stempel: `ROBOCZA · 2026-07-27 17:25` · commit: `a17b541`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html`
 - Wynik `vite build` exit 0. POLE-BITWY: pominięty (npm devdir warning).
