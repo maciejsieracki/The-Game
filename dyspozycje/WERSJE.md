@@ -12,7 +12,7 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 ## ROBOCZA `08c676a5` — 2026-07-27 17:32 — FALA 38: DYSPOZYCJA-85 globalny suwak — **AKTUALNA**
-- md5 (pelne): `08c676a56b568d59277d0a5e573a517a` · stempel: `ROBOCZA · 2026-07-27 17:32` · commit: *(po commit deploy)*
+- md5 (pelne): `08c676a56b568d59277d0a5e573a517a` · stempel: `ROBOCZA · 2026-07-27 17:32` · commit: `001a4b1`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html`
 - Wynik `vite build` exit 0. POLE-BITWY: pominięty (npm devdir warning).
