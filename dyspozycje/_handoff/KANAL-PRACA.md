@@ -3769,3 +3769,12 @@ CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).
 **Bramki:** tsc 0 · VERIFY OK.
 **Push:** na prośbę Macieja.
 CZEKAM-NA: nic.
+
+## [00:05] SESJA → MACIEJ — FALA 44 deploy ROBOCZA `95021308`
+
+**md5:** `95021308eb1eb918bc95149d6928a8ef` · `gra-robocza/START.html` FALA 44 · Ctrl+F5 + Nowa gra.
+**Zakres:** bonus Kuźnia/Koszary przy wejściu/przejściu przez heks własnego miasta + toast graczowi; usunięty bonus na koniec tury.
+**Pliki:** `unit-building-bonuses.ts` · `main.ts` · `unit-building-bonuses-test.cjs`.
+**Bramki:** tsc 0 · unit-building-bonuses 82/82 · VERIFY OK.
+**Push:** `git push origin main` na prośbę Macieja.
+CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).

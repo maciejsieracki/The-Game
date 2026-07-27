@@ -59,6 +59,7 @@ export {
   unitPancerzBonusProc, unitParametryBonusProc,
   unitPancerzBonusFrac, unitParametryBonusFrac,
   bestBuildingProgressAfterCityVisit, buildingProgressWouldChange,
+  applyCityVisitBonusGain, formatBuildingBonusGainHint,
   unitBuildingBonusLabel, mnoznikRoleForBuildingId,
   mergeBuildingBonusIntoStatMultipliers, buildingCombatBonusForUnit,
   cumulativeMnoznikForBuildingId,
@@ -392,7 +393,23 @@ console.log('\n-- E. PARYTET AI --');
 }
 
 // ===========================================================================
-// H. Integracja z resolveCombat -- Pancerz redukuje obrazenia, Parametry (HP)
+// F. applyCityVisitBonusGain + komunikat (przejscie przez miasto)
+// ===========================================================================
+console.log('\n-- F. Nabycie bonusu przy wizycie w miescie --');
+{
+  const unit = { pancerzBonusProc: 0, parametryBonusProc: 0 };
+  const gain = M.applyCityVisitBonusGain(unit, ['kuznia', 'koszary'], BUILDINGS);
+  assert(gain.changed, 'applyCityVisitBonusGain: pierwsza wizyta zmienia stan');
+  eq(gain.armorGained, KUZNIA, 'przyrost Pancerza = Kuznia');
+  eq(gain.softGained, KOSZARY, 'przyrost Parametrow = Koszary');
+  eq(unit.pancerzBonusProc, KUZNIA, 'jednostka ma zapisany Pancerz');
+  const again = M.applyCityVisitBonusGain(unit, ['kuznia'], BUILDINGS);
+  assert(!again.changed, 'druga wizyta w slabszym miescie nic nie daje');
+  const hint = M.formatBuildingBonusGainHint('Wojownik', 'Ateny', gain);
+  assert(hint.includes('Wojownik') && hint.includes('Ateny') && hint.includes('Kuźnia'),
+    'formatBuildingBonusGainHint: tresc komunikatu');
+}
+
 //    nie wplywaja na redukcje pancerza. Deterministyczny rng (zawsze trafia).
 // ===========================================================================
 console.log('\n-- H. Integracja resolveCombat: Pancerz redukuje dmg, Sciezka B go nie rusza --');

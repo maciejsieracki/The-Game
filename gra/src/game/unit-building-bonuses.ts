@@ -40,10 +40,9 @@
  *   (a) przy wyprodukowaniu jednostki w miescie (applyProductionCompleted /
  *       recruitment-queue completion) -- jednostka od razu dostaje poziom
  *       miasta, w ktorym powstala;
- *   (b) raz na koniec kazdej tury, dla KAZDEJ jednostki stojacej na heksie
- *       WLASNEGO miasta (applyCityVisitBuildingBonuses w main.ts, wolane po
- *       wakeSentryUnitsOnEnemyContact() -- pozycje wszystkich jednostek,
- *       gracz+AI+miasta-panstwa, sa juz finalne dla tej tury).
+ *   (b) przy WEJSCIU na heks WLASNEGO miasta w trakcie ruchu (kazdy heks
+ *       sciezki marszu -- main.ts applyCityVisitBonusesAlongPath) + komunikat
+ *       dla gracza gdy cos nowego zostalo zdobyte; PARYTET AI bez UI.
  * Obie sciezki oraz oba haki sa CALKOWICIE ownerId-agnostyczne -- PARYTET AI.
  *
  * Kompatybilnosc wsteczna: stare zapisy bez tych pol -> pole `undefined` po
@@ -269,6 +268,60 @@ export function buildingProgressWouldChange(
   const next = bestBuildingProgressAfterCityVisit(unit, builtBuildingIds, buildings);
   return next.pancerzBonusProc !== unitPancerzBonusProc(unit)
     || next.parametryBonusProc !== unitParametryBonusProc(unit);
+}
+
+/** Wynik jednorazowego nabycia bonusu po wizycie w miescie (heks sciezki ruchu). */
+export interface BuildingBonusGain {
+  changed: boolean;
+  armorGained: number;
+  softGained: number;
+  armorTotal: number;
+  softTotal: number;
+}
+
+/**
+ * Stosuje bonus miasta na jednostce (mutuje pola procentowe). Zwraca przyrost
+ * wzgledem stanu sprzed wizyty -- do komunikatu UI i testow.
+ */
+export function applyCityVisitBonusGain(
+  unit: UnitBuildingProgress,
+  builtBuildingIds: readonly string[] | null | undefined,
+  buildings: readonly MnoznikBuildingLookup[] | null | undefined,
+): BuildingBonusGain {
+  const prevArmor = unitPancerzBonusProc(unit);
+  const prevSoft = unitParametryBonusProc(unit);
+  const next = bestBuildingProgressAfterCityVisit(unit, builtBuildingIds, buildings);
+  const armorGained = Math.max(0, next.pancerzBonusProc - prevArmor);
+  const softGained = Math.max(0, next.parametryBonusProc - prevSoft);
+  const changed = armorGained > 0 || softGained > 0;
+  if (changed) {
+    unit.pancerzBonusProc = next.pancerzBonusProc;
+    unit.parametryBonusProc = next.parametryBonusProc;
+  }
+  return {
+    changed,
+    armorGained,
+    softGained,
+    armorTotal: next.pancerzBonusProc,
+    softTotal: next.parametryBonusProc,
+  };
+}
+
+/** Komunikat po zdobyciu bonusu (gracz) -- puste gdy brak przyrostu. */
+export function formatBuildingBonusGainHint(
+  unitLabel: string,
+  cityName: string,
+  gain: Pick<BuildingBonusGain, 'armorGained' | 'softGained' | 'armorTotal' | 'softTotal'>,
+): string {
+  const parts: string[] = [];
+  if (gain.armorGained > 0) {
+    parts.push(`Kuźnia +${gain.armorGained}% pancerza (razem +${gain.armorTotal}%)`);
+  }
+  if (gain.softGained > 0) {
+    parts.push(`Koszary +${gain.softGained}% parametrów (razem +${gain.softTotal}%)`);
+  }
+  if (parts.length === 0) return '';
+  return `${unitLabel} — ${cityName}: ${parts.join(' · ')}`;
 }
 
 /** Etykieta do tooltipu/karty jednostki, np. "Pancerz +30% \xb7 Parametry +20%". Pusty string gdy brak obu bonusow. */

@@ -1,3 +1,12 @@
+## [00:05] ✅ Gotowe — FALA 44 bonus koszar/kuźnia przy wejściu do miasta
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Trigger** | bonus Kuźnia/Koszary przy **wejściu lub przejściu** przez heks własnego miasta (nie koniec tury) |
+| **Toast** | komunikat graczowi po nabyciu bonusu (np. „Wojownik — Ateny: Kuźnia +15% pancerza…") |
+| **Trwałość** | bonus zostaje; rekrutacja w mieście — bonus przy narodzinach |
+| **Deploy** | ROBOCZA `95021308` · VERIFY OK · `gra-robocza/START.html` |
+
 ## [23:50] ✅ Gotowe — FALA 43 żeton jednostki (C-OBCE-JEDN-Q2)
 
 | Co | Efekt na mapie |

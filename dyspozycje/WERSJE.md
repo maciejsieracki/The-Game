@@ -11,7 +11,18 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `33c49486` — 2026-07-27 23:50 — FALA 43: żeton jednostki — medalion + koszary/kuźnia — **AKTUALNA**
+## ROBOCZA `95021308` — 2026-07-28 00:05 — FALA 44: bonus koszar/kuźnia przy wejściu do miasta + toast — **AKTUALNA**
+- md5 (pelne): `95021308eb1eb918bc95149d6928a8ef` · stempel: `ROBOCZA · 2026-07-28 00:05`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 8 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- Wynik `vite build` exit 0. POLE-BITWY: bez zmian od FALA 42 (`a5a60f15`).
+- **Co nowego (FALA 44):**
+  - **Bonus budynków wojskowych (Kuźnia/Koszary):** natychmiast przy **wejściu lub przejściu** przez heks własnego miasta (nie koniec tury).
+  - **Toast graczowi** po nabyciu bonusu, np. „Wojownik — Ateny: Kuźnia +15% pancerza…".
+  - Bonus trwały; rekrutacja w mieście — bonus przy narodzinach (bez dodatkowego komunikatu).
+- **Bramki:** tsc 0 · unit-building-bonuses 82/82.
+
+## ROBOCZA `33c49486` — 2026-07-27 23:50 — FALA 43: żeton jednostki — medalion + koszary/kuźnia — **ZASTĄPIONA**
 - md5 (pelne): `33c4948673c578874dc897286371179b` · stempel: `ROBOCZA · 2026-07-27 23:50`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).

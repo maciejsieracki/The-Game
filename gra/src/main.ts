@@ -532,7 +532,8 @@ import {
 } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
 import {
-  bestBuildingProgressAfterCityVisit, buildingProgressWouldChange,
+  bestBuildingProgressAfterCityVisit,
+  applyCityVisitBonusGain, formatBuildingBonusGainHint,
   unitPancerzBonusFrac, unitParametryBonusFrac, unitBuildingBonusLabel,
   unitPancerzBonusProc, unitParametryBonusProc,
 } from './game/unit-building-bonuses';
@@ -6212,31 +6213,48 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * Ścieżki ulepszeń jednostek (2026-07-25, unit-building-bonuses.ts, wariant A
-     * właściciela): jednostka dostaje bonus Pancerza/parametrów miękkich NIE
-     * TYLKO przy wyprodukowaniu, ale też gdy WEJDZIE do miasta posiadającego
-     * dany budynek — liczy się najlepsze miasto, jakie kiedykolwiek odwiedziła.
-     * Zamiast łapać każdą ścieżkę ruchu (animowany marsz gracza, teleport AI,
-     * merge/split stosów, embarkacja…) osobno, sprawdzamy RAZ NA KONIEC KAŻDEJ
-     * TURY każdą jednostkę stojącą na heksie WŁASNEGO miasta — dokładnie tak
-     * samo jak wakeSentryUnitsOnEnemyContact() powyżej, z tym samym komentarzem
-     * "pozycje wszystkich jednostek (gracz + AI) są już finalne dla tej tury".
-     * CAŁKOWICIE ownerId-agnostyczne — PARYTET AI: brak gałęzi „tylko gracz",
-     * miasta-państwa i AI awansują swoje jednostki dokładnie tak samo.
+     * Bonusy budynkow wojskowych: kazdy heks WLASNEGO miasta na sciezce ruchu
+     * (wejscie / przejscie) -- natychmiast, bez czekania do konca tury.
+     * PARYTET AI: ta sama logika; komunikat tylko dla ownerId===0.
      */
-    function applyCityVisitBuildingBonuses(): void {
-      if (units.length === 0 || cities.length === 0) return;
-      // Miasto (q,r) -> City, żeby uniknąć O(units*cities) find() w pętli.
+    function applyCityVisitBonusesAlongPath(
+      stack: readonly RuntimeUnit[],
+      pathHexes: ReadonlyArray<{ q: number; r: number }>,
+      showPlayerHints: boolean,
+    ): boolean {
+      if (stack.length === 0 || pathHexes.length === 0 || cities.length === 0) return false;
       const cityByHex = new Map<string, City>();
       for (const c of cities) cityByHex.set(keyOf(c.q, c.r), c);
-      for (const u of units) {
-        const c = cityByHex.get(keyOf(u.q, u.r));
-        if (!c || c.ownerId !== u.ownerId) continue;
-        if (!buildingProgressWouldChange(u, cityBuilt.get(c.id), data.buildings)) continue;
-        const next = bestBuildingProgressAfterCityVisit(u, cityBuilt.get(c.id), data.buildings);
-        u.pancerzBonusProc = next.pancerzBonusProc;
-        u.parametryBonusProc = next.parametryBonusProc;
+      let anyChanged = false;
+      const seenHex = new Set<string>();
+      for (const h of pathHexes) {
+        const hk = keyOf(h.q, h.r);
+        if (seenHex.has(hk)) continue;
+        seenHex.add(hk);
+        const city = cityByHex.get(hk);
+        if (!city) continue;
+        const built = cityBuilt.get(city.id);
+        for (const u of stack) {
+          if (u.ownerId !== city.ownerId) continue;
+          const gain = applyCityVisitBonusGain(u, built, data.buildings);
+          if (!gain.changed) continue;
+          anyChanged = true;
+          if (showPlayerHints && u.ownerId === 0) {
+            const msg = formatBuildingBonusGainHint(u.typeId, city.name, gain);
+            if (msg) showHintMessage(msg, 4500);
+          }
+        }
       }
+      return anyChanged;
+    }
+
+    function applyCityVisitBonusesAtHex(
+      unit: RuntimeUnit,
+      q: number,
+      r: number,
+      showPlayerHints: boolean,
+    ): boolean {
+      return applyCityVisitBonusesAlongPath([unit], [{ q, r }], showPlayerHints);
     }
 
     /**
@@ -16715,6 +16733,14 @@ async function boot(): Promise<void> {
             if (u.ownerId === 0 && anim.pathHexes.length > 0) {
               checkVillageRewardsAlongPath(anim.pathHexes);
             }
+            if (anim.pathHexes.length > 0) {
+              const bonusChanged = applyCityVisitBonusesAlongPath(
+                stack,
+                anim.pathHexes,
+                u.ownerId === 0,
+              );
+              if (bonusChanged) syncUnitsRender();
+            }
           }
           anim = null;
           isAnimating = false;
@@ -16731,6 +16757,9 @@ async function boot(): Promise<void> {
             Math.random,
             (u) => {
               if (u.ownerId === 0) checkVillageRewardAt(u.q, u.r);
+              if (applyCityVisitBonusesAtHex(u, u.q, u.r, u.ownerId === 0)) {
+                syncUnitsRender();
+              }
             },
           );
           if (scoutExplore.movedUnitIds.length > 0) {
@@ -18371,6 +18400,9 @@ async function boot(): Promise<void> {
                     u.ruchLeft = 0;
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     applyEmbarkStateAfterMove([u], map);
+                    if (applyCityVisitBonusesAlongPath([u], path, false)) {
+                      syncUnitsRender();
+                    }
                     if (sfxUnitsEnabled && (aiVisNow === null || aiVisNow.has(keyOf(last.q, last.r)))) {
                       playMarchAccent(1);
                     }
@@ -18948,7 +18980,6 @@ async function boot(): Promise<void> {
         // finalne dla tej tury — teraz sprawdzamy, czy jakaś śpiąca (sentry)
         // jednostka ma wroga w polu widzenia i trzeba ją obudzić.
         wakeSentryUnitsOnEnemyContact();
-        applyCityVisitBuildingBonuses();
         executePlannedMarchesEndTurn();
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();
@@ -19019,10 +19050,10 @@ async function boot(): Promise<void> {
           const movedStackIds = anim.movingStackIds;
           const pathHexes = anim.pathHexes;
           const u = units.find(x => x.id === finishedId);
+          const stack = movedStackIds
+            .map(sid => units.find(x => x.id === sid))
+            .filter((su): su is RuntimeUnit => su != null);
           if (u) {
-            const stack = movedStackIds
-              .map(sid => units.find(x => x.id === sid))
-              .filter((su): su is RuntimeUnit => su != null);
             for (const su of stack) {
               su.q = destQ;
               su.r = destR;
@@ -19041,11 +19072,20 @@ async function boot(): Promise<void> {
           validateActiveSieges();
 
           // GRAFIKA-TEREN-2 / WIOSKI: jednostka gracza kończy ruch na wiosce -> nagroda + znika.
-          if (u && u.ownerId === 0) {
+          if (u) {
             if (pathHexes.length > 0) {
-              checkVillageRewardsAlongPath(pathHexes);
-            } else {
+              if (u.ownerId === 0) checkVillageRewardsAlongPath(pathHexes);
+              const bonusChanged = applyCityVisitBonusesAlongPath(
+                stack,
+                pathHexes,
+                u.ownerId === 0,
+              );
+              if (bonusChanged) syncUnitsRender();
+            } else if (u.ownerId === 0) {
               checkVillageRewardAt(destQ, destR);
+              if (applyCityVisitBonusesAtHex(u, destQ, destR, true)) {
+                syncUnitsRender();
+              }
             }
           }
 
