@@ -4,8 +4,11 @@
 import type { City } from './cities';
 import { cityPopulationCap } from './economy';
 import type { EconParams, CivEconomyBonus } from './economy';
-import type { SpichlerzCityBonusState } from './building-resource-gate';
-import { spichlerzGrowthBonusPercent } from './building-resource-gate';
+import {
+  spichlerzGrowthBonusPercent,
+  spichlerzRationFoodCostMultiplier,
+  type SpichlerzCityBonusState,
+} from './building-resource-gate';
 import { civMatrixParam } from './civ-matrix';
 import type { EmpireFoodTickResult } from './empire-food';
 import type { EconomyTickResult } from './turn-economy';
@@ -94,8 +97,11 @@ export function computeCityRationCost(
   population: number,
   level: PoziomRacji,
   params: RationParams,
+  spichlerzState?: SpichlerzCityBonusState,
 ): number {
-  return Math.max(0, population) * rationFoodCostPerPop(level, params);
+  const base = Math.max(0, population) * rationFoodCostPerPop(level, params);
+  const mult = spichlerzState ? spichlerzRationFoodCostMultiplier(spichlerzState) : 1;
+  return base * mult;
 }
 
 export interface GrowthPercentBreakdown {

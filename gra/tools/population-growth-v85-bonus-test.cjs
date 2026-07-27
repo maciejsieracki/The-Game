@@ -16,9 +16,12 @@ fs.writeFileSync(ENTRY, `
 export {
   computeGrowthPercentV85,
   buildRationParams,
+  computeCityRationCost,
 } from '../src/game/population-growth-v85';
 export {
   spichlerzGrowthBonusPercent,
+  spichlerzHealthBonus,
+  spichlerzRationFoodCostMultiplier,
   resolveSpichlerzCityBonusState,
 } from '../src/game/building-resource-gate';
 `, 'utf8');
@@ -142,6 +145,30 @@ console.log('--- Q9 Zdrowie → wzrost% ---');
       .every(k => typeof bd[k] === 'number'),
     'GrowthPercentBreakdown ma wszystkie pola nazwane',
   );
+}
+
+// P84-SPICHLERZ: Zdrowie + tańsza racja
+console.log('--- P84 Spichlerz Zdrowie + racje ---');
+{
+  const tierI = M.resolveSpichlerzCityBonusState(['spichlerz'], { ceramikaPaid: true, solPaid: false });
+  eq(M.spichlerzHealthBonus(tierI), 5, 'Spichlerz I → +5 Zdrowia');
+  eq(M.spichlerzGrowthBonusPercent(tierI), 1, 'Spichlerz I → nadal +1% wzrostu');
+  eq(M.spichlerzRationFoodCostMultiplier(tierI), 0.75, 'Spichlerz I → koszt racji ×0.75');
+  const fullII = M.resolveSpichlerzCityBonusState(['spichlerz_ii'], { ceramikaPaid: true, solPaid: true });
+  eq(M.spichlerzHealthBonus(fullII), 10, 'Spichlerz II pełny → +10 Zdrowia');
+  eq(M.spichlerzRationFoodCostMultiplier(fullII), 0.5, 'Spichlerz II pełny → koszt racji ×0.5');
+  const rationParams = M.buildRationParams({
+    ekonomia_miasta: {
+      racje_zywnosc_1: { normal: 1 },
+      racje_zywnosc_2: { normal: 2 },
+      racje_zywnosc_3: { normal: 3 },
+      racje_wzrost_proc_1: { normal: 3 },
+      racje_wzrost_proc_2: { normal: 5 },
+      racje_wzrost_proc_3: { normal: 7 },
+    },
+  }, 'normal');
+  eq(M.computeCityRationCost(10, 3, rationParams, fullII), 15, 'pop 10 racje 3 ×0.5 = 15');
+  eq(M.computeCityRationCost(10, 3, rationParams), 30, 'bez Spichlerza = 30');
 }
 
 console.log('\n--- wynik: ' + passed + ' pass, ' + failed + ' fail ---\n');

@@ -64,6 +64,8 @@
 | **C-STRATY-HP-Q1** | 2026-07-27 | wyjaśnienie — nadreprezentacja siły AI; bez fixu | C | ZAMKNIĘTE | `C-STRATY-HP-Q1.md` |
 | **PYTANIE-20** | 2026-07-27 | **A** — Targowisko: efekt w Pieniądz, bez martwego mnożnika | B | ZAMKNIĘTE | `PYTANIE-20.md` · `buildings.json` |
 | **PYTANIE-84** | 2026-07-27 | **hybryda** — dostęp natychmiast / magazyn państwa dla surowców | B | 🟡 **ZAPISANA** | `PYTANIE-84.md` — czeka `działaj` |
+| **P84-SPICHLERZ-2026-07-27** | 2026-07-27 | U-12: Zdrowie **i** % wzrostu równolegle (+5/+10 Zdrowia + +1/+2% wzrost). U-25B: koszt racji ×0,75 / ×0,50 (nie ½ żywności) | — | 🔵 **W TRAKCIE** | `building-resource-gate.ts` · `population-growth-v85.ts` · test 20/20 |
+| **P84-R7C-GARN** | 2026-07-27 | Garncarnia: nadwyżka Ceramiki → +Zadowolenie (+1/szt.) zamiast +Zdrowie | — | 🔵 **W TRAKCIE** | `turn-economy.ts` · `main.ts` · `cityPanel.ts` |
 | **B-PALAC-TIER** | 2026-07-24 | Pałac 3 tiery: I=drewno, II=drewno+kamień, III=drewno+kamień+cegła; bonus +50%/tier (×1,5) | B | 🟢 **WDROŻONA** | `buildings.json` · `cityHasPalacLine()` · robocza md5 `a85e7d3f…` | upgradeFrom łańcuch |
 | **B-RESEARCH-COST-MODEL** | 2026-07-24 | JSON pochłania dawniejszy global ×2; `GLOBAL_RESEARCH_COST_MULT=1`; Obróbka drewna/Murarstwo JSON=5 → 5/10/20 PN wg tempa | B | 🟢 **WDROŻONA** | `tech.json` · `difficulty-cost.ts` · robocza md5 `c77d2bc9…` | dyplomacja: JSON×tempo only |
 | **B-MP-Q1** | 2026-07-27 | **Q1a=B** % maxHP/turę (25/20/15) · **Q1b=A** częściowe leczenie · **Q1c** brak uzupełnienia w oblężonym mieście | B | 🟢 **WDROŻONA** | `manpower.ts` `tickManpowerUnitReplenishment` · `miasto-params.json` · `manpower-test.cjs` 62/62 · robocza md5 `f694dcba` (FALA 31) | garnizon przed polem — osobny temat |

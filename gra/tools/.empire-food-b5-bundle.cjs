@@ -1241,13 +1241,20 @@ function resolveSpichlerzCityBonusState(builtIds, drain) {
   const maSpichlerzPop = ceramikaActive && !maSpichlerzIIPop;
   return { ceramikaActive, solActive, maSpichlerzPop, maSpichlerzIIPop };
 }
-function spichlerzHealthBonus(_state) {
+function spichlerzHealthBonus(state) {
+  if (state.maSpichlerzIIPop) return 10;
+  if (state.maSpichlerzPop) return 5;
   return 0;
 }
 function spichlerzGrowthBonusPercent(state) {
   if (state.maSpichlerzIIPop) return 2;
   if (state.maSpichlerzPop) return 1;
   return 0;
+}
+function spichlerzRationFoodCostMultiplier(state) {
+  if (state.maSpichlerzIIPop) return 0.5;
+  if (state.maSpichlerzPop) return 0.75;
+  return 1;
 }
 function builtIdsForSpichlerzYields(builtIds, state) {
   const effective = state.maSpichlerzIIPop ? "spichlerz_ii" : state.maSpichlerzPop ? "spichlerz" : null;
@@ -4920,8 +4927,10 @@ function rationGrowthPercent(level, params) {
   if (level === 1) return params.racjeWzrostProc1;
   return params.racjeWzrostProc2;
 }
-function computeCityRationCost(population, level, params) {
-  return Math.max(0, population) * rationFoodCostPerPop(level, params);
+function computeCityRationCost(population, level, params, spichlerzState) {
+  const base = Math.max(0, population) * rationFoodCostPerPop(level, params);
+  const mult = spichlerzState ? spichlerzRationFoodCostMultiplier(spichlerzState) : 1;
+  return base * mult;
 }
 function computeGrowthPercentV85(input) {
   const racje = rationGrowthPercent(input.poziomRacji, input.rationParams);
@@ -6282,7 +6291,7 @@ function simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity) {
   }
   return ceramika;
 }
-function computeGarncarniaSurplusZdrowieByOwner(cities, builtByCity, hp, stockAlreadyDrained = false) {
+function computeGarncarniaSurplusZadowolenieByOwner(cities, builtByCity, stockAlreadyDrained = false) {
   const out = /* @__PURE__ */ new Map();
   const ownerIds = new Set(cities.map((c) => c.ownerId));
   for (const ownerId of ownerIds) {
@@ -6295,18 +6304,24 @@ function computeGarncarniaSurplusZdrowieByOwner(cities, builtByCity, hp, stockAl
       }
     }
     const ceramikaAfter = stockAlreadyDrained ? ownerResourceStock(cities, ownerId, "ceramika") : simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity);
-    const { zdrowieBonus } = computeGarncarniaSurplusBonus({
+    const { zadowolenieBonus } = computeGarncarniaSurplusBonus({
       ceramikaPoDrainSpichlerza: ceramikaAfter,
       maGarncarnie,
-      zdrowieNaSztuke: hp.ceramika
+      efekt: "zadowolenie",
+      zadowolenieNaSztuke: 1
     });
-    out.set(ownerId, zdrowieBonus);
+    out.set(ownerId, zadowolenieBonus);
   }
   return out;
 }
-function computeCityFoodBalanceV85(zywnoscBrutto, population, city, rationParams) {
+function computeCityFoodBalanceV85(zywnoscBrutto, population, city, rationParams, spichlerzState) {
   const poziomRacji = getCityRationLevel(city);
-  const kosztRacji = computeCityRationCost(population, poziomRacji, rationParams);
+  const kosztRacji = computeCityRationCost(
+    population,
+    poziomRacji,
+    rationParams,
+    spichlerzState
+  );
   return {
     kosztRacji,
     bilansLokalny: zywnoscBrutto - kosztRacji,
@@ -6527,10 +6542,9 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     resolveOwnerActiveLabels,
     resolveOwnerZlotoAccess
   );
-  const garncarniaSurplusZdrowieByOwner = computeGarncarniaSurplusZdrowieByOwner(
+  const garncarniaSurplusZadowolenieByOwner = computeGarncarniaSurplusZadowolenieByOwner(
     cities,
     builtByCity,
-    healthParams,
     true
   );
   for (const city of cities) {
@@ -6547,7 +6561,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     );
     const spichlerzState = spichlerzByCity.get(city.id) ?? resolveSpichlerzCityBonusState(builtIds, { ceramikaPaid: false, solPaid: false });
     const hasWater = cityHasWaterAccess(city, map);
-    const garncarniaZdrowie = runtimeBuiltIds.includes("garncarnia") ? garncarniaSurplusZdrowieByOwner.get(city.ownerId) ?? 0 : 0;
+    const garncarniaZadowolenie = runtimeBuiltIds.includes("garncarnia") ? garncarniaSurplusZadowolenieByOwner.get(city.ownerId) ?? 0 : 0;
     const zdrowie = computeCityHealth(
       city.population,
       worked,
@@ -6555,8 +6569,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       healthParams,
       hasWater,
       { city, map },
-      spichlerzHealthBonus(spichlerzState),
-      garncarniaZdrowie
+      spichlerzHealthBonus(spichlerzState)
     );
     const maSpichlerzII = spichlerzState.maSpichlerzIIPop;
     const maSpichlerz = spichlerzState.maSpichlerzPop;
@@ -6636,7 +6649,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
     const zywnoscBrutto = yld.zywnoscBrutto;
-    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams);
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState);
     yld.zywnosc = foodBal.bilansLokalny;
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
     const prevWealth = city.wealthState ?? freshWealthState();
@@ -6695,6 +6708,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
         doPuli,
         wealthMnoznik: wt.mnoznik,
         wealthZadowolenie: wt.zadowolenie,
+        garncarniaSurplusZadowolenie: garncarniaZadowolenie,
         pieniadzZPracy: yld.pieniadzZPracy,
         pieniadzZTras,
         oblegany: true,
@@ -6766,6 +6780,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       doPuli,
       wealthMnoznik: wt.mnoznik,
       wealthZadowolenie: wt.zadowolenie,
+      garncarniaSurplusZadowolenie: garncarniaZadowolenie,
       pieniadzZPracy: yld.pieniadzZPracy,
       pieniadzZTras,
       oblegany: false,

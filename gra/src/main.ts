@@ -17444,7 +17444,7 @@ async function boot(): Promise<void> {
                   difficulty,
                   era: empireEpochForOwner(city.ownerId),
                   population: city.population,
-                  buildingZadowolenie: haBuildings,
+                  buildingZadowolenie: haBuildings + (econTick?.garncarniaSurplusZadowolenie ?? 0),
                   haKult,
                   haRel,
                   haWealth,

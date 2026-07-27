@@ -11,7 +11,19 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `c1e7a596` — 2026-07-27 23:01 — FALA 41: PYTANIE-85 żywność + Podatek + ulepszenia — **AKTUALNA**
+## ROBOCZA `6714d76f` — 2026-07-27 23:26 — FALA 42: Spichlerz U-12/U-25B + Garncarnia R7-C — **AKTUALNA**
+- md5 (pelne): `6714d76f2c20b6cf039fe517a3979b44` · stempel: `ROBOCZA · 2026-07-27 23:26`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 8 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- Wynik `vite build` exit 0. POLE-BITWY: `a5a60f15` (bez zmian od FALA 41 follow-up).
+- **Co nowego (FALA 42):**
+  - **P84-SPICHLERZ U-12:** Zdrowie (+5/+10) **równolegle** z +1%/+2% wzrostu (nie wykluczają się).
+  - **P84-SPICHLERZ U-25B:** tańsza racja żywności ×0,75 / ×0,50 (nie ½ żywności ludności).
+  - **P84-R7C-GARN:** nadwyżka Ceramiki z Garncarni → +Zadowolenie (+1 pkt/szt.).
+  - **Panel miasta:** podgląd racji ze Spichlerzem; Garncarnia surplus w sumie Zadowolenia z budynków.
+- **Bramki:** tsc 0 · population-growth-v85 11/11 · bonus 20/20 · empire-food-b5 17/17.
+
+## ROBOCZA `c1e7a596` — 2026-07-27 23:01 — FALA 41: PYTANIE-85 żywność + Podatek + ulepszenia — **ZASTĄPIONA**
 - md5 (pelne): `c1e7a5968dce012936d4925d05999d82` · stempel: `ROBOCZA · 2026-07-27 23:01` · commit: `68395cc`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).

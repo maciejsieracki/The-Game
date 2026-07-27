@@ -1013,6 +1013,8 @@ export interface CityEconomyTick {
   doPuli:         number;          // WIRE 2: czesc Pracy do puli globalnej
   wealthMnoznik:  number;          // WIRE 3: mnoznik podatku z Wealth
   wealthZadowolenie: number;       // WIRE 3: wklad do zadowolenia
+  /** R7-C: nadwyżka Ceramiki po Spichlerzu → +Zadowolenie (miasto z Garncarnią). */
+  garncarniaSurplusZadowolenie?: number;
   pieniadzZPracy: number;          // Efekt 2: doPuli*targowiskoPracaMnoznik (0 bez Targowiska/Waluty)
   /**
    * Handel E3: dochod dystansowy z tras handlowych dotykajacych to miasto
@@ -1292,11 +1294,10 @@ function simulateCeramikaAfterSpichlerzDrains(
   return ceramika;
 }
 
-/** U-14bA: +Zdrowie z nadwyżki Ceramiki po drain Spichlerza (per owner, miasto z Garncarnią). */
-function computeGarncarniaSurplusZdrowieByOwner(
+/** U-14bA / R7-C: +Zadowolenie z nadwyżki Ceramiki po drain Spichlerza (per owner, miasto z Garncarnią). */
+export function computeGarncarniaSurplusZadowolenieByOwner(
   cities: ReadonlyArray<City>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
-  hp: HealthParams,
   /** true po tickEmpireResourcePipeline (drain już w puli); false w podglądzie HUD. */
   stockAlreadyDrained = false,
 ): Map<number, number> {
@@ -1314,12 +1315,13 @@ function computeGarncarniaSurplusZdrowieByOwner(
     const ceramikaAfter = stockAlreadyDrained
       ? ownerResourceStock(cities, ownerId, 'ceramika')
       : simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity);
-    const { zdrowieBonus } = computeGarncarniaSurplusBonus({
+    const { zadowolenieBonus } = computeGarncarniaSurplusBonus({
       ceramikaPoDrainSpichlerza: ceramikaAfter,
       maGarncarnie,
-      zdrowieNaSztuke: hp.ceramika,
+      efekt: 'zadowolenie',
+      zadowolenieNaSztuke: 1,
     });
-    out.set(ownerId, zdrowieBonus);
+    out.set(ownerId, zadowolenieBonus);
   }
   return out;
 }
@@ -1330,9 +1332,15 @@ function computeCityFoodBalanceV85(
   population: number,
   city: Pick<City, 'poziomRacji' | 'procentRozwoj'>,
   rationParams: RationParams,
+  spichlerzState?: SpichlerzCityBonusState,
 ): { kosztRacji: number; bilansLokalny: number; poziomRacji: number } {
   const poziomRacji = getCityRationLevel(city);
-  const kosztRacji = computeCityRationCost(population, poziomRacji as 1 | 2 | 3, rationParams);
+  const kosztRacji = computeCityRationCost(
+    population,
+    poziomRacji as 1 | 2 | 3,
+    rationParams,
+    spichlerzState,
+  );
   return {
     kosztRacji,
     bilansLokalny: zywnoscBrutto - kosztRacji,
@@ -1555,8 +1563,8 @@ export function previewCityEconomy(
     cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
   }
 
-  const garncarniaSurplusZdrowieByOwner = computeGarncarniaSurplusZdrowieByOwner(
-    cities, builtByCity, healthParams, false,
+  const garncarniaSurplusZadowolenieByOwner = computeGarncarniaSurplusZadowolenieByOwner(
+    cities, builtByCity, false,
   );
 
   const perCity: CityEconomyTick[] = [];
@@ -1576,13 +1584,12 @@ export function previewCityEconomy(
     );
     const spichlerzState = resolveSpichlerzForCity(cities, city.ownerId, builtIds, true);
     const hasWater = cityHasWaterAccess(city, map);
-    const garncarniaZdrowie = runtimeBuiltIds.includes('garncarnia')
-      ? (garncarniaSurplusZdrowieByOwner.get(city.ownerId) ?? 0)
+    const garncarniaZadowolenie = runtimeBuiltIds.includes('garncarnia')
+      ? (garncarniaSurplusZadowolenieByOwner.get(city.ownerId) ?? 0)
       : 0;
     const zdrowie = computeCityHealth(
       city.population, worked, runtimeBuiltIds, healthParams, hasWater, { city, map },
       spichlerzHealthBonus(spichlerzState),
-      garncarniaZdrowie,
     );
 
     const maSpichlerzII = spichlerzState.maSpichlerzIIPop;
@@ -1680,7 +1687,7 @@ export function previewCityEconomy(
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
     const zywnoscBrutto = yld.zywnoscBrutto;
-    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams);
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState);
     yld.zywnosc = foodBal.bilansLokalny;
     // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty.
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
@@ -1724,6 +1731,7 @@ export function previewCityEconomy(
         doPuli,
         wealthMnoznik: wt.mnoznik,
         wealthZadowolenie: wt.zadowolenie,
+        garncarniaSurplusZadowolenie: garncarniaZadowolenie,
         pieniadzZPracy: yld.pieniadzZPracy,
         pieniadzZTras,
         oblegany: true,
@@ -1772,6 +1780,7 @@ export function previewCityEconomy(
       doPuli,
       wealthMnoznik: wt.mnoznik,
       wealthZadowolenie: wt.zadowolenie,
+      garncarniaSurplusZadowolenie: garncarniaZadowolenie,
       pieniadzZPracy: yld.pieniadzZPracy,
       pieniadzZTras,
       oblegany: false,
@@ -2049,8 +2058,8 @@ export function advanceCityEconomy(
     resolveOwnerZlotoAccess,
   );
 
-  const garncarniaSurplusZdrowieByOwner = computeGarncarniaSurplusZdrowieByOwner(
-    cities, builtByCity, healthParams, true,
+  const garncarniaSurplusZadowolenieByOwner = computeGarncarniaSurplusZadowolenieByOwner(
+    cities, builtByCity, true,
   );
 
   for (const city of cities) {
@@ -2072,13 +2081,12 @@ export function advanceCityEconomy(
 
     // WIRE 1: oblicz zdrowie miasta (D17-A: dostęp do wody z mapy, nie tylko pól plonów)
     const hasWater = cityHasWaterAccess(city, map);
-    const garncarniaZdrowie = runtimeBuiltIds.includes('garncarnia')
-      ? (garncarniaSurplusZdrowieByOwner.get(city.ownerId) ?? 0)
+    const garncarniaZadowolenie = runtimeBuiltIds.includes('garncarnia')
+      ? (garncarniaSurplusZadowolenieByOwner.get(city.ownerId) ?? 0)
       : 0;
     const zdrowie = computeCityHealth(
       city.population, worked, runtimeBuiltIds, healthParams, hasWater, { city, map },
       spichlerzHealthBonus(spichlerzState),
-      garncarniaZdrowie,
     );
 
     const maSpichlerzII = spichlerzState.maSpichlerzIIPop;
@@ -2176,7 +2184,7 @@ export function advanceCityEconomy(
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
     const zywnoscBrutto = yld.zywnoscBrutto;
-    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams);
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState);
     yld.zywnosc = foodBal.bilansLokalny;
     // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty
     // ekonomii/Pracy (nie dotyka economy.ts ani formul terenu/ulepszen powyzej).
@@ -2254,6 +2262,7 @@ export function advanceCityEconomy(
         doPuli,
         wealthMnoznik:     wt.mnoznik,
         wealthZadowolenie: wt.zadowolenie,
+        garncarniaSurplusZadowolenie: garncarniaZadowolenie,
         pieniadzZPracy:    yld.pieniadzZPracy,
         pieniadzZTras,
         oblegany:          true,
@@ -2337,6 +2346,7 @@ export function advanceCityEconomy(
       doPuli,
       wealthMnoznik:     wt.mnoznik,
       wealthZadowolenie: wt.zadowolenie,
+      garncarniaSurplusZadowolenie: garncarniaZadowolenie,
       pieniadzZPracy:    yld.pieniadzZPracy,
       pieniadzZTras,
       oblegany:          false,

@@ -1,3 +1,32 @@
+## [23:22] ✅ Gotowe — P84 Spichlerz + Garncarnia R7-C (kod, bez deploy)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Spichlerz I** | +5 Zdrowia + +1% wzrostu + koszt racji **×0,75** |
+| **Spichlerz II pełny** | +10 Zdrowia + +2% wzrostu + koszt racji **×0,50** |
+| **Garncarnia R7-C** | nadwyżka Ceramiki → **+Zadowolenie** (+1 pkt/szt., miasto z Garncarnią) |
+| **Testy** | population-growth-v85-bonus **20/20** · tsc 0 |
+
+Commit lokalny — czeka `push` / deploy ROBOCZA.
+
+## [23:10] ✅ Gotowe — POLE-BITWY odświeżony + START.html + audyt PYTANIE-84
+
+| Co | Status |
+|----|--------|
+| **POLE-BITWY** | `a5a60f15` · `gra-robocza/Gra-ROBOCZA-POLE-BITWY.html` (było z 7.07) |
+| **START.html** | FALA 41 · `c1e7a596` · link do POLE-BITWY + playtesty DUŻA odświeżone |
+| **Commit lokalny** | `74ad7f2` — **jeszcze bez push** na GitHub |
+| **PYTANIE-84** | rdzeń magazynu państwa ✅ w grze; luki: pkt Zdrowia Spichlerza (→ P85 wzrost %), ½ żywności ludności (U-25B) |
+
+## [23:01] ✅ Gotowe — FALA 41 deploy ROBOCZA `c1e7a596`
+
+| Co | Status |
+|----|--------|
+| **PYTANIE-85** | żywność, racje 1/2/3, wzrost %, Spichlerz centralny |
+| **Podatek** | nazwa + plony (Łąka 2, Rzeka +3, Las +2) + 24 bonusy z Excela |
+| **Głód wojska** | 75% statów bojowych bez pancerza |
+| **Push** | `297c60c` na `main` |
+
 ## [18:20] ✅ Gotowe — łańcuch odlewni + tech tree (B-ODLEWNIA-2026-07-27, kod bez deploy)
 
 | Co | Status |

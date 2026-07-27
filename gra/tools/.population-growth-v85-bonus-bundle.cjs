@@ -21,9 +21,12 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var population_growth_v85_bonus_entry_exports = {};
 __export(population_growth_v85_bonus_entry_exports, {
   buildRationParams: () => buildRationParams,
+  computeCityRationCost: () => computeCityRationCost,
   computeGrowthPercentV85: () => computeGrowthPercentV85,
   resolveSpichlerzCityBonusState: () => resolveSpichlerzCityBonusState,
-  spichlerzGrowthBonusPercent: () => spichlerzGrowthBonusPercent
+  spichlerzGrowthBonusPercent: () => spichlerzGrowthBonusPercent,
+  spichlerzHealthBonus: () => spichlerzHealthBonus,
+  spichlerzRationFoodCostMultiplier: () => spichlerzRationFoodCostMultiplier
 });
 module.exports = __toCommonJS(population_growth_v85_bonus_entry_exports);
 
@@ -732,10 +735,20 @@ function resolveSpichlerzCityBonusState(builtIds, drain) {
   const maSpichlerzPop = ceramikaActive && !maSpichlerzIIPop;
   return { ceramikaActive, solActive, maSpichlerzPop, maSpichlerzIIPop };
 }
+function spichlerzHealthBonus(state) {
+  if (state.maSpichlerzIIPop) return 10;
+  if (state.maSpichlerzPop) return 5;
+  return 0;
+}
 function spichlerzGrowthBonusPercent(state) {
   if (state.maSpichlerzIIPop) return 2;
   if (state.maSpichlerzPop) return 1;
   return 0;
+}
+function spichlerzRationFoodCostMultiplier(state) {
+  if (state.maSpichlerzIIPop) return 0.5;
+  if (state.maSpichlerzPop) return 0.75;
+  return 1;
 }
 
 // src/game/production.ts
@@ -3514,10 +3527,20 @@ function buildRationParams(raw, difficulty = "normal") {
     racjeWzrostProc3: pick(section.racje_wzrost_proc_3, difficulty, 7)
   };
 }
+function rationFoodCostPerPop(level, params) {
+  if (level === 3) return params.racjeZywnosc3;
+  if (level === 1) return params.racjeZywnosc1;
+  return params.racjeZywnosc2;
+}
 function rationGrowthPercent(level, params) {
   if (level === 3) return params.racjeWzrostProc3;
   if (level === 1) return params.racjeWzrostProc1;
   return params.racjeWzrostProc2;
+}
+function computeCityRationCost(population, level, params, spichlerzState) {
+  const base = Math.max(0, population) * rationFoodCostPerPop(level, params);
+  const mult = spichlerzState ? spichlerzRationFoodCostMultiplier(spichlerzState) : 1;
+  return base * mult;
 }
 function computeGrowthPercentV85(input) {
   const racje = rationGrowthPercent(input.poziomRacji, input.rationParams);
@@ -3534,7 +3557,10 @@ function computeGrowthPercentV85(input) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   buildRationParams,
+  computeCityRationCost,
   computeGrowthPercentV85,
   resolveSpichlerzCityBonusState,
-  spichlerzGrowthBonusPercent
+  spichlerzGrowthBonusPercent,
+  spichlerzHealthBonus,
+  spichlerzRationFoodCostMultiplier
 });

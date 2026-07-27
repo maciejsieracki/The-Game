@@ -3752,3 +3752,11 @@ CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).
 **START.html:** FALA 41 `c1e7a596`, wszystkie card-meta zaktualizowane, link POLE-BITWY dodany.
 **PYTANIE-84 gap:** rdzeń R1–R3 + R4–R10 + U-5…U-25 w src — braki: U-12/U-25 pkt Zdrowia Spichlerza (zastąpione P85 wzrost %), ½ żywności ludności przy Spichlerzu.
 CZEKAM-NA: nic (bez push — Maciej nie prosił).
+
+## [23:26] SESJA → MACIEJ — FALA 42 deploy ROBOCZA `6714d76f`
+
+**md5:** `6714d76f2c20b6cf039fe517a3979b44` · `gra-robocza/START.html` FALA 42 · Ctrl+F5 + Nowa gra.
+**Zakres:** Spichlerz U-12 (Zdrowie+wzrost %) + U-25B (tańsza racja ×0,75/×0,50) + Garncarnia R7-C (nadwyżka Ceramiki → Zadowolenie).
+**Bramki:** tsc 0 · P85 bonus 20/20 · empire-food-b5 17/17.
+**Push:** `git push origin main` na prośbę Macieja.
+CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).

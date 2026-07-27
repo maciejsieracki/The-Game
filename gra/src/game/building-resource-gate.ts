@@ -423,8 +423,10 @@ export function resolveSpichlerzCityBonusState(
   return { ceramikaActive, solActive, maSpichlerzPop, maSpichlerzIIPop };
 }
 
-/** @deprecated PYTANIE-85 — Spichlerz daje % wzrostu, nie pkt Zdrowia. Zwraca 0. */
-export function spichlerzHealthBonus(_state: SpichlerzCityBonusState): number {
+/** P84-SPICHLERZ-2026-07-27: +5 tier I (Ceramika), +10 pełny II — równolegle z % wzrostu (P85). */
+export function spichlerzHealthBonus(state: SpichlerzCityBonusState): number {
+  if (state.maSpichlerzIIPop) return 10;
+  if (state.maSpichlerzPop) return 5;
   return 0;
 }
 
@@ -433,6 +435,13 @@ export function spichlerzGrowthBonusPercent(state: SpichlerzCityBonusState): num
   if (state.maSpichlerzIIPop) return 2;
   if (state.maSpichlerzPop) return 1;
   return 0;
+}
+
+/** P84-U25B: obniżka kosztu racji żywnościowej (nie produkcji z pól): I −25%, II pełny −50%. */
+export function spichlerzRationFoodCostMultiplier(state: SpichlerzCityBonusState): number {
+  if (state.maSpichlerzIIPop) return 0.5;
+  if (state.maSpichlerzPop) return 0.75;
+  return 1;
 }
 
 /**

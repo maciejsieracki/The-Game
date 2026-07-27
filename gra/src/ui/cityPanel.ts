@@ -157,6 +157,7 @@ import {
   cityWorkedTilesForEconomy,
   toEconomyCity,
   computeCityHealthBreakdown,
+  computeGarncarniaSurplusZadowolenieByOwner,
   type CityHealthLine,
   type Difficulty,
 } from '../game/turn-economy';
@@ -925,11 +926,11 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const zywnoscBrutto = y.zywnosc;
     const rationParams = buildRationParams(data.econParams, cfg.difficulty ?? 'normal');
     const poziomRacji = getCityRationLevel(city);
-    const kosztRacji = computeCityRationCost(city.population, poziomRacji, rationParams);
-    const bilansLokalny = zywnoscBrutto - kosztRacji;
     const allCities = cfg.getCities?.() ?? [];
     const spichlerzDrain = paySpichlerzDrainForCity(allCities, city.ownerId, built, true);
     const spichlerzState = resolveSpichlerzCityBonusState(built, spichlerzDrain);
+    const kosztRacji = computeCityRationCost(city.population, poziomRacji, rationParams, spichlerzState);
+    const bilansLokalny = zywnoscBrutto - kosztRacji;
     const { state: ordState } = resolveOrderState(city, data);
     const ws = city.wealthState ?? freshWealthState();
     const growthBreakdown = computeGrowthPercentV85({
@@ -2294,7 +2295,7 @@ function PH(): string {
 function buildingHappinessSum(cityId: string, data: GameData, era: number, ownerId: number): number {
   const builtIds = cfg.getBuiltBuildingIds?.(cityId) ?? [];
   const techs = cfg.getUnlockedTechs?.(ownerId) ?? [];
-  return sumBuildingHappinessFromBuiltIds(
+  let sum = sumBuildingHappinessFromBuiltIds(
     builtIds,
     data.buildings,
     bdef => buildingLevelForEpoch(
@@ -2305,6 +2306,15 @@ function buildingHappinessSum(cityId: string, data: GameData, era: number, owner
       techs,
     ),
   );
+  if (builtIds.includes('garncarnia')) {
+    const allCities = cfg.getCities?.() ?? [];
+    const builtByCity = new Map<string, readonly string[]>();
+    for (const c of allCities) {
+      builtByCity.set(c.id, cfg.getBuiltBuildingIds?.(c.id) ?? []);
+    }
+    sum += computeGarncarniaSurplusZadowolenieByOwner(allCities, builtByCity, false).get(ownerId) ?? 0;
+  }
+  return sum;
 }
 
 /** B2-Q7=1C: pełny model % z silnika lub lokalnie (evaluateOrderFromBreakdown). */
