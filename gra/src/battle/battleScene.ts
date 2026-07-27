@@ -64,6 +64,10 @@ import {
 } from '../game/combat';
 import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef, unitRowStat } from '../game/combat';
+import {
+  buildTerrainTerenTooltipParts,
+  terrainTerenTooltipColor,
+} from './battleTerrainTooltip';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { applyMultiplier, civCombatStatMultipliers } from '../game/civ-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from '../game/unit-building-bonuses';
@@ -2119,19 +2123,6 @@ export class BattleScene {
   };
   /** Licznik do generowania unikalnych groupId. */
   private _groupCounter = 0;
-  /**
-   * BŁĄD I (właściciel, 2026-07-24): stan grup (kto jest w jakiej grupie,
-   * kto ręcznie rozgrupowany) zapisany na koniec fazy rozstawiania
-   * (_endDeployPhase), klucz = bu.id jednostki, wartość = jej groupId W TEJ
-   * CHWILI (grupy puste/rozgrupowane jednostki po prostu nie mają wpisu).
-   * `null` = brak zapisu (pierwszy deploy tej sesji bitwy — jeszcze nic nie
-   * zakończyło fazy rozstawiania) → `_initDeployUI()` używa dawnego
-   * zachowania (`_autoGroupDeployByKind`). Po `_replayBattle()`
-   * ("Rozegraj ponownie") `_initDeployUI()` odtwarza TEN zapis zamiast na
-   * nowo auto-grupować — więc ręczne rozgrupowanie gracza z poprzedniej
-   * rundy PRZETRWA powtórkę, zamiast znikać.
-   */
-  private _deployGroupSnapshot: Map<string, string> | null = null;
   /** Zloty marker grupy na mapie (3D) per jednostka. */
   private _groupFrameMarkers = new Map<string, THREE.Group>();
   // --- PROFESSIONAL HUD (TotalWar-style) ---
@@ -10409,18 +10400,24 @@ export class BattleScene {
     const hasAmmo = ru.ammoBarShown && Number.isFinite(ru.ammoMax) && ru.ammoMax > 0;
     const ammoPct = hasAmmo ? Math.round(100 * Math.max(0, ru.ammoLeft) / ru.ammoMax) : 0;
 
-    // C-BTL-BROD-Q1 (wariant C): active ford / shore status for THIS unit's
-    // current tile. Mutually exclusive -- a tile is either the ford itself or
-    // dry shore next to one, never both. Not shown at all off the river preset
-    // (both isFordTile/isShoreAdjacentToFord read the terrain map directly, so
-    // a field with zero Ford tiles never matches).
+    // C-TEREN-IMPL-3=B: wiersz TEREN — brod/brzeg + obrona, Δ zasięg, koszt, blokada.
     const onFord = !ru.onWallWalkway && isFordTile(this.terrainMap, ru.q, ru.r);
     const onShore = !onFord && !ru.onWallWalkway && isShoreAdjacentToFord(this.terrainMap, ru.q, ru.r);
-    const fordStatus = onFord
-      ? { text: 'W brodzie: −25% atak/obrona, ruch ×0,5', color: '#e08a8a' }
-      : onShore
-        ? { text: 'Obrona brzegu: +15% obrony', color: '#7ad0a0' }
-        : null;
+    const terenParts = buildTerrainTerenTooltipParts({
+      terrain: this.terrainMap.combatTerrainName(ru.q, ru.r),
+      onWallWalkway: !!ru.onWallWalkway,
+      onFord,
+      onShore,
+      rangedUnit: !!ru.rangedBase,
+      isCatapult: this._isCatapult(ru.bu),
+      rangeBase: ru.rangeBase,
+      mounted: !!ru.mounted,
+      moveCost: this._moveCostForUnit(ru, ru.q, ru.r),
+      baseMoveCost: this.terrainMap.moveCost(ru.q, ru.r),
+      terrainData: this.terrainData,
+    });
+    const terenText = terenParts.map((p) => p.text).join(' · ');
+    const terenColor = terrainTerenTooltipColor(terenParts);
 
     const row = (label: string, value: string, color = '#e8e0c8'): string =>
       '<div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.35;">' +
@@ -10454,7 +10451,7 @@ export class BattleScene {
       '<div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;">' +
       row('Postawa', postawa) +
       row('Grupa', groupLabel, gNum != null ? BATTLE_PLAYER_TEXT : '#8a8070') +
-      (fordStatus ? row('Teren', fordStatus.text, fordStatus.color) : '') +
+      (terenParts.length > 0 ? row('Teren', terenText, terenColor) : '') +
       '</div>' +
       '<div style="padding:9px 12px;border-top:1px solid rgba(232,216,138,0.16);display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;">' +
       statCells.join('') +
@@ -12121,19 +12118,9 @@ export class BattleScene {
 
     this._buildDeployHalfLabels();
     this._initDeployGhostLayer();
-    // BŁĄD I: mamy zapis grup z KOŃCA poprzedniej fazy rozstawiania tej samej
-    // bitwy (_endDeployPhase) -> odtwórz go (w tym ręczne rozgrupowanie
-    // gracza) zamiast na nowo auto-grupować po typie. Sprawdzamy ISTNIENIE
-    // zapisu (nie jego rozmiar!) — pusty zapis (Map o size 0) oznacza, że
-    // gracz miał WSZYSTKO rozgrupowane przed końcem poprzedniego rozstawiania,
-    // co też ma PRZETRWAĆ powtórkę (patrz błąd I — auto-grupowanie nadpisywało
-    // dokładnie ten stan). Brak zapisu (`null`, pierwszy deploy tej bitwy) ->
-    // dawne zachowanie bez zmian.
-    if (this._deployGroupSnapshot) {
-      this._restoreDeployGroupSnapshot(this._deployGroupSnapshot);
-    } else {
-      this._autoGroupDeployByKind();
-    }
+    // R-BITWA-POWTORKA-I=B: pierwsze wejście i „Rozegraj ponownie" — zawsze
+    // świeża auto-grupa po typie (Konnica / Piechota / Łucznicy).
+    this._autoGroupDeployByKind();
     this._updateBattleRosterHeader();
     this._updateDeployGroupsBar();
     this._updateDeployStrategyBar();
@@ -12207,44 +12194,6 @@ export class BattleScene {
       for (const u of units) this._selectedUnits.add(u.bu.id);
       this._groupSelected();
     }
-    this._selectedUnits.clear();
-    for (const gid of this._sortedGroupIds()) {
-      this._rosterGroupCollapsed.delete(gid);
-    }
-    this._rebuildDeployRosterGrid();
-    this._refreshDeploySelectionVisuals();
-  }
-
-  /**
-   * BŁĄD I: odtwarza podział na grupy z zapisu `_endDeployPhase`
-   * (`_deployGroupSnapshot`) zamiast na nowo auto-grupować po typie — więc
-   * ręczne rozgrupowanie/przegrupowanie gracza z poprzedniej rundy PRZETRWA
-   * "Rozegraj ponownie". Woła się TYLKO gdy istnieje zapis (patrz
-   * _initDeployUI); jednostki bez wpisu w zapisie (ręcznie rozgrupowane albo
-   * nowe) zostają ungrouped — `_initDeployUI` już wyzerował ich groupId
-   * przed wywołaniem tej funkcji.
-   */
-  private _restoreDeployGroupSnapshot(snapshot: Map<string, string>): void {
-    const byGroup = new Map<string, Set<string>>();
-    for (const ru of this._playerRoster()) {
-      if (ru.dead || ru.removed) continue;
-      const gid = snapshot.get(ru.bu.id);
-      if (!gid) continue;
-      ru.groupId = gid;
-      let set = byGroup.get(gid);
-      if (!set) { set = new Set<string>(); byGroup.set(gid, set); }
-      set.add(ru.bu.id);
-      this._refreshUnitRingColor(ru);
-      this._updateGroupFrameMarker(ru);
-    }
-    for (const [gid, memberIds] of byGroup) {
-      if (memberIds.size === 0) continue;
-      this._groups.set(gid, memberIds);
-      this._ensureGroupMeta(gid);
-      const n = parseInt(gid, 10);
-      if (Number.isFinite(n)) this._groupCounter = Math.max(this._groupCounter, n);
-    }
-    this._pruneStaleGroups();
     this._selectedUnits.clear();
     for (const gid of this._sortedGroupIds()) {
       this._rosterGroupCollapsed.delete(gid);
@@ -15481,13 +15430,6 @@ export class BattleScene {
    * uruchamia walke.
    */
   private _endDeployPhase(): void {
-    // BŁĄD I: zapamiętaj stan grup PRZED czymkolwiek innym (w tym
-    // _syncGroupRegistry poniżej), żeby _replayBattle -> _initDeployUI mógł go
-    // odtworzyć zamiast na nowo auto-grupować (patrz komentarz przy polu).
-    this._deployGroupSnapshot = new Map();
-    for (const ru of this._playerRoster()) {
-      if (ru.groupId) this._deployGroupSnapshot.set(ru.bu.id, ru.groupId);
-    }
     this.deployPhase = false;
     this._clearAllSelection();
     this._clearDeploySelection();

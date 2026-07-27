@@ -84,13 +84,13 @@ var map_gen_params_default = {
     },
     relief_land_fraction: {
       low: { mountain: 0.045, highland: 0.105 },
-      medium: { mountain: 0.09, highland: 0.165 },
+      medium: { mountain: 0.075, highland: 0.125 },
       high: { mountain: 0.18, highland: 0.27 }
     },
     relief_overflow_cap_frac: {
-      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224818% (0,06+0,09 \u2014 progi fair-play-grid-test.cjs: max(3, ceil(land\xB7mountain)) G\xF3r i max(3, ceil(land\xB7highland)) Wzg\xF3rz na kom\xF3rk\u0119 25\xD725/15\xD715), high\u224830%. Rewizja 2026-07-26: w\u0142a\u015Bciciel \u2014 wi\u0119cej g\xF3r (~12%\u2192~18% g\xF3rzysto\u015Bci l\u0105du na medium).",
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
       low: { mountain: 0.045, highland: 0.075 },
-      medium: { mountain: 0.06, highland: 0.09 },
+      medium: { mountain: 0.05, highland: 0.085 },
       high: { mountain: 0.12, highland: 0.18 }
     },
     pasma_gorskie: {
@@ -170,7 +170,7 @@ var FALLBACK_MOUNTAIN = { low: 0.8, medium: 0.68, high: 0.52 };
 var FALLBACK_HIGHLAND = { low: 0.66, medium: 0.5, high: 0.38 };
 var FALLBACK_RELIEF_OVERFLOW_CAP = {
   low: { mountain: 0.045, highland: 0.075 },
-  medium: { mountain: 0.06, highland: 0.09 },
+  medium: { mountain: 0.05, highland: 0.085 },
   high: { mountain: 0.12, highland: 0.18 }
 };
 var FALLBACK_MOUNTAIN_RANGE = {
@@ -1176,11 +1176,6 @@ function isInLatitudinalOceanBuffer(r, height, isEarth) {
   const buf = latitudinalOceanBufferRows(height, isEarth);
   return r < buf || r >= height - buf;
 }
-function climateForestThreshold(band, baseForTh) {
-  if (!band || band === "desert" || isPolarClimateBand(band)) return 1.1;
-  if (band === "temperate_north" || band === "temperate_south") return baseForTh - 0.06;
-  return baseForTh;
-}
 function canAssignClimateDesert(band) {
   return band === void 0 || band === "desert";
 }
@@ -1434,7 +1429,6 @@ function terrainRownLakaJitter(forNoise, desNoise, cellBias) {
 }
 function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise, thresholds, climateBand, cellBias = 0) {
   const desTh = thresholds?.desert ?? 0.63;
-  const forTh = climateForestThreshold(climateBand, thresholds?.forest ?? 0.58);
   const mtnTh = thresholds?.mountain ?? 0.75;
   const hiTh = thresholds?.highland ?? 0.6;
   const elevG = reliefElevGates(mtnTh);
@@ -1456,17 +1450,13 @@ function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise
     } else {
       terenBazowy = "laka" /* Laka */;
     }
-    if (climateBand !== "desert" && terenBazowy !== "gory" /* Gory */ && terenBazowy !== "pustynia" /* Pustynia */ && forNoise > forTh && (landMask > 0.04 || elevContinental > 0.14)) {
-      nakladka = "las" /* Las */;
-    }
   }
   return { terenBazowy, nakladka };
 }
 function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, desNoise, thresholds, climateBand, cellBias = 0) {
   const desTh = thresholds?.desert ?? 0.63;
-  const forTh = climateForestThreshold(climateBand, thresholds?.forest ?? 0.58);
   let terenBazowy;
-  let nakladka = "brak" /* Brak */;
+  const nakladka = "brak" /* Brak */;
   if (elevContinental < 0.14) {
     terenBazowy = "laka" /* Laka */;
   } else if (canAssignClimateDesert(climateBand) && desNoise > desTh && elevContinental > 0.18 && elevContinental < 0.45) {
@@ -1475,9 +1465,6 @@ function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, des
     terenBazowy = "rownina" /* Rownina */;
   } else {
     terenBazowy = "laka" /* Laka */;
-  }
-  if (climateBand !== "desert" && terenBazowy !== "pustynia" /* Pustynia */ && forNoise > forTh && (landMask > 0.04 || elevContinental > 0.14)) {
-    nakladka = "las" /* Las */;
   }
   return { terenBazowy, nakladka };
 }
@@ -1517,7 +1504,7 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
 }
 var REAPPLY_RELIEF_BUDGET_FRAC = {
   low: 0.1,
-  medium: 0.17,
+  medium: 0.15,
   high: 0.3
 };
 function reapplyLandTerrain(hexes, scratch, seed, thresholds, mapHeight, reliefTier = "medium") {
@@ -1576,7 +1563,7 @@ function reapplyLandTerrain(hexes, scratch, seed, thresholds, mapHeight, reliefT
 }
 var FALLBACK_RELIEF_FRAC = {
   low: { mountain: 0.045, highland: 0.105 },
-  medium: { mountain: 0.09, highland: 0.165 },
+  medium: { mountain: 0.075, highland: 0.125 },
   high: { mountain: 0.18, highland: 0.27 }
 };
 function reliefLandFractions(tier) {
@@ -1776,11 +1763,11 @@ function applyReliefToLandKeys(hexes, scratch, tier, keys, width, height) {
   applyCopperHighlandsToLandKeys(hexes, scratch, tier, keys, width, height);
 }
 function reliefBonusCapMountain(tier, landCount) {
-  const frac = tier === "high" ? 0.14 : tier === "low" ? 0.05 : 0.09;
+  const frac = tier === "high" ? 0.14 : tier === "low" ? 0.05 : 0.075;
   return Math.max(0, Math.ceil(landCount * frac));
 }
 function reliefBonusCapHighland(tier, landCount) {
-  const frac = tier === "high" ? 0.22 : tier === "low" ? 0.08 : 0.14;
+  const frac = tier === "high" ? 0.22 : tier === "low" ? 0.08 : 0.12;
   return Math.max(0, Math.ceil(landCount * frac));
 }
 function reliefSpreadCapMountain(tier, landCount) {
@@ -5742,7 +5729,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   const landFraction = resolveLandFraction(genOpts, typ);
   const terrainTh = {
     desert: wgn.desertThreshold,
-    forest: wgn.forestThreshold,
     mountain: wgn.mountainThreshold,
     highland: wgn.highlandThreshold
   };

@@ -164,6 +164,45 @@ export function pickRetreatTargetTowardAttackerSide(input: PostBattleMapInput): 
   return passable[0]!;
 }
 
+export interface DefenderPreBattleRetreatInput {
+  units: RuntimeUnit[];
+  battleQ: number;
+  battleR: number;
+  atkRoster: RuntimeUnit[];
+  defRoster: RuntimeUnit[];
+  isPassableHex: (q: number, r: number) => boolean;
+  isUnitAt: (q: number, r: number, exceptId?: string | number) => boolean;
+}
+
+/** Taktyczne wycofanie obrońcy przed bitwą — fan-out 1 heks od atakującego, bez strat HP. */
+export function applyDefenderPreBattleRetreat(input: DefenderPreBattleRetreatInput): void {
+  const defAlive = input.defRoster
+    .map(r => liveUnit(input.units, r.id))
+    .filter((u): u is RuntimeUnit => !!u);
+  if (defAlive.length === 0) return;
+
+  const pbInput: PostBattleMapInput = {
+    units: input.units,
+    map: {} as GameMap,
+    cities: [],
+    battleQ: input.battleQ,
+    battleR: input.battleR,
+    atkAnchor: input.atkRoster[0]!,
+    atkRoster: input.atkRoster,
+    defRoster: input.defRoster,
+    atkStart: new Map(),
+    winner: 'remis',
+    getDef: () => ({} as UnitPowerInput & Record<string, unknown>),
+    maxHpOf: () => 1,
+    isPassableHex: input.isPassableHex,
+    isUnitAt: input.isUnitAt,
+  };
+
+  const lead = pickLiveDefLead(pbInput, defAlive) ?? defAlive[0]!;
+  const dir = pickRetreatTargetAwayFromAttacker(pbInput);
+  placeFanOutGroup(pbInput, defAlive, lead, dir, false);
+}
+
 function placeFanOutGroup(
   input: PostBattleMapInput,
   roster: RuntimeUnit[],

@@ -77,6 +77,10 @@ export interface HudState {
   /** B5-SP — max zapasów (100 × Spichlerze); 0 = brak magazynu armii. */
   zywnoscMax?: number;
   zywnoscRate?: number;
+  /** Wpływ miast do zapasów państwa/turę (po suwaku Rozwój) — rozbicie chipu Armia. */
+  zywnoscWplywMiast?: number;
+  /** Koszt utrzymania wojska/turę (pkt Żywności) — rozbicie chipu Armia. */
+  zywnoscKosztWojska?: number;
   /** true → czerwony alert głodu wojska na HUD mapy. */
   glodWojska?: boolean;
   /** C-GLOD-Q1=A (Maciej 2026-07-26): liczba tur do startu atrycji HP wojska (karencja
@@ -559,18 +563,81 @@ function pracaChipTitle(s: HudState): string {
     + ` · Razem netto: ${signed(netto)} pkt Pracy. Kliknij po szczegóły.`;
 }
 
+function naukaChipTitle(s: HudState): string {
+  const stock = Math.floor(s.nauka);
+  const rate = s.naukaRate ?? 0;
+  return `Nauka — badania technologiczne`
+    + ` · Duża liczba: ${stock} pkt Nauki (skumulowane do bieżącej technologii)`
+    + ` · Zielone +N: ${signed(rate)} pkt Nauki/turę (przyrost netto)`
+    + ` · Kliknij po szczegóły.`;
+}
+
 /**
- * C-GLOD-Q1=A (Maciej 2026-07-26): tooltip chipu „Armia" — poza opisem stałym,
- * ostrzeżenie z wyprzedzeniem podczas karencji ("za N tur") LUB potwierdzenie,
- * że atrycja HP już trwa, gdy karencja minęła.
+ * C-GLOD-Q1=A (Maciej 2026-07-26): tooltip chipu „Armia" — duża liczba = Zapasy
+ * państwa, zielone +N = bilans netto/turę, rozbicie jak Skarbiec (wpływ miast,
+ * koszt wojska). Ostrzeżenia głodu z wyprzedzeniem lub atrycji HP.
  */
 function armiaChipTitle(s: HudState): string {
-  const base = 'Armia — zaopatrzenie (żywność), ludność i rekruci — klik po szczegóły';
-  if (s.glodWojska) return `${base}. Głód wojska: atrycja HP trwa!`;
-  if (s.zywnoscKarencjaZaTur != null && s.zywnoscKarencjaZaTur > 0) {
-    return `${base}. Głód wojska za ${s.zywnoscKarencjaZaTur} ${slowoTuraHud(s.zywnoscKarencjaZaTur)} — zapasy państwa ujemne!`;
+  const maxPart = s.zywnoscMax != null && s.zywnoscMax > 0 ? ` / ${s.zywnoscMax}` : '';
+  const netto = s.zywnoscRate ?? 0;
+  const wplyw = s.zywnoscWplywMiast ?? 0;
+  const koszt = s.zywnoscKosztWojska ?? 0;
+  let title = `Armia — zaopatrzenie wojsk`
+    + ` · Duża liczba: ${s.zywnoscLabel}${maxPart} pkt Żywności (Zapasy państwa)`
+    + ` · Zielone +N: ${signed(netto)} pkt Żywności/turę (bilans netto zapasów)`
+    + ` · Wpływ miast do zapasów: ${signed(wplyw)} pkt Żywności/turę`
+    + ` · Koszt utrzymania wojska: ${signed(-koszt)} pkt Żywności/turę`
+    + ` · Razem netto: ${signed(netto)} pkt Żywności/turę`;
+  if (s.glodWojska) title += ` · Głód wojska: atrycja HP trwa!`;
+  else if (s.zywnoscKarencjaZaTur != null && s.zywnoscKarencjaZaTur > 0) {
+    title += ` · Głód wojska za ${s.zywnoscKarencjaZaTur} ${slowoTuraHud(s.zywnoscKarencjaZaTur)} — zapasy państwa ujemne!`;
   }
-  return base;
+  return `${title} · Kliknij po szczegóły.`;
+}
+
+function ludnoscChipTitle(s: HudState): string {
+  const rate = s.ludnoscRate ?? 0;
+  return `Ludność — ludność w miastach imperium`
+    + ` · Duża liczba: ${s.ludnosc} ludności (łącznie we wszystkich miastach)`
+    + ` · Zielone +N: ${signed(rate)} ludności/turę (przyrost netto)`
+    + ` · Kliknij po szczegóły.`;
+}
+
+function kulturaChipTitle(s: HudState): string {
+  const stock = Math.floor(s.kultura);
+  const rate = s.kulturaRate ?? 0;
+  return `Kultura — wpływ kulturowy imperium`
+    + ` · Duża liczba: ${stock} pkt Kultury (zapas imperium)`
+    + ` · Zielone +N: ${signed(rate)} pkt Kultury/turę (przyrost netto)`
+    + ` · Kliknij po szczegóły.`;
+}
+
+function religiaChipTitle(s: HudState): string {
+  const stock = Math.round(s.religionStock ?? 0);
+  const rate = s.religionRate ?? 0;
+  const rel = s.stateReligion ? ` (${s.stateReligion})` : '';
+  return `Religia — wierni religii państwa${rel}`
+    + ` · Duża liczba: ${stock} wiernych (łącznie w imperium)`
+    + ` · Zielone +N: ${signed(rate)} wiernych/turę (szerzenie netto)`
+    + ` · Kliknij po szczegóły.`;
+}
+
+function surowceChipTitle(s: HudState): string {
+  const summary = s.surowceSummary ?? '—';
+  let title = `Surowce — magazyn państwa`
+    + ` · Podsumowanie: ${summary} surowców magazynowanych bez alertu (OK / wszystkie)`;
+  if (s.surowceAlert) {
+    title += ` · ⚠ Alert: co najmniej jeden surowiec na limicie magazynu lub w niedoborze`;
+  }
+  return `${title} · Kliknij po szczegóły.`;
+}
+
+function handelChipTitle(s: HudState): string {
+  const income = s.handelIncome ?? 0;
+  const routes = s.handelRouteCount ?? 0;
+  return `Handel — wymiana z obcymi cywilizacjami`
+    + ` · Liczba na chipie: ${signed(income)} pkt Pieniądza/turę (dochód z ${routes} aktywnych tras handlowych)`
+    + ` · Kliknij po szczegóły.`;
 }
 
 function hudIc(id: IconId): string {
@@ -621,8 +688,10 @@ function recruitSideIconHtml(): string {
 /** Symbol Mocy (cygnet / wpływ) — nad liczbą po prawej. */
 function powerSymbolHtml(): string {
   const svg = brandIconSvg('res-influence', 22);
-  if (svg) return `<span class="p-power-ic" aria-hidden="true" title="Moc imperium">${svg}</span>`;
-  return '<span class="p-power-ic p-power-fleur" aria-hidden="true" title="Moc imperium">⚜</span>';
+  if (svg) {
+    return `<span class="p-power-ic" aria-hidden="true" title="Moc imperium — siła absolutna państwa">${svg}</span>`;
+  }
+  return '<span class="p-power-ic p-power-fleur" aria-hidden="true" title="Moc imperium — siła absolutna państwa">⚜</span>';
 }
 
 function renderBarD1B(s: HudState): string {
@@ -654,7 +723,7 @@ function renderBarD1B(s: HudState): string {
       rate: s.surowceAlert ? '⚠' : undefined,
       rateWarn: !!s.surowceAlert,
       act: 'surowce',
-      title: 'Surowce — magazyn państwa, klik po szczegóły',
+      title: surowceChipTitle(s),
     }),
     chip6cSep(),
     // DYSPOZYCJA 85 (Maciej 2026-07-26): Handel przeniesiony NA KONIEC, za Surowce.
@@ -666,7 +735,7 @@ function renderBarD1B(s: HudState): string {
       label: 'Handel',
       value: signed(s.handelIncome ?? 0),
       act: 'handel',
-      title: `Handel — dochód z ${s.handelRouteCount ?? 0} aktywnych tras handlowych z obcymi cywilizacjami, na turę. Kliknij po szczegóły.`,
+      title: handelChipTitle(s),
     }),
   ];
   const rightChips: string[] = [
@@ -678,7 +747,7 @@ function renderBarD1B(s: HudState): string {
       medVariant: 'science',
       valClass: ' science',
       act: 'nauka',
-      title: 'Nauka — kliknij po podsumowanie imperium',
+      title: naukaChipTitle(s),
       researchProgress: resolveResearchProgress(s),
     }),
     chip6cSep(),
@@ -698,7 +767,7 @@ function renderBarD1B(s: HudState): string {
       value: String(s.ludnosc),
       rate: signed(s.ludnoscRate ?? 0),
       act: 'ludnosc',
-      title: 'Ludność imperium — klik po szczegóły',
+      title: ludnoscChipTitle(s),
     }),
     chip6cSep(),
     chip6cHtml({
@@ -707,7 +776,7 @@ function renderBarD1B(s: HudState): string {
       value: signed(s.kultura),
       rate: signed(s.kulturaRate ?? 0),
       act: 'kultura',
-      title: 'Kultura — kliknij po szczegóły imperium',
+      title: kulturaChipTitle(s),
     }),
     chip6cSep(),
     chip6cHtml({
@@ -716,7 +785,7 @@ function renderBarD1B(s: HudState): string {
       value: String(Math.round(s.religionStock ?? 0)),
       rate: signed(s.religionRate ?? 0),
       act: 'religia',
-      title: 'Religia państwa — klik po szczegóły imperium',
+      title: religiaChipTitle(s),
     }),
   ];
 
@@ -725,10 +794,10 @@ function renderBarD1B(s: HudState): string {
   let html = '<div class="civ-hud-banner-shell civ-hud-banner-left"><div class="hud-chip-row">'
     + leftChips.join('') + '</div></div>';
 
-  html += '<div class="power-center" data-act="power" title="Klik — składniki Mocy imperium">'
+  html += '<div class="power-center" data-act="power" title="Moc imperium — siła absolutna państwa · Duża liczba: punkty Mocy (łączna siła imperium) · Kliknij po szczegóły.">'
     + '<div class="p-epoch">' + escHtml(s.epoka) + '</div>'
     + '<div class="p-row">'
-    + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci (pula werbu) — klik po szczegóły">`
+    + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci — pula rekrutacji (Manpower) · Liczba: aktualna pula werbu do szkolenia wojsk · Kliknij po szczegóły.">`
     + '<span class="p-stack">'
     + recruitSideIconHtml()
     + `<span class="p-recruit-val">${rekrLabel}</span>`

@@ -507,13 +507,16 @@ export function normTerrain(s: string): string {
 /**
  * terrainDefenseMultiplier:
  * Returns the multiplier applied to the defender's effective Obrona.
- *
- *   Wzgorza     -> 1.5  (+50% Obrona)
- *   Gory        -> 1.75 (+50-100%, midpoint for auto-resolve)
- *   Las         -> 1.5 ONLY vs Dystans/Flanka attackers
- *   Rzeka       -> 1.0 (penalty is on attacker Atak, not defender Obrona)
- *   Everything else -> 1.0
+ * C-TEREN-IMPL-2=C: wartości % czytane z terrain-combat.json ("Bonus Obrona"),
+ * wyjątek: Las (+50% tylko vs Dystans/Flanka — logika warunkowa w kodzie).
  */
+function parseDefenseBonusPct(bonus: string | undefined): number | null {
+  if (!bonus || bonus === '+0%' || bonus === '---' || bonus === '') return null;
+  const match = bonus.match(/([+-]?\d+)/);
+  if (!match?.[1]) return null;
+  return parseFloat(match[1]);
+}
+
 export function terrainDefenseMultiplier(
   defenderTerrain: TerrainName,
   attackerRola: string,
@@ -531,11 +534,9 @@ export function terrainDefenseMultiplier(
   if (!entry) return 1.0;
 
   const bonus = entry['Bonus Obrona'];
-  if (!bonus || bonus === '+0%' || bonus === '---' || bonus === '') return 1.0;
-
   const eName = normTerrain(entry['Teren']);
 
-  // Las: +50% ONLY vs ranged / cavalry
+  // Las: +50% ONLY vs ranged / cavalry (warunek nie jest w samym procencie JSON)
   if (eName.includes('las')) {
     const aLow = normTerrain(attackerRola);
     const isRangedOrCav =
@@ -544,22 +545,8 @@ export function terrainDefenseMultiplier(
     return isRangedOrCav ? 1.5 : 1.0;
   }
 
-  // Gory (mountains) — has cost 3-4 in data; distinguish from Wzgorza
-  if (eName.includes('gory')) {
-    return 1.75;
-  }
-
-  // Wzgorza (hills)
-  if (eName.includes('wzg')) {
-    return 1.5;
-  }
-
-  // Generic numeric fallback
-  const match = bonus.match(/([+-]?\d+)/);
-  if (match?.[1]) {
-    const pct = parseFloat(match[1]);
-    return 1.0 + pct / 100;
-  }
+  const pct = parseDefenseBonusPct(bonus);
+  if (pct !== null) return 1.0 + pct / 100;
 
   return 1.0;
 }

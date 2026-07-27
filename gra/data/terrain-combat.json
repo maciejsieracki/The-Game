@@ -25,11 +25,11 @@
   },
   {
     "Teren": "Góry",
-    "Koszt wejścia (ruch)": "3–4 (bardzo wolno)",
-    "Bonus Obrona": "+50%",
+    "Koszt wejścia (ruch)": "2 (piechota; jak na lądzie)",
+    "Bonus Obrona": "+75%",
     "Δ Zasięg (dystansowi)": "+1",
     "Kawaleria/Rydwan": "NIEDOSTĘPNE dla kawalerii/rydwanów",
-    "Efekt specjalny": "tylko piechota; silna obrona"
+    "Efekt specjalny": "tylko piechota; silna obrona (+75% — źródło: terrain-combat.json, C-TEREN-IMPL-2=C)"
   },
   {
     "Teren": "Rzeka",

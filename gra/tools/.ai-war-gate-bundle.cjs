@@ -20,6 +20,12 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.ai-war-gate-entry.ts
 var ai_war_gate_entry_exports = {};
 __export(ai_war_gate_entry_exports, {
+  EKSPANSJA_KLASTR_BYPASS: () => EKSPANSJA_KLASTR_BYPASS,
+  aiBypassClusterConsolidation: () => aiBypassClusterConsolidation,
+  aiClusterOutsidePenalty: () => aiClusterOutsidePenalty,
+  aiFoundingWorkReserve: () => aiFoundingWorkReserve,
+  aiPowerGoalFoundingInterval: () => aiPowerGoalFoundingInterval,
+  aiTreasuryPracaForFounding: () => aiTreasuryPracaForFounding,
   decideAITurn: () => decideAITurn,
   planCityFounding: () => planCityFounding
 });
@@ -419,6 +425,7 @@ function applyRoadMovementModifier(cost, hex) {
 }
 
 // src/units/setup.ts
+var RIVER_MOVE_BONUS = 4;
 function keyOf(q, r) {
   return `${q},${r}`;
 }
@@ -435,7 +442,8 @@ var DEFAULT_TERRAIN_COSTS = {
   ["wybrzeze" /* Wybrzeze */]: Infinity,
   ["wzgorza" /* Wzgorza */]: 2,
   ["gory" /* Gory */]: Infinity,
-  ["morze" /* Morze */]: Infinity
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 var _forestExtra = 1;
@@ -457,6 +465,91 @@ function terrainMoveCost(hex) {
     cost = base + extra;
   }
   return applyRoadMovementModifier(cost, hex);
+}
+function computeReachable(unit, map, occupied, costFn = terrainMoveCost) {
+  const reachable = /* @__PURE__ */ new Set();
+  const startKey = keyOf(unit.q, unit.r);
+  const startHexHasRiver = map.hexes[startKey]?.rzeka?.obecna === true;
+  const budget = unit.ruchLeft + (startHexHasRiver ? RIVER_MOVE_BONUS : 0);
+  const dist = /* @__PURE__ */ new Map();
+  dist.set(startKey, 0);
+  const heap = [[0, unit.q, unit.r]];
+  function heapPush(e) {
+    heap.push(e);
+    let i = heap.length - 1;
+    while (i > 0) {
+      const parent = i - 1 >> 1;
+      if (heap[parent][0] <= heap[i][0]) break;
+      const tmp = heap[parent];
+      heap[parent] = heap[i];
+      heap[i] = tmp;
+      i = parent;
+    }
+  }
+  function heapPop() {
+    if (heap.length === 0) return void 0;
+    const top = heap[0];
+    const last = heap.pop();
+    if (heap.length > 0) {
+      heap[0] = last;
+      let i = 0;
+      for (; ; ) {
+        const l = 2 * i + 1;
+        const r = 2 * i + 2;
+        let smallest = i;
+        if (l < heap.length && heap[l][0] < heap[smallest][0]) smallest = l;
+        if (r < heap.length && heap[r][0] < heap[smallest][0]) smallest = r;
+        if (smallest === i) break;
+        const tmp = heap[i];
+        heap[i] = heap[smallest];
+        heap[smallest] = tmp;
+        i = smallest;
+      }
+    }
+    return top;
+  }
+  while (heap.length > 0) {
+    const entry = heapPop();
+    if (!entry) break;
+    const [cost, cq, cr] = entry;
+    const curKey = keyOf(cq, cr);
+    const bestSoFar = dist.get(curKey);
+    if (bestSoFar !== void 0 && cost > bestSoFar) continue;
+    for (const [dq, dr] of HEX_NEIGHBORS) {
+      const nq = cq + dq;
+      const nr = cr + dr;
+      const nKey = keyOf(nq, nr);
+      if (!(nKey in map.hexes)) continue;
+      const hex = map.hexes[nKey];
+      const movCost = costFn(hex);
+      if (movCost === Infinity) continue;
+      if (occupied.has(nKey)) continue;
+      const newCost = cost + movCost;
+      if (newCost <= budget) {
+        const prevDist = dist.get(nKey);
+        if (prevDist === void 0 || newCost < prevDist) {
+          dist.set(nKey, newCost);
+          reachable.add(nKey);
+          heapPush([newCost, nq, nr]);
+        }
+      }
+    }
+  }
+  if (budget >= 1) {
+    for (const [dq, dr] of HEX_NEIGHBORS) {
+      const nq = unit.q + dq;
+      const nr = unit.r + dr;
+      const nKey = keyOf(nq, nr);
+      if (!(nKey in map.hexes)) continue;
+      const hex = map.hexes[nKey];
+      const movCost = costFn(hex);
+      if (movCost !== Infinity && !occupied.has(nKey)) {
+        reachable.add(nKey);
+      }
+    }
+  }
+  reachable.delete(startKey);
+  return reachable;
 }
 var PATH_SEARCH_RADIUS_BUFFER = 12;
 function computePath(unit, map, destQ, destR, occupied, costFn = terrainMoveCost) {
@@ -604,6 +697,13 @@ var miasto_params_default = {
     wartosc: 1,
     jednostka: "0/1",
     opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
+  },
+  manpower_uzupelnienie_hp_proc_max_tura: {
+    easy: 25,
+    normal: 20,
+    hard: 15,
+    jednostka: "% maxHP/tura",
+    opis: "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP \xD7 warto\u015B\u0107/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP \xD7 kosztJednostki). Przy braku MP \u2014 leczenie cz\u0119\u015Bciowe do dost\u0119pnej puli. manpower.tickManpowerUnitReplenishment."
   },
   jednostka_koszt_domyslny: {
     wartosc: 10,
@@ -838,6 +938,39 @@ function evaluateFoundCityAffordance(treasuryPraca, cities, ownerId, opts) {
   };
 }
 
+// src/game/ai-expansion.ts
+var EKSPANSJA_KLASTR_BYPASS = 4;
+var FOUNDING_WORK_RESERVE_BASE = 10;
+function aiFoundingWorkReserve(ekspansywnosc) {
+  return Math.max(0, FOUNDING_WORK_RESERVE_BASE - ekspansywnosc * 2);
+}
+function aiTreasuryPracaForFounding(treasuryPraca, ekspansywnosc) {
+  return treasuryPraca - aiFoundingWorkReserve(ekspansywnosc);
+}
+function aiBypassClusterConsolidation(ekspansywnosc) {
+  return ekspansywnosc >= EKSPANSJA_KLASTR_BYPASS;
+}
+function aiPowerGoalFoundingInterval(ekspansywnosc) {
+  if (ekspansywnosc >= 5) return 2;
+  if (ekspansywnosc >= 3) return 3;
+  return 4;
+}
+function aiClusterOutsidePenalty(ekspansywnosc) {
+  return Math.max(0, 20 - ekspansywnosc * 4);
+}
+
+// src/game/ai-production-priorities.ts
+function aiPanelPriorityDelta(priorytet) {
+  return (priorytet - 5) * 15;
+}
+function aiProductionScoreBoosts(profile) {
+  return {
+    military: aiPanelPriorityDelta(profile?.priorytetMilitarny ?? 5),
+    economy: aiPanelPriorityDelta(profile?.priorytetEkonomia ?? 5),
+    science: aiPanelPriorityDelta(profile?.priorytetNauka ?? 5)
+  };
+}
+
 // data/terrain-yields.json
 var terrain_yields_default = {
   terrain_types: [
@@ -910,6 +1043,16 @@ var terrain_yields_default = {
       Kamie\u0144: 0,
       Suma: 1,
       Uwagi: null
+    },
+    {
+      Teren: "Polarny",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 0,
+      Handel: 0,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 0,
+      Uwagi: "Strefa polarna (\u015Bnieg) \u2014 niezamieszkana, C-MAP-Q3b"
     }
   ],
   terrain_modifiers: [
@@ -945,7 +1088,8 @@ var TERRAIN_NAME_TO_ENUM = {
   "G\xF3ry": "gory" /* Gory */,
   "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
   "Morze": "morze" /* Morze */,
-  "Pustynia": "pustynia" /* Pustynia */
+  "Pustynia": "pustynia" /* Pustynia */,
+  "Polarny": "polarny" /* Polarny */
 };
 function terrainRowToTileYield(row) {
   return {
@@ -7433,7 +7577,8 @@ var ELEVATION_RANK = {
   ["pustynia" /* Pustynia */]: 3,
   ["rownina" /* Rownina */]: 4,
   ["wzgorza" /* Wzgorza */]: 5,
-  ["gory" /* Gory */]: 6
+  ["gory" /* Gory */]: 6,
+  ["polarny" /* Polarny */]: 2
 };
 var BASE_DEPOSIT_RULES = [
   {
@@ -7524,7 +7669,8 @@ var TERRAIN_SURFACE_Y = {
   ["rownina" /* Rownina */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.02,
   ["pustynia" /* Pustynia */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.08,
   ["wzgorza" /* Wzgorza */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.18,
-  ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32
+  ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32,
+  ["polarny" /* Polarny */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.04
 };
 var ROBLOX_TERRAIN_VIS = {
   ["morze" /* Morze */]: { height: 0.3, yOffset: 0 },
@@ -7535,7 +7681,8 @@ var ROBLOX_TERRAIN_VIS = {
   /** Pustynia = profil wzgórza (Maciej 2026-07-04: nie zalewa morze). */
   ["pustynia" /* Pustynia */]: { height: 0.42, yOffset: 0.08 },
   ["wzgorza" /* Wzgorza */]: { height: 0.42, yOffset: 0.08 },
-  ["gory" /* Gory */]: { height: 0.46, yOffset: 0.12 }
+  ["gory" /* Gory */]: { height: 0.46, yOffset: 0.12 },
+  ["polarny" /* Polarny */]: { height: 0.36, yOffset: 0.06 }
 };
 var COAST_WATER_CAP_THICKNESS = 0.038 * 1.15;
 var CIV_TERRAIN_VIS = {
@@ -7545,7 +7692,8 @@ var CIV_TERRAIN_VIS = {
   ["rownina" /* Rownina */]: { height: 0.45, yOffset: 0.08 },
   ["pustynia" /* Pustynia */]: { height: 0.42, yOffset: 0.08 },
   ["wzgorza" /* Wzgorza */]: { height: 0.7, yOffset: 0.15 },
-  ["gory" /* Gory */]: { height: 1.2, yOffset: 0.4 }
+  ["gory" /* Gory */]: { height: 1.2, yOffset: 0.4 },
+  ["polarny" /* Polarny */]: { height: 0.38, yOffset: 0.06 }
 };
 var TERRAIN_CIV = {
   ["morze" /* Morze */]: 2054790,
@@ -7554,7 +7702,8 @@ var TERRAIN_CIV = {
   ["rownina" /* Rownina */]: 11121239,
   ["pustynia" /* Pustynia */]: 14270841,
   ["wzgorza" /* Wzgorza */]: 5209396,
-  ["gory" /* Gory */]: 10133929
+  ["gory" /* Gory */]: 10133929,
+  ["polarny" /* Polarny */]: 15265525
 };
 var TERRAIN_ROBLOX = {
   ["morze" /* Morze */]: 5608621,
@@ -7564,7 +7713,8 @@ var TERRAIN_ROBLOX = {
   ["rownina" /* Rownina */]: 11586174,
   ["pustynia" /* Pustynia */]: 14731406,
   ["wzgorza" /* Wzgorza */]: 8300658,
-  ["gory" /* Gory */]: 10332340
+  ["gory" /* Gory */]: 10332340,
+  ["polarny" /* Polarny */]: 15659768
 };
 var TERRAIN_MINECRAFT = {
   ["morze" /* Morze */]: 2842280,
@@ -7573,7 +7723,8 @@ var TERRAIN_MINECRAFT = {
   ["rownina" /* Rownina */]: 7249987,
   ["pustynia" /* Pustynia */]: 14402396,
   ["wzgorza" /* Wzgorza */]: 4880946,
-  ["gory" /* Gory */]: 9080985
+  ["gory" /* Gory */]: 9080985,
+  ["polarny" /* Polarny */]: 14476526
 };
 
 // src/render/pastwisko-modele.ts
@@ -8048,6 +8199,7 @@ function createQualifier(state) {
         return nakladka === "las" /* Las */ && inPlayerTerritory(q, r);
       case "tartak": {
         if (!inPlayerTerritory(q, r)) return false;
+        if (nakladka !== "las" /* Las */) return false;
         return TARTAK_TERENY.has(teren);
       }
       case "oboz_lowiecki": {
@@ -8226,7 +8378,51 @@ function firstStep(unit, map, destQ, destR, units) {
   if (path.length === 0) return null;
   return path[0] ?? null;
 }
-function hexCityScore(hex, q, r, data, enemyCities) {
+var AI_EARLY_SCOUT_TARGET = 2;
+var SCOUT_TYPE_ID = "Zwiadowca";
+function isScoutUnit(unit) {
+  return unit.typeId === SCOUT_TYPE_ID || unit.category === "zwiadowca";
+}
+function countPlayerScouts(allUnits, playerId) {
+  return allUnits.filter((u) => u.ownerId === playerId && isScoutUnit(u)).length;
+}
+function isVillageExploreRacePhase(opts, myCities) {
+  return !opts.defensiveCopy && myCities.length < 3;
+}
+function planScoutExploreStep(unit, map, myCities, units, villages) {
+  const villageTarget = findNearestVillage(unit, villages);
+  if (villageTarget !== null) {
+    const towardVillage = firstStep(unit, map, villageTarget.q, villageTarget.r, units);
+    if (towardVillage !== null) return towardVillage;
+  }
+  if (myCities.length === 0) return null;
+  const home = nearest(unit.q, unit.r, myCities, (c) => c.q, (c) => c.r);
+  if (home === void 0) return null;
+  const homeDist = hexDistance(unit.q, unit.r, home.q, home.r);
+  const occ = occupiedExcluding(units, unit.id);
+  const reachable = computeReachable(unit, map, occ);
+  reachable.delete(keyOf(unit.q, unit.r));
+  let bestKey = null;
+  let bestDist = homeDist;
+  for (const key of reachable) {
+    const parts2 = key.split(",");
+    if (parts2.length !== 2) continue;
+    const q = Number(parts2[0]);
+    const r = Number(parts2[1]);
+    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+    const d = hexDistance(q, r, home.q, home.r);
+    if (d > bestDist) {
+      bestDist = d;
+      bestKey = key;
+    }
+  }
+  if (bestKey === null) return null;
+  const parts = bestKey.split(",");
+  const destQ = Number(parts[0]);
+  const destR = Number(parts[1]);
+  return firstStep(unit, map, destQ, destR, units);
+}
+function hexCityScore(hex, q, r, data, enemyCities, opts) {
   const foodPts = getAiParam(data, "ekspansja_heurystyka_zywnosc_pkt", 3);
   const workPts = getAiParam(data, "ekspansja_heurystyka_praca_pkt", 2);
   const tradePts = getAiParam(data, "ekspansja_heurystyka_handel_pkt", 1);
@@ -8249,6 +8445,10 @@ function hexCityScore(hex, q, r, data, enemyCities) {
   if (work >= 2) score += workPts;
   if (trade >= 1) score += tradePts;
   if (hex.rzeka.obecna) score += riverPts;
+  const deficits = opts?.resourceDeficitKeys ?? [];
+  if (deficits.includes("glina") && hex.nakladka === "zloze_gliny" /* ZlozeGliny */) score += resPts * 2;
+  if (deficits.includes("ruda") && hex.nakladka === "zloze_rudy" /* ZlozeRudy */) score += resPts * 2;
+  if (deficits.includes("drewno") && hex.nakladka === "las" /* Las */) score += resPts * 2;
   if (hex.nakladka === "zloze_gliny" /* ZlozeGliny */ || hex.nakladka === "zloze_rudy" /* ZlozeRudy */) {
     score += resPts;
   }
@@ -8271,10 +8471,12 @@ function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, 
     (eu) => hexDistance(city.q, city.r, eu.q, eu.r) <= threatRange
   );
   const diffProdBonus = Math.round(difficultyParams.bonusProdukcja * 200);
+  const panelBoost = aiProductionScoreBoosts(opts.civAiProfile);
   const powerGoalBoost = opts.currentTurn !== void 0 && opts.currentTurn % 3 === 0 && (opts.powerRank ?? 1) > 1;
-  const economyScore = 100 + mods.ekonomia * 20 + diffProdBonus + (powerGoalBoost ? 40 : 0);
-  const militaryScore = 100 + mods.wojsko * 20;
+  const economyScore = 100 + mods.ekonomia * 20 + diffProdBonus + panelBoost.economy + (powerGoalBoost ? 40 : 0);
+  const militaryScore = 100 + mods.wojsko * 20 + panelBoost.military;
   const defenseScore = 100 + mods.obrona * 20;
+  const scienceScore = 100 + mods.nauka * 20 + panelBoost.science;
   const candidates = [];
   const earlyPhase = myCities.length < 3 && !opts.defensiveCopy;
   if (underThreat) {
@@ -8301,6 +8503,9 @@ function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, 
     if (!built.includes("spichlerz")) {
       candidates.push({ id: "spichlerz", score: 250 });
     }
+    if (!opts.defensiveCopy && countPlayerScouts(allUnits, playerId) < AI_EARLY_SCOUT_TARGET) {
+      candidates.push({ id: SCOUT_TYPE_ID, score: 320 + economyScore });
+    }
     const cityGuard = allUnits.filter(
       (u) => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1
     );
@@ -8318,6 +8523,12 @@ function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, 
       if (!built.includes(b)) {
         candidates.push({ id: b, score: 140 + economyScore });
       }
+    }
+    if (!built.includes("biblioteka")) {
+      candidates.push({ id: "biblioteka", score: 135 + scienceScore });
+    }
+    if (built.includes("biblioteka") && !built.includes("akademia")) {
+      candidates.push({ id: "akademia", score: 130 + scienceScore });
     }
   }
   if (opts.canAfford) {
@@ -8342,6 +8553,20 @@ function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, 
         candidates.push({ id: converterId, score: consumer.score + 1 });
       }
       candidates[consumerIdx].score = consumer.score - 1;
+    }
+  }
+  const deficitKeys = opts.resourceDeficitKeys;
+  if (deficitKeys?.length) {
+    for (const resKey of deficitKeys) {
+      for (const buildingId of AI_BUILDING_FOR_DEFICIT[resKey] ?? []) {
+        if (built.includes(buildingId)) continue;
+        const idx = candidates.findIndex((c) => c.id === buildingId);
+        if (idx >= 0) {
+          candidates[idx].score += 85;
+        } else {
+          candidates.push({ id: buildingId, score: 200 + economyScore });
+        }
+      }
     }
   }
   const buildingNames = new Set(data.buildings.map((b) => b.id));
@@ -8394,6 +8619,30 @@ var AI_IMPROVEMENT_PRIORITY = [
   "fort",
   "wyrab"
 ];
+var AI_IMPROVEMENT_FOR_DEFICIT = {
+  drewno: ["tartak", "wyrab"],
+  kamien: ["kamieniolom"],
+  glina: ["glinianka"],
+  ruda: ["kopalnia", "kopalnia_miedzi"]
+};
+var AI_BUILDING_FOR_DEFICIT = {
+  drewno: ["stolarnia"],
+  glina: ["garncarnia", "cegielnia"],
+  kamien: ["kamieniarski"],
+  ruda: ["kuznia"],
+  cegla: ["cegielnia"],
+  braz: ["odlewnia_brazu"],
+  ceramika: ["garncarnia"]
+};
+function improvementPriorityForDeficits(base, deficitKeys) {
+  if (!deficitKeys?.length) return [...base];
+  const boost = /* @__PURE__ */ new Set();
+  for (const key of deficitKeys) {
+    for (const imp of AI_IMPROVEMENT_FOR_DEFICIT[key] ?? []) boost.add(imp);
+  }
+  if (boost.size === 0) return [...base];
+  return [...base.filter((k) => boost.has(k)), ...base.filter((k) => !boost.has(k))];
+}
 var AI_WYRAB_MIN_FOREST_IN_RADIUS = 3;
 var AI_IMPROVEMENT_PRACA_SURPLUS = 30;
 function planCityImprovements(myCities, ownerId, map, opts) {
@@ -8432,7 +8681,7 @@ function planCityImprovements(myCities, ownerId, map, opts) {
       const [qs, rs] = k.split(",");
       return { q: Number(qs), r: Number(rs) };
     }).sort((a, b) => a.q - b.q || a.r - b.r);
-    for (const key of AI_IMPROVEMENT_PRIORITY) {
+    for (const key of improvementPriorityForDeficits(AI_IMPROVEMENT_PRIORITY, opts.resourceDeficitKeys)) {
       const meta = getImprovementMeta(key);
       if (!meta) continue;
       if (meta.kosztPraca > pracaLeft) continue;
@@ -8476,10 +8725,11 @@ function aiFoundingRand(playerId, turn) {
 }
 function planCityFounding(playerId, cities, map, data, opts, minCityDist) {
   if (opts.defensiveCopy) return null;
+  const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterConsolidationPhase = (opts.clusterStateTargets ?? []).length > 0;
-  if (clusterConsolidationPhase) return null;
+  if (clusterConsolidationPhase && !aiBypassClusterConsolidation(ekspansywnosc)) return null;
   const myCities = cities.filter((c) => c.ownerId === playerId);
-  const treasuryPraca = opts.pracaAvailable ?? 0;
+  const treasuryPraca = aiTreasuryPracaForFounding(opts.pracaAvailable ?? 0, ekspansywnosc);
   const turn = opts.currentTurn ?? 0;
   const aff = evaluateFoundCityAffordance(
     treasuryPraca,
@@ -8556,6 +8806,7 @@ function decideAITurn(playerId, units, cities, map, data, opts = {}) {
   const clusterEnemyCities = engageableEnemyCities.filter((c) => clusterTargetOwnerIds.has(c.ownerId));
   const sklonnoscPodboju = opts.civAiProfile?.sklonnoscDoPodboju ?? 2;
   const skipPatrol = sklonnoscPodboju >= 4;
+  const villageExploreRace = isVillageExploreRacePhase(opts, myCities);
   const minCityDist = getAiParam(data, "ekspansja_min_dystans_miast", 5);
   const foundingCmd = planCityFounding(playerId, cities, map, data, opts, minCityDist);
   if (foundingCmd !== null) {
@@ -8581,6 +8832,11 @@ function decideAITurn(playerId, units, cities, map, data, opts = {}) {
     commands.push(cmd);
   }
   const sortedUnits = [...myUnits].sort((a, b) => {
+    if (villageExploreRace) {
+      const scoutA = isScoutUnit(a) ? 0 : 1;
+      const scoutB = isScoutUnit(b) ? 0 : 1;
+      if (scoutA !== scoutB) return scoutA - scoutB;
+    }
     const superA = a.category === "super" ? 0 : 1;
     const superB = b.category === "super" ? 0 : 1;
     return superA - superB;
@@ -8606,6 +8862,14 @@ function decideAITurn(playerId, units, cities, map, data, opts = {}) {
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
     if (unit.ruchLeft <= 0) continue;
+    if (isScoutUnit(unit)) {
+      const step = planScoutExploreStep(unit, map, myCities, units, getNeutralVillages());
+      if (step !== null) {
+        commands.push({ type: "move", unitId: unit.id, toQ: step.q, toR: step.r });
+        unitActed.add(unit.id);
+      }
+      continue;
+    }
     const adjacentEnemy = engageableEnemyUnits.find(
       (eu) => isAdjacent(unit.q, unit.r, eu.q, eu.r)
     );
@@ -8623,6 +8887,17 @@ function decideAITurn(playerId, units, cities, map, data, opts = {}) {
       commands.push({ type: "move", unitId: unit.id, toQ: adjacentEnemyCity.q, toR: adjacentEnemyCity.r });
       unitActed.add(unit.id);
       continue;
+    }
+    if (villageExploreRace) {
+      const villageTarget2 = findNearestVillage(unit, getNeutralVillages());
+      if (villageTarget2 !== null) {
+        const step = firstStep(unit, map, villageTarget2.q, villageTarget2.r, units);
+        if (step !== null) {
+          commands.push({ type: "move", unitId: unit.id, toQ: step.q, toR: step.r });
+          unitActed.add(unit.id);
+          continue;
+        }
+      }
     }
     const citiesForMarch = (() => {
       if (clusterConsolidationPhase && clusterEnemyCities.length > 0) return clusterEnemyCities;
@@ -8689,7 +8964,7 @@ function decideAITurn(playerId, units, cities, map, data, opts = {}) {
         continue;
       }
     }
-    if (!skipPatrol && myCities.length > 0) {
+    if (!skipPatrol && !villageExploreRace && myCities.length > 0) {
       const homeCity = nearest(unit.q, unit.r, myCities, (c) => c.q, (c) => c.r);
       if (homeCity !== void 0 && hexDistance(unit.q, unit.r, homeCity.q, homeCity.r) > 2) {
         const step = firstStep(unit, map, homeCity.q, homeCity.r, units);
@@ -8820,8 +9095,11 @@ function decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts,
 function findCityFoundingHex(map, allCities, enemyCities, data, minCityDist, opts = {}) {
   let bestScore = -Infinity;
   let bestHex = null;
-  const ekspansjaScale = 1 + (opts.civAiProfile?.ekspansywnosc ?? 0) * 0.1;
-  const powerGoalBoost = opts.currentTurn !== void 0 && opts.currentTurn % 3 === 0 && (opts.powerRank ?? 1) > 1;
+  const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
+  const ekspansjaScale = 1 + ekspansywnosc * 0.1;
+  const powerInterval = aiPowerGoalFoundingInterval(ekspansywnosc);
+  const powerGoalBoost = opts.currentTurn !== void 0 && opts.currentTurn % powerInterval === 0 && (opts.powerRank ?? 1) > 1;
+  const clusterOutsidePenalty = aiClusterOutsidePenalty(ekspansywnosc);
   for (const key of Object.keys(map.hexes)) {
     const hex = map.hexes[key];
     if (hex === void 0) continue;
@@ -8830,14 +9108,14 @@ function findCityFoundingHex(map, allCities, enemyCities, data, minCityDist, opt
     const { q, r } = hex.coords;
     const tooClose = allCities.some((c) => hexDistance(q, r, c.q, c.r) < minCityDist);
     if (tooClose) continue;
-    let score = hexCityScore(hex, q, r, data, enemyCities) * ekspansjaScale;
+    let score = hexCityScore(hex, q, r, data, enemyCities, opts) * ekspansjaScale;
     if (powerGoalBoost) score += 25;
     if (opts.clusterCenter !== void 0 && opts.clusterRadius !== void 0) {
       const distToCenter = hexDistance(q, r, opts.clusterCenter.q, opts.clusterCenter.r);
       if (distToCenter <= opts.clusterRadius) {
         score += 50 * ekspansjaScale;
-      } else {
-        score -= 20;
+      } else if (clusterOutsidePenalty > 0) {
+        score -= clusterOutsidePenalty;
       }
     }
     if (score > bestScore) {
@@ -8861,6 +9139,12 @@ function findNearestVillage(unit, villages) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  EKSPANSJA_KLASTR_BYPASS,
+  aiBypassClusterConsolidation,
+  aiClusterOutsidePenalty,
+  aiFoundingWorkReserve,
+  aiPowerGoalFoundingInterval,
+  aiTreasuryPracaForFounding,
   decideAITurn,
   planCityFounding
 });

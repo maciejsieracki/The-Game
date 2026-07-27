@@ -11,7 +11,46 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `2c3804da` — 2026-07-27 10:20 · FALA 33: GARNIZON + KULTURA + PRAWO + KLIMAT — **AKTUALNA**
+## ROBOCZA `a74c3797` — 2026-07-27 15:12 — FALA 36: PACZKA WDROŻEŃ BEZ ABC — **AKTUALNA**
+- md5 (pelne): `a74c3797e211532a457413e94fe28765` · stempel: `ROBOCZA · 2026-07-27 15:12`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` exit 0. POLE-BITWY: pominięty (build oblezenie-bitwa fail npm devdir).
+- **Co nowego (FALA 36, batch bez nowego ABC):**
+  - **Dyspozycja 85:** pasek zasobów `Skarbiec · Praca · Surowce · Handel`; handel międzynarodowy w chipie Handel.
+  - **Kultura/religia/presja** (B-KULT-REL, KULT-PRESJA, KULT-DYP) — silnik już w bundlu.
+  - **B-SPIC / B-SUROW-BUD** — dane + bramki surowców (deploy zbiorczy).
+  - **FALA 9 UI** (R-STARTPREVIEW, R-PANEL-DOCHOD, R-ARMIA, R-DRZEWO-TECH…) — scalone z F28–35.
+  - **FALA 34–35:** scout chatka, tartak, pre-battle retreat, odfortyfikowanie, HUD tooltips, cykl armii, baner po turze.
+  - **C-WIAR-D4 + C-WIAR-N1-UX:** Dźwignia 4 Zaufanie + modal 3 opcje przed atakiem.
+  - **R-TEREN-DOPIAC:** teren bitwy 3 etapy (obrona Gór, Δ zasięg, koszty konnicy).
+  - **R-AI-SUWAKI:** `decideAIEconomySliders` dla AI (żywność/handlarz/praca).
+  - **R-DYP-STOL-A (część):** modal handlu dyplomacji + wyświetlanie statystyk imperium.
+  - **Bitwa:** snapshot grup przy „Rozegraj ponownie" (R-BITWA-POWTORKA-I).
+- **NIE w tej fali (osobne tematy):** R-MUZYKA-OPOZNIENIE, R-FULLSCREEN-PASEK, R-PIERWSZE-MIASTO (kod niekompletny).
+- **Bramki:** tsc 0 · scout 10/10 · map-improvement 58/58 · diplomacy-display 26/26 · manpower 62/62 · post-capture-law 11/11 · culture-religion 65/65.
+
+## ROBOCZA `2e606ae6` — 2026-07-27 12:15 — FALA 35: HUD UX + CYKL ARMII + BANER — **ZASTĄPIONA**
+- md5 (pelne): `2e606ae6f49e0f549cc337638939266e` · stempel: `ROBOCZA · 2026-07-27 12:15`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0).
+- **Co nowego (sesja F35, nad F34):**
+  - **Koniec tury:** fix wiszącego banera armii po zakończeniu tury (`syncPlayerUnitSelectionOnMap`).
+  - **HUD:** tooltipsy chipów zasobów (Armia z rozbiciem wpływ miast / koszt wojska, Nauka, Kultura…).
+  - **Cykl jednostek:** Spacja + ◀ ▶ w panelu armii — wszystkie armie gracza (garnizon, bez ruchu).
+- **Bramki:** tsc 0 · VERIFY OK.
+
+## ROBOCZA `1e7f4cad` — 2026-07-27 11:56 — FALA 34: SCOUT CHATKA + TARTAK + OBRONA — **ZASTĄPIONA**
+- md5 (pelne): `1e7f4cad0435fe00d8464d41a7faf8ff` · stempel: `ROBOCZA · 2026-07-27 11:56`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0).
+- **Co nowego (sesja F34):**
+  - **Scout:** fix chatki wioski (`onAfterStep` w scout-auto-explore).
+  - **Tartak:** tylko las + auto-usuwanie przy utratie lasu (improvement-build / map).
+  - **Pre-battle:** wycofanie obrońcy (defender retreat).
+  - **Garnizon:** odfortyfikowanie (unfortify).
+- **Bramki:** tsc 0 · scout-auto-explore 10/10 · map-improvement-qualify 58/58.
+
+## ROBOCZA `2c3804da` — 2026-07-27 10:20 · FALA 33: GARNIZON + KULTURA + PRAWO + KLIMAT — **ZASTĄPIONA**
 - md5 (pelne): `2c3804da371c027043b2669b535268c7` · stempel: `ROBOCZA · 2026-07-27 10:20`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0). POLE-BITWY: build pominięty (OneDrive lock). Pieczęć: inject via temp (OneDrive lock na bezpośrednim zapisie).

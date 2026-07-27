@@ -106,6 +106,7 @@ export function advanceScoutAutoExplore(
   allUnits: readonly RuntimeUnit[],
   sight: number,
   rng: () => number = Math.random,
+  onAfterStep?: (unit: RuntimeUnit) => void,
 ): { moved: boolean; steps: number } {
   if (!isScoutUnit(unit)) return { moved: false, steps: 0 };
   if (unit.ruchLeft <= 0 || unit.inGarnizon || unit.oblegaCityId) {
@@ -139,6 +140,7 @@ export function advanceScoutAutoExplore(
     addExplored(workingExplored, computeVisibleAt(unit.q, unit.r, map, sight));
     steps++;
     moved = true;
+    onAfterStep?.(unit);
 
     if (steps > 96) break;
   }
@@ -154,6 +156,7 @@ export function runScoutsAutoExplore(
   playerOwnerId: number,
   sightResolver: UnitSightResolver,
   rng: () => number = Math.random,
+  onAfterStep?: (unit: RuntimeUnit) => void,
 ): { movedUnitIds: string[]; totalSteps: number } {
   const movedUnitIds: string[] = [];
   let totalSteps = 0;
@@ -166,6 +169,7 @@ export function runScoutsAutoExplore(
       units,
       sightResolver(u),
       rng,
+      onAfterStep,
     );
     if (r.moved) {
       movedUnitIds.push(u.id);

@@ -18,7 +18,17 @@ export interface EmpireResourceRow {
   icon: string;
   label: string;
   stock: number;
+  /** Zmiana zapasu / turę (netto: produkcja ± dyplomacja). */
   ratePerTurn: number;
+  /**
+   * Produkcja własna (teren + konwertery) — bez umów dyplomatycznych.
+   * Gdy brak — UI traktuje `ratePerTurn` jako produkcję.
+   */
+  rateProductionPerTurn?: number;
+  /** Surowce oddawane co turę na umowy handlowe (dyplomacja). */
+  rateDiploOutPerTurn?: number;
+  /** Surowce otrzymywane co turę z umów handlowych (dyplomacja). */
+  rateDiploInPerTurn?: number;
   assigned?: string;
   typ: 'podstawowy' | 'surowy' | 'przetworzony' | 'hodowla';
   dostep: boolean;

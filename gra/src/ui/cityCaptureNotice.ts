@@ -1,5 +1,5 @@
 /**
- * cityCaptureNotice.ts — tabliczka po zdobyciu pustego miasta (bez bitwy).
+ * cityCaptureNotice.ts — tabliczka po zdobyciu miasta.
  * Styl spójny z cityAttackChoice / siegeMapPanel.
  */
 
@@ -8,7 +8,14 @@ import { brandIconSvg } from './icons/brandAssets';
 let root: HTMLDivElement | null = null;
 let keyHandler: ((e: KeyboardEvent) => void) | null = null;
 
-const STYLE_ID = 'civ-city-capture-css-v1';
+const STYLE_ID = 'civ-city-capture-css-v2';
+
+export interface CityCaptureNoticeOpts {
+  /** Otwórz panel miasta (przycisk „Wejdź do miasta"). */
+  onEnterCity?: () => void;
+  /** Zostań na mapie (przycisk „Wróć na mapę"). */
+  onStayOnMap?: () => void;
+}
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -28,7 +35,7 @@ function ensureStyles(): void {
   text-align:center;
 }
 .civ-ccn *{box-sizing:border-box;}
-.civ-ccn-hdr{padding:20px 22px 12px;}
+.civ-ccn-hdr{padding:22px 22px 18px;}
 .civ-ccn-ic{
   display:flex;align-items:center;justify-content:center;margin-bottom:10px;line-height:0;
 }
@@ -36,16 +43,25 @@ function ensureStyles(): void {
 .civ-ccn-title{
   font:700 12px/1.2 Georgia,serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
 }
-.civ-ccn-name{font-size:20px;font-weight:700;color:#f0e8b8;margin:10px 0 6px;}
-.civ-ccn-sub{font-size:12px;color:var(--muted);line-height:1.45;padding:0 18px 16px;}
-.civ-ccn-foot{padding:0 22px 20px;}
+.civ-ccn-name{font-size:20px;font-weight:700;color:#f0e8b8;margin:10px 0 0;}
+.civ-ccn-foot{padding:0 22px 22px;}
+.civ-ccn-actions{display:flex;flex-direction:column;gap:8px;}
 .civ-ccn-btn{
   font:inherit;font-size:12px;font-weight:700;cursor:pointer;width:100%;
-  padding:10px 16px;border-radius:8px;border:1px solid rgba(232,216,138,0.35);
+  padding:10px 16px;border-radius:8px;
+}
+.civ-ccn-btn-primary{
+  border:1px solid rgba(232,216,138,0.35);
   background:linear-gradient(135deg,rgba(232,216,138,0.22),rgba(201,168,76,0.18));
   color:#f0e8b8;
 }
-.civ-ccn-btn:hover{filter:brightness(1.08);}
+.civ-ccn-btn-primary:hover{filter:brightness(1.08);}
+.civ-ccn-btn-secondary{
+  border:1px solid rgba(122,132,152,0.35);
+  background:rgba(12,16,26,0.55);
+  color:#b8c0d0;
+}
+.civ-ccn-btn-secondary:hover{background:rgba(20,26,40,0.75);color:#e2e6ec;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -62,7 +78,7 @@ function modalIcon(id: string, size: 20 | 24 = 24): string {
   return svg ? svg.replace('<svg ', '<svg class="siege-modal-ic" ') : '';
 }
 
-function close(onDismiss?: () => void): void {
+function close(): void {
   if (keyHandler) {
     document.removeEventListener('keydown', keyHandler);
     keyHandler = null;
@@ -71,24 +87,29 @@ function close(onDismiss?: () => void): void {
     root.remove();
     root = null;
   }
-  onDismiss?.();
 }
 
-/** Tabliczka: miasto zdobyte bez walki (brak obrońców). */
+/** Tabliczka po zdobyciu miasta — tytuł, nazwa, wybór: panel miasta lub mapa. */
 export function showCityCaptureNotice(
   cityName: string,
-  opts?: { subtitle?: string; onDismiss?: () => void },
+  opts?: CityCaptureNoticeOpts,
 ): void {
   close();
   ensureStyles();
 
-  const subtitle = opts?.subtitle
-    ?? 'Miasto było bez obrońców — wojsko weszło bez strat.';
+  const enter = () => {
+    close();
+    opts?.onEnterCity?.();
+  };
+  const stay = () => {
+    close();
+    opts?.onStayOnMap?.();
+  };
 
   root = document.createElement('div');
   root.className = 'civ-ccn-overlay';
   root.addEventListener('click', (e) => {
-    if (e.target === root) close(opts?.onDismiss);
+    if (e.target === root) stay();
   });
 
   const box = document.createElement('div');
@@ -98,21 +119,27 @@ export function showCityCaptureNotice(
       '<div class="civ-ccn-ic">' + modalIcon('cp-buildings', 24) + '</div>' +
       '<div class="civ-ccn-title">Miasto zdobyte</div>' +
       '<div class="civ-ccn-name">' + esc(cityName) + '</div>' +
-      '<div class="civ-ccn-sub">' + esc(subtitle) + '</div>' +
     '</div>' +
     '<div class="civ-ccn-foot">' +
-      '<button type="button" class="civ-ccn-btn" data-ok>Rozumiem · Enter</button>' +
+      '<div class="civ-ccn-actions">' +
+        '<button type="button" class="civ-ccn-btn civ-ccn-btn-primary" data-enter>Wejdź do miasta</button>' +
+        '<button type="button" class="civ-ccn-btn civ-ccn-btn-secondary" data-stay>Wróć na mapę</button>' +
+      '</div>' +
     '</div>';
 
-  box.querySelector('[data-ok]')?.addEventListener('click', () => close(opts?.onDismiss));
+  box.querySelector('[data-enter]')?.addEventListener('click', enter);
+  box.querySelector('[data-stay]')?.addEventListener('click', stay);
   box.addEventListener('click', (e) => e.stopPropagation());
   root.appendChild(box);
   document.body.appendChild(root);
 
   keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === 'Escape') {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      close(opts?.onDismiss);
+      enter();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      stay();
     }
   };
   document.addEventListener('keydown', keyHandler);

@@ -3608,3 +3608,49 @@ Nowe: garnizon pod badge miasta · fix kultury ownCultureShare · B-LAW-Q1 Prawo
 Bramki: tsc 0 · post-capture-law 11/11 · climate-band OK · conquest 29/29 · society 40/40 · manpower 62/62 · picker 140/140 · diplomacy-display 17/17 · deposit-building-gate 41/41.
 **Sesja lokalna: pull / sync dysk, testuj `2c3804da` — `gra-robocza/START.html`. Nowa gra (Ctrl+F5) dla mapy.**
 CZEKAM-NA: nic.
+
+## [12:00 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `1e7f4cad` (FALA 34, VERIFY)
+**md5 `1e7f4cad0435fe00d8464d41a7faf8ff`**, stempel `ROBOCZA · 2026-07-27 11:56`. **VERIFY OK** (manifest md5 = HTML).
+Wynik `vite build` exit 0.
+Nowe: scout fix chatki wioski (onAfterStep) · tartak tylko las + auto-usuwanie · wycofanie obrońcy (pre-battle) · odfortyfikowanie garnizonu.
+Bramki: tsc 0 · scout-auto-explore 10/10 · map-improvement-qualify 58/58.
+**Sesja lokalna: pull / sync dysk, testuj `1e7f4cad` — `gra-robocza/START.html`.**
+CZEKAM-NA: Maciej smoke.
+
+## [13:50 PL, 2026-07-27] LOKALNA → INTEGRATOR — C-WIAR-N4-AI=B (handoff, bez kodu)
+Maciej: **B** — AI rzadko odmawia pomocy sojuszniczej gdy osłabione (wojna / słaba armia / niskie Zaufanie). ECHO + handoff `MASTER-do-GRUPA-D_C-WIAR-N4-AI.md`. **Bez edycji `gra/`** — równoległy agent na plikach gry; bez deploy.
+CZEKAM-NA: zwolnienie locka `gra/` + Maciej **`działaj`** → heurystyka w `aiHonorsAllianceWarObligation` + kontekst w `main.ts`.
+
+## [12:15 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `2e606ae6` (FALA 35, VERIFY)
+**md5 `2e606ae6f49e0f549cc337638939266e`**, stempel `ROBOCZA · 2026-07-27 12:15`. **VERIFY OK** (manifest md5 = HTML).
+Nad F34: fix baner armii po końcu tury · tooltipsy chipów HUD (Armia z rozbiciem) · Spacja + ◀▶ cykl wszystkich armii.
+Bramki: tsc 0 · VERIFY OK.
+**Sesja lokalna: pull / sync dysk, testuj `2e606ae6` — `gra-robocza/START.html`.**
+CZEKAM-NA: nic.
+
+## [15:12 PL, 2026-07-27] LOKALNA → LOKALNA — deploy ROBOCZA `a74c3797` (FALA 36, VERIFY)
+**md5 `a74c3797e211532a457413e94fe28765`**, stempel `ROBOCZA · 2026-07-27 15:12`. **VERIFY OK** (manifest md5 = HTML).
+Wynik `vite build` exit 0. POLE-BITWY: pominięty.
+Batch bez nowego ABC: Dyspozycja 85 (pasek zasobów) · kultura/religia/presja · B-SPIC/B-SUROW-BUD · FALA 9 UI · F34–35 · C-WIAR-D4/N1 · R-TEREN-DOPIAC · R-AI-SUWAKI · dyplomacja (część stołu) · bitwa replay snapshot.
+Bramki: tsc 0 · scout 10/10 · map-improvement 58/58 · diplomacy-display 26/26 · manpower 62/62 · post-capture-law 11/11 · culture-religion 65/65.
+**Sesja lokalna: testuj `a74c3797` — `gra-robocza/START.html`.**
+CZEKAM-NA: nic.
+
+## [15:20 PL, 2026-07-27] CZAT-ABC → INTEGRATOR — NIE deployować z tej sesji; delta po FALA 36
+
+**Maciej:** deploy do `gra-robocza/` robi **inny agent (Integrator)**. Ten czat = tylko `gra/src/` + decyzje ABC — **ZAKAZ publishu roboczej** bez `git pull` + porównania z `WERSJE.md` / `ROBOCZA-MANIFEST.json`.
+
+**Aktualna ROBOCZA (nie ruszać z tego czatu):** md5 `a74c3797` · FALA 36 · 15:12 — paczka z listy Macieja (Dyspozycja 85, kultura/religia, B-SPIC/B-SUROW-BUD, FALA 9 UI, R-TEREN-DOPIAC, R-AI-SUWAKI, część R-DYP-STOL-A, replay snapshot).
+
+**Kolejny deploy Integratora — PRZED buildem:** `git pull --ff-only origin main` · sprawdź czy `gra-robocza/ROBOCZA-MANIFEST.json` = `a74c3797` · **nie nadpisuj** niezcommitowanych zmian cudzej sesji.
+
+**W `gra/src/` gotowe u ABC, NIE w FALA 36 (wejść do FALA 37+):**
+- `C-TEREN-IMPL-3=B` — tooltip TEREN pełny (`battleTerrainTooltip.ts`, test ETAP 4)
+- `R-BITWA-POWTORKA-I=B` — powtórka = auto-grupa (**konflikt:** FALA 36 ma stary snapshot A)
+- `R-MAPGEN-KOLEJNOSC-Q2=C`, `Q3=A` — relief ~15%, próg czasu mapy
+- `C-TEREN-IMPL-2=C` — obrona Gór +75% z JSON (jeśli nie weszło w F36 — zweryfikować diff)
+
+**Poza paczką (osobne tematy):** R-MUZYKA-OPOZNIENIE · R-FULLSCREEN-PASEK · R-PIERWSZE-MIASTO (rejestr W TOKU) · R-DYP-STOL-A pełny stół (duży zakres).
+
+**Zasada zapisu ABC (Maciej 2026-07-27):** odpowiedź `ID: litera` → najpierw `docs/decyzje/<ID>.md`, potem kod. Standard: `docs/decyzje/ABC-ZAPIS-PLIKOWY.md`.
+CZEKAM-NA: Integrator — pull + FALA 37 z delty powyżej (po sygnale Macieja **deploy**).

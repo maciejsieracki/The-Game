@@ -138,7 +138,6 @@ export function generateMap(
   const landFraction = resolveLandFraction(genOpts, typ);
   const terrainTh: TerrainClassifyThresholds = {
     desert: wgn.desertThreshold,
-    forest: wgn.forestThreshold,
     mountain: wgn.mountainThreshold,
     highland: wgn.highlandThreshold,
   };
@@ -188,7 +187,7 @@ export function generateMap(
   const landScores = new Map<string, number>();
   const terrainScratch = new Map<string, TerrainScratch>();
 
-  // ── Przebieg 1: teren bazowy + las (szum → klasyfikacja) ──────────────────
+  // ── Przebieg 1: teren bazowy (szum → klasyfikacja; las dopiero w przebiegu 3h) ─
   for (let r = 0; r < height; r++) {
     for (let q = 0; q < width; q++) {
       const coords: HexCoords = { q, r };
@@ -361,6 +360,8 @@ export function generateMap(
   // ── Przebieg 3e-pre: wysepki-szum po finalnym wybrzeżu (pustynia/łąka w oceanie) ─
   finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, 2);
   // ── Przebieg 3g: siatki fair play relief + las (po finalnym lądzie, przed rzekami) ─
+  // R-MAPGEN-KOLEJNOSC-Q3=A: wieloetapowy floor (2× standard / 3× Ziemia) — celowo bez
+  // skracania pipeline; priorytetem jest poprawne pokrycie reliefu wg wytycznych, nie czas.
   ensureReliefGridCoverage(
     hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
   );
@@ -448,9 +449,9 @@ export function generateMap(
   // globalna górzystość NIE MOŻE przekroczyć tego sufitu (zmierzone: wymuszenie limitu zbiło
   // górzystość z ~19,3% do ~9,4-9,8% na 5 seedach).
   //
-  // PONOWNIE WŁĄCZONE — Maciej 2026-07-26 (wieczór), C-MAPA-Q2=B: świadoma REWIZJA decyzji 80A.
-  // Właściciel obniżył docelową górzystość do ~10% (uprzedzony, że to mniej niż 13,8% odrzucone
-  // wcześniej), żeby fair-play-grid-test.cjs przechodził bez naginania progów testu. Sufit żyje
+  // PONOWNIE WŁĄCZONE — Maciej 2026-07-26 (wieczór), C-MAPA-Q2=B; skorygowane R-MAPGEN-KOLEJNOSC-Q2=C
+  // (2026-07-27): docelowa górzystość lądu tier Średni relief ≈15% (kompromis między ~10% a ~19%).
+  // Sufit żyje
   // teraz jako RELIEF_OVERFLOW_CAP_MULT=1 w gen-helpers.ts (frakcje z Panel-A
   // `gestosc.relief_overflow_cap_frac`). Heksy ze złożem są chronione przed przycięciem
   // (isDepositProtectedFromOverflowCap) — inaczej TEN sam sufit, wywołany ponownie niżej

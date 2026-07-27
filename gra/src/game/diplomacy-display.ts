@@ -330,15 +330,61 @@ export function formatPowerRelationLine(
   };
 }
 
+/** Klucz ASCII surowca → etykieta PL (spójne z diplomacy-goods.ts). */
+const RESOURCE_KEY_LABEL: Readonly<Record<string, string>> = {
+  drewno: 'Drewno',
+  kamien: 'Kamień',
+  glina: 'Glina',
+  ruda: 'Ruda',
+  sol: 'Sól',
+  zelazo: 'Żelazo',
+  braz: 'Brąz',
+  cegla: 'Cegła',
+  ceramika: 'Ceramika',
+  kon: 'Koń',
+  owce: 'Owce',
+  lama: 'Lama',
+  trzoda: 'Trzoda',
+  wegiel: 'Węgiel',
+  zloto: 'Złoto',
+};
+
+export function resourceDisplayLabel(key: string): string {
+  const k = key.trim().toLowerCase();
+  return RESOURCE_KEY_LABEL[k] ?? (key.charAt(0).toUpperCase() + key.slice(1));
+}
+
+export interface BasketItemFormatCtx {
+  /** Wymiana cykliczna co turę (resourceTradeMode === 'per_turn'). */
+  perTurn?: boolean;
+  /** Czas trwania umowy w turach — do liczenia sumy łącznej. */
+  turns?: number;
+}
+
 /** Krótka etykieta jednej pozycji koszyka PN (UI + podsumowania stołu negocjacji). */
-export function formatBasketItemBrief(item: BasketItem): string {
+export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCtx): string {
+  const perTurn = ctx?.perTurn === true;
+  const turns = ctx?.turns;
   switch (item.typ) {
-    case 'zloto':
-      return `${item.ilosc ?? 0} ¤`;
+    case 'zloto': {
+      const amt = item.ilosc ?? 0;
+      if (perTurn) {
+        const base = `${amt} ¤ na turę`;
+        if (turns != null && turns > 0) {
+          return `${base} (łącznie ${amt * turns} ¤ przez ${turns} tur)`;
+        }
+        return base;
+      }
+      return `jednorazowo ${amt} ¤`;
+    }
     case 'praca':
-      return `${item.ilosc ?? 0} pracy`;
+      return perTurn
+        ? `${item.ilosc ?? 0} Pracy na turę`
+        : `jednorazowo ${item.ilosc ?? 0} Pracy`;
     case 'zywnosc':
-      return `${item.ilosc ?? 0} żywności`;
+      return perTurn
+        ? `${item.ilosc ?? 0} Żywności na turę`
+        : `jednorazowo ${item.ilosc ?? 0} Żywności`;
     case 'zloze':
       return `dostęp do złoża: ${item.id}`;
     case 'tech':
@@ -346,20 +392,126 @@ export function formatBasketItemBrief(item: BasketItem): string {
     case 'jednostka':
       return `jednostka: ${item.id}`;
     case 'surowiec_boolean':
-      return `dostęp do surowca: ${item.id}`;
+      return `dostęp do surowca: ${resourceDisplayLabel(item.id)}`;
     case 'surowiec_ilosc': {
-      const pakiet = diplomacyHandelSurowcePakietWielkosc();
+      const pakietSize = diplomacyHandelSurowcePakietWielkosc();
       const pakiety = item.ilosc ?? 1;
-      return `${item.id} ×${pakiety * pakiet} (${pakiety} pak.)`;
+      const szt = pakiety * pakietSize;
+      const label = resourceDisplayLabel(item.id);
+      if (perTurn) {
+        const base = `${szt} ${label} na turę`;
+        if (turns != null && turns > 0) {
+          return `${base} (łącznie ${szt * turns} ${label} przez ${turns} tur)`;
+        }
+        return base;
+      }
+      return `jednorazowo ${szt} ${label}`;
     }
     default:
       return item.id ?? item.typ;
   }
 }
 
-export function formatBasketListBrief(items: readonly BasketItem[] | undefined): string {
+export function formatBasketListBrief(
+  items: readonly BasketItem[] | undefined,
+  ctx?: BasketItemFormatCtx,
+): string {
   if (!items?.length) return '—';
-  return items.map(formatBasketItemBrief).join(' · ');
+  return items.map(i => formatBasketItemBrief(i, ctx)).join(' · ');
+}
+
+export interface NegotiationDealParts {
+  /** Etykieta wiersza „dają" (Oni dają / Ty dajesz). */
+  giveLabel: string;
+  giveText: string;
+  /** Etykieta wiersza „chcą/dostajesz". */
+  wantLabel: string;
+  wantText: string;
+  /** Czas / tryb umowy (gdy dotyczy). */
+  schedule?: string;
+}
+
+export function formatNegotiationDealParts(
+  payload: ProposalPayload,
+  opts: { fromPlayerPerspective?: boolean } = {},
+): NegotiationDealParts | null {
+  const give = payload.giveItems ?? [];
+  const receive = payload.receiveItems ?? [];
+  if (give.length === 0 && receive.length === 0) return null;
+
+  const perTurn = payload.resourceTradeMode === 'per_turn';
+  const turns = payload.turns;
+  const ctx: BasketItemFormatCtx = { perTurn, turns };
+  const fromThem = opts.fromPlayerPerspective === true;
+
+  const parts: NegotiationDealParts = {
+    giveLabel: fromThem ? 'Oni dają' : 'Ty dajesz',
+    giveText: formatBasketListBrief(give, ctx),
+    wantLabel: fromThem ? 'Oni chcą' : 'Ty dostajesz',
+    wantText: formatBasketListBrief(receive, ctx),
+  };
+
+  if (turns != null && turns > 0) {
+    if (perTurn) {
+      parts.schedule = `Wymiana co turę przez ${turns} tur`;
+    } else {
+      parts.schedule = `Jednorazowa wymiana (umowa na ${turns} tur)`;
+    }
+  } else if (perTurn) {
+    parts.schedule = 'Wymiana co turę (bez limitu tur w ofercie)';
+  }
+
+  return parts;
+}
+
+/**
+ * Podział koszyka na dwie strony stołu — zawsze z perspektywy GRACZA.
+ * Lewo: Oferujemy (co my dajemy). Prawo: Oferują (co oni dają).
+ * `incoming` = propozycja od drugiej strony (payload w perspektywie proponenta).
+ */
+export function splitNegotiationDealPlayerSides(
+  payload: ProposalPayload,
+  incoming: boolean,
+): { weOffer: readonly BasketItem[]; theyOffer: readonly BasketItem[]; schedule?: string } | null {
+  const give = payload.giveItems ?? [];
+  const receive = payload.receiveItems ?? [];
+  if (give.length === 0 && receive.length === 0) return null;
+
+  const weOffer = incoming ? receive : give;
+  const theyOffer = incoming ? give : receive;
+
+  const perTurn = payload.resourceTradeMode === 'per_turn';
+  const turns = payload.turns;
+  let schedule: string | undefined;
+  if (turns != null && turns > 0) {
+    schedule = perTurn
+      ? `Wymiana co turę przez ${turns} tur`
+      : `Jednorazowa wymiana (umowa na ${turns} tur)`;
+  } else if (perTurn) {
+    schedule = 'Wymiana co turę (bez limitu tur w ofercie)';
+  }
+
+  return { weOffer, theyOffer, schedule };
+}
+
+/** Tekstowe podsumowanie stołu: Oferujemy | Oferują (perspektywa gracza). */
+export function formatNegotiationDealPlayerSummary(
+  payload: ProposalPayload,
+  incoming: boolean,
+): string {
+  const split = splitNegotiationDealPlayerSides(payload, incoming);
+  if (!split) return '';
+
+  const ctx: BasketItemFormatCtx = {
+    perTurn: payload.resourceTradeMode === 'per_turn',
+    turns: payload.turns,
+  };
+  const lines = [
+    `Oferujemy: ${formatBasketListBrief(split.weOffer, ctx)}`,
+    `Oferują: ${formatBasketListBrief(split.theyOffer, ctx)}`,
+  ];
+  if (split.schedule) lines.push(split.schedule);
+  return lines.join(' · ');
 }
 
 /** Dane wejściowe do podsumowania gracza na liście dyplomacji (tylko realne pola stanu). */
@@ -460,22 +612,14 @@ export function formatNegotiationDealSummary(
   payload: ProposalPayload,
   opts: { fromPlayerPerspective?: boolean } = {},
 ): string {
-  const give = payload.giveItems ?? [];
-  const receive = payload.receiveItems ?? [];
-  if (give.length > 0 || receive.length > 0) {
-    const parts: string[] = [];
-    if (opts.fromPlayerPerspective) {
-      parts.push(`Oni dają: ${formatBasketListBrief(give)}`);
-      parts.push(`Oni chcą: ${formatBasketListBrief(receive)}`);
-    } else {
-      parts.push(`Ty dajesz: ${formatBasketListBrief(give)}`);
-      parts.push(`Ty dostajesz: ${formatBasketListBrief(receive)}`);
-    }
-    if (payload.turns != null && payload.turns > 0) {
-      const mode = payload.resourceTradeMode === 'per_turn' ? 'co turę' : 'umowa';
-      parts.push(`${mode}: ${payload.turns} tur`);
-    }
-    return parts.join(' · ');
+  const deal = formatNegotiationDealParts(payload, opts);
+  if (deal) {
+    const lines: string[] = [
+      `${deal.giveLabel}: ${deal.giveText}`,
+      `${deal.wantLabel}: ${deal.wantText}`,
+    ];
+    if (deal.schedule) lines.push(deal.schedule);
+    return lines.join(' · ');
   }
   if (payload.isGift && (payload.givePn ?? 0) > 0) {
     return `Dar: ${payload.givePn} PN`;

@@ -209,7 +209,7 @@ export interface PodzialPracySplit {
 
 /** A unit garrisoned in the city (supplied by the engine via getUnitsAt). */
 export interface GarrisonUnit {
-  /** RuntimeUnit id — potrzebny do akcji „Opuść garnizon" (onLeaveGarrison). */
+  /** RuntimeUnit id — potrzebny do akcji „Odfortyfikuj" (onLeaveGarrison). */
   id: string;
   nazwa: string;
   category?: string;
@@ -218,7 +218,7 @@ export interface GarrisonUnit {
   /**
    * C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): czy ta jednostka jest UKRYTA
    * w garnizonie (Ufort., RuntimeUnit.inGarnizon===true) — tylko takie dostają
-   * przycisk „Opuść garnizon". Jednostki po prostu stojące na heksie miasta
+   * przycisk „Odfortyfikuj". Jednostki po prostu stojące na heksie miasta
    * (niewymagające fortyfikacji) są już sterowalne normalnie z mapy.
    */
   inGarnizon?: boolean;
@@ -252,6 +252,8 @@ export interface CityPanelConfig {
    * stosu na heksie miasta; „Czuwaj"/„Rozwiąż" działają dalej bez zmian.
    */
   onLeaveGarrison?: (unitId: string) => void;
+  /** Odfortyfikowuje wszystkie jednostki w garnizonie na heksie miasta. */
+  onLeaveAllGarrison?: (q: number, r: number) => void;
   /** Player treasury (gold) -> enables the Wykup (rush-buy) button. */
   getTreasury?: (ownerId: number) => number;
   /**
@@ -1914,11 +1916,18 @@ function ensureStyles(): void {
   padding:0.1rem 0;-ms-overflow-style:none;width:auto;max-width:100%;text-align:center;align-self:center;}
 .civ-v-garrison-inline::-webkit-scrollbar{display:none;}
 .civ-v-garrison-label{display:inline-flex;align-items:center;gap:0.28em;font-size:0.82em;font-weight:700;color:var(--text);
-  letter-spacing:0.03em;flex-shrink:0;white-space:nowrap;cursor:help;}
+  letter-spacing:0.03em;flex-shrink:0;white-space:nowrap;cursor:pointer;border-radius:6px;padding:0.18em 0.42em;
+  border:1px solid transparent;transition:color .15s,border-color .15s,background .15s;}
+.civ-v-garrison-label:hover,.civ-v-garrison-label:focus-visible{color:#f0e8b8;border-color:rgba(212,175,90,0.28);
+  background:rgba(212,175,90,0.08);outline:none;}
 .civ-v-garrison-icon{font-size:1.45em;line-height:1;display:flex;align-items:center;flex-shrink:0;opacity:0.95;}
 .civ-v-garrison-count{font-size:0.92em;font-weight:700;color:#d4af5a;}
 .civ-v-garrison-chip{display:inline-flex;align-items:center;gap:0.3em;padding:0.22em 0.52em;border-radius:3px;
-  background:rgba(20,28,40,0.88);border:1px solid rgba(212,175,90,0.28);font-size:0.72em;line-height:1.15;flex-shrink:0;cursor:help;}
+  background:rgba(20,28,40,0.88);border:1px solid rgba(212,175,90,0.28);font-size:0.72em;line-height:1.15;flex-shrink:0;}
+.civ-v-garrison-detail-list{display:flex;flex-direction:column;gap:0.35em;max-height:min(50vh,320px);overflow-y:auto;
+  padding:0.15em 0.05em 0.05em;scrollbar-width:thin;}
+.civ-v-garrison-detail-list .civ-v-garrison-chip{width:100%;font-size:0.78em;padding:0.35em 0.55em;}
+.civ-v-garrison-detail-list .civ-v-garrison-chip .gn{max-width:none;flex:1;}
 .civ-v-garrison-chip .gi{font-size:1.15em;line-height:1;}
 .civ-v-garrison-chip .gn{font-weight:600;color:var(--text);max-width:7em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .civ-v-garrison-chip .hpb{width:2em;height:0.4em;background:#0a0e14;border-radius:2px;overflow:hidden;border:1px solid rgba(0,0,0,0.35);flex-shrink:0;}
@@ -1929,6 +1938,10 @@ function ensureStyles(): void {
   background:rgba(212,175,90,0.12);color:#e0b24a;font-size:0.85em;line-height:1;border-radius:3px;
   padding:0.05em 0.32em;margin-left:0.1em;}
 .civ-v-garrison-leave-btn:hover{background:rgba(212,175,90,0.28);color:#f0d290;}
+.civ-v-garrison-leave-all-btn{display:block;width:100%;margin-top:0.5rem;cursor:pointer;
+  border:1px solid rgba(212,175,90,0.45);background:rgba(212,175,90,0.14);color:#e0b24a;
+  font-size:0.78em;padding:0.35em 0.6em;border-radius:4px;text-align:center;}
+.civ-v-garrison-leave-all-btn:hover{background:rgba(212,175,90,0.28);color:#f0d290;}
 .civ-v-garrison-empty{display:none;}
 .civ-v-res-scroll{display:flex;align-items:center;justify-content:center;gap:1.15rem;
   justify-self:center;align-self:center;max-width:min(100%,96vw);
@@ -7305,68 +7318,64 @@ function renderBuildSplitPanel(
   mount.appendChild(pane);
 }
 
+function appendGarrisonUnitChip(parent: HTMLElement, u: GarrisonUnit): void {
+  const hp = u.health ?? 100;
+  const max = u.maxHealth ?? 100;
+  const pct = Math.max(0, Math.min(100, Math.round((hp / Math.max(1, max)) * 100)));
+  const low = pct < 40;
+  const isHidden = u.inGarnizon === true;
+  const chip = el('div', 'civ-v-garrison-chip' + (isHidden ? ' in-garnizon' : ''));
+  chip.innerHTML =
+    `<span class="gi">${cityPanelChipIconWrap('tb-army', 14)}</span><span class="gn">${u.nazwa}</span>` +
+    `<span class="hpb"><span class="hpf ${low ? 'hpl' : ''}" style="width:${pct}%"></span></span>`;
+  chip.title = `${u.nazwa} · ${hp}/${max} HP`
+    + (isHidden ? ' · w koszarach (ufortyfikowana)' : '');
+  if (isHidden && cfg.onLeaveGarrison) {
+    const leaveBtn = document.createElement('button');
+    leaveBtn.type = 'button';
+    leaveBtn.className = 'civ-v-garrison-leave-btn';
+    leaveBtn.textContent = '↩';
+    leaveBtn.title = `Odfortyfikuj — ${u.nazwa} zostaje na heksie miasta`;
+    leaveBtn.setAttribute('aria-label', `Odfortyfikuj — ${u.nazwa}`);
+    leaveBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      cfg.onLeaveGarrison?.(u.id);
+    });
+    chip.appendChild(leaveBtn);
+  }
+  parent.appendChild(chip);
+}
+
 function renderTopBarGarrison(mount: HTMLElement, city: City): void {
   mount.innerHTML = '';
   const units = cfg.getUnitsAt?.(city.q, city.r);
   const count = units?.length ?? 0;
-  const showDetail = () => buildGarnizonDetailCard(units ?? null, count);
+  const showDetail = () => buildGarnizonDetailCard(units ?? null, count, city.q, city.r);
 
-  const label = el('span', 'civ-v-garrison-label');
+  const label = el('button', 'civ-v-garrison-label');
+  label.type = 'button';
   label.title = count === 0
-    ? 'Garnizon pusty — brak wojska w mieście'
-    : `Garnizon — ${count} jedn. w mieście`;
+    ? 'Garnizon pusty — kliknij, aby zobaczyć szczegóły'
+    : `Garnizon — ${count} jedn. w mieście · kliknij, aby zobaczyć listę`;
   const icon = el('span', 'civ-v-garrison-icon');
   icon.innerHTML = cityPanelChipIconWrap('chip-garrison', 18);
   label.appendChild(icon);
   const name = el('span');
   name.textContent = 'Garnizon';
   label.appendChild(name);
-  if (units !== undefined) {
-    const cnt = el('span', 'civ-v-garrison-count');
-    cnt.textContent = String(count);
-    label.appendChild(cnt);
-  } else {
-    const cnt = el('span', 'civ-v-garrison-count');
-    cnt.textContent = '—';
-    label.appendChild(cnt);
-  }
+  const cnt = el('span', 'civ-v-garrison-count');
+  cnt.textContent = units !== undefined ? String(count) : '—';
+  label.appendChild(cnt);
   mount.appendChild(label);
-  attachHoverDetail(mount, showDetail, 220, 'left');
-
-  if (units === undefined || count === 0) return;
-
-  for (const u of units) {
-    const hp = u.health ?? 100;
-    const max = u.maxHealth ?? 100;
-    const pct = Math.max(0, Math.min(100, Math.round((hp / Math.max(1, max)) * 100)));
-    const low = pct < 40;
-    const isHidden = u.inGarnizon === true;
-    const chip = el('div', 'civ-v-garrison-chip' + (isHidden ? ' in-garnizon' : ''));
-    chip.innerHTML =
-      `<span class="gi">${cityPanelChipIconWrap('tb-army', 14)}</span><span class="gn">${u.nazwa}</span>` +
-      `<span class="hpb"><span class="hpf ${low ? 'hpl' : ''}" style="width:${pct}%"></span></span>`;
-    chip.title = `${u.nazwa} · ${hp}/${max} HP`
-      + (isHidden ? ' · w koszarach (ufortyfikowana)' : '');
-    // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): jedyny sposób na wyprowadzenie
-    // trwale ufortyfikowanej jednostki bez rozkazu ruchu z listy armii.
-    if (isHidden && cfg.onLeaveGarrison) {
-      const leaveBtn = document.createElement('button');
-      leaveBtn.type = 'button';
-      leaveBtn.className = 'civ-v-garrison-leave-btn';
-      leaveBtn.textContent = '↩'; // ↩
-      leaveBtn.title = `Opuść garnizon — ${u.nazwa} wraca na mapę (odfortyfikowanie)`;
-      leaveBtn.setAttribute('aria-label', `Opuść garnizon — ${u.nazwa}`);
-      leaveBtn.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        cfg.onLeaveGarrison?.(u.id);
-      });
-      chip.appendChild(leaveBtn);
-    }
-    mount.appendChild(chip);
-  }
+  attachInteractiveDetail(label, showDetail, { delayMs: 220, sideHint: 'left' });
 }
 
-function buildGarnizonDetailCard(units: GarrisonUnit[] | null, count: number): HTMLDivElement {
+function buildGarnizonDetailCard(
+  units: GarrisonUnit[] | null,
+  count: number,
+  cityQ?: number,
+  cityR?: number,
+): HTMLDivElement {
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Garnizon — szczegóły</span>'));
   const intro = el('div', 'dc-note');
@@ -7378,12 +7387,19 @@ function buildGarnizonDetailCard(units: GarrisonUnit[] | null, count: number): H
   const g = appendDetailGrid(card);
   gridDetailRow(g, 'Jednostki', units === null ? '— (brak hooka silnika)' : count === 0 ? 'Brak garnizonu' : String(count));
   if (units && units.length > 0) {
-    appendDetailSection(card, 'Lista');
-    const gl = appendDetailGrid(card);
-    for (const u of units) {
-      const hp = u.health ?? 100;
-      const max = u.maxHealth ?? 100;
-      gridDetailRow(gl, u.nazwa, `${hp}/${max} HP`);
+    appendDetailSection(card, 'Lista jednostek');
+    const list = el('div', 'civ-v-garrison-detail-list');
+    for (const u of units) appendGarrisonUnitChip(list, u);
+    card.appendChild(list);
+    const hiddenCount = units.filter(u => u.inGarnizon === true).length;
+    if (hiddenCount > 1 && cfg.onLeaveAllGarrison && cityQ !== undefined && cityR !== undefined) {
+      const allBtn = document.createElement('button');
+      allBtn.type = 'button';
+      allBtn.className = 'civ-v-garrison-leave-all-btn';
+      allBtn.textContent = 'Odfortyfikuj wszystkie';
+      allBtn.title = `Odfortyfikuj wszystkie ${hiddenCount} jednostki — zostają na heksie miasta`;
+      allBtn.addEventListener('click', () => cfg.onLeaveAllGarrison?.(cityQ, cityR));
+      card.appendChild(allBtn);
     }
   }
   appendDetailSection(card, 'Wpływ na Prawo');

@@ -51,13 +51,13 @@
     },
     "relief_land_fraction": {
       "low": { "mountain": 0.045, "highland": 0.105 },
-      "medium": { "mountain": 0.09, "highland": 0.165 },
+      "medium": { "mountain": 0.075, "highland": 0.125 },
       "high": { "mountain": 0.18, "highland": 0.27 }
     },
     "relief_overflow_cap_frac": {
-      "_opis": "Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZROŚCIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland ≈ docelowa górzystość lądu per tier suwaka 'Relief': low≈12%, medium≈18% (0,06+0,09 — progi fair-play-grid-test.cjs: max(3, ceil(land·mountain)) Gór i max(3, ceil(land·highland)) Wzgórz na komórkę 25×25/15×15), high≈30%. Rewizja 2026-07-26: właściciel — więcej gór (~12%→~18% górzystości lądu na medium).",
+      "_opis": "Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZROŚCIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland ≈ docelowa górzystość lądu per tier suwaka 'Relief': low≈12%, medium≈15% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 — progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high≈30%.",
       "low": { "mountain": 0.045, "highland": 0.075 },
-      "medium": { "mountain": 0.06, "highland": 0.09 },
+      "medium": { "mountain": 0.05, "highland": 0.085 },
       "high": { "mountain": 0.12, "highland": 0.18 }
     },
     "pasma_gorskie": {

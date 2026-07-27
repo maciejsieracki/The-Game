@@ -5,6 +5,10 @@ const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
 
+/** R-MAPGEN-KOLEJNOSC-Q3=A (2026-07-27): jakość reliefu > czas; wieloetapowy floor zostaje. */
+const STANDARD_GEN_MS_LIMIT = 7000;
+const DUZY_GEN_MS_LIMIT = 15000;
+
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.join(__dirname, '.map-gen-regression-entry.ts');
 const BUNDLE = path.join(__dirname, '.map-gen-regression-bundle.cjs');
@@ -129,11 +133,11 @@ const detOk = ha === hb;
 console.log(`  hash A=${ha} B=${hb} → ${detOk ? 'IDENTYCZNY' : 'RÓŻNY'}`);
 if (!detOk) fail++;
 
-const stdOk = tStd < 5000;
-const duzyOk = tDuzy < 15000;
+const stdOk = tStd < STANDARD_GEN_MS_LIMIT;
+const duzyOk = tDuzy < DUZY_GEN_MS_LIMIT;
 console.log(`\n=== AC ===`);
-console.log(`  standard <5s: ${stdOk ? 'PASS' : 'FAIL'} (${(tStd / 1000).toFixed(2)}s)`);
-console.log(`  duża <15s: ${duzyOk ? 'PASS' : 'FAIL'} (${(tDuzy / 1000).toFixed(2)}s)`);
+console.log(`  standard <${STANDARD_GEN_MS_LIMIT / 1000}s: ${stdOk ? 'PASS' : 'FAIL'} (${(tStd / 1000).toFixed(2)}s)`);
+console.log(`  duża <${DUZY_GEN_MS_LIMIT / 1000}s: ${duzyOk ? 'PASS' : 'FAIL'} (${(tDuzy / 1000).toFixed(2)}s)`);
 console.log(`  0 rzek bez ujścia (luźne): ${totalBad === 0 ? 'PASS' : 'FAIL'} (${totalBad} złych)`);
 console.log(`  0 rzek bez REALNEGO ujścia (pathReachesRealSea): ${totalBadReal === 0 ? 'PASS' : 'FAIL'} (${totalBadReal} złych)`);
 console.log(`  determinizm: ${detOk ? 'PASS' : 'FAIL'}`);

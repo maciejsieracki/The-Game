@@ -85,6 +85,8 @@ export interface PreBattleInfo {
   prognoza?: string;
   werdykt?: string;
   canRetreat?: boolean;
+  /** Gdy canRetreat===false (obrońca gracza) — pokaż przycisk Wycofaj i Esc. */
+  defenderCanRetreat?: boolean;
   /** Opcjonalne nadpisanie — inaczej z getCivBonusy(ownerId) */
   bonusyAtakujacy?: readonly CivBonusLite[];
   bonusyObronca?: readonly CivBonusLite[];
@@ -394,15 +396,19 @@ function defaultVerdict(atkPct: number): string {
   return 'Szanse umiarkowane';
 }
 
+function retreatUiEnabled(info: PreBattleInfo): boolean {
+  return info.canRetreat !== false || info.defenderCanRetreat === true;
+}
+
 function attachKeyboard(
   cb: PreBattleCallbacks,
   info: PreBattleInfo,
   opts?: PreBattleOptions,
 ): void {
-  const canRetreat = info.canRetreat !== false;
+  const showRetreat = retreatUiEnabled(info);
   const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
   keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && canRetreat) {
+    if (e.key === 'Escape' && showRetreat) {
       e.preventDefault();
       cb.onCancel();
       hidePreBattle();
@@ -581,6 +587,8 @@ function metaHtml(info: PreBattleInfo): string {
 }
 
 function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManual: boolean, hasSave: boolean): HTMLElement {
+  const defenderCanRetreat = info.defenderCanRetreat === true;
+  const showRetreat = canRetreat || defenderCanRetreat;
   const place = info.miejsce ?? info.lokacja ?? info.teren;
   const kicker = canRetreat ? 'ROZSTAWIENIE BITWY' : 'WRÓG ATAKUJE';
   const title = (canRetreat ? 'Atakujesz: ' : 'Broni się: ') + esc(place);
@@ -591,7 +599,7 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
   const deployIcon = canRetreat ? PB_ICON_DEPLOY : PB_ICON_SHIELD;
 
   const btns: string[] = [];
-  if (canRetreat) {
+  if (showRetreat) {
     btns.push('<button type="button" class="pb-btn pb-danger" data-act="cancel">' + PB_SVG.retreat + 'Wycofaj</button>');
   }
   btns.push('<button type="button" class="pb-btn" data-act="auto">' + PB_SVG.auto + 'Auto</button>');
@@ -600,14 +608,16 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
     btns.push('<button type="button" class="pb-btn" data-act="save">Zapisz</button>');
   }
 
-  const noRetreatBar = canRetreat
-    ? ''
+  const noRetreatBar = showRetreat
+    ? (defenderCanRetreat && !canRetreat
+        ? '<div class="pb-note">Wycofaj — uniknij walki (jednostka cofa się na sąsiedni heks)</div>'
+        : '')
     : '<div class="pb-noretreat">' + PB_ICON_NO_RETREAT +
       'Wycofanie niedostępne — to wróg wybrał bitwę (obrońca nie może uciec)</div>';
 
   const enterLabel = defaultManual ? deployLabel : 'Auto';
   const keysParts: string[] = ['<b>Enter</b> = ' + esc(enterLabel)];
-  if (canRetreat) keysParts.push('<b>Esc</b> = Wycofaj');
+  if (showRetreat) keysParts.push('<b>Esc</b> = Wycofaj');
   if (hasSave) keysParts.push('<b>Zapisz</b> dostępny przed bitwą');
   const keys = '<div class="pb-keys">' + keysParts.join(' · ') + '</div>';
 

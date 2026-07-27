@@ -84,9 +84,19 @@ assert(target !== null, 'wybiera cel w zasięgu');
 
 const beforeQ = unit.q;
 const beforeR = unit.r;
-const res = advanceScoutAutoExplore(unit, map, explored, [unit], sight, () => 0.42);
+let stepCalls = 0;
+const res = advanceScoutAutoExplore(
+  unit,
+  map,
+  explored,
+  [unit],
+  sight,
+  () => 0.42,
+  () => { stepCalls++; },
+);
 assert(res.moved && (unit.q !== beforeQ || unit.r !== beforeR), 'zwiadowca zmienia pozycję');
 assert(unit.ruchLeft < 3, 'zużywa punkty ruchu');
+assert(stepCalls > 0 && stepCalls === res.steps, 'onAfterStep wywoływany po każdym kroku');
 
 const u2 = scout(3, 3, 0);
 assert(!advanceScoutAutoExplore(u2, map, explored, [u2], sight).moved, 'brak ruchu = brak ruchu');

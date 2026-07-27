@@ -294,6 +294,26 @@
     "sekcja": "§6 Dyplomacja AI",
     "opis": "Min. handlowość archetypu do propozycji handlu przez AI."
   },
+  "ai_sojusz_obowiazek_min_ratio": {
+    "wartosc": 0.55,
+    "sekcja": "§6 Dyplomacja AI",
+    "opis": "Min. stosunek Mocy sojusznika do celu wojny — poniżej AI odmawia pomocy (N4)."
+  },
+  "ai_sojusz_obowiazek_min_ratio_pokojowy": {
+    "wartosc": 0.75,
+    "sekcja": "§6 Dyplomacja AI",
+    "opis": "Min. stosunek Mocy dla archetypu pokojowego — wyższy próg odmowy obowiązku sojuszu."
+  },
+  "ai_sojusz_obowiazek_max_wojny": {
+    "wartosc": 1,
+    "sekcja": "§6 Dyplomacja AI",
+    "opis": "AI odmawia pomocy sojuszniczej gdy liczba aktywnych wojen >= ten próg."
+  },
+  "ai_sojusz_obowiazek_min_zaufanie": {
+    "wartosc": 20,
+    "sekcja": "§6 Dyplomacja AI",
+    "opis": "Min. Zaufanie (pkt) AI do proszącego sojusznika — poniżej AI odmawia pomocy (N4)."
+  },
   "ai_wycofanie_hp_prog": {
     "wartosc": 0.3,
     "sekcja": "§2 Ruch",
@@ -305,9 +325,9 @@
     "opis": "Minimalna odległość (pola heksagonalne) między miastami AI przy zakładaniu nowego."
   },
   "ekspansja_zagroz_zasieg": {
-    "wartosc": 5,
+    "wartosc": 7,
     "sekcja": "§3/§4 Ekspansja",
-    "opis": "Zasięg (pola) od miasta AI, przy którym ustawiana jest flaga ZAGROŻENIE."
+    "opis": "Zasięg (pola) od miasta AI, przy którym ustawiana jest flaga ZAGROŻENIE. P-AI-008=C: 7 hex (było 5)."
   },
   "ekspansja_heurystyka_zywnosc_pkt": {
     "wartosc": 3,

@@ -37,6 +37,7 @@ fs.writeFileSync(
   [
     "export { terrainDefenseMultiplier, terrainRangeDelta, cavalryTerrainMultiplier } from '../src/game/combat';",
     "export { presetForWorldTerrain, generateBattleTerrain, BTerrain } from '../src/battle/battle-terrain';",
+    "export { buildTerrainTerenTooltipParts, terrainTerenTooltipColor } from '../src/battle/battleTerrainTooltip';",
   ].join('\n'),
   'utf8',
 );
@@ -58,6 +59,8 @@ const {
   presetForWorldTerrain,
   generateBattleTerrain,
   BTerrain,
+  buildTerrainTerenTooltipParts,
+  terrainTerenTooltipColor,
 } = require(OUT);
 
 const terrainData = JSON.parse(fs.readFileSync(TERRAIN_JSON, 'utf8'));
@@ -200,6 +203,75 @@ console.log('ETAP 3 -- przejezdnosc/koszt konnicy i rydwanow');
     const mult = cavalryTerrainMultiplier(wzgMap.combatTerrainName(hc, hr), terrainData);
     assert(Number.isFinite(mult), 'konnica MOZE wejsc na Wzgorza (nie Gory) -- tylko Gory jest NIEDOSTEPNE');
   }
+}
+
+// ---------------------------------------------------------------------------
+// ETAP 4 (C-TEREN-IMPL-3=B): tooltip TEREN — teksty modyfikatorow terenu.
+// ---------------------------------------------------------------------------
+console.log('ETAP 4 -- tooltip TEREN (C-TEREN-IMPL-3=B)');
+{
+  const goryFoot = buildTerrainTerenTooltipParts({
+    terrain: 'Gory',
+    onWallWalkway: false,
+    onFord: false,
+    onShore: false,
+    rangedUnit: false,
+    isCatapult: false,
+    rangeBase: 0,
+    mounted: false,
+    moveCost: 2,
+    baseMoveCost: 2,
+    terrainData,
+  });
+  assert(goryFoot.some((p) => p.text.includes('+75%')), 'Gory piechota: obrona +75% w tooltipie');
+  assert(goryFoot.some((p) => p.text.includes('Koszt ruchu: 2')), 'Gory piechota: koszt ruchu 2 pkt');
+
+  const goryCav = buildTerrainTerenTooltipParts({
+    terrain: 'Gory',
+    onWallWalkway: false,
+    onFord: false,
+    onShore: false,
+    rangedUnit: false,
+    isCatapult: false,
+    rangeBase: 0,
+    mounted: true,
+    moveCost: Infinity,
+    baseMoveCost: 2,
+    terrainData,
+  });
+  assert(goryCav.some((p) => /NIEDOST[EĘ]PNE/i.test(p.text)), 'Gory konnica: NIEDOSTEPNE w tooltipie');
+
+  const lasArcher = buildTerrainTerenTooltipParts({
+    terrain: 'Las',
+    onWallWalkway: false,
+    onFord: false,
+    onShore: false,
+    rangedUnit: true,
+    isCatapult: false,
+    rangeBase: 2,
+    mounted: false,
+    moveCost: 2,
+    baseMoveCost: 2,
+    terrainData,
+  });
+  assert(lasArcher.some((p) => p.text.includes('vs dystans')), 'Las: obrona vs dystans');
+  assert(lasArcher.some((p) => /Zasi[eę]g/i.test(p.text) && p.text.includes('-1')), 'Las lucznik: -1 hex zasieg');
+
+  const fordParts = buildTerrainTerenTooltipParts({
+    terrain: 'Plaskie (rownina/laka)',
+    onWallWalkway: false,
+    onFord: true,
+    onShore: false,
+    rangedUnit: false,
+    isCatapult: false,
+    rangeBase: 0,
+    mounted: false,
+    moveCost: 1,
+    baseMoveCost: 1,
+    terrainData,
+  });
+  assert(fordParts.some((p) => p.text.includes('brodzie')), 'Brod: tekst kary w tooltipie');
+  assertEq(terrainTerenTooltipColor(fordParts), '#e08a8a', 'kolor tooltipu: czerwony gdy kara (brod)');
 }
 
 console.log('');

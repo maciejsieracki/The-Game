@@ -17,6 +17,7 @@ export {
   isTarasyCiv,
   isImprovementVisibleInBuildPanel,
   isFarmBaseTerrain,
+  stripImprovementsWhenForestRemoved,
 } from '../src/map/improvement-build';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
@@ -106,7 +107,9 @@ ok(!qInka('farma', 5, 0), 'farma NOT on wybrzeze');
 ok(qRzym('farma', 2, 0), 'WOLNE-WSPOL: farma on zloze bydla nakladka');
 ok(qInka('fort', 2, 0), 'WOLNE-WSPOL: fort on zloze hex');
 ok(qInka('glinianka', 5, 1), 'REMIND-A: glinianka ON zloze gliny');
-ok(qInka('tartak', 5, 1), 'tartak ON zloze gliny (rownina — teren OK, współistnienie)');
+ok(!qInka('tartak', 5, 1), 'tartak NOT on rownina bez lasu (tylko Nakladka.Las)');
+ok(qInka('tartak', 3, 1), 'tartak ON laka+las');
+ok(!qInka('tartak', 1, 0), 'tartak NOT on plain laka bez lasu');
 ok(qRzym('bydlo', 2, 0), 'ABC-18: bydlo buildable on zloze bydla (pierwsze pastwisko)');
 ok(qRzym('bydlo', 1, 0), 'bydlo after empire unlock on plain');
 ok(qRzym('owce', 1, 1), 'ABC-18: owce buildable on zloze owiec (pierwsze pastwisko)');
@@ -187,6 +190,9 @@ const qOverlap = M.buildImprovementQualifier({
 });
 ok(!qOverlap('wyrab', 4, 0), 'wyrab NOT on Sparta-owned forest (territory overlap)');
 ok(qOverlap('wyrab', 2, 1), 'wyrab OK on player-owned forest');
+
+ok(M.stripImprovementsWhenForestRemoved(['farma', 'tartak', 'droga']).join(',') === 'farma,droga', 'strip tartak when forest removed');
+ok(M.stripImprovementsWhenForestRemoved(['tartak']).length === 0, 'strip tartak only hex');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

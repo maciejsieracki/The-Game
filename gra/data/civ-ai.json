@@ -3,7 +3,7 @@
     {
       "Cywilizacja": "Grecy",
       "agresywnosc": 4,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 3,
       "priorytetMilitarny": 5,
       "priorytetEkonomia": 5,
       "priorytetNauka": 6,
@@ -15,7 +15,7 @@
     {
       "Cywilizacja": "Rzymianie",
       "agresywnosc": 8,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 5,
       "priorytetMilitarny": 6,
       "priorytetEkonomia": 5,
       "priorytetNauka": 5,
@@ -27,7 +27,7 @@
     {
       "Cywilizacja": "Chińczycy",
       "agresywnosc": 2,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 2,
       "priorytetMilitarny": 4,
       "priorytetEkonomia": 6,
       "priorytetNauka": 6,
@@ -39,7 +39,7 @@
     {
       "Cywilizacja": "Inkowie",
       "agresywnosc": 4,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 3,
       "priorytetMilitarny": 5,
       "priorytetEkonomia": 5,
       "priorytetNauka": 5,
@@ -51,7 +51,7 @@
     {
       "Cywilizacja": "Zulusi",
       "agresywnosc": 9,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 4,
       "priorytetMilitarny": 8,
       "priorytetEkonomia": 4,
       "priorytetNauka": 4,
@@ -63,7 +63,7 @@
     {
       "Cywilizacja": "Egipt",
       "agresywnosc": 4,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 2,
       "priorytetMilitarny": 5,
       "priorytetEkonomia": 6,
       "priorytetNauka": 5,
@@ -75,7 +75,7 @@
     {
       "Cywilizacja": "Sumerowie",
       "agresywnosc": 3,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 2,
       "priorytetMilitarny": 4,
       "priorytetEkonomia": 5,
       "priorytetNauka": 8,
@@ -87,7 +87,7 @@
     {
       "Cywilizacja": "Celtowie",
       "agresywnosc": 6,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 4,
       "priorytetMilitarny": 8,
       "priorytetEkonomia": 5,
       "priorytetNauka": 4,
@@ -99,7 +99,7 @@
     {
       "Cywilizacja": "Germanie",
       "agresywnosc": 6,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 4,
       "priorytetMilitarny": 8,
       "priorytetEkonomia": 4,
       "priorytetNauka": 4,
@@ -111,7 +111,7 @@
     {
       "Cywilizacja": "Harappa",
       "agresywnosc": 2,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 3,
       "priorytetMilitarny": 4,
       "priorytetEkonomia": 7,
       "priorytetNauka": 5,
@@ -123,7 +123,7 @@
     {
       "Cywilizacja": "Hetyci",
       "agresywnosc": 5,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 3,
       "priorytetMilitarny": 6,
       "priorytetEkonomia": 5,
       "priorytetNauka": 4,
@@ -135,7 +135,7 @@
     {
       "Cywilizacja": "Słowianie",
       "agresywnosc": 6,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 4,
       "priorytetMilitarny": 6,
       "priorytetEkonomia": 5,
       "priorytetNauka": 5,
@@ -147,7 +147,7 @@
     {
       "Cywilizacja": "Babilonia",
       "agresywnosc": 4,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 2,
       "priorytetMilitarny": 5,
       "priorytetEkonomia": 5,
       "priorytetNauka": 5,
@@ -159,7 +159,7 @@
     {
       "Cywilizacja": "Asyria",
       "agresywnosc": 8,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 5,
       "priorytetMilitarny": 8,
       "priorytetEkonomia": 5,
       "priorytetNauka": 5,
@@ -171,7 +171,7 @@
     {
       "Cywilizacja": "Fenicjanie",
       "agresywnosc": 3,
-      "ekspansywnosc": 0,
+      "ekspansywnosc": 2,
       "priorytetMilitarny": 5,
       "priorytetEkonomia": 8,
       "priorytetNauka": 5,

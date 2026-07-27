@@ -630,9 +630,10 @@ export interface TerrainResult {
   nakladka: Nakladka;
 }
 
-/** Progi klasyfikacji terenu (szum → typ heksa). */
+/** Progi klasyfikacji terenu (szum → typ heksa). Las: wyłącznie {@link reapplyForestOverlay}. */
 export interface TerrainClassifyThresholds {
   desert?: number;
+  /** @deprecated Nieużywane w classifyTerrain — las w reapplyForestOverlay (R-MAPGEN-KOLEJNOSC-Q1=B). */
   forest?: number;
   /** Niższy = więcej gór. */
   mountain?: number;
@@ -650,9 +651,7 @@ export interface TerrainScratch {
 }
 
 /**
- * Klasyfikuje teren jednego heksa na podstawie szumow i maski ladu.
- * Zachowuje DOKLADNIE logike z oryginalnego generator.ts (te same progi),
- * jedynie wydzielona do nazwanej, testowalnej funkcji.
+ * Klasyfikuje teren bazowy jednego heksa (bez nakładki lasu — patrz reapplyForestOverlay).
  *
  * @param elevContinental elevation * landMask (juz po przemnozeniu)
  * @param landMask        surowa maska ladu w tym heksie
@@ -735,7 +734,6 @@ export function classifyTerrain(
   cellBias = 0,
 ): TerrainResult {
   const desTh = thresholds?.desert ?? 0.63;
-  const forTh = climateForestThreshold(climateBand, thresholds?.forest ?? 0.58);
   const mtnTh = thresholds?.mountain ?? 0.75;
   const hiTh = thresholds?.highland ?? 0.60;
   const elevG = reliefElevGates(mtnTh);
@@ -765,18 +763,6 @@ export function classifyTerrain(
     } else {
       terenBazowy = TerenBazowy.Laka;
     }
-
-    // Las (nie na pustyni, nie na gorach). elevContinental bywa ~0 na heksach
-    // „dopisanych” przy niskim udziale lądu — wtedy wystarczy landMask.
-    if (
-      climateBand !== 'desert' &&
-      terenBazowy !== TerenBazowy.Gory &&
-      terenBazowy !== TerenBazowy.Pustynia &&
-      forNoise > forTh &&
-      (landMask > 0.04 || elevContinental > 0.14)
-    ) {
-      nakladka = Nakladka.Las;
-    }
   }
 
   return { terenBazowy, nakladka };
@@ -784,6 +770,7 @@ export function classifyTerrain(
 
 /**
  * Klasyfikacja lądu bez gór/wzgórz — relief nadaje wyłącznie applyReliefByNoiseRank.
+ * Bez nakładki lasu (R-MAPGEN-KOLEJNOSC-Q1=B).
  */
 export function classifyTerrainFlat(
   elevContinental: number,
@@ -797,9 +784,8 @@ export function classifyTerrainFlat(
   cellBias = 0,
 ): TerrainResult {
   const desTh = thresholds?.desert ?? 0.63;
-  const forTh = climateForestThreshold(climateBand, thresholds?.forest ?? 0.58);
   let terenBazowy: TerenBazowy;
-  let nakladka: Nakladka = Nakladka.Brak;
+  const nakladka: Nakladka = Nakladka.Brak;
 
   if (elevContinental < 0.14) {
     terenBazowy = TerenBazowy.Laka;
@@ -816,19 +802,12 @@ export function classifyTerrainFlat(
     terenBazowy = TerenBazowy.Laka;
   }
 
-  if (
-    climateBand !== 'desert' &&
-    terenBazowy !== TerenBazowy.Pustynia &&
-    forNoise > forTh &&
-    (landMask > 0.04 || elevContinental > 0.14)
-  ) {
-    nakladka = Nakladka.Las;
-  }
-
   return { terenBazowy, nakladka };
 }
 
 /**
+ * **Jedyny** etap nakładania lasu w pipeline generatora (R-MAPGEN-KOLEJNOSC-Q1=B).
+ * Wołany po finalnym reliefie i rzekach, przed złożami.
  * Nakładka lasu po reliefie — **osobno na każdej wyspie / strefie kontynentu** (pangea: per masa).
  * Ranking forNoise w partycji; globalnie ~2× gęściej niż wcześniej.
  */
@@ -915,7 +894,7 @@ export function reapplyForestOverlay(
  */
 const REAPPLY_RELIEF_BUDGET_FRAC: Record<ReliefDensityTier, number> = {
   low: 0.10,
-  medium: 0.17,
+  medium: 0.15,
   high: 0.30,
 };
 
@@ -977,7 +956,7 @@ export type ReliefDensityTier = 'low' | 'medium' | 'high';
 
 const FALLBACK_RELIEF_FRAC: Record<ReliefDensityTier, { mountain: number; highland: number }> = {
   low: { mountain: 0.045, highland: 0.105 },
-  medium: { mountain: 0.09, highland: 0.165 },
+  medium: { mountain: 0.075, highland: 0.125 },
   high: { mountain: 0.18, highland: 0.27 },
 };
 
@@ -1315,12 +1294,12 @@ function applyReliefToLandKeys(
 }
 
 function reliefBonusCapMountain(tier: ReliefDensityTier, landCount: number): number {
-  const frac = tier === 'high' ? 0.14 : tier === 'low' ? 0.05 : 0.09;
+  const frac = tier === 'high' ? 0.14 : tier === 'low' ? 0.05 : 0.075;
   return Math.max(0, Math.ceil(landCount * frac));
 }
 
 function reliefBonusCapHighland(tier: ReliefDensityTier, landCount: number): number {
-  const frac = tier === 'high' ? 0.22 : tier === 'low' ? 0.08 : 0.14;
+  const frac = tier === 'high' ? 0.22 : tier === 'low' ? 0.08 : 0.12;
   return Math.max(0, Math.ceil(landCount * frac));
 }
 
@@ -1328,7 +1307,7 @@ function reliefBonusCapHighland(tier: ReliefDensityTier, landCount: number): num
  * Anty-klaster w komórce żelaza (fair play — rozkład, nie jeden stos wzgórz).
  * Frakcja czytana z Panel-A (`gestosc.relief_overflow_cap_frac`, C-MAPA-Q2=B) — patrz
  * mapGenReliefOverflowCapFrac. To TEN SAM sufit, który (po włączeniu przez
- * RELIEF_OVERFLOW_CAP_MULT) egzekwuje docelową górzystość ~18% dla tieru medium.
+ * RELIEF_OVERFLOW_CAP_MULT) egzekwuje docelową górzystość ~15% dla tieru medium (R-MAPGEN-KOLEJNOSC-Q2=C).
  */
 function reliefSpreadCapMountain(tier: ReliefDensityTier, landCount: number): number {
   const frac = mapGenReliefOverflowCapFrac(tier).mountain;
@@ -1812,14 +1791,13 @@ function forceReliefInCell(
  * Góra→Wzgórza, Wzgórze→Równina) był wtedy uznany za sztuczną regularność, więc mnożnik = ∞
  * wyłączał cap (gwarancja minimum zostawała — force*InCell).
  *
- * PONOWNIE WŁĄCZONE — Maciej 2026-07-26, C-MAPA-Q2=B (świadoma rewizja 80A): sufit
- * `reliefSpreadCapMountain`/`reliefSpreadCapHighland` (frakcje z `gestosc.relief_overflow_cap_frac`,
- * ~0,04 Gór / ~0,06 Wzgórz na komórkę dla tieru medium — suma ≈10% górzystości lądu) egzekwowany
+ * PONOWNIE WŁĄCZONE — Maciej 2026-07-26, C-MAPA-Q2=B; skorygowane R-MAPGEN-KOLEJNOSC-Q2=C (2026-07-27):
+ * sufit `reliefSpreadCapMountain`/`reliefSpreadCapHighland` (frakcje z `gestosc.relief_overflow_cap_frac`,
+ * ~0,05 Gór / ~0,085 Wzgórz na komórkę dla tieru medium — suma ≈15% górzystości lądu) egzekwowany
  * mnożnikiem 1 (bez marginesu) PRZY ZASIEWANIU (ensureReliefGridCoverage wołane w generator.ts
  * PRZED growMountainRanges) i PO ROZROŚCIE pasm (to samo wywołanie ponownie na finalnej
- * geografii, PO growMountainRanges — patrz generator.ts). Właściciel został uprzedzony, że efekt
- * (~10%) jest NIŻSZY niż 13,8% odrzucone wcześniej, i mimo to wybrał ten wariant, bo priorytetem
- * jest przejście fair-play-grid-test.cjs bez naginania progów testu. Limit skupiska (decyzja 63,
+ * geografii, PO growMountainRanges — patrz generator.ts). Docelowa górzystość lądu tier medium
+ * ≈15% (R-MAPGEN-KOLEJNOSC-Q2=C). Limit skupiska (decyzja 63,
  * MAX_MOUNTAIN_RANGE_CLUSTER_SIZE=10) i floor 2/2 na komórkę (MIN_MOUNTAINS_IRON_CELL/
  * MIN_HIGHLANDS_COPPER_CELL) zostają nienaruszone — te capy nigdy nie schodzą poniżej floora
  * (patrz `Math.max(MIN_..._CELL, ...)` w capMountainOverflowInCell/capHighlandOverflowInCell).

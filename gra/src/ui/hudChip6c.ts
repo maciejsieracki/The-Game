@@ -9,6 +9,10 @@ import { iconHtml } from './icons/iconRegistry';
 import { scienceOwlIconSized } from './icons/scienceOwlIcon';
 import { scienceProgressRingHtml } from './icons/scienceProgressRing';
 
+function escHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 export type ChipMedVariant = 'gold' | 'science';
 
 export interface Chip6cOpts {
@@ -45,7 +49,7 @@ export function chip6cHtml(opts: Chip6cOpts): string {
   const med = opts.medVariant ?? (opts.iconId === 'res-science' ? 'science' : 'gold');
   const clickCls = opts.act ? ' civ-hud-chip-click' : '';
   const actAttr = opts.act
-    ? ` data-act="${opts.act}" role="button" tabindex="0" title="${opts.title ?? opts.label}"`
+    ? ` data-act="${opts.act}" role="button" tabindex="0" title="${escHtml(opts.title ?? opts.label)}"`
     : '';
   const valCls = opts.valClass ?? (med === 'science' ? ' science' : '');
   const rateCls = opts.rateWarn ? ' warn' : '';

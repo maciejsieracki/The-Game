@@ -17,6 +17,11 @@ export {
   diplomacyPersonalityTags,
   formatPowerRatioLabel,
   formatPowerRelationLine,
+  formatBasketItemBrief,
+  formatNegotiationDealParts,
+  formatNegotiationDealPlayerSummary,
+  formatNegotiationDealSummary,
+  splitNegotiationDealPlayerSides,
   nastawienieLabelFromScore,
   resolveFormalDiplomaticStatus,
   respektTooltipPl,
@@ -93,6 +98,43 @@ const labels = mod.activeTreatyLabelsForPair([
 ], 0, 2);
 ok(labels.length === 2 && labels.includes('Pakt nieagresji') && labels.includes('Umowa handlowa'),
   'activeTreatyLabelsForPair: tylko para 0↔2');
+
+const woodPerTurn = mod.formatBasketItemBrief(
+  { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 },
+  { perTurn: true, turns: 10 },
+);
+ok(woodPerTurn.includes('10 Drewno na turę'), 'surowiec per turn: ilość na turę');
+ok(woodPerTurn.includes('łącznie 100 Drewno przez 10 tur'), 'surowiec per turn: suma');
+
+const goldOnce = mod.formatBasketItemBrief({ typ: 'zloto', id: 'zloto', ilosc: 21 }, { perTurn: false });
+ok(goldOnce.includes('jednorazowo 21'), 'złoto jednorazowo');
+
+const dealParts = mod.formatNegotiationDealParts({
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 21 }],
+  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  resourceTradeMode: 'per_turn',
+  turns: 10,
+}, { fromPlayerPerspective: true });
+ok(dealParts && dealParts.giveLabel === 'Oni dają', 'deal parts: etykiety incoming');
+ok(dealParts && dealParts.schedule === 'Wymiana co turę przez 10 tur', 'deal parts: harmonogram');
+
+const playerSplit = mod.splitNegotiationDealPlayerSides({
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 21 }],
+  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  resourceTradeMode: 'per_turn',
+  turns: 10,
+}, true);
+ok(playerSplit && playerSplit.weOffer.length === 1 && playerSplit.theyOffer.length === 1, 'player split: incoming');
+ok(playerSplit && playerSplit.weOffer[0].typ === 'surowiec_ilosc', 'player split: we give wood');
+
+const playerSummary = mod.formatNegotiationDealPlayerSummary({
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 21 }],
+  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  resourceTradeMode: 'per_turn',
+  turns: 10,
+}, true);
+ok(playerSummary.startsWith('Oferujemy:'), 'player summary: Oferujemy');
+ok(playerSummary.includes('Oferują:'), 'player summary: Oferują');
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
 

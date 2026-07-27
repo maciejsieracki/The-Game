@@ -139,6 +139,14 @@ const TARTAK_TERENY = new Set<TerenBazowy>([
   TerenBazowy.Pustynia,
 ]);
 
+/** Ulepszenia wymagające nakładki Las — usuwane gdy las znika z heksa (wyrąb, wycinka). */
+const FOREST_OVERLAY_IMPROVEMENT_KEYS = new Set<string>(['tartak']);
+
+/** Po usunięciu lasu z heksa — odfiltruj ulepszenia zależne od nakładki Las. */
+export function stripImprovementsWhenForestRemoved(layers: readonly string[]): string[] {
+  return layers.filter(k => !FOREST_OVERLAY_IMPROVEMENT_KEYS.has(k));
+}
+
 const FLAT_FARM = new Set<TerenBazowy>([TerenBazowy.Laka, TerenBazowy.Rownina]);
 const FLAT_IRR = new Set<TerenBazowy>([
   TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Pustynia,
@@ -549,6 +557,7 @@ function createQualifier(state: ImprovementBuildState) {
         return nakladka === Nakladka.Las && inPlayerTerritory(q, r);
       case 'tartak': {
         if (!inPlayerTerritory(q, r)) return false;
+        if (nakladka !== Nakladka.Las) return false;
         return TARTAK_TERENY.has(teren);
       }
       case 'oboz_lowiecki': {
@@ -764,7 +773,7 @@ export function createImprovementBuildApi(
       const unlocked = isImprovementTechUnlocked(key, researched);
       const canPlaceAny = getQualifyingHexes(key).length > 0;
       const territoryHint = unlocked && !canPlaceAny
-        ? (key === 'wyrab'
+        ? (key === 'wyrab' || key === 'tartak'
           ? 'Brak lasu w twoim terytorium'
           : 'Brak heksów w twoim terytorium')
         : null;

@@ -151,6 +151,17 @@ function ensureStyles(): void {
 .civ-emp-res-nm .nm{font-size:12.5px;font-weight:600;color:#e2e6ec;}
 .civ-emp-res-rate{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;
   padding:2px 6px;border-radius:999px;white-space:nowrap;flex:none;}
+.civ-emp-res-rate-stack{display:flex;flex-direction:column;align-items:flex-end;gap:1px;
+  padding:3px 6px;border-radius:8px;background:rgba(15,20,28,.55);flex:none;}
+.civ-emp-res-rate-line{font-size:9.5px;font-weight:700;font-variant-numeric:tabular-nums;
+  line-height:1.2;white-space:nowrap;}
+.civ-emp-res-rate-line.prod{color:#78c95a;}
+.civ-emp-res-rate-line.diplo-out{color:#e07a7a;}
+.civ-emp-res-rate-line.diplo-in{color:#8ec5ff;}
+.civ-emp-res-rate-line.net{margin-top:1px;padding-top:2px;border-top:1px solid rgba(255,255,255,.1);}
+.civ-emp-res-rate-line.net.good{color:#78c95a;}
+.civ-emp-res-rate-line.net.warn{color:#d9a441;}
+.civ-emp-res-rate-line.net.bad{color:#e07a7a;}
 .civ-emp-res-rate.good{color:#78c95a;background:rgba(120,201,90,.14);}
 .civ-emp-res-rate.warn{color:#d9a441;background:rgba(217,164,65,.14);}
 .civ-emp-res-rate.bad{color:#e07a7a;background:rgba(224,122,122,.14);}
@@ -356,8 +367,39 @@ function resTooltipHtml(r: EmpireResourceRow): string {
   if (r.cap == null) {
     parts.push(r.zrodlo ? `Źródło dostępu: ${r.zrodlo}` : 'Dostęp: brak — nie odblokowano jeszcze tego surowca');
   }
-  parts.push(r.ratePerTurn === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(r.ratePerTurn)} / turę`);
+  const prod = r.rateProductionPerTurn ?? r.ratePerTurn;
+  const diploOut = r.rateDiploOutPerTurn ?? 0;
+  const diploIn = r.rateDiploInPerTurn ?? 0;
+  if (diploOut > 0 || diploIn > 0) {
+    parts.push(prod === 0 ? 'Produkcja własna: brak' : `Produkcja własna: ${signedTxt(prod)} / turę`);
+    if (diploOut > 0) parts.push(`Dyplomacja (oddajesz): −${diploOut} / turę`);
+    if (diploIn > 0) parts.push(`Dyplomacja (otrzymujesz): +${diploIn} / turę`);
+    parts.push(`Netto magazyn: ${signedTxt(r.ratePerTurn)} / turę`);
+  } else {
+    parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
+  }
   return esc(parts.join(' · '));
+}
+
+/** Pill lub stos: produkcja ± dyplomacja = netto (gdy aktywny handel cykliczny). */
+function resRateHtml(r: EmpireResourceRow, state: 'bad' | 'warn' | 'good'): string {
+  const prod = r.rateProductionPerTurn ?? r.ratePerTurn;
+  const diploOut = r.rateDiploOutPerTurn ?? 0;
+  const diploIn = r.rateDiploInPerTurn ?? 0;
+  const hasDiplo = diploOut > 0 || diploIn > 0;
+  if (!hasDiplo) {
+    const rateTxt = prod === 0 ? '—' : signedTxt(prod);
+    return `<span class="civ-emp-res-rate ${state}">${esc(rateTxt)}</span>`;
+  }
+  const net = r.ratePerTurn;
+  const netState = net < 0 ? 'bad' : (net === 0 ? 'warn' : 'good');
+  let html = `<div class="civ-emp-res-rate-stack">`;
+  html += `<span class="civ-emp-res-rate-line prod">${esc(signedTxt(prod))}</span>`;
+  if (diploOut > 0) html += `<span class="civ-emp-res-rate-line diplo-out">−${diploOut} dypl.</span>`;
+  if (diploIn > 0) html += `<span class="civ-emp-res-rate-line diplo-in">+${diploIn} dypl.</span>`;
+  html += `<span class="civ-emp-res-rate-line net ${netState}">=${esc(signedTxt(net))}</span>`;
+  html += `</div>`;
+  return html;
 }
 
 /** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
@@ -365,12 +407,11 @@ function resCardHtml(r: EmpireResourceRow): string {
   const cap = r.cap ?? 0;
   const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((r.stock / cap) * 100))) : 0;
   const state = resStateOf(r);
-  const rateTxt = r.ratePerTurn === 0 ? '—' : signedTxt(r.ratePerTurn);
   const flag = state === 'bad' ? 'spada' : (state === 'warn' ? 'pełny' : '');
   return `<div class="civ-emp-res-card ${state}" data-section="econ-surowiec-${esc(r.id)}" title="${resTooltipHtml(r)}">`
     + `<div class="civ-emp-res-top"><span class="civ-emp-res-ic">${resIconHtml(r.label)}</span>`
     + `<div class="civ-emp-res-nm"><div class="nm">${esc(r.label)}</div></div>`
-    + `<span class="civ-emp-res-rate ${state}">${esc(rateTxt)}</span></div>`
+    + resRateHtml(r, state) + `</div>`
     + `<div class="civ-emp-res-amt"><span class="cur">${r.stock}</span><span class="cap">/ ${cap}</span>`
     + (flag ? `<span class="flag ${state}">${esc(flag)}</span>` : '')
     + `</div>`

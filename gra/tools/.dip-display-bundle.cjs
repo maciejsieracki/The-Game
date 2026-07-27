@@ -22,11 +22,16 @@ var dip_display_entry_exports = {};
 __export(dip_display_entry_exports, {
   activeTreatyLabelsForPair: () => activeTreatyLabelsForPair,
   diplomacyPersonalityTags: () => diplomacyPersonalityTags,
+  formatBasketItemBrief: () => formatBasketItemBrief,
+  formatNegotiationDealParts: () => formatNegotiationDealParts,
+  formatNegotiationDealPlayerSummary: () => formatNegotiationDealPlayerSummary,
+  formatNegotiationDealSummary: () => formatNegotiationDealSummary,
   formatPowerRatioLabel: () => formatPowerRatioLabel,
   formatPowerRelationLine: () => formatPowerRelationLine,
   nastawienieLabelFromScore: () => nastawienieLabelFromScore,
   resolveFormalDiplomaticStatus: () => resolveFormalDiplomaticStatus,
   respektTooltipPl: () => respektTooltipPl,
+  splitNegotiationDealPlayerSides: () => splitNegotiationDealPlayerSides,
   treatyDisplayLabel: () => treatyDisplayLabel
 });
 module.exports = __toCommonJS(dip_display_entry_exports);
@@ -3528,7 +3533,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.4,
         dip_handlowosc_archetyp: 0.75,
         ai_agresywnosc: 4,
-        ai_ekspansywnosc: 0,
+        ai_ekspansywnosc: 3,
         ai_priorytet_militarny: 5,
         ai_priorytet_ekonomia: 5,
         ai_priorytet_nauka: 6,
@@ -3649,7 +3654,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.75,
         dip_handlowosc_archetyp: 0.5,
         ai_agresywnosc: 8,
-        ai_ekspansywnosc: 0,
+        ai_ekspansywnosc: 5,
         ai_priorytet_militarny: 6,
         ai_priorytet_ekonomia: 5,
         ai_priorytet_nauka: 5,
@@ -3770,7 +3775,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.2,
         dip_handlowosc_archetyp: 0.85,
         ai_agresywnosc: 2,
-        ai_ekspansywnosc: 0,
+        ai_ekspansywnosc: 2,
         ai_priorytet_militarny: 4,
         ai_priorytet_ekonomia: 6,
         ai_priorytet_nauka: 6,
@@ -3891,7 +3896,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.45,
         dip_handlowosc_archetyp: 0.25,
         ai_agresywnosc: 4,
-        ai_ekspansywnosc: 0,
+        ai_ekspansywnosc: 3,
         ai_priorytet_militarny: 5,
         ai_priorytet_ekonomia: 5,
         ai_priorytet_nauka: 5,
@@ -4012,7 +4017,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.9,
         dip_handlowosc_archetyp: 0.2,
         ai_agresywnosc: 9,
-        ai_ekspansywnosc: 0,
+        ai_ekspansywnosc: 4,
         ai_priorytet_militarny: 8,
         ai_priorytet_ekonomia: 4,
         ai_priorytet_nauka: 4,
@@ -4133,7 +4138,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.35,
         dip_handlowosc_archetyp: 0.6,
         ai_agresywnosc: 4,
-        ai_ekspansywnosc: 0,
+        ai_ekspansywnosc: 2,
         ai_priorytet_militarny: 5,
         ai_priorytet_ekonomia: 6,
         ai_priorytet_nauka: 5,
@@ -4254,7 +4259,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.3,
         dip_handlowosc_archetyp: 0.65,
         ai_agresywnosc: 3,
-        ai_ekspansywnosc: 0,
+        ai_ekspansywnosc: 2,
         ai_priorytet_militarny: 4,
         ai_priorytet_ekonomia: 5,
         ai_priorytet_nauka: 8,
@@ -4375,7 +4380,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.6,
         dip_handlowosc_archetyp: 0.35,
         ai_agresywnosc: 6,
-        ai_ekspansywnosc: 0,
+        ai_ekspansywnosc: 4,
         ai_priorytet_militarny: 8,
         ai_priorytet_ekonomia: 5,
         ai_priorytet_nauka: 4,
@@ -4496,7 +4501,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.65,
         dip_handlowosc_archetyp: 0.3,
         ai_agresywnosc: 6,
-        ai_ekspansywnosc: 0,
+        ai_ekspansywnosc: 4,
         ai_priorytet_militarny: 8,
         ai_priorytet_ekonomia: 4,
         ai_priorytet_nauka: 4,
@@ -4859,7 +4864,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.55,
         dip_handlowosc_archetyp: 0.4,
         ai_agresywnosc: 6,
-        ai_ekspansywnosc: 3,
+        ai_ekspansywnosc: 4,
         ai_priorytet_militarny: 6,
         ai_priorytet_ekonomia: 5,
         ai_priorytet_nauka: 5,
@@ -4980,7 +4985,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.3,
         dip_handlowosc_archetyp: 0.65,
         ai_agresywnosc: 3,
-        ai_ekspansywnosc: 3,
+        ai_ekspansywnosc: 2,
         ai_priorytet_militarny: 4,
         ai_priorytet_ekonomia: 6,
         ai_priorytet_nauka: 8,
@@ -5101,7 +5106,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.8,
         dip_handlowosc_archetyp: 0.25,
         ai_agresywnosc: 8,
-        ai_ekspansywnosc: 3,
+        ai_ekspansywnosc: 5,
         ai_priorytet_militarny: 8,
         ai_priorytet_ekonomia: 5,
         ai_priorytet_nauka: 5,
@@ -5222,7 +5227,7 @@ var civ_matrix_default = {
         dip_agresja_archetyp: 0.25,
         dip_handlowosc_archetyp: 0.9,
         ai_agresywnosc: 3,
-        ai_ekspansywnosc: 3,
+        ai_ekspansywnosc: 2,
         ai_priorytet_militarny: 5,
         ai_priorytet_ekonomia: 8,
         ai_priorytet_nauka: 5,
@@ -13480,6 +13485,16 @@ for (const row of tech_default.technologie ?? []) {
   }
 }
 var _handelSurowce = econ_params_default.handel_surowce ?? {};
+var DEFAULT_HANDEL_SUROWCE_PAKIET = 10;
+function readHandelSurowceParam(rowKey, fallback) {
+  const row = _handelSurowce[rowKey];
+  const v = row?.normal;
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+function diplomacyHandelSurowcePakietWielkosc() {
+  const v = readHandelSurowceParam("pakiet_wielkosc", DEFAULT_HANDEL_SUROWCE_PAKIET);
+  return v > 0 ? Math.floor(v) : DEFAULT_HANDEL_SUROWCE_PAKIET;
+}
 var DEFAULT_PROG_DAR_RELACJA = 30;
 var DEFAULT_DOBRA_WOLA_MIN_PN = 100;
 var DEFAULT_DOBRA_WOLA_TUR = 3;
@@ -13696,14 +13711,161 @@ function formatPowerRelationLine(selfPower, otherPower) {
     respekt: computeRespekt(selfPower, otherPower)
   };
 }
+var RESOURCE_KEY_LABEL = {
+  drewno: "Drewno",
+  kamien: "Kamie\u0144",
+  glina: "Glina",
+  ruda: "Ruda",
+  sol: "S\xF3l",
+  zelazo: "\u017Belazo",
+  braz: "Br\u0105z",
+  cegla: "Ceg\u0142a",
+  ceramika: "Ceramika",
+  kon: "Ko\u0144",
+  owce: "Owce",
+  lama: "Lama",
+  trzoda: "Trzoda",
+  wegiel: "W\u0119giel",
+  zloto: "Z\u0142oto"
+};
+function resourceDisplayLabel(key) {
+  const k = key.trim().toLowerCase();
+  return RESOURCE_KEY_LABEL[k] ?? key.charAt(0).toUpperCase() + key.slice(1);
+}
+function formatBasketItemBrief(item, ctx) {
+  const perTurn = ctx?.perTurn === true;
+  const turns = ctx?.turns;
+  switch (item.typ) {
+    case "zloto": {
+      const amt = item.ilosc ?? 0;
+      if (perTurn) {
+        const base = `${amt} \xA4 na tur\u0119`;
+        if (turns != null && turns > 0) {
+          return `${base} (\u0142\u0105cznie ${amt * turns} \xA4 przez ${turns} tur)`;
+        }
+        return base;
+      }
+      return `jednorazowo ${amt} \xA4`;
+    }
+    case "praca":
+      return perTurn ? `${item.ilosc ?? 0} Pracy na tur\u0119` : `jednorazowo ${item.ilosc ?? 0} Pracy`;
+    case "zywnosc":
+      return perTurn ? `${item.ilosc ?? 0} \u017Bywno\u015Bci na tur\u0119` : `jednorazowo ${item.ilosc ?? 0} \u017Bywno\u015Bci`;
+    case "zloze":
+      return `dost\u0119p do z\u0142o\u017Ca: ${item.id}`;
+    case "tech":
+      return `technologia: ${item.id}`;
+    case "jednostka":
+      return `jednostka: ${item.id}`;
+    case "surowiec_boolean":
+      return `dost\u0119p do surowca: ${resourceDisplayLabel(item.id)}`;
+    case "surowiec_ilosc": {
+      const pakietSize = diplomacyHandelSurowcePakietWielkosc();
+      const pakiety = item.ilosc ?? 1;
+      const szt = pakiety * pakietSize;
+      const label = resourceDisplayLabel(item.id);
+      if (perTurn) {
+        const base = `${szt} ${label} na tur\u0119`;
+        if (turns != null && turns > 0) {
+          return `${base} (\u0142\u0105cznie ${szt * turns} ${label} przez ${turns} tur)`;
+        }
+        return base;
+      }
+      return `jednorazowo ${szt} ${label}`;
+    }
+    default:
+      return item.id ?? item.typ;
+  }
+}
+function formatBasketListBrief(items, ctx) {
+  if (!items?.length) return "\u2014";
+  return items.map((i) => formatBasketItemBrief(i, ctx)).join(" \xB7 ");
+}
+function formatNegotiationDealParts(payload, opts = {}) {
+  const give = payload.giveItems ?? [];
+  const receive = payload.receiveItems ?? [];
+  if (give.length === 0 && receive.length === 0) return null;
+  const perTurn = payload.resourceTradeMode === "per_turn";
+  const turns = payload.turns;
+  const ctx = { perTurn, turns };
+  const fromThem = opts.fromPlayerPerspective === true;
+  const parts = {
+    giveLabel: fromThem ? "Oni daj\u0105" : "Ty dajesz",
+    giveText: formatBasketListBrief(give, ctx),
+    wantLabel: fromThem ? "Oni chc\u0105" : "Ty dostajesz",
+    wantText: formatBasketListBrief(receive, ctx)
+  };
+  if (turns != null && turns > 0) {
+    if (perTurn) {
+      parts.schedule = `Wymiana co tur\u0119 przez ${turns} tur`;
+    } else {
+      parts.schedule = `Jednorazowa wymiana (umowa na ${turns} tur)`;
+    }
+  } else if (perTurn) {
+    parts.schedule = "Wymiana co tur\u0119 (bez limitu tur w ofercie)";
+  }
+  return parts;
+}
+function splitNegotiationDealPlayerSides(payload, incoming) {
+  const give = payload.giveItems ?? [];
+  const receive = payload.receiveItems ?? [];
+  if (give.length === 0 && receive.length === 0) return null;
+  const weOffer = incoming ? receive : give;
+  const theyOffer = incoming ? give : receive;
+  const perTurn = payload.resourceTradeMode === "per_turn";
+  const turns = payload.turns;
+  let schedule;
+  if (turns != null && turns > 0) {
+    schedule = perTurn ? `Wymiana co tur\u0119 przez ${turns} tur` : `Jednorazowa wymiana (umowa na ${turns} tur)`;
+  } else if (perTurn) {
+    schedule = "Wymiana co tur\u0119 (bez limitu tur w ofercie)";
+  }
+  return { weOffer, theyOffer, schedule };
+}
+function formatNegotiationDealPlayerSummary(payload, incoming) {
+  const split = splitNegotiationDealPlayerSides(payload, incoming);
+  if (!split) return "";
+  const ctx = {
+    perTurn: payload.resourceTradeMode === "per_turn",
+    turns: payload.turns
+  };
+  const lines = [
+    `Oferujemy: ${formatBasketListBrief(split.weOffer, ctx)}`,
+    `Oferuj\u0105: ${formatBasketListBrief(split.theyOffer, ctx)}`
+  ];
+  if (split.schedule) lines.push(split.schedule);
+  return lines.join(" \xB7 ");
+}
+function formatNegotiationDealSummary(payload, opts = {}) {
+  const deal = formatNegotiationDealParts(payload, opts);
+  if (deal) {
+    const lines = [
+      `${deal.giveLabel}: ${deal.giveText}`,
+      `${deal.wantLabel}: ${deal.wantText}`
+    ];
+    if (deal.schedule) lines.push(deal.schedule);
+    return lines.join(" \xB7 ");
+  }
+  if (payload.isGift && (payload.givePn ?? 0) > 0) {
+    return `Dar: ${payload.givePn} PN`;
+  }
+  if (payload.goldOnce) return `Jednorazowo: ${payload.goldOnce} \xA4`;
+  if (payload.goldPerTurn) return `Co tur\u0119: ${payload.goldPerTurn} \xA4`;
+  return "";
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   activeTreatyLabelsForPair,
   diplomacyPersonalityTags,
+  formatBasketItemBrief,
+  formatNegotiationDealParts,
+  formatNegotiationDealPlayerSummary,
+  formatNegotiationDealSummary,
   formatPowerRatioLabel,
   formatPowerRelationLine,
   nastawienieLabelFromScore,
   resolveFormalDiplomaticStatus,
   respektTooltipPl,
+  splitNegotiationDealPlayerSides,
   treatyDisplayLabel
 });

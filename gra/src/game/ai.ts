@@ -21,6 +21,17 @@ import { hexDistance, computePath, computeReachable, keyOf } from '../units/setu
 import type { City }       from './cities';
 import { canFoundCity }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
+import {
+  aiBypassClusterConsolidation,
+  aiClusterOutsidePenalty,
+  aiPowerGoalFoundingInterval,
+  aiTreasuryPracaForFounding,
+} from './ai-expansion';
+import { aiProductionScoreBoosts } from './ai-production-priorities';
+import {
+  AI_THREAT_RANGE_DEFAULT,
+  aiThreatWallProductionScore,
+} from './ai-threat-mode';
 import type { CivAiProfile } from './civ-ai-data';
 import type { ImprovementKey } from '../render/improvements';
 import type { TerritoryNode } from '../map/territory';
@@ -308,7 +319,14 @@ export interface AITurnOpts {
    * C-AI-PAKIET (2026-07-26): profil z civ-ai.json per typ cywilizacji —
    * ekspansywnosc i sklonnoscDoPodboju sterują ekspansją i agresją wojskową.
    */
-  civAiProfile?: Pick<CivAiProfile, 'ekspansywnosc' | 'sklonnoscDoPodboju'>;
+  civAiProfile?: Pick<
+    CivAiProfile,
+    | 'ekspansywnosc'
+    | 'sklonnoscDoPodboju'
+    | 'priorytetMilitarny'
+    | 'priorytetEkonomia'
+    | 'priorytetNauka'
+  >;
   /** Bieżąca tura (silnik) — cel #1 Mocy co 3 tury. */
   currentTurn?: number;
   /** Pozycja w rankingu Mocy (1 = najsilniejszy; silnik: computeAbsolutePowerRank). */
@@ -762,7 +780,7 @@ function hexCityScore(
   }
 
   // Enemy proximity penalty: < 5 hexes from any enemy city
-  const enemyThresh = getAiParam(data, 'ekspansja_zagroz_zasieg', 5);
+  const enemyThresh = getAiParam(data, 'ekspansja_zagroz_zasieg', AI_THREAT_RANGE_DEFAULT);
   for (const ec of enemyCities) {
     if (hexDistance(q, r, ec.q, ec.r) < enemyThresh) {
       score += enemyPenalty;
@@ -782,7 +800,7 @@ function hexCityScore(
  * Priority based on Spec-AI §4 and archetype modifiers.
  * Returns null if nothing can be queued.
  */
-function chooseCityProduction(
+export function chooseCityProduction(
   cityId: string,
   myCities: AICity[],
   allUnits: RuntimeUnit[],
@@ -799,7 +817,7 @@ function chooseCityProduction(
   if (city === undefined) return null;
 
   // Threat check: any enemy within threat range of this city
-  const threatRange  = getAiParam(data, 'ekspansja_zagroz_zasieg', 5);
+  const threatRange  = getAiParam(data, 'ekspansja_zagroz_zasieg', AI_THREAT_RANGE_DEFAULT);
   const enemyUnits   = allUnits.filter(u => u.ownerId !== playerId);
   const underThreat  = enemyUnits.some(
     eu => hexDistance(city.q, city.r, eu.q, eu.r) <= threatRange,
@@ -809,12 +827,14 @@ function chooseCityProduction(
   // Archetype delta: +/- 20 per unit of mod
   // Difficulty bonus: bonusProdukcja scales economy score (higher difficulty = more efficient AI)
   const diffProdBonus = Math.round(difficultyParams.bonusProdukcja * 200); // e.g. +10% -> +20 pts, +25% -> +50 pts
+  const panelBoost = aiProductionScoreBoosts(opts.civAiProfile);
   const powerGoalBoost = opts.currentTurn !== undefined
     && opts.currentTurn % 3 === 0
     && (opts.powerRank ?? 1) > 1;
-  const economyScore  = 100 + mods.ekonomia * 20 + diffProdBonus + (powerGoalBoost ? 40 : 0);
-  const militaryScore = 100 + mods.wojsko   * 20;
+  const economyScore  = 100 + mods.ekonomia * 20 + diffProdBonus + panelBoost.economy + (powerGoalBoost ? 40 : 0);
+  const militaryScore = 100 + mods.wojsko   * 20 + panelBoost.military;
   const defenseScore  = 100 + mods.obrona   * 20;
+  const scienceScore  = 100 + mods.nauka    * 20 + panelBoost.science;
 
   const candidates: { id: string; score: number }[] = [];
 
@@ -828,10 +848,11 @@ function chooseCityProduction(
   // dostają dokładnie tę samą listę kandydatów budowy co każde inne miasto AI w fazie mid-game.
   const earlyPhase = myCities.length < 3 && !opts.defensiveCopy;
 
-  // §4.3 Under threat: walls first, then guard
+  // §4.3 Under threat: walls first (lider Mocy), then guard
   if (underThreat) {
-    if (!built.includes('mury')) {
-      candidates.push({ id: 'mury', score: 300 + defenseScore });
+    const wallScore = aiThreatWallProductionScore(defenseScore, opts.powerRank);
+    if (!built.includes('mury') && wallScore !== null) {
+      candidates.push({ id: 'mury', score: wallScore });
     }
     candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
   }
@@ -891,6 +912,13 @@ function chooseCityProduction(
       if (!built.includes(b)) {
         candidates.push({ id: b, score: 140 + economyScore });
       }
+    }
+    // P-AI-007=A: budynki nauki w puli produkcji (priorytetNauka + mods.nauka archetypu).
+    if (!built.includes('biblioteka')) {
+      candidates.push({ id: 'biblioteka', score: 135 + scienceScore });
+    }
+    if (built.includes('biblioteka') && !built.includes('akademia')) {
+      candidates.push({ id: 'akademia', score: 130 + scienceScore });
     }
   }
 
@@ -1340,11 +1368,12 @@ export function planCityFounding(
   minCityDist: number,
 ): AICmdFoundCityAt | null {
   if (opts.defensiveCopy) return null;
+  const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterConsolidationPhase = (opts.clusterStateTargets ?? []).length > 0;
-  if (clusterConsolidationPhase) return null;
+  if (clusterConsolidationPhase && !aiBypassClusterConsolidation(ekspansywnosc)) return null;
 
   const myCities = cities.filter(c => c.ownerId === playerId);
-  const treasuryPraca = opts.pracaAvailable ?? 0;
+  const treasuryPraca = aiTreasuryPracaForFounding(opts.pracaAvailable ?? 0, ekspansywnosc);
   const turn = opts.currentTurn ?? 0;
   const aff = evaluateFoundCityAffordance(
     treasuryPraca,
@@ -1935,10 +1964,13 @@ function findCityFoundingHex(
 ): { q: number; r: number } | null {
   let bestScore = -Infinity;
   let bestHex: { q: number; r: number } | null = null;
-  const ekspansjaScale = 1 + (opts.civAiProfile?.ekspansywnosc ?? 0) * 0.1;
+  const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
+  const ekspansjaScale = 1 + ekspansywnosc * 0.1;
+  const powerInterval = aiPowerGoalFoundingInterval(ekspansywnosc);
   const powerGoalBoost = opts.currentTurn !== undefined
-    && opts.currentTurn % 3 === 0
+    && opts.currentTurn % powerInterval === 0
     && (opts.powerRank ?? 1) > 1;
+  const clusterOutsidePenalty = aiClusterOutsidePenalty(ekspansywnosc);
 
   for (const key of Object.keys(map.hexes)) {
     const hex = map.hexes[key];
@@ -1961,8 +1993,8 @@ function findCityFoundingHex(
       const distToCenter = hexDistance(q, r, opts.clusterCenter.q, opts.clusterCenter.r);
       if (distToCenter <= opts.clusterRadius) {
         score += 50 * ekspansjaScale; // strong bonus for hexes inside the cluster
-      } else {
-        score -= 20; // mild penalty for hexes outside the cluster
+      } else if (clusterOutsidePenalty > 0) {
+        score -= clusterOutsidePenalty;
       }
     }
 
@@ -2235,6 +2267,10 @@ import {
   relationScore,
 } from './diplomacy';
 import type { Relation, AIDiplomacyContext } from './diplomacy';
+import {
+  shouldHonorAllianceWarObligation,
+  type AllianceWarObligationInput,
+} from './alliance-war-obligation';
 import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -2454,31 +2490,32 @@ export type AIDiplomacyCommand =
  * wymuszał join, więc ścieżka "odmawiam" (a razem z nią kara N4, gotowa
  * i poprawnie liczona) nigdy nie mogła się odpalić.
  *
- * Zakres TEJ fali — WYŁĄCZNIE seam decyzyjny: silnik teraz PYTA zamiast
- * bezwarunkowo wymuszać. Domyślna polityka poniżej jest ZAWSZE `true`
- * (honoruje) — identyczna z dotychczasowym wymuszonym zachowaniem, zero
- * zmiany w dzisiejszej rozgrywce/balansie AI. Prawdziwa heurystyka odmowy
- * (np. własna siła militarna względem `mustDeclareWarOn`, liczba już
- * toczonych wojen, archetyp agresji, Wiarygodność proszącego sojusznika) to
- * osobna decyzja gameplayowa/balansowa wymagająca ABC z właścicielem —
- * CELOWO POZA zakresem tej fali (patrz raport wdrożeniowy Wiarygodności,
- * Zadanie 3, dla dokładnego zakresu: plik/funkcja/co trzeba dorobić).
+ * C-WIAR-N4-AI=B — heurystyka odmowy w `shouldHonorAllianceWarObligation`
+ * (alliance-war-obligation.ts). Bez 5. argumentu `ctx` zwraca `true` (kompatybilność
+ * wsteczna: main.ts dopóki nie przekazuje kontekstu).
  *
- * Parytet (§6 pkt 2): czysta funkcja nad gołym `allyId` — nie rozgałęzia się
- * po ownerId===0, więc ta sama funkcja obsłuży też decyzję gracza W CHWILI,
- * gdy stanie się osiągalna w UI (dziś main.ts nigdy jej nie woła z
- * allyId===0 — sojusznik w `applyAllianceObligationsOnWar` jest zawsze
- * stroną TRZECIĄ względem pary attacker/victim, a każda dzisiejsza wojna ma
- * gracza po jednej z tych dwóch stron, nigdy jako trzeci sojusznik — patrz
- * raport wdrożeniowy dla pełnego wyprowadzenia).
+ * Parytet (§6 pkt 2): gracz (allyId===0) nigdy nie odmawia automatycznie — decyzja UI osobno.
  */
+export type AllianceWarObligationCtx = Omit<
+  AllianceWarObligationInput,
+  'allyId' | 'mustDeclareWarOn' | 'attackerId' | 'victimId'
+>;
+
 export function aiHonorsAllianceWarObligation(
-  _allyId: number,
-  _mustDeclareWarOn: number,
-  _attackerId: number,
-  _victimId: number,
+  allyId: number,
+  mustDeclareWarOn: number,
+  attackerId: number,
+  victimId: number,
+  ctx?: AllianceWarObligationCtx,
 ): boolean {
-  return true;
+  if (!ctx) return true;
+  return shouldHonorAllianceWarObligation({
+    allyId,
+    mustDeclareWarOn,
+    attackerId,
+    victimId,
+    ...ctx,
+  });
 }
 
 // ---------------------------------------------------------------------------

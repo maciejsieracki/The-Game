@@ -30,13 +30,13 @@ const FALLBACK_MOUNTAIN: Record<DensityTier, number> = { low: 0.80, medium: 0.68
 const FALLBACK_HIGHLAND: Record<DensityTier, number> = { low: 0.66, medium: 0.50, high: 0.38 };
 
 /**
- * Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play — Maciej 2026-07-26,
- * C-MAPA-Q2=B (rewizja 2026-07-26: górzystość lądu ~18% zamiast ~12% na medium).
- * Suma mountain+highland per tier ≈ docelowa górzystość lądu: low≈0,12 / medium≈0,18 / high≈0,30.
+ * Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play — R-MAPGEN-KOLEJNOSC-Q2=C
+ * (2026-07-27): górzystość lądu ~15% na tierze Średni relief (kompromis między ~10% a ~19%).
+ * Suma mountain+highland per tier ≈ docelowa górzystość lądu: low≈0,12 / medium≈0,15 / high≈0,30.
  */
 const FALLBACK_RELIEF_OVERFLOW_CAP: Record<DensityTier, { mountain: number; highland: number }> = {
   low: { mountain: 0.045, highland: 0.075 },
-  medium: { mountain: 0.06, highland: 0.09 },
+  medium: { mountain: 0.05, highland: 0.085 },
   high: { mountain: 0.12, highland: 0.18 },
 };
 

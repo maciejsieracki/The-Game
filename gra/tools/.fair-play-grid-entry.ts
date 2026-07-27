@@ -8,4 +8,5 @@ export {
   reliefCoverageCellSize,
   landHexesByCoverageCell,
 } from '../src/map/gen-helpers';
+export { mapGenReliefOverflowCapFrac } from '../src/data/map-gen-params-loader';
 export { TerenBazowy } from '../src/types/hex';

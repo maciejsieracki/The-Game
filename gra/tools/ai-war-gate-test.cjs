@@ -23,6 +23,14 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-war-gate-bundle.cjs');
 
 const ENTRY_TS = `
 export { decideAITurn, planCityFounding } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export {
+  aiFoundingWorkReserve,
+  aiTreasuryPracaForFounding,
+  aiBypassClusterConsolidation,
+  aiPowerGoalFoundingInterval,
+  aiClusterOutsidePenalty,
+  EKSPANSJA_KLASTR_BYPASS,
+} from ${JSON.stringify(AI_SRC + '/game/ai-expansion')};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -43,7 +51,14 @@ try {
   process.exit(1);
 }
 
-const { decideAITurn, planCityFounding } = require(BUNDLE_FILE);
+const {
+  decideAITurn,
+  planCityFounding,
+  aiFoundingWorkReserve,
+  aiPowerGoalFoundingInterval,
+  aiClusterOutsidePenalty,
+  EKSPANSJA_KLASTR_BYPASS,
+} = require(BUNDLE_FILE);
 
 let passed = 0;
 let failed = 0;
@@ -203,9 +218,10 @@ console.log('\n--- W4c: clusterStateTargets blokuje founding ---');
   const map = makeMap(12, 12);
   const cmd = planCityFounding(5, [], map, makeGameData(), {
     pracaAvailable: 50,
+    civAiProfile: { ekspansywnosc: 0, sklonnoscDoPodboju: 0 },
     clusterStateTargets: [{ ownerId: 3, q: 2, r: 2 }],
   }, 3);
-  assert(cmd === null, 'W4c: konsolidacja klastra -> null');
+  assert(cmd === null, 'W4c: konsolidacja klastra + eksp 0 -> null');
 }
 
 console.log('\n--- W4d: za malo Pracy -> brak founding ---');
@@ -216,6 +232,60 @@ console.log('\n--- W4d: za malo Pracy -> brak founding ---');
     pracaAvailable: 0,
   }, 3);
   assert(cmd === null, 'W4d: brak Pracy na kolejne miasto -> null');
+}
+
+// ---------------------------------------------------------------------------
+// P-AI-006=C: ekspansywnosc — rezerwa Pracy, bypass klastra, heurystyka
+// ---------------------------------------------------------------------------
+
+console.log('\n--- E6a: aiFoundingWorkReserve skalowanie ---');
+{
+  assert(aiFoundingWorkReserve(0) === 10, 'E6a: eksp 0 -> rezerwa 10 Pracy');
+  assert(aiFoundingWorkReserve(3) === 4, 'E6a: eksp 3 -> rezerwa 4 Pracy');
+  assert(aiFoundingWorkReserve(5) === 0, 'E6a: eksp 5 -> brak rezerwy');
+}
+
+console.log('\n--- E6b: rezerwa Pracy blokuje founding przy niskiej puli ---');
+{
+  const map = makeMap(12, 12);
+  const myCity = makeCity('mc', 5, 3, 3, 10);
+  const low = planCityFounding(5, [myCity], map, makeGameData(), {
+    pracaAvailable: 22,
+    civAiProfile: { ekspansywnosc: 0, sklonnoscDoPodboju: 0 },
+  }, 3);
+  assert(low === null, 'E6b: 22 Pracy + eksp 0 (potrzeba 30) -> null');
+}
+
+console.log('\n--- E6c: ekspansywnosc >= 4 omija blokade klastra ---');
+{
+  const map = makeMap(12, 12);
+  const myCity = makeCity('mc', 5, 3, 3, 10);
+  const blocked = planCityFounding(5, [myCity], map, makeGameData(), {
+    pracaAvailable: 50,
+    civAiProfile: { ekspansywnosc: 3, sklonnoscDoPodboju: 0 },
+    clusterStateTargets: [{ ownerId: 3, q: 2, r: 2 }],
+  }, 3);
+  assert(blocked === null, 'E6c: eksp 3 + konsolidacja -> null');
+  const bypass = planCityFounding(5, [myCity], map, makeGameData(), {
+    pracaAvailable: 50,
+    civAiProfile: { ekspansywnosc: 4, sklonnoscDoPodboju: 0 },
+    clusterStateTargets: [{ ownerId: 3, q: 2, r: 2 }],
+  }, 3);
+  assert(bypass === null || bypass.type === 'foundCityAt', 'E6c: eksp 4 nie odrzucone przez blokade klastra');
+}
+
+console.log('\n--- E6d: aiPowerGoalFoundingInterval ---');
+{
+  assert(aiPowerGoalFoundingInterval(5) === 2, 'E6d: eksp 5 -> co 2 tury');
+  assert(aiPowerGoalFoundingInterval(3) === 3, 'E6d: eksp 3 -> co 3 tury');
+  assert(aiPowerGoalFoundingInterval(2) === 4, 'E6d: eksp 2 -> co 4 tury');
+}
+
+console.log('\n--- E6e: aiClusterOutsidePenalty ---');
+{
+  assert(aiClusterOutsidePenalty(0) === 20, 'E6e: eksp 0 -> kara 20');
+  assert(aiClusterOutsidePenalty(5) === 0, 'E6e: eksp 5 -> brak kary');
+  assert(EKSPANSJA_KLASTR_BYPASS === 4, 'E6e: prog bypass klastra = 4');
 }
 
 // ---------------------------------------------------------------------------

@@ -47,6 +47,8 @@ export interface ArmyStackHudConfig {
   onSplit?: () => void;
   canSplit?: () => boolean;
   onOpenArmyList?: () => void;
+  onCycleUnit?: (delta: -1 | 1) => void;
+  canCycleUnits?: () => boolean;
 }
 
 export interface ArmyStackHudApi {
@@ -72,6 +74,10 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-army-stack.open{display:flex;}
 .civ-army-stack .ash-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px 8px;
   border-bottom:1px solid rgba(232,216,138,.18);}
+.civ-army-stack .ash-nav-arr{background:rgba(232,216,138,.06);border:1px solid rgba(232,216,138,.28);
+  color:var(--civ-gold-primary,#e8d88a);font-size:.95em;padding:0 8px;height:28px;cursor:pointer;
+  border-radius:4px;flex:0 0 auto;line-height:1;}
+.civ-army-stack .ash-nav-arr:disabled{opacity:.35;cursor:not-allowed;}
 .civ-army-stack .ash-title-wrap{flex:1;display:flex;align-items:flex-start;gap:8px;min-width:0;}
 .civ-army-stack .ash-title-ic{width:22px;height:22px;color:var(--civ-gold-primary,#e8d88a);margin-top:1px;}
 .civ-army-stack .ash-title{font-family:var(--civ-font-title,Georgia,serif);font-size:0.95em;font-weight:400;
@@ -124,8 +130,14 @@ function esc(s: string): string {
  * Tooltip (title/aria-label) niesie PEŁNĄ nazwę akcji z a.label.
  */
 const ASH_ACTION_ICONS: Partial<Record<string, string>> = {
-  // Ufortyfikuj -- fort/palisada z blankami.
+  // Ufortyfikuj / Odfortyfikuj -- fort/palisada z blankami.
   fortify:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M4 21V10l3-2.5V6h2v1.5L12 5l3 2.5V6h2v1.5l3 2.5v11z"/>'
+    + '<path d="M4 21h16M9.5 21v-5h5v5"/>'
+    + '</svg>',
+  // Odfortyfikuj całą armię — ten sam symbol co fortyfikacja (akcja odwrotna).
+  'unfortify-all':
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
     + '<path d="M4 21V10l3-2.5V6h2v1.5L12 5l3 2.5V6h2v1.5l3 2.5v11z"/>'
     + '<path d="M4 21h16M9.5 21v-5h5v5"/>'
@@ -172,13 +184,20 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
     el.classList.add('open');
     const mergeOk = config.canMerge?.() ?? false;
     const splitOk = config.canSplit?.() ?? false;
+    const cycleOk = config.canCycleUnits?.() ?? false;
     const armyIc = mapUnitBrandIconHtml('tb-army', 24, 'ash-title-ic');
     const menuIc = mapUnitBrandIconHtml('ui-menu', 24, 'mu-ic');
+    const cycleDis = cycleOk ? '' : ' disabled';
 
-    let html = '<div class="ash-hdr"><div class="ash-title-wrap">'
+    let html = '<div class="ash-hdr">'
+      + '<button type="button" class="ash-nav-arr" data-cycle="-1"' + cycleDis
+      + ' title="Poprzednia jednostka">◀</button>'
+      + '<div class="ash-title-wrap">'
       + armyIc
       + '<div><div class="ash-title">Armia · ' + esc(st.hexLabel) + '</div>'
       + '<div class="ash-meta">' + formatJednostkiCount(st.unitCount) + ' na heksie</div></div></div>'
+      + '<button type="button" class="ash-nav-arr" data-cycle="1"' + cycleDis
+      + ' title="Następna jednostka">▶</button>'
       + '<div class="ash-hdr-actions">';
 
     if (config.onOpenArmyList) {
@@ -234,6 +253,14 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
     el.innerHTML = html;
 
     el.querySelector('.mu-close-btn')?.addEventListener('click', () => config.onClose());
+    el.querySelectorAll('[data-cycle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!cycleOk) return;
+        const raw = (btn as HTMLElement).getAttribute('data-cycle');
+        const delta = raw === '-1' ? -1 : 1;
+        config.onCycleUnit?.(delta);
+      });
+    });
     el.querySelector('[data-list]')?.addEventListener('click', () => config.onOpenArmyList?.());
     el.querySelector('[data-merge]')?.addEventListener('click', () => {
       if (mergeOk) config.onMerge?.();
@@ -249,7 +276,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       card.addEventListener('click', go);
       card.addEventListener('keydown', (ev: Event) => {
         const ke = ev as KeyboardEvent;
-        if (ke.key === 'Enter' || ke.key === ' ') { ke.preventDefault(); go(); }
+        if (ke.key === 'Enter') { ke.preventDefault(); go(); }
       });
     });
     el.querySelectorAll('[data-act]').forEach(btn => {

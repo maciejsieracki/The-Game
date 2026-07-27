@@ -17411,7 +17411,13 @@ async function boot(): Promise<void> {
                 return getDiploRelation(ownerId, targetOwnerId).status === 'wojna';
               },
               civAiProfile: civAiProf
-                ? { ekspansywnosc: civAiProf.ekspansywnosc, sklonnoscDoPodboju: civAiProf.sklonnoscDoPodboju }
+                ? {
+                    ekspansywnosc: civAiProf.ekspansywnosc,
+                    sklonnoscDoPodboju: civAiProf.sklonnoscDoPodboju,
+                    priorytetMilitarny: civAiProf.priorytetMilitarny,
+                    priorytetEkonomia: civAiProf.priorytetEkonomia,
+                    priorytetNauka: civAiProf.priorytetNauka,
+                  }
                 : undefined,
               currentTurn: turn,
               powerRank: powerRankInfo.rank,

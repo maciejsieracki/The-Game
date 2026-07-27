@@ -9,6 +9,8 @@ export {
   credibilityStreamWeight,
   sumaStrumienia,
   strumienWiarygodnoscDoZaufania,
+  modyfikatorZaufaniaD4OdWiarygodnosci,
+  zaufaniePierwszyKontaktZD4,
   freshCredibilityStreamEntry,
   tickCredibilityStreamEntry,
   sumaWiarygodnosciCalkowita,
