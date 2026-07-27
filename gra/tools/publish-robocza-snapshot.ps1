@@ -40,11 +40,16 @@ $playtestNames = @(
   'Gra-ROBOCZA-PLAYTEST-MIASTO.html'
 )
 
-# Pole bitwyWrite-Host "Build POLE-BITWY (units.json + battleScene)..." -ForegroundColor Cyan
+# Pole bitwy (osobny bundle — nie blokuje głównego Gra-ROBOCZA)
+Write-Host "Build POLE-BITWY (units.json + battleScene)..." -ForegroundColor Cyan
 try {
   Push-Location $graRoot
-  npx vite build --config vite.oblezenie-bitwa.config.ts --outDir (Join-Path $env:TEMP 'civ-dist-oblezenie') 2>&1 | Out-Host
-  if ($LASTEXITCODE -ne 0) { Write-Host "UWAGA: vite oblezenie-bitwa exit $LASTEXITCODE (pomijam POLE-BITWY)" -ForegroundColor Yellow }
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  node ./node_modules/vite/bin/vite.js build --config vite.oblezenie-bitwa.config.ts --outDir (Join-Path $env:TEMP 'civ-dist-oblezenie') 2>&1 | Out-Host
+  $viteExit = $LASTEXITCODE
+  $ErrorActionPreference = $prevEap
+  if ($viteExit -ne 0) { Write-Host "UWAGA: vite oblezenie-bitwa exit $viteExit (pomijam POLE-BITWY)" -ForegroundColor Yellow }
   else {
     $poleSrc = Join-Path $projRoot 'Gra-ROBOCZA-POLE-BITWY.html'
     if (-not (Test-Path $poleSrc)) { $poleSrc = Join-Path $projRoot 'Gra-podglad-POLE-BITWY.html' }

@@ -11,7 +11,18 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `4ef42265` — 2026-07-28 01:05 — FALA 46: Spichlerz/Armia HUD + panel jednostki + tartak/cuda — **AKTUALNA**
+## ROBOCZA `267d6d31` — 2026-07-28 01:41 — FALA 47: magazyn centralny + FALA 46 batch — **AKTUALNA**
+- md5 (pelne): `267d6d31a171df8de8061161e910444d` · stempel: `ROBOCZA · 2026-07-28 01:41`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + manifest (md5 HTML = md5 manifest). Smoke OK.
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- Wynik `vite build` exit 0.
+- **Co nowego (FALA 47):**
+  - **Bramka budowy** — tylko surowce w centralnym magazynie państwa; „dostęp" do złoża nie wystarcza.
+  - **FALA 46** (ten sam batch): Spichlerz/Armia HUD, panel jednostki, tartak/cuda w terenie.
+- **Bramki:** tsc 0 · deposit-building-gate 42/42 · map-improvement 64/64 · spichlerz 27/27 · river-move 17/17 · smoke OK.
+- **POLE-BITWY:** `Gra-ROBOCZA-POLE-BITWY.html` md5 `dd399c4b1640c9934b03820291c319bf` (osobny build oblezenie-bitwa).
+
+## ROBOCZA `4ef42265` — 2026-07-28 01:05 — FALA 46: Spichlerz/Armia HUD + panel jednostki + tartak/cuda — **ZASTĄPIONA**
 - md5 (pelne): `4ef422657547260d564a082be463276a` · stempel: `ROBOCZA · 2026-07-28 01:05`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).

@@ -3793,3 +3793,12 @@ CZEKAM-NA: nic.
 **Bramki:** tsc 0 · diplomacy-display 26/26 · logic 206/208 (pre) · VERIFY OK.
 **Push:** na prośbę Macieja „deploy do roboczej".
 CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).
+
+## [01:41] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 47
+
+**md5:** `267d6d31a171df8de8061161e910444d` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** bramka budowy = tylko centralny magazyn (bez „dostępu") · batch FALA 46 (Spichlerz/Armia HUD, panel jednostki, tartak/cuda).
+**Bramki:** tsc 0 · deposit-gate 42/42 · map-improvement 64/64 · spichlerz 27/27 · river-move 17/17 · smoke OK.
+**POLE-BITWY:** przebudowany · md5 `dd399c4b1640c9934b03820291c319bf` · fix publish (npm stderr vs ErrorAction Stop).
+**Git:** commit FALA 47 deploy + push gałąź `cursor/fala46-hud-magazyn-unit-panel`.
+CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku + otwórz `267d6d31`).
