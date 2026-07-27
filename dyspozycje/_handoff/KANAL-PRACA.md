@@ -3802,3 +3802,10 @@ CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).
 **POLE-BITWY:** przebudowany · md5 `dd399c4b1640c9934b03820291c319bf` · fix publish (npm stderr vs ErrorAction Stop).
 **Git:** commit FALA 47 deploy + push gałąź `cursor/fala46-hud-magazyn-unit-panel`.
 CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku + otwórz `267d6d31`).
+
+## [01:54] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 48
+
+**md5:** `2bdd9b59cdf96668a470d1c43beae2cf` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** redeploy (ten sam kod FALA 47) · świeża pieczęć · POLE-BITWY `dd399c4b` OK.
+**Bramki:** tsc 0 · smoke OK.
+CZEKAM-NA: nic (sesja lokalna: otwórz `2bdd9b59`).

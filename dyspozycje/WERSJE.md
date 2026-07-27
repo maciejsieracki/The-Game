@@ -11,7 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `267d6d31` — 2026-07-28 01:41 — FALA 47: magazyn centralny + FALA 46 batch — **AKTUALNA**
+## ROBOCZA `2bdd9b59` — 2026-07-28 01:54 — FALA 48: redeploy roboczej (pieczęć + POLE-BITWY) — **AKTUALNA**
+- md5 (pelne): `2bdd9b59cdf96668a470d1c43beae2cf` · stempel: `ROBOCZA · 2026-07-28 01:54`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + manifest · smoke OK · POLE-BITWY OK.
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- **Zakres:** ten sam kod co FALA 47 — świeży build + pieczęć czasu; POLE-BITWY `dd399c4b`.
+- **Bramki:** tsc 0 · smoke OK · publish POLE-BITWY bez błędu (fix skryptu).
+
+## ROBOCZA `267d6d31` — 2026-07-28 01:41 — FALA 47: magazyn centralny + FALA 46 batch — **ZASTĄPIONA**
 - md5 (pelne): `267d6d31a171df8de8061161e910444d` · stempel: `ROBOCZA · 2026-07-28 01:41`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + manifest (md5 HTML = md5 manifest). Smoke OK.
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
