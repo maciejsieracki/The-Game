@@ -5125,6 +5125,7 @@ async function boot(): Promise<void> {
     function wireUnitRendererRingStance(): void {
       unitRenderer.setRingStanceResolver(unitRingStanceForPlayer);
       unitRenderer.setOwnerColorFn(civColorFn);
+      wireUnitOwnerMedallionResolver();
     }
     wireUnitRendererRingStance();
 
@@ -5134,6 +5135,15 @@ async function boot(): Promise<void> {
         typCopyOwners: typCityCopyOwners,
         cities,
       };
+    }
+
+    function wireUnitOwnerMedallionResolver(): void {
+      unitRenderer.setOwnerMedallionResolver((ownerId: number) => ({
+        civIconId: civKeyForOwnerId(ownerId),
+        era: empireEpochForOwner(ownerId),
+        isCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+        isBarbarian: isBarbarian(ownerId),
+      }));
     }
 
     function civDisplayNameForOwner(ownerId: number): string | undefined {

@@ -42,6 +42,13 @@ import { syncUnitUpgradeBadges } from './unitUpgradeBadges';
 // 2026-07-26) — złote gwiazdki NAD GŁOWĄ, w miejscu zarezerwowanym wtedy jako
 // VETERAN_BADGE_RESERVED_Y. Zasoby to singletony modułu, jak wyżej.
 import { syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
+// C-OBCE-JEDN-Q2: medalion właściciela (lewo) + ikony koszar/kuźnia przy gwiazdkach.
+import {
+  setOwnerMedallionResolver,
+  syncUnitOwnerMedallion,
+  type OwnerMedallionResolver,
+} from './unitOwnerMedallion';
+import { syncUnitPathFlankBadges } from './unitPathFlankBadges';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -4594,6 +4601,11 @@ export class UnitRenderer {
     this.ringStanceForOwner = fn;
   }
 
+  /** Medalion właściciela (portret / sygnet / barbarzyńca) po lewej żetonu — C-OBCE-JEDN-Q2. */
+  setOwnerMedallionResolver(fn: OwnerMedallionResolver): void {
+    setOwnerMedallionResolver(fn);
+  }
+
   /** Tint modelu jednostki (kolorHex cywilizacji z silnika). */
   setOwnerColorFn(fn: (ownerId: number) => number): void {
     this.ownerColorFn = fn;
@@ -4820,10 +4832,9 @@ export class UnitRenderer {
       const tokenObj = this.tokens.get(unit.id);
       if (tokenObj) {
         syncUnitUpgradeBadges(tokenObj, unit);
-        // Odznaka poziomu weterana (game/veteran.ts) — DRUGI, niezależny system:
-        // złote gwiazdki nad głową figurki. Poziom 1 (Rekrut) nie dostaje nic.
-        // Tak samo dla gracza i AI — PARYTET AI, zero warunków na ownerId.
         syncUnitVeteranBadges(tokenObj, unit);
+        syncUnitOwnerMedallion(tokenObj, unit.ownerId);
+        syncUnitPathFlankBadges(tokenObj, unit);
       }
     }
 

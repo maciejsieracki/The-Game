@@ -1,6 +1,6 @@
 # C-OBCE-JEDN-Q2 — Znak właściciela nad żetonem jednostki
 
-**Status:** 🟢 **ZAMKNIĘTE** — Maciej **A + doprecyzowanie Total War** (2026-07-27)  
+**Status:** 🟢 **WDROŻONA** — FALA 43 `33c49486` (2026-07-27)  
 **Grupa:** C + render (`gra/src/render/`)  
 **Ekran:** [EKRAN: Mapa świata — żeton jednostki]
 
@@ -36,8 +36,8 @@ Dziś `render/unitUpgradeBadges.ts` łączy obie ścieżki w **kropki przy podst
 
 | Etap | Stan |
 |------|------|
-| **Właściciel** | 👷 **subagent (inna sesja)** — render → Opus |
-| **Portret/sygnet po lewej** | ❌ brak |
-| **Ikony koszar/kuźnia przy gwiazdkach** | ❌ brak (są kropki u podstawy) |
+| **Właściciel** | ✅ FALA 43 `33c49486` |
+| **Portret/sygnet po lewej** | ✅ `unitOwnerMedallion.ts` |
+| **Ikony koszar/kuźnia przy gwiazdkach** | ✅ `unitPathFlankBadges.ts` |
 | **Generał u góry** | ⏸ poza zakresem |
 | **Deploy** | czeka `działaj` · render 3D → subagent Opus (`gra/src/render/**`) |

@@ -11,7 +11,18 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `6714d76f` — 2026-07-27 23:26 — FALA 42: Spichlerz U-12/U-25B + Garncarnia R7-C — **AKTUALNA**
+## ROBOCZA `33c49486` — 2026-07-27 23:50 — FALA 43: żeton jednostki — medalion + koszary/kuźnia — **AKTUALNA**
+- md5 (pelne): `33c4948673c578874dc897286371179b` · stempel: `ROBOCZA · 2026-07-27 23:50`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- Wynik `vite build` exit 0. POLE-BITWY: bez zmian od FALA 42.
+- **Co nowego (FALA 43):**
+  - **C-OBCE-JEDN-Q2:** medalion właściciela po lewej żetonu (portret / sygnet MP / czaszka barbarzyńcy).
+  - Ikony koszar (ścieżka B) i kuźni (ścieżka A) po bokach gwiazdek weterana — brąz/srebro/złoto.
+  - Usunięte stare kropki/obwódka u podstawy żetonu (`syncUnitUpgradeBadges` → poziom 0).
+- **Bramki:** tsc 0.
+
+## ROBOCZA `6714d76f` — 2026-07-27 23:26 — FALA 42: Spichlerz U-12/U-25B + Garncarnia R7-C — **ZASTĄPIONA**
 - md5 (pelne): `6714d76f2c20b6cf039fe517a3979b44` · stempel: `ROBOCZA · 2026-07-27 23:26`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 8 bundli PLAYTEST + manifest (md5 HTML = md5 manifest).
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).

@@ -139,19 +139,19 @@ export function upgradeBadgeDots(level: UpgradeBadgeLevel): number {
  * wzrokowy). Progresja metali kuźni; złoto zarezerwowane dla weterana.
  *   1 — brąz/miedź  (ciemny, ciepły)
  *   2 — stal/srebro (średni, chłodny szary)
- *   3 — platyna     (bardzo jasna biel — czytelna nawet w odcieniach szarości)
+ *   3 — złoto       (C-OBCE-JEDN-Q1: brąz → srebro → złoto; odcień ciemniejszy niż ★ weterana)
  */
 export const UPGRADE_BADGE_COLOR: Readonly<Record<1 | 2 | 3, number>> = {
   1: 0xc9762c,
   2: 0x9aa8b6,
-  3: 0xf4f8fc,
+  3: 0xe8c84a,
 };
 
 /** Etykieta poziomu do UI/tooltipu (poziom 0 = pusty string). */
 export const UPGRADE_BADGE_LABEL: Readonly<Record<1 | 2 | 3, string>> = {
   1: 'Ulepszenie I (brąz)',
-  2: 'Ulepszenie II (stal)',
-  3: 'Ulepszenie III (platyna)',
+  2: 'Ulepszenie II (srebro)',
+  3: 'Ulepszenie III (złoto)',
 };
 
 export function upgradeBadgeLabel(level: UpgradeBadgeLevel): string {
@@ -334,14 +334,15 @@ export function applyUnitUpgradeBadgeLevel(group: THREE.Object3D, level: Upgrade
 }
 
 /**
- * Wygodne wejście dla renderera mapy: policz poziom z pól jednostki
- * (pancerzBonusProc / parametryBonusProc) i zaktualizuj żeton.
+ * Wygodne wejście dla renderera mapy — od C-OBCE-JEDN-Q2 zawsze czyści stare
+ * kropki/obwódkę u podstawy (poziom 0). Ikony ścieżek koszar/kuźnia są w
+ * unitPathFlankBadges.ts obok gwiazdek weterana.
  */
 export function syncUnitUpgradeBadges(
   group: THREE.Object3D,
-  unit: UnitBuildingProgress | null | undefined,
+  _unit: UnitBuildingProgress | null | undefined,
 ): void {
-  applyUnitUpgradeBadgeLevel(group, upgradeBadgeLevelForUnit(unit));
+  applyUnitUpgradeBadgeLevel(group, 0);
 }
 
 /**

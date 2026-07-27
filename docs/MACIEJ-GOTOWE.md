@@ -1,3 +1,12 @@
+## [23:50] ✅ Gotowe — FALA 43 żeton jednostki (C-OBCE-JEDN-Q2)
+
+| Co | Efekt na mapie |
+|----|----------------|
+| **Medalion lewo** | portret władcy / sygnet MP / czaszka barbarzyńcy |
+| **Nad głową** | ikona koszar (lewo) i kuźni (prawo) przy gwiazdkach weterana |
+| **Usunięte** | stare kropki u podstawy żetonu |
+| **Deploy** | ROBOCZA `33c49486` · VERIFY OK · `gra-robocza/START.html` |
+
 ## [23:22] ✅ Gotowe — P84 Spichlerz + Garncarnia R7-C (kod, bez deploy)
 
 | Co | Efekt w grze |

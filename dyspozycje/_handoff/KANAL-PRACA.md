@@ -3760,3 +3760,12 @@ CZEKAM-NA: nic (bez push — Maciej nie prosił).
 **Bramki:** tsc 0 · P85 bonus 20/20 · empire-food-b5 17/17.
 **Push:** `git push origin main` na prośbę Macieja.
 CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku).
+
+## [23:50] SESJA → MACIEJ — FALA 43 deploy ROBOCZA `33c49486`
+
+**md5:** `33c4948673c578874dc897286371179b` · `gra-robocza/START.html` FALA 43 · Ctrl+F5 + Nowa gra.
+**Zakres:** C-OBCE-JEDN-Q2 — medalion właściciela (lewo) + ikony koszar/kuźnia przy gwiazdkach weterana; usunięte kropki u podstawy.
+**Pliki:** `unitOwnerMedallion.ts` · `unitPathFlankBadges.ts` · `unitUpgradeBadges.ts` · `units.ts` · `main.ts`.
+**Bramki:** tsc 0 · VERIFY OK.
+**Push:** na prośbę Macieja.
+CZEKAM-NA: nic.

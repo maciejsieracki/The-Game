@@ -108,12 +108,13 @@ const STAR_DEPTH = 0.020 * HEX_R;
  * przechodzącej przez środek wynosi cos(30°)·HEX_R = 0,866·HEX_R —
  * mieści się z zapasem 3,5×.
  */
-const STAR_SPACING = 0.170 * HEX_R;
+/** Rozstaw gwiazdek — współdzielony z unitPathFlankBadges (C-OBCE-JEDN-Q2). */
+export const STAR_SPACING = 0.170 * HEX_R;
 /**
  * Odchylenie płytki do tyłu = elewacja kamery gry (render/camera.ts: 52°).
  * Normalna gwiazdy celuje wtedy prosto w kamerę → pełny obrys, zero skrótu.
  */
-const STAR_TILT_RAD = THREE.MathUtils.degToRad(52);
+export const STAR_TILT_RAD = THREE.MathUtils.degToRad(52);
 /** Powiększenie ciemnej gwiazdy-obwódki (kontrast niezależny od koloru terenu). */
 const STAR_OUTLINE_SCALE = 1.30;
 /** Odsunięcie obwódki ZA gwiazdę w lokalnej osi Z płytki (po obrocie: w głąb, od kamery). */
