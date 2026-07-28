@@ -1,3 +1,10 @@
+## [14:28] ✅ Gotowe — FALA 63 zoom nad minimapą (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Zoom UI** | przyciski − 100% + i ⛶ nad górną krawędzią minimapy (lewa kolumna) |
+| **Deploy** | ROBOCZA `0aa8e5c8` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
 ## [14:22] ✅ Gotowe — FALA 62 HUD Handel obok Surowców (deploy ROBOCZA)
 
 | Co | Efekt w grze |

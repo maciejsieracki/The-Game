@@ -39,7 +39,7 @@ import { refreshDiploListHudIfOpen } from './diploListHud';
 import { refreshScienceHubIfOpen } from './scienceHubHud';
 import { type UnitPanelState } from './unitPanelHud';
 import { createArmyStackHud, type ArmyStackHudConfig } from './armyStackHud';
-import { MINIMAP_H_PX, MINIMAP_W_PX } from './minimapLayout';
+import { MINIMAP_H_PX, MINIMAP_W_PX, utilDockBottomCss, utilDockLeftCss } from './minimapLayout';
 import {
   cityViewRightClusterRightCss,
   CITY_EDGE_PX,
@@ -48,8 +48,6 @@ import {
   HUD_POWER_TOP_PX,
   HUD_TOP_PX,
   HUD_ZOOM_EDGE_PX,
-  utilDockBottomCss,
-  utilDockLeftCss,
 } from './hudLayout';
 import { showPowerOverlay, hidePowerOverlay, type PowerOverlayData } from './powerOverlayHud';
 import { mocLabel } from './power-labels';
@@ -483,7 +481,7 @@ const MINI_H = MINIMAP_H_PX;
 // Style
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-hud-css-w2ring4';
+const STYLE_ID = 'civ-hud-css-w2ring5';
 function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-hud-css')?.remove();
@@ -561,7 +559,7 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-zoom-pct{min-width:40px;display:inline-flex;align-items:center;justify-content:center;
   font-size:11px;color:var(--civ-text-muted);letter-spacing:.02em;padding:0 2px;border-left:1px solid rgba(232,216,138,.2);
   border-right:1px solid rgba(232,216,138,.2);}
-/* Zoom + pełny ekran — tylko mapa świata, obok minimapy (Maciej 2026-07-28). */
+/* Zoom + pełny ekran — nad minimapą (Maciej 2026-07-28). */
 .civ-hud .civ-hud-util-dock{pointer-events:auto;position:fixed;z-index:315;
   display:flex;align-items:center;gap:8px;
   left:${utilDockLeftCss(MINI_W)};bottom:${utilDockBottomCss()};}

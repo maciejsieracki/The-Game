@@ -3897,6 +3897,13 @@ CZEKAM-NA: nic (sesja lokalna: pull + otworz `80608ce4`).
 **Bramki:** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b`.
 CZEKAM-NA: nic (sesja lokalna: pull + otworz `0e985a95`).
 
+## [14:28] SESJA LOKALNA -> Maciej - deploy ROBOCZA FALA 63
+
+**md5:** `0aa8e5c87ab46386cf82d346e85b06b7` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** zoom −/+ i ⛶ nad minimapą (górna krawędź), nie z boku.
+**Bramki:** tsc 0 · VERIFY OK · POLE-BITWY `dd399c4b`.
+CZEKAM-NA: nic (sesja lokalna: pull + otworz `0aa8e5c8`).
+
 ## [14:22] SESJA LOKALNA -> Maciej - deploy ROBOCZA FALA 62
 
 **md5:** `1a8f2f721914e66163eb92d7bfddf4c7` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

@@ -11,7 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `1a8f2f72` - 2026-07-28 14:22 - FALA 62: HUD Handel obok Surowców - **AKTUALNA**
+## ROBOCZA `0aa8e5c8` - 2026-07-28 14:28 - FALA 63: zoom nad minimapą - **AKTUALNA**
+- md5 (pelne): `0aa8e5c87ab46386cf82d346e85b06b7` · stempel: `ROBOCZA · 2026-07-28 14:28`
+- **VERIFY OK.** tsc 0 · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** pasek zoom −/+ i ⛶ nad górną krawędzią minimapy (nie z boku). Pliki: `minimapLayout.ts`, `hud.ts`, `minimapHud.ts`.
+
+## ROBOCZA `1a8f2f72` - 2026-07-28 14:22 - FALA 62: HUD Handel obok Surowców - **ZASTAPIONA**
 - md5 (pelne): `1a8f2f721914e66163eb92d7bfddf4c7` · stempel: `ROBOCZA · 2026-07-28 14:22`
 - **VERIFY OK.** tsc 0 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

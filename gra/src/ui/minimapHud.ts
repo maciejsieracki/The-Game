@@ -18,7 +18,6 @@ import {
 import {
   MINIMAP_EDGE_PX,
   MINIMAP_H_PX,
-  MINIMAP_UTIL_DOCK_RESERVE_PX,
   MINIMAP_W_PX,
   minimapWrapBottomCss,
 } from './minimapLayout';
@@ -269,7 +268,7 @@ function renderCanvas(
   }
 }
 
-const STYLE_ID = 'civ-minimap-hud-css-w2ring7';
+const STYLE_ID = 'civ-minimap-hud-css-w2ring8';
 /** Pozycja zgodna z mockupem HUD Mapy layout (1E) — dół-lewo. */
 const MINIMAP_EDGE_GAP = `${MINIMAP_EDGE_PX}px`;
 
@@ -283,7 +282,7 @@ function ensureStyles(): void {
 .civ-minimap-wrap{position:fixed;left:${MINIMAP_EDGE_GAP};bottom:${minimapWrapBottomCss()};z-index:310;
   display:flex;flex-direction:row;flex-wrap:nowrap;align-items:flex-end;gap:${MINIMAP_TOOL_GAP_PX}px;width:max-content;
   filter:drop-shadow(0 8px 22px rgba(0,0,0,.7));overflow:visible;}
-html.civ-ui-zoom-active .civ-minimap-wrap{left:${HUD_ZOOM_EDGE_PX}px;bottom:calc(${HUD_ZOOM_BOTTOM_PX}px + ${MINIMAP_UTIL_DOCK_RESERVE_PX}px);}
+html.civ-ui-zoom-active .civ-minimap-wrap{left:${HUD_ZOOM_EDGE_PX}px;bottom:${HUD_ZOOM_BOTTOM_PX}px;}
 .civ-minimap-hud{position:relative;flex:0 0 var(--mini-w,280px);width:var(--mini-w,280px);height:var(--mini-h,170px);
   background:#0a0f16;border:3px solid #6a5212;border-radius:12px;
   box-shadow:inset 0 0 0 2px rgba(232,216,138,.3);overflow:hidden;cursor:crosshair;}

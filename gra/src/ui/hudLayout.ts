@@ -37,17 +37,6 @@ export const BOTTOM_BAR_WYKONAJ_H_PX = 52;
 export const BOTTOM_BAR_END_TURN_H_PX = 60;
 export const BOTTOM_BAR_TURN_LABEL_H_PX = 30;
 
-/** CSS `left` docku zoom/pełny ekran obok minimapy. */
-export function utilDockLeftCss(miniW: number, zoom = false): string {
-  const edge = zoom ? HUD_ZOOM_EDGE_PX : HUD_EDGE_PX;
-  return `calc(${edge}px + ${miniW}px + ${MINIMAP_TOOL_GAP_PX}px + ${MINIMAP_TOOL_BTN_PX}px)`;
-}
-
-/** CSS `bottom` docku zoom/pełny ekran. */
-export function utilDockBottomCss(zoom = false): string {
-  return `${zoom ? HUD_ZOOM_BOTTOM_PX : HUD_EDGE_PX}px`;
-}
-
 /** CSS `right` klastra Wiki/Menu w widoku miasta. */
 export function cityViewRightClusterRightCss(): string {
   return `calc(${CITY_EDGE_PX}px + min(26vw,${CITY_RIGHT_PANEL_W_PX}px) + ${CITY_RAIL_GAP_PX}px + ${CITY_ICON_RAIL_W_PX}px + ${HUD_GAP_PX}px)`;
