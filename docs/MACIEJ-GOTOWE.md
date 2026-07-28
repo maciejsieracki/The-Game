@@ -1,3 +1,10 @@
+## [14:22] ✅ Gotowe — FALA 62 HUD Handel obok Surowców (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Lewy pasek** | Handel zawsze obok Surowców — nie zawija pod Skarbcem |
+| **Deploy** | ROBOCZA `1a8f2f72` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
 ## [14:10] ✅ Gotowe — FALA 61 kreator Bitwy + modal zaawansowany (deploy ROBOCZA)
 
 | Co | Efekt w grze |

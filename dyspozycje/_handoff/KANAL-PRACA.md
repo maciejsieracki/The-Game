@@ -3897,6 +3897,13 @@ CZEKAM-NA: nic (sesja lokalna: pull + otworz `80608ce4`).
 **Bramki:** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b`.
 CZEKAM-NA: nic (sesja lokalna: pull + otworz `0e985a95`).
 
+## [14:22] SESJA LOKALNA -> Maciej - deploy ROBOCZA FALA 62
+
+**md5:** `1a8f2f721914e66163eb92d7bfddf4c7` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** HUD lewy pasek — Handel obok Surowców (grupa tail + nowrap, szerszy banner).
+**Bramki:** tsc 0 · smoke OK · VERIFY OK · POLE-BITWY `dd399c4b`.
+CZEKAM-NA: nic (sesja lokalna: pull + otworz `1a8f2f72`).
+
 ## [14:10] SESJA LOKALNA -> Maciej - deploy ROBOCZA FALA 61
 
 **md5:** `846db7fcc09fb004d3241edd883b935b` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

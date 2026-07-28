@@ -483,7 +483,7 @@ const MINI_H = MINIMAP_H_PX;
 // Style
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-hud-css-w2ring3';
+const STYLE_ID = 'civ-hud-css-w2ring4';
 function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-hud-css')?.remove();
@@ -494,10 +494,11 @@ function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 html.civ-ui-zoom-active{overflow:hidden;width:100%;height:100%;}
-html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:${HUD_ZOOM_EDGE_PX}px;max-width:min(38vw,480px);}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 380px),680px);}
 html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:${HUD_ZOOM_EDGE_PX}px;max-width:min(38vw,520px);}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-shell{padding:7px 10px;}
-html.civ-ui-zoom-active .civ-hud .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:nowrap;max-width:none;}
 /* Etykiety PL (Skarbiec, Armia…) zostają widoczne także przy zoom UI — kanon mockup 6C. */
 html.civ-ui-zoom-active .civ-hud .civ-hud-chip-lbl{font-size:10px;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-chip-sep{height:18px;margin:0 4px;}
@@ -516,7 +517,9 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   border:1px solid rgba(232,216,138,.3);box-shadow:inset 0 1px 0 rgba(232,216,138,.18),0 6px 18px rgba(0,0,0,.55);
   flex-shrink:0;width:max-content;overflow:visible;}
 .civ-hud .civ-hud-banner-left{pointer-events:auto;position:fixed;top:${HUD_TOP_PX}px;left:${HUD_EDGE_PX}px;z-index:3;
-  max-width:min(calc(50vw - 150px),600px);}
+  max-width:min(calc(100vw - 400px),720px);}
+.civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:nowrap;}
+.civ-hud .hud-chip-tail-group{display:inline-flex;align-items:center;flex-wrap:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-banner-right{flex-shrink:0;max-width:min(calc(50vw - 340px),780px);}
 .civ-hud .hud-right-cluster{pointer-events:auto;position:fixed;top:${HUD_TOP_PX}px;right:${HUD_EDGE_PX}px;z-index:3;
   display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;max-width:calc(50vw - 150px);}
@@ -862,7 +865,7 @@ function powerSymbolHtml(): string {
 
 function renderBarD1B(s: HudState): string {
   const powerIconHtml = powerCenterIconHtml(s);
-  const leftChips: string[] = [
+  const leftHeadChips: string[] = [
     chip6cHtml({
       iconId: 'res-treasury',
       label: 'Skarbiec',
@@ -892,26 +895,27 @@ function renderBarD1B(s: HudState): string {
       title: spichlerzChipTitle(s),
     }),
     chip6cSep(),
-    chip6cHtml({
-      iconId: 'res-resources',
-      label: 'Surowce',
-      value: '',   // Maciej 2026-07-24: bez liczby na chipie (był „9/9") — sam żeton + klik po magazyn
-      rate: s.surowceAlert ? '⚠' : undefined,
-      rateWarn: !!s.surowceAlert,
-      act: 'surowce',
-      title: surowceChipTitle(s),
-    }),
-    chip6cSep(),
-    // DYSPOZYCJA 85 (Maciej 2026-07-26): Handel przeniesiony NA KONIEC, za Surowce.
-    // Kolejność paska: Skarbiec · Praca · Spichlerz · Surowce · Handel.
-    chip6cHtml({
+  ];
+  // DYSPOZYCJA 85: Handel ZA Surowcami — grupa tail, żeby przy wąskim oknie nie lądował pod Skarbcem.
+  const leftTailChips = chip6cHtml({
+    iconId: 'res-resources',
+    label: 'Surowce',
+    value: '',   // Maciej 2026-07-24: bez liczby na chipie (był „9/9") — sam żeton + klik po magazyn
+    rate: s.surowceAlert ? '⚠' : undefined,
+    rateWarn: !!s.surowceAlert,
+    act: 'surowce',
+    title: surowceChipTitle(s),
+  })
+    + chip6cSep()
+    + chip6cHtml({
       iconId: 'res-trade',
       label: 'Handel',
       value: signed(s.handelIncome ?? 0),
       act: 'handel',
       title: handelChipTitle(s),
-    }),
-  ];
+    });
+  const leftChipsHtml = leftHeadChips.join('')
+    + `<span class="hud-chip-tail-group">${leftTailChips}</span>`;
   const rightChips: string[] = [
     chip6cHtml({
       iconId: 'res-science',
@@ -966,7 +970,7 @@ function renderBarD1B(s: HudState): string {
   const rekrLabel = s.rekruciLabel ?? '—';
 
   let html = '<div class="civ-hud-banner-shell civ-hud-banner-left"><div class="hud-chip-row">'
-    + leftChips.join('') + '</div></div>';
+    + leftChipsHtml + '</div></div>';
 
   html += '<div class="power-center" data-act="power" title="Moc imperium — siła absolutna państwa · Duża liczba: punkty Mocy (łączna siła imperium) · Kliknij po szczegóły.">'
     + '<div class="p-epoch">' + escHtml(s.epoka) + '</div>'

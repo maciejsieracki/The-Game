@@ -11,7 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `846db7fc` - 2026-07-28 14:10 - FALA 61: kreator Bitwy + layout modal zaawansowany - **AKTUALNA**
+## ROBOCZA `1a8f2f72` - 2026-07-28 14:22 - FALA 62: HUD Handel obok Surowców - **AKTUALNA**
+- md5 (pelne): `1a8f2f721914e66163eb92d7bfddf4c7` · stempel: `ROBOCZA · 2026-07-28 14:22`
+- **VERIFY OK.** tsc 0 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** lewy pasek HUD — Handel w grupie z Surowcami (nie zawija pod Skarbcem); szerszy banner-left, nowrap. Plik: `hud.ts`.
+
+## ROBOCZA `846db7fc` - 2026-07-28 14:10 - FALA 61: kreator Bitwy + layout modal zaawansowany - **ZASTAPIONA**
 - md5 (pelne): `846db7fcc09fb004d3241edd883b935b` · stempel: `ROBOCZA · 2026-07-28 14:10`
 - **VERIFY OK.** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
