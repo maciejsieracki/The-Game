@@ -9,6 +9,13 @@
 import { brandIconSvg } from './icons/brandAssets';
 import { ensureBrandRootTokens } from './brandTokenVars';
 import { FOG_EXPLORED_BRIGHTNESS } from '../game/visibility';
+import {
+  MINIMAP_EDGE_PX,
+  MINIMAP_H_PX,
+  MINIMAP_UTIL_DOCK_RESERVE_PX,
+  MINIMAP_W_PX,
+  minimapWrapBottomCss,
+} from './minimapLayout';
 
 /** Dane pojedynczego heksa do rysowania minimapy. */
 export interface MinimapHexData {
@@ -104,8 +111,8 @@ const TEREN_KOLOR: Record<string, string> = {
 const TEREN_KOLOR_DEFAULT = '#3a4450';
 const FOG_HIDDEN = '#0a0e14';
 
-const DEFAULT_W = 280;
-const DEFAULT_H = 170;
+const DEFAULT_W = MINIMAP_W_PX;
+const DEFAULT_H = MINIMAP_H_PX;
 
 const SEARCH_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20 16 16"/></svg>';
 const TERRITORY_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2 20 7v10L12 22 4 17V7z"/><path d="M12 2v20M4 7l8 5 8-5M4 17l8-5 8 5"/></svg>';
@@ -256,11 +263,9 @@ function renderCanvas(
   }
 }
 
-const STYLE_ID = 'civ-minimap-hud-css-w2ring6';
+const STYLE_ID = 'civ-minimap-hud-css-w2ring7';
 /** Pozycja zgodna z mockupem HUD Mapy layout (1E) — dół-lewo. */
-const MINIMAP_EDGE_GAP = '20px';
-/** Miejsce pod pasek zoom/pełny ekran pod minimapą (hud.ts civ-hud-util-dock). */
-const MINIMAP_UTIL_DOCK_RESERVE = 50;
+const MINIMAP_EDGE_GAP = `${MINIMAP_EDGE_PX}px`;
 
 function ensureStyles(): void {
   ensureBrandRootTokens();
@@ -269,10 +274,10 @@ function ensureStyles(): void {
   document.getElementById('civ-minimap-hud-css-w2b')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-minimap-wrap{position:fixed;left:${MINIMAP_EDGE_GAP};bottom:calc(${MINIMAP_EDGE_GAP} + ${MINIMAP_UTIL_DOCK_RESERVE}px);z-index:310;
+.civ-minimap-wrap{position:fixed;left:${MINIMAP_EDGE_GAP};bottom:${minimapWrapBottomCss()};z-index:310;
   display:flex;flex-direction:row;flex-wrap:nowrap;align-items:flex-end;gap:10px;width:max-content;
   filter:drop-shadow(0 8px 22px rgba(0,0,0,.7));overflow:visible;}
-html.civ-ui-zoom-active .civ-minimap-wrap{left:10px;bottom:calc(10px + ${MINIMAP_UTIL_DOCK_RESERVE}px);}
+html.civ-ui-zoom-active .civ-minimap-wrap{left:10px;bottom:calc(10px + ${MINIMAP_UTIL_DOCK_RESERVE_PX}px);}
 .civ-minimap-hud{position:relative;flex:0 0 var(--mini-w,280px);width:var(--mini-w,280px);height:var(--mini-h,170px);
   background:#0a0f16;border:3px solid #6a5212;border-radius:12px;
   box-shadow:inset 0 0 0 2px rgba(232,216,138,.3);overflow:hidden;cursor:crosshair;}

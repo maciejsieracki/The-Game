@@ -11,7 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `80608ce4` - 2026-07-28 12:58 - FALA 58: magazyn panstwa ceramika/sol/kon/zloto + spawn nagrody chatka - **AKTUALNA**
+## ROBOCZA `0e985a95` - 2026-07-28 13:35 - FALA 59: karta jednostki vs minimapa + fortify/czuwanie - **AKTUALNA**
+- md5 (pelne): `0e985a95fb0c8a28b8ada53e52b14360` · stempel: `ROBOCZA · 2026-07-28 13:35`
+- **VERIFY OK.** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** karta jednostki nad minimapa (minimapLayout.ts, +28px luz) + Ufortyfikuj/Czuwaj dzialaja poza terytorium + klik akcji w panelu heksa (dblclick). Pliki: minimapLayout.ts, sidePanelHud.ts, minimapHud.ts, hud.ts, main.ts.
+
+## ROBOCZA `80608ce4` - 2026-07-28 12:58 - FALA 58: magazyn panstwa ceramika/sol/kon/zloto + spawn nagrody chatka - **ZASTAPIONA**
 - md5 (pelne): `80608ce4bbca64b58c67d034bcba004b` · stempel: `ROBOCZA · 2026-07-28 12:58`
 - **VERIFY OK.** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

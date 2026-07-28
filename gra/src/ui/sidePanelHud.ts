@@ -7,6 +7,11 @@
 import { brandIconSvg } from './icons/brandAssets';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import { UNIT_CONTEXT_PANEL_CSS } from './hexContextTooltip';
+import {
+  MINIMAP_EDGE_PX,
+  MINIMAP_W_PX,
+  unitCardDockBottomPx,
+} from './minimapLayout';
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
@@ -55,14 +60,12 @@ export interface SidePanelHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-side-panel-hud-css-w3-unit-dock2';
+const STYLE_ID = 'civ-side-panel-hud-css-w3-unit-dock3';
 /** Wysokość stosu tury (Wykonaj + Koniec tury) nad dolną krawędzią — mockup 1E strefa G. */
 const TURN_STACK_H = 172;
-/** Zgodne z hud.ts / minimapHud.ts — minimapa 280×170, margines 20px. */
-const MINIMAP_W = 280;
-const MINIMAP_H = 170;
-const MINIMAP_EDGE = 20;
-const MINIMAP_GAP = 10;
+const MINIMAP_EDGE = MINIMAP_EDGE_PX;
+const MINIMAP_W = MINIMAP_W_PX;
+const unitDockBottom = unitCardDockBottomPx();
 
 function eventIconHtml(kind: SidePanelEventKind, fallback: string): string {
   const map: Partial<Record<SidePanelEventKind, string>> = {
@@ -89,9 +92,8 @@ function ensureStyles(): void {
   document.getElementById('civ-side-panel-hud-css-w2')?.remove();
   document.getElementById('civ-side-panel-hud-css-w2full')?.remove();
   document.getElementById('civ-side-panel-hud-css-w3-zoom-cap')?.remove();
+  document.getElementById('civ-side-panel-hud-css-w3-unit-dock2')?.remove();
   if (document.getElementById(STYLE_ID)) return;
-  const MINIMAP_UTIL_DOCK_RESERVE = 50;
-const unitDockBottom = MINIMAP_EDGE + MINIMAP_UTIL_DOCK_RESERVE + MINIMAP_H + MINIMAP_GAP;
   const css = `
 .civ-side-panel{position:fixed;bottom:${TURN_STACK_H}px;right:20px;top:auto;z-index:310;width:300px;pointer-events:auto;
   max-height:min(50vh,calc(100vh - ${TURN_STACK_H + 80}px));overflow-y:auto;overflow-x:hidden;
@@ -99,9 +101,9 @@ const unitDockBottom = MINIMAP_EDGE + MINIMAP_UTIL_DOCK_RESERVE + MINIMAP_H + MI
   ${CIV_BRAND_SCOPE_VARS}
   display:flex;flex-direction:column;gap:8px;font:13px var(--civ-font-ui);}
 html.civ-ui-zoom-active .civ-side-panel{max-height:50vh;right:16px;}
-.civ-side-ctx-dock{position:fixed;left:${MINIMAP_EDGE}px;bottom:${unitDockBottom}px;z-index:312;
+.civ-side-ctx-dock{position:fixed;left:${MINIMAP_EDGE}px;bottom:${unitDockBottom}px;z-index:308;
   width:min(${MINIMAP_W}px,calc(100vw - ${MINIMAP_EDGE * 2}px));pointer-events:none;
-  max-height:min(45vh,calc(100vh - ${unitDockBottom + 72}px));overflow-y:auto;overflow-x:hidden;
+  max-height:min(40vh,calc(100vh - ${unitDockBottom + 80}px));overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;scrollbar-gutter:stable;display:none;
   ${CIV_BRAND_SCOPE_VARS}
   font:13px var(--civ-font-ui);}
@@ -219,7 +221,6 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   ctxEl.className = 'civ-side-ctx-dock';
 
   function bindContextInteractions(root: HTMLElement, ctx: ContextPanelData): void {
-    if (ctx.kind !== 'unit') return;
     root.querySelector('[data-sp-expand]')?.addEventListener('click', () => {
       config.onContextExpand?.();
       render();
@@ -231,6 +232,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
         if (id) config.onContextAction?.(id);
       });
     });
+    if (ctx.kind !== 'unit') return;
     root.querySelectorAll('[data-unit]').forEach(chip => {
       const go = () => {
         const id = (chip as HTMLElement).getAttribute('data-unit');

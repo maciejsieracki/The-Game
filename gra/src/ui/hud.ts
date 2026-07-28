@@ -39,6 +39,7 @@ import { refreshDiploListHudIfOpen } from './diploListHud';
 import { refreshScienceHubIfOpen } from './scienceHubHud';
 import { type UnitPanelState } from './unitPanelHud';
 import { createArmyStackHud, type ArmyStackHudConfig } from './armyStackHud';
+import { MINIMAP_H_PX, MINIMAP_W_PX } from './minimapLayout';
 import { showPowerOverlay, hidePowerOverlay, type PowerOverlayData } from './powerOverlayHud';
 import { mocLabel } from './power-labels';
 import { wikiBookIcon } from './icons/wikiBookIcon';
@@ -464,8 +465,8 @@ function ensureUiZoomApplied(): void {
 
 const useD1BLayout = (): boolean => cfg?.onExecutePending !== undefined || cfg?.mapToolbar !== undefined;
 
-const MINI_W = 280;
-const MINI_H = 170;
+const MINI_W = MINIMAP_W_PX;
+const MINI_H = MINIMAP_H_PX;
 
 // ---------------------------------------------------------------------------
 // Style

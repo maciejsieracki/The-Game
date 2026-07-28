@@ -3889,3 +3889,10 @@ CZEKAM-NA: nic (sesja lokalna: pull + otwórz `8dd05481`).
 **Zakres:** magazyn panstwa (ceramika/sol/kon/zloto) · spawn nagrody chatka (findVillageRewardSpawnHex).
 **Bramki:** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b`.
 CZEKAM-NA: nic (sesja lokalna: pull + otworz `80608ce4`).
+
+## [13:35] SESJA LOKALNA -> Maciej - deploy ROBOCZA FALA 59
+
+**md5:** `0e985a95fb0c8a28b8ada53e52b14360` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** karta jednostki nad minimapa (minimapLayout) + fortify/czuwanie poza terytorium + akcje w panelu heksa.
+**Bramki:** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b`.
+CZEKAM-NA: nic (sesja lokalna: pull + otworz `0e985a95`).

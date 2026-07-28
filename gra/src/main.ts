@@ -12184,6 +12184,19 @@ async function boot(): Promise<void> {
       return false;
     }
 
+    function unitFortifyActionDisabled(u: RuntimeUnit, stackRuch: number): boolean {
+      // Ufortyfikuj / odfortyfikuj działa na KAŻDYM heksie (także poza terytorium gracza).
+      // Blokada wyłącznie: brak puli ruchu przy wejściu w tryb (nie przy wyjściu).
+      if (u.inGarnizon === true || u.ufortyfikowanyWPolu === true) return false;
+      return stackRuch <= 0;
+    }
+
+    function unitSentryActionDisabled(u: RuntimeUnit, stackRuch: number): boolean {
+      // Czuwaj zużywa ruch przy wejściu; obudź — bez kosztu. Bez bramki terytorialnej.
+      if (u.sentry === true) return false;
+      return stackRuch <= 0;
+    }
+
     function buildArmyStackHudState(): ArmyStackHudState | null {
       // Maciej 2026-07-28: akcje i stos przeniesione do rozszerzonego panelu bocznego.
       return null;
@@ -12266,13 +12279,12 @@ async function boot(): Promise<void> {
         // zostaje na heksie miasta i wraca do normalnego sterowania.
         const isGarnizoned = active.inGarnizon === true;
         const isFieldFortified = active.ufortyfikowanyWPolu === true;
-        const alreadyFortifiedSomehow = isGarnizoned || isFieldFortified;
         actions.push({
           id: 'fortify',
           label: isGarnizoned
             ? 'Odfortyfikuj'
             : isFieldFortified ? 'Zdejmij fortyfikację' : 'Ufortyfikuj',
-          disabled: alreadyFortifiedSomehow ? false : stackRuch <= 0,
+          disabled: unitFortifyActionDisabled(active, stackRuch),
         });
         if (isGarnizoned) {
           const garCount = garrisonUnitsOnHex(units, active.q, active.r, active.ownerId).length;
@@ -12300,7 +12312,7 @@ async function boot(): Promise<void> {
         actions.push({
           id: 'sentry',
           label: enteringSentry ? 'Czuwaj' : 'Obud\u017a',
-          disabled: enteringSentry && stackRuch <= 0,
+          disabled: unitSentryActionDisabled(active, stackRuch),
         });
       }
       actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });

@@ -1,17 +1,18 @@
-## [12:58] Gotowe - FALA 58 magazyn panstwa + spawn chatka (deploy ROBOCZA)
+## [13:35] ✅ Gotowe — FALA 59 karta jednostki + fortify/czuwanie (deploy ROBOCZA)
 
 | Co | Efekt w grze |
 |----|----------------|
-| **Magazyn panstwa** | Ceramika, Sol, Kon, Zloto - stock i limit jak drewno/kamien w panelu Surowce |
+| **Karta vs minimapa** | dock nad minimapą, bez nakładania (`minimapLayout.ts`) |
+| **Ufortyfikuj / Czuwaj** | działają poza terytorium; klik działa też w panelu heksa (dblclick) |
+| **Deploy** | ROBOCZA `0e985a95` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
+## [12:58] ✅ Gotowe — FALA 58 magazyn państwa + spawn chatka (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Magazyn państwa** | Ceramika, Sól, Koń, Złoto — stock i limit jak drewno/kamień w panelu Surowce |
 | **Nagroda chatka** | jednostka-nagroda spawnuje poza obcym miastem (ring od chatki) |
 | **Deploy** | ROBOCZA `80608ce4` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
-## [13:05] ⏸️ Czeka — paczka FALA 58 (kod, bez deploy)
-
-| Co | Efekt w grze (po deploy) |
-|----|--------------------------|
-| **Zwiadowca z chatki** | spawn **poza** heksem obcego miasta (`findVillageRewardSpawnHex`, villages-test 45/45) |
-| **Magazyn państwa** | Ceramika, Sól, Koń, Złoto jak drewno/kamień (`0/500` + pasek) |
-| **Deploy** | jeszcze **nie** w ROBOCZA — aktualna gra: FALA 57 `8dd05481` |
 
 ## [12:28] ✅ Gotowe — FALA 57 batch HUD + Miasta + spawn 4 hex (deploy ROBOCZA)
 
