@@ -1886,11 +1886,6 @@ function ensureStyles(): void {
 .civ-v-w3-chip-val.green{color:var(--green);}
 .civ-v-w3-chip-val.red{color:var(--red);}
 .civ-v-w3-chip-sep{width:1px;height:1.45em;background:rgba(232,216,138,0.2);flex-shrink:0;}
-.civ-v-w3-chip-splits{display:inline-flex;align-items:center;gap:0.22em;margin-left:0.12em;}
-.civ-v-w3-split{font-size:0.82em;font-weight:700;line-height:1;opacity:0.95;}
-.civ-v-w3-split.gold{color:var(--gold);}
-.civ-v-w3-split.blue{color:#7cb4e4;}
-.civ-v-w3-split.purple{color:#c894e8;}
 .civ-v-w3-top-actions{display:flex;align-items:center;gap:0.75rem;flex-shrink:0;margin-left:0.35rem;}
 .civ-v-exit-map-btn{display:inline-flex;align-items:center;gap:0.38em;padding:0.38em 0.85em 0.38em 0.65em;
   border-radius:10px;border:2px solid rgba(232,216,138,0.55);
@@ -8039,32 +8034,19 @@ function w3CityChip(
   cls: string,
   statId: string,
   hint: string,
-  splitsHtml = '',
 ): string {
   return `<button type="button" class="civ-v-w3-chip civ-v-res-interactive" data-res-stat="${statId}" ` +
     `title="${hint.replace(/"/g, '&quot;')}" aria-label="${hint.replace(/"/g, '&quot;')}">` +
     `<span class="civ-v-w3-chip-icon">${icon}</span>` +
     `<span class="civ-v-w3-chip-lbl">${label}</span>` +
     `<span class="civ-v-w3-chip-val ${cls}">${val}</span>` +
-    splitsHtml +
     `</button>`;
-}
-
-function w3SplitSpan(amount: number, cls: string, title: string, suffix = ''): string {
-  if (amount === 0) return '';
-  const d = fmtResDelta(amount);
-  return `<span class="civ-v-w3-split ${cls}" title="${title.replace(/"/g, '&quot;')}">${d.html}${suffix}</span>`;
 }
 
 /** Górny pasek widoku miasta — chipy po bokach nazwy miasta (lewo: ekonomia, prawo: kultura/nauka). */
 function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | null): { left: string; right: string } {
   const pracaSplit = cityPracaSplit(city, view, data);
   const pracaCls = pracaSplit.total > 0 ? 'green' : pracaSplit.total < 0 ? 'red' : '';
-  const pracaSplits =
-    `<span class="civ-v-w3-chip-splits">` +
-    w3SplitSpan(pracaSplit.doBudynkow, 'gold', 'Praca → budynki (kolejka produkcji)') +
-    w3SplitSpan(pracaSplit.doUlepszen, 'blue', 'Praca → ulepszenia terenu (farma, kamieniołom…)') +
-    `</span>`;
 
   const splitHandel = readPodzialHandlu(city, data);
   const est = estimateHandelChips(view, splitHandel);
@@ -8072,19 +8054,9 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
   const skarbHandel = est.skarb;
   const wealthHandel = est.zam;
   const daninaLblChip = daninaLabelForCity(city);
-  const goldSplits =
-    `<span class="civ-v-w3-chip-splits">` +
-    w3SplitSpan(skarbHandel, 'gold', `${daninaLblChip} → skarbiec imperium`) +
-    w3SplitSpan(wealthHandel, 'purple', `${daninaLblChip} → pula zamożności (W)`, 'W') +
-    `</span>`;
 
   const foodSplit = cityFoodSplit(view);
   const foodCls = foodSplit.total > 0 ? 'green' : foodSplit.total < 0 ? 'red' : '';
-  const foodSplits =
-    `<span class="civ-v-w3-chip-splits">` +
-    w3SplitSpan(foodSplit.produkcja, 'gold', 'Produkcja żywności (brutto)') +
-    w3SplitSpan(-foodSplit.racje, 'red', 'Koszt racji mieszkańców') +
-    `</span>`;
 
   const kultCls = view.kultura > 0 ? 'gold' : view.kultura < 0 ? 'red' : '';
   const naukaCls = view.nauka > 0 ? 'blue' : view.nauka < 0 ? 'red' : 'blue';
@@ -8101,7 +8073,6 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
       pracaCls,
       'praca',
       `Praca tego miasta · budynki ${signed(pracaSplit.doBudynkow)} · ulepszenia ${signed(pracaSplit.doUlepszen)}`,
-      pracaSplits,
     ),
     w3CityChip(
       loafIconHtml(),
@@ -8110,7 +8081,6 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
       foodCls,
       'zywnosc',
       `Bilans żywności: produkcja ${signed(foodSplit.produkcja)} − racje ${foodSplit.racje} = ${signed(foodSplit.total)} · WZROST ${view.wzrostProcent}%`,
-      foodSplits,
     ),
     w3CityChip(
       cityPanelChipIcon('res-treasury', 20),
@@ -8119,7 +8089,6 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
       goldCls,
       'zloto',
       `Netto pieniędzy tego miasta → skarbiec · ${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)}`,
-      goldSplits,
     ),
   ].join('');
 

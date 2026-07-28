@@ -79,7 +79,7 @@ import { computeStartPlacements, computeReachable, computePath, listUnitTypes, p
 import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
-import { pixelToHex, unitAt, keyOf } from './input/picker';
+import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
 import { runScoutsAutoExplore } from './game/scout-auto-explore';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
@@ -7226,6 +7226,10 @@ async function boot(): Promise<void> {
     let lastMouseX = 0;
     let lastMouseY = 0;
     let chipOverCanvas = false;
+    /** Heks pod tooltipem „Kliknij hex" — pozycja odświeżana co klatkę (kamera / zoom UI). */
+    let ghostChipHex: { q: number; r: number } | null = null;
+    let ghostChipLabel = '';
+    let ghostChipValid = false;
 
     const ghostChip = document.createElement('div');
     ghostChip.id = 'civ-build-ghost-chip';
@@ -7236,7 +7240,8 @@ async function boot(): Promise<void> {
       'background:rgba(30,34,50,0.92)', 'border:1px solid rgba(255,212,121,0.75)',
       'box-shadow:0 4px 14px rgba(0,0,0,0.55)',
     ].join(';');
-    document.body.appendChild(ghostChip);
+    // Na <html>, nie <body> — applyUiZoom() skaluje body (transform), co psuje position:fixed.
+    document.documentElement.appendChild(ghostChip);
 
     const IMPROVEMENT_CHIP: Partial<Record<ImprovementKey, string>> = {
       farma: '🌾', pastwisko: '🐑', kopalnia: '⛏', kamieniolom: '🪨',
@@ -7273,6 +7278,7 @@ async function boot(): Promise<void> {
       if (ghostCityGroup) { scene.remove(ghostCityGroup); ghostCityGroup = null; }
       lastGhostKey = '';
       lastGhostCityKey = '';
+      ghostChipHex = null;
       ghostChip.style.display = 'none';
     }
 
@@ -7286,17 +7292,39 @@ async function boot(): Promise<void> {
       lastGhostCityKey = '';
     }
 
-    function updateBuildGhostChip(clientX: number, clientY: number, label: string, valid: boolean): void {
-      if (!chipOverCanvas || !buildModeOpen) {
+    function hexCenterClientPx(q: number, r: number, liftY = 1.5): { x: number; y: number } | null {
+      const wp = axialToWorld(q, r, HEX_R);
+      return worldToClientPx(wp.x, unitRenderer.topYAt(q, r) + liftY, wp.z, camera, canvas);
+    }
+
+    function syncBuildGhostChipDom(): void {
+      if (!ghostChipHex || !chipOverCanvas || !buildModeOpen) {
         ghostChip.style.display = 'none';
         return;
       }
-      ghostChip.innerHTML = '<span style="font-size:16px;line-height:1">' + label + '</span>'
-        + '<span>' + (valid ? 'Kliknij hex' : 'Niedozwolone') + '</span>';
-      ghostChip.style.borderColor = valid ? 'rgba(255,212,121,0.75)' : 'rgba(255,102,85,0.85)';
+      const pos = hexCenterClientPx(ghostChipHex.q, ghostChipHex.r);
+      if (!pos) {
+        ghostChip.style.display = 'none';
+        return;
+      }
+      ghostChip.innerHTML = '<span style="font-size:16px;line-height:1">' + ghostChipLabel + '</span>'
+        + '<span>' + (ghostChipValid ? 'Kliknij hex' : 'Niedozwolone') + '</span>';
+      ghostChip.style.borderColor = ghostChipValid ? 'rgba(255,212,121,0.75)' : 'rgba(255,102,85,0.85)';
       ghostChip.style.display = 'flex';
-      ghostChip.style.left = (clientX + 18) + 'px';
-      ghostChip.style.top = (clientY - 32) + 'px';
+      ghostChip.style.left = Math.round(pos.x + 14) + 'px';
+      ghostChip.style.top = Math.round(pos.y - 40) + 'px';
+    }
+
+    function setBuildGhostChip(q: number, r: number, label: string, valid: boolean): void {
+      if (!chipOverCanvas || !buildModeOpen) {
+        ghostChipHex = null;
+        ghostChip.style.display = 'none';
+        return;
+      }
+      ghostChipHex = { q, r };
+      ghostChipLabel = label;
+      ghostChipValid = valid;
+      syncBuildGhostChipDom();
     }
 
     function showGhostImprovement(q: number, r: number): void {
@@ -7352,10 +7380,10 @@ async function boot(): Promise<void> {
         removeGhostImprovement();
         if (isInStartReveal(hit.q, hit.r)) {
           showGhostCity(hit.q, hit.r);
-          updateBuildGhostChip(e.clientX, e.clientY, '🏛', canFoundPlayerCityAt(hit.q, hit.r).ok);
+          setBuildGhostChip(hit.q, hit.r, '🏛', canFoundPlayerCityAt(hit.q, hit.r).ok);
         } else {
           removeGhostCity();
-          updateBuildGhostChip(e.clientX, e.clientY, '🏛', false);
+          setBuildGhostChip(hit.q, hit.r, '🏛', false);
         }
         return;
       }
@@ -7366,7 +7394,7 @@ async function boot(): Promise<void> {
         if (ok) showGhostImprovement(hit.q, hit.r);
         else removeGhostImprovement();
         const ic = IMPROVEMENT_CHIP[activeImprovementKey] ?? '🔨';
-        updateBuildGhostChip(e.clientX, e.clientY, ic, ok);
+        setBuildGhostChip(hit.q, hit.r, ic, ok);
         return;
       }
       removeBuildGhosts();
@@ -7375,6 +7403,7 @@ async function boot(): Promise<void> {
     canvas.addEventListener('mouseenter', () => { chipOverCanvas = true; });
     canvas.addEventListener('mouseleave', () => {
       chipOverCanvas = false;
+      ghostChipHex = null;
       ghostChip.style.display = 'none';
     });
     const placedImprovements = new Map<string, PlacedLayers>();
@@ -19360,6 +19389,10 @@ async function boot(): Promise<void> {
         const { dist } = camCtrl.getFocusState();
         const { minDist, maxDist } = camCtrl.getDistLimits();
         setZoomLod(dist, minDist, maxDist);
+      }
+
+      if (ghostChipHex && buildModeOpen && chipOverCanvas) {
+        syncBuildGhostChipDom();
       }
 
       // TEMAT #23 — woda pozycyjna (ambience): próbka udziału wody w kadrze co

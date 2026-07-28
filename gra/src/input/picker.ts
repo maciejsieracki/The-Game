@@ -97,6 +97,25 @@ export function clientRectToNdc(
   };
 }
 
+/** Punkt świata → piksele viewportu (do tooltipów fixed na <html>, niezależnie od zoom UI body). */
+export function worldToClientPx(
+  worldX: number,
+  worldY: number,
+  worldZ: number,
+  camera: THREE.Camera,
+  canvas: HTMLCanvasElement,
+): { x: number; y: number } | null {
+  const v = new THREE.Vector3(worldX, worldY, worldZ);
+  v.project(camera);
+  if (v.z > 1) return null;
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return null;
+  return {
+    x: rect.left + (v.x * 0.5 + 0.5) * rect.width,
+    y: rect.top + (-v.y * 0.5 + 0.5) * rect.height,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // 1c. refreshInstancedPickBounds — sfera otaczająca InstancedMesh do raycastu
 // ---------------------------------------------------------------------------

@@ -293,7 +293,7 @@ let hudSessionActive = false;
 let barActionsBound = false;
 
 // ---------------------------------------------------------------------------
-// Pełny ekran (Maciej 2026-07-25) — przycisk w HUD (⛶) obok Menu/Civpedia.
+// Pełny ekran + zoom UI (Maciej 2026-07-25 / 2026-07-28) — dock lewy dolny (mapa) lub lewy górny (miasto).
 // Zero flagowania własnego stanu: zawsze pytamy document.fullscreenElement na
 // żywo (renderBar czyta go przy każdym renderze), a zdarzenie 'fullscreenchange'
 // tylko WYZWALA odświeżenie — dzięki temu F11 przeglądarki i Esc też trzymają
@@ -486,7 +486,8 @@ html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:10px;max-width:min(38
 html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:10px;max-width:min(38vw,520px);}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-shell{padding:7px 10px;}
 html.civ-ui-zoom-active .civ-hud .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
-html.civ-ui-zoom-active .civ-hud .civ-hud-chip-lbl{display:none;}
+/* Etykiety PL (Skarbiec, Armia…) zostają widoczne także przy zoom UI — kanon mockup 6C. */
+html.civ-ui-zoom-active .civ-hud .civ-hud-chip-lbl{font-size:10px;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-chip-sep{height:18px;margin:0 4px;}
 html.civ-ui-zoom-active .civ-hud .power-center{min-width:210px;padding:9px 14px 7px;}
 html.civ-ui-zoom-active .civ-hud .power-center .p-epoch{font-size:11px;margin-bottom:5px;}
@@ -545,6 +546,13 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-zoom-pct{min-width:40px;display:inline-flex;align-items:center;justify-content:center;
   font-size:11px;color:var(--civ-text-muted);letter-spacing:.02em;padding:0 2px;border-left:1px solid rgba(232,216,138,.2);
   border-right:1px solid rgba(232,216,138,.2);}
+/* Zoom + pełny ekran — tylko mapa świata, obok minimapy (Maciej 2026-07-28). */
+.civ-hud .civ-hud-util-dock{pointer-events:auto;position:fixed;z-index:315;
+  display:flex;align-items:center;gap:8px;
+  left:calc(20px + ${MINI_W}px + 10px + 48px);bottom:20px;}
+.civ-hud.is-city-view .civ-hud-util-dock{display:none!important;}
+html.civ-ui-zoom-active .civ-hud .civ-hud-util-dock{
+  left:calc(10px + ${MINI_W}px + 8px + 48px);bottom:16px;}
 .civ-hud .b-wiki{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
   border-radius:9px;border:1px solid rgba(168,200,120,.38);cursor:pointer;font-family:var(--civ-font-ui);
   background:linear-gradient(180deg,#161c28,#0a0d14);color:var(--civ-wiki-accent,#a8c878);
@@ -600,11 +608,10 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud.is-city-view .hud-meta{display:none!important;}
 .civ-hud.is-city-view .hud-right-cluster{top:8px;
   right:calc(32px + min(26vw,300px) + 16px + 46px + 10px);
-  z-index:407;flex-direction:column;align-items:stretch;gap:5px;max-width:148px;}
+  z-index:407;flex-direction:column;align-items:stretch;gap:5px;max-width:min(148px,calc(100vw - 32px));}
 .civ-hud.is-city-view .hud-right-cluster .hud-right{flex-direction:column;align-items:stretch;gap:5px;}
-.civ-hud.is-city-view .hud-right-cluster .b-menu{height:36px;padding:0 10px;font-size:10px;letter-spacing:.12em;justify-content:center;}
-.civ-hud.is-city-view .civ-hud-zoom .b-zoom{height:36px;width:30px;font-size:16px;}
-.civ-hud.is-city-view .civ-hud-zoom-pct{min-width:34px;font-size:10px;}
+.civ-hud.is-city-view .hud-right-cluster .b-menu,
+.civ-hud.is-city-view .hud-right-cluster .b-wiki{height:36px;padding:0 10px;font-size:10px;letter-spacing:.12em;justify-content:center;}
 .civ-mini{position:fixed;left:20px;bottom:20px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
 .civ-mini-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#9aa6b6;font:11px monospace;text-align:center;}
 .civ-fs-hint{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;
@@ -977,12 +984,12 @@ function renderBarD1B(s: HudState): string {
       + wikiBookIcon(16)
       + '<span>Civpedia</span></button>'
     : '';
-  // Pełny ekran (Maciej 2026-07-25): dyskretna ikona ⛶, ta sama klasa co Menu.
-  // Znika w pełnym ekranie (isDocFullscreen()) — wraca po Esc/F11 (fullscreenchange → renderBar()).
+  // Pełny ekran ⛶ — przy minimapie na mapie świata; w mieście obok Menu.
   const fsBtn = (fullscreenSupported() && !isDocFullscreen())
     ? '<button type="button" class="b-menu" data-act="fullscreen" title="Pełny ekran" aria-label="Pełny ekran">'
       + '<span aria-hidden="true">⛶</span></button>'
     : '';
+  const showMapZoomDock = !mapChromeSuppressed;
   const menuBtn = (!mapChromeSuppressed && cfg?.onOpenMenu)
     ? '<button type="button" class="b-menu" data-act="menu" title="Menu główne">'
       + (menuIc || '') + '<span>Menu</span></button>'
@@ -992,10 +999,15 @@ function renderBarD1B(s: HudState): string {
     + rightChips.join('') + '</div></div>'
     + '<div class="hud-right">'
     + wikiBtn
-    + renderZoomControls()
-    + fsBtn
     + menuBtn
+    + (showMapZoomDock ? '' : fsBtn)
     + '</div></div>';
+  if (showMapZoomDock) {
+    html += '<div class="civ-hud-util-dock" title="Powiększenie UI i pełny ekran">'
+      + renderZoomControls()
+      + fsBtn
+      + '</div>';
+  }
   return html;
 }
 

@@ -3817,3 +3817,10 @@ CZEKAM-NA: nic (sesja lokalna: otwórz `2bdd9b59`).
 **Bramki:** tsc 0 · river-move 17/17 · smoke OK · fix inject-build-stamp (temp file — OneDrive lock).
 **Git:** commit FALA 49 + push gałąź `cursor/fala46-hud-magazyn-unit-panel`.
 CZEKAM-NA: nic (sesja lokalna: otwórz `e906af1d`).
+
+## [02:26] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 50
+
+**md5:** `85d115d4a5a6dae37351eab976833c79` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** etykiety HUD (Armia, Spichlerz…) przy zoomie UI · zoom −/+ tylko obok minimapy na mapie świata · tooltip „Kliknij hex" przyklejony do heksu (budowa w terenie + założenie miasta) · chipy nagłówka miasta bez rozbicia inline.
+**Bramki:** tsc 0 · smoke OK · river-move 17/17 · POLE-BITWY `dd399c4b` (bez zmian).
+CZEKAM-NA: nic (sesja lokalna: otwórz `85d115d4`).

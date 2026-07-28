@@ -11,7 +11,18 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `e906af1d` — 2026-07-28 02:04 — FALA 49: rzeka koszt 2 + cuda góra + lama Inkowie — **AKTUALNA**
+## ROBOCZA `85d115d4` — 2026-07-28 02:26 — FALA 50: HUD etykiety + zoom przy minimapie + tooltip budowy — **AKTUALNA**
+- md5 (pelne): `85d115d4a5a6dae37351eab976833c79` · stempel: `ROBOCZA · 2026-07-28 02:26`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + manifest · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- **Zakres:**
+  - **HUD mapy** — etykiety chipów (Skarbiec, Armia, Spichlerz…) widoczne także przy zoomie UI ≠ 100%.
+  - **Zoom −/+** — tylko na mapie świata, obok minimapy; w panelu miasta ukryty; pełny ekran ⛶ w mieście przy Menu.
+  - **Budowa w terenie / założenie miasta** — podpis „Kliknij hex" przypięty do heksu (nie do kursora), bez rozjazdu przy zoomie UI.
+  - **Nagłówek miasta** — chipy zasobów: jedna liczba netto (bez rozbicia +10 +7 +3 inline).
+- **Bramki:** tsc 0 · smoke OK · river-move 17/17.
+
+## ROBOCZA `e906af1d` — 2026-07-28 02:04 — FALA 49: rzeka koszt 2 + cuda góra + lama Inkowie — **ZASTĄPIONA**
 - md5 (pelne): `e906af1d0fe2c6fe29a321ddbb68ed68` · stempel: `ROBOCZA · 2026-07-28 02:04`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + manifest · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).

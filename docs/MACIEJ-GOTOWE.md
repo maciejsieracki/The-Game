@@ -1,3 +1,13 @@
+## [02:26] ✅ Gotowe — FALA 50 HUD + zoom + tooltip budowy (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Etykiety HUD** | Skarbiec, Armia, Spichlerz… z powrotem widoczne (także przy zoomie UI) |
+| **Zoom −/+** | tylko na **mapie świata**, obok minimapy; w mieście ukryty |
+| **Budowa w terenie / miasto** | podpis „Kliknij hex" przy heksie z podglądem, nie przy kursorze |
+| **Nagłówek miasta** | chipy zasobów — jedna liczba netto (bez +10 +7 +3 obok) |
+| **Deploy** | ROBOCZA `85d115d4` · VERIFY OK · `gra-robocza/START.html` |
+
 ## [02:04] ✅ Gotowe — FALA 49 rzeka + cuda + lama (deploy ROBOCZA)
 
 | Co | Efekt w grze |
