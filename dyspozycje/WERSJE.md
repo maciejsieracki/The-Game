@@ -11,9 +11,9 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `145452c9` - 2026-07-28 15:03 - FALA 64: armia Rozdziel + karta stosu + Spacja cykl - **AKTUALNA**
-- md5 (pelne): `145452c99f51e6a80abdbd04c88f70b5` · stempel: `ROBOCZA · 2026-07-28 15:03`
-- **VERIFY OK.** tsc 0 · smoke OK · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · map-gen determinizm+rzeki OK · army-stack-ruch 5/5 · garnizon-exit 11/11 · unit-context-card 12/12 · POLE-BITWY `dd399c4b` (bez zmian).
+## ROBOCZA `145452c9` - 2026-07-28 15:04 - FALA 64: armia Rozdziel + karta stosu + Spacja cykl - **AKTUALNA**
+- md5 (pelne): `145452c99f51e6a80abdbd04c88f70b5` · stempel: `ROBOCZA · 2026-07-28 15:04`
+- **VERIFY OK.** tsc 0 · tech-tree 19/0 · research 33/0 · unit-replace 10/10 · map-gen FAIL (duża mapa 16.71s>15s; determinizm+rzeki PASS) · smoke OK · army-stack-ruch 5/0 · garnizon-exit 11/0 · army-merge-bounce 4/0 · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 - **Zakres:** (1) **Karta armii** — zwarty widok stosu: zetony HP/ruch per jednostka, bez zbiorczych Atak/Obrona/Pancerz/bonusow; szczegoly wybranej po „Wiecej szczegolow". (2) **Rozdziel** — ikona na karcie bocznej (2+ jednostki) otwiera panel rozdzielenia na sasiedni heks. (3) **Spacja/auto-cykl** — po wyczerpaniu ruchu przechodzi do nastepnej jednostki/armii niezaleznie od ruchu. (4) **HUD** — karta jednostki vs minimapa (marginesy), panel Wydarzenia nie nachodzi na Wykonaj. (5) **Handel AI** — propozycje surowcow vs realne zasoby (`diplomacy-ai-balance.ts`).
 - **Pliki:** `main.ts` · `hexContextTooltip.ts` · `unitActionBarHtml.ts` · `hud.ts` · `hudLayout.ts` · `minimapLayout.ts` · `sidePanelHud.ts` · `diplomacy-ai-balance.ts`
