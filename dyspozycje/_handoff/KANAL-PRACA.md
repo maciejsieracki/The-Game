@@ -3838,3 +3838,10 @@ CZEKAM-NA: nic (sesja lokalna: otwórz `e49eb25d`).
 **Zakres:** karta Jednostka — lewy dolny róg nad minimapą (dock `.civ-side-ctx-dock`); karta heksu w panelu Wydarzenia po prawej; `hideHud` ukrywa ctxEl; zoom −/+ bez kolizji (po prawej od minimapy).
 **Bramki:** tsc 0 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
 CZEKAM-NA: nic (sesja lokalna: otwórz `111427dd`).
+
+## [02:50] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 53
+
+**md5:** `b337e2e0ff5ab3f5580a0f16a2dbf3a6` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** rzeka — koszt ruchu **1 MP** na heksie z rzeką (cofnięcie błędu FALA 49); ignoruje kary lasu/wzgórz/gór.
+**Bramki:** tsc 0 · river-move 17/17 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+CZEKAM-NA: nic (sesja lokalna: otwórz `b337e2e0`).

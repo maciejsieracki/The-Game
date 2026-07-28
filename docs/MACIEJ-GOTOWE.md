@@ -1,3 +1,12 @@
+## [02:50] ✅ Gotowe — FALA 53 rzeka bonus ruchu (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Rzeka** | heks z rzeką (`rzeka.obecna`) kosztuje **1 MP** — ignoruje las, wzgórza i góry |
+| **Autostrada** | równina z lasem: 2 MP bez rzeki vs **1 MP** z rzeką; góry bez rzeki = nieprzejezdne, z rzeką = **1 MP** |
+| **Cofnięcie** | FALA 49 (koszt 2) był błędem — rzeka znów daje widoczny bonus |
+| **Deploy** | ROBOCZA `b337e2e0` · `gra-robocza/START.html` |
+
 ## [02:45] ✅ Gotowe — FALA 52 karta jednostki nad minimapą (deploy ROBOCZA)
 
 | Co | Efekt w grze |

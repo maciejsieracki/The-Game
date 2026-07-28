@@ -11,7 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `111427dd` — 2026-07-28 02:45 — FALA 52: karta jednostki nad minimapą — **AKTUALNA**
+## ROBOCZA `b337e2e0` — 2026-07-28 02:50 — FALA 53: rzeka bonus ruchu 1 MP — **AKTUALNA**
+- md5 (pelne): `b337e2e0ff5ab3f5580a0f16a2dbf3a6` · stempel: `ROBOCZA · 2026-07-28 02:50`
+- **VERIFY OK.** smoke OK · river-move 17/17 · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** **Rzeka** — koszt ruchu **1 MP** na heksie z rzeką (cofnięcie błędu FALA 49); ignoruje kary lasu/wzgórz/gór — „autostrada wzdłuż rzeki".
+- **Bramki:** tsc 0 · river-move 17/17 · smoke OK.
+
+## ROBOCZA `111427dd` — 2026-07-28 02:45 — FALA 52: karta jednostki nad minimapą — **ZASTĄPIONA**
 - md5 (pelne): `111427dd444ea8d56154e808de92de4b` · stempel: `ROBOCZA · 2026-07-28 02:45`
 - **VERIFY OK.** smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
