@@ -225,8 +225,10 @@ export const UNIT_CARD_STATUS_CSS = `
 .uc-stat-eff{font-weight:700;color:var(--civ-text-primary,#e8e0c8);}
 .uc-stat-base{font-weight:400;font-size:0.85em;color:var(--civ-text-muted,#8a8070);margin-left:4px;}
 .uc-unit-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;}
-.uc-unit-head .uc-owner-emblem{flex:0 0 auto;width:40px;height:40px;line-height:0;}
-.uc-unit-head .uc-owner-emblem .dip-leader-medallion{width:40px;height:40px;}
+.uc-unit-head .uc-owner-emblem{flex:0 0 auto;width:40px;height:40px;line-height:0;overflow:hidden;position:relative;}
+.uc-unit-head .uc-owner-emblem .dip-leader-medallion{width:40px!important;height:40px!important;margin:0;
+  overflow:hidden;border-width:2px;box-shadow:none!important;}
+.uc-unit-head .uc-owner-emblem .dip-leader-ic{width:100%!important;height:100%!important;}
 .uc-unit-head .uc-owner-emblem.uc-owner-barb{display:flex;align-items:center;justify-content:center;
   width:40px;height:40px;border-radius:50%;border:2px solid rgba(180,60,60,.55);
   background:rgba(40,12,12,.75);color:#e07070;}

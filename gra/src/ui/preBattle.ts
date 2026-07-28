@@ -112,6 +112,8 @@ export interface PreBattleOptions {
 }
 
 let overlayEl: HTMLDivElement | null = null;
+/** Ciemny scrim nad mapą świata (pod UI pre-battle, z-index 9899). */
+let mapScrimEl: HTMLDivElement | null = null;
 let keyHandler: ((e: KeyboardEvent) => void) | null = null;
 let pbCfg: PreBattleConfig = {};
 let saveToastEl: HTMLDivElement | null = null;
@@ -122,12 +124,28 @@ export function configurePreBattle(config: PreBattleConfig): void {
   pbCfg = { ...pbCfg, ...config };
 }
 
+function showMapScrim(): void {
+  ensureStyles();
+  mapScrimEl = document.createElement('div');
+  mapScrimEl.className = 'pb-map-scrim';
+  mapScrimEl.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(mapScrimEl);
+}
+
+function hideMapScrim(): void {
+  if (mapScrimEl !== null) {
+    mapScrimEl.remove();
+    mapScrimEl = null;
+  }
+}
+
 export function showPreBattle(
   info: PreBattleInfo,
   cb: PreBattleCallbacks,
   opts?: PreBattleOptions,
 ): void {
   hidePreBattle();
+  showMapScrim();
   overlayEl = buildOverlay(info, cb, opts);
   document.body.appendChild(overlayEl);
   attachKeyboard(cb, info, opts);
@@ -142,6 +160,7 @@ export function showPreBattle(
 export function hidePreBattle(): void {
   detachKeyboard();
   clearPreBattleSaveToast();
+  hideMapScrim();
   if (overlayEl !== null) {
     overlayEl.remove();
     overlayEl = null;
@@ -198,10 +217,16 @@ function ensureStyles(): void {
   --pb-font-main:Georgia,"Times New Roman",serif;
   --pb-font-ui:"Segoe UI",Tahoma,sans-serif;
 }
+.pb-map-scrim{position:fixed;inset:0;z-index:9899;pointer-events:none;
+  background:rgba(6,8,14,.58);
+  backdrop-filter:saturate(.38) brightness(.7);
+  -webkit-backdrop-filter:saturate(.38) brightness(.7);
+  animation:pb-scrimIn .24s ease-out}
 .pb-overlay{position:fixed;inset:0;z-index:9900;font-family:var(--pb-font-ui);color:var(--pb-text);
   user-select:none;pointer-events:none;overflow:hidden;animation:pb-fadeIn .22s ease-out}
 .pb-overlay *{box-sizing:border-box}
 .pb-overlay button{font:inherit;cursor:pointer}
+@keyframes pb-scrimIn{from{opacity:0}to{opacity:1}}
 @keyframes pb-fadeIn{from{opacity:0}to{opacity:1}}
 
 .pb-cmd{position:absolute;top:14px;display:flex;align-items:center;gap:12px;z-index:5;pointer-events:auto;

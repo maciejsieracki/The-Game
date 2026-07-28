@@ -69,6 +69,7 @@ import { showMapLoadingOverlay } from './ui/mapLoadingOverlay';
 import {
   beginTurnTransition,
   endTurnTransition,
+  isTurnTransitionActive,
   setTurnTransition,
   yieldTurnTransitionUi,
 } from './ui/turnTransitionOverlay';
@@ -123,7 +124,7 @@ import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch
 import type { ProductionItem } from './game/production';
 import { resolveArchetypeAggression, resolveArchetypeTrade, civAiProfileForTyp } from './game/civ-ai-data';
 import { buildClusterStartPlan, buildSameTypeRivalCandidateHexes } from './game/cluster-start';
-import { clusterCityStateRadius, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
+import { clusterCityStateRadius, clusterHubChainReachHex, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
 import {
   formatOwnerDiploLabel,
@@ -259,6 +260,7 @@ import {
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
 import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius } from './map/territory';
+import { isTerritoryHexOwnedBy } from './map/territory-work';
 import type { CityNode, TerritoryNode } from './map/territory';
 import type { GameMap } from './types/map';
 import {
@@ -1925,7 +1927,7 @@ async function boot(): Promise<void> {
       // wystarczy dołożyć cap, żeby licznik pokazał „stock / cap" (np. „140 / 200").
       const empireCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty);
       // SUROW-UI-A1: parametry bazy/bonusu wprost z econ-params.json — UI dostaje realne
-      // wartości (dziś 500 + 100×Magazyny) zamiast zaszywać starą "100" na sztywno.
+      // wartości (dziś 1000 + 100×Magazyny) zamiast zaszywać starą "100" na sztywno.
       const storageParams = loadOwnerStorageParams(
         data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0],
         _menuDifficulty,
@@ -3165,6 +3167,7 @@ async function boot(): Promise<void> {
           cityPanelViewSaved = null;
         }
         cityPanelViewCityId = null;
+        restoreTerritoryBorderAfterCityPanel();
       }
       // D3: usunięty zbędny refreshFog() przy otwarciu panelu miasta — mgła się tu nie zmienia
       // (widoczność miast ustawia cityRenderer.sync; poprawność mgły dają realne zdarzenia: ruch/tura).
@@ -3597,16 +3600,15 @@ async function boot(): Promise<void> {
       if (isDiploListHudOpen()) hideDiploListHud();
     }
 
-    /** Listy toolbaru + tryby mapy (budowa, zasięgi, pickery) — czysta mapa / wejście w miasto. */
+    /** Listy toolbaru + tryby mapy (budowa, zasięgi kultury/religii, pickery) — czysta mapa / wejście w miasto.
+     * Granice państw (territoryBorderVisible) NIE są tu gaszone — trwały wybór użytkownika aż do toggle OFF. */
     function dismissMapOverlayModes(): void {
       dismissToolbarSidePanels();
       if (buildModeOpen) exitBuildMode();
-      if (cultureRangeVisible || religionRangeVisible || territoryBorderVisible) {
+      if (cultureRangeVisible || religionRangeVisible) {
         cultureRangeVisible = false;
         religionRangeVisible = false;
-        territoryBorderVisible = false;
         refreshRangeOverlays();
-        refreshTerritoryBorderOverlay();
       }
       hideWondersPicker();
       hideEmpireOverlay();
@@ -3626,7 +3628,9 @@ async function boot(): Promise<void> {
         diplomacyAudienceOwnerId = null;
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
+      saveTerritoryBorderBeforeCityPanel();
       dismissMapOverlayModes();
+      forceTerritoryBorderForCityPanel();
       exitOkolicaMapMode();
       clearPlayerUnitSelection();
       applyCityPanelWorldView(true, city);
@@ -3640,10 +3644,10 @@ async function boot(): Promise<void> {
       updateHud();
     }
 
-    function selectPlayerUnit(unitId: string, keepListOpen = false): void {
+    function selectPlayerUnit(unitId: string, keepListOpen = false, preserveDetailExpanded = false): void {
       const u = units.find(x => x.id === unitId);
       if (!u || u.ownerId !== 0) return;
-      unitSideDetailExpanded = false;
+      if (!preserveDetailExpanded) unitSideDetailExpanded = false;
       const stack = playerStackAt(u);
       if (stack.length > 1) syncStackRuchLeft(stack);
       if (isCityPanelOpen()) hideCityPanelFull();
@@ -4877,9 +4881,29 @@ async function boot(): Promise<void> {
       diagInfo('session', 'resetStuckInteractiveState');
     }
 
+    /** Zeruje flagi końca tury — Nowa gra / load bez pełnego reload strony zostawiały endTurnInProgress / AI resume. */
+    function resetEndTurnBlockers(reason: string): void {
+      const had = endTurnInProgress || aiTurnAwaitingBattle || aiCmdResume != null || isTurnTransitionActive();
+      if (had) {
+        console.warn('[EndTurn] resetEndTurnBlockers:', reason, {
+          endTurnInProgress,
+          aiTurnAwaitingBattle,
+          aiCmdResume: aiCmdResume != null,
+          transition: isTurnTransitionActive(),
+        });
+      }
+      endTurnInProgress = false;
+      endTurnStartedAt = 0;
+      aiTurnAwaitingBattle = false;
+      aiCmdResume = null;
+      endTurnTransition();
+      if (isPreBattleOpen()) hidePreBattle();
+    }
+
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
     function prepareSessionForLoad(): void {
       resetStuckInteractiveState();
+      resetEndTurnBlockers('prepareSessionForLoad');
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
@@ -4891,7 +4915,7 @@ async function boot(): Promise<void> {
       hideSiegeMapPanel();
       hideCityAttackChoice();
       clearSiegeHtmlLabels();
-      removeBuildGhosts();
+      clearBuildModeVisuals();
       diagInfo('session', 'prepareSessionForLoad');
     }
 
@@ -6000,6 +6024,8 @@ async function boot(): Promise<void> {
     /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
     let gameOver = false;
     let endTurnInProgress = false;
+    /** Timestamp (ms) — wykrywanie zawieszonego przejścia tury (>8 s → force heal). */
+    let endTurnStartedAt = 0;
     /** Jednostki gracza ukończone w ticku end-turn — ukryte do końca tury AI. */
     const deferredPlayerUnitRevealIds = new Set<string>();
     /** Prompty połączenia armii odłożone do startu tury gracza (produkcja / ruch w ticku end-turn). */
@@ -7050,7 +7076,10 @@ async function boot(): Promise<void> {
     // --- Warstwy zasięgu kultury / religii / państwa na mapie 3D (A1-Q12 + toolbar [C]) ---
     let cultureRangeVisible = false;
     let religionRangeVisible = false;
+    /** Trwały wybór użytkownika — gasi tylko toggle OFF lub reset sesji (nowa gra / load). */
     let territoryBorderVisible = false;
+    /** Stan toggle granic na mapie świata — przywracany po zamknięciu panelu miasta. */
+    let territoryBorderSavedBeforeCityPanel: boolean | null = null;
     let cultureRangeGroup: THREE.Group | null = null;
     let religionRangeGroup: THREE.Group | null = null;
     let territoryBorderGroup: THREE.Group | null = null;
@@ -7086,6 +7115,8 @@ async function boot(): Promise<void> {
 
     // --- E-map-worker-overlay: ikonki 👤 na polach z robotnikami (wszystkie cywilizacje) ---
     let showWorkerOverlay = false;
+    /** true gdy overlay włączony automatycznie wejściem w tryb budowy — wyłącz przy exitBuildMode. */
+    let workerOverlayAutoEnabled = false;
     let workerFieldOverlayGroup: THREE.Group | null = null;
 
     function clearWorkerFieldOverlay(): void {
@@ -7114,11 +7145,13 @@ async function boot(): Promise<void> {
 
     function toggleWorkerOverlayOnMap(): void {
       showWorkerOverlay = !showWorkerOverlay;
+      workerOverlayAutoEnabled = false;
       refreshWorkerFieldOverlay();
       refreshD1bHud();
     }
 
     function autoEnableWorkerOverlayForBuildMode(): void {
+      if (!showWorkerOverlay) workerOverlayAutoEnabled = true;
       showWorkerOverlay = true;
       refreshWorkerFieldOverlay();
       refreshD1bHud();
@@ -7158,9 +7191,25 @@ async function boot(): Promise<void> {
       territoryBorderGroup = null;
     }
 
+    function saveTerritoryBorderBeforeCityPanel(): void {
+      if (territoryBorderSavedBeforeCityPanel === null) {
+        territoryBorderSavedBeforeCityPanel = territoryBorderVisible;
+      }
+    }
+
+    function forceTerritoryBorderForCityPanel(): void {
+      territoryBorderVisible = true;
+    }
+
+    function restoreTerritoryBorderAfterCityPanel(): void {
+      if (territoryBorderSavedBeforeCityPanel === null) return;
+      territoryBorderVisible = territoryBorderSavedBeforeCityPanel;
+      territoryBorderSavedBeforeCityPanel = null;
+    }
+
     function refreshTerritoryBorderOverlay(): void {
       clearTerritoryBorderOverlay();
-      if (!territoryBorderVisible || isCityPanelOpen()) return;
+      if (!(territoryBorderVisible || isCityPanelOpen())) return;
       const nodes = buildAllTerritoryNodes();
       const byOwner = collectTerritoryHexKeysByOwner(map, nodes, (key, ownerId) => {
         if (ownerId === 0) return true;
@@ -7277,9 +7326,28 @@ async function boot(): Promise<void> {
       });
     }
 
+    function disposeGhostObject3D(g: THREE.Object3D): void {
+      g.traverse((obj) => {
+        const mesh = obj as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        for (const m of mats) {
+          if (m) (m as THREE.Material).dispose();
+        }
+      });
+    }
+
     function removeBuildGhosts(): void {
-      if (ghostGroup) { scene.remove(ghostGroup); ghostGroup = null; }
-      if (ghostCityGroup) { scene.remove(ghostCityGroup); ghostCityGroup = null; }
+      if (ghostGroup) {
+        scene.remove(ghostGroup);
+        disposeGhostObject3D(ghostGroup);
+        ghostGroup = null;
+      }
+      if (ghostCityGroup) {
+        scene.remove(ghostCityGroup);
+        disposeGhostObject3D(ghostCityGroup);
+        ghostCityGroup = null;
+      }
       lastGhostKey = '';
       lastGhostCityKey = '';
       ghostChipHex = null;
@@ -7287,12 +7355,20 @@ async function boot(): Promise<void> {
     }
 
     function removeGhostImprovement(): void {
-      if (ghostGroup) { scene.remove(ghostGroup); ghostGroup = null; }
+      if (ghostGroup) {
+        scene.remove(ghostGroup);
+        disposeGhostObject3D(ghostGroup);
+        ghostGroup = null;
+      }
       lastGhostKey = '';
     }
 
     function removeGhostCity(): void {
-      if (ghostCityGroup) { scene.remove(ghostCityGroup); ghostCityGroup = null; }
+      if (ghostCityGroup) {
+        scene.remove(ghostCityGroup);
+        disposeGhostObject3D(ghostCityGroup);
+        ghostCityGroup = null;
+      }
       lastGhostCityKey = '';
     }
 
@@ -7576,11 +7652,22 @@ async function boot(): Promise<void> {
         return;
       }
       if (!buildModeOpen || !activeImprovementKey || !buildApi) {
-        if (!buildModeOpen) unitRenderer.clearHighlight();
+        unitRenderer.clearHighlight();
         return;
       }
       const hexes = buildApi.getQualifyingHexes(activeImprovementKey);
       unitRenderer.setHighlight(new Set(hexes.map(h => keyOf(h.q, h.r))));
+    }
+
+    /** Usuwa tymczasowe warstwy 3D trybu budowy (ghost, highlight, auto-overlay 👤). */
+    function clearBuildModeVisuals(): void {
+      removeBuildGhosts();
+      unitRenderer.clearHighlight();
+      if (workerOverlayAutoEnabled) {
+        showWorkerOverlay = false;
+        workerOverlayAutoEnabled = false;
+        clearWorkerFieldOverlay();
+      }
     }
 
     function beginOnboardingFoundCity(): void {
@@ -7685,7 +7772,7 @@ async function boot(): Promise<void> {
       buildModeOpen = false;
       foundCityMode = false;
       activeImprovementKey = null;
-      removeBuildGhosts();
+      clearBuildModeVisuals();
       refreshBuildApi();
       refreshBuildHighlight();
       refreshD1bHud();
@@ -7726,7 +7813,8 @@ async function boot(): Promise<void> {
 
     function showBuildTerritoryBlockedHint(q: number, r: number): void {
       const nodes = buildAllTerritoryNodes();
-      if (isPlayerTerritoryHex(q, r, playerCityNodes(), nodes, 0)) return;
+      if (nodes.length > 0 && isTerritoryHexOwnedBy(q, r, 0, nodes)) return;
+      if (!nodes.length && isPlayerTerritoryHex(q, r, playerCityNodes(), nodes, 0)) return;
       const owner = territoryOwnerAt(q, r, nodes);
       if (owner != null && owner !== 0) {
         showHintMessage('Tylko w swoim terytorium — ten heks należy do innego państwa', 3000);
@@ -7737,7 +7825,11 @@ async function boot(): Promise<void> {
 
     function assertPlayerTerritoryForBuild(q: number, r: number): boolean {
       const nodes = buildAllTerritoryNodes();
-      if (isPlayerTerritoryHex(q, r, playerCityNodes(), nodes, 0)) return true;
+      if (nodes.length > 0) {
+        if (isTerritoryHexOwnedBy(q, r, 0, nodes)) return true;
+      } else if (isPlayerTerritoryHex(q, r, playerCityNodes(), nodes, 0)) {
+        return true;
+      }
       showBuildTerritoryBlockedHint(q, r);
       return false;
     }
@@ -9884,6 +9976,7 @@ async function boot(): Promise<void> {
     /** C-DYP-Q1=A: krótki opis WARUNKÓW aktualnie na stole (bez nowej wyceny — tylko odczyt payloadu). */
     function negotiationSummary(entry: PendingNegotiation): string {
       const p = entry.payload;
+      if (!p) return entry.actionId;
       const incoming = entry.proposerOwnerId !== 0;
       const basketDetail = formatNegotiationDealPlayerSummary(p, incoming);
       switch (entry.actionId) {
@@ -12440,13 +12533,6 @@ async function boot(): Promise<void> {
             });
           }
         }
-        // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
-        // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
-        // jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
-        const replaceDisabled = !isUnitInPlayerTerritory(active)
-          || active.replaceUsedThisTurn === true
-          || computeUnitReplacements(active).length === 0;
-        actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
         // C-SENTRY-Q1 wariant A (Maciej 2026-07-25): "Czuwaj" -- jak Pomi\u0144/Ufort.
         // (zu\u017cywa ruch na wej\u015bciu), trwa mi\u0119dzy turami do r\u0119cznego lub
         // AUTOMATYCZNEGO budzenia (ponowny klik budzi bez zu\u017cycia ruchu; patrz te\u017c
@@ -12458,6 +12544,13 @@ async function boot(): Promise<void> {
           label: enteringSentry ? 'Czuwaj' : 'Obud\u017a',
           disabled: unitSentryActionDisabled(active, stackRuch),
         });
+        // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
+        // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
+        // jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
+        const replaceDisabled = !isUnitInPlayerTerritory(active)
+          || active.replaceUsedThisTurn === true
+          || computeUnitReplacements(active).length === 0;
+        actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
       }
       if (stack.length >= 2) {
         const splitDests = findAdjacentEmptyHexes(
@@ -12829,13 +12922,10 @@ async function boot(): Promise<void> {
         getReligionOverlay: buildReligionOverlayData,
         getYearLabel: () => Math.max(0, 4000 - turn * 50) + ' p.n.e.',
         onExecutePending: () => executeFirstBlockingEvent(),
-        canEndTurn: () => !playtestWalkaActive && !isAwaitingFirstPlayerCity(),
+        canEndTurn: () => canPlayerInitiateEndTurn(),
         hideEndTurn: () => playtestWalkaActive,
         getBlockingCount: () => countBlockingEvents(),
-        onEndTurn: () => {
-          if (playtestWalkaActive) return;
-          window.dispatchEvent(new KeyboardEvent('keydown', { key: 'n', bubbles: true }));
-        },
+        onEndTurn: () => triggerPlayerEndTurn(),
         onOpenMenu: () => {
           if (isMainMenuOpen() || isNewGameFlowOpen()) return;
           toggleGamePauseMenu();
@@ -12959,7 +13049,7 @@ async function boot(): Promise<void> {
         },
         armyStack: {
           getStack: () => (isWorldMapUnitMode() ? buildArmyStackHudState() : null),
-          onSelectUnit: (id) => selectPlayerUnit(id, true),
+          onSelectUnit: (id) => selectPlayerUnit(id, true, unitSideDetailExpanded),
           onOpenArmyList: () => {
             showArmyListHud();
             refreshD1bHud();
@@ -13061,7 +13151,7 @@ async function boot(): Promise<void> {
           unitSideDetailExpanded = !unitSideDetailExpanded;
           refreshD1bHud();
         },
-        onContextSelectUnit: (id) => selectPlayerUnit(id, true),
+        onContextSelectUnit: (id) => selectPlayerUnit(id, true, unitSideDetailExpanded),
         onContextAction: handleSelectedUnitHudAction,
         getContextPanelMessage: () => buildContextPanelMessage(),
         onEventClick: (id) => {
@@ -14289,7 +14379,9 @@ async function boot(): Promise<void> {
         const req = buildApi.handleHexClick(hit.q, hit.r);
         if (req) return;
         const nodes = buildAllTerritoryNodes();
-        if (!isPlayerTerritoryHex(hit.q, hit.r, playerCityNodes(), nodes, 0)) {
+        if (nodes.length > 0 && !isTerritoryHexOwnedBy(hit.q, hit.r, 0, nodes)) {
+          showBuildTerritoryBlockedHint(hit.q, hit.r);
+        } else if (!nodes.length && !isPlayerTerritoryHex(hit.q, hit.r, playerCityNodes(), nodes, 0)) {
           showBuildTerritoryBlockedHint(hit.q, hit.r);
         } else if (!buildApi.canBuild(activeImprovementKey, hit.q, hit.r)) {
           showHintMessage('Nie można tu zbudować (teren / złoże)', 2500);
@@ -15576,7 +15668,10 @@ async function boot(): Promise<void> {
             attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo.obronca.isBarbarian,
             ...armyHungerBattleOpts(atkLead.ownerId, defLead.ownerId),
-            onCancel: () => setMood('mapa'),
+            onCancel: () => {
+              setMood('mapa');
+              finishIncomingBattleUi();
+            },
           });
           bs.play((res) => {
             applyMapBattleOutcomeWithSummary(
@@ -16908,156 +17003,108 @@ async function boot(): Promise<void> {
     // If animation is running, snap unit to destination first.
     // -----------------------------------------------------------------------
 
-    window.addEventListener('keydown', (e: KeyboardEvent) => {
-      // --- Escape: close city panel / exit build mode ---
-      if (e.key === 'Escape') {
-        if (isSaveLoadDialogOpen()) {
-          hideSaveLoadDialog();
-          return;
-        }
-        if (isGamePauseMenuOpen()) {
-          hideGamePauseMenu();
-          return;
-        }
-        if (tryCloseCityUxFrameFromKeyboard() || (isCityPanelOpen() && closeCityPanelIfOpen())) {
-          e.preventDefault();
-          hideCityUnitPick();
-      hideCityForeignPick();
-          requestAnimationFrame(() => tryOpenNextAutoDiploAudience());
-          return;
-        }
-        if (okolicaMapEditCityId) {
-          exitOkolicaMapMode();
-          showHintMessage('Tryb okolicy zakończony.', 2500);
-          return;
-        }
-        if (buildModeOpen) {
-          exitBuildMode();
-          return;
-        }
-        if (dismissPlayerUnitSelectionIfAny()) {
-          return;
-        }
-        hideCityPanelFull();
+    /** Po anulowaniu bitwy / Nowa gra bez reload — flagi resume i overlay potrafią zostać. */
+    function healStaleEndTurnBlockers(): void {
+      const preBattle = isPreBattleOpen();
+      if (!preBattle && (aiTurnAwaitingBattle || aiCmdResume)) {
+        console.warn('[EndTurn] Clearing stale AI battle resume flags');
+        aiTurnAwaitingBattle = false;
+        aiCmdResume = null;
+      }
+      if (endTurnInProgress && !isTurnTransitionActive()) {
+        console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');
+        endTurnInProgress = false;
+        endTurnStartedAt = 0;
+      }
+      if (isTurnTransitionActive() && !endTurnInProgress) {
+        console.warn('[EndTurn] Clearing orphan turn transition overlay');
+        endTurnTransition();
+      }
+      const stuckMs = endTurnStartedAt > 0 ? Date.now() - endTurnStartedAt : 0;
+      if (endTurnInProgress && isTurnTransitionActive() && stuckMs > 8000 && !preBattle) {
+        console.warn('[EndTurn] Force-clearing stuck transition (>8s)');
+        endTurnInProgress = false;
+        endTurnStartedAt = 0;
+        aiTurnAwaitingBattle = false;
+        aiCmdResume = null;
+        endTurnTransition();
+      }
+    }
+
+    function canPlayerInitiateEndTurn(): boolean {
+      healStaleEndTurnBlockers();
+      if (playtestWalkaActive) {
+        console.warn('[EndTurn] blocked: playtestWalkaActive');
+        return false;
+      }
+      if (isAwaitingFirstPlayerCity()) {
+        console.warn('[EndTurn] blocked: awaitingFirstPlayerCity');
+        return false;
+      }
+      if (isPreBattleOpen()) {
+        console.warn('[EndTurn] blocked: preBattleOpen');
+        return false;
+      }
+      if (galleryOn) {
+        console.warn('[EndTurn] blocked: galleryOn');
+        return false;
+      }
+      if (gameOver) {
+        console.warn('[EndTurn] blocked: gameOver');
+        return false;
+      }
+      if (endTurnInProgress) {
+        console.warn('[EndTurn] blocked: endTurnInProgress');
+        return false;
+      }
+      if (aiTurnAwaitingBattle || aiCmdResume) {
+        console.warn('[EndTurn] blocked: aiTurnAwaitingBattle/resume', {
+          aiTurnAwaitingBattle,
+          aiCmdResume: aiCmdResume != null,
+        });
+        return false;
+      }
+      return true;
+    }
+
+    function hintEndTurnBlocked(): void {
+      if (playtestWalkaActive) return;
+      if (isAwaitingFirstPlayerCity()) {
+        showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B), potem zakończ turę.', 3500);
         return;
       }
-
-      // --- Spacja: następna armia gracza (wszystkie stosy; nie tylko z ruchem) ---
-      if (e.code === 'Space' || e.key === ' ') {
-        const ae = document.activeElement as HTMLElement | null;
-        if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
-        if (e.repeat || galleryOn || isAnimating || endTurnInProgress || !isWorldMapUnitMode()) return;
-        e.preventDefault();
-        cycleToAdjacentPlayerUnit(selectedId, 1);
+      if (isPreBattleOpen()) {
+        showHintMessage('Zakończ ekran bitwy, potem zakończ turę.', 3500);
         return;
       }
-
-      // --- Gallery toggle ---
-      if (e.key.toLowerCase() === 'g') {
-        galleryOn = !galleryOn;
-        if (galleryOn) {
-          hideCityPanelFull();
-          enterGallery();
-        } else {
-          exitGallery();
-        }
+      if (gameOver) {
+        showHintMessage('Gra zakonczona. Kliknij "Nowa gra" by zagrac ponownie.', 3000);
         return;
       }
-
-      // --- F: pełne wyłączenie FoW (dev) — renderuje całą mapę, wolniejsze ---
-      if (e.code === 'KeyF' || e.key.toLowerCase() === 'f') {
-        if (e.repeat) return;
-        if (!FOG_DEV_SHORTCUTS) return;
-        if (galleryOn) return;
-        e.preventDefault();
-        toggleDevFogFull();
+      if (endTurnInProgress) {
+        showHintMessage('Trwa przejście tury — poczekaj chwilę.', 2500);
         return;
       }
+      if (aiTurnAwaitingBattle || aiCmdResume) {
+        showHintMessage('Trwa tura AI — dokończ bitwę lub poczekaj.', 3500);
+      }
+    }
 
-      // --- M: odkryj / zakryj ląd (test) — ocean ukryty, FoW przy jednostkach zostaje ---
-      if (e.code === 'KeyM' || (e.key.toLowerCase() === 'm' && !e.ctrlKey && !e.metaKey && !e.altKey)) {
-        if (e.repeat) return;
-        if (!FOG_DEV_SHORTCUTS) return;
-        if (galleryOn) return;
-        e.preventDefault();
-        toggleDevRevealAllLand();
+    function triggerPlayerEndTurn(): void {
+      if (!canPlayerInitiateEndTurn()) {
+        console.warn('[EndTurn] triggerPlayerEndTurn: odrzucono (canPlayerInitiateEndTurn=false)');
+        hintEndTurnBlocked();
         return;
       }
-
-      // --- B: Found a city on the last hovered/clicked hex ---
-      if (e.key.toLowerCase() === 'b') {
-        // Gallery mode: ignore.
-        if (galleryOn) return;
-
-        // Use the last hex the player hovered over or explicitly set (lastBHex).
-        // Fallback: if a unit is selected, use that unit's position.
-        let foundQ: number | null = null;
-        let foundR: number | null = null;
-
-        if (lastBHex !== null) {
-          foundQ = lastBHex.q;
-          foundR = lastBHex.r;
-        } else if (hoverKey !== null) {
-          const parts = hoverKey.split(',');
-          if (parts.length === 2) {
-            foundQ = parseInt(parts[0]!, 10);
-            foundR = parseInt(parts[1]!, 10);
-          }
-        } else if (selectedId !== null) {
-          const sel = units.find(x => x.id === selectedId);
-          if (sel && sel.ownerId === 0) {
-            foundQ = sel.q;
-            foundR = sel.r;
-          }
-        }
-
-        if (foundQ === null || foundR === null) {
-          showHintMessage('Nie wybrano heksu — najedz na pole i nacisnij B', 3000);
-          return;
-        }
-        tryFoundPlayerCityAt(foundQ, foundR);
-        return;
-      }
-
-      // --- Ctrl+S: Save game (step K) ---
-      if ((e.key.toLowerCase() === 's') && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        doQuickSave(true);
-        return;
-      }
-
-      // --- Ctrl+L: Load game — wybór slotu ---
-      if ((e.key.toLowerCase() === 'l') && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        openLoadGameDialog(true);
-        return;
-      }
-
-      // --- N: End turn ---
-      if (e.key.toLowerCase() === 'n') {
-        if (playtestWalkaActive) return;
-        // R-PIERWSZE-MIASTO: nie można kończyć tury dopóki brak pierwszego miasta
-        // (inaczej gracz „przeklikuje" tury bez miasta — wariant tego samego problemu).
-        if (isAwaitingFirstPlayerCity()) {
-          showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B), potem zakończ turę.', 3500);
-          return;
-        }
-        // #12 fix: trwa modalna bitwa / zawieszona faza AI (preBattle) — nie startuj drugiej tury.
-        if (isPreBattleOpen() || aiTurnAwaitingBattle || aiCmdResume) return;
-        // Gallery mode: ignore end-turn key.
-        if (galleryOn) return;
-        // P3b: Block turns after game over.
-        if (gameOver) { showHintMessage('Gra zakonczona. Kliknij "Nowa gra" by zagrac ponownie.', 3000); return; }
-        if (endTurnInProgress) return;
-        e.preventDefault();
-        endTurnInProgress = true;
-
-        void (async () => {
-          const nextTurnNum = turn + 1;
-          beginTurnTransition(nextTurnNum);
-          await yieldTurnTransitionUi();
-
+      console.warn('[EndTurn] triggerPlayerEndTurn: START tura', turn);
+      endTurnInProgress = true;
+      endTurnStartedAt = Date.now();
+      void (async () => {
         try {
+        const nextTurnNum = turn + 1;
+        beginTurnTransition(nextTurnNum);
+        await yieldTurnTransitionUi();
+
         // B2-Q5: wyczyść flagi buntu z poprzedniej tury (chip/ikona do końca tury).
         for (const st of cityOrderState.values()) {
           if (st.bunt) st.bunt = undefined;
@@ -18305,6 +18352,17 @@ async function boot(): Promise<void> {
               civEra: empireEpochForOwner(ownerId),
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
+              // Trudny MP: aktywne wsparcie ofensywne (Normal/Easy = legacy defend-only).
+              cityStateOffensiveSupport: typCityCopyOwners.has(ownerId)
+                && _menuCityStateDifficulty === 'hard',
+              warAllyOwnerIds: typCityCopyOwners.has(ownerId)
+                ? aiOwnerList.filter(oid =>
+                    oid !== ownerId
+                    && activeDeals.some(
+                      d => isAllianceDealKind(d.rodzaj) && dealInvolvesOwners(d, ownerId, oid),
+                    ),
+                  )
+                : undefined,
               // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24) / JEDNOSTKI-SUROWIEC-01
               // (2026-07-24): AI pomija budynek LUB jednostkę (skips, nie zawiesza się) gdy
               // pula PAŃSTWA ownera (suma City.surowce po wszystkich miastach — nie tylko to
@@ -18332,17 +18390,19 @@ async function boot(): Promise<void> {
             };
             const myCivTyp = aiOwnerCivMap.get(ownerId);
             const tc = clusterPlacement?.klastry.find(k => k.typ === myCivTyp);
+            const clusterCap = tc?.miasta.find(m => m.isCapital) ?? tc?.miasta[0];
             if (tc && clusterCapitalOwnerIds.has(ownerId)) {
-              const slotCount = tc.miasta.length + (tc.growthSlot ? 1 : 0);
+              const mpReach = clusterHubChainReachHex(Math.max(0, tc.miasta.length - 1));
               opts.clusterCenter = tc.centrum;
               opts.clusterRadius = clusterCityStateRadius();
               opts.clusterStateTargets = cities
-                .filter(c =>
-                  c.startCityState
-                  && c.ownerId !== ownerId
-                  && aiOwnerCivMap.get(c.ownerId) === myCivTyp
-                  && hexDistance(c.q, c.r, tc.centrum.q, tc.centrum.r) <= opts.clusterRadius!,
-                )
+                .filter(c => {
+                  if (!c.startCityState) return false;
+                  if (c.ownerId === ownerId) return false;
+                  if (aiOwnerCivMap.get(c.ownerId) !== myCivTyp) return false;
+                  if (!clusterCap) return true;
+                  return hexDistance(c.q, c.r, clusterCap.q, clusterCap.r) <= mpReach;
+                })
                 .map(c => ({ ownerId: c.ownerId, q: c.q, r: c.r }));
             } else if (tc && !typCityCopyOwners.has(ownerId)) {
               opts.clusterCenter = tc.centrum;
@@ -18357,13 +18417,15 @@ async function boot(): Promise<void> {
               // ai.ts nie wie nic o dyplomacji, filtrujemy TUTAJ, przed przekazaniem.
               // Ten sam promień co dla clusterStateTargets (spójność z konsolidacją
               // klastra powyżej).
-              const resupRadius = clusterCityStateRadius();
+              const resupRadius = clusterCap
+                ? clusterHubChainReachHex(Math.max(0, tc.miasta.length - 1))
+                : clusterCityStateRadius();
               opts.sisterCityStates = cities
                 .filter(c =>
                   c.ownerId !== ownerId
                   && typCityCopyOwners.has(c.ownerId)
                   && aiOwnerCivMap.get(c.ownerId) === myCivTyp
-                  && hexDistance(c.q, c.r, tc.centrum.q, tc.centrum.r) <= resupRadius
+                  && (!clusterCap || hexDistance(c.q, c.r, clusterCap.q, clusterCap.r) <= resupRadius)
                   && activeDeals.some(
                     d => isAllianceDealKind(d.rodzaj) && dealInvolvesOwners(d, ownerId, c.ownerId),
                   ),
@@ -18973,6 +19035,14 @@ async function boot(): Promise<void> {
                   const hexForImprovement = map.hexes[hexKey];
                   if (!hexForImprovement) continue;
 
+                  const territoryGate = buildAllTerritoryNodes();
+                  if (!isTerritoryHexOwnedBy(cmd.q, cmd.r, ownerId, territoryGate)) {
+                    console.warn(
+                      `[AI ${ownerId}] Build skipped (obce terytorium): ${cmd.key} @ (${cmd.q},${cmd.r})`,
+                    );
+                    continue;
+                  }
+
                   // TEMAT #8 (2026-07-23): `wyrab` (wyrąb lasu) = typ 'wycinka', NIE stała
                   // warstwa -- nie idzie do `placedImprovements` (patrz applyBuildRequest gracza
                   // wyżej, sekcja `req.action === 'wycinka'`). AI nie ma per-owner wieloturowego
@@ -19297,11 +19367,146 @@ async function boot(): Promise<void> {
         } finally {
           endTurnTransition();
           endTurnInProgress = false;
+          endTurnStartedAt = 0;
           flushDeferredPlayerUnitReveals();
           flushDeferredMergePrompts();
           syncPlayerUnitSelectionOnMap();
+          console.warn('[EndTurn] triggerPlayerEndTurn: DONE tura', turn);
         }
-        })();
+      })();
+    }
+
+    window.addEventListener('keydown', (e: KeyboardEvent) => {
+      // --- Escape: close city panel / exit build mode ---
+      if (e.key === 'Escape') {
+        if (isSaveLoadDialogOpen()) {
+          hideSaveLoadDialog();
+          return;
+        }
+        if (isGamePauseMenuOpen()) {
+          hideGamePauseMenu();
+          return;
+        }
+        if (tryCloseCityUxFrameFromKeyboard() || (isCityPanelOpen() && closeCityPanelIfOpen())) {
+          e.preventDefault();
+          hideCityUnitPick();
+      hideCityForeignPick();
+          requestAnimationFrame(() => tryOpenNextAutoDiploAudience());
+          return;
+        }
+        if (okolicaMapEditCityId) {
+          exitOkolicaMapMode();
+          showHintMessage('Tryb okolicy zakończony.', 2500);
+          return;
+        }
+        if (buildModeOpen) {
+          exitBuildMode();
+          return;
+        }
+        if (dismissPlayerUnitSelectionIfAny()) {
+          return;
+        }
+        hideCityPanelFull();
+        return;
+      }
+
+      // --- Spacja: następna armia gracza (wszystkie stosy; nie tylko z ruchem) ---
+      if (e.code === 'Space' || e.key === ' ') {
+        const ae = document.activeElement as HTMLElement | null;
+        if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
+        if (e.repeat || galleryOn || isAnimating || endTurnInProgress || !isWorldMapUnitMode()) return;
+        e.preventDefault();
+        cycleToAdjacentPlayerUnit(selectedId, 1);
+        return;
+      }
+
+      // --- Gallery toggle ---
+      if (e.key.toLowerCase() === 'g') {
+        galleryOn = !galleryOn;
+        if (galleryOn) {
+          hideCityPanelFull();
+          enterGallery();
+        } else {
+          exitGallery();
+        }
+        return;
+      }
+
+      // --- F: pełne wyłączenie FoW (dev) — renderuje całą mapę, wolniejsze ---
+      if (e.code === 'KeyF' || e.key.toLowerCase() === 'f') {
+        if (e.repeat) return;
+        if (!FOG_DEV_SHORTCUTS) return;
+        if (galleryOn) return;
+        e.preventDefault();
+        toggleDevFogFull();
+        return;
+      }
+
+      // --- M: odkryj / zakryj ląd (test) — ocean ukryty, FoW przy jednostkach zostaje ---
+      if (e.code === 'KeyM' || (e.key.toLowerCase() === 'm' && !e.ctrlKey && !e.metaKey && !e.altKey)) {
+        if (e.repeat) return;
+        if (!FOG_DEV_SHORTCUTS) return;
+        if (galleryOn) return;
+        e.preventDefault();
+        toggleDevRevealAllLand();
+        return;
+      }
+
+      // --- B: Found a city on the last hovered/clicked hex ---
+      if (e.key.toLowerCase() === 'b') {
+        if (galleryOn) return;
+
+        let foundQ: number | null = null;
+        let foundR: number | null = null;
+
+        if (lastBHex !== null) {
+          foundQ = lastBHex.q;
+          foundR = lastBHex.r;
+        } else if (hoverKey !== null) {
+          const parts = hoverKey.split(',');
+          if (parts.length === 2) {
+            foundQ = parseInt(parts[0]!, 10);
+            foundR = parseInt(parts[1]!, 10);
+          }
+        } else if (selectedId !== null) {
+          const sel = units.find(x => x.id === selectedId);
+          if (sel && sel.ownerId === 0) {
+            foundQ = sel.q;
+            foundR = sel.r;
+          }
+        }
+
+        if (foundQ === null || foundR === null) {
+          showHintMessage('Nie wybrano heksu — najedz na pole i nacisnij B', 3000);
+          return;
+        }
+        tryFoundPlayerCityAt(foundQ, foundR);
+        return;
+      }
+
+      // --- Ctrl+S: Save game (step K) ---
+      if ((e.key.toLowerCase() === 's') && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        doQuickSave(true);
+        return;
+      }
+
+      // --- Ctrl+L: Load game — wybór slotu ---
+      if ((e.key.toLowerCase() === 'l') && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        openLoadGameDialog(true);
+        return;
+      }
+
+      // --- N: End turn ---
+      if (e.code === 'KeyN' || e.key.toLowerCase() === 'n') {
+        const ae = document.activeElement as HTMLElement | null;
+        if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) {
+          console.warn('[EndTurn] keydown N ignored: focus in', ae.tagName);
+          return;
+        }
+        e.preventDefault();
+        triggerPlayerEndTurn();
         return;
       }
     });
@@ -19912,9 +20117,11 @@ async function boot(): Promise<void> {
     }
 
     async function doStartGame(params: NewGameParams): Promise<void> {
+      resetEndTurnBlockers('doStartGame');
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
+      galleryOn = false;
       _saveOrigin = 'normal';
       applyMenuParams(params);
       hideMainMenu();
@@ -20078,7 +20285,7 @@ async function boot(): Promise<void> {
       hoverKey = null;
       buildModeOpen = false;
       activeImprovementKey = null;
-      removeBuildGhosts();
+      clearBuildModeVisuals();
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
@@ -20307,6 +20514,7 @@ async function boot(): Promise<void> {
       hoverKey = null;
       buildModeOpen = false;
       activeImprovementKey = null;
+      clearBuildModeVisuals();
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
@@ -20537,6 +20745,7 @@ async function boot(): Promise<void> {
       hoverKey = null;
       buildModeOpen = false;
       activeImprovementKey = null;
+      clearBuildModeVisuals();
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
@@ -20742,6 +20951,7 @@ async function boot(): Promise<void> {
       hoverKey = null;
       buildModeOpen = false;
       activeImprovementKey = null;
+      clearBuildModeVisuals();
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();

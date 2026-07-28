@@ -248,7 +248,8 @@ function isSpawnHabitableTerrain(teren: TerenBazowy | string): boolean {
 }
 
 /**
- * Udział lądu zamieszkiwalnego w dysku hexów wokół (q,r) — wszystkie heksy mapy w promieniu R.
+ * Udział lądu zamieszkiwalnego w dysku hexów wokół (q,r), promień R (domyślnie 3).
+ * Iteracja tylko po heksach w dysku — O(R²), nie po całej mapie (regres MAP-SPAWN-Q1 B).
  * Eksport do testów MAP-SPAWN-Q1 B (lokalna bramka, nie Voronoi).
  */
 export function localLandFraction(
@@ -259,11 +260,15 @@ export function localLandFraction(
 ): { ratio: number; landCount: number; totalCount: number } {
   let landCount = 0;
   let totalCount = 0;
-  for (const h of Object.values(map.hexes)) {
-    const d = hexDistanceAxial(h.coords.q, h.coords.r, q, r);
-    if (d > radius) continue;
-    totalCount++;
-    if (isSpawnHabitableTerrain(h.terenBazowy)) landCount++;
+  for (let dq = -radius; dq <= radius; dq++) {
+    const r1 = Math.max(-radius, -dq - radius);
+    const r2 = Math.min(radius, -dq + radius);
+    for (let dr = r1; dr <= r2; dr++) {
+      const h = map.hexes[`${q + dq},${r + dr}`];
+      if (!h) continue;
+      totalCount++;
+      if (isSpawnHabitableTerrain(h.terenBazowy)) landCount++;
+    }
   }
   const ratio = totalCount > 0 ? landCount / totalCount : 0;
   return { ratio, landCount, totalCount };
@@ -604,6 +609,15 @@ export function clusterCityStateRadius(): number {
   return CLUSTER_CITY_STATE_MAX_HEX;
 }
 
+/**
+ * Maks. zasięg łańcucha hubów od stolicy klastra (hexy).
+ * N MP w pierścieniach 4 hex → ostatnie MP może być ~4×N od stolicy.
+ */
+export function clusterHubChainReachHex(stateCityCount: number): number {
+  const n = Math.max(1, stateCityCount + CLUSTER_GROWTH_RESERVE);
+  return CLUSTER_CITY_STATE_MAX_HEX * n;
+}
+
 /** Pola lądowe w promieniu od rdzenia, posortowane od najbliższych (do ciasnego pakowania). */
 function landPoolNearCore(
   region: Array<{ q: number; r: number }>,
@@ -681,6 +695,28 @@ function poissonPickCities(
   return picked;
 }
 
+/** Heksy dokładnie `dist` kroków od (q,r) — pierścień axial (max ~6×dist). */
+function hexesAtDistance(q: number, r: number, dist: number): Array<{ q: number; r: number }> {
+  if (dist <= 0) return [{ q, r }];
+  let frontier: Array<{ q: number; r: number }> = [{ q, r }];
+  for (let d = 0; d < dist; d++) {
+    const next: Array<{ q: number; r: number }> = [];
+    const seen = new Set<string>();
+    for (const h of frontier) {
+      for (const dir of HEX_DIRECTIONS) {
+        const nq = h.q + dir[0];
+        const nr = h.r + dir[1];
+        const k = `${nq},${nr}`;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        next.push({ q: nq, r: nr });
+      }
+    }
+    frontier = next;
+  }
+  return frontier;
+}
+
 /**
  * Miasta-państwa — łańcuch pierścieni 4 hex (MAP-SPAWN hub-chain, Maciej 2026-07-28).
  * BFS od stolicy: pierwszy pierścień dokładnie `ringDist` od stolicy, potem od każdego MP
@@ -703,8 +739,10 @@ export function packCityStatesHubChain(
   const placed: Array<{ q: number; r: number }> = [];
   const exclude = opts?.excludeHex ?? core;
   const anchor = opts?.anchor;
+  const landSet = new Set(landHexes.map(h => `${h.q},${h.r}`));
 
   function validCandidate(h: { q: number; r: number }, hub: { q: number; r: number }): boolean {
+    if (!landSet.has(`${h.q},${h.r}`)) return false;
     if (h.q === exclude.q && h.r === exclude.r) return false;
     if (hexDistanceAxial(h.q, h.r, hub.q, hub.r) !== ringDist) return false;
     if (hexDistanceAxial(h.q, h.r, core.q, core.r) < minSep) return false;
@@ -721,7 +759,8 @@ export function packCityStatesHubChain(
     hubIdx += 1;
     // Jedno MP na iterację — validCandidate musi widzieć aktualne `placed`.
     while (placed.length < count) {
-      const cands = landHexes.filter(h => validCandidate(h, hub));
+      const cands = hexesAtDistance(hub.q, hub.r, ringDist)
+        .filter(h => validCandidate(h, hub));
       if (cands.length === 0) break;
       shuffleInPlace(cands, rand);
       cands.sort((a, b) => a.q - b.q || a.r - b.r);
@@ -735,6 +774,69 @@ export function packCityStatesHubChain(
 }
 
 /**
+ * Pakuje MP wokół stolicy — rozszerzona pula lądu + retry seedów (symetria z graczem).
+ * Region Voronoi bywa wąski; pełny ląd mapy ratuje hub-chain na krawędzi klastra.
+ */
+export function packCityStatesAroundCapital(
+  allLand: Array<{ q: number; r: number }>,
+  region: Array<{ q: number; r: number }>,
+  capital: { q: number; r: number },
+  stateCityCount: number,
+  minDist: number,
+  seed: number,
+  opts?: {
+    excludeHex?: { q: number; r: number };
+    anchor?: { q: number; r: number; minDist: number };
+    growthReserve?: number;
+  },
+): { stateCities: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
+  if (stateCityCount <= 0) {
+    return { stateCities: [], growthSlot: null };
+  }
+  const growthReserve = opts?.growthReserve ?? CLUSTER_GROWTH_RESERVE;
+  const totalPack = stateCityCount + growthReserve;
+  const packOpts = { excludeHex: opts?.excludeHex ?? capital, anchor: opts?.anchor };
+  const expandedR = clusterPackRadius(totalPack, minDist) * 2;
+
+  const pools: Array<Array<{ q: number; r: number }>> = [];
+  const nearRegion = landPoolNearCore(region, capital, totalPack, minDist);
+  pools.push(nearRegion);
+  const nearExpanded = landPoolNearCore(region, capital, totalPack, minDist, expandedR);
+  if (nearExpanded.length > nearRegion.length) pools.push(nearExpanded);
+  if (allLand.length > nearExpanded.length) pools.push(allLand);
+
+  const seeds = [
+    seed,
+    (seed + 0x517cc1b7) >>> 0,
+    (seed + 0x85ebca6b) >>> 0,
+    (seed + 0xc2b2ae35) >>> 0,
+  ];
+
+  let best: Array<{ q: number; r: number }> = [];
+  for (const pool of pools) {
+    for (const s of seeds) {
+      const packed = packCityStatesHubChain(
+        pool,
+        capital,
+        totalPack,
+        minDist,
+        CLUSTER_CITY_STATE_MAX_HEX,
+        s,
+        packOpts,
+      );
+      if (packed.length > best.length) best = packed;
+      if (best.length >= stateCityCount) break;
+    }
+    if (best.length >= stateCityCount) break;
+  }
+
+  return {
+    stateCities: best.slice(0, stateCityCount),
+    growthSlot: best.length > stateCityCount ? best[stateCityCount] ?? null : null,
+  };
+}
+
+/**
  * Miasta-państwa wokół stolicy klastra — deleguje do łańcucha hubów (pierścień 4 hex).
  */
 export function packRivalCitiesAroundCore(
@@ -745,15 +847,15 @@ export function packRivalCitiesAroundCore(
   seed: number,
 ): Array<{ q: number; r: number }> {
   if (rivalCount <= 0) return [];
-  return packCityStatesHubChain(
+  return packCityStatesAroundCapital(
+    landHexes,
     landHexes,
     core,
     rivalCount,
     minDist,
-    CLUSTER_CITY_STATE_MAX_HEX,
     seed,
-    { excludeHex: core },
-  );
+    { excludeHex: core, growthReserve: 0 },
+  ).stateCities;
 }
 
 /** Wynik planowania klastra: stolica na krawędzi, państwa w środku. */
@@ -816,17 +918,15 @@ export function buildClusterLayoutWithEdgeCapital(
   });
   const capital = capitalCandidates[0]!;
 
-  const packed = packCityStatesHubChain(
+  const { stateCities, growthSlot } = packCityStatesAroundCapital(
+    region,
     region,
     capital,
-    stateCityCount + growthReserve,
+    stateCityCount,
     minDist,
-    CLUSTER_CITY_STATE_MAX_HEX,
     seed,
-    { excludeHex: capital, anchor },
+    { excludeHex: capital, anchor, growthReserve },
   );
-  const stateCities = packed.slice(0, stateCityCount);
-  const growthSlot = packed.length > stateCityCount ? packed[stateCityCount] ?? null : null;
 
   return { capital, stateCities, growthSlot };
 }
@@ -880,7 +980,7 @@ function buildClusterCitiesSimpleFallback(
   anchor: { q: number; r: number; minDist: number } | undefined,
   seed: number,
   map?: GameMap,
-): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: null } {
+): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   let pool = region;
   if (anchor) {
     const filtered = region.filter(
@@ -906,20 +1006,20 @@ function buildClusterCitiesSimpleFallback(
     return { cities: [], pendingStateSlots: [], growthSlot: null };
   }
 
-  const stateCities = packCityStatesHubChain(
+  const { stateCities, growthSlot } = packCityStatesAroundCapital(
+    pool,
     pool,
     capital,
     stateCityCount,
     minDist,
-    CLUSTER_CITY_STATE_MAX_HEX,
     seed,
-    { excludeHex: capital, anchor },
+    { excludeHex: capital, anchor, growthReserve: 0 },
   );
   const cities: ClusterCity[] = [{ q: capital.q, r: capital.r, isCapital: true }];
   for (const s of stateCities) {
     cities.push({ q: s.q, r: s.r, isCapital: false });
   }
-  return { cities, pendingStateSlots: stateCities, growthSlot: null };
+  return { cities, pendingStateSlots: stateCities, growthSlot };
 }
 
 /**
@@ -1313,12 +1413,37 @@ export function computeClusters(
     );
     if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) continue;
 
+    const foreignCap = foreignLayoutResult.cities.find(m => m.isCapital)
+      ?? foreignLayoutResult.cities[0]!;
+    const foreignAnchor = {
+      q: playerCapitalPos.q,
+      r: playerCapitalPos.r,
+      minDist: minDystObcyOdGracza,
+    };
+    const foreignRepack = packCityStatesAroundCapital(
+      ladowe,
+      region,
+      { q: foreignCap.q, r: foreignCap.r },
+      stateCityCount,
+      MIN_DIST_FOREIGN_IN_CLUSTER,
+      (seed + ci * 0x9e3779b1) >>> 0,
+      { excludeHex: { q: foreignCap.q, r: foreignCap.r }, anchor: foreignAnchor },
+    );
+    const foreignCities: ClusterCity[] = [{
+      q: foreignCap.q,
+      r: foreignCap.r,
+      isCapital: true,
+    }];
+    for (const s of foreignRepack.stateCities) {
+      foreignCities.push({ q: s.q, r: s.r, isCapital: false });
+    }
+
     klastry.push({
       typIndex: klastry.length,
       typ: activeKlucze[ci] ?? `typ${ci}`,
       centrum: foreignLayoutResult.centrum,
-      miasta: foreignLayoutResult.cities,
-      growthSlot: foreignLayoutResult.growthSlot,
+      miasta: foreignCities,
+      growthSlot: foreignRepack.growthSlot ?? foreignLayoutResult.growthSlot,
     });
   }
 

@@ -1037,13 +1037,13 @@ function ensureStyles(): void {
 .civ-sci-tooltip{
   position:fixed;display:none;
   background:#160e00;border:1px solid #b08800;border-radius:6px;
-  padding:20px 26px;max-width:600px;font-size:1.54rem;color:#e0d098;
+  padding:10px 13px;max-width:300px;font-size:0.77rem;color:#e0d098;
   box-shadow:0 4px 18px rgba(0,0,0,0.88);pointer-events:none;z-index:1000;line-height:1.55;
   font-family:'Georgia',serif;}
-.civ-sci-tooltip .tt-name{font-size:1.82rem;font-weight:bold;margin-bottom:3px;}
-.civ-sci-tooltip .tt-section{margin-top:6px;color:#907030;font-size:1.36em;text-transform:uppercase;letter-spacing:0.5px;}
+.civ-sci-tooltip .tt-name{font-size:0.91rem;font-weight:bold;margin-bottom:3px;}
+.civ-sci-tooltip .tt-section{margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase;letter-spacing:0.5px;}
 .civ-sci-tooltip .tt-items{margin-top:2px;padding-left:13px;color:#cebe70;}
-.civ-sci-tooltip .tt-items li{list-style:disc;margin:1px 0;font-size:1.48rem;}
+.civ-sci-tooltip .tt-items li{list-style:disc;margin:1px 0;font-size:0.74rem;}
 /* Legend */
 .civ-sci .cs-legend{
   display:flex;flex-wrap:wrap;gap:8px 20px;

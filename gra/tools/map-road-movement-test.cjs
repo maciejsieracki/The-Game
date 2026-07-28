@@ -79,6 +79,7 @@ ok(roadKeys.has('0,0') && roadKeys.has('2,0'), 'collectRoadKeys includes droga h
 const qual = M.buildImprovementQualifier({
   map,
   cityNodes,
+  territoryNodes: [{ q: 0, r: 0, pop: 10, level: 1, ownerId: 0 }],
   roadKeys,
   researchedTechs: new Set(['Drogi brukowane']),
 });
@@ -88,7 +89,11 @@ ok(!qual('droga_brukowana', 1, 0), 'no bruk without existing droga');
 ok(qual('droga_brukowana', 2, 0), 'bruk upgrade on hex with droga ulepszenie');
 
 hexes['0,0'].ulepszenie = UL.DrogaBrukowana;
-ok(!M.buildImprovementQualifier({ map, cityNodes, roadKeys })( 'droga_brukowana', 0, 0),
+ok(!M.buildImprovementQualifier({
+  map, cityNodes,
+  territoryNodes: [{ q: 0, r: 0, pop: 10, level: 1, ownerId: 0 }],
+  roadKeys,
+})('droga_brukowana', 0, 0),
   'no double bruk upgrade');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}

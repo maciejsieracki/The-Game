@@ -240,6 +240,25 @@ assert(M.CLUSTER_CITY_STATE_MIN_HEX === 4, 'CLUSTER_CITY_STATE_MIN_HEX=4');
 assert(M.CLUSTER_CITY_STATE_MAX_HEX === 4, 'CLUSTER_CITY_STATE_MAX_HEX=4');
 assert(M.clusterCityStateRadius() === 4, 'clusterCityStateRadius=4');
 
+// Maciej 2026-07-28: każdy obcy klaster powinien mieć pełną quotę MP (stolica + N państw)
+const expectedMpPerCluster = 4;
+for (const k of plan.placement.klastry) {
+  if (k.typ === 'grecy') continue;
+  const mpCount = k.miasta.filter(m => !m.isCapital).length;
+  assert(
+    mpCount >= expectedMpPerCluster,
+    `klaster ${k.typ}: ${mpCount}/${expectedMpPerCluster} MP (miast=${k.miasta.length})`,
+  );
+  const cap = k.miasta.find(m => m.isCapital) ?? k.miasta[0];
+  const mps = k.miasta.filter(m => !m.isCapital);
+  if (cap && mps.length > 0) {
+    assert(
+      isValidHubChain(cap, mps, clusterMax, clusterMin),
+      `klaster ${k.typ}: poprawny łańcuch hubów`,
+    );
+  }
+}
+
 // Maciej 2026-07-28: kandydaci runtime — hub-chain BFS (nie tylko pierścień od stolicy)
 const runtimeCandidates = M.buildSameTypeRivalCandidateHexes(map, playerCap, 9, 4242);
 for (let i = 0; i < runtimeCandidates.length; i++) {

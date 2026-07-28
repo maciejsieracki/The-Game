@@ -136,11 +136,9 @@ const SWEETENER_ACTION_IDS = new Set<string>();
 
 function sweetenerSectionHtml(ctx: NegotiationModalContext): string {
   const goldMax = Math.max(0, Math.floor(ctx.playerSkarbiec ?? 0));
-  const boolOpts = ctx.giveResourceOptions ?? [];
   const qtyOpts = (ctx.giveQuantityResourceOptions ?? []).filter(o => o.maxPakiety > 0);
   const resOptions =
     '<option value="">— brak —</option>'
-    + boolOpts.map(o => '<option value="bool:' + esc(o.id) + '">' + esc(o.label) + ' (dostęp)</option>').join('')
     + qtyOpts.map(o =>
       '<option value="qty:' + esc(o.id) + '" data-max="' + o.maxPakiety + '">'
       + esc(o.label) + ' (ilość, max ' + o.maxPakiety + ' pak.)</option>',
@@ -166,9 +164,7 @@ function readSweetenerGiveItems(): BasketItem[] {
   if (gold > 0) items.push({ typ: 'zloto', id: 'zloto', ilosc: gold });
   const resSel = document.getElementById('cdn-sw-res') as HTMLSelectElement | null;
   const resVal = resSel?.value ?? '';
-  if (resVal.startsWith('bool:')) {
-    items.push({ typ: 'surowiec_boolean', id: resVal.slice('bool:'.length) });
-  } else if (resVal.startsWith('qty:')) {
+  if (resVal.startsWith('qty:')) {
     const id = resVal.slice('qty:'.length);
     const maxAttr = parseInt(resSel!.selectedOptions[0]?.getAttribute('data-max') ?? '0', 10);
     const rawQty = parseInt((document.getElementById('cdn-sw-qty') as HTMLInputElement)?.value ?? '0', 10);

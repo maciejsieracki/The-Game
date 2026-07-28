@@ -2021,8 +2021,8 @@ function ensureStyles(): void {
   --bg:#141820;--panel:#1e2430;--panel2:#171c24;--border:#2e3848;--bord2:#3d4a5c;
   --text:#e8ebf0;--muted:#8b97a8;--gold:#e0b24a;--green:#6bbf59;--red:#d36b5e;--blue:#5a9bd4;--happy:#f6c942;
   color:var(--text);font-family:'Segoe UI',Tahoma,Verdana,sans-serif;line-height:1.38;}
-.civ-detail-scope .detail-card{margin:0;padding:0.76em 0.96em;background:rgba(0,0,0,0.28);
-  border:1px solid var(--bord2);border-left:3px solid var(--gold);border-radius:4px;font-size:1.56em;line-height:1.38;}
+.civ-detail-scope .detail-card{margin:0;padding:0.38em 0.48em;background:rgba(0,0,0,0.28);
+  border:1px solid var(--bord2);border-left:3px solid var(--gold);border-radius:4px;font-size:0.78em;line-height:1.38;}
 .civ-detail-scope .detail-card .dc-h{font-weight:700;color:var(--gold);margin-bottom:0.22em;display:flex;align-items:center;gap:0.35em;}
 .civ-detail-scope .detail-card .dc-h .mini-thumb{width:1.85em;height:1.85em;font-size:0.95em;border-width:1px;
   width:2.15em;height:2.15em;border:2px solid var(--gold);border-radius:4px;background:var(--panel2);
@@ -2030,7 +2030,7 @@ function ensureStyles(): void {
 .civ-detail-scope .detail-card .dc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.12em 0.5em;margin-top:0.15em;}
 .civ-detail-scope .detail-card .dc-l{color:var(--muted);}
 .civ-detail-scope .detail-card .dc-v{word-break:break-word;}
-.civ-detail-scope .detail-card .dc-section{font-size:1.36em;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
+.civ-detail-scope .detail-card .dc-section{font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
   color:#d4af5a;margin:0.55em 0 0.2em;padding-bottom:0.12em;border-bottom:1px solid rgba(212,175,90,0.18);}
 .civ-detail-scope .detail-card .dc-section:first-of-type{margin-top:0.15em;}
 .civ-detail-scope .detail-card.bld-detail-card{padding:0.32em 0.38em;}
@@ -2047,14 +2047,14 @@ function ensureStyles(): void {
 .civ-detail-scope .detail-card.bld-detail-card .bld-detail-tile-bd .bld-infocard-chips{margin-top:0.08em;}
 .civ-detail-scope .detail-card.bld-detail-card .bld-detail-tile-bd .bld-infocard-eyebrow{margin-top:0.18em;}
 .civ-detail-scope .detail-card.bld-detail-card .bld-detail-tile-bd .bld-infocard-eyebrow:first-child{margin-top:0;}
-.civ-detail-scope .detail-card .dc-note{margin-top:0.35em;color:var(--muted);font-size:1.76em;font-style:italic;line-height:1.35;}
-.civ-detail-scope .detail-card .dc-algo-step{font-size:1.52em;line-height:1.42;color:var(--muted);margin:0.1em 0 0.26em;padding-left:0.12em;}
-.civ-detail-scope .detail-card .dc-formula{font-size:1.64em;color:var(--gold);font-family:Consolas,'Courier New',monospace;margin:0.18em 0 0.32em;padding:0.22em 0.38em;
+.civ-detail-scope .detail-card .dc-note{margin-top:0.35em;color:var(--muted);font-size:0.88em;font-style:italic;line-height:1.35;}
+.civ-detail-scope .detail-card .dc-algo-step{font-size:0.76em;line-height:1.42;color:var(--muted);margin:0.1em 0 0.26em;padding-left:0.12em;}
+.civ-detail-scope .detail-card .dc-formula{font-size:0.82em;color:var(--gold);font-family:Consolas,'Courier New',monospace;margin:0.18em 0 0.32em;padding:0.22em 0.38em;
   background:rgba(0,0,0,0.25);border-radius:3px;border-left:2px solid rgba(212,175,90,0.35);}
 .civ-hover-detail-dock .civ-detail-scope .detail-card{box-shadow:none;}
-.civ-hover-detail-float{display:none;position:fixed;z-index:100000;max-width:min(680px,92vw);pointer-events:none;
-  padding:0.76em 0.96em;background:rgba(8,12,20,0.96);border:1px solid #e0b24a;border-radius:4px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.65);font-size:1.48em;line-height:1.38;}
+.civ-hover-detail-float{display:none;position:fixed;z-index:100000;max-width:min(400px,92vw);pointer-events:none;
+  padding:0.38em 0.48em;background:rgba(8,12,20,0.96);border:1px solid #e0b24a;border-radius:4px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.65);font-size:0.74em;line-height:1.38;}
 .civ-hover-detail-float .civ-detail-scope .detail-card{border:none;background:transparent;padding:0;}
 .civ-cs .mini-thumb.hover-detail-anchor,.civ-cs .unit-mini-preview.hover-detail-anchor,.civ-cs .item-row.hover-detail-anchor,.civ-cs .growth-progress-block.hover-detail-anchor,.civ-cs .wealth-compact-wrap.hover-detail-anchor{cursor:help;}
 .civ-cs .item-row{display:flex;align-items:center;gap:0.32em;background:var(--panel2);border:1px solid var(--border);
@@ -6466,7 +6466,7 @@ function appendBuildQueueSection(mount: HTMLElement, city: City, player: boolean
   if (prod.kolejka.length <= 1) return;
   const data = gameData();
   const qWrap = el('div');
-  qWrap.style.cssText = 'margin-bottom:0.42em;padding-bottom:0.35em;border-bottom:1px solid var(--border);';
+  qWrap.style.cssText = 'margin-top:0.5em;padding-top:0.35em;border-top:1px solid var(--border);';
   const qh = el('div', 'gold', 'Kolejka budowy:');
   qh.style.cssText = 'font-size:0.78em;font-weight:700;margin-bottom:0.22em;';
   qWrap.appendChild(qh);
@@ -6528,10 +6528,6 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
   }
   mount.style.display = '';
   mount.appendChild(el('div', 'ptitle', '<span>Produkcja</span>'));
-
-  // B7: obie kolejki na górze sekcji Produkcja (wszystkie zakładki lewego raila)
-  appendBuildQueueSection(mount, city, player);
-  appendRecruitmentQueue(mount, city, player);
 
   if (player && cfg.getBudowaState) {
     const bState = cfg.getBudowaState(city.id);
@@ -6599,6 +6595,9 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     actions.appendChild(usun);
     if (player) mount.appendChild(actions);
   }
+
+  appendBuildQueueSection(mount, city, player);
+  appendRecruitmentQueue(mount, city, player);
 }
 
 function missingTechSteps(data: GameData, techName: string, unlocked: ReadonlySet<string>): string[] {

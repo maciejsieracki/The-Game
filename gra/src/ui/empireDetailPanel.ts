@@ -191,9 +191,14 @@ function ensureStyles(): void {
 .civ-emp-zrow .val .d.z{color:#6f7889;}
 .civ-emp-mini{border:1px solid #232b38;border-radius:7px;overflow:hidden;margin:2px 0 8px;
   scroll-margin-top:8px;}
-.civ-emp-mini-h,.civ-emp-mini-r{display:grid;padding:7px 10px;}
-.civ-emp-mini-h{font-size:10px;letter-spacing:0.5px;color:#7d8798;font-weight:600;background:#1a2230;}
+.civ-emp-mini-h,.civ-emp-mini-r{display:grid;padding:7px 10px;column-gap:6px;}
+.civ-emp-mini-h{font-size:10px;letter-spacing:0.35px;color:#7d8798;font-weight:600;background:#1a2230;}
+.civ-emp-mini-h-cell{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;}
+.civ-emp-mini-h-ic{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;color:#9aa4b2;flex-shrink:0;}
+.civ-emp-mini-h-ic svg{width:100%;height:100%;display:block;}
+.civ-emp-mini-h-txt{font-size:9px;letter-spacing:0.25px;line-height:1.15;white-space:normal;word-break:break-word;}
 .civ-emp-mini-r{font-size:12px;color:#cfd5de;}
+.civ-emp-mini-r>div{min-width:0;}
 .civ-emp-mini-r+.civ-emp-mini-r{border-top:1px solid #1f2733;}
 .civ-emp-bar{height:10px;border-radius:6px;background:#1f2733;overflow:hidden;margin:2px 0 10px;}
 .civ-emp-bar .fill{height:100%;background:linear-gradient(90deg,#4e9a3f,#78c95a);}
@@ -307,8 +312,20 @@ function formatRawCount(n: number): string {
   return Number.isInteger(r) ? String(r) : r.toFixed(1);
 }
 
-function miniHeader(cols: string[], grid: string): string {
-  const cells = cols.map(c => `<div>${c}</div>`).join('');
+type MiniColHeader = string | { label: string; iconId?: string };
+
+function miniHeaderCell(col: MiniColHeader): string {
+  if (typeof col === 'string') {
+    return `<div class="civ-emp-mini-h-cell"><span class="civ-emp-mini-h-txt">${col}</span></div>`;
+  }
+  const icon = col.iconId
+    ? `<span class="civ-emp-mini-h-ic" aria-hidden="true">${brandIconSvg(col.iconId, 12)}</span>`
+    : '';
+  return `<div class="civ-emp-mini-h-cell">${icon}<span class="civ-emp-mini-h-txt">${col.label}</span></div>`;
+}
+
+function miniHeader(cols: MiniColHeader[], grid: string): string {
+  const cells = cols.map(miniHeaderCell).join('');
   return `<div class="civ-emp-mini-h" style="grid-template-columns:${grid}">${cells}</div>`;
 }
 
@@ -389,7 +406,15 @@ function cityMiastaMiniDetail(
   let h = `<div class="civ-emp-note">Miasta imperium: <b>${e.osiedla}</b>`
     + ` · przyrost ludności łącznie: <b>${signedPl(e.ludnoscRate ?? 0)}</b> obyw./turę</div>`;
   h += `<div class="civ-emp-mini">${miniHeader(
-    ['MIASTO', 'OBYW.', 'LUDNOŚĆ', 'WZROST', 'PRACA', 'PIENIĄDZ', 'ŻYWNOŚĆ'],
+    [
+      'MIASTO',
+      { label: 'OBYW.', iconId: 'res-population' },
+      'LUDNOŚĆ',
+      'WZROST',
+      { label: 'PRACA', iconId: 'res-work' },
+      { label: 'PIENIĄDZ', iconId: 'res-treasury' },
+      { label: 'ŻYWNOŚĆ', iconId: 'res-food' },
+    ],
     grid,
   )}`;
   for (const pob of cp) {
@@ -397,7 +422,7 @@ function cityMiastaMiniDetail(
     const fd = foodByName.get(pob.name);
     const praca = (econ?.pracaPula ?? 0) + (econ?.pracaBudynki ?? 0);
     const wzrost = fd != null ? `${Math.round(fd.wzrostProcent)}%` : '—';
-    const zywnosc = fd != null ? foodSignedTxt(fd.bilans, true) : '—';
+    const zywnosc = fd != null ? signedIntTxt(fd.bilans) : '—';
     h += miniRow([
       esc(pob.name),
       String(pob.ludki),
@@ -444,6 +469,14 @@ function cityPoborMiniRekruci(
 function signedTxt(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '—';
   return signedPl(n);
+}
+
+/** Wartość liczbowa bez ikony (komórki danych tabel miast). */
+function signedIntTxt(n: number): string {
+  if (!Number.isFinite(n)) return '—';
+  const r = Math.round(n);
+  if (r === 0) return '0';
+  return `${r > 0 ? '+' : ''}${r}`;
 }
 
 /** PYTANIE-85 — wartość żywności z emoji 🍞 (np. „+72 🍞", „−48 🍞"). */
@@ -653,7 +686,7 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   const capBase = stored[0]?.capBase;
   const capBonus = stored[0]?.capBonusPerMagazyn;
   // SUROW-UI-A1: liczba Magazynów wyliczona z REALNEJ bazy/bonusu (econ-params.json),
-  // nie z zaszytej na sztywno starej wartości 100 — baza dziś to 500 (Maciej 2026-07-24).
+  // nie z zaszytej na sztywno starej wartości 100 — baza z econ-params.json (dziś 1000).
   const magazyny = (capBase != null && capBonus != null && capBonus > 0 && cap > capBase)
     ? Math.round((cap - capBase) / capBonus)
     : 0;

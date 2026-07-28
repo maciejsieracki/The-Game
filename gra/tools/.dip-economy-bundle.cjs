@@ -20,14 +20,16 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.dip-economy-entry.ts
 var dip_economy_entry_exports = {};
 __export(dip_economy_entry_exports, {
+  AI_DIPLOMACY_GENEROSITY_GOLD_MULT: () => AI_DIPLOMACY_GENEROSITY_GOLD_MULT,
   AI_TRADE_GOLD_MAX: () => AI_TRADE_GOLD_MAX,
   activeDealsToPaymentDeals: () => activeDealsToPaymentDeals,
+  aiDiplomacyGenerosityGoldMultiplier: () => aiDiplomacyGenerosityGoldMultiplier,
   aiOneShotGiftCooldownTurns: () => aiOneShotGiftCooldownTurns,
-  aiOneShotGiftGoldMultiplier: () => aiOneShotGiftGoldMultiplier,
   applyDiplomaticGoldGrant: () => applyDiplomaticGoldGrant,
   applyOneShotGoldTransfer: () => applyOneShotGoldTransfer,
   canAiProposeOneShotGoldGift: () => canAiProposeOneShotGoldGift,
   capAiGoldOffer: () => capAiGoldOffer,
+  scaleAiGenerousGoldOffer: () => scaleAiGenerousGoldOffer,
   tickDiplomacyPayments: () => tickDiplomacyPayments,
   tributeBreakPairsFromDeals: () => tributeBreakPairsFromDeals
 });
@@ -110,16 +112,20 @@ var AI_ONESHOT_GIFT_COOLDOWN_TURNS = {
   normal: 25,
   hard: 35
 };
-var AI_ONESHOT_GIFT_GOLD_MULT = {
-  easy: 1.25,
-  normal: 1,
-  hard: 0.75
+var AI_DIPLOMACY_GENEROSITY_GOLD_MULT = {
+  easy: 1,
+  normal: 0.5,
+  hard: 0.3
 };
 function aiOneShotGiftCooldownTurns(difficulty) {
   return AI_ONESHOT_GIFT_COOLDOWN_TURNS[difficulty];
 }
-function aiOneShotGiftGoldMultiplier(difficulty) {
-  return AI_ONESHOT_GIFT_GOLD_MULT[difficulty];
+function aiDiplomacyGenerosityGoldMultiplier(difficulty) {
+  return AI_DIPLOMACY_GENEROSITY_GOLD_MULT[difficulty];
+}
+function scaleAiGenerousGoldOffer(baseGold, difficulty) {
+  if (!Number.isFinite(baseGold) || baseGold <= 0) return 0;
+  return Math.max(0, Math.floor(baseGold * aiDiplomacyGenerosityGoldMultiplier(difficulty)));
 }
 function canAiProposeOneShotGoldGift(currentTurn, lastGiftTurn, difficulty) {
   if (lastGiftTurn == null || lastGiftTurn <= 0) return true;
@@ -146,14 +152,16 @@ function applyDiplomaticGoldGrant(fromOwnerId, toOwnerId, amount, treasury) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  AI_DIPLOMACY_GENEROSITY_GOLD_MULT,
   AI_TRADE_GOLD_MAX,
   activeDealsToPaymentDeals,
+  aiDiplomacyGenerosityGoldMultiplier,
   aiOneShotGiftCooldownTurns,
-  aiOneShotGiftGoldMultiplier,
   applyDiplomaticGoldGrant,
   applyOneShotGoldTransfer,
   canAiProposeOneShotGoldGift,
   capAiGoldOffer,
+  scaleAiGenerousGoldOffer,
   tickDiplomacyPayments,
   tributeBreakPairsFromDeals
 });

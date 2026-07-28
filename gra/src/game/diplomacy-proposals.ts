@@ -231,7 +231,11 @@ function buildDeal(
   };
 }
 
+/** SUROW-TERYT: trwały dostęp (złoże / surowiec_boolean) wycofany z handlu dyplomatycznego. */
 const RESOURCE_ACCESS_TYPES = new Set<BasketItem['typ']>(['zloze', 'surowiec_boolean']);
+
+export const RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON =
+  'Handel dostępem do surowców nieaktualny — wycofany po polityce terytorialnej (SUROW-TERYT)';
 
 /** Czy propozycja obejmuje trwały dostęp do surowców/złóż (nie jednorazowy PN). */
 export function proposalHasResourceAccess(payload: {
@@ -240,6 +244,11 @@ export function proposalHasResourceAccess(payload: {
 }): boolean {
   const items = [...(payload.giveItems ?? []), ...(payload.receiveItems ?? [])];
   return items.some(i => RESOURCE_ACCESS_TYPES.has(i.typ));
+}
+
+/** Usuwa wycofane pozycje dostępu z koszyka (bezpieczny filtr UI / quick-deal). */
+export function stripWithdrawnResourceAccessItems(items: readonly BasketItem[]): BasketItem[] {
+  return items.filter(i => !RESOURCE_ACCESS_TYPES.has(i.typ));
 }
 
 /** Czas trwałej umowy handlowej: 1–20 tur (Maciej 2026-07-21). */
@@ -517,32 +526,8 @@ export function evaluateProposal(
       }
 
       const hasPnPath = givePn > 0 || receivePn > 0 || payload.giveItems?.length || payload.receiveItems?.length;
-      const hasResourceAccess = proposalHasResourceAccess(payload);
-
-      if (hasResourceAccess) {
-        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
-        }
-        const turns = clampDealTurns(payload.turns);
-        const handelPayload: HandelDealPayload = {
-          giveItems: payload.giveItems?.length ? [...payload.giveItems] : undefined,
-          receiveItems: payload.receiveItems?.length ? [...payload.receiveItems] : undefined,
-        };
-        const deal = buildDeal(
-          RodzajTraktatu.UmowaHandlowa,
-          proposerOwnerId,
-          responderOwnerId,
-          ctx.turn,
-          ctx.turn + turns,
-          undefined,
-          false,
-          handelPayload,
-        );
-        return {
-          accepted: true,
-          reason: `Umowa handlowa (dostęp do surowców) na ${turns} tur`,
-          deal,
-        };
+      if (proposalHasResourceAccess(payload)) {
+        return { accepted: false, reason: RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON };
       }
 
       // HANDEL-SUROWCE-CYKL (2026-07-24): tryb „Wymiana przez X tur" — surowiec_ilosc
@@ -979,6 +964,9 @@ export function resolvePlayerAcceptsAiPending(
       return { accepted: true, reason: 'Wasalizacja zaakceptowana', deal };
     }
     case 'handel': {
+      if (proposalHasResourceAccess(payload)) {
+        return { accepted: false, reason: RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON };
+      }
       // HANDEL-SUROWCE-CYKL (2026-07-24): AI zaproponowała cykliczny handel
       // surowcem (zaproponuj_handel_surowiec) — gracz akceptuje DOKŁADNIE tę ofertę
       // (AI już wyceniła ją fair @ katalog PN przy budowaniu propozycji, main.ts

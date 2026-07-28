@@ -6603,11 +6603,15 @@ function isSpawnHabitableTerrain(teren) {
 function localLandFraction(map, q, r, radius = LOCAL_LAND_DOMINANCE_RADIUS) {
   let landCount = 0;
   let totalCount = 0;
-  for (const h of Object.values(map.hexes)) {
-    const d = hexDistanceAxial(h.coords.q, h.coords.r, q, r);
-    if (d > radius) continue;
-    totalCount++;
-    if (isSpawnHabitableTerrain(h.terenBazowy)) landCount++;
+  for (let dq = -radius; dq <= radius; dq++) {
+    const r1 = Math.max(-radius, -dq - radius);
+    const r2 = Math.min(radius, -dq + radius);
+    for (let dr = r1; dr <= r2; dr++) {
+      const h = map.hexes[`${q + dq},${r + dr}`];
+      if (!h) continue;
+      totalCount++;
+      if (isSpawnHabitableTerrain(h.terenBazowy)) landCount++;
+    }
   }
   const ratio = totalCount > 0 ? landCount / totalCount : 0;
   return { ratio, landCount, totalCount };
@@ -6814,13 +6818,51 @@ function clusterPackRadius(maxMiast, minDist) {
 function clusterCityStateRadius() {
   return CLUSTER_CITY_STATE_MAX_HEX;
 }
+function landPoolNearCore(region, centrum, maxMiast, minDist, maxRadius) {
+  const packR = maxRadius != null ? maxRadius : clusterPackRadius(maxMiast, minDist);
+  const near = region.map((c) => ({ c, d: hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) })).filter((x) => x.d <= packR).sort((a, b) => a.d - b.d || a.c.q - b.c.q || a.c.r - b.c.r).map((x) => x.c);
+  if (near.length >= maxMiast) return near;
+  if (maxRadius != null) return near.length > 0 ? near : region;
+  let expanded = packR + minDist;
+  while (near.length < maxMiast && expanded <= packR + minDist * 6) {
+    for (const c of region) {
+      if (near.some((p) => p.q === c.q && p.r === c.r)) continue;
+      if (hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) <= expanded) near.push(c);
+      if (near.length >= maxMiast * 3) break;
+    }
+    expanded += minDist;
+  }
+  return near.length > 0 ? near : region;
+}
+function hexesAtDistance(q, r, dist) {
+  if (dist <= 0) return [{ q, r }];
+  let frontier = [{ q, r }];
+  for (let d = 0; d < dist; d++) {
+    const next = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const h of frontier) {
+      for (const dir of HEX_DIRECTIONS) {
+        const nq = h.q + dir[0];
+        const nr = h.r + dir[1];
+        const k = `${nq},${nr}`;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        next.push({ q: nq, r: nr });
+      }
+    }
+    frontier = next;
+  }
+  return frontier;
+}
 function packCityStatesHubChain(landHexes, core, count, minSep, ringDist, seed, opts) {
   if (count <= 0) return [];
   const rand = mulberry32((seed ^ 2654435769) >>> 0);
   const placed = [];
   const exclude = opts?.excludeHex ?? core;
   const anchor = opts?.anchor;
+  const landSet = new Set(landHexes.map((h) => `${h.q},${h.r}`));
   function validCandidate(h, hub) {
+    if (!landSet.has(`${h.q},${h.r}`)) return false;
     if (h.q === exclude.q && h.r === exclude.r) return false;
     if (hexDistanceAxial(h.q, h.r, hub.q, hub.r) !== ringDist) return false;
     if (hexDistanceAxial(h.q, h.r, core.q, core.r) < minSep) return false;
@@ -6834,7 +6876,7 @@ function packCityStatesHubChain(landHexes, core, count, minSep, ringDist, seed, 
     const hub = hubQueue[hubIdx];
     hubIdx += 1;
     while (placed.length < count) {
-      const cands = landHexes.filter((h) => validCandidate(h, hub));
+      const cands = hexesAtDistance(hub.q, hub.r, ringDist).filter((h) => validCandidate(h, hub));
       if (cands.length === 0) break;
       shuffleInPlace(cands, rand);
       cands.sort((a, b) => a.q - b.q || a.r - b.r);
@@ -6845,17 +6887,59 @@ function packCityStatesHubChain(landHexes, core, count, minSep, ringDist, seed, 
   }
   return placed;
 }
+function packCityStatesAroundCapital(allLand, region, capital, stateCityCount, minDist, seed, opts) {
+  if (stateCityCount <= 0) {
+    return { stateCities: [], growthSlot: null };
+  }
+  const growthReserve = opts?.growthReserve ?? CLUSTER_GROWTH_RESERVE;
+  const totalPack = stateCityCount + growthReserve;
+  const packOpts = { excludeHex: opts?.excludeHex ?? capital, anchor: opts?.anchor };
+  const expandedR = clusterPackRadius(totalPack, minDist) * 2;
+  const pools = [];
+  const nearRegion = landPoolNearCore(region, capital, totalPack, minDist);
+  pools.push(nearRegion);
+  const nearExpanded = landPoolNearCore(region, capital, totalPack, minDist, expandedR);
+  if (nearExpanded.length > nearRegion.length) pools.push(nearExpanded);
+  if (allLand.length > nearExpanded.length) pools.push(allLand);
+  const seeds = [
+    seed,
+    seed + 1367130551 >>> 0,
+    seed + 2246822507 >>> 0,
+    seed + 3266489909 >>> 0
+  ];
+  let best = [];
+  for (const pool of pools) {
+    for (const s of seeds) {
+      const packed = packCityStatesHubChain(
+        pool,
+        capital,
+        totalPack,
+        minDist,
+        CLUSTER_CITY_STATE_MAX_HEX,
+        s,
+        packOpts
+      );
+      if (packed.length > best.length) best = packed;
+      if (best.length >= stateCityCount) break;
+    }
+    if (best.length >= stateCityCount) break;
+  }
+  return {
+    stateCities: best.slice(0, stateCityCount),
+    growthSlot: best.length > stateCityCount ? best[stateCityCount] ?? null : null
+  };
+}
 function packRivalCitiesAroundCore(landHexes, core, rivalCount, minDist, seed) {
   if (rivalCount <= 0) return [];
-  return packCityStatesHubChain(
+  return packCityStatesAroundCapital(
+    landHexes,
     landHexes,
     core,
     rivalCount,
     minDist,
-    CLUSTER_CITY_STATE_MAX_HEX,
     seed,
-    { excludeHex: core }
-  );
+    { excludeHex: core, growthReserve: 0 }
+  ).stateCities;
 }
 function centroidOf(hexes) {
   if (hexes.length === 0) return { q: 0, r: 0 };
@@ -6886,17 +6970,15 @@ function buildClusterLayoutWithEdgeCapital(region, centrum, stateCityCount, minD
     return db + jitter - (da + jitter) || a.q - b.q || a.r - b.r;
   });
   const capital = capitalCandidates[0];
-  const packed = packCityStatesHubChain(
+  const { stateCities, growthSlot } = packCityStatesAroundCapital(
+    region,
     region,
     capital,
-    stateCityCount + growthReserve,
+    stateCityCount,
     minDist,
-    CLUSTER_CITY_STATE_MAX_HEX,
     seed,
-    { excludeHex: capital, anchor }
+    { excludeHex: capital, anchor, growthReserve }
   );
-  const stateCities = packed.slice(0, stateCityCount);
-  const growthSlot = packed.length > stateCityCount ? packed[stateCityCount] ?? null : null;
   return { capital, stateCities, growthSlot };
 }
 function layoutToClusterCities(layout) {
@@ -6961,20 +7043,20 @@ function buildClusterCitiesSimpleFallback(region, centrum, stateCityCount, minDi
   if (map && !passesLocalLandGate(map, capital.q, capital.r)) {
     return { cities: [], pendingStateSlots: [], growthSlot: null };
   }
-  const stateCities = packCityStatesHubChain(
+  const { stateCities, growthSlot } = packCityStatesAroundCapital(
+    pool,
     pool,
     capital,
     stateCityCount,
     minDist,
-    CLUSTER_CITY_STATE_MAX_HEX,
     seed,
-    { excludeHex: capital, anchor }
+    { excludeHex: capital, anchor, growthReserve: 0 }
   );
   const cities = [{ q: capital.q, r: capital.r, isCapital: true }];
   for (const s of stateCities) {
     cities.push({ q: s.q, r: s.r, isCapital: false });
   }
-  return { cities, pendingStateSlots: stateCities, growthSlot: null };
+  return { cities, pendingStateSlots: stateCities, growthSlot };
 }
 function enforceLocalLandDominance(map, centrumy, regiony, aktywneKlucze, ladowe, masses, rand, minDist, mapCenter) {
   let relocated = false;
@@ -7245,12 +7327,35 @@ function computeClusters(map, opts) {
       minDystKlastrow
     );
     if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) continue;
+    const foreignCap = foreignLayoutResult.cities.find((m) => m.isCapital) ?? foreignLayoutResult.cities[0];
+    const foreignAnchor = {
+      q: playerCapitalPos.q,
+      r: playerCapitalPos.r,
+      minDist: minDystObcyOdGracza
+    };
+    const foreignRepack = packCityStatesAroundCapital(
+      ladowe,
+      region,
+      { q: foreignCap.q, r: foreignCap.r },
+      stateCityCount,
+      MIN_DIST_FOREIGN_IN_CLUSTER,
+      seed + ci * 2654435761 >>> 0,
+      { excludeHex: { q: foreignCap.q, r: foreignCap.r }, anchor: foreignAnchor }
+    );
+    const foreignCities = [{
+      q: foreignCap.q,
+      r: foreignCap.r,
+      isCapital: true
+    }];
+    for (const s of foreignRepack.stateCities) {
+      foreignCities.push({ q: s.q, r: s.r, isCapital: false });
+    }
     klastry.push({
       typIndex: klastry.length,
       typ: activeKlucze[ci] ?? `typ${ci}`,
       centrum: foreignLayoutResult.centrum,
-      miasta: foreignLayoutResult.cities,
-      growthSlot: foreignLayoutResult.growthSlot
+      miasta: foreignCities,
+      growthSlot: foreignRepack.growthSlot ?? foreignLayoutResult.growthSlot
     });
   }
   if (typeof console !== "undefined") {
@@ -7313,29 +7418,16 @@ function buildSameTypeRivalCandidateHexes(map, core, rivalCount, seed) {
   if (rivalCount <= 0) return [];
   const land = landHexesFromMap(map);
   const minDist = MIN_DIST_START_CITY_STATE;
-  const seeds = [seed, seed + 1367130551 >>> 0, seed + 2246822507 >>> 0, seed + 3266489909 >>> 0];
-  for (const s of seeds) {
-    const packed = packCityStatesHubChain(
-      land,
-      core,
-      rivalCount,
-      minDist,
-      CLUSTER_CITY_STATE_MAX_HEX,
-      s,
-      { excludeHex: core }
-    );
-    if (packed.length >= rivalCount) return packed.slice(0, rivalCount);
-    if (packed.length > 0) return packed;
-  }
-  return packCityStatesHubChain(
+  const { stateCities } = packCityStatesAroundCapital(
+    land,
     land,
     core,
     rivalCount,
     minDist,
-    CLUSTER_CITY_STATE_MAX_HEX,
     seed,
-    { excludeHex: core }
+    { excludeHex: core, growthReserve: 0 }
   );
+  return stateCities;
 }
 function capitalOf(klaster) {
   const cap = klaster.miasta.find((m) => m.isCapital) ?? klaster.miasta[0];

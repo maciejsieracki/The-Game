@@ -386,13 +386,13 @@ export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCt
         ? `${item.ilosc ?? 0} Żywności na turę`
         : `jednorazowo ${item.ilosc ?? 0} Żywności`;
     case 'zloze':
-      return `dostęp do złoża: ${item.id}`;
+      return `dostęp do złoża: ${item.id} (nieaktualne)`;
     case 'tech':
       return `technologia: ${item.id}`;
     case 'jednostka':
       return `jednostka: ${item.id}`;
     case 'surowiec_boolean':
-      return `dostęp do surowca: ${resourceDisplayLabel(item.id)}`;
+      return `dostęp do surowca: ${resourceDisplayLabel(item.id)} (nieaktualne)`;
     case 'surowiec_ilosc': {
       const pakietSize = diplomacyHandelSurowcePakietWielkosc();
       const pakiety = item.ilosc ?? 1;

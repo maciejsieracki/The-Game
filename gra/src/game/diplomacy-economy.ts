@@ -156,19 +156,41 @@ export const AI_ONESHOT_GIFT_COOLDOWN_TURNS: Record<'easy' | 'normal' | 'hard', 
   hard: 35,
 };
 
-/** Mnożnik kwoty jednorazowego daru wg trudności (łatwy = więcej, trudny = mniej). */
-export const AI_ONESHOT_GIFT_GOLD_MULT: Record<'easy' | 'normal' | 'hard', number> = {
-  easy: 1.25,
-  normal: 1.0,
-  hard: 0.75,
+/**
+ * Mnożnik hojności AI (prezenty ¤, osłodziki przy proaktywnych ofertach) wg trudności.
+ * Maciej 2026-07-28: łatwy = baza bez cięcia; normal = 50%; trudny = 30%.
+ * Nie dotyczy umów wynegocjowanych świadomie przez gracza.
+ */
+export const AI_DIPLOMACY_GENEROSITY_GOLD_MULT: Record<'easy' | 'normal' | 'hard', number> = {
+  easy: 1.0,
+  normal: 0.5,
+  hard: 0.3,
 };
+
+/** @deprecated alias — użyj AI_DIPLOMACY_GENEROSITY_GOLD_MULT */
+export const AI_ONESHOT_GIFT_GOLD_MULT = AI_DIPLOMACY_GENEROSITY_GOLD_MULT;
 
 export function aiOneShotGiftCooldownTurns(difficulty: 'easy' | 'normal' | 'hard'): number {
   return AI_ONESHOT_GIFT_COOLDOWN_TURNS[difficulty];
 }
 
+/** Mnożnik kwoty daru / osłodzika AI-initiated wg trudności sesji. */
+export function aiDiplomacyGenerosityGoldMultiplier(difficulty: 'easy' | 'normal' | 'hard'): number {
+  return AI_DIPLOMACY_GENEROSITY_GOLD_MULT[difficulty];
+}
+
+/** @deprecated alias — użyj aiDiplomacyGenerosityGoldMultiplier */
 export function aiOneShotGiftGoldMultiplier(difficulty: 'easy' | 'normal' | 'hard'): number {
-  return AI_ONESHOT_GIFT_GOLD_MULT[difficulty];
+  return aiDiplomacyGenerosityGoldMultiplier(difficulty);
+}
+
+/** Skaluje kwotę ¤ oferowaną proaktywnie przez AI (prezent, osłodzik umowy handlowej). */
+export function scaleAiGenerousGoldOffer(
+  baseGold: number,
+  difficulty: 'easy' | 'normal' | 'hard',
+): number {
+  if (!Number.isFinite(baseGold) || baseGold <= 0) return 0;
+  return Math.max(0, Math.floor(baseGold * aiDiplomacyGenerosityGoldMultiplier(difficulty)));
 }
 
 /** Czy AI może zaproponować kolejny jednorazowy dar ¤ (bez umowy handlowej/trybutu). */

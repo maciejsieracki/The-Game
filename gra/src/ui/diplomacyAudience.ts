@@ -23,7 +23,11 @@ import {
 } from './diplomacyNegotiationModal';
 import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { civCardDisplayName, leaderName } from './leaderPortraits';
-import { renderNegotiationDealHtml } from './diplomacyDealDisplay';
+import { renderNegotiationDealOneSideHtml } from './diplomacyDealDisplay';
+import {
+  proposalHasResourceAccess,
+  RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
+} from '../game/diplomacy-proposals';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
 
 export interface AudienceAction {
@@ -156,7 +160,7 @@ export interface DiplomacyAudienceState {
   pendingNegotiations?: readonly PendingNegotiationRow[];
 }
 
-/** Jeden wiersz stołu „Oczekujące propozycje" — patrz DiplomacyAudienceState.pendingNegotiations. */
+/** Jeden wiersz stołu „Oni oferują" — patrz DiplomacyAudienceState.pendingNegotiations. */
 export interface PendingNegotiationRow {
   id: string;
   /** 'own' = gracz czeka na odpowiedź AI; 'incoming' = to gracz musi odpowiedzieć. */
@@ -399,7 +403,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-tab svg{width:12px;height:12px;}
 
 .da-table{flex:1;display:grid;grid-template-columns:1fr 0.85fr 0.85fr 1fr;gap:10px;min-height:0;}
-/* C-DYP-Q1=A (2026-07-26) — kolumna „Oczekujące propozycje" (stół negocjacyjny z kontrofertą). */
+/* C-DYP-Q1=A (2026-07-26) — kolumna „Oni oferują" (ex Oczekujące propozycje; stół z kontrofertą). */
 .da-negot{display:flex;flex-direction:column;gap:6px;padding:7px 8px;border-radius:8px;
   border:1px solid rgba(232,216,138,.18);background:linear-gradient(180deg,rgba(26,32,44,.7),rgba(12,16,24,.7));}
 .da-negot.incoming{border-color:rgba(90,208,122,.4);}
@@ -432,6 +436,12 @@ ${DIPLO_1E_SHARED_CSS}
 .da-deal-sched-foot{margin-top:4px;padding-top:5px;border-top:1px solid rgba(255,255,255,.06);
   font-size:0.88em;color:#b8a888;text-align:center;}
 .da-deal-empty{color:#6a6058;font-style:italic;}
+.da-deal-single{display:flex;flex-direction:column;gap:5px;margin:4px 0 2px;}
+.da-deal-context{padding:5px 7px;border-radius:6px;border:1px dashed rgba(232,216,138,.14);
+  background:rgba(0,0,0,.15);}
+.da-deal-ctx-label{font-size:0.58em;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:#6a7280;margin-bottom:3px;}
+.da-deal-ctx-body{display:flex;flex-direction:column;gap:3px;font-size:0.92em;opacity:.88;}
 .da-negot .da-btnrow{display:flex;gap:6px;margin-top:2px;}
 .da-negot .da-btnrow button{flex:1;font-size:0.66em;padding:5px 6px;border-radius:6px;
   border:1px solid rgba(232,216,138,.3);background:rgba(232,216,138,.06);color:#e8e0c8;cursor:pointer;font-family:inherit;}
@@ -981,7 +991,7 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
   return '<div class="da-actionbar">' + btns + quickdeal + '</div>';
 }
 
-/** FAZA 2 pkt 3 kol.1 — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest). */
+/** FAZA 2 pkt 3 kol.4 (prawo) — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest). */
 function dealsColumnHtml(st: DiplomacyAudienceState): string {
   const visible = st.actions.filter(a => !(a.id === '1' && st.contactEstablished));
   const items = visible.map(a => {
@@ -1010,7 +1020,7 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
   );
 }
 
-/** FAZA 2 pkt 3 kol.2 — „Aktywne traktaty" (od ilu tur + kara zerwania + „Zerwij" — zaległość #2). */
+/** FAZA 2 pkt 3 kol.1 (lewo) — „Aktywne traktaty" (od ilu tur + kara zerwania + „Zerwij" — zaległość #2). */
 function treatiesColumnHtml(st: DiplomacyAudienceState): string {
   const treaties = st.activeTreaties ?? [];
   const canBreak = typeof cfg?.onBreakTreaty === 'function';
@@ -1044,11 +1054,76 @@ function treatiesColumnHtml(st: DiplomacyAudienceState): string {
   );
 }
 
-/** FAZA 2 pkt 3 kol.3 — „Żądania/Oferty": wejście do istniejącego koszyka PN (Umowa handlowa/Dar) —
- * ten sam handler co kafelek w kol. 1 (data-aid), więc modal/logika zostają nietknięte. Pełny
- * embedded formularz (bilans na żywo w tabeli) — faza 3; tu wpis + uzasadnienie bilansu (pkt 7)
- * jest już liczony w samym koszyku (diplomacyTradeBasket summaryHtml — Jednorazowo/Co turę/Werdykt). */
+/** Meta wspólna dla karty oczekującej negocjacji (runda + ważność). */
+function pendingNegotiationMetaHtml(r: PendingNegotiationRow): string {
+  const expLabel = r.expiresInTurns <= 0
+    ? 'wygasa w tej turze'
+    : `ważna jeszcze ${r.expiresInTurns} ${r.expiresInTurns === 1 ? 'turę' : 'tur'}`;
+  const roundLabel = `Runda negocjacji ${r.round} z ${r.maxRounds}`;
+  return '<div class="da-meta">' + esc(roundLabel) + ' · ' + esc(expLabel) + '</div>';
+}
+
+/** Fallback tekstowy gdy brak dealPayload. */
+function pendingDealFallbackHtml(r: PendingNegotiationRow): string {
+  if (!r.dealDetails && !r.summary) return '';
+  return '<div class="da-deal-detail da-deal-plain">' + esc(r.dealDetails || r.summary) + '</div>';
+}
+
+/** Karta wychodzącej propozycji gracza — kolumna „My oferujemy". */
+function renderOwnPendingCard(r: PendingNegotiationRow): string {
+  const dealHtml = r.dealPayload
+    ? renderNegotiationDealOneSideHtml(r.dealPayload, 'we', { incoming: false })
+    : '';
+  const dealBlock = dealHtml
+    ? '<div class="da-deal-detail">' + dealHtml + '</div>'
+    : pendingDealFallbackHtml(r);
+  return (
+    '<div class="da-negot">' +
+      '<div class="da-nm"><span class="dir">' + esc('Twoja propozycja') + '</span>' + esc(r.actionLabel) + '</div>' +
+      dealBlock +
+      pendingNegotiationMetaHtml(r) +
+      '<div class="da-meta">Wysłano — odpowiedź pojawi się w tym oknie za chwilę.</div>' +
+    '</div>'
+  );
+}
+
+/** Karta przychodzącej propozycji AI — kolumna „Oni oferują" + Przyjmij/Odrzuć/Kontruj. */
+function renderIncomingPendingCard(r: PendingNegotiationRow): string {
+  const dirIcon = dipBrandIconHtml('chip-warning', 11, 'da-dir-ic');
+  const legacyAccess = r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
+  const dealHtml = r.dealPayload
+    ? renderNegotiationDealOneSideHtml(r.dealPayload, 'they', { incoming: true })
+    : '';
+  const dealBlock = dealHtml
+    ? '<div class="da-deal-detail">' + dealHtml + '</div>'
+    : pendingDealFallbackHtml(r);
+  const legacyNote = legacyAccess
+    ? '<div class="da-meta da-legacy-access">' + esc(RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON) + '</div>'
+    : '';
+  const btns =
+    '<div class="da-btnrow">'
+    + '<button type="button" class="acc"' + (legacyAccess ? ' disabled title="' + esc(RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON) + '"' : '')
+    + ' data-negot-id="' + esc(r.id) + '" data-negot-act="accept">Przyjmij</button>'
+    + '<button type="button" class="rej" data-negot-id="' + esc(r.id) + '" data-negot-act="reject">Odrzuć</button>'
+    + (r.canCounter
+      ? '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="counter" data-negot-aid="' + esc(r.uiActionId) + '">Kontruj</button>'
+      : '') +
+    '</div>';
+  return (
+    '<div class="da-negot incoming">' +
+      '<div class="da-nm"><span class="dir">' + dirIcon + esc('Ich propozycja — czeka na Ciebie') + '</span>' + esc(r.actionLabel) + '</div>' +
+      dealBlock +
+      legacyNote +
+      pendingNegotiationMetaHtml(r) +
+      btns +
+    '</div>'
+  );
+}
+
+/** FAZA 2 pkt 3 kol.2 — „My oferujemy": wychodzące oczekujące + wejście do koszyka PN (Umowa handlowa/Dar). */
 function offersColumnHtml(st: DiplomacyAudienceState): string {
+  const ownPending = (st.pendingNegotiations ?? []).filter(r => r.direction === 'own');
+  const pendingCards = ownPending.map(renderOwnPendingCard).join('');
   const offerActions = st.actions.filter(a => a.id === '5' || a.id === '13');
   const buttons = offerActions.map(a => {
     const icon = dipBrandIconHtml(actionIconId(a.id), 14, 'da-di');
@@ -1061,9 +1136,14 @@ function offersColumnHtml(st: DiplomacyAudienceState): string {
       '</button>'
     );
   }).join('');
+  const emptyPending = ownPending.length === 0
+    ? '<div class="da-empty">Brak naszych ofert.</div>'
+    : '';
   return (
     '<div class="da-col da-col-offers">' +
-      '<h3>Żądania / Oferty</h3>' +
+      '<h3>My oferujemy<span class="cnt">' + ownPending.length + '</span></h3>' +
+      pendingCards +
+      emptyPending +
       '<div class="da-offer-hint">Otwórz <b>Umowę handlową</b> lub <b>Dar</b>, by ułożyć koszyk PN — ' +
       'bilans (jednorazowo / co turę) i werdykt liczone są tam na żywo, z tych samych danych co progi obok.</div>' +
       (buttons || '<div class="da-empty">Brak dostępnych ofert przy obecnych progach.</div>') +
@@ -1072,65 +1152,16 @@ function offersColumnHtml(st: DiplomacyAudienceState): string {
 }
 
 /**
- * C-DYP-Q1=B (2026-07-26, Maciej — po playteście: negocjacja NA ŻYWO w oknie audiencji,
- * BEZ czekania na koniec tury; jego słowa: „wszystkie decyzje powinny być na bieżąco
- * rozwiązywane", „gracz będzie myślał, że coś się nie udało… to jest nielogiczne").
- * SILNIK (main.ts resolveNegotiationEntryAt) odpowiada AI natychmiast po złożeniu
- * propozycji/kontroferty gracza — w normalnym biegu ta kolumna pokazuje więc od razu
- * albo (a) wpis PRZYCHODZĄCY („incoming" — kontroferta AI lub świeża propozycja AI,
- * wymaga decyzji gracza TERAZ) albo nic (przyjęto/odrzucono i zniknęło ze stołu).
- * Gałąź „własna" (direction='own', dashed/przygaszona) zostaje WYŁĄCZNIE jako awaryjny
- * stan (np. okno zamknięte w ułamku sekundy między krokami) — patrz komentarz niżej.
- * Data-attrs (data-negot-id/data-negot-action) czytane w render() — Kontruj ponownie
- * otwiera showNegotiationModal (nowy formularz, bez wypełniania poprzednich wartości).
+ * C-DYP-Q1=B — kolumna „Oni oferują": wyłącznie przychodzące propozycje AI (direction='incoming'),
+ * wymagające decyzji gracza TERAZ (Przyjmij/Odrzuć/Kontruj).
  */
-function pendingNegotiationsColumnHtml(st: DiplomacyAudienceState): string {
-  const rows = st.pendingNegotiations ?? [];
-  const items = rows.map(r => {
-    const cls = 'da-negot' + (r.direction === 'incoming' ? ' incoming' : '');
-    const dirIcon = r.direction === 'incoming' ? dipBrandIconHtml('chip-warning', 11, 'da-dir-ic') : '';
-    const dirLabel = r.direction === 'incoming' ? 'Ich propozycja — czeka na Ciebie' : 'Twoja propozycja';
-    const expLabel = r.expiresInTurns <= 0
-      ? 'wygasa w tej turze'
-      : `ważna jeszcze ${r.expiresInTurns} ${r.expiresInTurns === 1 ? 'turę' : 'tur'}`;
-    const roundLabel = `Runda negocjacji ${r.round} z ${r.maxRounds}`;
-    const dealHtml = r.dealPayload
-      ? renderNegotiationDealHtml(r.dealPayload, {
-        incoming: r.direction === 'incoming',
-      })
-      : '';
-    const dealBlock = dealHtml
-      ? '<div class="da-deal-detail">' + dealHtml + '</div>'
-      : (r.dealDetails || r.summary
-        ? '<div class="da-deal-detail da-deal-plain">' + esc(r.dealDetails || r.summary) + '</div>'
-        : '');
-    const btns = r.direction === 'incoming'
-      ? (
-        '<div class="da-btnrow">'
-        + '<button type="button" class="acc" data-negot-id="' + esc(r.id) + '" data-negot-act="accept">Przyjmij</button>'
-        + '<button type="button" class="rej" data-negot-id="' + esc(r.id) + '" data-negot-act="reject">Odrzuć</button>'
-        + (r.canCounter
-          ? '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="counter" data-negot-aid="' + esc(r.uiActionId) + '">Kontruj</button>'
-          : '') +
-        '</div>'
-      )
-      // C-DYP-Q1=B: STAN AWARYJNY — w normalnym biegu ta gałąź się nie renderuje (AI
-      // odpowiada natychmiast, patrz komentarz funkcji). Świadomie BEZ odniesienia do
-      // „końca tury"/„czekamy" — właśnie to mylenie właściciel odrzucił w playtescie.
-      : '<div class="da-meta">Wysłano — odpowiedź pojawi się w tym oknie za chwilę.</div>';
-    return (
-      '<div class="' + cls + '">' +
-        '<div class="da-nm"><span class="dir">' + dirIcon + esc(dirLabel) + '</span>' + esc(r.actionLabel) + '</div>' +
-        dealBlock +
-        '<div class="da-meta">' + esc(roundLabel) + ' · ' + esc(expLabel) + '</div>' +
-        btns +
-      '</div>'
-    );
-  }).join('');
+function incomingOffersColumnHtml(st: DiplomacyAudienceState): string {
+  const rows = (st.pendingNegotiations ?? []).filter(r => r.direction === 'incoming');
+  const items = rows.map(renderIncomingPendingCard).join('');
   return (
     '<div class="da-col da-col-negot">' +
-      '<h3>Oczekujące propozycje<span class="cnt">' + rows.length + '</span></h3>' +
-      (items || '<div class="da-empty">Brak oczekujących propozycji.</div>') +
+      '<h3>Oni oferują<span class="cnt">' + rows.length + '</span></h3>' +
+      (items || '<div class="da-empty">Brak ofert od nich.</div>') +
     '</div>'
   );
 }
@@ -1190,7 +1221,7 @@ function render(): void {
             '<span class="da-tab on">' + dipBrandIconHtml('tb-diplomacy', 12) + 'Stół negocjacji</span>' +
           '</div>' +
           '<div class="da-table">' +
-            dealsColumnHtml(st) + treatiesColumnHtml(st) + offersColumnHtml(st) + pendingNegotiationsColumnHtml(st) +
+            treatiesColumnHtml(st) + offersColumnHtml(st) + incomingOffersColumnHtml(st) + dealsColumnHtml(st) +
           '</div>' +
           relBreakdownHtml(st) +
         '</div>' +

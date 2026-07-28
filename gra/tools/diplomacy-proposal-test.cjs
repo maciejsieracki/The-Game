@@ -294,14 +294,13 @@ ok(r.accepted, 'handel accept relacja 39 easy (progHandelRelacja=0)');
 r = evaluateProposal(prop('handel', 0, 1, { givePn: 50, receivePn: 100 }), ctx({ relation: rel(25, 20) }));
 ok(!r.accepted, 'handel reject unfair PN');
 
-// 10b Handel z dostępem do złoża → trwała UmowaHandlowa (nie oneShot)
+// 10b Handel z dostępem do złoża — wycofany (SUROW-TERYT)
 r = evaluateProposal(prop('handel', 0, 1, {
   giveItems: [{ typ: 'zloze', id: 'zelazo', hexKey: '10,20' }],
   receiveItems: [{ typ: 'zloze', id: 'miedz', hexKey: '5,8' }],
   turns: 7,
 }), ctx({ relation: rel(60, 50), turn: 10 }));
-ok(r.accepted && r.deal?.rodzaj === 'umowa_handlowa' && !r.oneShotTrade, 'handel zloze -> UmowaHandlowa trwała');
-ok(r.deal?.wygasaTura === 17, 'handel zloze wygasa turn+7');
+ok(!r.accepted && r.reason.includes('SUROW-TERYT'), 'handel zloze odrzucony po wycofaniu dostepu');
 ok(clampDealTurns(25) === 20 && clampDealTurns(0) === 1, 'clampDealTurns 1-20');
 ok(proposalHasResourceAccess({ giveItems: [{ typ: 'zloze', id: 'zelazo' }] }), 'proposalHasResourceAccess zloze');
 

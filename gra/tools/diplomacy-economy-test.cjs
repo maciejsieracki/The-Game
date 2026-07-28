@@ -14,7 +14,8 @@ fs.writeFileSync(entryFile, `
 export {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
   applyDiplomaticGoldGrant, tributeBreakPairsFromDeals, capAiGoldOffer, AI_TRADE_GOLD_MAX,
-  canAiProposeOneShotGoldGift, aiOneShotGiftCooldownTurns, aiOneShotGiftGoldMultiplier,
+  canAiProposeOneShotGoldGift, aiOneShotGiftCooldownTurns, aiDiplomacyGenerosityGoldMultiplier,
+  scaleAiGenerousGoldOffer, AI_DIPLOMACY_GENEROSITY_GOLD_MULT,
 } from '../src/game/diplomacy-economy.ts';
 `);
 
@@ -31,7 +32,8 @@ esbuild.buildSync({
 const {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
   applyDiplomaticGoldGrant, tributeBreakPairsFromDeals, capAiGoldOffer, AI_TRADE_GOLD_MAX,
-  canAiProposeOneShotGoldGift, aiOneShotGiftCooldownTurns, aiOneShotGiftGoldMultiplier,
+  canAiProposeOneShotGoldGift, aiOneShotGiftCooldownTurns, aiDiplomacyGenerosityGoldMultiplier,
+  scaleAiGenerousGoldOffer, AI_DIPLOMACY_GENEROSITY_GOLD_MULT,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -92,7 +94,17 @@ ok(canAiProposeOneShotGoldGift(10, undefined, 'normal'), 'cooldown: brak histori
 ok(!canAiProposeOneShotGoldGift(10, 5, 'normal'), 'cooldown normal: tura 10 po darze 5 → blok');
 ok(canAiProposeOneShotGoldGift(30, 5, 'normal'), 'cooldown normal: tura 30 po darze 5 → OK');
 ok(aiOneShotGiftCooldownTurns('hard') === 35, 'cooldown hard 35 tur');
-ok(aiOneShotGiftGoldMultiplier('easy') === 1.25, 'gold mult easy 1.25');
+ok(aiDiplomacyGenerosityGoldMultiplier('easy') === 1.0, 'generosity mult easy 1.0');
+ok(aiDiplomacyGenerosityGoldMultiplier('normal') === 0.5, 'generosity mult normal 0.5');
+ok(aiDiplomacyGenerosityGoldMultiplier('hard') === 0.3, 'generosity mult hard 0.3');
+ok(scaleAiGenerousGoldOffer(20, 'normal') === 10, 'scale 20¤ normal → 10¤');
+ok(scaleAiGenerousGoldOffer(20, 'hard') === 6, 'scale 20¤ hard → 6¤');
+ok(
+  AI_DIPLOMACY_GENEROSITY_GOLD_MULT.easy === 1.0
+    && AI_DIPLOMACY_GENEROSITY_GOLD_MULT.normal === 0.5
+    && AI_DIPLOMACY_GENEROSITY_GOLD_MULT.hard === 0.3,
+  'AI_DIPLOMACY_GENEROSITY_GOLD_MULT tabela',
+);
 
 const pairs = tributeBreakPairsFromDeals([{
   id: 'tb', rodzaj: 'wasalizacja', strony: [0, 2], wygasaTura: null,

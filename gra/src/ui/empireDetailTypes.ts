@@ -76,7 +76,7 @@ export interface EmpireResourceRow {
   cap?: number;
   /**
    * SUROW-UI-A1 (2026-07-24): baza capu (econ-params.json magazyn_baza_surowce, DZIŚ
-   * 500) — pozwala UI wyliczyć tekst „baza + bonus × Magazyny” bez zaszywania starej
+   * 1000) — pozwala UI wyliczyć tekst „baza + bonus × Magazyny” bez zaszywania starej
    * wartości 100 na sztywno. Brak (undefined) dla wierszy dostępu.
    */
   capBase?: number;

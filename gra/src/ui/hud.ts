@@ -58,6 +58,7 @@ import { brandIconSvg, civIconSvg } from './icons/brandAssets';
 import { leaderPortraitUrl } from './leaderPortraits';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import { chip6cHtml, chip6cSep } from './hudChip6c';
+import { installHudTitleTooltips } from './hudTitleTooltip';
 import { createLeaderBannersHud, type LeaderBannersHudApi } from './leaderBannersHud';
 import { createContextPanelHud, type ContextPanelHudApi } from './contextPanelHud';
 import {
@@ -69,7 +70,7 @@ import './buildStampToggle';
 
 export type { PowerOverlayData, CultureOverlayData, ReligionOverlayData };
 
-/** Wojna z graczem — badge na ikonie Wojsko (lista dyplomacji). */
+/** Wojna z graczem — badge na ikonie Dyplomacja (lista dyplomacji). */
 export interface WarWithPlayer {
   civName: string;
   civId?: string;
@@ -1452,6 +1453,7 @@ export function showHud(config: HudConfig): void {
   if (sidePanelApi !== null) { sidePanelApi.destroy(); sidePanelApi = null; }
   destroyD1BModules();
   ensureStyles();
+  installHudTitleTooltips();
   ensureFullscreenListener();
   ensureUiZoomApplied();
   if (barEl === null) {

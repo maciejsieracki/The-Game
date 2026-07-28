@@ -14,7 +14,7 @@ import {
 import {
   computeClusters,
   packRivalCitiesAroundCore,
-  packCityStatesHubChain,
+  packCityStatesAroundCapital,
   MIN_DIST_START_CITY_STATE,
   CLUSTER_CITY_STATE_MAX_HEX,
   groupHabitableMasses,
@@ -122,29 +122,16 @@ export function buildSameTypeRivalCandidateHexes(
   const land = landHexesFromMap(map);
   const minDist = MIN_DIST_START_CITY_STATE;
 
-  const seeds = [seed, (seed + 0x517cc1b7) >>> 0, (seed + 0x85ebca6b) >>> 0, (seed + 0xc2b2ae35) >>> 0];
-  for (const s of seeds) {
-    const packed = packCityStatesHubChain(
-      land,
-      core,
-      rivalCount,
-      minDist,
-      CLUSTER_CITY_STATE_MAX_HEX,
-      s,
-      { excludeHex: core },
-    );
-    if (packed.length >= rivalCount) return packed.slice(0, rivalCount);
-    if (packed.length > 0) return packed;
-  }
-  return packCityStatesHubChain(
+  const { stateCities } = packCityStatesAroundCapital(
+    land,
     land,
     core,
     rivalCount,
     minDist,
-    CLUSTER_CITY_STATE_MAX_HEX,
     seed,
-    { excludeHex: core },
+    { excludeHex: core, growthReserve: 0 },
   );
+  return stateCities;
 }
 
 export interface BuildClusterSpawnInput {

@@ -13,7 +13,6 @@ import {
   diplomacyProgDarRelacja,
   diplomacySumPn,
   diplomacyPnZloto,
-  diplomacyPnSurowiecBoolean,
   diplomacyPnSurowiecIlosc,
   type WartoscPozycjaTyp,
   type PnRelacjaParams,
@@ -256,6 +255,8 @@ export interface QuickDealInput {
    * po prostu nie dostaną tego dopełniacza).
    */
   ourQuantityResourceOptions?: readonly QuickDealQuantityGoodOption[];
+  /** Surowce ILOŚCIOWE partnera (pakiety) — do quick-deal zamiast wycofanego dostępu boolean. */
+  theirQuantityResourceOptions?: readonly QuickDealQuantityGoodOption[];
 }
 
 export interface QuickDealResult {
@@ -267,29 +268,27 @@ const QUICK_DEAL_FALLBACK_GOLD = 20;
 const QUICK_DEAL_GOLD_STEP = 5;
 const QUICK_DEAL_MAX_GOLD = 200;
 
-function pricedSortedAscending(
-  options: readonly QuickDealGoodOption[],
-): Array<{ id: string; label: string; pn: number }> {
-  return options
-    .map(o => ({ ...o, pn: diplomacyPnSurowiecBoolean(o.id) }))
-    .filter((o): o is { id: string; label: string; pn: number } => o.pn != null && o.pn > 0)
-    .sort((a, b) => a.pn - b.pn);
-}
-
 /**
  * FAZA 3 (zaległość #1 — SZYBKA UMOWA to dziś zaślepka: otwiera zwykły koszyk pusty).
- * Auto-uczciwa oferta: greedy — jedna najtańsza pozycja partnera jako „co dostaję", potem
- * NASZE najtańsze pozycje (+złoto jako dopełniacz) aż suma osiągnie próg fair @ Relacji —
- * DOKŁADNIE ten sam próg, którym AI ocenia ofertę (diplomacyFairGivePn / pnDealAcceptedByAi
- * w diplomacy-proposals.ts). Wynik zawsze edytowalny dalej w koszyku (UI).
+ * Auto-uczciwa oferta: greedy — surowce ILOŚCIOWE partnera jako „co dostaję" (SUROW-TERYT:
+ * bez trwałego dostępu boolean), potem NASZE pakiety (+złoto jako dopełniacz) aż suma
+ * osiągnie próg fair @ Relacji — DOKŁADNIE ten sam próg, którym AI ocenia ofertę
+ * (diplomacyFairGivePn / pnDealAcceptedByAi w diplomacy-proposals.ts).
  */
 export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
-  const theirPriced = pricedSortedAscending(input.theirResourceOptions);
   const receiveItems: BasketItem[] = [];
-  if (theirPriced.length > 0) {
-    receiveItems.push({ typ: 'surowiec_boolean', id: theirPriced[0]!.id });
+  let receivePn = 0;
+
+  // SUROW-TERYT: partner oddaje pakiety surowca (nie trwały dostęp civ-wide).
+  const theirQtyPriced = (input.theirQuantityResourceOptions ?? [])
+    .map(o => ({ ...o, pnPerPakiet: diplomacyPnSurowiecIlosc(o.id, 1) ?? 0 }))
+    .filter(o => o.pnPerPakiet > 0 && o.maxPakiety > 0)
+    .sort((a, b) => a.pnPerPakiet - b.pnPerPakiet);
+  if (theirQtyPriced.length > 0) {
+    const pick = theirQtyPriced[0]!;
+    receiveItems.push({ typ: 'surowiec_ilosc', id: pick.id, ilosc: 1 });
+    receivePn = diplomacyPnSurowiecIlosc(pick.id, 1) ?? 0;
   }
-  const receivePn = diplomacySumPn(receiveItems.map(i => ({ typ: i.typ, id: i.id }))) ?? 0;
 
   const giveItems: BasketItem[] = [];
 
@@ -307,13 +306,7 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
   }
 
   const fairMin = diplomacyFairGivePn(receivePn, input.relacjaTotal);
-  const ourPriced = pricedSortedAscending(input.ourResourceOptions);
   let giveSum = 0;
-  for (const item of ourPriced) {
-    if (giveSum >= fairMin) break;
-    giveItems.push({ typ: 'surowiec_boolean', id: item.id });
-    giveSum += item.pn;
-  }
 
   // C-DYP-SUROWCE-Q1=B: dopełniacz z surowców ILOŚCIOWYCH (pakiety) — tanie, dobrze
   // domykają bilans granularnie, zanim sięgniemy po złoto. Najtańszy PN/pakiet pierwszy.

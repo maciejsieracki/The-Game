@@ -19,14 +19,17 @@ export function buildTerritoryNodesFromCities(
   }));
 }
 
-/** Heks należy do państwa ownerId (overlap → najbliższe miasto w promieniu). */
+/**
+ * Heks należy do państwa ownerId (overlap → najbliższe miasto w promieniu).
+ * Brak węzłów terytorium → false (fail-closed: nie budujemy / nie obsadzamy bez danych).
+ */
 export function isTerritoryHexOwnedBy(
   q: number,
   r: number,
   ownerId: number,
   territoryNodes: readonly TerritoryNode[],
 ): boolean {
-  if (!territoryNodes.length) return true;
+  if (!territoryNodes.length) return false;
   return territoryOwnerAt(q, r, territoryNodes) === ownerId;
 }
 

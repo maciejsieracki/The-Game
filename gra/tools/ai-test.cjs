@@ -31,7 +31,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-test-bundle.cjs');
 // Entry TS re-exports everything we need from ai.ts.
 // Uses AI_SRC path so env override works correctly.
 const ENTRY_TS = `
-export { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts, isLocalExpansionPhase } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
 export { diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } from ${JSON.stringify(AI_SRC + '/game/diplomacy-layers')};
 `;
@@ -55,7 +55,7 @@ try {
 }
 
 const AI = require(BUNDLE_FILE);
-const { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding } = AI;
+const { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
 let passed = 0;
@@ -1209,6 +1209,28 @@ console.log('\n--- T6e: planCityFounding prefers hex inside cluster ---');
       'T6e: hex founding blizej centrum klastra niz dalekiego rogu'
     );
   }
+}
+
+console.log('\n--- T6g: isLocalExpansionPhase blokuje founding bez skautów ---');
+{
+  const map6g = makeMap(20, 20);
+  const data6g = makeGameData({
+    'ekspansja_min_dystans_miast': { wartosc: 3, sekcja: 'test', opis: '' },
+  });
+  const myCity = [{ id: 'c1', ownerId: 1, q: 2, r: 2, population: 2 }];
+  const blocked = planCityFounding(1, myCity, map6g, data6g, {
+    pracaAvailable: 30,
+    currentTurn: 5,
+  }, 3, []);
+  assert(blocked === null, 'T6g: brak skautów -> brak founding');
+  const scouts = [
+    { id: 's1', ownerId: 1, q: 2, r: 3, typeId: 'Zwiadowca', category: 'zwiadowca', ruchLeft: 2 },
+    { id: 's2', ownerId: 1, q: 3, r: 2, typeId: 'Zwiadowca', category: 'zwiadowca', ruchLeft: 2 },
+  ];
+  assert(
+    isLocalExpansionPhase({ currentTurn: 5 }, myCity, map6g, scouts, 1) === false,
+    'T6g: 2 skautów + brak hutów -> koniec fazy lokalnej',
+  );
 }
 
 console.log('\n--- T6f: decideAITurn z clusterStateTargets -> brak foundCityAt ---');

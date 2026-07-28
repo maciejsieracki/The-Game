@@ -83,7 +83,7 @@ import {
   fieldFortifyDefenseBonus,
 } from '../game/city-defense';
 import { buildUnitModel } from '../render/units';
-import { refreshInstancedPickBounds } from '../input/picker';
+import { clientRectToNdc, refreshInstancedPickBounds, worldToClientPx } from '../input/picker';
 import {
   BTerrain,
   generateBattleTerrain,
@@ -1682,6 +1682,19 @@ function makeProjectileMesh(kind: ProjectileKind): {
 /** World position of the CENTRE of tile (col,row). Tiles are TILE_S apart. */
 function cellToWorld(col: number, row: number): { x: number; z: number } {
   return { x: col * TILE_S, z: row * TILE_S };
+}
+
+/** Krawędzie kafla w X/Z (środek ± połowa TILE_S) — do obrysów zaznaczenia terenu. */
+function cellBoundsXZ(
+  minCol: number, minRow: number, maxCol: number, maxRow: number,
+): { xMin: number; xMax: number; zMin: number; zMax: number } {
+  const half = TILE_S * 0.5;
+  return {
+    xMin: minCol * TILE_S - half,
+    xMax: maxCol * TILE_S + half,
+    zMin: minRow * TILE_S - half,
+    zMax: maxRow * TILE_S + half,
+  };
 }
 
 function cellKey(col: number, row: number): string { return col + ',' + row; }
@@ -7893,11 +7906,30 @@ export class BattleScene {
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
     if (w === 0 || h === 0) return;
-    if (this.renderer.domElement.width !== w || this.renderer.domElement.height !== h) {
+    const size = this.renderer.getSize(new THREE.Vector2());
+    if (Math.round(size.x) !== w || Math.round(size.y) !== h) {
       this.renderer.setSize(w, h, false);
       this.camera.aspect = w / h;
       this.camera.updateProjectionMatrix();
     }
+  }
+
+  /** clientX/Y → NDC zsynchronizowane z getBoundingClientRect (jak picker.ts na mapie). */
+  private _canvasNdc(clientX: number, clientY: number): THREE.Vector2 | null {
+    const rect = this.canvas.getBoundingClientRect();
+    const ndc = clientRectToNdc(clientX, clientY, rect);
+    if (!ndc) return null;
+    return new THREE.Vector2(ndc.x, ndc.y);
+  }
+
+  /** Promień z pozycji kursora — świeża macierz kamery po pan/zoom w deploy. */
+  private _raycastFromCanvas(clientX: number, clientY: number): THREE.Raycaster | null {
+    const ndc = this._canvasNdc(clientX, clientY);
+    if (!ndc) return null;
+    this.camera.updateMatrixWorld(true);
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(ndc, this.camera);
+    return raycaster;
   }
 
   private _tickProjectiles(t: number): void {
@@ -9678,11 +9710,8 @@ export class BattleScene {
   }
 
   private _pickGroundTile(cx: number, cy: number): { col: number; row: number } | null {
-    const rect = this.canvas.getBoundingClientRect();
-    const ndcX = ((cx - rect.left) / rect.width) * 2 - 1;
-    const ndcY = -((cy - rect.top) / rect.height) * 2 + 1;
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+    const raycaster = this._raycastFromCanvas(cx, cy);
+    if (!raycaster) return null;
     const pt = new THREE.Vector3();
     let gotHit = false;
     if (this._battleGroundPickMeshes.length > 0) {
@@ -10352,11 +10381,8 @@ export class BattleScene {
   }
 
   private _pickUnitAtScreen(cx: number, cy: number): RuntimeBattleUnit | null {
-    const rect = this.canvas.getBoundingClientRect();
-    const ndcX = ((cx - rect.left) / rect.width) * 2 - 1;
-    const ndcY = -((cy - rect.top) / rect.height) * 2 + 1;
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+    const raycaster = this._raycastFromCanvas(cx, cy);
+    if (!raycaster) return null;
     const allGroups = [...this.atk, ...this.def]
       .filter(u => !u.dead && !u.fadingOut && !u.removed)
       .map(u => u.group);
@@ -10629,7 +10655,8 @@ export class BattleScene {
             pointerEvents: 'none',
             zIndex: '99999',
           });
-          document.body.appendChild(d);
+          // Na <html>, nie <body> — applyUiZoom() skaluje body (transform), co psuje position:fixed + clientX/Y.
+          document.documentElement.appendChild(d);
           this._boxSelectDiv = d;
         }
         const x1 = Math.min(this._boxSelectStart.x, e.clientX);
@@ -10704,7 +10731,7 @@ export class BattleScene {
           Math.min(startX, endX), Math.min(startY, endY),
           Math.max(startX, endX), Math.max(startY, endY),
         );
-        document.body.removeChild(this._boxSelectDiv);
+        this._boxSelectDiv.parentNode?.removeChild(this._boxSelectDiv);
         this._boxSelectDiv = null;
       } else if (distSq < 36) {
         // Krotki klik — standardowe zaznaczanie
@@ -12154,6 +12181,7 @@ export class BattleScene {
     if (this._groupSelectorBar) this._groupSelectorBar.style.display = 'none';
     this._syncRosterBottomInset();
     this._syncBattleToolbarMode();
+    this._syncRendererSize();
     const fb = this._rosterBar?.querySelector('#battle-roster-feedback') as HTMLDivElement | null;
     if (fb) {
       fb.style.display = 'block';
@@ -12579,6 +12607,9 @@ export class BattleScene {
 
   /** Układ kart w panelu deploy — ten sam scroll co walka. */
   private _syncDeployPanelLayout(): void {
+    if (this.deployPhase) {
+      this._syncRendererSize();
+    }
     if (this.deployPhase && this._rosterBar) {
       this._syncBattleRosterPanelLayout();
       this._syncRosterBottomInset();
@@ -14237,11 +14268,8 @@ export class BattleScene {
     // precyzyjnie identyfikuje jednostke bez bledu perspektywy.
     // Pomijamy gdy uzytkownik kliknal puste pole z zaznaczeniem (preferPlacement).
     if (!preferPlacement) {
-      const rect = this.canvas.getBoundingClientRect();
-      const ndcX =  ((cx - rect.left) / rect.width)  * 2 - 1;
-      const ndcY = -((cy - rect.top)  / rect.height) * 2 + 1;
-      const raycaster = new THREE.Raycaster();
-      raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+      const raycaster = this._raycastFromCanvas(cx, cy);
+      if (raycaster) {
       const atkGroups = this._playerRoster()
         .filter(u => !u.dead && !u.removed)
         .map(u => u.group);
@@ -14278,6 +14306,7 @@ export class BattleScene {
           this._handleDeployUnitPick(hitUnit, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
           return;
         }
+      }
       }
     }
 
@@ -14402,6 +14431,41 @@ export class BattleScene {
     for (const g of this._deployGhostOwnedGeos) g.dispose();
     this._deployGhostOwnedMats = [];
     this._deployGhostOwnedGeos = [];
+  }
+
+  /**
+   * Obrys zaznaczonego terenu (krawędzie kafli + tileTopY na wzgórzach).
+   * Wcześniej ramka leżała na y≈0 i łączyła środki kafli → na reliefie wyglądała
+   * jak przesunięcie w bok względem kursora i duchów jednostek.
+   */
+  private _appendDeployCellOutline(
+    minCol: number, minRow: number, maxCol: number, maxRow: number,
+    color: number, opacity: number, dashed: boolean,
+  ): void {
+    if (!this._deployGhostGroup) return;
+    const { xMin, xMax, zMin, zMax } = cellBoundsXZ(minCol, minRow, maxCol, maxRow);
+    const yLift = 0.08;
+    const y00 = tileTopY(this.terrainMap, minCol, minRow) + yLift;
+    const y10 = tileTopY(this.terrainMap, maxCol, minRow) + yLift;
+    const y11 = tileTopY(this.terrainMap, maxCol, maxRow) + yLift;
+    const y01 = tileTopY(this.terrainMap, minCol, maxRow) + yLift;
+    const boxGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(xMin, y00, zMin),
+      new THREE.Vector3(xMax, y10, zMin),
+      new THREE.Vector3(xMax, y11, zMax),
+      new THREE.Vector3(xMin, y01, zMax),
+      new THREE.Vector3(xMin, y00, zMin),
+    ]);
+    this._deployGhostOwnedGeos.push(boxGeo);
+    const boxMat = dashed
+      ? new THREE.LineDashedMaterial({
+        color, transparent: true, opacity, dashSize: TILE_S * 0.22, gapSize: TILE_S * 0.14,
+      })
+      : new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+    this._deployGhostOwnedMats.push(boxMat);
+    const boxLine = new THREE.Line(boxGeo, boxMat);
+    if (dashed) boxLine.computeLineDistances();
+    this._deployGhostGroup.add(boxLine);
   }
 
   /** Podglad przy najechaniu / podczas drag rozciagania formacji. */
@@ -14989,27 +15053,7 @@ export class BattleScene {
       this._deployGhostGroup.add(ring);
     }
 
-    const y = 0.08;
-    const p0 = cellToWorld(minC, minR);
-    const p1 = cellToWorld(maxC, minR);
-    const p2 = cellToWorld(maxC, maxR);
-    const p3 = cellToWorld(minC, maxR);
-    const boxGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(p0.x, y, p0.z),
-      new THREE.Vector3(p1.x, y, p1.z),
-      new THREE.Vector3(p2.x, y, p2.z),
-      new THREE.Vector3(p3.x, y, p3.z),
-      new THREE.Vector3(p0.x, y, p0.z),
-    ]);
-    this._deployGhostOwnedGeos.push(boxGeo);
-    const boxMat = new THREE.LineBasicMaterial({
-      color: 0xffd700,
-      transparent: true,
-      opacity: 0.75,
-    });
-    this._deployGhostOwnedMats.push(boxMat);
-    const boxLine = new THREE.Line(boxGeo, boxMat);
-    this._deployGhostGroup.add(boxLine);
+    this._appendDeployCellOutline(minC, minR, maxC, maxR, 0xffd700, 0.75, false);
 
     const anchorGeo = new THREE.RingGeometry(0.2, 0.32, 16);
     anchorGeo.rotateX(-Math.PI / 2);
@@ -15058,6 +15102,20 @@ export class BattleScene {
       mesh.position.set(x, topY + 0.06, z);
       this._deployGhostGroup!.add(mesh);
     }
+
+    let minC = col;
+    let maxC = col;
+    let minR = row;
+    let maxR = row;
+    for (const u of units) {
+      const pos = layout.get(u.bu.id);
+      if (!pos) continue;
+      minC = Math.min(minC, pos.col);
+      maxC = Math.max(maxC, pos.col);
+      minR = Math.min(minR, pos.row);
+      maxR = Math.max(maxR, pos.row);
+    }
+    this._appendDeployCellOutline(minC, minR, maxC, maxR, 0x00ffcc, 0.9, true);
   }
 
   /**
@@ -15570,16 +15628,15 @@ export class BattleScene {
    * w prostokącie ekranowym (x1,y1)-(x2,y2) w pikselach (client coords).
    */
   private _doBoxSelect(x1: number, y1: number, x2: number, y2: number): void {
-    const rect = this.canvas.getBoundingClientRect();
     const found: RuntimeBattleUnit[] = [];
     const roster = (this.deployPhase || this._manualMode) ? this._playerRoster() : this.atk;
+    this.camera.updateMatrixWorld(true);
     for (const ru of roster) {
       if (ru.dead || ru.fadingOut || ru.removed || ru.routed) continue;
-      const screen = worldToScreen(ru.group.position, this.camera, this.canvas);
-      if (!screen) continue;
-      const sx = screen.x + rect.left;
-      const sy = screen.y + rect.top;
-      if (sx >= x1 && sx <= x2 && sy >= y1 && sy <= y2) found.push(ru);
+      const p = ru.group.position;
+      const px = worldToClientPx(p.x, p.y, p.z, this.camera, this.canvas);
+      if (!px) continue;
+      if (px.x >= x1 && px.x <= x2 && px.y >= y1 && px.y <= y2) found.push(ru);
     }
     if (found.length === 0) {
       this._clearAllSelection();
@@ -16585,16 +16642,13 @@ export class BattleScene {
   private _onBattleClick(cx: number, cy: number): void {
     const queueOnly = this._lastClickModifiers.ctrl || this._lastClickModifiers.shift
       || (this._battleAwaitingOrders && this.roundNo < 1);
-    const rect = this.canvas.getBoundingClientRect();
-    const ndcX =  ((cx - rect.left) / rect.width)  * 2 - 1;
-    const ndcY = -((cy - rect.top)  / rect.height) * 2 + 1;
 
     // Kafel pod kursorem liczony wczesniej niz dawniej — patrz BLAD K2 nizej
     // (ten sam mechanizm co w _onDeployClick).
     const tile = this._pickGroundTile(cx, cy);
 
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+    const raycaster = this._raycastFromCanvas(cx, cy);
+    if (!raycaster) return;
 
     const allGroups = [...this.atk, ...this.def]
       .filter(u => !u.dead && !u.fadingOut)

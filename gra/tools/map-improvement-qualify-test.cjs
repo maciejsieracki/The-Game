@@ -190,10 +190,11 @@ const qOverlap = M.buildImprovementQualifier({
   playerEra: 1,
 });
 ok(!qOverlap('wyrab', 4, 0), 'wyrab NOT on Sparta-owned forest (territory overlap)');
+ok(!qOverlap('tartak', 4, 0), 'tartak NOT on Sparta-owned forest (territory overlap)');
 ok(qOverlap('wyrab', 2, 1), 'wyrab OK on player-owned forest');
+ok(qOverlap('tartak', 2, 1), 'tartak OK on player-owned forest');
 
-ok(M.stripImprovementsWhenForestRemoved(['farma', 'tartak', 'droga']).join(',') === 'farma,droga', 'strip tartak when forest removed');
-ok(M.stripImprovementsWhenForestRemoved(['tartak']).length === 0, 'strip tartak only hex');
+ok(M.stripImprovementsWhenForestRemoved(['farma', 'tartak', 'droga']).join(',') === 'farma,tartak,droga', 'tartak stays when forest removed (kanon)');
 
 function forestHint(opts = {}) {
   return M.getForestBuildBlockReason({

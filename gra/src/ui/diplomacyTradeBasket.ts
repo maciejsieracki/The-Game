@@ -5,6 +5,10 @@
 import type { AudienceAction } from './diplomacyAudience';
 import type { NegotiationModalContext, NegotiationPayload } from './diplomacyNegotiationModal';
 import { computeQuickDealBasket, type BasketItem } from '../game/diplomacy-pn-engine';
+import {
+  proposalHasResourceAccess,
+  stripWithdrawnResourceAccessItems,
+} from '../game/diplomacy-proposals';
 import type { TempoGry } from '../game/tech-tempo';
 import {
   diplomacySumPn,
@@ -47,6 +51,9 @@ const TYP_LABELS: Record<WartoscPozycjaTyp, string> = {
   surowiec_boolean: 'Dostęp do surowca',
   surowiec_ilosc: 'Surowiec (sztuki, pakiety)',
 };
+
+/** SUROW-TERYT: typy wycofane z koszyka negocjacji (tylko ilości + złoto/praca/żywność). */
+const WITHDRAWN_BASKET_ACCESS_TYPES = new Set<WartoscPozycjaTyp>(['zloze', 'surowiec_boolean']);
 
 const PROG_HANDEL_REL = 100;
 
@@ -501,6 +508,8 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   const prefix = side === 'give' ? 'give' : 'recv';
   const typOpts = (Object.keys(TYP_LABELS) as WartoscPozycjaTyp[])
     .filter(t => {
+      // SUROW-TERYT: trwały dostęp do surowców/złóż wycofany z handlu dyplomatycznego.
+      if (WITHDRAWN_BASKET_ACCESS_TYPES.has(t)) return false;
       // TODO(A1 — audyt #1): pozycja "jednostka" ukryta do czasu, gdy transfer
       // faktycznie zdejmuje WSKAZANĄ jednostkę dawcy (wymaga unitOptions ograniczonych
       // do posiadanych jednostek w getNegotiationContext). Patrz też defensywne
@@ -839,28 +848,31 @@ function renderBasket(
 
   const title = mode === 'gift' ? 'Prezent / dar' : action.label;
   const sub = mode === 'treaty'
-    ? 'Warunki traktatu + opcjonalny koszyk PN · partner: <strong>' + esc(ctx.civName) + '</strong>'
+    ? 'Ustal warunki traktatu — wymiana PN jest opcjonalna · partner: <strong>' + esc(ctx.civName) + '</strong>'
     : mode === 'gift'
       ? 'Oddajesz bez towaru w zamian · Rel ≥ ' + progDar
       : 'Wymiana dwustronna · Rel ≥ ' + progHandel + ' · partner: <strong>' + esc(ctx.civName) + '</strong>';
 
   const basketModeForForm: TradeBasketMode = mode === 'treaty' ? 'trade' : mode;
   const showReceiveCol = mode === 'trade' || mode === 'treaty';
+  /** Traktat (NAP/sojusz/…) bez koszyka PN — nie pokazuj pustego stołu OFERUJEMY|OFERUJĄ. */
+  const treatyBasketsEmpty = mode === 'treaty' && giveItems.length === 0 && receiveItems.length === 0;
+  const showDealPreview = showReceiveCol && !blocked && !treatyBasketsEmpty;
 
   const giveCol =
     '<div class="cdb-col">' +
-      '<div class="cdb-col-title">Dodaj do oferty</div>' +
+      '<div class="cdb-col-title">' + (mode === 'treaty' ? 'My oddajemy (opcjonalnie)' : 'Dodaj do oferty') + '</div>' +
       (blocked ? '' : buildAddForm('give', ctx, basketModeForForm)) +
     '</div>';
 
   const recvCol = showReceiveCol
     ? '<div class="cdb-col">' +
-        '<div class="cdb-col-title">Dodaj do kontrpropozycji</div>' +
+        '<div class="cdb-col-title">' + (mode === 'treaty' ? 'Oni oddają (opcjonalnie)' : 'Dodaj do kontrpropozycji') + '</div>' +
         (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm)) +
       '</div>'
     : '';
 
-  const dealPreview = showReceiveCol && !blocked
+  const dealPreview = showDealPreview
     ? tradeDealPreviewHtml(giveItems, receiveItems, resourceTradeMode, dealTurns)
     : (mode === 'gift' && !blocked
       ? '<div class="cdb-deal-preview"><div class="da-deal-table">' +
@@ -899,7 +911,11 @@ function renderBasket(
 
   const treatyHtml = mode === 'treaty' ? treatySectionHtml(action.id, ctx, treatyState) : '';
   const basketOptIntro = mode === 'treaty' && !blocked
-    ? '<div class="cdb-basket-opt"><div class="cdb-basket-opt-title">Opcjonalnie — dołóż wymianę PN do traktatu</div>'
+    ? '<div class="cdb-basket-opt"><div class="cdb-basket-opt-title">'
+      + (treatyBasketsEmpty
+        ? 'Opcjonalnie — dołóż wymianę PN (nie jest wymagana do zaproponowania traktatu)'
+        : 'Dołóżona wymiana PN')
+      + '</div>'
     : '';
   const basketOptClose = mode === 'treaty' && !blocked ? '</div>' : '';
   const summaryBlock = mode === 'treaty'
@@ -951,8 +967,8 @@ export function showTradeBasketModal(
 
   // Zaległość #1 (SZYBKA UMOWA) — koszyk może otwierać się WYPEŁNIONY propozycją
   // (computeQuickDealBasket), użytkownik dalej może edytować/usuwać pozycje normalnie.
-  let giveItems: BasketItem[] = initial?.giveItems ? [...initial.giveItems] : [];
-  let receiveItems: BasketItem[] = initial?.receiveItems ? [...initial.receiveItems] : [];
+  let giveItems: BasketItem[] = stripWithdrawnResourceAccessItems(initial?.giveItems ?? []);
+  let receiveItems: BasketItem[] = stripWithdrawnResourceAccessItems(initial?.receiveItems ?? []);
   let dealTurns = initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 15;
   let resourceTradeMode: 'once' | 'per_turn' = initial?.resourceTradeMode ?? 'once';
   let treatyState = defaultTreatyState(action.id, initial);
@@ -1072,6 +1088,10 @@ export function showTradeBasketModal(
       );
       if (!validation.valid) return;
 
+      giveItems = stripWithdrawnResourceAccessItems(giveItems);
+      receiveItems = stripWithdrawnResourceAccessItems(receiveItems);
+      if (proposalHasResourceAccess({ giveItems, receiveItems })) return;
+
       let payload: NegotiationPayload;
       if (mode === 'treaty') {
         payload = buildTreatyPayload(
@@ -1139,9 +1159,10 @@ export function openQuickDealBasket(
   const quick = computeQuickDealBasket({
     relacjaTotal: ctx.relacjaTotal ?? 0,
     ourGoldAvailable: ctx.playerSkarbiec ?? 0,
-    ourResourceOptions: ctx.giveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions(),
-    theirResourceOptions: ctx.receiveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions(),
+    ourResourceOptions: [],
+    theirResourceOptions: [],
     ourQuantityResourceOptions: ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions(),
+    theirQuantityResourceOptions: ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions(),
   });
   showTradeBasketModal('trade', action, ctx, onSubmit, onCancel, quick);
 }

@@ -569,11 +569,11 @@
       "opis": "Bazowa pojemność Magazynu Żywności (bez Spichlerza). [PT]"
     },
     "magazyn_baza_surowce": {
-      "easy": 500,
-      "normal": 500,
-      "hard": 500,
+      "easy": 1000,
+      "normal": 1000,
+      "hard": 1000,
       "jednostka": "szt/typ surowca (PAŃSTWO)",
-      "opis": "SUROW-CIV-01 (decyzja Macieja 2026-07-24): ZMIANA SEMANTYKI — od teraz to baza pojemności CAŁEGO PAŃSTWA (civ-wide, suma po wszystkich miastach ownera) per typ surowca, przy 0 zbudowanych budynków „Magazyn” w imperium — NIE per-miasto jak dawniej. Model ADDYTYWNY razem z magazyn_bonus_surowce_na_budynek (nie mnożnikowy). BAZA PODNIESIONA 100→500 (Maciej 2026-07-24). Cap per typ = 500 + 100 × liczba Magazynów (każdy Magazyn w dowolnym mieście dokłada +100, nie jednorazowo). Płaskie na easy/normal/hard. Dotyczy WYŁĄCZNIE surowców (drewno/kamień/glina/ruda/ruda_zelaza/cegła/brąz/żelazo/stal) — Żywność/Spichlerz nadal używa modelu mnożnikowego per-miasto (bez zmian, patrz magazyn_baza_zywnosc)."
+      "opis": "SUROW-CIV-01 (decyzja Macieja 2026-07-24): ZMIANA SEMANTYKI — od teraz to baza pojemności CAŁEGO PAŃSTWA (civ-wide, suma po wszystkich miastach ownera) per typ surowca, przy 0 zbudowanych budynków „Magazyn” w imperium — NIE per-miasto jak dawniej. Model ADDYTYWNY razem z magazyn_bonus_surowce_na_budynek (nie mnożnikowy). BAZA PODNIESIONA 100→500 (Maciej 2026-07-24), potem 500→1000 (Maciej 2026-07-28). Cap per typ = 1000 + 100 × liczba Magazynów (każdy Magazyn w dowolnym mieście dokłada +100, nie jednorazowo). Płaskie na easy/normal/hard. Dotyczy WYŁĄCZNIE surowców (drewno/kamień/glina/ruda/ruda_zelaza/cegła/brąz/żelazo/stal) — Żywność/Spichlerz nadal używa modelu mnożnikowego per-miasto (bez zmian, patrz magazyn_baza_zywnosc)."
     },
     "magazyn_bonus_surowce_na_budynek": {
       "easy": 100,
@@ -583,11 +583,11 @@
       "opis": "SUROW-CIV-01 (decyzja Macieja 2026-07-24, NOWY PARAMETR): dodatkowa pojemność CAŁEGO PAŃSTWA per typ surowca za KAŻDY budynek „Magazyn” zbudowany GDZIEKOLWIEK w imperium ownera (addytywnie, nie mnożnik — 2 Magazyny = +200, nie ×2). Cap per typ = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek × liczba_magazynow. Placeholder do strojenia."
     },
     "magazyn_centralny_baza_zywnosc": {
-      "easy": 500,
-      "normal": 500,
-      "hard": 500,
+      "easy": 1000,
+      "normal": 1000,
+      "hard": 1000,
       "jednostka": "🍞",
-      "opis": "PYTANIE-85-Q6: baza capu centralnego magazynu żywności imperium (+ Spichlerze lokalne +100/+150, Magazyn +100)."
+      "opis": "PYTANIE-85-Q6: baza capu centralnego magazynu żywności imperium (+ Spichlerze lokalne +100/+150, Magazyn +100). Podniesione 500→1000 (Maciej 2026-07-28)."
     },
     "magazyn_centralny_bonus_zywnosc_na_budynek": {
       "easy": 100,

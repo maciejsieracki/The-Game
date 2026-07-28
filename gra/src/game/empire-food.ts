@@ -110,7 +110,7 @@ export function buildEmpireFoodParams(
   return {
     centralCapBaza: pick(
       gl.magazyn_centralny_baza_zywnosc ?? em.magazyn_centralny_baza_zywnosc,
-      difficulty, 500,
+      difficulty, 1000,
     ),
     centralCapBonusMagazyn: pick(
       gl.magazyn_centralny_bonus_zywnosc_na_budynek ?? em.magazyn_centralny_bonus_zywnosc_na_budynek,

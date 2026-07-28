@@ -17,10 +17,11 @@ import {
 import {
   MINIMAP_EDGE_PX,
   MINIMAP_W_PX,
+  UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX,
   unitCardDockBottomCss,
   unitCardDockBottomPx,
 } from './minimapLayout';
-import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
+import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX, SIDE_PANEL_TOP_PX } from './sidePanelLayout';
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
@@ -69,7 +70,7 @@ export interface SidePanelHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-side-panel-hud-css-w5-events-pin';
+const STYLE_ID = 'civ-side-panel-hud-css-w7-unit-lift';
 const EVENTS_PANEL_TOP = eventsPanelTopPx();
 const EVENTS_PANEL_BOTTOM = eventsPanelBottomPx();
 const EVENTS_PANEL_BOTTOM_ZOOM = eventsPanelBottomPx(true);
@@ -106,6 +107,7 @@ function ensureStyles(): void {
   document.getElementById('civ-side-panel-hud-css-w3-unit-dock2')?.remove();
   document.getElementById('civ-side-panel-hud-css-w3-unit-dock3')?.remove();
   document.getElementById('civ-side-panel-hud-css-w3-unit-dock4')?.remove();
+  document.getElementById('civ-side-panel-hud-css-w5-events-pin')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 .civ-side-panel{position:fixed;top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM}px;right:${HUD_EDGE_PX}px;z-index:305;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:auto;
@@ -114,15 +116,17 @@ function ensureStyles(): void {
   ${CIV_BRAND_SCOPE_VARS}
   display:flex;flex-direction:column;gap:8px;font:13px var(--civ-font-ui);}
 html.civ-ui-zoom-active .civ-side-panel{top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM_ZOOM}px;right:${HUD_ZOOM_EDGE_PX}px;}
-.civ-side-ctx-dock{position:fixed;left:${SIDE_PANEL_LEFT};bottom:${unitCardDockBottomCss()};z-index:308;
+.civ-side-ctx-dock{position:fixed;left:${SIDE_PANEL_LEFT};bottom:${unitCardDockBottomCss()};z-index:311;
   width:min(${MINIMAP_W}px,calc(100vw - ${SIDE_PANEL_LEFT_PX}px - ${MINIMAP_EDGE}px));pointer-events:none;
-  max-height:min(40vh,calc(100vh - ${unitDockBottom + 80}px));overflow-y:auto;overflow-x:hidden;
+  max-height:min(40vh,calc(100vh - ${SIDE_PANEL_TOP_PX}px - ${unitDockBottom}px - 8px));overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;scrollbar-gutter:stable;display:none;
   ${CIV_BRAND_SCOPE_VARS}
   font:13px var(--civ-font-ui);}
 .civ-side-ctx-dock.open{display:block;pointer-events:auto;}
-html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};bottom:${unitCardDockBottomCss(true)};
-  max-height:min(40vh,calc(100vh - ${unitDockBottomZoom + 80}px));}
+html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
+  bottom:calc(${unitCardDockBottomCss(true)} + (var(--civ-ui-zoom, 1) - 1) * ${UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX}px);
+  max-height:min(40vh,calc(100vh - ${SIDE_PANEL_TOP_PX}px - ${unitDockBottomZoom}px - 8px
+    - (var(--civ-ui-zoom, 1) - 1) * ${UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX}px));}
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
 .civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;
@@ -147,7 +151,7 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};bottom:${unit
 .civ-side-panel .sp-close{font-size:10px;color:var(--civ-text-muted);cursor:pointer;padding:2px 4px;margin-left:auto;}
 .civ-side-panel .sp-close:hover{color:var(--civ-gold-primary);}
 .civ-side-panel .sp-placeholder{font-size:10px;color:#7a7055;text-align:right;padding:8px 4px;font-style:italic;line-height:1.4;}
-.civ-side-ctx-dock .sp-ctx-card,.civ-side-panel .sp-ctx-card{padding:14px 16px;border-radius:10px;margin-bottom:0;
+.civ-side-ctx-dock .sp-ctx-card,.civ-side-panel .sp-ctx-card{padding:14px 16px 16px;border-radius:10px;margin-bottom:0;
   background:linear-gradient(180deg,rgba(24,30,42,.98),rgba(10,12,18,.96));
   border:1px solid rgba(212,175,90,.38);box-shadow:0 6px 18px rgba(0,0,0,.45);}
 .civ-side-panel .sp-ctx-card{margin-bottom:10px;}

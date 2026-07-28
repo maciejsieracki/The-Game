@@ -73,8 +73,10 @@ export function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemForma
     }
     case 'surowiec_boolean': {
       const label = resourceDisplayLabel(item.id);
-      return `${resourceIconHtml(label, 16)}<span class="da-deal-amt">dostęp: ${esc(label)}</span>`;
+      return `${resourceIconHtml(label, 16)}<span class="da-deal-amt">dostęp: ${esc(label)}</span><span class="da-deal-once">(nieaktualne)</span>`;
     }
+    case 'zloze':
+      return `<span class="da-deal-amt">dostęp do złoża: ${esc(item.id)}</span><span class="da-deal-once">(nieaktualne)</span>`;
     case 'praca':
       return `<span class="da-deal-amt">${item.ilosc ?? 0} Pracy${perTurn ? ' na turę' : ' (jednorazowo)'}</span>`;
     case 'zywnosc':
@@ -114,6 +116,47 @@ export function renderNegotiationDealHtml(
   html += '<div class="da-deal-col-head">Oferują</div>';
   html += `<div class="da-deal-col-body">${renderBasketListHtml(split.theyOffer, ctx)}</div>`;
   html += '</div>';
+  html += '</div>';
+  if (split.schedule) {
+    html += `<div class="da-deal-sched-foot">${esc(split.schedule)}</div>`;
+  }
+  return html;
+}
+
+/**
+ * Jednostronny podgląd oferty — akcent na „we" lub „they" + opcjonalny kontekst drugiej strony
+ * (kolumny „My oferujemy" / „Oni oferują" stołu negocjacji).
+ */
+export function renderNegotiationDealOneSideHtml(
+  payload: ProposalPayload,
+  focus: 'we' | 'they',
+  opts: { incoming?: boolean; showContext?: boolean } = {},
+): string {
+  const split = splitNegotiationDealPlayerSides(payload, opts.incoming === true);
+  if (!split) return '';
+
+  const ctx: BasketItemFormatCtx = {
+    perTurn: payload.resourceTradeMode === 'per_turn',
+    turns: payload.turns,
+  };
+
+  const primary = focus === 'we' ? split.weOffer : split.theyOffer;
+  const secondary = focus === 'we' ? split.theyOffer : split.weOffer;
+  const primaryLabel = focus === 'we' ? 'Oferujemy' : 'Oferują';
+  const contextLabel = focus === 'we' ? 'Chcemy w zamian' : 'W zamian proszą';
+  const colCls = focus === 'we' ? 'da-deal-col-we' : 'da-deal-col-they';
+
+  let html = '<div class="da-deal-single">';
+  html += `<div class="da-deal-col ${colCls}">`;
+  html += `<div class="da-deal-col-head">${primaryLabel}</div>`;
+  html += `<div class="da-deal-col-body">${renderBasketListHtml(primary, ctx)}</div>`;
+  html += '</div>';
+  if (opts.showContext !== false && secondary.length > 0) {
+    html += '<div class="da-deal-context">';
+    html += `<div class="da-deal-ctx-label">${contextLabel}</div>`;
+    html += `<div class="da-deal-ctx-body">${renderBasketListHtml(secondary, ctx)}</div>`;
+    html += '</div>';
+  }
   html += '</div>';
   if (split.schedule) {
     html += `<div class="da-deal-sched-foot">${esc(split.schedule)}</div>`;

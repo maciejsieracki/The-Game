@@ -33,7 +33,13 @@ export const MINIMAP_BORDER_PX = 6;
 const MINIMAP_TOOL_BTN_COUNT = 4;
 
 /** Odstęp między górną krawędzią stosu minimapy a dolną krawędzią docku karty jednostki. */
-export const UNIT_CARD_ABOVE_MINIMAP_GAP_PX = 36;
+export const UNIT_CARD_ABOVE_MINIMAP_GAP_PX = 56;
+
+/**
+ * Dodatkowy lift karty jednostki przy zoom UI >100% (body transform:scale).
+ * Wartość w px na każdy +1.0 powyżej 1.0 — używane w CSS calc(var(--civ-ui-zoom)).
+ */
+export const UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX = 100;
 
 /** Wysokość canvasu minimapy z obwódką (px). */
 export function minimapCanvasHeightPx(): number {

@@ -3,7 +3,7 @@
  * Fallback: pływający tooltip gdy brak mountu docka (fullscreen panel).
  */
 
-export const HOVER_DETAIL_DOCK_W = 560;
+export const HOVER_DETAIL_DOCK_W = 400;
 
 export type HoverDetailDockSide = 'left' | 'right';
 

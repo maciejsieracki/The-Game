@@ -1,34 +1,7 @@
 "use strict";
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.map-gen-regression-entry.ts
-var map_gen_regression_entry_exports = {};
-__export(map_gen_regression_entry_exports, {
-  defaultCivTypesFromMapLabel: () => defaultCivTypesFromMapLabel,
-  defaultMiastaPanstwaFromMapLabel: () => defaultMiastaPanstwaFromMapLabel,
-  expectedStartCityCount: () => expectedStartCityCount,
-  generujSwiat: () => generujSwiat,
-  pathEndsAtSea: () => pathEndsAtSea,
-  pathReachesRealSea: () => pathReachesRealSea,
-  targetVillageHutCount: () => targetVillageHutCount
-});
-module.exports = __toCommonJS(map_gen_regression_entry_exports);
+// tools/.map-gen-phase-profile-entry.ts
+var import_node_perf_hooks = require("node:perf_hooks");
 
 // data/map-gen-params.json
 var map_gen_params_default = {
@@ -209,7 +182,7 @@ function mapGenMaxRiversBase(tier) {
   return FALLBACK_RIVERS[tier];
 }
 function mapGenRiverScale(size) {
-  const rs = map_gen_params_default.gestosc?.river_scale;
+  const rs2 = map_gen_params_default.gestosc?.river_scale;
   const lut = {
     mala: "mala",
     srednia: "srednia",
@@ -217,7 +190,7 @@ function mapGenRiverScale(size) {
     ogromna: "ogromna",
     super: "super"
   };
-  const v = rs?.[lut[size]];
+  const v = rs2?.[lut[size]];
   return typeof v === "number" && v > 0 ? v : FALLBACK_RIVER_SCALE[size];
 }
 function mapGenDesertThreshold(tier) {
@@ -239,9 +212,9 @@ function mapGenMountainThreshold(tier) {
   return FALLBACK_MOUNTAIN[tier];
 }
 function mapGenHighlandThreshold(tier) {
-  const h = map_gen_params_default.gestosc?.highland_noise_threshold;
+  const h2 = map_gen_params_default.gestosc?.highland_noise_threshold;
   const k = tierKey(tier);
-  if (h && typeof h[k] === "number") return h[k];
+  if (h2 && typeof h2[k] === "number") return h2[k];
   return FALLBACK_HIGHLAND[tier];
 }
 function mapGenReliefOverflowCapFrac(tier) {
@@ -525,8 +498,8 @@ function civIdsAvailableAtGameEpoch(cywilizacje, gameEpochId) {
 }
 
 // src/map/newGameMapDefaults.ts
-function mapSizeLabelFromDims(w, h) {
-  const area = w * h;
+function mapSizeLabelFromDims(w2, h2) {
+  const area = w2 * h2;
   if (area < 4800) return "mala";
   if (area < 12e3) return "srednia";
   if (area < 25200) return "duza";
@@ -534,8 +507,8 @@ function mapSizeLabelFromDims(w, h) {
   return "super";
 }
 function mapSizeLabelFromMenuLabel(menuLabel) {
-  const { w, h } = menuLabelToDims(menuLabel);
-  return mapSizeLabelFromDims(w, h);
+  const { w: w2, h: h2 } = menuLabelToDims(menuLabel);
+  return mapSizeLabelFromDims(w2, h2);
 }
 var DEFAULT_PLAYER_CIV_ID = eStartPlayerCivId();
 var DEFAULT_START_EPOCH_ID = eStartEpochId();
@@ -564,8 +537,8 @@ function maxRiversForMapAndDensity(mapMenuLabel, tier) {
   const base = maxRiversFromDensity(tier);
   const sizeLabel = mapSizeLabelFromMenuLabel(mapMenuLabel);
   const scale = RIVER_SCALE_BY_SIZE[sizeLabel] ?? 1;
-  const { w, h } = menuLabelToDims(mapMenuLabel);
-  const areaBoost = Math.max(1, Math.sqrt(w * h / 5e3));
+  const { w: w2, h: h2 } = menuLabelToDims(mapMenuLabel);
+  const areaBoost = Math.max(1, Math.sqrt(w2 * h2 / 5e3));
   return Math.max(2, Math.round(base * scale * areaBoost));
 }
 function riverMinPathLengthForTier(tier) {
@@ -574,15 +547,15 @@ function riverMinPathLengthForTier(tier) {
   return 25;
 }
 var RIVER_REF_AREA = 168 * 120;
-function riverMapAreaScale(w, h) {
-  return Math.sqrt(w * h / RIVER_REF_AREA);
+function riverMapAreaScale(w2, h2) {
+  return Math.sqrt(w2 * h2 / RIVER_REF_AREA);
 }
 function clamp(n, lo, hi) {
   return Math.max(lo, Math.min(hi, n));
 }
-function resolveRiverMapParams(tier, w, h) {
-  const areaScale = riverMapAreaScale(w, h);
-  const minDim = Math.min(w, h);
+function resolveRiverMapParams(tier, w2, h2) {
+  const areaScale = riverMapAreaScale(w2, h2);
+  const minDim = Math.min(w2, h2);
   const mainBase = tier === "high" ? 4 : tier === "low" ? 11 : 7;
   const tribBase = tier === "high" ? 2 : tier === "low" ? 6 : 4;
   const tierMinLen = riverMinPathLengthForTier(tier);
@@ -635,19 +608,19 @@ function resolveRiverMapParams(tier, w, h) {
   };
 }
 function resolveRiverTraceForMap(mapMenuLabel, riversTier) {
-  const { w, h } = menuLabelToDims(mapMenuLabel);
-  const params = resolveRiverMapParams(riversTier, w, h);
+  const { w: w2, h: h2 } = menuLabelToDims(mapMenuLabel);
+  const params2 = resolveRiverMapParams(riversTier, w2, h2);
   const base = riverTraceLimitsForMap(mapMenuLabel);
   return {
-    minLen: params.minLen,
-    maxLen: params.maxLen,
+    minLen: params2.minLen,
+    maxLen: params2.maxLen,
     margin: base.margin
   };
 }
 function riverTraceLimitsForMap(mapMenuLabel) {
-  const { w, h } = menuLabelToDims(mapMenuLabel);
-  const minDim = Math.min(w, h);
-  const area = w * h;
+  const { w: w2, h: h2 } = menuLabelToDims(mapMenuLabel);
+  const minDim = Math.min(w2, h2);
+  const area = w2 * h2;
   return {
     minLen: area > 2e4 ? 5 : 4,
     maxLen: Math.max(40, Math.floor(minDim * 0.22)),
@@ -1286,7 +1259,7 @@ function earthTemplateLandAt(q, r, width, height) {
   const steps = earthSubsampleGrid(width, height);
   if (steps <= 1) return sampleEarthTemplateLand(t.nq, t.nr);
   let landHits = 0;
-  const total = steps * steps;
+  const total2 = steps * steps;
   for (let sy = 0; sy < steps; sy++) {
     for (let sx = 0; sx < steps; sx++) {
       const nq = t.nq - cellW * 0.5 + (sx + 0.5) / steps * cellW;
@@ -1294,7 +1267,7 @@ function earthTemplateLandAt(q, r, width, height) {
       if (sampleEarthTemplateLand(nq, nr)) landHits++;
     }
   }
-  return landHits / total >= earthLandFractionThreshold(width, height) ? 1 : 0;
+  return landHits / total2 >= earthLandFractionThreshold(width, height) ? 1 : 0;
 }
 
 // src/map/gen-helpers.ts
@@ -1418,11 +1391,11 @@ function buildContinentCenters(rand, n, opts) {
   const radiusMin = opts?.radiusMin ?? 0.28;
   const radiusMax = opts?.radiusMax ?? 0.4;
   const minDist = opts?.minCenterDist ?? 0;
-  const w = opts?.width ?? 120;
-  const h = opts?.height ?? 80;
+  const w2 = opts?.width ?? 120;
+  const h2 = opts?.height ?? 80;
   const borderMargin = Math.max(
-    mapBorderWidth(w, h) / Math.max(1, w - 1),
-    mapBorderWidth(w, h) / Math.max(1, h - 1),
+    mapBorderWidth(w2, h2) / Math.max(1, w2 - 1),
+    mapBorderWidth(w2, h2) / Math.max(1, h2 - 1),
     0.12
   );
   const clamp01 = (v) => Math.max(borderMargin, Math.min(1 - borderMargin, v));
@@ -1567,13 +1540,13 @@ function islandGridCellIndex(q, r, width, height) {
   return row * GRID + col;
 }
 function assignIslandGridIndices(width, height) {
-  const map = /* @__PURE__ */ new Map();
+  const map2 = /* @__PURE__ */ new Map();
   for (let r = 0; r < height; r++) {
     for (let q = 0; q < width; q++) {
-      map.set(hexKey(q, r), islandGridCellIndex(q, r, width, height));
+      map2.set(hexKey(q, r), islandGridCellIndex(q, r, width, height));
     }
   }
-  return map;
+  return map2;
 }
 function landMaskWyspy(q, r, width, height, centers, perm, noiseScale) {
   const GRID = ISLAND_GRID_DIVISIONS;
@@ -1627,10 +1600,10 @@ function terenCoverageCellSize() {
   return 4;
 }
 function hashInt3(a, b, c) {
-  let h = a * 374761393 ^ b * 668265263 ^ c * 2246822519;
-  h = Math.imul(h ^ h >>> 13, 1274126177);
-  h = (h ^ h >>> 16) >>> 0;
-  return h / 4294967296;
+  let h2 = a * 374761393 ^ b * 668265263 ^ c * 2246822519;
+  h2 = Math.imul(h2 ^ h2 >>> 13, 1274126177);
+  h2 = (h2 ^ h2 >>> 16) >>> 0;
+  return h2 / 4294967296;
 }
 function terrainCellBias(q, r, seed, cellSize = terenCoverageCellSize()) {
   const cx = Math.floor(q / cellSize);
@@ -1697,8 +1670,8 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
     for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
       if (land.length < minLand) continue;
       const eligible = land.filter(([q, r]) => {
-        const h = hexes[hexKey(q, r)];
-        if (!h || !isForestEligibleTerrain(h.terenBazowy) || h.nakladka !== "brak" /* Brak */) return false;
+        const h2 = hexes[hexKey(q, r)];
+        if (!h2 || !isForestEligibleTerrain(h2.terenBazowy) || h2.nakladka !== "brak" /* Brak */) return false;
         if (mapHeight && climateBandAt(q, r, mapHeight) === "desert") return false;
         return true;
       }).map(([q, r]) => ({ k: hexKey(q, r), n: scratch.get(hexKey(q, r))?.forNoise ?? 0 })).sort((a, b) => b.n - a.n);
@@ -2244,9 +2217,9 @@ function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
     protected: isDepositProtectedFromOverflowCap(hexes[hexKey(q, r)])
   })).sort((a, b) => a.n - b.n);
   let changed = false;
-  let total = mountains.length;
+  let total2 = mountains.length;
   let i = 0;
-  while (total > maxMtn && total > MIN_MOUNTAINS_IRON_CELL && i < mountains.length) {
+  while (total2 > maxMtn && total2 > MIN_MOUNTAINS_IRON_CELL && i < mountains.length) {
     const cand = mountains[i];
     if (cand.protected) {
       i++;
@@ -2257,7 +2230,7 @@ function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
     dropHex.nakladka = "brak" /* Brak */;
     delete dropHex.zloze;
     changed = true;
-    total--;
+    total2--;
     mountains.splice(i, 1);
   }
   return changed;
@@ -2272,9 +2245,9 @@ function capHighlandOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
     protected: isDepositProtectedFromOverflowCap(hexes[hexKey(q, r)])
   })).sort((a, b) => a.n - b.n);
   let changed = false;
-  let total = highlands.length;
+  let total2 = highlands.length;
   let i = 0;
-  while (total > maxHi && total > MIN_HIGHLANDS_COPPER_CELL && i < highlands.length) {
+  while (total2 > maxHi && total2 > MIN_HIGHLANDS_COPPER_CELL && i < highlands.length) {
     const cand = highlands[i];
     if (cand.protected) {
       i++;
@@ -2285,7 +2258,7 @@ function capHighlandOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
     dropHex.nakladka = "brak" /* Brak */;
     delete dropHex.zloze;
     changed = true;
-    total--;
+    total2--;
     highlands.splice(i, 1);
   }
   return changed;
@@ -2636,21 +2609,21 @@ function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses,
   return recovered;
 }
 function growMountainRanges(hexes, scratch, tier, width, height, rand) {
-  const params = mapGenMountainRangeParams(tier);
+  const params2 = mapGenMountainRangeParams(tier);
   const mtnTh = mapGenMountainThreshold(tier);
   const hiTh = mapGenHighlandThreshold(tier);
-  const masses = groupLandMassKeys(hexes).filter((m) => m.length >= params.minMasaHexow).sort((a, b) => b.length - a.length || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  const masses = groupLandMassKeys(hexes).filter((m) => m.length >= params2.minMasaHexow).sort((a, b) => b.length - a.length || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const addedByThisRun = [];
   for (const mass of masses) {
     const nRanges = Math.min(
-      params.maxPasmNaMase,
-      Math.max(1, Math.round(mass.length / params.hexyNaPasmo))
+      params2.maxPasmNaMase,
+      Math.max(1, Math.round(mass.length / params2.hexyNaPasmo))
     );
     const seedCandidates = mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand);
     if (seedCandidates.length === 0) continue;
     const seeds = pickSpreadReliefKeys(seedCandidates, nRanges, 5);
     for (const seedKey of seeds) {
-      const len = params.dlugoscMin + Math.floor(rand() * (params.dlugoscMax - params.dlugoscMin + 1));
+      const len = params2.dlugoscMin + Math.floor(rand() * (params2.dlugoscMax - params2.dlugoscMin + 1));
       const path = [seedKey, ...walkMountainRange(hexes, scratch, width, height, rand, seedKey, len)];
       const placedThisRange = [];
       for (const k of path) {
@@ -2689,7 +2662,7 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
           if (nhex.terenBazowy === "gory" /* Gory */ || nhex.terenBazowy === "wzgorza" /* Wzgorza */) continue;
           if (nhex.terenBazowy !== "laka" /* Laka */ && nhex.terenBazowy !== "rownina" /* Rownina */ && nhex.terenBazowy !== "pustynia" /* Pustynia */) continue;
           if (!isReliefCandidateHex(nhex, nq, nr, width, height)) continue;
-          if (rand() >= params.obrzezeSzansa) continue;
+          if (rand() >= params2.obrzezeSzansa) continue;
           const n = scratch.get(nk)?.mtnNoise ?? 0;
           addedByThisRun.push({ k: nk, n, wasHighland: true, prev: nhex.terenBazowy });
           nhex.terenBazowy = "wzgorza" /* Wzgorza */;
@@ -2809,15 +2782,15 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
   return addedByThisRun.length;
 }
 function assignContinentIndices(width, height, centers) {
-  const map = /* @__PURE__ */ new Map();
+  const map2 = /* @__PURE__ */ new Map();
   for (let r = 0; r < height; r++) {
     for (let q = 0; q < width; q++) {
       const nq = q / Math.max(1, width - 1);
       const nr = r / Math.max(1, height - 1);
-      map.set(hexKey(q, r), nearestContinentZoneIndex(nq, nr, centers));
+      map2.set(hexKey(q, r), nearestContinentZoneIndex(nq, nr, centers));
     }
   }
-  return map;
+  return map2;
 }
 function parseHexKey(key) {
   const parts = key.split(",");
@@ -2865,8 +2838,8 @@ function defaultLandFractionForTyp(typ) {
 function countLandSeaHexes(hexes) {
   let land = 0;
   let sea = 0;
-  for (const h of Object.values(hexes)) {
-    if (h.terenBazowy === "morze" /* Morze */ || h.terenBazowy === "wybrzeze" /* Wybrzeze */) sea++;
+  for (const h2 of Object.values(hexes)) {
+    if (h2.terenBazowy === "morze" /* Morze */ || h2.terenBazowy === "wybrzeze" /* Wybrzeze */) sea++;
     else land++;
   }
   return { land, sea, total: land + sea };
@@ -2900,13 +2873,13 @@ function countLandNeighbors(hexes, q, r) {
   return n;
 }
 function isCoastalLandHex(hexes, q, r) {
-  const h = hexes[hexKey(q, r)];
-  if (!h || h.terenBazowy === "morze" /* Morze */ || h.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
+  const h2 = hexes[hexKey(q, r)];
+  if (!h2 || h2.terenBazowy === "morze" /* Morze */ || h2.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
   return countMorseNeighbors(hexes, q, r) > 0;
 }
 function isCoastalMorseHex(hexes, q, r) {
-  const h = hexes[hexKey(q, r)];
-  if (h?.terenBazowy !== "morze" /* Morze */ && h?.terenBazowy !== "wybrzeze" /* Wybrzeze */) return false;
+  const h2 = hexes[hexKey(q, r)];
+  if (h2?.terenBazowy !== "morze" /* Morze */ && h2?.terenBazowy !== "wybrzeze" /* Wybrzeze */) return false;
   return countLandNeighbors(hexes, q, r) > 0;
 }
 function setHexToMorze(hex) {
@@ -2936,17 +2909,17 @@ function enforceLatitudinalOceanBuffer(hexes, width, height, isEarth) {
 }
 function climateBandBaseTerrain(band, q, r, seed) {
   if (isPolarClimateBand(band)) return "polarny" /* Polarny */;
-  const h = hashInt3(q, r, seed);
+  const h2 = hashInt3(q, r, seed);
   switch (band) {
     case "desert":
-      return h < 0.5 ? "pustynia" /* Pustynia */ : "rownina" /* Rownina */;
+      return h2 < 0.5 ? "pustynia" /* Pustynia */ : "rownina" /* Rownina */;
     case "plains_north":
     case "plains_south":
-      return h < 0.7 ? "rownina" /* Rownina */ : "laka" /* Laka */;
+      return h2 < 0.7 ? "rownina" /* Rownina */ : "laka" /* Laka */;
     case "temperate_north":
     case "temperate_south":
     default:
-      return h < 0.85 ? "laka" /* Laka */ : "rownina" /* Rownina */;
+      return h2 < 0.85 ? "laka" /* Laka */ : "rownina" /* Rownina */;
   }
 }
 function applyClimateBandsToHexes(hexes, height, seed, isEarth = false) {
@@ -2988,8 +2961,8 @@ function enforceEarthTemplateOnHexes(hexes, width, height) {
 function applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height) {
   const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
   const keys = Object.keys(hexes);
-  const total = keys.length;
-  const targetLand = Math.round(total * clamped);
+  const total2 = keys.length;
+  const targetLand = Math.round(total2 * clamped);
   let { land } = countLandSeaHexes(hexes);
   let adjusted = 0;
   const hasBorder = width != null && height != null && width > 0 && height > 0;
@@ -3057,8 +3030,8 @@ function rebalanceLandFractionWithMargins(hexes, landScores, targetLandFraction,
 }
 function applyLandFractionByContinent(hexes, landScores, continentOf, nContinents, targetLandFraction, width, height) {
   const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
-  const total = Object.keys(hexes).length;
-  const targetLand = Math.round(total * clamped);
+  const total2 = Object.keys(hexes).length;
+  const targetLand = Math.round(total2 * clamped);
   const zoneKeys = Array.from({ length: nContinents }, () => []);
   for (const k of Object.keys(hexes)) {
     const raw = continentOf.get(k) ?? 0;
@@ -3261,8 +3234,8 @@ function oceanConnectedWaterKeys(hexes, width, height) {
 }
 function findInlandWaterHexes(hexes, width, height) {
   const ocean = oceanConnectedWaterKeys(hexes, width, height);
-  return Object.entries(hexes).filter(([k, h]) => {
-    const tb = h.terenBazowy;
+  return Object.entries(hexes).filter(([k, h2]) => {
+    const tb = h2.terenBazowy;
     return (tb === "morze" /* Morze */ || tb === "wybrzeze" /* Wybrzeze */) && !ocean.has(k);
   }).map(([k]) => k);
 }
@@ -3299,7 +3272,7 @@ function purgeDesertEnclaveWater(hexes, width, height) {
   return n;
 }
 function fillEnclosedWaterByLandNeighbors(hexes, minLandNeighbors = 5) {
-  let total = 0;
+  let total2 = 0;
   for (let pass = 0; pass < 8; pass++) {
     let n = 0;
     for (const [key, hex] of Object.entries(hexes)) {
@@ -3314,10 +3287,10 @@ function fillEnclosedWaterByLandNeighbors(hexes, minLandNeighbors = 5) {
       delete hex.zloze;
       n++;
     }
-    total += n;
+    total2 += n;
     if (n === 0) break;
   }
-  return total;
+  return total2;
 }
 function purgeInlandWaterForMultiLandTyp(hexes, width, height) {
   let n = fillEnclosedWaterByLandNeighbors(hexes, 5);
@@ -3579,8 +3552,8 @@ function removeTinyLandIslands(hexes, minHexes) {
   let removed = 0;
   for (const key of Object.keys(hexes)) {
     if (visited.has(key)) continue;
-    const h = hexes[key];
-    if (!h || !isLandOrCoast(h.terenBazowy)) continue;
+    const h2 = hexes[key];
+    if (!h2 || !isLandOrCoast(h2.terenBazowy)) continue;
     const stack = [key];
     const comp = [];
     visited.add(key);
@@ -3649,16 +3622,16 @@ function purgeOpenOceanLandSpecks(hexes) {
 }
 function finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, coastPasses = 2) {
   const minHexes = minTinyIslandHexesForTyp(typ);
-  let total = 0;
+  let total2 = 0;
   for (let pass = 0; pass < 3; pass++) {
-    total += removeTinyLandIslands(hexes, minHexes);
+    total2 += removeTinyLandIslands(hexes, minHexes);
     const purged = purgeOpenOceanLandSpecks(hexes);
-    total += purged;
+    total2 += purged;
     if (purged === 0 && pass > 0) break;
   }
   finalizeCoastAndInlandWater(hexes, width, height, coastPasses, coastOpts);
   enforceMapBorderOcean(hexes, width, height);
-  return total;
+  return total2;
 }
 var ELEVATION_RANK = {
   ["morze" /* Morze */]: 0,
@@ -3768,8 +3741,8 @@ function riverPathRespectsSeaBuffer(hexes, path, seaDist, minInland = RIVER_MIN_
   const bodyEnd = Math.max(0, path.length - mouthTail);
   for (let i = 0; i < bodyEnd; i++) {
     const p = path[i];
-    const h = hexes[hexKey(p.q, p.r)];
-    if (!h || h.terenBazowy === "morze" /* Morze */) return false;
+    const h2 = hexes[hexKey(p.q, p.r)];
+    if (!h2 || h2.terenBazowy === "morze" /* Morze */) return false;
     if ((seaDist.get(hexKey(p.q, p.r)) ?? 0) < minInland) return false;
   }
   return true;
@@ -4305,7 +4278,7 @@ function riverSegmentEdgeMarks(hexes, a, b) {
   const out = [];
   const eA = neighborDirIndex(a.q, a.r, b.q, b.r);
   const eB = neighborDirIndex(b.q, b.r, a.q, a.r);
-  const eligible = (h) => h.terenBazowy !== "morze" /* Morze */ && (isRiverLandTerrain(h.terenBazowy) || h.terenBazowy === "wybrzeze" /* Wybrzeze */);
+  const eligible = (h2) => h2.terenBazowy !== "morze" /* Morze */ && (isRiverLandTerrain(h2.terenBazowy) || h2.terenBazowy === "wybrzeze" /* Wybrzeze */);
   if (eA >= 0 && eligible(ha)) out.push({ key: hexKey(a.q, a.r), edge: eA });
   if (eB >= 0 && eligible(hb)) out.push({ key: hexKey(b.q, b.r), edge: eB });
   return out;
@@ -4315,8 +4288,8 @@ function trimRiverPathRings(hexes, path) {
   const priorCount = /* @__PURE__ */ new Map();
   const laid = /* @__PURE__ */ new Map();
   const totalOnHex = (key) => (priorCount.get(key) ?? (() => {
-    const h = hexes[key];
-    const c = h?.rzeka?.krawedzie?.length ?? 0;
+    const h2 = hexes[key];
+    const c = h2?.rzeka?.krawedzie?.length ?? 0;
     priorCount.set(key, c);
     return c;
   })()) + (laid.get(key)?.size ?? 0);
@@ -4510,8 +4483,8 @@ function landHexesByCoverageCell(massSet, cellSize) {
 var MAIN_RIVER_GRID_STRIDE = 3;
 function cellHasRiverHex(cellLand, hexes) {
   for (const [q, r] of cellLand) {
-    const h = hexes[hexKey(q, r)];
-    if (h?.rzeka?.obecna) return true;
+    const h2 = hexes[hexKey(q, r)];
+    if (h2?.rzeka?.obecna) return true;
   }
   return false;
 }
@@ -4525,8 +4498,8 @@ function isSparseMainCoverageCell(land, cellSize, stride = MAIN_RIVER_GRID_STRID
 }
 function collectRiverHexKeys(hexes) {
   const keys = /* @__PURE__ */ new Set();
-  for (const [k, h] of Object.entries(hexes)) {
-    if (h.rzeka?.obecna) keys.add(k);
+  for (const [k, h2] of Object.entries(hexes)) {
+    if (h2.rzeka?.obecna) keys.add(k);
   }
   return keys;
 }
@@ -4549,9 +4522,9 @@ function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oce
   while (queue.length > 0) {
     const k = queue.shift();
     const { q, r } = parseHexKey(k);
-    const h = hexes[k];
-    if (!h?.rzeka?.krawedzie?.length) continue;
-    for (const edgeIdx of h.rzeka.krawedzie) {
+    const h2 = hexes[k];
+    if (!h2?.rzeka?.krawedzie?.length) continue;
+    for (const edgeIdx of h2.rzeka.krawedzie) {
       const dir = HEX_DIRECTIONS[edgeIdx];
       if (!dir) continue;
       const nk = hexKey(q + dir[0], r + dir[1]);
@@ -4591,8 +4564,8 @@ function pruneOrphanRiverPaths(hexes, paths, kinds, width, height) {
         continue;
       }
       const connected = p.every((c) => {
-        const h = hexes[hexKey(c.q, c.r)];
-        if (h?.terenBazowy === "morze" /* Morze */) return true;
+        const h2 = hexes[hexKey(c.q, c.r)];
+        if (h2?.terenBazowy === "morze" /* Morze */) return true;
         return reached.has(hexKey(c.q, c.r));
       });
       if (!connected) {
@@ -4736,11 +4709,11 @@ function ensureMassRiverGridCoverage(hexes, massSet, cellSize, seaDist, riverPat
   for (const land of cellList) {
     if (cellSatisfied(land)) continue;
     const ranked = land.filter(([q, r]) => !usedSources.has(hexKey(q, r))).map(([q, r]) => {
-      const h = hexes[hexKey(q, r)];
+      const h2 = hexes[hexKey(q, r)];
       const d = seaDist.get(hexKey(q, r)) ?? 0;
       let score = d + rand() * 4;
-      if (h && isReliefRiverSource(h.terenBazowy)) score += reliefBonus;
-      else if (h && isRiverLandTerrain(h.terenBazowy)) score += 12;
+      if (h2 && isReliefRiverSource(h2.terenBazowy)) score += reliefBonus;
+      else if (h2 && isRiverLandTerrain(h2.terenBazowy)) score += 12;
       return { q, r, d, score };
     }).filter((c) => c.d >= minInlandFromSea).sort((a, b) => b.score - a.score);
     let ok = false;
@@ -5051,7 +5024,7 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
   return { paths: riverPaths, kinds: riverKinds };
 }
 function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, rand, riversTier = "medium", minLen = 4, maxLen = 40, riverParams) {
-  const params = riverParams ?? resolveRiverMapParams(riversTier, width, height);
+  const params2 = riverParams ?? resolveRiverMapParams(riversTier, width, height);
   const seaDist = buildSeaDistanceField(hexes);
   const oceanConnected = oceanConnectedWaterKeys(hexes, width, height);
   const openOceanDist = buildOpenOceanDistanceField(hexes, width, height, oceanConnected);
@@ -5061,24 +5034,24 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
     if (p0) usedSources.add(hexKey(p0.q, p0.r));
   }
   const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 8).sort((a, b) => b.length - a.length);
-  const cellSize = params.tributaryCell;
-  const feederMinLen = params.feederMinLen;
+  const cellSize = params2.tributaryCell;
+  const feederMinLen = params2.feederMinLen;
   const feederMinSourceSep = Math.max(
     2,
-    Math.floor(cellSize * 0.75 * params.feederSourceSepMult)
+    Math.floor(cellSize * 0.75 * params2.feederSourceSepMult)
   );
   const traceOptsBase = {
-    hardMeanderLen: params.hardMeanderLen,
-    mouthTailLen: params.mouthTailLen
+    hardMeanderLen: params2.hardMeanderLen,
+    mouthTailLen: params2.mouthTailLen
   };
   const seaBufferOpts = {
-    minInland: params.minInlandFromSea,
-    mouthTail: params.mouthTailLen
+    minInland: params2.minInlandFromSea,
+    mouthTail: params2.mouthTailLen
   };
   const gridOptsBase = {
-    reliefSourceBonus: params.reliefSourceBonus,
-    expandSourceRadius: params.expandSourceRadius,
-    minInlandFromSea: params.minInlandFromSea
+    reliefSourceBonus: params2.reliefSourceBonus,
+    expandSourceRadius: params2.expandSourceRadius,
+    minInlandFromSea: params2.minInlandFromSea
   };
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
@@ -5206,7 +5179,7 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
     return false;
   };
   let placed = 0;
-  for (let pass = 0; pass < params.topUpPasses; pass++) {
+  for (let pass = 0; pass < params2.topUpPasses; pass++) {
     let passPlaced = 0;
     const reach = buildOceanReachableRiverHexKeys(
       hexes,
@@ -5245,13 +5218,13 @@ var BASE_DEPOSIT_RULES = [
   {
     id: "miedz",
     nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "wzgorza" /* Wzgorza */,
+    allowedOn: (h2) => isDryLandTerrain(h2.terenBazowy) && h2.terenBazowy === "wzgorza" /* Wzgorza */,
     rarity: 0.1
   },
   {
     id: "zelazo",
     nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
+    allowedOn: (h2) => isDryLandTerrain(h2.terenBazowy) && h2.terenBazowy === "gory" /* Gory */,
     rarity: 0.08
   },
   {
@@ -5260,20 +5233,20 @@ var BASE_DEPOSIT_RULES = [
     // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
     // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
     // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
+    allowedOn: (h2) => isDryLandTerrain(h2.terenBazowy) && h2.rzeka?.obecna === true,
     rarity: 0.1
   },
   {
     id: "konie",
     nakladka: "zloze_konia" /* ZlozeKonia */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "rownina" /* Rownina */,
+    allowedOn: (h2) => isDryLandTerrain(h2.terenBazowy) && h2.terenBazowy === "rownina" /* Rownina */,
     rarity: 0.1
   },
   {
     id: "wegiel",
     nakladka: null,
     // brak w enumie Nakladka -> znacznik hex.zloze
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
+    allowedOn: (h2) => isDryLandTerrain(h2.terenBazowy) && h2.terenBazowy === "gory" /* Gory */,
     rarity: 0.1
   },
   // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
@@ -5286,7 +5259,7 @@ var BASE_DEPOSIT_RULES = [
     // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
     // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
     // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    allowedOn: (h2) => isDryLandTerrain(h2.terenBazowy),
     requiresCoastalLand: true,
     rarity: 0.12
   },
@@ -5299,7 +5272,7 @@ var BASE_DEPOSIT_RULES = [
     // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
     id: "zloto",
     nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    allowedOn: (h2) => isDryLandTerrain(h2.terenBazowy) && (h2.terenBazowy === "wzgorza" /* Wzgorza */ || h2.terenBazowy === "gory" /* Gory */),
     rarity: 0.03
   }
 ];
@@ -5513,8 +5486,8 @@ function ensureForestGridCoverage(hexes, scratch, forestTier, _typ, _continentOf
       for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
         if (land.length < minLand || cellHasForest(land, hexes)) continue;
         const eligible = land.filter(([q, r]) => {
-          const h = hexes[hexKey(q, r)];
-          return h && isForestEligibleTerrain(h.terenBazowy) && h.nakladka === "brak" /* Brak */;
+          const h2 = hexes[hexKey(q, r)];
+          return h2 && isForestEligibleTerrain(h2.terenBazowy) && h2.nakladka === "brak" /* Brak */;
         }).map(([q, r]) => ({
           q,
           r,
@@ -6057,6 +6030,784 @@ var DEFAULT_TERRAIN_COSTS = {
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
+// src/map/clusters.ts
+var CLUSTER_CITY_STATE_MIN_HEX = 4;
+var CLUSTER_CITY_STATE_MAX_HEX = 4;
+var MIN_DIST_START_CITY_STATE = CLUSTER_CITY_STATE_MIN_HEX;
+var MIN_DIST_FOREIGN_FROM_PLAYER = 12;
+var MIN_DIST_FOREIGN_IN_CLUSTER = MIN_DIST_START_CITY_STATE;
+var CLUSTER_GROWTH_RESERVE = 1;
+var ROSTER_KLUCZE = [
+  "grecy",
+  "rzymianie",
+  "chinczycy",
+  "inkowie",
+  "zulusi",
+  "egipt",
+  "sumer",
+  "celtowie",
+  "germanie",
+  "harappa",
+  "hetyci",
+  "slowianie",
+  "babilonia",
+  "asyria",
+  "fenicjanie"
+];
+function rosterKluczeForStartEpoch(civRoster, startEpochId) {
+  if (!civRoster || !startEpochId) return [...ROSTER_KLUCZE];
+  const available = new Set(civIdsAvailableAtGameEpoch(civRoster, startEpochId));
+  return ROSTER_KLUCZE.filter((k) => available.has(k));
+}
+function mapSizeLabel(w2, h2) {
+  const area = w2 * h2;
+  if (area < 4800) return "mala";
+  if (area < 12e3) return "srednia";
+  if (area < 25200) return "duza";
+  if (area < 1e5) return "ogromna";
+  return "super";
+}
+function aktywneTypyFromSize(label) {
+  const lut = {
+    mala: 4,
+    srednia: 5,
+    duza: 6,
+    ogromna: 8,
+    super: 10
+  };
+  return lut[label];
+}
+function shuffleInPlace(arr, rand) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+  }
+}
+var MIN_MASS_HEXES_FOR_CENTER = 12;
+var ISLAND_FALLBACK_MASS_FRAC = 0.25;
+var LOCAL_LAND_DOMINANCE_FRAC = 0.7;
+var LOCAL_LAND_DOMINANCE_RADIUS = 3;
+var PLAYER_START_MIN_MASS_HEXES = 25;
+var PLAYER_START_MASS_MIN_ABSOLUTE = 30;
+function qualifyingMassThreshold(largestMassSize) {
+  return Math.max(
+    MIN_MASS_HEXES_FOR_CENTER,
+    Math.floor(largestMassSize * ISLAND_FALLBACK_MASS_FRAC)
+  );
+}
+function buildMassHexIndex(masses) {
+  const idx = /* @__PURE__ */ new Map();
+  for (let mi = 0; mi < masses.length; mi++) {
+    for (const h2 of masses[mi]) {
+      idx.set(`${h2.q},${h2.r}`, mi);
+    }
+  }
+  return idx;
+}
+function massContainingHex(hexIndex, q, r) {
+  const mi = hexIndex.get(`${q},${r}`);
+  return mi !== void 0 ? mi : null;
+}
+function isSpawnHabitableTerrain(teren) {
+  return teren !== "morze" /* Morze */ && teren !== "gory" /* Gory */ && teren !== "wybrzeze" /* Wybrzeze */ && teren !== "morze" && teren !== "gory" && teren !== "wybrzeze";
+}
+function localLandFraction(map2, q, r, radius = LOCAL_LAND_DOMINANCE_RADIUS) {
+  let landCount = 0;
+  let totalCount = 0;
+  for (let dq = -radius; dq <= radius; dq++) {
+    const r1 = Math.max(-radius, -dq - radius);
+    const r2 = Math.min(radius, -dq + radius);
+    for (let dr = r1; dr <= r2; dr++) {
+      const h2 = map2.hexes[`${q + dq},${r + dr}`];
+      if (!h2) continue;
+      totalCount++;
+      if (isSpawnHabitableTerrain(h2.terenBazowy)) landCount++;
+    }
+  }
+  const ratio = totalCount > 0 ? landCount / totalCount : 0;
+  return { ratio, landCount, totalCount };
+}
+function passesLocalLandGate(map2, q, r, minFrac = LOCAL_LAND_DOMINANCE_FRAC, radius = LOCAL_LAND_DOMINANCE_RADIUS) {
+  return localLandFraction(map2, q, r, radius).ratio >= minFrac;
+}
+function massSizeAtHex(q, r, masses) {
+  const idx = buildMassHexIndex(masses);
+  const mi = massContainingHex(idx, q, r);
+  return mi !== null ? masses[mi].length : 0;
+}
+function passesPlayerStartMassGate(map2, q, r, masses) {
+  if (!passesLocalLandGate(map2, q, r)) return false;
+  const massSize = massSizeAtHex(q, r, masses);
+  const largest = masses[0]?.length ?? 0;
+  const scaledMin = Math.max(
+    PLAYER_START_MASS_MIN_ABSOLUTE,
+    Math.floor(largest * 0.08)
+  );
+  if (massSize >= scaledMin) return true;
+  return massSize >= PLAYER_START_MIN_MASS_HEXES;
+}
+function pickPlayerClusterCenter(map2, masses, ladowe, mapCenter, rand) {
+  const massOrder = masses.length > 0 ? [masses[0], ...masses.slice(1)] : [];
+  for (const mass of massOrder) {
+    const candidates = mass.map((h2) => ({ h: h2, ...localLandFraction(map2, h2.q, h2.r) })).filter((x) => passesPlayerStartMassGate(map2, x.h.q, x.h.r, masses)).sort((a, b) => {
+      const da = hexDistanceAxial(a.h.q, a.h.r, mapCenter.q, mapCenter.r);
+      const db = hexDistanceAxial(b.h.q, b.h.r, mapCenter.q, mapCenter.r);
+      return b.ratio - a.ratio || da - db || a.h.q - b.h.q || a.h.r - b.h.r;
+    });
+    if (candidates.length === 0) continue;
+    const top = candidates[0];
+    if (candidates.length > 1) {
+      const tie = candidates.filter((x) => x.ratio >= top.ratio - 1e-3);
+      return tie[Math.floor(rand() * tie.length)].h;
+    }
+    return top.h;
+  }
+  const fallback = ladowe.map((h2) => ({ h: h2, ...localLandFraction(map2, h2.q, h2.r) })).filter((x) => passesPlayerStartMassGate(map2, x.h.q, x.h.r, masses)).sort((a, b) => b.ratio - a.ratio);
+  return fallback[0]?.h ?? null;
+}
+function pickBestLocalLandSpawn(map2, pool, existing, minDist, rand) {
+  const candidates = pool.filter((h2) => existing.every((p) => hexDistanceAxial(h2.q, h2.r, p.q, p.r) >= minDist)).map((h2) => ({ h: h2, ...localLandFraction(map2, h2.q, h2.r) })).filter((x) => x.ratio >= LOCAL_LAND_DOMINANCE_FRAC).sort((a, b) => b.ratio - a.ratio || a.h.q - b.h.q || a.h.r - b.h.r);
+  if (candidates.length === 0) return null;
+  const top = candidates[0];
+  if (candidates.length > 1 && rand) {
+    const tieBand = candidates.filter((x) => x.ratio >= top.ratio - 1e-3);
+    return tieBand[Math.floor(rand() * tieBand.length)].h;
+  }
+  return top.h;
+}
+function assignVoronoiRegions(ladowe, centrumy) {
+  const regiony = Array.from(
+    { length: centrumy.length },
+    () => []
+  );
+  for (const h2 of ladowe) {
+    let bestIdx = 0;
+    let bestDist = Infinity;
+    for (let ci = 0; ci < centrumy.length; ci++) {
+      const d = hexDistanceAxial(h2.q, h2.r, centrumy[ci].q, centrumy[ci].r);
+      if (d < bestDist) {
+        bestDist = d;
+        bestIdx = ci;
+      }
+    }
+    regiony[bestIdx].push(h2);
+  }
+  return regiony;
+}
+function groupHabitableMasses(ladowe) {
+  const keySet = new Set(ladowe.map((h2) => `${h2.q},${h2.r}`));
+  const visited = /* @__PURE__ */ new Set();
+  const masses = [];
+  for (const h2 of ladowe) {
+    const startKey = `${h2.q},${h2.r}`;
+    if (visited.has(startKey)) continue;
+    const mass = [];
+    const stack = [h2];
+    visited.add(startKey);
+    while (stack.length) {
+      const cur = stack.pop();
+      mass.push(cur);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nq = cur.q + dq;
+        const nr = cur.r + dr;
+        const nk = `${nq},${nr}`;
+        if (!keySet.has(nk) || visited.has(nk)) continue;
+        visited.add(nk);
+        stack.push({ q: nq, r: nr });
+      }
+    }
+    if (mass.length >= MIN_MASS_HEXES_FOR_CENTER) masses.push(mass);
+  }
+  masses.sort((a, b) => b.length - a.length);
+  return masses;
+}
+function massCentroid(mass) {
+  let sq = 0;
+  let sr = 0;
+  for (const h2 of mass) {
+    sq += h2.q;
+    sr += h2.r;
+  }
+  return { q: sq / mass.length, r: sr / mass.length };
+}
+function pickCenterInMassWithLandGate(map2, mass, existing, minDist, preferNear, rand) {
+  const centroid = massCentroid(mass);
+  const candidates = mass.filter((h2) => existing.every((p) => hexDistanceAxial(h2.q, h2.r, p.q, p.r) >= minDist)).map((h2) => ({
+    h: h2,
+    land: localLandFraction(map2, h2.q, h2.r),
+    score: hexDistanceAxial(h2.q, h2.r, centroid.q, centroid.r) + (preferNear ? hexDistanceAxial(h2.q, h2.r, preferNear.q, preferNear.r) * 0.05 : 0)
+  })).filter((x) => x.land.ratio >= LOCAL_LAND_DOMINANCE_FRAC).sort((a, b) => b.land.ratio - a.land.ratio || a.score - b.score);
+  if (candidates.length === 0) return null;
+  const top = candidates[0];
+  if (rand && candidates.length > 1) {
+    const tieBand = candidates.filter((x) => x.land.ratio >= top.land.ratio - 1e-3);
+    return tieBand[Math.floor(rand() * tieBand.length)].h;
+  }
+  return top.h;
+}
+function placeClusterCentersAcrossLandmasses(map2, ladowe, nNeeded, minDistBase, mapCenter, rand, marginBrzeg, bounds) {
+  const { minQ, maxQ, minR, maxR } = bounds;
+  const masses = groupHabitableMasses(ladowe);
+  const largestMassSize = masses[0]?.length ?? 0;
+  const qualThreshold = qualifyingMassThreshold(largestMassSize);
+  const qualifyingMasses = masses.filter((m) => m.length >= qualThreshold);
+  const centers = [];
+  function okMargins(q, r, relax) {
+    if (relax) return true;
+    return q - minQ >= marginBrzeg && maxQ - q >= marginBrzeg && r - minR >= marginBrzeg && maxR - r >= marginBrzeg;
+  }
+  function hasCenter(c) {
+    return centers.some((p) => p.q === c.q && p.r === c.r);
+  }
+  function tryPlace(c, minDist, relaxMargin, forPlayer = false) {
+    if (!c || hasCenter(c)) return false;
+    if (!okMargins(c.q, c.r, relaxMargin)) return false;
+    if (centers.some((p) => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDist)) return false;
+    if (forPlayer) {
+      if (!passesPlayerStartMassGate(map2, c.q, c.r, masses)) return false;
+    } else if (!passesLocalLandGate(map2, c.q, c.r)) {
+      return false;
+    }
+    centers.push(c);
+    return true;
+  }
+  const playerCenter = pickPlayerClusterCenter(map2, masses, ladowe, mapCenter, rand);
+  if (playerCenter) {
+    centers.push(playerCenter);
+  }
+  for (let minDist = minDistBase; minDist >= 6 && centers.length < nNeeded; minDist -= 2) {
+    const relaxMargin = minDist < minDistBase;
+    for (let mi = 1; mi < qualifyingMasses.length && centers.length < nNeeded; mi++) {
+      tryPlace(
+        pickCenterInMassWithLandGate(map2, qualifyingMasses[mi], centers, minDist, void 0, rand),
+        minDist,
+        relaxMargin
+      );
+    }
+    let stagnant = 0;
+    while (centers.length < nNeeded && stagnant < qualifyingMasses.length + 2) {
+      let placed = false;
+      for (const mass of qualifyingMasses) {
+        if (centers.length >= nNeeded) break;
+        if (tryPlace(
+          pickCenterInMassWithLandGate(map2, mass, centers, minDist, void 0, rand),
+          minDist,
+          relaxMargin
+        )) {
+          placed = true;
+        }
+      }
+      stagnant = placed ? 0 : stagnant + 1;
+    }
+  }
+  if (centers.length < nNeeded) {
+    const shuffled = ladowe.slice();
+    shuffleInPlace(shuffled, rand);
+    for (const c of shuffled) {
+      if (centers.length >= nNeeded) break;
+      tryPlace(c, 4, true);
+    }
+  }
+  if (centers.length < nNeeded && qualifyingMasses.length > 0) {
+    for (let minDist = 4; minDist >= 2 && centers.length < nNeeded; minDist--) {
+      for (const mass of qualifyingMasses) {
+        if (centers.length >= nNeeded) break;
+        tryPlace(
+          pickCenterInMassWithLandGate(map2, mass, centers, minDist, void 0, rand),
+          minDist,
+          true
+        );
+      }
+    }
+  }
+  return centers.slice(0, nNeeded);
+}
+function hexesAtDistance(q, r, dist) {
+  if (dist <= 0) return [{ q, r }];
+  let frontier = [{ q, r }];
+  for (let d = 0; d < dist; d++) {
+    const next = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const h2 of frontier) {
+      for (const dir of HEX_DIRECTIONS) {
+        const nq = h2.q + dir[0];
+        const nr = h2.r + dir[1];
+        const k = `${nq},${nr}`;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        next.push({ q: nq, r: nr });
+      }
+    }
+    frontier = next;
+  }
+  return frontier;
+}
+function packCityStatesHubChain(landHexes, core, count, minSep, ringDist, seed, opts) {
+  if (count <= 0) return [];
+  const rand = mulberry32((seed ^ 2654435769) >>> 0);
+  const placed = [];
+  const exclude = opts?.excludeHex ?? core;
+  const anchor = opts?.anchor;
+  const landSet = new Set(landHexes.map((h2) => `${h2.q},${h2.r}`));
+  function validCandidate(h2, hub) {
+    if (!landSet.has(`${h2.q},${h2.r}`)) return false;
+    if (h2.q === exclude.q && h2.r === exclude.r) return false;
+    if (hexDistanceAxial(h2.q, h2.r, hub.q, hub.r) !== ringDist) return false;
+    if (hexDistanceAxial(h2.q, h2.r, core.q, core.r) < minSep) return false;
+    if (anchor && hexDistanceAxial(h2.q, h2.r, anchor.q, anchor.r) < anchor.minDist) return false;
+    if (placed.some((p) => p.q === h2.q && p.r === h2.r)) return false;
+    return placed.every((p) => hexDistanceAxial(h2.q, h2.r, p.q, p.r) >= minSep);
+  }
+  const hubQueue = [core];
+  let hubIdx = 0;
+  while (placed.length < count && hubIdx < hubQueue.length) {
+    const hub = hubQueue[hubIdx];
+    hubIdx += 1;
+    while (placed.length < count) {
+      const cands = hexesAtDistance(hub.q, hub.r, ringDist).filter((h2) => validCandidate(h2, hub));
+      if (cands.length === 0) break;
+      shuffleInPlace(cands, rand);
+      cands.sort((a, b) => a.q - b.q || a.r - b.r);
+      const c = cands[0];
+      placed.push(c);
+      hubQueue.push(c);
+    }
+  }
+  return placed;
+}
+function packRivalCitiesAroundCore(landHexes, core, rivalCount, minDist, seed) {
+  if (rivalCount <= 0) return [];
+  return packCityStatesHubChain(
+    landHexes,
+    core,
+    rivalCount,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: core }
+  );
+}
+function centroidOf(hexes) {
+  if (hexes.length === 0) return { q: 0, r: 0 };
+  let sq = 0;
+  let sr = 0;
+  for (const h2 of hexes) {
+    sq += h2.q;
+    sr += h2.r;
+  }
+  return { q: sq / hexes.length, r: sr / hexes.length };
+}
+function buildClusterLayoutWithEdgeCapital(region, centrum, stateCityCount, minDist, rand, anchor, growthReserve = CLUSTER_GROWTH_RESERVE, map2, seed = 42) {
+  if (stateCityCount < 0) return null;
+  const blobCenter = centroidOf(region.length > 0 ? region : [centrum]);
+  let capitalCandidates = region.filter((c) => {
+    if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
+    return true;
+  });
+  if (map2) {
+    const gated = capitalCandidates.filter((c) => passesLocalLandGate(map2, c.q, c.r));
+    if (gated.length > 0) capitalCandidates = gated;
+  }
+  if (capitalCandidates.length === 0) return null;
+  capitalCandidates.sort((a, b) => {
+    const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
+    const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
+    const jitter = rand() * 0.01;
+    return db + jitter - (da + jitter) || a.q - b.q || a.r - b.r;
+  });
+  const capital = capitalCandidates[0];
+  const packed = packCityStatesHubChain(
+    region,
+    capital,
+    stateCityCount + growthReserve,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: capital, anchor }
+  );
+  const stateCities = packed.slice(0, stateCityCount);
+  const growthSlot = packed.length > stateCityCount ? packed[stateCityCount] ?? null : null;
+  return { capital, stateCities, growthSlot };
+}
+function layoutToClusterCities(layout) {
+  const cities = [{
+    q: layout.capital.q,
+    r: layout.capital.r,
+    isCapital: true
+  }];
+  for (const s of layout.stateCities) {
+    cities.push({ q: s.q, r: s.r, isCapital: false });
+  }
+  return cities;
+}
+function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anchor, seed, map2) {
+  const layout = buildClusterLayoutWithEdgeCapital(
+    region,
+    centrum,
+    stateCityCount,
+    minDist,
+    rand,
+    anchor,
+    CLUSTER_GROWTH_RESERVE,
+    map2,
+    seed ?? 42
+  );
+  if (!layout) {
+    return buildClusterCitiesSimpleFallback(
+      region,
+      centrum,
+      stateCityCount,
+      minDist,
+      anchor,
+      seed ?? 42,
+      map2
+    );
+  }
+  return {
+    cities: layoutToClusterCities(layout),
+    pendingStateSlots: layout.stateCities,
+    growthSlot: layout.growthSlot
+  };
+}
+function buildClusterCitiesSimpleFallback(region, centrum, stateCityCount, minDist, anchor, seed, map2) {
+  let pool = region;
+  if (anchor) {
+    const filtered = region.filter(
+      (h2) => hexDistanceAxial(h2.q, h2.r, anchor.q, anchor.r) >= anchor.minDist
+    );
+    if (filtered.length > 0) pool = filtered;
+  }
+  if (pool.length === 0) {
+    return { cities: [], pendingStateSlots: [], growthSlot: null };
+  }
+  const cen = centroidOf(pool);
+  const capSorted = pool.slice().sort((a, b) => {
+    const da = hexDistanceAxial(a.q, a.r, cen.q, cen.r);
+    const db = hexDistanceAxial(b.q, b.r, cen.q, cen.r);
+    return db - da || a.q - b.q || a.r - b.r;
+  });
+  const gatedCaps = map2 ? capSorted.filter((c) => passesLocalLandGate(map2, c.q, c.r)) : capSorted;
+  const capital = gatedCaps[0] ?? (map2 ? null : capSorted[0]) ?? centrum;
+  if (map2 && !passesLocalLandGate(map2, capital.q, capital.r)) {
+    return { cities: [], pendingStateSlots: [], growthSlot: null };
+  }
+  const stateCities = packCityStatesHubChain(
+    pool,
+    capital,
+    stateCityCount,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: capital, anchor }
+  );
+  const cities = [{ q: capital.q, r: capital.r, isCapital: true }];
+  for (const s of stateCities) {
+    cities.push({ q: s.q, r: s.r, isCapital: false });
+  }
+  return { cities, pendingStateSlots: stateCities, growthSlot: null };
+}
+function enforceLocalLandDominance(map2, centrumy, regiony, aktywneKlucze, ladowe, masses, rand, minDist, mapCenter) {
+  let relocated = false;
+  for (let ci = 0; ci < centrumy.length; ci++) {
+    const center = centrumy[ci];
+    const ok = ci === 0 ? passesPlayerStartMassGate(map2, center.q, center.r, masses) : passesLocalLandGate(map2, center.q, center.r);
+    if (ok) continue;
+    const region = regiony[ci] ?? [];
+    const others = centrumy.filter((_, i) => i !== ci);
+    let newCenter = null;
+    if (ci === 0) {
+      newCenter = pickPlayerClusterCenter(map2, masses, ladowe, mapCenter, rand);
+    } else {
+      newCenter = pickBestLocalLandSpawn(map2, region, others, minDist, rand);
+      if (!newCenter) {
+        for (const mass of masses) {
+          newCenter = pickCenterInMassWithLandGate(map2, mass, others, minDist, void 0, rand);
+          if (newCenter) break;
+        }
+      }
+    }
+    if (newCenter) {
+      centrumy[ci] = newCenter;
+      relocated = true;
+    }
+  }
+  if (relocated) {
+    const newRegiony2 = assignVoronoiRegions(ladowe, centrumy);
+    for (let i = 0; i < regiony.length; i++) {
+      regiony[i] = newRegiony2[i];
+    }
+  }
+  const keep = centrumy.map((c, ci) => {
+    if (ci === 0) return true;
+    return passesLocalLandGate(map2, c.q, c.r);
+  });
+  if (!passesLocalLandGate(map2, centrumy[0].q, centrumy[0].r) || !passesPlayerStartMassGate(map2, centrumy[0].q, centrumy[0].r, masses)) {
+    const forced = pickPlayerClusterCenter(map2, masses, ladowe, mapCenter, rand);
+    if (forced) {
+      centrumy[0] = forced;
+      const newRegiony2 = assignVoronoiRegions(ladowe, centrumy);
+      for (let i = 0; i < regiony.length; i++) {
+        regiony[i] = newRegiony2[i];
+      }
+      keep[0] = true;
+    }
+  }
+  const newCentrumy = centrumy.filter((_, i) => keep[i]);
+  const newAktywneKlucze = aktywneKlucze.filter((_, i) => keep[i]);
+  const newRegiony = assignVoronoiRegions(ladowe, newCentrumy);
+  return { centrumy: newCentrumy, regiony: newRegiony, aktywneKlucze: newAktywneKlucze };
+}
+function clusterCapitalPos(layout, fallback) {
+  const cap = layout.cities.find((m) => m.isCapital) ?? layout.cities[0];
+  return cap ? { q: cap.q, r: cap.r } : fallback;
+}
+function buildClusterCitiesWithLandGate(map2, region, centrum, stateCityCount, minDist, rand, anchor, seed, masses, existingCenters, minClusterDist) {
+  let activeCentrum = centrum;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const layout = buildClusterCities(
+      region,
+      activeCentrum,
+      stateCityCount,
+      minDist,
+      rand,
+      anchor,
+      seed,
+      map2
+    );
+    const cap = clusterCapitalPos(layout, activeCentrum);
+    if (passesLocalLandGate(map2, cap.q, cap.r)) {
+      return { ...layout, centrum: activeCentrum };
+    }
+    const altCenter = pickBestLocalLandSpawn(map2, region, existingCenters, minClusterDist, rand);
+    let nextCenter = altCenter;
+    if (!nextCenter) {
+      for (const mass of masses) {
+        nextCenter = pickCenterInMassWithLandGate(map2, mass, existingCenters, minClusterDist, void 0, rand);
+        if (nextCenter) break;
+      }
+    }
+    if (!nextCenter) return null;
+    activeCentrum = nextCenter;
+  }
+  return null;
+}
+function computeClusters(map2, opts) {
+  const seed = opts?.seed ?? 42;
+  const playerTypKlucz = opts?.playerTyp ?? ROSTER_KLUCZE[0];
+  const rywaleNaKlaster = opts?.rywaleNaKlaster ?? 9;
+  const minDystKlastrowBase = opts?.minDystansKlastrow ?? 12;
+  const minDystMiastaPanstwa = opts?.minDystans ?? MIN_DIST_START_CITY_STATE;
+  const minDystObcyOdGracza = MIN_DIST_FOREIGN_FROM_PLAYER;
+  const rand = mulberry32(seed);
+  const allHexes = Object.values(map2.hexes);
+  let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
+  for (const h2 of allHexes) {
+    if (h2.coords.q < minQ) minQ = h2.coords.q;
+    if (h2.coords.q > maxQ) maxQ = h2.coords.q;
+    if (h2.coords.r < minR) minR = h2.coords.r;
+    if (h2.coords.r > maxR) maxR = h2.coords.r;
+  }
+  const W = maxQ - minQ + 1;
+  const H = maxR - minR + 1;
+  const rozmiarMapy = mapSizeLabel(W, H);
+  const requestedTypy = opts?.aktywneTypy ?? aktywneTypyFromSize(rozmiarMapy);
+  const epochRoster2 = rosterKluczeForStartEpoch(opts?.civRoster, opts?.startEpochId);
+  const rosterCap = epochRoster2.length > 0 ? epochRoster2.length : ROSTER_KLUCZE.length;
+  const nTypy = Math.min(requestedTypy, rosterCap);
+  const area = W * H;
+  const minDystKlastrow = Math.max(
+    6,
+    Math.min(minDystKlastrowBase, Math.floor(Math.sqrt(area / Math.max(nTypy, 1)) * 0.9))
+  );
+  const ladowe = [];
+  for (const h2 of allHexes) {
+    if (h2.terenBazowy !== "morze" /* Morze */ && h2.terenBazowy !== "gory" /* Gory */ && h2.terenBazowy !== "wybrzeze" /* Wybrzeze */) {
+      ladowe.push({ q: h2.coords.q, r: h2.coords.r });
+    }
+  }
+  if (ladowe.length === 0) {
+    return {
+      rozmiarMapy,
+      aktywneTypy: 0,
+      requestedTypy: nTypy,
+      minDystansMiastaPanstwa: minDystMiastaPanstwa,
+      maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
+      minDystansObcyOdGracza: minDystObcyOdGracza,
+      playerTypIndex: 0,
+      klastry: []
+    };
+  }
+  const shuffledLad = ladowe.slice();
+  shuffleInPlace(shuffledLad, rand);
+  const mapCenter = { q: (minQ + maxQ) / 2, r: (minR + maxR) / 2 };
+  const marginBrzeg = Math.max(2, Math.floor(minDystKlastrow / 3));
+  const centrumy = placeClusterCentersAcrossLandmasses(
+    map2,
+    ladowe,
+    nTypy,
+    minDystKlastrow,
+    mapCenter,
+    rand,
+    marginBrzeg,
+    { minQ, maxQ, minR, maxR }
+  );
+  if (centrumy.length < nTypy && typeof console !== "undefined") {
+    console.warn(
+      `[clusters] Tylko ${centrumy.length}/${nTypy} \u015Brodk\xF3w klastr\xF3w \u2014 mapa za ciasna lub zbyt pofragmentowany l\u0105d`
+    );
+  }
+  const rosterSource = epochRoster2.length > 0 ? epochRoster2 : ROSTER_KLUCZE;
+  const playerInEpoch = rosterSource.includes(playerTypKlucz);
+  const playerKlucz = playerInEpoch ? playerTypKlucz : rosterSource[0];
+  const rosterBezGracza = rosterSource.filter((k) => k !== playerKlucz);
+  for (let i = rosterBezGracza.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    const tmp = rosterBezGracza[i];
+    rosterBezGracza[i] = rosterBezGracza[j];
+    rosterBezGracza[j] = tmp;
+  }
+  const aktywneKlucze = [playerKlucz, ...rosterBezGracza.slice(0, nTypy - 1)];
+  const rosterTrimmed = aktywneKlucze.slice(0, centrumy.length);
+  while (rosterTrimmed.length < centrumy.length) {
+    rosterTrimmed.push(`typ${rosterTrimmed.length}`);
+  }
+  const masses = groupHabitableMasses(ladowe);
+  let activeCentrumy = centrumy.slice();
+  let activeKlucze = rosterTrimmed.slice();
+  let regiony = assignVoronoiRegions(ladowe, activeCentrumy);
+  const dominanceResult = enforceLocalLandDominance(
+    map2,
+    activeCentrumy,
+    regiony,
+    activeKlucze,
+    ladowe,
+    masses,
+    rand,
+    minDystKlastrow,
+    mapCenter
+  );
+  activeCentrumy = dominanceResult.centrumy;
+  activeKlucze = dominanceResult.aktywneKlucze;
+  regiony = dominanceResult.regiony;
+  if (activeCentrumy.length < nTypy && typeof console !== "undefined") {
+    console.warn(
+      `[clusters] Po bramce lokalnego l\u0105du 70% (R=${LOCAL_LAND_DOMINANCE_RADIUS}): ${activeCentrumy.length}/${nTypy} aktywnych klastr\xF3w`
+    );
+  }
+  const klastry = [];
+  const stateCityCount = rywaleNaKlaster;
+  const playerCentrum = activeCentrumy[0];
+  const playerRegion = regiony[0];
+  const playerLayoutResult = buildClusterCitiesWithLandGate(
+    map2,
+    playerRegion,
+    playerCentrum,
+    stateCityCount,
+    minDystMiastaPanstwa,
+    rand,
+    void 0,
+    seed,
+    masses,
+    [],
+    minDystKlastrow
+  );
+  let playerCentrumFinal = playerCentrum;
+  let playerLayout;
+  if (playerLayoutResult) {
+    playerLayout = playerLayoutResult;
+    playerCentrumFinal = playerLayoutResult.centrum;
+  } else {
+    const forced = pickPlayerClusterCenter(map2, masses, ladowe, mapCenter, rand);
+    if (forced) {
+      playerCentrumFinal = forced;
+      playerLayout = {
+        cities: [{ q: forced.q, r: forced.r, isCapital: true }],
+        pendingStateSlots: [],
+        growthSlot: null
+      };
+    } else {
+      playerLayout = { cities: [], pendingStateSlots: [], growthSlot: null };
+    }
+  }
+  let playerCapital = playerLayout.cities.find((m) => m.isCapital) ?? playerLayout.cities[0];
+  let playerCapitalPos = playerCapital ? { q: playerCapital.q, r: playerCapital.r } : playerCentrumFinal;
+  if (!passesPlayerStartMassGate(map2, playerCapitalPos.q, playerCapitalPos.r, masses)) {
+    const fixed = pickPlayerClusterCenter(map2, masses, ladowe, mapCenter, rand);
+    if (fixed) {
+      playerCentrumFinal = fixed;
+      playerCapitalPos = fixed;
+      playerLayout = {
+        cities: [{ q: fixed.q, r: fixed.r, isCapital: true }],
+        pendingStateSlots: [],
+        growthSlot: null
+      };
+    }
+  }
+  const playerStateSlots = packRivalCitiesAroundCore(
+    ladowe,
+    playerCapitalPos,
+    stateCityCount,
+    minDystMiastaPanstwa,
+    seed
+  );
+  klastry.push({
+    typIndex: 0,
+    typ: activeKlucze[0] ?? playerKlucz,
+    centrum: playerCentrumFinal,
+    miasta: playerLayout.cities,
+    pendingStateSlots: playerStateSlots,
+    growthSlot: playerLayout.growthSlot
+  });
+  for (let ci = 1; ci < activeCentrumy.length; ci++) {
+    const centrum = activeCentrumy[ci];
+    const region = regiony[ci];
+    const foreignLayoutResult = buildClusterCitiesWithLandGate(
+      map2,
+      region,
+      centrum,
+      stateCityCount,
+      MIN_DIST_FOREIGN_IN_CLUSTER,
+      rand,
+      { q: playerCapitalPos.q, r: playerCapitalPos.r, minDist: minDystObcyOdGracza },
+      seed,
+      masses,
+      activeCentrumy.slice(0, ci),
+      minDystKlastrow
+    );
+    if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) continue;
+    klastry.push({
+      typIndex: klastry.length,
+      typ: activeKlucze[ci] ?? `typ${ci}`,
+      centrum: foreignLayoutResult.centrum,
+      miasta: foreignLayoutResult.cities,
+      growthSlot: foreignLayoutResult.growthSlot
+    });
+  }
+  if (typeof console !== "undefined") {
+    for (let ci = 0; ci < klastry.length; ci++) {
+      const k = klastry[ci];
+      if (k.miasta.length < stateCityCount + 1) {
+        console.warn(
+          `[clusters] Klaster '${k.typ}' (region ${ci}): tylko ${k.miasta.length}/${stateCityCount + 1} miast (region za ma\u0142y: ${regiony[ci].length} pol ladowych)`
+        );
+      }
+    }
+  }
+  const placedTypy = klastry.filter((k) => k.miasta.length > 0).length;
+  return {
+    rozmiarMapy,
+    aktywneTypy: placedTypy,
+    requestedTypy: nTypy,
+    minDystansMiastaPanstwa: minDystMiastaPanstwa,
+    maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
+    minDystansObcyOdGracza: minDystObcyOdGracza,
+    playerTypIndex: 0,
+    klastry
+  };
+}
+
 // src/map/generator.ts
 var DEFAULT_WIDTH = 36;
 var DEFAULT_HEIGHT = 28;
@@ -6367,27 +7118,3278 @@ function rozmiarFromMenuLabel(label) {
   return "standardowy";
 }
 function rozmiarToDims(rozmiar) {
-  const [w, h] = ROZMIAR_DIMS[rozmiar];
-  return { w, h };
+  const [w2, h2] = ROZMIAR_DIMS[rozmiar];
+  return { w: w2, h: h2 };
 }
 function menuLabelToDims(label) {
   return rozmiarToDims(rozmiarFromMenuLabel(label));
 }
 function generujSwiat(seed, rozmiar, typ = "kontynenty", genOpts, onProgress) {
   const effectiveSeed = seed && seed !== 0 ? seed : (Date.now() ^ 3735928559) >>> 0 || 42;
-  const [w, h] = ROZMIAR_DIMS[rozmiar];
+  const [w2, h2] = ROZMIAR_DIMS[rozmiar];
   onProgress?.("Przygotowanie mapy", 5, 1, 6);
-  const map = generateMap(w, h, effectiveSeed, typ, genOpts);
+  const map2 = generateMap(w2, h2, effectiveSeed, typ, genOpts);
   onProgress?.("Pozycje startowe", 100, 6, 7);
-  return map;
+  return map2;
 }
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
-  defaultCivTypesFromMapLabel,
-  defaultMiastaPanstwaFromMapLabel,
-  expectedStartCityCount,
-  generujSwiat,
-  pathEndsAtSea,
-  pathReachesRealSea,
-  targetVillageHutCount
+
+// src/game/city-names-pool.ts
+function nazwaKlastraAt(names, index, fallback) {
+  if (index >= 0 && index < names.length && names[index]) {
+    return names[index];
+  }
+  return fallback;
+}
+function poolEntry(pools, ikonaId) {
+  return pools[ikonaId];
+}
+function rivalPoolIndex(rivalIndex1Based, poolLen) {
+  if (poolLen <= 1) return 0;
+  const rivalSlots = poolLen - 1;
+  return (Math.max(1, rivalIndex1Based) - 1) % rivalSlots + 1;
+}
+function stateCityNameAt(pools, ikonaId, index, fallback) {
+  const pan = poolEntry(pools, ikonaId)?.miasta_panstwa;
+  if (!pan?.length) return fallback;
+  const idx = index >= 1 ? rivalPoolIndex(index, pan.length) : index;
+  if (idx >= 0 && idx < pan.length && pan[idx]) {
+    return pan[idx];
+  }
+  return fallback;
+}
+function playerCapitalFromPool(pools, ikonaId) {
+  return stateCityNameAt(pools, ikonaId, 0, "Stolica");
+}
+function clusterRivalFromPool(pools, ikonaId, rivalIndex1Based) {
+  const entry = poolEntry(pools, ikonaId);
+  const pan = entry?.miasta_panstwa ?? [];
+  const fallback = `Rywal ${rivalIndex1Based}`;
+  if (!pan.length || rivalIndex1Based < 1) {
+    return fallback;
+  }
+  const rivalSlots = pan.length - 1;
+  if (rivalIndex1Based <= rivalSlots) {
+    const idx = rivalPoolIndex(rivalIndex1Based, pan.length);
+    const name = pan[idx];
+    if (name) return name;
+  }
+  const regular = entry?.miasta_cywilizacji ?? [];
+  const usedInCluster = new Set(pan.filter(Boolean));
+  const overflowIndex = rivalIndex1Based - rivalSlots - 1;
+  let skipped = 0;
+  for (const name of regular) {
+    if (!name || usedInCluster.has(name)) continue;
+    if (skipped === overflowIndex) return name;
+    skipped++;
+  }
+  const base = regular.find((n) => n && !usedInCluster.has(n));
+  if (base) {
+    return cityNameWithSuffix(base, overflowIndex + 2);
+  }
+  return fallback;
+}
+function foreignCapitalFromPool(pools, ikonaId) {
+  return stateCityNameAt(pools, ikonaId, 0, ikonaId);
+}
+function cityNameWithSuffix(base, ordinal) {
+  if (ordinal <= 1) return base;
+  const roman = ["", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  const suffix = ordinal <= 10 ? roman[ordinal] : String(ordinal);
+  return `${base} ${suffix}`;
+}
+
+// src/game/civ-names.ts
+function findCivByIkonaId(civs, ikonaId) {
+  return civs.cywilizacje.find((c) => c.ikonaId === ikonaId);
+}
+function getNazwyKlastra(civs, ikonaId) {
+  const def = findCivByIkonaId(civs, ikonaId);
+  return def?.nazwyKlastra ?? [];
+}
+function playerStartCityName(civs, playerCivId, pools) {
+  if (pools?.[playerCivId]) {
+    return playerCapitalFromPool(pools, playerCivId);
+  }
+  const names = getNazwyKlastra(civs, playerCivId);
+  return nazwaKlastraAt(names, 0, "Stolica");
+}
+function clusterRivalCityName(civs, playerCivId, rivalIndex1Based, pools) {
+  if (pools?.[playerCivId]) {
+    return clusterRivalFromPool(pools, playerCivId, rivalIndex1Based);
+  }
+  const names = getNazwyKlastra(civs, playerCivId);
+  if (!names.length) return `Rywal ${rivalIndex1Based}`;
+  const idx = rivalIndex1Based >= 1 ? rivalPoolIndex(rivalIndex1Based, names.length) : rivalIndex1Based;
+  return nazwaKlastraAt(names, idx, `Rywal ${rivalIndex1Based}`);
+}
+function foreignCapitalCityName(civs, typIkonaId, pools) {
+  if (pools?.[typIkonaId]) {
+    return foreignCapitalFromPool(pools, typIkonaId);
+  }
+  const names = getNazwyKlastra(civs, typIkonaId);
+  return nazwaKlastraAt(names, 0, typIkonaId);
+}
+
+// src/map/cluster-spawn.ts
+function landHexesFromMap(map2) {
+  const out = [];
+  for (const h2 of Object.values(map2.hexes)) {
+    if (h2.terenBazowy === "morze" /* Morze */ || h2.terenBazowy === "gory" /* Gory */ || h2.terenBazowy === "wybrzeze" /* Wybrzeze */ || h2.terenBazowy === "polarny" /* Polarny */) continue;
+    out.push({ q: h2.coords.q, r: h2.coords.r });
+  }
+  return out;
+}
+function capitalOf(klaster) {
+  const cap = klaster.miasta.find((m) => m.isCapital) ?? klaster.miasta[0];
+  return cap ? { q: cap.q, r: cap.r } : null;
+}
+function groupForeignTypeClusters(slots) {
+  const byTyp = /* @__PURE__ */ new Map();
+  for (const slot of slots) {
+    if (slot.isSameTypeRival) continue;
+    let group = byTyp.get(slot.typ);
+    if (!group) {
+      group = { typ: slot.typ, ownerIds: [], positions: [] };
+      byTyp.set(slot.typ, group);
+    }
+    group.ownerIds.push(slot.ownerId);
+    group.positions.push({ q: slot.q, r: slot.r });
+  }
+  return [...byTyp.values()];
+}
+function buildClusterSpawnPlan(input) {
+  const {
+    map: map2,
+    civs,
+    seed,
+    playerTyp,
+    rywaleNaKlaster,
+    aktywneTypy,
+    startEpochId,
+    cityNamesPools
+  } = input;
+  const placement2 = computeClusters(map2, {
+    seed,
+    playerTyp,
+    rywaleNaKlaster,
+    aktywneTypy,
+    startEpochId,
+    civRoster: civs.cywilizacje
+  });
+  const playerCluster = placement2.klastry[placement2.playerTypIndex];
+  const fallbackHex = { q: 0, r: 0 };
+  if (!playerCluster || playerCluster.miasta.length === 0) {
+    return {
+      playerStartHex: fallbackHex,
+      playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
+      slots: [],
+      foreignTypeClusters: [],
+      placement: placement2,
+      pendingSameTypeRivals: rywaleNaKlaster,
+      pendingSameTypeRivalHexes: [],
+      clusterCapitalOwnerIds: []
+    };
+  }
+  const capPosRaw = capitalOf(playerCluster) ?? fallbackHex;
+  const land = landHexesFromMap(map2);
+  const masses = groupHabitableMasses(land);
+  let capPos = capPosRaw;
+  if (!passesPlayerStartMassGate(map2, capPos.q, capPos.r, masses)) {
+    const mapCenter = {
+      q: (map2.szerokoscQ - 1) / 2,
+      r: (map2.wysokoscR - 1) / 2
+    };
+    const fixed = pickPlayerClusterCenter(map2, masses, land, mapCenter, mulberry32(seed));
+    if (fixed) capPos = fixed;
+  }
+  const slots = [];
+  const clusterCapitalOwnerIds = [];
+  let nextOwnerId = 1;
+  const pendingSameTypeRivals = rywaleNaKlaster;
+  const pendingSameTypeRivalHexes = playerCluster.pendingStateSlots?.slice() ?? [];
+  for (const klaster of placement2.klastry) {
+    if (klaster.typIndex === placement2.playerTypIndex) continue;
+    let rivalIdx = 0;
+    for (const m of klaster.miasta) {
+      const ownerId = nextOwnerId++;
+      let nazwa;
+      if (m.isCapital) {
+        nazwa = foreignCapitalCityName(civs, klaster.typ, cityNamesPools);
+        clusterCapitalOwnerIds.push(ownerId);
+      } else {
+        rivalIdx += 1;
+        nazwa = clusterRivalCityName(civs, klaster.typ, rivalIdx, cityNamesPools);
+      }
+      slots.push({
+        ownerId,
+        q: m.q,
+        r: m.r,
+        nazwaMiasta: nazwa,
+        typ: klaster.typ,
+        isSameTypeRival: false,
+        isPlayerCapital: false,
+        isClusterCapital: m.isCapital
+      });
+    }
+  }
+  return {
+    playerStartHex: capPos,
+    playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
+    slots,
+    foreignTypeClusters: groupForeignTypeClusters(slots),
+    placement: placement2,
+    pendingSameTypeRivals,
+    pendingSameTypeRivalHexes,
+    clusterCapitalOwnerIds
+  };
+}
+function displayLabelForSlot(_civs, slot) {
+  return slot.nazwaMiasta;
+}
+
+// data/civs.json
+var civs_default = {
+  cywilizacje: [
+    {
+      Cywilizacja: "Grecy",
+      "Styl / charakter": "defensywna piechota",
+      "Jednostka specjalna": "Falanga (Hoplita)",
+      "Bonus startowy": "+Obrona piechoty; silna od frontu, odpiera szar\u017C\u0119",
+      "Bonusy/minusy (do dopracowania)": "wolniejszy ruch",
+      Uwagi: "epoka Br\u0105zu",
+      Religia: "Politeizm olimpijski",
+      nazwyKlastra: [
+        "Ateny",
+        "Sparta",
+        "Korynt",
+        "Teby",
+        "Argos",
+        "Mykeny",
+        "Milet",
+        "Rodos",
+        "Syrakuzy",
+        "Delfy"
+      ],
+      mnoznikHandelPieniadz: 2.3,
+      ikonaId: "grecy",
+      wodzowiePula: ["Perykles", "Temistokles", "Miltiades", "Kimon", "Solon", "Kleistenes", "Lizander", "Epaminondas", "Pelopidas", "Alkibiades"],
+      wodzowie: {
+        kamien: "Minos",
+        braz: "Agamemnon",
+        zelazo: "Leonidas",
+        antyk: "Aleksander Wielki"
+      },
+      kolorHex: "#1E5AA8",
+      bonusy: [
+        {
+          typ: "bonus_obrona",
+          cel: "piechota",
+          wartosc: 0.2,
+          opis: "Falanga: +20% obrony piechoty przy ataku frontalnym (szyld i oszczep)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Falanga",
+            "Wojownik myke\u0144ski",
+            "Rydwan myke\u0144ski",
+            "Thorakites"
+          ],
+          opis: "Hoplita = ulepszona piechota z tarcz\u0105; silna od frontu, odpiera szar\u017C\u0119 kawalerii",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.15,
+          opis: "Morskie szlaki handlowe: +15% Daniny z port\xF3w i dr\xF3g morskich (Korynt, Ateny)",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_pobor_regen",
+          cel: "rekruci",
+          wartosc: -0.15,
+          opis: "Mniejsze pa\u0144stwa-miasta: wolniejsza odnowa poboru (\u221215% regen/tur\u0119 vs standard 10%)",
+          realizuje: "ekonomia"
+        }
+      ],
+      typCywilizacji: "grecy",
+      archetyp: "grecy",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Ateny",
+        "Sparta",
+        "Korynt",
+        "Teby",
+        "Argos",
+        "Mykeny",
+        "Milet",
+        "Rodos",
+        "Syrakuzy",
+        "Delfy",
+        "Olimpia",
+        "Efez",
+        "Pergamon",
+        "Halikarnas",
+        "Knossos",
+        "Faistos",
+        "Chania",
+        "Epidauros",
+        "Nafplion",
+        "Megara",
+        "Eleusis",
+        "Maraton",
+        "Platoje",
+        "Chalkida",
+        "Eretria",
+        "Larisa",
+        "Farsalos",
+        "Trikala",
+        "Iolkos",
+        "Demetrias",
+        "Ambrakia",
+        "Nikopolis",
+        "Dodona",
+        "Patras",
+        "Elis",
+        "Pylos",
+        "Messene",
+        "Gytheion",
+        "Monemwazja",
+        "Mistra",
+        "Tegea",
+        "Mantineja",
+        "Orchomenos",
+        "Chaironeja",
+        "Lebadeia",
+        "Tanagra",
+        "Aulis",
+        "Amfissa",
+        "Naupaktos",
+        "Kalydon",
+        "Stratos",
+        "Apollonia Illiryjska",
+        "Epidamnos",
+        "Korkyra",
+        "Zakintos",
+        "Kefalonia",
+        "Itaka",
+        "Leukas",
+        "Samos",
+        "Chios",
+        "Mitylena",
+        "Fokaja",
+        "Smyrna",
+        "Klazomeny",
+        "Kolofon",
+        "Teos",
+        "Erytraj",
+        "Priene",
+        "Magnezja",
+        "Milas",
+        "Knidos",
+        "Kos",
+        "Kalymnos",
+        "Astypalaia",
+        "Naksos",
+        "Paros",
+        "Melos",
+        "Tera",
+        "Delos",
+        "Andros",
+        "Tenos",
+        "Mykonos",
+        "Kytnos",
+        "Sifnos",
+        "Ios",
+        "Amorgos",
+        "Karpatos",
+        "Gortyna",
+        "Kydonia",
+        "Lyktos",
+        "Polirinia",
+        "Eleutherna",
+        "Aptera",
+        "Kyrena",
+        "Bizantion",
+        "Selinunt",
+        "Agrygent",
+        "Gela",
+        "Katania",
+        "Messyna"
+      ]
+    },
+    {
+      Cywilizacja: "Rzymianie",
+      "Styl / charakter": "ofensywna piechota + in\u017Cynieria",
+      "Jednostka specjalna": "Legion (Legionista)",
+      "Bonus startowy": "silny atak + pancerz; szybsza budowa dr\xF3g/budynk\xF3w; +Morale (dyscyplina)",
+      "Bonusy/minusy (do dopracowania)": "wy\u017Csze utrzymanie armii",
+      Uwagi: null,
+      Religia: "Religia rzymska / kult pa\u0144stwa",
+      nazwyKlastra: [
+        "Rzym",
+        "Ostia",
+        "Kapua",
+        "Pompeje",
+        "Tarent",
+        "Mediolan",
+        "Akwileja",
+        "Rawenna",
+        "Weje",
+        "Ancjum"
+      ],
+      mnoznikHandelPieniadz: 2,
+      ikonaId: "rzymianie",
+      wodzowiePula: ["Kamillus", "Cyncynat", "Fabiusz Maksymus", "Katon Starszy", "Emiliusz Paulus", "Klaudiusz", "Waleriusz", "Korneliusz", "Serwiliusz", "Fulwiusz"],
+      wodzowie: {
+        kamien: "Romulus",
+        braz: "Numa Pompiliusz",
+        zelazo: "Scypion Afryka\u0144ski",
+        antyk: "Juliusz Cezar"
+      },
+      kolorHex: "#8B1A1A",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Legion: +15% ataku i pancerza piechoty szturmowej; dyscyplina bojowa +morale",
+          realizuje: "walka"
+        },
+        {
+          typ: "koszt_redukcja",
+          cel: "budynki",
+          wartosc: 0.2,
+          opis: "In\u017Cynieria rzymska: -20% kosztu Produkcji budowli; szybsza budowa dr\xF3g",
+          realizuje: "miasto"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Hastati",
+            "Triari"
+          ],
+          opis: "Legionista = ci\u0119\u017Cka piechota z pilum; silny atak + pancerz + morale",
+          realizuje: "walka"
+        },
+        {
+          typ: "mnoznik_manpower_max",
+          cel: "rekruci",
+          wartosc: 2,
+          opis: "Legiony: 2\xD7 pula Manpower na obywatela (np. 2000 vs 1000 w epoce Kamie\u0144)",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_pobor_regen",
+          cel: "rekruci",
+          wartosc: 1,
+          opis: "Dyscyplina legion\xF3w: 2\xD7 szybsza odnowa poboru (4% max/tur\u0119 vs standard 2%)",
+          realizuje: "ekonomia"
+        }
+      ],
+      typCywilizacji: "rzymianie",
+      archetyp: "rzym",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Rzym",
+        "Ostia",
+        "Kapua",
+        "Pompeje",
+        "Tarent",
+        "Mediolan",
+        "Akwileja",
+        "Rawenna",
+        "Weje",
+        "Ancjum",
+        "Neapol",
+        "Herkulanum",
+        "Werona",
+        "Padwa",
+        "Brescia",
+        "Turyn",
+        "Genua",
+        "Piza",
+        "Florencja",
+        "Perugia",
+        "Asy\u017C",
+        "Rimini",
+        "Bolonia",
+        "Parma",
+        "Modena",
+        "Ferrara",
+        "Terracina",
+        "Formia",
+        "Gaeta",
+        "Brindisi",
+        "Bari",
+        "Otranto",
+        "Lecce",
+        "Reggio Kalabria",
+        "Krotona",
+        "Sybaris",
+        "Metapont",
+        "Lokri",
+        "Cumae",
+        "Puzzole",
+        "Benewent",
+        "Alba Longa",
+        "Tuskulum",
+        "Preneste",
+        "Tibur",
+        "Antium",
+        "Lawinium",
+        "Fidenae",
+        "Cerveteri",
+        "Tarquinia",
+        "Volterra",
+        "Arezzo",
+        "Kortona",
+        "Chiusi",
+        "Perugia Etruska",
+        "Vulci",
+        "Populonia",
+        "Fiesole",
+        "Luka",
+        "Pistoia",
+        "Akwilea Nowa",
+        "Trewir",
+        "Kolonia",
+        "Moguncja",
+        "Augsburg",
+        "Wiede\u0144 Rzymski",
+        "Lugdunum",
+        "Massalia",
+        "Arles",
+        "Nimes",
+        "Narbona",
+        "Tuluza",
+        "Bordeaux",
+        "Londinium",
+        "York",
+        "Bath",
+        "Chester",
+        "Kartagena Hiszpa\u0144ska",
+        "Tarragona",
+        "Merida",
+        "Sewilla",
+        "Kordoba",
+        "Saragossa",
+        "Efez Rzymski",
+        "Antiochia",
+        "Damaszek",
+        "Cezarea Nadmorska",
+        "Aleksandria",
+        "Cyrena",
+        "Leptis Magna",
+        "Sabratha",
+        "Utica",
+        "Timgad",
+        "Volubilis",
+        "Bizancjum",
+        "Nikomedia",
+        "Tesaloniki",
+        "Filippi",
+        "Dyrrachium",
+        "Salona"
+      ]
+    },
+    {
+      Cywilizacja: "Chi\u0144czycy",
+      "Styl / charakter": "dystans + kawaleria",
+      "Jednostka specjalna": "Je\u017Adziec chi\u0144ski",
+      "Bonus startowy": "lepsi \u0142ucznicy (+Atak/zasi\u0119g) i lepsza konnica (+Uderzenie)",
+      "Bonusy/minusy (do dopracowania)": "s\u0142absza piechota szturmowa wr\u0119cz (nacisk na dystans i konnic\u0119)",
+      Uwagi: "wczesna przewaga w wojnie dystansowej",
+      Religia: "Konfucjanizm / Taoizm",
+      nazwyKlastra: [
+        "Qin",
+        "Qi",
+        "Chu",
+        "Jin",
+        "Yan",
+        "Zhao",
+        "Wei",
+        "Han",
+        "Lu",
+        "Song"
+      ],
+      mnoznikHandelPieniadz: 2.4,
+      ikonaId: "chinczycy",
+      wodzowiePula: ["Cheng Tang", "Wu Ding", "Wen Wang", "Zhou Gong", "Goujian", "Fuchai", "Hel\xFC", "Ksiaze Mu", "Ksiaze Huan", "Zhuang"],
+      wodzowie: {
+        kamien: "Huang Di",
+        braz: "Yu Wielki",
+        zelazo: "Qin Shi Huang",
+        antyk: "Han Wudi"
+      },
+      kolorHex: "#C41E3A",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "lukownicy",
+          wartosc: 0.2,
+          opis: "\u0141ucznicy: +20% ataku i zasi\u0119gu jednostek dystansowych (przewaga dystansowa)",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "kawaleria",
+          wartosc: 0.15,
+          opis: "Konnica stepowa: +15% uderzenia kawalerii przy szar\u017Cy",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "kawaleria",
+          wartosc: [
+            "Je\u017Adziec chi\u0144ski",
+            "Halabardnik Shang",
+            "Rydwan Shang"
+          ],
+          opis: "Chi\u0144scy specjali\u015Bci: Je\u017Adziec chi\u0144ski (kawaleria stepowa), Halabardnik Shang (elitarna piechota), Rydwan Shang (rydwan bojowy)",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "chinczycy",
+      archetyp: "chiny",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Xi'an",
+        "Luoyang",
+        "Pekin",
+        "Nankin",
+        "Kaifeng",
+        "Hangzhou",
+        "Suzhou",
+        "Chengdu",
+        "Chongqing",
+        "Wuhan",
+        "Guangzhou",
+        "Shanghai",
+        "Tianjin",
+        "Shenyang",
+        "Harbin",
+        "Jinan",
+        "Taiyuan",
+        "Zhengzhou",
+        "Anyang",
+        "Handan",
+        "Linzi",
+        "Yingdu",
+        "Xianyang",
+        "Datong",
+        "Dunhuang",
+        "Turfan",
+        "Kaszgar",
+        "Lanzhou",
+        "Yinchuan",
+        "Xining",
+        "Kunming",
+        "Guiyang",
+        "Nanning",
+        "Fuzhou",
+        "Xiamen",
+        "Quanzhou",
+        "Ningbo",
+        "Wenzhou",
+        "Shaoxing",
+        "Jiaxing",
+        "Wuxi",
+        "Changzhou",
+        "Yangzhou",
+        "Zhenjiang",
+        "Hefei",
+        "Nanchang",
+        "Changsha",
+        "Guilin",
+        "Luoyi",
+        "Chang'an Nowy",
+        "Pingyao",
+        "Qufu",
+        "Zoucheng",
+        "Jining",
+        "Dezhou",
+        "Weifang",
+        "Yantai",
+        "Qingdao",
+        "Weihai",
+        "Baoding",
+        "Shijiazhuang",
+        "Handan Nowy",
+        "Xingtai",
+        "Luoning",
+        "Sanmenxia",
+        "Nanyang",
+        "Xiangyang",
+        "Jingzhou",
+        "Yichang",
+        "Jingmen",
+        "Ying",
+        "Shou Chun",
+        "Chen",
+        "Song Cheng",
+        "Pengcheng",
+        "Xiapi",
+        "Guangling",
+        "Jiankang",
+        "Jiangling",
+        "Wancheng",
+        "Chengzhou",
+        "Jinyang",
+        "Anyi",
+        "Yong",
+        "Yueyang",
+        "Fenyang",
+        "Puzhou",
+        "Wei Cheng",
+        "Daliang",
+        "Ye",
+        "Handan Stary",
+        "Zhongshan",
+        "Jicheng",
+        "Xiadu",
+        "Liaoyang",
+        "Yan Cheng",
+        "Jimo",
+        "Bohai",
+        "Laizhou",
+        "Dengzhou"
+      ]
+    },
+    {
+      Cywilizacja: "Inkowie",
+      "Styl / charakter": "nauka/kultura + elitarna piechota",
+      "Jednostka specjalna": "Chaska (maczuga gwia\u017Adzista) + Kr\xF3lewska Gwardia (elita)",
+      "Bonus startowy": "+Nauka/Kultura (kalendarz); bonus w lesie/d\u017Cungli",
+      "Bonusy/minusy (do dopracowania)": "brak konnicy i rydwan\xF3w (brak koni/wo\u0142\xF3w; \xA78c) \u2014 si\u0142a w piechocie i dystansie",
+      Uwagi: null,
+      Religia: "Kult S\u0142o\u0144ca Inti",
+      nazwyKlastra: [
+        "Cusco",
+        "Machu Picchu",
+        "Ollantaytambo",
+        "Pisac",
+        "Sacsayhuam\xE1n",
+        "Vilcabamba",
+        "Cajamarca",
+        "Tambo Colorado",
+        "Quito",
+        "Tumbes"
+      ],
+      mnoznikHandelPieniadz: 1.9,
+      ikonaId: "inkowie",
+      wodzowiePula: ["Sinchi Roca", "Lloque Yupanqui", "Mayta Capac", "Capac Yupanqui", "Inca Roca", "Yahuar Huacac", "Tupac Yupanqui", "Huayna Capac", "Atahualpa", "Huascar"],
+      wodzowie: {
+        kamien: "Manco C\xE1pac",
+        braz: "Wirakocza Inka",
+        zelazo: "Pachacuti",
+        antyk: "T\xFApac Inca Yupanqui"
+      },
+      kolorHex: "#D4A017",
+      bonusy: [
+        {
+          typ: "bonus_nauka",
+          cel: "wszystko",
+          wartosc: 0.15,
+          opis: "Kalendarz s\u0142oneczny: +15% produkcji punkt\xF3w nauki (astronomia i agronomia)",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.2,
+          opis: "Teren g\xF3rski: +20% walki w lesie i d\u017Cungli (znajomo\u015B\u0107 terenu)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Wojownik z maczug\u0105 (Chaska)",
+            "Wojownik z toporem",
+            "Procarz (Huaracoc)",
+            "Oszczepnik (Est\xF3lica)",
+            "Gwardzista z champi"
+          ],
+          opis: "Chaska (maczuga gwia\u017Adzista) = elitarna piechota; Kr\xF3lewska Gwardia = oddzia\u0142y presti\u017Cowe",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "inkowie",
+      archetyp: "inkowie",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Cusco",
+        "Machu Picchu",
+        "Ollantaytambo",
+        "Pisac",
+        "Sacsayhuam\xE1n",
+        "Vilcabamba",
+        "Cajamarca",
+        "Tambo Colorado",
+        "Quito",
+        "Tumbes",
+        "Chan Chan",
+        "Chavin de Huantar",
+        "Tiwanaku",
+        "Pachacamac",
+        "Nazca",
+        "Caral",
+        "Kuelap",
+        "Choquequirao",
+        "Wi\xF1ay Wayna",
+        "Moray",
+        "Tipon",
+        "Raqchi",
+        "Huanuco Pampa",
+        "Vilcashuaman",
+        "Chinchero",
+        "Pisac Nowy",
+        "Ancon",
+        "Sipan",
+        "T\xFAcume",
+        "Bat\xE1n Grande",
+        "Sican",
+        "Huaca del Sol",
+        "Huaca de la Luna",
+        "Chavin",
+        "Sillustani",
+        "Puno",
+        "Copacabana",
+        "Chucuito",
+        "Juli",
+        "Pomata",
+        "Lampa",
+        "Azangaro",
+        "Ayaviri",
+        "Huancayo",
+        "Jauja",
+        "Tarma",
+        "Huanuco",
+        "Cerro de Pasco",
+        "Huaraz",
+        "Recuay",
+        "Huamachuco",
+        "Marcahuamachuco",
+        "Cajamarquilla",
+        "Lima Inkaska",
+        "Ica",
+        "Pisco",
+        "Paracas",
+        "Arequipa",
+        "Moquegua",
+        "Tacna",
+        "Arica",
+        "Potosi",
+        "La Paz Inkaska",
+        "Oruro",
+        "Cochabamba",
+        "Sucre",
+        "Charcas",
+        "Chuquisaca",
+        "Samaipata",
+        "Incallajta",
+        "Iskanwaya",
+        "Quito Nowe",
+        "Latacunga",
+        "Ambato",
+        "Riobamba",
+        "Cuenca",
+        "Loja",
+        "Ingapirca",
+        "Tomebamba",
+        "Saraguro",
+        "Ca\xF1aribamba",
+        "Piura",
+        "Chulucanas",
+        "Lambayeque",
+        "Chiclayo",
+        "Trujillo",
+        "Huamachuco Nowy",
+        "Otuzco",
+        "Cajabamba",
+        "Celendin",
+        "San Marcos",
+        "Chota",
+        "Bambamarca",
+        "Huancabamba",
+        "Ayacucho",
+        "Huanta",
+        "Andahuaylas",
+        "Abancay",
+        "Curahuasi",
+        "Vilcashuaman Nowy"
+      ]
+    },
+    {
+      Cywilizacja: "Zulusi",
+      "Styl / charakter": "szybka, agresywna piechota",
+      "Jednostka specjalna": "Impi",
+      "Bonus startowy": "+Ruch i +Morale piechoty; tania, silna w grupie",
+      "Bonusy/minusy (do dopracowania)": "s\u0142aby dystans",
+      Uwagi: null,
+      Religia: "Kult przodk\xF3w / animizm",
+      nazwyKlastra: [
+        "uMgungundlovu",
+        "Ondini",
+        "Ulundi",
+        "kwaBulawayo",
+        "eMakhosini",
+        "Nobamba",
+        "Nodwengu",
+        "kwaDukuza",
+        "Mahlabathini",
+        "Babanango"
+      ],
+      mnoznikHandelPieniadz: 1.8,
+      ikonaId: "zulusi",
+      wodzowiePula: ["Dingane", "Mpande", "Ndaba", "Jama", "Punga", "Mageba", "Zwide", "Sobhuza", "Dingiswayo", "Langalibalele"],
+      wodzowie: {
+        kamien: "Zulu kaMalandela",
+        braz: "Senzangakhona",
+        zelazo: "Czaka",
+        antyk: "Cetshwayo"
+      },
+      kolorHex: "#2E7D32",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.2,
+          opis: "Ruch i morale: +20% pr\u0119dko\u015Bci piechoty i +morale przy ataku w grupie (formacja buffalo)",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.1,
+          opis: "Tania rekrutacja: koszt rekrutacji Impi -10% (liczebno\u015B\u0107 > jako\u015B\u0107)",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Impi",
+            "Oszczepnik Zulu (Izijula)",
+            "iButho z iklwa"
+          ],
+          opis: "Impi = szybka piechota z assegai; silna w zmasowanym ataku, s\u0142aba na dystans",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "zulusi",
+      archetyp: "zulusi",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "uMgungundlovu",
+        "Ondini",
+        "Ulundi",
+        "kwaBulawayo",
+        "eMakhosini",
+        "Nobamba",
+        "Nodwengu",
+        "kwaDukuza",
+        "Mahlabathini",
+        "Babanango",
+        "Isandlwana",
+        "kwaGqokli",
+        "Eshowe",
+        "Empangeni",
+        "Nongoma",
+        "Nkandla",
+        "Mtunzini",
+        "Melmoth",
+        "Vryheid",
+        "Pongola",
+        "Hlobane",
+        "Kambula",
+        "Gingindlovu",
+        "Ntombe",
+        "Msebe",
+        "Ndondakusuka",
+        "Ceza",
+        "Nkwalini",
+        "Mtubatuba",
+        "Hluhluwe",
+        "Mkuze",
+        "Jozini",
+        "Ubombo",
+        "Manguzi",
+        "Sodwana",
+        "kwaMbonambi",
+        "Richards Bay",
+        "St Lucia",
+        "Nseleni",
+        "Esikhawini",
+        "Gibixhegu",
+        "esiKlebheni",
+        "Mbelebeleni",
+        "kwaNzimela",
+        "kwaNxumalo",
+        "eNtumeni",
+        "kwaMagwaza",
+        "Hlabisa",
+        "Nqutu",
+        "Dundee",
+        "Utrecht",
+        "Newcastle",
+        "Ladysmith",
+        "Estcourt",
+        "Weenen",
+        "Greytown",
+        "Kranskop",
+        "Tugela Ferry",
+        "Msinga",
+        "Pomeroy",
+        "Nkonjeni",
+        "Louwsburg",
+        "Paulpietersburg",
+        "Piet Retief",
+        "Golela",
+        "Ingwavuma",
+        "Mahlangeni",
+        "Nondweni",
+        "Enseleni",
+        "Mandeni",
+        "Groutville",
+        "Stanger",
+        "Tongaat",
+        "Verulam",
+        "Ndwedwe",
+        "KwaMashu",
+        "Umlazi",
+        "Ntuzuma",
+        "Inanda",
+        "Amanzimtoti",
+        "Umzinto",
+        "Scottburgh",
+        "Port Shepstone",
+        "Harding",
+        "Ixopo",
+        "Underberg",
+        "Bulwer",
+        "Impendle",
+        "Nottingham Road",
+        "Mooi River",
+        "Winterton",
+        "Bergville",
+        "Colenso",
+        "Elandslaagte",
+        "Glencoe",
+        "Hattingspruit",
+        "Wasbank",
+        "Helpmekaar",
+        "Landman's Drift",
+        "Nongqayi"
+      ]
+    },
+    {
+      Cywilizacja: "Egipt",
+      "Styl / charakter": "rydwany + \u0142ucznicy dystansowi",
+      "Jednostka specjalna": "Med\u017Caj (Gwardia Faraona)",
+      "Bonus startowy": "+Atak dystansowy \u0142ucznik\xF3w; rydwany szybsze, z atakiem dystansowym i du\u017Cym zapasem strza\u0142u (rydwany-\u0142ucznicy)",
+      "Bonusy/minusy (do dopracowania)": "s\u0142absza ci\u0119\u017Cka piechota frontalna",
+      Uwagi: "Stary \u015Awiat \u2014 pe\u0142ny dost\u0119p do koni/wo\u0142\xF3w/rydwan\xF3w",
+      Religia: "Religia egipska \u2014 faraon-b\xF3g",
+      nazwyKlastra: [
+        "Memfis",
+        "Teby",
+        "Heliopolis",
+        "Abydos",
+        "Nekhen",
+        "Elefantyna",
+        "Sais",
+        "Bubastis",
+        "Edfu",
+        "Dendera"
+      ],
+      mnoznikHandelPieniadz: 2.1,
+      ikonaId: "egipt",
+      wodzowiePula: ["Dzeser", "Snofru", "Chefren", "Mykerinos", "Pepi II", "Mentuhotep II", "Amenemhat I", "Totmes III", "Amenhotep III", "Echnaton"],
+      wodzowie: {
+        kamien: "Narmer",
+        braz: "Chufu",
+        zelazo: "Ramzes II",
+        antyk: "Kleopatra VII"
+      },
+      kolorHex: "#E8C547",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "lukownicy",
+          wartosc: 0.2,
+          opis: "\u0141ucznicy na rydwanach: +20% ataku dystansowego; rydwany z du\u017Cym zapasem strza\u0142",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "rydwany",
+          wartosc: 0.15,
+          opis: "Szybkie rydwany: +15% pr\u0119dko\u015Bci i zasi\u0119gu ataku rydwan\xF3w bojowych",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "\u0141ucznik egipski",
+            "\u0141ucznik nubijski",
+            "Rydwan egipski",
+            "Wojownik z khopesh",
+            "Wojownik z \u017Celaznym khopesh"
+          ],
+          opis: "Med\u017Caj = elitarna gwardia; najlepsza piechota Egiptu, ochrona centrum miasta",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "egipt",
+      archetyp: "egipt",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Memfis",
+        "Teby",
+        "Heliopolis",
+        "Abydos",
+        "Nekhen",
+        "Elefantyna",
+        "Sais",
+        "Bubastis",
+        "Edfu",
+        "Dendera",
+        "Karnak",
+        "Luksor",
+        "Gize",
+        "Sakkara",
+        "Abu Simbel",
+        "Amarna",
+        "Achetaton",
+        "Awaris",
+        "Tanis",
+        "Piramunt",
+        "Buto",
+        "Naukratis",
+        "Rakotis",
+        "Aleksandria",
+        "Kanopus",
+        "Rozetta",
+        "Damietta",
+        "Mendes",
+        "Busiris",
+        "Pi-Ramzes",
+        "Herakleopolis",
+        "Oksyrynchos",
+        "Hermopolis",
+        "Asjut",
+        "Achmim",
+        "Koptos",
+        "Deir el-Bahari",
+        "Deir el-Medina",
+        "Medinet Habu",
+        "Ramesseum",
+        "Esna",
+        "Kom Ombo",
+        "Aswan",
+        "Filae",
+        "Kalabsza",
+        "Buhen",
+        "Kerma",
+        "Napata",
+        "Meroe",
+        "Semna",
+        "Faras",
+        "Nekropolis Teba\u0144ska",
+        "Hut-waret",
+        "Xois",
+        "Leontopolis",
+        "Sebennytos",
+        "Athribis",
+        "Letopolis",
+        "Krokodilopolis",
+        "Fajum",
+        "Herakleon",
+        "Marea",
+        "Paretonion",
+        "Siwa",
+        "Bahariya",
+        "Farafra",
+        "Dachla",
+        "Charga",
+        "Elkab",
+        "Hierakonpolis",
+        "Gebelein",
+        "Armant",
+        "Tod",
+        "Dendur",
+        "Amada",
+        "Wadi Halfa",
+        "Sesebi",
+        "Sai",
+        "Kawa",
+        "Sanam",
+        "Gebel Barkal",
+        "Nuri",
+        "Kurru",
+        "Musawwarat",
+        "Naga",
+        "Sarabit al-Chadim",
+        "Timna",
+        "Serabit",
+        "Tell el-Daba",
+        "Tell Basta",
+        "Tell el-Amarna",
+        "Kom el-Hisn",
+        "Kom el-Ahmar",
+        "Beni Hasan",
+        "El-Bersza",
+        "Meir",
+        "Qau el-Kebir",
+        "Rifa",
+        "Matmar",
+        "Badari"
+      ]
+    },
+    {
+      Cywilizacja: "Sumerowie",
+      "Styl / charakter": "ci\u0119\u017Cka piechota + \u0142ucznicy + mocne rydwany",
+      "Jednostka specjalna": "Gwardia Kr\xF3lewska Sumeru",
+      "Bonus startowy": "+Obrona i Health ci\u0119\u017Ckiej piechoty; silni \u0142ucznicy pieszni; ci\u0119\u017Ckie, mocne rydwany bojowe",
+      "Bonusy/minusy (do dopracowania)": "wolniejsza lekka kawaleria",
+      Uwagi: "Stary \u015Awiat \u2014 pe\u0142ny dost\u0119p do koni/wo\u0142\xF3w/rydwan\xF3w",
+      Religia: "Religia sumeryjska (mezopotamska) \u2014 Enlil/Anu",
+      nazwyKlastra: [
+        "Uruk",
+        "Ur",
+        "Lagasz",
+        "Kisz",
+        "Nippur",
+        "Eridu",
+        "Umma",
+        "Larsa",
+        "Adab",
+        "Isin"
+      ],
+      mnoznikHandelPieniadz: 2.2,
+      ikonaId: "sumer",
+      wodzowiePula: ["Etana", "Enmerkar", "Lugalbanda", "Dumuzi", "Eannatum", "Lugalzagesi", "Meskalamdug", "Mesannepada", "Enannatum", "Entemena"],
+      wodzowie: {
+        kamien: "Alulim",
+        braz: "Gilgamesz",
+        zelazo: "Ur-Nammu",
+        antyk: "Szulgi"
+      },
+      kolorHex: "#6B4226",
+      bonusy: [
+        {
+          typ: "bonus_obrona",
+          cel: "piechota",
+          wartosc: 0.2,
+          opis: "Ci\u0119\u017Cka piechota: +20% obrony i HP ci\u0119\u017Ckiej piechoty (pancerz br\u0105zowy + tarcza)",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "rydwany",
+          wartosc: 0.15,
+          opis: "Ci\u0119\u017Ckie rydwany bojowe: +15% HP i obrony rydwan\xF3w (masywna konstrukcja)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "\u0141ucznik sumeryjski",
+            "Rydwan sumeryjski",
+            "W\u0142\xF3cznik sumeryjski",
+            "\u0141ucznik akadyjski",
+            "Mur tarcz (Sargonid)"
+          ],
+          opis: "Gwardia Kr\xF3lewska = szczyt ci\u0119\u017Ckiej piechoty Sumeru; pancerz i lanca; +obrona miasta",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "sumer",
+      archetyp: "sumer",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Uruk",
+        "Ur",
+        "Lagasz",
+        "Kisz",
+        "Nippur",
+        "Eridu",
+        "Umma",
+        "Larsa",
+        "Adab",
+        "Isin",
+        "Girsu",
+        "Szuruppak",
+        "Bad-tibira",
+        "Sippar",
+        "Akszak",
+        "Kutha",
+        "Marad",
+        "Kazallu",
+        "Dilbat",
+        "Borsippa",
+        "Babilon",
+        "Kisura",
+        "Zabalam",
+        "Nina",
+        "Guabba",
+        "Karkara",
+        "Der",
+        "Esznunna",
+        "Malgium",
+        "Terqa",
+        "Mari",
+        "Ebla",
+        "Emar",
+        "Tuttul",
+        "Nagar",
+        "Urkesz",
+        "Aszur",
+        "Niniwa",
+        "Arbela",
+        "Nuzi",
+        "Arrapha",
+        "Susa",
+        "Anszan",
+        "Awan",
+        "Simaszki",
+        "Akkad",
+        "Agade",
+        "Kul-Aba",
+        "Kesz",
+        "Abu Salabikh",
+        "Fara",
+        "Tello",
+        "Warka",
+        "Uqair",
+        "Jemdet Nasr",
+        "Ubaid",
+        "Choga Mami",
+        "Tepe Gawra",
+        "Hassuna",
+        "Samarra",
+        "Halaf",
+        "Hamoukar",
+        "Tell Brak",
+        "Tell Leilan",
+        "Chagar Bazar",
+        "Tell Beydar",
+        "Tell Chuera",
+        "Kar-Tukulti-Ninurta",
+        "Dur-Kurigalzu",
+        "Larak",
+        "Kullab",
+        "Puzrisz-Dagan",
+        "Drehem",
+        "Tell Agrab",
+        "Khafajah",
+        "Tell Asmar",
+        "Ischali",
+        "Nerebtum",
+        "Shaduppum",
+        "Tuba",
+        "Rapiqum",
+        "Hit",
+        "Anah",
+        "Qatna",
+        "Alalakh",
+        "Ugarit",
+        "Karkemisz",
+        "Shubat-Enlil",
+        "Tell Mozan",
+        "Tell Rimah",
+        "Tell Taya",
+        "Tepe Sialk",
+        "Tepe Yahya",
+        "Shahr-i Sokhta",
+        "Chogha Zanbil",
+        "Haft Tepe",
+        "Tal-i Malyan",
+        "Konar Sandal",
+        "Liyan",
+        "Bushehr"
+      ]
+    },
+    {
+      Cywilizacja: "Celtowie",
+      "Styl / charakter": "agresywna piechota z broni\u0105 sieczn\u0105; brawurowa szar\u017Ca",
+      "Jednostka specjalna": "Soldurii",
+      "Bonus startowy": "+Atak/Morale piechoty przy szar\u017Cy (brawura); d\u0142ugie miecze \u2014 premia do Uderzenia",
+      "Bonusy/minusy (do dopracowania)": "s\u0142absza dyscyplina/obrona w przeci\u0105g\u0142ej walce; brak ci\u0119\u017Ckiej formacji",
+      Uwagi: "typ g\u0142\xF3wny \xA79d; jedn. spec. Soldurii (Maciej 2026-07-04); Gaesatae = elita najemna w units.json",
+      Religia: "Religia celtycka (druidyzm)",
+      nazwyKlastra: [
+        "Bibracte",
+        "Gergowia",
+        "Alezja",
+        "Avaricum",
+        "Uxellodunum",
+        "Manching",
+        "Numancja",
+        "Stradonice",
+        "Z\xE1vist",
+        "Heuneburg"
+      ],
+      mnoznikHandelPieniadz: 1.9,
+      ikonaId: "celtowie",
+      wodzowiePula: ["Dumnoryks", "Divitiakus", "Cassivellaunus", "Kunobelinos", "Orgetoryks", "Kastyk", "Ambioryks", "Indutiomaros", "Tasgetios", "Litawikus"],
+      wodzowie: {
+        kamien: "Ambigatos",
+        braz: "Brennus",
+        zelazo: "Wercyngetoryks",
+        antyk: "Boudika"
+      },
+      kolorHex: "#3D6B35",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.25,
+          opis: "Brawura szar\u017Cy: +25% ataku piechoty przy pierwszym uderzeniu (furia celtycka)",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Gaesatae: +15% Uderzenia (miecz sieczny, si\u0142a ci\u0119cia)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Soldurii",
+            "Rydwan celtycki",
+            "Miecznik galijski"
+          ],
+          opis: "Soldurii \u2014 elitarna gwardia wodza; przysi\u0119ga do \u015Bmierci; silna w szar\u017Cy",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "celtowie",
+      archetyp: "celtowie",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Bibracte",
+        "Gergowia",
+        "Alezja",
+        "Avaricum",
+        "Uxellodunum",
+        "Manching",
+        "Numancja",
+        "Stradonice",
+        "Zavist",
+        "Heuneburg",
+        "Vix",
+        "Mont Lassois",
+        "Entremont",
+        "Glanum",
+        "Ens\xE9rune",
+        "Corent",
+        "Gondole",
+        "Vienne",
+        "Genabum",
+        "Lutecja",
+        "Divodurum",
+        "Durocortorum",
+        "Samarobriva",
+        "Noviodunum",
+        "Augustodunum",
+        "Augustonemetum",
+        "Vesontio",
+        "Cabillonum",
+        "Matisco",
+        "Lugdunum",
+        "Genava",
+        "Noviodunum Helvetiorum",
+        "Aventicum",
+        "Vindonissa",
+        "Basilia",
+        "Turicum",
+        "Salodurum",
+        "Argentorate",
+        "Borbetomagus",
+        "Noviomagus",
+        "Durocatalaunum",
+        "Vellaunodunum",
+        "Agedincum",
+        "Autricum",
+        "Suindinum",
+        "Vorgium",
+        "Condate",
+        "Condevincum",
+        "Portus Namnetum",
+        "Darioritum",
+        "Fanum Martis",
+        "Vindinium",
+        "Juliomagus",
+        "Caesarodunum",
+        "Limonum",
+        "Mediolanum Santonum",
+        "Burdigala",
+        "Vesunna",
+        "Segodunum",
+        "Divona",
+        "Nemausus",
+        "Ruscino",
+        "Ambrussum",
+        "Ugernum",
+        "Cabellio",
+        "Arausio",
+        "Vasio",
+        "Alba Helviorum",
+        "Aletum",
+        "Reginca",
+        "Vorganium",
+        "Isca Dumnoniorum",
+        "Camulodunum",
+        "Verulamium",
+        "Calleva Atrebatum",
+        "Venta Belgarum",
+        "Durnovaria",
+        "Sorviodunum",
+        "Corinium",
+        "Glevum",
+        "Viroconium",
+        "Deva",
+        "Eboracum",
+        "Lindum",
+        "Ratae",
+        "Venta Icenorum",
+        "Noviomagus Reginorum",
+        "Maiden Castle",
+        "Danebury",
+        "Cadbury Castle",
+        "Traprain Law",
+        "Dun Aengus",
+        "Emain Macha",
+        "Tara",
+        "Dun Ailinne",
+        "Cruachan",
+        "Navan Fort",
+        "Downpatrick",
+        "Dinorben",
+        "Tre'r Ceiri"
+      ]
+    },
+    {
+      Cywilizacja: "Germanie",
+      "Styl / charakter": "piechota le\u015Bna; zasadzki i furia bojowa",
+      "Jednostka specjalna": "Wojownik germa\u0144ski (framea)",
+      "Bonus startowy": "+walka w lesie i +zasadzka (pierwszy cios); furia bojowa (+Atak na starciu)",
+      "Bonusy/minusy (do dopracowania)": "wolniejsza technologia/organizacja; s\u0142absze obl\u0119\u017Cnictwo",
+      Uwagi: "typ g\u0142\xF3wny (przysz\u0142a kultura \xA79d, pokrewna Galom)",
+      Religia: "Religia germa\u0144ska (Wotan / Odyn)",
+      nazwyKlastra: [
+        "Mattium",
+        "Feddersen Wierde",
+        "Hodde",
+        "Gr\xF8ntoft",
+        "Fl\xF6geln",
+        "Wijster",
+        "Ezinge",
+        "Jastorf",
+        "Gamla Uppsala",
+        "Tofting"
+      ],
+      mnoznikHandelPieniadz: 1.7,
+      ikonaId: "germanie",
+      wodzowiePula: ["Marbod", "Segestes", "Segimer", "Inguiomer", "Chariovalda", "Katualda", "Nasua", "Cimberius", "Boioryks", "Teutobod"],
+      wodzowie: {
+        kamien: "Mannus",
+        braz: "Ariowist",
+        zelazo: "Arminiusz",
+        antyk: "Alaryk I"
+      },
+      kolorHex: "#4A5568",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.25,
+          opis: "Zasadzka le\u015Bna: +25% ataku przy walce w lesie lub przy pierwszym ciosie z zasadzki",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Furia bojowa: +15% ataku na starciu (bonus morale przy bezpo\u015Brednim kontakcie)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Berserker germa\u0144ski"
+          ],
+          opis: "Framea = w\u0142\xF3cznia/oszczep germa\u0144ski; celny rzut + walka wr\u0119cz; specjalista od zasadzki",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "germanie",
+      archetyp: "germanie",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Mattium",
+        "Feddersen Wierde",
+        "Hodde",
+        "Gr\xF8ntoft",
+        "Fl\xF6geln",
+        "Wijster",
+        "Ezinge",
+        "Jastorf",
+        "Gamla Uppsala",
+        "Tofting",
+        "Haithabu",
+        "Birka",
+        "Ribe",
+        "Hedeby",
+        "Kaupang",
+        "Wolin",
+        "Truso",
+        "Menzlin",
+        "Gro\xDF Str\xF6mkendorf",
+        "Reric",
+        "Starigard",
+        "Rugard",
+        "Oldenburg",
+        "Bardowick",
+        "Magadoburg",
+        "Erphesfurt",
+        "Fulda",
+        "Paderborn",
+        "Corvey",
+        "Herford",
+        "Minden",
+        "Osnabr\xFCck",
+        "Bremum",
+        "Hammaburg",
+        "Soest",
+        "Throtmanni",
+        "Xanten",
+        "Ubiorum",
+        "Novaesium",
+        "Bonna",
+        "Confluentes",
+        "Wormacja",
+        "Mogontiacum",
+        "Nida",
+        "Dieburg",
+        "Ladenburg",
+        "Rottweil",
+        "Cambodunum",
+        "Reginum",
+        "Castra Regina",
+        "Boiodurum",
+        "Iuvavum",
+        "Vindobona",
+        "Carnuntum",
+        "Brigetio",
+        "Aquincum",
+        "Noreia",
+        "Magdalensberg",
+        "Idistaviso",
+        "Teutoburg",
+        "Aliso",
+        "Anreppen",
+        "Haltern",
+        "Oberaden",
+        "Waldgirmes",
+        "Dorlar",
+        "Kalkriese",
+        "Wilzenberg",
+        "Sievern",
+        "Fochteloerveen",
+        "Wijnaldum",
+        "Elisenhof",
+        "Bentumersiel",
+        "Fallward",
+        "Hodorf",
+        "S\xFCderbrarup",
+        "Sorte Muld",
+        "Gudme",
+        "Lundeborg",
+        "Upp\xE5kra",
+        "Helg\xF6",
+        "Sigtuna",
+        "Old L\xF6d\xF6se",
+        "Trelleborg",
+        "Fyrkat",
+        "Aggersborg",
+        "Nonnebakken",
+        "Jelling",
+        "Ladby",
+        "Roskilde",
+        "Lejre",
+        "Tiss\xF8",
+        "Vorbasse",
+        "Dankirke",
+        "Himling\xF8je",
+        "Stevns",
+        "Boeslunde",
+        "Borgeby",
+        "Valsg\xE4rde",
+        "Vendel"
+      ]
+    },
+    {
+      Cywilizacja: "Harappa",
+      "Styl / charakter": "Miasta-plan; handel wewn\u0119trzny; obrona mur\xF3w; niska agresja ekspansji",
+      "Jednostka specjalna": "Stra\u017Cnik bram Harappy",
+      "Bonus startowy": "+Handel miejski; +obrona piechoty w terytorium",
+      "Bonusy/minusy (do dopracowania)": "S\u0142absza kawaleria wczesna",
+      Uwagi: "roster-6 tier 1",
+      Religia: "Kultura indusko-dolinna",
+      nazwyKlastra: [
+        "Harappa",
+        "Mohenjo-daro",
+        "Dholavira",
+        "Rakhigarhi",
+        "Ganweriwala",
+        "Kalibangan",
+        "Lothal",
+        "Banawali",
+        "Kot Diji",
+        "Amri"
+      ],
+      mnoznikHandelPieniadz: 2.4,
+      ikonaId: "harappa",
+      wodzowiePula: ["Vasu", "Bharata", "Divodasa", "Sudas", "Trasadasyu", "Mandhatri", "Purukutsa", "Kuvalashva", "Anaranya", "Trishanku"],
+      wodzowie: {
+        kamien: "Starszy z Mehrgarh",
+        braz: "Kap\u0142an-Kr\xF3l z Mohend\u017Co-Daro",
+        zelazo: "Rad\u017Ca Dholaviry",
+        antyk: "A\u015Boka"
+      },
+      kolorHex: "#C67B4E",
+      bonusy: [
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.15,
+          opis: "Szlaki lokalne: +15% Daniny miast",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_obrona",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Obrona mur\xF3w: +15% obrony piechoty w terytorium w\u0142asnym",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Stra\u017Cnik bram Harappy",
+            "Piechota induska",
+            "Garnizon Harappy"
+          ],
+          opis: "Elitarna piechota bram miasta-plan",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "harappa",
+      archetyp: "harappa",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Harappa",
+        "Mohenjo-daro",
+        "Dholavira",
+        "Rakhigarhi",
+        "Ganweriwala",
+        "Kalibangan",
+        "Lothal",
+        "Banawali",
+        "Kot Diji",
+        "Amri",
+        "Chanhudaro",
+        "Surkotada",
+        "Rojdi",
+        "Rangpur",
+        "Desalpur",
+        "Dhaneti",
+        "Nagwada",
+        "Nageshwar",
+        "Bagasra",
+        "Kuntasi",
+        "Padri",
+        "Somnath",
+        "Prabhas Patan",
+        "Lakhabaval",
+        "Rupar",
+        "Sanghol",
+        "Bara",
+        "Kotla Nihang Khan",
+        "Manda",
+        "Chak Purbane Syal",
+        "Kunal",
+        "Bhirrana",
+        "Farmana",
+        "Mitathal",
+        "Balu",
+        "Girawad",
+        "Rakhi Shahpur",
+        "Alamgirpur",
+        "Hulas",
+        "Bargaon",
+        "Sanauli",
+        "Baror",
+        "Karanpura",
+        "Nausharo",
+        "Mehrgarh",
+        "Sibri",
+        "Dabar Kot",
+        "Pirak",
+        "Sutkagen Dor",
+        "Sotka Koh",
+        "Balakot",
+        "Allahdino",
+        "Naru Waro Dharo",
+        "Jhukar",
+        "Chhalgari",
+        "Judeirjo-daro",
+        "Ali Murad",
+        "Gazi Shah",
+        "Ghazi Shah",
+        "Lohumjo-daro",
+        "Rehman Dheri",
+        "Sarai Khola",
+        "Jalilpur",
+        "Gumla",
+        "Lewan",
+        "Islam Chowki",
+        "Hathala",
+        "Tarakai Qila",
+        "Dabarkot",
+        "Periano Ghundai",
+        "Kulli",
+        "Mehi",
+        "Shahi Tump",
+        "Miri Qalat",
+        "Nindowari",
+        "Nal",
+        "Anjira",
+        "Togau",
+        "Damb Sadaat",
+        "Quetta",
+        "Kili Gul Muhammad",
+        "Faiz Muhammad",
+        "Sadaat",
+        "Rana Ghundai",
+        "Sur Jangal",
+        "Zangian",
+        "Bampur",
+        "Shahdad",
+        "Jiroft",
+        "Khurab",
+        "Deh Morasi Ghundai",
+        "Mundigak",
+        "Said Qala",
+        "Nad-i Ali",
+        "Farukhabad",
+        "Bala Hisar Charsadda",
+        "Taxila",
+        "Hastinapur",
+        "Bhagwanpura",
+        "Daimabad"
+      ]
+    },
+    {
+      Cywilizacja: "Hetyci",
+      "Styl / charakter": "Charyotycy; fortyfikacje g\xF3rskie; traktaty; obrona",
+      "Jednostka specjalna": "Rydwan Kapadokijski",
+      "Bonus startowy": "+Rydwany; +obrona fortec",
+      "Bonusy/minusy (do dopracowania)": "S\u0142abszy handel morski",
+      Uwagi: "roster-6 tier 1",
+      Religia: "Politeizm hetycki",
+      nazwyKlastra: [
+        "Hattusa",
+        "Alaca H\xF6y\xFCk",
+        "Kanesh",
+        "Carchemish",
+        "Aleppo",
+        "Karkemish",
+        "Sapinuwa",
+        "Sarissa",
+        "Ku\u015Fakl\u0131",
+        "\u015Eapinuva"
+      ],
+      mnoznikHandelPieniadz: 2,
+      ikonaId: "hetyci",
+      wodzowiePula: ["Tudhalija I", "Arnuwanda I", "Mursili I", "Muwatalli II", "Hantili I", "Zidanta I", "Ammuna", "Telipinu", "Tahurwaili", "Alluwamna"],
+      wodzowie: {
+        kamien: "Labarna I",
+        braz: "Hattusili I",
+        zelazo: "Suppiluliuma I",
+        antyk: "Suppiluliuma II"
+      },
+      kolorHex: "#7B4B8A",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "rydwany",
+          wartosc: 0.2,
+          opis: "Rydwan hetycki: +20% ataku rydwan\xF3w",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_obrona",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Forteca Anatolii: +15% obrony w murach/g\xF3rach",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "rydwany",
+          wartosc: [
+            "Rydwan Kapadokijski",
+            "Piechota hetycka",
+            "Gwardia hetycka"
+          ],
+          opis: "Elitarny rydwan hetycki",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "hetyci",
+      archetyp: "hetyci",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Hattusa",
+        "Alaca H\xF6y\xFCk",
+        "Kanesz",
+        "Karkemisz",
+        "Aleppo",
+        "Sapinuwa",
+        "Sarissa",
+        "Ku\u015Fakl\u0131",
+        "Nerik",
+        "Zippalanda",
+        "Tarhuntassa",
+        "Nesa",
+        "Purushanda",
+        "Zalpa",
+        "Wahsusana",
+        "Hupisna",
+        "Tuwanuwa",
+        "Landa",
+        "Hattena",
+        "Nenassa",
+        "Ullamma",
+        "Malitiya",
+        "Melid",
+        "Kummanni",
+        "Lawazantiya",
+        "Kizzuwatna",
+        "Adaniya",
+        "Tarsus",
+        "Ura",
+        "Lamiya",
+        "Milawanda",
+        "Apasa",
+        "Arzawa",
+        "Mira",
+        "Hapalla",
+        "Seha",
+        "Wilusa",
+        "Truwisa",
+        "Masa",
+        "Karkisa",
+        "Lukka",
+        "Pitassa",
+        "Tummana",
+        "Pala",
+        "Kaska",
+        "Isuwa",
+        "Alse",
+        "Arslantepe",
+        "Tille H\xF6y\xFCk",
+        "Lidar H\xF6y\xFCk",
+        "Norsuntepe",
+        "Korucutepe",
+        "Pulur",
+        "Imiku\u015Fa\u011F\u0131",
+        "Tepecik",
+        "De\u011Firmentepe",
+        "Karah\xF6y\xFCk",
+        "Acemh\xF6y\xFCk",
+        "Yaz\u0131l\u0131kaya",
+        "Eflatun P\u0131nar",
+        "Fas\u0131llar",
+        "Gavurkalesi",
+        "Sivas H\xF6y\xFCk",
+        "Ma\u015Fath\xF6y\xFCk",
+        "Ortak\xF6y",
+        "\xC7ad\u0131r H\xF6y\xFCk",
+        "Kaman-Kaleh\xF6y\xFCk",
+        "Kerkenes Da\u011F",
+        "K\xFCltepe",
+        "Karum Kanesz",
+        "Karah\xF6y\xFCk Elbistan",
+        "Kummuh",
+        "Samsat",
+        "Lidar",
+        "Gritille",
+        "Kurban H\xF6y\xFCk",
+        "Titri\u015F H\xF6y\xFCk",
+        "Hassek H\xF6y\xFCk",
+        "Tell Ahmar",
+        "Til Barsip",
+        "Zincirli",
+        "Sam'al",
+        "Karatepe",
+        "Sak\xE7ag\xF6z\xFC",
+        "Tayinat",
+        "Tell Tayinat",
+        "\xC7atal H\xF6y\xFCk Amik",
+        "Domuztepe",
+        "Sirkeli H\xF6y\xFCk",
+        "Kinet H\xF6y\xFCk",
+        "Sabuniye",
+        "Al Mina",
+        "Kilise Tepe",
+        "G\xF6zl\xFCkule",
+        "Mersin",
+        "Soli",
+        "Kelenderis",
+        "Nagidos",
+        "Anemurium",
+        "Iotape"
+      ]
+    },
+    {
+      Cywilizacja: "S\u0142owianie",
+      "Styl / charakter": "Osady le\u015Bne; liczna piechota; ekspansja wschodnia",
+      "Jednostka specjalna": "Dru\u017Cynnik",
+      "Bonus startowy": "+Piechota w lesie; +regen poboru",
+      "Bonusy/minusy (do dopracowania)": "Wolniejsza nauka wczesna",
+      Uwagi: "roster-6 tier 1",
+      Religia: "Poga\u0144stwo s\u0142owia\u0144skie",
+      nazwyKlastra: [
+        "Kiev",
+        "Novgorod",
+        "Krak\xF3w",
+        "Wolin",
+        "Gniezno",
+        "Pskov",
+        "Suzdal",
+        "Belgrade",
+        "Pliska",
+        "Arkona"
+      ],
+      mnoznikHandelPieniadz: 1.8,
+      ikonaId: "slowianie",
+      wodzowiePula: ["Piast", "Siemowit", "Lestek", "Siemomysl", "Popiel", "Przemysl", "Ziemowit", "Choscisko", "Wiszymir", "Leszek"],
+      wodzowie: {
+        kamien: "Lech",
+        braz: "Krak",
+        zelazo: "Samo",
+        antyk: "Mieszko I"
+      },
+      kolorHex: "#B83232",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Horda le\u015Bna: +15% ataku piechoty w lesie",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_pobor_regen",
+          cel: "rekruci",
+          wartosc: 0.1,
+          opis: "Wsp\xF3lnota: +10% regen poboru",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Dru\u017Cynnik",
+            "Je\u017Adziec z oszczepami"
+          ],
+          opis: "Elitarny wojownik dru\u017Cyny ksi\u0119cia",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "slowianie",
+      archetyp: "slowianie",
+      epokaWejscia: "zelazo",
+      epokiStartowe: [
+        "zelazo"
+      ],
+      nazwyMiast: [
+        "Kij\xF3w",
+        "Nowogr\xF3d",
+        "Krak\xF3w",
+        "Wolin",
+        "Gniezno",
+        "Psk\xF3w",
+        "Suzdal",
+        "Belgrad",
+        "Pliska",
+        "Arkona",
+        "Wieliczka",
+        "Pozna\u0144",
+        "Wroc\u0142aw",
+        "Opole",
+        "G\u0142og\xF3w",
+        "Szczecin",
+        "Ko\u0142obrzeg",
+        "Gda\u0144sk",
+        "Elbl\u0105g",
+        "Toru\u0144",
+        "P\u0142ock",
+        "Sandomierz",
+        "Lublin",
+        "Przemy\u015Bl",
+        "Halicz",
+        "W\u0142odzimierz Wo\u0142y\u0144ski",
+        "Czernih\xF3w",
+        "Perejas\u0142aw",
+        "Smole\u0144sk",
+        "Po\u0142ock",
+        "Witebsk",
+        "Tur\xF3w",
+        "Rost\xF3w",
+        "W\u0142odzimierz nad Kla\u017Am\u0105",
+        "Moskwa",
+        "Twer",
+        "Riaza\u0144",
+        "Murom",
+        "Jaros\u0142aw Ruski",
+        "Wo\u0142ogda",
+        "Bie\u0142ozersk",
+        "Staraja \u0141adoga",
+        "Izborsk",
+        "Wyszogr\xF3d",
+        "Czersk",
+        "Sieradz",
+        "\u0141\u0119czyca",
+        "Kalisz",
+        "Gdecz",
+        "Bnin",
+        "Ostr\xF3w Lednicki",
+        "Grodzisk Wielkopolski",
+        "Santok",
+        "Mi\u0119dzyrzecz",
+        "Cedynia",
+        "Kamie\u0144 Pomorski",
+        "Szczecinek",
+        "Bia\u0142ogard",
+        "Nak\u0142o",
+        "Bydgoszcz",
+        "W\u0142oc\u0142awek",
+        "Giecz",
+        "L\u0105d",
+        "Radzim",
+        "Ostr\xF3w Tumski",
+        "Wi\u015Blica",
+        "Strad\xF3w",
+        "Naszacowice",
+        "Chodlik",
+        "Zawichost",
+        "Opat\xF3w",
+        "Tyniec",
+        "Praga",
+        "Wyszehrad",
+        "O\u0142omuniec",
+        "Brno",
+        "Mikulczyce",
+        "Stare Miasto na Morawach",
+        "Bratys\u0142awa",
+        "Nitra",
+        "Devin",
+        "Zadar",
+        "Split",
+        "Nin",
+        "Knin",
+        "Solin",
+        "Trogir",
+        "Kotor",
+        "Ras",
+        "Stari Ras",
+        "Prizren",
+        "Skopje",
+        "Ohrid",
+        "Pres\u0142aw",
+        "Tyrnowo",
+        "Warna",
+        "Sozopol",
+        "Nesebyr",
+        "Ruse",
+        "Sylistra"
+      ]
+    },
+    {
+      Cywilizacja: "Babilonia",
+      "Styl / charakter": "Prawo, astronomia, kap\u0142ani; nauka i dyplomacja",
+      "Jednostka specjalna": "Gwardia Ishtar",
+      "Bonus startowy": "+Nauka; +handel rzeczny",
+      "Bonusy/minusy (do dopracowania)": "Wra\u017Cliwo\u015B\u0107 na utrat\u0119 stolicy",
+      Uwagi: "roster-6 tier 2",
+      Religia: "Religia babilo\u0144ska (Marduk)",
+      nazwyKlastra: [
+        "Babilon",
+        "Ur",
+        "Sippar",
+        "Nippur",
+        "Larsa",
+        "Isin",
+        "Uruk",
+        "Eridu",
+        "Kish",
+        "Akkad"
+      ],
+      mnoznikHandelPieniadz: 2.3,
+      ikonaId: "babilonia",
+      wodzowiePula: ["Sumu-la-El", "Sabium", "Apil-Sin", "Sin-muballit", "Samsu-iluna", "Abi-eszuh", "Ammi-ditana", "Ammi-saduqa", "Samsu-ditana", "Kurigalzu I"],
+      wodzowie: {
+        kamien: "Sumu-abum",
+        braz: "Hammurabi",
+        zelazo: "Nabuchodonozor II",
+        antyk: "Nabonid"
+      },
+      kolorHex: "#2B5F8A",
+      bonusy: [
+        {
+          typ: "bonus_nauka",
+          cel: "nauka",
+          wartosc: 0.15,
+          opis: "Kap\u0142ani-astronomowie: +15% nauki",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.1,
+          opis: "Rynek Euphratu: +10% Daniny miast",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Gwardia Ishtar",
+            "Wojownik babilo\u0144ski",
+            "Piechota neobabilo\u0144ska"
+          ],
+          opis: "Elitarna gwardia \u015Bwi\u0105tynna",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "babilonia",
+      archetyp: "babilonia",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Babilon",
+        "Ur",
+        "Sippar",
+        "Nippur",
+        "Larsa",
+        "Isin",
+        "Uruk",
+        "Eridu",
+        "Kisz",
+        "Akkad",
+        "Borsippa",
+        "Kutha",
+        "Dilbat",
+        "Marad",
+        "Kazallu",
+        "Opis",
+        "Sela",
+        "Der",
+        "Mari",
+        "Terqa",
+        "Emar",
+        "Tuttul",
+        "Ebla",
+        "Halab",
+        "Karkemisz",
+        "Hindanu",
+        "Rapiqum",
+        "Anah",
+        "Hit",
+        "Sirara",
+        "Karduniasz",
+        "Nemetti-Enlil",
+        "Dur-Kurigalzu",
+        "Duranki",
+        "Namar",
+        "Ellipi",
+        "Susa",
+        "Anszan",
+        "Ekbatana",
+        "Niniwa",
+        "Kalhu",
+        "Dur-Szarrukin",
+        "Harran",
+        "Tema",
+        "Dumat al-D\u017Candal",
+        "Duma",
+        "Adummatu",
+        "Bit-Adini",
+        "Bit-Bahiani",
+        "Guzana",
+        "Arpad",
+        "Melid",
+        "Tabal",
+        "Que",
+        "Hilakku",
+        "Unqi",
+        "Patina",
+        "Hamat",
+        "Damaszek",
+        "Sydon",
+        "Tyr",
+        "Byblos",
+        "Arwad",
+        "Aszkelon",
+        "Gaza",
+        "Jerozolima",
+        "Samaria",
+        "Megiddo",
+        "Lakisz",
+        "Hazor",
+        "Jerycho",
+        "Betel",
+        "Sychem",
+        "Hebron",
+        "Beer-Szeba",
+        "Aszdod",
+        "Ekron",
+        "Gat",
+        "Joppa",
+        "Berytos",
+        "Kadesz",
+        "Qarqar",
+        "Tadmor",
+        "Dura Europos",
+        "Circesium",
+        "Nisibis",
+        "Edessa",
+        "Sarug",
+        "Til Huzur",
+        "Tarbisu",
+        "Kar-Tukulti-Ninurta",
+        "Imgur-Enlil",
+        "Arbail",
+        "Arrapha",
+        "Nuzi",
+        "Lubdu",
+        "Kilizi",
+        "Sibaniba",
+        "Dur-Katlimmu",
+        "Sabi Abyad"
+      ]
+    },
+    {
+      Cywilizacja: "Asyria",
+      "Styl / charakter": "Imperium obl\u0119\u017Cnicze; \u0142ucznicy; podb\xF3j",
+      "Jednostka specjalna": "\u0141ucznik asyryjski",
+      "Bonus startowy": "+\u0141ucznicy; +obl\u0119\u017Cenie",
+      "Bonusy/minusy (do dopracowania)": "Niskie zaufanie s\u0105siad\xF3w",
+      Uwagi: "roster-6 tier 2",
+      Religia: "Religia asyryjska (Aszur)",
+      nazwyKlastra: [
+        "Ninive",
+        "Assur",
+        "Kalhu",
+        "Dur-Sharrukin",
+        "Harran",
+        "Carchemish",
+        "Arpad",
+        "Imgur-Enlil",
+        "Tushhan",
+        "Arbail"
+      ],
+      mnoznikHandelPieniadz: 1.7,
+      ikonaId: "asyria",
+      wodzowiePula: ["Szamszi-Adad I", "Adad-nirari I", "Salmanasar I", "Tukulti-Ninurta I", "Aszur-uballit I", "Sargon II", "Asarhaddon", "Aszurnasirpal II", "Salmanasar III", "Sennacheryb"],
+      wodzowie: {
+        kamien: "Puzur-Aszur I",
+        braz: "Tiglat-Pileser I",
+        zelazo: "Aszurbanipal",
+        antyk: "Sennacheryb"
+      },
+      kolorHex: "#5C4033",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "lukownicy",
+          wartosc: 0.2,
+          opis: "\u0141ucznicy asyryjscy: +20% ataku dystansowego",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "obleczenie",
+          wartosc: 0.15,
+          opis: "Machiny obl\u0119\u017Cnicze: +15% obl\u0119\u017Cenia",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "lukownicy",
+          wartosc: [
+            "Konnica lancowa asyryjska",
+            "Konnica \u0142ucznicza asyryjska",
+            "\u0141ucznik asyryjski"
+          ],
+          opis: "Elitarny \u0142ucznik imperium",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "asyria",
+      archetyp: "asyria",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Ninive",
+        "Assur",
+        "Kalhu",
+        "Dur-Szarrukin",
+        "Harran",
+        "Karkemisz",
+        "Arpad",
+        "Imgur-Enlil",
+        "Tuszhan",
+        "Arbail",
+        "Nemed-Ishtar",
+        "Kar-Tukulti-Ninurta",
+        "Szibaniba",
+        "Kilizi",
+        "Lubdu",
+        "Arrapha",
+        "Nuzi",
+        "Guzana",
+        "Til Barsip",
+        "Hindanu",
+        "Sam'al",
+        "Que",
+        "Tabal",
+        "Hilakku",
+        "Melid",
+        "Kummuh",
+        "Patina",
+        "Unqi",
+        "Hamat",
+        "Damaszek",
+        "Samerina",
+        "Aszkelon",
+        "Gaza",
+        "Ekron",
+        "Aszdod",
+        "Tyr",
+        "Sydon",
+        "Byblos",
+        "Arwad",
+        "Babilon",
+        "Borsippa",
+        "Sippar",
+        "Kutha",
+        "Uruk",
+        "Ur",
+        "Nippur",
+        "Der",
+        "Susa",
+        "Madaktu",
+        "Hidalu",
+        "Ekbatana",
+        "Parsua",
+        "Namri",
+        "Zamua",
+        "Musasir",
+        "Tuszpa",
+        "Van",
+        "Argishtihinili",
+        "Erebuni",
+        "Teishebaini",
+        "Rusahinili",
+        "Manna",
+        "Izirtu",
+        "Kar-Kashi",
+        "Bit-Hamban",
+        "Ellipi",
+        "Bit-Jakin",
+        "Bit-Dakkuri",
+        "Bit-Amukani",
+        "Larak",
+        "Marad",
+        "Kisz",
+        "Isin",
+        "Larsa",
+        "Adab",
+        "Umma",
+        "Girsu",
+        "Lagasz",
+        "Eridu",
+        "Bad-tibira",
+        "Szuruppak",
+        "Memfis",
+        "Teby Asyryjskie",
+        "Sais",
+        "Tanis",
+        "Migdol",
+        "Pelusium",
+        "Daphnae",
+        "Kition",
+        "Salamina Cypryjska",
+        "Amathus",
+        "Kurion",
+        "Pafos",
+        "Idalion",
+        "Tamassos",
+        "Marion",
+        "Soloi Cypryjskie",
+        "Lapithos",
+        "Chytroi",
+        "Golgoi"
+      ]
+    },
+    {
+      Cywilizacja: "Fenicjanie",
+      "Styl / charakter": "Handel morski; kolonie; barter",
+      "Jednostka specjalna": "Tyrski miecznik",
+      "Bonus startowy": "+Handel morski; porty",
+      "Bonusy/minusy (do dopracowania)": "S\u0142aba piechota elit l\u0105dowa",
+      Uwagi: "roster-6 tier 2",
+      Religia: "Religia fenicka (Ba'al)",
+      nazwyKlastra: [
+        "Tyr",
+        "Sidon",
+        "Byblos",
+        "Carthage",
+        "Utica",
+        "Gadir",
+        "Motya",
+        "Tharros",
+        "Kition",
+        "Arwad"
+      ],
+      mnoznikHandelPieniadz: 2.6,
+      ikonaId: "fenicjanie",
+      wodzowiePula: ["Ahiram", "Ittobaal I", "Baal-Eser I", "Matten I", "Pygmalion", "Abibaal", "Elibaal", "Szipitbaal", "Mago I", "Hazdrubal"],
+      wodzowie: {
+        kamien: "Agenor",
+        braz: "Hiram I",
+        zelazo: "Dydona-Elissa",
+        antyk: "Hannibal Barkas"
+      },
+      kolorHex: "#9B2335",
+      bonusy: [
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.25,
+          opis: "Szlaki morskie: +25% Daniny z port\xF3w",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.1,
+          opis: "Purpura: +10% Daniny",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Tyrski miecznik",
+            "Wojownik fenicki",
+            "Gwardia Tyre\u0144ska"
+          ],
+          opis: "Elitarny wojownik fenicki",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "fenicjanie",
+      archetyp: "fenicjanie",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Tyr",
+        "Sydon",
+        "Byblos",
+        "Kartagina",
+        "Utica",
+        "Gadir",
+        "Motya",
+        "Tharros",
+        "Kition",
+        "Arwad",
+        "Berytos",
+        "Trypolis",
+        "Batrun",
+        "Amrit",
+        "Simyra",
+        "Sarepta",
+        "Akko",
+        "Dor",
+        "Jafa",
+        "Ako",
+        "Achziw",
+        "Anafa",
+        "Kabri",
+        "Tell Sukas",
+        "Ras Ibn Hani",
+        "Al Mina",
+        "Amathus",
+        "Kurion",
+        "Pafos",
+        "Salamis",
+        "Idalion",
+        "Lapithos",
+        "Marion",
+        "Soloi",
+        "Tamassos",
+        "Chytroi",
+        "Golgoi",
+        "Kalawasos",
+        "Palepafos",
+        "Larnaka",
+        "Panormos",
+        "Solunt",
+        "Lilibeum",
+        "Drepanon",
+        "Erice",
+        "Segesta Fenicka",
+        "Karales",
+        "Nora",
+        "Sulcis",
+        "Bithia",
+        "Olbia Sardy\u0144ska",
+        "Melite",
+        "Gaulos",
+        "Ebusus",
+        "Sa Caleta",
+        "Malaka",
+        "Sexi",
+        "Abdera",
+        "Carteia",
+        "Baelo Claudia",
+        "Lixus",
+        "Mogador",
+        "Tingis",
+        "Rusadir",
+        "Sala",
+        "Cerne",
+        "Tamuda",
+        "Volubilis",
+        "Ikosim",
+        "Rusguniae",
+        "Hippo Diarrhytus",
+        "Hippo Regius",
+        "Thabraca",
+        "Cirta",
+        "Sicca Veneria",
+        "Thugga",
+        "Sabratha",
+        "Oea",
+        "Leptis Magna",
+        "Leptis Minor",
+        "Hadrumetum",
+        "Thapsus",
+        "Ruspina",
+        "Zama",
+        "Bulla Regia",
+        "Kerkouane",
+        "Neapolis",
+        "Klupea",
+        "Carthago Nova",
+        "Akra Leuke",
+        "Barcelo",
+        "Onoba",
+        "Asta Regia",
+        "Tartessos",
+        "Huelva",
+        "Ossonoba",
+        "Balsa",
+        "Myrtilis",
+        "Olisipo",
+        "Cetobriga"
+      ]
+    }
+  ],
+  start_gry: [
+    {
+      Parametr: "Osadnicy na start (gracz)",
+      Warto\u015B\u0107: "1",
+      Uwagi: "gracz zawsze startuje z 1 osadnikiem"
+    },
+    {
+      Parametr: "Cywilizacje na mapie",
+      Warto\u015B\u0107: "90",
+      Uwagi: "9 typ\xF3w \xD7 10 miast (1 gracz + 9 rywali tego samego typu = klaster); skaluje si\u0119 z map\u0105"
+    },
+    {
+      Parametr: "G\u0142\xF3wne cywilizacje (typy)",
+      Warto\u015B\u0107: "15 (Grecy, Rzymianie, Chi\u0144czycy, Inkowie, Zulusi, Egipt, Sumerowie, Celtowie, Germanie, Harappa, Hetyci, S\u0142owianie, Babilonia, Asyria, Fenicjanie)",
+      Uwagi: "pula 15 typ\xF3w (D-ROSTER-Q3); na mapie cap z rozmiaru; Celtowie = Soldurii + Gaesatae (2026-07-04)"
+    },
+    {
+      Parametr: "Cywilizacje pocz\u0105tkowe",
+      Warto\u015B\u0107: "miasta tego samego typu (klaster)",
+      Uwagi: "to NIE osobne nacje \u2014 to miasta/AI tego samego typu wok\xF3\u0142 g\u0142\xF3wnej cyw. (1 gracz + 9 rywali); uproszczona dyplomacja: osobny, p\xF3\u017Aniejszy w\u0105tek"
+    },
+    {
+      Parametr: "Rywale tego samego typu wok\xF3\u0142 gracza",
+      Warto\u015B\u0107: "~9 (AI)",
+      Uwagi: "9 rywali wok\xF3\u0142 gracza = klaster 10 miast danego typu; miasta min. ~9 p\xF3l od siebie (regu\u0142a map-gen)"
+    },
+    {
+      Parametr: "Cel startu",
+      Warto\u015B\u0107: "pokona\u0107 rywali w\u0142asnego typu",
+      Uwagi: "zanim napotkasz inne typy cywilizacji"
+    },
+    {
+      Parametr: "Ludno\u015B\u0107 w terenie",
+      Warto\u015B\u0107: "ka\u017Cdy zamieszkiwalny heks (\u22651 \u017Cywno\u015B\u0107) = 1 wioska/1 ludno\u015B\u0107",
+      Uwagi: "g\xF3ry/ja\u0142owe = 0 ludno\u015Bci"
+    },
+    {
+      Parametr: "Przejmowanie terenu",
+      Warto\u015B\u0107: "odkrycie/zaj\u0119cie \u2192 wioska + ludno\u015B\u0107 staje si\u0119 nasza (obywatele, nie niewolnicy), przypisana do najbli\u017Cszego miasta",
+      Uwagi: null
+    },
+    {
+      Parametr: "Wzrost ludno\u015Bci",
+      Warto\u015B\u0107: "szybki przez ekspansj\u0119, ograniczony \u017Cywno\u015Bci\u0105",
+      Uwagi: "najpierw zdob\u0105d\u017A tereny rolne, by wy\u017Cywi\u0107"
+    },
+    {
+      Parametr: "Jednostka specjalna",
+      Warto\u015B\u0107: "1 na cywilizacj\u0119",
+      Uwagi: "niekoniecznie w ka\u017Cdej epoce"
+    },
+    {
+      Parametr: "Bonusy/minusy cywilizacji",
+      Warto\u015B\u0107: "do dopracowania",
+      Uwagi: "doprecyzujemy p\xF3\u017Aniej"
+    }
+  ]
+};
+
+// src/game/diplomacy.ts
+var DIPLOMACY_PARAMS = {
+  // ---- one-shot Zaufanie deltas (jednorazowo) ----
+  /** "Zawarcie umowy handlowej" (+2 Zaufanie, jednorazowo) */
+  handelZawarcie_zaufanie: 2,
+  /** "Pomoc w wojnie sojusznikowi" (+10 Zaufanie, jednorazowo) */
+  pomocSojusznikowi_zaufanie: 10,
+  /** "Wspolny wrog -- nawiazanie kooperacji" (+5 Zaufanie, jednorazowo) */
+  wspolnyWrogNawiazanie_zaufanie: 5,
+  /** "Podarunek surowca / Pieniadza (gratis)" (+6 Zaufanie, jednorazowo) */
+  dar_zaufanie: 6,
+  /** "Zlamany pakt przez gracza" (-40 Zaufanie, jednorazowo) */
+  zlamanaPaktGracz_zaufanie: -40,
+  /** "Zlamany pakt przez AI" (-20 Zaufanie, jednorazowo) */
+  zlamanaPaktAI_zaufanie: -20,
+  /** "Zdrada / atak z zaskoczenia (na gracza)" (-50 Zaufanie, jednorazowo) */
+  zdrada_zaufanie: -50,
+  /** "Szpiegostwo wykryte przez przeciwnika" (-15 Zaufanie, jednorazowo) */
+  szpiegWykryty_zaufanie: -15,
+  /** "Rywalizacja tego samego typu (start gry)" (-20 Zaufanie, jednorazowo) */
+  rywalizacjaTenSamTyp_zaufanie: -20,
+  /** "Duza roznica kulturowa (rozny typ)" (-5 Zaufanie, jednorazowo) */
+  roznicaKulturowa_zaufanie: -5,
+  // ---- one-shot Respekt deltas (jednorazowo) ----
+  /** "Znaczaca przewaga militarna gracza" (+15 Respekt, jednorazowo; 2x or 5x threshold) */
+  przewagaMilitarna_respekt: 15,
+  /** "Gracz slabszy militarnie od partnera" (-10 Respekt, jednorazowo) */
+  slabszyMilitarnie_respekt: -10,
+  /** "Wygrana bitwa (historia bojowa)" (+5 Respekt, jednorazowo) */
+  wygraBitwa_respekt: 5,
+  /** "Akceptacja zadania trybutu" (+10 Respekt, jednorazowo) */
+  trybut_respekt: 10,
+  /** "Wspolny wrog zaakceptowany" (+10 Respekt, jednorazowo) */
+  wspolnyWrogAkceptacja_respekt: 10,
+  // ---- per-turn Zaufanie deltas (co ture) ----
+  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) — stackuje z tierem pokoju */
+  handel_zaufanie_perTura: 1,
+  /** "Aktywny sojusz wojskowy" (+3/ture, Maciej 2026-07-21) */
+  sojusz_zaufanie_perTura: 3,
+  /** "Aktywny pakt nieagresji" (+2/ture, Maciej 2026-07-21) */
+  nap_zaufanie_perTura: 2,
+  /** "Pokojowy kontakt bez wojny/NAP/sojuszu" (+1/ture, Maciej 2026-07-21) */
+  pokoj_zaufanie_perTura: 1,
+  /** @deprecated — zastąpione przez nap/sojusz/pokoj (2026-07-21); zostaje w JSON roundtrip */
+  aktywnyPakt_zaufanie_perTura: 1,
+  /** "Efekt dobrej woli (podarunek)" (+1/ture przez kilka tur) */
+  dobraWola_zaufanie_perTura: 1,
+  /** "Wspolny wrog (kooperacja trwa)" (+1/ture) */
+  wspolnyWrog_zaufanie_perTura: 1,
+  /** "Wspolna religia" (+0.5/ture, max +15) */
+  wspolnaReligia_zaufanie_perTura: 0.5,
+  /** "Odmienna religia" (-0.5/ture, max -10) */
+  odmiennaReligia_zaufanie_perTura: -0.5,
+  /** "Ekspansja przy granicy" (-2/ture) */
+  ekspansjaGranica_zaufanie_perTura: -2,
+  /** "Urazy historyczne (zanikajace)" (-2/ture; fades every 20 turns) */
+  urazyHistoryczne_zaufanie_perTura: -2,
+  // ---- thresholds (progi akcji; sekcja C) ----
+  /** Zaufanie >= 91 required for SojuszWojskowy (przy równowadze sił >90%) */
+  progSojuszZaufanie: 91,
+  /** Zaufanie >= 70 required for WymianaTechnologii */
+  progWymianaTechZaufanie: 70,
+  /** Respekt >= 70 required to demand Wasalizacja */
+  progWasalizacjaRespekt: 70,
+  /** Respekt >= 90 required to demand Wchloniecie */
+  progWchloniecieRespekt: 90,
+  /** Relacja < 30 = diplomacy nearly impossible */
+  progMinimalnyRelacja: 30,
+  /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
+  progSojuszRelacja: 151,
+  /** Twarda podłoga Relacji na dobrowolne umowy pozytywne (>150); premia siły nie obniża */
+  progUmowaMinRelacja: 151,
+  // ---- starting values (wartosci startowe) ----
+  startZaufanie: 20,
+  startRespekt: 30,
+  // ---- global multipliers (sekcja E) ----
+  mnoznikZaufania: 1,
+  mnoznikRespektu: 1,
+  mnoznikPodarunku: 1,
+  turyEfektuPodarunku: 5,
+  // ---- simplified minor-civ threshold (paragraph 5.2) ----
+  /** Minor civ accepts tribute / NAP / annexation when player Respekt > this */
+  progPoboczneAkceptacja: 60,
+  /** Minor civ at peace when Relacja > this */
+  progPoboczneHandel: 30,
+  /**
+   * Minor civ may go to war when Relacja drops BELOW this (0-200 scale).
+   * Remaps Dyplomacja-szablon.md 5.2 "Relacja < -40" onto the 3.1 range 0-200:
+   * Relacja = Zaufanie + Respekt is clamped >= 0, so a negative floor is
+   * unreachable -- "very hostile" is modelled as a low positive threshold.
+   * (The "player attacks" war trigger from 5.2 is handled by the engine.)
+   */
+  progPoboczneWojna: 15,
+  // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
+  /** Zaufanie >= wartość wymagane do NAP */
+  progNapZaufanie: 40,
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  progNapRelacja: 50,
+  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
+  progHandelRelacja: 0,
+  /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
+  progSojuszPartnerRwMin: 0.4,
+  progSojuszPartnerRwMax: 0.7,
+  /** Max obniżka progu willingnessAlly gdy proponent silniejszy (Moc/Respekt) */
+  progSojuszPremiaSilniejszyMax: 0.25,
+  /** Wkład przewagi Mocy (milRatio−1) × skok w premii progu */
+  progSojuszPremiaMilSkok: 0.08,
+  /** Wkład przewagi Respektu proponenta × skok w premii progu */
+  progSojuszPremiaRespektSkok: 0.15,
+  /** Poniżej tego stosunku M proponent/respondent — wymagana pełna relacja (score≥120) */
+  progSojuszSlabyProponentMilRatio: 0.5,
+  /** Bonus willingnessAlly gdy rozmówca silniejszy (AI słabsze — sojusz z hegemonem) */
+  progSojuszPremiaSilniejszyInny: 0.2,
+  /** aiDiplomacyStance.willingnessAlly min dla sojuszu */
+  progSojuszWillingnessMin: 0.68,
+  /** v1.3 — max podwyżka progów gdy respondent (AI) silniejszy od proponenta */
+  progSojuszKaraSilniejszyMax: 0.4,
+  /** v1.3 — wkład przewagi respondenta (1/milProponent − 1) × skok */
+  progSojuszKaraMilSkok: 0.15,
+  /** v1.3 — kara willingnessAlly na jednostkę przewagi respondenta */
+  progSojuszKaraAllySkok: 0.18,
+  /** v1.3 — poniżej tego stosunku M proponent/respondent → hegemon odmawia sojuszu (słaby proponent) */
+  progSojuszHegemonMilRatio: 0.42,
+  /** v1.3 — powyżej tego stosunku M proponent/respondent → hegemon nie szuka sojuszu równoprawnego */
+  progSojuszHegemonProposerMaxMil: 2.38,
+  /** v1.3c — progresywne podłogi Zauf. gdy gracz silniejszy (2×≈85, 3×≈83 — oba „w okolicy 85") */
+  progSojuszPremiaGracz2xMilRatio: 2,
+  progSojuszPremiaGracz2xMinZaufanie: 85,
+  progSojuszPremiaGracz2xBonus: 0.06,
+  progSojuszPremiaGracz3xMilRatio: 2.8,
+  progSojuszPremiaGracz3xMinZaufanie: 83,
+  progSojuszPremiaGracz3xBonus: 0.1,
+  /** Minimalny trybut żądany (¤/turę) */
+  progTrybutMinGoldPerTurn: 10,
+  /** Respekt proponenta musi być > tej wartości, by żądać trybutu (spokój) */
+  progTrybutZadanieMinRespekt: 70,
+  /** Limit górny żądania trybutu (¤/turę) przy Respekt tuż powyżej progu (audyt #21) */
+  progTrybutZadanieMaxGoldBase: 50,
+  /** Limit górny: dodatek ¤/turę za każdy punkt Respektu ponad próg żądania (audyt #21) */
+  progTrybutZadanieMaxGoldPerRespekt: 5,
+  /** militaryRatio > wartość → „blisko wojny” (oferta trybutu) */
+  progTrybutOfertaNearWarRatio: 1.2,
+  /** Zaufanie < wartość → „blisko wojny” (oferta trybutu) */
+  progTrybutOfertaNearWarZaufanie: 30,
+  /** Minimalna oferta trybutu (¤) */
+  progTrybutOfertaMinGold: 5,
+  /** Bazowa oferta trybutu poza „blisko wojny”: base + epoka × epokaGold */
+  progTrybutOfertaBaseGold: 10,
+  progTrybutOfertaEpokaGold: 5,
+  /** willingnessTrade min dla handlu */
+  progHandelWillingnessMin: 0.5,
+  /** Fair deal: offered/fair min */
+  progHandelFairRatioMin: 0.8,
+  /** Fair deal: offered/fair max */
+  progHandelFairRatioMax: 1.2,
+  /** Zaufanie min dla namówienia do wojny */
+  progNamowWojneZaufanie: 50,
+  /** Łapówka min = base × (epoka + 1) */
+  progNamowWojneBribeBase: 30,
+  /** Zaufanie min dla otwartych granic */
+  progGraniceZaufanie: 45,
+  /** Relacja min dla otwartych granic / przemarszu (G1-A) */
+  progGraniceRelacja: 100,
+  /** Respekt min dla prawa wojskowego przemarszu */
+  progGraniceWojskoweRespekt: 55,
+  /** militaryRatio min dla ultimatum */
+  progUltimatumMilitaryRatio: 1.3,
+  /** Jednorazowe złoto min przy ultimatum */
+  progUltimatumMinGold: 20,
+  /** Domyślny trybut wasala (¤/turę) */
+  progWasalDefaultGoldPerTurn: 10,
+  // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
+  // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
+  // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —
+  // wzorem loadDiplomacyParams() dla reszty DIPLOMACY_PARAMS.
+  // -- §1: skala i wartość startowa (pkt Wiarygodności, skala −100…+100) --
+  /** Dolna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMin: -100,
+  /** Górna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMax: 100,
+  /** Próg pasma „Wzór cnoty" — W >= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWzorCnoty: 40,
+  /** Próg pasma „Wiarołomny" — W <= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWiarolomny: -40,
+  /** Wartość startowa Wiarygodności, poziom Łatwy (pkt Wiarygodności), §1. */
+  wiarygodnoscStartLatwy: 40,
+  /** Wartość startowa Wiarygodności, poziom Normalny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartNormalny: 20,
+  /** Wartość startowa Wiarygodności, poziom Trudny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartTrudny: 0,
+  // -- §2: KARY N1–N7 (pkt Wiarygodności, jednorazowo, wszystkie poziomy trudności) --
+  /** N1 — wypowiedzenie wojny bez ostrzeżenia / atak w tej samej turze co deklaracja (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN1BezOstrzezenia: -10,
+  /** N1 — okno karencji: liczba tur po wypowiedzeniu wojny, w której atak jeszcze liczy się jako "bez ostrzeżenia" (tury). */
+  wiarygodnoscN1KarencjaTur: 1,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Paktu o Nieagresji (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuNap: -18,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Sojuszu (pełny/defensywny), także atak na sojusznika (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuSojusz: -25,
+  /** N3 — atak w oknie karencji po zakończeniu porozumienia (pkt Wiarygodności, jednorazowo, na wierzchu N1/N2). */
+  wiarygodnoscN3AtakWOknieKarencji: -12,
+  /** N3 — okno karencji (tury) po jednostronnym anulowaniu porozumienia BEZTERMINOWEGO lub po zawarciu pokoju, przed którym atak = kara N3. */
+  wiarygodnoscN3KarencjaBezterminoweTur: 10,
+  /** N4 — odmowa pomocy sojusznikowi na wezwanie obowiązku sojuszniczego, kara WYŁĄCZNIE dla odmawiającego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN4OdmowaObowiazkuSojuszu: -15,
+  /** N5 — dobrowolne zerwanie traktatu CZASOWEGO (nie handlowego) (pkt Wiarygodności, jednorazowo). Bezterminowe = brak kary (patrz N3). */
+  wiarygodnoscN5ZerwanieTraktatCzasowy: -6,
+  /** N5 — dobrowolne zerwanie umowy handlowej CZASOWEJ (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN5ZerwanieHandelCzasowy: -4,
+  /** N6 — niedotrzymanie handlu cyklicznego (3 tury z rzędu z winy strony), kara wyłącznie dla winnego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN6NiedotrzymanieHandluCyklicznego: -2,
+  /** N6 — próg kolejnych tur z rzędu z winy TEJ SAMEJ strony (dawca bez zapasu / biorca bez środków), po którym nalicza się kara (tury). */
+  wiarygodnoscN6ProgTurZRzedu: 3,
+  /** N7 — nieautoryzowany przemarsz, jednorazowo przy pierwszym wykryciu w danej "wizycie" (pkt Wiarygodności). Zwiadowcy wykluczeni (C-WIAR-SKAUT=A). */
+  wiarygodnoscN7NieautoryzowanyPrzemarsz: -2,
+  /** Odwet (C-WIAR-ODWET=A) — okno (tury) od cudzego N1/N2/N4 wobec nas, w którym nasza odwetowa wojna NIE nalicza N1/N2. */
+  wiarygodnoscOdwetOknoTur: 10,
+  // -- §3: NAGRODY — tabela A STRUMIEŃ (pkt Wiarygodności NA TURĘ, za każde aktualnie dotrzymywane zobowiązanie) --
+  /** S1 — Sojusz (pełny lub defensywny) aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS1SojuszPerTure: 1,
+  /** S2 — Pakt o nieagresji aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS2NapPerTure: 0.5,
+  /** S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTure: 0.3,
+  /** S4 — Prawo przemarszu / otwarte granice aktywne (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTure: 0.2,
+  // -- §3: NAGRODY — tabela B FINISZ (pkt Wiarygodności, jednorazowo, za dotrwanie do zapisanego terminu) --
+  /** P1 — Sojusz dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP1FiniszSojusz: 10,
+  /** P2 — Pakt o nieagresji dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszNap: 5,
+  /** P2 — Umowa handlowa dotrwana do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszHandel: 5,
+  /** P3 — Handel cykliczny ze 100% dostaw aż do końca umowy (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP3FiniszHandelCykliczny: 1,
+  // -- §3: NAGRODY — tabela C CZYNY (pkt Wiarygodności, jednorazowo, niepowiązane z trwającym zobowiązaniem) --
+  /** P4 — kamień milowy "bez wojny" (pkt Wiarygodności, jednorazowo, powtarzalny co wiarygodnoscP4OknoBezWojnyTur tur). */
+  wiarygodnoscP4BezWojny30Tur: 3,
+  /** P4 — długość okna "bez wojny" wymaganego do naliczenia kamienia milowego (tury). */
+  wiarygodnoscP4OknoBezWojnyTur: 30,
+  /** P5 — pomoc sojusznikowi w wojnie, dołączenie z własnej woli LUB na wezwanie (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP5PomocSojusznikowi: 20,
+  // -- §4: model zapominania — krzywa liniowa z trwałą podłogą (tury do osiągnięcia podłogi, wg trudności i znaku zdarzenia) --
+  /** Czas zapomnienia KAR, poziom Łatwy (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraLatwy: 40,
+  /** Czas zapomnienia KAR, poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraNormalny: 80,
+  /** Czas zapomnienia KAR, poziom Trudny (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraTrudny: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Łatwy (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaLatwy: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaNormalny: 80,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Trudny (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaTrudny: 40,
+  /** Trwała podłoga krzywej zapominania — ułamek [0,1] wartości pierwotnej, który zostaje NA ZAWSZE po pełnym wygaśnięciu (dotyczy WYŁĄCZNIE zdarzeń jednorazowych, nie STRUMIENIA — C-WIAR-SLAD=A). */
+  wiarygodnoscTrwalaPodlogaProcent: 0.1,
+  // -- §5: wpływ Wiarygodności na Zaufanie --
+  /** Dzielnik strumienia Wiarygodność→Zaufanie: ΔZaufanie/turę = Wiarygodność / wartość (C-WIAR-SKALA=20). */
+  wiarygodnoscZaufanieDzielnikPerTura: 20,
+  /** Dźwignia 3 — twardy próg: Sojusz wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgSojuszMin: 0,
+  /** Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgNapMin: -40
+};
+var ARCHETYPE_AGGRESSION = {
+  ["grecy" /* Grecy */]: 0.4,
+  ["rzymianie" /* Rzymianie */]: 0.75,
+  ["chinczycy" /* Chinczycy */]: 0.2,
+  ["inkowie" /* Inkowie */]: 0.45,
+  ["zulusi" /* Zulusi */]: 0.9,
+  ["egipt" /* Egipt */]: 0.35,
+  ["babilon" /* Babilon */]: 0.3,
+  ["sumer" /* Sumer */]: 0.3,
+  ["celtowie" /* Celtowie */]: 0.6,
+  ["germanie" /* Germanie */]: 0.65,
+  ["harappa" /* Harappa */]: 0.2,
+  ["hetyci" /* Hetyci */]: 0.5,
+  ["slowianie" /* Slowianie */]: 0.6,
+  ["babilonia" /* Babilonia */]: 0.4,
+  ["asyria" /* Asyria */]: 0.8,
+  ["fenicjanie" /* Fenicjanie */]: 0.3,
+  ["drobna_cywilizacja" /* DrobnaCywilizacja */]: 0.15
+};
+var ARCHETYPE_TRADE = {
+  ["grecy" /* Grecy */]: 0.75,
+  ["rzymianie" /* Rzymianie */]: 0.5,
+  ["chinczycy" /* Chinczycy */]: 0.85,
+  ["inkowie" /* Inkowie */]: 0.25,
+  ["zulusi" /* Zulusi */]: 0.2,
+  ["egipt" /* Egipt */]: 0.6,
+  ["babilon" /* Babilon */]: 0.65,
+  ["sumer" /* Sumer */]: 0.65,
+  ["celtowie" /* Celtowie */]: 0.35,
+  ["germanie" /* Germanie */]: 0.3,
+  ["harappa" /* Harappa */]: 0.8,
+  ["hetyci" /* Hetyci */]: 0.5,
+  ["slowianie" /* Slowianie */]: 0.4,
+  ["babilonia" /* Babilonia */]: 0.6,
+  ["asyria" /* Asyria */]: 0.3,
+  ["fenicjanie" /* Fenicjanie */]: 0.9,
+  ["drobna_cywilizacja" /* DrobnaCywilizacja */]: 0.6
+};
+
+// src/game/diplomacy-layers.ts
+function clamp2(n, lo, hi) {
+  return Math.max(lo, Math.min(hi, n));
+}
+function startRelationForPair(sameType) {
+  const p = DIPLOMACY_PARAMS;
+  let zaufanie = p.startZaufanie;
+  if (sameType) {
+    zaufanie += p.rywalizacjaTenSamTyp_zaufanie;
+  } else {
+    zaufanie += p.roznicaKulturowa_zaufanie;
+  }
+  return {
+    zaufanie: clamp2(zaufanie, 0, 100),
+    respekt: p.startRespekt,
+    status: "neutralni"
+  };
+}
+
+// src/game/cluster-start.ts
+function buildClusterStartPlan(input) {
+  const spawnPlan = buildClusterSpawnPlan({
+    map: input.map,
+    civs: input.civs,
+    seed: input.seed,
+    playerTyp: input.playerCivId,
+    rywaleNaKlaster: input.rywaleNaKlaster,
+    aktywneTypy: input.aktywneTypy,
+    startEpochId: input.startEpochId,
+    cityNamesPools: input.cityNamesPools
+  });
+  const aiOwnerCivMap = /* @__PURE__ */ new Map();
+  const ownerDisplayName = /* @__PURE__ */ new Map();
+  const simplifiedDiplomacyOwners = /* @__PURE__ */ new Set();
+  const foreignTypeOwners = /* @__PURE__ */ new Set();
+  const typCityCopyOwners = /* @__PURE__ */ new Set();
+  const startRelations = /* @__PURE__ */ new Map();
+  const spawnCities = [];
+  const aiStartHexes = [];
+  for (const slot of spawnPlan.slots) {
+    aiOwnerCivMap.set(slot.ownerId, slot.typ);
+    ownerDisplayName.set(slot.ownerId, displayLabelForSlot(input.civs, slot));
+    if (slot.isSameTypeRival) simplifiedDiplomacyOwners.add(slot.ownerId);
+    else foreignTypeOwners.add(slot.ownerId);
+    if (!slot.isClusterCapital) typCityCopyOwners.add(slot.ownerId);
+    startRelations.set(slot.ownerId, startRelationForPair(slot.isSameTypeRival));
+    spawnCities.push({
+      q: slot.q,
+      r: slot.r,
+      ownerId: slot.ownerId,
+      name: slot.nazwaMiasta
+    });
+    aiStartHexes.push({ q: slot.q, r: slot.r, ownerId: slot.ownerId });
+  }
+  return {
+    playerStartHex: spawnPlan.playerStartHex,
+    playerStartCityName: spawnPlan.playerStartCityName,
+    aiStartHexes,
+    spawnCities,
+    foreignTypeClusters: spawnPlan.foreignTypeClusters,
+    aiOwnerCivMap,
+    ownerDisplayName,
+    simplifiedDiplomacyOwners,
+    foreignTypeOwners,
+    typCityCopyOwners,
+    startRelations,
+    placement: spawnPlan.placement,
+    pendingSameTypeRivals: spawnPlan.pendingSameTypeRivals,
+    pendingSameTypeRivalHexes: spawnPlan.pendingSameTypeRivalHexes,
+    clusterCapitalOwnerIds: spawnPlan.clusterCapitalOwnerIds
+  };
+}
+
+// tools/.map-gen-phase-profile-entry.ts
+var SEED = 42;
+var ROZMIAR = "maly";
+var DENSITY_MEDIUM = { rivers: "medium", forest: "medium", desert: "medium", relief: "medium" };
+var DENSITY_LOW = { ...DENSITY_MEDIUM, rivers: "low" };
+function msSince(t0) {
+  return import_node_perf_hooks.performance.now() - t0;
+}
+function fmtSec(ms) {
+  return (ms / 1e3).toFixed(2) + "s";
+}
+function riverStats(map2) {
+  const kinds = map2.riverPathKinds ?? [];
+  return {
+    main: kinds.filter((k) => k === "main").length,
+    trib: kinds.filter((k) => k === "tributary").length,
+    total: map2.riverPaths?.length ?? 0
+  };
+}
+var { w, h } = rozmiarToDims(ROZMIAR);
+var params = resolveRiverMapParams("medium", w, h);
+console.log("=== PARAMETRY RZEK (Ma\u0142y " + w + "\xD7" + h + ", tier medium) ===");
+console.log(JSON.stringify({
+  areaScale: +params.areaScale.toFixed(3),
+  mainCell: params.mainCell,
+  tributaryCell: params.tributaryCell,
+  feederPasses: params.feederPasses,
+  topUpPasses: params.topUpPasses,
+  minLen: params.minLen,
+  maxLen: params.maxLen,
+  gridTraceMinLen: params.gridTraceMinLen
+}, null, 2));
+var tMap0 = import_node_perf_hooks.performance.now();
+var map = generujSwiat(SEED, ROZMIAR, "kontynenty", {
+  worldDensity: DENSITY_MEDIUM,
+  mapSizeMenuLabel: "Ma\u0142y",
+  civTypesCount: 4,
+  cityStatesCount: 4,
+  difficulty: "normal"
 });
+var mapMs = msSince(tMap0);
+var rs = riverStats(map);
+var tLow0 = import_node_perf_hooks.performance.now();
+generujSwiat(SEED, ROZMIAR, "kontynenty", {
+  worldDensity: DENSITY_LOW,
+  mapSizeMenuLabel: "Ma\u0142y"
+});
+var mapLowMs = msSince(tLow0);
+var epochRoster = civIdsAvailableAtGameEpoch(civs_default.cywilizacje, "kamien");
+var tCl0 = import_node_perf_hooks.performance.now();
+var placement = computeClusters(map, {
+  seed: SEED,
+  aktywneTypy: 4,
+  playerTyp: "grecy",
+  rywaleNaKlaster: 4,
+  startEpochId: "kamien",
+  civRoster: epochRoster
+});
+var clusterMs = msSince(tCl0);
+var tPlan0 = import_node_perf_hooks.performance.now();
+var plan = buildClusterStartPlan({
+  map,
+  civs: civs_default,
+  seed: SEED,
+  playerCivId: "grecy",
+  rywaleNaKlaster: 4,
+  aktywneTypy: 4,
+  startEpochId: "kamien"
+});
+var planMs = msSince(tPlan0);
+var tDirect0 = import_node_perf_hooks.performance.now();
+generateMap(w, h, SEED, "kontynenty", { worldDensity: DENSITY_MEDIUM, mapSizeMenuLabel: "Ma\u0142y" });
+var directMs = msSince(tDirect0);
+console.log("\n=== CZASY (seed=42, Ma\u0142y, kontynenty) ===");
+console.log("  generateMap (pe\u0142ny):     " + fmtSec(mapMs));
+console.log("  generateMap rivers=low:  " + fmtSec(mapLowMs) + "  (delta W2 rzek \u2248 " + fmtSec(mapMs - mapLowMs) + ")");
+console.log("  computeClusters:         " + fmtSec(clusterMs));
+console.log("  buildClusterStartPlan:   " + fmtSec(planMs));
+console.log("  clusters+spawn RAZEM:    " + fmtSec(clusterMs + planMs));
+console.log("  reszta (map - rivers\u0394):  " + fmtSec(mapLowMs) + "  (~" + (mapLowMs / mapMs * 100).toFixed(0) + "% mapy)");
+console.log("\n=== RZEKI na mapie ===");
+console.log("  main=" + rs.main + " tributary=" + rs.trib + " total=" + rs.total);
+console.log("\n=== KLASTRY ===");
+console.log("  aktywneTypy=" + placement.aktywneTypy + " klastry=" + placement.klastry.length);
+console.log("  spawnCities(AI)=" + plan.spawnCities.length + " pendingRivals=" + plan.pendingSameTypeRivals);
+console.log('\n=== Udzia\u0142 faz w \u201ETworzenie \u015Bwiata" (tylko mapgen, bez buildScene) ===');
+var rest = mapLowMs;
+var rivers = mapMs - mapLowMs;
+var total = mapMs;
+console.log("  rzeki (szac. delta low\u2192medium): " + fmtSec(rivers) + " (" + (rivers / total * 100).toFixed(0) + "%)");
+console.log("  reszta generatora:              " + fmtSec(rest) + " (" + (rest / total * 100).toFixed(0) + "%)");
+console.log("  clusters+spawn (PO mapgen):     " + fmtSec(clusterMs + planMs) + " (poza overlay mapgen)");

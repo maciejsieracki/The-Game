@@ -1,4 +1,150 @@
 ﻿
+## [20:48] ✅ Gotowe — pre-battle: przyciemnienie mapy świata (bez deployu)
+
+`preBattle.ts`: scrim `rgba` + desaturacja przy `showPreBattle`, off przy `hidePreBattle`. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [21:05] ✅ Gotowe — MP: Normal=obrona, Trudny=aktywne wsparcie (bez deployu)
+
+Hard: `cityStateOffensiveSupport` — nadwyżka garnizonu → armie sojuszników / atak na wroga wojny. Easy/Normal = legacy defend. `ai.ts` + `main.ts`. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [21:01] ✅ Gotowe — dyplo: wycofany handel „dostępem” (bez deployu)
+
+Po SUROW-TERYT: brak `surowiec_boolean`/`zloze` w koszyku i ofertach AI; pending legacy = nieaktualne (Przyjmij zablokowane). Ilości/złoto bez zmian. Test 65/65 · tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [20:54] ✅ Gotowe — dyplo AI: hojność wg trudności (bez deployu)
+
+Mnożnik darów/osłodzika AI: łatwy **1.0** · normalny **0.5** · trudny **0.3** (`diplomacy-economy.ts` + `ai.ts`). Świadomy handel bez zmian. Test 21/21 · tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [20:53] ✅ Gotowe — bitwa: obrys zaznaczenia na reliefie (bez deployu)
+
+Pick OK; winny był **render ramki** (środki kafli + y≈0 zamiast krawędzi + `tileTopY`). Wzgórza passable — nie osobna bramka. `battleScene.ts`. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [20:44] ✅ Gotowe — Magazyn + Spichlerz: baza cap 500→1000 (bez deployu)
+
+`econ-params.json`: `magazyn_baza_surowce` + `magazyn_centralny_baza_zywnosc` = **1000** (easy/normal/hard) + fallbacki w `economy-upkeep.ts` / `empire-food.ts`. tsc 0. (Testy z asercją 500 — dogonić przy suite.)
+
+⏸️ **Czeka:** `deploy`.
+
+## [20:44] ✅ Gotowe — granice mapy nie gasną same (bez deployu)
+
+`dismissMapOverlayModes()` w `main.ts` już **nie** zeruje `territoryBorderVisible` (wcześniej gaszenie przy kliku mapy / resetach). OFF tylko ręcznie. Miasto: force ON + restore bez zmian. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [20:43] ✅ Gotowe — duchy ikon po wyjściu z budowy tartaku (bez deployu)
+
+`main.ts`: `clearBuildModeVisuals()` przy `exitBuildMode` — ghosts + `clearHighlight` + auto-overlay 👤. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [20:40] ✅ Gotowe — Pakt o nieagresji: bez pustej oferty na starcie (bez deployu)
+
+`diplomacyTradeBasket.ts`: przy `mode=treaty` i pustych koszykach nie renderuj OFERUJEMY/OFERUJĄ („—”); Zaproponuj = sam pakt; wymiana PN opcjonalna po „+ Dodaj”. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [20:36] ✅ Gotowe — ulepszenia tylko na własnym terenie + tartak (bez deployu)
+
+**Przyczyna braku drewna:** tartak na heksie **sąsiada** (overlap zasięgów) — surowiec idzie do właściciela heksu.
+
+| Fix | Opis |
+|-----|------|
+| Bramka | `isTerritoryHexOwnedBy` fail-closed; budowa (w tym posterunek/droga) tylko `owner === ty` |
+| AI/MP | druga linia walidacji w `main.ts` przed zapisem ulepszenia |
+| Tartak | nie znika przy wycince lasu |
+| Testy | qualify 65/65 · gate 6/6 · road 16/16 · tsc 0 |
+
+⏸️ **Czeka:** `deploy`.
+
+## [20:35] ✅ Gotowe — podgląd granic zawsze w widoku miasta (bez deployu)
+
+`main.ts`: przy wejściu do miasta force granic ON (wcześniej city panel je chował); przy wyjściu restore stanu z mapy świata. tsc: main OK (osobny WIP w `improvement-build.ts` może mieć błąd — śledzony w wątku ulepszeń).
+
+⏸️ **Czeka:** `deploy` (duża paczka).
+
+## [20:29] ✅ Gotowe — karta jednostki (zoom) + duch minimapy + złote scrollbary (bez deployu)
+
+| Fix | Opis |
+|-----|------|
+| Karta jednostki | `bottom` +20 px bazowo + lift przy zoom UI (`minimapLayout` / `sidePanelHud`) |
+| Duch za minimapą | prześwit medalionu władcy `.dip-leader-medallion` — przycięty w `unitCardStatus` |
+| Scrollbary | globalnie złoty thumb na czarnym tracku (`brandTokenVars.ts`) |
+
+⏸️ **Czeka:** `deploy` (duża paczka UI + klastry + dyplo…).
+
+## [20:25] ✅ Gotowe — Stół: oferty rozbite My / Oni (bez deployu)
+
+`diplomacyAudience.ts` + `diplomacyDealDisplay.ts`: outgoing (`direction=own`) → **My oferujemy**; incoming → **Oni oferują** (+ Przyjmij/Odrzuć/Kontruj). Bez dual-boxu w jednym worku. tsc OK.
+
+⏸️ **Czeka:** `deploy` (paczka: dyplo + tabela miast + fix klastrów ~10×).
+
+## [20:24] ✅ Gotowe — tabela Miasta imperium: ikony tylko w nagłówkach (bez deployu)
+
+`empireDetailPanel.ts`: w TD same liczby (żywność `+5` bez chleba); w TH ikony designera (`res-food`, `res-work`, `res-treasury`, `res-population`) + etykiety; gap żeby nagłówki się nie sklejały. tsc OK.
+
+⏸️ **Czeka:** `deploy` (paczka z dyplo + fix klastrów).
+
+## [20:22] ✅ Gotowe — Stół negocjacji: nazwy + układ kolumn (bez deployu)
+
+L→P: **Aktywne traktaty** · **My oferujemy** · **Oni oferują** · **Możliwe umowy** (`diplomacyAudience.ts`). tsc OK.
+
+⏸️ **Czeka:** `deploy` (razem z fixem wolnej Nowej gry / tabela miast gdy gotowe).
+
+## [20:21] ✅ Gotowe — wolna Nowa gra (~10×) — bug bramki lądu klastrów (bez deployu)
+
+**Nie crash.** Rzeki W2 ~+1,7 s na Małym (~40% mapgen) — nie ×10.
+
+**Root cause:** `localLandFraction` w `clusters.ts` skanowała **całą mapę** przy każdym checku 70% lądu (R=3) → `computeClusters` ~9 s. Po fixie ~0,15 s (iteracja tylko dysku R=3).
+
+| | Przed | Po |
+|--|------:|---:|
+| computeClusters (Mały) | ~9,3 s | ~0,15 s |
+| rzeki W2 | ~1,7 s | bez zmian |
+
+⏸️ **Czeka:** `deploy` → Ctrl+F5 → Nowa gra (Mały) powinna startować wyraźnie szybciej.
+
+## [19:26] ✅ Gotowe — FALA 72 deploy (tooltipy HUD + karty detail + hub-chain MP)
+
+| Deploy | Wartość |
+|--------|---------|
+| **FALA** | 72 |
+| **md5** | `bd18787215dc0ae9e98eab54944b117c` (skrót **`bd187872`**) |
+| **Wejście** | `gra-robocza/START.html` |
+| **Weryfikacja** | **Ctrl+F5** → pieczęć **`bd187872`** → hover ikon = większy jasny podpis · „Pieniądz — co to znaczy" = normalna karta · Nowa gra = MP hub-chain 4 hex |
+
+| Fix | Opis |
+|-----|------|
+| **Tooltipy HUD** | `hudTitleTooltip.ts` — custom overlay 15px (zamiast natywnego title); włączone w `showHud()` |
+| **Karty wyjaśnień** | `.detail-card` 0.78em, sekcje ~0.68–0.88em, float max 400px, dock **400px**; `sciencePicker` cofnięty z 2× |
+| **Hub-chain MP** | `packCityStatesHubChain()` — pierścień 4 hex od stolicy, potem od kolejnych MP; min. 4 hex między MP (`clusters.ts`) · testy **6/6** |
+
+## [19:10] ✅ Gotowe — FALA 71 deploy (P0 koniec tury — session reset)
+
+**Przyczyna:** `doStartGame` / Nowa gra **nie resetowała** `endTurnInProgress`, `aiTurnAwaitingBattle`, `aiCmdResume` ani overlay tury z poprzedniej sesji (bez Ctrl+F5). Stare flagi + cichy `return` na `aiTurnAwaitingBattle` blokowały **N** i przycisk. Stempel `f5fe14f9` u Macieja = **stary cache** (nie F70 `e441f614` ani F71).
+
+| Deploy | Wartość |
+|--------|---------|
+| **FALA** | 71 |
+| **md5** | `0232836ac4a721f4df33256cb3642dd4` (skrót **`0232836a`**) |
+| **Wejście** | `gra-robocza/START.html` |
+| **Weryfikacja** | **Ctrl+F5** → pieczęć builda / manifest **`0232836a`** → Nowa gra → załóż miasto → **N** (F12: `[EndTurn] triggerPlayerEndTurn: START`) |
+
+| Fix | Opis |
+|-----|------|
+| `resetEndTurnBlockers()` | Wywołane przy Nowa gra + load — czyści flagi + overlay + preBattle zombie |
+| `healStaleEndTurnBlockers()` | Orphan overlay, force-clear >8s, `console.warn` per blocker |
+| bottomBar | Klik zawsze woła `triggerPlayerEndTurn` (hint przy blokadzie, nie martwy disabled) |
+
 ## [18:48] ✅ Gotowe — FALA 69 deploy all (HUD + dyplo + epoch matrix + spawn)
 
 | Paczka | Status | Efekt w grze |

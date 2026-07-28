@@ -309,6 +309,17 @@ export interface AITurnOpts {
    */
   citySupportLevel?: 'low' | 'normal' | 'strong';
   /**
+   * Trudność miast-państw = Hard: aktywne wsparcie ofensywne (marsz na wroga wojny,
+   * łączenie z armią sojusznika/siostry). Normal/Easy = false (legacy defend-only).
+   * Silnik: main.ts `_menuCityStateDifficulty === 'hard'`.
+   */
+  cityStateOffensiveSupport?: boolean;
+  /**
+   * Sojusznicy (pełne AI) do łączenia armii na Trudnym — ownerId spoza klastra MP.
+   * Siostry w klastrze są w sisterCityStates; tu tylko zewnętrzni sojusznicy z activeDeals.
+   */
+  warAllyOwnerIds?: readonly number[];
+  /**
    * Silnik: czy AI (playerId) może prowadzić walkę z ownerId celu.
    * main.ts ustawia: gracz (0) tylko przy status 'wojna' — bez tego miasta-państwa
    * atakowały zwiadowcę przy PRZYJAZNY/neutralni (bug 2026-07-21).
@@ -673,6 +684,10 @@ function firstStep(
 /** Pełne cywilizacje: min. tyle zwiadowców w fazie startowej (nie dotyczy państw-miast). */
 export const AI_EARLY_SCOUT_TARGET = 2;
 const SCOUT_TYPE_ID = 'Zwiadowca';
+/** Promień szukania neutralnych wiosek w fazie lokalnej (hexy od dowolnego miasta). */
+const AI_LOCAL_VILLAGE_SEARCH_RADIUS = 24;
+/** Po tej turze faza lokalna może się zakończyć mimo niewybranych hutów / MP. */
+const AI_LOCAL_PHASE_MAX_TURN = 45;
 
 export function isScoutUnit(unit: RuntimeUnit): boolean {
   return unit.typeId === SCOUT_TYPE_ID || unit.category === 'zwiadowca';
@@ -685,6 +700,53 @@ export function countPlayerScouts(allUnits: readonly RuntimeUnit[], playerId: nu
 /** Faza wyścigu o neutralne wioski — pełna cywilizacja, przed ekspansją poza region startowy. */
 function isVillageExploreRacePhase(opts: AITurnOpts, myCities: AICity[]): boolean {
   return !opts.defensiveCopy && myCities.length < 3;
+}
+
+/** Liczba wolnych wiosek w zasięgu od miast AI (faza lokalna — huty przed founding). */
+function countNeutralVillagesInRange(
+  map: GameMap,
+  myCities: AICity[],
+  radius: number,
+): number {
+  if (myCities.length === 0) return 0;
+  let count = 0;
+  for (const key of Object.keys(map.hexes)) {
+    const hex = map.hexes[key];
+    if (hex === undefined) continue;
+    if (!hex.wioska.istnieje) continue;
+    if (hex.wlasciciel !== null) continue;
+    const { q, r } = hex.coords;
+    const near = myCities.some(c => hexDistance(q, r, c.q, c.r) <= radius);
+    if (near) count += 1;
+  }
+  return count;
+}
+
+/**
+ * Faza lokalna (Maciej 2026-07-28): skauci + huty + MP w klastrze przed founding drugiego miasta.
+ * Kończy się po wyczerpaniu celów lokalnych lub po AI_LOCAL_PHASE_MAX_TURN.
+ */
+export function isLocalExpansionPhase(
+  opts: AITurnOpts,
+  myCities: AICity[],
+  map: GameMap,
+  units: readonly RuntimeUnit[],
+  playerId: number,
+): boolean {
+  if (opts.defensiveCopy) return false;
+  if (myCities.length === 0) return false;
+  const turn = opts.currentTurn ?? 0;
+  if (turn >= AI_LOCAL_PHASE_MAX_TURN) return false;
+
+  const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
+  const clusterTargets = opts.clusterStateTargets ?? [];
+  if (clusterTargets.length > 0 && !aiBypassClusterConsolidation(ekspansywnosc)) return true;
+
+  if (countPlayerScouts(units, playerId) < AI_EARLY_SCOUT_TARGET) return true;
+
+  if (countNeutralVillagesInRange(map, myCities, AI_LOCAL_VILLAGE_SEARCH_RADIUS) > 0) return true;
+
+  return false;
 }
 
 /**
@@ -1375,13 +1437,15 @@ export function planCityFounding(
   data: GameData,
   opts: AITurnOpts,
   minCityDist: number,
+  units: readonly RuntimeUnit[] = [],
 ): AICmdFoundCityAt | null {
   if (opts.defensiveCopy) return null;
+  const myCities = cities.filter(c => c.ownerId === playerId);
+  if (isLocalExpansionPhase(opts, myCities, map, units, playerId)) return null;
+
   const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterConsolidationPhase = (opts.clusterStateTargets ?? []).length > 0;
   if (clusterConsolidationPhase && !aiBypassClusterConsolidation(ekspansywnosc)) return null;
-
-  const myCities = cities.filter(c => c.ownerId === playerId);
   const treasuryPraca = aiTreasuryPracaForFounding(opts.pracaAvailable ?? 0, ekspansywnosc);
   const turn = opts.currentTurn ?? 0;
   const aff = evaluateFoundCityAffordance(
@@ -1537,7 +1601,8 @@ export function decideAITurn(
   const clusterEnemyCities = engageableEnemyCities.filter(c => clusterTargetOwnerIds.has(c.ownerId));
   const sklonnoscPodboju = opts.civAiProfile?.sklonnoscDoPodboju ?? 2;
   const skipPatrol = sklonnoscPodboju >= 4;
-  const villageExploreRace = isVillageExploreRacePhase(opts, myCities);
+  const localExpansionPhase = isLocalExpansionPhase(opts, myCities, map, myUnits, playerId);
+  const villageExploreRace = localExpansionPhase || isVillageExploreRacePhase(opts, myCities);
 
   // (archetyp + trudność policzone na górze funkcji — wspólne dla obu ścieżek)
   const minCityDist = getAiParam(data, 'ekspansja_min_dystans_miast', 5);
@@ -1545,7 +1610,7 @@ export function decideAITurn(
   // -------------------------------------------------------------------------
   // Step 1b: CITY FOUNDING — max 1/turę (C-AI-EKSP-Q1)
   // -------------------------------------------------------------------------
-  const foundingCmd = planCityFounding(playerId, cities, map, data, opts, minCityDist);
+  const foundingCmd = planCityFounding(playerId, cities, map, data, opts, minCityDist, myUnits);
   if (foundingCmd !== null) {
     commands.push(foundingCmd);
   }
@@ -1790,6 +1855,79 @@ export const RESUP_TIERS: Record<'low' | 'normal' | 'strong', ResupTier> = {
   strong: { threatRadius: 2, minGuard: 1, maxPerTurn: 2 },
 };
 
+/** Maks. dystans od domu, by jednostka MP (Hard) kontynuowała marsz ofensywny zamiast powrotu. */
+const CS_OFFENSIVE_CAMPAIGN_RADIUS = 12;
+
+/**
+ * Trudny (cityStateOffensiveSupport): marsz na wroga wojny lub dołączenie do armii
+ * sojusznika/siostry. Normal/Easy — nie wołane (legacy defend-only).
+ */
+function planCityStateOffensiveMove(
+  unit: RuntimeUnit,
+  map: GameMap,
+  allUnits: RuntimeUnit[],
+  myCities: AICity[],
+  enemyUnits: RuntimeUnit[],
+  enemyCities: AICity[],
+  friendlyOwnerIds: ReadonlySet<number>,
+  homeGuardCount: ReadonlyMap<string, number>,
+  minGuardToSend: number,
+): { q: number; r: number } | null {
+  if (isScoutUnit(unit)) return null;
+
+  const homeCity = nearest(unit.q, unit.r, myCities, c => c.q, c => c.r);
+  if (homeCity === undefined) return null;
+
+  const distHome = hexDistance(unit.q, unit.r, homeCity.q, homeCity.r);
+  const atHome = distHome <= 1;
+  if (atHome) {
+    const guardCount = homeGuardCount.get(homeCity.id) ?? 0;
+    if (guardCount < minGuardToSend) return null;
+  } else if (distHome > CS_OFFENSIVE_CAMPAIGN_RADIUS) {
+    return null;
+  }
+
+  // 1) Dołącz do najbliższej armii sojusznika/siostry w zasięgu walki z wrogiem.
+  const allies = allUnits.filter(
+    u => friendlyOwnerIds.has(u.ownerId) && u.id !== unit.id && !isScoutUnit(u),
+  );
+  let bestAlly: RuntimeUnit | undefined;
+  let bestAllyScore = -Infinity;
+  for (const ally of allies) {
+    const nearestEnemyToAlly = nearest(ally.q, ally.r, enemyUnits, u => u.q, u => u.r);
+    if (nearestEnemyToAlly === undefined) continue;
+    const enemyDist = hexDistance(ally.q, ally.r, nearestEnemyToAlly.q, nearestEnemyToAlly.r);
+    if (enemyDist > 4) continue;
+    const d = hexDistance(unit.q, unit.r, ally.q, ally.r);
+    if (d > 6) continue;
+    const score = -d - enemyDist;
+    if (score > bestAllyScore) {
+      bestAllyScore = score;
+      bestAlly = ally;
+    }
+  }
+  if (bestAlly !== undefined) {
+    const step = firstStep(unit, map, bestAlly.q, bestAlly.r, allUnits);
+    if (step !== null) return step;
+  }
+
+  // 2) Marsz na najbliższą jednostkę wroga wojny.
+  const nearestEnemy = nearest(unit.q, unit.r, enemyUnits, u => u.q, u => u.r);
+  if (nearestEnemy !== undefined) {
+    const step = firstStep(unit, map, nearestEnemy.q, nearestEnemy.r, allUnits);
+    if (step !== null) return step;
+  }
+
+  // 3) Marsz na najbliższe wrogie miasto (formalna wojna z właścicielem).
+  const nearestEnemyCity = nearest(unit.q, unit.r, enemyCities, c => c.q, c => c.r);
+  if (nearestEnemyCity !== undefined) {
+    const step = firstStep(unit, map, nearestEnemyCity.q, nearestEnemyCity.r, allUnits);
+    if (step !== null) return step;
+  }
+
+  return null;
+}
+
 /**
  * D-START kopia_typu_obronna — bez produkcji ekspansyjnej, bez osadników/foundCity;
  * poza tym pełna produkcja (jak zwykłe miasto AI, via chooseCityProduction), riposta
@@ -1868,6 +2006,18 @@ function decideDefensiveCopyTurn(
   }
 
   let reinforcementsSentThisTurn = 0;
+  let offensiveMovesThisTurn = 0;
+
+  const enemyCitiesAtWar = cities.filter(
+    c => c.ownerId !== playerId
+      && aiCanEngageOwner(opts, c.ownerId)
+      && !sisterOwnerIds.has(c.ownerId),
+  );
+  const friendlyArmyOwnerIds = new Set<number>([
+    ...sisterOwnerIds,
+    ...(opts.warAllyOwnerIds ?? []),
+  ]);
+  const offensiveSupport = opts.cityStateOffensiveSupport === true;
 
   for (const unit of myUnits) {
     if (unit.ruchLeft <= 0) continue;
@@ -1932,6 +2082,38 @@ function decideDefensiveCopyTurn(
             reinforcementsSentThisTurn++;
             continue;
           }
+        }
+      }
+    }
+
+    // Trudny: aktywne wsparcie ofensywne — marsz na wroga wojny / łączenie z sojusznikiem.
+    // Normal/Easy (offensiveSupport=false): legacy defend-only — ten blok pomijany.
+    if (
+      offensiveSupport
+      && offensiveMovesThisTurn < RESUP_MAX_PER_TURN
+      && (nonSisterEnemyUnits.length > 0 || enemyCitiesAtWar.length > 0)
+    ) {
+      const ownThreatened = myCities.some(city =>
+        nonSisterEnemyUnits.some(
+          eu => hexDistance(eu.q, eu.r, city.q, city.r) <= RESUP_THREAT_RADIUS,
+        ),
+      );
+      if (!ownThreatened) {
+        const offStep = planCityStateOffensiveMove(
+          unit,
+          map,
+          units,
+          myCities,
+          nonSisterEnemyUnits,
+          enemyCitiesAtWar,
+          friendlyArmyOwnerIds,
+          homeGuardCount,
+          RESUP_MIN_GUARD_TO_SEND,
+        );
+        if (offStep !== null) {
+          commands.push({ type: 'move', unitId: unit.id, toQ: offStep.q, toR: offStep.r });
+          offensiveMovesThisTurn++;
+          continue;
         }
       }
     }
@@ -2287,7 +2469,7 @@ import {
   AI_TRIBUTE_PEACE_MAX,
   AI_TRADE_AGREEMENT_SWEETENER_MARGIN,
   AI_TRADE_AGREEMENT_SWEETENER_MAX,
-  aiOneShotGiftGoldMultiplier,
+  scaleAiGenerousGoldOffer,
   canAiProposeOneShotGoldGift,
   canAiProposeTradeAgreement,
   canAiProposeResourceTrade,
@@ -2988,7 +3170,10 @@ export function decideAIDiplomacy(
       const sweetenerRaw = closeToThreshold
         ? capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_AGREEMENT_SWEETENER_MAX)
         : 0;
-      const sweetenerGold = sweetenerRaw > 0 ? sweetenerRaw : undefined;
+      const sweetenerScaled = sweetenerRaw > 0
+        ? scaleAiGenerousGoldOffer(sweetenerRaw, difficulty)
+        : 0;
+      const sweetenerGold = sweetenerScaled > 0 ? sweetenerScaled : undefined;
       komendy.push({
         type:     'zaproponuj_umowe_handlowa',
         targetId: rel.partnerId,
@@ -3016,10 +3201,7 @@ export function decideAIDiplomacy(
       difficulty,
     );
     const rawTradeGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_GOLD_MAX);
-    const tradeGold = Math.max(
-      0,
-      Math.floor(rawTradeGold * aiOneShotGiftGoldMultiplier(difficulty)),
-    );
+    const tradeGold = scaleAiGenerousGoldOffer(rawTradeGold, difficulty);
     if (
       !rel.stanWojny &&
       giftCooldownOk &&

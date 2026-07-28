@@ -29,8 +29,52 @@ const CIV_ALIASES_CSS = `
 }
 `;
 
+/** Globalne scrollbary — złoty thumb na czarnym tracku (Maciej 2026-07-28). */
+const CIV_GLOBAL_SCROLLBAR_CSS = `
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #e0b24a #0a0e14;
+}
+html * {
+  scrollbar-width: thin;
+  scrollbar-color: #e0b24a #0a0e14;
+}
+html::-webkit-scrollbar,
+html *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html::-webkit-scrollbar-track,
+html *::-webkit-scrollbar-track {
+  background: #0a0e14;
+}
+html::-webkit-scrollbar-thumb,
+html *::-webkit-scrollbar-thumb {
+  background: #e0b24a;
+  border-radius: 5px;
+  border: 2px solid #0a0e14;
+}
+html::-webkit-scrollbar-thumb:hover,
+html *::-webkit-scrollbar-thumb:hover {
+  background: #d4af5a;
+}
+html::-webkit-scrollbar-button,
+html *::-webkit-scrollbar-button {
+  background: #0a0e14;
+  border: 1px solid #1a1f28;
+}
+html::-webkit-scrollbar-button:hover,
+html *::-webkit-scrollbar-button:hover {
+  background: #141a22;
+}
+html::-webkit-scrollbar-corner,
+html *::-webkit-scrollbar-corner {
+  background: #0a0e14;
+}
+`;
+
 /** :root — zmienne globalne (wstrzykiwane raz na dokument). */
-export const CIV_BRAND_ROOT_CSS = brandTokensCss + CIV_ALIASES_CSS;
+export const CIV_BRAND_ROOT_CSS = brandTokensCss + CIV_ALIASES_CSS + CIV_GLOBAL_SCROLLBAR_CSS;
 
 /** Alias lokalny w scope menu/kreator (kompatybilność ze starymi var(--gold)). */
 export const CIV_BRAND_SCOPE_VARS = `
@@ -59,10 +103,11 @@ export const CIV_BRAND_SCOPE_VARS = `
   --radius-lg: var(--civ-radius-panel);
 `;
 
-const ROOT_STYLE_ID = 'civ-brand-root-css';
+const ROOT_STYLE_ID = 'civ-brand-root-css-w2-scroll';
 
 /** Jednorazowe wstrzyknięcie :root tokenów. */
 export function ensureBrandRootTokens(): void {
+  document.getElementById('civ-brand-root-css')?.remove();
   if (document.getElementById(ROOT_STYLE_ID)) return;
   const style = document.createElement('style');
   style.id = ROOT_STYLE_ID;

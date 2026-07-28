@@ -39,7 +39,7 @@ const ACTION_ICONS: Partial<Record<string, string>> = {
 };
 
 /** Ikony akcji widoczne w kompaktowej karcie (bez rozwiąż w środku — osobno po prawej). */
-const COMPACT_ACTION_ORDER = ['fortify', 'split', 'replace', 'sentry', 'skip'] as const;
+const COMPACT_ACTION_ORDER = ['fortify', 'sentry', 'split', 'replace', 'skip'] as const;
 
 export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): string {
   const byId = new Map(actions.map(a => [a.id, a]));

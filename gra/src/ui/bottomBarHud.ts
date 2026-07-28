@@ -60,6 +60,7 @@ html.civ-ui-zoom-active .civ-bottom-bar{bottom:${HUD_ZOOM_EDGE_PX}px;right:${HUD
   border:1px solid #6a5212;border-top-color:#f8eea8;border-radius:9px;cursor:pointer;color:#2e2708;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 18px rgba(232,216,138,.22);font-family:var(--civ-font-ui);}
 .civ-bottom-bar .end-turn:hover:not(:disabled){filter:brightness(1.04);}
+.civ-bottom-bar .end-turn.is-disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.5);box-shadow:none;}
 .civ-bottom-bar .end-turn:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.5);box-shadow:none;}
 .civ-bottom-bar .et-meta{display:none;}
 .civ-bottom-bar .et-action{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;
@@ -92,10 +93,14 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
       ? endArrow.replace(/\swidth="[^"]*"/, ' width="18"').replace(/\sheight="[^"]*"/, ' height="18"')
       : '<span aria-hidden="true">▶</span>';
 
+    const endVisuallyDisabled = hideEnd || !canEnd;
+
     el.innerHTML = '<button type="button" class="wykonaj' + (wykOn ? ' on' : '') + '" data-wykonaj'
       + (wykOn ? '' : ' disabled') + '>Wykonaj</button>'
       + (hideEnd ? '' : (
-        '<button type="button" class="end-turn" data-end>'
+        '<button type="button" class="end-turn'
+        + (endVisuallyDisabled ? ' is-disabled' : '')
+        + '" data-end aria-disabled="' + (endVisuallyDisabled ? 'true' : 'false') + '">'
         + '<span class="et-action">' + arrowHtml + '<span>Zakończ turę</span></span></button>'
       ))
       + '<div class="et-turn-lbl">Tura ' + turn + (year ? ' · ' + year : '') + '</div>';
@@ -104,7 +109,8 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
       if (wykOn) config.onExecutePending?.();
     });
     el.querySelector('[data-end]')?.addEventListener('click', () => {
-      if (canEnd) config.onEndTurn?.();
+      if (config.hideEndTurn?.()) return;
+      config.onEndTurn?.();
     });
   }
 

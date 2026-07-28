@@ -16,6 +16,7 @@ import {
   type CityNode,
   type TerritoryNode,
 } from './territory';
+import { isTerritoryHexOwnedBy } from './territory-work';
 import { hexKeysWithinRadius } from '../game/okolica';
 import terrainImprovements from '../../data/terrain-improvements.json';
 import {
@@ -139,12 +140,9 @@ const TARTAK_TERENY = new Set<TerenBazowy>([
   TerenBazowy.Pustynia,
 ]);
 
-/** Ulepszenia wymagające nakładki Las — usuwane gdy las znika z heksa (wyrąb, wycinka). */
-const FOREST_OVERLAY_IMPROVEMENT_KEYS = new Set<string>(['tartak']);
-
-/** Po usunięciu lasu z heksa — odfiltruj ulepszenia zależne od nakładki Las. */
+/** Po usunięciu lasu z heksa — odfiltruj ulepszenia zależne od nakładki Las (tartak NIE — kanon: las zostaje przy tartaku). */
 export function stripImprovementsWhenForestRemoved(layers: readonly string[]): string[] {
-  return layers.filter(k => !FOREST_OVERLAY_IMPROVEMENT_KEYS.has(k));
+  return [...layers];
 }
 
 const FLAT_FARM = new Set<TerenBazowy>([TerenBazowy.Laka, TerenBazowy.Rownina]);
@@ -433,15 +431,10 @@ function createQualifier(state: ImprovementBuildState) {
   if (state.tradeRouteKonUnlocked) empireUnlocks.add('kon');
 
   function inPlayerTerritory(q: number, r: number): boolean {
-    return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
-  }
-
-  function isOnTerritoryEdge(q: number, r: number): boolean {
-    if (inPlayerTerritory(q, r)) return true;
-    for (const nb of hexNeighbors(q, r)) {
-      if (inPlayerTerritory(nb.q, nb.r)) return true;
+    if (territoryNodes.length > 0) {
+      return isTerritoryHexOwnedBy(q, r, playerOwnerIdNum, territoryNodes);
     }
-    return false;
+    return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
   }
 
   function isRoadQualified(q: number, r: number): boolean {
@@ -486,6 +479,7 @@ function createQualifier(state: ImprovementBuildState) {
 
     if (key === 'droga_brukowana') {
       if (!TERENY_LADU.has(teren)) return false;
+      if (!inPlayerTerritory(q, r)) return false;
       const hasDroga = existing.includes('droga') || hex.ulepszenie === Ulepszenie.Droga;
       const hasBruk = existing.includes('droga_brukowana')
         || hex.ulepszenie === Ulepszenie.DrogaBrukowana;
@@ -541,7 +535,7 @@ function createQualifier(state: ImprovementBuildState) {
       case 'droga':
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
       case 'posterunek':
-        return TERENY_LADU.has(teren) && isOnTerritoryEdge(q, r);
+        return TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
       case 'fort':
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
       case 'glinianka':

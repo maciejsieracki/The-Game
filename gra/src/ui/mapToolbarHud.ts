@@ -107,10 +107,10 @@ export function createMapToolbarHud(config: MapToolbarHudConfig): MapToolbarHudA
     html += `<button type="button" class="tb${cityListOn ? ' on' : ''}" data-act="cities" title="Miasto — lista i produkcja">${tbIcon('tb-cities')}</button>`;
     html += `<button type="button" class="tb science${scienceOn ? ' on' : ''}" data-act="science" title="Badania">`
       + `${scienceRing}<span class="tb-ring-wrap">${tbIcon('tb-science')}</span></button>`;
-    html += `<button type="button" class="tb${diploListOn ? ' on' : ''}" data-act="diplo" title="Dyplomacja">${tbIcon('tb-diplomacy')}</button>`;
-    const armyExtra = (wars > 0 ? ' at-war' : '') + (armyListOn ? ' on' : '');
-    html += `<button type="button" class="tb${armyExtra}" data-act="army" title="Wojsko">${tbIcon('tb-army')}`
+    const diploExtra = (wars > 0 ? ' at-war' : '') + (diploListOn ? ' on' : '');
+    html += `<button type="button" class="tb${diploExtra}" data-act="diplo" title="Dyplomacja">${tbIcon('tb-diplomacy')}`
       + (wars > 0 ? `<span class="badge">${wars}</span>` : '') + '</button>';
+    html += `<button type="button" class="tb${armyListOn ? ' on' : ''}" data-act="army" title="Wojsko">${tbIcon('tb-army')}</button>`;
     html += `<button type="button" class="tb${buildOn ? ' on' : ''}" data-act="build" title="Budowa ulepszeń">${tbIcon('tb-build')}</button>`;
     el.innerHTML = html;
 

@@ -447,6 +447,98 @@ console.log('9. applyCityStateDifficultyTrust -- korekta zaufania miast-panstw w
     'nie przez logike tej funkcji');
 }
 
+// ===========================================================================
+// 10. Hard: aktywne wsparcie ofensywne (cityStateOffensiveSupport).
+// ===========================================================================
+console.log('10. Hard offensive -- marsz na wroga wojny gdy brak zagrozenia domu');
+{
+  const mapOff = makeFlatMap(30, 30);
+  const guard1 = makeGuard('og1', PLAYER_ID, CITY_Q, CITY_R);
+  const guard2 = makeGuard('og2', PLAYER_ID, CITY_Q, CITY_R + 1);
+  const guard3 = makeGuard('og3', PLAYER_ID, CITY_Q + 1, CITY_R);
+  const enemyCity = makeCity('ecWar', ENEMY_ID, CITY_Q + 8, CITY_R);
+  const atWar = (targetOwnerId) => targetOwnerId === ENEMY_ID;
+  const city = makeCity('cityA', PLAYER_ID, CITY_Q, CITY_R);
+
+  const cmdsNormal = decideAITurn(
+    PLAYER_ID,
+    [guard1, guard2, guard3],
+    [city, enemyCity],
+    mapOff,
+    data,
+    {
+      defensiveCopy: true,
+      citySupportLevel: 'normal',
+      canEngageOwner: atWar,
+    },
+  );
+  const movesNormal = cmdsNormal.filter(c => c.type === 'move');
+  eq(movesNormal.length, 0, 'Normal (bez offensiveSupport): brak marszu na odleglego wroga');
+
+  const cmdsHard = decideAITurn(
+    PLAYER_ID,
+    [guard1, guard2, guard3],
+    [city, enemyCity],
+    mapOff,
+    data,
+    {
+      defensiveCopy: true,
+      citySupportLevel: 'strong',
+      cityStateOffensiveSupport: true,
+      canEngageOwner: atWar,
+    },
+  );
+  const movesHard = cmdsHard.filter(c => c.type === 'move');
+  assert(movesHard.length >= 1, 'Hard: co najmniej 1 jednostka maszeruje na wroga wojny');
+  const towardEnemy = movesHard.some(m =>
+    hexDistance(m.toQ, m.toR, enemyCity.q, enemyCity.r)
+    < hexDistance(
+      m.unitId === 'og1' ? CITY_Q : m.unitId === 'og3' ? CITY_Q + 1 : CITY_Q,
+      m.unitId === 'og2' ? CITY_R + 1 : CITY_R,
+      enemyCity.q,
+      enemyCity.r,
+    ),
+  );
+  assert(towardEnemy, 'Hard: ruch zmniejsza dystans do wrogiego miasta');
+}
+
+console.log('11. Hard offensive -- dolaczenie do armii sojusznika');
+{
+  const mapJoin = makeFlatMap(30, 30);
+  const guard1 = makeGuard('jg1', PLAYER_ID, CITY_Q, CITY_R);
+  const guard2 = makeGuard('jg2', PLAYER_ID, CITY_Q, CITY_R + 1);
+  const allyUnit = makeGuard('ally1', SISTER_ID, CITY_Q + 4, CITY_R);
+  const enemy = makeEnemy('je1', ENEMY_ID, CITY_Q + 5, CITY_R);
+  const city = makeCity('cityA', PLAYER_ID, CITY_Q, CITY_R);
+  const atWar = (targetOwnerId) => targetOwnerId === ENEMY_ID;
+
+  const cmds = decideAITurn(
+    PLAYER_ID,
+    [guard1, guard2, allyUnit, enemy],
+    [city],
+    mapJoin,
+    data,
+    {
+      defensiveCopy: true,
+      citySupportLevel: 'strong',
+      cityStateOffensiveSupport: true,
+      canEngageOwner: atWar,
+      warAllyOwnerIds: [SISTER_ID],
+    },
+  );
+  const moves = cmds.filter(c => c.type === 'move' && (c.unitId === 'jg1' || c.unitId === 'jg2'));
+  const towardAlly = moves.some(m =>
+    hexDistance(m.toQ, m.toR, allyUnit.q, allyUnit.r)
+    < hexDistance(
+      m.unitId === 'jg1' ? CITY_Q : CITY_Q,
+      m.unitId === 'jg2' ? CITY_R + 1 : CITY_R,
+      allyUnit.q,
+      allyUnit.r,
+    ),
+  );
+  assert(towardAlly || moves.length >= 1, 'Hard: jednostka MP rusza w strone sojusznika lub wroga');
+}
+
 // ---------------------------------------------------------------------------
 console.log('');
 console.log(`city-state-alliance-test: ${passed} passed, ${failed} failed`);

@@ -334,16 +334,16 @@ export interface OwnerStorageParams {
   bonusSurowceNaBudynek: number;
 }
 
-/** Placeholder do strojenia (Maciej 2026-07-24): 500 baza + 100/Magazyn (baza podniesiona 100→500). */
+/** Placeholder do strojenia (Maciej 2026-07-24/28): 1000 baza + 100/Magazyn (baza 100→500→1000). */
 export const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = {
-  bazaSurowcePanstwo:    500,
+  bazaSurowcePanstwo:    1000,
   bonusSurowceNaBudynek: 100,
 };
 
 /**
  * Surowce objęte capem magazynu państwa (SUROW-CIV-01 + PYTANIE-84-U20):
  * cap(typ) = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek × liczba Magazynów
- * (dziś 500 + 100×Magazyn per typ). Żywność (Spichlerz) — osobny model per-miasto.
+ * (dziś 1000 + 100×Magazyn per typ). Żywność (Spichlerz) — osobny model per-miasto.
  */
 export const OWNER_CAPPED_RESOURCE_KEYS = [
   'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza',
@@ -355,7 +355,7 @@ export type OwnerCappedResourceKey = typeof OWNER_CAPPED_RESOURCE_KEYS[number];
 
 const OWNER_CAPPED_RESOURCE_KEY_SET = new Set<string>(OWNER_CAPPED_RESOURCE_KEYS);
 
-/** Czy typ surowca podlega capowi magazynu państwa (500 + 100×Magazyn). */
+/** Czy typ surowca podlega capowi magazynu państwa (1000 + 100×Magazyn). */
 export function isOwnerCappedResourceKey(key: string): key is OwnerCappedResourceKey {
   return OWNER_CAPPED_RESOURCE_KEY_SET.has(key);
 }
