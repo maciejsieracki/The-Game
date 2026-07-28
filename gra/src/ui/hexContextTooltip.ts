@@ -24,6 +24,7 @@ import { isLamaDepositVisibleForCiv } from '../game/livestock-unlock';
 import { formatEntityDisplayName } from '../game/display-names';
 import type { DaninaLabel } from '../game/danina-nazwa';
 import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
+import { fieldPower } from '../game/unit-power';
 import type { VeteranProgress } from '../game/veteran';
 import {
   buildPathLevelIconsRowHtml,
@@ -505,29 +506,85 @@ function buildUnitStackCardsHtml(
   return html + '</div>';
 }
 
-function buildUnitCompactStatsHtml(u: UnitContextTooltipInput): string {
-  const hpText = u.hp != null && u.combat.hpMaxEffective > 0
-    ? `${Math.round(u.hp)}/${formatCardHp(u.combat.hpMaxEffective)}`
-    : '—';
-  const movText = u.readOnly ? '' : `<span class="sp-unit-stat"><span class="sp-unit-stat-l">Ruch</span>`
-    + `<span class="sp-unit-stat-v">${u.ruchLeft}/${u.ruchMax}</span></span>`;
-  const rngVal = u.zasieg ?? 0;
-  const rngText = `<span class="sp-unit-stat"><span class="sp-unit-stat-l">Zasięg</span>`
-    + `<span class="sp-unit-stat-v">${rngVal}</span></span>`;
-  return '<div class="sp-unit-stats-grid">'
-    + `<span class="sp-unit-stat"><span class="sp-unit-stat-l">Atak / obrona</span>`
-    + `<span class="sp-unit-stat-v">${unitCardAtkDefLineHtml(u.combat)}</span></span>`
-    + `<span class="sp-unit-stat"><span class="sp-unit-stat-l">Pancerz</span>`
-    + `<span class="sp-unit-stat-v">${unitCardStatValueHtml(u.combat.pancerzEffective, u.combat.pancerzBase)}</span></span>`
-    + `<span class="sp-unit-stat"><span class="sp-unit-stat-l">HP</span>`
-    + `<span class="sp-unit-stat-v">${hpText}</span></span>`
-    + movText
-    + rngText
+function unitCurrentHp(u: UnitContextTooltipInput): number {
+  if (u.hp != null) return u.hp;
+  return u.combat.hpMaxEffective;
+}
+
+function buildUnitVitalsHtml(u: UnitContextTooltipInput): string {
+  const hpMax = u.combat.hpMaxEffective;
+  const hpCur = unitCurrentHp(u);
+  const hpPct = hpMax > 0 ? (hpCur / hpMax) * 100 : 0;
+  let html = '<div class="sp-unit-vitals">';
+  html += '<div class="sp-unit-vital-row">'
+    + '<div class="sp-unit-vital-lbl"><span class="sp-unit-vital-l">Zdrowie</span>'
+    + `<span class="sp-unit-vital-v">${Math.round(hpCur)}/${formatCardHp(hpMax)}</span></div>`
+    + buildUnitStackBarHtml(hpPct, 'hp')
     + '</div>';
+  if (!u.readOnly) {
+    const movPct = u.ruchMax > 0 ? (u.ruchLeft / u.ruchMax) * 100 : 0;
+    html += '<div class="sp-unit-vital-row">'
+      + '<div class="sp-unit-vital-lbl"><span class="sp-unit-vital-l">Ruch</span>'
+      + `<span class="sp-unit-vital-v">${u.ruchLeft}/${u.ruchMax}</span></div>`
+      + buildUnitStackBarHtml(movPct, 'mov')
+      + '</div>';
+  }
+  return html + '</div>';
+}
+
+function buildUnitForcesHtml(u: UnitContextTooltipInput): string {
+  const { combat } = u;
+  const power = fieldPower({
+    meleeAttack: combat.atakEffective,
+    meleeDefence: combat.obronaEffective,
+    armor: combat.pancerzEffective,
+    health: combat.hpMaxEffective,
+  });
+  return '<div class="sp-unit-forces">'
+    + '<div class="sp-unit-forces-head">Siły zastosowane</div>'
+    + `<div class="sp-unit-forces-line"><span class="sp-unit-forces-l">Atak / obrona</span>`
+    + `<span class="sp-unit-forces-v">${unitCardAtkDefLineHtml(combat)}</span></div>`
+    + `<div class="sp-unit-forces-line"><span class="sp-unit-forces-l">Pancerz</span>`
+    + `<span class="sp-unit-forces-v">${unitCardStatValueHtml(combat.pancerzEffective, combat.pancerzBase)}</span></div>`
+    + `<div class="sp-unit-forces-line sp-unit-forces-power"><span class="sp-unit-forces-l">Moc pola</span>`
+    + `<span class="sp-unit-forces-v">Atak ${power.attack} · Obrona ${power.defense} · Razem ${power.total}</span></div>`
+    + '</div>';
+}
+
+function buildUnitExpandedStatsHtml(u: UnitContextTooltipInput): string {
+  const { combat } = u;
+  const rows: Array<{ label: string; html: string }> = [
+    { label: 'Atak', html: unitCardStatValueHtml(combat.atakEffective, combat.atakBase) },
+    { label: 'Obrona', html: unitCardStatValueHtml(combat.obronaEffective, combat.obronaBase) },
+    { label: 'Pancerz', html: unitCardStatValueHtml(combat.pancerzEffective, combat.pancerzBase) },
+    { label: 'HP max', html: unitCardStatValueHtml(combat.hpMaxEffective, combat.hpMaxBase) },
+    { label: 'Zasięg', html: `<span class="uc-stat-eff">${u.zasieg ?? 0}</span>` },
+    { label: 'Ruch max', html: `<span class="uc-stat-eff">${u.ruchMax}</span>` },
+  ];
+  let html = '<div class="sp-unit-expanded-stats-head">Statystyki jednostki</div>'
+    + '<div class="sp-unit-expanded-stats">';
+  for (const row of rows) {
+    html += `<span class="sp-unit-stat"><span class="sp-unit-stat-l">${row.label}</span>`
+      + `<span class="sp-unit-stat-v">${row.html}</span></span>`;
+  }
+  return html + '</div>';
 }
 
 export const UNIT_CONTEXT_PANEL_CSS = `
 ${UNIT_CARD_STATUS_CSS}
+.sp-unit-vitals{display:flex;flex-direction:column;gap:8px;margin:8px 0 6px;}
+.sp-unit-vital-row{display:flex;flex-direction:column;gap:3px;}
+.sp-unit-vital-lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:10px;line-height:1.3;}
+.sp-unit-vital-l{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--civ-text-muted,#a09880);}
+.sp-unit-vital-v{font-size:10px;color:var(--civ-text-primary,#e8e0c8);font-weight:600;}
+.sp-unit-forces{margin:6px 0 4px;padding-top:6px;border-top:1px solid rgba(212,175,90,.12);}
+.sp-unit-forces-head{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--civ-text-muted,#8a8070);margin-bottom:6px;}
+.sp-unit-forces-line{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:11px;line-height:1.45;margin:2px 0;}
+.sp-unit-forces-l{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--civ-text-muted,#a09880);flex:0 0 auto;}
+.sp-unit-forces-v{color:var(--civ-text-primary,#e8e0c8);text-align:right;}
+.sp-unit-forces-power .sp-unit-forces-v{font-size:10px;color:var(--civ-gold-primary,#d4c080);}
+.sp-unit-expanded-stats-head{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--civ-text-muted,#8a8070);margin:10px 0 6px;}
+.sp-unit-expanded-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin:0 0 6px;}
 .sp-unit-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin:8px 0 4px;}
 .sp-unit-stat{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.35;}
 .sp-unit-stat-l{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--civ-text-muted,#a09880);}
@@ -552,21 +609,44 @@ ${UNIT_ACTION_BAR_CSS}
   color:var(--civ-gold-primary,#e8d88a);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
   cursor:pointer;font-family:inherit;text-align:center;}
 .sp-ctx-expand:hover{border-color:rgba(212,175,90,.55);background:rgba(28,34,46,.9);}
+.sp-army-sel-lbl{font-size:10px;color:var(--civ-text-muted,#a09880);margin:8px 0 4px;letter-spacing:.04em;}
+.sp-army-sel-lbl b{color:var(--civ-gold-primary,#e8d88a);font-weight:600;}
 `;
+
+function buildArmySelectedUnitLabelHtml(
+  cards: NonNullable<UnitContextTooltipInput['stackCards']>,
+  esc: (raw: string) => string,
+): string {
+  const active = cards.find(c => c.active);
+  if (!active) return '';
+  return `<div class="sp-army-sel-lbl">Wybrana jednostka: <b>${esc(active.name)}</b></div>`;
+}
 
 export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string {
   const statusInput = unitCardStatusFromTooltip(u);
   const expanded = u.expanded === true;
+  const isArmy = (u.stackCards?.length ?? 0) > 1;
   const lines: string[] = [buildUnitHeadHtml(u)];
 
-  lines.push(buildUnitCompactStatsHtml(u));
-  lines.push(buildPathLevelIconsRowHtml(statusInput));
-
-  if (u.stackCards && u.stackCards.length > 1) {
+  if (isArmy && u.stackCards) {
+    // Armia: najpierw żetony (HP/ruch per jednostka); bez zbiorczych Atak/Obrona/Pancerz/bonusów.
     lines.push(buildUnitStackCardsHtml(u.stackCards, u.esc));
+  } else {
+    lines.push(buildUnitVitalsHtml(u));
+    lines.push(buildUnitForcesHtml(u));
+    lines.push(buildPathLevelIconsRowHtml(statusInput));
   }
 
   if (expanded) {
+    if (isArmy && u.stackCards) {
+      lines.push(buildArmySelectedUnitLabelHtml(u.stackCards, u.esc));
+      lines.push(buildUnitVitalsHtml(u));
+      lines.push(buildUnitForcesHtml(u));
+      lines.push(buildPathLevelIconsRowHtml(statusInput));
+    }
+
+    lines.push(buildUnitExpandedStatsHtml(u));
+
     const extra = buildUnitExtraStatusLinesHtml(statusInput);
     if (extra) lines.push(`<div class="cp-sub">${extra}</div>`);
 

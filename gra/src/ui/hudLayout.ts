@@ -37,16 +37,34 @@ export const BOTTOM_BAR_WYKONAJ_H_PX = 52;
 export const BOTTOM_BAR_END_TURN_H_PX = 60;
 export const BOTTOM_BAR_TURN_LABEL_H_PX = 30;
 
+/** Dolna krawędź górnego banera HUD (chipy religji itd.) — ~HUD_TOP_PX + shell + chip. */
+export const HUD_MAP_BANNER_BOTTOM_PX = HUD_LEADER_TOP_PX;
+/** Odstęp panelu wydarzeń nad stosem Wykonaj / Zakończ turę. */
+export const EVENTS_PANEL_ABOVE_TURN_GAP_PX = 12;
+/** Odstęp panelu wydarzeń pod górnym banerem HUD. */
+export const EVENTS_PANEL_BELOW_TOP_GAP_PX = 10;
+
 /** CSS `right` klastra Wiki/Menu w widoku miasta. */
 export function cityViewRightClusterRightCss(): string {
   return `calc(${CITY_EDGE_PX}px + min(26vw,${CITY_RIGHT_PANEL_W_PX}px) + ${CITY_RAIL_GAP_PX}px + ${CITY_ICON_RAIL_W_PX}px + ${HUD_GAP_PX}px)`;
 }
 
-/** Dolna krawędź panelu wydarzeń — nad stosem bottomBarHud (Wykonaj + Zakończ turę). */
-export function turnStackBottomPx(): number {
-  return HUD_EDGE_PX
+/** Dolna krawędź stosu bottomBarHud (Wykonaj + Zakończ turę) od dołu viewportu. */
+export function turnStackBottomPx(zoom = false): number {
+  const edge = zoom ? HUD_ZOOM_EDGE_PX : HUD_EDGE_PX;
+  return edge
     + BOTTOM_BAR_WYKONAJ_H_PX
     + HUD_GAP_PX
     + BOTTOM_BAR_END_TURN_H_PX
     + BOTTOM_BAR_TURN_LABEL_H_PX;
+}
+
+/** Dolna krawędź panelu wydarzeń — nad stosem tury z odstępem. */
+export function eventsPanelBottomPx(zoom = false): number {
+  return turnStackBottomPx(zoom) + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
+}
+
+/** Górna krawędź panelu wydarzeń — pod banerem HUD z odstępem. */
+export function eventsPanelTopPx(): number {
+  return HUD_MAP_BANNER_BOTTOM_PX + EVENTS_PANEL_BELOW_TOP_GAP_PX;
 }

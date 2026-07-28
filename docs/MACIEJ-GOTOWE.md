@@ -1,3 +1,13 @@
+## [15:03] ✅ Gotowe — FALA 64 armia + Rozdziel + Spacja (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Karta armii** | stos 2+: żetony z HP/ruchem; bez Atak/Obrona/Pancerz u góry; szczegóły wybranej po „Więcej szczegółów" |
+| **Rozdziel** | ikona strzałek na karcie bocznej → panel: wybierz jednostki + sąsiedni heks |
+| **Spacja** | po zużyciu ruchu przechodzi do następnej jednostki/armii (także bez ruchu) |
+| **HUD** | karta jednostki nie nachodzi na minimapę; Wydarzenia nie zasłaniają Wykonaj |
+| **Deploy** | ROBOCZA `145452c9` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
 ## [14:28] ✅ Gotowe — FALA 63 zoom nad minimapą (deploy ROBOCZA)
 
 | Co | Efekt w grze |

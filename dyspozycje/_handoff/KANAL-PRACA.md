@@ -3911,7 +3911,13 @@ CZEKAM-NA: nic (sesja lokalna: pull + otworz `0aa8e5c8`).
 **Bramki:** tsc 0 · smoke OK · VERIFY OK · POLE-BITWY `dd399c4b`.
 CZEKAM-NA: nic (sesja lokalna: pull + otworz `1a8f2f72`).
 
-## [14:10] SESJA LOKALNA -> Maciej - deploy ROBOCZA FALA 61
+## [15:03] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 64
+
+**md5:** `145452c99f51e6a80abdbd04c88f70b5` (skrót `145452c9`) · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** karta armii (stos bez zbiorczych statów) · przycisk **Rozdziel** na karcie bocznej · Spacja cykluje wszystkie jednostki · HUD minimapa/karta + Wydarzenia · handel AI vs zasoby.
+**Bramki:** tsc 0 · smoke OK · VERIFY OK · unit-context-card 12/12.
+CZEKAM-NA: playtest Macieja (armia: rozdziel + karta; Spacja po ruchu=0)
+
 
 **md5:** `846db7fcc09fb004d3241edd883b935b` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 **Zakres:** kreator — ustawienie **Bitwy** (Automatyczne/Ręczna); modal zaawansowany przesunięty w prawo, Zamknij zawsze widoczny.

@@ -1,8 +1,8 @@
 /**
  * hud.ts
  * HUD w grze (UI plan pkt 3, D1=C) — gorny pasek zasobow + minimapa + panel boczny.
- * Uklad wg Makieta-HUD-mapa-swiata.html (grupy zasobow: Zloto/Praca, Moc/Nauka,
- * Kultura/Zadowolenie; Wiki/Menu po prawej; epoka w panelu Moc).
+ * Uklad wg Makieta-HUD-mapa-swiata.html (lewy: Zloto/Praca/Spichlerz/Nauka/Surowce/Handel;
+ * prawy: Armia/Miasta/Kultura/Religia; epoka w panelu Moc).
  *
  * DOM-only, DECOUPLED: dane podaje silnik przez getState(); akcje przez callbacki.
  *
@@ -893,6 +893,18 @@ function renderBarD1B(s: HudState): string {
       title: spichlerzChipTitle(s),
     }),
     chip6cSep(),
+    chip6cHtml({
+      iconId: 'res-science',
+      label: 'Nauka',
+      value: String(Math.floor(s.nauka)),
+      rate: signed(s.naukaRate ?? 0),
+      medVariant: 'science',
+      valClass: ' science',
+      act: 'nauka',
+      title: naukaChipTitle(s),
+      researchProgress: resolveResearchProgress(s),
+    }),
+    chip6cSep(),
   ];
   // DYSPOZYCJA 85: Handel ZA Surowcami — grupa tail, żeby przy wąskim oknie nie lądował pod Skarbcem.
   const leftTailChips = chip6cHtml({
@@ -915,18 +927,6 @@ function renderBarD1B(s: HudState): string {
   const leftChipsHtml = leftHeadChips.join('')
     + `<span class="hud-chip-tail-group">${leftTailChips}</span>`;
   const rightChips: string[] = [
-    chip6cHtml({
-      iconId: 'res-science',
-      label: 'Nauka',
-      value: String(Math.floor(s.nauka)),
-      rate: signed(s.naukaRate ?? 0),
-      medVariant: 'science',
-      valClass: ' science',
-      act: 'nauka',
-      title: naukaChipTitle(s),
-      researchProgress: resolveResearchProgress(s),
-    }),
-    chip6cSep(),
     chip6cHtml({
       iconId: 'tb-army',
       label: 'Armia',
@@ -1304,8 +1304,8 @@ function mountSidePanel(): void {
     onEventClick: cfg.onEventClick,
     onEventDismiss: cfg.onEventDismiss,
   });
-  document.documentElement.appendChild(sidePanelApi.el);
-  document.documentElement.appendChild(sidePanelApi.ctxEl);
+  document.body.appendChild(sidePanelApi.el);
+  document.body.appendChild(sidePanelApi.ctxEl);
 }
 
 function refreshSidePanel(): void {

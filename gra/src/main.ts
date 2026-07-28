@@ -787,6 +787,7 @@ import {
 import { RodzajTraktatu } from './types/diplomacy';
 import {
   applyPnTrustToRelation,
+  computeQuickDealBasket,
   diploPairKey,
   freshDiploPairMeta,
   relationTotal,
@@ -798,6 +799,11 @@ import {
   type DiploPairMeta,
   type ZlozeGrant,
 } from './game/diplomacy-pn-engine';
+import {
+  basketItemsAffordableExtended,
+  clampAiResourceTradeCommand,
+  type AiResourceTradeClampCtx,
+} from './game/diplomacy-ai-balance';
 import {
   wiarygodnoscStartowa,
   sumaWiarygodnosciCalkowita,
@@ -3664,22 +3670,6 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
-    /** Jednostki gracza na mapie świata z dostępnym ruchem (1 reprezentant/heks), stała kolejność. */
-    function movableWorldUnits(): RuntimeUnit[] {
-      const seen = new Set<string>();
-      const out: RuntimeUnit[] = [];
-      for (const u of units) {
-        if (u.ownerId !== 0) continue;
-        if (u.inGarnizon) continue;
-        if (!stackCanMove(u)) continue;
-        const key = u.q + ',' + u.r;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        out.push(u);
-      }
-      return out;
-    }
-
     /** Wszystkie armie gracza (1 wiodąca/heks) — garnizon, oblężenie, bez ruchu; kolejność przestrzenna. */
     function cyclablePlayerArmyLeads(): RuntimeUnit[] {
       const playerUnits = units.filter(u => u.ownerId === 0);
@@ -3708,7 +3698,7 @@ async function boot(): Promise<void> {
       return u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
     }
 
-    /** Spacja / strzałki HUD — cykl po wszystkich armiach gracza (nie tylko z ruchem). */
+    /** Spacja, strzałki HUD i auto-cykl po ruchu — cykl po wszystkich armiach gracza (nie tylko z ruchem). */
     function cycleToAdjacentPlayerUnit(afterId: string | null, delta: 1 | -1): void {
       if (!isWorldMapUnitMode()) return;
       const list = cyclablePlayerArmyLeads();
@@ -3731,28 +3721,6 @@ async function boot(): Promise<void> {
         }
       }
       const idx = (cur + delta + list.length) % list.length;
-      const next = list[idx]!;
-      selectPlayerUnit(next.id);
-      focusCameraOnUnit(next);
-    }
-
-    /**
-     * C: auto-cykl „bęben" — przejdź do następnej jednostki gracza z dostępnym ruchem
-     * (po jednostce `afterId`). Gdy żadna nie ma już ruchu — odznacz (koniec cyklu).
-     * Centruje kamerę na wybranej jednostce (jak klik w panelu ARMIE).
-     */
-    function cycleToNextMovableUnit(afterId: string | null): void {
-      if (!isWorldMapUnitMode()) return;
-      const list = movableWorldUnits();
-      if (list.length === 0) {
-        clearPlayerUnitSelection();
-        return;
-      }
-      let idx = 0;
-      if (afterId !== null) {
-        const cur = list.findIndex(u => u.id === afterId);
-        idx = cur >= 0 ? (cur + 1) % list.length : 0;
-      }
       const next = list[idx]!;
       selectPlayerUnit(next.id);
       focusCameraOnUnit(next);
@@ -4800,6 +4768,8 @@ async function boot(): Promise<void> {
     let pendingSameTypeRivalCount = 0;
     /** Pre-planowane hexy państw gracza (klaster z mapgen). */
     let pendingSameTypeRivalHexes: Array<{ q: number; r: number }> = [];
+    /** Obcy typy cywilizacji — spawn po stolicy gracza i rywalach tego samego typu. */
+    let pendingForeignSpawnCities: Array<{ q: number; r: number; ownerId: number; name: string }> = [];
     /** Stolice klastrów obcych typów — ekspansyjna AI. */
     const clusterCapitalOwnerIds = new Set<number>();
     /** Rozmieszczenie klastrów — kontekst AI (faza 1 konsolidacji). */
@@ -5328,7 +5298,8 @@ async function boot(): Promise<void> {
       });
 
       playerStartHex = { ...plan.playerStartHex };
-      aiStartHexes = plan.aiStartHexes.slice();
+      aiStartHexes = [];
+      pendingForeignSpawnCities = plan.spawnCities.slice();
       clusterPlayerStartCityName = plan.playerStartCityName;
       pendingSameTypeRivalCount = plan.pendingSameTypeRivals;
       pendingSameTypeRivalHexes = plan.pendingSameTypeRivalHexes.slice();
@@ -5384,26 +5355,6 @@ async function boot(): Promise<void> {
         );
       }
 
-      let _scFounded = 0, _scRejected = 0;
-      for (const sc of plan.spawnCities) {
-        const isCS = plan.simplifiedDiplomacyOwners.has(sc.ownerId) || typCityCopyOwners.has(sc.ownerId);
-        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name, isCS);
-        if (c) {
-          if (isCS) {
-            c.startCityState = true;
-          }
-          cities.push(c);
-          finalizeCityFounding(c, sc.q, sc.r);
-          _scFounded++;
-        } else {
-          _scRejected++;
-        }
-      }
-      if (_scRejected > 0) {
-        console.warn('[ClusterStart] klastry: założono ' + _scFounded + ' z ' +
-          plan.spawnCities.length + ' (' + _scRejected + ' odrzuconych przez canFoundCity)');
-      }
-
       // Model B (Maciej 2026-07-09): USUNIĘTO posiew lamy (E2) — nie ma już złóż zwierzęcych.
       // Lama = czyste ulepszenie „Zagroda lam" budowane przez Inków (bramka po typie cywilizacji
       // w isLivestockAllowed: lama tylko isIncaCiv), bez złoża na mapie.
@@ -5420,7 +5371,7 @@ async function boot(): Promise<void> {
       console.log(
         '[ClusterStart] typ=' + playerCivId +
         ' rywale=' + rywaleNaKlaster + ' (deferred)' +
-        ' AI=' + plan.spawnCities.length +
+        ' foreignAI=' + pendingForeignSpawnCities.length + ' (deferred)' +
         ' typow=' + plan.placement.aktywneTypy +
         (plan.placement.requestedTypy != null && plan.placement.requestedTypy > plan.placement.aktywneTypy
           ? ' (żądano ' + plan.placement.requestedTypy + ' — mapa nie zmieściła wszystkich)'
@@ -5502,6 +5453,47 @@ async function boot(): Promise<void> {
         (_rivalsRejected > 0 ? ' (' + _rivalsRejected + ' odrzuconych, backfill)' : '') +
         ' epokaStart=' + (_menuEpochId || 'kamien') +
         ' (actual player capital @ ' + core.q + ',' + core.r + ')',
+      );
+    }
+
+    /** Po stolicy gracza i rywalach tego samego typu — obce cywilizacje z planu klastra. */
+    function spawnPendingForeignClusters(): void {
+      if (pendingForeignSpawnCities.length === 0) return;
+      const toSpawn = pendingForeignSpawnCities.slice();
+      pendingForeignSpawnCities = [];
+
+      let _scFounded = 0, _scRejected = 0;
+      for (const sc of toSpawn) {
+        const isCS = simplifiedDiplomacyOwners.has(sc.ownerId) || typCityCopyOwners.has(sc.ownerId);
+        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name, isCS);
+        if (c) {
+          if (isCS) {
+            c.startCityState = true;
+          }
+          cities.push(c);
+          finalizeCityFounding(c, sc.q, sc.r);
+          aiStartHexes.push({ q: sc.q, r: sc.r, ownerId: sc.ownerId });
+          if (!empireFoodStates.has(sc.ownerId)) {
+            empireFoodStates.set(sc.ownerId, freshEmpireFoodState());
+          }
+          if (!ownerDefaultPodzialHandlu.has(sc.ownerId)) {
+            ownerDefaultPodzialHandlu.set(sc.ownerId, freshOwnerDefaultPodzialHandlu());
+          }
+          _scFounded++;
+        } else {
+          _scRejected++;
+        }
+      }
+      if (_scRejected > 0) {
+        console.warn('[ClusterStart] deferred foreign clusters: założono ' + _scFounded + ' z ' +
+          toSpawn.length + ' (' + _scRejected + ' odrzuconych przez canFoundCity)');
+      }
+
+      reconcileAllOwnerErasFromResearch();
+      initDiplomaticContactSnapshot();
+      console.log(
+        '[ClusterStart] deferred foreign clusters=' + _scFounded + '/' + toSpawn.length +
+        (_scRejected > 0 ? ' (' + _scRejected + ' odrzuconych)' : ''),
       );
     }
 
@@ -5813,27 +5805,43 @@ async function boot(): Promise<void> {
      * Nie zmienia samego transferu (transferBasketItems ma osobne, już istniejące
      * zabezpieczenia/ograniczenia — patrz audyt #1/#47, poza zakresem tej naprawy).
      */
+    function ownerBasketAffordCtx(ownerId: number, treasury: ReturnType<typeof buildDiploTreasury>) {
+      return {
+        gold: treasury.getPieniadze(ownerId),
+        praca: ownerPracaPool(ownerId),
+        foodReserve: empireFoodStates.get(ownerId)?.zapasyPanstwa ?? 0,
+        stock: ownerSurowcePoolFor(ownerId),
+        pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
+      };
+    }
+
     function basketItemsAffordable(
       ownerId: number,
       items: readonly BasketItem[] | undefined,
       treasury: ReturnType<typeof buildDiploTreasury>,
+      turnsMultiplier = 1,
     ): boolean {
-      if (!items?.length) return true;
-      for (const item of items) {
-        const qty = item.ilosc ?? 1;
-        if (item.typ === 'zloto') {
-          const gold = diplomacyPnZloto(qty);
-          if (gold > 0 && treasury.getPieniadze(ownerId) < gold) return false;
-        } else if (item.typ === 'praca') {
-          const praca = diplomacyPnPraca(qty);
-          const have = ownerId === 0 ? playerPracaPool : (aiPracaPoolByOwner.get(ownerId) ?? 0);
-          if (praca > 0 && have < praca) return false;
-        } else if (item.typ === 'zywnosc') {
-          const have = empireFoodStates.get(ownerId)?.zapasyPanstwa ?? 0;
-          if (qty > 0 && have < qty) return false;
-        }
-      }
-      return true;
+      return basketItemsAffordableExtended(
+        items,
+        ownerBasketAffordCtx(ownerId, treasury),
+        turnsMultiplier,
+      );
+    }
+
+    function buildAiResourceTradeClampCtx(aiOwnerId: number): AiResourceTradeClampCtx {
+      const treasury = buildDiploTreasury();
+      return {
+        aiOwnerId,
+        partnerOwnerId: 0,
+        aiGold: treasury.getPieniadze(aiOwnerId),
+        partnerGold: treasury.getPieniadze(0),
+        aiPraca: ownerPracaPool(aiOwnerId),
+        partnerPraca: ownerPracaPool(0),
+        aiStock: ownerSurowcePoolFor(aiOwnerId),
+        partnerStock: ownerSurowcePoolFor(0),
+        pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
+        defaultTurns: 10,
+      };
     }
 
     function transferBasketItems(
@@ -7642,6 +7650,7 @@ async function boot(): Promise<void> {
       reconcileAllWorkedTiles(cities, buildAllTerritoryNodes());
       finalizeCityFounding(c, q, r);
       spawnPendingSameTypeRivals(q, r);
+      spawnPendingForeignClusters();
       refreshFog();
       cityRenderer.sync(cities, _cityRenderOpts());
       playerEverOwnedCity = true;
@@ -9571,8 +9580,35 @@ async function boot(): Promise<void> {
      * tylko treść (actionId/payload), id/expiresTurn/source dokłada createNegotiation.
      */
     function enqueueNegotiationFromAiCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
-      const converted = aiCommandToPendingProposal(cmd, ownerId, 0, turn);
+      let workingCmd = cmd;
+      if (cmd.type === 'zaproponuj_handel_surowiec') {
+        const clamped = clampAiResourceTradeCommand(cmd, buildAiResourceTradeClampCtx(ownerId));
+        if (!clamped) return;
+        workingCmd = clamped;
+      }
+
+      const converted = aiCommandToPendingProposal(workingCmd, ownerId, 0, turn);
       if (!converted) return;
+
+      if (workingCmd.type === 'zaproponuj_umowe_handlowa') {
+        const rel = getDiploRelation(ownerId, 0);
+        const treasury = buildDiploTreasury();
+        const quick = computeQuickDealBasket({
+          relacjaTotal: relationTotal(rel),
+          ourGoldAvailable: treasury.getPieniadze(ownerId),
+          ourResourceOptions: priceableTradableGoodOptions(ownerId),
+          theirResourceOptions: priceableTradableGoodOptions(0),
+          ourQuantityResourceOptions: quantityTradableGoodOptions(ownerId),
+        });
+        const hasBasket = quick.giveItems.length > 0 || quick.receiveItems.length > 0;
+        const sweetener = workingCmd.sweetenerGold ?? 0;
+        if (!hasBasket && sweetener <= 0) return;
+        converted.payload = {
+          ...converted.payload,
+          ...(quick.giveItems.length ? { giveItems: quick.giveItems } : {}),
+          ...(quick.receiveItems.length ? { receiveItems: quick.receiveItems } : {}),
+        };
+      }
       // Dedup — nie stackuj drugiej propozycji TEGO SAMEGO typu, gdy jedna już czeka.
       if (negotiationTable.some(n =>
         n.proposerOwnerId === ownerId && n.responderOwnerId === 0 && n.actionId === converted.actionId,
@@ -11611,8 +11647,11 @@ async function boot(): Promise<void> {
             // Audyt #16: Zaufanie tylko gdy obie strony faktycznie POSIADAJĄ zadeklarowane
             // zasoby (zloto/praca/zywnosc) — bez tego dar/handel bez pokrycia dawał darmowy trust.
             const dealTreasury = buildDiploTreasury();
-            const dealCovered = basketItemsAffordable(proposerId, items?.giveItems, dealTreasury)
-              && basketItemsAffordable(responderId, items?.receiveItems, dealTreasury);
+            const dealTurnsMult = payload.resourceTradeMode === 'per_turn'
+              ? Math.max(1, payload.turns ?? 1)
+              : 1;
+            const dealCovered = basketItemsAffordable(proposerId, items?.giveItems, dealTreasury, dealTurnsMult)
+              && basketItemsAffordable(responderId, items?.receiveItems, dealTreasury, dealTurnsMult);
             if (dealCovered) {
               applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
               const cur = getDiploRelation(proposerId, responderId);
@@ -11652,9 +11691,12 @@ async function boot(): Promise<void> {
             && (payload.goldOnce ?? 0) > 0
             ? oneShotTreasury.getPieniadze(proposerId) >= (payload.goldOnce ?? 0)
             : true;
+          const oneShotTurnsMult = payload.resourceTradeMode === 'per_turn'
+            ? Math.max(1, payload.turns ?? 1)
+            : 1;
           const oneShotCovered = legacyGoldOk
-            && basketItemsAffordable(proposerId, payload.giveItems, oneShotTreasury)
-            && basketItemsAffordable(responderId, payload.receiveItems, oneShotTreasury);
+            && basketItemsAffordable(proposerId, payload.giveItems, oneShotTreasury, oneShotTurnsMult)
+            && basketItemsAffordable(responderId, payload.receiveItems, oneShotTreasury, oneShotTurnsMult);
           if (oneShotCovered) {
             applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
             const cur = getDiploRelation(proposerId, responderId);
@@ -12315,6 +12357,19 @@ async function boot(): Promise<void> {
           disabled: unitSentryActionDisabled(active, stackRuch),
         });
       }
+      if (stack.length >= 2) {
+        const splitDests = findAdjacentEmptyHexes(
+          units,
+          active.q,
+          active.r,
+          isHexPassableForUnit,
+        );
+        actions.push({
+          id: 'split',
+          label: 'Rozdziel',
+          disabled: splitDests.length === 0,
+        });
+      }
       actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });
       actions.push({ id: 'disband', label: 'ROZWI\u0104\u017d', danger: true });
       return {
@@ -12426,6 +12481,8 @@ async function boot(): Promise<void> {
         refreshD1bHud();
       } else if (actionId === 'disband') {
         disbandPlayerUnit(u.id);
+      } else if (actionId === 'split') {
+        openSplitPanelForSelected();
       } else if (actionId === 'replace') {
         openUnitReplacePicker(u);
       } else if (actionId === 'sentry') {
@@ -19318,11 +19375,11 @@ async function boot(): Promise<void> {
           refreshD1bHud();
           processMarchQueue();
           // C: auto-cykl „bęben" — jednostka gracza wyczerpała ruch (bez marszu
-          // wieloturowego w toku) → przejdź automatycznie do następnej jednostki z ruchem.
+          // wieloturowego w toku) → przejdź do następnej armii (wszystkie, nie tylko z ruchem).
           if (u && u.ownerId === 0 && selectedId === finishedId
               && !stackCanMove(u) && !plannedMarches.has(finishedId)
               && !isAnimating && isWorldMapUnitMode()) {
-            cycleToNextMovableUnit(finishedId);
+            cycleToAdjacentPlayerUnit(finishedId, 1);
           }
         } else {
           // --- Interpolate token along current segment ---
