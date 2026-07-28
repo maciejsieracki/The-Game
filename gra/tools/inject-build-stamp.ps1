@@ -41,7 +41,20 @@ if ($html -match '</body>') {
   $html += "`n$block"
 }
 
-[IO.File]::WriteAllText($HtmlPath, $html, [Text.UTF8Encoding]::new($false))
+function Write-StampHtml {
+  param([string]$Path, [string]$Content)
+  $utf8 = [Text.UTF8Encoding]::new($false)
+  $tmp = [IO.Path]::GetTempFileName()
+  try {
+    [IO.File]::WriteAllText($tmp, $Content, $utf8)
+    if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Force }
+    Move-Item -LiteralPath $tmp -Destination $Path -Force
+  } finally {
+    if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
+  }
+}
+
+Write-StampHtml -Path $HtmlPath -Content $html
 
 for ($iter = 0; $iter -lt 4; $iter++) {
   $Md5 = (Get-FileHash -LiteralPath $HtmlPath -Algorithm MD5).Hash.ToLower()
@@ -51,7 +64,7 @@ for ($iter = 0; $iter -lt 4; $iter++) {
   $next = $content -replace 'title="md5=[0-9a-f]{32}"', "title=`"md5=$Md5`""
   $next = $next -replace '(?<=id="civ-build-stamp"[^>]*>)[^<]+(?=</div>)', $label
   if ($next -eq $content) { break }
-  [IO.File]::WriteAllText($HtmlPath, $next, [Text.UTF8Encoding]::new($false))
+  Write-StampHtml -Path $HtmlPath -Content $next
 }
 
 $Md5 = (Get-FileHash -LiteralPath $HtmlPath -Algorithm MD5).Hash.ToLower()

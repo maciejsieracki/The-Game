@@ -74,6 +74,7 @@
   "lama": {
     "nazwa": "Lama",
     "epoka": 1,
+    "cywilizacje": ["inkowie"],
     "bonus": {
       "zywnosc": 1,
       "praca": 3,

@@ -3809,3 +3809,11 @@ CZEKAM-NA: nic (sesja lokalna: `git pull` na dysku + otwórz `267d6d31`).
 **Zakres:** redeploy (ten sam kod FALA 47) · świeża pieczęć · POLE-BITWY `dd399c4b` OK.
 **Bramki:** tsc 0 · smoke OK.
 CZEKAM-NA: nic (sesja lokalna: otwórz `2bdd9b59`).
+
+## [02:04] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 49
+
+**md5:** `e906af1d0fe2c6fe29a321ddbb68ed68` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** rzeka koszt ruchu 2 · cuda świata na górze listy budowy w terenie · LAMA tylko Inkowie/Astekowie.
+**Bramki:** tsc 0 · river-move 17/17 · smoke OK · fix inject-build-stamp (temp file — OneDrive lock).
+**Git:** commit FALA 49 + push gałąź `cursor/fala46-hud-magazyn-unit-panel`.
+CZEKAM-NA: nic (sesja lokalna: otwórz `e906af1d`).

@@ -10,6 +10,7 @@ import {
   improvementDisplayName,
   improvementBonusForKey,
   normalizeImprovementKey,
+  isImprovementAllowedForCiv,
   type ImprovementBonus,
 } from '../game/terrain-improvements';
 import { galleryTerrainEligible } from '../map/improvement-build';
@@ -19,6 +20,7 @@ import {
   hexHiddenDepositHint,
   labelsForImprovementUnlock,
 } from '../game/resource-access';
+import { isLamaDepositVisibleForCiv } from '../game/livestock-unlock';
 import { formatEntityDisplayName } from '../game/display-names';
 import type { DaninaLabel } from '../game/danina-nazwa';
 import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
@@ -204,7 +206,7 @@ function formatYieldBreakdownHtml(
   return lines.join('');
 }
 
-function collectResourceLabels(hex: Hex, era: number): string[] {
+function collectResourceLabels(hex: Hex, era: number, playerCivType?: string | null): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
 
@@ -215,11 +217,15 @@ function collectResourceLabels(hex: Hex, era: number): string[] {
     out.push(label);
   };
 
-  const deposit = hexDepositDisplayLabel(hex, era);
-  if (deposit) push(deposit);
+  if (hex.nakladka === Nakladka.ZlozeLamy && !isLamaDepositVisibleForCiv(playerCivType)) {
+    // Lama — tylko cywilizacje andyjskie (Inkowie / Astekowie).
+  } else {
+    const deposit = hexDepositDisplayLabel(hex, era);
+    if (deposit) push(deposit);
 
-  const hidden = hexHiddenDepositHint(hex, era);
-  if (hidden) push(hidden);
+    const hidden = hexHiddenDepositHint(hex, era);
+    if (hidden) push(hidden);
+  }
 
   for (const key of improvementKeysForHex(hex)) {
     for (const u of labelsForImprovementUnlock(key)) push(u);
@@ -232,12 +238,13 @@ function collectResourceLabels(hex: Hex, era: number): string[] {
 }
 
 /** Ulepszenia możliwe na tym terenie (bez bramki tech — podgląd mapy). */
-function listTerrainPossibleImprovements(hex: Hex): string[] {
+function listTerrainPossibleImprovements(hex: Hex, playerCivType?: string | null): string[] {
   const active = new Set(improvementKeysForHex(hex));
   const teren = hex.terenBazowy;
   const out: string[] = [];
   for (const key of IMPROVEMENT_KEYS) {
     if (active.has(key)) continue;
+    if (!isImprovementAllowedForCiv(key, playerCivType)) continue;
     if (!galleryTerrainEligible(key as ImprovementKey, teren)) continue;
     if (key === 'bydlo' && hex.nakladka !== Nakladka.ZlozeBydla) continue;
     if (key === 'owce' && hex.nakladka !== Nakladka.ZlozeOwiec) continue;
@@ -263,6 +270,8 @@ export interface HexContextTooltipInput {
   cityOwnerLabel?: string | null;
   /** Ludność miasta (gdy znana z odkrycia). */
   cityPopulation?: number | null;
+  /** typCywilizacji gracza — bramka widoczności lamy. */
+  playerCivType?: string | null;
   currentEra?: number;
   /**
    * Etykieta strumienia podatkowego (zawsze "Podatek" od 2026-07-27); opcjonalna
@@ -277,10 +286,10 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   const era = input.currentEra ?? 99;
   const yieldRows = YIELD_ROWS;
   const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(String(hex.terenBazowy));
-  const resources = collectResourceLabels(hex, era);
+  const resources = collectResourceLabels(hex, era, input.playerCivType);
   const built = builtImprovementKeys(hex);
   const implicitKeys = improvementKeysForHex(hex).filter(k => !built.includes(k));
-  const possible = listTerrainPossibleImprovements(hex);
+  const possible = listTerrainPossibleImprovements(hex, input.playerCivType);
 
   const lines: string[] = [];
 

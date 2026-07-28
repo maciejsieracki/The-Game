@@ -25,12 +25,17 @@ const DEPOSIT_FOR_LIVESTOCK: Record<'bydlo' | 'owce' | 'lama', Nakladka> = {
   lama:  Nakladka.ZlozeLamy,
 };
 
-const INCA_CIV_TYPES = new Set(['inkowie', 'inka', 'incas']);
+const INCA_CIV_TYPES = new Set(['inkowie', 'inka', 'incas', 'astekowie', 'astek', 'aztekowie', 'aztek']);
 
 export function isIncaCiv(civType: string | undefined | null): boolean {
   if (!civType) return false;
   const t = civType.toLowerCase().trim();
-  return INCA_CIV_TYPES.has(t) || t.includes('inkow');
+  return INCA_CIV_TYPES.has(t) || t.includes('inkow') || t.includes('astek') || t.includes('aztek');
+}
+
+/** Złoże lamy na mapie / w UI — tylko dla cywilizacji lamowych (dziś: Inkowie). */
+export function isLamaDepositVisibleForCiv(civType: string | undefined | null): boolean {
+  return isIncaCiv(civType);
 }
 
 /**

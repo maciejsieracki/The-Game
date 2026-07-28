@@ -55,31 +55,31 @@ function mkHex(q, r, teren, opts = {}) {
 const hillNoRiver = mkHex(0, 0, TB.Wzgorza);
 const hillRiver = mkHex(0, 0, TB.Wzgorza, { river: true });
 ok(M.terrainMoveCost(hillNoRiver) === 2, 'wzgorza bez rzeki = 2');
-ok(M.terrainMoveCost(hillRiver) === 1, 'wzgorza + rzeka = 1');
+ok(M.terrainMoveCost(hillRiver) === 2, 'wzgorza + rzeka = 2');
 
 const forestHill = mkHex(1, 0, TB.Wzgorza, { nakladka: NK.Las });
 const forestHillRiver = mkHex(1, 0, TB.Wzgorza, { nakladka: NK.Las, river: true });
 ok(M.terrainMoveCost(forestHill) === 3, 'wzgorza + las bez rzeki = 3');
-ok(M.terrainMoveCost(forestHillRiver) === 1, 'wzgorza + las + rzeka = 1');
+ok(M.terrainMoveCost(forestHillRiver) === 2, 'wzgorza + las + rzeka = 2');
 
 const mountain = mkHex(2, 0, TB.Gory);
 const mountainRiver = mkHex(2, 0, TB.Gory, { river: true });
 ok(M.terrainMoveCost(mountain) === Infinity, 'gory bez rzeki = Infinity');
-ok(M.terrainMoveCost(mountainRiver) === 1, 'gory + rzeka = 1 (skonczony)');
+ok(M.terrainMoveCost(mountainRiver) === 2, 'gory + rzeka = 2 (skonczony)');
 
 const plainRiver = mkHex(3, 0, TB.Laka, { river: true });
-ok(M.terrainMoveCost(plainRiver) === 1, 'laka + rzeka = 1');
+ok(M.terrainMoveCost(plainRiver) === 2, 'laka + rzeka = 2');
 
 // Droga na rzece — bonus drogi nadal dziala
 const riverRoad = mkHex(4, 0, TB.Wzgorza, { river: true, ulepszenie: UL.Droga });
-ok(M.terrainMoveCost(riverRoad) === 1 / 3, 'rzeka + droga na wzgorzu = 1/3');
+ok(M.terrainMoveCost(riverRoad) === 2 / 3, 'rzeka + droga na wzgorzu = 2/3');
 
 // Woda z rzeka nadal nieprzejezdna (ląd)
 const seaRiver = mkHex(5, 0, TB.Morze, { river: true });
 ok(M.terrainMoveCost(seaRiver) === Infinity, 'morze + rzeka = Infinity');
 
 // --- embarkMoveCost deleguje terrainMoveCost na lądzie ---
-ok(M.embarkMoveCost(hillRiver) === 1, 'embarkMoveCost ląd z rzeką = 1');
+ok(M.embarkMoveCost(hillRiver) === 2, 'embarkMoveCost ląd z rzeką = 2');
 ok(M.embarkMoveCost(mkHex(6, 0, TB.Morze)) === 1, 'embarkMoveCost morze = 1');
 
 // --- computeReachable / pathCost: góry z rzeką osiągalne ---
@@ -96,24 +96,24 @@ const map = {
 
 const unit = {
   id: 'u1', ownerId: 0, typeId: 'Wojownik', category: 'domyslny',
-  q: 0, r: 0, ruch: 2, ruchLeft: 2,
+  q: 0, r: 0, ruch: 4, ruchLeft: 4,
 };
 
 const reachable = M.computeReachable(unit, map, new Set());
 ok(reachable.has('1,0'), 'computeReachable: góry+rzeka osiągalne');
-ok(reachable.has('2,0'), 'computeReachable: drugi heks rzeki w zasięgu');
+ok(reachable.has('2,0'), 'computeReachable: drugi heks rzeki w zasięgu (4 MP)');
 
 const riverPath = M.computePath(unit, map, 2, 0, new Set());
 ok(riverPath.length === 2 && riverPath[1].q === 2 && riverPath[1].r === 0,
   'computePath przez korytarz rzeki na górach');
-ok(M.pathCost(riverPath, map) === 2, 'pathCost korytarz rzeki = 2 (2× koszt 1)');
+ok(M.pathCost(riverPath, map) === 4, 'pathCost korytarz rzeki = 4 (2× koszt 2)');
 
 // Brak bonusu startowego na rzece — budżet = ruchLeft (nie +4)
-const riverStartUnit = { ...unit, q: 1, r: 0, ruchLeft: 1 };
+const riverStartUnit = { ...unit, q: 1, r: 0, ruchLeft: 2 };
 const riverStartReach = M.computeReachable(riverStartUnit, map, new Set());
-ok(riverStartReach.has('2,0'), 'start na rzece 1 MP: sąsiad rzeki osiągalny');
+ok(riverStartReach.has('2,0'), 'start na rzece 2 MP: jeden skok po rzece (koszt 2)');
 ok(!riverStartReach.has('3,0'),
-  'start na rzece 1 MP: trzeci hex poza budżetem (brak starego +4 bonusu)');
+  'start na rzece 2 MP: trzeci hex poza budżetem');
 
 try { fs.unlinkSync(ENTRY); } catch (_) {}
 try { fs.unlinkSync(BUNDLE); } catch (_) {}

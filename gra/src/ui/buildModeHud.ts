@@ -205,6 +205,27 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         + '</div>';
     }
     if (!foundCityOnly) {
+      const wonders = config.listWonders?.() ?? [];
+      const wonderTarget = config.getWonderTargetLabel?.() ?? null;
+      if (wonders.length > 0) {
+        html += '<div class="civ-build-wonders-gap"></div>';
+        html += '<div class="lbl">Cuda świata</div>';
+        if (wonderTarget) {
+          html += '<div class="civ-build-wonders-sub">Kolejka produkcji: ' + wonderTarget + '</div>';
+        }
+        for (const w of wonders) {
+          const locked = w.queued === true;
+          const hint = w.lockHint ?? (locked ? 'Już w kolejce tego miasta' : null);
+          const tag = w.dostep === 'R' ? ' · wyścig' : '';
+          const costLabel = w.kosztPraca + ' P';
+          html += '<div class="civ-build-item wonder' + (locked ? ' locked' : '') + '" data-wonder-id="' + w.id + '"'
+            + (locked && hint ? ' data-lock-hint="' + hint.replace(/"/g, '&quot;') + '"' : '')
+            + ' title="' + (locked && hint ? hint : (w.label + ' — epoka ' + w.epokaWejscia)) + '">'
+            + '<span class="ic">🏛</span>'
+            + '<span>' + w.label + '</span>'
+            + '<span class="meta">' + (locked && hint ? hint : ('E' + w.epokaWejscia + ' · ' + costLabel + tag)) + '</span></div>';
+        }
+      }
       html += '<div class="lbl">Ulepszenia terenu</div>';
     }
     for (const t of types) {
@@ -226,31 +247,6 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         + '<span class="meta">' + (locked && hint ? (hintTechIcWrap + hint) : ('E' + t.epoka + ' · ' + costLabel + techHint)) + '</span></div>';
     }
 
-    if (!foundCityOnly) {
-      const wonders = config.listWonders?.() ?? [];
-      const wonderTarget = config.getWonderTargetLabel?.() ?? null;
-      html += '<div class="civ-build-wonders-gap"></div>';
-      html += '<div class="lbl">Cuda świata</div>';
-      if (wonderTarget) {
-        html += '<div class="civ-build-wonders-sub">Kolejka produkcji: ' + wonderTarget + '</div>';
-      }
-      if (wonders.length === 0) {
-        html += '<div class="civ-build-wonders-empty">(brak dostępnych — zbadaj technologie lub poczekaj na epokę)</div>';
-      } else {
-        for (const w of wonders) {
-          const locked = w.queued === true;
-          const hint = w.lockHint ?? (locked ? 'Już w kolejce tego miasta' : null);
-          const tag = w.dostep === 'R' ? ' · wyścig' : '';
-          const costLabel = w.kosztPraca + ' P';
-          html += '<div class="civ-build-item wonder' + (locked ? ' locked' : '') + '" data-wonder-id="' + w.id + '"'
-            + (locked && hint ? ' data-lock-hint="' + hint.replace(/"/g, '&quot;') + '"' : '')
-            + ' title="' + (locked && hint ? hint : (w.label + ' — epoka ' + w.epokaWejscia)) + '">'
-            + '<span class="ic">🏛</span>'
-            + '<span>' + w.label + '</span>'
-            + '<span class="meta">' + (locked && hint ? hint : ('E' + w.epokaWejscia + ' · ' + costLabel + tag)) + '</span></div>';
-        }
-      }
-    }
     el.innerHTML = html;
 
     el.querySelector('[data-found-city]')?.addEventListener('click', () => {

@@ -523,7 +523,7 @@ export function hexNeighborCoords(q: number, r: number): Array<{ q: number; r: n
 // ---------------------------------------------------------------------------
 
 /** Płaski koszt wejścia na lądowy heks z rzeką — ignoruje wzgórza, las i góry. */
-const RIVER_HEX_MOVE_COST = 1;
+const RIVER_HEX_MOVE_COST = 2;
 
 /**
  * Returns the movement point cost to ENTER the given hex.

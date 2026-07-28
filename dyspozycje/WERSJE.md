@@ -11,7 +11,17 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `2bdd9b59` — 2026-07-28 01:54 — FALA 48: redeploy roboczej (pieczęć + POLE-BITWY) — **AKTUALNA**
+## ROBOCZA `e906af1d` — 2026-07-28 02:04 — FALA 49: rzeka koszt 2 + cuda góra + lama Inkowie — **AKTUALNA**
+- md5 (pelne): `e906af1d0fe2c6fe29a321ddbb68ed68` · stempel: `ROBOCZA · 2026-07-28 02:04`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + manifest · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
+- **Zakres gameplay:**
+  - **Rzeka** — koszt ruchu **2** pkt na heksie z rzeką (było 1).
+  - **Cuda świata** — sekcja na **górze** listy Budowy w terenie (przed ulepszeniami); tylko gdy dostępne.
+  - **LAMA** — złoże/hodowla widoczne **tylko dla Inków/Asteków** (mapa, tooltip, budowa).
+- **Bramki:** tsc 0 · river-move 17/17 · smoke OK · fix inject-build-stamp (zapis przez temp — OneDrive).
+
+## ROBOCZA `2bdd9b59` — 2026-07-28 01:54 — FALA 48: redeploy roboczej (pieczęć + POLE-BITWY) — **ZASTĄPIONA**
 - md5 (pelne): `2bdd9b59cdf96668a470d1c43beae2cf` · stempel: `ROBOCZA · 2026-07-28 01:54`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + manifest · smoke OK · POLE-BITWY OK.
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).

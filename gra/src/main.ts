@@ -465,7 +465,7 @@ import {
   normalizeImprovementKey,
   isImprovementAllowedForCiv,
 } from './game/terrain-improvements';
-import { isLivestockAllowed } from './game/livestock-unlock';
+import { isLivestockAllowed, isLamaDepositVisibleForCiv } from './game/livestock-unlock';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { BattleScene } from './battle/battleScene';
@@ -1472,6 +1472,16 @@ async function boot(): Promise<void> {
       return n === Nakladka.ZlozeBydla || n === Nakladka.ZlozeOwiec;
     }
 
+    function isDepositOverlaySuppressed(n: Nakladka | undefined): boolean {
+      if (!n) return false;
+      if (isLivestockDepositNakladka(n)) return true;
+      if (n === Nakladka.ZlozeLamy) {
+        const civ = String(player.civType || _menuCivId || '');
+        return !isLamaDepositVisibleForCiv(civ);
+      }
+      return false;
+    }
+
     /** Warstwy gracza + implicit hodowla ze złoża zwierzęcego (render). */
     type PlacedLayers = string[];
 
@@ -1516,7 +1526,7 @@ async function boot(): Promise<void> {
       const hasNakladka = hex.nakladka && hex.nakladka !== Nakladka.Brak && hex.nakladka !== Nakladka.Las;
       const zlozeShown = visibleZloze(hexZ, overlayDepositEra);
       if (!hasNakladka && !zlozeShown) return;
-      if (isLivestockDepositNakladka(hex.nakladka)) return;
+      if (isDepositOverlaySuppressed(hex.nakladka)) return;
       if (improvementMeshes.has(hexKey)) return;
       try {
         const ov = buildStyledResourceOverlay(hex.nakladka, GAME_MAP_RENDER_STYLE, zlozeShown);
@@ -1543,7 +1553,7 @@ async function boot(): Promise<void> {
         const zlozeShown = visibleZloze(hexZ, overlayDepositEra);
         if (!hasNakladka && !zlozeShown) continue;
         const hexKey = keyOf(hex.coords.q, hex.coords.r);
-        if (isLivestockDepositNakladka(hex.nakladka)) continue;
+        if (isDepositOverlaySuppressed(hex.nakladka)) continue;
         if (improvementMeshes.has(hexKey)) continue;
         try {
           const ov = buildStyledResourceOverlay(hex.nakladka, GAME_MAP_RENDER_STYLE, zlozeShown);
@@ -3334,6 +3344,7 @@ async function boot(): Promise<void> {
           : null,
         cityPopulation: cityOn?.population ?? null,
         currentEra: player.era,
+        playerCivType: String(player.civType || _menuCivId || ''),
         daninaLabel: hexDaninaLabelAt(hexDetailHex.q, hexDetailHex.r),
         esc: hudHtmlEsc,
       });

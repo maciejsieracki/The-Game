@@ -1,3 +1,12 @@
+## [02:04] ✅ Gotowe — FALA 49 rzeka + cuda + lama (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Rzeka** | koszt ruchu **2** pkt na heksie z rzeką (wcześniej 1) |
+| **Cuda świata** | sekcja **na górze** listy Budowy w terenie (przed ulepszeniami); tylko gdy coś dostępne |
+| **LAMA** | złoże i hodowla widoczne **tylko dla Inków/Asteków** (mapa, tooltip, budowa) |
+| **Deploy** | ROBOCZA `e906af1d` · VERIFY OK · `gra-robocza/START.html` |
+
 ## [00:35] ✅ Gotowe — FALA 45 UI (produkcja, dyplomacja, drzewko, HUD)
 
 | Co | Efekt w grze |
