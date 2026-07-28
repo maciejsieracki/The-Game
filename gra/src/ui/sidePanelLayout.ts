@@ -15,10 +15,12 @@
  * własnych, osobno wyliczanych stałych.
  */
 
-import { TOOLBAR_BTN_PX, TOOLBAR_LEFT_PX, TOOLBAR_TOP_PX } from './mapToolbarHud';
-
-/** Odstęp między prawą krawędzią medalionów toolbara a lewą krawędzią panelu. */
-const SIDE_PANEL_LEFT_MARGIN_PX = 12;
+import {
+  SIDE_PANEL_LEFT_MARGIN_PX,
+  TOOLBAR_BTN_PX,
+  TOOLBAR_LEFT_PX,
+  TOOLBAR_TOP_PX,
+} from './hudLayout';
 
 /** Lewa krawędź paneli bocznych (px) — prawa krawędź toolbara + margines. */
 export const SIDE_PANEL_LEFT_PX = TOOLBAR_LEFT_PX + TOOLBAR_BTN_PX + SIDE_PANEL_LEFT_MARGIN_PX;

@@ -10,6 +10,7 @@ import { iconHtml } from './icons/iconRegistry';
 import { scienceOwlIconSized } from './icons/scienceOwlIcon';
 import { scienceProgressRingHtml } from './icons/scienceProgressRing';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+import { TOOLBAR_BTN_PX, TOOLBAR_LEFT_PX, TOOLBAR_TOP_PX } from './hudLayout';
 
 export interface MapToolbarHudConfig {
   onOpenCities?: () => void;
@@ -39,15 +40,8 @@ export interface MapToolbarHudApi {
 
 const STYLE_ID = 'civ-map-toolbar-hud-css-w2ring2';
 
-/**
- * Geometria toolbara — jedyne źródło prawdy dla pozycji lewego paska medalionów.
- * Panele otwierane z toolbara (Miasta/Badania/Dyplomacja/Wojsko/Civpedia — patrz
- * `sidePanelLayout.ts`) liczą swój `left`/`top` na podstawie TYCH stałych, żeby nie
- * nachodzić na przyciski ani na górny pasek chipów (hud.ts, `.civ-hud-banner-left`).
- */
-export const TOOLBAR_LEFT_PX = 22;
-export const TOOLBAR_TOP_PX = 104;
-export const TOOLBAR_BTN_PX = 52;
+/** Re-export geometrii toolbara z hudLayout (kompatybilność importów). */
+export { TOOLBAR_BTN_PX, TOOLBAR_LEFT_PX, TOOLBAR_TOP_PX } from './hudLayout';
 
 function ensureStyles(): void {
   ensureBrandRootTokens();

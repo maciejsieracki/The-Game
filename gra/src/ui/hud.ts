@@ -40,6 +40,17 @@ import { refreshScienceHubIfOpen } from './scienceHubHud';
 import { type UnitPanelState } from './unitPanelHud';
 import { createArmyStackHud, type ArmyStackHudConfig } from './armyStackHud';
 import { MINIMAP_H_PX, MINIMAP_W_PX } from './minimapLayout';
+import {
+  cityViewRightClusterRightCss,
+  CITY_EDGE_PX,
+  HUD_EDGE_PX,
+  HUD_GAP_MD_PX,
+  HUD_POWER_TOP_PX,
+  HUD_TOP_PX,
+  HUD_ZOOM_EDGE_PX,
+  utilDockBottomCss,
+  utilDockLeftCss,
+} from './hudLayout';
 import { showPowerOverlay, hidePowerOverlay, type PowerOverlayData } from './powerOverlayHud';
 import { mocLabel } from './power-labels';
 import { wikiBookIcon } from './icons/wikiBookIcon';
@@ -483,8 +494,8 @@ function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 html.civ-ui-zoom-active{overflow:hidden;width:100%;height:100%;}
-html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:10px;max-width:min(38vw,480px);}
-html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:10px;max-width:min(38vw,520px);}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:${HUD_ZOOM_EDGE_PX}px;max-width:min(38vw,480px);}
+html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:${HUD_ZOOM_EDGE_PX}px;max-width:min(38vw,520px);}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-shell{padding:7px 10px;}
 html.civ-ui-zoom-active .civ-hud .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
 /* Etykiety PL (Skarbiec, Armia…) zostają widoczne także przy zoom UI — kanon mockup 6C. */
@@ -504,11 +515,11 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   border-radius:12px;background:linear-gradient(180deg,rgba(20,26,38,.94),rgba(8,10,16,.95));
   border:1px solid rgba(232,216,138,.3);box-shadow:inset 0 1px 0 rgba(232,216,138,.18),0 6px 18px rgba(0,0,0,.55);
   flex-shrink:0;width:max-content;overflow:visible;}
-.civ-hud .civ-hud-banner-left{pointer-events:auto;position:fixed;top:16px;left:20px;z-index:3;
+.civ-hud .civ-hud-banner-left{pointer-events:auto;position:fixed;top:${HUD_TOP_PX}px;left:${HUD_EDGE_PX}px;z-index:3;
   max-width:min(calc(50vw - 150px),600px);}
 .civ-hud .civ-hud-banner-right{flex-shrink:0;max-width:min(calc(50vw - 340px),780px);}
-.civ-hud .hud-right-cluster{pointer-events:auto;position:fixed;top:16px;right:20px;z-index:3;
-  display:flex;align-items:center;gap:12px;max-width:calc(50vw - 150px);}
+.civ-hud .hud-right-cluster{pointer-events:auto;position:fixed;top:${HUD_TOP_PX}px;right:${HUD_EDGE_PX}px;z-index:3;
+  display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;max-width:calc(50vw - 150px);}
 .civ-hud .hud-chip-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-chip{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-chip-click{cursor:pointer;border-radius:8px;padding:2px 4px;margin:-2px -4px;}
@@ -528,7 +539,7 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-chip-val.science{color:#7cb4e4;}
 .civ-hud .civ-hud-chip-rate{font-size:10px;color:var(--tg-green);}
 .civ-hud .civ-hud-chip-rate.warn{color:var(--tg-orange);}
-.civ-hud .hud-right{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.civ-hud .hud-right{display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;flex-shrink:0;}
 .civ-hud .hud-meta{text-align:right;}
 .civ-hud .b-menu{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
   border-radius:9px;border:1px solid rgba(232,216,138,.35);
@@ -550,10 +561,10 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 /* Zoom + pełny ekran — tylko mapa świata, obok minimapy (Maciej 2026-07-28). */
 .civ-hud .civ-hud-util-dock{pointer-events:auto;position:fixed;z-index:315;
   display:flex;align-items:center;gap:8px;
-  left:calc(20px + ${MINI_W}px + 10px + 48px);bottom:20px;}
+  left:${utilDockLeftCss(MINI_W)};bottom:${utilDockBottomCss()};}
 .civ-hud.is-city-view .civ-hud-util-dock{display:none!important;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-util-dock{
-  left:calc(10px + ${MINI_W}px + 8px + 48px);bottom:16px;}
+  left:${utilDockLeftCss(MINI_W, true)};bottom:${utilDockBottomCss(true)};}
 .civ-hud .b-wiki{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
   border-radius:9px;border:1px solid rgba(168,200,120,.38);cursor:pointer;font-family:var(--civ-font-ui);
   background:linear-gradient(180deg,#161c28,#0a0d14);color:var(--civ-wiki-accent,#a8c878);
@@ -562,7 +573,7 @@ html.civ-ui-zoom-active .civ-hud .civ-hud-util-dock{
 .civ-hud .b-wiki.on{border-color:rgba(168,200,120,.72);background:linear-gradient(180deg,#1a2218,#0c100c);
   box-shadow:inset 0 0 0 1px rgba(168,200,120,.15),0 0 12px rgba(168,200,120,.12);}
 .civ-hud .b-wiki .civ-wiki-ic{width:16px;height:16px;flex-shrink:0;}
-.civ-hud .power-center{pointer-events:auto;position:fixed;left:50%;top:6px;transform:translateX(-50%);
+.civ-hud .power-center{pointer-events:auto;position:fixed;left:50%;top:${HUD_POWER_TOP_PX}px;transform:translateX(-50%);
   display:flex;flex-direction:column;align-items:stretch;gap:0;padding:12px 24px 10px;cursor:pointer;min-width:240px;z-index:4;
   background:linear-gradient(180deg,rgba(30,24,12,.96),rgba(14,10,6,.96));
   border:1px solid #a08030;border-top:none;border-radius:0 0 18px 18px;
@@ -608,14 +619,14 @@ html.civ-ui-zoom-active .civ-hud .civ-hud-util-dock{
 .civ-hud.is-city-view .power-center{display:none!important;}
 .civ-hud.is-city-view .hud-meta{display:none!important;}
 .civ-hud.is-city-view .hud-right-cluster{top:8px;
-  right:calc(32px + min(26vw,300px) + 16px + 46px + 10px);
-  z-index:407;flex-direction:column;align-items:stretch;gap:5px;max-width:min(148px,calc(100vw - 32px));}
+  right:${cityViewRightClusterRightCss()};
+  z-index:407;flex-direction:column;align-items:stretch;gap:5px;max-width:min(148px,calc(100vw - ${CITY_EDGE_PX}px));}
 .civ-hud.is-city-view .hud-right-cluster .hud-right{flex-direction:column;align-items:stretch;gap:5px;}
 .civ-hud.is-city-view .hud-right-cluster .b-menu,
 .civ-hud.is-city-view .hud-right-cluster .b-wiki{height:36px;padding:0 10px;font-size:10px;letter-spacing:.12em;justify-content:center;}
-.civ-mini{position:fixed;left:20px;bottom:20px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
+.civ-mini{position:fixed;left:${HUD_EDGE_PX}px;bottom:${HUD_EDGE_PX}px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
 .civ-mini-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#9aa6b6;font:11px monospace;text-align:center;}
-.civ-fs-hint{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;
+.civ-fs-hint{position:fixed;top:${HUD_TOP_PX}px;left:50%;transform:translateX(-50%);z-index:9999;
   display:none;padding:6px 14px;border-radius:8px;pointer-events:none;
   background:rgba(8,12,20,.92);color:var(--civ-text-muted);
   border:1px solid rgba(232,216,138,.3);font:12px var(--civ-font-ui);letter-spacing:.02em;

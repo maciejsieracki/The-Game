@@ -10,6 +10,12 @@ import { brandIconSvg } from './icons/brandAssets';
 import { ensureBrandRootTokens } from './brandTokenVars';
 import { FOG_EXPLORED_BRIGHTNESS } from '../game/visibility';
 import {
+  HUD_ZOOM_EDGE_PX,
+  HUD_ZOOM_BOTTOM_PX,
+  MINIMAP_TOOL_BTN_PX,
+  MINIMAP_TOOL_GAP_PX,
+} from './hudLayout';
+import {
   MINIMAP_EDGE_PX,
   MINIMAP_H_PX,
   MINIMAP_UTIL_DOCK_RESERVE_PX,
@@ -275,17 +281,17 @@ function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 .civ-minimap-wrap{position:fixed;left:${MINIMAP_EDGE_GAP};bottom:${minimapWrapBottomCss()};z-index:310;
-  display:flex;flex-direction:row;flex-wrap:nowrap;align-items:flex-end;gap:10px;width:max-content;
+  display:flex;flex-direction:row;flex-wrap:nowrap;align-items:flex-end;gap:${MINIMAP_TOOL_GAP_PX}px;width:max-content;
   filter:drop-shadow(0 8px 22px rgba(0,0,0,.7));overflow:visible;}
-html.civ-ui-zoom-active .civ-minimap-wrap{left:10px;bottom:calc(10px + ${MINIMAP_UTIL_DOCK_RESERVE_PX}px);}
+html.civ-ui-zoom-active .civ-minimap-wrap{left:${HUD_ZOOM_EDGE_PX}px;bottom:calc(${HUD_ZOOM_BOTTOM_PX}px + ${MINIMAP_UTIL_DOCK_RESERVE_PX}px);}
 .civ-minimap-hud{position:relative;flex:0 0 var(--mini-w,280px);width:var(--mini-w,280px);height:var(--mini-h,170px);
   background:#0a0f16;border:3px solid #6a5212;border-radius:12px;
   box-shadow:inset 0 0 0 2px rgba(232,216,138,.3);overflow:hidden;cursor:crosshair;}
 .civ-minimap-hud canvas{display:block;width:100%;height:100%;}
 .civ-minimap-hud .mini-placeholder{display:flex;align-items:center;justify-content:center;
   width:100%;height:100%;color:#9aa6b6;font:11px monospace;text-align:center;padding:8px;}
-.civ-minimap-tools{display:flex;flex-direction:column;gap:8px;padding:0;}
-.civ-minimap-tools .mini-tool-btn{width:40px;height:40px;border-radius:9px;cursor:pointer;padding:0;
+.civ-minimap-tools{display:flex;flex-direction:column;gap:${MINIMAP_TOOL_GAP_PX}px;padding:0;}
+.civ-minimap-tools .mini-tool-btn{width:${MINIMAP_TOOL_BTN_PX}px;height:${MINIMAP_TOOL_BTN_PX}px;border-radius:9px;cursor:pointer;padding:0;
   border:1px solid rgba(232,216,138,.3);background:linear-gradient(180deg,#161c28,#0a0d14);
   color:#e8d88a;display:flex;align-items:center;justify-content:center;}
 .civ-minimap-tools .mini-tool-btn:hover{border-color:rgba(232,216,138,.55);}

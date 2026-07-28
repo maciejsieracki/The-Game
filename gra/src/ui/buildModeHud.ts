@@ -5,6 +5,7 @@
  */
 
 import type { ImprovementKey } from '../render/improvements';
+import { HUD_EDGE_PX } from './hudLayout';
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 
@@ -83,7 +84,7 @@ function ensureStyles(): void {
 .civ-build-banner.open{display:flex;}
 .civ-build-banner button{background:rgba(255,255,255,.08);border:1px solid rgba(232,176,74,.4);
   color:#ffe8c0;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;}
-.civ-build-panel{position:fixed;top:90px;right:12px;z-index:311;width:240px;max-height:calc(100vh - 180px);
+.civ-build-panel{position:fixed;top:90px;right:${HUD_EDGE_PX}px;z-index:311;width:240px;max-height:calc(100vh - 180px);
   overflow-y:auto;display:none;flex-direction:column;gap:4px;padding:8px;
   background:rgba(12,18,35,.94);border:1px solid rgba(232,216,138,.28);border-radius:8px;
   font:12px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.55);}

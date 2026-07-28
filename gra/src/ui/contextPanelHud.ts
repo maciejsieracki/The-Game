@@ -3,6 +3,7 @@
  */
 
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+import { HUD_CONTEXT_PANEL_W_PX, HUD_EDGE_PX } from './hudLayout';
 import { UNIT_CARD_STATUS_CSS } from './unitCardStatus';
 
 export interface ContextPanelHudConfig {
@@ -22,7 +23,7 @@ function ensureStyles(): void {
   ensureBrandRootTokens();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-context-panel{position:fixed;top:300px;right:20px;z-index:310;width:340px;pointer-events:none;
+.civ-context-panel{position:fixed;top:300px;right:${HUD_EDGE_PX}px;z-index:310;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:none;
   ${CIV_BRAND_SCOPE_VARS}
   display:none;
   border:1px solid rgba(212,175,90,0.28);border-radius:12px;

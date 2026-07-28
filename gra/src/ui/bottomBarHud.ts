@@ -5,6 +5,13 @@
 
 import { brandIconSvg } from './icons/brandAssets';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+import {
+  BOTTOM_BAR_END_TURN_H_PX,
+  BOTTOM_BAR_WYKONAJ_H_PX,
+  HUD_EDGE_PX,
+  HUD_GAP_PX,
+  HUD_ZOOM_EDGE_PX,
+} from './hudLayout';
 
 export interface BottomBarHudConfig {
   getTurn: () => number;
@@ -34,19 +41,20 @@ function ensureStyles(): void {
   document.getElementById('civ-bottom-bar-hud-css-w2b')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-bottom-bar{position:fixed;bottom:20px;right:20px;z-index:310;width:200px;height:auto;
+.civ-bottom-bar{position:fixed;bottom:${HUD_EDGE_PX}px;right:${HUD_EDGE_PX}px;z-index:310;width:200px;height:auto;
   ${CIV_BRAND_SCOPE_VARS}
   background:transparent;border:none;display:flex;flex-direction:column;align-items:stretch;
-  padding:0;gap:10px;font:12px var(--civ-font-ui);}
+  padding:0;gap:${HUD_GAP_PX}px;font:12px var(--civ-font-ui);}
+html.civ-ui-zoom-active .civ-bottom-bar{bottom:${HUD_ZOOM_EDGE_PX}px;right:${HUD_ZOOM_EDGE_PX}px;}
 .civ-bottom-bar .spacer{display:none}
-.civ-bottom-bar .wykonaj{height:52px;padding:0 18px;border-radius:9px;font-size:13px;font-weight:600;
+.civ-bottom-bar .wykonaj{height:${BOTTOM_BAR_WYKONAJ_H_PX}px;padding:0 18px;border-radius:9px;font-size:13px;font-weight:600;
   letter-spacing:.16em;text-transform:uppercase;cursor:pointer;width:100%;
   border:2px solid rgba(232,216,138,.4);color:var(--civ-gold-primary);
   background:linear-gradient(180deg,#161c28,#0a0d14);font-family:var(--civ-font-ui);}
 .civ-bottom-bar .wykonaj.on{animation:civ-wyk-glow 1.5s infinite;border-color:rgba(240,160,64,.75);
   color:#ffc080;background:rgba(208,128,48,.08);border-color:rgba(208,128,48,.55);}
 .civ-bottom-bar .wykonaj:disabled{opacity:.35;cursor:not-allowed;pointer-events:none;border-color:rgba(255,255,255,.12);color:var(--civ-text-muted);}
-.civ-bottom-bar .end-turn{min-width:0;width:100%;height:60px;padding:5px 18px;
+.civ-bottom-bar .end-turn{min-width:0;width:100%;height:${BOTTOM_BAR_END_TURN_H_PX}px;padding:5px 18px;
   display:flex;flex-direction:row;align-items:center;justify-content:center;gap:10px;
   background:linear-gradient(180deg,#f0dc88,#b99a28);
   border:1px solid #6a5212;border-top-color:#f8eea8;border-radius:9px;cursor:pointer;color:#2e2708;

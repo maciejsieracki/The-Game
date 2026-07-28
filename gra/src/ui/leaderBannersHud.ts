@@ -4,6 +4,7 @@
  */
 
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+import { HUD_EDGE_PX, HUD_GAP_PX, HUD_LEADER_TOP_PX } from './hudLayout';
 import { brandIconSvg } from './icons/brandAssets';
 
 export interface LeaderBannersHudApi {
@@ -31,7 +32,7 @@ function ensureStyles(): void {
   ensureBrandRootTokens();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-leader-banners{position:fixed;top:92px;right:20px;z-index:310;display:flex;gap:10px;pointer-events:none;
+.civ-leader-banners{position:fixed;top:${HUD_LEADER_TOP_PX}px;right:${HUD_EDGE_PX}px;z-index:310;display:flex;gap:${HUD_GAP_PX}px;pointer-events:none;
   ${CIV_BRAND_SCOPE_VARS}}
 .civ-leader-banner{width:46px;height:70px;display:flex;justify-content:center;padding-top:8px;
   clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%);

@@ -11,24 +11,33 @@ import {
 } from './cityPanel';
 import { getActiveDetailDockWidths, HOVER_DETAIL_DOCK_W } from './hoverDetailDock';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
+import {
+  CITY_EDGE_PX,
+  CITY_ICON_RAIL_W_PX,
+  CITY_LEFT_ICON_RAIL_W_PX,
+  CITY_LEFT_PANEL_W_PX,
+  CITY_RAIL_GAP_PX,
+  CITY_RAIL_TOP_PX,
+  CITY_RIGHT_PANEL_W_PX,
+} from './hudLayout';
 
 let frameRoot: HTMLDivElement | null = null;
 let mounts: CityPanelUxMounts | null = null;
 
 const TOP_H = 96;
 const ICON_BAR_H = 0;
-const LEFT_W = 340;
+const LEFT_W = CITY_LEFT_PANEL_W_PX;
 /** Lewy panel danych (produkcja) + rail produkcji po jego prawej krawędzi. */
-const LEFT_MARGIN = 32;
-const LEFT_RAIL_GAP = 16;
+const LEFT_MARGIN = CITY_EDGE_PX;
+const LEFT_RAIL_GAP = CITY_RAIL_GAP_PX;
 /** Panele boczne startują blisko górnej krawędzi — pasek miasta jest wyśrodkowany, rogi są wolne. */
-const LEFT_RAIL_TOP = 10;
-const LEFT_ICON_RAIL_W = 56;
-const RIGHT_MARGIN = 32;
-const RIGHT_RAIL_GAP = 16;
-const RIGHT_ICON_RAIL_W = 46;
+const LEFT_RAIL_TOP = CITY_RAIL_TOP_PX;
+const LEFT_ICON_RAIL_W = CITY_LEFT_ICON_RAIL_W_PX;
+const RIGHT_MARGIN = CITY_EDGE_PX;
+const RIGHT_RAIL_GAP = CITY_RAIL_GAP_PX;
+const RIGHT_ICON_RAIL_W = CITY_ICON_RAIL_W_PX;
 const DETAIL_DOCK_W = HOVER_DETAIL_DOCK_W;
-const RIGHT_W = 300;
+const RIGHT_W = CITY_RIGHT_PANEL_W_PX;
 /** Dolny margines docków — nie zasłaniają środkowego stosu okolicy (profile / akcje). */
 const DOCK_BOTTOM_CLEAR = 96;
 const LEFT_PANEL_W_EXPR = `min(24vw,${LEFT_W}px)`;
@@ -92,7 +101,7 @@ function ensureFrameStyles(): void {
 .civ-ux-detail-dock.is-open::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
 .civ-hover-detail-dock .civ-hover-detail-scope{display:flex;flex-direction:column;min-height:0;max-height:100%;}
 .civ-hover-detail-dock .civ-hover-detail-content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;}
-.civ-ux-right{position:fixed;top:${LEFT_RAIL_TOP}px;right:${RIGHT_MARGIN}px;bottom:32px;width:${RIGHT_PANEL_W_EXPR};min-width:260px;z-index:410;
+.civ-ux-right{position:fixed;top:${LEFT_RAIL_TOP}px;right:${RIGHT_MARGIN}px;bottom:${CITY_EDGE_PX}px;width:${RIGHT_PANEL_W_EXPR};min-width:260px;z-index:410;
   pointer-events:auto;overflow:hidden;padding:0;
   background:linear-gradient(180deg,rgba(18,24,32,0.97),rgba(8,10,16,0.97));
   border:2px solid rgba(232,216,138,0.42);border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,0.6);

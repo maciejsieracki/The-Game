@@ -3896,3 +3896,10 @@ CZEKAM-NA: nic (sesja lokalna: pull + otworz `80608ce4`).
 **Zakres:** karta jednostki nad minimapa (minimapLayout) + fortify/czuwanie poza terytorium + akcje w panelu heksa.
 **Bramki:** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b`.
 CZEKAM-NA: nic (sesja lokalna: pull + otworz `0e985a95`).
+
+## [13:45] SESJA LOKALNA -> Maciej - deploy ROBOCZA FALA 60
+
+**md5:** `b68ed20671cd82dedefaf31e1a8996dc` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** hudLayout.ts — wyrównanie marginesów HUD mapa (20px) + miasto (32px) + zoom (10px); 11 plików UI.
+**Bramki:** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b`.
+CZEKAM-NA: nic (sesja lokalna: pull + otworz `b68ed206`).

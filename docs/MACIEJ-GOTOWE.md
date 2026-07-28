@@ -1,3 +1,11 @@
+## [13:45] ✅ Gotowe — FALA 60 wyrównanie HUD (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **hudLayout.ts** | jedne marginesy: mapa 20px, miasto 32px, zoom 10px |
+| **11 plików UI** | chipy, minimapa, wydarzenia, tura, budowa, miasto — wyrównane do mockupu 1E |
+| **Deploy** | ROBOCZA `b68ed206` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
 ## [13:35] ✅ Gotowe — FALA 59 karta jednostki + fortify/czuwanie (deploy ROBOCZA)
 
 | Co | Efekt w grze |

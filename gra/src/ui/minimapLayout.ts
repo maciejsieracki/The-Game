@@ -3,8 +3,10 @@
  * Jedno źródło prawdy dla sidePanelHud · minimapHud · hud.ts (util dock).
  */
 
-/** Margines od krawędzi viewportu (px). */
-export const MINIMAP_EDGE_PX = 20;
+import { HUD_EDGE_PX } from './hudLayout';
+
+/** Margines od krawędzi viewportu (px) — alias HUD_EDGE_PX. */
+export const MINIMAP_EDGE_PX = HUD_EDGE_PX;
 
 /** Miejsce pod pasek zoom/pełny ekran pod minimapą (hud.ts .civ-hud-util-dock). */
 export const MINIMAP_UTIL_DOCK_RESERVE_PX = 50;

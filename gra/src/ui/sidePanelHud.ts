@@ -8,6 +8,12 @@ import { brandIconSvg } from './icons/brandAssets';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import { UNIT_CONTEXT_PANEL_CSS } from './hexContextTooltip';
 import {
+  HUD_CONTEXT_PANEL_W_PX,
+  HUD_EDGE_PX,
+  HUD_ZOOM_EDGE_PX,
+  turnStackBottomPx,
+} from './hudLayout';
+import {
   MINIMAP_EDGE_PX,
   MINIMAP_W_PX,
   unitCardDockBottomPx,
@@ -62,7 +68,7 @@ export interface SidePanelHudApi {
 
 const STYLE_ID = 'civ-side-panel-hud-css-w3-unit-dock3';
 /** Wysokość stosu tury (Wykonaj + Koniec tury) nad dolną krawędzią — mockup 1E strefa G. */
-const TURN_STACK_H = 172;
+const TURN_STACK_H = turnStackBottomPx();
 const MINIMAP_EDGE = MINIMAP_EDGE_PX;
 const MINIMAP_W = MINIMAP_W_PX;
 const unitDockBottom = unitCardDockBottomPx();
@@ -95,12 +101,12 @@ function ensureStyles(): void {
   document.getElementById('civ-side-panel-hud-css-w3-unit-dock2')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-side-panel{position:fixed;bottom:${TURN_STACK_H}px;right:20px;top:auto;z-index:310;width:300px;pointer-events:auto;
+.civ-side-panel{position:fixed;bottom:${TURN_STACK_H}px;right:${HUD_EDGE_PX}px;top:auto;z-index:310;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:auto;
   max-height:min(50vh,calc(100vh - ${TURN_STACK_H + 80}px));overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;scrollbar-gutter:stable;
   ${CIV_BRAND_SCOPE_VARS}
   display:flex;flex-direction:column;gap:8px;font:13px var(--civ-font-ui);}
-html.civ-ui-zoom-active .civ-side-panel{max-height:50vh;right:16px;}
+html.civ-ui-zoom-active .civ-side-panel{max-height:50vh;right:${HUD_ZOOM_EDGE_PX}px;}
 .civ-side-ctx-dock{position:fixed;left:${MINIMAP_EDGE}px;bottom:${unitDockBottom}px;z-index:308;
   width:min(${MINIMAP_W}px,calc(100vw - ${MINIMAP_EDGE * 2}px));pointer-events:none;
   max-height:min(40vh,calc(100vh - ${unitDockBottom + 80}px));overflow-y:auto;overflow-x:hidden;
@@ -108,7 +114,7 @@ html.civ-ui-zoom-active .civ-side-panel{max-height:50vh;right:16px;}
   ${CIV_BRAND_SCOPE_VARS}
   font:13px var(--civ-font-ui);}
 .civ-side-ctx-dock.open{display:block;pointer-events:auto;}
-html.civ-ui-zoom-active .civ-side-ctx-dock{left:16px;bottom:${unitDockBottom - 4}px;}
+html.civ-ui-zoom-active .civ-side-ctx-dock{left:${HUD_ZOOM_EDGE_PX}px;bottom:${unitDockBottom - 4}px;}
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
 .civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;

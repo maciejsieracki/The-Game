@@ -11,7 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `0e985a95` - 2026-07-28 13:35 - FALA 59: karta jednostki vs minimapa + fortify/czuwanie - **AKTUALNA**
+## ROBOCZA `b68ed206` - 2026-07-28 13:45 - FALA 60: wyrównanie HUD mapa + miasto (hudLayout.ts) - **AKTUALNA**
+- md5 (pelne): `b68ed20671cd82dedefaf31e1a8996dc` · stempel: `ROBOCZA · 2026-07-28 13:45`
+- **VERIFY OK.** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** jedno źródło marginesów HUD (`hudLayout.ts`) — mapa 20/16px, miasto 32px, zoom 10px; build panel right 20px; context 300px; 11 plików UI.
+
+## ROBOCZA `0e985a95` - 2026-07-28 13:35 - FALA 59: karta jednostki vs minimapa + fortify/czuwanie - **ZASTAPIONA**
 - md5 (pelne): `0e985a95fb0c8a28b8ada53e52b14360` · stempel: `ROBOCZA · 2026-07-28 13:35`
 - **VERIFY OK.** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
