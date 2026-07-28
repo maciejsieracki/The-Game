@@ -12,7 +12,36 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `d109dfa8` - 2026-07-28 18:48 - FALA 69: deploy all (HUD+dyplo+epoch matrix+spawn 70%+MP pack) - **AKTUALNA**
+## ROBOCZA `490ec5fd` - 2026-07-28 21:20 - FALA 73: deploy all (UI+dyplo+granice+terytorium+MP pack+AI ekspansja) - **AKTUALNA**
+- md5 (pelne): `490ec5fd5e914960586c6437e4e3018b` · stempel: `ROBOCZA · 490ec5fd`
+- **VERIFY OK.** tsc 0 · cluster-start PASS (150+) · vite build OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** (1) **Mapgen ~10×** — `localLandFraction` tylko dysk R=3 (`clusters.ts`). (2) **Stół negocjacji** — kolumny L→P + split My/Oni oferty (`diplomacyAudience.ts`, `diplomacyDealDisplay.ts`). (3) **Tabela miast** — ikony tylko w TH (`empireDetailPanel.ts`). (4) **Karta jednostki** — zoom lift + duch medallion + złote scrollbary. (5) **Granice** — force ON w mieście, nie gasną na mapie (`main.ts`). (6) **Ulepszenia** — tylko własne terytorium + tartak nie znika (`improvement-build.ts`, `territory.ts`). (7) **NAP** — bez pustej oferty (`diplomacyTradeBasket.ts`). (8) **Magazyn/Spichlerz cap 1000** (`econ-params.json`). (9) **Pre-battle scrim** (`preBattle.ts`). (10) **Bitwa obrys relief** (`battleScene.ts`). (11) **Dyplo** — hojność wg trudności + wycofany handel dostępem. (12) **MP Hard** — offensive support (`ai.ts`). (13) **MP packing** — `packCityStatesAroundCapital` + repack obcych klastrów + `clusterStateTargets` od stolicy. (14) **AI priorytet** — `isLocalExpansionPhase` (skauci→huty→MP→founding).
+- **Commit:** `6829df7` · **Pliki:** `clusters.ts` · `cluster-spawn.ts` · `ai.ts` · `main.ts` · `battleScene.ts` · `preBattle.ts` · `diplomacy*.ts` · `empireDetailPanel.ts` · `improvement-build.ts` · `territory.ts` · `econ-params.json` · UI HUD/panel
+
+## ROBOCZA `bd187872` - 2026-07-28 19:26 - FALA 72: tooltipy HUD + karty detail normal + hub-chain MP - **ZASTĄPIONA**
+- md5 (pelne): `bd18787215dc0ae9e98eab54944b117c` · stempel: `ROBOCZA · bd187872`
+- **VERIFY OK.** tsc 0 · cluster-start hub-chain 6/6 PASS · vite build OK · POLE-BITWY bez zmian.
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** (1) **Tooltipy HUD** — `hudTitleTooltip.ts` + `installHudTitleTooltips()` w `showHud` (15px, jasny box; zamiast natywnego title). (2) **Karty wyjaśnień** — przywrócone rozmiary: `.detail-card` 0.78em, sekcje ~0.68–0.88em, float 400px, dock `HOVER_DETAIL_DOCK_W`=400; `sciencePicker` tooltipy cofnięte z 2×. (3) **MAP-SPAWN hub-chain** — `packCityStatesHubChain()` pierścień 4 hex od stolicy, potem od kolejnych MP; min. odstęp 4 hex między MP na pierścieniu (`clusters.ts`).
+- **Pliki:** `hudTitleTooltip.ts` · `hud.ts` · `cityPanel.ts` · `hoverDetailDock.ts` · `sciencePicker.ts` · `clusters.ts`
+
+## ROBOCZA `0232836a` - 2026-07-28 19:10 - FALA 71: P0 end-turn session reset + heal + debug warns - **ZASTĄPIONA**
+- md5 (pelne): `0232836ac4a721f4df33256cb3642dd4` · stempel: `ROBOCZA · 0232836a`
+- Nowa gra / load resetuje endTurnInProgress + aiTurnAwaitingBattle + aiCmdResume + overlay tury
+- healStaleEndTurnBlockers: orphan overlay, force-clear >8s, console.warn per blocker
+- bottomBar: klik Zakończ turę zawsze woła triggerPlayerEndTurn (hint przy blokadzie)
+- tsc 0 · Ctrl+F5 + certutil/md5 pliku = `0232836a`
+
+## ROBOCZA `e441f614` - 2026-07-28 19:00 - FALA 70: P0 end-turn fix + bottomBar + battle cancel resume - **ZASTĄPIONA**
+- md5 (pelne): `e441f614f2e94c2722012291e6828f8f` · stempel: `ROBOCZA · e441f614`
+- **VERIFY OK.** tsc 0 · vite build OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** P0 Maciej — tura nie przechodziła: (1) `canEndTurn` HUD ≠ bramki N (ciche `return` przy `aiCmdResume`/`aiTurnAwaitingBattle`); (2) self-heal zawieszonych flag po anulowaniu bitwy AI; (3) `BattleScene.onCancel` incoming → `finishIncomingBattleUi`; (4) `triggerPlayerEndTurn()` wspólny dla N i przycisku; (5) `bottomBarHud` — disabled + click-time gate; (6) guard `negotiationSummary` przy pustym payload.
+- **Pliki:** `main.ts` · `bottomBarHud.ts`
+
+
+## ROBOCZA `d109dfa8` - 2026-07-28 18:48 - FALA 69: deploy all (HUD+dyplo+epoch matrix+spawn 70%+MP pack) - **ZASTAPIONA**
 - md5 (pelne): `d109dfa85c7006e708352e839d4330f2` · stempel: `ROBOCZA · d109dfa8`
 - **VERIFY OK.** tsc 0 · diplomacy-display 28/0 · map-scale-menu 97/0 · cluster-start PASS (partial run, >140 asercji) · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

@@ -1,5 +1,27 @@
 ﻿
-## [20:48] ✅ Gotowe — pre-battle: przyciemnienie mapy świata (bez deployu)
+## [21:17] ✅ Gotowe — MP packing wokół AI + faza lokalna AI (bez deployu — jedzie z FALA)
+
+| Fix | Opis |
+|-----|------|
+| MP | `packCityStatesAroundCapital` — pełniejsza quota wokół obcych klastrów (nie tylko wąski Voronoi) |
+| AI | `isLocalExpansionPhase` — skauci/huty/MP lokalne **przed** foundingiem miast (do tury 45) |
+
+tsc 0 · ai-test 248/248. ⏸️ deploy w toku.
+
+## [21:20] ✅ Gotowe — FALA 73 deploy (duża paczka UI+dyplo+granice+MP+AI)
+
+| Deploy | Wartość |
+|--------|---------|
+| **FALA** | 73 |
+| **md5** | `490ec5fd` (pełne: `490ec5fd5e914960586c6437e4e3018b`) |
+| **Commit** | `6829df7` (źródła) + deploy log |
+| **Wejście** | `gra-robocza/START.html` · **Ctrl+F5** + Nowa gra |
+
+**Weszło:** mapgen ~10× (`localLandFraction`) · stół negocjacji My/Oni · tabela miast ikony TH · karta jednostki+scrollbary · granice miasto/map · ulepszenia własne terytorium+tartak · NAP bez pustej oferty · Magazyn/Spichlerz 1000 · pre-battle scrim · bitwa obrys relief · dyplo hojność+wycofany dostęp · MP Hard offensive · **MP packing** (`packCityStatesAroundCapital`) · **AI priorytet** (`isLocalExpansionPhase`: skauci→huty→MP→founding).
+
+---
+
+## [20:48] ✅ Gotowe — pre-battle: przyciemnienie mapy świata (FALA 73)
 
 `preBattle.ts`: scrim `rgba` + desaturacja przy `showPreBattle`, off przy `hidePreBattle`. tsc 0.
 

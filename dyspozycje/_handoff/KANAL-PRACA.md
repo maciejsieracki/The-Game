@@ -3987,3 +3987,32 @@ Bramki: tsc 0 · diplomacy-display 28/0 · map-scale-menu 97/0 · cluster-start 
 Zakres: CIV-MAP-EPOCH-Q1 · HUD 1 wiersz chipy+Civpedia+Menu · karta jednostki left 86px · Grecy display name · fix pustej tablicy handlu AI · MAP-SPAWN 70% lokalny + MP packing · + dziedziczone rzeki W2/civ counts/filtr epoki.
 Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 CZEKAM-NA: Maciej otwiera `d109dfa8`
+
+## [19:00] INTEGRATOR -> MASTER + Maciej (sesja lokalna) -- deploy FALA 70 ROBOCZA P0 end-turn
+
+Publish `gra-robocza/` — fix P0: tura nie przechodzi (Maciej 2026-07-28).
+md5: `e441f614f2e94c2722012291e6828f8f` (skrot `e441f614`) | stempel ROBOCZA · e441f614
+Bramki: tsc 0 · vite build OK · VERIFY OK · POLE-BITWY `dd399c4b` (bez zmian).
+Przyczyna: rozjazd `canEndTurn` HUD vs bramki N (`aiCmdResume`/`aiTurnAwaitingBattle` ciche return); zawieszone flagi po anulowaniu bitwy AI w `BattleScene.onCancel`.
+Fix: `triggerPlayerEndTurn()` + `healStaleEndTurnBlockers()` + `finishIncomingBattleUi` on cancel + bottomBar click-time gate.
+Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+CZEKAM-NA: Maciej otwiera `e441f614`
+
+## [19:26] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 72 ROBOCZA deploy all
+
+Publish `gra-robocza/` — tooltipy HUD większe + karty wyjaśnień normal + hub-chain MP packing.
+md5: `bd18787215dc0ae9e98eab54944b117c` (skrót `bd187872`) | stempel ROBOCZA · bd187872
+Zakres: (1) `hudTitleTooltip.ts` — custom title 15px (toolbar/chipy/rail ikon). (2) karty detail cofnięte z 2× (0.78em, dock 400px, sciencePicker tooltipy normal). (3) `packCityStatesHubChain()` — pierścień 4 hex, min 4 hex między MP.
+Bramki: tsc 0 · cluster-start hub-chain 6/6 PASS · verify-robocza VERIFY OK.
+Wejście: `gra-robocza/START.html` · **Ctrl+F5** · md5 **bd187872**.
+CZEKAM-NA: Maciej otwiera `bd187872`
+
+## [21:20] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 73 ROBOCZA deploy all
+
+Publish `gra-robocza/` — duża paczka UI+dyplo+granice+terytorium+MP pack+AI ekspansja.
+md5: `490ec5fd5e914960586c6437e4e3018b` (skrót `490ec5fd`) | stempel ROBOCZA · 490ec5fd
+Commit źródeł: `6829df7` (zawiera MP packing `packCityStatesAroundCapital` + `isLocalExpansionPhase`).
+Bramki: tsc 0 · cluster-start PASS (150+) · verify-robocza VERIFY OK · POLE-BITWY `dd399c4b`.
+Wejście: `gra-robocza/START.html` · **Ctrl+F5** · md5 **490ec5fd**.
+CZEKAM-NA: Maciej otwiera `490ec5fd`
+
