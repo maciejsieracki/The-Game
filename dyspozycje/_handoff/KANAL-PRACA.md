@@ -3824,3 +3824,10 @@ CZEKAM-NA: nic (sesja lokalna: otwórz `e906af1d`).
 **Zakres:** etykiety HUD (Armia, Spichlerz…) przy zoomie UI · zoom −/+ tylko obok minimapy na mapie świata · tooltip „Kliknij hex" przyklejony do heksu (budowa w terenie + założenie miasta) · chipy nagłówka miasta bez rozbicia inline.
 **Bramki:** tsc 0 · smoke OK · river-move 17/17 · POLE-BITWY `dd399c4b` (bez zmian).
 CZEKAM-NA: nic (sesja lokalna: otwórz `85d115d4`).
+
+## [02:30] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 51
+
+**md5:** `e49eb25d4f676c880f0c1bf65808a21b` · `gra-robocza/START.html` · Ctrl+F5.
+**Zakres:** panel Wydarzenia max 50vh + scroll · komunikaty/toasty stabilne przy zoomie UI (fixed na `<html>`).
+**Bramki:** tsc 0 · smoke OK.
+CZEKAM-NA: nic (sesja lokalna: otwórz `e49eb25d`).

@@ -1294,7 +1294,7 @@ function mountSidePanel(): void {
     onEventClick: cfg.onEventClick,
     onEventDismiss: cfg.onEventDismiss,
   });
-  document.body.appendChild(sidePanelApi.el);
+  document.documentElement.appendChild(sidePanelApi.el);
 }
 
 function refreshSidePanel(): void {

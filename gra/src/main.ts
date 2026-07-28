@@ -1005,13 +1005,15 @@ async function boot(): Promise<void> {
     hintToast.style.cssText = [
       'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
       'z-index:320', 'display:none', 'pointer-events:none',
-      'max-width:min(560px,calc(100vw - 48px))', 'padding:8px 14px', 'border-radius:8px',
+      'max-width:min(560px,calc(100vw - 48px))', 'max-height:min(40vh,240px)', 'overflow-y:auto',
+      'padding:8px 14px', 'border-radius:8px',
       'background:rgba(8,12,20,0.92)', 'color:#e8e0c8',
       'border:1px solid rgba(232,216,138,0.35)',
       'font:12px/1.45 Segoe UI,Tahoma,sans-serif', 'text-align:center',
       'box-shadow:0 6px 20px rgba(0,0,0,0.45)',
     ].join(';');
-    document.body.appendChild(hintToast);
+    // Na <html> — zoom UI skaluje <body>; fixed na body „ucieka” w górę.
+    document.documentElement.appendChild(hintToast);
 
     /** C-OBCE-JEDN-Q3 C: tooltip przy najechaniu na ★ weterana na mapie. */
     const veteranBadgeTip = document.createElement('div');

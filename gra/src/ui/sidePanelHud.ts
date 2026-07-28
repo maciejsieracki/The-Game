@@ -49,7 +49,7 @@ export interface SidePanelHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-side-panel-hud-css-w3-unit';
+const STYLE_ID = 'civ-side-panel-hud-css-w3-zoom-cap';
 /** Wysokość stosu tury (Wykonaj + Koniec tury + etykieta) nad dolną krawędzią — mockup 1E strefa G. */
 const TURN_STACK_H = 172;
 
@@ -80,9 +80,11 @@ function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 .civ-side-panel{position:fixed;bottom:${TURN_STACK_H}px;right:20px;top:auto;z-index:310;width:300px;pointer-events:auto;
-  max-height:calc(100vh - ${TURN_STACK_H + 120}px);overflow-y:auto;
+  max-height:min(50vh,calc(100vh - ${TURN_STACK_H + 80}px));overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;scrollbar-gutter:stable;
   ${CIV_BRAND_SCOPE_VARS}
   display:flex;flex-direction:column;gap:8px;font:13px var(--civ-font-ui);}
+html.civ-ui-zoom-active .civ-side-panel{max-height:50vh;right:16px;}
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
 .civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;

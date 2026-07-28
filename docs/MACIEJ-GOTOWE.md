@@ -1,3 +1,11 @@
+## [02:30] ✅ Gotowe — FALA 51 wydarzenia + zoom komunikatów (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Panel Wydarzenia** | max połowa ekranu wysokości; nadmiar — przewijanie w dół |
+| **Zoom UI** | komunikaty nie „uciekają” w górę (warstwa poza skalowanym body) |
+| **Deploy** | ROBOCZA `e49eb25d` · `gra-robocza/START.html` |
+
 ## [02:26] ✅ Gotowe — FALA 50 HUD + zoom + tooltip budowy (deploy ROBOCZA)
 
 | Co | Efekt w grze |

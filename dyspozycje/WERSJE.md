@@ -11,7 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `85d115d4` — 2026-07-28 02:26 — FALA 50: HUD etykiety + zoom przy minimapie + tooltip budowy — **AKTUALNA**
+## ROBOCZA `e49eb25d` — 2026-07-28 02:30 — FALA 51: wydarzenia max 50vh + zoom fix komunikatów — **AKTUALNA**
+- md5 (pelne): `e49eb25d4f676c880f0c1bf65808a21b` · stempel: `ROBOCZA · 2026-07-28 02:30`
+- **VERIFY OK.** smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** panel Wydarzenia (prawy dolny) — max **50% wysokości ekranu**, przewijanie w dół przy nadmiarze; pozycja stabilna przy zoomie UI (warstwa na `<html>`). Toasty dolne — też poza skalowanym `body`, z limitem wysokości.
+- **Bramki:** tsc 0 · smoke OK.
+
+## ROBOCZA `85d115d4` — 2026-07-28 02:26 — FALA 50: HUD etykiety + zoom przy minimapie + tooltip budowy — **ZASTĄPIONA**
 - md5 (pelne): `85d115d4a5a6dae37351eab976833c79` · stempel: `ROBOCZA · 2026-07-28 02:26`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + manifest · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejście: `gra-robocza/START.html` · **Nowa gra** (Ctrl+F5).
