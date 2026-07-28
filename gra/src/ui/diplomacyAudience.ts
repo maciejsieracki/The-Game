@@ -22,7 +22,7 @@ import {
   type NegotiationPayload,
 } from './diplomacyNegotiationModal';
 import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
-import { leaderName } from './leaderPortraits';
+import { civCardDisplayName, leaderName } from './leaderPortraits';
 import { renderNegotiationDealHtml } from './diplomacyDealDisplay';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
 
@@ -817,7 +817,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
     '<div class="da-card you">' +
       '<div class="da-portrait">' +
         civLeaderMedallionHtmlById(st.playerIkonaId ?? 'rzymianie', st.playerKolorHex, st.playerEra) +
-        '<div class="da-civname">' + esc(st.playerCivName) + '</div>' +
+        '<div class="da-civname">' + esc(civCardDisplayName(st.playerCivName, st.playerIkonaId)) + '</div>' +
         playerLeaderHtml(st) +
         '<div class="da-civtitle">' + esc(st.playerTitle) + '</div>' +
       '</div>' +
@@ -851,7 +851,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
     '<div class="da-card them">' +
       '<div class="da-portrait">' +
         civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex, st.otherEra, st.otherIsCityState) +
-        '<div class="da-civname">' + esc(st.otherCivName) + '</div>' +
+        '<div class="da-civname">' + esc(civCardDisplayName(st.otherCivName, st.otherIkonaId)) + '</div>' +
         otherLeaderHtml(st) +
         '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
         stanceBadgeHtml(st) +

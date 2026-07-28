@@ -6,10 +6,20 @@ import raw from '../../data/e-start-params.json';
 import { normPlMenuLabel } from '../util/norm-pl-label';
 import type { QualityTier } from '../map/newGameMapDefaults';
 
+export interface TypyCywilizacjiTripleRow {
+  default: number;
+  min: number;
+  max: number;
+}
+
+export type StartEpochId = 'kamien' | 'braz' | 'zelazo';
+
 interface SkalaRow {
   rywale_ai?: number;
   miasta_panstwa?: number;
+  /** Legacy — domyślna liczba typów (żelazo lub pojedyncza skala). */
   typy_cywilizacji?: number;
+  typy_cywilizacji_per_epoka?: Partial<Record<StartEpochId, TypyCywilizacjiTripleRow>>;
   hex_w?: number;
   hex_h?: number;
 }
@@ -75,8 +85,36 @@ export function eStartRywaleAi(menuLabel: string): number | undefined {
   return skalaRow(menuLabel)?.rywale_ai;
 }
 
+function normEpochId(epochId: string): StartEpochId {
+  const n = epochId.toLowerCase().replace(/ł/g, 'l').trim();
+  if (n === 'braz' || n === 'bronz') return 'braz';
+  if (n === 'zelazo' || n === 'iron') return 'zelazo';
+  return 'kamien';
+}
+
+export function eStartTypyCywilizacjiPerEpoka(
+  menuLabel: string,
+  epochId: string,
+): TypyCywilizacjiTripleRow | undefined {
+  const row = skalaRow(menuLabel);
+  const ep = normEpochId(epochId);
+  const triple = row?.typy_cywilizacji_per_epoka?.[ep];
+  if (!triple) return undefined;
+  const { default: def, min, max } = triple;
+  if (
+    typeof def !== 'number' || typeof min !== 'number' || typeof max !== 'number'
+    || !Number.isFinite(def) || !Number.isFinite(min) || !Number.isFinite(max)
+  ) {
+    return undefined;
+  }
+  return { default: def, min, max };
+}
+
 export function eStartTypyCywilizacji(menuLabel: string): number | undefined {
-  return skalaRow(menuLabel)?.typy_cywilizacji;
+  const row = skalaRow(menuLabel);
+  const kamien = row?.typy_cywilizacji_per_epoka?.kamien?.default;
+  if (typeof kamien === 'number' && kamien > 0) return kamien;
+  return row?.typy_cywilizacji;
 }
 
 export function eStartMiastaPanstwa(menuLabel: string): number | undefined {

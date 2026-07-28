@@ -9,7 +9,6 @@
 import type { TypSwiata } from './gen-helpers';
 import { defaultLandFractionForTyp } from './gen-helpers';
 import {
-  mapGenAktywneTypy,
   mapGenDefaultRywale,
   mapGenDesertThreshold,
   mapGenForestThreshold,
@@ -27,6 +26,8 @@ import {
   eStartRenderQualityBundled,
   eStartRywaleAi,
   eStartTypyCywilizacji,
+  eStartTypyCywilizacjiPerEpoka,
+  type StartEpochId,
 } from '../data/e-start-params-loader';
 import { normPlMenuLabel } from '../util/norm-pl-label';
 import { menuLabelToDims, rozmiarFromMenuLabel, type RozmiarSwiata } from './generator';
@@ -72,18 +73,10 @@ export function mapSizeLabelFromMenuLabel(menuLabel: string): MapSizeLabel {
   return mapSizeLabelFromDims(w, h);
 }
 
-/** Aktywne typy nacji na mapie (Panel-A / Panel-E JSON). */
-export function aktywneTypyFromMapLabel(menuLabel: string): number {
-  const fromE = eStartTypyCywilizacji(menuLabel);
-  if (fromE != null && fromE > 0) return fromE;
-  const lut: Record<MapSizeLabel, number> = {
-    mala: mapGenAktywneTypy('mala'),
-    srednia: mapGenAktywneTypy('srednia'),
-    duza: mapGenAktywneTypy('duza'),
-    ogromna: mapGenAktywneTypy('ogromna'),
-    super: mapGenAktywneTypy('super'),
-  };
-  return lut[mapSizeLabelFromMenuLabel(menuLabel)] ?? mapGenAktywneTypy('duza');
+/** Aktywne typy nacji na mapie (Panel-E / legacy pojedyncza skala lub max z macierzy żelazo). */
+export function aktywneTypyFromMapLabel(menuLabel: string, epochId: string = 'zelazo'): number {
+  const triple = civTypesTripleForMapLabel(menuLabel, epochId);
+  return triple.max;
 }
 
 /**
@@ -574,18 +567,70 @@ const MIASTA_PANSTWA_MENU_BY_TIER: readonly MapScaleTriple[] = [
   { min: 7, default: 8, max: MAX_MIAST_PANSTWA },
 ];
 
+/** Pula typów cywilizacji wg epoki startu (CIV-MAP-EPOCH-Q1 / CIV-EPOCH-SPAWN-Q1). */
+export const EPOCH_CIV_TYPE_POOL: Readonly<Record<StartEpochId, number>> = {
+  kamien: 8,
+  braz: 14,
+  zelazo: 15,
+};
+
+function normStartEpochId(epochId: string | undefined): StartEpochId {
+  const n = (epochId ?? 'kamien').toLowerCase().replace(/ł/g, 'l').trim();
+  if (n === 'braz' || n === 'bronz') return 'braz';
+  if (n === 'zelazo' || n === 'iron') return 'zelazo';
+  return 'kamien';
+}
+
+function tripleFromDefault(def: number, pool: number): MapScaleTriple {
+  const max = Math.min(def + 1, pool);
+  let min = Math.max(1, def - 1);
+  let adjustedDef = Math.min(Math.max(def, 1), pool);
+  if (min >= max) min = Math.max(1, max - 1);
+  if (adjustedDef <= min) adjustedDef = Math.min(min + 1, max);
+  if (adjustedDef >= max) adjustedDef = Math.max(min + 1, max - 1);
+  return { min, default: adjustedDef, max };
+}
+
 /**
- * min · domyślne · max — typy cywilizacji (gracz + obce).
- * Maciej 2026-07-28: średnia z Panel-E; min = default−1, max = default+1 (clamp 1..15).
+ * Fallback macierzy mapa × epoka (CIV-MAP-EPOCH-Q1 = A) — gdy brak wpisu w JSON.
+ * Indeks tier: malenki … superogromny.
  */
-const TYPY_CYWILIZACJI_MENU_BY_TIER: readonly MapScaleTriple[] = [
-  { min: 3, default: 4, max: 5 },
-  { min: 4, default: 5, max: 6 },
-  { min: 5, default: 6, max: 7 },
-  { min: 9, default: 10, max: 11 },
-  { min: 11, default: 12, max: 13 },
-  { min: 14, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
-];
+const TYPY_CYWILIZACJI_DEFAULT_BY_TIER: Readonly<
+  Record<StartEpochId, readonly number[]>
+> = {
+  kamien: [3, 4, 5, 6, 7, 7],
+  braz: [4, 5, 6, 9, 11, 13],
+  zelazo: [4, 5, 6, 10, 12, 14],
+};
+
+function fallbackTypyTriple(menuLabel: string, epochId: StartEpochId): MapScaleTriple {
+  const tierIdx = mapMenuTierIndex(menuLabel);
+  const pool = EPOCH_CIV_TYPE_POOL[epochId];
+  const def = TYPY_CYWILIZACJI_DEFAULT_BY_TIER[epochId][tierIdx]
+    ?? TYPY_CYWILIZACJI_DEFAULT_BY_TIER[epochId][2]!;
+  return tripleFromDefault(def, pool);
+}
+
+/** min · domyślne · max — typy cywilizacji per mapa i epoka startu. */
+export function civTypesTripleForMapLabel(
+  menuLabel: string,
+  epochId: string = 'kamien',
+): MapScaleTriple {
+  const ep = normStartEpochId(epochId);
+  const fromE = eStartTypyCywilizacjiPerEpoka(menuLabel, ep);
+  if (fromE) {
+    return {
+      min: fromE.min,
+      default: fromE.default,
+      max: fromE.max,
+    };
+  }
+  const legacy = eStartTypyCywilizacji(menuLabel);
+  if (legacy != null && legacy > 0) {
+    return tripleFromDefault(legacy, EPOCH_CIV_TYPE_POOL[ep]);
+  }
+  return fallbackTypyTriple(menuLabel, ep);
+}
 
 function mapMenuTierIndex(menuLabel: string): number {
   const idx = MAP_MENU_TIER_ORDER.indexOf(rozmiarFromMenuLabel(menuLabel));
@@ -596,8 +641,8 @@ function miastaPanstwaTriple(menuLabel: string): MapScaleTriple {
   return MIASTA_PANSTWA_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? MIASTA_PANSTWA_MENU_BY_TIER[2]!;
 }
 
-function typyCywilizacjiTriple(menuLabel: string): MapScaleTriple {
-  return TYPY_CYWILIZACJI_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? TYPY_CYWILIZACJI_MENU_BY_TIER[2]!;
+function typyCywilizacjiTriple(menuLabel: string, epochId: string = 'kamien'): MapScaleTriple {
+  return civTypesTripleForMapLabel(menuLabel, epochId);
 }
 
 function menuBundleFromTriple(
@@ -637,17 +682,14 @@ export interface CivTypesMenuBundle {
   domyslny: number;
 }
 
-/** Domyślna liczba typów cywilizacji (Panel-E → fallback drabinka tier). */
+/** Domyślna liczba typów cywilizacji (macierz mapa × epoka; clamp puli epoki). */
 export function defaultCivTypesFromMapLabel(
   menuLabel: string,
-  epochId?: string,
+  epochId: string = 'kamien',
   civRoster?: readonly CivEntryEpochRow[],
 ): number {
-  const fromE = eStartTypyCywilizacji(menuLabel);
-  let def = fromE != null && fromE > 0
-    ? Math.min(fromE, MAX_TYPY_CYWILIZACJI_MENU)
-    : typyCywilizacjiTriple(menuLabel).default;
-  if (epochId && civRoster && civRoster.length > 0) {
+  let def = typyCywilizacjiTriple(menuLabel, epochId).default;
+  if (civRoster && civRoster.length > 0) {
     def = Math.min(def, maxCivTypesForStartEpoch(epochId, civRoster));
   }
   return Math.max(1, def);
@@ -655,11 +697,11 @@ export function defaultCivTypesFromMapLabel(
 
 export function civTypesMenuForMapLabel(
   menuLabel: string,
-  epochId?: string,
+  epochId: string = 'kamien',
   civRoster?: readonly CivEntryEpochRow[],
 ): CivTypesMenuBundle {
   const triple = clampTypyTripleToEpoch(
-    typyCywilizacjiTriple(menuLabel),
+    typyCywilizacjiTriple(menuLabel, epochId),
     epochId,
     civRoster,
   );

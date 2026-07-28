@@ -136,6 +136,12 @@ const playerSummary = mod.formatNegotiationDealPlayerSummary({
 ok(playerSummary.startsWith('Oferujemy:'), 'player summary: Oferujemy');
 ok(playerSummary.includes('Oferują:'), 'player summary: Oferują');
 
+const legacyGoldSplit = mod.splitNegotiationDealPlayerSides({ goldOnce: 42 }, true);
+ok(legacyGoldSplit && legacyGoldSplit.theyOffer.length === 1
+  && legacyGoldSplit.theyOffer[0].typ === 'zloto' && legacyGoldSplit.theyOffer[0].ilosc === 42,
+  'legacy goldOnce: incoming they offer gold');
+ok(legacyGoldSplit && legacyGoldSplit.weOffer.length === 0, 'legacy goldOnce: incoming we offer nothing');
+
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
 
 console.log(`[diplomacy-display-test] ${pass} OK, ${fail} FAIL`);

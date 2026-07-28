@@ -13,9 +13,9 @@ fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '../src/game/cluster-start';
 export { buildClusterSpawnPlan, buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes, groupForeignTypeClusters } from '../src/map/cluster-spawn';
 export { generateMap } from '../src/map/generator';
-export { computeClusters, groupHabitableMasses, regionMassDominance, ISLAND_FALLBACK_MASS_FRAC, REGION_MASS_DOMINANCE_FRAC, rosterKluczeForStartEpoch } from '../src/map/clusters';
+export { computeClusters, groupHabitableMasses, regionMassDominance, localLandFraction, passesLocalLandGate, passesPlayerStartMassGate, pickPlayerClusterCenter, ISLAND_FALLBACK_MASS_FRAC, REGION_MASS_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_RADIUS, PLAYER_START_MIN_MASS_HEXES, PLAYER_START_MASS_MIN_ABSOLUTE, rosterKluczeForStartEpoch } from '../src/map/clusters';
 export { civIdsAvailableAtGameEpoch } from '../src/game/civ-entry-epoch';
-export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius, packRivalCitiesAroundCore } from '../src/map/clusters';
+export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius, packRivalCitiesAroundCore, packCityStatesHubChain } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
 `, 'utf8');
 
@@ -39,6 +39,35 @@ let failed = 0;
 function assert(c, msg) {
   if (c) { passed++; console.log('PASS:', msg); }
   else { failed++; console.error('FAIL:', msg); }
+}
+
+/** BFS: każde MP dokładnie ringDist hex od jakiegoś huba (stolica → MP1 → MP2…). */
+function isValidHubChain(core, cities, ringDist, minSep) {
+  if (cities.length === 0) return true;
+  for (let i = 0; i < cities.length; i++) {
+    for (let j = i + 1; j < cities.length; j++) {
+      const d = M.hexDistanceAxial(cities[i].q, cities[i].r, cities[j].q, cities[j].r);
+      if (d < minSep) return false;
+    }
+    const dCore = M.hexDistanceAxial(cities[i].q, cities[i].r, core.q, core.r);
+    if (dCore < minSep) return false;
+  }
+  const placed = new Set([`${core.q},${core.r}`]);
+  const queue = [core];
+  let reached = 0;
+  while (queue.length > 0 && reached < cities.length) {
+    const hub = queue.shift();
+    for (const c of cities) {
+      const k = `${c.q},${c.r}`;
+      if (placed.has(k)) continue;
+      if (M.hexDistanceAxial(c.q, c.r, hub.q, hub.r) === ringDist) {
+        placed.add(k);
+        queue.push(c);
+        reached++;
+      }
+    }
+  }
+  return reached === cities.length;
 }
 
 console.log('cluster-start-test (D-START)\n');
@@ -90,16 +119,16 @@ const resolvedCandidates = actualCandidates.length >= 1
     map, plan.playerStartHex, plan.pendingSameTypeRivals, 4242,
   );
 assert(resolvedCandidates.length >= 1,
-  'kandydaci wokół faktycznej stolicy (pierścień 4 hex, partial OK)');
-const packRActual = M.clusterCityStateRadius();
-const packReachActual = packRActual;
+  'kandydaci wokół faktycznej stolicy (hub-chain, partial OK)');
 for (const h of resolvedCandidates.slice(0, plan.pendingSameTypeRivals)) {
   const dCore = M.hexDistanceAxial(h.q, h.r, candidateHex.q, candidateHex.r);
-  assert(dCore <= packReachActual,
-    `rywal przy offsetCore w zasięgu klastra (${dCore} <= ${packReachActual})`);
   assert(dCore >= M.CLUSTER_CITY_STATE_MIN_HEX,
     `rywal min ${M.CLUSTER_CITY_STATE_MIN_HEX} hex od stolicy (${dCore})`);
 }
+assert(
+  isValidHubChain(candidateHex, resolvedCandidates.slice(0, plan.pendingSameTypeRivals), M.CLUSTER_CITY_STATE_MAX_HEX, M.CLUSTER_CITY_STATE_MIN_HEX),
+  'kandydaci runtime: poprawny łańcuch hubów',
+);
 
 // Symulacja: gracz założył miasto → spawn państw z pre-planu klastra (legacy podgląd)
 const deferredHexes = prePlanHexes;
@@ -164,7 +193,7 @@ assert(
   'deterministyczny seed',
 );
 
-// Maciej 2026-07-22: twardy klaster miast-państw gracza — min/max 3 hex od stolicy
+// Maciej 2026-07-28: twardy klaster miast-państw gracza — hub-chain pierścień 4 hex
 const playerCap = plan.playerStartHex;
 const clusterMax = M.CLUSTER_CITY_STATE_MAX_HEX;
 const clusterMin = M.CLUSTER_CITY_STATE_MIN_HEX;
@@ -174,9 +203,9 @@ for (let i = 0; i < sameType.length; i++) {
     assert(d >= clusterMin, `miasta-panstwa >= ${clusterMin} hex (${d})`);
   }
   const dCore = M.hexDistanceAxial(sameType[i].q, sameType[i].r, playerCap.q, playerCap.r);
-  assert(dCore <= clusterMax, `rywal max ${clusterMax} hex od stolicy (${dCore})`);
   assert(dCore >= clusterMin, `rywal min ${clusterMin} hex od stolicy (${dCore})`);
 }
+assert(isValidHubChain(playerCap, sameType, clusterMax, clusterMin), 'pre-plan MP: poprawny łańcuch hubów');
 const foreignCities = plan.spawnCities.filter(c => plan.foreignTypeOwners.has(c.ownerId));
 for (const fc of foreignCities) {
   const d = M.hexDistanceAxial(fc.q, fc.r, playerCap.q, playerCap.r);
@@ -211,7 +240,7 @@ assert(M.CLUSTER_CITY_STATE_MIN_HEX === 4, 'CLUSTER_CITY_STATE_MIN_HEX=4');
 assert(M.CLUSTER_CITY_STATE_MAX_HEX === 4, 'CLUSTER_CITY_STATE_MAX_HEX=4');
 assert(M.clusterCityStateRadius() === 4, 'clusterCityStateRadius=4');
 
-// Maciej 2026-07-22: kandydaci runtime — para po parze min 3 hex (nie tylko od stolicy)
+// Maciej 2026-07-28: kandydaci runtime — hub-chain BFS (nie tylko pierścień od stolicy)
 const runtimeCandidates = M.buildSameTypeRivalCandidateHexes(map, playerCap, 9, 4242);
 for (let i = 0; i < runtimeCandidates.length; i++) {
   for (let j = i + 1; j < runtimeCandidates.length; j++) {
@@ -222,12 +251,26 @@ for (let i = 0; i < runtimeCandidates.length; i++) {
     assert(d >= clusterMin, `runtimeCandidates pairwise >= ${clusterMin} hex (${d})`);
   }
   const dCore = M.hexDistanceAxial(runtimeCandidates[i].q, runtimeCandidates[i].r, playerCap.q, playerCap.r);
-  assert(dCore >= clusterMin && dCore <= clusterMax,
-    `runtimeCandidate pierścień ${clusterMin}..${clusterMax} od stolicy (${dCore})`);
+  assert(dCore >= clusterMin, `runtimeCandidate min ${clusterMin} hex od stolicy (${dCore})`);
 }
-const packedNine = M.buildSameTypeRivalCandidateHexes(map, playerCap, 9, 7777);
-assert(packedNine.length <= 6,
-  'max państw na pierścieniu 4 hex z odstępem 4 (got ' + packedNine.length + ')');
+assert(
+  isValidHubChain(playerCap, runtimeCandidates, clusterMax, clusterMin),
+  'runtimeCandidates: poprawny łańcuch hubów (' + runtimeCandidates.length + ' slotów)',
+);
+
+// Hub-chain: przy wystarczającym lądzie 6 MP → pełne 6 slotów (6. może być >4 od stolicy)
+const hubSix = M.buildSameTypeRivalCandidateHexes(map, playerCap, 6, 4242);
+assert(hubSix.length === 6, 'hub-chain 50×50: 6 slotów MP (got ' + hubSix.length + ')');
+if (hubSix.length === 6) {
+  const d6Cap = M.hexDistanceAxial(hubSix[5].q, hubSix[5].r, playerCap.q, playerCap.r);
+  let d6Hub = clusterMax;
+  for (let i = 0; i < 5; i++) {
+    const d = M.hexDistanceAxial(hubSix[5].q, hubSix[5].r, hubSix[i].q, hubSix[i].r);
+    if (d === clusterMax) d6Hub = clusterMax;
+  }
+  assert(d6Hub === clusterMax, '6. MP dokładnie 4 hex od któregoś huba klastra (od stolicy=' + d6Cap + ')');
+  assert(isValidHubChain(playerCap, hubSix, clusterMax, clusterMin), 'hub-chain 6/6: BFS valid');
+}
 
 // packRivalCitiesAroundCore — pairwise min 3 hex między państwami
 const landHexes = Object.values(map.hexes)
@@ -310,28 +353,52 @@ assert(maxCenterDist >= 8,
   'środki klastrów rozłożone na mapie (max dist ' + maxCenterDist + ', klastrów ' + centers50.length + ')');
 assert(
   placement50.aktywneTypy >= 3 && placement50.aktywneTypy <= placement50.requestedTypy,
-  '50×50 × 5 typów: klastry po filtrze 70% masy (got ' + placement50.aktywneTypy + '/' + placement50.requestedTypy + ')',
+  '50×50 × 5 typów: klastry po bramce lokalnego lądu (got ' + placement50.aktywneTypy + '/' + placement50.requestedTypy + ')',
 );
 
-// MAP-SPAWN-Q1 C: mała wyspa (<25% największej masy) nie dostaje środka gdy kontynent wystarcza
+// MAP-SPAWN-Q1 C + lokalna bramka 70%
 assert(M.ISLAND_FALLBACK_MASS_FRAC === 0.25, 'ISLAND_FALLBACK_MASS_FRAC=0.25');
-assert(M.REGION_MASS_DOMINANCE_FRAC === 0.70, 'REGION_MASS_DOMINANCE_FRAC=0.70');
+assert(M.LOCAL_LAND_DOMINANCE_FRAC === 0.70, 'LOCAL_LAND_DOMINANCE_FRAC=0.70');
+assert(M.LOCAL_LAND_DOMINANCE_RADIUS === 3, 'LOCAL_LAND_DOMINANCE_RADIUS=3');
+
+function fillSeaBoundingBox(hexes, minQ, maxQ, minR, maxR) {
+  for (let q = minQ; q <= maxQ; q++) {
+    for (let r = minR; r <= maxR; r++) {
+      const key = q + ',' + r;
+      if (!hexes[key]) hexes[key] = { coords: { q, r }, terenBazowy: 'morze' };
+    }
+  }
+}
 
 function makeTwoMassSyntheticMap() {
   const hexes = {};
-  // Kontynent ~400 hexów
   for (let q = 10; q < 30; q++) {
     for (let r = 10; r < 30; r++) {
-      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'Laka' };
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
     }
   }
-  // Wyspa ~15 hexów (≥12, <25% kontynentu)
   for (let q = 50; q < 53; q++) {
     for (let r = 50; r < 55; r++) {
-      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'Laka' };
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
     }
   }
+  fillSeaBoundingBox(hexes, 0, 60, 0, 60);
   return { hexes };
+}
+
+function makeTinyIslandMap() {
+  const hexes = {};
+  for (let q = 10; q < 30; q++) {
+    for (let r = 10; r < 30; r++) {
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
+    }
+  }
+  const island = [[50, 50], [51, 50], [52, 50], [50, 51], [51, 51], [52, 51], [51, 52]];
+  for (const [q, r] of island) {
+    hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
+  }
+  fillSeaBoundingBox(hexes, 0, 60, 0, 60);
+  return { hexes, islandCoords: island };
 }
 
 const synthMap = makeTwoMassSyntheticMap();
@@ -350,18 +417,105 @@ const centersOnIsland = synthPlacement.klastry.filter(k => centerOnMass(k.centru
 assert(centersOnIsland.length === 0,
   'MAP-SPAWN-Q1 C: brak środka na małej wyspie gdy kontynent obsługuje typy (got ' + centersOnIsland.length + ')');
 
-// MAP-SPAWN-Q1 B: regionMassDominance — środek na słabej masie < 70%
+// MAP-SPAWN-Q1 B: lokalny ląd ≥70% w promieniu R=3 (nie Voronoi)
+const tiny = makeTinyIslandMap();
+const islandCenter = { q: 51, r: 51 };
+const islandLand = M.localLandFraction(tiny, islandCenter.q, islandCenter.r, M.LOCAL_LAND_DOMINANCE_RADIUS);
+assert(islandLand.ratio < M.LOCAL_LAND_DOMINANCE_FRAC,
+  '7-hex wyspa: lokalny ląd < 70% w R=3 (' + islandLand.ratio.toFixed(2) + ', land=' + islandLand.landCount + '/' + islandLand.totalCount + ')');
+const continentCenter = { q: 20, r: 20 };
+const continentLand = M.localLandFraction(tiny, continentCenter.q, continentCenter.r, M.LOCAL_LAND_DOMINANCE_RADIUS);
+assert(continentLand.ratio >= M.LOCAL_LAND_DOMINANCE_FRAC,
+  'kontynent: lokalny ląd ≥ 70% w R=3 (' + continentLand.ratio.toFixed(2) + ')');
+
+const tinyPlacement = M.computeClusters(tiny, { seed: 777, aktywneTypy: 4, rywaleNaKlaster: 2 });
+function cityOnTinyIsland(k) {
+  for (const m of k.miasta) {
+    for (const [q, r] of tiny.islandCoords) {
+      if (m.q === q && m.r === r) return true;
+    }
+  }
+  return false;
+}
+const citiesOnTinyIsland = tinyPlacement.klastry.filter(cityOnTinyIsland);
+assert(citiesOnTinyIsland.length === 0,
+  '7-hex wyspa + kontynent: 0 miast startowych na wyspie (got ' + citiesOnTinyIsland.length + ')');
+
+function make16HexIslandMap() {
+  const hexes = {};
+  for (let q = 10; q < 30; q++) {
+    for (let r = 10; r < 30; r++) {
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
+    }
+  }
+  const islandCoords = [];
+  for (let q = 50; q < 54; q++) {
+    for (let r = 50; r < 54; r++) {
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
+      islandCoords.push([q, r]);
+    }
+  }
+  fillSeaBoundingBox(hexes, 0, 60, 0, 60);
+  return { hexes, islandCoords };
+}
+
+const island16 = make16HexIslandMap();
+const plan16 = M.buildClusterStartPlan({
+  map: island16,
+  civs,
+  seed: 4242,
+  playerCivId: 'grecy',
+  rywaleNaKlaster: 4,
+  aktywneTypy: 4,
+});
+function hexOnIsland16(q, r) {
+  return island16.islandCoords.some(([iq, ir]) => iq === q && ir === r);
+}
+assert(
+  !hexOnIsland16(plan16.playerStartHex.q, plan16.playerStartHex.r),
+  '16-hex wyspa: playerStartHex na dużej masie (got ' + plan16.playerStartHex.q + ',' + plan16.playerStartHex.r + ')',
+);
+assert(
+  M.passesPlayerStartMassGate(island16, plan16.playerStartHex.q, plan16.playerStartHex.r, M.groupHabitableMasses(
+    Object.values(island16.hexes).filter(h => h.terenBazowy === 'laka').map(h => ({ q: h.coords.q, r: h.coords.r })),
+  )),
+  '16-hex wyspa: playerStartHex przechodzi bramkę masy gracza',
+);
+
+// Standard × 8 typów (kamień): requested 8 → placed ≥ 7
+const stdMap = M.generateMap(168, 120, 4242, 'kontynenty');
+const stdPlan = M.buildClusterStartPlan({
+  map: stdMap,
+  civs,
+  seed: 4242,
+  playerCivId: 'grecy',
+  rywaleNaKlaster: 6,
+  aktywneTypy: 8,
+  startEpochId: 'kamien',
+});
+assert(stdPlan.placement.requestedTypy === 8, 'Standard kamień: requestedTypy=8 (got ' + stdPlan.placement.requestedTypy + ')');
+assert(stdPlan.placement.aktywneTypy >= 7,
+  'Standard kamień × 8 typów: placed ≥ 7 (got ' + stdPlan.placement.aktywneTypy + '/8)');
+assert(stdPlan.pendingSameTypeRivals === 6, 'Standard kamień: pendingSameTypeRivals=6');
+const stdSix = M.buildSameTypeRivalCandidateHexes(stdMap, stdPlan.playerStartHex, 6, 4242);
+assert(stdSix.length === 6, 'Standard hub-chain: 6 slotów MP (got ' + stdSix.length + ')');
+assert(
+  isValidHubChain(stdPlan.playerStartHex, stdSix, M.CLUSTER_CITY_STATE_MAX_HEX, M.CLUSTER_CITY_STATE_MIN_HEX),
+  'Standard hub-chain 6/6: BFS valid',
+);
+
+// regionMassDominance — legacy metryka Voronoi (tylko unit test)
 const bigMass = synthMasses[0];
 const smallMass = synthMasses[1];
 const mixedRegion = [...bigMass.slice(0, 70), ...smallMass];
 const weakCenter = smallMass[0];
 const weakDom = M.regionMassDominance(mixedRegion, weakCenter, synthMasses);
-assert(weakDom.ratio < M.REGION_MASS_DOMINANCE_FRAC,
-  'regionMassDominance: słaba masa < 70% (' + weakDom.ratio.toFixed(2) + ')');
+assert(weakDom.ratio < M.LOCAL_LAND_DOMINANCE_FRAC,
+  'regionMassDominance (legacy): słaba masa < 70% Voronoi (' + weakDom.ratio.toFixed(2) + ')');
 const strongCenter = bigMass[Math.floor(bigMass.length / 2)];
 const strongDom = M.regionMassDominance(mixedRegion, strongCenter, synthMasses);
-assert(strongDom.ratio >= M.REGION_MASS_DOMINANCE_FRAC,
-  'regionMassDominance: dominująca masa ≥ 70% (' + strongDom.ratio.toFixed(2) + ')');
+assert(strongDom.ratio >= M.LOCAL_LAND_DOMINANCE_FRAC,
+  'regionMassDominance (legacy): dominująca masa ≥ 70% Voronoi (' + strongDom.ratio.toFixed(2) + ')');
 
 // CIV-EPOCH-SPAWN-Q1: pula typów = tylko nacje dostępne w epoce startu
 const BRAZ_ONLY_TYPY = ['celtowie', 'germanie', 'hetyci', 'babilonia', 'asyria', 'fenicjanie'];

@@ -577,8 +577,16 @@ function syncCivTypesOptions(): void {
   const prev = civRow.opts[civRow.idx];
   civRow.opts = bundle.opts;
   civRow.descs = bundle.descs;
-  const keepIdx = prev != null ? bundle.opts.indexOf(prev) : -1;
-  civRow.idx = keepIdx >= 0 ? keepIdx : bundle.domyslny;
+  const min = parseInt(bundle.opts[0] ?? '1', 10);
+  const max = parseInt(bundle.opts[bundle.opts.length - 1] ?? '1', 10);
+  const prevNum = prev != null ? parseInt(prev, 10) : NaN;
+  if (Number.isFinite(prevNum)) {
+    const clamped = Math.max(min, Math.min(max, prevNum));
+    const clampIdx = bundle.opts.indexOf(String(clamped));
+    civRow.idx = clampIdx >= 0 ? clampIdx : bundle.domyslny;
+  } else {
+    civRow.idx = bundle.domyslny;
+  }
 }
 
 function syncMapScaleOptions(): void {

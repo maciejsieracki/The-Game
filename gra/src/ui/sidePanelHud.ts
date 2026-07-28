@@ -20,6 +20,7 @@ import {
   unitCardDockBottomCss,
   unitCardDockBottomPx,
 } from './minimapLayout';
+import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
@@ -113,14 +114,14 @@ function ensureStyles(): void {
   ${CIV_BRAND_SCOPE_VARS}
   display:flex;flex-direction:column;gap:8px;font:13px var(--civ-font-ui);}
 html.civ-ui-zoom-active .civ-side-panel{top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM_ZOOM}px;right:${HUD_ZOOM_EDGE_PX}px;}
-.civ-side-ctx-dock{position:fixed;left:${MINIMAP_EDGE}px;bottom:${unitCardDockBottomCss()};z-index:308;
-  width:min(${MINIMAP_W}px,calc(100vw - ${MINIMAP_EDGE * 2}px));pointer-events:none;
+.civ-side-ctx-dock{position:fixed;left:${SIDE_PANEL_LEFT};bottom:${unitCardDockBottomCss()};z-index:308;
+  width:min(${MINIMAP_W}px,calc(100vw - ${SIDE_PANEL_LEFT_PX}px - ${MINIMAP_EDGE}px));pointer-events:none;
   max-height:min(40vh,calc(100vh - ${unitDockBottom + 80}px));overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;scrollbar-gutter:stable;display:none;
   ${CIV_BRAND_SCOPE_VARS}
   font:13px var(--civ-font-ui);}
 .civ-side-ctx-dock.open{display:block;pointer-events:auto;}
-html.civ-ui-zoom-active .civ-side-ctx-dock{left:${HUD_ZOOM_EDGE_PX}px;bottom:${unitCardDockBottomCss(true)};
+html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};bottom:${unitCardDockBottomCss(true)};
   max-height:min(40vh,calc(100vh - ${unitDockBottomZoom + 80}px));}
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}

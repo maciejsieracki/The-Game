@@ -90,6 +90,49 @@ const CIV_MATCH_CANDIDATES: readonly { icon: string; keys: readonly string[] }[]
         .map(foldDiacritics),
     }));
 
+/** ikonaId (lowercase) → kanoniczna nazwa wyświetlana (Cywilizacja z civs.json). */
+const CIV_DISPLAY_NAME_BY_ICON: Record<string, string> = {};
+for (const civ of (civsRaw as CivsData).cywilizacje) {
+  if (civ.ikonaId && civ.Cywilizacja) {
+    CIV_DISPLAY_NAME_BY_ICON[civ.ikonaId.toLowerCase()] = civ.Cywilizacja;
+  }
+}
+
+/**
+ * Kanoniczna nazwa cywilizacji z civs.json dla ikonaId / typCywilizacji / samej nazwy.
+ * Zwraca `null`, gdy klucz nie pasuje do żadnej z 15 cywilizacji.
+ */
+export function civDisplayNameFromKey(civKey: string | null | undefined): string | null {
+  const raw = String(civKey ?? '').trim();
+  if (!raw) return null;
+  const folded = foldDiacritics(raw);
+  const byIcon = CIV_DISPLAY_NAME_BY_ICON[folded];
+  if (byIcon) return byIcon;
+  for (const cand of CIV_MATCH_CANDIDATES) {
+    if (cand.keys.includes(folded)) return CIV_DISPLAY_NAME_BY_ICON[cand.icon] ?? null;
+  }
+  return null;
+}
+
+/**
+ * Etykieta na karcie dyplomacji: zachowuje złożone etykiety (miasto-państwo),
+ * a techniczny klucz (np. „grecy") zamienia na Cywilizacja z JSON.
+ */
+export function civCardDisplayName(label: string, ikonaId?: string | null): string {
+  const trimmed = (label ?? '').trim();
+  const canonicalFromIcon = civDisplayNameFromKey(ikonaId);
+  if (!trimmed) return canonicalFromIcon ?? '';
+  if (trimmed.includes('·')) return trimmed;
+  const canonicalFromLabel = civDisplayNameFromKey(trimmed);
+  if (canonicalFromLabel && foldDiacritics(trimmed) === foldDiacritics(canonicalFromLabel)) {
+    return canonicalFromLabel;
+  }
+  if (canonicalFromIcon && foldDiacritics(trimmed) === foldDiacritics(ikonaId ?? '')) {
+    return canonicalFromIcon;
+  }
+  return trimmed;
+}
+
 /**
  * civId (ikonaId) dla dowolnej etykiety cywilizacji/państwa, albo `null` gdy
  * żadna z 15 cywilizacji civs.json nie pasuje.

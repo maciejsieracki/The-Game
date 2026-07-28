@@ -23,9 +23,13 @@ __export(cluster_start_entry_exports, {
   CLUSTER_CITY_STATE_MAX_HEX: () => CLUSTER_CITY_STATE_MAX_HEX,
   CLUSTER_CITY_STATE_MIN_HEX: () => CLUSTER_CITY_STATE_MIN_HEX,
   ISLAND_FALLBACK_MASS_FRAC: () => ISLAND_FALLBACK_MASS_FRAC,
+  LOCAL_LAND_DOMINANCE_FRAC: () => LOCAL_LAND_DOMINANCE_FRAC,
+  LOCAL_LAND_DOMINANCE_RADIUS: () => LOCAL_LAND_DOMINANCE_RADIUS,
   MIN_DIST_FOREIGN_FROM_PLAYER: () => MIN_DIST_FOREIGN_FROM_PLAYER,
   MIN_DIST_FOREIGN_IN_CLUSTER: () => MIN_DIST_FOREIGN_IN_CLUSTER,
   MIN_DIST_START_CITY_STATE: () => MIN_DIST_START_CITY_STATE,
+  PLAYER_START_MASS_MIN_ABSOLUTE: () => PLAYER_START_MASS_MIN_ABSOLUTE,
+  PLAYER_START_MIN_MASS_HEXES: () => PLAYER_START_MIN_MASS_HEXES,
   REGION_MASS_DOMINANCE_FRAC: () => REGION_MASS_DOMINANCE_FRAC,
   buildClusterSpawnPlan: () => buildClusterSpawnPlan,
   buildClusterStartPlan: () => buildClusterStartPlan,
@@ -39,7 +43,12 @@ __export(cluster_start_entry_exports, {
   groupForeignTypeClusters: () => groupForeignTypeClusters,
   groupHabitableMasses: () => groupHabitableMasses,
   hexDistanceAxial: () => hexDistanceAxial,
+  localLandFraction: () => localLandFraction,
+  packCityStatesHubChain: () => packCityStatesHubChain,
   packRivalCitiesAroundCore: () => packRivalCitiesAroundCore,
+  passesLocalLandGate: () => passesLocalLandGate,
+  passesPlayerStartMassGate: () => passesPlayerStartMassGate,
+  pickPlayerClusterCenter: () => pickPlayerClusterCenter,
   regionMassDominance: () => regionMassDominance,
   rosterKluczeForStartEpoch: () => rosterKluczeForStartEpoch
 });
@@ -413,12 +422,78 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 3, typy_cywilizacji: 4, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 4, typy_cywilizacji: 5, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 6, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 10, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 12, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
+    Malenki: {
+      rywale_ai: 2,
+      miasta_panstwa: 3,
+      typy_cywilizacji: 4,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 3, min: 2, max: 4 },
+        braz: { default: 4, min: 3, max: 5 },
+        zelazo: { default: 4, min: 3, max: 5 }
+      },
+      hex_w: 76,
+      hex_h: 52
+    },
+    Ma\u0142y: {
+      rywale_ai: 3,
+      miasta_panstwa: 4,
+      typy_cywilizacji: 5,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 4, min: 3, max: 5 },
+        braz: { default: 5, min: 4, max: 6 },
+        zelazo: { default: 5, min: 4, max: 6 }
+      },
+      hex_w: 108,
+      hex_h: 74
+    },
+    Standardowy: {
+      rywale_ai: 6,
+      miasta_panstwa: 6,
+      typy_cywilizacji: 6,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 5, min: 4, max: 6 },
+        braz: { default: 6, min: 5, max: 7 },
+        zelazo: { default: 6, min: 5, max: 7 }
+      },
+      hex_w: 168,
+      hex_h: 120
+    },
+    Du\u017Cy: {
+      rywale_ai: 7,
+      miasta_panstwa: 7,
+      typy_cywilizacji: 10,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 6, min: 5, max: 7 },
+        braz: { default: 9, min: 8, max: 10 },
+        zelazo: { default: 10, min: 9, max: 11 }
+      },
+      hex_w: 240,
+      hex_h: 168
+    },
+    Ogromny: {
+      rywale_ai: 8,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 12,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 11, min: 10, max: 12 },
+        zelazo: { default: 12, min: 11, max: 13 }
+      },
+      hex_w: 336,
+      hex_h: 238
+    },
+    "Super Huge": {
+      rywale_ai: 10,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 14,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 13, min: 12, max: 14 },
+        zelazo: { default: 14, min: 13, max: 15 }
+      },
+      hex_w: 672,
+      hex_h: 476
+    }
   },
   generator_e2: {
     resource_mult_low: 0.6,
@@ -513,8 +588,28 @@ function eStartRenderQualityBundled() {
   if (q === "low" || q === "high") return q;
   return "medium";
 }
+function normEpochId(epochId) {
+  const n = epochId.toLowerCase().replace(/ł/g, "l").trim();
+  if (n === "braz" || n === "bronz") return "braz";
+  if (n === "zelazo" || n === "iron") return "zelazo";
+  return "kamien";
+}
+function eStartTypyCywilizacjiPerEpoka(menuLabel, epochId) {
+  const row = skalaRow(menuLabel);
+  const ep = normEpochId(epochId);
+  const triple = row?.typy_cywilizacji_per_epoka?.[ep];
+  if (!triple) return void 0;
+  const { default: def, min, max } = triple;
+  if (typeof def !== "number" || typeof min !== "number" || typeof max !== "number" || !Number.isFinite(def) || !Number.isFinite(min) || !Number.isFinite(max)) {
+    return void 0;
+  }
+  return { default: def, min, max };
+}
 function eStartTypyCywilizacji(menuLabel) {
-  return skalaRow(menuLabel)?.typy_cywilizacji;
+  const row = skalaRow(menuLabel);
+  const kamien = row?.typy_cywilizacji_per_epoka?.kamien?.default;
+  if (typeof kamien === "number" && kamien > 0) return kamien;
+  return row?.typy_cywilizacji;
 }
 function eStartMiastaPanstwa(menuLabel) {
   return skalaRow(menuLabel)?.miasta_panstwa;
@@ -1498,7 +1593,6 @@ function clampMiastaPanstwaCount(raw) {
   if (!Number.isFinite(n) || n < 1) return 1;
   return Math.min(n, MAX_MIAST_PANSTWA);
 }
-var MAX_TYPY_CYWILIZACJI_MENU = 15;
 function maxCivTypesForStartEpoch(epochId, civRoster) {
   return civIdsAvailableAtGameEpoch(civRoster, epochId).length;
 }
@@ -1518,14 +1612,53 @@ var MIASTA_PANSTWA_MENU_BY_TIER = [
   { min: 6, default: 8, max: MAX_MIAST_PANSTWA },
   { min: 7, default: 8, max: MAX_MIAST_PANSTWA }
 ];
-var TYPY_CYWILIZACJI_MENU_BY_TIER = [
-  { min: 3, default: 4, max: 5 },
-  { min: 4, default: 5, max: 6 },
-  { min: 5, default: 6, max: 7 },
-  { min: 9, default: 10, max: 11 },
-  { min: 11, default: 12, max: 13 },
-  { min: 14, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU }
-];
+var EPOCH_CIV_TYPE_POOL = {
+  kamien: 8,
+  braz: 14,
+  zelazo: 15
+};
+function normStartEpochId(epochId) {
+  const n = (epochId ?? "kamien").toLowerCase().replace(/ł/g, "l").trim();
+  if (n === "braz" || n === "bronz") return "braz";
+  if (n === "zelazo" || n === "iron") return "zelazo";
+  return "kamien";
+}
+function tripleFromDefault(def, pool) {
+  const max = Math.min(def + 1, pool);
+  let min = Math.max(1, def - 1);
+  let adjustedDef = Math.min(Math.max(def, 1), pool);
+  if (min >= max) min = Math.max(1, max - 1);
+  if (adjustedDef <= min) adjustedDef = Math.min(min + 1, max);
+  if (adjustedDef >= max) adjustedDef = Math.max(min + 1, max - 1);
+  return { min, default: adjustedDef, max };
+}
+var TYPY_CYWILIZACJI_DEFAULT_BY_TIER = {
+  kamien: [3, 4, 5, 6, 7, 7],
+  braz: [4, 5, 6, 9, 11, 13],
+  zelazo: [4, 5, 6, 10, 12, 14]
+};
+function fallbackTypyTriple(menuLabel, epochId) {
+  const tierIdx = mapMenuTierIndex(menuLabel);
+  const pool = EPOCH_CIV_TYPE_POOL[epochId];
+  const def = TYPY_CYWILIZACJI_DEFAULT_BY_TIER[epochId][tierIdx] ?? TYPY_CYWILIZACJI_DEFAULT_BY_TIER[epochId][2];
+  return tripleFromDefault(def, pool);
+}
+function civTypesTripleForMapLabel(menuLabel, epochId = "kamien") {
+  const ep = normStartEpochId(epochId);
+  const fromE = eStartTypyCywilizacjiPerEpoka(menuLabel, ep);
+  if (fromE) {
+    return {
+      min: fromE.min,
+      default: fromE.default,
+      max: fromE.max
+    };
+  }
+  const legacy = eStartTypyCywilizacji(menuLabel);
+  if (legacy != null && legacy > 0) {
+    return tripleFromDefault(legacy, EPOCH_CIV_TYPE_POOL[ep]);
+  }
+  return fallbackTypyTriple(menuLabel, ep);
+}
 function mapMenuTierIndex(menuLabel) {
   const idx = MAP_MENU_TIER_ORDER.indexOf(rozmiarFromMenuLabel(menuLabel));
   return idx >= 0 ? idx : 2;
@@ -1533,18 +1666,17 @@ function mapMenuTierIndex(menuLabel) {
 function miastaPanstwaTriple(menuLabel) {
   return MIASTA_PANSTWA_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? MIASTA_PANSTWA_MENU_BY_TIER[2];
 }
-function typyCywilizacjiTriple(menuLabel) {
-  return TYPY_CYWILIZACJI_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? TYPY_CYWILIZACJI_MENU_BY_TIER[2];
+function typyCywilizacjiTriple(menuLabel, epochId = "kamien") {
+  return civTypesTripleForMapLabel(menuLabel, epochId);
 }
 function defaultMiastaPanstwaFromMapLabel(menuLabel) {
   const fromE = eStartMiastaPanstwa(menuLabel);
   if (fromE != null && fromE > 0) return clampMiastaPanstwaCount(fromE);
   return miastaPanstwaTriple(menuLabel).default;
 }
-function defaultCivTypesFromMapLabel(menuLabel, epochId, civRoster) {
-  const fromE = eStartTypyCywilizacji(menuLabel);
-  let def = fromE != null && fromE > 0 ? Math.min(fromE, MAX_TYPY_CYWILIZACJI_MENU) : typyCywilizacjiTriple(menuLabel).default;
-  if (epochId && civRoster && civRoster.length > 0) {
+function defaultCivTypesFromMapLabel(menuLabel, epochId = "kamien", civRoster) {
+  let def = typyCywilizacjiTriple(menuLabel, epochId).default;
+  if (civRoster && civRoster.length > 0) {
     def = Math.min(def, maxCivTypesForStartEpoch(epochId, civRoster));
   }
   return Math.max(1, def);
@@ -6420,7 +6552,11 @@ function shuffleInPlace(arr, rand) {
 }
 var MIN_MASS_HEXES_FOR_CENTER = 12;
 var ISLAND_FALLBACK_MASS_FRAC = 0.25;
-var REGION_MASS_DOMINANCE_FRAC = 0.7;
+var LOCAL_LAND_DOMINANCE_FRAC = 0.7;
+var REGION_MASS_DOMINANCE_FRAC = LOCAL_LAND_DOMINANCE_FRAC;
+var LOCAL_LAND_DOMINANCE_RADIUS = 3;
+var PLAYER_START_MIN_MASS_HEXES = 25;
+var PLAYER_START_MASS_MIN_ABSOLUTE = 30;
 function qualifyingMassThreshold(largestMassSize) {
   return Math.max(
     MIN_MASS_HEXES_FOR_CENTER,
@@ -6460,6 +6596,69 @@ function regionMassDominance(region, center, masses) {
   const centerCount = centerMassIndex !== null ? perMass.get(centerMassIndex) ?? 0 : 0;
   const ratio = region.length > 0 ? centerCount / region.length : 0;
   return { ratio, centerMassIndex, dominantMassIndex };
+}
+function isSpawnHabitableTerrain(teren) {
+  return teren !== "morze" /* Morze */ && teren !== "gory" /* Gory */ && teren !== "wybrzeze" /* Wybrzeze */ && teren !== "morze" && teren !== "gory" && teren !== "wybrzeze";
+}
+function localLandFraction(map, q, r, radius = LOCAL_LAND_DOMINANCE_RADIUS) {
+  let landCount = 0;
+  let totalCount = 0;
+  for (const h of Object.values(map.hexes)) {
+    const d = hexDistanceAxial(h.coords.q, h.coords.r, q, r);
+    if (d > radius) continue;
+    totalCount++;
+    if (isSpawnHabitableTerrain(h.terenBazowy)) landCount++;
+  }
+  const ratio = totalCount > 0 ? landCount / totalCount : 0;
+  return { ratio, landCount, totalCount };
+}
+function passesLocalLandGate(map, q, r, minFrac = LOCAL_LAND_DOMINANCE_FRAC, radius = LOCAL_LAND_DOMINANCE_RADIUS) {
+  return localLandFraction(map, q, r, radius).ratio >= minFrac;
+}
+function massSizeAtHex(q, r, masses) {
+  const idx = buildMassHexIndex(masses);
+  const mi = massContainingHex(idx, q, r);
+  return mi !== null ? masses[mi].length : 0;
+}
+function passesPlayerStartMassGate(map, q, r, masses) {
+  if (!passesLocalLandGate(map, q, r)) return false;
+  const massSize = massSizeAtHex(q, r, masses);
+  const largest = masses[0]?.length ?? 0;
+  const scaledMin = Math.max(
+    PLAYER_START_MASS_MIN_ABSOLUTE,
+    Math.floor(largest * 0.08)
+  );
+  if (massSize >= scaledMin) return true;
+  return massSize >= PLAYER_START_MIN_MASS_HEXES;
+}
+function pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand) {
+  const massOrder = masses.length > 0 ? [masses[0], ...masses.slice(1)] : [];
+  for (const mass of massOrder) {
+    const candidates = mass.map((h) => ({ h, ...localLandFraction(map, h.q, h.r) })).filter((x) => passesPlayerStartMassGate(map, x.h.q, x.h.r, masses)).sort((a, b) => {
+      const da = hexDistanceAxial(a.h.q, a.h.r, mapCenter.q, mapCenter.r);
+      const db = hexDistanceAxial(b.h.q, b.h.r, mapCenter.q, mapCenter.r);
+      return b.ratio - a.ratio || da - db || a.h.q - b.h.q || a.h.r - b.h.r;
+    });
+    if (candidates.length === 0) continue;
+    const top = candidates[0];
+    if (candidates.length > 1) {
+      const tie = candidates.filter((x) => x.ratio >= top.ratio - 1e-3);
+      return tie[Math.floor(rand() * tie.length)].h;
+    }
+    return top.h;
+  }
+  const fallback = ladowe.map((h) => ({ h, ...localLandFraction(map, h.q, h.r) })).filter((x) => passesPlayerStartMassGate(map, x.h.q, x.h.r, masses)).sort((a, b) => b.ratio - a.ratio);
+  return fallback[0]?.h ?? null;
+}
+function pickBestLocalLandSpawn(map, pool, existing, minDist, rand) {
+  const candidates = pool.filter((h) => existing.every((p) => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minDist)).map((h) => ({ h, ...localLandFraction(map, h.q, h.r) })).filter((x) => x.ratio >= LOCAL_LAND_DOMINANCE_FRAC).sort((a, b) => b.ratio - a.ratio || a.h.q - b.h.q || a.h.r - b.h.r);
+  if (candidates.length === 0) return null;
+  const top = candidates[0];
+  if (candidates.length > 1 && rand) {
+    const tieBand = candidates.filter((x) => x.ratio >= top.ratio - 1e-3);
+    return tieBand[Math.floor(rand() * tieBand.length)].h;
+  }
+  return top.h;
 }
 function assignVoronoiRegions(ladowe, centrumy) {
   const regiony = Array.from(
@@ -6516,23 +6715,27 @@ function massCentroid(mass) {
   }
   return { q: sq / mass.length, r: sr / mass.length };
 }
-function pickCenterInMass(mass, existing, minDist, preferNear, rand) {
+function pickCenterInMassWithLandGate(map, mass, existing, minDist, preferNear, rand) {
   const centroid = massCentroid(mass);
   const candidates = mass.filter((h) => existing.every((p) => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minDist)).map((h) => ({
     h,
-    score: hexDistanceAxial(h.q, h.r, centroid.q, centroid.r) + (preferNear ? hexDistanceAxial(h.q, h.r, preferNear.q, preferNear.r) * 0.05 : 0) + (rand ? rand() * 0.01 : 0)
-  })).sort((a, b) => a.score - b.score);
-  return candidates[0]?.h ?? null;
+    land: localLandFraction(map, h.q, h.r),
+    score: hexDistanceAxial(h.q, h.r, centroid.q, centroid.r) + (preferNear ? hexDistanceAxial(h.q, h.r, preferNear.q, preferNear.r) * 0.05 : 0)
+  })).filter((x) => x.land.ratio >= LOCAL_LAND_DOMINANCE_FRAC).sort((a, b) => b.land.ratio - a.land.ratio || a.score - b.score);
+  if (candidates.length === 0) return null;
+  const top = candidates[0];
+  if (rand && candidates.length > 1) {
+    const tieBand = candidates.filter((x) => x.land.ratio >= top.land.ratio - 1e-3);
+    return tieBand[Math.floor(rand() * tieBand.length)].h;
+  }
+  return top.h;
 }
-function placeClusterCentersAcrossLandmasses(ladowe, nNeeded, minDistBase, mapCenter, rand, marginBrzeg, bounds) {
+function placeClusterCentersAcrossLandmasses(map, ladowe, nNeeded, minDistBase, mapCenter, rand, marginBrzeg, bounds) {
   const { minQ, maxQ, minR, maxR } = bounds;
   const masses = groupHabitableMasses(ladowe);
   const largestMassSize = masses[0]?.length ?? 0;
   const qualThreshold = qualifyingMassThreshold(largestMassSize);
   const qualifyingMasses = masses.filter((m) => m.length >= qualThreshold);
-  const smallMasses = masses.filter(
-    (m) => m.length >= MIN_MASS_HEXES_FOR_CENTER && m.length < qualThreshold
-  );
   const centers = [];
   function okMargins(q, r, relax) {
     if (relax) return true;
@@ -6541,40 +6744,45 @@ function placeClusterCentersAcrossLandmasses(ladowe, nNeeded, minDistBase, mapCe
   function hasCenter(c) {
     return centers.some((p) => p.q === c.q && p.r === c.r);
   }
-  function tryPlace(c, minDist, relaxMargin) {
+  function tryPlace(c, minDist, relaxMargin, forPlayer = false) {
     if (!c || hasCenter(c)) return false;
     if (!okMargins(c.q, c.r, relaxMargin)) return false;
     if (centers.some((p) => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDist)) return false;
+    if (forPlayer) {
+      if (!passesPlayerStartMassGate(map, c.q, c.r, masses)) return false;
+    } else if (!passesLocalLandGate(map, c.q, c.r)) {
+      return false;
+    }
     centers.push(c);
     return true;
   }
+  const playerCenter = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+  if (playerCenter) {
+    centers.push(playerCenter);
+  }
   for (let minDist = minDistBase; minDist >= 6 && centers.length < nNeeded; minDist -= 2) {
     const relaxMargin = minDist < minDistBase;
-    if (centers.length === 0) {
-      if (masses.length > 0) {
-        tryPlace(pickCenterInMass(masses[0], [], minDist, mapCenter, rand), minDist, relaxMargin);
-      }
-      if (centers.length === 0 && ladowe.length > 0) {
-        tryPlace(ladowe[0], minDist, true);
-      }
-    }
     for (let mi = 1; mi < qualifyingMasses.length && centers.length < nNeeded; mi++) {
-      tryPlace(pickCenterInMass(qualifyingMasses[mi], centers, minDist, void 0, rand), minDist, relaxMargin);
+      tryPlace(
+        pickCenterInMassWithLandGate(map, qualifyingMasses[mi], centers, minDist, void 0, rand),
+        minDist,
+        relaxMargin
+      );
     }
     let stagnant = 0;
     while (centers.length < nNeeded && stagnant < qualifyingMasses.length + 2) {
       let placed = false;
       for (const mass of qualifyingMasses) {
         if (centers.length >= nNeeded) break;
-        if (tryPlace(pickCenterInMass(mass, centers, minDist, void 0, rand), minDist, relaxMargin)) {
+        if (tryPlace(
+          pickCenterInMassWithLandGate(map, mass, centers, minDist, void 0, rand),
+          minDist,
+          relaxMargin
+        )) {
           placed = true;
         }
       }
       stagnant = placed ? 0 : stagnant + 1;
-    }
-    for (const mass of smallMasses) {
-      if (centers.length >= nNeeded) break;
-      tryPlace(pickCenterInMass(mass, centers, minDist, void 0, rand), minDist, relaxMargin);
     }
   }
   if (centers.length < nNeeded) {
@@ -6583,6 +6791,18 @@ function placeClusterCentersAcrossLandmasses(ladowe, nNeeded, minDistBase, mapCe
     for (const c of shuffled) {
       if (centers.length >= nNeeded) break;
       tryPlace(c, 4, true);
+    }
+  }
+  if (centers.length < nNeeded && qualifyingMasses.length > 0) {
+    for (let minDist = 4; minDist >= 2 && centers.length < nNeeded; minDist--) {
+      for (const mass of qualifyingMasses) {
+        if (centers.length >= nNeeded) break;
+        tryPlace(
+          pickCenterInMassWithLandGate(map, mass, centers, minDist, void 0, rand),
+          minDist,
+          true
+        );
+      }
     }
   }
   return centers.slice(0, nNeeded);
@@ -6594,55 +6814,48 @@ function clusterPackRadius(maxMiast, minDist) {
 function clusterCityStateRadius() {
   return CLUSTER_CITY_STATE_MAX_HEX;
 }
-function landPoolNearCore(region, centrum, maxMiast, minDist, maxRadius) {
-  const packR = maxRadius != null ? maxRadius : clusterPackRadius(maxMiast, minDist);
-  const near = region.map((c) => ({ c, d: hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) })).filter((x) => x.d <= packR).sort((a, b) => a.d - b.d || a.c.q - b.c.q || a.c.r - b.c.r).map((x) => x.c);
-  if (near.length >= maxMiast) return near;
-  if (maxRadius != null) return near.length > 0 ? near : region;
-  let expanded = packR + minDist;
-  while (near.length < maxMiast && expanded <= packR + minDist * 6) {
-    for (const c of region) {
-      if (near.some((p) => p.q === c.q && p.r === c.r)) continue;
-      if (hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) <= expanded) near.push(c);
-      if (near.length >= maxMiast * 3) break;
-    }
-    expanded += minDist;
+function packCityStatesHubChain(landHexes, core, count, minSep, ringDist, seed, opts) {
+  if (count <= 0) return [];
+  const rand = mulberry32((seed ^ 2654435769) >>> 0);
+  const placed = [];
+  const exclude = opts?.excludeHex ?? core;
+  const anchor = opts?.anchor;
+  function validCandidate(h, hub) {
+    if (h.q === exclude.q && h.r === exclude.r) return false;
+    if (hexDistanceAxial(h.q, h.r, hub.q, hub.r) !== ringDist) return false;
+    if (hexDistanceAxial(h.q, h.r, core.q, core.r) < minSep) return false;
+    if (anchor && hexDistanceAxial(h.q, h.r, anchor.q, anchor.r) < anchor.minDist) return false;
+    if (placed.some((p) => p.q === h.q && p.r === h.r)) return false;
+    return placed.every((p) => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minSep);
   }
-  return near.length > 0 ? near : region;
-}
-function poissonPickCities(region, maxMiast, minDist, rand, opts) {
-  const shuffledRegion = region.slice();
-  shuffleInPlace(shuffledRegion, rand);
-  const picked = [];
-  const anchor = opts?.minDistFrom;
-  const anchorMin = opts?.minDistFromValue ?? 0;
-  const exclude = opts?.excludeHex;
-  function tooClose(c, limit) {
-    if (exclude != null && c.q === exclude.q && c.r === exclude.r) return true;
-    if (anchor != null && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchorMin) {
-      return true;
-    }
-    return picked.some((p) => hexDistanceAxial(c.q, c.r, p.q, p.r) < limit);
-  }
-  for (const c of shuffledRegion) {
-    if (picked.length >= maxMiast) break;
-    if (!tooClose(c, minDist)) picked.push(c);
-  }
-  if (picked.length < 2 && minDist > MIN_DIST_START_CITY_STATE) {
-    const luzMin = Math.max(MIN_DIST_START_CITY_STATE, minDist - 2);
-    for (const c of shuffledRegion) {
-      if (picked.length >= maxMiast) break;
-      if (picked.some((p) => p.q === c.q && p.r === c.r)) continue;
-      if (!tooClose(c, luzMin)) picked.push(c);
+  const hubQueue = [core];
+  let hubIdx = 0;
+  while (placed.length < count && hubIdx < hubQueue.length) {
+    const hub = hubQueue[hubIdx];
+    hubIdx += 1;
+    while (placed.length < count) {
+      const cands = landHexes.filter((h) => validCandidate(h, hub));
+      if (cands.length === 0) break;
+      shuffleInPlace(cands, rand);
+      cands.sort((a, b) => a.q - b.q || a.r - b.r);
+      const c = cands[0];
+      placed.push(c);
+      hubQueue.push(c);
     }
   }
-  return picked;
+  return placed;
 }
 function packRivalCitiesAroundCore(landHexes, core, rivalCount, minDist, seed) {
   if (rivalCount <= 0) return [];
-  const rand = mulberry32((seed ^ 2654435769) >>> 0);
-  const pool = landHexes.map((h) => ({ h, d: hexDistanceAxial(h.q, h.r, core.q, core.r) })).filter((x) => x.d >= minDist && x.d <= CLUSTER_CITY_STATE_MAX_HEX).sort((a, b) => b.d - a.d || a.h.q - b.h.q || a.h.r - b.h.r).map((x) => x.h);
-  return poissonPickCities(pool, rivalCount, minDist, rand, { excludeHex: core });
+  return packCityStatesHubChain(
+    landHexes,
+    core,
+    rivalCount,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: core }
+  );
 }
 function centroidOf(hexes) {
   if (hexes.length === 0) return { q: 0, r: 0 };
@@ -6654,60 +6867,36 @@ function centroidOf(hexes) {
   }
   return { q: sq / hexes.length, r: sr / hexes.length };
 }
-function isFarEnough(c, others, minDist) {
-  return others.every((o) => hexDistanceAxial(c.q, c.r, o.q, o.r) >= minDist);
-}
-function buildClusterLayoutWithEdgeCapital(region, centrum, stateCityCount, minDist, rand, anchor, growthReserve = CLUSTER_GROWTH_RESERVE) {
+function buildClusterLayoutWithEdgeCapital(region, centrum, stateCityCount, minDist, rand, anchor, growthReserve = CLUSTER_GROWTH_RESERVE, map, seed = 42) {
   if (stateCityCount < 0) return null;
-  const interiorNeed = stateCityCount + growthReserve;
-  const packR = clusterPackRadius(Math.max(1, stateCityCount + 1), minDist);
-  const localPool = landPoolNearCore(region, centrum, interiorNeed + 2, minDist);
-  const interiorPicked = poissonPickCities(
-    localPool,
-    interiorNeed,
-    minDist,
-    rand,
-    anchor ? { minDistFrom: anchor, minDistFromValue: anchor.minDist } : void 0
-  );
-  const stateCities = interiorPicked.slice(0, stateCityCount);
-  const growthSlot = interiorPicked.length > stateCityCount ? interiorPicked[stateCityCount] ?? null : null;
-  const occupied = [...stateCities];
-  if (growthSlot) occupied.push(growthSlot);
-  const blobCenter = stateCities.length > 0 ? centroidOf(stateCities) : centrum;
-  const capitalCandidates = region.filter((c) => {
-    if (occupied.some((o) => o.q === c.q && o.r === c.r)) return false;
-    if (!isFarEnough(c, occupied, minDist)) return false;
+  const blobCenter = centroidOf(region.length > 0 ? region : [centrum]);
+  let capitalCandidates = region.filter((c) => {
     if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
-    if (stateCities.length === 0) return true;
-    const nearestState = Math.min(
-      ...stateCities.map((s) => hexDistanceAxial(c.q, c.r, s.q, s.r))
-    );
-    return nearestState <= packR && nearestState >= minDist;
+    return true;
   });
-  let capital = null;
-  let bestEdgeScore = -Infinity;
-  for (const c of capitalCandidates) {
-    const edgeDist = hexDistanceAxial(c.q, c.r, blobCenter.q, blobCenter.r);
+  if (map) {
+    const gated = capitalCandidates.filter((c) => passesLocalLandGate(map, c.q, c.r));
+    if (gated.length > 0) capitalCandidates = gated;
+  }
+  if (capitalCandidates.length === 0) return null;
+  capitalCandidates.sort((a, b) => {
+    const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
+    const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
     const jitter = rand() * 0.01;
-    if (edgeDist + jitter > bestEdgeScore) {
-      bestEdgeScore = edgeDist + jitter;
-      capital = c;
-    }
-  }
-  if (!capital) {
-    const fallbackPool = region.filter((c) => {
-      if (occupied.some((o) => o.q === c.q && o.r === c.r)) return false;
-      if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
-      return isFarEnough(c, occupied, minDist);
-    });
-    if (fallbackPool.length === 0) return null;
-    fallbackPool.sort((a, b) => {
-      const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
-      const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
-      return db - da || a.q - b.q || a.r - b.r;
-    });
-    capital = fallbackPool[0];
-  }
+    return db + jitter - (da + jitter) || a.q - b.q || a.r - b.r;
+  });
+  const capital = capitalCandidates[0];
+  const packed = packCityStatesHubChain(
+    region,
+    capital,
+    stateCityCount + growthReserve,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: capital, anchor }
+  );
+  const stateCities = packed.slice(0, stateCityCount);
+  const growthSlot = packed.length > stateCityCount ? packed[stateCityCount] ?? null : null;
   return { capital, stateCities, growthSlot };
 }
 function layoutToClusterCities(layout) {
@@ -6721,7 +6910,7 @@ function layoutToClusterCities(layout) {
   }
   return cities;
 }
-function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anchor, seed) {
+function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anchor, seed, map) {
   const layout = buildClusterLayoutWithEdgeCapital(
     region,
     centrum,
@@ -6729,7 +6918,9 @@ function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anch
     minDist,
     rand,
     anchor,
-    CLUSTER_GROWTH_RESERVE
+    CLUSTER_GROWTH_RESERVE,
+    map,
+    seed ?? 42
   );
   if (!layout) {
     return buildClusterCitiesSimpleFallback(
@@ -6738,7 +6929,8 @@ function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anch
       stateCityCount,
       minDist,
       anchor,
-      seed ?? 42
+      seed ?? 42,
+      map
     );
   }
   return {
@@ -6747,7 +6939,7 @@ function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anch
     growthSlot: layout.growthSlot
   };
 }
-function buildClusterCitiesSimpleFallback(region, centrum, stateCityCount, minDist, anchor, seed) {
+function buildClusterCitiesSimpleFallback(region, centrum, stateCityCount, minDist, anchor, seed, map) {
   let pool = region;
   if (anchor) {
     const filtered = region.filter(
@@ -6764,28 +6956,46 @@ function buildClusterCitiesSimpleFallback(region, centrum, stateCityCount, minDi
     const db = hexDistanceAxial(b.q, b.r, cen.q, cen.r);
     return db - da || a.q - b.q || a.r - b.r;
   });
-  const capital = capSorted[0] ?? centrum;
-  const stateCities = packRivalCitiesAroundCore(pool, capital, stateCityCount, minDist, seed);
+  const gatedCaps = map ? capSorted.filter((c) => passesLocalLandGate(map, c.q, c.r)) : capSorted;
+  const capital = gatedCaps[0] ?? (map ? null : capSorted[0]) ?? centrum;
+  if (map && !passesLocalLandGate(map, capital.q, capital.r)) {
+    return { cities: [], pendingStateSlots: [], growthSlot: null };
+  }
+  const stateCities = packCityStatesHubChain(
+    pool,
+    capital,
+    stateCityCount,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: capital, anchor }
+  );
   const cities = [{ q: capital.q, r: capital.r, isCapital: true }];
   for (const s of stateCities) {
     cities.push({ q: s.q, r: s.r, isCapital: false });
   }
   return { cities, pendingStateSlots: stateCities, growthSlot: null };
 }
-function enforceRegionMassDominance(centrumy, regiony, aktywneKlucze, ladowe, masses, rand, minDist) {
-  const hexIndex = buildMassHexIndex(masses);
+function enforceLocalLandDominance(map, centrumy, regiony, aktywneKlucze, ladowe, masses, rand, minDist, mapCenter) {
   let relocated = false;
-  for (let ci = 1; ci < centrumy.length; ci++) {
-    const region = regiony[ci];
-    if (region.length === 0) continue;
-    const { ratio, dominantMassIndex } = regionMassDominance(region, centrumy[ci], masses);
-    if (ratio >= REGION_MASS_DOMINANCE_FRAC) continue;
-    const dominantHexes = region.filter(
-      (h) => hexIndex.get(`${h.q},${h.r}`) === dominantMassIndex
-    );
-    if (dominantHexes.length === 0) continue;
+  for (let ci = 0; ci < centrumy.length; ci++) {
+    const center = centrumy[ci];
+    const ok = ci === 0 ? passesPlayerStartMassGate(map, center.q, center.r, masses) : passesLocalLandGate(map, center.q, center.r);
+    if (ok) continue;
+    const region = regiony[ci] ?? [];
     const others = centrumy.filter((_, i) => i !== ci);
-    const newCenter = pickCenterInMass(dominantHexes, others, minDist, void 0, rand);
+    let newCenter = null;
+    if (ci === 0) {
+      newCenter = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+    } else {
+      newCenter = pickBestLocalLandSpawn(map, region, others, minDist, rand);
+      if (!newCenter) {
+        for (const mass of masses) {
+          newCenter = pickCenterInMassWithLandGate(map, mass, others, minDist, void 0, rand);
+          if (newCenter) break;
+        }
+      }
+    }
     if (newCenter) {
       centrumy[ci] = newCenter;
       relocated = true;
@@ -6797,17 +7007,59 @@ function enforceRegionMassDominance(centrumy, regiony, aktywneKlucze, ladowe, ma
       regiony[i] = newRegiony2[i];
     }
   }
-  const keep = centrumy.map((_, ci) => {
+  const keep = centrumy.map((c, ci) => {
     if (ci === 0) return true;
-    const region = regiony[ci];
-    if (region.length === 0) return false;
-    const { ratio } = regionMassDominance(region, centrumy[ci], masses);
-    return ratio >= REGION_MASS_DOMINANCE_FRAC;
+    return passesLocalLandGate(map, c.q, c.r);
   });
+  if (!passesLocalLandGate(map, centrumy[0].q, centrumy[0].r) || !passesPlayerStartMassGate(map, centrumy[0].q, centrumy[0].r, masses)) {
+    const forced = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+    if (forced) {
+      centrumy[0] = forced;
+      const newRegiony2 = assignVoronoiRegions(ladowe, centrumy);
+      for (let i = 0; i < regiony.length; i++) {
+        regiony[i] = newRegiony2[i];
+      }
+      keep[0] = true;
+    }
+  }
   const newCentrumy = centrumy.filter((_, i) => keep[i]);
   const newAktywneKlucze = aktywneKlucze.filter((_, i) => keep[i]);
   const newRegiony = assignVoronoiRegions(ladowe, newCentrumy);
   return { centrumy: newCentrumy, regiony: newRegiony, aktywneKlucze: newAktywneKlucze };
+}
+function clusterCapitalPos(layout, fallback) {
+  const cap = layout.cities.find((m) => m.isCapital) ?? layout.cities[0];
+  return cap ? { q: cap.q, r: cap.r } : fallback;
+}
+function buildClusterCitiesWithLandGate(map, region, centrum, stateCityCount, minDist, rand, anchor, seed, masses, existingCenters, minClusterDist) {
+  let activeCentrum = centrum;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const layout = buildClusterCities(
+      region,
+      activeCentrum,
+      stateCityCount,
+      minDist,
+      rand,
+      anchor,
+      seed,
+      map
+    );
+    const cap = clusterCapitalPos(layout, activeCentrum);
+    if (passesLocalLandGate(map, cap.q, cap.r)) {
+      return { ...layout, centrum: activeCentrum };
+    }
+    const altCenter = pickBestLocalLandSpawn(map, region, existingCenters, minClusterDist, rand);
+    let nextCenter = altCenter;
+    if (!nextCenter) {
+      for (const mass of masses) {
+        nextCenter = pickCenterInMassWithLandGate(map, mass, existingCenters, minClusterDist, void 0, rand);
+        if (nextCenter) break;
+      }
+    }
+    if (!nextCenter) return null;
+    activeCentrum = nextCenter;
+  }
+  return null;
 }
 function computeClusters(map, opts) {
   const seed = opts?.seed ?? 42;
@@ -6860,6 +7112,7 @@ function computeClusters(map, opts) {
   const mapCenter = { q: (minQ + maxQ) / 2, r: (minR + maxR) / 2 };
   const marginBrzeg = Math.max(2, Math.floor(minDystKlastrow / 3));
   const centrumy = placeClusterCentersAcrossLandmasses(
+    map,
     ladowe,
     nTypy,
     minDystKlastrow,
@@ -6892,38 +7145,74 @@ function computeClusters(map, opts) {
   let activeCentrumy = centrumy.slice();
   let activeKlucze = rosterTrimmed.slice();
   let regiony = assignVoronoiRegions(ladowe, activeCentrumy);
-  const dominanceResult = enforceRegionMassDominance(
+  const dominanceResult = enforceLocalLandDominance(
+    map,
     activeCentrumy,
     regiony,
     activeKlucze,
     ladowe,
     masses,
     rand,
-    minDystKlastrow
+    minDystKlastrow,
+    mapCenter
   );
   activeCentrumy = dominanceResult.centrumy;
   activeKlucze = dominanceResult.aktywneKlucze;
   regiony = dominanceResult.regiony;
   if (activeCentrumy.length < nTypy && typeof console !== "undefined") {
     console.warn(
-      `[clusters] Po filtrze 70% masy: ${activeCentrumy.length}/${nTypy} aktywnych klastr\xF3w`
+      `[clusters] Po bramce lokalnego l\u0105du 70% (R=${LOCAL_LAND_DOMINANCE_RADIUS}): ${activeCentrumy.length}/${nTypy} aktywnych klastr\xF3w`
     );
   }
   const klastry = [];
   const stateCityCount = rywaleNaKlaster;
   const playerCentrum = activeCentrumy[0];
   const playerRegion = regiony[0];
-  const playerLayout = buildClusterCities(
+  const playerLayoutResult = buildClusterCitiesWithLandGate(
+    map,
     playerRegion,
     playerCentrum,
     stateCityCount,
     minDystMiastaPanstwa,
     rand,
     void 0,
-    seed
+    seed,
+    masses,
+    [],
+    minDystKlastrow
   );
-  const playerCapital = playerLayout.cities.find((m) => m.isCapital) ?? playerLayout.cities[0];
-  const playerCapitalPos = playerCapital ? { q: playerCapital.q, r: playerCapital.r } : playerCentrum;
+  let playerCentrumFinal = playerCentrum;
+  let playerLayout;
+  if (playerLayoutResult) {
+    playerLayout = playerLayoutResult;
+    playerCentrumFinal = playerLayoutResult.centrum;
+  } else {
+    const forced = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+    if (forced) {
+      playerCentrumFinal = forced;
+      playerLayout = {
+        cities: [{ q: forced.q, r: forced.r, isCapital: true }],
+        pendingStateSlots: [],
+        growthSlot: null
+      };
+    } else {
+      playerLayout = { cities: [], pendingStateSlots: [], growthSlot: null };
+    }
+  }
+  let playerCapital = playerLayout.cities.find((m) => m.isCapital) ?? playerLayout.cities[0];
+  let playerCapitalPos = playerCapital ? { q: playerCapital.q, r: playerCapital.r } : playerCentrumFinal;
+  if (!passesPlayerStartMassGate(map, playerCapitalPos.q, playerCapitalPos.r, masses)) {
+    const fixed = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+    if (fixed) {
+      playerCentrumFinal = fixed;
+      playerCapitalPos = fixed;
+      playerLayout = {
+        cities: [{ q: fixed.q, r: fixed.r, isCapital: true }],
+        pendingStateSlots: [],
+        growthSlot: null
+      };
+    }
+  }
   const playerStateSlots = packRivalCitiesAroundCore(
     ladowe,
     playerCapitalPos,
@@ -6934,7 +7223,7 @@ function computeClusters(map, opts) {
   klastry.push({
     typIndex: 0,
     typ: activeKlucze[0] ?? playerKlucz,
-    centrum: playerCentrum,
+    centrum: playerCentrumFinal,
     miasta: playerLayout.cities,
     pendingStateSlots: playerStateSlots,
     growthSlot: playerLayout.growthSlot
@@ -6942,21 +7231,26 @@ function computeClusters(map, opts) {
   for (let ci = 1; ci < activeCentrumy.length; ci++) {
     const centrum = activeCentrumy[ci];
     const region = regiony[ci];
-    const foreignLayout = buildClusterCities(
+    const foreignLayoutResult = buildClusterCitiesWithLandGate(
+      map,
       region,
       centrum,
       stateCityCount,
       MIN_DIST_FOREIGN_IN_CLUSTER,
       rand,
       { q: playerCapitalPos.q, r: playerCapitalPos.r, minDist: minDystObcyOdGracza },
-      seed
+      seed,
+      masses,
+      activeCentrumy.slice(0, ci),
+      minDystKlastrow
     );
+    if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) continue;
     klastry.push({
-      typIndex: ci,
+      typIndex: klastry.length,
       typ: activeKlucze[ci] ?? `typ${ci}`,
-      centrum,
-      miasta: foreignLayout.cities,
-      growthSlot: foreignLayout.growthSlot
+      centrum: foreignLayoutResult.centrum,
+      miasta: foreignLayoutResult.cities,
+      growthSlot: foreignLayoutResult.growthSlot
     });
   }
   if (typeof console !== "undefined") {
@@ -7019,31 +7313,29 @@ function buildSameTypeRivalCandidateHexes(map, core, rivalCount, seed) {
   if (rivalCount <= 0) return [];
   const land = landHexesFromMap(map);
   const minDist = MIN_DIST_START_CITY_STATE;
-  const maxDist = CLUSTER_CITY_STATE_MAX_HEX;
-  const out = [];
-  const seen = /* @__PURE__ */ new Set();
-  const coreKey = `${core.q},${core.r}`;
-  function tryAdd(h) {
-    const k = `${h.q},${h.r}`;
-    if (k === coreKey || seen.has(k)) return false;
-    const dCore = hexDistanceAxial(h.q, h.r, core.q, core.r);
-    if (dCore < minDist || dCore > maxDist) return false;
-    if (out.some((p) => hexDistanceAxial(p.q, p.r, h.q, h.r) < minDist)) return false;
-    seen.add(k);
-    out.push(h);
-    return true;
+  const seeds = [seed, seed + 1367130551 >>> 0, seed + 2246822507 >>> 0, seed + 3266489909 >>> 0];
+  for (const s of seeds) {
+    const packed = packCityStatesHubChain(
+      land,
+      core,
+      rivalCount,
+      minDist,
+      CLUSTER_CITY_STATE_MAX_HEX,
+      s,
+      { excludeHex: core }
+    );
+    if (packed.length >= rivalCount) return packed.slice(0, rivalCount);
+    if (packed.length > 0) return packed;
   }
-  function mergePass(extraSeed, count) {
-    const hexes = packRivalCitiesAroundCore(land, core, count, minDist, extraSeed);
-    for (const h of hexes) tryAdd(h);
-  }
-  mergePass(seed, rivalCount);
-  if (out.length < rivalCount) {
-    mergePass(seed + 1367130551 >>> 0, rivalCount);
-    mergePass(seed + 2246822507 >>> 0, rivalCount);
-    mergePass(seed + 3266489909 >>> 0, rivalCount);
-  }
-  return out;
+  return packCityStatesHubChain(
+    land,
+    core,
+    rivalCount,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: core }
+  );
 }
 function capitalOf(klaster) {
   const cap = klaster.miasta.find((m) => m.isCapital) ?? klaster.miasta[0];
@@ -7096,7 +7388,18 @@ function buildClusterSpawnPlan(input) {
       clusterCapitalOwnerIds: []
     };
   }
-  const capPos = capitalOf(playerCluster) ?? fallbackHex;
+  const capPosRaw = capitalOf(playerCluster) ?? fallbackHex;
+  const land = landHexesFromMap(map);
+  const masses = groupHabitableMasses(land);
+  let capPos = capPosRaw;
+  if (!passesPlayerStartMassGate(map, capPos.q, capPos.r, masses)) {
+    const mapCenter = {
+      q: (map.szerokoscQ - 1) / 2,
+      r: (map.wysokoscR - 1) / 2
+    };
+    const fixed = pickPlayerClusterCenter(map, masses, land, mapCenter, mulberry32(seed));
+    if (fixed) capPos = fixed;
+  }
   const slots = [];
   const clusterCapitalOwnerIds = [];
   let nextOwnerId = 1;
@@ -7523,9 +7826,13 @@ function buildClusterStartPlan(input) {
   CLUSTER_CITY_STATE_MAX_HEX,
   CLUSTER_CITY_STATE_MIN_HEX,
   ISLAND_FALLBACK_MASS_FRAC,
+  LOCAL_LAND_DOMINANCE_FRAC,
+  LOCAL_LAND_DOMINANCE_RADIUS,
   MIN_DIST_FOREIGN_FROM_PLAYER,
   MIN_DIST_FOREIGN_IN_CLUSTER,
   MIN_DIST_START_CITY_STATE,
+  PLAYER_START_MASS_MIN_ABSOLUTE,
+  PLAYER_START_MIN_MASS_HEXES,
   REGION_MASS_DOMINANCE_FRAC,
   buildClusterSpawnPlan,
   buildClusterStartPlan,
@@ -7539,7 +7846,12 @@ function buildClusterStartPlan(input) {
   groupForeignTypeClusters,
   groupHabitableMasses,
   hexDistanceAxial,
+  localLandFraction,
+  packCityStatesHubChain,
   packRivalCitiesAroundCore,
+  passesLocalLandGate,
+  passesPlayerStartMassGate,
+  pickPlayerClusterCenter,
   regionMassDominance,
   rosterKluczeForStartEpoch
 });

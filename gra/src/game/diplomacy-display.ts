@@ -473,9 +473,16 @@ export function splitNegotiationDealPlayerSides(
   payload: ProposalPayload,
   incoming: boolean,
 ): { weOffer: readonly BasketItem[]; theyOffer: readonly BasketItem[]; schedule?: string } | null {
-  const give = payload.giveItems ?? [];
-  const receive = payload.receiveItems ?? [];
-  if (give.length === 0 && receive.length === 0) return null;
+  let give = payload.giveItems ?? [];
+  let receive = payload.receiveItems ?? [];
+  if (give.length === 0 && receive.length === 0) {
+    const legacyGold = payload.goldOnce ?? 0;
+    if (legacyGold > 0) {
+      give = [{ typ: 'zloto', id: 'zloto', ilosc: legacyGold }];
+    } else {
+      return null;
+    }
+  }
 
   const weOffer = incoming ? receive : give;
   const theyOffer = incoming ? give : receive;

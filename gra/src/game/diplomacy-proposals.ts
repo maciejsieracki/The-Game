@@ -824,10 +824,14 @@ export function aiCommandToPendingProposal(
     case 'zaproponuj_handel': {
       const goldOnce = cmd.goldOnce ?? 0;
       if (goldOnce <= 0) return null;
+      const goldBasket: BasketItem = { typ: 'zloto', id: 'zloto', ilosc: goldOnce };
       return {
         ...base,
         id: makeDealId('pending-handel', turn, fromOwnerId, toOwnerId),
-        payload: { goldOnce },
+        payload: {
+          goldOnce,
+          giveItems: [goldBasket],
+        },
         actionId: 'handel',
       };
     }

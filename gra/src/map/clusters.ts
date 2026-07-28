@@ -169,8 +169,19 @@ function shuffleInPlace<T>(arr: T[], rand: () => number): void {
 const MIN_MASS_HEXES_FOR_CENTER = 12;
 /** Wyspa kwalifikuje się do round-robin dopiero gdy ≥ tej frakcji największej masy (MAP-SPAWN-Q1 C). */
 export const ISLAND_FALLBACK_MASS_FRAC = 0.25;
-/** Min. udział masy środka w regionie Voronoi — inaczej relokacja lub pominięcie typu (MAP-SPAWN-Q1 B). */
-export const REGION_MASS_DOMINANCE_FRAC = 0.70;
+/**
+ * Min. udział lądu zamieszkiwalnego w promieniu R wokół stolicy startowej (MAP-SPAWN-Q1 B, Maciej 2026-07-28).
+ * Morze / wybrzeże / góry nie liczą się jako ląd — bramka blokuje start na wysepkach otoczonych wodą.
+ */
+export const LOCAL_LAND_DOMINANCE_FRAC = 0.70;
+/** @deprecated alias — testy historyczne; metryka = lokalny ląd w promieniu, nie Voronoi. */
+export const REGION_MASS_DOMINANCE_FRAC = LOCAL_LAND_DOMINANCE_FRAC;
+/** Promień okolicy stolicy: ~typowy zasięg klastra miasta (min 4 hex) — lokalna ocena lądu vs morze. */
+export const LOCAL_LAND_DOMINANCE_RADIUS = 3;
+/** Min. rozmiar masy lądu (flood-fill) pod startem gracza przy lokalnym lądzie ≥70% (MAP-SPAWN-Q1 B). */
+export const PLAYER_START_MIN_MASS_HEXES = 25;
+/** Bezwzględny min. rozmiar masy dla startu gracza (16-hex wyspa odpada). */
+export const PLAYER_START_MASS_MIN_ABSOLUTE = 30;
 
 function qualifyingMassThreshold(largestMassSize: number): number {
   return Math.max(
@@ -229,6 +240,132 @@ export function regionMassDominance(
   const centerCount = centerMassIndex !== null ? (perMass.get(centerMassIndex) ?? 0) : 0;
   const ratio = region.length > 0 ? centerCount / region.length : 0;
   return { ratio, centerMassIndex, dominantMassIndex };
+}
+
+function isSpawnHabitableTerrain(teren: TerenBazowy | string): boolean {
+  return teren !== TerenBazowy.Morze && teren !== TerenBazowy.Gory &&
+    teren !== TerenBazowy.Wybrzeze && teren !== 'morze' && teren !== 'gory' && teren !== 'wybrzeze';
+}
+
+/**
+ * Udział lądu zamieszkiwalnego w dysku hexów wokół (q,r) — wszystkie heksy mapy w promieniu R.
+ * Eksport do testów MAP-SPAWN-Q1 B (lokalna bramka, nie Voronoi).
+ */
+export function localLandFraction(
+  map: GameMap,
+  q: number,
+  r: number,
+  radius: number = LOCAL_LAND_DOMINANCE_RADIUS,
+): { ratio: number; landCount: number; totalCount: number } {
+  let landCount = 0;
+  let totalCount = 0;
+  for (const h of Object.values(map.hexes)) {
+    const d = hexDistanceAxial(h.coords.q, h.coords.r, q, r);
+    if (d > radius) continue;
+    totalCount++;
+    if (isSpawnHabitableTerrain(h.terenBazowy)) landCount++;
+  }
+  const ratio = totalCount > 0 ? landCount / totalCount : 0;
+  return { ratio, landCount, totalCount };
+}
+
+export function passesLocalLandGate(
+  map: GameMap,
+  q: number,
+  r: number,
+  minFrac: number = LOCAL_LAND_DOMINANCE_FRAC,
+  radius: number = LOCAL_LAND_DOMINANCE_RADIUS,
+): boolean {
+  return localLandFraction(map, q, r, radius).ratio >= minFrac;
+}
+
+/** Rozmiar masy lądu (flood-fill) zawierającej hex — 0 gdy poza masą ≥12 hex. */
+export function massSizeAtHex(
+  q: number,
+  r: number,
+  masses: Array<Array<{ q: number; r: number }>>,
+): number {
+  const idx = buildMassHexIndex(masses);
+  const mi = massContainingHex(idx, q, r);
+  return mi !== null ? masses[mi]!.length : 0;
+}
+
+/**
+ * Bramka startu gracza: lokalny ląd ≥70% w R **oraz** masa wystarczająco duża
+ * (≥ max(30, 8% największej masy) albo ≥25 hex przy spełnionym 70% lokalnym).
+ */
+export function passesPlayerStartMassGate(
+  map: GameMap,
+  q: number,
+  r: number,
+  masses: Array<Array<{ q: number; r: number }>>,
+): boolean {
+  if (!passesLocalLandGate(map, q, r)) return false;
+  const massSize = massSizeAtHex(q, r, masses);
+  const largest = masses[0]?.length ?? 0;
+  const scaledMin = Math.max(
+    PLAYER_START_MASS_MIN_ABSOLUTE,
+    Math.floor(largest * 0.08),
+  );
+  if (massSize >= scaledMin) return true;
+  return massSize >= PLAYER_START_MIN_MASS_HEXES;
+}
+
+/**
+ * Hex startu gracza — zawsze preferuj masses[0] (największy kontynent) gdy spełnia bramki.
+ */
+export function pickPlayerClusterCenter(
+  map: GameMap,
+  masses: Array<Array<{ q: number; r: number }>>,
+  ladowe: Array<{ q: number; r: number }>,
+  mapCenter: { q: number; r: number },
+  rand: () => number,
+): { q: number; r: number } | null {
+  const massOrder = masses.length > 0 ? [masses[0]!, ...masses.slice(1)] : [];
+  for (const mass of massOrder) {
+    const candidates = mass
+      .map(h => ({ h, ...localLandFraction(map, h.q, h.r) }))
+      .filter(x => passesPlayerStartMassGate(map, x.h.q, x.h.r, masses))
+      .sort((a, b) => {
+        const da = hexDistanceAxial(a.h.q, a.h.r, mapCenter.q, mapCenter.r);
+        const db = hexDistanceAxial(b.h.q, b.h.r, mapCenter.q, mapCenter.r);
+        return b.ratio - a.ratio || da - db || a.h.q - b.h.q || a.h.r - b.h.r;
+      });
+    if (candidates.length === 0) continue;
+    const top = candidates[0]!;
+    if (candidates.length > 1) {
+      const tie = candidates.filter(x => x.ratio >= top.ratio - 0.001);
+      return tie[Math.floor(rand() * tie.length)]!.h;
+    }
+    return top.h;
+  }
+  const fallback = ladowe
+    .map(h => ({ h, ...localLandFraction(map, h.q, h.r) }))
+    .filter(x => passesPlayerStartMassGate(map, x.h.q, x.h.r, masses))
+    .sort((a, b) => b.ratio - a.ratio);
+  return fallback[0]?.h ?? null;
+}
+
+/** Najlepszy hex spawnu z puli — minDist od istniejących + bramka lokalnego lądu ≥70%. */
+function pickBestLocalLandSpawn(
+  map: GameMap,
+  pool: Array<{ q: number; r: number }>,
+  existing: Array<{ q: number; r: number }>,
+  minDist: number,
+  rand?: () => number,
+): { q: number; r: number } | null {
+  const candidates = pool
+    .filter(h => existing.every(p => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minDist))
+    .map(h => ({ h, ...localLandFraction(map, h.q, h.r) }))
+    .filter(x => x.ratio >= LOCAL_LAND_DOMINANCE_FRAC)
+    .sort((a, b) => b.ratio - a.ratio || a.h.q - b.h.q || a.h.r - b.h.r);
+  if (candidates.length === 0) return null;
+  const top = candidates[0]!;
+  if (candidates.length > 1 && rand) {
+    const tieBand = candidates.filter(x => x.ratio >= top.ratio - 0.001);
+    return tieBand[Math.floor(rand() * tieBand.length)]!.h;
+  }
+  return top.h;
 }
 
 function assignVoronoiRegions(
@@ -313,11 +450,40 @@ function pickCenterInMass(
   return candidates[0]?.h ?? null;
 }
 
+function pickCenterInMassWithLandGate(
+  map: GameMap,
+  mass: Array<{ q: number; r: number }>,
+  existing: Array<{ q: number; r: number }>,
+  minDist: number,
+  preferNear?: { q: number; r: number },
+  rand?: () => number,
+): { q: number; r: number } | null {
+  const centroid = massCentroid(mass);
+  const candidates = mass
+    .filter(h => existing.every(p => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minDist))
+    .map(h => ({
+      h,
+      land: localLandFraction(map, h.q, h.r),
+      score: hexDistanceAxial(h.q, h.r, centroid.q, centroid.r)
+        + (preferNear ? hexDistanceAxial(h.q, h.r, preferNear.q, preferNear.r) * 0.05 : 0),
+    }))
+    .filter(x => x.land.ratio >= LOCAL_LAND_DOMINANCE_FRAC)
+    .sort((a, b) => b.land.ratio - a.land.ratio || a.score - b.score);
+  if (candidates.length === 0) return null;
+  const top = candidates[0]!;
+  if (rand && candidates.length > 1) {
+    const tieBand = candidates.filter(x => x.land.ratio >= top.land.ratio - 0.001);
+    return tieBand[Math.floor(rand() * tieBand.length)]!.h;
+  }
+  return top.h;
+}
+
 /**
  * Rozmieszcza środki klastrów równomiernie po masach lądu (kontynenty/wyspy),
  * z progresywnym luzowaniem min odległości gdy żądana liczba nie mieści się na mapie.
  */
 function placeClusterCentersAcrossLandmasses(
+  map: GameMap,
   ladowe: Array<{ q: number; r: number }>,
   nNeeded: number,
   minDistBase: number,
@@ -331,9 +497,6 @@ function placeClusterCentersAcrossLandmasses(
   const largestMassSize = masses[0]?.length ?? 0;
   const qualThreshold = qualifyingMassThreshold(largestMassSize);
   const qualifyingMasses = masses.filter(m => m.length >= qualThreshold);
-  const smallMasses = masses.filter(
-    m => m.length >= MIN_MASS_HEXES_FOR_CENTER && m.length < qualThreshold,
-  );
   const centers: Array<{ q: number; r: number }> = [];
 
   function okMargins(q: number, r: number, relax: boolean): boolean {
@@ -348,31 +511,41 @@ function placeClusterCentersAcrossLandmasses(
     return centers.some(p => p.q === c.q && p.r === c.r);
   }
 
-  function tryPlace(c: { q: number; r: number } | null, minDist: number, relaxMargin: boolean): boolean {
+  function tryPlace(
+    c: { q: number; r: number } | null,
+    minDist: number,
+    relaxMargin: boolean,
+    forPlayer = false,
+  ): boolean {
     if (!c || hasCenter(c)) return false;
     if (!okMargins(c.q, c.r, relaxMargin)) return false;
     if (centers.some(p => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDist)) return false;
+    if (forPlayer) {
+      if (!passesPlayerStartMassGate(map, c.q, c.r, masses)) return false;
+    } else if (!passesLocalLandGate(map, c.q, c.r)) {
+      return false;
+    }
     centers.push(c);
     return true;
   }
 
-  // Progresywne luzowanie: 12 → 10 → 8 → 6 hex między środkami.
+  // Faza 0: gracz ZAWSZE na największej masie spełniającej bramki (MAP-SPAWN-Q1 B).
+  const playerCenter = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+  if (playerCenter) {
+    centers.push(playerCenter);
+  }
+
+  // Progresywne luzowanie: 12 → 10 → 8 → 6 hex między środkami (obce typy).
   for (let minDist = minDistBase; minDist >= 6 && centers.length < nNeeded; minDist -= 2) {
     const relaxMargin = minDist < minDistBase;
 
-    // Faza 1: gracz na największej masie lądu (blisko geometrycznego środka mapy).
-    if (centers.length === 0) {
-      if (masses.length > 0) {
-        tryPlace(pickCenterInMass(masses[0]!, [], minDist, mapCenter, rand), minDist, relaxMargin);
-      }
-      if (centers.length === 0 && ladowe.length > 0) {
-        tryPlace(ladowe[0]!, minDist, true);
-      }
-    }
-
     // Faza 2 (MAP-SPAWN-Q1 C): po jednym środku na kwalifikujących masach (≥25% największej).
     for (let mi = 1; mi < qualifyingMasses.length && centers.length < nNeeded; mi++) {
-      tryPlace(pickCenterInMass(qualifyingMasses[mi]!, centers, minDist, undefined, rand), minDist, relaxMargin);
+      tryPlace(
+        pickCenterInMassWithLandGate(map, qualifyingMasses[mi]!, centers, minDist, undefined, rand),
+        minDist,
+        relaxMargin,
+      );
     }
 
     // Faza 3: round-robin — tylko na masach kwalifikujących się (bez wysp poniżej progu).
@@ -381,27 +554,39 @@ function placeClusterCentersAcrossLandmasses(
       let placed = false;
       for (const mass of qualifyingMasses) {
         if (centers.length >= nNeeded) break;
-        if (tryPlace(pickCenterInMass(mass, centers, minDist, undefined, rand), minDist, relaxMargin)) {
+        if (tryPlace(
+          pickCenterInMassWithLandGate(map, mass, centers, minDist, undefined, rand),
+          minDist,
+          relaxMargin,
+        )) {
           placed = true;
         }
       }
       stagnant = placed ? 0 : stagnant + 1;
     }
-
-    // Faza 4: ostatnia deska ratunku — małe wyspy (≥12 hex, <25%) przed losowym fallbackiem.
-    for (const mass of smallMasses) {
-      if (centers.length >= nNeeded) break;
-      tryPlace(pickCenterInMass(mass, centers, minDist, undefined, rand), minDist, relaxMargin);
-    }
   }
 
-  // Ostateczny fallback: dowolne pola lądu (min 4 hex między środkami).
+  // Ostateczny fallback: najlepsze hexy lądu z bramką ≥70% (min 4 hex między środkami).
   if (centers.length < nNeeded) {
     const shuffled = ladowe.slice();
     shuffleInPlace(shuffled, rand);
     for (const c of shuffled) {
       if (centers.length >= nNeeded) break;
       tryPlace(c, 4, true);
+    }
+  }
+
+  // Pakowanie na dużych masach — luzuj dystans zanim oddasz mniej typów niż trzeba.
+  if (centers.length < nNeeded && qualifyingMasses.length > 0) {
+    for (let minDist = 4; minDist >= 2 && centers.length < nNeeded; minDist--) {
+      for (const mass of qualifyingMasses) {
+        if (centers.length >= nNeeded) break;
+        tryPlace(
+          pickCenterInMassWithLandGate(map, mass, centers, minDist, undefined, rand),
+          minDist,
+          true,
+        );
+      }
     }
   }
 
@@ -497,8 +682,60 @@ function poissonPickCities(
 }
 
 /**
- * Miasta-państwa wokół wybranego rdzenia (po założeniu stolicy gracza).
- * Deterministyczne dla seed; min 4 hex między miastami; rdzeń nie jest slotem rywala.
+ * Miasta-państwa — łańcuch pierścieni 4 hex (MAP-SPAWN hub-chain, Maciej 2026-07-28).
+ * BFS od stolicy: pierwszy pierścień dokładnie `ringDist` od stolicy, potem od każdego MP
+ * już postawionego, aż do `count` lub brak lądu. Min. odstęp `minSep` między wszystkimi miastami.
+ */
+export function packCityStatesHubChain(
+  landHexes: Array<{ q: number; r: number }>,
+  core: { q: number; r: number },
+  count: number,
+  minSep: number,
+  ringDist: number,
+  seed: number,
+  opts?: {
+    excludeHex?: { q: number; r: number };
+    anchor?: { q: number; r: number; minDist: number };
+  },
+): Array<{ q: number; r: number }> {
+  if (count <= 0) return [];
+  const rand = mulberry32((seed ^ 0x9e3779b9) >>> 0);
+  const placed: Array<{ q: number; r: number }> = [];
+  const exclude = opts?.excludeHex ?? core;
+  const anchor = opts?.anchor;
+
+  function validCandidate(h: { q: number; r: number }, hub: { q: number; r: number }): boolean {
+    if (h.q === exclude.q && h.r === exclude.r) return false;
+    if (hexDistanceAxial(h.q, h.r, hub.q, hub.r) !== ringDist) return false;
+    if (hexDistanceAxial(h.q, h.r, core.q, core.r) < minSep) return false;
+    if (anchor && hexDistanceAxial(h.q, h.r, anchor.q, anchor.r) < anchor.minDist) return false;
+    if (placed.some(p => p.q === h.q && p.r === h.r)) return false;
+    return placed.every(p => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minSep);
+  }
+
+  const hubQueue: Array<{ q: number; r: number }> = [core];
+  let hubIdx = 0;
+
+  while (placed.length < count && hubIdx < hubQueue.length) {
+    const hub = hubQueue[hubIdx]!;
+    hubIdx += 1;
+    // Jedno MP na iterację — validCandidate musi widzieć aktualne `placed`.
+    while (placed.length < count) {
+      const cands = landHexes.filter(h => validCandidate(h, hub));
+      if (cands.length === 0) break;
+      shuffleInPlace(cands, rand);
+      cands.sort((a, b) => a.q - b.q || a.r - b.r);
+      const c = cands[0]!;
+      placed.push(c);
+      hubQueue.push(c);
+    }
+  }
+
+  return placed;
+}
+
+/**
+ * Miasta-państwa wokół stolicy klastra — deleguje do łańcucha hubów (pierścień 4 hex).
  */
 export function packRivalCitiesAroundCore(
   landHexes: Array<{ q: number; r: number }>,
@@ -508,14 +745,15 @@ export function packRivalCitiesAroundCore(
   seed: number,
 ): Array<{ q: number; r: number }> {
   if (rivalCount <= 0) return [];
-  const rand = mulberry32((seed ^ 0x9e3779b9) >>> 0);
-  // Pierścień [minDist .. maxDist] wokół stolicy — ciasne skupisko (Maciej 2026-07-22).
-  const pool = landHexes
-    .map(h => ({ h, d: hexDistanceAxial(h.q, h.r, core.q, core.r) }))
-    .filter(x => x.d >= minDist && x.d <= CLUSTER_CITY_STATE_MAX_HEX)
-    .sort((a, b) => b.d - a.d || a.h.q - b.h.q || a.h.r - b.h.r)
-    .map(x => x.h);
-  return poissonPickCities(pool, rivalCount, minDist, rand, { excludeHex: core });
+  return packCityStatesHubChain(
+    landHexes,
+    core,
+    rivalCount,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: core },
+  );
 }
 
 /** Wynik planowania klastra: stolica na krawędzi, państwa w środku. */
@@ -554,65 +792,41 @@ export function buildClusterLayoutWithEdgeCapital(
   rand: () => number,
   anchor?: { q: number; r: number; minDist: number },
   growthReserve = CLUSTER_GROWTH_RESERVE,
+  map?: GameMap,
+  seed = 42,
 ): ClusterLayoutPlan | null {
   if (stateCityCount < 0) return null;
-  const interiorNeed = stateCityCount + growthReserve;
-  const packR = clusterPackRadius(Math.max(1, stateCityCount + 1), minDist);
-  const localPool = landPoolNearCore(region, centrum, interiorNeed + 2, minDist);
 
-  const interiorPicked = poissonPickCities(
-    localPool,
-    interiorNeed,
-    minDist,
-    rand,
-    anchor ? { minDistFrom: anchor, minDistFromValue: anchor.minDist } : undefined,
-  );
-
-  const stateCities = interiorPicked.slice(0, stateCityCount);
-  const growthSlot = interiorPicked.length > stateCityCount
-    ? interiorPicked[stateCityCount] ?? null
-    : null;
-
-  const occupied = [...stateCities];
-  if (growthSlot) occupied.push(growthSlot);
-  const blobCenter = stateCities.length > 0 ? centroidOf(stateCities) : centrum;
-
-  const capitalCandidates = region.filter(c => {
-    if (occupied.some(o => o.q === c.q && o.r === c.r)) return false;
-    if (!isFarEnough(c, occupied, minDist)) return false;
+  const blobCenter = centroidOf(region.length > 0 ? region : [centrum]);
+  let capitalCandidates = region.filter(c => {
     if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
-    if (stateCities.length === 0) return true;
-    const nearestState = Math.min(
-      ...stateCities.map(s => hexDistanceAxial(c.q, c.r, s.q, s.r)),
-    );
-    return nearestState <= packR && nearestState >= minDist;
+    return true;
   });
+  if (map) {
+    const gated = capitalCandidates.filter(c => passesLocalLandGate(map, c.q, c.r));
+    if (gated.length > 0) capitalCandidates = gated;
+  }
+  if (capitalCandidates.length === 0) return null;
 
-  let capital: { q: number; r: number } | null = null;
-  let bestEdgeScore = -Infinity;
-  for (const c of capitalCandidates) {
-    const edgeDist = hexDistanceAxial(c.q, c.r, blobCenter.q, blobCenter.r);
+  capitalCandidates.sort((a, b) => {
+    const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
+    const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
     const jitter = rand() * 0.01;
-    if (edgeDist + jitter > bestEdgeScore) {
-      bestEdgeScore = edgeDist + jitter;
-      capital = c;
-    }
-  }
+    return (db + jitter) - (da + jitter) || a.q - b.q || a.r - b.r;
+  });
+  const capital = capitalCandidates[0]!;
 
-  if (!capital) {
-    const fallbackPool = region.filter(c => {
-      if (occupied.some(o => o.q === c.q && o.r === c.r)) return false;
-      if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
-      return isFarEnough(c, occupied, minDist);
-    });
-    if (fallbackPool.length === 0) return null;
-    fallbackPool.sort((a, b) => {
-      const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
-      const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
-      return db - da || a.q - b.q || a.r - b.r;
-    });
-    capital = fallbackPool[0]!;
-  }
+  const packed = packCityStatesHubChain(
+    region,
+    capital,
+    stateCityCount + growthReserve,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: capital, anchor },
+  );
+  const stateCities = packed.slice(0, stateCityCount);
+  const growthSlot = packed.length > stateCityCount ? packed[stateCityCount] ?? null : null;
 
   return { capital, stateCities, growthSlot };
 }
@@ -637,13 +851,14 @@ function buildClusterCities(
   rand: () => number,
   anchor?: { q: number; r: number; minDist: number },
   seed?: number,
+  map?: GameMap,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   const layout = buildClusterLayoutWithEdgeCapital(
-    region, centrum, stateCityCount, minDist, rand, anchor, CLUSTER_GROWTH_RESERVE,
+    region, centrum, stateCityCount, minDist, rand, anchor, CLUSTER_GROWTH_RESERVE, map, seed ?? 42,
   );
   if (!layout) {
     return buildClusterCitiesSimpleFallback(
-      region, centrum, stateCityCount, minDist, anchor, seed ?? 42,
+      region, centrum, stateCityCount, minDist, anchor, seed ?? 42, map,
     );
   }
   return {
@@ -664,6 +879,7 @@ function buildClusterCitiesSimpleFallback(
   minDist: number,
   anchor: { q: number; r: number; minDist: number } | undefined,
   seed: number,
+  map?: GameMap,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: null } {
   let pool = region;
   if (anchor) {
@@ -682,9 +898,23 @@ function buildClusterCitiesSimpleFallback(
     const db = hexDistanceAxial(b.q, b.r, cen.q, cen.r);
     return db - da || a.q - b.q || a.r - b.r;
   });
-  const capital = capSorted[0] ?? centrum;
+  const gatedCaps = map
+    ? capSorted.filter(c => passesLocalLandGate(map, c.q, c.r))
+    : capSorted;
+  const capital = gatedCaps[0] ?? (map ? null : capSorted[0]) ?? centrum;
+  if (map && !passesLocalLandGate(map, capital.q, capital.r)) {
+    return { cities: [], pendingStateSlots: [], growthSlot: null };
+  }
 
-  const stateCities = packRivalCitiesAroundCore(pool, capital, stateCityCount, minDist, seed);
+  const stateCities = packCityStatesHubChain(
+    pool,
+    capital,
+    stateCityCount,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: capital, anchor },
+  );
   const cities: ClusterCity[] = [{ q: capital.q, r: capital.r, isCapital: true }];
   for (const s of stateCities) {
     cities.push({ q: s.q, r: s.r, isCapital: false });
@@ -693,10 +923,11 @@ function buildClusterCitiesSimpleFallback(
 }
 
 /**
- * MAP-SPAWN-Q1 B: relokacja środków z regionów rozciągniętych na wiele mas;
- * pomija obce typy, których region nie spełnia progu 70% po relokacji.
+ * MAP-SPAWN-Q1 B (Maciej 2026-07-28): relokacja środków / odrzucenie typów,
+ * gdy stolica startowa nie ma ≥70% lądu w promieniu R (lokalnie, nie Voronoi).
  */
-function enforceRegionMassDominance(
+function enforceLocalLandDominance(
+  map: GameMap,
   centrumy: Array<{ q: number; r: number }>,
   regiony: Array<Array<{ q: number; r: number }>>,
   aktywneKlucze: string[],
@@ -704,27 +935,36 @@ function enforceRegionMassDominance(
   masses: Array<Array<{ q: number; r: number }>>,
   rand: () => number,
   minDist: number,
+  mapCenter: { q: number; r: number },
 ): {
   centrumy: Array<{ q: number; r: number }>;
   regiony: Array<Array<{ q: number; r: number }>>;
   aktywneKlucze: string[];
 } {
-  const hexIndex = buildMassHexIndex(masses);
   let relocated = false;
 
-  for (let ci = 1; ci < centrumy.length; ci++) {
-    const region = regiony[ci]!;
-    if (region.length === 0) continue;
-    const { ratio, dominantMassIndex } = regionMassDominance(region, centrumy[ci]!, masses);
-    if (ratio >= REGION_MASS_DOMINANCE_FRAC) continue;
+  for (let ci = 0; ci < centrumy.length; ci++) {
+    const center = centrumy[ci]!;
+    const ok = ci === 0
+      ? passesPlayerStartMassGate(map, center.q, center.r, masses)
+      : passesLocalLandGate(map, center.q, center.r);
+    if (ok) continue;
 
-    const dominantHexes = region.filter(
-      h => hexIndex.get(`${h.q},${h.r}`) === dominantMassIndex,
-    );
-    if (dominantHexes.length === 0) continue;
-
+    const region = regiony[ci] ?? [];
     const others = centrumy.filter((_, i) => i !== ci);
-    const newCenter = pickCenterInMass(dominantHexes, others, minDist, undefined, rand);
+    let newCenter: { q: number; r: number } | null = null;
+    if (ci === 0) {
+      newCenter = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+    } else {
+      newCenter = pickBestLocalLandSpawn(map, region, others, minDist, rand);
+      if (!newCenter) {
+        for (const mass of masses) {
+          newCenter = pickCenterInMassWithLandGate(map, mass, others, minDist, undefined, rand);
+          if (newCenter) break;
+        }
+      }
+    }
+
     if (newCenter) {
       centrumy[ci] = newCenter;
       relocated = true;
@@ -738,19 +978,80 @@ function enforceRegionMassDominance(
     }
   }
 
-  const keep: boolean[] = centrumy.map((_, ci) => {
+  const keep: boolean[] = centrumy.map((c, ci) => {
     if (ci === 0) return true;
-    const region = regiony[ci]!;
-    if (region.length === 0) return false;
-    const { ratio } = regionMassDominance(region, centrumy[ci]!, masses);
-    return ratio >= REGION_MASS_DOMINANCE_FRAC;
+    return passesLocalLandGate(map, c.q, c.r);
   });
+
+  if (!passesLocalLandGate(map, centrumy[0]!.q, centrumy[0]!.r)
+    || !passesPlayerStartMassGate(map, centrumy[0]!.q, centrumy[0]!.r, masses)) {
+    const forced = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+    if (forced) {
+      centrumy[0] = forced;
+      const newRegiony = assignVoronoiRegions(ladowe, centrumy);
+      for (let i = 0; i < regiony.length; i++) {
+        regiony[i] = newRegiony[i]!;
+      }
+      keep[0] = true;
+    }
+  }
 
   const newCentrumy = centrumy.filter((_, i) => keep[i]);
   const newAktywneKlucze = aktywneKlucze.filter((_, i) => keep[i]);
   const newRegiony = assignVoronoiRegions(ladowe, newCentrumy);
 
   return { centrumy: newCentrumy, regiony: newRegiony, aktywneKlucze: newAktywneKlucze };
+}
+
+function clusterCapitalPos(
+  layout: { cities: ClusterCity[] },
+  fallback: { q: number; r: number },
+): { q: number; r: number } {
+  const cap = layout.cities.find(m => m.isCapital) ?? layout.cities[0];
+  return cap ? { q: cap.q, r: cap.r } : fallback;
+}
+
+function buildClusterCitiesWithLandGate(
+  map: GameMap,
+  region: Array<{ q: number; r: number }>,
+  centrum: { q: number; r: number },
+  stateCityCount: number,
+  minDist: number,
+  rand: () => number,
+  anchor: { q: number; r: number; minDist: number } | undefined,
+  seed: number,
+  masses: Array<Array<{ q: number; r: number }>>,
+  existingCenters: Array<{ q: number; r: number }>,
+  minClusterDist: number,
+): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null; centrum: { q: number; r: number } } | null {
+  let activeCentrum = centrum;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const layout = buildClusterCities(
+      region,
+      activeCentrum,
+      stateCityCount,
+      minDist,
+      rand,
+      anchor,
+      seed,
+      map,
+    );
+    const cap = clusterCapitalPos(layout, activeCentrum);
+    if (passesLocalLandGate(map, cap.q, cap.r)) {
+      return { ...layout, centrum: activeCentrum };
+    }
+    const altCenter = pickBestLocalLandSpawn(map, region, existingCenters, minClusterDist, rand);
+    let nextCenter = altCenter;
+    if (!nextCenter) {
+      for (const mass of masses) {
+        nextCenter = pickCenterInMassWithLandGate(map, mass, existingCenters, minClusterDist, undefined, rand);
+        if (nextCenter) break;
+      }
+    }
+    if (!nextCenter) return null;
+    activeCentrum = nextCenter;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -847,6 +1148,7 @@ export function computeClusters(
 
   // --- ŚRODKI TYPÓW: równomiernie po masach lądu (kontynenty/wyspy), nie tylko greedy shuffle ---
   const centrumy = placeClusterCentersAcrossLandmasses(
+    map,
     ladowe,
     nTypy,
     minDystKlastrow,
@@ -891,8 +1193,9 @@ export function computeClusters(
   let activeKlucze = rosterTrimmed.slice();
   let regiony = assignVoronoiRegions(ladowe, activeCentrumy);
 
-  // MAP-SPAWN-Q1 B: dominacja masy w regionie (relokacja / pominięcie typu).
-  const dominanceResult = enforceRegionMassDominance(
+  // MAP-SPAWN-Q1 B: lokalny ląd ≥70% w promieniu stolicy (relokacja / pominięcie typu).
+  const dominanceResult = enforceLocalLandDominance(
+    map,
     activeCentrumy,
     regiony,
     activeKlucze,
@@ -900,6 +1203,7 @@ export function computeClusters(
     masses,
     rand,
     minDystKlastrow,
+    mapCenter,
   );
   activeCentrumy = dominanceResult.centrumy;
   activeKlucze = dominanceResult.aktywneKlucze;
@@ -907,7 +1211,7 @@ export function computeClusters(
 
   if (activeCentrumy.length < nTypy && typeof console !== 'undefined') {
     console.warn(
-      `[clusters] Po filtrze 70% masy: ${activeCentrumy.length}/${nTypy} aktywnych klastrów`,
+      `[clusters] Po bramce lokalnego lądu 70% (R=${LOCAL_LAND_DOMINANCE_RADIUS}): ${activeCentrumy.length}/${nTypy} aktywnych klastrów`,
     );
   }
 
@@ -917,7 +1221,8 @@ export function computeClusters(
 
   const playerCentrum = activeCentrumy[0]!;
   const playerRegion = regiony[0]!;
-  const playerLayout = buildClusterCities(
+  const playerLayoutResult = buildClusterCitiesWithLandGate(
+    map,
     playerRegion,
     playerCentrum,
     stateCityCount,
@@ -925,12 +1230,52 @@ export function computeClusters(
     rand,
     undefined,
     seed,
+    masses,
+    [],
+    minDystKlastrow,
   );
 
-  const playerCapital = playerLayout.cities.find(m => m.isCapital) ?? playerLayout.cities[0];
-  const playerCapitalPos = playerCapital
+  let playerCentrumFinal = playerCentrum;
+  let playerLayout: {
+    cities: ClusterCity[];
+    pendingStateSlots: Array<{ q: number; r: number }>;
+    growthSlot: { q: number; r: number } | null;
+  };
+
+  if (playerLayoutResult) {
+    playerLayout = playerLayoutResult;
+    playerCentrumFinal = playerLayoutResult.centrum;
+  } else {
+    const forced = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+    if (forced) {
+      playerCentrumFinal = forced;
+      playerLayout = {
+        cities: [{ q: forced.q, r: forced.r, isCapital: true }],
+        pendingStateSlots: [],
+        growthSlot: null,
+      };
+    } else {
+      playerLayout = { cities: [], pendingStateSlots: [], growthSlot: null };
+    }
+  }
+
+  let playerCapital = playerLayout.cities.find(m => m.isCapital) ?? playerLayout.cities[0];
+  let playerCapitalPos = playerCapital
     ? { q: playerCapital.q, r: playerCapital.r }
-    : playerCentrum;
+    : playerCentrumFinal;
+
+  if (!passesPlayerStartMassGate(map, playerCapitalPos.q, playerCapitalPos.r, masses)) {
+    const fixed = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand);
+    if (fixed) {
+      playerCentrumFinal = fixed;
+      playerCapitalPos = fixed;
+      playerLayout = {
+        cities: [{ q: fixed.q, r: fixed.r, isCapital: true }],
+        pendingStateSlots: [],
+        growthSlot: null,
+      };
+    }
+  }
 
   // Pre-plan państw gracza: ciasne skupisko wokół stolicy (min/max 4 hex — Maciej 2026-07-28).
   const playerStateSlots = packRivalCitiesAroundCore(
@@ -944,7 +1289,7 @@ export function computeClusters(
   klastry.push({
     typIndex: 0,
     typ: activeKlucze[0] ?? playerKlucz,
-    centrum: playerCentrum,
+    centrum: playerCentrumFinal,
     miasta: playerLayout.cities,
     pendingStateSlots: playerStateSlots,
     growthSlot: playerLayout.growthSlot,
@@ -953,7 +1298,8 @@ export function computeClusters(
   for (let ci = 1; ci < activeCentrumy.length; ci++) {
     const centrum = activeCentrumy[ci]!;
     const region = regiony[ci]!;
-    const foreignLayout = buildClusterCities(
+    const foreignLayoutResult = buildClusterCitiesWithLandGate(
+      map,
       region,
       centrum,
       stateCityCount,
@@ -961,14 +1307,18 @@ export function computeClusters(
       rand,
       { q: playerCapitalPos.q, r: playerCapitalPos.r, minDist: minDystObcyOdGracza },
       seed,
+      masses,
+      activeCentrumy.slice(0, ci),
+      minDystKlastrow,
     );
+    if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) continue;
 
     klastry.push({
-      typIndex: ci,
+      typIndex: klastry.length,
       typ: activeKlucze[ci] ?? `typ${ci}`,
-      centrum,
-      miasta: foreignLayout.cities,
-      growthSlot: foreignLayout.growthSlot,
+      centrum: foreignLayoutResult.centrum,
+      miasta: foreignLayoutResult.cities,
+      growthSlot: foreignLayoutResult.growthSlot,
     });
   }
 

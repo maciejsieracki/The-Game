@@ -14,12 +14,16 @@ import {
 import {
   computeClusters,
   packRivalCitiesAroundCore,
+  packCityStatesHubChain,
   MIN_DIST_START_CITY_STATE,
   CLUSTER_CITY_STATE_MAX_HEX,
+  groupHabitableMasses,
+  passesPlayerStartMassGate,
+  pickPlayerClusterCenter,
   type ClusterPlacement,
   type TypeCluster,
 } from './clusters';
-import { hexDistanceAxial } from './gen-helpers';
+import { hexDistanceAxial, mulberry32 } from './gen-helpers';
 import { TerenBazowy } from '../types/hex';
 
 /** Slot startowy — kontrakt dla SILNIK (D-START). */
@@ -106,7 +110,7 @@ export function buildSameTypeRivalSlots(
 
 /**
  * Rozszerzona pula kandydatów na państwa-miasta wokół FAKTYCZNEJ stolicy gracza.
- * Pre-plan z mapgen = podgląd; spawn używa rdzenia gracza + backfill (E-START-CS-Q1 C).
+ * Pre-plan z mapgen = podgląd; spawn używa rdzenia gracza + łańcuch hubów (E-START-CS-Q1 C).
  */
 export function buildSameTypeRivalCandidateHexes(
   map: GameMap,
@@ -117,36 +121,30 @@ export function buildSameTypeRivalCandidateHexes(
   if (rivalCount <= 0) return [];
   const land = landHexesFromMap(map);
   const minDist = MIN_DIST_START_CITY_STATE;
-  const maxDist = CLUSTER_CITY_STATE_MAX_HEX;
-  const out: Array<{ q: number; r: number }> = [];
-  const seen = new Set<string>();
-  const coreKey = `${core.q},${core.r}`;
 
-  /** Dodaj hex tylko gdy pierścień [minDist..maxDist] od rdzenia i minDist od już zebranych. */
-  function tryAdd(h: { q: number; r: number }): boolean {
-    const k = `${h.q},${h.r}`;
-    if (k === coreKey || seen.has(k)) return false;
-    const dCore = hexDistanceAxial(h.q, h.r, core.q, core.r);
-    if (dCore < minDist || dCore > maxDist) return false;
-    if (out.some(p => hexDistanceAxial(p.q, p.r, h.q, h.r) < minDist)) return false;
-    seen.add(k);
-    out.push(h);
-    return true;
+  const seeds = [seed, (seed + 0x517cc1b7) >>> 0, (seed + 0x85ebca6b) >>> 0, (seed + 0xc2b2ae35) >>> 0];
+  for (const s of seeds) {
+    const packed = packCityStatesHubChain(
+      land,
+      core,
+      rivalCount,
+      minDist,
+      CLUSTER_CITY_STATE_MAX_HEX,
+      s,
+      { excludeHex: core },
+    );
+    if (packed.length >= rivalCount) return packed.slice(0, rivalCount);
+    if (packed.length > 0) return packed;
   }
-
-  function mergePass(extraSeed: number, count: number): void {
-    const hexes = packRivalCitiesAroundCore(land, core, count, minDist, extraSeed);
-    for (const h of hexes) tryAdd(h);
-  }
-
-  // Główny pakiet + zapasowe seedy gdy founding odrzuci pole (teren).
-  mergePass(seed, rivalCount);
-  if (out.length < rivalCount) {
-    mergePass((seed + 0x517cc1b7) >>> 0, rivalCount);
-    mergePass((seed + 0x85ebca6b) >>> 0, rivalCount);
-    mergePass((seed + 0xc2b2ae35) >>> 0, rivalCount);
-  }
-  return out;
+  return packCityStatesHubChain(
+    land,
+    core,
+    rivalCount,
+    minDist,
+    CLUSTER_CITY_STATE_MAX_HEX,
+    seed,
+    { excludeHex: core },
+  );
 }
 
 export interface BuildClusterSpawnInput {
@@ -218,7 +216,18 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     };
   }
 
-  const capPos = capitalOf(playerCluster) ?? fallbackHex;
+  const capPosRaw = capitalOf(playerCluster) ?? fallbackHex;
+  const land = landHexesFromMap(map);
+  const masses = groupHabitableMasses(land);
+  let capPos = capPosRaw;
+  if (!passesPlayerStartMassGate(map, capPos.q, capPos.r, masses)) {
+    const mapCenter = {
+      q: (map.szerokoscQ - 1) / 2,
+      r: (map.wysokoscR - 1) / 2,
+    };
+    const fixed = pickPlayerClusterCenter(map, masses, land, mapCenter, mulberry32(seed));
+    if (fixed) capPos = fixed;
+  }
   const slots: ClusterSpawnSlot[] = [];
   const clusterCapitalOwnerIds: number[] = [];
   let nextOwnerId = 1;

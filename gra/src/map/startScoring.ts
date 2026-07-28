@@ -8,6 +8,7 @@
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
 import { hexDistance, keyOf } from '../units/setup';
+import { groupHabitableMasses, passesPlayerStartMassGate } from './clusters';
 
 /** Domyślny promień (legacy / testy) — w grze używaj {@link startRevealRadiusForDifficulty}. */
 export const START_REVEAL_RADIUS = 5;
@@ -96,17 +97,35 @@ export function scoreCityStartHex(map: GameMap, q: number, r: number): number {
 
 /**
  * Najlepszy hex startu gracza — deterministyczny tie-break: bliżej centrum mapy.
+ * MAP-SPAWN-Q1 B: tylko hexy z lokalnym lądem ≥70% (R=3) na masie ≥25 hex (wyspy odpadają).
  */
 export function findBestPlayerStartHex(map: GameMap): { q: number; r: number } | null {
   const cq = Math.round((map.szerokoscQ - 1) / 2);
   const cr = Math.round((map.wysokoscR - 1) / 2);
 
+  const ladowe: Array<{ q: number; r: number }> = [];
+  for (const hex of Object.values(map.hexes)) {
+    if (!canFoundOnTerrain(hex.terenBazowy)) continue;
+    ladowe.push({ q: hex.coords.q, r: hex.coords.r });
+  }
+  const masses = groupHabitableMasses(ladowe);
+
   let best: { q: number; r: number } | null = null;
   let bestScore = -Infinity;
   let bestCenterDist = Infinity;
 
-  for (const hex of Object.values(map.hexes)) {
+  const orderedHexes = [...Object.values(map.hexes)].sort((a, b) => {
+    const onLargest = (h: typeof a) => {
+      if (masses.length === 0) return 1;
+      const m0 = new Set(masses[0]!.map(x => `${x.q},${x.r}`));
+      return m0.has(`${h.coords.q},${h.coords.r}`) ? 0 : 1;
+    };
+    return onLargest(a) - onLargest(b);
+  });
+
+  for (const hex of orderedHexes) {
     const { q, r } = hex.coords;
+    if (!passesPlayerStartMassGate(map, q, r, masses)) continue;
     const s = scoreCityStartHex(map, q, r);
     if (s === -Infinity) continue;
     const cd = hexDistance(q, r, cq, cr);

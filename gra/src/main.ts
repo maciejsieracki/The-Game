@@ -750,7 +750,7 @@ import {
 } from './ui/diplomacyPanel';
 import {
   showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
-  showWarConsentModal, requestAutoCounterNegotiation,
+  showWarConsentModal,
   type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
 } from './ui/diplomacyAudience';
 import { civLeaderMedallionHtmlById } from './ui/diploUiSkin';
@@ -5166,7 +5166,9 @@ async function boot(): Promise<void> {
     }
 
     function civDisplayNameForOwner(ownerId: number): string | undefined {
-      const civKey = aiOwnerCivMap.get(ownerId);
+      const civKey = ownerId === 0
+        ? civTypeForOwner(0)
+        : aiOwnerCivMap.get(ownerId);
       if (!civKey) return undefined;
       const row = data.civs.cywilizacje.find(
         (c: { ikonaId?: string; typCywilizacji?: string }) =>
@@ -9108,11 +9110,9 @@ async function boot(): Promise<void> {
       const entry = negotiationTable.find(n => n.id === negotiationId);
       if (!entry) return;
       const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
-      // Gracz chce negocjować — po otwarciu audiencji od razu formularz kontroferty, nie
-      // tylko kolumna z przyciskiem „Przyjmij" (który finalizuje propozycję AI).
-      if (entry.awaitingOwnerId === 0 && canCounterNegotiation(entry)) {
-        requestAutoCounterNegotiation(negotiationId);
-      }
+      // Przychodząca propozycja AI: audiencja z kartą „Oczekujące propozycje" (Przyjmij/
+      // Odrzuć/Kontruj). NIE auto-otwieramy pustego kreatora „Handel jednorazowy" — Maciej
+      // 2026-07-28 (bug UX: puste Oferujemy|Oferują przy kontakcie AI).
       openDiplomacyAudience(aiOwnerId);
     }
 
@@ -9924,7 +9924,11 @@ async function boot(): Promise<void> {
           if (uiActionId === '5') {
             counterInitial = {
               giveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
-              receiveItems: p.giveItems?.length ? [...p.giveItems] : undefined,
+              receiveItems: p.giveItems?.length
+                ? [...p.giveItems]
+                : (p.goldOnce ?? 0) > 0
+                  ? [{ typ: 'zloto', id: 'zloto', ilosc: p.goldOnce! }]
+                  : undefined,
               turns: p.turns,
               resourceTradeMode: p.resourceTradeMode,
             };
@@ -12147,7 +12151,7 @@ async function boot(): Promise<void> {
         refreshD1bHud();
         if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
       }
-      const playerCivName = String(player.civType || 'Gracz');
+      const playerCivName = civDisplayNameForKey(civTypeForOwner(0));
       showDiplomacyAudience({
         ownerId,
         getState: () => {

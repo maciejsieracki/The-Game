@@ -3978,3 +3978,12 @@ Bramki: tsc 0 · cluster-start 123/0 · river-map-scale 11/0 · VERIFY OK.
 Zakres: re-build ze zrodla roboczego (niezacommitowane gra/src+data) — rzeki W2 · MAP-SPAWN C+B · civ 4/5/6/10/12/15 · filtr epoki.
 Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 CZEKAM-NA: Maciej otwiera `9b8f3539`
+
+## [18:48] INTEGRATOR -> MASTER + Maciej (sesja lokalna) -- deploy all FALA 69 ROBOCZA
+
+Publish `gra-robocza/` — pelny deploy all (Maciej: deploy all).
+md5: `d109dfa85c7006e708352e839d4330f2` (skrot `d109dfa8`) | stempel ROBOCZA · d109dfa8
+Bramki: tsc 0 · diplomacy-display 28/0 · map-scale-menu 97/0 · cluster-start PASS (partial) · VERIFY OK · POLE-BITWY `dd399c4b`.
+Zakres: CIV-MAP-EPOCH-Q1 · HUD 1 wiersz chipy+Civpedia+Menu · karta jednostki left 86px · Grecy display name · fix pustej tablicy handlu AI · MAP-SPAWN 70% lokalny + MP packing · + dziedziczone rzeki W2/civ counts/filtr epoki.
+Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+CZEKAM-NA: Maciej otwiera `d109dfa8`

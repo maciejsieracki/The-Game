@@ -43,7 +43,6 @@ import { MINIMAP_H_PX, MINIMAP_W_PX, utilDockBottomCss, utilDockLeftCss } from '
 import {
   cityViewRightClusterRightCss,
   CITY_EDGE_PX,
-  HUD_CONTEXT_PANEL_W_PX,
   HUD_EDGE_PX,
   HUD_GAP_MD_PX,
   HUD_POWER_TOP_PX,
@@ -495,7 +494,7 @@ function ensureStyles(): void {
   const css = `
 html.civ-ui-zoom-active{overflow:hidden;width:100%;height:100%;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 380px),680px);}
-html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:${HUD_ZOOM_EDGE_PX}px;max-width:min(38vw,520px);}
+html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 120px),960px);}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-shell{padding:7px 10px;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:nowrap;max-width:none;}
@@ -521,11 +520,11 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:nowrap;}
 .civ-hud .hud-chip-tail-group{display:inline-flex;align-items:center;flex-wrap:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-banner-right{flex-shrink:0;max-width:min(calc(50vw - 340px),780px);}
-/* Prawy klaster: chipy NAD Civpedia/Menu (nie w jednym wierszu — inaczej Menu wypada poza ekran). */
+/* Prawy klaster: jeden wiersz — chipy Armia…Religia, odstęp, Civpedia + Menu (prawy róg). */
 .civ-hud .hud-right-cluster{pointer-events:auto;position:fixed;top:${HUD_TOP_PX}px;right:${HUD_EDGE_PX}px;z-index:320;
-  display:flex;flex-direction:column;align-items:flex-end;gap:${HUD_RIGHT_RAIL_ROW_GAP_PX}px;
-  max-width:min(calc(50vw - 150px),780px);}
-.civ-hud .hud-right-cluster .hud-right{width:100%;max-width:${HUD_CONTEXT_PANEL_W_PX}px;justify-content:flex-end;}
+  display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:${HUD_RIGHT_RAIL_ROW_GAP_PX}px;
+  max-width:min(calc(100vw - 200px),960px);}
+.civ-hud .hud-right-cluster .hud-right{width:auto;max-width:none;justify-content:flex-end;flex-shrink:0;}
 .civ-hud .hud-chip-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-chip{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-chip-click{cursor:pointer;border-radius:8px;padding:2px 4px;margin:-2px -4px;}

@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`934ac394`** (FALA 67, 17:42) — deploy all: rzeki W2 + MAP-SPAWN C+B + typy cywilizacji (4/5/6/10/12/15) + filtr epoki startu. Poprzedni: FALA 66 `20b25cc0` (częściowy). Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`d109dfa8`** (FALA 69, 18:48) — deploy all: CIV-MAP-EPOCH-Q1 + HUD 1 wiersz + karta jednostki left 86px + Grecy display name + fix handlu AI + MAP-SPAWN 70%/MP packing + dziedziczone rzeki W2/civ counts/filtr epoki. Poprzedni: FALA 68 `9b8f3539`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

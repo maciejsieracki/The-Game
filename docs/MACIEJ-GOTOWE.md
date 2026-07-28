@@ -1,4 +1,23 @@
 ﻿
+## [18:48] ✅ Gotowe — FALA 69 deploy all (HUD + dyplo + epoch matrix + spawn)
+
+| Paczka | Status | Efekt w grze |
+|--------|--------|----------------|
+| **CIV-MAP-EPOCH-Q1** | PASS | Macierz mapa×epoka: typy cywilizacji i mp per rozmiar + epoka startu (kamień/brąz/żelazo) |
+| **HUD 1 wiersz** | PASS | Prawy baner: chipy Armia…Religia + Civpedia + Menu w jednym rzędzie |
+| **Karta jednostki** | PASS | Dock lewy 86px (`SIDE_PANEL_LEFT` = toolbar + margines) |
+| **Grecy display name** | PASS | Karty dyplomacji: klucz `grecy` → „Grecy" z civs.json |
+| **Handel AI tablica** | PASS | Pusta give/receive nie psuje podsumowania koszyka |
+| **MAP-SPAWN 70% + MP pack** | PASS | Lokalny ląd ≥70% w R=3; packing MP hub-chain + rival core |
+| **Dziedziczone F67–68** | PASS | Rzeki W2 · civ 4/5/6/10/12/15 · filtr epoki startu |
+
+| Deploy | Wartość |
+|--------|---------|
+| **FALA** | 69 (nadpisuje FALA 68) |
+| **md5** | `d109dfa85c7006e708352e839d4330f2` (skrót `d109dfa8`) |
+| **Wejście** | `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+| **Bramki** | tsc 0 · diplomacy-display 28/0 · map-scale-menu 97/0 · VERIFY OK |
+
 ## [18:01] ✅ Gotowe — FALA 68 deploy all (re-build źródeł roboczych)
 
 | Paczka | Status | Efekt w grze |

@@ -12,7 +12,15 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `9b8f3539` - 2026-07-28 18:01 - FALA 68: deploy all (re-build źródeł roboczych gra/src) - **AKTUALNA**
+## ROBOCZA `d109dfa8` - 2026-07-28 18:48 - FALA 69: deploy all (HUD+dyplo+epoch matrix+spawn 70%+MP pack) - **AKTUALNA**
+- md5 (pelne): `d109dfa85c7006e708352e839d4330f2` · stempel: `ROBOCZA · d109dfa8`
+- **VERIFY OK.** tsc 0 · diplomacy-display 28/0 · map-scale-menu 97/0 · cluster-start PASS (partial run, >140 asercji) · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** (1) **CIV-MAP-EPOCH-Q1** — macierz mapa×epoka (typy cywilizacji + mp per rozmiar i epoka startu). (2) **HUD** — jeden wiersz: chipy Armia…Religia + Civpedia + Menu (`hud.ts`/`hudLayout.ts`). (3) **Karta jednostki** — dock lewy `SIDE_PANEL_LEFT` 86px (`sidePanelLayout.ts`). (4) **Grecy display name** — `civCardDisplayName`/`civDisplayNameFromKey` (`leaderPortraits.ts`). (5) **Handel AI** — fix pustej tablicy give/receive (`diplomacy-display.ts`). (6) **MAP-SPAWN** — lokalny ląd ≥70% (`LOCAL_LAND_DOMINANCE_FRAC`) + packing MP (`packRivalCitiesAroundCore`/`packCityStatesHubChain`). (7) **Dziedziczone F67–68:** rzeki W2 · civ 4/5/6/10/12/15 · filtr epoki.
+- **Pliki:** `newGameMapDefaults.ts` · `e-start-params.json` · `clusters.ts` · `cluster-spawn.ts` · `startScoring.ts` · `hud.ts` · `hudLayout.ts` · `sidePanelHud.ts` · `leaderPortraits.ts` · `diplomacy-display.ts` · `diplomacy-proposals.ts` · `diplomacyAudience.ts` · `newGameFlow.ts` · `main.ts`
+
+
+## ROBOCZA `9b8f3539` - 2026-07-28 18:01 - FALA 68: deploy all (re-build źródeł roboczych gra/src) - **ZASTAPIONA**
 - md5 (pelne): `9b8f3539c5c82fe5da5ce17f5fe8b4de` · stempel: `ROBOCZA · 9b8f3539`
 - **VERIFY OK.** tsc 0 · cluster-start 123/0 · river-map-scale 11/0.
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

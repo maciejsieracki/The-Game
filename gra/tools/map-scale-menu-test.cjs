@@ -1,5 +1,5 @@
 'use strict';
-/** Regresja menu skali kreatora (Maciej 2026-07-04: mp max 9, typy osobno). */
+/** Regresja menu skali kreatora (Maciej 2026-07-04: mp max 9; CIV-MAP-EPOCH-Q1: typy mapa×epoka). */
 
 const esbuild = require('esbuild');
 const path = require('path');
@@ -14,8 +14,10 @@ fs.writeFileSync(
   `export {
   MAX_MIAST_PANSTWA,
   MAX_TYPY_CYWILIZACJI_MENU,
+  EPOCH_CIV_TYPE_POOL,
   miastaPanstwaMenuForMapLabel,
   civTypesMenuForMapLabel,
+  civTypesTripleForMapLabel,
   defaultMiastaPanstwaFromMapLabel,
   defaultCivTypesFromMapLabel,
 } from '../src/map/newGameMapDefaults';`,
@@ -43,44 +45,99 @@ function assert(c, msg) {
   else { failed++; console.error('FAIL:', msg); }
 }
 
-const EXPECT = {
-  Malenki: { mp: [2, 3, 4], typy: [3, 4, 5] },
-  Mały: { mp: [3, 4, 5], typy: [4, 5, 6] },
-  Standardowy: { mp: [4, 6, 7], typy: [5, 6, 7] },
-  Duży: { mp: [5, 7, 8], typy: [9, 10, 11] },
-  Ogromny: { mp: [6, 8, 9], typy: [11, 12, 13] },
-  'Super Huge': { mp: [7, 8, 9], typy: [14, 15, 15] },
+const MP_EXPECT = {
+  Malenki: [2, 3, 4],
+  Mały: [3, 4, 5],
+  Standardowy: [4, 6, 7],
+  Duży: [5, 7, 8],
+  Ogromny: [6, 8, 9],
+  'Super Huge': [7, 8, 9],
 };
 
-console.log('map-scale-menu-test (Panel-E + menu kreatora)\n');
+/** CIV-MAP-EPOCH-Q1 = A — macierz mapa × epoka */
+const TYPY_EXPECT = {
+  Malenki: {
+    kamien: [2, 3, 4],
+    braz: [3, 4, 5],
+    zelazo: [3, 4, 5],
+  },
+  Mały: {
+    kamien: [3, 4, 5],
+    braz: [4, 5, 6],
+    zelazo: [4, 5, 6],
+  },
+  Standardowy: {
+    kamien: [4, 5, 6],
+    braz: [5, 6, 7],
+    zelazo: [5, 6, 7],
+  },
+  Duży: {
+    kamien: [5, 6, 7],
+    braz: [8, 9, 10],
+    zelazo: [9, 10, 11],
+  },
+  Ogromny: {
+    kamien: [6, 7, 8],
+    braz: [10, 11, 12],
+    zelazo: [11, 12, 13],
+  },
+  'Super Huge': {
+    kamien: [6, 7, 8],
+    braz: [12, 13, 14],
+    zelazo: [13, 14, 15],
+  },
+};
+
+const EPOCH_POOL = { kamien: 8, braz: 14, zelazo: 15 };
+
+console.log('map-scale-menu-test (Panel-E + menu kreatora + CIV-MAP-EPOCH-Q1)\n');
 
 assert(M.MAX_MIAST_PANSTWA === 9, 'MAX_MIAST_PANSTWA=9');
 assert(M.MAX_TYPY_CYWILIZACJI_MENU === 15, 'MAX_TYPY_CYWILIZACJI_MENU=15');
+assert(M.EPOCH_CIV_TYPE_POOL.kamien === 8, 'pula kamień=8');
+assert(M.EPOCH_CIV_TYPE_POOL.braz === 14, 'pula brąz=14');
+assert(M.EPOCH_CIV_TYPE_POOL.zelazo === 15, 'pula żelazo=15');
 
-for (const [label, exp] of Object.entries(EXPECT)) {
+for (const [label, exp] of Object.entries(MP_EXPECT)) {
   const mp = M.miastaPanstwaMenuForMapLabel(label);
   assert(
-    mp.opts.join(',') === exp.mp.join(','),
-    `${label} mp menu ${mp.opts.join('·')} (exp ${exp.mp.join('·')})`,
+    mp.opts.join(',') === exp.join(','),
+    `${label} mp menu ${mp.opts.join('·')} (exp ${exp.join('·')})`,
   );
   assert(
-    M.defaultMiastaPanstwaFromMapLabel(label) === exp.mp[1],
-    `${label} domyślne mp=${exp.mp[1]}`,
+    M.defaultMiastaPanstwaFromMapLabel(label) === exp[1],
+    `${label} domyślne mp=${exp[1]}`,
   );
-
-  const typy = M.civTypesMenuForMapLabel(label);
-  assert(
-    typy.opts.join(',') === exp.typy.join(','),
-    `${label} typy menu ${typy.opts.join('·')} (exp ${exp.typy.join('·')})`,
-  );
-  assert(
-    M.defaultCivTypesFromMapLabel(label) === exp.typy[1],
-    `${label} domyślne typy=${exp.typy[1]}`,
-  );
-
   const maxMp = parseInt(mp.opts[mp.opts.length - 1], 10);
   assert(maxMp <= M.MAX_MIAST_PANSTWA, `${label} mp max ${maxMp} ≤ ${M.MAX_MIAST_PANSTWA}`);
 }
+
+for (const [label, epochs] of Object.entries(TYPY_EXPECT)) {
+  for (const [epoch, exp] of Object.entries(epochs)) {
+    const typy = M.civTypesMenuForMapLabel(label, epoch);
+    assert(
+      typy.opts.join(',') === exp.join(','),
+      `${label}+${epoch} typy menu ${typy.opts.join('·')} (exp ${exp.join('·')})`,
+    );
+    assert(
+      M.defaultCivTypesFromMapLabel(label, epoch) === exp[1],
+      `${label}+${epoch} domyślne typy=${exp[1]}`,
+    );
+    const triple = M.civTypesTripleForMapLabel(label, epoch);
+    const min = triple.min;
+    const max = triple.max;
+    const pool = EPOCH_POOL[epoch];
+    assert(min < max, `${label}+${epoch} min(${min}) < max(${max})`);
+    assert(max <= pool, `${label}+${epoch} max(${max}) ≤ pula(${pool})`);
+  }
+}
+
+// Skróty z zadania
+const duzyKamien = M.civTypesTripleForMapLabel('Duży', 'kamien');
+assert(duzyKamien.min < duzyKamien.max && duzyKamien.max <= 8, 'Duży+kamień min<max i max≤8');
+
+const superZelazo = M.civTypesTripleForMapLabel('Super Huge', 'zelazo');
+assert(superZelazo.max === 15, 'Super Huge+żelazo max=15');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
