@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`b68ed206`** (FALA 60, 13:45) — wyrównanie HUD (`hudLayout.ts`, mapa 20px / miasto 32px / zoom 10px). Poprzedni: FALA 59 `0e985a95`. **Nie wdrożone:** handel AI · przyciski Połącz/Rozdziel/Lista na karcie armii. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`846db7fc`** (FALA 61, 14:10) — kreator: ustawienie **Bitwy** (Automatyczne/Ręczna) + modal zaawansowany (layout, Zamknij widoczny). Poprzedni: FALA 60 `b68ed206`. **Nie wdrożone:** handel AI · przyciski Połącz/Rozdziel/Lista na karcie armii. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

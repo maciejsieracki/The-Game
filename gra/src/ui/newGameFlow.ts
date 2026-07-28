@@ -607,7 +607,7 @@ let selEpoch = 'kamien';
 // Style (scoped .civ-newgame)
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-newgame-css-v2';
+const STYLE_ID = 'civ-newgame-css-v3';
 function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-newgame-css')?.remove();
@@ -736,7 +736,7 @@ function ensureStyles(): void {
 .civ-newgame .ec .bdg{font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-family:Arial,sans-serif;padding:3px 10px;border-radius:12px;border:1px solid var(--gold-dim);color:var(--gold-dim);}
 .civ-newgame .ec.sel .bdg{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.1);}
 .civ-newgame .ec .fl{flex:1;width:100%;font-size:11px;color:var(--tx2);font-style:italic;line-height:1.45;min-height:4.35em;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
-.civ-newgame .sett-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;max-width:720px;margin:0 auto;align-items:stretch;}
+.civ-newgame .sett-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;max-width:720px;margin-left:auto;margin-right:clamp(24px,8vw,120px);align-items:stretch;}
 .civ-newgame .qual-sect{max-width:700px;margin:1.1rem auto 0;text-align:center;}
 .civ-newgame .qual-sect h3{font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:var(--tx2);margin-bottom:.65rem;font-family:Arial,sans-serif;font-weight:400;}
 .civ-newgame .qual-hint{color:#E8C060;font-size:12px;line-height:1.55;margin:.75rem auto 0;max-width:520px;font-family:Arial,sans-serif;}
@@ -779,19 +779,23 @@ function ensureStyles(): void {
 .civ-newgame .ng-glyph-ep{font-size:22px;font-weight:600;}
 .civ-newgame .start{background:transparent;border:2px solid var(--gold);color:var(--gold-light);font-size:14px;letter-spacing:.3em;text-transform:uppercase;padding:13px 50px;cursor:pointer;border-radius:var(--radius);font-family:var(--civ-font-ui);margin:1.4rem auto 0;display:block;}
 .civ-newgame .start:hover{background:rgba(232,216,138,0.12);}
-.civ-newgame .sett-actions{max-width:700px;margin:1rem auto 0;display:flex;flex-direction:column;gap:10px;align-items:center;}
+.civ-newgame .sett-actions{max-width:700px;margin:1rem clamp(24px,8vw,120px) 0 auto;display:flex;flex-direction:column;gap:10px;align-items:center;}
 .civ-newgame .btn-adv{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);font-size:12px;letter-spacing:.15em;text-transform:uppercase;padding:9px 28px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
 .civ-newgame .btn-adv:hover{color:var(--tx);background:rgba(255,255,255,.03);}
-.civ-newgame .sett-note{font-size:11px;color:var(--tx-muted);text-align:center;max-width:700px;margin:.35rem auto 0;font-family:Arial,sans-serif;line-height:1.4;}
-.civ-newgame .adv-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:1rem;}
+.civ-newgame .sett-note{font-size:11px;color:var(--tx-muted);text-align:center;max-width:700px;margin:.35rem clamp(24px,8vw,120px) 0 auto;font-family:Arial,sans-serif;line-height:1.4;}
+.civ-newgame .adv-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);display:none;align-items:flex-start;justify-content:flex-end;padding:1rem 2rem 1rem 1rem;overflow-y:auto;}
 .civ-newgame .adv-overlay.open{display:flex;}
-.civ-newgame .adv-modal{background:#12121A;border:1px solid var(--bd-mid);border-radius:var(--radius-lg);max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:1.4rem 1.6rem;}
+.civ-newgame .adv-modal{background:#12121A;border:1px solid var(--bd-mid);border-radius:var(--radius-lg);max-width:520px;width:100%;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;margin-left:auto;flex-shrink:0;}
+.civ-newgame .adv-modal-head{padding:1.2rem 1.4rem 0;flex-shrink:0;}
 .civ-newgame .adv-modal h3{font-size:18px;font-weight:400;letter-spacing:.12em;color:var(--gold-light);margin-bottom:4px;}
-.civ-newgame .adv-sub{font-size:11px;color:var(--tx-muted);font-family:Arial,sans-serif;margin-bottom:1rem;line-height:1.45;}
-.civ-newgame .adv-row{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
+.civ-newgame .adv-sub{font-size:11px;color:var(--tx-muted);font-family:Arial,sans-serif;margin-bottom:.75rem;line-height:1.45;}
+.civ-newgame .adv-modal-body{flex:1;overflow-y:auto;padding:.5rem 1.4rem;min-height:0;}
+.civ-newgame .adv-row{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;}
+.civ-newgame .adv-row .sv{min-height:auto;font-size:14px;}
+.civ-newgame .adv-row .sv .d{min-height:auto;-webkit-line-clamp:3;}
 .civ-newgame .adv-lbl{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;margin-bottom:6px;}
-.civ-newgame .adv-hint{font-size:10px;color:var(--tx-muted);font-family:Arial,sans-serif;margin-top:4px;font-style:italic;line-height:1.35;}
-.civ-newgame .adv-btns{display:flex;justify-content:flex-end;margin-top:1rem;}
+.civ-newgame .adv-modal-foot{flex-shrink:0;padding:.85rem 1.4rem 1.2rem;border-top:1px solid var(--bd-sub);background:#12121A;}
+.civ-newgame .adv-btns{display:flex;justify-content:flex-end;}
 .civ-newgame .adv-close{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);padding:8px 20px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
 `;
   const s = document.createElement('style');
@@ -1060,9 +1064,9 @@ function advancedSettingRows(): AdvSettingRow[] {
     },
     {
       key: 'battleAlwaysManual',
-      lbl: 'Szczegółowość bitew',
-      hint: 'UNITS: auto-resolve vs wejście w scenę bitwy.',
-      opts: ['Automatyczne', 'Zawsze ręczna'],
+      lbl: 'Bitwy',
+      hint: 'Automatyczne — wynik na mapie. Ręczna — wejście w scenę bitwy.',
+      opts: ['Automatyczne', 'Ręczna'],
       getIdx: () => (advOpts.battleAlwaysManual ? 1 : 0),
       setIdx: (i) => { advOpts.battleAlwaysManual = i === 1; },
     },
@@ -1132,8 +1136,11 @@ function showAdvancedModal(): void {
   const overlay = ensureAdvOverlay();
   overlay.innerHTML = '';
   const modal = el('div', 'adv-modal');
-  modal.appendChild(el('h3', '', 'Zaawansowane opcje'));
-  modal.appendChild(el('div', 'adv-sub', 'Parametry rzadko zmieniane — poza główną siatką kroku 4.'));
+  const head = el('div', 'adv-modal-head');
+  head.appendChild(el('h3', '', 'Zaawansowane opcje'));
+  head.appendChild(el('div', 'adv-sub', 'Parametry rzadko zmieniane — poza główną siatką kroku 4.'));
+  modal.appendChild(head);
+  const body = el('div', 'adv-modal-body');
   const rows = advancedSettingRows();
   for (const row of rows) {
     const box = el('div', 'adv-row');
@@ -1160,14 +1167,14 @@ function showAdvancedModal(): void {
     ctl.appendChild(sv);
     ctl.appendChild(right);
     box.appendChild(ctl);
-    box.appendChild(el('div', 'adv-hint', row.hint));
-    modal.appendChild(box);
+    body.appendChild(box);
   }
-  const btns = el('div', 'adv-btns');
+  modal.appendChild(body);
+  const foot = el('div', 'adv-modal-foot adv-btns');
   const close = el('button', 'adv-close', 'Zamknij');
   close.addEventListener('click', hideAdvancedModal);
-  btns.appendChild(close);
-  modal.appendChild(btns);
+  foot.appendChild(close);
+  modal.appendChild(foot);
   overlay.appendChild(modal);
   overlay.classList.add('open');
 }
@@ -1348,7 +1355,7 @@ function renderGenStep(host: HTMLElement): void {
           : p.difficulty + ' (jak glowna)';
     rows.push(
       ['Barbarzyncy', bLabel],
-      ['Bitwy', p.advanced.battleAlwaysManual ? 'Zawsze reczna' : 'Automatyczne'],
+      ['Bitwy', p.advanced.battleAlwaysManual ? 'Ręczna' : 'Automatyczne'],
       ['Zwyciestwo', vLabel],
       ['Koszty budynkow', costLabel],
       ['Koszty jednostek', unitCostLabel],

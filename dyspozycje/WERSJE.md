@@ -11,7 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `b68ed206` - 2026-07-28 13:45 - FALA 60: wyrównanie HUD mapa + miasto (hudLayout.ts) - **AKTUALNA**
+## ROBOCZA `846db7fc` - 2026-07-28 14:10 - FALA 61: kreator Bitwy + layout modal zaawansowany - **AKTUALNA**
+- md5 (pelne): `846db7fcc09fb004d3241edd883b935b` · stempel: `ROBOCZA · 2026-07-28 14:10`
+- **VERIFY OK.** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** kreator nowej gry — ustawienie **Bitwy** (Automatyczne / Ręczna), modal zaawansowany przesunięty w prawo, przycisk Zamknij zawsze widoczny, bez duplikatów opisów. Plik: `newGameFlow.ts`.
+
+## ROBOCZA `b68ed206` - 2026-07-28 13:45 - FALA 60: wyrównanie HUD mapa + miasto (hudLayout.ts) - **ZASTAPIONA**
 - md5 (pelne): `b68ed20671cd82dedefaf31e1a8996dc` · stempel: `ROBOCZA · 2026-07-28 13:45`
 - **VERIFY OK.** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

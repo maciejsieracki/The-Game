@@ -1,3 +1,11 @@
+## [14:10] ✅ Gotowe — FALA 61 kreator Bitwy + modal zaawansowany (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Bitwy** | w zaawansowanych: Automatyczne / Ręczna (zamiast „Szczegółowość bitew”) |
+| **Modal** | przesunięty w prawo; przycisk Zamknij zawsze widoczny; bez podwójnych opisów |
+| **Deploy** | ROBOCZA `846db7fc` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
 ## [13:45] ✅ Gotowe — FALA 60 wyrównanie HUD (deploy ROBOCZA)
 
 | Co | Efekt w grze |
