@@ -3944,3 +3944,11 @@ CZEKAM-NA: sygnał Macieja (Design/render).
 **Bramki:** tsc 0 · tech-tree 19/0 · research 33/0 · unit-replace 10/10 · map-gen PASS · smoke OK · diplomacy-ai-balance 7/7 · POLE-BITWY `dd399c4b`.
 CZEKAM-NA: sesja lokalna pull + otworz `4906486f`.
 
+
+## [16:22] INTEGRATOR -> MASTER + Maciej (sesja lokalna) -- deploy all FALA 65 ROBOCZA
+
+Publish `gra-robocza/` po bramkach (tsc + tech-tree + research + unit-replace + map-gen + smoke).
+md5: `8092d730685bd083c9a7797e3461adad` (skrot `8092d730`) | stempel ROBOCZA 2026-07-28 16:21
+Zakres: Handel UX A-D, HUD prawy pasek, cityPanel/sciencePicker tooltips, hoverDetailDock, main+trade-routes.
+Playtest: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra).
+CZEKAM-NA: Maciej playtest przez Master / sesja lokalna pull na dysk jesli chmura
