@@ -3930,3 +3930,17 @@ CZEKAM-NA: nic (sesja lokalna: pull + otworz `846db7fc`).
 **Zakres:** hudLayout.ts — wyrównanie marginesów HUD mapa (20px) + miasto (32px) + zoom (10px); 11 plików UI.
 **Bramki:** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b`.
 CZEKAM-NA: nic (sesja lokalna: pull + otworz `b68ed206`).
+
+## [16:11] SESJA → dokumentacja — backlog złoże złota (mapa)
+
+**Notatka Maciej 2026-07-28:** uzupełnić grafikę złoża złota na mapie (3D overlay) — świadomie ODŁOŻONE, na razie bez zmian w kodzie.
+Zapis: `STAN-PRACY-HANDOFF.md` §8 · `docs/CURSOR-BACKLOG.md`.
+CZEKAM-NA: sygnał Macieja (Design/render).
+
+## [16:16] SESJA LOKALNA -> Maciej - deploy ROBOCZA FALA 65
+
+**md5:** `4906486fc876d6e2d3d14b28198394ca` (skrot `4906486f`) · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** Handel UX A-D · HUD prawy pasek · tooltips wzrost/zamoznosc (miasto) · sciencePicker 2x.
+**Bramki:** tsc 0 · tech-tree 19/0 · research 33/0 · unit-replace 10/10 · map-gen PASS · smoke OK · diplomacy-ai-balance 7/7 · POLE-BITWY `dd399c4b`.
+CZEKAM-NA: sesja lokalna pull + otworz `4906486f`.
+

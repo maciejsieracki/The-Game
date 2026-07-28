@@ -43,6 +43,20 @@ export const HUD_MAP_BANNER_BOTTOM_PX = HUD_LEADER_TOP_PX;
 export const EVENTS_PANEL_ABOVE_TURN_GAP_PX = 12;
 /** Odstęp panelu wydarzeń pod górnym banerem HUD. */
 export const EVENTS_PANEL_BELOW_TOP_GAP_PX = 10;
+/** Wysokość wiersza chipów w prawym banerze (shell + medalion). */
+export const HUD_RIGHT_CHIP_ROW_H_PX = 52;
+/** Wysokość wiersza Civpedia/Menu pod chipami. */
+export const HUD_RIGHT_ACTION_ROW_H_PX = 42;
+/** Odstęp między wierszem chipów a wierszem akcji (prawy klaster mapy). */
+export const HUD_RIGHT_RAIL_ROW_GAP_PX = 8;
+
+/** Dolna krawędź prawego klastra mapy (chipy + Civpedia/Menu) od góry viewportu. */
+export function hudRightRailBottomPx(): number {
+  return HUD_TOP_PX
+    + HUD_RIGHT_CHIP_ROW_H_PX
+    + HUD_RIGHT_RAIL_ROW_GAP_PX
+    + HUD_RIGHT_ACTION_ROW_H_PX;
+}
 
 /** CSS `right` klastra Wiki/Menu w widoku miasta. */
 export function cityViewRightClusterRightCss(): string {
@@ -64,7 +78,10 @@ export function eventsPanelBottomPx(zoom = false): number {
   return turnStackBottomPx(zoom) + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
 }
 
-/** Górna krawędź panelu wydarzeń — pod banerem HUD z odstępem. */
+/** Górna krawędź panelu wydarzeń — pod prawym klastrem (chipy + akcje) z odstępem. */
 export function eventsPanelTopPx(): number {
-  return HUD_MAP_BANNER_BOTTOM_PX + EVENTS_PANEL_BELOW_TOP_GAP_PX;
+  return Math.max(
+    HUD_MAP_BANNER_BOTTOM_PX,
+    hudRightRailBottomPx(),
+  ) + EVENTS_PANEL_BELOW_TOP_GAP_PX;
 }

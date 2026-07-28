@@ -68,7 +68,7 @@ export interface SidePanelHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-side-panel-hud-css-w4-events-pin';
+const STYLE_ID = 'civ-side-panel-hud-css-w5-events-pin';
 const EVENTS_PANEL_TOP = eventsPanelTopPx();
 const EVENTS_PANEL_BOTTOM = eventsPanelBottomPx();
 const EVENTS_PANEL_BOTTOM_ZOOM = eventsPanelBottomPx(true);
@@ -107,7 +107,7 @@ function ensureStyles(): void {
   document.getElementById('civ-side-panel-hud-css-w3-unit-dock4')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-side-panel{position:fixed;top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM}px;right:${HUD_EDGE_PX}px;z-index:310;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:auto;
+.civ-side-panel{position:fixed;top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM}px;right:${HUD_EDGE_PX}px;z-index:305;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:auto;
   overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;scrollbar-gutter:stable;
   ${CIV_BRAND_SCOPE_VARS}

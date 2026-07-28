@@ -1034,23 +1034,19 @@ function pluralTur(n: number): string {
   return 'tur';
 }
 
-/** Postęp wzrostu (sloty + osoby) i ETA kolejnego obywatela — ułamek <1 zostaje w buforze. */
+/** Postęp wzrostu (sloty) i ETA kolejnego obywatela — szczegóły absolutne/tempo tylko w tooltipie. */
 function buildGrowthProgressUi(
   population: number,
   view: CityView,
   epoch: number,
   fed: boolean,
   atPopCap: boolean,
-): { progressHtml: string; etaHtml: string; perTurnHtml: string } {
+): { progressHtml: string; etaHtml: string } {
   const frac = view.wzrostUlamkowy;
-  const osobNaObywatela = cityLudnoscAbsolutna(1, epoch);
   const gainSlots = growthGainPerTurnSlots(population, view.wzrostProcent, fed, atPopCap);
-  const fracPeople = Math.round(frac * osobNaObywatela);
-  const gainPeople = Math.round(gainSlots * osobNaObywatela);
 
   const progressHtml =
-  `<div class="growth-progress-main">Wzrost ludności: <strong>${fmtDecPl(frac)}</strong> / 1 obywatela` +
-  ` <span class="growth-progress-abs">(≈ ${formatManpower(fracPeople)} / ${formatManpower(osobNaObywatela)})</span></div>`;
+    `<div class="growth-progress-main">Wzrost ludności: <strong>${fmtDecPl(frac)}</strong> / 1 obywatela</div>`;
 
   let etaHtml = '';
   if (atPopCap) {
@@ -1068,12 +1064,43 @@ function buildGrowthProgressUi(
     }
   }
 
-  const perTurnHtml = gainSlots > 0
-    ? `<div class="growth-per-turn">Tempo: +${fmtDecPl(gainSlots)} obywatela/t` +
-      ` (≈ +${formatManpower(gainPeople)}/t) — nadwyżka zostaje w buforze</div>`
-    : '';
+  return { progressHtml, etaHtml };
+}
 
-  return { progressHtml, etaHtml, perTurnHtml };
+/** Tooltip wzrostu — skala absolutna, tempo/turę, bufor (poza głównym widokiem). */
+function buildGrowthProgressTooltipCard(
+  population: number,
+  view: CityView,
+  epoch: number,
+  fed: boolean,
+  atPopCap: boolean,
+): HTMLDivElement {
+  const frac = view.wzrostUlamkowy;
+  const osobNaObywatela = cityLudnoscAbsolutna(1, epoch);
+  const gainSlots = growthGainPerTurnSlots(population, view.wzrostProcent, fed, atPopCap);
+  const fracPeople = Math.round(frac * osobNaObywatela);
+  const gainPeople = Math.round(gainSlots * osobNaObywatela);
+
+  const card = el('div', 'detail-card');
+  card.appendChild(el('div', 'dc-h', '<span>Wzrost ludności — szczegóły</span>'));
+  const g = appendDetailGrid(card);
+  gridDetailRow(g, 'Postęp (sloty)', `${fmtDecPl(frac)} / 1 obywatela`);
+  gridDetailRow(
+    g,
+    'Skala absolutna',
+    `≈ ${formatManpower(fracPeople)} / ${formatManpower(osobNaObywatela)} os.`,
+  );
+  if (gainSlots > 0) {
+    gridDetailRow(
+      g,
+      'Tempo',
+      `+${fmtDecPl(gainSlots)} obywatela/t (≈ +${formatManpower(gainPeople)}/t)`,
+    );
+  }
+  const note = el('div', 'dc-note');
+  note.textContent = 'Ułamek poniżej 1 zostaje w buforze i sumuje się co turę.';
+  card.appendChild(note);
+  return card;
 }
 
 function resolveEmpireSnap(city: City, map: GameMap | null, data: GameData | null): EmpireHudSnap {
@@ -1567,13 +1594,12 @@ function ensureStyles(): void {
 .civ-cs .food-pop-hero .pop-slots{font-size:1.12em;font-weight:700;color:var(--gold);line-height:1.35;}
 .civ-cs .food-pop-hero .pop-abs{font-size:0.78em;color:var(--muted);margin-top:0.12em;}
 .civ-cs .growth-progress-block{margin-top:0.22em;padding-top:0.2em;border-top:1px dashed rgba(232,216,138,.12);}
+.civ-cs .growth-progress-block.hover-detail-anchor{cursor:help;}
 .civ-cs .growth-progress-main{font-size:0.76em;color:var(--text);line-height:1.45;}
-.civ-cs .growth-progress-abs{color:var(--muted);font-size:0.92em;}
 .civ-cs .growth-eta{font-size:0.74em;margin-top:0.2em;line-height:1.4;}
 .civ-cs .growth-eta.ok{color:#7ad0a0;}
 .civ-cs .growth-eta.warn{color:#e0a860;}
 .civ-cs .growth-eta.muted{color:var(--muted);}
-.civ-cs .growth-per-turn{font-size:0.66em;color:var(--muted);margin-top:0.14em;line-height:1.4;}
 .civ-cs .praca-split-bar{display:flex;height:26px;background:rgba(255,255,255,0.08);border:1px solid rgba(232,216,138,0.18);border-radius:7px;overflow:hidden;position:relative;margin-bottom:0.38em;}
 .civ-cs .praca-split-b{background:linear-gradient(90deg,#a08030,#e8d88a);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#2e2708;font-weight:700;}
 .civ-cs .praca-split-u{background:linear-gradient(90deg,#3a6ad0,#5a9bd4);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#08121e;font-weight:700;}
@@ -1767,6 +1793,7 @@ function ensureStyles(): void {
 .civ-cs .chip .cl{display:inline-flex;align-items:center;gap:0.1em;}
 .civ-cs .wealth-grid{display:flex;flex-wrap:wrap;gap:0.22em;}
 .civ-cs .wealth-compact-wrap{margin:0.06em 0 0.28em;padding:0.28em 0.34em;background:var(--panel2);border:1px solid var(--border);border-radius:6px;}
+.civ-cs .wealth-compact-wrap.hover-detail-anchor{cursor:help;}
 .civ-cs .wealth-compact-badges{display:flex;align-items:center;gap:0.28em;flex-wrap:wrap;margin-bottom:0.28em;}
 .civ-cs .wealth-compact-stat{display:inline-flex;align-items:center;justify-content:center;gap:0.12em;
   min-width:2.1em;padding:0.18em 0.38em;border:1px solid rgba(232,216,138,0.22);border-radius:5px;
@@ -1994,8 +2021,8 @@ function ensureStyles(): void {
   --bg:#141820;--panel:#1e2430;--panel2:#171c24;--border:#2e3848;--bord2:#3d4a5c;
   --text:#e8ebf0;--muted:#8b97a8;--gold:#e0b24a;--green:#6bbf59;--red:#d36b5e;--blue:#5a9bd4;--happy:#f6c942;
   color:var(--text);font-family:'Segoe UI',Tahoma,Verdana,sans-serif;line-height:1.38;}
-.civ-detail-scope .detail-card{margin:0;padding:0.38em 0.48em;background:rgba(0,0,0,0.28);
-  border:1px solid var(--bord2);border-left:3px solid var(--gold);border-radius:4px;font-size:0.78em;line-height:1.38;}
+.civ-detail-scope .detail-card{margin:0;padding:0.76em 0.96em;background:rgba(0,0,0,0.28);
+  border:1px solid var(--bord2);border-left:3px solid var(--gold);border-radius:4px;font-size:1.56em;line-height:1.38;}
 .civ-detail-scope .detail-card .dc-h{font-weight:700;color:var(--gold);margin-bottom:0.22em;display:flex;align-items:center;gap:0.35em;}
 .civ-detail-scope .detail-card .dc-h .mini-thumb{width:1.85em;height:1.85em;font-size:0.95em;border-width:1px;
   width:2.15em;height:2.15em;border:2px solid var(--gold);border-radius:4px;background:var(--panel2);
@@ -2003,7 +2030,7 @@ function ensureStyles(): void {
 .civ-detail-scope .detail-card .dc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.12em 0.5em;margin-top:0.15em;}
 .civ-detail-scope .detail-card .dc-l{color:var(--muted);}
 .civ-detail-scope .detail-card .dc-v{word-break:break-word;}
-.civ-detail-scope .detail-card .dc-section{font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
+.civ-detail-scope .detail-card .dc-section{font-size:1.36em;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
   color:#d4af5a;margin:0.55em 0 0.2em;padding-bottom:0.12em;border-bottom:1px solid rgba(212,175,90,0.18);}
 .civ-detail-scope .detail-card .dc-section:first-of-type{margin-top:0.15em;}
 .civ-detail-scope .detail-card.bld-detail-card{padding:0.32em 0.38em;}
@@ -2020,16 +2047,16 @@ function ensureStyles(): void {
 .civ-detail-scope .detail-card.bld-detail-card .bld-detail-tile-bd .bld-infocard-chips{margin-top:0.08em;}
 .civ-detail-scope .detail-card.bld-detail-card .bld-detail-tile-bd .bld-infocard-eyebrow{margin-top:0.18em;}
 .civ-detail-scope .detail-card.bld-detail-card .bld-detail-tile-bd .bld-infocard-eyebrow:first-child{margin-top:0;}
-.civ-detail-scope .detail-card .dc-note{margin-top:0.35em;color:var(--muted);font-size:0.88em;font-style:italic;line-height:1.35;}
-.civ-detail-scope .detail-card .dc-algo-step{font-size:0.76em;line-height:1.42;color:var(--muted);margin:0.1em 0 0.26em;padding-left:0.12em;}
-.civ-detail-scope .detail-card .dc-formula{font-size:0.82em;color:var(--gold);font-family:Consolas,'Courier New',monospace;margin:0.18em 0 0.32em;padding:0.22em 0.38em;
+.civ-detail-scope .detail-card .dc-note{margin-top:0.35em;color:var(--muted);font-size:1.76em;font-style:italic;line-height:1.35;}
+.civ-detail-scope .detail-card .dc-algo-step{font-size:1.52em;line-height:1.42;color:var(--muted);margin:0.1em 0 0.26em;padding-left:0.12em;}
+.civ-detail-scope .detail-card .dc-formula{font-size:1.64em;color:var(--gold);font-family:Consolas,'Courier New',monospace;margin:0.18em 0 0.32em;padding:0.22em 0.38em;
   background:rgba(0,0,0,0.25);border-radius:3px;border-left:2px solid rgba(212,175,90,0.35);}
 .civ-hover-detail-dock .civ-detail-scope .detail-card{box-shadow:none;}
-.civ-hover-detail-float{display:none;position:fixed;z-index:100000;max-width:min(340px,92vw);pointer-events:none;
-  padding:0.38em 0.48em;background:rgba(8,12,20,0.96);border:1px solid #e0b24a;border-radius:4px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.65);font-size:0.74em;line-height:1.38;}
+.civ-hover-detail-float{display:none;position:fixed;z-index:100000;max-width:min(680px,92vw);pointer-events:none;
+  padding:0.76em 0.96em;background:rgba(8,12,20,0.96);border:1px solid #e0b24a;border-radius:4px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.65);font-size:1.48em;line-height:1.38;}
 .civ-hover-detail-float .civ-detail-scope .detail-card{border:none;background:transparent;padding:0;}
-.civ-cs .mini-thumb.hover-detail-anchor,.civ-cs .unit-mini-preview.hover-detail-anchor,.civ-cs .item-row.hover-detail-anchor{cursor:help;}
+.civ-cs .mini-thumb.hover-detail-anchor,.civ-cs .unit-mini-preview.hover-detail-anchor,.civ-cs .item-row.hover-detail-anchor,.civ-cs .growth-progress-block.hover-detail-anchor,.civ-cs .wealth-compact-wrap.hover-detail-anchor{cursor:help;}
 .civ-cs .item-row{display:flex;align-items:center;gap:0.32em;background:var(--panel2);border:1px solid var(--border);
   border-radius:3px;padding:0.18em 0.38em;margin-bottom:0.16em;position:relative;}
 .civ-cs .item-row.is-catalog-ready{border-color:rgba(107,191,89,0.35);}
@@ -3406,68 +3433,90 @@ function appendWealthCompactStrip(
 ): void {
   const wrap = el('div', 'wealth-compact-wrap');
   const badges = el('div', 'wealth-compact-badges');
-  const mkStat = (html: string, title: string, cls: string) => {
+  const mkStat = (html: string, cls: string) => {
     const s = el('span', `wealth-compact-stat ${cls}`.trim());
     s.innerHTML = html;
-    s.title = title;
     return s;
   };
   const nextW = opts.poziom + 1;
   const mnozTxt = opts.mnoz.toFixed(2).replace('.', ',');
 
-  badges.appendChild(mkStat(
-    `<b>W${opts.poziom}</b>`,
-    opts.atCap
-      ? `Poziom zamożności W${opts.poziom} — maksimum w epoce ${opts.epoch} (limit W${opts.cap}). Bogatsze miasto = wyższy mnożnik pieniędzy do skarbca i więcej szczęścia.`
-      : `Poziom zamożności W${opts.poziom} (limit W${opts.cap} w epoce ${opts.epoch}). Rośnie, gdy część ${opts.daninaLblGen} idzie na suwak „Zamożność” zamiast od razu do skarbca.`,
-    'wealth-w',
-  ));
+  badges.appendChild(mkStat(`<b>W${opts.poziom}</b>`, 'wealth-w'));
   badges.appendChild(mkStat(
     `${cityPanelChipIconWrap('res-treasury', 14)}<b>×${mnozTxt}</b>`,
-    `Mnożnik pieniędzy do skarbca przy W${opts.poziom}: ×${mnozTxt}. ` +
-    (opts.poziom <= 1
-      ? 'W1 = bez bonusu (×1,00). Każdy kolejny poziom W podnosi ten mnożnik.'
-      : `Wyższe W = więcej 💰 z tego samego handlu i podatków.`),
     'wealth-mnoz',
   ));
-  const szStat = mkStat(
-    cityPanelChipIconWrap('chip-happiness', 14),
-    `Szczęście z zamożności: ${opts.szBonus >= 0 ? '+' : ''}${Math.round(opts.szBonus)}. ` +
-    'Co 10 poziomów W daje +1 szczęście (zadowolonych).',
-    'wealth-happy',
-  );
+  const szStat = mkStat(cityPanelChipIconWrap('chip-happiness', 14), 'wealth-happy');
   szStat.setAttribute('aria-label', `Szczęście z zamożności ${opts.szBonus >= 0 ? '+' : ''}${Math.round(opts.szBonus)}`);
   badges.appendChild(szStat);
   wrap.appendChild(badges);
 
   const track = el('div', 'food-grow-track wealth-compact-bar');
   const barLabel = opts.atCap ? `W${opts.poziom} — MAX` : `${Math.round(opts.pula)} / ${Math.round(opts.prog)}`;
-  track.title = opts.atCap
-    ? `Osiągnięto najwyższą zamożność W${opts.poziom} w epoce ${opts.epoch}.`
-    : `Postęp do poziomu W${nextW}: zebrano ${Math.round(opts.pula)} z ${Math.round(opts.prog)} 💰 z udziału „Zamożność” w ${opts.daninaLblGen}. Nadwyżka zostaje w puli po awansie.`;
   track.innerHTML =
     `<div class="food-grow-fill" style="width:${opts.pct}%"></div>` +
     `<span class="fbtxt">${barLabel}</span>`;
   wrap.appendChild(track);
 
-  const eta = el('div', 'wealth-compact-eta');
-  if (opts.atCap) {
-    eta.textContent = `Najwyższa zamożność w epoce ${opts.epoch} (W${opts.poziom}).`;
-  } else if (opts.zamIn <= 0) {
-    eta.className += ' warn';
-    eta.textContent =
-      `Brak wpływu do puli — przesuń suwak „Zamożność” w podziale ${opts.daninaLblGen}, żeby rosnąć do W${nextW}.`;
-  } else if (opts.etaW != null) {
-    eta.className += ' ok';
-    eta.textContent =
-      `Kolejny poziom W${nextW} za ok. ${opts.etaW} ${tury(opts.etaW)}` +
-      ` (≈ +${opts.zamIn} 💰/turę do puli).`;
-  } else {
-    eta.textContent = `Cel: W${nextW} — potrzeba ${Math.round(opts.prog)} 💰 w puli.`;
+  if (!opts.atCap && opts.etaW != null) {
+    const eta = el('div', 'wealth-compact-eta ok');
+    eta.textContent = `Kolejny W${nextW} za ok. ${opts.etaW} ${tury(opts.etaW)}.`;
+    wrap.appendChild(eta);
   }
-  wrap.appendChild(eta);
 
   mount.appendChild(wrap);
+  attachHoverDetail(
+    wrap,
+    () => buildWealthCompactTooltipCard(opts),
+    220,
+    'left',
+  );
+}
+
+/** Tooltip zamożności — pełne wyjaśnienia (poza głównym widokiem). */
+function buildWealthCompactTooltipCard(opts: {
+  poziom: number;
+  atCap: boolean;
+  cap: number;
+  epoch: number;
+  mnoz: number;
+  szBonus: number;
+  pula: number;
+  prog: number;
+  etaW: number | null;
+  zamIn: number;
+  daninaLblGen: string;
+}): HTMLDivElement {
+  const nextW = opts.poziom + 1;
+  const mnozTxt = opts.mnoz.toFixed(2).replace('.', ',');
+
+  const card = el('div', 'detail-card');
+  card.appendChild(el('div', 'dc-h', '<span>Zamożność — szczegóły</span>'));
+  const g = appendDetailGrid(card);
+  gridDetailRow(g, 'Poziom W', opts.atCap
+    ? `W${opts.poziom} — maksimum w epoce ${opts.epoch} (limit W${opts.cap})`
+    : `W${opts.poziom} (limit W${opts.cap} w epoce ${opts.epoch})`);
+  gridDetailRow(g, 'Pula', opts.atCap
+    ? 'Pełna — brak kolejnego poziomu w tej epoce'
+    : `${Math.round(opts.pula)} / ${Math.round(opts.prog)} 💰 do W${nextW}`);
+  gridDetailRow(g, 'Mnożnik skarbca', `×${mnozTxt}${opts.poziom <= 1 ? ' (W1 = bez bonusu)' : ''}`);
+  gridDetailRow(g, 'Szczęście', `${opts.szBonus >= 0 ? '+' : ''}${Math.round(opts.szBonus)} (co 10 poziomów W +1)`);
+
+  const note = el('div', 'dc-note');
+  if (opts.atCap) {
+    note.textContent = `Osiągnięto najwyższą zamożność W${opts.poziom} w epoce ${opts.epoch}.`;
+  } else if (opts.zamIn <= 0) {
+    note.textContent =
+      `Brak wpływu do puli — przesuń suwak „Zamożność” w podziale ${opts.daninaLblGen}, żeby rosnąć do W${nextW}.`;
+  } else if (opts.etaW != null) {
+    note.textContent =
+      `Postęp do W${nextW}: ≈ +${opts.zamIn} 💰/turę trafia do puli z udziału „Zamożność” w ${opts.daninaLblGen}. ` +
+      'Nadwyżka puli zostaje po awansie.';
+  } else {
+    note.textContent = `Cel: W${nextW} — potrzeba ${Math.round(opts.prog)} 💰 w puli.`;
+  }
+  card.appendChild(note);
+  return card;
 }
 
 function shortIndLabel(text: string, max = 13): string {
@@ -4304,8 +4353,17 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     growthBreakdownRow('Zdrowie', bd.zdrowie) +
     growthBreakdownRow('Szczęście', bd.szczescie) +
     growthBreakdownRow('Cywilizacja', bd.cywilizacja) +
-    `<div class="growth-progress-block">${growthUi.progressHtml}${growthUi.etaHtml}${growthUi.perTurnHtml}</div>`;
+    `<div class="growth-progress-block">${growthUi.progressHtml}${growthUi.etaHtml}</div>`;
   mount.appendChild(growBlock);
+  const progressBlock = growBlock.querySelector('.growth-progress-block') as HTMLElement | null;
+  if (progressBlock) {
+    attachHoverDetail(
+      progressBlock,
+      () => buildGrowthProgressTooltipCard(city.population, view, epoch, fed, atPopCap),
+      220,
+      'left',
+    );
+  }
 }
 
 function buildRacjeWzrostDetailCard(

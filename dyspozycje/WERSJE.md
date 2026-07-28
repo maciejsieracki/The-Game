@@ -1,4 +1,4 @@
-# WERSJE — jedyny rejestr wersji bundli (prowadzi: publikujący, czyli INTEGRATOR)
+﻿# WERSJE — jedyny rejestr wersji bundli (prowadzi: publikujący, czyli INTEGRATOR)
 
 ZASADA: md5/stempel wpisuje się TYLKO tutaj, zaraz po publishu. Inne pliki linkują,
 nigdy nie kopiują (stary system miał 4 sprzeczne „aktualne" md5 — nigdy więcej).
@@ -11,7 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `145452c9` - 2026-07-28 15:04 - FALA 64: armia Rozdziel + karta stosu + Spacja cykl - **AKTUALNA**
+
+## ROBOCZA `4906486f` - 2026-07-28 16:15 - FALA 65: Handel UX A-D + HUD prawy pasek + tooltips miasto - **AKTUALNA**
+- md5 (pelne): `4906486fc876d6e2d3d14b28198394ca` · stempel: `ROBOCZA · 2026-07-28 16:15`
+- **VERIFY OK.** tsc 0 · tech-tree 19/0 · research 33/0 · unit-replace 10/10 · map-gen PASS (duza 12.24s<15s; determinizm+rzeki PASS) · smoke OK · diplomacy-ai-balance 7/7 · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** (1) **Handel UX A-D** — trasy handlowe, panel handlu, flow propozycji. (2) **HUD prawy pasek** — layout sidePanelHud/hudLayout. (3) **Miasto** — tooltips wzrost/zamoznosc w cityPanel. (4) **sciencePicker** — skala 2x czytelnosc.
+- **Pliki:** `trade-routes.ts` · `main.ts` · `cityPanel.ts` · `empireDetailPanel.ts` · `hud.ts` · `hudLayout.ts` · `sidePanelHud.ts` · `sciencePicker.ts` · `hoverDetailDock.ts`
+## ROBOCZA `145452c9` - 2026-07-28 15:04 - FALA 64: armia Rozdziel + karta stosu + Spacja cykl - **ZASTAPIONA**
 - md5 (pelne): `145452c99f51e6a80abdbd04c88f70b5` · stempel: `ROBOCZA · 2026-07-28 15:04`
 - **VERIFY OK.** tsc 0 · tech-tree 19/0 · research 33/0 · unit-replace 10/10 · map-gen FAIL (duża mapa 16.71s>15s; determinizm+rzeki PASS) · smoke OK · army-stack-ruch 5/0 · garnizon-exit 11/0 · army-merge-bounce 4/0 · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

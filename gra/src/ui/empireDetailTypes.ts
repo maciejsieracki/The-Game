@@ -185,10 +185,23 @@ export interface EmpireTradeResourceGrantRow {
   partnerLabel: string;
 }
 
+/** Aktywna Umowa Handlowa (traktat) — widok panelu imperium. */
+export interface EmpireTradeDealRow {
+  partnerLabel: string;
+  partnerOwnerId: number;
+  /** null = bezterminowa */
+  turnsLeft: number | null;
+  trustPerTurn: number;
+  hasActiveRoute: boolean;
+  blockReason?: string;
+}
+
 /** Zbiorczy widok imperium: suma dochodu + rozpiska aktywnych tras (żeton HUD „Handel"). */
 export interface EmpireTradeSnap {
   totalIncome: number;
   routes: EmpireTradeRouteRow[];
+  /** Aktywne umowy handlowe (traktaty) gracza z obcymi cywilizacjami. */
+  activeDeals: EmpireTradeDealRow[];
   /**
    * Etykieta strumienia podatkowego z pól miasta (zawsze "Podatek" od 2026-07-27).
    * Używana w zdaniu "+5% podatku z pól" w renderHandelSection — NIE do nazwy

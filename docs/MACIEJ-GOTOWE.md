@@ -1,3 +1,13 @@
+﻿
+## [16:16] Gotowe - FALA 65 Handel UX + HUD + tooltips miasto (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Handel UX A-D** | trasy i panel handlu, flow propozycji |
+| **HUD prawy** | layout paska bocznego (sidePanelHud) |
+| **Miasto** | tooltips wzrost i zamoznosc |
+| **Nauka** | sciencePicker 2x wiekszy |
+| **Deploy** | ROBOCZA `4906486f` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
 ## [15:03] ✅ Gotowe — FALA 64 armia + Rozdziel + Spacja (deploy ROBOCZA)
 
 | Co | Efekt w grze |

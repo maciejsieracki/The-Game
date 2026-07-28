@@ -291,6 +291,7 @@ import {
   findCityConnection,
   tradeRouteDistanceIncome,
   citiesHaveTradeConnection,
+  diagnoseMissingTradeRouteForPartner,
   computeTradeRouteResourceFlow,
   loadTradeRouteResourceFlowParams,
   type TradeRoute,
@@ -8888,6 +8889,53 @@ async function boot(): Promise<void> {
      * ponowne wywolanie z tym samym diffem (np. bledny retry) nie dodaje
      * duplikatu — sprawdzamy obecnosc po id przed push.
      */
+    function recomputeTradeRoutesNow(reportEvents = true): void {
+      const tradeCities = cities.filter(c => !isBarbarian(c.ownerId));
+      const tradeParams = loadTradeRouteParams(
+        data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
+        _menuDifficulty,
+      );
+      const isAtWarFn = (a: number, b: number): boolean => getDiploRelation(a, b).status === 'wojna';
+      const hasTradeTreatyFn = (a: number, b: number): boolean =>
+        hasTreaty(activeDeals, a, b, RodzajTraktatu.UmowaHandlowa);
+      const prevTradeRoutes = tradeRoutes;
+      try {
+        tradeRoutes = refreshTradeRoutes(
+          tradeCities,
+          tradeRoutes,
+          map,
+          cityBuilt,
+          isAtWarFn,
+          hasTradeTreatyFn,
+          tradeParams,
+        );
+      } catch (eTrade) {
+        console.error('[Handel] Blad odswiezania tras:', eTrade);
+      }
+      tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+      try {
+        recomputeTradeRouteResourceGrants();
+      } catch (eTradeGrant) {
+        console.error('[Handel] Blad przeliczania grantow z trasy:', eTradeGrant);
+      }
+      if (reportEvents) {
+        const tradeIncomeParams = loadTradeRouteIncomeParams(
+          data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+          _menuDifficulty,
+        );
+        try {
+          reportTradeRouteEvents(
+            prevTradeRoutes, tradeRoutes, tradeCities, map, tradeParams, cityBuilt,
+            isAtWarFn, hasTradeTreatyFn, tradeIncomeParams,
+          );
+        } catch (eTradeEv) {
+          console.error('[Handel] Blad powiadomien o trasach:', eTradeEv);
+        }
+      }
+      refreshTradeRoutesOverlay();
+      refreshD1bHud();
+    }
+
     function reportTradeRouteEvents(
       prevRoutes: readonly TradeRoute[],
       nextRoutes: readonly TradeRoute[],
@@ -9465,7 +9513,51 @@ async function boot(): Promise<void> {
           partnerLabel: ownerDiploLabel(grant.viaOwnerId),
         });
       }
-      return { totalIncome, routes, daninaLabel: daninaLbl, wonderBonusLadPct, wonderBonusMorzePct, resourceGrants };
+      const trustPerTurn = _diplomacyParams().handel_zaufanie_perTura;
+      const tradeParamsForDiag = loadTradeRouteParams(
+        data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
+        _menuDifficulty,
+      );
+      const tradeCitiesForDiag = cities.filter(c => !isBarbarian(c.ownerId));
+      const isAtWarForDiag = (a: number, b: number): boolean => getDiploRelation(a, b).status === 'wojna';
+      const seenDealPartners = new Set<number>();
+      const activeDealsRows: EmpireDetailSnap['trade']['activeDeals'] = [];
+      for (const deal of activeDeals) {
+        if (normalizeTreatyKind(deal.rodzaj) !== RodzajTraktatu.UmowaHandlowa) continue;
+        if (!deal.strony.includes(0)) continue;
+        const partnerId = deal.strony[0] === 0 ? deal.strony[1] : deal.strony[0];
+        if (seenDealPartners.has(partnerId)) continue;
+        seenDealPartners.add(partnerId);
+        const hasActiveRoute = tradeRoutes.some(
+          r => r.status === 'polaczony' && r.ownerId === 0 && r.toOwnerId === partnerId,
+        );
+        let blockReason: string | undefined;
+        if (!hasActiveRoute) {
+          blockReason = diagnoseMissingTradeRouteForPartner(
+            0,
+            partnerId,
+            tradeCitiesForDiag,
+            map,
+            cityBuilt,
+            isAtWarForDiag,
+            tradeParamsForDiag,
+            ownerDiploLabel(partnerId),
+          ) ?? undefined;
+        }
+        activeDealsRows.push({
+          partnerLabel: ownerDiploLabel(partnerId),
+          partnerOwnerId: partnerId,
+          turnsLeft: deal.wygasaTura === null ? null : Math.max(0, deal.wygasaTura - turn),
+          trustPerTurn,
+          hasActiveRoute,
+          blockReason,
+        });
+      }
+      activeDealsRows.sort((a, b) => a.partnerLabel.localeCompare(b.partnerLabel, 'pl'));
+      return {
+        totalIncome, routes, daninaLabel: daninaLbl, wonderBonusLadPct, wonderBonusMorzePct,
+        resourceGrants, activeDeals: activeDealsRows,
+      };
     }
 
     function openEmpireDetailFromHud(section?: string): void {
@@ -9534,7 +9626,7 @@ async function boot(): Promise<void> {
       switch (cmdType) {
         case 'zaproponuj_pokoj': return 'Propozycja pokoju';
         case 'zaproponuj_sojusz': return 'Propozycja sojuszu';
-        case 'zaproponuj_handel': return 'Propozycja handlu';
+        case 'zaproponuj_handel': return 'Propozycja handlu jednorazowego';
         case 'zaproponuj_umowe_handlowa': return 'Propozycja umowy handlowej';
         case 'zaproponuj_handel_surowiec': return 'Propozycja handlu surowcem';
         case 'zadaj_trybut': return 'Żądanie trybutu';
@@ -9799,9 +9891,9 @@ async function boot(): Promise<void> {
         case 'sojusz_pelny': return 'Sojusz pełny';
         case 'granice': return p.borderMilitary ? 'Prawo wojskowego przemarszu' : 'Otwarte granice cywilne';
         case 'handel':
-          return basketDetail || (p.goldOnce ? `Handel — ${p.goldOnce} ¤` : 'Handel — koszyk PN');
+          return basketDetail || (p.goldOnce ? `Handel jednorazowy — ${p.goldOnce} ¤` : 'Handel jednorazowy');
         case 'umowa_handlowa':
-          return basketDetail || ('Umowa handlowa' + (p.goldOnce ? ` (+${p.goldOnce} ¤ słodzika)` : ''));
+          return basketDetail || ('Umowa handlowa (traktat)' + (p.goldOnce ? ` (+${p.goldOnce} ¤ słodzika)` : ''));
         case 'tech': return `Sprzedaż technologii za ${p.techPrice ?? p.goldOnce ?? 0} ¤`;
         case 'namow_wojne': return `Namowa do wojny — łapówka ${p.bribeGold ?? 0} ¤`;
         case 'trybut_zadanie': return `Żądanie trybutu ${p.goldPerTurn ?? 0} ¤/turę`;
@@ -9820,7 +9912,9 @@ async function boot(): Promise<void> {
       return getNegotiationsForPair(ownerId).map(entry => {
         const direction: 'own' | 'incoming' = entry.awaitingOwnerId === 0 ? 'incoming' : 'own';
         const uiActionId = CYW_ACTION_TO_UI_ID[entry.actionId] ?? '5';
-        const actionLabel = actionsList.find(a => a.id === uiActionId)?.label ?? entry.actionId;
+        let actionLabel = actionsList.find(a => a.id === uiActionId)?.label ?? entry.actionId;
+        if (entry.actionId === 'handel') actionLabel = 'Handel jednorazowy';
+        else if (entry.actionId === 'umowa_handlowa') actionLabel = 'Umowa handlowa (traktat)';
         const dealDetails = negotiationSummary(entry);
         const canCounter = direction === 'incoming' && canCounterNegotiation(entry);
         const p = entry.payload;
@@ -11666,6 +11760,9 @@ async function boot(): Promise<void> {
           // deal juz obsluzyl akceptacje traktatu).
           if (cywAction === 'umowa_handlowa' && (payload.goldOnce ?? 0) > 0) {
             executePnDealTransfer(proposerId, responderId, payload);
+          }
+          if (proposerId === 0 || responderId === 0) {
+            recomputeTradeRoutesNow();
           }
         } else if ((payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0) {
           // C-DYP-STOL-Q1=B (2026-07-25): „słodzik" dołożony do propozycji TRAKTATOWEJ
@@ -17082,40 +17179,12 @@ async function boot(): Promise<void> {
           const popBeforeTick = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + c.population, 0);
 
           // --- Handel E3: odswiez trasy handlowe gracz<->obca cywilizacja ---
-          // Filtr zewnetrzny + pokoj stosuje refreshTradeRoutes samo; tutaj tylko
-          // wykluczamy barbarzyncow (nie sa stronami handlu) i budujemy isAtWar +
-          // hasTradeTreaty (C-HANDEL-UMOWA=B, 2026-07-23: sam pokoj juz NIE wystarcza,
-          // trasa wymaga aktywnej Umowy Handlowej -- ta sama bramka co activeDeals
-          // uzywana gdzie indziej w tym pliku, tylko wstrzykniete jako predykat, zeby
-          // trade-routes.ts nie musial znac stanu dyplomacji, analogicznie do isAtWar).
+          recomputeTradeRoutesNow(true);
           const tradeCities = cities.filter(c => !isBarbarian(c.ownerId));
           const tradeParams = loadTradeRouteParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
             _menuDifficulty,
           );
-          const isAtWarFn = (a: number, b: number): boolean => getDiploRelation(a, b).status === 'wojna';
-          const hasTradeTreatyFn = (a: number, b: number): boolean =>
-            hasTreaty(activeDeals, a, b, RodzajTraktatu.UmowaHandlowa);
-          const prevTradeRoutes = tradeRoutes;
-          try {
-            tradeRoutes = refreshTradeRoutes(
-              tradeCities,
-              tradeRoutes,
-              map,
-              cityBuilt,
-              isAtWarFn,
-              hasTradeTreatyFn,
-              tradeParams,
-            );
-          } catch (eTrade) {
-            console.error('[Handel] Blad odswiezania tras:', eTrade);
-          }
-          tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
-          try {
-            recomputeTradeRouteResourceGrants();
-          } catch (eTradeGrant) {
-            console.error('[Handel] Blad przeliczania grantow z trasy:', eTradeGrant);
-          }
           // Handel E3c (PYTANIE 53=B, Maciej 2026-07-25): przepływ ILOŚCIOWY surowca
           // (braz/zelazo/cegla — patrz TRADE_ROUTE_STOCK_FLOW_KEYS) przez aktywne trasy,
           // NIEZALEŻNY od grantu dostępu wyżej (ten zostaje boolean-bramką jednostek).
@@ -17146,16 +17215,6 @@ async function boot(): Promise<void> {
           const tradeIncomeByCity = computeTradeRouteIncomeByCity(
             tradeRoutes, tradeIncomeParams, wonderTradeRouteBonusForOwner,
           );
-          // TEMAT #5: powiadomienia WYDARZENIA o powstaniu/zerwaniu szlaku (tylko gracz;
-          // tradeRoutes zawiera WYLACZNIE trasy gracz<->obcy, AI<->AI tu nie istnieje).
-          try {
-            reportTradeRouteEvents(
-              prevTradeRoutes, tradeRoutes, tradeCities, map, tradeParams, cityBuilt,
-              isAtWarFn, hasTradeTreatyFn, tradeIncomeParams,
-            );
-          } catch (eTradeEv) {
-            console.error('[Handel] Blad powiadomien o trasach:', eTradeEv);
-          }
 
           const mapOwnerIds = ownerIdsOnMap();
           const zlotoAccessForMennicaTick = prepareMennicaZlotoGraceForTick(

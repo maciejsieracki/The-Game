@@ -705,8 +705,32 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
  */
 function renderHandelSection(t: EmpireDetailSnap['trade']): string {
   let h = `<div class="civ-emp-sect sep" data-section="handel">`
-    + `<div class="civ-emp-title">Handel — szlaki handlowe</div>`
-    + `<div class="civ-emp-kult-line">Dochód z tras: <b class="gold">+${t.totalIncome}</b>/turę · `
+    + `<div class="civ-emp-title">Handel — szlaki handlowe</div>`;
+
+  // Aktywne umowy handlowe (traktaty) — przed tabelą tras.
+  h += `<div class="civ-emp-res-lbl" style="margin-top:4px">Aktywne umowy handlowe</div>`;
+  if (t.activeDeals.length === 0) {
+    h += `<div class="civ-emp-note" style="font-style:italic">Brak aktywnych umów handlowych.</div>`;
+  } else {
+    const dealGrid = '1.1fr 0.9fr 0.9fr 1.2fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['PARTNER', 'POZOSTAŁO', 'ZAUFANIE', 'TRASA'], dealGrid)}`;
+    for (const d of t.activeDeals) {
+      const turnsCell = d.turnsLeft === null ? 'bezterminowa' : `${d.turnsLeft} tur`;
+      const trustCell = `+${d.trustPerTurn}/turę`;
+      const routeCell = d.hasActiveRoute
+        ? 'aktywny szlak'
+        : `<span style="font-style:italic">${esc(d.blockReason ?? 'brak trasy')}</span>`;
+      h += miniRow([
+        esc(d.partnerLabel),
+        turnsCell,
+        trustCell,
+        routeCell,
+      ], dealGrid);
+    }
+    h += `</div>`;
+  }
+
+  h += `<div class="civ-emp-kult-line" style="margin-top:10px">Dochód z tras: <b class="gold">+${t.totalIncome}</b>/turę · `
     + `${t.routes.length} ${routeCountWord(t.routes.length)} aktywnych</div>`;
 
   if (t.routes.length > 0) {

@@ -43,9 +43,11 @@ import { MINIMAP_H_PX, MINIMAP_W_PX, utilDockBottomCss, utilDockLeftCss } from '
 import {
   cityViewRightClusterRightCss,
   CITY_EDGE_PX,
+  HUD_CONTEXT_PANEL_W_PX,
   HUD_EDGE_PX,
   HUD_GAP_MD_PX,
   HUD_POWER_TOP_PX,
+  HUD_RIGHT_RAIL_ROW_GAP_PX,
   HUD_TOP_PX,
   HUD_ZOOM_EDGE_PX,
 } from './hudLayout';
@@ -481,7 +483,7 @@ const MINI_H = MINIMAP_H_PX;
 // Style
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-hud-css-w2ring5';
+const STYLE_ID = 'civ-hud-css-w2ring6';
 function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-hud-css')?.remove();
@@ -519,8 +521,11 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:nowrap;}
 .civ-hud .hud-chip-tail-group{display:inline-flex;align-items:center;flex-wrap:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-banner-right{flex-shrink:0;max-width:min(calc(50vw - 340px),780px);}
-.civ-hud .hud-right-cluster{pointer-events:auto;position:fixed;top:${HUD_TOP_PX}px;right:${HUD_EDGE_PX}px;z-index:3;
-  display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;max-width:calc(50vw - 150px);}
+/* Prawy klaster: chipy NAD Civpedia/Menu (nie w jednym wierszu — inaczej Menu wypada poza ekran). */
+.civ-hud .hud-right-cluster{pointer-events:auto;position:fixed;top:${HUD_TOP_PX}px;right:${HUD_EDGE_PX}px;z-index:320;
+  display:flex;flex-direction:column;align-items:flex-end;gap:${HUD_RIGHT_RAIL_ROW_GAP_PX}px;
+  max-width:min(calc(50vw - 150px),780px);}
+.civ-hud .hud-right-cluster .hud-right{width:100%;max-width:${HUD_CONTEXT_PANEL_W_PX}px;justify-content:flex-end;}
 .civ-hud .hud-chip-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-chip{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-chip-click{cursor:pointer;border-radius:8px;padding:2px 4px;margin:-2px -4px;}

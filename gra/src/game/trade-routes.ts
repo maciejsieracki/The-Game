@@ -544,6 +544,71 @@ export function citiesHaveTradeConnection(
 }
 
 /**
+ * Diagnoza, dlaczego między graczem a partnerem nie ma aktywnej trasy handlowej
+ * mimo zawartej Umowy Handlowej (panel imperium → Aktywne umowy handlowe).
+ * Zwraca komunikat PL lub null, gdy połączenie geometryczne jest możliwe
+ * (wtedy brak trasy to kwestia slotów / odświeżenia, nie blokady terytorialnej).
+ */
+export function diagnoseMissingTradeRouteForPartner(
+  playerOwnerId: number,
+  partnerOwnerId: number,
+  cities: readonly TradeRouteCityRef[],
+  map: GameMap,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+  isAtWar: (ownerA: number, ownerB: number) => boolean,
+  params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
+  partnerLabel?: string,
+): string | null {
+  if (isAtWar(playerOwnerId, partnerOwnerId)) {
+    return 'wojna — szlaki zawieszone';
+  }
+
+  const label = partnerLabel ?? `cywilizacja ${partnerOwnerId}`;
+  const playerCities = cities.filter(c => c.ownerId === playerOwnerId);
+  const partnerCities = cities.filter(c => c.ownerId === partnerOwnerId);
+  const playerTradeCities = playerCities.filter(c => tradeRouteLimitForCity(c.id, builtByCity) > 0);
+  const partnerTradeCities = partnerCities.filter(c => tradeRouteLimitForCity(c.id, builtByCity) > 0);
+
+  if (playerTradeCities.length === 0) {
+    const displayName = (playerCities[0] as { name?: string }).name ?? playerCities[0]?.id ?? 'mieście';
+    return `brak Targowiska/Portu w ${displayName}`;
+  }
+
+  if (partnerTradeCities.length === 0) {
+    return `brak Targowiska/Portu u ${label}`;
+  }
+
+  if (citiesHaveTradeConnection(playerTradeCities, partnerTradeCities, map, builtByCity, params)) {
+    return 'brak wolnego slotu trasy w mieście';
+  }
+
+  let minDist = Infinity;
+  for (const a of playerTradeCities) {
+    for (const b of partnerTradeCities) {
+      const d = hexDistance(a.q, a.r, b.q, b.r);
+      if (d < minDist) minDist = d;
+    }
+  }
+
+  let seaPossible = false;
+  for (const a of playerTradeCities) {
+    for (const b of partnerTradeCities) {
+      if (findCityConnection(a, b, map, 'morze', params, builtByCity).connected) {
+        seaPossible = true;
+        break;
+      }
+    }
+    if (seaPossible) break;
+  }
+
+  if (minDist > params.ladMaxDist && !seaPossible) {
+    return `${label} za daleko (${minDist} heks.)`;
+  }
+
+  return 'brak połączenia lądowego lub morskiego (wymagany Port)';
+}
+
+/**
  * refreshTradeRoutes — E3: ustala aktywne trasy handlowe gracza na tę turę.
  *
  * Reguły (decyzje właściciela, patrz STAN-PRACY-HANDOFF.md, epik Handel):
