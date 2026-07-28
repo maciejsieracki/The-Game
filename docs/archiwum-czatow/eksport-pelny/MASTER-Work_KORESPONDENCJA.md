@@ -88279,3 +88279,2892 @@ jeszcze jedna kwestia. Generator uwielbia generować cywilizacje na wyspach. gdz
 Sprawdzam, jak generator wybiera miejsca startowe klastrów cywilizacji i czy jest już filtrowanie wysp.
 
 [REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-28 16:34 UTC (linie 10850–11090)
+
+
+### Linia 10850 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 4:11 PM (UTC+2)</timestamp>
+
+okej, to zapisz sobie, że musimy uzupełnić grafikę samego złota na mapie. Na razie tak musi zostać.
+
+### Linia 10851 — AGENT
+
+Zapisuję to jako odłożony backlog — grafika złoża złota na mapie, na razie bez zmian w kodzie.
+
+[REDACTED]
+
+### Linia 10852 — AGENT
+
+Przyjąłem.
+
+**Zapisane jako odłożone (2026-07-28):**
+- Złoże złota **w logice jest** (Wzgórza/Góry, tooltip „Złoto”).
+- **Brakuje nakładki 3D** na mapie (jak miedź/żelazo) — tylko kopalnia po zbudowaniu.
+- **Na razie bez zmian** — wrócimy do tego przy kolejnej paczce grafiki mapy.
+
+Dopiszę to do handoffu/backlogu, żeby nie zginęło między sesjami.
+
+[REDACTED]
+
+### Linia 10853 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 10854 — AGENT
+
+Sprawdzam, czy zmiany handlu są w repo i czy deploy je objął.
+
+[REDACTED]
+
+### Linia 10855 — AGENT
+
+[REDACTED]
+
+### Linia 10856 — AGENT
+
+[REDACTED]
+
+### Linia 10857 — AGENT
+
+[REDACTED]
+
+### Linia 10858 — AGENT
+
+Handel A–D jest w kodzie źródłowym, ale nie w bundle — uruchamiam deploy z wcześniejszego polecenia „deploy all”.
+
+[REDACTED]
+
+### Linia 10859 — AGENT
+
+[Handel UX A+B+C+D](038934cc-90ac-46fe-98a4-335f4a914a7e) — kod gotowy, dalszej pracy nad implementacją nie trzeba.
+
+**Co jest w źródle:**
+- tabela „Aktywne umowy handlowe” + powody braku trasy
+- rozróżnienie handlu jednorazowego vs traktatu
+- natychmiastowe przeliczenie szlaków po podpisaniu umowy
+
+**Co jeszcze:** zmiany nie były w bundle (ostatnia publikacja to FALA 64). Dokończę deploy z Twojego „deploy all” jako **FALA 65** — dam znać z md5, gdy skończy.
+
+[REDACTED]
+
+### Linia 10860 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 10861 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 10862 — AGENT
+
+Sprawdzam stan repo i zapisuję wynik researchu handlu B, żeby nie zginął między sesjami.
+
+[REDACTED]
+
+### Linia 10863 — AGENT
+
+[REDACTED]
+
+### Linia 10864 — AGENT
+
+[REDACTED]
+
+### Linia 10865 — AGENT
+
+[REDACTED]
+
+### Linia 10866 — AGENT
+
+[REDACTED]
+
+### Linia 10867 — AGENT
+
+[REDACTED]
+
+### Linia 10868 — AGENT
+
+[REDACTED]
+
+### Linia 10869 — AGENT
+
+**[Zapis backlog złoto mapa](b5c04637-e11b-46a9-9848-b558f345d93c)** — bez dalszych kroków (wpisy już w handoffie i backlogu).
+
+**[Handel rozdzielenie B research](ea3b8579-253a-4793-8f56-4fc3350bb80b)** — zapisałem wynik researchu:
+- `docs/decyzje/HANDEL-SPLIT-Q1.md` — pełne ABC (A/B/C)
+- `dyspozycje/PYTANIA-OTWARTE.md` — wpis OTWARTE
+
+Wdrożenie silnikowe **nie ruszone** — czeka na Twoją decyzję A/B/C. Wskazałeś temat B; gdy potwierdzisz, zaczynamy od kontraktu (dwa traktaty + migracja save).
+
+[REDACTED]
+
+### Linia 10870 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-5cb8b43f-224c-4a7c-8447-8f3b77fa7f0d.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 4:16 PM (UTC+2)</timestamp>
+
+czy jeszcze pracujesz?
+
+### Linia 10871 — AGENT
+
+Sprawdzam status deployu i bramek testowych.
+
+[REDACTED]
+
+### Linia 10872 — AGENT
+
+[REDACTED]
+
+### Linia 10873 — AGENT
+
+Tak — **deploy jeszcze się domyka** (na screenie widać dwa zadania w tle).
+
+**Stan na teraz:**
+- Bundle **FALA 65** jest już zbudowany lokalnie — md5 `4906486f`
+- Bramki: tsc OK, smoke OK, handel AI 7/7, map-gen PASS
+- Zostało: dopisanie dokumentacji + **commit i push** (jeszcze nie na `main`)
+
+**Co weszło:** Handel UX A–D, HUD prawy pasek (Menu/Civpedia), tooltips wzrost/zamożność, sciencePicker 2×.
+
+Jak skończy push, dam znać jednym zdaniem — wtedy możesz otworzyć `gra-robocza/START.html` (Ctrl+F5).
+
+[REDACTED]
+
+### Linia 10874 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 10875 — AGENT
+
+[REDACTED]
+
+### Linia 10876 — AGENT
+
+[REDACTED]
+
+### Linia 10877 — AGENT
+
+Aktualizuję przestarzały wpis w handoffie — deploy już zakończony.
+
+[REDACTED]
+
+### Linia 10878 — AGENT
+
+**✅ Gotowe — FALA 65** (`4906486f`) · `gra-robocza/START.html` · Ctrl+F5
+
+[Deploy FALA 65 batch](8f213d29-87c8-47cc-bb81-f9975ae8ad62) domknął wszystko — bramki, push `3bc53cf`, wpisy w `WERSJE.md` / kanale / `MACIEJ-GOTOWE.md`. Dopisałem tylko aktualny stan w `STAN-PRACY-HANDOFF.md`.
+
+**Co sprawdzić:** panel Handel (aktywne umowy + powody braku trasy), prawy HUD (Menu/Civpedia), tooltips wzrostu/zamożności w mieście.
+
+[REDACTED]
+
+### Linia 10879 — MACIEJ
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 10880 — AGENT
+
+Sprawdzam, który md5 jest kanoniczny po dwóch deployach FALI 65.
+
+[REDACTED]
+
+### Linia 10881 — AGENT
+
+Koryguję rozbieżność md5: kanoniczny to `8092d730` z manifestu.
+
+[REDACTED]
+
+### Linia 10882 — AGENT
+
+[Full deploy gra-robocza](b19d646b-563f-4e22-83b3-0d9bf6c878e3) był drugim przebiegiem tej samej FALI 65 — po nim obowiązuje **`8092d730`** (manifest + `WERSJE.md`).
+
+Wyrównałem tylko rozjechane wpisy: `STAN-PRACY-HANDOFF.md` i `MACIEJ-GOTOWE.md` (wcześniej zostało `4906486f` z pierwszego deployu). Dalszej pracy nie trzeba.
+
+[REDACTED]
+
+### Linia 10883 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:01 PM (UTC+2)</timestamp>
+
+rozpisz mi jeszcze raz, ile cywilizacji startuje na danej mapie, ale pełnych cywilizacji, nie państw-miast, bo wydaje mi się, że jest to trochę za dużo.
+
+### Linia 10884 — AGENT
+
+[REDACTED]
+
+### Linia 10885 — AGENT
+
+[REDACTED]
+
+### Linia 10886 — AGENT
+
+[REDACTED]
+
+### Linia 10887 — AGENT
+
+[REDACTED]
+
+### Linia 10888 — AGENT
+
+[REDACTED]
+
+### Linia 10889 — AGENT
+
+[REDACTED]
+
+### Linia 10890 — AGENT
+
+[REDACTED]
+
+### Linia 10891 — AGENT
+
+[REDACTED]
+
+### Linia 10892 — AGENT
+
+[REDACTED]
+
+### Linia 10893 — AGENT
+
+[REDACTED]
+
+### Linia 10894 — AGENT
+
+[REDACTED]
+
+### Linia 10895 — AGENT
+
+[REDACTED]
+
+### Linia 10896 — AGENT
+
+[REDACTED]
+
+### Linia 10897 — AGENT
+
+Oto jak to dziś działa w silniku — z rozróżnieniem na **pełne cywilizacje (nacje)** vs **miasta-państwa**.
+
+## Co jest „pełną cywilizacją”
+
+W kreatorze suwak **„Liczba cywilizacji”** (`typy_cywilizacji`) to **liczba typów nacji na mapie** — w tym Twój typ.
+
+| Rola | Kto to jest | Dyplomacja |
+|------|-------------|------------|
+| **Pełna cywilizacja** | Ty (gracz) + **po jednej stolicy** na każdy obcy typ (np. Qin, Rzym…) | Pełna (po odkryciu) |
+| **Miasto-państwo** | Pozostałe miasta w klastrze (Sparta, Kapua, kolejne chińskie miasta…) | Uproszczona / obronna kopia typu |
+
+Czyli:
+
+**Pełnych cywilizacji = `Liczba cywilizacji` z kreatora**  
+(nie mylić z liczbą wszystkich miast na mapie).
+
+Źródło: `e-start-params.json` → `typy_cywilizacji`, silnik: `computeClusters()` + `buildClusterSpawnPlan()`.
+
+---
+
+## Domyślnie per rozmiar mapy
+
+Wartości z Panel-E (to, co kreator ładuje na start):
+
+| Rozmiar mapy | Heksy | **Pełne cywilizacje** (domyślnie) | Miasta-państwa / klaster (domyślnie) |
+|--------------|-------|-----------------------------------|--------------------------------------|
+| **Maleński** | 76×52 | **7** | 3 |
+| **Mały** | 108×74 | **10** | 4 |
+| **Standardowy** | 168×120 | **12** | 6 |
+| **Duży** | 240×168 | **14** | 7 |
+| **Ogromny** | 336×238 | **15** | 8 |
+| **Super Huge** | 672×476 | **15** | 8 |
+
+W kreatorze (zaawansowane) możesz też ruszyć suwaki w szerszym zakresie, np. Standardowy: cywilizacje **10–14** (domyślnie 12), miasta-państwa **4–7** (domyślnie 6).
+
+---
+
+## Dlaczego wydaje się, że jest „za dużo”
+
+Na mapie widać **wszystkie miasta**, a pełnych nacji jest dużo mniej.
+
+Przykład **Standardowy, domyślnie** (12 typów, 6 miast-państw):
+
+| Kategoria | Liczba |
+|---------|--------|
+| **Pełne cywilizacje** | **12** (Ty + 11 obcych stolic) |
+| Miasta-państwa w Twoim klastrze | +6 (po założeniu stolicy) |
+| Obce klastry na start | 11 typów × (1 stolica + 6 MP) = **77 miast AI** |
+| **Razem graczy na mapie** | ok. **84** (po założeniu Twojego miasta) |
+
+Na **Super Huge** przy domyślnych 15 typów i 8 MP:
+- **15 pełnych nacji**
+- ok. **14 × 9 = 126** obcych miast od razu + 8 w Twoim klastrze + Ty → **~135 graczy na mapie**
+
+To nie są 135 cywilizacji — to **15 nacji** + setki **miast-państw** w klastrach.
+
+---
+
+## Skrót
+
+- Szukasz **pełnych cywilizacji** → patrz na **„Liczba cywilizacji”** (7–15 zależnie od mapy).
+- **„Miasta-państwa”** to osobny suwak — mnoży tylko małe państwa w każdym klastrze, nie dodaje nowych nacji.
+- Na Standardowym domyślnie: **12 pełnych**, nie 12+6+77 „cywilizacji”.
+
+Jeśli 12–15 nacji to za dużo, naturalny kierunek to obniżyć **`typy_cywilizacji`** w Panel-E / kreatorze (np. Standardowy 8–10 zamiast 12). Mogę przygotować konkretną propozycję liczb per mapa — napisz, na jakiej grasz (rozmiar + co widzisz w kreatorze).
+
+[REDACTED]
+
+### Linia 10898 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:06 PM (UTC+2)</timestamp>
+
+czy jesteśmy w stanie zwiększyć ilość rzek na mapie?
+
+### Linia 10899 — AGENT
+
+[REDACTED]
+
+### Linia 10900 — AGENT
+
+[REDACTED]
+
+### Linia 10901 — AGENT
+
+[REDACTED]
+
+### Linia 10902 — AGENT
+
+[REDACTED]
+
+### Linia 10903 — AGENT
+
+[REDACTED]
+
+### Linia 10904 — AGENT
+
+[REDACTED]
+
+### Linia 10905 — AGENT
+
+Tak — **jesteśmy w stanie**, i część tego **już działa bez zmian w kodzie**.
+
+## Co masz dziś w grze
+
+W kreatorze (ustawienia zaawansowane) jest suwak **„Rzeki”**:
+
+| Ustawienie | Efekt (uproszczenie) |
+|------------|----------------------|
+| **Mało** | rzadsza siatka — mniej rzek |
+| **Normalnie** | domyślne |
+| **Dużo** | gęstsza siatka — **więcej rzek i dopływów** |
+
+Silnik dzieli ląd na komórki siatki i stara się w każdej postawić co najmniej jedno ujście/dopływ. Im mniejsza komórka, tym więcej rzek:
+
+- główne ujścia: komórka **15 / 10 / 5** hexów (Mało / Normalnie / Dużo)
+- dopływy (druga faza): **11 / 7 / 4** hexów
+
+**Szybki test:** Nowa gra → zaawansowane → **Rzeki: Dużo** → Ctrl+F5.
+
+---
+
+## Ograniczenia (dlaczego nie „nieskończenie”)
+
+Generator ma twarde reguły z ostatnich poprawek mapy:
+
+- rzeka **musi mieć ujście do morza** (nie kończy się w środku lądu),
+- minimalna długość głównego nurtu,
+- na wąskich wyspach / małych masach lądu część prób jest odrzucana,
+- po generacji są jeszcze etapy czyszczenia (sieroty, rzeki bez prawdziwego morza).
+
+Na **Kontynentach / Pangei** zwykle da się dodać sporo rzek; na **Wyspach** efekt bywa słabszy — mniej lądu = mniej sensownych tras.
+
+---
+
+## Jeśli „Dużo” to za mało
+
+Da się podkręcić dalej, to już **zmiana balansu w danych/kodzie** (🟢–🟡):
+
+1. **Panel-A / `map-gen-params.json`** — dziś głównie legacy; realna gęstość jest w `waterCoverageCellSize()` w `gen-helpers.ts`.
+2. **Nowy poziom** np. „Bardzo dużo” (komórka 3 zamiast 5) albo obniżenie progów dla tieru `high`.
+3. **Więcej przebiegów** `topUpRiverGridCoverage` w generatorze (więcej dopływów do istniejącej sieci).
+
+Ryzyko: wizualny „las rzek”, trudniejszy ruch armii, więcej mostów/bródów do ogarnięcia.
+
+---
+
+## Rekomendacja
+
+1. Najpierw **Rzeki: Dużo** w kreatorze — zero deployu.
+2. Jeśli nadal mało — mogę zaproponować konkretne liczby (np. komórka 4→3, +1 pass dopływów) i wdrożyć po Twoim „tak”.
+
+Na jakiej mapie grasz (rozmiar + typ świata) i czy masz **Normalnie** czy już **Dużo**? Od tego zależy, czy wystarczy suwak, czy ruszamy generator.
+
+[REDACTED]
+
+### Linia 10906 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:07 PM (UTC+2)</timestamp>
+
+jakie są parametry w generatorze gry odpowiedzialne za to, ile będzie rzek oraz jak będą długie?
+
+### Linia 10907 — AGENT
+
+[REDACTED]
+
+### Linia 10908 — AGENT
+
+[REDACTED]
+
+### Linia 10909 — AGENT
+
+[REDACTED]
+
+### Linia 10910 — AGENT
+
+Oto mapa parametrów — od tego, co widzisz w kreatorze, po twarde stałe w silniku.
+
+## Skąd generator bierze ustawienia
+
+Przy **Nowej grze** przepływ jest taki:
+
+1. Kreator → `worldDensity.rivers` = **Mało / Normalnie / Dużo** (`ui-params.json`, klucz `rivers_density`)
+2. `generator.ts` → `generateRivers()` + `topUpRiverGridCoverage()`
+3. Parametry liczone w `newGameMapDefaults.ts` → `resolveRiverTraceForMap()` + funkcje siatki w `gen-helpers.ts`
+
+---
+
+## Ile będzie rzek (gęstość / liczba)
+
+Główny regulator to **rozmiar komórki siatki** na lądzie — im mniejsza komórka, tym więcej „slotów” na rzeki.
+
+| Parametr | Gdzie | Mało | Normalnie | Dużo |
+|----------|--------|------|-----------|-----|
+| **`riverCoverageCellSize`** (główne ujścia) | `gen-helpers.ts` → `waterCoverageCellSize()` | **15** hex | **10** hex | **5** hex |
+| **`riverTributaryCellSize`** (dopływy, faza 2) | `gen-helpers.ts` → `riverTributaryCellSize()` | **11** | **7** | **4** |
+
+**Kreator:** suwak **„Rzeki”** w ustawieniach zaawansowanych = ten tier.
+
+Dodatkowo wpływają:
+
+| Mechanizm | Efekt |
+|-----------|--------|
+| **Liczba przebiegów** | Faza 1: do **6** passów głównych ujść; faza 2: **3** passy dopływów; potem domykanie „dziur” w siatce |
+| **Rozmiar mapy** | Większa mapa = więcej komórek siatki → więcej potencjalnych rzek (brak osobnego mnożnika „× rozmiar” w aktywnym kodzie) |
+| **Typ świata** | Kontynenty/Pangea zwykle lepsze niż rozdrobnione Wyspy |
+| **Geografia** | Komórka bez sensownej trasy do morza / sieci → rzeka **nie powstanie** (odrzucenie, nie błąd) |
+| **`RIVER_MIN_INLAND_FROM_SEA = 2`** | Źródło min. 2 hexy od morza (bufor brzegu) |
+
+### Legacy w JSON (praktycznie nie steruje generatorem)
+
+W `map-gen-params.json` są jeszcze:
+
+- `gestosc.rzeki_max_mala_mapa` (20 / 50 / 120)
+- `gestosc.river_scale` (skala per rozmiar mapy)
+
+Kod oznacza `maxRiversForMapAndDensity()` jako **@deprecated** — dziś **nie** liczy rzek tym suitem, tylko siatką `cellSize`.
+
+---
+
+## Jak długie będą rzeki
+
+Tu działają **dwa poziomy**: cel długości (kreator) i twarde minimum w silniku.
+
+### 1. Z kreatora — tier „Rzeki”
+
+| Parametr | Gdzie | Mało | Normalnie | Dużo |
+|----------|--------|------|-----------|-----|
+| **`riverMinPathLengthForTier`** | `newGameMapDefaults.ts` | **15** hex | **25** hex | **35** hex |
+
+To trafia jako `minLen` do `generateRivers()` przez `resolveRiverTraceForMap()`.
+
+Uwaga: przy **„Dużo”** cel jest **dłuższy** (35), ale siatka jest **gęstsza** — więcej rzek, często krótszych dopływów; długie główne nurty tam, gdzie geografia pozwala.
+
+### 2. Z rozmiaru mapy — sufit długości
+
+`riverTraceLimitsForMap()` → **`maxLen`**:
+
+- zależy od wymiarów mapy (np. `max(40, min(W,H) × 0.22)`)
+- **`margin`** — margines od krawędzi mapy przy szukaniu źródeł
+
+Przykład **Standardowy 168×120**: `maxLen` ≈ **40** (minDim × 0.22).
+
+### 3. Miękki próg akceptacji (siatka fair-play)
+
+| Parametr | Mało | Normalnie | Dużo |
+|----------|------|-----------|-----|
+| **`riverGridTraceMinLen`** | min(cel, **5**) | min(cel, **6**) | min(cel, **8**) |
+
+Krótka rzeka, która **ma ujście do morza**, może przejść nawet gdy nie dobiła do celu 25/35 (decyzja z 2026-07-11).
+
+### 4. Twarde minimum w silniku
+
+| Stała | Wartość | Znaczenie |
+|-------|---------|-----------|
+| **`RIVER_MIN_MAIN_LEN`** | **3** hex | Główny nurt do morza — krótszy odrzucony |
+| **`feederMinLen`** | ~4–10 | Dopływy — niższy próg niż główne |
+| **`traceRiver` / `inlandTarget`** | z `minLen` | A* dąży do morza z celem długości w głąb lądu |
+
+Długość realna wynika też z **traceMax** (zależny od odległości źródła od morza) i meandrów w `traceRiver()`.
+
+---
+
+## Podsumowanie „co kręci czym”
+
+| Chcesz… | Kręć… |
+|---------|--------|
+| **Więcej rzek** | Kreator **Rzeki: Dużo**; w kodzie: mniejszy `waterCoverageCellSize` / `riverTributaryCellSize` |
+| **Mniej rzek** | **Mało**; większa komórka siatki |
+| **Dłuższe rzeki** | Wyższy `riverMinPathLengthForTier`; większe `maxLen` (duża mapa); mniej odrzuceń w `riverGridTraceMinLen` |
+| **Krótsze rzeki** | Niższy cel `minLen`; niższy `RIVER_MIN_MAIN_LEN` (ryzykowne dla jakości) |
+
+---
+
+## Pliki źródłowe (jeśli będziemy balansować)
+
+- **Kreator / tier:** `gra/data/ui-params.json` · `gra/src/map/newGameMapDefaults.ts`
+- **Generator:** `gra/src/map/generator.ts` (wywołanie rzek)
+- **Logika rzek:** `gra/src/map/gen-helpers.ts` (`generateRivers`, `topUpRiverGridCoverage`, stałe `RIVER_*`)
+- **Panel-A (legacy):** `gra/data/map-gen-params.json` — głównie **nie** steruje już liczbą rzek
+
+Jeśli chcesz „więcej niż Dużo”, najprostszy kierunek to nowy tier albo obniżenie komórki **5→3** (główne) i **4→3** (dopływy) — mogę rozpisać konkretny pakiet liczb pod Twoją mapę (rozmiar + typ świata).
+
+[REDACTED]
+
+### Linia 10911 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:09 PM (UTC+2)</timestamp>
+
+jeszcze jedna kwestia. Generator uwielbia generować cywilizacje na wyspach. gdzie te cywilizacje mają bardzo ograniczoną możliwość rozwoju. jeżeli jest tylko na przykład miasto z dwoma terenami lądu i wokół samo morze. To przecież nawet nie ma szans na jakikolwiek rozwój. Więc może postawimy warunek że na początku generator nie generuje miast na wyspach jeżeli ląd nie stanowi co najmniej siedemdziesiąt procent powierzchni terytorialnej tego państwa generalnie generator powinien ustawać w pierwszej kolejności na kontynentach i zaczynać od największej masy lądu, a niestety on wszystko robi na wyspach, a często całe kontynenty są puste bez cywilizacji.
+
+### Linia 10912 — AGENT
+
+Sprawdzam, jak generator wybiera miejsca startowe klastrów cywilizacji i czy jest już filtrowanie wysp.
+
+[REDACTED]
+
+### Linia 10913 — MACIEJ
+
+<mcp_meta_tools>
+You have access to MCP (Model Context Protocol) tools through `GetMcpTools` and `CallMcpTool`.
+
+## MCP Tool Discovery and Invocation
+
+Use `GetMcpTools` to discover tool schemas, then `CallMcpTool` to invoke them. Aim to minimize round-trips: ideally one `GetMcpTools` call followed by one `CallMcpTool` call.
+
+If the user mentions, references, or links to a product or service that corresponds to an available MCP server, and the request likely depends on information from that service, proactively inspect that MCP server before answering. Do not wait for the user to explicitly ask you to use MCP. If you are unsure which server matches, use `GetMcpTools` with a pattern based on the service name.
+
+`GetMcpTools` supports four modes:
+
+1. `{"server":"<id>"}`: returns full input schemas and full descriptions for every tool on that server. Preferred when you know which server to use.
+2. `{"server":"<id>","toolName":"<name>"}`: returns the full schema and full description for one tool.
+3. `{"pattern":"<regex>"}`: searches tool and server names across all servers using RE2 syntax (no backreferences, lookahead, or lookbehind). Use when you're unsure which server has the tool you need.
+4. No arguments: returns a catalog of all servers with tool names and short descriptions. Only use this if you have no idea which server or tool to look for — in most cases, prefer fetching by server or pattern instead.
+
+Pattern-search and catalog results shorten long descriptions, marked by a trailing "... [truncated]"; server and single-tool lookups always return the complete description.
+
+MANDATORY - Always call `GetMcpTools` to discover a tool's schema before invoking it with `CallMcpTool`. If you already know the server, go directly to it rather than listing the full catalog first.
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+Available MCP servers:
+
+<mcp_meta_tool_servers>
+<mcp_meta_tool_server name="cursor-app-control" tools="move_agent_to_root, move_agent_to_cloned_root, create_project, rename_chat, cursor_dialog, open_resource, open_automation" serverUseInstructions="Controls the Cursor application itself (workspace root, projects, opening resources and automations, user rules, chat title). See each tool description for usage." />
+<mcp_meta_tool_server name="cursor-ide-browser" tools="browser_navigate, browser_snapshot, browser_click, browser_mouse_click_xy, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, browser_drag, browser_get_bounding_box, browser_highlight, browser_tabs, browser_cdp, browser_take_screenshot, browser_lock" serverUseInstructions="The cursor-ide-browser MCP server provides a Cursor-owned browser tab plus a raw Chrome DevTools Protocol command tool.
+
+CORE WORKFLOW:
+1. Start by understanding the user's goal and what success looks like on the page.
+2. Use browser_tabs with action "list" to inspect open tabs and URLs before acting.
+3. Use browser_navigate to create or navigate the target tab. Omit the position parameter for background automation so focus is preserved.
+4. Use browser_lock before longer automation on an existing tab, then browser_lock with action "unlock" when finished.
+5. Use browser_snapshot for accessibility context and browser_take_screenshot for visual verification.
+6. Use browser_click, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, and browser_drag for page interactions.
+7. Use browser_highlight and browser_get_bounding_box for visual grounding and coordinate diagnostics.
+8. Use browser_cdp for page inspection, profiling, runtime evaluation, DOM/CSS queries, and performance data.
+
+AVOID RABBIT HOLES:
+1. Do not repeat the same failing action more than once without new evidence such as a fresh snapshot, a different ref, a changed page state, or a clear new hypothesis.
+2. IMPORTANT: If four attempts fail or progress stalls, stop acting and report what you observed, what blocked progress, and the most likely next step.
+3. Prefer gathering evidence over brute force. If the page is confusing, use browser_snapshot, browser_take_screenshot, or CDP inspection before trying more actions.
+4. If you encounter a blocker such as login, passkey/manual user interaction, permissions, captchas, destructive confirmations, missing data, or an unexpected state, stop and report it instead of improvising repeated actions.
+5. Do not get stuck in wait-action-wait loops. Every retry should be justified by something newly observed.
+
+CRITICAL - Lock/unlock workflow:
+1. browser_lock requires an existing browser tab - you CANNOT call browser_lock with action: "lock" before browser_navigate
+2. Correct order: browser_navigate -> browser_lock({ action: "lock" }) -> (interactions) -> browser_lock({ action: "unlock" })
+3. If a browser tab already exists (check with browser_tabs list), call browser_lock with action: "lock" FIRST before any interactions
+4. Only call browser_lock with action: "unlock" when completely done with ALL browser operations for this turn
+
+IMPORTANT - Waiting strategy:
+When waiting for page changes, prefer short CDP polling loops with Runtime.evaluate, DOM queries, Page lifecycle signals, or browser_snapshot checks rather than a single long wait.
+
+CDP USAGE:
+- Use browser_cdp with a DevTools Protocol method and params object, for example Runtime.evaluate, DOM.getDocument, CSS.getComputedStyleForNode, Profiler.start/stop, Performance.getMetrics, Log.enable, and Network.enable.
+- Do not use browser_cdp with CDP Input.* methods. They are denied because they are focus-sensitive in Electron webviews and can route input to Cursor UI instead of the browser page.
+- Use browser_click, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, and browser_drag for clicks, typing, filling inputs, selecting options, keyboard actions, scrolling, and drag-and-drop.
+- Use Runtime.evaluate for advanced DOM-scoped interactions that the dedicated browser tools do not cover.
+- For profiling, call Profiler.enable, Profiler.start, reproduce the behavior, then Profiler.stop. The profile is saved to a file and returned as a log_file; read that file only when you need to inspect details.
+- For JavaScript evaluation, prefer Runtime.evaluate with returnByValue when possible.
+- Some browser-wide or sensitive CDP methods are denied, especially cookie, storage, permission, download, target-management, filesystem-backed file-input commands, system-level commands, and CDP navigation/history navigation commands.
+- Large CDP responses are saved to files instead of being inlined. Prefer using the returned file path over immediately stuffing large payloads into context; read focused sections only when needed.
+
+VISION:
+- browser_take_screenshot attaches an image result that the model can inspect. CDP Page.captureScreenshot returns data inside JSON and should not replace browser_take_screenshot when visual verification is needed.
+
+NOTES:
+- browser_snapshot returns snapshot YAML and is the main source of truth for page structure.
+- Refs are opaque handles tied to the latest browser_snapshot for that tab.
+- Iframe content is not accessible - only elements outside iframes can be interacted with.
+- When you stop to report a blocker, include the current page, the target you were trying to reach, the blocker you observed, and the best next action. If the blocker requires manual user interaction, ask the user to take over at that point rather than assuming it in advance." />
+<mcp_meta_tool_server name="plugin-notion-workspace-notion" />
+<mcp_meta_tool_server name="plugin-datadog-datadog" />
+<mcp_meta_tool_server name="plugin-slack-slack" tools="slack_send_message, slack_schedule_message, slack_add_reaction, slack_create_conversation, slack_create_canvas, slack_update_canvas, slack_search_public, slack_search_public_and_private, slack_search_channels, slack_search_users, slack_read_channel, slack_read_thread, slack_read_canvas, slack_read_user_profile, slack_list_channel_members, slack_read_file, slack_send_message_draft, slack_search_emojis, slack_get_reactions" />
+</mcp_meta_tool_servers>
+
+## MCP Resource Access
+
+You also have access to MCP resources via `FetchMcpResource`.
+If a relevant server is marked as needing authentication, or if an MCP tool call fails with an authentication/authorization error, call `mcp_auth` for that server, then inspect that server again and retry the original request if appropriate. Do not call `mcp_auth` just because it is listed, and do not repeatedly call it if authentication did not fix the failure. Do not call `mcp_auth` in parallel; authenticate only one server at a time.
+</mcp_meta_tools>
+
+### Linia 10914 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:09 PM (UTC+2)</timestamp>
+
+jeszcze jedna kwestia. Generator uwielbia generować cywilizacje na wyspach. gdzie te cywilizacje mają bardzo ograniczoną możliwość rozwoju. jeżeli jest tylko na przykład miasto z dwoma terenami lądu i wokół samo morze. To przecież nawet nie ma szans na jakikolwiek rozwój. Więc może postawimy warunek że na początku generator nie generuje miast na wyspach jeżeli ląd nie stanowi co najmniej siedemdziesiąt procent powierzchni terytorialnej tego państwa generalnie generator powinien ustawać w pierwszej kolejności na kontynentach i zaczynać od największej masy lądu, a niestety on wszystko robi na wyspach, a często całe kontynenty są puste bez cywilizacji.
+
+### Linia 10915 — AGENT
+
+[REDACTED]
+
+### Linia 10916 — AGENT
+
+[REDACTED]
+
+### Linia 10917 — AGENT
+
+Masz trafną diagnozę — w kodzie **jest** logika „najpierw największy kontynent”, ale **obok niej** działa druga reguła, która wręcz **promuje wyspy**.
+
+## Co generator robi dziś
+
+Plik: `gra/src/map/clusters.ts` → `placeClusterCentersAcrossLandmasses()` + `computeClusters()`.
+
+### Co działa dobrze
+1. **Gracz** — pierwszy środek klastra ląduje na **największej masie lądu** (`masses[0]`, sortowanie po rozmiarze flood-fill).
+2. Wysepki **poniżej 12 hexów** lądu w ogóle nie wchodzą do listy mas (`MIN_MASS_HEXES_FOR_CENTER = 12`).
+
+### Skąd biorą się cywilizacje na wyspach
+3. **Faza 2** (kluczowy problem): *„po jednym środku na każdej masie lądu”* — każda wyspa ≥12 hexów dostaje **własny typ cywilizacji**, zanim duży kontynent dostanie drugi.
+4. **Voronoi** — cały ląd przypisuje się do najbliższego środka. Środek na wyspie → region tej nacji to często **tylko ta wyspa** (kilkanaście–kilkadziesiąt hexów).
+5. **Miasta** stawiane są w tym regionie (`buildClusterCities`) — bez sprawdzenia „czy to ma sens na dłuższą metę”.
+6. Próg **12 hexów** to bardzo mało (2–3 heksy „szerokości” wyspy).
+7. Gdy mapa jest ciasna, **luzowanie odległości** (12→6 hex) i fallback „dowolny ląd” jeszcze pogarsza losowanie.
+
+Efekt: duży kontynent = jeden (lub kilka) typów, a **mnóstwo małych wysp = osobne „nacje”** — dokładnie to, co opisujesz.
+
+---
+
+## Twoja propozycja 70% — jak to się ma do kodu
+
+„Ląd ≥70% terytorium państwa” przy spawnie trzeba zdefiniować operacyjnie, bo **terytorium miasta jeszcze nie istnieje**. Naturalne odpowiedniki w silniku:
+
+| Wariant | Sens | Gdzie mierzyć |
+|--------|------|----------------|
+| **B1** | Stolica tylko na **dużej masie lądu** | Flood-fill wyspy/kontynentu ≥ X hexów lub ≥ Y% całego lądu mapy |
+| **B2** | W regionie Voronoi nacji **≥70% lądu** to **jedna spójna masa** (nie rozproszone wysepki) | Po podziale Voronoi, przed `buildClusterCities` |
+| **B3** | W promieniu R od stolicy **≥70%** pól to ląd (nie morze) | Test „otoczenia” stolicy |
+
+Najbliżej Twojej intencji: **B1 + priorytet największych mas** (kontynenty pierwsze, wyspy tylko jeśli zostały sloty i wyspa jest duża).
+
+---
+
+## Gdzie to zmienić (gdy zdecydujesz)
+
+| Plik | Co |
+|------|-----|
+| `gra/src/map/clusters.ts` | `placeClusterCentersAcrossLandmasses` — **wyłączyć/warunkować fazę 2** (jeden środek per wyspa) |
+| `gra/src/map/clusters.ts` | `MIN_MASS_HEXES_FOR_CENTER` (12 → np. 80–150 zależnie od mapy) |
+| `gra/src/map/clusters.ts` | `computeClusters` — filtrować klastry bez sensownego regionu przed spawnem miast |
+| `gra/data/map-gen-params.json` lub Panel-A | Parametry progów (opcjonalnie, jak rzeki) |
+| `gra/tools/cluster-start-test.cjs` | Testy regresji spawnu |
+
+Warstwa: **🟡** (mapa + start gry, bez `main.ts` gameplay).
+
+---
+
+## Propozycja ABC (do decyzji)
+
+**[TEMAT: Spawn cywilizacji — kontynenty zamiast wysp] · MAP-SPAWN-Q1**
+
+**Sytuacja**  
+Cywilizacje lądują na małych wyspach (często kilkanaście hexów), podczas gdy duże kontynenty bywają puste. Generator ma priorytet największej masy dla gracza, ale **rozdziela typy po jednym na każdą wyspę ≥12 hexów**.
+
+**Cel**  
+Startowe nacje tylko tam, gdzie mają realny potencjał rozwoju; kontynenty zapełniane w pierwszej kolejności.
+
+**A — Tylko największe masy (proste)**  
+Środki klastrów **wyłącznie** na top N masach lądu (N = liczba typów cywilizacji), posortowanych malejąco. **Usunąć fazę 2** „jedna wyspa = jeden typ”. Min. masa np. **5% lądu mapy** lub **150 hexów** (skalowane rozmiarem).  
+*Za:* proste, szybkie, dobrze czuć w grze. *Przeciw:* na mapie Wyspy może zostać mało slotów.
+
+**B — Twój próg 70% (jakość regionu)**  
+Po Voronoi: spawn miast **tylko** jeśli spójna masa ze stolicą ≥ **70%** lądu w regionie tego typu (B2). Wyspy poniżej progu → **pomiń typ** lub przenieś środek na kontynent.  
+*Za:* dokładniejsze niż sam rozmiar wyspy. *Przeciw:* więcej kodu + testów; na bardzo rozdrobnionym lądzie mniej typów niż w kreatorze.
+
+**C — A + miękki fallback**  
+Najpierw A (kontynenty), a jeśli zostały wolne typy i są **duże** wyspy (np. ≥25% rozmiaru największej masy) — dopiero wtedy slot na wyspę.  
+*Za:* balans kontynent vs archipelag. *Przeciw:* więcej parametrów do strojenia.
+
+**Rekomendacja: C** — najpierw zapełnij kontynenty (A), wyspy tylko gdy naprawdę duże; opcjonalnie później dodać 70% (B) jako drugą bramkę.
+
+---
+
+## Krótko
+
+- Problem **nie jest** w braku logiki „największy ląd” — jest w **fazie 2: jedna cywilizacja per mała wyspa**.
+- **70%** da się wdrożyć, ale sensowniej jako **jakość regionu Voronoi** lub **min. rozmiar masy**, nie dosłowne terytorium miasta przy starcie.
+- To da się zrobić bez przebudowy całej gry — głównie `clusters.ts`.
+
+Jeśli wybierzesz **A / B / C** (albo „C + 70%”), mogę to od razu zapisać jako decyzję i wdrożyć w generatorze. Na jakim typie mapy najczęściej to widzisz — **Kontynenty**, **Pangea**, czy **Wyspy**?
+
+[REDACTED]
+
+### Linia 10919 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:11 PM (UTC+2)</timestamp>
+
+każdy współczynnik, który jest obecnie w kodzie dotyczący rzek, pokaż mi jaki jest przy w wariancie neutralnym. Jak jest współczynnik? A może nawet inaczej. Pokaż mi, jaki jest współczynnik przy wariancie mało rzek, normalnie rzeki i dużo rzek, ale każdy współczynnik i spróbujemy tym pokręcić oraz opisz za co odpowiada każdy współczynnik.
+
+### Linia 10920 — AGENT
+
+Przeszukam kod generatora map i zestawię wszystkie współczynniki rzek dla trzech wariantów: mało, normalnie i dużo.
+
+[REDACTED]
+
+### Linia 10921 — AGENT
+
+[REDACTED]
+
+### Linia 10922 — AGENT
+
+[REDACTED]
+
+### Linia 10923 — AGENT
+
+[REDACTED]
+
+### Linia 10924 — AGENT
+
+[REDACTED]
+
+### Linia 10925 — AGENT
+
+[REDACTED]
+
+### Linia 10926 — AGENT
+
+Poniżej masz **pełną mapę współczynników rzek** z kodu — z podziałem na **Mało / Normalnie / Dużo** oraz opisem, **za co odpowiada każdy**.
+
+Źródła: `gra/src/map/newGameMapDefaults.ts`, `gra/src/map/gen-helpers.ts`, `gra/data/map-gen-params.json`, wywołanie w `gra/src/map/generator.ts`.
+
+---
+
+## Jak działa suwak „Rzeki” w kreatorze
+
+| Etykieta UI | Wewnętrzny tier | Domyślny |
+|-------------|-----------------|----------|
+| **Mało** | `low` | — |
+| **Normalnie** | `medium` | ✅ (neutral) |
+| **Dużo** | `high` | — |
+
+Generator **nie liczy już „max 50 rzek”** — gęstość steruje **siatką komórek na mapie** + **długością tras** + **dopływami**.
+
+---
+
+## 1. Współczynniki AKTYWNE (tier Mało / Normalnie / Dużo)
+
+### Gęstość — siatki (najważniejsze do „pokręcania”)
+
+| Współczynnik | Mało | Normalnie | Dużo | Za co odpowiada |
+|--------------|------|-----------|------|-----------------|
+| **`riverCoverageCellSize`** (główna siatka) | **15** | **10** | **5** | Bok kwadratu komórki (w hexach). Mapa dzielona na siatkę N×N — w każdej komórce z wystarczającym lądem cel: **główny nurt → morze**. **Mniejsza liczba = gęstsza siatka = więcej rzek** (~odwrotnie do kwadratu: 10→5 to ~4× więcej komórek). |
+| **`riverTributaryCellSize`** (siatka dopływów) | **11** | **7** | **4** | Osobna, **gęstsza** siatka tylko dla fazy **dopływów** (`topUpRiverGridCoverage`). Nie dodaje nowych ujść co komórkę — dopływy wpływają do istniejącej sieci lub morza. |
+| **`MAIN_RIVER_GRID_STRIDE`** | **3** | **3** | **3** | W fazie 1 tylko co **3.** komórka siatki (w obu osiach) dostaje **główne ujście** — rzadsze główne rzeki niż „każda komórka”. Stała, nie zależy od tieru. |
+
+**Szacunek komórek głównej siatki** (mapa Standardowy 168×120, tylko orientacyjnie):
+
+| Tier | Komórek siatki (≈) | Z stride=3 (≈1/9) głównych slotów |
+|------|-------------------|-----------------------------------|
+| Mało | ~90 | ~10 |
+| Normalnie | ~200 | ~22 |
+| Dużo | ~800 | ~90 |
+
+---
+
+### Długość rzek
+
+| Współczynnik | Mało | Normalnie | Dużo | Za co odpowiada |
+|--------------|------|-----------|------|-----------------|
+| **`riverMinPathLengthForTier`** (cel katalogowy) | **15** | **25** | **35** | Docelowa **minimalna długość głównego nurtu** (hexy na ścieżce). Steruje algorytmem `traceRiver` — rzeka **stara się** być długa, jeśli geografia pozwala. |
+| **`riverGridTraceMinLen`** (próg akceptacji) | **5** | **6** | **8** | = `min(cel katalogowy, cap tieru)`. **Miękki** próg: krótsza, ale **kompletna** rzeka (z ujściem) może zostać, gdy nie da się dobić do 25/35. Cap tieru: Mało **5**, Normalnie **6**, Dużo **8**. |
+| **`feederMinLen`** (wyliczane) | **5** | **6** | **8** | Min. długość **dopływu** / krótkiego nurtu. = `max(4, min(gridTraceMinLen, 10))`. |
+| **`maxLen`** (zależy od mapy + tier) | patrz niżej | patrz niżej | patrz niżej | **Sufit długości** trasy przy trace. Wzór: `max(bazowy, minLen×3, minLen+40)`. |
+| **`margin`** (zależy od mapy) | ~3 na Standard | ~3 | ~3 | Margines od krawędzi mapy przy trace (legacy helper). |
+
+**`maxLen` dla mapy Standardowy (168×120)** — przykład:
+
+| Tier | minLen | maxLen |
+|------|--------|--------|
+| Mało | 15 | **55** |
+| Normalnie | 25 | **75** |
+| Dużo | 35 | **105** |
+
+Na mniejszej mapie `maxLen` spada (bazowo `max(40, minWymiar×0.22)`).
+
+---
+
+### Odległości między źródłami
+
+| Współczynnik | Mało | Normalnie | Dużo | Za co odpowiada |
+|--------------|------|-----------|------|-----------------|
+| **`minSourceSep`** (główna siatka) | **11** | **7** | **3** | = `max(2, floor(cellSize × 0.75))`. Min. odległość między **źródłami** rzek — mniejsza przy „Dużo” = bliżej siebie mogą startować. |
+| **Dopływy: odległość od źródeł** | **×0.55** od powyższego | to samo | to samo | Dopływy mogą być bliżej istniejących źródeł niż główne nurtu. |
+
+---
+
+### Warunki „czy w ogóle stawiać rzekę w komórce”
+
+| Współczynnik | Mało | Normalnie | Dużo | Za co odpowiada |
+|--------------|------|-----------|------|-----------------|
+| **`minLandHexesForRiverCell`** | **5** | **4** | **4** | = `max(4, floor(cellSize × 0.35))`. Min. lądu w komórce siatki, żeby w ogóle rozważać rzekę. |
+| **`minInland` w komórce** | **8** | **11** | **15** | = `max(8, floor(minLen × 0.45))`. W komórce musi być ląd wystarczająco **daleko od morza**, żeby dało się poprowadzić rzekę. |
+| **Min. masa lądu** | **8** | **8** | **8** | Masy lądu &lt;8 hexów — **pomijane** (za małe wysepki). |
+
+---
+
+### Stałe geometrii rzeki (identyczne dla wszystkich tierów)
+
+| Współczynnik | Wartość | Za co odpowiada |
+|--------------|---------|-----------------|
+| **`RIVER_MIN_INLAND_FROM_SEA`** | **2** | Ciało rzeki min. **2 hexy** od morza; ujście w ostatnich hexach. |
+| **`RIVER_MOUTH_TAIL_LEN`** | **5** | Ostatnie **5 hexów** — szybkie zejście do morza (ujście). |
+| **`RIVER_HARD_MEANDER_LEN`** | **8** | Pierwsze **8 kroków** rzeka **musi** iść w głąb lądu (meander), nie prosto do oceanu. |
+| **`RIVER_MIN_MAIN_LEN`** | **3** | Absolutne minimum długości **głównego nurtu do morza** (odrzuca 1–2 hexy). |
+| **`MIN_RIVER_SOURCES_PER_WATER_CELL`** | **1** | Fair play: min. 1 źródło na komórkę wody (katalog fair play). |
+
+---
+
+### Pętle generatora (stałe)
+
+| Faza | Przebiegi | Co robi |
+|------|-----------|---------|
+| Główne ujścia (siatka + stride) | **6** passów | Rzadkie główne rzeki co ~3×3 komórki |
+| Dopływy siatkowe (w `generateRivers`) | **3** passy | Dopływy do sieci / morza |
+| `topUpRiverGridCoverage` | osobna faza | Gęstsza siatka dopływów po finalnym terenie |
+
+---
+
+## 2. Współczynniki LEGACY (w JSON, ale generator ich NIE używa)
+
+W `map-gen-params.json` / `e-start-params.json` — oznaczone w kodzie jako **@deprecated**:
+
+| Współczynnik | Mało | Normalnie | Dużo | Status |
+|--------------|------|-----------|------|--------|
+| **`rzeki_max_mala_mapa`** | **20** | **50** | **120** | Stary sufit liczby rzek — **nieużywany** od 2026-07-04 |
+| **`river_scale`** (mala→super) | 1.0 → 2.6 | mnożnik rozmiaru mapy | **nieużywany** |
+| **`riversQuotaForLandMass`** | hex/river: **5** | **2** | **1** | Legacy helper — **nieużywany** |
+
+Jeśli będziesz „kręcił” w Panel-A — **te pola nic nie zmienią**, dopóki kod nie zostanie podpięty z powrotem.
+
+---
+
+## 3. Co NIE należy do suwaka „Rzeki”
+
+Suwak **„Góry i wzgórza”** (`relief`) osobno steruje górami/wzgórzami — pośrednio wpływa na **źródła rzek** (preferują wyższy teren), ale to **inny** preset w kreatorze.
+
+---
+
+## 4. Gdzie kręcić, żeby szybko zobaczyć efekt
+
+| Chcesz… | Kręć przede wszystkim… |
+|---------|------------------------|
+| **Więcej / mniej rzek** | `riverCoverageCellSize` (15/10/5) i `riverTributaryCellSize` (11/7/4) |
+| **Dłuższe / krótsze rzeki** | `riverMinPathLengthForTier` (15/25/35) + cap w `riverGridTraceMinLen` (5/6/8) |
+| **Rzadsze główne ujścia** | `MAIN_RIVER_GRID_STRIDE` (teraz 3 → np. 4 = jeszcze rzadziej) |
+| **Więcej meandrów w głąb** | `RIVER_HARD_MEANDER_LEN` (teraz 8) |
+| **Bliżej / dalej od morza** | `RIVER_MIN_INLAND_FROM_SEA` (2), `RIVER_MOUTH_TAIL_LEN` (5) |
+
+---
+
+## 5. Podsumowanie jednym rzędem (neutral = Normalnie)
+
+```
+                    Mało    Normalnie    Dużo
+Główna siatka:       15        10          5   ← mniejsze = więcej rzek
+Siatka dopływów:     11         7          4
+Cel długości:        15        25         35
+Akceptacja krótkiej:  5         6          8
+Max długość (Std.):  55        75        105
+Min. odległ. źródeł: 11         7          3
+```
+
+Jeśli chcesz **„więcej rzek niż Dużo”**, najszybsza ścieżka to obniżyć `riverCoverageCellSize` dla `high` (np. 5→4 lub 3) i/lub `riverTributaryCellSize` (4→3), ewentualnie zmniejszyć `MAIN_RIVER_GRID_STRIDE` z 3 na 2.
+
+Powiedz, w którą stronę chcesz iść (np. „2× więcej niż Dużo” albo „dłuższe rzeki, ta sama liczba”) — zaproponuję konkretne liczby do zmiany.
+
+[REDACTED]
+
+### Linia 10927 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:13 PM (UTC+2)</timestamp>
+
+Spawn cywilizacji — kontynenty zamiast wysp c+b
+
+### Linia 10928 — AGENT
+
+Zapisuję decyzję C+B i przygotowuję wdrożenie — najpierw przejrzę aktualny kod spawnu.
+
+[REDACTED]
+
+### Linia 10929 — AGENT
+
+[REDACTED]
+
+### Linia 10930 — AGENT
+
+Wdrażam C+B — uruchamiam subagenta z pełną specyfikacją.
+
+[REDACTED]
+
+### Linia 10931 — AGENT
+
+[REDACTED]
+
+### Linia 10932 — AGENT
+
+Zapisałem **MAP-SPAWN-Q1 → C+B** w [`docs/decyzje/MAP-SPAWN-Q1.md`](docs/decyzje/MAP-SPAWN-Q1.md).
+
+Wdrożenie jest w toku w `clusters.ts`:
+
+**C** — środki klastrów najpierw na największych masach lądu; wyspa tylko jeśli ma ≥25% rozmiaru największego kontynentu; bez fazy „jedna wyspa = jeden typ”.
+
+**B** — po Voronoi: spawn tylko gdy spójna masa ze stolicą to ≥70% lądu w regionie; inaczej przesunięcie środka lub pominięcie typu.
+
+Dopiszę wynik testów (`cluster-start-test.cjs` + typecheck), gdy subagent skończy.
+
+[REDACTED]
+
+### Linia 10934 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:15 PM (UTC+2)</timestamp>
+
+wiesz co, tak myślę sobie, że chciałbym zwiększyć ilość głównych rzek z dopływami dwukrotnie oraz trzykrotnie zwiększyć ilość dopływów. Zaproponuj nowe wskaźniki dla wszystkich parametrów, w jaki sposób to osiągnąć. W sumie to najbardziej zależy my tym, żeby było jak najwięcej dopływów do rzek, czyli jest jakaś rzeka, która startuje w górach, ale dopływa do najbliższej rzeki. Bo wtedy ląd wyzapełniłby się rzekami. Głównie chodzi o to, że są bardzo duże połacie lądu, gdzie nie ma rzek, a rzeka jest kluczowa do rozwoju cywilizacji.
+
+### Linia 10935 — AGENT
+
+Przeanalizuję dokładnie, które współczynniki sterują głównymi rzekami i dopływami — potem zaproponuję konkretne nowe wartości.
+
+[REDACTED]
+
+### Linia 10936 — AGENT
+
+[REDACTED]
+
+### Linia 10937 — AGENT
+
+[REDACTED]
+
+### Linia 10938 — AGENT
+
+[REDACTED]
+
+### Linia 10939 — AGENT
+
+Poniżej masz **propozycję pakietu** pod cel: **2× więcej głównych nurtów** i **3× więcej dopływów** (góry/wzgórza → najbliższa sieć), z uzasadnieniem każdego współczynnika.
+
+---
+
+## Dlaczego są puste połacie lądu
+
+Generator działa w **warstwach**:
+
+```mermaid
+flowchart TD
+  A[Faza 1: główne ujścia] --> B[Siatka główna + stride co 3 komórki]
+  B --> C[Faza 2: dopływy siatkowe w generateRivers]
+  C --> D[Faza 3: domknięcie resztek]
+  D --> E[Faza 4: dopływy dekoracyjne z gór]
+  E --> F[topUpRiverGridCoverage po finalnym terenie]
+```
+
+**Główne problemy dziś:**
+
+1. **Główne ujścia są rzadkie** — siatka 10×10 hex + tylko co **3.** komórka (`MAIN_RIVER_GRID_STRIDE = 3`) → realnie ~**1/9** komórek dostaje główną rzekę.
+2. **Dopływy w fazie 2 używają tej samej grubej siatki co główne** (`cellSize` z `riverCoverageCellSize`), a nie gęstszej `riverTributaryCellSize` — gęstsza siatka działa dopiero w `topUpRiverGridCoverage`.
+3. **Dopływy z gór** (`findTributarySource`) szukają źródła tylko w promieniu **3–8 hex** od punktu na głównej rzece — na dużych kontynentach to za mało.
+4. **Dekoracyjne dopływy** — max **4** na długą rzekę, zero na krótszych niż 12 hex.
+
+Źródła w górach są już **preferowane** (+55 punktów w rankingu), ale **siatka jest za rzadka**, żeby wypełnić ląd siecią dopływów.
+
+---
+
+## Propozycja nowych wartości (wszystkie tiery)
+
+### A. Parametry tierowe (główne pokrętła)
+
+| Współczynnik | Dziś Mało / Norm / Dużo | **Propozycja** | Efekt | Uzasadnienie |
+|--------------|-------------------------|----------------|-------|--------------|
+| **`riverCoverageCellSize`** (główna siatka) | 15 / **10** / 5 | **11 / 7 / 4** | **~2× więcej komórek** → ~2× slotów na główne ujścia | Skala ~1/√2; przy stride bez zmian daje ~2× głównych rzek |
+| **`riverTributaryCellSize`** (siatka dopływów) | 11 / **7** / 4 | **6 / 4 / 2** | **~3× więcej komórek dopływów** | Skala ~1/√3; gęstsza siatka feederów do istniejącej sieci |
+| **`MAIN_RIVER_GRID_STRIDE`** | **3** (wszystkie) | **2** (opcjonalnie) | stride 3→2 = **2,25×** głównych ujść | **Nie łączyć** z A jeśli chcesz dokładnie 2× — wybierz **albo** mniejszą siatkę **albo** stride=2 |
+| **`riverMinPathLengthForTier`** (cel długości) | 15 / **25** / 35 | **bez zmian** | długość głównych nurtów | Cel: więcej rzek, nie krótsze rzeki |
+| **`riverGridTraceMinLen`** (cap akceptacji) | 5 / **6** / 8 | **4 / 5 / 6** | więcej krótkich ale kompletnych rąk | Na wąskim lądzie łatwiej „domknąć” dopływ do sieci |
+
+**Dla tieru Normalnie (neutralny) — jedna linia:**
+
+```
+Główna siatka:     10 → 7
+Siatka dopływów:    7 → 4
+Stride głównych:    3 → 3  (zostaje, żeby nie przesadzić)
+```
+
+---
+
+### B. Stałe algorytmu (poza suwakiem, ale kluczowe dla dopływów)
+
+| Współczynnik | Dziś | **Propozycja** | Za co odpowiada |
+|--------------|------|----------------|-----------------|
+| **`tributaryCountForLength`** | &lt;12: 0 · &lt;22: 2 · max 4 | &lt;8: 0 · &lt;22: **6** · max **12** | Ile dopływów z gór **na jedną długą główną rzekę** (faza dekoracyjna) |
+| **Promień `findTributarySource`** | dist **3–8** hex | dist **3–14** hex | Jak daleko od rzeki szukać **Gór/Wzgórz** jako źródła dopływu |
+| **Bonus relief w rankingu źródeł** | +55 | **+80** | Preferencja startu w górach (już jest, wzmacniamy) |
+| **minSourceSep dopływów** | `×0.55` od głównego | **`×0.35`** | Bliskość źródeł — mniejsza = więcej dopływów obok siebie |
+| **Pętle fazowe `generateRivers`** | główne **6** · dopływy **3** | główne **6** · dopływy **5** | Więcej przebiegów domykania pustych komórek |
+| **Pętle `topUpRiverGridCoverage`** | **5** | **8** | Po finalnym terenie — główny mechanizm „wypełnij ląd” |
+| **`feederMinLen`** (min. długość dopływu) | 5/6/8 | **3/4/5** | Krótsze dopływy z gór do najbliższej rzeki |
+| **`expandRiverSourceCandidates` radius** | **2** | **4** | Szersze szukanie źródła w komórce siatki |
+
+---
+
+### C. Zmiana logiki (nie tylko liczby) — **najważniejsze dla Twojego celu**
+
+| Co zmienić w kodzie | Dziś | Propozycja |
+|---------------------|------|------------|
+| **Faza 2 `generateRivers`** (dopływy siatkowe) | używa `riverCoverageCellSize` (gruba siatka) | używa **`riverTributaryCellSize`** (gęsta siatka) |
+| **Nowa faza 5** (opcjonalna, rekomendowana) | brak | Po sieci głównej: skan **wszystkich Gór/Wzgórz** w promieniu X od sieci bez rzeki → `traceTributary` do **najbliższego junction** (max odległość np. 20 hex) |
+| **Faza 3 domknięcie** | próbuje `tryPlaceFeederRiver` na losowych hexach komórki | **najpierw** relief w komórce, potem reszta |
+
+To właśnie realizuje wizję: *„rzeka startuje w górach i dopływa do najbliższej rzeki”* — mechanizm **już istnieje** (`traceTributary` + `findTributarySource`), ale jest **za rzadko wołany** i na **za grubej siatce**.
+
+---
+
+## Pełna tabela: DZIŚ vs PROPOZYCJA (Normalnie)
+
+| Parametr | Dziś | Propozycja | Wpływ na |
+|----------|------|------------|----------|
+| Główna siatka | 10 | **7** | główne ujścia ~2× |
+| Siatka dopływów | 7 | **4** | dopływy ~3× |
+| Stride głównych | 3 | **3** | bez zmiany (kontrola) |
+| Cel długości | 25 | 25 | bez zmiany |
+| Akceptacja krótkiej | 6 | **5** | więcej dopływów na małym lądzie |
+| Dopływy dekoracyjne / długa rzeka | max 4 | **max 12** | góry → rzeka |
+| Szukaj gór przy rzece | 3–8 hex | **3–14 hex** | więcej źródeł w reliefie |
+| Passy dopływów (gen) | 3 | **5** | domykanie dziur |
+| Passy topUp | 5 | **8** | wypełnienie po terenie |
+| Min. długość dopływu | 6 | **4** | krótsze ramię z gór |
+
+**Mało / Dużo** — ten sam wzorzec: główna siatka ÷√2, dopływy ÷√3 → **11/6** i **4/2**.
+
+---
+
+## Trzy warianty wdrożenia (do wyboru)
+
+| Wariant | Co robimy | Szacunek efektu | Ryzyko |
+|---------|-----------|-----------------|--------|
+| **W1 — tylko liczby** | A + B (bez zmiany kodu faz) | ~1,5× główne, ~2× dopływy | umiarkowane — faza 2 nadal na grubej siatce |
+| **W2 — liczby + fix fazy 2** | W1 + faza 2 na `riverTributaryCellSize` | **~2× główne, ~3× dopływy** (Twój cel) | średnie — więcej krzyżowań rzek |
+| **W3 — pełny pakiet** | W2 + faza „góry → najbliższa sieć” + łagodniejsze `feederMinLen` | najgęstsza sieć, ląd „wypełniony” | wyższe — wizualnie gęsto, więcej pracy przy bramce testów |
+
+**Rekomendacja: W2** — trafia w 2×/3× bez przebudowy całego systemu. **W3** jeśli po W2 nadal widzisz puste połacie na Super Huge.
+
+---
+
+## Czego NIE ruszać (na start)
+
+| Parametr | Wartość | Dlaczego |
+|----------|---------|----------|
+| `RIVER_MIN_INLAND_FROM_SEA` | 2 | bufor od morza — reguła mapy |
+| `RIVER_HARD_MEANDER_LEN` | 8 | meander w głąb lądu |
+| `RIVER_MIN_MAIN_LEN` | 3 | anty-sztuczki 1–2 hex |
+| Legacy `rzeki_max_mala_mapa` | 20/50/120 | **nieużywane** przez generator |
+
+---
+
+## Jak to zmierzyć po wdrożeniu
+
+Prosty KPI w teście (mapa Standardowy, seed stały):
+
+- liczba ścieżek `main` / `tributary`
+- % lądu w odległości ≤**4 hex** od dowolnej rzeki (cel: wyraźny wzrost vs dziś)
+- 0 rzek bez ujścia (istniejąca bramka — musi zostać zielona)
+
+---
+
+## Podsumowanie jednym zdaniem
+
+**2× główne** → `riverCoverageCellSize` **10→7** (Normalnie), stride zostaje **3**.  
+**3× dopływy** → `riverTributaryCellSize` **7→4** + **faza 2 na gęstej siatce** + więcej passów topUp + potrojone `tributaryCountForLength` + szerszy zasięg gór **3–14 hex**.
+
+Jeśli powiesz **W1 / W2 / W3**, przygotuję gotowy pakiet zmian (konkretne liczby w plikach + test regresji). Możemy też najpierw podkręcić **tylko Normalnie** i zostawić Mało/Dużo bez zmian, żebyś porównał na jednej mapie.
+
+[REDACTED]
+
+### Linia 10941 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:18 PM (UTC+2)</timestamp>
+
+pamiętaj, że te parametry muszą być dostosowane też do wielkości mapy.
+
+### Linia 10942 — AGENT
+
+Sprawdzę, jak generator dziś skaluje rzeki względem rozmiaru mapy — i dopasuję propozycję parametrów.
+
+[REDACTED]
+
+### Linia 10943 — AGENT
+
+[REDACTED]
+
+### Linia 10944 — AGENT
+
+Masz rację — dziś **większość parametrów rzek NIE skaluje się z mapą**. Tylko `maxLen` / `margin` rosną z rozmiarem; **siatki główne i dopływów są stałe** (15/10/5 i 11/7/4) niezależnie od Malenki vs Super Huge. To na dużych mapach daje wrażenie „pustych połaci”, bo **odległość między rzekami rośnie szybciej niż rozmiar kontynentu**.
+
+Poniżej **zaktualizowany pakiet W2** z **skalą mapy** wbudowaną we wszystkie kluczowe współczynniki.
+
+---
+
+## Zasada skali (nowa, wspólna dla wszystkich parametrów)
+
+**Mapa odniesienia:** Standardowy = **168×120** (20 160 hexów).
+
+```
+areaScale = √(powierzchnia_mapy / 20 160)
+```
+
+| Mapa | W×H | areaScale |
+|------|-----|-----------|
+| Malenki | 76×52 | **0,44** |
+| Mały | 108×74 | **0,63** |
+| Standardowy | 168×120 | **1,00** |
+| Duży | 240×168 | **1,41** |
+| Ogromny | 336×238 | **1,99** |
+| Super Huge | 672×476 | **3,98** |
+
+**Wzór uniwersalny:**
+
+```
+wartość = round(baza_tier × areaScale)   // z clampem min/max
+```
+
+Bazy tierowe to wartości z poprzedniej propozycji (**2× główne, 3× dopływy**) — liczone **na Standardzie**.
+
+---
+
+## 1. Siatki — baza tier × skala mapy
+
+### Bazy tierowe (tylko przy Standardzie)
+
+| Tier | Główna siatka (dziś→nowa) | Siatka dopływów (dziś→nowa) |
+|------|---------------------------|-----------------------------|
+| Mało | 15 → **11** | 11 → **6** |
+| Normalnie | 10 → **7** | 7 → **4** |
+| Dużo | 5 → **4** | 4 → **2** |
+
+### Wzór
+
+```
+mainCell     = clamp(round(baza_główna[tier] × areaScale), 4, 32)
+tributaryCell = clamp(round(baza_dopływ[tier] × areaScale), 2, 18)
+```
+
+### Tabela gotowych wartości — tier **Normalnie**
+
+| Mapa | Główna siatka | Siatka dopływów | Dziś (stałe) |
+|------|---------------|-----------------|--------------|
+| Malenki | **4** | **2** | 10 / 7 |
+| Mały | **4** | **3** | 10 / 7 |
+| Standardowy | **7** | **4** | 10 / 7 |
+| Duży | **10** | **6** | 10 / 7 |
+| Ogromny | **14** | **8** | 10 / 7 |
+| Super Huge | **28** | **16** | 10 / 7 |
+
+Efekt: **ta sama gęstość rzek na jednostkę powierzchni** na każdej mapie + wyższa absolutna liczba na dużych mapach proporcjonalnie do lądu.
+
+---
+
+## 2. Długość tras — już częściowo skalowana, uzupełnienie
+
+| Parametr | Skala mapy dziś | Propozycja |
+|----------|-----------------|------------|
+| **`maxLen`** | ✅ `minWymiar × 0,22` | zostaje |
+| **`minLen` (cel)** | ❌ tylko tier | zostaje tierowy (15/25/35) |
+| **`riverGridTraceMinLen`** | ❌ tylko tier | **`clamp(round(cap_tier × areaScale), 3, 10)`** — na małych mapach łatwiej zaakceptować krótki dopływ |
+| **`feederMinLen`** | wyliczane | **`max(3, gridTraceMinLen - 1)`** |
+
+**`maxLen` dla Normalnie (już w kodzie, bez zmian):**
+
+| Mapa | maxLen |
+|------|--------|
+| Malenki | ~55 |
+| Standardowy | ~75 |
+| Super Huge | ~**105** |
+
+---
+
+## 3. Stride głównych ujść — też skala mapy
+
+| Mapa | `MAIN_RIVER_GRID_STRIDE` |
+|------|--------------------------|
+| Malenki, Mały | **2** (gęściej — mało miejsca) |
+| Standardowy → Super Huge | **3** |
+
+Na małych mapach stride 3 + duża komórka = prawie zero głównych rzek.
+
+---
+
+## 4. Dopływy z gór → najbliższa sieć (skalowane)
+
+| Parametr | Baza (Standard) | Wzór |
+|----------|-----------------|------|
+| **Zasięg szukania Gór/Wzgórz** | min **3**, max **14** hex | `maxDist = round(14 × areaScale)` clamp 6–28 |
+| **Bonus relief w rankingu** | +80 | bez zmian |
+| **`tributaryCountForLength`** | 0 / 6 / max 12 | `× round(areaScale)` clamp — więcej ramion na dużych mapach |
+| **Pętle dopływów `generateRivers`** | 5 | **`5 + floor(areaScale)`** → Malenki 5, Super 8 |
+| **Pętle `topUpRiverGridCoverage`** | 8 | **`6 + floor(areaScale × 1.5)`** → Malenki 6, Super 12 |
+| **`minSourceSep` dopływów** | ×0,35 głównego | skaluje się sam przez `cellSize` |
+
+**Przykład zasięgu gór (Normalnie):**
+
+| Mapa | Szukaj źródła w promieniu |
+|------|---------------------------|
+| Malenki | 3–**6** hex |
+| Standardowy | 3–**14** hex |
+| Super Huge | 3–**28** hex (clamp) |
+
+---
+
+## 5. Warunki komórki siatki (skalowane)
+
+| Parametr | Wzór |
+|----------|------|
+| **`minLandHexesForRiverCell`** | `max(4, floor(cellSize × 0,35))` — już zależy od cellSize ✅ |
+| **`minInland` w komórce** | `max(6, floor(minLen × 0,45 × √areaScale))` — na dużych mapach wymagaj głębszego lądu od morza |
+| **`expandRiverSourceCandidates` radius** | `clamp(round(2 × areaScale), 2, 6)` |
+
+---
+
+## 6. Co wdrożyć w kodzie (jedna funkcja + przekazanie W×H)
+
+Dziś `riverCoverageCellSize(tier)` i `riverTributaryCellSize(tier)` **nie biorą w×h**. Propozycja:
+
+```typescript
+// newGameMapDefaults.ts lub gen-helpers.ts
+const RIVER_REF_AREA = 168 * 120;
+
+export function riverMapAreaScale(w: number, h: number): number {
+  return Math.sqrt((w * h) / RIVER_REF_AREA);
+}
+
+export function resolveRiverCellSizes(
+  tier: DensityTier,
+  w: number,
+  h: number,
+): { main: number; tributary: number; areaScale: number } {
+  const s = riverMapAreaScale(w, h);
+  const mainBase   = tier === 'high' ? 4 : tier === 'low' ? 11 : 7;
+  const tribBase   = tier === 'high' ? 2 : tier === 'low' ? 6 : 4;
+  return {
+    areaScale: s,
+    main:      clamp(Math.round(mainBase   * s), 4, 32),
+    tributary: clamp(Math.round(tribBase   * s), 2, 18),
+  };
+}
+```
+
+`generateRivers(hexes, width, height, …)` — używa `width`/`height` zamiast stałych tierowych.
+
+Legacy `river_scale` z Panel-A (1,0–2,6) — **nie podłączać** (deprecated); nowa skala z `areaScale` go zastępuje spójniej.
+
+---
+
+## 7. Podsumowanie: co skaluje się z mapą
+
+| Parametr | Tier | Mapa | Cel |
+|----------|------|------|-----|
+| Główna siatka | ✅ baza | ✅ × areaScale | 2× główne vs dziś |
+| Siatka dopływów | ✅ baza | ✅ × areaScale | 3× dopływy vs dziś |
+| Stride głównych | — | ✅ małe=2, reszta=3 | nie głodzić Malenki |
+| maxLen | ✅ tier | ✅ minWymiar | długie rzeki na dużych mapach |
+| Zasięg gór → rzeka | — | ✅ × areaScale | wypełnia duże kontynenty |
+| Passy topUp / feeder | — | ✅ rośnie z areaScale | domyka puste połacie |
+| minInland komórki | ✅ minLen | ✅ √areaScale | fair play na każdej skali |
+
+---
+
+## 8. KPI po wdrożeniu (per rozmiar mapy)
+
+Dla każdej mapy osobno (seed stały, Normalnie rzeki):
+
+- % lądu w odległości ≤ **4 hex** od rzeki — **porównywalny** między Malenki a Super Huge (±10%)
+- liczba `tributary` / `main` ≥ **2,5×** dziś na Standardzie
+- **0** rzek bez ujścia (bramka zostaje)
+
+---
+
+Kiedy będziesz gotowy na wdrożenie (**W2 + skala mapy**), mogę to zrobić w jednym pakiecie: `resolveRiverCellSizes` + przekazanie w×h w generatorze + faza 2 na gęstej siatce dopływów + test regresji per rozmiar mapy.
+
+[REDACTED]
+
+### Linia 10945 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:19 PM (UTC+2)</timestamp>
+
+na małych mapach pewne warianty się po prostu nie zepną, jeżeli na przykład damy bardzo długie rzeki. Więc tutaj musi być chyba dostosowany każdy parametr do wielkości mapy.
+
+### Linia 10946 — AGENT
+
+Dokładnie tak — **tier „Rzeki” to intencja gracza**, a **rozmiar mapy to twardy sufit**. Na Malenki `minLen = 25` to połowa szerokości mapy — algorytm często **nie domknie** trasy do morza ani dopływu do sieci, mimo że na Standardzie działa.
+
+Poniżej propozycja: **każdy** parametr rzeki jako funkcja `(tier, w, h)` — z tabelą per mapa dla tieru **Normalnie**.
+
+---
+
+## Zasada nadrzędna
+
+```
+areaScale = √(w × h / 20 160)     // odniesienie: Standardowy 168×120
+minDim    = min(w, h)
+maxDim    = max(w, h)
+```
+
+**Dwa tryby każdego parametru:**
+
+1. **Cel tierowy** — co gracz chce (Mało / Normalnie / Dużo).
+2. **Cap mapowy** — co fizycznie mieści się na mapie (skaluje `areaScale` + `minDim`).
+
+```
+wartość_efektywna = clamp( cel_tier × areaScale , minimum_mapy , maximum_mapy )
+```
+
+Na małych mapach **caps wygrywają** — rzeki są krótsze i gęstsze, ale **zawsze kompletne** (ujście / dopływ do sieci).
+
+---
+
+## Pełna lista parametrów — wzory
+
+### A. Siatki (gęstość)
+
+| Parametr | Baza tier (Standard) | Wzór efektywny | Clamp |
+|----------|----------------------|----------------|-------|
+| Główna siatka | Mało **11** / Norm **7** / Dużo **4** | `round(baza × areaScale)` | **4–32** |
+| Siatka dopływów | **6 / 4 / 2** | `round(baza × areaScale)` | **2–18** |
+| Stride głównych | — | `areaScale < 0,55 → 2`, inaczej `3` | 2 lub 3 |
+
+### B. Długość tras (tu najczęściej „nie zepnie się”)
+
+| Parametr | Baza tier | Wzór efektywny | Dlaczego cap mapowy |
+|----------|-----------|----------------|---------------------|
+| **Cel `minLen`** | 15 / **25** / 35 | `round(baza × areaScale)` | **`≤ floor(minDim × 0,35)`** — nie więcej niż ~35% krótszego boku |
+| **`maxLen`** | z tieru | `max( cel×2 , minDim×0,22 )` | **`≤ floor(minDim × 0,75)`** — rzeka musi zmieścić meander + ujście |
+| **Akceptacja krótkiej (`gridTraceMinLen`)** | cap 5/6/8 | `min( cel_minLen , cap_tier )` | **`≥ 3`** na Malenki, **`≤ floor(minDim × 0,12)`** |
+| **`feederMinLen`** (dopływ) | — | `max(3, gridTraceMinLen − 1)` | **`≤ floor(minDim × 0,08)`** |
+| **`RIVER_HARD_MEANDER_LEN`** | 8 | `round(8 × areaScale)` | **3–8** — na Malenki krótszy „wymuszony meander” |
+| **`RIVER_MOUTH_TAIL_LEN`** | 5 | `round(5 × areaScale)` | **3–5** |
+| **`RIVER_MIN_INLAND_FROM_SEA`** | 2 | `max(1, round(2 × areaScale))` tylko gdy `minDim ≥ 40`, inaczej **1** | bufor od morza |
+
+### C. Dopływy z gór → sieć
+
+| Parametr | Baza (Standard) | Wzór |
+|----------|-----------------|------|
+| Szukaj Gór/Wzgórz (min–max hex) | 3–14 | min **2**, max **`round(14 × areaScale)`** clamp **6–28** |
+| Dopływy dekoracyjne / długa rzeka | 0/6/max 12 | `round(liczba × areaScale)` |
+| `minSourceSep` dopływów | ×0,35 | z `cellSize` — samo się skaluje |
+| Passy feeder (`generateRivers`) | 5 | `clamp(3 + floor(areaScale), 3, 8)` |
+| Passy `topUp` | 8 | `clamp(4 + floor(areaScale × 1,5), 4, 12)` |
+
+### D. Warunki komórki siatki
+
+| Parametr | Wzór |
+|----------|------|
+| `minLandHexesForRiverCell` | `max(3, floor(cellSize × 0,35))` — na Malenki min **3** zamiast 4 |
+| `minInland` w komórce | `max(4, floor(cel_minLen × 0,35))` — **nie** sztywne 8+ na małych mapach |
+| Zasięg `expandRiverSourceCandidates` | `clamp(round(2 × areaScale), 1, 5)` |
+
+---
+
+## Tabela gotowa — tier **Normalnie** (wszystkie mapy)
+
+| Parametr | Malenki | Mały | Standard | Duży | Ogromny | Super |
+|----------|---------|------|----------|------|---------|-------|
+| areaScale | 0,44 | 0,63 | 1,00 | 1,41 | 1,99 | 3,98 |
+| minDim | 52 | 74 | 120 | 168 | 238 | 476 |
+| **Główna siatka** | 4 | 4 | 7 | 10 | 14 | 28 |
+| **Siatka dopływów** | 2 | 3 | 4 | 6 | 8 | 16 |
+| **Stride** | 2 | 2 | 3 | 3 | 3 | 3 |
+| **Cel minLen** | **11**¹ | 16 | 25 | 25² | 25² | 25² |
+| **maxLen** | **39**³ | 55 | 75 | 90³ | 105³ | 105³ |
+| **Akceptacja krótkiej** | **3** | 4 | 6 | 6 | 6 | 8⁴ |
+| **feederMinLen** | 3 | 3 | 5 | 5 | 5 | 7 |
+| **Meander twardy** | 3 | 5 | 8 | 8 | 8 | 8 |
+| **Ujście (ogon)** | 3 | 3 | 5 | 5 | 5 | 5 |
+| **Bufor od morza** | 1 | 1 | 2 | 2 | 2 | 2 |
+| **Góry: max zasięg** | 6 | 9 | 14 | 20 | 28 | 28⁵ |
+| **Passy feeder** | 3 | 4 | 5 | 6 | 6 | 7 |
+| **Passy topUp** | 4 | 5 | 6 | 6 | 7 | 10 |
+
+¹ `25 × 0,44 = 11`, cap `52×0,35 = 18` → **11**  
+² tier cap 25, mapa pozwala  
+³ cap `minDim × 0,75`  
+⁴ cap tieru 8, na Super bez dodatkowego podbicia  
+⁵ clamp max 28  
+
+**Tier Mało / Dużo** — te same wzory, inne bazy (11/7/4 i 6/4/2 dla siatek).
+
+---
+
+## Co to rozwiązuje na małych mapach
+
+| Problem dziś | Po skalowaniu |
+|--------------|---------------|
+| `minLen=25` na mapie 52 hex wysokości | cel **11**, akceptacja od **3** hex |
+| Meander 8 kroków zjada całą wyspę | meander **3** na Malenki |
+| `minInland≥8` — komórka przy brzegu odrzucona | próg **4** |
+| Za gruba siatka 10 — 1–2 sloty na mapę | siatka **4**, stride **2** |
+| Dopływ musi mieć 6+ hex, a do rzeki 4 | feederMin **3** |
+
+---
+
+## Implementacja w kodzie (jeden punkt wejścia)
+
+Zamiast rozrzucać logikę, jeden obiekt **`RiverMapParams`** liczony raz na start generacji:
+
+```typescript
+resolveRiverMapParams(tier, width, height) → {
+  areaScale, mainCell, tributaryCell, stride,
+  minLen, maxLen, gridTraceMinLen, feederMinLen,
+  hardMeanderLen, mouthTailLen, minInlandFromSea,
+  reliefSearchMax, feederPasses, topUpPasses, ...
+}
+```
+
+`generateRivers` i `topUpRiverGridCoverage` biorą **tylko ten obiekt** — zero stałych tierowych bez mapy.
+
+---
+
+## Uczciwe ostrzeżenie gameplayowe
+
+Nawet przy pełnym skalowaniu na **Malenki + Rzeki: Dużo** sieć będzie **gęstsza niż dziś**, ale **nie identyczna** jak na Super Huge — inaczej przy 76×52 hexów mapa wyglądałaby jak delta Nilu. Tier „Dużo” na małej mapie = **maksimum możliwe**, nie to samo co na dużej.
+
+---
+
+## Podsumowanie
+
+Masz rację: **nie wystarczy skalować tylko siatki** — `minLen`, meander, bufor morza, próg akceptacji krótkiej rzeki i zasięg gór muszą iść razem z `minDim` i `areaScale`. Wtedy małe mapy dostają **krótsze, gęstsze, kompletne** rzeki zamiast odrzuconych tras.
+
+Gdy powiesz **wdrażaj**, zrobię pakiet: `resolveRiverMapParams` + podpięcie w generatorze + test regresji **osobno per rozmiar mapy** (Malenki musi przejść z 0 „sierot”).
+
+[REDACTED]
+
+### Linia 10948 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:20 PM (UTC+2)</timestamp>
+
+zdrażaj.
+
+### Linia 10949 — AGENT
+
+Wdrażam pełny pakiet skalowania rzek — najpierw sprawdzę aktualny stan kodu, potem uruchomię implementację.
+
+[REDACTED]
+
+### Linia 10950 — AGENT
+
+[REDACTED]
+
+### Linia 10951 — AGENT
+
+[REDACTED]
+
+### Linia 10952 — AGENT
+
+[REDACTED]
+
+### Linia 10953 — AGENT
+
+[REDACTED]
+
+### Linia 10954 — AGENT
+
+Wdrażam pakiet **W2 + pełna skala mapy**: `resolveRiverMapParams`, gęstsze siatki (2× główne / 3× dopływy na Standardzie), krótsze rzeki na małych mapach, dopływy z fazy 2 na gęstej siatce, test `river-map-scale-test.cjs`.
+
+Dam znać, gdy przejdą bramki (`tsc`, regresja mapy, testy rzek). **Deploy do `gra-robocza` nie ruszy** — tylko kod źródłowy, chyba że powiesz inaczej.
+
+[REDACTED]
+
+### Linia 10956 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:22 PM (UTC+2)</timestamp>
+
+Jedna uwaga. Główne Twoje myślenie ustawiłem na groch 4-5. Ale do każdej pracy audytu pracy programistycznej każdy zlecenie rozkminianie każdego tematu każdego błędu wrzuca i subagenta komposer 2 i pół normalnego.
+
+### Linia 10957 — AGENT
+
+Przyjąłem.
+
+**Ja (Grok 4.5)** — myślenie, decyzje, routing, weryfikacja wyników.  
+**Subagent `composer-2.5`** — każde zlecenie kodu, audyt, rozkminianie tematu/błędu, wdrożenie.
+
+Bez `composer-2.5-fast`. W tej sesji tak już lecimy (rzeki + spawn — na Composerze).
+
+### Linia 10958 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:22 PM (UTC+2)</timestamp>
+
+zapisz sobie to do reguł.
+
+### Linia 10959 — AGENT
+
+Zapisuję to w regule routingu modeli.
+
+### Linia 10961 — AGENT
+
+Zapisane w `.cursor/rules/model-routing.mdc` (alwaysApply):
+
+- **Grok 4.5** — myślenie, decyzje, routing, weryfikacja  
+- **`composer-2.5`** — każde zlecenie kodu, audyt, rozkminianie tematu, błąd  
+- **`composer-2.5-fast`** — zakaz
+
+### Linia 10962 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:23 PM (UTC+2)</timestamp>
+
+czyli ty jesteś do rozkminiania planowania kontrolowania ewentualnie robienia deploy u a komposer jest do pracy pozostałej.
+
+### Linia 10963 — AGENT
+
+Tak — doprecyzowuję regułę o deploy.
+
+### Linia 10966 — AGENT
+
+Tak — dokładnie tak to teraz jest w regule:
+
+| Ja (Grok 4.5) | Composer 2.5 |
+|---|---|
+| Rozkmina, plan, kontrola | Kod, audyt, fixy, testy, reszta |
+| Ewentualnie deploy | — |
+
+### Linia 10967 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:24 PM (UTC+2)</timestamp>
+
+włącz multitasking.
+
+### Linia 10971 — AGENT
+
+Nie mam przełącznika w UI — **Multitask** w Cursorze włączasz Ty:
+
+1. W czacie / Agents Window wpisz **`/multitask`**
+2. Albo przy planie kliknij **Build in Parallel**
+
+Od teraz, przy Twoim „włącz multitasking”, traktuję to jako tryb pracy: **subagenty Composer w tle, równolegle** (`run_in_background`), zamiast kolejki jeden po drugim.
+
+Jeśli `/multitask` już leci — daj znać, kontynuuję w tym trybie.
+
+### Linia 10973 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:24 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 10974 — AGENT
+
+Weryfikuję wynik spawnu i domykam status decyzji.
+
+### Linia 10977 — AGENT
+
+✅ Gotowe: **MAP-SPAWN-Q1 C+B** — [MAP-SPAWN clusters](1b7616d9-b617-4648-b74c-9302f75d28d1)
+
+- Kontynenty pierwsze; wyspy tylko ≥25% największej masy  
+- Region Voronoi ≥70% na jednej masie (inaczej przesunięcie / pominięcie typu)  
+- Testy 106/106 · `tsc` OK · w `gra/src`, **bez deployu**
+
+⏸️ Czeka: skala rzek (Composer w toku) — potem ewentualny wspólny deploy.
+
+### Linia 10978 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-2ed9004f-878b-4fac-bf3b-9ca5af88fabf.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 5:25 PM (UTC+2)</timestamp>
+
+czym będą się różnić te różne moduły? Do czego używać i do czego służy każdy z nich?
+
+### Linia 10980 — AGENT
+
+Z Twojego menu — krótko i praktycznie:
+
+| Moduł | Do czego | Co robi z kodem |
+|--------|----------|------------------|
+| **Plan** | Duża / niejasna zmiana — najpierw **jak**, potem dopiero kod | Najpierw pyta, bada repo, pisze plan. Kod dopiero po Twojej akceptacji („Build”). |
+| **Debug** | Bug, który jest **trudny do złapania** | Hipotezy → logi / dowody runtime → naprawa. Nie „zgadywanie w ciemno”. |
+| **Multitask** | Wiele niezależnych rzeczy naraz (albo duże zlecenie do pocięcia) | Odpalą **równoległe** subagenty w tle zamiast kolejki jeden po drugim. U Ciebie jest włączony (ptaszek). |
+| **Ask** | „Jak to działa?”, „gdzie jest X?” | **Tylko czyta** — zero edycji plików. |
+
+Dodatkowo (domyślny tryb pracy, gdy nie wybierzesz powyższych):
+
+| **Agent** (zwykły) | „Zrób to” — implementacja, poprawki, testy | Może edytować pliki i odpalać komendy. |
+
+---
+
+**Kiedy którego używać u Ciebie (Civ):**
+
+- **Ask** — szybkie pytanie bez ryzyka (np. „który plik steruje rzekami?”).
+- **Plan** — wielki temat z wariantami (np. przebudowa generatora, handel split) — najpierw plan ABC-friendly, potem Build.
+- **Debug** — „mapa się wykrzacza”, czerwony test, zachowanie w runtime.
+- **Multitask** — dwa niezależne wątki naraz (np. spawn + rzeki) albo jedno duże zlecenie pocięte na Composerów.
+- **Agent** (bez Multitask) — jedno konkretne zlecenie po kolei: wdroż, deploy, popraw.
+
+**Skrót:** Ask = rozumiem · Plan = projektuję · Agent = buduję · Debug = naprawiam z dowodem · Multitask = buduję **równolegle**.
+
+### Linia 10981 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:26 PM (UTC+2)</timestamp>
+
+Miałeś mi też napisać, na jakiej mapie ile jest cywilizacji w tej chwili, głównych cywilizacji.
+
+### Linia 10983 — AGENT
+
+Źródło: `gra/data/e-start-params.json` → `skala_mapy` → **`typy_cywilizacji`** (pełne nacje / typy, nie miasta-państwa).
+
+| Mapa | Główne cywilizacje (domyślnie) | Hexów |
+|------|--------------------------------|--------|
+| Malenki | **7** | 76×52 |
+| Mały | **10** | 108×74 |
+| Standardowy | **12** | 168×120 |
+| Duży | **14** | 240×168 |
+| Ogromny | **15** | 336×238 |
+| Super Huge | **15** | 672×476 |
+
+Sufit rosteru silnika: **15** nacji.
+
+Uwaga po MAP-SPAWN-Q1: kreator nadal **prosi** o te liczby, ale na mapie może wyjść **mniej**, jeśli typ nie zmieści się na kontynencie (próg 70% / brak dużych mas).
+
+### Linia 10985 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:27 PM (UTC+2)</timestamp>
+
+to może teraz w sytuacji, gdy po prostu tak naprawdę poprawiamy błędy, najlepsza opcja byłaby włączenie debug. ?
+
+### Linia 10986 — AGENT
+
+Nie zawsze — **Debug** ma sens tylko przy konkretnym typie błędu.
+
+**Debug — włącz, gdy:**
+- coś „nie działa”, a nie wiesz czemu
+- potrzebujesz **dowodu runtime** (logi, reprodukcja, hipotezy)
+- błąd jest trudny / sporadyczny / „wygląda OK w kodzie”
+
+**Zostań przy Agent / Multitask, gdy:**
+- już wiesz, co jest źle (np. spawn na wyspach, za mało rzek)
+- to **wdrożenie poprawki wg decyzji**, nie śledztwo
+- kilka niezależnych fixów naraz → **Multitask**
+
+**Skrót dla Ciebie:**
+- „napraw to, bo wiadomo jak” → **Agent** (lub Multitask)
+- „dlaczego to się wykrzacza?” → **Debug**
+- „najpierw jak to zrobić?” → **Plan**
+
+Przy bieżącej pracy (spawn C+B, skala rzek) Debug nie jest konieczny — to świadome zmiany generatora, nie śledztwo nieznanego buga.
+
+### Linia 10988 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:29 PM (UTC+2)</timestamp>
+
+OK. Zmieniszmy ilość cywilizacji: Maleńka 4, Mała 5, Standardowa 6. Duża 10, ogromna 12, Super Huge 15. To jest średnia, zawsze może być o jedną mniej, o jedną więcej, możesz zmienić teraz i potem deploy all.
+
+### Linia 10989 — AGENT
+
+Zmieniam domyślne liczby cywilizacji i po wdrożeniu zrobię pełny deploy.
+
+### Linia 10990 — AGENT
+
+W toku: nowe liczby cywilizacji (±1 w drabince) + **deploy all**. Dam znać, gdy będzie md5 i `START.html`.
+
+### Linia 10991 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:30 PM (UTC+2)</timestamp>
+
+Jeszcze mam jedno pytanie. Jeżeli zaczynamy w kamieniu, to nie ma 15 cywilizacji. Rozumiem, że co, system rozstawia tylko tyle, ile cywilizacji maksymalnie może rozstawić w epoce kamienia, czyli 9? Czy np. dostawia dwie cywilizacje greckie?
+
+### Linia 10992 — AGENT
+
+Sprawdzam w kodzie, jak dobierane są cywilizacje przy starcie w epoce kamienia.
+
+### Linia 10993 — AGENT
+
+Sprawdzam to w kodzie — zaraz dam prostą odpowiedź.
+
+### Linia 10995 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:32 PM (UTC+2)</timestamp>
+
+Rozumiem, że wszelkie weryfikacje i sprawdzanie w kodzie robisz subagentem. Composer ?
+
+### Linia 10996 — AGENT
+
+Tak — zgodnie z regułą:
+
+| Ja (Grok) | Subagent **Composer 2.5** |
+|-----------|---------------------------|
+| plan, decyzja, kontrola wyniku, deploy | czytanie kodu, audyt, fix, testy |
+
+„Sprawdź w kodzie / jak to działa / gdzie jest bug” → **Composer**.  
+Ja biorę jego raport i mówię Ci po ludzku.
+
+Wyjątek: 1–2 zdania z pamięci sesji (gdy temat już mamy) — bez odpalania Composera.
+
+### Linia 10998 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:34 PM (UTC+2)</timestamp>
+
+No to, to jest raczej błąd, bo te cywilizacje nie powinny się pojawiać w epoce kamienia, zwłaszcza że mogą nie mieć odpowiednich budynków jednostek, więc generalnie nadrzędna jest zasada czy dana cywilizacja występuje w danej epoce, czyli tak naprawdę jeżeli nastawimy nawet 15 to jeżeli dla epoki kamienia maksymalnie jest 8 dodatkowych cywilizacji no to powinno być tylko 8 a nie wrzucamy na siłę inne cywilizacje z puli które są w przyszłych epokach.
+
+### Linia 10999 — AGENT
+
+Masz rację — to błąd. Epoka startu ogranicza pulę: w kamieniu max 8 unikalnych typów, bez cywilizacji z późniejszych epok. Wdrażam.
+
+### Linia 11000 — AGENT
+
+Zgadza się — w kamieniu max **8** unikalnych nacji z tej epoki, zero z brązu/żelaza. Composer wdraża filtr epoki w spawnie + clamp suwaka w kreatorze.
+
+### Linia 11001 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:34 PM (UTC+2)</timestamp>
+
+trzeba to zmienić i poprawić. Już kiedyś o to pytałem, dlaczego Germanów mamy na mapie, ale mi agent nie odpowiedział.
+
+### Linia 11002 — AGENT
+
+Dokładnie to właśnie poprawiamy — Germanie (i inne z brązu/żelaza) nie powinny lądować przy starcie w kamieniu.
+
+Composer już ma zlecenie: filtr epoki w spawnie + limit suwaka. Dam znać, jak będzie gotowe.
+
+### Linia 11004 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:34 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11006 — AGENT
+
+✅ Gotowe: **rzeki skala mapy W2** — [River map-scale](681e35d5-6dd3-4798-be52-decc8b8b288a)
+
+- ~2× główne / ~3× dopływy na Standardzie  
+- Maleński: krótsze rzeki (żeby się spinały)  
+- Testy zielone · w `gra/src`, **bez deployu**
+
+⏸️ Czeka na wspólny deploy: nowe liczby cywilizacji + filtr epoki (bez Germanów w kamieniu).
+
+### Linia 11007 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:35 PM (UTC+2)</timestamp>
+
+To samo trzeba wdrożyć dla brązu i dla żelaza, bo w kolejnych epokach dojdą kolejne cywilizacje i też to będzie dotyczyć zarówno brązu, jak i żelaza. Że maksymalna ilość cywilizacji to ta, która wynika z tej epoki.
+
+### Linia 11008 — AGENT
+
+Doprecyzowuję zlecenie: limit z epoki startu dotyczy też brązu i żelaza (pula kaskadowa).
+
+### Linia 11010 — AGENT
+
+Tak — ta sama zasada dla **kamień / brąz / żelazo**: max cywilizacji = pula dostępna przy wybranej epoce startu (z kaskadą). Composer właśnie to dopina.
+
+### Linia 11012 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:36 PM (UTC+2)</timestamp>
+
+W każdym bądź razie jak skończysz wszystko to zrób deploy all.
+
+### Linia 11014 — AGENT
+
+Przyjąłem — po domknięciu filtra epoki + liczb cywilizacji pójdzie **deploy all** (razem z rzekami i spawnem). Dam md5, jak będzie na ROBOCZEJ.
+
+### Linia 11016 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:36 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11017 — AGENT
+
+FALA 66 ma tylko liczby cywilizacji — dopinam pełny redeploy z rzekami i filtrem epoki.
+
+### Linia 11019 — AGENT
+
+Częściowo na ROBOCZEJ: **FALA 66** · md5 `20b25cc0` — nowe liczby cywilizacji (4/5/6/10/12/15).
+
+Pełny pakiet (rzeki + filtr epoki bez Germanów w kamieniu) idzie w kolejnym deployu zaraz po domknięciu.
+
+### Linia 11021 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:37 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11022 — AGENT
+
+Dokumentacja rzek zaktualizowana — bez dalszych kroków. Czekamy na pełny deploy (filtr epoki + rzeki).
+
+### Linia 11024 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 5:48 PM (UTC+2)</timestamp>
+
+deploy all
+
+### Linia 11026 — AGENT
+
+Deploy all w toku — dam md5, jak będzie gotowe.
+
+### Linia 11028 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:01 PM (UTC+2)</timestamp>
+
+git push
+
+### Linia 11030 — AGENT
+
+Push w toku (z commitem niezacommitowanych zmian, jeśli coś zostało). Dam znać po wyniku.
+
+### Linia 11032 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:08 PM (UTC+2)</timestamp>
+
+Tutaj zauważyłem inny problem, ponieważ jeżeli damy dużą mapę, a ustaliliśmy jakąś ilość cywilizacji, na przykład duża mapa, to tak naprawdę nie możemy ani zwiększyć, ani zmniejszyć liczby cywilizacji. Więc wydaje mi się, że… liczbę cywilizacji musimy ustalić dla poszczególnej mapy, oraz dla poszczególnych epok. Tak żeby była chociaż jakakolwiek możliwość ruchu edycji, czyli zwiększyć o jedno, zmniejszyć o jedno. Zaproponuj nowy schemat.
+
+### Linia 11033 — AGENT
+
+Masz rację — teraz jest kolizja dwóch limitów.
+
+**Dziś:** suwak = średnia mapy ±1, potem **twardy sufit epoki** (kamień 8 · brąz 14 · żelazo 15).  
+Na Dużej/Ogromnej/Super w kamieniu wszystko spada do **8** → min=max=8 → **zero ruchu**.
+
+---
+
+## Propozycja: macierz **mapa × epoka startu**
+
+Każda komórka: **default**, z **min = default−1**, **max = default+1**, oraz:
+
+```
+1 ≤ min < default < max ≤ pula_epoki
+```
+
+(przy skrajach: jeśli default=2 → min=1; jeśli default = pula−1 → max = pula — zawsze **przynajmniej jeden** krok w górę **lub** w dół, idealnie oba).
+
+### Pule epok (jak teraz)
+| Epoka startu | Max nacji |
+|--------------|-----------|
+| Kamień | **8** |
+| Brąz | **14** |
+| Żelazo | **15** |
+
+### Szkic liczb (default)
+
+| Mapa | Kamień | Brąz | Żelazo |
+|------|--------|------|--------|
+| Maleński | **3** (2–4) | **4** (3–5) | **4** (3–5) |
+| Mały | **4** (3–5) | **5** (4–6) | **5** (4–6) |
+| Standardowy | **5** (4–6) | **6** (5–7) | **6** (5–7) |
+| Duży | **6** (5–7) | **9** (8–10) | **10** (9–11) |
+| Ogromny | **7** (6–8) | **11** (10–12) | **12** (11–13) |
+| Super Huge | **7** (6–8) | **13** (12–14) | **14** (13–15) |
+
+Zasady w szkicu:
+- W **kamieniu** nigdy default ≥ 8 (zostaje miejsce na +1, poza samym max puli przy 7→8).
+- Twoje „średnie” z Dużej/Ogromnej/Super (10/12/15) żyją w **żelazie**; w kamieniu są **niższe**, żeby dało się kręcić.
+- Zmiana epoki w kreatorze → przeładowanie defaultu + clamp suwaka do min/max tej komórki.
+
+---
+
+## Trzy warianty (do wyboru)
+
+**A — Macierz pełna (jak tabela wyżej)**  
+Osobny default (i ±1) dla każdej pary mapa×epoka.  
+*Za:* zawsze ruch, czytelne. *Przeciw:* więcej liczb do strojenia.
+
+**B — Default z mapy + „bezpieczny ±1 w epoce”**  
+Bierzesz obecną średnią mapy, potem:  
+`default = clamp(średnia, 2, pula−1)`, min/max = ±1 w [1, pula].  
+*Za:* mało tabeli. *Przeciw:* na Super+kamień zawsze ~7, nie „Twoje” 15.
+
+**C — A, ale w kamieniu/brązie procent puli**  
+np. Maleński 40% puli, Super 90% puli, zaokrąglone, zawsze ±1 wewnątrz.  
+*Za:* automat przy nowych epokach. *Przeciw:* mniej intuicyjne liczby.
+
+**Rekomendacja: A** — masz pełną kontrolę; kreator nigdy nie „zamraża” suwaka.
+
+---
+
+Jak wybierzesz **A / B / C** (albo poprawisz liczby w tabeli A), wdrożę w `e-start-params` + suwak kreatora.
+
+### Linia 11035 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:11 PM (UTC+2)</timestamp>
+
+a
+
+### Linia 11036 — AGENT
+
+Zapisuję decyzję A i wdrażam macierz mapa × epoka.
+
+### Linia 11037 — AGENT
+
+Zapisałem **CIV-MAP-EPOCH-Q1 → A** (macierz mapa × epoka). Composer wdraża suwak z ±1 w każdej komórce — dam znać po testach.
+
+### Linia 11039 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-edff0c67-7d39-40e8-9938-f1507e7b97a3.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:12 PM (UTC+2)</timestamp>
+
+To może oznaczać taka propozycja, bo nie wiadomo co jest oferowane, a co jest. Co my mamy zaoferować?
+
+### Linia 11041 — AGENT
+
+Sprawdzam w kodzie, co dokładnie oznacza ta linia „13 ¤” — zaraz wyjaśnię kto komu co daje.
+
+### Linia 11044 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-bac209b4-01e9-43b2-8e4e-bb2c3cd1ae74.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:16 PM (UTC+2)</timestamp>
+
+w Grecji nie powinno być z małej litery
+
+### Linia 11045 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:16 PM (UTC+2)</timestamp>
+
+Grecy
+
+### Linia 11047 — AGENT
+
+Poprawiam — zamiast klucza `grecy` ma być nazwa **Grecy** (i tak samo dla innych nacji).
+
+### Linia 11048 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-76292049-c6f2-48e9-b365-1d2bfa4237af.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:17 PM (UTC+2)</timestamp>
+
+faktycznie mamy szlak handlowy i teraz to działa, ale nie ma z tego tytułu pieniędzy. Chyba dlatego, że trzeba mieć targowisko, bo port inaczej nie ma trasy. Ale można zrobić szlak handlowy, czy tam umowę handlową chyba. To buduje zaufanie.
+
+### Linia 11050 — AGENT
+
+Tak — to wygląda na **dwie osobne rzeczy**. Sprawdzam w silniku i potwierdzę: umowa = zaufanie, pieniądze = dopiero szlak przy Targowisku/Porcie.
+
+### Linia 11052 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:17 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11053 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:17 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11054 — AGENT
+
+Dwie rzeczy naraz:
+
+### Propozycja „Handel jednorazowy — 13 ¤”
+**AI daje Ci 13 ¤**, Ty nic nie oddajesz. UI tego nie pokazuje (bug: nie mapuje starego `goldOnce` na kolumny Oferujemy/Oferują) — [Trade proposal UI](41c6dca4-a5b5-420a-9d9d-ea1a31ba4b64).
+
+### Macierz cywilizacji A
+✅ W kodzie: suwak **mapa × epoka** z ±1 — [CIV matrix](fe4e7783-f01e-46bf-8800-bcade84b0dbe). Bez deployu.
+
+Powiedz **deploy** albo **popraw UX handlu**, to lecę dalej.
+
+### Linia 11056 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-5eb0eb3d-2784-45f1-87ad-b2263f532a3f.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:18 PM (UTC+2)</timestamp>
+
+Divpedia i menu miały być na samej górnym prawym rogu, a w niewielkim odstępie miały być kafelki armia, miasto, kultura i religia. Miały być w jednym ciągu, a nie jedno pod drugim.
+
+### Linia 11058 — AGENT
+
+Poprawiam układ: jeden rząd — kafelki, potem CIVPEDIA i MENU w prawym górnym rogu.
+
+### Linia 11060 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-4f5457a9-14ac-4ca1-a759-5188c8718c62.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:19 PM (UTC+2)</timestamp>
+
+karty jednostki trzeba przesunąć trochę w prawo, żeby nie chowała się za ikonami budowania.
+
+### Linia 11062 — AGENT
+
+Przesuwam kartę jednostki w prawo, żeby nie nachodziła na ikony budowania.
+
+### Linia 11064 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:19 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11065 — AGENT
+
+✅ Gotowe w kodzie: nazwa **Grecy** (nie `grecy`) — [Capitalize Grecy](2aa34540-2ed2-4611-986c-e6d7f1fd9394). Bez deployu; wpadnie z HUD-em przy następnym.
+
+### Linia 11067 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:20 PM (UTC+2)</timestamp>
+
+Wydaje mi się, że coś się wydarzyło z chatkami i domkami po ostatniej zmianie. Jest ich po prostu mniej. Może też dlatego, że ustaliśmy, że ilość jest ze względów na ilość miast, a jak ilość miast się zmieniła, to jest też mniej chatek.
+
+### Linia 11070 — AGENT
+
+Sprawdzam zależność chatek od liczby miast — Twoja hipoteza wygląda na trafną; zaraz potwierdzę liczbami.
+
+### Linia 11072 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:20 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11073 — AGENT
+
+✅ Gotowe w kodzie: HUD — jeden rząd (Armia…Religia · CIVPEDIA · MENU) — [HUD top row](2841ba28-7e35-4eff-ae20-971df32cc65d). Bez deployu.
+
+### Linia 11075 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-20115488-00ae-45a3-9c29-a1f1d6cc33a3.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:24 PM (UTC+2)</timestamp>
+
+coś jest nie tak. Zaznaczyłem osiem cywilizacji, a pojawiło się tylko w sumie sześć.
+
+### Linia 11076 — AGENT
+
+Sprawdzam, czemu przy 8 w kreatorze na mapie ląduje tylko 6.
+
+### Linia 11077 — AGENT
+
+Prawdopodobnie filtr spawnu (70% / kontynenty) ucina typy mimo suwaka 8 — sprawdzam i poprawiam, żeby żądane 8 realnie lądowało na mapie.
+
+### Linia 11079 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-a0ba3e48-fb36-47a4-83cf-afd469366c8d.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:28 PM (UTC+2)</timestamp>
+
+myślę że to nie wiele dało albo nie jest zrespektowane w grze bo nadal pojawiają się miasta które są na wyspach które nie mają żadnego szans żadnej szansy rozwoju a przecież 70% miało być lądu i dopiero wtedy zakładanie miasta nie musi być kontynent tylko ląd w ramach okolicy miasta musi zajmować 70% żeby nie robić właśnie miast na wyspach na początku.
+
+### Linia 11080 — AGENT
+
+Doprecyzowuję regułę 70%: okolica miasta = ≥70% lądu (nie woda) — i poprawiam spawn.
+
+### Linia 11081 — AGENT
+
+Masz rację — dotychczasowe 70% liczyło **coś innego** (udział masy w regionie Voronoi), a nie **„w okolicy miasta ≥70% lądu”**. Stąd nadal miasta na wysepkach.
+
+Poprawiam bramkę: lokalny ląd wokół stolicy ≥70%, inaczej odrzut / przeniesienie na większy ląd. Potem wejdzie w deploy razem z HUD.
+
+### Linia 11083 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-001f5a16-479d-40bb-8d03-eeb57809686d.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:30 PM (UTC+2)</timestamp>
+
+ewidentnie to nie działa w parze, co zaproponowało mi do postawienia pierwszej cywilizacji.
+
+### Linia 11084 — AGENT
+
+Start gracza też na wysepce — dopinam tę samą bramkę 70% do strefy założenia pierwszego miasta.
+
+### Linia 11085 — AGENT
+
+Tak — strefa „załóż pierwsze miasto” też ląduje na wyspie. Dopinam bramkę 70% + minimalną masę lądu **do startu gracza**, nie tylko do AI.
+
+### Linia 11087 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:32 PM (UTC+2)</timestamp>
+
+Wydaje mi się też że graczowi nie rozstawia więcej państw miast z tego względu że jest reguła cztery heksy od gracza. Ale ta reguła powinna być taka że w pierwszej kolejności ustawiamy państwa miasta w odległości cztery heksy od miasta gracza a później znowu cztery heksy od kolejnego miasta państwa aż do uzupełnienia tej ilości która jest zadana w starcie. Jeżeli sześć to sześć. Generalnie wokół miasta mieści się pięć więc szóste musi być już wokół innego miasta państwa z naszej cywilizacji i to samo dotyczy się innych cywilizacji. To trzeba poprawić.
+
+### Linia 11088 — AGENT
+
+Dopinam pakowanie miast-państw: pierścień 4 hex od stolicy, potem 4 hex od kolejnych, aż do pełnej liczby.
+
+### Linia 11089 — AGENT
+
+Przyjąłem: najpierw pierścień 4 hex od stolicy, potem 4 hex od kolejnych miast-państw — aż do pełnej liczby (6 = 6). To samo dla obcych cywilizacji. Composer to wdraża razem z bramką 70% lądu.
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-28 17:10 UTC (linie 11091–11177)
+
+
+### Linia 11091 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-544a97f5-73d3-44a6-8384-59d3946ed7d0.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-a569a54a-0787-4968-b5ed-46072e4d7933.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:35 PM (UTC+2)</timestamp>
+
+nie wiem na początku dlaczego, jeżeli jakaś cywilizacja nawiązuje kontakt w celu handlu, to pokazuje się ta tablica handlu jednorazowego, gdzie tak naprawdę nic nie ma, jest oferujemy, oferują i nie ma żadnych informacji. trzeba dać anuluj i później dopiero pokazuje się oczekująca propozycja po prawej stronie.  Nie wiem, czy to jest jakiś błąd, czy ewentualnie po prostu coś się gdzieś nie pokazuje.
+
+### Linia 11092 — AGENT
+
+To wygląda na błąd flow — pusta tablica zamiast wypełnionej oferty AI. Naprawiam.
+
+### Linia 11093 — AGENT
+
+To bug flowu: otwiera się pusty kreator zamiast oferty AI. Composer naprawia — albo od razu widać propozycję, albo tablica będzie wypełniona.
+
+### Linia 11095 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:39 PM (UTC+2)</timestamp>
+
+deploy all
+
+### Linia 11097 — AGENT
+
+Deploy all w toku — dam md5, jak będzie na ROBOCZEJ.
+
+### Linia 11099 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:40 PM (UTC+2)</timestamp>
+
+przypomnij mi czy stolarnia ma teraz warunek, że w pobliżu musi być tartak, czy wystarczy tylko żeby mieć surowce w magazynie?
+
+### Linia 11101 — AGENT
+
+Sprawdzam warunek Stolarni w danych — zaraz potwierdzę.
+
+### Linia 11103 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-b7385f3c-c172-449d-8594-ae8e77762cb4.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:43 PM (UTC+2)</timestamp>
+
+Moim zdaniem komputer proponuje oferty których nie jest w stanie spełnić ponieważ nie wiem skąd miałby mieć taką ilość na przykład drewno na początku gdy de facto nie posiada jeszcze żadnych tartaków. Obawiam się że to są oferty które albo nie mogą być spełnione albo komputer ma jakąś niewidoczną przewagę.
+
+### Linia 11105 — AGENT
+
+Sprawdzam, skąd AI bierze „30 drewna/turę” i czy realnie to ma w magazynie — zaraz dam wynik.
+
+### Linia 11107 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-9324cb51-ee22-472b-9a50-bfa378f8bbdb.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:45 PM (UTC+2)</timestamp>
+
+Kolejny jakiś błąd na polu bitwy. Kursor. Jest dużej odległości od pola, który na przykład się zaznacza i ciężko w coś trafić. jest przesunięcie pomiędzy kursorem, a na przykład zaznaczeniem na mapie.
+
+### Linia 11109 — AGENT
+
+To klasyczny offset myszy vs canvas na bitwie — Composer szuka i poprawia mapowanie kursora.
+
+### Linia 11110 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:46 PM (UTC+2)</timestamp>
+
+ale tylko w etapie rozstawiania i przestawiania jednostek. Bo w inne rzeczy już bez problemu utrafia.
+
+### Linia 11112 — AGENT
+
+Dzięki — szukam offsetu tylko w fazie **rozstawiania/przestawiania**, nie w samej walce.
+
+### Linia 11114 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:46 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11115 — AGENT
+
+Masz rację, że oferty wyglądają podejrzanie — ale to **nie cheat**.
+
+**Co się dzieje:** AI liczy ofertę od **zapasu na jedną turę** (np. 30 drewna → „30/turę × 10 tur”), a nie od tego, czy utrzyma to przez cały kontrakt. Drewno może też iść z **obrabianego lasu** (+3/turę/heks), bez tartaka.
+
+**Przy realizacji:** każdej tury ściąga realnie ze stocku; jak nie ma — **tej tury nic nie oddaje** (umowa nie pęka). Nie drukuje surowca.
+
+Czyli: **overpromise w ofercie**, nie tajna przewaga. Mogę dopiąć cap (tylko tyle, ile realnie ma / produkuje) — daj znać, jeśli wdrażać.
+
+### Linia 11117 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-f8eed9c1-4e16-45d7-81b4-10e835d1351c.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-554a26c2-b7f0-46f1-a868-a70f0dd1b3f3.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:47 PM (UTC+2)</timestamp>
+
+Karta nadal w armii wyjeżdża na zakładki i się pod nimi chowa. Poza tym w momencie, gdy się kliknie na daną jednostkę, żeby zobaczyć jej statystyki,  Karta wychodzi ze szczegółów.
+
+### Linia 11119 — AGENT
+
+Poprawiam: panel ARMIA nie pod zakładkami, a klik jednostki nie wychodzi ze szczegółów.
+
+### Linia 11120 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:48 PM (UTC+2)</timestamp>
+
+Uśpienie powinno być obok fortyfikuj.
+
+### Linia 11122 — AGENT
+
+Ustawiam Uśpienie obok Fortyfikuj.
+
+### Linia 11124 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:48 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11125 — AGENT
+
+✅ Gotowe: **FALA 69** · md5 `d109dfa8` · `gra-robocza/START.html` — [Deploy all](7e423abb-5c89-447f-bb4c-4c12518543e8)
+
+Weszło m.in.: macierz civ mapa×epoka, HUD jeden rząd, spawn 70%/MP, handel AI, Grecy.
+
+Ctrl+F5 + **Nowa gra**. (Uśpienie obok Fortyfikuj / ARMIA pod zakładkami / kursor bitwy — jeśli jeszcze w toku, wejdą w kolejnym deployu.)
+
+### Linia 11127 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-a2c0b2b2-adfc-4d84-a67a-3b587a03a0c0.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-2c0c2fb5-5a71-4484-b4f6-847456dfd8ad.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 6:53 PM (UTC+2)</timestamp>
+
+Ta czerwona obwódka na znaku armii to chyba powinna być na znaku dyplomacji, bo to chodzi o to z iloma chyba państwami mamy wojnę.
+
+### Linia 11129 — AGENT
+
+Przenoszę czerwoną obwódkę i licznik wojen na ikonę Dyplomacji.
+
+### Linia 11130 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:53 PM (UTC+2)</timestamp>
+
+możliwe że jakieś ostatnie nasze zmiany spowodowały że tura nie może przejść a nie ma nic do wykonania co by je blokowało teoretycznie
+
+### Linia 11132 — AGENT
+
+Szukam regresji w ostatnich zmianach (handel/dyplomacja/ARMIA) — coś może wywalać turę w tle mimo pustej kolejki.
+
+### Linia 11134 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:56 PM (UTC+2)</timestamp>
+
+A czy jest jakiś skrót zakończenia tury? Bo może po prostu zwyczajnie baton nie działa?
+
+### Linia 11137 — AGENT
+
+Sprawdzam skrót zakończenia tury w kodzie.
+
+### Linia 11139 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:58 PM (UTC+2)</timestamp>
+
+A to musi być duże N, czy wystarczy samo n?
+
+### Linia 11141 — AGENT
+
+Sprawdzam w kodzie — zaraz potwierdzę, czy wystarczy małe `n`.
+
+### Linia 11142 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:58 PM (UTC+2)</timestamp>
+
+Nie musi być z jakimś ctrl+shift i tak dalej. ?
+
+### Linia 11144 — AGENT
+
+Nie — **samo `n`**, bez Ctrl/Shift/Alt.
+
+(W polu tekstowym może nie złapać — kliknij najpierw mapę.)
+
+### Linia 11146 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:59 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11149 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:59 PM (UTC+2)</timestamp>
+
+czy zapisać jakoś stan tej gry, ewentualnie jakiś potrzebujesz, bo jesteś w stanie wystawić raport, który mam ci wysłać, co tu może być powodem.
+
+### Linia 11150 — AGENT
+
+Tak — to pomoże. Nie musisz nic z terminala.
+
+**Najbardziej przydatne (w tej kolejności):**
+
+1. **Konsola przeglądarki (F12 → Console)**  
+   Kliknij mapę → naciśnij **`n`** (albo „Zakończ turę”) → zrób **screenshot** albo skopiuj **czerwone błędy** (jeśli są). To najczęściej zdradza wyjątek przy końcu tury.
+
+2. **Zapis gry**  
+   Jeśli masz **Zapisz** / plik save w grze — zapisz teraz i podeślij plik (albo ścieżkę, jeśli leży w folderze projektu). Da się odtworzyć stan.
+
+3. **Krótki opis** (wystarczy w czacie):  
+   - czy przycisk „Zakończ turę” reaguje (szary / nic / miga)?  
+   - czy **`n`** też nic nie robi?  
+   - czy wisi jakieś okno (dyplomacja, miasto, bitwa)?  
+   - numer tury / czy to świeża gra po FALI 69?
+
+**Nie potrzebuję:** Ctrl+Shift ani logów systemowych.
+
+Wyślij konsolę + zapis (jeśli masz) — na tej podstawie Composer dopnie przyczynę.
+
+### Linia 11151 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:59 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11152 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 6:59 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11153 — AGENT
+
+Potwierdzone — samo **`n`**, bez Ctrl/Shift. Czekam na konsolę/zapis, jeśli tura dalej nie przechodzi.
+
+### Linia 11155 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 7:01 PM (UTC+2)</timestamp>
+
+nie działa. Coś śmieszniejsze, nawet w nowej grze, którą rozpocząłem, też nie działa zakończenie tury, tak że coś wykrakają, że się w końcu wysypie
+
+### Linia 11156 — AGENT
+
+Nawet nowa gra — to poważniejsza regresja. Kopię głębiej w handler końca tury.
+
+### Linia 11157 — AGENT
+
+Biorę to jako regresję na świeżej grze — Composer grzebie w całym handlerze `n` / „Zakończ turę”. Jeśli możesz: F12 → Console → `n` i wklej czerwone linie / `[EndTurn]`.
+
+### Linia 11159 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-9c72ce6f-6b38-476d-baba-ef5092993039.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 7:02 PM (UTC+2)</timestamp>
+
+a gdzie mam to N wstawić?
+
+### Linia 11160 — AGENT
+
+Nigdzie w DevTools — **na klawiaturze**, w grze.
+
+1. Zamknij DevTools albo kliknij w **okno gry / mapę** (żeby fokus nie był w konsoli).
+2. Naciśnij klawisz **`n`** (zwykłe n, bez Ctrl).
+
+To skrót „Zakończ turę” — to samo co przycisk na dole.
+
+Do diagnozy błędu: w DevTools wejdź w zakładkę **Konsola** (nie Elementy) → kliknij mapę → `n` → jeśli coś czerwonego, zrób zrzut.
+
+### Linia 11162 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 7:03 PM (UTC+2)</timestamp>
+
+No niestety nie działa.
+
+### Linia 11164 — AGENT
+
+Na Twoim zrzucie stempel to **`f5fe14f9`**, a fix FALI 70 to **`e441f614`** — możliwe, że gra nie wzięła nowego bundla.
+
+Zrób: zamknij kartę → otwórz `gra-robocza/START.html` → **Ctrl+F5** → sprawdź stempel w rogu: ma być **`e441f614`**.
+
+Równolegle Composer szuka, czemu nawet `n` pada na świeżej grze.
+
+### Linia 11166 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 7:07 PM (UTC+2)</timestamp>
+
+Stworzeniem świata też coś się wydarzyło i nie działa.
+
+### Linia 11168 — AGENT
+
+Biorę tworzenie świata osobno — Composer szuka crasha w Nowej grze / generatorze. Jak w Konsoli (F12) jest czerwony tekst przy „Start” / generowaniu, wklej.
+
+### Linia 11170 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 7:08 PM (UTC+2)</timestamp>
+
+To jest trochę gorsza informacja.
+
+### Linia 11171 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 7:08 PM (UTC+2)</timestamp>
+
+Trzeba pomyśleć, co ostatnio robiliśmy w związku z zmianami w tworzeniu świata.
+
+### Linia 11172 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 7:08 PM (UTC+2)</timestamp>
+
+A nie, czekaj. Pojawiło się, ale bardzo długo się generowało.
+
+### Linia 11173 — AGENT
+
+OK — czyli **nie crash**, tylko **dużo dłuższa generacja**.
+
+Najbardziej prawdopodobne z ostatnich zmian:
+
+1. **Rzeki W2** — ~2× głównych + ~3× dopływów, gęstsza siatka, więcej przebiegów (szczególnie na Dużej / Super Huge).
+2. **Spawn** — więcej sprawdzeń (70% lądu, packing miast-państw).
+
+Na Standardzie powinno być zauważalnie wolniej niż wcześniej, na Super Huge — wyraźnie dłużej (to może być „minuty”, nie „sekundy”).
+
+Koniec tury (`n`) to osobny temat — tam nadal grzebiemy.
+
+Jak chcesz, mogę kazać Composerowi **zmierzyć**, która faza generacji zjada czas (rzeki vs spawn), i zaproponować przyspieszenie bez cofania gęstości rzek.
+
+### Linia 11174 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 7:08 PM (UTC+2)</timestamp>
+
+I mogę robić zakończenie tury w nowej grze, ale przetestuję jak długo to będzie działać.
+
+### Linia 11175 — AGENT
+
+Dobrze — na świeżej grze koniec tury żyje.
+
+Pilnuj zwłaszcza sytuacji po **bitwie AI → Wycofaj się**: wcześniej właśnie wtedy tura potrafiła się zawiesić na stałe. Jak znów padnie, daj znać (najlepiej stempel md5 w rogu + czy było anulowanie bitwy).
+
+### Linia 11177 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-6d1dd45e-fa0d-4d60-b33c-3718c73dd284.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 7:09 PM (UTC+2)</timestamp>
+
+te karty stały się jakieś duże teraz, nie wiem czemu. Jedno naprawione, drugie zepsute.
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-28 18:35 UTC (linie 11178–11239)
+
+
+### Linia 11178 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-6d1dd45e-fa0d-4d60-b33c-3718c73dd284.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 7:09 PM (UTC+2)</timestamp>
+
+te karty stały się jakieś duże teraz, nie wiem czemu. Jedno naprawione, drugie zepsute.
+
+### Linia 11180 — MACIEJ
+
+<mcp_meta_tools>
+You have access to MCP (Model Context Protocol) tools through `GetMcpTools` and `CallMcpTool`.
+
+## MCP Tool Discovery and Invocation
+
+Use `GetMcpTools` to discover tool schemas, then `CallMcpTool` to invoke them. Aim to minimize round-trips: ideally one `GetMcpTools` call followed by one `CallMcpTool` call.
+
+If the user mentions, references, or links to a product or service that corresponds to an available MCP server, and the request likely depends on information from that service, proactively inspect that MCP server before answering. Do not wait for the user to explicitly ask you to use MCP. If you are unsure which server matches, use `GetMcpTools` with a pattern based on the service name.
+
+`GetMcpTools` supports four modes:
+
+1. `{"server":"<id>"}`: returns full input schemas and full descriptions for every tool on that server. Preferred when you know which server to use.
+2. `{"server":"<id>","toolName":"<name>"}`: returns the full schema and full description for one tool.
+3. `{"pattern":"<regex>"}`: searches tool and server names across all servers using RE2 syntax (no backreferences, lookahead, or lookbehind). Use when you're unsure which server has the tool you need.
+4. No arguments: returns a catalog of all servers with tool names and short descriptions. Only use this if you have no idea which server or tool to look for — in most cases, prefer fetching by server or pattern instead.
+
+Pattern-search and catalog results shorten long descriptions, marked by a trailing "... [truncated]"; server and single-tool lookups always return the complete description.
+
+MANDATORY - Always call `GetMcpTools` to discover a tool's schema before invoking it with `CallMcpTool`. If you already know the server, go directly to it rather than listing the full catalog first.
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+Available MCP servers:
+
+<mcp_meta_tool_servers>
+<mcp_meta_tool_server name="cursor-app-control" tools="move_agent_to_root, move_agent_to_cloned_root, create_project, rename_chat, cursor_dialog, open_resource, open_automation" serverUseInstructions="Controls the Cursor application itself (workspace root, projects, opening resources and automations, user rules, chat title). See each tool description for usage." />
+<mcp_meta_tool_server name="plugin-datadog-datadog" />
+<mcp_meta_tool_server name="plugin-notion-workspace-notion" />
+<mcp_meta_tool_server name="plugin-slack-slack" tools="slack_send_message, slack_schedule_message, slack_add_reaction, slack_create_conversation, slack_create_canvas, slack_update_canvas, slack_search_public, slack_search_public_and_private, slack_search_channels, slack_search_users, slack_read_channel, slack_read_thread, slack_read_canvas, slack_read_user_profile, slack_list_channel_members, slack_read_file, slack_send_message_draft, slack_search_emojis, slack_get_reactions" />
+</mcp_meta_tool_servers>
+
+## MCP Resource Access
+
+You also have access to MCP resources via `FetchMcpResource`.
+If a relevant server is marked as needing authentication, or if an MCP tool call fails with an authentication/authorization error, call `mcp_auth` for that server, then inspect that server again and retry the original request if appropriate. Do not call `mcp_auth` just because it is listed, and do not repeatedly call it if authentication did not fix the failure. Do not call `mcp_auth` in parallel; authenticate only one server at a time.
+</mcp_meta_tools>
+
+### Linia 11181 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-6d1dd45e-fa0d-4d60-b33c-3718c73dd284.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 7:09 PM (UTC+2)</timestamp>
+
+te karty stały się jakieś duże teraz, nie wiem czemu. Jedno naprawione, drugie zepsute.
+
+### Linia 11182 — AGENT
+
+Poprawiam rozmiar tych kart wyjaśnień. Przy okazji: u Ciebie zoom UI był **150%** — to też powiększa wszystko; po fixie i tak zmniejszymy bazę kart.
+
+### Linia 11184 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-def77b9d-7b27-43fb-80e1-81502c61ed38.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 7:17 PM (UTC+2)</timestamp>
+
+Już wiem czemu. Bo chciałem tylko zwiększyć tooltipy czyli jak się najeżdża na coś na przykład to wtedy jest taka częściąka  mi chodziło tylko o takie podpisy, nie wiem czy to się nazywa tooltip, a Ty zwiększyłeś dwukrotnie całą czcionkę. Także na przykład jak jeżdża na jakieś wyjaśnienia, to też.
+
+### Linia 11185 — AGENT
+
+Jasne — chodzi tylko o małe podpisy przy najechaniu (jak „Religia — wiara i szerzenie”), nie o karty wyjaśnień. Odwracam podwojenie i powiększam wyłącznie te tooltipy.
+
+### Linia 11186 — AGENT
+
+Dokładnie — to są **tooltipy** (małe podpisy przy najechaniu). Karty wyjaśnień zostają normalne; powiększam tylko te podpisy.
+
+### Linia 11188 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 7:20 PM (UTC+2)</timestamp>
+
+Jak będziesz miał wszystko gotowe, to deplay all do roboczej.
+
+### Linia 11189 — AGENT
+
+Dopinam do bieżącej poprawki tooltipów: po skończeniu od razu full deploy do roboczej.
+
+### Linia 11191 — AGENT
+
+Przyjąłem — po tooltipach od razu **deploy all** do roboczej. Daję znać ze stemplem.
+
+### Linia 11192 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 7:21 PM (UTC+2)</timestamp>
+
+No okej ale kartę wyjaśnień powiększyłeś zamiast tooltipów więc je trzeba pomniejszyć.
+
+### Linia 11193 — AGENT
+
+Tak — karty wyjaśnień wracają do normalnego rozmiaru; powiększam tylko tooltipy.
+
+### Linia 11194 — AGENT
+
+Tak — karty wyjaśnień wracają do poprzedniego rozmiaru, większe zostają tylko te małe podpisy przy najechaniu. Potem deploy.
+
+### Linia 11196 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 8:08 PM (UTC+2)</timestamp>
+
+Czy już skończyłeś wszystko?
+
+### Linia 11197 — AGENT
+
+Tak — z tej paczki wszystko jest zrobione.
+
+**FALA 72** (`bd187872`) jest w roboczej:
+- tooltipy większe  
+- karty wyjaśnień z powrotem normalne  
+- packing MP (łańcuch 4 hex)
+
+Do Ciebie: **Ctrl+F5** i sprawdzenie tych trzech rzeczy. Commit/push nie robiłem (nie prosiłeś).
+
+### Linia 11198 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-312332fd-ded1-4c12-b1d2-5f3cdca6b29a.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 8:08 PM (UTC+2)</timestamp>
+
+bo tu chyba coś trwa. Ale jest jakiś crash.
+
+### Linia 11199 — AGENT
+
+Sprawdzam ten crash przy tworzeniu świata i co jeszcze działa w tle.
+
+### Linia 11200 — AGENT
+
+FALA 72 jest domknięta — to **osobny** wątek: „Fix world creation broken”. Sprawdzam, czy to prawdziwy crash przy Nowej grze, czy tylko bardzo wolna generacja mapy.
+
+### Linia 11202 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 8:09 PM (UTC+2)</timestamp>
+
+Okazało się, że jest po prostu bardzo wolna generacja. Coś się wydarzyło w tym temacie, ale mapa się wygenerowała
+
+### Linia 11203 — AGENT
+
+To nie crash — tylko wolna generacja. Przerywam śledztwo „crash” i sprawdzam, co dokładnie spowalnia.
+
+### Linia 11204 — AGENT
+
+OK — to nie crash, tylko długa generacja (po gęstszych rzekach). Sprawdzam, co dokładnie ją spowalnia; mapę zostawiamy jak jest, chyba że wyjdzie tani fix.
+
+### Linia 11205 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 8:10 PM (UTC+2)</timestamp>
+
+Okej, czy poza tym wątkiem masz wszystko zdeployowane do roboczej?
+
+### Linia 11206 — AGENT
+
+Tak — poza wątkiem wolnej generacji wszystko z tej paczki jest w roboczej.
+
+**FALA 72** (`bd187872`): tooltipy, karty wyjaśnień, hub-chain MP (+ wcześniejsze UI z F71 end-turn w poprzednim deployu).
+
+Wolna mapa: na razie tylko diagnoza, **bez** nowego deployu.
+
+### Linia 11208 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 8:12 PM (UTC+2)</timestamp>
+
+Faktycznie to może być element tej większej ilości rzek, że tam coś się spowalnia przez to. ale to trzeba sprawdzić, bo ten czas wzrósł 10-krotnie przy małej mapie, a co dopiero jak będą te większe.
+
+### Linia 11209 — AGENT
+
+10× na małej mapie to za dużo — sprawdzam, czy to same rzeki, czy gdzieś poszło w ścieżkę patologiczną.
+
+### Linia 11210 — AGENT
+
+Zgadza się — 10× na małej to za dużo na „po prostu więcej rzek”. Mierzę fazy i sprawdzam, czy `areaScale` / dopływy nie poszły w patologię; przy bugach od razu poprawiam.
+
+### Linia 11212 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 8:13 PM (UTC+2)</timestamp>
+
+tak naprawdę nie widzę innej możliwości dlatego, że na mapie świata generalnie nic więcej nie zmienialiśmy, poza ilością rzek. Zmienialiśmy też ilość cywilizacji dostępnych, to też mogą mieć wpływ na generacje. Bo jest to ograniczenie do wysokości pewnej. Ale nie wiem
+
+### Linia 11214 — AGENT
+
+Tak — to dwie główne hipotezy. Mierzymy osobno czas **rzek** i czas **spawn/cywilizacji** (klastry, limity epoki, packing MP), żeby nie zgadywać. Daję wynik z liczbami.
+
+### Linia 11216 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-b619c862-72f0-4b71-ba9b-4de92e770574.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-20cb7321-d56a-4ae7-9261-b9e1e21f2140.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 8:20 PM (UTC+2)</timestamp>
+
+jeżeli dobrze rozumiem, to żądania ofert to jest to, co my proponujemy. A po drugiej stronie oczekujące propozycje to jest to, co druga strona proponuje. Jeżeli to jest ten stół negocjacji i tak to wygląda, że lewa strona, to co proponujemy, prawa, to co jest proponowane. To trzeba zmienić nazewnictwo. Tak jak jest wcześniej. Czyli my oferujemy oni oferują  poza tym proponuję te dwie pozycje przenieść na całkiem na sam środek. Czyli jest. Zamiast w miejsce aktywne traktaty przenieść to co my oferujemy, w miejsce teraz żądania oferty przenieść co oni oferują. Natomiast. możliwe umowy przenieść w obecne miejsce oczekujące propozycje. a aktywne traktaty miejsce możliwe umowy, o które jest obecnie.
+
+### Linia 11217 — AGENT
+
+Przestawiam kolumny stołu negocjacji i zmieniam nazwy na „My oferujemy” / „Oni oferują”.
+
+### Linia 11218 — AGENT
+
+Rozumiem tak samo. Nowy układ L→P:
+
+1. **Aktywne traktaty**  
+2. **My oferujemy**  
+3. **Oni oferują**  
+4. **Możliwe umowy**
+
+Wdrażam w źródłach; dam znać jak będzie gotowe (deploy osobno, jak powiesz).
+
+### Linia 11220 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-17574d6e-53d6-4e44-843f-8e43f6e06955.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 8:23 PM (UTC+2)</timestamp>
+
+Wszystkie propozycje powinny być rozbite nie w jednym oknie oczekujące propozycje, tylko na dwie części. Tam gdzie my oferujemy to jest to co oferujemy, a tam co oni oferują to co oni oferują. To trzeba uporządkować.
+
+### Linia 11221 — AGENT
+
+Rozbijam oczekujące propozycje na dwie kolumny: nasze oferty vs ich oferty.
+
+### Linia 11222 — AGENT
+
+Tak — nasze oferty w **My oferujemy**, ich w **Oni oferują**, bez wspólnego worka „oczekujące”. Porządkuję to teraz.
+
+### Linia 11224 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-972b3686-7a8b-462a-8e22-e94432c60b7d.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 28, 2026, 8:27 PM (UTC+2)</timestamp>
+
+Po włączeniu budowania tartaku i wyjścia z tego nadal widnieją gdzieś na czarnym tle nawet inne surowce bez jakiś błąd ukrycia.
+
+### Linia 11225 — AGENT
+
+To osobny bug ukrycia ikon po wyjściu z trybu tartaku — naprawiam czyszczenie markerów surowców.
+
+### Linia 11226 — AGENT
+
+Widzę — po wyjściu z tartaku zostają „duchy” ikon na czarnym. Czyszczę ukrywanie tej warstwy.
+
+### Linia 11228 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 8:31 PM (UTC+2)</timestamp>
+
+pomimo faktu wybudowania tartaku na własnym terenie nie mam drewna. Prawdopodobnie dlatego, że postawiłem tartak na lesie, a państwo miasto usunęło mi tam las powinno być tak, że inne cywilizacje nie mogą budować i usuwać żadnych, robić ulepszeń w terenie, ani obsadzać przez swoje miasta na nie swoim terenie.
+
+### Linia 11229 — AGENT
+
+Sprawdzam tartak/drewno oraz blokadę ulepszeń i pracy obywateli na cudzym terenie (w tym miasta-państwa).
+
+### Linia 11230 — AGENT
+
+Przyjąłem. Sprawdzam, czemu tartak nie daje drewna, i twardo blokuję ulepszenia oraz pracę obywateli na cudzym terenie (także dla miast-państw).
+
+### Linia 11232 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 8:32 PM (UTC+2)</timestamp>
+
+Jest jeszcze ciekawiej mianowicie okazuje się że zrobiłem ulepszenie na terenie sąsiada a nie na swoim i dlatego nie mam tego drewna a nie powinienem mieć możliwości budowania na czyimś terenie ulepszenia.
+
+### Linia 11234 — AGENT
+
+Jasne — to dziura w bramce: dało się postawić ulepszenie u sąsiada. Blokuję budowę wyłącznie na własnym terenie (UI + silnik).
+
+### Linia 11236 — MACIEJ
+
+<timestamp>Tuesday, Jul 28, 2026, 8:32 PM (UTC+2)</timestamp>
+
+bardzo ważna kwestia. Gdy się wchodzi do miasta, podgląd granic powinien być zawsze widoczny, bo jest to duże utrudnienie. A można go włączyć tylko i wyłącznie na mapie świata. Więc jak się wchodzi do miasta, podgląd granic zawsze powinien być aktywny
+
+### Linia 11237 — AGENT
+
+Włączam stały podgląd granic w widoku miasta.
+
+### Linia 11238 — AGENT
+
+Tak — w mieście granice zawsze włączone; na mapie świata wraca Twój wcześniejszy przełącznik. Wdrażam.
