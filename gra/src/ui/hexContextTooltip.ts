@@ -359,6 +359,8 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
 
 export interface UnitContextTooltipInput {
   displayName: string;
+  /** Podtytuł pod nazwą (np. „2 jednostki na heksie"). */
+  headMeta?: string;
   /** Medalion portretu / sygnet właściciela (C-OBCE-JEDN-Q2). */
   ownerEmblemHtml?: string;
   q: number;
@@ -417,7 +419,7 @@ export interface UnitContextTooltipInput {
   expanded?: boolean;
   /** Pokaż przycisk „Więcej szczegółów” w treści (nad paskiem akcji). */
   expandable?: boolean;
-  /** Karty jednostek na stosie (tylko expanded). */
+  /** Karty jednostek na stosie (widoczne gdy length > 1). */
   stackCards?: ReadonlyArray<{
     id: string;
     name: string;
@@ -461,16 +463,24 @@ function buildUnitHeadHtml(u: UnitContextTooltipInput): string {
   const subHtml = subs.length
     ? `<div class="uc-unit-head-sub">${subs.join(' · ')}</div>`
     : '';
+  const metaHtml = u.headMeta
+    ? `<div class="uc-unit-head-meta">${u.esc(u.headMeta)}</div>`
+    : '';
   const emblem = u.ownerEmblemHtml
     ? `<span class="uc-owner-emblem">${u.ownerEmblemHtml}</span>`
     : '';
   return `<div class="uc-unit-head cp-unit-head">${emblem}`
-    + `<div class="uc-unit-head-info"><b>${u.esc(u.displayName)}</b>${subHtml}</div></div>`;
+    + `<div class="uc-unit-head-info"><b>${u.esc(u.displayName)}</b>${metaHtml}${subHtml}</div></div>`;
 }
 
 function buildUnitExpandButtonHtml(expanded: boolean): string {
   const label = expanded ? 'Mniej szczegółów' : 'Więcej szczegółów';
   return `<button type="button" class="sp-ctx-expand" data-sp-expand>${label}</button>`;
+}
+
+function buildUnitStackBarHtml(pct: number, kind: 'hp' | 'mov'): string {
+  const width = Math.max(0, Math.min(100, Math.round(pct)));
+  return `<div class="sp-unit-stack-bar sp-unit-stack-bar-${kind}"><i style="width:${width}%"></i></div>`;
 }
 
 function buildUnitStackCardsHtml(
@@ -480,9 +490,15 @@ function buildUnitStackCardsHtml(
   if (cards.length <= 1) return '';
   let html = '<div class="sp-unit-stack">';
   for (const c of cards) {
+    const hpPct = c.hpMax > 0 ? (c.hp / c.hpMax) * 100 : 0;
+    const movPct = c.ruchMax > 0 ? (c.ruchLeft / c.ruchMax) * 100 : 0;
     html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}" data-unit="${esc(c.id)}" role="button" tabindex="0">`
       + `<div class="sp-unit-stack-ic">${c.icon || unitIconSvg(undefined)}</div>`
       + `<div class="sp-unit-stack-name">${esc(c.name)}</div>`
+      + '<div class="sp-unit-stack-bars">'
+      + buildUnitStackBarHtml(hpPct, 'hp')
+      + buildUnitStackBarHtml(movPct, 'mov')
+      + '</div>'
       + `<div class="sp-unit-stack-meta">${Math.round(c.hp)}/${c.hpMax} · ${c.ruchLeft}/${c.ruchMax}</div>`
       + '</div>';
   }
@@ -522,7 +538,13 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-card.on{border-color:rgba(212,175,90,.55);box-shadow:0 0 10px rgba(212,175,90,.12);}
 .sp-unit-stack-ic{font-size:18px;line-height:1;min-height:20px;}
 .sp-unit-stack-name{font-size:9px;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sp-unit-stack-meta{font-size:8px;color:var(--civ-text-muted,#8a8070);margin-top:3px;}
+.sp-unit-stack-bars{display:flex;flex-direction:column;gap:3px;margin-top:5px;padding:0 3px;}
+.sp-unit-stack-bar{height:4px;background:rgba(0,0,0,.38);border-radius:2px;overflow:hidden;}
+.sp-unit-stack-bar i{display:block;height:100%;border-radius:2px;}
+.sp-unit-stack-bar-hp i{background:linear-gradient(90deg,#1a6020,#50b070);}
+.sp-unit-stack-bar-mov i{background:linear-gradient(90deg,#2a5080,#60a8e8);}
+.sp-unit-stack-meta{font-size:8px;color:var(--civ-text-muted,#8a8070);margin-top:4px;}
+.uc-unit-head-meta{font-size:10px;color:var(--civ-text-muted,#a09880);margin-top:3px;font-weight:400;}
 ${UNIT_ACTION_BAR_CSS}
 .sp-unit-card-body{display:flex;flex-direction:column;gap:0;}
 .sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
@@ -540,6 +562,10 @@ export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string 
   lines.push(buildUnitCompactStatsHtml(u));
   lines.push(buildPathLevelIconsRowHtml(statusInput));
 
+  if (u.stackCards && u.stackCards.length > 1) {
+    lines.push(buildUnitStackCardsHtml(u.stackCards, u.esc));
+  }
+
   if (expanded) {
     const extra = buildUnitExtraStatusLinesHtml(statusInput);
     if (extra) lines.push(`<div class="cp-sub">${extra}</div>`);
@@ -549,10 +575,6 @@ export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string 
 
     if (u.buildingBonusLabel && !pathStatusRowHasChips(statusInput)) {
       lines.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));
-    }
-
-    if (u.stackCards && u.stackCards.length > 1) {
-      lines.push(buildUnitStackCardsHtml(u.stackCards, u.esc));
     }
   }
 

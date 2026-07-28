@@ -11,6 +11,12 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-28 12:05] SESJA LOKALNA — audyt FALA 50–56 + redeploy ROBOCZA `fed92ad1`
+
+Dokumentacja zsynchronizowana z manifestem: FALA 56 HUD mapa+miasto+dock · FALA 55 paski armii · FALA 54 karta armii · łańcuch 50–56 w jednym bundle. Handoff: `dyspozycje/HANDOFF-SESJA-2026-07-28-KARTA-ARMII.md` · rejestr: `REJESTR-PROSB-I-ZADAN.md` · `STAN-PRACY-HANDOFF.md` §1.
+
+---
+
 ## [2026-07-07 ~22:40] HANDOFF plot-code — sesja 06–07.07 zapisana
 
 **Plik:** `dyspozycje/HANDOFF-PLOT-CODE-2026-07-06-07.md` — build `e2c5c711…`, wdrożenia, decyzje ZAMKNIĘTE, status bugów B1–B12, priorytety plot code. Dopisek: `docs/MACIEJ-GOTOWE.md` · sekcja 7 w `RAPORT-DZIEN-2026-07-07.md`.

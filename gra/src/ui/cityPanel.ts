@@ -1187,7 +1187,7 @@ function resLocalOnly(icon: string, val: string, cls: string, hint: string, stat
 // Scoped styles (injected once, namespaced under .civ-cs so the game is safe)
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-city-screen-css-w3';
+const STYLE_ID = 'civ-city-screen-css-w3-hudfix';
 
 /** Rozmiar samej ikonki (emoji/SVG) na pasku zakładek — w em względem font-size mountu. */
 const CITY_PANEL_ICON_GLYPH_EM = 4.5;
@@ -1821,11 +1821,11 @@ function ensureStyles(): void {
 .civ-v-resource-bar.civ-v-resource-bar-w3{display:flex;align-items:center;justify-content:center;gap:0.65rem;
   padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
 .civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(98vw,1280px);gap:0.22rem;padding:0;box-sizing:border-box;margin:0 auto;}
-.civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:wrap;width:100%;}
-.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.32rem 0.48rem;
+.civ-v-top-flank-row{display:flex;align-items:flex-start;justify-content:center;gap:0.5rem 0.65rem;flex-wrap:nowrap;width:100%;overflow:visible;}
+.civ-v-w3-chips-flank{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:0.32rem 0.48rem;
   padding:0.38rem 0.82rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
-  flex:0 1 auto;min-width:0;max-width:min(48vw,560px);}
+  flex:0 0 auto;min-width:0;overflow:visible;}
 .civ-v-w3-chips-flank.civ-v-w3-chips-left{justify-content:flex-end;}
 .civ-v-w3-chips-flank.civ-v-w3-chips-right{justify-content:flex-start;}
 .civ-v-top-line{display:flex;align-items:center;justify-content:center;gap:0.65rem;flex-wrap:wrap;width:100%;}
@@ -8075,7 +8075,7 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
       `Praca tego miasta · budynki ${signed(pracaSplit.doBudynkow)} · ulepszenia ${signed(pracaSplit.doUlepszen)}`,
     ),
     w3CityChip(
-      loafIconHtml(),
+      cityPanelChipIcon('res-food', 20),
       'Żywność',
       signed(foodSplit.total),
       foodCls,
@@ -8094,6 +8094,14 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
 
   const cultureRow = [
     w3CityChip(
+      cityPanelChipIcon('res-science', 20),
+      'Nauka',
+      signed(view.nauka),
+      naukaCls,
+      'nauka',
+      `Nauka generowana w tym mieście`,
+    ),
+    w3CityChip(
       cityPanelChipIcon('res-culture', 20),
       'Kultura',
       signed(view.kultura),
@@ -8108,14 +8116,6 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
       relCls,
       'religia',
       `Przyrost wiernych w tym mieście`,
-    ),
-    w3CityChip(
-      `<span class="civ-v-w3-sci-med">${scienceOwlIconHtml()}</span>`,
-      'Nauka',
-      signed(view.nauka),
-      naukaCls,
-      'nauka',
-      `Nauka generowana w tym mieście`,
     ),
   ].join('');
 

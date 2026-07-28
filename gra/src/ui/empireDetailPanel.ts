@@ -375,12 +375,45 @@ function cityEconMiniNauka(rows: EmpireDetailSnap['cityEcon']): string {
   return h;
 }
 
-function cityPoborMiniLudnosc(rows: EmpireDetailSnap['cityPobor']): string {
-  if (rows.length === 0) return '<div class="civ-emp-empty">Brak miast.</div>';
-  const grid = '1fr 1fr 1fr';
-  let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'OBYW.', 'LUDNOŚĆ ABS.'], grid)}`;
-  for (const c of rows) h += miniRow([esc(c.name), String(c.ludki), esc(c.ludnoscAbsLabel)], grid);
-  h += '</div><div class="civ-emp-foot">Obywatele to mieszkańcy miasta (1–10 slotów). Ludność absolutna rośnie z epoką imperium.</div>';
+function cityMiastaMiniDetail(
+  ce: EmpireDetailSnap['cityEcon'],
+  cp: EmpireDetailSnap['cityPobor'],
+  food: EmpireFoodSnap,
+  e: EmpireDetailSnap['economy'],
+): string {
+  if (cp.length === 0) {
+    return '<div class="civ-emp-empty">Brak miast — załóż osiedle na mapie.</div>';
+  }
+  const foodByName = new Map(food.perCityRows.map(r => [r.name, r]));
+  const grid = '1.05fr 0.45fr 0.75fr 0.55fr 0.55fr 0.6fr 0.6fr';
+  let h = `<div class="civ-emp-note">Miasta imperium: <b>${e.osiedla}</b>`
+    + ` · przyrost ludności łącznie: <b>${signedPl(e.ludnoscRate ?? 0)}</b> obyw./turę</div>`;
+  h += `<div class="civ-emp-mini">${miniHeader(
+    ['MIASTO', 'OBYW.', 'LUDNOŚĆ', 'WZROST', 'PRACA', 'PIENIĄDZ', 'ŻYWNOŚĆ'],
+    grid,
+  )}`;
+  for (const pob of cp) {
+    const econ = ce.find(c => c.name === pob.name);
+    const fd = foodByName.get(pob.name);
+    const praca = (econ?.pracaPula ?? 0) + (econ?.pracaBudynki ?? 0);
+    const wzrost = fd != null ? `${Math.round(fd.wzrostProcent)}%` : '—';
+    const zywnosc = fd != null ? foodSignedTxt(fd.bilans, true) : '—';
+    h += miniRow([
+      esc(pob.name),
+      String(pob.ludki),
+      esc(pob.ludnoscAbsLabel),
+      wzrost,
+      signedTxt(praca),
+      signedTxt(econ?.pieniadz ?? 0),
+      zywnosc,
+    ], grid);
+  }
+  h += '</div>';
+  h += '<div class="civ-emp-foot">'
+    + 'PRACA = suma do puli imperium i do budynków w mieście / turę · '
+    + 'PIENIĄDZ = wpływ netto do skarbca po suwakach · '
+    + 'ŻYWNOŚĆ = bilans lokalny miasta (produkcja − racje) · '
+    + 'WZROST = szacowany % wzrostu ludności (szczegóły w panelu miasta).</div>';
   return h;
 }
 
@@ -792,8 +825,8 @@ function render(): void {
     + `<div class="civ-emp-moc-big">${esc(mocWithValue(p.power))}</div>`
     + `<div class="civ-emp-moc-sub">Suma składników: <b>${Math.round(p.powerBase)}</b> pkt (kanon P‑A · bez mnożnika epoki)</div>`
     + `<div class="civ-emp-two">`
-    + `<div class="civ-emp-box" data-section="econ-ludnosc"><div class="k">LUDNOŚĆ</div>`
-    + `<div class="v">${formatObywateleLabel(e.ludnosc)} · ${esc(p.ludnoscAbsLabel)} abs.</div></div>`
+    + `<div class="civ-emp-box" data-section="econ-miasta"><div class="k">MIASTA</div>`
+    + `<div class="v">${e.osiedla} · ${formatObywateleLabel(e.ludnosc)} · ${esc(p.ludnoscAbsLabel)} abs.</div></div>`
     + `<div class="civ-emp-box" data-section="econ-rekruci"><div class="k">REKRUCI</div>`
     + `<div class="v">${esc(p.rekruciLabel)} / ${esc(p.rekruciMaxLabel)} · ${p.rekrutEkw} werb.</div></div>`
     + `</div>`;
@@ -840,14 +873,15 @@ function render(): void {
     { id: 'nauka', lbl: 'Bank nauki', stock: String(Math.floor(e.nauka)), rate: e.naukaRate ?? 0 },
     { id: 'kultura', lbl: 'Kultura (suma miast)', stock: String(e.kultura), rate: e.kulturaRate ?? 0 },
     { id: 'religia', lbl: 'Wierni religii', stock: String(e.religionStock ?? '—'), rate: e.religionRate ?? 0 },
-    { id: 'ludnosc', lbl: 'Ludność (obywatele w miastach)', stock: String(e.ludnosc), rate: e.ludnoscRate ?? 0, noRate: true },
+    { id: 'miasta', lbl: 'Miasta (osiedla imperium)', stock: String(e.osiedla), rate: e.ludnoscRate ?? 0, noRate: true },
     { id: 'rekruci', lbl: 'Rekruci (pula werbu)', stock: e.rekruciLabel ?? String(p.rekruci), rate: 0, gold: true, noRate: true },
   ];
   const detailFor: Record<string, string> = {
     skarbiec: cityEconMiniSkarbiec(ce, e),
     praca: cityEconMiniPraca(ce, e.pracaUpkeep),
     nauka: cityEconMiniNauka(ce),
-    ludnosc: cityPoborMiniLudnosc(cp),
+    miasta: cityMiastaMiniDetail(ce, cp, snap.food, e),
+    ludnosc: cityMiastaMiniDetail(ce, cp, snap.food, e),
     rekruci: cityPoborMiniRekruci(cp, p),
   };
   let zasoby = `<div class="civ-emp-sect sep" data-section="ekonomia">`
@@ -1030,7 +1064,8 @@ export function empireSectionFromHudAct(act: string): string | undefined {
     case 'skarbiec': return 'econ-skarbiec';
     case 'praca': return 'econ-praca';
     case 'kultura': return 'kultura';
-    case 'ludnosc': return 'econ-ludnosc';
+    case 'miasta':
+    case 'ludnosc': return 'econ-miasta';
     case 'rekruci': return 'econ-rekruci';
     case 'power':
     case 'moc': return 'moc';

@@ -256,9 +256,11 @@ function renderCanvas(
   }
 }
 
-const STYLE_ID = 'civ-minimap-hud-css-w2full';
+const STYLE_ID = 'civ-minimap-hud-css-w2ring6';
 /** Pozycja zgodna z mockupem HUD Mapy layout (1E) — dół-lewo. */
 const MINIMAP_EDGE_GAP = '20px';
+/** Miejsce pod pasek zoom/pełny ekran pod minimapą (hud.ts civ-hud-util-dock). */
+const MINIMAP_UTIL_DOCK_RESERVE = 50;
 
 function ensureStyles(): void {
   ensureBrandRootTokens();
@@ -267,9 +269,10 @@ function ensureStyles(): void {
   document.getElementById('civ-minimap-hud-css-w2b')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-minimap-wrap{position:fixed;left:${MINIMAP_EDGE_GAP};bottom:${MINIMAP_EDGE_GAP};z-index:310;
+.civ-minimap-wrap{position:fixed;left:${MINIMAP_EDGE_GAP};bottom:calc(${MINIMAP_EDGE_GAP} + ${MINIMAP_UTIL_DOCK_RESERVE}px);z-index:310;
   display:flex;flex-direction:row;flex-wrap:nowrap;align-items:flex-end;gap:10px;width:max-content;
-  filter:drop-shadow(0 8px 22px rgba(0,0,0,.7));}
+  filter:drop-shadow(0 8px 22px rgba(0,0,0,.7));overflow:visible;}
+html.civ-ui-zoom-active .civ-minimap-wrap{left:10px;bottom:calc(10px + ${MINIMAP_UTIL_DOCK_RESERVE}px);}
 .civ-minimap-hud{position:relative;flex:0 0 var(--mini-w,280px);width:var(--mini-w,280px);height:var(--mini-h,170px);
   background:#0a0f16;border:3px solid #6a5212;border-radius:12px;
   box-shadow:inset 0 0 0 2px rgba(232,216,138,.3);overflow:hidden;cursor:crosshair;}

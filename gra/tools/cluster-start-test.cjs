@@ -66,7 +66,7 @@ assert(plan.clusterCapitalOwnerIds.length === foreignCount,
 // E-START-CS-Q1 C: spawn wokół FAKTYCZNEJ stolicy gracza, nie pre-planu mapgen
 const prePlanHexes = plan.pendingSameTypeRivalHexes;
 assert(prePlanHexes.length >= 1 && prePlanHexes.length <= plan.pendingSameTypeRivals,
-  'pre-planowane hexy państw gracza (1..N w pierścieniu 3 hex)');
+  'pre-planowane hexy państw gracza (1..N w pierścieniu 4 hex)');
 
 // Gracz stawia stolicę w innym miejscu niż sugerowany hex algorytmu
 function isLandHex(m, q, r) {
@@ -81,7 +81,7 @@ const actualCandidates = M.buildSameTypeRivalCandidateHexes(
   map, offsetCore, plan.pendingSameTypeRivals, 4242,
 );
 assert(actualCandidates.length >= 1,
-  'kandydaci wokół faktycznej stolicy (pierścień 3 hex, partial OK)');
+  'kandydaci wokół faktycznej stolicy (pierścień 4 hex, partial OK)');
 const packRActual = M.clusterCityStateRadius();
 const packReachActual = packRActual;
 for (const h of actualCandidates.slice(0, plan.pendingSameTypeRivals)) {
@@ -194,13 +194,13 @@ for (const fcl of plan.foreignTypeClusters) {
     }
   }
 }
-assert(plan.placement.minDystansMiastaPanstwa === 3, 'placement minDystansMiastaPanstwa=3');
-assert(plan.placement.maxDystansMiastaPanstwa === 3, 'placement maxDystansMiastaPanstwa=3');
+assert(plan.placement.minDystansMiastaPanstwa === 4, 'placement minDystansMiastaPanstwa=4');
+assert(plan.placement.maxDystansMiastaPanstwa === 4, 'placement maxDystansMiastaPanstwa=4');
 assert(plan.placement.minDystansObcyOdGracza === 12, 'placement minDystansObcyOdGracza=12');
-assert(M.MIN_DIST_FOREIGN_IN_CLUSTER === 3, 'MIN_DIST_FOREIGN_IN_CLUSTER=3');
-assert(M.CLUSTER_CITY_STATE_MIN_HEX === 3, 'CLUSTER_CITY_STATE_MIN_HEX=3');
-assert(M.CLUSTER_CITY_STATE_MAX_HEX === 3, 'CLUSTER_CITY_STATE_MAX_HEX=3');
-assert(M.clusterCityStateRadius() === 3, 'clusterCityStateRadius=3');
+assert(M.MIN_DIST_FOREIGN_IN_CLUSTER === 4, 'MIN_DIST_FOREIGN_IN_CLUSTER=4');
+assert(M.CLUSTER_CITY_STATE_MIN_HEX === 4, 'CLUSTER_CITY_STATE_MIN_HEX=4');
+assert(M.CLUSTER_CITY_STATE_MAX_HEX === 4, 'CLUSTER_CITY_STATE_MAX_HEX=4');
+assert(M.clusterCityStateRadius() === 4, 'clusterCityStateRadius=4');
 
 // Maciej 2026-07-22: kandydaci runtime — para po parze min 3 hex (nie tylko od stolicy)
 const runtimeCandidates = M.buildSameTypeRivalCandidateHexes(map, playerCap, 9, 4242);
@@ -218,7 +218,7 @@ for (let i = 0; i < runtimeCandidates.length; i++) {
 }
 const packedNine = M.buildSameTypeRivalCandidateHexes(map, playerCap, 9, 7777);
 assert(packedNine.length <= 6,
-  'max ~6 państw na pierścieniu 3 hex z odstępem 3 (got ' + packedNine.length + ')');
+  'max państw na pierścieniu 4 hex z odstępem 4 (got ' + packedNine.length + ')');
 
 // packRivalCitiesAroundCore — pairwise min 3 hex między państwami
 const landHexes = Object.values(map.hexes)

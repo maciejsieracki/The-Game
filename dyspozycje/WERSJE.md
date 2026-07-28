@@ -11,7 +11,42 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `b337e2e0` — 2026-07-28 02:50 — FALA 53: rzeka bonus ruchu 1 MP — **AKTUALNA**
+## ROBOCZA `8dd05481` — 2026-07-28 12:28 — FALA 57: batch HUD + Miasta + spawn 4 hex + FALA 54–56 — **AKTUALNA**
+- md5 (pelne): `8dd05481749e1950e0de31c1f8c40f48` · stempel: `ROBOCZA · 2026-07-28 12:28`
+- **VERIFY OK.** tsc 0 · smoke OK · cluster-start (4 hex) · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** **FALA 54–56** (karta armii, paski HP/ruch, HUD mapa/miasto, dock minimapy) + **Miasta** (chip zamiast Ludność, tabela per miasto: obyw., ludność, wzrost, praca, pieniądz, żywność) + **Spichlerz** (tylko stan + przyrost, bez `/max`) + **Surowce** na lewym pasku za Handlem + **miasta-państwa** dokładnie **4 hex** od stolicy (fallback od innych MP w grupie).
+- **Pliki:** `hud.ts` · `empireDetailPanel.ts` · `cityPanel.ts` · `minimapHud.ts` · `sidePanelHud.ts` · `hexContextTooltip.ts` · `main.ts` · `clusters.ts`
+
+## ROBOCZA `fed92ad1` — 2026-07-28 12:05 — FALA 56: HUD mapa + miasto + dock minimapy (redeploy potwierdzający) — **ZASTĄPIONA**
+- md5 (pelne): `fed92ad11b2bcfc5ea6e3be2459a9235` · stempel: `ROBOCZA · 2026-07-28 12:05`
+- **VERIFY OK.** tsc 0 · smoke OK · river-terrain-move 17/17 · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** jak `52bb743b` (FALA 50–56 w jednym bundle) — świeży build + pieczęć po audycie Macieja.
+- **Uwaga:** poprzedni `52bb743b` (11:53) był już na dysku; redeploy potwierdził zgodność źródło→bundle (nowa pieczęć).
+
+## ROBOCZA `52bb743b` — 2026-07-28 11:53 — FALA 56: HUD mapa + miasto + dock minimapy — **ZASTĄPIONA**
+- md5 (pelne): `52bb743b503d0db9406dc5931543f8c7` · stempel: `ROBOCZA · 2026-07-28 11:53`
+- **VERIFY OK.** tsc 0 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** **Mapa** — lewy pasek jeden rząd (Skarbiec·Praca·Spichlerz·Nauka·Handel), bez emoji 🍞 przy Spichlerzu; prawy klaster widoczny przy zoom UI; zoom ± i ⛶ pod minimapą (280px, lewa krawędź). **Miasto** — lewo: Praca·Żywność·Skarbiec; prawo przy nazwie: Nauka·Kultura·Religia; ikony brand (res-food/res-treasury/res-science), nowrap bez zawijania.
+- **Pliki:** `hud.ts` · `cityPanel.ts` · `minimapHud.ts` · `sidePanelHud.ts`
+
+## ROBOCZA `9bd4a0f6` — 2026-07-28 09:57 — FALA 55: paski HP + ruch na żetonach armii — **ZASTĄPIONA**
+- md5 (pelne): `9bd4a0f6ded2720543f516c0cc49adcf` · stempel: `ROBOCZA · 2026-07-28 09:57`
+- **VERIFY OK.** smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** FALA 54 + na każdym żetonie składu armii: **pasek HP** (zielony) + **pasek ruchu** (niebieski) + tekst `22/22 · 2/2`; CSS `.sp-unit-stack-bar-hp`, `.sp-unit-stack-bar-mov`.
+- **Bramki:** tsc 0 · smoke OK (deploy z 09:57; WERSJE zsynchronizowane 11:21).
+
+## ROBOCZA `5162a385` — 2026-07-28 02:42 — FALA 54: karta armii — nazwa + skład od razu — **ZASTĄPIONA**
+- md5 (pelne): `5162a385e35c232d9e6a675f4a182f69` · stempel: `ROBOCZA · 2026-07-28 02:42`
+- **VERIFY OK.** smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** po połączeniu jednostek karta pokazuje **„Armia · (q,r)”** + liczbę oddziałów na heksie; mini-karty składu widoczne bez „Więcej szczegółów”; nagłówek panelu **Armia** (nie Jednostka).
+- **Bramki:** tsc 0 · smoke OK.
+
+## ROBOCZA `b337e2e0` — 2026-07-28 02:50 — FALA 53: rzeka bonus ruchu 1 MP — **ZASTĄPIONA**
 - md5 (pelne): `b337e2e0ff5ab3f5580a0f16a2dbf3a6` · stempel: `ROBOCZA · 2026-07-28 02:50`
 - **VERIFY OK.** smoke OK · river-move 17/17 · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

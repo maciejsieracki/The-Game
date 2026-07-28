@@ -409,7 +409,7 @@ import {
   type DiploPlayerSummary,
 } from './ui/diploListHud';
 import type { ArmyStackHudState } from './ui/armyStackHud';
-import { formatArmiaLabel } from './ui/formatPl';
+import { formatArmiaLabel, formatJednostkiCount } from './ui/formatPl';
 import type {
   HudState, WarWithPlayer, SidePanelEvent,
   PowerOverlayData, CultureOverlayData, ReligionOverlayData,
@@ -3419,8 +3419,10 @@ async function boot(): Promise<void> {
       const stackState = !opts.readOnly && u.ownerId === 0
         ? buildArmyStackHudStateInner()
         : null;
+      const isArmy = stackState != null && stackState.unitCount > 1;
       return buildUnitContextTooltipHtml({
-        displayName: defName,
+        displayName: isArmy ? `Armia · ${stackState.hexLabel}` : defName,
+        headMeta: isArmy ? `${formatJednostkiCount(stackState.unitCount)} na heksie` : undefined,
         ownerEmblemHtml: unitOwnerMedallionHtml(u.ownerId),
         q: u.q,
         r: u.r,
@@ -3432,7 +3434,7 @@ async function boot(): Promise<void> {
         zasieg,
         expanded,
         expandable: u.ownerId === 0 || opts.readOnly === true,
-        stackCards: expanded ? stackState?.cards : undefined,
+        stackCards: isArmy ? stackState.cards : undefined,
         actions: stackState?.actions,
         inGarnizon: status.inGarnizon,
         buildingBonusLabel: status.buildingBonusLabel,
@@ -3491,6 +3493,7 @@ async function boot(): Promise<void> {
     function buildContextPanelData(): {
       kind: 'hex' | 'unit';
       html: string;
+      headLabel?: string;
       expandable?: boolean;
       expandInHtml?: boolean;
     } | null {
@@ -3509,9 +3512,12 @@ async function boot(): Promise<void> {
       }
       if (unitMsg) {
         const ownSelected = selectedId !== null && units.some(x => x.id === selectedId && x.ownerId === 0);
+        const stackState = ownSelected ? buildArmyStackHudStateInner() : null;
+        const isArmyStack = (stackState?.unitCount ?? 0) > 1;
         return {
           kind: 'unit',
           html: unitMsg,
+          headLabel: isArmyStack ? 'Armia' : undefined,
           expandable: ownSelected || foreignUnitInspectId !== null,
           expandInHtml: ownSelected || foreignUnitInspectId !== null,
         };

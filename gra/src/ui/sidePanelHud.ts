@@ -24,6 +24,8 @@ export type ContextPanelKind = 'hex' | 'unit';
 export interface ContextPanelData {
   kind: ContextPanelKind;
   html: string;
+  /** Nadpisanie nagłówka karty (np. „Armia" zamiast „Jednostka"). */
+  headLabel?: string;
   /** Jednostka — przycisk „Więcej szczegółów” w panelu bocznym. */
   expandable?: boolean;
   /** Przycisk rozwijania jest już w html (nad paskiem akcji). */
@@ -53,7 +55,7 @@ export interface SidePanelHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-side-panel-hud-css-w3-unit-dock';
+const STYLE_ID = 'civ-side-panel-hud-css-w3-unit-dock2';
 /** Wysokość stosu tury (Wykonaj + Koniec tury) nad dolną krawędzią — mockup 1E strefa G. */
 const TURN_STACK_H = 172;
 /** Zgodne z hud.ts / minimapHud.ts — minimapa 280×170, margines 20px. */
@@ -88,7 +90,8 @@ function ensureStyles(): void {
   document.getElementById('civ-side-panel-hud-css-w2full')?.remove();
   document.getElementById('civ-side-panel-hud-css-w3-zoom-cap')?.remove();
   if (document.getElementById(STYLE_ID)) return;
-  const unitDockBottom = MINIMAP_EDGE + MINIMAP_H + MINIMAP_GAP;
+  const MINIMAP_UTIL_DOCK_RESERVE = 50;
+const unitDockBottom = MINIMAP_EDGE + MINIMAP_UTIL_DOCK_RESERVE + MINIMAP_H + MINIMAP_GAP;
   const css = `
 .civ-side-panel{position:fixed;bottom:${TURN_STACK_H}px;right:20px;top:auto;z-index:310;width:300px;pointer-events:auto;
   max-height:min(50vh,calc(100vh - ${TURN_STACK_H + 80}px));overflow-y:auto;overflow-x:hidden;
@@ -193,7 +196,7 @@ function contextHeadLabel(kind: ContextPanelKind): string {
 
 function buildContextCardHtml(ctx: ContextPanelData, expanded: boolean): string {
   const interactive = ctx.kind === 'unit';
-  const headHtml = `<div class="sp-ctx-head">${contextHeadLabel(ctx.kind)}</div>`;
+  const headHtml = `<div class="sp-ctx-head">${ctx.headLabel ?? contextHeadLabel(ctx.kind)}</div>`;
   let html = `<div class="sp-ctx-card${interactive ? ' sp-ctx-interactive' : ''}">`
     + headHtml
     + `<div class="cp-msg">${ctx.html}</div>`;

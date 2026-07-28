@@ -1,3 +1,51 @@
+## [12:28] ✅ Gotowe — FALA 57 batch HUD + Miasta + spawn 4 hex (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **FALA 54–56** | karta armii · paski HP/ruch · HUD mapa/miasto · dock minimapy |
+| **Miasta** | chip zamiast Ludność (liczba miast); klik → tabela per miasto |
+| **Spichlerz** | tylko stan + przyrost (bez limitu `/500` na chipie) |
+| **Surowce** | lewy pasek za Handlem |
+| **Miasta-państwa** | dokładnie **4 hex** od stolicy gracza |
+| **Deploy** | ROBOCZA `8dd05481` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
+## [12:05] ✅ Gotowe — audyt FALA 50–56 + redeploy ROBOCZA (potwierdzenie)
+
+| Co | Efekt |
+|----|--------|
+| **Deploy** | ROBOCZA `fed92ad1` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+| **Audyt** | FALA 50–56 ✅ w kodzie i bundle (szczegóły w czacie) |
+| **P1 bez zmian** | handel AI · przyciski Połącz/Rozdziel/Lista na karcie armii — nie zaczęte |
+
+## [11:53] ✅ Gotowe — FALA 56 HUD mapa + miasto + dock minimapy (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Mapa — lewy pasek** | jeden rząd: Skarbiec · Praca · Spichlerz · Nauka · Handel (bez 🍞 przy liczbach Spichlerza) |
+| **Mapa — prawy pasek** | Civpedia + Menu widoczne także przy zoom UI 110–150% |
+| **Minimapa** | przyciski **− 100% +** i **⛶** pod minimapą, ta sama lewa krawędź (280px) |
+| **Miasto — lewo** | jeden rząd: Praca · Żywność · Skarbiec (ikony brand, bez dodatkowych sygnetów) |
+| **Miasto — prawo** | przy nazwie miasta: Nauka · Kultura · Religia (ta kolejność, jeden rząd) |
+| **Deploy** | ROBOCZA `52bb743b` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
+## [11:21] ✅ Gotowe — FALA 55 paski HP + ruch na żetonach armii (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Żetony składu** | po połączeniu jednostek: na każdej mini-karcie **zielony pasek HP** + **niebieski pasek ruchu** |
+| **Tekst** | pod paskami: `aktualne/maks · ruch/maks` (np. `22/22 · 2/2`) |
+| **Karta armii** | FALA 54 nadal: nagłówek **„Armia · (q,r)”**, skład od razu, etykieta **ARMIA** |
+| **Deploy** | ROBOCZA `9bd4a0f6` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
+## [02:42] ✅ Gotowe — FALA 54 karta armii (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Nagłówek** | po połączeniu jednostek: **„Armia · (q,r)”** zamiast nazwy typu lidera |
+| **Skład** | mini-karty oddziałów widoczne od razu — bez „Więcej szczegółów” |
+| **Etykieta panelu** | **ARMIA** (gdy >1 jednostka na heksie) |
+| **Deploy** | ROBOCZA `5162a385` · `gra-robocza/START.html` · Ctrl+F5 |
+
 ## [02:50] ✅ Gotowe — FALA 53 rzeka bonus ruchu (deploy ROBOCZA)
 
 | Co | Efekt w grze |

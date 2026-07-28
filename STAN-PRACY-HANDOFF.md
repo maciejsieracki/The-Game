@@ -26,7 +26,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`95021308`** (FALA 44). Skrót łańcucha: FALA 41 `c1e7a596` → FALA 42 `6714d76f` → FALA 43 `33c49486` → FALA 44 **`95021308`** (bonus Kuźnia/Koszary przy wejściu do miasta + toast). Commit: `65e3ddd`. **Nowa gra** (Ctrl+F5). POLE-BITWY: bez zmian (`a5a60f15`). **Rejestr wersji:** [`dyspozycje/WERSJE.md`](dyspozycje/WERSJE.md) · **Kanał:** [`dyspozycje/_handoff/KANAL-PRACA.md`](dyspozycje/_handoff/KANAL-PRACA.md).
+**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`8dd05481`** (FALA 57, 12:28) — batch FALA 54–56 + chip **Miasta** (tabela per miasto) + Spichlerz bez `/max` + Surowce lewo + miasta-państwa **4 hex**. **Handoff:** [`HANDOFF-SESJA-2026-07-28-KARTA-ARMII.md`](dyspozycje/HANDOFF-SESJA-2026-07-28-KARTA-ARMII.md). **Nie wdrożone:** handel AI · przyciski Połącz/Rozdziel/Lista na karcie armii. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+
+**Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 
 **Poprzedni stan (2026-07-27):** deploy ROBOCZA **`2c3804da`** (FALA 33). Skrót łańcucha: FALA 29 `e0238cc8` → FALA 30 `d9f2c1fa` → FALA 31 `f694dcba` → FALA 32 `e7c0655d` → FALA 33 **`2c3804da`** (garnizon + kultura + B-LAW-Q1 + C-MAP-Q3).
 

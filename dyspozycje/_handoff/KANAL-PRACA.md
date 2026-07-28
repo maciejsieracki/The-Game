@@ -3845,3 +3845,40 @@ CZEKAM-NA: nic (sesja lokalna: otwórz `111427dd`).
 **Zakres:** rzeka — koszt ruchu **1 MP** na heksie z rzeką (cofnięcie błędu FALA 49); ignoruje kary lasu/wzgórz/gór.
 **Bramki:** tsc 0 · river-move 17/17 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
 CZEKAM-NA: nic (sesja lokalna: otwórz `b337e2e0`).
+
+## [02:42] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 54
+
+**md5:** `5162a385e35c232d9e6a675f4a182f69` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** karta armii — nagłówek **Armia · (q,r)** + liczba oddziałów; mini-karty składu od razu; etykieta panelu **Armia** przy stosie >1.
+**Bramki:** tsc 0 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+CZEKAM-NA: nic (sesja lokalna: otwórz `5162a385`).
+
+## [09:57] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 55
+
+**md5:** `9bd4a0f6ded2720543f516c0cc49adcf` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** FALA 54 + na żetonach składu armii: pasek HP (zielony) + pasek ruchu (niebieski) + tekst `22/22 · 2/2`.
+**Bramki:** tsc 0 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+**Uwaga:** WERSJE zsynchronizowane 11:21 (wcześniej rozjazd manifest vs rejestr).
+CZEKAM-NA: nic (sesja lokalna: otwórz `9bd4a0f6`).
+
+## [11:53] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 56
+
+**md5:** `52bb743b503d0db9406dc5931543f8c7` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** HUD mapa (lewy/prawy nowrap, Nauka na lewo, Spichlerz bez 🍞) · dock zoom pod minimapą · HUD miasto (Praca·Żywność·Skarbiec | Nauka·Kultura·Religia, ikony brand).
+**Bramki:** tsc 0 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+CZEKAM-NA: nic (sesja lokalna: otwórz `52bb743b`).
+
+## [12:05] SESJA LOKALNA → Maciej — redeploy ROBOCZA FALA 50–56 (audyt + potwierdzenie)
+
+**md5:** `fed92ad11b2bcfc5ea6e3be2459a9235` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan:** `52bb743b` już był na dysku; świeży build + pieczęć → `fed92ad1` (ten sam zakres FALA 50–56).
+**Bramki:** tsc 0 · smoke OK · river-terrain-move 17/17 · POLE-BITWY `dd399c4b`.
+**Audyt:** FALA 50–56 ✅ w `gra/src` i bundle; P1: handel AI + przyciski Połącz/Rozdziel/Lista — nie zaczęte.
+CZEKAM-NA: nic (Maciej: otwórz `fed92ad1`).
+
+## [12:28] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 57
+
+**md5:** `8dd05481749e1950e0de31c1f8c40f48` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** FALA 54–56 w bundle + chip Miasta + Spichlerz bez max + Surowce lewo + spawn MP 4 hex.
+**Bramki:** tsc 0 · smoke OK · cluster-start 4 hex · POLE-BITWY `dd399c4b`.
+CZEKAM-NA: nic (sesja lokalna: pull + otwórz `8dd05481`).

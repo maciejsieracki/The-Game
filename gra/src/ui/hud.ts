@@ -649,10 +649,7 @@ function resolveResearchProgress(s: HudState): number {
 }
 
 function formatFoodHudLabel(s: HudState): string {
-  const max = s.zywnoscMax;
-  const base = `${s.zywnoscLabel} 🍞`;
-  if (max != null && max > 0) return `${s.zywnoscLabel} / ${max} 🍞`;
-  return base;
+  return s.zywnoscLabel;
 }
 
 /** Odmiana „tura" w bierniku ("za 1 turę" / "za 2 tury" / "za 5 tur"). */
@@ -752,12 +749,12 @@ function armiaChipTitle(s: HudState): string {
   return `${title} · Kliknij po szczegóły.`;
 }
 
-function ludnoscChipTitle(s: HudState): string {
+function miastaChipTitle(s: HudState): string {
   const rate = s.ludnoscRate ?? 0;
-  return `Ludność — ludność w miastach imperium`
-    + ` · Duża liczba: ${s.ludnosc} ludności (łącznie we wszystkich miastach)`
-    + ` · Zielone +N: ${signed(rate)} ludności/turę (przyrost netto)`
-    + ` · Kliknij po szczegóły.`;
+  return `Miasta — osiedla imperium`
+    + ` · Duża liczba: ${s.osiedla} miast`
+    + ` · Zielone +N: ${signed(rate)} obyw./turę (przyrost ludności łącznie)`
+    + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
 
 function kulturaChipTitle(s: HudState): string {
@@ -875,7 +872,6 @@ function renderBarD1B(s: HudState): string {
     chip6cSep(),
     chip6cHtml({
       iconId: 'res-food',
-      iconAssetId: 'cp-granary',
       label: 'Spichlerz',
       value: formatFoodHudLabel(s),
       rate: signed(s.zywnoscRate ?? 0),
@@ -929,11 +925,11 @@ function renderBarD1B(s: HudState): string {
     chip6cSep(),
     chip6cHtml({
       iconId: 'res-population',
-      label: 'Ludność',
-      value: String(s.ludnosc),
+      label: 'Miasta',
+      value: String(s.osiedla),
       rate: signed(s.ludnoscRate ?? 0),
-      act: 'ludnosc',
-      title: ludnoscChipTitle(s),
+      act: 'miasta',
+      title: miastaChipTitle(s),
     }),
     chip6cSep(),
     chip6cHtml({
@@ -1057,7 +1053,7 @@ function handleHudBarAction(act: string): void {
       }
     }
   } else if (act === 'religia' || act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'
-    || act === 'ludnosc' || act === 'rekruci' || act === 'spichlerz' || act === 'zywnosc' || act === 'armia'
+    || act === 'miasta' || act === 'ludnosc' || act === 'rekruci' || act === 'spichlerz' || act === 'zywnosc' || act === 'armia'
     || act === 'surowce' || act === 'handel') {
     hideEmpireOverlay();
     const section = empireSectionFromHudAct(act);
