@@ -1295,6 +1295,7 @@ function mountSidePanel(): void {
     onEventDismiss: cfg.onEventDismiss,
   });
   document.documentElement.appendChild(sidePanelApi.el);
+  document.documentElement.appendChild(sidePanelApi.ctxEl);
 }
 
 function refreshSidePanel(): void {
@@ -1385,7 +1386,10 @@ function applyMapChromeVisibility(): void {
     barEl.classList.toggle('is-city-view', mapChromeSuppressed);
   }
   if (minimapApi !== null) minimapApi.el.style.display = showMapChrome ? 'flex' : 'none';
-  if (sidePanelApi !== null) sidePanelApi.el.style.display = showMapChrome ? 'flex' : 'none';
+  if (sidePanelApi !== null) {
+    sidePanelApi.el.style.display = showMapChrome ? 'flex' : 'none';
+    sidePanelApi.ctxEl.style.display = showMapChrome ? '' : 'none';
+  }
   if (bottomBarApi !== null) bottomBarApi.el.style.display = showMapChrome ? 'flex' : 'none';
   if (mapToolbarApi !== null) mapToolbarApi.el.style.display = showMapChrome ? 'flex' : 'none';
   if (miniEl !== null) {
@@ -1481,7 +1485,10 @@ export function hideHud(): void {
   if (barEl !== null) barEl.style.display = 'none';
   if (miniEl !== null) miniEl.style.display = 'none';
   if (minimapApi !== null) minimapApi.el.style.display = 'none';
-  if (sidePanelApi !== null) sidePanelApi.el.style.display = 'none';
+  if (sidePanelApi !== null) {
+    sidePanelApi.el.style.display = 'none';
+    sidePanelApi.ctxEl.style.display = 'none';
+  }
   if (contextPanelApi !== null) contextPanelApi.el.style.display = 'none';
   if (leaderBannersApi !== null) leaderBannersApi.el.style.display = 'none';
   if (bottomBarApi !== null) bottomBarApi.el.style.display = 'none';

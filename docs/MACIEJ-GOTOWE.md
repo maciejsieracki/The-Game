@@ -1,3 +1,12 @@
+## [02:45] ✅ Gotowe — FALA 52 karta jednostki nad minimapą (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Karta Jednostka** | lewy dolny róg, **nad minimapą** — nie znika poza ekran przy wielu wydarzeniach |
+| **Karta heksu** | bez zmian — w panelu Wydarzenia po prawej |
+| **Zoom −/+** | obok minimapy po prawej — bez kolizji z kartą jednostki |
+| **Deploy** | ROBOCZA `111427dd` · `gra-robocza/START.html` |
+
 ## [02:30] ✅ Gotowe — FALA 51 wydarzenia + zoom komunikatów (deploy ROBOCZA)
 
 | Co | Efekt w grze |

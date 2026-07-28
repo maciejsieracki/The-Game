@@ -11,7 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `e49eb25d` — 2026-07-28 02:30 — FALA 51: wydarzenia max 50vh + zoom fix komunikatów — **AKTUALNA**
+## ROBOCZA `111427dd` — 2026-07-28 02:45 — FALA 52: karta jednostki nad minimapą — **AKTUALNA**
+- md5 (pelne): `111427dd444ea8d56154e808de92de4b` · stempel: `ROBOCZA · 2026-07-28 02:45`
+- **VERIFY OK.** smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** karta **Jednostka** — lewy dolny róg, nad minimapą (280×170, margines 20px); karta heksu zostaje w panelu Wydarzenia po prawej; `hideHud` ukrywa też dock jednostki; warstwa na `<html>` (zoom UI).
+- **Bramki:** tsc 0 · smoke OK.
+
+## ROBOCZA `e49eb25d` — 2026-07-28 02:30 — FALA 51: wydarzenia max 50vh + zoom fix komunikatów — **ZASTĄPIONA**
 - md5 (pelne): `e49eb25d4f676c880f0c1bf65808a21b` · stempel: `ROBOCZA · 2026-07-28 02:30`
 - **VERIFY OK.** smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

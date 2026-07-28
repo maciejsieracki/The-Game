@@ -3831,3 +3831,10 @@ CZEKAM-NA: nic (sesja lokalna: otwórz `85d115d4`).
 **Zakres:** panel Wydarzenia max 50vh + scroll · komunikaty/toasty stabilne przy zoomie UI (fixed na `<html>`).
 **Bramki:** tsc 0 · smoke OK.
 CZEKAM-NA: nic (sesja lokalna: otwórz `e49eb25d`).
+
+## [02:45] SESJA LOKALNA → Maciej — deploy ROBOCZA FALA 52
+
+**md5:** `111427dd444ea8d56154e808de92de4b` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** karta Jednostka — lewy dolny róg nad minimapą (dock `.civ-side-ctx-dock`); karta heksu w panelu Wydarzenia po prawej; `hideHud` ukrywa ctxEl; zoom −/+ bez kolizji (po prawej od minimapy).
+**Bramki:** tsc 0 · smoke OK · POLE-BITWY `dd399c4b` (bez zmian).
+CZEKAM-NA: nic (sesja lokalna: otwórz `111427dd`).

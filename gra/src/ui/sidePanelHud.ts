@@ -1,6 +1,7 @@
 /**
  * sidePanelHud.ts
  * Panel boczny HUD (D1=C) — wydarzenia z tury (mockup HUD Mapy layout 1E strefa H).
+ * Karta jednostki: osobny dock lewy-dół, nad minimapą (Maciej 2026-07-28).
  */
 
 import { brandIconSvg } from './icons/brandAssets';
@@ -44,14 +45,22 @@ export interface SidePanelHudConfig {
 }
 
 export interface SidePanelHudApi {
+  /** Wydarzenia — prawy dolny róg. */
   el: HTMLDivElement;
+  /** Karta jednostki — lewy dolny róg, nad minimapą. */
+  ctxEl: HTMLDivElement;
   update: () => void;
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-side-panel-hud-css-w3-zoom-cap';
-/** Wysokość stosu tury (Wykonaj + Koniec tury + etykieta) nad dolną krawędzią — mockup 1E strefa G. */
+const STYLE_ID = 'civ-side-panel-hud-css-w3-unit-dock';
+/** Wysokość stosu tury (Wykonaj + Koniec tury) nad dolną krawędzią — mockup 1E strefa G. */
 const TURN_STACK_H = 172;
+/** Zgodne z hud.ts / minimapHud.ts — minimapa 280×170, margines 20px. */
+const MINIMAP_W = 280;
+const MINIMAP_H = 170;
+const MINIMAP_EDGE = 20;
+const MINIMAP_GAP = 10;
 
 function eventIconHtml(kind: SidePanelEventKind, fallback: string): string {
   const map: Partial<Record<SidePanelEventKind, string>> = {
@@ -77,7 +86,9 @@ function ensureStyles(): void {
   document.getElementById('civ-side-panel-hud-css')?.remove();
   document.getElementById('civ-side-panel-hud-css-w2')?.remove();
   document.getElementById('civ-side-panel-hud-css-w2full')?.remove();
+  document.getElementById('civ-side-panel-hud-css-w3-zoom-cap')?.remove();
   if (document.getElementById(STYLE_ID)) return;
+  const unitDockBottom = MINIMAP_EDGE + MINIMAP_H + MINIMAP_GAP;
   const css = `
 .civ-side-panel{position:fixed;bottom:${TURN_STACK_H}px;right:20px;top:auto;z-index:310;width:300px;pointer-events:auto;
   max-height:min(50vh,calc(100vh - ${TURN_STACK_H + 80}px));overflow-y:auto;overflow-x:hidden;
@@ -85,6 +96,14 @@ function ensureStyles(): void {
   ${CIV_BRAND_SCOPE_VARS}
   display:flex;flex-direction:column;gap:8px;font:13px var(--civ-font-ui);}
 html.civ-ui-zoom-active .civ-side-panel{max-height:50vh;right:16px;}
+.civ-side-ctx-dock{position:fixed;left:${MINIMAP_EDGE}px;bottom:${unitDockBottom}px;z-index:312;
+  width:min(${MINIMAP_W}px,calc(100vw - ${MINIMAP_EDGE * 2}px));pointer-events:none;
+  max-height:min(45vh,calc(100vh - ${unitDockBottom + 72}px));overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;scrollbar-gutter:stable;display:none;
+  ${CIV_BRAND_SCOPE_VARS}
+  font:13px var(--civ-font-ui);}
+.civ-side-ctx-dock.open{display:block;pointer-events:auto;}
+html.civ-ui-zoom-active .civ-side-ctx-dock{left:16px;bottom:${unitDockBottom - 4}px;}
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
 .civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;
@@ -109,32 +128,33 @@ html.civ-ui-zoom-active .civ-side-panel{max-height:50vh;right:16px;}
 .civ-side-panel .sp-close{font-size:10px;color:var(--civ-text-muted);cursor:pointer;padding:2px 4px;margin-left:auto;}
 .civ-side-panel .sp-close:hover{color:var(--civ-gold-primary);}
 .civ-side-panel .sp-placeholder{font-size:10px;color:#7a7055;text-align:right;padding:8px 4px;font-style:italic;line-height:1.4;}
-.civ-side-panel .sp-ctx-card{padding:14px 16px;border-radius:10px;margin-bottom:10px;
+.civ-side-ctx-dock .sp-ctx-card,.civ-side-panel .sp-ctx-card{padding:14px 16px;border-radius:10px;margin-bottom:0;
   background:linear-gradient(180deg,rgba(24,30,42,.98),rgba(10,12,18,.96));
   border:1px solid rgba(212,175,90,.38);box-shadow:0 6px 18px rgba(0,0,0,.45);}
-.civ-side-panel .sp-ctx-card.sp-ctx-interactive{pointer-events:auto;}
-.civ-side-panel .sp-ctx-head{font-size:10px;color:var(--civ-text-muted,#a09880);text-transform:uppercase;
+.civ-side-panel .sp-ctx-card{margin-bottom:10px;}
+.civ-side-ctx-dock .sp-ctx-card.sp-ctx-interactive,.civ-side-panel .sp-ctx-card.sp-ctx-interactive{pointer-events:auto;}
+.civ-side-ctx-dock .sp-ctx-head,.civ-side-panel .sp-ctx-head{font-size:10px;color:var(--civ-text-muted,#a09880);text-transform:uppercase;
   letter-spacing:.22em;margin-bottom:8px;text-align:right;}
-.civ-side-panel .sp-ctx-card .cp-msg{font-size:12px;color:var(--civ-text-primary,#e8e0c8);line-height:1.55;text-align:left;}
-.civ-side-panel .sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
+.civ-side-ctx-dock .cp-msg,.civ-side-panel .sp-ctx-card .cp-msg{font-size:12px;color:var(--civ-text-primary,#e8e0c8);line-height:1.55;text-align:left;}
+.civ-side-ctx-dock .sp-ctx-expand,.civ-side-panel .sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
   border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);
   color:var(--civ-gold-primary,#e8d88a);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
   cursor:pointer;font-family:inherit;text-align:center;}
-.civ-side-panel .sp-ctx-expand:hover{border-color:rgba(212,175,90,.55);background:rgba(28,34,46,.9);}
-.civ-side-panel .sp-ctx-card .cp-hero-names{font-size:15px;font-weight:700;color:var(--civ-gold-primary,#e8d88a);
+.civ-side-ctx-dock .sp-ctx-expand:hover,.civ-side-panel .sp-ctx-expand:hover{border-color:rgba(212,175,90,.55);background:rgba(28,34,46,.9);}
+.civ-side-ctx-dock .cp-hero-names,.civ-side-panel .sp-ctx-card .cp-hero-names{font-size:15px;font-weight:700;color:var(--civ-gold-primary,#e8d88a);
   line-height:1.4;margin-bottom:4px;}
-.civ-side-panel .sp-ctx-card .cp-hero-sub{font-size:10px;color:var(--civ-text-muted,#a09880);margin-bottom:8px;}
-.civ-side-panel .sp-ctx-card .cp-sub{margin-top:0.35em;font-size:11px;color:var(--civ-text-muted,#a09880);line-height:1.45;}
-.civ-side-panel .sp-ctx-card .cp-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
-.civ-side-panel .sp-ctx-card .cp-total{margin-top:0.5em;font-size:12px;color:var(--civ-text-primary,#e8e0c8);}
-.civ-side-panel .sp-ctx-card .cp-yield-head{margin-top:0.65em;font-size:10px;text-transform:uppercase;
+.civ-side-ctx-dock .cp-hero-sub,.civ-side-panel .sp-ctx-card .cp-hero-sub{font-size:10px;color:var(--civ-text-muted,#a09880);margin-bottom:8px;}
+.civ-side-ctx-dock .cp-sub,.civ-side-panel .sp-ctx-card .cp-sub{margin-top:0.35em;font-size:11px;color:var(--civ-text-muted,#a09880);line-height:1.45;}
+.civ-side-ctx-dock .cp-lbl,.civ-side-panel .sp-ctx-card .cp-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
+.civ-side-ctx-dock .cp-total,.civ-side-panel .sp-ctx-card .cp-total{margin-top:0.5em;font-size:12px;color:var(--civ-text-primary,#e8e0c8);}
+.civ-side-ctx-dock .cp-yield-head,.civ-side-panel .sp-ctx-card .cp-yield-head{margin-top:0.65em;font-size:10px;text-transform:uppercase;
   letter-spacing:.18em;color:var(--civ-gold-primary,#c4b890);font-weight:600;}
-.civ-side-panel .sp-ctx-card .cp-yield-row{margin-top:0.25em;font-size:11px;color:var(--civ-text-primary,#e8e0c8);line-height:1.45;}
-.civ-side-panel .sp-ctx-card .cp-yield-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
-.civ-side-panel .sp-ctx-card .cp-yield-detail{color:var(--civ-text-muted,#a09880);font-size:10px;}
-.civ-side-panel .sp-ctx-card .cp-possible{margin-top:0.2em;font-size:10px;line-height:1.4;}
-.civ-side-panel .sp-ctx-card .cp-unit-head{margin-top:0.65em;padding-top:0.55em;border-top:1px solid rgba(212,175,90,.22);}
-.civ-side-panel .sp-ctx-card .cp-sep{height:1px;margin:0.55em 0;background:rgba(212,175,90,.22);}
+.civ-side-ctx-dock .cp-yield-row,.civ-side-panel .sp-ctx-card .cp-yield-row{margin-top:0.25em;font-size:11px;color:var(--civ-text-primary,#e8e0c8);line-height:1.45;}
+.civ-side-ctx-dock .cp-yield-lbl,.civ-side-panel .sp-ctx-card .cp-yield-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
+.civ-side-ctx-dock .cp-yield-detail,.civ-side-panel .sp-ctx-card .cp-yield-detail{color:var(--civ-text-muted,#a09880);font-size:10px;}
+.civ-side-ctx-dock .cp-possible,.civ-side-panel .sp-ctx-card .cp-possible{margin-top:0.2em;font-size:10px;line-height:1.4;}
+.civ-side-ctx-dock .cp-unit-head,.civ-side-panel .sp-ctx-card .cp-unit-head{margin-top:0.65em;padding-top:0.55em;border-top:1px solid rgba(212,175,90,.22);}
+.civ-side-ctx-dock .cp-sep,.civ-side-panel .sp-ctx-card .cp-sep{height:1px;margin:0.55em 0;background:rgba(212,175,90,.22);}
 ${UNIT_CONTEXT_PANEL_CSS}
 `;
   const s = document.createElement('style');
@@ -171,6 +191,20 @@ function contextHeadLabel(kind: ContextPanelKind): string {
   return kind === 'hex' ? 'Pole mapy — kliknięty heks' : 'Jednostka';
 }
 
+function buildContextCardHtml(ctx: ContextPanelData, expanded: boolean): string {
+  const interactive = ctx.kind === 'unit';
+  const headHtml = `<div class="sp-ctx-head">${contextHeadLabel(ctx.kind)}</div>`;
+  let html = `<div class="sp-ctx-card${interactive ? ' sp-ctx-interactive' : ''}">`
+    + headHtml
+    + `<div class="cp-msg">${ctx.html}</div>`;
+  if (ctx.kind === 'unit' && ctx.expandable && !ctx.expandInHtml) {
+    const label = expanded ? 'Mniej szczegółów' : 'Więcej szczegółów';
+    html += `<button type="button" class="sp-ctx-expand" data-sp-expand>${label}</button>`;
+  }
+  html += '</div>';
+  return html;
+}
+
 /** Montuje panel wydarzeń (mockup 1E strefa H). */
 export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi {
   ensureStyles();
@@ -178,20 +212,23 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   const el = document.createElement('div');
   el.className = 'civ-side-panel';
 
-  function bindContextInteractions(card: HTMLElement, ctx: ContextPanelData): void {
+  const ctxEl = document.createElement('div');
+  ctxEl.className = 'civ-side-ctx-dock';
+
+  function bindContextInteractions(root: HTMLElement, ctx: ContextPanelData): void {
     if (ctx.kind !== 'unit') return;
-    card.querySelector('[data-sp-expand]')?.addEventListener('click', () => {
+    root.querySelector('[data-sp-expand]')?.addEventListener('click', () => {
       config.onContextExpand?.();
       render();
     });
-    card.querySelectorAll('[data-act]').forEach(btn => {
+    root.querySelectorAll('[data-act]').forEach(btn => {
       btn.addEventListener('click', () => {
         if ((btn as HTMLButtonElement).disabled) return;
         const id = (btn as HTMLElement).getAttribute('data-act');
         if (id) config.onContextAction?.(id);
       });
     });
-    card.querySelectorAll('[data-unit]').forEach(chip => {
+    root.querySelectorAll('[data-unit]').forEach(chip => {
       const go = () => {
         const id = (chip as HTMLElement).getAttribute('data-unit');
         if (id) config.onContextSelectUnit?.(id);
@@ -210,18 +247,22 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     const ctx = resolveContextPanel(config);
     const expanded = config.isContextExpanded?.() ?? false;
 
+    const unitCtx = ctx?.kind === 'unit' ? ctx : null;
+    const hexCtx = ctx?.kind === 'hex' ? ctx : null;
+
+    if (unitCtx !== null) {
+      ctxEl.innerHTML = buildContextCardHtml(unitCtx, expanded);
+      ctxEl.classList.add('open');
+      const card = ctxEl.querySelector('.sp-ctx-card');
+      if (card) bindContextInteractions(ctxEl, unitCtx);
+    } else {
+      ctxEl.innerHTML = '';
+      ctxEl.classList.remove('open');
+    }
+
     let html = '';
-    if (ctx !== null) {
-      const interactive = ctx.kind === 'unit';
-      const headHtml = `<div class="sp-ctx-head">${contextHeadLabel(ctx.kind)}</div>`;
-      html += `<div class="sp-ctx-card${interactive ? ' sp-ctx-interactive' : ''}">`
-        + headHtml
-        + `<div class="cp-msg">${ctx.html}</div>`;
-      if (ctx.kind === 'unit' && ctx.expandable && !ctx.expandInHtml) {
-        const label = expanded ? 'Mniej szczegółów' : 'Więcej szczegółów';
-        html += `<button type="button" class="sp-ctx-expand" data-sp-expand>${label}</button>`;
-      }
-      html += '</div>';
+    if (hexCtx !== null) {
+      html += buildContextCardHtml(hexCtx, expanded);
     }
 
     html += '<div class="sp-header">Wydarzenia</div>';
@@ -249,9 +290,9 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
 
     el.innerHTML = html;
 
-    if (ctx !== null) {
+    if (hexCtx !== null) {
       const card = el.querySelector('.sp-ctx-card');
-      if (card) bindContextInteractions(card as HTMLElement, ctx);
+      if (card) bindContextInteractions(el, hexCtx);
     }
 
     el.querySelectorAll('.sp-event[data-id]').forEach(chip => {
@@ -278,7 +319,11 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   render();
   return {
     el,
+    ctxEl,
     update: render,
-    destroy: () => el.remove(),
+    destroy: () => {
+      el.remove();
+      ctxEl.remove();
+    },
   };
 }
