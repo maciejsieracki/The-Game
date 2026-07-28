@@ -11,7 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `8dd05481` — 2026-07-28 12:28 — FALA 57: batch HUD + Miasta + spawn 4 hex + FALA 54–56 — **AKTUALNA**
+## ROBOCZA `80608ce4` - 2026-07-28 12:58 - FALA 58: magazyn panstwa ceramika/sol/kon/zloto + spawn nagrody chatka - **AKTUALNA**
+- md5 (pelne): `80608ce4bbca64b58c67d034bcba004b` · stempel: `ROBOCZA · 2026-07-28 12:58`
+- **VERIFY OK.** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b` (bez zmian).
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** magazyn panstwa (Ceramika/Sol/Kon/Zloto stock+cap) + spawn nagrody chatka (findVillageRewardSpawnHex). Pliki: main.ts, empireDetailPanel, empireDetailTypes, villageRewards, city-hex-movement, villages-test.cjs.
+
+## ROBOCZA `8dd05481` — 2026-07-28 12:28 — FALA 57: batch HUD + Miasta + spawn 4 hex + FALA 54–56 — **ZASTAPIONA**
 - md5 (pelne): `8dd05481749e1950e0de31c1f8c40f48` · stempel: `ROBOCZA · 2026-07-28 12:28`
 - **VERIFY OK.** tsc 0 · smoke OK · cluster-start (4 hex) · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

@@ -71,7 +71,7 @@ export interface EmpireResourceRow {
   /**
    * SUROW-CIV-01 (Maciej 2026-07-24): cap CAŁEGO PAŃSTWA (civ-wide) dla tego typu
    * surowca — capBase + capBonusPerMagazyn×liczba Magazynów ownera. Brak (undefined)
-   * dla wierszy czystego dostępu (Sól/Koń/Ceramika — `access`, stock zawsze 0/—).
+   * Brak (undefined) tylko gdy surowiec nie jest magazynowany (dziś: żaden z katalogu).
    */
   cap?: number;
   /**
@@ -83,10 +83,8 @@ export interface EmpireResourceRow {
   /** Bonus capu za KAŻDY Magazyn (econ-params.json magazyn_bonus_surowce_na_budynek). */
   capBonusPerMagazyn?: number;
   /**
-   * ZGŁOSZENIE (Maciej 2026-07-26): dla wierszy czystego DOSTĘPU (Sól/Koń/Ceramika/Złoto)
-   * — skąd dostęp pochodzi ("własna Kopalnia złota" / "szlak handlowy z <partner>" /
-   * "Garncarnia zbudowana w imperium" ...). `undefined` gdy `dostep` jest false (nie ma
-   * czego pokazać) albo dla wierszy magazynowanych (nie dotyczy).
+   * Opcjonalnie: skąd dostęp pochodzi (Ceramika/Sól/Koń/Złoto — budynek/złoże/szlak).
+   * `undefined` gdy `dostep` jest false (nie ma czego pokazać).
    */
   zrodlo?: string;
 }

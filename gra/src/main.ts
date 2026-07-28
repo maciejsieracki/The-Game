@@ -332,6 +332,7 @@ import {
   villageGoldAmount,
   villageTechProgress,
   villageUnitForEra,
+  findVillageRewardSpawnHex,
 } from './game/villageRewards';
 import { CityRenderer, type CityRenderOptions, type CityMapOutlineKind } from './render/cities';
 import { WonderRenderer, type PlacedWonder } from './render/wonderRenderer';
@@ -1900,13 +1901,12 @@ async function boot(): Promise<void> {
      * (suma City.surowce). Cel: zobaczyć, ile surowców realnie leży w magazynach, zanim
      * dostroimy stawki produkcji. Reguły składowania (decyzja Macieja):
      *   • Żywność — pominięta (osobny system spichlerza).
-     *   • Sól / Koń / Ceramika — czysty DOSTĘP (nie kumulują sztuk, Maciej 2026-07-23:
-     *     Garncarnia = dostęp, nie stock) → stock zawsze 0, kolumna „dostęp".
+     *   • Ceramika / Sól / Koń / Złoto — magazyn państwa (jak drewno/kamień), 2026-07-28.
      *   • Bydło / Owce / Lama — NIE są surowcami (pominięte całkowicie).
      *   • Reszta (drewno/kamień/glina/ruda/ruda żelaza/cegła/brąz/żelazo/stal) — zliczana.
      *   • Paliwo USUNIĘTE calkowicie (decyzja Macieja 2026-07-23) — konwertery biorą DREWNO 1:1.
      * Tempo/turę (ratePerTurn) — BRUTTO produkcji tej tury (SUROW-TERYT-01 dla teren,
-     * przepustowość nominalna konwerterów dla miasto); 0 dla wierszy czystego dostępu.
+     * przepustowość nominalna konwerterów dla miasto).
      */
     function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {
       const warehouse = citySurowceSumForOwner(ownerId);
@@ -1923,7 +1923,7 @@ async function boot(): Promise<void> {
         data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0],
         _menuDifficulty,
       );
-      type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ']; access?: boolean };
+      type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ'] };
       const CATALOG: Cat[] = [
         { id: 'drewno',      label: 'Drewno',      icon: '🪵', typ: 'surowy' },
         { id: 'kamien',      label: 'Kamień',      icon: '🪨', typ: 'surowy' },
@@ -1931,26 +1931,18 @@ async function boot(): Promise<void> {
         { id: 'ruda',        label: 'Ruda miedzi', icon: '🔶', typ: 'surowy' },
         { id: 'ruda_zelaza', label: 'Ruda żelaza', icon: '⛏️', typ: 'surowy' },
         { id: 'cegla',       label: 'Cegła',       icon: '🧱', typ: 'przetworzony' },
-        { id: 'ceramika',    label: 'Ceramika',    icon: '🏺', typ: 'przetworzony', access: true },
+        { id: 'ceramika',    label: 'Ceramika',    icon: '🏺', typ: 'przetworzony' },
         { id: 'braz',        label: 'Brąz',        icon: '🥉', typ: 'przetworzony' },
         { id: 'zelazo',      label: 'Żelazo',      icon: '⚙️', typ: 'przetworzony' },
         { id: 'stal',        label: 'Stal',        icon: '🔩', typ: 'przetworzony' },
-        { id: 'sol',         label: 'Sól',         icon: '🧂', typ: 'surowy',  access: true },
-        { id: 'kon',         label: 'Koń',         icon: '🐎', typ: 'hodowla', access: true },
-        // ZGŁOSZENIE (Maciej 2026-07-26): "trzeba dodać złoto" — surowiec czystego
-        // dostępu (jak Sól/Koń/Ceramika), NIE magazynowany (zloto-access.ts nagłówek:
-        // "nie będzie składowane jako oddzielny surowiec"). dostep liczony niżej przez
-        // ownerHasZlotoAccessNow — TA SAMA funkcja co silnik (bramka Mennicy) i panel
-        // miasta, zero drugiej implementacji.
-        { id: 'zloto',       label: 'Złoto',       icon: '🪙', typ: 'surowy',  access: true },
+        { id: 'sol',         label: 'Sól',         icon: '🧂', typ: 'surowy' },
+        { id: 'kon',         label: 'Koń',         icon: '🐎', typ: 'hodowla' },
+        { id: 'zloto',       label: 'Złoto',       icon: '🪙', typ: 'surowy' },
       ];
       const diploFlows = empireDiploResourceFlowPerTurn(activeDeals, ownerId);
       const rows: EmpireResourceRow[] = [];
       for (const c of CATALOG) {
-        // Wiersze czystego dostępu (Sól/Koń/Ceramika/Złoto) NIE pokazują stocku — nawet
-        // gdy stary zapis gry ma jeszcze niezerowy City.surowce.ceramika (migracja, brak
-        // konsumenta) świadomie go tu ukrywamy (Maciej 2026-07-23: "stock 0/—").
-        const stock = c.access ? 0 : Math.floor(warehouse[c.id] ?? 0);
+        const stock = Math.floor(warehouse[c.id] ?? 0);
         // Zgłoszenie Macieja 2026-07-26: "surowce na dostęp" mają mieć ŹRÓDŁO PRAWDY
         // per surowiec (nie jeden zbiorczy accessLabels.has), żeby złoto mogło użyć
         // TEJ SAMEJ bramki co silnik (ownerHasZlotoAccessNow = natywna Kopalnia złota
@@ -1962,44 +1954,36 @@ async function boot(): Promise<void> {
         let dostep: boolean;
         let zrodlo: string | undefined;
         if (c.id === 'zloto') {
-          // Krok 2 zlecenia: dostep MUSI wołać dokładnie ownerHasZlotoAccessNow —
-          // jedno źródło prawdy ze silnikiem (bramka Mennicy) i panelem miasta,
-          // zero drugiej implementacji tego samego pytania (main.ts linia ~2619).
-          // native/grant niżej służą WYŁĄCZNIE do wyboru tekstu „zrodlo" (te same
-          // dwie składowe, z których ownerHasZlotoAccessNow jest zbudowane) — nie
-          // zmieniają wyniku dostep.
-          dostep = ownerHasZlotoAccessNow(ownerId);
-          const native = dostep && ownerHasNativeResourceAccess(ownerId, 'zloto');
-          const grant = dostep && !native ? firstTradeRouteResourceGrant(tradeRouteResourceGrants, ownerId, 'zloto') : undefined;
+          const hasAccess = ownerHasZlotoAccessNow(ownerId);
+          dostep = hasAccess || stock > 0;
+          const native = hasAccess && ownerHasNativeResourceAccess(ownerId, 'zloto');
+          const grant = hasAccess && !native ? firstTradeRouteResourceGrant(tradeRouteResourceGrants, ownerId, 'zloto') : undefined;
           zrodlo = native ? 'własna Kopalnia złota' : (grant ? `szlak handlowy z ${ownerDiploLabel(grant.viaOwnerId)}` : undefined);
         } else if (c.id === 'kon') {
           const native = ownerHasNativeResourceAccess(ownerId, 'kon');
           const grant = native ? undefined : firstTradeRouteResourceGrant(tradeRouteResourceGrants, ownerId, 'kon');
-          dostep = native || !!grant;
+          const hasAccess = native || !!grant;
+          dostep = hasAccess || stock > 0;
           zrodlo = native ? 'własna Stadnina (złoże Konia)' : (grant ? `szlak handlowy z ${ownerDiploLabel(grant.viaOwnerId)}` : undefined);
         } else if (c.id === 'ceramika') {
-          dostep = accessLabels.has(c.label);
-          zrodlo = dostep ? 'Garncarnia zbudowana w imperium' : undefined;
+          const hasAccess = accessLabels.has(c.label);
+          dostep = hasAccess || stock > 0;
+          zrodlo = hasAccess ? 'Garncarnia zbudowana w imperium' : (stock > 0 ? 'zapasy w magazynie' : undefined);
         } else if (c.id === 'sol') {
-          dostep = accessLabels.has(c.label);
-          zrodlo = dostep ? 'Warzelnia soli w zasięgu miasta' : undefined;
+          const hasAccess = accessLabels.has(c.label);
+          dostep = hasAccess || stock > 0;
+          zrodlo = hasAccess ? 'Warzelnia soli w zasięgu miasta' : (stock > 0 ? 'zapasy w magazynie' : undefined);
         } else {
           dostep = accessLabels.has(c.label) || stock > 0;
         }
-        // C-SURUI=A (Maciej 2026-07-24) — NADPISANE przez zgłoszenie 2026-07-26: dawniej
-        // wiersze czystego DOSTĘPU znikały całkowicie, gdy owner ich nie odblokował ("Pomiń
-        // wiersze, których owner jeszcze nie odblokował"). Maciej: "nawet jeżeli nie mamy
-        // nic, powinno być zasugerowane, że jest miejsce na surowce, które są dostępem" —
-        // więc od teraz wiersze dostępu ZOSTAJĄ zawsze, ze stanem dostep=false ("brak")
-        // renderowanym przez resAccessHtml (empireDetailPanel.ts) zamiast znikać z panelu.
-        const production = c.access ? 0 : Math.floor((territoryRates[c.id] ?? 0) + (converterRates[c.id] ?? 0));
+        const production = Math.floor((territoryRates[c.id] ?? 0) + (converterRates[c.id] ?? 0));
         const flow = diploFlows[c.id];
         const diploOut = flow?.outPerTurn ?? 0;
         const diploIn = flow?.inPerTurn ?? 0;
         const ratePerTurn = production - diploOut + diploIn;
-        const cap = c.access ? undefined : empireCap;
-        const capBase = c.access ? undefined : storageParams.bazaSurowcePanstwo;
-        const capBonusPerMagazyn = c.access ? undefined : storageParams.bonusSurowceNaBudynek;
+        const cap = empireCap;
+        const capBase = storageParams.bazaSurowcePanstwo;
+        const capBonusPerMagazyn = storageParams.bonusSurowceNaBudynek;
         rows.push({
           id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
           rateProductionPerTurn: production,
@@ -10207,8 +10191,7 @@ async function boot(): Promise<void> {
         stateRel,
       );
       // SUROW-HUD-01 (Maciej 2026-07-24): chip „Surowce" w HUD — podsumowanie stanu
-      // magazynów imperium (tylko wiersze magazynowane, cap != null; wiersze czystego
-      // dostępu jak Sól/Koń/Ceramika nie wchodzą do tego zliczenia). „OK/total": OK =
+      // magazynów imperium (wiersze magazynowane, cap != null). „OK/total": OK =
       // surowce ani w niedoborze (ratePerTurn<0), ani na capie (stock>=cap).
       const resourceRows = buildEmpireResourceRows(0);
       const storedResourceRows = resourceRows.filter(r => r.cap != null);
@@ -13684,7 +13667,15 @@ async function boot(): Promise<void> {
       } else {
         const typeId = villageUnitForEra(player.era);
         const dest = typeId
-          ? findAdjacentEmptyHexes(units, q, r, isHexPassableForUnit)[0]
+          ? findVillageRewardSpawnHex({
+              hutQ: q,
+              hutR: r,
+              ownerId: 0,
+              units,
+              cities,
+              isPassable: isHexPassableForUnit,
+              exploredHexes: explored,
+            })
           : undefined;
         if (!typeId || !dest) {
           grantGold('brak miejsca/jednostki, w zamian');

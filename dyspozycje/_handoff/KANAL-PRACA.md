@@ -3882,3 +3882,10 @@ CZEKAM-NA: nic (Maciej: otwórz `fed92ad1`).
 **Zakres:** FALA 54–56 w bundle + chip Miasta + Spichlerz bez max + Surowce lewo + spawn MP 4 hex.
 **Bramki:** tsc 0 · smoke OK · cluster-start 4 hex · POLE-BITWY `dd399c4b`.
 CZEKAM-NA: nic (sesja lokalna: pull + otwórz `8dd05481`).
+
+## [12:58] SESJA LOKALNA -> Maciej - deploy ROBOCZA FALA 58
+
+**md5:** `80608ce4bbca64b58c67d034bcba004b` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Zakres:** magazyn panstwa (ceramika/sol/kon/zloto) · spawn nagrody chatka (findVillageRewardSpawnHex).
+**Bramki:** tsc 0 · smoke OK · cluster-start 93/0 · POLE-BITWY `dd399c4b`.
+CZEKAM-NA: nic (sesja lokalna: pull + otworz `80608ce4`).

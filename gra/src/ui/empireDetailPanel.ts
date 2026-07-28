@@ -563,6 +563,7 @@ function resTooltipHtml(r: EmpireResourceRow): string {
   const parts = [`Typ: ${r.typ}`];
   if (r.cap != null) {
     parts.push(`Magazyn: wspólna pula państwa, limit ${r.cap}/typ — nadmiar przepada`);
+    if (r.zrodlo) parts.push(`Źródło dostępu: ${r.zrodlo}`);
   }
   if (r.cap == null) {
     parts.push(r.zrodlo ? `Źródło dostępu: ${r.zrodlo}` : 'Dostęp: brak — nie odblokowano jeszcze tego surowca');
@@ -620,8 +621,8 @@ function resCardHtml(r: EmpireResourceRow): string {
 }
 
 /**
- * Wiersz dostępu (boolean) — Ceramika/Sól/Koń/Złoto — nie magazynowane, tylko
- * odblokowują budowę. ZGŁOSZENIE (Maciej 2026-07-26): wiersz zostaje widoczny ZAWSZE
+ * Wiersz dostępu (boolean) — surowce nie magazynowane (dziś: brak w katalogu).
+ * Zachowane na wypadek przyszłych surowców „tylko dostęp".
  * (nawet gdy dostep=false — "masz"/"brak"), a gdy źródło jest znane (r.zrodlo — własne
  * złoże/budynek albo szlak handlowy) pokazujemy je jako podpis pod nazwą surowca.
  */

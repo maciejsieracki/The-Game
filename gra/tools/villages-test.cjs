@@ -29,6 +29,7 @@ const ENTRY_TS = `
 export { placeVillages, VILLAGE_LAND_HEX_PER_VILLAGE, VILLAGE_MIN_DIST_FROM_CITY, VILLAGE_MIN_SPACING, VILLAGE_HUTS_PER_CITY, expectedStartCityCount, targetVillageHutCount, villageHutsPerCityMultiplier } from '../src/map/villages';
 export {
   pickVillageReward, villageGoldAmount, villageTechProgress, villageUnitForEra,
+  findVillageRewardSpawnHex, VILLAGE_REWARD_SPAWN_MAX_RADIUS,
   VILLAGE_REWARD_WEIGHT_GOLD, VILLAGE_REWARD_WEIGHT_TECH, VILLAGE_REWARD_WEIGHT_UNIT,
   VILLAGE_GOLD_BASE_MIN, VILLAGE_GOLD_BASE_MAX, VILLAGE_TECH_SCIENCE_BASE,
 } from '../src/game/villageRewards';
@@ -58,6 +59,7 @@ const {
   placeVillages, VILLAGE_LAND_HEX_PER_VILLAGE, VILLAGE_MIN_DIST_FROM_CITY, VILLAGE_MIN_SPACING,
   VILLAGE_HUTS_PER_CITY, expectedStartCityCount, targetVillageHutCount, villageHutsPerCityMultiplier,
   pickVillageReward, villageGoldAmount, villageTechProgress, villageUnitForEra,
+  findVillageRewardSpawnHex, VILLAGE_REWARD_SPAWN_MAX_RADIUS,
   VILLAGE_REWARD_WEIGHT_GOLD, VILLAGE_REWARD_WEIGHT_TECH, VILLAGE_REWARD_WEIGHT_UNIT,
   VILLAGE_GOLD_BASE_MIN, VILLAGE_GOLD_BASE_MAX, VILLAGE_TECH_SCIENCE_BASE,
   hexDistance,
@@ -275,6 +277,49 @@ console.log('\n8. Magnitudy nagrod');
   eq(villageUnitForEra(2), 'Włócznik', 'era2 unit reward == Włócznik');
   eq(villageUnitForEra(3), null, 'era3 has no defined generic unit -> null (main.ts fallback zloto)');
   eq(villageUnitForEra(0), villageUnitForEra(1), 'era<1 clamps to era1');
+}
+
+// ===========================================================================
+// 9. findVillageRewardSpawnHex -- poza obcym miastem
+// ===========================================================================
+console.log('\n9. findVillageRewardSpawnHex -- spawn poza obcym miastem');
+{
+  const passable = () => true;
+  const cities = [
+    { q: 1, r: 0, ownerId: 2 }, // obce miasto na sąsiednim heksie chatki
+  ];
+  const units = [];
+
+  // Chatka (0,0); obce miasto na (1,0); wolny heks (0,1)
+  const dest = findVillageRewardSpawnHex({
+    hutQ: 0, hutR: 0, ownerId: 0, units, cities, isPassable: passable,
+  });
+  assert(dest !== undefined, 'znajduje wolny heks gdy obce miasto sąsiaduje z chatką');
+  assert(!(dest.q === 1 && dest.r === 0), 'nie spawnuje na heksie obcego miasta');
+
+  // Wszystkie sąsiednie heksy to obce miasta — szuka w promieniu 2
+  const ringCities = [
+    { q: 1, r: 0, ownerId: 2 },
+    { q: 0, r: 1, ownerId: 2 },
+    { q: -1, r: 1, ownerId: 2 },
+    { q: -1, r: 0, ownerId: 2 },
+    { q: 0, r: -1, ownerId: 2 },
+    { q: 1, r: -1, ownerId: 2 },
+  ];
+  const dest2 = findVillageRewardSpawnHex({
+    hutQ: 0, hutR: 0, ownerId: 0, units, cities: ringCities, isPassable: passable,
+  });
+  assert(dest2 !== undefined, 'znajduje heks w promieniu 2 gdy ring 1 to obce miasta');
+  eq(hexDistance(dest2.q, dest2.r, 0, 0), 2, 'spawn w promieniu 2 gdy ring 1 zablokowany');
+
+  // Preferuje odkryty heks
+  const explored = new Set(['0,1']);
+  const dest3 = findVillageRewardSpawnHex({
+    hutQ: 0, hutR: 0, ownerId: 0, units, cities: [], isPassable: passable, exploredHexes: explored,
+  });
+  eq(dest3?.q + ',' + dest3?.r, '0,1', 'preferuje odkryty heks przy równej odległości');
+
+  eq(VILLAGE_REWARD_SPAWN_MAX_RADIUS, 2, 'domyślny promień spawnu = 2');
 }
 
 // --- summary ---------------------------------------------------------------

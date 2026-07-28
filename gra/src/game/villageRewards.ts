@@ -4,14 +4,20 @@
  * bez DOM/THREE (zob. tools/villages-test.cjs).
  *
  * Podział odpowiedzialności:
- *   - pickVillageReward()   -- czyste losowanie KATEGORII nagrody z wag (roll wejściowy).
- *   - villageGoldAmount()   -- kwota złota (skalowana erą).
- *   - villageTechProgress() -- postęp nauki doliczany do bieżącej technologii (skalowany erą).
- *   - villageUnitForEra()   -- typeId jednostki-nagrody dla danej ery, lub null (-> fallback złoto).
+ *   - pickVillageReward()        -- czyste losowanie KATEGORII nagrody z wag (roll wejściowy).
+ *   - villageGoldAmount()        -- kwota złota (skalowana erą).
+ *   - villageTechProgress()      -- postęp nauki doliczany do bieżącej technologii (skalowany erą).
+ *   - villageUnitForEra()        -- typeId jednostki-nagrody dla danej ery, lub null (-> fallback złoto).
+ *   - findVillageRewardSpawnHex() -- heks spawnu jednostki-nagrody (poza obcym miastem).
  *
  * Realizację nagrody (mutacja PlayerState, tworzenie RuntimeUnit, komunikaty)
  * robi main.ts — ten moduł nie zna PlayerState/RuntimeUnit/main.ts.
  */
+
+import type { CityHexRef } from './city-hex-movement';
+import { canUnitOccupyCityHex } from './city-hex-movement';
+import type { RuntimeUnit } from '../units/setup';
+import { hexNeighborCoords, keyOf } from '../units/setup';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,4 +100,74 @@ export function villageTechProgress(era: number): number {
 export function villageUnitForEra(era: number): string | null {
   const e = Math.max(1, Math.floor(era));
   return VILLAGE_UNIT_BY_ERA[e] ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Spawn jednostki-nagrody
+// ---------------------------------------------------------------------------
+
+/** Maks. odległość heksowa od chatki przy szukaniu miejsca spawnu nagrody. */
+export const VILLAGE_REWARD_SPAWN_MAX_RADIUS = 2;
+
+export interface VillageRewardSpawnInput {
+  hutQ: number;
+  hutR: number;
+  ownerId: number;
+  units: readonly RuntimeUnit[];
+  cities: readonly CityHexRef[];
+  isPassable: (q: number, r: number) => boolean;
+  /** Heksy odkryte graczem — preferowane przy wyborze spawnu. */
+  exploredHexes?: ReadonlySet<string>;
+  maxRadius?: number;
+}
+
+/**
+ * Wybiera heks na spawn jednostki z nagrody chatki.
+ * Kolejność preferencji: bliżej chatki → odkryty → stabilny tie-break (q, r).
+ * Odrzuca: wodę/nieprzechodni teren, zajęte heksy, heksy obcych miast.
+ */
+export function findVillageRewardSpawnHex(
+  input: VillageRewardSpawnInput,
+): { q: number; r: number } | undefined {
+  const maxRadius = input.maxRadius ?? VILLAGE_REWARD_SPAWN_MAX_RADIUS;
+  const candidates: Array<{ q: number; r: number; dist: number; explored: boolean }> = [];
+
+  const visited = new Set<string>([keyOf(input.hutQ, input.hutR)]);
+  let ring: Array<{ q: number; r: number }> = [{ q: input.hutQ, r: input.hutR }];
+
+  for (let dist = 1; dist <= maxRadius; dist++) {
+    const nextRing: Array<{ q: number; r: number }> = [];
+    for (const cell of ring) {
+      for (const { q: nq, r: nr } of hexNeighborCoords(cell.q, cell.r)) {
+        const k = keyOf(nq, nr);
+        if (visited.has(k)) continue;
+        visited.add(k);
+        nextRing.push({ q: nq, r: nr });
+
+        if (!input.isPassable(nq, nr)) continue;
+        if (!canUnitOccupyCityHex(input.ownerId, nq, nr, input.cities)) continue;
+
+        const occupied = input.units.some(
+          u => u.q === nq && u.r === nr && u.inGarnizon !== true,
+        );
+        if (occupied) continue;
+
+        const explored = input.exploredHexes?.has(k) ?? false;
+        candidates.push({ q: nq, r: nr, dist, explored });
+      }
+    }
+    ring = nextRing;
+  }
+
+  if (candidates.length === 0) return undefined;
+
+  candidates.sort((a, b) => {
+    if (a.dist !== b.dist) return a.dist - b.dist;
+    if (a.explored !== b.explored) return a.explored ? -1 : 1;
+    if (a.q !== b.q) return a.q - b.q;
+    return a.r - b.r;
+  });
+
+  const best = candidates[0]!;
+  return { q: best.q, r: best.r };
 }

@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`8dd05481`** (FALA 57, 12:28) — batch FALA 54–56 + chip **Miasta** (tabela per miasto) + Spichlerz bez `/max` + Surowce lewo + miasta-państwa **4 hex**. **Handoff:** [`HANDOFF-SESJA-2026-07-28-KARTA-ARMII.md`](dyspozycje/HANDOFF-SESJA-2026-07-28-KARTA-ARMII.md). **Nie wdrożone:** handel AI · przyciski Połącz/Rozdziel/Lista na karcie armii. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`80608ce4`** (FALA 58, 12:58) - magazyn panstwa: Ceramika/Sol/Kon/Zloto (stock+cap) + spawn nagrody chatka (`findVillageRewardSpawnHex`). Poprzedni: FALA 57 `8dd05481`. **Nie wdrozene:** handel AI · przyciski Polacz/Rozdziel/Lista na karcie armii. Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 
