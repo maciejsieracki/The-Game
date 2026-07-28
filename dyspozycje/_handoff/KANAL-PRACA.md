@@ -3952,3 +3952,29 @@ md5: `8092d730685bd083c9a7797e3461adad` (skrot `8092d730`) | stempel ROBOCZA 202
 Zakres: Handel UX A-D, HUD prawy pasek, cityPanel/sciencePicker tooltips, hoverDetailDock, main+trade-routes.
 Playtest: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra).
 CZEKAM-NA: Maciej playtest przez Master / sesja lokalna pull na dysk jesli chmura
+
+## [17:35] INTEGRATOR -> MASTER + Maciej (sesja lokalna) -- deploy all FALA 66 ROBOCZA
+
+Publish `gra-robocza/` po bramkach (tsc + map-scale-menu + cluster-start).
+md5: `20b25cc07614fdb89cdb17d7de81854e` (skrot `20b25cc0`) | stempel ROBOCZA 2026-07-28 17:35
+Zakres: typy cywilizacji per rozmiar mapy (4/5/6/10/12/15 default); menu min=max±1; Panel-E + drabinka kreatora.
+Playtest: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra).
+CZEKAM-NA: nic (deploy gotowy)
+
+## [17:42] INTEGRATOR -> MASTER + Maciej (sesja lokalna) -- deploy all FALA 67 ROBOCZA
+
+Publish `gra-robocza/` — pelny deploy all (nadpisuje FALA 66).
+md5: `934ac394eb47fd83746275bc3eb18257` (skrot `934ac394`) | stempel ROBOCZA · 934ac394
+Bramki: tsc 0 · cluster-start 123/0 · river-map-scale 11/0 · VERIFY OK.
+Zakres: rzeki W2 (resolveRiverMapParams + tributaryCell) · MAP-SPAWN C+B (25% wyspa, 70% Voronoi) · civ counts 4/5/6/10/12/15 · filtr epoki spawn+suwak (kamien≤8, braz≤14, zelazo≤15).
+Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+CZEKAM-NA: sesja lokalna pull na dysk · Maciej otwiera `934ac394`
+
+## [18:01] INTEGRATOR -> MASTER + Maciej (sesja lokalna) -- deploy all FALA 68 ROBOCZA
+
+Publish `gra-robocza/` — ponowny deploy all (Maciej: deploy all; md5 ≠ FALA 67).
+md5: `9b8f3539c5c82fe5da5ce17f5fe8b4de` (skrot `9b8f3539`) | stempel ROBOCZA · 9b8f3539
+Bramki: tsc 0 · cluster-start 123/0 · river-map-scale 11/0 · VERIFY OK.
+Zakres: re-build ze zrodla roboczego (niezacommitowane gra/src+data) — rzeki W2 · MAP-SPAWN C+B · civ 4/5/6/10/12/15 · filtr epoki.
+Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+CZEKAM-NA: Maciej otwiera `9b8f3539`

@@ -490,6 +490,12 @@
 
 ---
 
+## 🅿️ DEFERRED (odłożone świadomie)
+
+- **2026-07-28 — Grafika złoża złota na mapie (MAPA/render):** `hex.zloze='zloto'` w generatorze (Wzgórza/Góry); brak nakładki 3D (`buildStyledResourceOverlay` bez case `zloto`, brak `buildZlozeZlota()`). Jest: model `kopalnia_zlota` po zbudowaniu + ikona UI `res-gold.svg`. **ODŁOŻONE** — Maciej: „na razie tak musi zostać".
+
+---
+
 ## Podsumowanie liczbowe
 
 | Grupa | Liczba zadań |

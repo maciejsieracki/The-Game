@@ -12,7 +12,31 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 
 
-## ROBOCZA `8092d730` - 2026-07-28 16:21 - FALA 65: Handel UX A-D + HUD prawy pasek + tooltips - **AKTUALNA**
+## ROBOCZA `9b8f3539` - 2026-07-28 18:01 - FALA 68: deploy all (re-build źródeł roboczych gra/src) - **AKTUALNA**
+- md5 (pelne): `9b8f3539c5c82fe5da5ce17f5fe8b4de` · stempel: `ROBOCZA · 9b8f3539`
+- **VERIFY OK.** tsc 0 · cluster-start 123/0 · river-map-scale 11/0.
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** ponowny deploy all ze świeżego buildu Vite (niezacommitowane zmiany `gra/src` + `gra/data`). Ten sam pakiet co FALA 67: rzeki W2 · MAP-SPAWN C+B · typy cywilizacji 4/5/6/10/12/15 · filtr epoki startu. Nowy md5 (≠ `934ac394`).
+- **Pliki:** `newGameMapDefaults.ts` · `gen-helpers.ts` · `generator.ts` · `clusters.ts` · `cluster-spawn.ts` · `cluster-start.ts` · `newGameFlow.ts` · `e-start-params.json` · `map-gen-params.json` · `main.ts`
+
+
+## ROBOCZA `934ac394` - 2026-07-28 17:42 - FALA 67: deploy all (rzeki W2 + MAP-SPAWN C+B + civ counts + filtr epoki) - **ZASTAPIONA**
+- md5 (pelne): `934ac394eb47fd83746275bc3eb18257` · stempel: `ROBOCZA · 934ac394`
+- **VERIFY OK.** tsc 0 · cluster-start 123/0 · river-map-scale 11/0.
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** (1) **Rzeki skala mapy W2** — `resolveRiverMapParams` + feedery `tributaryCell`. (2) **MAP-SPAWN C+B** — wyspa ≥25% masy, Voronoi ≥70% dominacji. (3) **Typy cywilizacji** — Malenki 4 … Super Huge 15 (menu ±1). (4) **Filtr epoki startu** — spawn + suwak: kamien≤8, braz≤14, zelazo≤15 (kaskada `civIdsAvailableAtGameEpoch`).
+- **Pliki:** `newGameMapDefaults.ts` · `gen-helpers.ts` · `generator.ts` · `clusters.ts` · `cluster-spawn.ts` · `civ-entry-epoch.ts` · `newGameFlow.ts` · `e-start-params.json` · `main.ts`
+
+
+## ROBOCZA `20b25cc0` - 2026-07-28 17:35 - FALA 66: typy cywilizacji per mapa (tylko liczby, bez reszty paczki) - **ZASTAPIONA**
+- md5 (pelne): `20b25cc07614fdb89cdb17d7de81854e` · stempel: `ROBOCZA · 2026-07-28 17:35`
+- **VERIFY OK.** tsc 0 · map-scale-menu 32/0 · cluster-start 106/0.
+- Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+- **Zakres:** domyslna liczba typow cywilizacji per rozmiar mapy (Malenki 4 … Super Huge 15); menu kreatora min/default/max = default±1 (clamp 1..15); Panel-E + map-gen fallback.
+- **Pliki:** `e-start-params.json` · `newGameMapDefaults.ts` · `map-gen-params.json` · `map-scale-menu-test.cjs`
+
+
+## ROBOCZA `8092d730` - 2026-07-28 16:21 - FALA 65: Handel UX A-D + HUD prawy pasek + tooltips - **ZASTAPIONA**
 - md5 (pelne): `8092d730685bd083c9a7797e3461adad` · stempel: `ROBOCZA · 2026-07-28 16:21`
 - **VERIFY OK.** tsc 0 · tech-tree 33/0 · unit-replace 10/10 · map-gen PASS (duza 12.42s<15s; determinizm+rzeki PASS) · smoke OK (post-publish) · POLE-BITWY `dd399c4b` (bez zmian).
 - Wejscie: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.

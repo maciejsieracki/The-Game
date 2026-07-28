@@ -1,5 +1,5 @@
 ---
-description: Routing modeli — drogi model decyduje, subagent composer-2.5 wykonuje. Oszczędność tokenów.
+description: Routing modeli — Grok 4.5 myśli, subagent composer-2.5 wykonuje kod/audyt/błędy. Oszczędność tokenów.
 globs:
   - "**/*"
 alwaysApply: true
@@ -7,7 +7,9 @@ alwaysApply: true
 
 # Routing modeli — oszczędność tokenów (NIENEGOCJOWALNE)
 
-**Zasada (Maciej 2026-06-28, korekta 2026-07-27):** mocny model myśli i decyduje, subagent wykonuje mechaniczną robotę. Każdą mechaniczną pracę wieloplikową **deleguj do subagenta `composer-2.5`** — nie rób jej drogim modelem.
+**Zasada (Maciej 2026-06-28, korekta 2026-07-27, doprecyzowanie 2026-07-28):**
+- **Grok 4.5** (czat główny) = mózg: **rozkminianie, planowanie, kontrola**, ewentualnie **deploy**.
+- **`composer-2.5`** (subagent) = ręce: **cała pozostała praca** (kod, audyt, błędy, testy, refaktory…).
 
 **⛔ `composer-2.5-fast` — NIE UŻYWAĆ** (Maciej 2026-07-27: za drogi). Jedyny model subagenta implementacyjnego: **`composer-2.5`**.
 
@@ -15,26 +17,37 @@ alwaysApply: true
 
 | Warstwa | Kto | Zakres |
 |---|---|---|
-| **Diagnoza / decyzje / projekt / weryfikacja / routing** | **mocny model (Master, ja)** | analiza wąskich gardeł, architektura mechanizmów, decyzje ABC, ocena raportów, kierowanie ruchem |
-| **Wykonanie mechaniczne** | **subagent `composer-2.5`** (Task) | masowe edycje wg wzoru, wpięcia wg kontraktu, refaktory, eksporty danych, przepisywanie wielu plików, powtarzalne poprawki |
+| **Rozkminianie / planowanie / kontrola / deploy** | **Grok 4.5** (czat główny) | ABC, architektura, priorytety, dekompozycja zadań, ocena raportów subagenta, bramka jakości, routing, ewentualny deploy do `gra-robocza` / logi WERSJE |
+| **Cała pozostała praca** | **subagent `composer-2.5`** (Task) | kod, refaktory, testy, audyt kodu, śledzenie bugów, analiza tematu w plikach, masowe edycje, eksporty, handoffy techniczne |
 
-## Próg delegacji (kiedy OBOWIĄZKOWO subagent)
+## Kiedy OBOWIĄZKOWO subagent `composer-2.5`
 
-Zanim zaczniesz wykonywać sam, sprawdź — jeśli **którekolwiek TAK** → najpierw odpal subagenta `composer-2.5`:
+**Domyślnie wszystko poza planowaniem/kontrolą/deployem** — wrzucaj do Composera, gdy zadanie dotyczy:
 
-1. Edycja **> 3 plików** „wg wzoru" (ten sam typ zmiany w wielu miejscach)?
-2. **> ~50 linii** czystego wykonania bez decyzji po drodze?
-3. Zadanie samodzielne i odizolowane (da się opisać jako jedno zlecenie z AC)?
+1. **Zlecenia programistycznego** — implementacja, poprawka, refaktor, wpięcie, testy.
+2. **Audytu pracy programistycznej** — przegląd diffu, checklista AC w plikach.
+3. **Pracy w kodzie przy błędzie / temacie** — śledzenie call-graph, diagnoza w plikach, fix (Grok planuje i kontroluje; Composer kopie).
 
-## Kiedy NIE delegować (wyjątki — rób sam)
+Próg ilościowy (gdy wahanie):
 
-- 1–3 drobne, **splecione z myśleniem** edycje, gdy pliki masz już w kontekście (koszt zimnego startu subagenta ≈ dokończenie na miejscu).
-- Praca, która na każdym kroku wymaga decyzji projektowej (wtedy delegacja = ciągłe odpytywanie, drożej).
+- Edycja **> 3 plików** „wg wzoru”, **lub**
+- **> ~50 linii** czystego wykonania, **lub**
+- zadanie samodzielne z jasnym AC.
+
+## Kiedy Grok robi sam (bez Composera)
+
+- Rozmowa produktowa / ABC / decyzja.
+- Plan i dekompozycja zlecenia dla subagenta.
+- Kontrola wyniku subagenta przed raportem do Macieja.
+- **Deploy** (gdy Maciej każe) — build/`gra-robocza`/WERSJE/kanał.
+- 1–3 drobne edycje splecione z myśleniem, gdy pliki już w kontekście.
+
+**ZAKAZ:** „zrobię sam, bo to szybkie” przy typowej pracy kodowej — domyślnie Composer.
 
 ## Jak delegować
 
-- `Task` z `subagent_type` implementacyjnym, model **`composer-2.5`** (nigdy `composer-2.5-fast`).
+- `Task` z modelem **`composer-2.5`** (nigdy `composer-2.5-fast`).
 - Daj subagentowi **pełny kontekst w prompcie** (nie zna historii czatu): pliki, wzór zmiany, AC, zakazy (np. NIE ruszaj `main.ts` jeśli to nie Integrator).
-- Po powrocie subagenta — **mocny model weryfikuje** wynik (spójność, AC) przed zamknięciem.
+- Po powrocie subagenta — **Grok 4.5 weryfikuje** wynik (spójność, AC) przed zamknięciem i raportem do Macieja.
 
-**Skutek:** drogie tokeny idą na myślenie, nie na klepanie. Master = mózg, subagent = ręce.
+**Skutek:** Grok = rozkmina + plan + kontrola (+ deploy). Composer = reszta roboty.

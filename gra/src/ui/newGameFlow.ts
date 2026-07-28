@@ -31,6 +31,8 @@ import {
   bundledMapQualityFromLabel,
   civTypesMenuForMapLabel,
   defaultCivTypesFromMapLabel,
+  maxCivTypesForStartEpoch,
+  MAX_TYPY_CYWILIZACJI_MENU,
   defaultMiastaPanstwaFromMapLabel,
   clampMiastaPanstwaCount,
   miastaPanstwaMenuForMapLabel,
@@ -561,12 +563,17 @@ function syncMiastaPanstwaOptions(): void {
   cityRow.idx = keepIdx >= 0 ? keepIdx : bundle.domyslny;
 }
 
+function civRosterRows(): CivEntryEpochRow[] {
+  const data = gameData();
+  return (data?.civs?.cywilizacje ?? []) as CivEntryEpochRow[];
+}
+
 function syncCivTypesOptions(): void {
   const mapRow = SETT.find(x => x.key === 'map_size');
   const civRow = SETT.find(x => x.key === 'civ_types_count');
   if (!mapRow || !civRow) return;
   const mapLabel = mapRow.opts[mapRow.idx] ?? 'Standardowy';
-  const bundle = civTypesMenuForMapLabel(mapLabel);
+  const bundle = civTypesMenuForMapLabel(mapLabel, selEpoch, civRosterRows());
   const prev = civRow.opts[civRow.idx];
   civRow.opts = bundle.opts;
   civRow.descs = bundle.descs;
@@ -927,6 +934,7 @@ function renderEpochStep(host: HTMLElement): void {
       ec.addEventListener('click', () => {
         selEpoch = e.id;
         ensureSelCivForEpoch();
+        syncCivTypesOptions();
         markNewGamePrefsDirtyAndSave();
         render();
       });
@@ -1234,7 +1242,14 @@ function buildParams(): NewGameParams {
   const cityStatesCount = parseInt(settingValue('city_states_count'), 10);
   const civTypesCount = parseInt(settingValue('civ_types_count'), 10);
   const cityDefault = defaultMiastaPanstwaFromMapLabel(mapSizeLabel || 'Standardowy');
-  const typesDefault = defaultCivTypesFromMapLabel(mapSizeLabel || 'Standardowy');
+  const typesDefault = defaultCivTypesFromMapLabel(
+    mapSizeLabel || 'Standardowy',
+    selEpoch,
+    civRosterRows(),
+  );
+  const epochCivMax = civRosterRows().length > 0
+    ? maxCivTypesForStartEpoch(selEpoch, civRosterRows())
+    : MAX_TYPY_CYWILIZACJI_MENU;
   const data = gameData();
   const startPreview = data
     ? buildStartPreview({
@@ -1265,7 +1280,10 @@ function buildParams(): NewGameParams {
     mapDetailQualityLabel: bundledLabel,
     renderQuality: bundle.renderQuality,
     mapDetailQuality: bundle.mapDetailQuality,
-    civTypesCount: Number.isFinite(civTypesCount) ? civTypesCount : typesDefault,
+    civTypesCount: Math.min(
+      Number.isFinite(civTypesCount) ? civTypesCount : typesDefault,
+      epochCivMax,
+    ),
     cityStatesCount: clampMiastaPanstwaCount(
       Number.isFinite(cityStatesCount) ? cityStatesCount : cityDefault,
     ),

@@ -156,6 +156,8 @@ export interface BuildClusterSpawnInput {
   playerTyp: string;
   rywaleNaKlaster: number;
   aktywneTypy?: number;
+  /** Epoka startu — filtr puli typów na mapie (kamien | braz | zelazo). */
+  startEpochId?: string;
   cityNamesPools?: CityNamesPoolsData;
 }
 
@@ -188,7 +190,8 @@ export function groupForeignTypeClusters(slots: ClusterSpawnSlot[]): ForeignType
  */
 export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpawnPlan {
   const {
-    map, civs, seed, playerTyp, rywaleNaKlaster, aktywneTypy, cityNamesPools,
+    map, civs, seed, playerTyp, rywaleNaKlaster, aktywneTypy,
+    startEpochId, cityNamesPools,
   } = input;
 
   const placement = computeClusters(map, {
@@ -196,6 +199,8 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     playerTyp,
     rywaleNaKlaster,
     aktywneTypy,
+    startEpochId,
+    civRoster: civs.cywilizacje,
   });
 
   const playerCluster = placement.klastry[placement.playerTypIndex];

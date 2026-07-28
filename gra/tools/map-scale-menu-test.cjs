@@ -44,12 +44,12 @@ function assert(c, msg) {
 }
 
 const EXPECT = {
-  Malenki: { mp: [2, 3, 4], typy: [6, 7, 10] },
-  Mały: { mp: [3, 4, 5], typy: [8, 10, 12] },
-  Standardowy: { mp: [4, 6, 7], typy: [10, 12, 14] },
-  Duży: { mp: [5, 7, 8], typy: [12, 14, 15] },
-  Ogromny: { mp: [6, 8, 9], typy: [13, 15, 15] },
-  'Super Huge': { mp: [7, 8, 9], typy: [13, 15, 15] },
+  Malenki: { mp: [2, 3, 4], typy: [3, 4, 5] },
+  Mały: { mp: [3, 4, 5], typy: [4, 5, 6] },
+  Standardowy: { mp: [4, 6, 7], typy: [5, 6, 7] },
+  Duży: { mp: [5, 7, 8], typy: [9, 10, 11] },
+  Ogromny: { mp: [6, 8, 9], typy: [11, 12, 13] },
+  'Super Huge': { mp: [7, 8, 9], typy: [14, 15, 15] },
 };
 
 console.log('map-scale-menu-test (Panel-E + menu kreatora)\n');

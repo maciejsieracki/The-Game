@@ -799,3 +799,13 @@ Audyt [Stolarnia tartak wymagania](b877b506-ac0b-4ca5-b98e-929b6e925510): dziś 
 **lub** zapasu w magazynie (SUROW-CIV-02) — **nie** wymaga Tartaku jako prerekwizytu. Wyrąb → drewno w magazynie
 wystarcza. Jeśli Maciej chce kanon B1 (Tartak → aktywne Drewno → dopiero Stolarnia): zmiana w
 `building-resource-gate.ts` (bez aktywnego źródła, bez obejścia stock-only). **Bez wdrożenia** do decyzji.
+
+---
+
+## HANDEL-SPLIT-Q1 — rozdzielenie handlu: szlaki vs wymiana · STATUS: **OTWARTE** (Maciej wskazał temat B, 2026-07-28)
+
+Pełna forma ABC: [`docs/decyzje/HANDEL-SPLIT-Q1.md`](../docs/decyzje/HANDEL-SPLIT-Q1.md).
+
+**Skrót:** A = tylko UI · **B** = dwa traktaty w silniku (TraktatSzlakow + UmowaWymianySurowcow) · C = jeden traktat, pole `handelTryb`.
+
+Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej decyzji — to warstwa prezentacji.

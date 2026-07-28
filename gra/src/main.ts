@@ -5295,6 +5295,7 @@ async function boot(): Promise<void> {
         playerCivId,
         rywaleNaKlaster,
         aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
+        startEpochId: _menuEpochId || 'kamien',
         cityNamesPools: data.cityNamesPools,
       });
 

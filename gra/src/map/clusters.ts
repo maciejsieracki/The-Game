@@ -58,6 +58,10 @@ export const MIN_DIST_FOREIGN_IN_CLUSTER = MIN_DIST_START_CITY_STATE;
 export const CLUSTER_GROWTH_RESERVE = 1;
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
+import {
+  civIdsAvailableAtGameEpoch,
+  type CivEntryEpochRow,
+} from '../game/civ-entry-epoch';
 
 // ---------------------------------------------------------------------------
 // Klucze typów z civs.json (kolejność = roster, ikonaId z JSON)
@@ -79,6 +83,16 @@ const ROSTER_KLUCZE: string[] = [
   'asyria',
   'fenicjanie',
 ];
+
+/** Pula kluczy typów dostępnych w epoce startu (kolejność rosteru zachowana). */
+export function rosterKluczeForStartEpoch(
+  civRoster: readonly CivEntryEpochRow[] | undefined,
+  startEpochId: string | undefined,
+): string[] {
+  if (!civRoster || !startEpochId) return [...ROSTER_KLUCZE];
+  const available = new Set(civIdsAvailableAtGameEpoch(civRoster, startEpochId));
+  return ROSTER_KLUCZE.filter(k => available.has(k));
+}
 
 // ---------------------------------------------------------------------------
 // FORMAT — interfejsy (eksport dla AI/SILNIK)
@@ -153,6 +167,92 @@ function shuffleInPlace<T>(arr: T[], rand: () => number): void {
 
 /** Min. pól lądu w masie, żeby rozważyć środek klastra (małe wysepki pomijamy). */
 const MIN_MASS_HEXES_FOR_CENTER = 12;
+/** Wyspa kwalifikuje się do round-robin dopiero gdy ≥ tej frakcji największej masy (MAP-SPAWN-Q1 C). */
+export const ISLAND_FALLBACK_MASS_FRAC = 0.25;
+/** Min. udział masy środka w regionie Voronoi — inaczej relokacja lub pominięcie typu (MAP-SPAWN-Q1 B). */
+export const REGION_MASS_DOMINANCE_FRAC = 0.70;
+
+function qualifyingMassThreshold(largestMassSize: number): number {
+  return Math.max(
+    MIN_MASS_HEXES_FOR_CENTER,
+    Math.floor(largestMassSize * ISLAND_FALLBACK_MASS_FRAC),
+  );
+}
+
+/** Mapa hex → indeks masy (flood-fill). */
+function buildMassHexIndex(
+  masses: Array<Array<{ q: number; r: number }>>,
+): Map<string, number> {
+  const idx = new Map<string, number>();
+  for (let mi = 0; mi < masses.length; mi++) {
+    for (const h of masses[mi]!) {
+      idx.set(`${h.q},${h.r}`, mi);
+    }
+  }
+  return idx;
+}
+
+function massContainingHex(
+  hexIndex: Map<string, number>,
+  q: number,
+  r: number,
+): number | null {
+  const mi = hexIndex.get(`${q},${r}`);
+  return mi !== undefined ? mi : null;
+}
+
+/**
+ * Udział pól regionu Voronoi należących do tej samej masy co środek klastra.
+ * Eksport do testów MAP-SPAWN-Q1 B.
+ */
+export function regionMassDominance(
+  region: Array<{ q: number; r: number }>,
+  center: { q: number; r: number },
+  masses: Array<Array<{ q: number; r: number }>>,
+): { ratio: number; centerMassIndex: number | null; dominantMassIndex: number } {
+  const hexIndex = buildMassHexIndex(masses);
+  const centerMassIndex = massContainingHex(hexIndex, center.q, center.r);
+  const perMass = new Map<number, number>();
+  for (const h of region) {
+    const mi = hexIndex.get(`${h.q},${h.r}`);
+    if (mi === undefined) continue;
+    perMass.set(mi, (perMass.get(mi) ?? 0) + 1);
+  }
+  let dominantMassIndex = -1;
+  let dominantCount = 0;
+  for (const [mi, count] of perMass) {
+    if (count > dominantCount) {
+      dominantCount = count;
+      dominantMassIndex = mi;
+    }
+  }
+  const centerCount = centerMassIndex !== null ? (perMass.get(centerMassIndex) ?? 0) : 0;
+  const ratio = region.length > 0 ? centerCount / region.length : 0;
+  return { ratio, centerMassIndex, dominantMassIndex };
+}
+
+function assignVoronoiRegions(
+  ladowe: Array<{ q: number; r: number }>,
+  centrumy: Array<{ q: number; r: number }>,
+): Array<Array<{ q: number; r: number }>> {
+  const regiony: Array<Array<{ q: number; r: number }>> = Array.from(
+    { length: centrumy.length },
+    () => [],
+  );
+  for (const h of ladowe) {
+    let bestIdx = 0;
+    let bestDist = Infinity;
+    for (let ci = 0; ci < centrumy.length; ci++) {
+      const d = hexDistanceAxial(h.q, h.r, centrumy[ci]!.q, centrumy[ci]!.r);
+      if (d < bestDist) {
+        bestDist = d;
+        bestIdx = ci;
+      }
+    }
+    regiony[bestIdx]!.push(h);
+  }
+  return regiony;
+}
 
 /** Grupy spójnych pól lądu (flood-fill) — każdy kontynent / wyspa osobno. Eksport do testów. */
 export function groupHabitableMasses(
@@ -228,6 +328,12 @@ function placeClusterCentersAcrossLandmasses(
 ): Array<{ q: number; r: number }> {
   const { minQ, maxQ, minR, maxR } = bounds;
   const masses = groupHabitableMasses(ladowe);
+  const largestMassSize = masses[0]?.length ?? 0;
+  const qualThreshold = qualifyingMassThreshold(largestMassSize);
+  const qualifyingMasses = masses.filter(m => m.length >= qualThreshold);
+  const smallMasses = masses.filter(
+    m => m.length >= MIN_MASS_HEXES_FOR_CENTER && m.length < qualThreshold,
+  );
   const centers: Array<{ q: number; r: number }> = [];
 
   function okMargins(q: number, r: number, relax: boolean): boolean {
@@ -264,22 +370,28 @@ function placeClusterCentersAcrossLandmasses(
       }
     }
 
-    // Faza 2: po jednym środku na każdej masie lądu (puste kontynenty dostają własny klaster).
-    for (let mi = 1; mi < masses.length && centers.length < nNeeded; mi++) {
-      tryPlace(pickCenterInMass(masses[mi]!, centers, minDist, undefined, rand), minDist, relaxMargin);
+    // Faza 2 (MAP-SPAWN-Q1 C): po jednym środku na kwalifikujących masach (≥25% największej).
+    for (let mi = 1; mi < qualifyingMasses.length && centers.length < nNeeded; mi++) {
+      tryPlace(pickCenterInMass(qualifyingMasses[mi]!, centers, minDist, undefined, rand), minDist, relaxMargin);
     }
 
-    // Faza 3: round-robin — kolejne środki proporcjonalnie na największe masy.
+    // Faza 3: round-robin — tylko na masach kwalifikujących się (bez wysp poniżej progu).
     let stagnant = 0;
-    while (centers.length < nNeeded && stagnant < masses.length + 2) {
+    while (centers.length < nNeeded && stagnant < qualifyingMasses.length + 2) {
       let placed = false;
-      for (const mass of masses) {
+      for (const mass of qualifyingMasses) {
         if (centers.length >= nNeeded) break;
         if (tryPlace(pickCenterInMass(mass, centers, minDist, undefined, rand), minDist, relaxMargin)) {
           placed = true;
         }
       }
       stagnant = placed ? 0 : stagnant + 1;
+    }
+
+    // Faza 4: ostatnia deska ratunku — małe wyspy (≥12 hex, <25%) przed losowym fallbackiem.
+    for (const mass of smallMasses) {
+      if (centers.length >= nNeeded) break;
+      tryPlace(pickCenterInMass(mass, centers, minDist, undefined, rand), minDist, relaxMargin);
     }
   }
 
@@ -580,6 +692,67 @@ function buildClusterCitiesSimpleFallback(
   return { cities, pendingStateSlots: stateCities, growthSlot: null };
 }
 
+/**
+ * MAP-SPAWN-Q1 B: relokacja środków z regionów rozciągniętych na wiele mas;
+ * pomija obce typy, których region nie spełnia progu 70% po relokacji.
+ */
+function enforceRegionMassDominance(
+  centrumy: Array<{ q: number; r: number }>,
+  regiony: Array<Array<{ q: number; r: number }>>,
+  aktywneKlucze: string[],
+  ladowe: Array<{ q: number; r: number }>,
+  masses: Array<Array<{ q: number; r: number }>>,
+  rand: () => number,
+  minDist: number,
+): {
+  centrumy: Array<{ q: number; r: number }>;
+  regiony: Array<Array<{ q: number; r: number }>>;
+  aktywneKlucze: string[];
+} {
+  const hexIndex = buildMassHexIndex(masses);
+  let relocated = false;
+
+  for (let ci = 1; ci < centrumy.length; ci++) {
+    const region = regiony[ci]!;
+    if (region.length === 0) continue;
+    const { ratio, dominantMassIndex } = regionMassDominance(region, centrumy[ci]!, masses);
+    if (ratio >= REGION_MASS_DOMINANCE_FRAC) continue;
+
+    const dominantHexes = region.filter(
+      h => hexIndex.get(`${h.q},${h.r}`) === dominantMassIndex,
+    );
+    if (dominantHexes.length === 0) continue;
+
+    const others = centrumy.filter((_, i) => i !== ci);
+    const newCenter = pickCenterInMass(dominantHexes, others, minDist, undefined, rand);
+    if (newCenter) {
+      centrumy[ci] = newCenter;
+      relocated = true;
+    }
+  }
+
+  if (relocated) {
+    const newRegiony = assignVoronoiRegions(ladowe, centrumy);
+    for (let i = 0; i < regiony.length; i++) {
+      regiony[i] = newRegiony[i]!;
+    }
+  }
+
+  const keep: boolean[] = centrumy.map((_, ci) => {
+    if (ci === 0) return true;
+    const region = regiony[ci]!;
+    if (region.length === 0) return false;
+    const { ratio } = regionMassDominance(region, centrumy[ci]!, masses);
+    return ratio >= REGION_MASS_DOMINANCE_FRAC;
+  });
+
+  const newCentrumy = centrumy.filter((_, i) => keep[i]);
+  const newAktywneKlucze = aktywneKlucze.filter((_, i) => keep[i]);
+  const newRegiony = assignVoronoiRegions(ladowe, newCentrumy);
+
+  return { centrumy: newCentrumy, regiony: newRegiony, aktywneKlucze: newAktywneKlucze };
+}
+
 // ---------------------------------------------------------------------------
 // COMPUTECLUSTERS — główna funkcja (czysta)
 // ---------------------------------------------------------------------------
@@ -604,6 +777,10 @@ export function computeClusters(
     minDystans?: number;
     rywaleNaKlaster?: number;
     minDystansKlastrow?: number;
+    /** Epoka startu gry — filtr puli typów (D-CYW-EPOKA-WEJSCIA). */
+    startEpochId?: string;
+    /** Wiersze z civs.json — wymagane z startEpochId do filtra epoki. */
+    civRoster?: readonly CivEntryEpochRow[];
   },
 ): ClusterPlacement {
   const seed             = opts?.seed ?? 42;
@@ -628,8 +805,10 @@ export function computeClusters(
   const H = maxR - minR + 1;
 
   const rozmiarMapy = mapSizeLabel(W, H);
-  const aktywneTypy = opts?.aktywneTypy ?? aktywneTypyFromSize(rozmiarMapy);
-  const nTypy = Math.min(aktywneTypy, ROSTER_KLUCZE.length);
+  const requestedTypy = opts?.aktywneTypy ?? aktywneTypyFromSize(rozmiarMapy);
+  const epochRoster = rosterKluczeForStartEpoch(opts?.civRoster, opts?.startEpochId);
+  const rosterCap = epochRoster.length > 0 ? epochRoster.length : ROSTER_KLUCZE.length;
+  const nTypy = Math.min(requestedTypy, rosterCap);
   const area = W * H;
   /** Skaluje min odległość środków — więcej typów na dużej mapie = ciaśniejszy szyk. */
   const minDystKlastrow = Math.max(
@@ -683,12 +862,13 @@ export function computeClusters(
     );
   }
 
-  // --- Roster typów — gracz na pozycji 0, reszta bez powtórzeń ---
-  const playerIdx = ROSTER_KLUCZE.indexOf(playerTypKlucz);
-  const playerKlucz = playerIdx >= 0 ? playerTypKlucz : ROSTER_KLUCZE[0]!;
+  // --- Roster typów — gracz na pozycji 0, reszta bez powtórzeń (tylko pula epoki) ---
+  const rosterSource = epochRoster.length > 0 ? epochRoster : ROSTER_KLUCZE;
+  const playerInEpoch = rosterSource.includes(playerTypKlucz);
+  const playerKlucz = playerInEpoch ? playerTypKlucz : rosterSource[0]!;
 
   // Buduj listę aktywnych kluczy typów (gracz pierwszy)
-  const rosterBezGracza = ROSTER_KLUCZE.filter(k => k !== playerKlucz);
+  const rosterBezGracza = rosterSource.filter(k => k !== playerKlucz);
   // Tasuj resztę losowo (używamy dalszych rand())
   for (let i = rosterBezGracza.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
@@ -698,28 +878,44 @@ export function computeClusters(
   }
   const aktywneKlucze: string[] = [playerKlucz, ...rosterBezGracza.slice(0, nTypy - 1)];
 
-  // --- VORONOI: każdy lądowy hex → najbliższy środek ---
-  // Mapa: centrum_index → lista hex w regionie
-  const regiony: Array<Array<{ q: number; r: number }>> = Array.from({ length: centrumy.length }, () => []);
+  // Wyrównaj długość rosteru do faktycznej liczby środków (może być < nTypy).
+  const rosterTrimmed = aktywneKlucze.slice(0, centrumy.length);
+  while (rosterTrimmed.length < centrumy.length) {
+    rosterTrimmed.push(`typ${rosterTrimmed.length}`);
+  }
 
-  for (const h of ladowe) {
-    let bestIdx = 0;
-    let bestDist = Infinity;
-    for (let ci = 0; ci < centrumy.length; ci++) {
-      const d = hexDistanceAxial(h.q, h.r, centrumy[ci]!.q, centrumy[ci]!.r);
-      if (d < bestDist) {
-        bestDist = d;
-        bestIdx = ci;
-      }
-    }
-    regiony[bestIdx]!.push(h);
+  const masses = groupHabitableMasses(ladowe);
+
+  // --- VORONOI: każdy lądowy hex → najbliższy środek ---
+  let activeCentrumy = centrumy.slice();
+  let activeKlucze = rosterTrimmed.slice();
+  let regiony = assignVoronoiRegions(ladowe, activeCentrumy);
+
+  // MAP-SPAWN-Q1 B: dominacja masy w regionie (relokacja / pominięcie typu).
+  const dominanceResult = enforceRegionMassDominance(
+    activeCentrumy,
+    regiony,
+    activeKlucze,
+    ladowe,
+    masses,
+    rand,
+    minDystKlastrow,
+  );
+  activeCentrumy = dominanceResult.centrumy;
+  activeKlucze = dominanceResult.aktywneKlucze;
+  regiony = dominanceResult.regiony;
+
+  if (activeCentrumy.length < nTypy && typeof console !== 'undefined') {
+    console.warn(
+      `[clusters] Po filtrze 70% masy: ${activeCentrumy.length}/${nTypy} aktywnych klastrów`,
+    );
   }
 
   // --- MIASTA: klaster gracza (min 4 hex), obce typy min 12 od stolicy, mp obcych min 4 w klastrze ---
   const klastry: TypeCluster[] = [];
   const stateCityCount = rywaleNaKlaster;
 
-  const playerCentrum = centrumy[0]!;
+  const playerCentrum = activeCentrumy[0]!;
   const playerRegion = regiony[0]!;
   const playerLayout = buildClusterCities(
     playerRegion,
@@ -747,15 +943,15 @@ export function computeClusters(
 
   klastry.push({
     typIndex: 0,
-    typ: aktywneKlucze[0] ?? playerKlucz,
+    typ: activeKlucze[0] ?? playerKlucz,
     centrum: playerCentrum,
     miasta: playerLayout.cities,
     pendingStateSlots: playerStateSlots,
     growthSlot: playerLayout.growthSlot,
   });
 
-  for (let ci = 1; ci < centrumy.length; ci++) {
-    const centrum = centrumy[ci]!;
+  for (let ci = 1; ci < activeCentrumy.length; ci++) {
+    const centrum = activeCentrumy[ci]!;
     const region = regiony[ci]!;
     const foreignLayout = buildClusterCities(
       region,
@@ -769,7 +965,7 @@ export function computeClusters(
 
     klastry.push({
       typIndex: ci,
-      typ: aktywneKlucze[ci] ?? `typ${ci}`,
+      typ: activeKlucze[ci] ?? `typ${ci}`,
       centrum,
       miasta: foreignLayout.cities,
       growthSlot: foreignLayout.growthSlot,

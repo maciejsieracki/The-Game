@@ -88,6 +88,7 @@ import { pruneOrphanRiverPaths, pruneRiversNotReachingRealSea, flattenFalseCoast
 import { placeVillages, targetVillageHutCount, expectedStartCityCount } from './villages';
 import {
   resolveWorldGenNumbers,
+  resolveRiverMapParams,
   resolveLandFraction,
   defaultCivTypesFromMapLabel,
   defaultMiastaPanstwaFromMapLabel,
@@ -392,13 +393,15 @@ export function generateMap(
   enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   // ── Przebieg 3h: rzeki DOPIERO po finalnym wybrzeżu (Maciej: bufor 2 hex od morza) ─
   const riversTier = genOpts?.worldDensity?.rivers ?? 'medium';
+  const riverParams = resolveRiverMapParams(riversTier, width, height);
   clearRiverMarks(hexes);
   let { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
-    minLen: wgn.riverTrace.minLen,
-    maxLen: wgn.riverTrace.maxLen,
+    minLen: riverParams.minLen,
+    maxLen: riverParams.maxLen,
     margin: wgn.riverTrace.margin,
     riversTier,
     worldTyp: typ,
+    riverParams,
   });
   topUpRiverGridCoverage(
     hexes,
@@ -408,8 +411,9 @@ export function generateMap(
     riverPathKinds,
     rand,
     riversTier,
-    wgn.riverTrace.minLen,
-    wgn.riverTrace.maxLen,
+    riverParams.minLen,
+    riverParams.maxLen,
+    riverParams,
   );
   stripRiverMarksFromOpenSea(hexes);
   // B0.7/B0.8: „zero sierot" — usun sciezki niepolaczone z morzem (finalny stan, jak widzi test).

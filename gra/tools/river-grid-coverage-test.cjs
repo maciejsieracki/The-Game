@@ -11,6 +11,7 @@ const BUNDLE = path.resolve(__dirname, '.river-grid-bundle.cjs');
 fs.writeFileSync(
   ENTRY,
   `export { generateMap } from '../src/map/generator';
+export { resolveRiverMapParams } from '../src/map/newGameMapDefaults';
 export {
   groupLandMassKeys,
   assertRiverGridCoverage,
@@ -56,7 +57,8 @@ for (const { w, h, typ, seed, label } of cases) {
     mapSizeMenuLabel: w >= 300 ? 'Ogromny' : 'Standardowy',
     worldDensity: { rivers: 'medium', forest: 'medium', desert: 'medium', relief: 'medium' },
   });
-  const cellSize = M.riverCoverageCellSize('medium');
+  const params = M.resolveRiverMapParams('medium', w, h);
+  const cellSize = params.tributaryCell;
   const seaDist = M.buildSeaDistanceField(map.hexes);
   const masses = M.groupLandMassKeys(map.hexes).filter((m) => m.length >= 8);
   const kinds = map.riverPathKinds;
@@ -70,7 +72,10 @@ for (const { w, h, typ, seed, label } of cases) {
   for (const mass of masses) {
     if (mass.length < 150) continue;
     total++;
-    const ratio = M.riverGridCoverageRatio(mass, map.riverPaths, cellSize, seaDist, 80, kinds, 25);
+    const ratio = M.riverGridCoverageRatio(
+      mass, map.riverPaths, cellSize, seaDist, params.maxLen, kinds,
+      params.minLen, map.hexes, params.minInlandCell,
+    );
     if (ratio >= 0.75) okMasses++;
     else console.log(`  ${label} mass ${mass.length} hex: pokrycie ${(ratio * 100).toFixed(0)}%`);
   }
@@ -78,7 +83,7 @@ for (const { w, h, typ, seed, label } of cases) {
 
   let short = 0;
   let mainCount = 0;
-  const minMainLen = 12;
+  const minMainLen = 3; // RIVER_MIN_MAIN_LEN — po trimRiverPathRings może być < gridTraceMinLen
   for (let i = 0; i < map.riverPaths.length; i++) {
     if (kinds[i] !== 'main') continue;
     mainCount++;

@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`846db7fc`** (FALA 61, 14:10) — kreator: ustawienie **Bitwy** (Automatyczne/Ręczna) + modal zaawansowany (layout, Zamknij widoczny). Poprzedni: FALA 60 `b68ed206`. **Nie wdrożone:** handel AI · przyciski Połącz/Rozdziel/Lista na karcie armii. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`934ac394`** (FALA 67, 17:42) — deploy all: rzeki W2 + MAP-SPAWN C+B + typy cywilizacji (4/5/6/10/12/15) + filtr epoki startu. Poprzedni: FALA 66 `20b25cc0` (częściowy). Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 
@@ -412,6 +412,7 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 - **Glina/ruda→brąz** — dziś zbierana tylko glina (`GLINA-Q2=A`). Ruda→brąz to osobna decyzja (przebudowa brązu z civ-wide boolean na ilościowy vs zostawienie).
 
 **Mapa / teren:**
+- **[ODŁOŻONE — Maciej 2026-07-28] Grafika złoża złota na mapie:** generator ustawia `hex.zloze='zloto'` (Wzgórza/Góry), ale brak nakładki 3D na heksie (`buildStyledResourceOverlay` bez case `zloto`, brak `buildZlozeZlota()`). Widoczne dziś: model `kopalnia_zlota` po zbudowaniu kopalni + ikona UI `res-gold.svg`. **Świadomie odłożone** — Maciej: „na razie tak musi zostać"; nie implementować bez sygnału.
 - Weryfikacja wzrokowa: pasma, wybrzeże=woda, bug rzeka↔mgła (patrz §7).
 - ~~Gęstość osadnictwa (więcej miast/państw)~~ — **ZROBIONE** (sesja 2, podwojenie państw/miast). Chunki mapy dla słabszych maszyn — odłożone.
 - **Follow-upy strategiczne (po playteście):** dostrojenie liczb (progi AI, skale sojuszu, RESUP, start-zaufanie — §3a-2); ewentualnie: więcej nacji (żeby cywilizacje ×2 działało pełni powyżej 15 na Ogromny/Super); wyrąb lasu (`wyrab`) dla AI (dziś pominięty).

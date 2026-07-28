@@ -30,6 +30,10 @@ import {
 } from '../data/e-start-params-loader';
 import { normPlMenuLabel } from '../util/norm-pl-label';
 import { menuLabelToDims, rozmiarFromMenuLabel, type RozmiarSwiata } from './generator';
+import {
+  civIdsAvailableAtGameEpoch,
+  type CivEntryEpochRow,
+} from '../game/civ-entry-epoch';
 
 export type MapSizeLabel = 'mala' | 'srednia' | 'duza' | 'ogromna' | 'super';
 
@@ -303,15 +307,99 @@ export function riverGridTraceMinLen(catalogMinLen: number, tier: DensityTier = 
   return Math.min(catalogMinLen, cap);
 }
 
+/** Referencyjna mapa Standard 168×120 — skala rzek (Maciej 2026-07-28). */
+export const RIVER_REF_AREA = 168 * 120;
+
+export function riverMapAreaScale(w: number, h: number): number {
+  return Math.sqrt((w * h) / RIVER_REF_AREA);
+}
+
+export interface RiverMapParams {
+  areaScale: number;
+  minDim: number;
+  mainCell: number;
+  tributaryCell: number;
+  mainGridStride: number;
+  minLen: number;
+  maxLen: number;
+  gridTraceMinLen: number;
+  feederMinLen: number;
+  hardMeanderLen: number;
+  mouthTailLen: number;
+  minInlandFromSea: number;
+  reliefSearchMin: number;
+  reliefSearchMax: number;
+  reliefSourceBonus: number;
+  feederPasses: number;
+  topUpPasses: number;
+  feederSourceSepMult: number;
+  expandSourceRadius: number;
+  minInlandCell: number;
+}
+
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+/** Parametry rzek skalowane z rozmiarem mapy (w×h) i tierem „Rzeki”. */
+export function resolveRiverMapParams(tier: DensityTier, w: number, h: number): RiverMapParams {
+  const areaScale = riverMapAreaScale(w, h);
+  const minDim = Math.min(w, h);
+  const mainBase = tier === 'high' ? 4 : tier === 'low' ? 11 : 7;
+  const tribBase = tier === 'high' ? 2 : tier === 'low' ? 6 : 4;
+  const tierMinLen = riverMinPathLengthForTier(tier);
+  const tierCap = tier === 'low' ? 5 : tier === 'high' ? 8 : 6;
+
+  const mainCell = clamp(Math.round(mainBase * areaScale), 4, 32);
+  const tributaryCell = clamp(Math.round(tribBase * areaScale), 2, 18);
+  const mainGridStride = areaScale < 0.55 ? 2 : 3;
+
+  const minLen = Math.min(
+    clamp(Math.round(tierMinLen * areaScale), 6, tierMinLen),
+    Math.floor(minDim * 0.35),
+  );
+  const maxLen = Math.min(
+    Math.max(minLen * 2, Math.floor(minDim * 0.22), Math.round(minLen * 3)),
+    Math.floor(minDim * 0.75),
+  );
+  const gridTraceMinLen = clamp(
+    Math.min(minLen, tierCap),
+    3,
+    Math.max(3, Math.floor(minDim * 0.12)),
+  );
+  const feederMinLen = clamp(Math.max(3, gridTraceMinLen - 1), 3, Math.max(3, Math.floor(minDim * 0.08)));
+  const hardMeanderLen = clamp(Math.round(8 * areaScale), 3, 8);
+  const mouthTailLen = clamp(Math.round(5 * areaScale), 3, 5);
+  const minInlandFromSea = minDim >= 40 ? 2 : 1;
+  const reliefSearchMax = clamp(Math.round(14 * areaScale), 6, 28);
+  const feederPasses = clamp(3 + Math.floor(areaScale), 3, 8);
+  const topUpPasses = clamp(4 + Math.floor(areaScale * 1.5), 4, 12);
+  const minInlandCell = Math.max(4, Math.floor(minLen * 0.35));
+
+  return {
+    areaScale, minDim, mainCell, tributaryCell, mainGridStride,
+    minLen, maxLen, gridTraceMinLen, feederMinLen,
+    hardMeanderLen, mouthTailLen, minInlandFromSea,
+    reliefSearchMin: 2,
+    reliefSearchMax,
+    reliefSourceBonus: 80,
+    feederPasses, topUpPasses,
+    feederSourceSepMult: 0.35,
+    expandSourceRadius: clamp(Math.round(2 * areaScale), 1, 5),
+    minInlandCell,
+  };
+}
+
 export function resolveRiverTraceForMap(
   mapMenuLabel: string,
   riversTier: DensityTier,
 ): { minLen: number; maxLen: number; margin: number } {
+  const { w, h } = menuLabelToDims(mapMenuLabel);
+  const params = resolveRiverMapParams(riversTier, w, h);
   const base = riverTraceLimitsForMap(mapMenuLabel);
-  const minLen = riverMinPathLengthForTier(riversTier);
   return {
-    minLen,
-    maxLen: Math.max(base.maxLen, minLen * 3, minLen + 40),
+    minLen: params.minLen,
+    maxLen: params.maxLen,
     margin: base.margin,
   };
 }
@@ -440,6 +528,31 @@ export function clampMiastaPanstwaCount(raw: number): number {
 /** Twardy sufit typów cywilizacji w menu (roster silnika: 15 nacji). */
 export const MAX_TYPY_CYWILIZACJI_MENU = 15;
 
+/** Liczba nacji dostępnych przy starcie w danej epoce (kaskada D-CYW-EPOKA-WEJSCIA). */
+export function maxCivTypesForStartEpoch(
+  epochId: string,
+  civRoster: readonly CivEntryEpochRow[],
+): number {
+  return civIdsAvailableAtGameEpoch(civRoster, epochId).length;
+}
+
+function clampTypyTripleToEpoch(
+  triple: MapScaleTriple,
+  epochId: string | undefined,
+  civRoster: readonly CivEntryEpochRow[] | undefined,
+): MapScaleTriple {
+  if (!epochId || !civRoster || civRoster.length === 0) return triple;
+  const epochMax = maxCivTypesForStartEpoch(epochId, civRoster);
+  if (epochMax <= 0) return triple;
+  const max = Math.min(triple.max, epochMax);
+  let def = Math.min(triple.default, max);
+  let min = Math.min(triple.min, max);
+  if (min > max) min = Math.max(1, max - 1);
+  if (def < min) def = max;
+  if (def > max) def = max;
+  return { min, default: def, max };
+}
+
 /** Menu „Miasta-państwa" — drabinka Maciej: max 9 (Super Huge), mniejsze mapy proporcjonalnie mniej. */
 const MAP_MENU_TIER_ORDER: readonly RozmiarSwiata[] = [
   'malenki', 'maly', 'standardowy', 'duzy', 'ogromny', 'superogromny',
@@ -462,19 +575,16 @@ const MIASTA_PANSTWA_MENU_BY_TIER: readonly MapScaleTriple[] = [
 ];
 
 /**
- * min · domyślne · max — typy cywilizacji (gracz + obce); osobna skala, boost Ogromny/Super.
- * ×2 balans 2026-07-20 — Ogromny/Super Huge przycięte do sufitu rosteru (15 nacji),
- * default==max=15 dla tych dwóch tierów jest zamierzone (twardy sufit, nie miejsce na „+2").
+ * min · domyślne · max — typy cywilizacji (gracz + obce).
+ * Maciej 2026-07-28: średnia z Panel-E; min = default−1, max = default+1 (clamp 1..15).
  */
 const TYPY_CYWILIZACJI_MENU_BY_TIER: readonly MapScaleTriple[] = [
-  // Maleński: 7 (nie 8) — na najmniejszej mapie 8 klastrów czasem się nie mieści
-  // (pofragmentowany ląd → 1 państwo z 0 miast). Decyzja właściciela 2026-07-20.
-  { min: 6, default: 7, max: 10 },
-  { min: 8, default: 10, max: 12 },
-  { min: 10, default: 12, max: 14 },
-  { min: 12, default: 14, max: MAX_TYPY_CYWILIZACJI_MENU },
-  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
-  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 3, default: 4, max: 5 },
+  { min: 4, default: 5, max: 6 },
+  { min: 5, default: 6, max: 7 },
+  { min: 9, default: 10, max: 11 },
+  { min: 11, default: 12, max: 13 },
+  { min: 14, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
 ];
 
 function mapMenuTierIndex(menuLabel: string): number {
@@ -528,14 +638,31 @@ export interface CivTypesMenuBundle {
 }
 
 /** Domyślna liczba typów cywilizacji (Panel-E → fallback drabinka tier). */
-export function defaultCivTypesFromMapLabel(menuLabel: string): number {
+export function defaultCivTypesFromMapLabel(
+  menuLabel: string,
+  epochId?: string,
+  civRoster?: readonly CivEntryEpochRow[],
+): number {
   const fromE = eStartTypyCywilizacji(menuLabel);
-  if (fromE != null && fromE > 0) return Math.min(fromE, MAX_TYPY_CYWILIZACJI_MENU);
-  return typyCywilizacjiTriple(menuLabel).default;
+  let def = fromE != null && fromE > 0
+    ? Math.min(fromE, MAX_TYPY_CYWILIZACJI_MENU)
+    : typyCywilizacjiTriple(menuLabel).default;
+  if (epochId && civRoster && civRoster.length > 0) {
+    def = Math.min(def, maxCivTypesForStartEpoch(epochId, civRoster));
+  }
+  return Math.max(1, def);
 }
 
-export function civTypesMenuForMapLabel(menuLabel: string): CivTypesMenuBundle {
-  const triple = typyCywilizacjiTriple(menuLabel);
+export function civTypesMenuForMapLabel(
+  menuLabel: string,
+  epochId?: string,
+  civRoster?: readonly CivEntryEpochRow[],
+): CivTypesMenuBundle {
+  const triple = clampTypyTripleToEpoch(
+    typyCywilizacjiTriple(menuLabel),
+    epochId,
+    civRoster,
+  );
   return menuBundleFromTriple(
     triple,
     'Zalecane dla tej mapy (obce klastry ≥5 hex od stolicy)',

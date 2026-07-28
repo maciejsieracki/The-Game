@@ -51,6 +51,8 @@ export interface BuildClusterStartInput {
   playerCivId: string;
   rywaleNaKlaster: number;
   aktywneTypy?: number;
+  /** Epoka startu — filtr puli typów na mapie (kamien | braz | zelazo). */
+  startEpochId?: string;
   cityNamesPools?: CityNamesPoolsData;
 }
 
@@ -63,6 +65,7 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     playerTyp: input.playerCivId,
     rywaleNaKlaster: input.rywaleNaKlaster,
     aktywneTypy: input.aktywneTypy,
+    startEpochId: input.startEpochId,
     cityNamesPools: input.cityNamesPools,
   });
 

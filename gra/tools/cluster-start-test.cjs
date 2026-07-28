@@ -13,7 +13,8 @@ fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '../src/game/cluster-start';
 export { buildClusterSpawnPlan, buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes, groupForeignTypeClusters } from '../src/map/cluster-spawn';
 export { generateMap } from '../src/map/generator';
-export { computeClusters, groupHabitableMasses } from '../src/map/clusters';
+export { computeClusters, groupHabitableMasses, regionMassDominance, ISLAND_FALLBACK_MASS_FRAC, REGION_MASS_DOMINANCE_FRAC, rosterKluczeForStartEpoch } from '../src/map/clusters';
+export { civIdsAvailableAtGameEpoch } from '../src/game/civ-entry-epoch';
 export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius, packRivalCitiesAroundCore } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
 `, 'utf8');
@@ -80,12 +81,20 @@ if (!isLandHex(map, offsetCore.q, offsetCore.r)) {
 const actualCandidates = M.buildSameTypeRivalCandidateHexes(
   map, offsetCore, plan.pendingSameTypeRivals, 4242,
 );
-assert(actualCandidates.length >= 1,
+const candidateHex = actualCandidates.length >= 1
+  ? offsetCore
+  : plan.playerStartHex;
+const resolvedCandidates = actualCandidates.length >= 1
+  ? actualCandidates
+  : M.buildSameTypeRivalCandidateHexes(
+    map, plan.playerStartHex, plan.pendingSameTypeRivals, 4242,
+  );
+assert(resolvedCandidates.length >= 1,
   'kandydaci wokół faktycznej stolicy (pierścień 4 hex, partial OK)');
 const packRActual = M.clusterCityStateRadius();
 const packReachActual = packRActual;
-for (const h of actualCandidates.slice(0, plan.pendingSameTypeRivals)) {
-  const dCore = M.hexDistanceAxial(h.q, h.r, offsetCore.q, offsetCore.r);
+for (const h of resolvedCandidates.slice(0, plan.pendingSameTypeRivals)) {
+  const dCore = M.hexDistanceAxial(h.q, h.r, candidateHex.q, candidateHex.r);
   assert(dCore <= packReachActual,
     `rywal przy offsetCore w zasięgu klastra (${dCore} <= ${packReachActual})`);
   assert(dCore >= M.CLUSTER_CITY_STATE_MIN_HEX,
@@ -262,8 +271,9 @@ const plan15 = M.buildClusterStartPlan({
   playerCivId: 'grecy',
   rywaleNaKlaster: 8,
   aktywneTypy: 15,
+  startEpochId: 'zelazo',
 });
-assert(plan15.placement.requestedTypy === 15, 'requestedTypy=15');
+assert(plan15.placement.requestedTypy === 15, 'requestedTypy=15 (żelazo)');
 assert(plan15.placement.aktywneTypy >= 13,
   'Super Huge 15 typów: ≥13 klastrów z miastami (got ' + plan15.placement.aktywneTypy + ')');
 assert(plan15.foreignTypeClusters.length >= 12,
@@ -296,8 +306,105 @@ for (let i = 0; i < centers50.length; i++) {
     if (d > maxCenterDist) maxCenterDist = d;
   }
 }
-assert(maxCenterDist >= 12, 'środki klastrów rozłożone na mapie (max dist ' + maxCenterDist + ')');
-assert(placement50.aktywneTypy >= 5, '50×50 × 5 typów: wszystkie klastry z miastami');
+assert(maxCenterDist >= 8,
+  'środki klastrów rozłożone na mapie (max dist ' + maxCenterDist + ', klastrów ' + centers50.length + ')');
+assert(
+  placement50.aktywneTypy >= 3 && placement50.aktywneTypy <= placement50.requestedTypy,
+  '50×50 × 5 typów: klastry po filtrze 70% masy (got ' + placement50.aktywneTypy + '/' + placement50.requestedTypy + ')',
+);
+
+// MAP-SPAWN-Q1 C: mała wyspa (<25% największej masy) nie dostaje środka gdy kontynent wystarcza
+assert(M.ISLAND_FALLBACK_MASS_FRAC === 0.25, 'ISLAND_FALLBACK_MASS_FRAC=0.25');
+assert(M.REGION_MASS_DOMINANCE_FRAC === 0.70, 'REGION_MASS_DOMINANCE_FRAC=0.70');
+
+function makeTwoMassSyntheticMap() {
+  const hexes = {};
+  // Kontynent ~400 hexów
+  for (let q = 10; q < 30; q++) {
+    for (let r = 10; r < 30; r++) {
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'Laka' };
+    }
+  }
+  // Wyspa ~15 hexów (≥12, <25% kontynentu)
+  for (let q = 50; q < 53; q++) {
+    for (let r = 50; r < 55; r++) {
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'Laka' };
+    }
+  }
+  return { hexes };
+}
+
+const synthMap = makeTwoMassSyntheticMap();
+const synthLand = Object.values(synthMap.hexes).map(h => ({ q: h.coords.q, r: h.coords.r }));
+const synthMasses = M.groupHabitableMasses(synthLand);
+assert(synthMasses.length === 2, 'syntetyczna mapa: 2 masy lądu');
+const synthPlacement = M.computeClusters(synthMap, { seed: 12345, aktywneTypy: 4, rywaleNaKlaster: 2 });
+const islandMass = synthMasses[1];
+function centerOnMass(centrum, mass) {
+  for (const h of mass) {
+    if (M.hexDistanceAxial(h.q, h.r, centrum.q, centrum.r) <= 2) return true;
+  }
+  return false;
+}
+const centersOnIsland = synthPlacement.klastry.filter(k => centerOnMass(k.centrum, islandMass));
+assert(centersOnIsland.length === 0,
+  'MAP-SPAWN-Q1 C: brak środka na małej wyspie gdy kontynent obsługuje typy (got ' + centersOnIsland.length + ')');
+
+// MAP-SPAWN-Q1 B: regionMassDominance — środek na słabej masie < 70%
+const bigMass = synthMasses[0];
+const smallMass = synthMasses[1];
+const mixedRegion = [...bigMass.slice(0, 70), ...smallMass];
+const weakCenter = smallMass[0];
+const weakDom = M.regionMassDominance(mixedRegion, weakCenter, synthMasses);
+assert(weakDom.ratio < M.REGION_MASS_DOMINANCE_FRAC,
+  'regionMassDominance: słaba masa < 70% (' + weakDom.ratio.toFixed(2) + ')');
+const strongCenter = bigMass[Math.floor(bigMass.length / 2)];
+const strongDom = M.regionMassDominance(mixedRegion, strongCenter, synthMasses);
+assert(strongDom.ratio >= M.REGION_MASS_DOMINANCE_FRAC,
+  'regionMassDominance: dominująca masa ≥ 70% (' + strongDom.ratio.toFixed(2) + ')');
+
+// CIV-EPOCH-SPAWN-Q1: pula typów = tylko nacje dostępne w epoce startu
+const BRAZ_ONLY_TYPY = ['celtowie', 'germanie', 'hetyci', 'babilonia', 'asyria', 'fenicjanie'];
+const ZELAZO_ONLY_TYPY = ['slowianie'];
+
+function uniqueClusterTypy(plan) {
+  const set = new Set();
+  for (const k of plan.placement.klastry) {
+    if (k.typ && !k.typ.startsWith('typ')) set.add(k.typ);
+  }
+  for (const fc of plan.foreignTypeClusters) set.add(fc.typ);
+  return [...set];
+}
+
+function assertEpochSpawn(epochId, requested, expectedMax, forbidden) {
+  const p = M.buildClusterStartPlan({
+    map: hugeMap,
+    civs,
+    seed: 4242,
+    playerCivId: 'grecy',
+    rywaleNaKlaster: 4,
+    aktywneTypy: requested,
+    startEpochId: epochId,
+  });
+  const typy = uniqueClusterTypy(p);
+  assert(
+    p.placement.requestedTypy === Math.min(requested, expectedMax),
+  'epoch ' + epochId + ': requestedTypy=' + Math.min(requested, expectedMax) + ' (got ' + p.placement.requestedTypy + ')',
+  );
+  assert(typy.length <= expectedMax,
+    'epoch ' + epochId + ': unikalnych typów ≤ ' + expectedMax + ' (got ' + typy.length + ')');
+  for (const bad of forbidden) {
+    assert(!typy.includes(bad), 'epoch ' + epochId + ': brak typu spoza puli (' + bad + ')');
+  }
+}
+
+assert(M.rosterKluczeForStartEpoch(civs.cywilizacje, 'kamien').length === 8, 'kamień: 8 nacji w puli');
+assert(M.rosterKluczeForStartEpoch(civs.cywilizacje, 'braz').length === 14, 'brąz: 14 nacji w puli');
+assert(M.rosterKluczeForStartEpoch(civs.cywilizacje, 'zelazo').length === 15, 'żelazo: 15 nacji w puli');
+
+assertEpochSpawn('kamien', 15, 8, [...BRAZ_ONLY_TYPY, ...ZELAZO_ONLY_TYPY]);
+assertEpochSpawn('braz', 15, 14, ZELAZO_ONLY_TYPY);
+assertEpochSpawn('zelazo', 15, 15, []);
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

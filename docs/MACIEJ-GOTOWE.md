@@ -1,5 +1,62 @@
 ﻿
-## [16:16] Gotowe - FALA 65 Handel UX + HUD + tooltips miasto (deploy ROBOCZA)
+## [18:01] ✅ Gotowe — FALA 68 deploy all (re-build źródeł roboczych)
+
+| Paczka | Status | Efekt w grze |
+|--------|--------|----------------|
+| **Rzeki W2** | PASS | Skala mapy: główne/dopływy z `resolveRiverMapParams`; feedery na siatce `tributaryCell` |
+| **MAP-SPAWN C+B** | PASS | Kontynenty pierwsze; wyspa ≥25% największej masy; Voronoi ≥70% dominacji masy |
+| **Civ counts** | PASS | Malenki 4 · Mały 5 · Standardowy 6 · Duży 10 · Ogromny 12 · Super Huge 15 (menu ±1) |
+| **Filtr epoki** | PASS | Kreator + spawn: tylko nacje z epoki startu (kamień≤8 · brąz≤14 · żelazo≤15) |
+
+| Deploy | Wartość |
+|--------|---------|
+| **FALA** | 68 (nadpisuje FALA 67 — nowy md5 ze świeżego buildu) |
+| **md5** | `9b8f3539c5c82fe5da5ce17f5fe8b4de` (skrót `9b8f3539`) |
+| **Wejście** | `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+| **Bramki** | tsc 0 · cluster-start 123/0 · river-map-scale 11/0 · VERIFY OK |
+
+## [17:42] ✅ Gotowe — FALA 67 deploy all (rzeki + spawn + civ + filtr epoki)
+
+| Paczka | Status | Efekt w grze |
+|--------|--------|----------------|
+| **Rzeki W2** | PASS | Skala mapy: główne/dopływy z `resolveRiverMapParams`; feedery na siatce `tributaryCell` |
+| **MAP-SPAWN C+B** | PASS | Kontynenty pierwsze; wyspa ≥25% największej masy; Voronoi ≥70% dominacji masy |
+| **Civ counts** | PASS | Malenki 4 · Mały 5 · Standardowy 6 · Duży 10 · Ogromny 12 · Super Huge 15 (menu ±1) |
+| **Filtr epoki** | PASS | Kreator + spawn: tylko nacje z epoki startu (kamień≤8 · brąz≤14 · żelazo≤15) |
+
+| Deploy | Wartość |
+|--------|---------|
+| **FALA** | 67 (nadpisuje FALA 66) |
+| **md5** | `934ac394eb47fd83746275bc3eb18257` (skrót `934ac394`) |
+| **Wejście** | `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+| **Bramki** | tsc 0 · cluster-start 123/0 · river-map-scale 11/0 · VERIFY OK |
+
+## [17:34] ✅ Gotowe — rzeki skala mapy W2 (kod, bez deployu)
+
+| Co | Efekt |
+|----|--------|
+| **Główne ~2× / dopływy ~3×** | na Standardzie (medium) |
+| **Skala z rozmiarem mapy** | Maleński krótsze rzeki, Super gęstsze siatki |
+| **Testy** | river-map-scale 11/11, regresja mapy OK, tsc OK |
+| **Deploy** | czeka (razem z liczbą cywilizacji + filtr epoki) |
+
+## [17:35] ✅ Gotowe — FALA 66 typy cywilizacji per mapa (deploy ROBOCZA)
+
+| Co | Efekt w grze |
+|----|----------------|
+| **Typy cywilizacji** | nowe defaulty per rozmiar mapy (Malenki 4 … Super Huge 15) |
+| **Menu kreatora** | min/default/max = średnia ±1 (sufit rosteru 15) |
+| **Deploy** | ROBOCZA `20b25cc0` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+
+
+| Co | Efekt |
+|----|--------|
+| **Kontynenty pierwsze** | środki klastrów na największych masach; wyspa tylko ≥25% największej masy |
+| **Próg 70%** | region Voronoi musi mieć ≥70% lądu na jednej masie — inaczej przesunięcie lub pominięcie typu |
+| **Testy** | `cluster-start-test` 106/106 · `tsc` OK |
+| **Deploy** | jeszcze nie — czeka na rzeki (skala mapy) albo osobne „deploy” |
+
+## [16:16] ✅ Gotowe — FALA 65 Handel UX + HUD + tooltips miasto (deploy ROBOCZA)
 
 | Co | Efekt w grze |
 |----|----------------|
@@ -7,7 +64,7 @@
 | **HUD prawy** | layout paska bocznego (sidePanelHud) |
 | **Miasto** | tooltips wzrost i zamoznosc |
 | **Nauka** | sciencePicker 2x wiekszy |
-| **Deploy** | ROBOCZA `4906486f` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
+| **Deploy** | ROBOCZA `8092d730` · `gra-robocza/START.html` · Ctrl+F5 + Nowa gra |
 ## [15:03] ✅ Gotowe — FALA 64 armia + Rozdziel + Spacja (deploy ROBOCZA)
 
 | Co | Efekt w grze |

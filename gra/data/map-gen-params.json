@@ -68,12 +68,12 @@
     }
   },
   "mapa_skala": {
-    "_opis": "Trzeciorzędny fallback (używany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). ×2 balans 2026-07-20, aktywne_typy przycięte do sufitu rosteru 15 nacji (ogromna/super).",
+    "_opis": "Trzeciorzędny fallback (używany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). Sync z Panel-E 2026-07-28 (typy_cywilizacji per rozmiar mapy).",
     "aktywne_typy": {
-      "mala": 8,
-      "srednia": 10,
-      "duza": 12,
-      "ogromna": 15,
+      "mala": 4,
+      "srednia": 5,
+      "duza": 6,
+      "ogromna": 12,
       "super": 15
     },
     "domyslni_rywale": {
