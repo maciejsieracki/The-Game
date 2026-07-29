@@ -4,6 +4,7 @@
  */
 import type { Relation } from './diplomacy';
 import type { GameDifficulty } from './difficulty-cost';
+import { trimQuickDealGiveToTolerance } from './diplomacy-ai-offer-balance';
 import type { TempoGry } from './tech-tempo';
 import type { CredibilityEvent } from './diplomacy-credibility';
 import {
@@ -305,6 +306,8 @@ export interface QuickDealInput {
   ourQuantityResourceOptions?: readonly QuickDealQuantityGoodOption[];
   /** Surowce ILOŚCIOWE partnera (pakiety) — do quick-deal zamiast wycofanego dostępu boolean. */
   theirQuantityResourceOptions?: readonly QuickDealQuantityGoodOption[];
+  /** Poziom trudności — Normal/Trudny: trim nadwyżki PW (D-DYPLO-AI-OFERTA-ZERO). */
+  difficulty?: GameDifficulty;
 }
 
 export interface QuickDealResult {
@@ -385,5 +388,12 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
     if (goldQty > 0) giveItems.push({ typ: 'zloto', id: 'zloto', ilosc: goldQty });
   }
 
-  return { giveItems, receiveItems };
+  const trimmedGive = trimQuickDealGiveToTolerance(
+    giveItems,
+    receivePn,
+    input.relacjaTotal,
+    input.difficulty ?? 'normal',
+  );
+
+  return { giveItems: trimmedGive, receiveItems };
 }

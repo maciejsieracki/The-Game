@@ -191,14 +191,71 @@ export function improvementKeysForHex(
   return single ? [single] : [];
 }
 
-/** Droga nie przykrywa markera złoża/plonów w rogu heksa — reszta ulepszeń tak. */
+/** Droga nie przykrywa markera złoża/plonów w rogu heksa. */
 export const ROAD_IMPROVEMENT_KEYS = new Set(['droga', 'droga_brukowana']);
 
-/** Heks z ulepszeniem produkcyjnym (farma, tartak, kopalnia…) — ukryj ikony zasobów/plonów. */
+/**
+ * Heks z dowolnym ulepszeniem terenu (poza drogą) — używane np. do etykiet plonów w okolicy miasta.
+ * NIE służy do ukrywania ikon złóż na mapie (patrz `hexSuppressesDepositOverlay`).
+ */
 export function hexHasCoveringTerrainImprovement(
   hex: Parameters<typeof improvementKeysForHex>[0],
 ): boolean {
   return improvementKeysForHex(hex).some(k => !ROAD_IMPROVEMENT_KEYS.has(k));
+}
+
+/** Czy postawione ulepszenie eksploatuje złoże/nakładkę na tym heksie (spójne z improvement-build). */
+export function improvementHidesDepositOnHex(
+  improvementKey: string,
+  hex: { nakladka?: Nakladka; zloze?: string },
+): boolean {
+  const key = normalizeImprovementKey(improvementKey);
+  if (!key) return false;
+  const nakladka = hex.nakladka;
+  const zloze = hex.zloze?.trim().toLowerCase();
+  switch (key) {
+    case 'glinianka':
+      return nakladka === Nakladka.ZlozeGliny || zloze === 'glina';
+    case 'kopalnia':
+      return nakladka === Nakladka.ZlozeRudy
+        || zloze === 'zelazo' || zloze === 'wegiel' || zloze === 'ruda';
+    case 'kopalnia_miedzi':
+      return zloze === 'miedz';
+    case 'kopalnia_zlota':
+      return zloze === 'zloto';
+    case 'warzelnia_soli':
+      return zloze === 'sol';
+    case 'stadnina':
+      return nakladka === Nakladka.ZlozeKonia;
+    case 'bydlo':
+      return nakladka === Nakladka.ZlozeBydla;
+    case 'owce':
+      return nakladka === Nakladka.ZlozeOwiec;
+    case 'lama':
+      return nakladka === Nakladka.ZlozeLamy;
+    default:
+      return false;
+  }
+}
+
+/**
+ * Ukryj ikonę złoża w rogu heksa tylko gdy na heksie stoi ulepszenie DEDYKOWANE temu złożu
+ * (Glinianka→glina, Kopalnia→ruda itd.). Farma / irygacja / droga / fort / tartak itp.
+ * NIE chowają overlay (BUG-FARMA-GLINA-ZNIKA, Maciej 2026-07-29).
+ */
+export function hexSuppressesDepositOverlay(
+  hex: Parameters<typeof improvementKeysForHex>[0] & { zloze?: string },
+  extraLayers?: readonly string[],
+): boolean {
+  const keys = [...improvementKeysForHex(hex)];
+  if (extraLayers?.length) {
+    for (const raw of extraLayers) {
+      const n = normalizeImprovementKey(String(raw));
+      if (n && !keys.includes(n)) keys.push(n);
+    }
+  }
+  if (keys.length === 0) return false;
+  return keys.some(k => improvementHidesDepositOnHex(k, hex));
 }
 
 export function improvementDisplayName(key: string): string {

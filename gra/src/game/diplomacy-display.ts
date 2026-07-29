@@ -636,7 +636,7 @@ export function formatNegotiationDealSummary(
     return lines.join(' · ');
   }
   if (payload.isGift && (payload.givePn ?? 0) > 0) {
-    return `Dar: ${payload.givePn} PN`;
+    return `Dar: ${payload.givePn} PW`;
   }
   if (payload.goldOnce) return `Jednorazowo: ${payload.goldOnce} ¤`;
   if (payload.goldPerTurn) return `Co turę: ${payload.goldPerTurn} ¤`;

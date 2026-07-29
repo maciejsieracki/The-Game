@@ -81,6 +81,12 @@ export interface MinimapWorkerOverlayHooks {
   isWorkersActive?: () => boolean;
 }
 
+/** Toggle ikon złóż / nakładek surowcowych (resourceOverlays w main.ts). */
+export interface MinimapResourceDepositOverlayHooks {
+  onToggleDeposits?: () => void;
+  isDepositsActive?: () => boolean;
+}
+
 export interface MinimapHudConfig {
   /** Pobierz dane mapy; null = placeholder. */
   getMinimapData: () => MinimapData | null;
@@ -92,6 +98,8 @@ export interface MinimapHudConfig {
   playtestFog?: MinimapPlaytestFogHooks;
   /** Toggle ikon 👤 — pola z robotnikami na mapie świata. */
   workerOverlay?: MinimapWorkerOverlayHooks;
+  /** Toggle ikon złóż / surowców na mapie 3D (⛏). */
+  resourceDepositOverlay?: MinimapResourceDepositOverlayHooks;
   width?: number;
   height?: number;
 }
@@ -328,10 +336,12 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
   let searchBtn: HTMLButtonElement | null = null;
   let territoryBtn: HTMLButtonElement | null = null;
   let workerBtn: HTMLButtonElement | null = null;
+  let depositBtn: HTMLButtonElement | null = null;
 
   function ensureToolButtons(): void {
     const L = config.layers;
     const W = config.workerOverlay;
+    const D = config.resourceDepositOverlay;
     if (W?.onToggleWorkers && !workerBtn) {
       workerBtn = document.createElement('button');
       workerBtn.type = 'button';
@@ -341,6 +351,16 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
       workerBtn.style.fontSize = '18px';
       workerBtn.onclick = () => W.onToggleWorkers?.();
       tools.appendChild(workerBtn);
+    }
+    if (D?.onToggleDeposits && !depositBtn) {
+      depositBtn = document.createElement('button');
+      depositBtn.type = 'button';
+      depositBtn.className = 'mini-tool-btn';
+      depositBtn.title = 'Pokaż złoża i surowce na mapie';
+      depositBtn.textContent = '⛏';
+      depositBtn.style.fontSize = '18px';
+      depositBtn.onclick = () => D.onToggleDeposits?.();
+      tools.appendChild(depositBtn);
     }
     if (!mapBtn) {
       const mapSvg = brandIconSvg('chip-map', 24) || '';
@@ -386,6 +406,7 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
     if (searchBtn) searchBtn.classList.toggle('on', L?.isReligionActive?.() ?? false);
     if (territoryBtn) territoryBtn.classList.toggle('on', L?.isTerritoryActive?.() ?? false);
     if (workerBtn) workerBtn.classList.toggle('on', W?.isWorkersActive?.() ?? false);
+    if (depositBtn) depositBtn.classList.toggle('on', D?.isDepositsActive?.() ?? false);
   }
 
   let canvas: HTMLCanvasElement | null = null;

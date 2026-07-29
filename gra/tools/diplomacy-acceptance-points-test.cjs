@@ -19,6 +19,8 @@ export {
   isPlayerIncomingGift,
   playerSideHasBasketOffer,
   acceptancePointsCatalog,
+  bilateralTreatyDisplayPw,
+  sideDisplayOfferPw,
 } from './game/diplomacy-acceptance-points';
 export {
   diplomacyFairGivePn,
@@ -97,6 +99,7 @@ ok(sides.my.demandPn === 80, 'player demand 80 PN');
 ok(sides.my.fairMinPn === 80, 'fair min @ rel 100 = 80');
 ok(sides.my.balancePn === 20, 'balance +20 PN');
 ok(sides.my.accepted, 'fair trade accepted @ rel 100');
+ok(sides.my.statusLabel === 'Nadwyżka +20 PW', 'UI statusLabel uses PW skrót');
 ok(sides.my.treatyBasePn === 0, 'handel: no treaty base on player side');
 
 const napSides = mod.computePlayerAcceptanceSides(
@@ -111,6 +114,70 @@ ok(!napSides.my.accepted, 'NAP 90 PN koszyk < effective 98');
 const giftSides = mod.computePlayerAcceptanceSides('dar', giftPayload, 100, true);
 ok(giftSides.isGift, 'dar flagged as gift');
 ok(giftSides.my.statusLabel === 'Nic w zamian', 'gift my label');
+
+const napTreatyOnly = mod.computePlayerAcceptanceSides('nap', {}, 100, false);
+ok(napTreatyOnly.my.mode === 'treaty', 'NAP bez koszyka: mode treaty');
+ok(napTreatyOnly.my.treatyEffectivePn === 200, 'NAP @ rel 100 effective 200 PW');
+ok(mod.bilateralTreatyDisplayPw(napTreatyOnly.my, napTreatyOnly.their) === 200, 'bilateral NAP display 200 PW');
+ok(mod.sideDisplayOfferPw(napTreatyOnly.my, 200) === 200, 'proposer side display 200 PW');
+ok(mod.sideDisplayOfferPw(napTreatyOnly.their, 200) === 200, 'responder side display 200 PW (bilateral)');
+
+const napIncoming = mod.computePlayerAcceptanceSides('nap', {}, 100, true);
+ok(napIncoming.their.treatyEffectivePn === 200, 'incoming NAP: their side treaty 200 PW');
+ok(mod.sideDisplayOfferPw(napIncoming.my, 200) === 200, 'incoming: my bilateral display 200 PW');
+ok(mod.sideDisplayOfferPw(napIncoming.their, 200) === 200, 'incoming: their display 200 PW');
+
+// Wszystkie traktaty z bazą PW > 0 — wspólna ścieżka bilateralTreatyDisplayPw / sideDisplayOfferPw
+const TREATY_PW_BASE = [
+  ['pokoj', 500],
+  ['sojusz_pelny', 500],
+  ['sojusz_defensywny', 420],
+  ['nap', 200],
+  ['umowa_szlakow', 80],
+  ['umowa_handlowa', 80],
+  ['granice', 60],
+  ['wasal', 350],
+  ['trybut_zadanie', 120],
+  ['trybut_oferta', 100],
+  ['namow_wojne', 150],
+  ['ultimatum', 180],
+];
+for (const [actionId, base] of TREATY_PW_BASE) {
+  const pure = mod.computePlayerAcceptanceSides(actionId, {}, 100, false);
+  ok(pure.my.mode === 'treaty', `${actionId}: pure mode treaty`);
+  ok(pure.my.treatyBasePn === base, `${actionId}: treatyBasePn ${base}`);
+  const bil = mod.bilateralTreatyDisplayPw(pure.my, pure.their);
+  ok(bil === base, `${actionId}: bilateral display ${base} PW @ rel 100`);
+  ok(mod.sideDisplayOfferPw(pure.my, bil) === base, `${actionId}: proposer card/panel ${base} PW`);
+  ok(mod.sideDisplayOfferPw(pure.their, bil) === base, `${actionId}: responder card/panel ${base} PW`);
+  ok(pure.my.offerPn === 0, `${actionId}: raw offerPn 0 before display helper`);
+}
+
+// Mixed: NAP + koszyk — panel/karta musi sumować traktat + koszyk
+const napMixed = mod.computePlayerAcceptanceSides(
+  'nap',
+  { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 50 }] },
+  100,
+  false,
+);
+ok(napMixed.my.mode === 'mixed', 'NAP+gold: mode mixed');
+const napMixedBil = mod.bilateralTreatyDisplayPw(napMixed.my, napMixed.their);
+ok(napMixedBil === 200, 'NAP+gold: bilateral 200');
+ok(mod.sideDisplayOfferPw(napMixed.my, napMixedBil) === 250, 'NAP+gold: my display 50+200 PW');
+ok(mod.sideDisplayOfferPw(napMixed.their, napMixedBil) === 200, 'NAP+gold: their display 200 PW');
+
+// Baza 0 — tylko koszyk
+ok(mod.treatyBaseAcceptancePn('handel') === 0, 'handel base 0');
+ok(mod.treatyBaseAcceptancePn('tech') === 0, 'tech base 0');
+const handelOnly = mod.computePlayerAcceptanceSides(
+  'handel',
+  { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 30 }], receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 20 }] },
+  100,
+  false,
+);
+ok(handelOnly.my.mode === 'basket', 'handel: mode basket');
+ok(mod.bilateralTreatyDisplayPw(handelOnly.my, handelOnly.their) === undefined, 'handel: no bilateral treaty PW');
+ok(mod.sideDisplayOfferPw(handelOnly.my, undefined) === 30, 'handel: my 30 PW koszyk only');
 
 const catalog = mod.acceptancePointsCatalog();
 ok(catalog.traktaty && catalog.traktaty.nap, 'catalog has traktaty');

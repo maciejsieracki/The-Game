@@ -26,6 +26,10 @@ export {
   improvementsReplacedByBuild,
   formatImprovementBuildImpactList,
 } from '../src/map/improvement-build';
+export {
+  hexSuppressesDepositOverlay,
+  improvementHidesDepositOnHex,
+} from '../src/game/terrain-improvements';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
 
@@ -290,6 +294,21 @@ ok(rep.length === 0, 'impact: oboz replaces tartak — regresja usunieta');
 ok(!M.computeImprovementBuildImpact('owce', hexes['10,0'], ['tartak']), 'impact null: owce on las+tartak');
 const farmaIrr = M.computeImprovementBuildImpact('bydlo', hexes['0,0'], ['farma', 'irygacja']);
 ok(farmaIrr === null, 'kanon: bydlo blocked on farma+irygacja (no replace)');
+
+const clayHex = { terenBazowy: TB.Rownina, nakladka: NK.ZlozeGliny };
+ok(!M.hexSuppressesDepositOverlay({ ...clayHex, ulepszenia: ['farma'] }), 'BUG-FARMA-GLINA: farma NIE chowa gliny');
+ok(!M.hexSuppressesDepositOverlay({ ...clayHex, ulepszenia: ['irygacja'] }), 'BUG-FARMA-GLINA: irygacja NIE chowa gliny');
+ok(!M.hexSuppressesDepositOverlay({ ...clayHex, ulepszenia: ['droga'] }), 'BUG-FARMA-GLINA: droga NIE chowa gliny');
+ok(!M.hexSuppressesDepositOverlay({ ...clayHex, ulepszenia: ['fort'] }), 'BUG-FARMA-GLINA: fort NIE chowa gliny');
+ok(!M.hexSuppressesDepositOverlay({ ...clayHex, ulepszenia: ['tartak'] }), 'BUG-FARMA-GLINA: tartak NIE chowa gliny');
+ok(M.hexSuppressesDepositOverlay({ ...clayHex, ulepszenia: ['glinianka'] }), 'BUG-FARMA-GLINA: glinianka chowa gline');
+ok(M.hexSuppressesDepositOverlay({ ...clayHex, ulepszenia: ['farma', 'glinianka'] }), 'glinianka match hides clay even with farma');
+ok(M.improvementHidesDepositOnHex('glinianka', clayHex), 'improvementHidesDepositOnHex glinianka+glina');
+ok(!M.improvementHidesDepositOnHex('farma', clayHex), 'improvementHidesDepositOnHex farma+glina false');
+const oreHex = { terenBazowy: TB.Gory, nakladka: NK.Brak, zloze: 'miedz' };
+ok(M.hexSuppressesDepositOverlay({ ...oreHex, ulepszenia: ['kopalnia_miedzi'] }), 'kopalnia_miedzi chowa miedz');
+ok(!M.hexSuppressesDepositOverlay({ ...oreHex, ulepszenia: ['farma'] }), 'farma NIE chowa miedzi');
+ok(!M.hexSuppressesDepositOverlay({ ...oreHex, ulepszenia: ['kamieniolom'] }), 'kamieniolom NIE chowa miedzi');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

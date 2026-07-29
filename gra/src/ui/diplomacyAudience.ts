@@ -24,10 +24,11 @@ import {
   type NegotiationModalContext,
   type NegotiationPayload,
 } from './diplomacyNegotiationModal';
-import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, showSzlakiTreatyProposalModal, type TradeBasketInitial } from './diplomacyTradeBasket';
+import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { civCardDisplayName, leaderName } from './leaderPortraits';
 import { civBrandLineForKey } from './civBrandDisplay';
 import { renderNegotiationTableDealSideHtml } from './diplomacyDealDisplay';
+import { bilateralTreatyDisplayPw } from '../game/diplomacy-acceptance-points';
 import {
   balancePanelDataFromRow,
   pickPrimaryNegotiationRow,
@@ -543,7 +544,9 @@ ${DIPLO_1E_SHARED_CSS}
 .da-pn-balance-bar.no{border-color:rgba(224,136,104,.45);}
 .da-pn-balance-bar.idle{border-color:rgba(140,150,165,.25);opacity:.92;}
 .da-pn-bal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
-.da-pn-bal-title{font-size:0.68em;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#e8d88a;}
+.da-pn-bal-head-titles{display:inline-flex;align-items:baseline;gap:6px;}
+.da-pn-bal-title{font-size:0.68em;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#e8d88a;cursor:help;}
+.da-pn-bal-abbr{font-size:0.62em;font-weight:700;letter-spacing:.06em;color:#c8b898;text-decoration:none;cursor:help;border-bottom:1px dotted rgba(200,184,152,.45);}
 .da-pn-bal-deal{font-size:0.72em;color:#c8b898;text-align:right;}
 .da-pn-bal-more{display:inline-block;margin-left:6px;font-size:0.85em;color:#8a8070;}
 .da-pn-bal-empty{font-size:0.72em;color:#8a8070;line-height:1.45;padding:4px 0;}
@@ -1231,7 +1234,7 @@ function pendingDealFallbackHtml(r: PendingNegotiationRow): string {
 /** Etykieta traktatu dwustronnego — gdy mode=treaty i brak pozycji koszyka. */
 function bilateralTreatyLabel(r: PendingNegotiationRow): string | undefined {
   const mode = r.acceptanceMy?.mode ?? r.acceptanceTheir?.mode;
-  if (mode === 'treaty') return r.actionLabel;
+  if (mode === 'treaty' || mode === 'mixed') return r.actionLabel;
   return undefined;
 }
 
@@ -1242,7 +1245,15 @@ function tableDealSideHtml(
   incoming: boolean,
 ): string {
   if (!r.dealPayload) return '';
-  return renderNegotiationTableDealSideHtml(r.dealPayload, focus, incoming, bilateralTreatyLabel(r));
+  const treatyLabel = bilateralTreatyLabel(r);
+  const treatyPw = treatyLabel ? bilateralTreatyDisplayPw(r.acceptanceMy, r.acceptanceTheir) : undefined;
+  return renderNegotiationTableDealSideHtml(
+    r.dealPayload,
+    focus,
+    incoming,
+    treatyLabel,
+    treatyPw,
+  );
 }
 
 /** Panel PN między kolumnami My / Oni — główny wpis stołu + licznik pozostałych. */
@@ -1523,12 +1534,8 @@ function render(): void {
             }
             return;
           }
-          showSzlakiTreatyProposalModal(
-            action,
-            st.otherCivName,
-            (payload) => cfg!.onAction(cfg!.ownerId, '5', payload),
-            () => { /* anulowano */ },
-          );
+          // D-DYPLO-KOSZYK-OD-RAZU: traktat handlowy od razu na stół („My oferujemy"), bez modala potwierdzenia.
+          cfg!.onAction(cfg!.ownerId, '5', { actionId: '5', turns: 20 });
           return;
         }
         if (action && action.enabled && actionNeedsNegotiation(aid) && negCtx) {

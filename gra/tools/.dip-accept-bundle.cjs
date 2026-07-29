@@ -22,6 +22,7 @@ var dip_accept_entry_exports = {};
 __export(dip_accept_entry_exports, {
   acceptancePointsCatalog: () => acceptancePointsCatalog,
   basketSidePnDifficultyMultiplier: () => basketSidePnDifficultyMultiplier,
+  bilateralTreatyDisplayPw: () => bilateralTreatyDisplayPw,
   computePlayerAcceptanceSides: () => computePlayerAcceptanceSides,
   diplomacyFairGivePn: () => diplomacyFairGivePn,
   diplomacyHandelSurowiecCenaJednostkowa: () => diplomacyHandelSurowiecCenaJednostkowa,
@@ -34,6 +35,7 @@ __export(dip_accept_entry_exports, {
   relationPnModPct: () => relationPnModPct,
   relationSignedFromTotal: () => relationSignedFromTotal,
   resolveProposalPn: () => resolveProposalPn,
+  sideDisplayOfferPw: () => sideDisplayOfferPw,
   treatyBaseAcceptancePn: () => treatyBaseAcceptancePn
 });
 module.exports = __toCommonJS(dip_accept_entry_exports);
@@ -1071,15 +1073,15 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.045, highland: 0.105 },
-      medium: { mountain: 0.075, highland: 0.125 },
-      high: { mountain: 0.18, highland: 0.27 }
+      low: { mountain: 0.06, highland: 0.126 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.324 }
     },
     relief_overflow_cap_frac: {
-      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
-      low: { mountain: 0.045, highland: 0.075 },
-      medium: { mountain: 0.05, highland: 0.085 },
-      high: { mountain: 0.12, highland: 0.18 }
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Maciej 2026-07-29: medium=10% G\xF3ry + 15% Wzg\xF3rza w kom\xF3rce 15\xD715; Ma\u0142o/Du\u017Co przeskalowane wzgl\u0119dem poprzedniego stosunku tier\xF3w.",
+      low: { mountain: 0.09, highland: 0.132 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.318 }
     },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
@@ -1379,6 +1381,10 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // map/gen-helpers.ts
+var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
+var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
+var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
+var MIN_HIGHLANDS_COPPER_CELL = RELIEF_MIN_HIGHLANDS.medium;
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,
@@ -1839,6 +1845,11 @@ var terrain_improvements_default = {
 // game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
+var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
+var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
+  const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
+  return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
 
 // map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -9248,6 +9259,13 @@ function diplomacyFairGivePn(receivePn, relacja) {
   return Math.ceil(Math.max(0, receivePn) * (100 / rel));
 }
 
+// game/diplomacy-ai-offer-balance.ts
+var AI_OFFER_PW_BALANCE_TOLERANCE_PN = {
+  easy: Number.POSITIVE_INFINITY,
+  normal: 5,
+  hard: 2
+};
+
 // game/diplomacy-pn-engine.ts
 function buildProposalPnSumOpts(opts) {
   return {
@@ -11983,6 +12001,24 @@ function loadTreatyAcceptanceDef(actionId) {
 function treatyBaseAcceptancePn(actionId) {
   return loadTreatyAcceptanceDef(actionId)?.punkty ?? 0;
 }
+function bilateralTreatyDisplayPw(my, their) {
+  const mode = my?.mode ?? their?.mode;
+  if (mode !== "treaty" && mode !== "mixed") return void 0;
+  const effective = my?.treatyEffectivePn ?? their?.treatyEffectivePn;
+  if (effective != null && effective > 0) return effective;
+  const base = my?.treatyBasePn ?? their?.treatyBasePn;
+  return base != null && base > 0 ? base : void 0;
+}
+function sideDisplayOfferPw(side, bilateralTreatyPw) {
+  if (!side) return bilateralTreatyPw ?? 0;
+  const basket = side.offerPn;
+  const ownTreaty = side.treatyEffectivePn ?? 0;
+  if (ownTreaty > 0) return basket + ownTreaty;
+  if ((side.mode === "treaty" || side.mode === "mixed") && bilateralTreatyPw != null && bilateralTreatyPw > 0) {
+    return basket + bilateralTreatyPw;
+  }
+  return basket;
+}
 function playerSideHasBasketOffer(payload, incoming) {
   const split = splitNegotiationDealPlayerSides(payload, incoming);
   if (!split) return false;
@@ -11994,10 +12030,10 @@ function isPlayerIncomingGift(payload) {
   return split.weOffer.length === 0 && split.theyOffer.length > 0;
 }
 function formatBalanceLabel(balancePn, accepted) {
-  if (accepted && balancePn > 0) return `Nadwy\u017Cka +${balancePn} PN`;
-  if (accepted && balancePn === 0) return "Spe\u0142nia warunki (0 PN)";
-  if (balancePn < 0) return `Brakuje ${Math.abs(balancePn)} PN`;
-  return `Saldo ${balancePn} PN`;
+  if (accepted && balancePn > 0) return `Nadwy\u017Cka +${balancePn} PW`;
+  if (accepted && balancePn === 0) return "Spe\u0142nia warunki (0 PW)";
+  if (balancePn < 0) return `Brakuje ${Math.abs(balancePn)} PW`;
+  return `Saldo ${balancePn} PW`;
 }
 function computeSideBalance(offerPn, demandPn, relTotal, treatyBasePn, relRequired, mode) {
   const relClamped = Math.min(100, Math.max(1, relTotal));
@@ -12014,11 +12050,11 @@ function computeSideBalance(offerPn, demandPn, relTotal, treatyBasePn, relRequir
   const accepted = basketAccepted && relOk && treatyPnOk;
   let statusLabel = formatBalanceLabel(balancePn, accepted);
   if (treatyEffectivePn > 0 && !treatyPnOk) {
-    statusLabel = `Brakuje ${treatyEffectivePn - offerPn} PN traktatu (wym. ${treatyEffectivePn})`;
+    statusLabel = `Brakuje ${treatyEffectivePn - offerPn} PW traktatu (wym. ${treatyEffectivePn})`;
   } else if (relRequired != null && relBalance != null && relBalance < 0) {
     statusLabel = `Relacja \u2212${Math.abs(relBalance)} (wym. ${relRequired})`;
   } else if (mode === "gift" && offerPn > 0 && demandPn === 0) {
-    statusLabel = `Dar +${offerPn} PN`;
+    statusLabel = `Dar +${offerPn} PW`;
   } else if (treatyEffectivePn > 0 && treatyPnOk && modPct !== 0) {
     statusLabel = `${statusLabel} \xB7 ${modLabel}`;
   }
@@ -12086,6 +12122,7 @@ function acceptancePointsCatalog() {
 0 && (module.exports = {
   acceptancePointsCatalog,
   basketSidePnDifficultyMultiplier,
+  bilateralTreatyDisplayPw,
   computePlayerAcceptanceSides,
   diplomacyFairGivePn,
   diplomacyHandelSurowiecCenaJednostkowa,
@@ -12098,5 +12135,6 @@ function acceptancePointsCatalog() {
   relationPnModPct,
   relationSignedFromTotal,
   resolveProposalPn,
+  sideDisplayOfferPw,
   treatyBaseAcceptancePn
 });

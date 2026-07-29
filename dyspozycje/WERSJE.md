@@ -14,7 +14,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `e5c1bbed` - 2026-07-29 18:30 - FALA 111: R-HEX-PLONY-MAGAZYN B + rzeka +2 glina + D-WIAR-KASKADA-Q1 - **AKTUALNA**
+## ROBOCZA `8d5813ea` - 2026-07-29 23:13 - FALA 112: DEPLOY ALL dyplo+UI+mapa overlay + AI oferta zero - **AKTUALNA**
+- md5 (pelne): `8d5813ea025a603d23e04cc923c65b94` · stempel: `ROBOCZA · 2026-07-29 23:13`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · diplomacy-acceptance-points 142/142 · diplomacy-ai-offer-balance 18/18 · hex-plony-magazyn 9/9 · map-improvement-qualify 94/94 · diplomacy-treaties 12/12 · POLE-BITWY `dd399c4b`.
+- **D-DYPLO-KOSZYK-OD-RAZU:** traktat handlowy / szlaki od razu na stół („My oferujemy"), bez modala potwierdzenia.
+- **D-DYPLO-PW-NAZWA:** „Punkty porozumienia" w nagłówku AC + tooltip; etykiety traktatów PW spójne (NAP/sojusz/przemarsz).
+- **BUG-DYPLO-NAP-PW:** wycena i wyświetlanie PW dla NAP i pozostałych traktatów PW (AC + koszyk + werdykt).
+- **D-DYPLO-AI-OFERTA-ZERO:** Easy bez trimu do zera; Normal tolerancja 5 PW + trim daru; Hard 2 PW + undershoot sprzedaży.
+- **E-TOOLTIP-ROZMIAR-2X:** podpisy hover HUD/toolbar/minimap ×2 (font + padding), bez kart wyjaśnień.
+- **E-MAP-TOGGLE-DEFAULT-ON:** 👤 robotnicy + granice terytorium + ⛏ złoża domyślnie ON (nowa gra / load).
+- **BUG-SUROWCE-WIDOCZNE:** overlay złóż surowcowych nie ukryty przy starcie.
+- **BUG-FARMA-GLINA-ZNIKA:** ulepszenie gliny nie chowa overlay nakładki złoża.
+- **BUG-RZEKI-DOPLYWY:** nie w bundlu (kod rzek niezmieniony w tej sesji).
+
+## ROBOCZA `e5c1bbed` - 2026-07-29 18:30 - FALA 111: R-HEX-PLONY-MAGAZYN B + rzeka +2 glina + D-WIAR-KASKADA-Q1 - **ZASTĄPIONA**
 - md5 (pelne): `e5c1bbed0087c660e1e29d8e00862a90` · stempel: `ROBOCZA · 2026-07-29 18:30`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · hex-plony-magazyn 9/9 · stolarnia-r5-d2 9/9 · diplomacy-treaties 12/12.

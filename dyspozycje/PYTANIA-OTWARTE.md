@@ -844,6 +844,14 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
+## D-DYPLO-KOSZYK-OD-RAZU — klik z „Możliwe umowy" od razu na stół · STATUS: **ZAMKNIĘTE · WDROŻANE** (Maciej 2026-07-29)
+
+**Cytat Macieja:** „Po wyborze z możliwe umowy (np. Traktat handlowy) — od razu w «My oferujemy», bez modala «Wyślij propozycję». System od razu przelicza Punkty porozumienia."
+
+**Wdrożenie:** `diplomacyAudience.ts` (aid `5` → `onAction` bez `showSzlakiTreatyProposalModal`), `diplomacyNegotiationModal.ts` (usunięty krok 2 „Wyślij propozycję"), usunięty modal `showSzlakiTreatyProposalModal` z `diplomacyTradeBasket.ts`. PN: `handleNegotiatedProposal` → `updateDiplomacyAudience` → `negotiationBalanceBarHtml` / `computePlayerAcceptanceSides`.
+
+---
+
 ## R-HEX-PLONY-MAGAZYN (archiwum zgłoszenia) — plony HEX vs silnik magazynu
 
 **Cytaty Macieja (2026-07-29):**
@@ -892,15 +900,48 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
+## BUG-DYPLO-NAP-PW-ZERO — karty NAP na stole bez wartości PW · STATUS: **ZAMKNIĘTE** (fix 2026-07-29)
+
+**Cytat:** Karty „Pakt o nieagresji" (My oferujemy / Oni oferują) nie pokazywały żadnej wartości PW — miały mieć swoją wartość z `diplomacy-acceptance-points.json` (baza 200 PW).
+
+**Przyczyna:** `renderTreatyDealItemHtml` wyświetlał tylko etykietę traktatu; panel bilansu brał wyłącznie `offerPn` z koszyka (0 przy pustym payloadzie NAP).
+
+**Fix:** `bilateralTreatyDisplayPw` + `sideDisplayOfferPw` w `diplomacy-acceptance-points.ts`; karty stołu i panel PW pokazują wartość traktatu na obu stronach (dwustronny).
+
+---
+
 ## R-AI-MIASTA-BUDOWY — państwa-miasta prawie nie budują mimo zasobów · STATUS: **OTWARTE** (Maciej 2026-07-29 ~02:04)
 
 **Cytat:** „Państwa miasta nie budują praktycznie żadnych budynków, chociaż mają zasoby — trzeba sprawdzić."
 
 ---
 
-## BUG-SUROWCE-WIDOCZNE — surowce na mapie widoczne po ulepszeniu (miały być przykryte) · STATUS: **OTWARTE** (Maciej 2026-07-29 ~01:33)
+## BUG-SUROWCE-WIDOCZNE — surowce na mapie widoczne po ulepszeniu (miały być przykryte) · STATUS: **ZAMKNIĘTE** (fix 2026-07-29)
 
 **Cytat:** „Znowu po budowie widać surowce. Miały być przykryte." (Regresja względem wcześniejszej decyzji ukrywania złóż pod ulepszeniem.)
+
+**Root cause:** Wejście w tryb budowy wywoływało `autoEnableWorkerOverlayForBuildMode()` (wymuszało 👤) oraz po postawieniu/cofnięciu ulepszenia pełny `rebuildResourceOverlays()` (skan całej mapy, odsłanianie wszystkich złóż z pominięciem per-hex suppress).
+
+**Fix (`gra/src/main.ts`, `gra/src/ui/minimapHud.ts`, `gra/src/ui/hud.ts`):**
+- Usunięto auto-włączanie overlay przy starcie build mode.
+- Po budowie/czyszczeniu: `syncResourceOverlayAtHex(hexKey)` zamiast pełnego rebuild.
+- Dodano toggle ⛏ `showResourceDepositOverlay` — build mode nie resetuje widoczności; `hexSuppressesResourceOverlay()` nadal ukrywa złoża pod ulepszeniem.
+- Podświetlenie kandydatów: `unitRenderer.setHighlight()` (bez resource overlay ON).
+
+---
+
+## BUG-FARMA-GLINA-ZNIKA — ikona gliny znika po postawieniu Farmy · STATUS: **ZAMKNIĘTE** (fix 2026-07-29)
+
+**Cytat:** Po zbudowaniu Farmy znika ikona gliny na heksie — mylące UI (gracz myśli że złoża nie ma). Technicznie Glinianka nadal się buduje (farma i glinianka = różne sektory).
+
+**Przyczyna:** `hexSuppressesResourceOverlay()` ukrywał overlay przy **każdym** ulepszeniu terenu (farma, fort, tartak…), nie tylko przy eksploatacji danego złoża.
+
+**Fix (`gra/src/game/terrain-improvements.ts`, `gra/src/main.ts`):**
+- Nowa reguła: `hexSuppressesDepositOverlay()` / `improvementHidesDepositOnHex()` — chowaj ikonę złoża **tylko** gdy na heksie stoi ulepszenie **dedykowane** temu złożu (Glinianka→glina, Kopalnia miedzi→miedź, Owce→owce itd.).
+- Farma / Irygacja / Droga / Fort / Tartak / Kamieniołom **nie** chowają ikon złóż.
+- Złoże (`nakladka` / `hex.zloze`) **nie jest usuwane** z danych heksa — zmiana wyłącznie wizualna.
+
+**Weryfikacja:** `map-improvement-qualify-test.cjs` (sekcja BUG-FARMA-GLINA).
 
 ---
 
@@ -918,18 +959,74 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ## R-PUŁKA-PYTANIA-29-07 — paczka pytań bez odpowiedzi w czacie (29.07 noc) · STATUS: **OTWARTE / FORGOTTEN**
 
-Maciej ~01:43: „Zadałem sporo pytań, czekam na odpowiedzi." Tematy **nie zapisane osobno** — do domknięcia lub ABC:
+Maciej ~01:43: „Zadałem sporo pytań, czekam na odpowiedzi." Źródło pełne: `MASTER-Work_KORESPONDENCJA.md` linie 93062–93505 (transkrypt 29.07 01:24–01:59).
 
-| Temat | Skrót |
-|---|---|
-| Farma na mapie bez obywateli — czy daje Żywność/Pracę/Podatek? | mechanika worked tiles |
-| Palisada — do jakiej technologii podpięta, czy w ogóle działa? | dane + silnik |
-| Lista ulepszeń: które dają surowce **bez** obywatela vs **z** obywatelem | tabela dla Macieja |
-| Irygacja vs Farma — wykluczenie graficzne? | render + reguły |
-| Farma + Trzoda — czy można zrobić Irygację? | stack reguł |
-| ETA budynku w turach przy obecnej Pracy | UI panelu miasta |
-| Skondensować UI budowy jednostek (jak budynki) | UX |
-| Ulepszenie kosztuje 1 Pracy? | potwierdzenie reguły |
-| AI wymienia drewno, którego nie ma | bug handlu/AI |
-| Handel wychodzi poza ramkę panelu | bug layout |
-| Etykieta „handel jednorazowy" + sens „5 tur" negocjacji | copy / UX |
+**Pełna lista numerowana (18 pytań + 2 uwagi balansu):**
+
+| # | Temat (skrót) | Odpowiedź z kodu? |
+|---|---|---|
+| 1 | Farma bez 👤 — czy daje Ż/Pr/Pod? | TAK — tylko z obywatelem lub centrum |
+| 2 | Palisada — tech i czy działa? | TAK — Obróbka drewna, Brąz, +100% Obrony |
+| 3 | Lista ulepszeń: surowce **bez** vs **z** 👤 | TAK — dwie listy (archiwum 01:32) |
+| 4 | Irygacja vs Farma — nachodzą graficznie? | TAK — logicznie stack OK, jeden mesh `pole_irygowane` |
+| 5 | Farma + Trzoda — czy można Irygację? | TAK — **nie** (farma+irygacja **albo** farma+trzoda) |
+| 6 | ETA budynku (~N tur przy obecnej Pracy) | TAK — `cityPanel.ts` `etaTurns()` |
+| 7 | Skondensować UI rekrutacji (jak budynki, max 5) | WDROŻENIE — decyzja UX Macieja, nie ABC |
+| 8 | Ulepszenie kosztuje 1 Pracy? | TAK — **utrzymanie**/turę (tartak, kopalnie…); budowa 15–30 |
+| 9 | AI oferuje drewno, którego nie ma | BUG — cap magazynu AI (fix wdrożony, weryfikacja) |
+| 10 | Handel wychodzi poza ramkę panelu | BUG — fix layout (wdrożony) |
+| 11 | „Handel jednorazowy" + „Runda 1 z 3 · 5 tur" | TAK — copy do uproszczenia (nie ABC gameplay) |
+| 12 | Owce w lesie / zastąpienie Tartaku — dialog? | WDROŻENIE — `R-ZAMIEN-ULEPSZENIE-CONFIRM` |
+| 13 | Brak „Połącz" przy wielu jednostkach | BUG — `BUG-ARMIA-BRAK-POLACZ` |
+| 14 | Surowce znów widoczne po budowie | BUG — fix (ZAMKNIĘTE) |
+| 15 | Farma chowa ikonę gliny — czy blokuje Gliniankę? | TAK — tylko UI, złoże zostaje (ZAMKNIĘTE) |
+| 16 | Tartak → 10 Drewna/t, Glinianka → 15 Glina/t | DECYZJA Macieja 01:39 — wdrożone |
+| 17 | Państwa-miasta nie budują mimo zasobów | OTWARTE — `R-AI-MIASTA-BUDOWY` |
+| 18 | Sojusznik zerwie handel gdy broni sojusznika — kto karę? | TAK — wyjaśnione w czacie 01:02 (audyt do potwierdzenia) |
+
+Powiązane osobno (ta sama noc, nie w skróconej tabeli): `D-DYPLO-KATALOG-AKCJI`, `D-DYPLO-CELOWNIK-STOLICA`, `D-DYPLO-AKCJE-SZARE`, `BUG-DYPLO-PANEL-OVERLAP`, `R-HEX-PLONY-MAGAZYN` (ZAMKNIĘTE B).
+
+---
+
+## E-TOOLTIP-ROZMIAR-2X — małe podpisy hover ×2 (nie karty wyjaśnień) · STATUS: **ZAMKNIĘTE** (Maciej 2026-07-28/29)
+
+**Cytat:** „Zwiększyć ciąg tooltipów dwukrotnie" = **rozmiar czcionki/box ×2** przy małych podpisach przy najechaniu (ikony HUD, minimapa, toolbar), **nie** opóźnienie czasu i **nie** karty wyjaśnień (hover-detail dock).
+
+**Wdrożenie:** `hudTitleTooltip.ts` (30px, padding 14×22, blokada natywnego `title=`) · `buildModeHud.ts` lock-tip · `sciencePicker.ts` `.civ-sci-tooltip`.
+
+---
+
+## E-MAP-TOGGLE-DEFAULT-ON — kłódki 👤 i granice domyślnie ON · STATUS: **WDROŻONE** (2026-07-29)
+
+**Cytat:** Przełączniki robotników w terenie (👤) i granic państw na mapie świata — na starcie zawsze włączone; po ręcznym włączeniu nie mogą się same wyłączać (zoom, tura, panel, fog).
+
+**Wdrożenie:** `main.ts` — `territoryBorderVisible` i `showWorkerOverlay` domyślnie `true`; `resetMapOverlayToggleDefaults()` przy nowej grze / load / playtestach; `refreshMapOverlayToggles()` po starcie sesji. Auto-wyłączanie 👤 tylko gdy overlay włączył tryb budowy (`workerOverlayAutoEnabled`) — przy domyślnym ON onboarding nie ustawia flagi auto.
+
+---
+
+## D-DYPLO-AI-OFERTA-ZERO — bilans PW ofert AI wg trudności · STATUS: **WDROŻONE** (Maciej 2026-07-29)
+
+**Decyzja Macieja:** Łatwy = dotychczasowe zachowanie (gratisy / duże plusy OK). Normal (i Trudny) = AI celuje w bilans PW ≈ 0, bez dużych nadwyżek dla gracza.
+
+**Parametr:** `AI_OFFER_PW_BALANCE_TOLERANCE_PN` — easy: ∞ · normal: **5 PW** · hard: **2 PW** (+ `AI_OFFER_PW_UNDERSHOOT_PN` hard: 3 PW na korzyść AI przy handlu surowcem).
+
+**Wdrożenie:** `diplomacy-ai-offer-balance.ts` · `ai.ts` (brak daru ¤ i osłodzika umowy na Normal+) · `diplomacy-proposals.ts` (`generateCounterOffer` — minimalny słodzik) · `diplomacy-pn-engine.ts` (`computeQuickDealBasket` trim) · `main.ts` (korekta zapłaty surowcem). Test: `diplomacy-ai-offer-balance-test.cjs`.
+
+---
+
+## BUG-RZEKI-DOPLYWY — dopływy kończą się na lądzie · STATUS: **WDRAŻANE** (Maciej 2026-07-29 wieczór)
+
+**Cytat Macieja (2026-07-29 ~23:02):**
+> „Jest jeszcze kwestia dopływów, które moim zdaniem nie łączą się z rzekami głównymi. Trzeba coś zrobić, żeby się łączyły — albo niech wpadają do morza. Generalnie rzeki nie powinny się zaczynać i kończyć na lądzie, jeżeli co najmniej nie wpadną do innej rzeki lub nie wpadną do morza."
+
+**Dowód wizualny:** 2 zrzuty ekranu z playtestu mapy (wieczór 29.07) — cienkie dopływy urwane na lądzie, bez styku z szeroką rzeką główną ani z morzem:
+- `assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-7e8998cb-174e-4ccc-b892-4b323b2ff8f2.png`
+- `assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-ead7e7c4-4424-4f8a-919a-2df7b73c7107.png`
+
+**Reguła kanonu:** każdy segment rzeki (w tym dopływ) musi zakończyć się wpływem do **innej rzeki** (sieć / junction) **lub** do **morza** — nie na gołym lądzie.
+
+**Hipoteza robocza:** generator lub render nie domyka junctionu dopływ↔główny nurt (por. historycznie B0.8 I2, `pruneOrphanRiverPaths`, `checkTributaryJunctions` w `gra/src/map/gen-helpers.ts`); możliwy też defekt wizualny styku w `render/scene.ts` przy różnej szerokości wstęgi main vs tributary.
+
+**Zakres naprawy:** Grupa A (mapa) · audyt + fix w `gra/src/map/**` · asercje w testach river/map (0 wiszących dopływów, połączenie z siecią lub oceanem).
+
+**Nota:** audyt i fix kodu już prowadzi agent mapy w tej samej sesji (2026-07-29) — ten wpis domyka lukę w rejestrze, bez duplikacji pracy.

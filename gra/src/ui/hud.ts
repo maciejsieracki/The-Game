@@ -20,6 +20,7 @@ import {
   type MinimapLayerHooks,
   type MinimapPlaytestFogHooks,
   type MinimapWorkerOverlayHooks,
+  type MinimapResourceDepositOverlayHooks,
 } from './minimapHud';
 import { naukaHudWordHtml } from './naukaLabel';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
@@ -214,6 +215,9 @@ export interface HudConfig {
 
   /** E-map-worker-overlay: toggle 👤 na mapie świata. */
   minimapWorkerOverlay?: MinimapWorkerOverlayHooks;
+
+  /** Toggle ikon złóż / surowców na mapie 3D (⛏). */
+  minimapResourceDepositOverlay?: MinimapResourceDepositOverlayHooks;
 
   /** D17=A: treść panelu kontekstowego (null = ukryty). @deprecated użyj getContextPanel */
   getContextPanelMessage?: () => string | null;
@@ -1210,6 +1214,7 @@ function mountMinimap(): void {
       layers: buildMinimapLayers(),
       playtestFog: cfg.minimapPlaytestFog,
       workerOverlay: cfg.minimapWorkerOverlay,
+      resourceDepositOverlay: cfg.minimapResourceDepositOverlay,
       width: MINI_W,
       height: MINI_H,
     });
@@ -1517,7 +1522,7 @@ export function hideHud(): void {
 /** Czy HUD widoczny (sesja gry aktywna — niezależnie od panelu miasta). */
 export function isHudOpen(): boolean { return hudSessionActive; }
 
-export type { MinimapHexData, MinimapData, MinimapPlaytestFogHooks, MinimapWorkerOverlayHooks } from './minimapHud';
+export type { MinimapHexData, MinimapData, MinimapPlaytestFogHooks, MinimapWorkerOverlayHooks, MinimapResourceDepositOverlayHooks } from './minimapHud';
 export type { ContextPanelData, SidePanelEvent, SidePanelEventKind } from './sidePanelHud';
 export type { UnitPanelState } from './unitPanelHud';
 export type { BuildTypeInfo } from './buildModeHud';

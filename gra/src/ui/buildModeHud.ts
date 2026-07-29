@@ -101,10 +101,10 @@ function ensureStyles(): void {
 .civ-build-item.locked{opacity:.48;cursor:help;}
 .civ-build-item.locked:hover{background:rgba(232,176,74,.08);border-color:rgba(232,176,74,.35);}
 .civ-build-item.locked .meta{color:#c9a060;font-size:8px;max-width:95px;text-align:right;line-height:1.2;}
-.civ-build-lock-tip{position:fixed;z-index:320;max-width:240px;padding:8px 10px;
-  background:rgba(24,16,8,.96);border:1px solid rgba(232,176,74,.5);border-radius:6px;
-  font:11px 'Segoe UI',Tahoma,sans-serif;color:#ffe8c0;pointer-events:none;
-  box-shadow:0 4px 16px rgba(0,0,0,.55);display:none;}
+.civ-build-lock-tip{position:fixed;z-index:320;max-width:480px;padding:16px 20px;
+  background:rgba(24,16,8,.96);border:1px solid rgba(232,176,74,.5);border-radius:12px;
+  font:22px/1.35 'Segoe UI',Tahoma,sans-serif;color:#ffe8c0;pointer-events:none;
+  box-shadow:0 8px 32px rgba(0,0,0,.55);display:none;}
 .civ-build-wonders-gap{margin-top:10px;padding-top:8px;border-top:1px solid rgba(232,216,138,.22);}
 .civ-build-wonders-sub{font-size:9px;color:#9a9070;line-height:1.35;margin:-2px 0 6px 2px;}
 .civ-build-item.wonder{border-color:rgba(212,175,95,.12);}

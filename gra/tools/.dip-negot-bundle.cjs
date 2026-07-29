@@ -3794,15 +3794,15 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.045, highland: 0.105 },
-      medium: { mountain: 0.075, highland: 0.125 },
-      high: { mountain: 0.18, highland: 0.27 }
+      low: { mountain: 0.06, highland: 0.126 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.324 }
     },
     relief_overflow_cap_frac: {
-      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
-      low: { mountain: 0.045, highland: 0.075 },
-      medium: { mountain: 0.05, highland: 0.085 },
-      high: { mountain: 0.12, highland: 0.18 }
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Maciej 2026-07-29: medium=10% G\xF3ry + 15% Wzg\xF3rza w kom\xF3rce 15\xD715; Ma\u0142o/Du\u017Co przeskalowane wzgl\u0119dem poprzedniego stosunku tier\xF3w.",
+      low: { mountain: 0.09, highland: 0.132 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.318 }
     },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
@@ -4102,6 +4102,10 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
+var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
+var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
+var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
+var MIN_HIGHLANDS_COPPER_CELL = RELIEF_MIN_HIGHLANDS.medium;
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,
@@ -4562,6 +4566,11 @@ var terrain_improvements_default = {
 // src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
+var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
+var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
+  const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
+  return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -12475,6 +12484,80 @@ function diplomacyProgDarRelacja(params = _pnRelacja, difficulty = "normal") {
   return scaleRelationThreshold(base, difficulty);
 }
 
+// src/game/diplomacy-ai-offer-balance.ts
+var AI_OFFER_PW_BALANCE_TOLERANCE_PN = {
+  easy: Number.POSITIVE_INFINITY,
+  normal: 5,
+  hard: 2
+};
+function aiOfferPwSurplusTolerance(difficulty = "normal") {
+  return AI_OFFER_PW_BALANCE_TOLERANCE_PN[difficulty];
+}
+function aiOfferTargetsZeroBalance(difficulty = "normal") {
+  return difficulty !== "easy";
+}
+function responderPwSurplus(proposerGivePn, proposerReceivePn, relTotal) {
+  const rel = Math.min(100, Math.max(1, relTotal));
+  const responderOfferPn = proposerReceivePn;
+  const responderDemandPn = proposerGivePn;
+  const fairMinPn = diplomacyFairGivePn(responderDemandPn, rel);
+  return responderOfferPn - fairMinPn;
+}
+function aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts) {
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const isOneSidedGift = givePn > 0 && receivePn <= 0 && !payload.receiveItems?.length;
+  if (isOneSidedGift) return givePn;
+  return -responderPwSurplus(givePn, receivePn, relTotal);
+}
+function trimProposalGoldForZeroBalance(payload, relTotal, difficulty = "normal", pnOpts) {
+  if (!aiOfferTargetsZeroBalance(difficulty)) return payload;
+  const tolerance = aiOfferPwSurplusTolerance(difficulty);
+  const surplus = aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts);
+  if (surplus <= tolerance) return payload;
+  const items = [...payload.giveItems ?? []];
+  const goldIdx = items.findIndex((i) => i.typ === "zloto");
+  if (goldIdx < 0) return payload;
+  const goldItem = items[goldIdx];
+  const currentGold = goldItem.ilosc ?? 0;
+  if (currentGold <= 0) return payload;
+  let lo = 0;
+  let hi = currentGold;
+  let best = -1;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const trialItems = [...items];
+    if (mid <= 0) {
+      trialItems.splice(goldIdx, 1);
+    } else {
+      trialItems[goldIdx] = { ...goldItem, ilosc: mid };
+    }
+    const trialPayload = {
+      ...payload,
+      giveItems: trialItems.length ? trialItems : void 0,
+      goldOnce: mid > 0 ? mid : void 0
+    };
+    const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts);
+    if (trialSurplus <= tolerance) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  if (best < 0 || best === currentGold) return payload;
+  const outItems = [...items];
+  if (best <= 0) {
+    outItems.splice(goldIdx, 1);
+  } else {
+    outItems[goldIdx] = { ...goldItem, ilosc: best };
+  }
+  return {
+    ...payload,
+    giveItems: outItems.length ? outItems : void 0,
+    goldOnce: best > 0 ? best : void 0
+  };
+}
+
 // src/game/diplomacy-pn-engine.ts
 function buildProposalPnSumOpts(opts) {
   return {
@@ -12716,7 +12799,7 @@ function treatyPnGate(actionId, payload, relation, pnOpts) {
     if (givePn < required) {
       return {
         accepted: false,
-        reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PN @ Relacji, baza ${basePn})`
+        reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PW @ Relacji, baza ${basePn})`
       };
     }
     return null;
@@ -12726,7 +12809,7 @@ function treatyPnGate(actionId, payload, relation, pnOpts) {
   if (givePn < required) {
     return {
       accepted: false,
-      reason: `Oferta za niska na ten traktat (wymagane \u2265 ${required} PN @ Relacji)`
+      reason: `Oferta za niska na ten traktat (wymagane \u2265 ${required} PW @ Relacji)`
     };
   }
   return null;
@@ -12859,7 +12942,7 @@ function evaluateProposal(proposal, ctx) {
       if (givePn < required) {
         return {
           accepted: false,
-          reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PN @ Relacji)`
+          reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PW @ Relacji)`
         };
       }
       return { accepted: true, reason: "Warunki pokoju spe\u0142nione", oneShotTrade: true };
@@ -12920,7 +13003,7 @@ function evaluateProposal(proposal, ctx) {
       const hasQuantityResourceItems = (payload.giveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false) || (payload.receiveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false);
       if (payload.resourceTradeMode === "per_turn" && hasQuantityResourceItems) {
         if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
+          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
         }
         const turns = clampDealTurns(payload.turns);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
@@ -12951,9 +13034,9 @@ function evaluateProposal(proposal, ctx) {
       }
       if (hasPnPath) {
         if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
+          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
         }
-        return { accepted: true, reason: "Wymiana PN zaakceptowana", oneShotTrade: true };
+        return { accepted: true, reason: "Wymiana PW zaakceptowana", oneShotTrade: true };
       }
       const legacyGive = pnFromLegacyGold(payload.goldOnce ?? (payload.amount ?? 0) * 10);
       const legacyReceive = pnFromLegacyGold(ctx.fairTradeValue ?? legacyGive);
@@ -12961,7 +13044,7 @@ function evaluateProposal(proposal, ctx) {
         return { accepted: false, reason: "Brak warto\u015Bci w ofercie" };
       }
       if (!pnDealAcceptedByAi(legacyGive, legacyReceive, relTotal)) {
-        return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
+        return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
       }
       return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
     }
@@ -12976,7 +13059,7 @@ function evaluateProposal(proposal, ctx) {
       const relTotal = relationTotal(relation);
       const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
       if (hasItems && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-        return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
+        return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
       }
       const wygasa = payload.turns != null ? ctx.turn + clampDealTurns(payload.turns) : null;
       const deal = buildDeal(
@@ -13192,7 +13275,7 @@ function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
       if (payload.goldOnce != null && payload.goldOnce > 0) {
         return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
       }
-      return { accepted: true, reason: "Wymiana PN zaakceptowana", oneShotTrade: true };
+      return { accepted: true, reason: "Wymiana PW zaakceptowana", oneShotTrade: true };
     }
     case "umowa_handlowa":
     case "umowa_szlakow": {
@@ -13368,20 +13451,33 @@ function withMoneyField(payload, field, value) {
 function generateCounterOffer(proposal, ctx) {
   const { actionId, payload } = proposal;
   if (NEGOTIATION_NO_ENGINE_COUNTER.has(actionId)) return null;
+  const difficulty = ctx.difficulty ?? "normal";
+  const relTotal = relationTotal(ctx.relation);
+  const pnOpts = { difficulty };
   const tryPayload = (p) => evaluateProposal({ ...proposal, payload: p }, ctx).accepted;
+  const finalizePayload = (p) => aiOfferTargetsZeroBalance(difficulty) ? trimProposalGoldForZeroBalance(p, relTotal, difficulty, pnOpts) : p;
   if (actionId === "trybut_zadanie") {
     const base = payload.goldPerTurn ?? 0;
     if (base > 0) {
+      let bestDown = null;
+      let bestUp = null;
       for (let step = 1; step <= NEGOTIATION_MONEY_MAX_STEPS; step++) {
         const down = withMoneyField(payload, "goldPerTurn", base * (1 - NEGOTIATION_MONEY_STEP_PCT * step));
         if ((down.goldPerTurn ?? 0) > 0 && tryPayload(down)) {
-          return { payload: down, note: `obni\u017Cone \u017C\u0105danie trybutu (${down.goldPerTurn} \xA4/tur\u0119)` };
+          const note = `obni\u017Cone \u017C\u0105danie trybutu (${down.goldPerTurn} \xA4/tur\u0119)`;
+          if (!bestDown || (down.goldPerTurn ?? 0) > (bestDown.payload.goldPerTurn ?? 0)) {
+            bestDown = { payload: down, note };
+          }
         }
         const up = withMoneyField(payload, "goldPerTurn", base * (1 + NEGOTIATION_MONEY_STEP_PCT * step));
         if (tryPayload(up)) {
-          return { payload: up, note: `podniesione \u017C\u0105danie trybutu (${up.goldPerTurn} \xA4/tur\u0119)` };
+          const note = `podniesione \u017C\u0105danie trybutu (${up.goldPerTurn} \xA4/tur\u0119)`;
+          if (!bestUp || (up.goldPerTurn ?? 0) < (bestUp.payload.goldPerTurn ?? 0)) {
+            bestUp = { payload: up, note };
+          }
         }
       }
+      return bestDown ?? bestUp;
     }
     return null;
   }
@@ -13405,18 +13501,37 @@ function generateCounterOffer(proposal, ctx) {
   if (moneyField) {
     const base = getMoneyField(payload, moneyField);
     if (base > 0) {
+      const tolerance = aiOfferPwSurplusTolerance(difficulty);
+      let bestUp = null;
+      let bestDown = null;
       for (let step = 1; step <= NEGOTIATION_MONEY_MAX_STEPS; step++) {
         const up = withMoneyField(payload, moneyField, base * (1 + NEGOTIATION_MONEY_STEP_PCT * step));
         if (tryPayload(up)) {
-          return { payload: up, note: `podbita oferta (${getMoneyField(up, moneyField)})` };
+          const surplus = aiProposalPlayerBenefitSurplus(up, relTotal, pnOpts);
+          if (surplus <= tolerance) {
+            if (!bestUp || surplus < aiProposalPlayerBenefitSurplus(bestUp.payload, relTotal, pnOpts)) {
+              bestUp = { payload: finalizePayload(up), note: `podbita oferta (${getMoneyField(up, moneyField)})` };
+            }
+          } else if (!aiOfferTargetsZeroBalance(difficulty)) {
+            bestUp = { payload: up, note: `podbita oferta (${getMoneyField(up, moneyField)})` };
+          }
         }
         if (actionId === "trybut_oferta") {
           const down = withMoneyField(payload, moneyField, base * (1 - NEGOTIATION_MONEY_STEP_PCT * step));
           if (getMoneyField(down, moneyField) > 0 && tryPayload(down)) {
-            return { payload: down, note: `obni\u017Cona oferta (${getMoneyField(down, moneyField)})` };
+            const surplus = aiProposalPlayerBenefitSurplus(down, relTotal, pnOpts);
+            if (surplus <= tolerance) {
+              if (!bestDown || surplus < aiProposalPlayerBenefitSurplus(bestDown.payload, relTotal, pnOpts)) {
+                bestDown = {
+                  payload: finalizePayload(down),
+                  note: `obni\u017Cona oferta (${getMoneyField(down, moneyField)})`
+                };
+              }
+            }
           }
         }
       }
+      return bestUp ?? bestDown;
     }
   }
   return null;

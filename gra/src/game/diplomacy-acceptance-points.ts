@@ -70,6 +70,38 @@ export function treatyBaseAcceptancePn(actionId: string): number {
   return loadTreatyAcceptanceDef(actionId)?.punkty ?? 0;
 }
 
+/** PW traktatu dwustronnego do wyświetlenia na obu stronach stołu (effective lub baza). */
+export function bilateralTreatyDisplayPw(
+  my?: AcceptanceSideBalance,
+  their?: AcceptanceSideBalance,
+): number | undefined {
+  const mode = my?.mode ?? their?.mode;
+  if (mode !== 'treaty' && mode !== 'mixed') return undefined;
+  const effective = my?.treatyEffectivePn ?? their?.treatyEffectivePn;
+  if (effective != null && effective > 0) return effective;
+  const base = my?.treatyBasePn ?? their?.treatyBasePn;
+  return base != null && base > 0 ? base : undefined;
+}
+
+/** Suma PW widoczna na karcie stołu: koszyk + wartość traktatu (dwustronny lub po stronie proponenta). */
+export function sideDisplayOfferPw(
+  side: AcceptanceSideBalance | undefined,
+  bilateralTreatyPw?: number,
+): number {
+  if (!side) return bilateralTreatyPw ?? 0;
+  const basket = side.offerPn;
+  const ownTreaty = side.treatyEffectivePn ?? 0;
+  if (ownTreaty > 0) return basket + ownTreaty;
+  if (
+    (side.mode === 'treaty' || side.mode === 'mixed')
+    && bilateralTreatyPw != null
+    && bilateralTreatyPw > 0
+  ) {
+    return basket + bilateralTreatyPw;
+  }
+  return basket;
+}
+
 /** Czy po stronie gracza (My) jest realna treść oferty — nie pusty „—". */
 export function playerSideHasBasketOffer(payload: ProposalPayload, incoming: boolean): boolean {
   const split = splitNegotiationDealPlayerSides(payload, incoming);
@@ -85,10 +117,10 @@ export function isPlayerIncomingGift(payload: ProposalPayload): boolean {
 }
 
 function formatBalanceLabel(balancePn: number, accepted: boolean): string {
-  if (accepted && balancePn > 0) return `Nadwyżka +${balancePn} PN`;
-  if (accepted && balancePn === 0) return 'Spełnia warunki (0 PN)';
-  if (balancePn < 0) return `Brakuje ${Math.abs(balancePn)} PN`;
-  return `Saldo ${balancePn} PN`;
+  if (accepted && balancePn > 0) return `Nadwyżka +${balancePn} PW`;
+  if (accepted && balancePn === 0) return 'Spełnia warunki (0 PW)';
+  if (balancePn < 0) return `Brakuje ${Math.abs(balancePn)} PW`;
+  return `Saldo ${balancePn} PW`;
 }
 
 function computeSideBalance(
@@ -114,11 +146,11 @@ function computeSideBalance(
 
   let statusLabel = formatBalanceLabel(balancePn, accepted);
   if (treatyEffectivePn > 0 && !treatyPnOk) {
-    statusLabel = `Brakuje ${treatyEffectivePn - offerPn} PN traktatu (wym. ${treatyEffectivePn})`;
+    statusLabel = `Brakuje ${treatyEffectivePn - offerPn} PW traktatu (wym. ${treatyEffectivePn})`;
   } else if (relRequired != null && relBalance != null && relBalance < 0) {
     statusLabel = `Relacja −${Math.abs(relBalance)} (wym. ${relRequired})`;
   } else if (mode === 'gift' && offerPn > 0 && demandPn === 0) {
-    statusLabel = `Dar +${offerPn} PN`;
+    statusLabel = `Dar +${offerPn} PW`;
   } else if (treatyEffectivePn > 0 && treatyPnOk && modPct !== 0) {
     statusLabel = `${statusLabel} · ${modLabel}`;
   }

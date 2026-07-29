@@ -37,6 +37,13 @@ import {
 import type { BasketItemFormatCtx } from '../game/diplomacy-display';
 import { formatBasketListBrief } from '../game/diplomacy-display';
 import { renderPnBalancePanelFromBasket } from './diplomacyAcceptanceBalance';
+import {
+  bilateralTreatyDisplayPw,
+  computePlayerAcceptanceSides,
+  sideDisplayOfferPw,
+} from '../game/diplomacy-acceptance-points';
+import { proposalActionIdFromPayload } from './diplomacyNegotiationModal';
+import type { ProposalPayload, ProposalActionId } from '../game/diplomacy-proposals';
 
 export type TradeBasketMode = 'trade' | 'gift' | 'treaty';
 
@@ -166,7 +173,9 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .da-pn-balance-bar.ok{border-color:rgba(90,208,122,.45);}
 .civ-diplo-basket .da-pn-balance-bar.no{border-color:rgba(224,136,104,.45);}
 .civ-diplo-basket .da-pn-bal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
-.civ-diplo-basket .da-pn-bal-title{font-size:0.68em;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#e8d88a;}
+.civ-diplo-basket .da-pn-bal-head-titles{display:inline-flex;align-items:baseline;gap:6px;}
+.civ-diplo-basket .da-pn-bal-title{font-size:0.68em;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#e8d88a;cursor:help;}
+.civ-diplo-basket .da-pn-bal-abbr{font-size:0.62em;font-weight:700;letter-spacing:.06em;color:#c8b898;text-decoration:none;cursor:help;border-bottom:1px dotted rgba(200,184,152,.45);}
 .civ-diplo-basket .da-pn-bal-deal{font-size:0.72em;color:#c8b898;}
 .civ-diplo-basket .da-pn-bal-cols{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:8px;}
 .civ-diplo-basket .da-pn-bal-cell{border-radius:8px;padding:8px 10px;border:1px solid rgba(255,255,255,.08);
@@ -222,7 +231,7 @@ function defaultResourceOptions(): Array<{ id: string; label: string }> {
   const cat = diplomacyResourceAccessCatalog();
   return Object.entries(cat).map(([id, pn]) => ({
     id,
-    label: id + ' (' + pn + ' PN)',
+    label: id + ' (' + pn + ' PW)',
   }));
 }
 
@@ -330,7 +339,7 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + '<p class="cdb-sub">Wasal zachowuje terytorium · płaci trybut co turę</p>';
       break;
     case '10':
-      body = '<p class="cdb-sub">Zakończenie wojny — wymagana oferta PN (baza 500, modyfikator Relacji ±90%). '
+      body = '<p class="cdb-sub">Zakończenie wojny — wymagana oferta PW (baza 500, modyfikator Relacji ±90%). '
         + 'Dołóż złoto lub surowce w koszyku poniżej.</p>';
       break;
     default:
@@ -384,20 +393,43 @@ function validateTreatyForm(actionId: string, state: TreatyFormState): BasketVal
 }
 
 function treatySummaryHtml(
+  action: AudienceAction,
+  treatyState: TreatyFormState,
   giveItems: BasketItem[],
   receiveItems: BasketItem[],
   ctx: NegotiationModalContext,
+  dealTurns: number,
+  resourceTradeMode: 'once' | 'per_turn',
 ): string {
-  if (giveItems.length === 0 && receiveItems.length === 0) return '';
+  const payload = buildTreatyPayload(
+    action.id, treatyState, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode,
+  );
+  const cywId = proposalActionIdFromPayload(payload) as ProposalActionId;
+  const rel = ctx.relacjaTotal ?? 100;
+  const { actionId: _aid, ...proposalFields } = payload;
+  const sides = computePlayerAcceptanceSides(cywId, proposalFields as ProposalPayload, rel, false);
+  const bil = bilateralTreatyDisplayPw(sides.my, sides.their);
+  const myPw = sideDisplayOfferPw(sides.my, bil);
+  const theirPw = sideDisplayOfferPw(sides.their, bil);
+
+  let html = '';
+  if ((bil != null && bil > 0) || myPw > 0 || theirPw > 0) {
+    html += renderPnBalancePanelFromBasket(myPw, theirPw, rel, action.label);
+  }
+
+  if (giveItems.length === 0 && receiveItems.length === 0) {
+    return html;
+  }
+
   const givePn = sumBasketPn(giveItems, ctx, 'give') ?? 0;
   const receivePn = sumBasketPn(receiveItems, ctx, 'receive') ?? 0;
   const net = Math.max(0, givePn - receivePn);
-  let html = '<div class="cdb-summary"><div class="cdb-basket-opt-title">Dołóż do umowy (koszyk PN)</div>';
-  html += '<div>Oddajesz: <b>' + givePn + ' PN</b>';
-  if (receiveItems.length > 0) html += ' · Dostajesz: <b>' + receivePn + ' PN</b>';
+  html += '<div class="cdb-summary"><div class="cdb-basket-opt-title">Dołóż do umowy (koszyk PW)</div>';
+  html += '<div>Oddajesz: <b>' + givePn + ' PW</b>';
+  if (receiveItems.length > 0) html += ' · Dostajesz: <b>' + receivePn + ' PW</b>';
   html += '</div>';
   if (net > 0) {
-    html += '<div>Słodzik netto: <b>' + net + ' PN</b> — zwiększa szansę akceptacji</div>';
+    html += '<div>Słodzik netto: <b>' + net + ' PW</b> — zwiększa szansę akceptacji</div>';
   }
   html += '</div>';
   return html;
@@ -614,7 +646,7 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
       '</div>' +
       '<div class="cdb-fields-extra" data-extra="' + prefix + '-city">' +
         '<label>Miasto (spichlerz)</label><select class="cdb-city" data-side="' + prefix + '">' + citySel + '</select>' +
-        '<label>Ilość żywności <span style="color:#7a8494">(1 PN = ' + zywnHint + ')</span></label>' +
+        '<label>Ilość żywności <span style="color:#7a8494">(1 PW = ' + zywnHint + ')</span></label>' +
         '<input type="number" class="cdb-food-qty" data-side="' + prefix + '" value="10" min="1" />' +
       '</div>' +
       '<div class="cdb-fields-extra" data-extra="' + prefix + '-zloze">' +
@@ -718,12 +750,12 @@ function summaryHtml(
   }
 
   if (mode === 'trade') {
-    html += '<div>SUMA oddaję: <b>' + (givePn ?? '—') + ' PN</b> · SUMA dostaję: <b>' + (receivePn ?? '—') + ' PN</b></div>';
+    html += '<div>SUMA oddaję: <b>' + (givePn ?? '—') + ' PW</b> · SUMA dostaję: <b>' + (receivePn ?? '—') + ' PW</b></div>';
     if (givePn != null && receivePn != null) {
       const fairMin = diplomacyFairGivePn(receivePn, rel);
-      html += '<div>Fair min (Rel ' + rel + '): <b>' + fairMin + ' PN</b></div>';
+      html += '<div>Fair min (Rel ' + rel + '): <b>' + fairMin + ' PW</b></div>';
       const preview = diplomacyTradeTrustFromDeal(givePn, receivePn, rel, trustGained);
-      html += '<div>Nadmiar: <b>' + preview.surplusPn + ' PN</b>';
+      html += '<div>Nadmiar: <b>' + preview.surplusPn + ' PW</b>';
       if (preview.deltaZaufanie > 0) {
         html += ' → <b>+' + preview.deltaZaufanie + ' Zauf.</b>';
         if (preview.deltaZaufanieRaw > preview.deltaZaufanie) {
@@ -772,7 +804,7 @@ function summaryHtml(
         verdict = 'poniżej progu — ryzyko odrzucenia przez partnera';
         verdictCls = 'bad';
       } else if (preview.surplusPn > 0) {
-        verdict = 'korzystna — nadwyżka ' + preview.surplusPn + ' PN przekłada się na Zaufanie';
+        verdict = 'korzystna — nadwyżka ' + preview.surplusPn + ' PW przekłada się na Zaufanie';
         verdictCls = 'good';
       } else {
         verdict = 'zrównoważona — dokładnie fair min przy tej Relacji';
@@ -780,10 +812,10 @@ function summaryHtml(
       }
       html += '<div class="cdb-verdict cdb-verdict-' + verdictCls + '">Szczegóły: ' + esc(verdict) + '</div>';
     } else {
-      html += '<div class="cdb-warn">' + brandIconSvg('chip-warning', 14) + ' Nieznana wartość PN — sprawdź pozycje.</div>';
+      html += '<div class="cdb-warn">' + brandIconSvg('chip-warning', 14) + ' Nieznana wartość PW — sprawdź pozycje.</div>';
     }
   } else {
-    html += '<div>SUMA daru: <b>' + (givePn ?? '—') + ' PN</b></div>';
+    html += '<div>SUMA daru: <b>' + (givePn ?? '—') + ' PW</b></div>';
     if (givePn != null) {
       const gift = diplomacyGiftTrustFromPn(givePn, trustGained);
       html += '<div>Przewidywane: <b>+' + gift.deltaZaufanie + ' Zauf.</b>';
@@ -897,7 +929,7 @@ function renderBasket(
 
   const title = mode === 'gift' ? 'Prezent / dar' : action.label;
   const sub = mode === 'treaty'
-    ? 'Ustal warunki traktatu — wymiana PN jest opcjonalna · partner: <strong>' + esc(ctx.civName) + '</strong>'
+    ? 'Ustal warunki traktatu — wymiana PW jest opcjonalna · partner: <strong>' + esc(ctx.civName) + '</strong>'
     : mode === 'gift'
       ? 'Oddajesz bez towaru w zamian · Rel ≥ ' + progDar
       : 'Wymiana dwustronna · Rel ≥ ' + progHandel + ' · partner: <strong>' + esc(ctx.civName) + '</strong>';
@@ -962,13 +994,13 @@ function renderBasket(
   const basketOptIntro = mode === 'treaty' && !blocked
     ? '<div class="cdb-basket-opt"><div class="cdb-basket-opt-title">'
       + (treatyBasketsEmpty
-        ? 'Opcjonalnie — dołóż wymianę PN (nie jest wymagana do zaproponowania traktatu)'
-        : 'Dołóżona wymiana PN')
+        ? 'Opcjonalnie — dołóż wymianę PW (nie jest wymagana do zaproponowania traktatu)'
+        : 'Dołóżona wymiana PW')
       + '</div>'
     : '';
   const basketOptClose = mode === 'treaty' && !blocked ? '</div>' : '';
   const summaryBlock = mode === 'treaty'
-    ? treatySummaryHtml(giveItems, receiveItems, ctx)
+    ? treatySummaryHtml(action, treatyState, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode)
     : summaryHtml(mode, giveItems, receiveItems, ctx, resourceTradeMode, dealTurns);
 
   box.className = 'civ-diplo-basket' + (mode === 'gift' ? ' cdb-gift' : '');
@@ -1230,63 +1262,7 @@ export function actionUsesTradeBasket(actionId: string): boolean {
   return TRADE_BASKET_ACTION_IDS.has(actionId);
 }
 
-const SZLAKI_MODAL_STYLE = 'civ-diplo-szlaki-css';
-
-/**
- * HANDEL-SPLIT-Q1=B — propozycja traktatu szlaków bez koszyka PN.
- * Partner może zażądać wymiany w odpowiedzi (kontroferta na stole).
- */
-export function showSzlakiTreatyProposalModal(
-  action: AudienceAction,
-  civName: string,
-  onSubmit: (payload: NegotiationPayload) => void,
-  onCancel: () => void,
-): void {
-  ensureDiploBrandScope();
-  document.getElementById(SZLAKI_MODAL_STYLE)?.remove();
-  const css = `
-${DIPLO_1E_SHARED_CSS}
-.civ-diplo-szlaki-overlay{position:fixed;inset:0;z-index:512;background:rgba(0,0,0,0.65);
-  display:flex;align-items:center;justify-content:center;padding:12px;}
-.civ-diplo-szlaki{background:linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98));
-  border:2px solid rgba(232,216,138,.4);border-radius:12px;padding:18px 20px;max-width:420px;width:100%;
-  color:#e8e0c8;font:14px 'Segoe UI',Tahoma,sans-serif;}
-.civ-diplo-szlaki h3{margin:0 0 8px;font-family:Georgia,serif;color:#e8d88a;font-size:1.05em;}
-.civ-diplo-szlaki p{font-size:0.85em;line-height:1.5;color:#a8a090;margin:0 0 14px;}
-.civ-diplo-szlaki .cs-btns{display:flex;gap:8px;justify-content:flex-end;}
-.civ-diplo-szlaki button{padding:8px 14px;border-radius:6px;border:1px solid rgba(232,216,138,.35);
-  background:rgba(20,24,32,.9);color:#e8e0c8;cursor:pointer;font:inherit;}
-.civ-diplo-szlaki button.primary{background:rgba(90,140,200,.35);border-color:rgba(140,180,240,.5);}
-`;
-  const s = document.createElement('style');
-  s.id = SZLAKI_MODAL_STYLE;
-  s.textContent = css;
-  document.head.appendChild(s);
-
-  const overlay = document.createElement('div');
-  overlay.className = 'civ-diplo-szlaki-overlay';
-  const szlakiTip = 'Otwarte szlaki handlowe między miastami, dochód z tras, +1 Zaufanie/turę. '
-    + 'Bez koszyka towarów (wymiana surowców = osobna umowa). Partner może zażądać wymiany w odpowiedzi.';
-  overlay.innerHTML =
-    '<div class="civ-diplo-szlaki">' +
-    '<h3 title="' + esc(szlakiTip) + '">' + esc(action.label) + '</h3>' +
-    '<p>Propozycja traktatu z <strong>' + esc(civName) + '</strong>.</p>' +
-    '<div class="cs-btns">' +
-    '<button type="button" class="cs-cancel">Anuluj</button>' +
-    '<button type="button" class="primary cs-send" title="' + esc(szlakiTip) + '">Wyślij propozycję</button>' +
-    '</div></div>';
-  document.body.appendChild(overlay);
-
-  const close = (): void => {
-    overlay.remove();
-    document.getElementById(SZLAKI_MODAL_STYLE)?.remove();
-  };
-  overlay.querySelector('.cs-cancel')?.addEventListener('click', () => { close(); onCancel(); });
-  overlay.querySelector('.cs-send')?.addEventListener('click', () => {
-    close();
-    onSubmit({ actionId: '5', turns: 20 });
-  });
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) { close(); onCancel(); }
-  });
+/** Domyślny payload traktatu handlowego (szlaki) — D-DYPLO-KOSZYK-OD-RAZU. */
+export function defaultSzlakiTreatyPayload(): NegotiationPayload {
+  return { actionId: '5', turns: 20 };
 }

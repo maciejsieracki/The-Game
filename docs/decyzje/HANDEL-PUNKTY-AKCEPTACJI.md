@@ -1,6 +1,8 @@
-# Handel — punkty akceptacji (PN)
+# Handel — punkty akceptacji (PW w UI)
 
 **Decyzja:** Maciej 2026-07-29 · **Źródło kodu:** `gra/data/diplomacy-acceptance-points.json` + runtime `diplomacy-value-catalog.ts`
+
+> **D-DYPLO-PW-NAZWA (2026-07-29):** w UI gracza nazwa **Punkty wymiany / PW** (wcześniej „punkty porozumienia / PN”). Kod wewnętrzny nadal `pn` / `acceptancePoints`. Szczegóły: `docs/decyzje/D-DYPLO-PW-NAZWA.md`.
 
 **Skala względna:** sojusz pełny >> sojusz defensywny >> NAP >> traktat handlowy ≈ umowa szlaków >> umowa wymiany >> granice. Koszyk PN liczony runtime; traktaty mają PN bazowe stałe.
 

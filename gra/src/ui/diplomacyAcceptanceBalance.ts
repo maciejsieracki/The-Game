@@ -1,8 +1,9 @@
 /**
- * diplomacyAcceptanceBalance.ts — panel punktów porozumienia (PN) na stole negocjacji.
+ * diplomacyAcceptanceBalance.ts — panel punktów wymiany (PW) na stole negocjacji.
  * Używa AcceptanceSideBalance z diplomacy-acceptance-points (bez drugiego silnika).
  */
 import type { AcceptanceSideBalance } from '../game/diplomacy-acceptance-points';
+import { bilateralTreatyDisplayPw, sideDisplayOfferPw } from '../game/diplomacy-acceptance-points';
 import { pnDealAcceptedByAi } from '../game/diplomacy-pn-engine';
 import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
 
@@ -36,11 +37,37 @@ export interface PnBalancePanelData {
   uiActionId?: string;
 }
 
+/** Tooltip nagłówka PW — D-DYPLO-PW-NAZWA (Maciej 2026-07-29). */
+export const PW_EXCHANGE_TOOLTIP =
+  'Punkty wymiany (PW) mierzą bilans oferty na stole negocjacji. '
+  + '„My oddajemy” vs „Oni oddają” — dodatni bilans oznacza, że możesz coś wyciągnąć lub przyjąć ofertę; '
+  + 'ujemny bilans — trzeba dopłacić (surowce, ¤, ustępstwa). '
+  + 'To nie jest waluta ¤ ani złoto-surowiec w magazynie.';
+
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-/** Wybiera wpis stołu do centralnego panelu PN (priorytet: incoming do decyzji). */
+function pwTipAttr(): string {
+  return ' title="' + esc(PW_EXCHANGE_TOOLTIP) + '"';
+}
+
+function pwTitleHeadHtml(): string {
+  const t = pwTipAttr();
+  return (
+    '<span class="da-pn-bal-head-titles">'
+    + '<span class="da-pn-bal-title"' + t + '>Punkty wymiany</span>'
+    + '<abbr class="da-pn-bal-abbr"' + t + '>PW</abbr>'
+    + '</span>'
+  );
+}
+
+function pwAmountHtml(n: number, extraCls = ''): string {
+  const cls = 'da-pn-bal-num' + (extraCls ? ' ' + extraCls : '');
+  return '<span class="' + cls + '"' + pwTipAttr() + '>' + n + ' PW</span>';
+}
+
+/** Wybiera wpis stołu do centralnego panelu PW (priorytet: incoming do decyzji). */
 export function pickPrimaryNegotiationRow(
   rows: readonly NegotiationBalanceSource[],
 ): NegotiationBalanceSource | null {
@@ -59,12 +86,13 @@ export function balancePanelDataFromRow(
   const their = row.acceptanceTheir;
   if (!their) return null;
   const my = row.acceptanceMy;
+  const bilateralPw = bilateralTreatyDisplayPw(my, their);
   return {
     actionLabel: row.actionLabel,
     negotiationId: row.id,
     direction: row.direction,
-    myOfferPn: my?.offerPn ?? 0,
-    theirOfferPn: their.offerPn,
+    myOfferPn: sideDisplayOfferPw(my, bilateralPw),
+    theirOfferPn: sideDisplayOfferPw(their, bilateralPw),
     theirBalance: their,
     myBalance: my,
     canAccept: row.canAccept,
@@ -85,13 +113,13 @@ function formatBalanceDelta(balancePn: number, accepted: boolean): string {
 
 function balanceHint(balance: AcceptanceSideBalance): string {
   if (balance.accepted && balance.balancePn > 0) {
-    return `Nadwyżka ${balance.balancePn} PN`;
+    return `Nadwyżka ${balance.balancePn} PW`;
   }
   if (balance.accepted && balance.balancePn === 0) {
     return 'Równo — spełnia';
   }
   if (balance.balancePn < 0) {
-    return `Brakuje ${Math.abs(balance.balancePn)} PN`;
+    return `Brakuje ${Math.abs(balance.balancePn)} PW`;
   }
   return balance.statusLabel;
 }
@@ -130,19 +158,19 @@ function verdictHtml(data: PnBalancePanelData): { html: string; tone: 'ok' | 'no
     return {
       tone: 'ok',
       html: data.theirBalance.balancePn > 0
-        ? 'Drugą stronę można przyjąć — nadwyżka ' + data.theirBalance.balancePn + ' PN'
+        ? 'Drugą stronę można przyjąć — nadwyżka ' + data.theirBalance.balancePn + ' PW'
         : 'Równo — druga strona spełnia oczekiwania',
     };
   }
   return { tone: 'no', html: 'Brakuje u nich: ' + their.statusLabel };
 }
 
-/** Główny panel PN — widoczny między kolumnami My / Oni na stole. */
+/** Główny panel PW — widoczny między kolumnami My / Oni na stole. */
 export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): string {
   if (!data) {
     return (
       '<div class="da-pn-balance-bar idle">'
-      + '<div class="da-pn-bal-head"><span class="da-pn-bal-title">Punkty porozumienia</span></div>'
+      + '<div class="da-pn-bal-head">' + pwTitleHeadHtml() + '</div>'
       + '<div class="da-pn-bal-empty">Brak aktywnej propozycji na stole — wyślij ofertę lub poczekaj na odpowiedź.</div>'
       + '</div>'
     );
@@ -159,7 +187,7 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
 
   const treatyNote = their.treatyEffectivePn != null && their.treatyEffectivePn > 0
     ? '<div class="da-pn-bal-meta">Traktat: wym. '
-      + their.treatyEffectivePn + ' PN'
+      + their.treatyEffectivePn + ' PW'
       + (their.relationModLabel ? ' · ' + esc(their.relationModLabel) : '')
       + '</div>'
     : '';
@@ -174,22 +202,22 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + (data.negotiationId ? ' data-negot-id="' + esc(data.negotiationId) + '"' : '')
     + '>'
     + '<div class="da-pn-bal-head">'
-    + '<span class="da-pn-bal-title">Punkty porozumienia</span>'
+    + pwTitleHeadHtml()
     + '<span class="da-pn-bal-deal">' + esc(data.actionLabel) + extraNote + '</span>'
     + '</div>'
     + '<div class="da-pn-bal-cols">'
     + '<div class="da-pn-bal-cell my">'
     + '<span class="da-pn-bal-lbl">My oddajemy</span>'
-    + '<span class="da-pn-bal-num">' + data.myOfferPn + ' PN</span>'
+    + pwAmountHtml(data.myOfferPn)
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
     + '<span class="da-pn-bal-lbl">Bilans (Oni)</span>'
-    + '<span class="da-pn-bal-num ' + deltaCls + '">' + esc(delta) + '</span>'
+    + '<span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + '>' + esc(delta) + '</span>'
     + '<span class="da-pn-bal-hint">' + esc(balanceHint(their)) + '</span>'
     + '</div>'
     + '<div class="da-pn-bal-cell they">'
     + '<span class="da-pn-bal-lbl">Oni oddają</span>'
-    + '<span class="da-pn-bal-num">' + data.theirOfferPn + ' PN</span>'
+    + pwAmountHtml(data.theirOfferPn)
     + '</div>'
     + '</div>'
     + treatyNote + relNote
@@ -208,8 +236,8 @@ export function renderPnBalancePanelFromBasket(
   if (givePn == null || receivePn == null) {
     return (
       '<div class="da-pn-balance-bar idle da-pn-balance-bar--basket">'
-      + '<div class="da-pn-bal-head"><span class="da-pn-bal-title">Punkty porozumienia</span></div>'
-      + '<div class="da-pn-bal-empty">Uzupełnij koszyk — wartości PN pojawią się tutaj.</div>'
+      + '<div class="da-pn-bal-head">' + pwTitleHeadHtml() + '</div>'
+      + '<div class="da-pn-bal-empty">Uzupełnij koszyk — wartości PW pojawią się tutaj.</div>'
       + '</div>'
     );
   }
@@ -220,36 +248,36 @@ export function renderPnBalancePanelFromBasket(
   const delta = formatBalanceDelta(balancePn, accepted);
   const deltaCls = balancePn >= 0 ? 'pos' : 'neg';
   const hint = accepted
-    ? (balancePn > 0 ? `Nadwyżka ${balancePn} PN` : 'Równo — spełnia')
-    : `Brakuje ${Math.abs(balancePn)} PN`;
+    ? (balancePn > 0 ? `Nadwyżka ${balancePn} PW` : 'Równo — spełnia')
+    : `Brakuje ${Math.abs(balancePn)} PW`;
   const verdict = accepted
     ? (balancePn > 0
-      ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PN'
+      ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
       : 'Równo — partner spełnia oczekiwania przy tej Relacji')
-    : 'Poniżej progu fair min (' + fairMin + ' PN) — ryzyko odrzucenia';
+    : 'Poniżej progu fair min (' + fairMin + ' PW) — ryzyko odrzucenia';
 
   return (
     '<div class="da-pn-balance-bar ' + balCls + ' da-pn-balance-bar--basket">'
     + '<div class="da-pn-bal-head">'
-    + '<span class="da-pn-bal-title">Punkty porozumienia</span>'
+    + pwTitleHeadHtml()
     + '<span class="da-pn-bal-deal">' + esc(actionLabel) + '</span>'
     + '</div>'
     + '<div class="da-pn-bal-cols">'
     + '<div class="da-pn-bal-cell my">'
     + '<span class="da-pn-bal-lbl">My oddajemy</span>'
-    + '<span class="da-pn-bal-num">' + givePn + ' PN</span>'
+    + pwAmountHtml(givePn)
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
     + '<span class="da-pn-bal-lbl">Bilans (Oni)</span>'
-    + '<span class="da-pn-bal-num ' + deltaCls + '">' + esc(delta) + '</span>'
+    + '<span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + '>' + esc(delta) + '</span>'
     + '<span class="da-pn-bal-hint">' + esc(hint) + '</span>'
     + '</div>'
     + '<div class="da-pn-bal-cell they">'
     + '<span class="da-pn-bal-lbl">Oni oddają</span>'
-    + '<span class="da-pn-bal-num">' + receivePn + ' PN</span>'
+    + pwAmountHtml(receivePn)
     + '</div>'
     + '</div>'
-    + '<div class="da-pn-bal-meta">Fair min @ Rel ' + relTotal + ': ' + fairMin + ' PN</div>'
+    + '<div class="da-pn-bal-meta">Fair min @ Rel ' + relTotal + ': ' + fairMin + ' PW</div>'
     + '<div class="da-pn-bal-verdict ' + (accepted ? 'ok' : 'no') + '">' + esc(verdict) + '</div>'
     + '</div>'
   );
@@ -259,14 +287,16 @@ export function renderPnBalancePanelFromBasket(
 export function renderAcceptanceCompactHtml(
   side: AcceptanceSideBalance | undefined,
   prefix: string,
+  bilateralPw?: number,
 ): string {
   if (!side) return '';
   const cls = side.accepted ? 'ok' : 'no';
+  const displayPw = sideDisplayOfferPw(side, bilateralPw);
   return (
     '<div class="da-accept-compact ' + cls + '">'
-    + esc(prefix) + ': ' + side.offerPn + ' PN · saldo '
+    + esc(prefix) + ': ' + displayPw + ' PW · saldo '
     + (side.balancePn >= 0 ? '+' + side.balancePn : String(side.balancePn))
-  + ' · ' + esc(side.statusLabel)
+    + ' · ' + esc(side.statusLabel)
     + '</div>'
   );
 }

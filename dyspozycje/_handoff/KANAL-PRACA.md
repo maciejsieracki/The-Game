@@ -4388,3 +4388,10 @@ tsc 0 | hex-plony-magazyn 9/9 | stolarnia 9/9 | diplomacy-treaties 12/12 | VERIF
 Zakres: R-HEX-PLONY-MAGAZYN B (worked tileYield drewno/kamień/glina → magazyn + ulepszenia addytywnie) · rzeka +2 glina w tileYield · D-WIAR-KASKADA-Q1=B (kara W kaskada)
 **Sesja lokalna: pull na dysk właściciela, testuj `e5c1bbed`.**
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (magazyn z pól + glina przy rzece).
+
+## [23:13 PL, 2026-07-29] Sesja lokalna → wszystkie — FALA 112 DEPLOY ALL
+md5 `8d5813ea025a603d23e04cc923c65b94` | stempel ROBOCZA · 2026-07-29 23:13
+tsc 0 | dip-accept 142/142 | dip-ai-offer 18/18 | hex-plony 9/9 | qualify 94/94 | dip-treaties 12/12 | VERIFY OK | vite build exit 0 przed kopiowaniem
+Zakres: koszyk dyplo od razu · PW nazwy+NAP fix · AI oferta zero (Easy/Normal) · tooltip HUD ×2 · mapa 👤+granice+⛏ default ON · surowce overlay · glina overlay · (rzeki dopływy — brak zmian kodu)
+Commit lokalny, **bez push** (Maciej).
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `8d5813ea`).

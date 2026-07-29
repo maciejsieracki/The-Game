@@ -34,7 +34,7 @@ Maciej wymaga **pełnej formy** dla KAŻDEJ decyzji gameplayowej/produktowej/arc
 **1. Zakaz otwierania nowych wątków pytaniami.** Wolno zadawać **wyłącznie pytania doprecyzowujące do wątku,
 który Maciej AKTUALNIE prowadzi**. Pytania otwierające nowy temat — dopiero gdy on sam powie, że można.
 Problem znaleziony przy okazji (nie dotyczący bieżącego wątku) zapisuje się **cicho** do
-`dyspozycje/PYTANIA-OTWARTE.md` i **nie wspomina się o nim w czacie**. Jego słowa: „ja odpowiadam na jedno,
+`dyspozycje/PYTANIA-OTWARTE.md` i **nie wspomina się o nim w czacie**. **Każde pytanie i każdy bug Macieja → ten plik zanim zmienisz temat** (2026-07-29). Jego słowa: „ja odpowiadam na jedno,
 a ty generujesz kolejnych pięć… nie jesteśmy w stanie zakończyć jednego, a ty wyciągasz kolejne". Kończymy
 jeden temat, dopiero potem następny — nie mieszamy wątków w jednej odpowiedzi.
 

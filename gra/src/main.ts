@@ -479,12 +479,11 @@ import { buildWzgorze, rotacjaDlaHeksa } from './render/teren-gory-wzgorza';
 import { buildTarasy, tarasyWariantDlaHeksa } from './render/tarasy-model';
 import {
   foodLayerFromAnimalDeposit,
-  hexHasCoveringTerrainImprovement,
+  hexSuppressesDepositOverlay,
   improvementDisplayName,
   improvementKeysForHex,
   isLivestockImprovementKey,
   normalizeImprovementKey,
-  ROAD_IMPROVEMENT_KEYS,
   isImprovementAllowedForCiv,
 } from './game/terrain-improvements';
 import { isLivestockAllowed, isLamaDepositVisibleForCiv } from './game/livestock-unlock';
@@ -838,6 +837,9 @@ import {
   clampBasketItemsToAffordable,
   type AiResourceTradeClampCtx,
 } from './game/diplomacy-ai-balance';
+import {
+  adjustZaplataPerTuraForZeroBalance,
+} from './game/diplomacy-ai-offer-balance';
 import {
   wiarygodnoscStartowa,
   sumaWiarygodnosciCalkowita,
@@ -1528,14 +1530,15 @@ async function boot(): Promise<void> {
       return false;
     }
 
-    /** Ulepszenie terenu (farma, tartak, kopalnia…) przykrywa marker złoża w rogu heksa. */
+    /** Ukryj ikonę złoża tylko gdy ulepszenie DEDYKOWANE temu złożu (Glinianka→glina; Farma NIE). */
     function hexSuppressesResourceOverlay(hexKey: string): boolean {
-      if (improvementMeshes.has(hexKey) || clearingMeshes.has(hexKey)) return true;
-      const placed = placedImprovements.get(hexKey);
-      if (placed?.some(k => !ROAD_IMPROVEMENT_KEYS.has(k))) return true;
       const hex = map.hexes[hexKey];
       if (!hex) return false;
-      return hexHasCoveringTerrainImprovement(hex);
+      const placed = placedImprovements.get(hexKey);
+      return hexSuppressesDepositOverlay(
+        hex as typeof hex & { zloze?: string },
+        placed,
+      );
     }
 
     /** Warstwy gracza + implicit hodowla ze złoża zwierzęcego (render). */
@@ -1575,6 +1578,7 @@ async function boot(): Promise<void> {
           resourceOverlays.splice(i, 1);
         }
       }
+      if (!showResourceDepositOverlay) return;
       const hex = map.hexes[hexKey];
       if (!hex) return;
       const hexZ = hex as typeof hex & { zloze?: string };
@@ -1601,6 +1605,7 @@ async function boot(): Promise<void> {
 
     function rebuildResourceOverlays(): number {
       clearResourceOverlays();
+      if (!showResourceDepositOverlay) return 0;
       let count = 0;
       for (const hex of Object.values(map.hexes)) {
         const hexZ = hex as typeof hex & { zloze?: string };
@@ -4964,6 +4969,7 @@ async function boot(): Promise<void> {
       hideSiegeMapPanel();
       hideCityAttackChoice();
       clearSiegeHtmlLabels();
+      resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
       diagInfo('session', 'prepareSessionForLoad');
     }
@@ -5897,7 +5903,7 @@ async function boot(): Promise<void> {
       // (D3-W1-A/D4-WYMIANA-PN: Zaufanie liczone wyłącznie z wartości PN, patrz diplomacy.ts).
       recordDiploFactor(proposerId, responderId, isGift ? 'dar_pn' : 'handel_pn', applied.deltaZaufanie);
       if (applied.dobraWolaStarted) {
-        showHintMessage('Dobra wola: +1 Zauf./turę × 3 (nadmiar ≥ 100 PN)', 3500);
+        showHintMessage('Dobra wola: +1 Zauf./turę × 3 (nadmiar ≥ 100 PW)', 3500);
       }
     }
 
@@ -7337,7 +7343,7 @@ async function boot(): Promise<void> {
     let cultureRangeVisible = false;
     let religionRangeVisible = false;
     /** Trwały wybór użytkownika — gasi tylko toggle OFF lub reset sesji (nowa gra / load). */
-    let territoryBorderVisible = false;
+    let territoryBorderVisible = true;
     /** Stan toggle granic na mapie świata — przywracany po zamknięciu panelu miasta. */
     let territoryBorderSavedBeforeCityPanel: boolean | null = null;
     let cultureRangeGroup: THREE.Group | null = null;
@@ -7374,10 +7380,11 @@ async function boot(): Promise<void> {
     }
 
     // --- E-map-worker-overlay: ikonki 👤 na polach z robotnikami (wszystkie cywilizacje) ---
-    let showWorkerOverlay = false;
-    /** true gdy overlay włączony automatycznie wejściem w tryb budowy — wyłącz przy exitBuildMode. */
-    let workerOverlayAutoEnabled = false;
+    let showWorkerOverlay = true;
     let workerFieldOverlayGroup: THREE.Group | null = null;
+
+    /** Ikony złóż / nakładek surowcowych na mapie 3D (resourceOverlays) — toggle minimapy ⛏. */
+    let showResourceDepositOverlay = true;
 
     function clearWorkerFieldOverlay(): void {
       if (!workerFieldOverlayGroup) return;
@@ -7403,17 +7410,35 @@ async function boot(): Promise<void> {
       }
     }
 
-    function toggleWorkerOverlayOnMap(): void {
-      showWorkerOverlay = !showWorkerOverlay;
-      workerOverlayAutoEnabled = false;
+    /** Domyślne ON przy nowej grze / load (brak zapisu preferencji UI w save). */
+    function resetMapOverlayToggleDefaults(): void {
+      territoryBorderVisible = true;
+      showWorkerOverlay = true;
+      showResourceDepositOverlay = true;
+      territoryBorderSavedBeforeCityPanel = null;
+    }
+
+    function refreshMapOverlayToggles(): void {
+      refreshTerritoryBorderOverlay();
       refreshWorkerFieldOverlay();
       refreshD1bHud();
     }
 
-    function autoEnableWorkerOverlayForBuildMode(): void {
-      if (!showWorkerOverlay) workerOverlayAutoEnabled = true;
-      showWorkerOverlay = true;
+    function toggleWorkerOverlayOnMap(): void {
+      showWorkerOverlay = !showWorkerOverlay;
       refreshWorkerFieldOverlay();
+      refreshD1bHud();
+    }
+
+    function toggleResourceDepositOverlayOnMap(): void {
+      showResourceDepositOverlay = !showResourceDepositOverlay;
+      if (showResourceDepositOverlay) {
+        rebuildResourceOverlays();
+        const vis = currentVisible();
+        syncResourceOverlayFog(vis, fogExploredForRender());
+      } else {
+        clearResourceOverlays();
+      }
       refreshD1bHud();
     }
 
@@ -7919,21 +7944,15 @@ async function boot(): Promise<void> {
       unitRenderer.setHighlight(new Set(hexes.map(h => keyOf(h.q, h.r))));
     }
 
-    /** Usuwa tymczasowe warstwy 3D trybu budowy (ghost, highlight, auto-overlay 👤). */
+    /** Usuwa tymczasowe warstwy 3D trybu budowy (ghost + highlight kandydatów). */
     function clearBuildModeVisuals(): void {
       removeBuildGhosts();
       unitRenderer.clearHighlight();
-      if (workerOverlayAutoEnabled) {
-        showWorkerOverlay = false;
-        workerOverlayAutoEnabled = false;
-        clearWorkerFieldOverlay();
-      }
     }
 
     function beginOnboardingFoundCity(): void {
       if (cities.some(c => c.ownerId === 0)) return;
       buildModeOpen = true;
-      autoEnableWorkerOverlayForBuildMode();
       foundCityMode = true;
       activeImprovementKey = null;
       refreshBuildApi();
@@ -8056,7 +8075,7 @@ async function boot(): Promise<void> {
           syncHexUlepszenieFields(req.hexKey, []);
         }
         spawnImprovementMesh(req.hexKey);
-        rebuildResourceOverlays();
+        syncResourceOverlayAtHex(req.hexKey);
       }
 
       if (pending.kosztPraca > 0) {
@@ -8212,7 +8231,7 @@ async function boot(): Promise<void> {
       });
 
       spawnImprovementMesh(req.hexKey);
-      rebuildResourceOverlays();
+      syncResourceOverlayAtHex(req.hexKey);
 
       refreshBuildApi();
       refreshBuildHighlight();
@@ -8337,7 +8356,7 @@ async function boot(): Promise<void> {
       stripForestDependentImprovements(hexKey);
       hideDecorAtHex(hexKey);
       removeClearingMesh(hexKey);
-      rebuildResourceOverlays();
+      syncResourceOverlayAtHex(hexKey);
     }
 
     function spawnImprovementMesh(hexKey: string): void {
@@ -10149,6 +10168,7 @@ async function boot(): Promise<void> {
           theirResourceOptions: priceableTradableGoodOptions(0),
           ourQuantityResourceOptions: quantityTradableGoodOptions(ownerId),
           theirQuantityResourceOptions: quantityTradableGoodOptions(0),
+          difficulty: effectiveGameDifficultyForOwner(ownerId),
         });
         const hasBasket = quick.giveItems.length > 0 || quick.receiveItems.length > 0;
         const sweetener = workingCmd.sweetenerGold ?? 0;
@@ -10398,7 +10418,7 @@ async function boot(): Promise<void> {
         case 'namow_wojne': return `Namowa do wojny — łapówka ${p.bribeGold ?? 0} ¤`;
         case 'trybut_zadanie': return `Żądanie trybutu ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'trybut_oferta': return p.goldOnce ? `Trybut jednorazowy ${p.goldOnce} ¤` : `Trybut ${p.goldPerTurn ?? 0} ¤/turę`;
-        case 'pokoj': return basketDetail || 'Propozycja pokoju (PN baza 500)';
+        case 'pokoj': return basketDetail || 'Propozycja pokoju (PW baza 500)';
         case 'ultimatum': return `Ultimatum — ${p.goldOnce ?? 0} ¤`;
         case 'wasal': return `Wasalizacja — ${p.goldPerTurn ?? 0} ¤/turę`;
         default: return basketDetail || entry.actionId;
@@ -11478,10 +11498,20 @@ async function boot(): Promise<void> {
       );
       if (pakietyPerTura <= 0) return null;
       const handlowosc = proposerHandlowosc ?? 0.5;
-      const zaplataPerTura = applyTradeArchetypePriceMargin(
+      let zaplataPerTura = applyTradeArchetypePriceMargin(
         pick.zaplataPerTura,
         handlowosc,
         kierunek,
+      );
+      const rel = getDiploRelation(proposerOwnerId, partnerOwnerId);
+      const resourceGivePn = diplomacyPnSurowiecIlosc(pick.surowiecKey, pakietyPerTura) ?? 0;
+      const difficulty = effectiveGameDifficultyForOwner(proposerOwnerId);
+      zaplataPerTura = adjustZaplataPerTuraForZeroBalance(
+        zaplataPerTura,
+        'zloto',
+        resourceGivePn,
+        relationTotal(rel),
+        difficulty,
       );
       return {
         surowiecKey: pick.surowiecKey,
@@ -12501,7 +12531,7 @@ async function boot(): Promise<void> {
       refreshD1bHud();
       updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
-      showHintMessage('Propozycja na stole — użyj Przyjmij w Punkty porozumienia', 4000);
+      showHintMessage('Propozycja na stole — użyj Przyjmij w Punkty wymiany', 4000);
     }
 
     function diplomacyActionIdFromLabel(akcja: string): string {
@@ -13498,7 +13528,6 @@ async function boot(): Promise<void> {
             }
             closeAllMapToolbarModes();
             buildModeOpen = true;
-            autoEnableWorkerOverlayForBuildMode();
             if (isAwaitingFirstPlayerCity()) {
               foundCityMode = true;
               activeImprovementKey = null;
@@ -13615,6 +13644,10 @@ async function boot(): Promise<void> {
         minimapWorkerOverlay: {
           onToggleWorkers: () => toggleWorkerOverlayOnMap(),
           isWorkersActive: () => showWorkerOverlay,
+        },
+        minimapResourceDepositOverlay: {
+          onToggleDeposits: () => toggleResourceDepositOverlayOnMap(),
+          isDepositsActive: () => showResourceDepositOverlay,
         },
         minimapPlaytestFog: minimapPlaytestFogHooks(),
         onMinimapClick: (q, r) => {
@@ -20945,6 +20978,7 @@ async function boot(): Promise<void> {
       hoverKey = null;
       buildModeOpen = false;
       activeImprovementKey = null;
+      resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
       placedImprovements.clear();
       clearAllHexClearing();
@@ -20980,6 +21014,7 @@ async function boot(): Promise<void> {
       refreshFog();
       initDiplomaticContactSnapshot();
       updateHud();
+      refreshMapOverlayToggles();
 
       syncBasketResearchFromEngine();
       console.log('[NewGame] Mapa: ' + map.szerokoscQ + 'x' + map.wysokoscR + ' seed=' + newSeed + ' typ=' + _menuTypSwiata + ' rywale=' + _menuCityStates + ' typy=' + _menuCivTypesCount);
@@ -21174,6 +21209,7 @@ async function boot(): Promise<void> {
       hoverKey = null;
       buildModeOpen = false;
       activeImprovementKey = null;
+      resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
       placedImprovements.clear();
       clearAllHexClearing();
@@ -21192,7 +21228,7 @@ async function boot(): Promise<void> {
       refreshFog();
       initDiplomaticContactSnapshot();
       updateHud();
-      refreshD1bHud();
+      refreshMapOverlayToggles();
 
       const playerCity = preset.playerCityId
         ? cities.find(c => c.id === preset.playerCityId)
@@ -21405,6 +21441,7 @@ async function boot(): Promise<void> {
       hoverKey = null;
       buildModeOpen = false;
       activeImprovementKey = null;
+      resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
       placedImprovements.clear();
       clearAllHexClearing();
@@ -21434,7 +21471,7 @@ async function boot(): Promise<void> {
       refreshFog();
       initDiplomaticContactSnapshot();
       updateHud();
-      refreshD1bHud();
+      refreshMapOverlayToggles();
 
       const playerCity = cities.find(c => c.id === preset.playerCityId);
       if (playerCity) {
@@ -21611,6 +21648,7 @@ async function boot(): Promise<void> {
       hoverKey = null;
       buildModeOpen = false;
       activeImprovementKey = null;
+      resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
       placedImprovements.clear();
       clearAllHexClearing();
@@ -21652,7 +21690,7 @@ async function boot(): Promise<void> {
       refreshFog();
       initDiplomaticContactSnapshot();
       updateHud();
-      refreshD1bHud();
+      refreshMapOverlayToggles();
 
       const playerCity = cities.find(c => c.id === preset.playerCityId);
       const playerUnit = units.find(u => u.ownerId === 0);
@@ -21766,6 +21804,7 @@ async function boot(): Promise<void> {
         refreshFog();
         initDiplomaticContactSnapshot();
         updateHud();
+        refreshMapOverlayToggles();
         startGameMusic('mapa');
         startRenderLoop();
         const label = (saved.meta?.label as string) || slotId;

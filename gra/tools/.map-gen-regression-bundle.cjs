@@ -5487,7 +5487,7 @@ function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, r
   let fixed = 0;
   for (const part of partitions) {
     const massSet = new Set(part.filter((k) => hexes[k]?.terenBazowy !== "morze" /* Morze */));
-    for (let pass = 0; pass < 6; pass++) {
+    for (let pass = 0; pass < 10; pass++) {
       let passFixed = 0;
       for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
         if (land.length < minLand) continue;
@@ -5497,6 +5497,14 @@ function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, r
       }
       fixed += passFixed;
       if (passFixed === 0) break;
+    }
+    for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
+      if (land.length < minLand) continue;
+      for (const id of FAIR_PLAY_DEPOSIT_IDS) {
+        if (!cellCarriesDepositType(land, hexes, id)) {
+          forceDepositInCell(land, hexes, id, rand);
+        }
+      }
     }
   }
   capMountainRangeClusterSize(

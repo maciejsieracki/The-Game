@@ -53,7 +53,9 @@ var BREAK_ON_WAR = /* @__PURE__ */ new Set([
   "sojusz_pelny",
   "otwarte_granice" /* OtwartGranice */,
   "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */,
-  "umowa_handlowa" /* UmowaHandlowa */
+  "umowa_handlowa" /* UmowaHandlowa */,
+  "umowa_szlakow" /* UmowaSzlakow */,
+  "umowa_wymiany" /* UmowaWymiany */
 ]);
 function treatiesBrokenByWar(state, a, b) {
   const pair = dealsForPair(state, a, b);
@@ -79,6 +81,10 @@ function totals(lines) {
 function isAllianceKind(rodzaj) {
   const k = normalizeTreatyKind(rodzaj);
   return k === "sojusz_pelny" || k === "sojusz_defensywny" || k === "sojusz_wojskowy" /* SojuszWojskowy */;
+}
+function isHandelTreatyKind(rodzaj) {
+  const k = normalizeTreatyKind(rodzaj);
+  return k === "umowa_handlowa" /* UmowaHandlowa */ || k === "umowa_szlakow" /* UmowaSzlakow */ || k === "umowa_wymiany" /* UmowaWymiany */;
 }
 function dealInvolvesOwners(deal, a, b) {
   const p0 = Math.min(a, b);
@@ -121,7 +127,7 @@ function previewWarDeclarationPenalties(input) {
   const brokenIds = treatiesBrokenByWar(deals, declarerId, targetId);
   if (brokenIds.length > 0) {
     const hasTrade = deals.some(
-      (d) => brokenIds.includes(d.id) && normalizeTreatyKind(d.rodzaj) === "umowa_handlowa" /* UmowaHandlowa */
+      (d) => brokenIds.includes(d.id) && isHandelTreatyKind(d.rodzaj)
     );
     pushLine(
       lines,
@@ -142,7 +148,7 @@ function previewWarDeclarationPenalties(input) {
 }
 function previewVoluntaryTreatyBreakPenalties(deal, params) {
   const lines = [];
-  const isTrade = normalizeTreatyKind(deal.rodzaj) === "umowa_handlowa" /* UmowaHandlowa */;
+  const isTrade = isHandelTreatyKind(deal.rodzaj);
   if (deal.wygasaTura === null) {
     pushLine(
       lines,

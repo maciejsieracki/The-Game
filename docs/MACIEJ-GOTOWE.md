@@ -1,8 +1,14 @@
-﻿## [18:30] ✅ Gotowe — deploy ROBOCZA FALA 111 (e5c1bbed)
+﻿## [23:13] ✅ Gotowe — deploy ROBOCZA FALA 112 (8d5813ea)
 
-**FALA 111** | md5 `e5c1bbed0087c660e1e29d8e00862a90` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+**FALA 112** | md5 `8d5813ea025a603d23e04cc923c65b94` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
-**Magazyn z pól + rzeka + dyplomacja:**
+**DEPLOY ALL sesji (dyplo + UI + mapa):**
+- Koszyk dyplo od razu na stół (handel/szlaki) · PW nazwy + fix NAP/traktaty PW · AI oferta: Easy vs Normal/Hard (zero/tolerancja).
+- Tooltip HUD/toolbar ×2 · mapa: 👤 + granice + ⛏ domyślnie ON · surowce widoczne · glina nie chowa overlay.
+- tsc 0 · dip-accept 142/142 · dip-ai-offer 18/18 · hex-plony 9/9 · qualify 94/94 · dip-treaties 12/12 · POLE-BITWY `dd399c4b`.
+- Rzeki dopływy: nie w bundlu (bez zmian kodu rzek).
+
+## [18:30] ✅ Gotowe — deploy ROBOCZA FALA 111 (e5c1bbed)
 - R-HEX-PLONY-MAGAZYN B: drewno/kamień/glina z obrabianych heksów (centrum + 👤) → magazyn; Tartak/Kamieniołom addytywnie.
 - Rzeka: +2 glina/szt./turę w plonie heksa (`terrain-yields` → `tileYield`).
 - D-WIAR-KASKADA-Q1=B: kaskada sojusznicza — kara W tylko przy pełnym sojuszu agresora.

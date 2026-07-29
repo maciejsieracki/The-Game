@@ -227,9 +227,9 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
     case '5':
       return sub + '<p class="cdn-sub">' + TRAKTAT_HANDLOWY_LABEL + ' — zamknij to okno i użyj przycisku „' + TRAKTAT_HANDLOWY_LABEL + '" na stole (bez koszyka).</p>';
     case '14':
-      return sub + '<p class="cdn-sub">Umowa wymiany PN — zamknij to okno i wybierz „Umowa wymiany" (koszyk).</p>';
+      return sub + '<p class="cdn-sub">Umowa wymiany PW — zamknij to okno i wybierz „Umowa wymiany" (koszyk).</p>';
     case '13':
-      return sub + '<p class="cdn-sub">Dar PN otwiera się w koszyku — zamknij to okno i wybierz „Przekaż dar" ponownie.</p>';
+      return sub + '<p class="cdn-sub">Dar PW otwiera się w koszyku — zamknij to okno i wybierz „Przekaż dar" ponownie.</p>';
 
     case '6': {
       const techs = ctx.techOptions ?? [];
@@ -345,16 +345,16 @@ export interface NegotiationPreviewResult {
 }
 
 /**
- * TEMAT 9 (2026-07-24) — negocjacje DWUETAPOWE: „Zaproponuj" nie zawiera już umowy od razu.
- * Krok 1 (formularz) → `onPreview` (evaluateProposal, BEZ mutacji) → krok 2 pokazuje wstępną
- * odpowiedź drugiej strony + „Zmień" (powrót do formularza, wartości zachowane) / „Akceptuj"
- * (dopiero to woła `onAccept`, który w SILNIKU re-waliduje i finalizuje umowę).
- * Zakres MVP: koszyk handlu/daru (aid 5/13) ma OSOBNY modal (diplomacyTradeBasket) i tu nie wchodzi.
+ * Formularz negocjacji (tech / namów wojnę / ultimatum itd.).
+ * D-DYPLO-KOSZYK-OD-RAZU (Maciej 2026-07-29): „Zaproponuj" od razu kładzie wpis na stół
+ * („My oferujemy") — bez drugiego kroku „Wyślij propozycję". `onPreview` zostaje w API
+ * (kontroferta / kompatybilność), ale nie blokuje dodania do stołu.
+ * Koszyk handlu/daru (aid 5/13/14) → diplomacyTradeBasket.ts.
  */
 export function showNegotiationModal(
   action: AudienceAction,
   ctx: NegotiationModalContext,
-  onPreview: (payload: NegotiationPayload) => NegotiationPreviewResult,
+  _onPreview: (payload: NegotiationPayload) => NegotiationPreviewResult,
   onAccept: (payload: NegotiationPayload) => void,
   onCancel: () => void,
 ): void {
@@ -371,22 +371,12 @@ export function showNegotiationModal(
     + '<button type="button" class="dip-muted-btn cdn-cancel">Anuluj</button>'
     + '<button type="button" class="dip-gold-btn cdn-submit">Zaproponuj</button>'
     + '</div></div>'
-    + '<div class="cdn-result-step" style="display:none">'
-    + '<div class="cdn-result-text"></div>'
-    + '<div class="cdn-btns">'
-    + '<button type="button" class="dip-muted-btn cdn-change">Zmień</button>'
-    + '<button type="button" class="dip-gold-btn cdn-accept">Wyślij propozycję</button>'
-    + '</div></div>'
     + '</div>';
   document.body.appendChild(overlay);
 
   const box = overlay.querySelector('.civ-diplo-neg')!;
   const formStep = box.querySelector('.cdn-form-step') as HTMLElement;
-  const resultStep = box.querySelector('.cdn-result-step') as HTMLElement;
-  const resultText = box.querySelector('.cdn-result-text') as HTMLElement;
-  const acceptBtn = box.querySelector('.cdn-accept') as HTMLButtonElement | null;
   const submitBtn = box.querySelector('.cdn-submit') as HTMLButtonElement | null;
-  let lastPayload: NegotiationPayload | null = null;
   let invalidMsg: HTMLDivElement | null = null;
 
   const showInvalid = (msg: string): void => {
@@ -416,32 +406,8 @@ export function showNegotiationModal(
       }
       return;
     }
-    lastPayload = payload;
-    // C-DYP-Q1=B (2026-07-26, po playteście — negocjacja NA ŻYWO): ten podgląd to
-    // WYŁĄCZNIE prognoza (evaluateProposal BEZ finalizacji). Kliknięcie „Wyślij
-    // propozycję" ląduje na stole (negotiationTable — potrzebne dla zapisu gry i na
-    // wypadek zamknięcia okna w trakcie rozmowy) i SILNIK odpowiada NATYCHMIAST
-    // (resolveNegotiationEntryAt w main.ts) — wynik (przyjęcie / odrzucenie /
-    // kontroferta) gracz zobaczy od razu w oknie audiencji, BEZ czekania na turę AI.
-    // „Wyślij propozycję" NIE jest blokowane tą prognozą — to gracz decyduje, czy mimo
-    // słabej prognozy warto spróbować.
-    const preview = onPreview(payload);
-    resultText.innerHTML = preview.accepted
-      ? '<p class="cdn-accepted">✓ ' + esc(ctx.civName) + ' prawdopodobnie się zgodzi'
-        + (preview.reason ? ': ' + esc(preview.reason) : '') + '.</p>'
-      : '<p class="cdn-rejected">✗ ' + esc(ctx.civName) + ' prawdopodobnie odrzuci'
-        + (preview.reason ? ': ' + esc(preview.reason) : '') + '.</p>';
-    formStep.style.display = 'none';
-    resultStep.style.display = '';
-  });
-  box.querySelector('.cdn-change')?.addEventListener('click', () => {
-    resultStep.style.display = 'none';
-    formStep.style.display = '';
-  });
-  box.querySelector('.cdn-accept')?.addEventListener('click', () => {
-    if (lastPayload == null || acceptBtn?.disabled) return;
     closeModal();
-    onAccept(lastPayload);
+    onAccept(payload);
   });
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) { closeModal(); onCancel(); }

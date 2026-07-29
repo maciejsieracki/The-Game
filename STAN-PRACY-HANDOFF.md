@@ -6,7 +6,7 @@
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
 > ⛔ **ZASADA PROCESU (2026-07-24):** KAŻDA prośba Macieja, która ma skończyć się zmianą, MUSI trafić do [`dyspozycje/REJESTR-PROSB-I-ZADAN.md`](dyspozycje/REJESTR-PROSB-I-ZADAN.md) — jedynego rejestru statusu próśb (żeby nic z czatu nie ginęło; zdarzyło się realnie). Sprawdzaj i aktualizuj go przy każdej prośbie.
 > ⛔ **TRZY ZASADY PROCESU (2026-07-25):** (1) zakaz otwierania nowych wątków pytaniami — tylko doprecyzowanie
-> bieżącego wątku, reszta cicho do `dyspozycje/PYTANIA-OTWARTE.md`; (2) każda liczba ma nazwany parametr +
+> bieżącego wątku, reszta cicho do `dyspozycje/PYTANIA-OTWARTE.md` (**każde pytanie/bug Macieja → ten plik zanim zmienisz temat**, 2026-07-29); (2) każda liczba ma nazwany parametr +
 > jednostkę + kontekst (zakaz gołego „baza 16"); (3) Opus 5/Fable 5 wyłącznie za wyraźną zgodą Macieja, domyślnie
 > Sonnet 5. Pełny zapis: `CLAUDE.md` §„Jak pracować z właścicielem" pkt 2–4, `dyspozycje/PAMIEC-ROBOCZA-CIV.md` §1a.
 > Powstał, bo notatki robocze asystenta żyją lokalnie na maszynie właściciela i **nie są widoczne z chmury** — tylko ten plik jedzie z repozytorium.
@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-28 (NAJNOWSZY):** deploy ROBOCZA **`d109dfa8`** (FALA 69, 18:48) — deploy all: CIV-MAP-EPOCH-Q1 + HUD 1 wiersz + karta jednostki left 86px + Grecy display name + fix handlu AI + MAP-SPAWN 70%/MP packing + dziedziczone rzeki W2/civ counts/filtr epoki. Poprzedni: FALA 68 `9b8f3539`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan na 2026-07-29 (NAJNOWSZY):** deploy ROBOCZA **`8d5813ea`** (FALA 112, 23:13) — DEPLOY ALL sesji: dyplo koszyk+PW+NAP+AI oferta zero · tooltip HUD ×2 · mapa 👤+granice+⛏ default ON · surowce overlay · glina overlay. Poprzedni: FALA 111 `e5c1bbed`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

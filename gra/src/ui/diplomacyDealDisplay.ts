@@ -123,9 +123,12 @@ export function renderNegotiationDealHtml(
   return html;
 }
 
-/** Wpis traktatu dwustronnego — gdy koszyk pusty, obie strony stołu pokazują tę samą etykietę. */
-export function renderTreatyDealItemHtml(label: string): string {
-  return `<div class="da-deal-item da-deal-treaty"><span class="da-deal-amt">${esc(label)}</span></div>`;
+/** Wpis traktatu dwustronnego — gdy koszyk pusty, obie strony stołu pokazują tę samą etykietę + PW. */
+export function renderTreatyDealItemHtml(label: string, pw?: number): string {
+  const pwSuffix = pw != null && pw > 0
+    ? `<span class="da-deal-pw" title="Punkty wymiany"> · ${pw} PW</span>`
+    : '';
+  return `<div class="da-deal-item da-deal-treaty"><span class="da-deal-amt">${esc(label)}${pwSuffix}</span></div>`;
 }
 
 /**
@@ -137,12 +140,18 @@ export function renderNegotiationTableDealSideHtml(
   focus: 'we' | 'they',
   incoming: boolean,
   treatyFallbackLabel?: string,
+  treatyFallbackPw?: number,
 ): string {
   const split = splitNegotiationDealPlayerSides(payload, incoming);
   const items = split ? (focus === 'we' ? split.weOffer : split.theyOffer) : [];
 
+  const treatyAppend =
+    treatyFallbackLabel && treatyFallbackPw != null && treatyFallbackPw > 0
+      ? { label: treatyFallbackLabel, pw: treatyFallbackPw }
+      : undefined;
+
   if (items.length > 0) {
-    return renderNegotiationDealSideOnlyHtml(payload, focus, incoming);
+    return renderNegotiationDealSideOnlyHtml(payload, focus, incoming, treatyAppend);
   }
 
   if (treatyFallbackLabel) {
@@ -152,7 +161,7 @@ export function renderNegotiationTableDealSideHtml(
       '<div class="da-deal-single da-deal-side-only">'
       + `<div class="da-deal-col ${colCls}">`
       + `<div class="da-deal-col-head">${headLabel}</div>`
-      + `<div class="da-deal-col-body">${renderTreatyDealItemHtml(treatyFallbackLabel)}</div>`
+      + `<div class="da-deal-col-body">${renderTreatyDealItemHtml(treatyFallbackLabel, treatyFallbackPw)}</div>`
       + '</div></div>'
     );
   }
@@ -165,6 +174,7 @@ export function renderNegotiationDealSideOnlyHtml(
   payload: ProposalPayload,
   focus: 'we' | 'they',
   incoming: boolean,
+  treatyAppend?: { label: string; pw?: number },
 ): string {
   const split = splitNegotiationDealPlayerSides(payload, incoming);
   if (!split) return '';
@@ -181,7 +191,12 @@ export function renderNegotiationDealSideOnlyHtml(
   let html = '<div class="da-deal-single da-deal-side-only">';
   html += `<div class="da-deal-col ${colCls}">`;
   html += `<div class="da-deal-col-head">${label}</div>`;
-  html += `<div class="da-deal-col-body">${renderBasketListHtml(items, ctx)}</div>`;
+  html += '<div class="da-deal-col-body">';
+  html += renderBasketListHtml(items, ctx);
+  if (treatyAppend) {
+    html += renderTreatyDealItemHtml(treatyAppend.label, treatyAppend.pw);
+  }
+  html += '</div>';
   html += '</div></div>';
   if (focus === 'they' && split.schedule) {
     html += `<div class="da-deal-sched-foot">${esc(split.schedule)}</div>`;

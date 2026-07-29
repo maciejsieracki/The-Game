@@ -43,6 +43,12 @@ import {
   AI_TRIBUTE_PEACE_MAX,
   capAiGoldOffer,
 } from './diplomacy-economy';
+import {
+  aiOfferPwSurplusTolerance,
+  aiOfferTargetsZeroBalance,
+  aiProposalPlayerBenefitSurplus,
+  trimProposalGoldForZeroBalance,
+} from './diplomacy-ai-offer-balance';
 
 export { AI_TRADE_GOLD_MAX, AI_TRIBUTE_PEACE_MAX, capAiGoldOffer } from './diplomacy-economy';
 
@@ -368,7 +374,7 @@ function treatyPnGate(
     if (givePn < required) {
       return {
         accepted: false,
-        reason: `Oferta za niska na pokój (wymagane ≥ ${required} PN @ Relacji, baza ${basePn})`,
+        reason: `Oferta za niska na pokój (wymagane ≥ ${required} PW @ Relacji, baza ${basePn})`,
       };
     }
     return null;
@@ -378,7 +384,7 @@ function treatyPnGate(
   if (givePn < required) {
     return {
       accepted: false,
-      reason: `Oferta za niska na ten traktat (wymagane ≥ ${required} PN @ Relacji)`,
+      reason: `Oferta za niska na ten traktat (wymagane ≥ ${required} PW @ Relacji)`,
     };
   }
   return null;
@@ -538,7 +544,7 @@ export function evaluateProposal(
       if (givePn < required) {
         return {
           accepted: false,
-          reason: `Oferta za niska na pokój (wymagane ≥ ${required} PN @ Relacji)`,
+          reason: `Oferta za niska na pokój (wymagane ≥ ${required} PW @ Relacji)`,
         };
       }
       return { accepted: true, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
@@ -613,7 +619,7 @@ export function evaluateProposal(
         || (payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false);
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
         if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
+          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
         }
         const turns = clampDealTurns(payload.turns);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
@@ -642,9 +648,9 @@ export function evaluateProposal(
 
       if (hasPnPath) {
         if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
+          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
         }
-        return { accepted: true, reason: 'Wymiana PN zaakceptowana', oneShotTrade: true };
+        return { accepted: true, reason: 'Wymiana PW zaakceptowana', oneShotTrade: true };
       }
 
       // Legacy: goldOnce → PN 1:1, strict fair (W4-A)
@@ -654,7 +660,7 @@ export function evaluateProposal(
         return { accepted: false, reason: 'Brak wartości w ofercie' };
       }
       if (!pnDealAcceptedByAi(legacyGive, legacyReceive, relTotal)) {
-        return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
+        return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
       }
       return { accepted: true, reason: 'Wymiana jednorazowa (T3A)', oneShotTrade: true };
     }
@@ -670,7 +676,7 @@ export function evaluateProposal(
       const relTotal = relationTotal(relation);
       const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
       if (hasItems && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-        return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
+        return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
       }
       const wygasa = payload.turns != null ? ctx.turn + clampDealTurns(payload.turns) : null;
       const deal = buildDeal(
@@ -1113,7 +1119,7 @@ export function resolvePlayerAcceptsAiPending(
       if (payload.goldOnce != null && payload.goldOnce > 0) {
         return { accepted: true, reason: 'Wymiana jednorazowa (T3A)', oneShotTrade: true };
       }
-      return { accepted: true, reason: 'Wymiana PN zaakceptowana', oneShotTrade: true };
+      return { accepted: true, reason: 'Wymiana PW zaakceptowana', oneShotTrade: true };
     }
     case 'umowa_handlowa':
     case 'umowa_szlakow': {
@@ -1428,24 +1434,42 @@ export function generateCounterOffer(
   const { actionId, payload } = proposal;
   if (NEGOTIATION_NO_ENGINE_COUNTER.has(actionId)) return null;
 
+  const difficulty = ctx.difficulty ?? 'normal';
+  const relTotal = relationTotal(ctx.relation);
+  const pnOpts: ResolveProposalPnOptions = { difficulty };
+
   const tryPayload = (p: ProposalPayload): boolean =>
     evaluateProposal({ ...proposal, payload: p }, ctx).accepted;
+
+  const finalizePayload = (p: ProposalPayload): ProposalPayload =>
+    aiOfferTargetsZeroBalance(difficulty)
+      ? trimProposalGoldForZeroBalance(p, relTotal, difficulty, pnOpts)
+      : p;
 
   // trybut_zadanie: dźwignia naturalna to SAMA kwota żądania (respondent „oferuje
   // mniej" / proponent „żąda dopłaty") — dwukierunkowe przeszukanie PRZED słodzikiem.
   if (actionId === 'trybut_zadanie') {
     const base = payload.goldPerTurn ?? 0;
     if (base > 0) {
+      let bestDown: CounterOfferResult | null = null;
+      let bestUp: CounterOfferResult | null = null;
       for (let step = 1; step <= NEGOTIATION_MONEY_MAX_STEPS; step++) {
         const down = withMoneyField(payload, 'goldPerTurn', base * (1 - NEGOTIATION_MONEY_STEP_PCT * step));
         if ((down.goldPerTurn ?? 0) > 0 && tryPayload(down)) {
-          return { payload: down, note: `obniżone żądanie trybutu (${down.goldPerTurn} ¤/turę)` };
+          const note = `obniżone żądanie trybutu (${down.goldPerTurn} ¤/turę)`;
+          if (!bestDown || (down.goldPerTurn ?? 0) > (bestDown.payload.goldPerTurn ?? 0)) {
+            bestDown = { payload: down, note };
+          }
         }
         const up = withMoneyField(payload, 'goldPerTurn', base * (1 + NEGOTIATION_MONEY_STEP_PCT * step));
         if (tryPayload(up)) {
-          return { payload: up, note: `podniesione żądanie trybutu (${up.goldPerTurn} ¤/turę)` };
+          const note = `podniesione żądanie trybutu (${up.goldPerTurn} ¤/turę)`;
+          if (!bestUp || (up.goldPerTurn ?? 0) < (bestUp.payload.goldPerTurn ?? 0)) {
+            bestUp = { payload: up, note };
+          }
         }
       }
+      return bestDown ?? bestUp;
     }
     return null;
   }
@@ -1478,18 +1502,37 @@ export function generateCounterOffer(
   if (moneyField) {
     const base = getMoneyField(payload, moneyField);
     if (base > 0) {
+      const tolerance = aiOfferPwSurplusTolerance(difficulty);
+      let bestUp: CounterOfferResult | null = null;
+      let bestDown: CounterOfferResult | null = null;
       for (let step = 1; step <= NEGOTIATION_MONEY_MAX_STEPS; step++) {
         const up = withMoneyField(payload, moneyField, base * (1 + NEGOTIATION_MONEY_STEP_PCT * step));
         if (tryPayload(up)) {
-          return { payload: up, note: `podbita oferta (${getMoneyField(up, moneyField)})` };
+          const surplus = aiProposalPlayerBenefitSurplus(up, relTotal, pnOpts);
+          if (surplus <= tolerance) {
+            if (!bestUp || surplus < aiProposalPlayerBenefitSurplus(bestUp.payload, relTotal, pnOpts)) {
+              bestUp = { payload: finalizePayload(up), note: `podbita oferta (${getMoneyField(up, moneyField)})` };
+            }
+          } else if (!aiOfferTargetsZeroBalance(difficulty)) {
+            bestUp = { payload: up, note: `podbita oferta (${getMoneyField(up, moneyField)})` };
+          }
         }
         if (actionId === 'trybut_oferta') {
           const down = withMoneyField(payload, moneyField, base * (1 - NEGOTIATION_MONEY_STEP_PCT * step));
           if (getMoneyField(down, moneyField) > 0 && tryPayload(down)) {
-            return { payload: down, note: `obniżona oferta (${getMoneyField(down, moneyField)})` };
+            const surplus = aiProposalPlayerBenefitSurplus(down, relTotal, pnOpts);
+            if (surplus <= tolerance) {
+              if (!bestDown || surplus < aiProposalPlayerBenefitSurplus(bestDown.payload, relTotal, pnOpts)) {
+                bestDown = {
+                  payload: finalizePayload(down),
+                  note: `obniżona oferta (${getMoneyField(down, moneyField)})`,
+                };
+              }
+            }
           }
         }
       }
+      return bestUp ?? bestDown;
     }
   }
 

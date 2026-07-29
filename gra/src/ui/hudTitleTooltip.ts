@@ -2,6 +2,8 @@
  * hudTitleTooltip.ts — większe podpisy hover (atrybut title) dla HUD / toolbar / ikon.
  * Zastępuje natywne tooltips (niepodatne na stylowanie CSS).
  * NIE dotyka kart szczegółów (.hover-detail-anchor, .civ-detail-scope, dock).
+ *
+ * Maciej 2026-07-28/29: małe podpisy przy ikonach ×2 (font + padding), nie karty wyjaśnień.
  */
 
 const STYLE_ID = 'civ-hud-title-tip-css';
@@ -13,6 +15,7 @@ const SCOPE_SELECTOR = [
   '.civ-hud',
   '.civ-map-toolbar',
   '.civ-bottom-bar',
+  '.civ-minimap-wrap',
   '.civ-minimap-tools',
   '.civ-v-icon-rail',
   '.civ-army-stack',
@@ -27,27 +30,31 @@ const HIDE_DELAY_MS = 80;
 
 let tipEl: HTMLDivElement | null = null;
 let activeEl: HTMLElement | null = null;
+/** Element ze schowanym title, zanim custom tooltip się pokaże. */
+let pendingEl: HTMLElement | null = null;
 let showTimer: ReturnType<typeof setTimeout> | null = null;
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
 let installed = false;
 
 function ensureStyles(): void {
-  if (document.getElementById(STYLE_ID)) return;
   const css = `
 #${TIP_ID}{
   position:fixed;z-index:100050;display:none;pointer-events:none;
-  max-width:min(420px,92vw);padding:7px 11px;
+  max-width:min(840px,92vw);padding:14px 22px;
   background:rgba(244,240,228,0.97);color:#1a1408;
-  border:1px solid rgba(160,128,48,0.45);border-radius:6px;
-  font:600 15px/1.35 var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);
-  letter-spacing:0.01em;box-shadow:0 4px 16px rgba(0,0,0,0.45);
+  border:1px solid rgba(160,128,48,0.45);border-radius:12px;
+  font:600 30px/1.35 var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);
+  letter-spacing:0.01em;box-shadow:0 8px 32px rgba(0,0,0,0.45);
   white-space:pre-wrap;word-break:break-word;
 }
 `;
-  const s = document.createElement('style');
-  s.id = STYLE_ID;
+  let s = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
+  if (!s) {
+    s = document.createElement('style');
+    s.id = STYLE_ID;
+    document.head.appendChild(s);
+  }
   s.textContent = css;
-  document.head.appendChild(s);
 }
 
 function ensureTipEl(): HTMLDivElement {
@@ -72,14 +79,18 @@ function isExcluded(el: HTMLElement): boolean {
   return false;
 }
 
+function titleText(el: HTMLElement): string | null {
+  const text = el.getAttribute('title')?.trim() || el.getAttribute(DATA_STORED)?.trim();
+  return text || null;
+}
+
 function resolveTarget(from: EventTarget | null): HTMLElement | null {
   if (!(from instanceof Element)) return null;
-  const hit = from.closest('[title]');
+  const hit = from.closest(`[title], [${DATA_STORED}]`);
   if (!(hit instanceof HTMLElement)) return null;
   if (isExcluded(hit)) return null;
   if (!hit.closest(SCOPE_SELECTOR)) return null;
-  const text = hit.getAttribute('title')?.trim();
-  return text ? hit : null;
+  return titleText(hit) ? hit : null;
 }
 
 function clearTimers(): void {
@@ -95,7 +106,7 @@ function clearTimers(): void {
 
 function storeTitle(el: HTMLElement): string | null {
   const text = el.getAttribute('title')?.trim();
-  if (!text) return null;
+  if (!text) return el.getAttribute(DATA_STORED)?.trim() || null;
   el.setAttribute(DATA_STORED, text);
   el.removeAttribute('title');
   return text;
@@ -109,10 +120,17 @@ function restoreTitle(el: HTMLElement): void {
   }
 }
 
+function clearPending(): void {
+  if (pendingEl && pendingEl !== activeEl) {
+    restoreTitle(pendingEl);
+  }
+  pendingEl = null;
+}
+
 function positionTip(anchor: HTMLElement): void {
   if (!tipEl) return;
   const r = anchor.getBoundingClientRect();
-  const pad = 8;
+  const pad = 16;
   let left = r.left + r.width / 2 - tipEl.offsetWidth / 2;
   let top = r.bottom + pad;
   tipEl.style.left = `${Math.max(pad, Math.min(left, window.innerWidth - tipEl.offsetWidth - pad))}px`;
@@ -135,11 +153,13 @@ function hideNow(): void {
     restoreTitle(activeEl);
     activeEl = null;
   }
+  clearPending();
 }
 
 function showFor(el: HTMLElement): void {
   const text = storeTitle(el);
   if (!text) return;
+  pendingEl = null;
   activeEl = el;
   const tip = ensureTipEl();
   tip.textContent = text;
@@ -158,10 +178,16 @@ function onPointerOver(ev: MouseEvent): void {
     hideTimer = null;
   }
   if (activeEl && activeEl !== target) hideNow();
+  if (pendingEl && pendingEl !== target) clearPending();
+  // Natywny title przeglądarki — schowaj od razu (nie czekaj na delay show).
+  if (target.hasAttribute('title')) {
+    storeTitle(target);
+    pendingEl = target;
+  }
   if (showTimer) clearTimeout(showTimer);
   showTimer = setTimeout(() => {
     showTimer = null;
-    if (!target.matches(`[${DATA_STORED}], [title]`)) return;
+    if (!titleText(target)) return;
     if (!target.isConnected) return;
     showFor(target);
   }, SHOW_DELAY_MS);
@@ -170,11 +196,13 @@ function onPointerOver(ev: MouseEvent): void {
 function onPointerOut(ev: MouseEvent): void {
   const related = ev.relatedTarget;
   if (activeEl && related instanceof Node && activeEl.contains(related)) return;
+  if (pendingEl && related instanceof Node && pendingEl.contains(related)) return;
   const leaving = resolveTarget(ev.target);
-  if (!leaving && !activeEl) return;
+  if (!leaving && !activeEl && !pendingEl) return;
   if (showTimer) {
     clearTimeout(showTimer);
     showTimer = null;
+    clearPending();
   }
   if (!activeEl) return;
   if (hideTimer) clearTimeout(hideTimer);

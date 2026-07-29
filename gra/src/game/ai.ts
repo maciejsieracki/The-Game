@@ -2520,6 +2520,10 @@ import {
   AI_RESOURCE_TRADE_CITYSTATE_URGENT_COOLDOWN_TURNS,
   capAiGoldOffer,
 } from './diplomacy-economy';
+import {
+  aiAllowsOneSidedGoldGift,
+  aiAllowsTradeAgreementSweetener,
+} from './diplomacy-ai-offer-balance';
 
 // ---------------------------------------------------------------------------
 // Strojalne progi (eksportowane, by testy mogły je sprawdzić)
@@ -3212,7 +3216,7 @@ export function decideAIDiplomacy(
       canAiProposeTradeAgreement(currentTurnForTrade, rel.lastTradeAgreementProposalTurn)
     ) {
       const closeToThreshold = score < tradeRelMin + AI_TRADE_AGREEMENT_SWEETENER_MARGIN;
-      const sweetenerRaw = closeToThreshold
+      const sweetenerRaw = (aiAllowsTradeAgreementSweetener(difficulty) && closeToThreshold)
         ? capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_AGREEMENT_SWEETENER_MAX)
         : 0;
       const sweetenerScaled = sweetenerRaw > 0
@@ -3249,6 +3253,7 @@ export function decideAIDiplomacy(
     const tradeGold = scaleAiGenerousGoldOffer(rawTradeGold, difficulty);
     if (
       !rel.stanWojny &&
+      aiAllowsOneSidedGoldGift(difficulty) &&
       giftCooldownOk &&
       tradeGold > 0 &&
       effWillingnessTrade >= effProgHandel &&
