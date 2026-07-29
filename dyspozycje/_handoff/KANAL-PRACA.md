@@ -4374,3 +4374,10 @@ tsc 0 | diplomacy 52/52 + 43/43 | map-gen-regression PASS | vite build OK przed 
 Zakres: dyplomacja AC (PN-only akcje, Następne FIFO, traktat sym.) + glina rarity 0.10→0.30 (×3 standard, proporcje tierów zachowane)
 **Sesja lokalna: pull na dysk właściciela, testuj `57f6fba7`.**
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (dyplo + mapa z więcej gliny przy rzekach).
+
+## [18:05 PL, 2026-07-29] Chmura → sesja lokalna — FALA 110 DEPLOY ALL
+md5 `1d730ca242e4ce8715a970801e6044c7` | stempel ROBOCZA · 2026-07-29 18:05
+tsc 0 | map-improvement-qualify 82/82 | relief-grid 6/6 | map-gen-regression determinizm PASS | vite build OK przed kopiowaniem
+Zakres: relief medium (min 4, komórka 15×15, 10%/15%) · las: hodowla zablokowana, obóz łowiecki+tartak współistnieją · surowce widoczne pod lasem
+**Sesja lokalna: pull na dysk właściciela, testuj `1d730ca2`.**
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (relief + las + surowce).

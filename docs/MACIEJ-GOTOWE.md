@@ -1,4 +1,14 @@
-﻿## [17:45] ✅ Gotowe — deploy ROBOCZA FALA 109 (57f6fba7)
+﻿## [18:05] ✅ Gotowe — deploy ROBOCZA FALA 110 (1d730ca2)
+
+**FALA 110** | md5 `1d730ca242e4ce8715a970801e6044c7` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Relief + las + surowce:**
+- Relief Normalnie: min 4 G/W, komórka 15×15, target/sufit 10%/15%; Mało/Dużo przeskalowane.
+- Las: hodowla zablokowana (`bydlo`/`owce`/`lama`/`stadnina`); `oboz_lowiecki` + `tartak` współistnieją.
+- Surowce pod lasem widoczne (`hex.zloze`); spawn bez blokady lasu.
+- tsc 0 · qualify 82/82 · relief-grid 6/6 · POLE-BITWY `dd399c4b`.
+
+## [17:45] ✅ Gotowe — deploy ROBOCZA FALA 109 (57f6fba7)
 
 **FALA 109** | md5 `57f6fba78776b0c31446059c66dbc975` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

@@ -58,10 +58,11 @@ export function livestockKeyFromImprovement(improvementKey: string): LivestockKe
 }
 
 export function hexHasLivestockDeposit(
-  hex: { nakladka?: Nakladka },
+  hex: { nakladka?: Nakladka; zloze?: string },
   key: 'bydlo' | 'owce' | 'lama',
 ): boolean {
-  return hex.nakladka === DEPOSIT_FOR_LIVESTOCK[key];
+  if (hex.nakladka === DEPOSIT_FOR_LIVESTOCK[key]) return true;
+  return hex.zloze?.trim().toLowerCase() === key;
 }
 
 export function hexHasHorseDeposit(hex: { nakladka?: Nakladka }): boolean {

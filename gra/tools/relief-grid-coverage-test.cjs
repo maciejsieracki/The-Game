@@ -1,5 +1,5 @@
 'use strict';
-/** Siatka reliefu: 25×25 min 2× Góry · 15×15 min 2× Wzgórza (Maciej 2026-07-04). */
+/** Siatka reliefu: 15×15 min 4× Góry/Wzgórza (tier Normalnie, Maciej 2026-07-29). */
 
 const fs = require('fs');
 const path = require('path');

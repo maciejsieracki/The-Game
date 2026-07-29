@@ -16,6 +16,7 @@ type ImprovementRow = {
   bonus?: ImprovementBonus;
   nazwa?: string;
   surowiec_ilosc_tura?: number;
+  surowiecOdblokowany?: string | null;
   /** Ograniczenie do wybranych cywilizacji (typCywilizacji z civs.json) — pole ogólny,
    *  patrz `isImprovementAllowedForCiv` niżej. Brak / pusta lista = wszystkie cywilizacje. */
   cywilizacje?: readonly string[];
@@ -202,6 +203,25 @@ export function hexHasCoveringTerrainImprovement(
 
 export function improvementDisplayName(key: string): string {
   return IMPROVEMENTS[key]?.nazwa ?? key;
+}
+
+/** Surowce zwierzęce — `_meta.klucze_surowcow_ASCII` w terrain-improvements.json. */
+const LIVESTOCK_SUROWIEC_KEYS = new Set(['bydlo', 'owce', 'lama', 'kon']);
+
+/**
+ * Id ulepszeń hodowlanych z JSON (`surowiecOdblokowany` ∈ zwierzęta).
+ * Kanon 2026-07-29: bydlo (Trzoda), owce, lama, stadnina — bez wymyślonych aliasów.
+ */
+export const LIVESTOCK_IMPROVEMENT_KEYS: readonly string[] = IMPROVEMENT_KEYS.filter(k => {
+  const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
+  return typeof s === 'string' && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
+
+/** Czy klucz ulepszenia to hodowla zwierzęca z terrain-improvements.json. */
+export function isLivestockImprovementKey(key: string): boolean {
+  const norm = normalizeImprovementKey(key);
+  if (!norm) return false;
+  return LIVESTOCK_IMPROVEMENT_KEYS.includes(norm);
 }
 
 // ---------------------------------------------------------------------------

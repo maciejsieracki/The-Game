@@ -802,7 +802,7 @@ const NAK_TO_DEPOSIT = {
   // lasu, nie wyklucza sie z nakladka='las'. Nie zawezamy silnika
   // (gen-helpers.ts), tylko przestajemy tego zakazywac w tej bramce.
   assert('mapgen: forest+deposit coexistence on the same hex is allowed (decyzja wlasciciela)',
-    true, `forestWithDeposit=${forestWithDeposit} (dozwolone, bez regresji)`);
+    forestWithDeposit >= 0, `forestWithDeposit=${forestWithDeposit} (dozwolone pod lasem)`);
 }
 
 // startPositions: >= 5, all on land, pairwise hex-distance >= absMinDist, deterministic.

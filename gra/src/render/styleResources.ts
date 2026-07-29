@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { Nakladka } from '../types/hex';
 import type { MapRenderStyle } from './mapRenderStyle';
-import { buildResourceOverlay } from './resources';
+import { buildResourceOverlay, buildResourceOverlayFromZloze } from './resources';
 import { buildZlozeKrowy, buildZlozeOwce } from './pastwisko-modele';
 import { buildTrzoda } from './swinia-trzoda';
 import { buildZlozeKonie } from './kon-nowy-model';
@@ -416,7 +416,11 @@ function styledSalt(style: MapRenderStyle): THREE.Group {
 }
 
 export function buildStyledResourceOverlay(nakladka: Nakladka, style: MapRenderStyle, zloze?: string): THREE.Group | null {
-  if (style === 'civ') return buildResourceOverlay(nakladka);
+  if (style === 'civ') {
+    const fromNak = buildResourceOverlay(nakladka);
+    if (fromNak) return fromNak;
+    return buildResourceOverlayFromZloze(zloze);
+  }
   let g: THREE.Group | null = null;
   switch (nakladka) {
     case Nakladka.ZlozeKonia:
@@ -446,6 +450,17 @@ export function buildStyledResourceOverlay(nakladka: Nakladka, style: MapRenderS
       case 'wegiel': g = style === 'roblox' ? buildZlozeWegiel() : styledCoal(style); break;
       case 'sol': g = style === 'roblox' ? buildZlozeSol() : styledSalt(style); break;
       case 'zloto': g = style === 'roblox' ? buildZlozeZloto() : styledGoldOre(style); break;
+      case 'glina': g = style === 'roblox' ? buildZlozeGlina() : styledClay(style); break;
+      case 'konie':
+        g = style === 'roblox' ? buildZlozeKonie() : styledHorse(style);
+        if (g) g.userData.depositDisplayScale = 2;
+        break;
+      case 'owce':
+        g = style === 'roblox' ? buildZlozeOwce() : styledSheep(style);
+        break;
+      case 'bydlo':
+        g = style === 'roblox' ? buildTrzoda() : styledCow(style);
+        break;
     }
   }
   return g;

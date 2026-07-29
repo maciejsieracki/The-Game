@@ -28,6 +28,7 @@ import {
 import {
   improvementDisplayName,
   improvementKeysForHex,
+  isLivestockImprovementKey,
   normalizeImprovementKey,
 } from '../game/terrain-improvements';
 import { hexHasRoad, isRoadImprovementKey } from './road-movement';
@@ -160,9 +161,17 @@ export function isFarmBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boole
   return nakladka === Nakladka.Las && teren === TerenBazowy.Wzgorza;
 }
 
+/** Hodowla zwierzęca z terrain-improvements.json — zakaz na Nakladka.Las (Maciej 2026-07-29). */
+export function isLivestockImprovementBlockedOnForest(key: string, nakladka: Nakladka): boolean {
+  return nakladka === Nakladka.Las && isLivestockImprovementKey(key);
+}
+
+/** @deprecated alias testów — używaj isLivestockImprovementBlockedOnForest */
+export const isAnimalFarmBlockedOnForest = isLivestockImprovementBlockedOnForest;
+
 /**
- * Owce — solo na otwartym Wzgórzu (bez Las) lub pierwsze pastwisko na złożu owiec.
- * Kanon: nie na lesie (nie współistnieją z tartakiem / wyrębem).
+ * Owce — solo na otwartym Wzgórzu (bez Las) lub pierwsze pastwisko na złożu owiec (nakładka, nie las).
+ * Kanon: nie na lesie (hodowla zwierzęca zablokowana — obóz łowiecki / tartak OK).
  */
 export function isOwceBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boolean {
   if (teren !== TerenBazowy.Wzgorza) return false;
@@ -196,8 +205,9 @@ const SEKTOR_OF: Record<string, string> = {
   // — żeby budowa kamieniołomu nie zablokowała późniejszego wydobycia rudy (zwłaszcza żelaza,
   // ukrytego do epoki 3). Zostaje unikalny wobec samego siebie (existing.includes w qualifies).
   kamieniolom: 'kamien',
-  // las (bok 1 — surowiec leśny)
-  wyrab: 'las', tartak: 'las', oboz_lowiecki: 'las',
+  // las (bok 1 — surowiec leśny); obóz łowiecki osobny sektor — współistnieje z tartakiem (Maciej 2026-07-29)
+  wyrab: 'las', tartak: 'las',
+  oboz_lowiecki: 'lowiectwo',
   // bok 2 — pole (food-teren)
   farma: 'foodteren', tarasy: 'foodteren',
   // bok 3 — hodowla
@@ -269,6 +279,7 @@ export function computeImprovementBuildImpact(
   hex: { terenBazowy: TerenBazowy; nakladka: Nakladka },
   existing: readonly string[],
 ): ImprovementBuildImpact | null {
+  if (isLivestockImprovementBlockedOnForest(key, hex.nakladka)) return null;
   if (key === 'owce' && !isOwceBaseTerrain(hex.terenBazowy, hex.nakladka)) {
     return null;
   }
@@ -612,6 +623,7 @@ function createQualifier(state: ImprovementBuildState) {
         break;
       case 'bydlo':
         terrainOk = FLAT_FARM.has(teren)
+          && !isLivestockImprovementBlockedOnForest(key, nakladka)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
@@ -624,6 +636,7 @@ function createQualifier(state: ImprovementBuildState) {
         break;
       case 'lama':
         terrainOk = teren !== TerenBazowy.Pustynia
+          && !isLivestockImprovementBlockedOnForest(key, nakladka)
           && (TERRAIN_ALLOW.lama?.has(teren) ?? false)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
@@ -631,6 +644,7 @@ function createQualifier(state: ImprovementBuildState) {
         break;
       case 'stadnina':
         terrainOk = inPlayerTerritory(q, r)
+          && !isLivestockImprovementBlockedOnForest(key, nakladka)
           && (teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && (hex.nakladka === Nakladka.ZlozeKonia

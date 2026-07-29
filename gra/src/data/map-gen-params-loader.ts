@@ -30,14 +30,13 @@ const FALLBACK_MOUNTAIN: Record<DensityTier, number> = { low: 0.80, medium: 0.68
 const FALLBACK_HIGHLAND: Record<DensityTier, number> = { low: 0.66, medium: 0.50, high: 0.38 };
 
 /**
- * Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play — R-MAPGEN-KOLEJNOSC-Q2=C
- * (2026-07-27): górzystość lądu ~15% na tierze Średni relief (kompromis między ~10% a ~19%).
- * Suma mountain+highland per tier ≈ docelowa górzystość lądu: low≈0,12 / medium≈0,15 / high≈0,30.
+ * Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play — Maciej 2026-07-29.
+ * medium: 10% Góry + 15% Wzgórza w komórce 15×15; Mało/Dużo przeskalowane względem starego stosunku.
  */
 const FALLBACK_RELIEF_OVERFLOW_CAP: Record<DensityTier, { mountain: number; highland: number }> = {
-  low: { mountain: 0.045, highland: 0.075 },
-  medium: { mountain: 0.05, highland: 0.085 },
-  high: { mountain: 0.12, highland: 0.18 },
+  low: { mountain: 0.09, highland: 0.132 },
+  medium: { mountain: 0.10, highland: 0.15 },
+  high: { mountain: 0.24, highland: 0.318 },
 };
 
 /** Parametry pasm górskich (seed-and-grow) — Zadanie HILLS Q1/Q2 (2026-07-20). */

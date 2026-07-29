@@ -14,7 +14,15 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `57f6fba7` - 2026-07-29 17:45 - FALA 109: DYPLO AC + GLINA x3 - **AKTUALNA**
+## ROBOCZA `1d730ca2` - 2026-07-29 18:05 - FALA 110: RELIEF medium + LAS/hodowla + surowce pod lasem - **AKTUALNA**
+- md5 (pelne): `1d730ca242e4ce8715a970801e6044c7` · stempel: `ROBOCZA · 2026-07-29 18:05`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · map-improvement-qualify 82/82 · relief-grid 6/6 · map-gen-regression determinizm PASS.
+- **Relief Normalnie:** min 4 G/W w komórce 15×15 · target 10%/15% lądu · sufit 10%/15%; Mało/Dużo przeskalowane.
+- **Las:** zakaz hodowli (`bydlo`/`owce`/`lama`/`stadnina` z JSON); wolno `oboz_lowiecki` **razem z** `tartak` (sektor `lowiectwo` ≠ `las`).
+- **Surowce:** spawn niezależny od lasu; `hex.zloze` widoczne mimo `Nakladka.Las`; fair-play domknięcie pakietu komórki.
+
+## ROBOCZA `57f6fba7` - 2026-07-29 17:45 - FALA 109: DYPLO AC + GLINA x3 - **ZASTĄPIONA**
 - md5 (pelne): `57f6fba78776b0c31446059c66dbc975` · stempel: `ROBOCZA · 2026-07-29 17:45`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · diplomacy-acceptance-points 52/52 · negotiation-table 43/43 · map-gen-regression PASS.

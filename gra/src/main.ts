@@ -480,7 +480,9 @@ import { buildTarasy, tarasyWariantDlaHeksa } from './render/tarasy-model';
 import {
   foodLayerFromAnimalDeposit,
   hexHasCoveringTerrainImprovement,
+  improvementDisplayName,
   improvementKeysForHex,
+  isLivestockImprovementKey,
   normalizeImprovementKey,
   ROAD_IMPROVEMENT_KEYS,
   isImprovementAllowedForCiv,
@@ -8149,8 +8151,11 @@ async function boot(): Promise<void> {
       const prevLayers = placedImprovements.get(req.hexKey) ?? [];
       const impact = computeImprovementBuildImpact(req.key, hex, prevLayers);
       if (impact === null) {
-        if (req.key === 'owce' && hex.nakladka === Nakladka.Las) {
-          showHintMessage('Owce tylko na otwartym wzgórzu — najpierw wyrąb lasu lub wybierz inne pole', 3500);
+        if (hex.nakladka === Nakladka.Las && isLivestockImprovementKey(req.key)) {
+          showHintMessage(
+            `${improvementDisplayName(req.key)} na lesie zabroniona — postaw ${improvementDisplayName('oboz_lowiecki')}, albo wybierz otwarte pole`,
+            4000,
+          );
         }
         return;
       }

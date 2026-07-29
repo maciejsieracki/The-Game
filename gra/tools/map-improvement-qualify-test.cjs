@@ -20,6 +20,8 @@ export {
   stripImprovementsWhenForestRemoved,
   getForestBuildBlockReason,
   isOwceBaseTerrain,
+  isAnimalFarmBlockedOnForest,
+  isLivestockImprovementBlockedOnForest,
   computeImprovementBuildImpact,
   improvementsReplacedByBuild,
   formatImprovementBuildImpactList,
@@ -266,13 +268,25 @@ ok(M.isOwceBaseTerrain(TB.Wzgorza, NK.Brak), 'owce terrain: open hill');
 ok(!M.isOwceBaseTerrain(TB.Wzgorza, NK.Las), 'owce terrain: hill+las blocked');
 ok(M.isOwceBaseTerrain(TB.Wzgorza, NK.ZlozeOwiec), 'owce terrain: zloze owiec');
 ok(!qRzym('owce', 10, 0), 'owce NOT on wzgorza+las (BUG owce/tartak)');
+ok(!qRzym('bydlo', 2, 1), 'bydlo NOT on laka+las (hodowla zablokowana na lesie)');
+ok(M.isLivestockImprovementBlockedOnForest('bydlo', NK.Las), 'livestock blocked on las: bydlo');
+ok(!M.computeImprovementBuildImpact('bydlo', hexes['2,1'], []), 'impact null: bydlo on las');
+ok(qInka('tartak', 2, 1), 'tartak OK on laka+las (ulepszenie leśne)');
+ok(qInka('oboz_lowiecki', 2, 1), 'oboz lowiecki OK on laka+las');
 const qOwceOpen = qual({ civ: 'rzym', placed: new Map([['1,1', ['owce']]]) });
 ok(qOwceOpen('owce', 0, 1), 'owce on open wzgorza after unlock');
 const placedTartak = new Map([['10,0', ['tartak']]]);
 const qTartakReplace = qual({ civ: 'rzym', placed: placedTartak });
-ok(qTartakReplace('oboz_lowiecki', 10, 0), 'las sector: oboz qualifies with tartak (confirm path)');
+ok(qTartakReplace('oboz_lowiecki', 10, 0), 'oboz qualifies with tartak on same las hex');
+const repObozTartak = M.improvementsReplacedByBuild('oboz_lowiecki', ['tartak']);
+ok(repObozTartak.length === 0, 'oboz does NOT replace tartak (coexist)');
+const impactObozTartak = M.computeImprovementBuildImpact('oboz_lowiecki', hexes['10,0'], ['tartak']);
+ok(impactObozTartak && impactObozTartak.removedImprovements.length === 0, 'impact: oboz+tartak coexist');
+const placedOboz = new Map([['10,0', ['oboz_lowiecki']]]);
+const qObozThenTartak = qual({ civ: 'rzym', placed: placedOboz });
+ok(qObozThenTartak('tartak', 10, 0), 'tartak qualifies when oboz already on hex');
 const rep = M.improvementsReplacedByBuild('oboz_lowiecki', ['tartak']);
-ok(rep.length === 1 && rep[0] === 'tartak', 'impact: oboz replaces tartak');
+ok(rep.length === 0, 'impact: oboz replaces tartak — regresja usunieta');
 ok(!M.computeImprovementBuildImpact('owce', hexes['10,0'], ['tartak']), 'impact null: owce on las+tartak');
 const farmaIrr = M.computeImprovementBuildImpact('bydlo', hexes['0,0'], ['farma', 'irygacja']);
 ok(farmaIrr === null, 'kanon: bydlo blocked on farma+irygacja (no replace)');

@@ -19,6 +19,8 @@ export {
   forestCoverageCellSize,
   reliefCoverageCellSize,
   landHexesByCoverageCell,
+  minMountainsIronCell,
+  minHighlandsCopperCell,
 } from '../src/map/gen-helpers';
 export { mapGenReliefOverflowCapFrac } from '../src/data/map-gen-params-loader';
 export { TerenBazowy } from '../src/types/hex';`,
@@ -90,8 +92,10 @@ for (const { w, h, typ, seed, label } of cases) {
       worstHi = Math.max(worstHi, maxReliefInCell(land, map.hexes, TerenBazowy.Wzgorza));
     }
     const reliefCap = M.mapGenReliefOverflowCapFrac('medium');
-    const maxMtnAllowed = Math.max(3, Math.ceil(worstLand * reliefCap.mountain));
-    const maxHiAllowed = Math.max(3, Math.ceil(worstLand * reliefCap.highland));
+    const minMtn = M.minMountainsIronCell('medium');
+    const minHi = M.minHighlandsCopperCell('medium');
+    const maxMtnAllowed = Math.max(minMtn, Math.ceil(worstLand * reliefCap.mountain));
+    const maxHiAllowed = Math.max(minHi, Math.ceil(worstLand * reliefCap.highland));
     ok(
       worstMtn <= maxMtnAllowed,
       `${label}: max gór w komórce ${worstMtn} ≤ ${maxMtnAllowed}`,

@@ -120,3 +120,29 @@ export function buildResourceOverlay(nakladka: Nakladka): THREE.Group | null {
     default: return null;
   }
 }
+
+/** Złoże w polu hex.zloze (np. las + surowiec — nakladka=Las, zloze=id). */
+export function buildResourceOverlayFromZloze(zloze?: string): THREE.Group | null {
+  if (!zloze) return null;
+  switch (zloze) {
+    case 'miedz':
+    case 'zelazo':
+    case 'wegiel':
+    case 'sol':
+    case 'zloto':
+      return oreRocks();
+    case 'glina':
+      return clayPots();
+    case 'konie': {
+      const h = horse();
+      h.userData.depositDisplayScale = 2;
+      return h;
+    }
+    case 'owce':
+      return sheep();
+    case 'bydlo':
+      return cow();
+    default:
+      return null;
+  }
+}

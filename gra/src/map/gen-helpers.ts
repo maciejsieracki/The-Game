@@ -899,9 +899,9 @@ export function reapplyForestOverlay(
  * cofamy tamtej decyzji: taki przypadek spłaszczamy do Łąki, jak robił classifyTerrainFlat.
  */
 const REAPPLY_RELIEF_BUDGET_FRAC: Record<ReliefDensityTier, number> = {
-  low: 0.10,
-  medium: 0.15,
-  high: 0.30,
+  low: 0.186,
+  medium: 0.25,
+  high: 0.564,
 };
 
 export function reapplyLandTerrain(
@@ -961,9 +961,9 @@ export function reapplyLandTerrain(
 export type ReliefDensityTier = 'low' | 'medium' | 'high';
 
 const FALLBACK_RELIEF_FRAC: Record<ReliefDensityTier, { mountain: number; highland: number }> = {
-  low: { mountain: 0.045, highland: 0.105 },
-  medium: { mountain: 0.075, highland: 0.125 },
-  high: { mountain: 0.18, highland: 0.27 },
+  low: { mountain: 0.06, highland: 0.126 },
+  medium: { mountain: 0.10, highland: 0.15 },
+  high: { mountain: 0.24, highland: 0.324 },
 };
 
 /** Docelowy udział gór/wzgórz na lądzie (gwarantowany ranking szumu). */
@@ -1300,12 +1300,12 @@ function applyReliefToLandKeys(
 }
 
 function reliefBonusCapMountain(tier: ReliefDensityTier, landCount: number): number {
-  const frac = tier === 'high' ? 0.14 : tier === 'low' ? 0.05 : 0.075;
+  const frac = tier === 'high' ? 0.187 : tier === 'low' ? 0.067 : 0.10;
   return Math.max(0, Math.ceil(landCount * frac));
 }
 
 function reliefBonusCapHighland(tier: ReliefDensityTier, landCount: number): number {
-  const frac = tier === 'high' ? 0.22 : tier === 'low' ? 0.08 : 0.12;
+  const frac = tier === 'high' ? 0.275 : tier === 'low' ? 0.10 : 0.15;
   return Math.max(0, Math.ceil(landCount * frac));
 }
 
@@ -1317,12 +1317,12 @@ function reliefBonusCapHighland(tier: ReliefDensityTier, landCount: number): num
  */
 function reliefSpreadCapMountain(tier: ReliefDensityTier, landCount: number): number {
   const frac = mapGenReliefOverflowCapFrac(tier).mountain;
-  return Math.max(MIN_MOUNTAINS_IRON_CELL, Math.ceil(landCount * frac));
+  return Math.max(minMountainsIronCell(tier), Math.ceil(landCount * frac));
 }
 
 function reliefSpreadCapHighland(tier: ReliefDensityTier, landCount: number): number {
   const frac = mapGenReliefOverflowCapFrac(tier).highland;
-  return Math.max(MIN_HIGHLANDS_COPPER_CELL, Math.ceil(landCount * frac));
+  return Math.max(minHighlandsCopperCell(tier), Math.ceil(landCount * frac));
 }
 
 function applyIronMountainsToLandKeys(
@@ -1455,10 +1455,24 @@ export function applyReliefByNoiseRank(
 // Relief — równomierna siatka gór/wzgórz (Maciej 2026-07-04: fair play rud)
 // ---------------------------------------------------------------------------
 
-/** Minima fair play (Maciej 2026-07-04 ~20:34). */
+/** Minima fair play per tier suwaka Relief (Maciej 2026-07-29: medium=4, Mało/Dużo skalowane). */
 export const MIN_RIVER_SOURCES_PER_WATER_CELL = 1;
-export const MIN_HIGHLANDS_COPPER_CELL = 2;
-export const MIN_MOUNTAINS_IRON_CELL = 2;
+
+const RELIEF_MIN_MOUNTAINS: Record<ReliefDensityTier, number> = { low: 2, medium: 4, high: 5 };
+const RELIEF_MIN_HIGHLANDS: Record<ReliefDensityTier, number> = { low: 2, medium: 4, high: 5 };
+
+export function minMountainsIronCell(tier: ReliefDensityTier = 'medium'): number {
+  return RELIEF_MIN_MOUNTAINS[tier];
+}
+
+export function minHighlandsCopperCell(tier: ReliefDensityTier = 'medium'): number {
+  return RELIEF_MIN_HIGHLANDS[tier];
+}
+
+/** @deprecated używaj minMountainsIronCell('medium') */
+export const MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
+/** @deprecated używaj minHighlandsCopperCell('medium') */
+export const MIN_HIGHLANDS_COPPER_CELL = RELIEF_MIN_HIGHLANDS.medium;
 
 /**
  * Siatka wody (rzeki): tier kreatora „Rzeki”.
@@ -1471,17 +1485,17 @@ export function waterCoverageCellSize(tier: DensityTier | ReliefDensityTier = 'm
 }
 
 /**
- * Siatka gór (żelazo) — tier kreatora „Góry i wzgórza” (Maciej A 2026-07-05, lustro rzek).
- * Mało=35 · Normalnie=25 · Dużo=20.
+ * Siatka gór (żelazo) — tier kreatora „Góry i wzgórza” (Maciej 2026-07-29: medium 15×15).
+ * Mało=21 · Normalnie=15 · Dużo=12.
  */
 export function ironCoverageCellSize(tier: ReliefDensityTier = 'medium'): number {
-  if (tier === 'high') return 20;
-  if (tier === 'low') return 35;
-  return 25;
+  if (tier === 'high') return 12;
+  if (tier === 'low') return 21;
+  return 15;
 }
 
 /**
- * Siatka wzgórz (miedź) — ten sam suwak Relief, proporcja ~5∶3 względem gór.
+ * Siatka wzgórz (miedź) — ten sam suwak Relief, ta sama siatka co góry (Maciej 2026-07-29).
  * Mało=21 · Normalnie=15 · Dużo=12.
  */
 export function copperCoverageCellSize(tier: ReliefDensityTier | DensityTier = 'medium'): number {
@@ -1553,20 +1567,22 @@ function cellHasHighland(
   return countHighlandsInCell(cellLand, hexes) > 0;
 }
 
-/** Komórka 25×25: min. 2× Góry (żelazo). */
+/** Komórka żelaza: min. N× Góry (tier Relief). */
 export function cellHasIronPackage(
   cellLand: Array<[number, number]>,
   hexes: Record<string, Hex>,
+  tier: ReliefDensityTier = 'medium',
 ): boolean {
-  return countMountainsInCell(cellLand, hexes) >= MIN_MOUNTAINS_IRON_CELL;
+  return countMountainsInCell(cellLand, hexes) >= minMountainsIronCell(tier);
 }
 
-/** Komórka 15×15: min. 2× Wzgórza (miedź / ruda brązu). */
+/** Komórka miedzi: min. N× Wzgórza (tier Relief). */
 export function cellHasCopperPackage(
   cellLand: Array<[number, number]>,
   hexes: Record<string, Hex>,
+  tier: ReliefDensityTier = 'medium',
 ): boolean {
-  return countHighlandsInCell(cellLand, hexes) >= MIN_HIGHLANDS_COPPER_CELL;
+  return countHighlandsInCell(cellLand, hexes) >= minHighlandsCopperCell(tier);
 }
 
 /** @deprecated — używaj cellHasIronPackage + cellHasCopperPackage */
@@ -1596,6 +1612,7 @@ export function ironGridCoverageRatio(
   massLandKeys: string[],
   hexes: Record<string, Hex>,
   cellSize: number,
+  tier: ReliefDensityTier = 'medium',
 ): number {
   const massSet = new Set(massLandKeys);
   const minLand = minLandHexesForReliefCell(cellSize);
@@ -1604,7 +1621,7 @@ export function ironGridCoverageRatio(
   for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
     if (eligibleReliefLandCount(land, hexes) < minLand) continue;
     need++;
-    if (cellHasIronPackage(land, hexes)) hit++;
+    if (cellHasIronPackage(land, hexes, tier)) hit++;
   }
   return need > 0 ? hit / need : 1;
 }
@@ -1613,6 +1630,7 @@ export function copperGridCoverageRatio(
   massLandKeys: string[],
   hexes: Record<string, Hex>,
   cellSize: number,
+  tier: ReliefDensityTier = 'medium',
 ): number {
   const massSet = new Set(massLandKeys);
   const minLand = minLandHexesForReliefCell(cellSize);
@@ -1621,7 +1639,7 @@ export function copperGridCoverageRatio(
   for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
     if (eligibleReliefLandCount(land, hexes) < minLand) continue;
     need++;
-    if (cellHasCopperPackage(land, hexes)) hit++;
+    if (cellHasCopperPackage(land, hexes, tier)) hit++;
   }
   return need > 0 ? hit / need : 1;
 }
@@ -1704,6 +1722,7 @@ function forceReliefTypeInCell(
   rand: () => number,
   want: 'mountain' | 'highland',
   minCount: number,
+  tier: ReliefDensityTier,
 ): boolean {
   const countFn = () =>
     want === 'mountain' ? countMountainsInCell(land, hexes) : countHighlandsInCell(land, hexes);
@@ -1713,8 +1732,8 @@ function forceReliefTypeInCell(
   const placed = new Set<string>();
   let guard = 0;
   while (countFn() < minCount && guard++ < land.length + 8) {
-    const protectHighland = want === 'mountain' && countHighlandsInCell(land, hexes) <= MIN_HIGHLANDS_COPPER_CELL;
-    const protectMountain = want === 'highland' && countMountainsInCell(land, hexes) <= MIN_MOUNTAINS_IRON_CELL;
+    const protectHighland = want === 'mountain' && countHighlandsInCell(land, hexes) <= minHighlandsCopperCell(tier);
+    const protectMountain = want === 'highland' && countMountainsInCell(land, hexes) <= minMountainsIronCell(tier);
     let spot = pickReliefForceHex(
       land, hexes, scratch, width, height, want, placed, rand, protectHighland, protectMountain,
     );
@@ -1758,9 +1777,10 @@ function forceIronMountainsInCell(
   width: number,
   height: number,
   rand: () => number,
+  tier: ReliefDensityTier,
 ): boolean {
   return forceReliefTypeInCell(
-    land, hexes, scratch, width, height, rand, 'mountain', MIN_MOUNTAINS_IRON_CELL,
+    land, hexes, scratch, width, height, rand, 'mountain', minMountainsIronCell(tier), tier,
   );
 }
 
@@ -1771,9 +1791,10 @@ function forceCopperHighlandsInCell(
   width: number,
   height: number,
   rand: () => number,
+  tier: ReliefDensityTier,
 ): boolean {
   return forceReliefTypeInCell(
-    land, hexes, scratch, width, height, rand, 'highland', MIN_HIGHLANDS_COPPER_CELL,
+    land, hexes, scratch, width, height, rand, 'highland', minHighlandsCopperCell(tier), tier,
   );
 }
 
@@ -1786,8 +1807,8 @@ function forceReliefInCell(
   height: number,
   rand: () => number,
 ): boolean {
-  const a = forceIronMountainsInCell(land, hexes, scratch, width, height, rand);
-  const b = forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand);
+  const a = forceIronMountainsInCell(land, hexes, scratch, width, height, rand, 'medium');
+  const b = forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand, 'medium');
   return a || b;
 }
 
@@ -1830,9 +1851,10 @@ function capMountainOverflowInCell(
   tier: ReliefDensityTier,
   spreadOnly = false,
 ): boolean {
+  const minMtn = minMountainsIronCell(tier);
   const baseMaxMtn = spreadOnly
     ? reliefSpreadCapMountain(tier, land.length)
-    : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
+    : Math.max(minMtn, reliefBonusCapMountain(tier, land.length) + minMtn);
   const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
   const mountains = land
     .filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === TerenBazowy.Gory)
@@ -1845,7 +1867,7 @@ function capMountainOverflowInCell(
   let changed = false;
   let total = mountains.length;
   let i = 0;
-  while (total > maxMtn && total > MIN_MOUNTAINS_IRON_CELL && i < mountains.length) {
+  while (total > maxMtn && total > minMtn && i < mountains.length) {
     const cand = mountains[i]!;
     if (cand.protected) { i++; continue; }
     const dropHex = hexes[hexKey(cand.q, cand.r)]!;
@@ -1866,9 +1888,10 @@ function capHighlandOverflowInCell(
   tier: ReliefDensityTier,
   spreadOnly = false,
 ): boolean {
+  const minHi = minHighlandsCopperCell(tier);
   const baseMaxHi = spreadOnly
     ? reliefSpreadCapHighland(tier, land.length)
-    : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
+    : Math.max(minHi, reliefBonusCapHighland(tier, land.length) + minHi);
   const maxHi = baseMaxHi * RELIEF_OVERFLOW_CAP_MULT;
   const highlands = land
     .filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === TerenBazowy.Wzgorza)
@@ -1881,7 +1904,7 @@ function capHighlandOverflowInCell(
   let changed = false;
   let total = highlands.length;
   let i = 0;
-  while (total > maxHi && total > MIN_HIGHLANDS_COPPER_CELL && i < highlands.length) {
+  while (total > maxHi && total > minHi && i < highlands.length) {
     const cand = highlands[i]!;
     if (cand.protected) { i++; continue; }
     const dropHex = hexes[hexKey(cand.q, cand.r)]!;
@@ -1945,10 +1968,10 @@ function ensureMassIronGridCoverage(
   for (let pass = 0; pass < 14; pass++) {
     let inner = 0;
     const cells = [...eligibleCells]
-      .sort((a, b) => (cellHasIronPackage(a, hexes) ? 1 : 0) - (cellHasIronPackage(b, hexes) ? 1 : 0));
+      .sort((a, b) => (cellHasIronPackage(a, hexes, tier) ? 1 : 0) - (cellHasIronPackage(b, hexes, tier) ? 1 : 0));
     for (const land of cells) {
-      if (cellHasIronPackage(land, hexes)) continue;
-      if (forceIronMountainsInCell(land, hexes, scratch, width, height, rand)) inner++;
+      if (cellHasIronPackage(land, hexes, tier)) continue;
+      if (forceIronMountainsInCell(land, hexes, scratch, width, height, rand, tier)) inner++;
     }
     fixed += inner;
     if (inner === 0) break;
@@ -1980,10 +2003,10 @@ function ensureMassCopperGridCoverage(
   for (let pass = 0; pass < 14; pass++) {
     let inner = 0;
     const cells = [...eligibleCells]
-      .sort((a, b) => (cellHasCopperPackage(a, hexes) ? 1 : 0) - (cellHasCopperPackage(b, hexes) ? 1 : 0));
+      .sort((a, b) => (cellHasCopperPackage(a, hexes, tier) ? 1 : 0) - (cellHasCopperPackage(b, hexes, tier) ? 1 : 0));
     for (const land of cells) {
-      if (cellHasCopperPackage(land, hexes)) continue;
-      if (forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand)) inner++;
+      if (cellHasCopperPackage(land, hexes, tier)) continue;
+      if (forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand, tier)) inner++;
     }
     fixed += inner;
     if (inner === 0) break;
@@ -2726,7 +2749,7 @@ export function growMountainRanges(
       if (item.isHighland) {
         const ck = cellIdOf(item.q, item.r, copperSize);
         const cnt = copperCellCount.get(ck) ?? 0;
-        if (cnt <= MIN_HIGHLANDS_COPPER_CELL) continue; // floor — nie schodzimy niżej
+        if (cnt <= minHighlandsCopperCell(tier)) continue; // floor — nie schodzimy niżej
         hex.terenBazowy = TerenBazowy.Rownina;
         hex.nakladka = Nakladka.Brak;
         delete (hex as HexWithZloze).zloze;
@@ -2734,7 +2757,7 @@ export function growMountainRanges(
       } else {
         const ck = cellIdOf(item.q, item.r, ironSize);
         const cnt = ironCellCount.get(ck) ?? 0;
-        if (cnt <= MIN_MOUNTAINS_IRON_CELL) continue; // floor — nie schodzimy niżej
+        if (cnt <= minMountainsIronCell(tier)) continue; // floor — nie schodzimy niżej
         // Rownina (nie Wzgorza) — Wzgorza nadal liczyłoby się do "mountainous" i nie
         // zmniejszyłoby udziału górzystości, którego pilnuje ten sanity-cap.
         hex.terenBazowy = TerenBazowy.Rownina;
@@ -7095,7 +7118,7 @@ export const DEPOSIT_RULES: DepositRule[] = BASE_DEPOSIT_RULES.map((rule) => {
  *
  * Zasady (par. reguly powyzej):
  *   - kazdy heks moze miec NAJWYZEJ jedno zloze;
- *   - las (Nakladka.Las) nie jest nadpisywany (zloze tylko na "Brak");
+ *   - las (Nakladka.Las) NIE blokuje spawnu — zloze w polu hex.zloze, las zostaje (widoczne razem);
  *   - dla danego ziarna wynik jest identyczny (sortowanie po kluczu + PRNG).
  *
  * Mutuje hexes: ustawia hex.nakladka (ruda/glina/konie) albo hex.zloze (wegiel).
@@ -7130,9 +7153,9 @@ export function placeDeposits(
   for (const key of keys) {
     const hex = hexes[key] as HexWithZloze | undefined;
     if (!hex) continue;
-    // Nie nadpisuj lasu ani istniejacych nakladek; jedno zloze na heks.
-    if (hex.nakladka !== Nakladka.Brak) continue;
+    // Las nie blokuje złoża (Maciej 2026-07-29) — surowiec pod pokrywą lasu; inne nakładki tak.
     if (hex.zloze) continue;
+    if (nakladkaBlocksDepositSpawn(hex.nakladka)) continue;
     // Woda nigdy nie dostaje złoża. C-MAP-SOL-ZIEMIA=B: sól nie jest już na kaflu Wybrzeże,
     // tylko na LĄDZIE przy wybrzeżu (requiresCoastalLand niżej) — więc Wybrzeże, jak Morze,
     // jest wykluczone dla wszystkich złóż.
@@ -7145,11 +7168,7 @@ export function placeDeposits(
       if (rule.requiresCoastalLand && !isCoastalLandHex(hexes, depQ, depR)) continue;
       // Rzut PRNG dla kazdej pasujacej reguly — deterministyczny przy danym seed.
       if (rand() < Math.min(1, rule.rarity * baselineMult * resourceMult)) {
-        if (rule.nakladka !== null) {
-          hex.nakladka = rule.nakladka;
-        } else {
-          hex.zloze = rule.id;
-        }
+        applyDepositToHex(hex, rule);
         counts[rule.id] = (counts[rule.id] ?? 0) + 1;
         break; // jedno zloze na heks
       }
@@ -7179,9 +7198,10 @@ function depositRuleById(id: DepositRule['id']): DepositRule {
 }
 
 function hexCarriesDepositType(hex: HexWithZloze, id: DepositRule['id']): boolean {
+  if (hex.zloze === id) return true;
   const rule = depositRuleById(id);
   if (rule.nakladka !== null) return hex.nakladka === rule.nakladka;
-  return hex.zloze === id;
+  return false;
 }
 
 function cellCarriesDepositType(
@@ -7196,31 +7216,35 @@ function cellCarriesDepositType(
   return false;
 }
 
-function hexCanAcceptDeposit(
-  hex: HexWithZloze,
-  rule: DepositRule,
-  allowForestClear: boolean,
-): boolean {
+/** Las nie blokuje spawnu złoża — inne nakładki (ruda, glina itd.) tak. */
+function nakladkaBlocksDepositSpawn(nakladka: Nakladka): boolean {
+  return nakladka !== Nakladka.Brak && nakladka !== Nakladka.Las;
+}
+
+function hexCanAcceptDeposit(hex: HexWithZloze, rule: DepositRule): boolean {
   if (hex.terenBazowy === TerenBazowy.Morze) return false;
   // C-MAP-SOL-ZIEMIA=B: żadne złoże nie ląduje na wodzie (sól jest teraz na LĄDZIE przy
   // wybrzeżu, nie na kaflu Wybrzeże) — Wybrzeże, jak Morze, wykluczone dla wszystkich złóż.
   if (hex.terenBazowy === TerenBazowy.Wybrzeze) return false;
   if (hex.zloze) return false;
-  if (hex.nakladka !== Nakladka.Brak) {
-    if (!allowForestClear || hex.nakladka !== Nakladka.Las) return false;
-  }
+  if (nakladkaBlocksDepositSpawn(hex.nakladka)) return false;
   return rule.allowedOn(hex);
 }
 
-function forceDepositOnHex(hex: HexWithZloze, rule: DepositRule): void {
-  if (hex.nakladka === Nakladka.Las) hex.nakladka = Nakladka.Brak;
-  if (rule.nakladka !== null) {
+function applyDepositToHex(hex: HexWithZloze, rule: DepositRule): void {
+  if (hex.nakladka === Nakladka.Las) {
+    hex.zloze = rule.id;
+  } else if (rule.nakladka !== null) {
     hex.nakladka = rule.nakladka;
   } else {
     hex.zloze = rule.id;
   }
   if (rule.id === 'miedz' && hex.zlozeMinEra == null) hex.zlozeMinEra = 2;
   if (rule.id === 'zelazo' && hex.zlozeMinEra == null) hex.zlozeMinEra = 3;
+}
+
+function forceDepositOnHex(hex: HexWithZloze, rule: DepositRule): void {
+  applyDepositToHex(hex, rule);
 }
 
 function prepareTerrainForDeposit(hex: Hex, rule: DepositRule): void {
@@ -7304,25 +7328,22 @@ function pickDepositForceHex(
   rule: DepositRule,
   rand: () => number,
 ): [number, number] | null {
-  const tryPick = (allowForestClear: boolean): [number, number] | null => {
-    const ranked = land
-      .filter(([q, r]) => {
-        const hex = hexes[hexKey(q, r)] as HexWithZloze | undefined;
-        return hex != null && hexCanAcceptDeposit(hex, rule, allowForestClear);
-      })
-      .map(([q, r]) => {
-        let score = 0;
-        const hex = hexes[hexKey(q, r)]!;
-        if (rule.id === 'glina' && hex.rzeka?.obecna) score += 2;
-        if (rule.id === 'glina' && hex.terenBazowy === TerenBazowy.Laka) score += 1;
-        score += rand() * 0.2;
-        return { q, r, score };
-      })
-      .sort((a, b) => b.score - a.score);
-    if (ranked.length === 0) return null;
-    return [ranked[0]!.q, ranked[0]!.r];
-  };
-  return tryPick(false) ?? tryPick(true);
+  const ranked = land
+    .filter(([q, r]) => {
+      const hex = hexes[hexKey(q, r)] as HexWithZloze | undefined;
+      return hex != null && hexCanAcceptDeposit(hex, rule);
+    })
+    .map(([q, r]) => {
+      let score = 0;
+      const hex = hexes[hexKey(q, r)]!;
+      if (rule.id === 'glina' && hex.rzeka?.obecna) score += 2;
+      if (rule.id === 'glina' && hex.terenBazowy === TerenBazowy.Laka) score += 1;
+      score += rand() * 0.2;
+      return { q, r, score };
+    })
+    .sort((a, b) => b.score - a.score);
+  if (ranked.length === 0) return null;
+  return [ranked[0]!.q, ranked[0]!.r];
 }
 
 function cellHasForest(
@@ -7372,7 +7393,7 @@ export function ensureDepositGridCoverage(
 
   for (const part of partitions) {
     const massSet = new Set(part.filter((k) => hexes[k]?.terenBazowy !== TerenBazowy.Morze));
-    for (let pass = 0; pass < 6; pass++) {
+    for (let pass = 0; pass < 10; pass++) {
       let passFixed = 0;
       for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
         if (land.length < minLand) continue;
@@ -7382,6 +7403,15 @@ export function ensureDepositGridCoverage(
       }
       fixed += passFixed;
       if (passFixed === 0) break;
+    }
+    // Domknięcie fair-play: komórki bez pełnego pakietu (żelazo+miedź+glina)
+    for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
+      if (land.length < minLand) continue;
+      for (const id of FAIR_PLAY_DEPOSIT_IDS) {
+        if (!cellCarriesDepositType(land, hexes, id)) {
+          forceDepositInCell(land, hexes, id, rand);
+        }
+      }
     }
   }
 
