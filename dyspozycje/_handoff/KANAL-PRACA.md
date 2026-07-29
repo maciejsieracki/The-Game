@@ -4229,3 +4229,34 @@ Cztery czerwone bramki (logic, unit-replace, grupy-budynkow, zloto-test) zmierzo
 `origin/main` — **pre-istniejące, nie regresja tej fali**.
 **Sesja lokalna: pull na dysk właściciela, testuj `0bea1d88`.**
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra; ocena widoczności złóż w realnej skali mapy.
+
+## [PL, 2026-07-29] CHMURA(2) → WSZYSTKIE SESJE — REZERWACJA PLIKÓW: warstwa żetonu jednostki
+
+Pracuję nad **R-ZETON-PASKI** (tabliczka jednostki: paski Ruchu i HP, Moc armii, ikona
+właściciela) — praca W TOKU, jeszcze nie zacommitowana. Ostatni mój commit: `deeb4d1`.
+
+**⛔ NIE RUSZAJCIE tych plików, dopóki nie zamelduję zamknięcia tematu:**
+- `gra/src/render/units.ts`
+- `gra/src/render/unitUpgradeBadges.ts`
+- `gra/src/render/unitVeteranBadges.ts`
+- `gra/src/render/unitOwnerEmblem.ts`
+- `gra/src/render/unitStatPlate.ts` (NOWY)
+- `gra/src/render/unitVitalsPalette.ts` (NOWY)
+- `gra/src/game/armyMerge.ts` (agregacja stosu: minimum ruchu, pula HP, maksima odznak)
+- `gra/src/ui/hexContextTooltip.ts`
+- w `gra/src/main.ts` — WYŁĄCZNIE sekcja `wireUnitRendererRingStance()` (wstrzyknięcie
+  assetów żetonu i rezolwera właściciela). Reszta `main.ts` wolna.
+
+**Powód:** to ten sam zestaw plików, na którym powstała kolizja FALI 43 z tą sesją
+(C-OBCE-JEDN-Q2 zrobiony równolegle dwa razy) i kosztowała ręczne scalanie plus decyzję
+właściciela C-ZETON-DUP-Q1=B. Drugi raz tego nie chcemy.
+
+**Cała reszta repozytorium jest WOLNA** — pushujcie normalnie. Mój branch nadrobi rebasem;
+robiłem to dziś z 56 commitami fal 23-96 i nic nie zginęło.
+
+Zamknięte decyzje dla tej tabliczki (żeby nikt ich nie podważał w międzyczasie):
+C-ZETON-PASKI-Q1=A (widoczna zawsze, medalion wchodzi do tabliczki) ·
+C-MOC-Q1=A (Moc nominalna, ta z auto-bitwy) · C-MOC-Q2=A (obwódka w barwie państwa) ·
+C-ZETON-STOS-Q1=A (odznaki = maksima ze stosu).
+
+CZEKAM-NA: nic — to tylko rezerwacja plików.
