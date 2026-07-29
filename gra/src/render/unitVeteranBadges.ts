@@ -32,19 +32,32 @@
  * i zabrało odznace znaczenie „ta jednostka jest lepsza od zwykłej".
  *
  * ── ODRÓŻNIENIE OD ODZNAK ULEPSZEŃ BUDYNKOWYCH (unitUpgradeBadges.ts) ──────
- * To dwa niezależne systemy i gracz nie może ich mylić. Rozróżnienie działa na
- * TRZECH osiach naraz — kolor jest tylko trzecią z nich, bo sam kolor ginie na
- * tle terenu (raz zielona trawa, raz jasny piasek, raz śnieg):
- *   1. KSZTAŁT — ulepszenia budynkowe to gładkie KULE (bryła obrotowa, brak
- *      jakiejkolwiek narożnej krawędzi) plus heksagonalny kołnierz; weteran to
- *      pięcioramienne GWIAZDY o ostrych, wklęsło-wypukłych ramionach. Sylwetki
- *      nie do pomylenia nawet przy oddalonej kamerze i w odcieniach szarości.
- *   2. POZYCJA — ulepszenia siedzą PRZY PODSTAWIE żetonu (kołnierz na ziemi +
- *      kropki przed stopami, maks. y ≈ 0,14·HEX_R); gwiazdki weterana wiszą
- *      NAD GŁOWĄ figurki (VETERAN_BADGE_RESERVED_Y = 0,92·HEX_R). Zero kontaktu.
- *   3. KOLOR — ulepszenia to metale kuźni (brąz → stal → platyna); weteran jest
- *      ZŁOTY, dokładnie jak ★ w UI. Złoto jest w unitUpgradeBadges.ts świadomie
- *      NIE UŻYWANE właśnie po to, żeby zostało zarezerwowane dla weterana.
+ * AKTUALIZACJA C-OBCE-JEDN-Q2 (Maciej, 2026-07-29): odznaki ulepszeń przeniosły
+ * się z podstawy żetonu DO TEGO SAMEGO RZĄDKA co gwiazdki weterana:
+ *
+ *        [ikona KOSZAR]   ★ ★ ★   [ikona KUŹNI]
+ *
+ * Oba systemy stykają się więc wizualnie i rozróżnienie musi być mocniejsze niż
+ * wcześniej. Działa na trzech osiach naraz:
+ *   1. POZYCJA — gwiazdki weterana ZAWSZE W ŚRODKU rządka, ulepszenia ZAWSZE
+ *      po bokach (Koszary lewo = ścieżka B/Parametry, Kuźnia prawo = ścieżka
+ *      A/Pancerz). Odległość ikony od skrajnej gwiazdki liczy
+ *      unitUpgradeBadges.ts::iconCenterX() z realnej szerokości listwy gwiazdek,
+ *      więc nigdy nie nachodzą.
+ *   2. KSZTAŁT I TECHNIKA — weteran to pięcioramienne GWIAZDY jako pełne BRYŁY
+ *      3D (ExtrudeGeometry, odchylone o 52°); ulepszenia to KRESKOWE ikony
+ *      budynków z brand-booka (bld-koszary.svg / bld-kuznia.svg) narysowane na
+ *      ciemnej, zaokrąglonej płytce i wyświetlane jako sprite. Inna technika,
+ *      inny obrys, zero wspólnych elementów.
+ *   3. KOLOR — weteran jest ZŁOTY jasny/blady 0xFFD24A (dokładnie jak ★ w UI);
+ *      odznaka ulepszenia poziomu 3 też jest złota, ale to nasycony bursztyn
+ *      (0xF2A81C) osadzony w CIEMNEJ płytce, więc nigdy nie czyta się jako
+ *      jasna plama. Szczegóły w nagłówku unitUpgradeBadges.ts.
+ *
+ * GEOMETRIA RZĄDKA (wysokość, promień i rozstaw gwiazdek, odchylenie płytki) ma
+ * JEDNO ŹRÓDŁO PRAWDY — render/unitUpgradeBadges.ts — bo obliczenie pozycji
+ * ikon ulepszeń wymaga znajomości szerokości listwy gwiazdek. Ten moduł te
+ * stałe importuje; zależność jest jednostronna, cyklu importów nie ma.
  *
  * ── CZYTELNOŚĆ POD KĄTEM KAMERY GRY (52°) ─────────────────────────────────
  * Kamera gry ma STAŁE nastawy (render/camera.ts::_syncCamera): elewacja 52°,
@@ -84,39 +97,44 @@
 
 import * as THREE from 'three';
 import { HEX_R } from './hexutil';
-import { VETERAN_BADGE_RESERVED_Y } from './unitUpgradeBadges';
+import {
+  BADGE_ROW_TILT_RAD,
+  VETERAN_BADGE_RESERVED_Y,
+  VETERAN_STAR_OUTLINE_SCALE,
+  VETERAN_STAR_R,
+  VETERAN_STAR_SPACING,
+} from './unitUpgradeBadges';
 import { veteranLevel, veteranStars, type VeteranLevel, type VeteranProgress } from '../game/veteran';
 
 // ---------------------------------------------------------------------------
 // Geometria — wymiary (wszystko względem HEX_R = 1.0)
+//
+// Promień, rozstaw, powiększenie obwódki i odchylenie płytki przychodzą
+// z unitUpgradeBadges.ts (jedno źródło prawdy dla całego rządka — patrz
+// nagłówek). Tu zostają wyłącznie wymiary WŁASNE kształtu gwiazdy.
 // ---------------------------------------------------------------------------
 
 /**
- * Promień zewnętrzny gwiazdy (ramię). 0,075·HEX_R to nieco ponad połowa
+ * Promień zewnętrzny gwiazdy (ramię). 0,072·HEX_R to nieco ponad połowa
  * średnicy głowy figurki (0,13·HEX_R) — na tyle duże, żeby ramiona były
  * policzalne przy oddalonej kamerze, i na tyle małe, żeby trzy gwiazdki
- * zmieściły się w obrysie heksu z zapasem (patrz STAR_SPACING).
+ * PLUS dwie ikony ulepszeń zmieściły się w obrysie heksu z zapasem
+ * (kontrola szerokości: unitUpgradeBadges.ts::iconCenterX).
  */
-const STAR_R = 0.075 * HEX_R;
-/** Promień wewnętrzny (wcięcie między ramionami) jako ułamek STAR_R — 0,42 daje wyraźnie ostre ramiona, a nie „pięciokąt z ząbkami". */
+const STAR_R = VETERAN_STAR_R;
+/** Promień wewnętrzny (wcięcie między ramionami) jako ułamek STAR_R — 0,42 daje wyraźnie ostre ramiona, a nie „pięciokąt z ząbkami”. */
 const STAR_INNER_FRAC = 0.42;
 /** Grubość wyciągnięcia płytki — gwiazda ma być bryłą, nie naklejką; przy 52° widać cień na ściance. */
 const STAR_DEPTH = 0.020 * HEX_R;
-/**
- * Rozstaw gwiazdek w osi X. Skrajna gwiazdka przy 3 sztukach:
- * |x| = 0,170 + 0,075 = 0,245·HEX_R, a półszerokość heksu pointy-top w osi
- * przechodzącej przez środek wynosi cos(30°)·HEX_R = 0,866·HEX_R —
- * mieści się z zapasem 3,5×.
- */
-/** Rozstaw gwiazdek — współdzielony z unitPathFlankBadges (C-OBCE-JEDN-Q2). */
-export const STAR_SPACING = 0.170 * HEX_R;
+/** Rozstaw gwiazdek w osi X (wspólny z układem rządka). */
+const STAR_SPACING = VETERAN_STAR_SPACING;
 /**
  * Odchylenie płytki do tyłu = elewacja kamery gry (render/camera.ts: 52°).
  * Normalna gwiazdy celuje wtedy prosto w kamerę → pełny obrys, zero skrótu.
  */
-export const STAR_TILT_RAD = THREE.MathUtils.degToRad(52);
+const STAR_TILT_RAD = BADGE_ROW_TILT_RAD;
 /** Powiększenie ciemnej gwiazdy-obwódki (kontrast niezależny od koloru terenu). */
-const STAR_OUTLINE_SCALE = 1.30;
+const STAR_OUTLINE_SCALE = VETERAN_STAR_OUTLINE_SCALE;
 /** Odsunięcie obwódki ZA gwiazdę w lokalnej osi Z płytki (po obrocie: w głąb, od kamery). */
 const STAR_OUTLINE_OFFSET_Z = -0.012 * HEX_R;
 
@@ -182,12 +200,17 @@ function getMatVeteranStarOutline(): THREE.MeshStandardMaterial {
 // Budowa / synchronizacja odznaki na żetonie
 // ---------------------------------------------------------------------------
 
+/**
+ * Znacznik na SIATKACH gwiazdek — po nim raycaster w units.ts rozpoznaje, że
+ * trafienie dotyczy odznaki weterana, i pokazuje tooltip poziomu (C-OBCE-JEDN-Q3).
+ * Bez tego trafienie w gwiazdkę czytałoby się jak trafienie w model jednostki.
+ */
+export const VETERAN_BADGE_HIT_UD = 'veteranBadgeHit';
+
 /** Klucz w userData żetonu — aktualnie narysowany poziom (do wczesnego wyjścia). */
 const UD_LEVEL = 'vetBadgeLevel';
 /** Klucz w userData żetonu — podgrupa z gwiazdkami (do podmiany/usunięcia). */
 const UD_GROUP = 'vetBadgeGroup';
-/** Na meshach gwiazdek — raycast tooltipu (C-OBCE-JEDN-Q3 C). */
-export const VETERAN_BADGE_HIT_UD = 'veteranBadgeHit';
 
 /** Rozstaw wyśrodkowany: 2 → [-s/2, +s/2]; 3 → [-s, 0, +s]. */
 function starOffsetsX(count: number): number[] {

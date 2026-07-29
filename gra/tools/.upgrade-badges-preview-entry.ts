@@ -14,10 +14,10 @@ import * as THREE from 'three';
 import { buildUnitModel } from '../src/render/units';
 import { axialToWorld, HEX_R } from '../src/render/hexutil';
 import {
-  applyUnitUpgradeBadgeLevel,
-  upgradeBadgeLevelFromTotalPp,
+  applyUnitUpgradeBadgeRow,
   VETERAN_BADGE_RESERVED_Y,
 } from '../src/render/unitUpgradeBadges';
+import { armorPathBadgeLevel, softPathBadgeLevel } from '../src/game/unit-building-bonuses';
 
 // --- MOCK-i podglądu (kopie prywatnych elementów UnitRenderer / veteran.ts) --
 // Obwódka właściciela 1:1 ze stałymi units.ts — po to, żeby udowodnić, że
@@ -113,7 +113,9 @@ function makeScene(cases: Case[], ownerColorId: number[]): THREE.Scene {
     const g = buildUnitModel('miecznik', color, 'miecznik');
     g.position.set(x, 0, z);
     g.add(ownerRing(color));
-    applyUnitUpgradeBadgeLevel(g, upgradeBadgeLevelFromTotalPp(c.pancerz + c.parametry));
+    // C-OBCE-JEDN-Q2: dwie osobne odznaki (Koszary lewo / Kuznia prawo) w rzadku nad glowa.
+    const bp = { pancerzBonusProc: c.pancerz, parametryBonusProc: c.parametry };
+    applyUnitUpgradeBadgeRow(g, armorPathBadgeLevel(bp), softPathBadgeLevel(bp), c.vet > 0 ? c.vet : 0);
     if (c.vet > 0) g.add(veteranStars(c.vet));
     scene.add(g);
   });

@@ -225,6 +225,116 @@ export function unitParametryBonusProc(unit: UnitBuildingProgress | null | undef
   return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0;
 }
 
+// ---------------------------------------------------------------------------
+// POZIOMY ODZNAK PER SCIEZKA (0-3) -- zrodlo prawdy dla render/unitUpgradeBadges.ts
+//
+// C-OBCE-JEDN-Q2 (Maciej, 2026-07-29): zeton jednostki na mapie pokazuje odtad
+// DWIE OSOBNE odznaki (ikona Koszar po lewej od gwiazdek weterana, ikona Kuzni
+// po prawej), a NIE jedna wspolna odznake z SUMY obu sciezek. Poziom kazdej
+// sciezki liczy sie WYLACZNIE z jej wlasnych punktow procentowych.
+//
+// == WYPROWADZENIE PROGOW (z danych gry, nie zgadywane) =====================
+// Metoda jest ta sama, ktora byla juz udokumentowana dla sumy obu sciezek
+// (render/unitUpgradeBadges.ts): rowne TERCJE maksimum osiagalnego w grze,
+// granice zaokraglone w dol do pelnych punktow procentowych.
+//
+//   prog_1 = floor(maksimum_sciezki / 3)
+//   prog_2 = floor(2 * maksimum_sciezki / 3)
+//   poziom = 0 gdy premia = 0 pp; 1 gdy 0 < premia <= prog_1;
+//            2 gdy prog_1 < premia <= prog_2; 3 gdy premia > prog_2
+//
+// SCIEZKA A -- premia Pancerza (RuntimeUnit.pancerzBonusProc), jednostka: pp
+//   maksimum = premia Pancerza z Kuzni:            +15 pp
+//            + premia Pancerza z Kuzni zelaza:     +15 pp
+//            + premia Pancerza z Wielkiej Kuzni:   +15 pp
+//            = 45 pp  (ARMOR_BUILDING_IDS, buildings.json baza.mnoznik)
+//   prog_1 = floor(45/3)   = 15 pp
+//   prog_2 = floor(2*45/3) = 30 pp
+//
+// SCIEZKA B -- premia Parametrow (RuntimeUnit.parametryBonusProc), jednostka: pp
+//   (Parametry = atak, obrona, atak dystansowy, zdrowie, uderzenie/szarza --
+//    wszystko POZA Pancerzem)
+//   maksimum = premia Parametrow z Koszar:              +20 pp
+//            + premia Parametrow z Akademii wojskowej:  +20 pp
+//            + premia Parametrow z Warsztatu oblezniczego: +10 pp
+//            = 50 pp  (SOFT_STAT_BUILDING_IDS, buildings.json baza.mnoznik)
+//   prog_1 = floor(50/3)   = 16 pp
+//   prog_2 = floor(2*50/3) = 33 pp
+//
+// == TABELA KONTROLNA -- REALNE KOMBINACJE BUDYNKOW =========================
+// Sprawdzenie, ze progi sie NIE degeneruja (kazdy z trzech poziomow jest
+// osiagalny, najmniejszy pojedynczy budynek sciezki daje poziom 1, komplet
+// budynkow sciezki daje poziom 3):
+//
+//   SCIEZKA A -- premia Pancerza (pp)                      -> poziom odznaki Kuzni
+//   ---------------------------------------------------------------------------
+//   brak budynkow kuzniczych                     0 pp      -> 0 (brak ikony)
+//   kuznia                                      15 pp      -> 1 (braz)
+//   kuznia + kuznia_zelaza                      30 pp      -> 2 (srebro)
+//   kuznia + wielka_kuznia (lancuch upgradeFrom)45 pp      -> 3 (zloto)   [komplet]
+//
+//   SCIEZKA B -- premia Parametrow (pp)                    -> poziom odznaki Koszar
+//   ---------------------------------------------------------------------------
+//   brak budynkow szkoleniowych                  0 pp      -> 0 (brak ikony)
+//   warsztat_oblezniczy                         10 pp      -> 1 (braz)    [najmniejszy budynek sciezki]
+//   koszary                                     20 pp      -> 2 (srebro)
+//   koszary + warsztat_oblezniczy               30 pp      -> 2 (srebro)
+//   koszary + akademia_wojskowa                 40 pp      -> 3 (zloto)
+//   koszary + akademia_wojskowa + warsztat      50 pp      -> 3 (zloto)   [komplet]
+//
+// Uwaga do sciezki B: pojedyncze Koszary (20 pp) daja od razu poziom 2, bo
+// 20 pp to 40% maksimum tej sciezki (50 pp) -- nie jest to blad progu, tylko
+// skutek tego, ze Koszary sa DWUKROTNIE mocniejsze od Warsztatu oblezniczego
+// (20 pp vs 10 pp). Zaden poziom nie jest pusty i zaden nie zjada calej skali.
+// ---------------------------------------------------------------------------
+
+/** Poziom odznaki JEDNEJ sciezki na zetonie: 0 = brak ikony, 1-3 = braz/srebro/zloto. */
+export type UnitPathBadgeLevel = 0 | 1 | 2 | 3;
+
+/** Maksimum sciezki A (Pancerz) w pp: Kuznia 15 + Kuznia zelaza 15 + Wielka Kuznia 15. */
+export const ARMOR_PATH_MAX_PP = 45;
+/** Maksimum sciezki B (Parametry) w pp: Koszary 20 + Akademia wojskowa 20 + Warsztat oblezniczy 10. */
+export const SOFT_PATH_MAX_PP = 50;
+
+/** Gorne granice tercji sciezki A w pp: [15, 30] (patrz wyprowadzenie wyzej). */
+export const ARMOR_PATH_LEVEL_MAX_PP: readonly [number, number] = [
+  Math.floor(ARMOR_PATH_MAX_PP / 3),
+  Math.floor((ARMOR_PATH_MAX_PP * 2) / 3),
+];
+
+/** Gorne granice tercji sciezki B w pp: [16, 33] (patrz wyprowadzenie wyzej). */
+export const SOFT_PATH_LEVEL_MAX_PP: readonly [number, number] = [
+  Math.floor(SOFT_PATH_MAX_PP / 3),
+  Math.floor((SOFT_PATH_MAX_PP * 2) / 3),
+];
+
+/** Wspolna funkcja progowa: premia w pp + granice tercji -> poziom odznaki 0-3. */
+function pathBadgeLevelFromPp(pp: number, bounds: readonly [number, number]): UnitPathBadgeLevel {
+  if (!Number.isFinite(pp) || pp <= 0) return 0;
+  if (pp <= bounds[0]) return 1;
+  if (pp <= bounds[1]) return 2;
+  return 3;
+}
+
+/**
+ * SCIEZKA A -- poziom odznaki Kuzni (0-3) z premii Pancerza jednostki w pp.
+ * Odczyt idzie przez unitPancerzBonusProc() (normalizacja undefined/NaN/ujemnych
+ * ze starych zapisow do 0 pp), zeby mapa i tooltip nie mogly sie rozjechac.
+ * PARYTET AI: brak jakiegokolwiek warunku na ownerId.
+ */
+export function armorPathBadgeLevel(unit: UnitBuildingProgress | null | undefined): UnitPathBadgeLevel {
+  return pathBadgeLevelFromPp(unitPancerzBonusProc(unit), ARMOR_PATH_LEVEL_MAX_PP);
+}
+
+/**
+ * SCIEZKA B -- poziom odznaki Koszar (0-3) z premii Parametrow jednostki w pp.
+ * Odczyt idzie przez unitParametryBonusProc() (jak wyzej).
+ * PARYTET AI: brak jakiegokolwiek warunku na ownerId.
+ */
+export function softPathBadgeLevel(unit: UnitBuildingProgress | null | undefined): UnitPathBadgeLevel {
+  return pathBadgeLevelFromPp(unitParametryBonusProc(unit), SOFT_PATH_LEVEL_MAX_PP);
+}
+
 /** Ulamek (0.15 = +15%) gotowy do bezposredniego mnozenia staty bojowej. */
 export function unitPancerzBonusFrac(unit: UnitBuildingProgress | null | undefined): number {
   return unitPancerzBonusProc(unit) / 100;
@@ -334,31 +444,18 @@ export function unitBuildingBonusLabel(unit: UnitBuildingProgress | null | undef
   return parts.join(' · ');
 }
 
-/** Maksimum ścieżki A (Pancerz / kuźnia) — do poziomów odznaki w karcie jednostki. */
-export const PATH_A_MAX_PP = 45;
-/** Maksimum ścieżki B (Parametry / koszary) — do poziomów odznaki w karcie jednostki. */
-export const PATH_B_MAX_PP = 50;
-
-export type PathBadgeLevel = 0 | 1 | 2 | 3;
-
-/** Poziom koloru (1–3) z % jednej ścieżki — osobno kuźnia i koszary (C-OBCE-JEDN-KARTA). */
-export function pathBadgeLevelFromPp(pp: number, maxPp: number): PathBadgeLevel {
-  if (!Number.isFinite(pp) || pp <= 0) return 0;
-  const t1 = Math.floor(maxPp / 3);
-  const t2 = Math.floor((maxPp * 2) / 3);
-  if (pp <= t1) return 1;
-  if (pp <= t2) return 2;
-  return 3;
-}
-
-export function armorPathBadgeLevel(unit: UnitBuildingProgress | null | undefined): PathBadgeLevel {
-  return pathBadgeLevelFromPp(unitPancerzBonusProc(unit), PATH_A_MAX_PP);
-}
-
-export function softPathBadgeLevel(unit: UnitBuildingProgress | null | undefined): PathBadgeLevel {
-  return pathBadgeLevelFromPp(unitParametryBonusProc(unit), PATH_B_MAX_PP);
-}
-
+/**
+ * Aliasy zgodnosci dla karty jednostki (ui/unitCardStatus.ts, C-OBCE-JEDN-KARTA).
+ * Definicja progow zyje WYLACZNIE wyzej (ARMOR_PATH_LEVEL_MAX_PP / SOFT_PATH_LEVEL_MAX_PP)
+ * -- FALA 43 miala wlasny, rownolegly komplet o IDENTYCZNYCH wartosciach
+ * (floor(max/3), floor(2*max/3) -> Pancerz 15/30 pp, Parametry 16/33 pp);
+ * scalone w jedno zrodlo, zeby zeton na mapie i karta nie mogly sie rozjechac.
+ */
+export type PathBadgeLevel = UnitPathBadgeLevel;
+/** Maksimum sciezki A (Pancerz) w pp -- alias ARMOR_PATH_MAX_PP. */
+export const PATH_A_MAX_PP = ARMOR_PATH_MAX_PP;
+/** Maksimum sciezki B (Parametry) w pp -- alias SOFT_PATH_MAX_PP. */
+export const PATH_B_MAX_PP = SOFT_PATH_MAX_PP;
 // ---------------------------------------------------------------------------
 // Wpiecie w silnik walki (game/combat.ts + battle/battleScene.ts).
 //

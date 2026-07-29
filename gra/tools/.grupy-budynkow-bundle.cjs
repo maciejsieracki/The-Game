@@ -87,6 +87,16 @@ function cumulativeMnoznikForBuildingId(buildingId, buildings) {
   const byId = new Map(buildings.map((b) => [b.id, b]));
   return chainMnoznikContribution(buildingId, byId, new Set(ids), /* @__PURE__ */ new Set());
 }
+var ARMOR_PATH_MAX_PP = 45;
+var SOFT_PATH_MAX_PP = 50;
+var ARMOR_PATH_LEVEL_MAX_PP = [
+  Math.floor(ARMOR_PATH_MAX_PP / 3),
+  Math.floor(ARMOR_PATH_MAX_PP * 2 / 3)
+];
+var SOFT_PATH_LEVEL_MAX_PP = [
+  Math.floor(SOFT_PATH_MAX_PP / 3),
+  Math.floor(SOFT_PATH_MAX_PP * 2 / 3)
+];
 
 // src/game/building-upgrades.ts
 function upgradeChainSteps(buildingId, buildings) {

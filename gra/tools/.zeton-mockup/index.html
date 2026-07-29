@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Makieta żetonu jednostki — C-OBCE-JEDN-Q2</title>
+<style>
+  body { margin:0; background:#0e1318; color:#e8eef4;
+         font:14px/1.5 "Segoe UI", Arial, sans-serif; padding:16px; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  p.sub { margin:0 0 12px; color:#9fb4c8; font-size:13px; }
+  canvas { display:block; border-radius:8px; width:1280px; height:520px; }
+  #legenda { display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+             width:1280px; margin-top:10px; }
+  #legenda div { background:#182028; border:1px solid #2b3946; border-radius:6px;
+                 padding:8px 10px; font-size:12.5px; color:#cfe0ee; text-align:center; }
+</style>
+</head>
+<body>
+<h1>Makieta żetonu jednostki na mapie — C-OBCE-JEDN-Q2</h1>
+<p class="sub">Kamera pod kątem gry <b>52°</b>. Heksy stykają się bokami — widać, że nic nie wychodzi poza obrys.
+Medalion właściciela przy lewej krawędzi; nad głową rządek: <b>ikona koszar ← gwiazdki weterana → ikona kuźni</b>.</p>
+<canvas id="scena" width="2560" height="1040"></canvas>
+<div id="legenda"></div>
+<h1 style="font-size:16px;margin:18px 0 4px">Zbliżenie — czy złoto odznaki nie zlewa się ze złotem gwiazdki?</h1>
+<canvas id="zblizenie" width="2560" height="900" style="height:420px"></canvas>
+<script type="module" src="./main.ts"></script>
+</body>
+</html>

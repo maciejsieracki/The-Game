@@ -34,21 +34,22 @@ import { buildHorse } from './kon-nowy-model';
 import { GAME_MAP_RENDER_STYLE, terrainVisualForStyle } from './mapRenderStyle';
 import type { RuntimeUnit } from '../units/setup';
 import type { StackDisplayInfo } from '../game/armyMerge';
-// Odznaki ulepszeń budynkowych na żetonie (Maciej 2026-07-25, pytanie 57 = A+B:
-// kropki przy żetonie ORAZ kolorowa obwódka). Zasoby to singletony modułu —
-// NIE trafiają do userData['mats'], patrz nagłówek unitUpgradeBadges.ts.
+// Odznaki ulepszeń budynkowych na żetonie — od C-OBCE-JEDN-Q2 (Maciej 2026-07-29)
+// DWIE OSOBNE ikony w rządku nad głową: Koszary (ścieżka B) po lewej od gwiazdek,
+// Kuźnia (ścieżka A) po prawej. Zasoby to singletony modułu — NIE trafiają do
+// userData['mats'], patrz nagłówek unitUpgradeBadges.ts.
 import { syncUnitUpgradeBadges } from './unitUpgradeBadges';
 // Odznaki poziomu weterana na żetonie (dokończenie tej samej decyzji 57,
 // 2026-07-26) — złote gwiazdki NAD GŁOWĄ, w miejscu zarezerwowanym wtedy jako
 // VETERAN_BADGE_RESERVED_Y. Zasoby to singletony modułu, jak wyżej.
+// VETERAN_BADGE_HIT_UD: znacznik siatek gwiazdek dla raycastera — tooltip
+// poziomu weterana (C-OBCE-JEDN-Q3) rozpoznaje po nim trafienie w odznakę.
 import { syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
-// C-OBCE-JEDN-Q2: medalion właściciela (lewo) + ikony koszar/kuźnia przy gwiazdkach.
-import {
-  setOwnerMedallionResolver,
-  syncUnitOwnerMedallion,
-  type OwnerMedallionResolver,
-} from './unitOwnerMedallion';
-import { syncUnitPathFlankBadges } from './unitPathFlankBadges';
+// Znak właściciela przy lewej krawędzi żetonu (C-OBCE-JEDN-Q2): portret władcy /
+// sygnet kultury miasta-państwa / czaszka barbarzyńców. Kontekst właściciela
+// wstrzykuje main.ts przez setOwnerEmblemResolver — ten renderer nie sięga do
+// stanu gry. Tekstury są współdzielone per wariant znaku, patrz nagłówek modułu.
+import { applyUnitOwnerEmblem, type UnitOwnerEmblemResolver } from './unitOwnerEmblem';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -4577,6 +4578,14 @@ export class UnitRenderer {
   /** Tint modelu jednostki; domyślnie stara paleta OWNER_COLORS. */
   private ownerColorFn: (ownerId: number) => number = ownerColor;
 
+  /**
+   * C-OBCE-JEDN-Q2: ownerId → kontekst znaku właściciela (portret / sygnet
+   * kultury / czaszka). Renderer NIE zna stanu gry, więc mapowanie wstrzykuje
+   * main.ts. Domyślnie null → żetony po prostu nie mają emblematu (podglądy,
+   * testy i galeria działają bez zmian).
+   */
+  private ownerEmblemResolver: UnitOwnerEmblemResolver | null = null;
+
   constructor(scene: THREE.Scene, map: GameMap) {
     this.scene = scene;
     this.hexGrid = new Map<string, Hex>(Object.entries(map.hexes));
@@ -4601,14 +4610,18 @@ export class UnitRenderer {
     this.ringStanceForOwner = fn;
   }
 
-  /** Medalion właściciela (portret / sygnet / barbarzyńca) po lewej żetonu — C-OBCE-JEDN-Q2. */
-  setOwnerMedallionResolver(fn: OwnerMedallionResolver): void {
-    setOwnerMedallionResolver(fn);
-  }
-
   /** Tint modelu jednostki (kolorHex cywilizacji z silnika). */
   setOwnerColorFn(fn: (ownerId: number) => number): void {
     this.ownerColorFn = fn;
+  }
+
+  /**
+   * Znak właściciela na żetonie (C-OBCE-JEDN-Q2): ownerId → cywilizacja / epoka /
+   * miasto-państwo / barbarzyńcy. PARYTET AI — rezolwer jest wołany dla KAŻDEGO
+   * właściciela tak samo, bez warunku „czy to gracz”.
+   */
+  setOwnerEmblemResolver(fn: UnitOwnerEmblemResolver | null): void {
+    this.ownerEmblemResolver = fn;
   }
 
   private _resolveOwnerColor(ownerId: number): number {
@@ -4824,17 +4837,24 @@ export class UnitRenderer {
         this.scene.add(group);
       }
 
-      // Odznaki ulepszeń budynkowych (Pancerz + Parametry) — kropki + kolorowa
-      // obwódka. Wołane PO ewentualnej przebudowie żetonu, dla KAŻDEJ jednostki
+      // Rządek nad głową figurki (C-OBCE-JEDN-Q2, Maciej 2026-07-29):
+      //     [ikona KOSZAR]  ★ ★ ★  [ikona KUŹNI]
+      // Wołane PO ewentualnej przebudowie żetonu, dla KAŻDEJ jednostki
       // (gracz i AI identycznie — PARYTET AI, zero warunków na ownerId).
-      // Funkcja jest idempotentna: przy niezmienionym poziomie kończy się
-      // porównaniem jednej liczby, więc bezpiecznie stoi w pętli sync().
+      // Obie funkcje są idempotentne: przy niezmienionym stanie kończą się
+      // porównaniem jednej liczby, więc bezpiecznie stoją w pętli sync().
       const tokenObj = this.tokens.get(unit.id);
       if (tokenObj) {
+        // Odznaki ulepszeń budynkowych — poziom liczony OSOBNO dla ścieżki A
+        // (Pancerz → Kuźnia, prawo) i ścieżki B (Parametry → Koszary, lewo).
         syncUnitUpgradeBadges(tokenObj, unit);
+        // Odznaka poziomu weterana (game/veteran.ts) — niezależny system:
+        // złote gwiazdki w ŚRODKU rządka. Poziom 1 (Rekrut) nie dostaje nic.
         syncUnitVeteranBadges(tokenObj, unit);
-        syncUnitOwnerMedallion(tokenObj, unit.ownerId, this._resolveOwnerColor(unit.ownerId));
-        syncUnitPathFlankBadges(tokenObj, unit);
+        // Znak właściciela przy LEWEJ KRAWĘDZI żetonu — portret władcy (pełna
+        // cywilizacja) / sygnet kultury (miasto-państwo) / czaszka (barbarzyńcy).
+        // Brak rezolwera (podglądy, galeria) = brak emblematu, bez błędu.
+        applyUnitOwnerEmblem(tokenObj, this.ownerEmblemResolver?.(unit.ownerId) ?? null);
       }
     }
 

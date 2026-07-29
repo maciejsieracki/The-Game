@@ -65,6 +65,12 @@ import {
   updatePerfDebugOverlay,
 } from './render/perfDebugOverlay';
 import { CIV_PUBLISH_MARKERS } from './buildInfo';
+// C-OBCE-JEDN-Q2: znak właściciela na żetonie mapy. Assety (portrety + ikony
+// brand-booka) wstrzykujemy stąd, bo warstwa render/ nie zależy od warstwy ui/.
+import { setUnitOwnerEmblemAssets } from './render/unitOwnerEmblem';
+import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';
+import { leaderPortraitUrl } from './ui/leaderPortraits';
+import { civIconSvg } from './ui/icons/brandAssets';
 import { showMapLoadingOverlay } from './ui/mapLoadingOverlay';
 import {
   beginTurnTransition,
@@ -5204,7 +5210,36 @@ async function boot(): Promise<void> {
     function wireUnitRendererRingStance(): void {
       unitRenderer.setRingStanceResolver(unitRingStanceForPlayer);
       unitRenderer.setOwnerColorFn(civColorFn);
-      wireUnitOwnerMedallionResolver();
+      // C-OBCE-JEDN-Q2 (Maciej 2026-07-29): znak właściciela na żetonie mapy.
+      // Rezolwer NIE tworzy nowego mapowania ownerId → cywilizacja — składa się
+      // wyłącznie z funkcji, które już istnieją i których używa panel bitwy
+      // (preBattleSideFromRoster), żeby żeton i medalion dowódcy nigdy nie
+      // pokazały innego znaku dla tego samego właściciela.
+      // PARYTET AI: żadnego warunku „czy ownerId === 0”.
+      // Assety medalionu — DOKŁADNIE te same funkcje, z których korzysta panel
+      // bitwy (ui/preBattle.ts::commanderHtml), żeby żeton i medalion dowódcy
+      // nie mogły pokazać innego znaku dla tego samego właściciela.
+      setUnitOwnerEmblemAssets({
+        leaderPortraitUrl: (civId: string, era: number) => leaderPortraitUrl(civId, era),
+        civSigilSvg: (civId: string) => civIconSvg(civId, 40),
+        barbarianSigilSvg: () => brandIconSvg('chip-death', 40),
+      });
+      // Ikony odznak ulepszeń — DOKŁADNIE te symbole budynków, które gracz widzi
+      // w panelu miasta przy Koszarach i Kuźni (korekta właściciela 2026-07-29:
+      // „masz konkretne ikony i symbole tych dwóch budynków, użyj je”).
+      setUnitUpgradeBadgeAssets({
+        barracksSvg: () => brandIconSvg('bld-koszary', 40),
+        forgeSvg: () => brandIconSvg('bld-kuznia', 40),
+      });
+      unitRenderer.setOwnerEmblemResolver((ownerId: number) => ({
+        // Barbarzyńcy nie mają wpisu w aiOwnerCivMap (civTypeForOwner spadłby na
+        // fallback 'grecy'), więc civId celowo null — wariant i tak rozstrzyga
+        // flaga isBarbarian, sprawdzana jako pierwsza.
+        civId: isBarbarian(ownerId) ? null : civTypeForOwner(ownerId),
+        era: empireEpochForOwner(ownerId),
+        isCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+        isBarbarian: isBarbarian(ownerId),
+      }));
     }
     wireUnitRendererRingStance();
 
@@ -5214,15 +5249,6 @@ async function boot(): Promise<void> {
         typCopyOwners: typCityCopyOwners,
         cities,
       };
-    }
-
-    function wireUnitOwnerMedallionResolver(): void {
-      unitRenderer.setOwnerMedallionResolver((ownerId: number) => ({
-        civIconId: civKeyForOwnerId(ownerId),
-        era: empireEpochForOwner(ownerId),
-        isCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
-        isBarbarian: isBarbarian(ownerId),
-      }));
     }
 
     function civDisplayNameForOwner(ownerId: number): string | undefined {
