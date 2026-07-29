@@ -4,6 +4,8 @@
  * NIE dotyka kart szczegółów (.hover-detail-anchor, .civ-detail-scope, dock).
  *
  * Maciej 2026-07-28/29: małe podpisy przy ikonach ×2 (font + padding), nie karty wyjaśnień.
+ * Docelowy rozmiar: 15px / padding 7×11 (custom overlay ≈2× natywnego title).
+ * Nie podwajać ponownie — FALA 112 przez pomyłkę dała 30px (=×4 łącznie).
  */
 
 const STYLE_ID = 'civ-hud-title-tip-css';
@@ -13,6 +15,7 @@ const DATA_STORED = 'data-civ-ori-title';
 /** Kontenery HUD — tylko małe podpisy ikon/chipów, nie karty wyjaśnień. */
 const SCOPE_SELECTOR = [
   '.civ-hud',
+  '.civ-hud-util-dock',
   '.civ-map-toolbar',
   '.civ-bottom-bar',
   '.civ-minimap-wrap',
@@ -40,11 +43,11 @@ function ensureStyles(): void {
   const css = `
 #${TIP_ID}{
   position:fixed;z-index:100050;display:none;pointer-events:none;
-  max-width:min(840px,92vw);padding:14px 22px;
+  max-width:min(420px,92vw);padding:7px 11px;
   background:rgba(244,240,228,0.97);color:#1a1408;
-  border:1px solid rgba(160,128,48,0.45);border-radius:12px;
-  font:600 30px/1.35 var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);
-  letter-spacing:0.01em;box-shadow:0 8px 32px rgba(0,0,0,0.45);
+  border:1px solid rgba(160,128,48,0.45);border-radius:6px;
+  font:600 15px/1.35 var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);
+  letter-spacing:0.01em;box-shadow:0 4px 16px rgba(0,0,0,0.45);
   white-space:pre-wrap;word-break:break-word;
 }
 `;
@@ -69,6 +72,8 @@ function ensureTipEl(): HTMLDivElement {
 
 function isExcluded(el: HTMLElement): boolean {
   if (el.id === TIP_ID) return true;
+  if (el.closest('.civ-hud-util-dock')) return true;
+  if (el.closest('[data-act="zoom-in"],[data-act="zoom-out"],[data-act="fullscreen"]')) return true;
   if (el.closest('.hover-detail-anchor')) return true;
   if (el.closest('.civ-detail-scope')) return true;
   if (el.closest('.civ-hover-detail-float')) return true;

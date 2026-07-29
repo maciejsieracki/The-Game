@@ -3,6 +3,14 @@
  */
 
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from './unit-building-bonuses';
+import miastoParams from '../../data/miasto-params.json';
+
+const STRUCTURAL_DEFENSE_PARAM_KEY: Readonly<Record<string, keyof typeof miastoParams>> = {
+  palisada: 'bonus_obrona_palisada_proc',
+  mury: 'bonus_obrona_mur_proc',
+  fort: 'bonus_obrona_cytadela_proc',
+  baszta: 'bonus_obrona_baszta_proc',
+};
 
 export type BuildingUpgradeLite = {
   id: string;
@@ -130,6 +138,34 @@ export function cityHasAmfiteatrLine(builtIds: readonly string[]): boolean {
 /** Mury, Cytadela (fort) lub wczesna Palisada drewniana. */
 export function cityHasMurLine(builtIds: readonly string[]): boolean {
   return builtIds.includes('mury') || builtIds.includes('fort') || builtIds.includes('palisada');
+}
+
+/** Bonus procentowy Obrony jednostek w mieście (miasto-params.json), jeśli budynek go daje. */
+export function buildingStructuralDefenseBonusPercent(buildingId: string): number | null {
+  const key = STRUCTURAL_DEFENSE_PARAM_KEY[buildingId];
+  if (!key) return null;
+  const entry = miastoParams[key] as { wartosc?: number } | undefined;
+  const raw = entry?.wartosc;
+  return typeof raw === 'number' && raw > 0 ? raw : null;
+}
+
+/** Etykieta UI panelu budowy — pełna forma z jednostką (reguła Macieja). */
+export function buildingStructuralDefenseBonusLine(buildingId: string): string | null {
+  const proc = buildingStructuralDefenseBonusPercent(buildingId);
+  if (proc == null) return null;
+  if (buildingId === 'palisada') {
+    return `Obrona (jednostki broniące miasta) +${proc}% — zastąpione przez Mury kamienne`;
+  }
+  if (buildingId === 'mury') {
+    return `Obrona (jednostki broniące miasta) +${proc}% — zastępuje Palisadę drewnianą`;
+  }
+  if (buildingId === 'fort') {
+    return `Obrona (jednostki broniące miasta) +${proc}% dodatkowo (wymaga Murów w mieście)`;
+  }
+  if (buildingId === 'baszta') {
+    return `Obrona (jednostki broniące miasta) +${proc}% dodatkowo (wymaga Murów w mieście)`;
+  }
+  return `Obrona (jednostki broniące miasta) +${proc}%`;
 }
 
 /** Pałac I / II / III (łańcuch upgrade B-PALAC-TIER). */

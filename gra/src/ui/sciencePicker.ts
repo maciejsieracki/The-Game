@@ -948,14 +948,14 @@ const BOTTOM_H = 'calc(56px + 2mm)';
 // Style (scoped .civ-sci, wstrzykiwane RAZ)
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-sci-css-v3';
+const STYLE_ID = 'civ-sci-css-v4-dim-hide';
 
 function ensureStyles(): void {
   document.getElementById('civ-sci-css-v2')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 .civ-sci-dim-backdrop{
-  position:fixed;inset:0;z-index:312;background:transparent;pointer-events:auto;}
+  position:fixed;inset:0;z-index:312;background:transparent;pointer-events:auto;display:none;}
 .civ-sci-overlay{
   position:fixed;inset:0;z-index:400;display:flex;align-items:flex-start;justify-content:center;
   background:rgba(0,0,0,0.78);backdrop-filter:blur(3px);overflow-y:auto;padding:20px 10px 40px;}

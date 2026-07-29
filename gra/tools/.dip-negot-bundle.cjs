@@ -26,8 +26,10 @@ __export(dip_negot_entry_exports, {
   canCounterNegotiation: () => canCounterNegotiation,
   createNegotiation: () => createNegotiation,
   evaluateProposal: () => evaluateProposal,
+  findOwnOutgoingNegotiation: () => findOwnOutgoingNegotiation,
   generateCounterOffer: () => generateCounterOffer,
   getEffectiveDiplomacyParams: () => getEffectiveDiplomacyParams,
+  hasPendingNegotiationForPair: () => hasPendingNegotiationForPair,
   makeNegotiationId: () => makeNegotiationId,
   negotiationAsProposal: () => negotiationAsProposal,
   negotiationStillValid: () => negotiationStillValid,
@@ -10513,7 +10515,7 @@ var buildings_default = [
     nazwa: "Palisada drewniana",
     kategoria: "Obrona",
     grupa: "Wojsko i obrona",
-    epokaWejscia: 2,
+    epokaWejscia: 1,
     maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
@@ -10541,7 +10543,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "Palisada drewniana (Maciej 2026-07-28): wczesna obrona miasta w epoce Br\u0105zu, odblokowana po Obr\xF3bce drewna -- przed kamiennymi Murami (tech Budownictwo). Obrona miasta WY\u0141\u0104CZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zast\u0119puj\u0105 bonus palisady (nie stackuj\u0105). Po uko\u0144czeniu Mur\xF3w palisada jest usuwana z cityBuilt (production.ts).",
+    uwagi: "Palisada drewniana (Maciej 2026-07-28, korekta 2026-07-29): wczesna obrona miasta w epoce Kamienia, odblokowana po Obr\xF3bce drewna -- przed kamiennymi Murami (tech Budownictwo, epoka Br\u0105z). Obrona miasta WY\u0141\u0104CZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zast\u0119puj\u0105 bonus palisady (nie stackuj\u0105). Po uko\u0144czeniu Mur\xF3w palisada jest usuwana z cityBuilt (production.ts).",
     techUnlock: "Obr\xF3bka drewna",
     odblokowuje: "maMur",
     koszt_surowce: {
@@ -12557,6 +12559,76 @@ function trimProposalGoldForZeroBalance(payload, relTotal, difficulty = "normal"
     goldOnce: best > 0 ? best : void 0
   };
 }
+function isPaymentBasketItem(item) {
+  return item.typ === "zloto" || item.typ === "praca";
+}
+function hasResourcePaymentTrade(payload) {
+  const giveRes = payload.giveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false;
+  const recvRes = payload.receiveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false;
+  const givePay = payload.giveItems?.some(isPaymentBasketItem) ?? false;
+  const recvPay = payload.receiveItems?.some(isPaymentBasketItem) ?? false;
+  return giveRes && recvPay || givePay && recvRes;
+}
+function trimResourcePaymentTradeForZeroBalance(payload, relTotal, difficulty = "normal", pnOpts) {
+  if (!aiOfferTargetsZeroBalance(difficulty) || !hasResourcePaymentTrade(payload)) {
+    return payload;
+  }
+  const tolerance = aiOfferPwSurplusTolerance(difficulty);
+  if (aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts) <= tolerance) {
+    return payload;
+  }
+  let giveItems = [...payload.giveItems ?? []];
+  let receiveItems = [...payload.receiveItems ?? []];
+  const resGiveIdx = giveItems.findIndex((i) => i.typ === "surowiec_ilosc");
+  const resRecvIdx = receiveItems.findIndex((i) => i.typ === "surowiec_ilosc");
+  const resSide = resGiveIdx >= 0 ? "give" : resRecvIdx >= 0 ? "receive" : null;
+  if (!resSide) return payload;
+  const resIdx = resSide === "give" ? resGiveIdx : resRecvIdx;
+  const resArr = resSide === "give" ? giveItems : receiveItems;
+  const resItem = resArr[resIdx];
+  const currentPkts = resItem.ilosc ?? 1;
+  let lo = 1;
+  let hi = currentPkts;
+  let best = -1;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const trialResArr = [...resArr];
+    trialResArr[resIdx] = { ...resItem, ilosc: mid };
+    const trialPayload = {
+      ...payload,
+      giveItems: resSide === "give" ? trialResArr : giveItems,
+      receiveItems: resSide === "receive" ? trialResArr : receiveItems
+    };
+    const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts);
+    if (trialSurplus <= tolerance) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  if (best < 1) {
+    return {
+      ...payload,
+      giveItems: void 0,
+      receiveItems: void 0
+    };
+  }
+  if (best === currentPkts) return payload;
+  const outResArr = [...resArr];
+  outResArr[resIdx] = { ...resItem, ilosc: best };
+  return {
+    ...payload,
+    giveItems: resSide === "give" ? outResArr.length ? outResArr : void 0 : giveItems.length ? giveItems : void 0,
+    receiveItems: resSide === "receive" ? outResArr.length ? outResArr : void 0 : receiveItems.length ? receiveItems : void 0
+  };
+}
+function trimProposalForZeroBalance(payload, relTotal, difficulty = "normal", pnOpts) {
+  if (!aiOfferTargetsZeroBalance(difficulty)) return payload;
+  let p = trimProposalGoldForZeroBalance(payload, relTotal, difficulty, pnOpts);
+  p = trimResourcePaymentTradeForZeroBalance(p, relTotal, difficulty, pnOpts);
+  return p;
+}
 
 // src/game/diplomacy-pn-engine.ts
 function buildProposalPnSumOpts(opts) {
@@ -13339,6 +13411,16 @@ function makeNegotiationId(actionId, turn, a, b, seq) {
   const [p0, p1] = a < b ? [a, b] : [b, a];
   return `negot-${actionId}-${p0}-${p1}-t${turn}-${seq}`;
 }
+function hasPendingNegotiationForPair(table, ownerA, ownerB, actionId) {
+  return table.some(
+    (n) => n.actionId === actionId && (n.proposerOwnerId === ownerA && n.responderOwnerId === ownerB || n.proposerOwnerId === ownerB && n.responderOwnerId === ownerA)
+  );
+}
+function findOwnOutgoingNegotiation(table, partnerOwnerId, actionId) {
+  return table.find(
+    (n) => n.proposerOwnerId === 0 && n.responderOwnerId === partnerOwnerId && n.actionId === actionId
+  );
+}
 function createNegotiation(proposal, turn, source, seq) {
   return {
     id: makeNegotiationId(proposal.actionId, turn, proposal.proposerOwnerId, proposal.responderOwnerId, seq),
@@ -13455,7 +13537,7 @@ function generateCounterOffer(proposal, ctx) {
   const relTotal = relationTotal(ctx.relation);
   const pnOpts = { difficulty };
   const tryPayload = (p) => evaluateProposal({ ...proposal, payload: p }, ctx).accepted;
-  const finalizePayload = (p) => aiOfferTargetsZeroBalance(difficulty) ? trimProposalGoldForZeroBalance(p, relTotal, difficulty, pnOpts) : p;
+  const finalizePayload = (p) => aiOfferTargetsZeroBalance(difficulty) ? trimProposalForZeroBalance(p, relTotal, difficulty, pnOpts) : p;
   if (actionId === "trybut_zadanie") {
     const base = payload.goldPerTurn ?? 0;
     if (base > 0) {
@@ -13569,8 +13651,10 @@ function negotiationToLegacyPending(entry) {
   canCounterNegotiation,
   createNegotiation,
   evaluateProposal,
+  findOwnOutgoingNegotiation,
   generateCounterOffer,
   getEffectiveDiplomacyParams,
+  hasPendingNegotiationForPair,
   makeNegotiationId,
   negotiationAsProposal,
   negotiationStillValid,

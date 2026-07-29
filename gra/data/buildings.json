@@ -799,7 +799,7 @@
     "nazwa": "Palisada drewniana",
     "kategoria": "Obrona",
     "grupa": "Wojsko i obrona",
-    "epokaWejscia": 2,
+    "epokaWejscia": 1,
     "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
@@ -827,7 +827,7 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "",
-    "uwagi": "Palisada drewniana (Maciej 2026-07-28): wczesna obrona miasta w epoce Brązu, odblokowana po Obróbce drewna -- przed kamiennymi Murami (tech Budownictwo). Obrona miasta WYŁĄCZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zastępują bonus palisady (nie stackują). Po ukończeniu Murów palisada jest usuwana z cityBuilt (production.ts).",
+    "uwagi": "Palisada drewniana (Maciej 2026-07-28, korekta 2026-07-29): wczesna obrona miasta w epoce Kamienia, odblokowana po Obróbce drewna -- przed kamiennymi Murami (tech Budownictwo, epoka Brąz). Obrona miasta WYŁĄCZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zastępują bonus palisady (nie stackują). Po ukończeniu Murów palisada jest usuwana z cityBuilt (production.ts).",
     "techUnlock": "Obróbka drewna",
     "odblokowuje": "maMur",
     "koszt_surowce": {

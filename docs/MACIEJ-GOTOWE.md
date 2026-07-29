@@ -1,4 +1,16 @@
-﻿## [23:13] ✅ Gotowe — deploy ROBOCZA FALA 112 (8d5813ea)
+﻿## [00:05] ✅ Gotowe — deploy ROBOCZA FALA 113 (9ae07906)
+
+**FALA 113** | md5 `9ae07906dc7215050b3cde635d50a5ee` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**DEPLOY ALL sesji (dyplo + HUD + mapa + palisada):**
+- Duplikat umów na stole dyplo · koszyk handlu UX · AI oferta zero + trim cykliczny · cooldown 3t po odrzuceniu (no-nag).
+- Zoom −/100%/+ i pełny ekran pod minimapą · tooltipy HUD ×2 · skarbiec bilans (kwoty zamiast „—").
+- Palisada epoka Kamień (Obróbka drewna) + chip +100% Obrony · rzeki `ensureRiverOutlets`.
+- tsc 0 · dip-ai-offer 23/23 · reject-cooldown 14/14 · negot 48/48 · skarbiec 11/11 · koszty 128/128 · POLE-BITWY `dd399c4b`.
+- map-gen dopływy: TIMEOUT w teście (>10 min) — do weryfikacji wizualnej rzek.
+- Bez ikony palisady z preview (nie w brand).
+
+## [23:13] ✅ Gotowe — deploy ROBOCZA FALA 112 (8d5813ea)
 
 **FALA 112** | md5 `8d5813ea025a603d23e04cc923c65b94` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

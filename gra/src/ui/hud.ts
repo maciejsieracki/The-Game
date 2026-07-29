@@ -307,6 +307,7 @@ let armyStackSuppressed = false;
 /** HUD zamontowany przez showHud (nie mylić z chwilowym ukryciem w panelu miasta). */
 let hudSessionActive = false;
 let barActionsBound = false;
+let utilDockEl: HTMLDivElement | null = null;
 
 // ---------------------------------------------------------------------------
 // Pełny ekran + zoom UI (Maciej 2026-07-25 / 2026-07-28) — dock lewy dolny (mapa) lub lewy górny (miasto).
@@ -487,7 +488,7 @@ const MINI_H = MINIMAP_H_PX;
 // Style
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-hud-css-w2ring6';
+const STYLE_ID = 'civ-hud-css-w2ring7-util-z';
 function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-hud-css')?.remove();
@@ -569,12 +570,31 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-zoom-pct{min-width:40px;display:inline-flex;align-items:center;justify-content:center;
   font-size:11px;color:var(--civ-text-muted);letter-spacing:.02em;padding:0 2px;border-left:1px solid rgba(232,216,138,.2);
   border-right:1px solid rgba(232,216,138,.2);}
-/* Zoom + pełny ekran — nad minimapą (Maciej 2026-07-28). */
-.civ-hud .civ-hud-util-dock{pointer-events:auto;position:fixed;z-index:315;
+/* Zoom + pełny ekran — nad minimapą i kartą jednostki (root body, z-index 318). */
+.civ-hud-util-dock{pointer-events:auto;position:fixed;z-index:318;
   display:flex;align-items:center;gap:8px;
-  left:${utilDockLeftCss(MINI_W)};bottom:${utilDockBottomCss()};}
-.civ-hud.is-city-view .civ-hud-util-dock{display:none!important;}
-html.civ-ui-zoom-active .civ-hud .civ-hud-util-dock{
+  left:${utilDockLeftCss(MINI_W)};bottom:${utilDockBottomCss()};
+  ${CIV_BRAND_SCOPE_VARS}
+  font-family:var(--civ-font-ui);}
+.civ-hud-util-dock button{font-family:var(--civ-font-ui);cursor:pointer;}
+.civ-hud-util-dock .civ-hud-zoom{display:inline-flex;align-items:stretch;flex-shrink:0;
+  border-radius:9px;border:1px solid rgba(232,216,138,.35);
+  background:linear-gradient(180deg,#161c28,#0a0d14);overflow:hidden;}
+.civ-hud-util-dock .b-zoom{display:inline-flex;align-items:center;justify-content:center;width:34px;height:42px;
+  border:none;background:transparent;color:var(--civ-gold-primary);
+  font-size:18px;font-weight:700;line-height:1;cursor:pointer;font-family:var(--civ-font-ui);}
+.civ-hud-util-dock .b-zoom:hover:not(:disabled){background:rgba(232,216,138,.1);}
+.civ-hud-util-dock .b-zoom:disabled{opacity:.35;cursor:default;}
+.civ-hud-util-dock .civ-hud-zoom-pct{min-width:40px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--civ-text-muted);letter-spacing:.02em;padding:0 2px;border-left:1px solid rgba(232,216,138,.2);
+  border-right:1px solid rgba(232,216,138,.2);}
+.civ-hud-util-dock .b-menu{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
+  border-radius:9px;border:1px solid rgba(232,216,138,.35);
+  background:linear-gradient(180deg,#161c28,#0a0d14);color:var(--civ-gold-primary);
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;cursor:pointer;font-family:var(--civ-font-ui);}
+.civ-hud-util-dock .b-menu:hover{filter:brightness(1.06);border-color:rgba(232,216,138,.55);}
+.civ-hud-util-dock.is-city-view{display:none!important;}
+html.civ-ui-zoom-active .civ-hud-util-dock{
   left:${utilDockLeftCss(MINI_W, true)};bottom:${utilDockBottomCss(true)};}
 .civ-hud .b-wiki{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
   border-radius:9px;border:1px solid rgba(168,200,120,.38);cursor:pointer;font-family:var(--civ-font-ui);
@@ -1022,13 +1042,21 @@ function renderBarD1B(s: HudState): string {
     + menuBtn
     + (showMapZoomDock ? '' : fsBtn)
     + '</div></div>';
-  if (showMapZoomDock) {
-    html += '<div class="civ-hud-util-dock" title="Powiększenie UI i pełny ekran">'
-      + renderZoomControls()
-      + fsBtn
-      + '</div>';
-  }
+  renderUtilDock(showMapZoomDock, fsBtn);
   return html;
+}
+
+function renderUtilDock(show: boolean, fsBtn: string): void {
+  if (utilDockEl === null) return;
+  utilDockEl.classList.toggle('is-city-view', mapChromeSuppressed);
+  if (!show) {
+    utilDockEl.style.display = 'none';
+    utilDockEl.innerHTML = '';
+    return;
+  }
+  utilDockEl.style.display = 'flex';
+  utilDockEl.title = 'Powiększenie UI i pełny ekran';
+  utilDockEl.innerHTML = renderZoomControls() + fsBtn;
 }
 
 function renderBarLegacy(s: HudState): string {
@@ -1092,35 +1120,52 @@ function handleHudBarAction(act: string): void {
   }
 }
 
+function ensureUtilDockMounted(): void {
+  if (utilDockEl !== null) return;
+  utilDockEl = document.createElement('div');
+  utilDockEl.className = 'civ-hud-util-dock';
+  document.body.appendChild(utilDockEl);
+}
+
+function hudActionRootContains(el: HTMLElement): boolean {
+  if (barEl !== null && barEl.contains(el)) return true;
+  if (utilDockEl !== null && utilDockEl.contains(el)) return true;
+  return false;
+}
+
 function ensureBarActionsBound(): void {
-  if (barEl === null || barActionsBound) return;
+  if (barActionsBound) return;
+  if (barEl === null) return;
   barActionsBound = true;
-  barEl.addEventListener('click', (e: MouseEvent) => {
+  const onActivate = (e: MouseEvent | KeyboardEvent): void => {
     const t = e.target as HTMLElement | null;
     if (t === null || cfg === null) return;
     const el = t.closest('[data-act]') as HTMLElement | null;
-    if (el === null || !barEl!.contains(el)) return;
+    if (el === null || !hudActionRootContains(el)) return;
     const act = el.getAttribute('data-act');
     if (act === null) return;
+    if (e instanceof KeyboardEvent) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+    }
     handleHudBarAction(act);
-  });
-  barEl.addEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    const t = e.target as HTMLElement | null;
-    if (t === null || cfg === null) return;
-    const el = t.closest('[data-act]') as HTMLElement | null;
-    if (el === null || !barEl!.contains(el)) return;
-    const act = el.getAttribute('data-act');
-    if (act === null) return;
-    e.preventDefault();
-    handleHudBarAction(act);
-  });
+  };
+  barEl.addEventListener('click', onActivate);
+  barEl.addEventListener('keydown', onActivate);
+  ensureUtilDockMounted();
+  utilDockEl!.addEventListener('click', onActivate);
+  utilDockEl!.addEventListener('keydown', onActivate);
 }
 
 function renderBar(): void {
   if (barEl === null || cfg === null) return;
   const s = cfg.getState();
-  barEl.innerHTML = useD1BLayout() ? renderBarD1B(s) : renderBarLegacy(s);
+  if (useD1BLayout()) {
+    barEl.innerHTML = renderBarD1B(s);
+  } else {
+    barEl.innerHTML = renderBarLegacy(s);
+    renderUtilDock(false, '');
+  }
 }
 
 function escHtml(s: string): string {
@@ -1466,6 +1511,7 @@ export function showHud(config: HudConfig): void {
     barEl = document.createElement('div');
     barEl.className = 'civ-hud';
     document.body.appendChild(barEl);
+    ensureUtilDockMounted();
     ensureBarActionsBound();
   }
   if (miniEl === null) {
@@ -1505,6 +1551,7 @@ export function hideHud(): void {
   hidePowerOverlay();
   hideEmpireOverlay();
   if (barEl !== null) barEl.style.display = 'none';
+  if (utilDockEl !== null) utilDockEl.style.display = 'none';
   if (miniEl !== null) miniEl.style.display = 'none';
   if (minimapApi !== null) minimapApi.el.style.display = 'none';
   if (sidePanelApi !== null) {

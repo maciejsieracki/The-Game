@@ -71,7 +71,7 @@ export interface SidePanelHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-side-panel-hud-css-w9-unit-expand-h';
+const STYLE_ID = 'civ-side-panel-hud-css-w10-ctx-passthrough';
 const EVENTS_PANEL_TOP = eventsPanelTopPx();
 const EVENTS_PANEL_BOTTOM = eventsPanelBottomPx();
 const EVENTS_PANEL_BOTTOM_ZOOM = eventsPanelBottomPx(true);
@@ -126,7 +126,7 @@ html.civ-ui-zoom-active .civ-side-panel{top:${EVENTS_PANEL_TOP}px;bottom:${EVENT
   transition:width .18s ease;
   ${CIV_BRAND_SCOPE_VARS}
   font:13px var(--civ-font-ui);}
-.civ-side-ctx-dock.open{display:block;pointer-events:auto;}
+.civ-side-ctx-dock.open{display:block;pointer-events:none;}
 .civ-side-ctx-dock.sp-ctx-expanded{width:${unitCardDockExpandedWidthCss()};}
 html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   top:${unitCardSafeTopCss()};
@@ -155,6 +155,7 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-panel .sp-close{font-size:10px;color:var(--civ-text-muted);cursor:pointer;padding:2px 4px;margin-left:auto;}
 .civ-side-panel .sp-close:hover{color:var(--civ-gold-primary);}
 .civ-side-panel .sp-placeholder{font-size:10px;color:#7a7055;text-align:right;padding:8px 4px;font-style:italic;line-height:1.4;}
+.civ-side-ctx-dock.open .sp-ctx-card{pointer-events:auto;}
 .civ-side-ctx-dock .sp-ctx-card,.civ-side-panel .sp-ctx-card{padding:14px 16px 16px;border-radius:10px;margin-bottom:0;
   background:linear-gradient(180deg,rgba(24,30,42,.98),rgba(10,12,18,.96));
   border:1px solid rgba(212,175,90,.38);box-shadow:0 6px 18px rgba(0,0,0,.45);}

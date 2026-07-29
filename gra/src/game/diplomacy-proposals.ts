@@ -47,7 +47,7 @@ import {
   aiOfferPwSurplusTolerance,
   aiOfferTargetsZeroBalance,
   aiProposalPlayerBenefitSurplus,
-  trimProposalGoldForZeroBalance,
+  trimProposalForZeroBalance,
 } from './diplomacy-ai-offer-balance';
 
 export { AI_TRADE_GOLD_MAX, AI_TRIBUTE_PEACE_MAX, capAiGoldOffer } from './diplomacy-economy';
@@ -1259,6 +1259,33 @@ export function makeNegotiationId(
   return `negot-${actionId}-${p0}-${p1}-t${turn}-${seq}`;
 }
 
+/** Czy para ma już aktywną propozycję danego typu na stole (oba kierunki). */
+export function hasPendingNegotiationForPair(
+  table: readonly PendingNegotiation[],
+  ownerA: number,
+  ownerB: number,
+  actionId: ProposalActionId,
+): boolean {
+  return table.some(n =>
+    n.actionId === actionId
+    && ((n.proposerOwnerId === ownerA && n.responderOwnerId === ownerB)
+      || (n.proposerOwnerId === ownerB && n.responderOwnerId === ownerA)),
+  );
+}
+
+/** Własna propozycja gracza (proposer=0) oczekująca u partnera — bez duplikatu tego typu. */
+export function findOwnOutgoingNegotiation(
+  table: readonly PendingNegotiation[],
+  partnerOwnerId: number,
+  actionId: ProposalActionId,
+): PendingNegotiation | undefined {
+  return table.find(n =>
+    n.proposerOwnerId === 0
+    && n.responderOwnerId === partnerOwnerId
+    && n.actionId === actionId,
+  );
+}
+
 /** Tworzy nowy wpis (runda 1) z propozycji — respondent = ten, kto musi teraz odpowiedzieć. */
 export function createNegotiation(
   proposal: DiplomaticProposal,
@@ -1443,7 +1470,7 @@ export function generateCounterOffer(
 
   const finalizePayload = (p: ProposalPayload): ProposalPayload =>
     aiOfferTargetsZeroBalance(difficulty)
-      ? trimProposalGoldForZeroBalance(p, relTotal, difficulty, pnOpts)
+      ? trimProposalForZeroBalance(p, relTotal, difficulty, pnOpts)
       : p;
 
   // trybut_zadanie: dźwignia naturalna to SAMA kwota żądania (respondent „oferuje

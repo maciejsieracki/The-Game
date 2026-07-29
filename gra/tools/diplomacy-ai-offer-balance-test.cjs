@@ -21,9 +21,12 @@ export {
   targetResourceTradePaymentPn,
   adjustZaplataPerTuraForZeroBalance,
   trimProposalGoldForZeroBalance,
+  trimResourcePaymentTradeForZeroBalance,
+  trimProposalForZeroBalance,
   pickMinimalSweetenerGold,
   trimQuickDealGiveToTolerance,
 } from '../src/game/diplomacy-ai-offer-balance.ts';
+export { computePlayerAcceptanceSides } from '../src/game/diplomacy-acceptance-points.ts';
 export { diplomacyPnZloto } from '../src/game/diplomacy-value-catalog.ts';
 `);
 
@@ -93,6 +96,47 @@ const minGold = M.pickMinimalSweetenerGold(
   },
 );
 ok(minGold === 50, `minimal sweetener: 50¤ nie 500¤ (${minGold})`);
+
+const cyclicRaw = {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
+  resourceTradeMode: 'per_turn',
+  turns: 10,
+};
+const cyclicSurplusBefore = M.aiProposalPlayerBenefitSurplus(cyclicRaw, 100);
+const cyclicTrimmed = M.trimProposalForZeroBalance(cyclicRaw, 100, 'normal');
+const cyclicSurplusAfter = M.aiProposalPlayerBenefitSurplus(cyclicTrimmed, 100);
+const cyclicGold = cyclicTrimmed.receiveItems?.find(i => i.typ === 'zloto')?.ilosc ?? 0;
+const cyclicWood = cyclicTrimmed.giveItems?.find(i => i.typ === 'surowiec_ilosc')?.ilosc ?? 0;
+ok(cyclicSurplusBefore >= 8, `scenariusz zrzutu: 10 drewna/turę + 1¤ → nadwyżka ≥8 (${cyclicSurplusBefore})`);
+ok(
+  cyclicSurplusAfter <= 5 || (!cyclicTrimmed.giveItems?.length && !cyclicTrimmed.receiveItems?.length),
+  `normal: nadwyżka ≤5 lub oferta wycofana (${cyclicSurplusAfter})`,
+);
+
+const cyclicFair = {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 10 }],
+  resourceTradeMode: 'per_turn',
+  turns: 10,
+};
+const cyclicFairTrimmed = M.trimProposalForZeroBalance(cyclicFair, 100, 'normal');
+ok(
+  M.aiProposalPlayerBenefitSurplus(cyclicFairTrimmed, 100) <= 5,
+  `fair 10¤ za pakiet drewna: nadwyżka ≤5`,
+);
+
+const cyclicEasy = M.trimProposalForZeroBalance(cyclicRaw, 100, 'easy');
+ok(
+  cyclicEasy.giveItems[0].ilosc === 1 && cyclicEasy.receiveItems[0].ilosc === 1,
+  'easy: bez trimu cyklicznego',
+);
+
+const cyclicClamped = M.trimProposalForZeroBalance(cyclicRaw, 100, 'normal');
+ok(
+  !cyclicClamped.giveItems?.length && !cyclicClamped.receiveItems?.length,
+  'po clamp 1¤: oferta wycofana (nie 10 drewna za 1¤)',
+);
 
 console.log(`\ndiplomacy-ai-offer-balance-test: ${pass} passed, ${fail} failed`);
 process.exit(fail > 0 ? 1 : 0);

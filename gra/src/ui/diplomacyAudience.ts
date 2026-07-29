@@ -292,6 +292,31 @@ function findIncomingNegotiationRow(
   );
 }
 
+function findOwnOutgoingNegotiationRow(
+  st: DiplomacyAudienceState,
+  aid: string,
+): PendingNegotiationRow | undefined {
+  return (st.pendingNegotiations ?? []).find(
+    r => r.direction === 'own' && r.uiActionId === aid,
+  );
+}
+
+/** Blokuje duplikat na stole: ich wpis → kontroferta; nasz → ignoruj klik. */
+function blockDuplicateNegotiationClick(
+  st: DiplomacyAudienceState,
+  aid: string,
+  mergeBasketCtx: (negCtx: NegotiationModalContext) => NegotiationModalContext,
+): boolean {
+  const incoming = findIncomingNegotiationRow(st, aid);
+  if (incoming) {
+    if (incoming.canCounter) {
+      openCounterNegotiationModal(st, incoming, mergeBasketCtx);
+    }
+    return true;
+  }
+  return findOwnOutgoingNegotiationRow(st, aid) != null;
+}
+
 function openCounterNegotiationModal(
   st: DiplomacyAudienceState,
   row: PendingNegotiationRow,
@@ -1145,7 +1170,7 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
 function dealsColumnHtml(st: DiplomacyAudienceState): string {
   const visible = st.actions.filter(a => a.id !== '1');
   const items = visible.map(a => {
-    const isLocked = a.locked || !a.enabled;
+    const isLocked = a.locked || !a.enabled || a.active === true;
     let cls = isLocked ? 'da-deal locked' : 'da-deal';
     if (a.active) cls += ' active';
     const lockReason = a.lockNote || (isLocked && a.tooltip ? a.tooltip : '');
@@ -1507,16 +1532,11 @@ function render(): void {
       if (!aid || cfg === null) return;
 
       const action = st.actions.find(a => a.id === aid);
+      if (action?.active) return;
       if (action && action.enabled && cfg.getNegotiationContext) {
         const negCtx = cfg.getNegotiationContext(aid);
         if (negCtx && actionUsesTradeBasket(aid)) {
-          const incomingBasket = findIncomingNegotiationRow(st, aid);
-          if (incomingBasket) {
-            if (incomingBasket.canCounter) {
-              openCounterNegotiationModal(st, incomingBasket, mergeBasketCtx);
-            }
-            return;
-          }
+          if (blockDuplicateNegotiationClick(st, aid, mergeBasketCtx)) return;
           showTradeBasketModal(
             getTradeBasketMode(aid),
             action,
@@ -1527,28 +1547,13 @@ function render(): void {
           return;
         }
         if (aid === '5' && negCtx) {
-          const incomingSzlaki = findIncomingNegotiationRow(st, aid);
-          if (incomingSzlaki) {
-            if (incomingSzlaki.canCounter) {
-              openCounterNegotiationModal(st, incomingSzlaki, mergeBasketCtx);
-            }
-            return;
-          }
+          if (blockDuplicateNegotiationClick(st, aid, mergeBasketCtx)) return;
           // D-DYPLO-KOSZYK-OD-RAZU: traktat handlowy od razu na stół („My oferujemy"), bez modala potwierdzenia.
           cfg!.onAction(cfg!.ownerId, '5', { actionId: '5', turns: 20 });
           return;
         }
         if (action && action.enabled && actionNeedsNegotiation(aid) && negCtx) {
-          // Ich propozycja na stole — ten sam kafelek ma otwierać KONTROFERTĘ (istniejący
-          // wpis), nie składać nowej propozycji gracza (handleNegotiatedProposal), bo ta
-          // ścieżka od razu rozstrzyga AI i wygląda jak natychmiastowe „Przyjmij".
-          const incoming = findIncomingNegotiationRow(st, aid);
-          if (incoming) {
-            if (incoming.canCounter) {
-              openCounterNegotiationModal(st, incoming, mergeBasketCtx);
-            }
-            return;
-          }
+          if (blockDuplicateNegotiationClick(st, aid, mergeBasketCtx)) return;
           showNegotiationModal(
             action,
             mergeBasketCtx(negCtx),

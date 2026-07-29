@@ -50,11 +50,10 @@ function isOccupied(
   return false;
 }
 
-/**
- * Wybiera heks w terytorium miasta budującego cud.
- * Preferuje najbliższe wolne pole lądowe (dist 1, potem 2…).
- */
-export function pickWonderHexForCity(input: PickWonderHexInput): { q: number; r: number } | null {
+/** Wszystkie wolne heksy lądowe w terytorium jednego miasta (pod wybór gracza / AI). */
+export function listQualifyingWonderHexesForCity(
+  input: PickWonderHexInput,
+): Array<{ q: number; r: number }> {
   const { map, city, occupiedWonderHexes, cityHexes } = input;
   const node: CityNode = {
     q: city.q,
@@ -79,6 +78,43 @@ export function pickWonderHexForCity(input: PickWonderHexInput): { q: number; r:
   }
 
   candidates.sort((a, b) => a.dist - b.dist || a.q - b.q || a.r - b.r);
-  const best = candidates[0];
-  return best ? { q: best.q, r: best.r } : null;
+  return candidates.map(c => ({ q: c.q, r: c.r }));
+}
+
+export interface WonderMapPlacementInput {
+  map: GameMap;
+  playerCities: WonderPlacementCity[];
+  occupiedWonderHexes: ReadonlyArray<{ q: number; r: number }>;
+  /** Heksy z cudami w budowie (nieukończone). */
+  buildingWonderHexes: ReadonlyArray<{ q: number; r: number }>;
+  cityHexes: ReadonlyArray<{ q: number; r: number }>;
+}
+
+/** Suma kwalifikujących heksów we wszystkich terytoriach gracza (deduplikacja). */
+export function listQualifyingWonderHexesForOwner(
+  input: WonderMapPlacementInput,
+): Array<{ q: number; r: number }> {
+  const occupied = [...input.occupiedWonderHexes, ...input.buildingWonderHexes];
+  const seen = new Map<string, { q: number; r: number }>();
+  for (const city of input.playerCities) {
+    const hexes = listQualifyingWonderHexesForCity({
+      map: input.map,
+      city,
+      occupiedWonderHexes: occupied,
+      cityHexes: input.cityHexes,
+    });
+    for (const h of hexes) {
+      seen.set(`${h.q},${h.r}`, h);
+    }
+  }
+  return [...seen.values()];
+}
+
+/**
+ * Wybiera heks w terytorium miasta budującego cud.
+ * Preferuje najbliższe wolne pole lądowe (dist 1, potem 2…).
+ */
+export function pickWonderHexForCity(input: PickWonderHexInput): { q: number; r: number } | null {
+  const candidates = listQualifyingWonderHexesForCity(input);
+  return candidates[0] ?? null;
 }

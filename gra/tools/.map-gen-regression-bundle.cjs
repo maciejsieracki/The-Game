@@ -20,13 +20,15 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.map-gen-regression-entry.ts
 var map_gen_regression_entry_exports = {};
 __export(map_gen_regression_entry_exports, {
+  checkTributaryJunctions: () => checkTributaryJunctions,
   defaultCivTypesFromMapLabel: () => defaultCivTypesFromMapLabel,
   defaultMiastaPanstwaFromMapLabel: () => defaultMiastaPanstwaFromMapLabel,
   expectedStartCityCount: () => expectedStartCityCount,
   generujSwiat: () => generujSwiat,
   pathEndsAtSea: () => pathEndsAtSea,
   pathReachesRealSea: () => pathReachesRealSea,
-  targetVillageHutCount: () => targetVillageHutCount
+  targetVillageHutCount: () => targetVillageHutCount,
+  verifyRiverNetworkConnectivity: () => verifyRiverNetworkConnectivity
 });
 module.exports = __toCommonJS(map_gen_regression_entry_exports);
 
@@ -4367,6 +4369,39 @@ function appendJunctionDownstreamHex(path, down) {
   if (path.some((p) => p.q === down.q && p.r === down.r)) return path;
   return [...path, { q: down.q, r: down.r }];
 }
+function tributaryTouchesOceanReachable(path, reached) {
+  for (const p of path) {
+    if (reached.has(hexKey(p.q, p.r))) return true;
+  }
+  const end = path[path.length - 1];
+  if (!end) return false;
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    const nk = hexKey(end.q + dq, end.r + dr);
+    if (reached.has(nk)) return true;
+  }
+  return false;
+}
+function finalizeTributaryPath(hexes, path, riverPaths, riverKinds, width, height, oceanConnected) {
+  let out = trimRiverPathRings(hexes, path);
+  if (out.length < 3) return null;
+  if (out.length >= 2) {
+    const junction = out[out.length - 1];
+    const approach = out[out.length - 2];
+    const down = networkDownstreamNeighbor(hexes, junction, approach);
+    out = appendJunctionDownstreamHex(out, down);
+  }
+  if (pathEndsAtSea(hexes, out, width, height, oceanConnected)) return out;
+  const reached = buildOceanReachableRiverHexKeys(
+    hexes,
+    riverPaths,
+    riverKinds,
+    width,
+    height,
+    oceanConnected
+  );
+  if (!tributaryTouchesOceanReachable(out, reached)) return null;
+  return out;
+}
 function networkDownstreamNeighbor(hexes, junction, approach) {
   const jh = hexes[hexKey(junction.q, junction.r)];
   const edges = jh?.rzeka?.krawedzie;
@@ -4469,7 +4504,7 @@ function traceTributary(hexes, sq, sr, tq, tr, maxLen, seaDist, rand) {
   path = repairRiverPathAdjacency(path, hexes, srcKey);
   return path;
 }
-function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, riverPaths, riverKinds, usedSources, minSourceSep, areaScale = 1, reliefSearchMin = 3, reliefSearchMax = 8) {
+function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, riverPaths, riverKinds, usedSources, minSourceSep, width, height, oceanConnected, areaScale = 1, reliefSearchMin = 3, reliefSearchMax = 8) {
   const n = tributaryCountForLength(mainPath.length, areaScale);
   if (n <= 0) return;
   const mainKeys = new Set(mainPath.map((p) => hexKey(p.q, p.r)));
@@ -4498,17 +4533,20 @@ function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, rive
     const tribLen = Math.min(maxLen, Math.max(5, Math.floor(mainPath.length * 0.4)));
     let path = traceTributary(hexes, src[0], src[1], junction.q, junction.r, tribLen, seaDist, rand);
     if (path.length < 3) continue;
-    path = trimRiverPathRings(hexes, path);
-    if (path.length >= 2) {
-      const end = path[path.length - 1];
-      const approach = path[path.length - 2];
-      const down = networkDownstreamNeighbor(hexes, end, approach);
-      path = appendJunctionDownstreamHex(path, down);
-    }
-    riverPaths.push(path);
+    const finalized = finalizeTributaryPath(
+      hexes,
+      path,
+      riverPaths,
+      riverKinds,
+      width,
+      height,
+      oceanConnected
+    );
+    if (!finalized) continue;
+    riverPaths.push(finalized);
     riverKinds.push("tributary");
     usedSources.add(srcKey);
-    markRiverPath(hexes, path);
+    markRiverPath(hexes, finalized);
   }
 }
 function landHexesByCoverageCell(massSet, cellSize) {
@@ -4577,6 +4615,16 @@ function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oce
     }
   }
   return reached;
+}
+function verifyRiverNetworkConnectivity(hexes, paths, kinds, width, height) {
+  const riverHexes = collectRiverHexKeys(hexes);
+  const reached = buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height);
+  const orphanCount = [...riverHexes].filter((k) => !reached.has(k)).length;
+  return {
+    connected: orphanCount === 0,
+    orphanCount,
+    riverHexCount: riverHexes.size
+  };
 }
 function pruneOrphanRiverPaths(hexes, paths, kinds, width, height) {
   let curPaths = paths.slice();
@@ -4661,6 +4709,51 @@ function pruneRiversNotReachingRealSea(hexes, paths, kinds, width, height) {
   clearRiverMarks(hexes);
   for (const p of keptPaths) markRiverPath(hexes, p);
   return pruneOrphanRiverPaths(hexes, keptPaths, keptKinds, width, height);
+}
+function ensureRiverOutlets(hexes, paths, kinds, width, height) {
+  let result = pruneOrphanRiverPaths(hexes, paths, kinds, width, height);
+  result = pruneRiversNotReachingRealSea(hexes, result.paths, result.kinds, width, height);
+  return result;
+}
+function checkTributaryJunctions(paths, kinds, hexes, width, height) {
+  const dims = width != null && height != null ? { width, height } : inferMapDimsFromHexes(hexes);
+  const ocean = oceanConnectedWaterKeys(hexes, dims.width, dims.height);
+  const hexToPaths = /* @__PURE__ */ new Map();
+  for (let pi = 0; pi < paths.length; pi++) {
+    for (const p of paths[pi] ?? []) {
+      const k = hexKey(p.q, p.r);
+      const s = hexToPaths.get(k) ?? /* @__PURE__ */ new Set();
+      s.add(pi);
+      hexToPaths.set(k, s);
+    }
+  }
+  let violations = 0;
+  let firstFail = null;
+  for (let pi = 0; pi < paths.length; pi++) {
+    if (kinds[pi] !== "tributary") continue;
+    const path = paths[pi];
+    if (!path || path.length < 2) continue;
+    if (pathEndsAtSea(hexes, path, dims.width, dims.height, ocean)) continue;
+    const end = path[path.length - 1];
+    const eh = hexes[hexKey(end.q, end.r)];
+    let closed = false;
+    for (const edgeIdx of eh?.rzeka?.krawedzie ?? []) {
+      const dir = HEX_DIRECTIONS[edgeIdx];
+      if (!dir) continue;
+      const nk = hexKey(end.q + dir[0], end.r + dir[1]);
+      const owners = hexToPaths.get(nk);
+      if (!owners) continue;
+      if ([...owners].some((idx) => idx !== pi)) {
+        closed = true;
+        break;
+      }
+    }
+    if (!closed) {
+      violations++;
+      if (!firstFail) firstFail = `tributary#${pi} end=${end.q},${end.r} (brak wsp\xF3lnej kraw\u0119dzi z inn\u0105 \u015Bcie\u017Ck\u0105)`;
+    }
+  }
+  return { ok: violations === 0, violations, firstFail };
 }
 function collectRiverPathHexKeys(paths) {
   const keys = /* @__PURE__ */ new Set();
@@ -4831,13 +4924,16 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
     return true;
   };
   const pushTributary = (path, sq, sr) => {
-    let out = trimRiverPathRings(hexes, path);
-    if (out.length >= 2) {
-      const junction = out[out.length - 1];
-      const approach = out[out.length - 2];
-      const down = networkDownstreamNeighbor(hexes, junction, approach);
-      out = appendJunctionDownstreamHex(out, down);
-    }
+    const out = finalizeTributaryPath(
+      hexes,
+      path,
+      riverPaths,
+      riverKinds,
+      width,
+      height,
+      oceanConnected
+    );
+    if (!out) return false;
     riverPaths.push(out);
     riverKinds.push("tributary");
     usedSources.add(hexKey(sq, sr));
@@ -5058,6 +5154,9 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
       riverKinds,
       usedSources,
       minSourceSep,
+      width,
+      height,
+      oceanConnected,
       riverParams.areaScale,
       riverParams.reliefSearchMin,
       riverParams.reliefSearchMax
@@ -5106,13 +5205,16 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
     return true;
   };
   const pushTributary = (path, sq, sr) => {
-    let out = trimRiverPathRings(hexes, path);
-    if (out.length >= 2) {
-      const junction = out[out.length - 1];
-      const approach = out[out.length - 2];
-      const down = networkDownstreamNeighbor(hexes, junction, approach);
-      out = appendJunctionDownstreamHex(out, down);
-    }
+    const out = finalizeTributaryPath(
+      hexes,
+      path,
+      riverPaths,
+      riverKinds,
+      width,
+      height,
+      oceanConnected
+    );
+    if (!out) return false;
     riverPaths.push(out);
     riverKinds.push("tributary");
     usedSources.add(hexKey(sq, sr));
@@ -6369,6 +6471,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
     stripDepositsFromWater(hexes);
   }
+  ({ paths: riverPaths, kinds: riverPathKinds } = ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
   return {
     szerokoscQ: width,
     wysokoscR: height,
@@ -6410,11 +6513,13 @@ function generujSwiat(seed, rozmiar, typ = "kontynenty", genOpts, onProgress) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  checkTributaryJunctions,
   defaultCivTypesFromMapLabel,
   defaultMiastaPanstwaFromMapLabel,
   expectedStartCityCount,
   generujSwiat,
   pathEndsAtSea,
   pathReachesRealSea,
-  targetVillageHutCount
+  targetVillageHutCount,
+  verifyRiverNetworkConnectivity
 });

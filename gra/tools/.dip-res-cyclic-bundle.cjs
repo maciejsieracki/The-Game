@@ -12480,6 +12480,19 @@ function diplomacyProgDarRelacja(params = _pnRelacja, difficulty = "normal") {
   return scaleRelationThreshold(base, difficulty);
 }
 
+// src/game/diplomacy-ai-offer-balance.ts
+var AI_OFFER_PW_BALANCE_TOLERANCE_PN = {
+  easy: Number.POSITIVE_INFINITY,
+  normal: 5,
+  hard: 2
+};
+function aiAllowsOneSidedGoldGift(difficulty = "normal") {
+  return difficulty === "easy";
+}
+function aiAllowsTradeAgreementSweetener(difficulty = "normal") {
+  return difficulty === "easy";
+}
+
 // src/game/diplomacy-pn-engine.ts
 function buildProposalPnSumOpts(opts) {
   return {
@@ -20995,7 +21008,7 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
     }
     if (!rel.stanWojny && !rel.hasHandelTreaty && rel.hasTradeConnection === true && score >= tradeRelMin && canAiProposeTradeAgreement(currentTurnForTrade, rel.lastTradeAgreementProposalTurn)) {
       const closeToThreshold = score < tradeRelMin + AI_TRADE_AGREEMENT_SWEETENER_MARGIN;
-      const sweetenerRaw = closeToThreshold ? capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_AGREEMENT_SWEETENER_MAX) : 0;
+      const sweetenerRaw = aiAllowsTradeAgreementSweetener(difficulty) && closeToThreshold ? capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_AGREEMENT_SWEETENER_MAX) : 0;
       const sweetenerScaled = sweetenerRaw > 0 ? scaleAiGenerousGoldOffer(sweetenerRaw, difficulty) : 0;
       const sweetenerGold = sweetenerScaled > 0 ? sweetenerScaled : void 0;
       komendy.push({
@@ -21018,7 +21031,7 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
     );
     const rawTradeGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_GOLD_MAX);
     const tradeGold = scaleAiGenerousGoldOffer(rawTradeGold, difficulty);
-    if (!rel.stanWojny && giftCooldownOk && tradeGold > 0 && effWillingnessTrade >= effProgHandel && handlowosc >= p.progHandelArchetypeMin && score > tradeRelMin) {
+    if (!rel.stanWojny && aiAllowsOneSidedGoldGift(difficulty) && giftCooldownOk && tradeGold > 0 && effWillingnessTrade >= effProgHandel && handlowosc >= p.progHandelArchetypeMin && score > tradeRelMin) {
       komendy.push({
         type: "zaproponuj_handel",
         targetId: rel.partnerId,

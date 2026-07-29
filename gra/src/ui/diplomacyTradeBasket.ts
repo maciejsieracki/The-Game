@@ -30,12 +30,12 @@ import { HANDEL_ZLOZE_CENA_BAZA } from '../game/diplomacy-deposit-trade';
 import unitsJson from '../../data/units.json';
 import techJson from '../../data/tech.json';
 import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
-import { brandIconSvg } from './icons/brandAssets';
+import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import {
   renderBasketItemValueHtml,
 } from './diplomacyDealDisplay';
 import type { BasketItemFormatCtx } from '../game/diplomacy-display';
-import { formatBasketListBrief } from '../game/diplomacy-display';
+import { formatBasketListBrief, resourceDisplayLabel } from '../game/diplomacy-display';
 import { renderPnBalancePanelFromBasket } from './diplomacyAcceptanceBalance';
 import {
   bilateralTreatyDisplayPw,
@@ -60,6 +60,83 @@ const TYP_LABELS: Record<WartoscPozycjaTyp, string> = {
   surowiec_boolean: 'Dostęp do surowca',
   surowiec_ilosc: 'Surowiec (sztuki, pakiety)',
 };
+
+/** Krótkie etykiety chipów (te same ikony co HUD / magazyn). */
+const TYP_CHIP_LABELS: Partial<Record<WartoscPozycjaTyp, string>> = {
+  zloto: 'Pieniądze',
+  praca: 'Praca',
+  zywnosc: 'Żywność',
+  tech: 'Technologia',
+  surowiec_ilosc: 'Surowiec',
+};
+
+function cdbIconWrap(svg: string): string {
+  if (!svg) return '';
+  return '<span class="cdb-chip-ic">' + svg + '</span>';
+}
+
+function goldChipIconHtml(size = 24): string {
+  const svg = mapResourceIconSvg('Złoto', size)
+    || mapResourceIconSvg('zloto', size)
+    || brandIconSvg('res-treasury', size);
+  return cdbIconWrap(svg);
+}
+
+function typChipIconHtml(typ: WartoscPozycjaTyp, resourceId?: string): string {
+  if (typ === 'zloto') return goldChipIconHtml();
+  if (typ === 'surowiec_ilosc' && resourceId) {
+    const label = resourceDisplayLabel(resourceId);
+    const svg = mapResourceIconSvg(label, 24) || brandIconSvg('chip-crate', 24);
+    return cdbIconWrap(svg);
+  }
+  const brandId: Record<string, string> = {
+    praca: 'res-work',
+    zywnosc: 'res-food',
+    tech: 'bld-science',
+    surowiec_ilosc: 'chip-crate',
+  };
+  return cdbIconWrap(brandIconSvg(brandId[typ] ?? 'chip-crate', 24));
+}
+
+function buildChipBtn(
+  cls: string,
+  value: string,
+  side: string,
+  selected: boolean,
+  iconHtml: string,
+  label: string,
+  extraAttrs = '',
+): string {
+  return (
+    '<button type="button" class="cdb-chip ' + cls + (selected ? ' selected' : '') + '"'
+    + ' data-side="' + side + '" data-value="' + esc(value) + '"' + extraAttrs + '>'
+    + iconHtml
+    + '<span class="cdb-chip-lbl">' + esc(label) + '</span>'
+    + '</button>'
+  );
+}
+
+function qtyStepperHtml(
+  inputClass: string,
+  side: string,
+  value: number,
+  min = 1,
+  max?: number,
+): string {
+  const maxAttr = max != null ? ' max="' + max + '"' : '';
+  return (
+    '<div class="cdb-qty-stepper">'
+    + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
+    + '" data-target="' + inputClass + '" data-delta="1">+1</button>'
+    + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
+    + '" data-target="' + inputClass + '" data-delta="10">+10</button>'
+    + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
+    + '" data-target="' + inputClass + '" data-delta="100">+100</button>'
+    + '<input type="number" class="' + inputClass + '" data-side="' + side
+    + '" value="' + value + '" min="' + min + '"' + maxAttr + ' />'
+    + '</div>'
+  );
+}
 
 /** SUROW-TERYT: typy wycofane z koszyka negocjacji (tylko ilości + złoto/praca/żywność). */
 const WITHDRAWN_BASKET_ACCESS_TYPES = new Set<WartoscPozycjaTyp>(['zloze', 'surowiec_boolean']);
@@ -166,6 +243,30 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-treaty-title{font-size:0.78em;color:#e8d88a;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em;}
 .civ-diplo-basket .cdb-basket-opt{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(232,216,138,.15);}
 .civ-diplo-basket .cdb-basket-opt-title{font-size:0.72em;color:#a8a090;margin:0 0 8px;}
+/* Chipy wyboru pozycji — ikony brand/HUD (bez nowych SVG). */
+.civ-diplo-basket .cdb-chip-grid{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;}
+.civ-diplo-basket .cdb-chip{display:inline-flex;flex-direction:column;align-items:center;gap:3px;
+  min-width:62px;padding:7px 8px;border-radius:8px;border:1px solid rgba(232,216,138,.22);
+  background:rgba(18,22,30,.85);color:#c8b898;cursor:pointer;font:inherit;font-size:0.68em;
+  transition:border-color .15s,background .15s,box-shadow .15s;}
+.civ-diplo-basket .cdb-chip:hover{border-color:rgba(232,216,138,.45);background:rgba(28,34,46,.92);}
+.civ-diplo-basket .cdb-chip.selected{border-color:rgba(232,216,138,.65);
+  background:rgba(40,48,64,.95);color:#f0e8d8;box-shadow:0 0 0 1px rgba(232,216,138,.25);}
+.civ-diplo-basket .cdb-chip-ic{display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;opacity:.95;}
+.civ-diplo-basket .cdb-chip-ic svg{display:block;}
+.civ-diplo-basket .cdb-chip-lbl{text-align:center;line-height:1.2;max-width:72px;}
+.civ-diplo-basket .cdb-chip-meta{font-size:0.85em;color:#8a8070;}
+.civ-diplo-basket .cdb-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;}
+.civ-diplo-basket .cdb-chip.cdb-chip-mode{flex-direction:row;min-width:0;padding:8px 12px;gap:6px;font-size:0.78em;}
+.civ-diplo-basket .cdb-chip.cdb-chip-turn{min-width:36px;padding:6px 10px;font-size:0.78em;font-weight:600;}
+.civ-diplo-basket .cdb-qty-stepper{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:4px 0;}
+.civ-diplo-basket .cdb-qty-step{padding:5px 9px;font-size:0.72em;min-width:42px;}
+.civ-diplo-basket .cdb-qty-stepper input[type=number]{flex:1;min-width:72px;max-width:110px;}
+.civ-diplo-basket .cdb-add-section{margin:6px 0 4px;}
+.civ-diplo-basket .cdb-add-section-title{font-size:0.7em;color:#a8a090;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em;}
+.civ-diplo-basket .cdb-deal-settings-title{font-size:0.72em;color:#e8d88a;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em;}
+.civ-diplo-basket .cdb-typ-hidden{display:none;}
 /* Panel PN — wspólny układ ze stołem negocjacji (diplomacyAcceptanceBalance.ts). */
 .civ-diplo-basket .da-pn-balance-bar{margin-top:10px;margin-bottom:10px;}
 .civ-diplo-basket .da-pn-balance-bar{border-radius:10px;padding:10px 12px;border:2px solid rgba(232,216,138,.28);
@@ -552,12 +653,17 @@ function validateBasketForm(
 
 function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (tur, max 20)', sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'): string {
   if (!visible) return '';
+  const turnChips = [5, 10, 15, 20].map(t =>
+    '<button type="button" class="cdb-chip cdb-chip-turn' + (turns === t ? ' selected' : '')
+    + '" data-turns="' + t + '">' + t + '</button>',
+  ).join('');
   return (
-    '<div class="cdb-duration">' +
-      '<label for="cdb-deal-turns">' + esc(label) + '</label>' +
-      '<input type="number" id="cdb-deal-turns" class="cdb-deal-turns" value="' + turns + '" min="1" max="20" />' +
-      '<p class="cdb-sub">' + esc(sub) + '</p>' +
-    '</div>'
+    '<div class="cdb-duration">'
+      + '<label for="cdb-deal-turns">' + esc(label) + '</label>'
+      + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
+      + qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, 20)
+      + '<p class="cdb-sub">' + esc(sub) + '</p>'
+    + '</div>'
   );
 }
 
@@ -569,29 +675,48 @@ function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (
  */
 function resourceTradeModeHtml(mode: 'once' | 'per_turn', visible: boolean): string {
   if (!visible) return '';
+  const onceIc = cdbIconWrap(brandIconSvg('chip-crate', 22));
+  const perTurnIc = cdbIconWrap(brandIconSvg('ui-end-turn', 22));
   return (
-    '<div class="cdb-duration">' +
-      '<label for="cdb-res-mode">Tryb wymiany surowca</label>' +
-      '<select id="cdb-res-mode" class="cdb-res-mode">' +
-        '<option value="once"' + (mode === 'once' ? ' selected' : '') + '>Jednorazowo — teraz</option>' +
-        '<option value="per_turn"' + (mode === 'per_turn' ? ' selected' : '') + '>Co turę — przez X tur</option>' +
-      '</select>' +
-    '</div>'
+    '<div class="cdb-duration">'
+      + '<label>Tryb wymiany</label>'
+      + '<div class="cdb-chip-row">'
+      + buildChipBtn('cdb-chip-mode', 'once', 'deal', mode === 'once', onceIc, 'Jednorazowo')
+      + buildChipBtn('cdb-chip-mode', 'per_turn', 'deal', mode === 'per_turn', perTurnIc, 'Co turę')
+      + '</div>'
+      + '<input type="hidden" class="cdb-res-mode" value="' + mode + '" />'
+    + '</div>'
   );
+}
+
+/** Pełny blok ustawień czasu umowy — widoczny w handlu zanim dodasz pozycje. */
+function dealSettingsBlockHtml(
+  resourceTradeMode: 'once' | 'per_turn',
+  dealTurns: number,
+  showMode: boolean,
+  showDuration: boolean,
+  dealDurationLabel: string,
+  dealDurationSub: string,
+  hintWhenIdle?: string,
+): string {
+  let html = '<div class="cdb-deal-settings">';
+  html += '<div class="cdb-deal-settings-title">Czas umowy</div>';
+  if (hintWhenIdle) {
+    html += '<p class="cdb-sub">' + esc(hintWhenIdle) + '</p>';
+  }
+  html += resourceTradeModeHtml(resourceTradeMode, showMode);
+  html += dealDurationHtml(dealTurns, showDuration, dealDurationLabel, dealDurationSub);
+  html += '</div>';
+  return html;
 }
 
 function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mode: TradeBasketMode): string {
   if (mode === 'gift' && side === 'receive') return '';
 
   const prefix = side === 'give' ? 'give' : 'recv';
-  const typOpts = (Object.keys(TYP_LABELS) as WartoscPozycjaTyp[])
+  const availableTypes = (Object.keys(TYP_LABELS) as WartoscPozycjaTyp[])
     .filter(t => {
-      // SUROW-TERYT: trwały dostęp do surowców/złóż wycofany z handlu dyplomatycznego.
       if (WITHDRAWN_BASKET_ACCESS_TYPES.has(t)) return false;
-      // TODO(A1 — audyt #1): pozycja "jednostka" ukryta do czasu, gdy transfer
-      // faktycznie zdejmuje WSKAZANĄ jednostkę dawcy (wymaga unitOptions ograniczonych
-      // do posiadanych jednostek w getNegotiationContext). Patrz też defensywne
-      // odrzucenie w main.ts transferBasketItems (case 'jednostka').
       if (t === 'jednostka') return false;
       if (mode === 'gift') return true;
       if (t === 'tech' && side === 'receive') {
@@ -599,76 +724,103 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
         return rel >= (ctx.progHandelRelacja ?? PROG_HANDEL_REL);
       }
       return true;
-    })
-    .map(t => '<option value="' + t + '">' + esc(TYP_LABELS[t]) + '</option>')
-    .join('');
+    });
+  const defaultTyp = availableTypes[0] ?? 'zloto';
+
+  const typChips = availableTypes.map(t =>
+    buildChipBtn(
+      'cdb-chip-typ',
+      t,
+      prefix,
+      t === defaultTyp,
+      typChipIconHtml(t),
+      TYP_CHIP_LABELS[t] ?? TYP_LABELS[t],
+      ' title="' + esc(TYP_LABELS[t]) + '"',
+    ),
+  ).join('');
 
   const cities = ctx.cityOptions ?? [];
-  const citySel = cities.length > 0
-    ? cities.map(c => '<option value="' + esc(c.id) + '">' + esc(c.label) + '</option>').join('')
-    : '<option value="">— brak miast (SILNIK) —</option>';
-
-  const zloze = ctx.zlozeOptions ?? defaultZlozeOptions();
-  const zlozeSel = zloze.map(z => '<option value="' + esc(z.id) + '">' + esc(z.label) + '</option>').join('');
+  const defaultCity = cities[0]?.id ?? '';
+  const cityChips = cities.length > 0
+    ? cities.map((c, i) =>
+      buildChipBtn(
+        'cdb-chip-city',
+        c.id,
+        prefix,
+        i === 0,
+        typChipIconHtml('zywnosc'),
+        c.label,
+      ),
+    ).join('')
+    : '<span class="cdb-sub">— brak miast (SILNIK) —</span>';
 
   const techs = ctx.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 }));
-  const techSel = techs.map(t => '<option value="' + esc(t.id) + '">' + esc(t.label) + '</option>').join('');
+  const defaultTech = techs[0]?.id ?? '';
+  const techChips = techs.map((t, i) =>
+    buildChipBtn(
+      'cdb-chip-tech',
+      t.id,
+      prefix,
+      i === 0,
+      typChipIconHtml('tech'),
+      t.label,
+    ),
+  ).join('');
 
-  const units = ctx.unitOptions ?? defaultUnitOptions();
-  const unitSel = units.map(u => '<option value="' + esc(u.id) + '">' + esc(u.label) + '</option>').join('');
-
-  // Zaległość #3 (2026-07-23): per-strona — dawca oferuje TYLKO to, co realnie posiada
-  // (game/diplomacy-goods.ts, wpięte przez main.ts getNegotiationContext); `resourceOptions`
-  // zostaje jako fallback dla wywołań, które jeszcze go nie ustawiają.
-  const resources = side === 'give'
-    ? (ctx.giveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions())
-    : (ctx.receiveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions());
-  const resSel = resources.map(r => '<option value="' + esc(r.id) + '">' + esc(r.label) + '</option>').join('');
-
-  // C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE per STRONA (realny magazyn
-  // miast, patrz game/diplomacy-goods.ts) — odrębne od `resources` powyżej (dostęp).
   const qtyResources = side === 'give'
     ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
     : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
-  const qtyResSel = qtyResources
-    .map(r => '<option value="' + esc(r.id) + '" data-max="' + r.maxPakiety + '">' + esc(r.label) + '</option>')
-    .join('');
+  const pakiet = diplomacyHandelSurowcePakietWielkosc();
+  const defaultResId = qtyResources[0]?.id ?? '';
+  const qtyResChips = qtyResources.map((r, i) => {
+    const label = resourceDisplayLabel(r.id);
+    const short = label.length > 10 ? label.slice(0, 9) + '…' : label;
+    return buildChipBtn(
+      'cdb-chip-resqty',
+      r.id,
+      prefix,
+      i === 0,
+      typChipIconHtml('surowiec_ilosc', r.id),
+      short,
+      ' data-max="' + r.maxPakiety + '" title="' + esc(label) + ' ×' + pakiet + '"',
+    );
+  }).join('');
   const qtyResFirstMax = qtyResources[0]?.maxPakiety ?? 1;
 
   const zywnHint = diplomacyZywnoscNaPn();
 
   return (
-    '<div class="cdb-add" data-side="' + prefix + '">' +
-      '<label>Typ pozycji</label>' +
-      '<select class="cdb-typ" data-side="' + prefix + '">' + typOpts + '</select>' +
-      '<div class="cdb-fields-extra visible" data-extra="' + prefix + '-qty">' +
-        '<label>Ilość</label><input type="number" class="cdb-qty" data-side="' + prefix + '" value="10" min="1" />' +
-      '</div>' +
-      '<div class="cdb-fields-extra" data-extra="' + prefix + '-city">' +
-        '<label>Miasto (spichlerz)</label><select class="cdb-city" data-side="' + prefix + '">' + citySel + '</select>' +
-        '<label>Ilość żywności <span style="color:#7a8494">(1 PW = ' + zywnHint + ')</span></label>' +
-        '<input type="number" class="cdb-food-qty" data-side="' + prefix + '" value="10" min="1" />' +
-      '</div>' +
-      '<div class="cdb-fields-extra" data-extra="' + prefix + '-zloze">' +
-        '<label>Złoże</label><select class="cdb-zloze" data-side="' + prefix + '">' + zlozeSel + '</select>' +
-      '</div>' +
-      '<div class="cdb-fields-extra" data-extra="' + prefix + '-tech">' +
-        '<label>Technologia</label><select class="cdb-tech" data-side="' + prefix + '">' + techSel + '</select>' +
-      '</div>' +
-      '<div class="cdb-fields-extra" data-extra="' + prefix + '-unit">' +
-        '<label>Jednostka</label><select class="cdb-unit" data-side="' + prefix + '">' + unitSel + '</select>' +
-      '</div>' +
-      '<div class="cdb-fields-extra" data-extra="' + prefix + '-res">' +
-        '<label>Surowiec</label><select class="cdb-res-bool" data-side="' + prefix + '">' + resSel + '</select>' +
-      '</div>' +
-      '<div class="cdb-fields-extra" data-extra="' + prefix + '-resqty">' +
-        '<label>Surowiec (ilość)</label>' +
-        '<select class="cdb-res-qty-sel" data-side="' + prefix + '">' + qtyResSel + '</select>' +
-        '<label>Liczba pakietów</label>' +
-        '<input type="number" class="cdb-res-qty-num" data-side="' + prefix + '" value="1" min="1" max="' + qtyResFirstMax + '" />' +
-      '</div>' +
-      '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '">+ Dodaj pozycję</button>' +
-    '</div>'
+    '<div class="cdb-add" data-side="' + prefix + '">'
+    + '<input type="hidden" class="cdb-typ cdb-typ-hidden" data-side="' + prefix + '" value="' + defaultTyp + '" />'
+    + '<div class="cdb-add-section">'
+    + '<div class="cdb-add-section-title">Co dodajesz</div>'
+    + '<div class="cdb-chip-grid cdb-typ-chips">' + typChips + '</div>'
+    + '</div>'
+    + '<div class="cdb-fields-extra visible" data-extra="' + prefix + '-qty">'
+    + '<label>Ilość</label>'
+    + qtyStepperHtml('cdb-qty', prefix, 10)
+    + '</div>'
+    + '<div class="cdb-fields-extra" data-extra="' + prefix + '-city">'
+    + '<label>Miasto (spichlerz)</label>'
+    + '<div class="cdb-chip-grid cdb-city-chips">' + cityChips + '</div>'
+    + '<input type="hidden" class="cdb-city" data-side="' + prefix + '" value="' + esc(defaultCity) + '" />'
+    + '<label>Ilość żywności <span style="color:#7a8494">(1 PW = ' + zywnHint + ')</span></label>'
+    + qtyStepperHtml('cdb-food-qty', prefix, 10)
+    + '</div>'
+    + '<div class="cdb-fields-extra" data-extra="' + prefix + '-tech">'
+    + '<label>Technologia</label>'
+    + '<div class="cdb-chip-grid cdb-tech-chips">' + techChips + '</div>'
+    + '<input type="hidden" class="cdb-tech" data-side="' + prefix + '" value="' + esc(defaultTech) + '" />'
+    + '</div>'
+    + '<div class="cdb-fields-extra" data-extra="' + prefix + '-resqty">'
+    + '<label>Surowiec (pakiety ×' + pakiet + ')</label>'
+    + '<div class="cdb-chip-grid cdb-resqty-chips">' + qtyResChips + '</div>'
+    + '<input type="hidden" class="cdb-res-qty-sel" data-side="' + prefix + '" value="' + esc(defaultResId) + '" data-max="' + qtyResFirstMax + '" />'
+    + '<label>Liczba pakietów</label>'
+    + qtyStepperHtml('cdb-res-qty-num', prefix, 1, 1, qtyResFirstMax)
+    + '</div>'
+    + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '">+ Dodaj pozycję</button>'
+    + '</div>'
   );
 }
 
@@ -832,7 +984,7 @@ function summaryHtml(
 
 function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: NegotiationModalContext): BasketItem | null {
   const prefix = side === 'give' ? 'give' : 'recv';
-  const typ = (box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLSelectElement)?.value as WartoscPozycjaTyp;
+  const typ = (box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLInputElement)?.value as WartoscPozycjaTyp;
   if (!typ) return null;
 
   switch (typ) {
@@ -843,36 +995,36 @@ function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Negotiati
       return { typ, id: typ, ilosc: qty };
     }
     case 'zywnosc': {
-      const cityId = (box.querySelector('.cdb-city[data-side="' + prefix + '"]') as HTMLSelectElement)?.value;
+      const cityId = (box.querySelector('.cdb-city[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
       const qty = parseInt((box.querySelector('.cdb-food-qty[data-side="' + prefix + '"]') as HTMLInputElement)?.value ?? '0', 10);
       if (!cityId || qty <= 0) return null;
       return { typ, id: cityId, cityId, ilosc: qty };
     }
     case 'zloze': {
-      const id = (box.querySelector('.cdb-zloze[data-side="' + prefix + '"]') as HTMLSelectElement)?.value;
+      const id = (box.querySelector('.cdb-zloze[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
       if (!id) return null;
       return { typ, id };
     }
     case 'tech': {
-      const id = (box.querySelector('.cdb-tech[data-side="' + prefix + '"]') as HTMLSelectElement)?.value;
+      const id = (box.querySelector('.cdb-tech[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
       if (!id) return null;
       return { typ, id };
     }
     case 'jednostka': {
-      const id = (box.querySelector('.cdb-unit[data-side="' + prefix + '"]') as HTMLSelectElement)?.value;
+      const id = (box.querySelector('.cdb-unit[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
       if (!id) return null;
       return { typ, id };
     }
     case 'surowiec_boolean': {
-      const id = (box.querySelector('.cdb-res-bool[data-side="' + prefix + '"]') as HTMLSelectElement)?.value;
+      const id = (box.querySelector('.cdb-res-bool[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
       if (!id) return null;
       return { typ, id };
     }
     case 'surowiec_ilosc': {
-      const sel = box.querySelector('.cdb-res-qty-sel[data-side="' + prefix + '"]') as HTMLSelectElement | null;
-      const id = sel?.value;
+      const hidden = box.querySelector('.cdb-res-qty-sel[data-side="' + prefix + '"]') as HTMLInputElement | null;
+      const id = hidden?.value;
       if (!id) return null;
-      const maxAttr = parseInt(sel!.selectedOptions[0]?.getAttribute('data-max') ?? '0', 10);
+      const maxAttr = parseInt(hidden?.getAttribute('data-max') ?? '0', 10);
       const rawQty = parseInt(
         (box.querySelector('.cdb-res-qty-num[data-side="' + prefix + '"]') as HTMLInputElement)?.value ?? '0',
         10,
@@ -888,21 +1040,43 @@ function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Negotiati
 
 function updateTypFields(box: Element, side: 'give' | 'receive'): void {
   const prefix = side === 'give' ? 'give' : 'recv';
-  const typ = (box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLSelectElement)?.value ?? 'zloto';
-  const extras = ['qty', 'city', 'zloze', 'tech', 'unit', 'res', 'resqty'];
+  const typ = (box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLInputElement)?.value ?? 'zloto';
+  const extras = ['qty', 'city', 'tech', 'resqty'];
   for (const ex of extras) {
     const el = box.querySelector('[data-extra="' + prefix + '-' + ex + '"]');
     if (el) el.classList.remove('visible');
   }
   const map: Record<string, string> = {
-    zloto: 'qty', praca: 'qty', zywnosc: 'city', zloze: 'zloze',
-    tech: 'tech', jednostka: 'unit', surowiec_boolean: 'res', surowiec_ilosc: 'resqty',
+    zloto: 'qty', praca: 'qty', zywnosc: 'city', tech: 'tech', surowiec_ilosc: 'resqty',
   };
   const show = map[typ];
   if (show) {
     const el = box.querySelector('[data-extra="' + prefix + '-' + show + '"]');
     if (el) el.classList.add('visible');
   }
+}
+
+function selectChipInGroup(
+  btn: Element,
+  chipClass: string,
+  hiddenSelector: string,
+  onSelect?: (value: string, max?: number) => void,
+): void {
+  const side = btn.getAttribute('data-side');
+  if (!side) return;
+  const value = btn.getAttribute('data-value') ?? '';
+  const addBox = btn.closest('.cdb-add');
+  if (!addBox) return;
+  addBox.querySelectorAll('.' + chipClass + '[data-side="' + side + '"]').forEach(c => {
+    c.classList.toggle('selected', c === btn);
+  });
+  const hidden = addBox.querySelector(hiddenSelector + '[data-side="' + side + '"]') as HTMLInputElement | null;
+  if (hidden) {
+    hidden.value = value;
+    const max = btn.getAttribute('data-max');
+    if (max != null) hidden.setAttribute('data-max', max);
+  }
+  onSelect?.(value, btn.getAttribute('data-max') ? parseInt(btn.getAttribute('data-max')!, 10) : undefined);
 }
 
 function renderBasket(
@@ -962,26 +1136,32 @@ function renderBasket(
       : '');
 
   const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
-  // HANDEL-SUROWCE-CYKL (2026-07-24): koszyk z surowcem ILOŚCIOWYM, bez trwałego
-  // dostępu (zloze/surowiec_boolean — ten ma własną, wcześniejszą semantykę czasu
-  // trwania poniżej) → pokaż przełącznik Jednorazowo/Co turę.
   const hasQtyRes = showReceiveCol && !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
-  const showResModeSelector = hasQtyRes;
+  const showResModeSelector = showReceiveCol && (mode === 'trade' || mode === 'treaty');
   const showDealDuration = showReceiveCol
-    && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn'));
+    && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn')
+      || (showResModeSelector && resourceTradeMode === 'per_turn'));
   const dealDurationLabel = hasResourceAccess
     ? 'Czas umowy (tur, max 20)'
     : 'Co ile tur trwa wymiana (tur, max 20)';
   const dealDurationSub = hasResourceAccess
     ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
     : 'Surowiec i zapłata płyną CO TURĘ przez wybrany czas. Deal znika po wygaśnięciu, zerwaniu traktatu lub wojnie.';
+  const dealSettingsHint = !hasQtyRes && !hasResourceAccess
+    ? 'Tryb „Co turę" i czas obowiązują po dodaniu surowca (pakiety) do koszyka.'
+    : undefined;
 
   const dealSettings = (blocked || !showReceiveCol)
     ? ''
-    : '<div class="cdb-deal-settings">' +
-        resourceTradeModeHtml(resourceTradeMode, showResModeSelector) +
-        dealDurationHtml(dealTurns, showDealDuration, dealDurationLabel, dealDurationSub) +
-      '</div>';
+    : dealSettingsBlockHtml(
+      resourceTradeMode,
+      dealTurns,
+      showResModeSelector,
+      showDealDuration,
+      dealDurationLabel,
+      dealDurationSub,
+      dealSettingsHint,
+    );
 
   const validation = validateBasketForm(
     mode, action.id, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, !!blocked, treatyState,
@@ -1011,8 +1191,8 @@ function renderBasket(
     treatyHtml +
     basketOptIntro +
     dealPreview +
-    (blocked ? '' : '<div class="cdb-cols">' + giveCol + recvCol + '</div>') +
     dealSettings +
+    (blocked ? '' : '<div class="cdb-cols">' + giveCol + recvCol + '</div>') +
     basketOptClose +
     (blocked ? '' : summaryBlock) +
     invalidHtml +
@@ -1077,8 +1257,8 @@ export function showTradeBasketModal(
   };
 
   const readResourceTradeModeFromDom = (): void => {
-    const sel = box.querySelector('.cdb-res-mode') as HTMLSelectElement | null;
-    if (sel) resourceTradeMode = sel.value === 'per_turn' ? 'per_turn' : 'once';
+    const hidden = box.querySelector('.cdb-res-mode') as HTMLInputElement | null;
+    if (hidden) resourceTradeMode = hidden.value === 'per_turn' ? 'per_turn' : 'once';
   };
 
   const refresh = (): void => {
@@ -1097,10 +1277,81 @@ export function showTradeBasketModal(
     };
     box.querySelector('.cdb-cancel')?.addEventListener('click', dismiss);
 
-    box.querySelectorAll('.cdb-typ').forEach(sel => {
-      sel.addEventListener('change', () => {
-        const side = sel.getAttribute('data-side') === 'recv' ? 'receive' : 'give';
-        updateTypFields(box, side);
+    box.querySelectorAll('.cdb-chip-typ').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const side = btn.getAttribute('data-side') === 'recv' ? 'receive' : 'give';
+        selectChipInGroup(btn, 'cdb-chip-typ', '.cdb-typ', (value) => {
+          const prefix = side === 'give' ? 'give' : 'recv';
+          const hidden = box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLInputElement | null;
+          if (hidden) hidden.value = value;
+          updateTypFields(box, side);
+        });
+      });
+    });
+
+    box.querySelectorAll('.cdb-chip-city').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectChipInGroup(btn, 'cdb-chip-city', '.cdb-city');
+      });
+    });
+
+    box.querySelectorAll('.cdb-chip-tech').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectChipInGroup(btn, 'cdb-chip-tech', '.cdb-tech');
+      });
+    });
+
+    box.querySelectorAll('.cdb-chip-resqty').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const side = btn.getAttribute('data-side');
+        selectChipInGroup(btn, 'cdb-chip-resqty', '.cdb-res-qty-sel', (_value, max) => {
+          if (side && max != null) {
+            const inp = box.querySelector('.cdb-res-qty-num[data-side="' + side + '"]') as HTMLInputElement | null;
+            if (inp) {
+              inp.max = String(max);
+              if (parseInt(inp.value, 10) > max) inp.value = String(max);
+            }
+          }
+        });
+      });
+    });
+
+    box.querySelectorAll('.cdb-chip-mode').forEach(btn => {
+      btn.addEventListener('click', () => {
+        box.querySelectorAll('.cdb-chip-mode').forEach(c => c.classList.toggle('selected', c === btn));
+        const hidden = box.querySelector('.cdb-res-mode') as HTMLInputElement | null;
+        const mode = btn.getAttribute('data-value') === 'per_turn' ? 'per_turn' : 'once';
+        if (hidden) hidden.value = mode;
+        resourceTradeMode = mode;
+        refresh();
+      });
+    });
+
+    box.querySelectorAll('.cdb-chip-turn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const turns = parseInt(btn.getAttribute('data-turns') ?? '15', 10);
+        dealTurns = Math.max(1, Math.min(20, turns));
+        const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
+        if (inp) inp.value = String(dealTurns);
+        box.querySelectorAll('.cdb-chip-turn').forEach(c => {
+          c.classList.toggle('selected', c === btn);
+        });
+        refresh();
+      });
+    });
+
+    box.querySelectorAll('.cdb-qty-step').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const side = btn.getAttribute('data-side');
+        const target = btn.getAttribute('data-target');
+        const delta = parseInt(btn.getAttribute('data-delta') ?? '0', 10);
+        if (!side || !target || delta <= 0) return;
+        const inp = box.querySelector('.' + target + '[data-side="' + side + '"]') as HTMLInputElement | null;
+        if (!inp) return;
+        const min = parseInt(inp.min || '1', 10);
+        const max = inp.max ? parseInt(inp.max, 10) : Infinity;
+        const next = Math.min(max, Math.max(min, (parseInt(inp.value, 10) || 0) + delta));
+        inp.value = String(next);
       });
     });
 
@@ -1109,11 +1360,6 @@ export function showTradeBasketModal(
       updateTypFields(box, uiSide);
     }
 
-    box.querySelector('.cdb-res-mode')?.addEventListener('change', () => {
-      readResourceTradeModeFromDom();
-      refresh();
-    });
-
     box.querySelector('.cdb-deal-turns')?.addEventListener('input', () => refresh());
 
     box.querySelectorAll(
@@ -1121,19 +1367,6 @@ export function showTradeBasketModal(
     ).forEach(el => {
       el.addEventListener('change', () => refresh());
       el.addEventListener('input', () => refresh());
-    });
-
-    box.querySelectorAll('.cdb-res-qty-sel').forEach(sel => {
-      sel.addEventListener('change', () => {
-        const side = sel.getAttribute('data-side');
-        const opt = (sel as HTMLSelectElement).selectedOptions[0];
-        const max = opt?.getAttribute('data-max');
-        const inp = box.querySelector('.cdb-res-qty-num[data-side="' + side + '"]') as HTMLInputElement | null;
-        if (inp && max) {
-          inp.max = max;
-          if (parseInt(inp.value, 10) > parseInt(max, 10)) inp.value = max;
-        }
-      });
     });
 
     box.querySelectorAll('.cdb-add-btn').forEach(btn => {

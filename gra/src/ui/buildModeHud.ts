@@ -22,7 +22,7 @@ export interface BuildTypeInfo {
   lockHint?: string | null;
 }
 
-/** Cud świata dostępny do kolejki produkcji (CUDA — panel budowy). */
+/** Cud świata — wybór z panelu budowy, placement na heksie mapy. */
 export interface WonderBuildTypeInfo {
   id: string;
   label: string;
@@ -30,8 +30,8 @@ export interface WonderBuildTypeInfo {
   epokaWejscia: number;
   /** E = wyłączny cywilizacji, R = wyścig światowy. */
   dostep?: string;
-  /** Już w kolejce miasta docelowego. */
-  queued?: boolean;
+  /** Już w budowie na mapie (nie kolejka miasta). */
+  building?: boolean;
   lockHint?: string | null;
 }
 
@@ -46,7 +46,8 @@ export interface BuildModeHudConfig {
   /** Cuda świata — lista na dole panelu (tylko aktualnie dostępne dla cywilizacji). */
   listWonders?: () => WonderBuildTypeInfo[];
   onSelectWonder?: (wonderId: string) => void;
-  /** Podtytuł sekcji cudów (np. miasto docelowe kolejki). */
+  getActiveWonderId?: () => string | null;
+  /** Podtytuł sekcji cudów (np. postęp budowy na mapie). */
   getWonderTargetLabel?: () => string | null;
   /** A-START-05: gracz bez miasta — przycisk Załóż miasto. */
   canFoundCity?: () => boolean;
@@ -179,6 +180,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     }
 
     const active = config.getActiveKey();
+    const activeWonder = config.getActiveWonderId?.() ?? null;
     const foundCityOnly = config.isFoundCityOnly?.() ?? false;
     const types = foundCityOnly
       ? []
@@ -189,9 +191,13 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     if (bannerText) {
       bannerText.textContent = foundActive
         ? '🏛️ ZAŁÓŻ MIASTO — kliknij podświetlony hex (ESC = wyjście)'
-        : foundCityOnly
-          ? '🏛️ ZAŁÓŻ PIERWSZE MIASTO — wybierz «Załóż miasto» w panelu'
-          : '🔨 TRYB BUDOWY — wybierz ulepszenie, kliknij hex (ESC = wyjście)';
+        : activeWonder
+          ? '🏛️ CUD ŚWIATA — kliknij hex w terytorium (ESC = wyjście)'
+          : foundCityOnly
+            ? '🏛️ ZAŁÓŻ PIERWSZE MIASTO — wybierz «Załóż miasto» w panelu'
+            : active
+              ? '🔨 TRYB BUDOWY — wybierz ulepszenie, kliknij hex (ESC = wyjście)'
+              : '🔨 TRYB BUDOWY — wybierz ulepszenie lub cud, kliknij hex (ESC = wyjście)';
     }
     let html = '';
     if (showFound) {
@@ -212,14 +218,15 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         html += '<div class="civ-build-wonders-gap"></div>';
         html += '<div class="lbl">Cuda świata</div>';
         if (wonderTarget) {
-          html += '<div class="civ-build-wonders-sub">Kolejka produkcji: ' + wonderTarget + '</div>';
+          html += '<div class="civ-build-wonders-sub">' + wonderTarget + '</div>';
         }
         for (const w of wonders) {
-          const locked = w.queued === true;
-          const hint = w.lockHint ?? (locked ? 'Już w kolejce tego miasta' : null);
+          const locked = w.building === true;
+          const sel = w.id === activeWonder ? ' sel' : '';
+          const hint = w.lockHint ?? (locked ? 'Już w budowie na mapie' : null);
           const tag = w.dostep === 'R' ? ' · wyścig' : '';
           const costLabel = w.kosztPraca + ' P';
-          html += '<div class="civ-build-item wonder' + (locked ? ' locked' : '') + '" data-wonder-id="' + w.id + '"'
+          html += '<div class="civ-build-item wonder' + sel + (locked ? ' locked' : '') + '" data-wonder-id="' + w.id + '"'
             + (locked && hint ? ' data-lock-hint="' + hint.replace(/"/g, '&quot;') + '"' : '')
             + ' title="' + (locked && hint ? hint : (w.label + ' — epoka ' + w.epokaWejscia)) + '">'
             + '<span class="ic">🏛</span>'
@@ -299,7 +306,10 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           return;
         }
         const id = elItem.getAttribute('data-wonder-id');
-        if (id) config.onSelectWonder?.(id);
+        if (id) {
+          const togglingOff = id === activeWonder;
+          config.onSelectWonder?.(togglingOff ? '' : id);
+        }
         render();
       });
     });

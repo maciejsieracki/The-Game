@@ -5584,6 +5584,52 @@ function appendJunctionDownstreamHex(
  * Sąsiad heksa-junction leżący w sieci rzecznej (po oznakowanej krawędzi), różny od hexa
  * dojścia dopływu. Używany do domknięcia junction w fazie 2 (feeder), gdzie nie znamy main path.
  */
+/** Czy dopływ (przed markiem) łączy się z siecią spływającą do morza lub ma własne ujście. */
+function tributaryTouchesOceanReachable(
+  path: RiverCoord[],
+  reached: Set<string>,
+): boolean {
+  for (const p of path) {
+    if (reached.has(hexKey(p.q, p.r))) return true;
+  }
+  const end = path[path.length - 1];
+  if (!end) return false;
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    const nk = hexKey(end.q + dq, end.r + dr);
+    if (reached.has(nk)) return true;
+  }
+  return false;
+}
+
+/**
+ * Przycina pierścienie (Z3), domyka junction (I2) i odrzuca dopływ bez ujścia do sieci lub morza.
+ * Zwraca gotową ścieżkę lub null (nie oznakowuj, nie dopisuj do riverPaths).
+ */
+function finalizeTributaryPath(
+  hexes: Record<string, Hex>,
+  path: RiverCoord[],
+  riverPaths: RiverCoord[][],
+  riverKinds: RiverPathKind[],
+  width: number,
+  height: number,
+  oceanConnected: Set<string>,
+): RiverCoord[] | null {
+  let out = trimRiverPathRings(hexes, path);
+  if (out.length < 3) return null;
+  if (out.length >= 2) {
+    const junction = out[out.length - 1]!;
+    const approach = out[out.length - 2]!;
+    const down = networkDownstreamNeighbor(hexes, junction, approach);
+    out = appendJunctionDownstreamHex(out, down);
+  }
+  if (pathEndsAtSea(hexes, out, width, height, oceanConnected)) return out;
+  const reached = buildOceanReachableRiverHexKeys(
+    hexes, riverPaths, riverKinds, width, height, oceanConnected,
+  );
+  if (!tributaryTouchesOceanReachable(out, reached)) return null;
+  return out;
+}
+
 function networkDownstreamNeighbor(
   hexes: Record<string, Hex>,
   junction: RiverCoord,
@@ -5745,6 +5791,9 @@ function addTributariesForMainRiver(
   riverKinds: RiverPathKind[],
   usedSources: Set<string>,
   minSourceSep: number,
+  width: number,
+  height: number,
+  oceanConnected: Set<string>,
   areaScale = 1,
   reliefSearchMin = 3,
   reliefSearchMax = 8,
@@ -5776,21 +5825,14 @@ function addTributariesForMainRiver(
     let path = traceTributary(hexes, src[0], src[1], junction.q, junction.r, tribLen, seaDist, rand);
     if (path.length < 3) continue;
 
-    // B0.10 (Z3) NAJPIERW: utnij bieg zanim położy 4. krawędź na heksie (pierścień).
-    path = trimRiverPathRings(hexes, path);
-    // B0.8 I2 PO przycięciu: domknij junction na realnym końcu biegu — dołóż 1 hex sieci
-    // za końcem (krawędź już oznakowana przez główny nurt → 0 nowych krawędzi, hash bez zmian).
-    // networkDownstreamNeighbor działa też gdy trim przesunął koniec z pierwotnego junction.
-    if (path.length >= 2) {
-      const end = path[path.length - 1]!;
-      const approach = path[path.length - 2]!;
-      const down = networkDownstreamNeighbor(hexes, end, approach);
-      path = appendJunctionDownstreamHex(path, down);
-    }
-    riverPaths.push(path);
+    const finalized = finalizeTributaryPath(
+      hexes, path, riverPaths, riverKinds, width, height, oceanConnected,
+    );
+    if (!finalized) continue;
+    riverPaths.push(finalized);
     riverKinds.push('tributary');
     usedSources.add(srcKey);
-    markRiverPath(hexes, path);
+    markRiverPath(hexes, finalized);
   }
 }
 
@@ -6049,6 +6091,23 @@ export function pruneRiversNotReachingRealSea(
   clearRiverMarks(hexes);
   for (const p of keptPaths) markRiverPath(hexes, p);
   return pruneOrphanRiverPaths(hexes, keptPaths, keptKinds, width, height);
+}
+
+/**
+ * Bramka końcowa (generator.ts, PO wszystkich przebiegach terenu): usuwa wiszące dopływy i
+ * główne trasy bez ujścia. Wołana ponownie po reliefie/złożach na Ziemi, bo późniejsze
+ * kroki mogą rozłączyć sieć bez aktualizacji riverPaths (regres BUG-RZEKI-DOPLYWY).
+ */
+export function ensureRiverOutlets(
+  hexes: Record<string, Hex>,
+  paths: RiverCoord[][],
+  kinds: RiverPathKind[],
+  width: number,
+  height: number,
+): { paths: RiverCoord[][]; kinds: RiverPathKind[] } {
+  let result = pruneOrphanRiverPaths(hexes, paths, kinds, width, height);
+  result = pruneRiversNotReachingRealSea(hexes, result.paths, result.kinds, width, height);
+  return result;
 }
 
 /** Czy między lądowymi heksami a→b krawędź rzeki jest oznakowana po OBU stronach (I1). */
@@ -6592,18 +6651,10 @@ export function generateRivers(
   };
 
   const pushTributary = (path: RiverCoord[], sq: number, sr: number): boolean => {
-    // B0.10 (Z3) NAJPIERW: utnij bieg zanim położy 4. krawędź na heksie (pierścień).
-    let out = trimRiverPathRings(hexes, path);
-    // B0.8 I2 PO przycięciu: domknij junction — dołóż 1 hex nurtu poniżej realnego końca
-    // (krawędź junction→down jest już oznakowana przez główny nurt → 0 nowych krawędzi,
-    // 0 pierścienia, hash terenu bez zmian). Kolejność append-po-trim chroni domknięcie
-    // przed usunięciem przez przycinanie pierścieni (regres I2).
-    if (out.length >= 2) {
-      const junction = out[out.length - 1]!;
-      const approach = out[out.length - 2]!;
-      const down = networkDownstreamNeighbor(hexes, junction, approach);
-      out = appendJunctionDownstreamHex(out, down);
-    }
+    const out = finalizeTributaryPath(
+      hexes, path, riverPaths, riverKinds, width, height, oceanConnected,
+    );
+    if (!out) return false;
     riverPaths.push(out);
     riverKinds.push('tributary');
     usedSources.add(hexKey(sq, sr));
@@ -6794,6 +6845,7 @@ export function generateRivers(
     if (!path || path.length < 10) continue;
     addTributariesForMainRiver(
       hexes, path, seaDist, rand, maxLen, riverPaths, riverKinds, usedSources, minSourceSep,
+      width, height, oceanConnected,
       riverParams.areaScale,
       riverParams.reliefSearchMin,
       riverParams.reliefSearchMax,
@@ -6869,18 +6921,10 @@ export function topUpRiverGridCoverage(
   };
 
   const pushTributary = (path: RiverCoord[], sq: number, sr: number): boolean => {
-    // B0.10 (Z3) NAJPIERW: utnij bieg zanim położy 4. krawędź na heksie (pierścień).
-    let out = trimRiverPathRings(hexes, path);
-    // B0.8 I2 PO przycięciu: domknij junction — dołóż 1 hex nurtu poniżej realnego końca
-    // (krawędź junction→down jest już oznakowana przez główny nurt → 0 nowych krawędzi,
-    // 0 pierścienia, hash terenu bez zmian). Kolejność append-po-trim chroni domknięcie
-    // przed usunięciem przez przycinanie pierścieni (regres I2).
-    if (out.length >= 2) {
-      const junction = out[out.length - 1]!;
-      const approach = out[out.length - 2]!;
-      const down = networkDownstreamNeighbor(hexes, junction, approach);
-      out = appendJunctionDownstreamHex(out, down);
-    }
+    const out = finalizeTributaryPath(
+      hexes, path, riverPaths, riverKinds, width, height, oceanConnected,
+    );
+    if (!out) return false;
     riverPaths.push(out);
     riverKinds.push('tributary');
     usedSources.add(hexKey(sq, sr));

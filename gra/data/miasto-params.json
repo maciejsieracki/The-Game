@@ -94,7 +94,7 @@
   "bonus_obrona_palisada_proc": {
     "wartosc": 100,
     "jednostka": "% Obrony (wczesna palisada drewniana)",
-    "opis": "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broniącym się jednostkom. Epoka Brązu, tech Obróbka drewna. Mury (+200%) ZASTĘPUJĄ bonus palisady (nie stackują -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
+    "opis": "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broniącym się jednostkom. Epoka Kamienia, tech Obróbka drewna. Mury (+200%) ZASTĘPUJĄ bonus palisady (nie stackują -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
   },
   "zasieg_okolicy_baza": {
     "wartosc": 5,

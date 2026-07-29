@@ -4395,3 +4395,10 @@ tsc 0 | dip-accept 142/142 | dip-ai-offer 18/18 | hex-plony 9/9 | qualify 94/94 
 Zakres: koszyk dyplo od razu · PW nazwy+NAP fix · AI oferta zero (Easy/Normal) · tooltip HUD ×2 · mapa 👤+granice+⛏ default ON · surowce overlay · glina overlay · (rzeki dopływy — brak zmian kodu)
 Commit lokalny, **bez push** (Maciej).
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `8d5813ea`).
+
+## [00:05 PL, 2026-07-30] Sesja lokalna → wszystkie — FALA 113 DEPLOY ALL
+md5 `9ae07906dc7215050b3cde635d50a5ee` | stempel ROBOCZA · 2026-07-30 00:05
+tsc 0 | dip-ai-offer 23/23 | dip-reject-cooldown 14/14 | dip-negot 48/48 | skarbiec-bilans 11/11 | koszty-surowcowe 128/128 | map-gen-regression TIMEOUT (dopływy) | VERIFY OK | vite exit 0 przed kopiowaniem
+Zakres: duplikat umów dyplo · koszyk UX · AI oferta zero+trim cykl · AI no-nag cooldown 3t · zoom/fullscreen · tooltip ×2 · skarbiec bilans · palisada ep. Kamień+chip obrony · ensureRiverOutlets · (bez ikony preview palisady)
+Commit lokalny, **bez push** (Maciej).
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `9ae07906`).

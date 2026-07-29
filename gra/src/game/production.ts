@@ -1455,6 +1455,9 @@ export function eraBuildingCatalog(
 
   for (const b of data.buildings) {
     if (b.epokaWejscia !== epoch) continue;
+    if (isBuildingSuppressedFromProduction(b)) continue;
+    // Palisada drewniana: tylko gdy miasto nie ma już kamiennych Murów/Cytadeli.
+    if (b.id === 'palisada' && (builtList.includes('mury') || builtList.includes('fort'))) continue;
 
     const koszt = buildingWorkCost(
       itemCost('budynek', b.id, data, level),

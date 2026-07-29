@@ -39,6 +39,10 @@ export { cityWallDefenseBonusPercent } from '../src/game/city-defense';
 export {
   ARMOR_BUILDING_IDS, cityArmorBonusPercent, cumulativeMnoznikForBuildingId,
 } from '../src/game/unit-building-bonuses';
+export {
+  buildingStructuralDefenseBonusPercent, buildingStructuralDefenseBonusLine,
+} from '../src/game/building-upgrades';
+export { availableProduction } from '../src/game/production';
 `, 'utf8');
 
 esbuild.buildSync({
@@ -87,21 +91,14 @@ function ok(c, m) {
 
 // ===========================================================================
 // B. Epoka Brazu (epokaWejscia=2) -- drewno + kamien, oba surowce, zaden inny.
-// Wyjatek: palisada drewniana -- tylko drewno (wczesna obrona przed Mury).
 // ===========================================================================
 {
-  const EPOCH2_DRENO_ONLY = new Set(['palisada']);
   const epoch2 = buildings.filter(b => b.epokaWejscia === 2);
   ok(epoch2.length > 0, 'sanity: sa budynki epoki Brazu');
   for (const b of epoch2) {
     const keys = new Set(Object.keys(b.koszt_surowce || {}));
-    if (EPOCH2_DRENO_ONLY.has(b.id)) {
-      ok(keys.size === 1 && keys.has('drewno'),
-        `${b.id} (epoka Brazu, palisada): koszt_surowce = samo drewno (ma: ${JSON.stringify(b.koszt_surowce)})`);
-    } else {
-      ok(keys.size === 2 && keys.has('drewno') && keys.has('kamien'),
-        `${b.id} (epoka Brazu): koszt_surowce = drewno + kamien (ma: ${JSON.stringify(b.koszt_surowce)})`);
-    }
+    ok(keys.size === 2 && keys.has('drewno') && keys.has('kamien'),
+      `${b.id} (epoka Brazu): koszt_surowce = drewno + kamien (ma: ${JSON.stringify(b.koszt_surowce)})`);
   }
 }
 
@@ -174,6 +171,36 @@ function ok(c, m) {
     'Palisada+Mury w zapisie: tylko bonus Murów (+200%), bez stacku z palisadą');
   ok(M.cityWallDefenseBonusPercent(['baszta'], params) === 100,
     'Sama Baszta (bez Murow/Cytadeli): tylko wlasny +100% (nie odblokowuje bazy muru)');
+  ok(M.buildingStructuralDefenseBonusPercent('palisada') === 100,
+    'UI helper: palisada +100% Obrony z miasto-params');
+  ok(M.buildingStructuralDefenseBonusLine('palisada')?.includes('+100%'),
+    'UI helper: etykieta palisady zawiera +100%');
+}
+
+// ===========================================================================
+// J. Palisada drewniana -- dostepnosc w produkcji (epoka Kamien + tech).
+// ===========================================================================
+{
+  const city = { id: 'c1', ownerId: 0, name: 'Test', population: 1 };
+  const prodData = { buildings, units: require('../data/units.json') };
+  const ctx = (epoch, techs, built = []) => ({
+    epoch,
+    builtBuildingIds: built,
+    productionQueue: [],
+    isCapital: true,
+    empireResourceStock: { drewno: 99, kamien: 99 },
+  });
+  const ids = (epoch, techs, built = []) => M.availableProduction(
+    city, prodData, techs, ctx(epoch, techs, built),
+  ).filter(i => i.kind === 'budynek').map(i => i.id);
+  ok(!ids(1, []).includes('palisada'),
+    'Palisada: ukryta w epoce Kamienia bez tech Obróbka drewna');
+  ok(ids(1, ['Obróbka drewna']).includes('palisada'),
+    'Palisada: widoczna w epoce Kamienia + Obróbka drewna');
+  ok(!ids(1, ['Obróbka drewna', 'Budownictwo'], ['mury']).includes('palisada'),
+    'Palisada: ukryta gdy miasto ma Mury kamienne');
+  ok(byId.get('palisada').epokaWejscia === 1,
+    'Palisada: epokaWejscia=1 (Kamien)');
 }
 
 // ===========================================================================

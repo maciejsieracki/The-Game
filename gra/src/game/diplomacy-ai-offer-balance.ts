@@ -191,6 +191,113 @@ export function trimProposalGoldForZeroBalance(
   };
 }
 
+type PaymentTyp = 'zloto' | 'praca';
+
+function isPaymentBasketItem(item: BasketItem): item is BasketItem & { typ: PaymentTyp } {
+  return item.typ === 'zloto' || item.typ === 'praca';
+}
+
+/** Surowiec ↔ zapłata (¤/Praca) — handel cykliczny lub jednorazowy. */
+function hasResourcePaymentTrade(payload: ProposalPayload): boolean {
+  const giveRes = payload.giveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false;
+  const recvRes = payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false;
+  const givePay = payload.giveItems?.some(isPaymentBasketItem) ?? false;
+  const recvPay = payload.receiveItems?.some(isPaymentBasketItem) ?? false;
+  return (giveRes && recvPay) || (givePay && recvRes);
+}
+
+/**
+ * Wyrównaj surowiec ↔ zapłata po ewentualnym clampBasket (zapłata gracza mogła spaść
+ * do 1 ¤ przy pełnej cenie drewna). Podnosi zapłatę do targetu, gdy się mieści; inaczej
+ * zmniejsza pakiety surowca, aż |nadwyżka gracza| ≤ tolerancji.
+ */
+export function trimResourcePaymentTradeForZeroBalance(
+  payload: ProposalPayload,
+  relTotal: number,
+  difficulty: GameDifficulty = 'normal',
+  pnOpts?: ResolveProposalPnOptions,
+): ProposalPayload {
+  if (!aiOfferTargetsZeroBalance(difficulty) || !hasResourcePaymentTrade(payload)) {
+    return payload;
+  }
+  const tolerance = aiOfferPwSurplusTolerance(difficulty);
+  if (aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts) <= tolerance) {
+    return payload;
+  }
+
+  let giveItems = [...(payload.giveItems ?? [])];
+  let receiveItems = [...(payload.receiveItems ?? [])];
+
+  const resGiveIdx = giveItems.findIndex(i => i.typ === 'surowiec_ilosc');
+  const resRecvIdx = receiveItems.findIndex(i => i.typ === 'surowiec_ilosc');
+  const resSide: 'give' | 'receive' | null =
+    resGiveIdx >= 0 ? 'give' : resRecvIdx >= 0 ? 'receive' : null;
+  if (!resSide) return payload;
+
+  const resIdx = resSide === 'give' ? resGiveIdx : resRecvIdx;
+  const resArr = resSide === 'give' ? giveItems : receiveItems;
+  const resItem = resArr[resIdx]!;
+  const currentPkts = resItem.ilosc ?? 1;
+
+  let lo = 1;
+  let hi = currentPkts;
+  let best = -1;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const trialResArr = [...resArr];
+    trialResArr[resIdx] = { ...resItem, ilosc: mid };
+    const trialPayload: ProposalPayload = {
+      ...payload,
+      giveItems: resSide === 'give' ? trialResArr : giveItems,
+      receiveItems: resSide === 'receive' ? trialResArr : receiveItems,
+    };
+    const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts);
+    if (trialSurplus <= tolerance) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+
+  if (best < 1) {
+    return {
+      ...payload,
+      giveItems: undefined,
+      receiveItems: undefined,
+    };
+  }
+  if (best === currentPkts) return payload;
+
+  const outResArr = [...resArr];
+  outResArr[resIdx] = { ...resItem, ilosc: best };
+  return {
+    ...payload,
+    giveItems: resSide === 'give'
+      ? (outResArr.length ? outResArr : undefined)
+      : (giveItems.length ? giveItems : undefined),
+    receiveItems: resSide === 'receive'
+      ? (outResArr.length ? outResArr : undefined)
+      : (receiveItems.length ? receiveItems : undefined),
+  };
+}
+
+/**
+ * Jedna bramka bilansu PW dla propozycji AI — dar ¤, handel surowcem (cykliczny i jednorazowy).
+ * Wywoływać po clampBasketItemsToAffordable (main.ts: enqueueNegotiationFromAiCmd).
+ */
+export function trimProposalForZeroBalance(
+  payload: ProposalPayload,
+  relTotal: number,
+  difficulty: GameDifficulty = 'normal',
+  pnOpts?: ResolveProposalPnOptions,
+): ProposalPayload {
+  if (!aiOfferTargetsZeroBalance(difficulty)) return payload;
+  let p = trimProposalGoldForZeroBalance(payload, relTotal, difficulty, pnOpts);
+  p = trimResourcePaymentTradeForZeroBalance(p, relTotal, difficulty, pnOpts);
+  return p;
+}
+
 /** Wybierz najmniejszą kwotę złota (słodzik), która przechodzi bramkę akceptacji. */
 export function pickMinimalSweetenerGold(
   basePayload: ProposalPayload,

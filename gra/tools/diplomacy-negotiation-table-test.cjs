@@ -19,6 +19,7 @@ export {
   evaluateProposal, createNegotiation, applyCounterOffer, canCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   resolvePlayerAcceptsAiPending, generateCounterOffer, negotiationAsProposal,
+  hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS, makeNegotiationId,
 } from '../src/game/diplomacy-proposals.ts';
 export { getEffectiveDiplomacyParams } from '../src/game/diplomacy.ts';
@@ -38,6 +39,7 @@ const {
   evaluateProposal, createNegotiation, applyCounterOffer, canCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   resolvePlayerAcceptsAiPending, generateCounterOffer, negotiationAsProposal,
+  hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS, makeNegotiationId,
   getEffectiveDiplomacyParams,
 } = require(BUNDLE);
@@ -261,6 +263,20 @@ ok(NEGOTIATION_EXPIRY_TURNS > 0, 'NEGOTIATION_EXPIRY_TURNS > 0');
   );
   const peaceDuringWar = negotiationStillValid(peaceEntry, { turn: 11, isAtWar: true, proposerEliminated: false, responderEliminated: false });
   ok(peaceDuringWar.valid, 'pokój: propozycja ważna PODCZAS wojny (nie gasi się jak NAP)');
+}
+
+// 8 — BUG-DYPLO-UMOWY-DUPLIKAT: ta sama umowa max raz na stole per para.
+{
+  const table = [];
+  const proposal = { actionId: 'umowa_szlakow', proposerOwnerId: 0, responderOwnerId: 2, payload: { turns: 20 } };
+  table.push(createNegotiation(proposal, 10, 'player', 1));
+  ok(findOwnOutgoingNegotiation(table, 2, 'umowa_szlakow') != null, 'dedup: wykrywa własną propozycję gracza');
+  ok(hasPendingNegotiationForPair(table, 0, 2, 'umowa_szlakow'), 'dedup: para 0↔2 ma umowa_szlakow');
+  ok(!hasPendingNegotiationForPair(table, 0, 2, 'nap'), 'dedup: inny typ akcji nie blokuje');
+  ok(!findOwnOutgoingNegotiation(table, 3, 'umowa_szlakow'), 'dedup: inny partner nie matchuje');
+  const aiProposal = { actionId: 'umowa_szlakow', proposerOwnerId: 2, responderOwnerId: 0, payload: { turns: 20 } };
+  table.push(createNegotiation(aiProposal, 11, 'ai', 2));
+  ok(hasPendingNegotiationForPair(table, 0, 2, 'umowa_szlakow'), 'dedup: oba kierunki na stole');
 }
 
 console.log(`\n${pass}/${pass + fail} PASS`);

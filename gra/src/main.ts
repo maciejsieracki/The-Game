@@ -350,7 +350,12 @@ import {
 } from './game/villageRewards';
 import { CityRenderer, type CityRenderOptions, type CityMapOutlineKind } from './render/cities';
 import { WonderRenderer, type PlacedWonder } from './render/wonderRenderer';
-import { pickWonderHexForCity } from './map/wonder-placement';
+import { pickWonderHexForCity, listQualifyingWonderHexesForOwner } from './map/wonder-placement';
+import {
+  advanceWonderMapBuilds,
+  ownerHasWonderBuildInProgress,
+  type WonderBuildSite,
+} from './game/wonder-map-build';
 import {
   GAME_MAP_RENDER_STYLE,
   TERRAIN_SURFACE_Y,
@@ -793,8 +798,16 @@ import {
   type PendingNegotiation, createNegotiation, applyCounterOffer, canCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
+  hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
 } from './game/diplomacy-proposals';
+import {
+  type RejectedOfferCooldown,
+  recordRejectedOffer,
+  isOfferRejectedOnCooldown,
+  pruneExpiredRejectedOffers,
+  negotiationPartnerOwnerId,
+} from './game/diplomacy-rejection-cooldown';
 import {
   type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
   removeTreatiesById, allianceObligationsForWarDeclaration, treatiesBrokenByRefusal,
@@ -839,6 +852,7 @@ import {
 } from './game/diplomacy-ai-balance';
 import {
   adjustZaplataPerTuraForZeroBalance,
+  trimProposalForZeroBalance,
 } from './game/diplomacy-ai-offer-balance';
 import {
   wiarygodnoscStartowa,
@@ -1119,7 +1133,7 @@ async function boot(): Promise<void> {
         keyPanSpeed: 0.3,
         blockPointerAt: (x, y) => {
           if (isPointOverCityPanelUi(x, y)) return true;
-          if (foundCityMode || (buildModeOpen && activeImprovementKey)) return true;
+          if (foundCityMode || (buildModeOpen && (activeImprovementKey || activeWonderId))) return true;
           return false;
         },
         // C-EDGEPAN-Q1=B (Maciej 2026-07-25): edge-pan ZAWSZE aktywny na mapie świata
@@ -2079,6 +2093,8 @@ async function boot(): Promise<void> {
     let completedWorldWonders: string[] = [];
     /** CUDA mapa: pozycje ukończonych cudów na heksach (nie w mieście). */
     let placedWorldWonders: PlacedWonder[] = [];
+    /** Cuda w budowie na heksach mapy (gracz + AI) — nie kolejka miasta. */
+    let wonderBuildSites: WonderBuildSite[] = [];
     const wonderTechEpochMap = buildTechEpochMap(data.tech as unknown as readonly { Technologia?: string; Epoka?: string | undefined }[]);
     let wondersPickerEl: HTMLDivElement | null = null;
 
@@ -2224,7 +2240,6 @@ async function boot(): Promise<void> {
 
     function completeWonderBuilt(city: City, wonderId: string): void {
       if (completedWorldWonders.includes(wonderId)) return;
-      completedWorldWonders.push(wonderId);
 
       const hex = pickWonderHexForCity({
         map,
@@ -2232,52 +2247,18 @@ async function boot(): Promise<void> {
         occupiedWonderHexes: placedWorldWonders,
         cityHexes: cities.map(c => ({ q: c.q, r: c.r })),
       });
-      if (hex) {
-        placedWorldWonders.push({
-          wonderId,
-          q: hex.q,
-          r: hex.r,
-          ownerId: city.ownerId,
-          ruin: false,
-        });
-        hideDecorAtHex(keyOf(hex.q, hex.r));
-        syncWonderRender();
-      } else {
+      if (!hex) {
+        completedWorldWonders.push(wonderId);
         console.warn(`[Cuda] Brak wolnego heksa w terytorium ${city.name} — cud bez modelu mapy`);
+        return;
       }
-
-      const w = getWonderById(wonderId);
-      const label = w?.nazwa ?? wonderId;
-      console.log(`[Cuda] Tura ${turn} ${city.name}: ukończono ${label}${hex ? ` @ ${hex.q},${hex.r}` : ''}`);
-      // TEMAT #16 — powiadomienie „Cud ukończony" (klatka C makiety): złote (nasze) vs cudze.
-      if (city.ownerId === 0) {
-        const civLabel = civWonderDisplayName(player.civType as string);
-        showWonderCompletedNotice({
-          variant: 'mine',
-          nazwa: label,
-          locationLabel: `${city.name} · Tura ${turn} · ${civLabel} — Ty`,
-          bodyHtml: w ? wonderEffectsLabel(w) : '',
-          noteHtml: w?.dostep === 'E'
-            ? `Ekskluzywny cud ${civLabel}. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 handel, utrzymanie ÷2).`
-            : 'Wygraliśmy wyścig. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 handel, utrzymanie ÷2).',
-          onShowOnMap: hex ? () => focusCameraOnWonder(wonderId) : undefined,
-        });
-      } else {
-        const civLabel = civWonderDisplayName(civTypeForOwner(city.ownerId));
-        showWonderCompletedNotice({
-          variant: 'rival',
-          nazwa: label,
-          locationLabel: `${city.name} · Tura ${turn} · ${civLabel}`,
-          bodyHtml: w?.dostep === 'R'
-            ? `Wyścig rozstrzygnięty — ${civLabel} ubiegli wszystkich.`
-            : `Ekskluzywny cud ${civLabel}.`,
-          noteHtml: w?.dostep === 'R'
-            ? `Każdy cud może powstać tylko raz na świecie. <b>${escWonderHtml(label)}</b> przepada dla pozostałych cywilizacji — usuwany z listy dostępnych.`
-            : undefined,
-        });
-      }
-      refreshCityPanelIfOpen();
-      refreshWondersPickerIfOpen();
+      completeWonderOnHex({
+        wonderId,
+        q: hex.q,
+        r: hex.r,
+        ownerId: city.ownerId,
+        postep: getWonderById(wonderId)?.kosztBudowy ?? 0,
+      }, city);
       refreshFog();
     }
 
@@ -2485,19 +2466,46 @@ async function boot(): Promise<void> {
       markCityStateDirty(); // D10: zmiana produkcji → przelicz ekonomię/moc
     }
 
+    function wonderPlacementContext() {
+      const playerCities = cities
+        .filter(c => c.ownerId === 0)
+        .map(c => ({
+          q: c.q,
+          r: c.r,
+          population: c.population,
+        }));
+      return {
+        map,
+        playerCities,
+        occupiedWonderHexes: placedWorldWonders,
+        buildingWonderHexes: wonderBuildSites.map(s => ({ q: s.q, r: s.r })),
+        cityHexes: cities.map(c => ({ q: c.q, r: c.r })),
+      };
+    }
+
+    function qualifyingWonderHexesForPlayer(): Array<{ q: number; r: number }> {
+      const ctx = wonderPlacementContext();
+      if (ctx.playerCities.length === 0) return [];
+      return listQualifyingWonderHexesForOwner(ctx);
+    }
+
     function wonderHudTargetLabel(): string | null {
-      const targetId = playerWonderTargetCityId();
-      if (!targetId) return 'Brak miasta — załóż stolicę';
-      return cities.find(c => c.id === targetId)?.name ?? null;
+      const sites = wonderBuildSites.filter(s => s.ownerId === 0);
+      if (sites.length === 0) {
+        return 'Kliknij hex w swoim terytorium';
+      }
+      const parts = sites.map(s => {
+        const w = getWonderById(s.wonderId);
+        const label = w?.nazwa ?? s.wonderId;
+        const koszt = w?.kosztBudowy ?? 0;
+        return `${label} @ ${s.q},${s.r}: ${s.postep}/${koszt} P`;
+      });
+      return parts.join(' · ');
     }
 
     function wonderHudEntries() {
-      const targetId = playerWonderTargetCityId();
-      const prod = targetId ? cityProd.get(targetId) : undefined;
-      const queued = new Set(
-        (prod?.kolejka ?? [])
-          .map(it => parseWonderProdId(it.id))
-          .filter((id): id is string => id != null),
+      const buildingIds = new Set(
+        wonderBuildSites.filter(s => s.ownerId === 0).map(s => s.wonderId),
       );
       return listBuildableWondersForOwner(0).map(w => ({
         id: w.id,
@@ -2505,11 +2513,122 @@ async function boot(): Promise<void> {
         kosztPraca: w.kosztBudowy,
         epokaWejscia: w.epokaWejscia,
         dostep: w.dostep,
-        queued: queued.has(w.id),
-        lockHint: queued.has(w.id) ? 'Już w kolejce tego miasta' : null,
+        building: buildingIds.has(w.id),
+        lockHint: buildingIds.has(w.id) ? 'Już w budowie na mapie' : null,
       }));
     }
 
+    function completeWonderOnHex(
+      site: WonderBuildSite,
+      sourceCity?: City,
+    ): void {
+      const wonderId = site.wonderId;
+      if (completedWorldWonders.includes(wonderId)) {
+        wonderBuildSites = wonderBuildSites.filter(s => s !== site);
+        return;
+      }
+      completedWorldWonders.push(wonderId);
+      placedWorldWonders.push({
+        wonderId,
+        q: site.q,
+        r: site.r,
+        ownerId: site.ownerId,
+        ruin: false,
+      });
+      wonderBuildSites = wonderBuildSites.filter(s => s !== site);
+      hideDecorAtHex(keyOf(site.q, site.r));
+      syncWonderRender();
+
+      const w = getWonderById(wonderId);
+      const label = w?.nazwa ?? wonderId;
+      const city = sourceCity ?? cities.find(c => c.ownerId === site.ownerId);
+      const cityName = city?.name ?? 'terytorium';
+      console.log(`[Cuda] Tura ${turn} ${cityName}: ukończono ${label} @ ${site.q},${site.r}`);
+      if (site.ownerId === 0) {
+        const civLabel = civWonderDisplayName(player.civType as string);
+        showWonderCompletedNotice({
+          variant: 'mine',
+          nazwa: label,
+          locationLabel: `${cityName} · Tura ${turn} · ${civLabel} — Ty`,
+          bodyHtml: w ? wonderEffectsLabel(w) : '',
+          noteHtml: w?.dostep === 'E'
+            ? `Ekskluzywny cud ${civLabel}. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 handel, utrzymanie ÷2).`
+            : 'Wygraliśmy wyścig. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 handel, utrzymanie ÷2).',
+          onShowOnMap: () => focusCameraOnWonder(wonderId),
+        });
+      } else if (city) {
+        const civLabel = civWonderDisplayName(civTypeForOwner(city.ownerId));
+        showWonderCompletedNotice({
+          variant: 'rival',
+          nazwa: label,
+          locationLabel: `${city.name} · Tura ${turn} · ${civLabel}`,
+          bodyHtml: w?.dostep === 'R'
+            ? `Wyścig rozstrzygnięty — ${civLabel} ubiegli wszystkich.`
+            : `Ekskluzywny cud ${civLabel}.`,
+          noteHtml: w?.dostep === 'R'
+            ? `Każdy cud może powstać tylko raz na świecie. <b>${escWonderHtml(label)}</b> przepada dla pozostałych cywilizacji — usuwany z listy dostępnych.`
+            : undefined,
+        });
+      }
+      refreshCityPanelIfOpen();
+      refreshWondersPickerIfOpen();
+      markCityStateDirty();
+    }
+
+    function advanceOwnerWonderMapBuilds(ownerId: number, pracaAvailable: number): number {
+      const result = advanceWonderMapBuilds(
+        wonderBuildSites,
+        ownerId,
+        pracaAvailable,
+        (id) => getWonderById(id)?.kosztBudowy ?? 0,
+      );
+      wonderBuildSites = result.sites;
+      for (const done of result.completed) {
+        const city = cities.find(c => c.ownerId === done.ownerId);
+        completeWonderOnHex(done, city);
+      }
+      return result.pracaUsed;
+    }
+
+    function tryBeginWonderMapBuild(wonderId: string, q: number, r: number): boolean {
+      if (!wonderGateOk(0, wonderId)) {
+        showHintMessage('Ten cud nie jest teraz dostępny', 3000);
+        return false;
+      }
+      if (ownerHasWonderBuildInProgress(wonderBuildSites, 0)) {
+        showHintMessage('Masz już cud w budowie na mapie — dokończ go najpierw', 3500);
+        return false;
+      }
+      const w = getWonderById(wonderId);
+      if (!w) return false;
+      const qual = qualifyingWonderHexesForPlayer();
+      if (!qual.some(h => h.q === q && h.r === r)) {
+        showHintMessage('Nie można tu postawić cudu (teren / terytorium / zajęte)', 3000);
+        return false;
+      }
+      wonderBuildSites.push({ wonderId, q, r, ownerId: 0, postep: 0 });
+      const used = advanceOwnerWonderMapBuilds(0, playerPracaPool);
+      if (used > 0) {
+        playerPracaPool -= used;
+        _lastPraca = playerPracaPool;
+      }
+      const site = wonderBuildSites.find(s => s.wonderId === wonderId && s.ownerId === 0);
+      if (site) {
+        showHintMessage(
+          `Budowa: <b>${w.nazwa}</b> @ ${q},${r} (${site.postep}/${w.kosztBudowy} Pracy)`,
+          4500,
+        );
+      } else {
+        showHintMessage(`Ukończono: <b>${w.nazwa}</b> @ ${q},${r}`, 4500);
+      }
+      activeWonderId = null;
+      refreshBuildHighlight();
+      refreshD1bHud();
+      updateHud();
+      return true;
+    }
+
+    /** @deprecated Gracz buduje cuda na mapie (tryBeginWonderMapBuild), nie w kolejce miasta. Zostaje dla AI. */
     function enqueueWonderForPlayer(wonderId: string): boolean {
       const cityId = playerWonderTargetCityId();
       if (!cityId) {
@@ -2571,7 +2690,7 @@ async function boot(): Promise<void> {
       const sub = document.createElement('div');
       sub.style.cssText = 'font-size:0.85em;opacity:0.85;margin-bottom:0.6em;';
       sub.textContent = targetCity
-        ? `Kolejka produkcji: ${targetCity.name}`
+        ? 'Użyj 🔨 Budowa w terenie → wybierz cud → kliknij hex na mapie'
         : 'Brak miasta gracza — załóż stolicę.';
       wondersPickerEl.appendChild(sub);
 
@@ -2591,7 +2710,10 @@ async function boot(): Promise<void> {
           'cursor:pointer;border:1px solid rgba(255,255,255,0.2);border-radius:4px;background:rgba(0,0,0,0.35);color:inherit;';
         const tag = w.dostep === 'R' ? ' [R]' : '';
         row.textContent = `${w.nazwa}${tag} — ${w.kosztBudowy} Pracy · tech: ${(w.techUnlock ?? []).join(' + ')}`;
-        row.addEventListener('click', () => { enqueueWonderForPlayer(w.id); });
+        row.addEventListener('click', () => {
+          hideWondersPicker();
+          showHintMessage('Otwórz 🔨 Budowa w terenie → wybierz cud → kliknij hex', 4000);
+        });
         wondersPickerEl.appendChild(row);
       }
     }
@@ -2617,11 +2739,9 @@ async function boot(): Promise<void> {
     }
 
     // -----------------------------------------------------------------
-    // R-CUDA-TAB (2026-07-28, korekta Maciej): cuda budowane WYŁĄCZNIE z panelu
-    // „Budowa w terenie" (buildModeHud.ts → listWonders/onSelectWonder), filtrowane
-    // do listBuildableWondersForOwner(0) — usunięto osobny katalog „Cuda świata"
-    // (wondersView.ts) oraz sekcję cudów z panelu produkcji miasta (błędny wariant A
-    // z 2026-07-24). Kolejka produkcji miasta bez zmian (enqueueWonderForPlayer).
+    // R-CUDA-TAB (2026-07-28, korekta Maciej 2026-07-29): cuda z panelu
+    // „Budowa w terenie" (buildModeHud → onSelectWonder → klik hex na mapie),
+    // NIE kolejka produkcji miasta. Postęp z puli Pracy imperium (wonderBuildSites).
     // -----------------------------------------------------------------
 
     function escWonderHtml(s: string): string {
@@ -5155,6 +5275,11 @@ async function boot(): Promise<void> {
     let negotiationTable: PendingNegotiation[] = [];
     /** Licznik do unikalnego id wpisu w negotiationTable (save/load meta.negotiationSeq). */
     let negotiationSeq = 0;
+    /**
+     * D-DYPLO-AI-NO-NAG (Maciej 2026-07-29): cooldown po odrzuceniu oferty AI przez gracza
+     * (partner + actionId) — save/load meta.rejectedOfferCooldowns.
+     */
+    let rejectedOfferCooldowns: RejectedOfferCooldown[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
@@ -5437,6 +5562,9 @@ async function boot(): Promise<void> {
       diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
       activeDeals = [];
+      negotiationTable.length = 0;
+      negotiationSeq = 0;
+      rejectedOfferCooldowns = [];
       aiSkarbiecByOwner.clear();
       aiPracaPoolByOwner.clear();
       aiNaukaPoolByOwner.clear();
@@ -7338,6 +7466,7 @@ async function boot(): Promise<void> {
     // --- D1B build mode (A4) + improvement placement ---
     let buildModeOpen = false;
     let activeImprovementKey: ImprovementKey | null = null;
+    let activeWonderId: string | null = null;
 
     // --- Warstwy zasięgu kultury / religii / państwa na mapie 3D (A1-Q12 + toolbar [C]) ---
     let cultureRangeVisible = false;
@@ -7752,6 +7881,14 @@ async function boot(): Promise<void> {
         }
         return;
       }
+      if (activeWonderId) {
+        removeGhostCity();
+        removeGhostImprovement();
+        const hexes = qualifyingWonderHexesForPlayer();
+        const ok = hexes.some(h => h.q === hit.q && h.r === hit.r);
+        setBuildGhostChip(hit.q, hit.r, '🏛', ok);
+        return;
+      }
       if (activeImprovementKey) {
         removeGhostCity();
         const hexes = buildApi?.getQualifyingHexes(activeImprovementKey) ?? [];
@@ -7936,6 +8073,11 @@ async function boot(): Promise<void> {
         unitRenderer.setHighlight(qual);
         return;
       }
+      if (activeWonderId) {
+        const hexes = qualifyingWonderHexesForPlayer();
+        unitRenderer.setHighlight(new Set(hexes.map(h => keyOf(h.q, h.r))));
+        return;
+      }
       if (!buildModeOpen || !activeImprovementKey || !buildApi) {
         unitRenderer.clearHighlight();
         return;
@@ -8051,6 +8193,7 @@ async function boot(): Promise<void> {
       buildModeOpen = false;
       foundCityMode = false;
       activeImprovementKey = null;
+      activeWonderId = null;
       clearBuildModeVisuals();
       refreshBuildApi();
       refreshBuildHighlight();
@@ -10047,6 +10190,9 @@ async function boot(): Promise<void> {
       hideCityListHud();
       hideArmyListHud();
       hideHexContextPanel();
+      // BUG-SKARBIEC-BILANS-DASH: panel czyta _last* z refreshLiveEmpireRates —
+      // bez tego pierwszy render ma same zera → signedTxt pokazuje „—”.
+      if (d1bHudActive) refreshLiveEmpireRates();
       showEmpireDetailPanel(section);
       refreshD1bHud();
     }
@@ -10182,11 +10328,31 @@ async function boot(): Promise<void> {
 
       const clampedPayload = clampAiProposalPayloadToRealResources(ownerId, converted.payload);
       if (!clampedPayload) return;
-      converted.payload = clampedPayload;
+      const relForBalance = getDiploRelation(ownerId, 0);
+      const difficultyForBalance = effectiveGameDifficultyForOwner(ownerId);
+      const pnBalanceOpts = {
+        difficulty: difficultyForBalance,
+        proposerOwnerId: ownerId,
+        playerOwnerId: 0,
+      };
+      const balancedPayload = trimProposalForZeroBalance(
+        clampedPayload,
+        relationTotal(relForBalance),
+        difficultyForBalance,
+        pnBalanceOpts,
+      );
+      if (
+        !balancedPayload.giveItems?.length
+        && !balancedPayload.receiveItems?.length
+        && (balancedPayload.goldOnce == null || balancedPayload.goldOnce <= 0)
+      ) {
+        return;
+      }
+      converted.payload = balancedPayload;
       // Dedup — nie stackuj drugiej propozycji TEGO SAMEGO typu, gdy jedna już czeka.
-      if (negotiationTable.some(n =>
-        n.proposerOwnerId === ownerId && n.responderOwnerId === 0 && n.actionId === converted.actionId,
-      )) return;
+      if (hasPendingNegotiationForPair(negotiationTable, 0, ownerId, converted.actionId)) return;
+      // D-DYPLO-AI-NO-NAG: gracz odrzucił ten typ — AI nie nęka ponownie do wygaśnięcia cooldownu.
+      if (isOfferRejectedOnCooldown(rejectedOfferCooldowns, ownerId, converted.actionId, turn)) return;
       negotiationSeq += 1;
       const entry = createNegotiation(
         { actionId: converted.actionId, proposerOwnerId: ownerId, responderOwnerId: 0, payload: converted.payload },
@@ -10339,10 +10505,16 @@ async function boot(): Promise<void> {
         return;
       }
       negotiationTable.splice(idx, 1);
+      const aiPartnerId = negotiationPartnerOwnerId(entry.proposerOwnerId, entry.responderOwnerId);
+      rejectedOfferCooldowns = recordRejectedOffer(
+        rejectedOfferCooldowns,
+        aiPartnerId,
+        entry.actionId,
+        turn,
+      );
       if (entry.actionId === 'trybut_zadanie' || entry.actionId === 'trybut_oferta') {
-        const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
-        const cur = getDiploRelation(0, aiOwnerId);
-        setDiploRelation(0, aiOwnerId, applyDiploEventTracked(0, aiOwnerId, cur, 'trybut_odmowa'));
+        const cur = getDiploRelation(0, aiPartnerId);
+        setDiploRelation(0, aiPartnerId, applyDiploEventTracked(0, aiPartnerId, cur, 'trybut_odmowa'));
       }
       showDiplomacyProposalBanner(false, 'Odrzucono propozycję');
       refreshD1bHud();
@@ -12525,6 +12697,11 @@ async function boot(): Promise<void> {
         handleNegotiationCounter(incoming.id, payload);
         return;
       }
+      if (findOwnOutgoingNegotiation(negotiationTable, ownerId, proposal.actionId)) {
+        showHintMessage('Ta umowa jest już na stole — użyj Przyjmij w Punkty wymiany', 4000);
+        updateDiplomacyAudience();
+        return;
+      }
       negotiationSeq += 1;
       const entry = createNegotiation(proposal, turn, 'player', negotiationSeq);
       negotiationTable.push(entry);
@@ -13546,6 +13723,7 @@ async function boot(): Promise<void> {
           onSelectType: (key) => {
             if (isAwaitingFirstPlayerCity()) return;
             foundCityMode = false;
+            activeWonderId = null;
             activeImprovementKey = key;
             refreshBuildApi();
             refreshBuildHighlight();
@@ -13575,12 +13753,32 @@ async function boot(): Promise<void> {
           },
           listWonders: () => wonderHudEntries(),
           getWonderTargetLabel: () => wonderHudTargetLabel(),
+          getActiveWonderId: () => activeWonderId,
           onSelectWonder: (wonderId) => {
             if (isAwaitingFirstPlayerCity()) return;
             foundCityMode = false;
             activeImprovementKey = null;
+            if (!wonderId) {
+              activeWonderId = null;
+            } else if (activeWonderId === wonderId) {
+              activeWonderId = null;
+            } else {
+              if (!wonderGateOk(0, wonderId)) {
+                showHintMessage('Ten cud nie jest teraz dostępny', 3000);
+                return;
+              }
+              if (ownerHasWonderBuildInProgress(wonderBuildSites, 0)) {
+                showHintMessage('Masz już cud w budowie na mapie', 3500);
+                return;
+              }
+              if (qualifyingWonderHexesForPlayer().length === 0) {
+                showHintMessage('Brak heksów w twoim terytorium na cud', 3500);
+                return;
+              }
+              activeWonderId = wonderId;
+            }
             refreshBuildHighlight();
-            enqueueWonderForPlayer(wonderId);
+            refreshD1bHud();
           },
         },
         armyStack: {
@@ -14839,7 +15037,7 @@ async function boot(): Promise<void> {
       }
 
       // Tryb budowy — ghost miasta / ulepszenia + chip przy kursorze
-      if (buildModeOpen && (foundCityMode || activeImprovementKey)) {
+      if (buildModeOpen && (foundCityMode || activeImprovementKey || activeWonderId)) {
         handleBuildModeHover(e);
         if (hoverKey !== null) { hoverKey = null; unitRenderer.clearPathRoute(); }
         applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
@@ -14920,7 +15118,7 @@ async function boot(): Promise<void> {
       const dx = e.clientX - mouseDownX;
       const dy = e.clientY - mouseDownY;
       const moveDist = Math.sqrt(dx * dx + dy * dy);
-      const placementClick = foundCityMode || (buildModeOpen && activeImprovementKey);
+      const placementClick = foundCityMode || (buildModeOpen && (activeImprovementKey || activeWonderId));
       if (moveDist >= DRAG_THRESHOLD && !placementClick) return; // was a drag -- skip click logic
 
       // Gallery mode: disable all unit interaction.
@@ -15007,6 +15205,10 @@ async function boot(): Promise<void> {
       // Załóż miasto — PRZED dismissMapOverlayModes (foundCityMode wystarczy)
       if (foundCityMode) {
         handleFoundCityMapClick(hit.q, hit.r);
+        return;
+      }
+      if (buildModeOpen && activeWonderId) {
+        tryBeginWonderMapBuild(activeWonderId, hit.q, hit.r);
         return;
       }
       if (buildModeOpen && activeImprovementKey && buildApi?.handleHexClick) {
@@ -17562,6 +17764,7 @@ async function boot(): Promise<void> {
           // MUSI przetrwać zapis/odczyt (zlecenie właściciela pkt 1).
           negotiationTable: negotiationTable.slice(),
           negotiationSeq,
+          rejectedOfferCooldowns: pruneExpiredRejectedOffers(rejectedOfferCooldowns, turn),
           diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
           diplomacyFactorLog: Array.from(diplomacyFactorLog.entries()),
           // WIARYGODNOSC CYWILIZACJI (WIARYGODNOSC-SPECYFIKACJA.md §7 "Save/load") — rejestr
@@ -17598,6 +17801,7 @@ async function boot(): Promise<void> {
           pendingImprovementsTurn: pendingImprovementsTurn.toSave(),
           completedWorldWonders: completedWorldWonders.slice(),
           placedWorldWonders: placedWorldWonders.slice(),
+          wonderBuildSites: wonderBuildSites.slice(),
           // Audyt #15: profile miast-panstw i klastrow -- byly wypelniane WYLACZNIE
           // w nowej grze (applyClusterStartPlan/spawnPendingSameTypeRivals) i nigdy
           // nie trafialy do snapshotu.
@@ -18887,6 +19091,23 @@ async function boot(): Promise<void> {
               }
             } catch (errUpkeepPraca) {
               console.error('[Ekonomia] Błąd upkeep Pracy (ulepszenia surowcowe):', errUpkeepPraca);
+            }
+            // CUDA-MAPA: postęp budowy cudów na heksach z puli Pracy imperium (nie kolejka miasta).
+            try {
+              const usedPlayer = advanceOwnerWonderMapBuilds(0, playerPracaPool);
+              if (usedPlayer > 0) {
+                playerPracaPool -= usedPlayer;
+                _lastPraca = playerPracaPool;
+              }
+              for (const oid of new Set(wonderBuildSites.map(s => s.ownerId).filter(id => id > 0))) {
+                const pool = aiPracaPoolByOwner.get(oid) ?? 0;
+                const usedAi = advanceOwnerWonderMapBuilds(oid, pool);
+                if (usedAi > 0) {
+                  aiPracaPoolByOwner.set(oid, pool - usedAi);
+                }
+              }
+            } catch (errWonderMap) {
+              console.error('[Cuda] Błąd postępu budowy na mapie:', errWonderMap);
             }
             _lastKultura = cities
               .filter(c => c.ownerId === 0)
@@ -20916,6 +21137,9 @@ async function boot(): Promise<void> {
       diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
       activeDeals = [];
+      negotiationTable.length = 0;
+      negotiationSeq = 0;
+      rejectedOfferCooldowns = [];
       aiSkarbiecByOwner.clear();
       aiPracaPoolByOwner.clear();
       aiNaukaPoolByOwner.clear();
@@ -20923,6 +21147,9 @@ async function boot(): Promise<void> {
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
       _dipUnitSeq = 0;
       pendingDiplomacyInbox.length = 0;
+      negotiationTable.length = 0;
+      negotiationSeq = 0;
+      rejectedOfferCooldowns = [];
       aiOneShotGiftLastTurn.clear();
       aiTradeAgreementLastProposalTurn.clear();
       aiAiTradeAgreementLastTurn.clear();
@@ -20952,6 +21179,7 @@ async function boot(): Promise<void> {
       cityProd.clear();
       completedWorldWonders = [];
       placedWorldWonders = [];
+      wonderBuildSites = [];
       cityOrderState.clear();
       orderMultMap.clear();
       orderValueMap.clear();
@@ -21194,6 +21422,7 @@ async function boot(): Promise<void> {
       cityProd.clear();
       completedWorldWonders = [];
       placedWorldWonders = [];
+      wonderBuildSites = [];
       cityOrderState.clear();
       orderMultMap.clear();
       orderValueMap.clear();
@@ -21425,6 +21654,7 @@ async function boot(): Promise<void> {
       cityProd.clear();
       completedWorldWonders = [];
       placedWorldWonders = [];
+      wonderBuildSites = [];
       cityOrderState.clear();
       orderMultMap.clear();
       orderValueMap.clear();
@@ -21632,6 +21862,7 @@ async function boot(): Promise<void> {
       cityProd.clear();
       completedWorldWonders = [];
       placedWorldWonders = [];
+      wonderBuildSites = [];
       cityOrderState.clear();
       orderMultMap.clear();
       orderValueMap.clear();
@@ -21898,6 +22129,9 @@ async function boot(): Promise<void> {
       placedWorldWonders = Array.isArray(saved.meta?.placedWorldWonders)
         ? (saved.meta.placedWorldWonders as PlacedWonder[]).slice()
         : [];
+      wonderBuildSites = Array.isArray(saved.meta?.wonderBuildSites)
+        ? (saved.meta.wonderBuildSites as WonderBuildSite[]).slice()
+        : [];
       aiResearchDone.clear();
       if (saved.aiResearchDone) {
         for (const [oid, zbadane] of saved.aiResearchDone) aiResearchDone.set(oid, new Set(zbadane));
@@ -22154,6 +22388,11 @@ async function boot(): Promise<void> {
         }
       }
       negotiationSeq = (saved.meta?.negotiationSeq as number | undefined) ?? negotiationTable.length;
+      rejectedOfferCooldowns = [];
+      const savedRejectCooldowns = saved.meta?.rejectedOfferCooldowns as RejectedOfferCooldown[] | undefined;
+      if (savedRejectCooldowns?.length) {
+        rejectedOfferCooldowns = pruneExpiredRejectedOffers(savedRejectCooldowns, turn);
+      }
       try { pruneInvalidNegotiations(); } catch (ePruneLoad) { console.error('[Dyplomacja] Blad sprzatania stolu po wczytaniu:', ePruneLoad); }
       diplomacyPairMeta.clear();
       const savedPairMeta = saved.meta?.diplomacyPairMeta as Array<[string, DiploPairMeta]> | undefined;

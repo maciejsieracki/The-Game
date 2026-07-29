@@ -84,7 +84,7 @@ import {
   type StartPosition,
   type TypSwiata,
 } from './gen-helpers';
-import { pruneOrphanRiverPaths, pruneRiversNotReachingRealSea, flattenFalseCoastalRiverNotches } from './gen-helpers';
+import { pruneOrphanRiverPaths, pruneRiversNotReachingRealSea, flattenFalseCoastalRiverNotches, ensureRiverOutlets } from './gen-helpers';
 import { placeVillages, targetVillageHutCount, expectedStartCityCount } from './villages';
 import {
   resolveWorldGenNumbers,
@@ -542,6 +542,10 @@ export function generateMap(
     ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
     stripDepositsFromWater(hexes);
   }
+
+  // BUG-RZEKI-DOPLYWY: ostatnia bramka po reliefie/złożach (Ziemia) — usuwa wiszące dopływy.
+  ({ paths: riverPaths, kinds: riverPathKinds } =
+    ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
 
   return {
     szerokoscQ: width,

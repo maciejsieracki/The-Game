@@ -14,6 +14,7 @@ import { formatObywateleLabel } from '../game/manpower';
 import { mocLabel, mocWithValue } from './power-labels';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
 import { signedPl } from './formatPl';
+import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
 import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu } from '../game/cities';
@@ -341,6 +342,17 @@ function miniRow(cells: string[], grid: string): string {
   return `<div class="civ-emp-mini-r" style="grid-template-columns:${grid}">${c}</div>`;
 }
 
+/** Delta netto skarbca — 0 jako „0", nie „—". */
+function treasuryDeltaHtml(n: number): string {
+  if (!Number.isFinite(n)) return '<span class="d z">—</span>';
+  if (n === 0) return '<span class="d z">0</span>';
+  const cls = n > 0 ? 'd pos' : 'd neg';
+  return `<span class="${cls}">${n > 0 ? '+' : ''}${n}</span>`;
+}
+
+/** Bilans skarbca — re-export dla testów (implementacja w treasuryBalanceFormat.ts). */
+export { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
+
 function cityEconMiniSkarbiec(
   rows: EmpireDetailSnap['cityEcon'],
   economy: EmpireDetailSnap['economy'],
@@ -357,11 +369,11 @@ function cityEconMiniSkarbiec(
   const sumGrid = '1fr auto';
   let h = '<div class="civ-emp-mini">';
   h += miniHeader(['SKARBIEC IMPERIUM — bilans / turę', ''], sumGrid);
-  h += miniRow(['Wpływy brutto (podatek + budynki)', signedTxt(daninaBud)], sumGrid);
-  h += miniRow(['Handel ze szlaków', signedTxt(handel)], sumGrid);
-  h += miniRow(['Utrzymanie budynków', signedTxt(-utrzB)], sumGrid);
-  h += miniRow(['Utrzymanie jednostek', signedTxt(-utrzJ)], sumGrid);
-  h += miniRow(['<b>Netto skarbiec</b>', `<b>${signedTxt(netto)}</b>`], sumGrid);
+  h += miniRow(['Wpływy brutto (podatek + budynki)', treasuryBalanceSignedTxt(daninaBud)], sumGrid);
+  h += miniRow(['Handel ze szlaków', treasuryBalanceSignedTxt(handel)], sumGrid);
+  h += miniRow(['Utrzymanie budynków', treasuryBalanceSignedTxt(-utrzB)], sumGrid);
+  h += miniRow(['Utrzymanie jednostek', treasuryBalanceSignedTxt(-utrzJ)], sumGrid);
+  h += miniRow(['<b>Netto skarbiec</b>', `<b>${treasuryBalanceSignedTxt(netto)}</b>`], sumGrid);
   h += '</div>';
 
   const grid = '1fr 0.7fr 0.9fr';
@@ -369,8 +381,8 @@ function cityEconMiniSkarbiec(
   for (const c of rows) {
     h += miniRow([
       esc(c.name),
-      signedTxt(c.pieniadz),
-      c.utrzymanieBudynkow ? signedTxt(-c.utrzymanieBudynkow) : '—',
+      treasuryBalanceSignedTxt(c.pieniadz),
+      treasuryBalanceSignedTxt(-(c.utrzymanieBudynkow ?? 0)),
     ], grid);
   }
   h += '</div>';
@@ -976,9 +988,10 @@ function render(): void {
   for (const r of econRows) {
     if (onlyEconId && r.id !== onlyEconId) continue;
     const detail = detailFor[r.id];
+    const rateCell = r.id === 'skarbiec' ? treasuryDeltaHtml(r.rate) : deltaHtml(r.rate);
     const val = r.noRate
       ? `<b${r.gold ? ' class="gold"' : ''}>${esc(r.stock)}</b>`
-      : `<b>${esc(r.stock)}</b> ${deltaHtml(r.rate)}`;
+      : `<b>${esc(r.stock)}</b> ${rateCell}`;
     zasoby += `<div class="civ-emp-zrow${detail ? '' : ' brd'}" data-section="econ-${r.id}">`
       + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
     if (detail) zasoby += `<div data-section="econ-${r.id}">${detail}</div>`;

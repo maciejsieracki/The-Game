@@ -16,7 +16,7 @@ const BUNDLE = path.join(__dirname, '.map-gen-regression-bundle.cjs');
 fs.writeFileSync(
   ENTRY,
   `export { generujSwiat } from '../src/map/generator';
-export { pathEndsAtSea, pathReachesRealSea } from '../src/map/gen-helpers';
+export { pathEndsAtSea, pathReachesRealSea, verifyRiverNetworkConnectivity, checkTributaryJunctions } from '../src/map/gen-helpers';
 export { expectedStartCityCount, targetVillageHutCount } from '../src/map/villages';
 export { defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel } from '../src/map/newGameMapDefaults';`,
   'utf8',
@@ -124,6 +124,34 @@ for (const density of [DENSITY, DENSITY_RIVERS_HIGH]) {
 console.log(`Główne rzeki OK (luźne pathEndsAtSea): ${totalMain - totalBad}/${totalMain}`);
 console.log(`Główne rzeki OK (REALNE morze, pathReachesRealSea): ${totalMain - totalBadReal}/${totalMain} (${fail} przypadków fail)`);
 
+console.log('\n=== Sieć rzek + dopływy (5 seedów × 4 typy, standardowy) ===');
+let netOrphans = 0;
+let tribJunctionFails = 0;
+for (const density of [DENSITY, DENSITY_RIVERS_HIGH]) {
+  for (const seed of SEEDS) {
+    for (const typ of TYPES) {
+      const map = M.generujSwiat(seed, 'standardowy', typ, { worldDensity: density });
+      const W = map.szerokoscQ;
+      const H = map.wysokoscR;
+      const paths = map.riverPaths ?? [];
+      const kinds = map.riverPathKinds ?? [];
+      const net = M.verifyRiverNetworkConnectivity(map.hexes, paths, kinds, W, H);
+      const j = M.checkTributaryJunctions(paths, kinds, map.hexes, W, H);
+      netOrphans += net.orphanCount;
+      tribJunctionFails += j.violations;
+      if (net.orphanCount > 0 || !j.ok) {
+        fail++;
+        console.error(
+          `FAIL seed=${seed} typ=${typ} rivers=${density.rivers}: orphans=${net.orphanCount} `
+          + `tribJunction=${j.violations} (${j.firstFail ?? 'ok'})`,
+        );
+      }
+    }
+  }
+}
+console.log(`  0 sierot w sieci: ${netOrphans === 0 ? 'PASS' : 'FAIL'} (${netOrphans} hex)`);
+console.log(`  dopływy domknięte (junction): ${tribJunctionFails === 0 ? 'PASS' : 'FAIL'} (${tribJunctionFails} naruszeń)`);
+
 console.log('\n=== Determinizm (seed 42, standardowy, kontynenty ×2) ===');
 const a = M.generujSwiat(42, 'standardowy', 'kontynenty', { worldDensity: DENSITY });
 const b = M.generujSwiat(42, 'standardowy', 'kontynenty', { worldDensity: DENSITY });
@@ -140,6 +168,8 @@ console.log(`  standard <${STANDARD_GEN_MS_LIMIT / 1000}s: ${stdOk ? 'PASS' : 'F
 console.log(`  duża <${DUZY_GEN_MS_LIMIT / 1000}s: ${duzyOk ? 'PASS' : 'FAIL'} (${(tDuzy / 1000).toFixed(2)}s)`);
 console.log(`  0 rzek bez ujścia (luźne): ${totalBad === 0 ? 'PASS' : 'FAIL'} (${totalBad} złych)`);
 console.log(`  0 rzek bez REALNEGO ujścia (pathReachesRealSea): ${totalBadReal === 0 ? 'PASS' : 'FAIL'} (${totalBadReal} złych)`);
+console.log(`  0 sierot sieci rzecznej: ${netOrphans === 0 ? 'PASS' : 'FAIL'} (${netOrphans})`);
+console.log(`  dopływy z junction: ${tribJunctionFails === 0 ? 'PASS' : 'FAIL'} (${tribJunctionFails})`);
 console.log(`  determinizm: ${detOk ? 'PASS' : 'FAIL'}`);
 
 console.log('\n=== Chat ze skarbami (miasta x trudnosc) ===');
@@ -176,5 +206,6 @@ const villageOk = placed >= minPlaced && placed <= stdTargetNormal;
 console.log(`  spawn chat (${minPlaced}..${stdTargetNormal}): ${villageOk ? 'PASS' : 'FAIL'}`);
 if (!villageOk) fail++;
 
-const allOk = stdOk && duzyOk && totalBad === 0 && totalBadReal === 0 && detOk && fail === 0 && villageOk;
+const allOk = stdOk && duzyOk && totalBad === 0 && totalBadReal === 0 && netOrphans === 0
+  && tribJunctionFails === 0 && detOk && fail === 0 && villageOk;
 process.exit(allOk ? 0 : 1);

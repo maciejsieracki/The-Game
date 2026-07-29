@@ -105,6 +105,8 @@ import {
   upgradeChainSteps,
   upgradeCompositionLines,
   buildingStatSummaryLines,
+  buildingStructuralDefenseBonusLine,
+  buildingStructuralDefenseBonusPercent,
   cityHasBibliotekaLine,
   cityHasAmfiteatrLine,
   cityPalacTier,
@@ -5437,6 +5439,12 @@ function buildingBonusChipsHtml(def: BuildingDef, buildings: readonly BuildingDe
       chips.push(`<span class="bld-infocard-chip">+${cumulative}% ${label}</span>`);
     }
   }
+  const defenseProc = buildingStructuralDefenseBonusPercent(def.id);
+  if (defenseProc != null && chips.length < max) {
+    chips.push(
+      `<span class="bld-infocard-chip">${yieldBrandIconHtml('chip-garrison', 13)}+${defenseProc}% Obrona</span>`,
+    );
+  }
   return chips.join('');
 }
 
@@ -6074,6 +6082,11 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
         gridDetailRow(gYield, label, `+${cumulative}%`);
       }
     }
+  }
+  const defenseLine = buildingStructuralDefenseBonusLine(def.id);
+  if (defenseLine) {
+    anyYield = true;
+    gridDetailRow(gYield, 'Obrona strukturalna', defenseLine);
   }
   if (!anyYield) gridDetailRow(gYield, 'Efekty', '—');
 

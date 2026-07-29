@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-29 (NAJNOWSZY):** deploy ROBOCZA **`8d5813ea`** (FALA 112, 23:13) — DEPLOY ALL sesji: dyplo koszyk+PW+NAP+AI oferta zero · tooltip HUD ×2 · mapa 👤+granice+⛏ default ON · surowce overlay · glina overlay. Poprzedni: FALA 111 `e5c1bbed`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan na 2026-07-30 (NAJNOWSZY):** deploy ROBOCZA **`9ae07906`** (FALA 113, 00:05) — DEPLOY ALL sesji: duplikat umów dyplo · koszyk UX · AI oferta zero+trim cykl · AI no-nag cooldown · zoom/fullscreen · tooltip ×2 · skarbiec bilans · palisada ep. Kamień · ensureRiverOutlets. Poprzedni: FALA 112 `8d5813ea`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

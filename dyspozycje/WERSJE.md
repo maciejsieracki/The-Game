@@ -14,7 +14,23 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `8d5813ea` - 2026-07-29 23:13 - FALA 112: DEPLOY ALL dyplo+UI+mapa overlay + AI oferta zero - **AKTUALNA**
+## ROBOCZA `9ae07906` - 2026-07-30 00:05 - FALA 113: DEPLOY ALL sesji (dyplo+HUD+mapa+palisada+rzeki) - **AKTUALNA**
+- md5 (pelne): `9ae07906dc7215050b3cde635d50a5ee` · stempel: `ROBOCZA · 2026-07-30 00:05`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · diplomacy-ai-offer-balance 23/23 · diplomacy-rejection-cooldown 14/14 · diplomacy-negotiation-table 48/48 · empire-skarbiec-bilans 11/11 · koszty-surowcowe 128/128 (palisada ep.1) · map-gen-regression TIMEOUT (dopływy rzek, >10 min) · POLE-BITWY `dd399c4b`.
+- **D-DYPLO-DUPLIKAT-UMOW:** blokada duplikatu negocjacji na stole (kontroferta / ignoruj klik).
+- **D-DYPLO-KOSZYK-UX:** koszyk handlu — poprawki UX (trade basket).
+- **D-DYPLO-AI-OFERTA-ZERO+CYKL:** trim cykliczny + oferta zero Normal/Hard (rozszerzenie FALA 112).
+- **D-DYPLO-AI-NO-NAG:** cooldown 3 tury po odrzuceniu oferty AI (brak nękania).
+- **E-HUD-ZOOM-FULLSCREEN:** zoom −/100%/+ i ⛶ pod minimapą; fullscreen documentElement.
+- **E-TOOLTIP-ROZMIAR-2X:** potwierdzenie ×2 (nie ×4) — hudTitleTooltip.
+- **E-SKARBIEC-BILANS:** panel imperium — kwoty zamiast myślników (treasuryBalanceSignedTxt).
+- **BUG-PALISADA-BRAK:** palisada epoka Kamień (epokaWejscia=1, Obróbka drewna) + chip +100% Obrony.
+- **BUG-FARMA-GLINA / surowce build / map toggles:** kontynuacja FALA 112 (bez regresji).
+- **BUG-RZEKI-DOPLYWY:** `ensureRiverOutlets` w generatorze (gen-helpers).
+- **WYKLUCZONE:** ikona palisady z `docs/ux/preview-palisada/` — nie w brand/bundle.
+
+## ROBOCZA `8d5813ea` - 2026-07-29 23:13 - FALA 112: DEPLOY ALL dyplo+UI+mapa overlay + AI oferta zero - **ZASTĄPIONA**
 - md5 (pelne): `8d5813ea025a603d23e04cc923c65b94` · stempel: `ROBOCZA · 2026-07-29 23:13`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · diplomacy-acceptance-points 142/142 · diplomacy-ai-offer-balance 18/18 · hex-plony-magazyn 9/9 · map-improvement-qualify 94/94 · diplomacy-treaties 12/12 · POLE-BITWY `dd399c4b`.
