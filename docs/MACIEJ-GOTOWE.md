@@ -1,4 +1,15 @@
-﻿## [13:50] ✅ Gotowe — deploy ROBOCZA FALA 106 (2b118002)
+﻿## [14:18] ✅ Gotowe — deploy ROBOCZA FALA 107 (b0517973)
+
+**FALA 107** | md5 `b0517973516024a1a75579eac09f52d9` | commit `d9fe45f` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**DEPLOY ALL — pełna sesja dyplo + weterani + surowce:**
+- PN: katalog akceptacji, stół negocjacji, pokój (500), panel My/Bilans/Oni, złoto/węgiel za sztukę.
+- Weterani: odznaki 3D, post-battle XP, auto-moc M.
+- Surowce: econ-params, building-stock-cost, empireDetailPanel.
+- UI: civBrandDisplay, koszyk handlu live PN.
+- tsc 0 · acceptance-points 52/52 · negotiation-table 43/43 · weterani 73/73 · POLE-BITWY `dd399c4b`.
+
+## [13:50] ✅ Gotowe — deploy ROBOCZA FALA 106 (2b118002)
 
 **FALA 106** | md5 `2b11800234eedd5891c8c7c8b85ba233` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

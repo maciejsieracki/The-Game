@@ -4324,6 +4324,15 @@ POLE-BITWY bez zmian (`dd399c4b`).
 **Sesja lokalna: pull na dysk właściciela, testuj `ded7ed28`.**
 CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
 
+## [14:18 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 107 (b0517973)
+
+md5 `b0517973516024a1a75579eac09f52d9` | stempel ROBOCZA · 2026-07-29 14:18 | commit `d9fe45f`
+tsc 0 | diplomacy-acceptance-points-test 52/52 | diplomacy-negotiation-table-test 43/43 | weterani-test 73/73 | vite build OK (36,4 MB) | publish-robocza-snapshot OK.
+Zakres: DEPLOY ALL — pełny rebuild HEAD (dyplo PN/stół/pokój, weterani, surowce, UI bilans). Zawiera FALA 106 i wcześniejsze.
+POLE-BITWY bez zmian (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `b0517973`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
 ## [13:50 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 106 (2b118002)
 
 md5 `2b11800234eedd5891c8c7c8b85ba233` | stempel ROBOCZA · 2026-07-29 13:50

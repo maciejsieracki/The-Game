@@ -14,7 +14,13 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `2b118002` - 2026-07-29 13:50 - FALA 106: DEPLOY — panel PN My/Bilans/Oni na stole + koszyku handlu - **AKTUALNA**
+## ROBOCZA `b0517973` - 2026-07-29 14:18 - FALA 107: DEPLOY ALL — commit d9fe45f (dyplo PN + weterani + surowce + UI) - **AKTUALNA**
+- md5 (pelne): `b0517973516024a1a75579eac09f52d9` · stempel: `ROBOCZA · 2026-07-29 14:18`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+- tsc 0 · diplomacy-acceptance-points-test 52/52 · diplomacy-negotiation-table-test 43/43 · weterani-test 73/73 · vite build OK (36,4 MB).
+- Zakres: pełny rebuild HEAD `d9fe45f` — PN/stół/pokój, panel My/Bilans/Oni, weterani (odznaki/XP), surowce/econ-params, civBrandDisplay, empireDetailPanel. Zawiera FALA 106 i wcześniejsze.
+
+## ROBOCZA `2b118002` - 2026-07-29 13:50 - FALA 106: DEPLOY — panel PN My/Bilans/Oni na stole + koszyku handlu - **ZASTAPIONA (b0517973)**
 - md5 (pelne): `2b11800234eedd5891c8c7c8b85ba233` · stempel: `ROBOCZA · 2026-07-29 13:50`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
 - tsc 0 · diplomacy-acceptance-points-test 52/52 · diplomacy-negotiation-table-test 43/43 · vite build OK (36,4 MB).
