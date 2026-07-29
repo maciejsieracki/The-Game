@@ -73,6 +73,7 @@ const hexes = {
   '0,1': mkHex(0, 1, TB.Wzgorza),
   '1,1': mkHex(1, 1, TB.Wzgorza, NK.ZlozeOwiec),
   '2,1': mkHex(2, 1, TB.Gory, NK.Brak, 'miedz'),
+  '1,2': mkHex(1, 2, TB.Gory, NK.Brak, 'zelazo'),
   '3,1': mkHex(3, 1, TB.Laka, NK.Las),
   '4,1': mkHex(4, 1, TB.Morze),
   '5,1': mkHex(5, 1, TB.Rownina, NK.ZlozeGliny),
@@ -141,6 +142,8 @@ ok(!qInka('owce', 6, 0), 'AC-M6: owce NOT pustynia');
 ok(!qInka('lama', 6, 0), 'AC-M6: lama NOT pustynia');
 ok(qInka('warzelnia_soli', 4, 0), 'warzelnia sol');
 ok(qInka('kopalnia_miedzi', 2, 1), 'kopalnia_miedzi gory miedz');
+ok(qInka('kopalnia_zelaza', 1, 2), 'kopalnia_zelaza gory zelazo');
+ok(!qInka('kopalnia_zelaza', 2, 1), 'kopalnia_zelaza NOT on miedz');
 ok(qInka('lodzie_rybackie', 0, -1), 'A-R7: lodzie wybrzeze IN territory');
 const qA7small = M.buildImprovementQualifier({
   map,

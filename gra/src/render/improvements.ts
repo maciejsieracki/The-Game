@@ -15,9 +15,9 @@ import { buildKopalniaZlota } from './kopalnia-zlota-opus5';
 // Opus 5) — wcześniejsze tymczasowe reużycie kopalniaMiedzi() zostało wycofane w OBU rejestrach
 // (ten plik + robloxImprovements.ts).
 export type ImprovementKey =
-  | 'farma' | 'bydlo' | 'owce' | 'lama' | 'kopalnia' | 'kamieniolom' | 'oboz_lowiecki' | 'wyrab' | 'tartak'
+  | 'farma' | 'bydlo' | 'owce' | 'lama' | 'kamieniolom' | 'oboz_lowiecki' | 'wyrab' | 'tartak'
   | 'lodzie_rybackie' | 'droga' | 'droga_brukowana' | 'posterunek' | 'stadnina' | 'pastwisko' | 'kopalnia_miedzi'
-  | 'kopalnia_zlota'
+  | 'kopalnia_zelaza' | 'kopalnia_zlota'
   | 'irygacja' | 'pole_irygowane' | 'glinianka' | 'warzelnia_soli' | 'tarasy' | 'fort';
 
 export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }[] = [
@@ -28,8 +28,9 @@ export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }
   { key: 'owce', label: 'Owczarnia', epoka: 1 },       // buduje się na złożu Owiec
   { key: 'lama', label: 'Zagroda lam', epoka: 1 },     // buduje się na złożu Lam
   { key: 'stadnina', label: 'Stadnina', epoka: 2 },
-  { key: 'kopalnia', label: 'Kopalnia żelaza', epoka: 1 }, { key: 'kamieniolom', label: 'Kamieniołom', epoka: 1 },
   { key: 'kopalnia_miedzi', label: 'Kopalnia miedzi', epoka: 2 },
+  { key: 'kopalnia_zelaza', label: 'Kopalnia żelaza', epoka: 3 },
+  { key: 'kamieniolom', label: 'Kamieniołom', epoka: 1 },
   { key: 'kopalnia_zlota', label: 'Kopalnia złota', epoka: 2 },
   { key: 'oboz_lowiecki', label: 'Obóz łowiecki', epoka: 1 }, { key: 'wyrab', label: 'Wyrąb', epoka: 1 },
   { key: 'tartak', label: 'Tartak', epoka: 1 },
@@ -359,7 +360,7 @@ export function buildImprovement(
     case 'owce': return owce();
     case 'lama': return lama();
     case 'stadnina': return stadnina();
-    case 'kopalnia': return kopalnia();
+    case 'kopalnia_zelaza': return kopalnia();
     case 'glinianka': return glinianka();
     case 'kamieniolom': return kamieniolom();
     case 'oboz_lowiecki': return obozLowiecki();
@@ -387,13 +388,45 @@ export function buildImprovement(
 // Może kolidować z rzeką — zaakceptowane. Łączenie dróg rozwiążemy inaczej w przyszłości.
 const SECTOR_R = 0.72;      // dosunięcie do ścianki (HEX_R=1)
 const SECTOR_SCALE = 0.30;  // znacząco mniejsze
+/**
+ * Pierścień sektorów na heksie z ZACHOWANĄ bryłą wzgórza/góry (kopalnia, kamieniołom,
+ * hodowla — patrz PRESERVES_HILL_RELIEF_KEYS w main.ts). Obrys kopca sięga 0.87 HEX_R
+ * (góra) / 0.92 (wzgórze), więc przy domyślnym 0.72 model stoi w połowie stromizny:
+ * albo tonie w skale, albo — gdy podniesiony do szczytu — wisi w powietrzu obok niej.
+ * 0.86 stawia go na płaskim rąbku heksa (sektory celują w wierzchołki, gdzie heks sięga
+ * 1.0 HEX_R), tyłem wtulonym w podnóże stoku.
+ */
+export const SECTOR_R_ELEVATED = 0.86;
+
+/** Osadzenie sektorów na bryle wzgórza/góry zamiast na płaskim wierzchu heksa. */
+export interface SectorReliefOpts {
+  /** Promień pierścienia sektorów (× hexR). Domyślnie SECTOR_R. */
+  sectorR?: number;
+  /** Wysokość bryły terenu nad wierzchem heksa w punkcie (x,z) układu heksa. */
+  surfaceY?: (x: number, z: number) => number;
+}
+
+/**
+ * Najniższy punkt bryły terenu pod całym obrysem sektora (siatka 3×3 po bbox).
+ * Minimum, nie środek — dzięki temu ŻADEN róg modelu nie zawisa nad stokiem;
+ * nadmiar po stronie góry wtapia się w zbocze (kanon: kopalnia wkomponowana w stok).
+ */
+function najnizszaPowierzchniaPod(box: THREE.Box3, surfaceY: (x: number, z: number) => number): number {
+  const xs = [box.min.x, (box.min.x + box.max.x) / 2, box.max.x];
+  const zs = [box.min.z, (box.min.z + box.max.z) / 2, box.max.z];
+  let y = Infinity;
+  for (const x of xs) {
+    for (const z of zs) y = Math.min(y, surfaceY(x, z));
+  }
+  return Number.isFinite(y) ? Math.max(0, y) : 0;
+}
 const CAT_ANGLE_DEG: Record<string, number> = {
   surowiec: 0, farma: 60, pastwisko: 120, fort: 180, inne: 240, kamien: 300,
 };
 // Kamieniołom ma WŁASNY bok (kamien=300°), NIE w 'surowiec' — bo od 2026-07-24 współistnieje
 // z kopalnią rudy na tym samym heksie (C-SUR kamień=b); w jednym sektorze modele rysują się w
 // tym samym punkcie, więc rozdzielenie kątów zapobiega nachodzeniu grafik kamieniołom↔kopalnia.
-const SUROWIEC_KEYS = new Set(['kopalnia', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi', 'kopalnia_zlota']);
+const SUROWIEC_KEYS = new Set(['kopalnia_zelaza', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi', 'kopalnia_zlota']);
 const PASTWISKO_KEYS = new Set(['bydlo', 'owce', 'lama', 'pastwisko']);
 const FORT_KEYS = new Set(['fort', 'posterunek']);
 const DROGA_KEYS = new Set(['droga', 'droga_brukowana']);
@@ -417,6 +450,7 @@ export function buildImprovementSectored(
   ownerCol = 0xffd54a,
   style: MapRenderStyle = GAME_MAP_RENDER_STYLE,
   hexR = 1,
+  relief: SectorReliefOpts = {},
 ): THREE.Group {
   const g = new THREE.Group();
   const normalized = keys.filter(k => k && k !== 'brak');
@@ -458,7 +492,12 @@ export function buildImprovementSectored(
     }
     sub.scale.setScalar(SECTOR_SCALE);
     const a = (angDeg * Math.PI) / 180;
-    sub.position.set(Math.sin(a) * SECTOR_R * hexR, 0, -Math.cos(a) * SECTOR_R * hexR);
+    const ringR = (relief.sectorR ?? SECTOR_R) * hexR;
+    sub.position.set(Math.sin(a) * ringR, 0, -Math.cos(a) * ringR);
+    if (relief.surfaceY) {
+      box.setFromObject(sub);
+      sub.position.y = najnizszaPowierzchniaPod(box, relief.surfaceY);
+    }
     g.add(sub);
   }
   return g;

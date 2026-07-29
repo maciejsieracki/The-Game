@@ -391,7 +391,7 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   owce: g => { g.add(buildZlozeOwce()); },   // FIX GRAFIKA-TEREN-2: owce jak trzoda/złoże owiec (2 owce S-SW, środek wolny) — buildOwca z pastwisko-modele
   lama: g => { const l = buildLama(); l.position.set(0.63, 0, 0.04); g.add(l); },
   stadnina: g => { g.add(buildStadnina(1)); },   // Maciej 2026-07-09: zawsze 1 koń (dwa zajmowały prawie cały heks)
-  kopalnia: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
+  kopalnia_zelaza: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
   kamieniolom: g => { const m = buildKamieniolom(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kamieniolom.budynek.rotY; g.add(m); },
   oboz_lowiecki: g => { const m = buildObozLowiecki(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.obozLowiecki.budynek.rotY; g.add(m); },
   wyrab: g => { const m = buildWyrab(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.wyrab.budynek.rotY; g.add(m); },

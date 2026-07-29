@@ -161,7 +161,7 @@ function improvementKeysOnPlacedHex(imp: string | readonly string[]): string[] {
 
 /** Ulepszenia wymagające złoża na heksie (terrain-improvements.json). */
 const DEPOSIT_LINKED_IMPROVEMENTS = new Set<string>([
-  'glinianka', 'kopalnia', 'kopalnia_miedzi', 'warzelnia_soli', 'stadnina',
+  'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'warzelnia_soli', 'stadnina',
 ]);
 
 /** Hodowla Model B — aktywny dostęp bez złoża (2026-07-09). */
@@ -209,13 +209,12 @@ export function improvementUnlockActiveOnHex(
   return true;
 }
 
-/** Etykiety aktywnego dostępu z kopalni — typ surowca wynika ze złoża pod ulepszeniem. */
-function labelsForKopalniaOnHex(hex: HexZloze): string[] {
-  const z = hex.zloze?.trim().toLowerCase();
-  if (z === 'zelazo') return [SUROWIEC_KEY_LABEL.ruda_zelaza!];
-  if (z === 'miedz') return [SUROWIEC_KEY_LABEL.ruda!];
-  if (z === 'wegiel') return [ZLOZE_LABEL.wegiel!];
-  return labelsForImprovementUnlock('kopalnia');
+/** Etykiety aktywnego dostępu z kopalni miedzi na legacy ZlozeRudy. */
+function labelsForKopalniaMiedziOnHex(hex: HexZloze): string[] {
+  if (hex.zloze?.trim().toLowerCase() === 'miedz' || hex.nakladka === Nakladka.ZlozeRudy) {
+    return [SUROWIEC_KEY_LABEL.ruda!];
+  }
+  return labelsForImprovementUnlock('kopalnia_miedzi');
 }
 
 function activeLabelsForImprovementOnHex(
@@ -225,7 +224,7 @@ function activeLabelsForImprovementOnHex(
   const norm = normalizeImprovementKey(improvementKey);
   if (!norm) return [];
   if (LIVESTOCK_NOT_RESOURCE.has(norm)) return [];  // pastwiska nie są surowcem
-  if (norm === 'kopalnia') return labelsForKopalniaOnHex(hex);
+  if (norm === 'kopalnia_miedzi') return labelsForKopalniaMiedziOnHex(hex);
   return labelsForImprovementUnlock(norm);
 }
 

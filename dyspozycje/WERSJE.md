@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `75fa29d7` - 2026-07-30 01:05 - FALA 115: fix złoża/kopalnia na górach + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `7df8cf1d` - 2026-07-30 12:45 - FALA 116: kopalnia_zelaza (R-KOPALNIA-UNIWERSALNA-Q1=B) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `7df8cf1d0e11b5f9a520f08540ad4dfa` · stempel: `ROBOCZA · 2026-07-30 12:45`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · map-improvement-qualify 96/96 · deposit-building-gate 45/45 · zelazo-gate 24/24.
+- **R-KOPALNIA-UNIWERSALNA-Q1=B:** usunięto uniwersalną `kopalnia`; dodano `kopalnia_zelaza` (epoka 3, tech Hutnictwo żelaza, ruda_zelaza 2/t); `kopalnia_miedzi` + legacy ZlozeRudy; migracja save przy load.
+- Bez push origin.
+
+## ROBOCZA `75fa29d7` - 2026-07-30 01:05 - FALA 115: fix złoża/kopalnia na górach + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `75fa29d71ccd7d0ff42080175bd299b4` · stempel: `ROBOCZA · 2026-07-30 01:05`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · population-growth-v85 47/47 · population-growth-v85-bonus 20/20 · map-improvement-qualify 94/94 · POLE-BITWY `dd399c4b`.

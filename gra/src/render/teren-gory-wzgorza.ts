@@ -459,6 +459,49 @@ export function buildGora(wariant: number): THREE.Mesh {
   return m;
 }
 
+// ---------------------------------------------------------------------------
+// Wysokość powierzchni bryły w dowolnym punkcie heksa
+// ---------------------------------------------------------------------------
+
+/** Proxy do raycastu (1 na wariant, geometria współdzielona z InstancedMesh mapy). */
+const proxyWzgorz: Array<THREE.Mesh | null> = [null, null, null, null, null];
+const proxyGor: Array<THREE.Mesh | null> = [null, null, null, null, null];
+const promien = new THREE.Raycaster();
+const promienStart = new THREE.Vector3();
+const promienDol = new THREE.Vector3(0, -1, 0);
+/** Ponad najwyższym apexem (1.25) — start promienia w dół. */
+const PROMIEN_START_Y = 4;
+
+/**
+ * Wysokość powierzchni kopca/masywu nad wierzchem heksa w punkcie (x,z) układu
+ * lokalnego heksa (HEX_R = 1, środek heksa = 0,0). Poza obrysem bryły zwraca 0.
+ *
+ * Potrzebne, bo ulepszenia i złoża stoją na PIERŚCIENIU (bok heksa), a nie w jego
+ * środku — sam wierzchołek (GORA_APEX_Y / WZGORZE_SZCZYT_Y) mówi tylko o osi heksa.
+ */
+export function powierzchniaReliefuY(
+  typ: 'wzgorze' | 'gora',
+  wariant: number,
+  rotY: number,
+  x: number,
+  z: number,
+): number {
+  const w = ((wariant | 0) % 5 + 5) % 5;
+  const cache = typ === 'gora' ? proxyGor : proxyWzgorz;
+  let mesh = cache[w];
+  if (!mesh) {
+    mesh = new THREE.Mesh(typ === 'gora' ? goraGeometria(w) : wzgorzeGeometria(w), TEREN_MATERIAL);
+    cache[w] = mesh;
+  }
+  mesh.rotation.y = rotY;
+  mesh.updateMatrixWorld(true);
+  promienStart.set(x, PROMIEN_START_Y, z);
+  promien.set(promienStart, promienDol);
+  promien.far = PROMIEN_START_Y + 1;
+  const traf = promien.intersectObject(mesh, false);
+  return traf.length > 0 ? Math.max(0, traf[0]!.point.y) : 0;
+}
+
 /** Liczba trójkątów wariantu (diagnostyka/testy). */
 export function trojkatyWariantu(typ: 'wzgorze' | 'gora', wariant: number): number {
   const g = typ === 'wzgorze' ? wzgorzeGeometria(wariant) : goraGeometria(wariant);

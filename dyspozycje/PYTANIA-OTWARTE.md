@@ -910,6 +910,14 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
+## BUG-DYPLO-UMOWY-DUPLIKAT — wielokrotne klikanie tej samej umowy na stole · STATUS: **ZAMKNIĘTE** (fix 2026-07-29)
+
+**Cytat:** Można wielokrotnie naciskać tę samą umowę (np. Traktat handlowy) — na stole pojawia się wiele kart i rzędów Przyjmij/Odrzuć.
+
+**Fix:** `hasPendingNegotiationForPair` + `findOwnOutgoingNegotiation` (`diplomacy-proposals.ts`); guard w `handleNegotiatedProposal` (`main.ts`); `blockDuplicateNegotiationClick` + blokada kafelków `active` (`diplomacyAudience.ts`).
+
+---
+
 ## R-AI-MIASTA-BUDOWY — państwa-miasta prawie nie budują mimo zasobów · STATUS: **OTWARTE** (Maciej 2026-07-29 ~02:04)
 
 **Cytat:** „Państwa miasta nie budują praktycznie żadnych budynków, chociaż mają zasoby — trzeba sprawdzić."
@@ -966,7 +974,7 @@ Maciej ~01:43: „Zadałem sporo pytań, czekam na odpowiedzi." Źródło pełne
 | # | Temat (skrót) | Odpowiedź z kodu? |
 |---|---|---|
 | 1 | Farma bez 👤 — czy daje Ż/Pr/Pod? | TAK — tylko z obywatelem lub centrum |
-| 2 | Palisada — tech i czy działa? | TAK — Obróbka drewna, Brąz, +100% Obrony |
+| 2 | Palisada — tech i czy działa? | TAK — Obróbka drewna, **Kamień** (korekta 2026-07-29), +100% Obrony |
 | 3 | Lista ulepszeń: surowce **bez** vs **z** 👤 | TAK — dwie listy (archiwum 01:32) |
 | 4 | Irygacja vs Farma — nachodzą graficznie? | TAK — logicznie stack OK, jeden mesh `pole_irygowane` |
 | 5 | Farma + Trzoda — czy można Irygację? | TAK — **nie** (farma+irygacja **albo** farma+trzoda) |
@@ -1014,19 +1022,137 @@ Powiązane osobno (ta sama noc, nie w skróconej tabeli): `D-DYPLO-KATALOG-AKCJI
 
 ---
 
-## BUG-RZEKI-DOPLYWY — dopływy kończą się na lądzie · STATUS: **WDRAŻANE** (Maciej 2026-07-29 wieczór)
+## BUG-RZEKI-DOPLYWY — dopływy kończą się na lądzie · STATUS: **WDROŻONE** (2026-07-29)
 
 **Cytat Macieja (2026-07-29 ~23:02):**
 > „Jest jeszcze kwestia dopływów, które moim zdaniem nie łączą się z rzekami głównymi. Trzeba coś zrobić, żeby się łączyły — albo niech wpadają do morza. Generalnie rzeki nie powinny się zaczynać i kończyć na lądzie, jeżeli co najmniej nie wpadną do innej rzeki lub nie wpadną do morza."
 
-**Dowód wizualny:** 2 zrzuty ekranu z playtestu mapy (wieczór 29.07) — cienkie dopływy urwane na lądzie, bez styku z szeroką rzeką główną ani z morzem:
-- `assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-7e8998cb-174e-4ccc-b892-4b323b2ff8f2.png`
-- `assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-ead7e7c4-4424-4f8a-919a-2df7b73c7107.png`
+**Przyczyna:** `pruneOrphanRiverPaths` wołane przed finalnym reliefem/złożami (szczególnie mapa Ziemia) — późniejsze kroki rozłączały sieć bez ponownego przycinania.
 
-**Reguła kanonu:** każdy segment rzeki (w tym dopływ) musi zakończyć się wpływem do **innej rzeki** (sieć / junction) **lub** do **morza** — nie na gołym lądzie.
+**Wdrożenie:** `ensureRiverOutlets()` na końcu `generator.ts` · `finalizeTributaryPath()` odrzuca dopływy bez junction/morza przy generacji · asercje w `map-gen-regression-test.cjs` (0 sierot + `checkTributaryJunctions`).
 
-**Hipoteza robocza:** generator lub render nie domyka junctionu dopływ↔główny nurt (por. historycznie B0.8 I2, `pruneOrphanRiverPaths`, `checkTributaryJunctions` w `gra/src/map/gen-helpers.ts`); możliwy też defekt wizualny styku w `render/scene.ts` przy różnej szerokości wstęgi main vs tributary.
+---
 
-**Zakres naprawy:** Grupa A (mapa) · audyt + fix w `gra/src/map/**` · asercje w testach river/map (0 wiszących dopływów, połączenie z siecią lub oceanem).
+## D-DYPLO-AI-NO-NAG — AI nie powtarza odrzuconej oferty · STATUS: **WDROŻONE** (Maciej 2026-07-29)
 
-**Nota:** audyt i fix kodu już prowadzi agent mapy w tej samej sesji (2026-07-29) — ten wpis domyka lukę w rejestrze, bez duplikacji pracy.
+**Cytat Macieja:** Po odrzuceniu propozycji AI — nie proponować tego samego w następnej turze (ani 2–3× pod rząd). Ten sam partner + ten sam typ umowy = cooldown.
+
+**Decyzja:** Cooldown **3 pełne tury** (`AI_REJECTED_OFFER_COOLDOWN_TURNS`). Klucz: `partnerOwnerId` + `actionId`. Różne typy (NAP vs handel) — OK.
+
+**Wdrożenie:** `diplomacy-rejection-cooldown.ts` · `main.ts` (Odrzuć → zapis, kolejka AI → filtr, save/load `meta.rejectedOfferCooldowns`) · `diplomacy-rejection-cooldown-test.cjs`. Decyzja: `docs/decyzje/D-DYPLO-AI-NO-NAG.md`.
+
+---
+
+## D-DYPLO-KOSZYK-UX — koszyk wymiany surowców (chipy, czas umowy) · STATUS: **WDROŻONE** (Maciej 2026-07-29)
+
+**Cytat Macieja:** Dropdown „Typ pozycji" + ilość + „+ DODAJ" — nieczytelne. Chce chipy z ikonami gry (HUD/magazyn), wybór czasu umowy (Jednorazowo / Co turę × N tur), przyciski +1/+10/+100 przy ilości.
+
+**Wdrożenie:** `gra/src/ui/diplomacyTradeBasket.ts` — chipy typów (ikony `brandAssets` / `mapResourceIconSvg`: Pieniądze, Praca, Żywność, Surowiec, Technologia), chipy surowców z ikonami mapy, stepper ilości (+1/+10/+100), blok „Czas umowy" (chipy Jednorazowo/Co turę + presety tur 5–20). Silnik PW bez zmian.
+
+**Screenshot:** `docs/ux/preview-dyplomacja/D-DYPLO-KOSZYK-UX-trade-basket.png` (skrypt `gra/tools/capture-trade-basket-preview.cjs`).
+
+---
+
+## BUG-HUD-ZOOM-FULLSCREEN — klik +/− i pełny ekran nie reagują · STATUS: **NAPRAWIONE** (2026-07-29)
+
+**Objaw:** Przyciski zoom UI (85%–150%) i ⛶ pełny ekran nad minimapą — widoczne, ale klik bez efektu.
+
+**Przyczyna (warstwy UI):**
+1. `.civ-side-ctx-dock.open` (karta jednostki, z-index 316) miał `pointer-events:auto` na pełnej wysokości kolumny — przykrywał dock zoomu (wewnątrz `.civ-hud` z-index 310).
+2. `.civ-minimap-wrap` (z-index 310, montowany po HUD w DOM) przechwytywał kliknięcia w strefie nakładania z dockiem.
+3. `.civ-sci-dim-backdrop` (hub badań, dock drzewka) — przezroczysty pełnoekranowy overlay `pointer-events:auto` bez `display:none` w CSS (ryzyko „leave-behind").
+
+**Fix:** `sidePanelHud.ts` — pass-through `pointer-events` na docku karty (auto tylko na `.sp-ctx-card`); `minimapHud.ts` — `pointer-events:none` na wrapie; `hud.ts` — dock zoom/fs na `document.body` z z-index 318 + osobne style; `sciencePicker.ts` — domyślne `display:none` na dim-backdrop; `hudTitleTooltip.ts` — wykluczenie przycisków zoom/fs z przechwytywania title.
+
+**Pliki:** `gra/src/ui/hud.ts`, `sidePanelHud.ts`, `minimapHud.ts`, `sciencePicker.ts`, `hudTitleTooltip.ts`.
+
+---
+
+## BUG-PALISADA-BRAK — Palisada drewniana „wdrożona", niewidoczna w grze · STATUS: **NAPRAWIONE w źródle** (2026-07-29) · **czeka deploy ROBOCZA**
+
+**Korekta epoki (Maciej 2026-07-29):** *„Palisada miała być w epoce KAMIENIA. Korekta nieporozumienia: nie Brąz — epoka Kamienia."* → `epokaWejscia: 1`, tech **Obróbka drewna** (Kamień w `tech.json`). Szczegóły: `docs/decyzje/BUG-PALISADA-BRAK-korekta-epoka.md`.
+
+**Pytanie Macieja (R-PUŁKA #2):** Czy Palisada jest w danych, panelu budowy i działa (+100% Obrony, Mury zastępują)?
+
+**Audyt (źródło `gra/`):**
+| Warstwa | Stan | Dowód |
+|---|---|---|
+| `buildings.json` | **JEST** | `id: palisada`, `techUnlock: Obróbka drewna`, `epokaWejscia: 1` (Kamień), koszt 22 Pracy + 12 drewna |
+| `loader.ts` | **OK** | Import `buildings.json` — bez filtra |
+| `production.ts` | **OK** | `availableProduction` — epoka Kamień + tech; ukryta gdy `mury`/`fort` |
+| `city-defense.ts` | **OK** | +100% (`bonus_obrona_palisada_proc`); Mury +200% bez stacku |
+| `production.ts` apply | **OK** | Po `mury` usuwa `palisada` z `cityBuilt` |
+| Panel budowy UI | **było źle** | Brak chipa „+100% Obrona" (bonus tylko w silniku, nie w `baza.obrona`) |
+
+**Dlaczego Maciej nie widzi w playteście:** `gra-robocza/Gra-ROBOCZA.html` (md5 `e5c1bbed`, publish 2026-07-29 18:31) **nie zawiera** stringa `Palisada drewniana` w bundlu — kod jest w `gra/src` + `gra/data`, ale **nie był w ostatnim deployu ROBOCZA**.
+
+**Naprawa (bez deployu):** `building-upgrades.ts` + `cityPanel.ts` — chip/infokarta „+100% Obrona"; `eraBuildingCatalog` — ukrywa palisadę po Murach; test `koszty-surowcowe-test.cjs` §J (dostępność w Kamieniu). **Deploy ROBOCZA** — osobno (Grok).
+
+---
+
+## BUG-SKARBIEC-BILANS-DASH — panel ZASOBY IMPERIUM: bilans skarbca same „—" · STATUS: **NAPRAWIONE w źródle** (2026-07-29) · **czeka deploy ROBOCZA**
+
+**Objaw (Maciej + zrzut):** Panel „Grecy · ZASOBY IMPERIUM" — Skarbiec **83** OK, ale Wpływy / Handel ze szlaków / Utrzymanie budynków / jednostek / Netto = **—**; tabela miasta (Ateny): Do skarbca / Utrzymanie = **—**. Wrażenie: „płacę za handel", ale kwota skarbca się nie zmniejsza.
+
+**Root cause (wyświetlanie):**
+1. `openEmpireDetailFromHud()` wołało `showEmpireDetailPanel()` **przed** `refreshLiveEmpireRates()` — pierwszy render czytał stale `_lastPieniadzRate` / `_lastPlayerCityEcon` (= 0 po starcie).
+2. `signedTxt()` w `empireDetailPanel.ts` zamieniało **0 → „—"** (OK dla surowców, złe dla bilansu ¤).
+
+**Czy ¤ faktycznie schodzi (silnik):**
+| Mechanizm | Debit ze skarbca? | Gdzie |
+|---|---|---|
+| Utrzymanie budynków + jednostek | **TAK** | `main.ts` koniec tury: `player.skarbiec -= playerBalance.utrzymanieRazem` |
+| Dochód ze szlaków handlowych | **TAK (kredyt)** | `turn-economy.ts` `pieniadzZTras` → skarbiec |
+| Trybut / płatność ¤ z traktatu | **TAK** | `tickDiplomacyPayments()` → `treasury.add(payer, -amount)` |
+| Handel surowcowy cykliczny (zaplataTyp=zloto) | **TAK** | `tickCyclicResourceTradeDeals()` → `applyOneShotGoldTransfer()` |
+| Handel surowcowy (zaplataTyp=praca) | **NIE ¤** | Odejmuje z **puli Pracy**, nie skarbca |
+| Koszt „utrzymania szlaku" jako osobna opłata ¤ | **NIE** | Szlaki dają dochód dystansowy; nie ma osobnego debitu ¤ za trasę |
+
+**Fix:** `main.ts` — `refreshLiveEmpireRates()` przed `showEmpireDetailPanel()`; `empireDetailPanel.ts` — `treasuryBalanceSignedTxt()` / `treasuryDeltaHtml()` (jawne 0); test `gra/tools/empire-skarbiec-bilans-test.cjs`.
+
+**Deploy ROBOCZA** — osobno (Grok).
+
+---
+
+## BUG-CUDY-MAPA-NIE-MIASTO — cuda z panelu ulepszeń trafiały do kolejki miasta zamiast na hex · STATUS: **NAPRAWIONE w źródle** (2026-07-29) · **czeka deploy ROBOCZA**
+
+**Cytat Macieja:** „Budowa ulepszeń obejmuje też cuda, ale cud kładzie się **na mapie świata** (heks), jak ulepszenie terenu. Jak jest źle: klik cudu w panelu ulepszeń na mapie → **dokłada się do kolejki budowy w mieście**."
+
+**Root cause:** `buildModeHud.ts` → `onSelectWonder` → `enqueueWonderForPlayer()` w `main.ts` — cud trafiał do `cityProd` jako `__wonder__:<id>` (kolejka produkcji miasta), a po ukończeniu `pickWonderHexForCity()` losował hex automatycznie.
+
+**Dane:** Cuda **nie są** w `buildings.json` — osobny plik `gra/data/wonders.json` (`cuda[]`, pole `kosztBudowy` w Pracy, `_meta.budowa` = „hex w terytorium (nie slot miasta)").
+
+**Fix (źródło):**
+- `activeWonderId` + klik hex → `wonderBuildSites[]` (postęp na mapie, koszt z puli Pracy imperium)
+- `wonder-map-build.ts`, rozszerzenie `wonder-placement.ts` (`listQualifyingWonderHexesForOwner`)
+- `buildModeHud.ts` — UI: „Kliknij hex w terytorium", nie „Kolejka produkcji"
+- AI nadal przez kolejkę miasta (`enqueueWonderForPlayer` zostaje dla AI)
+
+**Test:** `node gra/tools/wonder-map-build-test.cjs`
+
+**Deploy ROBOCZA** — osobno (Grok).
+
+---
+
+## NOTATKA-PALISADA-BISKUPIN — wdrożony wygląd palisady (bez pytania do Macieja) · STATUS: **WDROŻONE w źródle** (2026-07-30) · **czeka deploy ROBOCZA**
+
+**Cytat Macieja (2026-07-29):** „Do palisady wygląda bardzo fajnie, możesz ją wdrażać do gry."
+
+Wdrożone w `gra/src/render/miasto-kamien.ts` (funkcja `wal`) — palisada w stylu Biskupin: skarpa ziemna + żerdzie na skos + ściana z belkami poziomymi + nierówna korona + brama od +x. Podgląd po wdrożeniu: `docs/ux/preview-palisada/wdrozenie-biskupin-kamien.png`.
+
+**Trzy rzeczy do ewentualnej decyzji później (NIE pytam teraz):**
+
+1. **Paleta.** Wdrożony wariant **Kamień** (drewno szare-zwietrzałe, jak `ref-styl-biskupin-kamien.png`). Wariant brązowy (`ref-styl-biskupin-braz.png`) to osobna propozycja — miasto epoki Brązu ma własny mur (`miasto-braz.ts`: mur cyklopowy / wał agger), więc brązowej palisady nikt dziś nie renderuje.
+2. **Korekty wobec pliku propozycji.** W `gra/tools/.palisada-biskupin-preview-entry.ts` obroty wokół osi Y były podane w **stopniach zamiast radianów** (płyty skarpy i żerdzie leciały pod losowymi kątami), a nadproże bramy było obrócone w poprzek cięciwy — stąd długa belka wystająca poza obrys heksa na zrzucie referencyjnym. W grze jedno i drugie poprawione: pierścień skarpy stycznie do obwodu, żerdzie pochylone **na zewnątrz**, nadproże wzdłuż cięciwy. Struktura, palety i wysokości bez zmian.
+3. **Koszt renderu.** Palisada to teraz **1428–1644 tri (119–137 klocków)** zamiast 288–320 tri (32 klocki). Obrys w normie (0.42 / 0.47 / 0.49 przy rezerwie 0.50 — `gra/tools/.palisada-obrys-entry.ts`), ale miasto z murem to ~135–219 meshy. Jeśli przy wielu miastach na mapie pojawi się spadek FPS — pierwszy kandydat do scalenia geometrii.
+
+**Ikona panelu budowy:** `palisada` miała ikonę `bld-mury` (tę samą co kamienne Mury). Wdrożona dedykowana `gra/src/ui/icons/brand/buildings/bld-palisada.svg` z propozycji UX (`docs/ux/preview-palisada/bld-palisada-proposal.svg`). Powrót do wspólnej ikony = jedna linia w `building-icon-map.json`.
+
+**Deploy ROBOCZA** — osobno (Grok).
+
+---
+
+## NOTATKA TECH (R-KOPALNIA-UNIWERSALNA-Q1=B) — kopalnia na węglu · STATUS: **OTWARTE (cicho)**
+
+Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulepszenia (brak `kopalnia_wegla`). Migracja przy load usuwa taką warstwę (`migrateLegacyKopalniaKey` → null). Do decyzji Macieja: osobne ulepszenie węgla vs inny fallback.
+

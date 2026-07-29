@@ -4416,3 +4416,10 @@ tsc 0 | population-growth-v85 47/47 | population-growth-v85-bonus 20/20 | map-im
 Zakres: MAP-DEPOSIT-RELIEF — `elevatedTerrainEdgeSurfaceY` (złoża + kopalnie na Wzg./Górach przy ściance; fix „w powietrzu") · palisada żerdzie skarpa (miasto-kamien.ts)
 Commit lokalny, **bez push** (Maciej).
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `75fa29d7`).
+
+## [12:45 PL, 2026-07-30] Sesja lokalna → wszystkie — FALA 116 kopalnia_zelaza + DEPLOY ALL
+md5 `7df8cf1d0e11b5f9a520f08540ad4dfa` | stempel ROBOCZA · 2026-07-30 12:45
+tsc 0 | map-improvement-qualify 96/96 | deposit-building-gate 45/45 | zelazo-gate 24/24 | VERIFY OK | vite exit 0 przed kopiowaniem
+Zakres: R-KOPALNIA-UNIWERSALNA-Q1=B — usunięto `kopalnia`; dodano `kopalnia_zelaza` (epoka 3, Hutnictwo żelaza, ruda_zelaza 2/t); kopalnia_miedzi + ZlozeRudy; migracja save
+Commit lokalny, **bez push** (Maciej).
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `7df8cf1d`).

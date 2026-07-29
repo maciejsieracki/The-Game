@@ -81,27 +81,19 @@ function mapWith(...hexes) {
   ok(!M.improvementUnlockActiveOnHex('kopalnia_miedzi', { zloze: 'zelazo' }), 'kopalnia_miedzi false na zelazo');
 }
 
-// --- ruda/żelazo/węgiel + kopalnia ---
+// --- ruda/żelazo — kopalnie dedykowane (R-KOPALNIA-UNIWERSALNA-Q1=B) ---
 {
   const hexRuda = { coords: { q: 1, r: 0 }, terenBazowy: TB.Wzgorza, nakladka: NK.ZlozeRudy, wlasciciel: '0' };
   const mapR = mapWith(hexRuda);
-  const placedR = new Map([['1,0', 'kopalnia']]);
-  ok(M.getCityResourceAccessForCity(city, mapR, placedR, 99).active.includes('Ruda'), 'kopalnia na ZlozeRudy → Ruda');
+  const placedR = new Map([['1,0', 'kopalnia_miedzi']]);
+  ok(M.getCityResourceAccessForCity(city, mapR, placedR, 99).active.includes('Ruda'), 'kopalnia_miedzi na ZlozeRudy → Ruda');
 }
 {
   const hexZ = { coords: { q: 2, r: 0 }, terenBazowy: TB.Gory, zloze: 'zelazo', wlasciciel: '0' };
   const mapZ = mapWith(hexZ);
-  const placedZ = new Map([['2,0', 'kopalnia']]);
-  // kopalnia na złożu żelaza daje surowiec 'Ruda żelaza' (metal Żelazo powstaje dopiero
-  // w hucie, nie w kopalni) -- przebudowa modelu brązu/żelaza.
-  ok(M.getCityResourceAccessForCity(city, mapZ, placedZ, 99).active.includes('Ruda żelaza'), 'kopalnia na zelazo → Ruda żelaza');
-  ok(!M.improvementUnlockActiveOnHex('kopalnia', { zloze: 'miedz' }), 'kopalnia false na miedz');
-}
-{
-  const hexW = { coords: { q: 3, r: 0 }, terenBazowy: TB.Gory, zloze: 'wegiel', wlasciciel: '0' };
-  const mapW = mapWith(hexW);
-  const placedW = new Map([['3,0', 'kopalnia']]);
-  ok(M.getCityResourceAccessForCity(city, mapW, placedW, 99).active.includes('Węgiel'), 'kopalnia na wegiel → Węgiel');
+  const placedZ = new Map([['2,0', 'kopalnia_zelaza']]);
+  ok(M.getCityResourceAccessForCity(city, mapZ, placedZ, 99).active.includes('Ruda żelaza'), 'kopalnia_zelaza na zelazo → Ruda żelaza');
+  ok(!M.improvementUnlockActiveOnHex('kopalnia_zelaza', { zloze: 'miedz' }), 'kopalnia_zelaza false na miedz');
 }
 
 // --- sól + warzelnia_soli (złoże) ---

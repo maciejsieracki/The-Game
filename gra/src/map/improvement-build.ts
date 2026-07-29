@@ -193,8 +193,8 @@ const SOLO_FOOD_KEYS = new Set<string>(['tarasy', 'owce', 'lama']);
 // nakładka (współistnieje z food). Uwaga: teren i tak wyklucza większość par (płaski≠wzgórza).
 const SEKTOR_OF: Record<string, string> = {
   // bok 1 — surowce + ich ulepszenia
-  kopalnia: 'surowiec', glinianka: 'surowiec',
-  stadnina: 'surowiec', kopalnia_miedzi: 'surowiec',
+  glinianka: 'surowiec',
+  stadnina: 'surowiec', kopalnia_miedzi: 'surowiec', kopalnia_zelaza: 'surowiec',
   // Maciej 2026-07-25: Kopalnia złota — dedykowane ulepszenie jak kopalnia_miedzi (tylko na
   // hex.zloze==='zloto'); sektor 'surowiec' jest tu bezpieczny bo tylko JEDNO złoże może
   // istnieć na heksie (placeDeposits — break po pierwszym trafieniu), więc nigdy nie koliduje
@@ -324,9 +324,8 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   owce: new Set([TerenBazowy.Wzgorza]),
   lama: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]), // decyzja 3a: lama tylko wzgórza + góry
   stadnina: new Set([TerenBazowy.Laka, TerenBazowy.Rownina]),
-  kopalnia: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
   glinianka: null,
-  kamieniolom: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]), // Maciej 2026-07-24: Wzgórza+Góry (nie zawsze mamy dostęp do gór); teren, bez złoża
+  kamieniolom: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]), // Maciej 2026-07-24: Wzgórza+Góry
   oboz_lowiecki: null,
   wyrab: null,
   lodzie_rybackie: new Set([TerenBazowy.Wybrzeze, TerenBazowy.Morze]),
@@ -336,6 +335,7 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   droga_brukowana: null,
   posterunek: null,
   kopalnia_miedzi: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
+  kopalnia_zelaza: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
   // Maciej 2026-07-25: złoto żyłowe — Wzgórza/Góry, jak kopalnia_miedzi (patrz DEPOSIT_RULES
   // gen-helpers.ts id='zloto').
   kopalnia_zlota: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
@@ -394,16 +394,12 @@ export function depositAllowsPlayerImprovement(
   switch (key) {
     case 'glinianka':
       return nakladka === Nakladka.ZlozeGliny;
-    case 'kopalnia': // Maciej 2026-07-09: kopalnia żelaza — żelazo/węgiel/generyczna ruda (NIE miedź)
-      if (teren === TerenBazowy.Gory) {
-        return zloze === 'zelazo' || zloze === 'wegiel'
-          || nakladka === Nakladka.ZlozeRudy;
-      }
-      return nakladka === Nakladka.ZlozeRudy;
     case 'warzelnia_soli':
       return zloze === 'sol';
-    case 'kopalnia_miedzi': // kopalnia miedzi — TYLKO ruda miedzi
-      return zloze === 'miedz';
+    case 'kopalnia_miedzi': // kopalnia miedzi — miedź lub legacy ZlozeRudy
+      return zloze === 'miedz' || nakladka === Nakladka.ZlozeRudy || zloze === 'ruda';
+    case 'kopalnia_zelaza': // kopalnia żelaza — TYLKO złoże żelaza (R-KOPALNIA-UNIWERSALNA-Q1=B)
+      return zloze === 'zelazo';
     case 'kopalnia_zlota': // kopalnia złota — TYLKO złoże złota (Maciej 2026-07-25)
       return zloze === 'zloto';
     case 'bydlo':
@@ -661,10 +657,10 @@ function createQualifier(state: ImprovementBuildState) {
       case 'glinianka':
         terrainOk = nakladka === Nakladka.ZlozeGliny && inPlayerTerritory(q, r);
         break;
-      case 'kopalnia':
-        if (!inPlayerTerritory(q, r)) terrainOk = false;
-        else if (teren !== TerenBazowy.Gory) terrainOk = nakladka === Nakladka.ZlozeRudy;
-        else terrainOk = zloze === 'zelazo' || zloze === 'wegiel' || nakladka === Nakladka.ZlozeRudy;
+      case 'kopalnia_zelaza':
+        terrainOk = inPlayerTerritory(q, r)
+          && (teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory)
+          && zloze === 'zelazo';
         break;
       case 'wyrab':
         if (state.pendingUndoKeys?.has(`${hexKey}:wyrab`)) return true;
@@ -688,7 +684,7 @@ function createQualifier(state: ImprovementBuildState) {
       case 'kopalnia_miedzi':
         terrainOk = inPlayerTerritory(q, r)
           && (teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory)
-          && zloze === 'miedz';
+          && (zloze === 'miedz' || nakladka === Nakladka.ZlozeRudy || zloze === 'ruda');
         break;
       case 'kopalnia_zlota':
         terrainOk = inPlayerTerritory(q, r)
@@ -749,9 +745,9 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
       return TERRAIN_ALLOW.lama?.has(teren) ?? false;
     case 'lodzie_rybackie':
       return teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Morze;
-    case 'kopalnia':
     case 'kamieniolom':
     case 'kopalnia_miedzi':
+    case 'kopalnia_zelaza':
     case 'kopalnia_zlota':
       return teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory;
     case 'wyrab':

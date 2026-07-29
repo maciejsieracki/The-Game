@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-30 (NAJNOWSZY):** deploy ROBOCZA **`75fa29d7`** (FALA 115, 01:05) — fix złoża/kopalnia na reliefie Gór/Wzgórz + palisada żerdzie. Poprzedni: FALA 114 `c7f15cb3`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan na 2026-07-30 (NAJNOWSZY):** deploy ROBOCZA **`7df8cf1d`** (FALA 116, 12:45) — R-KOPALNIA-UNIWERSALNA-Q1=B: `kopalnia_zelaza`, usunięto uniwersalną `kopalnia`. Poprzedni: FALA 115 `75fa29d7`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

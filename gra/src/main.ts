@@ -475,7 +475,10 @@ import {
 } from './map/improvement-build';
 import { showImprovementBuildConfirmModal } from './ui/improvementBuildConfirm';
 import type { ImprovementKey } from './render/improvements';
-import { buildImprovement, buildImprovementStack, buildImprovementSectored } from './render/improvements';
+import {
+  buildImprovement, buildImprovementStack, buildImprovementSectored,
+  SECTOR_R_ELEVATED, type SectorReliefOpts,
+} from './render/improvements';
 // GRAFIKA-TEREN-2: render wiosek neutralnych + obozów barbarzyńców (wcześniej ZERO tri).
 import { buildWioska, buildObozBarbarzyncow, WIOSKA_OBOZ_LAYOUT } from './render/wioska-oboz';
 // GRAFIKA-TEREN-2: tarasy = wzgórze (wariant 0/3) + schodkowe półki NA garbie (nie mini-dysk w sektorze).
@@ -487,6 +490,7 @@ import {
   improvementDisplayName,
   improvementKeysForHex,
   isLivestockImprovementKey,
+  migrateImprovementLayers,
   normalizeImprovementKey,
   isImprovementAllowedForCiv,
 } from './game/terrain-improvements';
@@ -1570,11 +1574,11 @@ async function boot(): Promise<void> {
       return [...keys];
     }
 
-    function buildImprovementVisual(layers: readonly string[]): THREE.Group {
+    function buildImprovementVisual(layers: readonly string[], relief: SectorReliefOpts = {}): THREE.Group {
       if (layers.length === 0) return new THREE.Group();
       // Maciej 2026-07-09: układ sektorowy — każde ulepszenie w swoim boku heksa, mocno mniejsze,
       // przy ściance, środek wolny pod miasto; droga = obwódka.
-      return buildImprovementSectored(layers, 0xffd54a, undefined, HEX_R);
+      return buildImprovementSectored(layers, 0xffd54a, undefined, HEX_R, relief);
     }
 
     function clearResourceOverlays(): void {
@@ -7712,7 +7716,7 @@ async function boot(): Promise<void> {
     document.documentElement.appendChild(ghostChip);
 
     const IMPROVEMENT_CHIP: Partial<Record<ImprovementKey, string>> = {
-      farma: '🌾', pastwisko: '🐑', kopalnia: '⛏', kamieniolom: '🪨',
+      farma: '🌾', pastwisko: '🐑', kopalnia_zelaza: '⛏', kamieniolom: '🪨',
       oboz_lowiecki: '🏹', wyrab: '🪓', tartak: '🪚', lodzie_rybackie: '🎣', droga: '🛤',
       posterunek: '🏰', irygacja: '💧', pole_irygowane: '🌾', glinianka: '🏺',
       warzelnia_soli: '🧂', tarasy: '🏔', fort: '🛡',
@@ -7832,7 +7836,7 @@ async function boot(): Promise<void> {
       if (!ok) return;
       const hk = keyOf(q, r);
       const preview = [...new Set([...mergedImprovementLayers(hk), activeImprovementKey])];
-      const g = buildImprovementVisual(preview);
+      const g = buildImprovementVisual(preview, improvementReliefOpts(q, r, preview));
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, preview), wp.z);
       applyGhostMaterial(g, true);
@@ -7986,7 +7990,7 @@ async function boot(): Promise<void> {
       const m: Partial<Record<ImprovementKey, Ulepszenie>> = {
         farma: Ulepszenie.Farma,
         irygacja: Ulepszenie.Irygacja,
-        kopalnia: Ulepszenie.Kopalnia,
+        kopalnia_zelaza: Ulepszenie.Kopalnia,
         droga: Ulepszenie.Droga,
         pastwisko: Ulepszenie.Pastwisko,
         bydlo: Ulepszenie.Pastwisko,
@@ -8394,27 +8398,51 @@ async function boot(): Promise<void> {
      * mają identyczny mechanizm spłaszczania — rozszerzone o nie, bo kopalnia wkomponowana
      * w zbocze wzgórza jest logiczniejsza niż płaski heks (spójne z kamieniołomem).
      */
-    const PRESERVES_HILL_RELIEF_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom', 'kopalnia', 'kopalnia_miedzi']);
+    const PRESERVES_HILL_RELIEF_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom', 'kopalnia_miedzi', 'kopalnia_zelaza']);
 
     function preservesHillRelief(layers: readonly string[]): boolean {
       return layers.length > 0 && layers.every(k => PRESERVES_HILL_RELIEF_KEYS.has(k));
     }
 
-    /** Y osadzenia mesh ulepszenia — solo hodowla na wzgórzu: wierzchołek kopca (kopiec zostaje widoczny). */
+    /**
+     * Czy bryła kopca/masywu ZOSTAJE pod ulepszeniem (odwrotność hideDecorAtHex w
+     * syncImprovementDecorForHex). Jeden predykat dla obu miejsc — inaczej model dostaje
+     * wysokość reliefu, którego już nie ma (albo odwrotnie) i zawisa w powietrzu.
+     */
+    function keepsReliefUnderImprovement(hexKey: string, layers: readonly string[]): boolean {
+      const hex = map.hexes[hexKey];
+      if (!hex || layers.length === 0) return false;
+      const teren = hex.terenBazowy;
+      if (teren !== TerenBazowy.Wzgorza && teren !== TerenBazowy.Gory) return false;
+      if (layers.includes('tarasy')) return false;
+      const foodOnForest = hex.nakladka === Nakladka.Las
+        && layers.some(k => k === 'farma' || k === 'bydlo' || k === 'irygacja');
+      if (foodOnForest) return false;
+      return preservesHillRelief(layers);
+    }
+
+    /**
+     * Osadzenie sektorów na zachowanej bryle wzgórza/góry: pierścień odsunięty na płaski
+     * rąbek heksa (SECTOR_R_ELEVATED) + wysokość czytana z GEOMETRII kopca pod obrysem
+     * modelu. Bez tego sektor dostawał jedną wysokość dla całego heksa — a przy ściance
+     * stok jest o ~0,9 HEX_R niżej niż wierzchołek, więc kopalnia wisiała obok szczytu.
+     */
+    function improvementReliefOpts(q: number, r: number, layers: readonly string[]): SectorReliefOpts {
+      const hexKey = keyOf(q, r);
+      if (!keepsReliefUnderImprovement(hexKey, layers)) return {};
+      const hex = map.hexes[hexKey]!;
+      const surfaceY = reliefSurfaceSampler(hex.terenBazowy, q, r, map.seed, HEX_R);
+      if (!surfaceY) return {};
+      return { sectorR: SECTOR_R_ELEVATED, surfaceY };
+    }
+
+    /** Y osadzenia mesh ulepszenia — wierzch pryzmu heksa; relief bryły dokłada sektor (patrz wyżej). */
     function improvementMeshPlacement(q: number, r: number, layers: readonly string[]): number {
       const hex = map.hexes[keyOf(q, r)];
       const topY = unitRenderer.topYAt(q, r);
       if (!hex) return topY + 0.01;
-      const teren = hex.terenBazowy;
-      const elevated = teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory;
-      if (layers.includes('tarasy') && teren === TerenBazowy.Wzgorza) {
+      if (layers.includes('tarasy') && hex.terenBazowy === TerenBazowy.Wzgorza) {
         return topY;
-      }
-      if (elevated) {
-        if (preservesHillRelief(layers)) {
-          return elevatedTerrainEdgeSurfaceY(teren, topY) + 0.01;
-        }
-        return topY + 0.01;
       }
       return topY + 0.01;
     }
@@ -8436,7 +8464,7 @@ async function boot(): Promise<void> {
         hideDecorAtHex(hexKey);
         return;
       }
-      if (elevated && preservesHillRelief(layers)) {
+      if (elevated && keepsReliefUnderImprovement(hexKey, layers)) {
         return;
       }
       if (elevated) {
@@ -8527,7 +8555,7 @@ async function boot(): Promise<void> {
       const hex = map.hexes[hexKey];
       const isHill = hex?.terenBazowy === TerenBazowy.Wzgorza;
       const sectoredLayers = hasTarasy ? layers.filter(l => l !== 'tarasy') : layers;
-      const g = buildImprovementVisual(sectoredLayers);
+      const g = buildImprovementVisual(sectoredLayers, improvementReliefOpts(q, r, layers));
       if (hasTarasy && isHill) {
         const tv = tarasyWariantDlaHeksa(q, r, map.seed);
         const rotY = rotacjaDlaHeksa(q, r, map.seed);
@@ -8553,7 +8581,12 @@ async function boot(): Promise<void> {
       improvementMeshes.clear();
       if (entries?.length) {
         for (const [hexKey, raw] of entries) {
-          const layers = Array.isArray(raw) ? raw : [raw];
+          const hex = map.hexes[hexKey];
+          const layers = migrateImprovementLayers(
+            Array.isArray(raw) ? raw : [raw],
+            hex as { zloze?: string; nakladka?: Nakladka } | undefined,
+          );
+          if (!layers.length) continue;
           placedImprovements.set(hexKey, layers);
           syncHexUlepszenieFields(hexKey, layers);
         }
@@ -8575,7 +8608,7 @@ async function boot(): Promise<void> {
       const out: ImprovementKey[] = [];
       if (n === Nakladka.ZlozeKonia) out.push('stadnina');
       else if (n === Nakladka.ZlozeGliny) out.push('glinianka');
-      else if (n === Nakladka.ZlozeRudy) out.push('kopalnia');
+      else if (n === Nakladka.ZlozeRudy) out.push('kopalnia_miedzi');
       else if (n === Nakladka.ZlozeLamy) out.push('lama');
       switch (t) {
         case TerenBazowy.Laka:
@@ -8584,7 +8617,7 @@ async function boot(): Promise<void> {
         case TerenBazowy.Wzgorza:
           out.push('tarasy', 'owce'); break;
         case TerenBazowy.Gory:
-          if (!out.includes('kopalnia')) out.push('kamieniolom'); break;
+          if (!out.includes('kopalnia_miedzi') && !out.includes('kopalnia_zelaza')) out.push('kamieniolom'); break;
         case TerenBazowy.Pustynia:
           out.push('farma'); break;
         default: break;

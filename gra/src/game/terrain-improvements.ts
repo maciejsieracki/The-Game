@@ -29,6 +29,35 @@ const LEGACY_KEY_ALIASES: Readonly<Record<string, string>> = {
   pastwisko: 'bydlo',
 };
 
+/**
+ * R-KOPALNIA-UNIWERSALNA-Q1=B: migruj starą uniwersalną `kopalnia` → dedykowane typy.
+ * Zwraca `null` gdy migracja niemożliwa (np. węgiel — brak dedykowanego ulepszenia).
+ */
+export function migrateLegacyKopalniaKey(
+  key: string,
+  hex?: { zloze?: string; nakladka?: Nakladka },
+): string | null {
+  if (key !== 'kopalnia') return key;
+  const z = hex?.zloze?.trim().toLowerCase();
+  if (z === 'zelazo') return 'kopalnia_zelaza';
+  if (z === 'miedz' || z === 'ruda' || hex?.nakladka === Nakladka.ZlozeRudy) return 'kopalnia_miedzi';
+  if (z === 'wegiel') return null;
+  return 'kopalnia_miedzi';
+}
+
+/** Migruj listę warstw ulepszeń na heksie (save load). */
+export function migrateImprovementLayers(
+  layers: readonly string[],
+  hex?: { zloze?: string; nakladka?: Nakladka },
+): string[] {
+  const out: string[] = [];
+  for (const raw of layers) {
+    const migrated = migrateLegacyKopalniaKey(raw, hex);
+    if (migrated) out.push(migrated);
+  }
+  return out;
+}
+
 /** Klucze z JSON (bez _meta). */
 export const IMPROVEMENT_KEYS: readonly string[] = Object.keys(IMPROVEMENTS)
   .filter(k => !k.startsWith('_'));
@@ -67,7 +96,7 @@ export function applyImprovementBonus(yld: TileYield, improvementKey: string | u
 export const ORE_YIELD_PER_MINE = 2;
 
 /**
- * Plon rudy miedzi vs żelaza z ulepszeń kopalni (kopalnia_miedzi → ruda; kopalnia + zloze zelazo → ruda_zelaza).
+ * Plon rudy miedzi vs żelaza z ulepszeń kopalni (kopalnia_miedzi → ruda; kopalnia_zelaza → ruda_zelaza).
  */
 export function oreYieldFromImprovements(
   improvementKeys: readonly string[],
@@ -75,14 +104,12 @@ export function oreYieldFromImprovements(
 ): { ruda: number; ruda_zelaza: number } {
   let ruda = 0;
   let ruda_zelaza = 0;
-  const z = zloze?.trim().toLowerCase();
   for (const raw of improvementKeys) {
     const key = normalizeImprovementKey(raw);
     if (key === 'kopalnia_miedzi') {
       ruda += ORE_YIELD_PER_MINE;
-    } else if (key === 'kopalnia') {
-      if (z === 'zelazo') ruda_zelaza += ORE_YIELD_PER_MINE;
-      else ruda += ORE_YIELD_PER_MINE;
+    } else if (key === 'kopalnia_zelaza') {
+      ruda_zelaza += ORE_YIELD_PER_MINE;
     }
   }
   return { ruda, ruda_zelaza };
@@ -122,7 +149,7 @@ export interface TerritoryResourceYield {
 
 /** Ulepszenia produkujące surowiec do magazynu państwa niezależnie od workerów (SUROW-TERYT-01). */
 const TERRITORY_YIELD_IMPROVEMENTS: ReadonlySet<string> = new Set([
-  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia',
+  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza',
   'warzelnia_soli', 'stadnina', 'kopalnia_zlota',
 ]);
 
@@ -140,7 +167,7 @@ function territoryYieldAmountForKey(key: string): number {
  * Surowiec + ilosc/ture produkowane przez `key` (ulepszenie terenu), niezaleznie od
  * obsadzenia pola populacja. Zwraca null gdy ulepszenie nie produkuje surowca
  * do magazynu państwa (np. Farma, Droga).
- * `zloze` rozstrzyga ruda vs ruda_zelaza pod Kopalnia (jak oreYieldFromImprovements).
+ * `zloze` — ignorowane (każda kopalnia ma własny typ surowca).
  */
 export function territoryResourceYieldForImprovement(
   key: string,
@@ -153,13 +180,10 @@ export function territoryResourceYieldForImprovement(
     case 'kamieniolom':     return { resourceKey: 'kamien', amount: territoryYieldAmountForKey(norm) };
     case 'glinianka':       return { resourceKey: 'glina',  amount: territoryYieldAmountForKey(norm) };
     case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount: territoryYieldAmountForKey(norm) };
+    case 'kopalnia_zelaza': return { resourceKey: 'ruda_zelaza', amount: territoryYieldAmountForKey(norm) };
     case 'warzelnia_soli':  return { resourceKey: 'sol',    amount: territoryYieldAmountForKey(norm) };
     case 'stadnina':        return { resourceKey: 'kon',    amount: 1 }; // PYTANIE-84-B3
     case 'kopalnia_zlota':  return { resourceKey: 'zloto',  amount: 1 }; // PYTANIE-84-B4
-    case 'kopalnia': {
-      const z = zloze?.trim().toLowerCase();
-      return { resourceKey: z === 'zelazo' ? 'ruda_zelaza' : 'ruda', amount: territoryYieldAmountForKey(norm) };
-    }
     default: return null;
   }
 }
@@ -216,11 +240,10 @@ export function improvementHidesDepositOnHex(
   switch (key) {
     case 'glinianka':
       return nakladka === Nakladka.ZlozeGliny || zloze === 'glina';
-    case 'kopalnia':
-      return nakladka === Nakladka.ZlozeRudy
-        || zloze === 'zelazo' || zloze === 'wegiel' || zloze === 'ruda';
     case 'kopalnia_miedzi':
-      return zloze === 'miedz';
+      return zloze === 'miedz' || nakladka === Nakladka.ZlozeRudy || zloze === 'ruda';
+    case 'kopalnia_zelaza':
+      return zloze === 'zelazo';
     case 'kopalnia_zlota':
       return zloze === 'zloto';
     case 'warzelnia_soli':
@@ -320,7 +343,7 @@ export function isImprovementAllowedForCiv(
 
 /** Ulepszenia płacące −1 Praca/turę (civ-wide) z econ-params.json `ulepszenie_surowcowe_upkeep_praca`. */
 export const RESOURCE_UPKEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set([
-  'tartak', 'kamieniolom', 'glinianka', 'kopalnia', 'kopalnia_miedzi',
+  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza',
   'warzelnia_soli', 'stadnina',
   // PYTANIE-84-B4: Kopalnia złota produkuje zloto/t do magazynu państwa (TERRITORY_YIELD powyżej).
   'kopalnia_zlota',

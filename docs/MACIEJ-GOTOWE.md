@@ -1,4 +1,16 @@
-﻿## [01:05] ✅ Gotowe — deploy ROBOCZA FALA 115 (75fa29d7)
+﻿## [12:45] ✅ Gotowe — deploy ROBOCZA FALA 116 (7df8cf1d)
+
+**FALA 116** | md5 `7df8cf1d0e11b5f9a520f08540ad4dfa` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**R-KOPALNIA-UNIWERSALNA-Q1=B — osobne kopalnie:**
+- Usunięto uniwersalną **Kopalnia** (`kopalnia`).
+- Nowa **Kopalnia żelaza** (`kopalnia_zelaza`): epoka 3, tech **Hutnictwo żelaza**, `ruda_zelaza` 2/t, tylko `zloze=zelazo`.
+- **Kopalnia miedzi** obsługuje też legacy nakładkę ZlozeRudy.
+- Stare save: `kopalnia` → migracja przy load (`kopalnia_zelaza` / `kopalnia_miedzi`).
+
+**Bramki:** tsc 0 · map-improvement-qualify 96/96 · deposit-building-gate 45/45 · zelazo-gate 24/24 · VERIFY OK.
+
+## [01:05] ✅ Gotowe — deploy ROBOCZA FALA 115 (75fa29d7)
 
 **FALA 115** | md5 `75fa29d71ccd7d0ff42080175bd299b4` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

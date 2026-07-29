@@ -10,6 +10,7 @@ import { axialToWorld, HEX_R } from './hexutil';
 import {
   goraGeometria, wzgorzeGeometria, wariantDlaHeksa, rotacjaDlaHeksa,
   TEREN_MATERIAL, LICZBA_WARIANTOW_TERENU, GORA_APEX_Y, WZGORZE_SZCZYT_Y,
+  powierzchniaReliefuY,
 } from './teren-gory-wzgorza';
 
 export type MapRenderStyle = 'civ' | 'roblox' | 'minecraft';
@@ -1039,6 +1040,30 @@ export function elevatedTerrainEdgeSurfaceY(
     return hexTopY;
   }
   return hexTopY;
+}
+
+/**
+ * Wysokość bryły wzgórza/góry NAD wierzchem heksa w dowolnym punkcie (x,z) mierzonym
+ * od środka heksa (w tych samych jednostkach co `R`). Dla terenu płaskiego — null.
+ *
+ * Po co: ulepszenia i złoża stoją na pierścieniu przy ściance heksa, więc wysokość
+ * szczytu (`galleryDecorSurfaceY`) jest dla nich bezużyteczna — nad pierścieniem stok
+ * jest o wiele niżej i model zawisa w powietrzu.
+ */
+export function reliefSurfaceSampler(
+  teren: TerenBazowy,
+  q: number,
+  r: number,
+  seed: number,
+  R = 1,
+): ((x: number, z: number) => number) | null {
+  const typ = teren === TerenBazowy.Gory ? 'gora'
+    : teren === TerenBazowy.Wzgorza ? 'wzgorze'
+      : null;
+  if (!typ) return null;
+  const wariant = wariantDlaHeksa(q, r, LICZBA_WARIANTOW_TERENU, seed);
+  const rotY = rotacjaDlaHeksa(q, r, seed);
+  return (x: number, z: number) => powierzchniaReliefuY(typ, wariant, rotY, x / R, z / R) * R;
 }
 
 /**

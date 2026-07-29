@@ -119,7 +119,7 @@ console.log('-- B. rzadkość złota vs miedzi --');
 console.log('-- C. dostęp imperium do złota (empireHasKopalniaZlota) --');
 {
   const withMine = new Map([['5,5', ['kopalnia_zlota']]]);
-  const withoutMine = new Map([['5,5', ['kopalnia']]]);
+  const withoutMine = new Map([['5,5', ['kopalnia_zelaza']]]);
   const empty = new Map();
 
   ok(M.empireHasKopalniaZlota(withMine) === true, 'Kopalnia złota gdziekolwiek w placedImprovements -> dostęp TAK');

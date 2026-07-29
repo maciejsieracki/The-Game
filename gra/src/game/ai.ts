@@ -1258,7 +1258,7 @@ export function decideAiWonderBuild(
  */
 const AI_IMPROVEMENT_PRIORITY: readonly ImprovementKey[] = [
   'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'oboz_lowiecki', 'lodzie_rybackie',
-  'irygacja', 'kopalnia', 'kopalnia_miedzi', 'kamieniolom', 'glinianka', 'stadnina',
+  'irygacja', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kamieniolom', 'glinianka', 'stadnina',
   'warzelnia_soli', 'tartak', 'posterunek', 'droga', 'droga_brukowana', 'fort',
   'wyrab',
 ];
@@ -1268,7 +1268,8 @@ const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKe
   drewno: ['tartak', 'wyrab'],
   kamien: ['kamieniolom'],
   glina: ['glinianka'],
-  ruda: ['kopalnia', 'kopalnia_miedzi'],
+  ruda: ['kopalnia_miedzi'],
+  ruda_zelaza: ['kopalnia_zelaza'],
 };
 
 /** P-AI-011: budynki miejskie pod brakujący surowiec. */

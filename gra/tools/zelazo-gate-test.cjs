@@ -120,23 +120,27 @@ console.log('1. empireHasKopalniaNaZlozuZelaza');
   assert(empireHasKopalniaNaZlozuZelaza(placedNone, MAP) === false,
     'brak placedImprovements -> false');
 
-  const placedKopalniaOnZelazo = new Map([['1,1', 'kopalnia']]);
+  const placedKopalniaOnZelazo = new Map([['1,1', 'kopalnia_zelaza']]);
   assert(empireHasKopalniaNaZlozuZelaza(placedKopalniaOnZelazo, MAP) === true,
-    'Kopalnia na hexie ze zlozem zelaza -> true');
+    'Kopalnia żelaza na hexie ze zlozem zelaza -> true');
 
-  const placedKopalniaOnMiedz = new Map([['2,2', 'kopalnia']]);
+  const placedLegacyKopalniaOnZelazo = new Map([['1,1', 'kopalnia']]);
+  assert(empireHasKopalniaNaZlozuZelaza(placedLegacyKopalniaOnZelazo, MAP) === true,
+    'Legacy kopalnia na hexie ze zlozem zelaza -> true (migracja save)');
+
+  const placedKopalniaOnMiedz = new Map([['2,2', 'kopalnia_zelaza']]);
   assert(empireHasKopalniaNaZlozuZelaza(placedKopalniaOnMiedz, MAP) === false,
     'Kopalnia na hexie ze zlozem MIEDZI (nie zelaza) -> false');
 
-  const placedKopalniaOnEmpty = new Map([['3,3', 'kopalnia']]);
+  const placedKopalniaOnEmpty = new Map([['3,3', 'kopalnia_zelaza']]);
   assert(empireHasKopalniaNaZlozuZelaza(placedKopalniaOnEmpty, MAP) === false,
-    'Kopalnia na hexie BEZ zloza -> false');
+    'Kopalnia żelaza na hexie BEZ zloza -> false');
 
   const placedOtherImprovementOnZelazo = new Map([['1,1', 'droga']]);
   assert(empireHasKopalniaNaZlozuZelaza(placedOtherImprovementOnZelazo, MAP) === false,
     'INNE ulepszenie (droga) na hexie ze zlozem zelaza (bez Kopalni) -> false');
 
-  const placedMultiLayer = new Map([['1,1', ['droga', 'kopalnia']]]);
+  const placedMultiLayer = new Map([['1,1', ['droga', 'kopalnia_zelaza']]]);
   assert(empireHasKopalniaNaZlozuZelaza(placedMultiLayer, MAP) === true,
     'Kopalnia jako jedna z kilku warstw na hexie -> true');
 
@@ -156,10 +160,10 @@ console.log('\n2. cityHasOdlewniaZelaza');
 
 console.log('\n3. hasZelazoAccess (AND-gate)');
 {
-  assert(hasZelazoAccess(true, []) === false, 'kopalnia=true, brak Odlewni -> false');
-  assert(hasZelazoAccess(false, ['odlewnia_zelaza']) === false, 'Odlewnia=true, brak kopalni -> false');
-  assert(hasZelazoAccess(true, ['odlewnia_zelaza']) === true, 'oba warunki spelnione -> true');
-  assert(hasZelazoAccess(undefined, ['odlewnia_zelaza']) === false, 'kopalnia=undefined -> false (fail-closed)');
+  assert(hasZelazoAccess({ zelazo: 1 }, []) === false, 'zelazo w magazynie, brak Odlewni -> false');
+  assert(hasZelazoAccess({}, ['odlewnia_zelaza']) === false, 'Odlewnia=true, brak zelaza w magazynie -> false');
+  assert(hasZelazoAccess({ zelazo: 1 }, ['odlewnia_zelaza']) === true, 'zelazo w magazynie + Odlewnia -> true');
+  assert(hasZelazoAccess(undefined, ['odlewnia_zelaza']) === false, 'brak stocku -> false (fail-closed)');
 }
 
 // === Warstwa 2: availableProduction / availableReplacementsFor (integracja) ==
@@ -201,6 +205,7 @@ console.log('\n5. availableProduction: miasto Z kopalnia na zlozu ORAZ z Odlewni
     epoch: 3,
     builtBuildingIds: ['odlewnia_zelaza'],
     hasKopalniaNaZlozuZelaza: true,
+    empireResourceStock: { zelazo: 1 },
   });
   assert(items.some(i => i.id === 'Legionista'),
     'Legionista JEST dostepny: kopalnia na zlozu + Odlewnia zelaza',
@@ -226,6 +231,7 @@ console.log('\n7. purchasableUnits respektuje ten sam gate');
   });
   const withBoth = purchasableUnits(CITY, DATA, NO_TECHS, {
     epoch: 3, builtBuildingIds: ['odlewnia_zelaza'], hasKopalniaNaZlozuZelaza: true,
+    empireResourceStock: { zelazo: 1 },
   });
   assert(!without.some(i => i.id === 'Legionista'), 'purchasableUnits: brak kopalni -> Legionista niedostepny');
   assert(withBoth.some(i => i.id === 'Legionista'), 'purchasableUnits: kopalnia+Odlewnia -> Legionista dostepny');
@@ -255,6 +261,7 @@ console.log('\n8. availableReplacementsFor ("Zastap") respektuje ten sam gate');
 
   const withAccess = availableReplacementsFor('Wojownik podstawowy', DATA_REPL, NO_TECHS, {
     epoch: 3, builtBuildingIds: ['odlewnia_zelaza'], hasKopalniaNaZlozuZelaza: true,
+    empireResourceStock: { zelazo: 1 },
   });
   assert(withAccess.some(i => i.id === 'Legionista'),
     'Zastap: Legionista JEST opcja zamiany z pelnym dostepem do zelaza',
