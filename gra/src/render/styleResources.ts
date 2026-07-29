@@ -11,6 +11,7 @@ import { buildTrzoda } from './swinia-trzoda';
 import { buildZlozeKonie } from './kon-nowy-model';
 import {
   buildZlozeMiedz, buildZlozeZelazo, buildZlozeWegiel, buildZlozeSol, buildZlozeGlina,
+  buildZlozeZloto,
 } from './ulepszenia-modele-p3b';
 
 const S = 2.05 / 3; // małe nakładki surowcowe (~1/3 poprzedniej skali)
@@ -336,6 +337,28 @@ function styledIronOre(style: MapRenderStyle): THREE.Group {
   return g;
 }
 
+/** Ruda złota (wzgórza/góry) — ciemne skały z żyłą i samorodkami złota. */
+function styledGoldOre(style: MapRenderStyle): THREE.Group {
+  const g = new THREE.Group();
+  const rock = mat(style === 'roblox' ? 0x4b4453 : 0x554e5e);
+  const ore = mat(0xffc21a);
+  const oreHi = mat(0xffe86e);
+  const s = style === 'roblox' ? S : 1;
+  const spots: Array<[number, number, number]> = [[0, 0, 1.0], [0.075 * s, 0.04 * s, 0.8], [-0.055 * s, 0.045 * s, 0.72]];
+  for (const [px, pz, sc] of spots) {
+    const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.05 * s * sc, 0), rock);
+    r.position.set(px, 0.045 * s * sc, pz);
+    r.rotation.set(px * 2, pz * 3, sc);
+    r.castShadow = true;
+    g.add(r);
+    // żyła — szeroki jasny pas przecinający skałę (odróżnia złoto od soli/węgla)
+    boxAt(g, 0.055 * s * sc, 0.016 * s * sc, 0.022 * s * sc, px, 0.056 * s * sc, pz, 0, 0.4, 0.18, ore);
+    box(g, 0.024 * s * sc, 0.024 * s * sc, 0.024 * s * sc, px + 0.014 * s, 0.062 * s * sc, pz - 0.008 * s, ore);
+    box(g, 0.016 * s * sc, 0.016 * s * sc, 0.016 * s * sc, px - 0.014 * s, 0.05 * s * sc, pz + 0.01 * s, oreHi);
+  }
+  return g;
+}
+
 /** Ruda — sterta skał ze złotymi żyłami (legacy Nakladka.ZlozeRudy). */
 function styledOre(style: MapRenderStyle): THREE.Group {
   const g = new THREE.Group();
@@ -422,6 +445,7 @@ export function buildStyledResourceOverlay(nakladka: Nakladka, style: MapRenderS
       case 'zelazo': g = style === 'roblox' ? buildZlozeZelazo() : styledIronOre(style); break;
       case 'wegiel': g = style === 'roblox' ? buildZlozeWegiel() : styledCoal(style); break;
       case 'sol': g = style === 'roblox' ? buildZlozeSol() : styledSalt(style); break;
+      case 'zloto': g = style === 'roblox' ? buildZlozeZloto() : styledGoldOre(style); break;
     }
   }
   return g;

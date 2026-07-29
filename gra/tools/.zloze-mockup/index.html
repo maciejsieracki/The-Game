@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8">
+<title>Złoża surowców na mapie — co gra faktycznie rysuje</title>
+<style>
+ body{margin:0;background:#0e1318;color:#e8eef4;font:14px/1.5 "Segoe UI",Arial,sans-serif;padding:16px}
+ h1{font-size:18px;margin:0 0 4px}
+ p.sub{margin:0 0 12px;color:#9fb4c8;font-size:13px}
+ canvas{display:block;border-radius:8px;width:1280px;height:420px}
+ #legenda{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;width:1280px;margin-top:10px}
+ #legenda div{border-radius:6px;padding:10px;text-align:center;font-size:13px}
+ #legenda .ok{background:#16301c;border:1px solid #2f6b3d;color:#bfe6c8}
+ #legenda .brak{background:#3a1416;border:1px solid #8b2a2f;color:#ffc9cc;font-weight:600}
+</style></head><body>
+<h1>Złoża surowców na mapie — wynik prawdziwej funkcji gry</h1>
+<p class="sub">Każdy heks to Wzgórza z ustawionym <code>hex.zloze</code>. Nakładkę buduje ta sama funkcja,
+której używa mapa gry: <code>buildStyledResourceOverlay(hex.nakladka, GAME_MAP_RENDER_STYLE, hex.zloze)</code>.
+Kamera 52°.</p>
+<canvas id="scena" width="2560" height="840"></canvas>
+<div id="legenda"></div>
+<script type="module" src="./main.ts"></script>
+</body></html>

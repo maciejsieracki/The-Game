@@ -23,12 +23,13 @@
  *      kamyczki, plamy ubitej ziemi.
  *  - buildDrogaBrukowanaNawierzchnia() 396 -> 288 tri — ta sama wstega; klockowe
  *      plyty w 2 odcieniach szarosci (uklad cegielki) + jasne obrzeze.
- *  - buildZlozeMiedz/Zelazo/Wegiel/Sol/Glina() — 208/216/216/200/216 tri —
+ *  - buildZlozeMiedz/Zelazo/Wegiel/Sol/Glina/Zloto() — 208/216/216/200/216/264 tri —
  *      wystajace z terenu klockowe mineraly w 4 skupiskach na obrzezu heksa
  *      (r 0.60-0.68); SRODEK WOLNY (r<0.45) — na tych heksach staje kopalnia.
  *      miedz=pomaranczowo-turkusowe krysztaly, zelazo=rdzawe bryly z metalicznym
  *      blikiem, wegiel=czarne blyszczace szesciany, sol=biale krysztaly+panew
- *      solankowa, glina=pomaranczowe warstwy tarasowe.
+ *      solankowa, glina=pomaranczowe warstwy tarasowe, zloto=ciemne wychodnie
+ *      z zolta zyla i samorodkami.
  *  - buildZlozeKlaster(typ)          ~44-56 tri — jedno skupisko (do kompozycji).
  *
  * KONWENCJE (zgodne z pastwisko-modele.ts / ulepszenia-modele-p2.ts):
@@ -73,13 +74,14 @@
  *         case 'zelazo': g = buildZlozeZelazo(); break;
  *         case 'wegiel': g = buildZlozeWegiel(); break;
  *         case 'sol':    g = buildZlozeSol();    break;
+ *         case 'zloto':  g = buildZlozeZloto();  break;
  *     (dla style !== 'roblox' zostawic stare styled*). Nakladka dostaje
  *     w main.ts (rebuildResourceOverlays ~1026) pozycje + losowy rotation.y —
  *     skupiska sa rozlozone rotacyjnie-neutralnie (pierscien), wiec OK.
  */
 import * as THREE from 'three';
 
-export type ZlozeTyp = 'miedz' | 'zelazo' | 'wegiel' | 'sol' | 'glina';
+export type ZlozeTyp = 'miedz' | 'zelazo' | 'wegiel' | 'sol' | 'glina' | 'zloto';
 
 function mat(c: number): THREE.MeshLambertMaterial {
   return new THREE.MeshLambertMaterial({ color: c, flatShading: true });
@@ -145,6 +147,7 @@ export const P3B = {
   rdza: 0x9a4f26, rdzaHi: 0xb46435, metalPolysk: 0xcdd3d9, rdzaDk: 0x6e3a1e,
   wegiel: 0x17171b, wegielHi: 0x40454d, wegielBaza: 0x2c2e33,
   sol: 0xf7fbff, solDk: 0xdfe9f2, solanka: 0xbfe4f2,
+  zloto: 0xffc21a, zlotoHi: 0xffe86e, zlotoDk: 0xc98505, zlotoSkala: 0x4b4453,
   glinaA: 0xb85c33, glinaB: 0xd97742, glinaC: 0xe8935a, glinaMokra: 0xc44f22,
   plomien: 0xffc02e, plomienDk: 0xff7a1a, metal: 0x545d66,
 } as const;
@@ -442,6 +445,16 @@ export function buildZlozeKlaster(typ: ZlozeTyp, du = 0): THREE.Group {
     B(g, 0.06, 0.17, 0.06, -0.01, 0.095, 0.01, solM, 0.06, 0.45 + du, -0.10);
     B(g, 0.048, 0.095, 0.048, 0.055, 0.048, -0.04, solDkM, -0.1, du, 0.22);
     CONE(g, 0.043, 0.075, -0.014, 0.213, 0.017, solM, 4, 0.45 + du, 0.06, -0.10);
+  } else if (typ === 'zloto') {
+    // Zloto: CIEMNA skala macierzysta (kontrast na brazowym Wzgorzu) + szeroka
+    // ZOLTA ZYLA + samorodki. Bryly niskie i krepe — celowo INNA sylwetka niz
+    // wysokie biale prymy soli i niz czarne szesciany wegla.
+    const skalaM = mat(P.zlotoSkala), zlM = mat(P.zloto), zlHiM = mat(P.zlotoHi), zlDkM = mat(P.zlotoDk);
+    B(g, 0.20, 0.115, 0.165, 0, 0.055, 0, skalaM, 0.05, 0.3 + du, 0.09);       // wychodnia skalna
+    B(g, 0.185, 0.055, 0.065, -0.01, 0.135, 0.02, zlM, 0.12, 0.3 + du, 0.30);  // zyla wychodzaca ze skaly
+    B(g, 0.105, 0.09, 0.095, 0.055, 0.19, -0.035, zlM, 0.32, 0.6 + du, -0.26); // samorodek glowny
+    B(g, 0.065, 0.06, 0.065, -0.055, 0.235, 0.04, zlHiM, 0.38, du, 0.5);       // blik na szczycie
+    B(g, 0.065, 0.05, 0.06, 0.105, 0.026, 0.085, zlDkM, 0, 0.4 + du, 0.14);    // okruch u podnoza
   } else {
     const gA = mat(P.glinaA), gB = mat(P.glinaB), gC = mat(P.glinaC), mokraM = mat(P.glinaMokra);
     B(g, 0.175, 0.05, 0.15, 0, 0.025, 0, gA, 0, 0.2 + du, 0);                 // warstwy tarasowe
@@ -499,6 +512,19 @@ export function buildZlozeSol(): THREE.Group {
     B(g, 0.13, 0.014, 0.10, c.x, 0.042, c.z, mat(P.solanka), 0, 0.25, 0);
   });
 }
+/**
+ * Zloto — SUROWE zloze (stan „przed zbudowaniem czegokolwiek"): ciemne
+ * wychodnie skalne z zolta zyla i samorodkami w 4 skupiskach obrzeza.
+ * Zadnych konstrukcji (trojnog/szyb/rynna) — te ma dopiero Kopalnia zlota
+ * (render/kopalnia-zlota-opus5.ts). 264 tri.
+ */
+export function buildZlozeZloto(): THREE.Group {
+  return zlozeZeSkupisk('zloto', ZL().zloto, g => {
+    const c1 = azXZ(70, 0.55), c2 = azXZ(250, 0.58);
+    B(g, 0.065, 0.055, 0.06, c1.x, 0.028, c1.z, mat(P.zloto), 0, 0.5, 0);      // luzny samorodek
+    B(g, 0.05, 0.045, 0.05, c2.x, 0.023, c2.z, mat(P.zlotoHi), 0, -0.3, 0);    // okruch z blikiem
+  });
+}
 /** Glina — pomaranczowe warstwy tarasowe. 216 tri. */
 export function buildZlozeGlina(): THREE.Group {
   return zlozeZeSkupisk('glina', ZL().glina, g => {
@@ -542,6 +568,10 @@ export const ULEPSZENIA_P3B_LAYOUT = {
     glina: [
       { az: 55, r: 0.62, s: 1.0, rotY: 0.3 }, { az: 145, r: 0.64, s: 0.9, rotY: -1.2 },
       { az: 250, r: 0.62, s: 0.95, rotY: 0.8 }, { az: 330, r: 0.60, s: 0.85, rotY: 1.9 },
+    ],
+    zloto: [
+      { az: 25, r: 0.62, s: 1.0, rotY: 0.6 }, { az: 115, r: 0.64, s: 0.9, rotY: -0.5 },
+      { az: 215, r: 0.62, s: 0.95, rotY: 1.4 }, { az: 310, r: 0.66, s: 0.82, rotY: 2.1 },
     ],
   },
 } as const;
