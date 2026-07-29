@@ -38,18 +38,25 @@ import type { StackDisplayInfo } from '../game/armyMerge';
 // DWIE OSOBNE ikony w rządku nad głową: Koszary (ścieżka B) po lewej od gwiazdek,
 // Kuźnia (ścieżka A) po prawej. Zasoby to singletony modułu — NIE trafiają do
 // userData['mats'], patrz nagłówek unitUpgradeBadges.ts.
-import { syncUnitUpgradeBadges } from './unitUpgradeBadges';
+import { applyUnitUpgradeBadgeRow, syncUnitUpgradeBadges } from './unitUpgradeBadges';
 // Odznaki poziomu weterana na żetonie (dokończenie tej samej decyzji 57,
 // 2026-07-26) — złote gwiazdki NAD GŁOWĄ, w miejscu zarezerwowanym wtedy jako
 // VETERAN_BADGE_RESERVED_Y. Zasoby to singletony modułu, jak wyżej.
 // VETERAN_BADGE_HIT_UD: znacznik siatek gwiazdek dla raycastera — tooltip
 // poziomu weterana (C-OBCE-JEDN-Q3) rozpoznaje po nim trafienie w odznakę.
-import { syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
+import { applyUnitVeteranBadgeLevel, syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
 // Znak właściciela przy lewej krawędzi żetonu (C-OBCE-JEDN-Q2): portret władcy /
 // sygnet kultury miasta-państwa / czaszka barbarzyńców. Kontekst właściciela
 // wstrzykuje main.ts przez setOwnerEmblemResolver — ten renderer nie sięga do
 // stanu gry. Tekstury są współdzielone per wariant znaku, patrz nagłówek modułu.
-import { applyUnitOwnerEmblem, type UnitOwnerEmblemResolver } from './unitOwnerEmblem';
+import type { UnitOwnerEmblemResolver } from './unitOwnerEmblem';
+// R-ZETON-PASKI (Maciej 2026-07-29, C-ZETON-PASKI-Q1 = A): TABLICZKA JEDNOSTKI —
+// jeden zwarty obiekt nad figurką: mała ikona właściciela LEWO · pasek Ruchu
+// (niebieski) i pasek HP w środku · pole Mocy armii PRAWO. Rządek Koszary/
+// gwiazdki/Kuźnia stoi NA tabliczce (jej wysokość podaje unitStatPlate.ts).
+// Duży, samodzielny medalion właściciela ZNIKNĄŁ — wszedł do tabliczki.
+// Zasoby to singletony modułu; NIC nie trafia do userData['mats'].
+import { applyUnitStatPlate } from './unitStatPlate';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -4837,24 +4844,55 @@ export class UnitRenderer {
         this.scene.add(group);
       }
 
-      // Rządek nad głową figurki (C-OBCE-JEDN-Q2, Maciej 2026-07-29):
-      //     [ikona KOSZAR]  ★ ★ ★  [ikona KUŹNI]
+      // TABLICZKA JEDNOSTKI nad figurką (R-ZETON-PASKI, Maciej 2026-07-29):
+      //
+      //            [ puste miejsce na przyszły symbol generała ]
+      //   [ikona   ]  [Koszary]  ★ ★ ★  [Kuźnia]
+      //   [właśc.  ]  ▓▓▓▓░░░░  pasek RUCHU (niebieski)         [ MOC ]
+      //   [        ]  ▓▓▓▓▓▓▓░  pasek ŻYCIA                     [armii]
+      //
       // Wołane PO ewentualnej przebudowie żetonu, dla KAŻDEJ jednostki
       // (gracz i AI identycznie — PARYTET AI, zero warunków na ownerId).
-      // Obie funkcje są idempotentne: przy niezmienionym stanie kończą się
-      // porównaniem jednej liczby, więc bezpiecznie stoją w pętli sync().
+      // Wszystkie trzy funkcje są idempotentne: przy niezmienionym stanie
+      // kończą się porównaniem paru liczb, więc bezpiecznie stoją w pętli sync().
+      //
+      // WARTOŚCI STOSU: na heksie widoczny jest tylko REPREZENTANT stosu
+      // (_applyStackDisplay ukrywa resztę), więc tabliczka ma pokazywać liczby
+      // CAŁEJ armii, nie reprezentanta. Liczy je warstwa game/ —
+      // armyMerge.ts::stackVitals, dostarczone tu w StackDisplayInfo.vitalsByRepId:
+      //   Ruch  = minimum (stackRuchLeft — wspólny pul, armia rusza łącznie),
+      //   HP    = PULA (Σ HP / Σ maks. HP, nie średnia z procentów),
+      //   Moc   = sumRosterFieldM (nominalna, C-MOC-Q1 = A),
+      //   odznaki i gwiazdki = MAKSIMUM z każdej ścieżki osobno (C-ZETON-STOS-Q1 = A).
+      // Brak wpisu (żeton niewidoczny, galeria, podgląd bez StackDisplayInfo) =
+      // wartości pojedynczej jednostki; hpMax jest wtedy nieznane i pasek HP
+      // wychodzi pełny — świadomy fallback, patrz unitStatPlate.ts::barFraction.
       const tokenObj = this.tokens.get(unit.id);
       if (tokenObj) {
-        // Odznaki ulepszeń budynkowych — poziom liczony OSOBNO dla ścieżki A
-        // (Pancerz → Kuźnia, prawo) i ścieżki B (Parametry → Koszary, lewo).
-        syncUnitUpgradeBadges(tokenObj, unit);
-        // Odznaka poziomu weterana (game/veteran.ts) — niezależny system:
-        // złote gwiazdki w ŚRODKU rządka. Poziom 1 (Rekrut) nie dostaje nic.
-        syncUnitVeteranBadges(tokenObj, unit);
-        // Znak właściciela przy LEWEJ KRAWĘDZI żetonu — portret władcy (pełna
-        // cywilizacja) / sygnet kultury (miasto-państwo) / czaszka (barbarzyńcy).
-        // Brak rezolwera (podglądy, galeria) = brak emblematu, bez błędu.
-        applyUnitOwnerEmblem(tokenObj, this.ownerEmblemResolver?.(unit.ownerId) ?? null);
+        const vitals = stackDisplay?.vitalsByRepId?.get(unit.id);
+        if (vitals) {
+          // Odznaki ulepszeń budynkowych — poziom OSOBNO dla ścieżki A
+          // (Pancerz → Kuźnia, prawo) i ścieżki B (Parametry → Koszary, lewo).
+          applyUnitUpgradeBadgeRow(
+            tokenObj, vitals.armorBadgeLevel, vitals.softBadgeLevel, vitals.veteranStars,
+          );
+          applyUnitVeteranBadgeLevel(tokenObj, vitals.veteranLevel);
+        } else {
+          syncUnitUpgradeBadges(tokenObj, unit);
+          syncUnitVeteranBadges(tokenObj, unit);
+        }
+        applyUnitStatPlate(
+          tokenObj,
+          this.ownerEmblemResolver?.(unit.ownerId) ?? null,
+          {
+            ruchLeft: vitals ? vitals.ruchLeft : unit.ruchLeft,
+            ruchMax: vitals ? vitals.ruchMax : unit.ruch,
+            hp: vitals ? vitals.hp : unit.hp,
+            hpMax: vitals ? vitals.hpMax : undefined,
+            fieldPowerM: vitals?.fieldPowerM,
+            ownerColor: this._resolveOwnerColor(unit.ownerId),
+          },
+        );
       }
     }
 

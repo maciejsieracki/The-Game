@@ -17,6 +17,17 @@ import {
 } from '../game/terrain-improvements';
 import { galleryTerrainEligible } from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
+// R-ZETON-PASKI (Maciej 2026-07-29): kolory pasków Zdrowia i Ruchu były tu
+// wpisane na sztywno w CSS. Wyciągnięte do JEDNEGO źródła prawdy, bo te same
+// barwy niesie teraz tabliczka nad żetonem na mapie (render/unitStatPlate.ts) —
+// „żeby mapa i panel nie mogły się rozjechać”. Moduł to czyste stałe, nie
+// wciąga do UI ani grama THREE.
+import {
+  VITALS_HP_DARK_CSS,
+  VITALS_HP_FULL_CSS,
+  VITALS_MOVE_DARK_CSS,
+  VITALS_MOVE_FULL_CSS,
+} from '../render/unitVitalsPalette';
 import {
   hexDepositDisplayLabel,
   hexHiddenDepositHint,
@@ -699,8 +710,8 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-bars{display:flex;flex-direction:column;gap:3px;margin-top:5px;padding:0 3px;}
 .sp-unit-stack-bar{height:4px;background:rgba(0,0,0,.38);border-radius:2px;overflow:hidden;}
 .sp-unit-stack-bar i{display:block;height:100%;border-radius:2px;}
-.sp-unit-stack-bar-hp i{background:linear-gradient(90deg,#1a6020,#50b070);}
-.sp-unit-stack-bar-mov i{background:linear-gradient(90deg,#2a5080,#60a8e8);}
+.sp-unit-stack-bar-hp i{background:linear-gradient(90deg,${VITALS_HP_DARK_CSS},${VITALS_HP_FULL_CSS});}
+.sp-unit-stack-bar-mov i{background:linear-gradient(90deg,${VITALS_MOVE_DARK_CSS},${VITALS_MOVE_FULL_CSS});}
 .sp-unit-stack-meta{font-size:8px;color:var(--civ-text-muted,#8a8070);margin-top:4px;}
 .uc-unit-head-meta{font-size:10px;color:var(--civ-text-muted,#a09880);margin-top:3px;font-weight:400;}
 ${UNIT_ACTION_BAR_CSS}

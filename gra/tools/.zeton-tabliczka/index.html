@@ -1,0 +1,54 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8">
+<title>Tabliczka jednostki (R-ZETON-PASKI) — prawdziwa ścieżka render/</title>
+<style>
+ body{margin:0;background:#0e1318;color:#e8eef4;font:14px/1.5 "Segoe UI",Arial,sans-serif;padding:16px}
+ h1{font-size:18px;margin:0 0 4px} h2{font-size:15px;margin:20px 0 6px;color:#9fb4c8}
+ p.sub{margin:0 0 12px;color:#9fb4c8;font-size:13px}
+ canvas{display:block;border-radius:8px}
+ .box{background:#121820;border:1px solid #26333f;border-radius:10px;padding:10px;width:1300px}
+ .leg{display:grid;gap:8px;margin-top:8px;width:1280px}
+ .leg div{background:#182028;border:1px solid #2b3946;border-radius:6px;padding:6px 8px;text-align:center;font-size:12px;color:#cfe0ee}
+ #cv-blisko{width:1280px;height:520px} #cv-stany{width:1280px;height:480px}
+ #cv-daleko{width:1280px;height:720px} #cv-stos{width:1280px;height:560px}
+ #cv-zoom20{width:1280px;height:520px} #cv-zoom30{width:1280px;height:520px}
+</style></head><body>
+
+<h1>Tabliczka jednostki nad żetonem — R-ZETON-PASKI</h1>
+<p class="sub">Wołane te same funkcje co <code>UnitRenderer.sync()</code> w grze:
+<code>applyUnitStatPlate</code> · <code>applyUnitUpgradeBadgeRow</code> · <code>applyUnitVeteranBadgeLevel</code>,
+z assetami wstrzykniętymi jak w <code>main.ts</code>. Wartości stosu liczy prawdziwy
+<code>game/armyMerge.ts::stackVitals</code>.</p>
+
+<h2>1) Zbliżenie — trzy warianty właściciela, konfiguracja maksymalna</h2>
+<div class="box" id="box-blisko">
+  <canvas id="cv-blisko" width="2560" height="1040"></canvas>
+  <div class="leg" id="leg-blisko" style="grid-template-columns:repeat(3,1fr)"></div>
+</div>
+
+<h2>2) Stany pasków</h2>
+<div class="box" id="box-stany">
+  <canvas id="cv-stany" width="2560" height="960"></canvas>
+  <div class="leg" id="leg-stany" style="grid-template-columns:repeat(4,1fr)"></div>
+</div>
+
+<h2>3) Realna skala rozgrywki (kamera gry: fov 50, elewacja 52°)</h2>
+<div class="box" id="box-daleko">
+  <canvas id="cv-daleko" width="2560" height="1440"></canvas>
+  <div class="leg" id="leg-daleko" style="grid-template-columns:repeat(1,1fr)"></div>
+</div>
+
+<h2>4) Stos (armia na jednym heksie) vs pojedyncza jednostka</h2>
+<div class="box" id="box-stos">
+  <canvas id="cv-stos" width="2560" height="1120"></canvas>
+  <div class="leg" id="leg-stos" style="grid-template-columns:repeat(3,1fr)"></div>
+</div>
+
+<h2>5) Drabinka oddalenia — kiedy cyfra Mocy przestaje być czytelna</h2>
+<div class="box" id="box-zoom">
+  <canvas id="cv-zoom20" width="2560" height="1040"></canvas>
+  <canvas id="cv-zoom30" width="2560" height="1040" style="margin-top:10px"></canvas>
+  <div class="leg" id="leg-zoom" style="grid-template-columns:repeat(1,1fr)"></div>
+</div>
+
+<script type="module" src="./main.ts"></script>
+</body></html>

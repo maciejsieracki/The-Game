@@ -4,6 +4,14 @@
 
 import type { RuntimeUnit } from '../units/setup';
 import { keyOf } from '../units/setup';
+import type { UnitPowerInput } from './unit-power';
+import { sumRosterFieldM } from './auto-battle-power';
+import {
+  armorPathBadgeLevel,
+  softPathBadgeLevel,
+  type UnitPathBadgeLevel,
+} from './unit-building-bonuses';
+import { veteranLevel, veteranStars, type VeteranLevel } from './veteran';
 
 const NEIGH: ReadonlyArray<readonly [number, number]> = [
   [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1],
@@ -16,6 +24,14 @@ export interface StackDisplayInfo {
   badgeByRepId: Map<string, number>;
   /** MAP-Q1: rep token ids z chipem głodu (armia państwa głoduje). */
   starvingRepIds?: Set<string>;
+  /**
+   * R-ZETON-PASKI (Maciej 2026-07-29): rep unit id → wartości CAŁEGO stosu
+   * pokazywane na tabliczce nad żetonem (Ruch / pula HP / Moc pola M).
+   * Wypełniane tylko wtedy, gdy `computeStackDisplay` dostanie `vitalsDeps`
+   * (silnik gry je ma; podglądy i galeria wołają sync() bez StackDisplayInfo
+   * i tabliczka spada wtedy na wartości pojedynczej jednostki).
+   */
+  vitalsByRepId?: Map<string, StackVitals>;
 }
 
 export function visibleStackOnHex(
@@ -163,6 +179,13 @@ export function garrisonUnitsOnHex(
 export function computeStackDisplay(
   units: RuntimeUnit[],
   attackOf: (u: RuntimeUnit) => number,
+  /**
+   * R-ZETON-PASKI: gdy podane, do wyniku dochodzi `vitalsByRepId` — wartości
+   * CAŁEGO stosu (min ruchu / pula HP / Moc pola M) pod id reprezentanta,
+   * czyli pod jedynym żetonem, który na tym heksie jest widoczny. Grupowanie
+   * jest już policzone tutaj, więc rachunek nie dubluje się w warstwie renderu.
+   */
+  vitalsDeps?: StackVitalsDeps,
 ): StackDisplayInfo {
   const byStack = new Map<string, RuntimeUnit[]>();
   for (const u of units) {
@@ -176,14 +199,18 @@ export function computeStackDisplay(
 
   const visibleIds = new Set<string>();
   const badgeByRepId = new Map<string, number>();
+  const vitalsByRepId = vitalsDeps ? new Map<string, StackVitals>() : undefined;
 
   for (const stack of byStack.values()) {
     const rep = pickStackRepresentative(stack, attackOf);
     visibleIds.add(rep.id);
     if (stack.length > 1) badgeByRepId.set(rep.id, stack.length);
+    if (vitalsByRepId && vitalsDeps) vitalsByRepId.set(rep.id, stackVitals(stack, vitalsDeps));
   }
 
-  return { visibleIds, badgeByRepId };
+  return vitalsByRepId
+    ? { visibleIds, badgeByRepId, vitalsByRepId }
+    : { visibleIds, badgeByRepId };
 }
 
 /** Klik na heks — reprezentant stosu (nie losowa jednostka z kupy). */
@@ -311,6 +338,185 @@ export function stackKey(q: number, r: number): string {
 export function stackRuchLeft(stack: ReadonlyArray<RuntimeUnit>): number {
   if (stack.length === 0) return 0;
   return Math.min(...stack.map(u => u.ruchLeft));
+}
+
+/**
+ * Maksimum wspólnego pulu ruchu stosu — MINIMUM z `ruch` członków.
+ *
+ * Symetryczne do `stackRuchLeft()` powyżej i z tego samego powodu (par. 6b:
+ * armia rusza łącznie, więc pul jest ograniczony najwolniejszym). Dzięki temu
+ * ułamek `stackRuchLeft / stackRuchMax` jest spójny: świeża armia z pełnym
+ * pulem daje dokładnie 1,0, a nie „2 z 4", gdyby maksimum wzięło szybszego
+ * członka. Jednostka: punkty ruchu (pkt ruchu / turę).
+ */
+export function stackRuchMax(stack: ReadonlyArray<RuntimeUnit>): number {
+  if (stack.length === 0) return 0;
+  return Math.min(...stack.map(u => u.ruch));
+}
+
+/**
+ * PULA ŻYCIA stosu: Σ punktów życia członków / Σ ich maksimów.
+ *
+ * ŚWIADOMIE NIE JEST TO ŚREDNIA Z PROCENTÓW (decyzja przekazana przez
+ * właściciela, 2026-07-29, przy R-ZETON-PASKI). Dwa powody:
+ *   1. średnia z procentów UKRYWA rannego — 3 jednostki po 100% + 1 na 8%
+ *      dają 77%, choć armia jest już o jedną jednostkę słabsza niż wygląda;
+ *   2. średnia z procentów traktuje Zwiadowcę i Włócznika jako równych, mimo
+ *      że wnoszą do walki inną masę punktów życia.
+ * Pula odpowiada na pytanie, które gracz faktycznie zadaje: ILE TA ARMIA
+ * JESZCZE WYTRZYMA.
+ *
+ * Jednostka OBU zwracanych liczb: punkty życia (HP).
+ * `RuntimeUnit.hp === undefined` znaczy „pełne z definicji jednostki”
+ * (kontrakt z units/setup.ts), więc taki członek wnosi maxHpOf(u) do obu sum.
+ */
+export function stackHpPool(
+  stack: ReadonlyArray<RuntimeUnit>,
+  maxHpOf: (u: RuntimeUnit) => number,
+): { hp: number; hpMax: number } {
+  let hp = 0;
+  let hpMax = 0;
+  for (const u of stack) {
+    const m = maxHpOf(u);
+    if (!Number.isFinite(m) || m <= 0) continue;
+    hpMax += m;
+    const cur = typeof u.hp === 'number' && Number.isFinite(u.hp) ? Math.max(0, Math.min(m, u.hp)) : m;
+    hp += cur;
+  }
+  return { hp, hpMax };
+}
+
+/**
+ * MOC POLA (M) całego stosu — JEDYNE miejsce, z którego tabliczka nad żetonem
+ * bierze liczbę „Moc armii”.
+ *
+ * Liczy ją `sumRosterFieldM()` z game/auto-battle-power.ts, czyli DOKŁADNIE ta
+ * sama funkcja, której gra używa do werdyktu auto-bitwy — zero równoległego
+ * rachunku. Konsekwencje tego wyboru, które MUSZĄ być widoczne w interfejsie:
+ *
+ *   • `isFieldBattleUnit()` WYKLUCZA Zwiadowcę, Osadnika i jednostki oblężnicze,
+ *     więc stos samych Zwiadowców ma Moc pola = 0. To nie jest błąd — ta armia
+ *     naprawdę nie liczy się w bitwie polowej. Warstwa renderu ma wtedy
+ *     NIE RYSOWAĆ pola Mocy (tak jak nie rysuje ikony Koszar przy poziomie 0),
+ *     bo gołe „0” gracz odczytałby jako awarię.
+ *   • `armyFieldPower(def)` bierze DEFINICJĘ jednostki, więc ta liczba jest
+ *     MOCĄ NOMINALNĄ: NIE uwzględnia bieżących HP, premii weterana
+ *     (game/veteran.ts) ani premii budynkowych (pancerzBonusProc /
+ *     parametryBonusProc). Wariant zachowawczy, wybrany świadomie — gdyby
+ *     właściciel zdecydował „moc efektywna”, podmiana ma być JEDNYM
+ *     wywołaniem W TYM CIELE, bez ruszania renderu.
+ *   • KONKRETNY, ZNANY ROZJAZD: sama auto-bitwa mapowa NIE liczy M z surowych
+ *     definicji — battle/mapFieldBattle.ts::rosterFieldPowerM podaje do
+ *     `sumRosterFieldM` definicje PRZESKALOWANE premią weterana
+ *     (`veteranScaledDef`, z usunięciem zapieczonego pola `fieldPower`).
+ *     Dla armii z weteranami M użyte do rozstrzygnięcia starcia jest więc
+ *     WYŻSZE niż liczba na tabliczce. To jest właśnie ta rozbieżność, którą
+ *     właściciel świadomie odłożył jako osobny temat (C-MOC-Q1 = A); żeby ją
+ *     zamknąć, wystarczy tu wywołać rosterFieldPowerM zamiast sumRosterFieldM.
+ *
+ * Jednostka: punkty Mocy pola M (ta sama skala co mAtk/mDef w auto-bitwie).
+ */
+export function stackFieldPowerM(
+  stack: ReadonlyArray<RuntimeUnit>,
+  defOf: (u: RuntimeUnit) => UnitPowerInput,
+): number {
+  if (stack.length === 0) return 0;
+  return sumRosterFieldM(stack.map(u => ({ typeId: u.typeId, def: defOf(u) })));
+}
+
+/**
+ * ODZNAKI STOSU — MAKSIMUM Z KAŻDEJ ŚCIEŻKI OSOBNO (decyzja właściciela
+ * C-ZETON-STOS-Q1 = A, Maciej 2026-07-29).
+ *
+ * Uzasadnienie właściciela: przy armii gracz podejmuje decyzję o STARCIU, nie
+ * o pojedynczej jednostce — maksimum mówi mu, z czym najgorszym się zmierzy,
+ * i jest spójne z sumowaniem Mocy oraz puli HP.
+ *
+ * ⚠ ŚWIADOMIE PRZYJĘTY KOSZT — NIE JEST TO BŁĄD DO „NAPRAWIENIA”:
+ * tak złożony zestaw odznak NIE OPISUJE ŻADNEJ REALNEJ JEDNOSTKI. Ikona Koszar
+ * może pochodzić z innego członka stosu niż ikona Kuźni, a JEDNA oweteranowana
+ * jednostka wśród trzech rekrutów daje gwiazdki CAŁEJ armii. Tak ma być.
+ */
+export function stackArmorBadgeLevel(stack: ReadonlyArray<RuntimeUnit>): UnitPathBadgeLevel {
+  let best: UnitPathBadgeLevel = 0;
+  for (const u of stack) {
+    const lvl = armorPathBadgeLevel(u);
+    if (lvl > best) best = lvl;
+  }
+  return best;
+}
+
+/** Jak `stackArmorBadgeLevel`, ale dla ścieżki B (Parametry → ikona Koszar). */
+export function stackSoftBadgeLevel(stack: ReadonlyArray<RuntimeUnit>): UnitPathBadgeLevel {
+  let best: UnitPathBadgeLevel = 0;
+  for (const u of stack) {
+    const lvl = softPathBadgeLevel(u);
+    if (lvl > best) best = lvl;
+  }
+  return best;
+}
+
+/** Najwyższy poziom weterana w stosie (game/veteran.ts). Patrz koszt przy stackArmorBadgeLevel. */
+export function stackVeteranLevel(stack: ReadonlyArray<RuntimeUnit>): VeteranLevel {
+  let best: VeteranLevel = 1;
+  for (const u of stack) {
+    const lvl = veteranLevel(u);
+    if (lvl > best) best = lvl;
+  }
+  return best;
+}
+
+/** Komplet liczb pokazywanych na tabliczce nad żetonem (R-ZETON-PASKI). */
+export interface StackVitals {
+  /** Pozostały wspólny pul ruchu stosu (pkt ruchu) — minimum z członków. */
+  ruchLeft: number;
+  /** Maksimum wspólnego pulu ruchu (pkt ruchu) — minimum z członków. */
+  ruchMax: number;
+  /** Suma bieżących punktów życia członków (HP). */
+  hp: number;
+  /** Suma maksymalnych punktów życia członków (HP). */
+  hpMax: number;
+  /** Moc pola M całego stosu (pkt Mocy); 0 = stos nie walczy w polu → pole Mocy się nie rysuje. */
+  fieldPowerM: number;
+  /** Liczba jednostek w stosie (1 = pojedyncza jednostka). */
+  count: number;
+  /** Ścieżka A (Pancerz → ikona Kuźni): NAJWYŻSZY poziom w stosie, 0–3. */
+  armorBadgeLevel: UnitPathBadgeLevel;
+  /** Ścieżka B (Parametry → ikona Koszar): NAJWYŻSZY poziom w stosie, 0–3. */
+  softBadgeLevel: UnitPathBadgeLevel;
+  /** NAJWYŻSZY poziom weterana w stosie (1–3). */
+  veteranLevel: VeteranLevel;
+  /** Liczba gwiazdek dla `veteranLevel` (poziom 1 = Rekrut = 0 gwiazdek). */
+  veteranStars: number;
+}
+
+/** Zależności, których warstwa stosów nie zna sama (definicje jednostek żyją w main.ts). */
+export interface StackVitalsDeps {
+  /** Maksymalne HP jednostki — TA SAMA liczba, którą pokazuje panel/tooltip. */
+  maxHpOf: (u: RuntimeUnit) => number;
+  /** Definicja jednostki do rachunku Mocy pola (units.json). */
+  defOf: (u: RuntimeUnit) => UnitPowerInput;
+}
+
+/** Komplet wartości stosu na tabliczkę — jedno wejście dla renderu mapy. */
+export function stackVitals(
+  stack: ReadonlyArray<RuntimeUnit>,
+  deps: StackVitalsDeps,
+): StackVitals {
+  const pool = stackHpPool(stack, deps.maxHpOf);
+  const vet = stackVeteranLevel(stack);
+  return {
+    ruchLeft: stackRuchLeft(stack),
+    ruchMax: stackRuchMax(stack),
+    hp: pool.hp,
+    hpMax: pool.hpMax,
+    fieldPowerM: stackFieldPowerM(stack, deps.defOf),
+    count: stack.length,
+    armorBadgeLevel: stackArmorBadgeLevel(stack),
+    softBadgeLevel: stackSoftBadgeLevel(stack),
+    veteranLevel: vet,
+    veteranStars: vet === 1 ? 0 : veteranStars(vet),
+  };
 }
 
 /** Ujednolic ruchLeft wszystkich członków stosu (domyślnie = min obecnych). */

@@ -6877,7 +6877,27 @@ async function boot(): Promise<void> {
       const src = deferredPlayerUnitRevealIds.size > 0
         ? rawSrc.filter(u => !deferredPlayerUnitRevealIds.has(u.id))
         : rawSrc;
-      const display = computeStackDisplay(src, unitAttackScore);
+      // R-ZETON-PASKI (Maciej 2026-07-29): razem z widocznością stosu licz od
+      // razu wartości CAŁEJ armii na tabliczkę nad żetonem (min ruchu / pula HP /
+      // Moc pola M / maksima odznak). Grupowanie stosów i tak już tu jest, więc
+      // rachunek nie dubluje się w warstwie renderu, a cała agregacja mieszka
+      // w game/armyMerge.ts. PARYTET AI: liczone dla KAŻDEGO właściciela.
+      // lookupUnitDef() skanuje liniowo data.units, a tu pytamy o definicję
+      // dwa razy na jednostkę w KAŻDEJ klatce synchronizacji — memo po typeId
+      // (żyje tylko przez to jedno wywołanie, więc nie może się zestarzeć).
+      const defMemo = new Map<string, ReturnType<typeof lookupUnitDef>>();
+      const defForUnit = (u: RuntimeUnit) => {
+        let d = defMemo.get(u.typeId);
+        if (d === undefined) { d = lookupUnitDef(u.typeId); defMemo.set(u.typeId, d); }
+        return d;
+      };
+      const display = computeStackDisplay(src, unitAttackScore, {
+        // TA SAMA liczba, którą pokazuje panel/tooltip jednostki
+        // (hpMaxEffective z game/unit-card-stats.ts) — mapa i panel nie mogą
+        // pokazać innego maksimum HP dla tej samej jednostki.
+        maxHpOf: (u: RuntimeUnit) => unitCardCombatFor(u, defForUnit(u)).hpMaxEffective,
+        defOf: (u: RuntimeUnit) => defForUnit(u),
+      });
       if (anim?.movingStackIds?.length) {
         for (const sid of anim.movingStackIds) display.visibleIds.add(sid);
       } else if (forceVisibleUnitId) {

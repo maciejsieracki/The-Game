@@ -145,7 +145,17 @@ export function setUnitOwnerEmblemAssets(src: UnitOwnerEmblemAssets | null): voi
 // Wymiary i paleta medalionu
 // ---------------------------------------------------------------------------
 
-/** Bok sprite'a medalionu w jednostkach świata (HEX_R = 1.0). */
+/**
+ * ⚠ AKTUALIZACJA R-ZETON-PASKI (Maciej, 2026-07-29, decyzja C-ZETON-PASKI-Q1 = A):
+ * MEDALION NIE JEST JUŻ SAMODZIELNYM ELEMENTEM ŻETONU. Wszedł DO TABLICZKI
+ * jednostki jako mała ikona przy jej lewej krawędzi — geometrię (rozmiar,
+ * pozycję) ustawia teraz render/unitStatPlate.ts, a ten moduł odpowiada
+ * wyłącznie za RYSUNEK i CACHE tekstury wariantu (portret / sygnet / czaszka).
+ * `applyUnitOwnerEmblem()` niżej jest ZACHOWANY dla podglądów sprzed tej zmiany
+ * (tools/.zeton-max) — GRA GO NIE WOŁA. Nowe wejście to `ownerEmblemMaterial()`.
+ *
+ * Bok samodzielnego (starego) sprite'a medalionu w jednostkach świata (HEX_R = 1.0).
+ */
 const EMBLEM_SPRITE_SIZE = 0.36 * HEX_R;
 /** Środek medalionu — LEWA KRAWĘDŹ żetonu (−X). */
 const EMBLEM_X = -0.50 * HEX_R;
@@ -174,6 +184,25 @@ const RING_COLOR = {
 
 /** Tło tarczy medalionu — ciemne, żeby jasne kreski sygnetu miały kontrast na każdym terenie. */
 const DISC_FILL = 'rgba(12,17,26,0.92)';
+
+/** Promień tarczy na kanwie 128 px. */
+const DISC_R = 54;
+/**
+ * Grubość pierścienia wariantu na kanwie 128 px.
+ *
+ * ⚠ PODNIESIONA Z 7 NA 14 px przy R-ZETON-PASKI (2026-07-29). Powód wprost
+ * z decyzji C-ZETON-PASKI-Q1 = A: medalion zjechał z boku heksu (bok
+ * 0,36·HEX_R) do tabliczki (bok 0,19·HEX_R), czyli do ok. 13 px na ekranie
+ * przy kamerze rozgrywki. Przy tym rozmiarze TWARZ WŁADCY PRZESTAJE BYĆ
+ * ROZPOZNAWALNA i jedynym pewnym nośnikiem wariantu (państwo / miasto-państwo /
+ * barbarzyńcy) zostaje KOLOR OBWÓDKI — mosiądz / srebro / czerwień. Pierścień
+ * 7 px schodził wtedy poniżej jednego piksela ekranu i kolor ginął.
+ */
+const DISC_RING_W = 14;
+/** Promień koła przycinającego portret (pod pierścieniem). */
+const DISC_PORTRAIT_R = 48;
+/** Bok rysunku sygnetu (SVG) wpisanego w tarczę. */
+const DISC_SIGIL_SIDE = 76;
 
 // ---------------------------------------------------------------------------
 // Rasteryzacja SVG → <img>
@@ -215,12 +244,12 @@ function drawDisc(ctx: CanvasRenderingContext2D, variant: EmblemVariant): void {
   ctx.clearRect(0, 0, CANVAS_PX, CANVAS_PX);
   ctx.fillStyle = DISC_FILL;
   ctx.beginPath();
-  ctx.arc(c, c, 57, 0, Math.PI * 2);
+  ctx.arc(c, c, DISC_R, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = RING_COLOR[variant];
-  ctx.lineWidth = 7;
+  ctx.lineWidth = DISC_RING_W;
   ctx.beginPath();
-  ctx.arc(c, c, 57, 0, Math.PI * 2);
+  ctx.arc(c, c, DISC_R, 0, Math.PI * 2);
   ctx.stroke();
 }
 
@@ -237,7 +266,7 @@ function drawFallbackGlyph(ctx: CanvasRenderingContext2D, variant: EmblemVariant
 /** Portret: obraz przycięty do koła (cover-fit), z lekkim przyciemnieniem krawędzi. */
 function drawPortrait(ctx: CanvasRenderingContext2D, img: HTMLImageElement): void {
   const c = CANVAS_PX / 2;
-  const r = 51;
+  const r = DISC_PORTRAIT_R;
   ctx.save();
   ctx.beginPath();
   ctx.arc(c, c, r, 0, Math.PI * 2);
@@ -254,7 +283,7 @@ function drawPortrait(ctx: CanvasRenderingContext2D, img: HTMLImageElement): voi
 /** Sygnet (SVG): wyśrodkowany, wpisany w koło tarczy. */
 function drawSigil(ctx: CanvasRenderingContext2D, img: HTMLImageElement): void {
   const c = CANVAS_PX / 2;
-  const side = 86;
+  const side = DISC_SIGIL_SIDE;
   ctx.drawImage(img, c - side / 2, c - side / 2, side, side);
 }
 
@@ -362,9 +391,9 @@ function getEmblemAsset(octx: UnitOwnerEmblemContext): EmblemAsset | null {
       // Pierścień na wierzchu portretu — inaczej zdjęcie zjada mu wewnętrzną krawędź.
       const c = CANVAS_PX / 2;
       ctx.strokeStyle = RING_COLOR.civ;
-      ctx.lineWidth = 7;
+      ctx.lineWidth = DISC_RING_W;
       ctx.beginPath();
-      ctx.arc(c, c, 57, 0, Math.PI * 2);
+      ctx.arc(c, c, DISC_R, 0, Math.PI * 2);
       ctx.stroke();
       texture.needsUpdate = true;
     });
@@ -385,6 +414,29 @@ function getEmblemAsset(octx: UnitOwnerEmblemContext): EmblemAsset | null {
 }
 
 // ---------------------------------------------------------------------------
+// WEJŚCIE DLA TABLICZKI JEDNOSTKI (render/unitStatPlate.ts)
+//
+// Od R-ZETON-PASKI znak właściciela jest MAŁĄ IKONĄ wewnątrz tabliczki, a nie
+// samodzielnym medalionem. Geometrię ustawia tabliczka; ten moduł oddaje jej
+// tylko dwie rzeczy: klucz wariantu (do wczesnego wyjścia z sync()) i gotowy,
+// WSPÓŁDZIELONY materiał. Nic tu nie powstaje per żeton.
+// ---------------------------------------------------------------------------
+
+/** Klucz wariantu znaku właściciela — stabilny string do porównań w sync(). */
+export function ownerEmblemKey(octx: UnitOwnerEmblemContext): string {
+  return emblemKey(octx);
+}
+
+/**
+ * Współdzielony materiał sprite'a ze znakiem właściciela (portret / sygnet /
+ * czaszka). `null` tylko wtedy, gdy nie da się utworzyć kanwy 2D.
+ * Rysunek dociąga się asynchronicznie do tej samej tekstury — patrz nagłówek.
+ */
+export function ownerEmblemMaterial(octx: UnitOwnerEmblemContext): THREE.SpriteMaterial | null {
+  return getEmblemAsset(octx)?.material ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // Budowa / synchronizacja emblematu na żetonie
 // ---------------------------------------------------------------------------
 
@@ -394,6 +446,11 @@ const UD_KEY = 'ownerEmblemKey';
 const UD_SPRITE = 'ownerEmblemSprite';
 
 /**
+ * ⚠ LEGACY (patrz nagłówek przy EMBLEM_SPRITE_SIZE): samodzielny DUŻY medalion
+ * przy lewej krawędzi heksu. GRA GO JUŻ NIE WOŁA — od R-ZETON-PASKI znak
+ * właściciela rysuje render/unitStatPlate.ts wewnątrz tabliczki. Funkcja
+ * zostaje dla podglądów zbudowanych przed tą zmianą (tools/.zeton-max).
+ *
  * Doprowadza emblemat właściciela na żetonie do stanu odpowiadającego `octx`
  * (`null` = brak emblematu, np. gdy renderer nie ma wstrzykniętego rezolwera).
  *

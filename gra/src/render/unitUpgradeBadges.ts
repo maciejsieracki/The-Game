@@ -95,6 +95,7 @@ import {
 } from '../game/unit-building-bonuses';
 import { veteranStarCount, type VeteranProgress } from '../game/veteran';
 import { loadImageInto, prepareSvgForCanvas, svgToDataUri } from './unitOwnerEmblem';
+import { BADGE_ROW_Y } from './unitStatPlate';
 
 // ---------------------------------------------------------------------------
 // Model poziomu (progi i wyprowadzenie: game/unit-building-bonuses.ts)
@@ -143,12 +144,16 @@ export function pathBadgeLabel(level: UpgradeBadgeLevel): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Wysokość całego rządka nad środkiem żetonu. Figurki mają ~0,75·HEX_R
- * wysokości, więc 0,92·HEX_R jest wyraźnie NAD GŁOWĄ; jest też wyżej niż
- * czaszka głodu (0,78·HEX_R) i badge stosu (0,55·HEX_R) — zero kolizji
- * z istniejącymi elementami żetonu.
+ * Wysokość całego rządka nad środkiem żetonu.
+ *
+ * ⚠ OD R-ZETON-PASKI (Maciej, 2026-07-29) NIE JEST TO JUŻ LICZBA WŁASNA TEGO
+ * MODUŁU. Rządek stoi NA PASKACH Ruchu i HP, więc jego wysokość wyznacza
+ * właściciel geometrii całej tabliczki — render/unitStatPlate.ts::BADGE_ROW_Y
+ * (dziś 1,08·HEX_R; przed tabliczką było tu 0,92·HEX_R). Zależność jest
+ * jednostronna: unitUpgradeBadges → unitStatPlate → unitOwnerEmblem, cyklu nie ma.
+ * Nazwa stałej zostaje niezmieniona, bo importuje ją render/unitVeteranBadges.ts.
  */
-export const VETERAN_BADGE_RESERVED_Y = 0.92 * HEX_R;
+export const VETERAN_BADGE_RESERVED_Y = BADGE_ROW_Y;
 
 /** Promień zewnętrzny (ramię) gwiazdki weterana. */
 export const VETERAN_STAR_R = 0.072 * HEX_R;
