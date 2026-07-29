@@ -95,7 +95,7 @@ import {
 } from '../game/unit-building-bonuses';
 import { veteranStarCount, type VeteranProgress } from '../game/veteran';
 import { loadImageInto, prepareSvgForCanvas, svgToDataUri } from './unitOwnerEmblem';
-import { BADGE_ROW_Y } from './unitStatPlate';
+import { BADGE_ROW_Y, PLATE_TILT_RAD, makeFlatBadgeMaterial, getGeoBadgeQuad } from './unitStatPlate';
 
 // ---------------------------------------------------------------------------
 // Model poziomu (progi i wyprowadzenie: game/unit-building-bonuses.ts)
@@ -163,11 +163,21 @@ export const VETERAN_STAR_SPACING = 0.158 * HEX_R;
 export const VETERAN_STAR_OUTLINE_SCALE = 1.30;
 
 /**
- * Odchylenie brył 3D rządka do tyłu = elewacja kamery gry (render/camera.ts: 52°).
- * Dotyczy WYŁĄCZNIE gwiazdek weterana — ikony ulepszeń są sprite'ami i zawsze
- * same ustawiają się przodem do kamery.
+ * Odchylenie brył rządka do tyłu = elewacja kamery gry (render/camera.ts: 52°).
+ *
+ * ⚠ OD POPRAWKI „PASKI SIĘ ROZJEŻDŻAJĄ” (2026-07-29) DOTYCZY CAŁEGO RZĄDKA,
+ * nie tylko gwiazdek. Ikony ulepszeń były sprite'ami; sprite jest budowany
+ * w przestrzeni widoku wokół własnego zrzutowanego początku, więc dwa sprite'y
+ * o różnym położeniu przesuwają się WZGLĘDEM SIEBIE i względem brył przy
+ * obrocie kamery (zmierzone: kilka pikseli, patrz unitStatPlate.ts::PLATE_TILT_RAD).
+ * Teraz cały żeton — tabliczka, ikony i gwiazdki — to bryły w jednej,
+ * odchylonej płaszczyźnie, więc nakładka jest sztywna przy każdym kącie.
+ *
+ * Wartość ma JEDNO ŹRÓDŁO: render/unitStatPlate.ts::PLATE_TILT_RAD (tam też
+ * mieszka wysokość rządka BADGE_ROW_Y). Nazwa zostaje, bo importuje ją
+ * render/unitVeteranBadges.ts.
  */
-export const BADGE_ROW_TILT_RAD = THREE.MathUtils.degToRad(52);
+export const BADGE_ROW_TILT_RAD = PLATE_TILT_RAD;
 
 /** Bok sprite'a ikony ulepszenia w jednostkach świata (HEX_R = 1.0). */
 const ICON_SPRITE_SIZE = 0.24 * HEX_R;
@@ -293,7 +303,7 @@ function drawIcon(ctx: CanvasRenderingContext2D, img: HTMLImageElement): void {
 
 interface BadgeAsset {
   texture: THREE.CanvasTexture;
-  material: THREE.SpriteMaterial;
+  material: THREE.MeshStandardMaterial;
 }
 
 const assetByKey = new Map<string, BadgeAsset>();
@@ -312,15 +322,10 @@ function getBadgeAsset(path: BadgePath, level: 1 | 2 | 3): BadgeAsset | null {
   drawPlate(ctx, level);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
   texture.colorSpace = THREE.SRGBColorSpace;
-  const material = new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-    toneMapped: false,
-  });
+  const material = makeFlatBadgeMaterial(texture);
   const asset: BadgeAsset = { texture, material };
   assetByKey.set(key, asset);
 
@@ -358,19 +363,18 @@ function packRowState(armor: UpgradeBadgeLevel, soft: UpgradeBadgeLevel, stars: 
 function addIcon(g: THREE.Group, path: BadgePath, level: 1 | 2 | 3, x: number): void {
   const asset = getBadgeAsset(path, level);
   if (!asset) return;
-  const sprite = new THREE.Sprite(asset.material);
-  sprite.center.set(0.5, 0.5);
-  sprite.scale.set(ICON_SPRITE_SIZE, ICON_SPRITE_SIZE, 1);
-  sprite.position.set(x, 0, ICON_Z);
-  sprite.renderOrder = ICON_RENDER_ORDER;
-  g.add(sprite);
+  const mesh = new THREE.Mesh(getGeoBadgeQuad(), asset.material);
+  mesh.scale.set(ICON_SPRITE_SIZE, ICON_SPRITE_SIZE, 1);
+  mesh.position.set(x, 0, ICON_Z);
+  mesh.renderOrder = ICON_RENDER_ORDER;
+  g.add(mesh);
 }
 
 /**
  * Buduje podgrupę odznak ulepszeń: ikona Koszar po LEWEJ (−X) i/lub ikona Kuźni
  * po PRAWEJ (+X) od środka rządka. Ikona ścieżki o poziomie 0 nie powstaje.
- * Grupa NIE jest obracana (sprite'y same celują w kamerę) i nie posiada
- * NICZEGO na własność — tekstury i materiały są współdzielone.
+ * Grupa jest odchylona o BADGE_ROW_TILT_RAD (przodem do kamery gry) i nie
+ * posiada NICZEGO na własność — geometria, tekstury i materiały są współdzielone.
  */
 function buildBadgeRowGroup(
   armorLevel: UpgradeBadgeLevel,
@@ -380,6 +384,10 @@ function buildBadgeRowGroup(
   const g = new THREE.Group();
   g.name = 'upgradeBadgeRow';
   g.position.y = VETERAN_BADGE_RESERVED_Y;
+  // Ten sam obrót co listwa gwiazdek i co tabliczka — cała nakładka żetonu
+  // leży w JEDNEJ płaszczyźnie, więc jej elementy nie mogą się rozjechać
+  // przy obrocie kamery (patrz BADGE_ROW_TILT_RAD).
+  g.rotation.x = -BADGE_ROW_TILT_RAD;
 
   const x = iconCenterX(starCount);
   // ŚCIEŻKA B (Parametry) — Koszary, ZAWSZE po lewej.

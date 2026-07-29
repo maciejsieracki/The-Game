@@ -67,7 +67,7 @@ import * as THREE from 'three';
 import { HEX_R } from './hexutil';
 import {
   ownerEmblemKey,
-  ownerEmblemMaterial,
+  ownerEmblemTexture,
   type UnitOwnerEmblemContext,
 } from './unitOwnerEmblem';
 import {
@@ -100,27 +100,55 @@ export const PLATE_BAR_H = 0.056 * HEX_R;
  * fragment + zielony fragment obok siebie), zamiast jako Ruch i Życie.
  * Z tego samego powodu podniesiona jest wysokość samego paska (0,046 → 0,056).
  */
-const PLATE_BAR_GAP = 0.028 * HEX_R;
+const PLATE_BAR_GAP = 0.042 * HEX_R;
+
+/**
+ * ZŁOTA KRESKA ROZDZIELAJĄCA paski Ruchu i Życia — poprawka właściciela
+ * (Maciej, 2026-07-29, po obejrzeniu zrzutów): „trzeba te paski niebieski
+ * i zielony oddzielić jakąś obwódką, jeżeli obwódka jest złota, to warto
+ * rozdzielić złotą kreską niebieskie od zielonego”.
+ *
+ * Kolor bierze się z TEJ SAMEJ stałej co obwódka tabliczki (PLATE_GOLD) —
+ * żadnego nowego odcienia.
+ *
+ * ⚠ GRUBOŚĆ JEST WYMOGIEM CZYTELNOŚCI, NIE GUSTU: kreska nie może zejść poniżej
+ * ~1 px na ekranie przy domyślnej odległości kamery. Przelicznik przy dist = 11
+ * i fov 50: px_na_HEX_R = H_okna / (2·11·tan25°) = H_okna / 10,26.
+ *   okno 1080 px → 105 px/HEX_R → 0,020·HEX_R = 2,1 px  ✔
+ *   okno  720 px →  70 px/HEX_R → 0,020·HEX_R = 1,4 px  ✔
+ * Dlatego odstęp między paskami MUSIAŁ urosnąć z 0,028 na 0,042·HEX_R —
+ * w 0,028 kreska 0,020 nie zmieściłaby się z prześwitem po obu stronach.
+ * Kreska jest OSOBNĄ BRYŁĄ, nie rysunkiem w teksturze tła: przy 8-krotnym
+ * pomniejszeniu tekstury 512 px linia o grubości 1 px zniknęłaby w filtrowaniu,
+ * a geometria rasteryzuje się zawsze w docelowej rozdzielczości (i korzysta
+ * z antyaliasingu MSAA).
+ */
+const PLATE_DIVIDER_H = 0.020 * HEX_R;
 
 /** Wysokość osi paska ŻYCIA (dolny z pary). */
 export const PLATE_HP_BAR_Y = 0.820 * HEX_R;
 /** Wysokość osi paska RUCHU (górny z pary — bliżej rządka odznak). */
-export const PLATE_MOVE_BAR_Y = PLATE_HP_BAR_Y + PLATE_BAR_H + PLATE_BAR_GAP; // 0,904·HEX_R
+export const PLATE_MOVE_BAR_Y = PLATE_HP_BAR_Y + PLATE_BAR_H + PLATE_BAR_GAP; // 0,918·HEX_R
 
 /** Margines ciemnego tła wokół pary pasków. */
 const PLATE_PAD = 0.020 * HEX_R;
 /** Szerokość ciemnego tła tabliczki. */
 const PLATE_BG_W = PLATE_BAR_W + 2 * PLATE_PAD;                       // 0,590·HEX_R
 /** Wysokość ciemnego tła tabliczki. */
-const PLATE_BG_H = 2 * PLATE_BAR_H + PLATE_BAR_GAP + 2 * PLATE_PAD;   // 0,180·HEX_R
+const PLATE_BG_H = 2 * PLATE_BAR_H + PLATE_BAR_GAP + 2 * PLATE_PAD;   // 0,194·HEX_R
 /** Środek pionowy tła (= środek pary pasków). */
-const PLATE_BG_Y = (PLATE_HP_BAR_Y + PLATE_MOVE_BAR_Y) / 2;           // 0,862·HEX_R
-/** Lewa krawędź obu pasków (kotwica wypełnienia). */
-const PLATE_BAR_LEFT_X = -PLATE_BAR_W / 2;                            // −0,275·HEX_R
+const PLATE_BG_Y = (PLATE_HP_BAR_Y + PLATE_MOVE_BAR_Y) / 2;           // 0,869·HEX_R
+/**
+ * Lewa krawędź OBU pasków (kotwica wypełnienia) — jedna liczba, wspólna dla
+ * Ruchu i Życia, w LOKALNYM układzie odchylonej tabliczki. To jest gwarancja
+ * wspólnej krawędzi: obie bryły startują od tej samej prostej w tej samej
+ * płaszczyźnie. Eksportowana, bo mierzy ją harness tools/.zeton-tabliczka/kat.ts.
+ */
+export const PLATE_BAR_LEFT_X = -PLATE_BAR_W / 2;                     // −0,275·HEX_R
 
 /**
  * Bok małej ikony właściciela. 0,20·HEX_R to nieco więcej niż wysokość całego
- * tła (0,180·HEX_R), więc medalion lekko wystaje ponad i pod tabliczkę i czyta
+ * tła (0,194·HEX_R), więc medalion lekko wystaje ponad i pod tabliczkę i czyta
  * się jako „pieczęć” przypięta z lewej, a nie jako trzeci pasek.
  */
 export const PLATE_OWNER_ICON_SIZE = 0.20 * HEX_R;
@@ -132,6 +160,8 @@ export const PLATE_OWNER_ICON_SIZE = 0.20 * HEX_R;
 const PLATE_OWNER_GAP = 0.006 * HEX_R;
 /** Środek ikony właściciela w osi X. */
 const PLATE_OWNER_X = -(PLATE_BG_W / 2 + PLATE_OWNER_GAP + PLATE_OWNER_ICON_SIZE / 2); // −0,401·HEX_R
+/** Wysokość osi wypełnień względem środka tabliczki (± w lokalnym układzie grupy). */
+export const PLATE_BAR_DY = (PLATE_BAR_H + PLATE_BAR_GAP) / 2;         // 0,049·HEX_R
 
 /**
  * Wysokość rządka [Koszary] ★★★ [Kuźnia] NAD paskami.
@@ -149,22 +179,20 @@ const PLATE_OWNER_X = -(PLATE_BG_W / 2 + PLATE_OWNER_GAP + PLATE_OWNER_ICON_SIZE
  * 0,068·HEX_R, a na ekranie było −0,043·HEX_R, czyli medalion NACHODZIŁ na
  * ikonę Koszar (a ikona Kuźni na pole Mocy).
  *
- * Kontrola pionowa NA EKRANIE (jednostki: ułamki HEX_R po projekcji):
- *   góra medalionu     = 0,862·0,6157 + 0,100 = 0,631
- *   góra pola Mocy     = 0,862·0,6157 + 0,095 = 0,626
- *   góra tła tabliczki = 0,862·0,6157 + 0,090 = 0,621
- *   dół ikony rządka   = 1,250·0,6157 − 0,120 = 0,650  → prześwit 0,019 ✔
- *   dół obwódki ★      = 1,250·0,6157 − 0,0936 = 0,676 ✔
- * (0,019 to prześwit GEOMETRYCZNY; rysunek płytki ikony ma jeszcze ~0,013
- *  własnego marginesu w kanwie, więc na oko prześwit jest ok. 0,03 — rządek
- *  ma stać BLISKO tabliczki, ma się z nią czytać jako jeden obiekt.)
- * (Gwiazdki są bryłami 3D odchylonymi o 52°, więc też stoją przodem do kamery
- * i ich wysokość na ekranie też jest pełna.)
+ * Kontrola pionowa NA EKRANIE (jednostki: ułamki HEX_R po projekcji;
+ * tabliczka jest odchylona o 52°, więc jej wysokość na ekranie też jest pełna):
+ *   góra medalionu     = 0,869·0,6157 + 0,100 = 0,635
+ *   góra pola Mocy     = 0,869·0,6157 + 0,100 = 0,635
+ *   góra tła tabliczki = 0,869·0,6157 + 0,097 = 0,632
+ *   dół ikony rządka   = 1,270·0,6157 − 0,120 = 0,662  → prześwit 0,027 ✔
+ *   dół obwódki ★      = 1,270·0,6157 − 0,0936 = 0,688 ✔
+ * (Do prześwitu geometrycznego dochodzi ~0,013 własnego marginesu w kanwie
+ *  ikony — rządek ma stać BLISKO tabliczki i czytać się z nią jako jeden obiekt.)
  *
  * Poprzednia wartość (przed R-ZETON-PASKI) wynosiła 0,92·HEX_R — rządek
- * podniósł się o 0,33·HEX_R, żeby zrobić miejsce na paski, medalion i Moc.
+ * podniósł się o 0,35·HEX_R, żeby zrobić miejsce na paski, medalion i Moc.
  */
-export const BADGE_ROW_Y = 1.25 * HEX_R;
+export const BADGE_ROW_Y = 1.27 * HEX_R;
 
 /**
  * MIEJSCE NA PRZYSZŁY SYMBOL GENERAŁA — dziś PUSTE, nic się tu nie rysuje.
@@ -173,11 +201,12 @@ export const BADGE_ROW_Y = 1.25 * HEX_R;
  * przestrzeń i podaje jej wymiary, żeby przyszła implementacja nie musiała
  * przesuwać reszty tabliczki.
  *   środek: (0, GENERAL_SLOT_Y), bok: GENERAL_SLOT_SIZE
- *   NA EKRANIE: dół slotu = 1,63·0,6157 − 0,085 = 0,919, a góra ikon rządka
- *   = 1,25·0,6157 + 0,120 = 0,890 → prześwit 0,029 (ten sam rachunek co przy
- *   BADGE_ROW_Y: sprite nie skraca się perspektywicznie, odległość w świecie tak).
+ *   NA EKRANIE: dół slotu = 1,65·0,6157 − 0,085 = 0,931, a góra ikon rządka
+ *   = 1,27·0,6157 + 0,120 = 0,902 → prześwit 0,029 (ten sam rachunek co przy
+ *   BADGE_ROW_Y — wszystkie elementy nakładki stoją przodem do kamery, więc
+ *   ich wysokość na ekranie jest pełna, a odległość w świecie skraca się ×0,6157).
  */
-export const GENERAL_SLOT_Y = 1.63 * HEX_R;
+export const GENERAL_SLOT_Y = 1.65 * HEX_R;
 export const GENERAL_SLOT_SIZE = 0.17 * HEX_R;
 
 /**
@@ -188,7 +217,7 @@ export const GENERAL_SLOT_SIZE = 0.17 * HEX_R;
  * rozstaw sam się zacieśnia, więc układ się nie rozjeżdża.
  */
 const PLATE_POWER_BOX_W = 0.24 * HEX_R;
-const PLATE_POWER_BOX_H = 0.19 * HEX_R;
+const PLATE_POWER_BOX_H = 0.20 * HEX_R;
 /** Odstęp między prawą krawędzią tła tabliczki a polem Mocy (jak przy medalionie: minimalny). */
 const PLATE_POWER_GAP = 0.010 * HEX_R;
 /** Środek pola Mocy w osi X. */
@@ -207,15 +236,45 @@ const PLATE_POWER_X = PLATE_BG_W / 2 + PLATE_POWER_GAP + PLATE_POWER_BOX_W / 2; 
  *   sąsiednie heksy w rzędzie dzieli √3·HEX_R = 1,732, więc między
  *   tabliczkami sąsiadów zostaje 0,642·HEX_R prześwitu.
  *
- * Kontrola pionowa pola Mocy: góra 0,862 + 0,095 = 0,957·HEX_R, a dół ikony
- * Kuźni w rządku to 1,030·HEX_R → prześwit 0,073·HEX_R ✔
+ * PODWYŻSZENIE ODSTĘPU MIĘDZY PASKAMI (0,028 → 0,042, na złotą kreskę) NIE
+ * zmieniło ani jednego wymiaru poziomego — tabliczka urosła wyłącznie w pionie,
+ * więc 0,545·HEX_R i prześwit 0,642·HEX_R między sąsiadami zostają bez zmian.
  */
 export const PLATE_MAX_HALF_WIDTH = 0.545 * HEX_R;
 
-/** Wysunięcia w stronę kamery (+Z) — kolejność warstw tabliczki. */
-const PLATE_BG_Z = 0.026 * HEX_R;
-const PLATE_FILL_Z = 0.030 * HEX_R;
-const PLATE_OWNER_Z = 0.034 * HEX_R;
+/**
+ * ODCHYLENIE CAŁEJ TABLICZKI = elewacja kamery gry (render/camera.ts: 52°,
+ * azymut na stałe 0 — pole `yaw` z komentarzem „kamera stała”). Tabliczka stoi
+ * więc prostopadle do osi patrzenia i widać ją bez skrótu perspektywicznego,
+ * dokładnie jak gwiazdki weterana (te były bryłami 3D od początku).
+ *
+ * ⚠ TO JEST NAPRAWA BŁĘDU, NIE KOSMETYKA (Maciej, 2026-07-29: „trochę
+ * rozjeżdżają się te paski zielony i niebieski, zwłaszcza przy bocznej
+ * perspektywie”). Wcześniej każdy element tabliczki był OSOBNYM `THREE.Sprite`.
+ * Sprite jest budowany w PRZESTRZENI WIDOKU wokół własnego, zrzutowanego
+ * początku, a oba wypełnienia mają różną wysokość w świecie — po pochyleniu
+ * kamery o 52° różnią się GŁĘBOKOŚCIĄ, więc dzielenie perspektywiczne przesuwa
+ * je względem siebie na ekranie. Zmierzone na żetonie poza środkiem kadru
+ * (tools/.zeton-tabliczka/kat.ts, bufor 1280 px): rozjazd lewych krawędzi
+ * +3 px (azymut 0°), +4 px (30°), +2 px (60°).
+ *
+ * Po zmianie WSZYSTKIE elementy tabliczki są bryłami w JEDNEJ, wspólnej
+ * płaszczyźnie (jedna odchylona grupa). Lewe krawędzie obu pasków to ta sama
+ * prosta x = const w tej płaszczyźnie, a rzut perspektywiczny odwzorowuje
+ * prostą na prostą — więc pokrywają się przy KAŻDYM kącie kamery, dokładnie,
+ * a nie „prawie”. Eksportowana, bo tego samego kąta używa rządek odznak
+ * (render/unitUpgradeBadges.ts::BADGE_ROW_TILT_RAD).
+ */
+export const PLATE_TILT_RAD = THREE.MathUtils.degToRad(52);
+
+/**
+ * Warstwy tabliczki — przesunięcia w LOKALNEJ osi Z odchylonej grupy, czyli
+ * prostopadle do płytki, w stronę kamery. Rosnące = bliżej gracza.
+ */
+const PLATE_BG_Z = 0.000 * HEX_R;
+export const PLATE_FILL_Z = 0.004 * HEX_R;
+const PLATE_DIVIDER_Z = 0.006 * HEX_R;
+const PLATE_OWNER_Z = 0.008 * HEX_R;
 
 /**
  * Kolejność rysowania. Rządek odznak ulepszeń ma 13, medalion (dawniej) 14,
@@ -237,7 +296,13 @@ const PLATE_OWNER_RENDER_ORDER = 14;
  * ORAZ od niebieskiej obwódki właściciela na ziemi (OWNER_COLORS w units.ts
  * zawiera błękit) — tamta leży płasko na heksie, ta stoi pionowo 0,85·HEX_R
  * wyżej i jest obrysowana złotem, więc nie da się ich pomylić.
+ *
+ * PLATE_GOLD_HEX to TA SAMA barwa jako liczba — używa jej złota kreska
+ * rozdzielająca paski (PLATE_DIVIDER_H). Jedno źródło koloru, zgodnie
+ * z poleceniem właściciela („jeżeli obwódka jest złota, to warto rozdzielić
+ * złotą kreską”) — żadnego drugiego odcienia złota na tabliczce.
  */
+const PLATE_GOLD_HEX = 0xd4af5a;
 const PLATE_BORDER_CSS = 'rgba(212,175,90,0.70)';
 /** Wypełnienie tabliczki — ciemne i prawie nieprzezroczyste (kontrast na każdym terenie). */
 const PLATE_FILL_CSS = 'rgba(9,13,20,0.88)';
@@ -260,7 +325,74 @@ function roundedRectPath(
   ctx.closePath();
 }
 
-let bgAsset: { texture: THREE.CanvasTexture; material: THREE.SpriteMaterial } | null = null;
+// ---------------------------------------------------------------------------
+// Geometrie — DWA singletony na całą grę
+// ---------------------------------------------------------------------------
+
+let geoQuadCenter: THREE.PlaneGeometry | null = null;
+/** Kwadrat 1×1 z początkiem w ŚRODKU — tło, medalion, ramka i cyfry Mocy. */
+function getGeoQuadCenter(): THREE.PlaneGeometry {
+  return (geoQuadCenter ||= new THREE.PlaneGeometry(1, 1));
+}
+
+/**
+ * Ten sam kwadrat udostępniony rządkowi odznak (render/unitUpgradeBadges.ts),
+ * żeby ikony Koszar/Kuźni były bryłami w tej samej płaszczyźnie co tabliczka,
+ * a nie billboardami — patrz PLATE_TILT_RAD. Jedna geometria na całą grę.
+ */
+export function getGeoBadgeQuad(): THREE.PlaneGeometry {
+  return getGeoQuadCenter();
+}
+
+/**
+ * Materiał „nieoświetlonej” płytki z teksturą — dla rządka odznak, żeby ikony
+ * miały dokładnie ten sam sposób rysowania co tabliczka (i tak samo nie gasły
+ * w cieniu). Wołane z render/unitUpgradeBadges.ts, które cache'uje wynik
+ * per (ikona, poziom).
+ */
+export function makeFlatBadgeMaterial(map: THREE.Texture): THREE.MeshStandardMaterial {
+  return makeFlatMaterial(0xffffff, map);
+}
+
+let geoQuadLeft: THREE.PlaneGeometry | null = null;
+/**
+ * Kwadrat 1×1 z początkiem przy LEWEJ krawędzi (x ∈ [0, 1], y ∈ [−0,5, 0,5]).
+ * To jest kotwica wypełnienia paska: `scale.x = BAR_W · frac` rozciąga bryłę
+ * WYŁĄCZNIE w prawo, więc lewa krawędź stoi nieruchomo — ten sam efekt, co
+ * dawało `sprite.center.set(0, 0.5)`, ale bez billboardowania.
+ */
+function getGeoQuadLeft(): THREE.PlaneGeometry {
+  if (geoQuadLeft) return geoQuadLeft;
+  const g = new THREE.PlaneGeometry(1, 1);
+  g.translate(0.5, 0, 0);
+  geoQuadLeft = g;
+  return g;
+}
+
+/**
+ * Materiał „nieoświetlony” na bryle: barwa rozproszona wygaszona do czerni,
+ * cały kolor idzie przez `emissive`. Dzięki temu pasek ma DOKŁADNIE ten odcień
+ * co jego odpowiednik w panelu jednostki i nie gaśnie w cieniu góry ani lasu
+ * (ta sama sztuczka co przy gwiazdkach weterana, tylko doprowadzona do końca).
+ * `MeshStandardMaterial` — zgodnie z konwencją repo dla brył.
+ */
+function makeFlatMaterial(color: number, map?: THREE.Texture): THREE.MeshStandardMaterial {
+  return new THREE.MeshStandardMaterial({
+    color: 0x000000,
+    emissive: new THREE.Color(color),
+    emissiveMap: map ?? null,
+    map: map ?? null,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    toneMapped: false,
+    roughness: 1,
+    metalness: 0,
+    side: THREE.DoubleSide,
+  });
+}
+
+let bgAsset: { texture: THREE.CanvasTexture; material: THREE.MeshStandardMaterial } | null = null;
 
 /**
  * Tło tabliczki: ciemna zaokrąglona płytka + złota obwódka + DWA ciemne koryta
@@ -268,7 +400,7 @@ let bgAsset: { texture: THREE.CanvasTexture; material: THREE.SpriteMaterial } | 
  * czyta się nad wodą i nad śniegiem. Jedna tekstura na całą grę — nie zależy od
  * żadnej wartości Ruchu ani HP.
  */
-function getPlateBgAsset(): { texture: THREE.CanvasTexture; material: THREE.SpriteMaterial } | null {
+function getPlateBgAsset(): { texture: THREE.CanvasTexture; material: THREE.MeshStandardMaterial } | null {
   if (bgAsset) return bgAsset;
   const canvas = document.createElement('canvas');
   canvas.width = BG_CANVAS_W;
@@ -303,15 +435,13 @@ function getPlateBgAsset(): { texture: THREE.CanvasTexture; material: THREE.Spri
   }
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
+  // Mipmapy WŁĄCZONE: tabliczka schodzi przy kamerze gry do ~60 px szerokości,
+  // czyli tekstura 512 px jest zmniejszana ośmiokrotnie. Bez mipmap cienkie
+  // elementy (obwódka, krawędzie koryt) migotałyby przy każdym przesunięciu mapy.
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
   texture.colorSpace = THREE.SRGBColorSpace;
-  const material = new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-    toneMapped: false,
-  });
+  const material = makeFlatMaterial(0xffffff, texture);
   bgAsset = { texture, material };
   return bgAsset;
 }
@@ -335,29 +465,44 @@ const HP_BAND_COLOR: Readonly<Record<HpBand, number>> = {
   2: VITALS_HP_LOW,
 };
 
-const fillMatByKey = new Map<string, THREE.SpriteMaterial>();
+/**
+ * Materiały ikony właściciela — po JEDNYM na wariant znaku (ten sam klucz co
+ * cache tekstur w unitOwnerEmblem.ts), nigdy per żeton. Tekstura jest tamtego
+ * modułu; tutaj powstaje tylko opakowanie na bryłę, bo tabliczka nie może
+ * używać `SpriteMaterial` (billboard = rozjazd, patrz PLATE_TILT_RAD).
+ */
+const ownerIconMatByKey = new Map<string, THREE.MeshStandardMaterial>();
+
+function ownerIconMaterial(key: string, tex: THREE.Texture): THREE.MeshStandardMaterial {
+  const cached = ownerIconMatByKey.get(key);
+  if (cached) return cached;
+  const mat = makeFlatMaterial(0xffffff, tex);
+  ownerIconMatByKey.set(key, mat);
+  return mat;
+}
+
+const fillMatByKey = new Map<string, THREE.MeshStandardMaterial>();
 
 /** Materiał wypełnienia w danym kolorze — współdzielony singleton, nigdy per żeton. */
-function getFillMaterial(key: string, color: number): THREE.SpriteMaterial {
+function getFillMaterial(key: string, color: number): THREE.MeshStandardMaterial {
   const cached = fillMatByKey.get(key);
   if (cached) return cached;
-  const mat = new THREE.SpriteMaterial({
-    color,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-    toneMapped: false,
-  });
+  const mat = makeFlatMaterial(color);
   fillMatByKey.set(key, mat);
   return mat;
 }
 
-function moveFillMaterial(): THREE.SpriteMaterial {
+function moveFillMaterial(): THREE.MeshStandardMaterial {
   return getFillMaterial('move', VITALS_MOVE_FULL);
 }
 
-function hpFillMaterial(band: HpBand): THREE.SpriteMaterial {
+function hpFillMaterial(band: HpBand): THREE.MeshStandardMaterial {
   return getFillMaterial('hp' + band, HP_BAND_COLOR[band]);
+}
+
+/** Materiał złotej kreski rozdzielającej paski — jeden na całą grę. */
+function dividerMaterial(): THREE.MeshStandardMaterial {
+  return getFillMaterial('divider', PLATE_GOLD_HEX);
 }
 
 // ---------------------------------------------------------------------------
@@ -384,8 +529,8 @@ const POWER_DIGIT_ADVANCE = 0.066 * HEX_R;
 /** Światło wewnętrzne ramki — poza nie cyfry nie mogą wyjść. */
 const POWER_BOX_INNER_W = PLATE_POWER_BOX_W - 0.036 * HEX_R;
 /** Wysunięcia w stronę kamery. */
-const POWER_FRAME_Z = 0.028 * HEX_R;
-const POWER_DIGIT_Z = 0.036 * HEX_R;
+const POWER_FRAME_Z = 0.008 * HEX_R;
+const POWER_DIGIT_Z = 0.012 * HEX_R;
 const POWER_RENDER_ORDER = 14;
 
 /** Kanwa ramki i cyfry (potęgi dwójki nie wymagamy — minFilter = LinearFilter). */
@@ -395,8 +540,8 @@ const POWER_DIGIT_CANVAS_W = 72;
 const POWER_DIGIT_CANVAS_H = Math.round((POWER_DIGIT_CANVAS_W * POWER_DIGIT_H) / POWER_DIGIT_W);
 
 let powerFrameTex: THREE.CanvasTexture | null = null;
-const powerFrameMatByColor = new Map<number, THREE.SpriteMaterial>();
-const powerDigitMat: Array<THREE.SpriteMaterial | null> = new Array(10).fill(null);
+const powerFrameMatByColor = new Map<number, THREE.MeshStandardMaterial>();
+const powerDigitMat: Array<THREE.MeshStandardMaterial | null> = new Array(10).fill(null);
 const powerDigitTex: Array<THREE.CanvasTexture | null> = new Array(10).fill(null);
 
 /**
@@ -436,19 +581,12 @@ function getPowerFrameTexture(): THREE.CanvasTexture | null {
  * którego używa obwódka heksu — `_resolveOwnerColor` w render/units.ts).
  * Cache po kolorze: ile państw, tyle materiałów.
  */
-function getPowerFrameMaterial(color: number): THREE.SpriteMaterial | null {
+function getPowerFrameMaterial(color: number): THREE.MeshStandardMaterial | null {
   const cached = powerFrameMatByColor.get(color);
   if (cached) return cached;
   const map = getPowerFrameTexture();
   if (!map) return null;
-  const mat = new THREE.SpriteMaterial({
-    map,
-    color,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-    toneMapped: false,
-  });
+  const mat = makeFlatMaterial(color, map);
   powerFrameMatByColor.set(color, mat);
   return mat;
 }
@@ -459,7 +597,7 @@ function getPowerFrameMaterial(color: number): THREE.SpriteMaterial | null {
  * o nieprzewidywalnej jasności, a przy oddalonej kamerze cyfra schodzi do
  * kilku pikseli i sama biel by się rozmyła.
  */
-function getPowerDigitMaterial(digit: number): THREE.SpriteMaterial | null {
+function getPowerDigitMaterial(digit: number): THREE.MeshStandardMaterial | null {
   const cached = powerDigitMat[digit];
   if (cached) return cached;
   const canvas = document.createElement('canvas');
@@ -478,16 +616,11 @@ function getPowerDigitMaterial(digit: number): THREE.SpriteMaterial | null {
   ctx.fillStyle = '#fdf6e3';
   ctx.fillText(String(digit), POWER_DIGIT_CANVAS_W / 2, POWER_DIGIT_CANVAS_H / 2 + 1);
   const tex = new THREE.CanvasTexture(canvas);
-  tex.minFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
   tex.colorSpace = THREE.SRGBColorSpace;
   powerDigitTex[digit] = tex;
-  const mat = new THREE.SpriteMaterial({
-    map: tex,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-    toneMapped: false,
-  });
+  const mat = makeFlatMaterial(0xffffff, tex);
   powerDigitMat[digit] = mat;
   return mat;
 }
@@ -511,7 +644,11 @@ function powerText(power: number | undefined | null): string {
   return String(n);
 }
 
-/** Buduje podgrupę pola Mocy (ramka + cyfry). Pusty tekst = brak podgrupy (zwraca null). */
+/**
+ * Buduje podgrupę pola Mocy (ramka + cyfry). Pusty tekst = brak podgrupy (null).
+ * Współrzędne są LOKALNE względem odchylonej grupy tabliczki, więc y = 0 znaczy
+ * „na wysokości środka tabliczki”, a z rośnie w stronę kamery.
+ */
 function buildPowerGroup(text: string, ownerColor: number): THREE.Group | null {
   if (!text) return null;
   const g = new THREE.Group();
@@ -519,10 +656,9 @@ function buildPowerGroup(text: string, ownerColor: number): THREE.Group | null {
 
   const frameMat = getPowerFrameMaterial(ownerColor);
   if (frameMat) {
-    const frame = new THREE.Sprite(frameMat);
-    frame.center.set(0.5, 0.5);
+    const frame = new THREE.Mesh(getGeoQuadCenter(), frameMat);
     frame.scale.set(PLATE_POWER_BOX_W, PLATE_POWER_BOX_H, 1);
-    frame.position.set(PLATE_POWER_X, PLATE_BG_Y, POWER_FRAME_Z);
+    frame.position.set(PLATE_POWER_X, 0, POWER_FRAME_Z);
     frame.renderOrder = POWER_RENDER_ORDER;
     g.add(frame);
   }
@@ -540,12 +676,11 @@ function buildPowerGroup(text: string, ownerColor: number): THREE.Group | null {
     if (d < 0 || d > 9) continue;
     const mat = getPowerDigitMaterial(d);
     if (!mat) continue;
-    const sprite = new THREE.Sprite(mat);
-    sprite.center.set(0.5, 0.5);
-    sprite.scale.set(POWER_DIGIT_W, POWER_DIGIT_H, 1);
-    sprite.position.set(startX + i * advance, PLATE_BG_Y, POWER_DIGIT_Z);
-    sprite.renderOrder = POWER_RENDER_ORDER + 1;
-    g.add(sprite);
+    const glyph = new THREE.Mesh(getGeoQuadCenter(), mat);
+    glyph.scale.set(POWER_DIGIT_W, POWER_DIGIT_H, 1);
+    glyph.position.set(startX + i * advance, 0, POWER_DIGIT_Z);
+    glyph.renderOrder = POWER_RENDER_ORDER + 1;
+    g.add(glyph);
   }
   return g;
 }
@@ -605,52 +740,73 @@ function packBars(moveFrac: number, hpFrac: number, band: HpBand): number {
   return m * 100000 + h * 10 + band;
 }
 
-/** Sprite wypełnienia zakotwiczony do LEWEJ krawędzi paska (skalowany, nie przetekstuowany). */
-function makeFillSprite(material: THREE.SpriteMaterial, barY: number): THREE.Sprite {
-  const s = new THREE.Sprite(material);
-  s.center.set(0, 0.5); // kotwica: lewa krawędź, w połowie wysokości
-  s.scale.set(PLATE_BAR_W, PLATE_BAR_H, 1);
-  s.position.set(PLATE_BAR_LEFT_X, barY, PLATE_FILL_Z);
-  s.renderOrder = PLATE_FILL_RENDER_ORDER;
-  return s;
+/**
+ * Wypełnienie paska: bryła zakotwiczona do LEWEJ krawędzi (geometria
+ * `getGeoQuadLeft`), skalowana w osi X. Współrzędne LOKALNE odchylonej grupy:
+ * `dy` to odległość od środka tabliczki (+ w górę).
+ */
+function makeFillMesh(material: THREE.MeshStandardMaterial, dy: number): THREE.Mesh {
+  const m = new THREE.Mesh(getGeoQuadLeft(), material);
+  m.scale.set(PLATE_BAR_W, PLATE_BAR_H, 1);
+  m.position.set(PLATE_BAR_LEFT_X, dy, PLATE_FILL_Z);
+  m.renderOrder = PLATE_FILL_RENDER_ORDER;
+  return m;
 }
 
 /**
- * Buduje podgrupę tabliczki: tło + dwa wypełnienia + (opcjonalnie) mała ikona
- * właściciela. Grupa NIE posiada NICZEGO na własność — wszystkie tekstury
- * i materiały są współdzielonymi singletonami modułu.
+ * Buduje podgrupę tabliczki: tło + dwa wypełnienia + złota kreska + mała ikona
+ * właściciela (+ pole Mocy dokładane osobno).
+ *
+ * ⚠ CAŁA TABLICZKA TO JEDNA ODCHYLONA GRUPA — to jest sedno naprawy rozjazdu
+ * pasków (patrz PLATE_TILT_RAD). Wszystkie dzieci leżą w jednej płaszczyźnie
+ * i mają WSPÓLNY układ współrzędnych, więc żadne dwa elementy nie mogą się
+ * względem siebie przesunąć przy jakimkolwiek ustawieniu kamery. Wcześniej
+ * każdy element był osobnym billboardem i przesuwały się względem siebie.
+ *
+ * Grupa NIE posiada NICZEGO na własność — geometrie, tekstury i materiały są
+ * współdzielonymi singletonami modułu (patrz nagłówek: nic nie trafia do
+ * userData['mats'] ani ['perTokenGeos']).
  */
 function buildPlateGroup(octx: UnitOwnerEmblemContext | null): THREE.Group {
   const g = new THREE.Group();
   g.name = 'unitStatPlate';
+  g.position.y = PLATE_BG_Y;
+  g.rotation.x = -PLATE_TILT_RAD;
 
   const bg = getPlateBgAsset();
   if (bg) {
-    const sprite = new THREE.Sprite(bg.material);
-    sprite.center.set(0.5, 0.5);
-    sprite.scale.set(PLATE_BG_W, PLATE_BG_H, 1);
-    sprite.position.set(0, PLATE_BG_Y, PLATE_BG_Z);
-    sprite.renderOrder = PLATE_BG_RENDER_ORDER;
-    g.add(sprite);
+    const mesh = new THREE.Mesh(getGeoQuadCenter(), bg.material);
+    mesh.scale.set(PLATE_BG_W, PLATE_BG_H, 1);
+    mesh.position.set(0, 0, PLATE_BG_Z);
+    mesh.renderOrder = PLATE_BG_RENDER_ORDER;
+    g.add(mesh);
   }
 
-  const moveFill = makeFillSprite(moveFillMaterial(), PLATE_MOVE_BAR_Y);
+  const moveFill = makeFillMesh(moveFillMaterial(), +PLATE_BAR_DY);
   g.add(moveFill);
   g.userData[UD_MOVE_FILL] = moveFill;
 
-  const hpFill = makeFillSprite(hpFillMaterial(0), PLATE_HP_BAR_Y);
+  const hpFill = makeFillMesh(hpFillMaterial(0), -PLATE_BAR_DY);
   g.add(hpFill);
   g.userData[UD_HP_FILL] = hpFill;
 
+  // ZŁOTA KRESKA rozdzielająca Ruch od Życia (poprawka właściciela 2026-07-29).
+  // Idzie przez CAŁE światło tabliczki, nie tylko nad wypełnieniem — inaczej
+  // przy pustym pasku (ruch 0) kreska urywałaby się w połowie.
+  const divider = new THREE.Mesh(getGeoQuadCenter(), dividerMaterial());
+  divider.scale.set(PLATE_BAR_W, PLATE_DIVIDER_H, 1);
+  divider.position.set(0, 0, PLATE_DIVIDER_Z);
+  divider.renderOrder = PLATE_FILL_RENDER_ORDER + 1;
+  g.add(divider);
+
   // Mała ikona właściciela przy LEWEJ krawędzi tabliczki (C-ZETON-PASKI-Q1 = A).
-  const emblem = octx ? ownerEmblemMaterial(octx) : null;
-  if (emblem) {
-    const sprite = new THREE.Sprite(emblem);
-    sprite.center.set(0.5, 0.5);
-    sprite.scale.set(PLATE_OWNER_ICON_SIZE, PLATE_OWNER_ICON_SIZE, 1);
-    sprite.position.set(PLATE_OWNER_X, PLATE_BG_Y, PLATE_OWNER_Z);
-    sprite.renderOrder = PLATE_OWNER_RENDER_ORDER;
-    g.add(sprite);
+  const emblemTex = octx ? ownerEmblemTexture(octx) : null;
+  if (emblemTex) {
+    const mesh = new THREE.Mesh(getGeoQuadCenter(), ownerIconMaterial(ownerEmblemKey(octx!), emblemTex));
+    mesh.scale.set(PLATE_OWNER_ICON_SIZE, PLATE_OWNER_ICON_SIZE, 1);
+    mesh.position.set(PLATE_OWNER_X, 0, PLATE_OWNER_Z);
+    mesh.renderOrder = PLATE_OWNER_RENDER_ORDER;
+    g.add(mesh);
   }
   return g;
 }
@@ -736,12 +892,13 @@ export function applyUnitStatPlate(
   if (group.userData[UD_BARS] === packed) return;
   group.userData[UD_BARS] = packed;
 
-  const moveFill = plate.userData[UD_MOVE_FILL] as THREE.Sprite | undefined;
+  // Wypełnienie = SKALA bryły, nigdy nowa tekstura ani nowa geometria.
+  const moveFill = plate.userData[UD_MOVE_FILL] as THREE.Mesh | undefined;
   if (moveFill) {
     moveFill.visible = moveFrac > 0.002;
     moveFill.scale.x = PLATE_BAR_W * moveFrac;
   }
-  const hpFill = plate.userData[UD_HP_FILL] as THREE.Sprite | undefined;
+  const hpFill = plate.userData[UD_HP_FILL] as THREE.Mesh | undefined;
   if (hpFill) {
     hpFill.visible = hpFrac > 0.002;
     hpFill.scale.x = PLATE_BAR_W * hpFrac;
@@ -760,6 +917,12 @@ export function disposeUnitStatPlateResources(): void {
   bgAsset = null;
   for (const mat of fillMatByKey.values()) mat.dispose();
   fillMatByKey.clear();
+  for (const mat of ownerIconMatByKey.values()) mat.dispose();
+  ownerIconMatByKey.clear();
+  geoQuadCenter?.dispose();
+  geoQuadCenter = null;
+  geoQuadLeft?.dispose();
+  geoQuadLeft = null;
   for (const mat of powerFrameMatByColor.values()) mat.dispose();
   powerFrameMatByColor.clear();
   powerFrameTex?.dispose();

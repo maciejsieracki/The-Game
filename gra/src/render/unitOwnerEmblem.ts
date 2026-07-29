@@ -431,9 +431,25 @@ export function ownerEmblemKey(octx: UnitOwnerEmblemContext): string {
  * Współdzielony materiał sprite'a ze znakiem właściciela (portret / sygnet /
  * czaszka). `null` tylko wtedy, gdy nie da się utworzyć kanwy 2D.
  * Rysunek dociąga się asynchronicznie do tej samej tekstury — patrz nagłówek.
+ *
+ * ⚠ Od poprawki „paski się rozjeżdżają” (2026-07-29) TABLICZKA TEGO NIE UŻYWA:
+ * `SpriteMaterial` znaczy billboard, a billboardy w jednym obiekcie przesuwają
+ * się względem siebie przy obrocie kamery (render/unitStatPlate.ts::PLATE_TILT_RAD).
+ * Tabliczka bierze samą TEKSTURĘ przez `ownerEmblemTexture()` i opakowuje ją
+ * w materiał bryły. Ta funkcja zostaje dla podglądów sprzed zmiany.
  */
 export function ownerEmblemMaterial(octx: UnitOwnerEmblemContext): THREE.SpriteMaterial | null {
   return getEmblemAsset(octx)?.material ?? null;
+}
+
+/**
+ * Współdzielona TEKSTURA znaku właściciela — jedno wejście dla tabliczki
+ * jednostki, która rysuje znak jako bryłę, nie sprite. Ta sama tekstura co
+ * w `ownerEmblemMaterial`, więc portret dociągnięty asynchronicznie pojawia się
+ * w obu miejscach naraz.
+ */
+export function ownerEmblemTexture(octx: UnitOwnerEmblemContext): THREE.CanvasTexture | null {
+  return getEmblemAsset(octx)?.texture ?? null;
 }
 
 // ---------------------------------------------------------------------------

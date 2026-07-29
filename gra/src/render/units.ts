@@ -44,7 +44,7 @@ import { applyUnitUpgradeBadgeRow, syncUnitUpgradeBadges } from './unitUpgradeBa
 // VETERAN_BADGE_RESERVED_Y. Zasoby to singletony modułu, jak wyżej.
 // VETERAN_BADGE_HIT_UD: znacznik siatek gwiazdek dla raycastera — tooltip
 // poziomu weterana (C-OBCE-JEDN-Q3) rozpoznaje po nim trafienie w odznakę.
-import { applyUnitVeteranBadgeLevel, syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
+import { applyUnitVeteranBadgeStarCount, syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
 // Znak właściciela przy lewej krawędzi żetonu (C-OBCE-JEDN-Q2): portret władcy /
 // sygnet kultury miasta-państwa / czaszka barbarzyńców. Kontekst właściciela
 // wstrzykuje main.ts przez setOwnerEmblemResolver — ten renderer nie sięga do
@@ -4863,7 +4863,8 @@ export class UnitRenderer {
       //   Ruch  = minimum (stackRuchLeft — wspólny pul, armia rusza łącznie),
       //   HP    = PULA (Σ HP / Σ maks. HP, nie średnia z procentów),
       //   Moc   = sumRosterFieldM (nominalna, C-MOC-Q1 = A),
-      //   odznaki i gwiazdki = MAKSIMUM z każdej ścieżki osobno (C-ZETON-STOS-Q1 = A).
+      //   odznaki i gwiazdki = MAKSIMUM z każdej ścieżki osobno (C-ZETON-STOS-Q1 = A);
+      //     gwiazdki liczone jako max liczby WYGRANYCH bitew (veteranStarCount).
       // Brak wpisu (żeton niewidoczny, galeria, podgląd bez StackDisplayInfo) =
       // wartości pojedynczej jednostki; hpMax jest wtedy nieznane i pasek HP
       // wychodzi pełny — świadomy fallback, patrz unitStatPlate.ts::barFraction.
@@ -4876,7 +4877,10 @@ export class UnitRenderer {
           applyUnitUpgradeBadgeRow(
             tokenObj, vitals.armorBadgeLevel, vitals.softBadgeLevel, vitals.veteranStars,
           );
-          applyUnitVeteranBadgeLevel(tokenObj, vitals.veteranLevel);
+          // Gwiazdki = LICZBA WYGRANYCH (po fali 106), nie poziom premii —
+          // ta sama funkcja co dla pojedynczego żetonu, żeby stos i jednostka
+          // nie mogły pokazać innej liczby gwiazdek za to samo doświadczenie.
+          applyUnitVeteranBadgeStarCount(tokenObj, vitals.veteranStars as 0 | 1 | 2 | 3);
         } else {
           syncUnitUpgradeBadges(tokenObj, unit);
           syncUnitVeteranBadges(tokenObj, unit);

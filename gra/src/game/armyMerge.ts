@@ -11,7 +11,7 @@ import {
   softPathBadgeLevel,
   type UnitPathBadgeLevel,
 } from './unit-building-bonuses';
-import { veteranLevel, veteranStars, type VeteranLevel } from './veteran';
+import { veteranLevel, veteranStarCount, type VeteranLevel } from './veteran';
 
 const NEIGH: ReadonlyArray<readonly [number, number]> = [
   [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1],
@@ -456,12 +456,30 @@ export function stackSoftBadgeLevel(stack: ReadonlyArray<RuntimeUnit>): UnitPath
   return best;
 }
 
-/** Najwyższy poziom weterana w stosie (game/veteran.ts). Patrz koszt przy stackArmorBadgeLevel. */
+/** Najwyższy poziom premii weterana w stosie (game/veteran.ts). Patrz koszt przy stackArmorBadgeLevel. */
 export function stackVeteranLevel(stack: ReadonlyArray<RuntimeUnit>): VeteranLevel {
   let best: VeteranLevel = 1;
   for (const u of stack) {
     const lvl = veteranLevel(u);
     if (lvl > best) best = lvl;
+  }
+  return best;
+}
+
+/**
+ * Najwyższa LICZBA GWIAZDEK w stosie (0–3).
+ *
+ * ⚠ NIE wyprowadzaj jej z poziomu premii. Po fali 106 gwiazdka = JEDNA WYGRANA
+ * BITWA (`veteranStarCount`), a poziom premii ma tylko trzy stopnie
+ * (1 wygrana → poziom 2, ale JEDNA gwiazdka). Stary rachunek
+ * `veteranStars(poziom)` pokazałby jednostce po jednej wygranej DWIE gwiazdki,
+ * czyli co innego niż pojedynczy żeton i co innego niż panel jednostki.
+ */
+export function stackVeteranStarCount(stack: ReadonlyArray<RuntimeUnit>): number {
+  let best = 0;
+  for (const u of stack) {
+    const n = veteranStarCount(u);
+    if (n > best) best = n;
   }
   return best;
 }
@@ -484,9 +502,9 @@ export interface StackVitals {
   armorBadgeLevel: UnitPathBadgeLevel;
   /** Ścieżka B (Parametry → ikona Koszar): NAJWYŻSZY poziom w stosie, 0–3. */
   softBadgeLevel: UnitPathBadgeLevel;
-  /** NAJWYŻSZY poziom weterana w stosie (1–3). */
+  /** NAJWYŻSZY poziom premii weterana w stosie (1–3). */
   veteranLevel: VeteranLevel;
-  /** Liczba gwiazdek dla `veteranLevel` (poziom 1 = Rekrut = 0 gwiazdek). */
+  /** NAJWYŻSZA liczba gwiazdek w stosie (0–3) = najwięcej wygranych bitew. */
   veteranStars: number;
 }
 
@@ -504,7 +522,6 @@ export function stackVitals(
   deps: StackVitalsDeps,
 ): StackVitals {
   const pool = stackHpPool(stack, deps.maxHpOf);
-  const vet = stackVeteranLevel(stack);
   return {
     ruchLeft: stackRuchLeft(stack),
     ruchMax: stackRuchMax(stack),
@@ -514,8 +531,8 @@ export function stackVitals(
     count: stack.length,
     armorBadgeLevel: stackArmorBadgeLevel(stack),
     softBadgeLevel: stackSoftBadgeLevel(stack),
-    veteranLevel: vet,
-    veteranStars: vet === 1 ? 0 : veteranStars(vet),
+    veteranLevel: stackVeteranLevel(stack),
+    veteranStars: stackVeteranStarCount(stack),
   };
 }
 

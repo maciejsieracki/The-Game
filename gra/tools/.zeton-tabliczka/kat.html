@@ -1,0 +1,40 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8">
+<title>Tabliczka — dowód, że paski się nie rozjeżdżają</title>
+<style>
+ body{margin:0;background:#0e1318;color:#e8eef4;font:14px/1.5 "Segoe UI",Arial,sans-serif;padding:16px}
+ h1{font-size:17px;margin:0 0 4px} h2{font-size:14px;margin:14px 0 6px;color:#9fb4c8}
+ p.sub{margin:0 0 10px;color:#9fb4c8;font-size:12.5px}
+ .box{background:#121820;border:1px solid #26333f;border-radius:10px;padding:10px;width:1300px}
+ .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:1280px}
+ canvas{display:block;width:100%;border-radius:6px}
+ .leg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:1280px;margin-top:6px}
+ .leg div{background:#182028;border:1px solid #2b3946;border-radius:6px;padding:6px 8px;text-align:center;font-size:11.5px;color:#cfe0ee}
+</style></head><body>
+<div class="box" id="box-kat">
+<h1>Paski Ruchu i Życia — wspólna lewa krawędź przy każdym ustawieniu kamery</h1>
+<p class="sub">Ta sama tabliczka: Ruch <b>2/4 = 50 %</b>, Życie <b>38/48 = 79 %</b> (ułamki celowo różne, elewacja 52°).</p>
+
+<h2>1) PRZYPADEK Z GRY — kamera gry (azymut na stałe 0°), żeton w różnych miejscach kadru</h2>
+<p class="sub">To jest sytuacja, w której właściciel zobaczył wadę: „boczna perspektywa” = żeton daleko od środka ekranu.
+Miara: najbardziej wysunięty w lewo piksel niebieskiego i zielonego wypełnienia. Ma wyjść <b>0 px</b>.</p>
+<div class="grid">
+  <canvas id="cv-p1" width="1280" height="600"></canvas>
+  <canvas id="cv-p2" width="1280" height="600"></canvas>
+  <canvas id="cv-p3" width="1280" height="600"></canvas>
+  <canvas id="cv-p4" width="1280" height="600"></canvas>
+</div>
+<div class="leg" id="leg-1"></div>
+
+<h2>2) STRES-TEST — obrót kamery, którego gra nie wykonuje</h2>
+<p class="sub">Po obrocie pionowa oś tabliczki rzutuje się na linię <i>skośną</i>, więc goła różnica krawędzi rośnie z samej geometrii i nic nie dowodzi.
+Miara: <b>reszta</b> = odchyłka każdej krawędzi od jej własnego, analitycznego rzutu wspólnej prostej. Ma wyjść <b>0 px</b> (tolerancja ±1 px z rasteryzacji).</p>
+<div class="grid">
+  <canvas id="cv-p5" width="1280" height="600"></canvas>
+  <canvas id="cv-p6" width="1280" height="600"></canvas>
+  <canvas id="cv-p7" width="1280" height="600"></canvas>
+  <canvas id="cv-p8" width="1280" height="600"></canvas>
+</div>
+<div class="leg" id="leg-2"></div>
+</div>
+<script type="module" src="./kat.ts"></script>
+</body></html>

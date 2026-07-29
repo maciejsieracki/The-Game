@@ -25,11 +25,11 @@ import {
   setUnitUpgradeBadgeAssets,
   type UpgradeBadgeLevel,
 } from '../../src/render/unitUpgradeBadges';
-import { applyUnitVeteranBadgeLevel } from '../../src/render/unitVeteranBadges';
+import { applyUnitVeteranBadgeStarCount } from '../../src/render/unitVeteranBadges';
 import { applyUnitStatPlate } from '../../src/render/unitStatPlate';
 import { stackVitals, type StackVitalsDeps } from '../../src/game/armyMerge';
 import type { RuntimeUnit } from '../../src/units/setup';
-import type { VeteranLevel } from '../../src/game/veteran';
+
 
 // --- assety: DOKŁADNIE to samo wstrzyknięcie co w src/main.ts ---------------
 setUnitOwnerEmblemAssets({
@@ -58,16 +58,13 @@ interface Zeton {
   ctx: UnitOwnerEmblemContext;
   armor: UpgradeBadgeLevel;
   soft: UpgradeBadgeLevel;
-  vet: VeteranLevel;
+  /** Liczba gwiazdek (0–3) = liczba wygranych bitew — model po fali 106. */
+  vet: 0 | 1 | 2 | 3;
   ruchLeft: number;
   ruchMax: number;
   hp: number | undefined;
   hpMax: number | undefined;
   moc: number | undefined;
-}
-
-function starsFor(v: VeteranLevel): number {
-  return v === 1 ? 0 : v;
 }
 
 /** Żeton zbudowany PRAWDZIWĄ ścieżką render/ — tak jak w UnitRenderer.sync(). */
@@ -83,8 +80,8 @@ function zeton(z: Zeton): THREE.Group {
     f.position.y = 0.35 * HEX_R;
     g.add(f);
   }
-  applyUnitUpgradeBadgeRow(g, z.armor, z.soft, starsFor(z.vet));
-  applyUnitVeteranBadgeLevel(g, z.vet);
+  applyUnitUpgradeBadgeRow(g, z.armor, z.soft, z.vet);
+  applyUnitVeteranBadgeStarCount(g, z.vet);
   applyUnitStatPlate(g, z.ctx, {
     ruchLeft: z.ruchLeft,
     ruchMax: z.ruchMax,
@@ -272,7 +269,7 @@ const STANY: Zeton[] = [
   {
     opis: 'bez ulepszeń, bez weterana, Moc 0 → BEZ pola Mocy (sam pasek + ikona właściciela)',
     unitKey: 'zwiadowca', kolor: KOLOR_ZLOTY, ctx: CIV_GRACZ,
-    armor: 0, soft: 0, vet: 1, ruchLeft: 3, ruchMax: 4, hp: undefined, hpMax: undefined, moc: 0,
+    armor: 0, soft: 0, vet: 0, ruchLeft: 3, ruchMax: 4, hp: undefined, hpMax: undefined, moc: 0,
   },
 ];
 
@@ -281,12 +278,12 @@ const STANY: Zeton[] = [
 // ---------------------------------------------------------------------------
 const DALEKO: Zeton[] = [
   { opis: '', unitKey: 'wlocznik', kolor: KOLOR_NIEBIESKI, ctx: CIV_GRACZ, armor: 3, soft: 3, vet: 3, ruchLeft: 2, ruchMax: 4, hp: 38, hpMax: 48, moc: 128 },
-  { opis: '', unitKey: 'wlocznik', kolor: KOLOR_NIEBIESKI, ctx: CIV_GRACZ, armor: 1, soft: 0, vet: 1, ruchLeft: 4, ruchMax: 4, hp: 48, hpMax: 48, moc: 41 },
+  { opis: '', unitKey: 'wlocznik', kolor: KOLOR_NIEBIESKI, ctx: CIV_GRACZ, armor: 1, soft: 0, vet: 0, ruchLeft: 4, ruchMax: 4, hp: 48, hpMax: 48, moc: 41 },
   { opis: '', unitKey: 'wojownik', kolor: KOLOR_CZERWONY, ctx: CIV_BARB, armor: 0, soft: 0, vet: 2, ruchLeft: 0, ruchMax: 3, hp: 11, hpMax: 44, moc: 24 },
-  { opis: '', unitKey: 'wlocznik', kolor: KOLOR_FIOLET, ctx: CIV_MIASTO, armor: 2, soft: 2, vet: 1, ruchLeft: 3, ruchMax: 4, hp: 30, hpMax: 48, moc: 76 },
-  { opis: '', unitKey: 'zwiadowca', kolor: KOLOR_ZLOTY, ctx: CIV_GRACZ, armor: 0, soft: 0, vet: 1, ruchLeft: 4, ruchMax: 4, hp: undefined, hpMax: undefined, moc: 0 },
+  { opis: '', unitKey: 'wlocznik', kolor: KOLOR_FIOLET, ctx: CIV_MIASTO, armor: 2, soft: 2, vet: 0, ruchLeft: 3, ruchMax: 4, hp: 30, hpMax: 48, moc: 76 },
+  { opis: '', unitKey: 'zwiadowca', kolor: KOLOR_ZLOTY, ctx: CIV_GRACZ, armor: 0, soft: 0, vet: 0, ruchLeft: 4, ruchMax: 4, hp: undefined, hpMax: undefined, moc: 0 },
   { opis: '', unitKey: 'wlocznik', kolor: KOLOR_NIEBIESKI, ctx: CIV_GRACZ, armor: 0, soft: 3, vet: 2, ruchLeft: 1, ruchMax: 4, hp: 20, hpMax: 48, moc: 205 },
-  { opis: '', unitKey: 'wojownik', kolor: KOLOR_CZERWONY, ctx: CIV_BARB, armor: 0, soft: 0, vet: 1, ruchLeft: 2, ruchMax: 3, hp: 44, hpMax: 44, moc: 18 },
+  { opis: '', unitKey: 'wojownik', kolor: KOLOR_CZERWONY, ctx: CIV_BARB, armor: 0, soft: 0, vet: 0, ruchLeft: 2, ruchMax: 3, hp: 44, hpMax: 44, moc: 18 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -338,7 +335,7 @@ function zetonZeStosu(
   return {
     z: {
       opis, unitKey, kolor, ctx,
-      armor: v.armorBadgeLevel, soft: v.softBadgeLevel, vet: v.veteranLevel,
+      armor: v.armorBadgeLevel, soft: v.softBadgeLevel, vet: v.veteranStars as 0 | 1 | 2 | 3,
       ruchLeft: v.ruchLeft, ruchMax: v.ruchMax, hp: v.hp, hpMax: v.hpMax, moc: v.fieldPowerM,
     },
     opisPelny: `${opis}<br>ruch ${v.ruchLeft}/${v.ruchMax} · HP ${Math.round(v.hp)}/${Math.round(v.hpMax)}`
