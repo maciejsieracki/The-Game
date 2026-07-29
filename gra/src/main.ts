@@ -458,7 +458,7 @@ import {
   disposeTradeRoutesOverlayGroup,
   type TradeRouteOverlayInput,
 } from './render/tradeRoutesOverlay';
-import { showDiplomacyPendingModal } from './ui/diplomacyPendingHud';
+import { hideDiplomacyPendingModal, showDiplomacyPendingModal } from './ui/diplomacyPendingHud';
 import { getMinimapData, computeViewport } from './map/minimap';
 import {
   createImprovementBuildApi,
@@ -1079,6 +1079,8 @@ async function boot(): Promise<void> {
     let d1bHudActive = false;
     /** Aktualnie otwarta audiencja dyplomatyczna (ownerId AI), null = zamknięta. */
     let diplomacyAudienceOwnerId: number | null = null;
+    /** Wpis kolejki dyplomacji, z którego otwarto bieżącą audiencję / modal propozycji. */
+    let diplomacyAudienceSourceEventId: string | null = null;
 
     // C3: buildScene jest asynchroniczny (budowa sceny porcjami/chunkami). Mapa startowa
     // (domyślna, mała) budowana bez overlaya — po prostu await, bez callbacku postępu.
@@ -9490,11 +9492,71 @@ async function boot(): Promise<void> {
       return events.filter(e => !dismissedSidePanelEventIds.has(e.id));
     }
 
+    /** Kolejka otwartych propozycji dyplomatycznych (FIFO: inbox → stół negocjacji). */
+    function collectOpenDiploProposalQueue(): Array<{ id: string; ownerId: number }> {
+      const out: Array<{ id: string; ownerId: number }> = [];
+      for (const p of pendingDiplomacyInbox) {
+        if (dismissedSidePanelEventIds.has(p.id)) continue;
+        out.push({ id: p.id, ownerId: p.ownerId });
+      }
+      for (const n of negotiationTable) {
+        if (n.awaitingOwnerId !== 0) continue;
+        if (dismissedSidePanelEventIds.has(n.id)) continue;
+        const aiOwnerId = n.proposerOwnerId === 0 ? n.responderOwnerId : n.proposerOwnerId;
+        out.push({ id: n.id, ownerId: aiOwnerId });
+      }
+      return out;
+    }
+
+    function hasNextOpenDiploProposal(currentOwnerId: number, currentEventId: string | null): boolean {
+      const queue = collectOpenDiploProposalQueue();
+      if (queue.length <= 1) return false;
+      if (currentEventId) return queue.some(q => q.id !== currentEventId);
+      return queue.some(q => q.ownerId !== currentOwnerId)
+        || queue.filter(q => q.ownerId === currentOwnerId).length > 1;
+    }
+
+    function resolveNextOpenDiploProposal(
+      currentOwnerId: number,
+      currentEventId: string | null,
+    ): { id: string; ownerId: number } | null {
+      const queue = collectOpenDiploProposalQueue();
+      if (queue.length <= 1) return null;
+      let curIdx = currentEventId ? queue.findIndex(q => q.id === currentEventId) : -1;
+      if (curIdx < 0) curIdx = queue.findIndex(q => q.ownerId === currentOwnerId);
+      const nextIdx = curIdx >= 0 ? (curIdx + 1) % queue.length : 0;
+      if (curIdx >= 0 && nextIdx === curIdx) return null;
+      const next = queue[nextIdx];
+      if (!next) return null;
+      if (currentEventId && next.id === currentEventId) return null;
+      if (!currentEventId && curIdx < 0 && next.ownerId === currentOwnerId && queue.length <= 1) return null;
+      return next;
+    }
+
+    function openDiploProposalQueueItem(item: { id: string; ownerId: number }): void {
+      diplomacyAudienceSourceEventId = item.id;
+      if (item.id.startsWith('diplo-pend-')) {
+        openDiplomacyPendingById(item.id);
+        return;
+      }
+      openDiplomacyAudienceForNegotiation(item.id);
+    }
+
+    function openNextOpenDiploProposal(currentOwnerId: number): void {
+      const next = resolveNextOpenDiploProposal(currentOwnerId, diplomacyAudienceSourceEventId);
+      if (!next) return;
+      hideDiplomacyPendingModal();
+      hideDiplomacyAudience();
+      diplomacyAudienceOwnerId = null;
+      openDiploProposalQueueItem(next);
+    }
+
     /** C-DYP-Q1=A: klik na wpis stołu w kolejce zdarzeń — otwiera pełną Audiencję (stół), nie stary modal jednopozycyjny. */
     function openDiplomacyAudienceForNegotiation(negotiationId: string): void {
       const entry = negotiationTable.find(n => n.id === negotiationId);
       if (!entry) return;
       const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      diplomacyAudienceSourceEventId = negotiationId;
       // Przychodząca propozycja AI: audiencja z kartą „Oczekujące propozycje" (Przyjmij/
       // Odrzuć/Kontruj). NIE auto-otwieramy pustego kreatora „Handel jednorazowy" — Maciej
       // 2026-07-28 (bug UX: puste Oferujemy|Oferują przy kontakcie AI).
@@ -10210,12 +10272,15 @@ async function boot(): Promise<void> {
       }
     }
 
-    /** Gracz Przyjmuje wpis stołu, w którym to jego kolej — bez ponownej oceny progów (jak resolvePlayerAcceptsAiPending). */
+    /** Gracz Przyjmuje wpis stołu — incoming: akceptacja AI; own: wysłanie propozycji do partnera (Przyjmij w PN). */
     function handleNegotiationAccept(negotiationId: string): void {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
-      if (entry.awaitingOwnerId !== 0) return;
+      if (entry.awaitingOwnerId !== 0) {
+        handleRequestAiNegotiationResponse(negotiationId);
+        return;
+      }
       const preview = previewNegotiationEntry(entry);
       if (!preview.accepted) {
         showHintMessage('Nie można przyjąć — ' + (preview.reason ?? 'warunki niespełnione'), 4000);
@@ -10229,12 +10294,19 @@ async function boot(): Promise<void> {
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
-    /** Gracz Odrzuca wpis stołu, w którym to jego kolej. */
+    /** Gracz Odrzuca wpis stołu — incoming: odmowa AI; own: wycofanie własnej propozycji. */
     function handleNegotiationReject(negotiationId: string): void {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
-      if (entry.awaitingOwnerId !== 0) return;
+      if (entry.awaitingOwnerId !== 0) {
+        negotiationTable.splice(idx, 1);
+        showHintMessage('Wycofano propozycję z stołu', 3500);
+        refreshD1bHud();
+        updateDiplomacyAudience();
+        if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+        return;
+      }
       negotiationTable.splice(idx, 1);
       if (entry.actionId === 'trybut_zadanie' || entry.actionId === 'trybut_oferta') {
         const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
@@ -10503,6 +10575,7 @@ async function boot(): Promise<void> {
     function openDiplomacyPendingById(id: string): void {
       const p = pendingDiplomacyInbox.find(x => x.id === id);
       if (!p) return;
+      diplomacyAudienceSourceEventId = id;
       showDiplomacyPendingModal(
         {
           id: p.id,
@@ -10512,6 +10585,10 @@ async function boot(): Promise<void> {
         },
         () => resolvePendingDiplomacy(p.id, true),
         () => resolvePendingDiplomacy(p.id, false),
+        {
+          hasNext: hasNextOpenDiploProposal(p.ownerId, id),
+          onNext: () => openNextOpenDiploProposal(p.ownerId),
+        },
       );
     }
 
@@ -12377,9 +12454,7 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * C-DYP-Q1 (Maciej 2026-07-29): propozycja gracza ląduje na stole i ZOSTAJE tam,
-     * dopóki gracz nie poprosi AI o odpowiedź („Poproś o odpowiedź") lub nie minie tura AI
-     * (resolvePendingNegotiationsForOwner). Bez natychmiastowego resolve przy wysłaniu.
+     * C-DYP-Q1 (Maciej 2026-07-29): propozycja gracza ląduje na stole; odpowiedź AI po Przyjmij w PN.
      */
     /** Wpis stołu czekający na gracza (AI złożyło propozycję) — ten sam typ akcji. */
     function findIncomingNegotiationForAction(
@@ -12409,7 +12484,7 @@ async function boot(): Promise<void> {
       refreshD1bHud();
       updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
-      showHintMessage('Propozycja na stole — użyj „Poproś o odpowiedź" w kolumnie Oni oferują', 4000);
+      showHintMessage('Propozycja na stole — użyj Przyjmij w Punkty porozumienia', 4000);
     }
 
     function diplomacyActionIdFromLabel(akcja: string): string {
@@ -12731,6 +12806,7 @@ async function boot(): Promise<void> {
         onBack: () => {
           hideDiplomacyAudience();
           diplomacyAudienceOwnerId = null;
+          diplomacyAudienceSourceEventId = null;
           // Powrót do listy tylko gdy gracz wszedł z listy (brak zaznaczonej jednostki).
           if (d1bHudActive && selectedId === null) {
             showDiploListHud();
@@ -12742,6 +12818,8 @@ async function boot(): Promise<void> {
           }
           requestAnimationFrame(() => tryOpenNextFirstContactCard());
         },
+        hasNextOpenProposal: () => hasNextOpenDiploProposal(ownerId, diplomacyAudienceSourceEventId),
+        onNextOpenProposal: () => openNextOpenDiploProposal(ownerId),
         onOpenKnownFactions: () => {
           hideDiplomacyAudience();
           diplomacyAudienceOwnerId = null;

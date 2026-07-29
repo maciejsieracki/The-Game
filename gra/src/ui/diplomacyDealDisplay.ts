@@ -123,6 +123,43 @@ export function renderNegotiationDealHtml(
   return html;
 }
 
+/** Wpis traktatu dwustronnego — gdy koszyk pusty, obie strony stołu pokazują tę samą etykietę. */
+export function renderTreatyDealItemHtml(label: string): string {
+  return `<div class="da-deal-item da-deal-treaty"><span class="da-deal-amt">${esc(label)}</span></div>`;
+}
+
+/**
+ * Jedna strona stołu negocjacji — tylko pozycje dealu (bez ocen PN).
+ * Gdy koszyk pusty a `treatyFallbackLabel` podany (traktat dwustronny), pokazuje etykietę traktatu.
+ */
+export function renderNegotiationTableDealSideHtml(
+  payload: ProposalPayload,
+  focus: 'we' | 'they',
+  incoming: boolean,
+  treatyFallbackLabel?: string,
+): string {
+  const split = splitNegotiationDealPlayerSides(payload, incoming);
+  const items = split ? (focus === 'we' ? split.weOffer : split.theyOffer) : [];
+
+  if (items.length > 0) {
+    return renderNegotiationDealSideOnlyHtml(payload, focus, incoming);
+  }
+
+  if (treatyFallbackLabel) {
+    const colCls = focus === 'we' ? 'da-deal-col-we' : 'da-deal-col-they';
+    const headLabel = focus === 'we' ? 'Oferujemy' : 'Oferują';
+    return (
+      '<div class="da-deal-single da-deal-side-only">'
+      + `<div class="da-deal-col ${colCls}">`
+      + `<div class="da-deal-col-head">${headLabel}</div>`
+      + `<div class="da-deal-col-body">${renderTreatyDealItemHtml(treatyFallbackLabel)}</div>`
+      + '</div></div>'
+    );
+  }
+
+  return '<div class="da-deal-single da-deal-side-only"><span class="da-deal-empty">—</span></div>';
+}
+
 /** Jedna kolumna stołu (bez kontekstu drugiej strony) — do linked pending split. */
 export function renderNegotiationDealSideOnlyHtml(
   payload: ProposalPayload,

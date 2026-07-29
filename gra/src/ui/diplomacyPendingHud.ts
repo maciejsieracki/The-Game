@@ -46,6 +46,7 @@ export function showDiplomacyPendingModal(
   item: DiplomacyPendingItem,
   onAccept: () => void,
   onReject: () => void,
+  opts?: { onNext?: () => void; hasNext?: boolean },
 ): void {
   hideDiplomacyPendingModal();
   ensureStyles();
@@ -54,14 +55,23 @@ export function showDiplomacyPendingModal(
   const box = document.createElement('div');
   box.className = 'civ-dip-box';
   const dipIc = dipBrandIconHtml('tb-diplomacy', 24, 'dip-ic') ?? '';
+  const hasNext = opts?.hasNext === true && opts.onNext != null;
+  const nextBtn = hasNext
+    ? '<button type="button" class="dip-gold-btn civ-dip-next">Następne</button>'
+    : '';
   box.innerHTML = '<h2>' + dipIc + esc(item.title) + '</h2>'
     + '<p>' + esc(item.detail) + '</p>'
     + '<div class="civ-dip-btns">'
+    + nextBtn
     + '<button type="button" class="dip-gold-btn civ-dip-acc">Akceptuj</button>'
     + '<button type="button" class="dip-muted-btn civ-dip-rej">Odrzuć</button>'
     + '</div>';
   root.appendChild(box);
   document.body.appendChild(root);
+  box.querySelector('.civ-dip-next')?.addEventListener('click', () => {
+    hideDiplomacyPendingModal();
+    opts?.onNext?.();
+  });
   box.querySelector('.civ-dip-acc')?.addEventListener('click', () => {
     hideDiplomacyPendingModal();
     onAccept();

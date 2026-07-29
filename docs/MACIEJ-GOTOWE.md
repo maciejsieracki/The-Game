@@ -1,4 +1,14 @@
-﻿## [14:18] ✅ Gotowe — deploy ROBOCZA FALA 107 (b0517973)
+﻿## [17:45] ✅ Gotowe — deploy ROBOCZA FALA 109 (57f6fba7)
+
+**FALA 109** | md5 `57f6fba78776b0c31446059c66dbc975` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Dyplomacja AC + glina ×3:**
+- Stół negocjacji: My/Oni = tylko deal; akcje w Punkty porozumienia; Następne (FIFO); bez „Poproś o odpowiedź".
+- Traktat handlowy symetryczny gdy koszyk pusty.
+- Glina: rarity 0.10→0.30 (×3 przy Normalnie; Mało/Dużo proporcjonalnie).
+- tsc 0 · acceptance-points 52/52 · negotiation-table 43/43 · map-gen-regression PASS · POLE-BITWY `dd399c4b`.
+
+## [14:18] ✅ Gotowe — deploy ROBOCZA FALA 107 (b0517973)
 
 **FALA 107** | md5 `b0517973516024a1a75579eac09f52d9` | commit `d9fe45f` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

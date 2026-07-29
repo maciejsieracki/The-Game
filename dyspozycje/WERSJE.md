@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `9b61bdfd` - 2026-07-29 13:13 - FALA 108: TABLICZKA JEDNOSTKI (paski Ruchu i Zycia, Moc armii) - **AKTUALNA**
+## ROBOCZA `57f6fba7` - 2026-07-29 17:45 - FALA 109: DYPLO AC + GLINA x3 - **AKTUALNA**
+- md5 (pelne): `57f6fba78776b0c31446059c66dbc975` · stempel: `ROBOCZA · 2026-07-29 17:45`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · diplomacy-acceptance-points 52/52 · negotiation-table 43/43 · map-gen-regression PASS.
+- **Dyplomacja AC:** kolumny My/Oni = tylko przedmiot dealu; werdykt + Przyjmij/Odrzuć/Kontruj wyłącznie w Punkty porozumienia; traktat handlowy symetryczny; przycisk Następne (kolejka FIFO); usunięte Poproś o odpowiedź / oceny PN w kolumnach.
+- **Glina x3:** `deposit_rules.glina.rarity` 0.10→0.30 (×3 bazowej gęstości przy Normalnie; proporcje tierów Mało/Normalnie/Dużo bez zmian).
+
+## ROBOCZA `9b61bdfd` - 2026-07-29 13:13 - FALA 108: TABLICZKA JEDNOSTKI (paski Ruchu i Zycia, Moc armii) - **ZASTĄPIONA**
 - md5 (pelne): `9b61bdfdf20f181110ee2465cc75ce38` · stempel: `ROBOCZA · 2026-07-29 13:13`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `f10826b`.
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0, 36,5 MB). Worktree buildowy

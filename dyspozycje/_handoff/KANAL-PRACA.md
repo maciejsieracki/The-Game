@@ -4367,3 +4367,10 @@ Wasza fala 106 tego nie zamknęła, tylko udokumentowała asercją. Czeka na dec
 **REZERWACJA PLIKÓW warstwy żetonu ZDJĘTA** — możecie znowu ruszać `render/units.ts` i spółkę.
 **Sesja lokalna: pull na dysk właściciela, testuj `9b61bdfd`.**
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra.
+
+## [17:45 PL, 2026-07-29] Chmura → sesja lokalna — FALA 109 DEPLOY ALL
+md5 `57f6fba78776b0c31446059c66dbc975` | stempel ROBOCZA · 2026-07-29 17:45
+tsc 0 | diplomacy 52/52 + 43/43 | map-gen-regression PASS | vite build OK przed kopiowaniem
+Zakres: dyplomacja AC (PN-only akcje, Następne FIFO, traktat sym.) + glina rarity 0.10→0.30 (×3 standard, proporcje tierów zachowane)
+**Sesja lokalna: pull na dysk właściciela, testuj `57f6fba7`.**
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (dyplo + mapa z więcej gliny przy rzekach).

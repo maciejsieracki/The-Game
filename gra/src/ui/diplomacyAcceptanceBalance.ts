@@ -15,6 +15,9 @@ export interface NegotiationBalanceSource {
   canAccept?: boolean;
   responderPreview?: { accepted: boolean; reason?: string };
   isGift?: boolean;
+  awaitingAiResponse?: boolean;
+  canCounter?: boolean;
+  uiActionId?: string;
 }
 
 export interface PnBalancePanelData {
@@ -27,6 +30,10 @@ export interface PnBalancePanelData {
   myBalance?: AcceptanceSideBalance;
   canAccept?: boolean;
   extraOnTable?: number;
+  awaitingAiResponse?: boolean;
+  responderPreview?: { accepted: boolean; reason?: string };
+  canCounter?: boolean;
+  uiActionId?: string;
 }
 
 function esc(s: string): string {
@@ -62,6 +69,10 @@ export function balancePanelDataFromRow(
     myBalance: my,
     canAccept: row.canAccept,
     extraOnTable,
+    awaitingAiResponse: row.awaitingAiResponse,
+    responderPreview: row.responderPreview,
+    canCounter: row.canCounter,
+    uiActionId: row.uiActionId,
   };
 }
 
@@ -101,6 +112,19 @@ function verdictHtml(data: PnBalancePanelData): { html: string; tone: 'ok' | 'no
       return { tone: 'no', html: 'Oni nie spełniają progu: ' + their.statusLabel };
     }
     return { tone: 'wait', html: 'Oceń ofertę lub kontruj, aby osiągnąć bilans' };
+  }
+  if (data.awaitingAiResponse) {
+    const prev = data.responderPreview;
+    if (prev?.accepted) {
+      return {
+        tone: 'ok',
+        html: 'Spełnia warunki — użyj Przyjmij, aby wysłać propozycję do partnera',
+      };
+    }
+    if (prev && !prev.accepted) {
+      return { tone: 'no', html: 'Nie spełnia warunków: ' + (prev.reason ?? 'warunki niespełnione') };
+    }
+    return { tone: 'wait', html: 'Propozycja na stole — użyj Przyjmij, aby poprosić o odpowiedź' };
   }
   if (their.accepted) {
     return {

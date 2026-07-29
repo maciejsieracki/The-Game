@@ -99,7 +99,10 @@
   "deposit_rules": {
     "miedz": { "rarity": 0.10 },
     "zelazo": { "rarity": 0.08 },
-    "glina": { "rarity": 0.10 },
+    "glina": {
+      "rarity": 0.30,
+      "_opis": "Maciej 2026-07-29: ×3 gęstości złóż gliny vs poprzedni standard (0.10→0.30). Szansa spawnu na kwal. heks = rarity × baseline_rarity_mult (1.35) × surowce_mult tieru (Mało 0.6 / Normalnie 1.0 / Dużo 1.4) — proporcje tierów bez zmian."
+    },
     "konie": { "rarity": 0.025 },
     "wegiel": { "rarity": 0.10 },
     "sol": { "rarity": 0.12 },

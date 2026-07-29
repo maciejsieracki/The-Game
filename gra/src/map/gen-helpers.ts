@@ -7041,7 +7041,7 @@ const BASE_DEPOSIT_RULES: DepositRule[] = [
     // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
     // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
-    rarity: 0.10,
+    rarity: 0.30,
   },
   {
     id: 'konie',
