@@ -358,9 +358,8 @@ import {
 } from './game/wonder-map-build';
 import {
   GAME_MAP_RENDER_STYLE,
-  TERRAIN_SURFACE_Y,
   DEFAULT_MAP_RENDER_OPTIONS,
-  galleryDecorSurfaceY,
+  elevatedTerrainEdgeSurfaceY,
   type MapRenderOptions,
 } from './render/mapRenderStyle';
 import {
@@ -1607,7 +1606,8 @@ async function boot(): Promise<void> {
         if (!ov) return;
         collapseToMergedMesh(ov); // FPS lewar 1: dziesiątki boxów złoża → 1 mesh
         const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
-        const baseY = TERRAIN_SURFACE_Y[hex.terenBazowy] ?? 0.45;
+        const topY = unitRenderer.topYAt(hex.coords.q, hex.coords.r);
+        const baseY = elevatedTerrainEdgeSurfaceY(hex.terenBazowy, topY);
         compactDepositAtEdge(ov, x, z, baseY, hex.coords.q * 1.3 + hex.coords.r * 0.7);
         ov.matrixAutoUpdate = false; ov.updateMatrix(); // FPS lewar 3: statyczne — bez per-frame update macierzy
         scene.add(ov);
@@ -1635,7 +1635,8 @@ async function boot(): Promise<void> {
           if (!ov) continue;
           collapseToMergedMesh(ov); // FPS lewar 1
           const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
-          const baseY = TERRAIN_SURFACE_Y[hex.terenBazowy] ?? 0.45;
+          const topY = unitRenderer.topYAt(hex.coords.q, hex.coords.r);
+          const baseY = elevatedTerrainEdgeSurfaceY(hex.terenBazowy, topY);
           compactDepositAtEdge(ov, x, z, baseY, hex.coords.q * 1.3 + hex.coords.r * 0.7);
           ov.matrixAutoUpdate = false; ov.updateMatrix(); // FPS lewar 3
           const hexKey = keyOf(hex.coords.q, hex.coords.r);
@@ -8387,9 +8388,8 @@ async function boot(): Promise<void> {
      * Ulepszenia, które NIE spłaszczają wzgórza/góry — zostaw naturalny kopiec/szczyt
      * (nie hideDecor): solo hodowla (bydło/owce/lama stoją na kopcu) + kamieniołom
      * (Maciej 2026-07-24, R-KAMIEN-RELIEF: kamieniołom ma być wkomponowany w istniejące
-     * wzgórze/górę, a nie je spłaszczać — model już siada na wysokości szczytu/plateau
-     * przez improvementMeshPlacement/galleryDecorSurfaceY poniżej; brakowało tylko
-     * pozostawienia widocznej bryły reliefu pod nim).
+     * wzgórze/górę, a nie je spłaszczać — model siada na reliefie przy ściance heksa
+     * (elevatedTerrainEdgeSurfaceY); brakowało tylko pozostawienia widocznej bryły reliefu pod nim).
      * Decyzja właściciela (2026-07-25, autonomiczna do rewizji ABC): kopalnia/kopalnia_miedzi
      * mają identyczny mechanizm spłaszczania — rozszerzone o nie, bo kopalnia wkomponowana
      * w zbocze wzgórza jest logiczniejsza niż płaski heks (spójne z kamieniołomem).
@@ -8411,7 +8411,10 @@ async function boot(): Promise<void> {
         return topY;
       }
       if (elevated) {
-        return galleryDecorSurfaceY(teren, topY, layers) + 0.01;
+        if (preservesHillRelief(layers)) {
+          return elevatedTerrainEdgeSurfaceY(teren, topY) + 0.01;
+        }
+        return topY + 0.01;
       }
       return topY + 0.01;
     }

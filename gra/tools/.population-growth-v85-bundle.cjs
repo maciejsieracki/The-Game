@@ -20,16 +20,21 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.population-growth-v85-entry.ts
 var population_growth_v85_entry_exports = {};
 __export(population_growth_v85_entry_exports, {
+  WYZYWIENIE_GROWTH_PCT: () => WYZYWIENIE_GROWTH_PCT,
   advanceEmpireFood: () => advanceEmpireFood,
   applyFractionalGrowthV85: () => applyFractionalGrowthV85,
   applyHungerPenaltyV85: () => applyHungerPenaltyV85,
   applyPostCentralPopulationGrowth: () => applyPostCentralPopulationGrowth,
   buildEmpireFoodParams: () => buildEmpireFoodParams,
   buildRationParams: () => buildRationParams,
+  clampPoziomRacji: () => clampPoziomRacji,
   computeGrowthPercentV85: () => computeGrowthPercentV85,
   freshEmpireFoodState: () => freshEmpireFoodState,
   getCityRationLevel: () => getCityRationLevel,
   growthGainPerTurnSlots: () => growthGainPerTurnSlots,
+  migrateLegacyRationLevel: () => migrateLegacyRationLevel,
+  rationFoodCostPerPop: () => rationFoodCostPerPop,
+  rationGrowthPercent: () => rationGrowthPercent,
   turnsUntilNextCitizen: () => turnsUntilNextCitizen
 });
 module.exports = __toCommonJS(population_growth_v85_entry_exports);
@@ -126,8 +131,9 @@ var terrain_yields_default = {
       Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 8,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +8 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Glina: 2,
+      Suma: 10,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105; +2 glina (szt./tur\u0119) przy rzece \u2014 plon produkcji (R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29); razem +10 z glin\u0105"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
@@ -136,6 +142,7 @@ var terrain_yields_default = {
       Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
+      Glina: 0,
       Suma: 7,
       Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
@@ -195,15 +202,15 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.045, highland: 0.105 },
-      medium: { mountain: 0.075, highland: 0.125 },
-      high: { mountain: 0.18, highland: 0.27 }
+      low: { mountain: 0.06, highland: 0.126 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.324 }
     },
     relief_overflow_cap_frac: {
-      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
-      low: { mountain: 0.045, highland: 0.075 },
-      medium: { mountain: 0.05, highland: 0.085 },
-      high: { mountain: 0.12, highland: 0.18 }
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Maciej 2026-07-29: medium=10% G\xF3ry + 15% Wzg\xF3rza w kom\xF3rce 15\xD715; Ma\u0142o/Du\u017Co przeskalowane wzgl\u0119dem poprzedniego stosunku tier\xF3w.",
+      low: { mountain: 0.09, highland: 0.132 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.318 }
     },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
@@ -244,7 +251,10 @@ var map_gen_params_default = {
   deposit_rules: {
     miedz: { rarity: 0.1 },
     zelazo: { rarity: 0.08 },
-    glina: { rarity: 0.1 },
+    glina: {
+      rarity: 0.3,
+      _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
+    },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
     sol: { rarity: 0.12 },
@@ -277,7 +287,7 @@ var FALLBACK_RIVER_SCALE = {
 var FALLBACK_DEPOSIT_RARITY = {
   miedz: 0.1,
   zelazo: 0.08,
-  glina: 0.1,
+  glina: 0.3,
   konie: 0.1,
   wegiel: 0.1,
   owce: 0.08,
@@ -500,6 +510,10 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
+var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
+var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
+var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
+var MIN_HIGHLANDS_COPPER_CELL = RELIEF_MIN_HIGHLANDS.medium;
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,
@@ -541,7 +555,7 @@ var BASE_DEPOSIT_RULES = [
     // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
     // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
-    rarity: 0.1
+    rarity: 0.3
   },
   {
     id: "konie",
@@ -1005,6 +1019,11 @@ function applyImprovementBonuses(yld, improvementKeys) {
     applyImprovementBonus(yld, key);
   }
 }
+var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
+var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
+  const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
+  return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -1147,7 +1166,7 @@ var miasto_params_default = {
   bonus_obrona_palisada_proc: {
     wartosc: 100,
     jednostka: "% Obrony (wczesna palisada drewniana)",
-    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Br\u0105zu, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
+    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Kamienia, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -1278,8 +1297,8 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   stolarnia: ["Drewno"],
   kamieniarski: ["Kamie\u0144"],
   kuznia: ["Ruda"],
-  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
-  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  odlewnia_brazu: ["Ruda"],
+  // PYTANIE-84-R9/U-13 + DOSTEP-SUROWCE-Q1: Mennica — Złoto w magazynie państwa.
   mennica: [ZLOTO_LABEL]
 };
 var ASCII_BY_LABEL = Object.fromEntries(
@@ -1301,6 +1320,18 @@ function spichlerzArmyFoodCostMultiplier(opts) {
   if (opts.isGarrisonInSolCity) m *= 0.5;
   return m;
 }
+
+// src/game/unit-building-bonuses.ts
+var ARMOR_PATH_MAX_PP = 45;
+var SOFT_PATH_MAX_PP = 50;
+var ARMOR_PATH_LEVEL_MAX_PP = [
+  Math.floor(ARMOR_PATH_MAX_PP / 3),
+  Math.floor(ARMOR_PATH_MAX_PP * 2 / 3)
+];
+var SOFT_PATH_LEVEL_MAX_PP = [
+  Math.floor(SOFT_PATH_MAX_PP / 3),
+  Math.floor(SOFT_PATH_MAX_PP * 2 / 3)
+];
 
 // src/game/production.ts
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
@@ -1339,9 +1370,7 @@ function terrainRowToTileYield(row) {
     handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
-    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
-    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
-    glina: 0,
+    glina: Number(row.Glina ?? 0),
     ruda: 0,
     ruda_zelaza: 0
   };
@@ -1381,6 +1410,7 @@ function tileYield(tile) {
     zywnosc += RIVER_MODIFIER.zywnosc;
     praca += RIVER_MODIFIER.praca;
     handel += RIVER_MODIFIER.handel;
+    glina += RIVER_MODIFIER.glina;
   }
   const out = {
     zywnosc: Math.max(0, zywnosc),
@@ -4329,7 +4359,29 @@ function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter, t
 }
 
 // src/game/population-growth-v85.ts
-var DEFAULT_POZIOM_RACJI = 2;
+var WYZYWIENIE_MIN = 0;
+var WYZYWIENIE_MAX = 6;
+var WYZYWIENIE_STEP = 0.5;
+var WYZYWIENIE_LEVELS = Array.from(
+  { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
+  (_, i) => WYZYWIENIE_MIN + i * WYZYWIENIE_STEP
+);
+var WYZYWIENIE_GROWTH_PCT = {
+  0: -10,
+  0.5: -6,
+  1: -2,
+  1.5: 0,
+  2: 1.5,
+  2.5: 3,
+  3: 3.5,
+  3.5: 4,
+  4: 4.5,
+  4.5: 5,
+  5: 5.5,
+  5.5: 6,
+  6: 7
+};
+var DEFAULT_POZIOM_RACJI = 4;
 function pick(row, d, fallback) {
   if (!row) return fallback;
   const v = row[d];
@@ -4347,24 +4399,29 @@ function buildRationParams(raw, difficulty = "normal") {
   };
 }
 function clampPoziomRacji(n) {
-  if (n >= 3) return 3;
-  if (n <= 1) return 1;
-  return 2;
+  const clamped = Math.min(WYZYWIENIE_MAX, Math.max(WYZYWIENIE_MIN, n));
+  return Math.round(clamped / WYZYWIENIE_STEP) * WYZYWIENIE_STEP;
+}
+function migrateLegacyRationLevel(old) {
+  if (old === 1) return 2;
+  if (old === 2) return 4;
+  if (old === 3) return 6;
+  return clampPoziomRacji(old);
 }
 function migrateProcentRozwojToPoziomRacji(procentRozwoj) {
   if (procentRozwoj === void 0) return DEFAULT_POZIOM_RACJI;
-  if (procentRozwoj >= 90) return 3;
-  if (procentRozwoj >= 50) return 2;
-  return 1;
+  return clampPoziomRacji(procentRozwoj / 100 * WYZYWIENIE_MAX);
 }
 function getCityRationLevel(city) {
   if (city.poziomRacji !== void 0) return clampPoziomRacji(city.poziomRacji);
   return migrateProcentRozwojToPoziomRacji(city.procentRozwoj);
 }
-function rationGrowthPercent(level, params) {
-  if (level === 3) return params.racjeWzrostProc3;
-  if (level === 1) return params.racjeWzrostProc1;
-  return params.racjeWzrostProc2;
+function rationFoodCostPerPop(level, _params) {
+  return clampPoziomRacji(level);
+}
+function rationGrowthPercent(level, _params) {
+  const key = clampPoziomRacji(level);
+  return WYZYWIENIE_GROWTH_PCT[key] ?? 0;
 }
 function computeGrowthPercentV85(input) {
   const racje = rationGrowthPercent(input.poziomRacji, input.rationParams);
@@ -4383,21 +4440,29 @@ function applyFractionalGrowthV85(city, growthPct, fed, maAkwedukt, econParams) 
   let frac = city.wzrostUlamkowy ?? 0;
   let wzrost = false;
   let ubytek = false;
-  if (fed && growthPct > 0 && pop > 0) {
+  if (fed && growthPct !== 0 && pop > 0) {
     const popCap = cityPopulationCap(maAkwedukt, econParams);
-    if (pop < popCap) {
+    if (growthPct > 0 && pop < popCap) {
       frac += pop * growthPct / 100;
       while (frac >= 1 && pop < popCap) {
         pop += 1;
         frac -= 1;
         wzrost = true;
       }
+    } else if (growthPct < 0 && pop > 1) {
+      frac -= pop * -growthPct / 100;
+      while (frac >= 1 && pop > 1) {
+        pop -= 1;
+        frac -= 1;
+        ubytek = true;
+      }
     }
   }
   return { nowaLudnosc: pop, wzrostUlamkowy: frac, wzrost, ubytek };
 }
 function growthGainPerTurnSlots(population, growthPct, fed, atPopCap) {
-  if (!fed || growthPct <= 0 || atPopCap || population <= 0) return 0;
+  if (!fed || growthPct === 0 || population <= 0) return 0;
+  if (growthPct > 0 && atPopCap) return 0;
   return population * growthPct / 100;
 }
 function turnsUntilNextCitizen(wzrostUlamkowy, gainPerTurn) {
@@ -4476,7 +4541,7 @@ function applyPostCentralPopulationGrowth(opts) {
       city.wzrostUlamkowy = growth.wzrostUlamkowy;
       tick.ludnoscPo = city.population;
       tick.wzrost = growth.wzrost;
-      tick.ubytek = hunger.ubytek;
+      tick.ubytek = hunger.ubytek || growth.ubytek;
       tick.wzrostProcent = breakdown.total;
       tick.wzrostUlamkowyPo = city.wzrostUlamkowy;
       tick.magazynPoTurze = city.wzrostUlamkowy;
@@ -4487,7 +4552,7 @@ function applyPostCentralPopulationGrowth(opts) {
         city.manpower = refreshManpowerAfterPopChange(city, ownerEra, before, mpMults.maxMult);
       }
       if (growth.wzrost) econ.growth += 1;
-      if (hunger.ubytek) econ.starved += 1;
+      if (hunger.ubytek || growth.ubytek) econ.starved += 1;
     }
   }
 }
@@ -5472,15 +5537,20 @@ function _setLastEmpireFoodTicks(ticks) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  WYZYWIENIE_GROWTH_PCT,
   advanceEmpireFood,
   applyFractionalGrowthV85,
   applyHungerPenaltyV85,
   applyPostCentralPopulationGrowth,
   buildEmpireFoodParams,
   buildRationParams,
+  clampPoziomRacji,
   computeGrowthPercentV85,
   freshEmpireFoodState,
   getCityRationLevel,
   growthGainPerTurnSlots,
+  migrateLegacyRationLevel,
+  rationFoodCostPerPop,
+  rationGrowthPercent,
   turnsUntilNextCitizen
 });

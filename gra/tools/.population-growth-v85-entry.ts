@@ -8,6 +8,11 @@ export {
   getCityRationLevel,
   growthGainPerTurnSlots,
   turnsUntilNextCitizen,
+  rationFoodCostPerPop,
+  rationGrowthPercent,
+  clampPoziomRacji,
+  WYZYWIENIE_GROWTH_PCT,
+  migrateLegacyRationLevel,
 } from '../src/game/population-growth-v85';
 export {
   advanceEmpireFood,

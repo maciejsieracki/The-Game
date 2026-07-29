@@ -14,7 +14,15 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `c7f15cb3` - 2026-07-30 00:30 - FALA 114: Wyżywienie slider 0-6 + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `75fa29d7` - 2026-07-30 01:05 - FALA 115: fix złoża/kopalnia na górach + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `75fa29d71ccd7d0ff42080175bd299b4` · stempel: `ROBOCZA · 2026-07-30 01:05`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · population-growth-v85 47/47 · population-growth-v85-bonus 20/20 · map-improvement-qualify 94/94 · POLE-BITWY `dd399c4b`.
+- **MAP-DEPOSIT-RELIEF:** złoża i kopalnie na Wzg./Górach — `elevatedTerrainEdgeSurfaceY` (topY pryzmu + relief przy ściance); fix „w powietrzu" (było TERRAIN_SURFACE_Y / apex kopca przy sektorze krawędzi).
+- **PALISADA-BISKUPIN:** drobna korekta żerdzi na skarpie (`miasto-kamien.ts`).
+- Bez push origin (jak FALA 113/114).
+
+## ROBOCZA `c7f15cb3` - 2026-07-30 00:30 - FALA 114: Wyżywienie slider 0-6 + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `c7f15cb3f47c60dba04ec98c689daaee` · stempel: `ROBOCZA · 2026-07-30 00:30`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · population-growth-v85 47/47 · population-growth-v85-bonus 20/20 · POLE-BITWY `dd399c4b`.

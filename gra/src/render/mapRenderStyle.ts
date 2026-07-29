@@ -9,7 +9,7 @@ import { climateZoneAt } from '../map/gen-helpers';
 import { axialToWorld, HEX_R } from './hexutil';
 import {
   goraGeometria, wzgorzeGeometria, wariantDlaHeksa, rotacjaDlaHeksa,
-  TEREN_MATERIAL, LICZBA_WARIANTOW_TERENU, GORA_APEX_Y,
+  TEREN_MATERIAL, LICZBA_WARIANTOW_TERENU, GORA_APEX_Y, WZGORZE_SZCZYT_Y,
 } from './teren-gory-wzgorza';
 
 export type MapRenderStyle = 'civ' | 'roblox' | 'minecraft';
@@ -1016,6 +1016,27 @@ export function galleryDecorSurfaceY(
   }
   if (teren === TerenBazowy.Gory) {
     return styleMountainPeakSurfaceY(hexTopY, q, r, seed, R, lite);
+  }
+  return hexTopY;
+}
+
+/** Ułamek reliefu wzgórza przy ściance heksa (sektor ~0.6–0.7 R) vs plateau szczytu. */
+const WZGORZE_EDGE_RELIEF_FRAC = 0.38;
+
+/**
+ * Y osadzenia markera złoża / ulepszenia surowcowego na wzg./górach przy ściance heksa
+ * (compactDepositAtEdge, buildImprovementSectored). Nie TERRAIN_SURFACE_Y (wyższe niż pryzm)
+ * ani apex kopca (to centrum heksa).
+ */
+export function elevatedTerrainEdgeSurfaceY(
+  teren: TerenBazowy,
+  hexTopY: number,
+): number {
+  if (teren === TerenBazowy.Wzgorza) {
+    return hexTopY + WZGORZE_SZCZYT_Y * WZGORZE_EDGE_RELIEF_FRAC;
+  }
+  if (teren === TerenBazowy.Gory) {
+    return hexTopY;
   }
   return hexTopY;
 }

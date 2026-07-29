@@ -359,9 +359,10 @@ function naZewnatrz(azDeg: number, lean: number): [number, number] {
  * Drewno: dab zwietrzaly (szarosc walDrewno*), ziemia skarpy przygaszona
  * zielen. Rytm wysokosci/przechylen deterministyczny (zero randomu) — te same
  * pale przy kazdym przebudowaniu modelu.
- * Max r footprintu W SWIECIE: 0.41 (male) / 0.46 (srednie) / 0.48 (duze) —
- * rezerwa srodka heksa (<=0.50) zachowana. Mur liczony osobno od budzetu
- * progresji poziomow.
+ * Max r footprintu W SWIECIE (zmierzone, tools/.palisada-obrys-entry.ts):
+ * 0.42 (male) / 0.47 (srednie) / 0.49 (duze), wysokosc korony 0.46 — rezerwa
+ * srodka heksa (<=0.50) zachowana, pas ulepszen r 0.50-0.82 wolny.
+ * Mur liczony osobno od budzetu progresji poziomow.
  */
 function wal(m: M, r: number): THREE.Group {
   const g = new THREE.Group();
@@ -382,7 +383,8 @@ function wal(m: M, r: number): THREE.Group {
     B(g, segW, yStopa, 0.14, x, yStopa / 2, z, i % 2 ? m.walZiemia : m.walZiemiaDk,
       0, tangRotY(az) + rozjazd, 0);
     const zerdzH = 0.09 + 0.03 * ((i * 17) % 4) / 3;
-    const zer = azXZ(az, rSkarpy + 0.03);
+    // zerdzie na zewnetrznej krawedzi skarpy — widoczna przeszkoda u stopy walu
+    const zer = azXZ(az, rSkarpy + 0.058);
     const [zrx, zrz] = naZewnatrz(az, 0.28);
     B(g, 0.022, zerdzH, 0.022, zer.x, yStopa * 0.7 + zerdzH / 2, zer.z, m.walDrewnoDk,
       zrx, tangRotY(az), zrz);
@@ -640,9 +642,9 @@ export const MIASTO_KAMIEN_LAYOUT = {
   triWalu: { male: 1428, srednie: 1608, duze: 1644 } as const,
   /** Max promien footprintu W SWIECIE (po CityRenderer; zmierzone per wierzcholek). */
   granice: {
-    male:    { bezMuru: 0.35, zMurem: 0.43 },
+    male:    { bezMuru: 0.35, zMurem: 0.42 },
     srednie: { bezMuru: 0.40, zMurem: 0.47 },
-    duze:    { bezMuru: 0.42, zMurem: 0.50 },
+    duze:    { bezMuru: 0.42, zMurem: 0.49 },
   },
   /** Os walu (przed kompensacja skali; w swiecie = te same wartosci). */
   osWalu: OS_WALU,

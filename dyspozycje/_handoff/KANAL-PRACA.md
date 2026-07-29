@@ -4409,3 +4409,10 @@ tsc 0 | population-growth-v85 47/47 | population-growth-v85-bonus 20/20 | VERIFY
 Zakres: suwak Wyżywienie 0–6 (krok 0,5) + tabela wzrostu −10%…+7% + migracja racji 1|2|3→2|4|6 · palisada Biskupin render (miasto-kamien.ts)
 Commit lokalny, **bez push** (Maciej).
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `c7f15cb3`).
+
+## [01:05 PL, 2026-07-30] Sesja lokalna → wszystkie — FALA 115 fix góry + DEPLOY ALL
+md5 `75fa29d71ccd7d0ff42080175bd299b4` | stempel ROBOCZA · 2026-07-30 01:05
+tsc 0 | population-growth-v85 47/47 | population-growth-v85-bonus 20/20 | map-improvement-qualify 94/94 | VERIFY OK | vite exit 0 przed kopiowaniem
+Zakres: MAP-DEPOSIT-RELIEF — `elevatedTerrainEdgeSurfaceY` (złoża + kopalnie na Wzg./Górach przy ściance; fix „w powietrzu") · palisada żerdzie skarpa (miasto-kamien.ts)
+Commit lokalny, **bez push** (Maciej).
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `75fa29d7`).

@@ -1,4 +1,16 @@
-﻿## [00:30] ✅ Gotowe — deploy ROBOCZA FALA 114 (c7f15cb3)
+﻿## [01:05] ✅ Gotowe — deploy ROBOCZA FALA 115 (75fa29d7)
+
+**FALA 115** | md5 `75fa29d71ccd7d0ff42080175bd299b4` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Mapa — złoża/kopalnie na górach:**
+- Markery złóż i kopalnie na Wzgórzach/Górach siedzą na reliefie przy ściance heksa (nie „w powietrzu").
+- Wspólna funkcja `elevatedTerrainEdgeSurfaceY` — topY pryzmu zamiast TERRAIN_SURFACE_Y / apex kopca przy sektorze krawędzi.
+
+**Poza mapą:** drobna korekta żerdzi palisady Biskupin (skarpa).
+
+**Bramki:** tsc 0 · population-growth-v85 47/47 · population-growth-v85-bonus 20/20 · map-improvement-qualify 94/94 · VERIFY OK · POLE-BITWY `dd399c4b`.
+
+## [00:30] ✅ Gotowe — deploy ROBOCZA FALA 114 (c7f15cb3)
 
 **FALA 114** | md5 `c7f15cb3f47c60dba04ec98c689daaee` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
