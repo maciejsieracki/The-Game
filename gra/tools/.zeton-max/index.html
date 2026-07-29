@@ -1,0 +1,22 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8">
+<title>Żeton w maksymalnej konfiguracji — prawdziwa ścieżka render/</title>
+<style>
+ body{margin:0;background:#0e1318;color:#e8eef4;font:14px/1.5 "Segoe UI",Arial,sans-serif;padding:16px}
+ h1{font-size:18px;margin:0 0 4px} h2{font-size:15px;margin:18px 0 6px;color:#9fb4c8}
+ p.sub{margin:0 0 12px;color:#9fb4c8;font-size:13px}
+ canvas{display:block;border-radius:8px}
+ #blisko{width:1280px;height:520px} #gra{width:1280px;height:720px}
+ #legenda{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:1280px;margin-top:10px}
+ #legenda div{background:#182028;border:1px solid #2b3946;border-radius:6px;padding:8px 10px;text-align:center;font-size:12.5px;color:#cfe0ee}
+</style></head><body>
+<h1>Żeton w MAKSYMALNEJ konfiguracji — Pancerz 45 pp · Parametry 50 pp · weteran poziom 3</h1>
+<p class="sub">Wołane te same funkcje co <code>UnitRenderer.sync()</code> w grze:
+<code>syncUnitUpgradeBadges</code> · <code>syncUnitVeteranBadges</code> · <code>applyUnitOwnerEmblem</code>,
+z assetami wstrzykniętymi jak w <code>main.ts</code>. Kamera 52°.</p>
+<h2>1) Zbliżenie</h2>
+<canvas id="blisko" width="2560" height="1040"></canvas>
+<div id="legenda"></div>
+<h2>2) Realna skala rozgrywki (kamera gry: fov 50, elewacja 52°)</h2>
+<canvas id="gra" width="2560" height="1440"></canvas>
+<script type="module" src="./main.ts"></script>
+</body></html>
