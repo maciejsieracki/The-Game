@@ -14,7 +14,61 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `b0517973` - 2026-07-29 14:18 - FALA 107: DEPLOY ALL — commit d9fe45f (dyplo PN + weterani + surowce + UI) - **AKTUALNA**
+## ROBOCZA `9b61bdfd` - 2026-07-29 13:13 - FALA 108: TABLICZKA JEDNOSTKI (paski Ruchu i Zycia, Moc armii) - **AKTUALNA**
+- md5 (pelne): `9b61bdfdf20f181110ee2465cc75ce38` · stempel: `ROBOCZA · 2026-07-29 13:13`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `f10826b`.
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0, 36,5 MB). Worktree buildowy
+  zweryfikowany `git rev-parse` + obecnoscia plikow. Bundle URUCHOMIONY w Chromium:
+  **zero bledow JS przy starcie**.
+- Zbudowane po rebase na `origin/main` = `397456d` (fale 106-107 sesji lokalnej).
+
+### R-ZETON-PASKI — tabliczka jednostki w stylu Total War
+Zamiast dwoch osobnych obiektow (duzy medalion przy krawedzi heksu + rzadek odznak nad glowa)
+jeden zwarty odczyt:
+```
+        [ pusty slot na przyszly symbol generala ]
+   [ikona Koszar]   * * *   [ikona Kuzni]
+   [ikona wlasc.] ==== pasek RUCHU (NIEBIESKI) ====  [ MOC ]
+                  ---- zlota kreska rozdzielajaca ----
+                  ==== pasek ZYCIA (zielony)     ====
+```
+Decyzje wlasciciela: **C-ZETON-PASKI-Q1=A** (widoczna zawsze, medalion wchodzi do tabliczki) ·
+**C-MOC-Q1=A** (Moc nominalna, ta z auto-bitwy) · **C-MOC-Q2=A** (obwodka w barwie panstwa) ·
+**C-ZETON-STOS-Q1=A** (odznaki = maksima ze stosu).
+
+**Wymiary [HEX_R]:** paski 0,550 x 0,056, odstep 0,042, zlota kreska 0,020 · ikona wlasciciela
+0,200 · pole Mocy 0,240 x 0,190 (cyfra 0,126) · rzadek odznak y=1,27 · slot generala y=1,65.
+**Maks. promien poziomy 0,545** (limit roboczy 0,70, twardy obrys 0,866); miedzy tabliczkami
+sasiednich heksow **0,642** przeswitu.
+
+**AGREGACJA STOSU** — cala w `game/armyMerge.ts`, render tylko rysuje: Ruch = **MINIMUM**
+(armia rusza lacznie, `stackRuchLeft`) · Zycie = **PULA** (suma HP / suma maksimow, NIE srednia
+z procentow — srednia ukrywa rannego i traktuje Zwiadowce rowno z Wlocznikiem) · Moc przez
+istniejace `sumRosterFieldM` · odznaki = maksima per sciezka osobno.
+
+**NAPRAWIONY ROZJAZD PASKOW** (zgloszenie wlasciciela): zmierzony PRZED zmiana +3/+4/+2 px.
+Przyczyna: wypelnienia byly osobnymi `THREE.Sprite` budowanymi wokol wlasnego zrzutowanego
+poczatku; maja ten sam X w swiecie, ale rozna WYSOKOSC, wiec przy kamerze 52 st. rozna
+GLEBOKOSC — dzielenie perspektywiczne mapowalo ten sam X_widoku na rozne x ekranu. Wada rosla
+z oddaleniem zetonu od SRODKA KADRU (kamera gry ma azymut na stale 0), wiec wystepowala
+w normalnej rozgrywce. Naprawa: cala nakladka to jedna wspolna plaszczyzna odchylona o 52 st.
+**Zmierzone PO: 0 px roznicy w kazdym miejscu kadru.**
+
+**ZLAPANA REGRESJA PO REBASE:** fala 106 zmienila model gwiazdek (gwiazdka = jedna wygrana
+bitwa, nie pochodna poziomu premii). Kod stosu liczyl je stara funkcja — jednostka po jednej
+wygranej dostalaby na tabliczce stosu DWIE gwiazdki. Poprawione.
+
+**Bramki bez regresji vs baseline:** tsc 0 · weterani 73/0 · civ-visual 54/0 ·
+unit-building-bonuses 82/0 · logic 206/208 · unit-replace 2/10 · grupy-budynkow 80/3 ·
+zloto 39/6 · army-merge x3 i army-stack-ruch zielone.
+
+**⚠️ OTWARTE — do decyzji wlasciciela:** tabliczka pokazuje Moc NOMINALNA (49 dla Konnicy),
+a auto-bitwa dla tej samej jednostki z 3 wygranymi liczy **58** (skaluje definicje premia
+weterana przed `sumRosterFieldM`). Dla armii weteranow tabliczka pokazuje ok. 18% mniej niz
+liczba rozstrzygajaca starcie. Fala 106 tego NIE zamknela — dodala asercje, ktora to
+dokumentuje. Zamkniecie = jedna linia w `armyMerge.ts::stackFieldPowerM`.
+
+## ROBOCZA `b0517973` - 2026-07-29 14:18 - FALA 107: DEPLOY ALL — commit d9fe45f (dyplo PN + weterani + surowce + UI) - **ZASTAPIONA (9b61bdfd)**
 - md5 (pelne): `b0517973516024a1a75579eac09f52d9` · stempel: `ROBOCZA · 2026-07-29 14:18`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
 - tsc 0 · diplomacy-acceptance-points-test 52/52 · diplomacy-negotiation-table-test 43/43 · weterani-test 73/73 · vite build OK (36,4 MB).

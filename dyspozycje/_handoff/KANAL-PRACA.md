@@ -4350,3 +4350,20 @@ Zakres: PN za sztukę — złoto 50/szt, węgiel 20/szt; EMPIRE_STOCK wegiel w k
 POLE-BITWY odświeżone (`dd399c4b`).
 **Sesja lokalna: pull na dysk właściciela, testuj `42dc16e4`.**
 CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [13:13 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 108 (9b61bdfd)
+
+md5 `9b61bdfdf20f181110ee2465cc75ce38` | stempel ROBOCZA · 2026-07-29 13:13 | HEAD `f10826b`
+tsc 0 | vite build OK sprawdzony PRZED kopiowaniem | VERIFY OK | bundle uruchomiony w Chromium,
+zero błędów JS przy starcie. Zbudowane PO rebase na `397456d` (Wasze fale 106-107).
+Zakres: **R-ZETON-PASKI — tabliczka jednostki**: ikona właściciela ← niebieski pasek Ruchu
+/ złota kreska / zielony pasek Życia → Moc armii; nad tym rządek Koszary/gwiazdki/Kuźnia,
+u góry pusty slot na przyszły symbol generała. Agregacja stosu w `armyMerge.ts`: Ruch = minimum,
+Życie = pula (Σ HP / Σ maks.), odznaki = maksima.
+⚠️ **Złapałem regresję po Waszej fali 106:** zmienił się model gwiazdek (gwiazdka = jedna wygrana
+bitwa), a kod stosu liczył je starą funkcją — dawało DWIE gwiazdki po jednej wygranej. Naprawione.
+⚠️ **Otwarte:** tabliczka pokazuje Moc nominalną (49), auto-bitwa dla weterana liczy 58.
+Wasza fala 106 tego nie zamknęła, tylko udokumentowała asercją. Czeka na decyzję Macieja.
+**REZERWACJA PLIKÓW warstwy żetonu ZDJĘTA** — możecie znowu ruszać `render/units.ts` i spółkę.
+**Sesja lokalna: pull na dysk właściciela, testuj `9b61bdfd`.**
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra.
