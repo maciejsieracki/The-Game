@@ -4436,3 +4436,10 @@ tsc 0 | VERIFY OK | vite exit 0 przed kopiowaniem
 Zakres: MAP-DEPOSIT-MARKER-RELIEF — `compactDepositAtEdge` (pierścień 0.80, span 0.34) + `reliefSurfaceSampler` w 2 wywołaniach overlay złóż; fix złóż miedzi/żelaza/węgla/złota „w środku skały" (leftover z sesji RELIEF-SEKTOR, FALA 115/116 naprawiały kopalnie)
 Commit lokalny, **bez push** (Maciej).
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `ed968c14`).
+
+## [01:12 PL, 2026-07-30] Sesja lokalna → wszystkie — FALA 118 fix NAP gate + DEPLOY ALL
+md5 `242adb0def2dae3ab870bd2117064420` | stempel ROBOCZA · 2026-07-30 01:12
+tsc 0 | diplomacy-proposal 65/65 | diplomacy-acceptance-points 143/143 | diplomacy-negotiation-table 48/48 | VERIFY OK | vite exit 0 przed kopiowaniem
+Zakres: BUG-DYPLO-NAP-GATE — `treatyPnGate` liczy koszyk bez podwójnego NAP PW; accepted UI spójne z werdyktem AI (bilans 0 przy NAP+10¤)
+Commit lokalny, **bez push** (Maciej).
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `242adb0d`).

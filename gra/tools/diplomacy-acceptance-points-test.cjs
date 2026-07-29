@@ -109,7 +109,8 @@ const napSides = mod.computePlayerAcceptanceSides(
   false,
 );
 ok(napSides.my.treatyEffectivePn === 98, 'NAP @ rel +51 effective 98 PN');
-ok(!napSides.my.accepted, 'NAP 90 PN koszyk < effective 98');
+ok(napSides.my.accepted, 'NAP ze słodzikiem 90¤: Rel wystarczy (koszyk nie musi ≥ effective PN)');
+ok(napSides.my.offerPn === 90, 'NAP słodzik: offerPn = 90 z koszyka');
 
 const giftSides = mod.computePlayerAcceptanceSides('dar', giftPayload, 100, true);
 ok(giftSides.isGift, 'dar flagged as gift');

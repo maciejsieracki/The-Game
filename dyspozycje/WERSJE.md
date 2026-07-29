@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `ed968c14` - 2026-07-30 00:39 - FALA 117: markery złóż na górach (relief sampler) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `242adb0d` - 2026-07-30 01:12 - FALA 118: fix NAP treatyPnGate (koszyk vs bilans UI) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `242adb0def2dae3ab870bd2117064420` · stempel: `ROBOCZA · 2026-07-30 01:12`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · diplomacy-proposal 65/65 · diplomacy-acceptance-points 143/143 · diplomacy-negotiation-table 48/48.
+- **BUG-DYPLO-NAP-GATE:** UI pokazywał bilans 0 (NAP 200 PW doliczone do obu stron + 10¤), a `treatyPnGate` wymagał by sam koszyk ≥ ~200 PW → AI odrzucało; naprawione w `diplomacy-proposals.ts` (`treatyPnGate`) + `diplomacy-acceptance-points.ts` (accepted UI).
+- Bez push origin.
+
+## ROBOCZA `ed968c14` - 2026-07-30 00:39 - FALA 117: markery złóż na górach (relief sampler) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `ed968c14fe4983603931f3fe9c683920` · stempel: `ROBOCZA · 2026-07-30 00:39`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0.

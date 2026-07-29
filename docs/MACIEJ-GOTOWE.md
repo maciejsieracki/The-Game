@@ -1,4 +1,14 @@
-﻿## [00:39] ✅ Gotowe — deploy ROBOCZA FALA 117 (ed968c14)
+﻿## [01:12] ✅ Gotowe — deploy ROBOCZA FALA 118 (242adb0d)
+
+**FALA 118** | md5 `242adb0def2dae3ab870bd2117064420` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Dyplomacja — NAP (pokój) przy koszyku:**
+- UI pokazywał bilans 0 (NAP 200 PW na obu stronach + 10¤), ale silnik wymagał ≥200 PW **tylko w koszyku** → AI odrzucało mimo „sprawiedliwej" oferty.
+- Naprawione: `treatyPnGate` + wyświetlanie accepted — werdykt zgodny z tym, co widzisz na stole.
+
+**Bramki:** tsc 0 · diplomacy-proposal 65/65 · diplomacy-acceptance-points 143/143 · diplomacy-negotiation-table 48/48 · VERIFY OK.
+
+## [00:39] ✅ Gotowe — deploy ROBOCZA FALA 117 (ed968c14)
 
 **FALA 117** | md5 `ed968c14fe4983603931f3fe9c683920` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

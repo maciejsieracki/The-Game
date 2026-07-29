@@ -359,7 +359,15 @@ function treatyBasePnFromConfig(actionId: string): number {
   return t[actionId]?.punkty ?? 0;
 }
 
-/** Bramka PN traktatu @ Relacji (mod ±90%). Zwraca wynik odrzucenia lub null = OK. */
+/**
+ * Bramka PN traktatu @ Relacji (mod ±90%). Zwraca wynik odrzucenia lub null = OK.
+ *
+ * Pokój: zawsze trzeba „zapłacić” efektywnym PN traktatu z koszyka.
+ * Inne traktaty (NAP, sojusz…): próg Relacji jest główną bramką; koszyk to
+ * słodzik / wymiana. Dawniej: jakikolwiek giveItems wymagał givePn ≥ pełne PN
+ * traktatu (~200 przy NAP) — UI doliczało bazę NAP do obu stron (210=210,
+ * bilans 0), a silnik odrzucał 10¤ vs 10¤. Maciej 2026-07-30.
+ */
 function treatyPnGate(
   actionId: string,
   payload: ProposalPayload,
@@ -368,8 +376,9 @@ function treatyPnGate(
 ): ProposalEvalResult | null {
   const basePn = treatyBasePnFromConfig(actionId);
   if (basePn <= 0) return null;
-  const { givePn } = resolveProposalPn(payload, pnOpts);
-  const required = effectiveTreatyPnRequired(basePn, relationTotal(relation));
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const relTotal = relationTotal(relation);
+  const required = effectiveTreatyPnRequired(basePn, relTotal);
   if (actionId === 'pokoj') {
     if (givePn < required) {
       return {
@@ -381,12 +390,15 @@ function treatyPnGate(
   }
   const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
   if (!hasBasket) return null;
-  if (givePn < required) {
-    return {
-      accepted: false,
-      reason: `Oferta za niska na ten traktat (wymagane ≥ ${required} PW @ Relacji)`,
-    };
+  // Dwustronna wymiana przy traktacie — tylko fair trade koszyka (bez dublowania bazy NAP).
+  if (receivePn > 0) {
+    if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+      return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
+    }
+    return null;
   }
+  // Jednostronny słodzik: nie wymagaj pełnego PN traktatu z koszyka — próg Relacji
+  // (+ sweetenerEasePoints) wystarczy. Mały słodzik nie może psuć akceptacji.
   return null;
 }
 

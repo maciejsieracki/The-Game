@@ -141,12 +141,20 @@ function computeSideBalance(
   const relBalance = relRequired != null ? relTotal - relRequired : undefined;
   const relOk = relRequired == null || relTotal >= relRequired;
   const hasBasketContent = offerPn > 0 || demandPn > 0;
-  const treatyPnOk = !hasBasketContent || treatyEffectivePn === 0 || offerPn >= treatyEffectivePn;
-  const accepted = basketAccepted && relOk && treatyPnOk;
+  // Traktat (NAP itd.) opłacany progiem Relacji w evaluateProposal — koszyk to
+  // słodzik/wymiana. Nie wymagaj offerPn ≥ bazę PN traktatu (to psuło UI vs silnik:
+  // 10¤+NAP wyglądało na bilans 0, a accepted=false). Maciej 2026-07-30.
+  const treatyPnOk = treatyEffectivePn === 0
+    || !hasBasketContent
+    || demandPn > 0
+    || offerPn >= treatyEffectivePn;
+  const accepted = (hasBasketContent ? basketAccepted : true) && relOk;
 
   let statusLabel = formatBalanceLabel(balancePn, accepted);
-  if (treatyEffectivePn > 0 && !treatyPnOk) {
-    statusLabel = `Brakuje ${treatyEffectivePn - offerPn} PW traktatu (wym. ${treatyEffectivePn})`;
+  // Nie strasz „brakuje PW traktatu” przy słodziku/wymianie — traktat idzie progiem Relacji.
+  if (treatyEffectivePn > 0 && !treatyPnOk && demandPn <= 0 && offerPn > 0 && offerPn < treatyEffectivePn) {
+    // Jednostronna dopłata poniżej bazy: informacyjnie, bez blokady accepted (NAP/sojusz).
+    statusLabel = `${statusLabel} · słodzik ${offerPn}/${treatyEffectivePn} PW`;
   } else if (relRequired != null && relBalance != null && relBalance < 0) {
     statusLabel = `Relacja −${Math.abs(relBalance)} (wym. ${relRequired})`;
   } else if (mode === 'gift' && offerPn > 0 && demandPn === 0) {
