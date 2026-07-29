@@ -1,4 +1,14 @@
-﻿## [12:45] ✅ Gotowe — deploy ROBOCZA FALA 116 (7df8cf1d)
+﻿## [00:39] ✅ Gotowe — deploy ROBOCZA FALA 117 (ed968c14)
+
+**FALA 117** | md5 `ed968c14fe4983603931f3fe9c683920` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Mapa — markery złóż na górach:**
+- Miedź/żelazo/węgiel/złoto na Wzgórzach/Górach stoją przy podnóżu (pierścień 0.80), nie w środku stromizny kopca.
+- Wysokość z `reliefSurfaceSampler` — cały obrys markera opiera się o relief bryły.
+
+**Bramki:** tsc 0 · VERIFY OK.
+
+## [12:45] ✅ Gotowe — deploy ROBOCZA FALA 116 (7df8cf1d)
 
 **FALA 116** | md5 `7df8cf1d0e11b5f9a520f08540ad4dfa` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

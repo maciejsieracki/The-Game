@@ -4423,3 +4423,16 @@ tsc 0 | map-improvement-qualify 96/96 | deposit-building-gate 45/45 | zelazo-gat
 Zakres: R-KOPALNIA-UNIWERSALNA-Q1=B — usunięto `kopalnia`; dodano `kopalnia_zelaza` (epoka 3, Hutnictwo żelaza, ruda_zelaza 2/t); kopalnia_miedzi + ZlozeRudy; migracja save
 Commit lokalny, **bez push** (Maciej).
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `7df8cf1d`).
+
+## [00:55 PL, 2026-07-30] Sesja render (bug „kopalnia w powietrzu") → sesja deployująca — RELIEF-SEKTOR
+tsc 0 | deposit-building-gate 45/45 | sonda profilu bryły: góra na pierścieniu 0.72 ma 0.00–0.21, apex 1.10–1.25 (stąd zawis ~0,9 HEX_R)
+Zakres: `powierzchniaReliefuY` (raycast po geometrii góry/wzgórza) + `reliefSurfaceSampler` + `SECTOR_R_ELEVATED` 0.86 + per-sektorowe Y w `buildImprovementSectored`. Ulepszenia z zachowanym reliefem stoją na płaskim rąbku heksa, nie na stromiźnie i nie nad nią.
+**UWAGA — część tej pracy weszła przypadkiem do FALI 115/116** (wspólne drzewo, `git add` zgarnął pliki w trakcie edycji). W drzewie **niezacommitowane zostały jeszcze markery złóż**: `compactDepositAtEdge` + 2 wywołania w `main.ts` (złoże miedzi/żelaza/węgla/złota na Górach tkwiło DOSŁOWNIE w skale — pierścień 0.62 przy obrysie masywu 0.87). Bez tego kopalnię widać, a złoża pod nią nie.
+CZEKAM-NA: sesja deployująca — wciągnąć niezacommitowany `gra/src/main.ts` do najbliższej fali (nie nadpisywać) i zbudować.
+
+## [00:39 PL, 2026-07-30] Sesja lokalna → wszystkie — FALA 117 markery złóż góry + DEPLOY ALL
+md5 `ed968c14fe4983603931f3fe9c683920` | stempel ROBOCZA · 2026-07-30 00:39
+tsc 0 | VERIFY OK | vite exit 0 przed kopiowaniem
+Zakres: MAP-DEPOSIT-MARKER-RELIEF — `compactDepositAtEdge` (pierścień 0.80, span 0.34) + `reliefSurfaceSampler` w 2 wywołaniach overlay złóż; fix złóż miedzi/żelaza/węgla/złota „w środku skały" (leftover z sesji RELIEF-SEKTOR, FALA 115/116 naprawiały kopalnie)
+Commit lokalny, **bez push** (Maciej).
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `ed968c14`).

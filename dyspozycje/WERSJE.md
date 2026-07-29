@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `7df8cf1d` - 2026-07-30 12:45 - FALA 116: kopalnia_zelaza (R-KOPALNIA-UNIWERSALNA-Q1=B) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `ed968c14` - 2026-07-30 00:39 - FALA 117: markery złóż na górach (relief sampler) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `ed968c14fe4983603931f3fe9c683920` · stempel: `ROBOCZA · 2026-07-30 00:39`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0.
+- **MAP-DEPOSIT-MARKER-RELIEF:** markery złóż na Wzg./Górach — `compactDepositAtEdge` + `reliefSurfaceSampler` (pierścień 0.80, węższy span 0.34, Y z próbnika reliefu pod całym obrysem markera); fix „w środku skały" (FALA 115/116 naprawiały kopalnie, złoża zostawały w stromiźnie).
+- Bez push origin.
+
+## ROBOCZA `7df8cf1d` - 2026-07-30 12:45 - FALA 116: kopalnia_zelaza (R-KOPALNIA-UNIWERSALNA-Q1=B) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `7df8cf1d0e11b5f9a520f08540ad4dfa` · stempel: `ROBOCZA · 2026-07-30 12:45`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · map-improvement-qualify 96/96 · deposit-building-gate 45/45 · zelazo-gate 24/24.

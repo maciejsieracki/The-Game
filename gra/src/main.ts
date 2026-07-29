@@ -359,7 +359,7 @@ import {
 import {
   GAME_MAP_RENDER_STYLE,
   DEFAULT_MAP_RENDER_OPTIONS,
-  elevatedTerrainEdgeSurfaceY,
+  reliefSurfaceSampler,
   type MapRenderOptions,
 } from './render/mapRenderStyle';
 import {
@@ -1513,8 +1513,23 @@ async function boot(): Promise<void> {
     // (bok 1 = surowiec), spójnie z ulepszeniami — nie rozrzucone po heksie, środek wolny pod miasto.
     const DEPOSIT_EDGE_R = 0.62;    // dosunięcie do ścianki (bok 1, kierunek -Z = północ)
     const DEPOSIT_TARGET_SPAN = 0.55; // docelowa szerokość kompaktowego markera złoża (w jedn. HEX_R)
+    // Wzgórza/Góry: obrys kopca sięga 0.87–0.92 HEX_R, więc marker na 0.62 tkwi w połowie
+    // stromizny — dosłownie w środku skały (miedź/żelazo/węgiel/złoto rodzą się WYŁĄCZNIE na
+    // tych terenach). Dalej od środka i węziej = stoi na płaskim rąbku heksa, przy podnóżu.
+    const DEPOSIT_EDGE_R_ELEVATED = 0.80;
+    const DEPOSIT_TARGET_SPAN_ELEVATED = 0.34;
     /** Wyśrodkuj model złoża (bbox XZ), skompaktuj do wąskiego markera i dosuń do ścianki bok 1. */
-    function compactDepositAtEdge(ov: THREE.Group, x: number, z: number, baseY: number, rotY: number): void {
+    function compactDepositAtEdge(
+      ov: THREE.Group,
+      x: number,
+      z: number,
+      baseY: number,
+      rotY: number,
+      surfaceY: ((x: number, z: number) => number) | null = null,
+    ): void {
+      const edgeR = (surfaceY ? DEPOSIT_EDGE_R_ELEVATED : DEPOSIT_EDGE_R) * HEX_R;
+      const targetSpan = surfaceY ? DEPOSIT_TARGET_SPAN_ELEVATED : DEPOSIT_TARGET_SPAN;
+      let half = 0;
       const bb = new THREE.Box3().setFromObject(ov);
       if (!bb.isEmpty()) {
         const cx = (bb.min.x + bb.max.x) / 2;
@@ -1525,9 +1540,20 @@ async function boot(): Promise<void> {
           if (geo) geo.translate(-cx, 0, -cz); // wyśrodkuj w XZ (spód Y zostaje na terenie)
         }
         const depositDisplayScale = (ov.userData.depositDisplayScale as number) || 1;
-        ov.scale.setScalar(Math.min(0.6, (DEPOSIT_TARGET_SPAN * HEX_R) / maxSpan) * depositDisplayScale);
+        const scale = Math.min(0.6, (targetSpan * HEX_R) / maxSpan) * depositDisplayScale;
+        ov.scale.setScalar(scale);
+        half = (maxSpan * scale) / 2;
       }
-      ov.position.set(x, baseY + 0.01, z - DEPOSIT_EDGE_R * HEX_R);
+      // Bryła kopca pod CAŁYM obrysem markera — minimum, żeby żaden róg nie zawisł nad stokiem.
+      let relief = 0;
+      if (surfaceY) {
+        relief = Infinity;
+        for (const dx of [-half, 0, half]) {
+          for (const dz of [-half, 0, half]) relief = Math.min(relief, surfaceY(dx, -edgeR + dz));
+        }
+        relief = Number.isFinite(relief) ? Math.max(0, relief) : 0;
+      }
+      ov.position.set(x, baseY + relief + 0.01, z - edgeR);
       ov.rotation.y = rotY;
     }
     /** Epoka gracza dla widoczności złóż metali (E-P0); aktualizowana przy starcie / awansie. */
@@ -1611,8 +1637,8 @@ async function boot(): Promise<void> {
         collapseToMergedMesh(ov); // FPS lewar 1: dziesiątki boxów złoża → 1 mesh
         const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
         const topY = unitRenderer.topYAt(hex.coords.q, hex.coords.r);
-        const baseY = elevatedTerrainEdgeSurfaceY(hex.terenBazowy, topY);
-        compactDepositAtEdge(ov, x, z, baseY, hex.coords.q * 1.3 + hex.coords.r * 0.7);
+        const relief = reliefSurfaceSampler(hex.terenBazowy, hex.coords.q, hex.coords.r, map.seed, HEX_R);
+        compactDepositAtEdge(ov, x, z, topY, hex.coords.q * 1.3 + hex.coords.r * 0.7, relief);
         ov.matrixAutoUpdate = false; ov.updateMatrix(); // FPS lewar 3: statyczne — bez per-frame update macierzy
         scene.add(ov);
         resourceOverlays.push({ group: ov, hexKey });
@@ -1640,8 +1666,8 @@ async function boot(): Promise<void> {
           collapseToMergedMesh(ov); // FPS lewar 1
           const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
           const topY = unitRenderer.topYAt(hex.coords.q, hex.coords.r);
-          const baseY = elevatedTerrainEdgeSurfaceY(hex.terenBazowy, topY);
-          compactDepositAtEdge(ov, x, z, baseY, hex.coords.q * 1.3 + hex.coords.r * 0.7);
+          const relief = reliefSurfaceSampler(hex.terenBazowy, hex.coords.q, hex.coords.r, map.seed, HEX_R);
+          compactDepositAtEdge(ov, x, z, topY, hex.coords.q * 1.3 + hex.coords.r * 0.7, relief);
           ov.matrixAutoUpdate = false; ov.updateMatrix(); // FPS lewar 3
           const hexKey = keyOf(hex.coords.q, hex.coords.r);
           scene.add(ov);
