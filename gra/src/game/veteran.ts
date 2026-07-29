@@ -8,10 +8,17 @@
  *   armor. Trzecia gwiazdka weterana daje 20% do wszystkich statystyk poza
  *   armor."
  *
- * MODEL (3 poziomy, SUFIT na poziomie 3 -- "nie projektujemy na zapas"):
- *   Poziom 1 (Rekrut)       -- 0 przeżytych bitew -- 0% premii (baza z units.json 1:1)
- *   Poziom 2 (Doświadczony) -- 1 przeżyta bitwa   -- +10% / -10% (patrz kierunki niżej)
- *   Poziom 3 (Weteran)      -- 2+ przeżyte bitwy  -- +20% / -20% (nie +30%, NIE się kumuluje)
+ * MODEL (3 poziomy etykiet + 3 gwiazdki, SUFIT na 3 wygranych -- "nie projektujemy na zapas"):
+ *   Rekrut       -- 0 wygranych bitew -- 0 gwiazdek -- 0% premii (baza z units.json 1:1)
+ *   Doświadczony -- 1–2 wygrane       -- ★ / ★★     -- etykieta wspólna; premia wg gwiazdek
+ *   Weteran      -- 3 wygrane         -- ★★★         -- +20% / -20% (nie +30%, NIE się kumuluje)
+ *
+ * PREMIA WG GWIAZDEK (Maciej 2026-07-29): ★ +10% · ★★ +15% · ★★★ +20% (pancerz bez zmian;
+ * progi dezercji/ucieczki w dół proporcjonalnie −10/−15/−20).
+ *
+ * GWIAZDKI tylko za WYGRANE (Maciej 2026-07-29): przegrana / remis / udział bez zwycięstwa
+ * nie podbija licznika. Pole RuntimeUnit.battlesSurvived przechowuje liczbę wygranych bitew
+ * (nazwa pola historyczna — kompatybilność zapisu).
  *
  * PREMIE SIĘ NIE KUMULUJĄ MIĘDZY POZIOMAMI -- każdy poziom liczy się OD BAZY
  * z units.json, nigdy od wartości poprzedniego poziomu (poziom 3 = bazowa
@@ -52,17 +59,19 @@
 export type VeteranLevel = 1 | 2 | 3;
 
 /**
- * Sufit liczby ZAPISYWANYCH przeżytych bitew -- poziom 3 (maks) jest już
- * osiągnięty po 2 przeżytych starciach; dalsze bitwy nic nie zmieniają, więc
- * licznik nie rośnie w nieskończoność (bez znaczenia dla wyniku, ale trzyma
- * dane czyste -- "nie projektujemy na zapas").
+ * Sufit liczby ZAPISYWANYCH wygranych bitew -- ★★★ Weteran (+20%) po 3. wygranej;
+ * dalsze zwycięstwa nic nie zmieniają (licznik nie rośnie w nieskończoność).
  */
-export const VETERAN_MAX_BATTLES_TRACKED = 2;
+export const VETERAN_MAX_BATTLES_TRACKED = 3;
 
-/** Ułamek premii (0 / +10% / +20%) wg poziomu doświadczenia. */
-export const VETERAN_BONUS_FRAC: Readonly<Record<VeteranLevel, number>> = {
-  1: 0,
-  2: 0.10,
+/**
+ * Ułamek premii wg liczby wygranych bitew (gwiazdek): 0 / +10% / +15% / +20%.
+ * Klucz = veteranStarCount (0..3), NIE veteranLevel (etykieta Rekrut/Doświadczony/Weteran).
+ */
+export const VETERAN_BONUS_FRAC: Readonly<Record<0 | 1 | 2 | 3, number>> = {
+  0: 0,
+  1: 0.10,
+  2: 0.15,
   3: 0.20,
 };
 
@@ -82,37 +91,60 @@ export interface VeteranProgress {
   battlesSurvived?: number;
 }
 
-/** Odczyt z defaultem 0 -- stare zapisy bez pola / NaN / ujemne / niecałkowite = 0 przeżytych bitew. */
-export function veteranBattlesSurvived(unit: VeteranProgress | null | undefined): number {
+/** Odczyt z defaultem 0 -- stare zapisy bez pola / NaN / ujemne / niecałkowite = 0 wygranych. */
+export function veteranBattlesWon(unit: VeteranProgress | null | undefined): number {
   const v = unit?.battlesSurvived;
   return typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.floor(v) : 0;
 }
 
-/** Próg awansu: 0 bitew -> poziom 1, 1 bitwa -> poziom 2, 2+ bitew -> poziom 3 (sufit). */
-export function veteranLevelFromBattles(battlesSurvived: number): VeteranLevel {
-  if (battlesSurvived >= 2) return 3;
-  if (battlesSurvived >= 1) return 2;
+/** @deprecated alias — pole `battlesSurvived` = liczba wygranych (nazwa historyczna). */
+export function veteranBattlesSurvived(unit: VeteranProgress | null | undefined): number {
+  return veteranBattlesWon(unit);
+}
+
+/** Próg premii: 0 wygranych -> poziom 1, 1–2 wygrane -> poziom 2, 3+ wygranych -> poziom 3. */
+export function veteranLevelFromBattles(battlesWon: number): VeteranLevel {
+  if (battlesWon >= 3) return 3;
+  if (battlesWon >= 1) return 2;
   return 1;
 }
 
-/** Poziom weterana jednostki (1..3), z pola battlesSurvived (0 / undefined = poziom 1). */
+/** Poziom premii jednostki (1..3), z liczby wygranych bitew (pole battlesSurvived). */
 export function veteranLevel(unit: VeteranProgress | null | undefined): VeteranLevel {
-  return veteranLevelFromBattles(veteranBattlesSurvived(unit));
+  return veteranLevelFromBattles(veteranBattlesWon(unit));
 }
 
-/** Ułamek premii dla DANEGO poziomu (0 / 0.10 / 0.20). */
+/** Liczba gwiazdek na mapie / w UI (0–3) = liczba wygranych bitew (sufit 3). */
+export function veteranStarCount(unit: VeteranProgress | null | undefined): number {
+  return Math.min(VETERAN_MAX_BATTLES_TRACKED, veteranBattlesWon(unit));
+}
+
+/** Ułamek premii dla liczby wygranych bitew / gwiazdek (0 / 0.10 / 0.15 / 0.20). */
+export function veteranBonusFracForWins(wins: number): number {
+  const w = Math.min(VETERAN_MAX_BATTLES_TRACKED, Math.max(0, Math.floor(wins)));
+  return VETERAN_BONUS_FRAC[w as 0 | 1 | 2 | 3];
+}
+
+/**
+ * Ułamek premii dla poziomu etykiety (legacy / testy bez kontekstu wygranych).
+ * Poziom 2 bez liczby wygranych zakłada ★ (+10%) — pełna premia wymaga veteranBonusFracForWins.
+ */
 export function veteranBonusFracForLevel(level: VeteranLevel): number {
-  return VETERAN_BONUS_FRAC[level];
+  if (level >= 3) return VETERAN_BONUS_FRAC[3];
+  if (level >= 2) return VETERAN_BONUS_FRAC[1];
+  return VETERAN_BONUS_FRAC[0];
 }
 
-/** Ułamek premii jednostki (odczytuje poziom z battlesSurvived) -- gotowy do przekazania combat.ts/BattleUnit. */
+/** Ułamek premii jednostki (od wygranych bitew) -- gotowy do przekazania combat.ts/BattleUnit. */
 export function veteranCombatBonusFrac(unit: VeteranProgress | null | undefined): number {
-  return veteranBonusFracForLevel(veteranLevel(unit));
+  return veteranBonusFracForWins(veteranStarCount(unit));
 }
 
-/** Liczba gwiazdek do wyświetlenia -- równa poziomowi (1/2/3). */
+/** Liczba gwiazdek dla poziomu premii (legacy w testach) — preferuj veteranStarCount(unit). */
 export function veteranStars(level: VeteranLevel): number {
-  return level;
+  if (level >= 3) return 3;
+  if (level >= 2) return 2;
+  return 0;
 }
 
 export function veteranLevelLabel(level: VeteranLevel): string {
@@ -125,52 +157,88 @@ export function veteranLevelLabel(level: VeteranLevel): string {
  * "brak odznaki" na poziomie 1 to świadoma decyzja (patrz nagłówek modułu) --
  * odznaka pojawia się dopiero gdy jednostka faktycznie zdobyła doświadczenie.
  */
-export function veteranBadgeLabel(level: VeteranLevel): string {
-  if (level === 1) return '';
-  const stars = '★'.repeat(veteranStars(level));
-  const pct = Math.round(VETERAN_BONUS_FRAC[level] * 100);
+export function veteranBadgeLabel(unit: VeteranProgress | null | undefined): string;
+export function veteranBadgeLabel(level: VeteranLevel, wins: number): string;
+export function veteranBadgeLabel(
+  unitOrLevel: VeteranProgress | VeteranLevel | null | undefined,
+  winsArg?: number,
+): string {
+  const wins = typeof unitOrLevel === 'number'
+    ? (winsArg ?? (unitOrLevel >= 3 ? 3 : unitOrLevel >= 2 ? 2 : 0))
+    : veteranStarCount(unitOrLevel);
+  if (wins < 1) return '';
+  const level = typeof unitOrLevel === 'number'
+    ? unitOrLevel
+    : veteranLevel(unitOrLevel);
+  const stars = '★'.repeat(wins);
+  const pct = Math.round(veteranBonusFracForWins(wins) * 100);
   return stars + ' ' + veteranLevelLabel(level) + ' +' + pct + '%';
 }
 
-/** Poziom 2+ — jednostka ma widoczne gwiazdki weterana (C-OBCE-JEDN-Q3). */
-export function veteranHasVisibleBadge(level: VeteranLevel): boolean {
-  return level >= 2;
+/** ≥1 wygrana — jednostka ma widoczne gwiazdki weterana (C-OBCE-JEDN-Q3). */
+export function veteranHasVisibleBadge(unit: VeteranProgress | null | undefined): boolean;
+export function veteranHasVisibleBadge(level: VeteranLevel): boolean;
+export function veteranHasVisibleBadge(
+  unitOrLevel: VeteranProgress | VeteranLevel | null | undefined,
+): boolean {
+  if (typeof unitOrLevel === 'number') return unitOrLevel >= 2;
+  return veteranStarCount(unitOrLevel) >= 1;
 }
 
 /** Krótki tooltip przy najechaniu na ★ (własne i obce, mapa + panel). */
-export function veteranStarsTooltipText(level: VeteranLevel): string {
-  if (!veteranHasVisibleBadge(level)) return '';
-  const pct = Math.round(VETERAN_BONUS_FRAC[level] * 100);
+export function veteranStarsTooltipText(unit: VeteranProgress | null | undefined): string;
+export function veteranStarsTooltipText(level: VeteranLevel): string;
+export function veteranStarsTooltipText(
+  unitOrLevel: VeteranProgress | VeteranLevel | null | undefined,
+): string {
+  const wins = typeof unitOrLevel === 'number'
+    ? veteranStars(unitOrLevel)
+    : veteranStarCount(unitOrLevel);
+  if (wins < 1) return '';
+  const level = typeof unitOrLevel === 'number'
+    ? unitOrLevel
+    : veteranLevel(unitOrLevel);
+  const pct = Math.round(veteranBonusFracForWins(wins) * 100);
   return (
     'Doświadczenie bojowe: ' + veteranLevelLabel(level)
     + ' (+' + pct + '% do ataku, obrony i HP; pancerz bez zmian). '
-    + 'Po każdej przeżytej bitwie jednostka awansuje — maks. ★★★ Weteran (+20%).'
+    + 'Gwiazdki rosną tylko po wygranych bitwach — maks. ★★★ Weteran (+20%).'
   );
 }
 
 /** Jedna linia do karty jednostki (własnej i obcej — C-OBCE-JEDN-Q1/Q3). */
 export function veteranExperienceLine(unit: VeteranProgress | null | undefined): string {
-  const battles = veteranBattlesSurvived(unit);
+  const wins = veteranBattlesWon(unit);
   const level = veteranLevel(unit);
-  const starc = battles === 1 ? '1 starcie' : battles + ' starcia';
-  if (level === 1) {
-    return 'Doświadczenie bojowe: Rekrut (0 starć — brak premii)';
+  if (wins < 1) {
+    return 'Doświadczenie bojowe: Rekrut (0 wygranych bitew — brak premii)';
   }
-  const pct = Math.round(VETERAN_BONUS_FRAC[level] * 100);
+  const winLabel = wins === 1 ? '1 wygrana' : wins + ' wygrane';
+  const pct = Math.round(veteranBonusFracForWins(wins) * 100);
   return (
     'Doświadczenie bojowe: ' + veteranLevelLabel(level)
-    + ' (' + starc + ', +' + pct + '% do walki)'
+    + ' (' + winLabel + ', +' + pct + '% do walki)'
   );
 }
 
 /** Pełniejsze wyjaśnienie do panelu obcej jednostki (C-OBCE-JEDN-Q3 B). */
-export function veteranPanelExplanation(level: VeteranLevel): string {
-  if (!veteranHasVisibleBadge(level)) {
+export function veteranPanelExplanation(unit: VeteranProgress | null | undefined): string;
+export function veteranPanelExplanation(level: VeteranLevel): string;
+export function veteranPanelExplanation(
+  unitOrLevel: VeteranProgress | VeteranLevel | null | undefined,
+): string {
+  const wins = typeof unitOrLevel === 'number'
+    ? veteranStars(unitOrLevel)
+    : veteranStarCount(unitOrLevel);
+  if (wins < 1) {
     return 'Jednostka nie ma jeszcze doświadczenia bojowego — statystyki jak w karcie typu.';
   }
-  const pct = Math.round(VETERAN_BONUS_FRAC[level] * 100);
+  const level = typeof unitOrLevel === 'number'
+    ? unitOrLevel
+    : veteranLevel(unitOrLevel);
+  const pct = Math.round(veteranBonusFracForWins(wins) * 100);
   return (
-    'Gwiazdki oznaczają doświadczenie z przeżytych bitew. '
+    'Gwiazdki oznaczają wygrane bitwy (przegrane nie liczą się). '
     + veteranLevelLabel(level) + ' daje +' + pct + '% do ataku, obrony, obrażeń i HP. '
     + 'Pancerz pozostaje bez zmian. Doświadczony żołnierz rzadziej dezerteruje.'
   );
@@ -180,14 +248,14 @@ export function veteranPanelExplanation(level: VeteranLevel): string {
 export function veteranFirstEncounterHintHtml(): string {
   return (
     '<b>★ Doświadczeni wojownicy</b> — wroga jednostka ma gwiazdki: '
-    + 'przeżyła bitwy i bije mocniej niż rekrut. Najedź na ★ po szczegóły.'
+    + 'wygrała bitwy i bije mocniej niż rekrut. Najedź na ★ po szczegóły.'
   );
 }
 
 /** Podtytuł wpisu w panelu WYDARZENIA (pierwsze spotkanie weterana wroga). */
 export function veteranFirstEncounterJournalSubtitle(): string {
   return (
-    'Wrogie ★★/★★★ — premia do walki po przeżytych bitwach. '
+    'Wrogie ★/★★/★★★ — premia do walki po wygranych bitwach. '
     + 'Kliknij obcą jednostkę po pełną kartę.'
   );
 }
@@ -204,27 +272,30 @@ export function veteranUnitEducationFields(
   veteranPanelExplanation: string;
   veteranExperienceLine: string;
 } | null {
-  const level = veteranLevel(unit);
-  const badge = veteranBadgeLabel(level);
+  const badge = veteranBadgeLabel(unit);
   if (!badge) return null;
   return {
     veteranBadgeLabel: badge,
-    veteranStarsTooltip: veteranStarsTooltipText(level),
-    veteranPanelExplanation: veteranPanelExplanation(level),
+    veteranStarsTooltip: veteranStarsTooltipText(unit),
+    veteranPanelExplanation: veteranPanelExplanation(unit),
     veteranExperienceLine: veteranExperienceLine(unit),
   };
 }
 
 /**
- * Nowa wartość battlesSurvived po jednym PRZEŻYTYM starciu (sufit
- * VETERAN_MAX_BATTLES_TRACKED). Wołający (post-battle-map.ts) jest
- * odpowiedzialny za wywołanie tego DOKŁADNIE RAZ na jednostkę na rozstrzygniętą
- * bitwę i TYLKO dla jednostek, które przeżyły (nie ma tu sprawdzania HP --
- * caller już wie, że jednostka żyje, bo dopiero co ją znalazł w `units`).
+ * Nowa wartość licznika wygranych po jednej WYGRANEJ bitwie (sufit
+ * VETERAN_MAX_BATTLES_TRACKED). Wołający (post-battle-map.ts) woła to
+ * DOKŁADNIE RAZ na żywą jednostkę ze zwycięskiej strony — przegrani i remis
+ * nie podbijają licznika.
  */
-export function registerBattleSurvived(unit: VeteranProgress | null | undefined): number {
-  const cur = veteranBattlesSurvived(unit);
+export function registerBattleWon(unit: VeteranProgress | null | undefined): number {
+  const cur = veteranBattlesWon(unit);
   return Math.min(VETERAN_MAX_BATTLES_TRACKED, cur + 1);
+}
+
+/** @deprecated użyj registerBattleWon */
+export function registerBattleSurvived(unit: VeteranProgress | null | undefined): number {
+  return registerBattleWon(unit);
 }
 
 // ---------------------------------------------------------------------------

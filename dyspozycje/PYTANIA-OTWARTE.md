@@ -813,3 +813,11 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 **Cytat Macieja (2026-07-29 ~02:13):** „Chyba będzie przebudować drogi, bo nie wyglądają zbyt atrakcyjnie. Ale o tym jutro pogadamy."
 
 **Status:** odłożone na jutro — bez ABC, bez wdrożenia w tej sesji.
+
+---
+
+## KOLEJKA — audyt handlu / stołu negocjacji · STATUS: **PO PN ZŁOTO/WĘGIEL** (Maciej 2026-07-29)
+
+**Cytat Macieja:** po PN złoto/węgiel — **później** dokładny audyt całego handlu: czy wszystko spina się z wytycznymi (stół negocjacji), czy nie ma dróg na skróty / sytuacji omijających stół (wszystko na stół → akceptuj/odrzuć).
+
+**Warunek startu:** po zamknięciu PN dla złota i węgla. **Bez skrótów** — pełny przegląd ścieżek handlowych vs kanon stołu.

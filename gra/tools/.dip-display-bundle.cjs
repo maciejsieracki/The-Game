@@ -5449,28 +5449,36 @@ var diplomacy_default = {
       Efekt: "Flaga NAP aktywny na 10\u201320 tur (negocjowalne). UPR: automatyczny, sta\u0142y czas 10 tur"
     },
     {
-      Akcja: "3. Sojusz wojskowy",
-      Opis: "Formalne przymierze: atak na jedn\u0105 stron\u0119 = atak na obie. Wypowiedzenie: \u221225 Relacja, \u221220 Zaufanie.",
+      Akcja: "3. Sojusz (pe\u0142ny lub defensywny)",
+      Opis: "Formalne przymierze: pe\u0142ny = wojna sojusznika to twoja wojna; defensywny = wchodzisz tylko gdy sojusznik jest atakowany. Wypowiedzenie: \u221225 Relacja, \u221220 Zaufanie.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "NIE",
       Koszt: "Negocjacja \u2014 mo\u017Ce wymaga\u0107 op\u0142aty lub wymiany technologii jako gwarantu",
       Efekt: "Automatyczne wej\u015Bcie do wojen partnera (lub odmowa: \u221215 Zaufanie). Czas: bezterminowy"
     },
     {
-      Akcja: "4. Otwarte granice / prawo przemarszu",
-      Opis: "Zezwolenie na swobodny ruch jednostek cywilnych lub wojskowych. Nieautoryzowany przemarsz: \u22125 Zaufanie/tura u w\u0142a\u015Bciciela (koniec tury, bez stacku jednostek).",
+      Akcja: "4. Traktat przemarszu",
+      Opis: "Zezwolenie na przemarsz jednostek cywilnych lub wojskowych przez terytorium. Nieautoryzowany przemarsz: \u22125 Zaufanie/tura u w\u0142a\u015Bciciela (koniec tury, bez stacku jednostek).",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "UPR",
       Koszt: "Cywilne: 10\u201330 Pieni\u0119dzy; Wojskowe: 20\u201360 Pieni\u0119dzy + wzajemno\u015B\u0107",
       Efekt: "Jednostki poruszaj\u0105 si\u0119 swobodnie przez obce terytorium. UPR: tylko cywilne, bez negocjacji ceny"
     },
     {
-      Akcja: "5. Umowa handlowa",
-      Opis: "Regularny lub jednorazowy transfer surowc\xF3w, Pracy lub Pieni\u0119dzy. Handel Pieni\u0105dzem wymaga Waluty u obu stron. Zerwanie: \u221215 Relacja, \u221210 Zaufanie.",
+      Akcja: "5. Traktat handlowy",
+      Opis: "Otwiera i utrzymuje szlaki handlowe mi\u0119dzy miastami (+1 Zaufanie/tur\u0119). Bez koszyka towar\xF3w \u2014 wymiana surowc\xF3w to osobna umowa (akcja 14). Zerwanie: \u221215 Relacja, \u221210 Zaufanie.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "UPR",
       Koszt: "Okre\u015Blony w tre\u015Bci umowy (np. 10 Pieni\u0119dzy/tura za dost\u0119p do rudy)",
-      Efekt: "Transfer zasob\xF3w; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym handlu. UPR: jednorazowe transakcje"
+      Efekt: "Szlaki handlowe; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym traktacie handlowym. UPR: jednorazowe transakcje (akcja 14)"
+    },
+    {
+      Akcja: "14. Umowa wymiany surowc\xF3w",
+      Opis: "Koszyk towar\xF3w jednorazowo lub co tur\u0119 (PN, surowce). Nie otwiera szlak\xF3w \u2014 wymaga osobnego traktatu handlowego (akcja 5) na trasy handlowe.",
+      "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
+      "Dost\u0119pne: Poboczni": "UPR",
+      Koszt: "Okre\u015Blony w koszyku negocjacji",
+      Efekt: "Transfer zasob\xF3w wg umowy; nie zast\u0119puje traktatu handlowego"
     },
     {
       Akcja: "6. Wymiana / sprzeda\u017C technologii",
@@ -6612,7 +6620,7 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -6670,8 +6678,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    teren: "Wzg\xF3rza (bez lasu)",
+    warunek: "solo otwarte wzg\xF3rze (nak\u0142adka Las zabroniona); pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Owce (we\u0142na / jedzenie)"
@@ -6734,8 +6742,8 @@ var terrain_improvements_default = {
       handel: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 \u2014 magazyn PE\u0141NY). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 15,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -6804,8 +6812,8 @@ var terrain_improvements_default = {
       handel: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 \u2014 magazyn PE\u0141NY).",
+    surowiec_ilosc_tura: 10,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -7050,7 +7058,9 @@ var BREAK_ON_WAR = /* @__PURE__ */ new Set([
   "sojusz_pelny",
   "otwarte_granice" /* OtwartGranice */,
   "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */,
-  "umowa_handlowa" /* UmowaHandlowa */
+  "umowa_handlowa" /* UmowaHandlowa */,
+  "umowa_szlakow" /* UmowaSzlakow */,
+  "umowa_wymiany" /* UmowaWymiany */
 ]);
 
 // ../data/tech.json
@@ -7072,7 +7082,7 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "drewno",
-      "Odblokowuje budynek": "Stolarnia",
+      "Odblokowuje budynek": "Stolarnia; Palisada drewniana",
       "Koszt nauki": 5,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Tartak, Posterunek (Stra\u017Cnica)"
@@ -11668,7 +11678,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "Dost\u0119p do Drewna w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
+    wymagania: "Drewno w magazynie pa\u0144stwa (na koszt budowy i bramk\u0119 surowca)",
     uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
     techUnlock: "Obr\xF3bka drewna",
     koszt_surowce: {
@@ -11786,7 +11796,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Kopalnia miedzi w imperium (twardy wym\xF3g terenowy \u2014 jedyny wyj\u0105tek od regu\u0142y, decyzja w\u0142a\u015Bciciela Temat 8 Q3)",
+    wymagania: "Ruda w magazynie pa\u0144stwa",
     uwagi: "Odlewnia br\u0105zu (tier1 \u0142a\u0144cucha odlewni); upgrade \u2192 Odlewnia \u017Celaza. Dost\u0119p br\u0105z = Kopalnia miedzi (mapa) + ten budynek. Konwerter: ruda+drewno\u2192br\u0105z. Piec hutniczy = rezerwowana nazwa na przysz\u0142e epoki (NIE ten budynek). LANCUCH W GORE: maksPoziom=1 \u2014 wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza.",
     techUnlock: "Br\u0105zownictwo",
     koszt_surowce: {
@@ -12418,6 +12428,46 @@ var buildings_default = [
     koszt_surowce: {
       drewno: 6,
       kamien: 8
+    }
+  },
+  {
+    id: "palisada",
+    nazwa: "Palisada drewniana",
+    kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
+    epokaWejscia: 2,
+    maksPoziom: 1,
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 22,
+    przyrostKosztu: 8,
+    utrzymanie: 1,
+    przyrostUtrzymania: 0,
+    wymagania: "",
+    uwagi: "Palisada drewniana (Maciej 2026-07-28): wczesna obrona miasta w epoce Br\u0105zu, odblokowana po Obr\xF3bce drewna -- przed kamiennymi Murami (tech Budownictwo). Obrona miasta WY\u0141\u0104CZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zast\u0119puj\u0105 bonus palisady (nie stackuj\u0105). Po uko\u0144czeniu Mur\xF3w palisada jest usuwana z cityBuilt (production.ts).",
+    techUnlock: "Obr\xF3bka drewna",
+    odblokowuje: "maMur",
+    koszt_surowce: {
+      drewno: 12
     }
   },
   {
@@ -13440,25 +13490,25 @@ var econ_params_default = {
       opis: "NIEU\u017BYWANE (PYTANIE-85) \u2014 stary model suwaka \u017Cywno\u015Bci. Zostawione dla zgodno\u015Bci zapis\xF3w."
     },
     racje_zywnosc_1: {
-      easy: 1,
-      normal: 1,
-      hard: 1,
-      jednostka: "\u017Cywno\u015B\u0107/tur\u0119/os.",
-      opis: "PYTANIE-85: koszt racji poziom 1 (\u017Cywno\u015B\u0107 na mieszka\u0144ca/tur\u0119)."
-    },
-    racje_zywnosc_2: {
       easy: 2,
       normal: 2,
       hard: 2,
       jednostka: "\u017Cywno\u015B\u0107/tur\u0119/os.",
-      opis: "PYTANIE-85: koszt racji poziom 2."
+      opis: "PYTANIE-85: koszt racji poziom 1 (\u017Cywno\u015B\u0107 na mieszka\u0144ca/tur\u0119). Balans 2026-07-29: 2 (by\u0142o 1)."
+    },
+    racje_zywnosc_2: {
+      easy: 4,
+      normal: 4,
+      hard: 4,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119/os.",
+      opis: "PYTANIE-85: koszt racji poziom 2. Balans 2026-07-29: 4 (by\u0142o 2)."
     },
     racje_zywnosc_3: {
-      easy: 3,
-      normal: 3,
-      hard: 3,
+      easy: 6,
+      normal: 6,
+      hard: 6,
       jednostka: "\u017Cywno\u015B\u0107/tur\u0119/os.",
-      opis: "PYTANIE-85: koszt racji poziom 3."
+      opis: "PYTANIE-85: koszt racji poziom 3. Balans 2026-07-29: 6 (by\u0142o 3)."
     },
     racje_wzrost_proc_1: {
       easy: 3,
@@ -13854,11 +13904,11 @@ var econ_params_default = {
       opis: "Bazowa pojemno\u015B\u0107 Magazynu \u017Bywno\u015Bci (bez Spichlerza). [PT]"
     },
     magazyn_baza_surowce: {
-      easy: 500,
-      normal: 500,
-      hard: 500,
+      easy: 1e3,
+      normal: 1e3,
+      hard: 1e3,
       jednostka: "szt/typ surowca (PA\u0143STWO)",
-      opis: "SUROW-CIV-01 (decyzja Macieja 2026-07-24): ZMIANA SEMANTYKI \u2014 od teraz to baza pojemno\u015Bci CA\u0141EGO PA\u0143STWA (civ-wide, suma po wszystkich miastach ownera) per typ surowca, przy 0 zbudowanych budynk\xF3w \u201EMagazyn\u201D w imperium \u2014 NIE per-miasto jak dawniej. Model ADDYTYWNY razem z magazyn_bonus_surowce_na_budynek (nie mno\u017Cnikowy). BAZA PODNIESIONA 100\u2192500 (Maciej 2026-07-24). Cap per typ = 500 + 100 \xD7 liczba Magazyn\xF3w (ka\u017Cdy Magazyn w dowolnym mie\u015Bcie dok\u0142ada +100, nie jednorazowo). P\u0142askie na easy/normal/hard. Dotyczy WY\u0141\u0104CZNIE surowc\xF3w (drewno/kamie\u0144/glina/ruda/ruda_zelaza/ceg\u0142a/br\u0105z/\u017Celazo/stal) \u2014 \u017Bywno\u015B\u0107/Spichlerz nadal u\u017Cywa modelu mno\u017Cnikowego per-miasto (bez zmian, patrz magazyn_baza_zywnosc)."
+      opis: "SUROW-CIV-01 (decyzja Macieja 2026-07-24): ZMIANA SEMANTYKI \u2014 od teraz to baza pojemno\u015Bci CA\u0141EGO PA\u0143STWA (civ-wide, suma po wszystkich miastach ownera) per typ surowca, przy 0 zbudowanych budynk\xF3w \u201EMagazyn\u201D w imperium \u2014 NIE per-miasto jak dawniej. Model ADDYTYWNY razem z magazyn_bonus_surowce_na_budynek (nie mno\u017Cnikowy). BAZA PODNIESIONA 100\u2192500 (Maciej 2026-07-24), potem 500\u21921000 (Maciej 2026-07-28). Cap per typ = 1000 + 100 \xD7 liczba Magazyn\xF3w (ka\u017Cdy Magazyn w dowolnym mie\u015Bcie dok\u0142ada +100, nie jednorazowo). P\u0142askie na easy/normal/hard. Dotyczy WY\u0141\u0104CZNIE surowc\xF3w (drewno/kamie\u0144/glina/ruda/ruda_zelaza/ceg\u0142a/br\u0105z/\u017Celazo/stal) \u2014 \u017Bywno\u015B\u0107/Spichlerz nadal u\u017Cywa modelu mno\u017Cnikowego per-miasto (bez zmian, patrz magazyn_baza_zywnosc)."
     },
     magazyn_bonus_surowce_na_budynek: {
       easy: 100,
@@ -13868,11 +13918,11 @@ var econ_params_default = {
       opis: "SUROW-CIV-01 (decyzja Macieja 2026-07-24, NOWY PARAMETR): dodatkowa pojemno\u015B\u0107 CA\u0141EGO PA\u0143STWA per typ surowca za KA\u017BDY budynek \u201EMagazyn\u201D zbudowany GDZIEKOLWIEK w imperium ownera (addytywnie, nie mno\u017Cnik \u2014 2 Magazyny = +200, nie \xD72). Cap per typ = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek \xD7 liczba_magazynow. Placeholder do strojenia."
     },
     magazyn_centralny_baza_zywnosc: {
-      easy: 500,
-      normal: 500,
-      hard: 500,
+      easy: 1e3,
+      normal: 1e3,
+      hard: 1e3,
       jednostka: "\u{1F35E}",
-      opis: "PYTANIE-85-Q6: baza capu centralnego magazynu \u017Cywno\u015Bci imperium (+ Spichlerze lokalne +100/+150, Magazyn +100)."
+      opis: "PYTANIE-85-Q6: baza capu centralnego magazynu \u017Cywno\u015Bci imperium (+ Spichlerze lokalne +100/+150, Magazyn +100). Podniesione 500\u21921000 (Maciej 2026-07-28)."
     },
     magazyn_centralny_bonus_zywnosc_na_budynek: {
       easy: 100,
@@ -13991,46 +14041,109 @@ var econ_params_default = {
   },
   handel_surowce: {
     cena_drewno: {
-      easy: 2,
-      normal: 2,
-      hard: 2,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B (2026-07-23): cena jednostkowa Drewna w koszyku PN dyplomacji (pozycja surowiec_ilosc, diplomacy-value-catalog.ts) \u2014 warto\u015B\u0107 PN pozycji = pakiety \xD7 pakiet_wielkosc \xD7 cena. PLACEHOLDER do strojenia przez w\u0142a\u015Bciciela w panelu Excel (gen-panel-*.py) \u2014 nie warto\u015B\u0107 finalna. Ta sama cena na wszystkich trudno\u015Bciach (parametr handlu, nie skalowania trudno\u015Bci)."
-    },
-    cena_kamien: {
-      easy: 3,
-      normal: 3,
-      hard: 3,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Kamienia w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Drewna (surowiec_ilosc). Warto\u015B\u0107 pozycji koszyka = pakiety \xD7 pakiet_wielkosc \xD7 cena (PN/szt.). Ta sama cena na wszystkich trudno\u015Bciach."
     },
     cena_glina: {
       easy: 2,
       normal: 2,
       hard: 2,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Gliny w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Gliny \u2014 patrz cena_drewno."
+    },
+    cena_kamien: {
+      easy: 3,
+      normal: 3,
+      hard: 3,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Kamienia \u2014 patrz cena_drewno."
+    },
+    cena_ruda: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Rudy miedzi (klucz magazynu: ruda) \u2014 patrz cena_drewno."
+    },
+    cena_ruda_zelaza: {
+      easy: 10,
+      normal: 10,
+      hard: 10,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Rudy \u017Celaza (klucz magazynu: ruda_zelaza) \u2014 patrz cena_drewno."
     },
     cena_cegla: {
       easy: 5,
       normal: 5,
       hard: 5,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceg\u0142y w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Ceg\u0142y \u2014 patrz cena_drewno."
     },
-    cena_ruda: {
-      easy: 4,
-      normal: 4,
-      hard: 4,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Rudy w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    cena_sol: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Soli (jak glina) \u2014 patrz cena_drewno."
+    },
+    cena_kon: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Konia (jak ruda miedzi) \u2014 patrz cena_drewno."
+    },
+    cena_ceramika: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Ceramiki (jak ceg\u0142a) \u2014 patrz cena_drewno."
+    },
+    cena_braz: {
+      easy: 15,
+      normal: 15,
+      hard: 15,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Br\u0105zu (przetworzone) \u2014 patrz cena_drewno."
+    },
+    cena_zelazo: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. \u017Belaza przetworzonego \u2014 patrz cena_drewno."
+    },
+    cena_stal: {
+      easy: 25,
+      normal: 25,
+      hard: 25,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Stali (przetworzone) \u2014 patrz cena_drewno."
+    },
+    cena_zloto: {
+      easy: 50,
+      normal: 50,
+      hard: 50,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Z\u0142ota (surowiec w magazynie pa\u0144stwa, klucz zloto) \u2014 patrz cena_drewno. Odr\u0119bne od Pieni\u0105dza (\xA4) w koszyku typ zloto."
+    },
+    cena_wegiel: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. W\u0119gla w magazynie (gdy stock istnieje). Dost\u0119p do z\u0142o\u017Ca w\u0119gla = osobny cennik z\u0142o\u017Ca (handel_zloze)."
     },
     pakiet_wielkosc: {
       easy: 10,
       normal: 10,
       hard: 10,
       jednostka: "szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: wielko\u015B\u0107 pakietu handlu ilo\u015Bciowego (surowiec_ilosc) \u2014 handel odbywa si\u0119 w pakietach po tyle sztuk. Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach."
+      opis: "C-DYP-SUROWCE-Q1=B: wielko\u015B\u0107 pakietu handlu ilo\u015Bciowego (surowiec_ilosc) \u2014 handel odbywa si\u0119 w pakietach po tyle sztuk. PN pozycji = cena_PN/szt. \xD7 (pakiety \xD7 pakiet_wielkosc). Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach."
     }
   }
 };
@@ -14096,6 +14209,16 @@ for (const row of tech_default.technologie ?? []) {
     _techByName.set(name, koszt);
   }
 }
+var BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE = Object.freeze({
+  easy: 1.5,
+  normal: 1,
+  hard: 0.5
+});
+var BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE = Object.freeze({
+  easy: 0.5,
+  normal: 1,
+  hard: 1.5
+});
 var _handelSurowce = econ_params_default.handel_surowce ?? {};
 var DEFAULT_HANDEL_SUROWCE_PAKIET = 10;
 function readHandelSurowceParam(rowKey, fallback) {
@@ -14245,6 +14368,7 @@ function diplomacyPersonalityTags(civKey, maxTags = 3) {
 function respektTooltipPl() {
   return RESPEKT_TOOLTIP_PL;
 }
+var TRAKTAT_HANDLOWY_LABEL = "Traktat handlowy";
 function resolveFormalDiplomaticStatus(input) {
   if (input.relationStatus === "wojna") {
     return { label: "Wojna", kind: "wojna" };
@@ -14256,7 +14380,7 @@ function resolveFormalDiplomaticStatus(input) {
     return { label: "Pakt o nieagresji", kind: "pakt" };
   }
   if (input.hasTrade) {
-    return { label: "Umowa handlowa", kind: "handel" };
+    return { label: TRAKTAT_HANDLOWY_LABEL, kind: "handel" };
   }
   if (input.contactEstablished) {
     return { label: "Pok\xF3j", kind: "pokoj" };
@@ -14282,10 +14406,14 @@ function treatyDisplayLabel(rodzaj) {
       return "Sojusz pe\u0142ny";
     case "umowa_handlowa" /* UmowaHandlowa */:
       return "Umowa handlowa";
+    case "umowa_szlakow" /* UmowaSzlakow */:
+      return TRAKTAT_HANDLOWY_LABEL;
+    case "umowa_wymiany" /* UmowaWymiany */:
+      return "Umowa wymiany";
     case "otwarte_granice" /* OtwartGranice */:
-      return "Otwarte granice";
+      return "Traktat przemarszu (cywilny)";
     case "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */:
-      return "Prawo przemarszu wojskowego";
+      return "Traktat przemarszu (wojskowy)";
     case "wasalizacja" /* Wasalizacja */:
       return "Wasalizacja";
     case "rozejm" /* Rozejm */:
@@ -14364,13 +14492,13 @@ function formatBasketItemBrief(item, ctx) {
     case "zywnosc":
       return perTurn ? `${item.ilosc ?? 0} \u017Bywno\u015Bci na tur\u0119` : `jednorazowo ${item.ilosc ?? 0} \u017Bywno\u015Bci`;
     case "zloze":
-      return `dost\u0119p do z\u0142o\u017Ca: ${item.id}`;
+      return `dost\u0119p do z\u0142o\u017Ca: ${item.id} (nieaktualne)`;
     case "tech":
       return `technologia: ${item.id}`;
     case "jednostka":
       return `jednostka: ${item.id}`;
     case "surowiec_boolean":
-      return `dost\u0119p do surowca: ${resourceDisplayLabel(item.id)}`;
+      return `dost\u0119p do surowca: ${resourceDisplayLabel(item.id)} (nieaktualne)`;
     case "surowiec_ilosc": {
       const pakietSize = diplomacyHandelSurowcePakietWielkosc();
       const pakiety = item.ilosc ?? 1;

@@ -234,28 +234,36 @@ var diplomacy_default = {
       Efekt: "Flaga NAP aktywny na 10\u201320 tur (negocjowalne). UPR: automatyczny, sta\u0142y czas 10 tur"
     },
     {
-      Akcja: "3. Sojusz wojskowy",
-      Opis: "Formalne przymierze: atak na jedn\u0105 stron\u0119 = atak na obie. Wypowiedzenie: \u221225 Relacja, \u221220 Zaufanie.",
+      Akcja: "3. Sojusz (pe\u0142ny lub defensywny)",
+      Opis: "Formalne przymierze: pe\u0142ny = wojna sojusznika to twoja wojna; defensywny = wchodzisz tylko gdy sojusznik jest atakowany. Wypowiedzenie: \u221225 Relacja, \u221220 Zaufanie.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "NIE",
       Koszt: "Negocjacja \u2014 mo\u017Ce wymaga\u0107 op\u0142aty lub wymiany technologii jako gwarantu",
       Efekt: "Automatyczne wej\u015Bcie do wojen partnera (lub odmowa: \u221215 Zaufanie). Czas: bezterminowy"
     },
     {
-      Akcja: "4. Otwarte granice / prawo przemarszu",
-      Opis: "Zezwolenie na swobodny ruch jednostek cywilnych lub wojskowych. Nieautoryzowany przemarsz: \u22125 Zaufanie/tura u w\u0142a\u015Bciciela (koniec tury, bez stacku jednostek).",
+      Akcja: "4. Traktat przemarszu",
+      Opis: "Zezwolenie na przemarsz jednostek cywilnych lub wojskowych przez terytorium. Nieautoryzowany przemarsz: \u22125 Zaufanie/tura u w\u0142a\u015Bciciela (koniec tury, bez stacku jednostek).",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "UPR",
       Koszt: "Cywilne: 10\u201330 Pieni\u0119dzy; Wojskowe: 20\u201360 Pieni\u0119dzy + wzajemno\u015B\u0107",
       Efekt: "Jednostki poruszaj\u0105 si\u0119 swobodnie przez obce terytorium. UPR: tylko cywilne, bez negocjacji ceny"
     },
     {
-      Akcja: "5. Umowa handlowa",
-      Opis: "Regularny lub jednorazowy transfer surowc\xF3w, Pracy lub Pieni\u0119dzy. Handel Pieni\u0105dzem wymaga Waluty u obu stron. Zerwanie: \u221215 Relacja, \u221210 Zaufanie.",
+      Akcja: "5. Traktat handlowy",
+      Opis: "Otwiera i utrzymuje szlaki handlowe mi\u0119dzy miastami (+1 Zaufanie/tur\u0119). Bez koszyka towar\xF3w \u2014 wymiana surowc\xF3w to osobna umowa (akcja 14). Zerwanie: \u221215 Relacja, \u221210 Zaufanie.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "UPR",
       Koszt: "Okre\u015Blony w tre\u015Bci umowy (np. 10 Pieni\u0119dzy/tura za dost\u0119p do rudy)",
-      Efekt: "Transfer zasob\xF3w; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym handlu. UPR: jednorazowe transakcje"
+      Efekt: "Szlaki handlowe; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym traktacie handlowym. UPR: jednorazowe transakcje (akcja 14)"
+    },
+    {
+      Akcja: "14. Umowa wymiany surowc\xF3w",
+      Opis: "Koszyk towar\xF3w jednorazowo lub co tur\u0119 (PN, surowce). Nie otwiera szlak\xF3w \u2014 wymaga osobnego traktatu handlowego (akcja 5) na trasy handlowe.",
+      "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
+      "Dost\u0119pne: Poboczni": "UPR",
+      Koszt: "Okre\u015Blony w koszyku negocjacji",
+      Efekt: "Transfer zasob\xF3w wg umowy; nie zast\u0119puje traktatu handlowego"
     },
     {
       Akcja: "6. Wymiana / sprzeda\u017C technologii",
@@ -4194,7 +4202,7 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -4252,8 +4260,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    teren: "Wzg\xF3rza (bez lasu)",
+    warunek: "solo otwarte wzg\xF3rze (nak\u0142adka Las zabroniona); pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Owce (we\u0142na / jedzenie)"
@@ -4316,8 +4324,8 @@ var terrain_improvements_default = {
       handel: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 \u2014 magazyn PE\u0141NY). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 15,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -4386,8 +4394,8 @@ var terrain_improvements_default = {
       handel: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 \u2014 magazyn PE\u0141NY).",
+    surowiec_ilosc_tura: 10,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -5144,7 +5152,9 @@ var BREAK_ON_WAR = /* @__PURE__ */ new Set([
   "sojusz_pelny",
   "otwarte_granice" /* OtwartGranice */,
   "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */,
-  "umowa_handlowa" /* UmowaHandlowa */
+  "umowa_handlowa" /* UmowaHandlowa */,
+  "umowa_szlakow" /* UmowaSzlakow */,
+  "umowa_wymiany" /* UmowaWymiany */
 ]);
 function treatiesBrokenByWar(state, a, b) {
   const pair = dealsForPair(state, a, b);
@@ -5183,7 +5193,7 @@ var tech_default = {
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "drewno",
-      "Odblokowuje budynek": "Stolarnia",
+      "Odblokowuje budynek": "Stolarnia; Palisada drewniana",
       "Koszt nauki": 5,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Tartak, Posterunek (Stra\u017Cnica)"
@@ -9779,7 +9789,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "Dost\u0119p do Drewna w imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w magazynie pa\u0144stwa)",
+    wymagania: "Drewno w magazynie pa\u0144stwa (na koszt budowy i bramk\u0119 surowca)",
     uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
     techUnlock: "Obr\xF3bka drewna",
     koszt_surowce: {
@@ -9897,7 +9907,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Kopalnia miedzi w imperium (twardy wym\xF3g terenowy \u2014 jedyny wyj\u0105tek od regu\u0142y, decyzja w\u0142a\u015Bciciela Temat 8 Q3)",
+    wymagania: "Ruda w magazynie pa\u0144stwa",
     uwagi: "Odlewnia br\u0105zu (tier1 \u0142a\u0144cucha odlewni); upgrade \u2192 Odlewnia \u017Celaza. Dost\u0119p br\u0105z = Kopalnia miedzi (mapa) + ten budynek. Konwerter: ruda+drewno\u2192br\u0105z. Piec hutniczy = rezerwowana nazwa na przysz\u0142e epoki (NIE ten budynek). LANCUCH W GORE: maksPoziom=1 \u2014 wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza.",
     techUnlock: "Br\u0105zownictwo",
     koszt_surowce: {
@@ -10529,6 +10539,46 @@ var buildings_default = [
     koszt_surowce: {
       drewno: 6,
       kamien: 8
+    }
+  },
+  {
+    id: "palisada",
+    nazwa: "Palisada drewniana",
+    kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
+    epokaWejscia: 2,
+    maksPoziom: 1,
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 22,
+    przyrostKosztu: 8,
+    utrzymanie: 1,
+    przyrostUtrzymania: 0,
+    wymagania: "",
+    uwagi: "Palisada drewniana (Maciej 2026-07-28): wczesna obrona miasta w epoce Br\u0105zu, odblokowana po Obr\xF3bce drewna -- przed kamiennymi Murami (tech Budownictwo). Obrona miasta WY\u0141\u0104CZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zast\u0119puj\u0105 bonus palisady (nie stackuj\u0105). Po uko\u0144czeniu Mur\xF3w palisada jest usuwana z cityBuilt (production.ts).",
+    techUnlock: "Obr\xF3bka drewna",
+    odblokowuje: "maMur",
+    koszt_surowce: {
+      drewno: 12
     }
   },
   {
@@ -11551,25 +11601,25 @@ var econ_params_default = {
       opis: "NIEU\u017BYWANE (PYTANIE-85) \u2014 stary model suwaka \u017Cywno\u015Bci. Zostawione dla zgodno\u015Bci zapis\xF3w."
     },
     racje_zywnosc_1: {
-      easy: 1,
-      normal: 1,
-      hard: 1,
-      jednostka: "\u017Cywno\u015B\u0107/tur\u0119/os.",
-      opis: "PYTANIE-85: koszt racji poziom 1 (\u017Cywno\u015B\u0107 na mieszka\u0144ca/tur\u0119)."
-    },
-    racje_zywnosc_2: {
       easy: 2,
       normal: 2,
       hard: 2,
       jednostka: "\u017Cywno\u015B\u0107/tur\u0119/os.",
-      opis: "PYTANIE-85: koszt racji poziom 2."
+      opis: "PYTANIE-85: koszt racji poziom 1 (\u017Cywno\u015B\u0107 na mieszka\u0144ca/tur\u0119). Balans 2026-07-29: 2 (by\u0142o 1)."
+    },
+    racje_zywnosc_2: {
+      easy: 4,
+      normal: 4,
+      hard: 4,
+      jednostka: "\u017Cywno\u015B\u0107/tur\u0119/os.",
+      opis: "PYTANIE-85: koszt racji poziom 2. Balans 2026-07-29: 4 (by\u0142o 2)."
     },
     racje_zywnosc_3: {
-      easy: 3,
-      normal: 3,
-      hard: 3,
+      easy: 6,
+      normal: 6,
+      hard: 6,
       jednostka: "\u017Cywno\u015B\u0107/tur\u0119/os.",
-      opis: "PYTANIE-85: koszt racji poziom 3."
+      opis: "PYTANIE-85: koszt racji poziom 3. Balans 2026-07-29: 6 (by\u0142o 3)."
     },
     racje_wzrost_proc_1: {
       easy: 3,
@@ -12102,46 +12152,109 @@ var econ_params_default = {
   },
   handel_surowce: {
     cena_drewno: {
-      easy: 2,
-      normal: 2,
-      hard: 2,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B (2026-07-23): cena jednostkowa Drewna w koszyku PN dyplomacji (pozycja surowiec_ilosc, diplomacy-value-catalog.ts) \u2014 warto\u015B\u0107 PN pozycji = pakiety \xD7 pakiet_wielkosc \xD7 cena. PLACEHOLDER do strojenia przez w\u0142a\u015Bciciela w panelu Excel (gen-panel-*.py) \u2014 nie warto\u015B\u0107 finalna. Ta sama cena na wszystkich trudno\u015Bciach (parametr handlu, nie skalowania trudno\u015Bci)."
-    },
-    cena_kamien: {
-      easy: 3,
-      normal: 3,
-      hard: 3,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Kamienia w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Drewna (surowiec_ilosc). Warto\u015B\u0107 pozycji koszyka = pakiety \xD7 pakiet_wielkosc \xD7 cena (PN/szt.). Ta sama cena na wszystkich trudno\u015Bciach."
     },
     cena_glina: {
       easy: 2,
       normal: 2,
       hard: 2,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Gliny w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Gliny \u2014 patrz cena_drewno."
+    },
+    cena_kamien: {
+      easy: 3,
+      normal: 3,
+      hard: 3,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Kamienia \u2014 patrz cena_drewno."
+    },
+    cena_ruda: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Rudy miedzi (klucz magazynu: ruda) \u2014 patrz cena_drewno."
+    },
+    cena_ruda_zelaza: {
+      easy: 10,
+      normal: 10,
+      hard: 10,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Rudy \u017Celaza (klucz magazynu: ruda_zelaza) \u2014 patrz cena_drewno."
     },
     cena_cegla: {
       easy: 5,
       normal: 5,
       hard: 5,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceg\u0142y w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Ceg\u0142y \u2014 patrz cena_drewno."
     },
-    cena_ruda: {
-      easy: 4,
-      normal: 4,
-      hard: 4,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Rudy w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    cena_sol: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Soli (jak glina) \u2014 patrz cena_drewno."
+    },
+    cena_kon: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Konia (jak ruda miedzi) \u2014 patrz cena_drewno."
+    },
+    cena_ceramika: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Ceramiki (jak ceg\u0142a) \u2014 patrz cena_drewno."
+    },
+    cena_braz: {
+      easy: 15,
+      normal: 15,
+      hard: 15,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Br\u0105zu (przetworzone) \u2014 patrz cena_drewno."
+    },
+    cena_zelazo: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. \u017Belaza przetworzonego \u2014 patrz cena_drewno."
+    },
+    cena_stal: {
+      easy: 25,
+      normal: 25,
+      hard: 25,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Stali (przetworzone) \u2014 patrz cena_drewno."
+    },
+    cena_zloto: {
+      easy: 50,
+      normal: 50,
+      hard: 50,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Z\u0142ota (surowiec w magazynie pa\u0144stwa, klucz zloto) \u2014 patrz cena_drewno. Odr\u0119bne od Pieni\u0105dza (\xA4) w koszyku typ zloto."
+    },
+    cena_wegiel: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. W\u0119gla w magazynie (gdy stock istnieje). Dost\u0119p do z\u0142o\u017Ca w\u0119gla = osobny cennik z\u0142o\u017Ca (handel_zloze)."
     },
     pakiet_wielkosc: {
       easy: 10,
       normal: 10,
       hard: 10,
       jednostka: "szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: wielko\u015B\u0107 pakietu handlu ilo\u015Bciowego (surowiec_ilosc) \u2014 handel odbywa si\u0119 w pakietach po tyle sztuk. Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach."
+      opis: "C-DYP-SUROWCE-Q1=B: wielko\u015B\u0107 pakietu handlu ilo\u015Bciowego (surowiec_ilosc) \u2014 handel odbywa si\u0119 w pakietach po tyle sztuk. PN pozycji = cena_PN/szt. \xD7 (pakiety \xD7 pakiet_wielkosc). Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach."
     }
   }
 };
@@ -12239,6 +12352,25 @@ function diplomacyPnZywnosc(amount) {
 function diplomacyPnZloze(zlozeId) {
   return diplomacyDepositBasePrice(zlozeId);
 }
+var BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE = Object.freeze({
+  easy: 1.5,
+  normal: 1,
+  hard: 0.5
+});
+var BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE = Object.freeze({
+  easy: 0.5,
+  normal: 1,
+  hard: 1.5
+});
+function basketSideTradeRoleFromProposal(side, proposerOwnerId, playerOwnerId = 0) {
+  const playerIsProposer = proposerOwnerId === playerOwnerId;
+  if (side === "give") return playerIsProposer ? "sell" : "buy";
+  return playerIsProposer ? "buy" : "sell";
+}
+function basketSidePnDifficultyMultiplier(side, difficulty, proposerOwnerId, playerOwnerId = 0) {
+  const role = basketSideTradeRoleFromProposal(side, proposerOwnerId, playerOwnerId);
+  return role === "sell" ? BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE[difficulty] : BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE[difficulty];
+}
 function diplomacyPnTech(techName, tempo = "standardowa") {
   const base = _techByName.get(techName.trim());
   if (base == null) return null;
@@ -12257,12 +12389,19 @@ function diplomacyPnSurowiecBoolean(surowiecKey) {
 var _handelSurowce = econ_params_default.handel_surowce ?? {};
 var HANDEL_SUROWCE_CENA_ROW = {
   drewno: "cena_drewno",
-  kamien: "cena_kamien",
   glina: "cena_glina",
-  cegla: "cena_cegla",
+  kamien: "cena_kamien",
   ruda: "cena_ruda",
-  /** Ruda żelaza — osobny klucz magazynu (City.surowce.ruda_zelaza); cena placeholder jak ruda. */
-  ruda_zelaza: "cena_ruda"
+  ruda_zelaza: "cena_ruda_zelaza",
+  cegla: "cena_cegla",
+  sol: "cena_sol",
+  kon: "cena_kon",
+  ceramika: "cena_ceramika",
+  braz: "cena_braz",
+  zelazo: "cena_zelazo",
+  stal: "cena_stal",
+  zloto: "cena_zloto",
+  wegiel: "cena_wegiel"
 };
 var DEFAULT_HANDEL_SUROWCE_PAKIET = 10;
 function readHandelSurowceParam(rowKey, fallback) {
@@ -12288,7 +12427,19 @@ function diplomacyPnSurowiecIlosc(surowiecKey, pakietyQty) {
   const pakiet = diplomacyHandelSurowcePakietWielkosc();
   return Math.max(0, Math.round(pakiety * pakiet * cena));
 }
-function diplomacySumPn(items) {
+function applyBasketSideDifficultyPn(basePn, opts) {
+  if (basePn <= 0 || !opts?.difficulty || opts.side == null || opts.proposerOwnerId == null) {
+    return basePn;
+  }
+  const mult = basketSidePnDifficultyMultiplier(
+    opts.side,
+    opts.difficulty,
+    opts.proposerOwnerId,
+    opts.playerOwnerId ?? 0
+  );
+  return Math.max(0, Math.round(basePn * mult));
+}
+function diplomacySumPn(items, opts) {
   let sum = 0;
   for (const item of items) {
     const qty = item.ilosc ?? 1;
@@ -12308,7 +12459,7 @@ function diplomacySumPn(items) {
         pn = diplomacyPnZloze(item.id);
         break;
       case "tech":
-        pn = diplomacyPnTech(item.id, item.tempo ?? "standardowa");
+        pn = diplomacyPnTech(item.id, item.tempo ?? opts?.tempo ?? "standardowa");
         break;
       case "jednostka":
         pn = diplomacyPnJednostka(item.id);
@@ -12323,7 +12474,9 @@ function diplomacySumPn(items) {
         return null;
     }
     if (pn == null) return null;
-    sum += pn * (item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" || item.typ === "surowiec_ilosc" ? 1 : qty);
+    const qtyMult = item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" || item.typ === "surowiec_ilosc" ? 1 : qty;
+    const linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    sum += linePn;
   }
   return sum;
 }
@@ -12365,8 +12518,27 @@ function diplomacyProgDarRelacja(params = _pnRelacja, difficulty = "normal") {
 }
 
 // src/game/diplomacy-pn-engine.ts
+function buildProposalPnSumOpts(opts) {
+  return {
+    difficulty: opts?.difficulty ?? "normal",
+    proposerOwnerId: opts?.proposerOwnerId,
+    playerOwnerId: opts?.playerOwnerId ?? 0,
+    tempo: opts?.tempoGry
+  };
+}
 function relationTotal(rel) {
   return Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + (rel.respekt ?? 0)));
+}
+function relationSignedFromTotal(relTotal) {
+  return Math.max(-100, Math.min(100, relTotal - 100));
+}
+function relationPnModPct(relSigned) {
+  return Math.max(-90, Math.min(90, relSigned));
+}
+function effectiveTreatyPnRequired(basePn, relTotal) {
+  if (basePn <= 0) return 0;
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  return Math.max(0, Math.round(basePn * (1 - modPct / 100)));
 }
 function pnDealAcceptedByAi(givePn, receivePn, relacja) {
   if (givePn <= 0 && receivePn <= 0) return false;
@@ -12380,15 +12552,16 @@ function pnFromLegacyGold(goldOnce) {
   if (goldOnce == null || !Number.isFinite(goldOnce) || goldOnce <= 0) return 0;
   return diplomacyPnZloto(goldOnce);
 }
-function resolveProposalPn(payload) {
+function resolveProposalPn(payload, opts) {
   let givePn = payload.givePn ?? 0;
   let receivePn = payload.receivePn ?? 0;
+  const sumBase = buildProposalPnSumOpts(opts);
   if (payload.giveItems?.length) {
-    const sum = diplomacySumPn([...payload.giveItems]);
+    const sum = diplomacySumPn([...payload.giveItems], { ...sumBase, side: "give" });
     if (sum != null) givePn = sum;
   }
   if (payload.receiveItems?.length) {
-    const sum = diplomacySumPn([...payload.receiveItems]);
+    const sum = diplomacySumPn([...payload.receiveItems], { ...sumBase, side: "receive" });
     if (sum != null) receivePn = sum;
   }
   if (givePn <= 0 && payload.goldOnce != null && payload.goldOnce > 0) {
@@ -12396,6 +12569,85 @@ function resolveProposalPn(payload) {
   }
   return { givePn, receivePn };
 }
+
+// data/diplomacy-acceptance-points.json
+var diplomacy_acceptance_points_default = {
+  _opis: "Punkty akceptacji sto\u0142u negocjacji (Maciej 2026-07-29). Traktaty: PN bazowe (warto\u015B\u0107 strategiczna). Koszyk: runtime z diplomacy-value-catalog.ts. Skala wzgl\u0119dna: sojusz >> NAP >> traktat handlowy >> wymiana.",
+  traktaty: {
+    pokoj: { punkty: 500, jednostka: "umowa", uwaga: "zako\u0144czenie wojny \u2014 wymaga trwaj\u0105cej wojny; PN obowi\u0105zkowe (jak sojusz)" },
+    sojusz_pelny: { punkty: 500, jednostka: "umowa", prog_relacja: 151 },
+    sojusz_defensywny: { punkty: 420, jednostka: "umowa", prog_relacja: 151 },
+    nap: { punkty: 200, jednostka: "umowa", prog_relacja: 50 },
+    umowa_szlakow: { punkty: 80, jednostka: "umowa", prog_relacja: 0 },
+    umowa_handlowa: { punkty: 80, jednostka: "umowa", prog_relacja: 0 },
+    handel: { punkty: 0, jednostka: "wymiana", prog_relacja: 0, uwaga: "tylko koszyk PN \u2014 bez bazy traktatu" },
+    granice: { punkty: 60, jednostka: "umowa", prog_relacja: 100, uwaga: "UI: Traktat przemarszu" },
+    tech: { punkty: 0, jednostka: "once", uwaga: "wycena z tech.json (PN silnika)" },
+    wasal: { punkty: 350, jednostka: "umowa", prog_respekt: 70 },
+    trybut_zadanie: { punkty: 120, jednostka: "/t", prog_respekt: 70 },
+    trybut_oferta: { punkty: 100, jednostka: "once" },
+    namow_wojne: { punkty: 150, jednostka: "once", prog_zaufanie: 50 },
+    ultimatum: { punkty: 180, jednostka: "once" },
+    dar: { punkty: 0, jednostka: "once", uwaga: "tylko koszyk PN" }
+  },
+  koszyk_pn: {
+    zloto: { pn_per_unit: 1, jednostka: "once lub /t", zrodlo: "1 PN = 1 \xA4" },
+    praca: { pn_per_unit: 1, jednostka: "once lub /t", zrodlo: "1 PN = 1 Praca" },
+    zywnosc: { pn_per_unit: 1, jednostka: "once", zrodlo: "pn_relacja: 1 PN = 1 \u017Cywno\u015B\u0107" },
+    surowiec_ilosc: {
+      jednostka: "once lub /t (pakiety \xD7 10 szt.)",
+      zrodlo: "econ-params.handel_surowce \u2014 PN/szt. \xD7 (pakiety \xD7 pakiet_wielkosc)",
+      pn_per_szt: {
+        drewno: 1,
+        glina: 2,
+        kamien: 3,
+        ruda: 5,
+        ruda_zelaza: 10,
+        cegla: 5,
+        sol: 2,
+        kon: 5,
+        ceramika: 5,
+        braz: 15,
+        zelazo: 20,
+        stal: 25,
+        zloto: 50,
+        wegiel: 20
+      },
+      przyklady_pn_per_pakiet_10szt: {
+        drewno: 10,
+        glina: 20,
+        kamien: 30,
+        ruda: 50,
+        ruda_zelaza: 100,
+        cegla: 50,
+        sol: 20,
+        kon: 50,
+        ceramika: 50,
+        braz: 150,
+        zelazo: 200,
+        stal: 250,
+        zloto: 500,
+        wegiel: 200
+      }
+    },
+    tech: { jednostka: "once", zrodlo: "tech.json Koszt nauki \xD7 tempo gry" },
+    jednostka: { jednostka: "once", zrodlo: "units.json pole Pieni\u0105dz (koszt)" },
+    zloze: {
+      jednostka: "once (dost\u0119p 1 hex)",
+      zrodlo: "diplomacy.json handel_zloze.cena_baza",
+      przyklady: { glina: 50, sol: 50, konie: 100, wegiel: 100, miedz: 120, zelazo: 150 }
+    }
+  },
+  sweetener: {
+    pn_na_punkt_ease: 25,
+    max_ease_punkty: 20,
+    opis: "S\u0142odzik obni\u017Ca pr\xF3g Relacji traktatu: 1 pkt ease / 25 PN netto (sufit 20 pkt)"
+  },
+  fair_trade: {
+    kurs_relacja_baza: 100,
+    opis: "Min PN oddawane = oczekiwane \xD7 (100 / Relacja); patrz diplomacyFairGivePn"
+  }
+};
 
 // src/game/diplomacy-economy.ts
 var AI_TRADE_GOLD_MAX = 20;
@@ -12461,12 +12713,12 @@ function clampDealTurns(turns, defaultTurns = 15) {
 }
 var SWEETENER_PN_PER_EASE_POINT = 25;
 var SWEETENER_EASE_MAX_POINTS = 20;
-function sweetenerNetPn(payload) {
-  const { givePn, receivePn } = resolveProposalPn(payload);
+function sweetenerNetPn(payload, pnOpts) {
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
   return Math.max(0, givePn - receivePn);
 }
-function sweetenerEasePoints(payload) {
-  const netPn = sweetenerNetPn(payload);
+function sweetenerEasePoints(payload, pnOpts) {
+  const netPn = sweetenerNetPn(payload, pnOpts);
   if (netPn <= 0) return 0;
   return Math.min(SWEETENER_EASE_MAX_POINTS, Math.floor(netPn / SWEETENER_PN_PER_EASE_POINT));
 }
@@ -12498,18 +12750,59 @@ function buildHandelSurowiecCykliczny(proposerId, responderId, giveItems = [], r
   }
   return out;
 }
+function marchTreatyLabel(borderMilitary) {
+  return borderMilitary ? "Traktat przemarszu (wojskowy)" : "Traktat przemarszu (cywilny)";
+}
+function treatyBasePnFromConfig(actionId) {
+  const t = diplomacy_acceptance_points_default.traktaty;
+  return t[actionId]?.punkty ?? 0;
+}
+function treatyPnGate(actionId, payload, relation, pnOpts) {
+  const basePn = treatyBasePnFromConfig(actionId);
+  if (basePn <= 0) return null;
+  const { givePn } = resolveProposalPn(payload, pnOpts);
+  const required = effectiveTreatyPnRequired(basePn, relationTotal(relation));
+  if (actionId === "pokoj") {
+    if (givePn < required) {
+      return {
+        accepted: false,
+        reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PN @ Relacji, baza ${basePn})`
+      };
+    }
+    return null;
+  }
+  const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
+  if (!hasBasket) return null;
+  if (givePn < required) {
+    return {
+      accepted: false,
+      reason: `Oferta za niska na ten traktat (wymagane \u2265 ${required} PN @ Relacji)`
+    };
+  }
+  return null;
+}
 function evaluateProposal(proposal, ctx) {
   const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
   const { relation, stanWojny } = ctx;
   const p = getEffectiveDiplomacyParams(ctx.difficulty ?? "normal");
+  const pnOpts = {
+    difficulty: ctx.difficulty ?? "normal",
+    proposerOwnerId,
+    playerOwnerId: 0
+  };
   const score = relationScore(relation);
   const stance = stanceForEval(ctx);
-  if (stanWojny && actionId !== "trybut_oferta" && actionId !== "ultimatum") {
+  if (actionId === "pokoj" && !stanWojny) {
+    return { accepted: false, reason: "Pok\xF3j \u2014 brak trwaj\u0105cej wojny" };
+  }
+  if (stanWojny && actionId !== "trybut_oferta" && actionId !== "ultimatum" && actionId !== "pokoj") {
     return { accepted: false, reason: "Trwa wojna \u2014 ta akcja jest niedost\u0119pna" };
   }
+  const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
+  if (pnReject) return pnReject;
   switch (actionId) {
     case "nap": {
-      const napEase = sweetenerEasePoints(payload);
+      const napEase = sweetenerEasePoints(payload, pnOpts);
       const napThreshold = Math.max(0, p.progNapRelacja - napEase);
       if (score < napThreshold) {
         return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana \u2265 ${napThreshold})` };
@@ -12540,7 +12833,7 @@ function evaluateProposal(proposal, ctx) {
         ctx.responderRespekt,
         p
       );
-      const sojuszEase = sweetenerEasePoints(payload);
+      const sojuszEase = sweetenerEasePoints(payload, pnOpts);
       const minZ = Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
       const minScore = diplomacyTreatyMinRelacja(
         p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase,
@@ -12577,7 +12870,7 @@ function evaluateProposal(proposal, ctx) {
       if (perTurn < p.progTrybutMinGoldPerTurn) {
         return { accepted: false, reason: `Minimalny trybut to ${p.progTrybutMinGoldPerTurn} \xA4/tur\u0119` };
       }
-      const trybutEase = sweetenerEasePoints(payload);
+      const trybutEase = sweetenerEasePoints(payload, pnOpts);
       const trybutRespektThreshold = Math.max(0, p.progTrybutZadanieMinRespekt - trybutEase);
       if (ctx.proposerRespekt <= trybutRespektThreshold) {
         return {
@@ -12609,6 +12902,18 @@ function evaluateProposal(proposal, ctx) {
       );
       return { accepted: true, reason: `Trybut ${perTurn} \xA4/tur\u0119`, deal };
     }
+    case "pokoj": {
+      const { givePn } = resolveProposalPn(payload, pnOpts);
+      const basePn = treatyBasePnFromConfig("pokoj");
+      const required = effectiveTreatyPnRequired(basePn, relationTotal(relation));
+      if (givePn < required) {
+        return {
+          accepted: false,
+          reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PN @ Relacji)`
+        };
+      }
+      return { accepted: true, reason: "Warunki pokoju spe\u0142nione", oneShotTrade: true };
+    }
     case "trybut_oferta": {
       const perTurn = payload.goldPerTurn ?? payload.goldOnce ?? 0;
       const threshold = p.progTrybutOfertaBaseGold + (ctx.epoka ?? 0) * p.progTrybutOfertaEpokaGold;
@@ -12637,7 +12942,7 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: true, reason: `Oferta trybutu ${perTurn} \xA4/tur\u0119 przyj\u0119ta`, deal };
     }
     case "handel": {
-      const { givePn, receivePn } = resolveProposalPn(payload);
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const relTotal = relationTotal(relation);
       const isGift = payload.isGift === true || (payload.giveItems?.length ?? 0) > 0 && !payload.receiveItems?.length && (payload.receivePn ?? 0) <= 0;
       if (isGift) {
@@ -12678,7 +12983,7 @@ function evaluateProposal(proposal, ctx) {
           return { accepted: false, reason: "Brak surowca do cyklicznej wymiany" };
         }
         const deal = buildDeal(
-          "umowa_handlowa" /* UmowaHandlowa */,
+          "umowa_wymiany" /* UmowaWymiany */,
           proposerOwnerId,
           responderOwnerId,
           ctx.turn,
@@ -12709,6 +13014,33 @@ function evaluateProposal(proposal, ctx) {
         return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
       }
       return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
+    }
+    case "umowa_szlakow": {
+      if (stance.willingnessTrade < p.progHandelWillingnessMin) {
+        return { accepted: false, reason: "Brak ch\u0119ci do handlu" };
+      }
+      if (score < p.progHandelRelacja) {
+        return { accepted: false, reason: `Relacja zbyt niska na traktat handlowy (wymagane \u2265 ${p.progHandelRelacja})` };
+      }
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+      const relTotal = relationTotal(relation);
+      const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
+      if (hasItems && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+        return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
+      }
+      const wygasa = payload.turns != null ? ctx.turn + clampDealTurns(payload.turns) : null;
+      const deal = buildDeal(
+        "umowa_szlakow" /* UmowaSzlakow */,
+        proposerOwnerId,
+        responderOwnerId,
+        ctx.turn,
+        wygasa
+      );
+      return {
+        accepted: true,
+        reason: hasItems ? "Traktat handlowy (ze s\u0142odzikiem) zawarty" : "Traktat handlowy zawarty",
+        deal
+      };
     }
     case "namow_wojne": {
       if (relation.zaufanie < p.progNamowWojneZaufanie) {
@@ -12751,7 +13083,7 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: true, reason: "Sprzeda\u017C technologii zaakceptowana", oneShotTrade: true };
     }
     case "granice": {
-      const graniceEase = sweetenerEasePoints(payload);
+      const graniceEase = sweetenerEasePoints(payload, pnOpts);
       const graniceRelThreshold = Math.max(0, p.progGraniceRelacja - graniceEase);
       const graniceZaufThreshold = Math.max(0, p.progGraniceZaufanie - graniceEase);
       const granRelOk = score >= graniceRelThreshold;
@@ -12759,11 +13091,11 @@ function evaluateProposal(proposal, ctx) {
       if (!granRelOk && !granZaufOk) {
         return {
           accepted: false,
-          reason: `Relacja zbyt niska na granice (wymagana Relacja \u2265 ${graniceRelThreshold} i Zaufanie \u2265 ${graniceZaufThreshold})`
+          reason: `Relacja zbyt niska na traktat przemarszu (wymagana Relacja \u2265 ${graniceRelThreshold} i Zaufanie \u2265 ${graniceZaufThreshold})`
         };
       }
       if (!granRelOk) {
-        return { accepted: false, reason: `Relacja zbyt niska na granice (wymagana \u2265 ${graniceRelThreshold})` };
+        return { accepted: false, reason: `Relacja zbyt niska na traktat przemarszu (wymagana \u2265 ${graniceRelThreshold})` };
       }
       if (!granZaufOk) {
         return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${graniceZaufThreshold})` };
@@ -12781,7 +13113,7 @@ function evaluateProposal(proposal, ctx) {
       );
       return {
         accepted: true,
-        reason: payload.borderMilitary ? "Prawo wojskowego przemarszu" : "Otwarte granice cywilne",
+        reason: marchTreatyLabel(payload.borderMilitary),
         deal
       };
     }
@@ -12796,7 +13128,7 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: false, reason: "Ultimatum odrzucone \u2014 warunki zbyt surowe" };
     }
     case "wasal": {
-      const wasalEase = sweetenerEasePoints(payload);
+      const wasalEase = sweetenerEasePoints(payload, pnOpts);
       const wasalRespektThreshold = Math.max(0, p.progWasalizacjaRespekt - wasalEase);
       if (ctx.proposerRespekt < wasalRespektThreshold) {
         return { accepted: false, reason: `Wasalizacja wymaga Respekt \u2265 ${wasalRespektThreshold}` };
@@ -12847,7 +13179,7 @@ function formatAiDiplomacyPlayerMessage(cmd) {
     case "zaproponuj_umowe_handlowa":
       return cmd.sweetenerGold ? `Proponujemy sta\u0142\u0105 umow\u0119 handlow\u0105 (szlaki handlowe) \u2014 w ge\u015Bcie dobrej woli dok\u0142adamy ${cmd.sweetenerGold} \xA4.` : "Proponujemy sta\u0142\u0105 umow\u0119 handlow\u0105 \u2014 otwiera i utrzymuje szlaki handlowe mi\u0119dzy naszymi miastami.";
     case "zaproponuj_sojusz":
-      return "Proponujemy pe\u0142ny sojusz \u2014 wsp\xF3lna obrona i wsparcie militarnie.";
+      return cmd.allianceKind === "defensywny" ? "Proponujemy sojusz defensywny \u2014 wchodzimy do wojny tylko gdy kt\xF3ry\u015B z nas jest atakowany." : "Proponujemy pe\u0142ny sojusz \u2014 wsp\xF3lna obrona i wsparcie militarnie.";
     case "zaproponuj_pakt":
       return `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur \u2014 \u017Cadna strona nie zaatakuje drugiej.`;
     case "zaproponuj_pokoj":
@@ -12879,19 +13211,28 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
     aiPowod: formatAiDiplomacyPlayerMessage(cmd)
   };
   switch (cmd.type) {
-    case "zaproponuj_sojusz":
+    case "zaproponuj_sojusz": {
+      const allianceKind = cmd.allianceKind === "defensywny" ? "defensywny" : "pelny";
       return {
         ...base,
         id: makeDealId("pending-sojusz", turn, fromOwnerId, toOwnerId),
-        actionId: "sojusz_pelny",
-        payload: {}
+        actionId: allianceKind === "defensywny" ? "sojusz_defensywny" : "sojusz_pelny",
+        payload: { allianceKind }
       };
+    }
     case "zaproponuj_pakt":
       return {
         ...base,
         id: makeDealId("pending-nap", turn, fromOwnerId, toOwnerId),
         actionId: "nap",
         payload: { turns: cmd.turns ?? 15 }
+      };
+    case "zaproponuj_pokoj":
+      return {
+        ...base,
+        id: makeDealId("pending-pokoj", turn, fromOwnerId, toOwnerId),
+        actionId: "pokoj",
+        payload: {}
       };
     case "zaproponuj_handel": {
       const goldOnce = cmd.goldOnce ?? 0;
@@ -12976,12 +13317,14 @@ function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
       const label = actionId === "sojusz_defensywny" ? "Sojusz defensywny" : "Sojusz pe\u0142ny";
       return { accepted: true, reason: `${label} zawarty`, deal };
     }
+    case "pokoj":
+      return { accepted: true, reason: "Pok\xF3j zawarty", oneShotTrade: true };
     case "granice": {
       const rodzaj = payload.borderMilitary ? "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */ : "otwarte_granice" /* OtwartGranice */;
       const deal = buildDeal(rodzaj, fromOwnerId, toOwnerId, turn, null);
       return {
         accepted: true,
-        reason: payload.borderMilitary ? "Prawo wojskowego przemarszu" : "Otwarte granice cywilne",
+        reason: marchTreatyLabel(payload.borderMilitary),
         deal
       };
     }
@@ -13028,7 +13371,7 @@ function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
           return { accepted: false, reason: "Brak surowca do cyklicznej wymiany" };
         }
         const deal = buildDeal(
-          "umowa_handlowa" /* UmowaHandlowa */,
+          "umowa_wymiany" /* UmowaWymiany */,
           fromOwnerId,
           toOwnerId,
           turn,
@@ -13045,15 +13388,16 @@ function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
       }
       return { accepted: true, reason: "Wymiana PN zaakceptowana", oneShotTrade: true };
     }
-    case "umowa_handlowa": {
+    case "umowa_handlowa":
+    case "umowa_szlakow": {
       const deal = buildDeal(
-        "umowa_handlowa" /* UmowaHandlowa */,
+        "umowa_szlakow" /* UmowaSzlakow */,
         fromOwnerId,
         toOwnerId,
         turn,
-        turn + clampDealTurns(payload.turns)
+        payload.turns != null ? turn + clampDealTurns(payload.turns) : null
       );
-      return { accepted: true, reason: "Umowa handlowa zawarta", deal };
+      return { accepted: true, reason: "Traktat handlowy zawarty", deal };
     }
     case "trybut_zadanie": {
       const perTurn = payload.goldPerTurn ?? AI_TRIBUTE_PER_TURN;

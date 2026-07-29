@@ -129,8 +129,69 @@ export function diplomacyPnZloze(zlozeId: string): number | null {
   return diplomacyDepositBasePrice(zlozeId);
 }
 
-/** PN technologii = Koszt nauki × tempo gry. */
-export function diplomacyPnTech(techName: string, tempo: TempoGry | number = 'standardowa'): number | null {
+/**
+ * Mnożnik PN koszyka — strona „My oddajemy" (Maciej 2026-07-29, wszystkie elementy).
+ * Hard: ×0,5 (gorzej wyceniane); Easy: ×1,5; Normal: ×1,0.
+ */
+export const BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE: Readonly<Record<GameDifficulty, number>> = Object.freeze({
+  easy: 1.5,
+  normal: 1.0,
+  hard: 0.5,
+});
+
+/**
+ * Mnożnik PN koszyka — strona „My dostajemy" (Maciej 2026-07-29, wszystkie elementy).
+ * Hard: ×1,5 (lepiej wyceniane); Easy: ×0,5; Normal: ×1,0.
+ */
+export const BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE: Readonly<Record<GameDifficulty, number>> = Object.freeze({
+  easy: 0.5,
+  normal: 1.0,
+  hard: 1.5,
+});
+
+export type BasketSideTradeRole = 'sell' | 'buy';
+
+/**
+ * Rola strony koszyka z perspektywy gracza (ownerId 0):
+ * give/receive względem proponenta → sprzedaż (My oddajemy) lub kupno (My dostajemy).
+ */
+export function basketSideTradeRoleFromProposal(
+  side: 'give' | 'receive',
+  proposerOwnerId: number,
+  playerOwnerId = 0,
+): BasketSideTradeRole {
+  const playerIsProposer = proposerOwnerId === playerOwnerId;
+  if (side === 'give') return playerIsProposer ? 'sell' : 'buy';
+  return playerIsProposer ? 'buy' : 'sell';
+}
+
+/** @deprecated alias — użyj basketSideTradeRoleFromProposal */
+export const techTradeRoleFromBasketSide = basketSideTradeRoleFromProposal;
+
+/**
+ * Mnożnik trudności dla strony koszyka (wszystkie typy pozycji, w tym tech).
+ * Wymaga `side`, `difficulty` i `proposerOwnerId` — inaczej ×1.
+ */
+export function basketSidePnDifficultyMultiplier(
+  side: 'give' | 'receive',
+  difficulty: GameDifficulty,
+  proposerOwnerId: number,
+  playerOwnerId = 0,
+): number {
+  const role = basketSideTradeRoleFromProposal(side, proposerOwnerId, playerOwnerId);
+  return role === 'sell'
+    ? BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE[difficulty]
+    : BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE[difficulty];
+}
+
+/**
+ * PN technologii = Koszt nauki (tech.json) × tempo gry.
+ * Modyfikator trudności stosuje `diplomacySumPn` (globalnie per strona koszyka).
+ */
+export function diplomacyPnTech(
+  techName: string,
+  tempo: TempoGry | number = 'standardowa',
+): number | null {
   const base = _techByName.get(techName.trim());
   if (base == null) return null;
   return applyTempoKoszt(base, tempo);
@@ -174,10 +235,9 @@ export function diplomacyResourceAccessCatalog(): Readonly<Record<string, number
 }
 
 // ---------------------------------------------------------------------------
-// C-DYP-SUROWCE-Q1=B (2026-07-23): handel ILOŚCIOWY surowcami miejskimi
-// (surowiec_ilosc) — proste ceny jednostkowe z econ-params.json „handel_surowce".
-// Odrębne od surowiec_boolean powyżej (to dostęp civ-wide, nie ilość ze
-// spichlerza miast). Ceny PLACEHOLDER — strojenie właściciela w panelu Excel.
+// C-DYP-SUROWCE-Q1=B (2026-07-23) + Maciej 2026-07-29: handel ILOŚCIOWY
+// surowcami miejskimi (surowiec_ilosc) — PN/szt. z econ-params.json handel_surowce.
+// PN pozycji = cena_PN/szt. × ilość sztuk (pakiety × pakiet_wielkosc).
 // ---------------------------------------------------------------------------
 
 type RawHandelSurowceRow = Record<string, number | string | undefined>;
@@ -190,17 +250,24 @@ const _handelSurowce = (econParamsJson as RawEconParamsJsonHandelSurowce).handel
 
 /**
  * Klucz ASCII surowca (cities.ts City.surowce) → klucz wiersza cennika w econ-params.json.
- * Ceramika CELOWO NIEOBECNA (Maciej 2026-07-23): przestaje być dobrem ilościowym —
- * tylko dostęp (Garncarnia zbudowana), patrz diplomacy-goods.ts / building-resource-gate.ts.
+ * Maciej 2026-07-29: wycena za 1 szt. (PN/szt.); PN pozycji = cena × ilość sztuk
+ * (pakiety × pakiet_wielkosc gdy koszyk liczy w pakietach).
  */
 const HANDEL_SUROWCE_CENA_ROW: Readonly<Record<string, string>> = {
   drewno: 'cena_drewno',
-  kamien: 'cena_kamien',
   glina: 'cena_glina',
-  cegla: 'cena_cegla',
+  kamien: 'cena_kamien',
   ruda: 'cena_ruda',
-  /** Ruda żelaza — osobny klucz magazynu (City.surowce.ruda_zelaza); cena placeholder jak ruda. */
-  ruda_zelaza: 'cena_ruda',
+  ruda_zelaza: 'cena_ruda_zelaza',
+  cegla: 'cena_cegla',
+  sol: 'cena_sol',
+  kon: 'cena_kon',
+  ceramika: 'cena_ceramika',
+  braz: 'cena_braz',
+  zelazo: 'cena_zelazo',
+  stal: 'cena_stal',
+  zloto: 'cena_zloto',
+  wegiel: 'cena_wegiel',
 };
 
 const DEFAULT_HANDEL_SUROWCE_PAKIET = 10;
@@ -217,7 +284,7 @@ export function diplomacyHandelSurowcePakietWielkosc(): number {
   return v > 0 ? Math.floor(v) : DEFAULT_HANDEL_SUROWCE_PAKIET;
 }
 
-/** Cena jednostkowa (¤/szt.) surowca ilościowego, lub null gdy surowiec spoza cennika. */
+/** Cena jednostkowa (PN/szt.) surowca ilościowego, lub null gdy surowiec spoza cennika. */
 export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): number | null {
   const rowKey = HANDEL_SUROWCE_CENA_ROW[surowiecKey.trim().toLowerCase()];
   if (!rowKey) return null;
@@ -226,8 +293,9 @@ export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): num
 }
 
 /**
- * PN pozycji koszyka surowiec_ilosc = pakiety × pakiet_wielkosc × cena_jednostkowa.
+ * PN pozycji koszyka surowiec_ilosc = pakiety × pakiet_wielkosc × cena_PN/szt.
  * `pakietyQty` = liczba pakietów (nie sztuk) — spójne z polem `ilosc` w BasketItem.
+ * Efekt: PN/szt. × łączna liczba sztuk w pozycji.
  */
 export function diplomacyPnSurowiecIlosc(surowiecKey: string, pakietyQty: number): number | null {
   const cena = diplomacyHandelSurowiecCenaJednostkowa(surowiecKey);
@@ -248,8 +316,44 @@ export function diplomacyHandelSurowceCatalog(): Readonly<Record<string, number>
   return Object.freeze(out);
 }
 
+export interface DiplomacySumPnOptions {
+  /** Poziom trudności partii gracza (easy/normal/hard). */
+  difficulty?: GameDifficulty;
+  /** Kto złożył propozycję — do ustalenia roli tech sell/buy. */
+  proposerOwnerId?: number;
+  /** Gracz ludzki (domyślnie 0). */
+  playerOwnerId?: number;
+  /** Która strona koszyka jest sumowana (give = oddajemy, receive = oczekujemy). */
+  side?: 'give' | 'receive';
+  tempo?: TempoGry | number;
+}
+
+function applyBasketSideDifficultyPn(
+  basePn: number,
+  opts?: DiplomacySumPnOptions,
+): number {
+  if (
+    basePn <= 0 ||
+    !opts?.difficulty ||
+    opts.side == null ||
+    opts.proposerOwnerId == null
+  ) {
+    return basePn;
+  }
+  const mult = basketSidePnDifficultyMultiplier(
+    opts.side,
+    opts.difficulty,
+    opts.proposerOwnerId,
+    opts.playerOwnerId ?? 0,
+  );
+  return Math.max(0, Math.round(basePn * mult));
+}
+
 /** Suma PN pozycji w koszyku (null jeśli któraś pozycja nieznana). */
-export function diplomacySumPn(items: Array<{ typ: WartoscPozycjaTyp; id: string; ilosc?: number; level?: number; tempo?: TempoGry | number }>): number | null {
+export function diplomacySumPn(
+  items: Array<{ typ: WartoscPozycjaTyp; id: string; ilosc?: number; level?: number; tempo?: TempoGry | number }>,
+  opts?: DiplomacySumPnOptions,
+): number | null {
   let sum = 0;
   for (const item of items) {
     const qty = item.ilosc ?? 1;
@@ -269,7 +373,7 @@ export function diplomacySumPn(items: Array<{ typ: WartoscPozycjaTyp; id: string
         pn = diplomacyPnZloze(item.id);
         break;
       case 'tech':
-        pn = diplomacyPnTech(item.id, item.tempo ?? 'standardowa');
+        pn = diplomacyPnTech(item.id, item.tempo ?? opts?.tempo ?? 'standardowa');
         break;
       case 'jednostka':
         pn = diplomacyPnJednostka(item.id);
@@ -285,11 +389,12 @@ export function diplomacySumPn(items: Array<{ typ: WartoscPozycjaTyp; id: string
         return null;
     }
     if (pn == null) return null;
-    sum += pn * (
+    const qtyMult =
       item.typ === 'zloto' || item.typ === 'praca' || item.typ === 'zywnosc' || item.typ === 'surowiec_ilosc'
         ? 1
-        : qty
-    );
+        : qty;
+    const linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    sum += linePn;
   }
   return sum;
 }

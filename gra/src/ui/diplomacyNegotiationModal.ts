@@ -5,7 +5,9 @@
 import type { AudienceAction } from './diplomacyAudience';
 import type { BasketItem } from '../game/diplomacy-pn-engine';
 import type { TempoGry } from '../game/tech-tempo';
+import type { GameDifficulty } from '../game/difficulty-cost';
 import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
+import { TRAKTAT_HANDLOWY_LABEL } from '../game/diplomacy-display';
 
 export interface NegotiationPayload {
   actionId: string;
@@ -51,6 +53,8 @@ export interface NegotiationModalContext {
   trustPnGainedThisTurn?: number;
   /** Tempo gry — wycena tech */
   tempoGry?: TempoGry | number;
+  /** Poziom trudności partii gracza — modyfikator PN tech */
+  difficulty?: GameDifficulty;
   /** Miasta gracza (żywność ze spichlerza) */
   cityOptions?: ReadonlyArray<{ id: string; label: string; spichlerz?: number }>;
   /** Dostępne złoża do handlu */
@@ -84,7 +88,7 @@ export interface NegotiationModalContext {
 const STYLE_ID = 'civ-diplo-neg-css-1e';
 let overlay: HTMLDivElement | null = null;
 
-const NEGOTIATION_IDS = new Set(['6', '7', '9']);
+const NEGOTIATION_IDS = new Set(['6', '7', '9', '10']);
 
 export function actionNeedsNegotiation(actionId: string): boolean {
   return NEGOTIATION_IDS.has(actionId);
@@ -147,7 +151,7 @@ function sweetenerSectionHtml(ctx: NegotiationModalContext): string {
     '<div class="cdn-sweetener" style="margin-top:12px;border-top:1px dashed rgba(232,216,138,.18);padding-top:8px">'
     + '<label style="margin-top:0">Dołóż do umowy (opcjonalnie — słodzik)</label>'
     + '<p class="cdn-sub">Zwiększa szansę akceptacji — wliczane RAZEM z traktatem.</p>'
-    + numInput('cdn-sw-gold', 'Złoto ¤', 0, 0, goldMax)
+    + numInput('cdn-sw-gold', 'Pieniądze (¤)', 0, 0, goldMax)
     + '<label>Surowiec</label>'
     + '<select id="cdn-sw-res">' + resOptions + '</select>'
     + '<div id="cdn-sw-qty-wrap" style="display:none">'
@@ -221,7 +225,7 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
     }
 
     case '5':
-      return sub + '<p class="cdn-sub">Traktat szlaków — zamknij to okno i użyj przycisku „Traktat szlaków" na stole (bez koszyka).</p>';
+      return sub + '<p class="cdn-sub">' + TRAKTAT_HANDLOWY_LABEL + ' — zamknij to okno i użyj przycisku „' + TRAKTAT_HANDLOWY_LABEL + '" na stole (bez koszyka).</p>';
     case '14':
       return sub + '<p class="cdn-sub">Umowa wymiany PN — zamknij to okno i wybierz „Umowa wymiany" (koszyk).</p>';
     case '13':
@@ -405,7 +409,7 @@ export function showNegotiationModal(
     if (payload == null) {
       if (action.id === '5' || action.id === '14' || action.id === '13') {
         showInvalid(action.id === '5'
-          ? 'Traktat szlaków — zamknij okno i użyj przycisku na stole negocjacji.'
+          ? TRAKTAT_HANDLOWY_LABEL + ' — zamknij okno i użyj przycisku na stole negocjacji.'
           : 'Ta akcja wymaga koszyka wymiany — zamknij okno i wybierz ją ponownie z listy umów.');
       } else {
         showInvalid('Uzupełnij wymagane pola formularza.');
@@ -492,7 +496,7 @@ export function proposalActionIdFromPayload(payload: NegotiationPayload): string
   }
   const map: Record<string, string> = {
     '2': 'nap', '4': 'granice', '5': 'umowa_szlakow', '14': 'handel', '6': 'tech',
-    '7': 'namow_wojne', '9': 'ultimatum', '12': 'wasal',
+    '7': 'namow_wojne', '9': 'ultimatum', '12': 'wasal', '10': 'pokoj',
   };
   return map[payload.actionId] ?? payload.actionId;
 }

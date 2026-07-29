@@ -16,15 +16,12 @@
  * Poziom NIE jest liczony tu drugi raz — żeby mapa i tooltip nie mogły się
  * rozjechać.
  *
- *   Poziom 1 (Rekrut)       — 0 przeżytych bitew — premia 0%   — BRAK ODZNAKI
- *   Poziom 2 (Doświadczony) — 1 przeżyta bitwa   — premia +10% — 2 gwiazdki
- *   Poziom 3 (Weteran)      — 2+ przeżyte bitwy  — premia +20% — 3 gwiazdki
+ *   Rekrut       — 0 wygranych — premia 0%   — BRAK ODZNAKI
+ *   1 wygrana    — ★           — premia +10% — 1 gwiazdka
+ *   2 wygrane    — ★★          — premia +10% — 2 gwiazdki
+ *   3 wygrane    — ★★★ Weteran — premia +20% — 3 gwiazdki
  *
- * LICZBA GWIAZDEK = `veteranStars(level)` = poziom (2 albo 3), a nie „liczba
- * awansów". To celowe: tooltip pokazuje „★★ Doświadczony +10%" / „★★★ Weteran
- * +20%", więc gracz, który policzy gwiazdki na mapie, dostaje tę samą liczbę,
- * którą przed chwilą widział w panelu. Rozjazd 1★/2★ na mapie vs 2★/3★ w
- * tekście byłby błędem czytelności, nie oszczędnością.
+ * LICZBA GWIAZDEK = `veteranStarCount(unit)` (tylko wygrane bitwy).
  *
  * POZIOM 1 BEZ ODZNAKI — świadomie (ta sama zasada, co `veteranBadgeLabel()`,
  * które na poziomie 1 zwraca pusty string). Świeża jednostka jest stanem
@@ -104,7 +101,7 @@ import {
   VETERAN_STAR_R,
   VETERAN_STAR_SPACING,
 } from './unitUpgradeBadges';
-import { veteranLevel, veteranStars, type VeteranLevel, type VeteranProgress } from '../game/veteran';
+import { veteranStarCount, type VeteranProgress } from '../game/veteran';
 
 // ---------------------------------------------------------------------------
 // Geometria — wymiary (wszystko względem HEX_R = 1.0)
@@ -207,8 +204,8 @@ function getMatVeteranStarOutline(): THREE.MeshStandardMaterial {
  */
 export const VETERAN_BADGE_HIT_UD = 'veteranBadgeHit';
 
-/** Klucz w userData żetonu — aktualnie narysowany poziom (do wczesnego wyjścia). */
-const UD_LEVEL = 'vetBadgeLevel';
+/** Klucz w userData żetonu — aktualna liczba gwiazdek (do wczesnego wyjścia). */
+const UD_STAR_COUNT = 'vetBadgeStarCount';
 /** Klucz w userData żetonu — podgrupa z gwiazdkami (do podmiany/usunięcia). */
 const UD_GROUP = 'vetBadgeGroup';
 
@@ -224,7 +221,7 @@ function starOffsetsX(count: number): number[] {
  * Buduje podgrupę odznaki weterana dla poziomu 2–3 (poziom 1 nigdy tu nie trafia).
  * Wszystkie zasoby to singletony modułu — grupa nie posiada NICZEGO do zwolnienia.
  */
-function buildVeteranBadgeGroup(level: 2 | 3): THREE.Group {
+function buildVeteranBadgeGroup(starCount: 1 | 2 | 3): THREE.Group {
   const g = new THREE.Group();
   g.name = 'veteranBadge';
   // Cała listwa gwiazdek jest jedną odchyloną płytką — obrót raz, na grupie.
@@ -235,7 +232,7 @@ function buildVeteranBadgeGroup(level: 2 | 3): THREE.Group {
   const mat = getMatVeteranStar();
   const matOut = getMatVeteranStarOutline();
 
-  for (const x of starOffsetsX(veteranStars(level))) {
+  for (const x of starOffsetsX(starCount)) {
     const outline = new THREE.Mesh(geo, matOut);
     outline.position.set(x, 0, STAR_OUTLINE_OFFSET_Z);
     outline.scale.set(STAR_OUTLINE_SCALE, STAR_OUTLINE_SCALE, 1);
@@ -251,36 +248,36 @@ function buildVeteranBadgeGroup(level: 2 | 3): THREE.Group {
 }
 
 /**
- * Doprowadza odznakę weterana na żetonie do stanu odpowiadającego `level`.
- * IDEMPOTENTNA i tania — przy niezmienionym poziomie kończy się jednym
- * porównaniem liczby (wołana z UnitRenderer.sync() dla każdej jednostki
- * w każdej klatce synchronizacji).
- *
- * PARYTET AI: brak jakiegokolwiek warunku na właściciela.
+ * Doprowadza odznakę weterana na żetonie do `starCount` gwiazdek (0 = brak).
  */
-export function applyUnitVeteranBadgeLevel(group: THREE.Object3D, level: VeteranLevel): void {
-  if (group.userData[UD_LEVEL] === level) return;
+export function applyUnitVeteranBadgeStarCount(group: THREE.Object3D, starCount: 0 | 1 | 2 | 3): void {
+  if (group.userData[UD_STAR_COUNT] === starCount) return;
   const old = group.userData[UD_GROUP] as THREE.Group | undefined;
   if (old) {
     group.remove(old);
     delete group.userData[UD_GROUP];
   }
-  group.userData[UD_LEVEL] = level;
-  if (level === 1) return; // Rekrut — bez odznaki (świadomie, patrz nagłówek).
-  const badge = buildVeteranBadgeGroup(level);
+  group.userData[UD_STAR_COUNT] = starCount;
+  if (starCount === 0) return;
+  const badge = buildVeteranBadgeGroup(starCount);
   group.add(badge);
   group.userData[UD_GROUP] = badge;
 }
 
+/** @deprecated użyj applyUnitVeteranBadgeStarCount */
+export function applyUnitVeteranBadgeLevel(group: THREE.Object3D, level: 1 | 2 | 3): void {
+  const stars = level >= 3 ? 3 : level >= 2 ? 2 : 0;
+  applyUnitVeteranBadgeStarCount(group, stars as 0 | 1 | 2 | 3);
+}
+
 /**
- * Wygodne wejście dla renderera mapy: policz poziom jednostki TĄ SAMĄ funkcją,
- * której używa panel/tooltip (game/veteran.ts::veteranLevel) i zaktualizuj żeton.
+ * Wygodne wejście dla renderera mapy: liczba gwiazdek z wygranych bitew.
  */
 export function syncUnitVeteranBadges(
   group: THREE.Object3D,
   unit: VeteranProgress | null | undefined,
 ): void {
-  applyUnitVeteranBadgeLevel(group, veteranLevel(unit));
+  applyUnitVeteranBadgeStarCount(group, veteranStarCount(unit) as 0 | 1 | 2 | 3);
 }
 
 /**

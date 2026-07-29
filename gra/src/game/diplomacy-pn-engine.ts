@@ -4,6 +4,7 @@
  */
 import type { Relation } from './diplomacy';
 import type { GameDifficulty } from './difficulty-cost';
+import type { TempoGry } from './tech-tempo';
 import type { CredibilityEvent } from './diplomacy-credibility';
 import {
   diplomacyTradeTrustFromDeal,
@@ -14,9 +15,26 @@ import {
   diplomacySumPn,
   diplomacyPnZloto,
   diplomacyPnSurowiecIlosc,
+  type DiplomacySumPnOptions,
   type WartoscPozycjaTyp,
   type PnRelacjaParams,
 } from './diplomacy-value-catalog';
+
+export interface ResolveProposalPnOptions {
+  difficulty?: GameDifficulty;
+  proposerOwnerId?: number;
+  playerOwnerId?: number;
+  tempoGry?: TempoGry | number;
+}
+
+export function buildProposalPnSumOpts(opts?: ResolveProposalPnOptions): DiplomacySumPnOptions {
+  return {
+    difficulty: opts?.difficulty ?? 'normal',
+    proposerOwnerId: opts?.proposerOwnerId,
+    playerOwnerId: opts?.playerOwnerId ?? 0,
+    tempo: opts?.tempoGry,
+  };
+}
 
 /**
  * WIARYGODNOSC-SPECYFIKACJA.md §7 "Nowe pola w DiploPairMeta" — timing per para,
@@ -80,6 +98,34 @@ export function relationTotal(rel: Relation): number {
   return Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + (rel.respekt ?? 0)));
 }
 
+/** Relacja podpisana −100…+100 (relTotal 0–200 → neutral @ 100). Maciej 2026-07-29. */
+export function relationSignedFromTotal(relTotal: number): number {
+  return Math.max(-100, Math.min(100, relTotal - 100));
+}
+
+/** Modyfikator % wymagań PN traktatu; clamp ±90 (nigdy ±100). */
+export function relationPnModPct(relSigned: number): number {
+  return Math.max(-90, Math.min(90, relSigned));
+}
+
+/**
+ * Efektywne PN traktatu @ Relacji:
+ * wymagane = baza × (1 − modPct/100); +50 Rel → ×0,50; −50 → ×1,50.
+ */
+export function effectiveTreatyPnRequired(basePn: number, relTotal: number): number {
+  if (basePn <= 0) return 0;
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  return Math.max(0, Math.round(basePn * (1 - modPct / 100)));
+}
+
+/** Krótka etykieta UI modyfikatora relacji do progu PN. */
+export function formatRelationModLabel(relTotal: number): string {
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  if (modPct === 0) return 'Relacje: 0% do progu';
+  const verb = modPct > 0 ? '−' : '+';
+  return `Relacje: ${verb}${Math.abs(modPct)}% do progu`;
+}
+
 /**
  * W4-A: AI akceptuje gdy givePn ≥ fair min @ Relacji.
  * Kurs Rel/100 klampowany do 100 (fix #20): Relacja > 100 nie może obniżyć
@@ -115,15 +161,17 @@ export function resolveProposalPn(
     giveItems?: readonly BasketItem[];
     receiveItems?: readonly BasketItem[];
   },
+  opts?: ResolveProposalPnOptions,
 ): { givePn: number; receivePn: number } {
   let givePn = payload.givePn ?? 0;
   let receivePn = payload.receivePn ?? 0;
+  const sumBase = buildProposalPnSumOpts(opts);
   if (payload.giveItems?.length) {
-    const sum = diplomacySumPn([...payload.giveItems]);
+    const sum = diplomacySumPn([...payload.giveItems], { ...sumBase, side: 'give' });
     if (sum != null) givePn = sum;
   }
   if (payload.receiveItems?.length) {
-    const sum = diplomacySumPn([...payload.receiveItems]);
+    const sum = diplomacySumPn([...payload.receiveItems], { ...sumBase, side: 'receive' });
     if (sum != null) receivePn = sum;
   }
   if (givePn <= 0 && payload.goldOnce != null && payload.goldOnce > 0) {

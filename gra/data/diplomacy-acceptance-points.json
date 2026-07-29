@@ -1,0 +1,77 @@
+{
+  "_opis": "Punkty akceptacji stołu negocjacji (Maciej 2026-07-29). Traktaty: PN bazowe (wartość strategiczna). Koszyk: runtime z diplomacy-value-catalog.ts. Skala względna: sojusz >> NAP >> traktat handlowy >> wymiana.",
+  "traktaty": {
+    "pokoj": { "punkty": 500, "jednostka": "umowa", "uwaga": "zakończenie wojny — wymaga trwającej wojny; PN obowiązkowe (jak sojusz)" },
+    "sojusz_pelny": { "punkty": 500, "jednostka": "umowa", "prog_relacja": 151 },
+    "sojusz_defensywny": { "punkty": 420, "jednostka": "umowa", "prog_relacja": 151 },
+    "nap": { "punkty": 200, "jednostka": "umowa", "prog_relacja": 50 },
+    "umowa_szlakow": { "punkty": 80, "jednostka": "umowa", "prog_relacja": 0 },
+    "umowa_handlowa": { "punkty": 80, "jednostka": "umowa", "prog_relacja": 0 },
+    "handel": { "punkty": 0, "jednostka": "wymiana", "prog_relacja": 0, "uwaga": "tylko koszyk PN — bez bazy traktatu" },
+    "granice": { "punkty": 60, "jednostka": "umowa", "prog_relacja": 100, "uwaga": "UI: Traktat przemarszu" },
+    "tech": { "punkty": 0, "jednostka": "once", "uwaga": "wycena z tech.json (PN silnika)" },
+    "wasal": { "punkty": 350, "jednostka": "umowa", "prog_respekt": 70 },
+    "trybut_zadanie": { "punkty": 120, "jednostka": "/t", "prog_respekt": 70 },
+    "trybut_oferta": { "punkty": 100, "jednostka": "once" },
+    "namow_wojne": { "punkty": 150, "jednostka": "once", "prog_zaufanie": 50 },
+    "ultimatum": { "punkty": 180, "jednostka": "once" },
+    "dar": { "punkty": 0, "jednostka": "once", "uwaga": "tylko koszyk PN" }
+  },
+  "koszyk_pn": {
+    "zloto": { "pn_per_unit": 1, "jednostka": "once lub /t", "zrodlo": "1 PN = 1 ¤" },
+    "praca": { "pn_per_unit": 1, "jednostka": "once lub /t", "zrodlo": "1 PN = 1 Praca" },
+    "zywnosc": { "pn_per_unit": 1, "jednostka": "once", "zrodlo": "pn_relacja: 1 PN = 1 żywność" },
+    "surowiec_ilosc": {
+      "jednostka": "once lub /t (pakiety × 10 szt.)",
+      "zrodlo": "econ-params.handel_surowce — PN/szt. × (pakiety × pakiet_wielkosc)",
+      "pn_per_szt": {
+        "drewno": 1,
+        "glina": 2,
+        "kamien": 3,
+        "ruda": 5,
+        "ruda_zelaza": 10,
+        "cegla": 5,
+        "sol": 2,
+        "kon": 5,
+        "ceramika": 5,
+        "braz": 15,
+        "zelazo": 20,
+        "stal": 25,
+        "zloto": 50,
+        "wegiel": 20
+      },
+      "przyklady_pn_per_pakiet_10szt": {
+        "drewno": 10,
+        "glina": 20,
+        "kamien": 30,
+        "ruda": 50,
+        "ruda_zelaza": 100,
+        "cegla": 50,
+        "sol": 20,
+        "kon": 50,
+        "ceramika": 50,
+        "braz": 150,
+        "zelazo": 200,
+        "stal": 250,
+        "zloto": 500,
+        "wegiel": 200
+      }
+    },
+    "tech": { "jednostka": "once", "zrodlo": "tech.json Koszt nauki × tempo gry" },
+    "jednostka": { "jednostka": "once", "zrodlo": "units.json pole Pieniądz (koszt)" },
+    "zloze": {
+      "jednostka": "once (dostęp 1 hex)",
+      "zrodlo": "diplomacy.json handel_zloze.cena_baza",
+      "przyklady": { "glina": 50, "sol": 50, "konie": 100, "wegiel": 100, "miedz": 120, "zelazo": 150 }
+    }
+  },
+  "sweetener": {
+    "pn_na_punkt_ease": 25,
+    "max_ease_punkty": 20,
+    "opis": "Słodzik obniża próg Relacji traktatu: 1 pkt ease / 25 PN netto (sufit 20 pkt)"
+  },
+  "fair_trade": {
+    "kurs_relacja_baza": 100,
+    "opis": "Min PN oddawane = oczekiwane × (100 / Relacja); patrz diplomacyFairGivePn"
+  }
+}

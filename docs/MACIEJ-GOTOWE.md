@@ -1,4 +1,97 @@
-﻿## [10:22] ✅ Gotowe — deploy ROBOCZA FALA 96 DEPLOY ALL (bc8f4630)
+﻿## [13:50] ✅ Gotowe — deploy ROBOCZA FALA 106 (2b118002)
+
+**FALA 106** | md5 `2b11800234eedd5891c8c7c8b85ba233` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Panel Punkty porozumienia (My / Bilans / Oni):**
+- Centralny pasek PN między kolumnami My i Oni na stole negocjacji — oddajemy / bilans / oddają + werdykt.
+- Ten sam układ w koszyku handlu (live podgląd PN podczas budowania oferty).
+- Zawiera FALA 105 (pokój PN 500) i wcześniejsze.
+- tsc 0 · acceptance-points 52/52 · negotiation-table 43/43 · POLE-BITWY `dd399c4b`.
+
+## [13:38] ✅ Gotowe — deploy ROBOCZA FALA 105 (ded7ed28)
+
+**FALA 105** | md5 `ded7ed28c4c0f1c7a73bb772f1436aa3` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Pokój na stole negocjacji (PN 500):**
+- Akcja `pokoj` na stole negocjacji — PN baza 500, tylko w trwającej wojnie; propozycja ważna podczas wojny (nie gasi się jak NAP).
+- Wyłączenie instant-accept (case 10) — AI przechodzi przez normalny cykl negocjacji.
+- Zawiera FALA 104 (PN złoto/węgiel za sztukę) i wcześniejsze.
+- tsc 0 · acceptance-points 52/52 · negotiation-table 43/43 · POLE-BITWY `dd399c4b`.
+
+## [13:21] ✅ Gotowe — deploy ROBOCZA FALA 104 (42dc16e4)
+
+**FALA 104** | md5 `42dc16e49db9b33556233719ff337d75` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**PN złoto + węgiel za sztukę:**
+- Cennik PN/szt.: złoto 50, węgiel 20 (pakiety po 10 szt. na stole negocjacji).
+- EMPIRE_STOCK wegiel w katalogu wartości dyplomacji.
+- Zawiera FALA 103 (PN surowców drewno…stal + handel ilościowy) i wcześniejsze.
+- tsc 0 · acceptance-points 49/49 · POLE-BITWY `dd399c4b`.
+
+## [12:29] ✅ Gotowe — deploy ROBOCZA FALA 103 (d6a19cba)
+
+**FALA 103** | md5 `d6a19cba5734499c698cff110c4d161b` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**PN surowców za sztukę + handel ilościowy:**
+- Cennik PN/szt.: drewno 1 … stal 25 (pakiety po 10 szt. na stole negocjacji).
+- Handel ilościowy: sól, koń, ceramika, brąz, żelazo, stal.
+- Zawiera FALA 102 (magazyn państwa tooltip + opis civ) i wcześniejsze.
+- tsc 0 · acceptance-points 46/46 · value-catalog 58/59 (1 pre-existing boolean) · POLE-BITWY `dd399c4b`.
+
+## [12:24] ✅ Gotowe — deploy ROBOCZA FALA 102 (3bd7d5cf)
+
+**FALA 102** | md5 `3bd7d5cf2204b0de87c05766d02c5993` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Magazyn państwa + opis cywilizacji (tooltip):**
+- Magazyn państwa: krótki nagłówek + tooltip z pojemnością i formułą.
+- Opis cywilizacji (Falanga itd.): w grze tylko tooltip; ekran startu bez zmian.
+- Zawiera FALA 101 (mnożnik trudności koszyk) i wcześniejsze.
+- tsc 0 · POLE-BITWY `dd399c4b`.
+
+## [12:15] ✅ Gotowe — deploy ROBOCZA FALA 101 (683fe397)
+
+**FALA 101** | md5 `683fe39730d7baa8eeb02efff8e2cbca` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Globalny mnożnik trudności — koszyk My/Oni:**
+- Easy / Normal / Hard wpływają na cały koszyk negocjacji (My + Oni), nie per pozycja.
+- Technologie: koszt×tempo — bez osobnego ±50% na tech.
+- Zawiera FALA 100 (weterani + dyplomacja) i wcześniejsze.
+- tsc 0 · acceptance-points 43/43 · POLE-BITWY `dd399c4b`.
+
+## [12:07] ✅ Gotowe — deploy ROBOCZA FALA 100 DEPLOY ALL (26ef48a3)
+
+**FALA 100** | md5 `26ef48a35115e6965d9246e218436443` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Weterani + dyplomacja (pełny rebuild):**
+- **Weterani:** gwiazdki tylko za wygrane bitwy; premia ★ +10% / ★★ +15% / ★★★ +20% (pancerz bez zmian).
+- **Dyplomacja:** sojusz defensywny (AI + UI); umowa wymiany z PN=0; traktat przemarszu wojskowego; relacje modyfikują próg PN max ±90%.
+- Zawiera FALA 98–99 i wcześniejsze.
+- tsc 0 · weterani-test 73/73 · acceptance-points 33/33 · POLE-BITWY `dd399c4b`.
+
+## [12:01] ✅ Gotowe — deploy ROBOCZA FALA 99 (2f5b7a49)
+
+**FALA 99** | md5 `2f5b7a497b54b2fa8fbc0be52b552f9a` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Gwiazdki weterana — tylko wygrane bitwy:**
+- Poziom 1/2/3 = 0/1/3 wygranych bitew → ★ / ★★ / ★★★ (przegrana nie awansuje).
+- Premia bojowa i gwiazdki na mapie, karcie jednostki i w Auto-mocy (M).
+- Zawiera FALA 98 (dyplomacja negocjacje + PN) i wcześniejsze.
+- tsc 0 · weterani-test 60/60 · POLE-BITWY `dd399c4b`.
+
+## [11:54] ✅ Gotowe — deploy ROBOCZA FALA 98 DEPLOY ALL (222eb458)
+
+**FALA 98** | md5 `222eb45848ba4241d6fb0f21d41cadd9` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**DEPLOY ALL — dyplomacja negocjacje + PN akceptacji:**
+- Stół negocjacji (rundy, kontroferty, limit 3 rund).
+- Punkty akceptacji (PN) — katalog `diplomacy-acceptance-points`.
+- Traktat handlowy na stole negocjacji.
+- Prezent dyplomatyczny bez karty „My".
+- AI nie-instant — kontroferty zamiast natychmiastowej akceptacji.
+- Zawiera FALA 97 (żeton jednostki C-ZETON-DUP-Q1=B + ZŁOTO widoczne na mapie) i wcześniejsze.
+- tsc 0 · acceptance-points 20/20 · negotiation-table 39/39 · POLE-BITWY `dd399c4b`.
+
+## [10:22] ✅ Gotowe — deploy ROBOCZA FALA 96 DEPLOY ALL (bc8f4630)
 
 **FALA 96** | md5 `bc8f4630112a3b5e60914b5a1ba46515` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

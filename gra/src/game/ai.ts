@@ -2698,7 +2698,7 @@ export type AIDiplomacyCommand =
   | { type: 'zaproponuj_pokoj';      targetId: string; powod: string }
   | { type: 'zadaj_trybut';          targetId: string; powod: string }
   | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
-  | { type: 'zaproponuj_sojusz';     targetId: string; powod: string }
+  | { type: 'zaproponuj_sojusz'; targetId: string; powod: string; allianceKind?: 'defensywny' | 'pelny' }
   | { type: 'zaproponuj_handel';     targetId: string; powod: string; goldOnce?: number }
   | { type: 'zaproponuj_umowe_handlowa'; targetId: string; powod: string; sweetenerGold?: number }
   | {
@@ -3180,10 +3180,13 @@ export function decideAIDiplomacy(
       score >= minSojuszScore &&
       rel.relation.zaufanie >= diplomacyAllianceMinZaufanie(sojuszAdj, aiMilRatio, dipP)
     ) {
+      const allianceKind: 'defensywny' | 'pelny' =
+        rw < 0.45 || stance.willingnessWar < 0.35 ? 'defensywny' : 'pelny';
       komendy.push({
         type:     'zaproponuj_sojusz',
         targetId: rel.partnerId,
-        powod:    `willingnessAlly=${stance.willingnessAlly.toFixed(2)} (eff=${effWillingnessAlly.toFixed(2)} x aktywnosc=${dyplomacjaAktywnosc.toFixed(2)}) >= prog=${minSojuszAlly.toFixed(2)} (rw=${rw.toFixed(2)}): proponujemy sojusz`,
+        allianceKind,
+        powod:    `willingnessAlly=${stance.willingnessAlly.toFixed(2)} (eff=${effWillingnessAlly.toFixed(2)} x aktywnosc=${dyplomacjaAktywnosc.toFixed(2)}) >= prog=${minSojuszAlly.toFixed(2)} (rw=${rw.toFixed(2)}): proponujemy sojusz ${allianceKind}`,
       });
       continue;
     }

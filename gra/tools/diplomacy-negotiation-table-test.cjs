@@ -225,5 +225,43 @@ ok(NEGOTIATION_EXPIRY_TURNS > 0, 'NEGOTIATION_EXPIRY_TURNS > 0');
   ok(countered.payload.borderMilitary === false, 'applyCounterOffer: nowe warunki na stole (ustępstwo)');
 }
 
+// 11 — Pokój (Maciej 2026-07-29): tylko w wojnie, PN baza 500, stoł ważny podczas wojny.
+{
+  const warCtx = ctx({
+    stanWojny: true,
+    relation: rel(55, 45),
+    militaryRatio: 0.25,
+    proposerRespekt: 30,
+    responderRespekt: 70,
+  });
+  const peaceNoOffer = evaluateProposal(
+    { actionId: 'pokoj', proposerOwnerId: 0, responderOwnerId: 1, payload: {} },
+    warCtx,
+  );
+  ok(!peaceNoOffer.accepted, 'pokój bez koszyka: odrzucony (brak wymaganych PN)');
+
+  const peaceOffer = evaluateProposal(
+    {
+      actionId: 'pokoj', proposerOwnerId: 0, responderOwnerId: 1,
+      payload: { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 500 }] },
+    },
+    warCtx,
+  );
+  ok(peaceOffer.accepted, 'pokój z 500¤ @ rel 80 w wojnie: akceptowany');
+
+  const peaceNoWar = evaluateProposal(
+    { actionId: 'pokoj', proposerOwnerId: 0, responderOwnerId: 1, payload: { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 500 }] } },
+    ctx({ stanWojny: false }),
+  );
+  ok(!peaceNoWar.accepted && /wojny/i.test(peaceNoWar.reason ?? ''), 'pokój bez wojny: odrzucony');
+
+  const peaceEntry = createNegotiation(
+    { actionId: 'pokoj', proposerOwnerId: 1, responderOwnerId: 0, payload: {} },
+    10, 'ai', 9,
+  );
+  const peaceDuringWar = negotiationStillValid(peaceEntry, { turn: 11, isAtWar: true, proposerEliminated: false, responderEliminated: false });
+  ok(peaceDuringWar.valid, 'pokój: propozycja ważna PODCZAS wojny (nie gasi się jak NAP)');
+}
+
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);

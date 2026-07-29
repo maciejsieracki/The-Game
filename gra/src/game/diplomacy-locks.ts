@@ -169,7 +169,7 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
       return { locked: false, note: 'przemarsz wojsk dozwolony' };
     }
 
-    case '5': { // Traktat szlaków (HANDEL-SPLIT-Q1=B)
+    case '5': { // Traktat handlowy (HANDEL-SPLIT-Q1=B)
       if (ctx.hasHandel) return { locked: false, active: true, note: ALREADY_NOTE['5']! };
       const gate = relacjaGate(ctx.progHandelRelacja, ctx.relTotal);
       if (gate) return gate;

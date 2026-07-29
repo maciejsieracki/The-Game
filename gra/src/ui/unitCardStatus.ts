@@ -7,7 +7,7 @@ import {
   softPathBadgeLevel,
   type PathBadgeLevel,
 } from '../game/unit-building-bonuses';
-import { veteranLevel, type VeteranLevel, type VeteranProgress } from '../game/veteran';
+import { veteranStarCount, type VeteranProgress } from '../game/veteran';
 import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
 import { brandIconSvg } from './icons/brandAssets';
 
@@ -75,7 +75,7 @@ export function pathBadgeChipHtml(
     + `${icon} ${esc(label)} +${pct}%</span>`;
 }
 
-function pathLevelDotsHtml(level: PathBadgeLevel | VeteranLevel, activeColor: string): string {
+function pathLevelDotsHtml(level: PathBadgeLevel | number, activeColor: string): string {
   const lvl = Math.max(0, Math.min(3, level));
   const dots = ([1, 2, 3] as const).map((i) => {
     const on = i <= lvl;
@@ -93,7 +93,7 @@ export function buildPathLevelIconsRowHtml(input: UnitCardStatusInput): string {
   const esc = input.esc;
   const softLvl = softPathBadgeLevel({ parametryBonusProc: input.parametryPathPp ?? 0 });
   const armorLvl = armorPathBadgeLevel({ pancerzBonusProc: input.pancerzPathPp ?? 0 });
-  const vetLvl = veteranLevel(input.veteranProgress ?? null);
+  const vetStars = veteranStarCount(input.veteranProgress ?? null);
 
   const koszaryIc = brandIconSvg('bld-koszary', 16) || '🛡';
   const kuzniaIc = brandIconSvg('bld-kuznia', 16) || '⚒';
@@ -113,7 +113,7 @@ export function buildPathLevelIconsRowHtml(input: UnitCardStatusInput): string {
       pathLevelDotsHtml(armorLvl, pathBadgeColor(armorLvl)),
       'Pancerz ścieżka (kuźnia)',
     ),
-    pathIconCell(vetIc, pathLevelDotsHtml(vetLvl, '#f4d35e'), vetTip),
+    pathIconCell(vetIc, pathLevelDotsHtml(vetStars, '#f4d35e'), vetTip),
   ];
   return `<div class="uc-path-icons-row">${cells.join('')}</div>`;
 }

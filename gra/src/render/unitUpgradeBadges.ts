@@ -93,7 +93,7 @@ import {
   type UnitBuildingProgress,
   type UnitPathBadgeLevel,
 } from '../game/unit-building-bonuses';
-import { veteranLevel, veteranStars, type VeteranProgress } from '../game/veteran';
+import { veteranStarCount, type VeteranProgress } from '../game/veteran';
 import { loadImageInto, prepareSvgForCanvas, svgToDataUri } from './unitOwnerEmblem';
 
 // ---------------------------------------------------------------------------
@@ -428,8 +428,7 @@ export function syncUnitUpgradeBadges(
   group: THREE.Object3D,
   unit: (UnitBuildingProgress & VeteranProgress) | null | undefined,
 ): void {
-  const vet = veteranLevel(unit);
-  const stars = vet === 1 ? 0 : veteranStars(vet);
+  const stars = veteranStarCount(unit);
   applyUnitUpgradeBadgeRow(group, armorPathBadgeLevel(unit), softPathBadgeLevel(unit), stars);
 }
 

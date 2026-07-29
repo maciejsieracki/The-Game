@@ -10,6 +10,7 @@ import {
   stripWithdrawnResourceAccessItems,
 } from '../game/diplomacy-proposals';
 import type { TempoGry } from '../game/tech-tempo';
+import type { GameDifficulty } from '../game/difficulty-cost';
 import {
   diplomacySumPn,
   diplomacyFairGivePn,
@@ -35,6 +36,7 @@ import {
 } from './diplomacyDealDisplay';
 import type { BasketItemFormatCtx } from '../game/diplomacy-display';
 import { formatBasketListBrief } from '../game/diplomacy-display';
+import { renderPnBalancePanelFromBasket } from './diplomacyAcceptanceBalance';
 
 export type TradeBasketMode = 'trade' | 'gift' | 'treaty';
 
@@ -59,6 +61,20 @@ const PROG_HANDEL_REL = 100;
 
 function resolveTempo(ctx: NegotiationModalContext): TempoGry | number {
   return ctx.tempoGry ?? 'standardowa';
+}
+
+function basketPnOpts(ctx: NegotiationModalContext, side: 'give' | 'receive') {
+  return {
+    difficulty: ctx.difficulty ?? 'normal',
+    proposerOwnerId: 0,
+    playerOwnerId: 0,
+    side,
+    tempo: resolveTempo(ctx),
+  };
+}
+
+function sumBasketPn(items: BasketItem[], ctx: NegotiationModalContext, side: 'give' | 'receive'): number | null {
+  return diplomacySumPn(toPnItems(items, ctx), basketPnOpts(ctx, side));
 }
 
 type PnItem = Parameters<typeof diplomacySumPn>[0][number];
@@ -143,6 +159,31 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-treaty-title{font-size:0.78em;color:#e8d88a;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em;}
 .civ-diplo-basket .cdb-basket-opt{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(232,216,138,.15);}
 .civ-diplo-basket .cdb-basket-opt-title{font-size:0.72em;color:#a8a090;margin:0 0 8px;}
+/* Panel PN — wspólny układ ze stołem negocjacji (diplomacyAcceptanceBalance.ts). */
+.civ-diplo-basket .da-pn-balance-bar{margin-top:10px;margin-bottom:10px;}
+.civ-diplo-basket .da-pn-balance-bar{border-radius:10px;padding:10px 12px;border:2px solid rgba(232,216,138,.28);
+  background:linear-gradient(180deg,rgba(22,28,40,.95),rgba(10,14,22,.92));}
+.civ-diplo-basket .da-pn-balance-bar.ok{border-color:rgba(90,208,122,.45);}
+.civ-diplo-basket .da-pn-balance-bar.no{border-color:rgba(224,136,104,.45);}
+.civ-diplo-basket .da-pn-bal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.civ-diplo-basket .da-pn-bal-title{font-size:0.68em;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#e8d88a;}
+.civ-diplo-basket .da-pn-bal-deal{font-size:0.72em;color:#c8b898;}
+.civ-diplo-basket .da-pn-bal-cols{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:8px;}
+.civ-diplo-basket .da-pn-bal-cell{border-radius:8px;padding:8px 10px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(0,0,0,.22);text-align:center;display:flex;flex-direction:column;gap:3px;}
+.civ-diplo-basket .da-pn-bal-cell.my{border-color:rgba(110,150,220,.35);}
+.civ-diplo-basket .da-pn-bal-cell.they{border-color:rgba(90,208,122,.35);}
+.civ-diplo-basket .da-pn-bal-cell.center.ok{border-color:rgba(90,208,122,.5);background:rgba(40,80,50,.25);}
+.civ-diplo-basket .da-pn-bal-cell.center.no{border-color:rgba(224,136,104,.45);background:rgba(80,40,30,.2);}
+.civ-diplo-basket .da-pn-bal-lbl{font-size:0.58em;text-transform:uppercase;letter-spacing:.06em;color:#8a8070;}
+.civ-diplo-basket .da-pn-bal-num{font-size:1.1em;font-weight:700;color:#f0e8d8;}
+.civ-diplo-basket .da-pn-bal-num.pos{color:#7ad0a0;}
+.civ-diplo-basket .da-pn-bal-num.neg{color:#e0a868;}
+.civ-diplo-basket .da-pn-bal-hint{font-size:0.62em;color:#a8a090;}
+.civ-diplo-basket .da-pn-bal-meta{font-size:0.62em;color:#8a8070;margin-top:6px;}
+.civ-diplo-basket .da-pn-bal-verdict{margin-top:8px;padding:7px 10px;border-radius:7px;font-size:0.72em;font-weight:600;}
+.civ-diplo-basket .da-pn-bal-verdict.ok{color:#7ad0a0;background:rgba(80,176,112,.12);border:1px solid rgba(80,176,112,.35);}
+.civ-diplo-basket .da-pn-bal-verdict.no{color:#e0a868;background:rgba(224,168,104,.1);border:1px solid rgba(224,168,104,.35);}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -265,9 +306,10 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
     case '4': {
       const feeC = ctx.borderFeeCivil ?? 20;
       const feeM = ctx.borderFeeMilitary ?? 40;
-      body = '<div class="cdb-row" style="display:flex;gap:8px;align-items:center;margin:6px 0">'
+      body = '<label>Traktat przemarszu</label>'
+        + '<div class="cdb-row" style="display:flex;gap:8px;align-items:center;margin:6px 0">'
         + '<input type="checkbox" id="cdb-treaty-mil" class="cdb-treaty-mil"' + (state.borderMilitary ? ' checked' : '') + ' />'
-        + '<label for="cdb-treaty-mil" style="margin:0">Prawo wojskowego przemarszu (+ opłata)</label></div>'
+        + '<label for="cdb-treaty-mil" style="margin:0">Wariant wojskowy (+ opłata)</label></div>'
         + '<p class="cdb-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';
       break;
     }
@@ -286,6 +328,10 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
       body = '<label for="cdb-treaty-wasal-gpt">Trybut wasala ¤/turę</label>'
         + '<input type="number" id="cdb-treaty-wasal-gpt" class="cdb-treaty-wasal-gpt" value="' + state.goldPerTurn + '" min="10" />'
         + '<p class="cdb-sub">Wasal zachowuje terytorium · płaci trybut co turę</p>';
+      break;
+    case '10':
+      body = '<p class="cdb-sub">Zakończenie wojny — wymagana oferta PN (baza 500, modyfikator Relacji ±90%). '
+        + 'Dołóż złoto lub surowce w koszyku poniżej.</p>';
       break;
     default:
       body = '<p class="cdb-sub">Brak dodatkowych warunków traktatu.</p>';
@@ -343,8 +389,8 @@ function treatySummaryHtml(
   ctx: NegotiationModalContext,
 ): string {
   if (giveItems.length === 0 && receiveItems.length === 0) return '';
-  const givePn = diplomacySumPn(toPnItems(giveItems, ctx)) ?? 0;
-  const receivePn = diplomacySumPn(toPnItems(receiveItems, ctx)) ?? 0;
+  const givePn = sumBasketPn(giveItems, ctx, 'give') ?? 0;
+  const receivePn = sumBasketPn(receiveItems, ctx, 'receive') ?? 0;
   const net = Math.max(0, givePn - receivePn);
   let html = '<div class="cdb-summary"><div class="cdb-basket-opt-title">Dołóż do umowy (koszyk PN)</div>';
   html += '<div>Oddajesz: <b>' + givePn + ' PN</b>';
@@ -391,11 +437,11 @@ function buildTreatyPayload(
   }
   if (giveItems.length > 0) {
     payload.giveItems = giveItems;
-    payload.givePn = diplomacySumPn(toPnItems(giveItems, ctx)) ?? undefined;
+    payload.givePn = sumBasketPn(giveItems, ctx, 'give') ?? undefined;
   }
   if (receiveItems.length > 0) {
     payload.receiveItems = receiveItems;
-    payload.receivePn = diplomacySumPn(toPnItems(receiveItems, ctx)) ?? undefined;
+    payload.receivePn = sumBasketPn(receiveItems, ctx, 'receive') ?? undefined;
   }
   const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
   const hasQtyRes = !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
@@ -427,14 +473,14 @@ function validateBasketForm(
     if (!treatyVal.valid) return treatyVal;
     if (giveItems.length === 0 && receiveItems.length === 0) return { valid: true };
     if (giveItems.length > 0 && receiveItems.length > 0) {
-      const givePn = diplomacySumPn(toPnItems(giveItems, ctx));
-      const receivePn = diplomacySumPn(toPnItems(receiveItems, ctx));
+      const givePn = sumBasketPn(giveItems, ctx, 'give');
+      const receivePn = sumBasketPn(receiveItems, ctx, 'receive');
       if (givePn == null || receivePn == null) {
         return { valid: false, reason: 'Nie można wycenić pozycji koszyka — sprawdź typy i ilości' };
       }
     } else {
       const items = giveItems.length > 0 ? giveItems : receiveItems;
-      if (diplomacySumPn(toPnItems(items, ctx)) == null) {
+      if (sumBasketPn(items, ctx, 'give') == null) {
         return { valid: false, reason: 'Nie można wycenić pozycji koszyka — sprawdź typy i ilości' };
       }
     }
@@ -458,8 +504,8 @@ function validateBasketForm(
       return { valid: false, reason: 'Dodaj co najmniej jedną pozycję w „Co dostaję"' };
     }
   }
-  const givePn = diplomacySumPn(toPnItems(giveItems, ctx));
-  const receivePn = mode === 'trade' ? diplomacySumPn(toPnItems(receiveItems, ctx)) : 0;
+  const givePn = sumBasketPn(giveItems, ctx, 'give');
+  const receivePn = mode === 'trade' ? sumBasketPn(receiveItems, ctx, 'receive') : 0;
   if (givePn == null || (mode === 'trade' && receivePn == null)) {
     return { valid: false, reason: 'Nie można wycenić pozycji — sprawdź typy i ilości' };
   }
@@ -661,12 +707,15 @@ function summaryHtml(
   const pnParams = diplomacyPnRelacjaParams();
   const maxTrust = pnParams.max_zaufanie_na_ture;
 
-  const givePn = diplomacySumPn(toPnItems(giveItems, ctx));
+  const givePn = sumBasketPn(giveItems, ctx, 'give');
   const receivePn = mode === 'trade'
-    ? diplomacySumPn(toPnItems(receiveItems, ctx))
+    ? sumBasketPn(receiveItems, ctx, 'receive')
     : 0;
 
   let html = '<div class="cdb-summary">';
+  if (mode === 'trade') {
+    html += renderPnBalancePanelFromBasket(givePn, receivePn, rel, 'Wymiana');
+  }
 
   if (mode === 'trade') {
     html += '<div>SUMA oddaję: <b>' + (givePn ?? '—') + ' PN</b> · SUMA dostaję: <b>' + (receivePn ?? '—') + ' PN</b></div>';
@@ -729,7 +778,7 @@ function summaryHtml(
         verdict = 'zrównoważona — dokładnie fair min przy tej Relacji';
         verdictCls = 'neutral';
       }
-      html += '<div class="cdb-verdict cdb-verdict-' + verdictCls + '">Werdykt: ' + esc(verdict) + '</div>';
+      html += '<div class="cdb-verdict cdb-verdict-' + verdictCls + '">Szczegóły: ' + esc(verdict) + '</div>';
     } else {
       html += '<div class="cdb-warn">' + brandIconSvg('chip-warning', 14) + ' Nieznana wartość PN — sprawdź pozycje.</div>';
     }
@@ -1098,9 +1147,9 @@ export function showTradeBasketModal(
           action.id, treatyState, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode,
         );
       } else {
-        const givePn = diplomacySumPn(toPnItems(giveItems, ctx));
+        const givePn = sumBasketPn(giveItems, ctx, 'give');
         const receivePn = mode === 'trade'
-          ? diplomacySumPn(toPnItems(receiveItems, ctx))
+          ? sumBasketPn(receiveItems, ctx, 'receive')
           : 0;
         if (givePn == null || (mode === 'trade' && receivePn == null)) return;
         payload = {
@@ -1168,7 +1217,7 @@ export function openQuickDealBasket(
 }
 
 /** Akcje obsługiwane przez koszyk PN (handel + dar + traktaty z wymianą). R-DYP-STOL-A=C */
-export const TRADE_BASKET_ACTION_IDS = new Set(['2', '3', '4', '8', '12', '13', '14']);
+export const TRADE_BASKET_ACTION_IDS = new Set(['2', '3', '4', '8', '10', '12', '13', '14']);
 
 export function getTradeBasketMode(actionId: string): TradeBasketMode {
   if (actionId === '13') return 'gift';

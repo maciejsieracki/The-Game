@@ -18,6 +18,7 @@ import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
 import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu } from '../game/cities';
 import type { CityPodzialHandlu } from '../game/cities';
+import { formatCivBrandLine } from './civBrandDisplay';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 
 export interface EmpireHandelSplitUiConfig {
@@ -124,7 +125,16 @@ function ensureStyles(): void {
   display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;}
 .civ-emp-hdr-tx{flex:1;min-width:0;}
 .civ-emp-civ-name{font-size:18px;font-weight:700;color:#e8ebf0;line-height:1.1;}
-.civ-emp-civ-sub{font-size:11.5px;color:#8a93a4;margin-top:3px;}
+.civ-emp-civ-name.has-brand-tip{cursor:help;}
+.civ-emp-civ-sub{display:none;}
+.civ-emp-info-tip{display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;border:1px solid #3a4657;
+  background:#1a2230;color:#9aa4b2;font-size:10px;font-weight:700;line-height:1;
+  cursor:help;flex:none;vertical-align:middle;margin-left:6px;}
+.civ-emp-info-tip:hover{color:#e8ebf0;border-color:#4a5668;}
+.civ-emp-res-hdr-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.civ-emp-res-hdr-row .civ-emp-eyebrow{margin:0;}
+.civ-emp-res-hdr-sub{font-size:11px;color:#7d8798;font-weight:400;letter-spacing:0;}
 .civ-emp-close{flex:none;width:30px;height:30px;border-radius:7px;border:1px solid #2f3947;
   background:#1a2230;color:#9aa4b2;font-size:15px;cursor:pointer;line-height:1;}
 .civ-emp-close:hover{color:#e8ebf0;border-color:#3a4657;}
@@ -216,9 +226,6 @@ function ensureStyles(): void {
 .civ-emp-backdrop.open{opacity:1;pointer-events:auto;}
 
 /* — MAGAZYN PAŃSTWA (surowce) — SUROW-UI-A1 (Maciej 2026-07-24) — */
-.civ-emp-res-eyebrow-row{display:flex;justify-content:space-between;align-items:baseline;
-  flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-.civ-emp-res-cap-sub{font-size:11px;color:#7d8798;}
 .civ-emp-res-lbl{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;
   font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a;}
 .civ-emp-res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;}
@@ -670,6 +677,30 @@ function resAccessHtml(r: EmpireResourceRow): string {
     + `<span class="st">${r.dostep ? 'masz' : 'brak'}</span></div>`;
 }
 
+/** Tooltip nagłówka magazynu państwa — pojemność, formuła, reguła nadmiaru (Maciej UI). */
+function magazynPanstwaTooltip(
+  cap: number,
+  capBase: number | undefined,
+  capBonus: number | undefined,
+  magazyny: number,
+  magSlowo: string,
+): string {
+  const parts: string[] = ['Wspólna pula całego imperium — każdy typ surowca ma ten sam limit.'];
+  if (cap > 0) {
+    parts.push(`Pojemność: ${cap} / typ surowca`);
+    if (capBase != null && capBonus != null) {
+      parts.push(`Formuła: ${capBase} baza + ${capBonus} × ${magazyny} ${magSlowo}`);
+    }
+    parts.push('Nadmiar ponad limit przepada co turę');
+  }
+  parts.push('Legenda: nadwyżka/rośnie · na cap — nadmiar przepada · niedobór/spada');
+  return esc(parts.join(' · '));
+}
+
+function magazynInfoTipHtml(title: string): string {
+  return `<span class="civ-emp-info-tip" title="${title}" aria-label="Szczegóły magazynu">i</span>`;
+}
+
 /** Sekcja SUROWCE (magazyn państwa) — mockup „Magazyn surowców" (Maciej 2026-07-24). */
 function renderSurowceSection(rows: EmpireResourceRow[]): string {
   let sur = `<div class="civ-emp-sect sep" data-section="surowce">`;
@@ -691,16 +722,16 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
     ? Math.round((cap - capBase) / capBonus)
     : 0;
   const magSlowo = magazyny === 1 ? 'Magazyn' : (magazyny >= 2 && magazyny <= 4 ? 'Magazyny' : 'Magazynów');
+  const magTip = magazynPanstwaTooltip(cap, capBase, capBonus, magazyny, magSlowo);
 
-  sur += `<div class="civ-emp-res-eyebrow-row">`
-    + `<span class="civ-emp-eyebrow">MAGAZYN PAŃSTWA${cap > 0 ? ` · pojemność ${cap}/typ` : ''}</span>`
-    + (cap > 0 && capBase != null && capBonus != null
-      ? `<span class="civ-emp-res-cap-sub">${capBase} baza + ${capBonus} × ${magazyny} ${magSlowo} · nadmiar przepada</span>`
-      : '')
+  sur += `<div class="civ-emp-res-hdr-row" title="${magTip}">`
+    + `<span class="civ-emp-eyebrow">Magazyn państwa</span>`
+    + `<span class="civ-emp-res-hdr-sub">(wspólny)</span>`
+    + magazynInfoTipHtml(magTip)
     + `</div>`;
 
   if (stored.length > 0) {
-    sur += `<div class="civ-emp-res-lbl">Magazynowane — wspólne dla całego imperium</div>`
+    sur += `<div class="civ-emp-res-lbl">Magazynowane</div>`
       + `<div class="civ-emp-res-grid">${stored.map(resCardHtml).join('')}</div>`;
   }
 
@@ -718,12 +749,6 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   sur += `<div class="civ-emp-res-foodnote"><span class="k">Żywność</span>`
     + `<span>ma osobny <b>magazyn centralny</b> — chip HUD „Spichlerz" · panel Spichlerz centralny. `
     + `Nie wchodzi do wspólnej puli surowców powyżej.</span></div>`;
-
-  sur += `<div class="civ-emp-res-legend">`
-    + `<span><i class="good"></i> nadwyżka / rośnie</span>`
-    + `<span><i class="warn"></i> na cap — nadmiar przepada</span>`
-    + `<span><i class="bad"></i> niedobór / spada</span>`
-    + `</div>`;
 
   sur += `</div>`;
   return sur;
@@ -1068,11 +1093,21 @@ function renderHeader(): void {
   if (root === null || getSnap === null) return;
   const g = getSnap().global;
   const em = root.querySelector('[data-civ-em]');
-  const nm = root.querySelector('[data-civ-name]');
+  const nm = root.querySelector('[data-civ-name]') as HTMLElement | null;
   const sub = root.querySelector('[data-civ-sub]');
+  const brandLine = formatCivBrandLine(g.styl, g.jednostkaSpec);
   if (em) em.textContent = g.civEmoji;
-  if (nm) nm.textContent = g.civName;
-  if (sub) sub.textContent = `${g.styl} · ${g.jednostkaSpec}`;
+  if (nm) {
+    nm.textContent = g.civName;
+    if (brandLine) {
+      nm.setAttribute('title', brandLine);
+      nm.classList.add('has-brand-tip');
+    } else {
+      nm.removeAttribute('title');
+      nm.classList.remove('has-brand-tip');
+    }
+  }
+  if (sub) sub.textContent = '';
 }
 
 /** Montuje panel; getSnap wywoływany przy każdym renderze. */

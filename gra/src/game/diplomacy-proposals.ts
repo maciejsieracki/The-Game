@@ -27,14 +27,17 @@ import { RodzajTraktatu } from '../types/diplomacy';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
+  effectiveTreatyPnRequired,
   pnDealAcceptedByAi,
   pnFromLegacyGold,
   pnGiftAllowed,
   relationTotal,
   resolveProposalPn,
   type BasketItem,
+  type ResolveProposalPnOptions,
 } from './diplomacy-pn-engine';
 import { diplomacyProgDarRelacja } from './diplomacy-value-catalog';
+import acceptancePointsJson from '../../data/diplomacy-acceptance-points.json';
 import {
   AI_TRADE_GOLD_MAX,
   AI_TRIBUTE_PEACE_MAX,
@@ -68,7 +71,9 @@ export type ProposalActionId =
   | 'tech'
   | 'namow_wojne'
   | 'ultimatum'
-  | 'wasal';
+  | 'wasal'
+  /** Zakończenie wojny — stoł negocjacyjny, PN bazowe 500 (Maciej 2026-07-29). */
+  | 'pokoj';
 
 export interface ProposalPayload {
   /** NAP / rozejm — 10–20 tur */
@@ -80,6 +85,8 @@ export interface ProposalPayload {
   /** Namów do wojny — cel */
   targetOwnerId?: number;
   borderMilitary?: boolean;
+  /** Sojusz: defensywny vs pełny (Maciej 2026-07-29). */
+  allianceKind?: 'defensywny' | 'pelny';
   techId?: string;
   /** Łapówka przy namówieniu (¤) */
   bribeGold?: number;
@@ -276,8 +283,8 @@ const SWEETENER_PN_PER_EASE_POINT = 25;
 const SWEETENER_EASE_MAX_POINTS = 20;
 
 /** Wartość netto słodzika w PN (koszyk giveItems minus receiveItems, floor 0). */
-export function sweetenerNetPn(payload: ProposalPayload): number {
-  const { givePn, receivePn } = resolveProposalPn(payload);
+export function sweetenerNetPn(payload: ProposalPayload, pnOpts?: ResolveProposalPnOptions): number {
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
   return Math.max(0, givePn - receivePn);
 }
 
@@ -287,8 +294,8 @@ export function sweetenerNetPn(payload: ProposalPayload): number {
  * diplomacyProposerStrengthEase (przewaga militarna/Respekt) w diplomacy.ts.
  * PLACEHOLDER: liniowe, sufit 20 punktów — strojenie właściciela w playteście.
  */
-export function sweetenerEasePoints(payload: ProposalPayload): number {
-  const netPn = sweetenerNetPn(payload);
+export function sweetenerEasePoints(payload: ProposalPayload, pnOpts?: ResolveProposalPnOptions): number {
+  const netPn = sweetenerNetPn(payload, pnOpts);
   if (netPn <= 0) return 0;
   return Math.min(SWEETENER_EASE_MAX_POINTS, Math.floor(netPn / SWEETENER_PN_PER_EASE_POINT));
 }
@@ -336,6 +343,47 @@ export function buildHandelSurowiecCykliczny(
   return out;
 }
 
+/** Etykieta UI traktatu przemarszu (Maciej 2026-07-29 — zamiast „granice"). */
+export function marchTreatyLabel(borderMilitary?: boolean): string {
+  return borderMilitary ? 'Traktat przemarszu (wojskowy)' : 'Traktat przemarszu (cywilny)';
+}
+
+function treatyBasePnFromConfig(actionId: string): number {
+  const t = (acceptancePointsJson.traktaty as Record<string, { punkty?: number } | undefined>);
+  return t[actionId]?.punkty ?? 0;
+}
+
+/** Bramka PN traktatu @ Relacji (mod ±90%). Zwraca wynik odrzucenia lub null = OK. */
+function treatyPnGate(
+  actionId: string,
+  payload: ProposalPayload,
+  relation: Relation,
+  pnOpts?: ResolveProposalPnOptions,
+): ProposalEvalResult | null {
+  const basePn = treatyBasePnFromConfig(actionId);
+  if (basePn <= 0) return null;
+  const { givePn } = resolveProposalPn(payload, pnOpts);
+  const required = effectiveTreatyPnRequired(basePn, relationTotal(relation));
+  if (actionId === 'pokoj') {
+    if (givePn < required) {
+      return {
+        accepted: false,
+        reason: `Oferta za niska na pokój (wymagane ≥ ${required} PN @ Relacji, baza ${basePn})`,
+      };
+    }
+    return null;
+  }
+  const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
+  if (!hasBasket) return null;
+  if (givePn < required) {
+    return {
+      accepted: false,
+      reason: `Oferta za niska na ten traktat (wymagane ≥ ${required} PN @ Relacji)`,
+    };
+  }
+  return null;
+}
+
 /**
  * Ocena propozycji gracza (lub odwrotnej strony) przez AI/respondenta.
  * Pure function — bez mutacji stanu gry.
@@ -347,17 +395,28 @@ export function evaluateProposal(
   const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
   const { relation, stanWojny } = ctx;
   const p = getEffectiveDiplomacyParams(ctx.difficulty ?? 'normal');
+  const pnOpts: ResolveProposalPnOptions = {
+    difficulty: ctx.difficulty ?? 'normal',
+    proposerOwnerId,
+    playerOwnerId: 0,
+  };
   const score = relationScore(relation);
   const stance = stanceForEval(ctx);
 
-  if (stanWojny && actionId !== 'trybut_oferta' && actionId !== 'ultimatum') {
+  if (actionId === 'pokoj' && !stanWojny) {
+    return { accepted: false, reason: 'Pokój — brak trwającej wojny' };
+  }
+  if (stanWojny && actionId !== 'trybut_oferta' && actionId !== 'ultimatum' && actionId !== 'pokoj') {
     return { accepted: false, reason: 'Trwa wojna — ta akcja jest niedostępna' };
   }
+
+  const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
+  if (pnReject) return pnReject;
 
   switch (actionId) {
     case 'nap': {
       // C-DYP-STOL-Q1=B: słodzik (giveItems/receiveItems w payload) obniża próg Relacji.
-      const napEase = sweetenerEasePoints(payload);
+      const napEase = sweetenerEasePoints(payload, pnOpts);
       const napThreshold = Math.max(0, p.progNapRelacja - napEase);
       if (score < napThreshold) {
         return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana ≥ ${napThreshold})` };
@@ -392,7 +451,7 @@ export function evaluateProposal(
       // C-DYP-STOL-Q1=B: słodzik obniża progi tak samo jak przewaga militarna/Respekt
       // (diplomacyProposerStrengthEase) — komponuje się z istniejącą ulgą, nie ją zastępuje.
       // diplomacyTreatyMinRelacja i tak nie zejdzie poniżej progUmowaMinRelacja (twarda podłoga).
-      const sojuszEase = sweetenerEasePoints(payload);
+      const sojuszEase = sweetenerEasePoints(payload, pnOpts);
       const minZ = Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
       const minScore = diplomacyTreatyMinRelacja(
         p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase,
@@ -436,7 +495,7 @@ export function evaluateProposal(
         return { accepted: false, reason: `Minimalny trybut to ${p.progTrybutMinGoldPerTurn} ¤/turę` };
       }
       // C-DYP-STOL-Q1=B: słodzik obniża próg Respektu wymaganego do żądania trybutu.
-      const trybutEase = sweetenerEasePoints(payload);
+      const trybutEase = sweetenerEasePoints(payload, pnOpts);
       const trybutRespektThreshold = Math.max(0, p.progTrybutZadanieMinRespekt - trybutEase);
       if (ctx.proposerRespekt <= trybutRespektThreshold) {
         return {
@@ -472,6 +531,19 @@ export function evaluateProposal(
       return { accepted: true, reason: `Trybut ${perTurn} ¤/turę`, deal };
     }
 
+    case 'pokoj': {
+      const { givePn } = resolveProposalPn(payload, pnOpts);
+      const basePn = treatyBasePnFromConfig('pokoj');
+      const required = effectiveTreatyPnRequired(basePn, relationTotal(relation));
+      if (givePn < required) {
+        return {
+          accepted: false,
+          reason: `Oferta za niska na pokój (wymagane ≥ ${required} PN @ Relacji)`,
+        };
+      }
+      return { accepted: true, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
+    }
+
     case 'trybut_oferta': {
       const perTurn = payload.goldPerTurn ?? payload.goldOnce ?? 0;
       const threshold = p.progTrybutOfertaBaseGold + (ctx.epoka ?? 0) * p.progTrybutOfertaEpokaGold;
@@ -502,7 +574,7 @@ export function evaluateProposal(
     }
 
     case 'handel': {
-      const { givePn, receivePn } = resolveProposalPn(payload);
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const relTotal = relationTotal(relation);
       const isGift = payload.isGift === true
         || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
@@ -592,9 +664,9 @@ export function evaluateProposal(
         return { accepted: false, reason: 'Brak chęci do handlu' };
       }
       if (score < p.progHandelRelacja) {
-        return { accepted: false, reason: `Relacja zbyt niska na traktat szlaków (wymagane ≥ ${p.progHandelRelacja})` };
+        return { accepted: false, reason: `Relacja zbyt niska na traktat handlowy (wymagane ≥ ${p.progHandelRelacja})` };
       }
-      const { givePn, receivePn } = resolveProposalPn(payload);
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const relTotal = relationTotal(relation);
       const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
       if (hasItems && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
@@ -610,7 +682,7 @@ export function evaluateProposal(
       );
       return {
         accepted: true,
-        reason: hasItems ? 'Traktat szlaków (ze słodzikiem) zawarty' : 'Traktat szlaków zawarty',
+        reason: hasItems ? 'Traktat handlowy (ze słodzikiem) zawarty' : 'Traktat handlowy zawarty',
         deal,
       };
     }
@@ -659,7 +731,7 @@ export function evaluateProposal(
 
     case 'granice': {
       // C-DYP-STOL-Q1=B: słodzik obniża oba progi (Relacja/Zaufanie) o tyle samo.
-      const graniceEase = sweetenerEasePoints(payload);
+      const graniceEase = sweetenerEasePoints(payload, pnOpts);
       const graniceRelThreshold = Math.max(0, p.progGraniceRelacja - graniceEase);
       const graniceZaufThreshold = Math.max(0, p.progGraniceZaufanie - graniceEase);
       const granRelOk = score >= graniceRelThreshold;
@@ -667,11 +739,11 @@ export function evaluateProposal(
       if (!granRelOk && !granZaufOk) {
         return {
           accepted: false,
-          reason: `Relacja zbyt niska na granice (wymagana Relacja ≥ ${graniceRelThreshold} i Zaufanie ≥ ${graniceZaufThreshold})`,
+          reason: `Relacja zbyt niska na traktat przemarszu (wymagana Relacja ≥ ${graniceRelThreshold} i Zaufanie ≥ ${graniceZaufThreshold})`,
         };
       }
       if (!granRelOk) {
-        return { accepted: false, reason: `Relacja zbyt niska na granice (wymagana ≥ ${graniceRelThreshold})` };
+        return { accepted: false, reason: `Relacja zbyt niska na traktat przemarszu (wymagana ≥ ${graniceRelThreshold})` };
       }
       if (!granZaufOk) {
         return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane ≥ ${graniceZaufThreshold})` };
@@ -691,7 +763,7 @@ export function evaluateProposal(
       );
       return {
         accepted: true,
-        reason: payload.borderMilitary ? 'Prawo wojskowego przemarszu' : 'Otwarte granice cywilne',
+        reason: marchTreatyLabel(payload.borderMilitary),
         deal,
       };
     }
@@ -709,7 +781,7 @@ export function evaluateProposal(
 
     case 'wasal': {
       // C-DYP-STOL-Q1=B: słodzik obniża próg Respektu wymaganego do wasalizacji.
-      const wasalEase = sweetenerEasePoints(payload);
+      const wasalEase = sweetenerEasePoints(payload, pnOpts);
       const wasalRespektThreshold = Math.max(0, p.progWasalizacjaRespekt - wasalEase);
       if (ctx.proposerRespekt < wasalRespektThreshold) {
         return { accepted: false, reason: `Wasalizacja wymaga Respekt ≥ ${wasalRespektThreshold}` };
@@ -780,7 +852,9 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
         ? `Proponujemy stałą umowę handlową (szlaki handlowe) — w geście dobrej woli dokładamy ${cmd.sweetenerGold} ¤.`
         : 'Proponujemy stałą umowę handlową — otwiera i utrzymuje szlaki handlowe między naszymi miastami.';
     case 'zaproponuj_sojusz':
-      return 'Proponujemy pełny sojusz — wspólna obrona i wsparcie militarnie.';
+      return cmd.allianceKind === 'defensywny'
+        ? 'Proponujemy sojusz defensywny — wchodzimy do wojny tylko gdy któryś z nas jest atakowany.'
+        : 'Proponujemy pełny sojusz — wspólna obrona i wsparcie militarnie.';
     case 'zaproponuj_pakt':
       return `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur — żadna strona nie zaatakuje drugiej.`;
     case 'zaproponuj_pokoj':
@@ -822,19 +896,28 @@ export function aiCommandToPendingProposal(
   };
 
   switch (cmd.type) {
-    case 'zaproponuj_sojusz':
+    case 'zaproponuj_sojusz': {
+      const allianceKind = cmd.allianceKind === 'defensywny' ? 'defensywny' : 'pelny';
       return {
         ...base,
         id: makeDealId('pending-sojusz', turn, fromOwnerId, toOwnerId),
-        actionId: 'sojusz_pelny',
-        payload: {},
+        actionId: allianceKind === 'defensywny' ? 'sojusz_defensywny' : 'sojusz_pelny',
+        payload: { allianceKind },
       };
+    }
     case 'zaproponuj_pakt':
       return {
         ...base,
         id: makeDealId('pending-nap', turn, fromOwnerId, toOwnerId),
         actionId: 'nap',
         payload: { turns: cmd.turns ?? 15 },
+      };
+    case 'zaproponuj_pokoj':
+      return {
+        ...base,
+        id: makeDealId('pending-pokoj', turn, fromOwnerId, toOwnerId),
+        actionId: 'pokoj',
+        payload: {},
       };
     case 'zaproponuj_handel': {
       const goldOnce = cmd.goldOnce ?? 0;
@@ -956,6 +1039,8 @@ export function resolvePlayerAcceptsAiPending(
       const label = actionId === 'sojusz_defensywny' ? 'Sojusz defensywny' : 'Sojusz pełny';
       return { accepted: true, reason: `${label} zawarty`, deal };
     }
+    case 'pokoj':
+      return { accepted: true, reason: 'Pokój zawarty', oneShotTrade: true };
     case 'granice': {
       const rodzaj = payload.borderMilitary
         ? RodzajTraktatu.PrawoWojskowePrzemarszu
@@ -963,7 +1048,7 @@ export function resolvePlayerAcceptsAiPending(
       const deal = buildDeal(rodzaj, fromOwnerId, toOwnerId, turn, null);
       return {
         accepted: true,
-        reason: payload.borderMilitary ? 'Prawo wojskowego przemarszu' : 'Otwarte granice cywilne',
+        reason: marchTreatyLabel(payload.borderMilitary),
         deal,
       };
     }
@@ -1040,7 +1125,7 @@ export function resolvePlayerAcceptsAiPending(
         turn,
         payload.turns != null ? turn + clampDealTurns(payload.turns) : null,
       );
-      return { accepted: true, reason: 'Traktat szlaków zawarty', deal };
+      return { accepted: true, reason: 'Traktat handlowy zawarty', deal };
     }
     case 'trybut_zadanie': {
       const perTurn = payload.goldPerTurn ?? AI_TRIBUTE_PER_TURN;
@@ -1238,7 +1323,7 @@ export interface NegotiationWorldCtx {
  */
 const NEGOTIATION_PEACE_REQUIRED: ReadonlySet<ProposalActionId> = new Set([
   'nap', 'sojusz_defensywny', 'sojusz_pelny', 'handel',
-  'umowa_handlowa' as ProposalActionId, 'granice', 'tech', 'wasal', 'trybut_zadanie',
+  'umowa_handlowa' as ProposalActionId, 'umowa_szlakow', 'granice', 'tech', 'wasal', 'trybut_zadanie',
 ]);
 
 export interface NegotiationValidity {
@@ -1281,7 +1366,7 @@ const NEGOTIATION_MONEY_STEP_PCT = 0.2;
 const NEGOTIATION_MONEY_MAX_STEPS = 4;
 
 const SWEETENER_COUNTER_ELIGIBLE: ReadonlySet<ProposalActionId> = new Set([
-  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal',
+  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal', 'pokoj',
 ]);
 
 function withExtraSweetenerGold(payload: ProposalPayload, extraGold: number): ProposalPayload {

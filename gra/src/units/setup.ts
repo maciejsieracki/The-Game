@@ -112,14 +112,11 @@ export interface RuntimeUnit {
    * = nie awansuje), zliczana WSPÓLNIE dla wszystkich trybów starć
    * (mapa/pole bitwy/szturm) w JEDNYM miejscu -- post-battle-map.ts
    * applyPostBattleMap() / registerVeteranProgressAfterBattle(), ownerId-
-   * -agnostyczne (PARYTET AI: ten sam kod dla gracza i AI). Sufit 2
-   * (poziom 3 = maks, "nie projektujemy na zapas" — patrz
-   * VETERAN_MAX_BATTLES_TRACKED). Niezależne od pancerzBonusProc /
-   * parametryBonusProc (systemy budynkowe) -- trzeci, osobny system, nie
-   * zastępuje ani nie miesza się z tamtymi. Stare zapisy bez pola = 0 =
-   * poziom 1 (Rekrut), zero premii -- patrz veteranBattlesSurvived()
-   * w game/veteran.ts, KAŻDY odczyt tego pola MUSI iść przez tę funkcję
-   * (lub veteranLevel()/veteranCombatBonusFrac()), nie odczytywać wprost.
+   * Liczba WYGRANYCH bitew (pole historycznie `battlesSurvived`). Tylko zwycięstwo
+   * podbija licznik; przegrana/remis nie. Sufit 3 (★★★ Weteran). ownerId-
+   * agnostyczne (PARYTET AI). Niezależne od pancerzBonusProc / parametryBonusProc.
+   * Stare zapisy bez pola = 0 wygranych. Odczyt przez veteranBattlesWon() /
+   * veteranLevel() w game/veteran.ts — nie czytać pola wprost.
    */
   battlesSurvived?: number;
 }

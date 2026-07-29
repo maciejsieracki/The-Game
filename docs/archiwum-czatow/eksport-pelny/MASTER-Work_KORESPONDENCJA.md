@@ -93590,3 +93590,528 @@ Biorę trzy tematy: stopka surowców, łańcuch stolarnia/tartak i luki 84/85 �
 ### Linia 11763 — AGENT
 
 Biorę te trzy tematy: stopkę surowców (rekomendacja: zwinąć do Okolicy), łańcuch stolarnia/tartak oraz drobne luki z 84/85. Dam pełniejszy raport po wdrożeniu + FALA.
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-29 09:51 UTC (linie 11765–11819)
+
+
+### Linia 11765 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 9:51 AM (UTC+2)</timestamp>
+
+Luki 84/85 — w kodzie już były (½ żywności, Garncarnia, głód); tylko potwierdzone testami rozpisz mi dokładnie, co w tym temacie było dokładnie zrobione.
+
+### Linia 11766 — AGENT
+
+Rozpisuję dokładnie z decyzji 84/85 i z kodu, co jest wdrożone (½ żywności, Garncarnia, głód) — bez ogólników.
+
+### Linia 11767 — AGENT
+
+Sprawdzam decyzje i kod punkt po punkcie — zaraz dostaniesz dokładny rozpis, nie skrót.
+
+### Linia 11769 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 9:55 AM (UTC+2)</timestamp>
+
+Stolarnia — wymaga aktywnego Tartaku (sam magazyn drewna nie wystarczy). Sprawdź czy w przypadku innych budynków nie jest podobnie, że wystarczy dostęp do surowca, a na razie nic z tym nie rób, tylko sprawdź jak to jest w innych budynkach I zdaję mi raport
+
+### Linia 11770 — AGENT
+
+Sprawdzam bramki innych budynków: magazyn vs aktywne źródło (jak Tartak) — tylko raport, bez zmian.
+
+### Linia 11771 — AGENT
+
+Sprawdzam reguły bramek dla pozostałych budynków (magazyn vs aktywne źródło) — zaraz dam tabelę porównawczą, bez zmian w kodzie.
+
+### Linia 11773 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 10:01 AM (UTC+2)</timestamp>
+
+Wiesz co? Jeżeli mamy to ujednolicić, w takim razie ujednolicimy to w drugą stronę. Każdy budynek ma jakiś wymóg, że musi być postawiony inny budynek. Często tak jest. ale w wypadku surowców musimy ujednolicić kwestie, że jeżeli jakiś budynek wymaga surowca, to niech go wymaga tylko w magazynie, a nie dostępu. I kwestię dostępu usuwamy całkowicie z gry, bo jest on anochroniczny w stosunku do magazynu i polityki surowcowej. Coś takie jak dostęp nie jest nam w ogóle potrzebny. Tak samo bardzo często w dyplomacji przeciwnicy chcą handlować samym dostępem. Sam dostęp nic nie powinien grze dawać tylko fizyczne zasoby w magazynie
+
+### Linia 11774 — AGENT
+
+Przyjmuję kierunek: tylko magazyn ma znaczenie, „dostęp” znika z budynków i dyplomacji. Zapisuję decyzję i wdrażam ujednolicenie.
+
+### Linia 11775 — AGENT
+
+Zapisałem decyzję: **tylko fizyczny magazyn** — „dostęp” znika z bramek budynków i z handlu dyplomatycznego. Stolarnia też wraca do magazynu (cofamy wyjątek Tartaku). Wdrażam i dam FALĘ z raportem.
+
+### Linia 11777 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 10:07 AM (UTC+2)</timestamp>
+
+Jak skończysz to zrób deploy all do robocza.
+
+### Linia 11778 — AGENT
+
+Dopinam: po skończeniu ujednolicenia — pełny deploy wszystkiego do roboczej.
+
+### Linia 11779 — AGENT
+
+Jasne — po domknięciu ujednolicenia lecę z **pełnym deployem ALL** do `gra-robocza` i dam FALĘ + md5.
+
+### Linia 11780 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 10:09 AM (UTC+2)</timestamp>
+
+Pamiętaj że każdą pracę zlecasz do subagenta sam robisz jedynie orkiestracja
+
+### Linia 11781 — AGENT
+
+Jasne — Grok tylko orkiestracja i kontrola; cała robota (kod, audyt, testy, deploy) idzie na subagenta Composer. Tak jest ustawione przy ujednoliceniu magazynu i deployu ALL.
+
+### Linia 11783 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 10:13 AM (UTC+2)</timestamp>
+
+Przyjmijmy, że od teraz tylko ty robisz deploy, a wszystkie pozostałe elementy robią subagenci w Composer.
+
+### Linia 11784 — AGENT
+
+Zapisuję regułę na stałe: deploy tylko Grok, reszta Composer.
+
+### Linia 11785 — AGENT
+
+Przyjęte. Od teraz: **Composer** = kod, audyt, testy; **Grok** = orkiestracja + **jedyny deploy** do roboczej. Zapisuję to w regułach.
+
+### Linia 11786 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 10:15 AM (UTC+2)</timestamp>
+
+W takim razie zrób teraz deploy all do robocze.
+
+### Linia 11787 — AGENT
+
+Robię pełny deploy ALL do roboczej (tylko publish, bez zmian w kodzie).
+
+### Linia 11789 — AGENT
+
+Startuję **deploy ALL** do `gra-robocza` (bez zmian w kodzie) — dam FALĘ i md5 zaraz po publikacji.
+
+### Linia 11790 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 10:19 AM (UTC+2)</timestamp>
+
+Jak skończysz, to zrób git push.
+
+### Linia 11791 — AGENT
+
+Po deployu robię też `git push` (z commitem zaległych zmian, jeśli jeszcze nie ma).
+
+### Linia 11792 — AGENT
+
+Po deployu zrobię commit zaległości i `git push` — dam znać z hashem.
+
+### Linia 11793 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 10:21 AM (UTC+2)</timestamp>
+
+bo agent na opus przygotuje wygląd surowców złota, którego nam brakuje oraz poprawi plakietki widoku jednostek i ulepszeń jednostek na mapie.
+
+### Linia 11794 — AGENT
+
+Rozumiem — push jest po to, żeby Opus miał aktualną bazę (FALA + magazyn/bez dostępu) pod:
+
+1. **wygląd złoża złota** (brakuje assetu/markera),
+2. **plakietki jednostek i ulepszeń** na mapie.
+
+Jak tylko deploy + push przejdą, dam hash — wtedy możesz odpalać Opusa na tym stanie.
+
+### Linia 11796 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 10:22 AM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11797 — AGENT
+
+Reguła zapisana — dopinam, żeby weszła do commita przy pushu.
+
+### Linia 11798 — AGENT
+
+Reguła „deploy tylko Grok” jest w plikach — dołączam ją do commita przy pushu.
+
+### Linia 11800 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 11:35 AM (UTC+2)</timestamp>
+
+Ok, zrób sobie git pull
+
+### Linia 11801 — AGENT
+
+Pobieram zmiany z `origin/main`.
+
+### Linia 11802 — AGENT
+
+Robię `git pull --ff-only` — dam znać, co przyszło.
+
+### Linia 11804 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 11:42 AM (UTC+2)</timestamp>
+
+Nadal sytuacja wygląda w ten sposób że np. gdy proponuje traktat szlaków handlowych to nie ląduje to na stole negocjacji tylko po prostu od razu akceptuje lub nie dana nacja a powinno to najpierw każda propozycja którą daje powinna lądować my oferujemy po drugiej stronie powinna być też informacja że nasza propozycja spełnia ich warunki czy nie i w momencie gdy jest spełniam wtedy możemy dać akceptuj drugą stronę to samo więc żadne propozycje umów handlowych czy cokolwiek nie powinny przebiegać bez pokazania tego na stole i możliwości negocjacji lub akceptacji lub odrzucenia.
+
+### Linia 11805 — AGENT
+
+Sprawdzam stół negocjacji: propozycje (w tym szlaki) mają lądować na stole, nie iść od razu w akceptację/odrzucenie AI.
+
+### Linia 11806 — AGENT
+
+Masz rację — to omija stół. Naprawiam tak, żeby **każda** propozycja (szlaki, wymiana, traktaty) lądowała na stole z oceną warunków i dopiero potem Akceptuj / Odrzuć / Kontruj. Po fixie dam znać i zrobię deploy.
+
+### Linia 11808 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 11:43 AM (UTC+2)</timestamp>
+
+Zmień też nazwę traktat szlaków na traktat handlowy.
+
+### Linia 11809 — AGENT
+
+Dopinam zmianę nazwy: „traktat szlaków” → „traktat handlowy”.
+
+### Linia 11810 — AGENT
+
+Przyjąłem: w UI będzie **Traktat handlowy** (zamiast „szlaków”). Razem ze stołem negocjacji.
+
+### Linia 11812 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 11:45 AM (UTC+2)</timestamp>
+
+Jeszcze jedna kwestia. Nie odpowiedziałaś mi na jeden z case'ów, który zadałem pytanie. Mianowicie, co się dzieje, gdy atakujemy państwo, cywilizację, która nie ma z nami żadnych umów, więc nie mam żadnej kary, ale ona ma sojuszników, a ci sojusznicy mają z nami umowy handlowe lub umowy o nie agresji, faktycznie agresji i tak dalej. I w związku z tym, że wypowiadają umowę tej pierwszej cywilizacji, to tamte też wypowiadają umowę, bo są w sojuszu. czy ja ponoszę jakieś koszty wiarygodności w związku z tym, że są zerwane te umowy z tymi pozostałymi sojusznikami. Czy po prostu jest to dla mnie neutralne oraz drugie pytanie, czy w związku z wypowiedzeniem umowy przez te inne cywilizacje, które są w sojuszu, one tracą na wiarygodności? Daj mi znać.
+
+### Linia 11813 — AGENT
+
+Sprawdzam w kodzie łańcuch: czysty DoW → sojusznicy zrywają Wasze umowy → kto traci Wiarygodność.
+
+### Linia 11814 — AGENT
+
+Sprawdzam ten case w silniku dyplomacji — zaraz dam jasne tak/nie dla Twojej W i dla sojuszników.
+
+### Linia 11816 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 11:46 AM (UTC+2)</timestamp>
+
+Kolejne pytanie. Łowiectwo stawiamy na lesie. Z jakimi innymi usprawnieniami może ono współistnieć?
+
+### Linia 11817 — AGENT
+
+Sprawdzam reguły współistnienia łowiectwa z innymi ulepszeniami na lesie.
+
+### Linia 11818 — AGENT
+
+Sprawdzam reguły łowiectwa na lesie — zaraz lista, z czym może stać razem.
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-29 12:15 UTC (linie 11820–11894)
+
+
+### Linia 11820 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 11:53 AM (UTC+2)</timestamp>
+
+jeszcze jedna zmiana. Mianowicie pierwsza gwiazdka za doświadczenie powinna być po pierwszej bitwie ale tylko wygranej. Druga gwiazdka doświadczenia po kolejnej bitwie wygranej. Trzecia gwiazdka już weteran po trzeciej wygranej ale tylko po wygranych bitwach przegrane bitwy nie dają gwiazdek. Teraz rozpisz mi jeszcze propozycję bonusów za te gwiazdki trzy.
+
+### Linia 11821 — AGENT
+
+Ustalam gwiazdki tylko za wygrane bitwy (1→2→3) i przygotowuję propozycję bonusów za każdy poziom.
+
+### Linia 11823 — AGENT
+
+Przyjąłem: gwiazdki tylko za **wygrane** (1 / 2 / 3). Composer zmienia regułę i przygotuje propozycję bonusów za każdy poziom — zaraz je rozpiszę.
+
+### Linia 11825 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 12:00 PM (UTC+2)</timestamp>
+
+OK. Pierwsze uwagi: Po pierwsze Sojuszu Defensywnego w ogóle chyba nie ma w grze, więc trzeba go wprowadzić Traktat handlowy OK, ale umowa wymiany powinna nic nie kosztować, bo to jest tylko po prostu wymiana i wtedy tylko wartość tych surowców czy tych elementów, które są w ramach wymiany muszą być wartościowane. Traktat Granis trzeba zmienić nazwę na Traktat Przemarszu i przejściu on jest OK. Tylko sprawdź czy jest w grze. Basalizacja OK, trybut też OK, namów do wojny czy ultimatum też OK. Teraz trzeba zastanowić się jeszcze nad kwestią, jak relacje i punkty z relacji wpływają na decyzję. Jeżeli relacje są od minus sto do plus sto to moim zdaniem proporcjonalnie w zależności od tego Na jakim są poziomie powinny procentowo zbijać Nastawienie do podjęcia decyzji na tak. Przykładowo jeżeli mamy relacje pięćdziesiąt. To one powinny? Obniżać wymagane punkty o pięćdziesiąt procent, a jeżeli mamy relację minus pięćdziesiąt to powinny obniżać wymagane punkty o pięćdziesiąt procent. Jeżeli będziemy mieć relacje dziewięćdziesiąt procent. To dziewięćdziesiąt poprawia relacje, ale nigdy nie może osiągnąć stu procent, czyli max to powinno być dziewięćdziesiąt na plus z tego względu, że wtedy przeciwnik akceptowałby wszystko co chcemy, a jest to raczej mało prawdopodobne. Więc może przyjmijmy, że wymagania są od Minus 90% do plus 90%
+
+### Linia 11826 — AGENT
+
+Przyjmuję: sojusz defensywny, umowa wymiany = 0 PN (tylko koszyk), Traktat przemarszu, relacje ±90% do progu akceptacji.
+
+### Linia 11827 — AGENT
+
+Przyjąłem:
+
+1. **Sojusz defensywny** — wprowadzamy do gry  
+2. **Umowa wymiany** — **0 PN** za samą umowę; liczy się tylko koszyk  
+3. **Traktat granic** → **Traktat przemarszu** (+ sprawdzenie, czy działa)  
+4. **Relacje −100…+100** → modyfikator progu **clamp ±90%**  
+   - +50 → wymagane PN ×0,5  
+   - −50 → wymagane PN ×1,5 (trudniej; zakładam, że „obniżać” przy minusie to literówka)  
+   - max ulga/utrudnienie: **±90%**, nigdy 100%
+
+Wasale / trybut / namów / ultimatum bez zmian. Wdrażam.
+
+### Linia 11828 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 12:01 PM (UTC+2)</timestamp>
+
+Co do bonusów za gwiazdki zróbmy 10-15-20
+
+### Linia 11829 — AGENT
+
+Ustawiam bonusy gwiazdek na **+10% / +15% / +20%**.
+
+### Linia 11831 — AGENT
+
+Przyjąłem: ★ **+10%** · ★★ **+15%** · ★★★ **+20%**. Deploy weteranów wstrzymuję, aż to wejdzie — potem jedna FALA.
+
+### Linia 11833 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 12:02 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11834 — AGENT
+
+**FALA 99** już poszła ze starą skalą (10% / 20%). Czekam na **10 / 15 / 20** w kodzie, potem od razu **FALA 100**.
+
+### Linia 11836 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 12:03 PM (UTC+2)</timestamp>
+
+Rozpisz mi wszystkie surowce, które są w grze dostępne z propozycją punktacji, ja to przejdę i powiem ci jakie zmiany chcę wprowadzić. Naukę będziemy wyceniać po tym koszcie. Będzie punktowana tak ile kosztowało znalezienie danego zagadnienia. ale przy poziomie easy jeżeli chcemy przehandlować to nasza nauka będzie warta o 50% więcej punktów a przeciwnik będzie sprzedawał o 50% taniej tą technologię w wypadku normal jest tak jak jest po normalnym koszcie a na poziomie hard każdy każde badanie które chcemy pozyskać będzie o 50% droższe niż wynika z jasonów i kosztu realnego w grze w wypadku gdy chcemy sprzedać to będziemy oferować za 50% taniej
+
+### Linia 11837 — AGENT
+
+Zbieram pełną listę surowców z propozycją PN oraz regułę wyceny nauki wg poziomu trudności.
+
+### Linia 11838 — AGENT
+
+Zbieram listę wszystkich surowców z propozycją PN (do Twojej korekty).
+
+Naukę wyceniamy od **kosztu z JSON**, z mnożnikiem trudności:
+- **Easy:** sprzedajesz ×1,5 · kupujesz ×0,5  
+- **Normal:** ×1  
+- **Hard:** sprzedajesz ×0,5 · kupujesz ×1,5  
+
+Zaraz dostaniesz pełną tabelę.
+
+### Linia 11840 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 12:10 PM (UTC+2)</timestamp>
+
+Możemy przyjąć taką ogólną zasadę, że wszystkie elementy jeżeli my oferujemy to na hard są o 50% gorzej wyceniane, a przeciwnik jest o 50% lepiej wyceniany i na easy odwrót, na odwrót, czyli punkty z wszystkich elementów rozumienia A po prostu same badania po prostu zostawiamy w normalnym koszcie na danym poziomie. Trzeba też pamiętać, że trzeba sprawdzać zawsze jaki poziom jest w danym momencie w grze, no bo może być tak, że ktoś wybierze długą wersję gry i wtedy po prostu będzie droższy element. Badanie będą droższe.
+
+### Linia 11841 — AGENT
+
+Ujednolicam: mnożnik trudności na **cały koszyk** (My/Oni), a badania tylko koszt JSON × tempo gry — bez osobnego ±50% na tech.
+
+### Linia 11843 — AGENT
+
+Przyjąłem ogólną zasadę:
+
+| | Easy | Normal | Hard |
+|---|---|---|---|
+| **My oferujemy** | ×1,5 | ×1 | ×0,5 |
+| **Oni oferują** | ×0,5 | ×1 | ×1,5 |
+
+Badania: tylko **koszt JSON × tempo partii** (długa gra = drożej), potem ten sam mnożnik strony. Trudność i tempo zawsze z aktualnego stanu gry.
+
+### Linia 11845 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 12:13 PM (UTC+2)</timestamp>
+
+Po pierwsze złoto nie jest złotem tylko walutą jak już coś. Złoto w grze jest to surowiec. Poza tym nie wymieniłeś wszystkich surowców. Zrób to jeszcze raz.
+
+### Linia 11846 — AGENT
+
+Poprawiam: ¤ = waluta, złoto = surowiec. Robię pełną listę wszystkich surowców jeszcze raz.
+
+### Linia 11847 — AGENT
+
+Masz rację — ¤ to **waluta**, złoto to **surowiec**. Robię pełną listę od zera, nic nie pomijając.
+
+### Linia 11849 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 12:13 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11850 — AGENT
+
+Mnożnik trudności na cały koszyk gotowy — publikuję FALĘ.
+
+### Linia 11851 — AGENT
+
+Publikuję regułę trudności na cały koszyk. Pełna lista surowców (waluta ≠ złoto) jeszcze leci — dam zaraz osobno.
+
+### Linia 11853 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-7aeaa4f2-8a81-4c90-afbb-9c5fa936b433.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-1706a199-5e7f-4336-a7f9-d3a7a9b88401.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Wednesday, Jul 29, 2026, 12:16 PM (UTC+2)</timestamp>
+
+to można przenieść do tooltipa i zostawić tylko magazynowanie poza tym nie wiem po co jest piecznie pod tymi Y-kami opis  czym się wyróżniają? To nie jest potrzebne wszędzie. Tak naprawdę potrzebne jest na starcie gry tylko.
+
+### Linia 11854 — AGENT
+
+Przenoszę szczegóły magazynu do tooltipa i chowam opis civ (typ jednostki) poza startem gry.
+
+### Linia 11855 — AGENT
+
+Przyjąłem: magazyn — tylko nagłówek, reszta w tooltipie; opis „defensywna piechota · …” — głównie na starcie, w grze nie zaśmieca.
+
+### Linia 11857 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 12:17 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11858 — AGENT
+
+**FALA 101** · md5 `683fe397…` — mnożnik trudności na cały koszyk handlu. Ctrl+F5.
+
+UI magazynu/tooltip + opis civ jeszcze w toku.
+
+### Linia 11860 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 12:56 PM (UTC+2)</timestamp>
+
+To nie są wszystkie surowce. Mówię o wszystkich surowcach, które są w terenie oraz wszystkich, które są produkowane w budynkach.
+
+### Linia 11861 — AGENT
+
+Robię pełną listę: wszystko z terenu (złoża + ulepszenia) oraz wszystko z produkcji budynków — bez pomijania.
+
+### Linia 11862 — AGENT
+
+Masz rację — wcześniej było tylko pod kątem handlu. Teraz pełny spis: teren + budynki.
+
+### Linia 11864 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 1:16 PM (UTC+2)</timestamp>
+
+OK, surowiec złoto 50, węgiel 20 i jeszcze zużycie złota w mennicy. Sprawdźmy jakie jest, żeby mu potwierdzić.
+
+### Linia 11865 — AGENT
+
+Ustawiam złoto surowiec 50 i węgiel 20 PN/szt., oraz sprawdzam zużycie złota w Mennicy.
+
+### Linia 11866 — AGENT
+
+Przyjąłem: złoto surowiec **50**, węgiel **20**. Sprawdzam dokładnie, ile Mennica zużywa i skąd (magazyn vs ¤).
+
+### Linia 11867 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 1:17 PM (UTC+2)</timestamp>
+
+Później zrób dokładny audyt całego handlu czy wszystko spina się z moimi wytycznymi czyli stół negocjacji i czy nie ma jakiś dróg na skróty jakiś innych dziwnych sytuacji gdzie nie spełnia to mojego wymagania że wrzucamy wszystko na stół negocjacji i akceptujemy lub nie.
+
+### Linia 11869 — AGENT
+
+Jasne — po złocie/węglu i Mennicy robię dokładny audyt całego handlu: czy wszystko idzie na stół i nie ma skrótów (instant accept itd.).
+
+### Linia 11870 — AGENT
+
+Dopięte do tej samej kolejki: po Mennicy od razu audyt stołu.
+
+### Linia 11872 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 1:18 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 11873 — AGENT
+
+Notatka w kolejce — audyt stołu pójdzie po złocie/węglu.
+
+### Linia 11875 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 1:27 PM (UTC+2)</timestamp>
+
+?
+
+### Linia 11876 — AGENT
+
+Stoisz przy **FALA 104** (`42dc16e4…`).
+
+**Zrobione ostatnio:** PN surowców (w tym złoto 50, węgiel 20), Mennica = 1 szt. złota surowca/t z magazynu, stół handlu + mnożniki trudności.
+
+**Czeka na Ciebie (jedna rzecz z audytu):** czy **pokój** też ma iść na stół negocjacji (dziś AI = TAK/NIE bez Kontruj, Ty = instant)?
+
+Napisz „tak, pokój na stół” albo „pokój zostaw jak jest” — albo kolejny temat.
+
+### Linia 11878 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 1:28 PM (UTC+2)</timestamp>
+
+Wszystko ma iść na stół negocjacji. Każde porozumienie, każdy element wszystko ma być wyceniane. koszt pokoju powinien być wyceniany na 500, tak jak co już oczywiście poziom trudności oraz poziom relacji wpływa na jego koszty.
+
+### Linia 11879 — AGENT
+
+Wprowadzam: wszystko na stół (w tym pokój), wycena pokoju **500 PN** + trudność i relacje.
+
+### Linia 11880 — AGENT
+
+Przyjąłem: **pokój = 500 PN**, na stole jak sojusz, z trudnością i relacjami. Domkam też pozostałe skróty gracz↔AI.
+
+### Linia 11881 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 1:29 PM (UTC+2)</timestamp>
+
+Czy zakończyłeś już audyt? ?
+
+### Linia 11883 — AGENT
+
+**Audyt — tak, zakończony** (przy FALI 104): handel/traktaty/dary idą na stół; wyjątkiem był **pokój** (AI = TAK/NIE, Ty = instant).
+
+**Naprawa** „wszystko na stół + pokój 500 PN” — **właśnie wdrażana** (jeszcze nie w roboczej). Dam znać, gdy będzie gotowe do FALI.
+
+### Linia 11885 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 1:40 PM (UTC+2)</timestamp>
+
+Musisz jeszcze zaprojektować miejsce, gdzie się punkty będą pojawiać, porozumienia. Punkty jednej strony stołu, punkty drugiej strony i równowaga, czyli bilans tych punktów. I zadaniem gracza będzie po prostu osiągnięcie bilansu, kiedy druga strona jest w stanie spełnić te oczekiwania. Także przygotuj wszystko, a potem rób deploy do robocza.
+
+### Linia 11886 — AGENT
+
+Projektuję i wdrażam UI salda PN na stole (My / Oni / bilans), potem deploy do roboczej.
+
+### Linia 11888 — AGENT
+
+Projektuję pasek **My PN · Oni PN · Bilans** na stole (cel: zielony bilans = można przyjąć). Potem od razu deploy do roboczej.
+
+### Linia 11889 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 1:41 PM (UTC+2)</timestamp>
+
+Jak skończysz, to deploy all do robocza.
+
+### Linia 11891 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 2:12 PM (UTC+2)</timestamp>
+
+Zrobiłeś deep play wszystkiego? ?
+
+### Linia 11892 — AGENT
+
+**Nie** — nie robiłem deep play w samej grze. To Twój tor (Ctrl+F5 + Nowa gra).
+
+Z mojej strony było:
+- audyty kodu (stół, skróty, Mennica, surowce),
+- testy automatyczne (dyplo PN, stół, weterani, tsc),
+- deploye do roboczej (**FALA 106** · `2b118002…`).
+
+Czego **nie** ograłem klikając: pełny flow audiencji, bilans PN na żywo, pokój 500, handel surowcami, gwiazdki po bitwach.
+
+Jeśli chcesz, mogę odpalić **głębszy audyt ścieżek** (checklista scenariuszy w kodzie) albo przygotować krótką listę „co warto kliknąć” pod FALA 106 — bez udawania, że to playtest.
+
+### Linia 11894 — MACIEJ
+
+<timestamp>Wednesday, Jul 29, 2026, 2:15 PM (UTC+2)</timestamp>
+
+Ok, to zakoduj wszystkie zmiany i zrób deploy do roboczej.

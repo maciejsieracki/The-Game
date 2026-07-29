@@ -228,6 +228,9 @@ export interface FormalDiplomaticInput {
   contactEstablished: boolean;
 }
 
+/** Kanon UI (Maciej 2026-07-29): traktat szlaków handlowych — etykieta dla gracza. */
+export const TRAKTAT_HANDLOWY_LABEL = 'Traktat handlowy';
+
 /**
  * Jeden jawny stan formalny — priorytet: wojna > sojusz > pakt > handel > pokój > brak kontaktu.
  * Etykiety PL dla gracza; bez mieszania z nastawieniem (score).
@@ -243,7 +246,7 @@ export function resolveFormalDiplomaticStatus(input: FormalDiplomaticInput): For
     return { label: 'Pakt o nieagresji', kind: 'pakt' };
   }
   if (input.hasTrade) {
-    return { label: 'Umowa handlowa', kind: 'handel' };
+    return { label: TRAKTAT_HANDLOWY_LABEL, kind: 'handel' };
   }
   if (input.contactEstablished) {
     return { label: 'Pokój', kind: 'pokoj' };
@@ -274,10 +277,10 @@ export function treatyDisplayLabel(rodzaj: TreatyKind): string {
     case 'sojusz_defensywny': return 'Sojusz defensywny';
     case 'sojusz_pelny': return 'Sojusz pełny';
     case RodzajTraktatu.UmowaHandlowa: return 'Umowa handlowa';
-    case RodzajTraktatu.UmowaSzlakow: return 'Traktat szlaków';
+    case RodzajTraktatu.UmowaSzlakow: return TRAKTAT_HANDLOWY_LABEL;
     case RodzajTraktatu.UmowaWymiany: return 'Umowa wymiany';
-    case RodzajTraktatu.OtwartGranice: return 'Otwarte granice';
-    case RodzajTraktatu.PrawoWojskowePrzemarszu: return 'Prawo przemarszu wojskowego';
+    case RodzajTraktatu.OtwartGranice: return 'Traktat przemarszu (cywilny)';
+    case RodzajTraktatu.PrawoWojskowePrzemarszu: return 'Traktat przemarszu (wojskowy)';
     case RodzajTraktatu.Wasalizacja: return 'Wasalizacja';
     case RodzajTraktatu.Rozejm: return 'Rozejm';
     default: return String(k);

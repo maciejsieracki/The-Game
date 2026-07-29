@@ -87,6 +87,7 @@ export const STOCK_RESOURCE_LABEL: Readonly<Record<string, string>> = {
   stal: 'Stal',
   sol: 'Sól',
   zloto: 'Złoto (surowiec)',
+  wegiel: 'Węgiel',
   kon: 'Koń',
 };
 
@@ -96,7 +97,7 @@ export const STOCK_RESOURCE_LABEL: Readonly<Record<string, string>> = {
 export const EMPIRE_STOCK_RESOURCE_KEYS: readonly string[] = [
   'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza',
   'cegla', 'ceramika', 'braz', 'zelazo', 'stal',
-  'sol', 'zloto', 'kon',
+  'sol', 'zloto', 'wegiel', 'kon',
 ] as const;
 
 export function stockResourceLabel(key: string): string {

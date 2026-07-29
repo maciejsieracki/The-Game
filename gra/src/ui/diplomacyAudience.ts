@@ -7,6 +7,7 @@ import { startDiplomacyMusic, stopDiplomacyMusic } from '../audio/muzyka-antyczn
 import {
   nastawienieHintPl,
   nastawienieLabelFromScore,
+  TRAKTAT_HANDLOWY_LABEL,
   type FormalDiplomaticKind,
 } from '../game/diplomacy-display';
 import { wiarygodnoscLabelPl } from '../game/diplomacy-credibility';
@@ -25,7 +26,14 @@ import {
 } from './diplomacyNegotiationModal';
 import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, showSzlakiTreatyProposalModal, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { civCardDisplayName, leaderName } from './leaderPortraits';
+import { civBrandLineForKey } from './civBrandDisplay';
 import { renderNegotiationDealOneSideHtml, renderNegotiationDealSideOnlyHtml } from './diplomacyDealDisplay';
+import {
+  balancePanelDataFromRow,
+  pickPrimaryNegotiationRow,
+  renderAcceptanceCompactHtml,
+  renderPnBalancePanelHtml,
+} from './diplomacyAcceptanceBalance';
 import {
   proposalHasResourceAccess,
   RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
@@ -189,6 +197,20 @@ export interface PendingNegotiationRow {
   canCounter: boolean;
   /** Id akcji formularza negocjacji ('2'..'13') — do ponownego otwarcia modalu przy „Kontruj". */
   uiActionId: string;
+  /**
+   * Podgląd oceny warunków przez stronę, która ma odpowiedzieć (evaluateProposal).
+   * incoming → czy gracz może przyjąć; own → czy AI spełnia warunki oferty.
+   */
+  responderPreview?: { accepted: boolean; reason?: string };
+  /** incoming: Przyjmij dostępne tylko gdy warunki spełnione (i brak legacy access). */
+  canAccept?: boolean;
+  /** own: czekamy na odpowiedź AI — przycisk „Poproś o odpowiedź". */
+  awaitingAiResponse?: boolean;
+  /** Jednostronny dar od nich (My puste) — nie pokazuj karty wymiany po stronie My. */
+  isGift?: boolean;
+  /** Saldo punktów akceptacji (PN) — perspektywa gracza. */
+  acceptanceMy?: import('../game/diplomacy-acceptance-points').AcceptanceSideBalance;
+  acceptanceTheir?: import('../game/diplomacy-acceptance-points').AcceptanceSideBalance;
 }
 
 export interface DiplomacyAudienceConfig {
@@ -234,6 +256,11 @@ export interface DiplomacyAudienceConfig {
   onRejectNegotiation?: (negotiationId: string) => void;
   /** C-DYP-Q1=A: gracz wysyła kontrofertę (nowy formularz negocjacji) do wpisu stołu. */
   onCounterNegotiation?: (negotiationId: string, payload: NegotiationPayload) => void;
+  /**
+   * Gracz prosi AI o odpowiedź na własną propozycję leżącą na stole (bez natychmiastowego
+   * resolve przy wysłaniu — Maciej 2026-07-29).
+   */
+  onRequestAiNegotiationResponse?: (negotiationId: string) => void;
   /**
    * Celownik na karcie rozmówcy — wycentruj kamerę na stolicy tego państwa (SILNIK:
    * capitalCityIdForOwner + camCtrl.focusAt). UI zamyka overlay i woła callback.
@@ -369,6 +396,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-portrait .dip-leader-medallion{width:64px;height:64px;}
 .da-portrait .dip-leader-ic{width:32px;height:32px;}
 .da-civname{font-family:var(--tg-font-title,Georgia,serif);font-size:1.05em;color:var(--tg-gold-primary,#e8d88a);letter-spacing:.02em;}
+.da-civname.has-brand-tip{cursor:help;}
 .da-civleader{font-size:0.72em;font-style:italic;color:var(--tg-gold-dim,#c9a84c);line-height:1.3;}
 .da-civtitle{font-size:0.68em;color:#8a8070;line-height:1.5;}
 .da-stance-badge{display:inline-flex;align-items:center;gap:5px;font-size:0.6em;font-weight:700;letter-spacing:.05em;
@@ -421,8 +449,16 @@ ${DIPLO_1E_SHARED_CSS}
 .da-tab:not(.on):hover{border-color:rgba(232,216,138,.5);color:#e8d88a;}
 .da-tab svg{width:12px;height:12px;}
 
-.da-table-area{flex:1;display:grid;grid-template-columns:1fr 0.85fr 0.85fr 1fr;gap:10px;min-height:0;align-content:start;}
+.da-table-area{flex:1;display:grid;grid-template-columns:1fr 0.85fr 0.85fr 1fr;grid-template-rows:auto auto auto;gap:10px;min-height:0;align-content:start;}
 .da-table-area>.da-col{max-height:400px;}
+.da-col-deals{grid-column:1;grid-row:1;}
+.da-col-offers{grid-column:2;grid-row:1;}
+.da-col-negot{grid-column:3;grid-row:1;}
+.da-col-treaties{grid-column:4;grid-row:1;}
+.da-pn-balance-bar{grid-column:2/4;grid-row:2;}
+.da-negot-actionbar{grid-column:2/4;grid-row:3;display:flex;flex-direction:column;gap:6px;padding:6px 8px;
+  border-radius:8px;border:1px solid rgba(90,208,122,.28);background:rgba(12,18,14,.55);}
+.da-negot-actionbar:empty{display:none;}
 /* C-DYP-Q1=A (2026-07-26) — kolumna „Oni oferują" (ex Oczekujące propozycje; stół z kontrofertą). */
 .da-negot{display:flex;flex-direction:column;gap:6px;padding:7px 8px;border-radius:8px;
   border:1px solid rgba(232,216,138,.18);background:linear-gradient(180deg,rgba(26,32,44,.7),rgba(12,16,24,.7));}
@@ -469,9 +505,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-deal-ctx-label{font-size:0.58em;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
   color:#6a7280;margin-bottom:3px;}
 .da-deal-ctx-body{display:flex;flex-direction:column;gap:3px;font-size:0.92em;opacity:.88;}
-.da-negot-actionbar{grid-column:2/4;display:flex;flex-direction:column;gap:6px;padding:6px 8px;
-  border-radius:8px;border:1px solid rgba(90,208,122,.28);background:rgba(12,18,14,.55);}
-.da-negot-actionbar:empty{display:none;}
 .da-negot-actionbar .da-neg-act-label{font-size:0.64em;color:#8a8070;margin-bottom:2px;}
 .da-negot-actionbar .da-btnrow{display:flex;gap:8px;}
 .da-negot-actionbar .da-btnrow button{flex:1;font-size:0.72em;padding:7px 10px;border-radius:6px;
@@ -480,6 +513,57 @@ ${DIPLO_1E_SHARED_CSS}
 .da-negot-actionbar .da-btnrow button.rej{border-color:rgba(200,64,64,.55);color:#e08a8a;}
 .da-negot-actionbar .da-btnrow button:hover{filter:brightness(1.2);}
 .da-negot-actionbar .da-btnrow button:disabled{opacity:.4;cursor:not-allowed;}
+.da-cond-verdict{font-size:0.68em;line-height:1.4;margin:4px 0 2px;padding:5px 7px;border-radius:6px;}
+.da-cond-verdict.ok{color:#7ad0a0;background:rgba(80,176,112,.1);border:1px solid rgba(80,176,112,.35);}
+.da-cond-verdict.no{color:#e0a868;background:rgba(224,168,104,.08);border:1px solid rgba(224,168,104,.35);}
+.da-cond-verdict.wait{color:#a8a090;background:rgba(40,48,60,.45);border:1px solid rgba(232,216,138,.2);}
+.da-negot .da-req-ai{margin-top:6px;font-size:0.7em;padding:6px 10px;border-radius:6px;
+  border:1px solid rgba(140,180,240,.45);background:rgba(90,140,200,.25);color:#e8e0c8;cursor:pointer;width:100%;}
+.da-accept-pts{font-size:0.66em;line-height:1.35;margin:4px 0 2px;padding:4px 7px;border-radius:5px;
+  border:1px solid rgba(232,216,138,.18);background:rgba(24,28,36,.55);}
+.da-accept-pts .ap-row{display:flex;justify-content:space-between;gap:6px;}
+.da-accept-pts .ap-lbl{color:#8a8070;}
+.da-accept-pts .ap-val{font-weight:600;color:#e8e0c8;}
+.da-accept-pts .ap-val.pos{color:#7ad0a0;}
+.da-accept-pts .ap-val.neg{color:#e0a868;}
+.da-accept-pts .ap-foot{margin-top:3px;padding-top:3px;border-top:1px dashed rgba(255,255,255,.06);font-weight:600;}
+.da-accept-pts.ok .ap-foot{color:#7ad0a0;}
+.da-accept-pts.no .ap-foot{color:#e0a868;}
+/* Panel PN — bilans porozumienia między kolumnami My / Oni (Maciej 2026-07-29). */
+.da-pn-balance-bar{border-radius:10px;padding:10px 12px;border:2px solid rgba(232,216,138,.28);
+  background:linear-gradient(180deg,rgba(22,28,40,.95),rgba(10,14,22,.92));
+  box-shadow:0 4px 16px rgba(0,0,0,.35);}
+.da-pn-balance-bar.ok{border-color:rgba(90,208,122,.45);}
+.da-pn-balance-bar.no{border-color:rgba(224,136,104,.45);}
+.da-pn-balance-bar.idle{border-color:rgba(140,150,165,.25);opacity:.92;}
+.da-pn-bal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.da-pn-bal-title{font-size:0.68em;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#e8d88a;}
+.da-pn-bal-deal{font-size:0.72em;color:#c8b898;text-align:right;}
+.da-pn-bal-more{display:inline-block;margin-left:6px;font-size:0.85em;color:#8a8070;}
+.da-pn-bal-empty{font-size:0.72em;color:#8a8070;line-height:1.45;padding:4px 0;}
+.da-pn-bal-cols{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:8px;align-items:stretch;}
+.da-pn-bal-cell{border-radius:8px;padding:8px 10px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(0,0,0,.22);text-align:center;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.da-pn-bal-cell.my{border-color:rgba(110,150,220,.35);}
+.da-pn-bal-cell.they{border-color:rgba(90,208,122,.35);}
+.da-pn-bal-cell.center.ok{border-color:rgba(90,208,122,.5);background:rgba(40,80,50,.25);}
+.da-pn-bal-cell.center.no{border-color:rgba(224,136,104,.45);background:rgba(80,40,30,.2);}
+.da-pn-bal-lbl{font-size:0.58em;text-transform:uppercase;letter-spacing:.06em;color:#8a8070;}
+.da-pn-bal-num{font-size:1.15em;font-weight:700;font-variant-numeric:tabular-nums;color:#f0e8d8;line-height:1.2;}
+.da-pn-bal-num.pos{color:#7ad0a0;}
+.da-pn-bal-num.neg{color:#e0a868;}
+.da-pn-bal-hint{font-size:0.62em;color:#a8a090;line-height:1.3;}
+.da-pn-bal-meta{font-size:0.62em;color:#8a8070;margin-top:6px;}
+.da-pn-bal-meta.warn{color:#e0a868;}
+.da-pn-bal-verdict{margin-top:8px;padding:7px 10px;border-radius:7px;font-size:0.72em;font-weight:600;line-height:1.4;}
+.da-pn-bal-verdict.ok{color:#7ad0a0;background:rgba(80,176,112,.12);border:1px solid rgba(80,176,112,.35);}
+.da-pn-bal-verdict.no{color:#e0a868;background:rgba(224,168,104,.1);border:1px solid rgba(224,168,104,.35);}
+.da-pn-bal-verdict.wait{color:#a8a090;background:rgba(40,48,60,.45);border:1px solid rgba(232,216,138,.2);}
+.da-accept-compact{font-size:0.62em;line-height:1.35;margin:4px 0 2px;padding:3px 6px;border-radius:5px;
+  border:1px dashed rgba(232,216,138,.15);color:#a8a090;}
+.da-accept-compact.ok{color:#7ad0a0;border-color:rgba(90,208,122,.3);}
+.da-accept-compact.no{color:#e0a868;border-color:rgba(224,168,104,.3);}
+.da-negot-gift .da-nm .dir{border-color:rgba(224,168,104,.45);color:#e0a868;}
 .da-col{background:rgba(0,0,0,.22);border:1px solid rgba(232,216,138,.18);border-radius:10px;
   padding:9px 9px 10px;display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;min-width:180px;}
 .da-col h3{font-family:var(--tg-font-title,Georgia,serif);font-size:0.78em;color:var(--tg-gold-primary,#e8d88a);
@@ -537,7 +621,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-relbreak-foot{grid-column:1/-1;border-top:1px solid rgba(232,216,138,.18);padding:6px 13px;font-size:0.66em;color:#8a8070;}
 .da-relbreak-foot b{color:#e8d88a;}
 
-@media (max-width:1200px){.da-table-area{grid-template-columns:1fr;}.da-negot-actionbar{grid-column:1;}.da-card{flex:0 0 200px;width:200px;}}
+@media (max-width:1200px){.da-table-area{grid-template-columns:1fr;}.da-pn-balance-bar,.da-negot-actionbar{grid-column:1;}.da-card{flex:0 0 200px;width:200px;}}
 @media (max-width:920px){.da-relbreak{grid-template-columns:1fr;}.da-relcol.pos{border-right:none;border-bottom:1px solid rgba(232,216,138,.18);}}
 @media (max-width:760px){.da-mainrow{flex-wrap:wrap;}.da-card{width:100%;flex:1 1 auto;}}
 
@@ -822,6 +906,14 @@ function attrBarHtml(label: string, valueLabel: string, pct: number, tone: 'you'
   );
 }
 
+function civNameHtml(civName: string, ikonaId: string | undefined, displayIkonaId?: string | null): string {
+  const brandLine = civBrandLineForKey(ikonaId);
+  const tip = brandLine ? ' title="' + esc(brandLine) + '"' : '';
+  const cls = brandLine ? ' has-brand-tip' : '';
+  return '<div class="da-civname' + cls + '"' + tip + '>'
+    + esc(civCardDisplayName(civName, displayIkonaId ?? ikonaId)) + '</div>';
+}
+
 function goodsHtml(goods: readonly string[] | undefined): string {
   if (!goods || goods.length === 0) {
     return '<div class="da-goods-empty">Brak danych o dobrach</div>';
@@ -852,7 +944,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
     '<div class="da-card you">' +
       '<div class="da-portrait">' +
         civLeaderMedallionHtmlById(st.playerIkonaId ?? 'rzymianie', st.playerKolorHex, st.playerEra) +
-        '<div class="da-civname">' + esc(civCardDisplayName(st.playerCivName, st.playerIkonaId)) + '</div>' +
+        civNameHtml(st.playerCivName, st.playerIkonaId, st.playerIkonaId) +
         playerLeaderHtml(st) +
         '<div class="da-civtitle">' + esc(st.playerTitle) + '</div>' +
       '</div>' +
@@ -869,7 +961,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
         : '') +
       '<div>' +
         '<div class="da-sec-title">Skarbiec</div>' +
-        '<div class="da-attr-row"><span>Złoto</span><span class="v">' + skarbiec + '</span></div>' +
+        '<div class="da-attr-row"><span>Pieniądz (¤)</span><span class="v">' + skarbiec + '</span></div>' +
         (dochod !== undefined
           ? '<div class="da-attr-row"><span>Dochód</span><span class="v">' + (dochod >= 0 ? '+' : '') + dochod + ' / turę</span></div>'
           : '') +
@@ -893,7 +985,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
       (cfg?.onFocusCapital ? dipCapitalLocateBtnHtml() : '') +
       '<div class="da-portrait">' +
         civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex, st.otherEra, st.otherIsCityState) +
-        '<div class="da-civname">' + esc(civCardDisplayName(st.otherCivName, st.otherIkonaId)) + '</div>' +
+        civNameHtml(st.otherCivName, st.otherIkonaId, st.otherIkonaId) +
         otherLeaderHtml(st) +
         '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
         stanceBadgeHtml(st) +
@@ -998,7 +1090,7 @@ const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: s
   { svg: 'peace', aid: '10', label: 'Zaproponuj pokój', extraCls: 'peacebtn' },
   { svg: 'alliance', aid: '3', label: 'Sojusz' },
   { svg: 'pact', aid: '2', label: 'Pakt o nieagresji' },
-  { svg: 'trade', aid: '5', label: 'Traktat szlaków' },
+  { svg: 'trade', aid: '5', label: TRAKTAT_HANDLOWY_LABEL },
   { svg: 'trade', aid: '14', label: 'Umowa wymiany' },
   { svg: 'gift', aid: '13', label: 'Przekaż dar' },
   { svg: 'vassal', aid: '12', label: 'Wasalizacja' },
@@ -1130,8 +1222,60 @@ function pendingDealFallbackHtml(r: PendingNegotiationRow): string {
   return '<div class="da-deal-detail da-deal-plain">' + esc(r.dealDetails || r.summary) + '</div>';
 }
 
+/** Podgląd „czy oferta spełnia warunki" strony odpowiadającej. */
+function responderConditionVerdictHtml(r: PendingNegotiationRow): string {
+  const prev = r.responderPreview;
+  if (!prev) return '';
+  if (prev.accepted) {
+    return '<div class="da-cond-verdict ok" title="' + esc(prev.reason ?? '') + '">'
+      + 'Spełnia ich warunki — można przyjąć</div>';
+  }
+  const reason = prev.reason ?? 'Warunki niespełnione';
+  return '<div class="da-cond-verdict no">Nie spełnia warunków: ' + esc(reason) + '</div>';
+}
+
+/** Panel PN między kolumnami My / Oni — główny wpis stołu + licznik pozostałych. */
+function negotiationBalanceBarHtml(st: DiplomacyAudienceState): string {
+  const rows = st.pendingNegotiations ?? [];
+  const primary = pickPrimaryNegotiationRow(rows);
+  const extra = rows.length > 1 ? rows.length - 1 : 0;
+  const data = primary ? balancePanelDataFromRow(primary, extra) : null;
+  return renderPnBalancePanelHtml(data);
+}
+
+function isPrimaryNegotiationRow(r: PendingNegotiationRow, st: DiplomacyAudienceState): boolean {
+  const rows = st.pendingNegotiations ?? [];
+  const primary = pickPrimaryNegotiationRow(rows);
+  return primary != null && primary.id === r.id;
+}
+
+/** Podgląd PN na karcie — tylko gdy wpis nie jest główny w panelu centralnym. */
+function cardAcceptanceHtml(
+  r: PendingNegotiationRow,
+  st: DiplomacyAudienceState,
+  side: import('../game/diplomacy-acceptance-points').AcceptanceSideBalance | undefined,
+  prefix: string,
+): string {
+  if (isPrimaryNegotiationRow(r, st)) return '';
+  return renderAcceptanceCompactHtml(side, prefix);
+}
+
+/** Oczekiwanie na odpowiedź AI (własna propozycja gracza). */
+function awaitingAiResponseHtml(r: PendingNegotiationRow): string {
+  if (!r.awaitingAiResponse) return '';
+  const prev = r.responderPreview;
+  const verdict = prev
+    ? (prev.accepted
+      ? '<div class="da-cond-verdict ok">Ich ocena: spełnia warunki</div>'
+      : '<div class="da-cond-verdict no">Ich ocena: ' + esc(prev.reason ?? 'warunki niespełnione') + '</div>')
+    : '<div class="da-cond-verdict wait">Oczekiwanie na odpowiedź</div>';
+  return verdict
+    + '<button type="button" class="da-req-ai" data-negot-id="' + esc(r.id) + '" data-negot-act="request-ai">'
+    + 'Poproś o odpowiedź</button>';
+}
+
 /** Karta wychodzącej propozycji gracza — kolumna „My oferujemy". */
-function renderOwnPendingCard(r: PendingNegotiationRow): string {
+function renderOwnPendingCard(r: PendingNegotiationRow, st: DiplomacyAudienceState): string {
   const dealHtml = r.dealPayload
     ? renderNegotiationDealOneSideHtml(r.dealPayload, 'we', { incoming: false, showContext: false })
     : '';
@@ -1142,13 +1286,14 @@ function renderOwnPendingCard(r: PendingNegotiationRow): string {
     '<div class="da-negot">' +
       '<div class="da-nm"><span class="dir">' + esc('Twoja propozycja') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
+      cardAcceptanceHtml(r, st, r.acceptanceMy, 'My') +
       pendingNegotiationMetaHtml(r) +
     '</div>'
   );
 }
 
 /** Lewa kolumna — nasza strona linked dealu AI (co oddajemy / „My oferujemy"). */
-function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
+function renderIncomingPendingWeLinked(r: PendingNegotiationRow, st: DiplomacyAudienceState): string {
   const dealHtml = r.dealPayload
     ? renderNegotiationDealSideOnlyHtml(r.dealPayload, 'we', true)
     : '';
@@ -1159,13 +1304,14 @@ function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
     '<div class="da-negot da-negot-linked da-negot-linked-we" data-negot-id="' + esc(r.id) + '" data-negot-linked="we">' +
       '<div class="da-nm"><span class="dir">' + esc('W ofercie oddajemy') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
+      cardAcceptanceHtml(r, st, r.acceptanceMy, 'My') +
       pendingNegotiationMetaHtml(r) +
     '</div>'
   );
 }
 
 /** Prawa kolumna — ich strona linked dealu AI (bez przycisków — pasek akcji poniżej szal). */
-function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
+function renderIncomingPendingTheyCard(r: PendingNegotiationRow, st: DiplomacyAudienceState): string {
   const dirIcon = dipBrandIconHtml('chip-warning', 11, 'da-dir-ic');
   const legacyAccess = r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
   const dealHtml = r.dealPayload
@@ -1177,11 +1323,35 @@ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
   const legacyNote = legacyAccess
     ? '<div class="da-meta da-legacy-access">' + esc(RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON) + '</div>'
     : '';
+  const giftCls = r.isGift ? ' da-negot-gift' : '';
+  const dirLabel = r.isGift ? 'Prezent od nich' : 'Ich propozycja';
+  const titleLabel = r.isGift ? 'Dar / prezent' : r.actionLabel;
   return (
-    '<div class="da-negot incoming da-negot-linked da-negot-linked-they" data-negot-id="' + esc(r.id) + '" data-negot-linked="they">' +
-      '<div class="da-nm"><span class="dir">' + dirIcon + esc('Ich propozycja') + '</span>' + esc(r.actionLabel) + '</div>' +
+    '<div class="da-negot incoming da-negot-linked da-negot-linked-they' + giftCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="they">' +
+      '<div class="da-nm"><span class="dir">' + dirIcon + esc(dirLabel) + '</span>' + esc(titleLabel) + '</div>' +
       dealBlock +
+      cardAcceptanceHtml(r, st, r.acceptanceTheir, 'Oni') +
+      responderConditionVerdictHtml(r) +
       legacyNote +
+      pendingNegotiationMetaHtml(r) +
+    '</div>'
+  );
+}
+
+/** Prawa kolumna — odpowiedź AI na naszą propozycję (own, czekamy na AI). */
+function renderOwnPendingTheyResponseCard(r: PendingNegotiationRow, st: DiplomacyAudienceState): string {
+  const dealHtml = r.dealPayload
+    ? renderNegotiationDealSideOnlyHtml(r.dealPayload, 'they', false)
+    : '';
+  const dealBlock = dealHtml
+    ? '<div class="da-deal-detail">' + dealHtml + '</div>'
+    : pendingDealFallbackHtml(r);
+  return (
+    '<div class="da-negot da-negot-linked da-negot-linked-they own-outgoing" data-negot-id="' + esc(r.id) + '">' +
+      '<div class="da-nm"><span class="dir">' + esc('Odpowiedź') + '</span>' + esc(r.actionLabel) + '</div>' +
+      dealBlock +
+      cardAcceptanceHtml(r, st, r.acceptanceTheir, 'Oni') +
+      awaitingAiResponseHtml(r) +
       pendingNegotiationMetaHtml(r) +
     '</div>'
   );
@@ -1190,9 +1360,12 @@ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
 /** FAZA 2 pkt 3 kol.2 — „My oferujemy": wyłącznie nasze propozycje na stole (bez katalogu akcji). */
 function offersColumnHtml(st: DiplomacyAudienceState): string {
   const ownPending = (st.pendingNegotiations ?? []).filter(r => r.direction === 'own');
-  const incomingWeLinked = (st.pendingNegotiations ?? []).filter(r => r.direction === 'incoming');
-  const pendingCards = ownPending.map(renderOwnPendingCard).join('')
-    + incomingWeLinked.map(renderIncomingPendingWeLinked).join('');
+  /** Przy darze/prezencie (My puste) — bez karty „Umowa wymiany" po stronie My. */
+  const incomingWeLinked = (st.pendingNegotiations ?? []).filter(
+    r => r.direction === 'incoming' && !r.isGift,
+  );
+  const pendingCards = ownPending.map(r => renderOwnPendingCard(r, st)).join('')
+    + incomingWeLinked.map(r => renderIncomingPendingWeLinked(r, st)).join('');
   const emptyPending = ownPending.length === 0 && incomingWeLinked.length === 0
     ? '<div class="da-empty">Brak naszych ofert.</div>'
     : '';
@@ -1214,9 +1387,13 @@ function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
   if (rows.length === 0) return '<div class="da-negot-actionbar"></div>';
   const blocks = rows.map(r => {
     const legacyAccess = r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
+    const canAccept = r.canAccept !== false && !legacyAccess;
+    const acceptTitle = !canAccept
+      ? esc(r.responderPreview?.reason ?? RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON)
+      : '';
     const btns =
       '<div class="da-btnrow">'
-      + '<button type="button" class="acc"' + (legacyAccess ? ' disabled title="' + esc(RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON) + '"' : '')
+      + '<button type="button" class="acc"' + (!canAccept ? ' disabled title="' + acceptTitle + '"' : '')
       + ' data-negot-id="' + esc(r.id) + '" data-negot-act="accept">Przyjmij</button>'
       + '<button type="button" class="rej" data-negot-id="' + esc(r.id) + '" data-negot-act="reject">Odrzuć</button>'
       + (r.canCounter
@@ -1234,12 +1411,14 @@ function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
  * wymagające decyzji gracza TERAZ (Przyjmij/Odrzuć/Kontruj).
  */
 function incomingOffersColumnHtml(st: DiplomacyAudienceState): string {
-  const rows = (st.pendingNegotiations ?? []).filter(r => r.direction === 'incoming');
-  const items = rows.map(renderIncomingPendingTheyCard).join('');
+  const incoming = (st.pendingNegotiations ?? []).filter(r => r.direction === 'incoming');
+  const ownAwaitingAi = (st.pendingNegotiations ?? []).filter(r => r.direction === 'own' && r.awaitingAiResponse);
+  const rows = [...incoming.map(r => renderIncomingPendingTheyCard(r, st)), ...ownAwaitingAi.map(r => renderOwnPendingTheyResponseCard(r, st))];
+  const count = incoming.length + ownAwaitingAi.length;
   return (
     '<div class="da-col da-col-negot">' +
-      '<h3>Oni oferują<span class="cnt">' + rows.length + '</span></h3>' +
-      (items || '<div class="da-empty">Brak ofert od nich.</div>') +
+      '<h3>Oni oferują<span class="cnt">' + count + '</span></h3>' +
+      (rows.join('') || '<div class="da-empty">Brak ofert od nich.</div>') +
     '</div>'
   );
 }
@@ -1300,6 +1479,7 @@ function render(): void {
           '</div>' +
           '<div class="da-table-area">' +
             dealsColumnHtml(st) + offersColumnHtml(st) + incomingOffersColumnHtml(st) + treatiesColumnHtml(st) +
+            negotiationBalanceBarHtml(st) +
             negotiationActionBarHtml(st) +
           '</div>' +
           relBreakdownHtml(st) +
@@ -1439,6 +1619,7 @@ function render(): void {
       if (!negotId || !act) return;
       if (act === 'accept') { cfg.onAcceptNegotiation?.(negotId); return; }
       if (act === 'reject') { cfg.onRejectNegotiation?.(negotId); return; }
+      if (act === 'request-ai') { cfg.onRequestAiNegotiationResponse?.(negotId); return; }
       if (act === 'counter') {
         const aid = btn.getAttribute('data-negot-aid');
         if (!aid) return;

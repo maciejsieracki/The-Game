@@ -84,13 +84,14 @@ ok(peace.kind === 'pokoj' && peace.label === 'Pokój', 'formal: pokój bez (neut
 const trade = mod.resolveFormalDiplomaticStatus({
   relationStatus: 'pokoj', hasAlliance: false, hasNap: false, hasTrade: true, contactEstablished: true,
 });
-ok(trade.kind === 'handel', 'formal: umowa handlowa');
+ok(trade.kind === 'handel' && trade.label === 'Traktat handlowy', 'formal: traktat handlowy');
 
 ok(mod.nastawienieLabelFromScore(10, 10) === 'Wrogi', 'nastawienie: wrogi z score');
 ok(mod.nastawienieLabelFromScore(25, 25) === 'Neutralny', 'nastawienie: neutralny z score');
 
 ok(mod.treatyDisplayLabel('pakt_nieagresji') === 'Pakt nieagresji', 'etykieta: NAP');
-ok(mod.treatyDisplayLabel('umowa_handlowa') === 'Umowa handlowa', 'etykieta: handel');
+ok(mod.treatyDisplayLabel('umowa_szlakow') === 'Traktat handlowy', 'etykieta: traktat handlowy');
+ok(mod.treatyDisplayLabel('umowa_handlowa') === 'Umowa handlowa', 'etykieta: legacy handel');
 const labels = mod.activeTreatyLabelsForPair([
   { id: 't1', rodzaj: 'pakt_nieagresji', strony: [0, 2], wygasaTura: 50 },
   { id: 't2', rodzaj: 'umowa_handlowa', strony: [0, 2], wygasaTura: null },

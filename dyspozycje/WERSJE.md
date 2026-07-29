@@ -14,7 +14,61 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `0bea1d88` - 2026-07-29 09:09 - FALA 97: DEPLOY ALL — zeton jednostki (C-ZETON-DUP-Q1=B) + surowiec ZLOTO na mapie - **AKTUALNA**
+## ROBOCZA `2b118002` - 2026-07-29 13:50 - FALA 106: DEPLOY — panel PN My/Bilans/Oni na stole + koszyku handlu - **AKTUALNA**
+- md5 (pelne): `2b11800234eedd5891c8c7c8b85ba233` · stempel: `ROBOCZA · 2026-07-29 13:50`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+- tsc 0 · diplomacy-acceptance-points-test 52/52 · diplomacy-negotiation-table-test 43/43 · vite build OK (36,4 MB).
+- Zakres: panel „Punkty porozumienia" — kolumny My / Bilans / Oni na stole negocjacji i w koszyku handlu (live podgląd PN). Pliki: `diplomacyAcceptanceBalance.ts`, `diplomacyAudience.ts`, `diplomacyTradeBasket.ts`. Zawiera FALA 105 i wcześniejsze.
+
+## ROBOCZA `ded7ed28` - 2026-07-29 13:38 - FALA 105: DEPLOY — pokój na stole negocjacji (PN baza 500) + bez instant case 10 - **ZASTAPIONA (2b118002)**
+- md5 (pelne): `ded7ed28c4c0f1c7a73bb772f1436aa3` · stempel: `ROBOCZA · 2026-07-29 13:38`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+- tsc 0 · diplomacy-acceptance-points-test 52/52 · diplomacy-negotiation-table-test 43/43 · vite build OK (36,4 MB).
+- Zakres: pokój (`pokoj`) na stole negocjacji — PN baza 500, tylko w trwającej wojnie, propozycja ważna podczas wojny; wyłączenie instant-accept (case 10). Pliki: `diplomacy-acceptance-points.json`, `diplomacy-proposals.ts`, `diplomacy-negotiation-table-test.cjs`. Zawiera FALA 104 i wcześniejsze.
+
+## ROBOCZA `42dc16e4` - 2026-07-29 13:21 - FALA 104: DEPLOY — PN złoto 50/szt + węgiel 20/szt (+ EMPIRE_STOCK wegiel) - **ZASTAPIONA (ded7ed28)**
+- md5 (pelne): `42dc16e49db9b33556233719ff337d75` · stempel: `ROBOCZA · 2026-07-29 13:21`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest.
+- tsc 0 · diplomacy-acceptance-points-test 49/49 · vite build OK (36,4 MB).
+- Zakres: PN za sztukę — złoto 50/szt, węgiel 20/szt; EMPIRE_STOCK wegiel w katalogu wartości. Pliki: `diplomacy-acceptance-points.json`, `diplomacy-value-catalog.ts`, `diplomacy-goods.ts`. Zawiera FALA 103 i wcześniejsze.
+
+## ROBOCZA `d6a19cba` - 2026-07-29 12:29 - FALA 103: DEPLOY — PN surowców za sztukę (drewno 1…stal 25) + handel ilościowy sól/koń/ceramika/brąz/żelazo/stal - **ZASTAPIONA (42dc16e4)**
+- md5 (pelne): `d6a19cba5734499c698cff110c4d161b` · stempel: `ROBOCZA · 2026-07-29 12:29`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest. HEAD `f5bb931`.
+- tsc 0 · diplomacy-acceptance-points-test 46/46 · diplomacy-value-catalog-test 58/59 (1 pre-existing boolean `ruda`) · vite build OK (36,4 MB).
+- Zakres: PN za sztukę surowców magazynowych (drewno 1 … stal 25); handel ilościowy pakietami (sól, koń, ceramika, brąz, żelazo, stal). Pliki: `diplomacy-acceptance-points.json`, `diplomacy-value-catalog.ts`, `diplomacy-acceptance-points.ts`, `diplomacyTradeBasket.ts`, `diplomacyNegotiationModal.ts`. Zawiera FALA 102 i wcześniejsze.
+
+## ROBOCZA `3bd7d5cf` - 2026-07-29 12:24 - FALA 102: DEPLOY — magazyn państwa (nagłówek+tooltip) + opis civ tylko tooltip - **ZASTAPIONA (d6a19cba)**
+- md5 (pelne): `3bd7d5cf2204b0de87c05766d02c5993` · stempel: `ROBOCZA · 2026-07-29 12:24`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest. HEAD `f5bb931`.
+- tsc 0 · vite build OK (36,4 MB).
+- Zakres: magazyn państwa — krótki nagłówek + tooltip (pojemność/formuła); opis cywilizacji (Falanga itd.) — w grze tylko tooltip, start bez zmian. Pliki: `civBrandDisplay.ts`, `empireDetailPanel.ts`, `diplomacyAudience.ts`. Zawiera FALA 101 i wcześniejsze.
+
+## ROBOCZA `683fe397` - 2026-07-29 12:15 - FALA 101: DEPLOY — globalny mnożnik trudności koszyk My/Oni + tech koszt×tempo - **ZASTAPIONA (3bd7d5cf)**
+- md5 (pelne): `683fe39730d7baa8eeb02efff8e2cbca` · stempel: `ROBOCZA · 2026-07-29 12:15`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest. HEAD `f5bb931`.
+- tsc 0 · diplomacy-acceptance-points-test 43/43 · vite build OK (36,4 MB).
+- Zakres: globalny mnożnik trudności (easy/normal/hard) na cały koszyk My/Oni; technologie = koszt×tempo bez osobnego ±50%. Zawiera FALA 100 i wcześniejsze.
+
+## ROBOCZA `26ef48a3` - 2026-07-29 12:07 - FALA 100: DEPLOY ALL — weterani ★10/15/20% + dyplomacja (sojusz def., wymiana PN=0, przemarsz, rel ±90%) - **ZASTAPIONA (683fe397)**
+- md5 (pelne): `26ef48a35115e6965d9246e218436443` · stempel: `ROBOCZA · 2026-07-29 12:07`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest. HEAD `f5bb931`.
+- tsc 0 · weterani-test 73/73 · diplomacy-acceptance-points-test 33/33 · vite build OK (36,4 MB).
+- Zakres: (1) weterani — gwiazdki tylko za wygrane, premia ★+10% / ★★+15% / ★★★+20% (pancerz bez zmian); (2) dyplomacja — sojusz defensywny AI/UI, umowa wymiany PN=0, traktat przemarszu wojskowego, modyfikator relacji ±90% do progu PN. Zawiera FALA 98–99 i wcześniejsze.
+
+## ROBOCZA `2f5b7a49` - 2026-07-29 12:01 - FALA 99: DEPLOY — gwiazdki weterana tylko za wygrane bitwy - **ZASTAPIONA (26ef48a3)**
+- md5 (pelne): `2f5b7a497b54b2fa8fbc0be52b552f9a` · stempel: `ROBOCZA · 2026-07-29 12:01`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `f5bb931`.
+- tsc 0 · weterani-test 60/60 · vite build OK (36,4 MB).
+- Zakres: gwiazdki weterana tylko za wygrane bitwy (1/2/3 → ★/★★/★★★); przegrana nie awansuje (stara skala premii 10/20). Pliki: `veteran.ts`, `post-battle-map.ts`, `unitVeteranBadges`, `unitCardStatus`, `weterani-test.cjs`, `main.ts`/`setup.ts`. Zawiera FALA 98 i wcześniejsze.
+
+## ROBOCZA `222eb458` - 2026-07-29 11:54 - FALA 98: DEPLOY ALL — stół negocjacji + PN akceptacji + traktat handlowy + prezent AI - **ZASTAPIONA (2f5b7a49)**
+- md5 (pelne): `222eb45848ba4241d6fb0f21d41cadd9` · stempel: `ROBOCZA · 2026-07-29 11:54`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `f5bb931`.
+- tsc 0 · diplomacy-acceptance-points-test 20/20 · diplomacy-negotiation-table-test 39/39 · vite build OK (36,4 MB).
+- Zakres: stół negocjacji dyplomacji · punkty akceptacji (PN) · traktat handlowy · prezent bez karty My · AI nie-instant (kontroferty). Pliki: `diplomacy-acceptance-points`, `diplomacyAudience`, `diplomacy-display`, `main.ts`, testy dyplomacji.
+
+## ROBOCZA `0bea1d88` - 2026-07-29 09:09 - FALA 97: DEPLOY ALL — zeton jednostki (C-ZETON-DUP-Q1=B) + surowiec ZLOTO na mapie - **ZASTAPIONA (222eb458)**
 - md5 (pelne): `0bea1d88ac59fedf367cc796d7c9599e` · stempel: `ROBOCZA · 2026-07-29 09:09`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `b5370c8`.
 - Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0, 36,4 MB single-file).

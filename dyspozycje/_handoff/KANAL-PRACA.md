@@ -4260,3 +4260,84 @@ C-MOC-Q1=A (Moc nominalna, ta z auto-bitwy) · C-MOC-Q2=A (obwódka w barwie pa�
 C-ZETON-STOS-Q1=A (odznaki = maksima ze stosu).
 
 CZEKAM-NA: nic — to tylko rezerwacja plików.
+
+## [11:54 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 98 DEPLOY ALL (222eb458)
+
+md5 `222eb45848ba4241d6fb0f21d41cadd9` | stempel ROBOCZA · 2026-07-29 11:54 | HEAD `f5bb931`
+tsc 0 | diplomacy-acceptance-points-test 20/20 | diplomacy-negotiation-table-test 39/39 | vite build OK (36,4 MB) | publish-robocza-snapshot OK.
+Zakres: stół negocjacji dyplomacji · punkty akceptacji (PN) · traktat handlowy · prezent bez karty My · AI nie-instant (kontroferty). Zawiera FALA 97 (żeton jednostki + ZŁOTO na mapie) i wcześniejsze.
+POLE-BITWY odświeżone (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `222eb458`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [12:01 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 99 (2f5b7a49)
+
+md5 `2f5b7a497b54b2fa8fbc0be52b552f9a` | stempel ROBOCZA · 2026-07-29 12:01 | HEAD `f5bb931`
+tsc 0 | weterani-test 60/60 | vite build OK (36,4 MB) | publish-robocza-snapshot OK.
+Zakres: gwiazdki weterana tylko za wygrane bitwy (przegrana nie awansuje); stara skala premii 10/20.
+POLE-BITWY odświeżone (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `2f5b7a49`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [12:07 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 100 DEPLOY ALL (26ef48a3)
+
+md5 `26ef48a35115e6965d9246e218436443` | stempel ROBOCZA · 2026-07-29 12:07 | HEAD `f5bb931`
+tsc 0 | weterani-test 73/73 | diplomacy-acceptance-points-test 33/33 | vite build OK (36,4 MB) | verify-robocza VERIFY OK.
+Zakres: (1) weterani — ★+10% / ★★+15% / ★★★+20%, gwiazdki tylko za wygrane; (2) dyplomacja — sojusz defensywny AI/UI, umowa wymiany PN=0, traktat przemarszu wojskowego, relacje ±90% do progu PN. Zawiera FALA 98–99 i wcześniejsze.
+POLE-BITWY odświeżone (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `26ef48a3`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [12:15 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 101 (683fe397)
+
+md5 `683fe39730d7baa8eeb02efff8e2cbca` | stempel ROBOCZA · 2026-07-29 12:15 | HEAD `f5bb931`
+tsc 0 | diplomacy-acceptance-points-test 43/43 | vite build OK (36,4 MB) | publish-robocza-snapshot OK.
+Zakres: globalny mnożnik trudności (easy/normal/hard) na cały koszyk My/Oni; technologie = koszt×tempo bez osobnego ±50%. Zawiera FALA 100 i wcześniejsze.
+POLE-BITWY odświeżone (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `683fe397`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [12:24 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 102 (3bd7d5cf)
+
+md5 `3bd7d5cf2204b0de87c05766d02c5993` | stempel ROBOCZA · 2026-07-29 12:24 | HEAD `f5bb931`
+tsc 0 | vite build OK (36,4 MB) | publish-robocza-snapshot OK.
+Zakres: magazyn państwa — krótki nagłówek + tooltip (pojemność/formuła); opis cywilizacji (Falanga itd.) — w grze tylko tooltip, start bez zmian. Pliki: `civBrandDisplay.ts`, `empireDetailPanel.ts`, `diplomacyAudience.ts`. Zawiera FALA 101 i wcześniejsze.
+POLE-BITWY odświeżone (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `3bd7d5cf`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [12:29 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 103 (d6a19cba)
+
+md5 `d6a19cba5734499c698cff110c4d161b` | stempel ROBOCZA · 2026-07-29 12:29 | HEAD `f5bb931`
+tsc 0 | diplomacy-acceptance-points-test 46/46 | diplomacy-value-catalog-test 58/59 (1 pre-existing boolean `ruda`) | vite build OK (36,4 MB) | publish-robocza-snapshot OK.
+Zakres: PN za sztukę surowców magazynowych (drewno 1 … stal 25); handel ilościowy pakietami (sól, koń, ceramika, brąz, żelazo, stal). Zawiera FALA 102 i wcześniejsze.
+POLE-BITWY odświeżone (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `d6a19cba`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [13:38 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 105 (ded7ed28)
+
+md5 `ded7ed28c4c0f1c7a73bb772f1436aa3` | stempel ROBOCZA · 2026-07-29 13:38
+tsc 0 | diplomacy-acceptance-points-test 52/52 | diplomacy-negotiation-table-test 43/43 | vite build OK (36,4 MB) | VERIFY OK.
+Zakres: pokój na stole negocjacji (PN baza 500, tylko w wojnie); bez instant case 10. Zawiera FALA 104 i wcześniejsze.
+POLE-BITWY bez zmian (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `ded7ed28`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [13:50 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 106 (2b118002)
+
+md5 `2b11800234eedd5891c8c7c8b85ba233` | stempel ROBOCZA · 2026-07-29 13:50
+tsc 0 | diplomacy-acceptance-points-test 52/52 | diplomacy-negotiation-table-test 43/43 | vite build OK (36,4 MB) | publish-robocza-snapshot OK.
+Zakres: panel „Punkty porozumienia" My/Bilans/Oni na stole negocjacji + koszyku handlu (live PN). Zawiera FALA 105 i wcześniejsze.
+POLE-BITWY bez zmian (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `2b118002`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [13:21 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 104 (42dc16e4)
+
+md5 `42dc16e49db9b33556233719ff337d75` | stempel ROBOCZA · 2026-07-29 13:21
+tsc 0 | diplomacy-acceptance-points-test 49/49 | vite build OK (36,4 MB) | publish-robocza-snapshot OK.
+Zakres: PN za sztukę — złoto 50/szt, węgiel 20/szt; EMPIRE_STOCK wegiel w katalogu wartości. Zawiera FALA 103 i wcześniejsze.
+POLE-BITWY odświeżone (`dd399c4b`).
+**Sesja lokalna: pull na dysk właściciela, testuj `42dc16e4`.**
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra

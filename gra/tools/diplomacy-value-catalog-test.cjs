@@ -31,6 +31,10 @@ export {
   diplomacyGiftTrustFromPn,
   diplomacyDobraWolaFromSurplus,
   diplomacyProgDarRelacja,
+  diplomacyPnSurowiecIlosc,
+  diplomacyHandelSurowiecCenaJednostkowa,
+  diplomacyHandelSurowceCatalog,
+  diplomacyHandelSurowcePakietWielkosc,
 } from '../src/game/diplomacy-value-catalog';
 `, 'utf8');
 
@@ -101,6 +105,30 @@ eq(D.diplomacyProgDarRelacja(), 30, 'prog dar Rel 30');
 const gift = D.diplomacyGiftTrustFromPn(250, 3);
 eq(gift.deltaZaufanieRaw, 2, 'dar raw +2');
 eq(gift.deltaZaufanie, 2, 'dar z limitem tury +2');
+
+// Maciej 2026-07-29: PN/szt. surowców magazynowych (handel_surowce)
+eq(D.diplomacyHandelSurowcePakietWielkosc(), 10, 'pakiet_wielkosc = 10 szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('drewno'), 1, 'drewno 1 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('glina'), 2, 'glina 2 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('kamien'), 3, 'kamien 3 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda'), 5, 'ruda miedzi 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda_zelaza'), 10, 'ruda_zelaza 10 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('cegla'), 5, 'cegla 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('sol'), 2, 'sol 2 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('kon'), 5, 'kon 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('ceramika'), 5, 'ceramika 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('braz'), 15, 'braz 15 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('zelazo'), 20, 'zelazo 20 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('stal'), 25, 'stal 25 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('zloto'), 50, 'zloto-surowiec 50 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('wegiel'), 20, 'wegiel 20 PN/szt.');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 1), 10, '1 pakiet drewno = 10 PN (1×10×1)');
+eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 2), 200, '2 pakiety ruda_zelaza = 200 PN (2×10×10)');
+eq(D.diplomacyPnSurowiecIlosc('stal', 1), 250, '1 pakiet stal = 250 PN (1×10×25)');
+eq(D.diplomacyPnSurowiecIlosc('zloto', 1), 500, '1 pakiet zloto = 500 PN (1×10×50)');
+eq(D.diplomacyPnSurowiecIlosc('wegiel', 1), 200, '1 pakiet wegiel = 200 PN (1×10×20)');
+const handelCat = D.diplomacyHandelSurowceCatalog();
+ok(Object.keys(handelCat).length === 14, 'katalog handlu: 14 surowców ilościowych');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

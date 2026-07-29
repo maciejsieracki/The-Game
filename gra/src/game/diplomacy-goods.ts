@@ -55,6 +55,8 @@ const LABEL_TO_ASCII_KEY: Readonly<Record<string, string>> = {
   'Żelazo': 'zelazo',
   'Cegła': 'cegla',
   'Ceramika': 'ceramika',
+  'Złoto': 'zloto',
+  'Węgiel': 'wegiel',
 };
 
 function asciiKeyForLabel(label: string): string {

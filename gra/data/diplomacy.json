@@ -190,36 +190,36 @@
       "Efekt": "Flaga NAP aktywny na 10–20 tur (negocjowalne). UPR: automatyczny, stały czas 10 tur"
     },
     {
-      "Akcja": "3. Sojusz wojskowy",
-      "Opis": "Formalne przymierze: atak na jedną stronę = atak na obie. Wypowiedzenie: −25 Relacja, −20 Zaufanie.",
+      "Akcja": "3. Sojusz (pełny lub defensywny)",
+      "Opis": "Formalne przymierze: pełny = wojna sojusznika to twoja wojna; defensywny = wchodzisz tylko gdy sojusznik jest atakowany. Wypowiedzenie: −25 Relacja, −20 Zaufanie.",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "NIE",
       "Koszt": "Negocjacja — może wymagać opłaty lub wymiany technologii jako gwarantu",
       "Efekt": "Automatyczne wejście do wojen partnera (lub odmowa: −15 Zaufanie). Czas: bezterminowy"
     },
     {
-      "Akcja": "4. Otwarte granice / prawo przemarszu",
-      "Opis": "Zezwolenie na swobodny ruch jednostek cywilnych lub wojskowych. Nieautoryzowany przemarsz: −5 Zaufanie/tura u właściciela (koniec tury, bez stacku jednostek).",
+      "Akcja": "4. Traktat przemarszu",
+      "Opis": "Zezwolenie na przemarsz jednostek cywilnych lub wojskowych przez terytorium. Nieautoryzowany przemarsz: −5 Zaufanie/tura u właściciela (koniec tury, bez stacku jednostek).",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "UPR",
       "Koszt": "Cywilne: 10–30 Pieniędzy; Wojskowe: 20–60 Pieniędzy + wzajemność",
       "Efekt": "Jednostki poruszają się swobodnie przez obce terytorium. UPR: tylko cywilne, bez negocjacji ceny"
     },
     {
-      "Akcja": "5. Traktat szlaków handlowych",
+      "Akcja": "5. Traktat handlowy",
       "Opis": "Otwiera i utrzymuje szlaki handlowe między miastami (+1 Zaufanie/turę). Bez koszyka towarów — wymiana surowców to osobna umowa (akcja 14). Zerwanie: −15 Relacja, −10 Zaufanie.",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "UPR",
       "Koszt": "Określony w treści umowy (np. 10 Pieniędzy/tura za dostęp do rudy)",
-      "Efekt": "Szlaki handlowe; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym traktacie szlaków. UPR: jednorazowe transakcje (akcja 14)"
+      "Efekt": "Szlaki handlowe; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym traktacie handlowym. UPR: jednorazowe transakcje (akcja 14)"
     },
     {
       "Akcja": "14. Umowa wymiany surowców",
-      "Opis": "Koszyk towarów jednorazowo lub co turę (PN, surowce). Nie otwiera szlaków — wymaga osobnego traktatu szlaków (akcja 5) na trasy handlowe.",
+      "Opis": "Koszyk towarów jednorazowo lub co turę (PN, surowce). Nie otwiera szlaków — wymaga osobnego traktatu handlowego (akcja 5) na trasy handlowe.",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "UPR",
       "Koszt": "Określony w koszyku negocjacji",
-      "Efekt": "Transfer zasobów wg umowy; nie zastępuje traktatu szlaków"
+      "Efekt": "Transfer zasobów wg umowy; nie zastępuje traktatu handlowego"
     },
     {
       "Akcja": "6. Wymiana / sprzedaż technologii",

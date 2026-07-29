@@ -55,8 +55,13 @@ console.log('Bundle OK.\n');
 const {
   VETERAN_BONUS_FRAC,
   veteranLevelFromBattles,
+  veteranBattlesWon,
   veteranBattlesSurvived,
+  veteranStarCount,
   veteranCombatBonusFrac,
+  veteranBonusFracForWins,
+  veteranBonusFracForLevel,
+  registerBattleWon,
   registerBattleSurvived,
   applyVeteranFracToCombatUnit,
   veteranMoraleBazoweUp,
@@ -109,7 +114,8 @@ check('health == baza (22)', baseCu.health === 22, baseCu.health);
 check('armor == baza (2)', baseCu.armor === 2, baseCu.armor);
 check('Prog dezercji == baza (0.4)', baseCu['Prog dezercji (% health)'] === 0.4, baseCu['Prog dezercji (% health)']);
 check('veteranLevelFromBattles(0) === 1', veteranLevelFromBattles(0) === 1);
-check('VETERAN_BONUS_FRAC[1] === 0', VETERAN_BONUS_FRAC[1] === 0);
+check('VETERAN_BONUS_FRAC[0] === 0', VETERAN_BONUS_FRAC[0] === 0);
+check('veteranBonusFracForWins(0) === 0', veteranBonusFracForWins(0) === 0);
 
 // applyVeteranFracToCombatUnit z frac=0 zwraca WEJSCIOWY obiekt bez zmian (bit-identyczny).
 const lvl1Cu = applyVeteranFracToCombatUnit(baseCu, 0);
@@ -117,31 +123,56 @@ check('applyVeteranFracToCombatUnit(cu,0) === cu (ten sam obiekt)', lvl1Cu === b
 console.log('');
 
 // ---------------------------------------------------------------------------
-// 2. Po 1 przezytej bitwie: poziom 2, atak wrecz = baza x1.10, pancerz bez zmian.
+// 2. Po 1 wygranej: poziom premii 2 (+10%), 1 gwiazdka.
 // ---------------------------------------------------------------------------
-console.log('2. Poziom 2 (1 przezyta bitwa) -- +10%');
+console.log('2. ★ (1 wygrana) -- +10%, 1 gwiazdka');
 check('veteranLevelFromBattles(1) === 2', veteranLevelFromBattles(1) === 2);
-const frac2 = VETERAN_BONUS_FRAC[2];
-check('VETERAN_BONUS_FRAC[2] === 0.10', frac2 === 0.10, frac2);
-const lvl2Cu = applyVeteranFracToCombatUnit(baseCu, frac2);
-check('meleeAttack == baza x1.10 (4.4)', approxEq(lvl2Cu.meleeAttack, 4 * 1.10), lvl2Cu.meleeAttack);
-check('weaponDamage == baza x1.10 (4.4)', approxEq(lvl2Cu.weaponDamage, 4 * 1.10), lvl2Cu.weaponDamage);
-check('health == baza x1.10 (24.2)', approxEq(lvl2Cu.health, 22 * 1.10), lvl2Cu.health);
-check('armor BEZ ZMIAN (2)', lvl2Cu.armor === 2, lvl2Cu.armor);
+check('veteranStarCount({ battlesSurvived: 1 }) === 1', veteranStarCount({ battlesSurvived: 1 }) === 1);
+const frac1 = veteranBonusFracForWins(1);
+check('VETERAN_BONUS_FRAC[1] === 0.10', VETERAN_BONUS_FRAC[1] === 0.10, VETERAN_BONUS_FRAC[1]);
+check('veteranBonusFracForWins(1) === 0.10', frac1 === 0.10, frac1);
+const lvl1WinCu = applyVeteranFracToCombatUnit(baseCu, frac1);
+check('meleeAttack == baza x1.10 (4.4)', approxEq(lvl1WinCu.meleeAttack, 4 * 1.10), lvl1WinCu.meleeAttack);
+check('weaponDamage == baza x1.10 (4.4)', approxEq(lvl1WinCu.weaponDamage, 4 * 1.10), lvl1WinCu.weaponDamage);
+check('health == baza x1.10 (24.2)', approxEq(lvl1WinCu.health, 22 * 1.10), lvl1WinCu.health);
+check('armor BEZ ZMIAN (2)', lvl1WinCu.armor === 2, lvl1WinCu.armor);
 check(
   'Prog dezercji == baza x0.90 (0.36) -- ODWROCONE, w DOL',
-  approxEq(lvl2Cu['Prog dezercji (% health)'], 0.4 * 0.90, 1e-6),
+  approxEq(lvl1WinCu['Prog dezercji (% health)'], 0.4 * 0.90, 1e-6),
+  lvl1WinCu['Prog dezercji (% health)'],
+);
+console.log('');
+
+// ---------------------------------------------------------------------------
+// 2b. Po 2 wygranych: ★★ (+15%).
+// ---------------------------------------------------------------------------
+console.log('2b. ★★ (2 wygrane) -- +15%, 2 gwiazdki');
+check('veteranLevelFromBattles(2) === 2 (etykieta Doświadczony)', veteranLevelFromBattles(2) === 2);
+check('veteranStarCount({ battlesSurvived: 2 }) === 2', veteranStarCount({ battlesSurvived: 2 }) === 2);
+const frac2 = veteranBonusFracForWins(2);
+check('VETERAN_BONUS_FRAC[2] === 0.15', VETERAN_BONUS_FRAC[2] === 0.15, frac2);
+check('veteranBonusFracForWins(2) === 0.15', frac2 === 0.15, frac2);
+const lvl2Cu = applyVeteranFracToCombatUnit(baseCu, frac2);
+check('meleeAttack == baza x1.15 (4.6)', approxEq(lvl2Cu.meleeAttack, 4 * 1.15), lvl2Cu.meleeAttack);
+check('weaponDamage == baza x1.15 (4.6)', approxEq(lvl2Cu.weaponDamage, 4 * 1.15), lvl2Cu.weaponDamage);
+check('health == baza x1.15 (25.3)', approxEq(lvl2Cu.health, 22 * 1.15), lvl2Cu.health);
+check('armor BEZ ZMIAN (2)', lvl2Cu.armor === 2, lvl2Cu.armor);
+check(
+  'Prog dezercji == baza x0.85 (0.34) -- ODWROCONE, w DOL',
+  approxEq(lvl2Cu['Prog dezercji (% health)'], 0.4 * 0.85, 1e-6),
   lvl2Cu['Prog dezercji (% health)'],
 );
 console.log('');
 
 // ---------------------------------------------------------------------------
-// 3. Po 2 przezytych bitwach: poziom 3, atak wrecz = baza x1.20 (NIE x1.30/x1.32).
+// 3. Po 3 wygranych: poziom premii 3, atak wrecz = baza x1.20 (NIE x1.30/x1.32).
 // ---------------------------------------------------------------------------
-console.log('3. Poziom 3 (Weteran, 2 przezyte bitwy) -- +20%, BEZ KUMULACJI');
-check('veteranLevelFromBattles(2) === 3', veteranLevelFromBattles(2) === 3);
-const frac3 = VETERAN_BONUS_FRAC[3];
-check('VETERAN_BONUS_FRAC[3] === 0.20', frac3 === 0.20, frac3);
+console.log('3. ★★★ (3 wygrane, Weteran) -- +20%, BEZ KUMULACJI');
+check('veteranLevelFromBattles(3) === 3', veteranLevelFromBattles(3) === 3);
+check('veteranStarCount({ battlesSurvived: 3 }) === 3', veteranStarCount({ battlesSurvived: 3 }) === 3);
+const frac3 = veteranBonusFracForWins(3);
+check('VETERAN_BONUS_FRAC[3] === 0.20', VETERAN_BONUS_FRAC[3] === 0.20, frac3);
+check('veteranBonusFracForWins(3) === 0.20', frac3 === 0.20, frac3);
 const lvl3Cu = applyVeteranFracToCombatUnit(baseCu, frac3);
 check('meleeAttack == baza x1.20 (4.8)', approxEq(lvl3Cu.meleeAttack, 4 * 1.20), lvl3Cu.meleeAttack);
 check('meleeAttack != baza x1.30 (5.2) -- brak kumulacji', !approxEq(lvl3Cu.meleeAttack, 4 * 1.30));
@@ -155,25 +186,23 @@ check(
 console.log('');
 
 // ---------------------------------------------------------------------------
-// 4. Po 3. i 4. bitwie: nadal poziom 3, nadal x1.20 -- sufit dziala.
+// 4. Po 4. wygranej: nadal poziom 3, nadal x1.20 -- sufit dziala.
 // ---------------------------------------------------------------------------
-console.log('4. Sufit poziomu 3 -- dalsze bitwy nic nie zmieniaja');
-check('veteranLevelFromBattles(3) === 3', veteranLevelFromBattles(3) === 3);
+console.log('4. Sufit poziomu 3 -- dalsze wygrane nic nie zmieniaja');
 check('veteranLevelFromBattles(4) === 3', veteranLevelFromBattles(4) === 3);
+check('veteranLevelFromBattles(5) === 3', veteranLevelFromBattles(5) === 3);
 let battles = 0;
-for (let i = 0; i < 4; i++) battles = registerBattleSurvived({ battlesSurvived: battles });
-check('registerBattleSurvived x4 caps battlesSurvived at 2', battles === 2, battles);
-check('poziom po 4 rejestracjach === 3', veteranLevelFromBattles(battles) === 3);
-const lvl3After4 = applyVeteranFracToCombatUnit(baseCu, VETERAN_BONUS_FRAC[veteranLevelFromBattles(battles)]);
+for (let i = 0; i < 5; i++) battles = registerBattleWon({ battlesSurvived: battles });
+check('registerBattleWon x5 caps battlesSurvived at 3', battles === 3, battles);
+check('poziom po 5 rejestracjach === 3', veteranLevelFromBattles(battles) === 3);
+const lvl3After4 = applyVeteranFracToCombatUnit(baseCu, veteranBonusFracForWins(battles));
 check('meleeAttack po 4. bitwie nadal == baza x1.20 (4.8)', approxEq(lvl3After4.meleeAttack, 4 * 1.20), lvl3After4.meleeAttack);
 console.log('');
 
 // ---------------------------------------------------------------------------
-// 5 + 6. Integracja: applyPostBattleMap (post-battle-map.ts) -- jedyny wspolny
-// hak zliczania przezytej bitwy. Testujemy: zabita jednostka NIE awansuje,
-// a gracz (ownerId=0) i AI (ownerId=1) awansuja IDENTYCZNIE (parytet).
+// 5 + 6. Integracja applyPostBattleMap -- tylko zwyciezcy awansuja, parytet AI.
 // ---------------------------------------------------------------------------
-console.log('5+6. Integracja applyPostBattleMap -- smierc nie awansuje, parytet AI');
+console.log('5+6. Integracja applyPostBattleMap -- tylko wygrani, parytet AI');
 
 function makeUnit(id, ownerId, q, r) {
   return {
@@ -217,35 +246,66 @@ function runOneBattle(ownerAtk, ownerDef) {
 const player = runOneBattle(0, 1); // gracz atakuje AI
 const ai = runOneBattle(1, 0); // AI atakuje gracza (role odwrocone, ownerId zamienione)
 
-check('gracz: atakujacy (przezyl) battlesSurvived === 1', veteranBattlesSurvived(player.atk) === 1, player.atk.battlesSurvived);
-check('gracz: obronca przezyly battlesSurvived === 1', player.units.find(u => u.id === 'def-1').battlesSurvived === 1);
-check('gracz: obronca zabity ("def-2") usuniety z units (nie awansuje)', !player.units.find(u => u.id === 'def-2'));
+check('gracz: atakujacy (wygral) battlesSurvived === 1', veteranBattlesWon(player.atk) === 1, player.atk.battlesSurvived);
+check('gracz: obronca przezyly (przegral) NIE awansuje', veteranBattlesWon(player.units.find(u => u.id === 'def-1')) === 0);
+check('gracz: obronca zabity ("def-2") usuniety z units', !player.units.find(u => u.id === 'def-2'));
 
-check('AI: atakujacy (przezyl) battlesSurvived === 1', ai.atk.battlesSurvived === 1, ai.atk.battlesSurvived);
-check('AI: obronca przezyly battlesSurvived === 1', ai.units.find(u => u.id === 'def-1').battlesSurvived === 1);
-check('AI: obronca zabity usuniety z units (nie awansuje)', !ai.units.find(u => u.id === 'def-2'));
+check('AI: atakujacy (wygral) battlesSurvived === 1', veteranBattlesWon(ai.atk) === 1, ai.atk.battlesSurvived);
+check('AI: obronca przezyly (przegral) NIE awansuje', veteranBattlesWon(ai.units.find(u => u.id === 'def-1')) === 0);
+check('AI: obronca zabity usuniety z units', !ai.units.find(u => u.id === 'def-2'));
 
 check(
-  'PARYTET: wynik identyczny niezaleznie od ownerId (gracz vs AI)',
-  veteranBattlesSurvived(player.atk) === veteranBattlesSurvived(ai.atk)
-  && player.units.find(u => u.id === 'def-1').battlesSurvived === ai.units.find(u => u.id === 'def-1').battlesSurvived,
+  'PARYTET: zwyciezca identyczny niezaleznie od ownerId (gracz vs AI)',
+  veteranBattlesWon(player.atk) === veteranBattlesWon(ai.atk),
 );
+
+function runDefenderWinBattle(ownerAtk, ownerDef) {
+  const atk = makeUnit('atk-1', ownerAtk, 0, 0);
+  const def = makeUnit('def-1', ownerDef, 1, 0);
+  const units = [atk, def];
+  const input = {
+    units,
+    map: {},
+    cities: [],
+    battleQ: 0,
+    battleR: 0,
+    atkAnchor: atk,
+    atkRoster: [atk],
+    defRoster: [def],
+    atkStart: new Map([[atk.id, { q: atk.q, r: atk.r }]]),
+    winner: 'obronca',
+    manualSurvivors: [
+      { id: 'atk-1', hp: 5 },
+      { id: 'def-1', hp: 20 },
+    ],
+    getDef: () => ({}),
+    maxHpOf: () => 22,
+    isPassableHex: () => true,
+    isUnitAt: () => false,
+  };
+  applyPostBattleMap(input);
+  return { atk, def };
+}
+
+const defWin = runDefenderWinBattle(0, 1);
+check('wygrana obroncy: obronca +1 wygrana', veteranBattlesWon(defWin.def) === 1, defWin.def.battlesSurvived);
+check('wygrana obroncy: atakujacy (przegral) bez przyrostu', veteranBattlesWon(defWin.atk) === 0);
 console.log('');
 
 // ---------------------------------------------------------------------------
 // 7. Zapis/wczytanie: pole przetrwa JSON round-trip; brak pola = poziom 1.
 // ---------------------------------------------------------------------------
 console.log('7. Zapis gry -- round-trip + kompatybilnosc wsteczna');
-const savedUnit = { id: 'x', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 0, r: 0, ruch: 2, ruchLeft: 2, battlesSurvived: 2 };
+const savedUnit = { id: 'x', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 0, r: 0, ruch: 2, ruchLeft: 2, battlesSurvived: 3 };
 const roundTripped = JSON.parse(JSON.stringify(savedUnit));
-check('battlesSurvived przetrwal JSON round-trip (2)', roundTripped.battlesSurvived === 2, roundTripped.battlesSurvived);
-check('poziom po round-tripie === 3', veteranLevelFromBattles(veteranBattlesSurvived(roundTripped)) === 3);
+check('battlesSurvived przetrwal JSON round-trip (3)', roundTripped.battlesSurvived === 3, roundTripped.battlesSurvived);
+check('poziom po round-tripie === 3 (Weteran)', veteranLevelFromBattles(veteranBattlesWon(roundTripped)) === 3);
 
 const oldSaveUnit = { id: 'y', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 0, r: 0, ruch: 2, ruchLeft: 2 };
 // brak pola battlesSurvived (stary zapis) -- nie moze wysypac gry, ma dac poziom 1.
-check('stary zapis bez pola -> veteranBattlesSurvived === 0 (brak wyjatku)', veteranBattlesSurvived(oldSaveUnit) === 0);
-check('stary zapis bez pola -> poziom 1', veteranLevelFromBattles(veteranBattlesSurvived(oldSaveUnit)) === 1);
-check('undefined caly obiekt -> poziom 1 (brak wyjatku)', veteranLevelFromBattles(veteranBattlesSurvived(undefined)) === 1);
+check('stary zapis bez pola -> veteranBattlesWon === 0 (brak wyjatku)', veteranBattlesWon(oldSaveUnit) === 0);
+check('stary zapis bez pola -> poziom 1', veteranLevelFromBattles(veteranBattlesWon(oldSaveUnit)) === 1);
+check('undefined caly obiekt -> poziom 1 (brak wyjatku)', veteranLevelFromBattles(veteranBattlesWon(undefined)) === 1);
 console.log('');
 
 // ---------------------------------------------------------------------------
@@ -253,11 +313,13 @@ console.log('');
 // ucieczki w dol, z zabezpieczeniem podlogi dla malych wartosci.
 // ---------------------------------------------------------------------------
 console.log('8. Korekta: Morale bazowe (w gore) / Morale ucieczki (w dol)');
-check('Morale bazowe (50) poziom2 == ceil(50*1.10)=55', veteranMoraleBazoweUp(50, 0.10) === 55, veteranMoraleBazoweUp(50, 0.10));
-check('Morale bazowe (50) poziom3 == ceil(50*1.20)=60', veteranMoraleBazoweUp(50, 0.20) === 60, veteranMoraleBazoweUp(50, 0.20));
-check('Morale ucieczki (22) poziom2 == floor(22*0.90)=19', veteranMoraleUcieczkiDown(22, 0.10) === 19, veteranMoraleUcieczkiDown(22, 0.10));
-check('Morale ucieczki (22) poziom3 == floor(22*0.80)=17', veteranMoraleUcieczkiDown(22, 0.20) === 17, veteranMoraleUcieczkiDown(22, 0.20));
-check('Morale ucieczki poziom3 < poziom2 < baza (17 < 19 < 22)', 17 < 19 && 19 < 22);
+check('Morale bazowe (50) ★ == ceil(50*1.10)=55', veteranMoraleBazoweUp(50, 0.10) === 55, veteranMoraleBazoweUp(50, 0.10));
+check('Morale bazowe (50) ★★ == ceil(50*1.15)=58', veteranMoraleBazoweUp(50, 0.15) === 58, veteranMoraleBazoweUp(50, 0.15));
+check('Morale bazowe (50) ★★★ == ceil(50*1.20)=60', veteranMoraleBazoweUp(50, 0.20) === 60, veteranMoraleBazoweUp(50, 0.20));
+check('Morale ucieczki (22) ★ == floor(22*0.90)=19', veteranMoraleUcieczkiDown(22, 0.10) === 19, veteranMoraleUcieczkiDown(22, 0.10));
+check('Morale ucieczki (22) ★★ == floor(22*0.85)=18', veteranMoraleUcieczkiDown(22, 0.15) === 18, veteranMoraleUcieczkiDown(22, 0.15));
+check('Morale ucieczki (22) ★★★ == floor(22*0.80)=17', veteranMoraleUcieczkiDown(22, 0.20) === 17, veteranMoraleUcieczkiDown(22, 0.20));
+check('Morale ucieczki maleje: 17 < 18 < 19 < 22', 17 < 18 && 18 < 19 && 19 < 22);
 
 // Zabezpieczenie: najnizsza wartosc "Morale ucieczki" w units.json to 5
 // (Berserker germanski) -- floor(5*0.9)=4, floor(5*0.8)=4 (remis na tej samej
@@ -311,13 +373,14 @@ function veteranScaledUnitRow(raw, battlesSurvived) {
   return rest;
 }
 
-const mRekrut = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 0)); // poziom 1 (Rekrut), 0 przezytych bitew
-const mDoswiadczony = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 1)); // poziom 2, +10%
-const mWeteran = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 2)); // poziom 3 (Weteran, sufit), +20%
+const mRekrut = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 0)); // 0 wygranych
+const m1Win = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 1)); // ★ +10%
+const m2Wins = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 2)); // ★★ +15%
+const mWeteran = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 3)); // ★★★ +20%
 
 check(
-  'Auto-moc: M rosnie z kazdym poziomem weterana (rekrut ' + mRekrut + ' < doswiadczony ' + mDoswiadczony + ' < weteran ' + mWeteran + ')',
-  mRekrut < mDoswiadczony && mDoswiadczony < mWeteran,
+  'Auto-moc: M rosnie z kazda gwiazdka (rekrut ' + mRekrut + ' < ★ ' + m1Win + ' < ★★ ' + m2Wins + ' < ★★★ ' + mWeteran + ')',
+  mRekrut < m1Win && m1Win < m2Wins && m2Wins < mWeteran,
 );
 // M bazowe*1.20 NIE jest wprost oczekiwana wartosc: Pancerz jest wylaczony z
 // premii weterana (veteran.ts), a Pancerz WCHODZI do M (fieldPower() defense =
@@ -332,8 +395,8 @@ check(
   mWeteran + ' vs oczekiwane ' + expectedMWeteran,
 );
 check(
-  'Auto-moc: brak kumulacji -- M poziomu 3 != M poziomu2 dalsze +20% (' + mWeteran + ' != ' + Math.round((mDoswiadczony * 1.20 - konnicaArmor * 0.20) * 10) / 10 + ')',
-  Math.abs(mWeteran - Math.round((mDoswiadczony * 1.20 - konnicaArmor * 0.20) * 10) / 10) > 0.01,
+  'Auto-moc: brak kumulacji -- M ★★★ != M ★★ dalsze +20% (' + mWeteran + ' != ' + Math.round((m2Wins * 1.20 - konnicaArmor * 0.20) * 10) / 10 + ')',
+  Math.abs(mWeteran - Math.round((m2Wins * 1.20 - konnicaArmor * 0.20) * 10) / 10) > 0.01,
 );
 
 // Rozbicie Atak/Obrona (unit-power.ts armyFieldPowerSplit): premia weterana
@@ -341,7 +404,7 @@ check(
 // Obrony) ma prawo podniesc OBIE skladowe -- to inny, niezalezny system
 // (patrz veteran.ts naglowek: "W GORE -- meleeAttack, meleeDefence, ...").
 const splitRekrut = armyFieldPowerSplit(veteranScaledUnitRow(konnicaRaw, 0));
-const splitWeteran = armyFieldPowerSplit(veteranScaledUnitRow(konnicaRaw, 2));
+const splitWeteran = armyFieldPowerSplit(veteranScaledUnitRow(konnicaRaw, 3));
 check(
   'Auto-moc: weteran podnosi skladowa Ataku (' + splitRekrut.attack + ' -> ' + splitWeteran.attack + ')',
   splitWeteran.attack > splitRekrut.attack,
@@ -357,8 +420,8 @@ check(
 // symulowane przez dwie oddzielne kopie tego samego wiersza -- funkcje testowane
 // nie przyjmuja ownerId w ogole, wiec identycznosc jest gwarantowana STRUKTURALNIE,
 // nie przez przypadek fixture'u).
-const mWeteranCopyA = armyFieldPower(veteranScaledUnitRow({ ...konnicaRaw }, 2));
-const mWeteranCopyB = armyFieldPower(veteranScaledUnitRow({ ...konnicaRaw }, 2));
+const mWeteranCopyA = armyFieldPower(veteranScaledUnitRow({ ...konnicaRaw }, 3));
+const mWeteranCopyB = armyFieldPower(veteranScaledUnitRow({ ...konnicaRaw }, 3));
 check(
   'PARYTET AI: veteranCombatBonusFrac/armyFieldPower nie zalezy od ownerId (brak parametru ownerId w ogole) -- M identyczne (' + mWeteranCopyA + ' == ' + mWeteranCopyB + ')',
   mWeteranCopyA === mWeteranCopyB,
@@ -368,7 +431,7 @@ check(
 // FAKTYCZNIE uzywa main.ts rosterFieldPowerM/effectiveDefenderM po naprawie
 // (patrz main.ts ~L12177-12182, ~L12220-12222).
 const rosterRekrut = [{ typeId: 'Konnica', def: veteranScaledUnitRow(konnicaRaw, 0) }];
-const rosterWeteran = [{ typeId: 'Konnica', def: veteranScaledUnitRow(konnicaRaw, 2) }];
+const rosterWeteran = [{ typeId: 'Konnica', def: veteranScaledUnitRow(konnicaRaw, 3) }];
 check(
   'sumRosterFieldM: roster z jednostka-weteranem (poziom 3) daje WYZSZE M niz identyczny sklad z rekrutem (' + sumRosterFieldM(rosterRekrut) + ' -> ' + sumRosterFieldM(rosterWeteran) + ')',
   sumRosterFieldM(rosterWeteran) > sumRosterFieldM(rosterRekrut),
