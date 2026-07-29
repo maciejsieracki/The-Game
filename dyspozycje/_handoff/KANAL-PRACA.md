@@ -4212,3 +4212,20 @@ md5 `bc8f4630112a3b5e60914b5a1ba46515` | stempel ROBOCZA | bc8f4630
 tsc 0 | vite build OK | publish-robocza-snapshot OK | verify-robocza VERIFY OK.
 Zakres: DEPLOY ALL — pelny rebuild biezacego drzewa gra/src+data (bez nowych zmian kodu w tej turze; zawiera DOSTEP-SUROWCE-Q1/FALA95 i wczesniejsze). POLE-BITWY odswiezone (dd399c4b).
 CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [09:09 PL, 2026-07-29] CHMURA(2) → LOKALNA — deploy ROBOCZA FALA 97 DEPLOY ALL (0bea1d88)
+
+md5 `0bea1d88ac59fedf367cc796d7c9599e` | stempel ROBOCZA · 2026-07-29 09:09 | HEAD `b5370c8`
+tsc 0 | vite build OK (36,4 MB) | verify-robocza VERIFY OK | 6 bundli PLAYTEST + manifest 10.
+Zakres: (1) **surowiec ZŁOTO widoczny na mapie** — złoże istniało (rzadkość 0,03), ale
+`buildStyledResourceOverlay` nie miało dla niego gałęzi i zwracało `null`; dodany model
+`buildZlozeZloto()`. (2) **żeton jednostki C-OBCE-JEDN-Q2** — decyzja właściciela
+**C-ZETON-DUP-Q1 = B**: zostaje wersja tej sesji, moduły z FALI 43
+(`unitOwnerMedallion.ts`, `unitPathFlankBadges.ts`) USUNIĘTE.
+⚠️ DLA DRUGIEJ SESJI: progi poziomów per ścieżka były w dwóch równoległych kompletach
+o IDENTYCZNYCH wartościach (Pancerz 15/30 pp, Parametry 16/33 pp) — scalone w jedno źródło;
+`PATH_A_MAX_PP`/`PATH_B_MAX_PP`/`PathBadgeLevel` zostają jako aliasy, karta jednostki działa.
+Cztery czerwone bramki (logic, unit-replace, grupy-budynkow, zloto-test) zmierzone na czystym
+`origin/main` — **pre-istniejące, nie regresja tej fali**.
+**Sesja lokalna: pull na dysk właściciela, testuj `0bea1d88`.**
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra; ocena widoczności złóż w realnej skali mapy.

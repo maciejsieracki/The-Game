@@ -14,7 +14,62 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `bc8f4630` - 2026-07-29 10:22 - FALA 96: DEPLOY ALL — pelny rebuild biezacych zrodel - **AKTUALNA**
+## ROBOCZA `0bea1d88` - 2026-07-29 09:09 - FALA 97: DEPLOY ALL — zeton jednostki (C-ZETON-DUP-Q1=B) + surowiec ZLOTO na mapie - **AKTUALNA**
+- md5 (pelne): `0bea1d88ac59fedf367cc796d7c9599e` · stempel: `ROBOCZA · 2026-07-29 09:09`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji). HEAD `b5370c8`.
+- Wynik `vite build` sprawdzony PRZED kopiowaniem (exit 0, 36,4 MB single-file).
+  ⚠️ Pierwszy build tej fali byl zbudowany z NIEWLASCIWEGO commita (worktree stal na
+  `daacd43`, nie na scalonym HEAD) — wykryte kontrola `git rev-parse` i obecnoscia plikow
+  PRZED kopiowaniem, przebudowane. Ta sama klasa bledu co niewazny bundle `ddcc04c1`.
+
+### 1. ZLOTO JAKO SUROWIEC WIDOCZNY NA MAPIE (R-ZLOTO-NIEWIDOCZNE)
+Zloto istnialo w grze jako zloze (rzadkosc 0,03 ulamka heksow ladu, Wzgorza i Gory),
+bramkowalo Mennice i mialo wlasna Kopalnie zlota — ale **na mapie bylo NIEWIDZIALNE**:
+`buildStyledResourceOverlay` obslugiwalo tylko cztery zloza (miedz, zelazo, wegiel, sol),
+dla `zloto` zwracalo `null`. Gracz nie mial jak rozpoznac zloza inaczej niz klikajac w heks.
+Dodany model `buildZlozeZloto()` — 4 skupiska w pierscieniu obrzeza (srodek heksu wolny),
+kazde: skala macierzysta + zyla + samorodek + blik + okruch; NIE przypomina Kopalni zlota.
+Pomiary: 22 meshe / 264 tri, maks. promien poziomy 0,768 HEX_R (limit obrysu 0,866),
+min. promien 0,452 HEX_R. Rodzina zloz: 18 meshy, 0,748-0,787 / 0,462-0,510 — ten sam rzad.
+**Zostaje niezalatane:** w stylu renderowania `civ` zloto nadal niewidoczne (tamta sciezka
+nie zaglada do `hex.zloze`, kluczuje po enumie `Nakladka`). Enum jest ZAPISYWANY W STANIE GRY,
+wiec jego poszerzenie to decyzja wlasciciela. Aktywny styl to `roblox` — skutek dla gry zerowy.
+
+### 2. ZETON JEDNOSTKI — decyzja C-ZETON-DUP-Q1 = B
+Dwie sesje zrobily C-OBCE-JEDN-Q2 rownolegle. Wlasciciel wybral wersje tej sesji;
+moduly z FALI 43 (`unitOwnerMedallion.ts`, `unitPathFlankBadges.ts`) USUNIETE.
+- Medalion wlasciciela przy lewej krawedzi zetonu: portret wladcy / sygnet kultury
+  (miasto-panstwo) / czaszka (barbarzyncy). Kolejnosc rozstrzygania 1:1 z
+  `preBattle.ts::commanderHtml`. Kolor pierscienia (mosiadz/srebro/czerwien) niesie te sama
+  informacje, gdy przy oddalonej kamerze tresc medalionu przestaje byc czytelna.
+- Rzadek nad glowa: ikona Koszar (sciezka B) LEWO ← gwiazdki weterana ŚRODEK → ikona Kuzni
+  (sciezka A) PRAWO. Kropki u podstawy i metalowy kolnierz usuniete.
+- Ikony to prawdziwe assety marki (`bld-koszary.svg`, `bld-kuznia.svg`) — korekta wlasciciela
+  2026-07-29: „masz konkretne ikony i symbole tych dwoch budynkow, uzyj je".
+- Poziom 1/2/3 liczony OSOBNO per sciezka, niesiony WYLACZNIE kolorem (braz/srebro/zloto).
+  Progi: rowne tercje maksimum sciezki — **Pancerz max 45 pp -> 15/30 pp**,
+  **Parametry max 50 pp -> 16/33 pp**. Identyczne z progami FALI 43, wiec **zero zmiany
+  w rozgrywce** — dwa rownolegle komplety scalone w jedno zrodlo prawdy (aliasy
+  `PATH_A_MAX_PP`/`PATH_B_MAX_PP`/`PathBadgeLevel` zachowane dla karty jednostki).
+- `VETERAN_BADGE_HIT_UD` przywrocony — bez niego tooltip poziomu weterana (C-OBCE-JEDN-Q3)
+  przestalby rozpoznawac trafienie w gwiazdke.
+
+### BRAMKI — porownane z baseline zmierzonym na czystym `origin/main`
+| Bramka | baseline `origin/main` | po scaleniu |
+|---|---|---|
+| `tsc --noEmit` | 0 bledow | **0 bledow** |
+| `civ-visual-test` | 54/54 | **54/54** |
+| `unit-building-bonuses-test` | 82/82 | **82/82** |
+| `tech-tree-test` | 19/19 | **19/19** |
+| `research-test` | ALL GREEN | **ALL GREEN** |
+| `logic-test` | FAIL (city food store undefined) | **identycznie** |
+| `unit-replace-test` | 2/10 | **identycznie** |
+| `grupy-budynkow-test` | 80 pass / 3 fail | **identycznie** |
+| `zloto-test` | 39 pass / 6 fail | **identycznie** |
+**Cztery czerwone bramki sa PRE-ISTNIEJACE na `origin/main`** — zmierzone osobno w czystym
+worktree, nie sa regresja tej fali.
+
+## ROBOCZA `bc8f4630` - 2026-07-29 10:22 - FALA 96: DEPLOY ALL — pelny rebuild biezacych zrodel - **ZASTAPIONA (0bea1d88)**
 - md5 (pelne): `bc8f4630112a3b5e60914b5a1ba46515` | stempel: `ROBOCZA | bc8f4630`
 - **VERIFY OK.** tsc 0 | vite build OK | publish-robocza-snapshot OK | verify-robocza VERIFY OK.
 - Wejscie: `gra-robocza/START.html` | Ctrl+F5 + Nowa gra.

@@ -135,12 +135,12 @@ var map_gen_params_default = {
     }
   },
   mapa_skala: {
-    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). \xD72 balans 2026-07-20, aktywne_typy przyci\u0119te do sufitu rosteru 15 nacji (ogromna/super).",
+    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). Sync z Panel-E 2026-07-28 (typy_cywilizacji per rozmiar mapy).",
     aktywne_typy: {
-      mala: 8,
-      srednia: 10,
-      duza: 12,
-      ogromna: 15,
+      mala: 4,
+      srednia: 5,
+      duza: 6,
+      ogromna: 12,
       super: 15
     },
     domyslni_rywale: {
@@ -341,12 +341,78 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 3, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 4, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
+    Malenki: {
+      rywale_ai: 2,
+      miasta_panstwa: 3,
+      typy_cywilizacji: 4,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 3, min: 2, max: 4 },
+        braz: { default: 4, min: 3, max: 5 },
+        zelazo: { default: 4, min: 3, max: 5 }
+      },
+      hex_w: 76,
+      hex_h: 52
+    },
+    Ma\u0142y: {
+      rywale_ai: 3,
+      miasta_panstwa: 4,
+      typy_cywilizacji: 5,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 4, min: 3, max: 5 },
+        braz: { default: 5, min: 4, max: 6 },
+        zelazo: { default: 5, min: 4, max: 6 }
+      },
+      hex_w: 108,
+      hex_h: 74
+    },
+    Standardowy: {
+      rywale_ai: 6,
+      miasta_panstwa: 6,
+      typy_cywilizacji: 6,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 5, min: 4, max: 6 },
+        braz: { default: 6, min: 5, max: 7 },
+        zelazo: { default: 6, min: 5, max: 7 }
+      },
+      hex_w: 168,
+      hex_h: 120
+    },
+    Du\u017Cy: {
+      rywale_ai: 7,
+      miasta_panstwa: 7,
+      typy_cywilizacji: 10,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 6, min: 5, max: 7 },
+        braz: { default: 9, min: 8, max: 10 },
+        zelazo: { default: 10, min: 9, max: 11 }
+      },
+      hex_w: 240,
+      hex_h: 168
+    },
+    Ogromny: {
+      rywale_ai: 8,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 12,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 11, min: 10, max: 12 },
+        zelazo: { default: 12, min: 11, max: 13 }
+      },
+      hex_w: 336,
+      hex_h: 238
+    },
+    "Super Huge": {
+      rywale_ai: 10,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 14,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 13, min: 12, max: 14 },
+        zelazo: { default: 14, min: 13, max: 15 }
+      },
+      hex_w: 672,
+      hex_h: 476
+    }
   },
   generator_e2: {
     resource_mult_low: 0.6,
@@ -441,11 +507,61 @@ function eStartRenderQualityBundled() {
   if (q === "low" || q === "high") return q;
   return "medium";
 }
+function normEpochId(epochId) {
+  const n = epochId.toLowerCase().replace(/ł/g, "l").trim();
+  if (n === "braz" || n === "bronz") return "braz";
+  if (n === "zelazo" || n === "iron") return "zelazo";
+  return "kamien";
+}
+function eStartTypyCywilizacjiPerEpoka(menuLabel, epochId) {
+  const row = skalaRow(menuLabel);
+  const ep = normEpochId(epochId);
+  const triple = row?.typy_cywilizacji_per_epoka?.[ep];
+  if (!triple) return void 0;
+  const { default: def, min, max } = triple;
+  if (typeof def !== "number" || typeof min !== "number" || typeof max !== "number" || !Number.isFinite(def) || !Number.isFinite(min) || !Number.isFinite(max)) {
+    return void 0;
+  }
+  return { default: def, min, max };
+}
 function eStartTypyCywilizacji(menuLabel) {
-  return skalaRow(menuLabel)?.typy_cywilizacji;
+  const row = skalaRow(menuLabel);
+  const kamien = row?.typy_cywilizacji_per_epoka?.kamien?.default;
+  if (typeof kamien === "number" && kamien > 0) return kamien;
+  return row?.typy_cywilizacji;
 }
 function eStartMiastaPanstwa(menuLabel) {
   return skalaRow(menuLabel)?.miasta_panstwa;
+}
+
+// src/game/civ-entry-epoch.ts
+var GAME_EPOCH_ORDER = ["kamien", "braz", "zelazo"];
+function gameEpochIndex(epochId) {
+  const i = GAME_EPOCH_ORDER.indexOf(epochId);
+  return i >= 0 ? i : GAME_EPOCH_ORDER.length;
+}
+function getCivEpokaWejscia(civ) {
+  const direct = civ.epokaWejscia;
+  if (direct && GAME_EPOCH_ORDER.includes(direct)) {
+    return direct;
+  }
+  const legacy = civ.epokiStartowe;
+  if (legacy && legacy.length > 0) {
+    const indices = legacy.map((e) => gameEpochIndex(e)).filter((i) => i < GAME_EPOCH_ORDER.length);
+    if (indices.length > 0) {
+      const min = Math.min(...indices);
+      return GAME_EPOCH_ORDER[min];
+    }
+  }
+  return "kamien";
+}
+function isCivAvailableAtGameEpoch(civ, gameEpochId) {
+  const entryIdx = gameEpochIndex(getCivEpokaWejscia(civ));
+  const gameIdx = gameEpochIndex(gameEpochId);
+  return entryIdx <= gameIdx;
+}
+function civIdsAvailableAtGameEpoch(cywilizacje, gameEpochId) {
+  return cywilizacje.filter((c) => c.ikonaId && isCivAvailableAtGameEpoch(c, gameEpochId)).map((c) => c.ikonaId);
 }
 
 // src/map/newGameMapDefaults.ts
@@ -497,16 +613,74 @@ function riverMinPathLengthForTier(tier) {
   if (tier === "low") return 15;
   return 25;
 }
-function riverGridTraceMinLen(catalogMinLen, tier = "medium") {
-  const cap = tier === "low" ? 5 : tier === "high" ? 8 : 6;
-  return Math.min(catalogMinLen, cap);
+var RIVER_REF_AREA = 168 * 120;
+function riverMapAreaScale(w, h) {
+  return Math.sqrt(w * h / RIVER_REF_AREA);
+}
+function clamp(n, lo, hi) {
+  return Math.max(lo, Math.min(hi, n));
+}
+function resolveRiverMapParams(tier, w, h) {
+  const areaScale = riverMapAreaScale(w, h);
+  const minDim = Math.min(w, h);
+  const mainBase = tier === "high" ? 4 : tier === "low" ? 11 : 7;
+  const tribBase = tier === "high" ? 2 : tier === "low" ? 6 : 4;
+  const tierMinLen = riverMinPathLengthForTier(tier);
+  const tierCap = tier === "low" ? 5 : tier === "high" ? 8 : 6;
+  const mainCell = clamp(Math.round(mainBase * areaScale), 4, 32);
+  const tributaryCell = clamp(Math.round(tribBase * areaScale), 2, 18);
+  const mainGridStride = areaScale < 0.55 ? 2 : 3;
+  const minLen = Math.min(
+    clamp(Math.round(tierMinLen * areaScale), 6, tierMinLen),
+    Math.floor(minDim * 0.35)
+  );
+  const maxLen = Math.min(
+    Math.max(minLen * 2, Math.floor(minDim * 0.22), Math.round(minLen * 3)),
+    Math.floor(minDim * 0.75)
+  );
+  const gridTraceMinLen = clamp(
+    Math.min(minLen, tierCap),
+    3,
+    Math.max(3, Math.floor(minDim * 0.12))
+  );
+  const feederMinLen = clamp(Math.max(3, gridTraceMinLen - 1), 3, Math.max(3, Math.floor(minDim * 0.08)));
+  const hardMeanderLen = clamp(Math.round(8 * areaScale), 3, 8);
+  const mouthTailLen = clamp(Math.round(5 * areaScale), 3, 5);
+  const minInlandFromSea = minDim >= 40 ? 2 : 1;
+  const reliefSearchMax = clamp(Math.round(14 * areaScale), 6, 28);
+  const feederPasses = clamp(3 + Math.floor(areaScale), 3, 8);
+  const topUpPasses = clamp(4 + Math.floor(areaScale * 1.5), 4, 12);
+  const minInlandCell = Math.max(4, Math.floor(minLen * 0.35));
+  return {
+    areaScale,
+    minDim,
+    mainCell,
+    tributaryCell,
+    mainGridStride,
+    minLen,
+    maxLen,
+    gridTraceMinLen,
+    feederMinLen,
+    hardMeanderLen,
+    mouthTailLen,
+    minInlandFromSea,
+    reliefSearchMin: 2,
+    reliefSearchMax,
+    reliefSourceBonus: 80,
+    feederPasses,
+    topUpPasses,
+    feederSourceSepMult: 0.35,
+    expandSourceRadius: clamp(Math.round(2 * areaScale), 1, 5),
+    minInlandCell
+  };
 }
 function resolveRiverTraceForMap(mapMenuLabel, riversTier) {
+  const { w, h } = menuLabelToDims(mapMenuLabel);
+  const params = resolveRiverMapParams(riversTier, w, h);
   const base = riverTraceLimitsForMap(mapMenuLabel);
-  const minLen = riverMinPathLengthForTier(riversTier);
   return {
-    minLen,
-    maxLen: Math.max(base.maxLen, minLen * 3, minLen + 40),
+    minLen: params.minLen,
+    maxLen: params.maxLen,
     margin: base.margin
   };
 }
@@ -561,7 +735,9 @@ function clampMiastaPanstwaCount(raw) {
   if (!Number.isFinite(n) || n < 1) return 1;
   return Math.min(n, MAX_MIAST_PANSTWA);
 }
-var MAX_TYPY_CYWILIZACJI_MENU = 15;
+function maxCivTypesForStartEpoch(epochId, civRoster) {
+  return civIdsAvailableAtGameEpoch(civRoster, epochId).length;
+}
 var MAP_MENU_TIER_ORDER = [
   "malenki",
   "maly",
@@ -578,16 +754,53 @@ var MIASTA_PANSTWA_MENU_BY_TIER = [
   { min: 6, default: 8, max: MAX_MIAST_PANSTWA },
   { min: 7, default: 8, max: MAX_MIAST_PANSTWA }
 ];
-var TYPY_CYWILIZACJI_MENU_BY_TIER = [
-  // Maleński: 7 (nie 8) — na najmniejszej mapie 8 klastrów czasem się nie mieści
-  // (pofragmentowany ląd → 1 państwo z 0 miast). Decyzja właściciela 2026-07-20.
-  { min: 6, default: 7, max: 10 },
-  { min: 8, default: 10, max: 12 },
-  { min: 10, default: 12, max: 14 },
-  { min: 12, default: 14, max: MAX_TYPY_CYWILIZACJI_MENU },
-  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
-  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU }
-];
+var EPOCH_CIV_TYPE_POOL = {
+  kamien: 8,
+  braz: 14,
+  zelazo: 15
+};
+function normStartEpochId(epochId) {
+  const n = (epochId ?? "kamien").toLowerCase().replace(/ł/g, "l").trim();
+  if (n === "braz" || n === "bronz") return "braz";
+  if (n === "zelazo" || n === "iron") return "zelazo";
+  return "kamien";
+}
+function tripleFromDefault(def, pool) {
+  const max = Math.min(def + 1, pool);
+  let min = Math.max(1, def - 1);
+  let adjustedDef = Math.min(Math.max(def, 1), pool);
+  if (min >= max) min = Math.max(1, max - 1);
+  if (adjustedDef <= min) adjustedDef = Math.min(min + 1, max);
+  if (adjustedDef >= max) adjustedDef = Math.max(min + 1, max - 1);
+  return { min, default: adjustedDef, max };
+}
+var TYPY_CYWILIZACJI_DEFAULT_BY_TIER = {
+  kamien: [3, 4, 5, 6, 7, 7],
+  braz: [4, 5, 6, 9, 11, 13],
+  zelazo: [4, 5, 6, 10, 12, 14]
+};
+function fallbackTypyTriple(menuLabel, epochId) {
+  const tierIdx = mapMenuTierIndex(menuLabel);
+  const pool = EPOCH_CIV_TYPE_POOL[epochId];
+  const def = TYPY_CYWILIZACJI_DEFAULT_BY_TIER[epochId][tierIdx] ?? TYPY_CYWILIZACJI_DEFAULT_BY_TIER[epochId][2];
+  return tripleFromDefault(def, pool);
+}
+function civTypesTripleForMapLabel(menuLabel, epochId = "kamien") {
+  const ep = normStartEpochId(epochId);
+  const fromE = eStartTypyCywilizacjiPerEpoka(menuLabel, ep);
+  if (fromE) {
+    return {
+      min: fromE.min,
+      default: fromE.default,
+      max: fromE.max
+    };
+  }
+  const legacy = eStartTypyCywilizacji(menuLabel);
+  if (legacy != null && legacy > 0) {
+    return tripleFromDefault(legacy, EPOCH_CIV_TYPE_POOL[ep]);
+  }
+  return fallbackTypyTriple(menuLabel, ep);
+}
 function mapMenuTierIndex(menuLabel) {
   const idx = MAP_MENU_TIER_ORDER.indexOf(rozmiarFromMenuLabel(menuLabel));
   return idx >= 0 ? idx : 2;
@@ -595,18 +808,20 @@ function mapMenuTierIndex(menuLabel) {
 function miastaPanstwaTriple(menuLabel) {
   return MIASTA_PANSTWA_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? MIASTA_PANSTWA_MENU_BY_TIER[2];
 }
-function typyCywilizacjiTriple(menuLabel) {
-  return TYPY_CYWILIZACJI_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? TYPY_CYWILIZACJI_MENU_BY_TIER[2];
+function typyCywilizacjiTriple(menuLabel, epochId = "kamien") {
+  return civTypesTripleForMapLabel(menuLabel, epochId);
 }
 function defaultMiastaPanstwaFromMapLabel(menuLabel) {
   const fromE = eStartMiastaPanstwa(menuLabel);
   if (fromE != null && fromE > 0) return clampMiastaPanstwaCount(fromE);
   return miastaPanstwaTriple(menuLabel).default;
 }
-function defaultCivTypesFromMapLabel(menuLabel) {
-  const fromE = eStartTypyCywilizacji(menuLabel);
-  if (fromE != null && fromE > 0) return Math.min(fromE, MAX_TYPY_CYWILIZACJI_MENU);
-  return typyCywilizacjiTriple(menuLabel).default;
+function defaultCivTypesFromMapLabel(menuLabel, epochId = "kamien", civRoster) {
+  let def = typyCywilizacjiTriple(menuLabel, epochId).default;
+  if (civRoster && civRoster.length > 0) {
+    def = Math.min(def, maxCivTypesForStartEpoch(epochId, civRoster));
+  }
+  return Math.max(1, def);
 }
 
 // src/map/earth-land-mask.generated.ts
@@ -1900,11 +2115,6 @@ function applyReliefByNoiseRank(hexes, scratch, tier, width, height, typ = "pang
 }
 var MIN_HIGHLANDS_COPPER_CELL = 2;
 var MIN_MOUNTAINS_IRON_CELL = 2;
-function waterCoverageCellSize(tier = "medium") {
-  if (tier === "high") return 5;
-  if (tier === "low") return 15;
-  return 10;
-}
 function ironCoverageCellSize(tier = "medium") {
   if (tier === "high") return 20;
   if (tier === "low") return 35;
@@ -3721,7 +3931,7 @@ function reconstructRiverPath(cameFrom, endK) {
   path.reverse();
   return path;
 }
-function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, rand, inlandTargetLen, stepCap) {
+function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, rand, inlandTargetLen, stepCap, hardMeanderLen = RIVER_HARD_MEANDER_LEN) {
   const srcKey = hexKey(sq, sr);
   const path = [{ q: sq, r: sr }];
   const visited = /* @__PURE__ */ new Set([srcKey]);
@@ -3730,7 +3940,7 @@ function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, ra
     const curKey = hexKey(cur.q, cur.r);
     const curD = seaDist.get(curKey) ?? 0;
     const curOd = openOceanDist.get(curKey) ?? Infinity;
-    const hardMeander = path.length < RIVER_HARD_MEANDER_LEN;
+    const hardMeander = path.length < hardMeanderLen;
     const candidates = [];
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nq = cur.q + dq;
@@ -4006,8 +4216,10 @@ function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
   const startDist = seaDist.get(srcKey);
   if (startDist == null || !Number.isFinite(startDist)) return [];
   const inlandTarget = traceOpts.minLen ?? 4;
+  const mouthTailLen = traceOpts.mouthTailLen ?? RIVER_MOUTH_TAIL_LEN;
+  const hardMeanderLen = traceOpts.hardMeanderLen ?? RIVER_HARD_MEANDER_LEN;
   const stepCap = Math.max(
-    inlandTarget + RIVER_MOUTH_TAIL_LEN + 12,
+    inlandTarget + mouthTailLen + 12,
     Math.min(maxLen, Math.ceil(startDist * 2.5) + inlandTarget + 10)
   );
   let path = growRiverInlandBeforeDrainage(
@@ -4018,10 +4230,11 @@ function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
     openOceanDist,
     rand,
     inlandTarget,
-    stepCap
+    stepCap,
+    hardMeanderLen
   );
   const tailFrom = path[path.length - 1];
-  const drainBudget = Math.max(RIVER_MOUTH_TAIL_LEN + 4, stepCap - path.length + 1);
+  const drainBudget = Math.max(mouthTailLen + 4, stepCap - path.length + 1);
   let drainPath = aStarRiverToSea(
     hexes,
     tailFrom.q,
@@ -4208,10 +4421,10 @@ function clearRiverMarks(hexes) {
     if (hex.rzeka?.obecna) hex.rzeka = { obecna: false, krawedzie: [] };
   }
 }
-function tributaryCountForLength(pathLen) {
-  if (pathLen < 12) return 0;
-  if (pathLen < 22) return 2;
-  return Math.min(4, Math.floor(pathLen / 8));
+function tributaryCountForLength(pathLen, areaScale = 1) {
+  if (pathLen < 8) return 0;
+  if (pathLen < 22) return Math.max(2, Math.round(6 * areaScale));
+  return Math.min(12, Math.floor(pathLen / 8 * 3 * areaScale));
 }
 function aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, sourceKey) {
   const startK = hexKey(sq, sr);
@@ -4253,12 +4466,12 @@ function aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, sourceKey) {
   }
   return [];
 }
-function findTributarySource(hexes, junction, mainPathKeys, usedSources, rand) {
+function findTributarySource(hexes, junction, mainPathKeys, usedSources, rand, searchMin = 3, searchMax = 8) {
   const candidates = [];
-  for (let dq = -8; dq <= 8; dq++) {
-    for (let dr = -8; dr <= 8; dr++) {
+  for (let dq = -searchMax; dq <= searchMax; dq++) {
+    for (let dr = -searchMax; dr <= searchMax; dr++) {
       const dist = hexAxialDistance(junction.q, junction.r, junction.q + dq, junction.r + dr);
-      if (dist < 3 || dist > 8) continue;
+      if (dist < searchMin || dist > searchMax) continue;
       const q = junction.q + dq;
       const r = junction.r + dr;
       const k = hexKey(q, r);
@@ -4281,8 +4494,8 @@ function traceTributary(hexes, sq, sr, tq, tr, maxLen, seaDist, rand) {
   path = repairRiverPathAdjacency(path, hexes, srcKey);
   return path;
 }
-function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, riverPaths, riverKinds, usedSources, minSourceSep) {
-  const n = tributaryCountForLength(mainPath.length);
+function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, riverPaths, riverKinds, usedSources, minSourceSep, areaScale = 1, reliefSearchMin = 3, reliefSearchMax = 8) {
+  const n = tributaryCountForLength(mainPath.length, areaScale);
   if (n <= 0) return;
   const mainKeys = new Set(mainPath.map((p) => hexKey(p.q, p.r)));
   const jStart = Math.max(1, Math.floor(mainPath.length * 0.18));
@@ -4293,7 +4506,15 @@ function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, rive
     const jIdx = jStart + Math.floor((ti + 0.5) / n * span);
     const junction = mainPath[jIdx];
     if (!junction) continue;
-    const src = findTributarySource(hexes, junction, mainKeys, usedSources, rand);
+    const src = findTributarySource(
+      hexes,
+      junction,
+      mainKeys,
+      usedSources,
+      rand,
+      reliefSearchMin,
+      reliefSearchMax
+    );
     if (!src) continue;
     if (isTooCloseToRiverSource(src[0], src[1], usedSources, Math.max(2, Math.floor(minSourceSep * 0.5)))) {
       continue;
@@ -4314,14 +4535,6 @@ function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, rive
     usedSources.add(srcKey);
     markRiverPath(hexes, path);
   }
-}
-function riverCoverageCellSize(tier = "medium") {
-  return waterCoverageCellSize(tier);
-}
-function riverTributaryCellSize(tier = "medium") {
-  if (tier === "high") return 4;
-  if (tier === "low") return 11;
-  return 7;
 }
 function landHexesByCoverageCell(massSet, cellSize) {
   const cells = /* @__PURE__ */ new Map();
@@ -4345,10 +4558,10 @@ function cellHasRiverHex(cellLand, hexes) {
 function coverageCellIndex(q, r, cellSize) {
   return [Math.floor(q / cellSize), Math.floor(r / cellSize)];
 }
-function isSparseMainCoverageCell(land, cellSize) {
+function isSparseMainCoverageCell(land, cellSize, stride = MAIN_RIVER_GRID_STRIDE) {
   if (land.length === 0) return false;
   const [cq, cr] = coverageCellIndex(land[0][0], land[0][1], cellSize);
-  return cq % MAIN_RIVER_GRID_STRIDE === 0 && cr % MAIN_RIVER_GRID_STRIDE === 0;
+  return cq % stride === 0 && cr % stride === 0;
 }
 function collectRiverHexKeys(hexes) {
   const keys = /* @__PURE__ */ new Set();
@@ -4538,8 +4751,12 @@ function expandRiverSourceCandidates(land, massSet, radius = 2) {
 }
 function ensureMassRiverGridCoverage(hexes, massSet, cellSize, seaDist, riverPaths, riverKinds, usedSources, tryPlace, rand, maxLen, opts = {}) {
   const minLand = minLandHexesForRiverCell(cellSize);
+  const gridStride = opts.gridStride ?? MAIN_RIVER_GRID_STRIDE;
+  const reliefBonus = opts.reliefSourceBonus ?? 55;
+  const expandRadius = opts.expandSourceRadius ?? 2;
+  const minInlandFromSea = opts.minInlandFromSea ?? RIVER_MIN_INLAND_FROM_SEA;
   let placed = 0;
-  const cellList = [...landHexesByCoverageCell(massSet, cellSize).values()].filter((land) => land.length >= minLand).filter((land) => !opts.sparseMainOnly || isSparseMainCoverageCell(land, cellSize)).filter(
+  const cellList = [...landHexesByCoverageCell(massSet, cellSize).values()].filter((land) => land.length >= minLand).filter((land) => !opts.sparseMainOnly || isSparseMainCoverageCell(land, cellSize, gridStride)).filter(
     (land) => land.some(([q, r]) => {
       const d = seaDist.get(hexKey(q, r)) ?? 999;
       return d >= 2 && d <= maxLen + 8;
@@ -4562,10 +4779,10 @@ function ensureMassRiverGridCoverage(hexes, massSet, cellSize, seaDist, riverPat
       const h = hexes[hexKey(q, r)];
       const d = seaDist.get(hexKey(q, r)) ?? 0;
       let score = d + rand() * 4;
-      if (h && isReliefRiverSource(h.terenBazowy)) score += 55;
+      if (h && isReliefRiverSource(h.terenBazowy)) score += reliefBonus;
       else if (h && isRiverLandTerrain(h.terenBazowy)) score += 12;
       return { q, r, d, score };
-    }).filter((c) => c.d >= RIVER_MIN_INLAND_FROM_SEA).sort((a, b) => b.score - a.score);
+    }).filter((c) => c.d >= minInlandFromSea).sort((a, b) => b.score - a.score);
     let ok = false;
     for (const c of ranked) {
       if (tryPlace(c.q, c.r)) {
@@ -4575,7 +4792,7 @@ function ensureMassRiverGridCoverage(hexes, massSet, cellSize, seaDist, riverPat
       }
     }
     if (ok || cellSatisfied(land)) continue;
-    const expanded = expandRiverSourceCandidates(land, massSet, 2);
+    const expanded = expandRiverSourceCandidates(land, massSet, expandRadius);
     for (const [q, r] of expanded) {
       if (tryPlace(q, r)) {
         placed++;
@@ -4583,7 +4800,7 @@ function ensureMassRiverGridCoverage(hexes, massSet, cellSize, seaDist, riverPat
       }
     }
     if (cellSatisfied(land)) continue;
-    const fallbackRanked = land.filter(([q, r]) => !usedSources.has(hexKey(q, r))).filter(([q, r]) => (seaDist.get(hexKey(q, r)) ?? 0) >= RIVER_MIN_INLAND_FROM_SEA).slice(0, 6);
+    const fallbackRanked = land.filter(([q, r]) => !usedSources.has(hexKey(q, r))).filter(([q, r]) => (seaDist.get(hexKey(q, r)) ?? 0) >= minInlandFromSea).slice(0, 6);
     for (const [q, r] of fallbackRanked.length > 0 ? fallbackRanked : land.slice(0, 4)) {
       if (tryPlace(q, r)) {
         placed++;
@@ -4594,9 +4811,10 @@ function ensureMassRiverGridCoverage(hexes, massSet, cellSize, seaDist, riverPat
   return placed;
 }
 function generateRivers(hexes, width, height, rand, opts = {}) {
-  const minLen = opts.minLen ?? 4;
-  const maxLen = opts.maxLen ?? 40;
   const riversTier = opts.riversTier ?? "medium";
+  const riverParams = opts.riverParams ?? resolveRiverMapParams(riversTier, width, height);
+  const minLen = opts.minLen ?? riverParams.minLen;
+  const maxLen = opts.maxLen ?? riverParams.maxLen;
   const seaDist = buildSeaDistanceField(hexes);
   const oceanConnected = oceanConnectedWaterKeys(hexes, width, height);
   const openOceanDist = buildOpenOceanDistanceField(hexes, width, height, oceanConnected);
@@ -4604,10 +4822,29 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
   const riverKinds = [];
   const usedSources = /* @__PURE__ */ new Set();
   const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 8).sort((a, b) => b.length - a.length);
-  const cellSize = riverCoverageCellSize(riversTier);
-  const gridTraceMinLen = riverGridTraceMinLen(minLen, riversTier);
-  const feederMinLen = Math.max(4, Math.min(gridTraceMinLen, 10));
+  const cellSize = riverParams.mainCell;
+  const tributaryCell = riverParams.tributaryCell;
+  const gridTraceMinLen = riverParams.gridTraceMinLen;
+  const feederMinLen = riverParams.feederMinLen;
   const minSourceSep = Math.max(2, Math.floor(cellSize * 0.75));
+  const feederMinSourceSep = Math.max(
+    2,
+    Math.floor(tributaryCell * 0.75 * riverParams.feederSourceSepMult)
+  );
+  const traceOptsBase = {
+    hardMeanderLen: riverParams.hardMeanderLen,
+    mouthTailLen: riverParams.mouthTailLen
+  };
+  const seaBufferOpts = {
+    minInland: riverParams.minInlandFromSea,
+    mouthTail: riverParams.mouthTailLen
+  };
+  const gridOptsBase = {
+    gridStride: riverParams.mainGridStride,
+    reliefSourceBonus: riverParams.reliefSourceBonus,
+    expandSourceRadius: riverParams.expandSourceRadius,
+    minInlandFromSea: riverParams.minInlandFromSea
+  };
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
@@ -4646,17 +4883,24 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
       mapWidth: width,
       mapHeight: height,
       rand,
-      minLen
+      minLen,
+      ...traceOptsBase
     });
     if (path.length < gridTraceMinLen) return false;
     if (!pathEndsAtSea(hexes, path, width, height, oceanConnected)) return false;
-    if (!riverPathRespectsSeaBuffer(hexes, path, seaDist)) return false;
+    if (!riverPathRespectsSeaBuffer(
+      hexes,
+      path,
+      seaDist,
+      seaBufferOpts.minInland,
+      seaBufferOpts.mouthTail
+    )) return false;
     return pushMain(path, sq, sr);
   };
   const tryPlaceFeederRiver = (sq, sr, junctionKeysOverride) => {
     const srcKey = hexKey(sq, sr);
     if (usedSources.has(srcKey)) return false;
-    if (isTooCloseToRiverSource(sq, sr, usedSources, Math.max(2, Math.floor(minSourceSep * 0.55)))) {
+    if (isTooCloseToRiverSource(sq, sr, usedSources, feederMinSourceSep)) {
       return false;
     }
     if (openOceanDist.get(srcKey) == null) return false;
@@ -4685,9 +4929,16 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
         mapWidth: width,
         mapHeight: height,
         rand,
-        minLen
+        minLen,
+        ...traceOptsBase
       });
-      if (seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(hexes, seaPath2, seaDist)) {
+      if (seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
+        hexes,
+        seaPath2,
+        seaDist,
+        seaBufferOpts.minInland,
+        seaBufferOpts.mouthTail
+      )) {
         return pushMain(seaPath2, sq, sr);
       }
       return false;
@@ -4712,9 +4963,16 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
           mapWidth: width,
           mapHeight: height,
           rand,
-          minLen
+          minLen,
+          ...traceOptsBase
         });
-        const seaOk = seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(hexes, seaPath2, seaDist);
+        const seaOk = seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
+          hexes,
+          seaPath2,
+          seaDist,
+          seaBufferOpts.minInland,
+          seaBufferOpts.mouthTail
+        );
         if (seaOk && seaPath2.length < bestNetLen) {
           return pushMain(seaPath2, sq, sr);
         }
@@ -4728,9 +4986,16 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
       mapWidth: width,
       mapHeight: height,
       rand,
-      minLen
+      minLen,
+      ...traceOptsBase
     });
-    if (seaPath.length >= feederMinLen && pathEndsAtSea(hexes, seaPath, width, height, oceanConnected) && riverPathRespectsSeaBuffer(hexes, seaPath, seaDist)) {
+    if (seaPath.length >= feederMinLen && pathEndsAtSea(hexes, seaPath, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
+      hexes,
+      seaPath,
+      seaDist,
+      seaBufferOpts.minInland,
+      seaBufferOpts.mouthTail
+    )) {
       return pushMain(seaPath, sq, sr);
     }
     return false;
@@ -4749,12 +5014,12 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
         tryPlaceGridRiver,
         rand,
         maxLen,
-        { sparseMainOnly: true }
+        { sparseMainOnly: true, ...gridOptsBase }
       );
     }
     if (passPlaced === 0) break;
   }
-  for (let pass = 0; pass < 3; pass++) {
+  for (let pass = 0; pass < riverParams.feederPasses; pass++) {
     let passPlaced = 0;
     const reach = buildOceanReachableRiverHexKeys(
       hexes,
@@ -4773,7 +5038,7 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
       passPlaced += ensureMassRiverGridCoverage(
         hexes,
         new Set(mass),
-        cellSize,
+        tributaryCell,
         seaDist,
         riverPaths,
         riverKinds,
@@ -4781,20 +5046,20 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
         tryFeeder,
         rand,
         maxLen,
-        { requireRiverHex: true }
+        { requireRiverHex: true, ...gridOptsBase }
       );
     }
     if (passPlaced === 0) break;
   }
   for (const mass of masses) {
     const massSet = new Set(mass);
-    const minLand = minLandHexesForRiverCell(cellSize);
-    for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
+    const minLand = minLandHexesForRiverCell(tributaryCell);
+    for (const land of landHexesByCoverageCell(massSet, tributaryCell).values()) {
       if (land.length < minLand) continue;
       if (cellHasRiverHex(land, hexes)) continue;
       const reachable = land.some(([q, r]) => {
         const d = seaDist.get(hexKey(q, r)) ?? 999;
-        return d >= 2 && d <= maxLen + 40;
+        return d >= riverParams.minInlandFromSea && d <= maxLen + 40;
       });
       if (!reachable) continue;
       for (const [q, r] of land) {
@@ -4817,12 +5082,16 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
       riverPaths,
       riverKinds,
       usedSources,
-      minSourceSep
+      minSourceSep,
+      riverParams.areaScale,
+      riverParams.reliefSearchMin,
+      riverParams.reliefSearchMax
     );
   }
   return { paths: riverPaths, kinds: riverKinds };
 }
-function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, rand, riversTier = "medium", minLen = 4, maxLen = 40) {
+function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, rand, riversTier = "medium", minLen = 4, maxLen = 40, riverParams) {
+  const params = riverParams ?? resolveRiverMapParams(riversTier, width, height);
   const seaDist = buildSeaDistanceField(hexes);
   const oceanConnected = oceanConnectedWaterKeys(hexes, width, height);
   const openOceanDist = buildOpenOceanDistanceField(hexes, width, height, oceanConnected);
@@ -4832,10 +5101,25 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
     if (p0) usedSources.add(hexKey(p0.q, p0.r));
   }
   const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 8).sort((a, b) => b.length - a.length);
-  const cellSize = riverTributaryCellSize(riversTier);
-  const gridTraceMinLen = riverGridTraceMinLen(minLen, riversTier);
-  const feederMinLen = Math.max(4, Math.min(gridTraceMinLen, 10));
-  const minSourceSep = Math.max(2, Math.floor(cellSize * 0.75));
+  const cellSize = params.tributaryCell;
+  const feederMinLen = params.feederMinLen;
+  const feederMinSourceSep = Math.max(
+    2,
+    Math.floor(cellSize * 0.75 * params.feederSourceSepMult)
+  );
+  const traceOptsBase = {
+    hardMeanderLen: params.hardMeanderLen,
+    mouthTailLen: params.mouthTailLen
+  };
+  const seaBufferOpts = {
+    minInland: params.minInlandFromSea,
+    mouthTail: params.mouthTailLen
+  };
+  const gridOptsBase = {
+    reliefSourceBonus: params.reliefSourceBonus,
+    expandSourceRadius: params.expandSourceRadius,
+    minInlandFromSea: params.minInlandFromSea
+  };
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
@@ -4863,7 +5147,7 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
   const tryPlaceFeederRiver = (sq, sr, junctionKeysOverride) => {
     const srcKey = hexKey(sq, sr);
     if (usedSources.has(srcKey)) return false;
-    if (isTooCloseToRiverSource(sq, sr, usedSources, Math.max(2, Math.floor(minSourceSep * 0.55)))) {
+    if (isTooCloseToRiverSource(sq, sr, usedSources, feederMinSourceSep)) {
       return false;
     }
     if (openOceanDist.get(srcKey) == null) return false;
@@ -4892,9 +5176,16 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
         mapWidth: width,
         mapHeight: height,
         rand,
-        minLen
+        minLen,
+        ...traceOptsBase
       });
-      if (seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(hexes, seaPath2, seaDist)) {
+      if (seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
+        hexes,
+        seaPath2,
+        seaDist,
+        seaBufferOpts.minInland,
+        seaBufferOpts.mouthTail
+      )) {
         return pushMain(seaPath2, sq, sr);
       }
       return false;
@@ -4919,9 +5210,16 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
           mapWidth: width,
           mapHeight: height,
           rand,
-          minLen
+          minLen,
+          ...traceOptsBase
         });
-        const seaOk = seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(hexes, seaPath2, seaDist);
+        const seaOk = seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
+          hexes,
+          seaPath2,
+          seaDist,
+          seaBufferOpts.minInland,
+          seaBufferOpts.mouthTail
+        );
         if (seaOk && seaPath2.length < bestNetLen) return pushMain(seaPath2, sq, sr);
       }
       return pushTributary(bestNetPath, sq, sr);
@@ -4933,15 +5231,22 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
       mapWidth: width,
       mapHeight: height,
       rand,
-      minLen
+      minLen,
+      ...traceOptsBase
     });
-    if (seaPath.length >= feederMinLen && pathEndsAtSea(hexes, seaPath, width, height, oceanConnected) && riverPathRespectsSeaBuffer(hexes, seaPath, seaDist)) {
+    if (seaPath.length >= feederMinLen && pathEndsAtSea(hexes, seaPath, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
+      hexes,
+      seaPath,
+      seaDist,
+      seaBufferOpts.minInland,
+      seaBufferOpts.mouthTail
+    )) {
       return pushMain(seaPath, sq, sr);
     }
     return false;
   };
   let placed = 0;
-  for (let pass = 0; pass < 5; pass++) {
+  for (let pass = 0; pass < params.topUpPasses; pass++) {
     let passPlaced = 0;
     const reach = buildOceanReachableRiverHexKeys(
       hexes,
@@ -4968,7 +5273,7 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
         tryFeeder,
         rand,
         maxLen,
-        { requireRiverHex: true }
+        { requireRiverHex: true, ...gridOptsBase }
       );
     }
     placed += passPlaced;
@@ -5414,7 +5719,7 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -5472,8 +5777,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    teren: "Wzg\xF3rza (bez lasu)",
+    warunek: "solo otwarte wzg\xF3rze (nak\u0142adka Las zabroniona); pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Owce (we\u0142na / jedzenie)"
@@ -5481,6 +5786,7 @@ var terrain_improvements_default = {
   lama: {
     nazwa: "Lama",
     epoka: 1,
+    cywilizacje: ["inkowie"],
     bonus: {
       zywnosc: 1,
       praca: 3,
@@ -5535,8 +5841,8 @@ var terrain_improvements_default = {
       handel: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 \u2014 magazyn PE\u0141NY). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 15,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -5605,8 +5911,8 @@ var terrain_improvements_default = {
       handel: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 \u2014 magazyn PE\u0141NY).",
+    surowiec_ilosc_tura: 10,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -6024,13 +6330,15 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   enforceMapBorderOcean(hexes, width, height);
   enforceLatitudinalOceanBuffer(hexes, width, height, typ === "ziemia");
   const riversTier = genOpts?.worldDensity?.rivers ?? "medium";
+  const riverParams = resolveRiverMapParams(riversTier, width, height);
   clearRiverMarks(hexes);
   let { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
-    minLen: wgn.riverTrace.minLen,
-    maxLen: wgn.riverTrace.maxLen,
+    minLen: riverParams.minLen,
+    maxLen: riverParams.maxLen,
     margin: wgn.riverTrace.margin,
     riversTier,
-    worldTyp: typ
+    worldTyp: typ,
+    riverParams
   });
   topUpRiverGridCoverage(
     hexes,
@@ -6040,8 +6348,9 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     riverPathKinds,
     rand,
     riversTier,
-    wgn.riverTrace.minLen,
-    wgn.riverTrace.maxLen
+    riverParams.minLen,
+    riverParams.maxLen,
+    riverParams
   );
   stripRiverMarksFromOpenSea(hexes);
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
@@ -6136,6 +6445,7 @@ function menuLabelToDims(label) {
 
 // src/game/zloto-access.ts
 var KOPALNIA_ZLOTA_KEY = "kopalnia_zlota";
+var ZLOTO_STOCK_KEY = "zloto";
 var ZLOTO_LABEL = "Z\u0142oto";
 function improvementKeysOnPlaced(imp) {
   if (typeof imp === "string") {
@@ -6156,6 +6466,14 @@ function countKopalnieZlota(placedImprovements) {
 }
 function empireHasKopalniaZlota(placedImprovements) {
   return countKopalnieZlota(placedImprovements) > 0;
+}
+function empireZlotoStock(empireStock) {
+  if (!empireStock) return 0;
+  const v = empireStock[ZLOTO_STOCK_KEY];
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
+}
+function ownerHasZlotoStock(empireStock) {
+  return empireZlotoStock(empireStock) > 0;
 }
 
 // src/map/deposit-era.ts
@@ -6267,7 +6585,7 @@ function generateUUID() {
   const uuid = _lut[d0 & 255] + _lut[d0 >> 8 & 255] + _lut[d0 >> 16 & 255] + _lut[d0 >> 24 & 255] + "-" + _lut[d1 & 255] + _lut[d1 >> 8 & 255] + "-" + _lut[d1 >> 16 & 15 | 64] + _lut[d1 >> 24 & 255] + "-" + _lut[d2 & 63 | 128] + _lut[d2 >> 8 & 255] + "-" + _lut[d2 >> 16 & 255] + _lut[d2 >> 24 & 255] + _lut[d3 & 255] + _lut[d3 >> 8 & 255] + _lut[d3 >> 16 & 255] + _lut[d3 >> 24 & 255];
   return uuid.toLowerCase();
 }
-function clamp(value, min, max) {
+function clamp2(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 function euclideanModulo(n, m) {
@@ -6478,7 +6796,7 @@ var Vector2 = class _Vector2 {
     const denominator = Math.sqrt(this.lengthSq() * v.lengthSq());
     if (denominator === 0) return Math.PI / 2;
     const theta = this.dot(v) / denominator;
-    return Math.acos(clamp(theta, -1, 1));
+    return Math.acos(clamp2(theta, -1, 1));
   }
   distanceTo(v) {
     return Math.sqrt(this.distanceToSquared(v));
@@ -7462,7 +7780,7 @@ var Quaternion = class {
     return this.normalize();
   }
   angleTo(q) {
-    return 2 * Math.acos(Math.abs(clamp(this.dot(q), -1, 1)));
+    return 2 * Math.acos(Math.abs(clamp2(this.dot(q), -1, 1)));
   }
   rotateTowards(q, step) {
     const angle = this.angleTo(q);
@@ -7931,7 +8249,7 @@ var Vector3 = class _Vector3 {
     const denominator = Math.sqrt(this.lengthSq() * v.lengthSq());
     if (denominator === 0) return Math.PI / 2;
     const theta = this.dot(v) / denominator;
-    return Math.acos(clamp(theta, -1, 1));
+    return Math.acos(clamp2(theta, -1, 1));
   }
   distanceTo(v) {
     return Math.sqrt(this.distanceToSquared(v));
@@ -8878,7 +9196,7 @@ var Euler = class _Euler {
     const m31 = te[2], m32 = te[6], m33 = te[10];
     switch (order) {
       case "XYZ":
-        this._y = Math.asin(clamp(m13, -1, 1));
+        this._y = Math.asin(clamp2(m13, -1, 1));
         if (Math.abs(m13) < 0.9999999) {
           this._x = Math.atan2(-m23, m33);
           this._z = Math.atan2(-m12, m11);
@@ -8888,7 +9206,7 @@ var Euler = class _Euler {
         }
         break;
       case "YXZ":
-        this._x = Math.asin(-clamp(m23, -1, 1));
+        this._x = Math.asin(-clamp2(m23, -1, 1));
         if (Math.abs(m23) < 0.9999999) {
           this._y = Math.atan2(m13, m33);
           this._z = Math.atan2(m21, m22);
@@ -8898,7 +9216,7 @@ var Euler = class _Euler {
         }
         break;
       case "ZXY":
-        this._x = Math.asin(clamp(m32, -1, 1));
+        this._x = Math.asin(clamp2(m32, -1, 1));
         if (Math.abs(m32) < 0.9999999) {
           this._y = Math.atan2(-m31, m33);
           this._z = Math.atan2(-m12, m22);
@@ -8908,7 +9226,7 @@ var Euler = class _Euler {
         }
         break;
       case "ZYX":
-        this._y = Math.asin(-clamp(m31, -1, 1));
+        this._y = Math.asin(-clamp2(m31, -1, 1));
         if (Math.abs(m31) < 0.9999999) {
           this._x = Math.atan2(m32, m33);
           this._z = Math.atan2(m21, m11);
@@ -8918,7 +9236,7 @@ var Euler = class _Euler {
         }
         break;
       case "YZX":
-        this._z = Math.asin(clamp(m21, -1, 1));
+        this._z = Math.asin(clamp2(m21, -1, 1));
         if (Math.abs(m21) < 0.9999999) {
           this._x = Math.atan2(-m23, m22);
           this._y = Math.atan2(-m31, m11);
@@ -8928,7 +9246,7 @@ var Euler = class _Euler {
         }
         break;
       case "XZY":
-        this._z = Math.asin(-clamp(m12, -1, 1));
+        this._z = Math.asin(-clamp2(m12, -1, 1));
         if (Math.abs(m12) < 0.9999999) {
           this._x = Math.atan2(m32, m22);
           this._y = Math.atan2(m13, m11);
@@ -9780,8 +10098,8 @@ var Color = class {
   }
   setHSL(h, s, l, colorSpace = ColorManagement.workingColorSpace) {
     h = euclideanModulo(h, 1);
-    s = clamp(s, 0, 1);
-    l = clamp(l, 0, 1);
+    s = clamp2(s, 0, 1);
+    l = clamp2(l, 0, 1);
     if (s === 0) {
       this.r = this.g = this.b = l;
     } else {
@@ -9903,7 +10221,7 @@ var Color = class {
   }
   getHex(colorSpace = SRGBColorSpace) {
     ColorManagement.fromWorkingColorSpace(_color.copy(this), colorSpace);
-    return Math.round(clamp(_color.r * 255, 0, 255)) * 65536 + Math.round(clamp(_color.g * 255, 0, 255)) * 256 + Math.round(clamp(_color.b * 255, 0, 255));
+    return Math.round(clamp2(_color.r * 255, 0, 255)) * 65536 + Math.round(clamp2(_color.g * 255, 0, 255)) * 256 + Math.round(clamp2(_color.b * 255, 0, 255));
   }
   getHexString(colorSpace = SRGBColorSpace) {
     return ("000000" + this.getHex(colorSpace).toString(16)).slice(-6);
@@ -12652,6 +12970,11 @@ var miasto_params_default = {
     jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
     opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
+  bonus_obrona_palisada_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (wczesna palisada drewniana)",
+    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Br\u0105zu, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
+  },
   zasieg_okolicy_baza: {
     wartosc: 5,
     jednostka: "pola/strona",
@@ -12691,41 +13014,6 @@ var miasto_params_default = {
 
 // src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
-
-// src/game/braz-access.ts
-var PIEC_HUTNICZY_BUILDING_ID = "odlewnia_brazu";
-var KOPALNIA_MIEDZI_KEY = "kopalnia_miedzi";
-function improvementKeysOnPlaced2(imp) {
-  if (typeof imp === "string") {
-    const k = normalizeImprovementKey(imp);
-    return k ? [k] : [];
-  }
-  return imp.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
-}
-function empireHasKopalniaMiedzi(placedImprovements) {
-  if (!placedImprovements?.size) return false;
-  for (const imp of placedImprovements.values()) {
-    for (const key of improvementKeysOnPlaced2(imp)) {
-      if (key === KOPALNIA_MIEDZI_KEY) return true;
-    }
-  }
-  return false;
-}
-function cityHasPiecHutniczy(builtIds) {
-  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza") || builtIds.includes("wielka_odlewnia");
-}
-function hasBrazAccess(placedImprovements, builtIds) {
-  return empireHasKopalniaMiedzi(placedImprovements) && cityHasPiecHutniczy(builtIds);
-}
-
-// src/game/zelazo-access.ts
-var ODLEWNIA_ZELAZA_BUILDING_ID = "odlewnia_zelaza";
-function cityHasOdlewniaZelaza(builtIds) {
-  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID) || builtIds.includes("wielka_odlewnia");
-}
-function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
-  return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
-}
 
 // src/game/building-stock-cost.ts
 function buildingStockCost(building) {
@@ -12769,8 +13057,8 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   stolarnia: ["Drewno"],
   kamieniarski: ["Kamie\u0144"],
   kuznia: ["Ruda"],
-  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
-  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  odlewnia_brazu: ["Ruda"],
+  // PYTANIE-84-R9/U-13 + DOSTEP-SUROWCE-Q1: Mennica — Złoto w magazynie państwa.
   mennica: [ZLOTO_LABEL]
 };
 var CITY_BUILDING_PREREQ = {
@@ -12797,6 +13085,28 @@ var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"])
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
+function empireLabelSatisfied(label, empireBuiltIds, empireStock) {
+  if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
+  if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
+  const asciiKey = ASCII_BY_LABEL[label];
+  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  return false;
+}
+function buildingRequiredActiveLabels(building) {
+  const out = /* @__PURE__ */ new Set();
+  const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
+  if (hard) hard.forEach((l) => out.add(l));
+  const key = building.wymaganySurowiec?.trim().toLowerCase();
+  if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
+  return [...out];
+}
+function buildingResourceGateMet(building, _activeLabels, empireBuiltIds, empireStock) {
+  const required = buildingRequiredActiveLabels(building);
+  if (required.length === 0) return true;
+  return required.every(
+    (label) => empireLabelSatisfied(label, empireBuiltIds, empireStock)
+  );
+}
 var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
   Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
 );
@@ -12913,6 +13223,9 @@ function civRecruitmentDiscount(bonusy) {
   }
   return 0;
 }
+function empireStockHas(stock, asciiKey) {
+  return (stock?.[asciiKey] ?? 0) > 0;
+}
 function stripDiacritics(s) {
   return s.normalize("NFD").replace(/[\u0300-\u036F]/g, "").toLowerCase();
 }
@@ -12990,6 +13303,7 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
   for (const b of data.buildings) {
     if (b.epokaWejscia > epoch) continue;
     if (isBuildingSuppressedFromProduction(b)) continue;
+    if (b.id === "palisada" && (builtList.includes("mury") || builtList.includes("fort"))) continue;
     const upgradeFrom = (b.upgradeFrom ?? "").trim();
     if (upgradeFrom.length > 0) {
       if (!builtList.includes(upgradeFrom)) continue;
@@ -13001,13 +13315,18 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     const tech = (b.techUnlock ?? "").trim();
     if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
     if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
-    if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
-      continue;
-    }
     if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
       continue;
     }
     if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
+      continue;
+    }
+    if (!buildingResourceGateMet(
+      b,
+      ctx.empireActiveResourceLabels,
+      ctx.empireBuiltIds,
+      ctx.empireResourceStock
+    )) {
       continue;
     }
     items.push({
@@ -13044,10 +13363,10 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
     if (epochNumber(u.Epoka) === 2 && !built.has("koszary") && !isBuildingSupersededByUpgrade("koszary", builtList, data.buildings)) continue;
     const surowiec = stripDiacritics((u.Surowiec ?? "").toString().trim());
-    if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) {
+    if (surowiec === "braz" && !empireStockHas(ctx.empireResourceStock, "braz")) {
       continue;
     }
-    if (surowiec === "zelazo" && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) {
+    if (surowiec === "zelazo" && !empireStockHas(ctx.empireResourceStock, "zelazo")) {
       continue;
     }
     if (u["Super-jednostka"] === "TAK" && ctx.aliveUnitTypeNames?.has(u.Jednostka)) continue;
@@ -13104,7 +13423,12 @@ function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
       isBuildingSupersededByUpgrade
     );
     const stockCost = buildingStockCost(b);
-    const resourceOk = canAffordBuildingStock(ctx.empireResourceStock, stockCost) && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
+    const resourceOk = canAffordBuildingStock(ctx.empireResourceStock, stockCost) && buildingResourceGateMet(
+      b,
+      ctx.empireActiveResourceLabels,
+      ctx.empireBuiltIds,
+      ctx.empireResourceStock
+    );
     let status = "ready";
     let locationBlocked;
     if (buildingTypeQueued(b.id, queue)) {
@@ -13252,6 +13576,12 @@ var OWNER_CAPPED_RESOURCE_KEY_SET = new Set(OWNER_CAPPED_RESOURCE_KEYS);
 // src/game/cities.ts
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
+// src/map/territory-work.ts
+function isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes) {
+  if (!territoryNodes.length) return false;
+  return territoryOwnerAt(q, r, territoryNodes) === ownerId;
+}
+
 // src/game/okolica.ts
 var OKOLICA_RADIUS = miasto_params_default.zasieg_okolicy_miasta?.wartosc ?? 5;
 var CITY_RANGE_MIN = miasto_params_default.zasieg_okolicy_baza?.wartosc ?? 5;
@@ -13311,9 +13641,10 @@ function territoryOwnerAt(q, r, nodes) {
   return bestOwner;
 }
 function isPlayerTerritoryHex(q, r, playerNodes, allNodes, playerOwnerId = 0) {
-  if (!isInTerritory(q, r, playerNodes)) return false;
-  if (!allNodes.length) return true;
-  return territoryOwnerAt(q, r, allNodes) === playerOwnerId;
+  if (allNodes.length > 0) {
+    return territoryOwnerAt(q, r, allNodes) === playerOwnerId;
+  }
+  return isInTerritory(q, r, playerNodes);
 }
 
 // src/game/livestock-unlock.ts
@@ -13328,11 +13659,11 @@ var DEPOSIT_FOR_LIVESTOCK = {
   owce: "zloze_owiec" /* ZlozeOwiec */,
   lama: "zloze_lamy" /* ZlozeLamy */
 };
-var INCA_CIV_TYPES = /* @__PURE__ */ new Set(["inkowie", "inka", "incas"]);
+var INCA_CIV_TYPES = /* @__PURE__ */ new Set(["inkowie", "inka", "incas", "astekowie", "astek", "aztekowie", "aztek"]);
 function isIncaCiv(civType) {
   if (!civType) return false;
   const t = civType.toLowerCase().trim();
-  return INCA_CIV_TYPES.has(t) || t.includes("inkow");
+  return INCA_CIV_TYPES.has(t) || t.includes("inkow") || t.includes("astek") || t.includes("aztek");
 }
 function isNewWorldCiv(civType) {
   return isIncaCiv(civType);
@@ -13418,6 +13749,21 @@ function isFarmBaseTerrain(teren, nakladka) {
   if (FLAT_FARM.has(teren)) return true;
   return nakladka === "las" /* Las */ && teren === "wzgorza" /* Wzgorza */;
 }
+function isOwceBaseTerrain(teren, nakladka) {
+  if (teren !== "wzgorza" /* Wzgorza */) return false;
+  if (nakladka === "zloze_owiec" /* ZlozeOwiec */) return true;
+  if (nakladka === "las" /* Las */) return false;
+  return nakladka === "brak" /* Brak */;
+}
+var FOOD_LAYER_KEYS = /* @__PURE__ */ new Set([
+  "farma",
+  "irygacja",
+  "bydlo",
+  "owce",
+  "lama",
+  "tarasy"
+]);
+var SOLO_FOOD_KEYS = /* @__PURE__ */ new Set(["tarasy", "owce", "lama"]);
 var SEKTOR_OF = {
   // bok 1 — surowce + ich ulepszenia
   kopalnia: "surowiec",
@@ -13461,6 +13807,51 @@ var SEKTOR_OF = {
   warzelnia_soli: "woda"
 };
 var EXCLUSIVE_SEKTORY = /* @__PURE__ */ new Set(["surowiec", "las", "foodteren", "hodowla", "militaria"]);
+function improvementsReplacedByBuild(key, existing) {
+  const removed = [];
+  const add = (k) => {
+    if (k !== key && !removed.includes(k)) removed.push(k);
+  };
+  const sekt = SEKTOR_OF[key];
+  if (sekt && EXCLUSIVE_SEKTORY.has(sekt)) {
+    for (const k of existing) {
+      if (SEKTOR_OF[k] === sekt) add(k);
+    }
+  }
+  if (SOLO_FOOD_KEYS.has(key)) {
+    for (const k of existing) {
+      if (FOOD_LAYER_KEYS.has(k)) add(k);
+    }
+  } else if (isFoodKey(key)) {
+    for (const k of existing) {
+      if (SOLO_FOOD_KEYS.has(k)) add(k);
+    }
+  }
+  return removed;
+}
+function existingAfterSimulatedRemoval(existing, removed) {
+  const rm = new Set(removed);
+  return existing.filter((k) => !rm.has(k));
+}
+function computeImprovementBuildImpact(key, hex, existing) {
+  if (key === "owce" && !isOwceBaseTerrain(hex.terenBazowy, hex.nakladka)) {
+    return null;
+  }
+  const removedImprovements = improvementsReplacedByBuild(key, existing);
+  const after = existingAfterSimulatedRemoval(existing, removedImprovements);
+  if (after.includes(key)) {
+    return null;
+  }
+  const sekt = SEKTOR_OF[key];
+  if (key !== "droga" && sekt && EXCLUSIVE_SEKTORY.has(sekt) && after.some((k) => SEKTOR_OF[k] === sekt)) {
+    return null;
+  }
+  if (isFoodKey(key) && !canAddFoodLayer(after, key)) {
+    return null;
+  }
+  const removesForest = false;
+  return { removedImprovements, removesForest };
+}
 var TERRAIN_ALLOW = {
   farma: FLAT_FARM,
   irygacja: FLAT_IRR,
@@ -13521,6 +13912,28 @@ function depositAllowsPlayerImprovement(key, hex) {
       return false;
   }
 }
+function canAddFoodLayer(existing, newKey) {
+  const ex = existing.filter((k) => FOOD_LAYER_KEYS.has(k));
+  if (ex.includes(newKey)) return false;
+  if (SOLO_FOOD_KEYS.has(newKey)) return ex.length === 0;
+  if (ex.some((k) => SOLO_FOOD_KEYS.has(k))) return false;
+  const hasF = ex.includes("farma");
+  const hasI = ex.includes("irygacja");
+  const hasB = ex.includes("bydlo");
+  switch (newKey) {
+    case "farma":
+      if (ex.length === 0) return true;
+      return ex.length === 1 && (hasI || hasB);
+    case "irygacja":
+      if (ex.length === 0) return true;
+      return ex.length === 1 && hasF && !hasB;
+    case "bydlo":
+      if (ex.length === 0) return true;
+      return ex.length === 1 && hasF && !hasI;
+    default:
+      return false;
+  }
+}
 function keysOnPlacedHex2(imp) {
   if (typeof imp === "string") return imp ? [imp] : [];
   return imp.map(String);
@@ -13535,6 +13948,9 @@ function getHexLayers(hexKey2, hex, placedImprovements) {
     }
   }
   return [...keys];
+}
+function isFoodKey(key) {
+  return FOOD_LAYER_KEYS.has(key);
 }
 function buildPlacedImprovementsMap(map, placedImprovements) {
   if (placedImprovements) return placedImprovements;
@@ -13594,14 +14010,10 @@ function createQualifier(state) {
   );
   if (state.tradeRouteKonUnlocked) empireUnlocks.add("kon");
   function inPlayerTerritory(q, r) {
-    return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
-  }
-  function isOnTerritoryEdge(q, r) {
-    if (inPlayerTerritory(q, r)) return true;
-    for (const nb of hexNeighbors(q, r)) {
-      if (inPlayerTerritory(nb.q, nb.r)) return true;
+    if (territoryNodes.length > 0) {
+      return isTerritoryHexOwnedBy(q, r, playerOwnerIdNum, territoryNodes);
     }
-    return false;
+    return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
   }
   function isRoadQualified(q, r) {
     for (const nb of hexNeighbors(q, r)) {
@@ -13637,103 +14049,83 @@ function createQualifier(state) {
     const existing = getHexLayers(hexKey2, hex, placedMap);
     if (key === "droga_brukowana") {
       if (!TERENY_LADU.has(teren)) return false;
+      if (!inPlayerTerritory(q, r)) return false;
       const hasDroga = existing.includes("droga") || hex.ulepszenie === "droga" /* Droga */;
       const hasBruk = existing.includes("droga_brukowana") || hex.ulepszenie === "droga_brukowana" /* DrogaBrukowana */;
       return hasDroga && !hasBruk;
     }
     if (state.pendingUndoKeys?.has(`${hexKey2}:${key}`)) return true;
-    if (key !== "droga") {
-      if (existing.includes(key)) return false;
-      const sekt = SEKTOR_OF[key];
-      if (sekt && EXCLUSIVE_SEKTORY.has(sekt) && existing.some((k) => SEKTOR_OF[k] === sekt)) return false;
-    } else if (placedKeys.has(hexKey2)) {
-      return false;
-    }
+    if (key !== "droga" && existing.includes(key)) return false;
+    if (key === "droga" && placedKeys.has(hexKey2)) return false;
+    let terrainOk = false;
     switch (key) {
       case "farma":
-        if (!isFarmBaseTerrain(teren, nakladka)) return false;
-        if (hasBlockingDepositForFarm(hex)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        return true;
+        terrainOk = isFarmBaseTerrain(teren, nakladka) && !hasBlockingDepositForFarm(hex) && inPlayerTerritory(q, r);
+        break;
       case "irygacja":
-        if (!FLAT_IRR.has(teren)) return false;
-        if (hasBlockingDepositForFarm(hex)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        return isRiverAdjacent(q, r);
+        terrainOk = FLAT_IRR.has(teren) && !hasBlockingDepositForFarm(hex) && inPlayerTerritory(q, r) && isRiverAdjacent(q, r);
+        break;
       case "bydlo":
-        if (!FLAT_FARM.has(teren)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = FLAT_FARM.has(teren) && inPlayerTerritory(q, r) && isLivestockAllowed(playerCivArchetype, key, playerEra) && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        break;
       case "owce":
-        if (teren !== "wzgorza" /* Wzgorza */) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = isOwceBaseTerrain(teren, nakladka) && inPlayerTerritory(q, r) && isLivestockAllowed(playerCivArchetype, key, playerEra) && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        break;
       case "lama":
-        if (teren === "pustynia" /* Pustynia */) return false;
-        if (!TERRAIN_ALLOW.lama?.has(teren)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = teren !== "pustynia" /* Pustynia */ && (TERRAIN_ALLOW.lama?.has(teren) ?? false) && inPlayerTerritory(q, r) && isLivestockAllowed(playerCivArchetype, key, playerEra) && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        break;
       case "stadnina":
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== "laka" /* Laka */ && teren !== "rownina" /* Rownina */) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return hex.nakladka === "zloze_konia" /* ZlozeKonia */ || isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = inPlayerTerritory(q, r) && (teren === "laka" /* Laka */ || teren === "rownina" /* Rownina */) && isLivestockAllowed(playerCivArchetype, key, playerEra) && (hex.nakladka === "zloze_konia" /* ZlozeKonia */ || isLivestockUnlockedForPlacement(key, hex, empireUnlocks));
+        break;
       case "droga":
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
       case "posterunek":
-        return TERENY_LADU.has(teren) && isOnTerritoryEdge(q, r);
+        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        break;
       case "fort":
-        return TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        break;
       case "glinianka":
-        return nakladka === "zloze_gliny" /* ZlozeGliny */ && inPlayerTerritory(q, r);
+        terrainOk = nakladka === "zloze_gliny" /* ZlozeGliny */ && inPlayerTerritory(q, r);
+        break;
       case "kopalnia":
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== "gory" /* Gory */) return nakladka === "zloze_rudy" /* ZlozeRudy */;
-        return zloze === "zelazo" || zloze === "wegiel" || nakladka === "zloze_rudy" /* ZlozeRudy */;
+        if (!inPlayerTerritory(q, r)) terrainOk = false;
+        else if (teren !== "gory" /* Gory */) terrainOk = nakladka === "zloze_rudy" /* ZlozeRudy */;
+        else terrainOk = zloze === "zelazo" || zloze === "wegiel" || nakladka === "zloze_rudy" /* ZlozeRudy */;
+        break;
       case "wyrab":
         if (state.pendingUndoKeys?.has(`${hexKey2}:wyrab`)) return true;
-        if (state.clearingHexKeys?.has(hexKey2)) return false;
-        return nakladka === "las" /* Las */ && inPlayerTerritory(q, r);
-      case "tartak": {
-        if (!inPlayerTerritory(q, r)) return false;
-        if (nakladka !== "las" /* Las */) return false;
-        return TARTAK_TERENY.has(teren);
-      }
-      case "oboz_lowiecki": {
-        if (!inPlayerTerritory(q, r)) return false;
-        return nakladka === "las" /* Las */ || hasAnimalDeposit(nakladka);
-      }
+        terrainOk = !state.clearingHexKeys?.has(hexKey2) && nakladka === "las" /* Las */ && inPlayerTerritory(q, r);
+        break;
+      case "tartak":
+        terrainOk = inPlayerTerritory(q, r) && nakladka === "las" /* Las */ && TARTAK_TERENY.has(teren);
+        break;
+      case "oboz_lowiecki":
+        terrainOk = inPlayerTerritory(q, r) && (nakladka === "las" /* Las */ || hasAnimalDeposit(nakladka));
+        break;
       case "warzelnia_soli":
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren === "wybrzeze" /* Wybrzeze */) return true;
-        return zloze === "sol";
+        terrainOk = inPlayerTerritory(q, r) && (teren === "wybrzeze" /* Wybrzeze */ || zloze === "sol");
+        break;
       case "kopalnia_miedzi":
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== "wzgorza" /* Wzgorza */ && teren !== "gory" /* Gory */) return false;
-        return zloze === "miedz";
+        terrainOk = inPlayerTerritory(q, r) && (teren === "wzgorza" /* Wzgorza */ || teren === "gory" /* Gory */) && zloze === "miedz";
+        break;
       case "kopalnia_zlota":
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== "wzgorza" /* Wzgorza */ && teren !== "gory" /* Gory */) return false;
-        return zloze === "zloto";
-      case "tarasy": {
-        if (!inPlayerTerritory(q, r)) return false;
-        if (hasBlockingDepositForFarm(hex)) return false;
-        return teren === "wzgorza" /* Wzgorza */;
-      }
+        terrainOk = inPlayerTerritory(q, r) && (teren === "wzgorza" /* Wzgorza */ || teren === "gory" /* Gory */) && zloze === "zloto";
+        break;
+      case "tarasy":
+        terrainOk = inPlayerTerritory(q, r) && !hasBlockingDepositForFarm(hex) && teren === "wzgorza" /* Wzgorza */;
+        break;
       case "lodzie_rybackie":
-        if (!inPlayerTerritory(q, r)) return false;
-        return teren === "wybrzeze" /* Wybrzeze */ || teren === "morze" /* Morze */;
+        terrainOk = inPlayerTerritory(q, r) && (teren === "wybrzeze" /* Wybrzeze */ || teren === "morze" /* Morze */);
+        break;
       default: {
         const allowed = TERRAIN_ALLOW[key];
-        if (!TERENY_LADU.has(teren)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (allowed && !allowed.has(teren)) return false;
-        return true;
+        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && (!allowed || allowed.has(teren));
+        break;
       }
     }
+    if (!terrainOk) return false;
+    return computeImprovementBuildImpact(key, hex, existing) !== null;
   }
   return qualifies;
 }
@@ -13780,6 +14172,18 @@ function galleryTerrainEligible(key, teren) {
     default:
       return false;
   }
+}
+
+// src/game/braz-access.ts
+var PIEC_HUTNICZY_BUILDING_ID = "odlewnia_brazu";
+function cityHasPiecHutniczy(builtIds) {
+  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza") || builtIds.includes("wielka_odlewnia");
+}
+function hasBrazAccess(empireStock, builtIds) {
+  const stock = empireStock instanceof Map ? void 0 : empireStock ?? void 0;
+  const hasStock = (stock?.braz ?? 0) > 0;
+  if (!builtIds) return hasStock;
+  return hasStock && cityHasPiecHutniczy(builtIds);
 }
 
 // src/game/resource-access.ts
@@ -13946,10 +14350,10 @@ function collectActiveAccess(city, map, placedImprovements, options) {
       found.add(SUROWIEC_KEY_LABEL.kon);
     }
   }
-  if (options.builtIds && hasBrazAccess(placedImprovements, options.builtIds)) {
+  if (options.empireStock && hasBrazAccess(options.empireStock, options.builtIds)) {
     found.add(SUROWIEC_KEY_LABEL.braz);
   }
-  if (empireHasKopalniaZlota(placedImprovements)) {
+  if (ownerHasZlotoStock(options.empireStock)) {
     found.add(SUROWIEC_KEY_LABEL.zloto);
   }
   return found;
