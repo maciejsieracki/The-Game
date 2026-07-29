@@ -1,4 +1,14 @@
-﻿## [01:12] ✅ Gotowe — deploy ROBOCZA FALA 118 (242adb0d)
+﻿## [01:25] ✅ Gotowe — deploy ROBOCZA FALA 119 (ff57aaa5)
+
+**FALA 119** | md5 `ff57aaa588b1e7bfe58f569d852c64ea` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Bitwa — oszczepnik w rosterze deploy:**
+- Filtry Konnica / Piechota / Łucznictwo i liczniki typów: oszczepnik trafia do **Łucznictwo** (dystans), zgodnie z `units.json`.
+- Wcześniej był klasyfikowany jako piechota — znikał z filtra łuczników i podwajał piechotę.
+
+**Bramki:** tsc 0 · battle-roster-test 7/7 · VERIFY OK.
+
+## [01:12] ✅ Gotowe — deploy ROBOCZA FALA 118 (242adb0d)
 
 **FALA 118** | md5 `242adb0def2dae3ab870bd2117064420` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

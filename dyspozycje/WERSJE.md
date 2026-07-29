@@ -14,7 +14,15 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `242adb0d` - 2026-07-30 01:12 - FALA 118: fix NAP treatyPnGate (koszyk vs bilans UI) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `ff57aaa5` - 2026-07-30 01:25 - FALA 119: oszczepnik dystans w rosterze deploy + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `ff57aaa588b1e7bfe58f569d852c64ea` · stempel: `ROBOCZA · 2026-07-30 01:25`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · battle-roster-test 7/7.
+- **BUG-BATTLE-OSZCZEPNIK-ROSTER:** `_deployRowKind` deleguje do `_armyCompositionKind` — oszczepnik (Rola=Dystans) liczy się jako lucznictwo w filtrach/sortowaniu/licznikach rosteru deploy (wcześniej wrzucany do piechoty).
+- POLE-BITWY `dd399c4b` (bez zmian).
+- Bez push origin.
+
+## ROBOCZA `242adb0d` - 2026-07-30 01:12 - FALA 118: fix NAP treatyPnGate (koszyk vs bilans UI) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `242adb0def2dae3ab870bd2117064420` · stempel: `ROBOCZA · 2026-07-30 01:12`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · diplomacy-proposal 65/65 · diplomacy-acceptance-points 143/143 · diplomacy-negotiation-table 48/48.

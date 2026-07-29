@@ -4443,3 +4443,10 @@ tsc 0 | diplomacy-proposal 65/65 | diplomacy-acceptance-points 143/143 | diploma
 Zakres: BUG-DYPLO-NAP-GATE — `treatyPnGate` liczy koszyk bez podwójnego NAP PW; accepted UI spójne z werdyktem AI (bilans 0 przy NAP+10¤)
 Commit lokalny, **bez push** (Maciej).
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `242adb0d`).
+
+## [01:25 PL, 2026-07-30] Sesja lokalna → wszystkie — FALA 119 oszczepnik roster + DEPLOY ALL
+md5 `ff57aaa588b1e7bfe58f569d852c64ea` | stempel ROBOCZA · 2026-07-30 01:25
+tsc 0 | battle-roster-test 7/7 | VERIFY OK | vite exit 0 przed kopiowaniem
+Zakres: BUG-BATTLE-OSZCZEPNIK-ROSTER — `_deployRowKind` → `_armyCompositionKind`; oszczepnik w filtrach/sortowaniu/licznikach rosteru deploy jako dystans (nie piechota)
+POLE-BITWY `dd399c4b` bez zmian. Commit lokalny, **bez push** (Maciej).
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `ff57aaa5`).

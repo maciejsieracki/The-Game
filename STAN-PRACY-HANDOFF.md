@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-30 (NAJNOWSZY):** deploy ROBOCZA **`242adb0d`** (FALA 118, 01:12) — fix NAP `treatyPnGate`: koszyk vs bilans UI (AI odrzucało mimo bilansu 0 przy NAP+10¤). Poprzedni: FALA 117 `ed968c14`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan na 2026-07-30 (NAJNOWSZY):** deploy ROBOCZA **`ff57aaa5`** (FALA 119, 01:25) — oszczepnik = dystans w `_deployRowKind` (filtry/liczniki rosteru deploy). Poprzedni: FALA 118 `242adb0d`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

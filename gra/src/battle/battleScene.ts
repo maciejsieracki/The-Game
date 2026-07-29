@@ -8575,19 +8575,11 @@ export class BattleScene {
   }
 
   /**
-   * Klasyfikacja PRAWDZIWEGO typu jednostki (konnica/wręcz/dystans) do liczników
-   * górnego paska HUD (medaliony dowódców — BŁĄD C, zgłoszenie właściciela
-   * 2026-07-24). CELOWO nie używa _deployRowKind: tamta funkcja przekłada
-   * oszczepnika (miotacz oszczepów — Rola (linia)="Dystans" w units.json) do
-   * kubełka 'melee', bo to potrzebne dla formacji rozstawiania/zachowania przy
-   * wyczerpaniu amunicji (patrz komentarz przy _deployRowKind, ok. linii 12093).
-   * Górny pasek ma jednak pokazywać REALNY skład armii (ile wręcz, ile
-   * dystansowych) — z tamtą regułą oszczepnik znikał z licznika dystansowych i
-   * podwajał licznik wręcz (np. 1 wręcz + 1 oszczepnik => "wręcz 2 / dystans 0"
-   * zamiast poprawnego "wręcz 1 / dystans 1"). isPrimaryRanged() bez wyjątku
-   * dla oszczepnika = ten sam sygnał co isRanged()/attackRange (Atak dystansowy
-   * + Zasięg ataku z units.json), więc liczy się to co faktycznie jest
-   * jednostką strzelającą, niezależnie od typu pocisku (łuk/proca/oszczep).
+   * Klasyfikacja PRAWDZIWEGO typu jednostki (konnica/wręcz/dystans) — liczniki
+   * HUD, filtry rosteru, sortowanie kart. isPrimaryRanged() bez wyjątków
+   * (oszczepnik = dystans, jak Rola (linia) w units.json). Formacja na polu
+   * (wrecz / oszczep / luki) ma osobną ścieżkę javI po kategorii — nie polega
+   * na tej funkcji.
    */
   private _armyCompositionKind(ru: RuntimeBattleUnit): 'mounted' | 'melee' | 'ranged' {
     if (ru.mounted || isMounted(ru.bu)) return 'mounted';
@@ -12910,13 +12902,7 @@ export class BattleScene {
 
   /** Rząd rosteru deploy: konnica (0) → piesza (1) → lucznictwo (2). */
   private _deployRowKind(ru: RuntimeBattleUnit): 'mounted' | 'melee' | 'ranged' {
-    if (ru.mounted || isMounted(ru.bu)) return 'mounted';
-    if (isPrimaryRanged(ru.bu)) {
-      const kat = normName(String(ru.bu.kategoria ?? ''));
-      if (kat.includes('oszczep') || kat === 'oszczepnik') return 'melee';
-      return 'ranged';
-    }
-    return 'melee';
+    return this._armyCompositionKind(ru);
   }
 
   /** Sortowanie w rzedzie: nazwa jednostki. */
@@ -13450,9 +13436,6 @@ export class BattleScene {
     const isSel = this._selectedUnits.has(ru.bu.id);
     const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
     const morPct = ru.moraleMax > 0 ? Math.max(0, ru.morale / ru.moraleMax) : hpPct;
-    // BŁĄD H: ikona/kolor karty = PRAWDZIWY typ jednostki (jak licznik górnego
-    // paska, BŁĄD C), nie _deployRowKind (ten zostaje dla szyku/formacji —
-    // celowo wrzuca oszczepnika do 'melee', patrz komentarz przy tej funkcji).
     const row = this._armyCompositionKind(ru);
 
     const card = document.createElement('div');
@@ -17389,9 +17372,6 @@ export class BattleScene {
     const isSel = this._selectedUnits.has(ru.bu.id);
     const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
     const morPct = ru.moraleMax > 0 ? Math.max(0, ru.morale / ru.moraleMax) : hpPct;
-    // BŁĄD H: ikona/kolor karty = PRAWDZIWY typ jednostki (jak licznik górnego
-    // paska, BŁĄD C), nie _deployRowKind (ten zostaje dla szyku/formacji —
-    // celowo wrzuca oszczepnika do 'melee', patrz komentarz przy tej funkcji).
     const row = this._armyCompositionKind(ru);
 
     const card = document.createElement('div');
@@ -17587,10 +17567,7 @@ export class BattleScene {
         const isDead = ru.dead || ru.removed;
         const isSel = this._selectedUnits.has(ru.bu.id);
         const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
-        // BŁĄD H: ikona/kolor karty = PRAWDZIWY typ jednostki (jak licznik górnego
-    // paska, BŁĄD C), nie _deployRowKind (ten zostaje dla szyku/formacji —
-    // celowo wrzuca oszczepnika do 'melee', patrz komentarz przy tej funkcji).
-    const row = this._armyCompositionKind(ru);
+        const row = this._armyCompositionKind(ru);
         card.style.opacity = isDead ? '0.35' : '1';
         card.style.cursor = isDead ? 'default' : 'pointer';
         Object.assign(card.style, rosterCardBaseStyle(row, isSel));
@@ -17667,10 +17644,7 @@ export class BattleScene {
       const moraleVal: number = ru.morale ?? (hpPct * 100);
       const moraleMax: number = ru.moraleMax ?? 100;
       const morPct = moraleMax > 0 ? Math.max(0, moraleVal / moraleMax) : hpPct;
-      // BŁĄD H: ikona/kolor karty = PRAWDZIWY typ jednostki (jak licznik górnego
-    // paska, BŁĄD C), nie _deployRowKind (ten zostaje dla szyku/formacji —
-    // celowo wrzuca oszczepnika do 'melee', patrz komentarz przy tej funkcji).
-    const row = this._armyCompositionKind(ru);
+      const row = this._armyCompositionKind(ru);
 
       // C-09 v5 klatka 6: stan karty (normalna/zaznaczona/rout/martwa) \u2014 pe\u0142ny
       // przemalunek na wypadek przej\u015bcia \u017cywa->rout->martwa PO utworzeniu karty.
