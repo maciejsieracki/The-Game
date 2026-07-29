@@ -176,7 +176,7 @@ export function buildUnitExtraStatusLinesHtml(input: UnitCardStatusInput): strin
     lines.push(`<div class="uc-extra-status">Status: czuwa (nie budzi się na ruch wroga)</div>`);
   }
   if (input.ufortyfikowanyWPolu) {
-    lines.push(`<div class="uc-extra-status">Status: ufortyfikowana w polu</div>`);
+    lines.push(`<div class="uc-extra-status">Status: ufortyfikowana w polu (+50% Obrony)</div>`);
   }
   if (input.oblegaCityName) {
     lines.push(`<div class="uc-extra-status">Status: oblega ${esc(input.oblegaCityName)}</div>`);

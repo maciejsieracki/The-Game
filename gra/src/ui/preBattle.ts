@@ -620,7 +620,7 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
 
   const allMods: PreBattleModifier[] = [...(info.modyfikatory ?? []), ...(info.warunki ?? [])];
 
-  const deployLabel = canRetreat ? 'Bitwa' : 'Broń się — rozstawienie';
+  const deployLabel = 'BITWA';
   const deployIcon = canRetreat ? PB_ICON_DEPLOY : PB_ICON_SHIELD;
 
   const btns: string[] = [];

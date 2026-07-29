@@ -44,6 +44,8 @@ export interface PostBattleSummaryData {
   mode: 'auto' | 'manual' | 'szturm';
   atakujacy: BattleSummarySide;
   obronca: BattleSummarySide;
+  /** Krótki opis łupu (np. „+16 Pieniądz, +2 Brąz”) — tylko gdy gracz wygrał. */
+  lootNote?: string;
 }
 
 export interface BuildBattleSummaryInput {

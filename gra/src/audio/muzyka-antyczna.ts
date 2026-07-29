@@ -100,6 +100,7 @@
 import {
   kamienPlaylist, introPlaylist, dyplomacjaPlaylist, preBattlePlaylist,
   bitwaPlaylist, zwyciestwoPlaylist, porazkaPlaylist,
+  diplomacyPlaylistForCiv, allDiplomacyPlaylists,
 } from './filePlayer';
 import type { FilePlaylist } from './filePlayer';
 
@@ -1700,7 +1701,7 @@ export function setMusicVolume(v: number): void {
   }
   kamienPlaylist.setVolume(volume);
   introPlaylist.setVolume(volume);
-  dyplomacjaPlaylist.setVolume(volume);
+  for (const pl of allDiplomacyPlaylists()) pl.setVolume(volume);
   preBattlePlaylist.setVolume(volume);
   bitwaPlaylist.setVolume(volume);
   zwyciestwoPlaylist.setVolume(volume);
@@ -1768,6 +1769,11 @@ export function isIntroMusicPlaying(): boolean { return introPlaylist.isPlaying(
 // ---------------------------------------------------------------------------
 
 let overlayActive: FilePlaylist | null = null;
+/** Aktywna playlista dyplomacji (fallback lub per-civ) — do poprawnego stop(). */
+let diplomacyOverlayPlaylist: FilePlaylist | null = null;
+
+/** Fade-in przy starcie overlayu dyplomacji (ms). */
+const DIPLOMACY_FADE_IN_MS = 3000;
 
 /** Overlaye „rodziny bitewnej": sama bitwa + ekrany zwycięstwa/porażki. Podczas
  *  sceny bitwy przełączają się między sobą CZYSTĄ WYMIANĄ (bez powrotu muzyki
@@ -1776,14 +1782,16 @@ function isBattleFamilyOverlay(pl: FilePlaylist): boolean {
   return pl === bitwaPlaylist || pl === zwyciestwoPlaylist || pl === porazkaPlaylist;
 }
 
-function startOverlay(pl: FilePlaylist): void {
+function startOverlay(pl: FilePlaylist, opts?: { fadeInMs?: number }): void {
   if (overlayActive === pl) return;                 // ten overlay już gra
   const gameWasOn = playing || overlayActive !== null; // muzyka gry gra albo już ją overlay wyciszył
   if (!gameWasOn) return;                            // muzyka wyłączona -> overlay cichy
   if (overlayActive) overlayActive.stop();          // wymiana overlayu (rzadkie)
   else stopMusic();                                 // pierwsza aktywacja: wycisz muzykę gry
   pl.setVolume(volume);
-  pl.start();
+  const fadeMs = opts?.fadeInMs ?? 0;
+  if (fadeMs > 0) pl.startWithFadeIn(fadeMs);
+  else pl.start();
   overlayActive = pl;
 }
 
@@ -1794,10 +1802,19 @@ function stopOverlay(pl: FilePlaylist): void {
   startMusic(moodNow);                              // wznów muzykę gry (bieżący mood/era)
 }
 
-/** Muzyka panelu dyplomacji — start przy otwarciu audiencji z inną cywilizacją. */
-export function startDiplomacyMusic(): void { startOverlay(dyplomacjaPlaylist); }
-/** Koniec muzyki dyplomacji — powrót do muzyki gry. */
-export function stopDiplomacyMusic(): void { stopOverlay(dyplomacjaPlaylist); }
+/** Muzyka panelu dyplomacji — start przy otwarciu audiencji z inną cywilizacją.
+ *  civId = typCywilizacji / ikonaId z civs.json (np. rzymianie). */
+export function startDiplomacyMusic(civId?: string): void {
+  const pl = diplomacyPlaylistForCiv(civId);
+  diplomacyOverlayPlaylist = pl;
+  startOverlay(pl, { fadeInMs: DIPLOMACY_FADE_IN_MS });
+}
+/** Koniec muzyki dyplomacji — powrót do muzyki gry (fade-out przez stop()). */
+export function stopDiplomacyMusic(): void {
+  const pl = diplomacyOverlayPlaylist ?? dyplomacjaPlaylist;
+  diplomacyOverlayPlaylist = null;
+  stopOverlay(pl);
+}
 
 /** Muzyka nakładki pre-battle — start przy pokazaniu ekranu przedbitewnego. */
 export function startPreBattleMusic(): void { startOverlay(preBattlePlaylist); }

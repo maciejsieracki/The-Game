@@ -11,7 +11,9 @@ import {
   improvementBonusForKey,
   normalizeImprovementKey,
   isImprovementAllowedForCiv,
+  territoryResourceYieldForImprovement,
   type ImprovementBonus,
+  type TerritoryResourceKey,
 } from '../game/terrain-improvements';
 import { galleryTerrainEligible } from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
@@ -72,31 +74,110 @@ const TEREN_LABEL: Record<TerenBazowy, string> = {
   [TerenBazowy.Polarny]: 'Polarny',
 };
 
-type YieldKey = keyof Pick<TileYield, 'zywnosc' | 'praca' | 'handel' | 'drewno' | 'kamien'>;
+type CityYieldKey = keyof Pick<TileYield, 'zywnosc' | 'praca' | 'handel'>;
+type MagazynYieldKey = keyof Pick<TileYield, 'drewno' | 'kamien'>;
+type YieldKey = CityYieldKey | MagazynYieldKey;
 
 /**
  * Decyzja Macieja (2026-07-27): plon heksu strumienia podatkowego (klucz silnika
  * `handel`) nazywa się zawsze **Podatek**. Etykieta może być przekazana przez
  * wolającego (main.ts) — domyślnie też "Podatek".
+ *
+ * SUROW-TERYT-01: Żywność/Praca/Podatek → ekonomia miasta (workedTiles).
+ * Magazyn państwa → WYŁĄCZNIE `surowiec_ilosc_tura` z zbudowanych ulepszeń (auto, bez 👤).
+ * Drewno/kamień z plonów terenu (terrain-yields.json) to stary model dostępności —
+ * NIE trafiają do magazynu; UI nie sugeruje inaczej (audyt 2026-07-29, Maciej).
  */
-const YIELD_ROWS: ReadonlyArray<{ key: YieldKey; label: string }> = [
+const CITY_YIELD_ROWS: ReadonlyArray<{ key: CityYieldKey; label: string }> = [
   { key: 'zywnosc', label: 'Żywność' },
   { key: 'praca', label: 'Praca' },
   { key: 'handel', label: 'Podatek' },
-  { key: 'drewno', label: 'Drewno' },
-  { key: 'kamien', label: 'Kamień' },
 ];
 
 const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 
-function formatYieldLine(y: TileYield, empty = '—'): string {
+/** Etykiety surowców magazynowych (SUROW-TERYT-01 — `surowiec_ilosc_tura`). */
+const TERRITORY_RESOURCE_LABEL: Record<TerritoryResourceKey, string> = {
+  drewno: 'Drewno',
+  kamien: 'Kamień',
+  glina: 'Glina',
+  ruda: 'Ruda',
+  ruda_zelaza: 'Ruda żelaza',
+  sol: 'Sól',
+  zloto: 'Złoto',
+  kon: 'Koń',
+};
+
+function territoryResourceIconHtml(key: TerritoryResourceKey): string {
+  return `<span class="cp-yield-ic">${mapResourceIconSvg(key, 16)}</span>`;
+}
+
+/** Magazyn państwa z ulepszenia (automatycznie, bez 👤). */
+function formatTerritoryMagazynPart(key: string, zloze?: string | null): string | null {
+  const row = territoryResourceYieldForImprovement(key, zloze);
+  if (!row || !(row.amount > 0)) return null;
+  const label = TERRITORY_RESOURCE_LABEL[row.resourceKey];
+  const icon = territoryResourceIconHtml(row.resourceKey);
+  return `${icon} +${row.amount} ${label}/t`;
+}
+
+function formatImprovementDesc(
+  key: string,
+  hex: Hex,
+  esc: (raw: string) => string,
+  tag?: string,
+): string {
+  const name = esc(improvementDisplayName(key));
+  const bonus = formatCityBonusParts(improvementBonusForKey(key));
+  const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze);
+  const unlocks = labelsForImprovementUnlock(key);
+  let s = `<b>${name}</b>`;
+  if (tag) s += ` (${esc(tag)})`;
+  s += ` → plony miasta: ${bonus}`;
+  if (mag) {
+    s += `<br><span class="cp-magazyn-line">magazyn państwa: ${mag} · bez 👤</span>`;
+  }
+  if (unlocks.length) s += ` · ${esc(unlocks.join(', '))}`;
+  return s;
+}
+
+/** Podsumowanie wpływu do magazynu państwa z tego heksa (tylko ulepszenia SUROW-TERYT-01). */
+function formatHexMagazynSummary(hex: Hex, esc: (raw: string) => string): string | null {
+  const lines: string[] = [];
+
+  for (const key of builtImprovementKeys(hex)) {
+    const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze);
+    if (!mag) continue;
+    lines.push(`${esc(improvementDisplayName(key))}: ${mag} · automatycznie`);
+  }
+
+  return lines.length ? lines.join('<br>') : null;
+}
+
+/** Drewno z terrain-yields.json / nakładka Las — informacja, nie strumień magazynu. */
+function formatTerrainDrewnoInactiveNote(hex: Hex): string | null {
+  const drewno = fullTileYield(hex).drewno ?? 0;
+  if (!(drewno > 0)) return null;
+  const hasTartak = builtImprovementKeys(hex).includes('tartak');
+  const hint = hasTartak
+    ? 'drewno z Tartaku (auto) — patrz wyżej'
+    : 'zbuduj Tartak';
+  return `<span class="cp-inactive-yield">${yieldIconHtml('drewno')} Drewno na terenie: ${drewno} — nie trafia do magazynu; ${hint}</span>`;
+}
+
+/** Kamień w terrain-yields.json — informacja, nie aktywny strumień magazynu. */
+function formatTerrainKamienInactiveNote(hex: Hex): string | null {
+  const kamien = fullTileYield(hex).kamien ?? 0;
+  if (!(kamien > 0)) return null;
+  return `<span class="cp-inactive-yield">${yieldIconHtml('kamien')} Kamień na terenie: ${kamien} — nie trafia do magazynu; zbuduj Kamieniołom</span>`;
+}
+
+function formatCityYieldLine(y: TileYield, empty = '—'): string {
   const parts: string[] = [];
   if ((y.zywnosc ?? 0) > 0) parts.push(`${yieldIconHtml('zywnosc')} ${y.zywnosc}`);
   if ((y.praca ?? 0) > 0) parts.push(`${yieldIconHtml('praca')} ${y.praca}`);
   if ((y.handel ?? 0) > 0) parts.push(`${yieldIconHtml('handel')} ${y.handel}`);
-  if ((y.drewno ?? 0) > 0) parts.push(`${yieldIconHtml('drewno')} ${y.drewno}`);
-  if ((y.kamien ?? 0) > 0) parts.push(`${yieldIconHtml('kamien')} ${y.kamien}`);
   return parts.length ? parts.join(' · ') : empty;
 }
 
@@ -113,8 +194,21 @@ function bonusToTileYield(b: ImprovementBonus): TileYield {
   };
 }
 
-function formatBonusParts(b: ImprovementBonus): string {
-  return formatYieldLine(bonusToTileYield(b), '—');
+function formatCityBonusParts(b: ImprovementBonus): string {
+  return formatCityYieldLine(bonusToTileYield(b), '—');
+}
+
+function cityYieldOnly(y: TileYield): TileYield {
+  return {
+    zywnosc: y.zywnosc ?? 0,
+    praca: y.praca ?? 0,
+    handel: y.handel ?? 0,
+    drewno: 0,
+    kamien: 0,
+    glina: 0,
+    ruda: 0,
+    ruda_zelaza: 0,
+  };
 }
 
 function subLine(label: string, value: string): string {
@@ -164,8 +258,8 @@ function yieldParts(hex: Hex): YieldPart[] {
   }
   const builtSet = new Set(builtImprovementKeys(hex));
   for (const key of improvementKeysForHex(hex)) {
-    const bonus = bonusToTileYield(improvementBonusForKey(key));
-    const hasBonus = YIELD_ROWS.some(({ key: yk }) => (bonus[yk] ?? 0) !== 0);
+    const bonus = cityYieldOnly(bonusToTileYield(improvementBonusForKey(key)));
+    const hasBonus = CITY_YIELD_ROWS.some(({ key: yk }) => (bonus[yk] ?? 0) !== 0);
     if (!hasBonus) continue;
     const name = improvementDisplayName(key);
     const tag = builtSet.has(key) ? 'postawione' : 'złoże / hodowla';
@@ -174,20 +268,17 @@ function yieldParts(hex: Hex): YieldPart[] {
   return parts;
 }
 
-/** Rozbicie per typ surowca: baza + modyfikatory = suma. */
-function formatYieldBreakdownHtml(
-  hex: Hex,
-  rows: ReadonlyArray<{ key: YieldKey; label: string }> = YIELD_ROWS,
-): string {
+/** Rozbicie plonów miasta: baza + modyfikatory = suma (tylko Żywność/Praca/Podatek). */
+function formatCityYieldBreakdownHtml(hex: Hex): string {
   const parts = yieldParts(hex);
-  const total = fullTileYield(hex);
+  const total = cityYieldOnly(fullTileYield(hex));
   const lines: string[] = [];
 
-  for (const { key, label } of rows) {
+  for (const { key, label } of CITY_YIELD_ROWS) {
     const icon = yieldIconHtml(key);
-    const baseVal = parts[0]?.delta[key] ?? 0;
+    const baseVal = cityYieldOnly(parts[0]?.delta ?? { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 })[key] ?? 0;
     const mods = parts.slice(1)
-      .map(p => ({ label: p.label, v: p.delta[key] ?? 0 }))
+      .map(p => ({ label: p.label, v: cityYieldOnly(p.delta)[key] ?? 0 }))
       .filter(m => m.v !== 0);
     const sumVal = total[key] ?? 0;
     if (sumVal === 0 && baseVal === 0 && mods.length === 0) continue;
@@ -197,7 +288,7 @@ function formatYieldBreakdownHtml(
     for (const m of mods) {
       text += ` ${m.v > 0 ? '+' : ''}${m.v} ${m.label}`;
     }
-    text += ')</span>';
+    text += ' · przy 👤)</span>';
     lines.push(yieldDetailLine(`${icon} ${label}`, text));
   }
 
@@ -250,9 +341,11 @@ function listTerrainPossibleImprovements(hex: Hex, playerCivType?: string | null
     if (key === 'bydlo' && hex.nakladka !== Nakladka.ZlozeBydla) continue;
     if (key === 'owce' && hex.nakladka !== Nakladka.ZlozeOwiec) continue;
     if (key === 'lama' && hex.nakladka !== Nakladka.ZlozeLamy) continue;
-    const bonus = formatBonusParts(improvementBonusForKey(key));
+    const bonus = formatCityBonusParts(improvementBonusForKey(key));
+    const mag = formatTerritoryMagazynPart(key);
     const unlocks = labelsForImprovementUnlock(key);
-    let line = `<b>${improvementDisplayName(key)}</b> → ${bonus}`;
+    let line = `<b>${improvementDisplayName(key)}</b> → plony miasta: ${bonus}`;
+    if (mag) line += ` · magazyn państwa: ${mag} · bez 👤`;
     if (unlocks.length) line += ` · odblok. ${unlocks.join(', ')}`;
     out.push(line);
     if (out.length >= 10) break;
@@ -285,7 +378,6 @@ export interface HexContextTooltipInput {
 export function buildHexContextTooltipHtml(input: HexContextTooltipInput): string {
   const { q, r, hex, esc, cityName } = input;
   const era = input.currentEra ?? 99;
-  const yieldRows = YIELD_ROWS;
   const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(String(hex.terenBazowy));
   const resources = collectResourceLabels(hex, era, input.playerCivType);
   const built = builtImprovementKeys(hex);
@@ -309,22 +401,14 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   }
 
   if (built.length > 0) {
-    const builtDesc = built.map((key) => {
-      const name = esc(improvementDisplayName(key));
-      const bonus = formatBonusParts(improvementBonusForKey(key));
-      const unlocks = labelsForImprovementUnlock(key);
-      let s = `<b>${name}</b> → ${bonus}`;
-      if (unlocks.length) s += ` · ${esc(unlocks.join(', '))}`;
-      return s;
-    }).join('<br>');
+    const builtDesc = built.map((key) => formatImprovementDesc(key, hex, esc, 'postawione')).join('<br>');
     lines.push(subLine('Ulepszenia postawione', builtDesc));
   }
 
   if (implicitKeys.length > 0) {
     const impDesc = implicitKeys.map((key) => {
-      const name = esc(improvementDisplayName(key));
-      const bonus = formatBonusParts(improvementBonusForKey(key));
-      return `<b>${name}</b> (naturalne) → ${bonus}`;
+      const bonus = formatCityBonusParts(improvementBonusForKey(key));
+      return `<b>${esc(improvementDisplayName(key))}</b> (naturalne) → plony miasta: ${bonus}`;
     }).join('<br>');
     lines.push(subLine('Hodowla / złoże aktywne', impDesc));
   }
@@ -333,9 +417,26 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
     lines.push(subLine('Ulepszenie', 'brak — goły teren'));
   }
 
-  lines.push('<div class="cp-yield-head">Plony — rozbicie</div>');
-  lines.push(formatYieldBreakdownHtml(hex, yieldRows));
-  lines.push(`<div class="cp-total">Razem: ${formatYieldLine(fullTileYield(hex), '0')}</div>`);
+  const magazynSummary = formatHexMagazynSummary(hex, esc);
+  if (magazynSummary) {
+    lines.push('<div class="cp-yield-head">Do magazynu państwa</div>');
+    lines.push(`<div class="cp-sub cp-magazyn-block">${magazynSummary}</div>`);
+  }
+
+  const drewnoNote = formatTerrainDrewnoInactiveNote(hex);
+  if (drewnoNote) {
+    lines.push(`<div class="cp-sub">${drewnoNote}</div>`);
+  }
+
+  const kamienNote = formatTerrainKamienInactiveNote(hex);
+  if (kamienNote) {
+    lines.push(`<div class="cp-sub">${kamienNote}</div>`);
+  }
+
+  lines.push('<div class="cp-yield-head">Plony miasta — rozbicie (przy 👤)</div>');
+  lines.push(formatCityYieldBreakdownHtml(hex));
+  lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(fullTileYield(hex)), '0')}</div>`);
+  lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Magazyn → tylko ulepszenia (Tartak, Kamieniołom… — auto, bez 👤). Drewno/kamień z terenu nie trafia do magazynu.</div>');
 
   if (possible.length > 0) {
     lines.push('<div class="cp-yield-head">Możliwe ulepszenia (teren)</div>');
@@ -604,6 +705,11 @@ ${UNIT_CARD_STATUS_CSS}
 .uc-unit-head-meta{font-size:10px;color:var(--civ-text-muted,#a09880);margin-top:3px;font-weight:400;}
 ${UNIT_ACTION_BAR_CSS}
 .sp-unit-card-body{display:flex;flex-direction:column;gap:0;}
+.sp-unit-card-expanded .sp-unit-card-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;align-items:start;}
+.sp-unit-card-expanded .sp-unit-card-col{min-width:0;}
+.sp-unit-card-expanded .sp-unit-card-col-detail{border-left:1px solid rgba(212,175,90,.18);padding-left:12px;}
+.sp-unit-card-expanded .sp-unit-card-foot{display:flex;flex-direction:column;gap:0;margin-top:8px;}
+.sp-unit-card-expanded .sp-unit-stack{flex-wrap:wrap;overflow-x:visible;justify-content:flex-start;}
 .sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
   border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);
   color:var(--civ-gold-primary,#e8d88a);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
@@ -622,14 +728,27 @@ function buildArmySelectedUnitLabelHtml(
   return `<div class="sp-army-sel-lbl">Wybrana jednostka: <b>${esc(active.name)}</b></div>`;
 }
 
-export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string {
-  const statusInput = unitCardStatusFromTooltip(u);
-  const expanded = u.expanded === true;
+function buildUnitDetailExtrasHtml(u: UnitContextTooltipInput, statusInput: UnitCardStatusInput): string {
+  const parts: string[] = [buildUnitExpandedStatsHtml(u)];
+
+  const extra = buildUnitExtraStatusLinesHtml(statusInput);
+  if (extra) parts.push(`<div class="cp-sub">${extra}</div>`);
+
+  const vetEdu = buildUnitVeteranEducationHtml(statusInput);
+  if (vetEdu) parts.push(`<div class="cp-sub">${vetEdu}</div>`);
+
+  if (u.buildingBonusLabel && !pathStatusRowHasChips(statusInput)) {
+    parts.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));
+  }
+
+  return parts.join('');
+}
+
+function buildUnitCompactBodyHtml(u: UnitContextTooltipInput, statusInput: UnitCardStatusInput): string {
   const isArmy = (u.stackCards?.length ?? 0) > 1;
   const lines: string[] = [buildUnitHeadHtml(u)];
 
   if (isArmy && u.stackCards) {
-    // Armia: najpierw żetony (HP/ruch per jednostka); bez zbiorczych Atak/Obrona/Pancerz/bonusów.
     lines.push(buildUnitStackCardsHtml(u.stackCards, u.esc));
   } else {
     lines.push(buildUnitVitalsHtml(u));
@@ -637,34 +756,52 @@ export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string 
     lines.push(buildPathLevelIconsRowHtml(statusInput));
   }
 
-  if (expanded) {
-    if (isArmy && u.stackCards) {
-      lines.push(buildArmySelectedUnitLabelHtml(u.stackCards, u.esc));
-      lines.push(buildUnitVitalsHtml(u));
-      lines.push(buildUnitForcesHtml(u));
-      lines.push(buildPathLevelIconsRowHtml(statusInput));
-    }
+  return lines.join('');
+}
 
-    lines.push(buildUnitExpandedStatsHtml(u));
+function buildUnitExpandedBodyHtml(u: UnitContextTooltipInput, statusInput: UnitCardStatusInput): string {
+  const isArmy = (u.stackCards?.length ?? 0) > 1;
+  let basicCol = buildUnitHeadHtml(u);
+  let detailCol = '';
 
-    const extra = buildUnitExtraStatusLinesHtml(statusInput);
-    if (extra) lines.push(`<div class="cp-sub">${extra}</div>`);
-
-    const vetEdu = buildUnitVeteranEducationHtml(statusInput);
-    if (vetEdu) lines.push(`<div class="cp-sub">${vetEdu}</div>`);
-
-    if (u.buildingBonusLabel && !pathStatusRowHasChips(statusInput)) {
-      lines.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));
-    }
+  if (isArmy && u.stackCards) {
+    basicCol += buildUnitStackCardsHtml(u.stackCards, u.esc);
+    detailCol += buildArmySelectedUnitLabelHtml(u.stackCards, u.esc);
+    detailCol += buildUnitVitalsHtml(u);
+    detailCol += buildUnitForcesHtml(u);
+    detailCol += buildPathLevelIconsRowHtml(statusInput);
+  } else {
+    basicCol += buildUnitVitalsHtml(u);
+    basicCol += buildUnitForcesHtml(u);
+    basicCol += buildPathLevelIconsRowHtml(statusInput);
   }
 
+  detailCol += buildUnitDetailExtrasHtml(u, statusInput);
+
+  return '<div class="sp-unit-card-cols">'
+    + `<div class="sp-unit-card-col sp-unit-card-col-basic">${basicCol}</div>`
+    + `<div class="sp-unit-card-col sp-unit-card-col-detail">${detailCol}</div>`
+    + '</div>';
+}
+
+export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string {
+  const statusInput = unitCardStatusFromTooltip(u);
+  const expanded = u.expanded === true;
+  const bodyHtml = expanded
+    ? buildUnitExpandedBodyHtml(u, statusInput)
+    : buildUnitCompactBodyHtml(u, statusInput);
+
+  const footer: string[] = [];
   if (u.expandable) {
-    lines.push(buildUnitExpandButtonHtml(expanded));
+    footer.push(buildUnitExpandButtonHtml(expanded));
   }
-
   if (u.actions && u.actions.length > 0) {
-    lines.push(buildUnitActionBarHtml(u.actions));
+    footer.push(buildUnitActionBarHtml(u.actions));
   }
 
-  return `<div class="sp-unit-card-body">${lines.join('')}</div>`;
+  const footHtml = footer.length
+    ? `<div class="sp-unit-card-foot">${footer.join('')}</div>`
+    : '';
+
+  return `<div class="sp-unit-card-body${expanded ? ' sp-unit-card-expanded' : ''}">${bodyHtml}${footHtml}</div>`;
 }

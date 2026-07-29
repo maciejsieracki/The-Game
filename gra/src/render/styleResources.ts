@@ -399,6 +399,7 @@ export function buildStyledResourceOverlay(nakladka: Nakladka, style: MapRenderS
     case Nakladka.ZlozeKonia:
       // GRAFIKA-3D partia 1 (item 2): 2 konie BEZ jeźdźca w slotach obrzeża, środek wolny
       g = style === 'roblox' ? buildZlozeKonie() : styledHorse(style);
+      if (g) g.userData.depositDisplayScale = 2; // Maciej 2026-07-29: ×2 vs inne złoża (compactDepositAtEdge)
       break;
     case Nakladka.ZlozeOwiec:
     case Nakladka.ZlozeBydla:

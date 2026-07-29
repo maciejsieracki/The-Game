@@ -31,7 +31,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-test-bundle.cjs');
 // Entry TS re-exports everything we need from ai.ts.
 // Uses AI_SRC path so env override works correctly.
 const ENTRY_TS = `
-export { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts, isLocalExpansionPhase } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts, isLocalExpansionPhase } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
 export { diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } from ${JSON.stringify(AI_SRC + '/game/diplomacy-layers')};
 `;
@@ -55,7 +55,7 @@ try {
 }
 
 const AI = require(BUNDLE_FILE);
-const { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase } = AI;
+const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
 let passed = 0;
@@ -2251,6 +2251,57 @@ console.log('\n--- T11-scout-b: defensiveCopy (państwo-miasto) -> brak Zwiadowc
     !cmds.some(c => c.type === 'build' && c.buildingId === 'Zwiadowca'),
     'T11-scout-b: defensiveCopy never queues Zwiadowca',
   );
+}
+
+console.log('\n--- T7D-h: defensiveCopy z garnizonem -> infrastruktura, nie kolejny Wojownik ---');
+{
+  const map = makeMap(10, 10);
+  const city = makeCity('cs1', 4, 3, 3);
+  const guard = makeUnit('g1', 4, 3, 3, 'miecznik');
+  const dataCs = makeGameData();
+  dataCs.buildings.push(
+    { id: 'studnia', nazwa: 'Studnia' },
+    { id: 'garncarnia', nazwa: 'Garncarnia' },
+    { id: 'palac', nazwa: 'Pałac' },
+  );
+  const diff = loadDifficultyParams(dataCs, 2);
+  const pick = chooseCityProduction(
+    'cs1',
+    [city],
+    [guard],
+    4,
+    dataCs,
+    { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 },
+    { defensiveCopy: true, cityBuildings: { cs1: [] } },
+    map,
+    diff,
+  );
+  eq(pick, 'studnia', 'T7D-h: po garnizonie pierwszy budynek = Studnia');
+}
+
+console.log('\n--- T7D-i: defensiveCopy bez garnizonu -> nadal Wojownik pierwszy ---');
+{
+  const map = makeMap(10, 10);
+  const city = makeCity('cs2', 4, 1, 1);
+  const dataCs = makeGameData();
+  dataCs.buildings.push(
+    { id: 'studnia', nazwa: 'Studnia' },
+    { id: 'garncarnia', nazwa: 'Garncarnia' },
+    { id: 'palac', nazwa: 'Pałac' },
+  );
+  const diff = loadDifficultyParams(dataCs, 2);
+  const pick = chooseCityProduction(
+    'cs2',
+    [city],
+    [],
+    4,
+    dataCs,
+    { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 },
+    { defensiveCopy: true, cityBuildings: { cs2: [] } },
+    map,
+    diff,
+  );
+  eq(pick, 'Wojownik', 'T7D-i: bez garnizonu najpierw Wojownik');
 }
 
 console.log('\n--- T11-scout-c: zwiadowca rusza w stronę neutralnej wioski ---');

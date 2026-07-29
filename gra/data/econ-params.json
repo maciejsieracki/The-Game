@@ -155,25 +155,25 @@
       "opis": "NIEUŻYWANE (PYTANIE-85) — stary model suwaka żywności. Zostawione dla zgodności zapisów."
     },
     "racje_zywnosc_1": {
-      "easy": 1,
-      "normal": 1,
-      "hard": 1,
-      "jednostka": "żywność/turę/os.",
-      "opis": "PYTANIE-85: koszt racji poziom 1 (żywność na mieszkańca/turę)."
-    },
-    "racje_zywnosc_2": {
       "easy": 2,
       "normal": 2,
       "hard": 2,
       "jednostka": "żywność/turę/os.",
-      "opis": "PYTANIE-85: koszt racji poziom 2."
+      "opis": "PYTANIE-85: koszt racji poziom 1 (żywność na mieszkańca/turę). Balans 2026-07-29: 2 (było 1)."
+    },
+    "racje_zywnosc_2": {
+      "easy": 4,
+      "normal": 4,
+      "hard": 4,
+      "jednostka": "żywność/turę/os.",
+      "opis": "PYTANIE-85: koszt racji poziom 2. Balans 2026-07-29: 4 (było 2)."
     },
     "racje_zywnosc_3": {
-      "easy": 3,
-      "normal": 3,
-      "hard": 3,
+      "easy": 6,
+      "normal": 6,
+      "hard": 6,
       "jednostka": "żywność/turę/os.",
-      "opis": "PYTANIE-85: koszt racji poziom 3."
+      "opis": "PYTANIE-85: koszt racji poziom 3. Balans 2026-07-29: 6 (było 3)."
     },
     "racje_wzrost_proc_1": {
       "easy": 3,

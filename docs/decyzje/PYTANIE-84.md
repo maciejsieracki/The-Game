@@ -1,6 +1,6 @@
 ﻿# PYTANIE 84 â€” Magazyn paĹ„stwa i budynki surowcowe
 
-**Status:** đźźˇ **WDROĹ»ONE Z LUKAMI** â€” rdzeĹ„ R1â€“R10 + U-3â€¦U-25 w kodzie od FALA 41 (`c1e7a596`); deploy ROBOCZA OK. Otwarte: konflikt P84â†”P85 (pkt Zdrowia Spichlerza â†’ dziĹ› wzrost %), U-25B (Â˝ ĹĽywnoĹ›ci ludnoĹ›ci), Garncarnia +Zadowolenie (R7-C).  
+**Status:** 🟢 **WDROŻONE Z LUKAMI ZAMKNIĘTYMI** — rdzeń R1–R10 + U-3…U-25 w kodzie; FALA 41 (c1e7a596) + FALA 94 (d776c787). U-25B (racje Spichlerza), Garncarnia +Zadowolenie (R7-C/U-14b), głód 1 tura (P85-Q7) — zweryfikowane w kodzie 2026-07-29.
 **Data:** 2026-07-27 Â· audyt kodu: 2026-07-27 23:10
 
 ## Kanon przepĹ‚ywu (Maciej 2026-07-27 â€” nadrzÄ™dny nad wczeĹ›niejszymi paczkami Q1â€“Q6)
@@ -92,7 +92,7 @@ WczeĹ›niejsze odpowiedzi Q1=B (â€žstaĹ‚e X/turÄ™â€ť) i hybryda 
 
 | ID | ĹąrĂłdĹ‚o / budynek | Parametr | WartoĹ›Ä‡ |
 |----|------------------|----------|---------|
-| **PYTANIE-84-B1** | **Glinianka** (teren) | `surowiec_ilosc_tura` glina | **20**/turÄ™ (U-18/U-19) |
+| **PYTANIE-84-B1** | **Glinianka** (teren) | `surowiec_ilosc_tura` glina | **15**/turÄ™ (U-18; było 20 → korekta balansu Maciej 2026-07-29) |
 | **PYTANIE-84-B2** | **Warzelnia soli** (teren) | SĂłl do magazynu paĹ„stwa | **10**/turÄ™ |
 | **PYTANIE-84-B3** | **Stadnina** (teren) | KoĹ„ do magazynu paĹ„stwa | **1**/turÄ™ |
 | **PYTANIE-84-B4** | **Kopalnia zĹ‚ota** (teren) | ZĹ‚oto do magazynu paĹ„stwa | **1**/turÄ™ |
@@ -100,7 +100,7 @@ WczeĹ›niejsze odpowiedzi Q1=B (â€žstaĹ‚e X/turÄ™â€ť) i hybryda 
 | **PYTANIE-84-B6** | **Spichlerz I** (miasto) | zuĹĽycie Ceramiki/turÄ™ ze skarbca | **5**/turÄ™ |
 | **PYTANIE-84-B7** | **Spichlerz II** (miasto) | zuĹĽycie Soli/turÄ™ | **5**/turÄ™ (Ă— liczba dziaĹ‚ajÄ…cych, U-2=A) |
 | **PYTANIE-84-B8** | **Spichlerz II** (miasto) | zuĹĽycie Ceramiki/turÄ™ | **5**/turÄ™ |
-| **PYTANIE-84-B9** | **Tartak** (teren) | `surowiec_ilosc_tura` drewno | **20**/turÄ™ (U-18) |
+| **PYTANIE-84-B9** | **Tartak** (teren) | `surowiec_ilosc_tura` drewno | **10**/turÄ™ (U-18; było 20 → korekta balansu Maciej 2026-07-29) |
 
 **U-4 domkniÄ™te przez B6â€“B8:** Spichlerz **I** = tylko Ceramika; Spichlerz **II** = SĂłl **+** Ceramika (oba drainy co turÄ™).
 
@@ -127,7 +127,7 @@ WczeĹ›niejsze odpowiedzi Q1=B (â€žstaĹ‚e X/turÄ™â€ť) i hybryda 
 | **PYTANIE-84-U15** | **A** | Rekrut **+5 Koni:** wszystkie `Typ: Mount`, **oprĂłcz** Rydwan (woĹ‚y). |
 | **PYTANIE-84-U16** | **usunÄ…Ä‡ cap szlakĂłw** | **Brak** osobnej â€žprzepustowoĹ›ci szlakĂłw" (`capacityPerRoutePerTurn` itd.) â€” anachronizm. Szlaki (U-3=A) dostarczajÄ… surowce do magazynu wg **nowego modelu handlu** (bez limitu trasy); liczy siÄ™ tylko **produkcja** z mapy/budynkĂłw. ZĹ‚oto â€” **wysoka wartoĹ›Ä‡** wymiany (U-13). |
 | **PYTANIE-84-U17** | **A** | **Warsztat kamieniarski:** +10% Kamienia/szt. na wpĹ‚ywie z mapy (kumulacja addytywna, jak Stolarnia). |
-| **PYTANIE-84-U18** | **Tartak 20, Glinianka 20** | **Tartak** â†’ **20** Drewna/turÄ™; **Glinianka** â†’ **20** Gliny/turÄ™ (m.in. na CegielniÄ™ + GarncarniÄ™). |
+| **PYTANIE-84-U18** | **Tartak 10, Glinianka 15** | **Tartak** â†’ **10** Drewna/turÄ™; **Glinianka** â†’ **15** Gliny/turÄ™ (korekta balansu Maciej 2026-07-29; było 20/20). |
 | **PYTANIE-84-U19** | **20** | Bilans przy **20/t** ĹşrĂłdĹ‚ach: **Garncarnia 6/t** (B5) zostaje â€” wystarczajÄ…co na Spichlerz (5 Ceramiki/t) + nadwyĹĽka/handl. |
 | **PYTANIE-84-U20** | **A** | SĂłl, ZĹ‚oto, KoĹ„ **wliczajÄ… siÄ™** w cap magazynu paĹ„stwa (baza **500** + **100**Ă—Magazyn). |
 | **PYTANIE-84-U21** | **A** | Warzelnia: **10 Soli/t** do magazynu **+** dotychczasowy bonus heksa (+1 Ĺ»ywnoĹ›Ä‡, +1 PieniÄ…dz). |

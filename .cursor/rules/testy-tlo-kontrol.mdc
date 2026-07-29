@@ -1,0 +1,49 @@
+---
+description: Testy — uruchamiaj, czekaj na wynik, raportuj PASS/FAIL/TIMEOUT. Zakaz wiszących node i „odpal w tle i zapomnij”.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Testy — kontrola wykonania (NIENEGOCJOWALNE)
+
+**Powód:** Maciej 2026-07-28 — 7× `cluster-start-test` w tle ~4 h, zero efektu, ~0,6–1 GB RAM × 10 node. Doprecyzowanie: *„testy wolno i trzeba — ale wiedzieć, że się wykonały i co dowiozły."*
+
+## Zasada główna
+
+- Testy **wolno i trzeba** uruchamiać — to normalna praca.
+- Agent **musi** doczekać wyniku (`Await` / foreground `block_until_ms`) i wiedzieć: **zakończone** vs **timeout** vs **hung**.
+- W raporcie do Macieja / parenta: **`PASS` / `FAIL` / `TIMEOUT`** + **1 linia** co dowiozły (albo że nic).
+- **ZAKAZ** „odpal w tle i zapomnij".
+
+## ZAKAZY
+
+- **NIE** odpalać w tle (`block_until_ms: 0` / background) długich suite’ów bez limitu — szczególnie **więcej niż 1 kopię naraz**.
+- Dotyczy m.in.: `cluster-start-test.cjs`, `map-gen-regression-test.cjs` (full), łańcuchy „pełny tsc + cluster”, diplomacy fan-out.
+- **NIE** fan-out 3–7 równoległych długich testów „na wszelki wypadek" (subagenci włącznie).
+
+## Wymagane
+
+| Zasada | Wartość |
+|--------|---------|
+| Preferuj | krótkie, celowane testy lane’u |
+| Długie suite’y | **jeden** na raz, foreground + jawny timeout |
+| Typowy `.cjs` | max **~3–5 min** (`block_until_ms` / `Await`); dłużej tylko gdy Maciej każe |
+| Po limicie | **zabij** proces → raportuj **TIMEOUT** — **nie** zostawiaj orphaned `node` |
+| Koniec sesji / przed deploy | sprawdź brak wiszących `node tools/*-test.cjs` |
+
+## Raport (szablon)
+
+```
+combat-test.cjs — PASS (6/6) — kontrata typów bez regresji
+cluster-start-test.cjs — TIMEOUT 5 min — zabity, brak wyniku
+```
+
+## Przykład
+
+```
+❌ block_until_ms: 0 × 5× cluster-start-test → zapomniane
+❌ „uruchomiłem testy" bez PASS/FAIL/TIMEOUT
+✅ node tools/combat-test.cjs — block_until_ms: 180000 → PASS 6/6
+✅ timeout → kill → TIMEOUT — cluster-start, nic nie dowiózł
+```

@@ -88,9 +88,10 @@ import {
   CITY_BUILDING_PREREQ,
   cityBuildingPrereqMet,
   WATER_ACCESS_BUILDING_IDS,
+  buildingRequiredActiveLabels,
+  empireResourceLabelSatisfied,
 } from '../game/building-resource-gate';
 import { CITY_PANEL_RANGE_DEPOSIT_LABELS } from '../game/resource-access';
-import { empireHasKopalniaMiedzi, PIEC_HUTNICZY_BUILDING_ID } from '../game/braz-access';
 import {
   buildingStockCost,
   unitStockCost,
@@ -511,6 +512,44 @@ function copyCityProduction(prod: CityProduction): CityProduction {
   };
 }
 
+/** Przesuń pozycję kolejki rekrutacji w górę/dół. */
+function moveRecruitQueueItem(prod: CityProduction, index: number, dir: -1 | 1): CityProduction {
+  const rq = prod.rekrutacja ?? [];
+  const j = index + dir;
+  if (index < 0 || j < 0 || index >= rq.length || j >= rq.length) {
+    return copyCityProduction(prod);
+  }
+  const next = [...rq];
+  const a = next[index] as ProductionItem;
+  next[index] = next[j] as ProductionItem;
+  next[j] = a;
+  return {
+    kolejka: [...prod.kolejka],
+    postep: prod.postep,
+    wstrzymana: prod.wstrzymana,
+    rekrutacja: next.length ? next : undefined,
+  };
+}
+
+/** Przenieś pozycję kolejki rekrutacji na inny indeks. */
+function reorderRecruitQueueItem(prod: CityProduction, fromIndex: number, toIndex: number): CityProduction {
+  const rq = prod.rekrutacja ?? [];
+  const len = rq.length;
+  if (fromIndex < 0 || toIndex < 0 || fromIndex >= len || toIndex >= len || fromIndex === toIndex) {
+    return copyCityProduction(prod);
+  }
+  const next = [...rq];
+  const [moved] = next.splice(fromIndex, 1);
+  if (!moved) return copyCityProduction(prod);
+  next.splice(toIndex, 0, moved);
+  return {
+    kolejka: [...prod.kolejka],
+    postep: prod.postep,
+    wstrzymana: prod.wstrzymana,
+    rekrutacja: next.length ? next : undefined,
+  };
+}
+
 /** Przenieś pozycję kolejki (indeks ≥ 1) na inny indeks w tej samej kolejce. */
 function reorderQueueItem(prod: CityProduction, fromIndex: number, toIndex: number): CityProduction {
   const len = prod.kolejka.length;
@@ -527,6 +566,68 @@ function reorderQueueItem(prod: CityProduction, fromIndex: number, toIndex: numb
     wstrzymana: prod.wstrzymana,
     rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
   };
+}
+
+function bindRecruitQueueDragReorder(sc: HTMLElement, city: City): void {
+  let dragFromIndex: number | null = null;
+
+  const clearDropMarks = (): void => {
+    sc.querySelectorAll('.qitem.is-drop-target').forEach(node => node.classList.remove('is-drop-target'));
+    sc.querySelectorAll('.qitem.is-dragging').forEach(node => node.classList.remove('is-dragging'));
+  };
+
+  sc.querySelectorAll<HTMLElement>('.qitem[data-recruit-idx]').forEach(row => {
+    row.setAttribute('draggable', 'true');
+
+    row.addEventListener('dragstart', (e) => {
+      if ((e.target as HTMLElement).closest('button')) {
+        e.preventDefault();
+        return;
+      }
+      const idx = Number(row.dataset.recruitIdx);
+      if (!Number.isFinite(idx)) return;
+      dragFromIndex = idx;
+      row.classList.add('is-dragging');
+      e.dataTransfer?.setData('text/plain', String(idx));
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.dropEffect = 'move';
+      }
+    });
+
+    row.addEventListener('dragend', () => {
+      dragFromIndex = null;
+      clearDropMarks();
+    });
+  });
+
+  sc.addEventListener('dragover', (e) => {
+    if (dragFromIndex === null) return;
+    e.preventDefault();
+    const row = (e.target as HTMLElement).closest<HTMLElement>('.qitem[data-recruit-idx]');
+    clearDropMarks();
+    if (row) row.classList.add('is-drop-target');
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+  });
+
+  sc.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (dragFromIndex === null) return;
+    const row = (e.target as HTMLElement).closest<HTMLElement>('.qitem[data-recruit-idx]');
+    if (!row) {
+      clearDropMarks();
+      return;
+    }
+    const toIndex = Number(row.dataset.recruitIdx);
+    if (!Number.isFinite(toIndex) || toIndex === dragFromIndex) {
+      clearDropMarks();
+      return;
+    }
+    setProd(city.id, reorderRecruitQueueItem(getProd(city.id), dragFromIndex, toIndex));
+    dragFromIndex = null;
+    clearDropMarks();
+    rerender();
+  });
 }
 
 function bindBuildQueueDragReorder(sc: HTMLElement, city: City): void {
@@ -616,6 +717,45 @@ function tury(n: number): string {
 function etaTurns(koszt: number, postep: number, praca: number): number | null {
   if (!(praca > 0)) return null;
   return Math.max(1, Math.ceil(Math.max(0, koszt - postep) / praca));
+}
+
+/** Etykieta ETA budowy — null → „brak Pracy”. */
+function formatBuildEtaLabel(turns: number | null, prefix = '~'): string {
+  if (turns === null) return 'brak Pracy';
+  return `${prefix}${turns} ${tury(turns)}`;
+}
+
+/**
+ * Kumulatywny ETA pozycji kolejki (indeks ≥ 1): kiedy budynek będzie gotowy,
+ * licząc od bieżącej tury przy stałym dopływie Pracy do budynków.
+ * Gdy produkcja wstrzymana — null (nie da się oszacować kolejki).
+ */
+function queueItemCumulativeEta(
+  prod: CityProduction,
+  queueIndex: number,
+  pracaPerTurn: number,
+): number | null {
+  if (!(pracaPerTurn > 0) || queueIndex < 1) return null;
+  if (prod.wstrzymana === true) return null;
+  const front = frontItem(prod);
+  let sum = 0;
+  if (front) {
+    const rem = etaTurns(front.koszt, prod.postep, pracaPerTurn);
+    if (rem === null) return null;
+    sum += rem;
+  }
+  for (let i = 1; i < queueIndex; i++) {
+    const it = prod.kolejka[i] as ProductionItem;
+    sum += Math.max(1, Math.ceil(it.koszt / pracaPerTurn));
+  }
+  const cur = prod.kolejka[queueIndex] as ProductionItem;
+  sum += Math.max(1, Math.ceil(cur.koszt / pracaPerTurn));
+  return sum;
+}
+
+/** ETA samego budynku w kolejce (bez oczekiwania na poprzednie). */
+function queueItemOwnEta(koszt: number, pracaPerTurn: number): number | null {
+  return etaTurns(koszt, 0, pracaPerTurn);
 }
 
 /** Font scale (px on the root); module-level so it persists across re-renders. */
@@ -1224,10 +1364,12 @@ const CITY_PANEL_ICON_RAIL_VERT_EM = CITY_PANEL_ICON_GLYPH_EM * 0.5;
 const LIST_SCROLL_VISIBLE = 3;
 /** Kompaktowy wiersz katalogu budowy (ikona + nazwa + Buduj). */
 const LIST_ROW_HEIGHT_COMPACT = 2.35;
-/** Kolejka rekrutacji w panelu Produkcja (lewa kolumna). */
-const RECRUIT_QUEUE_VISIBLE = 7;
+/** Kolejka rekrutacji w panelu Produkcja — max widocznych wierszy (reszta scroll). */
+const RECRUIT_QUEUE_VISIBLE = 5;
 /** Kolejka budowy (pozycje po bieżącym projekcie) — max widocznych wierszy. */
 const BUILD_QUEUE_VISIBLE = 4;
+/** Wysokość jednego wiersza kolejki rekrutacji/budowy (em). */
+const QUEUE_ROW_EM = 2.75;
 /** Panel Buduj / Rekrutacja — więcej pozycji na ekranie. */
 const LIST_SCROLL_VISIBLE_CATALOG = 8;
 const LIST_ROW_HEIGHT_EM = 2.75;
@@ -1639,16 +1781,6 @@ function ensureStyles(): void {
 .civ-cs .civ-w4-inline-breakdown.muted{color:#8a8070;font-style:italic;}
 .civ-cs .civ-w4-section-hd{font-size:0.68em;letter-spacing:.14em;text-transform:uppercase;color:#a08030;
   margin:0.55em 0 0.38em;padding-top:0.35em;border-top:1px solid rgba(232,216,138,.12);}
-.civ-cs .unit-w4-card{display:flex;align-items:center;gap:0.55em;border:1px solid rgba(232,216,138,.18);border-radius:8px;
-  padding:0.55em 0.65em;margin-bottom:0.38em;background:rgba(255,255,255,.02);}
-.civ-cs .unit-w4-card .unit-w4-thumb{width:2.75em;height:2.75em;flex:none;border-radius:8px;border:1px solid rgba(232,216,138,.28);
-  background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);display:flex;align-items:center;justify-content:center;overflow:hidden;}
-.civ-cs .unit-w4-card .unit-w4-thumb .unit-infographic-medallion{width:100%;height:100%;border:none;border-radius:8px;}
-.civ-cs .unit-w4-card .unit-w4-thumb svg{width:1.35em;height:1.35em;display:block;}
-.civ-cs .unit-w4-card .unit-w4-body{flex:1;min-width:0;}
-.civ-cs .unit-w4-card .unit-w4-name{font-size:0.84em;font-weight:600;color:#e8e0c8;line-height:1.2;}
-.civ-cs .unit-w4-card .unit-w4-cost{font-size:0.7em;color:#8a8070;margin-top:0.12em;display:flex;align-items:center;gap:0.25em;}
-.civ-cs .unit-w4-scroll{max-height:calc(${RECRUIT_QUEUE_VISIBLE} * 4.6em);overflow-y:auto;scrollbar-width:thin;padding-right:0.1em;}
 .civ-cs .civ-w4-tab-body .civ-breakdown-block .subhd{font-size:0.68em;letter-spacing:.14em;text-transform:uppercase;color:#a08030;}
 .civ-cs .civ-w4-tab-body .civ-breakdown-block .muted{font-size:0.68em;letter-spacing:.1em;text-transform:uppercase;color:#8a8070;}
 .civ-cs .picon{width:3.4em;height:3.4em;border:2px solid var(--gold);border-radius:4px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:1.9em;flex-shrink:0;}
@@ -1660,6 +1792,12 @@ function ensureStyles(): void {
 .civ-cs .qitem.is-drop-target{border-color:var(--gold);box-shadow:0 0 0 1px rgba(232,216,138,0.35);}
 .civ-cs .qitem-grip{color:var(--muted);font-size:0.68em;letter-spacing:-0.14em;padding:0 0.12em;user-select:none;flex-shrink:0;line-height:1;opacity:0.75;}
 .civ-cs .qitem-grip:hover{color:var(--gold);opacity:1;}
+.civ-cs .qitem-eta{font-size:0.72em;color:var(--blue,#6ab0e8);white-space:nowrap;flex-shrink:0;line-height:1.2;}
+.civ-cs .qitem-eta.muted-eta{color:var(--muted,#8a8070);}
+.civ-cs .qitem-cost{font-size:0.72em;color:var(--muted,#8a8070);white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;gap:0.12em;line-height:1.2;}
+.civ-cs .qitem .qitem-ic{width:1.05em;height:1.05em;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;}
+.civ-cs .qitem .qitem-ic svg{width:1.05em;height:1.05em;display:block;}
+.civ-cs .qitem .qitem-ic .unit-infographic-medallion{width:1.05em;height:1.05em;border:none;}
 .civ-cs .hpb{height:0.4em;background:var(--panel2);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-top:0.15em;}
 .civ-cs .hpf{height:100%;border-radius:2px;background:var(--green);} .civ-cs .hpl{background:var(--red);}
 .civ-cs .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:0.25em;}
@@ -2127,12 +2265,8 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-cs .detail-card.bld-detail-card .bld-detail-tile-bd .bld-infocard-chips{margin-top:0.08em;}
 .civ-cs .detail-card.bld-detail-card .bld-detail-tile-bd .bld-infocard-eyebrow{margin-top:0.18em;}
 .civ-cs .detail-card.bld-detail-card .bld-detail-tile-bd .bld-infocard-eyebrow:first-child{margin-top:0;}
-.civ-cs .recruit-prod{display:flex;gap:0.5em;align-items:flex-start;margin-bottom:0.3em;padding:0.22em 0;
-  border-bottom:1px solid rgba(255,255,255,0.04);}
-.civ-cs .recruit-prod:last-child{border-bottom:none;}
-.civ-cs .recruit-prod .picon{width:2.75em;height:2.75em;font-size:1.45em;}
-.civ-cs .recruit-scroll{max-height:calc(${RECRUIT_QUEUE_VISIBLE} * 4.2em);overflow-y:auto;scrollbar-width:thin;padding-right:0.1em;}
-.civ-cs .build-queue-scroll{max-height:calc(${BUILD_QUEUE_VISIBLE} * 2.75em);overflow-y:auto;scrollbar-width:thin;padding-right:0.1em;}
+.civ-cs .recruit-queue-scroll{max-height:calc(${RECRUIT_QUEUE_VISIBLE} * ${QUEUE_ROW_EM}em);overflow-y:auto;scrollbar-width:thin;padding-right:0.1em;}
+.civ-cs .build-queue-scroll{max-height:calc(${BUILD_QUEUE_VISIBLE} * ${QUEUE_ROW_EM}em);overflow-y:auto;scrollbar-width:thin;padding-right:0.1em;}
 .civ-v-top-strip .civ-v-tag{color:#8b97a8;letter-spacing:0.06em;text-transform:uppercase;}
 .civ-v-top-close{background:linear-gradient(180deg,#5a3020,#3a1810);border:1px solid #a05040;
   color:#ffe8d0;font-size:0.85em;padding:0.15em 0.55em;border-radius:2px;cursor:pointer;font-weight:600;}
@@ -2231,6 +2365,11 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-v-right-foot .panel{background:transparent!important;border:none!important;padding:0!important;box-shadow:none!important;}
 .civ-w4-surowce-foot{padding:0.62em 0.72em;border:1px solid rgba(212,175,90,0.34);border-radius:10px;
   background:rgba(9,13,22,0.96);box-shadow:0 2px 10px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05);}
+.okolica-surowce-strip{margin:0.28em 0 0.42em;padding:0.38em 0.48em;border:1px solid rgba(212,175,90,0.22);
+  border-radius:8px;background:rgba(20,18,14,0.45);}
+.okolica-surowce-strip .civ-w4-surowce-hd{margin-bottom:0.28em;}
+.okolica-surowce-strip .civ-w4-surowce-title{font-size:0.58em;}
+.okolica-surowce-strip .civ-w4-surowce-grid{gap:0.22em 0.35em;}
 .civ-w4-surowce-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.42em;cursor:help;}
 .civ-w4-surowce-title{font-size:0.62em;letter-spacing:0.16em;text-transform:uppercase;color:#a08030;font-weight:700;}
 .civ-w4-surowce-detail{font-size:0.56em;letter-spacing:0.14em;text-transform:uppercase;color:#a08030;text-decoration:none;}
@@ -2284,7 +2423,7 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-v-split-col + .civ-v-split-col{border-top:1px solid rgba(212,175,90,0.22);padding-top:0.28em;}
 .civ-v-split-col > .panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .civ-v-split-col .list-scroll-fill,
-.civ-v-split-col .recruit-scroll.list-scroll-fill{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;}
+.civ-v-split-col .recruit-queue-scroll.list-scroll-fill{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;}
 .civ-v-build-pane{display:flex;flex-direction:column;flex:1;min-height:0;height:100%;width:100%;gap:0;}
 .civ-v-build-main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .civ-v-build-main > .panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
@@ -2840,15 +2979,15 @@ function appendSurowceGrid(
   parent.appendChild(grid);
 }
 
-function renderSurowce(mount: HTMLElement, city: City): void {
+function renderSurowce(mount: HTMLElement, city: City, compact = false): void {
   mount.innerHTML = '';
   const raw = cfg.getResourceAccess?.(city.id);
   const { potential, active, legacy } = normalizeResourceAccess(raw);
-  const wrap = el('div', 'civ-w4-surowce-foot');
+  const wrap = el('div', compact ? 'okolica-surowce-strip' : 'civ-w4-surowce-foot');
   const hd = el('div', 'civ-w4-surowce-hd');
-  const surowceTitle = el('span', 'civ-w4-surowce-title');
-  surowceTitle.textContent = 'Surowce w zasięgu';
-  const surowceDetail = el('button', 'civ-w4-surowce-detail civ-w4-panel-detail gold');
+  const surowceTitle = el('span', compact ? 'okolica-surowce-title' : 'civ-w4-surowce-title');
+  surowceTitle.textContent = compact ? 'Surowce w zasięgu' : 'Surowce w zasięgu';
+  const surowceDetail = el('button', compact ? 'okolica-info-link civ-w4-surowce-detail gold' : 'civ-w4-surowce-detail civ-w4-panel-detail gold');
   surowceDetail.type = 'button';
   surowceDetail.textContent = 'i szczegóły';
   surowceDetail.setAttribute('aria-label', 'Pokaż szczegóły surowców');
@@ -2906,7 +3045,7 @@ function buildSurowceDetailCard(
   intro.style.fontStyle = 'normal';
   intro.textContent = legacy
     ? 'Surowce w zasięgu TEGO miasta — podgląd mapy lokalnej (nie warunek budowy w innym mieście). Koszt surowcowy budynku = magazyn całej cywilizacji.'
-    : 'Potencjał (szare) = złoże widoczne w zasięgu tego miasta — jeszcze nieużywalne. Dostęp aktywny w imperium = po ulepszeniu terenu (tartak, glinianka, warzelnia soli…) gdziekolwiek w cywilizacji. Koszt budowy (`koszt_surowce`) pobierany jest z magazynu państwa — bez wymogu zasięgu tego miasta.';
+    : 'Potencjał (szare) = złoże widoczne w zasięgu tego miasta — jeszcze nieużywalne. Surowce magazynowe (Drewno, Glina, Ruda…) wymagają zapasu w magazynie państwa — koszt budowy (`koszt_surowce`) też stamtąd.';
   card.appendChild(intro);
   if (active.length > 0) {
     appendDetailSection(card, legacy ? 'Lista' : 'Dostęp aktywny');
@@ -5468,14 +5607,6 @@ function buildingRequirementChips(
     chips.push({ label, met, kind: 'other' });
   }
 
-  if (def.id === PIEC_HUTNICZY_BUILDING_ID) {
-    chips.push({
-      label: 'Kopalnia miedzi w imperium',
-      met: empireHasKopalniaMiedzi(ctx.placedImprovements),
-      kind: 'other',
-    });
-  }
-
   if (WATER_ACCESS_BUILDING_IDS.has(def.id)) {
     chips.push({
       label: 'Wybrzeże lub rzeka przy mieście',
@@ -5496,8 +5627,26 @@ function buildingRequirementChips(
   for (const [k, need] of Object.entries(stockCost)) {
     const have = pool[k] ?? 0;
     chips.push({
-      label: `${need} ${stockResourceLabel(k)} (masz ${have})`,
+      label: `${need} ${stockResourceLabel(k)} w magazynie (masz ${have})`,
       met: have >= need,
+      kind: 'stock',
+    });
+  }
+
+  const LABEL_STOCK_KEY: Record<string, string> = {
+    Drewno: 'drewno', Kamień: 'kamien', Glina: 'glina', Ruda: 'ruda',
+    Żelazo: 'zelazo', Stal: 'stal', Brąz: 'braz', Sól: 'sol', Cegła: 'cegla',
+    Ceramika: 'ceramika', Złoto: 'zloto', Koń: 'kon',
+  };
+  for (const label of buildingRequiredActiveLabels(def)) {
+    const asciiKey = LABEL_STOCK_KEY[label];
+    const have = asciiKey ? (pool[asciiKey] ?? 0) : 0;
+    const met = empireResourceLabelSatisfied(
+      label, undefined, ctx.empireBuiltIds ?? built, pool, def.id,
+    );
+    chips.push({
+      label: `${label} w magazynie państwa (masz ${have})`,
+      met,
       kind: 'stock',
     });
   }
@@ -6385,84 +6534,85 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
   }
   wrap.appendChild(qh);
   {
-    const sc = createScrollList(opts?.w4 ? 'unit-w4-scroll' : 'recruit-scroll', { visible: RECRUIT_QUEUE_VISIBLE, rowEm: 4.2 });
+    const sc = createScrollList('recruit-queue-scroll', {
+      visible: RECRUIT_QUEUE_VISIBLE,
+      rowEm: QUEUE_ROW_EM,
+    });
+    if (opts?.w4) sc.classList.add('list-scroll-fill');
     for (let i = 0; i < rq.length; i++) {
       const it = rq[i]!;
       const udef = data ? findUnitDef(data, it.id) : undefined;
-      const isFront = i === 0;
-      const badge = isFront
-        ? '<span class="blue" style="font-size:0.72em;font-weight:600;margin-left:0.3em;">· nast. tura</span>'
-        : `<span class="muted" style="font-size:0.68em;margin-left:0.3em;">#${i + 1}</span>`;
-      if (opts?.w4) {
-        const block = el('div', 'unit-w4-card');
-        const thumb = el('div', 'unit-w4-thumb');
-        thumb.innerHTML = unitMedallionHtml(udef, it.id, 20);
-        block.appendChild(thumb);
-        const body = el('div', 'unit-w4-body');
-        const name = el('div', 'unit-w4-name');
-        name.innerHTML = `${it.nazwa}${badge}`;
-        body.appendChild(name);
-        const cost = el('div', 'unit-w4-cost');
-        cost.innerHTML = `Opłacone ${it.koszt} ${cityPanelChipIconWrap('res-treasury', 14)}`;
-        body.appendChild(cost);
-        block.appendChild(body);
-        if (udef && data) {
-          attachHoverDetail(thumb, () => buildUnitDetailCard(udef, data), 180);
-        }
-        if (player) {
-          const x = el('button', 'btn btn-sm');
-          x.innerHTML = cityPanelChipIconWrap('ui-close', 14);
-          x.style.cssText = 'padding:0 0.35em;align-self:flex-start;flex:none;';
-          const idx = i;
-          x.title = 'Usuń z kolejki (zwrot opłaty do skarbca)';
-          x.addEventListener('click', () => {
-            cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
-            setProd(city.id, dequeueRecruitment(getProd(city.id), idx));
-            rerender();
-          });
-          block.appendChild(x);
-        }
-        sc.appendChild(block);
-        continue;
-      }
-      const icon = unitIconHtml(udef, it.id);
-      const block = el('div', 'recruit-prod');
-      block.style.position = 'relative';
-      const iconEl = el('div', 'picon');
-      fillIconElement(iconEl, icon);
-      block.appendChild(iconEl);
-      if (udef && data) {
-        attachHoverDetail(iconEl, () => buildUnitDetailCard(udef, data), 180);
-      }
-      const body = el('div');
-      body.style.cssText = 'flex:1;min-width:0;';
-      body.innerHTML =
-        `<div style="font-size:0.92em;font-weight:700;" class="gold">${it.nazwa}${badge}</div>` +
-        `<div class="muted" style="font-size:0.74em;">Jednostka · Opłacone ${it.koszt} ${cityPanelChipIconWrap('res-treasury', 14)}</div>`;
-      block.appendChild(body);
+      const qi = el('div', 'qitem');
+      qi.style.marginBottom = '0.15em';
+      qi.dataset.recruitIdx = String(i);
+      if (player) qi.classList.add('qitem-draggable');
       if (player) {
-        const x = el('button', 'btn btn-sm');
-        x.innerHTML = cityPanelChipIconWrap('ui-close', 14);
-        x.style.cssText = 'padding:0 0.35em;align-self:flex-start;';
-        const idx = i;
+        const grip = el('span', 'qitem-grip', '⋮⋮');
+        grip.title = 'Przeciągnij, aby zmienić kolejność';
+        qi.appendChild(grip);
+      }
+      const iconSpan = productionQueueIconSpan(data, it);
+      iconSpan.classList.add('qitem-ic');
+      if (udef && data) {
+        attachHoverDetail(iconSpan, () => buildUnitDetailCard(udef, data), 180);
+      }
+      qi.appendChild(iconSpan);
+      const qLabel = el('span');
+      qLabel.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+      qLabel.textContent = it.nazwa;
+      qi.appendChild(qLabel);
+      const costEl = el('span', 'qitem-cost');
+      costEl.innerHTML = `${it.koszt} ${cityPanelChipIconWrap('res-treasury', 14)}`;
+      costEl.title = `Opłacone ze skarbca: ${it.koszt}`;
+      qi.appendChild(costEl);
+      const etaTurns = i + 1;
+      const etaEl = el('span', 'qitem-eta');
+      etaEl.textContent = etaTurns === 1 ? 'nast. tura' : `~${etaTurns} ${tury(etaTurns)}`;
+      etaEl.title = `Szacunek: ${etaTurns} ${tury(etaTurns)} (1 jednostka na turę)`;
+      qi.appendChild(etaEl);
+      if (player) {
+        const up = el('button', 'btn btn-sm', '↑');
+        up.style.cssText = 'padding:0 0.35em;';
+        (up as HTMLButtonElement).disabled = i <= 0;
+        up.addEventListener('click', () => {
+          setProd(city.id, moveRecruitQueueItem(getProd(city.id), i, -1));
+          rerender();
+        });
+        const down = el('button', 'btn btn-sm', '↓');
+        down.style.cssText = 'padding:0 0.35em;';
+        (down as HTMLButtonElement).disabled = i >= rq.length - 1;
+        down.addEventListener('click', () => {
+          setProd(city.id, moveRecruitQueueItem(getProd(city.id), i, 1));
+          rerender();
+        });
+        const x = el('button', 'btn btn-sm', '✕');
+        x.style.cssText = 'padding:0 0.35em;';
         x.title = 'Usuń z kolejki (zwrot opłaty do skarbca)';
         x.addEventListener('click', () => {
           cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
-          setProd(city.id, dequeueRecruitment(getProd(city.id), idx));
+          setProd(city.id, dequeueRecruitment(getProd(city.id), i));
           rerender();
         });
-        block.appendChild(x);
+        qi.appendChild(up);
+        qi.appendChild(down);
+        qi.appendChild(x);
       }
-      sc.appendChild(block);
+      sc.appendChild(qi);
     }
+    if (player) bindRecruitQueueDragReorder(sc, city);
     wrap.appendChild(sc);
   }
   mount.appendChild(wrap);
 }
 
 /** Kolejka budynków (pozycje 2+ w kolejce produkcji). */
-function appendBuildQueueSection(mount: HTMLElement, city: City, player: boolean): void {
-  const prod = getProd(city.id);
+function appendBuildQueueSection(
+  mount: HTMLElement,
+  city: City,
+  player: boolean,
+  prod: CityProduction,
+  pracaBudynki: number,
+): void {
   if (prod.kolejka.length <= 1) return;
   const data = gameData();
   const qWrap = el('div');
@@ -6473,7 +6623,7 @@ function appendBuildQueueSection(mount: HTMLElement, city: City, player: boolean
   {
     const sc = createScrollList('build-queue-scroll', {
       visible: BUILD_QUEUE_VISIBLE,
-      rowEm: 2.75,
+      rowEm: QUEUE_ROW_EM,
     });
     for (let i = 1; i < prod.kolejka.length; i++) {
       const it = prod.kolejka[i] as ProductionItem;
@@ -6491,6 +6641,27 @@ function appendBuildQueueSection(mount: HTMLElement, city: City, player: boolean
       qLabel.style.flex = '1';
       qLabel.textContent = it.nazwa;
       qi.appendChild(qLabel);
+      const cumEta = queueItemCumulativeEta(prod, i, pracaBudynki);
+      const ownEta = queueItemOwnEta(it.koszt, pracaBudynki);
+      const etaEl = el('span', 'qitem-eta');
+      if (cumEta !== null) {
+        etaEl.textContent = `gotowy za ~${cumEta} ${tury(cumEta)}`;
+        etaEl.title =
+          `Szacunek przy +${pracaBudynki} Pracy/turę do budynków` +
+          (ownEta !== null && ownEta !== cumEta ? ` · sam budynek: ~${ownEta} ${tury(ownEta)}` : '');
+      } else if (ownEta !== null) {
+        etaEl.textContent = `~${ownEta} ${tury(ownEta)}`;
+        etaEl.classList.add('muted-eta');
+        etaEl.title =
+          prod.wstrzymana === true
+            ? `Budynek: ~${ownEta} ${tury(ownEta)} po wznowieniu (kolejka wstrzymana)`
+            : `Sam budynek: ~${ownEta} ${tury(ownEta)} przy +${pracaBudynki} Pracy/turę`;
+      } else {
+        etaEl.textContent = 'brak Pracy';
+        etaEl.classList.add('muted-eta');
+        etaEl.title = 'Brak Pracy skierowanej do budynków — ustaw suwak „Budynki”';
+      }
+      qi.appendChild(etaEl);
       const idx = i;
       const up = el('button', 'btn btn-sm', '↑');
       up.style.cssText = 'padding:0 0.35em;';
@@ -6516,9 +6687,10 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
   mount.innerHTML = '';
   const prod = getProd(city.id);
   const front = frontItem(prod);
-  const praca = view ? view.praca : 0;
-  const player = city.ownerId === 0; // AI cities -> read-only (no build/queue controls)
   const data = gameData();
+  const pracaSplit = view ? cityPracaSplit(city, view, data) : null;
+  const pracaBud = pracaSplit?.doBudynkow ?? 0;
+  const player = city.ownerId === 0; // AI cities -> read-only (no build/queue controls)
   const hasBuildQueue = prod.kolejka.length > 1;
   const hasRecruitQueue = (prod.rekrutacja ?? []).length > 0;
   const hasAutoToolbar = !!(player && cfg.getBudowaState?.(city.id));
@@ -6543,7 +6715,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
 
   if (front) {
     const paused = getProd(city.id).wstrzymana === true;
-    const e = paused ? null : etaTurns(front.koszt, prod.postep, praca);
+    const e = paused ? null : etaTurns(front.koszt, prod.postep, pracaBud);
     const pct = front.koszt > 0 ? Math.round(Math.min(1, prod.postep / front.koszt) * 100) : 100;
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const pauseBadge = paused
@@ -6561,7 +6733,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
           `<span class="muted">Zebrana Praca: <span class="gold">${Math.round(prod.postep)} / ${front.koszt}</span> ${workIc}</span>` +
           (paused
             ? `<span style="color:#e08030;font-weight:600;">Wstrzymane — brak postępu</span>`
-            : `<span class="blue">${e !== null ? '~' + e + ' ' + tury(e) : 'brak Pracy'}</span>`) +
+            : `<span class="blue">${formatBuildEtaLabel(e)}</span>`) +
         `</div>` +
         `<div class="bwrap"><div class="bfill" style="width:${pct}%;background:linear-gradient(90deg,#8a6418,var(--gold));"></div></div>`;
     row.appendChild(body);
@@ -6596,7 +6768,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     if (player) mount.appendChild(actions);
   }
 
-  appendBuildQueueSection(mount, city, player);
+  appendBuildQueueSection(mount, city, player, prod, pracaBud);
   appendRecruitmentQueue(mount, city, player);
 }
 
@@ -7883,6 +8055,11 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
     }
   }
   if (gridEl) renderWorkedPreview(gridEl, city, map, worked, okState?.reczne, tryb);
+
+  const surowceHost = root.querySelector('#cs-oksurowce') as HTMLElement | null;
+  if (surowceHost) {
+    renderSurowce(surowceHost, city, true);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -8011,6 +8188,7 @@ function skeleton(city: City, view: CityView | null): string {
         <div class="okolica">
           <div id="cs-okhead" class="ptitle"></div>
           <div id="cs-oktoolbar" class="okolica-toolbar"></div>
+          <div id="cs-oksurowce" class="okolica-surowce-host"></div>
           <div id="cs-okstats" class="okstats"></div>
           <div class="okwrap">
             <div id="cs-okolica" style="background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:6px;"></div>
@@ -8516,8 +8694,8 @@ function buildHandelDetailCard(
     const mennicaWarn = el('div', 'dc-note');
     mennicaWarn.style.cssText = 'font-style:normal;border-left:2px solid #e08a8a;padding-left:0.45em;margin-top:0.35em;color:#f0c8c8;';
     mennicaWarn.textContent =
-      'Mennica nieaktywna: brak dostępu do złota (własna Kopalnia złota albo szlak handlowy z posiadaczem złota). ' +
-      'Zdobądź dostęp do złota, żeby mnożnik znów zadziałał — budynek nie jest burzony, tylko czeka.';
+      'Mennica nieaktywna: brak Złota w magazynie państwa (Kopalnia złota, szlak handlowy lub zapas). ' +
+      'Uzupełnij magazyn Złotem, żeby mnożnik znów zadziałał — budynek nie jest burzony, tylko czeka.';
     card.appendChild(mennicaWarn);
   }
 
@@ -8554,7 +8732,7 @@ function buildHandelDetailCard(
     mennicaAktywna
       ? ` × Waluta+Mennica (${mennicaMnoznikTxt})`
       : mennicaSpiZBrakuZlota
-        ? ' × ×1 (Mennica śpi — brak dostępu do złota)'
+        ? ' × ×1 (Mennica śpi — brak Złota w magazynie)'
         : ' × ×1 (brak Waluty lub Mennicy)'
   ));
   appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki  ← już zawiera mnożnik Waluty+Mennicy powyżej');
@@ -8573,7 +8751,7 @@ function buildHandelDetailCard(
     mennicaAktywna
       ? `Mennica + Waluta razem mnożą całe ${daninaLbl} netto ${mennicaMnoznikTxt} (Skarb, Nauka i ${HANDEL_ZAMOZNOSC_LABEL} rosną razem).`
       : mennicaSpiZBrakuZlota
-        ? `Mennica zbudowana i Waluta odkryta, ale mnożnik ŚPI: brak dostępu do złota (własna Kopalnia złota albo szlak handlowy z posiadaczem złota) — wraca sam po odzyskaniu dostępu.`
+        ? `Mennica zbudowana i Waluta odkryta, ale mnożnik ŚPI: brak Złota w magazynie państwa — wraca sam po uzupełnieniu zapasu.`
         : maMennicaBudynek
           ? 'Mennica zbudowana, ale bez Waluty jeszcze nic nie mnoży (bramka: budynek + technologia, obie wymagane).'
           : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
@@ -8665,6 +8843,7 @@ function renderCivMapChrome(mount: HTMLElement, city: City, onClose?: () => void
     `</div>` +
     `</div>` +
     `<div id="cs-okolica-aux" hidden aria-hidden="true">` +
+    `<div id="cs-oksurowce" class="okolica-surowce-host"></div>` +
     `<div id="cs-okolica" class="okolica-grid-host"></div>` +
     `<div id="cs-okstats" class="okstats is-collapsed"></div>` +
     `<div id="cs-okhint" class="okhint is-collapsed"></div>` +
@@ -8867,6 +9046,7 @@ let activeCityPanelTab: CityPanelIconTab = 'budowa';
 function renderOkolicaPanel(mount: HTMLElement, city: City, map: GameMap): void {
   mount.innerHTML =
     `<div id="cs-okmode" class="okolica-mode-hint"></div>` +
+    `<div id="cs-oksurowce" class="okolica-surowce-host"></div>` +
     `<div id="cs-okolica" class="okolica-grid-host"></div>` +
     `<div id="cs-okstats" class="okstats is-collapsed"></div>` +
     `<div id="cs-okhint" class="okhint is-collapsed"></div>`;
@@ -9101,18 +9281,10 @@ export function paintCityPanelSections(
     mainEl.style.display = '';
     mainEl.style.flex = '1 1 auto';
     renderRightPanelTab(mainEl, activeCityPanelTab, city, map, view, data);
-    mainEl.querySelectorAll('.civ-w4-surowce-foot').forEach(node => {
-      node.closest('.panel')?.remove() ?? node.remove();
-    });
   }
 
-  const footEl = el('div', 'civ-v-right-foot');
-  footEl.id = 'cs-surowce-foot';
-  rightScope.appendChild(footEl);
-  mounts.right.querySelectorAll('.civ-w4-surowce-foot').forEach(node => {
-    if (!footEl.contains(node)) node.remove();
-  });
-  renderSurowce(appendPanel(footEl, 'cs-surowce'), city);
+  const footEl = rightScope.querySelector('#cs-surowce-foot');
+  if (footEl) footEl.remove();
 }
 
 function rerender(): void {

@@ -30,6 +30,41 @@ export function visibleStackOnHex(
 }
 
 /**
+ * Jednostki właściciela na heksie kwalifikujące się do promptu / logiki merge
+ * (widoczne + ukryte w garnizonie; bez oblegających).
+ */
+export function coLocatedForMergePrompt(
+  units: ReadonlyArray<RuntimeUnit>,
+  q: number,
+  r: number,
+  ownerId: number,
+): RuntimeUnit[] {
+  return units.filter(
+    u => u.ownerId === ownerId
+      && u.q === q
+      && u.r === r
+      && !u.oblegaCityId,
+  );
+}
+
+/** Sąsiednie heksy z widocznym stosem armii właściciela. */
+export function adjacentVisibleArmyHexes(
+  units: ReadonlyArray<RuntimeUnit>,
+  q: number,
+  r: number,
+  ownerId: number,
+): Array<{ q: number; r: number; stack: RuntimeUnit[] }> {
+  const out: Array<{ q: number; r: number; stack: RuntimeUnit[] }> = [];
+  for (const [dq, dr] of NEIGH) {
+    const nq = q + dq;
+    const nr = r + dr;
+    const stack = visibleStackOnHex(units as RuntimeUnit[], nq, nr, ownerId);
+    if (stack.length > 0) out.push({ q: nq, r: nr, stack });
+  }
+  return out;
+}
+
+/**
  * C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): "Ufortyfikuj" chowa jednostkę
  * (RuntimeUnit.inGarnizon=true) do garnizonu miasta — na mapie gracza widać
  * reprezentanta stosu w koszarach (computeStackDisplay); merge/ruch na heksie

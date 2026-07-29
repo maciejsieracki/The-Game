@@ -57,15 +57,10 @@ import {
 import { buildingCostAfterCivDiscount } from './civ-bonuses';
 import { unitManpowerCostForType, tryDeductUnitSpawnCosts, cityManpowerCurrent } from './manpower';
 import {
-  empireHasKopalniaMiedzi,
-  hasBrazAccess,
-  PIEC_HUTNICZY_BUILDING_ID,
-} from './braz-access';
-import { hasZelazoAccess } from './zelazo-access';
-import {
   CITY_BUILDING_PREREQ,
   cityBuildingPrereqMet,
   WATER_ACCESS_BUILDING_IDS,
+  buildingResourceGateMet,
 } from './building-resource-gate';
 import { buildingStockCost, canAffordBuildingStock } from './building-stock-cost';
 import {
@@ -517,6 +512,14 @@ export function civRecruitmentDiscount(
   return 0;
 }
 
+/** DOSTEP-SUROWCE-Q1: czy imperium ma >0 szt. surowca w magazynie państwa. */
+function empireStockHas(
+  stock: Readonly<Record<string, number>> | undefined,
+  asciiKey: string,
+): boolean {
+  return (stock?.[asciiKey] ?? 0) > 0;
+}
+
 function stripDiacritics(s: string): string {
   return s.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase();
 }
@@ -612,6 +615,11 @@ export function applyCompletedBuildingIds(
     if (idx >= 0) next.splice(idx, 1);
   }
   if (!next.includes(completedBuildingId)) next.push(completedBuildingId);
+  // Kamienne Mury zastępują wczesną Palisadę drewnianą (nie stack bonusów).
+  if (completedBuildingId === 'mury') {
+    const pi = next.indexOf('palisada');
+    if (pi >= 0) next.splice(pi, 1);
+  }
   return next;
 }
 
@@ -743,6 +751,9 @@ export function availableProduction(
     if (b.epokaWejscia > epoch) continue;
     if (isBuildingSuppressedFromProduction(b)) continue;
 
+    // Palisada drewniana: tylko gdy miasto nie ma już kamiennych Murów/Cytadeli.
+    if (b.id === 'palisada' && (builtList.includes('mury') || builtList.includes('fort'))) continue;
+
     const upgradeFrom = (b.upgradeFrom ?? '').trim();
     if (upgradeFrom.length > 0) {
       if (!builtList.includes(upgradeFrom)) continue;
@@ -762,10 +773,6 @@ export function availableProduction(
     // bug w tym module (jednostki już miały tę samą poprawkę, budynki — nie).
     if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) continue;
     if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
-    if (b.id === PIEC_HUTNICZY_BUILDING_ID
-      && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
-      continue;
-    }
     // TEMAT 8 Q2 (2026-07-24): budynek wymaga innego budynku W TYM MIEŚCIE (np. Warsztat
     // oblężniczy → Koszary LUB Akademia wojskowa, Łaźnia publiczna → Studnia). Od
     // GRUPY-BUDYNKOW (2026-07-25) Koszary/Akademia wojskowa stoją w mieście niezależnie
@@ -778,6 +785,14 @@ export function availableProduction(
     }
     // TEMAT 8 Q2: Port/Port wielki wymagają wybrzeża LUB rzeki w zasięgu TEGO miasta.
     if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
+      continue;
+    }
+    if (!buildingResourceGateMet(
+      b,
+      ctx.empireActiveResourceLabels,
+      ctx.empireBuiltIds,
+      ctx.empireResourceStock,
+    )) {
       continue;
     }
     items.push({
@@ -833,12 +848,11 @@ export function availableProduction(
     // -> bramka dostępu była MARTWA (jednostki brązowe/żelazne budowały się bez dostępu do surowca).
     // stripDiacritics() (NFD + lowercase) naprawia dopasowanie.
     const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
-    if (surowiec === 'braz'
-      && !hasBrazAccess(ctx.placedImprovements, builtList)) {
+    // DOSTEP-SUROWCE-Q1 (2026-07-29): jednostki brązowe/żelazne — tylko zapas w magazynie państwa.
+    if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) {
       continue;
     }
-    if (surowiec === 'zelazo'
-      && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) {
+    if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) {
       continue;
     }
     // Super-jednostka (audyt #11, decyzja A3=A): max 1 ŻYWA sztuka na cywilizację --
@@ -932,9 +946,8 @@ export function availableReplacementsFor(
     // -> bramka dostępu była MARTWA (jednostki brązowe/żelazne budowały się bez dostępu do surowca).
     // stripDiacritics() (NFD + lowercase) naprawia dopasowanie.
     const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
-    if (surowiec === 'braz' && !hasBrazAccess(ctx.placedImprovements, builtList)) return false;
-    if (surowiec === 'zelazo'
-      && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) return false;
+    if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) return false;
+    if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) return false;
     // Super-jednostka (audyt #11, decyzja A3=A): "Zastąp" nie może dać drugiej żywej
     // sztuki -- ta sama bramka co availableProduction (aliveUnitTypeNames).
     if (u['Super-jednostka'] === 'TAK' && ctx.aliveUnitTypeNames?.has(u.Jednostka)) return false;
@@ -1466,11 +1479,15 @@ export function eraBuildingCatalog(
     const prereqOk = cityBuildingPrereqMet(
       CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade,
     );
-    // Kanon 2026-07-28: bramka surowcowa katalogu = magazyn państwa (koszt_surowce), nie dostęp
-    // do etykiety. Piec hutniczy: twardy wyjątek terenowy (Kopalnia miedzi w imperium).
+    // Koszt surowcowy = magazyn państwa (koszt_surowce) + bramka etykiety (DEPOSIT_LINKED = stock).
     const stockCost = buildingStockCost(b);
     const resourceOk = canAffordBuildingStock(ctx.empireResourceStock, stockCost)
-      && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
+      && buildingResourceGateMet(
+        b,
+        ctx.empireActiveResourceLabels,
+        ctx.empireBuiltIds,
+        ctx.empireResourceStock,
+      );
 
     let status: BuildingCatalogStatus = 'ready';
     let locationBlocked: 'stolica' | 'region' | undefined;

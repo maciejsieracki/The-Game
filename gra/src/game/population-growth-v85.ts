@@ -53,9 +53,9 @@ export function buildRationParams(
 ): RationParams {
   const section = raw.ekonomia_miasta ?? raw;
   return {
-    racjeZywnosc1:    pick(section.racje_zywnosc_1, difficulty, 1),
-    racjeZywnosc2:    pick(section.racje_zywnosc_2, difficulty, 2),
-    racjeZywnosc3:    pick(section.racje_zywnosc_3, difficulty, 3),
+    racjeZywnosc1:    pick(section.racje_zywnosc_1, difficulty, 2),
+    racjeZywnosc2:    pick(section.racje_zywnosc_2, difficulty, 4),
+    racjeZywnosc3:    pick(section.racje_zywnosc_3, difficulty, 6),
     racjeWzrostProc1: pick(section.racje_wzrost_proc_1, difficulty, 3),
     racjeWzrostProc2: pick(section.racje_wzrost_proc_2, difficulty, 5),
     racjeWzrostProc3: pick(section.racje_wzrost_proc_3, difficulty, 7),

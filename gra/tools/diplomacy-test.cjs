@@ -173,7 +173,7 @@ eq(applyDiplomaticEvent(rel(20, 30), 'trybut_zaakceptowany').respekt, 40, 'trybu
 }
 {
   const r = applyDiplomaticEvent(rel(50, 30), 'wojna_wypowiedziana');
-  eq(r.zaufanie, 30,      'wojna bez c.b. -20 Z');
+  eq(r.zaufanie, 50,      'wojna z karencją N1 — bez kary Zaufania przy deklaracji');
   eq(r.status,  'wojna',  'wojna_wypowiedziana sets wojna');
 }
 {

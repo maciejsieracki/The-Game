@@ -131,13 +131,37 @@ export function normalizeTreatyKind(rodzaj: TreatyKind): TreatyKind {
   return rodzaj;
 }
 
+/** Czy deal niesie trwałą wymianę surowców (koszyk / cykliczna) — nie szlaki. */
+export function dealHasExchangePayload(deal: ActiveDeal): boolean {
+  const hp = deal.handelPayload;
+  if ((hp?.giveItems?.length ?? 0) > 0 || (hp?.receiveItems?.length ?? 0) > 0) return true;
+  return (deal.handelSurowiecCykliczny?.length ?? 0) > 0;
+}
+
+/** HANDEL-SPLIT-Q1=B: migracja legacy `umowa_handlowa` → szlaki lub wymiana. */
+export function migrateLegacyHandelRodzaj(deal: ActiveDeal): TreatyKind {
+  const k = normalizeTreatyKind(deal.rodzaj);
+  if (k !== RodzajTraktatu.UmowaHandlowa) return k;
+  return dealHasExchangePayload(deal) ? RodzajTraktatu.UmowaWymiany : RodzajTraktatu.UmowaSzlakow;
+}
+
 /** Po save/load — normalizuje legacy rodzaje traktatów (v1.1 migracja). */
 export function hydrateActiveDeals(deals: readonly ActiveDeal[]): ActiveDeal[] {
   return deals.map(d => ({
     ...d,
-    rodzaj: normalizeTreatyKind(d.rodzaj),
+    rodzaj: migrateLegacyHandelRodzaj(d),
     strony: pairKey(d.strony[0], d.strony[1]),
   }));
+}
+
+/** Aktywny traktat szlaków (szlaki handlowe, +1 Zaufanie/turę). */
+export function hasSzlakowTreaty(state: ActiveDeal[], a: number, b: number): boolean {
+  return dealsForPair(state, a, b).some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaSzlakow);
+}
+
+/** Aktywna umowa wymiany surowców (koszyk / cykliczna). */
+export function hasWymianaTreaty(state: ActiveDeal[], a: number, b: number): boolean {
+  return dealsForPair(state, a, b).some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaWymiany);
 }
 
 /**
@@ -266,6 +290,8 @@ const BREAK_ON_WAR: ReadonlySet<TreatyKind> = new Set([
   RodzajTraktatu.OtwartGranice,
   RodzajTraktatu.PrawoWojskowePrzemarszu,
   RodzajTraktatu.UmowaHandlowa,
+  RodzajTraktatu.UmowaSzlakow,
+  RodzajTraktatu.UmowaWymiany,
 ]);
 
 export function treatiesBrokenByWar(

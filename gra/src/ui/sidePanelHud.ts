@@ -16,12 +16,13 @@ import {
 } from './hudLayout';
 import {
   MINIMAP_EDGE_PX,
-  MINIMAP_W_PX,
   UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX,
   unitCardDockBottomCss,
-  unitCardDockBottomPx,
+  unitCardDockExpandedWidthCss,
+  unitCardDockWidthCss,
+  unitCardSafeTopCss,
 } from './minimapLayout';
-import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX, SIDE_PANEL_TOP_PX } from './sidePanelLayout';
+import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
@@ -70,14 +71,11 @@ export interface SidePanelHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-side-panel-hud-css-w7-unit-lift';
+const STYLE_ID = 'civ-side-panel-hud-css-w9-unit-expand-h';
 const EVENTS_PANEL_TOP = eventsPanelTopPx();
 const EVENTS_PANEL_BOTTOM = eventsPanelBottomPx();
 const EVENTS_PANEL_BOTTOM_ZOOM = eventsPanelBottomPx(true);
 const MINIMAP_EDGE = MINIMAP_EDGE_PX;
-const MINIMAP_W = MINIMAP_W_PX;
-const unitDockBottom = unitCardDockBottomPx();
-const unitDockBottomZoom = unitCardDockBottomPx(true);
 
 function eventIconHtml(kind: SidePanelEventKind, fallback: string): string {
   const map: Partial<Record<SidePanelEventKind, string>> = {
@@ -108,7 +106,11 @@ function ensureStyles(): void {
   document.getElementById('civ-side-panel-hud-css-w3-unit-dock3')?.remove();
   document.getElementById('civ-side-panel-hud-css-w3-unit-dock4')?.remove();
   document.getElementById('civ-side-panel-hud-css-w5-events-pin')?.remove();
+  document.getElementById('civ-side-panel-hud-css-w7-unit-lift')?.remove();
+  document.getElementById('civ-side-panel-hud-css-w8-unit-safe-rect')?.remove();
+  document.getElementById('civ-side-panel-hud-css-w9-unit-expand-h')?.remove();
   if (document.getElementById(STYLE_ID)) return;
+  const unitCardMaxRight = `${SIDE_PANEL_LEFT_PX + MINIMAP_EDGE}px`;
   const css = `
 .civ-side-panel{position:fixed;top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM}px;right:${HUD_EDGE_PX}px;z-index:305;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:auto;
   overflow-y:auto;overflow-x:hidden;
@@ -116,17 +118,19 @@ function ensureStyles(): void {
   ${CIV_BRAND_SCOPE_VARS}
   display:flex;flex-direction:column;gap:8px;font:13px var(--civ-font-ui);}
 html.civ-ui-zoom-active .civ-side-panel{top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM_ZOOM}px;right:${HUD_ZOOM_EDGE_PX}px;}
-.civ-side-ctx-dock{position:fixed;left:${SIDE_PANEL_LEFT};bottom:${unitCardDockBottomCss()};z-index:311;
-  width:min(${MINIMAP_W}px,calc(100vw - ${SIDE_PANEL_LEFT_PX}px - ${MINIMAP_EDGE}px));pointer-events:none;
-  max-height:min(40vh,calc(100vh - ${SIDE_PANEL_TOP_PX}px - ${unitDockBottom}px - 8px));overflow-y:auto;overflow-x:hidden;
+.civ-side-ctx-dock{position:fixed;left:${SIDE_PANEL_LEFT};top:${unitCardSafeTopCss()};bottom:${unitCardDockBottomCss()};
+  --civ-unit-card-max-right:${unitCardMaxRight};
+  z-index:316;width:${unitCardDockWidthCss()};pointer-events:none;
+  overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;scrollbar-gutter:stable;display:none;
+  transition:width .18s ease;
   ${CIV_BRAND_SCOPE_VARS}
   font:13px var(--civ-font-ui);}
 .civ-side-ctx-dock.open{display:block;pointer-events:auto;}
+.civ-side-ctx-dock.sp-ctx-expanded{width:${unitCardDockExpandedWidthCss()};}
 html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
-  bottom:calc(${unitCardDockBottomCss(true)} + (var(--civ-ui-zoom, 1) - 1) * ${UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX}px);
-  max-height:min(40vh,calc(100vh - ${SIDE_PANEL_TOP_PX}px - ${unitDockBottomZoom}px - 8px
-    - (var(--civ-ui-zoom, 1) - 1) * ${UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX}px));}
+  top:${unitCardSafeTopCss()};
+  bottom:calc(${unitCardDockBottomCss(true)} + (var(--civ-ui-zoom, 1) - 1) * ${UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX}px);}
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
 .civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;
@@ -175,6 +179,9 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-ctx-dock .cp-yield-row,.civ-side-panel .sp-ctx-card .cp-yield-row{margin-top:0.25em;font-size:11px;color:var(--civ-text-primary,#e8e0c8);line-height:1.45;}
 .civ-side-ctx-dock .cp-yield-lbl,.civ-side-panel .sp-ctx-card .cp-yield-lbl{color:var(--civ-text-secondary,#c4b890);font-weight:600;}
 .civ-side-ctx-dock .cp-yield-detail,.civ-side-panel .sp-ctx-card .cp-yield-detail{color:var(--civ-text-muted,#a09880);font-size:10px;}
+.civ-side-ctx-dock .cp-magazyn-line,.civ-side-panel .sp-ctx-card .cp-magazyn-line{color:#9ec8e8;font-size:10px;}
+.civ-side-ctx-dock .cp-magazyn-block,.civ-side-panel .sp-ctx-card .cp-magazyn-block{color:#b8d4ec;font-size:11px;line-height:1.5;}
+.civ-side-ctx-dock .cp-yield-foot,.civ-side-panel .sp-ctx-card .cp-yield-foot{margin-top:0.35em;font-size:9px;color:var(--civ-text-muted,#8a8070);line-height:1.4;}
 .civ-side-ctx-dock .cp-possible,.civ-side-panel .sp-ctx-card .cp-possible{margin-top:0.2em;font-size:10px;line-height:1.4;}
 .civ-side-ctx-dock .cp-unit-head,.civ-side-panel .sp-ctx-card .cp-unit-head{margin-top:0.65em;padding-top:0.55em;border-top:1px solid rgba(212,175,90,.22);}
 .civ-side-ctx-dock .cp-sep,.civ-side-panel .sp-ctx-card .cp-sep{height:1px;margin:0.55em 0;background:rgba(212,175,90,.22);}
@@ -276,11 +283,16 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     if (unitCtx !== null) {
       ctxEl.innerHTML = buildContextCardHtml(unitCtx, expanded);
       ctxEl.classList.add('open');
+      if (expanded && unitCtx.expandable) {
+        ctxEl.classList.add('sp-ctx-expanded');
+      } else {
+        ctxEl.classList.remove('sp-ctx-expanded');
+      }
       const card = ctxEl.querySelector('.sp-ctx-card');
       if (card) bindContextInteractions(ctxEl, unitCtx);
     } else {
       ctxEl.innerHTML = '';
-      ctxEl.classList.remove('open');
+      ctxEl.classList.remove('open', 'sp-ctx-expanded');
     }
 
     let html = '';

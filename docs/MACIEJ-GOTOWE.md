@@ -1,4 +1,144 @@
+﻿## [10:22] ✅ Gotowe — deploy ROBOCZA FALA 96 DEPLOY ALL (bc8f4630)
+
+**FALA 96** | md5 `bc8f4630112a3b5e60914b5a1ba46515` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**DEPLOY ALL — pelny rebuild bieżących źródeł** (bez nowych zmian kodu w tej turze):
+- Zawiera całość FALA 95 (DOSTEP-SUROWCE-Q1) i wcześniejsze: bramki budynków/jednostek = magazyn państwa, dyplomacja, AI miast-państw, owce/las/confirm, Połącz armie, balans racji 2-4-6, tartak/glinianka, ukrywanie surowców po ulepszeniu.
+- POLE-BITWY odświeżone (`dd399c4b`).
+- tsc 0 · VERIFY OK.
+
+## [10:09] ✅ Gotowe — deploy ROBOCZA FALA 95 (41cb38f7)
+
+**FALA 95** | md5 `41cb38f77ea238660ac8c45d5b53574f` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**DOSTEP-SUROWCE-Q1 — tylko magazyn, bez „dostępu":**
+- Cofnięto FALA 94 B1 (Stolarnia↔Tartak): budynki wymagają **zapasu w magazynie państwa**, nie aktywnego źródła na mapie.
+- Odlewnia brązu: **Ruda w magazynie** (nie Kopalnia miedzi na mapie).
+- Jednostki Brąz/Żelazo: wymagają `braz`/`zelazo` w stocku imperium.
+- Runtime gate: budynek aktywny gdy stock > 0 (lub drain opłacony).
+- UI: chipy „X w magazynie państwa"; Mennica — tekst o Złocie w magazynie.
+- Dyplomacja: handel dostępem (`zloze`/`surowiec_boolean`) bez zmian — nadal wycofany (SUROW-TERYT).
+
+Decyzja: `docs/decyzje/DOSTEP-SUROWCE-Q1.md`
+
+
+**FALA 94** | md5 `d776c7874b0f076469fdac495028a42f` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+(A) Stopka „Surowce w zasięgu” zniknęła z dołu panelu — kompaktowy pasek Koń/Sól/Złoto jest w zakładce **Okolica**.
+(B) Stolarnia wymaga **Tartaku** (aktywne Drewno w imperium) — sam zapas drewna w magazynie nie wystarczy do budowy ani działania bonusu.
+(C) Luki P84/85 (½ racji Spichlerza, Garncarnia +Zadowolenie, głód 1 tura) — już były w kodzie; tylko zweryfikowane.
+
+## [02:22] ✅ Gotowe — deploy ROBOCZA FALA 93 (651d0e11)
+
+**FALA 93** | md5 `651d0e11798831f4c69c2c35801b8430` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+Balans racji żywności: koszt poziom 1/2/3 = **2 / 4 / 6** 🍞 na obywatela/turę (było 1/2/3). Farmy i produkcja pól bez zmian. Domyślna Racja 2 → 4 🍞/obywatel/t (5 obywateli = 20 🍞/t).
+
+## [01:58] ✅ Gotowe — deploy ROBOCZA FALA 91 (34d69473)
+
+**FALA 91** | md5 `34d694736801bd350a2f7faccedd135f` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+Owce: tylko otwarte wzgórze / złoże owiec (las zablokowany). Modal „Zastąpić?" przy kolizji ulepszeń. Ukrycie markerów surowców/plonów po ulepszeniu. Tartak 10 drewno/t, Glinianka 15 glina/t. Połącz armie. W bundle FALA 87 (kolejka rekrutacji).
+
+## [01:50] Gotowe - deploy ROBOCZA FALA 88 (0c72963e)
+
+**FALA 88** | md5 0c72963e31e0bcd3db576c59ae1c3537 | gra-robocza/START.html (Ctrl+F5, Nowa gra).
+Połącz armie: ikona w karcie jednostki + wybór jednostek/sąsiedniego stosu; prompt merge przy rekrutacji wraca (garnizon na polu miasta).
+
+## [01:45] Gotowe - deploy ROBOCZA FALA 89 (17859ca1)
+
+**FALA 89** | md5 `17859ca11570ccf9f674a7cbc6e1f503` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+Ukrycie markerow surowcow/plonow po ulepszeniu terenu (farma, tartak, kopalnia...); drogi bez zmian; etykiety plonow w okolicy miasta. W bundle takze FALA 87-88 (kolejka rekrutacji, Polacz armie).
+
+## [01:46] ✅ Gotowe — deploy ROBOCZA FALA 88 (17859ca1)
+
+**FALA 88** | md5 17859ca11570ccf9f674a7cbc6e1f503 | gra-robocza/START.html (Ctrl+F5, Nowa gra).
+Owce: tylko otwarte wzgórze / złoże owiec (las zablokowany). Modal „Zastąpić?" przy kolizji ulepszeń. Overlay surowca ukryty po ulepszeniu. Tartak 10 drewno/t, Glinianka 15 glina/t. W bundle FALA 87 (kolejka rekrutacji).
+
+## [01:55] ✅ Gotowe — deploy ROBOCZA FALA 90 (3d299f17)
+
+**FALA 90** | md5 `3d299f176846d87a2801c20d4224f6c0` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+Balans SUROW-TERYT: Tartak **10** Drewna/t (było 20), Glinianka **15** Gliny/t (było 20); kamieniołom 4/t bez zmian.
+
+## [01:15] Gotowe - deploy ROBOCZA FALA 84 (7b836be9)
+
+**FALA 84** | md5 7b836be9756ab74dc61d21812ddbcc01 | gra-robocza/Gra-ROBOCZA.html (Ctrl+F5, Nowa gra).
+Stol negocjacji + etykiety umow + cap AI surowcow; w bundle takze FALA 82-83.
+
+**FALA 79** · md5 35ec62dfa661bcddf09c7107637c9e8e · gra-robocza/START.html (Ctrl+F5, Nowa gra).
+Miasta-państwa: dystans min/max **5 hex** (było 4) — hub-chain spawn w klastrze gracza i obcych typów.
+
+## [00:45] ✅ Gotowe — deploy ROBOCZA FALA 78 (ee79494f)
+
+**FALA 78** · md5 ee79494fb513673a703bf903df30253c · gra-robocza/START.html (Ctrl+F5, Nowa gra).
+Pierwszy kontakt: zawsze pełna audiencja (pełna cywilizacja i miasto-państwo). Karta „Pierwsze spotkanie" usunięta. Muzyka Rzymu bez zmian.
+
+## [00:15] ✅ Gotowe — deploy ROBOCZA FALA 77 (1459f95f)
+
+**FALA 77** · md5 1459f95f941002cbae0e887fa8cb8aac · gra-robocza/START.html (Ctrl+F5, Nowa gra).
+Muzyka audiencji Rzymu: Imperial_Accord + Portico_of_the_Consul, pętla 3×/3×, fade-in/out + crossfade. Spotkać Rzym (pełna cywilizacja) → od razu audiencja z muzyką.
+
+## [23:30] ✅ Gotowe — deploy ROBOCZA FALA 76 (ad2c3e5d)
+
+**FALA 76** · md5 ad2c3e5db875d5e6cfbf7f1502f91f0b · gra-robocza/START.html (Ctrl+F5, Nowa gra).
+Pierwsze spotkanie: pełna cywilizacja → od razu audiencja dyplomacji; miasto-państwo → krótka karta „Pierwsze spotkanie" (jak dotąd). `main.ts` · `isOwnerClusterCityState`.
+
+## [23:10] ✅ Gotowe — deploy ROBOCZA FALA 75 (caea930e)
+
+**FALA 75** · md5 caea930e8b505c972fff48766626ceb9 · gra-robocza/START.html (Ctrl+F5, Nowa gra).
+Hotfix P0: karta „Pierwsze spotkanie" i modale dyplomacji — brak CSS przed pierwszą audiencją (czarny ekran, ucięty tekst, pusty panel). `ensureStyles()` na wejściu modali w `diplomacyAudience.ts`.
+
+## [22:55] ✅ Gotowe — deploy ROBOCZA FALA 74 (76ccda79)
+
+**FALA 74** · md5 76ccda794983b7643f4a36cab44139ec · gra-robocza/START.html (Ctrl+F5, Nowa gra).
+Paczka od 490ec5fd: bitwa (wzgórza, formacja Piechota, łup), przycisk BITWA, dyplomacja (wiarygodność, DoW), palisada/fortify, obca jednostka info/dyplo, pathing EOT, handel AI, reszta working tree.
+
 ﻿
+## [22:34] ✅ Gotowe — klik obcej jednostki: Informacja / Dyplomacja (bez deployu)
+
+Jak przy mieście: modal wyboru → info (karta) lub audiencja. `unitForeignPick.ts` + `main.ts`. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [22:31] ✅ Gotowe — Palisada drewniana (bez deployu)
+
+`palisada`: Brąz · tech Obróbka drewna · 22 Pracy + 12 drewna · **+100% Obrony**; Mury +200% zastępują (bez stacku). tsc 0 · koszty 122/122 · defense-gate 31/31.
+
+⏸️ **Czeka:** `deploy`.
+
+## [22:29] ✅ Gotowe — ścieżka wieloturowa: kontynuacja na EOT (bez deployu)
+
+Auto-marsz nie na starcie tury — na **koniec tury** (przed odnową MP); pomija jednostki ruszane przez gracza w tej turze. `main.ts`. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [22:28] ✅ Gotowe — ufortyfikowanie w polu: +50% Obrony (bez deployu)
+
+Zamiast +2 pkt: `fortify_obrona_proc: 50` → Obrona ×1,5. Garnizon w mieście bez zmian. fortify-pole 25/25 · combat 6/6 · tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [22:23] ✅ Gotowe — jednostka/armia: szczegóły w prawo (bez deployu)
+
+„Więcej szczegółów” → dock 280→560 px, layout 2 kolumny (nie scroll w dół). Safe area HUD bez zmian. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [22:19] ✅ Gotowe — first contact: auto + bez otwierania dyplo (bez deployu)
+
+Kontakt automatyczny; tylko karta intro z OK; **nie** otwiera stołu/listy dyplo. `main.ts` + diplomacyPanel/Audience. tsc 0.
+
+⏸️ **Czeka:** `deploy`.
+
+## [22:17] ✅ Gotowe — karta jednostki: safe rectangle HUD (bez deployu)
+
+`.civ-side-ctx-dock`: top 112 · left 86 · bottom 260 · scroll wewnątrz · z-index 316 (bez cap 40vh). `minimapLayout` + `sidePanelHud`. tsc 0.
+
+⏸️ **Czeka:** `deploy` (z handlem split + first-contact gdy gotowe).
+
+## [22:10] ✅ Gotowe — handel AI: split L/P + realne zasoby (bez deployu)
+
+Pending incoming = 2 linked karty (My oddajemy | Oni dają). Cap AI: zapas+produkcja na cały okres; żądania ≤ zasoby gracza. tsc 0 · balance 11/11 · cyclic 45/45.
+
+⏸️ **Czeka:** `deploy`.
+
 ## [21:20] ✅ Gotowe — FALA 73 deploy (duża paczka UI+dyplo+granice+MP+AI)
 
 | Deploy | Wartość |
@@ -2285,3 +2425,4 @@ CZEKAM-NA: playtest miasta (panel Sz / tooltip „Budynki (+1/budynek)")
 ```
 
 Reguła: [`docs/obieg/OBOWIAZ-POWIADOM-MACIEJA.md`](obieg/OBOWIAZ-POWIADOM-MACIEJA.md)
+- **2026-07-29 01:38** FALA 87 ROBOCZA `0415305b` -- kolejka rekrutacji compact (panel miasta) + pending; `gra-robocza/START.html`

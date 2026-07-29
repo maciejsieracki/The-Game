@@ -96,7 +96,7 @@ assert(plan.clusterCapitalOwnerIds.length === foreignCount,
 // E-START-CS-Q1 C: spawn wokół FAKTYCZNEJ stolicy gracza, nie pre-planu mapgen
 const prePlanHexes = plan.pendingSameTypeRivalHexes;
 assert(prePlanHexes.length >= 1 && prePlanHexes.length <= plan.pendingSameTypeRivals,
-  'pre-planowane hexy państw gracza (1..N w pierścieniu 4 hex)');
+  'pre-planowane hexy państw gracza (1..N w pierścieniu 5 hex)');
 
 // Gracz stawia stolicę w innym miejscu niż sugerowany hex algorytmu
 function isLandHex(m, q, r) {
@@ -193,7 +193,7 @@ assert(
   'deterministyczny seed',
 );
 
-// Maciej 2026-07-28: twardy klaster miast-państw gracza — hub-chain pierścień 4 hex
+// Maciej 2026-07-29: twardy klaster miast-państw gracza — hub-chain pierścień 5 hex
 const playerCap = plan.playerStartHex;
 const clusterMax = M.CLUSTER_CITY_STATE_MAX_HEX;
 const clusterMin = M.CLUSTER_CITY_STATE_MIN_HEX;
@@ -232,23 +232,27 @@ for (const fcl of plan.foreignTypeClusters) {
     }
   }
 }
-assert(plan.placement.minDystansMiastaPanstwa === 4, 'placement minDystansMiastaPanstwa=4');
-assert(plan.placement.maxDystansMiastaPanstwa === 4, 'placement maxDystansMiastaPanstwa=4');
+assert(plan.placement.minDystansMiastaPanstwa === 5, 'placement minDystansMiastaPanstwa=5');
+assert(plan.placement.maxDystansMiastaPanstwa === 5, 'placement maxDystansMiastaPanstwa=5');
 assert(plan.placement.minDystansObcyOdGracza === 12, 'placement minDystansObcyOdGracza=12');
-assert(M.MIN_DIST_FOREIGN_IN_CLUSTER === 4, 'MIN_DIST_FOREIGN_IN_CLUSTER=4');
-assert(M.CLUSTER_CITY_STATE_MIN_HEX === 4, 'CLUSTER_CITY_STATE_MIN_HEX=4');
-assert(M.CLUSTER_CITY_STATE_MAX_HEX === 4, 'CLUSTER_CITY_STATE_MAX_HEX=4');
-assert(M.clusterCityStateRadius() === 4, 'clusterCityStateRadius=4');
+assert(M.MIN_DIST_FOREIGN_IN_CLUSTER === 5, 'MIN_DIST_FOREIGN_IN_CLUSTER=5');
+assert(M.CLUSTER_CITY_STATE_MIN_HEX === 5, 'CLUSTER_CITY_STATE_MIN_HEX=5');
+assert(M.CLUSTER_CITY_STATE_MAX_HEX === 5, 'CLUSTER_CITY_STATE_MAX_HEX=5');
+assert(M.clusterCityStateRadius() === 5, 'clusterCityStateRadius=5');
 
-// Maciej 2026-07-28: każdy obcy klaster powinien mieć pełną quotę MP (stolica + N państw)
+// Maciej 2026-07-29: obcy klaster — pełna quota MP gdy region pozwala; przy 5 hex partial OK na ciasnym regionie
 const expectedMpPerCluster = 4;
+const expectedMpPerClusterMin = 3;
 for (const k of plan.placement.klastry) {
   if (k.typ === 'grecy') continue;
   const mpCount = k.miasta.filter(m => !m.isCapital).length;
   assert(
-    mpCount >= expectedMpPerCluster,
-    `klaster ${k.typ}: ${mpCount}/${expectedMpPerCluster} MP (miast=${k.miasta.length})`,
+    mpCount >= expectedMpPerClusterMin,
+    `klaster ${k.typ}: min ${expectedMpPerClusterMin} MP (got ${mpCount}, miast=${k.miasta.length})`,
   );
+  if (mpCount < expectedMpPerCluster) {
+    console.log('NOTE: klaster ' + k.typ + ': partial ' + mpCount + '/' + expectedMpPerCluster + ' MP (region ciasny przy 5 hex)');
+  }
   const cap = k.miasta.find(m => m.isCapital) ?? k.miasta[0];
   const mps = k.miasta.filter(m => !m.isCapital);
   if (cap && mps.length > 0) {
@@ -277,7 +281,7 @@ assert(
   'runtimeCandidates: poprawny łańcuch hubów (' + runtimeCandidates.length + ' slotów)',
 );
 
-// Hub-chain: przy wystarczającym lądzie 6 MP → pełne 6 slotów (6. może być >4 od stolicy)
+// Hub-chain: przy wystarczającym lądzie 6 MP → pełne 6 slotów (6. może być >5 od stolicy)
 const hubSix = M.buildSameTypeRivalCandidateHexes(map, playerCap, 6, 4242);
 assert(hubSix.length === 6, 'hub-chain 50×50: 6 slotów MP (got ' + hubSix.length + ')');
 if (hubSix.length === 6) {
@@ -287,7 +291,7 @@ if (hubSix.length === 6) {
     const d = M.hexDistanceAxial(hubSix[5].q, hubSix[5].r, hubSix[i].q, hubSix[i].r);
     if (d === clusterMax) d6Hub = clusterMax;
   }
-  assert(d6Hub === clusterMax, '6. MP dokładnie 4 hex od któregoś huba klastra (od stolicy=' + d6Cap + ')');
+  assert(d6Hub === clusterMax, `6. MP dokładnie ${clusterMax} hex od któregoś huba klastra (od stolicy=${d6Cap})`);
   assert(isValidHubChain(playerCap, hubSix, clusterMax, clusterMin), 'hub-chain 6/6: BFS valid');
 }
 

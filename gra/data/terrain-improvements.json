@@ -7,7 +7,7 @@
     "kanon_zywnosc_hodowla": "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) — obowiazuje nad tym plikiem do wdrozenia",
     "decyzje_EKONOMIA": "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     "klucze_surowcow_ASCII": "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    "pole_surowiec_ilosc_tura": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    "pole_surowiec_ilosc_tura": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   "farma": {
     "nazwa": "Farma",
@@ -65,8 +65,8 @@
     },
     "surowiecOdblokowany": "owce",
     "surowiecOdblokowany_uwaga": "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    "teren": "Wzgórza",
-    "warunek": "solo wzgórze; pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu",
+    "teren": "Wzgórza (bez lasu)",
+    "warunek": "solo otwarte wzgórze (nakładka Las zabroniona); pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Owce (wełna / jedzenie)"
@@ -129,8 +129,8 @@
       "handel": 2
     },
     "surowiecOdblokowany": "glina",
-    "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwyżka). NIE bonus.glina (2) -- osobne pola.",
-    "surowiec_ilosc_tura": 20,
+    "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 — magazyn PEŁNY). NIE bonus.glina (2) -- osobne pola.",
+    "surowiec_ilosc_tura": 15,
     "teren": "złoże Gliny",
     "warunek": "glina → cegła (ważne w brązie)",
     "koszt_praca": 20,
@@ -199,8 +199,8 @@
       "handel": 3
     },
     "surowiecOdblokowany": "drewno",
-    "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
-    "surowiec_ilosc_tura": 20,
+    "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 — magazyn PEŁNY).",
+    "surowiec_ilosc_tura": 10,
     "teren": "Ląd w terytorium (łąka, lasy, wzgórza…)",
     "warunek": "stałe ulepszenie; MOŻE na lesie — las NIE znika; odblokowuje dostęp do drewna (v0.1 bez ilości)",
     "koszt_praca": 25,

@@ -15,7 +15,7 @@ import type { ImprovementKey } from '../render/improvements';
 import { hexDistance } from '../units/setup';
 import { citySightRadius, hexKeysWithinRadius } from './okolica';
 import { hasBrazAccess } from './braz-access';
-import { empireHasKopalniaZlota } from './zloto-access';
+import { ownerHasZlotoStock } from './zloto-access';
 import {
   computeEmpireLivestockUnlocks,
   type LivestockKey,
@@ -134,10 +134,12 @@ export interface ResourceAccessCity {
 export interface ResourceAccessOptions {
   /** Właściciel heksów — do filtrowania odblokowań hodowli imperium. */
   ownerId?: string;
-  /** Budynki miasta — bramka brązu (Kopalnia miedzi AND Odlewnia brązu). */
+  /** Budynki miasta — konwerter brązu (Odlewnia brązu w mieście). */
   builtIds?: readonly string[];
   /** Wstępnie obliczone odblokowania hodowli (opcjonalnie z main.ts). */
   empireLivestockUnlocks?: ReadonlySet<LivestockKey>;
+  /** Magazyn państwa — DOSTEP-SUROWCE-Q1: Brąz/Złoto z stocku, nie z mapy. */
+  empireStock?: Readonly<Record<string, number>>;
 }
 
 export interface CityResourceAccess {
@@ -310,14 +312,11 @@ function collectActiveAccess(
     }
   }
 
-  if (options.builtIds && hasBrazAccess(placedImprovements, options.builtIds)) {
+  if (options.empireStock && hasBrazAccess(options.empireStock, options.builtIds)) {
     found.add(SUROWIEC_KEY_LABEL.braz!);
   }
 
-  // Maciej 2026-07-25: Złoto — empire-wide, jak brąz wyżej, ale BEZ drugiego budynku
-  // "hutniczego" (kopalnia_zlota gdziekolwiek w imperium wystarcza — "wystarczy tylko
-  // dostęp"). Patrz game/zloto-access.ts.
-  if (empireHasKopalniaZlota(placedImprovements)) {
+  if (ownerHasZlotoStock(options.empireStock)) {
     found.add(SUROWIEC_KEY_LABEL.zloto!);
   }
 

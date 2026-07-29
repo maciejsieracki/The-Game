@@ -221,6 +221,11 @@ import {
 import { buildPostBattleSummary } from '../game/battle-summary';
 import type { BattleSummaryWinner, BattleUnitBeforeSnap } from '../game/battle-summary';
 import {
+  computeBattleLoot,
+  formatBattleLootNote,
+  battleLootIsEmpty,
+} from '../game/battle-loot';
+import {
   hidePostBattleSummary,
   isPostBattleSummaryOpen,
   showPostBattleSummary,
@@ -376,8 +381,8 @@ export interface BattleUnit {
    * Wypelniane przez main.ts runtimeToBattleUnit() z RuntimeUnit.ufortyfikowanyWPolu
    * -- OSOBNE od garnizonu miasta/muru (ktory ma wlasny procentowy system, patrz
    * onWallWalkway/wallDefenseTotalProc). Konsumowane przez _singleBlow (bitwa
-   * taktyczna) i computeInstantResult ("Pomin") -- flat bonus Obrony, NIGDY Atak
-   * (jak bonus muru C-COMBAT-Q1), przez fieldFortifyDefenseBonus (game/city-defense.ts).
+   * taktyczna) i computeInstantResult ("Pomin") -- +50% Obrony (fortify_obrona_proc),
+   * NIGDY Atak, przez fieldFortifyDefenseBonus (game/city-defense.ts).
    * Domyslnie undefined/false -- bezpieczne dla wszystkich istniejacych wywolan
    * (synthetic/test BattleUnit literals bez tego pola zachowuja dawne zachowanie).
    */
@@ -864,15 +869,13 @@ const BROD_RUCH_MULT   = BROD.ruchMult;             // 0.5 -> half speed while w
 const BROD_KARA_ATAK   = BROD.karaAtak;              // 0.25 -> -25% Atak while fighting in a ford
 const BROD_KARA_OBRONA = BROD.karaObrona;            // 0.25 -> -25% Obrona while fighting in a ford
 const BROD_BONUS_BRZEG = BROD.bonusObronaBrzegu;     // 0.15 -> +15% Obrona defending the shore vs a ford attacker
-// C-FORT-POLE-Q1 (Maciej 2026-07-26, "oblezenie + fortyfikacja w polu"): flat
-// Obrona bonus for a unit BattleUnit.fortifiedInField (from RuntimeUnit.
-// ufortyfikowanyWPolu). Revives combat-params.json "oblężenie".fortify_obrona_bonus
-// (today 2 Obrona points) -- until now read ONLY by siegeAi.ts for AI strength
-// estimation, never applied in real combat (see task report). Applied via
-// fieldFortifyDefenseBonus (game/city-defense.ts) so this file, _singleBlow and
-// computeInstantResult, and main.ts effectiveDefenderM all use the SAME formula
-// (parity with the wall-bonus pattern, cityGatedTerrainMultiplier above).
-const FORTIFY_OBRONA_BONUS_FIELD: number = combatParamsData['oblężenie'].fortify_obrona_bonus;
+// C-FORT-POLE-Q1 (Maciej 2026-07-26, korekta 2026-07-28): +50% Obrony
+// (fortify_obrona_proc) dla BattleUnit.fortifiedInField (RuntimeUnit.
+// ufortyfikowanyWPolu). Garnizon w oblężeniu nadal używa fortify_obrona_bonus
+// (flat +2) w siege.ts -- NIE ten parametr. Applied via
+// fieldFortifyDefenseBonus (game/city-defense.ts) -- parity across _singleBlow,
+// computeInstantResult, main.ts effectiveDefenderM.
+const FORTIFY_OBRONA_PROC_FIELD: number = combatParamsData['oblężenie'].fortify_obrona_proc;
 // Small tie-breaking penalty added to the cavalry tile-scoring functions below
 // (the only existing "score a candidate tile" AI logic in this file) so a
 // rider prefers a same-progress dry tile over stopping to fight IN a ford.
@@ -1699,6 +1702,77 @@ function cellBoundsXZ(
 
 function cellKey(col: number, row: number): string { return col + ',' + row; }
 
+function clampBattleTile(col: number, row: number): { col: number; row: number } | null {
+  if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) return null;
+  return { col, row };
+}
+
+/** Normala trafionego mesha w przestrzeni świata (składowa Y). */
+function battlePickMeshUpNormal(hit: THREE.Intersection): number {
+  if (!hit.face) return 0;
+  const n = hit.face.normal.clone();
+  hit.object.updateMatrixWorld(true);
+  n.transformDirection(hit.object.matrixWorld);
+  return n.y;
+}
+
+/**
+ * Płaszczyzna na tileTopY — ten sam relief co obrys deploy (cellBoundsXZ + tileTopY).
+ * Używana gdy raycast meshów trafia w sąsiedni płaski kafel (y=0) przed wzgórzem.
+ */
+function pickBattleGroundTilePlane(
+  raycaster: THREE.Raycaster,
+  tm: BattleTerrainMap,
+): { col: number; row: number } | null {
+  const pt = new THREE.Vector3();
+  let y = 0;
+  let col = 0;
+  let row = 0;
+  for (let i = 0; i < 4; i++) {
+    const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), -y);
+    if (!raycaster.ray.intersectPlane(ground, pt)) return null;
+    const nCol = Math.round(pt.x / TILE_S);
+    const nRow = Math.round(pt.z / TILE_S);
+    if (i > 0 && nCol === col && nRow === row) break;
+    col = nCol;
+    row = nRow;
+    y = tileTopY(tm, col, row);
+  }
+  return clampBattleTile(col, row);
+}
+
+/**
+ * Raycast na meshach terenu — wybiera trafienie, którego Y najlepiej pasuje do tileTopY
+ * (nie pierwszy hit: płaski sąsiad y=0 często blokuje kopułę wzgórza).
+ */
+function pickBattleGroundTileFromMeshes(
+  raycaster: THREE.Raycaster,
+  tm: BattleTerrainMap,
+  meshes: readonly THREE.Object3D[],
+): { col: number; row: number } | null {
+  if (meshes.length === 0) return null;
+  const hits = raycaster.intersectObjects(meshes as THREE.Object3D[], false);
+  let bestCol = 0;
+  let bestRow = 0;
+  let bestScore = -Infinity;
+  let found = false;
+  for (const h of hits) {
+    if (battlePickMeshUpNormal(h) < 0.3) continue;
+    const tile = clampBattleTile(Math.round(h.point.x / TILE_S), Math.round(h.point.z / TILE_S));
+    if (!tile) continue;
+    const expectedY = tileTopY(tm, tile.col, tile.row);
+    const heightMatch = -Math.abs(h.point.y - expectedY);
+    const score = heightMatch * 10 + h.point.y;
+    if (score > bestScore) {
+      bestScore = score;
+      bestCol = tile.col;
+      bestRow = tile.row;
+      found = true;
+    }
+  }
+  return found ? { col: bestCol, row: bestRow } : null;
+}
+
 /**
  * The Y of the VISIBLE walking surface on tile (col,row) -- the height a unit's
  * FEET rest at so it stands ON the terrain instead of sinking into it. This is
@@ -2054,14 +2128,14 @@ export class BattleScene {
   /** Aktywna grupa w deploy (doktryny / priorytety na lewym panelu). */
   private _deployActiveGroupId: string | null = null;
   /** Aktywny uklad formacji w fazie deploy (UI + logika). */
-  private _deployActiveFormation: 'F1' | 'F2' | 'F3' = 'F1';
+  private _deployActiveFormation: 'F1' | 'F2' | 'F3' = 'F2';
   /** Ustawienie konnicy w formacji deploy (osobny od F1/F2/F3). */
   private _deployCavalryMode: CavalryDeployMode = 'flanks';
   /** C-FLANK: kierunek natarcia aktywny w toolbarze deploy (osobny od formacji/konnicy). */
   private _deployAttackDirection: AttackDirection = 'front';
   /** Linie glebokosci piechoty / lucznikow (1–3) — osobno od formacji F1/F2/F3. */
   private _deployMeleeLines: DeployLineCount = 1;
-  private _deployArcherLines: DeployLineCount = 3;
+  private _deployArcherLines: DeployLineCount = 1;
   /** Rząd przyciskow formacji w pasku deploy (nad rosterem). */
   private _deployFmtRow: HTMLDivElement | null = null;
   /** Przyciski ustawienia konnicy (boki / z tylu). */
@@ -2475,8 +2549,9 @@ export class BattleScene {
       const murProc = (miastoParamsData as any)?.bonus_obrona_mur_proc?.wartosc ?? 200;
       const cytadelaProc = (miastoParamsData as any)?.bonus_obrona_cytadela_proc?.wartosc ?? 100;
       const basztaProc = (miastoParamsData as any)?.bonus_obrona_baszta_proc?.wartosc ?? 100;
+      const palisadaProc = (miastoParamsData as any)?.bonus_obrona_palisada_proc?.wartosc ?? 100;
       const totalProc = cityWallDefenseBonusPercent(opts.siege?.builtBuildingIds, {
-        mur: murProc, cytadela: cytadelaProc, baszta: basztaProc,
+        mur: murProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,
       });
       this.wallDefenseMult = 1 + totalProc / 100;
       this.wallDefenseTotalProc = totalProc;
@@ -7584,13 +7659,12 @@ export class BattleScene {
       { pancerz: defender.bu.pancerzBonusFrac ?? 0, other: defender.bu.parametryBonusFrac ?? 0 },
     );
 
-    // C-FORT-POLE-Q1 (Maciej 2026-07-26): fortyfikacja W POLU dolicza flat
-    // bonus Obrony PRZED terenem/brodem (fieldFortifyDefenseBonus, jak
-    // premia budynkowa powyzej -- dziala WYLACZNIE na Obronie, nigdy Atak).
+    // C-FORT-POLE-Q1: fortyfikacja W POLU = +50% Obrony PRZED terenem/brodem
+    // (fieldFortifyDefenseBonus -- działa WYLACZNIE na Obronie, nigdy Atak).
     const defMeleeDef = fieldFortifyDefenseBonus(
       applyMultiplier(cuD.meleeDefence, defMods.obrona),
       defender.bu.fortifiedInField === true,
-      FORTIFY_OBRONA_BONUS_FIELD,
+      FORTIFY_OBRONA_PROC_FIELD,
     );
     const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac));
     const defFinalObrona = defEffObrona * terrDefMult * defFordMlt * shoreBonusMlt;
@@ -9077,14 +9151,19 @@ export class BattleScene {
     const sA = this._sideEndStats('atk');
     const sD = this._sideEndStats('def');
     const playerWon = this._playerWonFromBattleWinner(winner);
-    const enemyStats = playerSide === 'atk' ? sD : sA;
     // Muzyka ekranu końca bitwy (wg tej samej flagi playerWon, co wizualia):
     // wygrana -> utwór zwycięstwa, przegrana -> utwór porażki. Overlay bitwy jest
     // aktywny, więc to czysta wymiana utworu; muzykę mapy wznawia setMood('mapa')
     // wołane z callbacku onFinish/onCancel bitwy (patrz main.ts).
     if (playerWon) startVictoryMusic(); else startDefeatMusic();
     const winSub = winner === 'atakujacy' ? 'Zwyci\u0119stwo atakuj\u0105cego!' : 'Zwyci\u0119stwo obro\u0144cy!';
-    const loot = playerWon ? Math.max(0, enemyStats.lost * 20) : 0;
+    const enemyRoster = playerSide === 'atk' ? this.def : this.atk;
+    const killedTypeIds = playerWon
+      ? enemyRoster.map(u => String(u.bu.nazwa || '')).filter(Boolean)
+      : [];
+    const lootResult = playerWon ? computeBattleLoot(killedTypeIds) : null;
+    const loot = lootResult && !battleLootIsEmpty(lootResult) ? lootResult.gold : 0;
+    const lootNote = lootResult ? formatBattleLootNote(lootResult) : 'brak \u0142up\u00F3w';
     let heroLabel = '—';
     for (const u of this._playerRoster()) {
       if (!u.dead && !u.routed) {
@@ -9103,7 +9182,7 @@ export class BattleScene {
       atk: sA,
       def: sD,
       lootGold: loot,
-      lootNote: loot > 0 ? 'z\u0142ota' : 'brak \u0142up\u00F3w',
+      lootNote: loot > 0 ? lootNote : 'brak \u0142up\u00F3w',
       heroLabel,
       heroPromo: playerWon ? 'Awans \u2192 Weteran' : '',
     }, {
@@ -9709,59 +9788,27 @@ export class BattleScene {
     return dist <= rng && dist > 1;
   }
 
+  /**
+   * Kafel pod kursorem — relief-aware (tileTopY), wspólny dla hover obrysu,
+   * deploy/move i fallbacku zaznaczenia jednostki.
+   */
   private _pickGroundTile(cx: number, cy: number): { col: number; row: number } | null {
     const raycaster = this._raycastFromCanvas(cx, cy);
     if (!raycaster) return null;
-    const pt = new THREE.Vector3();
-    let gotHit = false;
-    if (this._battleGroundPickMeshes.length > 0) {
-      const hits = raycaster.intersectObjects(this._battleGroundPickMeshes, false);
-      for (const h of hits) {
-        if (h.face && h.face.normal.y > 0.3) {
-          pt.copy(h.point);
-          gotHit = true;
-          break;
-        }
-      }
-      if (!gotHit && hits.length > 0) {
-        pt.copy(hits[0]!.point);
-        gotHit = true;
-      }
+    const tm = this.terrainMap;
+    const fromMeshes = pickBattleGroundTileFromMeshes(
+      raycaster, tm, this._battleGroundPickMeshes,
+    );
+    const fromPlane = pickBattleGroundTilePlane(raycaster, tm);
+    if (fromMeshes && fromPlane) {
+      if (fromMeshes.col === fromPlane.col && fromMeshes.row === fromPlane.row) return fromMeshes;
+      const meshY = tileTopY(tm, fromMeshes.col, fromMeshes.row);
+      const planeY = tileTopY(tm, fromPlane.col, fromPlane.row);
+      if (meshY > planeY) return fromMeshes;
+      if (planeY > meshY) return fromPlane;
+      return fromMeshes;
     }
-    if (!gotHit) {
-      // BŁĄD K1 (właściciel, 2026-07-25): ten fallback zakładał płaszczyznę
-      // y=0, IGNORUJĄC wysokość kafla (wzgórze/rzeka). Przy pochylonej
-      // kamerze przecięcie promienia z płaszczyzną na złej wysokości
-      // przesuwało trafiony punkt wzdłuż promienia (w stronę kamery, gdy
-      // realny kafel jest WYŻEJ niż y=0) -> Math.round poniżej łapał SĄSIEDNI
-      // kafel zamiast tego pod kursorem (ten sam mechanizm co dawny bug
-      // pickingu mapy świata). Naprawa: zamiast zgadywać y=0, iteracyjnie
-      // dopasuj wysokość płaszczyzny do REALNEJ wysokości terenu (tileTopY —
-      // tylko 3 możliwe wartości: 0 / HILL_SUMMIT_Y / -RIVER_DROP, więc zbiega
-      // w 1-2 krokach): przetnij na obecnym szacunku wysokości, sprawdź jaki
-      // kafel wskazuje ten punkt, weź WYSOKOŚĆ TEGO KAFLA jako nowy szacunek,
-      // powtórz aż col/row się ustabilizują (limit 4 iteracji — zabezpieczenie,
-      // nie powinno być potrzebne przy tylko 3 poziomach wysokości).
-      let y = 0;
-      let col = 0;
-      let row = 0;
-      for (let i = 0; i < 4; i++) {
-        const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), -y);
-        if (!raycaster.ray.intersectPlane(ground, pt)) return null;
-        const nCol = Math.round(pt.x / TILE_S);
-        const nRow = Math.round(pt.z / TILE_S);
-        if (i > 0 && nCol === col && nRow === row) break;
-        col = nCol;
-        row = nRow;
-        y = tileTopY(this.terrainMap, col, row);
-      }
-      if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) return null;
-      return { col, row };
-    }
-    const col = Math.round(pt.x / TILE_S);
-    const row = Math.round(pt.z / TILE_S);
-    if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) return null;
-    return { col, row };
+    return fromMeshes ?? fromPlane;
   }
 
   private _worldAtTile(col: number, row: number): THREE.Vector3 {
@@ -10380,7 +10427,16 @@ export class BattleScene {
     return 'Frontalne';
   }
 
+  /**
+   * Jednostka pod kursorem — najpierw kafel (relief), potem mesh 3D tylko gdy
+   * zgadza się z kaflem (K2: włócznia na sąsiednim heksie nie przełącza zaznaczenia).
+   */
   private _pickUnitAtScreen(cx: number, cy: number): RuntimeBattleUnit | null {
+    const tile = this._pickGroundTile(cx, cy);
+    if (tile) {
+      const cellUnit = this.occByKey.get(cellKey(tile.col, tile.row));
+      if (cellUnit && !cellUnit.dead && !cellUnit.fadingOut && !cellUnit.removed) return cellUnit;
+    }
     const raycaster = this._raycastFromCanvas(cx, cy);
     if (!raycaster) return null;
     const allGroups = [...this.atk, ...this.def]
@@ -10391,14 +10447,13 @@ export class BattleScene {
       let obj: THREE.Object3D | null = h.object;
       while (obj) {
         const found = [...this.atk, ...this.def].find(u => u.group === obj);
-        if (found && !found.dead && !found.fadingOut && !found.removed) return found;
+        if (found && !found.dead && !found.fadingOut && !found.removed) {
+          if (!tile || found.q === tile.col && found.r === tile.row) return found;
+          return null;
+        }
         obj = obj.parent;
       }
     }
-    const tile = this._pickGroundTile(cx, cy);
-    if (!tile) return null;
-    const cellUnit = this.occByKey.get(cellKey(tile.col, tile.row));
-    if (cellUnit && !cellUnit.dead && !cellUnit.fadingOut && !cellUnit.removed) return cellUnit;
     return null;
   }
 
@@ -10576,14 +10631,20 @@ export class BattleScene {
         this._boxSelectStart = { x: e.clientX, y: e.clientY };
         return;
       }
-      const hitUnit = this._pickUnitAtScreen(e.clientX, e.clientY);
-      if (hitUnit && this._isPlayerSide(hitUnit.side) && !hitUnit.dead && !hitUnit.removed) {
-        this._deployPickPending = hitUnit;
-        return;
-      }
-      if (this._selectedUnits.size > 0) {
-        const tile = this._pickGroundTile(e.clientX, e.clientY);
-        if (tile && this._inDeployPlayerZone(tile.col, tile.row)) {
+      // Deploy LPM: kafel relief-aware → select (zajęty) albo move (pusty legalny)
+      const tile = this._pickGroundTile(e.clientX, e.clientY);
+      if (tile) {
+        const unitAtTile = this.occByKey.get(cellKey(tile.col, tile.row));
+        if (
+          unitAtTile
+          && this._isPlayerSide(unitAtTile.side)
+          && !unitAtTile.dead
+          && !unitAtTile.removed
+        ) {
+          this._deployPickPending = unitAtTile;
+          return;
+        }
+        if (this._selectedUnits.size > 0 && this._inDeployPlayerZone(tile.col, tile.row)) {
           this._deployMoveStart = { x: e.clientX, y: e.clientY, col: tile.col, row: tile.row };
           return;
         }
@@ -11993,6 +12054,7 @@ export class BattleScene {
       this._clearDeploySelectionState();
       this._deployActiveGroupId = gid;
       this._updateDeployGroupsBar();
+      this._syncDeployToolbarFromSelection();
       this._showDeployFeedback('Odznaczono \u00B7 nadal zarządzasz: ' + this._groupDisplayLabel(gid));
     } else {
       this._selectDeployGroupToggle(gid, true);
@@ -13169,6 +13231,38 @@ export class BattleScene {
     this._updateDeployToolbarStatus();
   }
 
+  /** Odswieza formacje i linie toolbara deploy wg aktywnej grupy / zaznaczenia. */
+  private _syncDeployToolbarFromSelection(): void {
+    if (!this.deployPhase) return;
+    const selUnits = [...this._selectedUnits]
+      .map(id => this._findPlayerUnit(id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+    const groupIds = [...new Set(selUnits.map(u => u.groupId).filter(Boolean))];
+    const singleGid = groupIds.length === 1 && selUnits.every(u => u.groupId === groupIds[0])
+      ? groupIds[0]! : null;
+    const gid = singleGid
+      ?? (this._deployActiveGroupId && this._sortedGroupIds().includes(this._deployActiveGroupId)
+        ? this._deployActiveGroupId
+        : null);
+    let targets = selUnits;
+    if (targets.length === 0 && gid) {
+      targets = this._liveGroupMemberIds(gid)
+        .map(id => this._findPlayerUnit(id))
+        .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+    }
+    if (targets.length > 0) {
+      this._deployActiveFormation = this._formationForDeployUnits(targets);
+      this._syncDeployFormationButtons();
+    }
+    if (gid) {
+      const meta = this._groupMeta.get(gid);
+      if (meta?.meleeLines != null) this._deployMeleeLines = meta.meleeLines;
+      if (meta?.archerLines != null) this._deployArcherLines = meta.archerLines;
+      this._syncDeployLinesButtons();
+    }
+    this._updateDeployToolbarStatus();
+  }
+
   /** Ustawia tryb konnicy i odswieza przyciski. */
   private _setDeployCavalryMode(mode: CavalryDeployMode): void {
     this._deployCavalryMode = mode;
@@ -14179,6 +14273,7 @@ export class BattleScene {
     this._updateDeployDetailPanel();
     this._updateBattleQuickSelectBar();
     this._updateDeployToolbarSelection();
+    this._syncDeployToolbarFromSelection();
     this._updateDeployGroupsBar();
     this._updateDeployStrategyBar();
     this._syncDeployRosterGroupVisibility();
@@ -14517,12 +14612,41 @@ export class BattleScene {
     );
   }
 
+  /**
+   * Domyslna formacja wg skladu: piechota > dystans; oblezenie gdy sa machiny
+   * i brak piechoty wrecz.
+   */
+  private _inferDefaultFormation(units: RuntimeBattleUnit[]): GroupFormation {
+    if (units.length === 0) return 'F2';
+    let hasMelee = false;
+    let hasRanged = false;
+    let hasSiege = false;
+    for (const u of units) {
+      const role = this._deployRoleOf(u);
+      if (role === 'melee' || role === 'javelin') hasMelee = true;
+      else if (role === 'archer') hasRanged = true;
+      else if (role === 'siege') hasSiege = true;
+    }
+    if (hasSiege && !hasMelee) return 'F3';
+    if (hasMelee) return 'F2';
+    if (hasRanged) return 'F1';
+    return 'F2';
+  }
+
+  private _inferDefaultFormationForGroup(gid: string): GroupFormation {
+    const units = this._liveGroupMemberIds(gid)
+      .map(id => this._findPlayerUnit(id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+    return this._inferDefaultFormation(units);
+  }
+
   /** Aktywny schemat formacji dla biezacego zaznaczenia deploy. */
   private _formationForDeployUnits(units: RuntimeBattleUnit[]): 'F1' | 'F2' | 'F3' {
     const gid = units[0]?.groupId;
     if (gid && units.every(u => u.groupId === gid)) {
-      return this._ensureGroupMeta(gid).formation ?? this._deployActiveFormation;
+      return this._ensureGroupMeta(gid).formation ?? this._inferDefaultFormation(units);
     }
+    if (units.length > 0) return this._inferDefaultFormation(units);
     return this._deployActiveFormation;
   }
 
@@ -16056,7 +16180,7 @@ export class BattleScene {
     // autoPlay per grupa: po wczesnym return dla manual — tu zawsze auto
     meta.autoPlay = true;
     if (doctrine === 'defensive') meta.formation = 'F2';
-    else meta.formation = 'F1';
+    else meta.formation = this._inferDefaultFormationForGroup(gid);
     this._applyGroupFormation(gid, meta.formation);
     if (doctrine === 'skirmish') {
       this._applySkirmishFlags(gid);
@@ -18356,14 +18480,11 @@ function computeInstantResult(
       const structBonusPctForPair = (defOnWall ? wallDefenseTotalProc : 0)
         + (isCityDefense ? (cityTerrMult - 1) * 100 : 0);
 
-      // C-FORT-POLE-Q1 (Maciej 2026-07-26), skip-resolve parity: same flat
-      // Obrona bonus as _singleBlow when the defender is fortified in the
-      // field (BattleUnit.fortifiedInField) -- added BEFORE the ford/shore
-      // multipliers below (and before resolveCombat's own terrain/structure
-      // multipliers), so it scales with them exactly like the wall bonus does.
+      // C-FORT-POLE-Q1, skip-resolve parity: +50% Obrony gdy fortifiedInField
+      // (jak _singleBlow) -- PRZED mnożnikami brodu/brzegu/terenu.
       if (d.ru.bu.fortifiedInField === true) {
         cu_d.meleeDefence = fieldFortifyDefenseBonus(
-          cu_d.meleeDefence, true, FORTIFY_OBRONA_BONUS_FIELD,
+          cu_d.meleeDefence, true, FORTIFY_OBRONA_PROC_FIELD,
         );
       }
 

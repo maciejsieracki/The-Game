@@ -1,8 +1,7 @@
 /**
  * braz-access.ts — łańcuch brązu (ABC-12/13; Maciej 2026-07-09: brąz to STOP miedzi, NIE surowiec).
- * Dostęp do brązu = Kopalnia miedzi (mapa, imperium — źródło miedzi) AND Odlewnia brązu (miasto
- * lub upgrade: Odlewnia żelaza / Wielka odlewnia — te też produkują brąz).
- * Sama ruda / złoże w zasięgu ≠ brąz. „Piec hutniczy" = rezerwowana nazwa na przyszłe epoki.
+ * DOSTEP-SUROWCE-Q1 (2026-07-29): dostęp = fizyczny Brąz w magazynie państwa (nie mapa/kopalnia).
+ * Odlewnia brązu w mieście nadal wymagana do produkcji konwertera (cityHasPiecHutniczy).
  */
 import { normalizeImprovementKey } from './terrain-improvements';
 
@@ -42,10 +41,13 @@ export function cityHasPiecHutniczy(builtIds: readonly string[]): boolean {
     || builtIds.includes('wielka_odlewnia');
 }
 
-/** Pełny dostęp do brązu — rekrut, konwerter, panel (gdy wired). */
+/** Pełny dostęp do brązu — rekrut, konwerter, panel: Brąz w magazynie + odlewnia w mieście. */
 export function hasBrazAccess(
-  placedImprovements: ReadonlyMap<string, string | readonly string[]> | null | undefined,
-  builtIds: readonly string[],
+  empireStock?: Readonly<Record<string, number>> | ReadonlyMap<string, string | readonly string[]> | null,
+  builtIds?: readonly string[],
 ): boolean {
-  return empireHasKopalniaMiedzi(placedImprovements) && cityHasPiecHutniczy(builtIds);
+  const stock = empireStock instanceof Map ? undefined : (empireStock ?? undefined);
+  const hasStock = ((stock as Readonly<Record<string, number>> | undefined)?.braz ?? 0) > 0;
+  if (!builtIds) return hasStock;
+  return hasStock && cityHasPiecHutniczy(builtIds);
 }

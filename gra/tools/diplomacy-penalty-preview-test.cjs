@@ -65,7 +65,7 @@ const warPreview = previewWarDeclarationPenalties({
   attackSameTurn: true,
 });
 
-ok(warPreview.zaufanieTotal === -60, 'wojna + zerwanie handlu = Z −60');
+ok(warPreview.zaufanieTotal === -40, 'wojna + zerwanie handlu = Z −40 (bez kary za samą deklarację)');
 ok(warPreview.wiarygodnoscTotal === -10, 'atak w tej samej turze = W −10');
 ok(warPreview.lines.some(l => l.reason.includes('umowy handlowej')), 'wymienia umowę handlową');
 
@@ -75,6 +75,13 @@ const napWar = previewWarDeclarationPenalties({
   isRetaliation: false, attackSameTurn: false,
 });
 ok(napWar.wiarygodnoscTotal === -18, 'wojna mimo NAP = W −18 (bez N1)');
+
+const cleanDeclare = previewWarDeclarationPenalties({
+  declarerId: 0, targetId: 1, activeDeals: [], params: PARAMS,
+  isRetaliation: false, attackSameTurn: false,
+});
+ok(cleanDeclare.zaufanieTotal === 0 && cleanDeclare.wiarygodnoscTotal === 0,
+  'wypowiedzenie bez traktatu i bez ataku w tej turze — brak kar');
 
 const timedTradeBreak = previewVoluntaryTreatyBreakPenalties(
   { rodzaj: 'umowa_handlowa', wygasaTura: 20 },

@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-07-27. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md` (1–17 odpowiedziane).
+Aktualizacja: 2026-07-29. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md` (1–17 odpowiedziane).
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ---
@@ -784,21 +784,15 @@ Plik: `turn-economy.ts` · `economy-upkeep.ts`.
 
 ---
 
-## [ZNALEZIONE PRZY OKAZJI] Stopka „Surowce w zasięgu” — audyt UI (2026-07-28)
+## [ZNALEZIONE PRZY OKAZJI] Stopka „Surowce w zasięgu” — audyt UI · **STATUS: ✅ WDROŻONE (C, FALA 94 `d776c787`)**
 
-Audyt [Surowce w zasięgu UI](95b85062-2770-4046-b26f-0c027e320930): sekcja celowo pokazuje tylko Koń/Sól/Złoto (filtr
-`CITY_PANEL_RANGE_DEPOSIT_LABELS`), dublowuje imperium + Budowa. Rekomendacja subagenta: **C** — usunąć stałą stopkę
-`#cs-surowce-foot`, przenieść skrót do zakładki Okolica (docelowo ikony złóż na mini-mapie). **Bez wdrożenia** do
-decyzji Macieja (A zostaw + doprecyzuj / B usuń / C zwiń do Okolicy).
+Rekomendacja C: stopka `#cs-surowce-foot` usunięta; kompaktowy pasek Koń/Sól/Złoto w zakładce **Okolica** (`#cs-oksurowce` w `cityPanel.ts`).
 
 ---
 
-## [ZNALEZIONE PRZY OKAZJI] Stolarnia bez Tartaku — czy przywrócić łańcuch B1? (2026-07-28)
+## [ZNALEZIONE PRZY OKAZJI] Stolarnia bez Tartaku — łańcuch B1 · **STATUS: ↩️ COFNIĘTE (DOSTEP-SUROWCE-Q1, FALA 95)**
 
-Audyt [Stolarnia tartak wymagania](b877b506-ac0b-4ca5-b98e-929b6e925510): dziś Stolarnia wymaga etykiety Drewno w imperium
-**lub** zapasu w magazynie (SUROW-CIV-02) — **nie** wymaga Tartaku jako prerekwizytu. Wyrąb → drewno w magazynie
-wystarcza. Jeśli Maciej chce kanon B1 (Tartak → aktywne Drewno → dopiero Stolarnia): zmiana w
-`building-resource-gate.ts` (bez aktywnego źródła, bez obejścia stock-only). **Bez wdrożenia** do decyzji.
+FALA 94 B1 (aktywne Drewno/Tartak) cofnięta — kanon: **tylko magazyn państwa** (`docs/decyzje/DOSTEP-SUROWCE-Q1.md`).
 
 ---
 
@@ -809,3 +803,13 @@ Pełna forma ABC: [`docs/decyzje/HANDEL-SPLIT-Q1.md`](../docs/decyzje/HANDEL-SPL
 **Skrót:** A = tylko UI · **B** = dwa traktaty w silniku (TraktatSzlakow + UmowaWymianySurowcow) · C = jeden traktat, pole `handelTryb`.
 
 Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej decyzji — to warstwa prezentacji.
+
+---
+
+## [UI/RENDER] Drogi — wygląd/mesh do przebudowy · STATUS: **ODŁOŻONE** (rozmowa jutro, 2026-07-29)
+
+**Screen (mapa):** płaskie jasne prostokąty / belki między Atenami a Argos — drogi wyglądają nieatrakcyjnie.
+
+**Cytat Macieja (2026-07-29 ~02:13):** „Chyba będzie przebudować drogi, bo nie wyglądają zbyt atrakcyjnie. Ale o tym jutro pogadamy."
+
+**Status:** odłożone na jutro — bez ABC, bez wdrożenia w tej sesji.

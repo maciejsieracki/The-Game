@@ -206,12 +206,20 @@
       "Efekt": "Jednostki poruszają się swobodnie przez obce terytorium. UPR: tylko cywilne, bez negocjacji ceny"
     },
     {
-      "Akcja": "5. Umowa handlowa",
-      "Opis": "Regularny lub jednorazowy transfer surowców, Pracy lub Pieniędzy. Handel Pieniądzem wymaga Waluty u obu stron. Zerwanie: −15 Relacja, −10 Zaufanie.",
+      "Akcja": "5. Traktat szlaków handlowych",
+      "Opis": "Otwiera i utrzymuje szlaki handlowe między miastami (+1 Zaufanie/turę). Bez koszyka towarów — wymiana surowców to osobna umowa (akcja 14). Zerwanie: −15 Relacja, −10 Zaufanie.",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "UPR",
       "Koszt": "Określony w treści umowy (np. 10 Pieniędzy/tura za dostęp do rudy)",
-      "Efekt": "Transfer zasobów; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym handlu. UPR: jednorazowe transakcje"
+      "Efekt": "Szlaki handlowe; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym traktacie szlaków. UPR: jednorazowe transakcje (akcja 14)"
+    },
+    {
+      "Akcja": "14. Umowa wymiany surowców",
+      "Opis": "Koszyk towarów jednorazowo lub co turę (PN, surowce). Nie otwiera szlaków — wymaga osobnego traktatu szlaków (akcja 5) na trasy handlowe.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "UPR",
+      "Koszt": "Określony w koszyku negocjacji",
+      "Efekt": "Transfer zasobów wg umowy; nie zastępuje traktatu szlaków"
     },
     {
       "Akcja": "6. Wymiana / sprzedaż technologii",

@@ -494,11 +494,11 @@ function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 html.civ-ui-zoom-active{overflow:hidden;width:100%;height:100%;}
-html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 380px),680px);}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left{left:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 240px),820px);}
 html.civ-ui-zoom-active .civ-hud .hud-right-cluster{right:${HUD_ZOOM_EDGE_PX}px;max-width:min(calc(100vw - 120px),960px);}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-shell{padding:7px 10px;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-banner-right .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
-html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:nowrap;max-width:none;}
+html.civ-ui-zoom-active .civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:wrap;max-width:100%;row-gap:2px;}
 /* Etykiety PL (Skarbiec, Armia…) zostają widoczne także przy zoom UI — kanon mockup 6C. */
 html.civ-ui-zoom-active .civ-hud .civ-hud-chip-lbl{font-size:10px;}
 html.civ-ui-zoom-active .civ-hud .civ-hud-chip-sep{height:18px;margin:0 4px;}
@@ -515,10 +515,11 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-banner-shell{display:flex;align-items:center;padding:10px 14px;
   border-radius:12px;background:linear-gradient(180deg,rgba(20,26,38,.94),rgba(8,10,16,.95));
   border:1px solid rgba(232,216,138,.3);box-shadow:inset 0 1px 0 rgba(232,216,138,.18),0 6px 18px rgba(0,0,0,.55);
-  flex-shrink:0;width:max-content;overflow:visible;}
-.civ-hud .civ-hud-banner-left{pointer-events:auto;position:fixed;top:${HUD_TOP_PX}px;left:${HUD_EDGE_PX}px;z-index:3;
-  max-width:min(calc(100vw - 400px),720px);}
-.civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:nowrap;}
+  flex-shrink:0;width:max-content;max-width:100%;box-sizing:border-box;}
+.civ-hud .civ-hud-banner-left{pointer-events:none;position:fixed;top:${HUD_TOP_PX}px;left:${HUD_EDGE_PX}px;z-index:3;
+  max-width:min(calc(100vw - 260px),860px);}
+.civ-hud .civ-hud-banner-left>.civ-hud-banner-shell{pointer-events:auto;}
+.civ-hud .civ-hud-banner-left .hud-chip-row{flex-wrap:wrap;row-gap:2px;max-width:100%;}
 .civ-hud .hud-chip-tail-group{display:inline-flex;align-items:center;flex-wrap:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-banner-right{flex-shrink:0;max-width:min(calc(50vw - 340px),780px);}
 /* Prawy klaster: jeden wiersz — chipy Armia…Religia, odstęp, Civpedia + Menu (prawy róg). */
@@ -972,8 +973,8 @@ function renderBarD1B(s: HudState): string {
 
   const rekrLabel = s.rekruciLabel ?? '—';
 
-  let html = '<div class="civ-hud-banner-shell civ-hud-banner-left"><div class="hud-chip-row">'
-    + leftChipsHtml + '</div></div>';
+  let html = '<div class="civ-hud-banner-left"><div class="civ-hud-banner-shell"><div class="hud-chip-row">'
+    + leftChipsHtml + '</div></div></div>';
 
   html += '<div class="power-center" data-act="power" title="Moc imperium — siła absolutna państwa · Duża liczba: punkty Mocy (łączna siła imperium) · Kliknij po szczegóły.">'
     + '<div class="p-epoch">' + escHtml(s.epoka) + '</div>'

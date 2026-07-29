@@ -107,7 +107,11 @@ function oreRocks(): THREE.Group {
 
 export function buildResourceOverlay(nakladka: Nakladka): THREE.Group | null {
   switch (nakladka) {
-    case Nakladka.ZlozeKonia: return horse();
+    case Nakladka.ZlozeKonia: {
+      const h = horse();
+      h.userData.depositDisplayScale = 2; // Maciej 2026-07-29: ×2 (styl civ)
+      return h;
+    }
     case Nakladka.ZlozeOwiec: return sheep();
     case Nakladka.ZlozeBydla: return cow();
     case Nakladka.ZlozeLamy:  return llama();

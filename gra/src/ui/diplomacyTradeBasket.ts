@@ -1168,15 +1168,76 @@ export function openQuickDealBasket(
 }
 
 /** Akcje obsługiwane przez koszyk PN (handel + dar + traktaty z wymianą). R-DYP-STOL-A=C */
-export const TRADE_BASKET_ACTION_IDS = new Set(['2', '3', '4', '5', '8', '12', '13']);
+export const TRADE_BASKET_ACTION_IDS = new Set(['2', '3', '4', '8', '12', '13', '14']);
 
 export function getTradeBasketMode(actionId: string): TradeBasketMode {
   if (actionId === '13') return 'gift';
-  if (actionId === '5') return 'trade';
+  if (actionId === '14') return 'trade';
   if (TRADE_BASKET_ACTION_IDS.has(actionId)) return 'treaty';
   return 'trade';
 }
 
 export function actionUsesTradeBasket(actionId: string): boolean {
   return TRADE_BASKET_ACTION_IDS.has(actionId);
+}
+
+const SZLAKI_MODAL_STYLE = 'civ-diplo-szlaki-css';
+
+/**
+ * HANDEL-SPLIT-Q1=B — propozycja traktatu szlaków bez koszyka PN.
+ * Partner może zażądać wymiany w odpowiedzi (kontroferta na stole).
+ */
+export function showSzlakiTreatyProposalModal(
+  action: AudienceAction,
+  civName: string,
+  onSubmit: (payload: NegotiationPayload) => void,
+  onCancel: () => void,
+): void {
+  ensureDiploBrandScope();
+  document.getElementById(SZLAKI_MODAL_STYLE)?.remove();
+  const css = `
+${DIPLO_1E_SHARED_CSS}
+.civ-diplo-szlaki-overlay{position:fixed;inset:0;z-index:512;background:rgba(0,0,0,0.65);
+  display:flex;align-items:center;justify-content:center;padding:12px;}
+.civ-diplo-szlaki{background:linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98));
+  border:2px solid rgba(232,216,138,.4);border-radius:12px;padding:18px 20px;max-width:420px;width:100%;
+  color:#e8e0c8;font:14px 'Segoe UI',Tahoma,sans-serif;}
+.civ-diplo-szlaki h3{margin:0 0 8px;font-family:Georgia,serif;color:#e8d88a;font-size:1.05em;}
+.civ-diplo-szlaki p{font-size:0.85em;line-height:1.5;color:#a8a090;margin:0 0 14px;}
+.civ-diplo-szlaki .cs-btns{display:flex;gap:8px;justify-content:flex-end;}
+.civ-diplo-szlaki button{padding:8px 14px;border-radius:6px;border:1px solid rgba(232,216,138,.35);
+  background:rgba(20,24,32,.9);color:#e8e0c8;cursor:pointer;font:inherit;}
+.civ-diplo-szlaki button.primary{background:rgba(90,140,200,.35);border-color:rgba(140,180,240,.5);}
+`;
+  const s = document.createElement('style');
+  s.id = SZLAKI_MODAL_STYLE;
+  s.textContent = css;
+  document.head.appendChild(s);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'civ-diplo-szlaki-overlay';
+  const szlakiTip = 'Otwarte szlaki handlowe między miastami, dochód z tras, +1 Zaufanie/turę. '
+    + 'Bez koszyka towarów (wymiana surowców = osobna umowa). Partner może zażądać wymiany w odpowiedzi.';
+  overlay.innerHTML =
+    '<div class="civ-diplo-szlaki">' +
+    '<h3 title="' + esc(szlakiTip) + '">' + esc(action.label) + '</h3>' +
+    '<p>Propozycja traktatu z <strong>' + esc(civName) + '</strong>.</p>' +
+    '<div class="cs-btns">' +
+    '<button type="button" class="cs-cancel">Anuluj</button>' +
+    '<button type="button" class="primary cs-send" title="' + esc(szlakiTip) + '">Wyślij propozycję</button>' +
+    '</div></div>';
+  document.body.appendChild(overlay);
+
+  const close = (): void => {
+    overlay.remove();
+    document.getElementById(SZLAKI_MODAL_STYLE)?.remove();
+  };
+  overlay.querySelector('.cs-cancel')?.addEventListener('click', () => { close(); onCancel(); });
+  overlay.querySelector('.cs-send')?.addEventListener('click', () => {
+    close();
+    onSubmit({ actionId: '5', turns: 20 });
+  });
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) { close(); onCancel(); }
+  });
 }

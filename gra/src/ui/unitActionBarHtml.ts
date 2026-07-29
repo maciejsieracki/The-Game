@@ -32,6 +32,11 @@ const ACTION_ICONS: Partial<Record<string, string>> = {
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
     + '<path d="M12 3v18"/><path d="M8 7 4 11l4 4"/><path d="M16 7l4 4-4 4"/>'
     + '</svg>',
+  merge:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M8 7 4 11l4 4"/><path d="M16 7l4 4-4 4"/>'
+    + '<path d="M12 3v18"/>'
+    + '</svg>',
   sentry:
     '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none">'
     + '<path d="M20.7 14.9A9 9 0 1 1 9.4 3.3a7.2 7.2 0 0 0 11.3 11.6z"/>'
@@ -39,7 +44,7 @@ const ACTION_ICONS: Partial<Record<string, string>> = {
 };
 
 /** Ikony akcji widoczne w kompaktowej karcie (bez rozwiąż w środku — osobno po prawej). */
-const COMPACT_ACTION_ORDER = ['fortify', 'sentry', 'split', 'replace', 'skip'] as const;
+const COMPACT_ACTION_ORDER = ['fortify', 'sentry', 'split', 'merge', 'replace', 'skip'] as const;
 
 export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): string {
   const byId = new Map(actions.map(a => [a.id, a]));

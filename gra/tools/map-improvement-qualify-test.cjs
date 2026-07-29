@@ -19,6 +19,10 @@ export {
   isFarmBaseTerrain,
   stripImprovementsWhenForestRemoved,
   getForestBuildBlockReason,
+  isOwceBaseTerrain,
+  computeImprovementBuildImpact,
+  improvementsReplacedByBuild,
+  formatImprovementBuildImpactList,
 } from '../src/map/improvement-build';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
@@ -257,6 +261,21 @@ ok(forestHint({
   key: 'wyrab',
 })?.includes('innej cywilizacji'),
   'forest hint: enemy territory overlap');
+
+ok(M.isOwceBaseTerrain(TB.Wzgorza, NK.Brak), 'owce terrain: open hill');
+ok(!M.isOwceBaseTerrain(TB.Wzgorza, NK.Las), 'owce terrain: hill+las blocked');
+ok(M.isOwceBaseTerrain(TB.Wzgorza, NK.ZlozeOwiec), 'owce terrain: zloze owiec');
+ok(!qRzym('owce', 10, 0), 'owce NOT on wzgorza+las (BUG owce/tartak)');
+const qOwceOpen = qual({ civ: 'rzym', placed: new Map([['1,1', ['owce']]]) });
+ok(qOwceOpen('owce', 0, 1), 'owce on open wzgorza after unlock');
+const placedTartak = new Map([['10,0', ['tartak']]]);
+const qTartakReplace = qual({ civ: 'rzym', placed: placedTartak });
+ok(qTartakReplace('oboz_lowiecki', 10, 0), 'las sector: oboz qualifies with tartak (confirm path)');
+const rep = M.improvementsReplacedByBuild('oboz_lowiecki', ['tartak']);
+ok(rep.length === 1 && rep[0] === 'tartak', 'impact: oboz replaces tartak');
+ok(!M.computeImprovementBuildImpact('owce', hexes['10,0'], ['tartak']), 'impact null: owce on las+tartak');
+const farmaIrr = M.computeImprovementBuildImpact('bydlo', hexes['0,0'], ['farma', 'irygacja']);
+ok(farmaIrr === null, 'kanon: bydlo blocked on farma+irygacja (no replace)');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

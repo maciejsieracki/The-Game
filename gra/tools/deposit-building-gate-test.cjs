@@ -61,8 +61,11 @@ function mapWith(...hexes) {
   const split = M.getCityResourceAccessForCity(city, map, placed, 99);
   ok(split.active.includes('Glina'), 'glinianka na złożu gliny → active Glina');
   ok(!split.potential.includes('Glina'), 'Glina złoże → poza potencjałem panelu (magazynowe)');
-  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, split.active), 'buildingResourceGateMet: zawsze true (kanon magazyn)');
-  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'buildingResourceGateMet: brak dostępu nie blokuje budowy');
+  ok(!M.buildingResourceGateMet({ id: 'garncarnia' }, split.active),
+    'buildingResourceGateMet: garncarnia z etykietą active bez stocku — bramka zamknięta (DOSTEP-SUROWCE-Q1)');
+  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, split.active, undefined, { glina: 1 }),
+    'buildingResourceGateMet: garncarnia z Gliną w magazynie — OK');
+  ok(!M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'buildingResourceGateMet: garncarnia bez Gliny — bramka zamknięta');
 }
 
 // --- miedź + kopalnia_miedzi ---
@@ -163,11 +166,18 @@ function mapWith(...hexes) {
   ok(M.improvementUnlockActiveOnHex('bydlo', { nakladka: NK.Brak }), 'bydlo active bez złoża');
 }
 
-// --- Kanon 2026-07-28: bramka budowy = magazyn państwa (koszt_surowce), nie dostęp do etykiety ---
+// --- DOSTEP-SUROWCE-Q1 (2026-07-29): bramka budowy = wyłącznie magazyn państwa ---
 {
-  ok(M.buildingResourceGateMet({ id: 'stolarnia' }, []), 'buildingResourceGateMet: stolarnia bez dostępu — bramka otwarta');
-  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'buildingResourceGateMet: garncarnia bez Gliny — bramka otwarta');
-  ok(M.buildingResourceGateMet({ id: 'mennica' }, []), 'buildingResourceGateMet: mennica bez Złota — bramka otwarta');
+  ok(!M.buildingResourceGateMet({ id: 'stolarnia' }, [], undefined, {}),
+    'buildingResourceGateMet: stolarnia bez drewna w magazynie — bramka zamknięta');
+  ok(M.buildingResourceGateMet({ id: 'stolarnia' }, [], undefined, { drewno: 10 }),
+    'buildingResourceGateMet: stolarnia z drewnem w magazynie — OK (tylko stock)');
+  ok(!M.buildingResourceGateMet({ id: 'stolarnia' }, ['Drewno'], undefined, {}),
+    'buildingResourceGateMet: stolarnia z samym activeLabels bez stocku — bramka zamknięta');
+  ok(M.buildingResourceGateMet({ id: 'garncarnia' }, [], undefined, { glina: 5 }),
+    'buildingResourceGateMet: garncarnia z Gliną w magazynie — OK');
+  ok(M.buildingResourceGateMet({ id: 'odlewnia_brazu' }, [], undefined, { ruda: 3 }),
+    'buildingResourceGateMet: odlewnia brązu z Rudą w magazynie — OK (bez kopalni mapy)');
 
   const CITY = { id: 'c1', q: 0, r: 0, ownerId: 0, population: 10 };
   function prodCtx(overrides) {
@@ -175,26 +185,31 @@ function mapWith(...hexes) {
   }
   const stolarniaTech = ['Obróbka drewna'];
   ok(
-    M.buildableProduction(CITY, DATA, stolarniaTech, prodCtx()).some(it => it.id === 'stolarnia'),
-    'stolarnia w buildableProduction z samą tech (bez dostępu Drewna)',
+    !M.buildableProduction(CITY, DATA, stolarniaTech, prodCtx()).some(it => it.id === 'stolarnia'),
+    'stolarnia NIE w buildableProduction bez drewna w magazynie',
+  );
+  ok(
+    M.buildableProduction(CITY, DATA, stolarniaTech, prodCtx({ empireResourceStock: { drewno: 10 } }))
+      .some(it => it.id === 'stolarnia'),
+    'stolarnia w buildableProduction z drewnem w magazynie (bez Tartaku)',
   );
   const catNoStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx()).find(e => e.id === 'stolarnia');
   ok(catNoStock && catNoStock.status === 'locked',
     'stolarnia eraBuildingCatalog locked bez drewna w magazynie');
   const catStock = M.eraBuildingCatalog(DATA, stolarniaTech, prodCtx({ empireResourceStock: { drewno: 10 } }));
   ok(catStock.find(e => e.id === 'stolarnia')?.status === 'ready',
-    'stolarnia eraBuildingCatalog ready z drewnem w magazynie państwa');
+    'stolarnia eraBuildingCatalog ready z drewnem w magazynie (bez Tartaku)');
 }
 
-// --- PYTANIE-84: runtime gate dostęp vs magazyn ---
+// --- PYTANIE-84 + DOSTEP-SUROWCE-Q1: runtime gate = magazyn ---
 {
   ok(
-    !M.buildingRuntimeGateMet({ id: 'stolarnia' }, [], [], {}),
-    'runtime: stolarnia śpi bez Drewna i bez zapasu',
+    M.buildingRuntimeGateMet({ id: 'stolarnia' }, [], [], { drewno: 3 }),
+    'runtime: stolarnia działa z drewnem w magazynie',
   );
   ok(
-    M.buildingRuntimeGateMet({ id: 'stolarnia' }, [], [], { drewno: 3 }),
-    'runtime: stolarnia działa z drewnem w magazynie państwa',
+    !M.buildingRuntimeGateMet({ id: 'stolarnia' }, ['Drewno'], [], {}),
+    'runtime: stolarnia śpi bez zapasu drewna mimo activeLabels',
   );
   ok(
     M.buildingRuntimeGateMet({ id: 'spichlerz_ii' }, [], [], { sol: 99 }),
@@ -207,12 +222,12 @@ function mapWith(...hexes) {
   ok(
     !M.buildingRuntimeGateMet(
       { id: 'mennica' },
-      ['Złoto'],
+      [],
       [],
       {},
       { ownerId: 0, resolveOwnerZlotoAccess: () => false },
     ),
-    'runtime: mennica śpi bez dostępu złota (resolver, nie zapas)',
+    'runtime: mennica śpi bez Złota w magazynie',
   );
   const active = M.filterRuntimeActiveBuiltIds(
     ['garncarnia', 'spichlerz'],

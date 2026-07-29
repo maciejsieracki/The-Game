@@ -1,15 +1,14 @@
 /**
  * city-defense.ts
  *
- * Bonus procentowy Obrony miasta z budowli obronnych (Mury, Cytadela, Baszta)
+ * Bonus procentowy Obrony miasta z budowli obronnych (Palisada, Mury, Cytadela, Baszta)
  * -- WYLACZNIE procentowy, data-driven z miasto-params.json (Maciej 2026-07-25,
- * decyzja 41B -- Baszta jako trzeci, niezalezny budynek obronny).
+ * decyzja 41B -- Baszta jako trzeci, niezalezny budynek obronny; Maciej 2026-07-28
+ * -- Palisada drewniana jako wczesna obrona przed Mury).
  *
- * Trzy warstwy, ADDYTYWNE (nie mnozone), zadna nie zastepuje pozostalych
- * (upgradeFrom brak dla wszystkich trzech -- "w bok", nie "w gore"):
- *   Mury     +bonus_obrona_mur_proc%      -- baza, odblokowana przez KAZDA
- *                                            z trzech budowli obronnych (Mury,
- *                                            Cytadela lub Baszta) obecna w miescie
+ * Warstwy ADDYTYWNE (nie mnozone), z wyjatkiem Palisada vs Mury (Mury superseduja):
+ *   Palisada +bonus_obrona_palisada_proc%  -- tylko gdy brak Murów/Cytadeli w miescie
+ *   Mury     +bonus_obrona_mur_proc%       -- baza kamienna; zastepuje bonus Palisady
  *   Cytadela +bonus_obrona_cytadela_proc%  -- dodatkowo, gdy budynek 'fort' obecny
  *   Baszta   +bonus_obrona_baszta_proc%    -- dodatkowo, gdy budynek 'baszta' obecny
  *
@@ -37,19 +36,21 @@ import { normTerrain, terrainDefenseMultiplier } from './combat';
 import type { TerrainEntry } from './combat';
 
 export interface CityDefenseBonusParams {
-  /** bonus_obrona_mur_proc (miasto-params.json) -- baza, zwykle 200. */
+  /** bonus_obrona_mur_proc (miasto-params.json) -- baza kamienna, zwykle 200. */
   mur: number;
   /** bonus_obrona_cytadela_proc (miasto-params.json) -- dodatkowo z Cytadela, zwykle 100. */
   cytadela: number;
   /** bonus_obrona_baszta_proc (miasto-params.json) -- dodatkowo z Baszta, zwykle 100. */
   baszta: number;
+  /** bonus_obrona_palisada_proc (miasto-params.json) -- wczesna palisada, zwykle 100. */
+  palisada?: number;
 }
 
 /**
  * `builtBuildingIds` to lista budynkow FIZYCZNIE obecnych w miescie
  * (City.cityBuilt, PO podmianach upgrade'owych) -- id, nie nazwy. Zwraca %
  * (np. 400 = +400%), nie ulamek. Puste/brakujace dane => 0 (bez wyjatku --
- * bezpieczne dla starych zapisow gry sprzed Baszty/Cytadeli).
+ * bezpieczne dla starych zapisow gry sprzed Baszty/Cytadeli/Palisady).
  */
 export function cityWallDefenseBonusPercent(
   builtBuildingIds: readonly string[] | null | undefined,
@@ -59,11 +60,15 @@ export function cityWallDefenseBonusPercent(
   const hasMury = built.includes('mury');
   const hasFort = built.includes('fort');
   const hasBaszta = built.includes('baszta');
+  const hasPalisada = built.includes('palisada');
+  const palisadaProc = params.palisada ?? 100;
 
   let total = 0;
   if (hasMury || hasFort) {
     total += params.mur;
     if (hasFort) total += params.cytadela;
+  } else if (hasPalisada) {
+    total += palisadaProc;
   }
   if (hasBaszta) total += params.baszta;
   return total;
@@ -74,8 +79,8 @@ export function cityWallDefenseBonusPercent(
  * "bonus terenu przy obronie MIASTA dolicza sie WYLACZNIE gdy miasto ma mur"):
  *
  * Zwraca mnoznik terenu dla obrony MIASTA, gated na dwa warunki jednoczesnie:
- *   1. Miasto MUSI miec budynek obronny (Mury / Cytadela / Baszta) -- `hasMur`
- *      (dowolny z trzech, patrz cityWallDefenseBonusPercent powyzej > 0).
+ *   1. Miasto MUSI miec budynek obronny (Palisada / Mury / Cytadela / Baszta) --
+ *      `hasMur` (dowolny z nich, patrz cityWallDefenseBonusPercent powyzej > 0).
  *      Miasto BEZ zadnego z nich -> zawsze 1.0 (brak bonusu), niezaleznie od
  *      terenu -- uzasadnienie wlasciciela: jednostki miasta bez murow wychodza
  *      w pole i biją sie na plaskim gruncie, wiec wzgorze pod miastem nie ma

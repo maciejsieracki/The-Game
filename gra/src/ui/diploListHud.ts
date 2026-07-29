@@ -9,6 +9,7 @@ import {
   civPennantHtmlById,
   dipBrandIconHtml,
   dipCloseBtnHtml,
+  dipCapitalLocateBtnHtml,
   DIPLO_1E_SHARED_CSS,
   ensureDiploBrandScope,
   tierBadgeHtml,
@@ -48,6 +49,8 @@ export interface DiploListHudConfig {
   /** Opcjonalne — karta „Twoje państwo" u góry listy. */
   getPlayerSummary?: () => DiploPlayerSummary | null;
   onSelectEntry: (ownerId: number) => void;
+  /** Celownik — wycentruj kamerę na stolicy państwa (bez otwierania audiencji). */
+  onFocusCapital?: (ownerId: number) => void;
   onClose?: () => void;
 }
 
@@ -115,6 +118,7 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-list-hud .dl-divider{height:1px;margin:0.5em 0 0.35em;background:rgba(232,216,138,.14);}
 .civ-diplo-list-hud .dl-section{font-size:0.62em;letter-spacing:.18em;text-transform:uppercase;color:#6a6458;
   padding:0.15em 0.15em 0.35em;}
+.civ-diplo-list-hud .dl-locate-wrap{flex-shrink:0;display:flex;align-items:center;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -306,6 +310,18 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
         }
         row.appendChild(pennant.firstElementChild ?? pennant);
         row.appendChild(body);
+        if (config.onFocusCapital) {
+          const locateWrap = document.createElement('div');
+          locateWrap.className = 'dl-locate-wrap';
+          locateWrap.innerHTML = dipCapitalLocateBtnHtml();
+          locateWrap.querySelector('button')?.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            const oidLocate = parseInt(e.id, 10);
+            if (!Number.isFinite(oidLocate)) return;
+            config.onFocusCapital?.(oidLocate);
+          });
+          row.appendChild(locateWrap);
+        }
         const go = () => {
           const oidGo = parseInt(e.id, 10);
           if (!Number.isFinite(oidGo)) return;

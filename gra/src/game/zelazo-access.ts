@@ -79,13 +79,16 @@ export function cityHasOdlewniaZelaza(builtIds: readonly string[]): boolean {
 }
 
 /**
- * Pełny dostęp do żelaza — wołane z production.ts z JUŻ WYLICZONĄ przez wołającego flagą
- * "Kopalnia na złożu żelaza gdziekolwiek w imperium" (production.ts nie zna mapy) + listą
- * budynków TEGO miasta.
+ * Pełny dostęp do żelaza — DOSTEP-SUROWCE-Q1: Żelazo w magazynie państwa + odlewnia w mieście.
  */
 export function hasZelazoAccess(
-  hasKopalniaNaZlozuZelaza: boolean | undefined,
-  builtIds: readonly string[],
+  empireStock?: Readonly<Record<string, number>> | boolean | undefined,
+  builtIds?: readonly string[],
 ): boolean {
-  return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
+  const stock = typeof empireStock === 'boolean' || empireStock === undefined
+    ? undefined
+    : empireStock;
+  const hasStock = (stock?.zelazo ?? 0) > 0;
+  if (!builtIds) return hasStock;
+  return hasStock && cityHasOdlewniaZelaza(builtIds);
 }

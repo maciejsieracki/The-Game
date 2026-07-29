@@ -224,6 +224,22 @@ export function filterDiplomacyCommandsForEstablishedContact(
   return cmds.filter(c => !ESTABLISHED_CONTACT_CMDS.has(c.type));
 }
 
+/** Maciej 2026-07-29 — tooltip/kafelek wyszarzonej akcji na audiencji. */
+export const AUDIENCE_LOCK_NOTE_CITY_STATE = 'Niedostępne u miasta-państwa';
+export const AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL = 'Niedostępne u rywala tego samego typu';
+
+/**
+ * Powód blokady akcji spoza pakietu podstawowego (D3-Q4 poboczni / warstwa uproszczona).
+ * Rywal tego samego typu (simplifiedDiplomacyOwners) ma osobną etykietę od obcego MP.
+ */
+export function audienceRestrictedActionLockNote(
+  ownerId: number,
+  simplifiedOwners: ReadonlySet<number>,
+): string {
+  if (simplifiedOwners.has(ownerId)) return AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL;
+  return AUDIENCE_LOCK_NOTE_CITY_STATE;
+}
+
 /** Etykiety dozwolonych akcji w UI (podgląd v1). */
 export function allowedActionsForLayer(layer: DiplomacyLayer): readonly string[] {
   if (layer === 'pre_contact') return ['Brak kontaktu'];

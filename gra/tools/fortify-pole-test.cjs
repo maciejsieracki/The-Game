@@ -7,7 +7,7 @@
  * garnizonu miasta (inGarnizon) -- w tym KAŻDA jednostka oblegająca (oblegający
  * stoją przy murze, nigdy na hexie miasta, więc nigdy nie mogą wejść w garnizon).
  * Koszt: CAŁY pozostały ruch (ruchLeft=0). NIE przerywa oblężenia (oblegaCityId
- * zostaje). Bonus Obrony (combat-params.json "oblężenie".fortify_obrona_bonus)
+ * zostaje). Bonus Obrony +50% (combat-params.json "oblężenie".fortify_obrona_proc)
  * we WSZYSTKICH trzech ścieżkach walki (Auto/taktyczna/Pomiń), wzorem bonusu
  * muru (cityGatedTerrainMultiplier) -- wspólna funkcja fieldFortifyDefenseBonus
  * (game/city-defense.ts) wołana z trzech miejsc.
@@ -17,16 +17,16 @@
  *     ustawiają/zdejmują flagę, zerują ruch WYŁĄCZNIE na wejściu, NIE dotykają
  *     oblegaCityId (oblężenie trwa dalej) ani inGarnizon (stany ortogonalne).
  *   CZĘŚĆ B -- fieldFortifyDefenseBonus (game/city-defense.ts) w izolacji:
- *     flat dodatek do Obrony WYŁĄCZNIE gdy flaga=true, zero regresji gdy false.
+ *     +50% Obrony WYŁĄCZNIE gdy flaga=true, zero regresji gdy false.
  *   CZĘŚĆ C -- ścieżka Auto (main.ts effectiveDefenderM, gałąź "bitwa w polu"):
  *     reimplementacja z prawdziwych cegiełek (unit-power.ts armyFieldPowerSplit
  *     + auto-battle-power.ts sumRosterFieldMSplit + fieldFortifyDefenseBonus) --
- *     bonus SKALUJE się z terenem (flat-przed-mnożnikiem, jak mur w siege.ts).
+ *     bonus SKALUJE się z terenem (% na Obronie przed mnożnikami, jak mur).
  *   CZĘŚĆ D -- fundament wspólny Taktyczna/"Pomiń" (combat.ts resolveCombat):
  *     _singleBlow i computeInstantResult dodają bonus do meleeDefence PRZED
  *     wywołaniem resolveCombat -- ten test odtwarza dokładnie ten punkt wpięcia
  *     i sprawdza, że wynikowy hitChanceTw spada dokładnie tak, jak przewiduje
- *     ręczna formuła (Obrona+bonus)*terrDefMult.
+ *     ręczna formuła Obrona×(1+proc/100)×terrDefMult.
  *   CZĘŚĆ E -- przetrwanie zapisu gry: stare zapisy (obiekt bez pola) = false.
  *
  * Usage (z gra/): node tools/fortify-pole-test.cjs
@@ -60,9 +60,9 @@ console.log('fortify-pole-test (dyspozycja 2026-07-26 "oblężenie + fortyfikacj
 // Data
 // ---------------------------------------------------------------------------
 const combatParams = JSON.parse(fs.readFileSync(COMBAT_PARAMS_JSON, 'utf8'));
-const FORTIFY_OBRONA_BONUS = combatParams['oblężenie'].fortify_obrona_bonus;
-assert(typeof FORTIFY_OBRONA_BONUS === 'number' && FORTIFY_OBRONA_BONUS > 0,
-  'combat-params.json "oblężenie".fortify_obrona_bonus jest liczbą dodatnią (' + FORTIFY_OBRONA_BONUS + ')');
+const FORTIFY_OBRONA_PROC = combatParams['oblężenie'].fortify_obrona_proc;
+assert(typeof FORTIFY_OBRONA_PROC === 'number' && FORTIFY_OBRONA_PROC > 0,
+  'combat-params.json "oblężenie".fortify_obrona_proc jest liczbą dodatnią (' + FORTIFY_OBRONA_PROC + '%)');
 
 const unitsRaw = JSON.parse(fs.readFileSync(UNITS_JSON, 'utf8'));
 const terrainRaw = JSON.parse(fs.readFileSync(TERRAIN_JSON, 'utf8'));
@@ -221,12 +221,12 @@ console.log('\n--- B. fieldFortifyDefenseBonus (city-defense.ts) ---');
 {
   const baseObrona = 10;
   assert(
-    fieldFortifyDefenseBonus(baseObrona, false, FORTIFY_OBRONA_BONUS) === baseObrona,
+    fieldFortifyDefenseBonus(baseObrona, false, FORTIFY_OBRONA_PROC) === baseObrona,
     'fieldFortifyDefenseBonus(false): zwraca Obronę BEZ ZMIAN (zero regresji dla niefortyfikowanych)',
   );
   assert(
-    fieldFortifyDefenseBonus(baseObrona, true, FORTIFY_OBRONA_BONUS) === baseObrona + FORTIFY_OBRONA_BONUS,
-    'fieldFortifyDefenseBonus(true): dolicza dokładnie +' + FORTIFY_OBRONA_BONUS + ' pkt Obrony (parametr z combat-params.json)',
+    fieldFortifyDefenseBonus(baseObrona, true, FORTIFY_OBRONA_PROC) === baseObrona * (1 + FORTIFY_OBRONA_PROC / 100),
+    'fieldFortifyDefenseBonus(true): mnoży Obronę ×' + (1 + FORTIFY_OBRONA_PROC / 100) + ' (+' + FORTIFY_OBRONA_PROC + '% z combat-params.json)',
   );
 }
 
@@ -240,16 +240,15 @@ const splitBase = sumRosterFieldMSplit([{ typeId: 'Konnica', def: konnica }]);
 assert(splitBase.attack > 0 && splitBase.defense > 0, 'Konnica ma niezerowy Atak i Obronę w rozbiciu M');
 
 /**
- * Reimplementacja main.ts fortifyFieldScaledDefFor: dolicza flat bonus DO
+ * Reimplementacja main.ts fortifyFieldScaledDefFor: +50% Obrony na
  * meleeDefence PRZED policzeniem M (armyFieldPowerSplit sumuje meleeDefence
- * 1:1, bez dzielników -- patrz unit-power.ts fieldPower), więc bonus trafia
- * do M jako dokładnie +FORTIFY_OBRONA_BONUS na jednostkę fortyfikowaną.
+ * 1:1, bez dzielników -- patrz unit-power.ts fieldPower).
  */
 function fortifyScaledUnitDef(unitDef, isFortified) {
   if (!isFortified) return unitDef;
   return {
     ...unitDef,
-    meleeDefence: fieldFortifyDefenseBonus(Number(unitDef.meleeDefence) || 0, true, FORTIFY_OBRONA_BONUS),
+    meleeDefence: fieldFortifyDefenseBonus(Number(unitDef.meleeDefence) || 0, true, FORTIFY_OBRONA_PROC),
   };
 }
 
@@ -269,13 +268,14 @@ for (const [label, terrain] of [['płasko', FLAT], ['na wzgórzu', HILL]]) {
   const mBase = effectiveDefenderMField(splitBase, 0, terrain);
   const mFortified = effectiveDefenderMField(splitFortified, 0, terrain);
   const terrMult = terrainDefenseMultiplier(terrain, 'Wrecz', terrainRaw);
-  const expectedDelta = Math.round(FORTIFY_OBRONA_BONUS * terrMult * 10) / 10;
+  const defIncrease = splitFortified.defense - splitBase.defense;
+  const expectedDelta = Math.round(defIncrease * terrMult * 10) / 10;
   const actualDelta = Math.round((mFortified - mBase) * 10) / 10;
   assert(
     Math.abs(actualDelta - expectedDelta) < 0.05,
     'Auto, ' + label + ': przyrost M z fortyfikacji w polu (' + actualDelta
-      + ') == +' + FORTIFY_OBRONA_BONUS + ' pkt Obrony × mnożnik terenu (' + terrMult + ') = ' + expectedDelta
-      + ' -- bonus SKALUJE się z terenem (flat-przed-mnożnikiem, jak mur w siege.ts)',
+      + ') == +' + FORTIFY_OBRONA_PROC + '% Obrony × mnożnik terenu (' + terrMult + ') = ' + expectedDelta
+      + ' -- bonus SKALUJE się z terenem (% na Obronie przed mnożnikami)',
   );
 }
 
@@ -346,7 +346,7 @@ function firstHitPct(log, tag) {
 function runFieldBattleWithFortify(terrain, isFortified) {
   const defUnit = toCombatUnit(defenderRow);
   if (isFortified) {
-    defUnit.meleeDefence = fieldFortifyDefenseBonus(defUnit.meleeDefence, true, FORTIFY_OBRONA_BONUS);
+    defUnit.meleeDefence = fieldFortifyDefenseBonus(defUnit.meleeDefence, true, FORTIFY_OBRONA_PROC);
   }
   const rng = makeLCG(7);
   const res = resolveCombat(toCombatUnit(attackerRow), defUnit, {
@@ -375,11 +375,11 @@ for (const [label, terrain] of [['płasko', FLAT], ['na wzgórzu', HILL]]) {
   const atkUnit = toCombatUnit(attackerRow);
   const rawDef = toCombatUnit(defenderRow).meleeDefence;
   const terrMult = terrainDefenseMultiplier(terrain, atkUnit.rola, terrainRaw);
-  const boostedDef = fieldFortifyDefenseBonus(rawDef, true, FORTIFY_OBRONA_BONUS);
+  const boostedDef = fieldFortifyDefenseBonus(rawDef, true, FORTIFY_OBRONA_PROC);
   const expectedHit = hitChanceTw(atkUnit.meleeAttack, boostedDef * terrMult);
   assert(
     expectedHit === withFortify.atkHitPct,
-    'Taktyczna/Pomiń, ' + label + ': hitChanceTw(atak, (Obrona+bonus)×terrMult) (' + expectedHit
+    'Taktyczna/Pomiń, ' + label + ': hitChanceTw(atak, Obrona×(1+' + FORTIFY_OBRONA_PROC + '%)×terrMult) (' + expectedHit
       + '%) == resolveCombat z bonusem wliczonym do meleeDefence (' + withFortify.atkHitPct + '%)',
   );
 }

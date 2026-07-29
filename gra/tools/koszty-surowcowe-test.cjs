@@ -87,14 +87,21 @@ function ok(c, m) {
 
 // ===========================================================================
 // B. Epoka Brazu (epokaWejscia=2) -- drewno + kamien, oba surowce, zaden inny.
+// Wyjatek: palisada drewniana -- tylko drewno (wczesna obrona przed Mury).
 // ===========================================================================
 {
+  const EPOCH2_DRENO_ONLY = new Set(['palisada']);
   const epoch2 = buildings.filter(b => b.epokaWejscia === 2);
   ok(epoch2.length > 0, 'sanity: sa budynki epoki Brazu');
   for (const b of epoch2) {
     const keys = new Set(Object.keys(b.koszt_surowce || {}));
-    ok(keys.size === 2 && keys.has('drewno') && keys.has('kamien'),
-      `${b.id} (epoka Brazu): koszt_surowce = drewno + kamien (ma: ${JSON.stringify(b.koszt_surowce)})`);
+    if (EPOCH2_DRENO_ONLY.has(b.id)) {
+      ok(keys.size === 1 && keys.has('drewno'),
+        `${b.id} (epoka Brazu, palisada): koszt_surowce = samo drewno (ma: ${JSON.stringify(b.koszt_surowce)})`);
+    } else {
+      ok(keys.size === 2 && keys.has('drewno') && keys.has('kamien'),
+        `${b.id} (epoka Brazu): koszt_surowce = drewno + kamien (ma: ${JSON.stringify(b.koszt_surowce)})`);
+    }
   }
 }
 
@@ -154,12 +161,17 @@ function ok(c, m) {
     mur: miastoParams.bonus_obrona_mur_proc.wartosc,
     cytadela: miastoParams.bonus_obrona_cytadela_proc.wartosc,
     baszta: miastoParams.bonus_obrona_baszta_proc.wartosc,
+    palisada: miastoParams.bonus_obrona_palisada_proc.wartosc,
   };
   ok(M.cityWallDefenseBonusPercent(['mury'], params) === 200, 'Mury (samo): +200% Obrony');
   ok(M.cityWallDefenseBonusPercent(['mury', 'fort'], params) === 300, 'Mury+Cytadela: +300% Obrony');
   ok(M.cityWallDefenseBonusPercent(['mury', 'fort', 'baszta'], params) === 400,
     'Mury+Cytadela+Baszta: +400% Obrony (komplet trzech budowli obronnych)');
   ok(M.cityWallDefenseBonusPercent([], params) === 0, 'Miasto bez budowli obronnych: 0% Obrony');
+  ok(M.cityWallDefenseBonusPercent(['palisada'], params) === 100,
+    'Palisada drewniana (sama): +100% Obrony');
+  ok(M.cityWallDefenseBonusPercent(['palisada', 'mury'], params) === 200,
+    'Palisada+Mury w zapisie: tylko bonus Murów (+200%), bez stacku z palisadą');
   ok(M.cityWallDefenseBonusPercent(['baszta'], params) === 100,
     'Sama Baszta (bez Murow/Cytadeli): tylko wlasny +100% (nie odblokowuje bazy muru)');
 }

@@ -18,16 +18,16 @@
  *   < 100000 → ogromna → 8 typów
  *   ≥ 100000 → super → 10 typów
  *
- * Odległości startu (Maciej 2026-07-04 / 2026-07-22 / 2026-07-28, tylko spawn):
- *   miasta-państwa w klastrze gracza → min 4 hex, max 4 hex od stolicy (twardy pierścień)
+ * Odległości startu (Maciej 2026-07-04 / 2026-07-22 / 2026-07-28 / 2026-07-29, tylko spawn):
+ *   miasta-państwa w klastrze gracza → min 5 hex, max 5 hex od stolicy (twardy pierścień)
  *   miasta obcych typów od stolicy gracza → min 12 hexów (poza oświetleniem startu)
- *   miasta-państwa w klastrze obcego typu → min 4 hexy, też skupisko wokół centrum typu
+ *   miasta-państwa w klastrze obcego typu → min 5 hexy, też skupisko wokół centrum typu
  *
  * Pakowanie klastra (Maciej 2026-07-07): miasta w promieniu packRadius od centrum,
  * nie po całym regionie Voronoi — duże puste przestrzenie między typami są OK.
  *
  * Krawędź klastra (Maciej 2026-07-07): stolica / founding spot na obwodzie skupiska,
- * miasta-państwa w środku (~4 hex), +1 zarezerwowany slot wzrostu w klastrze.
+ * miasta-państwa w środku (~5 hex), +1 zarezerwowany slot wzrostu w klastrze.
  *
  * Własność: Civ-MAPA rozmieszcza (computeClusters), SILNIK osadza w pętli tury,
  *           AI ekspanduje rywali wewnątrz regionu swojego typu.
@@ -39,12 +39,12 @@ import { mulberry32, hexDistanceAxial, HEX_DIRECTIONS } from './gen-helpers';
  * Twardy promień skupiska miast-państw (Maciej 2026-07-22).
  * Min odległość między dowolnymi dwoma miastami-państwami w klastrze.
  */
-export const CLUSTER_CITY_STATE_MIN_HEX = 4;
+export const CLUSTER_CITY_STATE_MIN_HEX = 5;
 /**
  * Max odległość miasta-państwa od stolicy/rdzenia klastra (ciasne skupisko).
- * Wraz z MIN = dokładnie pierścień 4 hex wokół stolicy gracza.
+ * Wraz z MIN = dokładnie pierścień 5 hex wokół stolicy gracza.
  */
-export const CLUSTER_CITY_STATE_MAX_HEX = 4;
+export const CLUSTER_CITY_STATE_MAX_HEX = 5;
 /** Min odległość między startowymi miastami-państwami (ten sam typ co gracz). Tylko spawn. */
 export const MIN_DIST_START_CITY_STATE = CLUSTER_CITY_STATE_MIN_HEX;
 /**
@@ -176,7 +176,7 @@ export const ISLAND_FALLBACK_MASS_FRAC = 0.25;
 export const LOCAL_LAND_DOMINANCE_FRAC = 0.70;
 /** @deprecated alias — testy historyczne; metryka = lokalny ląd w promieniu, nie Voronoi. */
 export const REGION_MASS_DOMINANCE_FRAC = LOCAL_LAND_DOMINANCE_FRAC;
-/** Promień okolicy stolicy: ~typowy zasięg klastra miasta (min 4 hex) — lokalna ocena lądu vs morze. */
+/** Promień okolicy stolicy: ~typowy zasięg klastra miasta (min 5 hex) — lokalna ocena lądu vs morze. */
 export const LOCAL_LAND_DOMINANCE_RADIUS = 3;
 /** Min. rozmiar masy lądu (flood-fill) pod startem gracza przy lokalnym lądzie ≥70% (MAP-SPAWN-Q1 B). */
 export const PLAYER_START_MIN_MASS_HEXES = 25;
@@ -611,7 +611,7 @@ export function clusterCityStateRadius(): number {
 
 /**
  * Maks. zasięg łańcucha hubów od stolicy klastra (hexy).
- * N MP w pierścieniach 4 hex → ostatnie MP może być ~4×N od stolicy.
+ * N MP w pierścieniach 5 hex → ostatnie MP może być ~5×N od stolicy.
  */
 export function clusterHubChainReachHex(stateCityCount: number): number {
   const n = Math.max(1, stateCityCount + CLUSTER_GROWTH_RESERVE);
@@ -718,7 +718,7 @@ function hexesAtDistance(q: number, r: number, dist: number): Array<{ q: number;
 }
 
 /**
- * Miasta-państwa — łańcuch pierścieni 4 hex (MAP-SPAWN hub-chain, Maciej 2026-07-28).
+ * Miasta-państwa — łańcuch pierścieni 5 hex (MAP-SPAWN hub-chain, Maciej 2026-07-28 / 2026-07-29).
  * BFS od stolicy: pierwszy pierścień dokładnie `ringDist` od stolicy, potem od każdego MP
  * już postawionego, aż do `count` lub brak lądu. Min. odstęp `minSep` między wszystkimi miastami.
  */
@@ -837,7 +837,7 @@ export function packCityStatesAroundCapital(
 }
 
 /**
- * Miasta-państwa wokół stolicy klastra — deleguje do łańcucha hubów (pierścień 4 hex).
+ * Miasta-państwa wokół stolicy klastra — deleguje do łańcucha hubów (pierścień 5 hex).
  */
 export function packRivalCitiesAroundCore(
   landHexes: Array<{ q: number; r: number }>,
@@ -1315,7 +1315,7 @@ export function computeClusters(
     );
   }
 
-  // --- MIASTA: klaster gracza (min 4 hex), obce typy min 12 od stolicy, mp obcych min 4 w klastrze ---
+  // --- MIASTA: klaster gracza (min 5 hex), obce typy min 12 od stolicy, mp obcych min 5 w klastrze ---
   const klastry: TypeCluster[] = [];
   const stateCityCount = rywaleNaKlaster;
 
@@ -1377,7 +1377,7 @@ export function computeClusters(
     }
   }
 
-  // Pre-plan państw gracza: ciasne skupisko wokół stolicy (min/max 4 hex — Maciej 2026-07-28).
+  // Pre-plan państw gracza: ciasne skupisko wokół stolicy (min/max 5 hex — Maciej 2026-07-29).
   const playerStateSlots = packRivalCitiesAroundCore(
     ladowe,
     playerCapitalPos,

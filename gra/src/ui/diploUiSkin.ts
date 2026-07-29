@@ -158,6 +158,18 @@ export function dipCloseBtnHtml(title = 'Zamknij'): string {
     : `<button type="button" class="dip-close-btn" title="${title}" aria-label="${title}">×</button>`;
 }
 
+/** Ikona celownika — „pokaż stolicę na mapie" (audiencja, lista dyplo). */
+const DIP_CAPITAL_LOCATE_SVG =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">' +
+  '<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/>' +
+  '<path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>';
+
+/** Przycisk celownika — wycentruj kamerę na stolicy państwa (callback w SILNIKU). */
+export function dipCapitalLocateBtnHtml(title = 'Pokaż stolicę na mapie'): string {
+  const safe = escTreatyLabel(title);
+  return `<button type="button" class="dip-capital-locate" title="${safe}" aria-label="${safe}">${DIP_CAPITAL_LOCATE_SVG}</button>`;
+}
+
 /** Wspólne klasy 1E — dołącz na początku bloku CSS każdego modułu dyplo. */
 export const DIPLO_1E_SHARED_CSS = `
 ${CIV_BRAND_SCOPE_VARS}
@@ -208,4 +220,12 @@ ${CIV_BRAND_SCOPE_VARS}
   font-family:var(--tg-font-ui,'Segoe UI',Tahoma,sans-serif);font-size:0.78em;font-weight:600;
   letter-spacing:.06em;border:1px solid rgba(140,150,165,.35);background:rgba(40,48,60,.5);color:#c8d0dc;}
 .dip-muted-btn:hover{border-color:rgba(232,216,138,.35);color:var(--tg-text-primary,#e8e0c8);}
+.dip-capital-locate{flex-shrink:0;width:30px;height:30px;padding:0;border-radius:8px;
+  border:1px solid rgba(232,216,138,.35);background:rgba(8,12,20,.75);
+  color:var(--tg-gold-primary,#e8d88a);cursor:pointer;display:inline-flex;
+  align-items:center;justify-content:center;transition:border-color .15s,background .15s,box-shadow .15s;}
+.dip-capital-locate svg{width:16px;height:16px;display:block;}
+.dip-capital-locate:hover{border-color:rgba(232,216,138,.65);background:rgba(232,216,138,.12);
+  box-shadow:0 0 10px rgba(232,216,138,.15);}
+.dip-capital-locate:focus-visible{outline:2px solid var(--tg-gold-primary,#e8d88a);outline-offset:2px;}
 `;

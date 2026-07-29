@@ -18,6 +18,9 @@ export {
   filterDiplomacyCommandsForEstablishedContact,
   diplomacyLayerForOwner,
   barbarianWarRelation,
+  audienceRestrictedActionLockNote,
+  AUDIENCE_LOCK_NOTE_CITY_STATE,
+  AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL,
 } from ${JSON.stringify(SRC + '/game/diplomacy-layers')};
 export { BARBARIAN_OWNER_ID } from ${JSON.stringify(SRC + '/game/barbarians')};
 export type { AIDiplomacyCommand } from ${JSON.stringify(SRC + '/game/ai')};
@@ -38,6 +41,9 @@ const {
   filterDiplomacyCommandsForEstablishedContact,
   diplomacyLayerForOwner,
   barbarianWarRelation,
+  audienceRestrictedActionLockNote,
+  AUDIENCE_LOCK_NOTE_CITY_STATE,
+  AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL,
   BARBARIAN_OWNER_ID,
 } = require(BUNDLE);
 
@@ -120,6 +126,23 @@ ok(
   ok(rel.status === 'wojna', 'barbarianWarRelation status is wojna');
   ok(rel.zaufanie === 0, 'barbarianWarRelation zaufanie is 0 (no trust, ever)');
   ok(typeof rel.respekt === 'number', 'barbarianWarRelation respekt is a number');
+}
+
+// Maciej 2026-07-29 — etykiety wyszarzonych akcji na audiencji (MP vs rywal tego samego typu).
+{
+  const simplified = new Set([7]);
+  ok(
+    audienceRestrictedActionLockNote(7, simplified) === AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL,
+    'rywal tego samego typu → własny komunikat',
+  );
+  ok(
+    audienceRestrictedActionLockNote(9, simplified) === AUDIENCE_LOCK_NOTE_CITY_STATE,
+    'obce miasto-państwo → komunikat MP',
+  );
+  ok(
+    AUDIENCE_LOCK_NOTE_CITY_STATE === 'Niedostępne u miasta-państwa',
+    'kanon etykiety MP',
+  );
 }
 
 console.log(`\ndiplomacy-layers-test: ${passed} passed, ${failed} failed`);

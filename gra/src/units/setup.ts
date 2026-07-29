@@ -80,8 +80,8 @@ export interface RuntimeUnit {
    *  automatycznie przy rozkazie ruchu (exitFieldFortify w game/armyMerge.ts, wołane
    *  z main.ts startAnimatedMove, analogicznie do exitGarnizon) lub ręcznie (ponowne
    *  kliknięcie „Ufortyfikuj" -> „Zdejmij fortyfikację", bez kosztu ruchu, parytet
-   *  z Czuwaj/Obudź). Daje bonus Obrony (combat-params.json "oblężenie".
-   *  fortify_obrona_bonus, patrz game/city-defense.ts fieldFortifyDefenseBonus) we
+   *  z Czuwaj/Obudź). Daje +50% Obrony (combat-params.json "oblężenie"
+   *  .fortify_obrona_proc, patrz game/city-defense.ts fieldFortifyDefenseBonus) we
    *  WSZYSTKICH trzech ścieżkach walki (Auto/taktyczna/Pomiń). Stare zapisy bez pola
    *  = undefined = false (bez bonusu) -- jak każde inne pole opcjonalne tutaj.
    *  PARYTET AI: pole i bonus są ownerId-agnostyczne (dostępne AI identycznie jak

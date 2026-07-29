@@ -274,6 +274,8 @@ export function treatyDisplayLabel(rodzaj: TreatyKind): string {
     case 'sojusz_defensywny': return 'Sojusz defensywny';
     case 'sojusz_pelny': return 'Sojusz pełny';
     case RodzajTraktatu.UmowaHandlowa: return 'Umowa handlowa';
+    case RodzajTraktatu.UmowaSzlakow: return 'Traktat szlaków';
+    case RodzajTraktatu.UmowaWymiany: return 'Umowa wymiany';
     case RodzajTraktatu.OtwartGranice: return 'Otwarte granice';
     case RodzajTraktatu.PrawoWojskowePrzemarszu: return 'Prawo przemarszu wojskowego';
     case RodzajTraktatu.Wasalizacja: return 'Wasalizacja';
@@ -525,7 +527,7 @@ export function formatNegotiationDealPlayerSummary(
 export interface DiploPlayerSummaryInput {
   militaryPower: number;
   powerRank?: { rank: number; total: number };
-  /** Wiarygodność cywilizacji (0–100) — stat imperium, nie per-para. */
+  /** Wiarygodność cywilizacji (−100…+100) — stat imperium, nie per-para. */
   wiarygodnosc?: number;
   population?: number;
   armyCount?: number;
@@ -550,7 +552,9 @@ export function formatDiploPlayerSummaryLines(input: DiploPlayerSummaryInput): {
   }
   const metaParts: string[] = [];
   if (input.wiarygodnosc !== undefined) {
-    metaParts.push(`Wiarygodność: ${Math.round(Math.max(0, Math.min(100, input.wiarygodnosc)))}`);
+    const w = Math.round(Math.max(-100, Math.min(100, input.wiarygodnosc)));
+    const signed = w > 0 ? `+${w}` : String(w);
+    metaParts.push(`Wiarygodność: ${signed}`);
   }
   return {
     detailLine: detailParts.join(' · '),

@@ -62,6 +62,13 @@ function isAllianceKind(rodzaj: TreatyKind): boolean {
   return k === 'sojusz_pelny' || k === 'sojusz_defensywny' || k === RodzajTraktatu.SojuszWojskowy;
 }
 
+function isHandelTreatyKind(rodzaj: TreatyKind): boolean {
+  const k = normalizeTreatyKind(rodzaj);
+  return k === RodzajTraktatu.UmowaHandlowa
+    || k === RodzajTraktatu.UmowaSzlakow
+    || k === RodzajTraktatu.UmowaWymiany;
+}
+
 function dealInvolvesOwners(deal: ActiveDeal, a: number, b: number): boolean {
   const p0 = Math.min(a, b);
   const p1 = Math.max(a, b);
@@ -109,7 +116,7 @@ export function previewWarDeclarationPenalties(input: {
   const brokenIds = treatiesBrokenByWar(deals, declarerId, targetId);
   if (brokenIds.length > 0) {
     const hasTrade = deals.some(
-      d => brokenIds.includes(d.id) && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaHandlowa,
+      d => brokenIds.includes(d.id) && isHandelTreatyKind(d.rodzaj),
     );
     pushLine(lines, 'zaufanie', params.zlamanaPaktGracz_zaufanie,
       hasTrade
@@ -117,8 +124,8 @@ export function previewWarDeclarationPenalties(input: {
         : 'zerwanie aktywnego traktatu przez wojnę');
   }
 
-  pushLine(lines, 'zaufanie', -20, 'wypowiedzenie wojny');
-
+  // C-WIAR-N1-UX: sama deklaracja z karencją (bez ataku w tej turze) nie obniża Zaufania.
+  // Kara N1 (Wiarygodność) dotyczy wyłącznie ataku w tej samej turze co wypowiedzenie.
   if (attackSameTurn && !isRetaliation) {
     pushLine(lines, 'wiarygodnosc', params.wiarygodnoscN1BezOstrzezenia,
       'atak w tej samej turze co wypowiedzenie wojny (bez ostrzeżenia)');
@@ -133,7 +140,7 @@ export function previewVoluntaryTreatyBreakPenalties(
   params: DiplomacyPenaltyParams,
 ): DiploPenaltyPreview {
   const lines: DiploPenaltyLine[] = [];
-  const isTrade = normalizeTreatyKind(deal.rodzaj) === RodzajTraktatu.UmowaHandlowa;
+  const isTrade = isHandelTreatyKind(deal.rodzaj);
 
   if (deal.wygasaTura === null) {
     pushLine(lines, 'info', 0,

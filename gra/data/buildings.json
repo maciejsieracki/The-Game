@@ -42,7 +42,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
-    "wymagania": "Dostęp do Drewna w imperium (aktywne źródło lub zapas w magazynie państwa)",
+    "wymagania": "Drewno w magazynie państwa (na koszt budowy i bramkę surowca)",
     "uwagi": "B-SUROW-BUD-03: bonus Pracy only — bez konwertera desek",
     "techUnlock": "Obróbka drewna",
     "koszt_surowce": {
@@ -160,7 +160,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "Kopalnia miedzi w imperium (twardy wymóg terenowy — jedyny wyjątek od reguły, decyzja właściciela Temat 8 Q3)",
+    "wymagania": "Ruda w magazynie państwa",
     "uwagi": "Odlewnia brązu (tier1 łańcucha odlewni); upgrade → Odlewnia żelaza. Dostęp brąz = Kopalnia miedzi (mapa) + ten budynek. Konwerter: ruda+drewno→brąz. Piec hutniczy = rezerwowana nazwa na przyszłe epoki (NIE ten budynek). LANCUCH W GORE: maksPoziom=1 — wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza.",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
@@ -792,6 +792,46 @@
     "koszt_surowce": {
       "drewno": 6,
       "kamien": 8
+    }
+  },
+  {
+    "id": "palisada",
+    "nazwa": "Palisada drewniana",
+    "kategoria": "Obrona",
+    "grupa": "Wojsko i obrona",
+    "epokaWejscia": 2,
+    "maksPoziom": 1,
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 22,
+    "przyrostKosztu": 8,
+    "utrzymanie": 1,
+    "przyrostUtrzymania": 0,
+    "wymagania": "",
+    "uwagi": "Palisada drewniana (Maciej 2026-07-28): wczesna obrona miasta w epoce Brązu, odblokowana po Obróbce drewna -- przed kamiennymi Murami (tech Budownictwo). Obrona miasta WYŁĄCZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zastępują bonus palisady (nie stackują). Po ukończeniu Murów palisada jest usuwana z cityBuilt (production.ts).",
+    "techUnlock": "Obróbka drewna",
+    "odblokowuje": "maMur",
+    "koszt_surowce": {
+      "drewno": 12
     }
   },
   {

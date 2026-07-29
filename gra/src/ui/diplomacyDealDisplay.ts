@@ -123,6 +123,35 @@ export function renderNegotiationDealHtml(
   return html;
 }
 
+/** Jedna kolumna stołu (bez kontekstu drugiej strony) — do linked pending split. */
+export function renderNegotiationDealSideOnlyHtml(
+  payload: ProposalPayload,
+  focus: 'we' | 'they',
+  incoming: boolean,
+): string {
+  const split = splitNegotiationDealPlayerSides(payload, incoming);
+  if (!split) return '';
+
+  const ctx: BasketItemFormatCtx = {
+    perTurn: payload.resourceTradeMode === 'per_turn',
+    turns: payload.turns,
+  };
+
+  const items = focus === 'we' ? split.weOffer : split.theyOffer;
+  const label = focus === 'we' ? 'Oferujemy' : 'Oferują';
+  const colCls = focus === 'we' ? 'da-deal-col-we' : 'da-deal-col-they';
+
+  let html = '<div class="da-deal-single da-deal-side-only">';
+  html += `<div class="da-deal-col ${colCls}">`;
+  html += `<div class="da-deal-col-head">${label}</div>`;
+  html += `<div class="da-deal-col-body">${renderBasketListHtml(items, ctx)}</div>`;
+  html += '</div></div>';
+  if (focus === 'they' && split.schedule) {
+    html += `<div class="da-deal-sched-foot">${esc(split.schedule)}</div>`;
+  }
+  return html;
+}
+
 /**
  * Jednostronny podgląd oferty — akcent na „we" lub „they" + opcjonalny kontekst drugiej strony
  * (kolumny „My oferujemy" / „Oni oferują" stołu negocjacji).
@@ -132,6 +161,9 @@ export function renderNegotiationDealOneSideHtml(
   focus: 'we' | 'they',
   opts: { incoming?: boolean; showContext?: boolean } = {},
 ): string {
+  if (opts.showContext === false) {
+    return renderNegotiationDealSideOnlyHtml(payload, focus, opts.incoming === true);
+  }
   const split = splitNegotiationDealPlayerSides(payload, opts.incoming === true);
   if (!split) return '';
 
@@ -151,7 +183,7 @@ export function renderNegotiationDealOneSideHtml(
   html += `<div class="da-deal-col-head">${primaryLabel}</div>`;
   html += `<div class="da-deal-col-body">${renderBasketListHtml(primary, ctx)}</div>`;
   html += '</div>';
-  if (opts.showContext !== false && secondary.length > 0) {
+  if (secondary.length > 0) {
     html += '<div class="da-deal-context">';
     html += `<div class="da-deal-ctx-label">${contextLabel}</div>`;
     html += `<div class="da-deal-ctx-body">${renderBasketListHtml(secondary, ctx)}</div>`;

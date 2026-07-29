@@ -542,16 +542,58 @@ const INTRO_URLS: readonly string[] = INTRO_KOLEJNOSC
   .map((k) => introModules[k] as string);
 
 // OVERLAY kontekstowy — muzyka paneli na czas ich otwarcia (dyplomacja / pre-battle).
-// Pojedynczy utwór na katalog, pętla (createPlaylist zawija kolejkę), 'stala'
-// kolejność. Nazwy plików dowolne — czytamy katalog (jak kamień). Docelowo (życzenie
-// właściciela) osobny utwór per cywilizacja w dyplomacji — wtedy wybór po civId, a nie
-// całą playlistą; na razie jeden wspólny.
+// Dyplomacja: fallback w ./utwory/dyplomacja/*.mp3 (1 utwór, pętla); per-cywilizacja
+// w ./utwory/dyplomacja/<civId>/ (stała kolejność, 3× pod rząd każdy utwór — patrz
+// DYPLOMACJA_CIV_TRACK_ORDER). Wybór po civId w diplomacyPlaylistForCiv().
 const dyplomacjaModules = import.meta.glob('./utwory/dyplomacja/*.mp3', {
   eager: true,
   import: 'default',
 }) as Record<string, string>;
 const DYPLOMACJA_URLS: readonly string[] = Object.keys(dyplomacjaModules).sort()
   .map((k) => dyplomacjaModules[k] as string);
+
+// Per-cywilizacja: ./utwory/dyplomacja/<civId>/*.mp3 — stała kolejność, 3× pod rząd
+// każdy utwór, potem następny (A×3 → B×3 → A×3…), crossfade między przejściami.
+const dyplomacjaCivModules = import.meta.glob('./utwory/dyplomacja/*/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+/** Kolejność utworów per civId (klucz = typCywilizacji / ikonaId z civs.json). */
+const DYPLOMACJA_CIV_TRACK_ORDER: Readonly<Record<string, readonly string[]>> = {
+  rzymianie: ['Imperial_Accord', 'Portico_of_the_Consul'],
+};
+
+function civIdFromDyplomacjaPath(path: string): string | null {
+  const m = path.match(/\/dyplomacja\/([^/]+)\//);
+  return m?.[1] ?? null;
+}
+
+function buildCivDiplomacyUrls(civId: string): readonly string[] {
+  const keys = Object.keys(dyplomacjaCivModules).filter(
+    (k) => civIdFromDyplomacjaPath(k) === civId,
+  );
+  const order = DYPLOMACJA_CIV_TRACK_ORDER[civId];
+  if (order) {
+    return order
+      .map((nazwa) => keys.find((k) => k.includes(nazwa)))
+      .filter((k): k is string => Boolean(k))
+      .map((k) => dyplomacjaCivModules[k] as string);
+  }
+  return keys.sort().map((k) => dyplomacjaCivModules[k] as string);
+}
+
+const civDiplomacyPlaylistCache = new Map<string, FilePlaylist>();
+
+function getOrCreateCivDiplomacyPlaylist(civId: string): FilePlaylist | null {
+  const cached = civDiplomacyPlaylistCache.get(civId);
+  if (cached) return cached.hasTracks() ? cached : null;
+  const urls = buildCivDiplomacyUrls(civId);
+  if (urls.length === 0) return null;
+  const pl = createPlaylist(urls, 3, 'stala');
+  civDiplomacyPlaylistCache.set(civId, pl);
+  return pl;
+}
 
 const preBattleModules = import.meta.glob('./utwory/prebattle/*.mp3', {
   eager: true,
@@ -588,8 +630,22 @@ export const kamienPlaylist: FilePlaylist = createPlaylist(KAMIEN_URLS, 3);
 /** Intro (ekrany przed rozgrywką): shuffle + 1x, z crossfade 1,5 s. */
 export const introPlaylist: FilePlaylist = createPlaylist(INTRO_URLS, 1, 'stala');
 
-/** Dyplomacja: 1 utwór, pętla póki panel audiencji otwarty. */
+/** Dyplomacja (fallback): 1 utwór, pętla póki panel audiencji otwarty. */
 export const dyplomacjaPlaylist: FilePlaylist = createPlaylist(DYPLOMACJA_URLS, 1, 'stala');
+
+/** Wybiera playlistę dyplomacji: per-civ gdy są utwory, inaczej wspólny fallback. */
+export function diplomacyPlaylistForCiv(civId: string | undefined): FilePlaylist {
+  if (civId) {
+    const civPl = getOrCreateCivDiplomacyPlaylist(civId);
+    if (civPl) return civPl;
+  }
+  return dyplomacjaPlaylist;
+}
+
+/** Wszystkie playlisty dyplomacji (fallback + per-civ) — do setVolume(). */
+export function allDiplomacyPlaylists(): readonly FilePlaylist[] {
+  return [dyplomacjaPlaylist, ...civDiplomacyPlaylistCache.values()];
+}
 
 /** Pre-battle: 1 utwór, pętla póki nakładka przedbitewna otwarta. */
 export const preBattlePlaylist: FilePlaylist = createPlaylist(PREBATTLE_URLS, 1, 'stala');

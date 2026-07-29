@@ -20,7 +20,9 @@ export enum RodzajTraktatu {
   SojuszPelny       = 'sojusz_pelny',       // v1.1 T2: wojna sojusznika → auto-dołączenie
   OtwartGranice     = 'otwarte_granice',    // prawo przemarszu cywilnego
   PrawoWojskowePrzemarszu = 'prawo_wojskowe_przemarszu',
-  UmowaHandlowa     = 'umowa_handlowa',     // regularne transfery surowcow/Pieniadza
+  UmowaHandlowa     = 'umowa_handlowa',     // legacy — hydrate → umowa_szlakow | umowa_wymiany
+  UmowaSzlakow      = 'umowa_szlakow',     // HANDEL-SPLIT-Q1=B: szlaki, granty, +1 Zaufanie/turę
+  UmowaWymiany      = 'umowa_wymiany',     // HANDEL-SPLIT-Q1=B: koszyk PN / wymiana cykliczna
   Wasalizacja       = 'wasalizacja',        // trybut + ochrona; zakaz sojuszy bez zgody
   Rozejm            = 'rozejm',             // tymczasowe zawieszenie broni (5–15 tur)
 }

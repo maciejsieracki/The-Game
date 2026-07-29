@@ -127,9 +127,9 @@ export function cityHasAmfiteatrLine(builtIds: readonly string[]): boolean {
   return builtIds.includes('teatr') || builtIds.includes('akademia');
 }
 
-/** Mury lub Cytadela (fort). */
+/** Mury, Cytadela (fort) lub wczesna Palisada drewniana. */
 export function cityHasMurLine(builtIds: readonly string[]): boolean {
-  return builtIds.includes('mury') || builtIds.includes('fort');
+  return builtIds.includes('mury') || builtIds.includes('fort') || builtIds.includes('palisada');
 }
 
 /** Pałac I / II / III (łańcuch upgrade B-PALAC-TIER). */

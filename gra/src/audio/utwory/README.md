@@ -13,7 +13,8 @@ nie polega na konkretnych nazwach.
   `INTRO_KOLEJNOSC` w `filePlayer.ts`; nowy plik NIE wskoczy sam we właściwe
   miejsce, trzeba dopisać nazwę do listy)
 - `dyplomacja/` — utwór panelu audiencji dyplomatycznej (gra póki panel otwarty;
-  docelowo osobny plik per cywilizacja)
+  fallback: jeden plik w katalogu głównym; per-civ: podkatalog `<civId>/` z
+  własną playlistą — patrz `DYPLOMACJA_CIV_TRACK_ORDER` w `filePlayer.ts`)
 - `prebattle/`  — utwór nakładki pre-battle (przed bitwą)
 - `bitwa/`      — utwór sceny bitwy właściwej
 - `zwyciestwo/` — utwór ekranu końca WYGRANEJ bitwy

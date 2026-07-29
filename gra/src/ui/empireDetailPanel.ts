@@ -675,7 +675,7 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   let sur = `<div class="civ-emp-sect sep" data-section="surowce">`;
   if (rows.length === 0) {
     sur += `<div class="civ-emp-eyebrow" style="margin-bottom:10px">MAGAZYN PAŃSTWA</div>`
-      + `<div class="civ-emp-note" style="font-style:italic">Magazyny surowców per miasto — w panelu miasta (stopka). `
+      + `<div class="civ-emp-note" style="font-style:italic">Surowce w zasięgu miasta — zakładka Okolica w panelu miasta. `
       + `Tu pojawi się zbiorczy widok po podpięciu magazynów imperium.</div></div>`;
     return sur;
   }

@@ -131,6 +131,13 @@ export const MOUNTAIN_DEFENSE_MULT = OBL.mountain_defense_mult;
 export const FORTIFY_OBRONA_BONUS = OBL.fortify_obrona_bonus;
 
 /**
+ * Percent bonus to Obrona when RuntimeUnit.ufortyfikowanyWPolu (field
+ * fortification OUTSIDE city garrison). Applied via fieldFortifyDefenseBonus
+ * (game/city-defense.ts) — separate from FORTIFY_OBRONA_BONUS (garrison siege).
+ */
+export const FORTIFY_OBRONA_PROC_FIELD: number = OBL.fortify_obrona_proc;
+
+/**
  * Militia rule (SS9c): fraction of population that auto-defends a besieged city.
  */
 export const MILITIA_POP_FRACTION = OBL.militia_pop_fraction;

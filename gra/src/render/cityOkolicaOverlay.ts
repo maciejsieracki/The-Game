@@ -10,6 +10,7 @@ import { axialToWorld, HEX_R } from './hexutil';
 import { buildRangeOverlayGroup, disposeRangeOverlayGroup, type RangeOverlayStyle } from './rangeOverlay';
 import { GAME_MAP_RENDER_STYLE, terrainSurfaceTopY } from './mapRenderStyle';
 import { hexKeysWithinRadius, type TileYield } from '../game/okolica';
+import { hexHasCoveringTerrainImprovement } from '../game/terrain-improvements';
 import { hexDistance } from '../units/setup';
 
 export const CITY_RANGE_OVERLAY_STYLE: RangeOverlayStyle = {
@@ -233,6 +234,7 @@ export function buildCityOkolicaOverlayGroup(
       const { q, r } = hex.coords;
       const t = hex.terenBazowy;
       if (t === TerenBazowy.Morze || t === TerenBazowy.Gory) continue;
+      if (hexHasCoveringTerrainImprovement(hex)) continue;
 
       const yld = params.yieldOf(q, r);
       const parts = yieldLabelLines(yld);

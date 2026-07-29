@@ -67,6 +67,8 @@ var combat_params_default = {
     hill_defense_mult: 1.5,
     mountain_defense_mult: 1.75,
     fortify_obrona_bonus: 2,
+    fortify_obrona_proc: 50,
+    _fortify_obrona_proc_opis: "ufortyfikowanyWPolu (fortyfikacja W POLU, NIE garnizon): +50% Obrony jednostki (mno\u017Cnik na efektywnej Obronie przed terenem/brodem). Garnizon miasta nadal u\u017Cywa fortify_obrona_bonus (flat +2 pkt).",
     militia_pop_fraction: 0.2,
     militia_strength_fraction: 0.5,
     siege_max_rounds: 30

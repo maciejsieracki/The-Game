@@ -103,8 +103,8 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 // workedTiles (BEZ ZMIAN).
 //
 // Stawki: pole "surowiec_ilosc_tura" w terrain-improvements.json per ulepszenie.
-// Wartosci REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera 2/ture):
-//   Tartak->drewno 4 · Kamieniolom->kamien 4 · Glinianka->glina 4 ·
+// Wartosci REALNE (terrain-improvements.json; korekta balansu Maciej 2026-07-29):
+//   Tartak->drewno 10 · Glinianka->glina 15 · Kamieniolom->kamien 4 ·
 //   Kopalnia miedzi->ruda 2 · Kopalnia (zloze zelaza)->ruda_zelaza 2.
 // Domyslny fallback (gdy pole nieobecne w JSON) = 2/ture -- czysto bezpieczenstwo,
 // nie stawka docelowa; do dalszego strojenia w panelu Excel jesli potrzeba.
@@ -188,6 +188,16 @@ export function improvementKeysForHex(
   }
   const single = normalizeImprovementKey(String(hex.ulepszenie ?? 'brak'));
   return single ? [single] : [];
+}
+
+/** Droga nie przykrywa markera złoża/plonów w rogu heksa — reszta ulepszeń tak. */
+export const ROAD_IMPROVEMENT_KEYS = new Set(['droga', 'droga_brukowana']);
+
+/** Heks z ulepszeniem produkcyjnym (farma, tartak, kopalnia…) — ukryj ikony zasobów/plonów. */
+export function hexHasCoveringTerrainImprovement(
+  hex: Parameters<typeof improvementKeysForHex>[0],
+): boolean {
+  return improvementKeysForHex(hex).some(k => !ROAD_IMPROVEMENT_KEYS.has(k));
 }
 
 export function improvementDisplayName(key: string): string {

@@ -130,7 +130,6 @@ function previewWarDeclarationPenalties(input) {
       hasTrade ? "zerwanie aktywnej umowy handlowej (w tym cyklicznej) przez wojn\u0119" : "zerwanie aktywnego traktatu przez wojn\u0119"
     );
   }
-  pushLine(lines, "zaufanie", -20, "wypowiedzenie wojny");
   if (attackSameTurn && !isRetaliation) {
     pushLine(
       lines,

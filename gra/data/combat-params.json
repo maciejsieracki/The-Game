@@ -39,6 +39,8 @@
     "hill_defense_mult": 1.5,
     "mountain_defense_mult": 1.75,
     "fortify_obrona_bonus": 2,
+    "fortify_obrona_proc": 50,
+    "_fortify_obrona_proc_opis": "ufortyfikowanyWPolu (fortyfikacja W POLU, NIE garnizon): +50% Obrony jednostki (mnożnik na efektywnej Obronie przed terenem/brodem). Garnizon miasta nadal używa fortify_obrona_bonus (flat +2 pkt).",
     "militia_pop_fraction": 0.2,
     "militia_strength_fraction": 0.5,
     "siege_max_rounds": 30
@@ -56,5 +58,9 @@
     "missile_divisor": 2,
     "hp_field_divisor": 2,
     "hp_siege_divisor": 10
+  },
+  "battle_loot": {
+    "_opis": "Łup po wygranej bitwie — % bazowego kosztu rekrutacji (Pieniądz + Surowiec) każdej jednostki wroga usuniętej z mapy po walce.",
+    "recruit_cost_pct": 100
   }
 }

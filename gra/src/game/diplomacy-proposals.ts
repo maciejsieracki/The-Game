@@ -60,6 +60,8 @@ export type ProposalActionId =
    * evaluateProposal jej nie ocenia (gracz nie inicjuje tej akcji z UI negocjacji).
    */
   | 'umowa_handlowa'
+  /** HANDEL-SPLIT-Q1=B: traktat szlaków — gracz lub AI (bez koszyka PN). */
+  | 'umowa_szlakow'
   | 'trybut_zadanie'
   | 'trybut_oferta'
   | 'granice'
@@ -549,7 +551,7 @@ export function evaluateProposal(
           return { accepted: false, reason: 'Brak surowca do cyklicznej wymiany' };
         }
         const deal = buildDeal(
-          RodzajTraktatu.UmowaHandlowa,
+          RodzajTraktatu.UmowaWymiany,
           proposerOwnerId,
           responderOwnerId,
           ctx.turn,
@@ -583,6 +585,34 @@ export function evaluateProposal(
         return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
       }
       return { accepted: true, reason: 'Wymiana jednorazowa (T3A)', oneShotTrade: true };
+    }
+
+    case 'umowa_szlakow': {
+      if (stance.willingnessTrade < p.progHandelWillingnessMin) {
+        return { accepted: false, reason: 'Brak chęci do handlu' };
+      }
+      if (score < p.progHandelRelacja) {
+        return { accepted: false, reason: `Relacja zbyt niska na traktat szlaków (wymagane ≥ ${p.progHandelRelacja})` };
+      }
+      const { givePn, receivePn } = resolveProposalPn(payload);
+      const relTotal = relationTotal(relation);
+      const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
+      if (hasItems && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+        return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
+      }
+      const wygasa = payload.turns != null ? ctx.turn + clampDealTurns(payload.turns) : null;
+      const deal = buildDeal(
+        RodzajTraktatu.UmowaSzlakow,
+        proposerOwnerId,
+        responderOwnerId,
+        ctx.turn,
+        wygasa,
+      );
+      return {
+        accepted: true,
+        reason: hasItems ? 'Traktat szlaków (ze słodzikiem) zawarty' : 'Traktat szlaków zawarty',
+        deal,
+      };
     }
 
     case 'namow_wojne': {
@@ -983,7 +1013,7 @@ export function resolvePlayerAcceptsAiPending(
           return { accepted: false, reason: 'Brak surowca do cyklicznej wymiany' };
         }
         const deal = buildDeal(
-          RodzajTraktatu.UmowaHandlowa,
+          RodzajTraktatu.UmowaWymiany,
           fromOwnerId,
           toOwnerId,
           turn,
@@ -1000,20 +1030,17 @@ export function resolvePlayerAcceptsAiPending(
       }
       return { accepted: true, reason: 'Wymiana PN zaakceptowana', oneShotTrade: true };
     }
-    case 'umowa_handlowa': {
-      // E6 (2026-07-23): gracz akceptuje propozycję STAŁEJ Umowy Handlowej od AI —
-      // AI już oceniła próg (progHandelRelacja) w decideAIDiplomacy, bez ponownej
-      // oceny (jak reszta tej funkcji). payload.goldOnce = opcjonalny jednorazowy
-      // "osłodzik" towarzyszący traktatowi (przelew osobno w applyProposalOutcome,
-      // main.ts — result.deal tu nie niesie transferu jednorazowego).
+    case 'umowa_handlowa':
+    case 'umowa_szlakow': {
+      // E6 / HANDEL-SPLIT-Q1=B: gracz akceptuje propozycję traktatu szlaków od AI.
       const deal = buildDeal(
-        RodzajTraktatu.UmowaHandlowa,
+        RodzajTraktatu.UmowaSzlakow,
         fromOwnerId,
         toOwnerId,
         turn,
-        turn + clampDealTurns(payload.turns),
+        payload.turns != null ? turn + clampDealTurns(payload.turns) : null,
       );
-      return { accepted: true, reason: 'Umowa handlowa zawarta', deal };
+      return { accepted: true, reason: 'Traktat szlaków zawarty', deal };
     }
     case 'trybut_zadanie': {
       const perTurn = payload.goldPerTurn ?? AI_TRIBUTE_PER_TURN;

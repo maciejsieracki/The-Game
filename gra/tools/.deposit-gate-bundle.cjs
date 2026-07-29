@@ -42,7 +42,7 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -100,8 +100,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    teren: "Wzg\xF3rza (bez lasu)",
+    warunek: "solo otwarte wzg\xF3rze (nak\u0142adka Las zabroniona); pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Owce (we\u0142na / jedzenie)"
@@ -109,6 +109,7 @@ var terrain_improvements_default = {
   lama: {
     nazwa: "Lama",
     epoka: 1,
+    cywilizacje: ["inkowie"],
     bonus: {
       zywnosc: 1,
       praca: 3,
@@ -163,8 +164,8 @@ var terrain_improvements_default = {
       handel: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 \u2014 magazyn PE\u0141NY). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 15,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -233,8 +234,8 @@ var terrain_improvements_default = {
       handel: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 \u2014 magazyn PE\u0141NY).",
+    surowiec_ilosc_tura: 10,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -494,12 +495,12 @@ var map_gen_params_default = {
     }
   },
   mapa_skala: {
-    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). \xD72 balans 2026-07-20, aktywne_typy przyci\u0119te do sufitu rosteru 15 nacji (ogromna/super).",
+    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). Sync z Panel-E 2026-07-28 (typy_cywilizacji per rozmiar mapy).",
     aktywne_typy: {
-      mala: 8,
-      srednia: 10,
-      duza: 12,
-      ogromna: 15,
+      mala: 4,
+      srednia: 5,
+      duza: 6,
+      ogromna: 12,
       super: 15
     },
     domyslni_rywale: {
@@ -6691,12 +6692,78 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 3, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 4, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
+    Malenki: {
+      rywale_ai: 2,
+      miasta_panstwa: 3,
+      typy_cywilizacji: 4,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 3, min: 2, max: 4 },
+        braz: { default: 4, min: 3, max: 5 },
+        zelazo: { default: 4, min: 3, max: 5 }
+      },
+      hex_w: 76,
+      hex_h: 52
+    },
+    Ma\u0142y: {
+      rywale_ai: 3,
+      miasta_panstwa: 4,
+      typy_cywilizacji: 5,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 4, min: 3, max: 5 },
+        braz: { default: 5, min: 4, max: 6 },
+        zelazo: { default: 5, min: 4, max: 6 }
+      },
+      hex_w: 108,
+      hex_h: 74
+    },
+    Standardowy: {
+      rywale_ai: 6,
+      miasta_panstwa: 6,
+      typy_cywilizacji: 6,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 5, min: 4, max: 6 },
+        braz: { default: 6, min: 5, max: 7 },
+        zelazo: { default: 6, min: 5, max: 7 }
+      },
+      hex_w: 168,
+      hex_h: 120
+    },
+    Du\u017Cy: {
+      rywale_ai: 7,
+      miasta_panstwa: 7,
+      typy_cywilizacji: 10,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 6, min: 5, max: 7 },
+        braz: { default: 9, min: 8, max: 10 },
+        zelazo: { default: 10, min: 9, max: 11 }
+      },
+      hex_w: 240,
+      hex_h: 168
+    },
+    Ogromny: {
+      rywale_ai: 8,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 12,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 11, min: 10, max: 12 },
+        zelazo: { default: 12, min: 11, max: 13 }
+      },
+      hex_w: 336,
+      hex_h: 238
+    },
+    "Super Huge": {
+      rywale_ai: 10,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 14,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 13, min: 12, max: 14 },
+        zelazo: { default: 14, min: 13, max: 15 }
+      },
+      hex_w: 672,
+      hex_h: 476
+    }
   },
   generator_e2: {
     resource_mult_low: 0.6,
@@ -6819,6 +6886,7 @@ var RIVER_SCALE_BY_SIZE = {
   ogromna: mapGenRiverScale("ogromna"),
   super: mapGenRiverScale("super")
 };
+var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
@@ -7337,6 +7405,11 @@ var miasto_params_default = {
     jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
     opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
+  bonus_obrona_palisada_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (wczesna palisada drewniana)",
+    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Br\u0105zu, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
+  },
   zasieg_okolicy_baza: {
     wartosc: 5,
     jednostka: "pola/strona",
@@ -7377,41 +7450,6 @@ var miasto_params_default = {
 // src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 
-// src/game/braz-access.ts
-var PIEC_HUTNICZY_BUILDING_ID = "odlewnia_brazu";
-var KOPALNIA_MIEDZI_KEY = "kopalnia_miedzi";
-function improvementKeysOnPlaced(imp) {
-  if (typeof imp === "string") {
-    const k = normalizeImprovementKey(imp);
-    return k ? [k] : [];
-  }
-  return imp.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
-}
-function empireHasKopalniaMiedzi(placedImprovements) {
-  if (!placedImprovements?.size) return false;
-  for (const imp of placedImprovements.values()) {
-    for (const key of improvementKeysOnPlaced(imp)) {
-      if (key === KOPALNIA_MIEDZI_KEY) return true;
-    }
-  }
-  return false;
-}
-function cityHasPiecHutniczy(builtIds) {
-  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza") || builtIds.includes("wielka_odlewnia");
-}
-function hasBrazAccess(placedImprovements, builtIds) {
-  return empireHasKopalniaMiedzi(placedImprovements) && cityHasPiecHutniczy(builtIds);
-}
-
-// src/game/zelazo-access.ts
-var ODLEWNIA_ZELAZA_BUILDING_ID = "odlewnia_zelaza";
-function cityHasOdlewniaZelaza(builtIds) {
-  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID) || builtIds.includes("wielka_odlewnia");
-}
-function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
-  return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
-}
-
 // src/game/building-stock-cost.ts
 function buildingStockCost(building) {
   const raw = building?.koszt_surowce;
@@ -7431,34 +7469,16 @@ function canAffordBuildingStock(citySurowce, cost) {
 }
 
 // src/game/zloto-access.ts
-var KOPALNIA_ZLOTA_KEY = "kopalnia_zlota";
 var ZLOTO_STOCK_KEY = "zloto";
 var ZLOTO_LABEL = "Z\u0142oto";
 var MENNICA_ZLOTO_DRAIN_PER_TURN = 1;
-function improvementKeysOnPlaced2(imp) {
-  if (typeof imp === "string") {
-    const k = normalizeImprovementKey(imp);
-    return k ? [k] : [];
-  }
-  return imp.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
-}
-function countKopalnieZlota(placedImprovements) {
-  if (!placedImprovements?.size) return 0;
-  let n = 0;
-  for (const imp of placedImprovements.values()) {
-    for (const key of improvementKeysOnPlaced2(imp)) {
-      if (key === KOPALNIA_ZLOTA_KEY) n++;
-    }
-  }
-  return n;
-}
-function empireHasKopalniaZlota(placedImprovements) {
-  return countKopalnieZlota(placedImprovements) > 0;
-}
 function empireZlotoStock(empireStock) {
   if (!empireStock) return 0;
   const v = empireStock[ZLOTO_STOCK_KEY];
   return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
+}
+function ownerHasZlotoStock(empireStock) {
+  return empireZlotoStock(empireStock) > 0;
 }
 function ownerCanFeedMennica(empireStock, graceActive = false) {
   if (graceActive) return true;
@@ -7489,8 +7509,8 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   stolarnia: ["Drewno"],
   kamieniarski: ["Kamie\u0144"],
   kuznia: ["Ruda"],
-  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
-  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  odlewnia_brazu: ["Ruda"],
+  // PYTANIE-84-R9/U-13 + DOSTEP-SUROWCE-Q1: Mennica — Złoto w magazynie państwa.
   mennica: [ZLOTO_LABEL]
 };
 var CITY_BUILDING_PREREQ = {
@@ -7517,7 +7537,13 @@ var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"])
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
-var ACCESS_ONLY_RESOURCE_LABELS = /* @__PURE__ */ new Set();
+function empireLabelSatisfied(label, empireBuiltIds, empireStock) {
+  if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
+  if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
+  const asciiKey = ASCII_BY_LABEL[label];
+  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
+  return false;
+}
 function buildingRequiredActiveLabels(building) {
   const out = /* @__PURE__ */ new Set();
   const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
@@ -7526,8 +7552,12 @@ function buildingRequiredActiveLabels(building) {
   if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
   return [...out];
 }
-function buildingResourceGateMet(_building, _activeLabels, _empireBuiltIds, _empireStock) {
-  return true;
+function buildingResourceGateMet(building, _activeLabels, empireBuiltIds, empireStock) {
+  const required = buildingRequiredActiveLabels(building);
+  if (required.length === 0) return true;
+  return required.every(
+    (label) => empireLabelSatisfied(label, empireBuiltIds, empireStock)
+  );
 }
 var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
   Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
@@ -7537,14 +7567,11 @@ function hasDepositRuntimeGate(buildingId) {
   if (SPICHLERZ_RUNTIME_EXCLUDED.has(buildingId)) return false;
   return Object.prototype.hasOwnProperty.call(DEPOSIT_LINKED_BUILDING_LABELS, buildingId);
 }
-function empireLabelSatisfiedAtRuntime(label, activeLabels, runtimeActiveBuiltIds, empireStock) {
-  if (activeLabels.includes(label)) return true;
+function empireLabelSatisfiedAtRuntime(label, runtimeActiveBuiltIds, empireStock) {
   if (label === "Ceg\u0142a" && runtimeActiveBuiltIds.includes("cegielnia")) return true;
   if (label === "Ceramika" && runtimeActiveBuiltIds.includes("garncarnia")) return true;
-  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
-    const asciiKey = ASCII_BY_LABEL[label];
-    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
-  }
+  const asciiKey = ASCII_BY_LABEL[label];
+  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
   return false;
 }
 function mennicaRuntimeGateMet(empireStock, options) {
@@ -7559,9 +7586,8 @@ function buildingRuntimeGateMet(building, activeLabels, runtimeActiveBuiltIds, e
   }
   const required = buildingRequiredActiveLabels(building);
   if (required.length === 0) return true;
-  const active = activeLabels ?? [];
   return required.every(
-    (label) => empireLabelSatisfiedAtRuntime(label, active, runtimeActiveBuiltIds, empireStock)
+    (label) => empireLabelSatisfiedAtRuntime(label, runtimeActiveBuiltIds, empireStock)
   );
 }
 function filterRuntimeActiveBuiltIds(builtIds, activeLabels, empireStock, options) {
@@ -7691,6 +7717,9 @@ function civRecruitmentDiscount(bonusy) {
   }
   return 0;
 }
+function empireStockHas(stock, asciiKey) {
+  return (stock?.[asciiKey] ?? 0) > 0;
+}
 function stripDiacritics(s) {
   return s.normalize("NFD").replace(/[\u0300-\u036F]/g, "").toLowerCase();
 }
@@ -7768,6 +7797,7 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
   for (const b of data.buildings) {
     if (b.epokaWejscia > epoch) continue;
     if (isBuildingSuppressedFromProduction(b)) continue;
+    if (b.id === "palisada" && (builtList.includes("mury") || builtList.includes("fort"))) continue;
     const upgradeFrom = (b.upgradeFrom ?? "").trim();
     if (upgradeFrom.length > 0) {
       if (!builtList.includes(upgradeFrom)) continue;
@@ -7779,13 +7809,18 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     const tech = (b.techUnlock ?? "").trim();
     if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
     if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
-    if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
-      continue;
-    }
     if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
       continue;
     }
     if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
+      continue;
+    }
+    if (!buildingResourceGateMet(
+      b,
+      ctx.empireActiveResourceLabels,
+      ctx.empireBuiltIds,
+      ctx.empireResourceStock
+    )) {
       continue;
     }
     items.push({
@@ -7822,10 +7857,10 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
     if (epochNumber(u.Epoka) === 2 && !built.has("koszary") && !isBuildingSupersededByUpgrade("koszary", builtList, data.buildings)) continue;
     const surowiec = stripDiacritics((u.Surowiec ?? "").toString().trim());
-    if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) {
+    if (surowiec === "braz" && !empireStockHas(ctx.empireResourceStock, "braz")) {
       continue;
     }
-    if (surowiec === "zelazo" && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) {
+    if (surowiec === "zelazo" && !empireStockHas(ctx.empireResourceStock, "zelazo")) {
       continue;
     }
     if (u["Super-jednostka"] === "TAK" && ctx.aliveUnitTypeNames?.has(u.Jednostka)) continue;
@@ -7882,7 +7917,12 @@ function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
       isBuildingSupersededByUpgrade
     );
     const stockCost = buildingStockCost(b);
-    const resourceOk = canAffordBuildingStock(ctx.empireResourceStock, stockCost) && !(b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements));
+    const resourceOk = canAffordBuildingStock(ctx.empireResourceStock, stockCost) && buildingResourceGateMet(
+      b,
+      ctx.empireActiveResourceLabels,
+      ctx.empireBuiltIds,
+      ctx.empireResourceStock
+    );
     let status = "ready";
     let locationBlocked;
     if (buildingTypeQueued(b.id, queue)) {
@@ -8198,6 +8238,18 @@ function hasAnimalDeposit(nakladka) {
   return NAKLADKI_ZWIERZECZE.has(nakladka);
 }
 
+// src/game/braz-access.ts
+var PIEC_HUTNICZY_BUILDING_ID = "odlewnia_brazu";
+function cityHasPiecHutniczy(builtIds) {
+  return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza") || builtIds.includes("wielka_odlewnia");
+}
+function hasBrazAccess(empireStock, builtIds) {
+  const stock = empireStock instanceof Map ? void 0 : empireStock ?? void 0;
+  const hasStock = (stock?.braz ?? 0) > 0;
+  if (!builtIds) return hasStock;
+  return hasStock && cityHasPiecHutniczy(builtIds);
+}
+
 // src/game/resource-access.ts
 function parseSurowiecOdblokowany(raw) {
   if (!raw) return [];
@@ -8362,10 +8414,10 @@ function collectActiveAccess(city, map, placedImprovements, options) {
       found.add(SUROWIEC_KEY_LABEL.kon);
     }
   }
-  if (options.builtIds && hasBrazAccess(placedImprovements, options.builtIds)) {
+  if (options.empireStock && hasBrazAccess(options.empireStock, options.builtIds)) {
     found.add(SUROWIEC_KEY_LABEL.braz);
   }
-  if (empireHasKopalniaZlota(placedImprovements)) {
+  if (ownerHasZlotoStock(options.empireStock)) {
     found.add(SUROWIEC_KEY_LABEL.zloto);
   }
   return found;

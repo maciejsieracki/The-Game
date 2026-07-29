@@ -385,6 +385,18 @@ function buildCenterPanel(data: PostBattleSummaryData, statusHeading?: string): 
     : 'Brak zniszczonych jednostek \u2014 tylko obra\u017Cenia.';
   body.appendChild(summary);
 
+  if (data.lootNote) {
+    const lootLine = el('div');
+    css(lootLine, {
+      marginTop: '10px',
+      fontSize: '12px',
+      color: BATTLE_GOLD,
+      lineHeight: '1.5',
+    });
+    lootLine.textContent = '\u0141upy: ' + data.lootNote;
+    body.appendChild(lootLine);
+  }
+
   panel.appendChild(body);
   return panel;
 }

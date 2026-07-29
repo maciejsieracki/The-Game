@@ -25,7 +25,11 @@ import {
   isLivestockUnlockedForPlacement,
   livestockKeyFromImprovement,
 } from '../game/livestock-unlock';
-import { improvementKeysForHex, normalizeImprovementKey } from '../game/terrain-improvements';
+import {
+  improvementDisplayName,
+  improvementKeysForHex,
+  normalizeImprovementKey,
+} from '../game/terrain-improvements';
 import { hexHasRoad, isRoadImprovementKey } from './road-movement';
 import {
   getImprovementMeta,
@@ -156,6 +160,17 @@ export function isFarmBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boole
   return nakladka === Nakladka.Las && teren === TerenBazowy.Wzgorza;
 }
 
+/**
+ * Owce — solo na otwartym Wzgórzu (bez Las) lub pierwsze pastwisko na złożu owiec.
+ * Kanon: nie na lesie (nie współistnieją z tartakiem / wyrębem).
+ */
+export function isOwceBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boolean {
+  if (teren !== TerenBazowy.Wzgorza) return false;
+  if (nakladka === Nakladka.ZlozeOwiec) return true;
+  if (nakladka === Nakladka.Las) return false;
+  return nakladka === Nakladka.Brak;
+}
+
 export const FOOD_LAYER_KEYS = new Set<string>([
   'farma', 'irygacja', 'bydlo', 'owce', 'lama', 'tarasy',
 ]);
@@ -199,6 +214,95 @@ const SEKTOR_OF: Record<string, string> = {
 };
 /** Sektory z limitem „jeden na heks". Overlay/droga/woda — bez limitu (współistnieją). */
 const EXCLUSIVE_SEKTORY = new Set<string>(['surowiec', 'las', 'foodteren', 'hodowla', 'militaria']);
+
+export interface ImprovementBuildImpact {
+  /** Istniejące ulepszenia zdjęte przed postawieniem nowego. */
+  removedImprovements: string[];
+  /** Nakładka lasu zostanie usunięta (jak po wyrębie). */
+  removesForest: boolean;
+}
+
+/** Ulepszenia z tego samego sektora wykluczającego + konflikty solo-hodowla/żywność. */
+export function improvementsReplacedByBuild(
+  key: ImprovementKey,
+  existing: readonly string[],
+): string[] {
+  const removed: string[] = [];
+  const add = (k: string): void => {
+    if (k !== key && !removed.includes(k)) removed.push(k);
+  };
+
+  const sekt = SEKTOR_OF[key];
+  if (sekt && EXCLUSIVE_SEKTORY.has(sekt)) {
+    for (const k of existing) {
+      if (SEKTOR_OF[k] === sekt) add(k);
+    }
+  }
+
+  if (SOLO_FOOD_KEYS.has(key)) {
+    for (const k of existing) {
+      if (FOOD_LAYER_KEYS.has(k)) add(k);
+    }
+  } else if (isFoodKey(key)) {
+    for (const k of existing) {
+      if (SOLO_FOOD_KEYS.has(k)) add(k);
+    }
+  }
+
+  return removed;
+}
+
+function existingAfterSimulatedRemoval(
+  existing: readonly string[],
+  removed: readonly string[],
+): string[] {
+  const rm = new Set(removed);
+  return existing.filter(k => !rm.has(k));
+}
+
+/**
+ * Skutek budowy na heksie z istniejącymi warstwami — null = twarda blokada (np. owce na lesie).
+ * Nie usuwa farma+irygacja (kanon) — wtedy qualifies() zwraca false bez impactu.
+ */
+export function computeImprovementBuildImpact(
+  key: ImprovementKey,
+  hex: { terenBazowy: TerenBazowy; nakladka: Nakladka },
+  existing: readonly string[],
+): ImprovementBuildImpact | null {
+  if (key === 'owce' && !isOwceBaseTerrain(hex.terenBazowy, hex.nakladka)) {
+    return null;
+  }
+
+  const removedImprovements = improvementsReplacedByBuild(key, existing);
+  const after = existingAfterSimulatedRemoval(existing, removedImprovements);
+
+  if (after.includes(key)) {
+    return null;
+  }
+  const sekt = SEKTOR_OF[key];
+  if (key !== 'droga' && sekt && EXCLUSIVE_SEKTORY.has(sekt)
+    && after.some(k => SEKTOR_OF[k] === sekt)) {
+    return null;
+  }
+  if (isFoodKey(key) && !canAddFoodLayer(after, key)) {
+    return null;
+  }
+
+  const removesForest = false;
+  return { removedImprovements, removesForest };
+}
+
+/** Tekst listy znikających elementów (UI potwierdzenia). */
+export function formatImprovementBuildImpactList(impact: ImprovementBuildImpact): string {
+  const parts: string[] = [];
+  for (const k of impact.removedImprovements) {
+    parts.push(improvementDisplayName(k));
+  }
+  if (impact.removesForest) {
+    parts.push('Las');
+  }
+  return parts.join(', ');
+}
 
 type TerenSet = Set<TerenBazowy>;
 
@@ -488,105 +592,115 @@ function createQualifier(state: ImprovementBuildState) {
 
     if (state.pendingUndoKeys?.has(`${hexKey}:${key}`)) return true;
 
-    // WOLNE WSPÓŁISTNIENIE + „jeden per bok" (Maciej 2026-07-09, §5): ulepszenia różnych sektorów
-    // współistnieją; w obrębie jednego sektora maks. jedno; brak duplikatu klucza. Droga = środek (osobno).
-    if (key !== 'droga') {
-      if (existing.includes(key)) return false;                     // brak duplikatu tego samego ulepszenia
-      const sekt = SEKTOR_OF[key];
-      if (sekt && EXCLUSIVE_SEKTORY.has(sekt)
-        && existing.some(k => SEKTOR_OF[k] === sekt)) return false; // jeden per bok
-    } else if (placedKeys.has(hexKey)) {
-      return false;
-    }
+    // WOLNE WSPÓŁISTNIENIE + „jeden per bok" (Maciej 2026-07-09, §5): różne sektory współistnieją;
+    // kolizja w tym samym sektorze / solo-hodowla → computeImprovementBuildImpact + confirm w UI.
+    if (key !== 'droga' && existing.includes(key)) return false;
+    if (key === 'droga' && placedKeys.has(hexKey)) return false;
 
+    let terrainOk = false;
     switch (key) {
       case 'farma':
-        if (!isFarmBaseTerrain(teren, nakladka)) return false;
-        if (hasBlockingDepositForFarm(hex)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        return true;
+        terrainOk = isFarmBaseTerrain(teren, nakladka)
+          && !hasBlockingDepositForFarm(hex)
+          && inPlayerTerritory(q, r);
+        break;
       case 'irygacja':
-        if (!FLAT_IRR.has(teren)) return false;
-        if (hasBlockingDepositForFarm(hex)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        return isRiverAdjacent(q, r);
+        terrainOk = FLAT_IRR.has(teren)
+          && !hasBlockingDepositForFarm(hex)
+          && inPlayerTerritory(q, r)
+          && isRiverAdjacent(q, r);
+        break;
       case 'bydlo':
-        if (!FLAT_FARM.has(teren)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = FLAT_FARM.has(teren)
+          && inPlayerTerritory(q, r)
+          && isLivestockAllowed(playerCivArchetype, key, playerEra)
+          && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        break;
       case 'owce':
-        if (teren !== TerenBazowy.Wzgorza) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = isOwceBaseTerrain(teren, nakladka)
+          && inPlayerTerritory(q, r)
+          && isLivestockAllowed(playerCivArchetype, key, playerEra)
+          && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        break;
       case 'lama':
-        if (teren === TerenBazowy.Pustynia) return false;
-        if (!TERRAIN_ALLOW.lama?.has(teren)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = teren !== TerenBazowy.Pustynia
+          && (TERRAIN_ALLOW.lama?.has(teren) ?? false)
+          && inPlayerTerritory(q, r)
+          && isLivestockAllowed(playerCivArchetype, key, playerEra)
+          && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        break;
       case 'stadnina':
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== TerenBazowy.Laka && teren !== TerenBazowy.Rownina) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return hex.nakladka === Nakladka.ZlozeKonia
-          || isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = inPlayerTerritory(q, r)
+          && (teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)
+          && isLivestockAllowed(playerCivArchetype, key, playerEra)
+          && (hex.nakladka === Nakladka.ZlozeKonia
+            || isLivestockUnlockedForPlacement(key, hex, empireUnlocks));
+        break;
       case 'droga':
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
       case 'posterunek':
-        return TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        break;
       case 'fort':
-        return TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        break;
       case 'glinianka':
-        return nakladka === Nakladka.ZlozeGliny && inPlayerTerritory(q, r);
-      case 'kopalnia': // Maciej 2026-07-09: kopalnia żelaza — żelazo/węgiel/generyczna ruda (NIE miedź)
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== TerenBazowy.Gory) return nakladka === Nakladka.ZlozeRudy;
-        return zloze === 'zelazo' || zloze === 'wegiel' ||
-          nakladka === Nakladka.ZlozeRudy;
+        terrainOk = nakladka === Nakladka.ZlozeGliny && inPlayerTerritory(q, r);
+        break;
+      case 'kopalnia':
+        if (!inPlayerTerritory(q, r)) terrainOk = false;
+        else if (teren !== TerenBazowy.Gory) terrainOk = nakladka === Nakladka.ZlozeRudy;
+        else terrainOk = zloze === 'zelazo' || zloze === 'wegiel' || nakladka === Nakladka.ZlozeRudy;
+        break;
       case 'wyrab':
         if (state.pendingUndoKeys?.has(`${hexKey}:wyrab`)) return true;
-        if (state.clearingHexKeys?.has(hexKey)) return false;
-        return nakladka === Nakladka.Las && inPlayerTerritory(q, r);
-      case 'tartak': {
-        if (!inPlayerTerritory(q, r)) return false;
-        if (nakladka !== Nakladka.Las) return false;
-        return TARTAK_TERENY.has(teren);
-      }
-      case 'oboz_lowiecki': {
-        if (!inPlayerTerritory(q, r)) return false;
-        return nakladka === Nakladka.Las || hasAnimalDeposit(nakladka);
-      }
+        terrainOk = !state.clearingHexKeys?.has(hexKey)
+          && nakladka === Nakladka.Las
+          && inPlayerTerritory(q, r);
+        break;
+      case 'tartak':
+        terrainOk = inPlayerTerritory(q, r)
+          && nakladka === Nakladka.Las
+          && TARTAK_TERENY.has(teren);
+        break;
+      case 'oboz_lowiecki':
+        terrainOk = inPlayerTerritory(q, r)
+          && (nakladka === Nakladka.Las || hasAnimalDeposit(nakladka));
+        break;
       case 'warzelnia_soli':
-        if (!inPlayerTerritory(q, r)) return false;
-        // ZADANIE 1: Wybrzeże = woda — sól z morza, jak lodzie_rybackie (bez wymogu złoża).
-        if (teren === TerenBazowy.Wybrzeze) return true;
-        return zloze === 'sol';
-      case 'kopalnia_miedzi': // Maciej 2026-07-09: kopalnia miedzi — TYLKO ruda miedzi
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== TerenBazowy.Wzgorza && teren !== TerenBazowy.Gory) return false;
-        return zloze === 'miedz';
-      case 'kopalnia_zlota': // Maciej 2026-07-25: kopalnia złota — TYLKO złoże złota
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== TerenBazowy.Wzgorza && teren !== TerenBazowy.Gory) return false;
-        return zloze === 'zloto';
-      case 'tarasy': {
-        if (!inPlayerTerritory(q, r)) return false;
-        if (hasBlockingDepositForFarm(hex)) return false;
-        return teren === TerenBazowy.Wzgorza;
-      }
+        terrainOk = inPlayerTerritory(q, r)
+          && (teren === TerenBazowy.Wybrzeze || zloze === 'sol');
+        break;
+      case 'kopalnia_miedzi':
+        terrainOk = inPlayerTerritory(q, r)
+          && (teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory)
+          && zloze === 'miedz';
+        break;
+      case 'kopalnia_zlota':
+        terrainOk = inPlayerTerritory(q, r)
+          && (teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory)
+          && zloze === 'zloto';
+        break;
+      case 'tarasy':
+        terrainOk = inPlayerTerritory(q, r)
+          && !hasBlockingDepositForFarm(hex)
+          && teren === TerenBazowy.Wzgorza;
+        break;
       case 'lodzie_rybackie':
-        if (!inPlayerTerritory(q, r)) return false;
-        return teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Morze;
+        terrainOk = inPlayerTerritory(q, r)
+          && (teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Morze);
+        break;
       default: {
         const allowed = TERRAIN_ALLOW[key];
-        if (!TERENY_LADU.has(teren)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (allowed && !allowed.has(teren)) return false;
-        return true;
+        terrainOk = TERENY_LADU.has(teren)
+          && inPlayerTerritory(q, r)
+          && (!allowed || allowed.has(teren));
+        break;
       }
     }
+
+    if (!terrainOk) return false;
+    return computeImprovementBuildImpact(key, hex, existing) !== null;
   }
 
   return qualifies;

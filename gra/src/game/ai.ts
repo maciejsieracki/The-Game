@@ -984,6 +984,48 @@ export function chooseCityProduction(
     }
   }
 
+  // Miasta-państwa (defensiveCopy): bootstrap infrastruktury po pierwszym garnizonie.
+  // Mid-phase dodaje Wojownika (~170+mil ≈ 270 pkt), co stale wygrywało ze Spichlerzem
+  // (250) i resztą gospodarki (~140+eko ≈ 240) — efekt: 0 budynków mimo zasobów.
+  // Studnia/Garncarnia nie były w puli kandydatów w ogóle. Po garnizonie priorytet
+  // podstawowej bazy; wojsko tylko przy zagrożeniu lub gdy baza już stoi.
+  if (opts.defensiveCopy) {
+    const cityGuardCount = allUnits.filter(
+      u => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1,
+    ).length;
+    const infraBootstrap = built.length < 6;
+    if (infraBootstrap && cityGuardCount >= 1) {
+      const adminBuilding = myCities.length === 1 ? 'palac' : 'dom_starszyzny';
+      const infraOrder = [
+        'studnia',
+        'garncarnia',
+        'stolarnia',
+        'spichlerz',
+        'targowisko',
+        adminBuilding,
+      ];
+      for (let i = 0; i < infraOrder.length; i++) {
+        const bid = infraOrder[i]!;
+        if (!built.includes(bid)) {
+          // Powyżej Mury (defensiveCopy ≈ 420) i Koszar mid-phase (~300).
+          candidates.push({ id: bid, score: 450 - i * 12 });
+        }
+      }
+      for (const c of candidates) {
+        if (c.id === 'mury' || c.id === 'koszary') {
+          c.score -= 90;
+        }
+      }
+    }
+    if (cityGuardCount >= 1 && !underThreat && infraBootstrap) {
+      for (const c of candidates) {
+        if (c.id === 'Wojownik' || c.id === 'Łucznik') {
+          c.score -= 250;
+        }
+      }
+    }
+  }
+
   // ZADANIE 2 (Maciej 2026-07-23, correctness): priorytet konwertery-przed-konsumentami.
   // Cegła/Brąz/Żelazo powstają WYŁĄCZNIE w swoim konwerterze (Cegielnia/Odlewnia brązu/
   // Odlewnia żelaza -- glina+drewno→cegła, ruda+drewno→brąz, ruda_zelaza+drewno→żelazo).

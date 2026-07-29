@@ -20,13 +20,463 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.dip-layers-entry.ts
 var dip_layers_entry_exports = {};
 __export(dip_layers_entry_exports, {
+  AUDIENCE_LOCK_NOTE_CITY_STATE: () => AUDIENCE_LOCK_NOTE_CITY_STATE,
+  AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL: () => AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL,
   BARBARIAN_OWNER_ID: () => BARBARIAN_OWNER_ID,
+  audienceRestrictedActionLockNote: () => audienceRestrictedActionLockNote,
   barbarianWarRelation: () => barbarianWarRelation,
   computeDiplomaticContacts: () => computeDiplomaticContacts,
   diplomacyLayerForOwner: () => diplomacyLayerForOwner,
   filterDiplomacyCommandsForEstablishedContact: () => filterDiplomacyCommandsForEstablishedContact
 });
 module.exports = __toCommonJS(dip_layers_entry_exports);
+
+// data/map-gen-params.json
+var map_gen_params_default = {
+  _meta: {
+    opis: "Panel-A export \u2014 generator E2 + mg\u0142a. Kod czyta po P3 / handoff Integratora.",
+    panel: "panele-sterowania/Panel-A.xlsx",
+    export: "panele-sterowania/export-a.py"
+  },
+  mgla: {
+    default_sight_jednostki: {
+      wartosc: 3,
+      opis: "Domy\u015Blny promie\u0144 wzroku jednostki"
+    }
+  },
+  gestosc: {
+    surowce_mult: {
+      low: 0.6,
+      medium: 1,
+      high: 1.4
+    },
+    baseline_rarity_mult: 1.35,
+    rzeki_max_mala_mapa: {
+      low: 20,
+      medium: 50,
+      high: 120
+    },
+    river_scale: {
+      mala: 1,
+      srednia: 1.35,
+      duza: 1.7,
+      ogromna: 2.1,
+      super: 2.6
+    },
+    desert_noise_threshold: {
+      low: 0.68,
+      medium: 0.63,
+      high: 0.58
+    },
+    forest_noise_threshold: {
+      low: 0.65,
+      medium: 0.58,
+      high: 0.5
+    },
+    mountain_noise_threshold: {
+      low: 0.8,
+      medium: 0.68,
+      high: 0.52
+    },
+    highland_noise_threshold: {
+      low: 0.66,
+      medium: 0.5,
+      high: 0.38
+    },
+    relief_land_fraction: {
+      low: { mountain: 0.045, highland: 0.105 },
+      medium: { mountain: 0.075, highland: 0.125 },
+      high: { mountain: 0.18, highland: 0.27 }
+    },
+    relief_overflow_cap_frac: {
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
+      low: { mountain: 0.045, highland: 0.075 },
+      medium: { mountain: 0.05, highland: 0.085 },
+      high: { mountain: 0.12, highland: 0.18 }
+    },
+    pasma_gorskie: {
+      _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
+      low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
+      medium: { hexy_na_pasmo: 240, max_pasm_na_mase: 3, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
+      high: { hexy_na_pasmo: 170, max_pasm_na_mase: 5, dlugosc_min: 13, dlugosc_max: 17, min_masa_hexow: 24, obrzeze_szansa: 0.4 }
+    }
+  },
+  mapa_skala: {
+    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). Sync z Panel-E 2026-07-28 (typy_cywilizacji per rozmiar mapy).",
+    aktywne_typy: {
+      mala: 4,
+      srednia: 5,
+      duza: 6,
+      ogromna: 12,
+      super: 15
+    },
+    domyslni_rywale: {
+      mala: 12,
+      srednia: 14,
+      duza: 18,
+      ogromna: 22,
+      super: 30
+    }
+  },
+  generator: {
+    default_width: 36,
+    default_height: 28,
+    rozmiar_dims: {
+      malenki: [76, 52],
+      maly: [108, 74],
+      standardowy: [168, 120],
+      duzy: [240, 168],
+      ogromny: [336, 238],
+      superogromny: [672, 476]
+    }
+  },
+  deposit_rules: {
+    miedz: { rarity: 0.1 },
+    zelazo: { rarity: 0.08 },
+    glina: { rarity: 0.1 },
+    konie: { rarity: 0.025 },
+    wegiel: { rarity: 0.1 },
+    sol: { rarity: 0.12 },
+    zloto: { rarity: 0.03 }
+  },
+  metal_deposit_min_era: {
+    miedz: 2,
+    zelazo: 3,
+    wegiel: 8
+  }
+};
+
+// src/data/map-gen-params-loader.ts
+var FALLBACK_ROZMIAR = {
+  malenki: [76, 52],
+  maly: [108, 74],
+  standardowy: [168, 120],
+  duzy: [240, 168],
+  ogromny: [336, 238],
+  superogromny: [672, 476]
+};
+var FALLBACK_BASELINE_RARITY = 1.35;
+var FALLBACK_RIVER_SCALE = {
+  mala: 1,
+  srednia: 1.35,
+  duza: 1.7,
+  ogromna: 2.1,
+  super: 2.6
+};
+var FALLBACK_DEPOSIT_RARITY = {
+  miedz: 0.1,
+  zelazo: 0.08,
+  glina: 0.1,
+  konie: 0.1,
+  wegiel: 0.1,
+  owce: 0.08,
+  bydlo: 0.07,
+  sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03
+};
+function mapGenResourceBaselineRarity() {
+  const v = map_gen_params_default.gestosc?.baseline_rarity_mult;
+  return typeof v === "number" && v > 0 ? v : FALLBACK_BASELINE_RARITY;
+}
+function mapGenRiverScale(size) {
+  const rs = map_gen_params_default.gestosc?.river_scale;
+  const lut = {
+    mala: "mala",
+    srednia: "srednia",
+    duza: "duza",
+    ogromna: "ogromna",
+    super: "super"
+  };
+  const v = rs?.[lut[size]];
+  return typeof v === "number" && v > 0 ? v : FALLBACK_RIVER_SCALE[size];
+}
+function mapGenRozmiarDims() {
+  const src = map_gen_params_default.generator?.rozmiar_dims;
+  const out = { ...FALLBACK_ROZMIAR };
+  if (!src) return out;
+  for (const key of Object.keys(out)) {
+    const pair = src[key];
+    if (Array.isArray(pair) && pair.length >= 2 && pair.every((n) => typeof n === "number" && n > 0)) {
+      out[key] = [pair[0], pair[1]];
+    }
+  }
+  return out;
+}
+function mapGenAllDepositRarities() {
+  const out = { ...FALLBACK_DEPOSIT_RARITY };
+  const rules = map_gen_params_default.deposit_rules;
+  if (rules) {
+    for (const [id, row] of Object.entries(rules)) {
+      if (typeof row?.rarity === "number" && row.rarity >= 0) out[id] = row.rarity;
+    }
+  }
+  return out;
+}
+
+// data/e-start-params.json
+var e_start_params_default = {
+  _opis: "Panel-E (Grupa E): start, meta, generator E2, zwyci\u0119stwo, tempo. \u0179r\xF3d\u0142o: panele-sterowania/Panel-E.xlsx \u2192 export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i regu\u0142y silnika (docelowo odczyt w TS \u2014 dzi\u015B sync z kodem).",
+  defaulty: {
+    player_civ_id: "rzymianie",
+    start_epoch_id: "kamien",
+    map_quality_default: "\u015Arednia",
+    render_quality_bundled: "medium"
+  },
+  skala_mapy: {
+    Malenki: {
+      rywale_ai: 2,
+      miasta_panstwa: 3,
+      typy_cywilizacji: 4,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 3, min: 2, max: 4 },
+        braz: { default: 4, min: 3, max: 5 },
+        zelazo: { default: 4, min: 3, max: 5 }
+      },
+      hex_w: 76,
+      hex_h: 52
+    },
+    Ma\u0142y: {
+      rywale_ai: 3,
+      miasta_panstwa: 4,
+      typy_cywilizacji: 5,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 4, min: 3, max: 5 },
+        braz: { default: 5, min: 4, max: 6 },
+        zelazo: { default: 5, min: 4, max: 6 }
+      },
+      hex_w: 108,
+      hex_h: 74
+    },
+    Standardowy: {
+      rywale_ai: 6,
+      miasta_panstwa: 6,
+      typy_cywilizacji: 6,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 5, min: 4, max: 6 },
+        braz: { default: 6, min: 5, max: 7 },
+        zelazo: { default: 6, min: 5, max: 7 }
+      },
+      hex_w: 168,
+      hex_h: 120
+    },
+    Du\u017Cy: {
+      rywale_ai: 7,
+      miasta_panstwa: 7,
+      typy_cywilizacji: 10,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 6, min: 5, max: 7 },
+        braz: { default: 9, min: 8, max: 10 },
+        zelazo: { default: 10, min: 9, max: 11 }
+      },
+      hex_w: 240,
+      hex_h: 168
+    },
+    Ogromny: {
+      rywale_ai: 8,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 12,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 11, min: 10, max: 12 },
+        zelazo: { default: 12, min: 11, max: 13 }
+      },
+      hex_w: 336,
+      hex_h: 238
+    },
+    "Super Huge": {
+      rywale_ai: 10,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 14,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 13, min: 12, max: 14 },
+        zelazo: { default: 14, min: 13, max: 15 }
+      },
+      hex_w: 672,
+      hex_h: 476
+    }
+  },
+  generator_e2: {
+    resource_mult_low: 0.6,
+    resource_mult_normal: 1,
+    resource_mult_high: 1.4,
+    resource_baseline_rarity: 1.35,
+    river_base_low: 20,
+    river_base_normal: 50,
+    river_base_high: 80,
+    river_scale_mala: 1,
+    river_scale_srednia: 1.35,
+    river_scale_duza: 1.7,
+    river_scale_ogromna: 2.1,
+    desert_threshold_low: 0.68,
+    desert_threshold_normal: 0.63,
+    desert_threshold_high: 0.58,
+    forest_threshold_low: 0.65,
+    forest_threshold_normal: 0.58,
+    forest_threshold_high: 0.5
+  },
+  tempo_gry: {
+    szybka: 1,
+    standardowa: 2,
+    dluga: 4
+  },
+  koszt_budynkow_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  koszt_jednostek_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  zwyciestwo: {
+    ostatnia_epoka_v1: 3,
+    prog_dominacji_power: 0.5,
+    dominacja_wymaga_ostatniej_epoki: true,
+    nauka_wymaga_rakiety: true
+  },
+  kreator_zaawansowane: {
+    seed_mode_default: "random",
+    manual_seed_default: 424242,
+    barbarians_enabled_default: true,
+    battle_always_manual_default: false,
+    fog_debug_reveal_all_default: false,
+    victory_power_and_dominance_default: true
+  },
+  decyzje_kanon: {
+    e1_reset_nowa_gra: true,
+    e1_tech_kaskada_epok: true,
+    e1_ziemia_preset_staly: true,
+    e1_zloza_tylko_gory: true,
+    e1_zloza_ukryte_do_epoki: true,
+    e2_barbarzyncy_do_przed_sredniowiecza: true,
+    e2_buntownicy_od_sredniowiecza: true
+  }
+};
+
+// src/data/e-start-params-loader.ts
+var R = e_start_params_default;
+function eStartPlayerCivId() {
+  return R.defaulty?.player_civ_id ?? "rzymianie";
+}
+function eStartEpochId() {
+  return R.defaulty?.start_epoch_id ?? "kamien";
+}
+function eStartRenderQualityBundled() {
+  const q = R.defaulty?.render_quality_bundled ?? "medium";
+  if (q === "low" || q === "high") return q;
+  return "medium";
+}
+
+// src/map/generator.ts
+var ROZMIAR_DIMS = mapGenRozmiarDims();
+
+// src/map/newGameMapDefaults.ts
+var DEFAULT_PLAYER_CIV_ID = eStartPlayerCivId();
+var DEFAULT_START_EPOCH_ID = eStartEpochId();
+var DEFAULT_RENDER_QUALITY = eStartRenderQualityBundled();
+var RIVER_SCALE_BY_SIZE = {
+  mala: mapGenRiverScale("mala"),
+  srednia: mapGenRiverScale("srednia"),
+  duza: mapGenRiverScale("duza"),
+  ogromna: mapGenRiverScale("ogromna"),
+  super: mapGenRiverScale("super")
+};
+var RIVER_REF_AREA = 168 * 120;
+var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
+
+// src/map/gen-helpers.ts
+var ERODE_TERRAIN_ORDER = [
+  "wybrzeze" /* Wybrzeze */,
+  "laka" /* Laka */,
+  "pustynia" /* Pustynia */,
+  "rownina" /* Rownina */,
+  "wzgorza" /* Wzgorza */,
+  "gory" /* Gory */
+];
+function isDryLandTerrain(tb) {
+  return tb !== "morze" /* Morze */ && tb !== "wybrzeze" /* Wybrzeze */;
+}
+var ELEVATION_RANK = {
+  ["morze" /* Morze */]: 0,
+  ["wybrzeze" /* Wybrzeze */]: 1,
+  ["laka" /* Laka */]: 2,
+  ["pustynia" /* Pustynia */]: 3,
+  ["rownina" /* Rownina */]: 4,
+  ["wzgorza" /* Wzgorza */]: 5,
+  ["gory" /* Gory */]: 6,
+  ["polarny" /* Polarny */]: 2
+};
+var BASE_DEPOSIT_RULES = [
+  {
+    id: "miedz",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "wzgorza" /* Wzgorza */,
+    rarity: 0.1
+  },
+  {
+    id: "zelazo",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
+    rarity: 0.08
+  },
+  {
+    id: "glina",
+    nakladka: "zloze_gliny" /* ZlozeGliny */,
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
+    rarity: 0.1
+  },
+  {
+    id: "konie",
+    nakladka: "zloze_konia" /* ZlozeKonia */,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "rownina" /* Rownina */,
+    rarity: 0.1
+  },
+  {
+    id: "wegiel",
+    nakladka: null,
+    // brak w enumie Nakladka -> znacznik hex.zloze
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
+    rarity: 0.1
+  },
+  // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
+  // teraz CZYSTE ulepszenie (Owczarnia/Pastwisko), budowane jak farma, nie surowiec na mapie.
+  // Koń (wyżej) zostaje surowcem. Zmienia hash mapy (zamierzone).
+  {
+    id: "sol",
+    nakladka: null,
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
+    rarity: 0.12
+  },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: "zloto",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    rarity: 0.03
+  }
+];
+var _depositRarities = mapGenAllDepositRarities();
+var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
+  const rarity = _depositRarities[rule.id];
+  return typeof rarity === "number" ? { ...rule, rarity } : rule;
+});
 
 // data/terrain-improvements.json
 var terrain_improvements_default = {
@@ -37,14 +487,16 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
     epoka: 1,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
@@ -57,7 +509,9 @@ var terrain_improvements_default = {
     nazwa: "Irygacja",
     epoka: 2,
     bonus: {
-      zywnosc: 5
+      zywnosc: 5,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina, Pustynia",
@@ -71,7 +525,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 4,
+      handel: 3
     },
     surowiecOdblokowany: "bydlo",
     surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
@@ -86,7 +541,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
@@ -99,9 +555,11 @@ var terrain_improvements_default = {
   lama: {
     nazwa: "Lama",
     epoka: 1,
+    cywilizacje: ["inkowie"],
     bonus: {
       zywnosc: 1,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
@@ -115,10 +573,12 @@ var terrain_improvements_default = {
     nazwa: "Stadnina",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "kon",
-    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo",
+    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Ko\u0144 do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture.",
+    surowiec_ilosc_tura: 1,
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "solo; tylko heks ze z\u0142o\u017Cem konia w terytorium",
     koszt_praca: 28,
@@ -129,7 +589,8 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia",
     epoka: 1,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 3
     },
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
@@ -145,11 +606,12 @@ var terrain_improvements_default = {
     epoka: 2,
     bonus: {
       praca: 1,
-      glina: 2
+      glina: 2,
+      handel: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 5,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 20,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -161,7 +623,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       praca: 1,
-      kamien: 1
+      kamien: 1,
+      handel: 2
     },
     surowiecOdblokowany: "kamien",
     surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
@@ -177,7 +640,9 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      pieniadz: 1
+      pieniadz: 1,
+      praca: 1,
+      handel: 2
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 \u2014 brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
@@ -191,7 +656,9 @@ var terrain_improvements_default = {
     nazwa: "Wyr\u0105b",
     typ: "wycinka",
     epoka: 1,
-    bonus: {},
+    bonus: {
+      handel: 1
+    },
     surowiecOdblokowany: null,
     teren: "Las",
     warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
@@ -209,11 +676,12 @@ var terrain_improvements_default = {
     typ: "ulepszenie",
     epoka: 1,
     bonus: {
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
-    surowiec_ilosc_tura: 4,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
+    surowiec_ilosc_tura: 20,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -224,7 +692,9 @@ var terrain_improvements_default = {
     nazwa: "Tarasy uprawne",
     epoka: 2,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
@@ -232,7 +702,10 @@ var terrain_improvements_default = {
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje: [
+      "chinczycy",
+      "inkowie"
+    ],
     cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
     uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
@@ -241,7 +714,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
@@ -256,10 +730,13 @@ var terrain_improvements_default = {
     epoka: 2,
     bonus: {
       pieniadz: 1,
-      zywnosc: 1
+      zywnosc: 1,
+      praca: 1,
+      handel: 3
     },
     surowiecOdblokowany: "sol",
-    surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja S\xF3l do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 \u017Bywno\u015B\u0107, +1 Pieni\u0105dz) zostaje obok surowca_ilosc_tura.",
+    surowiec_ilosc_tura: 10,
     teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
     warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
@@ -300,7 +777,9 @@ var terrain_improvements_default = {
     nazwa: "Droga brukowana",
     typ: "ulepszenie",
     epoka: 3,
-    bonus: {},
+    bonus: {
+      handel: 2
+    },
     bonus_ruch: 2,
     surowiecOdblokowany: null,
     upgradeFrom: "droga",
@@ -315,7 +794,8 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 5
     },
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
@@ -331,16 +811,18 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia z\u0142ota",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 10
     },
-    surowiecOdblokowany: null,
-    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    surowiecOdblokowany: "zloto",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Z\u0142oto do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/tur\u0119. Mennica zu\u017Cywa 1 Z\u0142oto/tur\u0119 ze skarbca przy mno\u017Cniku handlu\u2192Pieni\u0105dz (U-13).",
+    surowiec_ilosc_tura: 1,
     teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
-    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    warunek: "z\u0142o\u017Ce z\u0142ota \u2014 produkcja do magazynu pa\u0144stwa",
     koszt_praca: 22,
     tech: "Waluta",
-    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
-    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+    odblokowuje: "Mennica (Z\u0142oto w skarbcu + Targowisko w stolicy)",
+    uwagi: "PYTANIE-84: z\u0142oto magazynowane (game/zloto-access.ts). Dodatkowe kopalnie \u2192 nadwy\u017Cka na handel/eksport (U-13)."
   },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
@@ -379,7 +861,8 @@ var DEFAULT_TERRAIN_COSTS = {
   ["wybrzeze" /* Wybrzeze */]: Infinity,
   ["wzgorza" /* Wzgorza */]: 2,
   ["gory" /* Gory */]: Infinity,
-  ["morze" /* Morze */]: Infinity
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
@@ -741,9 +1224,18 @@ function filterDiplomacyCommandsForEstablishedContact(cmds, contactEstablished) 
   if (contactEstablished) return cmds;
   return cmds.filter((c) => !ESTABLISHED_CONTACT_CMDS.has(c.type));
 }
+var AUDIENCE_LOCK_NOTE_CITY_STATE = "Niedost\u0119pne u miasta-pa\u0144stwa";
+var AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL = "Niedost\u0119pne u rywala tego samego typu";
+function audienceRestrictedActionLockNote(ownerId, simplifiedOwners) {
+  if (simplifiedOwners.has(ownerId)) return AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL;
+  return AUDIENCE_LOCK_NOTE_CITY_STATE;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  AUDIENCE_LOCK_NOTE_CITY_STATE,
+  AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL,
   BARBARIAN_OWNER_ID,
+  audienceRestrictedActionLockNote,
   barbarianWarRelation,
   computeDiplomaticContacts,
   diplomacyLayerForOwner,

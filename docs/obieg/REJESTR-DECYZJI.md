@@ -44,7 +44,7 @@
 
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
-| **C-UNIT-CARD-Q1** | 2026-07-27 | **C** — atak/obrona efektywne duże + baza małym | E | 🔵 **W TRAKCIE** | `unit-card-stats.ts` · `unitCardStatus.ts` | |
+| **HANDEL-SPLIT-Q1** | 2026-07-29 | **B** — dwa traktaty: `umowa_szlakow` + `umowa_wymiany` | D+E | 🟢 **WDROŻONA** | FALA 80 `7d266143` · `HANDEL-SPLIT-Q1.md` | Maciej: „b” |
 | **C-UNIT-CARD-Q2** | 2026-07-27 | **A** — max HP efektywne na karcie + pasek | E | 🔵 **W TRAKCIE** | j.w. | |
 | **C-UNIT-CARD-Q3** | 2026-07-27 | **A** — osobny wiersz Pancerz efektywny (parytet AI) | E | 🔵 **W TRAKCIE** | j.w. | |
 | **C-OBCE-JEDN-Q2** | 2026-07-27 | **TW** — medalion właściciela (lewo) + koszary/kuźnia przy gwiazdkach (brąz/srebro/złoto) | C | 🟢 **WDROŻONA** | FALA 43 `33c49486` · `unitOwnerMedallion.ts` · `unitPathFlankBadges.ts` |

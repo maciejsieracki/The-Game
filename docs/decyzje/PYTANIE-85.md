@@ -107,3 +107,18 @@ Nagłówek stanu: **„W magazynie: 127 / 500 🍞”** (+ rozszerzenia Spichler
 - Wartość pkt Zdrowia z Łaźni publicznej
 - Racje 3/5/7% i bonus małego miasta — strojenie
 - Koszt wojska z centrali (1 🍞/jedn./t?)
+
+---
+
+## Balans racji żywności — 2026-07-29 (Maciej)
+
+**Cytat:** „Duży nadmiar jedzenia. Nie chce grzebać w farmach.”
+
+**Decyzja:**
+- Koszt racji poziom 1: **2** 🍞/obywatel/turę (było 1)
+- Poziomy 1/2/3: koszt **2 / 4 / 6** 🍞/obywatel/turę (było 1/2/3) — skalowanie **2 × poziom**
+- Farmy i produkcja pól **bez zmian**
+
+**Źródło prawdy:** `gra/data/econ-params.json` → `racje_zywnosc_1/2/3` · `gra/src/game/population-growth-v85.ts` (`buildRationParams`, `rationFoodCostPerPop`)
+
+**Wpływ (Racja 2 domyślna):** 1 obywatel = 4 🍞/t; 5 obywateli = 20 🍞/t (było 10 🍞/t przy Racji 2).

@@ -51,7 +51,10 @@ export interface DiplomacyActionLockContext {
   respekt: number;
   /** Aktywne traktaty między stronami (z activeDeals, uwzględnia sojusz_defensywny/pelny). */
   hasNap: boolean;
+  /** Traktat szlaków (`umowa_szlakow`) — szlaki + +1 Zaufanie/turę. */
   hasHandel: boolean;
+  /** Umowa wymiany surowców (`umowa_wymiany`). */
+  hasWymiana?: boolean;
   hasSojusz: boolean;
   /** Etykieta traktatu, który zrywa wypowiedzenie wojny (np. „Pakt o nieagresji"); undefined = brak. */
   breaksTreatyLabel?: string;
@@ -131,6 +134,7 @@ const ALREADY_NOTE: Record<string, string> = {
   '2': 'już zawarty',
   '3': 'już zawarty',
   '5': 'już zawarta',
+  '14': 'już zawarta',
 };
 
 /**
@@ -165,11 +169,18 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
       return { locked: false, note: 'przemarsz wojsk dozwolony' };
     }
 
-    case '5': { // Umowa handlowa
+    case '5': { // Traktat szlaków (HANDEL-SPLIT-Q1=B)
       if (ctx.hasHandel) return { locked: false, active: true, note: ALREADY_NOTE['5']! };
       const gate = relacjaGate(ctx.progHandelRelacja, ctx.relTotal);
       if (gate) return gate;
-      return { locked: false, note: '' };
+      return { locked: false, note: 'szlaki handlowe, +1 Zaufanie/turę' };
+    }
+
+    case '14': { // Umowa wymiany surowców
+      if (ctx.hasWymiana) return { locked: false, active: true, note: ALREADY_NOTE['14']! };
+      const gate = relacjaGate(ctx.progHandelRelacja, ctx.relTotal);
+      if (gate) return gate;
+      return { locked: false, note: 'koszyk towarów jednorazowo / co turę' };
     }
 
     case '6': { // Wymiana / sprzedaż technologii

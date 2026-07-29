@@ -213,7 +213,7 @@ function panelRelTotal(zaufanie: number, respekt: number): number {
 }
 
 function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
-  const btnLabel = rel.contactEstablished ? 'Porozmawiaj' : 'Nawiąż kontakt';
+  const btnLabel = 'Porozmawiaj';
   let actionBtn = '';
   if (!isPlaceholder && rel.ownerId !== undefined && cfg?.onOpenAudience) {
     actionBtn = '<button type="button" class="dip-gold-btn cd-aud-btn" data-act="audience" data-oid="' + rel.ownerId + '">'

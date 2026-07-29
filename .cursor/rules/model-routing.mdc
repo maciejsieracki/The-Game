@@ -1,5 +1,5 @@
 ---
-description: Routing modeli — Grok 4.5 myśli, subagent composer-2.5 wykonuje kod/audyt/błędy. Oszczędność tokenów.
+description: Routing modeli — Grok 4.5 myśli i deploy, subagent composer-2.5 wykonuje kod/audyt/błędy. Oszczędność tokenów.
 globs:
   - "**/*"
 alwaysApply: true
@@ -7,9 +7,9 @@ alwaysApply: true
 
 # Routing modeli — oszczędność tokenów (NIENEGOCJOWALNE)
 
-**Zasada (Maciej 2026-06-28, korekta 2026-07-27, doprecyzowanie 2026-07-28):**
-- **Grok 4.5** (czat główny) = mózg: **rozkminianie, planowanie, kontrola**, ewentualnie **deploy**.
-- **`composer-2.5`** (subagent) = ręce: **cała pozostała praca** (kod, audyt, błędy, testy, refaktory…).
+**Zasada (Maciej 2026-06-28, korekta 2026-07-27, doprecyzowanie 2026-07-28, deploy 2026-07-29):**
+- **Grok 4.5** (czat główny) = mózg: **rozkminianie, planowanie, kontrola** — oraz **jedyny**, kto robi **deploy**.
+- **`composer-2.5`** (subagent) = ręce: **cała pozostała praca** (kod, audyt, błędy, testy, refaktory, dokumentacja decyzyjna…) — **bez deployu**.
 
 **⛔ `composer-2.5-fast` — NIE UŻYWAĆ** (Maciej 2026-07-27: za drogi). Jedyny model subagenta implementacyjnego: **`composer-2.5`**.
 
@@ -17,8 +17,24 @@ alwaysApply: true
 
 | Warstwa | Kto | Zakres |
 |---|---|---|
-| **Rozkminianie / planowanie / kontrola / deploy** | **Grok 4.5** (czat główny) | ABC, architektura, priorytety, dekompozycja zadań, ocena raportów subagenta, bramka jakości, routing, ewentualny deploy do `gra-robocza` / logi WERSJE |
-| **Cała pozostała praca** | **subagent `composer-2.5`** (Task) | kod, refaktory, testy, audyt kodu, śledzenie bugów, analiza tematu w plikach, masowe edycje, eksporty, handoffy techniczne |
+| **Orkiestracja / plan / kontrola / deploy** | **Grok 4.5** (czat główny) | ABC, architektura, priorytety, dekompozycja zadań, ocena raportów subagenta, bramka jakości, routing — oraz **wyłącznie Grok**: publish do `gra-robocza/`, logi `dyspozycje/WERSJE.md` (AKTUALNA FALA), `KANAL-PRACA.md` |
+| **Cała pozostała praca** | **subagent `composer-2.5`** (Task) | kod, refaktory, testy, audyt kodu, śledzenie bugów, analiza tematu w plikach, masowe edycje, eksporty, handoffy techniczne, dokumentacja decyzyjna |
+
+## Deploy — tylko Grok (Maciej 2026-07-29)
+
+**Grok 4.5** (gdy Maciej każe deploy / publish):
+- `vite build` → kopiowanie do `gra-robocza/`
+- wpis w `dyspozycje/WERSJE.md` (sekcja AKTUALNA FALA)
+- meldunek w `dyspozycje/_handoff/KANAL-PRACA.md`
+- ewentualny `git push` na polecenie Macieja
+
+**⛔ Composer 2.5 — ZAKAZ deployu:**
+- NIE `vite build` z celem publish do `gra-robocza/`
+- NIE edycja `dyspozycje/WERSJE.md` jako AKTUALNA FALA
+- NIE kopiowanie bundle do `gra-robocza/`
+- NIE `git push` deployowego bez Groka
+
+**Composer po zakończeniu pracy** raportuje do Groka: **„gotowe do deployu"** + lista zmienionych plików + wynik testów — i **czeka** na deploy przez Groka.
 
 ## Kiedy OBOWIĄZKOWO subagent `composer-2.5`
 
@@ -47,7 +63,7 @@ Próg ilościowy (gdy wahanie):
 ## Jak delegować
 
 - `Task` z modelem **`composer-2.5`** (nigdy `composer-2.5-fast`).
-- Daj subagentowi **pełny kontekst w prompcie** (nie zna historii czatu): pliki, wzór zmiany, AC, zakazy (np. NIE ruszaj `main.ts` jeśli to nie Integrator).
-- Po powrocie subagenta — **Grok 4.5 weryfikuje** wynik (spójność, AC) przed zamknięciem i raportem do Macieja.
+- Daj subagentowi **pełny kontekst w prompcie** (nie zna historii czatu): pliki, wzór zmiany, AC, zakazy (np. NIE ruszaj `main.ts` jeśli to nie Integrator; **NIE deploy** — patrz sekcja Deploy; długie testy → `.cursor/rules/testy-tlo-kontrol.mdc`).
+- Po powrocie subagenta — **Grok 4.5 weryfikuje** wynik (spójność, AC) przed zamknięciem i raportem do Macieja; deploy dopiero po zleceniu Macieja.
 
-**Skutek:** Grok = rozkmina + plan + kontrola (+ deploy). Composer = reszta roboty.
+**Skutek:** Grok = orkiestracja + plan + kontrola + **jedyny deploy**. Composer = reszta roboty, kończy „gotowe do deployu".

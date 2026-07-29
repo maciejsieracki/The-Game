@@ -794,9 +794,9 @@ export function applyDiplomaticEvent(
     // ---- war / peace ----
 
     case 'wojna_wypowiedziana':
-      // paragraph 1.11: without casus belli -> -25 Relacja, -20 Zaufanie globally.
-      // We model the Zaufanie hit here; Relacja derives from Z+R automatically.
-      dZ = -20;
+      // C-WIAR-N1-UX: deklaracja z karencją N1 (bez ataku w tej turze) nie obniża Zaufania.
+      // Kara za złamanie traktatu → breakTreatiesOnWar ('zlamana_obietnica').
+      // Kara za atak w tej samej turze → chargeCombatCredibilityPenalties (N1, Wiarygodność).
       newStatus = 'wojna';
       break;
 
@@ -884,8 +884,8 @@ export function applyDiplomaticEvent(
     // ---- additional spec-faithful events (Dyplomacja-szablon.md section 1) ----
 
     case 'wojna_casus_belli':
-      // 1.11 war WITH casus belli: -10 Relacja u wszystkich. Modelled as -10
-      // Zaufanie (vs 'wojna_wypowiedziana' = -20 Zaufanie for the no-c.b. case).
+      // 1.11 war WITH casus belli: -10 Relacja u wszystkich.
+      // (Czysta deklaracja z karencją N1 — 'wojna_wypowiedziana' — nie obniża Zaufania.)
       dZ = -10;
       newStatus = 'wojna';
       break;

@@ -65,6 +65,7 @@ git status --short
 5. `gra/src` + `gra/data` to **kanon**. Kopie w innych katalogach są zamrożone/historyczne.
 6. **KAŻDY deploy loguj natychmiast** w `dyspozycje/WERSJE.md` (md5+stempel+co weszło; poprzednią oznacz ZASTĄPIONA) **i** `dyspozycje/_handoff/KANAL-PRACA.md` (meldunek dla drugiego integratora). Narracja w czacie NIE jest meldunkiem.
 7. **Przy niejednoznaczności/sprzecznych danych — pytaj właściciela, nie zgaduj.**
+8. **Deploy ROBOCZA tylko Grok 4.5** (2026-07-29) — subagenci Composer 2.5 kończą raportem „gotowe do deployu"; szczegóły: `.cursor/rules/model-routing.mdc`.
 
 ---
 

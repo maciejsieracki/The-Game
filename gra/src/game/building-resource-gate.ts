@@ -21,9 +21,8 @@
  *    jest per-city `builtList` + `isBuildingSupersededByUpgrade`); (c) wybrzeże LUB rzeka w
  *    zasięgu TEGO miasta (teren — sprawdzane w `production.ts` przez `ctx.cityHasCoastOrRiver`,
  *    WYLICZONE przez main.ts, bo ten moduł jest pure-logic i nie zna mapy).
- *  - Q3: Odlewnia brązu (`odlewnia_brazu`) zostaje jako jedyny hard id-lock — Kopalnia miedzi
- *    w imperium, patrz `braz-access.ts` (`empireHasKopalniaMiedzi`) + `production.ts`
- *    (`PIEC_HUTNICZY_BUILDING_ID`) — NIE w tym module.
+ *  - Q3 (historyczne): Odlewnia brązu wymagała Kopalni miedzi na mapie — DOSTEP-SUROWCE-Q1
+ *    (2026-07-29): tylko magazyn państwa (Ruda > 0), jak pozostałe DEPOSIT_LINKED.
  */
 import type { BuildingDef } from '../data/loader';
 import {
@@ -53,12 +52,9 @@ const LABEL_BY_ASCII: Record<string, string> = {
 };
 
 /**
- * Budynki wymagające aktywnego dostępu do etykiety surowca w IMPERIUM (aktywne źródło
- * gdziekolwiek w cywilizacji LUB — dla surowców magazynowanych — zapas w puli państwa) —
- * patrz `empireLabelSatisfied`. NIE wymaga zasięgu TEGO miasta budowy.
- * TEMAT 8 Q2 (2026-07-24): stolarnia/kamieniarski/kuznia dograne tu z tym samym mechanizmem
- * co istniejące Glina/Ceramika/Sól (spójność — to już sprawdzony wzorzec, nie per-city
- * sąsiedztwo terenu, żeby nie różnicować traktowania bez wyraźnej potrzeby).
+ * Budynki wymagające zapasu etykiety surowca w MAGAZYNIE PAŃSTWA (empireStock > 0).
+ * DOSTEP-SUROWCE-Q1 (2026-07-29): brak „aktywnego dostępu" / źródła na mapie — tylko
+ * fizyczny stock civ-wide. Koszt `koszt_surowce` = osobno (building-stock-cost.ts).
  */
 const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>> = {
   garncarnia: ['Glina'],
@@ -69,8 +65,8 @@ const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>
   stolarnia: ['Drewno'],
   kamieniarski: ['Kamień'],
   kuznia: ['Ruda'],
-  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
-  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  odlewnia_brazu: ['Ruda'],
+  // PYTANIE-84-R9/U-13 + DOSTEP-SUROWCE-Q1: Mennica — Złoto w magazynie państwa.
   mennica: [ZLOTO_LABEL],
 };
 
@@ -151,43 +147,33 @@ const ASCII_BY_LABEL: Record<string, string> = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii]),
 );
 
-/**
- * Surowce „tylko dostęp" — bramka NIE spełnia się samym zapasem w puli państwa.
- * PYTANIE-84 R4=A: Złoto, Sól, Koń — magazyn państwa (jak Ruda); zestaw pusty.
- */
+/** @deprecated DOSTEP-SUROWCE-Q1 — pusty; wszystkie etykiety = magazyn państwa. */
 export const ACCESS_ONLY_RESOURCE_LABELS: ReadonlySet<string> = new Set();
 
-export function isAccessOnlyResourceLabel(label: string): boolean {
-  return ACCESS_ONLY_RESOURCE_LABELS.has(label);
+export function isAccessOnlyResourceLabel(_label: string): boolean {
+  return false;
 }
 
-/**
- * Czy pojedyncza etykieta surowca jest spełniona dla RUNTIME gate (nie bramki budowy).
- * Kanon 2026-07-28: budowa = wyłącznie magazyn państwa (`koszt_surowce` + canAffordBuildingStock).
- */
-/** Czy pojedyncza etykieta surowca jest spełniona (źródło / konwerter / zapas państwa) — runtime. */
+/** Czy pojedyncza etykieta surowca jest spełniona (magazyn państwa / konwerter) — runtime i budowa. */
 export function empireResourceLabelSatisfied(
   label: string,
-  activeLabels: readonly string[] | undefined,
+  _activeLabels: readonly string[] | undefined,
   empireBuiltIds?: readonly string[],
   empireStock?: Readonly<Record<string, number>>,
+  _buildingId?: string,
 ): boolean {
-  return empireLabelSatisfied(label, activeLabels ?? [], empireBuiltIds, empireStock);
+  return empireLabelSatisfied(label, empireBuiltIds, empireStock);
 }
 
 function empireLabelSatisfied(
   label: string,
-  activeLabels: readonly string[],
   empireBuiltIds: readonly string[] | undefined,
   empireStock: Readonly<Record<string, number>> | undefined,
 ): boolean {
-  if (activeLabels.includes(label)) return true;
   if (label === 'Cegła' && empireBuiltIds?.includes('cegielnia')) return true;
   if (label === 'Ceramika' && empireBuiltIds?.includes('garncarnia')) return true;
-  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
-    const asciiKey = ASCII_BY_LABEL[label];
-    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
-  }
+  const asciiKey = ASCII_BY_LABEL[label];
+  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
   return false;
 }
 
@@ -209,18 +195,20 @@ export function buildingRequiredActiveLabels(building: Pick<BuildingDef, 'id' | 
 }
 
 /**
- * Kanon 2026-07-28 (Maciej): bramka BUDOWY nie używa już dostępu do etykiety surowca
- * (deposit/zasięg/aktywne źródło). Warunek budowy = wystarczający stan magazynu państwa
- * dla `koszt_surowce` (building-stock-cost.ts / production.ts / cityPanel.ts).
- * Sygnatura zachowana dla kompatybilności wywołań — zawsze true.
+ * Bramka surowca przy budowie (DEPOSIT_LINKED): wymagany zapas w magazynie państwa.
+ * Koszt `koszt_surowce` = osobno (building-stock-cost.ts).
  */
 export function buildingResourceGateMet(
-  _building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null },
+  building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null },
   _activeLabels?: readonly string[],
-  _empireBuiltIds?: readonly string[],
-  _empireStock?: Readonly<Record<string, number>>,
+  empireBuiltIds?: readonly string[],
+  empireStock?: Readonly<Record<string, number>>,
 ): boolean {
-  return true;
+  const required = buildingRequiredActiveLabels(building);
+  if (required.length === 0) return true;
+  return required.every(label =>
+    empireLabelSatisfied(label, empireBuiltIds, empireStock),
+  );
 }
 
 /** Id budynków z bramką runtime zależną od złoża/dostępu (PYTANIE-84). */
@@ -248,25 +236,18 @@ export interface BuildingRuntimeGateOptions {
 }
 
 /**
- * PYTANIE-84 (Maciej 2026-07-27): runtime gate per budynek z DEPOSIT_LINKED.
- *  - DOSTĘP (ACCESS_ONLY — dziś puste): tylko aktywne źródło.
- *  - MAGAZYN (pozostałe etykiety, w tym Złoto): aktywne źródło LUB zapas państwa > 0.
- *  - Mennica runtime: resolveOwnerZlotoAccess (stock + łaska) LUB ownerCanFeedMennica(stock).
- *  - Ceramika/Cegła: liczone z runtimeActiveBuiltIds (Garncarnia/Cegielnia muszą być aktywne).
+ * PYTANIE-84 + DOSTEP-SUROWCE-Q1: runtime gate = magazyn państwa (lub konwerter Ceramika/Cegła).
+ * Mennica: ownerCanFeedMennica (stock + łaska 1 tury).
  */
 function empireLabelSatisfiedAtRuntime(
   label: string,
-  activeLabels: readonly string[],
   runtimeActiveBuiltIds: readonly string[],
   empireStock: Readonly<Record<string, number>> | undefined,
 ): boolean {
-  if (activeLabels.includes(label)) return true;
   if (label === 'Cegła' && runtimeActiveBuiltIds.includes('cegielnia')) return true;
   if (label === 'Ceramika' && runtimeActiveBuiltIds.includes('garncarnia')) return true;
-  if (!ACCESS_ONLY_RESOURCE_LABELS.has(label)) {
-    const asciiKey = ASCII_BY_LABEL[label];
-    if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
-  }
+  const asciiKey = ASCII_BY_LABEL[label];
+  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
   return false;
 }
 
@@ -292,9 +273,8 @@ export function buildingRuntimeGateMet(
   }
   const required = buildingRequiredActiveLabels(building);
   if (required.length === 0) return true;
-  const active = activeLabels ?? [];
   return required.every(label =>
-    empireLabelSatisfiedAtRuntime(label, active, runtimeActiveBuiltIds, empireStock),
+    empireLabelSatisfiedAtRuntime(label, runtimeActiveBuiltIds, empireStock),
   );
 }
 

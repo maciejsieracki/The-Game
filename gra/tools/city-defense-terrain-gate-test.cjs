@@ -147,9 +147,9 @@ const RZEKA_TILE = 'Rzeka';
 
 // miasto-params.json defaults (bonus_obrona_mur_proc/cytadela/baszta) -- patrz
 // main.ts MUR_BONUS_PROC/CYTADELA_BONUS_PROC/BASZTA_BONUS_PROC.
-const MUR = 200, CYTADELA = 100, BASZTA = 100;
+const MUR = 200, CYTADELA = 100, BASZTA = 100, PALISADA = 100;
 function structPctFor(builtIds) {
-  return cityWallDefenseBonusPercent(builtIds, { mur: MUR, cytadela: CYTADELA, baszta: BASZTA });
+  return cityWallDefenseBonusPercent(builtIds, { mur: MUR, cytadela: CYTADELA, baszta: BASZTA, palisada: PALISADA });
 }
 
 // Docelowa siatka (5 wierszy) -- [label, builtIds, terrain, expectedStructPct, expectedRazemPct]

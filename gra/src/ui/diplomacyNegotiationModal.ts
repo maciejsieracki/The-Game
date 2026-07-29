@@ -221,7 +221,9 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
     }
 
     case '5':
-      return sub + '<p class="cdn-sub">Handel PN otwiera się w koszyku wymiany — zamknij to okno i wybierz „Umowa handlowa" ponownie.</p>';
+      return sub + '<p class="cdn-sub">Traktat szlaków — zamknij to okno i użyj przycisku „Traktat szlaków" na stole (bez koszyka).</p>';
+    case '14':
+      return sub + '<p class="cdn-sub">Umowa wymiany PN — zamknij to okno i wybierz „Umowa wymiany" (koszyk).</p>';
     case '13':
       return sub + '<p class="cdn-sub">Dar PN otwiera się w koszyku — zamknij to okno i wybierz „Przekaż dar" ponownie.</p>';
 
@@ -293,6 +295,7 @@ function readPayload(actionId: string, ctx: NegotiationModalContext): Negotiatio
       return withSweetener({ ...base, borderMilitary: mil, goldOnce: fee });
     }
     case '5':
+    case '14':
     case '13':
       return null;
     case '6': {
@@ -400,8 +403,10 @@ export function showNegotiationModal(
     clearInvalid();
     const payload = readPayload(action.id, ctx);
     if (payload == null) {
-      if (action.id === '5' || action.id === '13') {
-        showInvalid('Ta akcja wymaga koszyka wymiany — zamknij okno i wybierz ją ponownie z listy umów.');
+      if (action.id === '5' || action.id === '14' || action.id === '13') {
+        showInvalid(action.id === '5'
+          ? 'Traktat szlaków — zamknij okno i użyj przycisku na stole negocjacji.'
+          : 'Ta akcja wymaga koszyka wymiany — zamknij okno i wybierz ją ponownie z listy umów.');
       } else {
         showInvalid('Uzupełnij wymagane pola formularza.');
       }
@@ -438,7 +443,7 @@ export function showNegotiationModal(
     if (e.target === overlay) { closeModal(); onCancel(); }
   });
 
-  if (action.id === '5' || action.id === '13') {
+  if (action.id === '5' || action.id === '14' || action.id === '13') {
     submitBtn?.setAttribute('disabled', 'disabled');
     submitBtn?.setAttribute('title', 'Użyj koszyka wymiany zamiast tego formularza');
   }
@@ -486,7 +491,7 @@ export function proposalActionIdFromPayload(payload: NegotiationPayload): string
     return payload.tributeMode === 'offer' ? 'trybut_oferta' : 'trybut_zadanie';
   }
   const map: Record<string, string> = {
-    '2': 'nap', '4': 'granice', '5': 'handel', '6': 'tech',
+    '2': 'nap', '4': 'granice', '5': 'umowa_szlakow', '14': 'handel', '6': 'tech',
     '7': 'namow_wojne', '9': 'ultimatum', '12': 'wasal',
   };
   return map[payload.actionId] ?? payload.actionId;

@@ -9,9 +9,11 @@ import {
   nastawienieLabelFromScore,
   type FormalDiplomaticKind,
 } from '../game/diplomacy-display';
+import { wiarygodnoscLabelPl } from '../game/diplomacy-credibility';
 import {
   civLeaderMedallionHtmlById,
   dipBrandIconHtml,
+  dipCapitalLocateBtnHtml,
   DIPLO_1E_SHARED_CSS,
   ensureDiploBrandScope,
 } from './diploUiSkin';
@@ -21,9 +23,9 @@ import {
   type NegotiationModalContext,
   type NegotiationPayload,
 } from './diplomacyNegotiationModal';
-import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
+import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, showSzlakiTreatyProposalModal, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { civCardDisplayName, leaderName } from './leaderPortraits';
-import { renderNegotiationDealOneSideHtml } from './diplomacyDealDisplay';
+import { renderNegotiationDealOneSideHtml, renderNegotiationDealSideOnlyHtml } from './diplomacyDealDisplay';
 import {
   proposalHasResourceAccess,
   RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
@@ -131,6 +133,11 @@ export interface DiplomacyAudienceState {
   playerKolorHex?: string;
   /** Epoka gracza (1=kamien,2=braz,3=zelazo) — portret władcy w medalionie (leaderPortraits.ts). */
   playerEra?: number;
+  /**
+   * Globalna Wiarygodność gracza (−100…+100) — reputacja imperium (nie per-relacja).
+   * SILNIK: getWiarygodnosc(0) · diplomacy-credibility.ts.
+   */
+  playerWiarygodnosc?: number;
   /** Skarbiec gracza (kwota złota) — pkt 5: u gracza zamiast paska Zaufanie/Respekt. */
   playerSkarbiec?: number;
   /** Dochód złota/turę gracza (informacyjnie, jeśli dostępny — cache silnika). */
@@ -186,6 +193,8 @@ export interface PendingNegotiationRow {
 
 export interface DiplomacyAudienceConfig {
   ownerId: number;
+  /** typCywilizacji / ikonaId rozmówcy (civs.json) — wybór muzyki per-civ. */
+  otherCivId?: string;
   getState: () => DiplomacyAudienceState | null;
   /** payload opcjonalny — po modalu negocjacji v1.1 */
   onAction: (ownerId: number, actionId: string, payload?: NegotiationPayload) => void;
@@ -225,6 +234,11 @@ export interface DiplomacyAudienceConfig {
   onRejectNegotiation?: (negotiationId: string) => void;
   /** C-DYP-Q1=A: gracz wysyła kontrofertę (nowy formularz negocjacji) do wpisu stołu. */
   onCounterNegotiation?: (negotiationId: string, payload: NegotiationPayload) => void;
+  /**
+   * Celownik na karcie rozmówcy — wycentruj kamerę na stolicy tego państwa (SILNIK:
+   * capitalCityIdForOwner + camCtrl.focusAt). UI zamyka overlay i woła callback.
+   */
+  onFocusCapital?: (ownerId: number) => void;
 }
 
 let cfg: DiplomacyAudienceConfig | null = null;
@@ -300,6 +314,8 @@ function onAudienceEsc(ev: KeyboardEvent): void {
 
 const RESPEKT_TOOLTIP_PL =
   'Respekt = jak duża jest wasza Moc w porównaniu z tą nacją. 50 = równi. Wyżej = jesteś silniejszy.';
+const WIARYGODNOSC_TOOLTIP_PL =
+  'Wiarygodność = globalna reputacja twojego państwa (−100…+100). Wpływa na zaufanie innych cywilizacji wobec ciebie.';
 
 const STYLE_ID = 'civ-diplo-aud-css-1e';
 
@@ -347,6 +363,7 @@ ${DIPLO_1E_SHARED_CSS}
   display:flex;flex-direction:column;gap:9px;box-shadow:0 6px 20px rgba(0,0,0,.4);}
 .da-card.you{border-color:rgba(58,106,208,.5);}
 .da-card.them{border-color:rgba(210,120,30,.45);}
+.da-card.them .dip-capital-locate{position:absolute;top:8px;right:8px;z-index:2;}
 .da-portrait{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
   padding-bottom:8px;border-bottom:1px solid rgba(232,216,138,.18);}
 .da-portrait .dip-leader-medallion{width:64px;height:64px;}
@@ -372,10 +389,12 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rel-row{display:flex;align-items:baseline;justify-content:space-between;font-size:0.72em;margin-bottom:2px;color:#8a8070;}
 .da-rel-row .v{font-weight:700;font-variant-numeric:tabular-nums;}
 .da-rel-row.trust .v{color:#7ad0a0;} .da-rel-row.respect .v{color:#e8d88a;}
+.da-rel-row.credibility .v{color:#9ab8e8;}
 .da-rbar{height:6px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;margin-bottom:6px;border:1px solid rgba(0,0,0,.3);}
 .da-rbar i{display:block;height:100%;}
 .da-rbar.trust i{background:linear-gradient(90deg,#2f7a4a,#5ad07a);}
 .da-rbar.respect i{background:linear-gradient(90deg,#9a7420,#e8d88a);}
+.da-rbar.credibility i{background:linear-gradient(90deg,#3a4a7a,#7aa0e8);}
 .da-goods{display:flex;flex-wrap:wrap;gap:5px;}
 .da-good{font-size:0.62em;padding:3px 8px;border-radius:7px;border:1px solid rgba(232,216,138,.2);
   background:rgba(24,30,42,.65);color:#c8b898;white-space:nowrap;}
@@ -402,11 +421,19 @@ ${DIPLO_1E_SHARED_CSS}
 .da-tab:not(.on):hover{border-color:rgba(232,216,138,.5);color:#e8d88a;}
 .da-tab svg{width:12px;height:12px;}
 
-.da-table{flex:1;display:grid;grid-template-columns:1fr 0.85fr 0.85fr 1fr;gap:10px;min-height:0;}
+.da-table-area{flex:1;display:grid;grid-template-columns:1fr 0.85fr 0.85fr 1fr;gap:10px;min-height:0;align-content:start;}
+.da-table-area>.da-col{max-height:400px;}
 /* C-DYP-Q1=A (2026-07-26) — kolumna „Oni oferują" (ex Oczekujące propozycje; stół z kontrofertą). */
 .da-negot{display:flex;flex-direction:column;gap:6px;padding:7px 8px;border-radius:8px;
   border:1px solid rgba(232,216,138,.18);background:linear-gradient(180deg,rgba(26,32,44,.7),rgba(12,16,24,.7));}
 .da-negot.incoming{border-color:rgba(90,208,122,.4);}
+.da-negot-linked-we{border-style:dashed;border-color:rgba(110,150,220,.35);opacity:.9;}
+.da-negot-linked-we .da-nm .dir{border-color:rgba(110,150,220,.4);color:#8ab4e8;}
+.da-negot-linked-they{border-color:rgba(90,208,122,.45);}
+.da-negot-linked-they[data-negot-linked]::before{content:'';position:absolute;left:-6px;top:50%;
+  width:4px;height:60%;transform:translateY(-50%);border-radius:2px;background:rgba(90,208,122,.35);}
+.da-negot-linked-they{position:relative;}
+.da-deal-side-only .da-deal-col{max-width:100%;}
 .da-negot .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;display:flex;align-items:center;gap:6px;}
 .da-negot .da-nm .dir{font-size:0.62em;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
   padding:1px 6px;border-radius:6px;border:1px solid rgba(232,216,138,.3);color:#8a8070;}
@@ -442,13 +469,17 @@ ${DIPLO_1E_SHARED_CSS}
 .da-deal-ctx-label{font-size:0.58em;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
   color:#6a7280;margin-bottom:3px;}
 .da-deal-ctx-body{display:flex;flex-direction:column;gap:3px;font-size:0.92em;opacity:.88;}
-.da-negot .da-btnrow{display:flex;gap:6px;margin-top:2px;}
-.da-negot .da-btnrow button{flex:1;font-size:0.66em;padding:5px 6px;border-radius:6px;
-  border:1px solid rgba(232,216,138,.3);background:rgba(232,216,138,.06);color:#e8e0c8;cursor:pointer;font-family:inherit;}
-.da-negot .da-btnrow button.acc{border-color:rgba(90,208,122,.5);color:#7ad0a0;}
-.da-negot .da-btnrow button.rej{border-color:rgba(200,64,64,.5);color:#e08a8a;}
-.da-negot .da-btnrow button:hover{filter:brightness(1.2);}
-.da-negot .da-btnrow button:disabled{opacity:.4;cursor:not-allowed;}
+.da-negot-actionbar{grid-column:2/4;display:flex;flex-direction:column;gap:6px;padding:6px 8px;
+  border-radius:8px;border:1px solid rgba(90,208,122,.28);background:rgba(12,18,14,.55);}
+.da-negot-actionbar:empty{display:none;}
+.da-negot-actionbar .da-neg-act-label{font-size:0.64em;color:#8a8070;margin-bottom:2px;}
+.da-negot-actionbar .da-btnrow{display:flex;gap:8px;}
+.da-negot-actionbar .da-btnrow button{flex:1;font-size:0.72em;padding:7px 10px;border-radius:6px;
+  border:1px solid rgba(232,216,138,.3);background:rgba(232,216,138,.08);color:#e8e0c8;cursor:pointer;font-family:inherit;font-weight:600;}
+.da-negot-actionbar .da-btnrow button.acc{border-color:rgba(90,208,122,.55);color:#7ad0a0;}
+.da-negot-actionbar .da-btnrow button.rej{border-color:rgba(200,64,64,.55);color:#e08a8a;}
+.da-negot-actionbar .da-btnrow button:hover{filter:brightness(1.2);}
+.da-negot-actionbar .da-btnrow button:disabled{opacity:.4;cursor:not-allowed;}
 .da-col{background:rgba(0,0,0,.22);border:1px solid rgba(232,216,138,.18);border-radius:10px;
   padding:9px 9px 10px;display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;min-width:180px;}
 .da-col h3{font-family:var(--tg-font-title,Georgia,serif);font-size:0.78em;color:var(--tg-gold-primary,#e8d88a);
@@ -490,15 +521,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-treaty .da-brk svg{width:14px;height:14px;}
 .da-empty{font-size:0.68em;color:#6a7280;padding:6px 2px;}
 
-.da-offer-hint{font-size:0.66em;color:#8a8070;line-height:1.5;padding:2px 2px 4px;}
-.da-offer-hint b{color:#e8d88a;}
-.da-offer-btn{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;
-  border:1px solid rgba(232,216,138,.3);background:rgba(232,216,138,.06);color:#e8e0c8;
-  cursor:pointer;font-family:inherit;font-size:0.72em;font-weight:600;text-align:left;width:100%;}
-.da-offer-btn:hover{border-color:#e8d88a;background:rgba(232,216,138,.12);}
-.da-offer-btn svg{width:14px;height:14px;color:var(--tg-gold-primary,#e8d88a);flex:none;}
-.da-offer-btn:disabled{opacity:.4;cursor:not-allowed;}
-
 /* ===== rozbicie relacji ===== */
 .da-relbreak{display:grid;grid-template-columns:1fr 1fr;gap:0;background:rgba(0,0,0,.22);
   border:1px solid rgba(232,216,138,.18);border-radius:10px;overflow:hidden;}
@@ -515,7 +537,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-relbreak-foot{grid-column:1/-1;border-top:1px solid rgba(232,216,138,.18);padding:6px 13px;font-size:0.66em;color:#8a8070;}
 .da-relbreak-foot b{color:#e8d88a;}
 
-@media (max-width:1200px){.da-table{grid-template-columns:1fr;}.da-card{flex:0 0 200px;width:200px;}}
+@media (max-width:1200px){.da-table-area{grid-template-columns:1fr;}.da-negot-actionbar{grid-column:1;}.da-card{flex:0 0 200px;width:200px;}}
 @media (max-width:920px){.da-relbreak{grid-template-columns:1fr;}.da-relcol.pos{border-right:none;border-bottom:1px solid rgba(232,216,138,.18);}}
 @media (max-width:760px){.da-mainrow{flex-wrap:wrap;}.da-card{width:100%;flex:1 1 auto;}}
 
@@ -629,6 +651,7 @@ export interface WarConsentModalOptions {
  * (1) Wypowiedz wojnę — bez ataku w tej turze · (2) Atakuj bez wypowiedzenia — wojna + atak + N1 · (3) Anuluj.
  */
 export function showWarConsentModal(opts: WarConsentModalOptions): void {
+  ensureStyles();
   const showAttack = opts.showAttackOption !== false && opts.onDeclareAndAttack != null;
   if (modalOverlay !== null) modalOverlay.remove();
   modalOverlay = document.createElement('div');
@@ -679,6 +702,7 @@ export function showWarConfirmModal(
   onConfirm: () => void,
   penaltyPreview?: DiploPenaltyPreview,
 ): void {
+  ensureStyles();
   if (modalOverlay !== null) modalOverlay.remove();
   modalOverlay = document.createElement('div');
   modalOverlay.className = 'civ-diplo-modal-overlay';
@@ -710,6 +734,7 @@ export function showBreakTreatyConfirmModal(
   penaltyPreview: DiploPenaltyPreview | undefined,
   onConfirm: () => void,
 ): void {
+  ensureStyles();
   if (modalOverlay !== null) modalOverlay.remove();
   modalOverlay = document.createElement('div');
   modalOverlay.className = 'civ-diplo-modal-overlay';
@@ -816,7 +841,7 @@ function otherLeaderHtml(st: DiplomacyAudienceState): string {
   return name ? '<div class="da-civleader">' + esc(name) + '</div>' : '';
 }
 
-/** FAZA 2 pkt 1 — LEWA karta (gracz): medalion, atrybuty, SKARBIEC, dobra handlowe. */
+/** FAZA 2 pkt 1 — LEWA karta (gracz): medalion, atrybuty, reputacja, skarbiec, dobra handlowe. */
 function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonusLite[]): string {
   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
   const powerPct = ((st.playerPower ?? 0) / maxPower) * 100;
@@ -836,6 +861,12 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
         attrBarHtml('Moc militarna', String(st.playerPower ?? 0), powerPct, 'you') +
         (potencjal ? attrBarHtml('Potencjał sojuszniczy', potencjal.label, potencjal.pct, 'gold') : '') +
       '</div>' +
+      (st.playerWiarygodnosc !== undefined
+        ? '<div>' +
+            '<div class="da-sec-title">Reputacja</div>' +
+            credibilityBarHtml(st.playerWiarygodnosc) +
+          '</div>'
+        : '') +
       '<div>' +
         '<div class="da-sec-title">Skarbiec</div>' +
         '<div class="da-attr-row"><span>Złoto</span><span class="v">' + skarbiec + '</span></div>' +
@@ -859,6 +890,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
   const potencjal = st.sojuszPotencjal;
   return (
     '<div class="da-card them">' +
+      (cfg?.onFocusCapital ? dipCapitalLocateBtnHtml() : '') +
       '<div class="da-portrait">' +
         civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex, st.otherEra, st.otherIsCityState) +
         '<div class="da-civname">' + esc(civCardDisplayName(st.otherCivName, st.otherIkonaId)) + '</div>' +
@@ -875,7 +907,6 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
         '<div class="da-sec-title">Relacje z Tobą</div>' +
         progressBarHtml('Zaufanie', st.zaufanie, 100, undefined, 'trust') +
         progressBarHtml('Respekt', st.respekt, 100, RESPEKT_TOOLTIP_PL, 'respect') +
-        (!st.contactEstablished ? '<div class="da-mood" style="color:#e0b24a">Brak formalnego kontaktu</div>' : '') +
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Dobra handlowe</div>' +
@@ -899,12 +930,26 @@ function progressBarHtml(label: string, value: number, max: number, tooltip?: st
   );
 }
 
+/** Pasek globalnej Wiarygodności gracza (−100…+100) — skala bipolarna jak Zaufanie/Respekt u rozmówcy. */
+function credibilityBarHtml(value: number): string {
+  const w = Math.round(Math.max(-100, Math.min(100, value)));
+  const pct = Math.round(((w + 100) / 200) * 100);
+  const signed = w > 0 ? '+' + w : String(w);
+  const band = wiarygodnoscLabelPl(w);
+  const tip = ' title="' + esc(WIARYGODNOSC_TOOLTIP_PL) + '"';
+  return (
+    '<div class="da-rel-row credibility"' + tip + '><span>Wiarygodność</span><span class="v">' + signed + ' · ' + esc(band) + '</span></div>' +
+    '<div class="da-rbar credibility"><i style="width:' + pct + '%"></i></div>'
+  );
+}
+
 /** Ikona kafelka „Możliwe umowy" — dopasowana per id akcji (data/diplomacy.json akcje_dyplomatyczne). */
 function actionIconId(id: string): string {
   switch (id) {
     case '2': return 'dip-pact';
     case '3': return 'dip-alliance';
     case '5': return 'cp-trade';
+    case '14': return 'cp-trade';
     case '6': return 'tb-science';
     case '8': return 'res-treasury';
     case '9': return 'chip-warning';
@@ -921,6 +966,8 @@ function treatyIconId(label: string): string {
   const l = label.toLowerCase();
   if (l.includes('sojusz')) return 'dip-alliance';
   if (l.includes('nieagresji')) return 'dip-pact';
+  if (l.includes('szlak')) return 'cp-trade';
+  if (l.includes('wymian')) return 'cp-trade';
   if (l.includes('handlow')) return 'cp-trade';
   if (l.includes('rozejm')) return 'dip-peace';
   if (l.includes('wasal')) return 'tb-army';
@@ -951,7 +998,8 @@ const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: s
   { svg: 'peace', aid: '10', label: 'Zaproponuj pokój', extraCls: 'peacebtn' },
   { svg: 'alliance', aid: '3', label: 'Sojusz' },
   { svg: 'pact', aid: '2', label: 'Pakt o nieagresji' },
-  { svg: 'trade', aid: '5', label: 'Umowa handlowa' },
+  { svg: 'trade', aid: '5', label: 'Traktat szlaków' },
+  { svg: 'trade', aid: '14', label: 'Umowa wymiany' },
   { svg: 'gift', aid: '13', label: 'Przekaż dar' },
   { svg: 'vassal', aid: '12', label: 'Wasalizacja' },
 ];
@@ -970,7 +1018,8 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
   const btns = ACTION_BAR_SPECS.map(spec => {
     const action = byId.get(spec.aid);
     const enabled = action ? action.enabled : false;
-    const tip = enabled ? spec.label : (action?.lockNote || action?.tooltip || spec.label);
+    const isLocked = action ? (action.locked || !action.enabled) : true;
+    const tip = enabled ? spec.label : (action?.lockNote || (isLocked ? action?.tooltip : undefined) || spec.label);
     const cls = 'da-abtn' + (spec.extraCls ? ' ' + spec.extraCls : '');
     return (
       '<span class="da-ttip"><span class="da-ttip-lbl">' + esc(spec.label) + '</span>' +
@@ -980,34 +1029,40 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
     );
   }).join('');
 
-  const handel = byId.get('5');
+  const handel = byId.get('14');
   const handelEnabled = handel ? handel.enabled : false;
-  const qdTitle = handelEnabled ? 'auto-uczciwa oferta' : (handel?.lockNote || handel?.tooltip || 'Handel niedostępny');
+  const qdTitle = handelEnabled ? 'auto-uczciwa wymiana' : (handel?.lockNote || handel?.tooltip || 'Wymiana niedostępna');
   const quickdeal =
     '<button type="button" class="da-quickdeal"' + (handelEnabled ? '' : ' disabled') +
     ' title="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
-    '<span>SZYBKA UMOWA<small>auto-uczciwa oferta</small></span></button>';
+    '<span>SZYBKA WYMIANA<small>auto-uczciwa oferta</small></span></button>';
 
   return '<div class="da-actionbar">' + btns + quickdeal + '</div>';
 }
 
-/** FAZA 2 pkt 3 kol.4 (prawo) — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest). */
+/** FAZA 2 pkt 3 kol.1 (lewo) — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest). */
 function dealsColumnHtml(st: DiplomacyAudienceState): string {
-  const visible = st.actions.filter(a => !(a.id === '1' && st.contactEstablished));
+  const visible = st.actions.filter(a => a.id !== '1');
   const items = visible.map(a => {
-    let cls = a.enabled ? 'da-deal' : 'da-deal locked';
+    const isLocked = a.locked || !a.enabled;
+    let cls = isLocked ? 'da-deal locked' : 'da-deal';
     if (a.active) cls += ' active';
-    const note = a.active ? 'już zawarta' : (a.lockNote || a.tooltip || a.opis || '');
+    const lockReason = a.lockNote || (isLocked && a.tooltip ? a.tooltip : '');
+    const shortNote = a.active ? 'już zawarta' : (lockReason ? (lockReason.length > 40 ? lockReason.slice(0, 37) + '…' : lockReason) : '');
+    const hoverTip = a.active
+      ? 'Umowa już zawarta'
+      : (a.opis || lockReason || a.tooltip || a.label);
     const icon = dipBrandIconHtml(actionIconId(a.id), 14, 'da-di');
     const endIc = a.active
       ? dipBrandIconHtml('ui-check', 13, 'da-checkic')
-      : (!a.enabled ? dipBrandIconHtml('ui-lock', 12, 'da-lockic') : '');
+      : (isLocked ? dipBrandIconHtml('ui-lock', 12, 'da-lockic') : '');
     return (
       '<button type="button" class="' + cls + '" data-aid="' + esc(a.id) + '"' +
-      (a.enabled ? '' : ' disabled title="' + esc(note) + '"') + '>' +
+      ' title="' + esc(hoverTip) + '"' +
+      (isLocked ? ' disabled' : '') + '>' +
       icon +
       '<div class="da-body"><div class="da-nm">' + esc(a.label) + '</div>' +
-      (note ? '<div class="da-note">' + esc(note.length > 70 ? note.slice(0, 67) + '…' : note) + '</div>' : '') +
+      (shortNote ? '<div class="da-note">' + esc(shortNote) + '</div>' : '') +
       '</div>' + endIc +
       '</button>'
     );
@@ -1020,7 +1075,7 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
   );
 }
 
-/** FAZA 2 pkt 3 kol.1 (lewo) — „Aktywne traktaty" (od ilu tur + kara zerwania + „Zerwij" — zaległość #2). */
+/** FAZA 2 pkt 3 kol.4 (prawo) — „Aktywne traktaty" (od ilu tur + kara zerwania + „Zerwij" — zaległość #2). */
 function treatiesColumnHtml(st: DiplomacyAudienceState): string {
   const treaties = st.activeTreaties ?? [];
   const canBreak = typeof cfg?.onBreakTreaty === 'function';
@@ -1054,13 +1109,19 @@ function treatiesColumnHtml(st: DiplomacyAudienceState): string {
   );
 }
 
-/** Meta wspólna dla karty oczekującej negocjacji (runda + ważność). */
+/** Meta wspólna dla karty oczekującej negocjacji (ważność; runda tylko po kontrofercie). */
 function pendingNegotiationMetaHtml(r: PendingNegotiationRow): string {
   const expLabel = r.expiresInTurns <= 0
     ? 'wygasa w tej turze'
-    : `ważna jeszcze ${r.expiresInTurns} ${r.expiresInTurns === 1 ? 'turę' : 'tur'}`;
-  const roundLabel = `Runda negocjacji ${r.round} z ${r.maxRounds}`;
-  return '<div class="da-meta">' + esc(roundLabel) + ' · ' + esc(expLabel) + '</div>';
+    : `wygasa za ${r.expiresInTurns} ${r.expiresInTurns === 1 ? 'turę' : 'tur'}`;
+  const tooltip =
+    'Brak odpowiedzi — propozycja wygasa. Do '
+    + r.maxRounds
+    + ' rund negocjacji (kontrofert); potem tylko Przyjmij lub Odrzuć.';
+  const visible = r.round > 1
+    ? `Kontroferta ${r.round}/${r.maxRounds} · ${expLabel}`
+    : expLabel;
+  return '<div class="da-meta" title="' + esc(tooltip) + '">' + esc(visible) + '</div>';
 }
 
 /** Fallback tekstowy gdy brak dealPayload. */
@@ -1072,7 +1133,7 @@ function pendingDealFallbackHtml(r: PendingNegotiationRow): string {
 /** Karta wychodzącej propozycji gracza — kolumna „My oferujemy". */
 function renderOwnPendingCard(r: PendingNegotiationRow): string {
   const dealHtml = r.dealPayload
-    ? renderNegotiationDealOneSideHtml(r.dealPayload, 'we', { incoming: false })
+    ? renderNegotiationDealOneSideHtml(r.dealPayload, 'we', { incoming: false, showContext: false })
     : '';
   const dealBlock = dealHtml
     ? '<div class="da-deal-detail">' + dealHtml + '</div>'
@@ -1082,17 +1143,33 @@ function renderOwnPendingCard(r: PendingNegotiationRow): string {
       '<div class="da-nm"><span class="dir">' + esc('Twoja propozycja') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
       pendingNegotiationMetaHtml(r) +
-      '<div class="da-meta">Wysłano — odpowiedź pojawi się w tym oknie za chwilę.</div>' +
     '</div>'
   );
 }
 
-/** Karta przychodzącej propozycji AI — kolumna „Oni oferują" + Przyjmij/Odrzuć/Kontruj. */
-function renderIncomingPendingCard(r: PendingNegotiationRow): string {
+/** Lewa kolumna — nasza strona linked dealu AI (co oddajemy / „My oferujemy"). */
+function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
+  const dealHtml = r.dealPayload
+    ? renderNegotiationDealSideOnlyHtml(r.dealPayload, 'we', true)
+    : '';
+  const dealBlock = dealHtml
+    ? '<div class="da-deal-detail">' + dealHtml + '</div>'
+    : '<div class="da-deal-detail"><span class="da-deal-empty">—</span></div>';
+  return (
+    '<div class="da-negot da-negot-linked da-negot-linked-we" data-negot-id="' + esc(r.id) + '" data-negot-linked="we">' +
+      '<div class="da-nm"><span class="dir">' + esc('W ofercie oddajemy') + '</span>' + esc(r.actionLabel) + '</div>' +
+      dealBlock +
+      pendingNegotiationMetaHtml(r) +
+    '</div>'
+  );
+}
+
+/** Prawa kolumna — ich strona linked dealu AI (bez przycisków — pasek akcji poniżej szal). */
+function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
   const dirIcon = dipBrandIconHtml('chip-warning', 11, 'da-dir-ic');
   const legacyAccess = r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
   const dealHtml = r.dealPayload
-    ? renderNegotiationDealOneSideHtml(r.dealPayload, 'they', { incoming: true })
+    ? renderNegotiationDealSideOnlyHtml(r.dealPayload, 'they', true)
     : '';
   const dealBlock = dealHtml
     ? '<div class="da-deal-detail">' + dealHtml + '</div>'
@@ -1100,55 +1177,56 @@ function renderIncomingPendingCard(r: PendingNegotiationRow): string {
   const legacyNote = legacyAccess
     ? '<div class="da-meta da-legacy-access">' + esc(RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON) + '</div>'
     : '';
-  const btns =
-    '<div class="da-btnrow">'
-    + '<button type="button" class="acc"' + (legacyAccess ? ' disabled title="' + esc(RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON) + '"' : '')
-    + ' data-negot-id="' + esc(r.id) + '" data-negot-act="accept">Przyjmij</button>'
-    + '<button type="button" class="rej" data-negot-id="' + esc(r.id) + '" data-negot-act="reject">Odrzuć</button>'
-    + (r.canCounter
-      ? '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="counter" data-negot-aid="' + esc(r.uiActionId) + '">Kontruj</button>'
-      : '') +
-    '</div>';
   return (
-    '<div class="da-negot incoming">' +
-      '<div class="da-nm"><span class="dir">' + dirIcon + esc('Ich propozycja — czeka na Ciebie') + '</span>' + esc(r.actionLabel) + '</div>' +
+    '<div class="da-negot incoming da-negot-linked da-negot-linked-they" data-negot-id="' + esc(r.id) + '" data-negot-linked="they">' +
+      '<div class="da-nm"><span class="dir">' + dirIcon + esc('Ich propozycja') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
       legacyNote +
       pendingNegotiationMetaHtml(r) +
-      btns +
     '</div>'
   );
 }
 
-/** FAZA 2 pkt 3 kol.2 — „My oferujemy": wychodzące oczekujące + wejście do koszyka PN (Umowa handlowa/Dar). */
+/** FAZA 2 pkt 3 kol.2 — „My oferujemy": wyłącznie nasze propozycje na stole (bez katalogu akcji). */
 function offersColumnHtml(st: DiplomacyAudienceState): string {
   const ownPending = (st.pendingNegotiations ?? []).filter(r => r.direction === 'own');
-  const pendingCards = ownPending.map(renderOwnPendingCard).join('');
-  const offerActions = st.actions.filter(a => a.id === '5' || a.id === '13');
-  const buttons = offerActions.map(a => {
-    const icon = dipBrandIconHtml(actionIconId(a.id), 14, 'da-di');
-    const disabled = !a.enabled;
-    const hint = disabled ? (a.lockNote || a.tooltip || '') : (a.id === '5' ? 'Otwórz koszyk wymiany (PN)' : 'Otwórz formularz daru (PN)');
-    return (
-      '<button type="button" class="da-offer-btn" data-aid="' + esc(a.id) + '"' +
-      (disabled ? ' disabled title="' + esc(hint) + '"' : ' title="' + esc(hint) + '"') + '>' +
-      icon + '<span>' + esc(a.label) + '</span>' +
-      '</button>'
-    );
-  }).join('');
-  const emptyPending = ownPending.length === 0
+  const incomingWeLinked = (st.pendingNegotiations ?? []).filter(r => r.direction === 'incoming');
+  const pendingCards = ownPending.map(renderOwnPendingCard).join('')
+    + incomingWeLinked.map(renderIncomingPendingWeLinked).join('');
+  const emptyPending = ownPending.length === 0 && incomingWeLinked.length === 0
     ? '<div class="da-empty">Brak naszych ofert.</div>'
     : '';
   return (
     '<div class="da-col da-col-offers">' +
-      '<h3>My oferujemy<span class="cnt">' + ownPending.length + '</span></h3>' +
+      '<h3>My oferujemy<span class="cnt">' + (ownPending.length + incomingWeLinked.length) + '</span></h3>' +
       pendingCards +
       emptyPending +
-      '<div class="da-offer-hint">Otwórz <b>Umowę handlową</b> lub <b>Dar</b>, by ułożyć koszyk PN — ' +
-      'bilans (jednorazowo / co turę) i werdykt liczone są tam na żywo, z tych samych danych co progi obok.</div>' +
-      (buttons || '<div class="da-empty">Brak dostępnych ofert przy obecnych progach.</div>') +
     '</div>'
   );
+}
+
+/**
+ * Pasek akcji pod kolumnami My/Oni — Przyjmij/Odrzuć/Kontruj dla każdej przychodzącej
+ * propozycji wymagającej decyzji gracza (Maciej 2026-07-29, redesign stołu).
+ */
+function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
+  const rows = (st.pendingNegotiations ?? []).filter(r => r.direction === 'incoming');
+  if (rows.length === 0) return '<div class="da-negot-actionbar"></div>';
+  const blocks = rows.map(r => {
+    const legacyAccess = r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
+    const btns =
+      '<div class="da-btnrow">'
+      + '<button type="button" class="acc"' + (legacyAccess ? ' disabled title="' + esc(RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON) + '"' : '')
+      + ' data-negot-id="' + esc(r.id) + '" data-negot-act="accept">Przyjmij</button>'
+      + '<button type="button" class="rej" data-negot-id="' + esc(r.id) + '" data-negot-act="reject">Odrzuć</button>'
+      + (r.canCounter
+        ? '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="counter" data-negot-aid="' + esc(r.uiActionId) + '">Kontruj</button>'
+        : '') +
+      '</div>';
+    return '<div class="da-neg-act-block" data-negot-id="' + esc(r.id) + '">' +
+      '<div class="da-neg-act-label">' + esc(r.actionLabel) + '</div>' + btns + '</div>';
+  }).join('');
+  return '<div class="da-negot-actionbar">' + blocks + '</div>';
 }
 
 /**
@@ -1157,7 +1235,7 @@ function offersColumnHtml(st: DiplomacyAudienceState): string {
  */
 function incomingOffersColumnHtml(st: DiplomacyAudienceState): string {
   const rows = (st.pendingNegotiations ?? []).filter(r => r.direction === 'incoming');
-  const items = rows.map(renderIncomingPendingCard).join('');
+  const items = rows.map(renderIncomingPendingTheyCard).join('');
   return (
     '<div class="da-col da-col-negot">' +
       '<h3>Oni oferują<span class="cnt">' + rows.length + '</span></h3>' +
@@ -1220,8 +1298,9 @@ function render(): void {
           '<div class="da-tabs">' + knownFactionsTab +
             '<span class="da-tab on">' + dipBrandIconHtml('tb-diplomacy', 12) + 'Stół negocjacji</span>' +
           '</div>' +
-          '<div class="da-table">' +
-            treatiesColumnHtml(st) + offersColumnHtml(st) + incomingOffersColumnHtml(st) + dealsColumnHtml(st) +
+          '<div class="da-table-area">' +
+            dealsColumnHtml(st) + offersColumnHtml(st) + incomingOffersColumnHtml(st) + treatiesColumnHtml(st) +
+            negotiationActionBarHtml(st) +
           '</div>' +
           relBreakdownHtml(st) +
         '</div>' +
@@ -1241,6 +1320,11 @@ function render(): void {
 
   rootEl.querySelector('.civ-diplo-aud-back')?.addEventListener('click', () => cfg!.onBack());
   rootEl.querySelector('.da-tab-known')?.addEventListener('click', () => cfg!.onOpenKnownFactions?.());
+  rootEl.querySelector('.dip-capital-locate')?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    if (cfg === null) return;
+    cfg.onFocusCapital?.(cfg.ownerId);
+  });
   rootEl.querySelectorAll<HTMLButtonElement>('button[data-aid]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
@@ -1263,6 +1347,22 @@ function render(): void {
             action,
             mergeBasketCtx(negCtx),
             (payload) => cfg!.onAction(cfg!.ownerId, aid, payload),
+            () => { /* anulowano */ },
+          );
+          return;
+        }
+        if (aid === '5' && negCtx) {
+          const incomingSzlaki = findIncomingNegotiationRow(st, aid);
+          if (incomingSzlaki) {
+            if (incomingSzlaki.canCounter) {
+              openCounterNegotiationModal(st, incomingSzlaki, mergeBasketCtx);
+            }
+            return;
+          }
+          showSzlakiTreatyProposalModal(
+            action,
+            st.otherCivName,
+            (payload) => cfg!.onAction(cfg!.ownerId, '5', payload),
             () => { /* anulowano */ },
           );
           return;
@@ -1298,14 +1398,14 @@ function render(): void {
    *  WYPEŁNIONY auto-uczciwą propozycją (openQuickDealBasket — diplomacyTradeBasket.ts). */
   rootEl.querySelector('.da-quickdeal')?.addEventListener('click', () => {
     if (cfg === null) return;
-    const handel = st.actions.find(a => a.id === '5');
+    const handel = st.actions.find(a => a.id === '14');
     if (!handel || !handel.enabled || !cfg.getNegotiationContext) return;
-    const negCtx = cfg.getNegotiationContext('5');
+    const negCtx = cfg.getNegotiationContext('14');
     if (!negCtx) return;
     openQuickDealBasket(
       handel,
       mergeBasketCtx(negCtx),
-      (payload) => cfg!.onAction(cfg!.ownerId, '5', payload),
+      (payload) => cfg!.onAction(cfg!.ownerId, '14', payload),
       () => { /* anulowano */ },
     );
   });
@@ -1370,7 +1470,7 @@ export function showDiplomacyAudience(config: DiplomacyAudienceConfig): void {
   render();
   rootEl.style.display = 'flex';
   document.addEventListener('keydown', onAudienceEsc);
-  startDiplomacyMusic();
+  startDiplomacyMusic(config.otherCivId);
 }
 
 export function updateDiplomacyAudience(): void {

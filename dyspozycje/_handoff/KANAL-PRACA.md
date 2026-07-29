@@ -4016,3 +4016,199 @@ Bramki: tsc 0 · cluster-start PASS (150+) · verify-robocza VERIFY OK · POLE-B
 Wejście: `gra-robocza/START.html` · **Ctrl+F5** · md5 **490ec5fd**.
 CZEKAM-NA: Maciej otwiera `490ec5fd`
 
+
+
+## [22:55] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 74 ROBOCZA deploy all
+
+Publish gra-robocza/ — bitwa (wzgórza/piechota/łup), pre-battle BITWA, dyplo wiarygodność+DoW, palisada+fortify, UI jednostek+pathing EOT, handel AI.
+md5: 76ccda794983b7643f4a36cab44139ec (skrót 76ccda79) | stempel ROBOCZA · 76ccda79
+Bramki: tsc 0 · vite build OK · verify-robocza VERIFY OK · POLE-BITWY dd399c4b (bez zmian).
+Wejście: gra-robocza/START.html · **Ctrl+F5** · md5 **76ccda79**.
+CZEKAM-NA: Maciej otwiera 76ccda79
+
+## [23:30] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 76 ROBOCZA first contact audiencja
+
+Publish gra-robocza/ — pierwsze spotkanie: pełna cywilizacja → od razu audiencja dyplomacji; miasto-państwo → krótka karta (bez zmian).
+md5: ad2c3e5db875d5e6cfbf7f1502f91f0b (skrót ad2c3e5d) | stempel ROBOCZA · ad2c3e5d
+Fix: `tryOpenNextFirstContactCard` — `isOwnerClusterCityState` → karta vs `openDiplomacyAudience` (main.ts).
+Bramki: tsc 0 · vite build OK · verify-robocza VERIFY OK.
+Wejście: gra-robocza/START.html · **Ctrl+F5** · md5 **ad2c3e5d**.
+CZEKAM-NA: Maciej otwiera ad2c3e5d
+
+## [23:10] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 75 ROBOCZA hotfix dyplomacja
+
+Publish gra-robocza/ — P0: karta pierwszego spotkania + modale dyplomacji bez CSS (czarny overlay, ucięty tekst, pusty panel).
+md5: caea930e8b505c972fff48766626ceb9 (skrót caea930e) | stempel ROBOCZA · caea930e
+Fix: ensureStyles() na wejściu showFirstContactCard + modali wojny/zerwania (diplomacyAudience.ts).
+Bramki: tsc 0 · vite build OK · verify-robocza VERIFY OK.
+Wejście: gra-robocza/START.html · **Ctrl+F5** · md5 **caea930e**.
+CZEKAM-NA: Maciej otwiera caea930e
+
+## [00:15] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 77 ROBOCZA muzyka Rzym dyplomacja
+
+Publish gra-robocza/ — muzyka audiencji per-cywilizacja: Rzym (`rzymianie`) — 2 utwory, pętla 3×A/3×B, fade-in/out + crossfade.
+md5: 1459f95f941002cbae0e887fa8cb8aac (skrót 1459f95f) | stempel ROBOCZA · 1459f95f
+Pliki: filePlayer.ts, muzyka-antyczna.ts, diplomacyAudience.ts, main.ts, utwory/dyplomacja/rzymianie/*.mp3
+Bramki: tsc 0 · vite build OK · smoke PASS.
+Wejście: gra-robocza/START.html · **Ctrl+F5** · Nowa gra · spotkać Rzym (pełna civ) → audiencja z muzyką.
+CZEKAM-NA: Maciej otwiera 1459f95f
+
+## [00:45] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 78 ROBOCZA first contact zawsze audiencja
+
+Publish gra-robocza/ — pierwszy kontakt: pełna audiencja dla wszystkich (AI + miasta-państwa); karta „Pierwsze spotkanie" usunięta.
+md5: ee79494fb513673a703bf903df30253c (skrót ee79494f) | stempel ROBOCZA · ee79494f
+Pliki: main.ts, diplomacyAudience.ts
+Bramki: tsc 0 · vite build OK · smoke PASS · verify-robocza VERIFY OK.
+Wejście: gra-robocza/START.html · **Ctrl+F5** · Nowa gra · odkryj pełną civ lub MP → od razu audiencja (bez karty OK).
+CZEKAM-NA: Maciej otwiera ee79494f
+
+## [01:20] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 79 ROBOCZA MP dystans 5 hex
+
+Publish gra-robocza/ — miasta-państwa: hub-chain min/max 4→5 hex (więcej miejsca na zasoby w klastrze).
+md5: 35ec62dfa661bcddf09c7107637c9e8e (skrót 35ec62df) | stempel ROBOCZA · 35ec62df
+Pliki: clusters.ts, cluster-start-test.cjs
+Bramki: tsc 0 · vite build OK · smoke PASS · verify-robocza VERIFY OK · cluster-start (rdzeń) PASS, full suite TIMEOUT po ~5 min (Super Huge).
+Wejście: gra-robocza/START.html · **Ctrl+F5** · Nowa gra · MP w pierścieniu 5 hex od stolicy.
+CZEKAM-NA: Maciej otwiera 35ec62df
+
+## [01:35] INTEGRATOR → MASTER + Maciej — deploy FALA 80 ROBOCZA HANDEL-SPLIT-Q1=B
+
+Publish gra-robocza/ — dwa traktaty: `umowa_szlakow` (szlaki, bez koszyka) + `umowa_wymiany` (koszyk PN). UI: akcja 5 / 14 na stole negocjacji.
+md5: 7d26614331b2ce511f3122da2382a400 (skrót 7d266143) | stempel ROBOCZA · 7d266143
+Bramki: tsc 0 · diplomacy-test 144/146 · vite build OK
+Wejście: gra-robocza/START.html · Ctrl+F5 · audiencja → Traktat szlaków vs Umowa wymiany
+CZEKAM-NA: Maciej playtest 7d266143 (handel split)
+
+## [02:00] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 81 ROBOCZA złoże konia ×2
+
+Publish gra-robocza/ — surowiec koń na mapie: skala wizualna ×2 (`buildZlozeKonie` 0.18→0.36 + `depositDisplayScale=2`).
+md5: 178a422a8c1dd2096bdfc049d93d087f (skrót 178a422a) | stempel ROBOCZA · 178a422a
+Pliki: kon-nowy-model.ts, styleResources.ts, resources.ts, main.ts
+Bramki: tsc 0 · smoke PASS · vite build OK
+Wejście: gra-robocza/START.html · Ctrl+F5 · Nowa gra · heks ze złożem konia (Równina)
+CZEKAM-NA: Maciej otwiera 178a422a
+
+## [02:50] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 82 ROBOCZA tooltip plony vs magazyn
+
+Audyt SUROW-TERYT: Żywność/Praca/Podatek → miasto (żywe); drewno z obrabianego pola → magazyn (żywe); kamień z terrain-yields → martwy (tylko Kamieniołom +4/t auto). UX: tooltip rozdziela sekcje, kamień terenu z etykietą nieaktywną.
+md5: e2dddd524016164809ddd8f8cf314dcd (skrót e2dddd52) | stempel ROBOCZA · e2dddd52
+Pliki: hexContextTooltip.ts
+Bramki: tsc 0 · smoke PASS · vite build OK · verify-robocza VERIFY OK
+Wejście: gra-robocza/START.html · Ctrl+F5 · Góry/Las+Tartak — sprawdź sekcje tooltipu
+CZEKAM-NA: Maciej otwiera e2dddd52
+
+## [12:55] INTEGRATOR → MASTER + Maciej (sesja lokalna) — deploy FALA 83 ROBOCZA dyplomacja MP wyszarzone akcje
+
+Maciej doprecyzowanie: akcje niemożliwe u miasta-państwa = widoczne + wyszarzone + tooltip (nie ukrywać). Rywal tego samego typu — osobny komunikat.
+md5: 9191d6970de5084651d32178c5735e29 (skrót 9191d697) | stempel ROBOCZA · 9191d697
+Pliki: diplomacy-layers.ts, main.ts, diplomacyAudience.ts
+Bramki: tsc 0 · diplomacy-layers-test 20/20 · vite build OK · verify-robocza VERIFY OK
+Wejście: gra-robocza/START.html · Ctrl+F5 · audiencja z rywalem MP / obcym MP — Sojusz/Wasal wyszarzone z powodem
+CZEKAM-NA: Maciej otwiera 9191d697
+
+## [01:05] INTEGRATOR -> MASTER + Maciej (sesja lokalna) -- deploy FALA 84 ROBOCZA redesign stolu negocjacji
+
+Stol PN: My/Oni bez duplikatow; Przyjmij/Odrzuc/Kontruj pod kolumnami; szlaki na stole; opisy w tooltipach (rundy kontrofert).
+md5: 558ca4f0ad71c4389f10910f692d1ec2 (skrot 558ca4f0) | stempel ROBOCZA | 558ca4f0
+Pliki: diplomacyAudience.ts, diplomacyTradeBasket.ts, diplomacyNegotiationModal.ts, diplomacyDealDisplay.ts
+Bramki: tsc 0 | smoke PASS | vite build OK | verify-robocza VERIFY OK | diplomacy-test SKIP (OneDrive lock .dip-bundle.cjs)
+Wejscie: gra-robocza/START.html | Ctrl+F5 | audiencja -> stol negocjacji / oczekujace propozycje
+CZEKAM-NA: Maciej otwiera 558ca4f0
+
+## [01:15] INTEGRATOR -> MASTER + Maciej (sesja lokalna) -- deploy FALA 85 ROBOCZA celownik dyplo
+
+Celownik na karcie państwa (audiencja + lista dyplo) -> kamera na stolicę. W bundlu: grey MP (FALA 83) + stół PN (FALA 84) z tego samego buildu.
+md5: 558ca4f006d6195a5054118fe7c67ef8 (skrót 558ca4f0) | stempel ROBOCZA | 558ca4f0
+Pliki: diploUiSkin.ts, diplomacyAudience.ts, diploListHud.ts, main.ts
+Bramki: tsc 0 | smoke PASS | vite build OK | verify-robocza VERIFY OK
+Wejście: gra-robocza/START.html | Ctrl+F5 | dyplomacja -> celownik przy nazwie państwa
+CZEKAM-NA: Maciej otwiera 558ca4f0
+
+
+## [01:15] INTEGRATOR -> Maciej / sesja lokalna - deploy ROBOCZA FALA 84 (7b836be9)
+tsc 0 | vite build TEMP | md5 7b836be9756ab74dc61d21812ddbcc01 | verify-robocza VERIFY OK.
+CZEKAM-NA: pull na dysk; opcjonalnie ponowic sync playtestow po OneDrive unlock.
+
+## [01:18] INTEGRATOR -> MASTER + Maciej (sesja lokalna) -- deploy FALA 85 ROBOCZA dyplomacja vs jednostka
+
+Lista dyplomacji nie nachodzi na panel jednostki: ensureDiplomacyUiClosed przy selectPlayerUnit; onBack bez showDiploListHud gdy selectedId != null.
+md5: 912f1efacbee0e69fa053d01494d08a3 (skrot 912f1efa) | stempel ROBOCZA | 912f1efa
+Pliki: main.ts
+Bramki: tsc 0 | smoke PASS | vite build OK | verify-robocza VERIFY OK
+Wejscie: gra-robocza/START.html | Ctrl+F5 | jednostka + dyplomacja / powrot z audiencji
+CZEKAM-NA: Maciej otwiera 912f1efa
+
+
+## [01:24] INTEGRATOR -> Maciej / sesja lokalna -- deploy ROBOCZA FALA 86 (5dfba0c5)
+UI pending: kolumny stolu (Mozliwe umowy lewo, Aktywne traktaty prawo), HUD Handel wrap, diplo vs jednostka, cap AI drewno.
+md5: 5dfba0c514eaf4c3264d2ea8704af61e (skrot 5dfba0c5) | stempel ROBOCZA | 5dfba0c5
+Bramki: tsc 0 | smoke PASS | diplomacy-ai-balance 14/14 | vite build dist | verify-robocza VERIFY OK
+Wejscie: gra-robocza/START.html | Ctrl+F5 + Nowa gra
+CZEKAM-NA: Maciej otwiera 5dfba0c5
+
+
+## [01:38] INTEGRATOR -> Maciej / sesja lokalna - FALA 87 ROBOCZA deploy
+FALA 87 | md5 `0415305b7834e29b25e619b452b97f07` | `gra-robocza/Gra-ROBOCZA.html`
+tsc 0 | smoke PASS | vite build OK | verify-robocza VERIFY OK.
+Zakres: kolejka rekrutacji compact (max 5 + scroll) + pending (FALA 86 w bundle).
+CZEKAM-NA: Maciej otwiera 0415305b (zastapione FALA 88)
+
+## [01:55] INTEGRATOR -> Maciej / sesja lokalna - FALA 90 ROBOCZA deploy
+FALA 90 | md5 `3d299f176846d87a2801c20d4224f6c0` | `gra-robocza/Gra-ROBOCZA.html`
+tsc 0 | vite build OK.
+Zakres: balans SUROW-TERYT — Tartak drewno 20→10/t, Glinianka glina 20→15/t (kamieniolom 4/t bez zmian). W bundle takze FALA 88-89.
+CZEKAM-NA: zastapione FALA 91
+
+## [01:58] INTEGRATOR -> Maciej / sesja lokalna -- deploy FALA 91 ROBOCZA (pelny rebuild)
+
+Owce/las + modal Zastapic + ukrycie surowcow + tartak 10/glinianka 15 + Polacz armie + FALA 87.
+md5: 34d694736801bd350a2f7faccedd135f (skrot 34d69473) | stempel ROBOCZA | 34d69473
+Bramki: tsc 0 | map-improvement-qualify 74/74 | smoke PASS | vite build TEMP civ-dist-fala90
+Wejscie: gra-robocza/START.html | Ctrl+F5 + Nowa gra
+CZEKAM-NA: sesja lokalna pull (push) / Maciej otwiera 34d69473
+
+## [01:52] INTEGRATOR -> Maciej / sesja lokalna - FALA 89 ROBOCZA deploy
+FALA 89 | md5 `17859ca11570ccf9f674a7cbc6e1f503` | `gra-robocza/Gra-ROBOCZA.html`
+tsc 0 | smoke PASS | vite build OK | verify-robocza VERIFY OK.
+Zakres: owce/las + modal Zastapic + ukrycie surowcow po ulepszeniu + tartak 10/glinianka 15 + Polacz armie. W bundlu FALA 87 (kolejka rekrutacji).
+CZEKAM-NA: sesja lokalna pull na dysk (haslo push) / Maciej Ctrl+F5 START.html
+
+## [01:50] INTEGRATOR -> Maciej / sesja lokalna - FALA 88 ROBOCZA deploy
+FALA 88 | md5 `0c72963e31e0bcd3db576c59ae1c3537` | `gra-robocza/Gra-ROBOCZA.html`
+tsc 0 | army-merge-colocated 2/2 | army-merge-bounce 4/4 | verify-robocza VERIFY OK.
+Zakres: ikona Połącz w karcie jednostki; panel wyboru jednostek + sąsiedni stos; prompt merge przy rekrutacji (garnizon na heksie miasta).
+CZEKAM-NA: sesja lokalna pull na dysk (haslo push) / Maciej Ctrl+F5 START.html
+
+## [02:15] INTEGRATOR -> Maciej / sesja lokalna - FALA 92 ROBOCZA deploy
+FALA 92 | md5 `2a14158dacce0b8558af9b03d5b3e5cf` | `gra-robocza/Gra-ROBOCZA.html`
+tsc 0 | ai-test 250/250 | vite build OK.
+Zakres: bugfix AI miast-panstw — po garnizonie buduja Studnia/Garncarnia/Spichlerz/Targowisko zamiast spamu Wojownika (chooseCityProduction defensiveCopy).
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 Nowa gra — po kilku turach MP powinny miec budynki
+
+## [02:22 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 93 (651d0e11)
+
+md5 `651d0e11798831f4c69c2c35801b8430` | stempel ROBOCZA | 651d0e11
+tsc 0 | population-growth-v85-test 18/18 | vite build OK.
+Zakres: balans racji zywnosci — koszt poziom 1/2/3 = 2/4/6 na obywatela/ture (bylo 1/2/3). Farmy bez zmian.
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [09:35 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 94 (d776c787)
+
+md5 `d776c7874b0f076469fdac495028a42f` | stempel ROBOCZA | d776c787
+tsc 0 | deposit-building-gate 45/45 | population-growth-v85 18/18 | vite build OK.
+Zakres: stopka surowców → Okolica; Stolarnia B1 (Tartak→Drewno aktywne); luki P84/85 zweryfikowane.
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [10:09 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 95 (41cb38f7)
+
+md5 `41cb38f77ea238660ac8c45d5b53574f` | stempel ROBOCZA | 41cb38f7
+tsc 0 | deposit-building-gate-test 46/46 | vite build OK | publish-robocza-snapshot OK.
+Zakres: DOSTEP-SUROWCE-Q1 — tylko magazyn państwa (cofnięcie B1 Stolarnia/Tartak); Odlewnia=Ruda stock; jednostki Brąz/Żelazo ze stocku; UI chipy magazyn. Pełny rebuild ALL z gra/src+data.
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
+
+## [10:22 PL, 2026-07-29] CHMURA → LOKALNA — deploy ROBOCZA FALA 96 DEPLOY ALL (bc8f4630)
+
+md5 `bc8f4630112a3b5e60914b5a1ba46515` | stempel ROBOCZA | bc8f4630
+tsc 0 | vite build OK | publish-robocza-snapshot OK | verify-robocza VERIFY OK.
+Zakres: DEPLOY ALL — pelny rebuild biezacego drzewa gra/src+data (bez nowych zmian kodu w tej turze; zawiera DOSTEP-SUROWCE-Q1/FALA95 i wczesniejsze). POLE-BITWY odswiezone (dd399c4b).
+CZEKAM-NA: sesja lokalna pull (push) / Maciej Ctrl+F5 + Nowa gra
