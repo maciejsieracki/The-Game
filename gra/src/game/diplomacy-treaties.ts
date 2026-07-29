@@ -187,6 +187,18 @@ export function allianceObligationsForWarDeclaration(
   ];
 }
 
+/**
+ * D-WIAR-KASKADA-Q1=B: sojusznik ofiary wchodzący w obronę musi wypowiedzieć wojnę
+ * agresorowi (`mustDeclareWarOn === attackerId`). Taki wymuszony join nie nalicza N2
+ * (−18/−25 W) za zerwanie NAP/sojuszu z agresorem — traktaty nadal się zrywają.
+ */
+export function isDefensiveAllianceWarObligation(
+  mustDeclareWarOn: number,
+  attackerId: number,
+): boolean {
+  return mustDeclareWarOn === attackerId;
+}
+
 export function addTreaty(state: ActiveDeal[], deal: ActiveDeal): ActiveDeal[] {
   const k = normalizeTreatyKind(deal.rodzaj);
   const next: ActiveDeal = { ...deal, rodzaj: k, strony: pairKey(deal.strony[0], deal.strony[1]) };

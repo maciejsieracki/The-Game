@@ -324,10 +324,10 @@ export interface CityYieldResult {
    */
   pieniadzBudynkow: number;
   /**
-   * E1 Zadanie 2: surowce logistyczne zebrane z pol tej tury (przed magazynem/converterami).
-   * Drewno/kamien/glina maja numeryczny plon terenu/ulepszen (tileYield); glina dodana
-   * GLINA-Q1=A (2026-07-20, stala ilosc 2/ture z glinianki). Ruda miedzi/żelaza — numeryczny
-   * plon z kopalni_miedzi / kopalnia (audit ROBOCZA 9a0ca985, 2026-07-23).
+   * E1 Zadanie 2: surowce logistyczne zebrane z pól tej tury (informacyjnie w wyniku
+   * cityYieldPerTurn — ta sama suma tileYield co computeWorkedMagazynYieldsByCity).
+   * Kredyt do magazynu państwa: turn-economy.ts tickEmpireResourcePipeline
+   * (R-HEX-PLONY-MAGAZYN B: worked + ulepszenia surowiec_ilosc_tura addytywnie).
    */
   drewnoTerenu:   number;
   kamienTerenu:   number;
@@ -373,9 +373,7 @@ function terrainRowToTileYield(row: TerrainTypeDef | TerrainModifierDef): TileYi
     handel:  Number(row['Podatek'] ?? row['Handel'] ?? 0),
     drewno:  Number(row['Drewno'] ?? 0),
     kamien:  Number(row['Kamień'] ?? 0),
-    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
-    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
-    glina:   0,
+    glina:   Number((row as { Glina?: number | null }).Glina ?? 0),
     ruda:    0,
     ruda_zelaza: 0,
   };
@@ -392,7 +390,7 @@ function buildTerrainYields(): Record<TerenBazowy, TileYield> {
 
 function terrainModifier(name: string): TileYield {
   const row = terrainYieldsData.terrain_modifiers.find(m => m['Modyfikator'] === name);
-  return row ? terrainRowToTileYield(row) : ZERO_YIELD;
+  return row ? terrainRowToTileYield(row as TerrainModifierDef) : ZERO_YIELD;
 }
 
 const TERRAIN_YIELDS = buildTerrainYields();
@@ -426,6 +424,7 @@ export function tileYield(tile: WorkedTile): TileYield {
     zywnosc += RIVER_MODIFIER.zywnosc;
     praca   += RIVER_MODIFIER.praca;
     handel  += RIVER_MODIFIER.handel;
+    glina   += RIVER_MODIFIER.glina;
   }
 
   const out: TileYield = {

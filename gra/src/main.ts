@@ -799,6 +799,7 @@ import {
 import {
   type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
   removeTreatiesById, allianceObligationsForWarDeclaration, treatiesBrokenByRefusal,
+  isDefensiveAllianceWarObligation,
   normalizeTreatyKind, hydrateActiveDeals, addTreaty, resolvePokojTrustTier,
   hasSzlakowTreaty, hasWymianaTreaty,
   type HandelSurowiecCyklicznyItem,
@@ -5727,11 +5728,16 @@ async function boot(): Promise<void> {
      * został złamany (Sojusz > NAP, per §2 hierarchia wag). Parytet: `declarerId`/
      * `targetId` to gołe liczby, zero specjalnego traktowania ownerId===0.
      */
-    function chargeWarDeclarationCredibility(declarerId: number, targetId: number): void {
+    function chargeWarDeclarationCredibility(
+      declarerId: number,
+      targetId: number,
+      opts?: { skipN2AllianceDefense?: boolean },
+    ): void {
       if (isBarbarian(declarerId) || isBarbarian(targetId)) return;
       const retaliation = isCredibilityRetaliation(declarerId, targetId);
+      const skipN2 = retaliation || opts?.skipN2AllianceDefense === true;
 
-      if (!retaliation) {
+      if (!skipN2) {
         const hasAlliance = activeDeals.some(
           d => dealInvolvesOwners(d, declarerId, targetId) && isAllianceDealKind(d.rodzaj),
         );
@@ -11872,7 +11878,13 @@ async function boot(): Promise<void> {
             );
           }
 
-          chargeWarDeclarationCredibility(allyId, ob.mustDeclareWarOn);
+          const skipN2AllianceDefense = isDefensiveAllianceWarObligation(
+            ob.mustDeclareWarOn,
+            attackerId,
+          );
+          chargeWarDeclarationCredibility(allyId, ob.mustDeclareWarOn, {
+            skipN2AllianceDefense,
+          });
           breakTreatiesOnWar(allyId, ob.mustDeclareWarOn, allyId === 0);
           setDiploRelation(
             allyId,

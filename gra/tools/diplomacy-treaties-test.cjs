@@ -17,6 +17,7 @@ export {
   treatiesBrokenByRefusal, normalizeTreatyKind, treatiesBrokenByWar,
   tributeDeals, removeTreatiesById,
   hydrateActiveDeals, allianceObligationsForWarDeclaration,
+  isDefensiveAllianceWarObligation,
 } from '../src/game/diplomacy-treaties.ts';
 `;
 const entryFile = path.resolve(__dirname, '.dip-treaties-entry.ts');
@@ -36,6 +37,7 @@ const {
   addTreaty, expireTreaties, hasTreaty, allianceObligations,
   treatiesBrokenByRefusal, normalizeTreatyKind, treatiesBrokenByWar,
   hydrateActiveDeals, allianceObligationsForWarDeclaration,
+  isDefensiveAllianceWarObligation,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -73,6 +75,20 @@ const warObs = allianceObligationsForWarDeclaration(deals, 0, 5);
 ok(
   warObs.some(o => o.obligatedAllies[0] === 2 && o.mustDeclareWarOn === 0),
   'war decl: def sojusznik 2 vs agresor 0',
+);
+
+console.log('\n--- D-WIAR-KASKADA-Q1=B: rozpoznanie obrony ofiary ---');
+ok(
+  isDefensiveAllianceWarObligation(0, 0) && !isDefensiveAllianceWarObligation(5, 0),
+  'mustDeclareWarOn===attackerId → obrona ofiary (bez N2)',
+);
+ok(
+  !isDefensiveAllianceWarObligation(5, 0) && isDefensiveAllianceWarObligation(5, 5),
+  'mustDeclareWarOn===victimId → pełny sojusz agresora (N2 nadal)',
+);
+ok(
+  warObs.every(o => isDefensiveAllianceWarObligation(o.mustDeclareWarOn, 0)),
+  'kaskada A→B: wszystkie obowiązki defensywne wskazują agresora 0',
 );
 
 console.log(`\n${pass}/${pass + fail} PASS`);

@@ -14,7 +14,15 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `1d730ca2` - 2026-07-29 18:05 - FALA 110: RELIEF medium + LAS/hodowla + surowce pod lasem - **AKTUALNA**
+## ROBOCZA `e5c1bbed` - 2026-07-29 18:30 - FALA 111: R-HEX-PLONY-MAGAZYN B + rzeka +2 glina + D-WIAR-KASKADA-Q1 - **AKTUALNA**
+- md5 (pelne): `e5c1bbed0087c660e1e29d8e00862a90` · stempel: `ROBOCZA · 2026-07-29 18:30`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · hex-plony-magazyn 9/9 · stolarnia-r5-d2 9/9 · diplomacy-treaties 12/12.
+- **R-HEX-PLONY-MAGAZYN (B):** pełne tileYield drewno/kamień/glina z obrabianych heksów (centrum + 👤) → magazyn państwa; ulepszenia `surowiec_ilosc_tura` addytywnie; tooltip heksa zaktualizowany.
+- **Rzeka +2 glina:** modyfikator „Rzeka" w `terrain-yields.json` → `tileYield` (+2 glina/szt./turę przy rzece); przy 👤 trafia do magazynu.
+- **D-WIAR-KASKADA-Q1=B:** obrona ofiary w kaskadzie sojuszniczej — kara W tylko przy pełnym sojuszu agresora (`isDefensiveAllianceWarObligation`).
+
+## ROBOCZA `1d730ca2` - 2026-07-29 18:05 - FALA 110: RELIEF medium + LAS/hodowla + surowce pod lasem - **ZASTĄPIONA**
 - md5 (pelne): `1d730ca242e4ce8715a970801e6044c7` · stempel: `ROBOCZA · 2026-07-29 18:05`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · map-improvement-qualify 82/82 · relief-grid 6/6 · map-gen-regression determinizm PASS.

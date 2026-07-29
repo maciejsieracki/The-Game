@@ -1,4 +1,24 @@
-﻿## [18:05] ✅ Gotowe — deploy ROBOCZA FALA 110 (1d730ca2)
+﻿## [18:30] ✅ Gotowe — deploy ROBOCZA FALA 111 (e5c1bbed)
+
+**FALA 111** | md5 `e5c1bbed0087c660e1e29d8e00862a90` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Magazyn z pól + rzeka + dyplomacja:**
+- R-HEX-PLONY-MAGAZYN B: drewno/kamień/glina z obrabianych heksów (centrum + 👤) → magazyn; Tartak/Kamieniołom addytywnie.
+- Rzeka: +2 glina/szt./turę w plonie heksa (`terrain-yields` → `tileYield`).
+- D-WIAR-KASKADA-Q1=B: kaskada sojusznicza — kara W tylko przy pełnym sojuszu agresora.
+- tsc 0 · hex-plony 9/9 · stolarnia 9/9 · diplomacy-treaties 12/12 · POLE-BITWY `dd399c4b`.
+
+## [18:30] ✅ Gotowe — deploy ROBOCZA FALA 111 (e5c1bbed)
+
+**FALA 111** | md5 `e5c1bbed0087c660e1e29d8e00862a90` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**R-HEX-PLONY-MAGAZYN B + rzeka +2 glina + D-WIAR-KASKADA-Q1=B:**
+- Plony terenu (drewno/kamień/glina) z obrabianych heksów (centrum + 👤) → magazyn państwa; ulepszenia addytywnie.
+- Rzeka: +2 glina/szt./turę na każdym heksie przy rzece (tileYield → magazyn przy 👤).
+- Dyplomacja: kaskada sojusznicza — kara W tylko przy pełnym sojuszu agresora (obrona ofiary bez kary).
+- tsc 0 · hex-plony-magazyn 9/9 · stolarnia-r5-d2 9/9 · diplomacy-treaties 12/12 · POLE-BITWY `dd399c4b`.
+
+## [18:05] ✅ Gotowe — deploy ROBOCZA FALA 110 (1d730ca2)
 
 **FALA 110** | md5 `1d730ca242e4ce8715a970801e6044c7` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

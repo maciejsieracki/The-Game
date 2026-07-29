@@ -26,6 +26,7 @@ __export(dip_treaties_entry_exports, {
   expireTreaties: () => expireTreaties,
   hasTreaty: () => hasTreaty,
   hydrateActiveDeals: () => hydrateActiveDeals,
+  isDefensiveAllianceWarObligation: () => isDefensiveAllianceWarObligation,
   normalizeTreatyKind: () => normalizeTreatyKind,
   removeTreatiesById: () => removeTreatiesById,
   treatiesBrokenByRefusal: () => treatiesBrokenByRefusal,
@@ -53,10 +54,20 @@ function normalizeTreatyKind(rodzaj) {
   if (rodzaj === "sojusz_wojskowy" /* SojuszWojskowy */) return "sojusz_pelny";
   return rodzaj;
 }
+function dealHasExchangePayload(deal) {
+  const hp = deal.handelPayload;
+  if ((hp?.giveItems?.length ?? 0) > 0 || (hp?.receiveItems?.length ?? 0) > 0) return true;
+  return (deal.handelSurowiecCykliczny?.length ?? 0) > 0;
+}
+function migrateLegacyHandelRodzaj(deal) {
+  const k = normalizeTreatyKind(deal.rodzaj);
+  if (k !== "umowa_handlowa" /* UmowaHandlowa */) return k;
+  return dealHasExchangePayload(deal) ? "umowa_wymiany" /* UmowaWymiany */ : "umowa_szlakow" /* UmowaSzlakow */;
+}
 function hydrateActiveDeals(deals) {
   return deals.map((d) => ({
     ...d,
-    rodzaj: normalizeTreatyKind(d.rodzaj),
+    rodzaj: migrateLegacyHandelRodzaj(d),
     strony: pairKey(d.strony[0], d.strony[1])
   }));
 }
@@ -73,6 +84,9 @@ function allianceObligationsForWarDeclaration(state, declarerOwnerId, targetOwne
       aggressorOwnerId: declarerOwnerId
     })
   ];
+}
+function isDefensiveAllianceWarObligation(mustDeclareWarOn, attackerId) {
+  return mustDeclareWarOn === attackerId;
 }
 function addTreaty(state, deal) {
   const k = normalizeTreatyKind(deal.rodzaj);
@@ -146,7 +160,9 @@ var BREAK_ON_WAR = /* @__PURE__ */ new Set([
   "sojusz_pelny",
   "otwarte_granice" /* OtwartGranice */,
   "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */,
-  "umowa_handlowa" /* UmowaHandlowa */
+  "umowa_handlowa" /* UmowaHandlowa */,
+  "umowa_szlakow" /* UmowaSzlakow */,
+  "umowa_wymiany" /* UmowaWymiany */
 ]);
 function treatiesBrokenByWar(state, a, b) {
   const pair = dealsForPair(state, a, b);
@@ -170,6 +186,7 @@ function tributeDeals(state) {
   expireTreaties,
   hasTreaty,
   hydrateActiveDeals,
+  isDefensiveAllianceWarObligation,
   normalizeTreatyKind,
   removeTreatiesById,
   treatiesBrokenByRefusal,

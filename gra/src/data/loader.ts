@@ -254,6 +254,8 @@ export interface TerrainTypeDef {
   Handel?: number | null;
   Drewno: number | null;
   Kamień: number | null;
+  /** Opcjonalnie (modyfikator Rzeka); brak = 0 w tileYield. */
+  Glina?: number | null;
   Suma: number | null;
   Uwagi: string | null;
 }

@@ -4381,3 +4381,10 @@ tsc 0 | map-improvement-qualify 82/82 | relief-grid 6/6 | map-gen-regression det
 Zakres: relief medium (min 4, komórka 15×15, 10%/15%) · las: hodowla zablokowana, obóz łowiecki+tartak współistnieją · surowce widoczne pod lasem
 **Sesja lokalna: pull na dysk właściciela, testuj `1d730ca2`.**
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (relief + las + surowce).
+
+## [18:30 PL, 2026-07-29] Chmura → sesja lokalna — FALA 111 DEPLOY ALL
+md5 `e5c1bbed0087c660e1e29d8e00862a90` | stempel ROBOCZA · 2026-07-29 18:30
+tsc 0 | hex-plony-magazyn 9/9 | stolarnia 9/9 | diplomacy-treaties 12/12 | VERIFY OK | vite build OK przed kopiowaniem
+Zakres: R-HEX-PLONY-MAGAZYN B (worked tileYield drewno/kamień/glina → magazyn + ulepszenia addytywnie) · rzeka +2 glina w tileYield · D-WIAR-KASKADA-Q1=B (kara W kaskada)
+**Sesja lokalna: pull na dysk właściciela, testuj `e5c1bbed`.**
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (magazyn z pól + glina przy rzece).

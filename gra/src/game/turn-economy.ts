@@ -796,7 +796,9 @@ export function computeTerritoryResourceYieldByCity(
 
 // ---------------------------------------------------------------------------
 // PYTANIE-84 R5+D2: Stolarnia — +10%/szt. na wpływie drewna z mapy (addytywnie).
-// Źródła: Tartak (terrYield) + Las na obrabianym polu (workedDrewno).
+// R-HEX-PLONY-MAGAZYN (Maciej 2026-07-29, B): drewno/kamień/glina z tileYield
+// na KAŻDYM heksie cityWorkedTilesForEconomy (centrum + 👤) + ulepszenia
+// surowiec_ilosc_tura (terrYield) addytywnie — patrz computeWorkedMagazynYieldsByCity.
 // ---------------------------------------------------------------------------
 
 /** Mnożnik wpływu drewna z mapy: 1 + bonus×liczbaStolarni (addytywnie). */
@@ -818,20 +820,53 @@ export function applyStolarniaDrewnoMapInflow(
   return Math.floor(baseDrewno * stolarniaDrewnoMapInflowMult(stolarniaCount, bonusPerBuilding));
 }
 
-/** Drewno z obrabianych pól (nakładka Las) — wpływ do magazynu państwa. */
+/** Plony magazynowe z obrabianych pól (centrum miasta + 👤) — R-HEX-PLONY-MAGAZYN B. */
+export interface WorkedMagazynYield {
+  drewno: number;
+  kamien: number;
+  glina: number;
+}
+
+const ZERO_WORKED_MAGAZYN: WorkedMagazynYield = { drewno: 0, kamien: 0, glina: 0 };
+
+/**
+ * Suma drewno/kamień/glina z tileYield na każdym heksie cityWorkedTilesForEconomy.
+ * Pełne plony terenu (terrain-yields + nakładki + bonusy pól ulepszeń w tileYield),
+ * BEZ surowiec_ilosc_tura (to osobno w computeTerritoryResourceYieldByCity).
+ */
+export function computeWorkedMagazynYieldsByCity(
+  cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'ownerId' | 'population'>>,
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[],
+): ReadonlyMap<string, WorkedMagazynYield> {
+  const out = new Map<string, WorkedMagazynYield>();
+  for (const city of cities) {
+    const worked = cityWorkedTilesForEconomy(city as City, map, territoryNodes);
+    let drewno = 0;
+    let kamien = 0;
+    let glina = 0;
+    for (const tile of worked) {
+      const y = tileYield(tile);
+      drewno += y.drewno;
+      kamien += y.kamien;
+      glina += y.glina;
+    }
+    if (drewno > 0 || kamien > 0 || glina > 0) {
+      out.set(city.id, { drewno, kamien, glina });
+    }
+  }
+  return out;
+}
+
+/** @deprecated alias — użyj computeWorkedMagazynYieldsByCity().drewno */
 export function computeWorkedDrewnoByCity(
   cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'ownerId' | 'population'>>,
   map: GameMap,
   territoryNodes: readonly TerritoryNode[],
 ): ReadonlyMap<string, number> {
   const out = new Map<string, number>();
-  for (const city of cities) {
-    const worked = cityWorkedTilesForEconomy(city as City, map, territoryNodes);
-    let sum = 0;
-    for (const tile of worked) {
-      sum += tileYield(tile).drewno;
-    }
-    if (sum > 0) out.set(city.id, sum);
+  for (const [id, y] of computeWorkedMagazynYieldsByCity(cities, map, territoryNodes)) {
+    if (y.drewno > 0) out.set(id, y.drewno);
   }
   return out;
 }
@@ -1381,7 +1416,7 @@ function tickEmpireResourcePipeline(
   cities: City[],
   builtByCity: ReadonlyMap<string, readonly string[]>,
   territoryResourceByCity: TerritoryResourceYieldByCity,
-  workedDrewnoByCity: ReadonlyMap<string, number>,
+  workedMagazynByCity: ReadonlyMap<string, WorkedMagazynYield>,
   stolarniaCountByOwner: ReadonlyMap<number, number>,
   kamieniarskiCountByOwner: ReadonlyMap<number, number>,
   stolarniaBonusDrewnaCiv: number,
@@ -1396,6 +1431,7 @@ function tickEmpireResourcePipeline(
   // Faza 1 (R2): wpływ z mapy do magazynu państwa — przed konwerterami.
   for (const city of cities) {
     const terrYield = territoryResourceByCity.get(city.id);
+    const worked = workedMagazynByCity.get(city.id) ?? ZERO_WORKED_MAGAZYN;
     const ownerId = city.ownerId;
     const cap = ownerResourceCapFor(ownerId);
     const stolarniaCount = stolarniaCountByOwner.get(ownerId) ?? 0;
@@ -1406,8 +1442,8 @@ function tickEmpireResourcePipeline(
       creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw * mult), cap);
     };
 
-    // PYTANIE-84 R5+D2: Tartak (terrYield) + Las (workedDrewno) × Stolarnia addytywnie.
-    const drewnoMapBase = (terrYield?.drewno ?? 0) + (workedDrewnoByCity.get(city.id) ?? 0);
+    // R-HEX-PLONY-MAGAZYN B: ulepszenie (terrYield) + plony terenu z 👤 (worked) addytywnie.
+    const drewnoMapBase = (terrYield?.drewno ?? 0) + worked.drewno;
     const drewnoCredit = applyStolarniaDrewnoMapInflow(
       drewnoMapBase,
       stolarniaCount,
@@ -1417,9 +1453,13 @@ function tickEmpireResourcePipeline(
       creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, cap);
     }
 
+    const kamienMapBase = (terrYield?.kamien ?? 0) + worked.kamien;
+    creditTerritory('kamien', kamienMapBase, kamienMult);
+
+    const glinaMapBase = (terrYield?.glina ?? 0) + worked.glina;
+    creditTerritory('glina', glinaMapBase);
+
     if (!terrYield) continue;
-    creditTerritory('kamien', terrYield.kamien, kamienMult);
-    creditTerritory('glina', terrYield.glina);
     creditTerritory('ruda', terrYield.ruda);
     creditTerritory('ruda_zelaza', terrYield.ruda_zelaza);
     creditTerritory('sol', terrYield.sol);
@@ -2042,12 +2082,12 @@ export function advanceCityEconomy(
   const incomeByOwner = new Map<number, number>();
 
   // PYTANIE-84 R2: wpływ mapy → konwertery → drain Spichlerza PRZED plonami miast.
-  const workedDrewnoByCity = computeWorkedDrewnoByCity(cities, map, territoryNodes);
+  const workedMagazynByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes);
   const spichlerzByCity = tickEmpireResourcePipeline(
     cities,
     builtByCity,
     territoryResourceByCity,
-    workedDrewnoByCity,
+    workedMagazynByCity,
     stolarniaCountByOwner,
     kamieniarskiCountByOwner,
     stolarniaBonusDrewnaCiv,

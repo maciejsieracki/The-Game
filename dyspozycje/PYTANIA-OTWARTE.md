@@ -821,3 +821,115 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 **Cytat Macieja:** po PN złoto/węgiel — **później** dokładny audyt całego handlu: czy wszystko spina się z wytycznymi (stół negocjacji), czy nie ma dróg na skróty / sytuacji omijających stół (wszystko na stół → akceptuj/odrzuć).
 
 **Warunek startu:** po zamknięciu PN dla złota i węgla. **Bez skrótów** — pełny przegląd ścieżek handlowych vs kanon stołu.
+
+---
+
+## D-WIAR-KASKADA-Q1 — kara W przy kaskadzie sojuszniczej · STATUS: **ZAMKNIĘTE · W ROBOCZEJ** (Maciej **B**, FALA 111 `e5c1bbed`)
+
+**Sytuacja.** Gdy A atakuje B, sojusznik C ofiary może być zmuszony wypowiedzieć wojnę A — zerwa NAP/sojusz z agresorem.
+
+**Odpowiedź Macieja:** **B** — odwet sojusznika w obronie ofiary: C **nie traci** Wiarygodności (N2) za wymuszone zerwanie NAP/sojuszu z A; traktaty nadal się zrywają; agresor nie dostaje kary W za pośrednie zerwanie z C.
+
+**Wdrożenie:** `docs/decyzje/D-WIAR-KASKADA-Q1.md` · `isDefensiveAllianceWarObligation` · `chargeWarDeclarationCredibility` + `applyAllianceObligationsOnWar`.
+
+**Deploy:** decyzja wieczorem 29.07 — **po** FALA 110 (`1d730ca2`). Kod w `gra/src`, **brak** w `gra-robocza/` do czasu kolejnego deployu.
+
+---
+
+## R-HEX-PLONY-MAGAZYN — plony HEX (`terrain-yields`) vs silnik magazynu · STATUS: **ZAMKNIĘTE** (Maciej 2026-07-29, decyzja **B**)
+
+**Decyzja:** `docs/decyzje/R-HEX-PLONY-MAGAZYN.md` — tileYield z obrabianych heksów (centrum + 👤) → magazyn; ulepszenia `surowiec_ilosc_tura` addytywnie.
+
+**Wdrożenie:** `turn-economy.ts` (`computeWorkedMagazynYieldsByCity`, `tickEmpireResourcePipeline`), `hexContextTooltip.ts`, test `hex-plony-magazyn-test.cjs`.
+
+---
+
+## R-HEX-PLONY-MAGAZYN (archiwum zgłoszenia) — plony HEX vs silnik magazynu
+
+**Cytaty Macieja (2026-07-29):**
+> „Trochę rozjeżdża się to co jest produkowane dzięki tartakowi i tym co jest na HEX-ie. Obawiam się że te informacje z HEX-a są martwe."
+> „Z HEX-ów żadne surowce się nie odkładają."
+> „Dane są w ustawieniach, ale chyba nie w silniku."
+
+**Kontekst zgłoszenia.** Maciej widzi na HEX-ie plony (np. 5 Drewna + Kamień z `terrain-yields`), buduje Tartak i oczekuje sumy plonów terenu + bonusu budynku (+25 Drewna pkt/turę), a w magazynie widzi tylko +20 — bez śladu surowców z heksów. Wcześniejszy audyt agenta stwierdził „mylące ale działa"; Maciej się **nie zgodził**. Pytanie **nie było** trwale zapisane w pliku.
+
+**Uwaga procesowa (Maciej 2026-07-29):** „każde moje pytanie, każdy błąd jest zapisywany w plikach" — ten wpis domyka lukę.
+
+**Hipoteza robocza z audytu (do potwierdzenia, nie werdykt):**
+- **Kamień z terenu** — prawdopodobnie **martwy** w silniku magazynu (dane w `terrain-yields`, brak wpływu na skarbiec).
+- **Drewno z terenu** — może działać **tylko przez ulepszenie 👤** (np. Tartak na lesie), nie z gołego plonu HEX-a.
+- **Tartak +20** zamiast oczekiwanego +25 — może wynikać z braku sumowania plonów HEX + budynku, albo z innego źródła liczby w UI.
+
+**Czeka na:** twardy werdykt techniczny (ścieżka kodu: `terrain-yields` → `turn-economy` / magazyn państwa) + ewentualna paczka ABC/naprawa po potwierdzeniu.
+
+**Uwaga:** w transkrypcie 29.07 ~18:12 Maciej pisał „w **silniku**" (STT czasem jako „średniku") — **ten sam wątek**, nie osobny temat.
+
+---
+
+## D-DYPLO-KATALOG-AKCJI — brak akcji (sojusz, wojna…) w menu propozycji · STATUS: **OTWARTE** (Maciej 2026-07-29 ~00:46)
+
+**Cytat:** „Nie widzę tutaj np. sojuszu czy zaatakowania innego państwa. Większość akcji dyplomatycznych, które mieliśmy w kodzie i zaprojektowaliśmy, ich tu nie widzę."
+
+**Czeka na:** audyt katalogu akcji vs UI propozycji/wydarzeń + wdrożenie brakujących lub ABC co pokazać.
+
+---
+
+## D-DYPLO-CELOWNIK-STOLICA — przeskok kamery do stolicy z karty państwa · STATUS: **OTWARTE** (Maciej 2026-07-29 ~00:47)
+
+**Cytat:** Na karcie reprezentanta państwa w dyplomacji brakuje **celownika** — klik przenosi na mapę do stolicy tego państwa.
+
+---
+
+## D-DYPLO-AKCJE-SZARE — niedostępne akcje wyszarzone + tooltip · STATUS: **OTWARTE** (Maciej 2026-07-29 ~00:50–00:51)
+
+**Cytat:** Gdy próg nie spełniony — akcja **wyszarzona z tooltipem** (nie znika). Osobno: akcje niemożliwe z **państwem-miastem** — wyszarzone z komunikatem.
+
+---
+
+## BUG-DYPLO-PANEL-OVERLAP — panel dyplomacji nachodzi na panel jednostki („Frank") · STATUS: **OTWARTE** (Maciej 2026-07-29 ~01:06)
+
+**Cytat:** Po dyplomacji z zaznaczoną jednostką oba panele nachodzą; miało być naprawione.
+
+---
+
+## R-AI-MIASTA-BUDOWY — państwa-miasta prawie nie budują mimo zasobów · STATUS: **OTWARTE** (Maciej 2026-07-29 ~02:04)
+
+**Cytat:** „Państwa miasta nie budują praktycznie żadnych budynków, chociaż mają zasoby — trzeba sprawdzić."
+
+---
+
+## BUG-SUROWCE-WIDOCZNE — surowce na mapie widoczne po ulepszeniu (miały być przykryte) · STATUS: **OTWARTE** (Maciej 2026-07-29 ~01:33)
+
+**Cytat:** „Znowu po budowie widać surowce. Miały być przykryte." (Regresja względem wcześniejszej decyzji ukrywania złóż pod ulepszeniem.)
+
+---
+
+## R-ZAMIEN-ULEPSZENIE-CONFIRM — potwierdzenie zamiany wykluczających ulepszeń (np. Tartak→Owce) · STATUS: **OTWARTE** (Maciej 2026-07-29 ~01:34)
+
+**Cytat:** Przy budowie ulepszenia wykluczającego istniejące (las+Tartak → Owce) — dialog „zastąpić?"
+
+---
+
+## BUG-ARMIA-BRAK-POLACZ — brak akcji „Połącz" przy wielu jednostkach na heksie · STATUS: **OTWARTE** (Maciej 2026-07-29 ~01:36)
+
+**Cytat:** Jest „Rozdziel", brakuje „Połącz" gdy kilka jednostek na polu.
+
+---
+
+## R-PUŁKA-PYTANIA-29-07 — paczka pytań bez odpowiedzi w czacie (29.07 noc) · STATUS: **OTWARTE / FORGOTTEN**
+
+Maciej ~01:43: „Zadałem sporo pytań, czekam na odpowiedzi." Tematy **nie zapisane osobno** — do domknięcia lub ABC:
+
+| Temat | Skrót |
+|---|---|
+| Farma na mapie bez obywateli — czy daje Żywność/Pracę/Podatek? | mechanika worked tiles |
+| Palisada — do jakiej technologii podpięta, czy w ogóle działa? | dane + silnik |
+| Lista ulepszeń: które dają surowce **bez** obywatela vs **z** obywatelem | tabela dla Macieja |
+| Irygacja vs Farma — wykluczenie graficzne? | render + reguły |
+| Farma + Trzoda — czy można zrobić Irygację? | stack reguł |
+| ETA budynku w turach przy obecnej Pracy | UI panelu miasta |
+| Skondensować UI budowy jednostek (jak budynki) | UX |
+| Ulepszenie kosztuje 1 Pracy? | potwierdzenie reguły |
+| AI wymienia drewno, którego nie ma | bug handlu/AI |
+| Handel wychodzi poza ramkę panelu | bug layout |
+| Etykieta „handel jednorazowy" + sens „5 tur" negocjacji | copy / UX |

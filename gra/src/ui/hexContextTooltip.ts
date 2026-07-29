@@ -95,9 +95,8 @@ type YieldKey = CityYieldKey | MagazynYieldKey;
  * wolającego (main.ts) — domyślnie też "Podatek".
  *
  * SUROW-TERYT-01: Żywność/Praca/Podatek → ekonomia miasta (workedTiles).
- * Magazyn państwa → WYŁĄCZNIE `surowiec_ilosc_tura` z zbudowanych ulepszeń (auto, bez 👤).
- * Drewno/kamień z plonów terenu (terrain-yields.json) to stary model dostępności —
- * NIE trafiają do magazynu; UI nie sugeruje inaczej (audyt 2026-07-29, Maciej).
+ * Magazyn państwa → ulepszenia `surowiec_ilosc_tura` (auto, bez 👤) PLUS drewno/kamień/
+ * glina z tileYield na heksach obrabianych (centrum + 👤) — R-HEX-PLONY-MAGAZYN B.
  */
 const CITY_YIELD_ROWS: ReadonlyArray<{ key: CityYieldKey; label: string }> = [
   { key: 'zywnosc', label: 'Żywność' },
@@ -105,7 +104,7 @@ const CITY_YIELD_ROWS: ReadonlyArray<{ key: CityYieldKey; label: string }> = [
   { key: 'handel', label: 'Podatek' },
 ];
 
-const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
+const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0, glina: 2, ruda: 0, ruda_zelaza: 0 };
 const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 
 /** Etykiety surowców magazynowych (SUROW-TERYT-01 — `surowiec_ilosc_tura`). */
@@ -131,6 +130,30 @@ function formatTerritoryMagazynPart(key: string, zloze?: string | null): string 
   const label = TERRITORY_RESOURCE_LABEL[row.resourceKey];
   const icon = territoryResourceIconHtml(row.resourceKey);
   return `${icon} +${row.amount} ${label}/t`;
+}
+
+/** Plony magazynowe z terenu (tileYield) — przy 👤 lub centrum miasta (R-HEX-PLONY-MAGAZYN B). */
+function formatTerrainMagazynWorkedPart(
+  key: 'drewno' | 'kamien' | 'glina',
+  amount: number,
+): string | null {
+  if (!(amount > 0)) return null;
+  const label = TERRITORY_RESOURCE_LABEL[key];
+  const icon = territoryResourceIconHtml(key);
+  return `${icon} +${amount} ${label}/t · przy 👤`;
+}
+
+/** Drewno/kamień z terrain-yields — trafia do magazynu przy obrabianiu pola. */
+function formatTerrainMagazynWorkedNotes(hex: Hex): string[] {
+  const y = fullTileYield(hex);
+  const notes: string[] = [];
+  const drewno = formatTerrainMagazynWorkedPart('drewno', y.drewno ?? 0);
+  if (drewno) notes.push(drewno);
+  const kamien = formatTerrainMagazynWorkedPart('kamien', y.kamien ?? 0);
+  if (kamien) notes.push(kamien);
+  const glina = formatTerrainMagazynWorkedPart('glina', y.glina ?? 0);
+  if (glina) notes.push(glina);
+  return notes;
 }
 
 function formatImprovementDesc(
@@ -164,24 +187,6 @@ function formatHexMagazynSummary(hex: Hex, esc: (raw: string) => string): string
   }
 
   return lines.length ? lines.join('<br>') : null;
-}
-
-/** Drewno z terrain-yields.json / nakładka Las — informacja, nie strumień magazynu. */
-function formatTerrainDrewnoInactiveNote(hex: Hex): string | null {
-  const drewno = fullTileYield(hex).drewno ?? 0;
-  if (!(drewno > 0)) return null;
-  const hasTartak = builtImprovementKeys(hex).includes('tartak');
-  const hint = hasTartak
-    ? 'drewno z Tartaku (auto) — patrz wyżej'
-    : 'zbuduj Tartak';
-  return `<span class="cp-inactive-yield">${yieldIconHtml('drewno')} Drewno na terenie: ${drewno} — nie trafia do magazynu; ${hint}</span>`;
-}
-
-/** Kamień w terrain-yields.json — informacja, nie aktywny strumień magazynu. */
-function formatTerrainKamienInactiveNote(hex: Hex): string | null {
-  const kamien = fullTileYield(hex).kamien ?? 0;
-  if (!(kamien > 0)) return null;
-  return `<span class="cp-inactive-yield">${yieldIconHtml('kamien')} Kamień na terenie: ${kamien} — nie trafia do magazynu; zbuduj Kamieniołom</span>`;
 }
 
 function formatCityYieldLine(y: TileYield, empty = '—'): string {
@@ -429,25 +434,21 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   }
 
   const magazynSummary = formatHexMagazynSummary(hex, esc);
-  if (magazynSummary) {
+  const terrainMagazyn = formatTerrainMagazynWorkedNotes(hex);
+  if (magazynSummary || terrainMagazyn.length > 0) {
     lines.push('<div class="cp-yield-head">Do magazynu państwa</div>');
-    lines.push(`<div class="cp-sub cp-magazyn-block">${magazynSummary}</div>`);
-  }
-
-  const drewnoNote = formatTerrainDrewnoInactiveNote(hex);
-  if (drewnoNote) {
-    lines.push(`<div class="cp-sub">${drewnoNote}</div>`);
-  }
-
-  const kamienNote = formatTerrainKamienInactiveNote(hex);
-  if (kamienNote) {
-    lines.push(`<div class="cp-sub">${kamienNote}</div>`);
+    const parts: string[] = [];
+    if (magazynSummary) parts.push(magazynSummary);
+    if (terrainMagazyn.length) {
+      parts.push(terrainMagazyn.map(n => `<span class="cp-magazyn-line">${n}</span>`).join('<br>'));
+    }
+    lines.push(`<div class="cp-sub cp-magazyn-block">${parts.join('<br>')}</div>`);
   }
 
   lines.push('<div class="cp-yield-head">Plony miasta — rozbicie (przy 👤)</div>');
   lines.push(formatCityYieldBreakdownHtml(hex));
   lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(fullTileYield(hex)), '0')}</div>`);
-  lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Magazyn → tylko ulepszenia (Tartak, Kamieniołom… — auto, bez 👤). Drewno/kamień z terenu nie trafia do magazynu.</div>');
+  lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Magazyn → ulepszenia (Tartak, Kamieniołom… — auto) + drewno/kamień/glina z terenu (przy 👤 lub centrum).</div>');
 
   if (possible.length > 0) {
     lines.push('<div class="cp-yield-head">Możliwe ulepszenia (teren)</div>');

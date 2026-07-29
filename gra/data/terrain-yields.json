@@ -89,8 +89,9 @@
       "Podatek": 3,
       "Drewno": 0,
       "Kamień": 0,
-      "Suma": 8,
-      "Uwagi": "Dodaje bonus do DOWOLNEGO pola z rzeką (Twój opis); razem +8 — mocny, można stonować"
+      "Glina": 2,
+      "Suma": 10,
+      "Uwagi": "Dodaje bonus do DOWOLNEGO pola z rzeką; +2 glina (szt./turę) przy rzece — plon produkcji (R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29); razem +10 z gliną"
     },
     {
       "Modyfikator": "Las (nakładka)",
@@ -99,6 +100,7 @@
       "Podatek": 2,
       "Drewno": 3,
       "Kamień": 0,
+      "Glina": 0,
       "Suma": 7,
       "Uwagi": "Pod lasem zawsze jest teren bazowy; las: −żywność, +handel (+2), +praca (+3), +drewno — bez względu na 👤/jednostkę"
     }
