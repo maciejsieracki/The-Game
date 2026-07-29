@@ -374,7 +374,9 @@ export function getCityFoodSplit(
   city: { procentRozwoj?: number; poziomRacji?: number },
   _defaultPct = 100,
 ): number {
-  return city.poziomRacji !== undefined ? city.poziomRacji * 33 : 100;
+  return city.poziomRacji !== undefined
+    ? Math.round((city.poziomRacji / 6) * 100)
+    : 100;
 }
 
 export {

@@ -1372,7 +1372,7 @@ function computeCityFoodBalanceV85(
   const poziomRacji = getCityRationLevel(city);
   const kosztRacji = computeCityRationCost(
     population,
-    poziomRacji as 1 | 2 | 3,
+    poziomRacji,
     rationParams,
     spichlerzState,
   );
@@ -1781,7 +1781,7 @@ export function previewCityEconomy(
         maSpichlerzII,
         spichlerzCeramika: spichlerzState.ceramikaActive,
         spichlerzSol: spichlerzState.solActive,
-        procentRozwoj: poziomRacji * 33,
+        procentRozwoj: Math.round((poziomRacji / 6) * 100),
         zywnoscBrutto: 0,
         kosztRacji: 0,
         bilansLokalny: 0,
@@ -1792,7 +1792,7 @@ export function previewCityEconomy(
 
     const growthPreview = computeGrowthPercentV85({
       population: city.population,
-      poziomRacji: foodBal.poziomRacji as 1 | 2 | 3,
+      poziomRacji: foodBal.poziomRacji,
       zdrowie,
       szczescieNetto: 0,
       wealthPoziom: wt.poziom,
@@ -1830,7 +1830,7 @@ export function previewCityEconomy(
       maSpichlerzII,
       spichlerzCeramika: spichlerzState.ceramikaActive,
       spichlerzSol: spichlerzState.solActive,
-      procentRozwoj: poziomRacji * 33,
+      procentRozwoj: Math.round((poziomRacji / 6) * 100),
       zywnoscBrutto,
       kosztRacji: foodBal.kosztRacji,
       bilansLokalny: foodBal.bilansLokalny,
@@ -2312,7 +2312,7 @@ export function advanceCityEconomy(
         maSpichlerzII,
         spichlerzCeramika: spichlerzState.ceramikaActive,
         spichlerzSol: spichlerzState.solActive,
-        procentRozwoj: poziomRacji * 33,
+        procentRozwoj: Math.round((poziomRacji / 6) * 100),
         zywnoscBrutto: 0,
         kosztRacji: 0,
         bilansLokalny: 0,
@@ -2341,7 +2341,7 @@ export function advanceCityEconomy(
     const before = city.population;
     const growthPreview = computeGrowthPercentV85({
       population: city.population,
-      poziomRacji: foodBal.poziomRacji as 1 | 2 | 3,
+      poziomRacji: foodBal.poziomRacji,
       zdrowie,
       szczescieNetto: 0,
       wealthPoziom: wt.poziom,
@@ -2396,7 +2396,7 @@ export function advanceCityEconomy(
       maSpichlerzII,
       spichlerzCeramika: spichlerzState.ceramikaActive,
       spichlerzSol: spichlerzState.solActive,
-      procentRozwoj: poziomRacji * 33,
+      procentRozwoj: Math.round((poziomRacji / 6) * 100),
       zywnoscBrutto,
       kosztRacji: foodBal.kosztRacji,
       bilansLokalny: foodBal.bilansLokalny,

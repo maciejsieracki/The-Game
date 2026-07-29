@@ -26,8 +26,13 @@
  *   P8  892: + chata przy ulicy E (kwartal NE)
  *   P9  964: + okragla chata przy bramie
  *   P10 1024: + lepianka kwartalu NW — pelna zabudowa          (= DUZE)
- *  WAL (opcja mur, DOSTEPNY NA KAZDYM POZIOMIE — steruje flaga z danych gry;
- *  os 0.37 / 0.42 / 0.445 wg fazy): +288 / +312 / +320 tri.
+ *  WAL = PALISADA W STYLU BISKUPIN (opcja mur, DOSTEPNY NA KAZDYM POZIOMIE —
+ *  steruje flaga City.maMur z danych gry, ustawiana przez budynek „Palisada
+ *  drewniana" / „Mury"; os 0.37 / 0.42 / 0.445 wg fazy):
+ *  skarpa + zerdzie na skos + sciana z belkami + nierowna korona + brama,
+ *  +1428 / +1608 / +1644 tri (119 / 134 / 137 klockow).
+ *  Wyglad zatwierdzony 2026-07-29 — referencja
+ *  docs/ux/preview-palisada/ref-styl-biskupin-kamien.png.
  *
  * TRI budynkow (box=12, cone4=8, cone5=10, cone6=12, cyl6=24, cyl8=32,
  * circle6=6): chata 60, chata wodza 72, tipi 58, okragla 72, ognisko 100/124,
@@ -143,6 +148,9 @@ const P = {
   sciana: 0xd9a05b, scianaDk: 0xc08a4a, glina: 0xc49a62,
   strzecha: 0xf0c34e, strzechaDk: 0xc0913a, strzechaKal: 0xdba044,
   drewno: 0xc98a4b, drewnoDk: 0x8a5a2e, drewnoC: 0x6b4423, pal: 0x77502c,
+  // Palisada w stylu Biskupin: dab zwietrzaly (szarosc) + ziemia skarpy.
+  walDrewno: 0x7a7268, walDrewnoDk: 0x5c554e, walDrewnoHi: 0x8f877c,
+  walZiemia: 0x6b7a4a, walZiemiaDk: 0x556640,
   kamien: 0x9aa5b1, kamienDk: 0x717d89, kamienHi: 0xb7c0c8,
   skora: 0x9a6b45, skoraDk: 0x7d5233, skoraHi: 0xb5854f,
   klepisko: 0xa08a68, sciezka: 0xbb9059,
@@ -154,6 +162,8 @@ interface M {
   sciana: THREE.Material; scianaDk: THREE.Material; glina: THREE.Material;
   strzecha: THREE.Material; strzechaDk: THREE.Material; strzechaKal: THREE.Material;
   drewno: THREE.Material; drewnoDk: THREE.Material; drewnoC: THREE.Material; pal: THREE.Material;
+  walDrewno: THREE.Material; walDrewnoDk: THREE.Material; walDrewnoHi: THREE.Material;
+  walZiemia: THREE.Material; walZiemiaDk: THREE.Material;
   kamien: THREE.Material; kamienDk: THREE.Material; kamienHi: THREE.Material;
   skora: THREE.Material; skoraDk: THREE.Material; skoraHi: THREE.Material;
   klepisko: THREE.Material; sciezka: THREE.Material;
@@ -168,6 +178,8 @@ function makeMats(color: number): M {
     sciana: mat(P.sciana), scianaDk: mat(P.scianaDk), glina: mat(P.glina),
     strzecha: mat(P.strzecha), strzechaDk: mat(P.strzechaDk), strzechaKal: mat(P.strzechaKal),
     drewno: mat(P.drewno), drewnoDk: mat(P.drewnoDk), drewnoC: mat(P.drewnoC), pal: mat(P.pal),
+    walDrewno: mat(P.walDrewno), walDrewnoDk: mat(P.walDrewnoDk), walDrewnoHi: mat(P.walDrewnoHi),
+    walZiemia: mat(P.walZiemia), walZiemiaDk: mat(P.walZiemiaDk),
     kamien: mat(P.kamien), kamienDk: mat(P.kamienDk), kamienHi: mat(P.kamienHi),
     skora: mat(P.skora), skoraDk: mat(P.skoraDk), skoraHi: mat(P.skoraHi),
     klepisko: mat(P.klepisko), sciezka: mat(P.sciezka),
@@ -328,35 +340,93 @@ function kosze(m: M): THREE.Group {
 
 // ========================= WAL / PALISADA ==================================
 
+/** Pochylenie zerdzi NA ZEWNATRZ pierscienia (rx, rz) dla azymutu az. */
+function naZewnatrz(azDeg: number, lean: number): [number, number] {
+  const rad = (azDeg * Math.PI) / 180;
+  return [-lean * Math.cos(rad), -lean * Math.sin(rad)];
+}
+
 /**
- * Wal: palisada z zaostrzonych zerdzi (cone4) po okregu + glazy u podstawy
- * + BRAMA-PRZELAZ od +x (przerwa az 72-108: 2 slupy z nadprozem, prog z glazow).
- * Deterministyczny rytm wysokosci pali. 288-320 tri zaleznie od promienia.
- * (BEZ ZMIAN — mur liczony osobno od budzetu progresji.)
+ * WAL — PALISADA W STYLU BISKUPIN (wyglad zatwierdzony 2026-07-29;
+ * referencja: docs/ux/preview-palisada/ref-styl-biskupin-kamien.png).
+ * Cztery warstwy od zewnatrz do gory:
+ *  1. SKARPA — pierscien plyt ziemi stycznie do obwodu (r*0.90) + zerdzie
+ *     wbite na skos NA ZEWNATRZ (przeszkoda u stopy walu),
+ *  2. SCIANA — pionowe pale (r*0.98) spiete 3 rzedami BELEK POZIOMYCH,
+ *  3. KORONA — nierowne ostrza nad scianka (rytm wysokosci + przechylen),
+ *  4. BRAMA-PRZELAZ od +x (az 72-108): 2 slupy, nadproze WZDLUZ cieciwy,
+ *     prog z glazow.
+ * Drewno: dab zwietrzaly (szarosc walDrewno*), ziemia skarpy przygaszona
+ * zielen. Rytm wysokosci/przechylen deterministyczny (zero randomu) — te same
+ * pale przy kazdym przebudowaniu modelu.
+ * Max r footprintu W SWIECIE: 0.41 (male) / 0.46 (srednie) / 0.48 (duze) —
+ * rezerwa srodka heksa (<=0.50) zachowana. Mur liczony osobno od budzetu
+ * progresji poziomow.
  */
 function wal(m: M, r: number): THREE.Group {
   const g = new THREE.Group();
   const gapOd = 72, gapDo = 108;
-  const n = Math.max(16, Math.round(r * 56));
+  const n = Math.max(20, Math.round(r * 64));
+  const rSkarpy = r * 0.90;
+  const rSciany = r * 0.98;
+  const yStopa = 0.055;   // korona skarpy = stopa sciany
+  const yKorona = 0.24;   // gora sciany = stopa ostrzy korony
+
+  // 1. SKARPA: plyty ziemi stycznie + zerdzie na skos (pochylone na zewnatrz)
+  for (let i = 0; i < n; i++) {
+    const az = (i / n) * 360;
+    if (az > gapOd - 8 && az < gapDo + 8) continue;
+    const { x, z } = azXZ(az, rSkarpy);
+    const segW = ((2 * Math.PI * rSkarpy) / n) * 1.15;
+    const rozjazd = 0.10 * (((i * 13) % 3) - 1);
+    B(g, segW, yStopa, 0.14, x, yStopa / 2, z, i % 2 ? m.walZiemia : m.walZiemiaDk,
+      0, tangRotY(az) + rozjazd, 0);
+    const zerdzH = 0.09 + 0.03 * ((i * 17) % 4) / 3;
+    const zer = azXZ(az, rSkarpy + 0.03);
+    const [zrx, zrz] = naZewnatrz(az, 0.28);
+    B(g, 0.022, zerdzH, 0.022, zer.x, yStopa * 0.7 + zerdzH / 2, zer.z, m.walDrewnoDk,
+      zrx, tangRotY(az), zrz);
+  }
+
+  // 2. SCIANA: pionowe pale + 3 rzedy belek poziomych miedzy nimi
+  for (let i = 0; i < n; i++) {
+    const az = (i / n) * 360;
+    if (az > gapOd - 5 && az < gapDo + 5) continue;
+    const { x, z } = azXZ(az, rSciany);
+    const palH = 0.19 + 0.04 * ((i * 23) % 5) / 4;
+    B(g, 0.028, palH, 0.028, x, yStopa + palH / 2, z, i % 3 ? m.walDrewno : m.walDrewnoDk,
+      0, tangRotY(az), 0);
+    if (i % 2 !== 0) continue;
+    const azDo = ((i + 1) / n) * 360;
+    if (azDo > gapOd - 5 && azDo < gapDo + 5) continue;
+    const p2 = azXZ(azDo, rSciany);
+    const dx = p2.x - x, dz = p2.z - z;
+    const len = Math.hypot(dx, dz) * 1.02;
+    const ang = Math.atan2(dx, dz);
+    for (const dy of [0.085, 0.135, 0.185]) {
+      B(g, 0.024, 0.022, len, (x + p2.x) / 2, yStopa + dy, (z + p2.z) / 2, m.walDrewnoHi, 0, ang, 0);
+    }
+  }
+
+  // 3. KORONA: nierowne ostrza nad sciana
   for (let i = 0; i < n; i++) {
     const az = (i / n) * 360;
     if (az > gapOd - 6 && az < gapDo + 6) continue;
-    const { x, z } = azXZ(az, r);
-    const h = 0.165 + 0.05 * ((i * 37) % 3) / 2;
-    const lean = 0.045;
-    CONE(g, 0.034, h, x, h / 2, z, m.pal, 4,
-      lean * Math.cos((az * Math.PI) / 180), (i % 3) * 0.4, -lean * Math.sin((az * Math.PI) / 180));
+    const { x, z } = azXZ(az, rSciany);
+    const ostrzeH = 0.12 + 0.10 * ((i * 41) % 7) / 6;
+    const przechyl = 0.08 * (((i * 13) % 3) - 1);
+    const [krx, krz] = naZewnatrz(az, przechyl);
+    B(g, 0.020, ostrzeH, 0.020, x, yKorona + ostrzeH / 2, z,
+      i % 2 ? m.walDrewnoHi : m.walDrewno, krx, tangRotY(az), krz);
   }
-  for (let i = 0; i < 7; i++) {
-    const az = 126 + (i / 6) * 298;
-    const { x, z } = azXZ(az, r * 1.01);
-    const s = 0.044 + 0.018 * ((i * 29) % 3) / 2;
-    B(g, s * 1.25, s * 0.8, s, x, s * 0.4, z, i % 2 ? m.kamienDk : m.kamien, 0, (i * 1.7) % 3.1, 0);
-  }
-  const b1 = azXZ(gapOd, r), b2 = azXZ(gapDo, r);
-  B(g, 0.046, 0.215, 0.046, b1.x, 0.1075, b1.z, m.drewnoDk);
-  B(g, 0.046, 0.215, 0.046, b2.x, 0.1075, b2.z, m.drewnoDk);
-  B(g, 0.036, 0.036, Math.abs(b2.z - b1.z) + 0.07, (b1.x + b2.x) / 2, 0.233, 0, m.drewnoC);
+
+  // 4. BRAMA-PRZELAZ od +x: slupy + nadproze wzdluz cieciwy + prog z glazow
+  const b1 = azXZ(gapOd, rSciany), b2 = azXZ(gapDo, rSciany);
+  B(g, 0.05, 0.26, 0.05, b1.x, yStopa + 0.13, b1.z, m.walDrewnoDk);
+  B(g, 0.05, 0.26, 0.05, b2.x, yStopa + 0.13, b2.z, m.walDrewnoDk);
+  const cieciwa = Math.hypot(b2.x - b1.x, b2.z - b1.z);
+  B(g, 0.05, 0.04, cieciwa + 0.06, (b1.x + b2.x) / 2, yStopa + 0.28, (b1.z + b2.z) / 2,
+    m.walDrewnoHi, 0, Math.atan2(b2.x - b1.x, b2.z - b1.z), 0);
   B(g, 0.055, 0.036, 0.05, b1.x + 0.008, 0.018, b1.z + 0.05, m.kamien, 0, 0.5, 0);
   B(g, 0.05, 0.032, 0.046, b2.x + 0.01, 0.016, b2.z - 0.046, m.kamienDk, 0, -0.4, 0);
   return g;
@@ -566,8 +636,8 @@ export const MIASTO_KAMIEN_LAYOUT = {
   progi: { male: [1, 3], srednie: [4, 6], duze: [7, 10] } as const,
   /** Tri per poziom 1..10 (bez muru; zmierzone stats()). */
   triPoziomy: [176, 296, 468, 528, 608, 784, 832, 892, 964, 1024] as const,
-  /** Tri walu wg fazy (mur liczony osobno). */
-  triWalu: { male: 288, srednie: 312, duze: 320 } as const,
+  /** Tri walu (palisada Biskupin) wg fazy — mur liczony osobno od progresji. */
+  triWalu: { male: 1428, srednie: 1608, duze: 1644 } as const,
   /** Max promien footprintu W SWIECIE (po CityRenderer; zmierzone per wierzcholek). */
   granice: {
     male:    { bezMuru: 0.35, zMurem: 0.43 },

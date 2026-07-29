@@ -240,9 +240,11 @@ export interface City {
   /** Per-miasto suwak Pracy; brak = global default w toEconomyCity. */
   podzialPracy?: CityPodzialPracy;
   /**
-   * PYTANIE-85: poziom racji żywności 1|2|3 (zastępuje suwak procentRozwoj).
+   * Wyżywienie: 0…6 co 0,5 (koszt żywności/miesz. = ta wartość). Decyzja 2026-07-30.
    */
-  poziomRacji?: 1 | 2 | 3;
+  poziomRacji?: number;
+  /** Jednorazowa migracja starych racji 1|2|3 → 2|4|6. */
+  rationMigratedV114?: boolean;
   /** PYTANIE-85: skumulowany ułamkowy przyrost ludności. */
   wzrostUlamkowy?: number;
   /** PYTANIE-85: licznik tur bez dopłaty z centrali (głód). */

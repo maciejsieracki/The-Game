@@ -14,7 +14,15 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `9ae07906` - 2026-07-30 00:05 - FALA 113: DEPLOY ALL sesji (dyplo+HUD+mapa+palisada+rzeki) - **AKTUALNA**
+## ROBOCZA `c7f15cb3` - 2026-07-30 00:30 - FALA 114: Wyżywienie slider 0-6 + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `c7f15cb3f47c60dba04ec98c689daaee` · stempel: `ROBOCZA · 2026-07-30 00:30`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · population-growth-v85 47/47 · population-growth-v85-bonus 20/20 · POLE-BITWY `dd399c4b`.
+- **B-WYZYWIENIE-SLIDER:** suwak Wyżywienie 0–6 (krok 0,5); koszt żywności = poziom; tabela wzrostu −10%…+7%; migracja starych racji 1|2|3 → 2|4|6.
+- **PALISADA-BISKUPIN:** render miasto-kamien (wdrożenie stylu Biskupin z sesji preview).
+- Bez push origin (jak FALA 113).
+
+## ROBOCZA `9ae07906` - 2026-07-30 00:05 - FALA 113: DEPLOY ALL sesji (dyplo+HUD+mapa+palisada+rzeki) - **ZASTĄPIONA**
 - md5 (pelne): `9ae07906dc7215050b3cde635d50a5ee` · stempel: `ROBOCZA · 2026-07-30 00:05`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · diplomacy-ai-offer-balance 23/23 · diplomacy-rejection-cooldown 14/14 · diplomacy-negotiation-table 48/48 · empire-skarbiec-bilans 11/11 · koszty-surowcowe 128/128 (palisada ep.1) · map-gen-regression TIMEOUT (dopływy rzek, >10 min) · POLE-BITWY `dd399c4b`.

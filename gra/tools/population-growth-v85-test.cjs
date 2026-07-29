@@ -21,6 +21,11 @@ export {
   getCityRationLevel,
   growthGainPerTurnSlots,
   turnsUntilNextCitizen,
+  rationFoodCostPerPop,
+  rationGrowthPercent,
+  clampPoziomRacji,
+  WYZYWIENIE_GROWTH_PCT,
+  migrateLegacyRationLevel,
 } from '../src/game/population-growth-v85';
 export {
   advanceEmpireFood,
@@ -64,7 +69,7 @@ const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJedn
 {
   const city = {
     id: 'c1', ownerId: 0, q: 0, r: 0, name: 'Test', population: 5,
-    poziomRacji: 2, wzrostUlamkowy: 0, turyBezDoplaty: 0,
+    poziomRacji: 4, wzrostUlamkowy: 0, turyBezDoplaty: 0, rationMigratedV114: true,
   };
   const econ = {
     perCity: [{
@@ -138,7 +143,7 @@ const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJedn
 {
   const city = {
     id: 'c2', ownerId: 0, q: 0, r: 0, name: 'Fed', population: 3,
-    poziomRacji: 2, wzrostUlamkowy: 0, turyBezDoplaty: 0,
+    poziomRacji: 4, wzrostUlamkowy: 0, turyBezDoplaty: 0, rationMigratedV114: true,
   };
   const econ = {
     perCity: [{
@@ -161,11 +166,25 @@ const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJedn
     rationParams,
     builtByCity: new Map([['c2', []]]),
   });
-  ok(city.wzrostUlamkowy > 0, 'fed: fractional growth accumulates (3 × 5% = 0.15)');
+  ok(city.wzrostUlamkowy > 0, 'fed: fractional growth accumulates (3 × 4.5% ≈ 0.135)');
   ok(city.population === 3, 'fed: no whole pop yet below 1.0 frac');
 }
 
-// --- ETA helpers ---
+// --- Wyżywienie: tabela wzrostu 2026-07-30 ---
+{
+  const table = [
+    [0, -10], [0.5, -6], [1, -2], [1.5, 0], [2, 1.5], [2.5, 3],
+    [3, 3.5], [3.5, 4], [4, 4.5], [4.5, 5], [5, 5.5], [5.5, 6], [6, 7],
+  ];
+  for (const [level, pct] of table) {
+    ok(M.rationGrowthPercent(level, rationParams) === pct, `Wyżywienie ${level} → ${pct}%`);
+    ok(M.rationFoodCostPerPop(level, rationParams) === level, `koszt żywności ${level} = ${level}`);
+  }
+  ok(M.migrateLegacyRationLevel(1) === 2, 'migracja stara racja 1 → Wyżywienie 2');
+  ok(M.migrateLegacyRationLevel(2) === 4, 'migracja stara racja 2 → Wyżywienie 4');
+  ok(M.migrateLegacyRationLevel(3) === 6, 'migracja stara racja 3 → Wyżywienie 6');
+}
+
 {
   ok(M.growthGainPerTurnSlots(1, 13, true, false) === 0.13, 'gainPerTurn: 1 pop × 13% = 0.13');
   ok(M.growthGainPerTurnSlots(1, 13, false, false) === 0, 'gainPerTurn: unfed → 0');

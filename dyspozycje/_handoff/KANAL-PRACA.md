@@ -4402,3 +4402,10 @@ tsc 0 | dip-ai-offer 23/23 | dip-reject-cooldown 14/14 | dip-negot 48/48 | skarb
 Zakres: duplikat umów dyplo · koszyk UX · AI oferta zero+trim cykl · AI no-nag cooldown 3t · zoom/fullscreen · tooltip ×2 · skarbiec bilans · palisada ep. Kamień+chip obrony · ensureRiverOutlets · (bez ikony preview palisady)
 Commit lokalny, **bez push** (Maciej).
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `9ae07906`).
+
+## [00:30 PL, 2026-07-30] Sesja lokalna → wszystkie — FALA 114 Wyżywienie + DEPLOY ALL
+md5 `c7f15cb3f47c60dba04ec98c689daaee` | stempel ROBOCZA · 2026-07-30 00:30
+tsc 0 | population-growth-v85 47/47 | population-growth-v85-bonus 20/20 | VERIFY OK | vite exit 0 przed kopiowaniem
+Zakres: suwak Wyżywienie 0–6 (krok 0,5) + tabela wzrostu −10%…+7% + migracja racji 1|2|3→2|4|6 · palisada Biskupin render (miasto-kamien.ts)
+Commit lokalny, **bez push** (Maciej).
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `c7f15cb3`).

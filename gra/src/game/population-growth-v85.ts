@@ -1,5 +1,6 @@
 /**
- * population-growth-v85.ts — PYTANIE-85: racje 1/2/3, wzrost %, ułamkowy przyrost.
+ * population-growth-v85.ts — racje żywności (Wyżywienie 0–6, krok 0,5).
+ * Decyzja Macieja 2026-07-30: koszt żywności = poziom Wyżywienia; wzrost z tabeli.
  */
 import type { City } from './cities';
 import { cityPopulationCap } from './economy';
@@ -17,9 +18,38 @@ import type { GameMap } from '../types/map';
 import type { TerritoryNode } from '../map/territory';
 import { refreshManpowerAfterPopChange, civManpowerMults } from './manpower';
 
-export type PoziomRacji = 1 | 2 | 3;
+/** Poziom suwaka Wyżywienie: 0 … 6 co 0,5 (koszt żywności na mieszkańca = ta wartość). */
+export type PoziomRacji = number;
 
-export const DEFAULT_POZIOM_RACJI: PoziomRacji = 2;
+export const WYZYWIENIE_MIN = 0;
+export const WYZYWIENIE_MAX = 6;
+export const WYZYWIENIE_STEP = 0.5;
+
+/** Wszystkie dozwolone poziomy Wyżywienia (0, 0.5, …, 6). */
+export const WYZYWIENIE_LEVELS: readonly number[] = Array.from(
+  { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
+  (_, i) => WYZYWIENIE_MIN + i * WYZYWIENIE_STEP,
+);
+
+/** Wzrost ludności (% na turę) per poziom Wyżywienia — decyzja 2026-07-30. */
+export const WYZYWIENIE_GROWTH_PCT: Readonly<Record<number, number>> = {
+  0: -10,
+  0.5: -6,
+  1: -2,
+  1.5: 0,
+  2: 1.5,
+  2.5: 3,
+  3: 3.5,
+  3.5: 4,
+  4: 4.5,
+  4.5: 5,
+  5: 5.5,
+  5.5: 6,
+  6: 7,
+};
+
+/** Domyślne Wyżywienie = 4 (≈ dawna racja 2 przy koszcie 4 żywności). */
+export const DEFAULT_POZIOM_RACJI: PoziomRacji = 4;
 
 export interface RationParams {
   racjeZywnosc1: number;
@@ -39,6 +69,7 @@ function pick(row: RawParamRow | undefined, d: Difficulty, fallback: number): nu
   return Number.isFinite(v) ? (v as number) : fallback;
 }
 
+/** @deprecated Tabela Wyżywienie 2026-07-30 — params ignorowane przy koszcie/wzroście; zachowane dla kompatybilności API. */
 export function buildRationParams(
   raw: {
     ekonomia_miasta?: Record<string, RawParamRow>;
@@ -62,35 +93,45 @@ export function buildRationParams(
   };
 }
 
+/** Przycina do 0…6 co 0,5. */
 export function clampPoziomRacji(n: number): PoziomRacji {
-  if (n >= 3) return 3;
-  if (n <= 1) return 1;
-  return 2;
+  const clamped = Math.min(WYZYWIENIE_MAX, Math.max(WYZYWIENIE_MIN, n));
+  return Math.round(clamped / WYZYWIENIE_STEP) * WYZYWIENIE_STEP;
 }
 
-/** Migracja: procentRozwoj 100→3, 70→2, else 1. */
+/** Stare batony 1|2|3 → Wyżywienie 2|4|6 (koszt żywności). */
+export function migrateLegacyRationLevel(old: number): PoziomRacji {
+  if (old === 1) return 2;
+  if (old === 2) return 4;
+  if (old === 3) return 6;
+  return clampPoziomRacji(old);
+}
+
+/** Migracja: procentRozwoj 0–100 → Wyżywienie 0–6. */
 export function migrateProcentRozwojToPoziomRacji(procentRozwoj: number | undefined): PoziomRacji {
   if (procentRozwoj === undefined) return DEFAULT_POZIOM_RACJI;
-  if (procentRozwoj >= 90) return 3;
-  if (procentRozwoj >= 50) return 2;
-  return 1;
+  return clampPoziomRacji((procentRozwoj / 100) * WYZYWIENIE_MAX);
 }
 
-export function getCityRationLevel(city: Pick<City, 'poziomRacji' | 'procentRozwoj'>): PoziomRacji {
+export function getCityRationLevel(city: Pick<City, 'poziomRacji' | 'procentRozwoj' | 'rationMigratedV114'>): PoziomRacji {
   if (city.poziomRacji !== undefined) return clampPoziomRacji(city.poziomRacji);
   return migrateProcentRozwojToPoziomRacji(city.procentRozwoj);
 }
 
-export function rationFoodCostPerPop(level: PoziomRacji, params: RationParams): number {
-  if (level === 3) return params.racjeZywnosc3;
-  if (level === 1) return params.racjeZywnosc1;
-  return params.racjeZywnosc2;
+/** Koszt żywności na mieszkańca = poziom Wyżywienia. */
+export function rationFoodCostPerPop(level: PoziomRacji, _params?: RationParams): number {
+  return clampPoziomRacji(level);
 }
 
-export function rationGrowthPercent(level: PoziomRacji, params: RationParams): number {
-  if (level === 3) return params.racjeWzrostProc3;
-  if (level === 1) return params.racjeWzrostProc1;
-  return params.racjeWzrostProc2;
+/** Wzrost ludności (%/turę) z tabeli Wyżywienie. */
+export function rationGrowthPercent(level: PoziomRacji, _params?: RationParams): number {
+  const key = clampPoziomRacji(level);
+  return WYZYWIENIE_GROWTH_PCT[key] ?? 0;
+}
+
+export function formatWyzwienieLabel(level: PoziomRacji): string {
+  const v = clampPoziomRacji(level);
+  return Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ',');
 }
 
 export function computeCityRationCost(
@@ -147,7 +188,7 @@ export interface FractionalGrowthResult {
 }
 
 /**
- * Ułamkowy wzrost: ludność × WZROST% / 100 kumuluje się na wzrostUlamkowy.
+ * Ułamkowy wzrost/spadek: ludność × WZROST% / 100 kumuluje się na wzrostUlamkowy.
  * Tylko gdy miasto nakarmione w tej turze (fed=true).
  */
 export function applyFractionalGrowthV85(
@@ -162,14 +203,21 @@ export function applyFractionalGrowthV85(
   let wzrost = false;
   let ubytek = false;
 
-  if (fed && growthPct > 0 && pop > 0) {
+  if (fed && growthPct !== 0 && pop > 0) {
     const popCap = cityPopulationCap(maAkwedukt, econParams);
-    if (pop < popCap) {
+    if (growthPct > 0 && pop < popCap) {
       frac += pop * growthPct / 100;
       while (frac >= 1 && pop < popCap) {
         pop += 1;
         frac -= 1;
         wzrost = true;
+      }
+    } else if (growthPct < 0 && pop > 1) {
+      frac -= pop * (-growthPct) / 100;
+      while (frac >= 1 && pop > 1) {
+        pop -= 1;
+        frac -= 1;
+        ubytek = true;
       }
     }
   }
@@ -184,7 +232,8 @@ export function growthGainPerTurnSlots(
   fed: boolean,
   atPopCap: boolean,
 ): number {
-  if (!fed || growthPct <= 0 || atPopCap || population <= 0) return 0;
+  if (!fed || growthPct === 0 || population <= 0) return 0;
+  if (growthPct > 0 && atPopCap) return 0;
   return population * growthPct / 100;
 }
 
@@ -216,8 +265,19 @@ export function applyHungerPenaltyV85(
 }
 
 export function ensureCityRationDefaults(city: City): void {
+  if (!city.rationMigratedV114) {
+    if (city.poziomRacji !== undefined
+      && Number.isInteger(city.poziomRacji)
+      && city.poziomRacji >= 1
+      && city.poziomRacji <= 3) {
+      city.poziomRacji = migrateLegacyRationLevel(city.poziomRacji);
+    } else if (city.poziomRacji === undefined && city.procentRozwoj !== undefined) {
+      city.poziomRacji = migrateProcentRozwojToPoziomRacji(city.procentRozwoj);
+    }
+    city.rationMigratedV114 = true;
+  }
   if (city.poziomRacji === undefined) {
-    city.poziomRacji = migrateProcentRozwojToPoziomRacji(city.procentRozwoj);
+    city.poziomRacji = DEFAULT_POZIOM_RACJI;
   } else {
     city.poziomRacji = clampPoziomRacji(city.poziomRacji);
   }
@@ -311,7 +371,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
 
       tick.ludnoscPo = city.population;
       tick.wzrost = growth.wzrost;
-      tick.ubytek = hunger.ubytek;
+      tick.ubytek = hunger.ubytek || growth.ubytek;
       tick.wzrostProcent = breakdown.total;
       tick.wzrostUlamkowyPo = city.wzrostUlamkowy;
       tick.magazynPoTurze = city.wzrostUlamkowy;
@@ -324,7 +384,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
       }
 
       if (growth.wzrost) econ.growth += 1;
-      if (hunger.ubytek) econ.starved += 1;
+      if (hunger.ubytek || growth.ubytek) econ.starved += 1;
     }
   }
 }

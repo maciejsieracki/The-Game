@@ -122,6 +122,10 @@ import {
   turnsUntilNextCitizen,
   rationFoodCostPerPop,
   rationGrowthPercent,
+  formatWyzwienieLabel,
+  WYZYWIENIE_MIN,
+  WYZYWIENIE_MAX,
+  WYZYWIENIE_STEP,
   type GrowthPercentBreakdown,
   type PoziomRacji,
 } from '../game/population-growth-v85';
@@ -1152,10 +1156,11 @@ function cityFoodSplit(view: CityView): { total: number; produkcja: number; racj
   return { total, produkcja, racje };
 }
 
-function rationButtonLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {
+function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {
   const cost = rationFoodCostPerPop(level, params);
   const grow = rationGrowthPercent(level, params);
-  return `${cost} 🍞/miesz. · ${grow}%`;
+  const growTxt = grow > 0 ? `+${grow}` : String(grow);
+  return `${cost} 🍞/miesz. · ${growTxt}%`;
 }
 
 function growthBreakdownRow(label: string, value: number, showZero = false): string {
@@ -1717,13 +1722,12 @@ function ensureStyles(): void {
 .civ-cs .food-split-handle{position:absolute;top:-3px;bottom:-3px;width:14px;margin-left:-7px;border-radius:4px;background:linear-gradient(180deg,#faf0c8 0%,#e8d070 35%,#a9861f 100%);border:1px solid #6a5212;box-shadow:0 1px 6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.35);cursor:ew-resize;z-index:2;touch-action:none;pointer-events:none;}
 .civ-cs .food-split-bar:focus-visible{outline:2px solid rgba(232,216,138,.55);outline-offset:2px;}
 .civ-cs .food-split-labels{display:flex;justify-content:space-between;font-size:0.66em;color:var(--muted);margin-bottom:0.12em;}
-.civ-cs .ration-btn-row{display:flex;gap:0.35em;margin:0.38em 0;}
-.civ-cs .ration-btn{flex:1;padding:0.42em 0.3em;border:1px solid var(--border);border-radius:6px;background:var(--panel2);cursor:pointer;text-align:center;font-size:0.7em;line-height:1.35;color:var(--fg);}
-.civ-cs .ration-btn:hover{border-color:rgba(232,216,138,.45);}
-.civ-cs .ration-btn.on{border-color:var(--gold);background:rgba(232,216,138,.12);box-shadow:0 0 0 1px rgba(232,216,138,.18) inset;}
-.civ-cs .ration-btn:disabled{opacity:.55;cursor:default;}
-.civ-cs .ration-btn-title{display:block;font-weight:700;margin-bottom:0.12em;}
-.civ-cs .ration-btn-sub{display:block;font-size:0.92em;color:var(--muted);}
+.civ-cs .wyzwienie-w4-sliders{margin:0.38em 0 0.12em;}
+.civ-cs .wyzwienie-w4-sliders input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:5px;background:rgba(255,255,255,0.08);outline:none;}
+.civ-cs .wyzwienie-w4-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
+.civ-cs .wyzwienie-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
+.civ-cs .wyzwienie-w4-sliders .slider-row label{font-size:0.74em;margin-bottom:0.08em;}
+.civ-cs .wyzwienie-w4-hint{font-size:0.62em;color:var(--muted);text-align:center;margin-top:0.2em;}
 .civ-cs .food-bilans-row{display:flex;justify-content:space-between;align-items:center;gap:0.35em;font-size:0.76em;margin:0.28em 0 0.12em;padding:0.35em 0.45em;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,.02);}
 .civ-cs .food-bilans-row .pos{color:var(--green);}
 .civ-cs .food-bilans-row .neg{color:var(--red);}
@@ -4404,7 +4408,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
       label: 'Racje',
       value: `−${foodSplit.racje}/t`,
       cls: 'red',
-      title: `Koszt wyżywienia przy Racji ${view.poziomRacji}`,
+      title: `Koszt wyżywienia przy poziomie ${formatWyzwienieLabel(view.poziomRacji)}`,
     },
     {
       icon: loafIconHtml('civ-v-loaf-chip'),
@@ -4458,29 +4462,41 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
 
   const player = city.ownerId === 0;
   const rationEditable = player && !!cfg.onCityRationChange;
-  const btnRow = el('div', 'ration-btn-row');
-  ([1, 2, 3] as const).forEach((level) => {
-    const btn = el('button', `ration-btn${view.poziomRacji === level ? ' on' : ''}`);
-    btn.type = 'button';
-    btn.disabled = !rationEditable;
-    btn.innerHTML =
-      `<span class="ration-btn-title">Racja ${level}</span>` +
-      `<span class="ration-btn-sub">${rationButtonLabel(level, rationParams)}</span>`;
-    btn.title = `Ustaw rację ${level} — koszt i wzrost na mieszkańca`;
-    if (rationEditable) {
-      btn.addEventListener('click', () => {
-        if (view.poziomRacji === level) return;
-        cfg.onCityRationChange?.(city.id, level);
-        rerender();
-      });
-    }
-    btnRow.appendChild(btn);
-  });
-  mount.appendChild(btnRow);
+  const sliderWrap = el('div', 'wyzwienie-w4-sliders');
+  const sliderRow = el('div', 'slider-row');
+  const sliderLabel = el('label');
+  const growPct = rationGrowthPercent(view.poziomRacji, rationParams);
+  const growTxt = growPct > 0 ? `+${growPct}` : String(growPct);
+  sliderLabel.innerHTML =
+    `<span>${loafIconHtml('civ-v-loaf-chip')} Wyżywienie</span>` +
+    `<span>${formatWyzwienieLabel(view.poziomRacji)} · ${growTxt}%</span>`;
+  sliderRow.appendChild(sliderLabel);
+  const inp = document.createElement('input');
+  inp.type = 'range';
+  inp.min = String(WYZYWIENIE_MIN / WYZYWIENIE_STEP);
+  inp.max = String(WYZYWIENIE_MAX / WYZYWIENIE_STEP);
+  inp.step = '1';
+  inp.value = String(view.poziomRacji / WYZYWIENIE_STEP);
+  inp.disabled = !rationEditable;
+  inp.title = 'Wyżywienie — koszt żywności na mieszkańca i tempo wzrostu ludności';
+  if (rationEditable) {
+    inp.addEventListener('input', () => {
+      const level = Number(inp.value) * WYZYWIENIE_STEP;
+      if (level === view.poziomRacji) return;
+      cfg.onCityRationChange?.(city.id, level);
+      rerender();
+    });
+  }
+  sliderRow.appendChild(inp);
+  sliderWrap.appendChild(sliderRow);
+  const hint = el('div', 'wyzwienie-w4-hint');
+  hint.textContent = wyzwienieSummaryLabel(view.poziomRacji, rationParams);
+  sliderWrap.appendChild(hint);
+  mount.appendChild(sliderWrap);
   if (!rationEditable && player) {
     const ro = el('div', 'muted');
     ro.style.cssText = 'font-size:0.62em;text-align:center;';
-    ro.textContent = 'Batony racji — po wpieciu silnika.';
+    ro.textContent = 'Suwak Wyżywienie — po wpieciu silnika.';
     mount.appendChild(ro);
   }
 
@@ -4488,7 +4504,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   growBlock.innerHTML =
     `<div class="growth-bd-hd">WZROST ludności</div>` +
     `<div class="growth-bd-total">Łącznie ${view.wzrostProcent}%</div>` +
-    growthBreakdownRow('Racje', bd.racje, true) +
+    growthBreakdownRow('Wyżywienie', bd.racje, true) +
     growthBreakdownRow('Małe miasto', bd.maleMiasto) +
     growthBreakdownRow('Spichlerz', bd.spichlerz) +
     growthBreakdownRow('Zdrowie', bd.zdrowie) +
@@ -4537,16 +4553,16 @@ function buildRacjeWzrostDetailCard(
   appendDetailSection(card, 'Bilans lokalny (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Produkcja brutto', `${signed(foodSplit.produkcja)} 🍞/t`);
-  gridDetailRow(g1, 'Koszt racji', `−${foodSplit.racje} 🍞/t (Racja ${view.poziomRacji})`);
+  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)})`);
   gridDetailRow(g1, 'Bilans', `${signed(foodSplit.total)} 🍞/t`);
   if (rationParams) {
-    gridDetailRow(g1, 'Racja 1/2/3', `${rationButtonLabel(1, rationParams)} · ${rationButtonLabel(2, rationParams)} · ${rationButtonLabel(3, rationParams)}`);
+    gridDetailRow(g1, 'Wyżywienie', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
   }
 
   appendDetailSection(card, 'WZROST% — składniki');
   const g2 = appendDetailGrid(card);
   const bd = view.growthBreakdown;
-  gridDetailRow(g2, 'Racje', `${signed(bd.racje)}%`);
+  gridDetailRow(g2, 'Wyżywienie', `${signed(bd.racje)}%`);
   gridDetailRow(g2, 'Małe miasto', `${signed(bd.maleMiasto)}%`);
   gridDetailRow(g2, 'Spichlerz', `${signed(bd.spichlerz)}%`);
   gridDetailRow(g2, 'Zdrowie', `${signed(bd.zdrowie)}%`);
@@ -4580,7 +4596,7 @@ function buildRacjeWzrostDetailCard(
   }
 
   appendDetailAlgo(card, 'Gdzie zarządzać', [
-    'Batony Racja 1/2/3 — koszt żywności i tempo wzrostu tego miasta.',
+    'Suwak Wyżywienie (0–6) — koszt żywności i tempo wzrostu tego miasta.',
     'Magazyn centralny — panel imperium (Spichlerz stolicy).',
     'Pola 🌾 w okolicy — podnoszą produkcję brutto.',
   ]);
@@ -4618,10 +4634,10 @@ function buildTopBarZywnoscDetailCard(
   appendDetailSection(card, 'Skąd bierze się żywność (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Produkcja brutto', `${signed(foodSplit.produkcja)} 🍞/t`);
-  gridDetailRow(g1, 'Koszt racji', `−${foodSplit.racje} 🍞/t (Racja ${view.poziomRacji})`);
+  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)})`);
   gridDetailRow(g1, 'Bilans lokalny', `${signed(foodSplit.total)} 🍞/t`);
   if (rationParams) {
-    gridDetailRow(g1, 'Racja aktywna', rationButtonLabel(view.poziomRacji, rationParams));
+    gridDetailRow(g1, 'Wyżywienie aktywne', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
   }
 
   appendDetailSection(card, 'WZROST ludności');
@@ -4643,7 +4659,7 @@ function buildTopBarZywnoscDetailCard(
   appendDetailFormula(card, 'wzrost = ludność × WZROST% / 100');
 
   appendDetailAlgo(card, 'Gdzie zarządzać', [
-    'Prawa kolumna → Wyżywienie i wzrost: batony Racja 1/2/3.',
+    'Prawa kolumna → Wyżywienie i wzrost: suwak Wyżywienie 0–6.',
     'Mapa okolicy → przypisz 👤 na pola żywnościowe (🌾).',
     'Magazyn centralny → panel imperium (Spichlerz stolicy).',
   ]);
@@ -4720,7 +4736,7 @@ function buildTopBarLudnoscDetailCard(
     const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
     appendDetailSection(card, 'Wzrost ludności');
     const g1 = appendDetailGrid(card);
-    gridDetailRow(g1, 'Racja', `Racja ${view.poziomRacji}`);
+    gridDetailRow(g1, 'Wyżywienie', formatWyzwienieLabel(view.poziomRacji));
     gridDetailRow(g1, 'WZROST%', `${view.wzrostProcent}%`);
     gridDetailRow(g1, 'Postęp do +1', `${fmtDecPl(view.wzrostUlamkowy)} / 1 obywatela`);
     gridDetailRow(
@@ -4749,7 +4765,7 @@ function buildTopBarLudnoscDetailCard(
 
   appendDetailFormula(card, 'wzrost = ludność × WZROST% / 100 — ułamek <1 zostaje w buforze');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
-    'Prawa kolumna → Wyżywienie i wzrost: batony Racja 1/2/3.',
+    'Prawa kolumna → Wyżywienie i wzrost: suwak Wyżywienie 0–6.',
     'Mapa okolicy → max 👤 obok centrum = populacja (kto pracuje pola).',
   ]);
   return card;
@@ -8625,7 +8641,7 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
   const grow = el('div', 'civ-v-growth');
   grow.innerHTML =
     `<div class="civ-v-growth-lbl">WZROST · ${view.wzrostProcent}% ${loafIconHtml('civ-v-loaf-chip')}</div>` +
-    `<div class="muted" style="font-size:0.68em;margin-top:0.12em">Racja ${view.poziomRacji} · postęp ${fmtDecPl(view.wzrostUlamkowy)}/1 · ${etaTxt}</div>`;
+    `<div class="muted" style="font-size:0.68em;margin-top:0.12em">Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} · postęp ${fmtDecPl(view.wzrostUlamkowy)}/1 · ${etaTxt}</div>`;
   mount.appendChild(grow);
 }
 
@@ -9021,7 +9037,7 @@ const CITY_PANEL_ICONS_LEFT: { id: CityPanelProductionTab; iconId: string; title
 ];
 
 const CITY_PANEL_ICONS_RIGHT: { id: CityPanelCityParamTab; iconId: string; title: string }[] = [
-  { id: 'spichlerz', iconId: 'cp-granary', title: 'Wyżywienie i wzrost — racje 1/2/3' },
+  { id: 'spichlerz', iconId: 'cp-granary', title: 'Wyżywienie i wzrost — suwak 0–6' },
   // Tytuł poniżej to fallback modułowej stałej — DYSPOZYCJA 85 (Maciej 2026-07-26):
   // realny tooltip gracza podmienia renderCityIconRightRail() na "Podział daniny/podatku"
   // (daninaLabelGenitive), więc ten string nigdy nie trafia na ekran. Celowo bez słowa

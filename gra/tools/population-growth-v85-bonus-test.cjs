@@ -62,7 +62,7 @@ const rationParams = M.buildRationParams(society, 'normal');
 function baseInput(overrides = {}) {
   return {
     population: 4,
-    poziomRacji: 2,
+    poziomRacji: 4,
     zdrowie: 0,
     szczescieNetto: 0,
     wealthPoziom: 1,
@@ -118,7 +118,7 @@ console.log('--- Q8 brak capa ---');
   const fullII = M.resolveSpichlerzCityBonusState(['spichlerz_ii'], { ceramikaPaid: true, solPaid: true });
   const bd = M.computeGrowthPercentV85(baseInput({
     population: 1,
-    poziomRacji: 3,
+    poziomRacji: 6,
     spichlerzState: fullII,
     civKey: 'chinczycy',
     zdrowie: 35,
@@ -137,8 +137,8 @@ console.log('--- Q9 Zdrowie → wzrost% ---');
 
 // Składniki nazwane w breakdown
 {
-  const bd = M.computeGrowthPercentV85(baseInput({ poziomRacji: 2, population: 3 }));
-  eq(bd.racje, 5, 'racje poziom 2 → 5%');
+  const bd = M.computeGrowthPercentV85(baseInput({ poziomRacji: 4, population: 3 }));
+  eq(bd.racje, 4.5, 'Wyżywienie 4 → +4.5%');
   eq(bd.maleMiasto, 3, 'maleMiasto pop=3 → max(0,6-3)=3');
   ok(
     ['total', 'racje', 'maleMiasto', 'spichlerz', 'zdrowie', 'szczescie', 'cywilizacja']
