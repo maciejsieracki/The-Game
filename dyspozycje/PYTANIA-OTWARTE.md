@@ -1156,3 +1156,21 @@ Wdrożone w `gra/src/render/miasto-kamien.ts` (funkcja `wal`) — palisada w sty
 
 Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulepszenia (brak `kopalnia_wegla`). Migracja przy load usuwa taką warstwę (`migrateLegacyKopalniaKey` → null). Do decyzji Macieja: osobne ulepszenie węgla vs inny fallback.
 
+---
+
+## PALISADA-BRAZ-Q1 — wygląd wału w Brązie przy samej palisadzie · STATUS: **ODŁOŻONE** (Maciej 2026-07-30)
+
+Gracz z palisadą (bez Murów/Cytadeli) w epoce Brązu: render dziś traktuje `maMur` jak kamienny mur (`buildMiastoBraz({ mur: true })`), choć obrona (`city-defense.ts`) rozróżnia palisadę. **Decyzja:** na razie tylko Kamień + palisada Biskupin; temat Brązu — ABC później (hybryda osada brązowa + drewniany wał vs inny wariant).
+
+---
+
+## RELIEF-SEKTOR-Q1 — hodowla na wzgórzu: podnóże czy szczyt kopca · STATUS: **OTWARTE (cicho)** (2026-07-30)
+
+Przy naprawie „kopalnia w powietrzu" (patrz niżej) wszystkie ulepszenia z zachowanym reliefem stają teraz na **płaskim rąbku heksa** (pierścień 0.86 HEX_R), bo tylko tam bryła kopca/masywu ma wysokość 0. Wcześniejszy zapis w `main.ts` mówił „bydło/owce/lama **stoją na kopcu**" — ale realnie stały ~0,26 HEX_R **nad** stokiem (wysokość brana z plateau szczytu, pozycja z pierścienia przy ściance). Dziś stoją u podnóża kopca. Do decyzji: zostawić u podnóża czy przenieść zagrodę na szczyt (osobny promień pierścienia 0 dla `bydlo`/`owce`/`lama`).
+
+---
+
+## RELIEF-SEKTOR-Q2 — Kopalnia złota spłaszcza górę, miedzi/żelaza nie · STATUS: **OTWARTE (cicho)** (2026-07-30)
+
+`PRESERVES_HILL_RELIEF_KEYS` (`main.ts`) zawiera `kopalnia_miedzi`, `kopalnia_zelaza`, `kamieniolom`, hodowlę — ale **nie** `kopalnia_zlota`. Skutek: na tym samym typie terenu (Wzgórza/Góry) kopalnia miedzi zostawia górę, a kopalnia złota ją kasuje (`hideDecorAtHex`) i heks robi się płaski. Wygląda na przeoczenie przy wprowadzaniu złota (2026-07-25), nie na decyzję. Nie zmieniałem — to zmiana wyglądu, nie bug wysokości.
+

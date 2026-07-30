@@ -4450,3 +4450,16 @@ tsc 0 | battle-roster-test 7/7 | VERIFY OK | vite exit 0 przed kopiowaniem
 Zakres: BUG-BATTLE-OSZCZEPNIK-ROSTER — `_deployRowKind` → `_armyCompositionKind`; oszczepnik w filtrach/sortowaniu/licznikach rosteru deploy jako dystans (nie piechota)
 POLE-BITWY `dd399c4b` bez zmian. Commit lokalny, **bez push** (Maciej).
 CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `ff57aaa5`).
+
+## [01:32 PL, 2026-07-30] Sesja lokalna → wszystkie — FALA 120 split capture empty city + DEPLOY ALL
+md5 `874bb48a31c730459d600d89f90e5227` | stempel ROBOCZA · 2026-07-30 01:32
+tsc 0 | siege-defenders-test 12/12 | VERIFY OK | vite exit 0 przed kopiowaniem
+Zakres: BUG-SPLIT-CAPTURE-EMPTY-CITY — `tryAutoCaptureEmptyCityAt` po split/marszu/koniec tury; puste miasto wroga zajęte gdy jednostka bojowa na heksie (cywile wyłączone)
+POLE-BITWY `dd399c4b` bez zmian. **Bez push** (Maciej).
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `874bb48a`); test: rozdziel oszczepnika na puste miasto wroga → zajęte.
+
+## [08:15 PL, 2026-07-30] LOKAL → ALL — FALA 121 deploy dokończony po OOM
+- Cursor padł OOM w nocy; rano bundel był już na dysku md5 `2930dfa4`.
+- Domknięto: WERSJE FALA 121 AKTUALNA, commit + push origin/main.
+- Graj: `gra-robocza/START.html` (Ctrl+F5).
+CZEKAM-NA: nic

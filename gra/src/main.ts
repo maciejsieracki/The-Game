@@ -211,7 +211,7 @@ import {
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import { collectAtkRosterNearCity, collectBattleRoster as collectBattleRosterPure, collectDefRosterNearCity } from './units/battleRoster';
-import { hasCityDefenders, survivorsLiveSet } from './game/siegeDefenders';
+import { canCaptureCityWithoutBattle, hasCityDefenders, survivorsLiveSet } from './game/siegeDefenders';
 import { getCityFood } from './game/turn-economy';
 import { SiegeMarkerRenderer } from './render/siegeMarker';
 import {
@@ -7393,6 +7393,13 @@ async function boot(): Promise<void> {
             u.q = destQ;
             u.r = destR;
             u.ruchLeft = 0;
+          }
+          const splitArrivals = ids
+            .map(id => units.find(x => x.id === id))
+            .filter((su): su is RuntimeUnit => su != null);
+          if (tryAutoCaptureEmptyCityAt(destQ, destR, splitArrivals)) {
+            refreshD1bHud();
+            return;
           }
           refreshFog();
           const movedSel = ids.includes(selectedId ?? '');
@@ -17232,6 +17239,37 @@ async function boot(): Promise<void> {
       });
     }
 
+    /**
+     * Jednostka bojowa na heksie pustego miasta wroga → zajęcie (split, marsz, teleport).
+     * Cywile nie zdobywają. Zwraca true gdy miasto przejęte (UI już odświeżone).
+     */
+    function tryAutoCaptureEmptyCityAt(
+      q: number,
+      r: number,
+      arrivingUnits: RuntimeUnit[],
+    ): boolean {
+      if (arrivingUnits.length === 0) return false;
+      const city = cities.find(c => c.q === q && c.r === r);
+      if (!city) return false;
+
+      const anchor = arrivingUnits.find(u => !isCivilianUnit(u));
+      if (!anchor) return false;
+
+      if (city.ownerId === anchor.ownerId) {
+        if (anchor.ownerId === 0) {
+          finishUnitEnterCityHex(anchor, city);
+          refreshCityPanelIfOpen();
+        }
+        return false;
+      }
+
+      if (!canCaptureCityWithoutBattle(city, units)) return false;
+
+      const atkRoster = collectAtkRosterNearCity(city, anchor, units);
+      captureCityWithoutBattle(city, anchor, atkRoster);
+      return true;
+    }
+
     /** Puste miasto — zdobycie bez preBattle / bitwy; jednostka wchodzi na heks miasta. */
     function captureCityWithoutBattle(
       city: City,
@@ -18089,6 +18127,7 @@ async function boot(): Promise<void> {
               );
               if (bonusChanged) syncUnitsRender();
             }
+            tryAutoCaptureEmptyCityAt(anim.destQ, anim.destR, stack);
           }
           anim = null;
           isAnimating = false;
@@ -20578,13 +20617,7 @@ async function boot(): Promise<void> {
             }
           }
 
-          const entryCity = u && cities.find(
-            c => c.q === destQ && c.r === destR && c.ownerId === u.ownerId,
-          );
-          if (entryCity && u) {
-            finishUnitEnterCityHex(u, entryCity);
-            refreshCityPanelIfOpen();
-          }
+          if (u) tryAutoCaptureEmptyCityAt(destQ, destR, stack);
           promptMergeIfCoLocated(movedStackIds.length > 0 ? movedStackIds : [finishedId], fromQ, fromR, moveCost);
           if (selectedId === finishedId) {
             const sel = units.find(x => x.id === finishedId);

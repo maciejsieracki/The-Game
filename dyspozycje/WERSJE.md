@@ -1,4 +1,4 @@
-# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
+﻿# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
 
 ZASADA: md5/stempel wpisuje siÄ™ TYLKO tutaj, zaraz po publishu. Inne pliki linkujÄ…,
 nigdy nie kopiujÄ… (stary system miaĹ‚ 4 sprzeczne â€žaktualne" md5 â€” nigdy wiÄ™cej).
@@ -14,7 +14,22 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `ff57aaa5` - 2026-07-30 01:25 - FALA 119: oszczepnik dystans w rosterze deploy + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `2930dfa4` - 2026-07-30 08:02 - FALA 121: DEPLOY ALL (dokonczenie po OOM) + auto-zajecie pustego miasta + main.ts - **AKTUALNA**
+- md5 (pelne): `2930dfa4c96d0e941f237fd9a54e1cad` · stempel: `ROBOCZA · 2026-07-30 08:02`
+- **VERIFY OK.** Plik Gra-ROBOCZA.html md5 = manifest.
+- Dokończenie po crashu Cursor OOM: bundel na dysku od 08:02, logi/commit/push domknięte rano.
+- Zakres: niezacommitowany `main.ts` (capture empty city) + pełny rebuild roboczej.
+- Bez force-push.
+
+## ROBOCZA `874bb48a` - 2026-07-30 01:32 - FALA 120: auto-zajęcie pustego miasta wroga (split/marsz) + DEPLOY ALL - **ZASTĄPIONA**
+- md5 (pelne): `874bb48a31c730459d600d89f90e5227` · stempel: `ROBOCZA · 2026-07-30 01:32`
+- **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
+- tsc 0 · siege-defenders-test 12/12.
+- **BUG-SPLIT-CAPTURE-EMPTY-CITY:** `tryAutoCaptureEmptyCityAt` — jednostka bojowa na heksie pustego miasta wroga (rozdzielenie armii, koniec marszu, ucięcie animacji na koniec tury) automatycznie zajmuje miasto (`captureCityWithoutBattle`); cywile bez zmian.
+- POLE-BITWY `dd399c4b` (bez zmian).
+- Bez push origin.
+
+## ROBOCZA `ff57aaa5` - 2026-07-30 01:25 - FALA 119: oszczepnik dystans w rosterze deploy + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `ff57aaa588b1e7bfe58f569d852c64ea` · stempel: `ROBOCZA · 2026-07-30 01:25`
 - **VERIFY OK.** `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + manifest (10 pozycji).
 - tsc 0 · battle-roster-test 7/7.

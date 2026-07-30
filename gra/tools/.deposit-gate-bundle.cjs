@@ -42,7 +42,7 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia zelaza->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -138,22 +138,6 @@ var terrain_improvements_default = {
     koszt_praca: 28,
     tech: "Je\u017Adziectwo",
     odblokowuje: "Ko\u0144 (jednostki konne)"
-  },
-  kopalnia: {
-    nazwa: "Kopalnia",
-    epoka: 1,
-    bonus: {
-      praca: 2,
-      handel: 3
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
-    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
-    koszt_praca: 25,
-    tech: "Murarstwo",
-    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
   },
   glinianka: {
     nazwa: "Glinianka",
@@ -354,12 +338,29 @@ var terrain_improvements_default = {
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
     surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
-    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy; R-KOPALNIA-UNIWERSALNA-Q1=B: legacy nakladka ZlozeRudy"
+  },
+  kopalnia_zelaza: {
+    nazwa: "Kopalnia \u017Celaza",
+    epoka: 3,
+    bonus: {
+      praca: 2,
+      handel: 5
+    },
+    surowiecOdblokowany: "ruda_zelaza",
+    surowiecOdblokowany_uwaga: "Ruda \u017Celaza (Odlewnia \u017Celaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce \u017Celaza (hex.zloze=zelazo)",
+    warunek: "ruda \u017Celaza \u2192 magazyn (Odlewnia \u017Celaza)",
+    koszt_praca: 22,
+    tech: "Hutnictwo \u017Celaza",
+    odblokowuje: "Odlewnia \u017Celaza (budynek miejski)",
+    uwagi: "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia"
   },
   kopalnia_zlota: {
     nazwa: "Kopalnia z\u0142ota",
@@ -477,15 +478,15 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.045, highland: 0.105 },
-      medium: { mountain: 0.075, highland: 0.125 },
-      high: { mountain: 0.18, highland: 0.27 }
+      low: { mountain: 0.06, highland: 0.126 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.324 }
     },
     relief_overflow_cap_frac: {
-      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
-      low: { mountain: 0.045, highland: 0.075 },
-      medium: { mountain: 0.05, highland: 0.085 },
-      high: { mountain: 0.12, highland: 0.18 }
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Maciej 2026-07-29: medium=10% G\xF3ry + 15% Wzg\xF3rza w kom\xF3rce 15\xD715; Ma\u0142o/Du\u017Co przeskalowane wzgl\u0119dem poprzedniego stosunku tier\xF3w.",
+      low: { mountain: 0.09, highland: 0.132 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.318 }
     },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
@@ -526,7 +527,10 @@ var map_gen_params_default = {
   deposit_rules: {
     miedz: { rarity: 0.1 },
     zelazo: { rarity: 0.08 },
-    glina: { rarity: 0.1 },
+    glina: {
+      rarity: 0.3,
+      _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
+    },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
     sol: { rarity: 0.12 },
@@ -560,7 +564,7 @@ var FALLBACK_METAL_ERA = { miedz: 2, zelazo: 3, wegiel: 8 };
 var FALLBACK_DEPOSIT_RARITY = {
   miedz: 0.1,
   zelazo: 0.08,
-  glina: 0.1,
+  glina: 0.3,
   konie: 0.1,
   wegiel: 0.1,
   owce: 0.08,
@@ -2496,6 +2500,245 @@ var Vector3 = class _Vector3 {
 };
 var _vector$c = /* @__PURE__ */ new Vector3();
 var _quaternion$4 = /* @__PURE__ */ new Quaternion();
+var _vector$a = /* @__PURE__ */ new Vector3();
+var _segCenter = /* @__PURE__ */ new Vector3();
+var _segDir = /* @__PURE__ */ new Vector3();
+var _diff = /* @__PURE__ */ new Vector3();
+var _edge1 = /* @__PURE__ */ new Vector3();
+var _edge2 = /* @__PURE__ */ new Vector3();
+var _normal$1 = /* @__PURE__ */ new Vector3();
+var Ray = class {
+  constructor(origin = new Vector3(), direction = new Vector3(0, 0, -1)) {
+    this.origin = origin;
+    this.direction = direction;
+  }
+  set(origin, direction) {
+    this.origin.copy(origin);
+    this.direction.copy(direction);
+    return this;
+  }
+  copy(ray) {
+    this.origin.copy(ray.origin);
+    this.direction.copy(ray.direction);
+    return this;
+  }
+  at(t, target) {
+    return target.copy(this.origin).addScaledVector(this.direction, t);
+  }
+  lookAt(v) {
+    this.direction.copy(v).sub(this.origin).normalize();
+    return this;
+  }
+  recast(t) {
+    this.origin.copy(this.at(t, _vector$a));
+    return this;
+  }
+  closestPointToPoint(point, target) {
+    target.subVectors(point, this.origin);
+    const directionDistance = target.dot(this.direction);
+    if (directionDistance < 0) {
+      return target.copy(this.origin);
+    }
+    return target.copy(this.origin).addScaledVector(this.direction, directionDistance);
+  }
+  distanceToPoint(point) {
+    return Math.sqrt(this.distanceSqToPoint(point));
+  }
+  distanceSqToPoint(point) {
+    const directionDistance = _vector$a.subVectors(point, this.origin).dot(this.direction);
+    if (directionDistance < 0) {
+      return this.origin.distanceToSquared(point);
+    }
+    _vector$a.copy(this.origin).addScaledVector(this.direction, directionDistance);
+    return _vector$a.distanceToSquared(point);
+  }
+  distanceSqToSegment(v0, v1, optionalPointOnRay, optionalPointOnSegment) {
+    _segCenter.copy(v0).add(v1).multiplyScalar(0.5);
+    _segDir.copy(v1).sub(v0).normalize();
+    _diff.copy(this.origin).sub(_segCenter);
+    const segExtent = v0.distanceTo(v1) * 0.5;
+    const a01 = -this.direction.dot(_segDir);
+    const b0 = _diff.dot(this.direction);
+    const b1 = -_diff.dot(_segDir);
+    const c = _diff.lengthSq();
+    const det = Math.abs(1 - a01 * a01);
+    let s0, s1, sqrDist, extDet;
+    if (det > 0) {
+      s0 = a01 * b1 - b0;
+      s1 = a01 * b0 - b1;
+      extDet = segExtent * det;
+      if (s0 >= 0) {
+        if (s1 >= -extDet) {
+          if (s1 <= extDet) {
+            const invDet = 1 / det;
+            s0 *= invDet;
+            s1 *= invDet;
+            sqrDist = s0 * (s0 + a01 * s1 + 2 * b0) + s1 * (a01 * s0 + s1 + 2 * b1) + c;
+          } else {
+            s1 = segExtent;
+            s0 = Math.max(0, -(a01 * s1 + b0));
+            sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+          }
+        } else {
+          s1 = -segExtent;
+          s0 = Math.max(0, -(a01 * s1 + b0));
+          sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        }
+      } else {
+        if (s1 <= -extDet) {
+          s0 = Math.max(0, -(-a01 * segExtent + b0));
+          s1 = s0 > 0 ? -segExtent : Math.min(Math.max(-segExtent, -b1), segExtent);
+          sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        } else if (s1 <= extDet) {
+          s0 = 0;
+          s1 = Math.min(Math.max(-segExtent, -b1), segExtent);
+          sqrDist = s1 * (s1 + 2 * b1) + c;
+        } else {
+          s0 = Math.max(0, -(a01 * segExtent + b0));
+          s1 = s0 > 0 ? segExtent : Math.min(Math.max(-segExtent, -b1), segExtent);
+          sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        }
+      }
+    } else {
+      s1 = a01 > 0 ? -segExtent : segExtent;
+      s0 = Math.max(0, -(a01 * s1 + b0));
+      sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+    }
+    if (optionalPointOnRay) {
+      optionalPointOnRay.copy(this.origin).addScaledVector(this.direction, s0);
+    }
+    if (optionalPointOnSegment) {
+      optionalPointOnSegment.copy(_segCenter).addScaledVector(_segDir, s1);
+    }
+    return sqrDist;
+  }
+  intersectSphere(sphere, target) {
+    _vector$a.subVectors(sphere.center, this.origin);
+    const tca = _vector$a.dot(this.direction);
+    const d2 = _vector$a.dot(_vector$a) - tca * tca;
+    const radius2 = sphere.radius * sphere.radius;
+    if (d2 > radius2) return null;
+    const thc = Math.sqrt(radius2 - d2);
+    const t0 = tca - thc;
+    const t1 = tca + thc;
+    if (t1 < 0) return null;
+    if (t0 < 0) return this.at(t1, target);
+    return this.at(t0, target);
+  }
+  intersectsSphere(sphere) {
+    return this.distanceSqToPoint(sphere.center) <= sphere.radius * sphere.radius;
+  }
+  distanceToPlane(plane) {
+    const denominator = plane.normal.dot(this.direction);
+    if (denominator === 0) {
+      if (plane.distanceToPoint(this.origin) === 0) {
+        return 0;
+      }
+      return null;
+    }
+    const t = -(this.origin.dot(plane.normal) + plane.constant) / denominator;
+    return t >= 0 ? t : null;
+  }
+  intersectPlane(plane, target) {
+    const t = this.distanceToPlane(plane);
+    if (t === null) {
+      return null;
+    }
+    return this.at(t, target);
+  }
+  intersectsPlane(plane) {
+    const distToPoint = plane.distanceToPoint(this.origin);
+    if (distToPoint === 0) {
+      return true;
+    }
+    const denominator = plane.normal.dot(this.direction);
+    if (denominator * distToPoint < 0) {
+      return true;
+    }
+    return false;
+  }
+  intersectBox(box, target) {
+    let tmin, tmax, tymin, tymax, tzmin, tzmax;
+    const invdirx = 1 / this.direction.x, invdiry = 1 / this.direction.y, invdirz = 1 / this.direction.z;
+    const origin = this.origin;
+    if (invdirx >= 0) {
+      tmin = (box.min.x - origin.x) * invdirx;
+      tmax = (box.max.x - origin.x) * invdirx;
+    } else {
+      tmin = (box.max.x - origin.x) * invdirx;
+      tmax = (box.min.x - origin.x) * invdirx;
+    }
+    if (invdiry >= 0) {
+      tymin = (box.min.y - origin.y) * invdiry;
+      tymax = (box.max.y - origin.y) * invdiry;
+    } else {
+      tymin = (box.max.y - origin.y) * invdiry;
+      tymax = (box.min.y - origin.y) * invdiry;
+    }
+    if (tmin > tymax || tymin > tmax) return null;
+    if (tymin > tmin || isNaN(tmin)) tmin = tymin;
+    if (tymax < tmax || isNaN(tmax)) tmax = tymax;
+    if (invdirz >= 0) {
+      tzmin = (box.min.z - origin.z) * invdirz;
+      tzmax = (box.max.z - origin.z) * invdirz;
+    } else {
+      tzmin = (box.max.z - origin.z) * invdirz;
+      tzmax = (box.min.z - origin.z) * invdirz;
+    }
+    if (tmin > tzmax || tzmin > tmax) return null;
+    if (tzmin > tmin || tmin !== tmin) tmin = tzmin;
+    if (tzmax < tmax || tmax !== tmax) tmax = tzmax;
+    if (tmax < 0) return null;
+    return this.at(tmin >= 0 ? tmin : tmax, target);
+  }
+  intersectsBox(box) {
+    return this.intersectBox(box, _vector$a) !== null;
+  }
+  intersectTriangle(a, b, c, backfaceCulling, target) {
+    _edge1.subVectors(b, a);
+    _edge2.subVectors(c, a);
+    _normal$1.crossVectors(_edge1, _edge2);
+    let DdN = this.direction.dot(_normal$1);
+    let sign;
+    if (DdN > 0) {
+      if (backfaceCulling) return null;
+      sign = 1;
+    } else if (DdN < 0) {
+      sign = -1;
+      DdN = -DdN;
+    } else {
+      return null;
+    }
+    _diff.subVectors(this.origin, a);
+    const DdQxE2 = sign * this.direction.dot(_edge2.crossVectors(_diff, _edge2));
+    if (DdQxE2 < 0) {
+      return null;
+    }
+    const DdE1xQ = sign * this.direction.dot(_edge1.cross(_diff));
+    if (DdE1xQ < 0) {
+      return null;
+    }
+    if (DdQxE2 + DdE1xQ > DdN) {
+      return null;
+    }
+    const QdN = -sign * _diff.dot(_normal$1);
+    if (QdN < 0) {
+      return null;
+    }
+    return this.at(QdN / DdN, target);
+  }
+  applyMatrix4(matrix4) {
+    this.origin.applyMatrix4(matrix4);
+    this.direction.transformDirection(matrix4);
+    return this;
+  }
+  equals(ray) {
+    return ray.origin.equals(this.origin) && ray.direction.equals(this.direction);
+  }
+  clone() {
+    return new this.constructor().copy(this);
+  }
+};
 var Matrix4 = class _Matrix4 {
   constructor(n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42, n43, n44) {
     _Matrix4.prototype.isMatrix4 = true;
@@ -6669,6 +6912,73 @@ PropertyBinding.prototype.SetterByBindingTypeAndVersioning = [
   ]
 ];
 var _controlInterpolantsResultBuffer = new Float32Array(1);
+var _matrix = /* @__PURE__ */ new Matrix4();
+var Raycaster = class {
+  constructor(origin, direction, near = 0, far = Infinity) {
+    this.ray = new Ray(origin, direction);
+    this.near = near;
+    this.far = far;
+    this.camera = null;
+    this.layers = new Layers();
+    this.params = {
+      Mesh: {},
+      Line: { threshold: 1 },
+      LOD: {},
+      Points: { threshold: 1 },
+      Sprite: {}
+    };
+  }
+  set(origin, direction) {
+    this.ray.set(origin, direction);
+  }
+  setFromCamera(coords, camera) {
+    if (camera.isPerspectiveCamera) {
+      this.ray.origin.setFromMatrixPosition(camera.matrixWorld);
+      this.ray.direction.set(coords.x, coords.y, 0.5).unproject(camera).sub(this.ray.origin).normalize();
+      this.camera = camera;
+    } else if (camera.isOrthographicCamera) {
+      this.ray.origin.set(coords.x, coords.y, (camera.near + camera.far) / (camera.near - camera.far)).unproject(camera);
+      this.ray.direction.set(0, 0, -1).transformDirection(camera.matrixWorld);
+      this.camera = camera;
+    } else {
+      console.error("THREE.Raycaster: Unsupported camera type: " + camera.type);
+    }
+  }
+  setFromXRController(controller) {
+    _matrix.identity().extractRotation(controller.matrixWorld);
+    this.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+    this.ray.direction.set(0, 0, -1).applyMatrix4(_matrix);
+    return this;
+  }
+  intersectObject(object, recursive = true, intersects = []) {
+    intersect(object, this, intersects, recursive);
+    intersects.sort(ascSort);
+    return intersects;
+  }
+  intersectObjects(objects, recursive = true, intersects = []) {
+    for (let i = 0, l = objects.length; i < l; i++) {
+      intersect(objects[i], this, intersects, recursive);
+    }
+    intersects.sort(ascSort);
+    return intersects;
+  }
+};
+function ascSort(a, b) {
+  return a.distance - b.distance;
+}
+function intersect(object, raycaster, intersects, recursive) {
+  let propagate = true;
+  if (object.layers.test(raycaster.layers)) {
+    const result = object.raycast(raycaster, intersects);
+    if (result === false) propagate = false;
+  }
+  if (propagate === true && recursive === true) {
+    const children = object.children;
+    for (let i = 0, l = children.length; i < l; i++) {
+      intersect(children[i], raycaster, intersects, true);
+    }
+  }
+}
 if (typeof __THREE_DEVTOOLS__ !== "undefined") {
   __THREE_DEVTOOLS__.dispatchEvent(new CustomEvent("register", { detail: {
     revision: REVISION
@@ -6849,6 +7159,11 @@ function normalizeImprovementKey(raw) {
   const key = LEGACY_KEY_ALIASES[raw] ?? raw;
   return IMPROVEMENTS[key]?.bonus !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
 }
+var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
+var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
+  const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
+  return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -6890,6 +7205,10 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
+var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
+var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
+var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
+var MIN_HIGHLANDS_COPPER_CELL = RELIEF_MIN_HIGHLANDS.medium;
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,
@@ -6931,7 +7250,7 @@ var BASE_DEPOSIT_RULES = [
     // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
     // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
-    rarity: 0.1
+    rarity: 0.3
   },
   {
     id: "konie",
@@ -6988,6 +7307,9 @@ var TEREN_MATERIAL = new MeshLambertMaterial({
   vertexColors: true,
   flatShading: true
 });
+var promien = new Raycaster();
+var promienStart = new Vector3();
+var promienDol = new Vector3(0, -1, 0);
 
 // src/render/mapRenderStyle.ts
 var SEA_SURFACE_TOP_Y = 0.18;
@@ -7219,8 +7541,9 @@ var terrain_yields_default = {
       Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 8,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +8 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Glina: 2,
+      Suma: 10,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105; +2 glina (szt./tur\u0119) przy rzece \u2014 plon produkcji (R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29); razem +10 z glin\u0105"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
@@ -7229,6 +7552,7 @@ var terrain_yields_default = {
       Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
+      Glina: 0,
       Suma: 7,
       Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
@@ -7408,7 +7732,7 @@ var miasto_params_default = {
   bonus_obrona_palisada_proc: {
     wartosc: 100,
     jednostka: "% Obrony (wczesna palisada drewniana)",
-    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Br\u0105zu, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
+    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Kamienia, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -7616,6 +7940,18 @@ function filterRuntimeActiveBuiltIds(builtIds, activeLabels, empireStock, option
   }
   return [...active];
 }
+
+// src/game/unit-building-bonuses.ts
+var ARMOR_PATH_MAX_PP = 45;
+var SOFT_PATH_MAX_PP = 50;
+var ARMOR_PATH_LEVEL_MAX_PP = [
+  Math.floor(ARMOR_PATH_MAX_PP / 3),
+  Math.floor(ARMOR_PATH_MAX_PP * 2 / 3)
+];
+var SOFT_PATH_LEVEL_MAX_PP = [
+  Math.floor(SOFT_PATH_MAX_PP / 3),
+  Math.floor(SOFT_PATH_MAX_PP * 2 / 3)
+];
 
 // src/game/building-upgrades.ts
 function isBuildingSuppressedFromProduction(building) {
@@ -7900,6 +8236,8 @@ function eraBuildingCatalog(data, unlockedTechs, ctx = {}) {
   const entries = [];
   for (const b of data.buildings) {
     if (b.epokaWejscia !== epoch) continue;
+    if (isBuildingSuppressedFromProduction(b)) continue;
+    if (b.id === "palisada" && (builtList.includes("mury") || builtList.includes("fort"))) continue;
     const koszt = buildingWorkCost(
       itemCost("budynek", b.id, data, level),
       ctx.civBonusy,
@@ -7983,9 +8321,7 @@ function terrainRowToTileYield(row) {
     handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
-    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
-    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
-    glina: 0,
+    glina: Number(row.Glina ?? 0),
     ruda: 0,
     ruda_zelaza: 0
   };
@@ -8067,6 +8403,15 @@ var OWNER_CAPPED_RESOURCE_KEYS = [
 ];
 var OWNER_CAPPED_RESOURCE_KEY_SET = new Set(OWNER_CAPPED_RESOURCE_KEYS);
 
+// src/game/population-growth-v85.ts
+var WYZYWIENIE_MIN = 0;
+var WYZYWIENIE_MAX = 6;
+var WYZYWIENIE_STEP = 0.5;
+var WYZYWIENIE_LEVELS = Array.from(
+  { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
+  (_, i) => WYZYWIENIE_MIN + i * WYZYWIENIE_STEP
+);
+
 // src/game/cities.ts
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
@@ -8119,7 +8464,8 @@ function livestockKeyFromImprovement(improvementKey) {
   return null;
 }
 function hexHasLivestockDeposit(hex, key) {
-  return hex.nakladka === DEPOSIT_FOR_LIVESTOCK[key];
+  if (hex.nakladka === DEPOSIT_FOR_LIVESTOCK[key]) return true;
+  return hex.zloze?.trim().toLowerCase() === key;
 }
 function hexHasHorseDeposit(hex) {
   return hex.nakladka === "zloze_konia" /* ZlozeKonia */;
@@ -8179,10 +8525,9 @@ var TERRAIN_ALLOW = {
   lama: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
   // decyzja 3a: lama tylko wzgórza + góry
   stadnina: /* @__PURE__ */ new Set(["laka" /* Laka */, "rownina" /* Rownina */]),
-  kopalnia: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
   glinianka: null,
   kamieniolom: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
-  // Maciej 2026-07-24: Wzgórza+Góry (nie zawsze mamy dostęp do gór); teren, bez złoża
+  // Maciej 2026-07-24: Wzgórza+Góry
   oboz_lowiecki: null,
   wyrab: null,
   lodzie_rybackie: /* @__PURE__ */ new Set(["wybrzeze" /* Wybrzeze */, "morze" /* Morze */]),
@@ -8192,6 +8537,7 @@ var TERRAIN_ALLOW = {
   droga_brukowana: null,
   posterunek: null,
   kopalnia_miedzi: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
+  kopalnia_zelaza: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
   // Maciej 2026-07-25: złoto żyłowe — Wzgórza/Góry, jak kopalnia_miedzi (patrz DEPOSIT_RULES
   // gen-helpers.ts id='zloto').
   kopalnia_zlota: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */])
@@ -8203,15 +8549,12 @@ function depositAllowsPlayerImprovement(key, hex) {
   switch (key) {
     case "glinianka":
       return nakladka === "zloze_gliny" /* ZlozeGliny */;
-    case "kopalnia":
-      if (teren === "gory" /* Gory */) {
-        return zloze === "zelazo" || zloze === "wegiel" || nakladka === "zloze_rudy" /* ZlozeRudy */;
-      }
-      return nakladka === "zloze_rudy" /* ZlozeRudy */;
     case "warzelnia_soli":
       return zloze === "sol";
     case "kopalnia_miedzi":
-      return zloze === "miedz";
+      return zloze === "miedz" || nakladka === "zloze_rudy" /* ZlozeRudy */ || zloze === "ruda";
+    case "kopalnia_zelaza":
+      return zloze === "zelazo";
     case "kopalnia_zlota":
       return zloze === "zloto";
     case "bydlo":
@@ -8323,8 +8666,8 @@ function improvementKeysOnPlacedHex(imp) {
 }
 var DEPOSIT_LINKED_IMPROVEMENTS = /* @__PURE__ */ new Set([
   "glinianka",
-  "kopalnia",
   "kopalnia_miedzi",
+  "kopalnia_zelaza",
   "warzelnia_soli",
   "stadnina"
 ]);
@@ -8347,18 +8690,17 @@ function improvementUnlockActiveOnHex(improvementKey, hex) {
   }
   return true;
 }
-function labelsForKopalniaOnHex(hex) {
-  const z = hex.zloze?.trim().toLowerCase();
-  if (z === "zelazo") return [SUROWIEC_KEY_LABEL.ruda_zelaza];
-  if (z === "miedz") return [SUROWIEC_KEY_LABEL.ruda];
-  if (z === "wegiel") return [ZLOZE_LABEL.wegiel];
-  return labelsForImprovementUnlock("kopalnia");
+function labelsForKopalniaMiedziOnHex(hex) {
+  if (hex.zloze?.trim().toLowerCase() === "miedz" || hex.nakladka === "zloze_rudy" /* ZlozeRudy */) {
+    return [SUROWIEC_KEY_LABEL.ruda];
+  }
+  return labelsForImprovementUnlock("kopalnia_miedzi");
 }
 function activeLabelsForImprovementOnHex(improvementKey, hex) {
   const norm = normalizeImprovementKey(improvementKey);
   if (!norm) return [];
   if (LIVESTOCK_NOT_RESOURCE.has(norm)) return [];
-  if (norm === "kopalnia") return labelsForKopalniaOnHex(hex);
+  if (norm === "kopalnia_miedzi") return labelsForKopalniaMiedziOnHex(hex);
   return labelsForImprovementUnlock(norm);
 }
 function sortLabels(labels) {

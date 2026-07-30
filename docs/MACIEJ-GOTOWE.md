@@ -1,4 +1,17 @@
-﻿## [01:25] ✅ Gotowe — deploy ROBOCZA FALA 119 (ff57aaa5)
+﻿- **2026-07-30 08:15** — ✅ FALA 121 ROBOCZA `2930dfa4` (deploy dokończony po OOM Cursor). START: `gra-robocza/START.html`.
+
+## [01:32] ✅ Gotowe — deploy ROBOCZA FALA 120 (874bb48a)
+
+**FALA 120** | md5 `874bb48a31c730459d600d89f90e5227` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
+
+**Mapa — auto-zajęcie pustego miasta wroga:**
+- Rozdzielenie armii (split) lub marsz na heks pustego miasta wroga → miasto zajęte (jak klik `capture_empty`).
+- Cywile (zwiadowca/osadnik/robotnik) nadal nie zdobywają.
+- Ścieżki: split, koniec animacji marszu, ucięcie marszu na koniec tury.
+
+**Bramki:** tsc 0 · siege-defenders-test 12/12 · VERIFY OK.
+
+## [01:25] ✅ Gotowe — deploy ROBOCZA FALA 119 (ff57aaa5)
 
 **FALA 119** | md5 `ff57aaa588b1e7bfe58f569d852c64ea` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

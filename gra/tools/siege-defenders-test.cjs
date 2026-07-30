@@ -41,6 +41,9 @@ console.log('siege-defenders-test (C3-ST-1)');
 assert(!M.hasCityDefenders(city, [atk]), 'pop only, no garnizon, no units → no defenders');
 assert(M.canCaptureCityWithoutBattle(city, [atk]), 'can capture without battle when empty');
 
+const atkOnHex = { ...atk, q: 10, r: 5 };
+assert(M.canCaptureCityWithoutBattle(city, [atkOnHex]), 'combat unit ON empty enemy city hex → can capture (split/march auto)');
+
 assert(M.hasCityDefenders(city, [atk, archer]), 'enemy unit on city hex → defenders');
 assert(M.defenderUnitsNearCity(city, [archer]).length === 1, 'defenderUnitsNearCity on hex');
 
