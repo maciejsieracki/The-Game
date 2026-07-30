@@ -1,0 +1,77 @@
+/**
+ * Trudność państw-miast vs trudność gry + reguły konsolidacji klastra (AI-CS-CLUSTER-DIFF 2026-07-30).
+ */
+
+export type DifficultyLevel = 'easy' | 'normal' | 'hard';
+
+/** Odwrócona skala Maciej 2026-07-30: łatwa gra → trudne PM, trudna gra → łatwe PM. */
+export function cityStateDifficultyFromGameDifficulty(diff: DifficultyLevel): DifficultyLevel {
+  if (diff === 'easy') return 'hard';
+  if (diff === 'hard') return 'easy';
+  return 'normal';
+}
+
+export const CLUSTER_CS_WAR_MIN_TURN = 20;
+export const CLUSTER_CS_CONQUEST_DEADLINE_TURN = 100;
+
+export interface ClusterStateTarget {
+  ownerId: number;
+  q: number;
+  r: number;
+}
+
+function axialDistance(q1: number, r1: number, q2: number, r2: number): number {
+  const dq = q1 - q2;
+  const dr = r1 - r2;
+  return (Math.abs(dq) + Math.abs(dq + dr) + Math.abs(dr)) / 2;
+}
+
+/** Twardy priorytet przejęcia CS z kręgu do tury 100 (bez kar przy niepowodzeniu). */
+export function isClusterConquestDeadlineActive(
+  turn: number,
+  clusterStateTargets: ReadonlyArray<ClusterStateTarget>,
+): boolean {
+  return turn <= CLUSTER_CS_CONQUEST_DEADLINE_TURN && clusterStateTargets.length > 0;
+}
+
+/**
+ * Wybiera ownerId państwa-miasta z kręgu do wymuszonej wojny:
+ * - tura >= 20 i brak wojny z żadnym CS kręgu, lub
+ * - aktywny deadline konsolidacji i pozostały CS bez wojny.
+ * Zwraca null gdy wymuszenie nie jest potrzebne.
+ */
+export function pickClusterCityStateWarTargetId(
+  turn: number,
+  clusterStateTargets: ReadonlyArray<ClusterStateTarget>,
+  atWarOwnerIds: ReadonlySet<number>,
+  referenceHex?: { q: number; r: number },
+): number | null {
+  if (clusterStateTargets.length === 0) return null;
+
+  const notAtWar = clusterStateTargets.filter(t => !atWarOwnerIds.has(t.ownerId));
+  if (notAtWar.length === 0) return null;
+
+  const anyAtWar = clusterStateTargets.some(t => atWarOwnerIds.has(t.ownerId));
+  const turn20Force = turn >= CLUSTER_CS_WAR_MIN_TURN && !anyAtWar;
+  const deadlineForce = turn >= CLUSTER_CS_WAR_MIN_TURN
+    && isClusterConquestDeadlineActive(turn, clusterStateTargets);
+
+  if (!turn20Force && !deadlineForce) return null;
+
+  const pickNearest = (): number => {
+    if (!referenceHex) return notAtWar[0]!.ownerId;
+    let best = notAtWar[0]!;
+    let bestDist = axialDistance(best.q, best.r, referenceHex.q, referenceHex.r);
+    for (let i = 1; i < notAtWar.length; i++) {
+      const t = notAtWar[i]!;
+      const d = axialDistance(t.q, t.r, referenceHex.q, referenceHex.r);
+      if (d < bestDist) {
+        best = t;
+        bestDist = d;
+      }
+    }
+    return best.ownerId;
+  };
+
+  return pickNearest();
+}

@@ -130,6 +130,11 @@ import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch
 import type { ProductionItem } from './game/production';
 import { resolveArchetypeAggression, resolveArchetypeTrade, civAiProfileForTyp } from './game/civ-ai-data';
 import { buildClusterStartPlan, buildSameTypeRivalCandidateHexes } from './game/cluster-start';
+import {
+  cityStateDifficultyFromGameDifficulty,
+  isClusterConquestDeadlineActive,
+  pickClusterCityStateWarTargetId,
+} from './game/city-state-difficulty';
 import { clusterCityStateRadius, clusterHubChainReachHex, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
 import {
@@ -963,14 +968,10 @@ async function boot(): Promise<void> {
      *  RESUP_TIERS) dla WSZYSTKICH AI defensywnych kopii typu oraz próg sojuszu sióstr
      *  (sisterAllianceDiplomacyParams, diplomacy.ts). */
     let _menuCitySupport: 'low' | 'normal' | 'strong' = 'normal';
-    /** R-TRUDNOSC-1 (Maciej 2026-07-24): trudność miast-państw, OSOBNY suwak kreatora,
-     *  niezależny od głównej trudności gry (_menuDifficulty). Steruje WYŁĄCZNIE zachowaniem
-     *  AI miast-państw (kopii obronnych): startowe zaufanie (applyCityStateDifficultyTrust),
-     *  próg sojuszu sióstr + posiłki (_menuCitySupport -- teraz pochodna TEGO pola, NIE
-     *  _menuDifficulty) oraz DifficultyParams (bonusProdukcja/bonusWalka/agresjaMnoznik)
-     *  dla ich decyzji AI (patrz aiDiffLevelForOwner niżej). Domyślnie = _menuDifficulty
-     *  (fallback dla starych sejwów bez pola -- zero regresji), patrz applyMenuParams().
-     *  Główna _menuDifficulty NADAL steruje ekonomią/kosztami/mapą/aiDiffLevel zwykłych AI. */
+    /** R-TRUDNOSC-1 (Maciej 2026-07-24, AI-CS-CLUSTER-DIFF 2026-07-30): trudność miast-państw.
+     *  OSOBNY suwak kreatora lub odwrotność głównej trudności gry (easy→hard, hard→easy).
+     *  Steruje AI miast-państw (kopie obronne): zaufanie, posiłki, DifficultyParams.
+     *  Override w Zaawansowanych (cityStateDifficultyOverride) ma pierwszeństwo. */
     let _menuCityStateDifficulty: 'easy' | 'normal' | 'hard' = 'normal';
     let _menuCivId: string = 'rzymianie'; // E1 default: Rzymianie
     let _menuMapSize: string = 'Standardowy'; // E1 default map size
@@ -19418,6 +19419,12 @@ async function boot(): Promise<void> {
                   return hexDistance(c.q, c.r, clusterCap.q, clusterCap.r) <= mpReach;
                 })
                 .map(c => ({ ownerId: c.ownerId, q: c.q, r: c.r }));
+              if (opts.clusterStateTargets && opts.clusterStateTargets.length > 0) {
+                opts.clusterConquestDeadlineActive = isClusterConquestDeadlineActive(
+                  turn,
+                  opts.clusterStateTargets,
+                );
+              }
             } else if (tc && !typCityCopyOwners.has(ownerId)) {
               opts.clusterCenter = tc.centrum;
               opts.clusterRadius = clusterCityStateRadius();
@@ -19607,6 +19614,31 @@ async function boot(): Promise<void> {
                   foreignTypeOwners,
                   contactedOwners,
                 );
+                let clusterForceWarTargetId: number | undefined;
+                if (
+                  !typCityCopyOwners.has(ownerId)
+                  && opts.clusterStateTargets
+                  && opts.clusterStateTargets.length > 0
+                ) {
+                  const atWarIds = new Set<number>();
+                  for (const r of relacjeDip) {
+                    if (r.stanWojny) {
+                      const oid = parseInt(r.partnerId, 10);
+                      if (!Number.isNaN(oid)) atWarIds.add(oid);
+                    }
+                  }
+                  const refCity = cities.find(c => c.ownerId === ownerId);
+                  const refHex = refCity
+                    ? { q: refCity.q, r: refCity.r }
+                    : opts.clusterCenter;
+                  const forced = pickClusterCityStateWarTargetId(
+                    turn,
+                    opts.clusterStateTargets,
+                    atWarIds,
+                    refHex,
+                  );
+                  if (forced != null) clusterForceWarTargetId = forced;
+                }
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),
                   relacje: relacjeDip,
@@ -19621,6 +19653,7 @@ async function boot(): Promise<void> {
                   tolerancjaRyzyka: civAiProf?.tolerancjaRyzyka,
                   fullDiplomacyLayer: dipLayer === 'full',
                   isMinorCivSelf: simplifiedDiplomacyOwners.has(ownerId),
+                  clusterForceWarTargetId,
                 };
                 const dipCmdsRaw = decideAIDiplomacy(
                   diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
@@ -20807,15 +20840,13 @@ async function boot(): Promise<void> {
       _menuDifficulty = diff;
       startRevealRadius = startRevealRadiusForDifficulty(diff);
 
-      // R-TRUDNOSC-1 (Maciej 2026-07-24): trudność miast-państw -- suwak OSOBNY od głównej
-      // trudności gry, w „Zaawansowane opcje" kreatora (params.advanced.cityStateDifficultyOverride).
-      // Brak override (null/nieprawidłowa wartość -- w tym stare sejwy sprzed tego pola) ->
-      // fallback = główna trudność `diff` (zero regresji domyślnej).
+      // R-TRUDNOSC-1 + AI-CS-CLUSTER-DIFF (Maciej 2026-07-30): trudność miast-państw —
+      // suwak Zaawansowane lub odwrotność trudności gry (easy→hard, normal→normal, hard→easy).
       const csOverrideRaw = params.advanced?.cityStateDifficultyOverride;
       _menuCityStateDifficulty =
         csOverrideRaw === 'easy' || csOverrideRaw === 'normal' || csOverrideRaw === 'hard'
           ? csOverrideRaw
-          : diff;
+          : cityStateDifficultyFromGameDifficulty(diff);
 
       // D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1, R-TRUDNOSC-1 2026-07-24
       // odpięcie od globalnej): „Wsparcie miast-państw" wynika z TRUDNOŚCI MIAST-PAŃSTW

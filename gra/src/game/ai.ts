@@ -251,6 +251,11 @@ export interface AITurnOpts {
    */
   clusterStateTargets?: Array<{ ownerId: number; q: number; r: number }>;
   /**
+   * AI-CS-CLUSTER-DIFF (Maciej 2026-07-30): tura <= 100 i pozostały CS w kręgu —
+   * twardy priorytet konsolidacji (bez bypass ekspansywności).
+   */
+  clusterConquestDeadlineActive?: boolean;
+  /**
    * D-START posiłki w klastrze (Maciej 2026-07-20): pozostałe miasta-siostry
    * (profil kopia_typu_obronna, TEN SAM typ cywilizacji/klaster) — źródła i cele
    * wewnątrz-klastrowych posiłków. Silnik podaje wyłącznie dla ownerId z
@@ -349,6 +354,12 @@ export interface AITurnOpts {
 /** Bramka walki AI — domyślnie przepuszcza (testy bez silnika). */
 function aiCanEngageOwner(opts: AITurnOpts, targetOwnerId: number): boolean {
   return opts.canEngageOwner ? opts.canEngageOwner(targetOwnerId) : true;
+}
+
+/** Omijanie konsolidacji klastra — wyłączone przy deadline do t.100 (AI-CS-CLUSTER-DIFF). */
+function aiMayBypassClusterConsolidation(ekspansywnosc: number, opts: AITurnOpts): boolean {
+  if (opts.clusterConquestDeadlineActive) return false;
+  return aiBypassClusterConsolidation(ekspansywnosc);
 }
 
 /**
@@ -740,7 +751,7 @@ export function isLocalExpansionPhase(
 
   const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterTargets = opts.clusterStateTargets ?? [];
-  if (clusterTargets.length > 0 && !aiBypassClusterConsolidation(ekspansywnosc)) return true;
+  if (clusterTargets.length > 0 && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)) return true;
 
   if (countPlayerScouts(units, playerId) < AI_EARLY_SCOUT_TARGET) return true;
 
@@ -1488,7 +1499,7 @@ export function planCityFounding(
 
   const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterConsolidationPhase = (opts.clusterStateTargets ?? []).length > 0;
-  if (clusterConsolidationPhase && !aiBypassClusterConsolidation(ekspansywnosc)) return null;
+  if (clusterConsolidationPhase && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)) return null;
   const treasuryPraca = aiTreasuryPracaForFounding(opts.pracaAvailable ?? 0, ekspansywnosc);
   const turn = opts.currentTurn ?? 0;
   const aff = evaluateFoundCityAffordance(
@@ -1645,7 +1656,8 @@ export function decideAITurn(
   const sklonnoscPodboju = opts.civAiProfile?.sklonnoscDoPodboju ?? 2;
   const skipPatrol = sklonnoscPodboju >= 4;
   const localExpansionPhase = isLocalExpansionPhase(opts, myCities, map, myUnits, playerId);
-  const villageExploreRace = localExpansionPhase || isVillageExploreRacePhase(opts, myCities);
+  const villageExploreRace = !opts.clusterConquestDeadlineActive
+    && (localExpansionPhase || isVillageExploreRacePhase(opts, myCities));
 
   // (archetyp + trudność policzone na górze funkcji — wspólne dla obu ścieżek)
   const minCityDist = getAiParam(data, 'ekspansja_min_dystans_miast', 5);
@@ -2689,6 +2701,11 @@ export interface DiplomacjaInputs {
   fullDiplomacyLayer?: boolean;
   /** To AI jest miastem-państwem (częstszy handel przy deficycie). */
   isMinorCivSelf?: boolean;
+  /**
+   * AI-CS-CLUSTER-DIFF (2026-07-30): wymuszona wojna z państwem-miastem kręgu
+   * (tura >= 20 lub deadline konsolidacji) — priorytet przed normalną dyplomacją.
+   */
+  clusterForceWarTargetId?: number;
 }
 
 /**
@@ -2945,6 +2962,19 @@ export function decideAIDiplomacy(
   difficulty: GameDifficulty = 'normal',
 ): AIDiplomacyCommand[] {
   if (!inp?.relacje?.length) return [];
+
+  // AI-CS-CLUSTER-DIFF: wymuszona wojna z CS kręgu (t.20+ / deadline do t.100).
+  if (inp.clusterForceWarTargetId != null) {
+    const forcedId = String(inp.clusterForceWarTargetId);
+    const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
+    if (forcedRel && !forcedRel.stanWojny) {
+      return [{
+        type:     'wypowiedz_wojne',
+        targetId: forcedId,
+        powod:    `AI-CS-CLUSTER-DIFF: wymuszona wojna z państwem-miastem kręgu (tura ${inp.currentTurn ?? 0})`,
+      }];
+    }
+  }
 
   const p: DiplomacjaParams = {
     ...loadDefaultAIDiplomacyProgs(difficulty),
