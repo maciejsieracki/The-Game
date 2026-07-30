@@ -1,6 +1,8 @@
-﻿- **2026-07-30 08:15** — ✅ FALA 121 ROBOCZA `2930dfa4` (deploy dokończony po OOM Cursor). START: `gra-robocza/START.html`.
+- **2026-07-30 08:15** — ✅ FALA 121 ROBOCZA `2930dfa4` (deploy dokończony po OOM Cursor). START: `gra-robocza/START.html`.
 
 ## [01:32] ✅ Gotowe — deploy ROBOCZA FALA 120 (874bb48a)
+
+- **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
 
 **FALA 120** | md5 `874bb48a31c730459d600d89f90e5227` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
@@ -13,6 +15,8 @@
 
 ## [01:25] ✅ Gotowe — deploy ROBOCZA FALA 119 (ff57aaa5)
 
+- **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
+
 **FALA 119** | md5 `ff57aaa588b1e7bfe58f569d852c64ea` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
 **Bitwa — oszczepnik w rosterze deploy:**
@@ -22,6 +26,8 @@
 **Bramki:** tsc 0 · battle-roster-test 7/7 · VERIFY OK.
 
 ## [01:12] ✅ Gotowe — deploy ROBOCZA FALA 118 (242adb0d)
+
+- **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
 
 **FALA 118** | md5 `242adb0def2dae3ab870bd2117064420` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
@@ -33,6 +39,8 @@
 
 ## [00:39] ✅ Gotowe — deploy ROBOCZA FALA 117 (ed968c14)
 
+- **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
+
 **FALA 117** | md5 `ed968c14fe4983603931f3fe9c683920` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
 **Mapa — markery złóż na górach:**
@@ -42,6 +50,8 @@
 **Bramki:** tsc 0 · VERIFY OK.
 
 ## [12:45] ✅ Gotowe — deploy ROBOCZA FALA 116 (7df8cf1d)
+
+- **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
 
 **FALA 116** | md5 `7df8cf1d0e11b5f9a520f08540ad4dfa` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
@@ -55,6 +65,8 @@
 
 ## [01:05] ✅ Gotowe — deploy ROBOCZA FALA 115 (75fa29d7)
 
+- **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
+
 **FALA 115** | md5 `75fa29d71ccd7d0ff42080175bd299b4` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
 **Mapa — złoża/kopalnie na górach:**
@@ -66,6 +78,8 @@
 **Bramki:** tsc 0 · population-growth-v85 47/47 · population-growth-v85-bonus 20/20 · map-improvement-qualify 94/94 · VERIFY OK · POLE-BITWY `dd399c4b`.
 
 ## [00:30] ✅ Gotowe — deploy ROBOCZA FALA 114 (c7f15cb3)
+
+- **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
 
 **FALA 114** | md5 `c7f15cb3f47c60dba04ec98c689daaee` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
@@ -80,6 +94,8 @@
 
 ## [00:05] ✅ Gotowe — deploy ROBOCZA FALA 113 (9ae07906)
 
+- **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
+
 **FALA 113** | md5 `9ae07906dc7215050b3cde635d50a5ee` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 
 **DEPLOY ALL sesji (dyplo + HUD + mapa + palisada):**
@@ -91,6 +107,8 @@
 - Bez ikony palisady z preview (nie w brand).
 
 ## [23:13] ✅ Gotowe — deploy ROBOCZA FALA 112 (8d5813ea)
+
+- **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
 
 **FALA 112** | md5 `8d5813ea025a603d23e04cc923c65b94` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
 

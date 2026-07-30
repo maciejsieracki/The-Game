@@ -1,4 +1,4 @@
-﻿# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
+# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
 
 ZASADA: md5/stempel wpisuje siÄ™ TYLKO tutaj, zaraz po publishu. Inne pliki linkujÄ…,
 nigdy nie kopiujÄ… (stary system miaĹ‚ 4 sprzeczne â€žaktualne" md5 â€” nigdy wiÄ™cej).
@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `2930dfa4` - 2026-07-30 08:02 - FALA 121: DEPLOY ALL (dokonczenie po OOM) + auto-zajecie pustego miasta + main.ts - **AKTUALNA**
+## ROBOCZA `9f09757e` - 2026-07-30 09:11 - FALA 122: AI-CS-CLUSTER-DIFF (odwrotna trudnosc PM, wojna CS od t.20, priorytet kragu do t.100) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `9f09757ecb1df804e66c96066fdb72ac` · stempel: `ROBOCZA · 2026-07-30 09:11`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Commit zrodlowy: `e0b8afe` (AI-CS-CLUSTER-DIFF). tsc 0 · city-state-cluster-diff-test 15/15 · siege-defenders 12/12.
+- POLE-BITWY `dd399c4b` (bez zmian logiki fali).
+- Deploy: Grok sam (bez subagenta). Bez push.
+
+## ROBOCZA `2930dfa4` - 2026-07-30 08:02 - FALA 121: DEPLOY ALL (dokonczenie po OOM) + auto-zajecie pustego miasta + main.ts - **ZASTĄPIONA**
 - md5 (pelne): `2930dfa4c96d0e941f237fd9a54e1cad` · stempel: `ROBOCZA · 2026-07-30 08:02`
 - **VERIFY OK.** Plik Gra-ROBOCZA.html md5 = manifest.
 - Dokończenie po crashu Cursor OOM: bundel na dysku od 08:02, logi/commit/push domknięte rano.

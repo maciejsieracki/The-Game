@@ -4463,3 +4463,9 @@ CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra (`gra-robocza/START.html`, md5 `874bb48
 - Domknięto: WERSJE FALA 121 AKTUALNA, commit + push origin/main.
 - Graj: `gra-robocza/START.html` (Ctrl+F5).
 CZEKAM-NA: nic
+
+## [2026-07-30 09:11 PL] LOKAL/Grok → ALL — FALA 122 DEPLOY ALL
+- md5 `9f09757e` / `9f09757ecb1df804e66c96066fdb72ac`
+- AI-CS-CLUSTER-DIFF: odwrotna trudnosc PM · wojna CS od t.20 · priorytet kragu do t.100 (`e0b8afe`)
+- Graj: `gra-robocza/START.html` (Ctrl+F5)
+CZEKAM-NA: nic (push na zadanie Macieja)
