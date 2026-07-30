@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-30 (NAJNOWSZY):** deploy ROBOCZA **`ff57aaa5`** (FALA 119, 01:25) — oszczepnik = dystans w `_deployRowKind` (filtry/liczniki rosteru deploy). Poprzedni: FALA 118 `242adb0d`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
+**Stan na 2026-07-30 (NAJNOWSZY):** deploy ROBOCZA **`fb78916f`** (FALA 123, 11:25) — armie/garnizon/rout/zajęcie · irygacja las · HP bitwy · dyplo wojna/pokój. Poprzedni: FALA 122 `9f09757e`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

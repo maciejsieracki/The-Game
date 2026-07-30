@@ -4,6 +4,7 @@
  */
 import {
   aiDiplomacyStance,
+  clampRelationForWar,
   diplomacyProposerStrengthEase,
   diplomacyAllianceStrengthAdjust,
   diplomacyAllianceMinZaufanie,
@@ -359,10 +360,32 @@ function treatyBasePnFromConfig(actionId: string): number {
   return t[actionId]?.punkty ?? 0;
 }
 
+/** Relacja do progu PN traktatu — w wojnie z podłogą score (spójne z clampRelationForWar / UI). */
+export function treatyEvalRelationTotal(rel: Relation): number {
+  const clamped = rel.status === 'wojna' ? clampRelationForWar(rel) : rel;
+  return relationTotal(clamped);
+}
+
+/**
+ * Skuteczna oferta PN na pokój: sama propozycja pokoju = wymagane PN traktatu @ Relacji
+ * (jak karta „375 PW" na stole); koszyk to dodatkowy słodzik netto ponad próg.
+ */
+export function peaceProposalOfferPn(
+  givePn: number,
+  receivePn: number,
+  basePn: number,
+  rel: Relation,
+): { offerPn: number; required: number } {
+  const relTotal = treatyEvalRelationTotal(rel);
+  const required = effectiveTreatyPnRequired(basePn, relTotal);
+  const basketNet = Math.max(0, givePn - receivePn);
+  return { offerPn: required + basketNet, required };
+}
+
 /**
  * Bramka PN traktatu @ Relacji (mod ±90%). Zwraca wynik odrzucenia lub null = OK.
  *
- * Pokój: zawsze trzeba „zapłacić” efektywnym PN traktatu z koszyka.
+ * Pokój: propozycja pokoju liczy się jako PN traktatu @ Relacji (+ słodzik z koszyka).
  * Inne traktaty (NAP, sojusz…): próg Relacji jest główną bramką; koszyk to
  * słodzik / wymiana. Dawniej: jakikolwiek giveItems wymagał givePn ≥ pełne PN
  * traktatu (~200 przy NAP) — UI doliczało bazę NAP do obu stron (210=210,
@@ -377,10 +400,9 @@ function treatyPnGate(
   const basePn = treatyBasePnFromConfig(actionId);
   if (basePn <= 0) return null;
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-  const relTotal = relationTotal(relation);
-  const required = effectiveTreatyPnRequired(basePn, relTotal);
   if (actionId === 'pokoj') {
-    if (givePn < required) {
+    const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+    if (offerPn < required) {
       return {
         accepted: false,
         reason: `Oferta za niska na pokój (wymagane ≥ ${required} PW @ Relacji, baza ${basePn})`,
@@ -388,6 +410,8 @@ function treatyPnGate(
     }
     return null;
   }
+  const relTotal = treatyEvalRelationTotal(relation);
+  const required = effectiveTreatyPnRequired(basePn, relTotal);
   const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
   if (!hasBasket) return null;
   // Dwustronna wymiana przy traktacie — tylko fair trade koszyka (bez dublowania bazy NAP).
@@ -550,10 +574,10 @@ export function evaluateProposal(
     }
 
     case 'pokoj': {
-      const { givePn } = resolveProposalPn(payload, pnOpts);
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const basePn = treatyBasePnFromConfig('pokoj');
-      const required = effectiveTreatyPnRequired(basePn, relationTotal(relation));
-      if (givePn < required) {
+      const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+      if (offerPn < required) {
         return {
           accepted: false,
           reason: `Oferta za niska na pokój (wymagane ≥ ${required} PW @ Relacji)`,
@@ -1474,7 +1498,7 @@ export function generateCounterOffer(
   if (NEGOTIATION_NO_ENGINE_COUNTER.has(actionId)) return null;
 
   const difficulty = ctx.difficulty ?? 'normal';
-  const relTotal = relationTotal(ctx.relation);
+  const relTotal = treatyEvalRelationTotal(ctx.relation);
   const pnOpts: ResolveProposalPnOptions = { difficulty };
 
   const tryPayload = (p: ProposalPayload): boolean =>
@@ -1514,6 +1538,7 @@ export function generateCounterOffer(
   }
 
   if (SWEETENER_COUNTER_ELIGIBLE.has(actionId)) {
+    if (tryPayload(payload)) return null;
     for (let step = 1; step <= NEGOTIATION_SWEETENER_MAX_STEPS; step++) {
       const extra = step * NEGOTIATION_SWEETENER_STEP_GOLD;
       const candidate = withExtraSweetenerGold(payload, extra);

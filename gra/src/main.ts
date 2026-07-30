@@ -134,6 +134,7 @@ import {
   cityStateDifficultyFromGameDifficulty,
   isClusterConquestDeadlineActive,
   pickClusterCityStateWarTargetId,
+  shouldCityStateRollWarOnPlayer,
 } from './game/city-state-difficulty';
 import { clusterCityStateRadius, clusterHubChainReachHex, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
@@ -474,6 +475,8 @@ import {
   collectRoadKeys,
   stripImprovementsWhenForestRemoved,
   computeImprovementBuildImpact,
+  getImprovementForestBlockHint,
+  isImprovementBlockedOnForest,
   type ImprovementBuildImpact,
   type ImprovementBuildRequest,
   type ImprovementBuildCallbacks,
@@ -3882,9 +3885,16 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
-    /** Wszystkie armie gracza (1 wiodąca/heks) — garnizon, oblężenie, bez ruchu; kolejność przestrzenna. */
+    /** Jednostka aktywna do cyklu Spacja/HUD — nie uśpiona, nie w garnizonie, nie ufortyfikowana w polu. */
+    function isUnitActiveForCycle(u: RuntimeUnit): boolean {
+      return u.sentry !== true
+        && u.inGarnizon !== true
+        && u.ufortyfikowanyWPolu !== true;
+    }
+
+    /** Wszystkie armie gracza (1 wiodąca/heks) — tylko aktywne do ruchu; kolejność przestrzenna. */
     function cyclablePlayerArmyLeads(): RuntimeUnit[] {
-      const playerUnits = units.filter(u => u.ownerId === 0);
+      const playerUnits = units.filter(u => u.ownerId === 0 && isUnitActiveForCycle(u));
       const stacks = new Map<string, RuntimeUnit[]>();
       for (const u of playerUnits) {
         const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
@@ -7426,6 +7436,11 @@ async function boot(): Promise<void> {
 
     function canMergeSelectedStack(active: RuntimeUnit, stack: RuntimeUnit[]): boolean {
       if (stack.length >= 2) return true;
+      // Ten sam heks miasta: garnizon vs jednostka na murze — dwa stosy, nie „sąsiedzi”.
+      const stackIds = new Set(stack.map(s => s.id));
+      const sameHexOthers = coLocatedForMergePrompt(units, active.q, active.r, active.ownerId)
+        .some(x => !stackIds.has(x.id));
+      if (sameHexOthers) return true;
       if (!hasAdjacentPlayerArmy(active.q, active.r)) return false;
       if (!stackCanMove(active)) return false;
       for (const t of adjacentVisibleArmyHexes(units, active.q, active.r, active.ownerId)) {
@@ -7441,6 +7456,52 @@ async function boot(): Promise<void> {
       const stack = playerStackAt(active);
       const srcQ = active.q;
       const srcR = active.r;
+      const stackIds = new Set(stack.map(s => s.id));
+
+      // Scalenie z jednostkami już na TYM heksie (garnizon ↔ pole w mieście).
+      const sameHexOthers = coLocatedForMergePrompt(units, srcQ, srcR, active.ownerId)
+        .filter(x => !stackIds.has(x.id));
+      if (sameHexOthers.length > 0) {
+        const arrivingUnits = stack;
+        const arrivingRow = arrivingUnits.length === 1
+          ? mergeUnitRow(arrivingUnits[0]!)
+          : {
+              ...mergeUnitRow(arrivingUnits[0]!),
+              name: 'Skład (' + arrivingUnits.length + ')',
+            };
+        showArmyMergePanel({
+          hexLabel: '(' + srcQ + ',' + srcR + ')',
+          existing: sameHexOthers.map(mergeUnitRow),
+          arriving: arrivingRow,
+          arrivingCount: arrivingUnits.length,
+          onMerge: () => {
+            // Ujednolić inGarnizon — inaczej zostają dwa stosy na tym samym heksie.
+            // Preferuj koszary, jeśli którakolwiek strona już jest w garnizonie.
+            const all = [...sameHexOthers, ...arrivingUnits];
+            const preferGarnizon = all.some(x => x.inGarnizon === true);
+            for (const u of all) u.inGarnizon = preferGarnizon;
+            const merged = coLocatedForMergePrompt(units, srcQ, srcR, active.ownerId);
+            syncStackRuchLeft(merged);
+            showHintMessage(
+              'Po\u0142\u0105czono: ' + merged.length + ' jedn. na (' + srcQ + ',' + srcR + ')',
+              3200,
+            );
+            syncUnitsRender();
+            refreshFog();
+            const selRep = pickStackRepresentative(merged, unitAttackScore);
+            selectPlayerUnit(selRep.id);
+            refreshD1bHud();
+          },
+          onSeparate: () => {
+            showHintMessage(
+              'Na heksie miasta s\u0105 dwa stosy (garnizon / pole). U\u017cyj Po\u0142\u0105cz, by scali\u0107.',
+              3600,
+            );
+            refreshD1bHud();
+          },
+        });
+        return;
+      }
 
       const reachableTargets = adjacentVisibleArmyHexes(units, srcQ, srcR, active.ownerId)
         .filter(t => reachable.has(keyOf(t.q, t.r)));
@@ -8358,11 +8419,8 @@ async function boot(): Promise<void> {
       const prevLayers = placedImprovements.get(req.hexKey) ?? [];
       const impact = computeImprovementBuildImpact(req.key, hex, prevLayers);
       if (impact === null) {
-        if (hex.nakladka === Nakladka.Las && isLivestockImprovementKey(req.key)) {
-          showHintMessage(
-            `${improvementDisplayName(req.key)} na lesie zabroniona — postaw ${improvementDisplayName('oboz_lowiecki')}, albo wybierz otwarte pole`,
-            4000,
-          );
+        if (hex.nakladka === Nakladka.Las && isImprovementBlockedOnForest(req.key, hex.nakladka)) {
+          showHintMessage(getImprovementForestBlockHint(req.key), 4000);
         }
         return;
       }
@@ -8450,7 +8508,7 @@ async function boot(): Promise<void> {
       if (teren !== TerenBazowy.Wzgorza && teren !== TerenBazowy.Gory) return false;
       if (layers.includes('tarasy')) return false;
       const foodOnForest = hex.nakladka === Nakladka.Las
-        && layers.some(k => k === 'farma' || k === 'bydlo' || k === 'irygacja');
+        && layers.some(k => k === 'farma' || k === 'bydlo');
       if (foodOnForest) return false;
       return preservesHillRelief(layers);
     }
@@ -8493,7 +8551,7 @@ async function boot(): Promise<void> {
       }
       // Maciej 2026-07-21: farma/hodowla na lesie bez wyrębu — schowaj kępę (nakładka Las zostaje).
       const foodOnForest = hex.nakladka === Nakladka.Las
-        && layers.some(k => k === 'farma' || k === 'bydlo' || k === 'irygacja');
+        && layers.some(k => k === 'farma' || k === 'bydlo');
       if (foodOnForest) {
         hideDecorAtHex(hexKey);
         return;
@@ -13704,7 +13762,8 @@ async function boot(): Promise<void> {
         getPowerOverlay: buildPowerOverlayData,
         getCultureOverlay: buildCultureOverlayData,
         getReligionOverlay: buildReligionOverlayData,
-        getYearLabel: () => Math.max(0, 4000 - turn * 50) + ' p.n.e.',
+        // Tura 1 = 4000 p.n.e.; potem −50 lat/turę (nie turn×50 — to zjadało rok już na starcie).
+        getYearLabel: () => Math.max(0, 4000 - (turn - 1) * 50) + ' p.n.e.',
         onExecutePending: () => executeFirstBlockingEvent(),
         canEndTurn: () => canPlayerInitiateEndTurn(),
         hideEndTurn: () => playtestWalkaActive,
@@ -14517,8 +14576,11 @@ async function boot(): Promise<void> {
       // stosu do animacji, żeby po ruchu wróciła do zwykłego, widocznego stosu
       // zamiast zostać "ukrytym" duchem na nowym heksie.
       const garnizonCity = u.inGarnizon === true ? cityAtUnit(u) : undefined;
-      if (exitGarnizon(u) && garnizonCity) syncGarnizonForCity(garnizonCity);
       const stack = playerStackAt(u);
+      if (u.inGarnizon === true) {
+        for (const su of stack) exitGarnizon(su);
+        if (garnizonCity) syncGarnizonForCity(garnizonCity);
+      }
       // DYSPOZYCJA Macieja 2026-07-26: rozkaz ruchu zdejmuje fortyfikację W
       // POLU automatycznie -- analogicznie do exitGarnizon powyżej, ale na
       // CAŁYM stosie (fortyfikacja w polu jest ustawiana na całym widocznym
@@ -19725,6 +19787,50 @@ async function boot(): Promise<void> {
                 resolvePendingNegotiationsForOwner(ownerId);
               } catch (eNegoc) {
                 console.error(`[Dyplomacja] Blad stolu negocjacyjnego AI${ownerId}:`, eNegoc);
+              }
+
+              // PM (trudność PM=hard) → wojna z graczem od t.20, 60%/turę; blokada: handel/surowce.
+              if (
+                typCityCopyOwners.has(ownerId)
+                && diplomaticallyDiscoveredOwners.has(ownerId)
+              ) {
+                try {
+                  const relToPlayer = getDiploRelation(ownerId, 0);
+                  const hasTradeBlock = activeDeals.some(d => {
+                    if (!dealInvolvesOwners(d, 0, ownerId)) return false;
+                    const k = normalizeTreatyKind(d.rodzaj);
+                    if (
+                      k === RodzajTraktatu.UmowaSzlakow
+                      || k === RodzajTraktatu.UmowaWymiany
+                      || k === RodzajTraktatu.UmowaHandlowa
+                    ) return true;
+                    return (d.handelSurowiecCykliczny?.length ?? 0) > 0;
+                  }) || hasActiveResourceTradeDealForPair(0, ownerId);
+                  if (shouldCityStateRollWarOnPlayer(
+                    _menuCityStateDifficulty,
+                    turn,
+                    relToPlayer.status === 'wojna',
+                    hasTradeBlock,
+                    Math.random,
+                  )) {
+                    chargeWarDeclarationCredibility(ownerId, 0);
+                    breakTreatiesOnWar(ownerId, 0, false);
+                    applyAllianceObligationsOnWar(ownerId, 0);
+                    const newRel = applyDiploEventTracked(
+                      ownerId, 0, getDiploRelation(ownerId, 0), 'wojna_wypowiedziana',
+                    );
+                    setDiploRelation(ownerId, 0, newRel);
+                    recordWarDeclarationEvent(ownerId, 0);
+                    console.log(`[Dyplomacja] PM${ownerId} wypowiada wojne graczowi (trudnosc PM=hard, 60%)`);
+                    showHintMessage(
+                      '\u2694 ' + ownerDiploLabel(ownerId) + ' wypowiada wojnę!',
+                      4500,
+                    );
+                    if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+                  }
+                } catch (eCsWar) {
+                  console.error(`[Dyplomacja] Blad wojny PM→gracz AI${ownerId}:`, eCsWar);
+                }
               }
             } catch (eDiplo) {
               console.error(`[Dyplomacja] Blad dyplomacji AI${ownerId}:`, eDiplo);

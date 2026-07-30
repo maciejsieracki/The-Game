@@ -30,9 +30,10 @@ const KIND_PREFIX: Record<SaveLabelKind, string> = {
   autosave: 'Autozapis · ',
 };
 
-/** Rok kalendarzowy jak w HUD (4000 p.n.e. minus 50 lat na turę). */
+/** Rok kalendarzowy jak w HUD: tura 1 = 4000 p.n.e., potem −50 lat na każdą kolejną turę. */
 export function yearLabelFromTurn(turn: number): string {
-  const y = Math.max(0, 4000 - turn * 50);
+  const t = Math.max(1, turn);
+  const y = Math.max(0, 4000 - (t - 1) * 50);
   return `rok ${y} p.n.e.`;
 }
 

@@ -88,15 +88,19 @@ function makeUnit(overrides) {
   assert(repOnFreeHex && repOnFreeHex.id === 'f1', 'zwykła jednostka nadal widoczna/klikalna jak dawniej');
 }
 
-// --- 2) activeUnitStack: jednostka ufortyfikowana zaznaczona z listy armii
-//        dostaje stos-solo (przed fixem: pusta tablica -> ruch/akcje no-op). ---
+// --- 2) activeUnitStack: jednostka w garnizonie zaznaczona z listy armii
+//        dostaje CAŁY garnizon na heksie (ruch/wyjście = cała armia). ---
 {
   const garrisoned = makeUnit({ id: 'g2', inGarnizon: true });
+  const garrisoned2 = makeUnit({ id: 'g2b', inGarnizon: true, q: garrisoned.q, r: garrisoned.r });
   const otherOnSameHex = makeUnit({ id: 'other', q: garrisoned.q, r: garrisoned.r });
-  const units = [garrisoned, otherOnSameHex];
+  const units = [garrisoned, garrisoned2, otherOnSameHex];
 
   const stack = activeUnitStack(units, garrisoned);
-  assert(stack.length === 1 && stack[0].id === 'g2', 'activeUnitStack(garnizon) = stos-solo [siebie], nie pusty ani cudzy');
+  assert(
+    stack.length === 2 && stack.some(x => x.id === 'g2') && stack.some(x => x.id === 'g2b'),
+    'activeUnitStack(garnizon) = cały garnizon na heksie, nie solo ani widoczny stos',
+  );
 
   const normalStack = activeUnitStack(units, otherOnSameHex);
   assert(

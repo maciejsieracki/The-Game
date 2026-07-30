@@ -240,7 +240,22 @@ ok(NEGOTIATION_EXPIRY_TURNS > 0, 'NEGOTIATION_EXPIRY_TURNS > 0');
     { actionId: 'pokoj', proposerOwnerId: 0, responderOwnerId: 1, payload: {} },
     warCtx,
   );
-  ok(!peaceNoOffer.accepted, 'pokój bez koszyka: odrzucony (brak wymaganych PN)');
+  ok(peaceNoOffer.accepted, 'pokój bez koszyka: akceptowany (sama propozycja = PN traktatu @ Relacji)');
+
+  const peaceGiftSurplus = evaluateProposal(
+    {
+      actionId: 'pokoj', proposerOwnerId: 1, responderOwnerId: 0,
+      payload: { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 28 }] },
+    },
+    warCtx,
+  );
+  ok(peaceGiftSurplus.accepted, 'pokój + dar 28¤ od AI: akceptowany (traktat + słodzik)');
+
+  const peaceNoCounter = generateCounterOffer(
+    { actionId: 'pokoj', proposerOwnerId: 0, responderOwnerId: 1, payload: {} },
+    warCtx,
+  );
+  ok(peaceNoCounter == null, 'pokój na progu: brak zbędnej kontroferty ze słodzikiem');
 
   const peaceOffer = evaluateProposal(
     {

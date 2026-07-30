@@ -344,5 +344,77 @@ assert(tebyA0?.q === 11 && tebyA0?.r === 22, 'Teby: anchor on city');
 assert(tebyA1?.q === 11 && tebyA1?.r === 22, 'Teby: stacked army on city with anchor');
 assert(tebyScout?.q !== tebyA0?.q || tebyScout?.r !== tebyA0?.r, 'Teby: scout not merged on city hex');
 
+// capture_empty (klik pustego miasta): cały stos na heksie kotwicy wchodzi — bez applyPostBattleMap
+const emptyCapUnits = [
+  { id: 'ec0', ownerId: 0, typeId: 'Hastati', category: 'miecznik', q: 10, r: 22, ruchLeft: 2 },
+  { id: 'ec1', ownerId: 0, typeId: 'Hastati', category: 'miecznik', q: 10, r: 22, ruchLeft: 2 },
+  { id: 'ec2', ownerId: 0, typeId: 'Lucznik', category: 'wlocznik', q: 11, r: 21, ruchLeft: 2 },
+];
+const emptyCapCity = { id: 'ecap', ownerId: 1, q: 11, r: 22, name: 'Puste' };
+applyCityCaptureAfterBattle(emptyCapCity, emptyCapUnits, 0, emptyCapUnits, 'ec0');
+const ec0 = emptyCapUnits.find(u => u.id === 'ec0');
+const ec1 = emptyCapUnits.find(u => u.id === 'ec1');
+const ec2 = emptyCapUnits.find(u => u.id === 'ec2');
+assert(ec0?.q === 11 && ec0?.r === 22, 'empty capture: anchor on city');
+assert(ec1?.q === 11 && ec1?.r === 22, 'empty capture: co-stacked unit enters with anchor');
+assert(ec2?.q === 11 && ec2?.r === 21, 'empty capture: support on other hex stays outside');
+
+// Rout w mieście: rozbita jednostka (hp>0) w manualSurvivors — nie kasacja z units[]
+const routDefUnits = [
+  { id: 'rd0', ownerId: 0, typeId: 'Wojownik', q: 11, r: 22, ruchLeft: 0, hp: 100 },
+  { id: 'rd1', ownerId: 0, typeId: 'Oszczepnik', q: 11, r: 22, ruchLeft: 0, hp: 100 },
+  { id: 're0', ownerId: 1, typeId: 'Wojownik', q: 12, r: 22, ruchLeft: 0 },
+];
+const routCity = { id: 'rc', ownerId: 0, q: 11, r: 22, name: 'Miasto' };
+applyPostBattleMap({
+  units: routDefUnits,
+  map: { hexes: {} },
+  cities: [routCity],
+  battleQ: 11,
+  battleR: 22,
+  atkAnchor: routDefUnits[2],
+  atkRoster: [routDefUnits[2]],
+  defRoster: [routDefUnits[0], routDefUnits[1]],
+  atkStart: new Map([['re0', { q: 12, r: 22 }]]),
+  winner: 'obronca',
+  manualSurvivors: [{ id: 'rd0', hp: 42 }, { id: 'rd1', hp: 88 }],
+  getDef: () => ({ Health: 100 }),
+  maxHpOf: () => 100,
+  isPassableHex: () => true,
+  isUnitAt: () => false,
+  cityOnBattleHex: routCity,
+});
+const rd0 = routDefUnits.find(u => u.id === 'rd0');
+const rd1 = routDefUnits.find(u => u.id === 'rd1');
+assert(rd0?.hp === 42, 'rout city: routed warrior hp from survivors, got ' + rd0?.hp);
+assert(rd1?.hp === 88, 'rout city: routed spearman hp from survivors, got ' + rd1?.hp);
+assert(!routDefUnits.find(u => u.id === 're0'), 'rout city: attacker removed');
+
+// Fan-out bez wolnego heksu — jednostka NIE jest usuwana z units[]
+const stuckUnits = [
+  { id: 'st0', ownerId: 1, typeId: 'Lucznik', q: 11, r: 22, ruchLeft: 0 },
+];
+const stuckPassable = (q, r) => q === 11 && r === 22;
+applyPostBattleMap({
+  units: stuckUnits,
+  map: { hexes: {} },
+  cities: [],
+  battleQ: 11,
+  battleR: 22,
+  atkAnchor: { id: 'atk', ownerId: 0, typeId: 'Hastati', q: 10, r: 23 },
+  atkRoster: [{ id: 'atk', ownerId: 0, typeId: 'Hastati', q: 10, r: 23 }],
+  defRoster: stuckUnits,
+  atkStart: new Map([['atk', { q: 10, r: 23 }]]),
+  winner: 'atakujacy',
+  lossAtkPct: 0,
+  lossDefPct: 0,
+  getDef: () => ({ Health: 100 }),
+  maxHpOf: () => 100,
+  isPassableHex: stuckPassable,
+  isUnitAt: (q, r, exceptId) =>
+    stuckUnits.some(u => u.id !== exceptId && u.q === q && u.r === r),
+});
+assert(stuckUnits.length === 1 && stuckUnits[0].id === 'st0', 'fan-out blocked: unit stays in units[]');
+
 console.log('post-battle-map-test: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail > 0 ? 1 : 0);

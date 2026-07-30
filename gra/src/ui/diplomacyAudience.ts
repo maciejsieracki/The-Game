@@ -5,6 +5,7 @@
 import type { CivBonusLite } from '../game/production';
 import { startDiplomacyMusic, stopDiplomacyMusic } from '../audio/muzyka-antyczna';
 import {
+  effectiveNastawienieScores,
   nastawienieHintPl,
   nastawienieLabelFromScore,
   TRAKTAT_HANDLOWY_LABEL,
@@ -896,12 +897,17 @@ function formalBannerHtml(st: DiplomacyAudienceState): string {
   );
 }
 
+function audienceAtWar(st: DiplomacyAudienceState): boolean {
+  return st.formalStatus?.kind === 'wojna';
+}
+
 function stanceBadgeHtml(st: DiplomacyAudienceState): string {
-  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt);
-  const hostile = label === 'Wrogi' || label === 'Nieufny';
+  const atWar = audienceAtWar(st);
+  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt, { atWar });
+  const hostile = atWar || label === 'Wrogi' || label === 'Nieufny';
   const cls = hostile ? 'da-stance-badge hostile' : 'da-stance-badge';
   return (
-    '<span class="' + cls + '" title="' + esc(nastawienieHintPl()) + '">' +
+    '<span class="' + cls + '" title="' + esc(nastawienieHintPl(atWar)) + '">' +
     esc(label) + '</span>'
   );
 }
@@ -1014,6 +1020,8 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
   const powerPct = ((st.otherPower ?? 0) / maxPower) * 100;
   const potencjal = st.sojuszPotencjal;
+  const atWar = audienceAtWar(st);
+  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt, atWar);
   return (
     '<div class="da-card them">' +
       (cfg?.onFocusCapital ? dipCapitalLocateBtnHtml() : '') +
@@ -1031,8 +1039,8 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Relacje z Tobą</div>' +
-        progressBarHtml('Zaufanie', st.zaufanie, 100, undefined, 'trust') +
-        progressBarHtml('Respekt', st.respekt, 100, RESPEKT_TOOLTIP_PL, 'respect') +
+        progressBarHtml('Zaufanie', relScores.zaufanie, 100, undefined, 'trust') +
+        progressBarHtml('Respekt', relScores.respekt, 100, RESPEKT_TOOLTIP_PL, 'respect') +
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Dobra handlowe</div>' +
@@ -1445,13 +1453,15 @@ function relBreakdownHtml(st: DiplomacyAudienceState): string {
   const negRows = rb.negatywne.map(f =>
     '<div class="da-rfact"><span class="lbl">' + esc(f.label) + '</span><span class="val">' + fmtVal(f.value, f.perTurn) + '</span></div>',
   ).join('') || '<div class="da-empty">Brak czynników.</div>';
-  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt);
+  const atWar = audienceAtWar(st);
+  const relScores = effectiveNastawienieScores(st.zaufanie, st.respekt, atWar);
+  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt, { atWar });
   return (
     '<div class="da-relbreak">' +
       '<div class="da-relcol pos"><h4>Za co Cię lubią</h4>' + posRows + '</div>' +
       '<div class="da-relcol neg"><h4>Za co Cię nie lubią</h4>' + negRows + '</div>' +
-      '<div class="da-relbreak-foot">Stan bieżący: <b>Zaufanie ' + st.zaufanie + ' / 100</b> · ' +
-        '<b>Respekt ' + st.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b></div>' +
+      '<div class="da-relbreak-foot">Stan bieżący: <b>Zaufanie ' + relScores.zaufanie + ' / 100</b> · ' +
+        '<b>Respekt ' + relScores.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b></div>' +
     '</div>'
   );
 }

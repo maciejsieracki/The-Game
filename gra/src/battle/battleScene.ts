@@ -8743,8 +8743,11 @@ export class BattleScene {
       winner = hpA >= hpD ? 'atakujacy' : 'obronca';
     }
 
-    const survivors = (winner === 'atakujacy' ? this.atk : this.def)
-      .filter(u => !u.dead).map(u => u.bu);
+    // Rout na polu 3D ustawia dead=true przy _removeUnitFromScene — na mapie świata
+    // jednostka rozbita (rout) ma wrócić z HP>0 (post-battle-map.ts wycofanie).
+    const survivors = this._battleUnitsForMapExport(
+      winner === 'atakujacy' ? this.atk : this.def,
+    );
 
     const winMsg = winner === 'atakujacy' ? 'ATAKUJACEGO' : 'OBRONCY';
     this.log.push('=== Koniec bitwy: zwyciestwo ' + winMsg + ' ===');
@@ -8758,6 +8761,16 @@ export class BattleScene {
     this._endSurvivors = survivors;
     this._showEndScreen(winner);
     return true;
+  }
+
+  /**
+   * Ocalałe jednostki zwycięskiej strony do applyPostBattleMap (manualSurvivors).
+   * Rout = ucieczka z pola bitwy, nie kasacja z units[] — HP>0 wraca na mapę.
+   */
+  private _battleUnitsForMapExport(roster: RuntimeBattleUnit[]): BattleUnit[] {
+    return roster
+      .filter(u => u.bu.hp > 0 && (!u.dead || u.routed))
+      .map(u => ({ ...u.bu, hp: Math.max(0, u.bu.hp) }));
   }
 
   /**

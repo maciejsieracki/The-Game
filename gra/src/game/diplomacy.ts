@@ -935,11 +935,45 @@ export function applyDiplomaticEvent(
   const newZ = clamp(rel.zaufanie + dZ, 0, 100);
   const newR = clamp(rel.respekt  + dR, 0, 100);
 
-  return {
+  return clampRelationForWar({
     zaufanie: newZ,
     respekt:  newR,
     status:   newStatus,
-  };
+  });
+}
+
+/**
+ * Maks. score (Zaufanie + Respekt) w stanie wojny — nastawienie co najmniej „Wrogi"
+ * (relationTier / nastawienieLabelFromScore: score < progMinimalnyRelacja = 30).
+ */
+export const WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
+
+/** Czy para jest w stanie wojny (slim Relation.status lub pełne RelacjaDyplomatyczna.stanWojny). */
+export function isRelationAtWar(
+  rdip: Pick<Relation, 'status'> | Pick<RelacjaDyplomatyczna, 'stanWojny'>,
+): boolean {
+  const slim = rdip as Relation;
+  if (slim.status === 'wojna') return true;
+  const stan = (rdip as RelacjaDyplomatyczna).stanWojny;
+  return stan === StanWojny.Wojna || stan === StanWojny.CasusBelli;
+}
+
+/**
+ * W stanie wojny score relacji nie może utrzymywać nastawienia „Przyjazny"/„Życzliwy".
+ * Obniża Zaufanie, potem Respekt, do WAR_RELATION_SCORE_CAP (29).
+ */
+export function clampRelationForWar(rel: Relation): Relation {
+  if (rel.status !== 'wojna') return rel;
+  const score = relationScore(rel);
+  if (score <= WAR_RELATION_SCORE_CAP) return rel;
+  let excess = score - WAR_RELATION_SCORE_CAP;
+  let z = rel.zaufanie;
+  let r = rel.respekt;
+  const takeZ = Math.min(excess, z);
+  z -= takeZ;
+  excess -= takeZ;
+  r = Math.max(0, r - excess);
+  return { ...rel, zaufanie: z, respekt: r };
 }
 
 // ---------------------------------------------------------------------------
@@ -1556,6 +1590,8 @@ export interface TickCtx {
 export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): RelacjaDyplomatyczna {
   const p = getEffectiveDiplomacyParams();
 
+  const atWar = isRelationAtWar(rdip);
+
   // --- delta Zaufania z flag per-turowych ---
   let dZ = 0;
   if (ctx.aktywnyHandel)        dZ += p.handel_zaufanie_perTura;
@@ -1597,13 +1633,24 @@ export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): Relacja
     t => t.wygasaTura === null || t.wygasaTura > ctx.turn,
   );
 
+  // Wojna: brak narastania Zaufania (pokój/handlowe tiery i tak wyłączone w main.ts).
+  if (atWar && dZ > 0) dZ = 0;
+
   // --- clamp Zaufania i przelicz relacjaOgolna ---
-  const noweZaufanie = clamp(rdip.zaufanie + dZ, 0, 100);
-  const nowaRelacja  = noweZaufanie + rdip.respekt;
+  const slimStatus = (rdip as unknown as Relation).status;
+  const tickedRel = clampRelationForWar({
+    zaufanie: clamp(rdip.zaufanie + dZ, 0, 100),
+    respekt:  rdip.respekt,
+    status:   atWar ? 'wojna' : (slimStatus ?? 'pokoj'),
+  });
+  const noweZaufanie = tickedRel.zaufanie;
+  const nowyRespekt  = tickedRel.respekt;
+  const nowaRelacja  = noweZaufanie + nowyRespekt;
 
   return {
     ...rdip,
     zaufanie:         noweZaufanie,
+    respekt:          nowyRespekt,
     relacjaOgolna:    nowaRelacja,
     traktaty:         aktywne,
     urazyHistoryczne: noweUrazy,

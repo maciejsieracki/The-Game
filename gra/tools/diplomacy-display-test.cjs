@@ -23,6 +23,7 @@ export {
   formatNegotiationDealSummary,
   splitNegotiationDealPlayerSides,
   nastawienieLabelFromScore,
+  effectiveNastawienieScores,
   resolveFormalDiplomaticStatus,
   respektTooltipPl,
   treatyDisplayLabel,
@@ -88,6 +89,9 @@ ok(trade.kind === 'handel' && trade.label === 'Traktat handlowy', 'formal: trakt
 
 ok(mod.nastawienieLabelFromScore(10, 10) === 'Wrogi', 'nastawienie: wrogi z score');
 ok(mod.nastawienieLabelFromScore(25, 25) === 'Neutralny', 'nastawienie: neutralny z score');
+ok(mod.nastawienieLabelFromScore(74, 54, { atWar: true }) === 'Wrogi', 'nastawienie: wojna → Wrogi mimo wysokiego score');
+ok(mod.effectiveNastawienieScores(74, 54, true).zaufanie === 0, 'effective scores: wojna clamp Z');
+ok(mod.effectiveNastawienieScores(74, 54, true).respekt === 29, 'effective scores: wojna clamp R');
 
 ok(mod.treatyDisplayLabel('pakt_nieagresji') === 'Pakt nieagresji', 'etykieta: NAP');
 ok(mod.treatyDisplayLabel('umowa_szlakow') === 'Traktat handlowy', 'etykieta: traktat handlowy');

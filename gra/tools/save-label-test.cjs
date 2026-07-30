@@ -32,8 +32,9 @@ function assert(cond, msg) {
   if (!cond) throw new Error(msg);
 }
 
-assert(yearLabelFromTurn(10) === 'rok 3500 p.n.e.', 'year turn 10');
-assert(yearLabelFromTurn(1) === 'rok 3950 p.n.e.', 'year turn 1');
+assert(yearLabelFromTurn(1) === 'rok 4000 p.n.e.', 'year turn 1');
+assert(yearLabelFromTurn(10) === 'rok 3550 p.n.e.', 'year turn 10');
+assert(yearLabelFromTurn(24) === 'rok 2850 p.n.e.', 'year turn 24');
 
 const manual = buildDefaultSaveLabel({
   kind: 'manual',
@@ -43,7 +44,7 @@ const manual = buildDefaultSaveLabel({
   difficulty: 'normal',
 });
 assert(
-  manual === 'Ateny · rok 3500 p.n.e. · tura 10 · Standardowy · Normalny',
+  manual === 'Ateny · rok 3550 p.n.e. · tura 10 · Standardowy · Normalny',
   'manual label: ' + manual,
 );
 

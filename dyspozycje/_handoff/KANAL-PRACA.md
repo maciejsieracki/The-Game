@@ -4469,3 +4469,10 @@ CZEKAM-NA: nic
 - AI-CS-CLUSTER-DIFF: odwrotna trudnosc PM · wojna CS od t.20 · priorytet kragu do t.100 (`e0b8afe`)
 - Graj: `gra-robocza/START.html` (Ctrl+F5)
 CZEKAM-NA: nic (push na zadanie Macieja)
+
+## [11:25 PL, 2026-07-30] LOKAL/Grok → ALL — FALA 123 DEPLOY ALL
+- md5 `fb78916f` / `fb78916f1c5d2db9d5413ad5ffe25e4e` | stempel ROBOCZA · 2026-07-30 11:25
+- Zakres: armie (merge heks/garnizon wyjście/Spacja/rout/zajęcie całego stosu) · irygacja/tarasy na lesie · HP auto-walki · CS wojna→Wrogi · pokój PW bez zbędnego prezentu
+- tsc 0 | VERIFY OK | POLE-BITWY `dd399c4b`
+- Graj: `gra-robocza/START.html` (Ctrl+F5)
+CZEKAM-NA: nic

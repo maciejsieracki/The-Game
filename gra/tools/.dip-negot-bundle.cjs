@@ -4994,6 +4994,20 @@ function relationScore(rel) {
     200
   );
 }
+var WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
+function clampRelationForWar(rel) {
+  if (rel.status !== "wojna") return rel;
+  const score = relationScore(rel);
+  if (score <= WAR_RELATION_SCORE_CAP) return rel;
+  let excess = score - WAR_RELATION_SCORE_CAP;
+  let z = rel.zaufanie;
+  let r = rel.respekt;
+  const takeZ = Math.min(excess, z);
+  z -= takeZ;
+  excess -= takeZ;
+  r = Math.max(0, r - excess);
+  return { ...rel, zaufanie: z, respekt: r };
+}
 var ARCHETYPE_AGGRESSION = {
   ["grecy" /* Grecy */]: 0.4,
   ["rzymianie" /* Rzymianie */]: 0.75,
@@ -12863,21 +12877,32 @@ function treatyBasePnFromConfig(actionId) {
   const t = diplomacy_acceptance_points_default.traktaty;
   return t[actionId]?.punkty ?? 0;
 }
+function treatyEvalRelationTotal(rel) {
+  const clamped = rel.status === "wojna" ? clampRelationForWar(rel) : rel;
+  return relationTotal(clamped);
+}
+function peaceProposalOfferPn(givePn, receivePn, basePn, rel) {
+  const relTotal = treatyEvalRelationTotal(rel);
+  const required = effectiveTreatyPnRequired(basePn, relTotal);
+  const basketNet = Math.max(0, givePn - receivePn);
+  return { offerPn: required + basketNet, required };
+}
 function treatyPnGate(actionId, payload, relation, pnOpts) {
   const basePn = treatyBasePnFromConfig(actionId);
   if (basePn <= 0) return null;
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-  const relTotal = relationTotal(relation);
-  const required = effectiveTreatyPnRequired(basePn, relTotal);
   if (actionId === "pokoj") {
-    if (givePn < required) {
+    const { offerPn, required: required2 } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+    if (offerPn < required2) {
       return {
         accepted: false,
-        reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PW @ Relacji, baza ${basePn})`
+        reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required2} PW @ Relacji, baza ${basePn})`
       };
     }
     return null;
   }
+  const relTotal = treatyEvalRelationTotal(relation);
+  const required = effectiveTreatyPnRequired(basePn, relTotal);
   const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
   if (!hasBasket) return null;
   if (receivePn > 0) {
@@ -13010,10 +13035,10 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: true, reason: `Trybut ${perTurn} \xA4/tur\u0119`, deal };
     }
     case "pokoj": {
-      const { givePn } = resolveProposalPn(payload, pnOpts);
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const basePn = treatyBasePnFromConfig("pokoj");
-      const required = effectiveTreatyPnRequired(basePn, relationTotal(relation));
-      if (givePn < required) {
+      const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+      if (offerPn < required) {
         return {
           accepted: false,
           reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PW @ Relacji)`
@@ -13536,7 +13561,7 @@ function generateCounterOffer(proposal, ctx) {
   const { actionId, payload } = proposal;
   if (NEGOTIATION_NO_ENGINE_COUNTER.has(actionId)) return null;
   const difficulty = ctx.difficulty ?? "normal";
-  const relTotal = relationTotal(ctx.relation);
+  const relTotal = treatyEvalRelationTotal(ctx.relation);
   const pnOpts = { difficulty };
   const tryPayload = (p) => evaluateProposal({ ...proposal, payload: p }, ctx).accepted;
   const finalizePayload = (p) => aiOfferTargetsZeroBalance(difficulty) ? trimProposalForZeroBalance(p, relTotal, difficulty, pnOpts) : p;
@@ -13566,6 +13591,7 @@ function generateCounterOffer(proposal, ctx) {
     return null;
   }
   if (SWEETENER_COUNTER_ELIGIBLE.has(actionId)) {
+    if (tryPayload(payload)) return null;
     for (let step = 1; step <= NEGOTIATION_SWEETENER_MAX_STEPS; step++) {
       const extra = step * NEGOTIATION_SWEETENER_STEP_GOLD;
       const candidate = withExtraSweetenerGold(payload, extra);

@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `9f09757e` - 2026-07-30 09:11 - FALA 122: AI-CS-CLUSTER-DIFF (odwrotna trudnosc PM, wojna CS od t.20, priorytet kragu do t.100) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `fb78916f` - 2026-07-30 11:25 - FALA 123: armie/garnizon/rout/zajecie + irygacja las + HP bitwy + dyplo wojna/pokoj + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `fb78916f1c5d2db9d5413ad5ffe25e4e` · stempel: `ROBOCZA · 2026-07-30 11:25`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: merge garnizon↔pole; wyjście całego stosu z garnizonu; Spacja pomija uśpione/ufortyfikowane; rout nie kasuje jednostki; zajęcie miasta — cały stos kotwicy; irygacja/tarasy zabronione na lesie; HP w podsumowaniu auto-walki (pkt); CS wojna→Wrogi; pokój PW gate + bez zbędnego prezentu.
+- tsc 0 · VERIFY OK. POLE-BITWY `dd399c4b` (bez zmian logiki fali).
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `9f09757e` - 2026-07-30 09:11 - FALA 122: AI-CS-CLUSTER-DIFF (odwrotna trudnosc PM, wojna CS od t.20, priorytet kragu do t.100) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `9f09757ecb1df804e66c96066fdb72ac` · stempel: `ROBOCZA · 2026-07-30 09:11`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Commit zrodlowy: `e0b8afe` (AI-CS-CLUSTER-DIFF). tsc 0 · city-state-cluster-diff-test 15/15 · siege-defenders 12/12.

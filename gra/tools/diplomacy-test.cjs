@@ -168,13 +168,15 @@ eq(applyDiplomaticEvent(rel(20, 30), 'trybut_zaakceptowany').respekt, 40, 'trybu
 // ---- war / peace status transitions ----
 {
   const r = applyDiplomaticEvent(rel(60, 40), 'zdrada');
-  eq(r.zaufanie, 10,      'zdrada -50 Z');
-  eq(r.status,  'wojna',  'zdrada sets status wojna');
+  eq(r.zaufanie, 0,      'zdrada -50 Z, potem clamp wojny');
+  eq(r.respekt,  29,     'zdrada clamp R (score<=29)');
+  eq(r.status,  'wojna', 'zdrada sets status wojna');
 }
 {
   const r = applyDiplomaticEvent(rel(50, 30), 'wojna_wypowiedziana');
-  eq(r.zaufanie, 50,      'wojna z karencją N1 — bez kary Zaufania przy deklaracji');
-  eq(r.status,  'wojna',  'wojna_wypowiedziana sets wojna');
+  eq(r.zaufanie, 0,      'wojna — clamp Z (podłoga Wrogi, bez kary N1 deklaracji)');
+  eq(r.respekt,  29,     'wojna — clamp R do score<=29');
+  eq(r.status,  'wojna', 'wojna_wypowiedziana sets wojna');
 }
 {
   const r = applyDiplomaticEvent(rel(20, 30, 'wojna'), 'pokoj');
@@ -194,7 +196,8 @@ eq(applyDiplomaticEvent(rel(20, 30), 'dar', { mnoznikPodarunku: 2 }).zaufanie, 2
 // ---- NEW spec-faithful events (Dyplomacja-szablon.md section 1) ----
 {
   const r = applyDiplomaticEvent(rel(50, 30), 'wojna_casus_belli');
-  eq(r.zaufanie, 40,     'wojna z casus belli -10 Z');
+  eq(r.zaufanie, 0,     'wojna z casus belli -10 Z, potem clamp wojny');
+  eq(r.respekt,  29,    'wojna casus belli clamp R');
   eq(r.status,  'wojna', 'wojna_casus_belli sets wojna');
 }
 eq(applyDiplomaticEvent(rel(20, 30), 'ultimatum_spelnione').zaufanie, 15, 'ultimatum spelnione -5 Z');

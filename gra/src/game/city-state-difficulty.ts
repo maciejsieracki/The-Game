@@ -14,6 +14,31 @@ export function cityStateDifficultyFromGameDifficulty(diff: DifficultyLevel): Di
 export const CLUSTER_CS_WAR_MIN_TURN = 20;
 export const CLUSTER_CS_CONQUEST_DEADLINE_TURN = 100;
 
+/**
+ * Gdy trudność państw-miast = hard: od tury 20 każde PM co turę ma szansę
+ * wypowiedzieć wojnę graczowi (Maciej 2026-07-30; podniesione do 60% po playteście t.24).
+ * Blokada: aktywny traktat handlowy / surowcowy z graczem.
+ */
+export const CITY_STATE_PLAYER_WAR_MIN_TURN = 20;
+export const CITY_STATE_PLAYER_WAR_CHANCE = 0.60;
+
+/**
+ * Czy to państwo-miasto ma w tej turze wypowiedzieć wojnę graczowi (rzut raz na turę).
+ */
+export function shouldCityStateRollWarOnPlayer(
+  cityStateDifficulty: DifficultyLevel,
+  turn: number,
+  atWarWithPlayer: boolean,
+  hasTradeOrResourceTreatyWithPlayer: boolean,
+  rng: () => number = Math.random,
+): boolean {
+  if (cityStateDifficulty !== 'hard') return false;
+  if (turn < CITY_STATE_PLAYER_WAR_MIN_TURN) return false;
+  if (atWarWithPlayer) return false;
+  if (hasTradeOrResourceTreatyWithPlayer) return false;
+  return rng() < CITY_STATE_PLAYER_WAR_CHANCE;
+}
+
 export interface ClusterStateTarget {
   ownerId: number;
   q: number;

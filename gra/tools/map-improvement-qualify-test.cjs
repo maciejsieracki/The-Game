@@ -22,6 +22,8 @@ export {
   isOwceBaseTerrain,
   isAnimalFarmBlockedOnForest,
   isLivestockImprovementBlockedOnForest,
+  isImprovementBlockedOnForest,
+  getImprovementForestBlockHint,
   computeImprovementBuildImpact,
   improvementsReplacedByBuild,
   formatImprovementBuildImpactList,
@@ -278,6 +280,16 @@ ok(!qRzym('owce', 10, 0), 'owce NOT on wzgorza+las (BUG owce/tartak)');
 ok(!qRzym('bydlo', 2, 1), 'bydlo NOT on laka+las (hodowla zablokowana na lesie)');
 ok(M.isLivestockImprovementBlockedOnForest('bydlo', NK.Las), 'livestock blocked on las: bydlo');
 ok(!M.computeImprovementBuildImpact('bydlo', hexes['2,1'], []), 'impact null: bydlo on las');
+ok(!qInka('irygacja', 3, 1), 'irygacja NOT on laka+las (wymaga wyrębu)');
+hexes['1,2'] = mkHex(1, 2, TB.Laka, NK.Las);
+ok(!qInka('irygacja', 1, 2), 'irygacja NOT on laka+las przy rzece');
+ok(!qInka('tarasy', 10, 0), 'tarasy NOT on wzgorza+las');
+ok(qInka('fort', 3, 1), 'fort OK on laka+las (las zostaje)');
+ok(M.isImprovementBlockedOnForest('irygacja', NK.Las), 'forest block: irygacja');
+ok(!M.isImprovementBlockedOnForest('farma', NK.Las), 'forest coexist: farma');
+ok(!M.isImprovementBlockedOnForest('tartak', NK.Las), 'forest coexist: tartak');
+ok(!M.isImprovementBlockedOnForest('droga', NK.Las), 'droga allowed on las (las zostaje)');
+ok(!M.computeImprovementBuildImpact('irygacja', hexes['3,1'], []), 'impact null: irygacja on las');
 ok(qInka('tartak', 2, 1), 'tartak OK on laka+las (ulepszenie leśne)');
 ok(qInka('oboz_lowiecki', 2, 1), 'oboz lowiecki OK on laka+las');
 const qOwceOpen = qual({ civ: 'rzym', placed: new Map([['1,1', ['owce']]]) });

@@ -67,6 +67,14 @@ function unitSvgHtml(kind: UnitKind): string {
   return PB_SVG.unitMelee;
 }
 
+/** Bezwzględne HP przed→po (max w liczniku po prawej). */
+function formatHpLine(u: BattleSummaryUnitCard): string {
+  const max = Math.max(0, Math.round(u.maxHp));
+  const before = Math.max(0, Math.round(u.hpBefore));
+  const after = u.dead ? 0 : Math.max(0, Math.round(u.hpAfter));
+  return 'HP ' + before + ' \u2192 ' + after + '/' + max;
+}
+
 function ensureStyles(): void {
   if (styleInjected) return;
   styleInjected = true;
@@ -235,10 +243,7 @@ function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def'): HTMLElemen
     fontSize: '10px',
     color: BATTLE_TEXT_DIM,
   });
-  const hpTxt = u.dead
-    ? 'HP ' + u.hpBeforePct + '% \u2192 0%'
-    : 'HP ' + u.hpBeforePct + '% \u2192 ' + u.hpAfterPct + '%';
-  stats.appendChild(el('span', hpTxt));
+  stats.appendChild(el('span', formatHpLine(u)));
   const loss = el('span');
   css(loss, {
     fontWeight: '700',

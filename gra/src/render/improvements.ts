@@ -422,6 +422,10 @@ function najnizszaPowierzchniaPod(box: THREE.Box3, surfaceY: (x: number, z: numb
 }
 const CAT_ANGLE_DEG: Record<string, number> = {
   surowiec: 0, farma: 60, pastwisko: 120, fort: 180, inne: 240, kamien: 300,
+  /** Las (tartak/wyrąb) — ten sam bok co dotychczasowe `inne` (240°), żeby tartak nie skakał. */
+  las: 240,
+  /** Obóz łowiecki — osobny bok (Maciej 2026-07-30); wcześniej wpadał w `inne` i nachodził na tartak. */
+  lowiectwo: 30,
 };
 // Kamieniołom ma WŁASNY bok (kamien=300°), NIE w 'surowiec' — bo od 2026-07-24 współistnieje
 // z kopalnią rudy na tym samym heksie (C-SUR kamień=b); w jednym sektorze modele rysują się w
@@ -431,9 +435,12 @@ const PASTWISKO_KEYS = new Set(['bydlo', 'owce', 'lama', 'pastwisko']);
 const FORT_KEYS = new Set(['fort', 'posterunek']);
 const DROGA_KEYS = new Set(['droga', 'droga_brukowana']);
 const OVERLAY_KEYS = new Set(['irygacja', 'pole_irygowane', 'tarasy']); // nakładki → przy farmie
+const LAS_KEYS = new Set(['tartak', 'wyrab']);
 
 function improvementSectorAngle(key: string): number {
   if (key === 'kamieniolom') return CAT_ANGLE_DEG.kamien!;   // własny bok, obok kopalni bez nachodzenia
+  if (key === 'oboz_lowiecki') return CAT_ANGLE_DEG.lowiectwo!;
+  if (LAS_KEYS.has(key)) return CAT_ANGLE_DEG.las!;
   if (SUROWIEC_KEYS.has(key)) return CAT_ANGLE_DEG.surowiec!;
   if (key === 'farma' || OVERLAY_KEYS.has(key)) return CAT_ANGLE_DEG.farma!;
   if (PASTWISKO_KEYS.has(key)) return CAT_ANGLE_DEG.pastwisko!;

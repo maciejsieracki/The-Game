@@ -237,9 +237,8 @@ function placeFanOutGroup(
     }
 
     if (!placed) {
-      const prev = u.defLossesThisTurn ?? 0;
-      if (prev >= 1) removeUnitById(input.units, u.id);
-      else u.defLossesThisTurn = prev + 1;
+      // Brak wolnego heksu na fan-out — zostaje na miejscu (rout ≠ usunięcie z mapy).
+      u.defLossesThisTurn = (u.defLossesThisTurn ?? 0) + 1;
     }
   }
 }
@@ -414,15 +413,22 @@ export function applyCityCaptureAfterBattle(
     }
   }
 
+  const anchorLive = units.find(x => x.id === anchorId);
+  const anchorQ = anchorLive?.q;
+  const anchorR = anchorLive?.r;
+
   let lead: RuntimeUnit | null = null;
   for (const ref of atkRoster) {
     const live = units.find(x => x.id === ref.id);
     if (!live) continue;
     const isAnchor = ref.id === anchorId;
-    if (isAnchor && !isCivilianUnit(live)) {
+    const coStackedWithAnchor =
+      anchorQ !== undefined && anchorR !== undefined
+      && live.q === anchorQ && live.r === anchorR;
+    if (!isCivilianUnit(live) && (isAnchor || coStackedWithAnchor)) {
       live.q = city.q;
       live.r = city.r;
-      lead = live;
+      if (isAnchor) lead = live;
     }
     if (isCivilianUnit(live) && !isAnchor) continue;
     live.ruchLeft = Math.max(0, live.ruchLeft - 1);

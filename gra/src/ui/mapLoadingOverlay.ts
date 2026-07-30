@@ -129,21 +129,21 @@ function escapeHtml(s: string): string {
 
 function overlayCopy(opts: MapLoadingOverlayOptions): { title: string; meta: string; hint: string; phaseStart: string } {
   const sizePart = opts.mapSizeMetric ?? opts.rozmiarLabel;
-  const mapLine = `${sizePart} · ${opts.typLabel} · ziarno ${opts.seed}`;
   if (opts.mode === 'load') {
-    const savePart = opts.saveLabel?.trim()
-      ? `«${escapeHtml(opts.saveLabel.trim())}» · `
-      : '';
+    // Tylko etykieta zapisu dla gracza — bez ziarna i bez technicznego opisu regeneracji mapy.
+    const meta = opts.saveLabel?.trim()
+      ? `«${escapeHtml(opts.saveLabel.trim())}»`
+      : `${escapeHtml(sizePart)} · ${escapeHtml(opts.typLabel)}`;
     return {
       title: 'Wczytywanie zapisu',
-      meta: `${savePart}${escapeHtml(mapLine)}`,
-      hint: 'Mapa nie jest w pliku zapisu — odtwarzamy ten sam świat ze ziarna, potem wczytujemy stan gry.',
-      phaseStart: 'Odtwarzanie mapy ze ziarna…',
+      meta,
+      hint: '',
+      phaseStart: 'Wczytywanie…',
     };
   }
   return {
     title: 'Tworzenie świata',
-    meta: `Ziarno mapy: ${opts.seed} · ${escapeHtml(sizePart)} · ${escapeHtml(opts.typLabel)}`,
+    meta: `${escapeHtml(sizePart)} · ${escapeHtml(opts.typLabel)}`,
     hint: '',
     phaseStart: 'Przygotowanie…',
   };

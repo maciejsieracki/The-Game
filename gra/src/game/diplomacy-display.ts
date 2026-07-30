@@ -6,7 +6,7 @@ import civsRaw from '../../data/civs.json';
 import { civMatrixParam, loadCivMatrix } from './civ-matrix';
 import type { DiplomacyPerNacjaRow } from './civ-ai-data';
 import { diplomacyPerNacjaRow } from './civ-ai-data';
-import { computeRespekt } from './diplomacy';
+import { clampRelationForWar, computeRespekt } from './diplomacy';
 import { RodzajTraktatu } from '../types/diplomacy';
 import type { ActiveDeal, TreatyKind } from './diplomacy-treaties';
 import { normalizeTreatyKind } from './diplomacy-treaties';
@@ -254,8 +254,13 @@ export function resolveFormalDiplomaticStatus(input: FormalDiplomaticInput): For
   return { label: 'Brak kontaktu', kind: 'brak' };
 }
 
-/** Nastawienie (score zaufania+respektu) — niezależne od formalnej wojny/traktatu. */
-export function nastawienieLabelFromScore(zaufanie: number, respekt: number): string {
+/** Nastawienie z score Zaufania+Respektu; w wojnie co najmniej „Wrogi". */
+export function nastawienieLabelFromScore(
+  zaufanie: number,
+  respekt: number,
+  opts?: { atWar?: boolean },
+): string {
+  if (opts?.atWar) return 'Wrogi';
   const s = Math.max(0, Math.min(200, Math.round(zaufanie + respekt)));
   if (s < 30) return 'Wrogi';
   if (s < 45) return 'Nieufny';
@@ -264,8 +269,22 @@ export function nastawienieLabelFromScore(zaufanie: number, respekt: number): st
   return 'Przyjazny';
 }
 
+/** Zaufanie/Respekt do wyświetlenia — w wojnie z podłogą score (spójne z clampRelationForWar). */
+export function effectiveNastawienieScores(
+  zaufanie: number,
+  respekt: number,
+  atWar: boolean,
+): { zaufanie: number; respekt: number } {
+  if (!atWar) return { zaufanie, respekt };
+  const c = clampRelationForWar({ zaufanie, respekt, status: 'wojna' });
+  return { zaufanie: c.zaufanie, respekt: c.respekt };
+}
+
 /** Krótki podpis pod etykietą nastawienia w audiencji. */
-export function nastawienieHintPl(): string {
+export function nastawienieHintPl(atWar?: boolean): string {
+  if (atWar) {
+    return 'W trakcie wojny nastawienie nie może być przyjazne — co najmniej wrogie.';
+  }
   return 'Ocena relacji i zachowania — niezależna od formalnej wojny i traktatów.';
 }
 

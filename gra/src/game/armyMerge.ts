@@ -87,8 +87,7 @@ export function adjacentVisibleArmyHexes(
  * nadal ignoruje garnizon (visibleStackOnHex).
  *
  * `activeUnitStack` daje "stos do działania" dla JUŻ ZAZNACZONEJ jednostki:
- * ukryta w garnizonie -> stos-solo [u] (Ufort. chowa tylko JEDNĄ konkretną
- * jednostkę, nie cały widoczny stos, więc wyjście też jest per-jednostka);
+ * ukryta w garnizonie -> cały garnizon na heksie (garrisonUnitsOnHex);
  * w przeciwnym razie zwykły, widoczny stos na jej heksie (bez zmian).
  */
 export function activeUnitStack(

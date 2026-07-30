@@ -166,6 +166,42 @@ export function isLivestockImprovementBlockedOnForest(key: string, nakladka: Nak
   return nakladka === Nakladka.Las && isLivestockImprovementKey(key);
 }
 
+/**
+ * Ulepszenia które MOGĄ stać na nakładce Las bez wyrębu (kanon).
+ * farma — Maciej 2026-07-21: Łąka/Równina; Wzgórza z lasem (kępa schowana wizualnie).
+ * tartak / obóz łowiecki — ulepszenia leśne (tartak: las zostaje przy tartaku).
+ */
+const FOREST_COEXIST_IMPROVEMENT_KEYS = new Set<string>([
+  'farma', 'tartak', 'oboz_lowiecki',
+]);
+
+/**
+ * Ulepszenia zabronione na lesie — wymagają wolnego terenu; gracz musi najpierw wyrąbić.
+ * (Wyrąb `wyrab` wymaga lasu — osobna ścieżka qualifies, nie tu.)
+ */
+const FOREST_BLOCKED_IMPROVEMENT_KEYS = new Set<string>([
+  'irygacja',
+  'tarasy',
+]);
+
+/** Budowa na Nakladka.Las zabroniona — bez automatycznego usuwania lasu. */
+export function isImprovementBlockedOnForest(key: string, nakladka: Nakladka): boolean {
+  if (nakladka !== Nakladka.Las) return false;
+  if (FOREST_COEXIST_IMPROVEMENT_KEYS.has(key)) return false;
+  if (key === 'wyrab') return false;
+  if (isLivestockImprovementBlockedOnForest(key, nakladka)) return true;
+  return FOREST_BLOCKED_IMPROVEMENT_KEYS.has(key);
+}
+
+/** Podpowiedź przy próbie budowy na lesie (styl istniejących hintów w main.ts). */
+export function getImprovementForestBlockHint(key: string): string {
+  const name = improvementDisplayName(key);
+  if (isLivestockImprovementKey(key)) {
+    return `${name} na lesie zabroniona — postaw ${improvementDisplayName('oboz_lowiecki')}, albo wybierz otwarte pole`;
+  }
+  return `${name} na lesie zabroniona — najpierw wyrąb las (Wyrąb w panelu ulepszeń).`;
+}
+
 /** @deprecated alias testów — używaj isLivestockImprovementBlockedOnForest */
 export const isAnimalFarmBlockedOnForest = isLivestockImprovementBlockedOnForest;
 
@@ -279,7 +315,7 @@ export function computeImprovementBuildImpact(
   hex: { terenBazowy: TerenBazowy; nakladka: Nakladka },
   existing: readonly string[],
 ): ImprovementBuildImpact | null {
-  if (isLivestockImprovementBlockedOnForest(key, hex.nakladka)) return null;
+  if (isImprovementBlockedOnForest(key, hex.nakladka)) return null;
   if (key === 'owce' && !isOwceBaseTerrain(hex.terenBazowy, hex.nakladka)) {
     return null;
   }

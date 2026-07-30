@@ -26,6 +26,9 @@ export {
   cityStateDifficultyFromGameDifficulty,
   isClusterConquestDeadlineActive,
   pickClusterCityStateWarTargetId,
+  shouldCityStateRollWarOnPlayer,
+  CITY_STATE_PLAYER_WAR_CHANCE,
+  CITY_STATE_PLAYER_WAR_MIN_TURN,
   CLUSTER_CS_WAR_MIN_TURN,
   CLUSTER_CS_CONQUEST_DEADLINE_TURN,
 } from ${JSON.stringify(AI_SRC + '/game/city-state-difficulty')};
@@ -54,6 +57,9 @@ const {
   cityStateDifficultyFromGameDifficulty,
   isClusterConquestDeadlineActive,
   pickClusterCityStateWarTargetId,
+  shouldCityStateRollWarOnPlayer,
+  CITY_STATE_PLAYER_WAR_CHANCE,
+  CITY_STATE_PLAYER_WAR_MIN_TURN,
   CLUSTER_CS_WAR_MIN_TURN,
   CLUSTER_CS_CONQUEST_DEADLINE_TURN,
   decideAIDiplomacy,
@@ -137,6 +143,34 @@ const dipNoForce = decideAIDiplomacy({
   clusterForceWarTargetId: 3,
 });
 assert(!dipNoForce.some(c => c.type === 'wypowiedz_wojne'), 'T5c: already at war → no forced war');
+
+console.log('\n--- T6: shouldCityStateRollWarOnPlayer ---');
+eq(CITY_STATE_PLAYER_WAR_CHANCE, 0.6, 'T6a: chance 60%');
+eq(CITY_STATE_PLAYER_WAR_MIN_TURN, 20, 'T6b: min turn 20');
+assert(
+  !shouldCityStateRollWarOnPlayer('normal', 25, false, false, () => 0),
+  'T6c: normal PM difficulty → never',
+);
+assert(
+  !shouldCityStateRollWarOnPlayer('hard', 19, false, false, () => 0),
+  'T6d: before turn 20 → never',
+);
+assert(
+  !shouldCityStateRollWarOnPlayer('hard', 25, true, false, () => 0),
+  'T6e: already at war → never',
+);
+assert(
+  !shouldCityStateRollWarOnPlayer('hard', 25, false, true, () => 0),
+  'T6f: trade treaty → never',
+);
+assert(
+  shouldCityStateRollWarOnPlayer('hard', 25, false, false, () => 0.59),
+  'T6g: hard + t.25 + roll 0.59 → war',
+);
+assert(
+  !shouldCityStateRollWarOnPlayer('hard', 25, false, false, () => 0.60),
+  'T6h: roll 0.60 → no war (strict <)',
+);
 
 console.log(`\n=== city-state-cluster-diff-test: ${passed} passed, ${failed} failed ===`);
 process.exit(failed > 0 ? 1 : 0);
