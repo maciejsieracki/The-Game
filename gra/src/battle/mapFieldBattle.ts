@@ -73,6 +73,8 @@ export interface MapFieldBattleLaunchDeps {
   isCityStateForOwner?: (ownerId: number) => boolean;
   lookupUnitDef: (typeId: string) => unknown;
   runtimeToBattleUnit: (u: RuntimeUnit, def: unknown, color: number) => BattleUnit;
+  /** Auto-moc M: veteran + fortify (+50% Obr. gdy pole lub garnizon bez muru). */
+  fortifyScaledDefFor: (u: RuntimeUnit) => UnitPowerInput & Record<string, unknown>;
   terrainCombatData: readonly TerrainEntry[];
   battleData: { terrainData?: unknown[]; counters?: unknown[]; units?: unknown[] };
   showHint: (msg: string, ms?: number) => void;
@@ -206,7 +208,7 @@ function effectiveDefenderM(
   terrain: string,
   structBonusPct: number,
   atkLeadDef: UnitPowerInput & Record<string, unknown>,
-  unitDefFor: MapFieldBattleLaunchDeps['unitDefFor'],
+  fortifyScaledDefFor: MapFieldBattleLaunchDeps['fortifyScaledDefFor'],
   terrainCombatData: readonly TerrainEntry[],
 ): number {
   // C-COMBAT-Q1 (Maciej, 2026-07-26): sam bug jak w main.ts effectiveDefenderM
@@ -225,7 +227,7 @@ function effectiveDefenderM(
   // pełne uzasadnienie kombinacji ADDYTYWNEJ struct%+teren% i zerowego bonusu
   // terenu na część Ataku obrońcy).
   const split = sumRosterFieldMSplit(
-    defRoster.map(u => ({ typeId: u.typeId, def: veteranScaledDef(u, unitDefFor) })),
+    defRoster.map(u => ({ typeId: u.typeId, def: fortifyScaledDefFor(u) })),
   );
   const cityTerrMult = cityGatedTerrainMultiplier(false, terrain, terrainCombatData as TerrainEntry[]);
   const combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100;
@@ -240,11 +242,12 @@ function preBattleSzanseAtkPct(
   terrain: string,
   structBonusPct: number,
   unitDefFor: MapFieldBattleLaunchDeps['unitDefFor'],
+  fortifyScaledDefFor: MapFieldBattleLaunchDeps['fortifyScaledDefFor'],
   terrainCombatData: readonly TerrainEntry[],
 ): number {
   const aLeadDef = unitDefFor(atkRoster[0]!);
   const mAtk = rosterFieldPowerM(atkRoster, unitDefFor);
-  const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef, unitDefFor, terrainCombatData);
+  const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef, fortifyScaledDefFor, terrainCombatData);
   return autoBattleWinPct(mAtk, mDef);
 }
 
@@ -274,6 +277,7 @@ export function planOpenCityFieldBattle(
     | 'getTerrainAt'
     | 'getStructBonus'
     | 'unitDefFor'
+    | 'fortifyScaledDefFor'
     | 'unitHealth'
     | 'unitAtak'
     | 'civLabelForOwner'
@@ -307,6 +311,7 @@ export function planOpenCityFieldBattle(
     terrain,
     structBonusPct,
     deps.unitDefFor,
+    deps.fortifyScaledDefFor,
     deps.terrainCombatData,
   );
 
@@ -416,7 +421,7 @@ export function launchFieldBattleFromMap(
         plan.terrain,
         plan.structBonusPct,
         aLeadDef,
-        deps.unitDefFor,
+        deps.fortifyScaledDefFor,
         deps.terrainCombatData,
       );
       const powerRes = resolveAutoBattleByPower({ mAtk, mDef });

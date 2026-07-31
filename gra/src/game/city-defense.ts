@@ -123,10 +123,42 @@ export function cityGatedTerrainMultiplier(
 }
 
 /**
+ * shouldApplyGarrisonFortifyBonus (Maciej 2026-07-31): garnizon „Ufortyfikuj"
+ * dostaje +50% Obrony (jak pole) WYŁĄCZNIE gdy miasto nie ma żadnego budynku
+ * obronnego (Palisada / Mury / Cytadela / Baszta → cityWallDefenseBonusPercent
+ * === 0). Baszta sama lub palisada = obrona budynku > 0 → bez +50% od garnizonu.
+ */
+export function shouldApplyGarrisonFortifyBonus(
+  builtBuildingIds: readonly string[] | null | undefined,
+  params: CityDefenseBonusParams,
+): boolean {
+  return cityWallDefenseBonusPercent(builtBuildingIds, params) === 0;
+}
+
+export interface UnitFortifyDefenseContext {
+  ufortyfikowanyWPolu?: boolean;
+  inGarnizon?: boolean;
+  builtBuildingIds?: readonly string[] | null;
+  cityDefenseParams?: CityDefenseBonusParams;
+}
+
+/**
+ * unitGetsFortifyDefenseBonus — czy jednostka dostaje procentowy bonus
+ * fortify_obrona_proc (+50% Obrony): pole (ufortyfikowanyWPolu) LUB garnizon
+ * w mieście bez palisady/murów/fort/cytadeli/baszty.
+ */
+export function unitGetsFortifyDefenseBonus(ctx: UnitFortifyDefenseContext): boolean {
+  if (ctx.ufortyfikowanyWPolu === true) return true;
+  if (ctx.inGarnizon !== true) return false;
+  if (!ctx.cityDefenseParams) return false;
+  return shouldApplyGarrisonFortifyBonus(ctx.builtBuildingIds, ctx.cityDefenseParams);
+}
+
+/**
  * fieldFortifyDefenseBonus (Maciej 2026-07-26, FORTIFY-POLE-Q1=A 2026-07-31):
  * mnożnik procentowy Obrony (combat-params.json "oblężenie".fortify_obrona_proc,
- * dziś 50 = +50%) dla jednostki RuntimeUnit.ufortyfikowanyWPolu=true — OSOBNE od
- * garnizonu miasta/muru (flat fortify_obrona_bonus w siege.ts).
+ * dziś 50 = +50%) dla jednostki z unitGetsFortifyDefenseBonus === true
+ * (ufortyfikowanyWPolu lub garnizon w mieście bez budynku obronnego).
  *
  * Zwraca Obronę PO bonusie, PRZED mnożnikiem terenu/muru — wołający MUSI pomnożyć
  * wynik przez własny mnożnik terenu osobno (jak cityGatedTerrainMultiplier).

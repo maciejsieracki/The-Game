@@ -1186,6 +1186,8 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Decyzja: 2A** — cytat: „1a, 2a, 3a, 4b, 5a, 6a, 7a". Naprawić na prawdziwe **+50% Obrony** (mnożnik ×1.5, nie flat +50). **WDROŻONE:** `fieldFortifyDefenseBonus` w `city-defense.ts`.
 
+**Dopisek 2026-07-31 (FORTIFY-GARNIZON):** garnizon „Ufortyfikuj" (`inGarnizon`) w mieście **bez** budynku obronnego (brak palisady/murów/fort/cytadeli/baszty → `cityWallDefenseBonusPercent === 0`) dostaje **+50% Obrony** (jak `ufortyfikowanyWPolu` / `fortify_obrona_proc`). Gdy miasto ma palisadę, mury lub basztę (bonus budynku > 0) — **0%** od ufortyfikuj, tylko bonus budynku. **WDROŻONE:** `shouldApplyGarrisonFortifyBonus` + `unitGetsFortifyDefenseBonus` w `city-defense.ts`; wpięte w `main.ts` (Auto/taktyczna) i `mapFieldBattle.ts`.
+
 ---
 
 ## CLIMATE-DESERT-WIDTH-Q1 — szerokość pasa pustyni środkowej · STATUS: **ZAMKNIĘTE / WDROŻONE** (Maciej 2026-07-31)

@@ -112,7 +112,7 @@ esbuild.buildSync({
   outfile: CITY_BUNDLE,
   logLevel: 'silent',
 });
-const { fieldFortifyDefenseBonus } = require(CITY_BUNDLE);
+const { fieldFortifyDefenseBonus, shouldApplyGarrisonFortifyBonus, unitGetsFortifyDefenseBonus } = require(CITY_BUNDLE);
 
 // ---------------------------------------------------------------------------
 // Bundle 3: game/combat.ts (resolveCombat, hitChanceTw, terrainDefenseMultiplier)
@@ -410,6 +410,64 @@ console.log('\n--- E. Przetrwanie zapisu gry (JSON round-trip) ---');
   assert(
     (loaded.ufortyfikowanyWPolu === true) === false,
     'Stary zapis traktowany jako false wszędzie, gdzie kod sprawdza "=== true" (bez wyjątku/NaN)',
+  );
+}
+
+// ===========================================================================
+// CZĘŚĆ F -- garnizon w mieście bez murów (Maciej 2026-07-31)
+// ===========================================================================
+console.log('\n--- F. Garnizon bez palisady/murów (+50% Obrony) ---');
+
+const CITY_DEF_PARAMS = { mur: 200, cytadela: 100, baszta: 100, palisada: 100 };
+
+{
+  assert(
+    shouldApplyGarrisonFortifyBonus([], CITY_DEF_PARAMS) === true,
+    'shouldApplyGarrisonFortifyBonus([]): brak budynków obronnych → true',
+  );
+  assert(
+    shouldApplyGarrisonFortifyBonus(['palisada'], CITY_DEF_PARAMS) === false,
+    'shouldApplyGarrisonFortifyBonus([palisada]): palisada → false (bonus budynku, nie fortify)',
+  );
+  assert(
+    shouldApplyGarrisonFortifyBonus(['mury'], CITY_DEF_PARAMS) === false,
+    'shouldApplyGarrisonFortifyBonus([mury]): mury → false',
+  );
+  assert(
+    shouldApplyGarrisonFortifyBonus(['baszta'], CITY_DEF_PARAMS) === false,
+    'shouldApplyGarrisonFortifyBonus([baszta]): sama baszta → false (cityWallDefenseBonusPercent > 0)',
+  );
+}
+
+{
+  const baseObrona = 12;
+  const ctxGarnizonNoWall = {
+    inGarnizon: true,
+    builtBuildingIds: [],
+    cityDefenseParams: CITY_DEF_PARAMS,
+  };
+  const ctxGarnizonPalisada = {
+    inGarnizon: true,
+    builtBuildingIds: ['palisada'],
+    cityDefenseParams: CITY_DEF_PARAMS,
+  };
+  assert(
+    unitGetsFortifyDefenseBonus(ctxGarnizonNoWall) === true,
+    'unitGetsFortifyDefenseBonus: garnizon + brak palisady → +50% (jak pole)',
+  );
+  assert(
+    unitGetsFortifyDefenseBonus(ctxGarnizonPalisada) === false,
+    'unitGetsFortifyDefenseBonus: garnizon + palisada → bez ×1.5 od fortify',
+  );
+  assert(
+    fieldFortifyDefenseBonus(baseObrona, unitGetsFortifyDefenseBonus(ctxGarnizonNoWall), FORTIFY_OBRONA_PROC)
+      === baseObrona * (1 + FORTIFY_OBRONA_PROC / 100),
+    'garnizon bez murów: Obrona ×' + (1 + FORTIFY_OBRONA_PROC / 100) + ' (parity z polem)',
+  );
+  assert(
+    fieldFortifyDefenseBonus(baseObrona, unitGetsFortifyDefenseBonus(ctxGarnizonPalisada), FORTIFY_OBRONA_PROC)
+      === baseObrona,
+    'garnizon z palisadą: Obrona bez zmian od fortify (budynek osobno)',
   );
 }
 

@@ -587,6 +587,8 @@ import {
   cityWallDefenseBonusPercent,
   cityGatedTerrainMultiplier,
   fieldFortifyDefenseBonus,
+  unitGetsFortifyDefenseBonus,
+  type CityDefenseBonusParams,
 } from './game/city-defense';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
@@ -15814,6 +15816,28 @@ async function boot(): Promise<void> {
     const BASZTA_BONUS_PROC = (miastoParams.bonus_obrona_baszta_proc?.wartosc as number) ?? 100;
     const PALISADA_BONUS_PROC = (miastoParams.bonus_obrona_palisada_proc?.wartosc as number) ?? 100;
 
+    const cityDefenseBonusParams: CityDefenseBonusParams = {
+      mur: MUR_BONUS_PROC,
+      cytadela: CYTADELA_BONUS_PROC,
+      baszta: BASZTA_BONUS_PROC,
+      palisada: PALISADA_BONUS_PROC,
+    };
+
+    function builtIdsForGarrisonUnit(u: RuntimeUnit): readonly string[] | undefined {
+      if (u.inGarnizon !== true) return undefined;
+      const city = cityAtUnit(u);
+      return city ? (cityBuilt.get(city.id) ?? []) : undefined;
+    }
+
+    function unitGetsFortifyBonus(u: RuntimeUnit): boolean {
+      return unitGetsFortifyDefenseBonus({
+        ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
+        inGarnizon: u.inGarnizon,
+        builtBuildingIds: builtIdsForGarrisonUnit(u),
+        cityDefenseParams: cityDefenseBonusParams,
+      });
+    }
+
     /**
      * structureDefenseBonusFor (STEP E) -- bonusy obronne za mape/budowle.
      *
@@ -15965,16 +15989,15 @@ async function boot(): Promise<void> {
     /**
      * DYSPOZYCJA Macieja 2026-07-26 / korekta 2026-07-28 (+50% Obrony):
      * veteranScaledDefFor(u) + procentowy bonus Obrony (fieldFortifyDefenseBonus,
-     * game/city-defense.ts) gdy RuntimeUnit.ufortyfikowanyWPolu -- TA SAMA
-     * sciezka wpiecia co weteran powyzej (Auto-walka moca nie przechodzi przez
-     * BattleUnit, wiec potrzebuje WLASNEGO punktu wpiecia). Usuwa `fieldPower`
-     * po doliczeniu bonusu z tego samego powodu co veteranScaledDefFor (cache
-     * z eksportu units.json ignorowalby przeskalowane pole meleeDefence --
-     * patrz PULAPKA w komentarzu powyzej).
+     * game/city-defense.ts) gdy unitGetsFortifyDefenseBonus (pole LUB garnizon
+     * w miescie bez palisady/murow) -- TA SAMA sciezka wpiecia co weteran.
+     * Usuwa `fieldPower` po doliczeniu bonusu z tego samego powodu co
+     * veteranScaledDefFor (cache z eksportu units.json ignorowalby przeskalowane
+     * pole meleeDefence -- patrz PULAPKA w komentarzu powyzej).
      */
     function fortifyFieldScaledDefFor(u: RuntimeUnit): any {
       const scaled = veteranScaledDefFor(u);
-      if (u.ufortyfikowanyWPolu !== true) return scaled;
+      if (!unitGetsFortifyBonus(u)) return scaled;
       const baseObrona = typeof scaled.meleeDefence === 'number' ? scaled.meleeDefence : 0;
       const { fieldPower: _staleFieldPower2, ...rest } = scaled;
       return {
@@ -16034,11 +16057,12 @@ async function boot(): Promise<void> {
         // TRZECI SYSTEM (weterani, decyzja wlasciciela 78, game/veteran.ts):
         // ownerId-agnostyczne, identyczne dla gracza i AI.
         veteranBonusFrac: veteranCombatBonusFrac(u),
-        // DYSPOZYCJA Macieja 2026-07-26 ("oblezenie + fortyfikacja w polu"):
-        // z RuntimeUnit.ufortyfikowanyWPolu -- ownerId-agnostyczne, identyczne
-        // dla gracza i AI. Konsumowane przez battleScene.ts _singleBlow oraz
-        // computeInstantResult (fieldFortifyDefenseBonus, game/city-defense.ts).
-        fortifiedInField: u.ufortyfikowanyWPolu === true,
+        // DYSPOZYCJA Macieja 2026-07-26 / 2026-07-31: pole (ufortyfikowanyWPolu)
+        // LUB garnizon w miescie bez palisady/murow -- ownerId-agnostyczne.
+        // Konsumowane przez battleScene.ts _singleBlow oraz computeInstantResult
+        // (fieldFortifyDefenseBonus, game/city-defense.ts). Nie zmienia widocznosci
+        // garnizonu (inGarnizon pozostaje osobno).
+        fortifiedInField: unitGetsFortifyBonus(u),
         armyHungry: isArmyHungry(u.ownerId) && !isCivilianUnit(u),
       };
     }
@@ -16482,9 +16506,9 @@ async function boot(): Promise<void> {
       // mnożniki różnych czynników, kolejność mnożenia nie zmienia wyniku
       // matematycznie, ale weteran musi skalować BAZOWĄ Obronę/Atak, na
       // której dopiero mur/teren nakładają swój procent -- nie odwrotnie).
-      // DYSPOZYCJA 2026-07-26 / korekta 2026-07-28: fortifyFieldScaledDefFor
-      // dolicza +50% Obrony (fieldFortifyDefenseBonus, fortify_obrona_proc)
-      // NA WIERZCHU premii weterana, gdy RuntimeUnit.ufortyfikowanyWPolu.
+      // DYSPOZYCJA 2026-07-26 / 2026-07-31: fortifyFieldScaledDefFor dolicza +50%
+      // Obrony (fieldFortifyDefenseBonus, fortify_obrona_proc) NA WIERZCHU premii
+      // weterana, gdy unitGetsFortifyDefenseBonus (pole lub garnizon bez muru).
       const split = sumRosterFieldMSplit(
         defRoster.map(u => ({ typeId: u.typeId, def: fortifyFieldScaledDefFor(u) })),
       );
@@ -17434,6 +17458,7 @@ async function boot(): Promise<void> {
       isCityStateForOwner: (ownerId: number) => isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
       lookupUnitDef,
       runtimeToBattleUnit,
+      fortifyScaledDefFor: fortifyFieldScaledDefFor,
       terrainCombatData: terrainCombatData as unknown as readonly TerrainEntry[],
       battleData: data,
       showHint: showHintMessage,
