@@ -847,6 +847,7 @@ import {
   freshDiploPairMeta,
   relationTotal,
   resolveProposalPn,
+  proposalPnTurnsMultiplier,
   suspendZlozeGrantsForWar,
   deactivateZlozeGrantsForDeal,
   tickDobraWolaOnRelation,
@@ -1461,6 +1462,8 @@ async function boot(): Promise<void> {
 
     /** Opcje renderowania miast — epoka i cywilizacja per właściciel. */
     let cityFogVisible: ((city: City, vis?: Set<string>) => boolean) | undefined;
+    /** Podpinane po deklaracji cityBuilt (~L1830) — unika TDZ przy pierwszym sync. */
+    let cityBuiltIdsForRender: ((cityId: string) => readonly string[]) | undefined;
     const _cityRenderOpts = (): CityRenderOptions => {
       // #27 perf: policz widoczność RAZ per wywołanie _cityRenderOpts (nie osobno dla
       // każdego obcego miasta w isVisible) — reużywane przez cache'ujący cityFogVisible.
@@ -1481,6 +1484,12 @@ async function boot(): Promise<void> {
           return c ? Math.max(1, Math.min(10, c.population ?? 1)) : 1;
         },
         getWalls: (cityId: string) => cities.find(c => c.id === cityId)?.maMur === true,
+        getWallKind: (cityId: string) => {
+          const built = cityBuiltIdsForRender?.(cityId) ?? [];
+          if (built.includes('mury') || built.includes('fort')) return 'stone';
+          if (built.includes('palisada')) return 'palisada';
+          return 'none';
+        },
         getRevolt: (cityId: string) => {
           const st = cityOrderState.get(cityId);
           return st?.bunt === true || st?.revoltWarning === true;
@@ -1821,6 +1830,7 @@ async function boot(): Promise<void> {
     // --- Stan pomiędzy turami: produkcja / built / religia per miasto ---
     const cityProd  = new Map<string, CityProduction>();
     const cityBuilt = new Map<string, string[]>();
+    cityBuiltIdsForRender = (cityId) => cityBuilt.get(cityId) ?? [];
     const cityRelig = new Map<string, ReligionState>();
     /** Handel E3: aktywne trasy gracz<->obca cywilizacja (odswiezane co ture). */
     let tradeRoutes: TradeRoute[] = [];
@@ -6512,6 +6522,34 @@ async function boot(): Promise<void> {
       return true;
     }
 
+    /** Wypowiedzenie wojny między dowolnymi państwami (ultimatum / odmowa negocjacji). */
+    function ownerDeclareWarOn(attackerId: number, defenderId: number): void {
+      if (attackerId === defenderId) return;
+      chargeWarDeclarationCredibility(attackerId, defenderId);
+      breakTreatiesOnWar(attackerId, defenderId, attackerId === 0);
+      applyAllianceObligationsOnWar(attackerId, defenderId);
+      setDiploRelation(
+        attackerId,
+        defenderId,
+        applyDiploEventTracked(
+          attackerId,
+          defenderId,
+          getDiploRelation(attackerId, defenderId),
+          'wojna_wypowiedziana',
+        ),
+      );
+      if (defenderId === 0 || attackerId === 0) {
+        recordWarDeclarationEvent(attackerId, defenderId);
+      }
+      if (defenderId === 0) {
+        showHintMessage('\u2694 ' + ownerDiploLabel(attackerId) + ' wypowiada wojnę (ultimatum)', 4500);
+        updateDiplomacyAudience();
+        if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+        updateHud();
+        wireUnitRendererRingStance();
+      }
+    }
+
     /** Bramka UX: atak / marsz na obce państwo wymaga wojny (modal potwierdzenia). */
     function withPlayerWarConsent(targetOwnerId: number, onAllowed: () => void): void {
       if (playerIsAtWarWith(targetOwnerId)) {
@@ -8490,7 +8528,7 @@ async function boot(): Promise<void> {
      * mają identyczny mechanizm spłaszczania — rozszerzone o nie, bo kopalnia wkomponowana
      * w zbocze wzgórza jest logiczniejsza niż płaski heks (spójne z kamieniołomem).
      */
-    const PRESERVES_HILL_RELIEF_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom', 'kopalnia_miedzi', 'kopalnia_zelaza']);
+    const PRESERVES_HILL_RELIEF_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_zlota']);
 
     function preservesHillRelief(layers: readonly string[]): boolean {
       return layers.length > 0 && layers.every(k => PRESERVES_HILL_RELIEF_KEYS.has(k));
@@ -10568,6 +10606,13 @@ async function boot(): Promise<void> {
         negotiationTable.splice(ni, 1);
         const result = outcome.kind === 'accepted' ? outcome.result : { accepted: false as const, reason: outcome.reason };
         applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
+        if (outcome.kind === 'rejected' && entry.payload.warThreat) {
+          if (entry.proposerOwnerId === 0) {
+            playerDeclareWarOnOwner(entry.responderOwnerId);
+          } else if (entry.responderOwnerId === 0) {
+            ownerDeclareWarOn(entry.proposerOwnerId, 0);
+          }
+        }
         const summary = negotiationSummary(entry);
         showHintMessage(
           ownerDiploLabel(awaitingId)
@@ -10634,6 +10679,9 @@ async function boot(): Promise<void> {
       }
       negotiationTable.splice(idx, 1);
       const aiPartnerId = negotiationPartnerOwnerId(entry.proposerOwnerId, entry.responderOwnerId);
+      if (entry.payload.warThreat && entry.proposerOwnerId !== 0) {
+        ownerDeclareWarOn(entry.proposerOwnerId, 0);
+      }
       rejectedOfferCooldowns = recordRejectedOffer(
         rejectedOfferCooldowns,
         aiPartnerId,
@@ -12651,11 +12699,13 @@ async function boot(): Promise<void> {
           const items = result.deal.handelPayload;
           transferBasketItems(proposerId, responderId, items?.giveItems, dealId);
           transferBasketItems(responderId, proposerId, items?.receiveItems, dealId);
+          const turnsOpts = proposalPnTurnsMultiplier(payload);
           const { givePn, receivePn } = resolveProposalPn(payload, {
             difficulty: _menuDifficulty,
             proposerOwnerId: proposerId,
             playerOwnerId: 0,
             tempoGry: player.tempoGry ?? 'standardowa',
+            ...turnsOpts,
           });
           const isGift = payload.isGift === true
             || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
@@ -12696,11 +12746,13 @@ async function boot(): Promise<void> {
       }
       if (result.oneShotTrade) {
         executePnDealTransfer(proposerId, responderId, payload);
+        const turnsOptsOne = proposalPnTurnsMultiplier(payload);
         const { givePn, receivePn } = resolveProposalPn(payload, {
           difficulty: _menuDifficulty,
           proposerOwnerId: proposerId,
           playerOwnerId: 0,
           tempoGry: player.tempoGry ?? 'standardowa',
+          ...turnsOptsOne,
         });
         const isGift = payload.isGift === true
           || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
@@ -12775,6 +12827,7 @@ async function boot(): Promise<void> {
         receiveItems: (payload as NegotiationPayload & { receiveItems?: BasketItem[] }).receiveItems,
         isGift: (payload as NegotiationPayload & { isGift?: boolean }).isGift,
         resourceTradeMode: payload.resourceTradeMode,
+        warThreat: payload.warThreat,
       };
       const proposal = {
         actionId: cywAction as import('./game/diplomacy-proposals').ProposalActionId,
@@ -13200,6 +13253,9 @@ async function boot(): Promise<void> {
             // per-panstwo (empireFoodStates/zapasyPanstwa), nie per-miasto (main.ts:3592-3601).
             cityOptions: cities
               .filter(c => c.ownerId === 0)
+              .map(c => ({ id: c.id, label: c.name, spichlerz: c.magazynZywnosci ?? 0 })),
+            receiveCityOptions: cities
+              .filter(c => c.ownerId === ownerId)
               .map(c => ({ id: c.id, label: c.name, spichlerz: c.magazynZywnosci ?? 0 })),
             // Zaległość #3 (2026-07-23): resourceOptions PER STRONA — realnie posiadane dobra
             // (diplomacy-goods.ts), nie globalny katalog identyczny po obu stronach.

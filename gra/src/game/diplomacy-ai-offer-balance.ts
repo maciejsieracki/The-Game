@@ -12,8 +12,13 @@ import {
   diplomacyPnPraca,
   diplomacyPnSurowiecIlosc,
   diplomacyPnZloto,
+  diplomacySumPn,
 } from './diplomacy-value-catalog';
-import { resolveProposalPn, type ResolveProposalPnOptions } from './diplomacy-pn-engine';
+import {
+  buildProposalPnSumOpts,
+  resolveProposalPn,
+  type ResolveProposalPnOptions,
+} from './diplomacy-pn-engine';
 
 /**
  * Maks. nadwyżka PW dla strony odbierającej ofertę AI (gracz), przy której AI
@@ -357,4 +362,42 @@ export function trimQuickDealGiveToTolerance(
     difficulty,
   );
   return [...(payload.giveItems ?? [])];
+}
+
+/**
+ * Dopina brakujące PW po stronie oddającej (złoto) do fair min @ Relacji — bilans ≈ 0.
+ * Używane przez przycisk „Wyrównaj" w koszyku handlu.
+ */
+export function balanceGiveItemsToFairMin(
+  giveItems: readonly BasketItem[],
+  receivePn: number,
+  relTotal: number,
+  maxGold: number,
+  pnOpts?: ResolveProposalPnOptions,
+): BasketItem[] {
+  if (receivePn <= 0) return [...giveItems];
+  const rel = Math.min(100, Math.max(1, relTotal));
+  const fairMin = diplomacyFairGivePn(receivePn, rel);
+  const sumBase = { ...buildProposalPnSumOpts(pnOpts), side: 'give' as const };
+  let givePn = 0;
+  if (giveItems.length > 0) {
+    const sum = diplomacySumPn([...giveItems], sumBase);
+    if (sum != null) givePn = sum;
+  }
+  const deficit = fairMin - givePn;
+  if (deficit <= 0) return [...giveItems];
+  const result: BasketItem[] = giveItems.map(i => ({ ...i }));
+  const goldPnPer = diplomacyPnZloto(1);
+  if (goldPnPer <= 0) return result;
+  const goldNeeded = Math.ceil(deficit / goldPnPer);
+  const goldIdx = result.findIndex(i => i.typ === 'zloto');
+  const currentGold = goldIdx >= 0 ? (result[goldIdx]!.ilosc ?? 0) : 0;
+  const addGold = Math.min(goldNeeded, Math.max(0, maxGold - currentGold));
+  if (addGold <= 0) return result;
+  if (goldIdx >= 0) {
+    result[goldIdx] = { ...result[goldIdx]!, ilosc: currentGold + addGold };
+  } else {
+    result.push({ typ: 'zloto', id: 'zloto', ilosc: addGold });
+  }
+  return result;
 }

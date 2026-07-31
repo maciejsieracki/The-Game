@@ -26,6 +26,9 @@ export interface ResolveProposalPnOptions {
   proposerOwnerId?: number;
   playerOwnerId?: number;
   tempoGry?: TempoGry | number;
+  /** Pełny cykl płatności (handel per_turn × turns tur). */
+  turnsMultiplier?: number;
+  perTurn?: boolean;
 }
 
 export function buildProposalPnSumOpts(opts?: ResolveProposalPnOptions): DiplomacySumPnOptions {
@@ -34,6 +37,20 @@ export function buildProposalPnSumOpts(opts?: ResolveProposalPnOptions): Diploma
     proposerOwnerId: opts?.proposerOwnerId,
     playerOwnerId: opts?.playerOwnerId ?? 0,
     tempo: opts?.tempoGry,
+    turnsMultiplier: opts?.turnsMultiplier,
+    perTurn: opts?.perTurn,
+  };
+}
+
+/** turns × per_turn z payloadu negocjacji — spójne z basketItemsAffordable. */
+export function proposalPnTurnsMultiplier(payload: {
+  resourceTradeMode?: 'once' | 'per_turn';
+  turns?: number;
+}): { turnsMultiplier: number; perTurn: boolean } {
+  const perTurn = payload.resourceTradeMode === 'per_turn';
+  return {
+    perTurn,
+    turnsMultiplier: perTurn ? Math.max(1, payload.turns ?? 1) : 1,
   };
 }
 

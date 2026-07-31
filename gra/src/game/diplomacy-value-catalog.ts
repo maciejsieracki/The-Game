@@ -326,6 +326,10 @@ export interface DiplomacySumPnOptions {
   /** Która strona koszyka jest sumowana (give = oddajemy, receive = oczekujemy). */
   side?: 'give' | 'receive';
   tempo?: TempoGry | number;
+  /** Handel cykliczny — mnożnik pełnego cyklu (turns tur). */
+  turnsMultiplier?: number;
+  /** Gdy true + turnsMultiplier>1 — mnoży PN pozycji ilościowych (¤/Praca/żywność/pakiety). */
+  perTurn?: boolean;
 }
 
 function applyBasketSideDifficultyPn(
@@ -393,7 +397,13 @@ export function diplomacySumPn(
       item.typ === 'zloto' || item.typ === 'praca' || item.typ === 'zywnosc' || item.typ === 'surowiec_ilosc'
         ? 1
         : qty;
-    const linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    let linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    const turnsMult = Math.max(1, opts?.turnsMultiplier ?? 1);
+    if (opts?.perTurn && turnsMult > 1) {
+      const perTurnTyp = item.typ === 'zloto' || item.typ === 'praca' || item.typ === 'zywnosc'
+        || item.typ === 'surowiec_ilosc';
+      if (perTurnTyp) linePn *= turnsMult;
+    }
     sum += linePn;
   }
   return sum;

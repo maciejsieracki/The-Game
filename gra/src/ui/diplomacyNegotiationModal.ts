@@ -37,6 +37,8 @@ export interface NegotiationPayload {
    * co turę przez `turns` tur (deal cykliczny).
    */
   resourceTradeMode?: 'once' | 'per_turn';
+  /** Ultimatum wojenne — odmowa respondenta = casus belli. */
+  warThreat?: boolean;
 }
 
 export interface NegotiationModalContext {
@@ -57,6 +59,8 @@ export interface NegotiationModalContext {
   difficulty?: GameDifficulty;
   /** Miasta gracza (żywność ze spichlerza) */
   cityOptions?: ReadonlyArray<{ id: string; label: string; spichlerz?: number }>;
+  /** Miasta partnera (żywność ze spichlerza — strona „Co dostaję") */
+  receiveCityOptions?: ReadonlyArray<{ id: string; label: string; spichlerz?: number }>;
   /** Dostępne złoża do handlu */
   zlozeOptions?: ReadonlyArray<{ id: string; label: string }>;
   /** Jednostki gracza do oddania */
@@ -116,6 +120,10 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-neg .cdn-result-text .cdn-accepted{color:#9fd88a;}
 .civ-diplo-neg .cdn-result-text .cdn-rejected{color:#d88a8a;}
 .civ-diplo-neg .cdn-invalid{color:#e08a8a;font-size:0.72em;margin-top:8px;line-height:1.4;}
+.civ-diplo-neg .cdn-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;}
+.civ-diplo-neg .cdn-chip-turn{padding:5px 10px;border-radius:6px;border:1px solid rgba(232,216,138,.28);
+  background:rgba(24,30,40,.7);color:#e8e0c8;cursor:pointer;font:inherit;}
+.civ-diplo-neg .cdn-chip-turn.selected{border-color:rgba(232,216,138,.65);background:rgba(232,216,138,.15);color:#e8d88a;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -205,9 +213,17 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
     : '<div class="cdn-sub">Partner: <strong>' + esc(ctx.civName) + '</strong></div>';
 
   switch (action.id) {
-    case '2':
-      return sub + numInput('cdn-turns', 'Czas paktu (tur)', 15, 10, 20)
+    case '2': {
+      const turnChips = [5, 10, 15].map(t =>
+        '<button type="button" class="cdn-chip-turn' + (t === 15 ? ' selected' : '')
+        + '" data-turns="' + t + '">' + t + '</button>',
+      ).join('');
+      return sub
+        + '<label>Czas paktu (tur)</label>'
+        + '<div class="cdn-chip-row">' + turnChips + '</div>'
+        + numInput('cdn-turns', 'Ręcznie (1–20)', 15, 1, 20)
         + '<p class="cdn-sub">Złamanie: −30 Relacja, −20 Zaufanie</p>';
+    }
 
     case '3':
       return sub
@@ -287,7 +303,7 @@ function readPayload(actionId: string, ctx: NegotiationModalContext): Negotiatio
   switch (actionId) {
     case '2': {
       const turns = parseInt((document.getElementById('cdn-turns') as HTMLInputElement)?.value ?? '15', 10);
-      return withSweetener({ ...base, turns: Math.max(10, Math.min(20, turns)) });
+      return withSweetener({ ...base, turns: Math.max(1, Math.min(20, turns)) });
     }
     case '3': {
       const v = (document.getElementById('cdn-alliance') as HTMLSelectElement)?.value;
@@ -327,7 +343,7 @@ function readPayload(actionId: string, ctx: NegotiationModalContext): Negotiatio
     }
     case '9': {
       const gold = parseInt((document.getElementById('cdn-ult-gold') as HTMLInputElement)?.value ?? '0', 10);
-      return { ...base, goldOnce: gold };
+      return { ...base, goldOnce: gold, warThreat: true };
     }
     case '12': {
       const gpt = parseInt((document.getElementById('cdn-wasal-gpt') as HTMLInputElement)?.value ?? '10', 10);
@@ -445,6 +461,15 @@ export function showNegotiationModal(
       }
     });
   }
+
+  box.querySelectorAll('.cdn-chip-turn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const turns = parseInt(btn.getAttribute('data-turns') ?? '15', 10);
+      const inp = box.querySelector('#cdn-turns') as HTMLInputElement | null;
+      if (inp) inp.value = String(turns);
+      box.querySelectorAll('.cdn-chip-turn').forEach(c => c.classList.toggle('selected', c === btn));
+    });
+  });
 }
 
 export function hideNegotiationModal(): void {

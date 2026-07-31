@@ -118,6 +118,8 @@ export interface ProposalPayload {
    * działa identycznie gdy proponentem jest gracz LUB AI.
    */
   resourceTradeMode?: 'once' | 'per_turn';
+  /** Ultimatum wojenne — odmowa respondenta = casus belli (wypowiedzenie wojny przez proponenta). */
+  warThreat?: boolean;
 }
 
 export interface DiplomaticProposal {

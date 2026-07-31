@@ -4,7 +4,8 @@
  */
 import type { AudienceAction } from './diplomacyAudience';
 import type { NegotiationModalContext, NegotiationPayload } from './diplomacyNegotiationModal';
-import { computeQuickDealBasket, type BasketItem } from '../game/diplomacy-pn-engine';
+import { computeQuickDealBasket, proposalPnTurnsMultiplier, type BasketItem } from '../game/diplomacy-pn-engine';
+import { balanceGiveItemsToFairMin } from '../game/diplomacy-ai-offer-balance';
 import {
   proposalHasResourceAccess,
   stripWithdrawnResourceAccessItems,
@@ -147,18 +148,32 @@ function resolveTempo(ctx: NegotiationModalContext): TempoGry | number {
   return ctx.tempoGry ?? 'standardowa';
 }
 
-function basketPnOpts(ctx: NegotiationModalContext, side: 'give' | 'receive') {
+function basketPnOpts(
+  ctx: NegotiationModalContext,
+  side: 'give' | 'receive',
+  resourceTradeMode: 'once' | 'per_turn' = 'once',
+  dealTurns = 1,
+) {
+  const perTurn = resourceTradeMode === 'per_turn';
   return {
     difficulty: ctx.difficulty ?? 'normal',
     proposerOwnerId: 0,
     playerOwnerId: 0,
     side,
     tempo: resolveTempo(ctx),
+    perTurn,
+    turnsMultiplier: perTurn ? Math.max(1, dealTurns) : 1,
   };
 }
 
-function sumBasketPn(items: BasketItem[], ctx: NegotiationModalContext, side: 'give' | 'receive'): number | null {
-  return diplomacySumPn(toPnItems(items, ctx), basketPnOpts(ctx, side));
+function sumBasketPn(
+  items: BasketItem[],
+  ctx: NegotiationModalContext,
+  side: 'give' | 'receive',
+  resourceTradeMode: 'once' | 'per_turn' = 'once',
+  dealTurns = 1,
+): number | null {
+  return diplomacySumPn(toPnItems(items, ctx), basketPnOpts(ctx, side, resourceTradeMode, dealTurns));
 }
 
 type PnItem = Parameters<typeof diplomacySumPn>[0][number];
@@ -386,7 +401,7 @@ interface TreatyFormState {
 
 function defaultTreatyState(actionId: string, initial?: TradeBasketInitial): TreatyFormState {
   return {
-    turns: initial?.turns != null ? Math.max(10, Math.min(20, initial.turns)) : 15,
+    turns: initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 10,
     allianceKind: initial?.allianceKind === 'defensywny' ? 'defensywny' : 'pelny',
     borderMilitary: initial?.borderMilitary ?? false,
     tributeMode: initial?.tributeMode === 'offer' ? 'offer' : 'demand',
@@ -401,11 +416,17 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
     : '';
   let body = '';
   switch (actionId) {
-    case '2':
+    case '2': {
+      const turnChips = [5, 10, 15].map(t =>
+        '<button type="button" class="cdb-chip cdb-chip-turn' + (state.turns === t ? ' selected' : '')
+        + '" data-turns="' + t + '">' + t + '</button>',
+      ).join('');
       body = '<label for="cdb-treaty-turns">Czas paktu (tur)</label>'
-        + '<input type="number" id="cdb-treaty-turns" class="cdb-treaty-turns" value="' + state.turns + '" min="10" max="20" />'
+        + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
+        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns, 1, 20)
         + '<p class="cdb-sub">Złamanie: −30 Relacja, −20 Zaufanie</p>';
       break;
+    }
     case '3':
       body = '<label>Typ sojuszu</label>'
         + '<select id="cdb-treaty-alliance" class="cdb-treaty-alliance">'
@@ -454,8 +475,8 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
 function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): TreatyFormState {
   const state = { ...prev };
   if (actionId === '2') {
-    const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '15', 10);
-    state.turns = Math.max(10, Math.min(20, turns));
+    const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '10', 10);
+    state.turns = Math.max(1, Math.min(20, turns));
   } else if (actionId === '3') {
     const v = (document.querySelector('.cdb-treaty-alliance') as HTMLSelectElement)?.value;
     state.allianceKind = v === 'defensywny' ? 'defensywny' : 'pelny';
@@ -475,8 +496,8 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): Treaty
 function validateTreatyForm(actionId: string, state: TreatyFormState): BasketValidation {
   switch (actionId) {
     case '2':
-      if (state.turns < 10 || state.turns > 20) {
-        return { valid: false, reason: 'Czas paktu: od 10 do 20 tur' };
+      if (state.turns < 1 || state.turns > 20) {
+        return { valid: false, reason: 'Czas paktu: od 1 do 20 tur' };
       }
       break;
     case '8':
@@ -522,8 +543,8 @@ function treatySummaryHtml(
     return html;
   }
 
-  const givePn = sumBasketPn(giveItems, ctx, 'give') ?? 0;
-  const receivePn = sumBasketPn(receiveItems, ctx, 'receive') ?? 0;
+  const givePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns) ?? 0;
+  const receivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns) ?? 0;
   const net = Math.max(0, givePn - receivePn);
   html += '<div class="cdb-summary"><div class="cdb-basket-opt-title">Dołóż do umowy (koszyk PW)</div>';
   html += '<div>Oddajesz: <b>' + givePn + ' PW</b>';
@@ -570,11 +591,11 @@ function buildTreatyPayload(
   }
   if (giveItems.length > 0) {
     payload.giveItems = giveItems;
-    payload.givePn = sumBasketPn(giveItems, ctx, 'give') ?? undefined;
+    payload.givePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns) ?? undefined;
   }
   if (receiveItems.length > 0) {
     payload.receiveItems = receiveItems;
-    payload.receivePn = sumBasketPn(receiveItems, ctx, 'receive') ?? undefined;
+    payload.receivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns) ?? undefined;
   }
   const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
   const hasQtyRes = !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
@@ -606,14 +627,14 @@ function validateBasketForm(
     if (!treatyVal.valid) return treatyVal;
     if (giveItems.length === 0 && receiveItems.length === 0) return { valid: true };
     if (giveItems.length > 0 && receiveItems.length > 0) {
-      const givePn = sumBasketPn(giveItems, ctx, 'give');
-      const receivePn = sumBasketPn(receiveItems, ctx, 'receive');
+      const givePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns);
+      const receivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns);
       if (givePn == null || receivePn == null) {
         return { valid: false, reason: 'Nie można wycenić pozycji koszyka — sprawdź typy i ilości' };
       }
     } else {
       const items = giveItems.length > 0 ? giveItems : receiveItems;
-      if (sumBasketPn(items, ctx, 'give') == null) {
+      if (sumBasketPn(items, ctx, 'give', resourceTradeMode, dealTurns) == null) {
         return { valid: false, reason: 'Nie można wycenić pozycji koszyka — sprawdź typy i ilości' };
       }
     }
@@ -637,8 +658,8 @@ function validateBasketForm(
       return { valid: false, reason: 'Dodaj co najmniej jedną pozycję w „Co dostaję"' };
     }
   }
-  const givePn = sumBasketPn(giveItems, ctx, 'give');
-  const receivePn = mode === 'trade' ? sumBasketPn(receiveItems, ctx, 'receive') : 0;
+  const givePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns);
+  const receivePn = mode === 'trade' ? sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns) : 0;
   if (givePn == null || (mode === 'trade' && receivePn == null)) {
     return { valid: false, reason: 'Nie można wycenić pozycji — sprawdź typy i ilości' };
   }
@@ -653,7 +674,7 @@ function validateBasketForm(
 
 function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (tur, max 20)', sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'): string {
   if (!visible) return '';
-  const turnChips = [5, 10, 15, 20].map(t =>
+  const turnChips = [5, 10, 15].map(t =>
     '<button type="button" class="cdb-chip cdb-chip-turn' + (turns === t ? ' selected' : '')
     + '" data-turns="' + t + '">' + t + '</button>',
   ).join('');
@@ -739,7 +760,9 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
     ),
   ).join('');
 
-  const cities = ctx.cityOptions ?? [];
+  const cities = side === 'give'
+    ? (ctx.cityOptions ?? [])
+    : (ctx.receiveCityOptions ?? ctx.cityOptions ?? []);
   const defaultCity = cities[0]?.id ?? '';
   const cityChips = cities.length > 0
     ? cities.map((c, i) =>
@@ -819,7 +842,7 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
     + '<label>Liczba pakietów</label>'
     + qtyStepperHtml('cdb-res-qty-num', prefix, 1, 1, qtyResFirstMax)
     + '</div>'
-    + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '">+ Dodaj pozycję</button>'
+    + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '">+ Dodaj propozycję</button>'
     + '</div>'
   );
 }
@@ -891,9 +914,9 @@ function summaryHtml(
   const pnParams = diplomacyPnRelacjaParams();
   const maxTrust = pnParams.max_zaufanie_na_ture;
 
-  const givePn = sumBasketPn(giveItems, ctx, 'give');
+  const givePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns);
   const receivePn = mode === 'trade'
-    ? sumBasketPn(receiveItems, ctx, 'receive')
+    ? sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns)
     : 0;
 
   let html = '<div class="cdb-summary">';
@@ -1079,6 +1102,21 @@ function selectChipInGroup(
   onSelect?.(value, btn.getAttribute('data-max') ? parseInt(btn.getAttribute('data-max')!, 10) : undefined);
 }
 
+function warThreatBlockHtml(checked: boolean, visible: boolean): string {
+  if (!visible) return '';
+  return (
+    '<div class="cdb-war-threat" style="margin-top:10px;padding:8px;border-radius:8px;border:1px solid rgba(200,64,64,.25);background:rgba(40,20,20,.35)">'
+    + '<label style="display:flex;gap:8px;align-items:center;font-size:0.85em;margin:0;cursor:pointer">'
+    + '<input type="checkbox" class="cdb-war-threat-cb"' + (checked ? ' checked' : '') + ' />'
+    + 'Ultimatum wojenne — odmowa partnera = wypowiedzenie wojny</label></div>'
+  );
+}
+
+function balanceButtonHtml(visible: boolean): string {
+  if (!visible) return '';
+  return '<button type="button" class="dip-muted-btn cdb-balance-btn" style="margin-top:8px">Wyrównaj (fair @ Rel)</button>';
+}
+
 function renderBasket(
   box: HTMLDivElement,
   mode: TradeBasketMode,
@@ -1089,6 +1127,7 @@ function renderBasket(
   dealTurns: number,
   resourceTradeMode: 'once' | 'per_turn',
   treatyState: TreatyFormState,
+  warThreat: boolean,
 ): void {
   const rel = ctx.relacjaTotal ?? 0;
   const progHandel = ctx.progHandelRelacja ?? PROG_HANDEL_REL;
@@ -1183,6 +1222,9 @@ function renderBasket(
     ? treatySummaryHtml(action, treatyState, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode)
     : summaryHtml(mode, giveItems, receiveItems, ctx, resourceTradeMode, dealTurns);
 
+  const showWarThreat = !blocked && (mode === 'trade' || mode === 'treaty');
+  const showBalanceBtn = !blocked && mode === 'trade' && receiveItems.length > 0;
+
   box.className = 'civ-diplo-basket' + (mode === 'gift' ? ' cdb-gift' : '');
   box.innerHTML =
     '<h3>' + esc(title) + '</h3>' +
@@ -1195,6 +1237,8 @@ function renderBasket(
     (blocked ? '' : '<div class="cdb-cols">' + giveCol + recvCol + '</div>') +
     basketOptClose +
     (blocked ? '' : summaryBlock) +
+    (blocked ? '' : balanceButtonHtml(showBalanceBtn)) +
+    (blocked ? '' : warThreatBlockHtml(warThreat, showWarThreat)) +
     invalidHtml +
     '<div class="cdb-btns">' +
       '<button type="button" class="dip-muted-btn cdb-cancel">Anuluj</button>' +
@@ -1232,6 +1276,7 @@ export function showTradeBasketModal(
   let receiveItems: BasketItem[] = stripWithdrawnResourceAccessItems(initial?.receiveItems ?? []);
   let dealTurns = initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 15;
   let resourceTradeMode: 'once' | 'per_turn' = initial?.resourceTradeMode ?? 'once';
+  let warThreat = false;
   let treatyState = defaultTreatyState(action.id, initial);
 
   overlay = document.createElement('div');
@@ -1265,7 +1310,7 @@ export function showTradeBasketModal(
     readDealTurnsFromDom();
     readResourceTradeModeFromDom();
     if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState);
-    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState);
+    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat);
     bindEvents();
   };
 
@@ -1330,6 +1375,14 @@ export function showTradeBasketModal(
     box.querySelectorAll('.cdb-chip-turn').forEach(btn => {
       btn.addEventListener('click', () => {
         const turns = parseInt(btn.getAttribute('data-turns') ?? '15', 10);
+        const treatyInp = box.querySelector('.cdb-treaty-turns') as HTMLInputElement | null;
+        if (treatyInp) {
+          treatyInp.value = String(Math.max(1, Math.min(20, turns)));
+          const treatyRoot = treatyInp.closest('.cdb-treaty');
+          treatyRoot?.querySelectorAll('.cdb-chip-turn').forEach(c => c.classList.toggle('selected', c === btn));
+          refresh();
+          return;
+        }
         dealTurns = Math.max(1, Math.min(20, turns));
         const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
         if (inp) inp.value = String(dealTurns);
@@ -1338,6 +1391,32 @@ export function showTradeBasketModal(
         });
         refresh();
       });
+    });
+
+    box.querySelector('.cdb-war-threat-cb')?.addEventListener('change', (ev) => {
+      warThreat = (ev.target as HTMLInputElement).checked;
+    });
+
+    box.querySelector('.cdb-balance-btn')?.addEventListener('click', () => {
+      readDealTurnsFromDom();
+      readResourceTradeModeFromDom();
+      const receivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns);
+      if (receivePn == null || receivePn <= 0) return;
+      const turnsOpts = proposalPnTurnsMultiplier({ resourceTradeMode, turns: dealTurns });
+      giveItems = balanceGiveItemsToFairMin(
+        giveItems,
+        receivePn,
+        ctx.relacjaTotal ?? 0,
+        Math.floor(ctx.playerSkarbiec ?? 0),
+        {
+          difficulty: ctx.difficulty ?? 'normal',
+          proposerOwnerId: 0,
+          playerOwnerId: 0,
+          tempoGry: resolveTempo(ctx),
+          ...turnsOpts,
+        },
+      );
+      refresh();
     });
 
     box.querySelectorAll('.cdb-qty-step').forEach(btn => {
@@ -1396,6 +1475,8 @@ export function showTradeBasketModal(
         || (mode === 'gift' && (ctx.relacjaTotal ?? 0) < (ctx.progDarRelacja ?? diplomacyProgDarRelacja()));
       readDealTurnsFromDom();
       readResourceTradeModeFromDom();
+      const warCb = box.querySelector('.cdb-war-threat-cb') as HTMLInputElement | null;
+      if (warCb) warThreat = warCb.checked;
       if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState);
       const validation = validateBasketForm(
         mode, action.id, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, blocked, treatyState,
@@ -1411,10 +1492,11 @@ export function showTradeBasketModal(
         payload = buildTreatyPayload(
           action.id, treatyState, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode,
         );
+        if (warThreat) payload.warThreat = true;
       } else {
-        const givePn = sumBasketPn(giveItems, ctx, 'give');
+        const givePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns);
         const receivePn = mode === 'trade'
-          ? sumBasketPn(receiveItems, ctx, 'receive')
+          ? sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns)
           : 0;
         if (givePn == null || (mode === 'trade' && receivePn == null)) return;
         payload = {
@@ -1424,6 +1506,7 @@ export function showTradeBasketModal(
           givePn: givePn ?? undefined,
           receivePn: mode === 'trade' ? (receivePn ?? undefined) : 0,
           isGift: mode === 'gift',
+          warThreat: warThreat || undefined,
         };
         if (mode === 'trade' && basketHasResourceAccess(giveItems, receiveItems)) {
           payload.turns = dealTurns;

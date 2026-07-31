@@ -243,6 +243,7 @@ export function renderPnBalancePanelFromBasket(
   }
   const fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relTotal));
   const balancePn = givePn - fairMin;
+  const rawBalancePn = givePn - receivePn;
   const accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
@@ -277,7 +278,10 @@ export function renderPnBalancePanelFromBasket(
     + pwAmountHtml(receivePn)
     + '</div>'
     + '</div>'
-    + '<div class="da-pn-bal-meta">Fair min @ Rel ' + relTotal + ': ' + fairMin + ' PW</div>'
+    + '<div class="da-pn-bal-meta">PW surowe (bez Relacji): oddajemy ' + givePn + ' · oni ' + receivePn
+    + ' · bilans ' + (rawBalancePn >= 0 ? '+' : '') + rawBalancePn + '</div>'
+    + '<div class="da-pn-bal-meta">PW @ Rel ' + relTotal + ': fair min ' + fairMin + ' · bilans '
+    + (balancePn >= 0 ? '+' : '') + balancePn + '</div>'
     + '<div class="da-pn-bal-verdict ' + (accepted ? 'ok' : 'no') + '">' + esc(verdict) + '</div>'
     + '</div>'
   );

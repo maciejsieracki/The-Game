@@ -12,6 +12,7 @@ import {
   effectiveTreatyPnRequired,
   formatRelationModLabel,
   pnDealAcceptedByAi,
+  proposalPnTurnsMultiplier,
   relationPnModPct,
   relationSignedFromTotal,
   resolveProposalPn,
@@ -192,11 +193,13 @@ export function computePlayerAcceptanceSides(
   incoming: boolean,
   opts?: { difficulty?: GameDifficulty; proposerOwnerId?: number; tempoGry?: import('./tech-tempo').TempoGry | number },
 ): { my: AcceptanceSideBalance; their: AcceptanceSideBalance; isGift: boolean } {
+  const turnsOpts = proposalPnTurnsMultiplier(payload);
   const pnOpts: ResolveProposalPnOptions = {
     difficulty: opts?.difficulty ?? 'normal',
     proposerOwnerId: opts?.proposerOwnerId ?? (incoming ? undefined : 0),
     playerOwnerId: 0,
     tempoGry: opts?.tempoGry,
+    ...turnsOpts,
   };
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
   const treatyDef = loadTreatyAcceptanceDef(actionId);
