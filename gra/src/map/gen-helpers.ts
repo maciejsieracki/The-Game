@@ -5669,6 +5669,50 @@ function finalizeTributaryPath(
   return out;
 }
 
+/**
+ * Etap 3: krótki dopływ — tylko do średniej rzeki (etap 2), bez bezpośredniego ujścia do oceanu.
+ */
+function finalizeShortPath(
+  hexes: Record<string, Hex>,
+  path: RiverCoord[],
+  riverPaths: RiverCoord[][],
+  riverKinds: RiverPathKind[],
+  width: number,
+  height: number,
+  oceanConnected: Set<string>,
+): RiverCoord[] | null {
+  let out = trimRiverPathRings(hexes, path);
+  if (out.length < 3) return null;
+  if (out.length >= 2) {
+    const junction = out[out.length - 1]!;
+    const approach = out[out.length - 2]!;
+    const down = networkDownstreamNeighbor(hexes, junction, approach);
+    out = appendJunctionDownstreamHex(out, down);
+  }
+  const ocean = oceanConnected;
+  if (pathEndsAtSea(hexes, out, width, height, ocean)) return null;
+
+  const mediumKeys = collectPathHexKeysForKinds(riverPaths, riverKinds, ['medium']);
+  if (mediumKeys.size === 0) return null;
+
+  const end = out[out.length - 1]!;
+  const endKey = hexKey(end.q, end.r);
+  let onMedium = mediumKeys.has(endKey);
+  if (!onMedium) {
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(end.q + dq, end.r + dr);
+      if (mediumKeys.has(nk)) { onMedium = true; break; }
+    }
+  }
+  if (!onMedium) return null;
+
+  const reached = buildOceanReachableRiverHexKeys(
+    hexes, riverPaths, riverKinds, width, height, ocean,
+  );
+  if (!tributaryTouchesOceanReachable(out, reached)) return null;
+  return out;
+}
+
 function networkDownstreamNeighbor(
   hexes: Record<string, Hex>,
   junction: RiverCoord,
@@ -5919,7 +5963,11 @@ export function landHexesByCoverageCell(
   return cells;
 }
 
-export type RiverPathKind = 'main' | 'tributary';
+/** Etap 1=główne→ocean · 2=średnie→sieć|ocean · 3=krótkie→średnie · tributary=dekoracyjne. */
+export type RiverPathKind = 'main' | 'medium' | 'short' | 'tributary';
+
+/** Etap 3: max odległość źródła od ścieżki średniej rzeki (hex). */
+export const SHORT_RIVER_MAX_DIST_FROM_MEDIUM = 5;
 
 export interface GenerateRiversResult {
   paths: RiverCoord[][];
@@ -5961,6 +6009,25 @@ function collectRiverHexKeys(hexes: Record<string, Hex>): Set<string> {
     if (h.rzeka?.obecna) keys.add(k);
   }
   return keys;
+}
+
+/** Heksy należące do ścieżek wybranych typów (etap 2/3 hierarchia). */
+export function collectPathHexKeysForKinds(
+  paths: RiverCoord[][],
+  kinds: RiverPathKind[],
+  allowed: ReadonlySet<RiverPathKind> | RiverPathKind[],
+): Set<string> {
+  const allow = allowed instanceof Set ? allowed : new Set(allowed);
+  const keys = new Set<string>();
+  for (let i = 0; i < paths.length; i++) {
+    if (!allow.has(kinds[i] ?? 'main')) continue;
+    for (const p of paths[i] ?? []) keys.add(hexKey(p.q, p.r));
+  }
+  return keys;
+}
+
+function isNonMainRiverKind(kind: RiverPathKind | undefined): boolean {
+  return kind === 'medium' || kind === 'short' || kind === 'tributary';
 }
 
 /** BFS po krawędziach rzek od ujść main do morza — heksy sieci spływającej do oceanu. */
@@ -6062,7 +6129,7 @@ export function pruneOrphanRiverPaths(
         return reached.has(hexKey(c.q, c.r));
       });
       if (!connected) { dropped = true; continue; }
-      if (curKinds[i] === 'tributary' && !pathEndsAtSea(hexes, p, width, height, ocean)) {
+      if (isNonMainRiverKind(curKinds[i]) && !pathEndsAtSea(hexes, p, width, height, ocean)) {
         const end = p[p.length - 1]!;
         const eh = hexes[hexKey(end.q, end.r)];
         let closed = false;
@@ -6149,6 +6216,8 @@ export function ensureRiverOutlets(
 ): { paths: RiverCoord[][]; kinds: RiverPathKind[] } {
   let result = pruneOrphanRiverPaths(hexes, paths, kinds, width, height);
   result = pruneRiversNotReachingRealSea(hexes, result.paths, result.kinds, width, height);
+  const ocean = oceanConnectedWaterKeys(hexes, width, height);
+  result = pruneInvalidShortRiverPaths(hexes, result.paths, result.kinds, width, height, ocean);
   return result;
 }
 
@@ -6224,7 +6293,7 @@ export function checkTributaryJunctions(
   let violations = 0;
   let firstFail: string | null = null;
   for (let pi = 0; pi < paths.length; pi++) {
-    if (kinds[pi] !== 'tributary') continue;
+    if (isNonMainRiverKind(kinds[pi])) continue;
     const path = paths[pi];
     if (!path || path.length < 2) continue;
     // dopływ z własnym ujściem do morza — nie wymaga junction
@@ -6247,6 +6316,49 @@ export function checkTributaryJunctions(
     }
   }
   return { ok: violations === 0, violations, firstFail };
+}
+
+/** Etap 3: usuwa krótkie trasy bez połączenia ze średnią rzeką lub ze źródłem >5 hex od średniej. */
+function pruneInvalidShortRiverPaths(
+  hexes: Record<string, Hex>,
+  paths: RiverCoord[][],
+  kinds: RiverPathKind[],
+  width: number,
+  height: number,
+  oceanConnected: Set<string>,
+): { paths: RiverCoord[][]; kinds: RiverPathKind[] } {
+  const mediumKeys = collectPathHexKeysForKinds(paths, kinds, ['medium']);
+  if (mediumKeys.size === 0) return { paths, kinds };
+
+  const drop = new Set<number>();
+  for (let i = 0; i < paths.length; i++) {
+    if (kinds[i] !== 'short') continue;
+    const p = paths[i] ?? [];
+    const p0 = p[0];
+    if (!p0) { drop.add(i); continue; }
+    if (nearestRiverHexDistance(p0.q, p0.r, mediumKeys) > SHORT_RIVER_MAX_DIST_FROM_MEDIUM) {
+      drop.add(i);
+      continue;
+    }
+    if (pathEndsAtSea(hexes, p, width, height, oceanConnected)) {
+      drop.add(i);
+      continue;
+    }
+    const end = p[p.length - 1]!;
+    let onMedium = mediumKeys.has(hexKey(end.q, end.r));
+    if (!onMedium) {
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        if (mediumKeys.has(hexKey(end.q + dq, end.r + dr))) { onMedium = true; break; }
+      }
+    }
+    if (!onMedium) drop.add(i);
+  }
+  if (drop.size === 0) return { paths, kinds };
+  const keptPaths = paths.filter((_, i) => !drop.has(i));
+  const keptKinds = kinds.filter((_, i) => !drop.has(i));
+  clearRiverMarks(hexes);
+  for (const p of keptPaths) markRiverPath(hexes, p);
+  return { paths: keptPaths, kinds: keptKinds };
 }
 
 /**
@@ -6356,7 +6468,7 @@ function rankNetworkJunctionCandidates(
 }
 
 /** Odległość od (sq,sr) do najbliższego heksa istniejącej rzeki. */
-function nearestRiverHexDistance(sq: number, sr: number, riverKeys: Set<string>): number {
+export function nearestRiverHexDistance(sq: number, sr: number, riverKeys: Set<string>): number {
   let best = Infinity;
   for (const k of riverKeys) {
     const { q, r } = parseHexKey(k);
@@ -6379,6 +6491,8 @@ export function cellHasRiverSourceInCell(
 }
 
 type GridRouteCandidate = { path: RiverCoord[]; kind: 'main' | 'tributary'; len: number };
+
+type GridPlaceMode = 'auto' | 'main-only' | 'medium' | 'short';
 
 /** Czy trasa ma ujście do morza lub do sieci rzeki (bez sierot). */
 export function pathHasValidRiverOutlet(
@@ -6416,7 +6530,11 @@ interface GridSourcePlaceCtx {
   seaBufferOpts: { minInland: number; mouthTail: number };
   pushMain: (path: RiverCoord[], sq: number, sr: number) => boolean;
   pushTributary: (path: RiverCoord[], sq: number, sr: number) => boolean;
+  pushMedium?: (path: RiverCoord[], sq: number, sr: number) => boolean;
+  pushShort?: (path: RiverCoord[], sq: number, sr: number) => boolean;
   relaxSeaBuffer?: boolean;
+  placeMode?: GridPlaceMode;
+  targetRiverKinds?: RiverPathKind[];
 }
 
 function buildGridRouteCandidates(
@@ -6433,26 +6551,36 @@ function buildGridRouteCandidates(
   const startSeaDist = seaDist.get(srcKey) ?? 999;
   const traceMax = Math.max(maxLen, minLen + 24, Math.ceil(startSeaDist * 2.8) + minLen);
   const out: GridRouteCandidate[] = [];
+  const mode = ctx.placeMode ?? 'auto';
 
-  const seaPath = traceRiverForGridFill(
-    hexes, sq, sr, traceMax, minLen, acceptLen,
-    { seaDist, openOceanDist, oceanConnected, mapWidth: width, mapHeight: height, rand, ...traceOptsBase },
-    ctx.relaxSeaBuffer,
-  );
-  if (seaPath.length >= acceptLen
-    && pathEndsAtSea(hexes, seaPath, width, height, oceanConnected)
-    && (ctx.relaxSeaBuffer || riverPathRespectsSeaBuffer(
-      hexes, seaPath, seaDist, seaBufferOpts.minInland, seaBufferOpts.mouthTail,
-    ))) {
-    out.push({ path: seaPath, kind: 'main', len: seaPath.length });
+  if (mode !== 'short') {
+    const seaPath = traceRiverForGridFill(
+      hexes, sq, sr, traceMax, minLen, acceptLen,
+      { seaDist, openOceanDist, oceanConnected, mapWidth: width, mapHeight: height, rand, ...traceOptsBase },
+      ctx.relaxSeaBuffer,
+    );
+    if (seaPath.length >= acceptLen
+      && pathEndsAtSea(hexes, seaPath, width, height, oceanConnected)
+      && (ctx.relaxSeaBuffer || riverPathRespectsSeaBuffer(
+        hexes, seaPath, seaDist, seaBufferOpts.minInland, seaBufferOpts.mouthTail,
+      ))) {
+      out.push({ path: seaPath, kind: 'main', len: seaPath.length });
+    }
   }
 
   const riverKeys = new Set(
     [...collectRiverPathHexKeys(riverPaths)].filter((k) => !massSet || massSet.has(k)),
   );
-  if (riverKeys.size > 0) {
+  const tribTargetKinds = ctx.targetRiverKinds
+    ?? (mode === 'short' ? ['medium'] as RiverPathKind[] : undefined);
+  const tribRiverKeys = tribTargetKinds
+    ? collectPathHexKeysForKinds(riverPaths, ctx.riverKinds, tribTargetKinds)
+    : riverKeys;
+  const tribKeysForTrace = tribRiverKeys.size > 0 ? tribRiverKeys : riverKeys;
+
+  if (mode !== 'main-only' && tribKeysForTrace.size > 0) {
     let bestTrib: RiverCoord[] = [];
-    for (const j of rankNetworkJunctionCandidates(sq, sr, riverKeys, seaDist, traceMax, rand)) {
+    for (const j of rankNetworkJunctionCandidates(sq, sr, tribKeysForTrace, seaDist, traceMax, rand)) {
       const p = traceTributary(hexes, sq, sr, j.q, j.r, traceMax, seaDist, rand, minLen);
       if (p.length >= acceptLen && p.length > bestTrib.length) bestTrib = p;
     }
@@ -6462,6 +6590,15 @@ function buildGridRouteCandidates(
   }
 
   return out;
+}
+
+/** Etap 2: priorytet dopływu do sieci, ocean jako fallback. */
+function pickPhase2Route(candidates: GridRouteCandidate[]): GridRouteCandidate | null {
+  const tribs = candidates.filter((c) => c.kind === 'tributary');
+  const seas = candidates.filter((c) => c.kind === 'main');
+  const pool = tribs.length > 0 ? tribs : seas;
+  if (pool.length === 0) return null;
+  return pool.reduce((a, b) => (a.len >= b.len ? a : b));
 }
 
 /** Morze vs rzeka geograficznie; w ramach wyboru — najdłuższa poprawna trasa. */
@@ -6490,16 +6627,40 @@ function tryPlaceGridSource(ctx: GridSourcePlaceCtx, sq: number, sr: number, mas
   const h = ctx.hexes[srcKey];
   if (!h || !isRiverLandTerrain(h.terenBazowy)) return false;
 
+  const mode = ctx.placeMode ?? 'auto';
+  if (mode === 'short') {
+    const mediumKeys = collectPathHexKeysForKinds(ctx.riverPaths, ctx.riverKinds, ['medium']);
+    if (mediumKeys.size === 0) return false;
+    const dist = nearestRiverHexDistance(sq, sr, mediumKeys);
+    if (dist > SHORT_RIVER_MAX_DIST_FROM_MEDIUM) return false;
+  }
+
   const startSeaDist = ctx.seaDist.get(srcKey) ?? 999;
   const riverKeys = new Set(
     [...collectRiverPathHexKeys(ctx.riverPaths)].filter((k) => !massSet || massSet.has(k)),
   );
   const nearestRiverDist = nearestRiverHexDistance(sq, sr, riverKeys);
   const candidates = buildGridRouteCandidates(ctx, sq, sr, massSet);
-  const chosen = pickGeographicLongestRoute(candidates, startSeaDist, nearestRiverDist);
+
+  let chosen: GridRouteCandidate | null = null;
+  if (mode === 'main-only') {
+    chosen = candidates.filter((c) => c.kind === 'main').reduce(
+      (a, b) => (a && a.len >= b.len ? a : b), null as GridRouteCandidate | null,
+    );
+  } else if (mode === 'medium') {
+    chosen = pickPhase2Route(candidates);
+  } else if (mode === 'short') {
+    chosen = candidates.filter((c) => c.kind === 'tributary').reduce(
+      (a, b) => (a && a.len >= b.len ? a : b), null as GridRouteCandidate | null,
+    );
+  } else {
+    chosen = pickGeographicLongestRoute(candidates, startSeaDist, nearestRiverDist);
+  }
   if (!chosen) return false;
 
   if (chosen.kind === 'main') return ctx.pushMain(chosen.path, sq, sr);
+  if (mode === 'medium' && ctx.pushMedium) return ctx.pushMedium(chosen.path, sq, sr);
+  if (mode === 'short' && ctx.pushShort) return ctx.pushShort(chosen.path, sq, sr);
   return ctx.pushTributary(chosen.path, sq, sr);
 }
 
@@ -6798,6 +6959,8 @@ function tryForceCellRiverConnection(
   if (path.length < 3) return false;
 
   const forceCtx: GridSourcePlaceCtx = { ...ctx, acceptLen: 3, sourceSep: 0 };
+  if (forceCtx.pushMedium?.(path, sq, sr)) return true;
+  if (forceCtx.pushShort?.(path, sq, sr)) return true;
   if (forceCtx.pushTributary(path, sq, sr)) return true;
   return false;
 }
@@ -6868,6 +7031,10 @@ function enforceHardRiverGridStarts(
         .sort((a, b) => a.d - b.d);
       for (const c of ranked.slice(0, 24)) {
         const localCtx: GridSourcePlaceCtx = { ...gridCtx, acceptLen: 3, sourceSep: 0 };
+        if (gridCtx.placeMode === 'medium' || gridCtx.placeMode === 'short') {
+          if (tryPlaceGridSource(localCtx, c.q, c.r, massSet)) { placed++; break; }
+          continue;
+        }
         const startSeaDist = seaDist.get(hexKey(c.q, c.r)) ?? 999;
         const traceMax = Math.max(gridCtx.maxLen, gridCtx.minLen + 24, Math.ceil(startSeaDist * 2.8) + gridCtx.minLen);
         const seaPath = traceRiverForGridFill(
@@ -6955,6 +7122,106 @@ function enforceHardRiverGridStarts(
     if (tryForceCellRiverConnection(gridCtx, land, massSet)) placed++;
   }
 
+  return placed;
+}
+
+/** Etap 1: główne rzeki — sparse siatka, inland → ocean (najdłuższe biegi). */
+function generatePhase1MainRivers(
+  hexes: Record<string, Hex>,
+  massSet: Set<string>,
+  seaDist: Map<string, number>,
+  riverPaths: RiverCoord[][],
+  riverKinds: RiverPathKind[],
+  usedSources: Set<string>,
+  gridCtx: GridSourcePlaceCtx,
+  maxLen: number,
+  riverParams: RiverMapParams,
+): number {
+  const ctx: GridSourcePlaceCtx = { ...gridCtx, placeMode: 'main-only' };
+  const tryMain = (sq: number, sr: number) => tryPlaceGridSource(ctx, sq, sr, massSet);
+  let placed = ensureMassRiverGridCoverage(
+    hexes,
+    massSet,
+    riverParams.mainCell,
+    seaDist,
+    riverPaths,
+    riverKinds,
+    usedSources,
+    tryMain,
+    gridCtx.rand,
+    maxLen,
+    {
+      sparseMainOnly: true,
+      gridStride: riverParams.mainGridStride,
+      reliefSourceBonus: riverParams.reliefSourceBonus,
+      expandSourceRadius: riverParams.expandSourceRadius,
+      minInlandFromSea: riverParams.minInlandFromSea,
+    },
+  );
+  if (!landMassHasMainRiver([...massSet], riverPaths, riverKinds)) {
+    const minLand = minLandHexesForRiverCell(riverParams.mainCell);
+    for (const land of landHexesByCoverageCell(massSet, riverParams.mainCell).values()) {
+      if (land.length < minLand) continue;
+      const ranked = land
+        .map(([q, r]) => ({ q, r, d: seaDist.get(hexKey(q, r)) ?? 0 }))
+        .filter((c) => c.d >= 2)
+        .sort((a, b) => b.d - a.d);
+      for (const c of ranked.slice(0, 20)) {
+        if (tryMain(c.q, c.r)) { placed++; break; }
+      }
+      if (landMassHasMainRiver([...massSet], riverPaths, riverKinds)) break;
+    }
+  }
+  return placed;
+}
+
+/** Etap 3: krótkie dopływy — max 5 hex od średnich, ujście tylko do średnich. */
+function generatePhase3ShortRivers(
+  massSet: Set<string>,
+  tributaryCell: number,
+  seaDist: Map<string, number>,
+  gridCtx: GridSourcePlaceCtx,
+  feederMinLen: number,
+  feederSourceSep: number,
+  feederPasses: number,
+): number {
+  const mediumKeys = collectPathHexKeysForKinds(gridCtx.riverPaths, gridCtx.riverKinds, ['medium']);
+  if (mediumKeys.size === 0) return 0;
+
+  let placed = 0;
+  const ctx: GridSourcePlaceCtx = {
+    ...gridCtx,
+    placeMode: 'short',
+    targetRiverKinds: ['medium'],
+    acceptLen: feederMinLen,
+    sourceSep: feederSourceSep,
+  };
+
+  for (let pass = 0; pass < feederPasses; pass++) {
+    let passPlaced = 0;
+    const minLand = minLandHexesForRiverCell(tributaryCell);
+    for (const land of landHexesByCoverageCell(massSet, tributaryCell).values()) {
+      if (land.length < minLand) continue;
+      const ranked = land
+        .filter(([q, r]) => !gridCtx.usedSources.has(hexKey(q, r)))
+        .map(([q, r]) => ({
+          q,
+          r,
+          riverD: nearestRiverHexDistance(q, r, mediumKeys),
+          inland: seaDist.get(hexKey(q, r)) ?? 0,
+        }))
+        .filter((c) => c.riverD > 0 && c.riverD <= SHORT_RIVER_MAX_DIST_FROM_MEDIUM)
+        .sort((a, b) => a.riverD - b.riverD || b.inland - a.inland);
+      for (const c of ranked.slice(0, 6)) {
+        if (tryPlaceGridSource(ctx, c.q, c.r, massSet)) {
+          passPlaced++;
+          placed++;
+          break;
+        }
+      }
+    }
+    if (passPlaced === 0) break;
+  }
   return placed;
 }
 
@@ -7058,7 +7325,8 @@ function ensureMassRiverGridCoverage(
 }
 
 /**
- * Generuje rzeki: rzadkie główne ujścia (BATCH 4) + dopływy siatkowe do sieci/morza + dekoracyjne dopływy.
+ * Generuje rzeki w 3 etapach (Maciej 2026-07-31):
+ * 1) główne inland→ocean (sparse) · 2) średnie siatka→sieć|ocean · 3) krótkie→średnie (delta).
  */
 export function generateRivers(
   hexes: Record<string, Hex>,
@@ -7139,15 +7407,51 @@ export function generateRivers(
     return true;
   };
 
+  const pushMedium = (path: RiverCoord[], sq: number, sr: number): boolean => {
+    const out = finalizeTributaryPath(
+      hexes, path, riverPaths, riverKinds, width, height, oceanConnected,
+    );
+    if (!out) return false;
+    riverPaths.push(out);
+    riverKinds.push('medium');
+    usedSources.add(hexKey(sq, sr));
+    markRiverPath(hexes, out);
+    return true;
+  };
+
+  const pushShort = (path: RiverCoord[], sq: number, sr: number): boolean => {
+    const mediumKeys = collectPathHexKeysForKinds(riverPaths, riverKinds, ['medium']);
+    if (mediumKeys.size === 0) return false;
+    if (nearestRiverHexDistance(sq, sr, mediumKeys) > SHORT_RIVER_MAX_DIST_FROM_MEDIUM) return false;
+    const out = finalizeShortPath(
+      hexes, path, riverPaths, riverKinds, width, height, oceanConnected,
+    );
+    if (!out) return false;
+    riverPaths.push(out);
+    riverKinds.push('short');
+    usedSources.add(hexKey(sq, sr));
+    markRiverPath(hexes, out);
+    return true;
+  };
+
   const gridCtx: GridSourcePlaceCtx = {
     hexes, width, height, riverPaths, riverKinds, usedSources,
     seaDist, openOceanDist, oceanConnected, rand,
     minLen, maxLen, acceptLen: gridTraceMinLen, traceMinLen: gridTraceMinLen,
     sourceSep: minSourceSep,
-    traceOptsBase, seaBufferOpts, pushMain, pushTributary,
+    traceOptsBase, seaBufferOpts, pushMain, pushTributary, pushMedium, pushShort,
   };
 
-  // 1) Twardy fill startów — każda komórka N×N z nadającym się lądem (Maciej 2026-07-31).
+  // ETAP 1 — główne rzeki: sparse siatka, inland → ocean.
+  for (const mass of masses) {
+    generatePhase1MainRivers(
+      hexes, new Set(mass), seaDist, riverPaths, riverKinds, usedSources,
+      gridCtx, maxLen, riverParams,
+    );
+  }
+
+  // ETAP 2 — średnie rzeki: pełna siatka tier, priorytet merge do sieci, ocean fallback.
+  const mediumCtx: GridSourcePlaceCtx = { ...gridCtx, placeMode: 'medium' };
   for (let round = 0; round < 6; round++) {
     for (const mass of masses) {
       enforceHardRiverGridStarts(
@@ -7156,7 +7460,7 @@ export function generateRivers(
         cellSize,
         seaDist,
         riverPaths,
-        gridCtx,
+        mediumCtx,
         maxLen,
         riverParams.reliefSourceBonus,
         riverParams.expandSourceRadius,
@@ -7167,42 +7471,20 @@ export function generateRivers(
     }
   }
 
-  // 1b) Dopływy gęstości — drobniejsza siatka, najdłuższa trasa do sieci/morza.
-  for (let pass = 0; pass < riverParams.feederPasses; pass++) {
-    let passPlaced = 0;
-    const reach = buildOceanReachableRiverHexKeys(
-      hexes, riverPaths, riverKinds, width, height, oceanConnected,
+  // ETAP 3 — krótkie dopływy: bufor 5 hex od średnich, ujście tylko do średnich.
+  for (const mass of masses) {
+    generatePhase3ShortRivers(
+      new Set(mass),
+      tributaryCell,
+      seaDist,
+      gridCtx,
+      feederMinLen,
+      feederMinSourceSep,
+      riverParams.feederPasses,
     );
-    const junctionKeys = new Set<string>();
-    for (const k of collectRiverPathHexKeys(riverPaths)) {
-      if (reach.has(k)) junctionKeys.add(k);
-    }
-    for (const mass of masses) {
-      const massSet = new Set(mass);
-      const minLand = minLandHexesForRiverCell(tributaryCell);
-      for (const land of landHexesByCoverageCell(massSet, tributaryCell).values()) {
-        if (land.length < minLand) continue;
-        if (cellHasRiverHex(land, hexes)) continue;
-        const ranked = land
-          .filter(([q, r]) => !usedSources.has(hexKey(q, r)))
-          .map(([q, r]) => ({ q, r, d: seaDist.get(hexKey(q, r)) ?? 0 }))
-          .filter((c) => c.d >= 2)
-          .sort((a, b) => b.d - a.d);
-        for (const c of ranked.slice(0, 4)) {
-          const localCtx: GridSourcePlaceCtx = {
-            ...gridCtx, acceptLen: feederMinLen, sourceSep: feederMinSourceSep,
-          };
-          if (tryPlaceGridSource(localCtx, c.q, c.r, massSet)) {
-            passPlaced++;
-            break;
-          }
-        }
-      }
-    }
-    if (passPlaced === 0) break;
   }
 
-  // 2) Dopływy dekoracyjne wzdłuż długich głównych nurtów
+  // Dekoracyjne dopływy wzdłuż długich głównych nurtów (legacy tributary).
   const pathCountBeforeDecor = riverPaths.length;
   for (let i = 0; i < pathCountBeforeDecor; i++) {
     if (riverKinds[i] !== 'main') continue;
@@ -7282,12 +7564,25 @@ export function topUpRiverGridCoverage(
     return true;
   };
 
+  const pushMedium = (path: RiverCoord[], sq: number, sr: number): boolean => {
+    const out = finalizeTributaryPath(
+      hexes, path, riverPaths, riverKinds, width, height, oceanConnected,
+    );
+    if (!out) return false;
+    riverPaths.push(out);
+    riverKinds.push('medium');
+    usedSources.add(hexKey(sq, sr));
+    markRiverPath(hexes, out);
+    return true;
+  };
+
   const gridCtx: GridSourcePlaceCtx = {
     hexes, width, height, riverPaths, riverKinds, usedSources,
     seaDist, openOceanDist, oceanConnected, rand,
     minLen: params.minLen, maxLen, acceptLen: params.gridTraceMinLen,
     traceMinLen: params.gridTraceMinLen, sourceSep: minSourceSep,
-    traceOptsBase, seaBufferOpts, pushMain, pushTributary,
+    traceOptsBase, seaBufferOpts, pushMain, pushTributary, pushMedium,
+    placeMode: 'medium',
   };
 
   let placed = 0;

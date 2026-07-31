@@ -1111,7 +1111,7 @@ function buildRiverPointsFromHexPath(
 function renderLandRiversFromPaths(
   map: GameMap,
   paths: Array<Array<{ q: number; r: number }>>,
-  kinds: Array<'main' | 'tributary' | undefined>,
+  kinds: Array<'main' | 'medium' | 'short' | 'tributary' | undefined>,
   R: number,
   renderStyle: MapRenderStyle,
   riverMouthY: number,
@@ -1146,7 +1146,7 @@ function renderLandRiversFromPaths(
     const reachesSea = pathReachesOpenSeaRender(map, path);
     const { pts, hexKeys, pointHex } = buildRiverPointsFromHexPath(
       map, landPath, R, renderStyle, riverMouthY, surfaceOffset, new Set<string>(),
-      kind === 'tributary' || reachesSea,
+      kind !== 'main' || reachesSea,
     );
     if (pts.length < 2) continue;
 

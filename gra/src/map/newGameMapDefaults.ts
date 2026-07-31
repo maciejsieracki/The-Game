@@ -344,7 +344,8 @@ export function resolveRiverMapParams(tier: DensityTier, w: number, h: number): 
   // Kanon Maciej 2026-07-31: siatka N×N z tieru (15/10/5) — liczba STARTÓW w komórkach.
   const mainCell = riverGridCellSizeForTier(tier);
   const tributaryCell = Math.max(3, Math.round(mainCell * 0.5));
-  const mainGridStride = 1;
+  // Etap 1: główne rzadziej — co 2 komórki siatki (średnie = pełna siatka tier).
+  const mainGridStride = 2;
 
   const minLen = Math.min(
     clamp(Math.round(tierMinLen * Math.max(0.65, areaScale)), 6, tierMinLen),

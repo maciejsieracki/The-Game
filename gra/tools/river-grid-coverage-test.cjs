@@ -1,5 +1,5 @@
 'use strict';
-/** Siatka rzek: twardy fill STARTÓW w komórkach N×N (Maciej 2026-07-31). */
+/** Siatka rzek + hierarchia 3 etapów (Maciej 2026-07-31). */
 
 const fs = require('fs');
 const path = require('path');
@@ -21,6 +21,10 @@ export {
   minLandHexesForRiverCell,
   landHexesByCoverageCell,
   pathHasValidRiverOutlet,
+  collectPathHexKeysForKinds,
+  nearestRiverHexDistance,
+  SHORT_RIVER_MAX_DIST_FROM_MEDIUM,
+  pathReachesRealSea,
 } from '../src/map/gen-helpers';`,
   'utf8',
 );
@@ -49,6 +53,23 @@ function ok(cond, msg) {
   }
 }
 
+function pathTouchesKind(path, paths, kinds, targetKind) {
+  const targetKeys = M.collectPathHexKeysForKinds(paths, kinds, [targetKind]);
+  if (targetKeys.size === 0) return false;
+  for (const p of path) {
+    if (targetKeys.has(`${p.q},${p.r}`)) return true;
+    for (const dq of [-1, 0, 1]) {
+      for (const dr of [-1, 0, 1]) {
+        if (dq === 0 && dr === 0) continue;
+        if (targetKeys.has(`${p.q + dq},${p.r + dr}`)) return true;
+      }
+    }
+  }
+  const end = path[path.length - 1];
+  if (!end) return false;
+  return M.nearestRiverHexDistance(end.q, end.r, targetKeys) <= 1;
+}
+
 const cases = [
   { w: 168, h: 120, typ: 'kontynenty', seed: 42, label: 'Standard kontynenty' },
   { w: 168, h: 120, typ: 'ziemia', seed: 7, label: 'Standard Ziemia' },
@@ -66,10 +87,12 @@ for (const { w, h, typ, seed, label } of cases) {
   const masses = M.groupLandMassKeys(map.hexes).filter((m) => m.length >= 8);
   const kinds = map.riverPathKinds;
   const mains = kinds.filter((k) => k === 'main').length;
+  const mediums = kinds.filter((k) => k === 'medium').length;
+  const shorts = kinds.filter((k) => k === 'short').length;
   const tribs = kinds.filter((k) => k === 'tributary').length;
   const sources = map.riverPaths.length;
 
-  ok(sources >= 40, `${label}: ≥40 startów rzek (${sources}, main=${mains} trib=${tribs})`);
+  ok(sources >= 40, `${label}: ≥40 startów rzek (${sources}, main=${mains} med=${mediums} short=${shorts} trib=${tribs})`);
 
   let orphanPaths = 0;
   for (let i = 0; i < map.riverPaths.length; i++) {
@@ -79,6 +102,31 @@ for (const { w, h, typ, seed, label } of cases) {
     if (!M.pathHasValidRiverOutlet(map.hexes, p, others, otherKinds, w, h)) orphanPaths++;
   }
   ok(orphanPaths === 0, `${label}: 0 tras bez ujścia (${orphanPaths})`);
+
+  let hierFail = 0;
+  const mediumKeys = M.collectPathHexKeysForKinds(map.riverPaths, kinds, ['medium']);
+  for (let i = 0; i < map.riverPaths.length; i++) {
+    const p = map.riverPaths[i];
+    const kind = kinds[i];
+    const p0 = p[0];
+    if (!p0) continue;
+    if (kind === 'main') {
+      if (!M.pathReachesRealSea(map.hexes, p, w, h)) hierFail++;
+    } else if (kind === 'medium') {
+      const others = map.riverPaths.filter((_, j) => j !== i);
+      const otherKinds = kinds.filter((_, j) => j !== i);
+      if (!M.pathHasValidRiverOutlet(map.hexes, p, others, otherKinds, w, h)) hierFail++;
+    } else if (kind === 'short') {
+      const srcDist = mediumKeys.size > 0
+        ? M.nearestRiverHexDistance(p0.q, p0.r, mediumKeys)
+        : 999;
+      const toMedium = pathTouchesKind(p, map.riverPaths, kinds, 'medium', i);
+      if (M.pathReachesRealSea(map.hexes, p, w, h) || !toMedium || srcDist > M.SHORT_RIVER_MAX_DIST_FROM_MEDIUM) {
+        hierFail++;
+      }
+    }
+  }
+  ok(hierFail === 0, `${label}: hierarchia 3 etapów OK (${hierFail} naruszeń)`);
 
   const minLand = M.minLandHexesForRiverCell(cellSize);
   let needCells = 0;

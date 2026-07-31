@@ -9,4 +9,8 @@ export {
   minLandHexesForRiverCell,
   landHexesByCoverageCell,
   pathHasValidRiverOutlet,
+  collectPathHexKeysForKinds,
+  nearestRiverHexDistance,
+  SHORT_RIVER_MAX_DIST_FROM_MEDIUM,
+  pathReachesRealSea,
 } from '../src/map/gen-helpers';

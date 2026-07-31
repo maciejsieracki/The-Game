@@ -43,8 +43,8 @@ export interface GameMap {
   riverPaths: { q: number; r: number }[][];
 
   /**
-   * main = nurt do morza (grubsza linia); tributary = dopływ (2× cieńszy).
+   * main = nurt do morza (grubsza); medium/short/tributary = dopływy (cieńsze).
    * Równoległy do riverPaths — ten sam indeks.
    */
-  riverPathKinds?: ('main' | 'tributary')[];
+  riverPathKinds?: ('main' | 'medium' | 'short' | 'tributary')[];
 }
