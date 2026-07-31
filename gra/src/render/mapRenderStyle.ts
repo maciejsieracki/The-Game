@@ -127,9 +127,9 @@ export const SEA_SURFACE_TOP_Y = 0.18;
 /** ZADANIE 1 (2026-07-20, kosmetyka opcjonalna): Wybrzeże = woda konsekwentnie — obniżone
  *  bliżej SEA_SURFACE_TOP_Y (płytka woda), nie „półka" lądu. Piasek na stykowych heksach
  *  prawdziwego lądu to osobna nakładka (niezmieniona). */
-export const WYBRZEZE_SURFACE_TOP_Y = 0.20;
+export const WYBRZEZE_SURFACE_TOP_Y = 0.22;
 /** Min. odstęp wierzchu lądu nad taflą morza — bufor na nakładki wybrzeża/rzeki. */
-export const LAND_MIN_CLEARANCE_ABOVE_SEA = 0.35;
+export const LAND_MIN_CLEARANCE_ABOVE_SEA = 0.28;
 
 /** Wstęga rzeki nad wierzchołkiem terenu (× promień hexa). Maciej 2026-07-09: 0.22→0.08 — po insecie
  *  wstęgi do WNĘTRZA płaskiego heksa (z dala od ściany pryzmu) duże podniesienie nie jest już potrzebne
@@ -1543,7 +1543,6 @@ export function buildStyleCoastWaterCap(
 
   const lite = opts.lite ?? false;
   const waterColor = TERRAIN_ROBLOX[TerenBazowy.Wybrzeze];
-  const deepWaterColor = 0x163d5c;
   const apothem = R * (Math.sqrt(3) / 2);
   const edgeLen = R * 1.04;
   const isDelta = opts.isDelta ?? opts.deltaKeys?.has(`${q},${r}`) ?? false;
@@ -1583,7 +1582,7 @@ export function buildStyleCoastWaterCap(
 
     const water = new THREE.Mesh(
       new THREE.BoxGeometry(edgeLen, stripH, stripDepth),
-      mat(deepWaterColor),
+      mat(waterColor),
     );
     water.position.set(ex, seaTopY + stripH * 0.52 + 0.014, ez);
     water.rotation.y = yaw;

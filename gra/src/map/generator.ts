@@ -547,6 +547,9 @@ export function generateMap(
   ({ paths: riverPaths, kinds: riverPathKinds } =
     ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
 
+  // Ostatni pierścień wybrzeża — relief/złoża/szablon Ziemi mogły odsłonić ląd przy Morzu.
+  finalizeCoastAndInlandWater(hexes, width, height, 2, coastOpts);
+
   return {
     szerokoscQ: width,
     wysokoscR: height,

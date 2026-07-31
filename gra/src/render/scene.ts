@@ -1774,14 +1774,16 @@ export async function buildScene(
     const t   = hex.terenBazowy;
     const vis = terrainVis(t, renderStyle);
     const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, R);
+    const coastalDrop = (
+      renderStyle === 'roblox'
+      && landCoastSandNeeded(map, hex.coords.q, hex.coords.r, t)
+    ) ? R * 0.045 : 0;
+    const surfaceTopY = vis.height + vis.yOffset - coastalDrop;
     // Morze / Wybrzeże (roblox): płaska tafla na wspólnym poziomie seaSurfaceY.
-    let y = vis.height / 2 + vis.yOffset;
+    let y = surfaceTopY - vis.height / 2;
     let scaleY = 1;
-    if (renderStyle === 'roblox' && t === TerenBazowy.Morze) {
+    if (renderStyle === 'roblox' && (t === TerenBazowy.Morze || t === TerenBazowy.Wybrzeze)) {
       y = seaSurfaceY - vis.height / 2;
-    } else if (renderStyle === 'roblox' && t === TerenBazowy.Wybrzeze) {
-      const wyTop = vis.height + vis.yOffset;
-      y = wyTop - vis.height / 2;
     }
     const hexKey = `${hex.coords.q},${hex.coords.r}`;
 
@@ -2031,7 +2033,7 @@ export async function buildScene(
     }
 
     // Brzeg hybryda C: ląd = pas piasku; Wybrzeże = pełna tafła piasku + woda od strony Morza.
-    const topYCoast = vis.height + vis.yOffset;
+    const topYCoast = surfaceTopY;
     if (useStyledDecor && renderStyle === 'roblox' && t === TerenBazowy.Wybrzeze) {
       const coastGroup = new THREE.Group();
       const hexQ = hex.coords.q;
@@ -2054,7 +2056,7 @@ export async function buildScene(
         r: hex.coords.r,
         x,
         z,
-        topY: vis.height + vis.yOffset,
+        topY: surfaceTopY,
         R,
         self: t,
       }, robloxLite);
