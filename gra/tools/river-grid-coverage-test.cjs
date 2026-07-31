@@ -25,6 +25,7 @@ export {
   nearestRiverHexDistance,
   SHORT_RIVER_MAX_DIST_FROM_MEDIUM,
   pathReachesRealSea,
+  maxDryLowlandPatchSize,
 } from '../src/map/gen-helpers';`,
   'utf8',
 );
@@ -163,6 +164,17 @@ for (const { w, h, typ, seed, label } of cases) {
     else console.log(`  ${label} mass ${mass.length} hex: pokrycie ${(ratio * 100).toFixed(0)}%`);
   }
   ok(total === 0 || okMasses === total, `${label}: siatka hex ≥${Math.round(hexMin * 100)}% (${okMasses}/${total} mas)`);
+
+  let maxDry = 0;
+  for (const mass of masses) {
+    if (mass.length < 150) continue;
+    maxDry = Math.max(maxDry, M.maxDryLowlandPatchSize(mass, map.hexes));
+  }
+  if (typ === 'kontynenty') {
+    ok(maxDry <= 80, `${label}: max suchy płat nizin ≤80 hex (${maxDry})`);
+  } else {
+    console.log(`  ${label}: max suchy płat nizin (info) = ${maxDry}`);
+  }
 }
 
 console.log(`\nriver-grid-coverage-test: ${pass} pass, ${fail} fail`);

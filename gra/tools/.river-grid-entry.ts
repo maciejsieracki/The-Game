@@ -13,4 +13,5 @@ export {
   nearestRiverHexDistance,
   SHORT_RIVER_MAX_DIST_FROM_MEDIUM,
   pathReachesRealSea,
+  maxDryLowlandPatchSize,
 } from '../src/map/gen-helpers';

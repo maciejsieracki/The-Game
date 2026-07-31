@@ -56,6 +56,7 @@ import {
   isWarmJungleForestHex,
   terrainVisualForStyle,
   terrainSurfaceTopY,
+  FLAT_LAND_SURFACE_Y,
   riverSurfaceLiftY,
   coastWaterCapTopY,
 } from './mapRenderStyle';
@@ -829,11 +830,10 @@ function riverHexSurfaceY(
   if (!h || h.terenBazowy === TerenBazowy.Morze) return null;
   // Tylko sam heks Wybrzeże schodzi do poziomu morza; sąsiedztwo plaży NIE obcina lądu.
   if (h.terenBazowy === TerenBazowy.Wybrzeze) return riverMouthY;
-  // Maciej 2026-07-09: STAŁA PŁASKA wysokość — rzeka na poziomie równin/łąk niezależnie od faktycznego
-  // terenu heksa (bez per-hex bonusów wzgórz/gór). Rzeka nie płynie w górę→dół→w górę.
-  // R nieużywane po zdjęciu bonusów.
+  // Maciej 2026-08-01: STAŁA PŁASKA wysokość (FLAT_LAND_SURFACE_Y) — wszystkie płaskie typy
+  // lądu na tej samej wysokości; rzeka nie tonie pod pustynią / równiną.
   void R;
-  return terrainSurfaceTopY(TerenBazowy.Laka, renderStyle) + surfaceOffset;
+  return FLAT_LAND_SURFACE_Y + surfaceOffset;
 }
 
 function neighborDirIndex(q: number, r: number, nq: number, nr: number): number {

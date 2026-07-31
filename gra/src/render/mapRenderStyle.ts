@@ -140,16 +140,19 @@ export function riverSurfaceLiftY(R: number): number {
   return R * RIVER_LIFT_ABOVE_TERRAIN_FRAC;
 }
 
+/** Wspólna wysokość płaskiego lądu (łąka, równina, pustynia, polarny) — rzeka i overlaye. */
+export const FLAT_LAND_SURFACE_Y = SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA;
+
 /** Wysokość powierzchni hexa (height + yOffset) — Roblox: płaskie przejścia. */
 export const TERRAIN_SURFACE_Y: Record<TerenBazowy, number> = {
   [TerenBazowy.Morze]: SEA_SURFACE_TOP_Y,
   [TerenBazowy.Wybrzeze]: WYBRZEZE_SURFACE_TOP_Y,
-  [TerenBazowy.Laka]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA,
-  [TerenBazowy.Rownina]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.02,
-  [TerenBazowy.Pustynia]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.08,
+  [TerenBazowy.Laka]: FLAT_LAND_SURFACE_Y,
+  [TerenBazowy.Rownina]: FLAT_LAND_SURFACE_Y,
+  [TerenBazowy.Pustynia]: FLAT_LAND_SURFACE_Y,
   [TerenBazowy.Wzgorza]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.18,
   [TerenBazowy.Gory]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32,
-  [TerenBazowy.Polarny]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.04,
+  [TerenBazowy.Polarny]: FLAT_LAND_SURFACE_Y,
 };
 
 /** Głębokość pasa piasku na lądzie — ~30% promienia od krawędzi w stronę morza. */
@@ -188,12 +191,16 @@ export function terrainVisualForStyle(
   civ: TerrainVisualSpec,
 ): TerrainVisualSpec {
   const base = style === 'roblox' ? ROBLOX_TERRAIN_VIS[t] : civ;
-  if (style === 'roblox') {
-    const topY = TERRAIN_SURFACE_Y[t];
-    return { height: base.height, yOffset: topY - base.height };
+  if (t === TerenBazowy.Morze || t === TerenBazowy.Wybrzeze) {
+    if (style === 'roblox') {
+      const topY = TERRAIN_SURFACE_Y[t];
+      return { height: base.height, yOffset: topY - base.height };
+    }
+    return base;
   }
-  if (t === TerenBazowy.Morze || t === TerenBazowy.Wybrzeze) return base;
-  return { ...base, yOffset: base.yOffset + LAND_HEX_Y_LIFT };
+  const extraLift = style === 'civ' ? LAND_HEX_Y_LIFT : 0;
+  const topY = TERRAIN_SURFACE_Y[t] + extraLift;
+  return { height: base.height, yOffset: topY - base.height };
 }
 
 export interface TerrainHeightAuditRow {
@@ -229,10 +236,14 @@ export function terrainHeightAudit(style: MapRenderStyle = GAME_MAP_RENDER_STYLE
   const seaTopY = terrainSurfaceTopY(TerenBazowy.Morze, style);
   const wybrzezeTopY = terrainSurfaceTopY(TerenBazowy.Wybrzeze, style);
   const coastWaterCapTopY = seaTopY + COAST_WATER_CAP_THICKNESS;
-  const dryTypes: TerenBazowy[] = [
+  const flatTypes: TerenBazowy[] = [
     TerenBazowy.Laka,
     TerenBazowy.Rownina,
     TerenBazowy.Pustynia,
+    TerenBazowy.Polarny,
+  ];
+  const dryTypes: TerenBazowy[] = [
+    ...flatTypes,
     TerenBazowy.Wzgorza,
     TerenBazowy.Gory,
   ];
@@ -244,6 +255,11 @@ export function terrainHeightAudit(style: MapRenderStyle = GAME_MAP_RENDER_STYLE
   const violations: string[] = [];
   if (wybrzezeTopY <= seaTopY) {
     violations.push(`wybrzeże (${wybrzezeTopY.toFixed(3)}) <= morze (${seaTopY.toFixed(3)})`);
+  }
+  const flatTops = flatTypes.map((t) => terrainSurfaceTopY(t, style));
+  const flatSpread = flatTops.length > 0 ? Math.max(...flatTops) - Math.min(...flatTops) : 0;
+  if (flatSpread > 0.001) {
+    violations.push(`płaski ląd: rozrzut topY ${flatSpread.toFixed(3)} (wymagane 0)`);
   }
   for (const row of land) {
     if (row.gapAboveSea < LAND_MIN_CLEARANCE_ABOVE_SEA - 0.001) {

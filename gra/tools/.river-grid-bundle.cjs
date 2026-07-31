@@ -28,6 +28,7 @@ __export(river_grid_entry_exports, {
   generateMap: () => generateMap,
   groupLandMassKeys: () => groupLandMassKeys,
   landHexesByCoverageCell: () => landHexesByCoverageCell,
+  maxDryLowlandPatchSize: () => maxDryLowlandPatchSize,
   minLandHexesForRiverCell: () => minLandHexesForRiverCell,
   nearestRiverHexDistance: () => nearestRiverHexDistance,
   pathHasValidRiverOutlet: () => pathHasValidRiverOutlet,
@@ -5222,6 +5223,152 @@ function tryForceCellRiverConnection(ctx, land, massSet) {
   if (forceCtx.pushTributary(path, sq, sr)) return true;
   return false;
 }
+function isDryLowlandHex(hex) {
+  return !!hex && isRiverLandTerrain(hex.terenBazowy) && !isReliefTerrain(hex.terenBazowy) && hex.rzeka?.obecna !== true;
+}
+function maxDryLowlandPatchSize(massLandKeys, hexes) {
+  const massSet = massLandKeys instanceof Set ? massLandKeys : new Set(massLandKeys);
+  const visited = /* @__PURE__ */ new Set();
+  let maxSize = 0;
+  for (const k of massSet) {
+    if (visited.has(k) || !isDryLowlandHex(hexes[k])) continue;
+    const queue = [k];
+    visited.add(k);
+    let size = 0;
+    while (queue.length > 0) {
+      const cur = queue.shift();
+      size++;
+      const { q, r } = parseHexKey(cur);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandHex(hexes[nk])) continue;
+        visited.add(nk);
+        queue.push(nk);
+      }
+    }
+    if (size > maxSize) maxSize = size;
+  }
+  return maxSize;
+}
+function tryDrainDryPatchFromRelief(ctx, component, massSet) {
+  const compSet = new Set(component.map(([q, r]) => hexKey(q, r)));
+  const reliefCandidates = [];
+  for (const [q, r] of component) {
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nq = q + dq;
+      const nr = r + dr;
+      const nk = hexKey(nq, nr);
+      if (!massSet.has(nk) || compSet.has(nk)) continue;
+      const nh = ctx.hexes[nk];
+      if (!nh || !isReliefRiverSource(nh.terenBazowy) || ctx.usedSources.has(nk)) continue;
+      const d = ctx.seaDist.get(nk) ?? 0;
+      reliefCandidates.push({ q: nq, r: nr, score: d + ctx.rand() * 2 });
+    }
+  }
+  reliefCandidates.sort((a, b) => b.score - a.score);
+  const traceOpts = {
+    seaDist: ctx.seaDist,
+    openOceanDist: ctx.openOceanDist,
+    oceanConnected: ctx.oceanConnected,
+    mapWidth: ctx.width,
+    mapHeight: ctx.height,
+    rand: ctx.rand,
+    ...ctx.traceOptsBase
+  };
+  for (const c of reliefCandidates.slice(0, 10)) {
+    const startSeaDist = ctx.seaDist.get(hexKey(c.q, c.r)) ?? 0;
+    const traceMax = Math.max(ctx.maxLen, ctx.minLen + 24, Math.ceil(startSeaDist * 2.8) + ctx.minLen);
+    const seaPath = traceRiverForGridFill(
+      ctx.hexes,
+      c.q,
+      c.r,
+      traceMax,
+      ctx.minLen,
+      3,
+      traceOpts,
+      true
+    );
+    if (seaPath.length >= 3 && ctx.pushMain(seaPath, c.q, c.r)) return true;
+    if (seaPath.length >= 3 && ctx.pushMedium?.(seaPath, c.q, c.r)) return true;
+  }
+  const riverKeys = new Set(
+    [...collectRiverPathHexKeys(ctx.riverPaths)].filter((k) => massSet.has(k))
+  );
+  if (riverKeys.size === 0) return false;
+  for (const c of reliefCandidates.slice(0, 8)) {
+    let bestJ = null;
+    let bestD = Infinity;
+    for (const jk of riverKeys) {
+      const { q: jq, r: jr } = parseHexKey(jk);
+      const d = hexAxialDistance(c.q, c.r, jq, jr);
+      if (d < bestD) {
+        bestD = d;
+        bestJ = { q: jq, r: jr };
+      }
+    }
+    if (!bestJ || bestD > ctx.maxLen) continue;
+    const tribPath = traceTributary(
+      ctx.hexes,
+      c.q,
+      c.r,
+      bestJ.q,
+      bestJ.r,
+      ctx.maxLen,
+      ctx.seaDist,
+      ctx.rand,
+      3
+    );
+    if (tribPath.length >= 3 && ctx.pushMedium?.(tribPath, c.q, c.r)) return true;
+  }
+  return false;
+}
+function fillDryLowlandPatches(massSet, gridCtx, minPatchSize, maxPasses) {
+  let placed = 0;
+  for (let pass = 0; pass < maxPasses; pass++) {
+    let passPlaced = 0;
+    const patches = [];
+    const visited = /* @__PURE__ */ new Set();
+    for (const k of massSet) {
+      if (visited.has(k) || !isDryLowlandHex(gridCtx.hexes[k])) continue;
+      const component = [];
+      const queue = [k];
+      visited.add(k);
+      while (queue.length > 0) {
+        const cur = queue.shift();
+        const { q, r } = parseHexKey(cur);
+        component.push([q, r]);
+        for (const [dq, dr] of HEX_DIRECTIONS) {
+          const nk = hexKey(q + dq, r + dr);
+          if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandHex(gridCtx.hexes[nk])) continue;
+          visited.add(nk);
+          queue.push(nk);
+        }
+      }
+      if (component.length >= minPatchSize) patches.push({ land: component, size: component.length });
+    }
+    patches.sort((a, b) => b.size - a.size);
+    for (const { land } of patches.slice(0, 12)) {
+      if (cellHasRiverHex(land, gridCtx.hexes)) continue;
+      const forceCtx = {
+        ...gridCtx,
+        acceptLen: 3,
+        sourceSep: 0,
+        relaxSeaBuffer: true
+      };
+      if (tryDrainDryPatchFromRelief(forceCtx, land, massSet)) {
+        passPlaced++;
+        placed++;
+        continue;
+      }
+      if (tryForceCellRiverConnection(forceCtx, land, massSet)) {
+        passPlaced++;
+        placed++;
+      }
+    }
+    if (passPlaced === 0) break;
+  }
+  return placed;
+}
 function enforceHardRiverGridStarts(hexes, massSet, cellSize, seaDist, riverPaths, gridCtx, maxLen, reliefSourceBonus, expandSourceRadius, minInlandFromSea, baseSourceSep, acceptLen) {
   const minLand = minLandHexesForRiverCell(cellSize);
   let placed = 0;
@@ -5650,6 +5797,9 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
       feederMinSourceSep,
       riverParams.feederPasses
     );
+  }
+  for (const mass of masses) {
+    fillDryLowlandPatches(new Set(mass), gridCtx, 20, 5);
   }
   const pathCountBeforeDecor = riverPaths.length;
   for (let i = 0; i < pathCountBeforeDecor; i++) {
@@ -6945,6 +7095,7 @@ function menuLabelToDims(label) {
   generateMap,
   groupLandMassKeys,
   landHexesByCoverageCell,
+  maxDryLowlandPatchSize,
   minLandHexesForRiverCell,
   nearestRiverHexDistance,
   pathHasValidRiverOutlet,

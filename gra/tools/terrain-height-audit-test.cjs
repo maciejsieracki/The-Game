@@ -10,9 +10,11 @@ const BUNDLE = path.resolve(__dirname, '.terrain-height-audit-bundle.cjs');
 
 fs.writeFileSync(
   ENTRY,
-  `export { terrainHeightAudit, LAND_MIN_CLEARANCE_ABOVE_SEA, SEA_SURFACE_TOP_Y } from '../src/render/mapRenderStyle';
+  `export { terrainHeightAudit, LAND_MIN_CLEARANCE_ABOVE_SEA, SEA_SURFACE_TOP_Y, FLAT_LAND_SURFACE_Y, terrainSurfaceTopY, riverSurfaceLiftY } from '../src/render/mapRenderStyle';
+export { TerenBazowy } from '../src/types/hex';
+export { HEX_R } from '../src/render/hexutil';
 export { generateMap } from '../src/map/generator';
-export { auditMapTerrainData } from '../src/map/gen-helpers';`,
+export { auditMapTerrainData, groupLandMassKeys, maxDryLowlandPatchSize } from '../src/map/gen-helpers';`,
   'utf8',
 );
 
@@ -56,6 +58,16 @@ console.log(`Min. luka ląd–morze: ${audit.minLandGap.toFixed(3)} (wymagane �
 ok(audit.violations.length === 0, `render: brak naruszeń wysokości (${audit.violations.length})`);
 if (audit.violations.length > 0) {
   for (const v of audit.violations) console.error('  ', v);
+}
+
+const { TerenBazowy } = M;
+const flats = [TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Pustynia, TerenBazowy.Polarny];
+const flatTops = flats.map((t) => M.terrainSurfaceTopY(t, 'roblox'));
+const flatSpread = Math.max(...flatTops) - Math.min(...flatTops);
+ok(flatSpread < 0.001, `płaski ląd: jednolite topY (rozrzut ${flatSpread.toFixed(4)})`);
+const riverY = M.FLAT_LAND_SURFACE_Y + M.riverSurfaceLiftY(M.HEX_R);
+for (const t of flats) {
+  ok(M.terrainSurfaceTopY(t, 'roblox') < riverY, `rzeka nad ${t} (top ${M.terrainSurfaceTopY(t, 'roblox').toFixed(3)} < river ${riverY.toFixed(3)})`);
 }
 
 const map = M.generateMap(168, 120, 42, 'kontynenty', {
