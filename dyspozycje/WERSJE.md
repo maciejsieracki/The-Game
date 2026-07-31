@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `31210b68` - 2026-07-31 23:08 - FALA 125: sojusze wojskowy/obronny + wybrzeze woda + rzeki siatka + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `f37ec466` - 2026-08-01 00:06 - FALA 126: 3 etapy rzek + inland fill + LOD3 + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `f37ec46616223e34b52d77dbc8967cd2` · stempel: `ROBOCZA · 2026-08-01 00:06`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: rzeki 3 etapy (główne/średnie/krótkie); inland BFS dry patches; rzeki na LOD 3.
+- Commity: `ab0a848` · `2107581`. tsc 0 · VERIFY OK. POLE-BITWY `dd399c4b`.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `31210b68` - 2026-07-31 23:08 - FALA 125: sojusze wojskowy/obronny + wybrzeze woda + rzeki siatka + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `31210b686cbc397917daeb23baa31b3f` · stempel: `ROBOCZA · 2026-07-31 23:08`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: sojusze wojskowy vs obronny (modal wypełnij/odmów); wybrzeże jasne + ląd niżej; rzeki — twardy start siatki, ujście morze/dopływ, dłuższe trasy.

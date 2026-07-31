@@ -4490,3 +4490,10 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK | POLE-BITWY `dd399c4b`
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra — mapa)
 CZEKAM-NA: nic
+
+## [00:06 PL, 2026-08-01] LOKAL/Grok → ALL — FALA 126 DEPLOY ALL
+- md5 `f37ec466` / `f37ec46616223e34b52d77dbc8967cd2` | stempel ROBOCZA · 2026-08-01 00:06
+- Zakres: 3 etapy rzek (`2107581`) · inland BFS dry patches + LOD3 (`ab0a848`)
+- tsc 0 | VERIFY OK | POLE-BITWY `dd399c4b`
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: nic
