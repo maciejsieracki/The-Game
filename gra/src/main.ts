@@ -4338,6 +4338,7 @@ async function boot(): Promise<void> {
         kolorHex: civKolorHexFn(0),
         cultureLabel: civCultureLabelForKey(civKey),
         epochLabel: epochLabelForOwner(0),
+        era: empireEpochForOwner(0),
         personalityTags: diplomacyPersonalityTags(civKey),
         detailLine: lines.detailLine,
         metaLine: lines.metaLine,

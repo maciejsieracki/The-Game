@@ -5,8 +5,8 @@
 import { formatDiploCivListLines } from '../game/diplomacy-display';
 import { tierLabel } from './diplomacyPanel';
 import {
+  civLeaderMedallionHtmlById,
   civPennantHtml,
-  civPennantHtmlById,
   dipBrandIconHtml,
   dipCloseBtnHtml,
   dipCapitalLocateBtnHtml,
@@ -37,6 +37,8 @@ export interface DiploPlayerSummary {
   kolorHex?: string;
   cultureLabel?: string;
   epochLabel?: string;
+  /** Epoka gracza (1=kamień, 2=brąz, 3=żelazo) — portret władcy w medalionie. */
+  era?: number;
   personalityTags?: readonly string[];
   detailLine: string;
   metaLine?: string;
@@ -115,6 +117,8 @@ ${DIPLO_1E_SHARED_CSS}
   display:flex;gap:0.85em;align-items:center;cursor:default;}
 .civ-diplo-list-hud .dl-self-label{font-size:0.58em;letter-spacing:.22em;text-transform:uppercase;color:#b8a870;margin-bottom:0.2em;}
 .civ-diplo-list-hud .dl-self .dl-name{color:#e8d88a;}
+.civ-diplo-list-hud .dl-self .dip-leader-medallion{width:48px;height:48px;margin:0;flex-shrink:0;border-width:2px;}
+.civ-diplo-list-hud .dl-self .dip-leader-ic{width:100%;height:100%;}
 .civ-diplo-list-hud .dl-divider{height:1px;margin:0.5em 0 0.35em;background:rgba(232,216,138,.14);}
 .civ-diplo-list-hud .dl-section{font-size:0.62em;letter-spacing:.18em;text-transform:uppercase;color:#6a6458;
   padding:0.15em 0.15em 0.35em;}
@@ -203,11 +207,11 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
       selfRow.className = 'dl-self';
       selfRow.setAttribute('aria-label', 'Twoje państwo — ' + playerSummary.name);
 
-      const pennant = document.createElement('div');
-      pennant.innerHTML = civPennantHtmlById(
+      const portrait = document.createElement('div');
+      portrait.innerHTML = civLeaderMedallionHtmlById(
         playerSummary.ikonaId,
         playerSummary.kolorHex,
-        4,
+        playerSummary.era ?? 1,
       );
 
       const body = document.createElement('div');
@@ -247,7 +251,7 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
         meta.textContent = playerSummary.metaLine;
         body.appendChild(meta);
       }
-      selfRow.appendChild(pennant.firstElementChild ?? pennant);
+      selfRow.appendChild(portrait.firstElementChild ?? portrait);
       selfRow.appendChild(body);
       scroll.appendChild(selfRow);
     }
