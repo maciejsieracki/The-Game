@@ -6664,6 +6664,144 @@ function expandRiverSourceCandidates(
   return [...out.values()];
 }
 
+/** BFS po nizinach (bez gór/wzgórz) — najbliższy heks istniejącej rzeki w masie lądu. */
+function bfsNearestRiverHexOnLowland(
+  hexes: Record<string, Hex>,
+  sq: number,
+  sr: number,
+  riverKeys: Set<string>,
+  massSet: Set<string>,
+  maxDist: number,
+): { q: number; r: number; dist: number } | null {
+  const startK = hexKey(sq, sr);
+  const queue: Array<[number, number, number]> = [[sq, sr, 0]];
+  const visited = new Set<string>([startK]);
+  while (queue.length > 0) {
+    const [q, r, d] = queue.shift()!;
+    const k = hexKey(q, r);
+    if (riverKeys.has(k) && d > 0) return { q, r, dist: d };
+    if (d >= maxDist) continue;
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nq = q + dq;
+      const nr = r + dr;
+      const nk = hexKey(nq, nr);
+      if (visited.has(nk) || !massSet.has(nk)) continue;
+      const nh = hexes[nk];
+      if (!nh || !isRiverLandTerrain(nh.terenBazowy)) continue;
+      if (isReliefTerrain(nh.terenBazowy)) continue;
+      visited.add(nk);
+      queue.push([nq, nr, d + 1]);
+    }
+  }
+  return null;
+}
+
+/** Prosta ścieżka BFS po nizinach (gdy A* nie przebija się przez relief). */
+function bfsLowlandRiverPath(
+  hexes: Record<string, Hex>,
+  sq: number,
+  sr: number,
+  tq: number,
+  tr: number,
+  massSet: Set<string>,
+  maxLen: number,
+): RiverCoord[] {
+  const startK = hexKey(sq, sr);
+  const targetK = hexKey(tq, tr);
+  if (startK === targetK) return [{ q: sq, r: sr }];
+  const cameFrom = new Map<string, string>();
+  const queue: string[] = [startK];
+  const visited = new Set<string>([startK]);
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (current === targetK) {
+      const path: RiverCoord[] = [];
+      let cur: string | undefined = current;
+      while (cur) {
+        const { q, r } = parseHexKey(cur);
+        path.push({ q, r });
+        cur = cameFrom.get(cur);
+      }
+      path.reverse();
+      return path.length <= maxLen ? path : path.slice(0, maxLen);
+    }
+    if (visited.size > maxLen + 4) break;
+    const { q, r } = parseHexKey(current);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (visited.has(nk) || !massSet.has(nk)) continue;
+      const nh = hexes[nk];
+      if (!nh || !isRiverLandTerrain(nh.terenBazowy)) continue;
+      if (isReliefTerrain(nh.terenBazowy) && nk !== targetK) continue;
+      visited.add(nk);
+      cameFrom.set(nk, current);
+      queue.push(nk);
+    }
+  }
+  return [];
+}
+
+/**
+ * Ostatnia deska ratunku: komórka bez startu → dopływ BFS/A* do najbliższej rzeki w sieci
+ * (omija góry po nizinach — typowa przyczyna „suchych płatów” na kontynencie).
+ */
+function tryForceCellRiverConnection(
+  ctx: GridSourcePlaceCtx,
+  land: Array<[number, number]>,
+  massSet: Set<string>,
+): boolean {
+  const riverKeys = new Set(
+    [...collectRiverPathHexKeys(ctx.riverPaths)].filter((k) => massSet.has(k)),
+  );
+  if (riverKeys.size === 0) return false;
+
+  const lowland = land
+    .filter(([q, r]) => {
+      const k = hexKey(q, r);
+      if (ctx.usedSources.has(k)) return false;
+      const h = ctx.hexes[k];
+      return h && isRiverLandTerrain(h.terenBazowy) && !isReliefTerrain(h.terenBazowy);
+    })
+    .map(([q, r]) => ({
+      q,
+      r,
+      d: ctx.seaDist.get(hexKey(q, r)) ?? 0,
+      tie: ctx.rand(),
+    }))
+    .sort((a, b) => b.d - a.d || a.tie - b.tie);
+
+  let bestSrc: [number, number] | null = null;
+  let bestTarget: [number, number] | null = null;
+  let bestDist = Infinity;
+
+  for (const c of lowland.slice(0, 16)) {
+    const near = bfsNearestRiverHexOnLowland(
+      ctx.hexes, c.q, c.r, riverKeys, massSet, Math.max(80, ctx.maxLen + 24),
+    );
+    if (!near || near.dist >= bestDist) continue;
+    bestDist = near.dist;
+    bestSrc = [c.q, c.r];
+    bestTarget = [near.q, near.r];
+  }
+
+  if (!bestSrc || !bestTarget || bestDist > 100) return false;
+
+  const [sq, sr] = bestSrc;
+  const [tq, tr] = bestTarget;
+  const srcKey = hexKey(sq, sr);
+  const traceBudget = Math.max(ctx.maxLen, Math.ceil(bestDist * 1.5) + 12);
+
+  let path = aStarRiverToTarget(ctx.hexes, sq, sr, tq, tr, traceBudget, srcKey);
+  if (path.length < 3) {
+    path = bfsLowlandRiverPath(ctx.hexes, sq, sr, tq, tr, massSet, traceBudget);
+  }
+  if (path.length < 3) return false;
+
+  const forceCtx: GridSourcePlaceCtx = { ...ctx, acceptLen: 3, sourceSep: 0 };
+  if (forceCtx.pushTributary(path, sq, sr)) return true;
+  return false;
+}
+
 function enforceHardRiverGridStarts(
   hexes: Record<string, Hex>,
   massSet: Set<string>,
@@ -6681,7 +6819,13 @@ function enforceHardRiverGridStarts(
   const minLand = minLandHexesForRiverCell(cellSize);
   let placed = 0;
 
-  const listEligibleCells = (): Array<[number, number]>[] =>
+  const cellAvgSeaDist = (cells: Array<[number, number]>) => {
+    let s = 0;
+    for (const [q, r] of cells) s += seaDist.get(hexKey(q, r)) ?? 0;
+    return cells.length > 0 ? s / cells.length : 0;
+  };
+
+  const listEligibleCells = (preferInland: boolean): Array<[number, number]>[] =>
     [...landHexesByCoverageCell(massSet, cellSize).values()]
       .filter((land) => land.length >= minLand)
       .filter((land) =>
@@ -6692,12 +6836,9 @@ function enforceHardRiverGridStarts(
       )
       .filter((land) => !cellHasRiverSourceInCell(land, riverPaths))
       .sort((a, b) => {
-        const avg = (cells: Array<[number, number]>) => {
-          let s = 0;
-          for (const [q, r] of cells) s += seaDist.get(hexKey(q, r)) ?? 0;
-          return s / cells.length;
-        };
-        return avg(a) - avg(b);
+        const da = cellAvgSeaDist(a);
+        const db = cellAvgSeaDist(b);
+        return preferInland ? db - da : da - db;
       });
 
   const retryPasses: Array<{ acceptLen: number; sourceSep: number; expand: number; minInland: number }> = [
@@ -6719,7 +6860,7 @@ function enforceHardRiverGridStarts(
   };
 
   if (!massHasRiver()) {
-    const bootstrapLand = listEligibleCells()[0];
+    const bootstrapLand = listEligibleCells(false)[0];
     if (bootstrapLand) {
       const ranked = bootstrapLand
         .map(([q, r]) => ({ q, r, d: seaDist.get(hexKey(q, r)) ?? 0 }))
@@ -6751,7 +6892,7 @@ function enforceHardRiverGridStarts(
   }
 
   for (const pass of retryPasses) {
-    const unfilled = listEligibleCells();
+    const unfilled = listEligibleCells(true);
     if (unfilled.length === 0) break;
 
     for (const land of unfilled) {
@@ -6798,7 +6939,7 @@ function enforceHardRiverGridStarts(
     }
   }
 
-  for (const land of listEligibleCells()) {
+  for (const land of listEligibleCells(true)) {
     if (cellHasRiverSourceInCell(land, riverPaths)) continue;
     for (const [q, r] of land) {
       const forceCtx: GridSourcePlaceCtx = {
@@ -6806,6 +6947,12 @@ function enforceHardRiverGridStarts(
       };
       if (tryPlaceGridSource(forceCtx, q, r, massSet)) { placed++; break; }
     }
+  }
+
+  // BFS fallback: suchy płat za górami — dopływ do najbliższej rzeki po nizinach.
+  for (const land of listEligibleCells(true)) {
+    if (cellHasRiverSourceInCell(land, riverPaths)) continue;
+    if (tryForceCellRiverConnection(gridCtx, land, massSet)) placed++;
   }
 
   return placed;

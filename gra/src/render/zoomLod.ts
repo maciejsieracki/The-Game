@@ -92,9 +92,8 @@ export function zoomLodFlags(level: ZoomLodLevel, baseShadows: boolean): ZoomLod
         forestTrunkInst: false,
         terrainDetailInst: false,
         coastDecorInst: false,
-        // A1a (civ-zoom-lod-a1a4): rzeki OFF na dalekim LOD — setki meshy woda+brzeg
-        // to tysiące draw calli na Super Huge, a przy pixelRatio 0.5 ledwie widoczne.
-        rivers: false,
+        // Rzeki widoczne przy średnim oddaleniu — dane są w mapie, LOD 3 je chował całkowicie.
+        rivers: true,
         shadows: false,
         pixelRatioMul: 0.5,
         decorDensity: 0.25,
