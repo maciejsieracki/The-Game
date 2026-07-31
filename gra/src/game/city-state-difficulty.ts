@@ -31,11 +31,14 @@ export function shouldCityStateRollWarOnPlayer(
   atWarWithPlayer: boolean,
   hasTradeOrResourceTreatyWithPlayer: boolean,
   rng: () => number = Math.random,
+  /** Aktywna karencja pokoju z graczem — nie wypowiadaj wojny mimo roll. */
+  peaceLockedWithPlayer = false,
 ): boolean {
   if (cityStateDifficulty !== 'hard') return false;
   if (turn < CITY_STATE_PLAYER_WAR_MIN_TURN) return false;
   if (atWarWithPlayer) return false;
   if (hasTradeOrResourceTreatyWithPlayer) return false;
+  if (peaceLockedWithPlayer) return false;
   return rng() < CITY_STATE_PLAYER_WAR_CHANCE;
 }
 

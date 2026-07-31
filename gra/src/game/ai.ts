@@ -2656,6 +2656,11 @@ export interface RelacjaWejscie {
   isMinorCivPartner?: boolean;
   /** Tura ostatniej prośby o audiencję u gracza (cooldown). */
   lastAudienceRequestTurn?: number;
+  /**
+   * Aktywna karencja pokoju z partnerem — AI nie wypowiada wojny (Maciej 2026-08-01).
+   * Ustawiane przez silnik z DiploPairMeta.peaceUntilTurn.
+   */
+  peaceLocked?: boolean;
 }
 
 /**
@@ -2967,7 +2972,7 @@ export function decideAIDiplomacy(
   if (inp.clusterForceWarTargetId != null) {
     const forcedId = String(inp.clusterForceWarTargetId);
     const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
-    if (forcedRel && !forcedRel.stanWojny) {
+    if (forcedRel && !forcedRel.stanWojny && !forcedRel.peaceLocked) {
       return [{
         type:     'wypowiedz_wojne',
         targetId: forcedId,
@@ -3177,6 +3182,7 @@ export function decideAIDiplomacy(
     // Przy rw >= PROG_TRYBUT=0.7 i agresja >= 0.75 — P3 nie przejal, wiec trafiamy tu.
     if (
       !rel.stanWojny &&
+      !rel.peaceLocked &&
       stance.willingnessWar > 0 &&
       rw >= effProgWojnaSila &&
       effAgresja >= effProgWojnaAgresja &&

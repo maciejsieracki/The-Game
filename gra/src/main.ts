@@ -861,6 +861,11 @@ import {
   type DiploPairMeta,
   type ZlozeGrant,
 } from './game/diplomacy-pn-engine';
+import {
+  isPeaceTreatyLocked,
+  startPeaceTreatyLock,
+  filterAllianceObligationsRespectingPeaceLock,
+} from './game/diplomacy-peace-lock';
 import { computePlayerAcceptanceSides } from './game/diplomacy-acceptance-points';
 import {
   basketItemsAffordableExtended,
@@ -5807,6 +5812,26 @@ async function boot(): Promise<void> {
       diplomacyPairMeta.set(diploPairKey(a, b), meta);
     }
 
+    /** Karencja pokoju po akceptacji traktatu — blokuje DOW obu stron (w tym kaskadę sojuszu). */
+    function isPeaceLockedBetween(a: number, b: number): boolean {
+      return isPeaceTreatyLocked(getDiploPairMeta(a, b), turn);
+    }
+
+    /** Zawarcie pokoju + blokada DOW na PEACE_TREATY_LOCK_TURNS tur. */
+    function finalizePeaceTreatyBetween(proposerId: number, responderId: number): void {
+      const cur = getDiploRelation(proposerId, responderId);
+      setDiploRelation(
+        proposerId,
+        responderId,
+        applyDiploEventTracked(proposerId, responderId, cur, 'pokoj'),
+      );
+      setDiploPairMeta(
+        proposerId,
+        responderId,
+        startPeaceTreatyLock(getDiploPairMeta(proposerId, responderId), turn),
+      );
+    }
+
     // -------------------------------------------------------------------------
     // WIARYGODNOSC CYWILIZACJI — WIARYGODNOSC-SPECYFIKACJA.md, etapy 2–4.
     // Rdzeń (typy, krzywa zapominania, klamrowanie) w game/diplomacy-credibility.ts
@@ -6499,6 +6524,10 @@ async function boot(): Promise<void> {
     /** Wypowiedzenie wojny gracza — ten sam efekt co audiencja dyplomatyczna (akcja 11). */
     function playerDeclareWarOnOwner(ownerId: number): boolean {
       const civName = ownerDiploLabel(ownerId);
+      if (isPeaceLockedBetween(0, ownerId)) {
+        showHintMessage('Traktat pokoju — nie możesz wypowiedzieć wojny: ' + civName, 4000);
+        return false;
+      }
       const layer = diplomacyLayerForOwner(
         ownerId,
         simplifiedDiplomacyOwners,
@@ -6529,6 +6558,7 @@ async function boot(): Promise<void> {
     /** Wypowiedzenie wojny między dowolnymi państwami (ultimatum / odmowa negocjacji). */
     function ownerDeclareWarOn(attackerId: number, defenderId: number): void {
       if (attackerId === defenderId) return;
+      if (isPeaceLockedBetween(attackerId, defenderId)) return;
       chargeWarDeclarationCredibility(attackerId, defenderId);
       breakTreatiesOnWar(attackerId, defenderId, attackerId === 0);
       applyAllianceObligationsOnWar(attackerId, defenderId);
@@ -10906,7 +10936,7 @@ async function boot(): Promise<void> {
       const curRel = getDiploRelation(0, p.ownerId);
       if (accept) {
         if (p.cmdType === 'zaproponuj_pokoj') {
-          setDiploRelation(0, p.ownerId, applyDiploEventTracked(0, p.ownerId, curRel, 'pokoj'));
+          finalizePeaceTreatyBetween(0, p.ownerId);
           showHintMessage('Pokój z: ' + p.civName, 4000);
         } else {
           const cmd = {
@@ -12281,7 +12311,11 @@ async function boot(): Promise<void> {
     }
 
     function applyAllianceObligationsOnWar(attackerId: number, victimId: number): void {
-      const obligations = allianceObligationsForWarDeclaration(activeDeals, attackerId, victimId);
+      const obligationsRaw = allianceObligationsForWarDeclaration(activeDeals, attackerId, victimId);
+      const obligations = filterAllianceObligationsRespectingPeaceLock(
+        obligationsRaw,
+        (allyId, targetId) => isPeaceLockedBetween(allyId, targetId),
+      );
       const joinedWarOwnerIds: number[] = [attackerId, victimId];
       const pendingPlayer: Array<{ ob: AllianceObligation; attackerId: number; victimId: number }> = [];
 
@@ -12831,8 +12865,7 @@ async function boot(): Promise<void> {
           const cur = getDiploRelation(proposerId, responderId);
           setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_oferta_przyjeta'));
         } else if (cywAction === 'pokoj') {
-          const cur = getDiploRelation(proposerId, responderId);
-          setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'pokoj'));
+          finalizePeaceTreatyBetween(proposerId, responderId);
           showHintMessage('\u{1F54A} Pokój zawarty', 4000);
         }
       } else if (cywAction === 'trybut_zadanie') {
@@ -19750,6 +19783,7 @@ async function boot(): Promise<void> {
                   contactEstablished: diplomaticContactEstablished.has(ownerId),
                   mapContact: contactedOwners.has(ownerId),
                   lastAudienceRequestTurn: aiAudienceLastRequestTurn.get(ownerId),
+                  peaceLocked: isPeaceLockedBetween(ownerId, 0),
                 });
               }
 
@@ -19793,6 +19827,7 @@ async function boot(): Promise<void> {
                   hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(ownerId, otherId),
                   isMinorCivPartner: simplifiedDiplomacyOwners.has(otherId),
                   lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
+                  peaceLocked: isPeaceLockedBetween(ownerId, otherId),
                 });
               }
 
@@ -19826,7 +19861,9 @@ async function boot(): Promise<void> {
                     atWarIds,
                     refHex,
                   );
-                  if (forced != null) clusterForceWarTargetId = forced;
+                  if (forced != null && !isPeaceLockedBetween(ownerId, forced)) {
+                    clusterForceWarTargetId = forced;
+                  }
                 }
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),
@@ -19866,6 +19903,7 @@ async function boot(): Promise<void> {
                     const targetId = parseInt(cmd.targetId, 10);
                     if (Number.isNaN(targetId)) continue;
                     if (cmd.type === 'wypowiedz_wojne') {
+                      if (isPeaceLockedBetween(ownerId, targetId)) continue;
                       chargeWarDeclarationCredibility(ownerId, targetId);
                       breakTreatiesOnWar(ownerId, targetId, false);
                       applyAllianceObligationsOnWar(ownerId, targetId);
@@ -19939,6 +19977,7 @@ async function boot(): Promise<void> {
                     relToPlayer.status === 'wojna',
                     hasTradeBlock,
                     Math.random,
+                    isPeaceLockedBetween(ownerId, 0),
                   )) {
                     chargeWarDeclarationCredibility(ownerId, 0);
                     breakTreatiesOnWar(ownerId, 0, false);

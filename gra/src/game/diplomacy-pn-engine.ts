@@ -77,6 +77,11 @@ export interface DiploPairMeta {
    */
   n3Window?: { turn: number; typ: 'bezterminowe' | 'pokoj'; byOwnerId?: number; charged?: boolean };
   /**
+   * Pokój / rozejm zaakceptowany — do tej tury (wyłącznie) para nie może wypowiedzieć sobie wojny
+   * (Maciej 2026-08-01). Sojusze nie omijają tej blokady.
+   */
+  peaceUntilTurn?: number;
+  /**
    * Odwet (C-WIAR-ODWET=A) — ostatnie przewinienie w TEJ parze otwierające prawo
    * do bezkarnej (bez N1/N2) wojny odwetowej w oknie `wiarygodnoscOdwetOknoTur`
    * tur. `byOwnerId` = kto zawinił, `againstOwnerId` = wobec kogo (tylko TA strona
