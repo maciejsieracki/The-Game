@@ -630,6 +630,15 @@ export function buildMiastoKamien(
   return root;
 }
 
+/** Drewniany wał/palisada Biskupin — współdzielony z epoką Brązu (PALISADA-BRAZ-Q1=A). */
+export function buildPalisadaWal(
+  rozmiar: RozmiarMiastaKamien,
+  color?: number,
+): THREE.Group {
+  const m = makeMats(color ?? MIASTO_KAMIEN_DEFAULT_COLOR);
+  return wal(m, OS_WALU[rozmiar]);
+}
+
 /** Layout / progi / granice — do integracji i testow kolizji z ulepszeniami. */
 export const MIASTO_KAMIEN_LAYOUT = {
   hexR: 1.0,

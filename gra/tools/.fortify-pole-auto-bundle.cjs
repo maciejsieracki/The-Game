@@ -86,6 +86,10 @@ var combat_params_default = {
     missile_divisor: 2,
     hp_field_divisor: 2,
     hp_siege_divisor: 10
+  },
+  battle_loot: {
+    _opis: "\u0141up po wygranej bitwie \u2014 % bazowego kosztu rekrutacji (Pieni\u0105dz + Surowiec) ka\u017Cdej jednostki wroga usuni\u0119tej z mapy po walce.",
+    recruit_cost_pct: 100
   }
 };
 

@@ -1158,19 +1158,43 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## PALISADA-BRAZ-Q1 — wygląd wału w Brązie przy samej palisadzie · STATUS: **ODŁOŻONE** (Maciej 2026-07-30)
+## PALISADA-BRAZ-Q1 — wygląd wału w Brązie przy samej palisadzie · STATUS: **ZAMKNIĘTE / WDROŻONE** (Maciej 2026-07-31)
 
-Gracz z palisadą (bez Murów/Cytadeli) w epoce Brązu: render dziś traktuje `maMur` jak kamienny mur (`buildMiastoBraz({ mur: true })`), choć obrona (`city-defense.ts`) rozróżnia palisadę. **Decyzja:** na razie tylko Kamień + palisada Biskupin; temat Brązu — ABC później (hybryda osada brązowa + drewniany wał vs inny wariant).
-
----
-
-## RELIEF-SEKTOR-Q1 — hodowla na wzgórzu: podnóże czy szczyt kopca · STATUS: **OTWARTE (cicho)** (2026-07-30)
-
-Przy naprawie „kopalnia w powietrzu" (patrz niżej) wszystkie ulepszenia z zachowanym reliefem stają teraz na **płaskim rąbku heksa** (pierścień 0.86 HEX_R), bo tylko tam bryła kopca/masywu ma wysokość 0. Wcześniejszy zapis w `main.ts` mówił „bydło/owce/lama **stoją na kopcu**" — ale realnie stały ~0,26 HEX_R **nad** stokiem (wysokość brana z plateau szczytu, pozycja z pierścienia przy ściance). Dziś stoją u podnóża kopca. Do decyzji: zostawić u podnóża czy przenieść zagrodę na szczyt (osobny promień pierścienia 0 dla `bydlo`/`owce`/`lama`).
+**Decyzja: 7A** — cytat: „1a, 2a, 3a, 4b, 5a, 6a, 7a". Drewniany wał/palisada Biskupin też w epoce Brązu (bez kamiennego muru cyklopowego/agger przy samej palisadzie). **WDROŻONE:** `miasto-braz.ts` + `cities.ts` `getWallKind` + `buildPalisadaWal` z `miasto-kamien.ts`.
 
 ---
 
-## RELIEF-SEKTOR-Q2 — Kopalnia złota spłaszcza górę, miedzi/żelaza nie · STATUS: **OTWARTE (cicho)** (2026-07-30)
+## RELIEF-SEKTOR-Q1 — hodowla na wzgórzu: podnóże czy szczyt kopca · STATUS: **ZAMKNIĘTE** (Maciej 2026-07-31)
 
-`PRESERVES_HILL_RELIEF_KEYS` (`main.ts`) zawiera `kopalnia_miedzi`, `kopalnia_zelaza`, `kamieniolom`, hodowlę — ale **nie** `kopalnia_zlota`. Skutek: na tym samym typie terenu (Wzgórza/Góry) kopalnia miedzi zostawia górę, a kopalnia złota ją kasuje (`hideDecorAtHex`) i heks robi się płaski. Wygląda na przeoczenie przy wprowadzaniu złota (2026-07-25), nie na decyzję. Nie zmieniałem — to zmiana wyglądu, nie bug wysokości.
+**Decyzja: 5A** — cytat: „1a, 2a, 3a, 4b, 5a, 6a, 7a". Hodowla zostaje **u podnóża** kopca (obecne zachowanie). Bez zmian kodu.
+
+---
+
+## RELIEF-SEKTOR-Q2 — Kopalnia złota spłaszcza górę, miedzi/żelaza nie · STATUS: **ZAMKNIĘTE / WDROŻONE** (Maciej 2026-07-31)
+
+**Decyzja: 6A** — cytat: „1a, 2a, 3a, 4b, 5a, 6a, 7a". `kopalnia_zlota` jak miedź/żelazo — **zostawia górę**. **WDROŻONE:** `PRESERVES_HILL_RELIEF_KEYS` w `main.ts`.
+
+---
+
+## ARMY-STACK-CAP-Q1 — limit jednostek na heksie vs pobór · STATUS: **ZAMKNIĘTE** (Maciej 2026-07-31)
+
+**Decyzja: 1A** — cytat: „1a, 2a, 3a, 4b, 5a, 6a, 7a". Bez limitu stosu (jak dziś). Bez zmian kodu.
+
+---
+
+## FORTIFY-POLE-Q1 — fortyfikacja w polu: +50% vs +50 flat · STATUS: **ZAMKNIĘTE / WDROŻONE** (Maciej 2026-07-31)
+
+**Decyzja: 2A** — cytat: „1a, 2a, 3a, 4b, 5a, 6a, 7a". Naprawić na prawdziwe **+50% Obrony** (mnożnik ×1.5, nie flat +50). **WDROŻONE:** `fieldFortifyDefenseBonus` w `city-defense.ts`.
+
+---
+
+## CLIMATE-DESERT-WIDTH-Q1 — szerokość pasa pustyni środkowej · STATUS: **ZAMKNIĘTE / WDROŻONE** (Maciej 2026-07-31)
+
+**Decyzja: 3A** — cytat: „1a, 2a, 3a, 4b, 5a, 6a, 7a". Zwęzić pas suchy do **~7 hexów** (było ~15% wysokości mapy). **WDROŻONE:** `CLIMATE_DESERT_HALF_ROWS = 3.5` w `gen-helpers.ts` (`climateBandAt` dynamicznie per wysokość mapy).
+
+---
+
+## WOJNA-PM-GRACZ-Q1 — tempo odbudowy PM po wojnie AI→gracz · STATUS: **ZAMKNIĘTE** (Maciej 2026-07-31)
+
+**Decyzja: 4B** — cytat: „1a, 2a, 3a, 4b, 5a, 6a, 7a". Zostawić **60%/turę** odbudowy Manpower po wojnie wymuszonej przez AI na gracza. Bez zmian kodu.
 

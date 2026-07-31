@@ -81,14 +81,16 @@
  *     buildera; rozmiarDlaPoziomu re-eksportowane dla zgodnosci.
  */
 import * as THREE from 'three';
-import { rozmiarDlaPoziomu, type RozmiarMiastaKamien } from './miasto-kamien';
+import { rozmiarDlaPoziomu, type RozmiarMiastaKamien, buildPalisadaWal } from './miasto-kamien';
 
 export { rozmiarDlaPoziomu } from './miasto-kamien';
 export type RozmiarMiastaBraz = RozmiarMiastaKamien;
 
 export interface MiastoBrazOpts {
-  /** Mur obronny: Grecja = cyklopowy z Lwia Brama, Rzym = wal agger z palisada. */
+  /** Mur obronny kamienny: Grecja = cyklopowy z Lwia Brama, Rzym = wal agger. */
   mur?: boolean;
+  /** Drewniany wał/palisada Biskupin (PALISADA-BRAZ-Q1=A) — zamiast kamiennego muru. */
+  palisada?: boolean;
   /** Kolor gracza: proporzec/vexillum + subtelna kalenica centralnego budynku. */
   color?: number;
 }
@@ -826,6 +828,7 @@ export function buildMiastoBrazGrecja(
   else if (rz === 'srednie') skladFazaSredniaG(inner, m, L);
   else skladFazaDuzaG(inner, m, L);
   if (opts.mur) inner.add(murCyklopowy(m, OS_MURU[rz]));
+  else if (opts.palisada) inner.add(buildPalisadaWal(rz, opts.color));
   return zapakuj(inner, 'miasto-braz-grecja', rz, L);
 }
 
@@ -849,6 +852,7 @@ export function buildMiastoBrazRzym(
   else if (rz === 'srednie') skladFazaSredniaR(inner, m, L);
   else skladFazaDuzaR(inner, m, L);
   if (opts.mur) inner.add(walAgger(m, OS_MURU[rz]));
+  else if (opts.palisada) inner.add(buildPalisadaWal(rz, opts.color));
   return zapakuj(inner, 'miasto-braz-rzym', rz, L);
 }
 

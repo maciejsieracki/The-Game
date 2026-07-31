@@ -158,8 +158,10 @@ export type ClimateBand =
 
 /** Polar 5% góra + 5% dół. */
 export const CLIMATE_POLAR_FRAC = 0.05;
-/** Pustynia środkowa 15% wysokości. */
-export const CLIMATE_DESERT_HALF_FRAC = 0.075;
+/** Pustynia środkowa — połowa szerokości w wierszach heksów (~7 hex łącznie, Maciej 2026-07-31). */
+export const CLIMATE_DESERT_HALF_ROWS = 3.5;
+/** Przybliżenie dla mapy standardowej (innerH≈108); runtime używa CLIMATE_DESERT_HALF_ROWS/innerH. */
+export const CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 /** Równiny po obu stronach pustyni — po 15% wysokości (±7.5% od środka). */
 export const CLIMATE_PLAINS_HALF_FRAC = 0.075;
 
@@ -168,7 +170,7 @@ export const CLIMATE_PROCEDURAL_LAT_BUFFER_FRAC = 0.05;
 
 /**
  * Pas klimatyczny heksa — ułamek wiersza r w **obszarze grywalnym** (po buforze oceanu N/S).
- * Kolejność od północy: polar 5% · umiarkowany · równiny 15% · pustynia 15% · równiny 15% · umiarkowany · polar 5%.
+ * Kolejność od północy: polar 5% · umiarkowany · równiny 15% · pustynia ~7 hex · równiny 15% · umiarkowany · polar 5%.
  */
 export function climateBandAt(_q: number, r: number, height: number, isEarth = false): ClimateBand {
   const buf = latitudinalOceanBufferRows(height, isEarth);
@@ -177,11 +179,17 @@ export function climateBandAt(_q: number, r: number, height: number, isEarth = f
   if (relR < 0 || relR > 1) {
     return r < height / 2 ? 'polar_north' : 'polar_south';
   }
+  const desertHalfFrac = CLIMATE_DESERT_HALF_ROWS / innerH;
+  const center = 0.5;
+  const desertLo = center - desertHalfFrac;
+  const desertHi = center + desertHalfFrac;
+  const plainsNorthLo = desertLo - CLIMATE_PLAINS_HALF_FRAC;
+  const plainsSouthHi = desertHi + CLIMATE_PLAINS_HALF_FRAC;
   if (relR < CLIMATE_POLAR_FRAC) return 'polar_north';
-  if (relR < 0.275) return 'temperate_north';
-  if (relR < 0.425) return 'plains_north';
-  if (relR < 0.575) return 'desert';
-  if (relR < 0.725) return 'plains_south';
+  if (relR < plainsNorthLo) return 'temperate_north';
+  if (relR < desertLo) return 'plains_north';
+  if (relR < desertHi) return 'desert';
+  if (relR < plainsSouthHi) return 'plains_south';
   if (relR < 1 - CLIMATE_POLAR_FRAC) return 'temperate_south';
   return 'polar_south';
 }

@@ -219,12 +219,18 @@ function buildSettlementModelForStyle(
   civ: BronzeCiv,
   level: number,
   ownerCol: number,
-  withWalls: boolean,
+  wallKind: CityWallKind,
 ): THREE.Group {
+  const withWalls = wallKind !== 'none';
+  const palisadaOnly = wallKind === 'palisada';
   if (GAME_MAP_RENDER_STYLE === 'roblox') {
     if (era >= 2) {
       // era 2 = Brąz; era 3+ (Żelazo, brak modelu) [fallback do czasu partii Żelaza]
-      return buildMiastoBraz(civ, level, { mur: withWalls, color: ownerCol });
+      return buildMiastoBraz(civ, level, {
+        mur: wallKind === 'stone',
+        palisada: palisadaOnly,
+        color: ownerCol,
+      });
     }
     return buildMiastoKamien(level, { mur: withWalls, color: ownerCol });
   }
@@ -254,6 +260,8 @@ const DEFAULT_CIV_MAP: Record<number, BronzeCiv> = {
 
 export type { CityMapOutlineKind } from './cityMapOutline';
 
+export type CityWallKind = 'none' | 'stone' | 'palisada';
+
 export interface CityRenderOptions {
   /**
    * Zwraca epokę właściciela miasta (1=Kamień, 2=Brąz, …).
@@ -278,6 +286,12 @@ export interface CityRenderOptions {
    * Domyślnie: false.
    */
   getWalls?: (cityId: string) => boolean;
+
+  /**
+   * Rodzaj obwodu obronnego: kamień (mury/fort), palisada drewniana, brak.
+   * Domyślnie: getWalls ? 'stone' : 'none'.
+   */
+  getWallKind?: (cityId: string) => CityWallKind;
 
   /** B2-Q5: bunt w bieżącej turze — ikona 🔥 nad miastem. */
   getRevolt?: (cityId: string) => boolean;
@@ -364,9 +378,11 @@ export class CityRenderer {
       const era     = options?.getEra?.(ownerIndex) ?? 1;
       const level   = options?.getLevel?.(city.id) ?? Math.max(1, Math.min(10, city.population ?? 1));
       const walls   = options?.getWalls?.(city.id) ?? false;
+      const wallKind: CityWallKind = options?.getWallKind?.(city.id)
+        ?? (walls ? 'stone' : 'none');
       const civ: BronzeCiv = options?.getCiv?.(ownerIndex) ??
         (DEFAULT_CIV_MAP[ownerIndex % 8] ?? 'grecja');
-      const visualKey = `${GAME_MAP_RENDER_STYLE}|${era}|${civ}|${level}|${walls}`;
+      const visualKey = `${GAME_MAP_RENDER_STYLE}|${era}|${civ}|${level}|${wallKind}`;
       const visible = options?.isVisible?.(city) ?? true;
 
       if (this.models.has(city.id)) {
@@ -402,7 +418,7 @@ export class CityRenderer {
       const col = (options?.ownerColorFn ?? ownerColor)(ownerIndex);
       let group: THREE.Group;
       try {
-        group = buildSettlementModelForStyle(era, civ, level, col, walls);
+        group = buildSettlementModelForStyle(era, civ, level, col, wallKind);
       } catch (err) {
         console.warn('[CityRenderer] fallback na buildCityModel dla', city.id, err);
         const result = buildCityModel(col);
