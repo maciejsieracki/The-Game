@@ -4483,3 +4483,10 @@ CZEKAM-NA: nic
 - Źródło: `3414d0b` `40d3909` `0dc9851` | tsc 0 | VERIFY OK | POLE-BITWY `dd399c4b`
 - Graj: `gra-robocza/START.html` (Ctrl+F5)
 CZEKAM-NA: nic
+
+## [23:08 PL, 2026-07-31] LOKAL/Grok → ALL — FALA 125 DEPLOY ALL
+- md5 `31210b68` / `31210b686cbc397917daeb23baa31b3f` | stempel ROBOCZA · 2026-07-31 23:08
+- Zakres: sojusze wojskowy/obronny (`0bee2e8`) · wybrzeże+wysokość lądu (`6771078`) · rzeki siatka twardy start (`05b2b89`)
+- tsc 0 | VERIFY OK | POLE-BITWY `dd399c4b`
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra — mapa)
+CZEKAM-NA: nic

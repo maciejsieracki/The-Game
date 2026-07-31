@@ -4,6 +4,9 @@ export {
   groupLandMassKeys,
   assertRiverGridCoverage,
   riverGridCoverageRatio,
-  riverCoverageCellSize,
+  cellHasRiverSourceInCell,
   buildSeaDistanceField,
+  minLandHexesForRiverCell,
+  landHexesByCoverageCell,
+  pathHasValidRiverOutlet,
 } from '../src/map/gen-helpers';

@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `10a2e30d` - 2026-07-31 22:04 - FALA 124: dyplomacja paczka + decyzje 1A-7A + fortify miasto bez murów + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `31210b68` - 2026-07-31 23:08 - FALA 125: sojusze wojskowy/obronny + wybrzeze woda + rzeki siatka + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `31210b686cbc397917daeb23baa31b3f` · stempel: `ROBOCZA · 2026-07-31 23:08`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: sojusze wojskowy vs obronny (modal wypełnij/odmów); wybrzeże jasne + ląd niżej; rzeki — twardy start siatki, ujście morze/dopływ, dłuższe trasy.
+- Commity: `0bee2e8` · `6771078` · `05b2b89`. tsc 0 · VERIFY OK. POLE-BITWY `dd399c4b`.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `10a2e30d` - 2026-07-31 22:04 - FALA 124: dyplomacja paczka + decyzje 1A-7A + fortify miasto bez murów + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `10a2e30dd1b1398be30ee8c919ae7e5b` · stempel: `ROBOCZA · 2026-07-31 22:04`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: Wyrównaj / ultimatum / PW×tury / UI Relacja / pakty 5/10/15 / rename; fortify +50%; pustynia ~7hex; złoto relief; palisada Brąz; ufortyfikuj w mieście bez murów = +50% Obrony.

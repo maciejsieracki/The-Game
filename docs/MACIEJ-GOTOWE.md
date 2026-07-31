@@ -1,3 +1,5 @@
+- **2026-07-31 23:08** — ✅ FALA 125 ROBOCZA `31210b68` (sojusze + wybrzeże + rzeki + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** dla mapy).
+
 - **2026-07-31 22:04** — ✅ FALA 124 ROBOCZA `10a2e30d` (dyplo + 1A–7A + fortify miasto + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5).
 
 - **2026-07-30 11:25** — ✅ FALA 123 ROBOCZA `fb78916f` (armie/dyplo/irygacja/HP/rout + DEPLOY ALL). START: `gra-robocza/START.html`.
