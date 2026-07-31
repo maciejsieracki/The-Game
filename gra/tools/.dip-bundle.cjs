@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.dip-entry.ts
+// gra/tools/.dip-entry.ts
 var dip_entry_exports = {};
 __export(dip_entry_exports, {
   DEFAULT_POTEGA_WAGI: () => DEFAULT_POTEGA_WAGI,
@@ -40,7 +40,7 @@ __export(dip_entry_exports, {
 });
 module.exports = __toCommonJS(dip_entry_exports);
 
-// src/types/diplomacy.ts
+// gra/src/types/diplomacy.ts
 var RodzajTraktatu = /* @__PURE__ */ ((RodzajTraktatu2) => {
   RodzajTraktatu2["PaktNieagresji"] = "pakt_nieagresji";
   RodzajTraktatu2["SojuszWojskowy"] = "sojusz_wojskowy";
@@ -63,7 +63,7 @@ var StanWojny = /* @__PURE__ */ ((StanWojny2) => {
   return StanWojny2;
 })(StanWojny || {});
 
-// src/types/player.ts
+// gra/src/types/player.ts
 var TypCywilizacji = /* @__PURE__ */ ((TypCywilizacji2) => {
   TypCywilizacji2["Grecy"] = "grecy";
   TypCywilizacji2["Rzymianie"] = "rzymianie";
@@ -85,7 +85,7 @@ var TypCywilizacji = /* @__PURE__ */ ((TypCywilizacji2) => {
   return TypCywilizacji2;
 })(TypCywilizacji || {});
 
-// data/diplomacy.json
+// gra/data/diplomacy.json
 var diplomacy_default = {
   params: {
     handelZawarcie_zaufanie: 2,
@@ -986,7 +986,7 @@ var diplomacy_default = {
   ]
 };
 
-// data/civs.json
+// gra/data/civs.json
 var civs_default = {
   cywilizacje: [
     {
@@ -3563,7 +3563,7 @@ var civs_default = {
   ]
 };
 
-// data/civ-ai.json
+// gra/data/civ-ai.json
 var civ_ai_default = {
   cywilizacje: [
     {
@@ -3752,7 +3752,7 @@ var civ_ai_default = {
   }
 };
 
-// src/game/civ-ai-data.ts
+// gra/src/game/civ-ai-data.ts
 function civAiAggressionNorm(data, civName) {
   const row = data.civAi?.cywilizacje?.find((c) => c.Cywilizacja === civName);
   if (!row || row.agresywnosc == null) return void 0;
@@ -3794,7 +3794,7 @@ function nastawienieBazoweZaufanieDelta(typ, baseTotal = 50) {
   return (row.nastawienieBazowe - baseTotal) / 2;
 }
 
-// data/map-gen-params.json
+// gra/data/map-gen-params.json
 var map_gen_params_default = {
   _meta: {
     opis: "Panel-A export \u2014 generator E2 + mg\u0142a. Kod czyta po P3 / handoff Integratora.",
@@ -3912,7 +3912,7 @@ var map_gen_params_default = {
   }
 };
 
-// src/data/map-gen-params-loader.ts
+// gra/src/data/map-gen-params-loader.ts
 var FALLBACK_ROZMIAR = {
   malenki: [76, 52],
   maly: [108, 74],
@@ -3981,7 +3981,7 @@ function mapGenAllDepositRarities() {
   return out;
 }
 
-// data/e-start-params.json
+// gra/data/e-start-params.json
 var e_start_params_default = {
   _opis: "Panel-E (Grupa E): start, meta, generator E2, zwyci\u0119stwo, tempo. \u0179r\xF3d\u0142o: panele-sterowania/Panel-E.xlsx \u2192 export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i regu\u0142y silnika (docelowo odczyt w TS \u2014 dzi\u015B sync z kodem).",
   defaulty: {
@@ -4123,7 +4123,7 @@ var e_start_params_default = {
   }
 };
 
-// src/data/e-start-params-loader.ts
+// gra/src/data/e-start-params-loader.ts
 var R = e_start_params_default;
 function eStartPlayerCivId() {
   return R.defaulty?.player_civ_id ?? "rzymianie";
@@ -4137,10 +4137,10 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
-// src/map/generator.ts
+// gra/src/map/generator.ts
 var ROZMIAR_DIMS = mapGenRozmiarDims();
 
-// src/map/newGameMapDefaults.ts
+// gra/src/map/newGameMapDefaults.ts
 var DEFAULT_PLAYER_CIV_ID = eStartPlayerCivId();
 var DEFAULT_START_EPOCH_ID = eStartEpochId();
 var DEFAULT_RENDER_QUALITY = eStartRenderQualityBundled();
@@ -4154,7 +4154,9 @@ var RIVER_SCALE_BY_SIZE = {
 var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
-// src/map/gen-helpers.ts
+// gra/src/map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
 var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
 var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
@@ -4248,7 +4250,7 @@ var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
   return typeof rarity === "number" ? { ...rule, rarity } : rule;
 });
 
-// data/terrain-improvements.json
+// gra/data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
     opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
@@ -4617,7 +4619,7 @@ var terrain_improvements_default = {
   }
 };
 
-// src/game/terrain-improvements.ts
+// gra/src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
 var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
@@ -4626,10 +4628,10 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
 
-// src/map/road-movement.ts
+// gra/src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
-// src/units/setup.ts
+// gra/src/units/setup.ts
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -4642,7 +4644,7 @@ var DEFAULT_TERRAIN_COSTS = {
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
-// src/game/diplomacy.ts
+// gra/src/game/diplomacy.ts
 var DIPLOMACY_PARAMS = {
   // ---- one-shot Zaufanie deltas (jednorazowo) ----
   /** "Zawarcie umowy handlowej" (+2 Zaufanie, jednorazowo) */

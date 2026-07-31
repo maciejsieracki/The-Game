@@ -1,4 +1,6 @@
-- **2026-07-30 11:25** — ✅ FALA 123 ROBOCZA `fb78916f` (armie/dyplo/irygacja/HP/rout + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5).
+- **2026-07-31 22:04** — ✅ FALA 124 ROBOCZA `10a2e30d` (dyplo + 1A–7A + fortify miasto + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5).
+
+- **2026-07-30 11:25** — ✅ FALA 123 ROBOCZA `fb78916f` (armie/dyplo/irygacja/HP/rout + DEPLOY ALL). START: `gra-robocza/START.html`.
 
 - **2026-07-30 08:15** — ✅ FALA 121 ROBOCZA `2930dfa4` (deploy dokończony po OOM Cursor). START: `gra-robocza/START.html`.
 

@@ -4476,3 +4476,10 @@ CZEKAM-NA: nic (push na zadanie Macieja)
 - tsc 0 | VERIFY OK | POLE-BITWY `dd399c4b`
 - Graj: `gra-robocza/START.html` (Ctrl+F5)
 CZEKAM-NA: nic
+
+## [22:04 PL, 2026-07-31] LOKAL/Grok → ALL — FALA 124 DEPLOY ALL
+- md5 `10a2e30d` / `10a2e30dd1b1398be30ee8c919ae7e5b` | stempel ROBOCZA · 2026-07-31 22:04
+- Zakres: dyplo (Wyrównaj, ultimatum, PW×tury, Relacja, pakty, rename) · 1A–7A (fortify %, pustynia ~7hex, złoto relief, palisada Brąz) · fortify miasto bez murów +50% Obrony
+- Źródło: `3414d0b` `40d3909` `0dc9851` | tsc 0 | VERIFY OK | POLE-BITWY `dd399c4b`
+- Graj: `gra-robocza/START.html` (Ctrl+F5)
+CZEKAM-NA: nic

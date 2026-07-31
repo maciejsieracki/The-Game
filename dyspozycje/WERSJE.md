@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `fb78916f` - 2026-07-30 11:25 - FALA 123: armie/garnizon/rout/zajecie + irygacja las + HP bitwy + dyplo wojna/pokoj + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `10a2e30d` - 2026-07-31 22:04 - FALA 124: dyplomacja paczka + decyzje 1A-7A + fortify miasto bez murów + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `10a2e30dd1b1398be30ee8c919ae7e5b` · stempel: `ROBOCZA · 2026-07-31 22:04`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: Wyrównaj / ultimatum / PW×tury / UI Relacja / pakty 5/10/15 / rename; fortify +50%; pustynia ~7hex; złoto relief; palisada Brąz; ufortyfikuj w mieście bez murów = +50% Obrony.
+- Commity źródłowe: `3414d0b` · `40d3909` · `0dc9851`. tsc 0 · VERIFY OK. POLE-BITWY `dd399c4b`.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `fb78916f` - 2026-07-30 11:25 - FALA 123: armie/garnizon/rout/zajecie + irygacja las + HP bitwy + dyplo wojna/pokoj + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `fb78916f1c5d2db9d5413ad5ffe25e4e` · stempel: `ROBOCZA · 2026-07-30 11:25`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: merge garnizon↔pole; wyjście całego stosu z garnizonu; Spacja pomija uśpione/ufortyfikowane; rout nie kasuje jednostki; zajęcie miasta — cały stos kotwicy; irygacja/tarasy zabronione na lesie; HP w podsumowaniu auto-walki (pkt); CS wojna→Wrogi; pokój PW gate + bez zbędnego prezentu.
