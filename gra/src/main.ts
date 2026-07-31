@@ -10496,6 +10496,14 @@ async function boot(): Promise<void> {
      */
     function enqueueNegotiationFromAiCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
       let workingCmd = cmd;
+      const atWarWithPlayer = getDiploRelation(ownerId, 0).status === 'wojna';
+      if (
+        atWarWithPlayer
+        && cmd.type !== 'zaproponuj_pokoj'
+        && cmd.type !== 'oferuj_trybut_za_pokoj'
+      ) {
+        return;
+      }
       if (cmd.type === 'zaproponuj_handel_surowiec') {
         const clamped = clampAiResourceTradeCommand(cmd, buildAiResourceTradeClampCtx(ownerId));
         if (!clamped) return;
@@ -13317,7 +13325,7 @@ async function boot(): Promise<void> {
         },
         onFocusCapital: handleDiploFocusCapital,
         getCivBonusy: civBonusyForOwnerId,
-        getNegotiationContext: () => {
+        getNegotiationContext: (actionId: string) => {
           const rel = getDiploRelation(0, ownerId);
           const dip = _diplomacyParams();
           return {
@@ -13327,6 +13335,8 @@ async function boot(): Promise<void> {
             borderFeeCivil: 20,
             borderFeeMilitary: 40,
             relacjaTotal: audienceRelTotal(ownerId, rel),
+            atWar: rel.status === 'wojna',
+            negotiationActionId: actionId,
             trustPnGainedThisTurn: getDiploPairMeta(0, ownerId).trustPnGainedThisTurn,
             progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
             progHandelRelacja: dip.progHandelRelacja,
@@ -19861,6 +19871,13 @@ async function boot(): Promise<void> {
                     opts.clusterStateTargets,
                     atWarIds,
                     refHex,
+                    new Set(
+                      opts.clusterStateTargets
+                        .filter(t => hasTreaty(
+                          activeDeals, ownerId, t.ownerId, RodzajTraktatu.PaktNieagresji,
+                        ))
+                        .map(t => t.ownerId),
+                    ),
                   );
                   if (forced != null && !isPeaceLockedBetween(ownerId, forced)) {
                     clusterForceWarTargetId = forced;
@@ -19905,6 +19922,9 @@ async function boot(): Promise<void> {
                     if (Number.isNaN(targetId)) continue;
                     if (cmd.type === 'wypowiedz_wojne') {
                       if (isPeaceLockedBetween(ownerId, targetId)) continue;
+                      if (hasTreaty(activeDeals, ownerId, targetId, RodzajTraktatu.PaktNieagresji)) {
+                        continue;
+                      }
                       chargeWarDeclarationCredibility(ownerId, targetId);
                       breakTreatiesOnWar(ownerId, targetId, false);
                       applyAllianceObligationsOnWar(ownerId, targetId);
@@ -19979,6 +19999,7 @@ async function boot(): Promise<void> {
                     hasTradeBlock,
                     Math.random,
                     isPeaceLockedBetween(ownerId, 0),
+                    hasTreaty(activeDeals, ownerId, 0, RodzajTraktatu.PaktNieagresji),
                   )) {
                     chargeWarDeclarationCredibility(ownerId, 0);
                     breakTreatiesOnWar(ownerId, 0, false);

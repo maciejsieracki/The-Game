@@ -2972,7 +2972,12 @@ export function decideAIDiplomacy(
   if (inp.clusterForceWarTargetId != null) {
     const forcedId = String(inp.clusterForceWarTargetId);
     const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
-    if (forcedRel && !forcedRel.stanWojny && !forcedRel.peaceLocked) {
+    if (
+      forcedRel
+      && !forcedRel.stanWojny
+      && !forcedRel.peaceLocked
+      && !forcedRel.hasNapTreaty
+    ) {
       return [{
         type:     'wypowiedz_wojne',
         targetId: forcedId,
@@ -3183,6 +3188,7 @@ export function decideAIDiplomacy(
     if (
       !rel.stanWojny &&
       !rel.peaceLocked &&
+      !rel.hasNapTreaty &&
       stance.willingnessWar > 0 &&
       rw >= effProgWojnaSila &&
       effAgresja >= effProgWojnaAgresja &&

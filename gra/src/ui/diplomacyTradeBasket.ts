@@ -4,6 +4,7 @@
  */
 import type { AudienceAction } from './diplomacyAudience';
 import type { NegotiationModalContext, NegotiationPayload } from './diplomacyNegotiationModal';
+import { isCurrencyProposalForbiddenDuringWar } from '../game/diplomacy-war-gates';
 import { computeQuickDealBasket, proposalPnTurnsMultiplier, type BasketItem } from '../game/diplomacy-pn-engine';
 import { balanceGiveItemsToFairMin } from '../game/diplomacy-ai-offer-balance';
 import {
@@ -627,6 +628,16 @@ function validateBasketForm(
   if (blocked) {
     return { valid: false, reason: 'Nie spełniasz progu Relacji dla tej akcji' };
   }
+  const propActionId = proposalActionIdFromUi(actionId, mode, treatyState?.tributeMode);
+  const currencyPayload = {
+    goldOnce: treatyState?.tributeMode === 'offer' ? treatyState.goldPerTurn : undefined,
+    goldPerTurn: treatyState?.goldPerTurn,
+    giveItems,
+    receiveItems,
+  };
+  if (isCurrencyProposalForbiddenDuringWar(propActionId, currencyPayload, true)) {
+    return { valid: false, reason: 'W wojnie pieniądze tylko w ugodzie pokojowej' };
+  }
   if (mode === 'treaty') {
     const treatyVal = validateTreatyForm(actionId, treatyState ?? defaultTreatyState(actionId));
     if (!treatyVal.valid) return treatyVal;
@@ -736,14 +747,40 @@ function dealSettingsBlockHtml(
   return html;
 }
 
-function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mode: TradeBasketMode): string {
+function uiActionAllowsWarCurrency(
+  actionId: string,
+  mode: TradeBasketMode,
+  tributeMode?: 'demand' | 'offer',
+): boolean {
+  if (actionId === '10') return true;
+  if (actionId === '8' && tributeMode === 'offer') return true;
+  if (mode === 'treaty' && actionId === '8' && tributeMode === 'offer') return true;
+  return false;
+}
+
+function proposalActionIdFromUi(
+  actionId: string,
+  mode: TradeBasketMode,
+  tributeMode?: 'demand' | 'offer',
+): string {
+  if (actionId === '10') return 'pokoj';
+  if (actionId === '8' && tributeMode === 'offer') return 'trybut_oferta';
+  if (actionId === '13' || mode === 'gift') return 'handel';
+  if (actionId === '5') return 'umowa_handlowa';
+  return 'handel';
+}
+
+function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mode: TradeBasketMode, actionId = '14', tributeMode?: 'demand' | 'offer'): string {
   if (mode === 'gift' && side === 'receive') return '';
 
   const prefix = side === 'give' ? 'give' : 'recv';
+  const allowWarCurrency = !ctx.atWar
+    || uiActionAllowsWarCurrency(actionId, mode, tributeMode);
   const availableTypes = (Object.keys(TYP_LABELS) as WartoscPozycjaTyp[])
     .filter(t => {
       if (WITHDRAWN_BASKET_ACCESS_TYPES.has(t)) return false;
       if (t === 'jednostka') return false;
+      if (!allowWarCurrency && (t === 'zloto' || t === 'praca')) return false;
       if (mode === 'gift') return true;
       if (t === 'tech' && side === 'receive') {
         const rel = ctx.relacjaTotal ?? 0;
@@ -1139,7 +1176,9 @@ function renderBasket(
   const progDar = ctx.progDarRelacja ?? diplomacyProgDarRelacja();
 
   let blocked = '';
-  if (mode === 'trade' && rel < progHandel) {
+  if (ctx.atWar && mode !== 'treaty' && !uiActionAllowsWarCurrency(action.id, mode, treatyState.tributeMode)) {
+    blocked = '<div class="cdb-blocked">W wojnie zwykły handel i dar są niedostępne — użyj propozycji pokoju</div>';
+  } else if (mode === 'trade' && rel < progHandel) {
     blocked = '<div class="cdb-blocked">Handel wymaga Relacji ≥ ' + progHandel + ' (obecnie: ' + rel + ')</div>';
   } else if (mode === 'gift' && rel < progDar) {
     blocked = '<div class="cdb-blocked">Dar wymaga Relacji ≥ ' + progDar + ' (obecnie: ' + rel + ')</div>';
@@ -1161,13 +1200,13 @@ function renderBasket(
   const giveCol =
     '<div class="cdb-col">' +
       '<div class="cdb-col-title">' + (mode === 'treaty' ? 'My oddajemy (opcjonalnie)' : 'Dodaj do oferty') + '</div>' +
-      (blocked ? '' : buildAddForm('give', ctx, basketModeForForm)) +
+      (blocked ? '' : buildAddForm('give', ctx, basketModeForForm, action.id, treatyState.tributeMode)) +
     '</div>';
 
   const recvCol = showReceiveCol
     ? '<div class="cdb-col">' +
         '<div class="cdb-col-title">' + (mode === 'treaty' ? 'Oni oddają (opcjonalnie)' : 'Dodaj do kontrpropozycji') + '</div>' +
-        (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm)) +
+        (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm, action.id, treatyState.tributeMode)) +
       '</div>'
     : '';
 

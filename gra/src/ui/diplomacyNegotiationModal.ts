@@ -78,6 +78,10 @@ export interface NegotiationModalContext {
   receiveResourceOptions?: ReadonlyArray<{ id: string; label: string }>;
   /** Skarbiec gracza (¤) — SZYBKA UMOWA: górny limit złota-dopełniacza. */
   playerSkarbiec?: number;
+  /** Trwa wojna z partnerem — blokuje zwykły handel/dar złotem (tylko ugoda pokojowa). */
+  atWar?: boolean;
+  /** Id akcji dyplomatycznej (np. '10' pokój, '8' trybut) — kontekst koszyka. */
+  negotiationActionId?: string;
   /**
    * C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE (drewno/kamień/glina/cegła/
    * ceramika/ruda — City.surowce, patrz diplomacy-goods.ts) per STRONA, z prostą ceną

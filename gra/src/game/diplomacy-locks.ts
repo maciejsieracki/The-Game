@@ -170,6 +170,7 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     }
 
     case '5': { // Traktat handlowy (HANDEL-SPLIT-Q1=B)
+      if (ctx.atWar) return { locked: true, note: 'handel niedostępny w wojnie' };
       if (ctx.hasHandel) return { locked: false, active: true, note: ALREADY_NOTE['5']! };
       const gate = relacjaGate(ctx.progHandelRelacja, ctx.relTotal);
       if (gate) return gate;
@@ -177,6 +178,7 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     }
 
     case '14': { // Umowa wymiany surowców
+      if (ctx.atWar) return { locked: true, note: 'handel niedostępny w wojnie' };
       if (ctx.hasWymiana) return { locked: false, active: true, note: ALREADY_NOTE['14']! };
       const gate = relacjaGate(ctx.progHandelRelacja, ctx.relTotal);
       if (gate) return gate;

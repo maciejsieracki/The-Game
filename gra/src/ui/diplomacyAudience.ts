@@ -1566,6 +1566,7 @@ function render(): void {
     trustPnGainedThisTurn: negCtx.trustPnGainedThisTurn ?? st.trustPnGainedThisTurn ?? 0,
     progDarRelacja: negCtx.progDarRelacja ?? st.progDarRelacja,
     playerSkarbiec: negCtx.playerSkarbiec ?? st.playerSkarbiec,
+    atWar: negCtx.atWar ?? audienceAtWar(st),
   });
 
   rootEl.querySelector('.civ-diplo-aud-back')?.addEventListener('click', () => cfg!.onBack());

@@ -33,12 +33,15 @@ export function shouldCityStateRollWarOnPlayer(
   rng: () => number = Math.random,
   /** Aktywna karencja pokoju z graczem — nie wypowiadaj wojny mimo roll. */
   peaceLockedWithPlayer = false,
+  /** Aktywny pakt nieagresji z graczem — twardy zakaz DOW do wygaśnięcia. */
+  hasNapWithPlayer = false,
 ): boolean {
   if (cityStateDifficulty !== 'hard') return false;
   if (turn < CITY_STATE_PLAYER_WAR_MIN_TURN) return false;
   if (atWarWithPlayer) return false;
   if (hasTradeOrResourceTreatyWithPlayer) return false;
   if (peaceLockedWithPlayer) return false;
+  if (hasNapWithPlayer) return false;
   return rng() < CITY_STATE_PLAYER_WAR_CHANCE;
 }
 
@@ -73,10 +76,15 @@ export function pickClusterCityStateWarTargetId(
   clusterStateTargets: ReadonlyArray<ClusterStateTarget>,
   atWarOwnerIds: ReadonlySet<number>,
   referenceHex?: { q: number; r: number },
+  /** OwnerIds chronione paktem nieagresji — nie wybieraj do wymuszonej wojny. */
+  napBlockedOwnerIds?: ReadonlySet<number>,
 ): number | null {
   if (clusterStateTargets.length === 0) return null;
 
-  const notAtWar = clusterStateTargets.filter(t => !atWarOwnerIds.has(t.ownerId));
+  const napBlocked = napBlockedOwnerIds ?? new Set<number>();
+  const notAtWar = clusterStateTargets.filter(
+    t => !atWarOwnerIds.has(t.ownerId) && !napBlocked.has(t.ownerId),
+  );
   if (notAtWar.length === 0) return null;
 
   const anyAtWar = clusterStateTargets.some(t => atWarOwnerIds.has(t.ownerId));

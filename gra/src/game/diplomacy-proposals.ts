@@ -38,6 +38,9 @@ import {
   type ResolveProposalPnOptions,
 } from './diplomacy-pn-engine';
 import { diplomacyProgDarRelacja } from './diplomacy-value-catalog';
+import {
+  isCurrencyProposalForbiddenDuringWar,
+} from './diplomacy-war-gates';
 import acceptancePointsJson from '../../data/diplomacy-acceptance-points.json';
 import {
   AI_TRADE_GOLD_MAX,
@@ -452,6 +455,9 @@ export function evaluateProposal(
   }
   if (stanWojny && actionId !== 'trybut_oferta' && actionId !== 'ultimatum' && actionId !== 'pokoj') {
     return { accepted: false, reason: 'Trwa wojna — ta akcja jest niedostępna' };
+  }
+  if (stanWojny && isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
+    return { accepted: false, reason: 'W wojnie pieniądze tylko w ugodzie pokojowej' };
   }
 
   const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
