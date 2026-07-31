@@ -67,6 +67,14 @@ function mapWith(...hexes) {
     'buildingResourceGateMet: garncarnia z Gliną w magazynie — OK');
   ok(!M.buildingResourceGateMet({ id: 'garncarnia' }, []), 'buildingResourceGateMet: garncarnia bez Gliny — bramka zamknięta');
 }
+{
+  const hex = { coords: { q: 2, r: 0 }, terenBazowy: TB.Laka, nakladka: NK.Las, zloze: 'glina', wlasciciel: '0' };
+  const map = mapWith(hex);
+  const placed = new Map([['2,0', 'glinianka']]);
+  const split = M.getCityResourceAccessForCity(city, map, placed, 99);
+  ok(split.active.includes('Glina'), 'glinianka na las+zloze gliny → active Glina');
+  ok(M.improvementUnlockActiveOnHex('glinianka', hex), 'improvementUnlockActiveOnHex glina las+zloze');
+}
 
 // --- miedź + kopalnia_miedzi ---
 {

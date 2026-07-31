@@ -170,9 +170,10 @@ export function isLivestockImprovementBlockedOnForest(key: string, nakladka: Nak
  * Ulepszenia które MOGĄ stać na nakładce Las bez wyrębu (kanon).
  * farma — Maciej 2026-07-21: Łąka/Równina; Wzgórza z lasem (kępa schowana wizualnie).
  * tartak / obóz łowiecki — ulepszenia leśne (tartak: las zostaje przy tartaku).
+ * glinianka — złoże gliny pod lasem (placeDeposits: nakladka=Las, zloze='glina').
  */
 const FOREST_COEXIST_IMPROVEMENT_KEYS = new Set<string>([
-  'farma', 'tartak', 'oboz_lowiecki',
+  'farma', 'tartak', 'oboz_lowiecki', 'glinianka',
 ]);
 
 /**
@@ -412,6 +413,12 @@ function hexHasRudaDeposit(hex: HexWithZloze): boolean {
   return hex.nakladka === Nakladka.ZlozeRudy;
 }
 
+/** Złoże gliny — nakładka ZlozeGliny albo zloze='glina' pod lasem (placeDeposits). */
+export function hexHasClayDeposit(hex: HexWithZloze): boolean {
+  return hex.nakladka === Nakladka.ZlozeGliny
+    || hex.zloze?.trim().toLowerCase() === 'glina';
+}
+
 /** REMIND-START-A (2026-06-26): hex ze złożem zarezerwowany — blokada ulepszeń gracza. */
 export function hexHasDepositReserve(hex: HexWithZloze): boolean {
   if (hex.zloze) return true;
@@ -429,7 +436,7 @@ export function depositAllowsPlayerImprovement(
   const teren = hex.terenBazowy;
   switch (key) {
     case 'glinianka':
-      return nakladka === Nakladka.ZlozeGliny;
+      return hexHasClayDeposit(hex);
     case 'warzelnia_soli':
       return zloze === 'sol';
     case 'kopalnia_miedzi': // kopalnia miedzi — miedź lub legacy ZlozeRudy
@@ -691,7 +698,7 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
         break;
       case 'glinianka':
-        terrainOk = nakladka === Nakladka.ZlozeGliny && inPlayerTerritory(q, r);
+        terrainOk = hexHasClayDeposit(hex) && inPlayerTerritory(q, r);
         break;
       case 'kopalnia_zelaza':
         terrainOk = inPlayerTerritory(q, r)

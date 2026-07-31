@@ -14,6 +14,7 @@ export {
   hasBlockingDepositForFarm,
   hexHasDepositReserve,
   depositAllowsPlayerImprovement,
+  hexHasClayDeposit,
   isTarasyCiv,
   isImprovementVisibleInBuildPanel,
   isFarmBaseTerrain,
@@ -121,6 +122,14 @@ ok(!qInka('farma', 5, 0), 'farma NOT on wybrzeze');
 ok(qRzym('farma', 2, 0), 'WOLNE-WSPOL: farma on zloze bydla nakladka');
 ok(qInka('fort', 2, 0), 'WOLNE-WSPOL: fort on zloze hex');
 ok(qInka('glinianka', 5, 1), 'REMIND-A: glinianka ON zloze gliny');
+hexes['3,1'].zloze = 'glina';
+ok(qInka('glinianka', 3, 1), 'BUG-GLINA-LAS: glinianka ON laka+las+zloze glina');
+ok(M.hexHasClayDeposit({ nakladka: NK.ZlozeGliny }), 'hexHasClayDeposit: nakladka ZlozeGliny');
+ok(M.hexHasClayDeposit({ nakladka: NK.Las, zloze: 'glina' }), 'hexHasClayDeposit: las+zloze glina');
+ok(!M.hexHasClayDeposit({ nakladka: NK.Las }), 'hexHasClayDeposit: las bez gliny');
+ok(M.depositAllowsPlayerImprovement('glinianka', { nakladka: NK.Las, zloze: 'glina' }), 'depositAllows glinianka las+zloze');
+ok(!M.isImprovementBlockedOnForest('glinianka', NK.Las), 'forest coexist: glinianka');
+ok(qInka('tartak', 3, 1), 'BUG-GLINA-LAS: tartak+glina na tym samym lesie (rozne sektory)');
 ok(!qInka('tartak', 5, 1), 'tartak NOT on rownina bez lasu (tylko Nakladka.Las)');
 ok(qInka('tartak', 3, 1), 'tartak ON laka+las');
 ok(!qInka('tartak', 1, 0), 'tartak NOT on plain laka bez lasu');
