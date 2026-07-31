@@ -26,6 +26,7 @@ export {
   SHORT_RIVER_MAX_DIST_FROM_MEDIUM,
   pathReachesRealSea,
   maxDryLowlandPatchSize,
+  MAX_DRY_LOWLAND_PATCH_HEXES,
 } from '../src/map/gen-helpers';`,
   'utf8',
 );
@@ -42,6 +43,7 @@ esbuild.buildSync({
 });
 
 const M = require(BUNDLE);
+const { MAX_DRY_LOWLAND_PATCH_HEXES } = M;
 let pass = 0;
 let fail = 0;
 function ok(cond, msg) {
@@ -171,7 +173,10 @@ for (const { w, h, typ, seed, label } of cases) {
     maxDry = Math.max(maxDry, M.maxDryLowlandPatchSize(mass, map.hexes));
   }
   if (typ === 'kontynenty') {
-    ok(maxDry <= 80, `${label}: max suchy płat nizin ≤80 hex (${maxDry})`);
+    ok(
+      maxDry <= MAX_DRY_LOWLAND_PATCH_HEXES,
+      `${label}: max suchy płat nizin ≤${MAX_DRY_LOWLAND_PATCH_HEXES} hex (${maxDry})`,
+    );
   } else {
     console.log(`  ${label}: max suchy płat nizin (info) = ${maxDry}`);
   }

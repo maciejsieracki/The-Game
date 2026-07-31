@@ -6945,7 +6945,8 @@ function tryForceCellRiverConnection(
     bestTarget = [near.q, near.r];
   }
 
-  if (!bestSrc || !bestTarget || bestDist > 100) return false;
+  const maxBfsDist = Math.max(100, Math.ceil(Math.sqrt(land.length) * 4) + 16);
+  if (!bestSrc || !bestTarget || bestDist > maxBfsDist) return false;
 
   const [sq, sr] = bestSrc;
   const [tq, tr] = bestTarget;
@@ -6964,6 +6965,9 @@ function tryForceCellRiverConnection(
   if (forceCtx.pushTributary(path, sq, sr)) return true;
   return false;
 }
+
+/** Maciej 2026-08-01: max spójny płat niziny bez rzeki = 10×10 hexów (metryka: contiguous BFS). */
+export const MAX_DRY_LOWLAND_PATCH_HEXES = 100;
 
 function isDryLowlandHex(hex: Hex | undefined): boolean {
   return !!hex && isRiverLandTerrain(hex.terenBazowy) && !isReliefTerrain(hex.terenBazowy)
@@ -7062,11 +7066,57 @@ function tryDrainDryPatchFromRelief(
   return false;
 }
 
+/** Wymusza rzekę z wnętrza suchego płata (trace do morza / siatka). */
+function tryForceRiverThroughDryPatch(
+  ctx: GridSourcePlaceCtx,
+  component: Array<[number, number]>,
+  massSet: Set<string>,
+): boolean {
+  const forceCtx: GridSourcePlaceCtx = { ...ctx, acceptLen: 3, sourceSep: 0, relaxSeaBuffer: true };
+  const candidates = component
+    .filter(([q, r]) => !ctx.usedSources.has(hexKey(q, r)))
+    .map(([q, r]) => ({
+      q,
+      r,
+      d: ctx.seaDist.get(hexKey(q, r)) ?? 0,
+      tie: ctx.rand(),
+    }))
+    .sort((a, b) => b.d - a.d || a.tie - b.tie);
+
+  for (const c of candidates.slice(0, 20)) {
+    if (tryPlaceGridSource(forceCtx, c.q, c.r, massSet)) return true;
+    const startSeaDist = ctx.seaDist.get(hexKey(c.q, c.r)) ?? 0;
+    const traceMax = Math.max(
+      ctx.maxLen,
+      ctx.minLen + 24,
+      Math.ceil(startSeaDist * 2.8) + ctx.minLen,
+    );
+    const seaPath = traceRiverForGridFill(
+      ctx.hexes, c.q, c.r, traceMax, ctx.minLen, 3,
+      {
+        seaDist: ctx.seaDist,
+        openOceanDist: ctx.openOceanDist,
+        oceanConnected: ctx.oceanConnected,
+        mapWidth: ctx.width,
+        mapHeight: ctx.height,
+        rand: ctx.rand,
+        ...ctx.traceOptsBase,
+      },
+      true,
+    );
+    if (seaPath.length >= 3 && ctx.pushMedium?.(seaPath, c.q, c.r)) return true;
+    if (seaPath.length >= 3 && ctx.pushShort?.(seaPath, c.q, c.r)) return true;
+    if (seaPath.length >= 3 && ctx.pushTributary(seaPath, c.q, c.r)) return true;
+  }
+  return false;
+}
+
 function fillDryLowlandPatches(
   massSet: Set<string>,
   gridCtx: GridSourcePlaceCtx,
   minPatchSize: number,
   maxPasses: number,
+  processAllOversized = false,
 ): number {
   let placed = 0;
   for (let pass = 0; pass < maxPasses; pass++) {
@@ -7092,7 +7142,10 @@ function fillDryLowlandPatches(
       if (component.length >= minPatchSize) patches.push({ land: component, size: component.length });
     }
     patches.sort((a, b) => b.size - a.size);
-    for (const { land } of patches.slice(0, 12)) {
+    const batchLimit = processAllOversized
+      ? patches.length
+      : Math.max(12, patches.filter((p) => p.size > MAX_DRY_LOWLAND_PATCH_HEXES).length);
+    for (const { land, size } of patches.slice(0, batchLimit)) {
       if (cellHasRiverHex(land, gridCtx.hexes)) continue;
       const forceCtx: GridSourcePlaceCtx = {
         ...gridCtx, acceptLen: 3, sourceSep: 0, relaxSeaBuffer: true,
@@ -7105,11 +7158,58 @@ function fillDryLowlandPatches(
       if (tryForceCellRiverConnection(forceCtx, land, massSet)) {
         passPlaced++;
         placed++;
+        continue;
+      }
+      if (size > MAX_DRY_LOWLAND_PATCH_HEXES && tryForceRiverThroughDryPatch(forceCtx, land, massSet)) {
+        passPlaced++;
+        placed++;
       }
     }
     if (passPlaced === 0) break;
   }
   return placed;
+}
+
+/** Domyka suche płaty nizin do limitu {@link MAX_DRY_LOWLAND_PATCH_HEXES}. */
+function enforceMaxDryLowlandPatches(massSet: Set<string>, gridCtx: GridSourcePlaceCtx): void {
+  const maxHex = MAX_DRY_LOWLAND_PATCH_HEXES;
+  fillDryLowlandPatches(massSet, gridCtx, Math.ceil(maxHex / 2), 4);
+  if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
+  for (let round = 0; round < 8; round++) {
+    if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
+    const n = fillDryLowlandPatches(massSet, gridCtx, maxHex + 1, 4, true);
+    if (n > 0) continue;
+    const patch = findLargestDryLowlandPatch(massSet, gridCtx.hexes);
+    if (!patch || patch.length <= maxHex) break;
+    if (!tryForceRiverThroughDryPatch(gridCtx, patch, massSet)) break;
+  }
+}
+
+function findLargestDryLowlandPatch(
+  massSet: Set<string>,
+  hexes: Record<string, Hex>,
+): Array<[number, number]> | null {
+  const visited = new Set<string>();
+  let best: Array<[number, number]> | null = null;
+  for (const k of massSet) {
+    if (visited.has(k) || !isDryLowlandHex(hexes[k])) continue;
+    const component: Array<[number, number]> = [];
+    const queue = [k];
+    visited.add(k);
+    while (queue.length > 0) {
+      const cur = queue.shift()!;
+      const { q, r } = parseHexKey(cur);
+      component.push([q, r]);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandHex(hexes[nk])) continue;
+        visited.add(nk);
+        queue.push(nk);
+      }
+    }
+    if (!best || component.length > best.length) best = component;
+  }
+  return best;
 }
 
 function enforceHardRiverGridStarts(
@@ -7631,9 +7731,9 @@ export function generateRivers(
     );
   }
 
-  // Domknięcie suchych basenów nizinnych (Maciej 2026-08-01 — płaty setek hex bez rzeki).
+  // Domknięcie suchych basenów nizinnych (Maciej 2026-08-01 — max 10×10 hex bez rzeki).
   for (const mass of masses) {
-    fillDryLowlandPatches(new Set(mass), gridCtx, 20, 5);
+    enforceMaxDryLowlandPatches(new Set(mass), gridCtx);
   }
 
   // Dekoracyjne dopływy wzdłuż długich głównych nurtów (legacy tributary).

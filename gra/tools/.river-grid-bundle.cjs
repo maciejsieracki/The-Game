@@ -20,6 +20,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.river-grid-entry.ts
 var river_grid_entry_exports = {};
 __export(river_grid_entry_exports, {
+  MAX_DRY_LOWLAND_PATCH_HEXES: () => MAX_DRY_LOWLAND_PATCH_HEXES,
   SHORT_RIVER_MAX_DIST_FROM_MEDIUM: () => SHORT_RIVER_MAX_DIST_FROM_MEDIUM,
   assertRiverGridCoverage: () => assertRiverGridCoverage,
   buildSeaDistanceField: () => buildSeaDistanceField,
@@ -5207,7 +5208,8 @@ function tryForceCellRiverConnection(ctx, land, massSet) {
     bestSrc = [c.q, c.r];
     bestTarget = [near.q, near.r];
   }
-  if (!bestSrc || !bestTarget || bestDist > 100) return false;
+  const maxBfsDist = Math.max(100, Math.ceil(Math.sqrt(land.length) * 4) + 16);
+  if (!bestSrc || !bestTarget || bestDist > maxBfsDist) return false;
   const [sq, sr] = bestSrc;
   const [tq, tr] = bestTarget;
   const srcKey = hexKey(sq, sr);
@@ -5223,6 +5225,7 @@ function tryForceCellRiverConnection(ctx, land, massSet) {
   if (forceCtx.pushTributary(path, sq, sr)) return true;
   return false;
 }
+var MAX_DRY_LOWLAND_PATCH_HEXES = 100;
 function isDryLowlandHex(hex) {
   return !!hex && isRiverLandTerrain(hex.terenBazowy) && !isReliefTerrain(hex.terenBazowy) && hex.rzeka?.obecna !== true;
 }
@@ -5322,7 +5325,47 @@ function tryDrainDryPatchFromRelief(ctx, component, massSet) {
   }
   return false;
 }
-function fillDryLowlandPatches(massSet, gridCtx, minPatchSize, maxPasses) {
+function tryForceRiverThroughDryPatch(ctx, component, massSet) {
+  const forceCtx = { ...ctx, acceptLen: 3, sourceSep: 0, relaxSeaBuffer: true };
+  const candidates = component.filter(([q, r]) => !ctx.usedSources.has(hexKey(q, r))).map(([q, r]) => ({
+    q,
+    r,
+    d: ctx.seaDist.get(hexKey(q, r)) ?? 0,
+    tie: ctx.rand()
+  })).sort((a, b) => b.d - a.d || a.tie - b.tie);
+  for (const c of candidates.slice(0, 20)) {
+    if (tryPlaceGridSource(forceCtx, c.q, c.r, massSet)) return true;
+    const startSeaDist = ctx.seaDist.get(hexKey(c.q, c.r)) ?? 0;
+    const traceMax = Math.max(
+      ctx.maxLen,
+      ctx.minLen + 24,
+      Math.ceil(startSeaDist * 2.8) + ctx.minLen
+    );
+    const seaPath = traceRiverForGridFill(
+      ctx.hexes,
+      c.q,
+      c.r,
+      traceMax,
+      ctx.minLen,
+      3,
+      {
+        seaDist: ctx.seaDist,
+        openOceanDist: ctx.openOceanDist,
+        oceanConnected: ctx.oceanConnected,
+        mapWidth: ctx.width,
+        mapHeight: ctx.height,
+        rand: ctx.rand,
+        ...ctx.traceOptsBase
+      },
+      true
+    );
+    if (seaPath.length >= 3 && ctx.pushMedium?.(seaPath, c.q, c.r)) return true;
+    if (seaPath.length >= 3 && ctx.pushShort?.(seaPath, c.q, c.r)) return true;
+    if (seaPath.length >= 3 && ctx.pushTributary(seaPath, c.q, c.r)) return true;
+  }
+  return false;
+}
+function fillDryLowlandPatches(massSet, gridCtx, minPatchSize, maxPasses, processAllOversized = false) {
   let placed = 0;
   for (let pass = 0; pass < maxPasses; pass++) {
     let passPlaced = 0;
@@ -5347,7 +5390,8 @@ function fillDryLowlandPatches(massSet, gridCtx, minPatchSize, maxPasses) {
       if (component.length >= minPatchSize) patches.push({ land: component, size: component.length });
     }
     patches.sort((a, b) => b.size - a.size);
-    for (const { land } of patches.slice(0, 12)) {
+    const batchLimit = processAllOversized ? patches.length : Math.max(12, patches.filter((p) => p.size > MAX_DRY_LOWLAND_PATCH_HEXES).length);
+    for (const { land, size } of patches.slice(0, batchLimit)) {
       if (cellHasRiverHex(land, gridCtx.hexes)) continue;
       const forceCtx = {
         ...gridCtx,
@@ -5363,11 +5407,52 @@ function fillDryLowlandPatches(massSet, gridCtx, minPatchSize, maxPasses) {
       if (tryForceCellRiverConnection(forceCtx, land, massSet)) {
         passPlaced++;
         placed++;
+        continue;
+      }
+      if (size > MAX_DRY_LOWLAND_PATCH_HEXES && tryForceRiverThroughDryPatch(forceCtx, land, massSet)) {
+        passPlaced++;
+        placed++;
       }
     }
     if (passPlaced === 0) break;
   }
   return placed;
+}
+function enforceMaxDryLowlandPatches(massSet, gridCtx) {
+  const maxHex = MAX_DRY_LOWLAND_PATCH_HEXES;
+  fillDryLowlandPatches(massSet, gridCtx, Math.ceil(maxHex / 2), 4);
+  if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
+  for (let round = 0; round < 8; round++) {
+    if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
+    const n = fillDryLowlandPatches(massSet, gridCtx, maxHex + 1, 4, true);
+    if (n > 0) continue;
+    const patch = findLargestDryLowlandPatch(massSet, gridCtx.hexes);
+    if (!patch || patch.length <= maxHex) break;
+    if (!tryForceRiverThroughDryPatch(gridCtx, patch, massSet)) break;
+  }
+}
+function findLargestDryLowlandPatch(massSet, hexes) {
+  const visited = /* @__PURE__ */ new Set();
+  let best = null;
+  for (const k of massSet) {
+    if (visited.has(k) || !isDryLowlandHex(hexes[k])) continue;
+    const component = [];
+    const queue = [k];
+    visited.add(k);
+    while (queue.length > 0) {
+      const cur = queue.shift();
+      const { q, r } = parseHexKey(cur);
+      component.push([q, r]);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandHex(hexes[nk])) continue;
+        visited.add(nk);
+        queue.push(nk);
+      }
+    }
+    if (!best || component.length > best.length) best = component;
+  }
+  return best;
 }
 function enforceHardRiverGridStarts(hexes, massSet, cellSize, seaDist, riverPaths, gridCtx, maxLen, reliefSourceBonus, expandSourceRadius, minInlandFromSea, baseSourceSep, acceptLen) {
   const minLand = minLandHexesForRiverCell(cellSize);
@@ -5799,7 +5884,7 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
     );
   }
   for (const mass of masses) {
-    fillDryLowlandPatches(new Set(mass), gridCtx, 20, 5);
+    enforceMaxDryLowlandPatches(new Set(mass), gridCtx);
   }
   const pathCountBeforeDecor = riverPaths.length;
   for (let i = 0; i < pathCountBeforeDecor; i++) {
@@ -7087,6 +7172,7 @@ function menuLabelToDims(label) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  MAX_DRY_LOWLAND_PATCH_HEXES,
   SHORT_RIVER_MAX_DIST_FROM_MEDIUM,
   assertRiverGridCoverage,
   buildSeaDistanceField,
