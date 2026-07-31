@@ -124,6 +124,58 @@ function formatBalanceLabel(balancePn: number, accepted: boolean): string {
   return `Saldo ${balancePn} PW`;
 }
 
+/**
+ * Pokój: silnik liczy offer = PN traktatu @ Relacji + słodzik netto z koszyka
+ * (peaceProposalOfferPn w diplomacy-proposals). NIE stosuje fair-min handlu na
+ * symetrycznej karcie traktatu — to dawało fałszywe „−184 PW” w koszyku przy
+ * 615/615, podczas gdy evaluateProposal akceptuje.
+ */
+function computePeaceAcceptanceSides(
+  givePn: number,
+  receivePn: number,
+  relTotal: number,
+  treatyBase: number,
+  incoming: boolean,
+  mode: 'treaty' | 'mixed',
+): { my: AcceptanceSideBalance; their: AcceptanceSideBalance } {
+  const treatyEffectivePn = effectiveTreatyPnRequired(treatyBase, relTotal);
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  const modLabel = formatRelationModLabel(relTotal);
+  const proposerGive = incoming ? receivePn : givePn;
+  const proposerReceive = incoming ? givePn : receivePn;
+  const basketNet = Math.max(0, proposerGive - proposerReceive);
+  const proposerOfferPn = treatyEffectivePn + basketNet;
+  const peaceAccepted = proposerOfferPn >= treatyEffectivePn;
+  const surplusPn = proposerOfferPn - treatyEffectivePn;
+
+  const myBasketOffer = incoming ? receivePn : givePn;
+  const myBasketDemand = incoming ? givePn : receivePn;
+  const theirBasketOffer = incoming ? givePn : receivePn;
+  const theirBasketDemand = incoming ? receivePn : givePn;
+
+  const buildSide = (
+    basketOffer: number,
+    basketDemand: number,
+  ): AcceptanceSideBalance => ({
+    offerPn: basketOffer,
+    demandPn: basketDemand,
+    fairMinPn: treatyEffectivePn,
+    balancePn: surplusPn,
+    treatyBasePn: treatyBase,
+    treatyEffectivePn,
+    relationModPct: modPct,
+    relationModLabel: modLabel,
+    mode,
+    accepted: peaceAccepted,
+    statusLabel: formatBalanceLabel(surplusPn, peaceAccepted),
+  });
+
+  return {
+    my: buildSide(myBasketOffer, myBasketDemand),
+    their: buildSide(theirBasketOffer, theirBasketDemand),
+  };
+}
+
 function computeSideBalance(
   offerPn: number,
   demandPn: number,
@@ -220,6 +272,18 @@ export function computePlayerAcceptanceSides(
 
   const ease = sweetenerEasePoints(payload);
   const adjustedRelRequired = relRequired != null ? Math.max(0, relRequired - ease) : undefined;
+
+  if (actionId === 'pokoj' && treatyBase > 0) {
+    const peaceMode: 'treaty' | 'mixed' = hasBasket ? 'mixed' : 'treaty';
+    const peace = computePeaceAcceptanceSides(givePn, receivePn, relTotal, treatyBase, incoming, peaceMode);
+    if (isGift) {
+      peace.their.accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
+      peace.my.accepted = true;
+      peace.my.statusLabel = 'Nic w zamian';
+      peace.their.statusLabel = formatBalanceLabel(peace.their.balancePn, peace.their.accepted);
+    }
+    return { my: peace.my, their: peace.their, isGift };
+  }
 
   const my = computeSideBalance(myOfferPn, myDemandPn, relTotal, incoming ? 0 : treatyBase, adjustedRelRequired, mode);
   const their = computeSideBalance(

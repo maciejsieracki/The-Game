@@ -287,6 +287,62 @@ export function renderPnBalancePanelFromBasket(
   );
 }
 
+/**
+ * Koszyk pokoju — PN traktatu @ Relacji + koszyk osobno (NIE fair-min na sumie 615+615).
+ * Bilans = słodzik netto proponenta (jak peaceProposalOfferPn w silniku).
+ */
+export function renderPnBalancePanelForPeace(
+  treatyEffectivePw: number,
+  basketGivePn: number,
+  basketReceivePn: number,
+  relTotal: number,
+  actionLabel = 'Propozycja pokoju',
+): string {
+  const basketNet = Math.max(0, basketGivePn - basketReceivePn);
+  const surplus = basketNet;
+  const myDisplay = treatyEffectivePw + basketGivePn;
+  const theirDisplay = treatyEffectivePw + basketReceivePn;
+  const accepted = true;
+  const balancePn = surplus;
+  const balCls = accepted ? 'ok' : 'no';
+  const delta = formatBalanceDelta(balancePn, accepted);
+  const deltaCls = balancePn >= 0 ? 'pos' : 'neg';
+  const hint = balancePn > 0 ? `Nadwyżka ${balancePn} PW` : 'Równo — spełnia';
+  const verdict = balancePn > 0
+    ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
+    : 'Pokój @ Rel ' + relTotal + ': wym. ' + treatyEffectivePw + ' PW traktatu — spełnione';
+
+  return (
+    '<div class="da-pn-balance-bar ' + balCls + ' da-pn-balance-bar--basket da-pn-balance-bar--peace">'
+    + '<div class="da-pn-bal-head">'
+    + pwTitleHeadHtml()
+    + '<span class="da-pn-bal-deal">' + esc(actionLabel) + '</span>'
+    + '</div>'
+    + '<div class="da-pn-bal-cols">'
+    + '<div class="da-pn-bal-cell my">'
+    + '<span class="da-pn-bal-lbl">My oddajemy</span>'
+    + pwAmountHtml(myDisplay)
+    + '</div>'
+    + '<div class="da-pn-bal-cell center ' + balCls + '">'
+    + '<span class="da-pn-bal-lbl">Bilans (Oni)</span>'
+    + '<span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + '>' + esc(delta) + '</span>'
+    + '<span class="da-pn-bal-hint">' + esc(hint) + '</span>'
+    + '</div>'
+    + '<div class="da-pn-bal-cell they">'
+    + '<span class="da-pn-bal-lbl">Oni oddają</span>'
+    + pwAmountHtml(theirDisplay)
+    + '</div>'
+    + '</div>'
+    + '<div class="da-pn-bal-meta">Traktat pokoju: ' + treatyEffectivePw + ' PW @ Rel ' + relTotal
+    + (basketGivePn > 0 || basketReceivePn > 0
+      ? ' · koszyk netto ' + (basketNet > 0 ? '+' + basketNet : '0') + ' PW'
+      : '')
+    + '</div>'
+    + '<div class="da-pn-bal-verdict ok">' + esc(verdict) + '</div>'
+    + '</div>'
+  );
+}
+
 /** Jednolinijkowy podgląd na karcie (gdy jest wiele propozycji na stole). */
 export function renderAcceptanceCompactHtml(
   side: AcceptanceSideBalance | undefined,

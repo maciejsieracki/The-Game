@@ -37,7 +37,7 @@ import {
 } from './diplomacyDealDisplay';
 import type { BasketItemFormatCtx } from '../game/diplomacy-display';
 import { formatBasketListBrief, resourceDisplayLabel } from '../game/diplomacy-display';
-import { renderPnBalancePanelFromBasket } from './diplomacyAcceptanceBalance';
+import { renderPnBalancePanelFromBasket, renderPnBalancePanelForPeace } from './diplomacyAcceptanceBalance';
 import {
   bilateralTreatyDisplayPw,
   computePlayerAcceptanceSides,
@@ -533,9 +533,14 @@ function treatySummaryHtml(
   const bil = bilateralTreatyDisplayPw(sides.my, sides.their);
   const myPw = sideDisplayOfferPw(sides.my, bil);
   const theirPw = sideDisplayOfferPw(sides.their, bil);
+  const basketGivePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns) ?? 0;
+  const basketReceivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns) ?? 0;
 
   let html = '';
-  if ((bil != null && bil > 0) || myPw > 0 || theirPw > 0) {
+  if (cywId === 'pokoj' && (sides.my.treatyEffectivePn ?? sides.their.treatyEffectivePn ?? 0) > 0) {
+    const treatyPw = sides.my.treatyEffectivePn ?? sides.their.treatyEffectivePn ?? 0;
+    html += renderPnBalancePanelForPeace(treatyPw, basketGivePn, basketReceivePn, rel, action.label);
+  } else if ((bil != null && bil > 0) || myPw > 0 || theirPw > 0) {
     html += renderPnBalancePanelFromBasket(myPw, theirPw, rel, action.label);
   }
 
@@ -543,8 +548,8 @@ function treatySummaryHtml(
     return html;
   }
 
-  const givePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns) ?? 0;
-  const receivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns) ?? 0;
+  const givePn = basketGivePn;
+  const receivePn = basketReceivePn;
   const net = Math.max(0, givePn - receivePn);
   html += '<div class="cdb-summary"><div class="cdb-basket-opt-title">Dołóż do umowy (koszyk PW)</div>';
   html += '<div>Oddajesz: <b>' + givePn + ' PW</b>';

@@ -252,6 +252,33 @@ const woodTradePn = mod.resolveProposalPn({
 }, { difficulty: 'normal', proposerOwnerId: 0, playerOwnerId: 0 });
 ok(woodTradePn.givePn === 10, 'resolveProposalPn: 1 pakiet drewno = 10 PN');
 
+// Pokój @ rel 77 (Maciej 2026-08-01): symetryczny traktat 615 PW — NIE fair-min −184
+ok(mod.effectiveTreatyPnRequired(500, 77) === 615, 'pokój @ rel 77: traktat effective 615 PW');
+const peacePure77 = mod.computePlayerAcceptanceSides('pokoj', {}, 77, false);
+ok(peacePure77.their.accepted, 'pokój czysty @ rel 77: accepted');
+ok(peacePure77.their.balancePn === 0, 'pokój czysty @ rel 77: bilans 0 (nie fair-min)');
+ok(mod.diplomacyFairGivePn(615, 77) === 799, 'kontrola: fair-min handlu 615→799 (nie dotyczy pokoju)');
+const peaceSym77 = mod.computePlayerAcceptanceSides(
+  'pokoj',
+  {
+    giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 10 }],
+    receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 10 }],
+  },
+  77,
+  false,
+);
+ok(peaceSym77.their.accepted, 'pokój symetryczny 10¤ @ rel 77: accepted (jak silnik)');
+ok(peaceSym77.their.balancePn === 0, 'pokój symetryczny: bilans 0 nie −184');
+ok(peaceSym77.their.balancePn !== -184, 'pokój: bez fałszywego fair-min na traktacie');
+const peaceSweet77 = mod.computePlayerAcceptanceSides(
+  'pokoj',
+  { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 50 }] },
+  77,
+  false,
+);
+ok(peaceSweet77.their.accepted, 'pokój + dar 50¤: accepted');
+ok(peaceSweet77.their.balancePn === 50, 'pokój + dar 50¤: nadwyżka +50 PW');
+
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 
 console.log(`diplomacy-acceptance-points-test: ${pass} pass, ${fail} fail`);
