@@ -16,7 +16,7 @@ const BUNDLE = path.join(__dirname, '.map-gen-regression-bundle.cjs');
 fs.writeFileSync(
   ENTRY,
   `export { generujSwiat } from '../src/map/generator';
-export { pathEndsAtSea, pathReachesRealSea, verifyRiverNetworkConnectivity, checkTributaryJunctions } from '../src/map/gen-helpers';
+export { pathEndsAtSea, pathReachesRealSea, pathHasValidRiverOutlet, verifyRiverNetworkConnectivity, checkTributaryJunctions } from '../src/map/gen-helpers';
 export { expectedStartCityCount, targetVillageHutCount } from '../src/map/villages';
 export { defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel } from '../src/map/newGameMapDefaults';`,
   'utf8',
@@ -59,28 +59,27 @@ function hexHash(hexes) {
   return (h >>> 0).toString(16);
 }
 
-function countBadMainRivers(map) {
+function countBadRiverPaths(map) {
   const W = map.szerokoscQ;
   const H = map.wysokoscR;
-  let bad = 0;
-  let totalMain = 0;
-  // ZADANIE 2 / A1: sprawdzenie ciągłości do REALNEGO Morza (pathReachesRealSea) — ostrzejsze
-  // niż pathEndsAtSea (który liczy CAŁY 2-hex pas Wybrzeża jako "ocean"). Diagnoza sprzed fixu:
-  // ~3.3% rzek przy gęstości 'high' urywało się ~3 hex przed morzem mimo pathEndsAtSea===true.
+  let badOutlet = 0;
   let badReal = 0;
+  let totalMain = 0;
   for (let i = 0; i < map.riverPaths.length; i++) {
-    if (map.riverPathKinds?.[i] !== 'main') continue;
-    totalMain++;
     const path = map.riverPaths[i];
+    const subPaths = map.riverPaths.slice(0, i);
+    const subKinds = map.riverPathKinds?.slice(0, i) ?? [];
     if (!path?.length) {
-      bad++;
-      badReal++;
+      badOutlet++;
       continue;
     }
-    if (!M.pathEndsAtSea(map.hexes, path, W, H)) bad++;
-    if (!M.pathReachesRealSea(map.hexes, path, W, H)) badReal++;
+    if (!M.pathHasValidRiverOutlet(map.hexes, path, subPaths, subKinds, W, H)) badOutlet++;
+    if (map.riverPathKinds?.[i] === 'main') {
+      totalMain++;
+      if (!M.pathReachesRealSea(map.hexes, path, W, H)) badReal++;
+    }
   }
-  return { bad, badReal, totalMain };
+  return { badOutlet, badReal, totalMain, totalPaths: map.riverPaths.length };
 }
 
 function bench(rozmiar, label) {
@@ -100,29 +99,31 @@ console.log('\n=== Rzeki bez ujścia (5 seedów × 4 typy × [rivers medium, riv
 let totalBad = 0;
 let totalBadReal = 0;
 let totalMain = 0;
+let totalPaths = 0;
 let fail = 0;
 
 for (const density of [DENSITY, DENSITY_RIVERS_HIGH]) {
   for (const seed of SEEDS) {
     for (const typ of TYPES) {
       const map = M.generujSwiat(seed, 'maly', typ, { worldDensity: density });
-      const { bad, badReal, totalMain: tm } = countBadMainRivers(map);
-      totalBad += bad;
+      const { badOutlet, badReal, totalMain: tm, totalPaths: tp } = countBadRiverPaths(map);
+      totalBad += badOutlet;
       totalBadReal += badReal;
       totalMain += tm;
-      if (bad > 0 || badReal > 0) {
+      totalPaths += tp;
+      if (badOutlet > 0 || badReal > 0) {
         fail++;
         console.error(
-          `FAIL seed=${seed} typ=${typ} rivers=${density.rivers}: ${bad}/${tm} bez ujścia (luźne), `
-          + `${badReal}/${tm} bez REALNEGO ujścia (pathReachesRealSea)`,
+          `FAIL seed=${seed} typ=${typ} rivers=${density.rivers}: ${badOutlet}/${tp} bez ujścia, `
+          + `${badReal}/${tm} main bez REALNEGO morza`,
         );
       }
     }
   }
 }
 
-console.log(`Główne rzeki OK (luźne pathEndsAtSea): ${totalMain - totalBad}/${totalMain}`);
-console.log(`Główne rzeki OK (REALNE morze, pathReachesRealSea): ${totalMain - totalBadReal}/${totalMain} (${fail} przypadków fail)`);
+console.log(`Trasy OK (ujście morze lub rzeka): ${totalPaths - totalBad}/${totalPaths}`);
+console.log(`Główne rzeki OK (REALNE morze): ${totalMain - totalBadReal}/${totalMain} (${fail} przypadków fail)`);
 
 console.log('\n=== Sieć rzek + dopływy (5 seedów × 4 typy, standardowy) ===');
 let netOrphans = 0;
@@ -166,8 +167,8 @@ const duzyOk = tDuzy < DUZY_GEN_MS_LIMIT;
 console.log(`\n=== AC ===`);
 console.log(`  standard <${STANDARD_GEN_MS_LIMIT / 1000}s: ${stdOk ? 'PASS' : 'FAIL'} (${(tStd / 1000).toFixed(2)}s)`);
 console.log(`  duża <${DUZY_GEN_MS_LIMIT / 1000}s: ${duzyOk ? 'PASS' : 'FAIL'} (${(tDuzy / 1000).toFixed(2)}s)`);
-console.log(`  0 rzek bez ujścia (luźne): ${totalBad === 0 ? 'PASS' : 'FAIL'} (${totalBad} złych)`);
-console.log(`  0 rzek bez REALNEGO ujścia (pathReachesRealSea): ${totalBadReal === 0 ? 'PASS' : 'FAIL'} (${totalBadReal} złych)`);
+console.log(`  0 tras bez ujścia: ${totalBad === 0 ? 'PASS' : 'FAIL'} (${totalBad} złych)`);
+console.log(`  0 main bez REALNEGO morza: ${totalBadReal === 0 ? 'PASS' : 'FAIL'} (${totalBadReal} złych)`);
 console.log(`  0 sierot sieci rzecznej: ${netOrphans === 0 ? 'PASS' : 'FAIL'} (${netOrphans})`);
 console.log(`  dopływy z junction: ${tribJunctionFails === 0 ? 'PASS' : 'FAIL'} (${tribJunctionFails})`);
 console.log(`  determinizm: ${detOk ? 'PASS' : 'FAIL'}`);

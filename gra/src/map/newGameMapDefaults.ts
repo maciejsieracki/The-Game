@@ -338,17 +338,16 @@ function clamp(n: number, lo: number, hi: number): number {
 export function resolveRiverMapParams(tier: DensityTier, w: number, h: number): RiverMapParams {
   const areaScale = riverMapAreaScale(w, h);
   const minDim = Math.min(w, h);
-  const mainBase = tier === 'high' ? 4 : tier === 'low' ? 11 : 7;
-  const tribBase = tier === 'high' ? 2 : tier === 'low' ? 6 : 4;
   const tierMinLen = riverMinPathLengthForTier(tier);
   const tierCap = tier === 'low' ? 5 : tier === 'high' ? 8 : 6;
 
-  const mainCell = clamp(Math.round(mainBase * areaScale), 4, 32);
-  const tributaryCell = clamp(Math.round(tribBase * areaScale), 2, 18);
-  const mainGridStride = areaScale < 0.55 ? 2 : 3;
+  // Kanon Maciej 2026-07-31: siatka N×N z tieru (15/10/5) — liczba STARTÓW w komórkach.
+  const mainCell = riverGridCellSizeForTier(tier);
+  const tributaryCell = Math.max(3, Math.round(mainCell * 0.5));
+  const mainGridStride = 1;
 
   const minLen = Math.min(
-    clamp(Math.round(tierMinLen * areaScale), 6, tierMinLen),
+    clamp(Math.round(tierMinLen * Math.max(0.65, areaScale)), 6, tierMinLen),
     Math.floor(minDim * 0.35),
   );
   const maxLen = Math.min(
@@ -365,8 +364,8 @@ export function resolveRiverMapParams(tier: DensityTier, w: number, h: number): 
   const mouthTailLen = clamp(Math.round(5 * areaScale), 3, 5);
   const minInlandFromSea = minDim >= 40 ? 2 : 1;
   const reliefSearchMax = clamp(Math.round(14 * areaScale), 6, 28);
-  const feederPasses = clamp(3 + Math.floor(areaScale), 3, 8);
-  const topUpPasses = clamp(4 + Math.floor(areaScale * 1.5), 4, 12);
+  const feederPasses = clamp(4 + Math.floor(areaScale), 4, 10);
+  const topUpPasses = clamp(6 + Math.floor(areaScale * 2), 6, 16);
   const minInlandCell = Math.max(4, Math.floor(minLen * 0.35));
 
   return {

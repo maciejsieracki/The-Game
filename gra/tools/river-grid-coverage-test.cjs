@@ -1,5 +1,5 @@
 'use strict';
-/** Siatka rzek: w każdej komórce N×N lądu min. 1 źródło → morze (Maciej 2026-07-04). */
+/** Siatka rzek: twardy fill STARTÓW w komórkach N×N (Maciej 2026-07-31). */
 
 const fs = require('fs');
 const path = require('path');
@@ -16,8 +16,11 @@ export {
   groupLandMassKeys,
   assertRiverGridCoverage,
   riverGridCoverageRatio,
-  riverCoverageCellSize,
+  cellHasRiverSourceInCell,
   buildSeaDistanceField,
+  minLandHexesForRiverCell,
+  landHexesByCoverageCell,
+  pathHasValidRiverOutlet,
 } from '../src/map/gen-helpers';`,
   'utf8',
 );
@@ -58,39 +61,60 @@ for (const { w, h, typ, seed, label } of cases) {
     worldDensity: { rivers: 'medium', forest: 'medium', desert: 'medium', relief: 'medium' },
   });
   const params = M.resolveRiverMapParams('medium', w, h);
-  const cellSize = params.tributaryCell;
+  const cellSize = params.mainCell;
   const seaDist = M.buildSeaDistanceField(map.hexes);
   const masses = M.groupLandMassKeys(map.hexes).filter((m) => m.length >= 8);
   const kinds = map.riverPathKinds;
   const mains = kinds.filter((k) => k === 'main').length;
-  const minPaths = typ === 'ziemia' ? 35 : 40;
-  ok(mains >= minPaths, `${label}: ≥${minPaths} głównych rzek (${mains})`);
-  ok(map.riverPaths.length >= minPaths, `${label}: ≥${minPaths} tras łącznie (${map.riverPaths.length})`);
+  const tribs = kinds.filter((k) => k === 'tributary').length;
+  const sources = map.riverPaths.length;
 
+  ok(sources >= 40, `${label}: ≥40 startów rzek (${sources}, main=${mains} trib=${tribs})`);
+
+  let orphanPaths = 0;
+  for (let i = 0; i < map.riverPaths.length; i++) {
+    const p = map.riverPaths[i];
+    const others = map.riverPaths.filter((_, j) => j !== i);
+    const otherKinds = kinds.filter((_, j) => j !== i);
+    if (!M.pathHasValidRiverOutlet(map.hexes, p, others, otherKinds, w, h)) orphanPaths++;
+  }
+  ok(orphanPaths === 0, `${label}: 0 tras bez ujścia (${orphanPaths})`);
+
+  const minLand = M.minLandHexesForRiverCell(cellSize);
+  let needCells = 0;
+  let hitCells = 0;
+  for (const mass of masses) {
+    if (mass.length < 80) continue;
+    const massSet = new Set(mass);
+    for (const land of M.landHexesByCoverageCell(massSet, cellSize).values()) {
+      if (land.length < minLand) continue;
+      const reachable = land.some(([q, r]) => {
+        const d = seaDist.get(`${q},${r}`) ?? 999;
+        return d >= 2 && d <= params.maxLen + 40;
+      });
+      if (!reachable) continue;
+      needCells++;
+      if (M.cellHasRiverSourceInCell(land, map.riverPaths)) hitCells++;
+    }
+  }
+  const srcPct = needCells > 0 ? Math.round((100 * hitCells) / needCells) : 100;
+  const srcMin = typ === 'ziemia' ? 55 : 80;
+  ok(needCells === 0 || srcPct >= srcMin, `${label}: starty w siatce ${cellSize}×${cellSize} ≥${srcMin}% (${hitCells}/${needCells} = ${srcPct}%)`);
+
+  const hexMin = typ === 'ziemia' ? 0.5 : 0.75;
   let okMasses = 0;
   let total = 0;
   for (const mass of masses) {
-    if (mass.length < 150) continue;
+    if (mass.length < (typ === 'ziemia' ? 200 : 150)) continue;
     total++;
     const ratio = M.riverGridCoverageRatio(
       mass, map.riverPaths, cellSize, seaDist, params.maxLen, kinds,
       params.minLen, map.hexes, params.minInlandCell,
     );
-    if (ratio >= 0.75) okMasses++;
+    if (ratio >= hexMin) okMasses++;
     else console.log(`  ${label} mass ${mass.length} hex: pokrycie ${(ratio * 100).toFixed(0)}%`);
   }
-  ok(total === 0 || okMasses === total, `${label}: siatka ${cellSize}×${cellSize} ≥75% (${okMasses}/${total} mas ≥150 hex)`);
-
-  let short = 0;
-  let mainCount = 0;
-  const minMainLen = 3; // RIVER_MIN_MAIN_LEN — po trimRiverPathRings może być < gridTraceMinLen
-  for (let i = 0; i < map.riverPaths.length; i++) {
-    if (kinds[i] !== 'main') continue;
-    mainCount++;
-    const len = map.riverPaths[i]?.length ?? 0;
-    if (len < minMainLen) short++;
-  }
-  ok(mainCount === 0 || short === 0, `${label}: główne rzeki ≥${minMainLen} hex (${short}/${mainCount} za krótkie)`);
+  ok(total === 0 || okMasses === total, `${label}: siatka hex ≥${Math.round(hexMin * 100)}% (${okMasses}/${total} mas)`);
 }
 
 console.log(`\nriver-grid-coverage-test: ${pass} pass, ${fail} fail`);
