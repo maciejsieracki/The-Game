@@ -529,7 +529,7 @@ export function evaluateProposal(
         return { accepted: false, reason: 'Sojusz tego typu już istnieje' };
       }
       const deal = buildDeal(kind, proposerOwnerId, responderOwnerId, ctx.turn, null);
-      const label = kind === 'sojusz_defensywny' ? 'Sojusz defensywny' : 'Sojusz pełny';
+      const label = kind === 'sojusz_defensywny' ? 'Sojusz obronny' : 'Sojusz wojskowy';
       return { accepted: true, reason: `${label} zawarty`, deal };
     }
 
@@ -897,8 +897,8 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
         : 'Proponujemy stałą umowę handlową — otwiera i utrzymuje szlaki handlowe między naszymi miastami.';
     case 'zaproponuj_sojusz':
       return cmd.allianceKind === 'defensywny'
-        ? 'Proponujemy sojusz defensywny — wchodzimy do wojny tylko gdy któryś z nas jest atakowany.'
-        : 'Proponujemy pełny sojusz — wspólna obrona i wsparcie militarnie.';
+        ? 'Proponujemy sojusz obronny — wchodzimy do wojny tylko gdy któryś z nas jest atakowany.'
+        : 'Proponujemy sojusz wojskowy — wspólna obrona i wsparcie militarnie.';
     case 'zaproponuj_pakt':
       return `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur — żadna strona nie zaatakuje drugiej.`;
     case 'zaproponuj_pokoj':
@@ -1080,7 +1080,7 @@ export function resolvePlayerAcceptsAiPending(
         turn,
         null,
       );
-      const label = actionId === 'sojusz_defensywny' ? 'Sojusz defensywny' : 'Sojusz pełny';
+      const label = actionId === 'sojusz_defensywny' ? 'Sojusz obronny' : 'Sojusz wojskowy';
       return { accepted: true, reason: `${label} zawarty`, deal };
     }
     case 'pokoj':

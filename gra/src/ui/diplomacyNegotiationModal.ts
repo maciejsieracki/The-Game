@@ -228,8 +228,8 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
     case '3':
       return sub
         + '<label>Typ sojuszu</label>'
-        + '<select id="cdn-alliance"><option value="pelny">Sojusz pełny (wojna sojusznika = twoja)</option>'
-        + '<option value="defensywny">Sojusz defensywny (atak na sojusznika)</option></select>';
+        + '<select id="cdn-alliance"><option value="pelny">Sojusz wojskowy (wojna sojusznika = twoja)</option>'
+        + '<option value="defensywny">Sojusz obronny (atak na sojusznika)</option></select>';
 
     case '4': {
       const feeC = ctx.borderFeeCivil ?? 20;

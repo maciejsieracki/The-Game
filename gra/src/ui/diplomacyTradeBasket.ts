@@ -430,8 +430,8 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
     case '3':
       body = '<label>Typ sojuszu</label>'
         + '<select id="cdb-treaty-alliance" class="cdb-treaty-alliance">'
-        + '<option value="pelny"' + (state.allianceKind === 'pelny' ? ' selected' : '') + '>Sojusz pełny (wojna sojusznika = twoja)</option>'
-        + '<option value="defensywny"' + (state.allianceKind === 'defensywny' ? ' selected' : '') + '>Sojusz defensywny (atak na sojusznika)</option>'
+        + '<option value="pelny"' + (state.allianceKind === 'pelny' ? ' selected' : '') + '>Sojusz wojskowy (wojna sojusznika = twoja)</option>'
+        + '<option value="defensywny"' + (state.allianceKind === 'defensywny' ? ' selected' : '') + '>Sojusz obronny (atak na sojusznika)</option>'
         + '</select>';
       break;
     case '4': {

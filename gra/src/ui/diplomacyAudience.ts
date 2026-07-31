@@ -815,6 +815,50 @@ export function showWarConsentModal(opts: WarConsentModalOptions): void {
   modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
 }
 
+export interface AllianceObligationModalOptions {
+  allyName: string;
+  targetName: string;
+  previewRefuse: DiploPenaltyPreview;
+  onFulfill: () => void;
+  onRefuse: () => void;
+}
+
+/**
+ * Modal obowiązku sojuszu — gracz musi wypełnić sojusz (wojna) lub odmówić (N4 + zerwanie).
+ */
+export function showAllianceObligationModal(opts: AllianceObligationModalOptions): void {
+  ensureStyles();
+  if (modalOverlay !== null) modalOverlay.remove();
+  modalOverlay = document.createElement('div');
+  modalOverlay.className = 'civ-diplo-modal-overlay';
+  modalOverlay.innerHTML =
+    '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
+      '<h3>Obowiązek sojuszu</h3>' +
+      '<p class="cd-war-lead">Sojusznik <strong>' + esc(opts.allyName) + '</strong> wymaga, '
+      + 'żebyś wypowiedział wojnę: <strong>' + esc(opts.targetName) + '</strong>.</p>' +
+      '<div class="cd-war-opt">' +
+        '<p class="cd-war-opt-title"><strong>Odmowa</strong> — kara Wiarygodności i zerwanie sojuszu</p>' +
+        penaltyBlockHtml(opts.previewRefuse) +
+      '</div>' +
+      '<div class="cd-modal-btns cd-war-consent-btns">' +
+        '<button type="button" class="dip-gold-btn cd-alliance-fulfill">Wypełnij sojusz</button>' +
+        '<button type="button" class="dip-muted-btn cd-alliance-refuse" style="border-color:rgba(200,64,64,.5);color:#e08a8a;">Odmów (kara)</button>' +
+      '</div></div>';
+  document.body.appendChild(modalOverlay);
+  const close = (): void => {
+    if (modalOverlay !== null) { modalOverlay.remove(); modalOverlay = null; }
+  };
+  modalOverlay.querySelector('.cd-alliance-fulfill')?.addEventListener('click', () => {
+    close();
+    opts.onFulfill();
+  });
+  modalOverlay.querySelector('.cd-alliance-refuse')?.addEventListener('click', () => {
+    close();
+    opts.onRefuse();
+  });
+  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
+}
+
 /** @deprecated Użyj showWarConsentModal — zostawione dla kompatybilności (2 przyciski). */
 export function showWarConfirmModal(
   civName: string,

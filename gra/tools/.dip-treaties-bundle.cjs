@@ -21,6 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var dip_treaties_entry_exports = {};
 __export(dip_treaties_entry_exports, {
   addTreaty: () => addTreaty,
+  allianceFormalKindBetween: () => allianceFormalKindBetween,
   allianceObligations: () => allianceObligations,
   allianceObligationsForWarDeclaration: () => allianceObligationsForWarDeclaration,
   expireTreaties: () => expireTreaties,
@@ -153,6 +154,12 @@ function dealsForPair(state, a, b) {
   const [p0, p1] = pairKey(a, b);
   return state.filter((d) => d.strony[0] === p0 && d.strony[1] === p1);
 }
+function allianceFormalKindBetween(state, a, b) {
+  const pair = dealsForPair(state, a, b);
+  if (pair.some((d) => normalizeTreatyKind(d.rodzaj) === "sojusz_pelny")) return "wojskowy";
+  if (pair.some((d) => normalizeTreatyKind(d.rodzaj) === "sojusz_defensywny")) return "obronny";
+  return null;
+}
 var BREAK_ON_WAR = /* @__PURE__ */ new Set([
   "pakt_nieagresji" /* PaktNieagresji */,
   "sojusz_wojskowy" /* SojuszWojskowy */,
@@ -181,6 +188,7 @@ function tributeDeals(state) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   addTreaty,
+  allianceFormalKindBetween,
   allianceObligations,
   allianceObligationsForWarDeclaration,
   expireTreaties,

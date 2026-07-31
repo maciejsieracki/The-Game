@@ -796,6 +796,7 @@ import {
 import {
   showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
   showWarConsentModal,
+  showAllianceObligationModal,
   type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
 } from './ui/diplomacyAudience';
 import { civLeaderMedallionHtmlById } from './ui/diploUiSkin';
@@ -827,7 +828,9 @@ import {
   isDefensiveAllianceWarObligation,
   normalizeTreatyKind, hydrateActiveDeals, addTreaty, resolvePokojTrustTier,
   hasSzlakowTreaty, hasWymianaTreaty,
+  allianceFormalKindBetween,
   type HandelSurowiecCyklicznyItem,
+  type AllianceObligation,
 } from './game/diplomacy-treaties';
 import { empireDiploResourceFlowPerTurn } from './game/empire-diplo-resource-flow';
 import {
@@ -840,6 +843,7 @@ import {
   formatDiploPenaltyShort,
   previewVoluntaryTreatyBreakPenalties,
   previewWarDeclarationPenalties,
+  previewAllianceObligationRefusal,
 } from './game/diplomacy-penalty-preview';
 import { RodzajTraktatu } from './types/diplomacy';
 import {
@@ -3566,20 +3570,18 @@ async function boot(): Promise<void> {
 
     function playerFormalRelationLabel(ownerId: number): string {
       if (isBarbarian(ownerId)) return 'Wojna';
-      let hasAlliance = false;
       let hasNap = false;
       let hasTrade = false;
       for (const d of activeDeals) {
         if (!d.strony.includes(0) || !d.strony.includes(ownerId)) continue;
         const k = normalizeTreatyKind(d.rodzaj);
-        if (isAllianceDealKind(d.rodzaj)) hasAlliance = true;
-        else if (k === RodzajTraktatu.PaktNieagresji) hasNap = true;
+        if (k === RodzajTraktatu.PaktNieagresji) hasNap = true;
         else if (k === RodzajTraktatu.UmowaSzlakow) hasTrade = true;
       }
       const rel = getDiploRelation(0, ownerId);
       return resolveFormalDiplomaticStatus({
         relationStatus: rel.status,
-        hasAlliance,
+        allianceFormalKind: allianceFormalKindBetween(activeDeals, 0, ownerId),
         hasNap,
         hasTrade,
         contactEstablished: diplomaticContactEstablished.has(ownerId),
@@ -10756,8 +10758,8 @@ async function boot(): Promise<void> {
       const basketDetail = formatNegotiationDealPlayerSummary(p, incoming);
       switch (entry.actionId) {
         case 'nap': return `Pakt nieagresji na ${p.turns ?? 15} tur`;
-        case 'sojusz_defensywny': return 'Sojusz defensywny';
-        case 'sojusz_pelny': return 'Sojusz pełny';
+        case 'sojusz_defensywny': return 'Sojusz obronny';
+        case 'sojusz_pelny': return 'Sojusz wojskowy';
         case 'granice': return p.borderMilitary ? 'Traktat przemarszu (wojskowy)' : 'Traktat przemarszu (cywilny)';
         case 'handel':
           return basketDetail || (p.goldOnce ? `jednorazowo ${p.goldOnce} ¤` : '');
@@ -12216,81 +12218,34 @@ async function boot(): Promise<void> {
       return allyPower / enemyPower;
     }
 
-    function applyAllianceObligationsOnWar(attackerId: number, victimId: number): void {
-      const obligations = allianceObligationsForWarDeclaration(activeDeals, attackerId, victimId);
-      const joinedWarOwnerIds: number[] = [attackerId, victimId];
+    function joinAllyToWar(
+      allyId: number,
+      mustDeclareWarOn: number,
+      attackerId: number,
+    ): void {
+      const skipN2AllianceDefense = isDefensiveAllianceWarObligation(
+        mustDeclareWarOn,
+        attackerId,
+      );
+      chargeWarDeclarationCredibility(allyId, mustDeclareWarOn, {
+        skipN2AllianceDefense,
+      });
+      breakTreatiesOnWar(allyId, mustDeclareWarOn, allyId === 0);
+      setDiploRelation(
+        allyId,
+        mustDeclareWarOn,
+        applyDiploEventTracked(allyId, mustDeclareWarOn, getDiploRelation(allyId, mustDeclareWarOn), 'wojna_wypowiedziana'),
+      );
+      recordWarDeclarationEvent(allyId, mustDeclareWarOn);
+      appendWiarygodnoscEvent(allyId, 'pomoc_sojusznikowi_realna', _diplomacyParams().wiarygodnoscP5PomocSojusznikowi);
+    }
 
-      for (const ob of obligations) {
-        for (const allyId of ob.obligatedAllies) {
-          if (joinedWarOwnerIds.includes(allyId)) continue;
-          if (getDiploRelation(allyId, ob.mustDeclareWarOn).status === 'wojna') {
-            joinedWarOwnerIds.push(allyId);
-            continue;
-          }
-
-          // N4 (§2, §8) — C-WIAR-N4-AI=B: heurystyka odmowy AI przed wymuszonym joinem.
-          const obCtx = buildAllianceWarObligationCtx(allyId, ob.mustDeclareWarOn, attackerId, victimId);
-          if (!aiHonorsAllianceWarObligation(allyId, ob.mustDeclareWarOn, attackerId, victimId, obCtx)) {
-            if (
-              allyId !== 0
-              && (attackerId === 0 || victimId === 0 || ob.mustDeclareWarOn === 0)
-            ) {
-              showHintMessage(
-                'Sojusznik ' + ownerDiploLabel(allyId) + ' odmawia pomocy — sojusz zerwany',
-                4500,
-              );
-            }
-            continue;
-          }
-
-          if (allyId === 0) {
-            const targetLabel = ownerDiploLabel(ob.mustDeclareWarOn);
-            showHintMessage('Sojusznik wymaga wojny z: ' + targetLabel, 4500);
-          } else if (ob.mustDeclareWarOn === 0) {
-            showHintMessage(
-              '\u2694 Sojusznik ' + ownerDiploLabel(allyId) + ' dołącza do wojny z tobą!',
-              4500,
-            );
-          } else if (victimId === 0 || attackerId === 0) {
-            showHintMessage(
-              '\u2694 Sojusznik ' + ownerDiploLabel(allyId) + ' wchodzi do wojny z: ' + ownerDiploLabel(ob.mustDeclareWarOn),
-              4500,
-            );
-          }
-
-          const skipN2AllianceDefense = isDefensiveAllianceWarObligation(
-            ob.mustDeclareWarOn,
-            attackerId,
-          );
-          chargeWarDeclarationCredibility(allyId, ob.mustDeclareWarOn, {
-            skipN2AllianceDefense,
-          });
-          breakTreatiesOnWar(allyId, ob.mustDeclareWarOn, allyId === 0);
-          setDiploRelation(
-            allyId,
-            ob.mustDeclareWarOn,
-            applyDiploEventTracked(allyId, ob.mustDeclareWarOn, getDiploRelation(allyId, ob.mustDeclareWarOn), 'wojna_wypowiedziana'),
-          );
-          recordWarDeclarationEvent(allyId, ob.mustDeclareWarOn);
-          joinedWarOwnerIds.push(allyId);
-
-          // P5 (§3 tabela C, §8) — "Pomoc sojusznikowi w wojnie… LUB na wezwanie": allyId
-          // faktycznie dołączył (nie odmówił, patrz N4 niżej) do wojny swojego sojusznika.
-          // Nagroda dla allyId (ten, kto pomaga), NIE dla attackerId/victimId (to ich własna
-          // wojna, nie akt pomocy). Wyłącznie ta gałąź — branch "już był w stanie wojny"
-          // (wyżej) to brak zmiany stanu, nie świeży akt dołączenia, więc nie nalicza.
-          appendWiarygodnoscEvent(allyId, 'pomoc_sojusznikowi_realna', _diplomacyParams().wiarygodnoscP5PomocSojusznikowi);
-        }
-      }
-
-      // N4 (§2, §8) — odmowa pomocy sojusznikowi na wezwanie obowiązku sojuszniczego.
-      // Kara WYŁĄCZNIE dla odmawiającego (nigdy dla opuszczonego sojusznika, §6 pkt 3).
-      // Hak wpięty w TO SAMO miejsce, które silnik już dziś woła, żeby wykryć kto się
-      // nie stawił (obligatedAllies \ joinedWarOwnerIds) — pętla wyżej TERAZ konsultuje
-      // `aiHonorsAllianceWarObligation` (game/ai.ts) PRZED wymuszeniem joina, więc ally,
-      // dla którego ta funkcja zwróci false, "wpada" właśnie tutaj. Dziś funkcja zawsze
-      // zwraca true (zero zmiany w rozgrywce) — realna heurystyka odmowy (AI) i ścieżka
-      // decyzji gracza w UI to celowo odłożone zadania, patrz raport wdrożeniowy.
+    function finalizeAllianceObligationRefusals(
+      obligations: AllianceObligation[],
+      joinedWarOwnerIds: number[],
+      attackerId: number,
+      victimId: number,
+    ): void {
       for (const ob of obligations) {
         for (const allyId of ob.obligatedAllies) {
           if (joinedWarOwnerIds.includes(allyId)) continue;
@@ -12323,6 +12278,99 @@ async function boot(): Promise<void> {
           syncRelationFromDeals(0, allyId);
         }
       }
+    }
+
+    function applyAllianceObligationsOnWar(attackerId: number, victimId: number): void {
+      const obligations = allianceObligationsForWarDeclaration(activeDeals, attackerId, victimId);
+      const joinedWarOwnerIds: number[] = [attackerId, victimId];
+      const pendingPlayer: Array<{ ob: AllianceObligation; attackerId: number; victimId: number }> = [];
+
+      for (const ob of obligations) {
+        for (const allyId of ob.obligatedAllies) {
+          if (joinedWarOwnerIds.includes(allyId)) continue;
+          if (getDiploRelation(allyId, ob.mustDeclareWarOn).status === 'wojna') {
+            joinedWarOwnerIds.push(allyId);
+            continue;
+          }
+
+          const obCtx = buildAllianceWarObligationCtx(allyId, ob.mustDeclareWarOn, attackerId, victimId);
+          if (!aiHonorsAllianceWarObligation(allyId, ob.mustDeclareWarOn, attackerId, victimId, obCtx)) {
+            if (
+              allyId !== 0
+              && (attackerId === 0 || victimId === 0 || ob.mustDeclareWarOn === 0)
+            ) {
+              showHintMessage(
+                'Sojusznik ' + ownerDiploLabel(allyId) + ' odmawia pomocy — sojusz zerwany',
+                4500,
+              );
+            }
+            continue;
+          }
+
+          if (allyId === 0) {
+            pendingPlayer.push({ ob, attackerId, victimId });
+            continue;
+          }
+
+          if (ob.mustDeclareWarOn === 0) {
+            showHintMessage(
+              '\u2694 Sojusznik ' + ownerDiploLabel(allyId) + ' dołącza do wojny z tobą!',
+              4500,
+            );
+          } else if (victimId === 0 || attackerId === 0) {
+            showHintMessage(
+              '\u2694 Sojusznik ' + ownerDiploLabel(allyId) + ' wchodzi do wojny z: ' + ownerDiploLabel(ob.mustDeclareWarOn),
+              4500,
+            );
+          }
+
+          joinAllyToWar(allyId, ob.mustDeclareWarOn, attackerId);
+          joinedWarOwnerIds.push(allyId);
+        }
+      }
+
+      if (pendingPlayer.length === 0) {
+        finalizeAllianceObligationRefusals(obligations, joinedWarOwnerIds, attackerId, victimId);
+        return;
+      }
+
+      const processPlayerQueue = (idx: number): void => {
+        if (idx >= pendingPlayer.length) {
+          finalizeAllianceObligationRefusals(obligations, joinedWarOwnerIds, attackerId, victimId);
+          updateDiplomacyAudience();
+          updateDiplomacyPanel();
+          updateHud();
+          wireUnitRendererRingStance();
+          return;
+        }
+        const pending = pendingPlayer[idx];
+        if (!pending) {
+          processPlayerQueue(idx + 1);
+          return;
+        }
+        const { ob, attackerId: aId, victimId: vId } = pending;
+        const requestingAllyId = ob.mustDeclareWarOn === aId ? vId : aId;
+        showAllianceObligationModal({
+          allyName: ownerDiploLabel(requestingAllyId),
+          targetName: ownerDiploLabel(ob.mustDeclareWarOn),
+          previewRefuse: previewAllianceObligationRefusal(
+            _diplomacyParams().wiarygodnoscN4OdmowaObowiazkuSojuszu,
+          ),
+          onFulfill: () => {
+            joinAllyToWar(0, ob.mustDeclareWarOn, aId);
+            joinedWarOwnerIds.push(0);
+            showHintMessage(
+              'Wypełniasz sojusz — wojna z: ' + ownerDiploLabel(ob.mustDeclareWarOn),
+              4500,
+            );
+            processPlayerQueue(idx + 1);
+          },
+          onRefuse: () => {
+            processPlayerQueue(idx + 1);
+          },
+        });
+      };
+      processPlayerQueue(0);
     }
 
     /**
@@ -13135,19 +13183,17 @@ async function boot(): Promise<void> {
           const respektNorm = powerLine.respekt;
           const pairMeta = getDiploPairMeta(0, ownerId);
           const dip = _diplomacyParams();
-          let _fsAlly = false;
           let _fsPakt = false;
           let _fsTrade = false;
           for (const d of activeDeals) {
             if (!d.strony.includes(0) || !d.strony.includes(ownerId)) continue;
             const k = normalizeTreatyKind(d.rodzaj);
-            if (isAllianceDealKind(d.rodzaj)) _fsAlly = true;
-            else if (k === RodzajTraktatu.PaktNieagresji) _fsPakt = true;
+            if (k === RodzajTraktatu.PaktNieagresji) _fsPakt = true;
             else if (k === RodzajTraktatu.UmowaSzlakow) _fsTrade = true;
           }
           const formalStatus = resolveFormalDiplomaticStatus({
             relationStatus: rel.status,
-            hasAlliance: _fsAlly,
+            allianceFormalKind: allianceFormalKindBetween(activeDeals, 0, ownerId),
             hasNap: _fsPakt,
             hasTrade: _fsTrade,
             contactEstablished: diplomaticContactEstablished.has(ownerId),

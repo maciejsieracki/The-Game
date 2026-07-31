@@ -17,7 +17,7 @@ export {
   treatiesBrokenByRefusal, normalizeTreatyKind, treatiesBrokenByWar,
   tributeDeals, removeTreatiesById,
   hydrateActiveDeals, allianceObligationsForWarDeclaration,
-  isDefensiveAllianceWarObligation,
+  isDefensiveAllianceWarObligation, allianceFormalKindBetween,
 } from '../src/game/diplomacy-treaties.ts';
 `;
 const entryFile = path.resolve(__dirname, '.dip-treaties-entry.ts');
@@ -37,7 +37,7 @@ const {
   addTreaty, expireTreaties, hasTreaty, allianceObligations,
   treatiesBrokenByRefusal, normalizeTreatyKind, treatiesBrokenByWar,
   hydrateActiveDeals, allianceObligationsForWarDeclaration,
-  isDefensiveAllianceWarObligation,
+  isDefensiveAllianceWarObligation, allianceFormalKindBetween,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -90,6 +90,41 @@ ok(
   warObs.every(o => isDefensiveAllianceWarObligation(o.mustDeclareWarOn, 0)),
   'kaskada A→B: wszystkie obowiązki defensywne wskazują agresora 0',
 );
+
+console.log('\n--- Maciej 2026-07-31: wojskowy vs obronny — egzekwowanie ---');
+
+// A wojskowy sojusznik B (1); B atakuje C (7) → A musi wojna z C
+deals = addTreaty([], { id: 'mw', rodzaj: 'sojusz_pelny', strony: [1, 2], wygasaTura: null });
+const milOff = allianceObligationsForWarDeclaration(deals, 1, 7);
+ok(
+  milOff.some(o => o.obligatedAllies[0] === 2 && o.mustDeclareWarOn === 7),
+  'wojskowy: sojusznik 2 musi wojna z 7 gdy 1 atakuje 7',
+);
+
+// A obronny sojusznik B (1); B atakuje C (7) → A BEZ obowiązku
+deals = addTreaty([], { id: 'def', rodzaj: 'sojusz_defensywny', strony: [1, 3], wygasaTura: null });
+const defOff = allianceObligationsForWarDeclaration(deals, 1, 7);
+ok(
+  !defOff.some(o => o.obligatedAllies.includes(3)),
+  'obronny: sojusznik 3 bez obowiązku gdy 1 atakuje 7',
+);
+
+// A obronny sojusznik B (1); C (5) atakuje B → A musi wojna z C
+deals = addTreaty([], { id: 'def2', rodzaj: 'sojusz_defensywny', strony: [1, 4], wygasaTura: null });
+const defDef = allianceObligationsForWarDeclaration(deals, 5, 1);
+ok(
+  defDef.some(o => o.obligatedAllies[0] === 4 && o.mustDeclareWarOn === 5),
+  'obronny: sojusznik 4 musi wojna z 5 gdy 5 atakuje 1',
+);
+
+ok(allianceFormalKindBetween(
+  addTreaty([], { id: 'p', rodzaj: 'sojusz_pelny', strony: [0, 1], wygasaTura: null }),
+  0, 1,
+) === 'wojskowy', 'allianceFormalKind: pełny → wojskowy');
+ok(allianceFormalKindBetween(
+  addTreaty([], { id: 'd', rodzaj: 'sojusz_defensywny', strony: [0, 2], wygasaTura: null }),
+  0, 2,
+) === 'obronny', 'allianceFormalKind: defensywny → obronny');
 
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);

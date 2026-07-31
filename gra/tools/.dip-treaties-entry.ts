@@ -4,5 +4,5 @@ export {
   treatiesBrokenByRefusal, normalizeTreatyKind, treatiesBrokenByWar,
   tributeDeals, removeTreatiesById,
   hydrateActiveDeals, allianceObligationsForWarDeclaration,
-  isDefensiveAllianceWarObligation,
+  isDefensiveAllianceWarObligation, allianceFormalKindBetween,
 } from '../src/game/diplomacy-treaties.ts';

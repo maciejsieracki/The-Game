@@ -293,6 +293,18 @@ export function dealsForPair(state: ActiveDeal[], a: number, b: number): ActiveD
   return state.filter(d => d.strony[0] === p0 && d.strony[1] === p1);
 }
 
+/** Formalny rodzaj sojuszu między parą (wojskowy > obronny). */
+export function allianceFormalKindBetween(
+  state: ActiveDeal[],
+  a: number,
+  b: number,
+): 'wojskowy' | 'obronny' | null {
+  const pair = dealsForPair(state, a, b);
+  if (pair.some(d => normalizeTreatyKind(d.rodzaj) === 'sojusz_pelny')) return 'wojskowy';
+  if (pair.some(d => normalizeTreatyKind(d.rodzaj) === 'sojusz_defensywny')) return 'obronny';
+  return null;
+}
+
 /** Traktaty zerwane przez wypowiedzenie wojny / atak (NAP, sojusze, granice). */
 const BREAK_ON_WAR: ReadonlySet<TreatyKind> = new Set([
   RodzajTraktatu.PaktNieagresji,

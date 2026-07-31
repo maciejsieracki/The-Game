@@ -6525,6 +6525,8 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
 var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
 var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
@@ -14668,12 +14670,18 @@ function respektTooltipPl() {
   return RESPEKT_TOOLTIP_PL;
 }
 var TRAKTAT_HANDLOWY_LABEL = "Traktat handlowy";
+var SOJUSZ_WOJSKOWY_LABEL = "Sojusz wojskowy";
+var SOJUSZ_OBRONNY_LABEL = "Sojusz obronny";
 function resolveFormalDiplomaticStatus(input) {
   if (input.relationStatus === "wojna") {
     return { label: "Wojna", kind: "wojna" };
   }
-  if (input.hasAlliance || input.relationStatus === "sojusz") {
-    return { label: "Sojusz wojskowy", kind: "sojusz" };
+  const allianceKind = input.allianceFormalKind ?? (input.hasAlliance ? "wojskowy" : null) ?? (input.relationStatus === "sojusz" ? "wojskowy" : null);
+  if (allianceKind === "wojskowy") {
+    return { label: SOJUSZ_WOJSKOWY_LABEL, kind: "sojusz" };
+  }
+  if (allianceKind === "obronny") {
+    return { label: SOJUSZ_OBRONNY_LABEL, kind: "sojusz" };
   }
   if (input.hasNap) {
     return { label: "Pakt o nieagresji", kind: "pakt" };
@@ -14706,9 +14714,9 @@ function treatyDisplayLabel(rodzaj) {
     case "pakt_nieagresji" /* PaktNieagresji */:
       return "Pakt nieagresji";
     case "sojusz_defensywny":
-      return "Sojusz defensywny";
+      return SOJUSZ_OBRONNY_LABEL;
     case "sojusz_pelny":
-      return "Sojusz pe\u0142ny";
+      return SOJUSZ_WOJSKOWY_LABEL;
     case "umowa_handlowa" /* UmowaHandlowa */:
       return "Umowa handlowa";
     case "umowa_szlakow" /* UmowaSzlakow */:

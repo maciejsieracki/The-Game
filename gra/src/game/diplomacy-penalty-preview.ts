@@ -134,6 +134,16 @@ export function previewWarDeclarationPenalties(input: {
   return { lines, ...totals(lines) };
 }
 
+/** Podgląd kar za odmowę obowiązku sojuszu (N4 — modal „Wypełnij sojusz / odmów"). */
+export function previewAllianceObligationRefusal(
+  wiarygodnoscN4: number,
+): DiploPenaltyPreview {
+  const lines: DiploPenaltyLine[] = [];
+  pushLine(lines, 'wiarygodnosc', wiarygodnoscN4, 'N4: odmowa obowiązku sojuszu');
+  pushLine(lines, 'info', 0, 'Sojusz zostanie zerwany');
+  return { lines, ...totals(lines) };
+}
+
 /** Podgląd kar za dobrowolne zerwanie traktatu (przycisk „Zerwij"). */
 export function previewVoluntaryTreatyBreakPenalties(
   deal: Pick<ActiveDeal, 'rodzaj' | 'wygasaTura'>,

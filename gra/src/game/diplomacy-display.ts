@@ -222,7 +222,10 @@ export interface FormalDiplomaticStatus {
 
 export interface FormalDiplomaticInput {
   relationStatus: 'wojna' | 'pokoj' | 'sojusz' | 'neutralni';
-  hasAlliance: boolean;
+  /** @deprecated — użyj allianceFormalKind */
+  hasAlliance?: boolean;
+  /** wojskowy (sojusz_pelny) lub obronny (sojusz_defensywny); null = brak sojuszu */
+  allianceFormalKind?: 'wojskowy' | 'obronny' | null;
   hasNap: boolean;
   hasTrade: boolean;
   contactEstablished: boolean;
@@ -230,6 +233,10 @@ export interface FormalDiplomaticInput {
 
 /** Kanon UI (Maciej 2026-07-29): traktat szlaków handlowych — etykieta dla gracza. */
 export const TRAKTAT_HANDLOWY_LABEL = 'Traktat handlowy';
+
+/** Etykiety sojuszu — Maciej 2026-07-31: wojskowy vs obronny (nie „pełny"). */
+export const SOJUSZ_WOJSKOWY_LABEL = 'Sojusz wojskowy';
+export const SOJUSZ_OBRONNY_LABEL = 'Sojusz obronny';
 
 /**
  * Jeden jawny stan formalny — priorytet: wojna > sojusz > pakt > handel > pokój > brak kontaktu.
@@ -239,8 +246,14 @@ export function resolveFormalDiplomaticStatus(input: FormalDiplomaticInput): For
   if (input.relationStatus === 'wojna') {
     return { label: 'Wojna', kind: 'wojna' };
   }
-  if (input.hasAlliance || input.relationStatus === 'sojusz') {
-    return { label: 'Sojusz wojskowy', kind: 'sojusz' };
+  const allianceKind = input.allianceFormalKind
+    ?? (input.hasAlliance ? 'wojskowy' : null)
+    ?? (input.relationStatus === 'sojusz' ? 'wojskowy' : null);
+  if (allianceKind === 'wojskowy') {
+    return { label: SOJUSZ_WOJSKOWY_LABEL, kind: 'sojusz' };
+  }
+  if (allianceKind === 'obronny') {
+    return { label: SOJUSZ_OBRONNY_LABEL, kind: 'sojusz' };
   }
   if (input.hasNap) {
     return { label: 'Pakt o nieagresji', kind: 'pakt' };
@@ -293,8 +306,8 @@ export function treatyDisplayLabel(rodzaj: TreatyKind): string {
   const k = normalizeTreatyKind(rodzaj);
   switch (k) {
     case RodzajTraktatu.PaktNieagresji: return 'Pakt nieagresji';
-    case 'sojusz_defensywny': return 'Sojusz defensywny';
-    case 'sojusz_pelny': return 'Sojusz pełny';
+    case 'sojusz_defensywny': return SOJUSZ_OBRONNY_LABEL;
+    case 'sojusz_pelny': return SOJUSZ_WOJSKOWY_LABEL;
     case RodzajTraktatu.UmowaHandlowa: return 'Umowa handlowa';
     case RodzajTraktatu.UmowaSzlakow: return TRAKTAT_HANDLOWY_LABEL;
     case RodzajTraktatu.UmowaWymiany: return 'Umowa wymiany';

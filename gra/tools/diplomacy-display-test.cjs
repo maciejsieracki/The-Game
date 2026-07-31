@@ -73,9 +73,14 @@ const war = mod.resolveFormalDiplomaticStatus({
 ok(war.kind === 'wojna' && war.label === 'Wojna', 'formal: wojna');
 
 const ally = mod.resolveFormalDiplomaticStatus({
-  relationStatus: 'sojusz', hasAlliance: true, hasNap: false, hasTrade: false, contactEstablished: true,
+  relationStatus: 'sojusz', allianceFormalKind: 'wojskowy', hasNap: false, hasTrade: false, contactEstablished: true,
 });
-ok(ally.kind === 'sojusz', 'formal: sojusz');
+ok(ally.kind === 'sojusz' && ally.label === 'Sojusz wojskowy', 'formal: sojusz wojskowy');
+
+const allyDef = mod.resolveFormalDiplomaticStatus({
+  relationStatus: 'pokoj', allianceFormalKind: 'obronny', hasNap: false, hasTrade: false, contactEstablished: true,
+});
+ok(allyDef.kind === 'sojusz' && allyDef.label === 'Sojusz obronny', 'formal: sojusz obronny');
 
 const peace = mod.resolveFormalDiplomaticStatus({
   relationStatus: 'pokoj', hasAlliance: false, hasNap: false, hasTrade: false, contactEstablished: true,
@@ -94,6 +99,8 @@ ok(mod.effectiveNastawienieScores(74, 54, true).zaufanie === 0, 'effective score
 ok(mod.effectiveNastawienieScores(74, 54, true).respekt === 29, 'effective scores: wojna clamp R');
 
 ok(mod.treatyDisplayLabel('pakt_nieagresji') === 'Pakt nieagresji', 'etykieta: NAP');
+ok(mod.treatyDisplayLabel('sojusz_pelny') === 'Sojusz wojskowy', 'etykieta: wojskowy');
+ok(mod.treatyDisplayLabel('sojusz_defensywny') === 'Sojusz obronny', 'etykieta: obronny');
 ok(mod.treatyDisplayLabel('umowa_szlakow') === 'Traktat handlowy', 'etykieta: traktat handlowy');
 ok(mod.treatyDisplayLabel('umowa_handlowa') === 'Umowa handlowa', 'etykieta: legacy handel');
 const labels = mod.activeTreatyLabelsForPair([
