@@ -375,7 +375,7 @@ export function resolveRiverMapParams(tier: DensityTier, w: number, h: number): 
     hardMeanderLen, mouthTailLen, minInlandFromSea,
     reliefSearchMin: 2,
     reliefSearchMax,
-    reliefSourceBonus: 80,
+    reliefSourceBonus: 0,
     feederPasses, topUpPasses,
     feederSourceSepMult: 0.35,
     expandSourceRadius: clamp(Math.round(2 * areaScale), 1, 5),
