@@ -1,3 +1,5 @@
+- **2026-08-01 18:54** — ✅ FALA 138 ROBOCZA `cbc79e63` (spawn Q2: bez wysp + 7 typów na kontynenty; tani fill rzek + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+
 - **2026-08-01 18:43** — ✅ FALA 137 ROBOCZA `09e5ecb7` (fix Budowanie sceny: cache ujść + yield + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
 
 - **2026-08-01 17:59** — ✅ FALA 136 ROBOCZA `84587206` (topUp/fill OFF na Duży/Pangea + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).

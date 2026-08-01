@@ -4575,3 +4575,10 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) ‚Äî timer ‚ÄûUp≈Çynƒô≈Ço‚Äù ma i≈õƒá
 CZEKAM-NA: nic
+
+## [18:54 PL, 2026-08-01] LOKAL/Grok õ ALL ó FALA 138 DEPLOY ALL
+- md5 `cbc79e63` / `cbc79e6399f5c67a41350229ff6a4711` | stempel ROBOCZA ∑ 2026-08-01 18:54
+- Zakres: MAP-SPAWN-Q2 (06a615) + tani fill rzek ( c4faac) ó bez wysp, 7 typÛw, gÍstoúÊ rzek bez proximity
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) ó sprawdü: 7 civ na duøych kontynentach + rzeki
+CZEKAM-NA: nic

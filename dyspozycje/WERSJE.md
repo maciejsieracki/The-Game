@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `09e5ecb7` - 2026-08-01 18:43 - FALA 137: fix Budowanie sceny (cache ujsc rzek + yield) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `cbc79e63` - 2026-08-01 18:54 - FALA 138: spawn Q2 (wyspy + 7 typów) + tani fill rzek + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `cbc79e6399f5c67a41350229ff6a4711` · stempel: `ROBOCZA · 2026-08-01 18:54`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: MAP-SPAWN-Q2 — twarde wykluczenie wysp (`max(90, 9% największej masy)`), quota 1 typ na kontynent, bez fallbacku na wyspy; tani fill rzek — topUp 1× hardStarts bez proximity (gęstość bez minut).
+- Commity: `a06a615` · `0c4faac`. tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `09e5ecb7` - 2026-08-01 18:43 - FALA 137: fix Budowanie sceny (cache ujsc rzek + yield) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `09e5ecb74b45b1dd55a82679d5db4fdd` · stempel: `ROBOCZA · 2026-08-01 18:43`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: `computeRiverMouthEdgeKeys` raz na mapę (nie per heks wybrzeża); yield w overlay/rzekach; limit wstęgi. Naprawia zamrożenie timera „Upłynęło” na Budowanie sceny (~20 s).
