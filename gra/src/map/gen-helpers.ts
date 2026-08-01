@@ -7146,7 +7146,7 @@ function massRiverCoveragePasses(massSize: number, profile: RiverRoundProfile = 
     return Math.max(3, Math.min(8, 3 + Math.floor(Math.sqrt(massSize / 700))));
   }
   if (profile === 'huge-mass') {
-    return Math.max(2, Math.min(6, 2 + Math.floor(Math.sqrt(massSize / 1200))));
+    return Math.max(2, Math.min(5, 2 + Math.floor(Math.sqrt(massSize / 1200))));
   }
   return Math.max(2, Math.min(4, 2 + Math.floor(Math.sqrt(massSize / 2500))));
 }
@@ -7158,7 +7158,7 @@ function riverProximityMaxRounds(massSize: number, profile: RiverRoundProfile = 
     return Math.max(6, Math.min(14, 6 + Math.floor(massSize / 1200)));
   }
   if (profile === 'huge-mass') {
-    return Math.max(4, Math.min(10, 4 + Math.floor(massSize / 2000)));
+    return Math.max(6, Math.min(12, 6 + Math.floor(massSize / 2000)));
   }
   return Math.max(3, Math.min(6, 3 + Math.floor(massSize / 4000)));
 }
@@ -7190,7 +7190,7 @@ function dryPatchEnforceMaxRounds(profile: RiverRoundProfile): number {
 
 function proximityMopRounds(profile: RiverRoundProfile): number {
   if (profile === 'pangea') return 1;
-  if (profile === 'huge-mass') return 2;
+  if (profile === 'huge-mass') return 1;
   if (profile === 'large-map') return 3;
   return 8;
 }
