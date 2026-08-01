@@ -6,23 +6,9 @@ import { MAP_GEN_PHASE_TOTAL } from '../map/mapGenProgress';
 
 const MAP_LOADING_PHASE_TOTAL = MAP_GEN_PHASE_TOTAL;
 
-export interface SceneTimingReport {
-  hexes: number;
-  coast: number;
-  overlays: number;
-  rivers: number;
-  tail: number;
-  total: number;
-  hexCount: number;
-  overlayTotal: number;
-  riverStage: number;
-}
-
 export interface MapLoadingOverlayHandle {
   setProgress: (faza: string, pct: number, phaseNum?: number, phaseTotal?: number) => void;
   showError: (message: string, onRetry: () => void) => void;
-  /** FALA 152: duże czasy na ekranie → print screen → OK. */
-  showSceneTimingReport: (t: SceneTimingReport) => Promise<void>;
   hide: () => void;
 }
 
@@ -113,40 +99,6 @@ function ensureStyles(): void {
   overflow:hidden;
   margin-bottom:1rem;
 }
-.civ-map-load-timing{
-  text-align:left;
-  font-size:1.05rem;
-  line-height:1.55;
-  font-variant-numeric:tabular-nums;
-  margin:0.75rem 0 1rem;
-  padding:0.85rem 1rem;
-  background:rgba(0,0,0,.28);
-  border:1px solid var(--border-mid);
-  border-radius:var(--radius-md,8px);
-  white-space:pre-line;
-}
-.civ-map-load-timing strong{
-  color:var(--text-gold);
-  font-size:1.15rem;
-}
-.civ-map-load-ok{
-  display:inline-block;
-  position:relative;
-  z-index:3000002;
-  margin-top:0.5rem;
-  padding:0.7rem 1.6rem;
-  font-size:1.1rem;
-  font-weight:700;
-  color:#1a1208;
-  background:var(--text-gold,#d4af37);
-  border:2px solid #f0e0a0;
-  border-radius:8px;
-  cursor:pointer;
-  pointer-events:auto;
-  touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;
-}
-.civ-map-load-ok:hover{ filter:brightness(1.08); }
 .civ-map-load-bar{
   height:100%;
   width:0%;
@@ -196,8 +148,6 @@ function restoreCanvasPointerEvents(): void {
     delete c.dataset.civMapLoadPe;
   });
 }
-
-const SCENE_TIMING_AUTO_MS = 3000;
 
 function overlayCopy(opts: MapLoadingOverlayOptions): { title: string; meta: string; hint: string; phaseStart: string } {
   const sizePart = opts.mapSizeMetric ?? opts.rozmiarLabel;
@@ -282,63 +232,6 @@ export function showMapLoadingOverlay(opts: MapLoadingOverlayOptions): MapLoadin
         onRetry();
       });
       errWrap.append(p, btn);
-    },
-    showSceneTimingReport(t: SceneTimingReport) {
-      return new Promise<void>((resolve) => {
-        let done = false;
-        let autoTimer = 0;
-        const cleanup = (): void => {
-          window.clearTimeout(autoTimer);
-          window.removeEventListener('keydown', onKey);
-        };
-        const finish = (): void => {
-          if (done) return;
-          done = true;
-          cleanup();
-          resolve();
-        };
-        spinEl.style.display = 'none';
-        const barWrap = barEl.parentElement as HTMLElement | null;
-        if (barWrap) barWrap.style.display = 'none';
-        elapsedEl.style.display = 'none';
-        phaseEl.textContent = 'Czasy budowania sceny — OK lub Enter (auto za 3 s)';
-        errWrap.innerHTML = '';
-        errWrap.style.pointerEvents = 'auto';
-        const box = document.createElement('div');
-        box.className = 'civ-map-load-timing';
-        box.textContent =
-          `BUDOWANIE SCENY (ms)\n`
-          + `Heksy:      ${t.hexes}\n`
-          + `Brzeg:      ${t.coast}\n`
-          + `Nakładki:   ${t.overlays}\n`
-          + `Rzeki:      ${t.rivers}  (stage ${t.riverStage})\n`
-          + `Finał:      ${t.tail}\n`
-          + `────────────\n`
-          + `RAZEM:      ${t.total}\n`
-          + `\nHeksów na mapie: ${t.hexCount}\n`
-          + `Nakładek: ${t.overlayTotal}`;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'civ-map-load-ok';
-        btn.textContent = 'OK — graj';
-        const onActivate = (ev: Event): void => {
-          ev.stopPropagation();
-          finish();
-        };
-        btn.addEventListener('pointerdown', onActivate);
-        btn.addEventListener('pointerup', onActivate);
-        btn.addEventListener('click', onActivate);
-        const onKey = (ev: KeyboardEvent): void => {
-          if (ev.key === 'Enter' || ev.key === 'Escape') {
-            ev.preventDefault();
-            finish();
-          }
-        };
-        window.addEventListener('keydown', onKey);
-        errWrap.append(box, btn);
-        autoTimer = window.setTimeout(finish, SCENE_TIMING_AUTO_MS);
-        try { btn.focus(); } catch { /* ignore */ }
-      });
     },
     hide() {
       window.clearInterval(elapsedTimer);

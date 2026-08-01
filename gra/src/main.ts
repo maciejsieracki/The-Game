@@ -57,15 +57,11 @@ import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
-import { buildScene, getLastSetFogMs, type SceneBuildTimings } from './render/scene';
+import { buildScene, getLastSetFogMs } from './render/scene';
 import { showMapLoadingOverlay, type MapLoadingOverlayHandle } from './ui/mapLoadingOverlay';
 
-/** FALA 152: po buildScene pokaż czasy na ekranie (print screen) → OK → hide. */
-async function finishLoadingAfterSceneBuild(
-  loading: MapLoadingOverlayHandle,
-  result: { buildTimings?: SceneBuildTimings },
-): Promise<void> {
-  if (result.buildTimings) await loading.showSceneTimingReport(result.buildTimings);
+/** Po buildScene zamknij overlay — czasy sceny tylko w console.info (scene.ts). */
+function finishLoadingAfterSceneBuild(loading: MapLoadingOverlayHandle): void {
   loading.hide();
 }
 import {
@@ -21464,7 +21460,7 @@ async function boot(): Promise<void> {
         const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
           loading.setProgress(phase ? `Przywracanie widoku mapy — ${phase}` : 'Przywracanie widoku mapy…', pct);
         });
-        await finishLoadingAfterSceneBuild(loading, newSceneResult);
+        finishLoadingAfterSceneBuild(loading);
         scene = newSceneResult.scene;
         camera = newSceneResult.camera;
         renderer = newSceneResult.renderer;
@@ -21557,7 +21553,7 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      await finishLoadingAfterSceneBuild(loading, newSceneResult);
+      finishLoadingAfterSceneBuild(loading);
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -21825,7 +21821,7 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      await finishLoadingAfterSceneBuild(loading, newSceneResult);
+      finishLoadingAfterSceneBuild(loading);
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -22054,7 +22050,7 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      await finishLoadingAfterSceneBuild(loading, newSceneResult);
+      finishLoadingAfterSceneBuild(loading);
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -22254,7 +22250,7 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      await finishLoadingAfterSceneBuild(loading, newSceneResult);
+      finishLoadingAfterSceneBuild(loading);
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;

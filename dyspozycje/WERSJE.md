@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `d3a11217` - 2026-08-02 00:12 - FALA 154: timing panel OK klik + auto 3s + canvas block + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `ac11d6e8` - 2026-08-02 00:05 - FALA 154: usunieto blokujacy panel czasow sceny + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `ac11d6e8c8f632fd205b24d397463619` · stempel: `ROBOCZA · 2026-08-02 00:05`
+- **VERIFY OK.** Po buildScene: natychmiast hide overlay; czasy tylko console.info (F12).
+- tsc 0 · VERIFY OK.
+## ROBOCZA `d3a11217` - 2026-08-02 00:12 - FALA 154: timing panel OK klik + auto 3s + canvas block + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `d3a11217a5a22dd9ba75569500557d8d` · stempel: `ROBOCZA · 2026-08-02 00:12`
 - **VERIFY OK.** Panel czasow: z-index 3M, canvas pointer-events:none, OK/Enter/Escape, auto 3s.
 - tsc 0 · VERIFY OK.

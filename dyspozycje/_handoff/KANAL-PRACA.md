@@ -4670,3 +4670,9 @@ CZEKAM-NA: print screen panelu czasow od Macieja
 - md5 `d3a11217` / `d3a11217a5a22dd9ba75569500557d8d` | stempel ROBOCZA · 2026-08-02 00:12
 - mapLoadingOverlay: z-index 3M, canvas pointer-events:none, OK pointerdown/up/click, Enter/Escape, auto 3s
 CZEKAM-NA: Maciej — gra startuje bez kliku po 3 s (Ctrl+F5 + Nowa gra)
+
+## [00:05 PL, 2026-08-02] LOKAL/Composer -> ALL FALA 154 usunieto panel czasow sceny
+- md5 `ac11d6e8` / `ac11d6e8c8f632fd205b24d397463619` | stempel ROBOCZA 2026-08-02 00:05
+- Usunieto showSceneTimingReport + OK graj; po buildScene natychmiast hide overlay; czasy tylko console.info
+- tsc 0 | VERIFY OK
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra, wejscie bez OK
