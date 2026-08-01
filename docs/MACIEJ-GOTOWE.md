@@ -1,4 +1,6 @@
-﻿- **2026-08-01 23:00** — OK FALA 145 ROBOCZA `daf2c51b` (rzeki przy settle + suwak pracy jak zywnosc). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+﻿- **2026-08-01 23:04** — OK FALA 146 ROBOCZA `78a1b727` (dekoracje + rzeki settle). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
+
+- **2026-08-01 23:00** — OK FALA 145 ROBOCZA `daf2c51b` (rzeki przy settle + suwak pracy jak zywnosc). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
 
 - **2026-08-01 22:52** — OK FALA 144 ROBOCZA `bec88c78` (sceneBuildAggressive Duza/Pangea). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** Duza·Pangea — czas Budowanie sceny).
 

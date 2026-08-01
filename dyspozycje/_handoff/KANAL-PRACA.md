@@ -4631,3 +4631,8 @@ CZEKAM-NA: pomiar Macieja (Duza Pangea)
 - tsc 0 | VERIFY OK
 - Graj: gra-robocza/START.html (Ctrl+F5 + Nowa gra)
 CZEKAM-NA: smoke Macieja (settle rzeki + panel pracy)
+
+## [23:04 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 146 DEPLOY ALL
+- md5 `78a1b727` / `78a1b727501f88348d3cfc88855a4614` | stempel ROBOCZA · 2026-08-01 23:04
+- Zakres: isRiverRenderFast + dekoracje z powrotem; testuj rzeki przy 1. miescie
+CZEKAM-NA: Maciej — widocznosc rzek przed settle (OK/BUG)

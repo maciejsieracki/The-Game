@@ -14,7 +14,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `daf2c51b` - 2026-08-01 23:00 - FALA 145: rzeki przy settle + suwak pracy jak zywnosc + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `78a1b727` - 2026-08-01 23:04 - FALA 146: isRiverRenderFast export + dekoracje z powrotem (perf tylko rzeki) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `78a1b727501f88348d3cfc88855a4614` · stempel: `ROBOCZA · 2026-08-01 23:04`
+- **VERIFY OK.**
+- Zakres: dopiecie eksportu isRiverRenderFast; dekoracje FALA 144 przywrocone; settle rzeki (riverRevealKeys) bez zmian.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `daf2c51b` - 2026-08-01 23:00 - FALA 145: rzeki przy settle + suwak pracy jak zywnosc + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `daf2c51b0e56ecd4f3d7e5c35d4d8f16` · stempel: `ROBOCZA · 2026-08-01 23:00`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: BUG-RZEKI-SETTLE-VIS (pointHex main + riverRevealKeys przy 1. miescie); UI-LABOR-SLIDER-FOOD-PARITY (jeden suwak PODZIAL PRACY).
