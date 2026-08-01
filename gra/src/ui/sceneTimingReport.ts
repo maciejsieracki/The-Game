@@ -1,13 +1,13 @@
 /**
- * sceneTimingReport.ts — twardy, zawsze widoczny raport czasów (FALA 157).
- * Montowany na documentElement (nie body — zoom UI scale() na body psuje position:fixed).
+ * sceneTimingReport.ts — raport czasów mapy (FALA 159: plik + localStorage + chip HUD).
+ * Żółty panel opcjonalny (domyślnie wyłączony); priorytet = persistPerfReport.
  */
 import type { MapGenPhaseTimings } from '../map/mapGenProgress';
 import { MAP_GEN_PHASE_LABELS } from '../map/mapGenProgress';
 import type { SceneBuildTimings } from '../render/scene';
+import { buildPerfReportText, persistPerfReport, type PerfReportPersistOptions } from './perfReport';
 
 const PANEL_ID = 'civ-perf-report';
-const AUTO_HIDE_MS = 20_000;
 
 const PANEL_STYLE =
   'position:fixed;top:12px;right:12px;z-index:2147483647;'
@@ -21,15 +21,10 @@ const CLOSE_STYLE =
   + 'border:1px solid #f5c542;border-radius:3px;background:#222;color:#f5c542;'
   + 'font:14px/1 monospace;cursor:pointer;pointer-events:auto;';
 
-export interface SceneTimingReportOptions {
-  mapGen?: MapGenPhaseTimings;
-  scene?: SceneBuildTimings;
-  typLabel?: string;
+export interface SceneTimingReportOptions extends PerfReportPersistOptions {
   hideAfterMs?: number;
   /** Ścieżka wywołania — diagnostyka gdy brak danych. */
   sourcePath?: string;
-  /** Błąd buildScene — panel i tak się pokazuje (FALA 158). */
-  error?: string;
 }
 
 function esc(s: string): string {
@@ -47,37 +42,6 @@ function emptySceneTimings(): SceneBuildTimings {
     hexes: 0, coast: 0, overlays: 0, rivers: 0, tail: 0, total: 0,
     hexCount: 0, overlayTotal: 0, riverStage: 0,
   };
-}
-
-function buildTextSummary(opts: SceneTimingReportOptions): string {
-  const s = opts.scene ?? emptySceneTimings();
-  const gen = opts.mapGen;
-  const lines: string[] = [];
-  if (opts.error) lines.push(`BŁĄD: ${opts.error}`);
-  if (opts.typLabel) lines.push(`${opts.typLabel} · ${s.hexCount} heksów · nakładek ${s.overlayTotal}`);
-  lines.push('GENERATOR:');
-  if (gen) {
-    for (const [k, label] of Object.entries(MAP_GEN_PHASE_LABELS) as [keyof MapGenPhaseTimings, string][]) {
-      if (k !== 'total') lines.push(`  ${label}: ${gen[k]} ms`);
-    }
-    lines.push(`  RAZEM: ${gen.total} ms`);
-  } else {
-    lines.push('  (brak danych)');
-  }
-  lines.push('SCENA:');
-  lines.push(`  Heksy: ${s.hexes} ms · Brzeg: ${s.coast} ms · Nakładki: ${s.overlays} ms`);
-  lines.push(`  Rzeki: ${s.rivers} ms · Finał: ${s.tail} ms · RAZEM: ${s.total} ms`);
-  const d = s.detail;
-  if (d) {
-    const h = d.heksy;
-    lines.push('  Heksy detail: alokacja=' + h.alokacja + ' pryzmy=' + h.pryzmy
-      + ' relief=' + h.instancjeReliefu + ' styled=' + h.styledWPetli
-      + ' brzeg=' + h.brzegWPetli + ' pustynia=' + h.pustynia + ' fin=' + h.finalizacja);
-    const n = d.nakladki;
-    lines.push('  Nakładki detail: merge=' + n.scalMerge + ' inst=' + n.instancjePlazaWydmy);
-  }
-  lines.push(`RAZEM (gen+scena): ${(gen?.total ?? 0) + s.total} ms`);
-  return lines.join('\n');
 }
 
 function buildHtml(opts: SceneTimingReportOptions): string {
@@ -168,10 +132,7 @@ function buildHtml(opts: SceneTimingReportOptions): string {
     + `<table style="width:100%;border-collapse:collapse;margin-top:6px;">${grandRow}</table>`;
 }
 
-function mountPanel(opts: SceneTimingReportOptions): void {
-  const hideMs = opts.hideAfterMs ?? AUTO_HIDE_MS;
-  const summary = buildTextSummary(opts);
-  console.info('[civ-perf]', summary);
+function mountPanel(opts: SceneTimingReportOptions, hideMs: number): void {
 
   document.getElementById(PANEL_ID)?.remove();
   document.querySelectorAll('.civ-scene-timing').forEach((el) => el.remove());
@@ -202,13 +163,20 @@ function panelStillVisible(): boolean {
   return !!el && el.isConnected;
 }
 
-/** Pokazuje raport na ekranie (nieblokujący) + loguje do konsoli. Retry 0 ms i 500 ms. */
+/** Zapisuje raport (plik + localStorage + chip); opcjonalnie żółty panel gdy hideAfterMs > 0. */
 export function showSceneTimingReport(opts: SceneTimingReportOptions): void {
-  mountPanel(opts);
+  const summary = buildPerfReportText(opts);
+  console.info('[civ-perf]', summary);
+  persistPerfReport(opts);
+
+  const hideMs = opts.hideAfterMs ?? 0;
+  if (hideMs <= 0) return;
+
+  mountPanel(opts, hideMs);
   window.setTimeout(() => {
-    if (!panelStillVisible()) mountPanel(opts);
+    if (!panelStillVisible()) mountPanel(opts, hideMs);
   }, 0);
   window.setTimeout(() => {
-    if (!panelStillVisible()) mountPanel(opts);
+    if (!panelStillVisible()) mountPanel(opts, hideMs);
   }, 500);
 }

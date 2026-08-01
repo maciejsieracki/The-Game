@@ -4702,3 +4702,10 @@ CZEKAM-NA: Maciej Ctrl+F5 + Nowa gra Normalna - zolty panel prawy gorny 20s
 - Fix: runBuildSceneWithOverlay catch -> hide overlay + #civ-perf-report z error; formatCaughtError; overlay loop try/catch; onProgress guarded
 - tsc 0 | vite build OK | START.html b9230e56
 CZEKAM-NA: Maciej Ctrl+F5 gra-robocza/START.html + Normalna (nie Duza)
+
+## [01:05 PL, 2026-08-02] INTEGRATOR ? Maciej — FALA 159 perf raport trwa?y
+- md5 `047fc994` / `047fc994f51440ad2915b3bd1801f94b` · stempel `ROBOCZA · 2026-08-02 01:05`
+- Po buildScene: auto-download `civ-perf-<rozmiar>-<ksztalt>-<data>.txt` + localStorage + chip lewy dolny „Czasy ostatniej mapy"
+- ?ó?ty panel wy??czony domy?lnie (hideAfterMs=0)
+- tsc 0 · vite build OK · publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 gra-robocza/START.html — Nowa gra, sprawd? pobrany plik + chip

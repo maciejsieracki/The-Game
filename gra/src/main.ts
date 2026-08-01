@@ -60,24 +60,33 @@ import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMap
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
 import { showMapLoadingOverlay, type MapLoadingOverlayHandle, formatCaughtError } from './ui/mapLoadingOverlay';
 import { showSceneTimingReport } from './ui/sceneTimingReport';
+import { ensurePerfReportChip } from './ui/perfReport';
 import type { MapGenPhaseTimings } from './map/mapGenProgress';
 
-/** Po buildScene: ukryj overlay ładowania + nieblokujący raport czasów (gra startuje od razu). */
+/** Po buildScene: ukryj overlay ładowania + trwały raport czasów (plik + chip HUD). */
 function finishLoadingAfterSceneBuild(
   loading: MapLoadingOverlayHandle,
-  report?: { mapGen?: MapGenPhaseTimings; scene?: SceneBuildTimings; typLabel?: string; error?: string },
+  report?: {
+    mapGen?: MapGenPhaseTimings;
+    scene?: SceneBuildTimings;
+    typLabel?: string;
+    rozmiarLabel?: string;
+    ksztaltLabel?: string;
+    error?: string;
+  },
   sourcePath = 'finishLoadingAfterSceneBuild',
 ): void {
   loading.hide();
-  const payload = {
+  showSceneTimingReport({
     mapGen: report?.mapGen,
     scene: report?.scene,
     typLabel: report?.typLabel,
+    rozmiarLabel: report?.rozmiarLabel,
+    ksztaltLabel: report?.ksztaltLabel ?? report?.typLabel,
     sourcePath,
     error: report?.error,
-  };
-  // Synchronicznie w tym samym ticku — panel na documentElement (nie body: zoom scale psuje fixed).
-  showSceneTimingReport(payload);
+    hideAfterMs: 0,
+  });
 }
 import {
   CIV_PERF_DEBUG_MARKER,
@@ -14288,6 +14297,7 @@ async function boot(): Promise<void> {
           refreshD1bHud();
         },
       });
+      ensurePerfReportChip();
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
       configureEmpireHandelSplit({
         getOwnerDefault: (ownerId) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
@@ -21460,6 +21470,8 @@ async function boot(): Promise<void> {
           mapGen: map.mapGenTimings,
           scene: newSceneResult.buildTimings,
           typLabel,
+          rozmiarLabel: _menuMapSize,
+          ksztaltLabel: typLabel,
         }, sourcePath);
         return newSceneResult;
       } catch (err) {
@@ -21467,6 +21479,8 @@ async function boot(): Promise<void> {
         finishLoadingAfterSceneBuild(loading, {
           mapGen: map.mapGenTimings,
           typLabel,
+          rozmiarLabel: _menuMapSize,
+          ksztaltLabel: typLabel,
           error: formatCaughtError(err),
         }, sourcePath);
         return null;
@@ -21543,6 +21557,8 @@ async function boot(): Promise<void> {
         finishLoadingAfterSceneBuild(loading, {
           mapGen: map?.mapGenTimings,
           typLabel: params.worldType || _menuTypSwiata,
+          rozmiarLabel: _menuMapSize,
+          ksztaltLabel: params.worldType || _menuTypSwiata,
           error: formatCaughtError(err),
         }, 'regenerateWorldForLoad');
         return false;

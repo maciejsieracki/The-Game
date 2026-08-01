@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `b9230e56` - 2026-08-02 00:45 - FALA 158: buildScene catch + perf panel przy błędzie + overlay hardening - **AKTUALNA**
+## ROBOCZA `047fc994` - 2026-08-02 01:05 - FALA 159: perf raport auto-download + localStorage + chip HUD - **AKTUALNA**
+- md5 (pelne): `047fc994f51440ad2915b3bd1801f94b` · stempel: `ROBOCZA · 2026-08-02 01:05`
+- **VERIFY OK.** Po buildScene: auto-download civ-perf-*.txt + localStorage civ-last-perf-report + chip „Czasy ostatniej mapy" (modal + pobierz ponownie). Żółty panel domyślnie wyłączony.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `b9230e56` - 2026-08-02 00:45 - FALA 158: buildScene catch + perf panel przy błędzie + overlay hardening - **ZASTAPIONA**
 - md5 (pelne): `b9230e56dc237fc09e2379bcc79e67e3` · stempel: `ROBOCZA · 2026-08-02 00:45`
 - **VERIFY OK.** runBuildSceneWithOverlay: catch → hide overlay + #civ-perf-report z error; formatCaughtError (nigdy „null"); overlay loop try/catch; onProgress guarded.
 - tsc 0 · VERIFY OK.
