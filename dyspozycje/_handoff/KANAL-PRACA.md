@@ -4683,3 +4683,9 @@ CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra, wejscie bez OK
 - mapGenTimings na mapie (10 faz) + panel nieblokujacy 4.5s (pointer-events:none), console.info
 - tsc 0 | vite build OK | VERIFY OK
 CZEKAM-NA: Maciej print screen Pangea vs Kontynenty (panel prawy gorny)
+
+## [01:00 PL, 2026-08-02] LOKAL/Composer -> ALL FALA 156 fix panel czasow widoczny
+- md5 `5614b30a` / `5614b30ad26cea36c05a3d38066286ba` | stempel ROBOCZA 2026-08-02 01:00
+- Fix: z-index 3_000_002 (nad overlay), min 15s lub X, rAF po hide overlay, fallback brak mapGen, RAZEM gen+scena
+- tsc 0 | vite build OK | VERIFY OK
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra — panel prawy gorny min 15s

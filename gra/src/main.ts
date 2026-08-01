@@ -68,13 +68,17 @@ function finishLoadingAfterSceneBuild(
   report?: { mapGen?: MapGenPhaseTimings; scene?: SceneBuildTimings; typLabel?: string },
 ): void {
   loading.hide();
-  if (report?.scene) {
-    showSceneTimingReport({
-      mapGen: report.mapGen,
-      scene: report.scene,
-      typLabel: report.typLabel,
+  const payload = {
+    mapGen: report?.mapGen,
+    scene: report?.scene,
+    typLabel: report?.typLabel,
+  };
+  // Dwa rAF: overlay z DOM znika przed panelem; z-index panelu > loading overlay.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      showSceneTimingReport(payload);
     });
-  }
+  });
 }
 import {
   CIV_PERF_DEBUG_MARKER,

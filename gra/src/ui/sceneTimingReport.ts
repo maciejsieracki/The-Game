@@ -1,6 +1,6 @@
 /**
- * sceneTimingReport.ts — nieblokujący raport czasów generatora + buildScene (FALA 155).
- * pointer-events:none · auto-hide · print screen bez F12.
+ * sceneTimingReport.ts — nieblokujący raport czasów generatora + buildScene (FALA 155/156).
+ * pointer-events:none na panelu · przycisk X z auto · min. 15 s widoczności.
  */
 import type { MapGenPhaseTimings } from '../map/mapGenProgress';
 import { MAP_GEN_PHASE_LABELS } from '../map/mapGenProgress';
@@ -8,11 +8,13 @@ import type { SceneBuildTimings } from '../render/scene';
 import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
 
 const STYLE_ID = 'civ-scene-timing-css';
-const DEFAULT_HIDE_MS = 4500;
+/** Nad loading overlay (3_000_000) i HUD — widoczny bez F12. */
+const PANEL_Z_INDEX = 3_000_002;
+const DEFAULT_HIDE_MS = 15_000;
 
 export interface SceneTimingReportOptions {
   mapGen?: MapGenPhaseTimings;
-  scene: SceneBuildTimings;
+  scene?: SceneBuildTimings;
   typLabel?: string;
   hideAfterMs?: number;
 }
@@ -25,18 +27,18 @@ function ensureStyles(): void {
   style.textContent = `
 .civ-scene-timing{
   ${CIV_BRAND_SCOPE_VARS}
-  position:fixed;top:12px;right:12px;z-index:2999999;
+  position:fixed;top:12px;right:12px;z-index:${PANEL_Z_INDEX};
   max-width:min(420px,92vw);max-height:min(88vh,640px);overflow:auto;
-  padding:.85rem 1rem;
-  background:rgba(8,12,18,.88);
+  padding:.85rem 2rem .85rem 1rem;
+  background:rgba(8,12,18,.92);
   border:1px solid var(--border-mid,#3a4555);
   border-radius:var(--radius-lg,8px);
-  box-shadow:0 8px 32px rgba(0,0,0,.45);
+  box-shadow:0 8px 32px rgba(0,0,0,.55);
   font-family:var(--civ-font-ui,system-ui,sans-serif);
   font-size:.72rem;line-height:1.45;
   color:var(--text-primary,#e8e6e3);
   pointer-events:none;
-  user-select:none;
+  user-select:text;
 }
 .civ-scene-timing h3{
   margin:0 0 .45rem;font-size:.82rem;
@@ -52,6 +54,18 @@ function ensureStyles(): void {
 .civ-scene-timing td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted,#9aa3ad)}
 .civ-scene-timing .total td{font-weight:600;color:var(--text-gold,#e8d88a)}
 .civ-scene-timing .meta{font-size:.68rem;color:var(--text-muted,#9aa3ad);margin-bottom:.35rem}
+.civ-scene-timing .missing{color:var(--text-muted,#9aa3ad);font-style:italic;margin:.2rem 0}
+.civ-scene-timing-close{
+  position:absolute;top:6px;right:8px;
+  width:26px;height:26px;padding:0;
+  border:1px solid var(--border-mid,#3a4555);
+  border-radius:var(--radius,4px);
+  background:rgba(255,255,255,.06);
+  color:var(--text-gold,#e8d88a);
+  font-size:1rem;line-height:1;cursor:pointer;
+  pointer-events:auto;
+}
+.civ-scene-timing-close:hover{background:rgba(255,255,255,.12)}
 `;
   document.head.appendChild(style);
 }
@@ -61,11 +75,27 @@ function row(label: string, ms: number, totalClass = false): string {
   return `<tr${cls}><td>${label}</td><td>${ms} ms</td></tr>`;
 }
 
+function emptySceneTimings(): SceneBuildTimings {
+  return {
+    hexes: 0,
+    coast: 0,
+    overlays: 0,
+    rivers: 0,
+    tail: 0,
+    total: 0,
+    hexCount: 0,
+    overlayTotal: 0,
+    riverStage: 0,
+  };
+}
+
 function buildReportHtml(opts: SceneTimingReportOptions): string {
-  const s = opts.scene;
+  const s = opts.scene ?? emptySceneTimings();
   const d = s.detail;
   const gen = opts.mapGen;
-  const meta = opts.typLabel ? `<div class="meta">${opts.typLabel} · ${s.hexCount} heksów · nakładek ${s.overlayTotal}</div>` : '';
+  const meta = opts.typLabel
+    ? `<div class="meta">${opts.typLabel} · ${s.hexCount} heksów · nakładek ${s.overlayTotal}</div>`
+    : '';
 
   let genBlock = '';
   if (gen) {
@@ -83,6 +113,8 @@ function buildReportHtml(opts: SceneTimingReportOptions): string {
       row('RAZEM generator', gen.total, true),
     ].join('');
     genBlock = `<h4>GENERATOR (ms)</h4><table>${genRows}</table>`;
+  } else {
+    genBlock = '<h4>GENERATOR (ms)</h4><p class="missing">generator: brak danych</p>';
   }
 
   const sceneTop = [
@@ -118,7 +150,10 @@ function buildReportHtml(opts: SceneTimingReportOptions): string {
     ].join('');
   }
 
-  return `${meta}<h3>Czasy ładowania</h3>${genBlock}<h4>SCENA (ms)</h4><table>${sceneTop}</table>${hexDetail}${overlayDetail}`;
+  const grandTotal = (gen?.total ?? 0) + s.total;
+  const grandRow = row('RAZEM (generator + scena)', grandTotal, true);
+
+  return `${meta}<h3>Czasy ładowania</h3>${genBlock}<h4>SCENA (ms)</h4><table>${sceneTop}</table>${hexDetail}${overlayDetail}<table>${grandRow}</table>`;
 }
 
 /** Pokazuje raport na ekranie (nieblokujący) + loguje do konsoli. */
@@ -132,9 +167,17 @@ export function showSceneTimingReport(opts: SceneTimingReportOptions): void {
   const root = document.createElement('div');
   root.className = 'civ-scene-timing';
   root.setAttribute('aria-live', 'polite');
-  root.innerHTML = html;
+  root.setAttribute('data-civ-timing-panel', '1');
+  root.innerHTML = `<button type="button" class="civ-scene-timing-close" title="Zamknij" aria-label="Zamknij raport">×</button>${html}`;
   document.body.appendChild(root);
 
   const hideMs = opts.hideAfterMs ?? DEFAULT_HIDE_MS;
-  window.setTimeout(() => root.remove(), hideMs);
+  let hideTimer = window.setTimeout(() => root.remove(), hideMs);
+
+  const closeBtn = root.querySelector('.civ-scene-timing-close') as HTMLButtonElement | null;
+  closeBtn?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    window.clearTimeout(hideTimer);
+    root.remove();
+  });
 }

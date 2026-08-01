@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `61d74797` - 2026-08-02 00:30 - FALA 155: rozbicie czasow heksy/nakladki + fazy generatora + overlay nieblokujacy - **AKTUALNA**
+## ROBOCZA `5614b30a` - 2026-08-02 01:00 - FALA 156: fix panel czasow widoczny 15s + z-index + X + fallback - **AKTUALNA**
+- md5 (pelne): `5614b30ad26cea36c05a3d38066286ba` · stempel: `ROBOCZA · 2026-08-02 01:00`
+- **VERIFY OK.** Panel po overlay: z-index 3_000_002, min 15s lub X, fallback brak mapGen, RAZEM gen+scena, rAF po hide.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `61d74797` - 2026-08-02 00:30 - FALA 155: rozbicie czasow heksy/nakladki + fazy generatora + overlay nieblokujacy - **ZASTAPIONA**
 - md5 (pelne): `61d74797f7397e25b03c07935499c99d` · stempel: `ROBOCZA · 2026-08-02 00:30`
 - **VERIFY OK.** buildTimings.detail (heksy 7 podetapow + nakladki 2) + mapGenTimings (10 faz). Panel prawy gorny, pointer-events:none, auto-hide 4.5s, gra bez OK.
 - tsc 0 · VERIFY OK.
