@@ -4647,3 +4647,8 @@ CZEKAM-NA: pomiar Macieja
 - md5 `b629a26d` / `b629a26dbd6aceca18e3480a3b95e590` | stempel ROBOCZA · 2026-08-01 23:24
 - Ten sam kod co 147 — swiezy plik po zgloszeniu „stara wersja”
 CZEKAM-NA: Maciej — w START.html ma byc kod `b629a26d` i czas 23:24
+
+## [23:33 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 149 DIAG stage 0
+- md5 `7381ff21` / `7381ff210874dab7c5a138da038f9ac6` | stempel ROBOCZA · 2026-08-01 23:33
+- riverRenderStage default 0 — zero rzek w Budowanie sceny; archiwum _archiwum-rzeki
+CZEKAM-NA: pomiar Macieja (czas sceny BEZ rzek na mapie)

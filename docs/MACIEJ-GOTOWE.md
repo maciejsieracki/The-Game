@@ -1,4 +1,6 @@
-﻿- **2026-08-01 23:14** — OK FALA 147 ROBOCZA `6a8ba59a` (tylko perf rzek). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** Duza·Pangea.
+﻿- **2026-08-01 23:33** — DIAG FALA 149 ROBOCZA `7381ff21` (stage 0 = bez rzek w scenie). START: `gra-robocza/START.html` Ctrl+F5 Nowa gra — mierz czas Budowanie sceny.
+
+- **2026-08-01 23:14** — OK FALA 147 ROBOCZA `6a8ba59a` (tylko perf rzek). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** Duza·Pangea.
 
 - **2026-08-01 23:04** — OK FALA 146 ROBOCZA `78a1b727` (dekoracje + rzeki settle). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 

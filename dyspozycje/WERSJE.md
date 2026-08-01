@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `b629a26d` - 2026-08-01 23:24 - FALA 148: swiezy rebuild FALA 147 (ta sama tresc) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `7381ff21` - 2026-08-01 23:33 - FALA 149: DIAG riverRenderStage=0 (zero rzek w scenie) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `7381ff210874dab7c5a138da038f9ac6` · stempel: `ROBOCZA · 2026-08-01 23:33`
+- **VERIFY OK.** Kill-switch: domyslnie stage 0 (bez meshy rzek). Kod zostaje; archiwum: `dyspozycje/_archiwum-rzeki/`. URL `?riverStage=5` = full.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `b629a26d` - 2026-08-01 23:24 - FALA 148: swiezy rebuild FALA 147 (ta sama tresc) + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `b629a26dbd6aceca18e3480a3b95e590` · stempel: `ROBOCZA · 2026-08-01 23:24`
 - **VERIFY OK.** Ten sam kod co FALA 147 — nowa pieczatka, zeby Maciej widzial swiezy plik (cache/stara sciezka).
 - tsc 0 · VERIFY OK.

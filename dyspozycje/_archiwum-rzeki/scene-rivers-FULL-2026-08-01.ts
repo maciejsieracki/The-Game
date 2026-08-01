@@ -1,0 +1,3272 @@
+﻿/**
+ * scene.ts
+ * Buduje scen─Ö Three.js dla mapy hex The Game.
+ *
+ * Jeden CylinderGeometry(R, R, h, 6) per heks ÔÇö prism sze┼Ťcioboczny.
+ * THREE.CylinderGeometry(6 segment├│w) generuje pointy-top (pierwszy wierzcho┼éek
+ * w +Z, theta=0), co pasuje do axialToWorld (pointy-top). NIE rotujemy geometrii.
+ * Kolory materia┼é├│w przypisane per typ terenu, scalane w grupy
+ * (InstancedMesh osobno per teren-typ dla wydajno┼Ťci).
+ *
+ * Las = k─Öpa 3ÔÇô5 drzew (pie┼ä walcowy + korona sto┼╝kowa), deterministyczna per kafelek.
+ * G├│ry = dekoracyjny szczyt skalny PONAD prizmem + ┼Ťnie┼╝na czapka na jego wierzcho┼éku.
+ * Wzg├│rza = schodkowy kopiec zielony PONAD prizmem (ten sam kszta┼ét co tarasy, bez br─ůzu).
+ * Wybrze┼╝e = pe┼éna taf┼éa piasku + jasnoniebieska woda tylko od strony Morza (Roblox, hybryda C).
+ * L─ůd przy Wybrze┼╝u = pas piasku ~30% promienia od kraw─Ödzi morza.
+ * Delta rzeki = fan 2ÔÇô3 heks├│w ja┼Ťniejszej wody u uj┼Ťcia (D-MAPA-DELTA A).
+ * Pustynia = wydmy (kopu┼éy piasku, ~1/3 hex├│w) + losowa (LCG, ~1 na 6) oaza: basen + palmy.
+ * Rzeka = ci─ůg┼éa wst─Öga wzd┼éu┼╝ riverPaths (kraw─Ödzie heks├│w); uj┼Ťcie przez Wybrze┼╝e.
+ *
+ * Kolor PER-KAFELEK: ka┼╝dy prism dostaje deterministyczny, subtelny jitter HSL
+ * (hash q,r,seed), ┼╝eby du┼╝e jednolite obszary nie by┼éy p┼éask─ů plam─ů koloru.
+ *
+ * Mg┼éa wojenna (3 stany ÔÇö l─ůd i morze identycznie, A-FOG-04 Maciej 2026-07-03):
+ *   - unknown  Ôćĺ heks ukryty (skala 0), l─ůd i morze ÔÇö czarne t┼éo wok├│┼é (FOG_HIDDEN_COLOR)
+ *   - explored Ôćĺ prawdziwy teren, przyciemniony ├ŚFOG_EXPLORED_BRIGHTNESS (FoW)
+ *   - visible  Ôćĺ pe┼ény kolor i dekor (pe┼ény widok w zasi─Ögu jednostki/miasta)
+ * Globalna tafla oceanu tylko gdy brak unknown na mapie (ca┼éo┼Ť─ç odkryta cho─çby przez FoW).
+ * Roblox: heksy Morze+Wybrze┼╝e ukryte gdy wida─ç g┼é─Öbok─ů tafl─Ö; brzeg = dekor piasku/p┼éytkiej wody.
+ */
+
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import type { GameMap } from '../types/map';
+import { TerenBazowy, Nakladka } from '../types/hex';
+import { axialToWorld, mapCenter, HEX_R } from './hexutil';
+import {
+  type MapRenderStyle,
+  type MapRenderOptions,
+  type QualityTier,
+  DEFAULT_MAP_RENDER_OPTIONS,
+  normalizeMapRenderOptions,
+  resolveRenderPreset,
+  styleScenePalette,
+  styleTerrainColor,
+  buildStyleForestCluster,
+  buildStyleMountainPeak,
+  buildStyleHillBump,
+  buildStyleBeachRing,
+  buildStyleCoastSandEdges,
+  computeRiverMouthEdgeKeys,
+  computeRiverDeltaHexKeys,
+  landCoastSandNeeded,
+  isSceneBuildFastPath,
+  isRiverRenderFast,
+  isDenseLandmassMap,
+  findLandCoastSandCandidates,
+  createCoastInstBuffers,
+  collectRobloxCoastWaterInst,
+  collectRobloxLandCoastSandInst,
+  getCoastSharedGeometries,
+  coastWaterMaterial,
+  coastSandMaterial,
+  type CoastInstBuffers,
+  buildStyleDune,
+  buildStyleOasis,
+  isWarmJungleForestHex,
+  terrainVisualForStyle,
+  terrainSurfaceTopY,
+  FLAT_LAND_SURFACE_Y,
+  riverSurfaceLiftY,
+  coastWaterCapTopY,
+} from './mapRenderStyle';
+import { addRobloxSkyDecor } from './robloxCity';
+import { improvementKeysForHex } from '../game/terrain-improvements';
+import { FOG_EXPLORED_BRIGHTNESS } from '../game/visibility';
+import {
+  goraGeometria, wzgorzeGeometria, wariantDlaHeksa, rotacjaDlaHeksa,
+  TEREN_MATERIAL, LICZBA_WARIANTOW_TERENU,
+} from './teren-gory-wzgorza';
+// GRAFIKA-TEREN-2: k─Öpy lasu jako 5 InstancedMesh (wzorzec g├│r/wzg├│rz ÔÇö vertex colors, wsp├│lny materia┼é).
+// D┼╝ungla tropikalna zostaje na starej ┼Ťcie┼╝ce buildStyleForestCluster (poza zakresem).
+import {
+  lasGeometria, wariantLasuDlaHeksa, rotacjaLasuDlaHeksa,
+  LAS_MATERIAL, LICZBA_WARIANTOW_LASU,
+} from './lasy-modele';
+import { setImprovementDetailQuality } from './robloxImprovements';
+import { collapseToMergedMesh, countMeshesInGroup } from './mergeDecor';
+import {
+  dekorLakaGeometria, dekorRowninaGeometria, dekorDlaHeksa, rotacjaDekoru,
+  DEKOR_MATERIAL, DEKOR_LICZBA_WARIANTOW,
+} from './dekor-laki-rowniny';
+// GRAFIKA-TEREN-2: oaza klockowa (podmiana w miejscu LCG za buildStyleOasis ÔÇö decyzja C w┼éa┼Ťciciela).
+// Desert-dekor z tego modu┼éu NIE wpi─Öty (decyzja A ÔÇö DEKOR_ENABLED=false).
+import { buildOaza, rotacjaOazy } from './oaza-pustynia';
+import {
+  type ZoomLodLevel,
+  type ZoomLodFlags,
+  normalizedZoomT,
+  resolveZoomLodLevel,
+  zoomLodFlags,
+  effectivePixelRatio,
+} from './zoomLod';
+import { fogBrightnessForHex, applyFogDimToObject3D } from './fogDim';
+import { landRiverRenderPath } from '../map/gen-helpers';
+import { refreshInstancedPickBounds } from '../input/picker';
+
+export type { MapRenderStyle, MapRenderOptions, QualityTier } from './mapRenderStyle';
+export { DEFAULT_MAP_RENDER_OPTIONS, normalizeMapRenderOptions, resolveRenderPreset } from './mapRenderStyle';
+
+// ---------------------------------------------------------------------------
+// Paleta kolor├│w i parametry wysoko┼Ťci per teren
+// ---------------------------------------------------------------------------
+
+interface TerenVisual {
+  color: number;
+  height: number; // high of the prism
+  yOffset: number; // dodatkowe podniesienie ┼Ťrodka (>0 gdy prism wy┼╝ej)
+}
+
+const TERRAIN_VISUALS: Record<TerenBazowy, TerenVisual> = {
+  [TerenBazowy.Morze]:     { color: 0x1f5a86, height: 0.30, yOffset: 0.00 },
+  [TerenBazowy.Wybrzeze]:  { color: 0x46a3d6, height: 0.35, yOffset: 0.05 },
+  [TerenBazowy.Laka]:      { color: 0x6aa53f, height: 0.40, yOffset: 0.05 },
+  [TerenBazowy.Rownina]:   { color: 0xa9b257, height: 0.45, yOffset: 0.08 },
+  [TerenBazowy.Pustynia]:  { color: 0xd9c179, height: 0.42, yOffset: 0.08 },
+  [TerenBazowy.Wzgorza]:   { color: 0x4f7d34, height: 0.55, yOffset: 0.10 },
+  [TerenBazowy.Gory]:      { color: 0x9aa1a9, height: 0.60, yOffset: 0.20 },
+  [TerenBazowy.Polarny]:   { color: 0xe8eef5, height: 0.38, yOffset: 0.06 },
+};
+
+const FOREST_COLOR      = 0x1b5e20;
+const FOREST_CONE_COLOR = 0x2f6b34;
+const SNOW_COLOR        = 0xf5f7fa;
+const SHRUB_COLOR       = 0x356b2c;
+
+// Kolory oazy
+const OASIS_WATER_COLOR = 0x3fa9c9;
+const OASIS_TRUNK_COLOR = 0x6b4f2a;
+const OASIS_FROND_COLOR = 0x2e8b3f;
+
+// Kolor wody rzeki i brzeg├│w (earthen bank)
+const RIVER_COLOR = 0x5fb4e8;
+const RIVER_BANK_COLOR = 0x4aa6dc;  // ciemniejszy, ziemisty kolor brzegu
+
+// Kolor mg┼éy wojennej (nieznane hexsy)
+const FOG_HIDDEN_COLOR = new THREE.Color(0x0b0d12);
+
+function terrainVis(t: TerenBazowy, renderStyle: MapRenderStyle): TerenVisual {
+  const civ = TERRAIN_VISUALS[t];
+  const spec = terrainVisualForStyle(t, renderStyle, civ);
+  return { color: civ.color, height: spec.height, yOffset: spec.yOffset };
+}
+
+// Dekoracyjne szczyty / kopce (geometria PONAD szczytem prizmu ÔÇö nie zmienia height/yOffset)
+const PEAK_ROCK_COLOR  = 0x828c97;  // skala szczytu gory (ciemniejsza niz prism)
+const HILL_GRASS_COLOR = 0x52823f;  // trawiasty kopiec na wzgorzu
+const FOREST_TRUNK_COLOR = 0x5b4327; // pien drzewa lasu
+const BEACH_SAND_COLOR = 0x5fb7e6;  // piaszczysty pierscien wybrzeza
+const DUNE_SAND_COLOR  = 0xcaa861;  // wydma pustynna (ciemniejszy piasek)
+
+// F1 ÔÇö ocean wokol swiata + ramka (plansza)
+const DEEP_OCEAN_COLOR = 0x163d5c;  // gleboki ocean poza kontynentem (ciemniejszy niz Morze)
+const FRAME_COLOR      = 0x241c12;  // ciemna listwa ramki swiata (kamien/drewno)
+
+// ---------------------------------------------------------------------------
+// Deterministyczny hash 2D (q,r) -> [0,1). Mieszanie bitowe (xorshift-podobne).
+// Daje stabilny, powtarzalny "szum" per kafelek -- ta sama (q,r,seed) -> ten sam wynik.
+// salt roznicuje wiele niezaleznych strumieni dla jednego kafelka.
+// ---------------------------------------------------------------------------
+function hash2D(q: number, r: number, seed: number, salt: number): number {
+  let h = (Math.imul(q | 0, 0x27d4eb2d) ^ Math.imul(r | 0, 0x165667b1) ^ Math.imul(seed | 0, 0x9e3779b1) ^ Math.imul(salt | 0, 0x85ebca6b)) >>> 0;
+  h ^= h >>> 15;
+  h = Math.imul(h, 0x2c1b3c6d) >>> 0;
+  h ^= h >>> 12;
+  h = Math.imul(h, 0x297a2d39) >>> 0;
+  h ^= h >>> 15;
+  return (h >>> 0) / 4294967296;
+}
+
+/**
+ * Zwraca kolor bazowy terenu z subtelnym, deterministycznym jitterem HSL.
+ * Duze jednolite obszary tego samego terenu przestaja byc plaska plama koloru.
+ * Woda (Morze/Wybrzeze) dostaje mniejszy jitter (gladsza tafla).
+ */
+// Wariant 5 odcieni koloru terenu (Maciej 2026-07-09) ÔÇö zamiast ozdobnik├│w pustych heks├│w:
+// R├│wnina = 5 jasnych zieleni, ┼ü─ůka/trawa = 5 ciemnych zieleni; deterministycznie per heks (hash2D),
+// mg┼éa nadal przygasza (baseColor ├Ś jasno┼Ť─ç w setFog). Warto┼Ťci do dostrojenia na renderze.
+const LAKA_SHADES = [0x54923a, 0x5f9e42, 0x6cab4f, 0x79b85c, 0x86c469] as const;    // 5 ciemnych zieleni (trawa/┼é─ůka)
+const ROWNINA_SHADES = [0x9ac968, 0xa6d074, 0xb4dc84, 0xc0e693, 0xcaec9f] as const; // 5 jasnych zieleni (r├│wnina)
+
+function jitteredTerrainColor(
+  baseHex: number,
+  q: number,
+  r: number,
+  seed: number,
+  isWater: boolean,
+): THREE.Color {
+  const c = new THREE.Color(baseHex);
+  const hsl = { h: 0, s: 0, l: 0 };
+  c.getHSL(hsl);
+  // Trzy niezalezne strumienie szumu (hue / saturation / lightness)
+  const nH = hash2D(q, r, seed, 101) - 0.5;
+  const nS = hash2D(q, r, seed, 202) - 0.5;
+  const nL = hash2D(q, r, seed, 303) - 0.5;
+  const hueAmt = isWater ? 0.010 : 0.022;
+  const satAmt = isWater ? 0.05  : 0.10;
+  const litAmt = isWater ? 0.030 : 0.060;
+  let h = hsl.h + nH * hueAmt;
+  h = h - Math.floor(h); // wrap do [0,1)
+  const s = Math.max(0, Math.min(1, hsl.s + nS * satAmt));
+  const l = Math.max(0, Math.min(1, hsl.l + nL * litAmt));
+  c.setHSL(h, s, l);
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+// Budowa sceny
+// ---------------------------------------------------------------------------
+
+/** Wpis w mapie instancji ÔÇö ┼é─ůczy InstancedMesh + indeks instancji + bazowy kolor terenu. */
+interface HexInstanceEntry {
+  mesh:      THREE.InstancedMesh;
+  index:     number;
+  baseColor: THREE.Color;
+}
+
+/** Jedna siatka rzeki (woda + brzegi) + zbi├│r kluczy hex wzd┼éu┼╝ jej trasy (dla fog-of-war). */
+interface RiverEntry {
+  waterMesh: THREE.Mesh;
+  bankMesh:  THREE.Mesh;
+  waterGeo:  THREE.BufferGeometry;
+  bankGeo:   THREE.BufferGeometry;
+  hexKeys:   Set<string>;
+  /** Scalona geometria wielu odcink├│w ÔÇö uproszczone regu┼éy fog. */
+  merged?: boolean;
+  /**
+   * Klucz heksa per PUNKT wej┼Ťciowy wst─Ögi (tylko rzeki jednowst─Ögowe, ga┼é─ů┼║ `sharp`).
+   * Punkt i Ôćĺ wierzcho┼éki 2i, 2i+1; quad j ┼é─ůczy punkty j..j+1 (wierzcho┼éki 2j..2j+3).
+   * Pozwala na mg┼é─Ö PER-HEKS: chowamy tylko quady dotykaj─ůce czerni (indeks), reszta wst─Ögi
+   * zostaje. Brak (delty scalone) Ôćĺ fog per ca┼é─ů wst─Ög─Ö.
+   */
+  pointHex?: string[];
+  /** PERF: hash stanu mg┼éy (odkryte/ciemne per punkt) z ostatniej przebudowy ÔÇö pomija `setIndex`,
+   *  gdy mg┼éa tej rzeki si─Ö nie zmieni┼éa (np. przy samym zoomie). Bez re-uploadu GPU bez potrzeby. */
+  lastFogSig?: number;
+  /** Czy po ostatniej przebudowie indeksu zosta┼é cho─ç jeden widoczny quad (dla flagi visible/LOD). */
+  hasVisibleQuads?: boolean;
+}
+
+/** Kolejka geometrii rzek przed merge do jednego mesha per materia┼é (BATCH 3 / A1b). */
+interface RiverGeoBucket {
+  mat: THREE.Material;
+  geos: THREE.BufferGeometry[];
+  hexKeys: Set<string>;
+  renderOrder: number;
+}
+
+export interface SceneResult {
+  scene:    THREE.Scene;
+  camera:   THREE.PerspectiveCamera;
+  renderer: THREE.WebGLRenderer;
+  /** ┼Ürodek mapy w world space (cel kamery i centrum panowania). */
+  center:   { x: number; z: number };
+  dispose:  () => void;
+  /**
+   * Przelicza kolory prizm├│w terenu wed┼éug stanu mg┼éy wojennej,
+   * oraz ukrywa/przywraca nak┼éadki (las, ┼Ťnieg, krzewy, oazy).
+   * Rzeki s─ů WYJ─äTKIEM (W┼éa┼Ťciciel 2026-07-10): renderuj─ů si─Ö zawsze pe┼énym kolorem,
+   * niezale┼╝nie od stanu mg┼éy ÔÇö patrz p─Ötla `riverEntries` w `applyZoomLodDecor`.
+   * @param visible  Zbi├│r kluczy "q,r" aktualnie widocznych hex├│w.
+   * @param explored Zbi├│r kluczy "q,r" odkrytych, lecz nie widocznych hex├│w.
+   *
+   * Poziomy:
+   *   visible  Ôćĺ factor 1.0  (pe┼ény kolor bazowy)
+   *   explored Ôćĺ factor FOG_EXPLORED_BRIGHTNESS (przyciemniony, zapami─Ötany)
+   *   unknown  Ôćĺ kolor 0x0b0d12 (ciemna mg┼éa, ustawiany bezpo┼Ťrednio)
+   */
+  setFog: (visible: Set<string>, explored: Set<string>, opts?: { landReveal?: boolean; riverRevealKeys?: Set<string> }) => void;
+  /** F-CITY-HEX: trwale ukryj dekoracje terenu (las, oazaÔÇŽ) na hexie miasta. */
+  hideDecorAtHex: (hexKey: string) => void;
+  /** Tymczasowo ukryj k─Öp─Ö lasu na heksach z widoczn─ů jednostk─ů (przywraca po ruchu). */
+  syncForestForUnits: (hexKeys: Set<string>) => void;
+  /**
+   * Dynamiczny LOD przy oddalaniu kamery ÔÇö ukrywa drogie dekoracje i obni┼╝a pixel ratio.
+   * Wywo┼éywa─ç co klatk─Ö z odleg┼éo┼Ťci─ů kamery (dist, minDist, maxDist).
+   */
+  setZoomLod: (dist: number, minDist: number, maxDist: number) => void;
+  /** Aktualny poziom zoom LOD (0ÔÇô4) ÔÇö overlay F9. */
+  getZoomLodLevel: () => ZoomLodLevel;
+  /** InstancedMesh terenu ÔÇö raycast pickingu heks├│w (input/picker.ts). */
+  terrainPickMeshes: THREE.InstancedMesh[];
+  /** InstancedMesh hit Ôćĺ axial hex (instanceId lookup, bez worldToAxial na ┼Ťcianach pryzmu). */
+  resolveTerrainPick: (mesh: THREE.InstancedMesh, instanceId: number) => { q: number; r: number } | null;
+}
+
+// ---------------------------------------------------------------------------
+// Pomocnik: buduje p┼éask─ů wst─Ög─Ö (ribbon) wzd┼éu┼╝ krzywej 3D.
+//
+// Zwraca BufferGeometry z siatk─ů z┼éo┼╝on─ů z czworobocznych segment├│w.
+// Ka┼╝dy segment ma sta┼éy Y (podany jako yBase), szeroko┼Ť─ç halfWidth*2.
+// Wst─Öga jest pozioma -- normalne skierowane w g├│r─Ö (0,1,0).
+// Kraw─Ödzie prostopad┼ée do kierunku ┼Ťcie┼╝ki w p┼éaszczy┼║nie XZ.
+// ---------------------------------------------------------------------------
+
+function buildRibbonGeometry(
+  points: THREE.Vector3[],
+  halfWidth: number | number[],
+  segmentsPerSpan: number,
+  sharp = false,
+): THREE.BufferGeometry {
+  if (points.length < 2) return new THREE.BufferGeometry();
+
+  const positions: number[] = [];
+  const normals:   number[] = [];
+  const uvs:       number[] = [];
+  const indices:   number[] = [];
+  let vertexCount = 0;
+  let uAccum = 0;
+
+  // Grubo┼Ť─ç wg rz─Ödu cieku (W┼éa┼Ťciciel 2026-07-10, zad. 4): `halfWidth` mo┼╝e by─ç tablic─ů ÔÇö jedna
+  // warto┼Ť─ç per punkt wej┼Ťciowy (1:1 w ga┼é─Özi `sharp`, jedyna aktualnie u┼╝ywana przez rzeki).
+  const scalarHalfWidth = Array.isArray(halfWidth) ? (halfWidth[0] ?? 0) : halfWidth;
+  const hwAt = (i: number): number => Array.isArray(halfWidth)
+    ? (halfWidth[i] ?? halfWidth[halfWidth.length - 1] ?? scalarHalfWidth)
+    : halfWidth;
+
+  const emitCrossSection = (pt: THREE.Vector3, tFlat: THREE.Vector3, u: number, hw: number): void => {
+    const right = new THREE.Vector3(-tFlat.z, 0, tFlat.x);
+    const left  = new THREE.Vector3(pt.x - right.x * hw, pt.y, pt.z - right.z * hw);
+    const rightV = new THREE.Vector3(pt.x + right.x * hw, pt.y, pt.z + right.z * hw);
+    positions.push(left.x, left.y, left.z, rightV.x, rightV.y, rightV.z);
+    normals.push(0, 1, 0, 0, 1, 0);
+    uvs.push(0, u, 1, u);
+    if (vertexCount > 0) {
+      const base = vertexCount;
+      indices.push(base - 2, base, base - 1, base - 1, base, base + 1);
+    }
+    vertexCount += 2;
+  };
+
+  if (sharp) {
+    for (let i = 0; i < points.length; i++) {
+      const pt = points[i]!;
+      let tFlat: THREE.Vector3;
+      if (i === 0) {
+        const n = points[1]!;
+        tFlat = new THREE.Vector3(n.x - pt.x, 0, n.z - pt.z).normalize();
+      } else if (i === points.length - 1) {
+        const p = points[i - 1]!;
+        tFlat = new THREE.Vector3(pt.x - p.x, 0, pt.z - p.z).normalize();
+      } else {
+        const p = points[i - 1]!;
+        const n = points[i + 1]!;
+        tFlat = new THREE.Vector3(n.x - p.x, 0, n.z - p.z).normalize();
+      }
+      if (i > 0) uAccum += pt.distanceTo(points[i - 1]!);
+      emitCrossSection(pt, tFlat, uAccum, hwAt(i));
+    }
+  } else {
+    // Interpoluj ┼Ťcie┼╝k─Ö przez CatmullRom dla g┼éadko┼Ťci (uj┼Ťcia / estuary). Nie wspiera per-punktowej
+    // tablicy szeroko┼Ťci (resampling nie ma 1:1 z punktami wej┼Ťcia) ÔÇö u┼╝ywany zawsze ze skalarem.
+    const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.5);
+    const totalSeg = Math.max(20, points.length * segmentsPerSpan);
+
+    for (let i = 0; i <= totalSeg; i++) {
+      const t = i / totalSeg;
+      const pt = curve.getPoint(t);
+      const tVec = curve.getTangent(t);
+      const tFlat = new THREE.Vector3(tVec.x, 0, tVec.z).normalize();
+      emitCrossSection(pt, tFlat, t, scalarHalfWidth);
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('normal',   new THREE.Float32BufferAttribute(normals, 3));
+  geo.setAttribute('uv',       new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setIndex(indices);
+  return geo;
+}
+
+// ---------------------------------------------------------------------------
+// F1 ÔÇö pomocniki: rogi heksa, blend biomow, rzeki na KRAWEDZIACH
+// ---------------------------------------------------------------------------
+
+/** 6 rogow pointy-top heksa (konwencja CylinderGeometry(6): rog 0 w +Z). */
+function hexCorners(cx: number, cz: number, R: number): { x: number; z: number }[] {
+  const out: { x: number; z: number }[] = [];
+  for (let k = 0; k < 6; k++) {
+    const a = (Math.PI / 3) * k; // 60 stopni * k
+    out.push({ x: cx + R * Math.sin(a), z: cz + R * Math.cos(a) });
+  }
+  return out;
+}
+
+/** Aksjalni sasiedzi pointy-top ÔÇö 6 kierunkow. */
+const HEX_NEIGHBORS: ReadonlyArray<readonly [number, number]> = [
+  [1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1],
+];
+
+/**
+ * Kolor bazowy terenu zmieszany ze srednia sasiadow -> miekkie przejscia biomow
+ * na granicach. Zwraca hex (number). Woda miesza sie slabiej (czystsza tafla).
+ */
+function blendedTerrainHex(
+  map: GameMap,
+  q: number,
+  r: number,
+  baseHex: number,
+  isWater: boolean,
+  renderStyle: MapRenderStyle = 'civ',
+  selfTeren?: TerenBazowy,
+): number {
+  const base = new THREE.Color(baseHex);
+  const acc = new THREE.Color(0, 0, 0);
+  let n = 0;
+  for (const [dq, dr] of HEX_NEIGHBORS) {
+    const nb = map.hexes[`${q + dq},${r + dr}`];
+    if (!nb) continue;
+    // Suchy l─ůd nie miesza koloru z morzem/wybrze┼╝em (inaczej ÔÇ×zalanieÔÇŁ przy zoom).
+    if (selfTeren
+      && selfTeren !== TerenBazowy.Morze
+      && selfTeren !== TerenBazowy.Wybrzeze
+      && (nb.terenBazowy === TerenBazowy.Morze || nb.terenBazowy === TerenBazowy.Wybrzeze)) {
+      continue;
+    }
+    if (selfTeren === TerenBazowy.Wybrzeze
+      && nb.terenBazowy !== TerenBazowy.Morze
+      && nb.terenBazowy !== TerenBazowy.Wybrzeze) {
+      continue;
+    }
+    const nbHex = renderStyle === 'civ'
+      ? TERRAIN_VISUALS[nb.terenBazowy].color
+      : styleTerrainColor(nb.terenBazowy, renderStyle);
+    acc.add(new THREE.Color(nbHex));
+    n++;
+  }
+  if (n === 0) return baseHex;
+  acc.multiplyScalar(1 / n);
+  base.lerp(acc, isWater ? 0.07 : 0.18);
+  return base.getHex();
+}
+
+
+// ---------------------------------------------------------------------------
+// F1: rzeka jako splyw po WIERZCHOLKACH (graf rogow heksow) -> krawedziami, jeden kierunek.
+// ---------------------------------------------------------------------------
+function terrainRank(t: TerenBazowy): number {
+  switch (t) {
+    case TerenBazowy.Morze: return 0;
+    case TerenBazowy.Wybrzeze: return 1;
+    case TerenBazowy.Wzgorza: return 3;
+    case TerenBazowy.Gory: return 4;
+    default: return 2; // Laka / Rownina / Pustynia
+  }
+}
+function vKey(x: number, z: number): string { return `${Math.round(x * 50)},${Math.round(z * 50)}`; }
+
+interface Vtx { x: number; z: number; hexKeys: string[]; }
+
+/** Hexy wsp├│┼édzielone przez dwa wierzcho┼éki kraw─Ödzi rzeki (w─Ö┼╝szy zestaw ni┼╝ union). */
+function riverSegmentHexKeys(v0: Vtx, v1: Vtx): Set<string> {
+  const shared = new Set<string>();
+  for (const k of v0.hexKeys) {
+    if (v1.hexKeys.includes(k)) shared.add(k);
+  }
+  if (shared.size > 0) return shared;
+  const fallback = new Set<string>();
+  for (const k of v0.hexKeys) fallback.add(k);
+  for (const k of v1.hexKeys) fallback.add(k);
+  return fallback;
+}
+
+function buildVertexGraph(map: GameMap, R: number): Map<string, Vtx> {
+  const verts = new Map<string, Vtx>();
+  for (const hex of Object.values(map.hexes)) {
+    const c = axialToWorld(hex.coords.q, hex.coords.r, R);
+    const cs = hexCorners(c.x, c.z, R);
+    const hk = `${hex.coords.q},${hex.coords.r}`;
+    for (const corner of cs) {
+      const k = vKey(corner.x, corner.z);
+      let v = verts.get(k);
+      if (!v) { v = { x: corner.x, z: corner.z, hexKeys: [] }; verts.set(k, v); }
+      if (!v.hexKeys.includes(hk)) v.hexKeys.push(hk);
+    }
+  }
+  return verts;
+}
+
+function vElev(map: GameMap, v: Vtx): number {
+  let s = 0;
+  for (const hk of v.hexKeys) { const h = map.hexes[hk]; s += h ? terrainRank(h.terenBazowy) : 2; }
+  return s / v.hexKeys.length;
+}
+function vIsSea(map: GameMap, v: Vtx): boolean {
+  return v.hexKeys.some(hk => { const h = map.hexes[hk]; return !!h && (h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Wybrzeze); });
+}
+
+const AXIAL_DIRS: ReadonlyArray<readonly [number, number]> = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
+
+function isDryLandTeren(tb: TerenBazowy): boolean {
+  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze;
+}
+
+function hasWybrzezeNeighbor(map: GameMap, q: number, r: number): boolean {
+  for (const [dq, dr] of AXIAL_DIRS) {
+    if (map.hexes[`${q + dq},${r + dr}`]?.terenBazowy === TerenBazowy.Wybrzeze) return true;
+  }
+  return false;
+}
+
+function hasMorzeNeighbor(map: GameMap, q: number, r: number): boolean {
+  for (const [dq, dr] of AXIAL_DIRS) {
+    if (map.hexes[`${q + dq},${r + dr}`]?.terenBazowy === TerenBazowy.Morze) return true;
+  }
+  return false;
+}
+
+/**
+ * B0.7/B0.8/B0.9 (Owner 2026-07-20: ÔÇ×Wybrze┼╝e JEST cz─Ö┼Ťci─ů morza" ÔÇö dotkni─Öcie Wybrze┼╝a =
+ * dotarcie do morza = koniec biegu, NIE wymagamy doj┼Ťcia do g┼é─Öbokiego Morza).
+ * Trasa realnie ko┼äczy w morzu, gdy ostatni hex JEST wod─ů (Morze lub Wybrze┼╝e) albo ostatni
+ * hex to l─ůd S─äSIADUJ─äCY z wod─ů (Morze lub Wybrze┼╝e). Tylko takie trasy dostaj─ů wst─Ög─Ö
+ * uj┼Ťcia ÔÇö dop┼éywy (koniec na junction w g┼é─Öbi l─ůdu) NIE.
+ */
+function pathReachesOpenSeaRender(map: GameMap, path: Array<{ q: number; r: number }>): boolean {
+  if (path.length < 1) return false;
+  const last = path[path.length - 1]!;
+  const lastH = map.hexes[`${last.q},${last.r}`];
+  if (!lastH) return false;
+  if (!isDryLandTeren(lastH.terenBazowy)) return true; // ostatni hex JEST wod─ů (Morze lub Wybrze┼╝e)
+  // Ostatni hex to l─ůd ÔÇö uj┼Ťcie, je┼Ťli S─äSIADUJE wprost z wod─ů (Morze lub Wybrze┼╝e).
+  return hasWybrzezeNeighbor(map, last.q, last.r) || hasMorzeNeighbor(map, last.q, last.r);
+}
+
+/**
+ * Punkty uj┼Ťcia: ostatni heks L─äDU Ôćĺ kr├│tkie wej┼Ťcie w PIERWSZY heks Wybrze┼╝a Ôćĺ sp┼éyw
+ * (wodospad) do tafli. ┼üa┼äcuch budowany PROSTO z trasy (render-only) ÔÇö dawny
+ * coastalRiverRenderPath zwraca┼é ┼éa┼äcuch d┼éugo┼Ťci 1 dla ~99% rzek (urywa┼é si─Ö na ostatnim
+ * Wybrze┼╝u przed unshiftem l─ůdu), przez co uj┼Ťcie nie renderowa┼éo si─Ö w og├│le i rzeka
+ * ÔÇ×chowa┼éa si─Ö pod ziemi─ů" przed wod─ů.
+ * KOTWICA: pierwszy punkt = ┼Ťrodek ostatniego heksa l─ůdu = dok┼éadnie tam, gdzie ko┼äczy si─Ö
+ * wst─Öga l─ůdowa (renderLandRiversFromPaths z extendToJoin) Ôćĺ styk bez luki.
+ * B0.9 (Owner 2026-07-20): ÔÇ×Wybrze┼╝e JEST cz─Ö┼Ťci─ů morza" ÔÇö uj┼Ťcie KO┼âCZY SI─ś na pierwszym
+ * heksie Wybrze┼╝a, do kt├│rego dochodzi rzeka. NIE ci─ůgniemy dalej pasem wybrze┼╝a (coastWidth=2)
+ * do heksa Morze ÔÇö to w┼éa┼Ťnie ÔÇ×przepychanie si─Ö przez pas wybrze┼╝a", kt├│rego regu┼éa zabrania.
+ */
+function buildCoastalRiverPointChain(
+  map: GameMap,
+  path: Array<{ q: number; r: number }>,
+  R: number,
+  riverMouthY: number,
+): { pts: THREE.Vector3[]; hexKeys: Set<string> } {
+  const hexKeys = new Set<string>();
+  const pts: THREE.Vector3[] = [];
+  if (path.length < 1) return { pts, hexKeys };
+
+  const COAST_OFFSET = R * 0.14;
+
+  // Pierwszy heks NIE-l─ůdowy w trasie (Wybrze┼╝e LUB Morze) = cel uj┼Ťcia; heks bezpo┼Ťrednio
+  // przed nim = ostatni l─ůd (styk bez luki z wst─Ög─ů l─ůdow─ů).
+  let landHex: { q: number; r: number } | null = null;
+  let coastHex: { q: number; r: number } | null = null;
+  for (let i = 0; i < path.length; i++) {
+    const h = map.hexes[`${path[i]!.q},${path[i]!.r}`];
+    if (h && !isDryLandTeren(h.terenBazowy)) {
+      coastHex = { q: path[i]!.q, r: path[i]!.r };
+      if (i > 0) landHex = { q: path[i - 1]!.q, r: path[i - 1]!.r };
+      break;
+    }
+  }
+  if (!coastHex) {
+    // Trasa (render) ko┼äczy na l─ůdzie stykaj─ůcym si─Ö z wod─ů wprost ÔÇö landRiverRenderPath ucina
+    // bieg PRZED heksem wody, wi─Öc w `path` mo┼╝e nie by─ç ┼╝adnego heksu wody. Dobierz s─ůsiada
+    // deterministycznie: sta┼éy porz─ůdek AXIAL_DIRS, pierwszy pasuj─ůcy (Wybrze┼╝e lub Morze).
+    const last = path[path.length - 1]!;
+    landHex = { q: last.q, r: last.r };
+    for (const [dq, dr] of AXIAL_DIRS) {
+      const nq = last.q + dq, nr = last.r + dr;
+      const nh = map.hexes[`${nq},${nr}`];
+      if (nh && !isDryLandTeren(nh.terenBazowy)) { coastHex = { q: nq, r: nr }; break; }
+    }
+  }
+  if (!landHex || !coastHex) return { pts, hexKeys };
+  hexKeys.add(`${landHex.q},${landHex.r}`);
+  hexKeys.add(`${coastHex.q},${coastHex.r}`);
+
+  // KOTWICA: ┼Ťrodek ostatniego heksa l─ůdu (na wysoko┼Ťci l─ůdu) ÔÇö koniec wst─Ögi l─ůdowej l─ůduje TU.
+  const landCenter = axialToWorld(landHex.q, landHex.r, R);
+  const landY = riverHexSurfaceY(map, landHex.q, landHex.r, 'roblox', riverMouthY, COAST_OFFSET, R) ?? riverMouthY;
+  pts.push(new THREE.Vector3(landCenter.x, landY, landCenter.z));
+
+  // Kraw─Öd┼║ styku l─ůd Ôćĺ Wybrze┼╝e ÔÇö TRZYMA WYSOKO┼Ü─ć L─äDU (nie tafli!). BUG-RZEKI-RENDER-B1
+  // (2026-07-20): wcze┼Ťniej ten punkt mia┼é ju┼╝ Y=riverMouthY, przez co `applyCoastalWaterfall`
+  // (kt├│ry szuka progu Y wzd┼éu┼╝ punkt├│w WEJ┼ÜCIOWYCH) klasyfikowa┼é go jako ÔÇ×morski" i wstawia┼é
+  // pionowy pr├│g TU┼╗ PRZY ┼Ťrodku heksa l─ůdu (nudge=R*0.06 z odcinka landÔćĺedge d┼éugo┼Ťci ~R*0.87,
+  // czyli <7% drogi) ÔÇö d┼éugi p┼éaski odcinek a┼╝ do kraw─Ödzi (>90% drogi) zostawa┼é na poziomie
+  // tafli, czyli SCHOWANY POD bry┼é─ů l─ůdu (niewidoczny). Plateau musi trzyma─ç wysoko┼Ť─ç l─ůdu A┼╗ DO
+  // kraw─Ödzi (zgodnie z komentarzem do applyCoastalWaterfall) ÔÇö pr├│g wodospadu wtedy wypada
+  // dok┼éadnie na kraw─Ödzi styku l─ůd/Wybrze┼╝e, nad tafl─ů, widocznie.
+  const edgeMid = sharedEdgeMidpoint(landHex.q, landHex.r, coastHex.q, coastHex.r, R);
+  if (edgeMid) pts.push(new THREE.Vector3(edgeMid.x, landY, edgeMid.z));
+
+  // Kr├│tkie wej┼Ťcie w p┼éytk─ů wod─Ö PIERWSZEGO heksa Wybrze┼╝a ÔÇö TU ko┼äczy si─Ö uj┼Ťcie.
+  // NIE idziemy dalej w stron─Ö ┼Ťrodka/drugiego pier┼Ťcienia wybrze┼╝a ani do Morza.
+  const coastCenter = axialToWorld(coastHex.q, coastHex.r, R);
+  const tIn = 0.4; // kr├│tki odcinek w g┼é─ůb pierwszego heksa Wybrze┼╝a
+  const baseX = edgeMid ? edgeMid.x : landCenter.x;
+  const baseZ = edgeMid ? edgeMid.z : landCenter.z;
+  const inX = baseX + (coastCenter.x - baseX) * tIn;
+  const inZ = baseZ + (coastCenter.z - baseZ) * tIn;
+  pts.push(new THREE.Vector3(inX, riverMouthY, inZ));
+
+  // Wodospad: cz─Ö┼Ť─ç l─ůdowa trzyma plateau (wysoko┼Ť─ç ostatniego heksa l─ůdu), na styku l─ůdÔćĺmorze
+  // wst─Öga spada pionowo do tafli (riverMouthY). Korona spina si─Ö z kotwic─ů l─ůdow─ů (bez luki).
+  const shaped = applyCoastalWaterfall(pts, riverMouthY, landY, R);
+  return { pts: shaped, hexKeys };
+}
+
+function coastalRiverKeySet(map: GameMap, path: Array<{ q: number; r: number }>): Set<string> {
+  const keys = new Set<string>();
+  const { hexKeys } = buildCoastalRiverPointChain(map, path, 1, 0);
+  for (const k of hexKeys) keys.add(k);
+  for (let i = Math.max(0, path.length - 6); i < path.length; i++) {
+    keys.add(`${path[i]!.q},${path[i]!.r}`);
+  }
+  return keys;
+}
+
+function riverVertexOnCoastalPath(v: Vtx, coastalKeys: Set<string>): boolean {
+  return v.hexKeys.some(k => coastalKeys.has(k));
+}
+
+function riverVertexAtCoast(map: GameMap, v: Vtx, coastalKeys: Set<string>): boolean {
+  if (riverVertexOnCoastalPath(v, coastalKeys)) return true;
+  for (const k of v.hexKeys) {
+    const h = map.hexes[k];
+    if (!h) continue;
+    if (h.terenBazowy === TerenBazowy.Wybrzeze || h.terenBazowy === TerenBazowy.Morze) return true;
+    if (h.rzeka?.obecna && hasWybrzezeNeighbor(map, h.coords.q, h.coords.r)) return true;
+  }
+  return false;
+}
+
+/**
+ * BUG-RZEKI-RENDER ÔÇö wariant B ÔÇ×wodospad" (Maciej 2026-07-06). Przerabia list─Ö punkt├│w
+ * wst─Ögi uj┼Ťcia tak, by NIGDY nie schodzi┼éa pod mesh l─ůdu/wybrze┼╝a:
+ *  - cz─Ö┼Ť─ç nad l─ůdem trzyma sta┼éy poziom l─ůdu (plateau) do samej kraw─Ödzi wybrze┼╝a,
+ *  - na styku l─ůdÔćĺmorze wst─Öga spada stromo (prawie pionowo) do poziomu tafli (mouthY),
+ *  - dalej p┼éynie p┼éasko na mouthY (nad wierzchem pryzmu wybrze┼╝a).
+ * Zamiast skosu, kt├│ry interpolowa┼é Y pod ┼Ťcian─Ö pryzmu (efekt ÔÇ×rzeka tonie"), robimy
+ * pionowy pr├│g. Pion realizujemy jako 2 punkty z ma┼éym przesuni─Öciem poziomym (nudge),
+ * bo buildRibbonGeometry liczy przekr├│j z tangensu sp┼éaszczonego do XZ ÔÇö punkty o tym
+ * samym X/Z da┼éyby zdegenerowany (NaN) przekr├│j. RENDER-ONLY: zero wp┼éywu na generacj─Ö.
+ */
+function applyCoastalWaterfall(
+  pts: THREE.Vector3[],
+  mouthY: number,
+  landPlateauY: number,
+  R: number,
+): THREE.Vector3[] {
+  if (pts.length < 2 || !(landPlateauY > mouthY + 1e-4)) return pts;
+  // Pr├│g klasyfikacji: punkt ÔÇ×morski" = Y bli┼╝ej mouthY ni┼╝ l─ůdowego plateau.
+  const seaThreshold = mouthY + (landPlateauY - mouthY) * 0.5;
+  let k = pts.length;
+  for (let i = 0; i < pts.length; i++) {
+    if (pts[i]!.y < seaThreshold) { k = i; break; }
+  }
+  if (k === 0) {
+    // Brak cz─Ö┼Ťci l─ůdowej ÔÇö ca┼éa wst─Öga p┼éaska na tafli.
+    return pts.map(p => new THREE.Vector3(p.x, mouthY, p.z));
+  }
+  if (k >= pts.length) {
+    // Sama cz─Ö┼Ť─ç l─ůdowa (nie powinno si─Ö zdarzy─ç dla uj┼Ťcia) ÔÇö trzymaj plateau.
+    return pts.map(p => new THREE.Vector3(p.x, landPlateauY, p.z));
+  }
+  const out: THREE.Vector3[] = [];
+  // Plateau l─ůdowe p┼éaskie do kraw─Ödzi (kasuje ÔÇ×obwis" u┼Ťrednionego ┼Ťrodka kraw─Ödzi).
+  for (let i = 0; i < k; i++) out.push(new THREE.Vector3(pts[i]!.x, landPlateauY, pts[i]!.z));
+  const edge = pts[k - 1]!;
+  const sea = pts[k]!;
+  const dx = sea.x - edge.x;
+  const dz = sea.z - edge.z;
+  const len = Math.hypot(dx, dz) || 1;
+  const nudge = R * 0.06; // ma┼ée przesuni─Öcie poziome ÔÇö pion, ale wa┼╝ny tangens dla wst─Ögi
+  const lipX = edge.x + (dx / len) * nudge;
+  const lipZ = edge.z + (dz / len) * nudge;
+  out.push(new THREE.Vector3(lipX, landPlateauY, lipZ));                 // korona wodospadu
+  out.push(new THREE.Vector3(lipX + (dx / len) * nudge, mouthY, lipZ + (dz / len) * nudge)); // stopa
+  // Cz─Ö┼Ť─ç morska p┼éaska na tafli.
+  for (let i = k; i < pts.length; i++) out.push(new THREE.Vector3(pts[i]!.x, mouthY, pts[i]!.z));
+  return out;
+}
+
+/** Lejek estuary ÔÇö rozszerzenie wst─Ögi rzeki w stron─Ö morza (trapez p┼éaski). */
+function buildEstuaryFunnelGeometry(
+  apex: THREE.Vector3,
+  seaPt: THREE.Vector3,
+  halfWidthNarrow: number,
+  halfWidthWide: number,
+): THREE.BufferGeometry {
+  const dx = seaPt.x - apex.x;
+  const dz = seaPt.z - apex.z;
+  const len = Math.hypot(dx, dz) || 1;
+  const px = -dz / len;
+  const pz = dx / len;
+  const y = apex.y;
+
+  const positions = [
+    apex.x + px * halfWidthNarrow, y, apex.z + pz * halfWidthNarrow,
+    apex.x - px * halfWidthNarrow, y, apex.z - pz * halfWidthNarrow,
+    seaPt.x + px * halfWidthWide, y, seaPt.z + pz * halfWidthWide,
+    seaPt.x - px * halfWidthWide, y, seaPt.z - pz * halfWidthWide,
+  ];
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setIndex([0, 1, 2, 1, 3, 2]);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/** Wst─Ögi wzd┼éu┼╝ riverPaths ÔÇö uj┼Ťcie przez Wybrze┼╝e do Morza (tylko kraw─Ödzie hex). */
+function renderCoastalRiverExtension(
+  map: GameMap,
+  path: Array<{ q: number; r: number }>,
+  R: number,
+  riverMouthY: number,
+  riverWaterBucket: RiverGeoBucket,
+  riverDeltaTopBucket: RiverGeoBucket,
+  coastFunnelBucket: RiverGeoBucket,
+  halfWidth: number,
+  deltaKeys: Set<string>,
+  ribbonSegs = 12,
+  /** FALA 147: wi─Ökszy pr├│g dedup na dense/fast ÔÇö mniej wierzcho┼ék├│w uj┼Ťcia (sharp=true). */
+  dedupMinDist?: number,
+): void {
+  const { pts: chainPts, hexKeys } = buildCoastalRiverPointChain(map, path, R, riverMouthY);
+  if (chainPts.length < 2) return;
+
+  const dedup = dedupMinDist ?? R * 0.02;
+  const pts: THREE.Vector3[] = [];
+  for (const p of chainPts) {
+    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > dedup) pts.push(p);
+  }
+  if (pts.length < 2) return;
+
+  const touchesDelta = [...hexKeys].some(k => deltaKeys.has(k));
+  const segCount = pts.length - 1;
+
+  // BUG-RZEKI-RENDER-B1 (2026-07-20, Maciej: wst─Öga urywa si─Ö w po┼éowie heksa l─ůdu, luka do
+  // brzegu ÔÇö potwierdzone zrzutem po poprzednim (niewystarczaj─ůcym) fixie renderu uj┼Ťcia).
+  // Przyczyna: `coastDeltaMat` ma KOLOR IDENTYCZNY z terenem Wybrze┼╝a (styleTerrainColor(Wybrzeze))
+  // ÔÇö to zamierzone dla PRAWDZIWEJ delty (blend z lejkiem/sandbarem, touchesDelta=true), ale dla
+  // ZWYK┼üEGO uj┼Ťcia (touchesDelta=false, czyli ~wszystkie rzeki) pr├│g `t >= 0.45` przemalowywa┼é
+  // DRUG─ä PO┼üOW─ś ┼éa┼äcucha uj┼Ťcia (dok┼éadnie t─Ö cz─Ö┼Ť─ç, kt├│ra realnie wchodzi za kraw─Öd┼║ brzegu w
+  // Wybrze┼╝e) na kolor terenu ÔÇö wst─Öga kamuflowa┼éa si─Ö na tle identycznie ubarwionego Wybrze┼╝a i
+  // wizualnie ÔÇ×znika┼éa" tu┼╝ za l─ůdem, mimo ┼╝e geometria (punkty ┼éa┼äcucha) by┼éa poprawna. Naprawa:
+  // kolor terenu (coastDeltaMat) TYLKO gdy realnie dotyka delty; w przeciwnym razie CA┼üY ┼éa┼äcuch
+  // uj┼Ťcia zostaje kolorem wody (riverWaterMat) a┼╝ do wej┼Ťcia w Wybrze┼╝e ÔÇö widocznie ci─ůg┼éy.
+  if (!touchesDelta) {
+    const halfWidths: number[] = [];
+    for (let i = 0; i < pts.length; i++) {
+      const t = segCount <= 1 ? 1 : i / (segCount - 1);
+      halfWidths.push(halfWidth * (1.08 + t * 2.65));
+    }
+    const geo = buildRibbonGeometry(pts, halfWidths, ribbonSegs, true);
+    queueRiverGeo(riverWaterBucket, geo, hexKeys);
+  } else {
+    let deltaStart = pts.length;
+    for (let i = 0; i < segCount; i++) {
+      const t = segCount <= 1 ? 1 : i / (segCount - 1);
+      if (t >= 0.12) { deltaStart = i; break; }
+    }
+    if (deltaStart > 0) {
+      const prePts = pts.slice(0, deltaStart + 1);
+      const preWidths: number[] = [];
+      for (let i = 0; i < prePts.length; i++) {
+        const t = segCount <= 1 ? 1 : i / (segCount - 1);
+        preWidths.push(halfWidth * (1.08 + t * 2.65));
+      }
+      const preGeo = buildRibbonGeometry(prePts, preWidths, ribbonSegs, true);
+      queueRiverGeo(riverWaterBucket, preGeo, hexKeys);
+    }
+    const postPts = pts.slice(deltaStart);
+    if (postPts.length >= 2) {
+      const postWidths: number[] = [];
+      for (let i = deltaStart; i < pts.length; i++) {
+        const t = segCount <= 1 ? 1 : i / (segCount - 1);
+        postWidths.push(halfWidth * (1.08 + t * 2.65));
+      }
+      const postGeo = buildRibbonGeometry(postPts, postWidths, ribbonSegs, true);
+      queueRiverGeo(riverDeltaTopBucket, postGeo, hexKeys);
+    }
+  }
+
+  if (pts.length >= 3 && touchesDelta) {
+    const apex = pts[pts.length - 3]!;
+    const seaPt = pts[pts.length - 1]!;
+    if (apex.distanceTo(seaPt) <= R * 3.5) {
+      const funnelGeo = buildEstuaryFunnelGeometry(
+        apex,
+        seaPt,
+        halfWidth * 1.35,
+        halfWidth * 3.4,
+      );
+      queueRiverGeo(coastFunnelBucket, funnelGeo, hexKeys);
+    }
+  }
+}
+
+function vNeighbors(map: GameMap, R: number, k: string, verts: Map<string, Vtx>): string[] {
+  const v = verts.get(k); if (!v) return [];
+  const out = new Set<string>();
+  for (const hk of v.hexKeys) {
+    const h = map.hexes[hk]; if (!h) continue;
+    const c = axialToWorld(h.coords.q, h.coords.r, R);
+    const cs = hexCorners(c.x, c.z, R);
+    let idx = -1;
+    for (let i = 0; i < 6; i++) if (vKey(cs[i]!.x, cs[i]!.z) === k) { idx = i; break; }
+    if (idx < 0) continue;
+    out.add(vKey(cs[(idx + 1) % 6]!.x, cs[(idx + 1) % 6]!.z));
+    out.add(vKey(cs[(idx + 5) % 6]!.x, cs[(idx + 5) % 6]!.z));
+  }
+  return [...out];
+}
+
+// Trasa rzeki: od najwyzszego rogu heksa-zrodla, splyw do najnizszego sasiada, az do morza.
+function traceRiverVertices(map: GameMap, R: number, verts: Map<string, Vtx>, src: { q: number; r: number }): Vtx[] {
+  const sc = axialToWorld(src.q, src.r, R);
+  const scs = hexCorners(sc.x, sc.z, R);
+  let startK = vKey(scs[0]!.x, scs[0]!.z), startE = -1;
+  for (const corner of scs) {
+    const k = vKey(corner.x, corner.z); const v = verts.get(k);
+    if (v) { const e = vElev(map, v); if (e > startE) { startE = e; startK = k; } }
+  }
+  const out: Vtx[] = [];
+  const visited = new Set<string>();
+  let curK = startK;
+  for (let step = 0; step < 500; step++) {
+    const v = verts.get(curK); if (!v || visited.has(curK)) break;
+    visited.add(curK); out.push(v);
+    if (vIsSea(map, v)) break; // ujscie na styku z morzem
+    const nbs = vNeighbors(map, R, curK, verts).filter(nk => !visited.has(nk) && verts.has(nk));
+    if (nbs.length === 0) break;
+    let best = nbs[0]!, bestE = vElev(map, verts.get(best)!);
+    for (const nk of nbs) { const e = vElev(map, verts.get(nk)!); if (e < bestE) { bestE = e; best = nk; } }
+    curK = best;
+  }
+  return out;
+}
+
+/** Wierzch pryzmu heksa (ta sama formu┼éa co dekoracje las/g├│ry). */
+function hexSurfaceTopY(t: TerenBazowy, renderStyle: MapRenderStyle): number {
+  const vis = terrainVis(t, renderStyle);
+  return vis.height + vis.yOffset;
+}
+
+/** Y wst─Ögi rzeki ÔÇö NAD powierzchni─ů heksa (+ relief na wzg├│rzach/g├│rach). */
+function riverHexSurfaceY(
+  map: GameMap,
+  q: number,
+  r: number,
+  renderStyle: MapRenderStyle,
+  riverMouthY: number,
+  surfaceOffset: number,
+  R: number,
+): number | null {
+  const h = map.hexes[`${q},${r}`];
+  if (!h || h.terenBazowy === TerenBazowy.Morze) return null;
+  // Tylko sam heks Wybrze┼╝e schodzi do poziomu morza; s─ůsiedztwo pla┼╝y NIE obcina l─ůdu.
+  if (h.terenBazowy === TerenBazowy.Wybrzeze) return riverMouthY;
+  // Maciej 2026-08-01: STA┼üA P┼üASKA wysoko┼Ť─ç (FLAT_LAND_SURFACE_Y) ÔÇö wszystkie p┼éaskie typy
+  // l─ůdu na tej samej wysoko┼Ťci; rzeka nie tonie pod pustyni─ů / r├│wnin─ů.
+  void R;
+  return FLAT_LAND_SURFACE_Y + surfaceOffset;
+}
+
+function neighborDirIndex(q: number, r: number, nq: number, nr: number): number {
+  const dq = nq - q;
+  const dr = nr - r;
+  for (let i = 0; i < HEX_NEIGHBORS.length; i++) {
+    const nb = HEX_NEIGHBORS[i]!;
+    if (nb[0] === dq && nb[1] === dr) return i;
+  }
+  return -1;
+}
+
+/** ┼Ürodek kraw─Ödzi heksa w kierunku s─ůsiada dir (pointy-top: kraw─Öd┼║ dir = rogi (dir+1),(dir+2)). */
+function hexEdgeMidpointByDir(q: number, r: number, dir: number, R: number): { x: number; z: number } {
+  const c = axialToWorld(q, r, R);
+  const cs = hexCorners(c.x, c.z, R);
+  const d = ((dir % 6) + 6) % 6;
+  const p0 = cs[(d + 1) % 6]!;
+  const p1 = cs[(d + 2) % 6]!;
+  return { x: (p0.x + p1.x) * 0.5, z: (p0.z + p1.z) * 0.5 };
+}
+
+// ---------------------------------------------------------------------------
+// Rzeki PO WEWN─śTRZNEJ STRONIE ┼ÜCIANEK heksa ÔÇö KANCIASTO (Owner 2026-07-10, twarda wytyczna
+// ÔÇ×!!"): NIE prosta przez ┼Ťrodek pola (odrzucona ÔÇ×centrolinia"), NIE g┼éadka krzywa (odrzucony
+// CatmullRom/Chaikin ÔÇö ÔÇ×to nie styl Roblox"). Geometria KRAW─śDZIOWA: polilinia biegnie OBWODEM
+// heks├│w ÔÇö ┼Ťrodek kraw─Ödzi WEJ┼ÜCIA Ôćĺ ROGI ┼éuku (najkr├│tszy po ┼Ťciankach, Ôëą2 boki) Ôćĺ ┼Ťrodek
+// kraw─Ödzi WYJ┼ÜCIA. Rogi INSETOWANE ku ┼Ťrodkowi W┼üASNEGO heksa (RIVER_INSET_FRAC) = hug
+// WEWN─śTRZNEJ strony ┼Ťcianki. JEDEN punkt na przej┼Ťciu przez ┼Ťciank─Ö (wsp├│lny ┼Ťrodek kraw─Ödzi,
+// bez insetu) Ôćĺ ZERO ÔÇ×domk├│w". Render sharp=true (proste odcinki + za┼éamania na rogach), BEZ
+// wyg┼éadzania. RENDER-ONLY (nie zmienia generatora ani hasza mapy).
+// ---------------------------------------------------------------------------
+
+/** Wsp├│lny ┼Ťrodek kraw─Ödzi dw├│ch s─ůsiednich heks├│w (granica hex1|hex2). */
+function sharedEdgeMidpoint(
+  q1: number, r1: number, q2: number, r2: number, R: number,
+): { x: number; z: number } | null {
+  const dir = neighborDirIndex(q1, r1, q2, r2);
+  if (dir < 0) return null;
+  return hexEdgeMidpointByDir(q1, r1, dir, R);
+}
+
+/** Nast─Öpny r├│g obwodu heksa (pointy-top; cw = zgodnie z ruchem wskaz├│wek). */
+function hexCornerStep(from: number, cw: boolean): number {
+  return cw ? (from + 1) % 6 : (from + 5) % 6;
+}
+
+/** Droga wzd┼éu┼╝ obwodu heksa (rogi) mi─Ödzy dwoma rogami ÔÇö bez przek─ůtnej przez pole. */
+function walkHexPerimeter(fromCorner: number, toCorner: number, cw: boolean): number[] {
+  if (fromCorner === toCorner) return [fromCorner];
+  const out: number[] = [];
+  let c = fromCorner;
+  for (let guard = 0; guard < 7; guard++) {
+    out.push(c);
+    if (c === toCorner) break;
+    c = hexCornerStep(c, cw);
+  }
+  return out;
+}
+
+/**
+ * Rogi obwodu mi─Ödzy kraw─Ödzi─ů WEJ┼ÜCIA (dirIn) a WYJ┼ÜCIA (dirOut) ÔÇö NAJKR├ôTSZY ┼éuk po ┼Ťciankach.
+ * Owner 2026-07-10: rzeka MUSI biec przez MINIMUM DWIE ┼ÜCIANKI na ka┼╝dy heks. UWAGA na liczenie
+ * ÔÇ×bok├│w": owner liczy ODCINKI ┼ÜCIANEK po kt├│rych biegnie rzeka = walked.length (p├│┼é-┼Ťcianka
+ * wej┼Ťcia + pe┼éne boki r├│g-r├│g + p├│┼é-┼Ťcianka wyj┼Ťcia); kod trzyma walked.length-1 = same PE┼üNE
+ * boki r├│g-r├│g. MIN_BOKI=1 (walked.length-1 Ôëą 1 Ôćĺ walked.length Ôëą 2) daje owner-boki Ôëą 2:
+ *   bieg prosty (kraw─Ödzie przeciwleg┼ée, diff 3) Ôćĺ walked 3 = 3 ┼Ťcianki,
+ *   ┼éagodny skr─Öt (diff 2)                       Ôćĺ walked 2 = 2 ┼Ťcianki,
+ *   ostry skr─Öt (kraw─Ödzie s─ůsiednie, diff 1)    Ôćĺ ju┼╝ zwini─Öty przez simplifyRiverRenderPath.
+ * Odrzucamy tylko walked.length=1 (clip rogu, 0 pe┼énych bok├│w = tylko 1 ┼Ťcianka). NIE ┼╝─ůdamy
+ * walked.length-1 Ôëą 2 (owner-boki Ôëą 3): to wymusza┼éo przy ┼éagodnym skr─Öcie overshoot rogu Ôćĺ
+ * prostopad┼éy ÔÇ×domek", a przy ostrzejszych ÔÇö objazd obwodu Ôćĺ ZAMKNI─śTE P─śTLE (ÔÇ×plaster miodu").
+ * Fallback: najkr├│tszy ┼éuk w og├│le (degeneracja). hexParity rozstrzyga remis strony deterministycznie.
+ */
+function riverCornersAlongHexEdges(dirIn: number, dirOut: number, hexParity: number): number[] {
+  const a = ((dirIn % 6) + 6) % 6;
+  const b = ((dirOut % 6) + 6) % 6;
+  if (a === b) return [];
+  const entryOpts = [(a + 1) % 6, (a + 2) % 6];
+  const exitOpts = [(b + 1) % 6, (b + 2) % 6];
+  const MIN_BOKI = 1; // walked.length-1 = pe┼éne boki r├│g-r├│g; =1 Ôćĺ hug pe┼énej ┼Ťcianki + 2 po┼é├│wki
+                      // ┼Ťcianek wej┼Ťcia/wyj┼Ťcia = wizualnie Ôëą2 ┼Ťcianki/heks BEZ ÔÇ×domk├│w". (=2
+                      // wymusza┼éo przy ┼éagodnym skr─Öcie overshoot rogu Ôćĺ prostopad┼éy dzi├│bek.)
+  let best: number[] = [];
+  let bestScore = Infinity;
+  let fallback: number[] = [];
+  let fallbackScore = Infinity;
+  for (const entry of entryOpts) {
+    for (const exit of exitOpts) {
+      for (const cw of [true, false]) {
+        const walked = walkHexPerimeter(entry, exit, cw);
+        if (walked.length === 0) continue;
+        let score = walked.length;
+        if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
+        else if (score === bestScore) score += cw ? 0.01 : 0;
+        if (score < fallbackScore) { fallbackScore = score; fallback = walked; }
+        if (walked.length - 1 < MIN_BOKI) continue; // odrzu─ç ÔÇ×clip rogu" (0 pe┼énych bok├│w)
+        if (score < bestScore) { bestScore = score; best = walked; }
+      }
+    }
+  }
+  return best.length ? best : fallback;
+}
+
+/** Rogi obwodu heksa (cur) na trasie prevÔćĺcurÔćĺnext, we wsp├│┼érz─Ödnych ┼Ťwiata. */
+function riverTransitCornersOnHex(
+  q: number, r: number, qPrev: number, rPrev: number, qNext: number, rNext: number, R: number,
+): Array<{ x: number; z: number }> {
+  const dirIn = neighborDirIndex(q, r, qPrev, rPrev);
+  const dirOut = neighborDirIndex(q, r, qNext, rNext);
+  if (dirIn < 0 || dirOut < 0) return [];
+  const wc = axialToWorld(q, r, R);
+  const cs = hexCorners(wc.x, wc.z, R);
+  return riverCornersAlongHexEdges(dirIn, dirOut, q + r).map((ci) => ({ x: cs[ci]!.x, z: cs[ci]!.z }));
+}
+
+/** Wsuni─Öcie rogu ┼éuku ku ┼Ťrodkowi W┼üASNEGO heksa (hug WEWN─śTRZNEJ strony ┼Ťcianki ÔÇö
+ *  rzeka widoczna po kraw─Ödzi, ale nie ginie pod wzg├│rzem s─ůsiada za ┼Ťciank─ů). */
+const RIVER_INSET_FRAC = 0.15;
+
+/**
+ * Regularyzacja ┼Ťcie┼╝ki rzeki POD RENDER (render-only ÔÇö NIE zmienia generatora ani hasza mapy).
+ * Zwija dwa artefakty meandra generatora, kt├│re psu┼éy wygl─ůd wst─Ögi:
+ *  - zawr├│t 180┬░ (H[i-1] == H[i+1]) ÔÇö ÔÇ×spike tam i z powrotem" Ôćĺ usuwamy H[i] i H[i+1],
+ *  - zakr─Öt Ôëą120┬░ (H[i-1] S─äSIADUJE z H[i+1]) ÔÇö skr├│t korytarzem Ôćĺ usuwamy H[i].
+ * Po doj┼Ťciu do punktu sta┼éego zostaj─ů WY┼ü─äCZNIE zakr─Öty ÔëĄ60┬░ i proste biegi. Poniewa┼╝ wst─Öga
+ * biegnie przez punkty-przej┼Ťcia = ┼ÜREDNIE ┼Ťrodk├│w kolejnych heks├│w (patrz buildRiverPointsFromHexPath),
+ * przy zakr─Ötach ÔëĄ60┬░ ka┼╝dy wierzcho┼éek wst─Ögi ma odchylenie ÔëĄ60┬░, a ciasny 60┬░-zygzak (ÔÇŽd,d+1,d,d+1ÔÇŽ)
+ * u┼Ťrednia si─Ö do PROSTEJ ÔÇö st─ůd znika ÔÇ×schodkowy" wygl─ůd i wymuszona jest kadencja meandra.
+ * Pierwszy i ostatni heks s─ů nienaruszalne (┼║r├│d┼éo / uj┼Ťcie / w─Öze┼é konfluencji).
+ */
+function simplifyRiverRenderPath(
+  path: Array<{ q: number; r: number }>,
+): Array<{ q: number; r: number }> {
+  const p = path.map((h) => ({ q: h.q, r: h.r }));
+  if (p.length < 3) return p;
+  let changed = true;
+  let guard = 0;
+  while (changed && guard++ < 4000) {
+    changed = false;
+    for (let i = 1; i < p.length - 1; i++) {
+      const a = p[i - 1]!;
+      const c = p[i + 1]!;
+      // 180┬░ zawr├│t: s─ůsiedzi H[i] to ten sam heks Ôćĺ wytnij oba ┼Ťrodkowe (degeneracja).
+      if (a.q === c.q && a.r === c.r) { p.splice(i, 2); changed = true; break; }
+      // Ôëą120┬░ zakr─Öt: H[i-1] s─ůsiaduje bezpo┼Ťrednio z H[i+1] Ôćĺ skr├│t, zostaje ÔëĄ60┬░.
+      if (neighborDirIndex(a.q, a.r, c.q, c.r) >= 0) { p.splice(i, 1); changed = true; break; }
+    }
+  }
+  return p;
+}
+
+/**
+ * Wst─Öga rzeki = polilinia KANCIASTA PO WEWN─śTRZNEJ STRONIE ┼ÜCIANEK heks├│w (Owner 2026-07-10 ÔÇö
+ * powr├│t od odrzuconej ÔÇ×centrolinii" prostej i odrzuconego g┼éadkiego CatmullRom/Chaikin; ÔÇ×to nie
+ * styl Roblox"). Dla ka┼╝dego heksa trasy rzeka biegnie jego OBWODEM: ┼Ťrodek kraw─Ödzi WEJ┼ÜCIA Ôćĺ
+ * ROGI ┼éuku (najkr├│tszy po ┼Ťciankach, Ôëą2 boki) Ôćĺ ┼Ťrodek kraw─Ödzi WYJ┼ÜCIA.
+ *  - ROGI ┼éuku INSETOWANE ku ┼Ťrodkowi W┼üASNEGO heksa (RIVER_INSET_FRAC) Ôćĺ hug WEWN─śTRZNEJ strony
+ *    ┼Ťcianki: widoczna po kraw─Ödzi, ale nie ginie pod wzg├│rzem s─ůsiada za ┼Ťciank─ů,
+ *  - wsp├│lny ┼Ťrodek kraw─Ödzi = JEDEN punkt bez insetu (granica dw├│ch heks├│w RZEKI, obie strony
+ *    to koryto) Ôćĺ ZERO ÔÇ×domk├│w" (dawniej exit-ku-cur + entry-ku-next dawa┼éy prostopad┼éy dzi├│bek),
+ *  - polilinia SUROWA (kanciasta) renderowana buildRibbonGeometry sharp=true Ôćĺ proste odcinki +
+ *    za┼éamania na rogach. BEZ Chaikina, BEZ CatmullRom = zero wyg┼éadzania (owner: kanciasto),
+ *  - sta┼éa P┼üASKA wysoko┼Ť─ç (riverHexSurfaceY) ÔÇö bez lewitacji g├│ra-d├│┼é-g├│ra,
+ *  - simplifyRiverRenderPath ┼Ťcina zawroty 180┬░ / skr─Öty Ôëą120┬░ Ôćĺ brak p─Ötli heksagonalnych i
+ *    (kluczowe dla Ôëą2 boki) usuwa transity przez s─ůsiednie kraw─Ödzie, kt├│re musia┼éyby obje┼╝d┼╝a─ç
+ *    obw├│d Ôćĺ filtr Ôëą2 boki nie generuje p─Ötli ani zawrot├│w.
+ * `extendToCenter`: do┼é├│┼╝ ┼Ťrodek OSTATNIEGO heksa ÔÇö TYLKO uj┼Ťcie do morza (g┼é├│wna rzeka).
+ * Konfluencje ko┼äcz─ů na wsp├│lnej kraw─Ödzi (terminal edge), nie w ┼Ťrodku heksa.
+ */
+function buildRiverPointsFromHexPath(
+  map: GameMap,
+  path: Array<{ q: number; r: number }>,
+  R: number,
+  renderStyle: MapRenderStyle,
+  riverMouthY: number,
+  surfaceOffset: number,
+  _coastalKeys: Set<string>,
+  extendToCenter = false,
+  /** Zad. 4 (rz─ůd cieku): mno┼╝nik szeroko┼Ťci dla heksa (q,r) tej trasy. Brak Ôćĺ 1 (bez zmian). */
+  widthAtHex?: (q: number, r: number) => number,
+): { pts: THREE.Vector3[]; hexKeys: Set<string>; widths: number[]; pointHex: string[] } {
+  const pts: THREE.Vector3[] = [];
+  const widths: number[] = [];
+  // Heks per PUNKT (r├│wnoleg┼éa tablica do pts) ÔÇö dla mg┼éy per-heks na wst─Ödze. Zad. bramki dedup
+  // ta sama co pts/widths, wi─Öc pointHex[i] Ôćö pts[i] Ôćö wierzcho┼éki 2i/2i+1 w buildRibbonGeometry.
+  const pointHex: string[] = [];
+  const hexKeys = new Set<string>();
+  if (path.length < 2) return { pts, hexKeys, widths, pointHex };
+
+  // Fog: pokryj WSZYSTKIE oryginalne heksy trasy (tak┼╝e zwini─Öte przez simplify).
+  for (const h of path) hexKeys.add(`${h.q},${h.r}`);
+
+  const yAt = (q: number, r: number): number | null =>
+    riverHexSurfaceY(map, q, r, renderStyle, riverMouthY, surfaceOffset, R);
+  const wAt = (q: number, r: number): number => widthAtHex ? widthAtHex(q, r) : 1;
+
+  const rp = simplifyRiverRenderPath(path);
+  if (rp.length < 2) return { pts, hexKeys, widths, pointHex };
+
+  // Inset surowego rogu obwodu ku ┼Ťrodkowi W┼üASNEGO heksa (hug wewn─Ötrznej ┼Ťcianki).
+  const insetToward = (x: number, z: number, hq: number, hr: number): { x: number; z: number } => {
+    const c = axialToWorld(hq, hr, R);
+    return { x: x + (c.x - x) * RIVER_INSET_FRAC, z: z + (c.z - z) * RIVER_INSET_FRAC };
+  };
+
+  // Surowa polilinia PO ┼ÜCIANKACH ÔÇö jeden punkt na przej┼Ťcie przez ┼Ťciank─Ö (bez domk├│w), kanciasto.
+  // `w` = mno┼╝nik szeroko┼Ťci w tym punkcie (rz─ůd cieku) ÔÇö r├│wnoleg┼éa tablica do `pts` (ta sama
+  // dedup-brama dystansu, ┼╝eby d┼éugo┼Ťci pts/widths zawsze si─Ö zgadza┼éy).
+  const pushPt = (x: number, z: number, y: number, w: number, hexKey: string): void => {
+    const p = new THREE.Vector3(x, y, z);
+    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.004) {
+      pts.push(p);
+      widths.push(w);
+      pointHex.push(hexKey);
+    }
+  };
+
+  // Start: ┼Ťrodek wsp├│lnej kraw─Ödzi hex0|hex1, INSET ku hex1 (na wewn─Ötrznym pa┼Ťmie, nie na samej
+  // ┼Ťciance) ÔÇö rzeka ÔÇ×rodzi si─Ö" tu, sp├│jnie z rogami ┼éuku (bez nadmiarowego nubu przy ┼║r├│dle).
+  {
+    const a = rp[0]!;
+    const b = rp[1]!;
+    const mid0 = sharedEdgeMidpoint(a.q, a.r, b.q, b.r, R);
+    const ya = yAt(a.q, a.r);
+    const yb = yAt(b.q, b.r);
+    if (mid0 && ya != null && yb != null) {
+      const p0 = insetToward(mid0.x, mid0.z, b.q, b.r);
+      pushPt(p0.x, p0.z, (ya + yb) * 0.5, wAt(b.q, b.r), `${b.q},${b.r}`);
+    }
+  }
+
+  // Heksy ┼Ťrodkowe: TYLKO rogi ┼éuku obwodu (inset ku cur, Ôëą2 boki). ┼ÜRODK├ôW KRAW─śDZI PRZEJ┼ÜCIA
+  // NIE dodajemy ÔÇö to one by┼éy ┼║r├│d┼éem ÔÇ×domk├│w": nieinsetowany ┼Ťrodek ┼Ťcianki mi─Ödzy dwoma
+  // insetowanymi rogami dawa┼é prostopad┼éy dzi├│bek (out-and-back do po┼éowy ┼Ťcianki), kt├│ry Chaikin
+  // wcze┼Ťniej wyg┼éadza┼é. Bez Chaikina rogi s─ůsiednich heks├│w ┼é─ůcz─ů si─Ö WPROST przez wsp├│ln─ů
+  // ┼Ťciank─Ö ÔÇö czysty odcinek po wewn─Ötrznej stronie kraw─Ödzi, ZERO dzi├│bk├│w, kanciasto.
+  for (let i = 1; i < rp.length - 1; i++) {
+    const prev = rp[i - 1]!;
+    const cur = rp[i]!;
+    const next = rp[i + 1]!;
+    if (neighborDirIndex(prev.q, prev.r, cur.q, cur.r) < 0) continue;
+    if (neighborDirIndex(cur.q, cur.r, next.q, next.r) < 0) continue;
+    const yc = yAt(cur.q, cur.r);
+    if (yc == null) continue;
+
+    const wc = wAt(cur.q, cur.r);
+    for (const corner of riverTransitCornersOnHex(
+      cur.q, cur.r, prev.q, prev.r, next.q, next.r, R,
+    )) {
+      const pc = insetToward(corner.x, corner.z, cur.q, cur.r);
+      pushPt(pc.x, pc.z, yc, wc, `${cur.q},${cur.r}`);
+    }
+  }
+
+  // Koniec trasy: ┼Ťrodek wsp├│lnej kraw─Ödzi (penultimate|last), inset ku last ÔÇö symetria ze
+  // startem. Konfluencja styka si─Ö na kraw─Ödzi hex, nie w ┼Ťrodku pola (Roblox, bez ÔÇ×┼Ťlepych"
+  // ko┼äc├│wek). G┼é├│wna rzeka do morza: dodatkowo ┼Ťrodek last = kotwica ┼éa┼äcucha przybrze┼╝nego.
+  if (rp.length >= 2) {
+    const pen = rp[rp.length - 2]!;
+    const last = rp[rp.length - 1]!;
+    const midEnd = sharedEdgeMidpoint(pen.q, pen.r, last.q, last.r, R);
+    const yPen = yAt(pen.q, pen.r);
+    const yLast = yAt(last.q, last.r);
+    if (midEnd && yPen != null && yLast != null) {
+      const pEnd = insetToward(midEnd.x, midEnd.z, last.q, last.r);
+      pushPt(pEnd.x, pEnd.z, (yPen + yLast) * 0.5, wAt(last.q, last.r), `${last.q},${last.r}`);
+    }
+    if (extendToCenter) {
+      const yl = yLast ?? yAt(last.q, last.r);
+      if (yl != null) {
+        const cl = axialToWorld(last.q, last.r, R);
+        pushPt(cl.x, cl.z, yl, wAt(last.q, last.r), `${last.q},${last.r}`);
+      }
+    }
+  }
+
+  return { pts, hexKeys, widths, pointHex };
+}
+
+/** FALA 147: rzadsze punkty wst─Ögi batched medium/tributary (bez pointHex ÔÇö mg┼éa per hexKeys). */
+function decimateRiverRibbonPoints(pts: THREE.Vector3[], minDist: number): THREE.Vector3[] {
+  if (pts.length < 3 || minDist <= 0) return pts;
+  const out: THREE.Vector3[] = [pts[0]!];
+  for (let i = 1; i < pts.length - 1; i++) {
+    if (out[out.length - 1]!.distanceTo(pts[i]!) >= minDist) out.push(pts[i]!);
+  }
+  const last = pts[pts.length - 1]!;
+  if (out[out.length - 1] !== last) out.push(last);
+  return out;
+}
+
+/** Jedna ci─ůg┼éa wst─Öga na tras─Ö riverPaths ÔÇö rogi i ┼Ťrodki kraw─Ödzi (NIE przez ┼Ťrodek heksa).
+ * hex.rzeka.krawedzie zostaje dla logiki gry; render idzie po pe┼énej ┼Ťcie┼╝ce.
+ */
+async function renderLandRiversFromPaths(
+  map: GameMap,
+  paths: Array<Array<{ q: number; r: number }>>,
+  kinds: Array<'main' | 'medium' | 'short' | 'tributary' | undefined>,
+  R: number,
+  renderStyle: MapRenderStyle,
+  riverMouthY: number,
+  surfaceOffset: number,
+  mainHalfWidth: number,
+  scene: THREE.Scene,
+  riverEntries: RiverEntry[],
+  riverMat: THREE.Material,
+  renderOrder: number,
+  onSlice?: (done: number, total: number) => void,
+  opts?: {
+    batchAllPaths?: boolean;
+    batchSize?: number;
+    ribbonSegments?: number;
+    /** FALA 147: min. odst─Öp punkt├│w tributary/medium (bez pointHex). */
+    tributaryDecimateDist?: number;
+    yieldEvery?: number;
+  },
+): Promise<Set<string>> {
+  const landHexKeys = new Set<string>();
+  const pathTotal = paths.length;
+  const batchAll = opts?.batchAllPaths ?? false;
+  const batchSize = opts?.batchSize ?? RIVER_BATCH_PATHS;
+  const ribbonSegs = opts?.ribbonSegments ?? 8;
+  let batchBucket: RiverGeoBucket | null = null;
+  let batchCount = 0;
+  let sliceStart = performance.now();
+
+  const flushBatch = (): void => {
+    if (!batchBucket || batchBucket.geos.length === 0) return;
+    flushRiverBucket(scene, batchBucket, riverEntries);
+    batchBucket = null;
+    batchCount = 0;
+  };
+
+  for (let pi = 0; pi < paths.length; pi++) {
+    const path = paths[pi]!;
+    if (path.length < 2) continue;
+    if (path.length > 512) continue;
+    const landPath = landRiverRenderPath(map.hexes, path);
+    if (landPath.length < 2) continue;
+    if (landPath.length > 480) continue;
+
+    const kind = kinds[pi] ?? 'main';
+    const landLen = landPath.length;
+    let widthMul = kind === 'main'
+      ? Math.min(1.35, 0.85 + landLen * 0.008)
+      : landLen < 10
+        ? 0.4
+        : landLen < 18
+          ? 0.55
+          : 0.7;
+    const halfWidth = mainHalfWidth * widthMul;
+
+    // Terminal edge na ka┼╝dej trasie; ┼Ťrodek last tylko uj┼Ťcie do morza (kotwica przybrze┼╝a).
+    const reachesSea = pathReachesOpenSeaRender(map, path);
+    const { pts, hexKeys, pointHex } = buildRiverPointsFromHexPath(
+      map, landPath, R, renderStyle, riverMouthY, surfaceOffset, new Set<string>(),
+      reachesSea,
+    );
+    if (pts.length < 2 || pts.length > RIVER_RIBBON_MAX_PTS) continue;
+
+    const isMain = kind === 'main';
+    // G┼é├│wne rzeki ZAWSZE osobno + pointHex (mg┼éa per-heks). batchAll dotyczy tylko medium/short/tributary.
+    if (isMain) {
+      flushBatch();
+      // G┼é├│wna rzeka: osobny mesh + pointHex (mg┼éa per-heks na wst─Ödze).
+      const pathBucket: RiverGeoBucket = {
+        mat: riverMat, geos: [], hexKeys: new Set(), renderOrder,
+      };
+      pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, ribbonSegs, true);
+      flushRiverBucket(scene, pathBucket, riverEntries, pointHex);
+    } else {
+      // Medium/short/tributary (lub Pangea: wszystkie batched Ôćĺ jeden merge).
+      if (!batchBucket) {
+        batchBucket = { mat: riverMat, geos: [], hexKeys: new Set(), renderOrder };
+      }
+      const renderPts = opts?.tributaryDecimateDist
+        ? decimateRiverRibbonPoints(pts, opts.tributaryDecimateDist)
+        : pts;
+      pushRiverMesh(batchBucket, renderPts, hexKeys, halfWidth, ribbonSegs, true);
+      batchCount++;
+      if (batchCount >= batchSize) flushBatch();
+    }
+    for (const k of hexKeys) landHexKeys.add(k);
+    const yieldEvery = opts?.yieldEvery ?? (batchAll ? 4 : 10);
+    if (pi > 0 && (pi % yieldEvery === 0 || performance.now() - sliceStart >= C3_CHUNK_TIME_BUDGET_MS)) {
+      onSlice?.(pi + 1, pathTotal);
+      await c3NextFrame();
+      sliceStart = performance.now();
+    }
+  }
+  flushBatch();
+  onSlice?.(pathTotal, pathTotal);
+  return landHexKeys;
+}
+
+function queueRiverGeo(
+  bucket: RiverGeoBucket,
+  geo: THREE.BufferGeometry,
+  hexKeys: Set<string>,
+): void {
+  bucket.geos.push(geo);
+  for (const k of hexKeys) bucket.hexKeys.add(k);
+}
+
+function flushRiverBucket(
+  scene: THREE.Scene,
+  bucket: RiverGeoBucket,
+  riverEntries: RiverEntry[],
+  /** Heks per punkt wst─Ögi (mg┼éa per-heks). Tylko dla pojedynczej geo (jedna trasa, bez merge). */
+  pointHex?: string[],
+): void {
+  if (bucket.geos.length === 0) return;
+  const merged = bucket.geos.length === 1
+    ? bucket.geos[0]!
+    : mergeGeometries(bucket.geos);
+  if (!merged) return;
+  const mesh = new THREE.Mesh(merged, bucket.mat);
+  mesh.castShadow = false;
+  mesh.receiveShadow = false;
+  mesh.renderOrder = bucket.renderOrder;
+  scene.add(mesh);
+  riverEntries.push({
+    waterMesh: mesh,
+    bankMesh: mesh,
+    waterGeo: merged,
+    bankGeo: merged,
+    hexKeys: bucket.hexKeys,
+    merged: bucket.geos.length > 1,
+    // Per-heks fog tylko dla jednowst─Ögowej geo (merge przesuwa offsety wierzcho┼ék├│w Ôćĺ niepewne).
+    pointHex: bucket.geos.length === 1 ? pointHex : undefined,
+  });
+  if (bucket.geos.length > 1) {
+    for (const g of bucket.geos) g.dispose();
+  }
+}
+
+function pushRiverMesh(
+  bucket: RiverGeoBucket,
+  pts: THREE.Vector3[],
+  hexKeys: Set<string>,
+  halfWidth: number | number[],
+  segmentsPerSpan = 16,
+  sharp = true,
+): void {
+  if (pts.length < 2) return;
+  const geo = buildRibbonGeometry(pts, halfWidth, segmentsPerSpan, sharp);
+  queueRiverGeo(bucket, geo, hexKeys);
+}
+
+// ---------------------------------------------------------------------------
+// Pomiar czasu ostatniego pe┼énego przebiegu setFog (A4/A5 ÔÇö overlay F9).
+// Modu┼éowy, bo naraz aktywna jest tylko jedna scena; getter czyta ostatni pomiar
+// z bie┼╝─ůcej sceny bez rozszerzania kontraktu SceneResult / wpi─Ö─ç w main.ts.
+// ---------------------------------------------------------------------------
+let lastSetFogMs = 0;
+/** Czas ostatniego pe┼énego przebiegu setFog w ms (aktywna scena). Overlay F9. */
+export function getLastSetFogMs(): number {
+  return lastSetFogMs;
+}
+
+// ---------------------------------------------------------------------------
+// C3 ÔÇö chunked scene build (DYSPOZYCJA-WYDAJNOSC C3).
+// Budowa sceny (g┼é├│wna p─Ötla po heksach) rozbita na porcje (chunki) z oddaniem
+// klatki mi─Ödzy nimi, ┼╝eby na wielkich mapach ("Super Huge") g┼é├│wny w─ůtek nie
+// blokowa┼é si─Ö na sekundy ("strona nie odpowiada"). C3 to WY┼ü─äCZNIE zmiana
+// harmonogramu: TA SAMA praca (te same meshe/materia┼éy/macierze/InstancedMesh),
+// tylko roz┼éo┼╝ona na kilka klatek. Zero zmian wizualnych/gameplay; PRNG nietkni─Öty.
+// Marker do grepowania zbudowanego bundla: 'civ-scene-chunked-c3'.
+// ---------------------------------------------------------------------------
+const C3_MARKER = 'civ-scene-chunked-c3';
+/** Bud┼╝et czasu na jedn─ů porcj─Ö g┼é├│wnej p─Ötli (ms) ÔÇö po przekroczeniu oddaj klatk─Ö. */
+const C3_CHUNK_TIME_BUDGET_MS = 14;
+/** Twardy limit heks├│w na porcj─Ö (bezpiecznik gdy zegar jest gruby/zamro┼╝ony). */
+const C3_CHUNK_MAX_HEXES = 1200;
+/** Maks. punkt├│w wst─Ögi rzeki ÔÇö degenerate path po bootstrap FALA 135. */
+const RIVER_RIBBON_MAX_PTS = 6000;
+/** FALA 138 perf: scala medium/short w jeden mesh co N tras (mg┼éa per hexKeys, nie pointHex). */
+const RIVER_BATCH_PATHS = 32;
+/** Pangea / g─Östa sie─ç rzek: wi─Ökszy batch medium/tributary (FALA 145: 96, FALA 147: 128). */
+const RIVER_BATCH_PATHS_DENSE = 128;
+/** Brzeg/pla┼╝a: 1ÔÇô6 box├│w ÔÇö merge per-heks to O(hex├Świerzcho┼éki) bez zysku FPS; scalaj tylko ci─Ö┼╝sze (oaza, las). */
+const OVERLAY_COLLAPSE_MIN_MESHES = 7;
+
+/** Oddaj jedn─ů klatk─Ö (rAF) ÔÇö pozwala przegl─ůdarce od┼Ťwie┼╝y─ç overlay i nie zawiesi─ç si─Ö. */
+function c3NextFrame(): Promise<void> {
+  return new Promise<void>((r) => requestAnimationFrame(() => r()));
+}
+
+/** Callback post─Öpu budowy sceny (C3). pct = 0..100 (procent porcji zrobionych). */
+export type SceneBuildProgress = (pct: number) => void;
+
+/**
+ * B (ci─Öcie geometrii): hex-graniastos┼éup BEZ dolnej pokrywy. Sp├│d heksa nigdy nie jest
+ * widoczny (kamera z g├│ry), a dolna pokrywa to 6 z 24 tr├│jk─ůt├│w Ôćĺ ~25% mniej tr├│jk─ůt├│w
+ * bazowych heks├│w, PIXEL-IDENTYCZNIE. Zostawiamy boki (relief przy klifach) + g├│rn─ů pokryw─Ö.
+ */
+function hexPrismNoBottomGeo(radius: number, height: number, radial = 6): THREE.CylinderGeometry {
+  const g = new THREE.CylinderGeometry(radius, radius, height, radial, 1);
+  const idx = g.getIndex();
+  if (idx) {
+    // Grupy CylinderGeometry: 0=boki, 1=g├│rna pokrywa, 2=DOLNA pokrywa (ostatnia w indeksie).
+    const bottom = g.groups.find((gr) => gr.materialIndex === 2);
+    if (bottom) {
+      const arr = idx.array as Uint16Array | Uint32Array;
+      const kept = arr.slice(0, bottom.start); // boki + g├│ra, bez dolnej pokrywy
+      g.setIndex(new THREE.BufferAttribute(kept, 1));
+      g.clearGroups();
+    }
+  }
+  return g;
+}
+
+export async function buildScene(
+  map: GameMap,
+  canvas: HTMLCanvasElement,
+  styleOrOptions?: MapRenderStyle | MapRenderOptions,
+  onProgress?: SceneBuildProgress,
+): Promise<SceneResult> {
+  // Odwo┼éanie do markera C3, ┼╝eby nie zosta┼é wyci─Öty przez tree-shaking (integrator
+  // grepuje ten litera┼é w zbudowanym bundlu). Nie zmienia zachowania.
+  void C3_MARKER;
+  if (typeof globalThis !== "undefined") { (globalThis as any).__CIV_MARKERS = "civ-scene-chunked-c3|civ-culling-b06|civ-zoom-lod-a1a4"; }
+  const CIV_CULLING_B06 = 'civ-culling-b06'; void CIV_CULLING_B06;
+  const renderOptions = normalizeMapRenderOptions(styleOrOptions);
+  const renderStyle = renderOptions.style;
+  const hexCount = Object.keys(map.hexes).length;
+  // Eksperyment B (heks bez dolnej pokrywy, ~25% mniej tri bazowych). Domy┼Ťlnie W┼ü─äCZONE.
+  // Prze┼é─ůcznik pomiarowy: ?nobottom=0 Ôćĺ pe┼ény pryzm (z doln─ů pokryw─ů) do por├│wnania F9.
+  const B_NO_BOTTOM =
+    (typeof location !== 'undefined'
+      ? new URLSearchParams(location.search).get('nobottom')
+      : null) !== '0';
+  const preset = resolveRenderPreset(renderOptions, hexCount);
+  const robloxLite = preset.robloxLite;
+  /** Pangea (jedna masa): g─Östa sie─ç rzek + ~2├Ś dekoracji l─ůdowej vs Kontynenty ÔÇö skr├│ty ko┼äc├│wki buildScene. */
+  const denseLandmass = isDenseLandmassMap(map);
+  /** FALA 145: Maciej ÔÇö przywr├│─ç dekoracje; perf tylko rzeki (isRiverRenderFast). */
+  const sceneBuildFast = isSceneBuildFastPath(hexCount);
+  const riverRenderFast = isRiverRenderFast(hexCount, map);
+  // GRAFIKA-3D: jako┼Ť─ç dekoracji ulepsze┼ä (stadnina 1/2 konie itp.) wg ustawienia gracza.
+  setImprovementDetailQuality(renderOptions.mapDetailQuality);
+  const palette = styleScenePalette(renderStyle);
+  const useStyledDecor = renderStyle !== 'civ';
+  const styledOverlays: Array<{ group: THREE.Group; hexKey: string; kind?: 'forest' }> = [];
+  const R = HEX_R;
+  const fixedViewport = renderOptions.previewViewport != null;
+  const panelCols = Math.max(1, renderOptions.previewViewport?.panelColumns ?? 1);
+  // clientWidth/Height ÔÇö ten sam uk┼éad co getBoundingClientRect w pickerze (Ôëá innerHeight ze scrollbarem).
+  const canvasCssW = () => canvas.clientWidth || window.innerWidth;
+  const canvasCssH = () => canvas.clientHeight || window.innerHeight;
+  const vpW = renderOptions.previewViewport?.width ?? canvasCssW();
+  const vpH = renderOptions.previewViewport?.height ?? canvasCssH();
+  const camAspect = (vpW / panelCols) / vpH;
+
+  // -- Renderer (jako┼Ť─ç GPU z kreatora / menu)
+  const ownRenderer = renderOptions.sharedRenderer == null;
+  const renderer = renderOptions.sharedRenderer
+    ?? new THREE.WebGLRenderer({ canvas, antialias: preset.antialias, powerPreference: 'high-performance' });
+  if (ownRenderer) {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, preset.pixelRatioMax));
+    // updateStyle=fixedViewport: dla qualitypreview (sta┼éy viewport, JS zarz─ůdza pikselowym
+    // rozmiarem canvasu) zachowujemy stare zachowanie (true). Dla g┼é├│wnego canvasu gry
+    // (fixedViewport=false) NIE wolno nadpisywa─ç stylu ÔÇö main.ts ustawia canvas na
+    // position:fixed + width/height:100%, ┼╝eby canvas ZAWSZE wizualnie wype┼énia┼é viewport
+    // (tak┼╝e w pe┼énym ekranie, bez czekania na 'resize'). setSize z updateStyle=true zapisuje
+    // literalne piksele w canvas.style.width/height, co ubija t─Ö reaktywno┼Ť─ç ÔÇö po wej┼Ťciu w
+    // pe┼ény ekran canvas zostaje "zamro┼╝ony" na starym rozmiarze i u do┼éu/z boku zostaje
+    // nieprzeskalowany pas t┼éa (a canvas.getBoundingClientRect() u┼╝ywany przez edge-pan nie
+    // si─Öga ju┼╝ do prawdziwej kraw─Ödzi ekranu, wi─Öc edge-pan tam nie dzia┼éa).
+    renderer.setSize(vpW, vpH, fixedViewport);
+  }
+  if (renderStyle === 'civ') {
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+  }
+  renderer.shadowMap.enabled = preset.shadowsEnabled;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // FPS: cienie na ┼╝─ůdanie. Shadow pass Ôëł drugi przebieg CA┼üEJ geometrii co klatk─Ö, a przy
+  // panie/idle kamery cienie si─Ö NIE zmieniaj─ů (s─ů w world-space). Wy┼é─ůczamy auto-render shadow
+  // mapy ÔÇö Three.js rysuje j─ů tylko gdy needsUpdate=true i konsumuje flag─Ö po renderze. Flag─Ö
+  // podnosimy przy realnej zmianie caster├│w: setFog (ods┼éoni─Öcie/ukrycie terenu), applyZoomGpuSettings
+  // (LOD), spawn ulepsze┼ä, oraz per-klatk─Ö animacji ruchu (p─Ötla main.ts). Pierwszy render: true.
+  if (renderer.shadowMap.enabled) {
+    renderer.shadowMap.autoUpdate = false;
+    renderer.shadowMap.needsUpdate = true;
+  }
+
+  // -- Scena + tlo
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(palette.sky);
+  if (palette.fogExp !== undefined) {
+    scene.fog = new THREE.FogExp2(palette.fogColor, palette.fogExp);
+  } else {
+    const fogNear = palette.fogNear ?? 40;
+    const fogFar = (palette.fogFar ?? 200) * preset.fogFarMul;
+    scene.fog = new THREE.Fog(palette.fogColor, fogNear, fogFar);
+  }
+
+  // -- Swiatla
+  const hemi = new THREE.HemisphereLight(
+    renderStyle === 'roblox' ? 0xffffff : 0xd4eaff,
+    renderStyle === 'roblox' ? 0x88cc88 : 0x5a5040,
+    renderStyle === 'roblox' ? 1.05 : 0.9,
+  );
+  scene.add(hemi);
+
+  const sun = new THREE.DirectionalLight(renderStyle === 'roblox' ? 0xfffef0 : 0xfff0cc, renderStyle === 'roblox' ? 1.25 : 1.4);
+  sun.position.set(60, 100, 40);
+  sun.castShadow = preset.shadowsEnabled;
+  if (preset.shadowsEnabled) {
+    sun.shadow.mapSize.set(preset.shadowMapSize, preset.shadowMapSize);
+  }
+  sun.shadow.camera.near = 0.5;
+  sun.shadow.camera.far  = 500;
+  const sc = renderStyle === 'roblox'
+    ? Math.max(70, Math.max(map.szerokoscQ, map.wysokoscR) * R * 0.55)
+    : 60;
+  sun.shadow.camera.left   = -sc;
+  sun.shadow.camera.right  =  sc;
+  sun.shadow.camera.top    =  sc;
+  sun.shadow.camera.bottom = -sc;
+  scene.add(sun);
+
+  // Subtelne swiatlo wypelniajace z przeciwnej strony ÔÇö mieksze cienie, bogatsze biomy.
+  const fill = new THREE.DirectionalLight(0xbcd4ff, 0.35);
+  fill.position.set(-50, 60, -30);
+  scene.add(fill);
+
+  // -- Geometrie wspoldzielone
+  // CylinderGeometry(6) jest juz pointy-top -- bez rotacji.
+
+  // Zlicz ilosc per teren i nakladke
+  // GRAFIKA-3D partia TEREN stage 2: w stylu roblox g├│ry/wzg├│rza renderujemy jako
+  // 10 InstancedMesh (5 wariant├│w g├│r + 5 wzg├│rz) zamiast per-heks styledOverlays.
+  const NW = LICZBA_WARIANTOW_TERENU;
+  const styledTerrain = useStyledDecor && renderStyle === 'roblox';
+  const countByTerrain: Partial<Record<TerenBazowy, number>> = {};
+  let forestCount = 0;
+  let mountainSnowCount = 0;
+  let hillCount = 0;
+  let desertCount = 0;
+  const goraVarCount: number[] = new Array(NW).fill(0);
+  const wzgorzeVarCount: number[] = new Array(NW).fill(0);
+  // GRAFIKA-TEREN-2: k─Öpy lasu (5 wariant├│w) ÔÇö pre-count wariant├│w do alokacji InstancedMesh (jak g├│ry/wzg├│rza).
+  const NL = LICZBA_WARIANTOW_LASU;
+  // NATURALNY las = warianty 0..3 (BEZ L4 ÔÇ×przetrzebionego": pie┼äki+k┼éoda). L4 zarezerwowany na
+  // dynamiczny wyr─ůb (hexClearingStates) ÔÇö na starcie las ma by─ç PE┼üNY, nie wygl─ůda─ç na wyr─ůbany.
+  const NL_NATURAL = 4;
+  const lasVarCount: number[] = new Array(NL).fill(0);
+  // DEKOR: mikrodekor ┼é─ůk/r├│wnin ÔÇö pre-count wariant├│w (jak goraVarCount) do alokacji InstancedMesh.
+  const dekorLakaVarCount: number[] = new Array(DEKOR_LICZBA_WARIANTOW).fill(0);
+  const dekorRowninaVarCount: number[] = new Array(DEKOR_LICZBA_WARIANTOW).fill(0);
+
+  for (const hex of Object.values(map.hexes)) {
+    const t = hex.terenBazowy;
+    countByTerrain[t] = (countByTerrain[t] ?? 0) + 1;
+    if (hex.nakladka === Nakladka.Las) {
+      forestCount++;
+      // K─Öpa lasu instancjonowana tylko dla stylu roblox POZA stref─ů tropikaln─ů (d┼╝ungla = stara ┼Ťcie┼╝ka).
+      if (styledTerrain && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze
+          && !isWarmJungleForestHex(hex.coords.q, hex.coords.r, map.wysokoscR)) {
+        lasVarCount[wariantLasuDlaHeksa(hex.coords.q, hex.coords.r, NL_NATURAL, map.seed)]!++;
+      }
+    }
+    if (t === TerenBazowy.Gory) {
+      mountainSnowCount++;
+      if (styledTerrain) goraVarCount[wariantDlaHeksa(hex.coords.q, hex.coords.r, NW, map.seed)]!++;
+    }
+    if (t === TerenBazowy.Wzgorza) {
+      hillCount++;
+      if (styledTerrain) wzgorzeVarCount[wariantDlaHeksa(hex.coords.q, hex.coords.r, NW, map.seed)]!++;
+    }
+    if (t === TerenBazowy.Pustynia) desertCount++;
+    // DEKOR: policz warianty mikrodekoru na heksach ┼é─ůki/r├│wniny (styl roblox; ~45% pustych).
+    if (styledTerrain && (t === TerenBazowy.Laka || t === TerenBazowy.Rownina)) {
+      const dw = dekorDlaHeksa(hex.coords.q, hex.coords.r, map.seed);
+      if (dw !== null) {
+        if (t === TerenBazowy.Laka) dekorLakaVarCount[dw]!++;
+        else dekorRowninaVarCount[dw]!++;
+      }
+    }
+  }
+
+  // Maks. liczby instancji dekoracji (z zapasem na deterministyczna zmiennosc)
+  const MAX_TREES_PER_FOREST = 6;   // korony (las gestszy, naturalne kepy); pnie tyle samo
+  const MAX_SHRUBS_PER_HILL  = 3;   // krzewy na wzgorzu
+
+  // -- Instanced hex prisms per terrain type
+  const instancedMeshes: THREE.InstancedMesh[] = [];
+  /** mesh Ôćĺ instanceId Ôćĺ hex key "q,r" (picking bez worldToAxial na bokach pryzmu). */
+  const terrainPickKeys = new Map<THREE.InstancedMesh, string[]>();
+  const terrainMaterials: Partial<Record<TerenBazowy, THREE.MeshLambertMaterial>> = {};
+
+  const terrainIndex: Partial<Record<TerenBazowy, number>> = {};
+
+  const terrainTypes = Object.values(TerenBazowy);
+  for (const t of terrainTypes) {
+    const cnt = countByTerrain[t] ?? 0;
+    if (cnt === 0) continue;
+    const vis = terrainVis(t, renderStyle);
+    // Roblox: lekki overlap zamyka tr├│jk─ůtne szczeliny mi─Ödzy heksami (prze┼Ťwit tafli oceanu).
+    const hexR = renderStyle === 'roblox' ? R * 1.008 : R * 0.998;
+    const geo = B_NO_BOTTOM
+      ? hexPrismNoBottomGeo(hexR, vis.height)
+      : new THREE.CylinderGeometry(hexR, hexR, vis.height, 6, 1); // ?nobottom=0: pe┼ény pryzm (pomiar B)
+    // Brak rotateY -- CylinderGeometry(6) jest juz pointy-top jak axialToWorld.
+    const mat = new THREE.MeshLambertMaterial({
+      color: styleTerrainColor(t, renderStyle),
+      flatShading: palette.flatShading,
+    });
+    terrainMaterials[t] = mat;
+    const mesh = new THREE.InstancedMesh(geo, mat, cnt);
+    mesh.frustumCulled = false;
+    mesh.castShadow    = true;
+    mesh.receiveShadow = true;
+    instancedMeshes.push(mesh);
+    scene.add(mesh);
+    terrainIndex[t] = instancedMeshes.length - 1;
+  }
+
+  const terrainInstanceIdx: Partial<Record<TerenBazowy, number>> = {};
+  for (const t of terrainTypes) terrainInstanceIdx[t] = 0;
+
+  // -- Las -- InstancedMesh stozkow (korony) + cienkie pnie (trunks) [tylko styl Civ]
+  const maxTrees = forestCount * MAX_TREES_PER_FOREST;
+  const forestConeGeo = useStyledDecor ? new THREE.ConeGeometry(1, 1, 3) : new THREE.ConeGeometry(R * 0.17, R * 0.50, 6);
+  const forestConeMat = new THREE.MeshLambertMaterial({ color: FOREST_CONE_COLOR });
+  const forestMesh = new THREE.InstancedMesh(forestConeGeo, forestConeMat, useStyledDecor ? 0 : maxTrees);
+  forestMesh.frustumCulled = false;
+  forestMesh.castShadow = true;
+  forestMesh.receiveShadow = true;
+  if (!useStyledDecor) scene.add(forestMesh);
+
+  // Pnie drzew lasu -- krotkie, ciemne walce pod koronami
+  const forestTrunkGeo = useStyledDecor ? new THREE.CylinderGeometry(1, 1, 1, 3) : new THREE.CylinderGeometry(R * 0.035, R * 0.05, R * 0.18, 5);
+  const forestTrunkMat = new THREE.MeshLambertMaterial({ color: FOREST_TRUNK_COLOR });
+  const forestTrunkMesh = new THREE.InstancedMesh(forestTrunkGeo, forestTrunkMat, useStyledDecor ? 0 : maxTrees);
+  forestTrunkMesh.frustumCulled = false;
+  forestTrunkMesh.castShadow = true;
+  if (!useStyledDecor) scene.add(forestTrunkMesh);
+
+  // -- Snieg na gorach
+  const snowGeo = useStyledDecor ? new THREE.ConeGeometry(1, 1, 3) : new THREE.ConeGeometry(R * 0.42, R * 0.45, 6);
+  // Brak rotateY -- snieg jest maly, orientacja bez znaczenia, ale spojnosc.
+  const snowMat = new THREE.MeshLambertMaterial({ color: SNOW_COLOR });
+  const snowMesh = new THREE.InstancedMesh(snowGeo, snowMat, useStyledDecor ? 0 : mountainSnowCount);
+  snowMesh.frustumCulled = false;
+  snowMesh.castShadow = true;
+  if (!useStyledDecor) scene.add(snowMesh);
+
+  // -- Krzewy na wzgorzach -- male stozki (mniejsze niz las)
+  const shrubConeGeo = useStyledDecor ? new THREE.ConeGeometry(1, 1, 3) : new THREE.ConeGeometry(R * 0.13, R * 0.38, 6);
+  const shrubConeMat = new THREE.MeshLambertMaterial({ color: SHRUB_COLOR });
+  const shrubMesh = new THREE.InstancedMesh(shrubConeGeo, shrubConeMat, useStyledDecor ? 0 : hillCount * MAX_SHRUBS_PER_HILL);
+  shrubMesh.frustumCulled = false;
+  shrubMesh.castShadow = true;
+  if (!useStyledDecor) scene.add(shrubMesh);
+
+  // -- Dekoracyjny szczyt skalny na gorach
+  const peakGeo = useStyledDecor ? new THREE.ConeGeometry(1, 1, 3) : new THREE.ConeGeometry(R * 0.55, R * 0.85, 6);
+  const peakMat = new THREE.MeshLambertMaterial({ color: PEAK_ROCK_COLOR, flatShading: true });
+  const peakMesh = new THREE.InstancedMesh(peakGeo, peakMat, useStyledDecor ? 0 : mountainSnowCount);
+  peakMesh.frustumCulled = false;
+  peakMesh.castShadow = true;
+  peakMesh.receiveShadow = true;
+  if (!useStyledDecor) scene.add(peakMesh);
+
+  // -- Trawiasty kopiec na wzgorzach
+  const hillBumpGeo = useStyledDecor ? new THREE.SphereGeometry(1, 4, 3) : new THREE.SphereGeometry(R * 0.62, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.5);
+  const hillBumpMat = new THREE.MeshLambertMaterial({ color: HILL_GRASS_COLOR, flatShading: true });
+  const hillBumpMesh = new THREE.InstancedMesh(hillBumpGeo, hillBumpMat, useStyledDecor ? 0 : hillCount);
+  hillBumpMesh.frustumCulled = false;
+  hillBumpMesh.castShadow = true;
+  hillBumpMesh.receiveShadow = true;
+  if (!useStyledDecor) scene.add(hillBumpMesh);
+
+  // GRAFIKA-3D partia TEREN stage 2: 10 InstancedMesh (5 gora + 5 wzgorze wariant├│w),
+  // wsp├│lny TEREN_MATERIAL (vertexColors), frustumCulled=false jak peak/hillBump.
+  // Fog: matrix-hide (nieodkryte/miasto) + instanceColor-dim (explored) ÔÇö patrz applyTerrainFog.
+  const goraInst: THREE.InstancedMesh[] = [];
+  const wzgorzeInst: THREE.InstancedMesh[] = [];
+  const goraHexKey: string[][] = [];
+  const goraOrigMatrix: THREE.Matrix4[][] = [];
+  const goraIdx: number[] = [];
+  const wzgorzeHexKey: string[][] = [];
+  const wzgorzeOrigMatrix: THREE.Matrix4[][] = [];
+  const wzgorzeIdx: number[] = [];
+  if (styledTerrain) {
+    for (let v = 0; v < NW; v++) {
+      const gm = new THREE.InstancedMesh(goraGeometria(v), TEREN_MATERIAL, Math.max(1, goraVarCount[v]!));
+      gm.frustumCulled = false; gm.castShadow = true; gm.receiveShadow = true; gm.count = 0;
+      scene.add(gm);
+      goraInst.push(gm); goraHexKey.push([]); goraOrigMatrix.push([]); goraIdx.push(0);
+      const wm = new THREE.InstancedMesh(wzgorzeGeometria(v), TEREN_MATERIAL, Math.max(1, wzgorzeVarCount[v]!));
+      wm.frustumCulled = false; wm.castShadow = true; wm.receiveShadow = true; wm.count = 0;
+      scene.add(wm);
+      wzgorzeInst.push(wm); wzgorzeHexKey.push([]); wzgorzeOrigMatrix.push([]); wzgorzeIdx.push(0);
+    }
+  }
+
+  // GRAFIKA-TEREN-2: 5 InstancedMesh k─Öp lasu (poza d┼╝ungl─ů tropikaln─ů) ÔÇö wsp├│lny LAS_MATERIAL
+  // (vertexColors, flatShading). Wzorzec g├│r/wzg├│rz: fog = matrix-hide + instanceColor-dim.
+  const lasInst: THREE.InstancedMesh[] = [];
+  const lasHexKey: string[][] = [];
+  const lasOrigMatrix: THREE.Matrix4[][] = [];
+  const lasIdx: number[] = [];
+  if (styledTerrain) {
+    for (let v = 0; v < NL; v++) {
+      const lm = new THREE.InstancedMesh(lasGeometria(v), LAS_MATERIAL, Math.max(1, lasVarCount[v]!));
+      lm.frustumCulled = false; lm.castShadow = true; lm.receiveShadow = true; lm.count = 0;
+      scene.add(lm);
+      lasInst.push(lm); lasHexKey.push([]); lasOrigMatrix.push([]); lasIdx.push(0);
+    }
+  }
+
+  // DEKOR mikrodekor ┼é─ůk/r├│wnin (MASTER [14:00] pkt 2): 4+4 InstancedMesh w JEDNEJ grupie
+  // = 8 draw calli na ca┼é─ů map─Ö. Wzorzec jak g├│ry/wzg├│rza; castShadow OFF (mikrodetal, cie┼ä nic
+  // nie wnosi a kosztuje pass); matrixAutoUpdate zamra┼╝any globalnym traverse na ko┼äcu buildScene.
+  // LOD: dekorGroup.visible = terrainDetailInst (poziomy 0-1). Fog: applyTerrainFog (wsp├│lny materia┼é).
+  // DEKOR WY┼ü─äCZONY (Maciej 2026-07-09): ozdobniki pustych heks├│w rozmywa┼éy czytelno┼Ť─ç
+  // (nie by┼éo wiadomo co surowiec/ulepszenie/ozdoba). Zast─ůpione wariantem 3 odcieni koloru
+  // terenu (patrz baseColor ni┼╝ej). Kod dekoru zostaje za flag─ů ÔÇö ┼éatwy powr├│t gdyby trzeba.
+  const DEKOR_ENABLED = false;
+  const dekorGroup = new THREE.Group();
+  const dekorLakaInst: THREE.InstancedMesh[] = [];
+  const dekorLakaHexKey: string[][] = [];
+  const dekorLakaOrig: THREE.Matrix4[][] = [];
+  const dekorLakaIdx: number[] = [];
+  const dekorRowninaInst: THREE.InstancedMesh[] = [];
+  const dekorRowninaHexKey: string[][] = [];
+  const dekorRowninaOrig: THREE.Matrix4[][] = [];
+  const dekorRowninaIdx: number[] = [];
+  // FPS fog: hexKey Ôćĺ instancja dekoru, ┼╝eby mg┼éa aktualizowa┼éa dekor DIFFEM (tylko zmienione
+  // heksy w setFog), a nie pe┼énym skanem ~80ÔÇô150k instancji co wywo┼éanie (regresja 1,9Ôćĺ139 ms).
+  const dekorRefByHex = new Map<string, { mesh: THREE.InstancedMesh; index: number; orig: THREE.Matrix4 }>();
+  if (styledTerrain && DEKOR_ENABLED) {
+    for (let w = 0; w < DEKOR_LICZBA_WARIANTOW; w++) {
+      const lm = new THREE.InstancedMesh(dekorLakaGeometria(w), DEKOR_MATERIAL, Math.max(1, dekorLakaVarCount[w]!));
+      lm.frustumCulled = false; lm.castShadow = false; lm.receiveShadow = true; lm.count = 0;
+      dekorGroup.add(lm);
+      dekorLakaInst.push(lm); dekorLakaHexKey.push([]); dekorLakaOrig.push([]); dekorLakaIdx.push(0);
+      const rm = new THREE.InstancedMesh(dekorRowninaGeometria(w), DEKOR_MATERIAL, Math.max(1, dekorRowninaVarCount[w]!));
+      rm.frustumCulled = false; rm.castShadow = false; rm.receiveShadow = true; rm.count = 0;
+      dekorGroup.add(rm);
+      dekorRowninaInst.push(rm); dekorRowninaHexKey.push([]); dekorRowninaOrig.push([]); dekorRowninaIdx.push(0);
+    }
+    scene.add(dekorGroup);
+  }
+
+  // -- Piaszczysty pierscien wybrzeza
+  const coastCount = countByTerrain[TerenBazowy.Wybrzeze] ?? 0;
+  const beachGeo = useStyledDecor ? new THREE.CylinderGeometry(1, 1, 1, 3) : new THREE.CylinderGeometry(R * 0.92, R * 0.96, R * 0.03, 6);
+  const beachMat = new THREE.MeshLambertMaterial({ color: BEACH_SAND_COLOR });
+  const beachMesh = new THREE.InstancedMesh(beachGeo, beachMat, useStyledDecor ? 0 : coastCount);
+  beachMesh.frustumCulled = false;
+  beachMesh.receiveShadow = true;
+  if (!useStyledDecor) scene.add(beachMesh);
+
+  // -- Wydmy pustynne
+  const duneGeo = useStyledDecor ? new THREE.SphereGeometry(1, 4, 3) : new THREE.SphereGeometry(R * 0.5, 7, 4, 0, Math.PI * 2, 0, Math.PI * 0.5);
+  const duneMat = new THREE.MeshLambertMaterial({ color: DUNE_SAND_COLOR, flatShading: true });
+  const duneMesh = new THREE.InstancedMesh(duneGeo, duneMat, useStyledDecor ? 0 : desertCount);
+  duneMesh.frustumCulled = false;
+  duneMesh.castShadow = true;
+  duneMesh.receiveShadow = true;
+  if (!useStyledDecor) scene.add(duneMesh);
+
+  // ---------------------------------------------------------------------------
+  // Oaza na pustyni -- InstancedMesh (pool + trunks + fronds); ~1/6 hexow pustyni.
+  // Max instancji: desertCount/6 oaz * 1 pool, * 2 trunks, * 2*4 fronds
+  // ---------------------------------------------------------------------------
+
+  // Geometrie wsp├│┼édzielone dla element├│w oazy
+  const oasisPoolGeo  = new THREE.CylinderGeometry(R * 0.35, R * 0.35, R * 0.04, 16);
+  const oasisPoolMat  = new THREE.MeshLambertMaterial({ color: OASIS_WATER_COLOR });
+  const oasisTrunkGeo = new THREE.CylinderGeometry(R * 0.04, R * 0.055, R * 0.55, 6);
+  const oasisTrunkMat = new THREE.MeshLambertMaterial({ color: OASIS_TRUNK_COLOR });
+  const oasisFrondGeo = new THREE.ConeGeometry(R * 0.18, R * 0.32, 5);
+  const oasisFrondMat = new THREE.MeshLambertMaterial({ color: OASIS_FROND_COLOR });
+
+  // G├│rna granica instancji oazy (z zapasem: zak┼éadamy ~1/6 hexow pustyni)
+  const maxOasis      = Math.ceil(desertCount / 5) + 4;   // oazy
+  const maxOasisTrunk = maxOasis * 2;                      // max 2 palmy / oaza
+  const maxOasisFrond = maxOasis * 2 * 4;                  // max 4 liscie / palma
+
+  const oasisPoolMesh  = new THREE.InstancedMesh(oasisPoolGeo,  oasisPoolMat,  useStyledDecor ? 0 : maxOasis);
+  oasisPoolMesh.frustumCulled = false;
+  const oasisTrunkMesh = new THREE.InstancedMesh(oasisTrunkGeo, oasisTrunkMat, useStyledDecor ? 0 : maxOasisTrunk);
+  oasisTrunkMesh.frustumCulled = false;
+  const oasisFrondMesh = new THREE.InstancedMesh(oasisFrondGeo, oasisFrondMat, useStyledDecor ? 0 : maxOasisFrond);
+  oasisFrondMesh.frustumCulled = false;
+  oasisPoolMesh.castShadow  = false;  oasisPoolMesh.receiveShadow  = true;
+  oasisTrunkMesh.castShadow = true;   oasisTrunkMesh.receiveShadow = false;
+  oasisFrondMesh.castShadow = true;   oasisFrondMesh.receiveShadow = false;
+  if (!useStyledDecor) {
+    scene.add(oasisPoolMesh);
+    scene.add(oasisTrunkMesh);
+    scene.add(oasisFrondMesh);
+  }
+
+  // Tablice kluczy i oryginalnych macierzy (fog-of-war)
+  const oasisPoolHexKey:   string[]         = [];
+  const oasisPoolOrigMat:  THREE.Matrix4[]  = [];
+  const oasisTrunkHexKey:  string[]         = [];
+  const oasisTrunkOrigMat: THREE.Matrix4[]  = [];
+  const oasisFrondHexKey:  string[]         = [];
+  const oasisFrondOrigMat: THREE.Matrix4[]  = [];
+
+  let oasisPoolIdx  = 0;
+  let oasisTrunkIdx = 0;
+  let oasisFrondIdx = 0;
+
+  // ---------------------------------------------------------------------------
+  // Materia┼éy rzeki (wsp├│lne dla wszystkich ┼Ťcie┼╝ek)
+  // Rzeka = p┼éaska wst─Öga (ribbon) wyci─Öta w terenie + ciemniejsze brzegi.
+  // ---------------------------------------------------------------------------
+
+  // Materia┼é wody rzeki ÔÇö nieprzezroczysty, nad terenem (polygonOffset vs z-fighting).
+  const riverWaterMat = new THREE.MeshLambertMaterial({
+    color: palette.river,
+    emissive: renderStyle === 'roblox' ? 0x2288dd : 0x1a7fd4,
+    emissiveIntensity: 0.65,
+    side: THREE.DoubleSide,
+    depthWrite: true,
+    polygonOffset: true,
+    polygonOffsetFactor: 2,
+    polygonOffsetUnits: 2,
+  });
+
+  const riverBankMat = new THREE.MeshLambertMaterial({
+    color: palette.riverBank,
+    side: THREE.DoubleSide,
+  });
+
+  const coastDeltaMat = new THREE.MeshLambertMaterial({
+    color: styleTerrainColor(TerenBazowy.Wybrzeze, renderStyle),
+    side: THREE.DoubleSide,
+  });
+
+  // Tablica wszystkich wpis├│w rzek (woda + brzegi) z hex-kluczami (fog-of-war)
+  const riverEntries: RiverEntry[] = [];
+
+  // Zbi├│r wszystkich hex-kluczy wzd┼éu┼╝ rzek (unia wszystkich ┼Ťcie┼╝ek) -- dla fog-of-war
+  let riverHexKeys: string[] = [];
+
+  // ---------------------------------------------------------------------------
+  // LCG -- deterministyczny PRNG (ten sam co istnieje, seed z map.seed)
+  // ---------------------------------------------------------------------------
+
+  let rndState = map.seed;
+  const rnd = () => {
+    rndState = (Math.imul(rndState, 1664525) + 1013904223) >>> 0;
+    return rndState / 4294967296;
+  };
+
+  // ---------------------------------------------------------------------------
+  // Mapa instancji dla fog-of-war -- klucz "q,r" Ôćĺ mesh + index + baseColor
+  // ---------------------------------------------------------------------------
+
+  const hexInstance = new Map<string, HexInstanceEntry>();
+  const hexOrigMatrix = new Map<string, THREE.Matrix4>();
+  const hexTeren = new Map<string, TerenBazowy>();
+
+  // ---------------------------------------------------------------------------
+  // Tablice nakladek dla fog-of-war (las, snieg, krzewy + nowe dekoracje)
+  // Indeks i odpowiada i-tej instancji w danym InstancedMesh.
+  // ---------------------------------------------------------------------------
+
+  const forestHexKey:  string[]          = [];
+  const forestOrigMatrix: THREE.Matrix4[] = [];
+  const forestTrunkHexKey: string[]       = [];
+  const forestTrunkOrigMatrix: THREE.Matrix4[] = [];
+  const shrubHexKey:   string[]          = [];
+  const shrubOrigMatrix: THREE.Matrix4[]  = [];
+  const snowHexKey:    string[]          = [];
+  const snowOrigMatrix:  THREE.Matrix4[]  = [];
+  // Nowe dekoracje (szczyty gor, kopce wzgorz, pierscienie wybrzeza, wydmy)
+  const peakHexKey:    string[]          = [];
+  const peakOrigMatrix:  THREE.Matrix4[]  = [];
+  const hillBumpHexKey: string[]         = [];
+  const hillBumpOrigMatrix: THREE.Matrix4[] = [];
+  const beachHexKey:   string[]          = [];
+  const beachOrigMatrix: THREE.Matrix4[]  = [];
+  const duneHexKey:    string[]          = [];
+  const duneOrigMatrix:  THREE.Matrix4[]  = [];
+
+  // ---------------------------------------------------------------------------
+  // P─Ötla g┼é├│wna -- wype┼énij macierze instancji + oazy
+  // ---------------------------------------------------------------------------
+
+  const dummy = new THREE.Object3D();
+  let forestIdx      = 0;
+  let forestTrunkIdx = 0;
+  let snowIdx        = 0;
+  let shrubIdx       = 0;
+  let peakIdx        = 0;
+  let hillBumpIdx    = 0;
+  let beachIdx       = 0;
+  let duneIdx        = 0;
+
+  const seaVisEarly = terrainVis(TerenBazowy.Morze, renderStyle);
+  const seaSurfaceY = seaVisEarly.height + seaVisEarly.yOffset;
+  const deltaHexKeys = renderStyle === 'roblox' ? computeRiverDeltaHexKeys(map) : new Set<string>();
+  const cachedMouthEdges = renderStyle === 'roblox' ? computeRiverMouthEdgeKeys(map) : undefined;
+  /** Piasek na l─ůdzie przy Wybrze┼╝u ÔÇö pre-pass raz (O(hex)). */
+  const landCoastSandKeys = (useStyledDecor && renderStyle === 'roblox')
+    ? new Set(findLandCoastSandCandidates(map))
+    : null;
+  /** Roblox brzeg: macierze instancji zamiast Group├ŚMesh├Śgeo per heks (FALA 141). */
+  const coastInstBuf: CoastInstBuffers | null =
+    useStyledDecor && renderStyle === 'roblox' ? createCoastInstBuffers() : null;
+  const coastInstMeshes: THREE.InstancedMesh[] = [];
+  const coastInstHexKey: string[][] = [];
+  const coastInstOrig: THREE.Matrix4[][] = [];
+
+  // C3 ÔÇö g┼é├│wna p─Ötla po heksach rozbita na porcje (chunki). Materializujemy list─Ö
+  // heks├│w RAZ i iterujemy po indeksie, ┼╝eby zachowa─ç DOK┼üADNIE t─Ö sam─ů kolejno┼Ť─ç co
+  // wcze┼Ťniejsze `for..of Object.values(map.hexes)` (kluczowe dla stanu LCG `rnd()`
+  // oazy i byte-for-byte identycznego wyniku). Po ka┼╝dej porcji oddajemy klatk─Ö
+  // (c3NextFrame) i raportujemy post─Öp do overlaya ÔÇ×Budowanie scenyÔÇŽ N%".
+  const c3Hexes = Object.values(map.hexes);
+  const c3Total = c3Hexes.length;
+  const c3ChunkMaxHexes = hexCount > 20000 ? 2000 : C3_CHUNK_MAX_HEXES;
+  const coastCollectLite = robloxLite;
+  onProgress?.(0);
+  let c3ChunkStart = performance.now();
+  let c3ChunkCount = 0;
+  for (let c3i = 0; c3i < c3Total; c3i++) {
+    const hex = c3Hexes[c3i]!;
+    const t   = hex.terenBazowy;
+    const vis = terrainVis(t, renderStyle);
+    const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, R);
+    const coastalDrop = (
+      renderStyle === 'roblox'
+      && landCoastSandNeeded(map, hex.coords.q, hex.coords.r, t)
+    ) ? R * 0.045 : 0;
+    const surfaceTopY = vis.height + vis.yOffset - coastalDrop;
+    // Morze / Wybrze┼╝e (roblox): p┼éaska tafla na wsp├│lnym poziomie seaSurfaceY.
+    let y = surfaceTopY - vis.height / 2;
+    let scaleY = 1;
+    if (renderStyle === 'roblox' && (t === TerenBazowy.Morze || t === TerenBazowy.Wybrzeze)) {
+      y = seaSurfaceY - vis.height / 2;
+    }
+    const hexKey = `${hex.coords.q},${hex.coords.r}`;
+
+    // DEKOR: mikrodekor pustego heksa ┼é─ůki/r├│wniny (styl roblox). Obecno┼Ť─ç/wariant/rotacja
+    // deterministyczne z hash(map.seed) ÔÇö generator NIETKNI─śTY. Sp├│d modelu = wierzch pryzmu.
+    if (styledTerrain && DEKOR_ENABLED && (t === TerenBazowy.Laka || t === TerenBazowy.Rownina)) {
+      const dw = dekorDlaHeksa(hex.coords.q, hex.coords.r, map.seed);
+      if (dw !== null) {
+        const dTopY = vis.height + vis.yOffset;
+        dummy.position.set(x, dTopY, z);
+        dummy.rotation.set(0, rotacjaDekoru(hex.coords.q, hex.coords.r, map.seed), 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        const dOrig = dummy.matrix.clone();
+        if (t === TerenBazowy.Laka) {
+          const di = dekorLakaIdx[dw]!;
+          dekorLakaInst[dw]!.setMatrixAt(di, dummy.matrix);
+          dekorLakaHexKey[dw]![di] = hexKey;
+          dekorLakaOrig[dw]![di] = dOrig;
+          dekorRefByHex.set(hexKey, { mesh: dekorLakaInst[dw]!, index: di, orig: dOrig });
+          dekorLakaIdx[dw] = di + 1;
+        } else {
+          const di = dekorRowninaIdx[dw]!;
+          dekorRowninaInst[dw]!.setMatrixAt(di, dummy.matrix);
+          dekorRowninaHexKey[dw]![di] = hexKey;
+          dekorRowninaOrig[dw]![di] = dOrig;
+          dekorRefByHex.set(hexKey, { mesh: dekorRowninaInst[dw]!, index: di, orig: dOrig });
+          dekorRowninaIdx[dw] = di + 1;
+        }
+      }
+    }
+
+    // Hex prism
+    const meshIdx = terrainIndex[t];
+    const iIdx    = terrainInstanceIdx[t] ?? 0;
+    if (meshIdx !== undefined) {
+      const mesh = instancedMeshes[meshIdx]!;
+      dummy.position.set(x, y, z);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, scaleY, 1);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(iIdx, dummy.matrix);
+      let pickKeys = terrainPickKeys.get(mesh);
+      if (!pickKeys) {
+        pickKeys = [];
+        terrainPickKeys.set(mesh, pickKeys);
+      }
+      pickKeys[iIdx] = hexKey;
+      hexOrigMatrix.set(hexKey, dummy.matrix.clone());
+      hexTeren.set(hexKey, t);
+
+      // Inicjalizuj kolor instancji: kolor bazowy terenu + deterministyczny jitter HSL.
+      // Wybrze┼╝e roblox: jednolity #82C8E0 (D-COAST-2 ÔÇö bez blendu z l─ůdem / ciemnej obw├│dki).
+      const isCoastRoblox = t === TerenBazowy.Wybrzeze && renderStyle === 'roblox';
+      const isWater = t === TerenBazowy.Morze
+        || isCoastRoblox
+        || (t === TerenBazowy.Wybrzeze && renderStyle !== 'roblox');
+      const baseTerrainHex = styleTerrainColor(t, renderStyle);
+      const blendedHex = isCoastRoblox
+        ? baseTerrainHex
+        : blendedTerrainHex(map, hex.coords.q, hex.coords.r, baseTerrainHex, isWater, renderStyle, t);
+      // ┼ü─ůka/R├│wnina (styl roblox): 5 dyskretnych odcieni zamiast ozdobnik├│w. Inne tereny: jitter HSL.
+      const shades = styledTerrain
+        ? (t === TerenBazowy.Laka ? LAKA_SHADES : t === TerenBazowy.Rownina ? ROWNINA_SHADES : null)
+        : null;
+      const baseColor = isCoastRoblox
+        ? new THREE.Color(baseTerrainHex)
+        : shades !== null
+          ? new THREE.Color(shades[Math.floor(hash2D(hex.coords.q, hex.coords.r, map.seed, 4242) * shades.length) % shades.length]!)
+          : jitteredTerrainColor(blendedHex, hex.coords.q, hex.coords.r, map.seed, isWater);
+      // Rzeka = wst─Öga na kraw─Ödzi (pushRiverMesh), nie tint ca┼éego heksu.
+      mesh.setColorAt(iIdx, baseColor);
+
+      // Rejestruj wpis w mapie instancji (fog-of-war)
+      hexInstance.set(hexKey, { mesh, index: iIdx, baseColor });
+
+      terrainInstanceIdx[t] = iIdx + 1;
+    }
+
+    // Las ÔÇö dekoracja 3D gdy nakladka=Las (logika gry); robloxLite tylko upraszcza meshe (E1).
+    if (hex.nakladka === Nakladka.Las && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
+      const baseY = vis.height + vis.yOffset;
+      const q = hex.coords.q, r = hex.coords.r;
+      if (styledTerrain && !isWarmJungleForestHex(q, r, map.wysokoscR)) {
+        // GRAFIKA-TEREN-2: instancjonowana k─Öpa lasu (wariant + rotacja deterministyczne; R=1 Ôćĺ bez skali).
+        // NL_NATURAL (4): tylko pe┼éne warianty 0..3 ÔÇö nigdy L4 ÔÇ×przetrzebiony" na starcie mapy.
+        const v = wariantLasuDlaHeksa(q, r, NL_NATURAL, map.seed);
+        dummy.position.set(x, baseY, z);
+        dummy.rotation.set(0, rotacjaLasuDlaHeksa(q, r, map.seed), 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        const lm = lasInst[v]!;
+        const li = lasIdx[v]!;
+        lm.setMatrixAt(li, dummy.matrix);
+        lasHexKey[v]![li] = hexKey;
+        lasOrigMatrix[v]![li] = dummy.matrix.clone();
+        lasIdx[v] = li + 1;
+      } else if (useStyledDecor) {
+        // D┼╝ungla tropikalna (palmy/parasole) ÔÇö stara ┼Ťcie┼╝ka klastra drzew (poza zakresem GRAFIKA-TEREN-2).
+        const cluster = buildStyleForestCluster(renderStyle, { q, r, x, z, baseY, seed: map.seed, R, mapHeight: map.wysokoscR }, robloxLite);
+        styledOverlays.push({ group: cluster, hexKey, kind: 'forest' });
+        scene.add(cluster);
+      } else {
+      const treeCount = 3 + Math.floor(hash2D(q, r, map.seed, 1) * 3); // 3..5
+      for (let ti = 0; ti < treeCount && forestIdx < forestMesh.count; ti++) {
+        // Kazde drzewo: niezalezne strumienie szumu (kat, promien, wysokosc, obrot).
+        const angle  = hash2D(q, r, map.seed, 10 + ti) * Math.PI * 2;
+        // Pierscieniowy rozklad: drzewa rzadziej w samym srodku -> naturalna kepa.
+        const spread = (0.12 + hash2D(q, r, map.seed, 40 + ti) * 0.36) * R;
+        const tx = x + Math.cos(angle) * spread;
+        const tz = z + Math.sin(angle) * spread;
+        const treeH  = 0.26 + hash2D(q, r, map.seed, 70 + ti) * 0.30; // wysokosc korony
+        const yaw    = hash2D(q, r, map.seed, 100 + ti) * Math.PI * 2;
+        const trunkH = R * 0.18;
+
+        // Pien -- krotki walec u podstawy drzewa
+        if (forestTrunkIdx < forestTrunkMesh.count) {
+          dummy.position.set(tx, baseY + trunkH / 2, tz);
+          dummy.scale.set(1, 1, 1);
+          dummy.rotation.set(0, yaw, 0);
+          dummy.updateMatrix();
+          forestTrunkMesh.setMatrixAt(forestTrunkIdx, dummy.matrix);
+          forestTrunkHexKey[forestTrunkIdx] = hexKey;
+          forestTrunkOrigMatrix[forestTrunkIdx] = dummy.matrix.clone();
+          forestTrunkIdx++;
+        }
+
+        // Korona -- stozek na pniu, lekko zwezony losowo (rozne grubosci drzew)
+        const widthScale = 0.85 + hash2D(q, r, map.seed, 130 + ti) * 0.4;
+        dummy.position.set(tx, baseY + trunkH + treeH / 2, tz);
+        dummy.scale.set(widthScale, treeH / 0.50, widthScale);
+        dummy.rotation.set(0, yaw, 0);
+        dummy.updateMatrix();
+        forestMesh.setMatrixAt(forestIdx, dummy.matrix);
+        // Zapisz klucz heksa i oryginalna macierz dla fog-of-war
+        forestHexKey[forestIdx] = hexKey;
+        forestOrigMatrix[forestIdx] = dummy.matrix.clone();
+        forestIdx++;
+      }
+      }
+    }
+
+    // Gory -- dekoracyjny szczyt skalny PONAD prizmem + sniezna czapka.
+    if (t === TerenBazowy.Gory) {
+      const topY = vis.height + vis.yOffset;
+      const q = hex.coords.q, r = hex.coords.r;
+      if (styledTerrain) {
+        // GRAFIKA-3D partia TEREN stage 2: instanced g├│ra (wariant + rotacja deterministyczne; R=1 Ôćĺ bez skali)
+        const v = wariantDlaHeksa(q, r, NW, map.seed);
+        dummy.position.set(x, topY, z);
+        dummy.rotation.set(0, rotacjaDlaHeksa(q, r, map.seed), 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        const gm = goraInst[v]!;
+        const gi = goraIdx[v]!;
+        gm.setMatrixAt(gi, dummy.matrix);
+        goraHexKey[v]![gi] = hexKey;
+        goraOrigMatrix[v]![gi] = dummy.matrix.clone();
+        goraIdx[v] = gi + 1;
+      } else if (useStyledDecor) {
+        const peak = buildStyleMountainPeak(renderStyle, { q, r, x, z, topY, seed: map.seed, R }, robloxLite);
+        styledOverlays.push({ group: peak, hexKey });
+        scene.add(peak);
+      } else {
+      const peakH = R * (0.35 + hash2D(q, r, map.seed, 5) * 0.22);
+      const peakYaw = hash2D(q, r, map.seed, 6) * Math.PI * 2;
+      const peakWidth = 0.85 + hash2D(q, r, map.seed, 7) * 0.3;
+      dummy.position.set(x, topY + peakH / 2, z);
+      dummy.scale.set(peakWidth, peakH / 0.85, peakWidth);
+      dummy.rotation.set(0, peakYaw, 0);
+      dummy.updateMatrix();
+      peakMesh.setMatrixAt(peakIdx, dummy.matrix);
+      peakHexKey[peakIdx] = hexKey;
+      peakOrigMatrix[peakIdx] = dummy.matrix.clone();
+      peakIdx++;
+
+      // Snieg: maly dysk na wierzcholku dekoracyjnego szczytu (skaluje sie do jego wysokosci)
+      const snowScale = peakWidth * 0.55;
+      dummy.position.set(x, topY + peakH * 0.74, z);
+      dummy.rotation.set(0, peakYaw, 0);
+      dummy.scale.set(snowScale, 1, snowScale);
+      dummy.updateMatrix();
+      snowMesh.setMatrixAt(snowIdx, dummy.matrix);
+      // Zapisz klucz heksa i oryginalna macierz dla fog-of-war
+      snowHexKey[snowIdx] = hexKey;
+      snowOrigMatrix[snowIdx] = dummy.matrix.clone();
+      snowIdx++;
+      }
+    }
+
+    // Wzgorza ÔÇö schodkowy kopiec zielony (tarasy = osobny model ulepszenia, bez podw├│jnego stosu).
+    if (t === TerenBazowy.Wzgorza) {
+      const baseY = vis.height + vis.yOffset;
+      const q = hex.coords.q, r = hex.coords.r;
+      const hillLayers = improvementKeysForHex(hex);
+      if (styledTerrain && !hillLayers.includes('tarasy')) {
+        // GRAFIKA-3D partia TEREN stage 2: instanced wzg├│rze (plateau 0.392 zachowane w modelu)
+        const v = wariantDlaHeksa(q, r, NW, map.seed);
+        dummy.position.set(x, baseY, z);
+        dummy.rotation.set(0, rotacjaDlaHeksa(q, r, map.seed), 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        const wm = wzgorzeInst[v]!;
+        const wi = wzgorzeIdx[v]!;
+        wm.setMatrixAt(wi, dummy.matrix);
+        wzgorzeHexKey[v]![wi] = hexKey;
+        wzgorzeOrigMatrix[v]![wi] = dummy.matrix.clone();
+        wzgorzeIdx[v] = wi + 1;
+      } else if (useStyledDecor && !hillLayers.includes('tarasy')) {
+        const hill = buildStyleHillBump(renderStyle, { q, r, x, z, baseY, seed: map.seed, R }, robloxLite);
+        styledOverlays.push({ group: hill, hexKey });
+        scene.add(hill);
+      } else {
+      const bumpH = 0.14 + hash2D(q, r, map.seed, 2) * 0.16;
+      const bumpW = 0.80 + hash2D(q, r, map.seed, 3) * 0.30;
+      const bumpYaw = hash2D(q, r, map.seed, 4) * Math.PI * 2;
+      dummy.position.set(x, baseY, z);
+      // SphereGeometry(R*0.62) polkula -> skala Y nadaje docelowa wysokosc kopca
+      dummy.scale.set(bumpW, bumpH / 0.62, bumpW);
+      dummy.rotation.set(0, bumpYaw, 0);
+      dummy.updateMatrix();
+      hillBumpMesh.setMatrixAt(hillBumpIdx, dummy.matrix);
+      hillBumpHexKey[hillBumpIdx] = hexKey;
+      hillBumpOrigMatrix[hillBumpIdx] = dummy.matrix.clone();
+      hillBumpIdx++;
+
+      // Krzewy na kopcu -- start od jego wierzcholka (baseY + bumpH)
+      const shrubBaseY = baseY + bumpH;
+      const shrubCount = 1 + Math.floor(hash2D(q, r, map.seed, 8) * 3); // 1..3
+      for (let si = 0; si < shrubCount && shrubIdx < hillCount * MAX_SHRUBS_PER_HILL; si++) {
+        const angle  = hash2D(q, r, map.seed, 200 + si) * Math.PI * 2;
+        const spread = hash2D(q, r, map.seed, 230 + si) * R * 0.38;
+        const sx = x + Math.cos(angle) * spread;
+        const sz = z + Math.sin(angle) * spread;
+        const shrubH = 0.16 + hash2D(q, r, map.seed, 260 + si) * 0.18;
+        dummy.position.set(sx, shrubBaseY + shrubH / 2, sz);
+        dummy.scale.set(1, shrubH / 0.38, 1);
+        dummy.rotation.set(0, hash2D(q, r, map.seed, 290 + si) * Math.PI * 2, 0);
+        dummy.updateMatrix();
+        shrubMesh.setMatrixAt(shrubIdx, dummy.matrix);
+        // Zapisz klucz heksa i oryginalna macierz dla fog-of-war
+        shrubHexKey[shrubIdx] = hexKey;
+        shrubOrigMatrix[shrubIdx] = dummy.matrix.clone();
+        shrubIdx++;
+      }
+      }
+    }
+
+    // Brzeg hybryda C: l─ůd = pas piasku; Wybrze┼╝e = pe┼éna taf┼éa piasku + woda od strony Morza.
+    const topYCoast = surfaceTopY;
+    if (useStyledDecor && renderStyle === 'roblox' && t === TerenBazowy.Wybrzeze && coastInstBuf) {
+      const hexQ = hex.coords.q;
+      const hexR = hex.coords.r;
+      const isDelta = deltaHexKeys.has(hexKey);
+      collectRobloxCoastWaterInst(
+        coastInstBuf, map, hexQ, hexR, x, z, seaSurfaceY, R, hexKey,
+        { lite: coastCollectLite, isDelta, mouthEdges: cachedMouthEdges },
+        dummy,
+      );
+    } else if (useStyledDecor && renderStyle === 'roblox' && landCoastSandKeys?.has(hexKey) && coastInstBuf) {
+      collectRobloxLandCoastSandInst(
+        coastInstBuf, map, hex.coords.q, hex.coords.r, x, z, surfaceTopY, R, hexKey, robloxLite, dummy,
+      );
+    } else if (useStyledDecor && renderStyle === 'minecraft' && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
+      const sand = buildStyleCoastSandEdges(renderStyle, {
+        map,
+        q: hex.coords.q,
+        r: hex.coords.r,
+        x,
+        z,
+        topY: topYCoast,
+        R,
+        self: t,
+      }, robloxLite);
+      if (sand.children.length > 0) {
+        styledOverlays.push({ group: sand, hexKey });
+        scene.add(sand);
+      }
+    } else if (t === TerenBazowy.Wybrzeze && useStyledDecor && renderStyle === 'minecraft') {
+      const beach = buildStyleBeachRing(renderStyle, x, topYCoast, z, R);
+      styledOverlays.push({ group: beach, hexKey });
+      scene.add(beach);
+    } else if (t === TerenBazowy.Wybrzeze && !useStyledDecor) {
+      dummy.position.set(x, topYCoast + R * 0.015, z);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      beachMesh.setMatrixAt(beachIdx, dummy.matrix);
+      beachHexKey[beachIdx] = hexKey;
+      beachOrigMatrix[beachIdx] = dummy.matrix.clone();
+      beachIdx++;
+    }
+
+    if (t === TerenBazowy.Pustynia) {
+      const q = hex.coords.q, r = hex.coords.r;
+      if (useStyledDecor) {
+        const dune = buildStyleDune(renderStyle, q, r, x, z, vis.height + vis.yOffset, map.seed, R);
+        if (dune) {
+          styledOverlays.push({ group: dune, hexKey });
+          scene.add(dune);
+        }
+      } else if (hash2D(q, r, map.seed, 9) < 0.34) {
+        const baseY = vis.height + vis.yOffset;
+        const duneH = 0.06 + hash2D(q, r, map.seed, 11) * 0.10;
+        const duneW = 0.7 + hash2D(q, r, map.seed, 12) * 0.5;
+        const dAng  = hash2D(q, r, map.seed, 13) * Math.PI * 2;
+        const dOff  = hash2D(q, r, map.seed, 14) * R * 0.25;
+        dummy.position.set(x + Math.cos(dAng) * dOff, baseY, z + Math.sin(dAng) * dOff);
+        // SphereGeometry(R*0.5) polkula -> skala Y nadaje wysokosc wydmy, X/Z elipse
+        dummy.scale.set(duneW, duneH / 0.5, duneW * (0.7 + hash2D(q, r, map.seed, 15) * 0.4));
+        dummy.rotation.set(0, dAng, 0);
+        dummy.updateMatrix();
+        duneMesh.setMatrixAt(duneIdx, dummy.matrix);
+        duneHexKey[duneIdx] = hexKey;
+        duneOrigMatrix[duneIdx] = dummy.matrix.clone();
+        duneIdx++;
+      }
+    }
+
+    if (t === TerenBazowy.Pustynia) {
+      const oasisRoll = rnd();
+      if (oasisRoll < 1.0 / 6.0) {
+        const baseY = vis.height + vis.yOffset;
+        if (useStyledDecor) {
+          const palmCount = oasisRoll < 1.0 / 12.0 ? 1 : 2;
+          // GRAFIKA-TEREN-2: oaza klockowa (348 tri) w miejscu buildStyleOasis (decyzja C ÔÇö LCG bez zmian).
+          const oasis = buildOaza();
+          oasis.position.set(x, baseY, z);
+          oasis.rotation.y = rotacjaOazy(hex.coords.q, hex.coords.r, map.seed);
+          styledOverlays.push({ group: oasis, hexKey });
+          scene.add(oasis);
+          // Zachowaj strumie┼ä LCG: stary buildStyleOasis (roblox) konsumowa┼é 2├ŚpalmCount rnd() ÔÇö utrzymuje zestaw oaz.
+          for (let i = 0; i < palmCount; i++) { rnd(); rnd(); }
+        } else {
+        if (oasisPoolIdx < oasisPoolMesh.count) {
+          dummy.position.set(x, baseY + R * 0.02, z);
+          dummy.rotation.set(0, 0, 0);
+          dummy.scale.set(1, 1, 1);
+          dummy.updateMatrix();
+          oasisPoolMesh.setMatrixAt(oasisPoolIdx, dummy.matrix);
+          oasisPoolHexKey[oasisPoolIdx]  = hexKey;
+          oasisPoolOrigMat[oasisPoolIdx] = dummy.matrix.clone();
+          oasisPoolIdx++;
+        }
+
+        // 1 lub 2 palmy
+        const palmCount = oasisRoll < 1.0 / 12.0 ? 1 : 2;
+        for (let pi = 0; pi < palmCount; pi++) {
+          // Pozycja palmy -- obok basenu
+          const palmAngle = rnd() * Math.PI * 2;
+          const palmDist  = R * (0.30 + rnd() * 0.15);
+          const px = x + Math.cos(palmAngle) * palmDist;
+          const pz = z + Math.sin(palmAngle) * palmDist;
+
+          // Pien palmy -- instancja
+          if (oasisTrunkIdx < oasisTrunkMesh.count) {
+            dummy.position.set(px, baseY + R * 0.275, pz);
+            dummy.rotation.set(0, rnd() * Math.PI * 2, (rnd() - 0.5) * 0.25);
+            dummy.scale.set(1, 1, 1);
+            dummy.updateMatrix();
+            oasisTrunkMesh.setMatrixAt(oasisTrunkIdx, dummy.matrix);
+            oasisTrunkHexKey[oasisTrunkIdx]  = hexKey;
+            oasisTrunkOrigMat[oasisTrunkIdx] = dummy.matrix.clone();
+            oasisTrunkIdx++;
+          } else {
+            // Consume rnd() calls even when count exceeded (preserve LCG state)
+            rnd(); rnd();
+          }
+
+          // Liscie palmy -- 3-4 stozki rozchodzace sie od czubka pnia
+          const frondCount = 3 + (rnd() > 0.5 ? 1 : 0);
+          const trunkTopY = baseY + R * 0.55;
+          for (let fi = 0; fi < frondCount; fi++) {
+            const frondAngle = (fi / frondCount) * Math.PI * 2 + rnd() * 0.4;
+            const tiltOut = 0.55 + rnd() * 0.25; // angle from vertical
+            if (oasisFrondIdx < oasisFrondMesh.count) {
+              dummy.position.set(
+                px + Math.cos(frondAngle) * R * 0.18,
+                trunkTopY + R * 0.10,
+                pz + Math.sin(frondAngle) * R * 0.18,
+              );
+              dummy.rotation.set(tiltOut, frondAngle + Math.PI * 0.5, 0);
+              dummy.scale.set(1, 1, 1);
+              dummy.updateMatrix();
+              oasisFrondMesh.setMatrixAt(oasisFrondIdx, dummy.matrix);
+              oasisFrondHexKey[oasisFrondIdx]  = hexKey;
+              oasisFrondOrigMat[oasisFrondIdx] = dummy.matrix.clone();
+              oasisFrondIdx++;
+            }
+          }
+        }
+        }
+      }
+    }
+
+    // --- C3: granica porcji (chunk) ---------------------------------------
+    // Po przekroczeniu bud┼╝etu czasu LUB twardego limitu heks├│w: oddaj klatk─Ö
+    // (rAF), zaktualizuj pasek post─Öpu i zacznij nowy bud┼╝et. Await TYLKO na
+    // granicy porcji (nie per-heks), wi─Öc narzut jest znikomy (~gar┼Ť─ç rAF).
+    c3ChunkCount++;
+    const c3IsLast = c3i === c3Total - 1;
+    if (
+      !c3IsLast &&
+      (c3ChunkCount >= c3ChunkMaxHexes ||
+        performance.now() - c3ChunkStart >= C3_CHUNK_TIME_BUDGET_MS)
+    ) {
+      onProgress?.(((c3i + 1) / c3Total) * 80);
+      await c3NextFrame();
+      c3ChunkStart = performance.now();
+      c3ChunkCount = 0;
+    }
+  }
+  onProgress?.(80);
+
+  // Aktualizuj bufor instancji + przycinaj count do faktycznie u┼╝ytych instancji
+  for (const t of terrainTypes) {
+    const meshIdx = terrainIndex[t];
+    const used = terrainInstanceIdx[t] ?? 0;
+    if (meshIdx === undefined || used === 0) continue;
+    instancedMeshes[meshIdx]!.count = used;
+  }
+  for (const m of instancedMeshes) {
+    m.instanceMatrix.needsUpdate = true;
+    // Zatwierd┼║ inicjalne kolory instancji (bazowe kolory terenu)
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+  }
+  forestMesh.count = forestIdx;
+  forestMesh.instanceMatrix.needsUpdate = true;
+  forestTrunkMesh.count = forestTrunkIdx;
+  forestTrunkMesh.instanceMatrix.needsUpdate = true;
+  snowMesh.count = snowIdx;
+  snowMesh.instanceMatrix.needsUpdate = true;
+  shrubMesh.count = shrubIdx;
+  shrubMesh.instanceMatrix.needsUpdate = true;
+  peakMesh.count = peakIdx;
+  peakMesh.instanceMatrix.needsUpdate = true;
+  hillBumpMesh.count = hillBumpIdx;
+  hillBumpMesh.instanceMatrix.needsUpdate = true;
+  // GRAFIKA-3D partia TEREN stage 2: finalizacja licznik├│w 10 InstancedMesh terenu.
+  // R-RUCH-WZGORZA (2026-07-24): rejestruj te┼╝ te meshe w terrainPickKeys, ┼╝eby picking
+  // (input/picker.ts) trafia┼é w RZECZYWIST─ä (wy┼╝sz─ů) bry┼é─Ö wzg├│rza/g├│ry, a nie tylko w
+  // p┼éaski pryzm bazowy pod spodem ÔÇö inaczej klik na wizualnym szczycie wzg├│rza/g├│ry
+  // (przesuni─Öty perspektywicznie wzgl─Ödem p┼éaskiego pryzmu) trafia┼é w s─ůsiedni heks.
+  for (let v = 0; v < goraInst.length; v++) {
+    goraInst[v]!.count = goraIdx[v]!;
+    goraInst[v]!.instanceMatrix.needsUpdate = true;
+    terrainPickKeys.set(goraInst[v]!, goraHexKey[v]!);
+    wzgorzeInst[v]!.count = wzgorzeIdx[v]!;
+    wzgorzeInst[v]!.instanceMatrix.needsUpdate = true;
+    terrainPickKeys.set(wzgorzeInst[v]!, wzgorzeHexKey[v]!);
+  }
+  // GRAFIKA-TEREN-2: finalizacja licznik├│w 5 InstancedMesh k─Öp lasu.
+  for (let v = 0; v < lasInst.length; v++) {
+    lasInst[v]!.count = lasIdx[v]!;
+    lasInst[v]!.instanceMatrix.needsUpdate = true;
+  }
+  // DEKOR: finalizacja licznik├│w 8 InstancedMesh mikrodekoru ┼é─ůk/r├│wnin.
+  for (let w = 0; w < dekorLakaInst.length; w++) {
+    dekorLakaInst[w]!.count = dekorLakaIdx[w]!;
+    dekorLakaInst[w]!.instanceMatrix.needsUpdate = true;
+    dekorRowninaInst[w]!.count = dekorRowninaIdx[w]!;
+    dekorRowninaInst[w]!.instanceMatrix.needsUpdate = true;
+  }
+
+  // FALA 141: zebrane macierze brzegu Ôćĺ kilka InstancedMesh (wsp├│lna geometria, bez alloc/geo per heks).
+  if (coastInstBuf) {
+    const coastGeo = getCoastSharedGeometries(robloxLite);
+    const waterMat = coastWaterMaterial();
+    const sandMat = coastSandMaterial();
+    const _coastWhite = new THREE.Color(1, 1, 1);
+    const flushCoastLayer = (
+      slots: typeof coastInstBuf.waterPool,
+      geo: THREE.BufferGeometry,
+      mat: THREE.MeshLambertMaterial,
+      renderOrder: number,
+    ): void => {
+      if (slots.length === 0) return;
+      const mesh = new THREE.InstancedMesh(geo, mat, slots.length);
+      mesh.frustumCulled = false;
+      mesh.receiveShadow = true;
+      mesh.castShadow = false;
+      mesh.renderOrder = renderOrder;
+      const keys: string[] = [];
+      const orig: THREE.Matrix4[] = [];
+      for (let i = 0; i < slots.length; i++) {
+        mesh.setMatrixAt(i, slots[i]!.matrix);
+        keys[i] = slots[i]!.hexKey;
+        orig[i] = slots[i]!.matrix;
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(slots.length * 3), 3);
+      for (let i = 0; i < slots.length; i++) mesh.setColorAt(i, _coastWhite);
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      scene.add(mesh);
+      coastInstMeshes.push(mesh);
+      coastInstHexKey.push(keys);
+      coastInstOrig.push(orig);
+    };
+    flushCoastLayer(coastInstBuf.waterPool, coastGeo.pool, waterMat, 0);
+    flushCoastLayer(coastInstBuf.waterEdge, coastGeo.waterEdge, waterMat, 1);
+    flushCoastLayer(coastInstBuf.waterLagoon, coastGeo.lagoon, waterMat, 1);
+    flushCoastLayer(coastInstBuf.waterTongue, coastGeo.tongue, waterMat, 1);
+    flushCoastLayer(coastInstBuf.landSand, coastGeo.landSand, sandMat, 3);
+    onProgress?.(78);
+    await c3NextFrame();
+  }
+
+  // FPS lewar 1+3: ci─Ö┼╝kie grupy styledOverlays (oaza ~348 tri, las d┼╝ungli) Ôćĺ 1 mesh.
+  // Lekki brzeg (1ÔÇô6 box├│w/heks) ÔÇö BEZ merge: FALA 139 robi┼é collapse na ka┼╝dym z ~5ÔÇô15k
+  // overlay├│w wybrze┼╝a = minuty CPU (O(hex├Świerzcho┼éki)); draw calli brzegu akceptowalne.
+  // Pangea: ~2├Ś las├│w vs Kontynenty ÔÇö collapse per-heks lasu = minuty; pomijamy gdy robloxLite.
+  const overlayTotal = styledOverlays.length;
+  const skipForestCollapse = robloxLite && overlayTotal > 2000;
+  const overlayYieldStep = overlayTotal > 8000 ? 15 : overlayTotal > 3000 ? 25 : overlayTotal > 1500 ? 40 : 80;
+  let overlayChunkStart = performance.now();
+  for (let oi = 0; oi < overlayTotal; oi++) {
+    const { group, kind } = styledOverlays[oi]!;
+    const heavy = (kind === 'forest' && !skipForestCollapse)
+      || countMeshesInGroup(group) >= OVERLAY_COLLAPSE_MIN_MESHES;
+    if (heavy) collapseToMergedMesh(group);
+    group.matrixAutoUpdate = false;
+    group.updateMatrix();
+    if (
+      oi > 0 && oi < overlayTotal - 1
+      && (oi % overlayYieldStep === 0 || performance.now() - overlayChunkStart >= C3_CHUNK_TIME_BUDGET_MS)
+    ) {
+      onProgress?.(80 + (oi / Math.max(1, overlayTotal)) * 10);
+      await c3NextFrame();
+      overlayChunkStart = performance.now();
+    }
+  }
+  onProgress?.(90);
+  beachMesh.count = beachIdx;
+  beachMesh.instanceMatrix.needsUpdate = true;
+  duneMesh.count = duneIdx;
+  duneMesh.instanceMatrix.needsUpdate = true;
+  oasisPoolMesh.count  = oasisPoolIdx;
+  oasisPoolMesh.instanceMatrix.needsUpdate  = true;
+  oasisTrunkMesh.count = oasisTrunkIdx;
+  oasisTrunkMesh.instanceMatrix.needsUpdate = true;
+  oasisFrondMesh.count = oasisFrondIdx;
+  oasisFrondMesh.instanceMatrix.needsUpdate = true;
+
+  // ---------------------------------------------------------------------------
+  // Rzeki -- wczytywane z map.riverPaths (dane generatora mapy)
+  // (opis jak w oryginale; wstega wody + brzegi, ponizej szczytu terenu)
+  // ---------------------------------------------------------------------------
+
+  const paths = map.riverPaths ?? [];
+  const pathKinds = map.riverPathKinds ?? paths.map(() => 'main' as const);
+
+  const seaVisForRiver = terrainVis(TerenBazowy.Morze, renderStyle);
+  const seaTopY = seaVisForRiver.height + seaVisForRiver.yOffset;
+  // BUG-RZEKI-RENDER (wariant B ÔÇ×wodospad", Maciej 2026-07-06): flat sea level wst─Ögi
+  // uj┼Ťcia MUSI le┼╝e─ç NAD wierzchem pryzmu Wybrze┼╝a (~0.28), inaczej p┼éaska ko┼äc├│wka chowa
+  // si─Ö w bloku wybrze┼╝a (poprzednio riverMouthYÔëł0.250 < 0.280 Ôćĺ wst─Öga ÔÇ×ton─Ö┼éa" pod l─ůdem).
+  // Sea level = wierzch capa Wybrze┼╝a + margines; drop l─ůduÔćĺmorze robi buildCoastalRiverPointChain
+  // pionowym progiem (wodospad), a nie skosem wchodz─ůcym pod mesh.
+  const capTopY = coastWaterCapTopY(renderStyle);
+  const coastPrismTopY = terrainSurfaceTopY(TerenBazowy.Wybrzeze, renderStyle);
+  const riverMouthY = Math.max(capTopY + R * 0.026, coastPrismTopY + R * 0.035);
+
+  // Wst─Ögi wzd┼éu┼╝ kraw─Ödzi hex (Roblox: proste odcinki obwodu, bez ┼Ťrodka pola).
+  const RIVER_MAIN_HALF_WIDTH = R * 0.052;
+  const RIVER_SURFACE_OFFSET   = riverSurfaceLiftY(R);
+
+  const LAND_RIVER_RENDER_ORDER = 55;
+  // B0.8b (Z1): wst─Öga uj┼Ťcia RYSUJE SI─ś NAD capem Wybrze┼╝a i nad lejkiem delty.
+  // renderOrder 58 > land 55 > cap-overlay (0/1) i > lejek (coastDeltaBucket 50).
+  const RIVER_MOUTH_RENDER_ORDER = 58;
+
+  const landHexKeysAll = await renderLandRiversFromPaths(
+    map, paths, pathKinds, R, renderStyle, riverMouthY, RIVER_SURFACE_OFFSET,
+    RIVER_MAIN_HALF_WIDTH, scene, riverEntries, riverWaterMat, LAND_RIVER_RENDER_ORDER,
+    (done, total) => {
+      onProgress?.(90 + (done / Math.max(1, total)) * 8);
+    },
+    riverRenderFast ? {
+      batchAllPaths: true,
+      batchSize: RIVER_BATCH_PATHS_DENSE,
+      // FALA 147: 3ÔÇô4 segmenty (uj┼Ťcia sharp=true; rezerwa dla g┼éadkich odcink├│w).
+      ribbonSegments: sceneBuildFast ? 3 : 4,
+      tributaryDecimateDist: R * (sceneBuildFast ? 0.10 : 0.065),
+      yieldEvery: sceneBuildFast ? 2 : 3,
+    } : undefined,
+  );
+  for (const k of landHexKeysAll) riverHexKeys.push(k);
+
+  // FALA 145/147: uj┼Ťcia main ÔÇö jeden merge na warstw─Ö (3├Śflush) zamiast per rzeka.
+  const coastalRibbonSegs = riverRenderFast ? (sceneBuildFast ? 3 : 4) : 12;
+  const coastalDedupDist = riverRenderFast ? R * (sceneBuildFast ? 0.045 : 0.032) : R * 0.02;
+  const batchCoastalMouths = riverRenderFast;
+  const aggCoastDeltaBucket: RiverGeoBucket | null = batchCoastalMouths
+    ? { mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: 50 }
+    : null;
+  const aggCoastRiverBucket: RiverGeoBucket | null = batchCoastalMouths
+    ? { mat: riverWaterMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER }
+    : null;
+  const aggCoastRiverDeltaTopBucket: RiverGeoBucket | null = batchCoastalMouths
+    ? { mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER }
+    : null;
+  let coastChunkStart = performance.now();
+  let coastDone = 0;
+  let coastTotal = 0;
+  for (let pi = 0; pi < paths.length; pi++) {
+    if ((pathKinds[pi] ?? 'main') !== 'main') continue;
+    if (pathReachesOpenSeaRender(map, paths[pi]!)) coastTotal++;
+  }
+  for (let pi = 0; pi < paths.length; pi++) {
+    const path = paths[pi]!;
+    if (path.length < 2) continue;
+    if ((pathKinds[pi] ?? 'main') !== 'main') continue;
+    // B0.7/B0.8: wst─Öga uj┼Ťcia + lejek TYLKO gdy trasa realnie ko┼äczy w morzu (nie junction).
+    // pathReachesOpenSeaRender wystarcza (buildCoastalRiverPointChain sam buduje ┼éa┼äcuch lub
+    // zwraca pusto) ÔÇö dawny dodatkowy warunek pathNearCoast blokowa┼é rzeki wpadaj─ůce wprost w Morze.
+    if (pathReachesOpenSeaRender(map, path)) {
+      if (batchCoastalMouths && aggCoastRiverBucket && aggCoastRiverDeltaTopBucket && aggCoastDeltaBucket) {
+        renderCoastalRiverExtension(
+          map, path, R, riverMouthY,
+          aggCoastRiverBucket, aggCoastRiverDeltaTopBucket, aggCoastDeltaBucket,
+          RIVER_MAIN_HALF_WIDTH, deltaHexKeys, coastalRibbonSegs, coastalDedupDist,
+        );
+      } else {
+        const coastRiverBucket: RiverGeoBucket = {
+          mat: riverWaterMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER,
+        };
+        const coastRiverDeltaTopBucket: RiverGeoBucket = {
+          mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER,
+        };
+        const coastDeltaBucket: RiverGeoBucket = {
+          mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: 50,
+        };
+        renderCoastalRiverExtension(
+          map, path, R, riverMouthY,
+          coastRiverBucket, coastRiverDeltaTopBucket, coastDeltaBucket,
+          RIVER_MAIN_HALF_WIDTH, deltaHexKeys, coastalRibbonSegs, coastalDedupDist,
+        );
+        flushRiverBucket(scene, coastDeltaBucket, riverEntries);
+        flushRiverBucket(scene, coastRiverBucket, riverEntries);
+        flushRiverBucket(scene, coastRiverDeltaTopBucket, riverEntries);
+      }
+      coastDone++;
+      // FALA 147: cz─Östszy yield przy uj┼Ťciach na dense/fast (responsywny overlay).
+      const coastYieldEvery = riverRenderFast
+        ? (sceneBuildFast ? 1 : denseLandmass ? 2 : 3)
+        : denseLandmass ? 2 : 4;
+      if (
+        coastDone % coastYieldEvery === 0
+        || performance.now() - coastChunkStart >= C3_CHUNK_TIME_BUDGET_MS
+      ) {
+        onProgress?.(98 + (coastDone / Math.max(1, coastTotal)) * 2);
+        await c3NextFrame();
+        coastChunkStart = performance.now();
+      }
+    }
+  }
+  if (batchCoastalMouths && aggCoastDeltaBucket && aggCoastRiverBucket && aggCoastRiverDeltaTopBucket) {
+    flushRiverBucket(scene, aggCoastDeltaBucket, riverEntries);
+    flushRiverBucket(scene, aggCoastRiverBucket, riverEntries);
+    flushRiverBucket(scene, aggCoastRiverDeltaTopBucket, riverEntries);
+  }
+  onProgress?.(100);
+
+  // ---------------------------------------------------------------------------
+  // F1 ÔÇö ocean wokol kontynentu + ramka swiata (plansza)
+  // ---------------------------------------------------------------------------
+  const mapMaxDim = Math.max(map.szerokoscQ, map.wysokoscR);
+  const mapSpanForCam = mapMaxDim * R * 1.85;
+  const maxZoomDist = Math.max(320, mapSpanForCam * 1.2);
+
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  for (const hex of Object.values(map.hexes)) {
+    const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, R);
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  const seaVis = terrainVis(TerenBazowy.Morze, renderStyle);
+  const seaTop = seaVis.height + seaVis.yOffset;
+  /** T┼éo oceanu ÔÇö g┼é─Öboko pod l─ůdem; w┼éa┼Ťciwa tafla = heksy Morze/Wybrze┼╝e (nie ta p┼éaszczyzna). */
+  const mapSpanBounds = Math.max(maxX - minX, maxZ - minZ);
+  const OCEAN_BACKDROP_DEPTH = Math.min(28, Math.max(14, mapSpanBounds * 0.012));
+  const OCEAN_BED_Y = seaTop - OCEAN_BACKDROP_DEPTH;
+  /** Pad musi przykry─ç kadr przy maxZoomDist ÔÇö poprzednio R*7 zostawia┼é szare rogi. */
+  const padO = Math.max(R * 7, maxZoomDist * 3.2, mapSpanBounds * 0.85);
+  const padF = R * 1.4;  // ramka tuz przy krawedzi mapy
+  const cXb = (minX + maxX) / 2, cZb = (minZ + maxZ) / 2;
+
+  // Plaszczyzna glebokiego oceanu pod calym swiatem (wypelnia tlo wokol ladu).
+  const oceanGeo = new THREE.PlaneGeometry((maxX - minX) + padO * 2, (maxZ - minZ) + padO * 2);
+  const oceanMat = new THREE.MeshLambertMaterial({
+    color: palette.deepOcean,
+    depthWrite: true,
+    fog: false,
+  });
+  const oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
+  oceanMesh.rotation.x = -Math.PI / 2;
+  oceanMesh.renderOrder = -10;
+  oceanMesh.position.set(cXb, OCEAN_BED_Y, cZb);
+  // P┼éaszczyzna g┼é─Öbokiego oceanu le┼╝y 14-28 j. POD tafl─ů (OCEAN_BED_Y) ÔÇö cie┼ä kontynentu
+  // rzucany na ni─ů wygl─ůda┼é jak ÔÇ×lewituj─ůcy", przesuni─Öty cie┼ä na wodzie (tylko pod
+  // kontynentem w kadrze kamery cienia). Dekoracyjne t┼éo nie potrzebuje cienia Ôćĺ OFF.
+  oceanMesh.receiveShadow = false;
+  scene.add(oceanMesh);
+
+  // Ramka swiata ÔÇö 4 listwy obramowania wokol mapy (ciemny kamien/drewno), w oceanie.
+  const frameMat = new THREE.MeshLambertMaterial({ color: palette.frame, fog: false });
+  const frameGeos: THREE.BoxGeometry[] = [];
+  const frameMeshes: THREE.Mesh[] = [];
+  const fx0 = minX - padF, fx1 = maxX + padF, fz0 = minZ - padF, fz1 = maxZ + padF;
+  const frameBarH = R * 0.6, frameBarT = R * 0.7, frameY = seaTop + R * 0.12;
+  const addBar = (w: number, d: number, px: number, pz: number) => {
+    const g = new THREE.BoxGeometry(w, frameBarH, d);
+    const m = new THREE.Mesh(g, frameMat);
+    m.position.set(px, frameY, pz);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    scene.add(m);
+    frameMeshes.push(m);
+    frameGeos.push(g);
+  };
+  const spanX = (fx1 - fx0) + frameBarT * 2;
+  addBar(spanX, frameBarT, (fx0 + fx1) / 2, fz0 - frameBarT / 2); // gora
+  addBar(spanX, frameBarT, (fx0 + fx1) / 2, fz1 + frameBarT / 2); // dol
+  addBar(frameBarT, (fz1 - fz0), fx0 - frameBarT / 2, (fz0 + fz1) / 2); // lewo
+  addBar(frameBarT, (fz1 - fz0), fx1 + frameBarT / 2, (fz0 + fz1) / 2); // prawo
+
+  // -- Kamera
+  const center = mapCenter(map.szerokoscQ, map.wysokoscR, R);
+
+  if (renderStyle === 'roblox') {
+    const mapSpan = mapSpanForCam;
+    const fogFar = Math.max(mapSpan * 2.6, maxZoomDist * 5.5);
+    scene.fog = new THREE.Fog(palette.fogColor, mapSpan * 0.28, fogFar);
+    addRobloxSkyDecor(scene, center.x, center.z, mapSpan, robloxLite);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+  }
+
+  const farClip = renderStyle === 'roblox'
+    ? Math.max(1200, maxZoomDist * 5, mapMaxDim * R * 6)
+    : Math.max(600, mapMaxDim * 3.5);
+  const camera = new THREE.PerspectiveCamera(
+    50,
+    camAspect,
+    0.5,
+    farClip,
+  );
+  const camDist = Math.max(map.szerokoscQ, map.wysokoscR) * R * (renderStyle === 'roblox' ? 1.65 : 1.45);
+  camera.position.set(center.x, camDist * 0.9, center.z + camDist * 0.7);
+  camera.lookAt(center.x, 0, center.z);
+
+  function resolveTerrainPick(mesh: THREE.InstancedMesh, instanceId: number): { q: number; r: number } | null {
+    const keys = terrainPickKeys.get(mesh);
+    const key = keys?.[instanceId];
+    if (!key) return null;
+    const comma = key.indexOf(',');
+    if (comma < 0) return null;
+    const q = Number(key.slice(0, comma));
+    const r = Number(key.slice(comma + 1));
+    if (!Number.isFinite(q) || !Number.isFinite(r)) return null;
+    return { q, r };
+  }
+
+  // -- Resize handler (pomini─Öty gdy previewViewport ÔÇö qualitypreview zarz─ůdza rozmiarem)
+  function onResize() {
+    const w = canvasCssW();
+    const h = canvasCssH();
+    if (w <= 0 || h <= 0) return;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    // updateStyle=false ÔÇö canvas.style.width/height (100%/100%, main.ts) zostaje nietkni─Öty,
+    // ustawiamy tylko rozdzielczo┼Ť─ç bufora renderowania (patrz komentarz przy setSize wy┼╝ej).
+    renderer.setSize(w, h, false);
+  }
+  if (!fixedViewport) {
+    window.addEventListener('resize', onResize);
+    // Bug Maciej 2026-07-25/26: samo 'resize' bywa niewystarczaj─ůce przy wej┼Ťciu w pe┼ény
+    // ekran (cz─Ö┼Ť─ç przegl─ůdarek nie odpala go przy fullscreenchange, cz─Ö┼Ť─ç odpala go zanim
+    // layout si─Ö ustabilizuje) ÔÇö dopinamy si─Ö te┼╝ wprost pod fullscreenchange, ┼╝eby kamera
+    // (aspect) i bufor renderera na pewno dogoni┼éy nowy rozmiar canvasu.
+    document.addEventListener('fullscreenchange', onResize);
+  }
+
+  // -- Dispose
+  function dispose() {
+    if (!fixedViewport) {
+      window.removeEventListener('resize', onResize);
+      document.removeEventListener('fullscreenchange', onResize);
+    }
+    for (const m of instancedMeshes) { m.geometry.dispose(); }
+    for (const mat of Object.values(terrainMaterials)) mat?.dispose();
+    forestConeGeo.dispose(); forestConeMat.dispose();
+    forestTrunkGeo.dispose(); forestTrunkMat.dispose();
+    snowGeo.dispose(); snowMat.dispose();
+    shrubConeGeo.dispose(); shrubConeMat.dispose();
+    // Nowe dekoracje terenu
+    peakGeo.dispose(); peakMat.dispose();
+    hillBumpGeo.dispose(); hillBumpMat.dispose();
+    // GRAFIKA-3D partia TEREN stage 2: zwolnij bufory instancji (geometria g├│r/wzg├│rz i
+    // TEREN_MATERIAL s─ů wsp├│┼édzielone/cache w module ÔÇö NIE dispose'owa─ç ich tutaj).
+    for (const m of goraInst) m.dispose();
+    for (const m of wzgorzeInst) m.dispose();
+    for (const m of coastInstMeshes) m.dispose();
+    for (const m of dekorLakaInst) m.dispose();
+    for (const m of dekorRowninaInst) m.dispose();
+    beachGeo.dispose(); beachMat.dispose();
+    duneGeo.dispose(); duneMat.dispose();
+    // Oazy (InstancedMesh)
+    oasisPoolGeo.dispose();  oasisPoolMat.dispose();
+    oasisTrunkGeo.dispose(); oasisTrunkMat.dispose();
+    oasisFrondGeo.dispose(); oasisFrondMat.dispose();
+    // Rzeki (woda + brzegi per entry; merged = jedna geo)
+    for (const entry of riverEntries) {
+      entry.waterGeo.dispose();
+      if (entry.bankGeo !== entry.waterGeo) entry.bankGeo.dispose();
+    }
+    riverWaterMat.dispose();
+    riverBankMat.dispose();
+    coastDeltaMat.dispose();
+    // Ocean + ramka swiata (F1)
+    oceanGeo.dispose(); oceanMat.dispose();
+    for (const g of frameGeos) g.dispose();
+    frameMat.dispose();
+    if (ownRenderer) {
+      renderer.dispose();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // setFog -- przelicza kolory prizmow terenu wedlug stanu mgly wojennej
+  // oraz ukrywa/przywraca nakladki (las, snieg, krzewy, oazy). Rzeki WYJATEK: zawsze widoczne.
+  // ---------------------------------------------------------------------------
+
+  // Macierz zerowa (skala 0,0,0) ÔÇö ukrywa instancje InstancedMesh
+  const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
+  /** Hexy z miastem ÔÇö dekoracje terenu ukryte na sta┼ée (F-CITY-HEX); grunt zostaje widoczny. */
+  const decorHiddenHexKeys = new Set<string>();
+  /** Hexy z widoczn─ů jednostk─ů ÔÇö tymczasowo ukryta k─Öpa lasu (syncForestForUnits). */
+  const unitForestHiddenHexKeys = new Set<string>();
+
+  const hideInstancedOnHex = (
+    mesh: THREE.InstancedMesh,
+    keys: string[],
+    orig: THREE.Matrix4[],
+    hexKey: string,
+  ): void => {
+    let touched = false;
+    for (let i = 0; i < mesh.count; i++) {
+      if (keys[i] !== hexKey) continue;
+      mesh.setMatrixAt(i, ZERO_MATRIX);
+      touched = true;
+    }
+    if (touched) mesh.instanceMatrix.needsUpdate = true;
+  };
+
+  function syncForestForUnits(hexKeys: Set<string>): void {
+    unitForestHiddenHexKeys.clear();
+    for (const k of hexKeys) {
+      if (!decorHiddenHexKeys.has(k)) unitForestHiddenHexKeys.add(k);
+    }
+    applyZoomLodDecor(lastAnyHidden);
+  }
+
+  function hideDecorAtHex(hexKey: string): void {
+    unitForestHiddenHexKeys.delete(hexKey);
+    decorHiddenHexKeys.add(hexKey);
+    // F-CITY-HEX: tylko dekor (las, zasoby, wydmaÔÇŽ) ÔÇö NIE ukrywaj kafelka terenu (inaczej ÔÇ×dziuraÔÇŁ z oceanem).
+    for (const { group, hexKey: hk } of styledOverlays) {
+      if (hk === hexKey) group.visible = false;
+    }
+    hideInstancedOnHex(forestMesh, forestHexKey, forestOrigMatrix, hexKey);
+    hideInstancedOnHex(forestTrunkMesh, forestTrunkHexKey, forestTrunkOrigMatrix, hexKey);
+    hideInstancedOnHex(snowMesh, snowHexKey, snowOrigMatrix, hexKey);
+    hideInstancedOnHex(shrubMesh, shrubHexKey, shrubOrigMatrix, hexKey);
+    hideInstancedOnHex(peakMesh, peakHexKey, peakOrigMatrix, hexKey);
+    hideInstancedOnHex(hillBumpMesh, hillBumpHexKey, hillBumpOrigMatrix, hexKey);
+    for (let v = 0; v < goraInst.length; v++) {
+      hideInstancedOnHex(goraInst[v]!, goraHexKey[v]!, goraOrigMatrix[v]!, hexKey);
+      hideInstancedOnHex(wzgorzeInst[v]!, wzgorzeHexKey[v]!, wzgorzeOrigMatrix[v]!, hexKey);
+    }
+    // GRAFIKA-TEREN-2: schowaj k─Öp─Ö lasu pod miastem/ulepszeniem na tym heksie (wzorzec g├│r/wzg├│rz).
+    for (let v = 0; v < lasInst.length; v++) {
+      hideInstancedOnHex(lasInst[v]!, lasHexKey[v]!, lasOrigMatrix[v]!, hexKey);
+    }
+    for (let ci = 0; ci < coastInstMeshes.length; ci++) {
+      hideInstancedOnHex(coastInstMeshes[ci]!, coastInstHexKey[ci]!, coastInstOrig[ci]!, hexKey);
+    }
+    // DEKOR: schowaj mikrodekor pod miastem/ulepszeniem na tym heksie (wzorzec jak las).
+    for (let w = 0; w < dekorLakaInst.length; w++) {
+      hideInstancedOnHex(dekorLakaInst[w]!, dekorLakaHexKey[w]!, dekorLakaOrig[w]!, hexKey);
+      hideInstancedOnHex(dekorRowninaInst[w]!, dekorRowninaHexKey[w]!, dekorRowninaOrig[w]!, hexKey);
+    }
+    hideInstancedOnHex(beachMesh, beachHexKey, beachOrigMatrix, hexKey);
+    hideInstancedOnHex(duneMesh, duneHexKey, duneOrigMatrix, hexKey);
+    hideInstancedOnHex(oasisPoolMesh, oasisPoolHexKey, oasisPoolOrigMat, hexKey);
+    hideInstancedOnHex(oasisTrunkMesh, oasisTrunkHexKey, oasisTrunkOrigMat, hexKey);
+    hideInstancedOnHex(oasisFrondMesh, oasisFrondHexKey, oasisFrondOrigMat, hexKey);
+    // Przywr├│─ç kafelek terenu (F-CITY-HEX ÔÇö tylko dekor ukryty, nie ÔÇ×dziuraÔÇŁ z oceanem).
+    const entry = hexInstance.get(hexKey);
+    if (entry) {
+      const orig = hexOrigMatrix.get(hexKey);
+      if (orig) {
+        entry.mesh.setMatrixAt(entry.index, orig);
+        entry.mesh.instanceMatrix.needsUpdate = true;
+      }
+    }
+  }
+
+  const skyBgColor = palette.sky;
+  const sceneFog = scene.fog;
+
+  let currentZoomLod: ZoomLodLevel = 0;
+  let zoomFlags: ZoomLodFlags = zoomLodFlags(0, preset.shadowsEnabled);
+  let lastFogVisible: Set<string> | null = null;
+  let lastFogExplored: Set<string> | null = null;
+  /** Heksy, na kt├│rych rzeka ignoruje mg┼é─Ö (onboarding: o┼Ťwietlony kr─ůg startu). */
+  let lastRiverRevealKeys: Set<string> | null = null;
+  let lastAnyHidden = false;
+  // A5: dirty-set dla setFog. Cache stanu widoczno┼Ťci per heks (0=visible, 1=explored,
+  // 2=hidden). Deklarowane w domkni─Öciu buildScene Ôćĺ auto-reset przy nowej scenie,
+  // brak przecieku mi─Ödzy scenami. Sygnatura = wy┼é─ůcznie kategoria stanu, bo kolor
+  // i macierz g┼é├│wnej p─Ötli zale┼╝─ů TYLKO od niej (baseColor, FOG_EXPLORED_BRIGHTNESS,
+  // FOG_HIDDEN_COLOR, hexOrigMatrix s─ů sta┼ée per heks/globalnie). Kontekst globalny
+  // (roblox ocean-hide) obs┼éu┼╝ony osobno przez uniewa┼╝nienie ca┼éego cache poni┼╝ej.
+  const lastFogSig = new Map<string, number>();
+  // Poprzedni kontekst globalny wp┼éywaj─ůcy na interpretacj─Ö macierzy oceanu:
+  // showOceanBackdrop (=!anyHidden||landReveal). Zmiana Ôćĺ pe┼ény przebieg (czy┼Ťcimy cache).
+  let lastFogShowOceanBackdrop: boolean | null = null;
+
+  function applyZoomGpuSettings(): void {
+    if (ownRenderer) {
+      renderer.setPixelRatio(effectivePixelRatio(preset.pixelRatioMax, zoomFlags.pixelRatioMul));
+    }
+    renderer.shadowMap.enabled = zoomFlags.shadows;
+    sun.castShadow = zoomFlags.shadows;
+    // FPS cienie na ┼╝─ůdanie: powr├│t do bliskiego LOD w┼é─ůcza cienie Ôćĺ jednorazowe przerysowanie
+    // shadow mapy (auto-render wy┼é─ůczony). Oddalenie (shadows=false) i tak jej nie rysuje.
+    if (zoomFlags.shadows) renderer.shadowMap.needsUpdate = true;
+  }
+
+  function applyZoomLodDecor(anyHiddenFinal: boolean): void {
+    const hasFog = lastFogVisible !== null && lastFogExplored !== null;
+    const visible = lastFogVisible ?? new Set<string>();
+    const explored = lastFogExplored ?? new Set<string>();
+    const isHidden = (k: string) => hasFog && !visible.has(k) && !explored.has(k);
+    const overlayHidden = (k: string) =>
+      isHidden(k) || decorHiddenHexKeys.has(k);
+    const forestHidden = (k: string) =>
+      overlayHidden(k) || unitForestHiddenHexKeys.has(k);
+
+    const applyOverlayFog = (
+      mesh: THREE.InstancedMesh,
+      keys: string[],
+      orig: THREE.Matrix4[],
+    ) => {
+      const cnt = mesh.count;
+      for (let i = 0; i < cnt; i++) {
+        const k = keys[i];
+        if (k === undefined) continue;
+        if (overlayHidden(k)) {
+          mesh.setMatrixAt(i, ZERO_MATRIX);
+        } else {
+          const m = orig[i];
+          if (m) mesh.setMatrixAt(i, m);
+        }
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+    };
+
+    // GRAFIKA-3D partia TEREN stage 2: fog dla instanced g├│r/wzg├│rz ÔÇö matrix-hide (nieodkryte
+    // / miasto) + instanceColor-dim (explored ├ŚFOG_EXPLORED_BRIGHTNESS). Parytet z dimmingiem
+    // styledOverlays (applyFogDimToObject3D), bo tu materia┼é wsp├│lny ÔÇö dimujemy per-instancj─Ö.
+    const _terrainDim = new THREE.Color();
+    const applyTerrainFog = (
+      mesh: THREE.InstancedMesh,
+      keys: string[],
+      orig: THREE.Matrix4[],
+    ) => {
+      const cnt = mesh.count;
+      for (let i = 0; i < cnt; i++) {
+        const k = keys[i];
+        if (k === undefined) continue;
+        const bri = fogBrightnessForHex(k, visible, explored, hasFog);
+        if (bri <= 0 || decorHiddenHexKeys.has(k)) {
+          mesh.setMatrixAt(i, ZERO_MATRIX);
+        } else {
+          const m = orig[i];
+          if (m) mesh.setMatrixAt(i, m);
+          _terrainDim.setScalar(bri);
+          mesh.setColorAt(i, _terrainDim);
+        }
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    };
+    const applyLasFog = (
+      mesh: THREE.InstancedMesh,
+      keys: string[],
+      orig: THREE.Matrix4[],
+    ) => {
+      const cnt = mesh.count;
+      for (let i = 0; i < cnt; i++) {
+        const k = keys[i];
+        if (k === undefined) continue;
+        const bri = fogBrightnessForHex(k, visible, explored, hasFog);
+        if (bri <= 0 || forestHidden(k)) {
+          mesh.setMatrixAt(i, ZERO_MATRIX);
+        } else {
+          const m = orig[i];
+          if (m) mesh.setMatrixAt(i, m);
+          _terrainDim.setScalar(bri);
+          mesh.setColorAt(i, _terrainDim);
+        }
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    };
+
+    const applyForestOverlayFog = (
+      mesh: THREE.InstancedMesh,
+      keys: string[],
+      orig: THREE.Matrix4[],
+    ) => {
+      const cnt = mesh.count;
+      for (let i = 0; i < cnt; i++) {
+        const k = keys[i];
+        if (k === undefined) continue;
+        if (forestHidden(k)) {
+          mesh.setMatrixAt(i, ZERO_MATRIX);
+        } else {
+          const m = orig[i];
+          if (m) mesh.setMatrixAt(i, m);
+        }
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+    };
+
+    forestMesh.visible = zoomFlags.forestInst;
+    if (zoomFlags.forestInst) applyForestOverlayFog(forestMesh, forestHexKey, forestOrigMatrix);
+
+    forestTrunkMesh.visible = zoomFlags.forestTrunkInst;
+    if (zoomFlags.forestTrunkInst) applyForestOverlayFog(forestTrunkMesh, forestTrunkHexKey, forestTrunkOrigMatrix);
+
+    snowMesh.visible = zoomFlags.terrainDetailInst;
+    if (zoomFlags.terrainDetailInst) applyOverlayFog(snowMesh, snowHexKey, snowOrigMatrix);
+
+    shrubMesh.visible = zoomFlags.terrainDetailInst;
+    if (zoomFlags.terrainDetailInst) applyOverlayFog(shrubMesh, shrubHexKey, shrubOrigMatrix);
+
+    peakMesh.visible = zoomFlags.terrainDetailInst;
+    if (zoomFlags.terrainDetailInst) applyOverlayFog(peakMesh, peakHexKey, peakOrigMatrix);
+
+    hillBumpMesh.visible = zoomFlags.terrainDetailInst;
+    if (zoomFlags.terrainDetailInst) applyOverlayFog(hillBumpMesh, hillBumpHexKey, hillBumpOrigMatrix);
+
+    // DEKOR mikrodekor ┼é─ůk/r├│wnin ÔÇö LOD 0-1 (terrainDetailInst); fog per-instancja (wsp├│lny materia┼é).
+    // DEKOR: tylko LOD (widoczno┼Ť─ç). Mg┼éa dekoru aktualizowana DIFFEM w setFog (dekorRefByHex),
+    // NIE pe┼énym skanem tutaj ÔÇö inaczej ~80ÔÇô150k instancji ├Ś ka┼╝de ods┼éoni─Öcie = regresja 139 ms.
+    // Instancje maj─ů zawsze aktualny stan mg┼éy z diffu, wi─Öc przy powrocie LOD s─ů poprawne.
+    dekorGroup.visible = zoomFlags.terrainDetailInst;
+
+    // GRAFIKA-3D partia TEREN stage 2: instanced g├│ry/wzg├│rza ÔÇö widoczno┼Ť─ç jak styledDecor.
+    for (let v = 0; v < goraInst.length; v++) {
+      goraInst[v]!.visible = zoomFlags.styledDecor;
+      if (zoomFlags.styledDecor) applyTerrainFog(goraInst[v]!, goraHexKey[v]!, goraOrigMatrix[v]!);
+      wzgorzeInst[v]!.visible = zoomFlags.styledDecor;
+      if (zoomFlags.styledDecor) applyTerrainFog(wzgorzeInst[v]!, wzgorzeHexKey[v]!, wzgorzeOrigMatrix[v]!);
+    }
+    // GRAFIKA-TEREN-2: instancjonowane k─Öpy lasu ÔÇö widoczno┼Ť─ç/mg┼éa jak g├│ry/wzg├│rza (styledDecor).
+    for (let v = 0; v < lasInst.length; v++) {
+      lasInst[v]!.visible = zoomFlags.styledDecor;
+      if (zoomFlags.styledDecor) applyLasFog(lasInst[v]!, lasHexKey[v]!, lasOrigMatrix[v]!);
+    }
+    // FALA 141: instanced brzeg (woda/piasek) ÔÇö fog jak g├│ry/wzg├│rza.
+    for (let ci = 0; ci < coastInstMeshes.length; ci++) {
+      coastInstMeshes[ci]!.visible = zoomFlags.styledDecor;
+      if (zoomFlags.styledDecor) {
+        applyTerrainFog(coastInstMeshes[ci]!, coastInstHexKey[ci]!, coastInstOrig[ci]!);
+      }
+    }
+
+    beachMesh.visible = zoomFlags.coastDecorInst;
+    if (zoomFlags.coastDecorInst) applyOverlayFog(beachMesh, beachHexKey, beachOrigMatrix);
+
+    duneMesh.visible = zoomFlags.coastDecorInst;
+    if (zoomFlags.coastDecorInst) applyOverlayFog(duneMesh, duneHexKey, duneOrigMatrix);
+
+    oasisPoolMesh.visible = zoomFlags.coastDecorInst;
+    if (zoomFlags.coastDecorInst) applyOverlayFog(oasisPoolMesh, oasisPoolHexKey, oasisPoolOrigMat);
+
+    oasisTrunkMesh.visible = zoomFlags.coastDecorInst;
+    if (zoomFlags.coastDecorInst) applyOverlayFog(oasisTrunkMesh, oasisTrunkHexKey, oasisTrunkOrigMat);
+
+    oasisFrondMesh.visible = zoomFlags.coastDecorInst;
+    if (zoomFlags.coastDecorInst) applyOverlayFog(oasisFrondMesh, oasisFrondHexKey, oasisFrondOrigMat);
+
+    // W┼éa┼Ťciciel 2026-07-10: rzeki NIE maj─ů by─ç widoczne na ciemnym (nieodkrytym) polu, ALE
+    // odkryta cz─Ö┼Ť─ç rzeki MA zosta─ç widoczna ÔÇö i CA┼üO┼Ü─ć, gdy nie ma fog-of-war. Rozwi─ůzanie:
+    // mg┼éa PER-HEKS. Dla rzek jednowst─Ögowych (entry.pointHex) rysujemy tylko te quady, kt├│rych
+    // OBA ko┼äce le┼╝─ů na odkrytym polu ÔÇö przez przebudow─Ö INDEKSU (pozycje wierzcho┼ék├│w nietkni─Öte
+    // Ôćĺ identyczny wygl─ůd, 1 draw-call). Ciemne odcinki po prostu wypadaj─ů z indeksu.
+    // Delty scalone (bez pointHex) Ôćĺ fallback: ukryj ca┼é─ů wst─Ög─Ö, gdy KT├ôRYKOLWIEK heks w czerni.
+    // Bez mg┼éy (hasFog=false) riverHidden zawsze false Ôćĺ indeks pe┼ény Ôćĺ ca┼éa rzeka widoczna.
+    //
+    // FIX (TEMAT #7, 2026-07-23): rzeki reaguja WYLACZNIE na mgle (isHidden), NIGDY na
+    // decorHiddenHexKeys. `overlayHidden` (isHidden || decorHiddenHexKeys) sluzy do chowania
+    // dekoracji terenu POD miastem/ulepszeniem (F-CITY-HEX) ÔÇö decorHiddenHexKeys jest ustawiane
+    // RAZ (hideDecorAtHex) i NIGDY nie jest czyszczone, wiec uzycie overlayHidden tutaj kasowalo
+    // wstege rzeki na stale w heksie miasta/ulepszenia, niezaleznie od stanu mgly (nie wracala
+    // nawet po pelnym wylaczeniu FoW ÔÇö zweryfikowane Playwright: rzeka znikala przy zalozeniu
+    // miasta i zostawala niewidoczna takze z FoW=OFF). Rzeka to woda, nie dekor ladu ÔÇö ma plynac
+    // pod/obok miasta tak samo jak przed jego zalozeniem.
+    const riverHidden = (k: string) =>
+      isHidden(k) && !(lastRiverRevealKeys?.has(k));
+    for (const entry of riverEntries) {
+      const ph = entry.pointHex;
+      if (ph && ph.length >= 2) {
+        // PERF: `setIndex` (re-upload GPU) TYLKO gdy zmieni┼é si─Ö stan mg┼éy tej rzeki. Sygnatura =
+        // tani 32-bit hash odkryte/ciemne per punkt (same Set.has). Zoom lub setFog na niezmienionej
+        // rzece Ôćĺ sam hash, ZERO setIndex/alokacji. P─Ötla i tak nie odpala si─Ö per-klatka.
+        let sig = 0;
+        for (let k = 0; k < ph.length; k++) {
+          sig = (Math.imul(sig, 31) + (riverHidden(ph[k]!) ? 1 : 0)) | 0;
+        }
+        if (sig !== entry.lastFogSig) {
+          entry.lastFogSig = sig;
+          const idx: number[] = [];
+          for (let j = 0; j < ph.length - 1; j++) {
+            if (riverHidden(ph[j]!) || riverHidden(ph[j + 1]!)) continue;
+            const b = 2 * j; // punkt j Ôćĺ wierzch. 2j/2j+1; quad j..j+1 = 2 tr├│jk─ůty (winding jak build)
+            idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
+          }
+          entry.waterGeo.setIndex(idx);
+          entry.hasVisibleQuads = idx.length > 0;
+        }
+        const riverVis = zoomFlags.rivers && (entry.hasVisibleQuads ?? true);
+        entry.waterMesh.visible = riverVis;
+        entry.bankMesh.visible = riverVis;
+      } else {
+        // Scalone batche (bez pointHex): onboarding Ôćĺ poka┼╝ gdy JAKIKOLWIEK heks trasy odkryty;
+        // normalna gra Ôćĺ ca┼éa wst─Öga tylko gdy WSZYSTKIE heksy trasy odkryte.
+        let showMerged = false;
+        if (lastRiverRevealKeys) {
+          for (const hk of entry.hexKeys) {
+            if (!riverHidden(hk)) { showMerged = true; break; }
+          }
+        } else {
+          showMerged = true;
+          for (const hk of entry.hexKeys) {
+            if (riverHidden(hk)) { showMerged = false; break; }
+          }
+        }
+        const riverVis = zoomFlags.rivers && showMerged;
+        entry.waterMesh.visible = riverVis;
+        entry.bankMesh.visible = riverVis;
+      }
+    }
+
+    for (const { group, hexKey: hk, kind } of styledOverlays) {
+      const hidden = overlayHidden(hk) || (kind === 'forest' && unitForestHiddenHexKeys.has(hk));
+      group.visible = zoomFlags.styledDecor && !hidden;
+      if (!group.visible) continue;
+      const bri = fogBrightnessForHex(hk, visible, explored, hasFog);
+      applyFogDimToObject3D(group, bri);
+    }
+  }
+
+  function setZoomLod(dist: number, minDist: number, maxDist: number): void {
+    const t = normalizedZoomT(dist, minDist, maxDist);
+    const level = resolveZoomLodLevel(t);
+    if (level === currentZoomLod) return;
+    currentZoomLod = level;
+    zoomFlags = zoomLodFlags(level, preset.shadowsEnabled);
+    applyZoomGpuSettings();
+    applyZoomLodDecor(lastAnyHidden);
+  }
+
+  function setFog(visible: Set<string>, explored: Set<string>, opts?: { landReveal?: boolean; riverRevealKeys?: Set<string> }): void {
+    const __fogT0 = performance.now();
+    const prevVisible = lastFogVisible;
+    lastFogVisible = visible;
+    lastFogExplored = explored;
+    lastRiverRevealKeys = opts?.riverRevealKeys ?? null;
+    const landReveal = opts?.landReveal ?? false;
+    // Pomocnik: czy hex jest niewidoczny i nieodkryty?
+    const isHidden = (k: string) => !visible.has(k) && !explored.has(k);
+
+    // -- Baza: kolory + ukrycie geometrii terenu (unknown = brak heksa, nie kontur kontynentu)
+    const touchedMeshes = new Set<THREE.InstancedMesh>();
+    // FPS: anyHidden = czy istnieje JAKIKOLWIEK ukryty heks (early-exit; przy obecnej mgle
+    // ko┼äczy na pierwszym nieodkrytym, bez skanu 320k).
+    let anyHidden = false;
+    for (const [key] of hexInstance) {
+      if (isHidden(key)) { anyHidden = true; break; }
+    }
+
+    // A5: kontekst globalny decyduj─ůcy o roblox ocean-hide (patrz p─Ötla ~2100 ni┼╝ej).
+    // Je┼Ťli si─Ö zmieni┼é, interpretacja macierzy heks├│w Morze/Wybrze┼╝e si─Ö zmienia
+    // (ZERO Ôćö orig), wi─Öc per-heks sygnatura stanu nie wystarcza Ôćĺ pe┼ény przebieg.
+    const showOceanBackdropNow = !anyHidden || landReveal;
+    const contextChanged = showOceanBackdropNow !== lastFogShowOceanBackdrop;
+    if (contextChanged) {
+      lastFogSig.clear();
+      lastFogShowOceanBackdrop = showOceanBackdropNow;
+    }
+
+    // FPS: iteruj TYLKO heksy, kt├│re ZMIENI┼üY przynale┼╝no┼Ť─ç do `visible` vs poprzednie
+    // wywo┼éanie (symetryczna r├│┼╝nica), zamiast ca┼éych ~320k.
+    // Dlaczego wystarczy sam `visible` (bez explored): `explored` ro┼Ťnie wy┼é─ůcznie o aktualnie
+    // widoczne heksy (addExplored(explored,vis) tu┼╝ przed setFog) i NIGDY nie maleje. Zatem
+    // KA┼╗DE przej┼Ťcie mg┼éy (hiddenÔćĺvisible, visibleÔćĺexplored, exploredÔćĺvisible) zmienia
+    // przynale┼╝no┼Ť─ç do `visible` ÔÇö a explored bez zmiany visible nie zmienia `sig`. Dodatkowo
+    // w normalnej grze `explored` to TEN SAM obiekt co poprzednio (wsp├│┼édzielony), wi─Öc diff po
+    // nim i tak by┼éby pusty (i kosztowny ÔÇö iteruje rosn─ůcy zbi├│r). revealAllLand daje nowy
+    // (scalony) explored, ale jego w┼é─ůczenie zmienia kontekst Ôćĺ pe┼ény przebieg poni┼╝ej.
+    let keysToScan: Iterable<string>;
+    if (contextChanged || prevVisible === null) {
+      keysToScan = hexInstance.keys();
+    } else {
+      const changed = new Set<string>();
+      for (const k of visible) if (!prevVisible.has(k)) changed.add(k);
+      for (const k of prevVisible) if (!visible.has(k)) changed.add(k);
+      keysToScan = changed;
+    }
+
+    const touchedDekorMeshes = new Set<THREE.InstancedMesh>();
+    const _dekorFogC = new THREE.Color();
+    for (const key of keysToScan) {
+      const entry = hexInstance.get(key);
+      if (entry === undefined) continue;
+      // 0=visible, 1=explored, 2=hidden. Pokrywa kolor (3 ga┼é─Özie) i macierz (isHiddenÔćĺZERO).
+      const sig = visible.has(key) ? 0 : explored.has(key) ? 1 : 2;
+      if (lastFogSig.get(key) === sig) continue; // brak zmiany Ôćĺ zero operacji GPU
+
+      const { mesh, index, baseColor } = entry;
+      let color: THREE.Color;
+
+      if (sig === 0) {
+        color = baseColor.clone();
+      } else if (sig === 1) {
+        color = baseColor.clone().multiplyScalar(FOG_EXPLORED_BRIGHTNESS);
+      } else {
+        color = FOG_HIDDEN_COLOR.clone();
+      }
+
+      mesh.setColorAt(index, color);
+      if (sig === 2) {
+        mesh.setMatrixAt(index, ZERO_MATRIX);
+      } else {
+        const orig = hexOrigMatrix.get(key);
+        if (orig) mesh.setMatrixAt(index, orig);
+      }
+      lastFogSig.set(key, sig);
+      touchedMeshes.add(mesh);
+
+      // FPS fog: mikrodekor tego heksa dzieli stan mg┼éy (ten sam sig) ÔÇö aktualizuj DIFFEM (tylko
+      // zmienione heksy), nie pe┼énym skanem ~80ÔÇô150k instancji per setFog (naprawa regresji 139 ms).
+      const dref = dekorRefByHex.get(key);
+      if (dref !== undefined) {
+        if (sig === 2 || decorHiddenHexKeys.has(key)) {
+          dref.mesh.setMatrixAt(dref.index, ZERO_MATRIX); // hidden lub pod miastem Ôćĺ schowaj
+        } else {
+          dref.mesh.setMatrixAt(dref.index, dref.orig);
+          _dekorFogC.setScalar(sig === 0 ? 1 : FOG_EXPLORED_BRIGHTNESS);
+          dref.mesh.setColorAt(dref.index, _dekorFogC); // visible=pe┼ény, explored=przygaszony
+        }
+        touchedDekorMeshes.add(dref.mesh);
+      }
+    }
+
+    // Zatwierdz zmiany kolorow i macierzy na wszystkich dotknietych meshach
+    for (const mesh of touchedMeshes) {
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+    for (const m of touchedDekorMeshes) {
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    }
+
+    const anyHiddenFinal = anyHidden;
+    // A5: ten sam kontekst, kt├│rego u┼╝yto do decyzji o uniewa┼╝nieniu cache wy┼╝ej ÔÇö
+    // jedno ┼║r├│d┼éo prawdy, by roblox ocean-hide i cache nigdy si─Ö nie rozjecha┼éy.
+    const showOceanBackdrop = showOceanBackdropNow;
+    // Roblox: heksy Morze/Wybrze┼╝e ukryte gdy wida─ç g┼é─Öbok─ů tafl─Ö (unikaj podw├│jnej wody).
+    if (renderStyle === 'roblox' && showOceanBackdrop) {
+      for (const [key, entry] of hexInstance) {
+        const teren = hexTeren.get(key);
+        if (teren !== TerenBazowy.Morze && teren !== TerenBazowy.Wybrzeze) continue;
+        entry.mesh.setMatrixAt(entry.index, ZERO_MATRIX);
+        touchedMeshes.add(entry.mesh);
+      }
+    }
+
+    // Skr├│t M (landReveal): tafla oceanu + t┼éo wody, cho─ç heksy Morza nadal unknown.
+    oceanMesh.visible = showOceanBackdrop;
+    if (showOceanBackdrop) {
+      oceanMesh.position.y = OCEAN_BED_Y;
+    }
+    for (const fm of frameMeshes) fm.visible = showOceanBackdrop;
+    scene.background = new THREE.Color(
+      showOceanBackdrop ? palette.deepOcean : FOG_HIDDEN_COLOR.getHex(),
+    );
+    scene.fog = showOceanBackdrop ? sceneFog : null;
+
+    lastAnyHidden = anyHiddenFinal && !landReveal;
+    applyZoomLodDecor(anyHiddenFinal && !landReveal);
+    // FPS cienie na ┼╝─ůdanie: geometria caster├│w zmieni┼éa si─Ö tylko gdy jaki┼Ť heks realnie
+    // zmieni┼é stan (touchedMeshes>0 = ukrycie/ods┼éoni─Öcie terenu, a wtedy i dekor per-heks).
+    // Pusty diff (np. od┼Ťwie┼╝enie mg┼éy bez zmian przy hover/select) NIE rusza shadow pass.
+    if (touchedMeshes.size > 0) renderer.shadowMap.needsUpdate = true;
+    lastSetFogMs = performance.now() - __fogT0;
+  }
+
+  function getZoomLodLevel(): ZoomLodLevel {
+    return currentZoomLod;
+  }
+
+  // FPS: statyczne InstancedMeshe terenu/dekoracji (baza heks├│w, las, ┼Ťnieg, szczyty, garby
+  // wzg├│rz, pla┼╝e/wydmy/oazy, 10├Ś g├│ry/wzg├│rza) nie zmieniaj─ů W┼üASNEJ macierzy ÔÇö instancje
+  // pozycjonowane s─ů przez instanceMatrix (setMatrixAt), a sam mesh stoi w origin. matrixAutoUpdate
+  // off zdejmuje per-frame updateMatrix z ka┼╝dego z nich. Celujemy tylko w isInstancedMesh, wi─Öc
+  // oceanMesh (jego position.y zmienia si─Ö w setFog) i wst─Ögi rzek zostaj─ů nietkni─Öte.
+  scene.traverse((o) => {
+    if ((o as THREE.InstancedMesh).isInstancedMesh) {
+      o.matrixAutoUpdate = false;
+      o.updateMatrix();
+    }
+  });
+  for (const m of coastInstMeshes) {
+    m.matrixAutoUpdate = false;
+    m.updateMatrix();
+  }
+  // R-RUCH-WZGORZA: terrainPickMeshes = pryzmy bazowe (instancedMeshes, dispose-owned) + bry┼éy
+  // wzg├│rz/g├│r (goraInst/wzgorzeInst) ÔÇö TYLKO do rzutowania promienia (input/picker.ts).
+  // Osobna tablica (nie push do `instancedMeshes`!) ÔÇö ta ostatnia jest w┼éa┼Ťcicielem geometrii
+  // przy dispose() (linia ni┼╝ej: `for (const m of instancedMeshes) m.geometry.dispose()`), a
+  // geometrie g├│r/wzg├│rz s─ů dzielone/cache'owane w teren-gory-wzgorza.ts (dispose() zepsu┼éby
+  // kolejne buildScene). goraInst/wzgorzeInst maj─ů w┼éasny dispose (patrz wy┼╝ej).
+  const terrainPickMeshes: THREE.InstancedMesh[] = [...instancedMeshes, ...goraInst, ...wzgorzeInst];
+  // R-RUCH-WZGORZA (nawr├│t, 2026-07-26): zamro┼║ sfery otaczaj─ůce pickingu TERAZ ÔÇö w tym miejscu
+  // wszystkie instancje maj─ů jeszcze ORYGINALNE macierze (setFog/hideDecorAtHex, kt├│re chowaj─ů
+  // heksy macierz─ů zerow─ů, biegn─ů dopiero po powrocie z buildScene). Bez tego three.js policzy┼éby
+  // je leniwie przy pierwszym klikni─Öciu ÔÇö czyli na mapie prawie ca┼éej zakrytej mg┼é─ů ÔÇö i taka
+  // zaw─Ö┼╝ona sfera odsiewa┼éaby CA┼üE meshe terenu z raycastu do ko┼äca sesji (picking spada┼é wtedy
+  // na p┼éaszczyzn─Ö y=0 = klik o p├│┼é heksa obok; na wzg├│rzach/g├│rach jeszcze dalej).
+  refreshInstancedPickBounds(terrainPickMeshes);
+
+  return {
+    scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, syncForestForUnits, setZoomLod, getZoomLodLevel,
+    terrainPickMeshes, resolveTerrainPick,
+  };
+}

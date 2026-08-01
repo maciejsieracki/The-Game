@@ -1365,6 +1365,57 @@ function c3NextFrame(): Promise<void> {
 /** Callback postępu budowy sceny (C3). pct = 0..100 (procent porcji zrobionych). */
 export type SceneBuildProgress = (pct: number) => void;
 
+type RiverPathKind = 'main' | 'medium' | 'short' | 'tributary';
+
+/**
+ * FALA 149 DIAG — kill-switch renderu rzek w buildScene (nie mapgen).
+ * 0 = zero meshów rzek · 1 = main · 2 = main+medium · 3 = +short/tributary ląd ·
+ * 4 = +ujścia coastal · 5 = pełny tor produkcyjny.
+ * Po diagnozie zmienić domyślny return na 5.
+ */
+export function getRiverRenderStage(): number {
+  if (typeof location !== 'undefined') {
+    const url = new URLSearchParams(location.search).get('riverStage');
+    if (url != null) {
+      const n = parseInt(url, 10);
+      if (!Number.isNaN(n) && n >= 0 && n <= 5) return n;
+    }
+  }
+  try {
+    const stored = localStorage.getItem('civ-river-render-stage');
+    if (stored != null) {
+      const n = parseInt(stored, 10);
+      if (!Number.isNaN(n) && n >= 0 && n <= 5) return n;
+    }
+  } catch { /* private mode / SSR */ }
+  return 0; // FALA 149 DIAG: domyślnie bez rzek — po eksperymencie → 5
+}
+
+function filterRiverPathsForStage(
+  paths: Array<Array<{ q: number; r: number }>>,
+  pathKinds: Array<RiverPathKind | undefined>,
+  stage: number,
+): { paths: Array<Array<{ q: number; r: number }>>; pathKinds: Array<RiverPathKind | undefined> } {
+  if (stage <= 0) return { paths: [], pathKinds: [] };
+  const allowed = new Set<RiverPathKind>();
+  if (stage >= 1) allowed.add('main');
+  if (stage >= 2) allowed.add('medium');
+  if (stage >= 3) {
+    allowed.add('short');
+    allowed.add('tributary');
+  }
+  const outPaths: Array<Array<{ q: number; r: number }>> = [];
+  const outKinds: Array<RiverPathKind | undefined> = [];
+  for (let i = 0; i < paths.length; i++) {
+    const kind = pathKinds[i] ?? 'main';
+    if (allowed.has(kind)) {
+      outPaths.push(paths[i]!);
+      outKinds.push(pathKinds[i]);
+    }
+  }
+  return { paths: outPaths, pathKinds: outKinds };
+}
+
 /**
  * B (cięcie geometrii): hex-graniastosłup BEZ dolnej pokrywy. Spód heksa nigdy nie jest
  * widoczny (kamera z góry), a dolna pokrywa to 6 z 24 trójkątów → ~25% mniej trójkątów
@@ -2464,8 +2515,18 @@ export async function buildScene(
   // (opis jak w oryginale; wstega wody + brzegi, ponizej szczytu terenu)
   // ---------------------------------------------------------------------------
 
-  const paths = map.riverPaths ?? [];
-  const pathKinds = map.riverPathKinds ?? paths.map(() => 'main' as const);
+  const riverStage = getRiverRenderStage();
+  console.info('[civ] riverRenderStage', riverStage);
+
+  if (riverStage === 0) {
+    // FALA 149 DIAG: zero meshów rzek — pomijamy wywołania; funkcje renderu zostają w pliku.
+    onProgress?.(100);
+  } else {
+  const pathsAll = map.riverPaths ?? [];
+  const pathKindsAll = map.riverPathKinds ?? pathsAll.map(() => 'main' as const);
+  const { paths, pathKinds } = riverStage >= 5
+    ? { paths: pathsAll, pathKinds: pathKindsAll }
+    : filterRiverPathsForStage(pathsAll, pathKindsAll, riverStage);
 
   const seaVisForRiver = terrainVis(TerenBazowy.Morze, renderStyle);
   const seaTopY = seaVisForRiver.height + seaVisForRiver.yOffset;
@@ -2504,6 +2565,8 @@ export async function buildScene(
   );
   for (const k of landHexKeysAll) riverHexKeys.push(k);
 
+  // FALA 149 DIAG: ujścia coastal tylko stage ≥ 4 (stage 5 = pełny tor).
+  if (riverStage >= 4) {
   // FALA 145/147: ujścia main — jeden merge na warstwę (3×flush) zamiast per rzeka.
   const coastalRibbonSegs = riverRenderFast ? (sceneBuildFast ? 3 : 4) : 12;
   const coastalDedupDist = riverRenderFast ? R * (sceneBuildFast ? 0.045 : 0.032) : R * 0.02;
@@ -2577,7 +2640,9 @@ export async function buildScene(
     flushRiverBucket(scene, aggCoastRiverBucket, riverEntries);
     flushRiverBucket(scene, aggCoastRiverDeltaTopBucket, riverEntries);
   }
+  } // riverStage >= 4 (coastal mouths)
   onProgress?.(100);
+  } // riverStage > 0
 
   // ---------------------------------------------------------------------------
   // F1 — ocean wokol kontynentu + ramka swiata (plansza)
