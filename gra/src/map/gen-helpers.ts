@@ -7273,8 +7273,8 @@ function effectiveTopUpPasses(
   basePasses: number,
   perf: RiverPerfCtx,
 ): number {
-  // Pangea + Duży: max 1 pass topUp (Maciej 2026-08-01).
-  if (perf.pangeaSingleMass || perf.largeMapPerf) return 1;
+  // Pangea + Duży: wyłącz ciężki topUp (grid/proximity/hardStarts >1min, Maciej 2026-08-01).
+  if (perf.pangeaSingleMass || perf.largeMapPerf) return 0;
   return basePasses;
 }
 
@@ -8848,6 +8848,18 @@ export function topUpRiverGridCoverage(
 ): number {
   const _topT0 = RIVER_PROFILE_ON ? rpNow() : 0;
   const params = riverParams ?? resolveRiverMapParams(riversTier, width, height);
+
+  const masses = groupLandMassKeys(hexes)
+    .filter((m) => m.length >= 8)
+    .sort((a, b) => b.length - a.length);
+  const riverPerf = buildRiverPerfCtx(masses, params.areaScale);
+  const topUpPasses = effectiveTopUpPasses(params.topUpPasses, riverPerf);
+  if (topUpPasses === 0) {
+    onProgress?.(100);
+    if (RIVER_PROFILE_ON) rpEnsure().topUpMs += rpNow() - _topT0;
+    return 0;
+  }
+
   const { seaDist, oceanConnected, openOceanDist } = buildRiverFieldCache(hexes, width, height);
   const usedSources = new Set<string>();
   for (let i = 0; i < riverPaths.length; i++) {
@@ -8855,12 +8867,7 @@ export function topUpRiverGridCoverage(
     if (p0) usedSources.add(hexKey(p0.q, p0.r));
   }
 
-  const masses = groupLandMassKeys(hexes)
-    .filter((m) => m.length >= 8)
-    .sort((a, b) => b.length - a.length);
-  const riverPerf = buildRiverPerfCtx(masses, params.areaScale);
   const { pangeaSingleMass, largeMapPerf } = riverPerf;
-  const topUpPasses = effectiveTopUpPasses(params.topUpPasses, riverPerf);
   const cellSize = params.mainCell;
   const minSourceSep = Math.max(2, Math.floor(cellSize * 0.25));
   const traceOptsBase = {
