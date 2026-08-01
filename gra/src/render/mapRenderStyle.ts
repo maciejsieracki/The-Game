@@ -50,6 +50,13 @@ export const DEFAULT_MAP_RENDER_OPTIONS: MapRenderOptions = {
 export const MAP_DETAIL_MEDIUM_HEX_THRESHOLD = 3000;
 /** Duża mapa (Duży/Pangea): wymuś robloxLite niezależnie od mapDetailQuality — buildScene sekundy zamiast minut. */
 export const LARGE_MAP_LITE_HEX_THRESHOLD = 8000;
+/** Duży+ (~40k hex): szybka ścieżka budowy sceny — pomija ciężkie dekoracje brzegu / oazy. Standard (~20k) bez zmian. */
+export const SCENE_BUILD_FAST_HEX_THRESHOLD = 32000;
+
+/** true = Duży / Ogromny / Super Huge — agresywniejsze skróty buildScene (nie wpływa na Standard). */
+export function isSceneBuildFastPath(hexCount: number): boolean {
+  return hexCount >= SCENE_BUILD_FAST_HEX_THRESHOLD;
+}
 
 export interface ResolvedRenderPreset {
   robloxLite: boolean;
@@ -1397,6 +1404,223 @@ export function buildStyleCoastSandTopCap(
   cap.castShadow = !lite;
   cap.renderOrder = 2;
   return cap;
+}
+
+/** Współdzielony materiał brzegu (bez alloc per heks). */
+const _coastMatCache = new Map<number, THREE.MeshLambertMaterial>();
+function coastMat(color: number): THREE.MeshLambertMaterial {
+  let m = _coastMatCache.get(color);
+  if (!m) {
+    m = new THREE.MeshLambertMaterial({ color, flatShading: true });
+    _coastMatCache.set(color, m);
+  }
+  return m;
+}
+
+export function coastWaterMaterial(): THREE.MeshLambertMaterial {
+  return coastMat(TERRAIN_ROBLOX[TerenBazowy.Wybrzeze]);
+}
+
+export function coastSandMaterial(): THREE.MeshLambertMaterial {
+  return coastMat(COAST_SAND_ROBLOX);
+}
+
+/** Bufor macierzy instancji brzegu — zbierany w pętli heksów, flush → InstancedMesh. */
+export interface CoastInstSlot {
+  matrix: THREE.Matrix4;
+  hexKey: string;
+}
+
+export interface CoastInstBuffers {
+  waterPool: CoastInstSlot[];
+  waterEdge: CoastInstSlot[];
+  waterLagoon: CoastInstSlot[];
+  waterTongue: CoastInstSlot[];
+  landSand: CoastInstSlot[];
+}
+
+export function createCoastInstBuffers(): CoastInstBuffers {
+  return { waterPool: [], waterEdge: [], waterLagoon: [], waterTongue: [], landSand: [] };
+}
+
+export interface CoastSharedGeometries {
+  pool: THREE.CylinderGeometry;
+  waterEdge: THREE.BoxGeometry;
+  waterEdgeDelta: THREE.BoxGeometry;
+  lagoon: THREE.CylinderGeometry;
+  tongue: THREE.BoxGeometry;
+  landSand: THREE.BoxGeometry;
+}
+
+let _coastGeoLite: CoastSharedGeometries | null = null;
+let _coastGeoFull: CoastSharedGeometries | null = null;
+
+/** Singleton geometrii brzegu (R=HEX_R) — jeden zestaw na lite/full. */
+export function getCoastSharedGeometries(lite: boolean): CoastSharedGeometries {
+  const R = HEX_R;
+  if (lite) {
+    if (!_coastGeoLite) {
+      const stripH = 0.028;
+      _coastGeoLite = {
+        pool: new THREE.CylinderGeometry(R * 0.91, R * 0.93, stripH * 1.15, 6),
+        waterEdge: new THREE.BoxGeometry(R * 1.04, stripH, R * 0.50),
+        waterEdgeDelta: new THREE.BoxGeometry(R * 1.04, stripH, R * 0.62),
+        lagoon: new THREE.CylinderGeometry(R * 0.86, R * 0.88, stripH * 1.35, 6),
+        tongue: new THREE.BoxGeometry(R * 0.78, stripH * 1.25, R * 1.22),
+        landSand: new THREE.BoxGeometry(R * 1.02, R * 0.010, R * LAND_COAST_SAND_FRAC),
+      };
+    }
+    return _coastGeoLite;
+  }
+  if (!_coastGeoFull) {
+    const stripH = 0.038;
+    _coastGeoFull = {
+      pool: new THREE.CylinderGeometry(R * 0.91, R * 0.93, stripH * 1.15, 6),
+      waterEdge: new THREE.BoxGeometry(R * 1.04, stripH, R * 0.50),
+      waterEdgeDelta: new THREE.BoxGeometry(R * 1.04, stripH, R * 0.62),
+      lagoon: new THREE.CylinderGeometry(R * 0.86, R * 0.88, stripH * 1.35, 6),
+      tongue: new THREE.BoxGeometry(R * 0.78, stripH * 1.25, R * 1.22),
+      landSand: new THREE.BoxGeometry(R * 1.02, R * 0.013, R * LAND_COAST_SAND_FRAC),
+    };
+  }
+  return _coastGeoFull;
+}
+
+/**
+ * Zamiast Group×Mesh per heks Wybrzeże — zbiera macierze do InstancedMesh (FALA 141 perf).
+ * Logika wizualna = buildStyleCoastWaterCap; lite pomija paski krawędzi (tylko tafla heksu).
+ */
+export function collectRobloxCoastWaterInst(
+  buf: CoastInstBuffers,
+  map: GameMap,
+  q: number,
+  r: number,
+  x: number,
+  z: number,
+  seaTopY: number,
+  R: number,
+  hexKey: string,
+  opts: { lite?: boolean; isDelta?: boolean; mouthEdges?: Set<string> },
+  dummy: THREE.Object3D,
+): void {
+  const lite = opts.lite ?? false;
+  const isDelta = opts.isDelta ?? false;
+  const mouthEdges = opts.mouthEdges;
+  const apothem = R * (Math.sqrt(3) / 2);
+  const stripDepth = isDelta ? R * 0.62 : R * 0.50;
+  const stripH = lite ? 0.028 : 0.038;
+
+  if (!isDelta) {
+    dummy.position.set(x, seaTopY + stripH * 0.55, z);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    buf.waterPool.push({ matrix: dummy.matrix.clone(), hexKey });
+  }
+
+  if (!lite) {
+    for (const [dq, dr] of AXIAL_NEIGHBORS) {
+      const lq = q + dq;
+      const lr = r + dr;
+      const nbHex = map.hexes[`${lq},${lr}`];
+      if (nbHex?.terenBazowy !== TerenBazowy.Morze) continue;
+      if (mouthEdges?.has(`${lq},${lr}|${q},${r}`)) continue;
+
+      const nbWorld = axialToWorld(lq, lr, R);
+      const dx = nbWorld.x - x;
+      const dz = nbWorld.z - z;
+      const dist = Math.hypot(dx, dz) || 1;
+      const nx = dx / dist;
+      const nz = dz / dist;
+      const ex = x + nx * (apothem + stripDepth * 0.42);
+      const ez = z + nz * (apothem + stripDepth * 0.42);
+      const yaw = Math.atan2(nx, nz);
+
+      dummy.position.set(ex, seaTopY + stripH * 0.52 + 0.014, ez);
+      dummy.rotation.set(0, yaw, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      buf.waterEdge.push({ matrix: dummy.matrix.clone(), hexKey });
+    }
+  }
+
+  if (isDelta) {
+    dummy.position.set(x, seaTopY + stripH * 0.58 + 0.012, z);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    buf.waterLagoon.push({ matrix: dummy.matrix.clone(), hexKey });
+
+    if (!lite) {
+      let bestSea: { nx: number; nz: number } | null = null;
+      let bestScore = -Infinity;
+      for (const [dq, dr] of AXIAL_NEIGHBORS) {
+        const nbHex = map.hexes[`${q + dq},${r + dr}`];
+        if (nbHex?.terenBazowy !== TerenBazowy.Morze) continue;
+        const nbWorld = axialToWorld(q + dq, r + dr, R);
+        const dx = nbWorld.x - x;
+        const dz = nbWorld.z - z;
+        const dist = Math.hypot(dx, dz) || 1;
+        const score = 1 / dist;
+        if (score > bestScore) {
+          bestScore = score;
+          bestSea = { nx: dx / dist, nz: dz / dist };
+        }
+      }
+      if (bestSea) {
+        const tongueLen = R * 1.22;
+        const ex = x + bestSea.nx * (apothem + tongueLen * 0.44);
+        const ez = z + bestSea.nz * (apothem + tongueLen * 0.44);
+        dummy.position.set(ex, seaTopY + stripH * 0.58 + 0.014, ez);
+        dummy.rotation.set(0, Math.atan2(bestSea.nx, bestSea.nz), 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        buf.waterTongue.push({ matrix: dummy.matrix.clone(), hexKey });
+      }
+    }
+  }
+}
+
+/** Piasek na lądzie przy Wybrzeżu — macierze do InstancedMesh. */
+export function collectRobloxLandCoastSandInst(
+  buf: CoastInstBuffers,
+  map: GameMap,
+  q: number,
+  r: number,
+  x: number,
+  z: number,
+  topY: number,
+  R: number,
+  hexKey: string,
+  lite: boolean,
+  dummy: THREE.Object3D,
+): void {
+  const apothem = R * (Math.sqrt(3) / 2);
+  const stripDepth = R * LAND_COAST_SAND_FRAC;
+  const stripH = lite ? R * 0.010 : R * 0.013;
+  const flushLift = 0.002;
+
+  for (const [dq, dr] of AXIAL_NEIGHBORS) {
+    const lq = q + dq;
+    const lr = r + dr;
+    if (map.hexes[`${lq},${lr}`]?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+
+    const nbWorld = axialToWorld(lq, lr, R);
+    const dx = nbWorld.x - x;
+    const dz = nbWorld.z - z;
+    const dist = Math.hypot(dx, dz) || 1;
+    const nx = dx / dist;
+    const nz = dz / dist;
+    const ex = x + nx * (apothem - stripDepth * 0.52);
+    const ez = z + nz * (apothem - stripDepth * 0.52);
+    const yaw = Math.atan2(nx, nz);
+
+    dummy.position.set(ex, topY + flushLift + stripH * 0.5, ez);
+    dummy.rotation.set(0, yaw, 0);
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    buf.landSand.push({ matrix: dummy.matrix.clone(), hexKey });
+  }
 }
 
 /**

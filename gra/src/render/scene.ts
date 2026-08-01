@@ -47,11 +47,18 @@ import {
   buildStyleHillBump,
   buildStyleBeachRing,
   buildStyleCoastSandEdges,
-  buildStyleCoastWaterCap,
-  buildStyleLandCoastSandCap,
   computeRiverMouthEdgeKeys,
   computeRiverDeltaHexKeys,
   landCoastSandNeeded,
+  isSceneBuildFastPath,
+  findLandCoastSandCandidates,
+  createCoastInstBuffers,
+  collectRobloxCoastWaterInst,
+  collectRobloxLandCoastSandInst,
+  getCoastSharedGeometries,
+  coastWaterMaterial,
+  coastSandMaterial,
+  type CoastInstBuffers,
   buildStyleDune,
   buildStyleOasis,
   isWarmJungleForestHex,
@@ -75,7 +82,7 @@ import {
   LAS_MATERIAL, LICZBA_WARIANTOW_LASU,
 } from './lasy-modele';
 import { setImprovementDetailQuality } from './robloxImprovements';
-import { collapseToMergedMesh } from './mergeDecor';
+import { collapseToMergedMesh, countMeshesInGroup } from './mergeDecor';
 import {
   dekorLakaGeometria, dekorRowninaGeometria, dekorDlaHeksa, rotacjaDekoru,
   DEKOR_MATERIAL, DEKOR_LICZBA_WARIANTOW,
@@ -744,15 +751,40 @@ function renderCoastalRiverExtension(
   // wizualnie „znikała" tuż za lądem, mimo że geometria (punkty łańcucha) była poprawna. Naprawa:
   // kolor terenu (coastDeltaMat) TYLKO gdy realnie dotyka delty; w przeciwnym razie CAŁY łańcuch
   // ujścia zostaje kolorem wody (riverWaterMat) aż do wejścia w Wybrzeże — widocznie ciągły.
-  for (let i = 0; i < segCount; i++) {
-    const t = segCount <= 1 ? 1 : i / (segCount - 1);
-    const segPts = [pts[i]!, pts[i + 1]!];
-    const widthMul = 1.08 + t * 2.65;
-    const useCoastMat = touchesDelta && t >= 0.12;
-    // Z1: „deltowa” część wstęgi trafia do bucketa o renderOrder wstęgi (nad lejkiem), nie do lejka.
-    const bucket = useCoastMat ? riverDeltaTopBucket : riverWaterBucket;
-    const geo = buildRibbonGeometry(segPts, halfWidth * widthMul, 12, true);
-    queueRiverGeo(bucket, geo, hexKeys);
+  if (!touchesDelta) {
+    const halfWidths: number[] = [];
+    for (let i = 0; i < pts.length; i++) {
+      const t = segCount <= 1 ? 1 : i / (segCount - 1);
+      halfWidths.push(halfWidth * (1.08 + t * 2.65));
+    }
+    const geo = buildRibbonGeometry(pts, halfWidths, 12, true);
+    queueRiverGeo(riverWaterBucket, geo, hexKeys);
+  } else {
+    let deltaStart = pts.length;
+    for (let i = 0; i < segCount; i++) {
+      const t = segCount <= 1 ? 1 : i / (segCount - 1);
+      if (t >= 0.12) { deltaStart = i; break; }
+    }
+    if (deltaStart > 0) {
+      const prePts = pts.slice(0, deltaStart + 1);
+      const preWidths: number[] = [];
+      for (let i = 0; i < prePts.length; i++) {
+        const t = segCount <= 1 ? 1 : i / (segCount - 1);
+        preWidths.push(halfWidth * (1.08 + t * 2.65));
+      }
+      const preGeo = buildRibbonGeometry(prePts, preWidths, 12, true);
+      queueRiverGeo(riverWaterBucket, preGeo, hexKeys);
+    }
+    const postPts = pts.slice(deltaStart);
+    if (postPts.length >= 2) {
+      const postWidths: number[] = [];
+      for (let i = deltaStart; i < pts.length; i++) {
+        const t = segCount <= 1 ? 1 : i / (segCount - 1);
+        postWidths.push(halfWidth * (1.08 + t * 2.65));
+      }
+      const postGeo = buildRibbonGeometry(postPts, postWidths, 12, true);
+      queueRiverGeo(riverDeltaTopBucket, postGeo, hexKeys);
+    }
   }
 
   if (pts.length >= 3 && touchesDelta) {
@@ -1284,6 +1316,8 @@ const C3_CHUNK_MAX_HEXES = 1200;
 const RIVER_RIBBON_MAX_PTS = 6000;
 /** FALA 138 perf: scala medium/short w jeden mesh co N tras (mgła per hexKeys, nie pointHex). */
 const RIVER_BATCH_PATHS = 32;
+/** Brzeg/plaża: 1–6 boxów — merge per-heks to O(hex×wierzchołki) bez zysku FPS; scalaj tylko cięższe (oaza, las). */
+const OVERLAY_COLLAPSE_MIN_MESHES = 7;
 
 /** Oddaj jedną klatkę (rAF) — pozwala przeglądarce odświeżyć overlay i nie zawiesić się. */
 function c3NextFrame(): Promise<void> {
@@ -1336,6 +1370,8 @@ export async function buildScene(
       : null) !== '0';
   const preset = resolveRenderPreset(renderOptions, hexCount);
   const robloxLite = preset.robloxLite;
+  /** Duży/Pangea (~40k+): pomija piasek lądu przy brzegu i oazy 3D — Standard (~20k) nietknięty. */
+  const sceneBuildFast = isSceneBuildFastPath(hexCount);
   // GRAFIKA-3D: jakość dekoracji ulepszeń (stadnina 1/2 konie itp.) wg ustawienia gracza.
   setImprovementDetailQuality(renderOptions.mapDetailQuality);
   const palette = styleScenePalette(renderStyle);
@@ -1801,6 +1837,16 @@ export async function buildScene(
   const seaSurfaceY = seaVisEarly.height + seaVisEarly.yOffset;
   const deltaHexKeys = renderStyle === 'roblox' ? computeRiverDeltaHexKeys(map) : new Set<string>();
   const cachedMouthEdges = renderStyle === 'roblox' ? computeRiverMouthEdgeKeys(map) : undefined;
+  /** Piasek na lądzie przy Wybrzeżu — pre-pass raz (O(hex)), nie neighbor-scan per heks w pętli. */
+  const landCoastSandKeys = (useStyledDecor && renderStyle === 'roblox')
+    ? new Set(findLandCoastSandCandidates(map))
+    : null;
+  /** Roblox brzeg: macierze instancji zamiast Group×Mesh×geo per heks (FALA 141). */
+  const coastInstBuf: CoastInstBuffers | null =
+    useStyledDecor && renderStyle === 'roblox' ? createCoastInstBuffers() : null;
+  const coastInstMeshes: THREE.InstancedMesh[] = [];
+  const coastInstHexKey: string[][] = [];
+  const coastInstOrig: THREE.Matrix4[][] = [];
 
   // C3 — główna pętla po heksach rozbita na porcje (chunki). Materializujemy listę
   // heksów RAZ i iterujemy po indeksie, żeby zachować DOKŁADNIE tę samą kolejność co
@@ -1809,6 +1855,7 @@ export async function buildScene(
   // (c3NextFrame) i raportujemy postęp do overlaya „Budowanie sceny… N%".
   const c3Hexes = Object.values(map.hexes);
   const c3Total = c3Hexes.length;
+  const c3ChunkMaxHexes = sceneBuildFast ? 3000 : hexCount > 20000 ? 2000 : C3_CHUNK_MAX_HEXES;
   onProgress?.(0);
   let c3ChunkStart = performance.now();
   let c3ChunkCount = 0;
@@ -2077,36 +2124,19 @@ export async function buildScene(
 
     // Brzeg hybryda C: ląd = pas piasku; Wybrzeże = pełna tafła piasku + woda od strony Morza.
     const topYCoast = surfaceTopY;
-    if (useStyledDecor && renderStyle === 'roblox' && t === TerenBazowy.Wybrzeze) {
-      const coastGroup = new THREE.Group();
+    if (useStyledDecor && renderStyle === 'roblox' && t === TerenBazowy.Wybrzeze && coastInstBuf) {
       const hexQ = hex.coords.q;
       const hexR = hex.coords.r;
       const isDelta = deltaHexKeys.has(hexKey);
-      // Wybrzeże = jasnoniebieska tafla (D-COAST-2); piasek tylko na lądzie (landCoastSandCap).
-      const water = buildStyleCoastWaterCap(
-        renderStyle, map, hexQ, hexR, x, z, seaSurfaceY, R,
-        { lite: robloxLite, deltaKeys: deltaHexKeys, isDelta, mouthEdges: cachedMouthEdges },
+      collectRobloxCoastWaterInst(
+        coastInstBuf, map, hexQ, hexR, x, z, seaSurfaceY, R, hexKey,
+        { lite: robloxLite, isDelta, mouthEdges: cachedMouthEdges },
+        dummy,
       );
-      if (water.children.length > 0) coastGroup.add(water);
-      if (coastGroup.children.length > 0) {
-        styledOverlays.push({ group: coastGroup, hexKey });
-        scene.add(coastGroup);
-      }
-    } else if (useStyledDecor && renderStyle === 'roblox' && landCoastSandNeeded(map, hex.coords.q, hex.coords.r, t)) {
-      const landSand = buildStyleLandCoastSandCap(renderStyle, {
-        map,
-        q: hex.coords.q,
-        r: hex.coords.r,
-        x,
-        z,
-        topY: surfaceTopY,
-        R,
-        self: t,
-      }, robloxLite);
-      if (landSand.children.length > 0) {
-        styledOverlays.push({ group: landSand, hexKey });
-        scene.add(landSand);
-      }
+    } else if (useStyledDecor && renderStyle === 'roblox' && landCoastSandKeys?.has(hexKey) && coastInstBuf) {
+      collectRobloxLandCoastSandInst(
+        coastInstBuf, map, hex.coords.q, hex.coords.r, x, z, surfaceTopY, R, hexKey, robloxLite, dummy,
+      );
     } else if (useStyledDecor && renderStyle === 'minecraft' && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
       const sand = buildStyleCoastSandEdges(renderStyle, {
         map,
@@ -2167,7 +2197,7 @@ export async function buildScene(
       const oasisRoll = rnd();
       if (oasisRoll < 1.0 / 6.0) {
         const baseY = vis.height + vis.yOffset;
-        if (useStyledDecor) {
+        if (useStyledDecor && !sceneBuildFast) {
           const palmCount = oasisRoll < 1.0 / 12.0 ? 1 : 2;
           // GRAFIKA-TEREN-2: oaza klockowa (348 tri) w miejscu buildStyleOasis (decyzja C — LCG bez zmian).
           const oasis = buildOaza();
@@ -2176,6 +2206,10 @@ export async function buildScene(
           styledOverlays.push({ group: oasis, hexKey });
           scene.add(oasis);
           // Zachowaj strumień LCG: stary buildStyleOasis (roblox) konsumował 2×palmCount rnd() — utrzymuje zestaw oaz.
+          for (let i = 0; i < palmCount; i++) { rnd(); rnd(); }
+        } else if (useStyledDecor && sceneBuildFast) {
+          // Duży+: oaza 3D pominięta (build+merge); LCG identyczny jak przy pełnej oazie.
+          const palmCount = oasisRoll < 1.0 / 12.0 ? 1 : 2;
           for (let i = 0; i < palmCount; i++) { rnd(); rnd(); }
         } else {
         if (oasisPoolIdx < oasisPoolMesh.count) {
@@ -2247,7 +2281,7 @@ export async function buildScene(
     const c3IsLast = c3i === c3Total - 1;
     if (
       !c3IsLast &&
-      (c3ChunkCount >= C3_CHUNK_MAX_HEXES ||
+      (c3ChunkCount >= c3ChunkMaxHexes ||
         performance.now() - c3ChunkStart >= C3_CHUNK_TIME_BUDGET_MS)
     ) {
       onProgress?.(((c3i + 1) / c3Total) * 80);
@@ -2308,19 +2342,68 @@ export async function buildScene(
     dekorRowninaInst[w]!.instanceMatrix.needsUpdate = true;
   }
 
-  // FPS lewar 1+3: każda grupa styledOverlays (wybrzeże/plaże/wydmy/oazy — po ~5-20 boxów/heks,
-  // skalują się z rozmiarem mapy) → 1 zmergowany mesh + zamrożona macierz. Fog działa bez zmian
-  // (własny materiał vertexColors → applyFogDimToObject3D dimuje per-grupa jak dotąd).
+  // FALA 141: zebrane macierze brzegu → kilka InstancedMesh (wspólna geometria, bez alloc/geo per heks).
+  if (coastInstBuf) {
+    const coastGeo = getCoastSharedGeometries(robloxLite);
+    const waterMat = coastWaterMaterial();
+    const sandMat = coastSandMaterial();
+    const _coastWhite = new THREE.Color(1, 1, 1);
+    const flushCoastLayer = (
+      slots: typeof coastInstBuf.waterPool,
+      geo: THREE.BufferGeometry,
+      mat: THREE.MeshLambertMaterial,
+      renderOrder: number,
+    ): void => {
+      if (slots.length === 0) return;
+      const mesh = new THREE.InstancedMesh(geo, mat, slots.length);
+      mesh.frustumCulled = false;
+      mesh.receiveShadow = true;
+      mesh.castShadow = false;
+      mesh.renderOrder = renderOrder;
+      const keys: string[] = [];
+      const orig: THREE.Matrix4[] = [];
+      for (let i = 0; i < slots.length; i++) {
+        mesh.setMatrixAt(i, slots[i]!.matrix);
+        keys[i] = slots[i]!.hexKey;
+        orig[i] = slots[i]!.matrix;
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(slots.length * 3), 3);
+      for (let i = 0; i < slots.length; i++) mesh.setColorAt(i, _coastWhite);
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      scene.add(mesh);
+      coastInstMeshes.push(mesh);
+      coastInstHexKey.push(keys);
+      coastInstOrig.push(orig);
+    };
+    flushCoastLayer(coastInstBuf.waterPool, coastGeo.pool, waterMat, 0);
+    flushCoastLayer(coastInstBuf.waterEdge, coastGeo.waterEdge, waterMat, 1);
+    flushCoastLayer(coastInstBuf.waterLagoon, coastGeo.lagoon, waterMat, 1);
+    flushCoastLayer(coastInstBuf.waterTongue, coastGeo.tongue, waterMat, 1);
+    flushCoastLayer(coastInstBuf.landSand, coastGeo.landSand, sandMat, 3);
+    onProgress?.(78);
+    await c3NextFrame();
+  }
+
+  // FPS lewar 1+3: ciężkie grupy styledOverlays (oaza ~348 tri, las dżungli) → 1 mesh.
+  // Lekki brzeg (1–6 boxów/heks) — BEZ merge: FALA 139 robił collapse na każdym z ~5–15k
+  // overlayów wybrzeża = minuty CPU (O(hex×wierzchołki)); draw calli brzegu akceptowalne.
   const overlayTotal = styledOverlays.length;
-  const overlayYieldStep = overlayTotal > 3000 ? 80 : overlayTotal > 1500 ? 40 : 20;
+  const overlayYieldStep = overlayTotal > 8000 ? 15 : overlayTotal > 3000 ? 25 : overlayTotal > 1500 ? 40 : 80;
+  let overlayChunkStart = performance.now();
   for (let oi = 0; oi < overlayTotal; oi++) {
-    const { group } = styledOverlays[oi]!;
-    collapseToMergedMesh(group);
+    const { group, kind } = styledOverlays[oi]!;
+    const heavy = kind === 'forest' || countMeshesInGroup(group) >= OVERLAY_COLLAPSE_MIN_MESHES;
+    if (heavy) collapseToMergedMesh(group);
     group.matrixAutoUpdate = false;
     group.updateMatrix();
-    if (oi > 0 && oi % overlayYieldStep === 0) {
+    if (
+      oi > 0 && oi < overlayTotal - 1
+      && (oi % overlayYieldStep === 0 || performance.now() - overlayChunkStart >= C3_CHUNK_TIME_BUDGET_MS)
+    ) {
       onProgress?.(80 + (oi / Math.max(1, overlayTotal)) * 10);
       await c3NextFrame();
+      overlayChunkStart = performance.now();
     }
   }
   onProgress?.(90);
@@ -2398,7 +2481,8 @@ export async function buildScene(
       flushRiverBucket(scene, coastRiverBucket, riverEntries);
       flushRiverBucket(scene, coastRiverDeltaTopBucket, riverEntries);
     }
-    if (pi > 0 && pi % 8 === 0) {
+    if (pi > 0 && pi % 4 === 0) {
+      onProgress?.(98 + (pi / Math.max(1, paths.length)) * 2);
       await c3NextFrame();
     }
   }
@@ -2544,6 +2628,7 @@ export async function buildScene(
     // TEREN_MATERIAL są współdzielone/cache w module — NIE dispose'ować ich tutaj).
     for (const m of goraInst) m.dispose();
     for (const m of wzgorzeInst) m.dispose();
+    for (const m of coastInstMeshes) m.dispose();
     for (const m of dekorLakaInst) m.dispose();
     for (const m of dekorRowninaInst) m.dispose();
     beachGeo.dispose(); beachMat.dispose();
@@ -2624,6 +2709,9 @@ export async function buildScene(
     // GRAFIKA-TEREN-2: schowaj kępę lasu pod miastem/ulepszeniem na tym heksie (wzorzec gór/wzgórz).
     for (let v = 0; v < lasInst.length; v++) {
       hideInstancedOnHex(lasInst[v]!, lasHexKey[v]!, lasOrigMatrix[v]!, hexKey);
+    }
+    for (let ci = 0; ci < coastInstMeshes.length; ci++) {
+      hideInstancedOnHex(coastInstMeshes[ci]!, coastInstHexKey[ci]!, coastInstOrig[ci]!, hexKey);
     }
     // DEKOR: schowaj mikrodekor pod miastem/ulepszeniem na tym heksie (wzorzec jak las).
     for (let w = 0; w < dekorLakaInst.length; w++) {
@@ -2808,6 +2896,13 @@ export async function buildScene(
     for (let v = 0; v < lasInst.length; v++) {
       lasInst[v]!.visible = zoomFlags.styledDecor;
       if (zoomFlags.styledDecor) applyLasFog(lasInst[v]!, lasHexKey[v]!, lasOrigMatrix[v]!);
+    }
+    // FALA 141: instanced brzeg (woda/piasek) — fog jak góry/wzgórza.
+    for (let ci = 0; ci < coastInstMeshes.length; ci++) {
+      coastInstMeshes[ci]!.visible = zoomFlags.styledDecor;
+      if (zoomFlags.styledDecor) {
+        applyTerrainFog(coastInstMeshes[ci]!, coastInstHexKey[ci]!, coastInstOrig[ci]!);
+      }
     }
 
     beachMesh.visible = zoomFlags.coastDecorInst;
@@ -3047,6 +3142,10 @@ export async function buildScene(
       o.updateMatrix();
     }
   });
+  for (const m of coastInstMeshes) {
+    m.matrixAutoUpdate = false;
+    m.updateMatrix();
+  }
   // R-RUCH-WZGORZA: terrainPickMeshes = pryzmy bazowe (instancedMeshes, dispose-owned) + bryły
   // wzgórz/gór (goraInst/wzgorzeInst) — TYLKO do rzutowania promienia (input/picker.ts).
   // Osobna tablica (nie push do `instancedMeshes`!) — ta ostatnia jest właścicielem geometrii

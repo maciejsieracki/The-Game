@@ -83,6 +83,13 @@ function buildMergedMesh(group: THREE.Object3D): THREE.Mesh {
  * Grupa zostaje (ta sama referencja, ta sama pozycja) — więc fog-sync i mapy overlayów
  * działają bez zmian. Zwraca tę samą grupę dla wygody łańcuchowania.
  */
+/** Liczba Mesh w grupie (do decyzji czy warto merge — lekki brzeg 1–6 boxów nie). */
+export function countMeshesInGroup(group: THREE.Object3D): number {
+  let n = 0;
+  group.traverse((o) => { if ((o as THREE.Mesh).isMesh) n++; });
+  return n;
+}
+
 export function collapseToMergedMesh<T extends THREE.Object3D>(group: T): T {
   if (group.children.length === 0) return group;
   let merged: THREE.Mesh;
