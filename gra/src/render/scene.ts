@@ -255,6 +255,18 @@ interface RiverGeoBucket {
   renderOrder: number;
 }
 
+export interface SceneBuildTimings {
+  hexes: number;
+  coast: number;
+  overlays: number;
+  rivers: number;
+  tail: number;
+  total: number;
+  hexCount: number;
+  overlayTotal: number;
+  riverStage: number;
+}
+
 export interface SceneResult {
   scene:    THREE.Scene;
   camera:   THREE.PerspectiveCamera;
@@ -291,6 +303,8 @@ export interface SceneResult {
   terrainPickMeshes: THREE.InstancedMesh[];
   /** InstancedMesh hit → axial hex (instanceId lookup, bez worldToAxial na ścianach pryzmu). */
   resolveTerrainPick: (mesh: THREE.InstancedMesh, instanceId: number) => { q: number; r: number } | null;
+  /** FALA 152: czasy faz buildScene (ms) — do panelu na ekranie (print screen bez F12). */
+  buildTimings?: SceneBuildTimings;
 }
 
 // ---------------------------------------------------------------------------
@@ -3370,15 +3384,27 @@ export async function buildScene(
   markBuildPhase('tail');
   const buildTotalMs = Math.round(performance.now() - buildT0);
   // FALA 151: jedna linia tekstu — bez rozwijania obiektu w DevTools (Maciej / file://).
+  const buildTimings: SceneBuildTimings = {
+    hexes: buildMs.hexes,
+    coast: buildMs.coast,
+    overlays: buildMs.overlays,
+    rivers: buildMs.rivers,
+    tail: buildMs.tail,
+    total: buildTotalMs,
+    hexCount,
+    overlayTotal,
+    riverStage,
+  };
+  // FALA 151/152: linia tekstu w konsoli + obiekt do panelu na ekranie (print screen).
   console.info(
-    `[civ] buildScene ms | hexes=${buildMs.hexes} coast=${buildMs.coast} overlays=${buildMs.overlays}`
-    + ` rivers=${buildMs.rivers} tail=${buildMs.tail} total=${buildTotalMs}`
+    `[civ] buildScene ms | hexes=${buildTimings.hexes} coast=${buildTimings.coast} overlays=${buildTimings.overlays}`
+    + ` rivers=${buildTimings.rivers} tail=${buildTimings.tail} total=${buildTimings.total}`
     + ` | hexCount=${hexCount} overlaysN=${overlayTotal} riverStage=${riverStage}`,
   );
   reportSceneProgress(onProgress, 100, SCENE_BUILD_PHASE_LABELS.tail);
 
   return {
     scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, syncForestForUnits, setZoomLod, getZoomLodLevel,
-    terrainPickMeshes, resolveTerrainPick,
+    terrainPickMeshes, resolveTerrainPick, buildTimings,
   };
 }

@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `ed322ecd` - 2026-08-01 23:48 - FALA 151: buildScene ms jako jedna linia tekstu + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `6c8a1f92` - 2026-08-01 23:52 - FALA 152: czasy sceny NA EKRANIE (print screen) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `6c8a1f92accad4df6a2bdfa564516088` · stempel: `ROBOCZA · 2026-08-01 23:52`
+- **VERIFY OK.** Po Budowanie sceny: panel Heksy/Brzeg/Nakladki/Rzeki/Final/RAZEM → print screen → OK.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `ed322ecd` - 2026-08-01 23:48 - FALA 151: buildScene ms jako jedna linia tekstu + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `ed322ecdca71eef54173fa20555c1479` · stempel: `ROBOCZA · 2026-08-01 23:48`
 - **VERIFY OK.** Console: `[civ] buildScene ms | hexes=… coast=… overlays=… total=…` (bez rozwijania obiektu).
 - tsc 0 · VERIFY OK.

@@ -57,7 +57,17 @@ import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
-import { buildScene, getLastSetFogMs } from './render/scene';
+import { buildScene, getLastSetFogMs, type SceneBuildTimings } from './render/scene';
+import { showMapLoadingOverlay, type MapLoadingOverlayHandle } from './ui/mapLoadingOverlay';
+
+/** FALA 152: po buildScene pokaż czasy na ekranie (print screen) → OK → hide. */
+async function finishLoadingAfterSceneBuild(
+  loading: MapLoadingOverlayHandle,
+  result: { buildTimings?: SceneBuildTimings },
+): Promise<void> {
+  if (result.buildTimings) await loading.showSceneTimingReport(result.buildTimings);
+  loading.hide();
+}
 import {
   CIV_PERF_DEBUG_MARKER,
   isPerfDebugOverlayVisible,
@@ -71,7 +81,6 @@ import { setUnitOwnerEmblemAssets } from './render/unitOwnerEmblem';
 import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';
 import { leaderPortraitUrl } from './ui/leaderPortraits';
 import { civIconSvg } from './ui/icons/brandAssets';
-import { showMapLoadingOverlay } from './ui/mapLoadingOverlay';
 import {
   beginTurnTransition,
   endTurnTransition,
@@ -21455,7 +21464,7 @@ async function boot(): Promise<void> {
         const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
           loading.setProgress(phase ? `Przywracanie widoku mapy — ${phase}` : 'Przywracanie widoku mapy…', pct);
         });
-        loading.hide();
+        await finishLoadingAfterSceneBuild(loading, newSceneResult);
         scene = newSceneResult.scene;
         camera = newSceneResult.camera;
         renderer = newSceneResult.renderer;
@@ -21548,7 +21557,7 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      loading.hide();
+      await finishLoadingAfterSceneBuild(loading, newSceneResult);
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -21816,7 +21825,7 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      loading.hide();
+      await finishLoadingAfterSceneBuild(loading, newSceneResult);
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -22045,7 +22054,7 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      loading.hide();
+      await finishLoadingAfterSceneBuild(loading, newSceneResult);
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -22245,7 +22254,7 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      loading.hide();
+      await finishLoadingAfterSceneBuild(loading, newSceneResult);
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;

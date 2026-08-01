@@ -4661,3 +4661,7 @@ CZEKAM-NA: Maciej — ktora etykieta stoi + F12 `[civ] buildScene ms`
 ## [2026-08-01 23:48 PL] LOKAL/Grok -> ALL — FALA 151 plain console line
 - md5 `ed322ecd` / `ed322ecdca71eef54173fa20555c1479`
 CZEKAM-NA: Maciej — wklej linike buildScene ms
+
+## [2026-08-01 23:52 PL] LOKAL/Grok -> ALL — FALA 152 on-screen timings
+- md5 `6c8a1f92` / `6c8a1f92accad4df6a2bdfa564516088`
+CZEKAM-NA: print screen panelu czasow od Macieja
