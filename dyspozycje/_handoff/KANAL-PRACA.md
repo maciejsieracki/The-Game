@@ -4723,3 +4723,17 @@ CZEKAM-NA: Maciej Ctrl+F5 gra-robocza/START.html - Nowa gra Pangea Standardowa, 
 - Nowe linie: Przekazanie z workera, Po scenie/finishLoading, WALL-CLOCK; console.info wall-clock
 - tsc 0 - vite build OK - publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 - Nowa gra Pangea Standardowa, sprawdz postSceneMs i WALL-CLOCK w civ-perf
+
+## [02:00 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 162 post-scene perf Duza Pangea
+- md5 `a01102ad` / `a01102ad73e22602ead3840a3984fba7` - stempel `ROBOCZA - 2026-08-02 02:00`
+- Winowajca: rebuildResourceOverlays O(n) ~40k hex + brak yield miedzy podkrokami (UI wisialo na 2/4)
+- Fix: 9 podkrokow post-scene z yield; defer nakladek zasobow >=32k hex (idle po hide); skip podwojny refreshFog w cluster
+- tsc 0 - vite build OK - VERIFY OK - publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 gra-robocza/START.html - Duza Pangea: overlay post-scene <<60s; F12 [civ-perf] postScene per krok
+
+## [02:10 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 162 fix 118s Standard Pangea post-scene
+- md5 `c153da40` / `c153da402b5167c78f7474e8d9a573ef` - stempel `ROBOCZA - 2026-08-02 02:10`
+- Winowajca podetapu: **nakladki zasobow** (rebuildResourceOverlays + collapseToMergedMesh per heks, ~O(n) na ~20k hex = ~118s)
+- Fix: ZAWSZE defer po hide overlay (nie tylko >=32k); collapse tylko gdy >=7 mesh; syncLivestock w defer; 9 podkrokow [civ-perf] postScene w F12
+- tsc 0 - vite build OK - Gra-ROBOCZA.html OK
+CZEKAM-NA: Maciej Ctrl+F5 - Standardowa Pangea: postScene/finishLoading <<5s; WALL-CLOCK ~gen+scena+kilka s; zloza pojawia sie po 1-2s idle

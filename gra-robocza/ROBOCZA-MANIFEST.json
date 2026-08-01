@@ -1,8 +1,26 @@
 {
-    "publisher":  "Integrator F",
-    "bundle":  "Gra-ROBOCZA.html",
-    "note":  "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
-    "publishedAt":  "2026-08-02T01:19:51",
-    "sourceBuild":  "C:\\Users\\macie\\AppData\\Local\\Temp\\civ-dist",
-    "md5":  "654ac9a0602925e6347fd4769d162802"
+  "publisher": "Integrator F",
+  "bundle": "Gra-ROBOCZA.html",
+  "note": "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
+  "publishedAt": "2026-08-02T02:10:00",
+  "sourceBuild": ".\\dist",
+  "md5": "c153da402b5167c78f7474e8d9a573ef",
+  "hubGeneratedAt": "2026-08-02T02:10:00",
+  "bundles": [
+    {
+      "file": "Gra-ROBOCZA.html",
+      "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
+      "label": "Pełna gra ROBOCZA",
+      "md5": "c153da402b5167c78f7474e8d9a573ef",
+      "sizeBytes": 36644361
+    },
+    {
+      "file": "Gra-ROBOCZA.html",
+      "href": "Gra-ROBOCZA.html",
+      "label": "Pełna gra (z menu)",
+      "md5": "c153da402b5167c78f7474e8d9a573ef",
+      "sizeBytes": 36644361
+    }
+  ],
+  "startHub": "START.html"
 }

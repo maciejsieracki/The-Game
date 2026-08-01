@@ -104,6 +104,22 @@ function finishMapLoadWithPerfReport(
 }
 
 const yieldMainThread = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+
+/** Post-scene: aktualizuj overlay + yield żeby widać który podkrok wisi (FALA 162). */
+async function postSceneStep(
+  loading: MapLoadingOverlayHandle,
+  label: string,
+  step: number,
+  total: number,
+  prevT0?: number,
+): Promise<number> {
+  if (prevT0 !== undefined) {
+    console.info(`[civ-perf] postScene — ${label}: ${Math.round(performance.now() - prevT0)} ms`);
+  }
+  loading.setProgress(`Po scenie — ${label}`, Math.round((step / total) * 100), step, total);
+  await yieldMainThread();
+  return performance.now();
+}
 import {
   CIV_PERF_DEBUG_MARKER,
   isPerfDebugOverlayVisible,
@@ -420,7 +436,7 @@ import {
   type QualityTier,
 } from './map/newGameMapDefaults';
 import { buildStyledResourceOverlay } from './render/styleResources';
-import { collapseToMergedMesh } from './render/mergeDecor';
+import { collapseToMergedMesh, countMeshesInGroup } from './render/mergeDecor';
 import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
@@ -1676,6 +1692,12 @@ async function boot(): Promise<void> {
       return buildImprovementSectored(layers, 0xffd54a, undefined, HEX_R, relief);
     }
 
+    /** collapseToMergedMesh per heks to ~10–20 ms × tysiące złoże — tylko gdy grupa ciężka. */
+    const OVERLAY_COLLAPSE_MIN_MESHES = 7;
+    function maybeCollapseResourceOverlay(ov: THREE.Group): void {
+      if (countMeshesInGroup(ov) >= OVERLAY_COLLAPSE_MIN_MESHES) collapseToMergedMesh(ov);
+    }
+
     function clearResourceOverlays(): void {
       for (const { group } of resourceOverlays) scene.remove(group);
       resourceOverlays.length = 0;
@@ -1703,7 +1725,7 @@ async function boot(): Promise<void> {
       try {
         const ov = buildStyledResourceOverlay(hex.nakladka, GAME_MAP_RENDER_STYLE, zlozeShown);
         if (!ov) return;
-        collapseToMergedMesh(ov); // FPS lewar 1: dziesiątki boxów złoża → 1 mesh
+        maybeCollapseResourceOverlay(ov);
         const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
         const topY = unitRenderer.topYAt(hex.coords.q, hex.coords.r);
         const relief = reliefSurfaceSampler(hex.terenBazowy, hex.coords.q, hex.coords.r, map.seed, HEX_R);
@@ -1732,7 +1754,7 @@ async function boot(): Promise<void> {
         try {
           const ov = buildStyledResourceOverlay(hex.nakladka, GAME_MAP_RENDER_STYLE, zlozeShown);
           if (!ov) continue;
-          collapseToMergedMesh(ov); // FPS lewar 1
+          maybeCollapseResourceOverlay(ov);
           const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
           const topY = unitRenderer.topYAt(hex.coords.q, hex.coords.r);
           const relief = reliefSurfaceSampler(hex.terenBazowy, hex.coords.q, hex.coords.r, map.seed, HEX_R);
@@ -1747,6 +1769,27 @@ async function boot(): Promise<void> {
         }
       }
       return count;
+    }
+
+    /**
+     * rebuildResourceOverlays = O(n) × buildStyledResourceOverlay × collapseToMergedMesh.
+     * Na Standard (~20k hex) to ~100+ s synchronicznie — ZAWSZE po hide overlay (FALA 162).
+     */
+    function scheduleDeferredResourceOverlays(): void {
+      const run = (): void => {
+        const t0 = performance.now();
+        const n = rebuildResourceOverlays();
+        syncLivestockAndPlacedMeshes();
+        refreshFog();
+        console.info(
+          `[civ-perf] deferred resourceOverlays: ${n} meshes in ${Math.round(performance.now() - t0)} ms`,
+        );
+      };
+      if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback(() => run(), { timeout: 2000 });
+      } else {
+        setTimeout(run, 32);
+      }
     }
 
     function syncResourceOverlayFog(vis: Set<string>, exploredKeys: Set<string>): void {
@@ -5622,6 +5665,7 @@ async function boot(): Promise<void> {
       playerCivId: string,
       seed: number,
       rywaleNaKlaster: number,
+      opts?: { skipRenderRefresh?: boolean },
     ): void {
       const plan = buildClusterStartPlan({
         map,
@@ -5700,11 +5744,12 @@ async function boot(): Promise<void> {
       // Lama = czyste ulepszenie „Zagroda lam" budowane przez Inków (bramka po typie cywilizacji
       // w isLivestockAllowed: lama tylko isIncaCiv), bez złoża na mapie.
 
-      refreshFog();
-      initDiplomaticContactSnapshot();
-      // B12: epoka wizualna = epoka startu gry + tylko tech awansujące epokę (fair play).
-      reconcileAllOwnerErasFromResearch();
-      cityRenderer.sync(cities, _cityRenderOpts());
+      if (!opts?.skipRenderRefresh) {
+        refreshFog();
+        initDiplomaticContactSnapshot();
+        reconcileAllOwnerErasFromResearch();
+        cityRenderer.sync(cities, _cityRenderOpts());
+      }
 
       initEmpireFoodStates();
       initOwnerDefaultPodzialHandlu();
@@ -21664,18 +21709,22 @@ async function boot(): Promise<void> {
       if (!newSceneResult) return;
 
       const postSceneT0 = performance.now();
-      loading.setProgress('Po scenie — inicjalizacja gry', 10, 1, 4);
-      applySceneResult(newSceneResult);
-      await yieldMainThread();
+      const POST_SCENE_STEPS = 9;
+      let postStep = 0;
+      let postT = performance.now();
 
-      // Rebuild camera controller with new scene center
-      loading.setProgress('Po scenie — kamera i renderery', 30, 2, 4);
+      postT = await postSceneStep(loading, 'init sceny', ++postStep, POST_SCENE_STEPS, postT);
+      applySceneResult(newSceneResult);
+
+      postT = await postSceneStep(loading, 'kamera', ++postStep, POST_SCENE_STEPS, postT);
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
 
-      // Rebuild unit and city renderers
+      postT = await postSceneStep(loading, 'renderery jednostek', ++postStep, POST_SCENE_STEPS, postT);
       unitRenderer = new UnitRenderer(scene, map);
       wireUnitRendererRingStance();
+
+      postT = await postSceneStep(loading, 'renderery miast', ++postStep, POST_SCENE_STEPS, postT);
       cityRenderer = new CityRenderer(scene, map);
       hideSiegeMapPanel();
       hideCityAttackChoice();
@@ -21684,11 +21733,12 @@ async function boot(): Promise<void> {
       siegeBesiegerByCity.clear();
       siegeAiStateByKey.clear();
       militiaDefOverrides.clear();
+
+      postT = await postSceneStep(loading, 'markery oblężenia i cuda', ++postStep, POST_SCENE_STEPS, postT);
       siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
       wonderRenderer = new WonderRenderer(scene, map);
-      await yieldMainThread();
 
-      loading.setProgress('Po scenie — stan gry i starty', 55, 3, 4);
+      postT = await postSceneStep(loading, 'reset stanu gry', ++postStep, POST_SCENE_STEPS, postT);
       // Reset stanu przed klastrem
       cities.length = 0;
       tradeRoutes.length = 0;
@@ -21779,12 +21829,12 @@ async function boot(): Promise<void> {
       for (const mesh of improvementMeshes.values()) scene.remove(mesh);
       improvementMeshes.clear();
 
-      applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates);
+      postT = await postSceneStep(loading, 'plan klastra startowego', ++postStep, POST_SCENE_STEPS, postT);
+      applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates, { skipRenderRefresh: true });
       initAllAiOwnersForNewGame(params.epochId || 'kamien');
       reconcileAllOwnerErasFromResearch();
-      await yieldMainThread();
 
-      loading.setProgress('Po scenie — mgła i HUD', 80, 4, 4);
+      postT = await postSceneStep(loading, 'mgła startowa', ++postStep, POST_SCENE_STEPS, postT);
       if (params.startPreview) {
         console.log(
           '[NewGame] StartPreview:',
@@ -21798,12 +21848,11 @@ async function boot(): Promise<void> {
       seedStartingFog();
       refreshBuildApi();
 
-      // Rebuild resource overlays for new map
+      postT = await postSceneStep(loading, 'nakładki zasobów (defer)', ++postStep, POST_SCENE_STEPS, postT);
       overlayDepositEra = player.era;
-      rebuildResourceOverlays();
-      syncLivestockAndPlacedMeshes();
+      scheduleDeferredResourceOverlays();
 
-      // Sync renderers with new state
+      postT = await postSceneStep(loading, 'synchronizacja HUD', ++postStep, POST_SCENE_STEPS, postT);
       syncUnitsRender();
       cityRenderer.sync(cities, _cityRenderOpts());
       refreshFog();
@@ -21812,6 +21861,7 @@ async function boot(): Promise<void> {
       refreshMapOverlayToggles();
 
       syncBasketResearchFromEngine();
+      console.info(`[civ-perf] postScene — synchronizacja HUD: ${Math.round(performance.now() - postT)} ms`);
       console.log('[NewGame] Mapa: ' + map.szerokoscQ + 'x' + map.wysokoscR + ' seed=' + newSeed + ' typ=' + _menuTypSwiata + ' rywale=' + _menuCityStates + ' typy=' + _menuCivTypesCount);
       beginOnboardingFoundCity();
       startGameMusic('mapa');

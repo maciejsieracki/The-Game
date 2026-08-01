@@ -14,7 +14,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `654ac9a0` - 2026-08-02 01:30 - FALA 161: perf raport po pełnym starcie mapy (postScene + wall-clock) - **AKTUALNA**
+## ROBOCZA `c153da40` - 2026-08-02 02:10 - FALA 162: post-scene perf — defer nakładek zasobów (fix 118s Standard) - **AKTUALNA**
+- md5 (pelne): `c153da402b5167c78f7474e8d9a573ef` · stempel: `ROBOCZA · 2026-08-02 02:10`
+- **VERIFY OK (Gra-ROBOCZA.html).** Winowajca: rebuildResourceOverlays+collapse O(n) synchronicznie (~118s Standard Pangea). Fix: ZAWSZE defer po hide; collapse tylko ≥7 mesh; 9 podkroków post-scene.
+- tsc 0 · Gra-ROBOCZA.html md5 OK.
+## ROBOCZA `a01102ad` - 2026-08-02 02:00 - FALA 162: post-scene perf Duża Pangea (granular progress + defer overlays) - **ZASTAPIONA**
+## ROBOCZA `654ac9a0` - 2026-08-02 01:30 - FALA 161: perf raport po pełnym starcie mapy (postScene + wall-clock) - **ZASTAPIONA**
 - md5 (pelne): `654ac9a0602925e6347fd4769d162802` · stempel: `ROBOCZA · 2026-08-02 01:30`
 - **VERIFY OK.** civ-perf dopiero gdy overlay znika; nowe linie: Przekazanie z workera, Po scenie/finishLoading, WALL-CLOCK; console.info wall-clock.
 - tsc 0 · VERIFY OK.
