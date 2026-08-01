@@ -4744,3 +4744,11 @@ CZEKAM-NA: Maciej Ctrl+F5 - Standardowa Pangea: postScene/finishLoading <<5s; WA
 - Fix: hide najpierw; overlays+fog+HUD dopiero po hide; civ-perf plik: sekcja POST-SCENE - podkroki (9x ms)
 - tsc 0 - vite build OK - publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 FRESH - Standard Pangea: postScene/finishLoading <5s; plik civ-perf pokazuje ktory podkrok >1s
+
+## [03:15 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 164 cluster start plan perf (113s fix)
+- md5 `440cf7da` / `440cf7dab49b05d809a39aaa3d0e68b7` - stempel `ROBOCZA - 2026-08-02 03:15`
+- Winowajca: `applyClusterStartPlan` -> `buildClusterStartPlan` -> `computeClusters`: `developmentSpaceScore` i `passesPlayerStartMassGate` przebudowywaly `buildMassHexIndex` dla KAZDEGO hexu masy (~15k x 15k = O(n2) ~113s)
+- Fix: `MassLandCache` (hexIndex + massSets) budowany raz; `spawnCache` w ClusterPlacement (reuse seaDist/ladowe w cluster-spawn)
+- Bench node Standard 168x120 Pangea: buildClusterStartPlan ~1041 ms (bylo ~113000 ms)
+- cluster-start-test.cjs PASS 375/375 - tsc 0 - publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 FRESH - Standard Pangea riverGen OFF: civ-perf postScene plan klastra startowego <=2s; WALL-CLOCK ~gen+scena+kilka s

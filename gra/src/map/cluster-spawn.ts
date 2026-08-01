@@ -18,7 +18,7 @@ import {
   packCityStatesAroundCapital,
   MIN_DIST_START_CITY_STATE,
   CLUSTER_CITY_STATE_MAX_HEX,
-  groupHabitableMasses,
+  createMassLandCache,
   passesPlayerStartMassGate,
   passesLocalLandGate,
   pickPlayerClusterCenter,
@@ -26,7 +26,7 @@ import {
   type ClusterPlacement,
   type TypeCluster,
 } from './clusters';
-import { hexDistanceAxial, mulberry32, buildSeaDistanceField } from './gen-helpers';
+import { hexDistanceAxial, mulberry32 } from './gen-helpers';
 import { TerenBazowy } from '../types/hex';
 
 /** Slot startowy — kontrakt dla SILNIK (D-START). */
@@ -223,21 +223,29 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
   }
 
   const capPosRaw = capitalOf(playerCluster) ?? fallbackHex;
-  const land = landHexesFromMap(map);
-  const masses = groupHabitableMasses(land);
-  const seaDist = buildSeaDistanceField(map.hexes);
+  const spawnCache = placement.spawnCache;
+  const landCache = spawnCache?.landCache ?? createMassLandCache(landHexesFromMap(map));
+  const seaDist = spawnCache?.seaDist;
   const minSeaDist = capitalMinSeaDistForMap(
     placement.rozmiarMapy,
     map.szerokoscQ,
     map.wysokoscR,
   );
   let capPos = capPosRaw;
-  if (!passesPlayerStartMassGate(map, capPos.q, capPos.r, masses)) {
+  if (!passesPlayerStartMassGate(map, capPos.q, capPos.r, landCache)) {
     const mapCenter = {
       q: (map.szerokoscQ - 1) / 2,
       r: (map.wysokoscR - 1) / 2,
     };
-    const fixed = pickPlayerClusterCenter(map, masses, land, mapCenter, mulberry32(seed), seaDist, minSeaDist);
+    const fixed = pickPlayerClusterCenter(
+      map,
+      landCache,
+      spawnCache?.ladowe ?? landHexesFromMap(map),
+      mapCenter,
+      mulberry32(seed),
+      seaDist,
+      minSeaDist,
+    );
     if (fixed) capPos = fixed;
   }
 

@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `c69a9c82` - 2026-08-02 02:45 - FALA 163: post-scene perf — defer PO hide + 9 podkroków w civ-perf - **AKTUALNA**
+## ROBOCZA `440cf7da` - 2026-08-02 03:15 - FALA 164: cluster start plan perf — MassLandCache (113s→~1s) - **AKTUALNA**
+- md5 (pelne): `440cf7dab49b05d809a39aaa3d0e68b7` · stempel: `ROBOCZA · 2026-08-02 03:15`
+- **VERIFY OK (Gra-ROBOCZA.html).** Winowajca: `developmentSpaceScore`/`passesPlayerStartMassGate` przebudowywały `buildMassHexIndex` per hex → O(n²) na ~15k lądu Pangea (~113 s w civ-perf „plan klastra startowego”). Fix: `MassLandCache` (hexIndex + massSets) jednorazowo w `computeClusters`; reuse `spawnCache` w cluster-spawn (bez drugiego `buildSeaDistanceField`). Bench Standard 168×120: buildClusterStartPlan ~1041 ms. Gameplay bez zmian.
+- cluster-start-test.cjs — PASS 375/375 · tsc 0.
+## ROBOCZA `c69a9c82` - 2026-08-02 02:45 - FALA 163: post-scene perf — defer PO hide + 9 podkroków w civ-perf - **ZASTAPIONA**
 - md5 (pelne): `c69a9c8297ef25f1624b4256de9311da` · stempel: `ROBOCZA · 2026-08-02 02:45`
 - **VERIFY OK (Gra-ROBOCZA.html).** FALA 162 nie pomogła: requestIdleCallback(2s) odpalał rebuildResourceOverlays WEWNĄTRZ pomiaru postScene (yield między krokami). Fix: hide najpierw, ciężkie (overlays+fog+HUD) po hide; civ-perf: POST-SCENE — podkroki (9× ms).
 - tsc 0 · Gra-ROBOCZA.html md5 OK.

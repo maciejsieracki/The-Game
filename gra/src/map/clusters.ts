@@ -117,6 +117,13 @@ export interface TypeCluster {
   growthSlot?: { q: number; r: number } | null;
 }
 
+/** Precomputed caches z computeClusters — reuse w cluster-spawn (FALA 164). */
+export interface ClusterSpawnCache {
+  seaDist: Map<string, number>;
+  landCache: MassLandCache;
+  ladowe: Array<{ q: number; r: number }>;
+}
+
 /** Pełny wynik rozmieszczenia klastrów dla całej mapy. */
 export interface ClusterPlacement {
   rozmiarMapy: 'mala' | 'srednia' | 'duza' | 'ogromna' | 'super';
@@ -132,6 +139,8 @@ export interface ClusterPlacement {
   minDystansObcyOdGracza: number;
   playerTypIndex: number;     // indeks klastra gracza (zawsze 0)
   klastry: TypeCluster[];
+  /** Cache spawnu (nie serializować). */
+  spawnCache?: ClusterSpawnCache;
 }
 
 // ---------------------------------------------------------------------------
@@ -242,6 +251,42 @@ function buildMassHexIndex(
   return idx;
 }
 
+/**
+ * Cache mas lądu — jednorazowy build na computeClusters (FALA 164 perf).
+ * Bez tego developmentSpaceScore / passesPlayerStartMassGate przebudowują indeks
+ * per hex → O(n²) na Pangea Standard (~15k² ≈ 113 s).
+ */
+export interface MassLandCache {
+  masses: Array<Array<{ q: number; r: number }>>;
+  hexIndex: Map<string, number>;
+  massSets: ReadonlyArray<ReadonlySet<string>>;
+}
+
+export function createMassLandCache(
+  ladowe: Array<{ q: number; r: number }>,
+): MassLandCache {
+  const masses = groupHabitableMasses(ladowe);
+  return massLandCacheFromMasses(masses);
+}
+
+export function massLandCacheFromMasses(
+  masses: Array<Array<{ q: number; r: number }>>,
+): MassLandCache {
+  return {
+    masses,
+    hexIndex: buildMassHexIndex(masses),
+    massSets: masses.map(m => new Set(m.map(h => `${h.q},${h.r}`))),
+  };
+}
+
+type MassesOrCache = Array<Array<{ q: number; r: number }>> | MassLandCache;
+
+function resolveMassLandCache(massesOrCache: MassesOrCache): MassLandCache {
+  return Array.isArray(massesOrCache)
+    ? massLandCacheFromMasses(massesOrCache)
+    : massesOrCache;
+}
+
 function massContainingHex(
   hexIndex: Map<string, number>,
   q: number,
@@ -331,13 +376,13 @@ export function developmentSpaceScore(
   map: GameMap,
   q: number,
   r: number,
-  masses: Array<Array<{ q: number; r: number }>>,
+  massesOrCache: MassesOrCache,
   radius: number = DEVELOPMENT_SPACE_RADIUS,
 ): number {
-  const hexIndex = buildMassHexIndex(masses);
-  const mi = massContainingHex(hexIndex, q, r);
+  const cache = resolveMassLandCache(massesOrCache);
+  const mi = massContainingHex(cache.hexIndex, q, r);
   if (mi === null) return 0;
-  const massSet = new Set(masses[mi]!.map(h => `${h.q},${h.r}`));
+  const massSet = cache.massSets[mi]!;
   let count = 0;
   for (let dq = -radius; dq <= radius; dq++) {
     const r1 = Math.max(-radius, -dq - radius);
@@ -473,11 +518,11 @@ export function qualifyingMassIndicesForSpawn(
 export function massSizeAtHex(
   q: number,
   r: number,
-  masses: Array<Array<{ q: number; r: number }>>,
+  massesOrCache: MassesOrCache,
 ): number {
-  const idx = buildMassHexIndex(masses);
-  const mi = massContainingHex(idx, q, r);
-  return mi !== null ? masses[mi]!.length : 0;
+  const cache = resolveMassLandCache(massesOrCache);
+  const mi = massContainingHex(cache.hexIndex, q, r);
+  return mi !== null ? cache.masses[mi]!.length : 0;
 }
 
 /**
@@ -488,11 +533,12 @@ export function passesPlayerStartMassGate(
   map: GameMap,
   q: number,
   r: number,
-  masses: Array<Array<{ q: number; r: number }>>,
+  massesOrCache: MassesOrCache,
 ): boolean {
   if (!passesLocalLandGate(map, q, r)) return false;
-  const massSize = massSizeAtHex(q, r, masses);
-  const largest = masses[0]?.length ?? 0;
+  const cache = resolveMassLandCache(massesOrCache);
+  const massSize = massSizeAtHex(q, r, cache);
+  const largest = cache.masses[0]?.length ?? 0;
   const scaledMin = Math.max(
     PLAYER_START_MASS_MIN_ABSOLUTE,
     Math.floor(largest * 0.08),
@@ -541,22 +587,24 @@ function pickTiedSpawnLandCandidate(
 
 function playerStartCandidatesOnMasses(
   map: GameMap,
-  masses: Array<Array<{ q: number; r: number }>>,
+  landCache: MassLandCache,
   seaDist: Map<string, number> | undefined,
   minSeaDist: number,
   requireSeaGate: boolean,
 ): SpawnLandCandidate[] {
-  const massOrder = masses.length > 0 ? [masses[0]!, ...masses.slice(1)] : [];
+  const massOrder = landCache.masses.length > 0
+    ? [landCache.masses[0]!, ...landCache.masses.slice(1)]
+    : [];
   const out: SpawnLandCandidate[] = [];
   for (const mass of massOrder) {
     for (const h of mass) {
-      if (!passesPlayerStartMassGate(map, h.q, h.r, masses)) continue;
+      if (!passesPlayerStartMassGate(map, h.q, h.r, landCache)) continue;
       const sea = seaDist ? seaDistAt(seaDist, h.q, h.r) : minSeaDist;
       if (requireSeaGate && seaDist && !passesMinSeaDistGate(seaDist, h.q, h.r, minSeaDist)) continue;
       out.push({
         h,
         land: localLandFraction(map, h.q, h.r),
-        dev: developmentSpaceScore(map, h.q, h.r, masses),
+        dev: developmentSpaceScore(map, h.q, h.r, landCache),
         sea,
       });
     }
@@ -571,14 +619,15 @@ function playerStartCandidatesOnMasses(
  */
 export function pickPlayerClusterCenter(
   map: GameMap,
-  masses: Array<Array<{ q: number; r: number }>>,
+  landCacheOrMasses: MassesOrCache,
   ladowe: Array<{ q: number; r: number }>,
   mapCenter: { q: number; r: number },
   rand: () => number,
   seaDist?: Map<string, number>,
   minSeaDist = 0,
 ): { q: number; r: number } | null {
-  const strict = playerStartCandidatesOnMasses(map, masses, seaDist, minSeaDist, true);
+  const landCache = resolveMassLandCache(landCacheOrMasses);
+  const strict = playerStartCandidatesOnMasses(map, landCache, seaDist, minSeaDist, true);
   if (strict.length > 0) {
     sortSpawnLandCandidates(strict, mapCenter);
     const picked = pickTiedSpawnLandCandidate(strict, rand);
@@ -586,7 +635,7 @@ export function pickPlayerClusterCenter(
   }
 
   if (seaDist && minSeaDist > 0) {
-    const relaxed = playerStartCandidatesOnMasses(map, masses, seaDist, minSeaDist, false);
+    const relaxed = playerStartCandidatesOnMasses(map, landCache, seaDist, minSeaDist, false);
     if (relaxed.length > 0) {
       sortSpawnLandCandidates(relaxed, mapCenter, true);
       const picked = pickTiedSpawnLandCandidate(relaxed, rand);
@@ -598,20 +647,20 @@ export function pickPlayerClusterCenter(
     .map(h => ({
       h,
       land: localLandFraction(map, h.q, h.r),
-      dev: developmentSpaceScore(map, h.q, h.r, masses),
+      dev: developmentSpaceScore(map, h.q, h.r, landCache),
       sea: seaDist ? seaDistAt(seaDist, h.q, h.r) : minSeaDist,
     }))
-    .filter(x => passesPlayerStartMassGate(map, x.h.q, x.h.r, masses))
+    .filter(x => passesPlayerStartMassGate(map, x.h.q, x.h.r, landCache))
     .filter(x => !seaDist || passesMinSeaDistGate(seaDist, x.h.q, x.h.r, minSeaDist));
   if (fallback.length === 0 && seaDist && minSeaDist > 0) {
     fallback = ladowe
       .map(h => ({
         h,
         land: localLandFraction(map, h.q, h.r),
-        dev: developmentSpaceScore(map, h.q, h.r, masses),
+        dev: developmentSpaceScore(map, h.q, h.r, landCache),
         sea: seaDistAt(seaDist, h.q, h.r),
       }))
-      .filter(x => passesPlayerStartMassGate(map, x.h.q, x.h.r, masses));
+      .filter(x => passesPlayerStartMassGate(map, x.h.q, x.h.r, landCache));
     sortSpawnLandCandidates(fallback, mapCenter, true);
   } else {
     sortSpawnLandCandidates(fallback, mapCenter);
@@ -625,7 +674,7 @@ function pickBestLocalLandSpawn(
   pool: Array<{ q: number; r: number }>,
   existing: Array<{ q: number; r: number }>,
   minDist: number,
-  masses?: Array<Array<{ q: number; r: number }>>,
+  landCache: MassLandCache,
   rand?: () => number,
   seaDist?: Map<string, number>,
   minSeaDist = 0,
@@ -635,7 +684,7 @@ function pickBestLocalLandSpawn(
     .map(h => ({
       h,
       land: localLandFraction(map, h.q, h.r),
-      dev: masses ? developmentSpaceScore(map, h.q, h.r, masses) : 0,
+      dev: developmentSpaceScore(map, h.q, h.r, landCache),
       sea: seaDist ? seaDistAt(seaDist, h.q, h.r) : minSeaDist,
     }))
     .filter(x => x.land.ratio >= LOCAL_LAND_DOMINANCE_FRAC);
@@ -746,7 +795,7 @@ function pickCenterInMassWithLandGate(
   mass: Array<{ q: number; r: number }>,
   existing: Array<{ q: number; r: number }>,
   minDist: number,
-  masses: Array<Array<{ q: number; r: number }>>,
+  landCache: MassLandCache,
   preferNear?: { q: number; r: number },
   rand?: () => number,
   seaDist?: Map<string, number>,
@@ -758,7 +807,7 @@ function pickCenterInMassWithLandGate(
     .map(h => ({
       h,
       land: localLandFraction(map, h.q, h.r),
-      dev: developmentSpaceScore(map, h.q, h.r, masses),
+      dev: developmentSpaceScore(map, h.q, h.r, landCache),
       sea: seaDist ? seaDistAt(seaDist, h.q, h.r) : minSeaDist,
       score: hexDistanceAxial(h.q, h.r, centroid.q, centroid.r)
         + (preferNear ? hexDistanceAxial(h.q, h.r, preferNear.q, preferNear.r) * 0.05 : 0),
@@ -791,6 +840,7 @@ function pickCenterInMassWithLandGate(
 function placeClusterCentersAcrossLandmasses(
   map: GameMap,
   ladowe: Array<{ q: number; r: number }>,
+  landCache: MassLandCache,
   nNeeded: number,
   minDistBase: number,
   mapCenter: { q: number; r: number },
@@ -801,8 +851,8 @@ function placeClusterCentersAcrossLandmasses(
   minSeaDist = 0,
 ): Array<{ q: number; r: number }> {
   const { minQ, maxQ, minR, maxR } = bounds;
-  const masses = groupHabitableMasses(ladowe);
-  const hexIndex = buildMassHexIndex(masses);
+  const masses = landCache.masses;
+  const hexIndex = landCache.hexIndex;
   const centers: Array<{ q: number; r: number }> = [];
 
   function okMargins(q: number, r: number, relax: boolean): boolean {
@@ -831,7 +881,7 @@ function placeClusterCentersAcrossLandmasses(
     if (!okMargins(c.q, c.r, relaxMargin)) return false;
     if (centers.some(p => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDist)) return false;
     if (forPlayer) {
-      if (!passesPlayerStartMassGate(map, c.q, c.r, masses)) return false;
+      if (!passesPlayerStartMassGate(map, c.q, c.r, landCache)) return false;
     } else if (!passesLocalLandGate(map, c.q, c.r)) {
       return false;
     }
@@ -840,7 +890,7 @@ function placeClusterCentersAcrossLandmasses(
   }
 
   // Faza 0: gracz ZAWSZE na największej masie spełniającej bramki (MAP-SPAWN-Q1 B).
-  const playerCenter = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand, seaDist, minSeaDist);
+  const playerCenter = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
   if (playerCenter) {
     centers.push(playerCenter);
   }
@@ -867,7 +917,7 @@ function placeClusterCentersAcrossLandmasses(
         if (currentForeign >= targetForeign) break;
         const before = centers.length;
         tryPlace(
-          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, masses, undefined, rand, seaDist, minSeaDist),
+          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, landCache, undefined, rand, seaDist, minSeaDist),
           minDist,
           relaxMargin,
         );
@@ -886,7 +936,7 @@ function placeClusterCentersAcrossLandmasses(
         const currentForeign = countCentersOnMass(mi) - (playerOnMass ? 1 : 0);
         if (currentForeign >= targetForeign) continue;
         tryPlace(
-          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, masses, undefined, rand, seaDist, minSeaDist),
+          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, landCache, undefined, rand, seaDist, minSeaDist),
           minDist,
           true,
         );
@@ -900,7 +950,7 @@ function placeClusterCentersAcrossLandmasses(
       for (const mi of qualifyingOrder) {
         if (centers.length >= nNeeded) break;
         tryPlace(
-          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, masses, undefined, rand, seaDist, minSeaDist),
+          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, landCache, undefined, rand, seaDist, minSeaDist),
           minDist,
           true,
         );
@@ -1511,7 +1561,7 @@ function enforceLocalLandDominance(
   regiony: Array<Array<{ q: number; r: number }>>,
   aktywneKlucze: string[],
   ladowe: Array<{ q: number; r: number }>,
-  masses: Array<Array<{ q: number; r: number }>>,
+  landCache: MassLandCache,
   rand: () => number,
   minDist: number,
   mapCenter: { q: number; r: number },
@@ -1522,12 +1572,13 @@ function enforceLocalLandDominance(
   regiony: Array<Array<{ q: number; r: number }>>;
   aktywneKlucze: string[];
 } {
+  const masses = landCache.masses;
   let relocated = false;
 
   for (let ci = 0; ci < centrumy.length; ci++) {
     const center = centrumy[ci]!;
     const ok = ci === 0
-      ? passesPlayerStartMassGate(map, center.q, center.r, masses)
+      ? passesPlayerStartMassGate(map, center.q, center.r, landCache)
       : passesLocalLandGate(map, center.q, center.r);
     if (ok) continue;
 
@@ -1535,14 +1586,14 @@ function enforceLocalLandDominance(
     const others = centrumy.filter((_, i) => i !== ci);
     let newCenter: { q: number; r: number } | null = null;
     if (ci === 0) {
-      newCenter = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand, seaDist, minSeaDist);
+      newCenter = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
     } else {
-      newCenter = pickBestLocalLandSpawn(map, region, others, minDist, masses, rand, seaDist, minSeaDist);
+      newCenter = pickBestLocalLandSpawn(map, region, others, minDist, landCache, rand, seaDist, minSeaDist);
       if (!newCenter) {
         const qualifying = qualifyingMassIndicesForSpawn(masses)
           .sort((a, b) => masses[b]!.length - masses[a]!.length);
         for (const mi of qualifying) {
-          newCenter = pickCenterInMassWithLandGate(map, masses[mi]!, others, minDist, masses, undefined, rand, seaDist, minSeaDist);
+          newCenter = pickCenterInMassWithLandGate(map, masses[mi]!, others, minDist, landCache, undefined, rand, seaDist, minSeaDist);
           if (newCenter) break;
         }
       }
@@ -1567,8 +1618,8 @@ function enforceLocalLandDominance(
   });
 
   if (!passesLocalLandGate(map, centrumy[0]!.q, centrumy[0]!.r)
-    || !passesPlayerStartMassGate(map, centrumy[0]!.q, centrumy[0]!.r, masses)) {
-    const forced = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand, seaDist, minSeaDist);
+    || !passesPlayerStartMassGate(map, centrumy[0]!.q, centrumy[0]!.r, landCache)) {
+    const forced = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
     if (forced) {
       centrumy[0] = forced;
       const newRegiony = assignVoronoiRegions(ladowe, centrumy);
@@ -1612,12 +1663,13 @@ function buildClusterCitiesWithLandGate(
   rand: () => number,
   anchor: { q: number; r: number; minDist: number } | undefined,
   seed: number,
-  masses: Array<Array<{ q: number; r: number }>>,
+  landCache: MassLandCache,
   existingCenters: Array<{ q: number; r: number }>,
   minClusterDist: number,
   seaDist?: Map<string, number>,
   minSeaDist = 0,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null; centrum: { q: number; r: number } } | null {
+  const masses = landCache.masses;
   let activeCentrum = centrum;
   for (let attempt = 0; attempt < 5; attempt++) {
     const layout = buildClusterCities(
@@ -1634,13 +1686,13 @@ function buildClusterCitiesWithLandGate(
     if (passesLocalLandGate(map, cap.q, cap.r)) {
       return { ...layout, centrum: activeCentrum };
     }
-    const altCenter = pickBestLocalLandSpawn(map, region, existingCenters, minClusterDist, masses, rand, seaDist, minSeaDist);
+    const altCenter = pickBestLocalLandSpawn(map, region, existingCenters, minClusterDist, landCache, rand, seaDist, minSeaDist);
     let nextCenter = altCenter;
     if (!nextCenter) {
       const qualifying = qualifyingMassIndicesForSpawn(masses)
         .sort((a, b) => masses[b]!.length - masses[a]!.length);
       for (const mi of qualifying) {
-        nextCenter = pickCenterInMassWithLandGate(map, masses[mi]!, existingCenters, minClusterDist, masses, undefined, rand, seaDist, minSeaDist);
+        nextCenter = pickCenterInMassWithLandGate(map, masses[mi]!, existingCenters, minClusterDist, landCache, undefined, rand, seaDist, minSeaDist);
         if (nextCenter) break;
       }
     }
@@ -1743,11 +1795,14 @@ export function computeClusters(
   const marginBrzeg = Math.max(2, Math.floor(minDystKlastrow / 3));
   const seaDist = buildSeaDistanceField(map.hexes);
   const minSeaDist = capitalMinSeaDistForMap(rozmiarMapy, W, H);
+  const landCache = createMassLandCache(ladowe);
+  const masses = landCache.masses;
 
   // --- ŚRODKI TYPÓW: równomiernie po masach lądu (kontynenty/wyspy), nie tylko greedy shuffle ---
   const centrumy = placeClusterCentersAcrossLandmasses(
     map,
     ladowe,
+    landCache,
     nTypy,
     minDystKlastrow,
     mapCenter,
@@ -1764,7 +1819,6 @@ export function computeClusters(
     );
   }
 
-  const masses = groupHabitableMasses(ladowe);
   const rosterSource = epochRoster.length > 0 ? epochRoster : ROSTER_KLUCZE;
   const playerInEpoch = rosterSource.includes(playerTypKlucz);
   const playerKlucz = playerInEpoch ? playerTypKlucz : rosterSource[0]!;
@@ -1783,7 +1837,7 @@ export function computeClusters(
     regiony,
     placeholderKlucze,
     ladowe,
-    masses,
+    landCache,
     rand,
     minDystKlastrow,
     mapCenter,
@@ -1827,7 +1881,7 @@ export function computeClusters(
     rand,
     undefined,
     seed,
-    masses,
+    landCache,
     [],
     minDystKlastrow,
     seaDist,
@@ -1845,7 +1899,7 @@ export function computeClusters(
     playerLayout = playerLayoutResult;
     playerCentrumFinal = playerLayoutResult.centrum;
   } else {
-    const forced = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand, seaDist, minSeaDist);
+    const forced = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
     if (forced) {
       playerCentrumFinal = forced;
       playerLayout = {
@@ -1863,8 +1917,8 @@ export function computeClusters(
     ? { q: playerCapital.q, r: playerCapital.r }
     : playerCentrumFinal;
 
-  if (!passesPlayerStartMassGate(map, playerCapitalPos.q, playerCapitalPos.r, masses)) {
-    const fixed = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand, seaDist, minSeaDist);
+  if (!passesPlayerStartMassGate(map, playerCapitalPos.q, playerCapitalPos.r, landCache)) {
+    const fixed = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
     if (fixed) {
       playerCentrumFinal = fixed;
       playerCapitalPos = fixed;
@@ -1881,7 +1935,7 @@ export function computeClusters(
     && minSeaDist > 0
     && !passesMinSeaDistGate(seaDist, playerCapitalPos.q, playerCapitalPos.r, minSeaDist)
   ) {
-    const fixed = pickPlayerClusterCenter(map, masses, ladowe, mapCenter, rand, seaDist, minSeaDist);
+    const fixed = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
     if (fixed) {
       const relocatedLayout = buildClusterCitiesWithLandGate(
         map,
@@ -1892,7 +1946,7 @@ export function computeClusters(
         rand,
         undefined,
         seed,
-        masses,
+        landCache,
         [],
         minDystKlastrow,
         seaDist,
@@ -1955,7 +2009,7 @@ export function computeClusters(
       rand,
       { q: playerCapitalPos.q, r: playerCapitalPos.r, minDist: minDystObcyOdGracza },
       seed,
-      masses,
+      landCache,
       activeCentrumy.slice(0, ci),
       minDystKlastrow,
       seaDist,
@@ -2029,5 +2083,6 @@ export function computeClusters(
     minDystansObcyOdGracza: minDystObcyOdGracza,
     playerTypIndex: 0,
     klastry,
+    spawnCache: { seaDist, landCache, ladowe },
   };
 }
