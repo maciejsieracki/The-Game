@@ -4744,6 +4744,8 @@ export interface TraceRiverOpts {
   minLen?: number;
   hardMeanderLen?: number;
   mouthTailLen?: number;
+  /** Tylko fill/force: trasa może przechodzić przez wzgórza/góry (nie tylko źródło). */
+  allowReliefTraversal?: boolean;
 }
 
 type RiverCoord = { q: number; r: number };
@@ -4770,9 +4772,10 @@ function canRiverFlowThrough(
   sourceKey: string,
   blockExisting = false,
   allowKey?: string,
+  allowReliefTraversal = false,
 ): boolean {
   if (!hex || hex.terenBazowy === TerenBazowy.Morze) return false;
-  if (isReliefTerrain(hex.terenBazowy)) return cellKey === sourceKey;
+  if (isReliefTerrain(hex.terenBazowy) && !allowReliefTraversal) return cellKey === sourceKey;
   if (blockExisting && hex.rzeka?.obecna && cellKey !== allowKey) return false;
   return true;
 }
@@ -4811,6 +4814,7 @@ function growRiverInlandBeforeDrainage(
   inlandTargetLen: number,
   stepCap: number,
   hardMeanderLen: number = RIVER_HARD_MEANDER_LEN,
+  allowReliefTraversal = false,
 ): RiverCoord[] {
   const srcKey = hexKey(sq, sr);
   const path: RiverCoord[] = [{ q: sq, r: sr }];
@@ -4833,7 +4837,7 @@ function growRiverInlandBeforeDrainage(
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue; // brak samoprzecięcia
       // blockExisting: nie wchodź na heks innej, już ułożonej rzeki (konfluencje, nie krzyżowania).
-      if (!canRiverFlowThrough(hexes[nk], nk, srcKey, true)) continue; // brak morza/poza mapą (poza źródłem-reliefem)
+      if (!canRiverFlowThrough(hexes[nk], nk, srcKey, true, undefined, allowReliefTraversal)) continue;
       const nd = seaDist.get(nk) ?? 0;
       if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
@@ -4869,6 +4873,7 @@ function greedyRiverDrainToSea(
   maxLen: number,
   rand: () => number,
   sourceKey: string,
+  allowReliefTraversal = false,
 ): RiverCoord[] {
   const startK = hexKey(sq, sr);
   const path: RiverCoord[] = [{ q: sq, r: sr }];
@@ -4896,7 +4901,7 @@ function greedyRiverDrainToSea(
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue;
       // blockExisting: nie wchodź na heks innej, już ułożonej rzeki (konfluencje, nie krzyżowania).
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, undefined, allowReliefTraversal)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
@@ -4931,6 +4936,7 @@ function aStarRiverToSea(
   oceanConnected: Set<string>,
   maxLen: number,
   rand: () => number = () => 0,
+  allowReliefTraversal = false,
 ): RiverCoord[] {
   const startK = hexKey(sq, sr);
   const h0 = openOceanDist.get(startK) ?? seaDist.get(startK);
@@ -4982,7 +4988,7 @@ function aStarRiverToSea(
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
       // blockExisting: nie wchodź na heks innej, już ułożonej rzeki (konfluencje, nie krzyżowania).
-      if (!canRiverFlowThrough(hexes[nk], nk, startK, true)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, startK, true, undefined, allowReliefTraversal)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       let stepCost = 1;
@@ -5256,6 +5262,7 @@ export function traceRiver(
   const inlandTarget = traceOpts.minLen ?? 4;
   const mouthTailLen = traceOpts.mouthTailLen ?? RIVER_MOUTH_TAIL_LEN;
   const hardMeanderLen = traceOpts.hardMeanderLen ?? RIVER_HARD_MEANDER_LEN;
+  const allowReliefTraversal = traceOpts.allowReliefTraversal ?? false;
   const stepCap = Math.max(
     inlandTarget + mouthTailLen + 12,
     Math.min(maxLen, Math.ceil(startDist * 2.5) + inlandTarget + 10),
@@ -5263,6 +5270,7 @@ export function traceRiver(
 
   let path = growRiverInlandBeforeDrainage(
     hexes, sq, sr, seaDist, openOceanDist, rand, inlandTarget, stepCap, hardMeanderLen,
+    allowReliefTraversal,
   );
 
   const tailFrom = path[path.length - 1]!;
@@ -5276,6 +5284,7 @@ export function traceRiver(
     oceanConnected,
     drainBudget,
     rand,
+    allowReliefTraversal,
   );
   if (drainPath.length <= 1) {
     drainPath = greedyRiverDrainToSea(
@@ -5288,17 +5297,19 @@ export function traceRiver(
       drainBudget,
       rand,
       srcKey,
+      allowReliefTraversal,
     );
   }
   if (drainPath.length > 1) {
     path = [...path, ...drainPath.slice(1)];
   } else if (path.length <= 1) {
     path = aStarRiverToSea(
-      hexes, sq, sr, seaDist, openOceanDist, oceanConnected, stepCap, rand,
+      hexes, sq, sr, seaDist, openOceanDist, oceanConnected, stepCap, rand, allowReliefTraversal,
     );
     if (path.length <= 1) {
       path = greedyRiverDrainToSea(
         hexes, sq, sr, seaDist, openOceanDist, oceanConnected, stepCap, rand, srcKey,
+        allowReliefTraversal,
       );
     }
   }
@@ -5770,6 +5781,7 @@ function aStarRiverToTarget(
   tr: number,
   maxLen: number,
   sourceKey: string,
+  allowReliefTraversal = false,
 ): RiverCoord[] {
   const startK = hexKey(sq, sr);
   const targetK = hexKey(tq, tr);
@@ -5803,7 +5815,7 @@ function aStarRiverToTarget(
       const nk = hexKey(q + dq, r + dr);
       // blockExisting: nie przecinaj ŻADNEJ innej, już ułożonej rzeki po drodze — jedyny
       // dozwolony (już-oznakowany) heks to sam cel `targetK` (zamierzona konfluencja).
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, targetK)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, targetK, allowReliefTraversal)) continue;
       const tg = curG + 1;
       if (tg > maxLen) continue;
       if (tg >= (gScore.get(nk) ?? Infinity)) continue;
@@ -5974,8 +5986,8 @@ export interface GenerateRiversResult {
   kinds: RiverPathKind[];
 }
 
-/** BATCH 4: 1 główny nurt na blok stride×stride komórek siatki (~9 komórek przy stride=3). */
-export const MAIN_RIVER_GRID_STRIDE = 3;
+/** BATCH 4: główny nurt w każdej komórce siatki (stride=1). */
+export const MAIN_RIVER_GRID_STRIDE = 1;
 
 /** Fair play BATCH 4: komórka ma dowolny heks z rzeką (krawędzie), nie tylko źródło main. */
 export function cellHasRiverHex(
@@ -6533,6 +6545,7 @@ interface GridSourcePlaceCtx {
   pushMedium?: (path: RiverCoord[], sq: number, sr: number) => boolean;
   pushShort?: (path: RiverCoord[], sq: number, sr: number) => boolean;
   relaxSeaBuffer?: boolean;
+  allowReliefTraversal?: boolean;
   placeMode?: GridPlaceMode;
   targetRiverKinds?: RiverPathKind[];
 }
@@ -6556,7 +6569,11 @@ function buildGridRouteCandidates(
   if (mode !== 'short') {
     const seaPath = traceRiverForGridFill(
       hexes, sq, sr, traceMax, minLen, acceptLen,
-      { seaDist, openOceanDist, oceanConnected, mapWidth: width, mapHeight: height, rand, ...traceOptsBase },
+      {
+        seaDist, openOceanDist, oceanConnected, mapWidth: width, mapHeight: height, rand,
+        ...traceOptsBase,
+        allowReliefTraversal: ctx.allowReliefTraversal,
+      },
       ctx.relaxSeaBuffer,
     );
     if (seaPath.length >= acceptLen
@@ -6728,7 +6745,7 @@ function isTooCloseToRiverSource(
 }
 
 export function minLandHexesForRiverCell(cellSize: number): number {
-  return Math.max(4, Math.floor(cellSize * 0.35));
+  return Math.max(3, Math.floor(cellSize * 0.2));
 }
 
 /** Test / bramka: każda komórka siatki z wystarczającym lądem ma heks z rzeką (BATCH 4). */
@@ -6825,7 +6842,7 @@ function expandRiverSourceCandidates(
   return [...out.values()];
 }
 
-/** BFS po nizinach (bez gór/wzgórz) — najbliższy heks istniejącej rzeki w masie lądu. */
+/** BFS po suchym lądzie — najbliższy heks istniejącej rzeki w masie lądu. */
 function bfsNearestRiverHexOnLowland(
   hexes: Record<string, Hex>,
   sq: number,
@@ -6833,6 +6850,7 @@ function bfsNearestRiverHexOnLowland(
   riverKeys: Set<string>,
   massSet: Set<string>,
   maxDist: number,
+  allowReliefTraversal = false,
 ): { q: number; r: number; dist: number } | null {
   const startK = hexKey(sq, sr);
   const queue: Array<[number, number, number]> = [[sq, sr, 0]];
@@ -6849,7 +6867,7 @@ function bfsNearestRiverHexOnLowland(
       if (visited.has(nk) || !massSet.has(nk)) continue;
       const nh = hexes[nk];
       if (!nh || !isRiverLandTerrain(nh.terenBazowy)) continue;
-      if (isReliefTerrain(nh.terenBazowy)) continue;
+      if (!allowReliefTraversal && isReliefTerrain(nh.terenBazowy)) continue;
       visited.add(nk);
       queue.push([nq, nr, d + 1]);
     }
@@ -6857,7 +6875,7 @@ function bfsNearestRiverHexOnLowland(
   return null;
 }
 
-/** Prosta ścieżka BFS po nizinach (gdy A* nie przebija się przez relief). */
+/** Prosta ścieżka BFS po suchym lądzie (gdy A* nie przebija się przez relief). */
 function bfsLowlandRiverPath(
   hexes: Record<string, Hex>,
   sq: number,
@@ -6866,6 +6884,7 @@ function bfsLowlandRiverPath(
   tr: number,
   massSet: Set<string>,
   maxLen: number,
+  allowReliefTraversal = false,
 ): RiverCoord[] {
   const startK = hexKey(sq, sr);
   const targetK = hexKey(tq, tr);
@@ -6893,7 +6912,7 @@ function bfsLowlandRiverPath(
       if (visited.has(nk) || !massSet.has(nk)) continue;
       const nh = hexes[nk];
       if (!nh || !isRiverLandTerrain(nh.terenBazowy)) continue;
-      if (isReliefTerrain(nh.terenBazowy) && nk !== targetK) continue;
+      if (!allowReliefTraversal && isReliefTerrain(nh.terenBazowy) && nk !== targetK) continue;
       visited.add(nk);
       cameFrom.set(nk, current);
       queue.push(nk);
@@ -6921,7 +6940,7 @@ function tryForceCellRiverConnection(
       const k = hexKey(q, r);
       if (ctx.usedSources.has(k)) return false;
       const h = ctx.hexes[k];
-      return h && isRiverLandTerrain(h.terenBazowy) && !isReliefTerrain(h.terenBazowy);
+      return h && isDryLandWithoutRiver(h);
     })
     .map(([q, r]) => ({
       q,
@@ -6934,10 +6953,11 @@ function tryForceCellRiverConnection(
   let bestSrc: [number, number] | null = null;
   let bestTarget: [number, number] | null = null;
   let bestDist = Infinity;
+  const allowRelief = ctx.allowReliefTraversal ?? true;
 
   for (const c of lowland.slice(0, 16)) {
     const near = bfsNearestRiverHexOnLowland(
-      ctx.hexes, c.q, c.r, riverKeys, massSet, Math.max(80, ctx.maxLen + 24),
+      ctx.hexes, c.q, c.r, riverKeys, massSet, Math.max(80, ctx.maxLen + 24), allowRelief,
     );
     if (!near || near.dist >= bestDist) continue;
     bestDist = near.dist;
@@ -6953,28 +6973,28 @@ function tryForceCellRiverConnection(
   const srcKey = hexKey(sq, sr);
   const traceBudget = Math.max(ctx.maxLen, Math.ceil(bestDist * 1.5) + 12);
 
-  let path = aStarRiverToTarget(ctx.hexes, sq, sr, tq, tr, traceBudget, srcKey);
+  let path = aStarRiverToTarget(ctx.hexes, sq, sr, tq, tr, traceBudget, srcKey, allowRelief);
   if (path.length < 3) {
-    path = bfsLowlandRiverPath(ctx.hexes, sq, sr, tq, tr, massSet, traceBudget);
+    path = bfsLowlandRiverPath(ctx.hexes, sq, sr, tq, tr, massSet, traceBudget, allowRelief);
   }
   if (path.length < 3) return false;
 
-  const forceCtx: GridSourcePlaceCtx = { ...ctx, acceptLen: 3, sourceSep: 0 };
+  const forceCtx: GridSourcePlaceCtx = { ...ctx, acceptLen: 3, sourceSep: 0, allowReliefTraversal: allowRelief };
   if (forceCtx.pushMedium?.(path, sq, sr)) return true;
   if (forceCtx.pushShort?.(path, sq, sr)) return true;
   if (forceCtx.pushTributary(path, sq, sr)) return true;
   return false;
 }
 
-/** Maciej 2026-08-01: max spójny płat niziny bez rzeki = 10×10 hexów (metryka: contiguous BFS). */
+/** Maciej 2026-08-01: max spójny płat suchego lądu bez rzeki = 10×10 hexów (metryka: contiguous BFS). */
 export const MAX_DRY_LOWLAND_PATCH_HEXES = 100;
 
-function isDryLowlandHex(hex: Hex | undefined): boolean {
-  return !!hex && isRiverLandTerrain(hex.terenBazowy) && !isReliefTerrain(hex.terenBazowy)
-    && hex.rzeka?.obecna !== true;
+/** Suchy ląd bez rzeki — relief (wzgórza/góry) NIE rozdziela płata. */
+function isDryLandWithoutRiver(hex: Hex | undefined): boolean {
+  return !!hex && isRiverLandTerrain(hex.terenBazowy) && hex.rzeka?.obecna !== true;
 }
 
-/** Największy spójny płat niziny bez rzeki (BFS) — audyt gęstości sieci. */
+/** Największy spójny płat suchego lądu bez rzeki (BFS) — audyt gęstości sieci. */
 export function maxDryLowlandPatchSize(
   massLandKeys: Iterable<string>,
   hexes: Record<string, Hex>,
@@ -6983,7 +7003,7 @@ export function maxDryLowlandPatchSize(
   const visited = new Set<string>();
   let maxSize = 0;
   for (const k of massSet) {
-    if (visited.has(k) || !isDryLowlandHex(hexes[k])) continue;
+    if (visited.has(k) || !isDryLandWithoutRiver(hexes[k])) continue;
     const queue = [k];
     visited.add(k);
     let size = 0;
@@ -6993,7 +7013,7 @@ export function maxDryLowlandPatchSize(
       const { q, r } = parseHexKey(cur);
       for (const [dq, dr] of HEX_DIRECTIONS) {
         const nk = hexKey(q + dq, r + dr);
-        if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandHex(hexes[nk])) continue;
+        if (!massSet.has(nk) || visited.has(nk) || !isDryLandWithoutRiver(hexes[nk])) continue;
         visited.add(nk);
         queue.push(nk);
       }
@@ -7032,6 +7052,7 @@ function tryDrainDryPatchFromRelief(
     mapHeight: ctx.height,
     rand: ctx.rand,
     ...ctx.traceOptsBase,
+    allowReliefTraversal: true,
   };
 
   for (const c of reliefCandidates.slice(0, 10)) {
@@ -7072,7 +7093,9 @@ function tryForceRiverThroughDryPatch(
   component: Array<[number, number]>,
   massSet: Set<string>,
 ): boolean {
-  const forceCtx: GridSourcePlaceCtx = { ...ctx, acceptLen: 3, sourceSep: 0, relaxSeaBuffer: true };
+  const forceCtx: GridSourcePlaceCtx = {
+    ...ctx, acceptLen: 3, sourceSep: 0, relaxSeaBuffer: true, allowReliefTraversal: true,
+  };
   const candidates = component
     .filter(([q, r]) => !ctx.usedSources.has(hexKey(q, r)))
     .map(([q, r]) => ({
@@ -7083,7 +7106,7 @@ function tryForceRiverThroughDryPatch(
     }))
     .sort((a, b) => b.d - a.d || a.tie - b.tie);
 
-  for (const c of candidates.slice(0, 20)) {
+  for (const c of candidates.slice(0, 40)) {
     if (tryPlaceGridSource(forceCtx, c.q, c.r, massSet)) return true;
     const startSeaDist = ctx.seaDist.get(hexKey(c.q, c.r)) ?? 0;
     const traceMax = Math.max(
@@ -7101,6 +7124,7 @@ function tryForceRiverThroughDryPatch(
         mapHeight: ctx.height,
         rand: ctx.rand,
         ...ctx.traceOptsBase,
+        allowReliefTraversal: true,
       },
       true,
     );
@@ -7124,7 +7148,7 @@ function fillDryLowlandPatches(
     const patches: Array<{ land: Array<[number, number]>; size: number }> = [];
     const visited = new Set<string>();
     for (const k of massSet) {
-      if (visited.has(k) || !isDryLowlandHex(gridCtx.hexes[k])) continue;
+      if (visited.has(k) || !isDryLandWithoutRiver(gridCtx.hexes[k])) continue;
       const component: Array<[number, number]> = [];
       const queue = [k];
       visited.add(k);
@@ -7134,7 +7158,7 @@ function fillDryLowlandPatches(
         component.push([q, r]);
         for (const [dq, dr] of HEX_DIRECTIONS) {
           const nk = hexKey(q + dq, r + dr);
-          if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandHex(gridCtx.hexes[nk])) continue;
+          if (!massSet.has(nk) || visited.has(nk) || !isDryLandWithoutRiver(gridCtx.hexes[nk])) continue;
           visited.add(nk);
           queue.push(nk);
         }
@@ -7148,7 +7172,7 @@ function fillDryLowlandPatches(
     for (const { land, size } of patches.slice(0, batchLimit)) {
       if (cellHasRiverHex(land, gridCtx.hexes)) continue;
       const forceCtx: GridSourcePlaceCtx = {
-        ...gridCtx, acceptLen: 3, sourceSep: 0, relaxSeaBuffer: true,
+        ...gridCtx, acceptLen: 3, sourceSep: 0, relaxSeaBuffer: true, allowReliefTraversal: true,
       };
       if (tryDrainDryPatchFromRelief(forceCtx, land, massSet)) {
         passPlaced++;
@@ -7170,29 +7194,43 @@ function fillDryLowlandPatches(
   return placed;
 }
 
-/** Domyka suche płaty nizin do limitu {@link MAX_DRY_LOWLAND_PATCH_HEXES}. */
+/** Domyka suche płaty lądu do limitu {@link MAX_DRY_LOWLAND_PATCH_HEXES}. */
 function enforceMaxDryLowlandPatches(massSet: Set<string>, gridCtx: GridSourcePlaceCtx): void {
   const maxHex = MAX_DRY_LOWLAND_PATCH_HEXES;
-  fillDryLowlandPatches(massSet, gridCtx, Math.ceil(maxHex / 2), 4);
+  const forceCtxBase = (): GridSourcePlaceCtx => ({
+    ...gridCtx, acceptLen: 3, sourceSep: 0, relaxSeaBuffer: true, allowReliefTraversal: true,
+  });
+
+  fillDryLowlandPatches(massSet, gridCtx, Math.ceil(maxHex / 2), 6);
   if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
-  for (let round = 0; round < 8; round++) {
+  for (let round = 0; round < 12; round++) {
     if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
-    const n = fillDryLowlandPatches(massSet, gridCtx, maxHex + 1, 4, true);
+    const n = fillDryLowlandPatches(massSet, gridCtx, maxHex + 1, 6, true);
     if (n > 0) continue;
-    const patch = findLargestDryLowlandPatch(massSet, gridCtx.hexes);
-    if (!patch || patch.length <= maxHex) break;
-    if (!tryForceRiverThroughDryPatch(gridCtx, patch, massSet)) break;
+    const oversized = findAllOversizedDryLandPatches(massSet, gridCtx.hexes, maxHex);
+    if (oversized.length === 0) break;
+    let anySuccess = false;
+    for (const patch of oversized) {
+      const forceCtx = forceCtxBase();
+      if (tryDrainDryPatchFromRelief(forceCtx, patch, massSet)) { anySuccess = true; continue; }
+      if (tryForceCellRiverConnection(forceCtx, patch, massSet)) { anySuccess = true; continue; }
+      if (tryForceRiverThroughDryPatch(gridCtx, patch, massSet)) anySuccess = true;
+    }
+    if (!anySuccess) break;
   }
+  if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
+  fillDryLowlandPatches(massSet, gridCtx, 1, 4, true);
 }
 
-function findLargestDryLowlandPatch(
+function findAllOversizedDryLandPatches(
   massSet: Set<string>,
   hexes: Record<string, Hex>,
-): Array<[number, number]> | null {
+  maxHex: number,
+): Array<Array<[number, number]>> {
   const visited = new Set<string>();
-  let best: Array<[number, number]> | null = null;
+  const out: Array<Array<[number, number]>> = [];
   for (const k of massSet) {
-    if (visited.has(k) || !isDryLowlandHex(hexes[k])) continue;
+    if (visited.has(k) || !isDryLandWithoutRiver(hexes[k])) continue;
     const component: Array<[number, number]> = [];
     const queue = [k];
     visited.add(k);
@@ -7202,7 +7240,35 @@ function findLargestDryLowlandPatch(
       component.push([q, r]);
       for (const [dq, dr] of HEX_DIRECTIONS) {
         const nk = hexKey(q + dq, r + dr);
-        if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandHex(hexes[nk])) continue;
+        if (!massSet.has(nk) || visited.has(nk) || !isDryLandWithoutRiver(hexes[nk])) continue;
+        visited.add(nk);
+        queue.push(nk);
+      }
+    }
+    if (component.length > maxHex) out.push(component);
+  }
+  out.sort((a, b) => b.length - a.length);
+  return out;
+}
+
+function findLargestDryLowlandPatch(
+  massSet: Set<string>,
+  hexes: Record<string, Hex>,
+): Array<[number, number]> | null {
+  const visited = new Set<string>();
+  let best: Array<[number, number]> | null = null;
+  for (const k of massSet) {
+    if (visited.has(k) || !isDryLandWithoutRiver(hexes[k])) continue;
+    const component: Array<[number, number]> = [];
+    const queue = [k];
+    visited.add(k);
+    while (queue.length > 0) {
+      const cur = queue.shift()!;
+      const { q, r } = parseHexKey(cur);
+      component.push([q, r]);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (!massSet.has(nk) || visited.has(nk) || !isDryLandWithoutRiver(hexes[nk])) continue;
         visited.add(nk);
         queue.push(nk);
       }
