@@ -344,8 +344,8 @@ export function resolveRiverMapParams(tier: DensityTier, w: number, h: number): 
   // Kanon Maciej 2026-08-01: siatka N×N z tieru (10/5/5) — gęstsza siatka = więcej startów.
   const mainCell = riverGridCellSizeForTier(tier);
   const tributaryCell = Math.max(3, Math.round(mainCell * 0.5));
-  // Etap 1: główne rzadziej — co 2 komórki siatki (średnie = pełna siatka tier).
-  const mainGridStride = 2;
+  // Etap 1: główne w każdej komórce siatki (Maciej 2026-08-01 — małe kontynenty nie mogą zostać z 1 rzeką).
+  const mainGridStride = 1;
 
   const minLen = Math.min(
     clamp(Math.round(tierMinLen * Math.max(0.65, areaScale)), 6, tierMinLen),
