@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `2806b932` - 2026-08-01 11:19 - FALA 129: siatka rzek 5x5 + stride 1 + inland + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `85767de4` - 2026-08-01 12:52 - FALA 130: rzeki od oceanu + sep 3 + bez relief + bez petli + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `85767de44be01e9d45500c382c97f83f` · stempel: `ROBOCZA · 2026-08-01 12:52`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: start od oceanu w głąb; min 3 hex między main; bez wymogu góry/wzgórza; zakaz zamkniętych pętli.
+- Commit źródłowy: `3f85613`. tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `2806b932` - 2026-08-01 11:19 - FALA 129: siatka rzek 5x5 + stride 1 + inland + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `2806b9320aab2c233478b8c8ac285019` · stempel: `ROBOCZA · 2026-08-01 11:19`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: Normalnie/Dużo siatka 5×5; Mało 10×10; mainGridStride 1; domknięcie inland na dużych; post-prune topUp.

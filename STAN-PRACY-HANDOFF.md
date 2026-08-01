@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`2806b932`** (FALA 129, 11:19) — siatka rzek 5×5 · mainGridStride 1 · inland na dużych. Poprzedni: FALA 128 `58755ecf`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
+**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`85767de4`** (FALA 130, 12:52) — rzeki od oceanu · sep main 3 · bez wymogu relief · bez pętli. Poprzedni: FALA 129 `2806b932`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 
