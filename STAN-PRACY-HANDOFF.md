@@ -26,7 +26,13 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`cbc79e63`** (FALA 138, 18:54) — MAP-SPAWN-Q2 (bez wysp, 7 typów na kontynenty) + tani fill rzek (1× hardStarts). Poprzedni: FALA 137 `09e5ecb7`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
+**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`73c18fc2`** (FALA 139, 19:20) — Budowanie sceny (merge/robloxLite/batch rzek) + częściowy perf głównych. W TOKU: regres ujść inland. Poprzedni: FALA 138 `cbc79e63`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
+
+**OTWARTE (2026-08-01):** regresja czasu głównych rzek (**>2 min** vs **~10 s** wcześniej) po FALA 138 — **W TRAKCIE po „działaj"** (~19:07); agent kodowy w toku. **Constraint ~19:17:** efekt/gęstość rzek OK — przy perf-fix nie degradować. Zapis: `dyspozycje/PYTANIA-OTWARTE.md` → `BUG-RZEKI-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138`.
+
+**OTWARTE (2026-08-01):** regres ciągłości rzek — część biegów **urywa się na lądzie** zamiast ujściem w inną rzekę lub ocean (~19:18) — **W TRAKCIE po „działaj"** (ten sam tor co perf); **constraint ~19:17:** gęstość/efekt OK — naprawić ciągłość do ujścia, nie wyzerować gęstości. Zapis: `PYTANIA-OTWARTE.md` → `BUG-RZEKI-UJSCIE-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-UJSCIE-FALA138`.
+
+**OTWARTE (2026-08-01):** Budowanie sceny — **bardzo długo (~kilkanaście minut, NIE hang/freeze)** mimo FALA 137 — **W TRAKCIE po „działaj"** (~19:07); korekta diagnozy Maciej ~19:15. Zapis: `dyspozycje/PYTANIA-OTWARTE.md` → `BUG-SCENA-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138`.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

@@ -1,3 +1,5 @@
+- **2026-08-01 19:20** — ✅ FALA 139 ROBOCZA `73c18fc2` (Budowanie sceny szybciej + częściowy perf głównych rzek + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**). Sprawdź czas sceny; ujścia inland jeszcze w toku.
+
 - **2026-08-01 18:54** — ✅ FALA 138 ROBOCZA `cbc79e63` (spawn Q2: bez wysp + 7 typów na kontynenty; tani fill rzek + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
 
 - **2026-08-01 18:43** — ✅ FALA 137 ROBOCZA `09e5ecb7` (fix Budowanie sceny: cache ujść + yield + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).

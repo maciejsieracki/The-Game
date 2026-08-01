@@ -4582,3 +4582,10 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) ó sprawdü: 7 civ na duøych kontynentach + rzeki
 CZEKAM-NA: nic
+
+## [19:20 PL, 2026-08-01] LOKAL/Grok õ ALL ó FALA 139 DEPLOY ALL
+- md5 `73c18fc2` / `73c18fc2ed030bf6c2fb2666b5c83676` | stempel ROBOCZA ∑ 2026-08-01 19:20
+- Zakres: scene build (25b6135) + perf glowne rzeki (d2db99c); ujscia inland jeszcze w toku
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) ó czas Budowanie sceny
+CZEKAM-NA: agent rzek (ujscia) + pomiar Macieja
