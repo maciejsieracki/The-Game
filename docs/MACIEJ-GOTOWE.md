@@ -1,3 +1,7 @@
+- **2026-08-01 18:43** — ✅ FALA 137 ROBOCZA `09e5ecb7` (fix Budowanie sceny: cache ujść + yield + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+
+- **2026-08-01 17:59** — ✅ FALA 136 ROBOCZA `84587206` (topUp/fill OFF na Duży/Pangea + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+
 - **2026-08-01 17:52** — ✅ FALA 135 ROBOCZA `5c9e2265` (4 cięcia ROI rzek na Duży/Pangea + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** — porównaj Duży·Pangea vs ~18 min).
 
 - **2026-08-01 17:28** — ✅ FALA 134 ROBOCZA `474c49c9` (ROI rzek: 1 topUp + mniej proximity/coverage na Duży + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).

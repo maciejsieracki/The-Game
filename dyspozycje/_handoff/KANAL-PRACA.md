@@ -4561,3 +4561,17 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — zwłaszcza Duży·Pangea vs 18 min
 CZEKAM-NA: nic
+
+## [17:59 PL, 2026-08-01] LOKAL/Grok → ALL — FALA 136 DEPLOY ALL
+- md5 `84587206` / `845872063e218adb66a3d94574aafcd8` | stempel ROBOCZA · 2026-08-01 17:59
+- Zakres: topUp/fill OFF na Duży/Pangea (`ca90306`) — uzupełnianie bez ciężkiego fill
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: nic
+
+## [18:43 PL, 2026-08-01] LOKAL/Grok → ALL — FALA 137 DEPLOY ALL
+- md5 `09e5ecb7` / `09e5ecb74b45b1dd55a82679d5db4fdd` | stempel ROBOCZA · 2026-08-01 18:43
+- Zakres: fix Budowanie sceny — cache ujść rzek + yield (`6c56c96`); zawiera też FALA 136
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — timer „Upłynęło” ma iść
+CZEKAM-NA: nic

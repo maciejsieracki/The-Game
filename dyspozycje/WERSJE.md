@@ -14,7 +14,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `5c9e2265` - 2026-08-01 17:52 - FALA 135: 4 ciecia ROI rzek (etap3/dry/bootstrap/topUp1) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `09e5ecb7` - 2026-08-01 18:43 - FALA 137: fix Budowanie sceny (cache ujsc rzek + yield) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `09e5ecb74b45b1dd55a82679d5db4fdd` · stempel: `ROBOCZA · 2026-08-01 18:43`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: `computeRiverMouthEdgeKeys` raz na mapę (nie per heks wybrzeża); yield w overlay/rzekach; limit wstęgi. Naprawia zamrożenie timera „Upłynęło” na Budowanie sceny (~20 s).
+- Commit: `6c56c96` (+ w bundlu też FALA 136 `ca90306`). tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `84587206` - 2026-08-01 17:59 - FALA 136: wylacz ciezkie topUp/fill na Duzy/Pangea + DEPLOY ALL - **ZASTĄPIONA**
+- md5 (pelne): `845872063e218adb66a3d94574aafcd8` · stempel: `ROBOCZA · 2026-08-01 17:59`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: Duży/Pangea — `effectiveTopUpPasses=0` (skip hardStarts/proximity/dry-patch/cache); faza 7 zostaje przy tanich prune/strip/outlets. Standard bez zmian.
+- Commit: `ca90306`. tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `5c9e2265` - 2026-08-01 17:52 - FALA 135: 4 ciecia ROI rzek (etap3/dry/bootstrap/topUp1) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `5c9e2265d24a7f43691a6ff1c7bf3a7b` · stempel: `ROBOCZA · 2026-08-01 17:52`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: Duży/Pangea — wyłączony etap 3; wyłączony dry-patch; etap 1 bootstrap (bez pełnej siatki); topUp max 1 pass. Standard bez largeMapPerf bez zmian.
