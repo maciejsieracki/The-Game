@@ -7069,22 +7069,33 @@ function isPangeaSingleMass(masses: string[][]): boolean {
   return masses.length === 1;
 }
 
-type RiverRoundProfile = 'normal' | 'pangea';
+type RiverRoundProfile = 'normal' | 'huge-mass' | 'pangea';
 
-function riverRoundProfile(pangeaSingleMass: boolean): RiverRoundProfile {
-  return pangeaSingleMass ? 'pangea' : 'normal';
+/** Duży kontynent na mapie Duży — jedna masa ≥ tego progu (hex lądu). */
+const HUGE_LAND_MASS_HEXES = 4800;
+
+function riverRoundProfile(massSize: number, pangeaSingleMass: boolean): RiverRoundProfile {
+  if (pangeaSingleMass) return 'pangea';
+  if (massSize >= HUGE_LAND_MASS_HEXES) return 'huge-mass';
+  return 'normal';
 }
 
 /** Ile rund domykania siatki na masę lądu (więcej na dużych kontynentach). */
 function massRiverCoveragePasses(massSize: number, profile: RiverRoundProfile = 'normal'): number {
   const base = Math.max(6, Math.min(24, 6 + Math.floor(Math.sqrt(massSize / 300))));
   if (profile === 'normal') return base;
+  if (profile === 'huge-mass') {
+    return Math.max(5, Math.min(16, 5 + Math.floor(Math.sqrt(massSize / 500))));
+  }
   return Math.max(4, Math.min(8, 4 + Math.floor(Math.sqrt(massSize / 1200))));
 }
 
 function riverProximityMaxRounds(massSize: number, profile: RiverRoundProfile = 'normal'): number {
   const base = Math.max(16, Math.min(48, 12 + Math.floor(massSize / 350)));
   if (profile === 'normal') return base;
+  if (profile === 'huge-mass') {
+    return Math.max(10, Math.min(28, 10 + Math.floor(massSize / 900)));
+  }
   return Math.max(6, Math.min(10, 6 + Math.floor(massSize / 2000)));
 }
 
@@ -8357,7 +8368,7 @@ export function generateRivers(
   let stage2Steps = 0;
   let stage2Total = 0;
   for (const mass of masses) {
-    stage2Total += massRiverCoveragePasses(mass.length, riverRoundProfile(pangeaSingleMass));
+    stage2Total += massRiverCoveragePasses(mass.length, riverRoundProfile(mass.length, pangeaSingleMass));
   }
   stage2Total = Math.max(1, stage2Total);
 
@@ -8374,7 +8385,7 @@ export function generateRivers(
   // ETAP 2 — średnie rzeki: pełna siatka tier, priorytet merge do sieci, ocean fallback.
   const mediumCtx: GridSourcePlaceCtx = { ...gridCtx, placeMode: 'medium' };
   for (const mass of masses) {
-    const massProfile = riverRoundProfile(pangeaSingleMass);
+    const massProfile = riverRoundProfile(mass.length, pangeaSingleMass);
     const passes = massRiverCoveragePasses(mass.length, massProfile);
     let idleRounds = 0;
     for (let round = 0; round < passes; round++) {
@@ -8394,7 +8405,7 @@ export function generateRivers(
       );
       if (placedNow === 0) {
         idleRounds++;
-        if (pangeaSingleMass && idleRounds >= 2) break;
+        if (massProfile !== 'normal' && idleRounds >= 2) break;
       } else {
         idleRounds = 0;
       }
@@ -8542,7 +8553,7 @@ export function topUpRiverGridCoverage(
     let passPlaced = 0;
     for (const mass of masses) {
       const massSet = new Set(mass);
-      const massProfile = riverRoundProfile(pangeaSingleMass);
+      const massProfile = riverRoundProfile(mass.length, pangeaSingleMass);
       if (!pangeaSingleMass || pass === 0) {
         passPlaced += enforceHardRiverGridStarts(
           hexes,
