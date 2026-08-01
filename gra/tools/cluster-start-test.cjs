@@ -13,7 +13,7 @@ fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '../src/game/cluster-start';
 export { buildClusterSpawnPlan, buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes, groupForeignTypeClusters } from '../src/map/cluster-spawn';
 export { generateMap } from '../src/map/generator';
-export { computeClusters, groupHabitableMasses, regionMassDominance, localLandFraction, passesLocalLandGate, passesPlayerStartMassGate, pickPlayerClusterCenter, ISLAND_FALLBACK_MASS_FRAC, REGION_MASS_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_RADIUS, PLAYER_START_MIN_MASS_HEXES, PLAYER_START_MASS_MIN_ABSOLUTE, rosterKluczeForStartEpoch } from '../src/map/clusters';
+export { computeClusters, groupHabitableMasses, regionMassDominance, localLandFraction, passesLocalLandGate, passesPlayerStartMassGate, pickPlayerClusterCenter, allocateTypyToMasses, massTypeCap, developmentSpaceScore, qualifyingMassIndicesForSpawn, MIN_MASS_HEXES_FOR_SPAWN, MIN_DEVELOPMENT_HEX_PER_CIV, SMALL_MASS_CAP_THRESHOLD, ISLAND_FALLBACK_MASS_FRAC, REGION_MASS_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_RADIUS, PLAYER_START_MIN_MASS_HEXES, PLAYER_START_MASS_MIN_ABSOLUTE, rosterKluczeForStartEpoch } from '../src/map/clusters';
 export { civIdsAvailableAtGameEpoch } from '../src/game/civ-entry-epoch';
 export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius, packRivalCitiesAroundCore, packCityStatesHubChain } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
@@ -582,6 +582,74 @@ assert(M.rosterKluczeForStartEpoch(civs.cywilizacje, 'zelazo').length === 15, '�
 assertEpochSpawn('kamien', 15, 8, [...BRAZ_ONLY_TYPY, ...ZELAZO_ONLY_TYPY]);
 assertEpochSpawn('braz', 15, 14, ZELAZO_ONLY_TYPY);
 assertEpochSpawn('zelazo', 15, 15, []);
+
+// MAP-SPAWN-Q2 B: quota proporcjonalna + cap małych mas
+assert(M.MIN_MASS_HEXES_FOR_SPAWN === 60, 'MIN_MASS_HEXES_FOR_SPAWN=60');
+assert(M.MIN_DEVELOPMENT_HEX_PER_CIV === 90, 'MIN_DEVELOPMENT_HEX_PER_CIV=90');
+assert(M.SMALL_MASS_CAP_THRESHOLD === 180, 'SMALL_MASS_CAP_THRESHOLD=180');
+assert(M.massTypeCap(50) === 1, 'mała masa: cap=1 typ');
+assert(M.massTypeCap(200) >= 2, 'duża masa: cap≥2 typy');
+
+function countCentersPerMass(masses, centers) {
+  const counts = masses.map(() => 0);
+  for (const c of centers) {
+    for (let mi = 0; mi < masses.length; mi++) {
+      for (const h of masses[mi]) {
+        if (M.hexDistanceAxial(h.q, h.r, c.q, c.r) <= 2) {
+          counts[mi]++;
+          break;
+        }
+      }
+    }
+  }
+  return counts;
+}
+
+// Quota: duży kontynent + mała wyspa — max 1 typ na wyspie
+const q2Land = Object.values(synthMap.hexes)
+  .filter(h => h.terenBazowy === 'laka')
+  .map(h => ({ q: h.coords.q, r: h.coords.r }));
+const q2Masses = M.groupHabitableMasses(q2Land);
+const q2Alloc = M.allocateTypyToMasses(3, q2Masses);
+assert(q2Alloc[1] === 0 || q2Masses[1].length < M.MIN_MASS_HEXES_FOR_SPAWN,
+  'MAP-SPAWN-Q2: mała wyspa bez quota gdy < MIN_MASS_HEXES_FOR_SPAWN (alloc=' + q2Alloc.join(',') + ')');
+assert(q2Alloc[0] >= 2, 'MAP-SPAWN-Q2: duży kontynent dostaje większość slotów (alloc[0]=' + q2Alloc[0] + ')');
+
+const q2Placement = M.computeClusters(synthMap, { seed: 9999, aktywneTypy: 5, rywaleNaKlaster: 2 });
+const q2Centers = q2Placement.klastry.map(k => k.centrum);
+const q2Counts = countCentersPerMass(q2Masses, q2Centers);
+assert(q2Counts[1] === 0,
+  'MAP-SPAWN-Q2: 0 środków na małej wyspie przy dużym kontynencie (got ' + q2Counts[1] + ')');
+
+// Pangea: wszystkie typy na jednej masie OK
+function makePangeaMap(size) {
+  const hexes = {};
+  for (let q = 0; q < size; q++) {
+    for (let r = 0; r < size; r++) {
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
+    }
+  }
+  return { hexes };
+}
+const pangeaMap = makePangeaMap(40);
+const pangeaPlacement = M.computeClusters(pangeaMap, { seed: 5555, aktywneTypy: 6, rywaleNaKlaster: 3 });
+const pangeaLand = Object.values(pangeaMap.hexes).map(h => ({ q: h.coords.q, r: h.coords.r }));
+const pangeaMasses = M.groupHabitableMasses(pangeaLand);
+assert(pangeaMasses.length === 1, 'Pangea: 1 masa lądu');
+assert(pangeaPlacement.klastry.length >= 5,
+  'Pangea: ≥5 klastrów na jednej masie (got ' + pangeaPlacement.klastry.length + ')');
+const pangeaAlloc = M.allocateTypyToMasses(5, pangeaMasses);
+assert(pangeaAlloc[0] === 5, 'Pangea: wszystkie obce typy na jedynej masie (alloc=' + pangeaAlloc[0] + ')');
+
+// developmentSpaceScore: kontynent > wysepka
+const bigDev = M.developmentSpaceScore(tiny, continentCenter.q, continentCenter.r, M.groupHabitableMasses(
+  Object.values(tiny.hexes).filter(h => h.terenBazowy === 'laka').map(h => ({ q: h.coords.q, r: h.coords.r })),
+));
+const islandDev = M.developmentSpaceScore(tiny, islandCenter.q, islandCenter.r, M.groupHabitableMasses(
+  Object.values(tiny.hexes).filter(h => h.terenBazowy === 'laka').map(h => ({ q: h.coords.q, r: h.coords.r })),
+));
+assert(bigDev > islandDev,
+  'MAP-SPAWN-Q2: kontynent ma wyższy developmentSpaceScore (' + bigDev + ' vs ' + islandDev + ')');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

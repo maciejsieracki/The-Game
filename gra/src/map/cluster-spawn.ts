@@ -19,6 +19,7 @@ import {
   CLUSTER_CITY_STATE_MAX_HEX,
   groupHabitableMasses,
   passesPlayerStartMassGate,
+  passesLocalLandGate,
   pickPlayerClusterCenter,
   type ClusterPlacement,
   type TypeCluster,
@@ -215,6 +216,11 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     const fixed = pickPlayerClusterCenter(map, masses, land, mapCenter, mulberry32(seed));
     if (fixed) capPos = fixed;
   }
+
+  /** MAP-SPAWN-Q2 B: walidacja stolic obcych typów — lokalny ląd ≥70% (jak gracz). */
+  function validateForeignCapital(q: number, r: number): boolean {
+    return passesLocalLandGate(map, q, r);
+  }
   const slots: ClusterSpawnSlot[] = [];
   const clusterCapitalOwnerIds: number[] = [];
   let nextOwnerId = 1;
@@ -226,6 +232,8 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
   // Obcy typ: pełny klaster miast-kopii (symetria z klasterem gracza — D-START-miasta-kopie-typu)
   for (const klaster of placement.klastry) {
     if (klaster.typIndex === placement.playerTypIndex) continue;
+    const cap = klaster.miasta.find(m => m.isCapital) ?? klaster.miasta[0];
+    if (cap && !validateForeignCapital(cap.q, cap.r)) continue;
     let rivalIdx = 0;
     for (const m of klaster.miasta) {
       const ownerId = nextOwnerId++;

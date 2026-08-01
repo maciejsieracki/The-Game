@@ -4106,6 +4106,8 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
 var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
 var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
@@ -4995,6 +4997,20 @@ function relationScore(rel) {
     0,
     200
   );
+}
+var WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
+function clampRelationForWar(rel) {
+  if (rel.status !== "wojna") return rel;
+  const score = relationScore(rel);
+  if (score <= WAR_RELATION_SCORE_CAP) return rel;
+  let excess = score - WAR_RELATION_SCORE_CAP;
+  let z = rel.zaufanie;
+  let r = rel.respekt;
+  const takeZ = Math.min(excess, z);
+  z -= takeZ;
+  excess -= takeZ;
+  r = Math.max(0, r - excess);
+  return { ...rel, zaufanie: z, respekt: r };
 }
 var ARCHETYPE_AGGRESSION = {
   ["grecy" /* Grecy */]: 0.4,
@@ -12488,7 +12504,12 @@ function diplomacySumPn(items, opts) {
     }
     if (pn == null) return null;
     const qtyMult = item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" || item.typ === "surowiec_ilosc" ? 1 : qty;
-    const linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    let linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    const turnsMult = Math.max(1, opts?.turnsMultiplier ?? 1);
+    if (opts?.perTurn && turnsMult > 1) {
+      const perTurnTyp = item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" || item.typ === "surowiec_ilosc";
+      if (perTurnTyp) linePn *= turnsMult;
+    }
     sum += linePn;
   }
   return sum;
@@ -12543,7 +12564,9 @@ function buildProposalPnSumOpts(opts) {
     difficulty: opts?.difficulty ?? "normal",
     proposerOwnerId: opts?.proposerOwnerId,
     playerOwnerId: opts?.playerOwnerId ?? 0,
-    tempo: opts?.tempoGry
+    tempo: opts?.tempoGry,
+    turnsMultiplier: opts?.turnsMultiplier,
+    perTurn: opts?.perTurn
   };
 }
 function relationTotal(rel) {
@@ -12588,6 +12611,27 @@ function resolveProposalPn(payload, opts) {
     givePn = pnFromLegacyGold(payload.goldOnce);
   }
   return { givePn, receivePn };
+}
+
+// src/game/diplomacy-war-gates.ts
+var PEACE_CURRENCY_ACTION_IDS = /* @__PURE__ */ new Set(["pokoj", "trybut_oferta"]);
+function isPeaceCurrencyAction(actionId) {
+  return PEACE_CURRENCY_ACTION_IDS.has(actionId);
+}
+function basketHasCurrencyPayment(items) {
+  if (!items?.length) return false;
+  return items.some((i) => i.typ === "zloto" || i.typ === "praca");
+}
+function payloadHasCurrencyPayment(payload) {
+  if (!payload) return false;
+  if ((payload.goldOnce ?? 0) > 0) return true;
+  if ((payload.goldPerTurn ?? 0) > 0) return true;
+  return basketHasCurrencyPayment(payload.giveItems) || basketHasCurrencyPayment(payload.receiveItems);
+}
+function isCurrencyProposalForbiddenDuringWar(actionId, payload, atWar = true) {
+  if (!atWar) return false;
+  if (!payloadHasCurrencyPayment(payload)) return false;
+  return !isPeaceCurrencyAction(actionId);
 }
 
 // data/diplomacy-acceptance-points.json
@@ -12777,21 +12821,32 @@ function treatyBasePnFromConfig(actionId) {
   const t = diplomacy_acceptance_points_default.traktaty;
   return t[actionId]?.punkty ?? 0;
 }
+function treatyEvalRelationTotal(rel) {
+  const clamped = rel.status === "wojna" ? clampRelationForWar(rel) : rel;
+  return relationTotal(clamped);
+}
+function peaceProposalOfferPn(givePn, receivePn, basePn, rel) {
+  const relTotal = treatyEvalRelationTotal(rel);
+  const required = effectiveTreatyPnRequired(basePn, relTotal);
+  const basketNet = Math.max(0, givePn - receivePn);
+  return { offerPn: required + basketNet, required };
+}
 function treatyPnGate(actionId, payload, relation, pnOpts) {
   const basePn = treatyBasePnFromConfig(actionId);
   if (basePn <= 0) return null;
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-  const relTotal = relationTotal(relation);
-  const required = effectiveTreatyPnRequired(basePn, relTotal);
   if (actionId === "pokoj") {
-    if (givePn < required) {
+    const { offerPn, required: required2 } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+    if (offerPn < required2) {
       return {
         accepted: false,
-        reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PW @ Relacji, baza ${basePn})`
+        reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required2} PW @ Relacji, baza ${basePn})`
       };
     }
     return null;
   }
+  const relTotal = treatyEvalRelationTotal(relation);
+  const required = effectiveTreatyPnRequired(basePn, relTotal);
   const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
   if (!hasBasket) return null;
   if (receivePn > 0) {
@@ -12818,6 +12873,9 @@ function evaluateProposal(proposal, ctx) {
   }
   if (stanWojny && actionId !== "trybut_oferta" && actionId !== "ultimatum" && actionId !== "pokoj") {
     return { accepted: false, reason: "Trwa wojna \u2014 ta akcja jest niedost\u0119pna" };
+  }
+  if (stanWojny && isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
+    return { accepted: false, reason: "W wojnie pieni\u0105dze tylko w ugodzie pokojowej" };
   }
   const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
   if (pnReject) return pnReject;
@@ -12883,7 +12941,7 @@ function evaluateProposal(proposal, ctx) {
         return { accepted: false, reason: "Sojusz tego typu ju\u017C istnieje" };
       }
       const deal = buildDeal(kind, proposerOwnerId, responderOwnerId, ctx.turn, null);
-      const label = kind === "sojusz_defensywny" ? "Sojusz defensywny" : "Sojusz pe\u0142ny";
+      const label = kind === "sojusz_defensywny" ? "Sojusz obronny" : "Sojusz wojskowy";
       return { accepted: true, reason: `${label} zawarty`, deal };
     }
     case "trybut_zadanie": {
@@ -12924,10 +12982,10 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: true, reason: `Trybut ${perTurn} \xA4/tur\u0119`, deal };
     }
     case "pokoj": {
-      const { givePn } = resolveProposalPn(payload, pnOpts);
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const basePn = treatyBasePnFromConfig("pokoj");
-      const required = effectiveTreatyPnRequired(basePn, relationTotal(relation));
-      if (givePn < required) {
+      const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+      if (offerPn < required) {
         return {
           accepted: false,
           reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PW @ Relacji)`
@@ -13200,7 +13258,7 @@ function formatAiDiplomacyPlayerMessage(cmd) {
     case "zaproponuj_umowe_handlowa":
       return cmd.sweetenerGold ? `Proponujemy sta\u0142\u0105 umow\u0119 handlow\u0105 (szlaki handlowe) \u2014 w ge\u015Bcie dobrej woli dok\u0142adamy ${cmd.sweetenerGold} \xA4.` : "Proponujemy sta\u0142\u0105 umow\u0119 handlow\u0105 \u2014 otwiera i utrzymuje szlaki handlowe mi\u0119dzy naszymi miastami.";
     case "zaproponuj_sojusz":
-      return cmd.allianceKind === "defensywny" ? "Proponujemy sojusz defensywny \u2014 wchodzimy do wojny tylko gdy kt\xF3ry\u015B z nas jest atakowany." : "Proponujemy pe\u0142ny sojusz \u2014 wsp\xF3lna obrona i wsparcie militarnie.";
+      return cmd.allianceKind === "defensywny" ? "Proponujemy sojusz obronny \u2014 wchodzimy do wojny tylko gdy kt\xF3ry\u015B z nas jest atakowany." : "Proponujemy sojusz wojskowy \u2014 wsp\xF3lna obrona i wsparcie militarnie.";
     case "zaproponuj_pakt":
       return `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur \u2014 \u017Cadna strona nie zaatakuje drugiej.`;
     case "zaproponuj_pokoj":
@@ -13335,7 +13393,7 @@ function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
         turn,
         null
       );
-      const label = actionId === "sojusz_defensywny" ? "Sojusz defensywny" : "Sojusz pe\u0142ny";
+      const label = actionId === "sojusz_defensywny" ? "Sojusz obronny" : "Sojusz wojskowy";
       return { accepted: true, reason: `${label} zawarty`, deal };
     }
     case "pokoj":

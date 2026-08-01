@@ -1,6 +1,6 @@
 # MAP-SPAWN-Q2 — Start cywilizacji: quota na masę lądu
 
-**Status:** 🟡 **ZAPISANA** · **ZAMKNIĘTE (dyskusja)** — czeka na wdrożenie  
+**Status:** 🔵 **W TRAKCIE** · **ZAMKNIĘTE (dyskusja)** — wdrożenie w toku  
 **Data decyzji:** 2026-08-01  
 **Decydent:** Maciej  
 **Cytat:** „**b**"  
@@ -84,5 +84,9 @@ Parametry do strojenia w `cluster-start-test.cjs` (mapy wielokontynentalne, Pang
 
 ## Dowód wdrożenia (po `działaj`)
 
-- Funkcja quota w `clusters.ts` + testy `cluster-start-test.cjs` zielone
-- Wpis w `REJESTR-DECYZJI.md` → 🔵 W TRAKCIE → 🟠 U INTEGRATORA → 🟢 WDROŻONA
+- `allocateTypyToMasses()` + `massTypeCap()` + `developmentSpaceScore()` w `gra/src/map/clusters.ts`
+- `placeClusterCentersAcrossLandmasses` — quota largest remainder zamiast round-robin
+- `cluster-spawn.ts` — walidacja stolic obcych (`passesLocalLandGate`)
+- `startScoring.ts` — bonus `developmentSpaceScore` w `findBestPlayerStartHex`
+- Testy: `cluster-start-test.cjs` (MAP-SPAWN-Q2 sekcja) + `cluster-start-q2-smoke.cjs` — PASS rdzeń+Q2
+- Bramka: `npx tsc --noEmit` — 0 błędów

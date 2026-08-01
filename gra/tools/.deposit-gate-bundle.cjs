@@ -7205,6 +7205,8 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
 var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
 var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
@@ -7313,17 +7315,18 @@ var promienDol = new Vector3(0, -1, 0);
 
 // src/render/mapRenderStyle.ts
 var SEA_SURFACE_TOP_Y = 0.18;
-var WYBRZEZE_SURFACE_TOP_Y = 0.2;
-var LAND_MIN_CLEARANCE_ABOVE_SEA = 0.35;
+var WYBRZEZE_SURFACE_TOP_Y = 0.22;
+var LAND_MIN_CLEARANCE_ABOVE_SEA = 0.28;
+var FLAT_LAND_SURFACE_Y = SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA;
 var TERRAIN_SURFACE_Y = {
   ["morze" /* Morze */]: SEA_SURFACE_TOP_Y,
   ["wybrzeze" /* Wybrzeze */]: WYBRZEZE_SURFACE_TOP_Y,
-  ["laka" /* Laka */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA,
-  ["rownina" /* Rownina */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.02,
-  ["pustynia" /* Pustynia */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.08,
+  ["laka" /* Laka */]: FLAT_LAND_SURFACE_Y,
+  ["rownina" /* Rownina */]: FLAT_LAND_SURFACE_Y,
+  ["pustynia" /* Pustynia */]: FLAT_LAND_SURFACE_Y,
   ["wzgorza" /* Wzgorza */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.18,
   ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32,
-  ["polarny" /* Polarny */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.04
+  ["polarny" /* Polarny */]: FLAT_LAND_SURFACE_Y
 };
 var ROBLOX_TERRAIN_VIS = {
   ["morze" /* Morze */]: { height: 0.3, yOffset: 0 },
@@ -8542,13 +8545,16 @@ var TERRAIN_ALLOW = {
   // gen-helpers.ts id='zloto').
   kopalnia_zlota: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */])
 };
+function hexHasClayDeposit(hex) {
+  return hex.nakladka === "zloze_gliny" /* ZlozeGliny */ || hex.zloze?.trim().toLowerCase() === "glina";
+}
 function depositAllowsPlayerImprovement(key, hex) {
   const nakladka = hex.nakladka;
   const zloze = hex.zloze;
   const teren = hex.terenBazowy;
   switch (key) {
     case "glinianka":
-      return nakladka === "zloze_gliny" /* ZlozeGliny */;
+      return hexHasClayDeposit(hex);
     case "warzelnia_soli":
       return zloze === "sol";
     case "kopalnia_miedzi":

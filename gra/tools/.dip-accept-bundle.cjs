@@ -1381,6 +1381,8 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
 var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
 var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
@@ -9487,7 +9489,12 @@ function diplomacySumPn(items, opts) {
     }
     if (pn == null) return null;
     const qtyMult = item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" || item.typ === "surowiec_ilosc" ? 1 : qty;
-    const linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    let linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    const turnsMult = Math.max(1, opts?.turnsMultiplier ?? 1);
+    if (opts?.perTurn && turnsMult > 1) {
+      const perTurnTyp = item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" || item.typ === "surowiec_ilosc";
+      if (perTurnTyp) linePn *= turnsMult;
+    }
     sum += linePn;
   }
   return sum;
@@ -9538,7 +9545,16 @@ function buildProposalPnSumOpts(opts) {
     difficulty: opts?.difficulty ?? "normal",
     proposerOwnerId: opts?.proposerOwnerId,
     playerOwnerId: opts?.playerOwnerId ?? 0,
-    tempo: opts?.tempoGry
+    tempo: opts?.tempoGry,
+    turnsMultiplier: opts?.turnsMultiplier,
+    perTurn: opts?.perTurn
+  };
+}
+function proposalPnTurnsMultiplier(payload) {
+  const perTurn = payload.resourceTradeMode === "per_turn";
+  return {
+    perTurn,
+    turnsMultiplier: perTurn ? Math.max(1, payload.turns ?? 1) : 1
   };
 }
 function relationSignedFromTotal(relTotal) {
@@ -12301,6 +12317,38 @@ function formatBalanceLabel(balancePn, accepted) {
   if (balancePn < 0) return `Brakuje ${Math.abs(balancePn)} PW`;
   return `Saldo ${balancePn} PW`;
 }
+function computePeaceAcceptanceSides(givePn, receivePn, relTotal, treatyBase, incoming, mode) {
+  const treatyEffectivePn = effectiveTreatyPnRequired(treatyBase, relTotal);
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  const modLabel = formatRelationModLabel(relTotal);
+  const proposerGive = incoming ? receivePn : givePn;
+  const proposerReceive = incoming ? givePn : receivePn;
+  const basketNet = Math.max(0, proposerGive - proposerReceive);
+  const proposerOfferPn = treatyEffectivePn + basketNet;
+  const peaceAccepted = proposerOfferPn >= treatyEffectivePn;
+  const surplusPn = proposerOfferPn - treatyEffectivePn;
+  const myBasketOffer = incoming ? receivePn : givePn;
+  const myBasketDemand = incoming ? givePn : receivePn;
+  const theirBasketOffer = incoming ? givePn : receivePn;
+  const theirBasketDemand = incoming ? receivePn : givePn;
+  const buildSide = (basketOffer, basketDemand) => ({
+    offerPn: basketOffer,
+    demandPn: basketDemand,
+    fairMinPn: treatyEffectivePn,
+    balancePn: surplusPn,
+    treatyBasePn: treatyBase,
+    treatyEffectivePn,
+    relationModPct: modPct,
+    relationModLabel: modLabel,
+    mode,
+    accepted: peaceAccepted,
+    statusLabel: formatBalanceLabel(surplusPn, peaceAccepted)
+  });
+  return {
+    my: buildSide(myBasketOffer, myBasketDemand),
+    their: buildSide(theirBasketOffer, theirBasketDemand)
+  };
+}
 function computeSideBalance(offerPn, demandPn, relTotal, treatyBasePn, relRequired, mode) {
   const relClamped = Math.min(100, Math.max(1, relTotal));
   const fairMinPn = diplomacyFairGivePn(demandPn, relClamped);
@@ -12342,11 +12390,13 @@ function computeSideBalance(offerPn, demandPn, relTotal, treatyBasePn, relRequir
   };
 }
 function computePlayerAcceptanceSides(actionId, payload, relTotal, incoming, opts) {
+  const turnsOpts = proposalPnTurnsMultiplier(payload);
   const pnOpts = {
     difficulty: opts?.difficulty ?? "normal",
     proposerOwnerId: opts?.proposerOwnerId ?? (incoming ? void 0 : 0),
     playerOwnerId: 0,
-    tempoGry: opts?.tempoGry
+    tempoGry: opts?.tempoGry,
+    ...turnsOpts
   };
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
   const treatyDef = loadTreatyAcceptanceDef(actionId);
@@ -12364,6 +12414,17 @@ function computePlayerAcceptanceSides(actionId, payload, relTotal, incoming, opt
   else if (hasBasket) mode = "basket";
   const ease = sweetenerEasePoints(payload);
   const adjustedRelRequired = relRequired != null ? Math.max(0, relRequired - ease) : void 0;
+  if (actionId === "pokoj" && treatyBase > 0) {
+    const peaceMode = hasBasket ? "mixed" : "treaty";
+    const peace = computePeaceAcceptanceSides(givePn, receivePn, relTotal, treatyBase, incoming, peaceMode);
+    if (isGift) {
+      peace.their.accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
+      peace.my.accepted = true;
+      peace.my.statusLabel = "Nic w zamian";
+      peace.their.statusLabel = formatBalanceLabel(peace.their.balancePn, peace.their.accepted);
+    }
+    return { my: peace.my, their: peace.their, isGift };
+  }
   const my = computeSideBalance(myOfferPn, myDemandPn, relTotal, incoming ? 0 : treatyBase, adjustedRelRequired, mode);
   const their = computeSideBalance(
     theirOfferPn,

@@ -4104,6 +4104,8 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
 var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
 var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
@@ -12459,7 +12461,12 @@ function diplomacySumPn(items, opts) {
     }
     if (pn == null) return null;
     const qtyMult = item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" || item.typ === "surowiec_ilosc" ? 1 : qty;
-    const linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    let linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
+    const turnsMult = Math.max(1, opts?.turnsMultiplier ?? 1);
+    if (opts?.perTurn && turnsMult > 1) {
+      const perTurnTyp = item.typ === "zloto" || item.typ === "praca" || item.typ === "zywnosc" || item.typ === "surowiec_ilosc";
+      if (perTurnTyp) linePn *= turnsMult;
+    }
     sum += linePn;
   }
   return sum;
@@ -12651,7 +12658,9 @@ function buildProposalPnSumOpts(opts) {
     difficulty: opts?.difficulty ?? "normal",
     proposerOwnerId: opts?.proposerOwnerId,
     playerOwnerId: opts?.playerOwnerId ?? 0,
-    tempo: opts?.tempoGry
+    tempo: opts?.tempoGry,
+    turnsMultiplier: opts?.turnsMultiplier,
+    perTurn: opts?.perTurn
   };
 }
 function relationTotal(rel) {
@@ -12994,7 +13003,7 @@ function evaluateProposal(proposal, ctx) {
         return { accepted: false, reason: "Sojusz tego typu ju\u017C istnieje" };
       }
       const deal = buildDeal(kind, proposerOwnerId, responderOwnerId, ctx.turn, null);
-      const label = kind === "sojusz_defensywny" ? "Sojusz defensywny" : "Sojusz pe\u0142ny";
+      const label = kind === "sojusz_defensywny" ? "Sojusz obronny" : "Sojusz wojskowy";
       return { accepted: true, reason: `${label} zawarty`, deal };
     }
     case "trybut_zadanie": {
@@ -13302,7 +13311,7 @@ function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
         turn,
         null
       );
-      const label = actionId === "sojusz_defensywny" ? "Sojusz defensywny" : "Sojusz pe\u0142ny";
+      const label = actionId === "sojusz_defensywny" ? "Sojusz obronny" : "Sojusz wojskowy";
       return { accepted: true, reason: `${label} zawarty`, deal };
     }
     case "pokoj":

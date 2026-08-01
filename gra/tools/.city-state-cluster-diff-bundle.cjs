@@ -42,11 +42,13 @@ var CLUSTER_CS_WAR_MIN_TURN = 20;
 var CLUSTER_CS_CONQUEST_DEADLINE_TURN = 100;
 var CITY_STATE_PLAYER_WAR_MIN_TURN = 20;
 var CITY_STATE_PLAYER_WAR_CHANCE = 0.6;
-function shouldCityStateRollWarOnPlayer(cityStateDifficulty, turn, atWarWithPlayer, hasTradeOrResourceTreatyWithPlayer, rng = Math.random) {
+function shouldCityStateRollWarOnPlayer(cityStateDifficulty, turn, atWarWithPlayer, hasTradeOrResourceTreatyWithPlayer, rng = Math.random, peaceLockedWithPlayer = false, hasNapWithPlayer = false) {
   if (cityStateDifficulty !== "hard") return false;
   if (turn < CITY_STATE_PLAYER_WAR_MIN_TURN) return false;
   if (atWarWithPlayer) return false;
   if (hasTradeOrResourceTreatyWithPlayer) return false;
+  if (peaceLockedWithPlayer) return false;
+  if (hasNapWithPlayer) return false;
   return rng() < CITY_STATE_PLAYER_WAR_CHANCE;
 }
 function axialDistance(q1, r1, q2, r2) {
@@ -57,9 +59,12 @@ function axialDistance(q1, r1, q2, r2) {
 function isClusterConquestDeadlineActive(turn, clusterStateTargets) {
   return turn <= CLUSTER_CS_CONQUEST_DEADLINE_TURN && clusterStateTargets.length > 0;
 }
-function pickClusterCityStateWarTargetId(turn, clusterStateTargets, atWarOwnerIds, referenceHex) {
+function pickClusterCityStateWarTargetId(turn, clusterStateTargets, atWarOwnerIds, referenceHex, napBlockedOwnerIds) {
   if (clusterStateTargets.length === 0) return null;
-  const notAtWar = clusterStateTargets.filter((t) => !atWarOwnerIds.has(t.ownerId));
+  const napBlocked = napBlockedOwnerIds ?? /* @__PURE__ */ new Set();
+  const notAtWar = clusterStateTargets.filter(
+    (t) => !atWarOwnerIds.has(t.ownerId) && !napBlocked.has(t.ownerId)
+  );
   if (notAtWar.length === 0) return null;
   const anyAtWar = clusterStateTargets.some((t) => atWarOwnerIds.has(t.ownerId));
   const turn20Force = turn >= CLUSTER_CS_WAR_MIN_TURN && !anyAtWar;
@@ -1067,6 +1072,8 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
 var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
 var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
@@ -8377,17 +8384,18 @@ var promienDol = new Vector3(0, -1, 0);
 
 // src/render/mapRenderStyle.ts
 var SEA_SURFACE_TOP_Y = 0.18;
-var WYBRZEZE_SURFACE_TOP_Y = 0.2;
-var LAND_MIN_CLEARANCE_ABOVE_SEA = 0.35;
+var WYBRZEZE_SURFACE_TOP_Y = 0.22;
+var LAND_MIN_CLEARANCE_ABOVE_SEA = 0.28;
+var FLAT_LAND_SURFACE_Y = SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA;
 var TERRAIN_SURFACE_Y = {
   ["morze" /* Morze */]: SEA_SURFACE_TOP_Y,
   ["wybrzeze" /* Wybrzeze */]: WYBRZEZE_SURFACE_TOP_Y,
-  ["laka" /* Laka */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA,
-  ["rownina" /* Rownina */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.02,
-  ["pustynia" /* Pustynia */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.08,
+  ["laka" /* Laka */]: FLAT_LAND_SURFACE_Y,
+  ["rownina" /* Rownina */]: FLAT_LAND_SURFACE_Y,
+  ["pustynia" /* Pustynia */]: FLAT_LAND_SURFACE_Y,
   ["wzgorza" /* Wzgorza */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.18,
   ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32,
-  ["polarny" /* Polarny */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.04
+  ["polarny" /* Polarny */]: FLAT_LAND_SURFACE_Y
 };
 var ROBLOX_TERRAIN_VIS = {
   ["morze" /* Morze */]: { height: 0.3, yOffset: 0 },
@@ -12676,6 +12684,7 @@ function relationScore(rel) {
     200
   );
 }
+var WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
 var ARCHETYPE_AGGRESSION = {
   ["grecy" /* Grecy */]: 0.4,
   ["rzymianie" /* Rzymianie */]: 0.75,
@@ -20142,7 +20151,7 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
   if (inp.clusterForceWarTargetId != null) {
     const forcedId = String(inp.clusterForceWarTargetId);
     const forcedRel = inp.relacje.find((r) => r.partnerId === forcedId);
-    if (forcedRel && !forcedRel.stanWojny) {
+    if (forcedRel && !forcedRel.stanWojny && !forcedRel.peaceLocked && !forcedRel.hasNapTreaty) {
       return [{
         type: "wypowiedz_wojne",
         targetId: forcedId,
@@ -20279,7 +20288,7 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
       });
       continue;
     }
-    if (!rel.stanWojny && stance.willingnessWar > 0 && rw >= effProgWojnaSila && effAgresja >= effProgWojnaAgresja && score < progMinimalnyRelacja) {
+    if (!rel.stanWojny && !rel.peaceLocked && !rel.hasNapTreaty && stance.willingnessWar > 0 && rw >= effProgWojnaSila && effAgresja >= effProgWojnaAgresja && score < progMinimalnyRelacja) {
       komendy.push({
         type: "wypowiedz_wojne",
         targetId: rel.partnerId,

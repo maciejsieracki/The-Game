@@ -8,7 +8,7 @@
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
 import { hexDistance, keyOf } from '../units/setup';
-import { groupHabitableMasses, passesPlayerStartMassGate } from './clusters';
+import { groupHabitableMasses, passesPlayerStartMassGate, developmentSpaceScore } from './clusters';
 
 /** Domyślny promień (legacy / testy) — w grze używaj {@link startRevealRadiusForDifficulty}. */
 export const START_REVEAL_RADIUS = 5;
@@ -97,7 +97,8 @@ export function scoreCityStartHex(map: GameMap, q: number, r: number): number {
 
 /**
  * Najlepszy hex startu gracza — deterministyczny tie-break: bliżej centrum mapy.
- * MAP-SPAWN-Q1 B: tylko hexy z lokalnym lądem ≥70% (R=3) na masie ≥25 hex (wyspy odpadają).
+ * MAP-SPAWN-Q1 B + MAP-SPAWN-Q2 B: lokalny ląd ≥70% (R=3), bramka masy gracza,
+ * preferencja przestrzeni rozwoju na największej masie.
  */
 export function findBestPlayerStartHex(map: GameMap): { q: number; r: number } | null {
   const cq = Math.round((map.szerokoscQ - 1) / 2);
@@ -128,9 +129,11 @@ export function findBestPlayerStartHex(map: GameMap): { q: number; r: number } |
     if (!passesPlayerStartMassGate(map, q, r, masses)) continue;
     const s = scoreCityStartHex(map, q, r);
     if (s === -Infinity) continue;
+    const devBonus = developmentSpaceScore(map, q, r, masses) * 0.05;
+    const combined = s + devBonus;
     const cd = hexDistance(q, r, cq, cr);
-    if (s > bestScore || (s === bestScore && cd < bestCenterDist)) {
-      bestScore = s;
+    if (combined > bestScore || (combined === bestScore && cd < bestCenterDist)) {
+      bestScore = combined;
       bestCenterDist = cd;
       best = { q, r };
     }
