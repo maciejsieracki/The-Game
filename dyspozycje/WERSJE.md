@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `047fc994` - 2026-08-02 01:05 - FALA 159: perf raport auto-download + localStorage + chip HUD - **AKTUALNA**
+## ROBOCZA `64240ff7` - 2026-08-02 01:15 - FALA 160: kill-switch generowania rzek (mapgen) - **AKTUALNA**
+- md5 (pelne): `64240ff734d91232f8d70c6dde47f504` · stempel: `ROBOCZA · 2026-08-02 01:15`
+- **VERIFY OK.** getRiverGenEnabled() — domyślnie OFF; ?riverGen=1 / localStorage civ-river-gen. Fazy „Rzeki — główne/uzupełnianie" ~0 ms. Kod rzek zachowany.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `047fc994` - 2026-08-02 01:05 - FALA 159: perf raport auto-download + localStorage + chip HUD - **ZASTAPIONA**
 - md5 (pelne): `047fc994f51440ad2915b3bd1801f94b` · stempel: `ROBOCZA · 2026-08-02 01:05`
 - **VERIFY OK.** Po buildScene: auto-download civ-perf-*.txt + localStorage civ-last-perf-report + chip „Czasy ostatniej mapy" (modal + pobierz ponownie). Żółty panel domyślnie wyłączony.
 - tsc 0 · VERIFY OK.

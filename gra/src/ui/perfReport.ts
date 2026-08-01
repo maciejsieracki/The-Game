@@ -4,6 +4,7 @@
 import { CIV_BUILD_STAMP } from '../buildInfo';
 import type { MapGenPhaseTimings } from '../map/mapGenProgress';
 import { MAP_GEN_PHASE_LABELS } from '../map/mapGenProgress';
+import { getRiverGenEnabled } from '../map/riverGenSwitch';
 import type { SceneBuildTimings } from '../render/scene';
 
 export const PERF_REPORT_STORAGE_KEY = 'civ-last-perf-report';
@@ -75,6 +76,9 @@ export function buildPerfReportText(opts: PerfReportPersistOptions): string {
 
   lines.push('');
   lines.push('GENERATOR (ms):');
+  if (!getRiverGenEnabled()) {
+    lines.push('  Rzeki (gen): WYŁĄCZONE');
+  }
   if (gen) {
     for (const [k, label] of Object.entries(MAP_GEN_PHASE_LABELS) as [keyof MapGenPhaseTimings, string][]) {
       if (k !== 'total') lines.push(`  ${label}: ${gen[k]} ms`);

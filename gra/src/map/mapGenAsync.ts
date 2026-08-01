@@ -11,6 +11,7 @@ import {
 import type { TypSwiata } from './gen-helpers';
 import type { WorldGenOptions } from './newGameMapDefaults';
 import type { GenWorkerRequest, GenWorkerResponse } from './genWorker';
+import { getRiverGenEnabled } from './riverGenSwitch';
 
 const yieldMain = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 
@@ -75,6 +76,7 @@ function generujSwiatInWorker(
       rozmiar,
       typ,
       genOpts,
+      riverGenEnabled: getRiverGenEnabled(),
     };
     worker.postMessage(req);
   });

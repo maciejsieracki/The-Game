@@ -4,6 +4,7 @@
  */
 import type { MapGenPhaseTimings } from '../map/mapGenProgress';
 import { MAP_GEN_PHASE_LABELS } from '../map/mapGenProgress';
+import { getRiverGenEnabled } from '../map/riverGenSwitch';
 import type { SceneBuildTimings } from '../render/scene';
 import { buildPerfReportText, persistPerfReport, type PerfReportPersistOptions } from './perfReport';
 
@@ -62,6 +63,9 @@ function buildHtml(opts: SceneTimingReportOptions): string {
 
   let genBlock = '';
   if (gen) {
+    const riverOffNote = !getRiverGenEnabled()
+      ? `<div style="color:#888;font-style:italic;margin-bottom:4px;">Rzeki (gen): WYŁĄCZONE</div>`
+      : '';
     const rows = [
       row(MAP_GEN_PHASE_LABELS.prep, gen.prep),
       row(MAP_GEN_PHASE_LABELS.terrain, gen.terrain),
@@ -75,7 +79,7 @@ function buildHtml(opts: SceneTimingReportOptions): string {
       row(MAP_GEN_PHASE_LABELS.starts, gen.starts),
       row('RAZEM generator', gen.total, true),
     ].join('');
-    genBlock = `<div style="color:#f5c542;font-weight:bold;margin:8px 0 4px;">GENERATOR (ms)</div>`
+    genBlock = `${riverOffNote}<div style="color:#f5c542;font-weight:bold;margin:8px 0 4px;">GENERATOR (ms)</div>`
       + `<table style="width:100%;border-collapse:collapse;">${rows}</table>`;
   } else {
     genBlock = `<div style="color:#f5c542;font-weight:bold;margin:8px 0 4px;">GENERATOR (ms)</div>`

@@ -4709,3 +4709,10 @@ CZEKAM-NA: Maciej Ctrl+F5 gra-robocza/START.html + Normalna (nie Duza)
 - ?ó?ty panel wy??czony domy?lnie (hideAfterMs=0)
 - tsc 0 · vite build OK · publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 gra-robocza/START.html — Nowa gra, sprawd? pobrany plik + chip
+
+## [01:15 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 160 kill-switch generowania rzek (mapgen)
+- md5 `64240ff7` / `64240ff734d91232f8d70c6dde47f504` - stempel `ROBOCZA - 2026-08-02 01:15`
+- getRiverGenEnabled() domyslnie OFF; ?riverGen=1 lub localStorage civ-river-gen=1 wlacza z powrotem
+- Fazy Rzeki glowne/uzupelnianie pomijane (~0 ms); riverPaths=[]; kod rzek nietkniety
+- tsc 0 - vite build OK - publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 gra-robocza/START.html - Nowa gra Pangea Standardowa, civ-perf riversMain~0

@@ -98,6 +98,7 @@ import {
 } from './newGameMapDefaults';
 import { mapGenRozmiarDims } from '../data/map-gen-params-loader';
 import { normPlMenuLabel } from '../util/norm-pl-label';
+import { getRiverGenEnabled } from './riverGenSwitch';
 import {
   MAP_GEN_PHASE_LABELS,
   MAP_GEN_PHASE_TOTAL,
@@ -431,56 +432,66 @@ export function generateMap(
   reportMapGenPhase(onProgress, 5, MAP_GEN_PHASE_LABELS.coast, 100);
   genTimer.begin('riversMain');
   // ── Przebieg 3h: rzeki DOPIERO po finalnym wybrzeżu (Maciej: bufor 2 hex od morza) ─
+  const riverGenOn = getRiverGenEnabled();
+  if (!riverGenOn) {
+    console.info('[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)');
+  }
   reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 0);
   const riversTier = genOpts?.worldDensity?.rivers ?? 'medium';
   const riverParams = resolveRiverMapParams(riversTier, width, height);
   clearRiverMarks(hexes);
-  let { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
-    minLen: riverParams.minLen,
-    maxLen: riverParams.maxLen,
-    margin: wgn.riverTrace.margin,
-    riversTier,
-    worldTyp: typ,
-    riverParams,
-    onProgress: (localPct) => {
-      reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, localPct);
-    },
-  });
+  let riverPaths: { q: number; r: number }[][] = [];
+  let riverPathKinds: ('main' | 'medium' | 'short' | 'tributary')[] = [];
+  if (riverGenOn) {
+    ({ paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
+      minLen: riverParams.minLen,
+      maxLen: riverParams.maxLen,
+      margin: wgn.riverTrace.margin,
+      riversTier,
+      worldTyp: typ,
+      riverParams,
+      onProgress: (localPct) => {
+        reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, localPct);
+      },
+    }));
+  }
   reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 100);
   genTimer.begin('riversFill');
   reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 0);
-  stripRiverMarksFromOpenSea(hexes);
-  // B0.7/B0.8: „zero sierot" — usun sciezki niepolaczone z morzem (finalny stan, jak widzi test).
-  ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
-  // ZADANIE 2 — bezpiecznik końcowy: generateRivers/topUpRiverGridCoverage już trasują do
-  // oceanConnectedWaterKeys (Morze ∪ Wybrzeże), więc to zwykle no-op; ostateczna gwarancja
-  // "0 rzek bez ujścia do wody" niezależnie od ewentualnych późniejszych przesunięć wybrzeża.
-  ({ paths: riverPaths, kinds: riverPathKinds } =
-    pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
-  ({ paths: riverPaths, kinds: riverPathKinds } =
-    pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
-  ({ paths: riverPaths, kinds: riverPathKinds } =
-    pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
-  // Jeden topUp PO prune (perf 2026-08-01): generateRivers pomija dry-patch na dużych mapach;
-  // Pangea + Duży: effectiveTopUpPasses=1 — tylko 1× enforceHardRiverGridStarts, bez proximity/dry-patch.
-  topUpRiverGridCoverage(
-    hexes,
-    width,
-    height,
-    riverPaths,
-    riverPathKinds,
-    rand,
-    riversTier,
-    riverParams.minLen,
-    riverParams.maxLen,
-    riverParams,
-    (localPct) => {
-      reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 5 + localPct * 0.75);
-    },
-  );
-  // topUp dodaje trasy — bramka ujść zaraz po (Maciej 2026-08-01 BUG-RZEKI-PERF-FALA138).
-  ({ paths: riverPaths, kinds: riverPathKinds } =
-    ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
+  if (riverGenOn) {
+    stripRiverMarksFromOpenSea(hexes);
+    // B0.7/B0.8: „zero sierot" — usun sciezki niepolaczone z morzem (finalny stan, jak widzi test).
+    ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+    // ZADANIE 2 — bezpiecznik końcowy: generateRivers/topUpRiverGridCoverage już trasują do
+    // oceanConnectedWaterKeys (Morze ∪ Wybrzeże), więc to zwykle no-op; ostateczna gwarancja
+    // "0 rzek bez ujścia do wody" niezależnie od ewentualnych późniejszych przesunięć wybrzeża.
+    ({ paths: riverPaths, kinds: riverPathKinds } =
+      pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
+    ({ paths: riverPaths, kinds: riverPathKinds } =
+      pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+    ({ paths: riverPaths, kinds: riverPathKinds } =
+      pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
+    // Jeden topUp PO prune (perf 2026-08-01): generateRivers pomija dry-patch na dużych mapach;
+    // Pangea + Duży: effectiveTopUpPasses=1 — tylko 1× enforceHardRiverGridStarts, bez proximity/dry-patch.
+    topUpRiverGridCoverage(
+      hexes,
+      width,
+      height,
+      riverPaths,
+      riverPathKinds,
+      rand,
+      riversTier,
+      riverParams.minLen,
+      riverParams.maxLen,
+      riverParams,
+      (localPct) => {
+        reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 5 + localPct * 0.75);
+      },
+    );
+    // topUp dodaje trasy — bramka ujść zaraz po (Maciej 2026-08-01 BUG-RZEKI-PERF-FALA138).
+    ({ paths: riverPaths, kinds: riverPathKinds } =
+      ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
+  }
   reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 85);
   // B0.1: purge wody→ląd tylko PRZED generateRivers — po rzekach kasował ujścia
   // ZADANIE 2 / C2: spłaszcz fałszywe "wcięcia/ujścia" (Wybrzeże bez własnej rzeki, kształtem
