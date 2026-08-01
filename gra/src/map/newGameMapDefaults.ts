@@ -365,13 +365,13 @@ export function resolveRiverMapParams(tier: DensityTier, w: number, h: number): 
   const mouthTailLen = clamp(Math.round(5 * areaScale), 3, 5);
   const minInlandFromSea = minDim >= 40 ? 2 : 1;
   const reliefSearchMax = clamp(Math.round(14 * areaScale), 6, 28);
-  // Duże mapy (areaScale≥1.35, np. 240×168): mniej rund fill — jakość domyka ensureRiverGridAndProximity.
+  // Duże mapy (areaScale≥1.35, np. 240×168): mniej rund fill — perf profile w gen-helpers.
   const largeMap = areaScale >= 1.35;
   const feederPasses = largeMap
-    ? clamp(3 + Math.floor(areaScale), 3, 6)
+    ? clamp(2 + Math.floor(areaScale * 0.4), 2, 4)
     : clamp(4 + Math.floor(areaScale), 4, 10);
   const topUpPasses = largeMap
-    ? clamp(4 + Math.floor(areaScale), 4, 8)
+    ? clamp(2 + Math.floor(areaScale * 0.4), 2, 4)
     : clamp(6 + Math.floor(areaScale * 2), 6, 16);
   const minInlandCell = Math.max(4, Math.floor(minLen * 0.35));
 

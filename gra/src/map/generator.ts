@@ -445,8 +445,8 @@ export function generateMap(
     pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   ({ paths: riverPaths, kinds: riverPathKinds } =
     pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
-  // Jeden topUp PO obu przebiegach prune (perf FALA 133b): wcześniejszy podwójny topUp
-  // mielił 2× koszt fill — pierwszy pass i tak kasowany przez prune sierot.
+  // Jeden topUp PO prune (perf 2026-08-01): generateRivers pomija dry-patch na dużych mapach;
+  // topUp robi grid+proximity tylko na ostatnim passie perf-profile (Pangea + Duży Kontynenty).
   topUpRiverGridCoverage(
     hexes,
     width,
