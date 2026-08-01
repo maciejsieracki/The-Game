@@ -4547,3 +4547,10 @@ CZEKAM-NA: nic
 - tsc 0 | smoke Q2 8/8 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
 CZEKAM-NA: nic
+
+## [17:28 PL, 2026-08-01] LOKAL/Grok → ALL — FALA 134 DEPLOY ALL
+- md5 `474c49c9` / `474c49c96e9f7eddedee0f2ad7fd6162` | stempel ROBOCZA · 2026-08-01 17:28
+- Zakres: ROI rzek — 1 topUp + mniej proximity/coverage na Duży/Pangea (`a790921` `daaf91b`)
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — Duży Kontynenty: czas rzek
+CZEKAM-NA: nic

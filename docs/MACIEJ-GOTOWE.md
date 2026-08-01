@@ -1,3 +1,5 @@
+- **2026-08-01 17:28** — ✅ FALA 134 ROBOCZA `474c49c9` (ROI rzek: 1 topUp + mniej proximity/coverage na Duży + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+
 - **2026-08-01 17:19** — ✅ FALA 133 ROBOCZA `ac743f2e` (MAP-SPAWN-Q2 B: quota lądu + cap na masę + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
 
 - **2026-08-01 13:44** — ✅ FALA 132 ROBOCZA `a2b17df5` (granice stała opacity 70% bez gradientu + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5).

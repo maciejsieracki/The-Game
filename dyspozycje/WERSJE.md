@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `ac743f2e` - 2026-08-01 17:19 - FALA 133: MAP-SPAWN-Q2 B quota + cap na mase + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `474c49c9` - 2026-08-01 17:28 - FALA 134: ROI rzek (1 topUp + mniej proximity/coverage na Duzy) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `474c49c96e9f7eddedee0f2ad7fd6162` · stempel: `ROBOCZA · 2026-08-01 17:28`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: jeden topUp po prune; twardsze limity coverage/proximity/topUp/feeder na Duży i Pangei; proximity tylko na ostatnim passie; skip dekoracyjnych tributary; dry-patch z generateRivers → topUp.
+- Commity: `a790921` · `daaf91b`. tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `ac743f2e` - 2026-08-01 17:19 - FALA 133: MAP-SPAWN-Q2 B quota + cap na mase + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `ac743f2ee94c1a68c7556edbfd95d430` · stempel: `ROBOCZA · 2026-08-01 17:19`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: start cywilizacji — quota lądu proporcjonalna (largest remainder) + max 1 typ na małą masę + preferencja przestrzeni rozwoju.
