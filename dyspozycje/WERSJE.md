@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `f37ec466` - 2026-08-01 00:06 - FALA 126: 3 etapy rzek + inland fill + LOD3 + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `490884f4` - 2026-08-01 09:56 - FALA 127: rzeki 10x10 + dyplo NAP/pokoj/portret + Glinianka + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `490884f41c586d090e9d2ef89748f254` · stempel: `ROBOCZA · 2026-08-01 09:56`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: max suchy płat 10×10 (100 hex); wysokość płaskiego lądu; Glinianka na lesie; bilans PW pokoju; karencja 10 tur po pokoju; NAP blokuje DOW; złoto tylko w ugodzie pokojowej; portret władcy na karcie „Twoje państwo”.
+- Commity: `e51dab3` · `7ffaff0` · `0fe3409` · `54757cc` · `9b658f2` · `22ac06b` · `d08165b`. tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `f37ec466` - 2026-08-01 00:06 - FALA 126: 3 etapy rzek + inland fill + LOD3 + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `f37ec46616223e34b52d77dbc8967cd2` · stempel: `ROBOCZA · 2026-08-01 00:06`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: rzeki 3 etapy (główne/średnie/krótkie); inland BFS dry patches; rzeki na LOD 3.
