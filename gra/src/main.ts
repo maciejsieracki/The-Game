@@ -66,19 +66,17 @@ import type { MapGenPhaseTimings } from './map/mapGenProgress';
 function finishLoadingAfterSceneBuild(
   loading: MapLoadingOverlayHandle,
   report?: { mapGen?: MapGenPhaseTimings; scene?: SceneBuildTimings; typLabel?: string },
+  sourcePath = 'finishLoadingAfterSceneBuild',
 ): void {
   loading.hide();
   const payload = {
     mapGen: report?.mapGen,
     scene: report?.scene,
     typLabel: report?.typLabel,
+    sourcePath,
   };
-  // Dwa rAF: overlay z DOM znika przed panelem; z-index panelu > loading overlay.
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      showSceneTimingReport(payload);
-    });
-  });
+  // Synchronicznie w tym samym ticku — panel na documentElement (nie body: zoom scale psuje fixed).
+  showSceneTimingReport(payload);
 }
 import {
   CIV_PERF_DEBUG_MARKER,

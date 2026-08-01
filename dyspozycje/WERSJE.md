@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `5614b30a` - 2026-08-02 01:00 - FALA 156: fix panel czasow widoczny 15s + z-index + X + fallback - **AKTUALNA**
+## ROBOCZA `fe9559c2` - 2026-08-02 01:36 - FALA 157: twardy panel #civ-perf-report inline + html mount + retry - **AKTUALNA**
+- md5 (pelne): `fe9559c214d449a091ba4071d281f36f` · stempel: `ROBOCZA · 2026-08-02 01:36`
+- **VERIFY OK.** Panel na documentElement (nie body — zoom scale psuje fixed); z-index max; inline styles; retry 0+500ms; [civ-perf] console; 20s auto.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `5614b30a` - 2026-08-02 01:00 - FALA 156: fix panel czasow widoczny 15s + z-index + X + fallback - **ZASTAPIONA**
 - md5 (pelne): `5614b30ad26cea36c05a3d38066286ba` · stempel: `ROBOCZA · 2026-08-02 01:00`
 - **VERIFY OK.** Panel po overlay: z-index 3_000_002, min 15s lub X, fallback brak mapGen, RAZEM gen+scena, rAF po hide.
 - tsc 0 · VERIFY OK.

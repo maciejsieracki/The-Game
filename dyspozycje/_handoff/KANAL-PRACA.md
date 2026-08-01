@@ -4689,3 +4689,11 @@ CZEKAM-NA: Maciej print screen Pangea vs Kontynenty (panel prawy gorny)
 - Fix: z-index 3_000_002 (nad overlay), min 15s lub X, rAF po hide overlay, fallback brak mapGen, RAZEM gen+scena
 - tsc 0 | vite build OK | VERIFY OK
 CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra — panel prawy gorny min 15s
+
+## [01:36 PL, 2026-08-02] LOKAL/Composer -> ALL FALA 157 twardy panel #civ-perf-report
+- md5 fe9559c2 / fe9559c214d449a091ba4071d281f36f | stempel ROBOCZA 2026-08-02 01:36
+- Przyczyna FALA 156: panel na body + zoom UI transform scale = fixed poza kadrem
+- Fix: civ-perf-report na documentElement, inline styles, z-index max, retry 0+500ms
+- tsc 0 | vite build OK | VERIFY OK
+CZEKAM-NA: Maciej Ctrl+F5 + Nowa gra Normalna - zolty panel prawy gorny 20s
+
