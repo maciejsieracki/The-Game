@@ -1,3 +1,5 @@
+- **2026-08-01 17:52** — ✅ FALA 135 ROBOCZA `5c9e2265` (4 cięcia ROI rzek na Duży/Pangea + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** — porównaj Duży·Pangea vs ~18 min).
+
 - **2026-08-01 17:28** — ✅ FALA 134 ROBOCZA `474c49c9` (ROI rzek: 1 topUp + mniej proximity/coverage na Duży + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
 
 - **2026-08-01 17:19** — ✅ FALA 133 ROBOCZA `ac743f2e` (MAP-SPAWN-Q2 B: quota lądu + cap na masę + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).

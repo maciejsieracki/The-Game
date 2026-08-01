@@ -4554,3 +4554,10 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — Duży Kontynenty: czas rzek
 CZEKAM-NA: nic
+
+## [17:52 PL, 2026-08-01] LOKAL/Grok → ALL — FALA 135 DEPLOY ALL
+- md5 `5c9e2265` / `5c9e2265d24a7f43691a6ff1c7bf3a7b` | stempel ROBOCZA · 2026-08-01 17:52
+- Zakres: 4 cięcia ROI — etap3 OFF, dry-patch OFF, bootstrap etap1, topUp×1 (`a5f099f`)
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — zwłaszcza Duży·Pangea vs 18 min
+CZEKAM-NA: nic

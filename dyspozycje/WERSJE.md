@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `474c49c9` - 2026-08-01 17:28 - FALA 134: ROI rzek (1 topUp + mniej proximity/coverage na Duzy) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `5c9e2265` - 2026-08-01 17:52 - FALA 135: 4 ciecia ROI rzek (etap3/dry/bootstrap/topUp1) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `5c9e2265d24a7f43691a6ff1c7bf3a7b` · stempel: `ROBOCZA · 2026-08-01 17:52`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: Duży/Pangea — wyłączony etap 3; wyłączony dry-patch; etap 1 bootstrap (bez pełnej siatki); topUp max 1 pass. Standard bez largeMapPerf bez zmian.
+- Commit: `a5f099f` (+ `d6c008c`). tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `474c49c9` - 2026-08-01 17:28 - FALA 134: ROI rzek (1 topUp + mniej proximity/coverage na Duzy) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `474c49c96e9f7eddedee0f2ad7fd6162` · stempel: `ROBOCZA · 2026-08-01 17:28`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: jeden topUp po prune; twardsze limity coverage/proximity/topUp/feeder na Duży i Pangei; proximity tylko na ostatnim passie; skip dekoracyjnych tributary; dry-patch z generateRivers → topUp.
