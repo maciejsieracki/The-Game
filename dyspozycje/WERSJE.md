@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `7381ff21` - 2026-08-01 23:33 - FALA 149: DIAG riverRenderStage=0 (zero rzek w scenie) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `a1037b66` - 2026-08-01 23:40 - FALA 150: instrumentacja buildScene (fazy UI + console ms) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `a1037b66b0899ba0af77e82686ebf060` · stempel: `ROBOCZA · 2026-08-01 23:40`
+- **VERIFY OK.** Stage 0 rzek zostaje. Overlay: heksy/brzeg/nakladki/rzeki/final. F12: `[civ] buildScene ms`.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `7381ff21` - 2026-08-01 23:33 - FALA 149: DIAG riverRenderStage=0 (zero rzek w scenie) + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `7381ff210874dab7c5a138da038f9ac6` · stempel: `ROBOCZA · 2026-08-01 23:33`
 - **VERIFY OK.** Kill-switch: domyslnie stage 0 (bez meshy rzek). Kod zostaje; archiwum: `dyspozycje/_archiwum-rzeki/`. URL `?riverStage=5` = full.
 - tsc 0 · VERIFY OK.

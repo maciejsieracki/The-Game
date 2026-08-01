@@ -4652,3 +4652,8 @@ CZEKAM-NA: Maciej — w START.html ma byc kod `b629a26d` i czas 23:24
 - md5 `7381ff21` / `7381ff210874dab7c5a138da038f9ac6` | stempel ROBOCZA · 2026-08-01 23:33
 - riverRenderStage default 0 — zero rzek w Budowanie sceny; archiwum _archiwum-rzeki
 CZEKAM-NA: pomiar Macieja (czas sceny BEZ rzek na mapie)
+
+## [23:40 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 150 DIAG timings
+- md5 `a1037b66` / `a1037b66b0899ba0af77e82686ebf060` | stempel ROBOCZA · 2026-08-01 23:40
+- Instrumentacja buildScene; stage 0 rzek zostaje
+CZEKAM-NA: Maciej — ktora etykieta stoi + F12 `[civ] buildScene ms`

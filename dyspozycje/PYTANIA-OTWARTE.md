@@ -1232,7 +1232,7 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## BUG-SCENA-PERF-FALA138 — Budowanie sceny: bardzo długo (~kilkanaście minut) · STATUS: **GOTOWE (kod) / ODŁOŻONE Z DEPLOYU** (Maciej 2026-08-01 ~22:31: deploy bez sceny)
+## BUG-SCENA-PERF-FALA138 — Budowanie sceny: bardzo długo (~kilkanaście minut) · STATUS: **W TRAKCIE** (FALA 150 — instrumentacja + diagnoza)
 
 **Cytat Macieja (~19:03):** „Rzeki Uzupełnienie to może jedna sekunda natomiast budowanie sceny nadal trwa bardzo długo. Coś jest nie tak. Do zapisania. Jak napiszę Działa i to wtedy zaczniesz to analizować."
 
@@ -1252,13 +1252,17 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Fix FALA 145 (kod 2026-08-01 ~22:58):** Maciej — **przyczyna = rzeki** (nie dekoracje). Cofnięto skróty FALA 144: piasek lądu przy brzegu, `blendedTerrainHex`, wydmy 3D, oazy 3D, pełny overlay collapse, pełny coast collect. Flaga `isRiverRenderFast` (ex-`sceneBuildAggressive`) steruje **wyłącznie** tor rzek: batch 96, ribbon 4/5, batch ujść, yield. **Bez deployu** — czeka na pomiar.
 
+**Diagnoza FALA 149 (~23:37, Maciej):** `riverRenderStage=0` (zero meshów rzek w buildScene) — **Budowanie sceny nadal bardzo długo**. Etapy UI „Rzeki — główne" / „Rzeki — uzupełnianie" to **mapgen** (`generator.ts` → `MAP_GEN_PHASE_LABELS.riversMain` / `riversFill`), **nie** render sceny. Wąskie gardło **≠ mesh rzek** — podejrzenie: pętla heksów i/lub overlay collapse (`styledOverlays`).
+
+**Fix FALA 150 (kod 2026-08-01 ~23:40):** instrumentacja `performance.now()` w `buildScene` → `console.info('[civ] buildScene ms', { hexes, coast, overlays, rivers, tail, total })`; overlay UI z fazami: heksy / brzeg / nakładki / rzeki (lub „pomiń rzeki") / finał. **Bez deployu** — czeka na pomiar Macieja (F12).
+
 **Root cause (częściowy, FALA 138):** ~637 ścieżek rzek + ~40k hex; `mapDetail=high` nie włączał `robloxLite`; `collapseToMergedMesh` wołał `updateMatrixWorld(true)` per overlay wybrzeża.
 
-**Objaw:** etap UI „Budowanie sceny" trwa **bardzo długo**; etap „Rzeki — Uzupełnienie" ~**1 s** (OK); etap głównych rzek ~**20 s** (OK).
+**Objaw:** etap UI „Budowanie sceny" trwa **bardzo długo**; etap „Rzeki — Uzupełnienie" ~**1 s** (OK, **mapgen**); etap „Rzeki — główne" ~**20 s** (OK, **mapgen**).
 
 **Osobny temat:** `BUG-RZEKI-PERF-FALA138` — **ZAMKNIĘTE** (~20 s OK).
 
-**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138` · `R-RZEKI-KILLSWITCH-DIAG` (**W TRAKCIE** — FALA 149, default stage 0, archiwum `_archiwum-rzeki/`).
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138` · `R-RZEKI-KILLSWITCH-DIAG` (**ZAMKNIĘTE częściowo** — stage 0 nie pomógł; FALA 150 = nowa instrumentacja).
 
 ---
 

@@ -21452,8 +21452,8 @@ async function boot(): Promise<void> {
         ensureDepositEraMeta(map.hexes);
         disposeOkolicaOverlay();
         try { disposeScene(); } catch { /* ignore */ }
-        const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
-          loading.setProgress('Przywracanie widoku mapy…', pct);
+        const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
+          loading.setProgress(phase ? `Przywracanie widoku mapy — ${phase}` : 'Przywracanie widoku mapy…', pct);
         });
         loading.hide();
         scene = newSceneResult.scene;
@@ -21545,8 +21545,8 @@ async function boot(): Promise<void> {
       try { disposeScene(); } catch (_) { /* ignore if dispose fails */ }
       // C3: buildScene budowany porcjami (chunki) — overlay zostaje na ekranie i
       // pokazuje „Budowanie sceny… N%"; ukryj DOPIERO po zbudowaniu sceny.
-      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
-        loading.setProgress('Budowanie sceny…', pct);
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
+        loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
       loading.hide();
       scene = newSceneResult.scene;
@@ -21813,8 +21813,8 @@ async function boot(): Promise<void> {
       try { disposeScene(); } catch (_) { /* ignore */ }
       // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
       // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
-      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
-        loading.setProgress('Budowanie sceny…', pct);
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
+        loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
       loading.hide();
       scene = newSceneResult.scene;
@@ -22042,8 +22042,8 @@ async function boot(): Promise<void> {
       try { disposeScene(); } catch (_) { /* ignore */ }
       // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
       // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
-      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
-        loading.setProgress('Budowanie sceny…', pct);
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
+        loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
       loading.hide();
       scene = newSceneResult.scene;
@@ -22242,8 +22242,8 @@ async function boot(): Promise<void> {
       try { disposeScene(); } catch (_) { /* ignore */ }
       // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
       // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
-      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
-        loading.setProgress('Budowanie sceny…', pct);
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
+        loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
       loading.hide();
       scene = newSceneResult.scene;

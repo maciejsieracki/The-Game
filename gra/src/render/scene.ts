@@ -1362,8 +1362,26 @@ function c3NextFrame(): Promise<void> {
   return new Promise<void>((r) => requestAnimationFrame(() => r()));
 }
 
-/** Callback postępu budowy sceny (C3). pct = 0..100 (procent porcji zrobionych). */
-export type SceneBuildProgress = (pct: number) => void;
+/** Etykiety faz budowy sceny (drugi arg. callbacku onProgress). */
+export const SCENE_BUILD_PHASE_LABELS = {
+  hexes: 'heksy…',
+  coast: 'brzeg…',
+  overlays: 'nakładki…',
+  rivers: 'rzeki…',
+  riversSkip: 'pomiń rzeki',
+  tail: 'finał…',
+} as const;
+
+/** Callback postępu budowy sceny (C3). pct = 0..100; phaseLabel = SCENE_BUILD_PHASE_LABELS.* */
+export type SceneBuildProgress = (pct: number, phaseLabel?: string) => void;
+
+function reportSceneProgress(
+  onProgress: SceneBuildProgress | undefined,
+  pct: number,
+  phaseLabel: string,
+): void {
+  onProgress?.(pct, phaseLabel);
+}
 
 type RiverPathKind = 'main' | 'medium' | 'short' | 'tributary';
 
@@ -1949,7 +1967,17 @@ export async function buildScene(
   const c3Total = c3Hexes.length;
   const c3ChunkMaxHexes = hexCount > 20000 ? 2000 : C3_CHUNK_MAX_HEXES;
   const coastCollectLite = robloxLite;
-  onProgress?.(0);
+  const buildT0 = performance.now();
+  let buildLastMark = buildT0;
+  const buildMs: { hexes: number; coast: number; overlays: number; rivers: number; tail: number } = {
+    hexes: 0, coast: 0, overlays: 0, rivers: 0, tail: 0,
+  };
+  const markBuildPhase = (key: keyof typeof buildMs): void => {
+    const now = performance.now();
+    buildMs[key] = Math.round(now - buildLastMark);
+    buildLastMark = now;
+  };
+  reportSceneProgress(onProgress, 0, SCENE_BUILD_PHASE_LABELS.hexes);
   let c3ChunkStart = performance.now();
   let c3ChunkCount = 0;
   for (let c3i = 0; c3i < c3Total; c3i++) {
@@ -2373,13 +2401,13 @@ export async function buildScene(
       (c3ChunkCount >= c3ChunkMaxHexes ||
         performance.now() - c3ChunkStart >= C3_CHUNK_TIME_BUDGET_MS)
     ) {
-      onProgress?.(((c3i + 1) / c3Total) * 80);
+      reportSceneProgress(onProgress, ((c3i + 1) / c3Total) * 80, SCENE_BUILD_PHASE_LABELS.hexes);
       await c3NextFrame();
       c3ChunkStart = performance.now();
       c3ChunkCount = 0;
     }
   }
-  onProgress?.(80);
+  reportSceneProgress(onProgress, 80, SCENE_BUILD_PHASE_LABELS.hexes);
 
   // Aktualizuj bufor instancji + przycinaj count do faktycznie użytych instancji
   for (const t of terrainTypes) {
@@ -2430,8 +2458,10 @@ export async function buildScene(
     dekorRowninaInst[w]!.count = dekorRowninaIdx[w]!;
     dekorRowninaInst[w]!.instanceMatrix.needsUpdate = true;
   }
+  markBuildPhase('hexes');
 
   // FALA 141: zebrane macierze brzegu → kilka InstancedMesh (wspólna geometria, bez alloc/geo per heks).
+  reportSceneProgress(onProgress, 80, SCENE_BUILD_PHASE_LABELS.coast);
   if (coastInstBuf) {
     const coastGeo = getCoastSharedGeometries(robloxLite);
     const waterMat = coastWaterMaterial();
@@ -2470,9 +2500,10 @@ export async function buildScene(
     flushCoastLayer(coastInstBuf.waterLagoon, coastGeo.lagoon, waterMat, 1);
     flushCoastLayer(coastInstBuf.waterTongue, coastGeo.tongue, waterMat, 1);
     flushCoastLayer(coastInstBuf.landSand, coastGeo.landSand, sandMat, 3);
-    onProgress?.(78);
+    reportSceneProgress(onProgress, 82, SCENE_BUILD_PHASE_LABELS.coast);
     await c3NextFrame();
   }
+  markBuildPhase('coast');
 
   // FPS lewar 1+3: ciężkie grupy styledOverlays (oaza ~348 tri, las dżungli) → 1 mesh.
   // Lekki brzeg (1–6 boxów/heks) — BEZ merge: FALA 139 robił collapse na każdym z ~5–15k
@@ -2482,6 +2513,7 @@ export async function buildScene(
   const skipForestCollapse = robloxLite && overlayTotal > 2000;
   const overlayYieldStep = overlayTotal > 8000 ? 15 : overlayTotal > 3000 ? 25 : overlayTotal > 1500 ? 40 : 80;
   let overlayChunkStart = performance.now();
+  reportSceneProgress(onProgress, 83, SCENE_BUILD_PHASE_LABELS.overlays);
   for (let oi = 0; oi < overlayTotal; oi++) {
     const { group, kind } = styledOverlays[oi]!;
     const heavy = (kind === 'forest' && !skipForestCollapse)
@@ -2493,12 +2525,13 @@ export async function buildScene(
       oi > 0 && oi < overlayTotal - 1
       && (oi % overlayYieldStep === 0 || performance.now() - overlayChunkStart >= C3_CHUNK_TIME_BUDGET_MS)
     ) {
-      onProgress?.(80 + (oi / Math.max(1, overlayTotal)) * 10);
+      reportSceneProgress(onProgress, 80 + (oi / Math.max(1, overlayTotal)) * 10, SCENE_BUILD_PHASE_LABELS.overlays);
       await c3NextFrame();
       overlayChunkStart = performance.now();
     }
   }
-  onProgress?.(90);
+  markBuildPhase('overlays');
+  reportSceneProgress(onProgress, 90, SCENE_BUILD_PHASE_LABELS.overlays);
   beachMesh.count = beachIdx;
   beachMesh.instanceMatrix.needsUpdate = true;
   duneMesh.count = duneIdx;
@@ -2520,8 +2553,10 @@ export async function buildScene(
 
   if (riverStage === 0) {
     // FALA 149 DIAG: zero meshów rzek — pomijamy wywołania; funkcje renderu zostają w pliku.
-    onProgress?.(100);
+    markBuildPhase('rivers');
+    reportSceneProgress(onProgress, 98, SCENE_BUILD_PHASE_LABELS.riversSkip);
   } else {
+  reportSceneProgress(onProgress, 91, SCENE_BUILD_PHASE_LABELS.rivers);
   const pathsAll = map.riverPaths ?? [];
   const pathKindsAll = map.riverPathKinds ?? pathsAll.map(() => 'main' as const);
   const { paths, pathKinds } = riverStage >= 5
@@ -2552,7 +2587,7 @@ export async function buildScene(
     map, paths, pathKinds, R, renderStyle, riverMouthY, RIVER_SURFACE_OFFSET,
     RIVER_MAIN_HALF_WIDTH, scene, riverEntries, riverWaterMat, LAND_RIVER_RENDER_ORDER,
     (done, total) => {
-      onProgress?.(90 + (done / Math.max(1, total)) * 8);
+      reportSceneProgress(onProgress, 90 + (done / Math.max(1, total)) * 8, SCENE_BUILD_PHASE_LABELS.rivers);
     },
     riverRenderFast ? {
       batchAllPaths: true,
@@ -2629,7 +2664,7 @@ export async function buildScene(
         coastDone % coastYieldEvery === 0
         || performance.now() - coastChunkStart >= C3_CHUNK_TIME_BUDGET_MS
       ) {
-        onProgress?.(98 + (coastDone / Math.max(1, coastTotal)) * 2);
+        reportSceneProgress(onProgress, 98 + (coastDone / Math.max(1, coastTotal)) * 2, SCENE_BUILD_PHASE_LABELS.rivers);
         await c3NextFrame();
         coastChunkStart = performance.now();
       }
@@ -2641,12 +2676,14 @@ export async function buildScene(
     flushRiverBucket(scene, aggCoastRiverDeltaTopBucket, riverEntries);
   }
   } // riverStage >= 4 (coastal mouths)
-  onProgress?.(100);
+  markBuildPhase('rivers');
+  reportSceneProgress(onProgress, 98, SCENE_BUILD_PHASE_LABELS.rivers);
   } // riverStage > 0
 
   // ---------------------------------------------------------------------------
   // F1 — ocean wokol kontynentu + ramka swiata (plansza)
   // ---------------------------------------------------------------------------
+  reportSceneProgress(onProgress, 99, SCENE_BUILD_PHASE_LABELS.tail);
   const mapMaxDim = Math.max(map.szerokoscQ, map.wysokoscR);
   const mapSpanForCam = mapMaxDim * R * 1.85;
   const maxZoomDist = Math.max(320, mapSpanForCam * 1.2);
@@ -3329,6 +3366,21 @@ export async function buildScene(
   // zawężona sfera odsiewałaby CAŁE meshe terenu z raycastu do końca sesji (picking spadał wtedy
   // na płaszczyznę y=0 = klik o pół heksa obok; na wzgórzach/górach jeszcze dalej).
   refreshInstancedPickBounds(terrainPickMeshes);
+
+  markBuildPhase('tail');
+  const buildTotalMs = Math.round(performance.now() - buildT0);
+  console.info('[civ] buildScene ms', {
+    hexes: buildMs.hexes,
+    coast: buildMs.coast,
+    overlays: buildMs.overlays,
+    rivers: buildMs.rivers,
+    tail: buildMs.tail,
+    total: buildTotalMs,
+    hexCount,
+    overlayTotal,
+    riverStage,
+  });
+  reportSceneProgress(onProgress, 100, SCENE_BUILD_PHASE_LABELS.tail);
 
   return {
     scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, syncForestForUnits, setZoomLod, getZoomLodLevel,
