@@ -423,6 +423,23 @@ export function generateMap(
   // "0 rzek bez ujścia do wody" niezależnie od ewentualnych późniejszych przesunięć wybrzeża.
   ({ paths: riverPaths, kinds: riverPathKinds } =
     pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
+  // Maciej 2026-08-01: domknięcie siatki/proximity PO prune — inaczej sieroty kasują force-fill.
+  topUpRiverGridCoverage(
+    hexes,
+    width,
+    height,
+    riverPaths,
+    riverPathKinds,
+    rand,
+    riversTier,
+    riverParams.minLen,
+    riverParams.maxLen,
+    riverParams,
+  );
+  ({ paths: riverPaths, kinds: riverPathKinds } =
+    pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+  ({ paths: riverPaths, kinds: riverPathKinds } =
+    pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   // B0.1: purge wody→ląd tylko PRZED generateRivers — po rzekach kasował ujścia
   // ZADANIE 2 / C2: spłaszcz fałszywe "wcięcia/ujścia" (Wybrzeże bez własnej rzeki, kształtem
   // udające deltę) — OSTATNI krok geografii, po finalnym oznakowaniu rzek, żeby znać PRAWDZIWE

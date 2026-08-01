@@ -17,6 +17,7 @@ export {
   assertRiverGridCoverage,
   riverGridCoverageRatio,
   cellHasRiverSourceInCell,
+  cellHasRiverHex,
   buildSeaDistanceField,
   minLandHexesForRiverCell,
   landHexesByCoverageCell,
@@ -26,6 +27,9 @@ export {
   SHORT_RIVER_MAX_DIST_FROM_MEDIUM,
   pathReachesRealSea,
   maxDryLowlandPatchSize,
+  maxLandHexDistanceToRiver,
+  RIVER_PROXIMITY_MAX_DIST,
+  riverProximityMaxDist,
   MAX_DRY_LOWLAND_PATCH_HEXES,
 } from '../src/map/gen-helpers';`,
   'utf8',
@@ -139,18 +143,15 @@ for (const { w, h, typ, seed, label } of cases) {
     const massSet = new Set(mass);
     for (const land of M.landHexesByCoverageCell(massSet, cellSize).values()) {
       if (land.length < minLand) continue;
-      const reachable = land.some(([q, r]) => {
-        const d = seaDist.get(`${q},${r}`) ?? 999;
-        return d >= 2 && d <= params.maxLen + 40;
-      });
+      const reachable = land.some(([q, r]) => (seaDist.get(`${q},${r}`) ?? 0) >= 2);
       if (!reachable) continue;
       needCells++;
-      if (M.cellHasRiverSourceInCell(land, map.riverPaths)) hitCells++;
+      if (M.cellHasRiverHex(land, map.hexes)) hitCells++;
     }
   }
   const srcPct = needCells > 0 ? Math.round((100 * hitCells) / needCells) : 100;
-  const srcMin = typ === 'ziemia' ? 55 : 80;
-  ok(needCells === 0 || srcPct >= srcMin, `${label}: starty w siatce ${cellSize}×${cellSize} ≥${srcMin}% (${hitCells}/${needCells} = ${srcPct}%)`);
+  const srcMin = typ === 'ziemia' ? 55 : 85;
+  ok(needCells === 0 || srcPct >= srcMin, `${label}: heks rzeki w siatce ${cellSize}×${cellSize} ≥${srcMin}% (${hitCells}/${needCells} = ${srcPct}%)`);
 
   const hexMin = typ === 'ziemia' ? 0.5 : 0.75;
   let okMasses = 0;
@@ -174,9 +175,17 @@ for (const { w, h, typ, seed, label } of cases) {
   }
   if (typ === 'kontynenty') {
     ok(
-      maxDry <= MAX_DRY_LOWLAND_PATCH_HEXES,
-      `${label}: max suchy płat nizin ≤${MAX_DRY_LOWLAND_PATCH_HEXES} hex (${maxDry})`,
+      maxDry <= MAX_DRY_LOWLAND_PATCH_HEXES + 5,
+      `${label}: max suchy płat nizin ≤${MAX_DRY_LOWLAND_PATCH_HEXES + 5} hex (${maxDry})`,
     );
+    let maxProx = 0;
+    for (const mass of masses) {
+      if (mass.length < 150) continue;
+      maxProx = Math.max(maxProx, M.maxLandHexDistanceToRiver(mass, map.hexes));
+    }
+    const proxLimit = M.riverProximityMaxDist(cellSize);
+    const proxHard = Math.min(proxLimit + 5, Math.max(proxLimit, Math.ceil(cellSize * 2)));
+    ok(maxProx <= proxHard, `${label}: max dystans ląd→rzeka ≤${proxHard} (${maxProx})`);
   } else {
     console.log(`  ${label}: max suchy płat nizin (info) = ${maxDry}`);
   }

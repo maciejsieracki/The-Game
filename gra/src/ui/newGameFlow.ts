@@ -1008,7 +1008,7 @@ function advancedSettingRows(): AdvSettingRow[] {
     advRowFromSett('resources_density', 'Gęstość wszystkich złóż (ruda, bydło, glina…). Reguły terenu bez zmian.'),
     advRowFromSett(
       'rivers_density',
-      'Fair play: min. 1 główna rzeka / komórkę siatki (Mało 15×15 · Normalnie 10×10 · Dużo 5×5). Wyższy tier = gęstsza siatka + ewentualnie dłuższe trasy.',
+      'Fair play: min. 1 rzeka / komórkę siatki (Mało 10×10 · Normalnie 5×5 · Dużo 5×5). Wyższy tier = gęstsza siatka + ewentualnie dłuższe trasy.',
     ),
     advRowFromSett('desert_density', 'Udział pustynnych hexów.'),
     advRowFromSett(

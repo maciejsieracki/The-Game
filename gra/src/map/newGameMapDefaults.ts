@@ -277,11 +277,11 @@ export function riverMinPathLengthForTier(tier: DensityTier): number {
   return 25;
 }
 
-/** Siatka rzek (bok komórki N×N) — tier kreatora „Rzeki”. */
+/** Siatka rzek (bok komórki N×N) — tier kreatora „Rzeki” (Maciej 2026-08-01: medium 10→5, low 15→10). */
 export function riverGridCellSizeForTier(tier: DensityTier): number {
   if (tier === 'high') return 5;
-  if (tier === 'low') return 15;
-  return 10;
+  if (tier === 'low') return 10;
+  return 5;
 }
 
 /**
@@ -341,7 +341,7 @@ export function resolveRiverMapParams(tier: DensityTier, w: number, h: number): 
   const tierMinLen = riverMinPathLengthForTier(tier);
   const tierCap = tier === 'low' ? 5 : tier === 'high' ? 8 : 6;
 
-  // Kanon Maciej 2026-07-31: siatka N×N z tieru (15/10/5) — liczba STARTÓW w komórkach.
+  // Kanon Maciej 2026-08-01: siatka N×N z tieru (10/5/5) — gęstsza siatka = więcej startów.
   const mainCell = riverGridCellSizeForTier(tier);
   const tributaryCell = Math.max(3, Math.round(mainCell * 0.5));
   // Etap 1: główne rzadziej — co 2 komórki siatki (średnie = pełna siatka tier).
