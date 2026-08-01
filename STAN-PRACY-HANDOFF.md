@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA `bec88c78` (FALA 144, 22:52) — sceneBuildAggressive (Duza/Pangea). Poprzedni: FALA 143 `2b524ff0`. Wejscie: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
+**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA `daf2c51b` (FALA 145, 23:00) — rzeki przy settle + suwak pracy. Poprzedni: FALA 144 `bec88c78`. Wejscie: `gra-robocza/START.html`.
 
 **ZAMKNIĘTE (2026-08-01 ~20:58):** regresja czasu głównych rzek — Maciej na FALA 140 `935d1642`: **~20 s OK** (było **>2 min**). Zapis: `PYTANIA-OTWARTE.md` → `BUG-RZEKI-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138`.
 

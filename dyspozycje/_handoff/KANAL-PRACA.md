@@ -4624,3 +4624,10 @@ CZEKAM-NA: pomiar Macieja (Pangea scena)
 - tsc 0 | VERIFY OK | agent Pangea scena further perf
 - Graj: gra-robocza/START.html (Ctrl+F5 + Nowa gra) — Duza·Pangea czas Budowanie sceny
 CZEKAM-NA: pomiar Macieja (Duza Pangea)
+
+## [23:00 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 145 DEPLOY ALL
+- md5 `daf2c51b` / `daf2c51b0e56ecd4f3d7e5c35d4d8f16` | stempel ROBOCZA · 2026-08-01 23:00
+- Zakres: rzeki widoczne przy zaloz 1. miasto; suwak PODZIAL PRACY = jak Wyzywienie
+- tsc 0 | VERIFY OK
+- Graj: gra-robocza/START.html (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: smoke Macieja (settle rzeki + panel pracy)

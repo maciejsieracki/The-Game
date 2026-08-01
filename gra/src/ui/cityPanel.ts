@@ -1751,7 +1751,8 @@ function ensureStyles(): void {
 .civ-cs .praca-split-bar{display:flex;height:26px;background:rgba(255,255,255,0.08);border:1px solid rgba(232,216,138,0.18);border-radius:7px;overflow:hidden;position:relative;margin-bottom:0.38em;}
 .civ-cs .praca-split-b{background:linear-gradient(90deg,#a08030,#e8d88a);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#2e2708;font-weight:700;}
 .civ-cs .praca-split-u{background:linear-gradient(90deg,#3a6ad0,#5a9bd4);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#08121e;font-weight:700;}
-.civ-cs .praca-w4-sliders{margin:0.08em 0 0.32em;}
+.civ-cs .praca-w4-sliders{margin:0.38em 0 0.12em;}
+.civ-cs .praca-w4-sliders .slider-row label{font-size:0.74em;margin-bottom:0.08em;}
 .civ-cs .praca-w4-sliders input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:5px;background:rgba(255,255,255,0.08);outline:none;}
 .civ-cs .praca-w4-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
 .civ-cs .praca-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
@@ -4186,9 +4187,8 @@ function buildPracaDetailCard(
 
   appendDetailSection(card, 'Co widać w panelu');
   const g0 = appendDetailGrid(card);
-  gridDetailRow(g0, 'Pasek (złoty + niebieski)', `Złoty 🏛 = ${pctB}% pracy na budynki i jednostki w kolejce. Niebieski 🛠 = ${pctU}% na ulepszenia pól.`);
-  gridDetailRow(g0, 'Tekst na pasku', `${pctB}% 🏛 · ${pctU}% 🛠 — ten sam podział co suwak; zmienia się na żywo.`);
-  gridDetailRow(g0, 'Suwak pod spodem', 'Przesuwasz w lewo → więcej ulepszeń pól; w prawo → szybsza produkcja w kolejce. Kroki co 10%.');
+  gridDetailRow(g0, 'Suwak (jak Wyżywienie)', `Etykieta: ${pctB}% 🏛 · ${pctU}% 🛠 — jeden pasek przesuwania, bez osobnego paska podglądu.`);
+  gridDetailRow(g0, 'Lewo / prawo', 'W lewo → więcej ulepszeń pól; w prawo → szybsza kolejka budowy. Kroki co 10%.');
   gridDetailRow(g0, 'Dlaczego tu, po lewej', 'Podział pracy karmi produkcję i budowę — garnizon jest w pasku u góry obok nazwy miasta.');
 
   appendDetailSection(card, 'Aktualny podział');
@@ -4309,44 +4309,40 @@ function renderPodzialPracy(
   const pctU = praca?.pctUlepszenia ?? (100 - pctB);
   const player = city.ownerId === 0;
 
-  const barWrap = el('div', 'praca-split-bar');
-  barWrap.innerHTML =
-    `<div class="praca-split-b" data-praca-bar="budynki" style="width:${pctB}%"></div>` +
-    `<div class="praca-split-u" data-praca-bar="ulepszenia" style="width:${pctU}%"></div>` +
-    `<div class="fbtxt">${pracaSplitBarLabelHtml(pctB, pctU, praca ? praca.doBudynkow : undefined, praca ? praca.doUlepszen : undefined)}</div>`;
-  mount.appendChild(barWrap);
+  const sliderWrap = el('div', 'praca-w4-sliders');
+  const sliderRow = el('div', 'slider-row');
+  const sliderLabel = el('label');
+  sliderLabel.innerHTML =
+    `<span>${cityPanelChipIconWrap('res-work', 14)} Budynki / Pula</span>` +
+    `<span>${pracaSplitBarLabelHtml(pctB, pctU, praca?.doBudynkow, praca?.doUlepszen)}</span>`;
+  sliderRow.appendChild(sliderLabel);
 
   if (player) {
-    const sliderWrap = el('div', 'praca-w4-sliders');
     const inp = document.createElement('input');
     inp.type = 'range';
-    inp.className = 'praca-split-range';
     inp.min = '0';
     inp.max = '100';
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
     inp.setAttribute('aria-label', 'Podział pracy: budynki versus pula imperium');
+    inp.title = 'Podział pracy — budynki w kolejce versus ulepszenia pól / pula imperium';
     inp.addEventListener('input', () => {
       const v = snapHandelPct(Number(inp.value));
-      const u = 100 - v;
-      const budBar = barWrap.querySelector('[data-praca-bar="budynki"]') as HTMLElement | null;
-      const uleBar = barWrap.querySelector('[data-praca-bar="ulepszenia"]') as HTMLElement | null;
-      const txt = barWrap.querySelector('.fbtxt');
-      if (budBar) budBar.style.width = `${v}%`;
-      if (uleBar) uleBar.style.width = `${u}%`;
-      if (txt && praca) {
-        const bAmt = Math.round(v / 100 * praca.total);
-        const uAmt = Math.round(praca.total - bAmt);
-        txt.innerHTML = pracaSplitBarLabelHtml(v, u, bAmt, uAmt);
-      } else if (txt) {
-        txt.innerHTML = pracaSplitBarLabelHtml(v, u);
-      }
       cfg.onPodzialPracyChange?.(city.id, { procentBudynki: v });
       rerender();
     });
-    sliderWrap.appendChild(inp);
-    mount.appendChild(sliderWrap);
+    sliderRow.appendChild(inp);
+  } else {
+    const ro = el('div', 'muted');
+    ro.style.cssText = 'font-size:0.68em;margin-top:0.06em;';
+    ro.textContent = 'Tylko podgląd (miasto rywala).';
+    sliderRow.appendChild(ro);
   }
+  sliderWrap.appendChild(sliderRow);
+  const hint = el('div', 'wyzwienie-w4-hint');
+  hint.textContent = 'Kroki co 10%. W lewo → więcej ulepszeń pola · w prawo → szybsza kolejka budowy.';
+  sliderWrap.appendChild(hint);
+  mount.appendChild(sliderWrap);
 
   appendPodzialPracyInfo(mount, city, view, data);
 }

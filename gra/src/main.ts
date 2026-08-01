@@ -6517,6 +6517,12 @@ async function boot(): Promise<void> {
       return new Set<string>();
     }
 
+    /** Klucze oświetlonego kręgu startu — rzeki widoczne przed założeniem pierwszego miasta. */
+    function startRevealKeysForRiverFog(): Set<string> | undefined {
+      if (!isAwaitingFirstPlayerCity() || playerStartHex === null) return undefined;
+      return computeVisibleAt(playerStartHex.q, playerStartHex.r, map, startRevealRadius);
+    }
+
     cityFogVisible = (city, vis) => {
       if (!fogOn) return true;
       if (city.ownerId === 0) return true;
@@ -6801,7 +6807,10 @@ async function boot(): Promise<void> {
       syncCampMeshes();
       syncVillageMeshes();
       if (useFogRender) {
-        setFog(vis, exploredForRender, { landReveal: revealAllLand });
+        setFog(vis, exploredForRender, {
+          landReveal: revealAllLand,
+          riverRevealKeys: startRevealKeysForRiverFog(),
+        });
         syncResourceOverlayFog(vis, exploredForRender);
         syncImprovementMeshFog(vis, exploredForRender);
         syncSettlementMeshFog(vis, exploredForRender);

@@ -1250,6 +1250,8 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Fix Pangea-only (kod 2026-08-01 ~22:33):** `isDenseLandmassMap` + skip collapse lasów + batch rzek/yield. **Patch odłożony z deployu** (Maciej): `dyspozycje/_handoff/PATCH-SCENA-PANGEA-PERF-2026-08-01.patch`.
 
+**Fix FALA 145 (kod 2026-08-01 ~22:58):** Maciej — **przyczyna = rzeki** (nie dekoracje). Cofnięto skróty FALA 144: piasek lądu przy brzegu, `blendedTerrainHex`, wydmy 3D, oazy 3D, pełny overlay collapse, pełny coast collect. Flaga `isRiverRenderFast` (ex-`sceneBuildAggressive`) steruje **wyłącznie** tor rzek: batch 96, ribbon 4/5, batch ujść, yield. **Bez deployu** — czeka na pomiar.
+
 **Root cause (częściowy, FALA 138):** ~637 ścieżek rzek + ~40k hex; `mapDetail=high` nie włączał `robloxLite`; `collapseToMergedMesh` wołał `updateMatrixWorld(true)` per overlay wybrzeża.
 
 **Objaw:** etap UI „Budowanie sceny" trwa **bardzo długo**; etap „Rzeki — Uzupełnienie" ~**1 s** (OK); etap głównych rzek ~**20 s** (OK).
@@ -1257,6 +1259,18 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Osobny temat:** `BUG-RZEKI-PERF-FALA138` — **ZAMKNIĘTE** (~20 s OK).
 
 **Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138` · `R-RZEKI-KILLSWITCH-DIAG` (ODŁOŻONY).
+
+---
+
+## BUG-RZEKI-SETTLE-VIS — rzeki niewidoczne przy zakładaniu pierwszego miasta · STATUS: **NAPRAWIONE (kod)** (2026-08-01)
+
+**Objaw:** w trybie wyboru miejsca na pierwsze miasto (onboarding settle) rzeki niewidoczne na mapie; po zbudowaniu miasta nagle się pojawiają. Gameplay/mapgen OK — problem renderu + mgły.
+
+**Root cause:** (1) na mapach gęstych (Pangea) główne rzeki trafiały do batch merge bez `pointHex` → reguła „cała wstęga albo nic"; (2) brak wyjątku mgły dla oświetlonego kręgu startu przed pierwszym miastem.
+
+**Fix:** `scene.ts` — główne rzeki zawsze osobny mesh + `pointHex`; `setFog` opcja `riverRevealKeys`; `main.ts` — `startRevealKeysForRiverFog()` w `refreshFog` gdy `isAwaitingFirstPlayerCity()`.
+
+**Powiązane:** historyczny bug rzeka↔mgła (`STAN-PRACY-HANDOFF.md` §7).
 
 ---
 
@@ -1309,3 +1323,11 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Decyzja:** **A — półpłaszczyzna (180°)**. MP tego samego typu tylko po jednej stronie stolicy; druga połowa wolna pod własne miasta.
 
 **Plik:** `docs/decyzje/SPAWN-EXPANSION-ARC-Q1.md` · kod: `clusters.ts` + `cluster-spawn.ts` · test `cluster-start-test.cjs`.
+
+---
+
+## UI-LABOR-SLIDER-FOOD-PARITY — podwójny pasek PODZIAŁ PRACY · STATUS: **WDROŻONE (kod)** (2026-08-01)
+
+**Sytuacja.** Panel miasta → PODZIAŁ PRACY: gruby pasek % (złoty/niebieski) + osobny cienki track suwaka pod spodem. Maciej: identycznie jak suwak Wyżywienie (żywność) — jedna kontrolka.
+
+**Fix (2026-08-01):** `cityPanel.ts` → `renderPodzialPracy`: usunięty `praca-split-bar`; jeden `slider-row` + `input[type=range]` jak `renderMagazyn` / Wyżywienie. Chipy + lista szczegółów bez zmian.

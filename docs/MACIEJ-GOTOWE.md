@@ -1,4 +1,6 @@
-﻿- **2026-08-01 22:52** — OK FALA 144 ROBOCZA `bec88c78` (sceneBuildAggressive Duza/Pangea). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** Duza·Pangea — czas Budowanie sceny).
+﻿- **2026-08-01 23:00** — OK FALA 145 ROBOCZA `daf2c51b` (rzeki przy settle + suwak pracy jak zywnosc). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+
+- **2026-08-01 22:52** — OK FALA 144 ROBOCZA `bec88c78` (sceneBuildAggressive Duza/Pangea). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** Duza·Pangea — czas Budowanie sceny).
 
 - **2026-08-01 22:45** ? ? FALA 143 ROBOCZA `2b524ff0` (Pangea Budowanie sceny: dense landmass + batch rzek + skip forest collapse). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** Standard�Pangea ? czas ostatniego etapu).
 

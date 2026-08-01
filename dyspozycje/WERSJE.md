@@ -14,7 +14,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `bec88c78` - 2026-08-01 22:52 - FALA 144: sceneBuildAggressive (Duza/Pangea) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `daf2c51b` - 2026-08-01 23:00 - FALA 145: rzeki przy settle + suwak pracy jak zywnosc + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `daf2c51b0e56ecd4f3d7e5c35d4d8f16` · stempel: `ROBOCZA · 2026-08-01 23:00`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: BUG-RZEKI-SETTLE-VIS (pointHex main + riverRevealKeys przy 1. miescie); UI-LABOR-SLIDER-FOOD-PARITY (jeden suwak PODZIAL PRACY).
+- tsc 0 · VERIFY OK. Kod: Composer; deploy: Grok.
+## ROBOCZA `bec88c78` - 2026-08-01 22:52 - FALA 144: sceneBuildAggressive (Duza/Pangea) + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `bec88c7855ff523fb73877182ed3ebf5` · stempel: `ROBOCZA · 2026-08-01 22:52`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: isSceneBuildAggressive (fast∨dense); skip piasek lądu/blend/wydmy/oazy; batch ujść rzek (3 merge); overlay bez collapse; ribbon ląd 4 / ujście 6.
