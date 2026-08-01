@@ -14,7 +14,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `78a1b727` - 2026-08-01 23:04 - FALA 146: isRiverRenderFast export + dekoracje z powrotem (perf tylko rzeki) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `6a8ba59a` - 2026-08-01 23:14 - FALA 147: tylko perf rzek (batch 128, decymacja tributary, ujscia) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `6a8ba59a6657d1d1bdbe66290411a46f` · stempel: `ROBOCZA · 2026-08-01 23:14`
+- **VERIFY OK.**
+- Zakres: TYLKO tor rzek — batch 128, ribbon 3–4, decymacja medium/tributary, yield ujsc; main+pointHex bez zmian; dekoracje bez zmian.
+- tsc 0 · VERIFY OK. Kod: Composer; deploy: Grok.
+## ROBOCZA `78a1b727` - 2026-08-01 23:04 - FALA 146: isRiverRenderFast export + dekoracje z powrotem (perf tylko rzeki) + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `78a1b727501f88348d3cfc88855a4614` · stempel: `ROBOCZA · 2026-08-01 23:04`
 - **VERIFY OK.**
 - Zakres: dopiecie eksportu isRiverRenderFast; dekoracje FALA 144 przywrocone; settle rzeki (riverRevealKeys) bez zmian.

@@ -731,13 +731,16 @@ function renderCoastalRiverExtension(
   halfWidth: number,
   deltaKeys: Set<string>,
   ribbonSegs = 12,
+  /** FALA 147: większy próg dedup na dense/fast — mniej wierzchołków ujścia (sharp=true). */
+  dedupMinDist?: number,
 ): void {
   const { pts: chainPts, hexKeys } = buildCoastalRiverPointChain(map, path, R, riverMouthY);
   if (chainPts.length < 2) return;
 
+  const dedup = dedupMinDist ?? R * 0.02;
   const pts: THREE.Vector3[] = [];
   for (const p of chainPts) {
-    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.02) pts.push(p);
+    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > dedup) pts.push(p);
   }
   if (pts.length < 2) return;
 
@@ -1150,6 +1153,18 @@ function buildRiverPointsFromHexPath(
   return { pts, hexKeys, widths, pointHex };
 }
 
+/** FALA 147: rzadsze punkty wstęgi batched medium/tributary (bez pointHex — mgła per hexKeys). */
+function decimateRiverRibbonPoints(pts: THREE.Vector3[], minDist: number): THREE.Vector3[] {
+  if (pts.length < 3 || minDist <= 0) return pts;
+  const out: THREE.Vector3[] = [pts[0]!];
+  for (let i = 1; i < pts.length - 1; i++) {
+    if (out[out.length - 1]!.distanceTo(pts[i]!) >= minDist) out.push(pts[i]!);
+  }
+  const last = pts[pts.length - 1]!;
+  if (out[out.length - 1] !== last) out.push(last);
+  return out;
+}
+
 /** Jedna ciągła wstęga na trasę riverPaths — rogi i środki krawędzi (NIE przez środek heksa).
  * hex.rzeka.krawedzie zostaje dla logiki gry; render idzie po pełnej ścieżce.
  */
@@ -1167,7 +1182,14 @@ async function renderLandRiversFromPaths(
   riverMat: THREE.Material,
   renderOrder: number,
   onSlice?: (done: number, total: number) => void,
-  opts?: { batchAllPaths?: boolean; batchSize?: number; ribbonSegments?: number },
+  opts?: {
+    batchAllPaths?: boolean;
+    batchSize?: number;
+    ribbonSegments?: number;
+    /** FALA 147: min. odstęp punktów tributary/medium (bez pointHex). */
+    tributaryDecimateDist?: number;
+    yieldEvery?: number;
+  },
 ): Promise<Set<string>> {
   const landHexKeys = new Set<string>();
   const pathTotal = paths.length;
@@ -1227,12 +1249,15 @@ async function renderLandRiversFromPaths(
       if (!batchBucket) {
         batchBucket = { mat: riverMat, geos: [], hexKeys: new Set(), renderOrder };
       }
-      pushRiverMesh(batchBucket, pts, hexKeys, halfWidth, ribbonSegs, true);
+      const renderPts = opts?.tributaryDecimateDist
+        ? decimateRiverRibbonPoints(pts, opts.tributaryDecimateDist)
+        : pts;
+      pushRiverMesh(batchBucket, renderPts, hexKeys, halfWidth, ribbonSegs, true);
       batchCount++;
       if (batchCount >= batchSize) flushBatch();
     }
     for (const k of hexKeys) landHexKeys.add(k);
-    const yieldEvery = batchAll ? 4 : 10;
+    const yieldEvery = opts?.yieldEvery ?? (batchAll ? 4 : 10);
     if (pi > 0 && (pi % yieldEvery === 0 || performance.now() - sliceStart >= C3_CHUNK_TIME_BUDGET_MS)) {
       onSlice?.(pi + 1, pathTotal);
       await c3NextFrame();
@@ -1327,8 +1352,8 @@ const C3_CHUNK_MAX_HEXES = 1200;
 const RIVER_RIBBON_MAX_PTS = 6000;
 /** FALA 138 perf: scala medium/short w jeden mesh co N tras (mgła per hexKeys, nie pointHex). */
 const RIVER_BATCH_PATHS = 32;
-/** Pangea / gęsta sieć rzek: większy batch + rzadsze mergeGeometries (FALA 145). */
-const RIVER_BATCH_PATHS_DENSE = 96;
+/** Pangea / gęsta sieć rzek: większy batch medium/tributary (FALA 145: 96, FALA 147: 128). */
+const RIVER_BATCH_PATHS_DENSE = 128;
 /** Brzeg/plaża: 1–6 boxów — merge per-heks to O(hex×wierzchołki) bez zysku FPS; scalaj tylko cięższe (oaza, las). */
 const OVERLAY_COLLAPSE_MIN_MESHES = 7;
 
@@ -2471,13 +2496,17 @@ export async function buildScene(
     riverRenderFast ? {
       batchAllPaths: true,
       batchSize: RIVER_BATCH_PATHS_DENSE,
-      ribbonSegments: sceneBuildFast ? 4 : 5,
+      // FALA 147: 3–4 segmenty (ujścia sharp=true; rezerwa dla gładkich odcinków).
+      ribbonSegments: sceneBuildFast ? 3 : 4,
+      tributaryDecimateDist: R * (sceneBuildFast ? 0.10 : 0.065),
+      yieldEvery: sceneBuildFast ? 2 : 3,
     } : undefined,
   );
   for (const k of landHexKeysAll) riverHexKeys.push(k);
 
-  // FALA 145: ujścia main rivers — jeden merge na warstwę zamiast 3×flush per rzeka (Pangea ~80–150 ujść).
-  const coastalRibbonSegs = riverRenderFast ? (sceneBuildFast ? 4 : 5) : 12;
+  // FALA 145/147: ujścia main — jeden merge na warstwę (3×flush) zamiast per rzeka.
+  const coastalRibbonSegs = riverRenderFast ? (sceneBuildFast ? 3 : 4) : 12;
+  const coastalDedupDist = riverRenderFast ? R * (sceneBuildFast ? 0.045 : 0.032) : R * 0.02;
   const batchCoastalMouths = riverRenderFast;
   const aggCoastDeltaBucket: RiverGeoBucket | null = batchCoastalMouths
     ? { mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: 50 }
@@ -2507,7 +2536,7 @@ export async function buildScene(
         renderCoastalRiverExtension(
           map, path, R, riverMouthY,
           aggCoastRiverBucket, aggCoastRiverDeltaTopBucket, aggCoastDeltaBucket,
-          RIVER_MAIN_HALF_WIDTH, deltaHexKeys, coastalRibbonSegs,
+          RIVER_MAIN_HALF_WIDTH, deltaHexKeys, coastalRibbonSegs, coastalDedupDist,
         );
       } else {
         const coastRiverBucket: RiverGeoBucket = {
@@ -2522,14 +2551,17 @@ export async function buildScene(
         renderCoastalRiverExtension(
           map, path, R, riverMouthY,
           coastRiverBucket, coastRiverDeltaTopBucket, coastDeltaBucket,
-          RIVER_MAIN_HALF_WIDTH, deltaHexKeys, coastalRibbonSegs,
+          RIVER_MAIN_HALF_WIDTH, deltaHexKeys, coastalRibbonSegs, coastalDedupDist,
         );
         flushRiverBucket(scene, coastDeltaBucket, riverEntries);
         flushRiverBucket(scene, coastRiverBucket, riverEntries);
         flushRiverBucket(scene, coastRiverDeltaTopBucket, riverEntries);
       }
       coastDone++;
-      const coastYieldEvery = riverRenderFast ? (denseLandmass ? 2 : 3) : denseLandmass ? 2 : 4;
+      // FALA 147: częstszy yield przy ujściach na dense/fast (responsywny overlay).
+      const coastYieldEvery = riverRenderFast
+        ? (sceneBuildFast ? 1 : denseLandmass ? 2 : 3)
+        : denseLandmass ? 2 : 4;
       if (
         coastDone % coastYieldEvery === 0
         || performance.now() - coastChunkStart >= C3_CHUNK_TIME_BUDGET_MS

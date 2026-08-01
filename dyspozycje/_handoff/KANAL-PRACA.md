@@ -4636,3 +4636,9 @@ CZEKAM-NA: smoke Macieja (settle rzeki + panel pracy)
 - md5 `78a1b727` / `78a1b727501f88348d3cfc88855a4614` | stempel ROBOCZA · 2026-08-01 23:04
 - Zakres: isRiverRenderFast + dekoracje z powrotem; testuj rzeki przy 1. miescie
 CZEKAM-NA: Maciej — widocznosc rzek przed settle (OK/BUG)
+
+## [23:14 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 147 DEPLOY ALL
+- md5 `6a8ba59a` / `6a8ba59a6657d1d1bdbe66290411a46f` | stempel ROBOCZA · 2026-08-01 23:14
+- Zakres: TYLKO perf rzek/ujsc (batch 128, decymacja tributary) — dekoracje nietkniete
+- Graj: gra-robocza/START.html Ctrl+F5 Nowa gra — Duza·Pangea czas Budowanie sceny
+CZEKAM-NA: pomiar Macieja
