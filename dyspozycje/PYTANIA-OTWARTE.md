@@ -1202,37 +1202,31 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## BUG-RZEKI-PERF-FALA138 — regresja czasu generowania głównych rzek · STATUS: **W TRAKCIE** (Maciej „działaj" 2026-08-01 ~19:07)
+## BUG-RZEKI-PERF-FALA138 — regresja czasu generowania głównych rzek · STATUS: **GOTOWE (kod)** (2026-08-01)
 
-**Cytat Macieja (~19:00):** „na razie z tym nic nie rób, tylko sobie zapisz" — generowanie głównych rzek trwa już **ponad dwie minuty**, wcześniej było **~10 sekund**.
+**Cytat Macieja (~19:00):** generowanie głównych rzek **>2 min** vs wcześniej **~10 s**.
 
-**Odblokowanie (~19:07):** Maciej **„działaj"** — agent kodowy w toku.
+**Fix (kod):** `d2db99c` + `9c4320b` — Pangea bootstrap 22–32 ujść (było 40–60×3), cache mainKeys, stride 3, max 72 komórki grid, fastTrace 2 próby, consecutive-fail break.
 
-**Kontekst deployu:** ROBOCZA FALA 138 md5 `cbc79e63` (spawn Q2 `a06a615` + tani fill rzek `0c4faac`). Tani fill włączył m.in. `effectiveTopUpPasses=1` (hardStarts), Pangea bootstrap 40–60 + grid stride 2, Duży `mainGridStride` 2.
+**Wynik bench Duży seed 42:** etap 1 (główne) **~146 ms** (było **~295 s** Pangea); traceRiver ×1285 (było ×53246). Gęstość Pangea: **604 rzek** (111 main + 544 medium vs 637 wcześniej).
 
-**Objaw:** etap UI „Rzeki — główne" / generowanie głównych rzek **>2 min** vs wcześniej **~10 s**.
+**Constraint gęstości:** zachowana (~95% liczby rzek Pangea); topUp hardStarts + etap 2 medium bez zmian logiki fill.
 
-**Constraint (~19:17):** Maciej: „natomiast efekt rzek był całkiem nie najgorszy." — **gęstość/wygląd rzek po FALA 138 akceptowalny**. Przy optymalizacji perf głównych rzek **NIE degradować** efektu wizualnego (nie wracać do pustej mapy); **ciąć czas, zachować efekt**.
-
-**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138` · osobny regres ciągłości: `BUG-RZEKI-UJSCIE-FALA138`.
+**Powiązane:** `R-RZEKI-PERF-FALA138` · sibling ujścia: `BUG-RZEKI-UJSCIE-FALA138`.
 
 ---
 
-## BUG-RZEKI-UJSCIE-FALA138 — regres: rzeki kończą się w środku lądu · STATUS: **W TRAKCIE** (Maciej „działaj" 2026-08-01 ~19:07; zgłoszenie ~19:18)
+## BUG-RZEKI-UJSCIE-FALA138 — regres: rzeki kończą się w środku lądu · STATUS: **GOTOWE (kod)** (2026-08-01)
 
-**Cytat Macieja (~19:18):** „natomiast część rzek zamiast wpadać do innej rzeki lub do morza kończyły w połowie lądu swój bieg i nie wiadomo gdzie się zaczynają, a gdzie kończą. Tutaj jest akurat Regres. rzeka jeżeli gdzieś startuje, to powinna tak długo się wić, aż sięgnie innej rzeki lub oceanu."
+**Cytat Macieja (~19:18):** część rzek urywa bieg na lądzie zamiast ujściem w inną rzekę / ocean.
 
-**Odblokowanie:** ten sam tor co `BUG-RZEKI-PERF-FALA138` — Maciej **„działaj" ~19:07**; agent kodowy w toku.
+**Root cause:** `finalizeCoastAndInlandWater` **po** `ensureRiverOutlets` zmieniało wybrzeże → ujścia stawały się „w środku lądu"; brak bramki po topUp.
 
-**Kontekst deployu:** ROBOCZA FALA 138 md5 `cbc79e63` (spawn Q2 `a06a615` + tani fill rzek `0c4faac` — `effectiveTopUpPasses=1`, Pangea bootstrap 40–60 + grid stride 2, Duży `mainGridStride` 2).
+**Fix (kod):** `9c4320b` — `ensureRiverOutlets` po topUp + **ponownie po** `finalizeCoastAndInlandWater`; `scrubStrayRiverHexMarks`.
 
-**Objaw:** część rzek **urywa bieg na suchym lądzie** zamiast domknąć się ujściem w **inną rzekę** albo **ocean**; nieczytelne początek/koniec biegu.
+**Wynik smoke (12 map):** **0** tras bez ujścia, **0** sierot hex. tsc PASS.
 
-**Kanon (reguła mapy):** jeśli rzeka startuje, bieg trwa aż do **ujścia** — połączenie z inną rzeką **lub** oceanem. Brak „sierot" w polu.
-
-**Constraint (~19:17, wspólny z perf):** „efekt rzek był całkiem nie najgorszy" — **gęstość/wygląd po FALA 138 OK**; przy naprawie ciągłości **nie wyzerować gęstości** ani nie cofać efektu wizualnego — naprawić **ciągłość do ujścia**, zachować gęstość.
-
-**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-UJSCIE-FALA138` · sibling perf: `BUG-RZEKI-PERF-FALA138` · historia ujść: `RZEKI-DIAGNOZA-UJSCIA.md`, `BUG-RZEKI-DOPLYWY` (WDROŻONE 2026-07-29).
+**Powiązane:** `R-RZEKI-UJSCIE-FALA138` · sibling perf: `BUG-RZEKI-PERF-FALA138`.
 
 ---
 
