@@ -6563,7 +6563,25 @@ export function ensureRiverOutlets(
   result = pruneRiversNotReachingRealSea(hexes, result.paths, result.kinds, width, height);
   const ocean = oceanConnectedWaterKeys(hexes, width, height);
   result = pruneInvalidShortRiverPaths(hexes, result.paths, result.kinds, width, height, ocean);
+  scrubStrayRiverHexMarks(hexes, result.paths);
   return result;
+}
+
+/** Usuwa oznaczenia rzeki na heksach spoza zachowanych tras (po prune). */
+function scrubStrayRiverHexMarks(hexes: Record<string, Hex>, paths: RiverCoord[][]): void {
+  const onPath = new Set<string>();
+  for (const path of paths) {
+    for (const p of path ?? []) onPath.add(hexKey(p.q, p.r));
+  }
+  for (const [k, hex] of Object.entries(hexes)) {
+    if (hex.rzeka?.obecna && !onPath.has(k)) {
+      hex.rzeka = { obecna: false, krawedzie: [] };
+    }
+  }
+  clearRiverMarks(hexes);
+  for (const path of paths) {
+    if (path?.length) markRiverPath(hexes, path);
+  }
 }
 
 /** Czy między lądowymi heksami a→b krawędź rzeki jest oznakowana po OBU stronach (I1). */

@@ -462,6 +462,9 @@ export function generateMap(
       reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 5 + localPct * 0.75);
     },
   );
+  // topUp dodaje trasy — bramka ujść zaraz po (Maciej 2026-08-01 BUG-RZEKI-PERF-FALA138).
+  ({ paths: riverPaths, kinds: riverPathKinds } =
+    ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
   reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 85);
   // B0.1: purge wody→ląd tylko PRZED generateRivers — po rzekach kasował ujścia
   // ZADANIE 2 / C2: spłaszcz fałszywe "wcięcia/ujścia" (Wybrzeże bez własnej rzeki, kształtem
@@ -590,12 +593,16 @@ export function generateMap(
     stripDepositsFromWater(hexes);
   }
 
-  // BUG-RZEKI-DOPLYWY: ostatnia bramka po reliefie/złożach (Ziemia) — usuwa wiszące dopływy.
+  // BUG-RZEKI-DOPLYWY: bramka po reliefie/złożach (Ziemia) — usuwa wiszące dopływy.
   ({ paths: riverPaths, kinds: riverPathKinds } =
     ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
 
   // Ostatni pierścień wybrzeża — relief/złoża/szablon Ziemi mogły odsłonić ląd przy Morzu.
   finalizeCoastAndInlandWater(hexes, width, height, 2, coastOpts);
+
+  // Wybrzeże po ensureRiverOutlets potrafi odciąć ujścia (Maciej 2026-08-01) — ponowna bramka.
+  ({ paths: riverPaths, kinds: riverPathKinds } =
+    ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
   reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 100);
 
   return {

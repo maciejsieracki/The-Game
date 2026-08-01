@@ -1214,7 +1214,25 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Constraint (~19:17):** Maciej: „natomiast efekt rzek był całkiem nie najgorszy." — **gęstość/wygląd rzek po FALA 138 akceptowalny**. Przy optymalizacji perf głównych rzek **NIE degradować** efektu wizualnego (nie wracać do pustej mapy); **ciąć czas, zachować efekt**.
 
-**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138`.
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138` · osobny regres ciągłości: `BUG-RZEKI-UJSCIE-FALA138`.
+
+---
+
+## BUG-RZEKI-UJSCIE-FALA138 — regres: rzeki kończą się w środku lądu · STATUS: **W TRAKCIE** (Maciej „działaj" 2026-08-01 ~19:07; zgłoszenie ~19:18)
+
+**Cytat Macieja (~19:18):** „natomiast część rzek zamiast wpadać do innej rzeki lub do morza kończyły w połowie lądu swój bieg i nie wiadomo gdzie się zaczynają, a gdzie kończą. Tutaj jest akurat Regres. rzeka jeżeli gdzieś startuje, to powinna tak długo się wić, aż sięgnie innej rzeki lub oceanu."
+
+**Odblokowanie:** ten sam tor co `BUG-RZEKI-PERF-FALA138` — Maciej **„działaj" ~19:07**; agent kodowy w toku.
+
+**Kontekst deployu:** ROBOCZA FALA 138 md5 `cbc79e63` (spawn Q2 `a06a615` + tani fill rzek `0c4faac` — `effectiveTopUpPasses=1`, Pangea bootstrap 40–60 + grid stride 2, Duży `mainGridStride` 2).
+
+**Objaw:** część rzek **urywa bieg na suchym lądzie** zamiast domknąć się ujściem w **inną rzekę** albo **ocean**; nieczytelne początek/koniec biegu.
+
+**Kanon (reguła mapy):** jeśli rzeka startuje, bieg trwa aż do **ujścia** — połączenie z inną rzeką **lub** oceanem. Brak „sierot" w polu.
+
+**Constraint (~19:17, wspólny z perf):** „efekt rzek był całkiem nie najgorszy" — **gęstość/wygląd po FALA 138 OK**; przy naprawie ciągłości **nie wyzerować gęstości** ani nie cofać efektu wizualnego — naprawić **ciągłość do ujścia**, zachować gęstość.
+
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-UJSCIE-FALA138` · sibling perf: `BUG-RZEKI-PERF-FALA138` · historia ujść: `RZEKI-DIAGNOZA-UJSCIA.md`, `BUG-RZEKI-DOPLYWY` (WDROŻONE 2026-07-29).
 
 ---
 
