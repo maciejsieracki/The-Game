@@ -49,6 +49,7 @@ import {
   buildStyleCoastSandEdges,
   buildStyleCoastWaterCap,
   buildStyleLandCoastSandCap,
+  computeRiverMouthEdgeKeys,
   computeRiverDeltaHexKeys,
   landCoastSandNeeded,
   buildStyleDune,
@@ -1117,7 +1118,7 @@ function buildRiverPointsFromHexPath(
 /** Jedna ciągła wstęga na trasę riverPaths — rogi i środki krawędzi (NIE przez środek heksa).
  * hex.rzeka.krawedzie zostaje dla logiki gry; render idzie po pełnej ścieżce.
  */
-function renderLandRiversFromPaths(
+async function renderLandRiversFromPaths(
   map: GameMap,
   paths: Array<Array<{ q: number; r: number }>>,
   kinds: Array<'main' | 'medium' | 'short' | 'tributary' | undefined>,
@@ -1130,14 +1131,18 @@ function renderLandRiversFromPaths(
   riverEntries: RiverEntry[],
   riverMat: THREE.Material,
   renderOrder: number,
-): Set<string> {
+  onSlice?: (done: number, total: number) => void,
+): Promise<Set<string>> {
   const landHexKeys = new Set<string>();
+  const pathTotal = paths.length;
 
   for (let pi = 0; pi < paths.length; pi++) {
     const path = paths[pi]!;
     if (path.length < 2) continue;
+    if (path.length > 512) continue;
     const landPath = landRiverRenderPath(map.hexes, path);
     if (landPath.length < 2) continue;
+    if (landPath.length > 480) continue;
 
     const kind = kinds[pi] ?? 'main';
     const landLen = landPath.length;
@@ -1156,7 +1161,7 @@ function renderLandRiversFromPaths(
       map, landPath, R, renderStyle, riverMouthY, surfaceOffset, new Set<string>(),
       reachesSea,
     );
-    if (pts.length < 2) continue;
+    if (pts.length < 2 || pts.length > RIVER_RIBBON_MAX_PTS) continue;
 
     // Jedna trasa = jeden wpis fog (nie scalać wszystkich rzek mapy w jeden mesh).
     const pathBucket: RiverGeoBucket = {
@@ -1167,7 +1172,12 @@ function renderLandRiversFromPaths(
     pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, true);
     flushRiverBucket(scene, pathBucket, riverEntries, pointHex);
     for (const k of hexKeys) landHexKeys.add(k);
+    if (pi > 0 && pi % 6 === 0) {
+      onSlice?.(pi + 1, pathTotal);
+      await c3NextFrame();
+    }
   }
+  onSlice?.(pathTotal, pathTotal);
   return landHexKeys;
 }
 
@@ -1249,7 +1259,9 @@ const C3_MARKER = 'civ-scene-chunked-c3';
 /** Budżet czasu na jedną porcję głównej pętli (ms) — po przekroczeniu oddaj klatkę. */
 const C3_CHUNK_TIME_BUDGET_MS = 14;
 /** Twardy limit heksów na porcję (bezpiecznik gdy zegar jest gruby/zamrożony). */
-const C3_CHUNK_MAX_HEXES = 4000;
+const C3_CHUNK_MAX_HEXES = 1200;
+/** Maks. punktów wstęgi rzeki — degenerate path po bootstrap FALA 135. */
+const RIVER_RIBBON_MAX_PTS = 6000;
 
 /** Oddaj jedną klatkę (rAF) — pozwala przeglądarce odświeżyć overlay i nie zawiesić się. */
 function c3NextFrame(): Promise<void> {
@@ -1766,6 +1778,7 @@ export async function buildScene(
   const seaVisEarly = terrainVis(TerenBazowy.Morze, renderStyle);
   const seaSurfaceY = seaVisEarly.height + seaVisEarly.yOffset;
   const deltaHexKeys = renderStyle === 'roblox' ? computeRiverDeltaHexKeys(map) : new Set<string>();
+  const cachedMouthEdges = renderStyle === 'roblox' ? computeRiverMouthEdgeKeys(map) : undefined;
 
   // C3 — główna pętla po heksach rozbita na porcje (chunki). Materializujemy listę
   // heksów RAZ i iterujemy po indeksie, żeby zachować DOKŁADNIE tę samą kolejność co
@@ -2050,7 +2063,7 @@ export async function buildScene(
       // Wybrzeże = jasnoniebieska tafla (D-COAST-2); piasek tylko na lądzie (landCoastSandCap).
       const water = buildStyleCoastWaterCap(
         renderStyle, map, hexQ, hexR, x, z, seaSurfaceY, R,
-        { lite: robloxLite, deltaKeys: deltaHexKeys, isDelta },
+        { lite: robloxLite, deltaKeys: deltaHexKeys, isDelta, mouthEdges: cachedMouthEdges },
       );
       if (water.children.length > 0) coastGroup.add(water);
       if (coastGroup.children.length > 0) {
@@ -2215,13 +2228,13 @@ export async function buildScene(
       (c3ChunkCount >= C3_CHUNK_MAX_HEXES ||
         performance.now() - c3ChunkStart >= C3_CHUNK_TIME_BUDGET_MS)
     ) {
-      onProgress?.(((c3i + 1) / c3Total) * 100);
+      onProgress?.(((c3i + 1) / c3Total) * 80);
       await c3NextFrame();
       c3ChunkStart = performance.now();
       c3ChunkCount = 0;
     }
   }
-  onProgress?.(100);
+  onProgress?.(80);
 
   // Aktualizuj bufor instancji + przycinaj count do faktycznie użytych instancji
   for (const t of terrainTypes) {
@@ -2276,11 +2289,18 @@ export async function buildScene(
   // FPS lewar 1+3: każda grupa styledOverlays (wybrzeże/plaże/wydmy/oazy — po ~5-20 boxów/heks,
   // skalują się z rozmiarem mapy) → 1 zmergowany mesh + zamrożona macierz. Fog działa bez zmian
   // (własny materiał vertexColors → applyFogDimToObject3D dimuje per-grupa jak dotąd).
-  for (const { group } of styledOverlays) {
+  const overlayTotal = styledOverlays.length;
+  for (let oi = 0; oi < overlayTotal; oi++) {
+    const { group } = styledOverlays[oi]!;
     collapseToMergedMesh(group);
     group.matrixAutoUpdate = false;
     group.updateMatrix();
+    if (oi > 0 && oi % 20 === 0) {
+      onProgress?.(80 + (oi / Math.max(1, overlayTotal)) * 10);
+      await c3NextFrame();
+    }
   }
+  onProgress?.(90);
   beachMesh.count = beachIdx;
   beachMesh.instanceMatrix.needsUpdate = true;
   duneMesh.count = duneIdx;
@@ -2320,9 +2340,12 @@ export async function buildScene(
   // renderOrder 58 > land 55 > cap-overlay (0/1) i > lejek (coastDeltaBucket 50).
   const RIVER_MOUTH_RENDER_ORDER = 58;
 
-  const landHexKeysAll = renderLandRiversFromPaths(
+  const landHexKeysAll = await renderLandRiversFromPaths(
     map, paths, pathKinds, R, renderStyle, riverMouthY, RIVER_SURFACE_OFFSET,
     RIVER_MAIN_HALF_WIDTH, scene, riverEntries, riverWaterMat, LAND_RIVER_RENDER_ORDER,
+    (done, total) => {
+      onProgress?.(90 + (done / Math.max(1, total)) * 8);
+    },
   );
   for (const k of landHexKeysAll) riverHexKeys.push(k);
 
@@ -2352,7 +2375,11 @@ export async function buildScene(
       flushRiverBucket(scene, coastRiverBucket, riverEntries);
       flushRiverBucket(scene, coastRiverDeltaTopBucket, riverEntries);
     }
+    if (pi > 0 && pi % 8 === 0) {
+      await c3NextFrame();
+    }
   }
+  onProgress?.(100);
 
   // ---------------------------------------------------------------------------
   // F1 — ocean wokol kontynentu + ramka swiata (plansza)

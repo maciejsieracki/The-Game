@@ -1455,8 +1455,9 @@ function coastEdgeNeedsSand(self: TerenBazowy, neighbor: TerenBazowy | null): bo
 
 /**
  * Krawędź ujścia rzeki (ląd→Wybrzeże) — tylko tam pomijamy piasek.
+ * Wywołaj RAZ na mapę w buildScene (nie per heks wybrzeża — inaczej O(heksy×ścieżki)).
  */
-function riverMouthEdgeKeys(map: GameMap): Set<string> {
+export function computeRiverMouthEdgeKeys(map: GameMap): Set<string> {
   const keys = new Set<string>();
   for (const path of map.riverPaths ?? []) {
     if (path.length < 1) continue;
@@ -1497,6 +1498,7 @@ export function buildStyleCoastSandEdges(
   style: MapRenderStyle,
   p: CoastSandParams,
   lite = false,
+  mouthEdges?: Set<string>,
 ): THREE.Group {
   const g = new THREE.Group();
   if (style !== 'roblox') return g;
@@ -1506,7 +1508,7 @@ export function buildStyleCoastSandEdges(
   const edgeLen = R * 1.02;
   const stripDepth = lite ? R * 0.10 : R * 0.12;
   const stripH = R * 0.065;
-  const mouthEdges = riverMouthEdgeKeys(map);
+  const edges = mouthEdges ?? computeRiverMouthEdgeKeys(map);
 
   for (const [dq, dr] of AXIAL_NEIGHBORS) {
     const lq = q + dq;
@@ -1514,7 +1516,7 @@ export function buildStyleCoastSandEdges(
     const nbHex = map.hexes[`${lq},${lr}`];
     const nbTeren = nbHex?.terenBazowy ?? null;
     if (!coastEdgeNeedsSand(self, nbTeren)) continue;
-    if (mouthEdges.has(`${lq},${lr}|${q},${r}`)) continue;
+    if (edges.has(`${lq},${lr}|${q},${r}`)) continue;
 
     const nbWorld = axialToWorld(lq, lr, R);
     const dx = nbWorld.x - x;
@@ -1552,7 +1554,7 @@ export function buildStyleCoastWaterCap(
   z: number,
   seaTopY: number,
   R: number,
-  opts: { lite?: boolean; deltaKeys?: Set<string>; isDelta?: boolean } = {},
+  opts: { lite?: boolean; deltaKeys?: Set<string>; isDelta?: boolean; mouthEdges?: Set<string> } = {},
 ): THREE.Group {
   const g = new THREE.Group();
   if (style !== 'roblox') return g;
@@ -1564,7 +1566,7 @@ export function buildStyleCoastWaterCap(
   const isDelta = opts.isDelta ?? opts.deltaKeys?.has(`${q},${r}`) ?? false;
   const stripDepth = isDelta ? R * 0.62 : R * 0.50;
   const stripH = lite ? 0.028 : 0.038;
-  const mouthEdges = riverMouthEdgeKeys(map);
+  const mouthEdges = opts.mouthEdges ?? computeRiverMouthEdgeKeys(map);
 
   // Płytkie wypełnienie heksu (po ukryciu pryzmatu Wybrzeże — bez „dziur” do głębokiej tafli).
   if (!isDelta) {
