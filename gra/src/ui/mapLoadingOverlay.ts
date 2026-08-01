@@ -2,8 +2,9 @@
  * mapLoadingOverlay.ts — panel postępu generacji mapy (DYSPOZYCJA-WYDAJNOSC C2 + C2b).
  */
 import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
+import { MAP_GEN_PHASE_TOTAL } from '../map/mapGenProgress';
 
-const MAP_LOADING_PHASE_TOTAL = 7;
+const MAP_LOADING_PHASE_TOTAL = MAP_GEN_PHASE_TOTAL;
 
 export interface MapLoadingOverlayHandle {
   setProgress: (faza: string, pct: number, phaseNum?: number, phaseTotal?: number) => void;

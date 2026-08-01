@@ -80,7 +80,7 @@ function generujSwiatInWorker(
   });
 }
 
-/** Fallback: sync generacja z yield przed/po — NIE między fazami (TODO etap B: async generateMap). */
+/** Fallback: sync generacja z yield przed/po — postęp z generateMap/generujSwiat. */
 async function generujSwiatOnMainWithYields(
   seed: number | undefined,
   rozmiar: RozmiarSwiata,
@@ -88,14 +88,8 @@ async function generujSwiatOnMainWithYields(
   genOpts?: WorldGenOptions,
   onProgress?: MapGenProgressCallback,
 ): Promise<GameMapWithStarts> {
-  let lastPct = -1;
-  const wrapped: MapGenProgressCallback = (faza, pct, phaseNum, phaseTotal) => {
-    onProgress?.(faza, pct, phaseNum, phaseTotal);
-    if (pct !== lastPct) lastPct = pct;
-  };
   await yieldMain();
-  const map = generujSwiat(seed, rozmiar, typ, genOpts, wrapped);
+  const map = generujSwiat(seed, rozmiar, typ, genOpts, onProgress);
   await yieldMain();
-  onProgress?.('Pozycje startowe', 100, 6, 7);
   return map;
 }

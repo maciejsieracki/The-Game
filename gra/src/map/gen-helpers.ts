@@ -5798,7 +5798,7 @@ function finalizeTributaryPath(
   if (out.length >= 2) {
     const junction = out[out.length - 1]!;
     const approach = out[out.length - 2]!;
-    const down = networkDownstreamNeighbor(hexes, junction, approach);
+    const down = networkDownstreamNeighbor(hexes, junction, approach, riverPaths);
     out = appendJunctionDownstreamHex(out, down);
   }
   if (pathEndsAtSea(hexes, out, width, height, oceanConnected)) return out;
@@ -5826,7 +5826,7 @@ function finalizeShortPath(
   if (out.length >= 2) {
     const junction = out[out.length - 1]!;
     const approach = out[out.length - 2]!;
-    const down = networkDownstreamNeighbor(hexes, junction, approach);
+    const down = networkDownstreamNeighbor(hexes, junction, approach, riverPaths);
     out = appendJunctionDownstreamHex(out, down);
   }
   const ocean = oceanConnected;
@@ -5857,10 +5857,12 @@ function networkDownstreamNeighbor(
   hexes: Record<string, Hex>,
   junction: RiverCoord,
   approach: RiverCoord | undefined,
+  riverPaths?: RiverCoord[][],
 ): RiverCoord | undefined {
   const jh = hexes[hexKey(junction.q, junction.r)];
   const edges = jh?.rzeka?.krawedzie;
   if (!edges || edges.length === 0) return undefined;
+  const candidates: RiverCoord[] = [];
   for (const edgeIdx of edges) {
     const dir = HEX_DIRECTIONS[edgeIdx];
     if (!dir) continue;
@@ -5868,9 +5870,33 @@ function networkDownstreamNeighbor(
     const nr = junction.r + dir[1];
     if (approach && nq === approach.q && nr === approach.r) continue;
     const nh = hexes[hexKey(nq, nr)];
-    if (nh?.rzeka?.obecna && nh.terenBazowy !== TerenBazowy.Morze) return { q: nq, r: nr };
+    if (nh?.rzeka?.obecna && nh.terenBazowy !== TerenBazowy.Morze) {
+      candidates.push({ q: nq, r: nr });
+    }
   }
-  return undefined;
+  if (candidates.length === 0) return undefined;
+
+  // Preferuj sąsiada leżący na JUŻ oznakowanej ścieżce sieci (kontynuacja nurtu głównego).
+  if (riverPaths && riverPaths.length > 0) {
+    const junctionKey = hexKey(junction.q, junction.r);
+    for (const path of riverPaths) {
+      for (let i = 0; i < path.length - 1; i++) {
+        const a = path[i]!;
+        const b = path[i + 1]!;
+        const ak = hexKey(a.q, a.r);
+        const bk = hexKey(b.q, b.r);
+        if (ak === junctionKey) {
+          const hit = candidates.find((c) => c.q === b.q && c.r === b.r);
+          if (hit) return hit;
+        }
+        if (bk === junctionKey) {
+          const hit = candidates.find((c) => c.q === a.q && c.r === a.r);
+          if (hit) return hit;
+        }
+      }
+    }
+  }
+  return candidates[0];
 }
 
 /** Usuwa oznaczenia rzeki z otwartego oceanu (bezpiecznik po generacji). */
