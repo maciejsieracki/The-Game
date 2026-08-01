@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `85767de4` - 2026-08-01 12:52 - FALA 130: rzeki od oceanu + sep 3 + bez relief + bez petli + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `2cb47461` - 2026-08-01 13:35 - FALA 131: postep UI 10 etapow + zbiegi rzek + granice panstw + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `2cb4746134631f9da988eeb78f5fdf4c` · stempel: `ROBOCZA · 2026-08-01 13:35`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: realne etapy postępu generacji mapy (10 faz zamiast fałszywego 1/6); wizualne zbiegi rzek na wspólnej krawędzi hex; granice państw — pas 0.45 + gradient opacity INNER 0.5 → EDGE 0.7.
+- Commity: `2237ffe` · `d6a4928` · `88ef15b` · `33616f1`. tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta). Perf Pangea (WIP gen-helpers) **nie** weszła — stash `WIP pangea-perf`.
+
+## ROBOCZA `85767de4` - 2026-08-01 12:52 - FALA 130: rzeki od oceanu + sep 3 + bez relief + bez petli + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `85767de44be01e9d45500c382c97f83f` · stempel: `ROBOCZA · 2026-08-01 12:52`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: start od oceanu w głąb; min 3 hex między main; bez wymogu góry/wzgórza; zakaz zamkniętych pętli.
