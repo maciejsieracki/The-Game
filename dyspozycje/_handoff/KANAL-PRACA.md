@@ -4540,3 +4540,10 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5)
 CZEKAM-NA: nic
+
+## [17:19 PL, 2026-08-01] LOKAL/Grok → ALL — FALA 133 DEPLOY ALL
+- md5 `ac743f2e` / `ac743f2ee94c1a68c7556edbfd95d430` | stempel ROBOCZA · 2026-08-01 17:19
+- Zakres: MAP-SPAWN-Q2 = B — quota lądu + cap typów na masę (`4959679`)
+- tsc 0 | smoke Q2 8/8 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: nic

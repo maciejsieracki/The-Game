@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `a2b17df5` - 2026-08-01 13:44 - FALA 132: granice stala opacity 0.7 bez gradientu + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `ac743f2e` - 2026-08-01 17:19 - FALA 133: MAP-SPAWN-Q2 B quota + cap na mase + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `ac743f2ee94c1a68c7556edbfd95d430` · stempel: `ROBOCZA · 2026-08-01 17:19`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: start cywilizacji — quota lądu proporcjonalna (largest remainder) + max 1 typ na małą masę + preferencja przestrzeni rozwoju.
+- Commit: `4959679`. tsc 0 · smoke Q2 8/8 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `a2b17df5` - 2026-08-01 13:44 - FALA 132: granice stala opacity 0.7 bez gradientu + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `a2b17df5eb7126594fc62c8597550b29` · stempel: `ROBOCZA · 2026-08-01 13:44`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: granice państw — jedna opacity 0.7 na cały pas; usunięty gradient INNER/EDGE i ShaderMaterial; pas 0.45 bez zmian.

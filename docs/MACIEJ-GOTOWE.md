@@ -1,3 +1,5 @@
+- **2026-08-01 17:19** — ✅ FALA 133 ROBOCZA `ac743f2e` (MAP-SPAWN-Q2 B: quota lądu + cap na masę + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+
 - **2026-08-01 13:44** — ✅ FALA 132 ROBOCZA `a2b17df5` (granice stała opacity 70% bez gradientu + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5).
 
 - **2026-08-01 13:35** — ✅ FALA 131 ROBOCZA `2cb47461` (postęp UI 10 etapów + zbiegi rzek + granice państw + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**). Perf Pangea jeszcze nie weszła.
