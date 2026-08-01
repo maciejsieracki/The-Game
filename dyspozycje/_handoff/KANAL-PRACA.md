@@ -4504,3 +4504,10 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
 CZEKAM-NA: nic
+
+## [10:16 PL, 2026-08-01] LOKAL/Grok → ALL — FALA 128 DEPLOY ALL
+- md5 `58755ecf` / `58755ecf53bcb4d2e637fbbb8002552a` | stempel ROBOCZA · 2026-08-01 10:16
+- Zakres: poluzowane reguly rzek (`5eb6234`) — stride 1, suchy plat z reliefem, fill przez wzgorza
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: nic

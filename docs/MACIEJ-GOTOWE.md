@@ -1,3 +1,5 @@
+- **2026-08-01 10:16** — ✅ FALA 128 ROBOCZA `58755ecf` (poluzowane reguły rzek + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+
 - **2026-08-01 09:56** — ✅ FALA 127 ROBOCZA `490884f4` (rzeki 10×10 + dyplo NAP/pokój/portret + Glinianka + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
 
 - **2026-08-01 00:06** — ✅ FALA 126 ROBOCZA `f37ec466` (3 etapy rzek + inland + LOD3 + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
