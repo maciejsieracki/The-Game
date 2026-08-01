@@ -124,12 +124,30 @@ function ensureStyles(): void {
   cursor:pointer;font:inherit;
 }
 .civ-map-load-retry:hover{background:var(--bg-sel);}
+.civ-map-load-err{
+  color:#ff6b6b;font-size:.85rem;margin:.65rem 0 0;
+  white-space:pre-wrap;word-break:break-word;max-height:28vh;overflow:auto;
+}
 `;
   document.head.appendChild(style);
 }
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/** Tekst błędu do UI — nigdy goły „null” / „undefined”. */
+export function formatCaughtError(err: unknown): string {
+  if (err == null) return 'nieznany błąd (odrzucone null/undefined)';
+  if (err instanceof Error) {
+    const msg = err.message?.trim();
+    if (msg && msg !== 'null' && msg !== 'undefined') return msg;
+    if (err.stack) return err.stack.split('\n').slice(0, 4).join('\n');
+    return err.name || 'Error (brak message)';
+  }
+  const s = String(err);
+  if (s === 'null' || s === 'undefined') return `odrzucone: ${s}`;
+  return s;
 }
 
 /** Canvas 3D pod overlayem — bez tego klik czasem trafia w renderer zamiast w panel. */

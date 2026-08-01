@@ -1421,7 +1421,12 @@ function reportSceneProgress(
   pct: number,
   phaseLabel: string,
 ): void {
-  onProgress?.(pct, phaseLabel);
+  if (!onProgress) return;
+  try {
+    onProgress(pct, phaseLabel);
+  } catch (err) {
+    console.warn('[civ] buildScene onProgress threw', err);
+  }
 }
 
 type RiverPathKind = 'main' | 'medium' | 'short' | 'tributary';
@@ -2581,12 +2586,18 @@ export async function buildScene(
   const overlayMergeT0 = performance.now();
   reportSceneProgress(onProgress, 83, SCENE_BUILD_PHASE_LABELS.overlays);
   for (let oi = 0; oi < overlayTotal; oi++) {
-    const { group, kind } = styledOverlays[oi]!;
-    const heavy = (kind === 'forest' && !skipForestCollapse)
-      || countMeshesInGroup(group) >= OVERLAY_COLLAPSE_MIN_MESHES;
-    if (heavy) collapseToMergedMesh(group);
-    group.matrixAutoUpdate = false;
-    group.updateMatrix();
+    try {
+      const entry = styledOverlays[oi];
+      if (!entry) continue;
+      const { group, kind } = entry;
+      const heavy = (kind === 'forest' && !skipForestCollapse)
+        || countMeshesInGroup(group) >= OVERLAY_COLLAPSE_MIN_MESHES;
+      if (heavy) collapseToMergedMesh(group);
+      group.matrixAutoUpdate = false;
+      group.updateMatrix();
+    } catch (err) {
+      console.warn('[civ] overlay item failed', oi, err);
+    }
     if (
       oi > 0 && oi < overlayTotal - 1
       && (oi % overlayYieldStep === 0 || performance.now() - overlayChunkStart >= C3_CHUNK_TIME_BUDGET_MS)

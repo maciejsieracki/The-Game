@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `fe9559c2` - 2026-08-02 01:36 - FALA 157: twardy panel #civ-perf-report inline + html mount + retry - **AKTUALNA**
+## ROBOCZA `b9230e56` - 2026-08-02 00:45 - FALA 158: buildScene catch + perf panel przy błędzie + overlay hardening - **AKTUALNA**
+- md5 (pelne): `b9230e56dc237fc09e2379bcc79e67e3` · stempel: `ROBOCZA · 2026-08-02 00:45`
+- **VERIFY OK.** runBuildSceneWithOverlay: catch → hide overlay + #civ-perf-report z error; formatCaughtError (nigdy „null"); overlay loop try/catch; onProgress guarded.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `fe9559c2` - 2026-08-02 01:36 - FALA 157: twardy panel #civ-perf-report inline + html mount + retry - **ZASTAPIONA**
 - md5 (pelne): `fe9559c214d449a091ba4071d281f36f` · stempel: `ROBOCZA · 2026-08-02 01:36`
 - **VERIFY OK.** Panel na documentElement (nie body — zoom scale psuje fixed); z-index max; inline styles; retry 0+500ms; [civ-perf] console; 20s auto.
 - tsc 0 · VERIFY OK.

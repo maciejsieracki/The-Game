@@ -57,15 +57,15 @@ import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
-import { buildScene, getLastSetFogMs, type SceneBuildTimings } from './render/scene';
-import { showMapLoadingOverlay, type MapLoadingOverlayHandle } from './ui/mapLoadingOverlay';
+import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
+import { showMapLoadingOverlay, type MapLoadingOverlayHandle, formatCaughtError } from './ui/mapLoadingOverlay';
 import { showSceneTimingReport } from './ui/sceneTimingReport';
 import type { MapGenPhaseTimings } from './map/mapGenProgress';
 
 /** Po buildScene: ukryj overlay ładowania + nieblokujący raport czasów (gra startuje od razu). */
 function finishLoadingAfterSceneBuild(
   loading: MapLoadingOverlayHandle,
-  report?: { mapGen?: MapGenPhaseTimings; scene?: SceneBuildTimings; typLabel?: string },
+  report?: { mapGen?: MapGenPhaseTimings; scene?: SceneBuildTimings; typLabel?: string; error?: string },
   sourcePath = 'finishLoadingAfterSceneBuild',
 ): void {
   loading.hide();
@@ -74,6 +74,7 @@ function finishLoadingAfterSceneBuild(
     scene: report?.scene,
     typLabel: report?.typLabel,
     sourcePath,
+    error: report?.error,
   };
   // Synchronicznie w tym samym ticku — panel na documentElement (nie body: zoom scale psuje fixed).
   showSceneTimingReport(payload);
@@ -21441,6 +21442,55 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** buildScene + overlay postępu; przy błędzie: hide overlay + panel perf z error (FALA 158). */
+    async function runBuildSceneWithOverlay(
+      loading: MapLoadingOverlayHandle,
+      typLabel: string | undefined,
+      sourcePath: string,
+      phasePrefix = 'Budowanie sceny',
+    ): Promise<SceneResult | null> {
+      try {
+        const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
+          loading.setProgress(
+            phase ? `${phasePrefix} — ${phase}` : `${phasePrefix}…`,
+            pct,
+          );
+        });
+        finishLoadingAfterSceneBuild(loading, {
+          mapGen: map.mapGenTimings,
+          scene: newSceneResult.buildTimings,
+          typLabel,
+        }, sourcePath);
+        return newSceneResult;
+      } catch (err) {
+        console.error('[civ] buildScene failed', sourcePath, err);
+        finishLoadingAfterSceneBuild(loading, {
+          mapGen: map.mapGenTimings,
+          typLabel,
+          error: formatCaughtError(err),
+        }, sourcePath);
+        return null;
+      }
+    }
+
+    function applySceneResult(newSceneResult: SceneResult): void {
+      scene = newSceneResult.scene;
+      camera = newSceneResult.camera;
+      renderer = newSceneResult.renderer;
+      center = newSceneResult.center;
+      setFog = newSceneResult.setFog;
+      hideDecorAtHex = newSceneResult.hideDecorAtHex;
+      syncForestForUnits = newSceneResult.syncForestForUnits;
+      setZoomLod = newSceneResult.setZoomLod;
+      getZoomLodLevel = newSceneResult.getZoomLodLevel;
+      terrainPickMeshes = newSceneResult.terrainPickMeshes;
+      resolveTerrainPick = newSceneResult.resolveTerrainPick;
+      disposeScene = newSceneResult.dispose;
+      cultureRangeGroup = null;
+      religionRangeGroup = null;
+      territoryBorderGroup = null;
+    }
+
     /** Regeneruje mapę + scenę 3D (bez resetu stanu gry — do wczytywania sejwu). */
     async function regenerateWorldForLoad(
       params: NewGameParams,
@@ -21471,29 +21521,14 @@ async function boot(): Promise<void> {
         ensureDepositEraMeta(map.hexes);
         disposeOkolicaOverlay();
         try { disposeScene(); } catch { /* ignore */ }
-        const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
-          loading.setProgress(phase ? `Przywracanie widoku mapy — ${phase}` : 'Przywracanie widoku mapy…', pct);
-        });
-        finishLoadingAfterSceneBuild(loading, {
-          mapGen: map.mapGenTimings,
-          scene: newSceneResult.buildTimings,
-          typLabel: params.worldType || _menuTypSwiata,
-        });
-        scene = newSceneResult.scene;
-        camera = newSceneResult.camera;
-        renderer = newSceneResult.renderer;
-        center = newSceneResult.center;
-        setFog = newSceneResult.setFog;
-        hideDecorAtHex = newSceneResult.hideDecorAtHex;
-        syncForestForUnits = newSceneResult.syncForestForUnits;
-        setZoomLod = newSceneResult.setZoomLod;
-        getZoomLodLevel = newSceneResult.getZoomLodLevel;
-        terrainPickMeshes = newSceneResult.terrainPickMeshes;
-        resolveTerrainPick = newSceneResult.resolveTerrainPick;
-        disposeScene = newSceneResult.dispose;
-        cultureRangeGroup = null;
-        religionRangeGroup = null;
-        territoryBorderGroup = null;
+        const newSceneResult = await runBuildSceneWithOverlay(
+          loading,
+          params.worldType || _menuTypSwiata,
+          'regenerateWorldForLoad',
+          'Przywracanie widoku mapy',
+        );
+        if (!newSceneResult) return false;
+        applySceneResult(newSceneResult);
         try { camCtrl.dispose(); } catch { /* ignore */ }
         camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
         unitRenderer = new UnitRenderer(scene, map);
@@ -21505,8 +21540,11 @@ async function boot(): Promise<void> {
         refreshBuildApi();
         return true;
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        loading.showError(msg || 'Błąd wczytywania zapisu', () => { loading.hide(); });
+        finishLoadingAfterSceneBuild(loading, {
+          mapGen: map?.mapGenTimings,
+          typLabel: params.worldType || _menuTypSwiata,
+          error: formatCaughtError(err),
+        }, 'regenerateWorldForLoad');
         return false;
       }
     }
@@ -21556,8 +21594,7 @@ async function boot(): Promise<void> {
           loading.setProgress(faza, pct, phaseNum, phaseTotal);
         });
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        loading.showError(msg || 'Błąd generacji mapy', () => { loading.hide(); void doStartGame(params); });
+        loading.showError(formatCaughtError(err) || 'Błąd generacji mapy', () => { loading.hide(); void doStartGame(params); });
         return;
       }
       map = newMap;
@@ -21566,31 +21603,13 @@ async function boot(): Promise<void> {
       // Rebuild scene with new map (dispose old scene first)
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore if dispose fails */ }
-      // C3: buildScene budowany porcjami (chunki) — overlay zostaje na ekranie i
-      // pokazuje „Budowanie sceny… N%"; ukryj DOPIERO po zbudowaniu sceny.
-      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
-        loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
-      });
-      finishLoadingAfterSceneBuild(loading, {
-        mapGen: map.mapGenTimings,
-        scene: newSceneResult.buildTimings,
-        typLabel: params.worldType || _menuTypSwiata,
-      });
-      scene = newSceneResult.scene;
-      camera = newSceneResult.camera;
-      renderer = newSceneResult.renderer;
-      center = newSceneResult.center;
-      setFog = newSceneResult.setFog;
-      hideDecorAtHex = newSceneResult.hideDecorAtHex;
-      syncForestForUnits = newSceneResult.syncForestForUnits;
-      setZoomLod = newSceneResult.setZoomLod;
-      getZoomLodLevel = newSceneResult.getZoomLodLevel;
-      terrainPickMeshes = newSceneResult.terrainPickMeshes;
-      resolveTerrainPick = newSceneResult.resolveTerrainPick;
-      disposeScene = newSceneResult.dispose;
-      cultureRangeGroup = null;
-      religionRangeGroup = null;
-      territoryBorderGroup = null;
+      const newSceneResult = await runBuildSceneWithOverlay(
+        loading,
+        params.worldType || _menuTypSwiata,
+        'doStartGame',
+      );
+      if (!newSceneResult) return;
+      applySceneResult(newSceneResult);
 
       // Rebuild camera controller with new scene center
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
@@ -21838,31 +21857,17 @@ async function boot(): Promise<void> {
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
-      // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
-      // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
-      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
-        loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
-      });
-      finishLoadingAfterSceneBuild(loading, {
-        mapGen: map.mapGenTimings,
-        scene: newSceneResult.buildTimings,
-        typLabel: params.worldType || _menuTypSwiata,
-      });
-      scene = newSceneResult.scene;
-      camera = newSceneResult.camera;
-      renderer = newSceneResult.renderer;
-      center = newSceneResult.center;
-      setFog = newSceneResult.setFog;
-      hideDecorAtHex = newSceneResult.hideDecorAtHex;
-      syncForestForUnits = newSceneResult.syncForestForUnits;
-      setZoomLod = newSceneResult.setZoomLod;
-      getZoomLodLevel = newSceneResult.getZoomLodLevel;
-      terrainPickMeshes = newSceneResult.terrainPickMeshes;
-      resolveTerrainPick = newSceneResult.resolveTerrainPick;
-      disposeScene = newSceneResult.dispose;
-      cultureRangeGroup = null;
-      religionRangeGroup = null;
-      territoryBorderGroup = null;
+      const newSceneResult = await runBuildSceneWithOverlay(
+        loading,
+        params.worldType || _menuTypSwiata,
+        'doStartPlaytestWalkaMapy',
+      );
+      if (!newSceneResult) {
+        playtestWalkaActive = false;
+        showMainMenu();
+        return;
+      }
+      applySceneResult(newSceneResult);
 
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
@@ -22071,31 +22076,17 @@ async function boot(): Promise<void> {
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
-      // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
-      // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
-      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
-        loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
-      });
-      finishLoadingAfterSceneBuild(loading, {
-        mapGen: map.mapGenTimings,
-        scene: newSceneResult.buildTimings,
-        typLabel: 'Kontynenty',
-      });
-      scene = newSceneResult.scene;
-      camera = newSceneResult.camera;
-      renderer = newSceneResult.renderer;
-      center = newSceneResult.center;
-      setFog = newSceneResult.setFog;
-      hideDecorAtHex = newSceneResult.hideDecorAtHex;
-      syncForestForUnits = newSceneResult.syncForestForUnits;
-      setZoomLod = newSceneResult.setZoomLod;
-      getZoomLodLevel = newSceneResult.getZoomLodLevel;
-      terrainPickMeshes = newSceneResult.terrainPickMeshes;
-      resolveTerrainPick = newSceneResult.resolveTerrainPick;
-      disposeScene = newSceneResult.dispose;
-      cultureRangeGroup = null;
-      religionRangeGroup = null;
-      territoryBorderGroup = null;
+      const newSceneResult = await runBuildSceneWithOverlay(
+        loading,
+        'Kontynenty',
+        'doStartPlaytestMiasto',
+      );
+      if (!newSceneResult) {
+        playtestMiastoActive = false;
+        showMainMenu();
+        return;
+      }
+      applySceneResult(newSceneResult);
 
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
@@ -22275,31 +22266,16 @@ async function boot(): Promise<void> {
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
-      // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
-      // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
-      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
-        loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
-      });
-      finishLoadingAfterSceneBuild(loading, {
-        mapGen: map.mapGenTimings,
-        scene: newSceneResult.buildTimings,
-        typLabel: 'Kontynenty',
-      });
-      scene = newSceneResult.scene;
-      camera = newSceneResult.camera;
-      renderer = newSceneResult.renderer;
-      center = newSceneResult.center;
-      setFog = newSceneResult.setFog;
-      hideDecorAtHex = newSceneResult.hideDecorAtHex;
-      syncForestForUnits = newSceneResult.syncForestForUnits;
-      setZoomLod = newSceneResult.setZoomLod;
-      getZoomLodLevel = newSceneResult.getZoomLodLevel;
-      terrainPickMeshes = newSceneResult.terrainPickMeshes;
-      resolveTerrainPick = newSceneResult.resolveTerrainPick;
-      disposeScene = newSceneResult.dispose;
-      cultureRangeGroup = null;
-      religionRangeGroup = null;
-      territoryBorderGroup = null;
+      const newSceneResult = await runBuildSceneWithOverlay(
+        loading,
+        'Kontynenty',
+        'doStartPlaytestMapaSwiata',
+      );
+      if (!newSceneResult) {
+        showMainMenu();
+        return;
+      }
+      applySceneResult(newSceneResult);
 
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());

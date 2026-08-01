@@ -4688,7 +4688,7 @@ CZEKAM-NA: Maciej print screen Pangea vs Kontynenty (panel prawy gorny)
 - md5 `5614b30a` / `5614b30ad26cea36c05a3d38066286ba` | stempel ROBOCZA 2026-08-02 01:00
 - Fix: z-index 3_000_002 (nad overlay), min 15s lub X, rAF po hide overlay, fallback brak mapGen, RAZEM gen+scena
 - tsc 0 | vite build OK | VERIFY OK
-CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra — panel prawy gorny min 15s
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra  panel prawy gorny min 15s
 
 ## [01:36 PL, 2026-08-02] LOKAL/Composer -> ALL FALA 157 twardy panel #civ-perf-report
 - md5 fe9559c2 / fe9559c214d449a091ba4071d281f36f | stempel ROBOCZA 2026-08-02 01:36
@@ -4697,3 +4697,8 @@ CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra — panel prawy gorny min 15s
 - tsc 0 | vite build OK | VERIFY OK
 CZEKAM-NA: Maciej Ctrl+F5 + Nowa gra Normalna - zolty panel prawy gorny 20s
 
+## [00:45 PL, 2026-08-02] LOKAL/Composer -> ALL FALA 158 buildScene error + perf przy fail
+- md5 b9230e56 / b9230e56dc237fc09e2379bcc79e67e3 | stempel ROBOCZA 2026-08-02 00:45
+- Fix: runBuildSceneWithOverlay catch -> hide overlay + #civ-perf-report z error; formatCaughtError; overlay loop try/catch; onProgress guarded
+- tsc 0 | vite build OK | START.html b9230e56
+CZEKAM-NA: Maciej Ctrl+F5 gra-robocza/START.html + Normalna (nie Duza)

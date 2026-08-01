@@ -28,6 +28,8 @@ export interface SceneTimingReportOptions {
   hideAfterMs?: number;
   /** Ścieżka wywołania — diagnostyka gdy brak danych. */
   sourcePath?: string;
+  /** Błąd buildScene — panel i tak się pokazuje (FALA 158). */
+  error?: string;
 }
 
 function esc(s: string): string {
@@ -51,6 +53,7 @@ function buildTextSummary(opts: SceneTimingReportOptions): string {
   const s = opts.scene ?? emptySceneTimings();
   const gen = opts.mapGen;
   const lines: string[] = [];
+  if (opts.error) lines.push(`BŁĄD: ${opts.error}`);
   if (opts.typLabel) lines.push(`${opts.typLabel} · ${s.hexCount} heksów · nakładek ${s.overlayTotal}`);
   lines.push('GENERATOR:');
   if (gen) {
@@ -80,7 +83,7 @@ function buildTextSummary(opts: SceneTimingReportOptions): string {
 function buildHtml(opts: SceneTimingReportOptions): string {
   const s = opts.scene ?? emptySceneTimings();
   const gen = opts.mapGen;
-  const hasData = !!gen || (s.total > 0) || !!s.detail;
+  const hasData = !!gen || (s.total > 0) || !!s.detail || !!opts.error;
 
   if (!hasData) {
     const path = opts.sourcePath ?? 'showSceneTimingReport';
@@ -151,7 +154,12 @@ function buildHtml(opts: SceneTimingReportOptions): string {
   const grand = (gen?.total ?? 0) + s.total;
   const grandRow = row('RAZEM (generator + scena)', grand, true);
 
-  return `${meta}`
+  const errBlock = opts.error
+    ? `<div style="color:#ff6b6b;font-weight:bold;margin-bottom:8px;white-space:pre-wrap;word-break:break-word;">`
+      + `BŁĄD buildScene:<br>${esc(opts.error)}</div>`
+    : '';
+
+  return `${errBlock}${meta}`
     + `<div style="color:#f5c542;font-weight:bold;font-size:13px;margin-bottom:4px;">Czasy ładowania</div>`
     + genBlock
     + `<div style="color:#f5c542;font-weight:bold;margin:8px 0 4px;">SCENA (ms)</div>`
