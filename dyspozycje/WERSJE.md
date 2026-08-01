@@ -14,14 +14,17 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `c7e95b62` - 2026-08-02 00:00 - FALA 153: fix timing OK button (pointerdown + auto-dismiss 8s) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `d3a11217` - 2026-08-02 00:12 - FALA 154: timing panel OK klik + auto 3s + canvas block + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `d3a11217a5a22dd9ba75569500557d8d` · stempel: `ROBOCZA · 2026-08-02 00:12`
+- **VERIFY OK.** Panel czasow: z-index 3M, canvas pointer-events:none, OK/Enter/Escape, auto 3s.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `c7e95b62` - 2026-08-02 00:00 - FALA 153: fix timing OK button (pointerdown + auto-dismiss 8s) + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `c7e95b62aeb46cfac740d2773b4742b9` · stempel: `ROBOCZA · 2026-08-02 00:00`
 - **VERIFY OK.** Panel czasow sceny: OK reaguje na pointerdown; auto-znikniecie po 8 s.
 - tsc 0 · VERIFY OK.
 ## ROBOCZA `6c8a1f92` - 2026-08-01 23:52 - FALA 152: czasy sceny NA EKRANIE (print screen) + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `6c8a1f92accad4df6a2bdfa564516088` · stempel: `ROBOCZA · 2026-08-01 23:52`
 - **VERIFY OK.** Po Budowanie sceny: panel Heksy/Brzeg/Nakladki/Rzeki/Final/RAZEM → print screen → OK.
-- tsc 0 · VERIFY OK.
 ## ROBOCZA `ed322ecd` - 2026-08-01 23:48 - FALA 151: buildScene ms jako jedna linia tekstu + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `ed322ecdca71eef54173fa20555c1479` · stempel: `ROBOCZA · 2026-08-01 23:48`
 - **VERIFY OK.** Console: `[civ] buildScene ms | hexes=… coast=… overlays=… total=…` (bez rozwijania obiektu).

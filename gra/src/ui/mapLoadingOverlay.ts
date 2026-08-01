@@ -58,7 +58,7 @@ function ensureStyles(): void {
   style.textContent = `
 .civ-map-load-overlay{
   ${CIV_BRAND_SCOPE_VARS}
-  position:fixed;inset:0;z-index:2000000;
+  position:fixed;inset:0;z-index:3000000;
   background:rgba(8,12,18,.92);
   display:flex;align-items:center;justify-content:center;
   font-family:var(--civ-font-ui,system-ui,sans-serif);
@@ -66,6 +66,8 @@ function ensureStyles(): void {
   pointer-events:auto;
 }
 .civ-map-load-panel{
+  position:relative;
+  z-index:3000001;
   min-width:min(420px,92vw);
   padding:1.75rem 2rem;
   background:var(--bg-card);
@@ -73,6 +75,7 @@ function ensureStyles(): void {
   border-radius:var(--radius-lg);
   box-shadow:0 12px 48px rgba(0,0,0,.45);
   text-align:center;
+  pointer-events:auto;
 }
 .civ-map-load-title{
   font-family:var(--civ-font-title,serif);
@@ -129,7 +132,7 @@ function ensureStyles(): void {
 .civ-map-load-ok{
   display:inline-block;
   position:relative;
-  z-index:2;
+  z-index:3000002;
   margin-top:0.5rem;
   padding:0.7rem 1.6rem;
   font-size:1.1rem;
@@ -141,6 +144,7 @@ function ensureStyles(): void {
   cursor:pointer;
   pointer-events:auto;
   touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
 }
 .civ-map-load-ok:hover{ filter:brightness(1.08); }
 .civ-map-load-bar{
@@ -175,6 +179,25 @@ function ensureStyles(): void {
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
+/** Canvas 3D pod overlayem — bez tego klik czasem trafia w renderer zamiast w panel. */
+function blockCanvasPointerEvents(): void {
+  document.querySelectorAll('canvas').forEach((el) => {
+    const c = el as HTMLCanvasElement;
+    if (!c.dataset.civMapLoadPe) c.dataset.civMapLoadPe = c.style.pointerEvents || '';
+    c.style.pointerEvents = 'none';
+  });
+}
+
+function restoreCanvasPointerEvents(): void {
+  document.querySelectorAll('canvas').forEach((el) => {
+    const c = el as HTMLCanvasElement;
+    c.style.pointerEvents = c.dataset.civMapLoadPe ?? '';
+    delete c.dataset.civMapLoadPe;
+  });
+}
+
+const SCENE_TIMING_AUTO_MS = 3000;
 
 function overlayCopy(opts: MapLoadingOverlayOptions): { title: string; meta: string; hint: string; phaseStart: string } {
   const sizePart = opts.mapSizeMetric ?? opts.rozmiarLabel;
@@ -221,6 +244,7 @@ export function showMapLoadingOverlay(opts: MapLoadingOverlayOptions): MapLoadin
       <div id="civ-map-load-err-wrap"></div>
     </div>`;
   document.body.appendChild(root);
+  blockCanvasPointerEvents();
 
   const phaseEl = root.querySelector('#civ-map-load-phase') as HTMLParagraphElement;
   const elapsedEl = root.querySelector('#civ-map-load-elapsed') as HTMLParagraphElement;
@@ -262,17 +286,24 @@ export function showMapLoadingOverlay(opts: MapLoadingOverlayOptions): MapLoadin
     showSceneTimingReport(t: SceneTimingReport) {
       return new Promise<void>((resolve) => {
         let done = false;
+        let autoTimer = 0;
+        const cleanup = (): void => {
+          window.clearTimeout(autoTimer);
+          window.removeEventListener('keydown', onKey);
+        };
         const finish = (): void => {
           if (done) return;
           done = true;
-          window.clearTimeout(autoTimer);
+          cleanup();
           resolve();
         };
         spinEl.style.display = 'none';
         const barWrap = barEl.parentElement as HTMLElement | null;
         if (barWrap) barWrap.style.display = 'none';
-        phaseEl.textContent = 'Czasy budowania sceny — print screen, potem OK (albo poczekaj 8 s)';
+        elapsedEl.style.display = 'none';
+        phaseEl.textContent = 'Czasy budowania sceny — OK lub Enter (auto za 3 s)';
         errWrap.innerHTML = '';
+        errWrap.style.pointerEvents = 'auto';
         const box = document.createElement('div');
         box.className = 'civ-map-load-timing';
         box.textContent =
@@ -290,22 +321,28 @@ export function showMapLoadingOverlay(opts: MapLoadingOverlayOptions): MapLoadin
         btn.type = 'button';
         btn.className = 'civ-map-load-ok';
         btn.textContent = 'OK — graj';
-        // pointerdown+click+touch — canvas/HUD czasem zjada zwykły click.
         const onActivate = (ev: Event): void => {
-          ev.preventDefault();
           ev.stopPropagation();
           finish();
         };
-        btn.addEventListener('pointerdown', onActivate, { once: true });
-        btn.addEventListener('click', onActivate, { once: true });
+        btn.addEventListener('pointerdown', onActivate);
+        btn.addEventListener('pointerup', onActivate);
+        btn.addEventListener('click', onActivate);
+        const onKey = (ev: KeyboardEvent): void => {
+          if (ev.key === 'Enter' || ev.key === 'Escape') {
+            ev.preventDefault();
+            finish();
+          }
+        };
+        window.addEventListener('keydown', onKey);
         errWrap.append(box, btn);
-        // Auto-dalej po 8 s — żeby nie utknąć gdy klik nie dochodzi.
-        const autoTimer = window.setTimeout(finish, 8000);
+        autoTimer = window.setTimeout(finish, SCENE_TIMING_AUTO_MS);
         try { btn.focus(); } catch { /* ignore */ }
       });
     },
     hide() {
       window.clearInterval(elapsedTimer);
+      restoreCanvasPointerEvents();
       root.remove();
     },
   };
