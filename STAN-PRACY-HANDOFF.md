@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`0b70e93f`** (FALA 141, 21:06) — Budowanie sceny: coast InstancedMesh + shared geo (`6556fa7`). Poprzedni: FALA 140 `935d1642`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
+**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`2b524ff0`** (FALA 143, 22:45) — Pangea Budowanie sceny (`isDenseLandmassMap` + batch rzek + skip forest collapse). Poprzedni: FALA 142 `2b1e072c` (ląd% + spawn). Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
 
 **ZAMKNIĘTE (2026-08-01 ~20:58):** regresja czasu głównych rzek — Maciej na FALA 140 `935d1642`: **~20 s OK** (było **>2 min**). Zapis: `PYTANIA-OTWARTE.md` → `BUG-RZEKI-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138`.
 

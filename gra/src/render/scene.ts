@@ -51,6 +51,7 @@ import {
   computeRiverDeltaHexKeys,
   landCoastSandNeeded,
   isSceneBuildFastPath,
+  isDenseLandmassMap,
   findLandCoastSandCandidates,
   createCoastInstBuffers,
   collectRobloxCoastWaterInst,
@@ -1164,11 +1165,16 @@ async function renderLandRiversFromPaths(
   riverMat: THREE.Material,
   renderOrder: number,
   onSlice?: (done: number, total: number) => void,
+  opts?: { batchAllPaths?: boolean; batchSize?: number; ribbonSegments?: number },
 ): Promise<Set<string>> {
   const landHexKeys = new Set<string>();
   const pathTotal = paths.length;
+  const batchAll = opts?.batchAllPaths ?? false;
+  const batchSize = opts?.batchSize ?? RIVER_BATCH_PATHS;
+  const ribbonSegs = opts?.ribbonSegments ?? 8;
   let batchBucket: RiverGeoBucket | null = null;
   let batchCount = 0;
+  let sliceStart = performance.now();
 
   const flushBatch = (): void => {
     if (!batchBucket || batchBucket.geos.length === 0) return;
@@ -1205,27 +1211,29 @@ async function renderLandRiversFromPaths(
     if (pts.length < 2 || pts.length > RIVER_RIBBON_MAX_PTS) continue;
 
     const isMain = kind === 'main';
-    if (isMain) {
+    if (isMain && !batchAll) {
       flushBatch();
       // Główna rzeka: osobny mesh + pointHex (mgła per-heks na wstędze).
       const pathBucket: RiverGeoBucket = {
         mat: riverMat, geos: [], hexKeys: new Set(), renderOrder,
       };
-      pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, true);
+      pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, ribbonSegs, true);
       flushRiverBucket(scene, pathBucket, riverEntries, pointHex);
     } else {
-      // Medium/short/tributary: batch — setki tras po FALA 138 → jeden merge zamiast N meshy.
+      // Medium/short/tributary (lub Pangea: wszystkie batched → jeden merge).
       if (!batchBucket) {
         batchBucket = { mat: riverMat, geos: [], hexKeys: new Set(), renderOrder };
       }
-      pushRiverMesh(batchBucket, pts, hexKeys, halfWidth, 8, true);
+      pushRiverMesh(batchBucket, pts, hexKeys, halfWidth, ribbonSegs, true);
       batchCount++;
-      if (batchCount >= RIVER_BATCH_PATHS) flushBatch();
+      if (batchCount >= batchSize) flushBatch();
     }
     for (const k of hexKeys) landHexKeys.add(k);
-    if (pi > 0 && pi % 12 === 0) {
+    const yieldEvery = batchAll ? 6 : 12;
+    if (pi > 0 && (pi % yieldEvery === 0 || performance.now() - sliceStart >= C3_CHUNK_TIME_BUDGET_MS)) {
       onSlice?.(pi + 1, pathTotal);
       await c3NextFrame();
+      sliceStart = performance.now();
     }
   }
   flushBatch();
@@ -1316,6 +1324,8 @@ const C3_CHUNK_MAX_HEXES = 1200;
 const RIVER_RIBBON_MAX_PTS = 6000;
 /** FALA 138 perf: scala medium/short w jeden mesh co N tras (mgła per hexKeys, nie pointHex). */
 const RIVER_BATCH_PATHS = 32;
+/** Pangea / gęsta sieć rzek: większy batch + rzadsze mergeGeometries. */
+const RIVER_BATCH_PATHS_DENSE = 64;
 /** Brzeg/plaża: 1–6 boxów — merge per-heks to O(hex×wierzchołki) bez zysku FPS; scalaj tylko cięższe (oaza, las). */
 const OVERLAY_COLLAPSE_MIN_MESHES = 7;
 
@@ -1370,6 +1380,8 @@ export async function buildScene(
       : null) !== '0';
   const preset = resolveRenderPreset(renderOptions, hexCount);
   const robloxLite = preset.robloxLite;
+  /** Pangea (jedna masa): gęsta sieć rzek + ~2× dekoracji lądowej vs Kontynenty — skróty końcówki buildScene. */
+  const denseLandmass = isDenseLandmassMap(map);
   /** Duży/Pangea (~40k+): pomija piasek lądu przy brzegu i oazy 3D — Standard (~20k) nietknięty. */
   const sceneBuildFast = isSceneBuildFastPath(hexCount);
   // GRAFIKA-3D: jakość dekoracji ulepszeń (stadnina 1/2 konie itp.) wg ustawienia gracza.
@@ -2388,12 +2400,17 @@ export async function buildScene(
   // FPS lewar 1+3: ciężkie grupy styledOverlays (oaza ~348 tri, las dżungli) → 1 mesh.
   // Lekki brzeg (1–6 boxów/heks) — BEZ merge: FALA 139 robił collapse na każdym z ~5–15k
   // overlayów wybrzeża = minuty CPU (O(hex×wierzchołki)); draw calli brzegu akceptowalne.
+  // Pangea: ~2× lasów vs Kontynenty — collapse per-heks lasu = minuty; pomijamy gdy robloxLite.
   const overlayTotal = styledOverlays.length;
-  const overlayYieldStep = overlayTotal > 8000 ? 15 : overlayTotal > 3000 ? 25 : overlayTotal > 1500 ? 40 : 80;
+  const skipForestCollapse = robloxLite && (denseLandmass || overlayTotal > 2000);
+  const overlayYieldStep = denseLandmass
+    ? (overlayTotal > 4000 ? 8 : overlayTotal > 2000 ? 12 : 20)
+    : overlayTotal > 8000 ? 15 : overlayTotal > 3000 ? 25 : overlayTotal > 1500 ? 40 : 80;
   let overlayChunkStart = performance.now();
   for (let oi = 0; oi < overlayTotal; oi++) {
     const { group, kind } = styledOverlays[oi]!;
-    const heavy = kind === 'forest' || countMeshesInGroup(group) >= OVERLAY_COLLAPSE_MIN_MESHES;
+    const heavy = (kind === 'forest' && !skipForestCollapse)
+      || countMeshesInGroup(group) >= OVERLAY_COLLAPSE_MIN_MESHES;
     if (heavy) collapseToMergedMesh(group);
     group.matrixAutoUpdate = false;
     group.updateMatrix();
@@ -2452,9 +2469,21 @@ export async function buildScene(
     (done, total) => {
       onProgress?.(90 + (done / Math.max(1, total)) * 8);
     },
+    denseLandmass ? {
+      batchAllPaths: true,
+      batchSize: RIVER_BATCH_PATHS_DENSE,
+      ribbonSegments: 6,
+    } : undefined,
   );
   for (const k of landHexKeysAll) riverHexKeys.push(k);
 
+  let coastChunkStart = performance.now();
+  let coastDone = 0;
+  let coastTotal = 0;
+  for (let pi = 0; pi < paths.length; pi++) {
+    if ((pathKinds[pi] ?? 'main') !== 'main') continue;
+    if (pathReachesOpenSeaRender(map, paths[pi]!)) coastTotal++;
+  }
   for (let pi = 0; pi < paths.length; pi++) {
     const path = paths[pi]!;
     if (path.length < 2) continue;
@@ -2480,10 +2509,16 @@ export async function buildScene(
       flushRiverBucket(scene, coastDeltaBucket, riverEntries);
       flushRiverBucket(scene, coastRiverBucket, riverEntries);
       flushRiverBucket(scene, coastRiverDeltaTopBucket, riverEntries);
-    }
-    if (pi > 0 && pi % 4 === 0) {
-      onProgress?.(98 + (pi / Math.max(1, paths.length)) * 2);
-      await c3NextFrame();
+      coastDone++;
+      const coastYieldEvery = denseLandmass ? 2 : 4;
+      if (
+        coastDone % coastYieldEvery === 0
+        || performance.now() - coastChunkStart >= C3_CHUNK_TIME_BUDGET_MS
+      ) {
+        onProgress?.(98 + (coastDone / Math.max(1, coastTotal)) * 2);
+        await c3NextFrame();
+        coastChunkStart = performance.now();
+      }
     }
   }
   onProgress?.(100);

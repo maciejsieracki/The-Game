@@ -1,4 +1,9 @@
-- **2026-08-01 22:38** � ? FALA 142 ROBOCZA `2b1e072c` (l�d% + spawn MP/ownerId + p�p�aszczyzna A + ~10 hex od morza). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**). Scena Pangea = osobny patch (nie wesz�a).- **2026-08-01 21:11** — ⏸️ Maciej: gęstość rzek **OK** (*„ilość generowanych rzek jest zadowalająca"*); problem = **ostatni etap = Budowanie sceny** (nie generowanie). Kill-switch rzek stage 0–5 → **ODŁOŻONY**. BUG-SCENA-PERF → W TRAKCIE (FALA 141); BUG-RZEKI-PERF → ZAMKNIĘTE (~20 s).
+- **2026-08-01 22:45** ? ? FALA 143 ROBOCZA `2b524ff0` (Pangea Budowanie sceny: dense landmass + batch rzek + skip forest collapse). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** Standard�Pangea ? czas ostatniego etapu).
+
+- **2026-08-01 22:38** ? ? FALA 142 ROBOCZA `2b1e072c` (l?d% + spawn MP/ownerId + p�?p?aszczyzna A + ~10 hex od morza). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+
+- **2026-08-01 21:11** ? ?? Maciej: g?sto?? rzek **OK**; problem = **Budowanie sceny** (nie generowanie). Kill-switch rzek ? OD?O?ONY. BUG-SCENA-PERF ? FALA 143.
+
 
 - **2026-08-01 21:06** — ✅ FALA 141 ROBOCZA `0b70e93f` (coast InstancedMesh + shared geo — Budowanie sceny + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**). Sprawdź czas sceny + wygląd brzegu/ujść.
 

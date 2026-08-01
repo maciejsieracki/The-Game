@@ -58,6 +58,23 @@ export function isSceneBuildFastPath(hexCount: number): boolean {
   return hexCount >= SCENE_BUILD_FAST_HEX_THRESHOLD;
 }
 
+/**
+ * Pangea (jedna masa ~60% lądu): gęsta sieć rzek + dużo dekoracji lądowej vs Kontynenty (~30%).
+ * Kontynenty Standard ~40–80 ścieżek; Pangea Standard ~180–350+.
+ */
+export function isDenseLandmassMap(map: GameMap): boolean {
+  const paths = map.riverPaths?.length ?? 0;
+  if (paths >= 120) return true;
+  if (paths < 80) return false;
+  let land = 0;
+  const hexCount = Object.keys(map.hexes).length;
+  for (const h of Object.values(map.hexes)) {
+    const t = h.terenBazowy;
+    if (t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) land++;
+  }
+  return land / Math.max(1, hexCount) > 0.50;
+}
+
 export interface ResolvedRenderPreset {
   robloxLite: boolean;
   antialias: boolean;

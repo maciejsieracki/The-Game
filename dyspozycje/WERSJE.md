@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `2b1e072c` - 2026-08-01 22:38 - FALA 142: ląd% + spawn MP/ownerId + półpłaszczyzna A + ~10 hex od morza + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `2b524ff0` - 2026-08-01 22:45 - FALA 143: Pangea Budowanie sceny (dense landmass) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `2b524ff05b4b1af28d4fd3a97b87a20b` · stempel: `ROBOCZA · 2026-08-01 22:45`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: `isDenseLandmassMap` (≥120 riverPaths lub ≥80 + >50% lądu); Pangea: skip forest collapse (robloxLite), batch ALL rzek (64), ribbonSegs 6, gęstsze yield overlay/ujść. Kontynenty bez zmian ścieżki.
+- tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `2b1e072c` - 2026-08-01 22:38 - FALA 142: ląd% + spawn MP/ownerId + półpłaszczyzna A + ~10 hex od morza + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `2b1e072c1b915bf53faf6a478ac0a680` · stempel: `ROBOCZA · 2026-08-01 22:38`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: `enforceTargetDryLandFraction` (suwak 20/40/60%); ownerId rivals vs obce MP; `assignTypesToClusterCenters`; `capitalMinSeaDist` Standard=10; SPAWN-EXPANSION-ARC-Q1=A (półpłaszczyzna MP). **Bez** fixu sceny Pangea (patch odłożony).
