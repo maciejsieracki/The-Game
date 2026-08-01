@@ -60,7 +60,7 @@ import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMap
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
 import { showMapLoadingOverlay, type MapLoadingOverlayHandle, formatCaughtError } from './ui/mapLoadingOverlay';
 import { showSceneTimingReport } from './ui/sceneTimingReport';
-import { ensurePerfReportChip } from './ui/perfReport';
+import { ensurePerfReportChip, type PostSceneStepMs } from './ui/perfReport';
 import type { MapGenPhaseTimings } from './map/mapGenProgress';
 
 /** Ukryj overlay + raport czasów dopiero gdy cały start mapy gotowy (plik + chip HUD). */
@@ -74,6 +74,7 @@ function finishMapLoadWithPerfReport(
     ksztaltLabel?: string;
     mapGenHandoffMs?: number;
     postSceneMs?: number;
+    postSceneSteps?: PostSceneStepMs[];
     wallClockMs?: number;
     error?: string;
   },
@@ -96,6 +97,7 @@ function finishMapLoadWithPerfReport(
     ksztaltLabel: report?.ksztaltLabel ?? report?.typLabel,
     mapGenHandoffMs: report?.mapGenHandoffMs,
     postSceneMs: report?.postSceneMs,
+    postSceneSteps: report?.postSceneSteps,
     wallClockMs: report?.wallClockMs,
     sourcePath,
     error: report?.error,
@@ -105,20 +107,24 @@ function finishMapLoadWithPerfReport(
 
 const yieldMainThread = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 
-/** Post-scene: aktualizuj overlay + yield żeby widać który podkrok wisi (FALA 162). */
-async function postSceneStep(
+/** Post-scene: overlay postępu (FALA 163). */
+async function postSceneProgress(
   loading: MapLoadingOverlayHandle,
   label: string,
   step: number,
   total: number,
-  prevT0?: number,
-): Promise<number> {
-  if (prevT0 !== undefined) {
-    console.info(`[civ-perf] postScene — ${label}: ${Math.round(performance.now() - prevT0)} ms`);
-  }
+): Promise<void> {
   loading.setProgress(`Po scenie — ${label}`, Math.round((step / total) * 100), step, total);
   await yieldMainThread();
-  return performance.now();
+}
+
+function endPostSceneStep(
+  label: string,
+  timings: PostSceneStepMs[],
+  stepWall: { t: number },
+): void {
+  timings.push({ label, ms: Math.round(performance.now() - stepWall.t) });
+  stepWall.t = performance.now();
 }
 import {
   CIV_PERF_DEBUG_MARKER,
@@ -1773,23 +1779,20 @@ async function boot(): Promise<void> {
 
     /**
      * rebuildResourceOverlays = O(n) × buildStyledResourceOverlay × collapseToMergedMesh.
-     * Na Standard (~20k hex) to ~100+ s synchronicznie — ZAWSZE po hide overlay (FALA 162).
+     * Na Standard (~20k hex) to ~100+ s synchronicznie — ZAWSZE po hide overlay (FALA 163).
+     * FALA 162 błąd: requestIdleCallback(timeout:2s) odpalał się WEWNĄTRZ pomiaru postScene
+     * (yield między podkrokami) — stąd nadal ~119 s mimo „defer”.
      */
-    function scheduleDeferredResourceOverlays(): void {
-      const run = (): void => {
+    function runDeferredResourceOverlaysAfterHide(): void {
+      window.setTimeout(() => {
         const t0 = performance.now();
         const n = rebuildResourceOverlays();
         syncLivestockAndPlacedMeshes();
         refreshFog();
         console.info(
-          `[civ-perf] deferred resourceOverlays: ${n} meshes in ${Math.round(performance.now() - t0)} ms`,
+          `[civ-perf] deferred resourceOverlays (post-hide): ${n} meshes in ${Math.round(performance.now() - t0)} ms`,
         );
-      };
-      if (typeof requestIdleCallback !== 'undefined') {
-        requestIdleCallback(() => run(), { timeout: 2000 });
-      } else {
-        setTimeout(run, 32);
-      }
+      }, 0);
     }
 
     function syncResourceOverlayFog(vis: Set<string>, exploredKeys: Set<string>): void {
@@ -21710,21 +21713,24 @@ async function boot(): Promise<void> {
 
       const postSceneT0 = performance.now();
       const POST_SCENE_STEPS = 9;
-      let postStep = 0;
-      let postT = performance.now();
+      const postSceneSteps: PostSceneStepMs[] = [];
+      const stepWall = { t: performance.now() };
 
-      postT = await postSceneStep(loading, 'init sceny', ++postStep, POST_SCENE_STEPS, postT);
+      await postSceneProgress(loading, 'init sceny', 1, POST_SCENE_STEPS);
       applySceneResult(newSceneResult);
+      endPostSceneStep('init sceny', postSceneSteps, stepWall);
 
-      postT = await postSceneStep(loading, 'kamera', ++postStep, POST_SCENE_STEPS, postT);
+      await postSceneProgress(loading, 'kamera', 2, POST_SCENE_STEPS);
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
+      endPostSceneStep('kamera', postSceneSteps, stepWall);
 
-      postT = await postSceneStep(loading, 'renderery jednostek', ++postStep, POST_SCENE_STEPS, postT);
+      await postSceneProgress(loading, 'renderery jednostek', 3, POST_SCENE_STEPS);
       unitRenderer = new UnitRenderer(scene, map);
       wireUnitRendererRingStance();
+      endPostSceneStep('renderery jednostek', postSceneSteps, stepWall);
 
-      postT = await postSceneStep(loading, 'renderery miast', ++postStep, POST_SCENE_STEPS, postT);
+      await postSceneProgress(loading, 'renderery miast', 4, POST_SCENE_STEPS);
       cityRenderer = new CityRenderer(scene, map);
       hideSiegeMapPanel();
       hideCityAttackChoice();
@@ -21733,12 +21739,14 @@ async function boot(): Promise<void> {
       siegeBesiegerByCity.clear();
       siegeAiStateByKey.clear();
       militiaDefOverrides.clear();
+      endPostSceneStep('renderery miast', postSceneSteps, stepWall);
 
-      postT = await postSceneStep(loading, 'markery oblężenia i cuda', ++postStep, POST_SCENE_STEPS, postT);
+      await postSceneProgress(loading, 'markery oblężenia i cuda', 5, POST_SCENE_STEPS);
       siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
       wonderRenderer = new WonderRenderer(scene, map);
+      endPostSceneStep('markery oblężenia i cuda', postSceneSteps, stepWall);
 
-      postT = await postSceneStep(loading, 'reset stanu gry', ++postStep, POST_SCENE_STEPS, postT);
+      await postSceneProgress(loading, 'reset stanu gry', 6, POST_SCENE_STEPS);
       // Reset stanu przed klastrem
       cities.length = 0;
       tradeRoutes.length = 0;
@@ -21829,12 +21837,13 @@ async function boot(): Promise<void> {
       for (const mesh of improvementMeshes.values()) scene.remove(mesh);
       improvementMeshes.clear();
 
-      postT = await postSceneStep(loading, 'plan klastra startowego', ++postStep, POST_SCENE_STEPS, postT);
+      await postSceneProgress(loading, 'plan klastra startowego', 7, POST_SCENE_STEPS);
       applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates, { skipRenderRefresh: true });
       initAllAiOwnersForNewGame(params.epochId || 'kamien');
       reconcileAllOwnerErasFromResearch();
+      endPostSceneStep('plan klastra startowego', postSceneSteps, stepWall);
 
-      postT = await postSceneStep(loading, 'mgła startowa', ++postStep, POST_SCENE_STEPS, postT);
+      await postSceneProgress(loading, 'mgła startowa', 8, POST_SCENE_STEPS);
       if (params.startPreview) {
         console.log(
           '[NewGame] StartPreview:',
@@ -21847,24 +21856,15 @@ async function boot(): Promise<void> {
       }
       seedStartingFog();
       refreshBuildApi();
+      endPostSceneStep('mgła startowa', postSceneSteps, stepWall);
 
-      postT = await postSceneStep(loading, 'nakładki zasobów (defer)', ++postStep, POST_SCENE_STEPS, postT);
+      await postSceneProgress(loading, 'nakładki zasobów (defer)', 9, POST_SCENE_STEPS);
       overlayDepositEra = player.era;
-      scheduleDeferredResourceOverlays();
-
-      postT = await postSceneStep(loading, 'synchronizacja HUD', ++postStep, POST_SCENE_STEPS, postT);
-      syncUnitsRender();
-      cityRenderer.sync(cities, _cityRenderOpts());
-      refreshFog();
-      initDiplomaticContactSnapshot();
-      updateHud();
-      refreshMapOverlayToggles();
-
-      syncBasketResearchFromEngine();
-      console.info(`[civ-perf] postScene — synchronizacja HUD: ${Math.round(performance.now() - postT)} ms`);
+      endPostSceneStep('nakładki zasobów (defer)', postSceneSteps, stepWall);
+      for (const st of postSceneSteps) {
+        console.info(`[civ-perf] postScene — ${st.label}: ${st.ms} ms`);
+      }
       console.log('[NewGame] Mapa: ' + map.szerokoscQ + 'x' + map.wysokoscR + ' seed=' + newSeed + ' typ=' + _menuTypSwiata + ' rywale=' + _menuCityStates + ' typy=' + _menuCivTypesCount);
-      beginOnboardingFoundCity();
-      startGameMusic('mapa');
 
       const postSceneMs = Math.round(performance.now() - postSceneT0);
       const wallClockMs = Math.round(performance.now() - loadWallT0);
@@ -21876,9 +21876,22 @@ async function boot(): Promise<void> {
         ksztaltLabel: typLabel,
         mapGenHandoffMs,
         postSceneMs,
+        postSceneSteps,
         wallClockMs,
       }, 'doStartGame');
       startRenderLoop();
+
+      // Po hide: ciężkie operacje POZA pomiarem postScene (FALA 163).
+      syncUnitsRender();
+      cityRenderer.sync(cities, _cityRenderOpts());
+      refreshFog();
+      initDiplomaticContactSnapshot();
+      updateHud();
+      refreshMapOverlayToggles();
+      beginOnboardingFoundCity();
+      startGameMusic('mapa');
+      syncBasketResearchFromEngine();
+      runDeferredResourceOverlaysAfterHide();
     }
 
     async function doStartPlaytestWalkaMapy(): Promise<void> {

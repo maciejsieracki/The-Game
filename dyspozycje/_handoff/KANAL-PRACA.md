@@ -4737,3 +4737,10 @@ CZEKAM-NA: Maciej Ctrl+F5 gra-robocza/START.html - Duza Pangea: overlay post-sce
 - Fix: ZAWSZE defer po hide overlay (nie tylko >=32k); collapse tylko gdy >=7 mesh; syncLivestock w defer; 9 podkrokow [civ-perf] postScene w F12
 - tsc 0 - vite build OK - Gra-ROBOCZA.html OK
 CZEKAM-NA: Maciej Ctrl+F5 - Standardowa Pangea: postScene/finishLoading <<5s; WALL-CLOCK ~gen+scena+kilka s; zloza pojawia sie po 1-2s idle
+
+## [02:45 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 163 post-scene defer PO hide + civ-perf 9 podkrokow
+- md5 `c69a9c82` / `c69a9c8297ef25f1624b4256de9311da` - stempel `ROBOCZA - 2026-08-02 02:45`
+- Dlaczego FALA 162 nie pomogla: kod BYL w bundlu (c153da40 OK), ale requestIdleCallback(timeout:2s) odpalal rebuildResourceOverlays WEWNATRZ pomiaru postScene (yield miedzy podkrokami + krok 10 HUD przed hide)
+- Fix: hide najpierw; overlays+fog+HUD dopiero po hide; civ-perf plik: sekcja POST-SCENE - podkroki (9x ms)
+- tsc 0 - vite build OK - publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 FRESH - Standard Pangea: postScene/finishLoading <5s; plik civ-perf pokazuje ktory podkrok >1s

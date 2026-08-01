@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `c153da40` - 2026-08-02 02:10 - FALA 162: post-scene perf — defer nakładek zasobów (fix 118s Standard) - **AKTUALNA**
+## ROBOCZA `c69a9c82` - 2026-08-02 02:45 - FALA 163: post-scene perf — defer PO hide + 9 podkroków w civ-perf - **AKTUALNA**
+- md5 (pelne): `c69a9c8297ef25f1624b4256de9311da` · stempel: `ROBOCZA · 2026-08-02 02:45`
+- **VERIFY OK (Gra-ROBOCZA.html).** FALA 162 nie pomogła: requestIdleCallback(2s) odpalał rebuildResourceOverlays WEWNĄTRZ pomiaru postScene (yield między krokami). Fix: hide najpierw, ciężkie (overlays+fog+HUD) po hide; civ-perf: POST-SCENE — podkroki (9× ms).
+- tsc 0 · Gra-ROBOCZA.html md5 OK.
+## ROBOCZA `c153da40` - 2026-08-02 02:10 - FALA 162: post-scene perf — defer nakładek zasobów (fix 118s Standard) - **ZASTAPIONA**
 - md5 (pelne): `c153da402b5167c78f7474e8d9a573ef` · stempel: `ROBOCZA · 2026-08-02 02:10`
 - **VERIFY OK (Gra-ROBOCZA.html).** Winowajca: rebuildResourceOverlays+collapse O(n) synchronicznie (~118s Standard Pangea). Fix: ZAWSZE defer po hide; collapse tylko ≥7 mesh; 9 podkroków post-scene.
 - tsc 0 · Gra-ROBOCZA.html md5 OK.

@@ -136,6 +136,14 @@ function buildHtml(opts: SceneTimingReportOptions): string {
       + `<table style="width:100%;border-collapse:collapse;">${postRows}</table>`;
   }
 
+  const steps = opts.postSceneSteps;
+  if (steps?.length) {
+    const stepRows = steps.map((st) => row(st.label, st.ms)).join('');
+    const sumSteps = steps.reduce((a, st) => a + st.ms, 0);
+    postBlock += `<div style="color:#f5c542;font-weight:bold;margin:8px 0 4px;">POST-SCENE — podkroki</div>`
+      + `<table style="width:100%;border-collapse:collapse;">${stepRows}${row('RAZEM podkroki', sumSteps, true)}</table>`;
+  }
+
   const errBlock = opts.error
     ? `<div style="color:#ff6b6b;font-weight:bold;margin-bottom:8px;white-space:pre-wrap;word-break:break-word;">`
       + `BŁĄD buildScene:<br>${esc(opts.error)}</div>`

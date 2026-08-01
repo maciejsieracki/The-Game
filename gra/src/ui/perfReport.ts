@@ -14,6 +14,12 @@ const CHIP_ID = 'civ-perf-chip';
 const MODAL_ID = 'civ-perf-modal';
 const STYLE_ID = 'civ-perf-hud-css';
 
+/** Jedna linia podziału post-scene (FALA 163 — 9 podkroków doStartGame). */
+export interface PostSceneStepMs {
+  label: string;
+  ms: number;
+}
+
 export interface PerfReportPersistOptions {
   mapGen?: MapGenPhaseTimings;
   scene?: SceneBuildTimings;
@@ -25,6 +31,8 @@ export interface PerfReportPersistOptions {
   mapGenHandoffMs?: number;
   /** Wszystko między końcem buildScene a hide overlay (init gry, renderery, mgła…) — ms. */
   postSceneMs?: number;
+  /** Podkroki post-scene (ms każdego z 9) — wskazuje winowajcę bez F12. */
+  postSceneSteps?: PostSceneStepMs[];
   /** Wall-clock od showMapLoadingOverlay do hide — ms. */
   wallClockMs?: number;
 }
@@ -132,6 +140,17 @@ export function buildPerfReportText(opts: PerfReportPersistOptions): string {
     if (wall > 0 && wall > measured + 50) {
       lines.push(`  Niemierzone (wall − suma faz): ${wall - measured} ms`);
     }
+  }
+
+  const steps = opts.postSceneSteps;
+  if (steps?.length) {
+    lines.push('');
+    lines.push('POST-SCENE — podkroki (ms):');
+    for (const st of steps) {
+      lines.push(`  ${st.label}: ${st.ms} ms`);
+    }
+    const sumSteps = steps.reduce((a, st) => a + st.ms, 0);
+    lines.push(`  RAZEM podkroki: ${sumSteps} ms`);
   }
 
   lines.push('');
