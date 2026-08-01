@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `6a8ba59a` - 2026-08-01 23:14 - FALA 147: tylko perf rzek (batch 128, decymacja tributary, ujscia) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `b629a26d` - 2026-08-01 23:24 - FALA 148: swiezy rebuild FALA 147 (ta sama tresc) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `b629a26dbd6aceca18e3480a3b95e590` · stempel: `ROBOCZA · 2026-08-01 23:24`
+- **VERIFY OK.** Ten sam kod co FALA 147 — nowa pieczatka, zeby Maciej widzial swiezy plik (cache/stara sciezka).
+- tsc 0 · VERIFY OK.
+## ROBOCZA `6a8ba59a` - 2026-08-01 23:14 - FALA 147: tylko perf rzek (batch 128, decymacja tributary, ujscia) + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `6a8ba59a6657d1d1bdbe66290411a46f` · stempel: `ROBOCZA · 2026-08-01 23:14`
 - **VERIFY OK.**
 - Zakres: TYLKO tor rzek — batch 128, ribbon 3–4, decymacja medium/tributary, yield ujsc; main+pointHex bez zmian; dekoracje bez zmian.

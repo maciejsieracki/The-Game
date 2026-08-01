@@ -4642,3 +4642,8 @@ CZEKAM-NA: Maciej — widocznosc rzek przed settle (OK/BUG)
 - Zakres: TYLKO perf rzek/ujsc (batch 128, decymacja tributary) — dekoracje nietkniete
 - Graj: gra-robocza/START.html Ctrl+F5 Nowa gra — Duza·Pangea czas Budowanie sceny
 CZEKAM-NA: pomiar Macieja
+
+## [23:24 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 148 DEPLOY (re-stamp)
+- md5 `b629a26d` / `b629a26dbd6aceca18e3480a3b95e590` | stempel ROBOCZA · 2026-08-01 23:24
+- Ten sam kod co 147 — swiezy plik po zgloszeniu „stara wersja”
+CZEKAM-NA: Maciej — w START.html ma byc kod `b629a26d` i czas 23:24
