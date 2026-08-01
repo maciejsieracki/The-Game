@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `64240ff7` - 2026-08-02 01:15 - FALA 160: kill-switch generowania rzek (mapgen) - **AKTUALNA**
+## ROBOCZA `654ac9a0` - 2026-08-02 01:30 - FALA 161: perf raport po pełnym starcie mapy (postScene + wall-clock) - **AKTUALNA**
+- md5 (pelne): `654ac9a0602925e6347fd4769d162802` · stempel: `ROBOCZA · 2026-08-02 01:30`
+- **VERIFY OK.** civ-perf dopiero gdy overlay znika; nowe linie: Przekazanie z workera, Po scenie/finishLoading, WALL-CLOCK; console.info wall-clock.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `64240ff7` - 2026-08-02 01:15 - FALA 160: kill-switch generowania rzek (mapgen) - **ZASTAPIONA**
 - md5 (pelne): `64240ff734d91232f8d70c6dde47f504` · stempel: `ROBOCZA · 2026-08-02 01:15`
 - **VERIFY OK.** getRiverGenEnabled() — domyślnie OFF; ?riverGen=1 / localStorage civ-river-gen. Fazy „Rzeki — główne/uzupełnianie" ~0 ms. Kod rzek zachowany.
 - tsc 0 · VERIFY OK.

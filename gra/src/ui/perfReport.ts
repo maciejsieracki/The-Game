@@ -21,6 +21,12 @@ export interface PerfReportPersistOptions {
   ksztaltLabel?: string;
   typLabel?: string;
   error?: string;
+  /** Czas przekazania mapy z workera (structured clone) ponad sumę faz mapGen — ms. */
+  mapGenHandoffMs?: number;
+  /** Wszystko między końcem buildScene a hide overlay (init gry, renderery, mgła…) — ms. */
+  postSceneMs?: number;
+  /** Wall-clock od showMapLoadingOverlay do hide — ms. */
+  wallClockMs?: number;
 }
 
 function emptySceneTimings(): SceneBuildTimings {
@@ -112,6 +118,22 @@ export function buildPerfReportText(opts: PerfReportPersistOptions): string {
 
   lines.push('');
   lines.push(`RAZEM (generator + scena): ${(gen?.total ?? 0) + s.total} ms`);
+
+  const handoff = opts.mapGenHandoffMs ?? 0;
+  const postScene = opts.postSceneMs ?? 0;
+  const wall = opts.wallClockMs ?? 0;
+  if (handoff > 0 || postScene > 0 || wall > 0) {
+    lines.push('');
+    lines.push('PO SCENIE / CAŁOŚĆ (ms):');
+    if (handoff > 0) lines.push(`  Przekazanie z workera (ponad fazy gen): ${handoff} ms`);
+    if (postScene > 0) lines.push(`  Po scenie / finishLoading: ${postScene} ms`);
+    if (wall > 0) lines.push(`  WALL-CLOCK (Nowa gra → hide overlay): ${wall} ms`);
+    const measured = (gen?.total ?? 0) + s.total + handoff + postScene;
+    if (wall > 0 && wall > measured + 50) {
+      lines.push(`  Niemierzone (wall − suma faz): ${wall - measured} ms`);
+    }
+  }
+
   lines.push('');
   lines.push(`Stempel builda: ${CIV_BUILD_STAMP}`);
 

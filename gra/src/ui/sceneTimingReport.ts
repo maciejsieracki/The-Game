@@ -122,6 +122,20 @@ function buildHtml(opts: SceneTimingReportOptions): string {
   const grand = (gen?.total ?? 0) + s.total;
   const grandRow = row('RAZEM (generator + scena)', grand, true);
 
+  let postBlock = '';
+  const handoff = opts.mapGenHandoffMs ?? 0;
+  const postScene = opts.postSceneMs ?? 0;
+  const wall = opts.wallClockMs ?? 0;
+  if (handoff > 0 || postScene > 0 || wall > 0) {
+    const postRows = [
+      handoff > 0 ? row('Przekazanie z workera', handoff) : '',
+      postScene > 0 ? row('Po scenie / finishLoading', postScene) : '',
+      wall > 0 ? row('WALL-CLOCK → hide', wall, true) : '',
+    ].filter(Boolean).join('');
+    postBlock = `<div style="color:#f5c542;font-weight:bold;margin:8px 0 4px;">PO SCENIE / CAŁOŚĆ (ms)</div>`
+      + `<table style="width:100%;border-collapse:collapse;">${postRows}</table>`;
+  }
+
   const errBlock = opts.error
     ? `<div style="color:#ff6b6b;font-weight:bold;margin-bottom:8px;white-space:pre-wrap;word-break:break-word;">`
       + `BŁĄD buildScene:<br>${esc(opts.error)}</div>`
@@ -133,7 +147,8 @@ function buildHtml(opts: SceneTimingReportOptions): string {
     + `<div style="color:#f5c542;font-weight:bold;margin:8px 0 4px;">SCENA (ms)</div>`
     + `<table style="width:100%;border-collapse:collapse;">${sceneRows}</table>`
     + detailBlock
-    + `<table style="width:100%;border-collapse:collapse;margin-top:6px;">${grandRow}</table>`;
+    + `<table style="width:100%;border-collapse:collapse;margin-top:6px;">${grandRow}</table>`
+    + postBlock;
 }
 
 function mountPanel(opts: SceneTimingReportOptions, hideMs: number): void {

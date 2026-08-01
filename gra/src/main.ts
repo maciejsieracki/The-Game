@@ -63,8 +63,8 @@ import { showSceneTimingReport } from './ui/sceneTimingReport';
 import { ensurePerfReportChip } from './ui/perfReport';
 import type { MapGenPhaseTimings } from './map/mapGenProgress';
 
-/** Po buildScene: ukryj overlay ładowania + trwały raport czasów (plik + chip HUD). */
-function finishLoadingAfterSceneBuild(
+/** Ukryj overlay + raport czasów dopiero gdy cały start mapy gotowy (plik + chip HUD). */
+function finishMapLoadWithPerfReport(
   loading: MapLoadingOverlayHandle,
   report?: {
     mapGen?: MapGenPhaseTimings;
@@ -72,10 +72,21 @@ function finishLoadingAfterSceneBuild(
     typLabel?: string;
     rozmiarLabel?: string;
     ksztaltLabel?: string;
+    mapGenHandoffMs?: number;
+    postSceneMs?: number;
+    wallClockMs?: number;
     error?: string;
   },
-  sourcePath = 'finishLoadingAfterSceneBuild',
+  sourcePath = 'finishMapLoadWithPerfReport',
 ): void {
+  const wall = report?.wallClockMs ?? 0;
+  const postScene = report?.postSceneMs ?? 0;
+  if (wall > 0) {
+    console.info(
+      `[civ-perf] wall-clock Nowa gra → hide overlay: ${wall} ms`
+      + (postScene > 0 ? ` (postScene/finishLoading=${postScene} ms)` : ''),
+    );
+  }
   loading.hide();
   showSceneTimingReport({
     mapGen: report?.mapGen,
@@ -83,11 +94,16 @@ function finishLoadingAfterSceneBuild(
     typLabel: report?.typLabel,
     rozmiarLabel: report?.rozmiarLabel,
     ksztaltLabel: report?.ksztaltLabel ?? report?.typLabel,
+    mapGenHandoffMs: report?.mapGenHandoffMs,
+    postSceneMs: report?.postSceneMs,
+    wallClockMs: report?.wallClockMs,
     sourcePath,
     error: report?.error,
     hideAfterMs: 0,
   });
 }
+
+const yieldMainThread = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 import {
   CIV_PERF_DEBUG_MARKER,
   isPerfDebugOverlayVisible,
@@ -21452,7 +21468,7 @@ async function boot(): Promise<void> {
       };
     }
 
-    /** buildScene + overlay postępu; przy błędzie: hide overlay + panel perf z error (FALA 158). */
+    /** buildScene + overlay postępu; raport perf dopiero w finishMapLoadWithPerfReport (FALA 161). */
     async function runBuildSceneWithOverlay(
       loading: MapLoadingOverlayHandle,
       typLabel: string | undefined,
@@ -21466,17 +21482,10 @@ async function boot(): Promise<void> {
             pct,
           );
         });
-        finishLoadingAfterSceneBuild(loading, {
-          mapGen: map.mapGenTimings,
-          scene: newSceneResult.buildTimings,
-          typLabel,
-          rozmiarLabel: _menuMapSize,
-          ksztaltLabel: typLabel,
-        }, sourcePath);
         return newSceneResult;
       } catch (err) {
         console.error('[civ] buildScene failed', sourcePath, err);
-        finishLoadingAfterSceneBuild(loading, {
+        finishMapLoadWithPerfReport(loading, {
           mapGen: map.mapGenTimings,
           typLabel,
           rozmiarLabel: _menuMapSize,
@@ -21514,6 +21523,7 @@ async function boot(): Promise<void> {
       applyMenuParams({ ...params, seed });
       _gameSeed = seed;
       const rozmiar = rozmiarFromMenuLabel(_menuMapSize);
+      const loadWallT0 = performance.now();
       const loading = showMapLoadingOverlay({
         seed,
         rozmiarLabel: _menuMapSize,
@@ -21521,7 +21531,9 @@ async function boot(): Promise<void> {
         mode: 'load',
         saveLabel,
       });
+      const typLabel = params.worldType || _menuTypSwiata;
       try {
+        const mapGenWallT0 = performance.now();
         map = await generujSwiatAsync(seed, rozmiar, _menuTypSwiata, {
           worldDensity: _menuWorldDensity,
           mapSizeMenuLabel: _menuMapSize,
@@ -21532,17 +21544,22 @@ async function boot(): Promise<void> {
         }, (faza, pct, phaseNum, phaseTotal) => {
           loading.setProgress(faza, pct, phaseNum, phaseTotal);
         });
+        const mapGenHandoffMs = Math.max(0, Math.round(performance.now() - mapGenWallT0) - (map.mapGenTimings?.total ?? 0));
         ensureDepositEraMeta(map.hexes);
         disposeOkolicaOverlay();
         try { disposeScene(); } catch { /* ignore */ }
         const newSceneResult = await runBuildSceneWithOverlay(
           loading,
-          params.worldType || _menuTypSwiata,
+          typLabel,
           'regenerateWorldForLoad',
           'Przywracanie widoku mapy',
         );
         if (!newSceneResult) return false;
+        const postSceneT0 = performance.now();
+        loading.setProgress('Po scenie — przywracanie widoku', 20, 1, 3);
         applySceneResult(newSceneResult);
+        await yieldMainThread();
+        loading.setProgress('Po scenie — jednostki i miasta', 55, 2, 3);
         try { camCtrl.dispose(); } catch { /* ignore */ }
         camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
         unitRenderer = new UnitRenderer(scene, map);
@@ -21552,13 +21569,28 @@ async function boot(): Promise<void> {
         wonderRenderer = new WonderRenderer(scene, map);
         rebuildAllKeys();
         refreshBuildApi();
+        loading.setProgress('Po scenie — finalizacja', 95, 3, 3);
+        await yieldMainThread();
+        const postSceneMs = Math.round(performance.now() - postSceneT0);
+        const wallClockMs = Math.round(performance.now() - loadWallT0);
+        finishMapLoadWithPerfReport(loading, {
+          mapGen: map.mapGenTimings,
+          scene: newSceneResult.buildTimings,
+          typLabel,
+          rozmiarLabel: _menuMapSize,
+          ksztaltLabel: typLabel,
+          mapGenHandoffMs,
+          postSceneMs,
+          wallClockMs,
+        }, 'regenerateWorldForLoad');
         return true;
       } catch (err) {
-        finishLoadingAfterSceneBuild(loading, {
+        finishMapLoadWithPerfReport(loading, {
           mapGen: map?.mapGenTimings,
-          typLabel: params.worldType || _menuTypSwiata,
+          typLabel,
           rozmiarLabel: _menuMapSize,
-          ksztaltLabel: params.worldType || _menuTypSwiata,
+          ksztaltLabel: typLabel,
+          wallClockMs: Math.round(performance.now() - loadWallT0),
           error: formatCaughtError(err),
         }, 'regenerateWorldForLoad');
         return false;
@@ -21592,12 +21624,16 @@ async function boot(): Promise<void> {
       const newSeed = params.seed > 0 ? params.seed : Math.floor(Math.random() * 1e9);
       _gameSeed = newSeed;
       // C1/C2: generacja mapy asynchronicznie w Web Workerze + panel postępu „Tworzenie świata".
+      const loadWallT0 = performance.now();
       const loading = showMapLoadingOverlay({
         seed: newSeed,
         rozmiarLabel: _menuMapSize,
         typLabel: params.worldType || _menuTypSwiata,
       });
+      const typLabel = params.worldType || _menuTypSwiata;
       let newMap;
+      let mapGenHandoffMs = 0;
+      const mapGenWallT0 = performance.now();
       try {
         newMap = await generujSwiatAsync(newSeed, rozmiar, _menuTypSwiata, {
           worldDensity: _menuWorldDensity,
@@ -21613,6 +21649,7 @@ async function boot(): Promise<void> {
         loading.showError(formatCaughtError(err) || 'Błąd generacji mapy', () => { loading.hide(); void doStartGame(params); });
         return;
       }
+      mapGenHandoffMs = Math.max(0, Math.round(performance.now() - mapGenWallT0) - (newMap.mapGenTimings?.total ?? 0));
       map = newMap;
       ensureDepositEraMeta(map.hexes);
 
@@ -21621,13 +21658,18 @@ async function boot(): Promise<void> {
       try { disposeScene(); } catch (_) { /* ignore if dispose fails */ }
       const newSceneResult = await runBuildSceneWithOverlay(
         loading,
-        params.worldType || _menuTypSwiata,
+        typLabel,
         'doStartGame',
       );
       if (!newSceneResult) return;
+
+      const postSceneT0 = performance.now();
+      loading.setProgress('Po scenie — inicjalizacja gry', 10, 1, 4);
       applySceneResult(newSceneResult);
+      await yieldMainThread();
 
       // Rebuild camera controller with new scene center
+      loading.setProgress('Po scenie — kamera i renderery', 30, 2, 4);
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
 
@@ -21644,7 +21686,9 @@ async function boot(): Promise<void> {
       militiaDefOverrides.clear();
       siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
       wonderRenderer = new WonderRenderer(scene, map);
+      await yieldMainThread();
 
+      loading.setProgress('Po scenie — stan gry i starty', 55, 3, 4);
       // Reset stanu przed klastrem
       cities.length = 0;
       tradeRoutes.length = 0;
@@ -21738,7 +21782,9 @@ async function boot(): Promise<void> {
       applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates);
       initAllAiOwnersForNewGame(params.epochId || 'kamien');
       reconcileAllOwnerErasFromResearch();
+      await yieldMainThread();
 
+      loading.setProgress('Po scenie — mgła i HUD', 80, 4, 4);
       if (params.startPreview) {
         console.log(
           '[NewGame] StartPreview:',
@@ -21769,6 +21815,19 @@ async function boot(): Promise<void> {
       console.log('[NewGame] Mapa: ' + map.szerokoscQ + 'x' + map.wysokoscR + ' seed=' + newSeed + ' typ=' + _menuTypSwiata + ' rywale=' + _menuCityStates + ' typy=' + _menuCivTypesCount);
       beginOnboardingFoundCity();
       startGameMusic('mapa');
+
+      const postSceneMs = Math.round(performance.now() - postSceneT0);
+      const wallClockMs = Math.round(performance.now() - loadWallT0);
+      finishMapLoadWithPerfReport(loading, {
+        mapGen: map.mapGenTimings,
+        scene: newSceneResult.buildTimings,
+        typLabel,
+        rozmiarLabel: _menuMapSize,
+        ksztaltLabel: typLabel,
+        mapGenHandoffMs,
+        postSceneMs,
+        wallClockMs,
+      }, 'doStartGame');
       startRenderLoop();
     }
 
@@ -21834,7 +21893,9 @@ async function boot(): Promise<void> {
 
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata" (overlay RAZ przed pętlą retry).
+      const loadWallT0 = performance.now();
       const loading = showMapLoadingOverlay({ seed: playtestSeed, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
+      const mapGenWallT0 = performance.now();
       let newMap = await generujSwiatAsync(playtestSeed, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
         loading.setProgress(faza, pct, phaseNum, phaseTotal);
       });
@@ -21870,6 +21931,7 @@ async function boot(): Promise<void> {
       map = newMap;
       ensureDepositEraMeta(map.hexes);
       rebuildAllKeys();
+      const mapGenHandoffMs = Math.max(0, Math.round(performance.now() - mapGenWallT0) - (map.mapGenTimings?.total ?? 0));
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
@@ -21883,6 +21945,8 @@ async function boot(): Promise<void> {
         showMainMenu();
         return;
       }
+      const postSceneT0 = performance.now();
+      loading.setProgress('Po scenie — playtest walki', 40, 1, 2);
       applySceneResult(newSceneResult);
 
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
@@ -21898,6 +21962,14 @@ async function boot(): Promise<void> {
       siegeAiStateByKey.clear();
 
       if (!preset) {
+        finishMapLoadWithPerfReport(loading, {
+          mapGen: map.mapGenTimings,
+          scene: newSceneResult.buildTimings,
+          typLabel: 'Kontynenty',
+          rozmiarLabel: 'Maly',
+          wallClockMs: Math.round(performance.now() - loadWallT0),
+          error: 'Playtest walki: brak miejsca na mapie',
+        }, 'doStartPlaytestWalkaMapy');
         showHintMessage('Playtest walki: brak miejsca na mapie — sprobuj inny seed', 5000);
         showMainMenu();
         return;
@@ -22033,6 +22105,15 @@ async function boot(): Promise<void> {
         ' wrogie=' + (enemyCity?.name ?? '?') + ' ownerId=' + (enemyCity?.ownerId ?? '?'),
       );
       startGameMusic('mapa');
+      finishMapLoadWithPerfReport(loading, {
+        mapGen: map.mapGenTimings,
+        scene: newSceneResult.buildTimings,
+        typLabel: 'Kontynenty',
+        rozmiarLabel: 'Maly',
+        mapGenHandoffMs,
+        postSceneMs: Math.round(performance.now() - postSceneT0),
+        wallClockMs: Math.round(performance.now() - loadWallT0),
+      }, 'doStartPlaytestWalkaMapy');
       startRenderLoop();
     }
 
@@ -22082,13 +22163,16 @@ async function boot(): Promise<void> {
 
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
+      const loadWallT0 = performance.now();
       const loading = showMapLoadingOverlay({ seed: PLAYTEST_MIASTO_SEED, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
+      const mapGenWallT0 = performance.now();
       const newMap = await generujSwiatAsync(PLAYTEST_MIASTO_SEED, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
         loading.setProgress(faza, pct, phaseNum, phaseTotal);
       });
       map = newMap;
       ensureDepositEraMeta(map.hexes);
       rebuildAllKeys();
+      const mapGenHandoffMs = Math.max(0, Math.round(performance.now() - mapGenWallT0) - (map.mapGenTimings?.total ?? 0));
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
@@ -22102,6 +22186,8 @@ async function boot(): Promise<void> {
         showMainMenu();
         return;
       }
+      const postSceneT0 = performance.now();
+      loading.setProgress('Po scenie — playtest miasta', 40, 1, 2);
       applySceneResult(newSceneResult);
 
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
@@ -22118,6 +22204,14 @@ async function boot(): Promise<void> {
 
       const preset = buildPlaytestMiastoEkonomia(map, data);
       if (!preset) {
+        finishMapLoadWithPerfReport(loading, {
+          mapGen: map.mapGenTimings,
+          scene: newSceneResult.buildTimings,
+          typLabel: 'Kontynenty',
+          rozmiarLabel: 'Maly',
+          wallClockMs: Math.round(performance.now() - loadWallT0),
+          error: 'Playtest miasta: brak miejsca na mapie',
+        }, 'doStartPlaytestMiasto');
         showHintMessage('Playtest miasta: brak miejsca na mapie — sprobuj inny seed', 5000);
         showMainMenu();
         playtestMiastoActive = false;
@@ -22222,6 +22316,15 @@ async function boot(): Promise<void> {
         ' pop=' + (playerCity?.population ?? 0),
       );
       startGameMusic('mapa');
+      finishMapLoadWithPerfReport(loading, {
+        mapGen: map.mapGenTimings,
+        scene: newSceneResult.buildTimings,
+        typLabel: 'Kontynenty',
+        rozmiarLabel: 'Maly',
+        mapGenHandoffMs,
+        postSceneMs: Math.round(performance.now() - postSceneT0),
+        wallClockMs: Math.round(performance.now() - loadWallT0),
+      }, 'doStartPlaytestMiasto');
       startRenderLoop();
     }
 
@@ -22266,7 +22369,9 @@ async function boot(): Promise<void> {
 
       const rozmiar = rozmiarFromMenuLabel('Maly');
       // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
+      const loadWallT0 = performance.now();
       const loading = showMapLoadingOverlay({ seed: PLAYTEST_MAPA_SEED, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
+      const mapGenWallT0 = performance.now();
       const newMap = await generujSwiatAsync(PLAYTEST_MAPA_SEED, rozmiar, 'kontynenty', {
         worldDensity: ptMapDensity.preset,
         mapSizeMenuLabel: 'Maly',
@@ -22279,6 +22384,7 @@ async function boot(): Promise<void> {
       map = newMap;
       ensureDepositEraMeta(map.hexes);
       rebuildAllKeys();
+      const mapGenHandoffMs = Math.max(0, Math.round(performance.now() - mapGenWallT0) - (map.mapGenTimings?.total ?? 0));
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
@@ -22291,6 +22397,8 @@ async function boot(): Promise<void> {
         showMainMenu();
         return;
       }
+      const postSceneT0 = performance.now();
+      loading.setProgress('Po scenie — playtest mapy', 40, 1, 2);
       applySceneResult(newSceneResult);
 
       try { camCtrl.dispose(); } catch (_) { /* ignore */ }
@@ -22307,6 +22415,14 @@ async function boot(): Promise<void> {
 
       const preset = buildPlaytestMapaSwiata(map, data);
       if (!preset) {
+        finishMapLoadWithPerfReport(loading, {
+          mapGen: map.mapGenTimings,
+          scene: newSceneResult.buildTimings,
+          typLabel: 'Kontynenty',
+          rozmiarLabel: 'Maly',
+          wallClockMs: Math.round(performance.now() - loadWallT0),
+          error: 'Playtest mapy: brak miejsca',
+        }, 'doStartPlaytestMapaSwiata');
         showHintMessage('Playtest mapy: brak miejsca — sprobuj inny seed', 5000);
         showMainMenu();
         return;
@@ -22432,6 +22548,15 @@ async function boot(): Promise<void> {
         ' praca=' + _lastPraca,
       );
       startGameMusic('mapa');
+      finishMapLoadWithPerfReport(loading, {
+        mapGen: map.mapGenTimings,
+        scene: newSceneResult.buildTimings,
+        typLabel: 'Kontynenty',
+        rozmiarLabel: 'Maly',
+        mapGenHandoffMs,
+        postSceneMs: Math.round(performance.now() - postSceneT0),
+        wallClockMs: Math.round(performance.now() - loadWallT0),
+      }, 'doStartPlaytestMapaSwiata');
       startRenderLoop();
     }
 
