@@ -4665,3 +4665,8 @@ CZEKAM-NA: Maciej — wklej linike buildScene ms
 ## [2026-08-01 23:52 PL] LOKAL/Grok -> ALL — FALA 152 on-screen timings
 - md5 `6c8a1f92` / `6c8a1f92accad4df6a2bdfa564516088`
 CZEKAM-NA: print screen panelu czasow od Macieja
+
+## [00:00 PL, 2026-08-02] LOKAL/Grok -> ALL — FALA 153 timing OK fix
+- md5 `c7e95b62` / `c7e95b62aeb46cfac740d2773b4742b9` | stempel ROBOCZA · 2026-08-02 00:00
+- mapLoadingOverlay: OK na pointerdown + auto-dismiss 8 s (panel czasow Budowanie sceny)
+CZEKAM-NA: Maciej — OK zamyka panel / auto po 8 s

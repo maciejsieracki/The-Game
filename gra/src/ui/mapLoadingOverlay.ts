@@ -58,11 +58,12 @@ function ensureStyles(): void {
   style.textContent = `
 .civ-map-load-overlay{
   ${CIV_BRAND_SCOPE_VARS}
-  position:fixed;inset:0;z-index:100600;
-  background:rgba(8,12,18,.88);
+  position:fixed;inset:0;z-index:2000000;
+  background:rgba(8,12,18,.92);
   display:flex;align-items:center;justify-content:center;
   font-family:var(--civ-font-ui,system-ui,sans-serif);
   color:var(--text-primary);
+  pointer-events:auto;
 }
 .civ-map-load-panel{
   min-width:min(420px,92vw);
@@ -127,15 +128,19 @@ function ensureStyles(): void {
 }
 .civ-map-load-ok{
   display:inline-block;
-  margin-top:0.25rem;
-  padding:0.55rem 1.4rem;
-  font-size:1rem;
+  position:relative;
+  z-index:2;
+  margin-top:0.5rem;
+  padding:0.7rem 1.6rem;
+  font-size:1.1rem;
   font-weight:700;
   color:#1a1208;
   background:var(--text-gold,#d4af37);
-  border:none;
-  border-radius:6px;
+  border:2px solid #f0e0a0;
+  border-radius:8px;
   cursor:pointer;
+  pointer-events:auto;
+  touch-action:manipulation;
 }
 .civ-map-load-ok:hover{ filter:brightness(1.08); }
 .civ-map-load-bar{
@@ -256,10 +261,17 @@ export function showMapLoadingOverlay(opts: MapLoadingOverlayOptions): MapLoadin
     },
     showSceneTimingReport(t: SceneTimingReport) {
       return new Promise<void>((resolve) => {
+        let done = false;
+        const finish = (): void => {
+          if (done) return;
+          done = true;
+          window.clearTimeout(autoTimer);
+          resolve();
+        };
         spinEl.style.display = 'none';
         const barWrap = barEl.parentElement as HTMLElement | null;
         if (barWrap) barWrap.style.display = 'none';
-        phaseEl.textContent = 'Czasy budowania sceny — zrób print screen, potem OK';
+        phaseEl.textContent = 'Czasy budowania sceny — print screen, potem OK (albo poczekaj 8 s)';
         errWrap.innerHTML = '';
         const box = document.createElement('div');
         box.className = 'civ-map-load-timing';
@@ -278,9 +290,18 @@ export function showMapLoadingOverlay(opts: MapLoadingOverlayOptions): MapLoadin
         btn.type = 'button';
         btn.className = 'civ-map-load-ok';
         btn.textContent = 'OK — graj';
-        btn.addEventListener('click', () => resolve(), { once: true });
+        // pointerdown+click+touch — canvas/HUD czasem zjada zwykły click.
+        const onActivate = (ev: Event): void => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          finish();
+        };
+        btn.addEventListener('pointerdown', onActivate, { once: true });
+        btn.addEventListener('click', onActivate, { once: true });
         errWrap.append(box, btn);
-        btn.focus();
+        // Auto-dalej po 8 s — żeby nie utknąć gdy klik nie dochodzi.
+        const autoTimer = window.setTimeout(finish, 8000);
+        try { btn.focus(); } catch { /* ignore */ }
       });
     },
     hide() {
