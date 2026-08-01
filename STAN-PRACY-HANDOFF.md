@@ -26,7 +26,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`73c18fc2`** (FALA 139, 19:20) — Budowanie sceny (merge/robloxLite/batch rzek) + częściowy perf głównych. W TOKU: regres ujść inland. Poprzedni: FALA 138 `cbc79e63`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
+**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`935d1642`** (FALA 140, 20:45) — ujścia inland (`9c4320b`) + perf głównych Pangea (`d2db99c`) + scena z 139. Poprzedni: FALA 139 `73c18fc2`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
 
 **OTWARTE (2026-08-01):** regresja czasu głównych rzek (**>2 min** vs **~10 s** wcześniej) po FALA 138 — **W TRAKCIE po „działaj"** (~19:07); agent kodowy w toku. **Constraint ~19:17:** efekt/gęstość rzek OK — przy perf-fix nie degradować. Zapis: `dyspozycje/PYTANIA-OTWARTE.md` → `BUG-RZEKI-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138`.
 

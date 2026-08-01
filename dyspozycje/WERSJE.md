@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `73c18fc2` - 2026-08-01 19:20 - FALA 139: Budowanie sceny minuty→sekundy + perf głównych rzek + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `935d1642` - 2026-08-01 20:45 - FALA 140: ujścia inland + perf głównych rzek (Pangea) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `935d16420541e2746b5be7de870fdc16` · stempel: `ROBOCZA · 2026-08-01 20:45`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: `ensureRiverOutlets` po topUp + po wybrzeżu + scrub; Pangea bootstrap 22–32 + fastTrace (etap1 ~146 ms vs ~295 s); scena z FALA 139.
+- Commity: `d2db99c` · `9c4320b` · (+ scena `25b6135`). tsc 0 · outlet smoke 0 bad · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `73c18fc2` - 2026-08-01 19:20 - FALA 139: Budowanie sceny minuty→sekundy + perf głównych rzek + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `73c18fc2ed030bf6c2fb2666b5c83676` · stempel: `ROBOCZA · 2026-08-01 19:20`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: scene — szybszy merge dekoru, robloxLite >8k hex, batch meshy rzek; mapgen — fastTrace/cache mainKeys (częściowy). Regres ujść inland — jeszcze w toku (osobny agent).

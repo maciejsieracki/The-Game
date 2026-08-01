@@ -4589,3 +4589,10 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — czas Budowanie sceny
 CZEKAM-NA: agent rzek (ujscia) + pomiar Macieja
+
+## [20:45 PL, 2026-08-01] LOKAL/Grok › ALL — FALA 140 DEPLOY ALL
+- md5 `935d1642` / `935d16420541e2746b5be7de870fdc16` | stempel ROBOCZA · 2026-08-01 20:45
+- Zakres: ujscia inland (9c4320b) + perf glowne Pangea (d2db99c) + scena 139; outlet smoke 0 bad
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — czas glownych, ujscia, gestosc
+CZEKAM-NA: pomiar Macieja
