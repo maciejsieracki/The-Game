@@ -8161,6 +8161,8 @@ export function generateRivers(
     riversTier?: DensityTier;
     worldTyp?: TypSwiata;
     riverParams?: RiverMapParams;
+    /** 0–100 w obrębie etapu głównych rzek (faza 6). */
+    onProgress?: (localPct: number) => void;
   } = {},
 ): GenerateRiversResult {
   const riversTier = opts.riversTier ?? 'medium';
@@ -8259,12 +8261,25 @@ export function generateRivers(
     traceOptsBase, seaBufferOpts, pushMain, pushTributary, pushMedium, pushShort,
   };
 
-  // ETAP 1 — główne rzeki: sparse siatka, ocean → inland (Maciej 2026-08-01).
+  const report = (localPct: number) => {
+    opts.onProgress?.(Math.max(0, Math.min(100, localPct)));
+  };
+  const nMasses = masses.length || 1;
+  let stage2Steps = 0;
+  let stage2Total = 0;
   for (const mass of masses) {
+    stage2Total += massRiverCoveragePasses(mass.length);
+  }
+  stage2Total = Math.max(1, stage2Total);
+
+  // ETAP 1 — główne rzeki: sparse siatka, ocean → inland (Maciej 2026-08-01).
+  for (let mi = 0; mi < masses.length; mi++) {
+    const mass = masses[mi];
     generatePhase1MainRivers(
       hexes, new Set(mass), seaDist, riverPaths, riverKinds, usedSources,
       gridCtx, maxLen, riverParams,
     );
+    report(((mi + 1) / nMasses) * 28);
   }
 
   // ETAP 2 — średnie rzeki: pełna siatka tier, priorytet merge do sieci, ocean fallback.
@@ -8286,11 +8301,14 @@ export function generateRivers(
         minSourceSep,
         gridTraceMinLen,
       );
+      stage2Steps++;
+      report(28 + (stage2Steps / stage2Total) * 42);
     }
   }
 
   // ETAP 3 — krótkie dopływy: bufor 5 hex od średnich, ujście tylko do średnich.
-  for (const mass of masses) {
+  for (let mi = 0; mi < masses.length; mi++) {
+    const mass = masses[mi];
     generatePhase3ShortRivers(
       new Set(mass),
       tributaryCell,
@@ -8300,6 +8318,7 @@ export function generateRivers(
       feederMinSourceSep,
       riverParams.feederPasses,
     );
+    report(70 + ((mi + 1) / nMasses) * 18);
   }
 
   // Dekoracyjne dopływy wzdłuż długich głównych nurtów (legacy tributary).
@@ -8315,13 +8334,17 @@ export function generateRivers(
       riverParams.reliefSearchMin,
       riverParams.reliefSearchMax,
     );
+    if (i % 3 === 0) report(88 + (i / Math.max(1, pathCountBeforeDecor)) * 8);
   }
 
   // Domknięcie suchych płatów lądu (pełny hard pass po prune — topUpRiverGridCoverage w generator.ts).
-  for (const mass of masses) {
+  for (let mi = 0; mi < masses.length; mi++) {
+    const mass = masses[mi];
     enforceMaxDryLowlandPatches(new Set(mass), gridCtx);
+    report(96 + ((mi + 1) / nMasses) * 4);
   }
 
+  report(100);
   return { paths: riverPaths, kinds: riverKinds };
 }
 
@@ -8339,6 +8362,7 @@ export function topUpRiverGridCoverage(
   minLen = 4,
   maxLen = 40,
   riverParams?: RiverMapParams,
+  onProgress?: (localPct: number) => void,
 ): number {
   const params = riverParams ?? resolveRiverMapParams(riversTier, width, height);
   const seaDist = buildSeaDistanceField(hexes);
@@ -8410,6 +8434,8 @@ export function topUpRiverGridCoverage(
   };
 
   let placed = 0;
+  const totalSteps = Math.max(1, params.topUpPasses * masses.length);
+  let step = 0;
   for (let pass = 0; pass < params.topUpPasses; pass++) {
     let passPlaced = 0;
     for (const mass of masses) {
@@ -8432,10 +8458,13 @@ export function topUpRiverGridCoverage(
       passPlaced += ensureRiverGridAndProximity(
         hexes, massSet, cellSize, seaDist, gridCtx, riverProximityMaxDist(cellSize),
       );
+      step++;
+      onProgress?.(Math.min(100, (step / totalSteps) * 100));
     }
     placed += passPlaced;
     if (passPlaced === 0) break;
   }
+  onProgress?.(100);
   return placed;
 }
 

@@ -1001,9 +1001,8 @@ function simplifyRiverRenderPath(
  *  - simplifyRiverRenderPath ścina zawroty 180° / skręty ≥120° → brak pętli heksagonalnych i
  *    (kluczowe dla ≥2 boki) usuwa transity przez sąsiednie krawędzie, które musiałyby objeżdżać
  *    obwód → filtr ≥2 boki nie generuje pętli ani zawrotów.
- * `extendToJoin`: dołóż środek OSTATNIEGO heksa — dla dopływu tip wchodzi w kanał głównej rzeki
- * (konfluencja), dla rzeki głównej wstęga kończy się w środku ostatniego heksa lądu = styk bez
- * luki z łańcuchem przybrzeżnym (buildCoastalRiverPointChain kotwiczy się w tym samym punkcie).
+ * `extendToCenter`: dołóż środek OSTATNIEGO heksa — TYLKO ujście do morza (główna rzeka).
+ * Konfluencje kończą na wspólnej krawędzi (terminal edge), nie w środku heksa.
  */
 function buildRiverPointsFromHexPath(
   map: GameMap,
@@ -1013,7 +1012,7 @@ function buildRiverPointsFromHexPath(
   riverMouthY: number,
   surfaceOffset: number,
   _coastalKeys: Set<string>,
-  extendToJoin = false,
+  extendToCenter = false,
   /** Zad. 4 (rząd cieku): mnożnik szerokości dla heksa (q,r) tej trasy. Brak → 1 (bez zmian). */
   widthAtHex?: (q: number, r: number) => number,
 ): { pts: THREE.Vector3[]; hexKeys: Set<string>; widths: number[]; pointHex: string[] } {
@@ -1090,15 +1089,25 @@ function buildRiverPointsFromHexPath(
     }
   }
 
-  // Dopływ / ujście: dołóż środek OSTATNIEGO heksa. Dopływ → tip wchodzi w kanał głównej rzeki
-  // (czyste scalenie w konfluencji). Rzeka główna dochodząca do morza → koniec wstęgi lądowej
-  // ląduje w środku ostatniego heksa lądu = punkt STYKU z łańcuchem przybrzeżnym (bez luki).
-  if (extendToJoin && rp.length >= 2) {
+  // Koniec trasy: środek wspólnej krawędzi (penultimate|last), inset ku last — symetria ze
+  // startem. Konfluencja styka się na krawędzi hex, nie w środku pola (Roblox, bez „ślepych"
+  // końcówek). Główna rzeka do morza: dodatkowo środek last = kotwica łańcucha przybrzeżnego.
+  if (rp.length >= 2) {
+    const pen = rp[rp.length - 2]!;
     const last = rp[rp.length - 1]!;
-    const yl = yAt(last.q, last.r);
-    if (yl != null) {
-      const cl = axialToWorld(last.q, last.r, R);
-      pushPt(cl.x, cl.z, yl, wAt(last.q, last.r), `${last.q},${last.r}`);
+    const midEnd = sharedEdgeMidpoint(pen.q, pen.r, last.q, last.r, R);
+    const yPen = yAt(pen.q, pen.r);
+    const yLast = yAt(last.q, last.r);
+    if (midEnd && yPen != null && yLast != null) {
+      const pEnd = insetToward(midEnd.x, midEnd.z, last.q, last.r);
+      pushPt(pEnd.x, pEnd.z, (yPen + yLast) * 0.5, wAt(last.q, last.r), `${last.q},${last.r}`);
+    }
+    if (extendToCenter) {
+      const yl = yLast ?? yAt(last.q, last.r);
+      if (yl != null) {
+        const cl = axialToWorld(last.q, last.r, R);
+        pushPt(cl.x, cl.z, yl, wAt(last.q, last.r), `${last.q},${last.r}`);
+      }
     }
   }
 
@@ -1141,12 +1150,11 @@ function renderLandRiversFromPaths(
           : 0.7;
     const halfWidth = mainHalfWidth * widthMul;
 
-    // extendToJoin: dopływ scala się w węźle głównej rzeki; rzeka główna dochodząca do morza
-    // kończy wstęgę w środku ostatniego heksa lądu = styk z łańcuchem przybrzeżnym (bez luki).
+    // Terminal edge na każdej trasie; środek last tylko ujście do morza (kotwica przybrzeża).
     const reachesSea = pathReachesOpenSeaRender(map, path);
     const { pts, hexKeys, pointHex } = buildRiverPointsFromHexPath(
       map, landPath, R, renderStyle, riverMouthY, surfaceOffset, new Set<string>(),
-      kind !== 'main' || reachesSea,
+      reachesSea,
     );
     if (pts.length < 2) continue;
 
