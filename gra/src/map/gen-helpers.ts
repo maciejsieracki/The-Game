@@ -6787,6 +6787,9 @@ interface GridSourcePlaceCtx {
   allowReliefTraversal?: boolean;
   placeMode?: GridPlaceMode;
   targetRiverKinds?: RiverPathKind[];
+  /** Pangea lub duża mapa — agresywniejsze limity perf (ujścia, topUp). */
+  pangeaSingleMass?: boolean;
+  largeMapPerf?: boolean;
 }
 
 function buildGridRouteCandidates(
@@ -6912,7 +6915,8 @@ function tryPlaceMainRiverFromCoast(
   mouths.sort((a, b) => a.d - b.d || ctx.rand() * 2 - 1);
 
   const seen = new Set<string>();
-  for (const mouth of mouths.slice(0, 12)) {
+  const mouthLimit = ctx.largeMapPerf ? 12 : mouths.length;
+  for (const mouth of mouths.slice(0, mouthLimit)) {
     const mk = hexKey(mouth.q, mouth.r);
     if (seen.has(mk)) continue;
     seen.add(mk);
@@ -7059,6 +7063,12 @@ export function riverProximityMaxDist(cellSize: number): number {
   return Math.max(RIVER_PROXIMITY_MAX_DIST, Math.ceil(cellSize / 2));
 }
 
+/** Cel domykania proximity w topUp — zgodny z progiem testu river-grid-coverage. */
+function riverProximityEnforceTarget(cellSize: number): number {
+  const proxLimit = riverProximityMaxDist(cellSize);
+  return Math.min(proxLimit + 5, Math.max(proxLimit, Math.ceil(cellSize * 2)));
+}
+
 /** Budżet trasowania A* skalowany z odległością od morza (duże kontynenty). */
 function riverTraceBudgetForSeaDist(startSeaDist: number, minLen: number, maxLen: number): number {
   return Math.max(maxLen, minLen + 24, Math.ceil(startSeaDist * 3) + minLen);
@@ -7092,21 +7102,37 @@ function massRiverCoveragePasses(massSize: number, profile: RiverRoundProfile = 
 
 function riverProximityMaxRounds(massSize: number, profile: RiverRoundProfile = 'normal'): number {
   const base = Math.max(16, Math.min(48, 12 + Math.floor(massSize / 350)));
-  if (profile === 'normal') return base;
+  if (profile === 'normal') return Math.min(52, base + 6);
   if (profile === 'huge-mass') {
     return Math.max(10, Math.min(28, 10 + Math.floor(massSize / 900)));
   }
   return Math.max(6, Math.min(10, 6 + Math.floor(massSize / 2000)));
 }
 
-function effectiveTopUpPasses(basePasses: number, pangeaSingleMass: boolean): number {
-  if (!pangeaSingleMass) return basePasses;
-  return Math.max(2, Math.ceil(basePasses * 0.35));
+function effectiveTopUpPasses(
+  basePasses: number,
+  pangeaSingleMass: boolean,
+  largeMapPerf = false,
+): number {
+  if (pangeaSingleMass) return Math.max(2, Math.ceil(basePasses * 0.35));
+  if (largeMapPerf) return Math.max(4, Math.ceil(basePasses * 0.65));
+  return basePasses;
 }
 
-function effectiveFeederPasses(basePasses: number, pangeaSingleMass: boolean): number {
-  if (!pangeaSingleMass) return basePasses;
-  return Math.max(2, Math.ceil(basePasses * 0.5));
+function effectiveFeederPasses(
+  basePasses: number,
+  pangeaSingleMass: boolean,
+  largeMapPerf = false,
+): number {
+  if (pangeaSingleMass) return Math.max(2, Math.ceil(basePasses * 0.5));
+  if (largeMapPerf) return Math.max(3, Math.ceil(basePasses * 0.7));
+  return basePasses;
+}
+
+function dryPatchEnforceMaxRounds(profile: RiverRoundProfile): number {
+  if (profile === 'pangea') return 12;
+  if (profile === 'huge-mass') return 16;
+  return 28;
 }
 
 /** Komórka siatki kwalifikuje się do rzeki — bez górnego limitu seaDist (głęboki inland OK). */
@@ -7699,11 +7725,16 @@ function fillDryLowlandPatches(
 }
 
 /** Domyka suche płaty lądu do limitu {@link MAX_DRY_LOWLAND_PATCH_HEXES}. */
-function enforceMaxDryLowlandPatches(massSet: Set<string>, gridCtx: GridSourcePlaceCtx): void {
+function enforceMaxDryLowlandPatches(
+  massSet: Set<string>,
+  gridCtx: GridSourcePlaceCtx,
+  roundProfile: RiverRoundProfile = 'normal',
+): void {
   const maxHex = MAX_DRY_LOWLAND_PATCH_HEXES;
   fillDryLowlandPatches(massSet, gridCtx, 4, 10);
   if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
-  for (let round = 0; round < 20; round++) {
+  const maxRounds = dryPatchEnforceMaxRounds(roundProfile);
+  for (let round = 0; round < maxRounds; round++) {
     if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
     const n = fillDryLowlandPatches(massSet, gridCtx, maxHex + 1, 6, true);
     if (n > 0) continue;
@@ -7988,7 +8019,7 @@ function ensureRiverGridAndProximity(
     const unfilledEarly = listUnfilledRiverGridCells(massSet, hexes, cellSize, seaDist);
     if (
       proxGap <= maxProximityDist
-      && dryGapEarly <= MAX_DRY_LOWLAND_PATCH_HEXES
+      && dryGapEarly <= MAX_DRY_LOWLAND_PATCH_HEXES + 5
       && unfilledEarly.length === 0
     ) break;
 
@@ -8030,7 +8061,7 @@ function ensureRiverGridAndProximity(
     }
 
     if (maxDryLowlandPatchSize(massSet, hexes) > MAX_DRY_LOWLAND_PATCH_HEXES) {
-      enforceMaxDryLowlandPatches(massSet, forceCtx);
+      enforceMaxDryLowlandPatches(massSet, forceCtx, roundProfile);
     }
 
     placed += roundPlaced;
@@ -8039,8 +8070,22 @@ function ensureRiverGridAndProximity(
       roundPlaced === 0
       && unfilled.length === 0
       && proxGap <= maxProximityDist
-      && dryGap <= MAX_DRY_LOWLAND_PATCH_HEXES
+      && dryGap <= MAX_DRY_LOWLAND_PATCH_HEXES + 5
     ) break;
+  }
+
+  const mopRounds = roundProfile === 'pangea' ? 2 : roundProfile === 'huge-mass' ? 4 : 8;
+  for (let mop = 0; mop < mopRounds; mop++) {
+    const finalProx = computeRiverProximityStats(massSet, hexes, true);
+    if (finalProx.maxDist <= maxProximityDist) break;
+    if (!finalProx.farthest) break;
+    const far = finalProx.farthest;
+    let fixed = false;
+    if (tryForceCellRiverConnection(forceCtx, [[far.q, far.r]], massSet)) fixed = true;
+    else if (tryPlaceGridSource(forceCtx, far.q, far.r, massSet)) fixed = true;
+    else if (tryForceRiverThroughDryPatch(forceCtx, [[far.q, far.r]], massSet)) fixed = true;
+    if (fixed) placed++;
+    else break;
   }
   return placed;
 }
@@ -8286,6 +8331,7 @@ export function generateRivers(
     .filter((m) => m.length >= 8)
     .sort((a, b) => b.length - a.length);
   const pangeaSingleMass = isPangeaSingleMass(masses);
+  const largeMapPerf = riverParams.areaScale >= 1.35;
 
   const cellSize = riverParams.mainCell;
   const tributaryCell = riverParams.tributaryCell;
@@ -8359,6 +8405,7 @@ export function generateRivers(
     minLen, maxLen, acceptLen: gridTraceMinLen, traceMinLen: gridTraceMinLen,
     sourceSep: minSourceSep,
     traceOptsBase, seaBufferOpts, pushMain, pushTributary, pushMedium, pushShort,
+    pangeaSingleMass, largeMapPerf,
   };
 
   const report = (localPct: number) => {
@@ -8405,7 +8452,10 @@ export function generateRivers(
       );
       if (placedNow === 0) {
         idleRounds++;
-        if (massProfile !== 'normal' && idleRounds >= 2) break;
+        const idleLimit = massProfile === 'normal'
+          ? (mass.length >= HUGE_LAND_MASS_HEXES ? 3 : 999)
+          : 2;
+        if (idleRounds >= idleLimit) break;
       } else {
         idleRounds = 0;
       }
@@ -8415,7 +8465,7 @@ export function generateRivers(
   }
 
   // ETAP 3 — krótkie dopływy: bufor 5 hex od średnich, ujście tylko do średnich.
-  const feederPasses = effectiveFeederPasses(riverParams.feederPasses, pangeaSingleMass);
+  const feederPasses = effectiveFeederPasses(riverParams.feederPasses, pangeaSingleMass, largeMapPerf);
   for (let mi = 0; mi < masses.length; mi++) {
     const mass = masses[mi];
     generatePhase3ShortRivers(
@@ -8430,8 +8480,8 @@ export function generateRivers(
     report(70 + ((mi + 1) / nMasses) * 18);
   }
 
-  // Dekoracyjne dopływy wzdłuż długich głównych nurtów (legacy tributary) — pomijane na Pangei.
-  if (!pangeaSingleMass) {
+  // Dekoracyjne dopływy — pomijane na Pangei i dużych mapach (perf).
+  if (!pangeaSingleMass && !largeMapPerf) {
     const pathCountBeforeDecor = riverPaths.length;
     for (let i = 0; i < pathCountBeforeDecor; i++) {
       if (riverKinds[i] !== 'main') continue;
@@ -8450,10 +8500,13 @@ export function generateRivers(
     report(96);
   }
 
-  // Domknięcie suchych płatów lądu (pełny hard pass po prune — topUpRiverGridCoverage w generator.ts).
+  // Lekkie domknięcie suchych płatów — pełny proximity/grid po prune w topUpRiverGridCoverage.
   for (let mi = 0; mi < masses.length; mi++) {
     const mass = masses[mi];
-    enforceMaxDryLowlandPatches(new Set(mass), gridCtx);
+    if (!mass) continue;
+    const massSet = new Set(mass);
+    const massProfile = riverRoundProfile(mass.length, pangeaSingleMass);
+    enforceMaxDryLowlandPatches(massSet, gridCtx, massProfile);
     report(96 + ((mi + 1) / nMasses) * 4);
   }
 
@@ -8489,7 +8542,8 @@ export function topUpRiverGridCoverage(
     .filter((m) => m.length >= 8)
     .sort((a, b) => b.length - a.length);
   const pangeaSingleMass = isPangeaSingleMass(masses);
-  const topUpPasses = effectiveTopUpPasses(params.topUpPasses, pangeaSingleMass);
+  const largeMapPerf = params.areaScale >= 1.35;
+  const topUpPasses = effectiveTopUpPasses(params.topUpPasses, pangeaSingleMass, largeMapPerf);
   const cellSize = params.mainCell;
   const minSourceSep = Math.max(2, Math.floor(cellSize * 0.25));
   const traceOptsBase = {
@@ -8544,6 +8598,7 @@ export function topUpRiverGridCoverage(
     traceMinLen: params.gridTraceMinLen, sourceSep: minSourceSep,
     traceOptsBase, seaBufferOpts, pushMain, pushTributary, pushMedium,
     placeMode: 'medium',
+    pangeaSingleMass, largeMapPerf,
   };
 
   let placed = 0;
@@ -8554,7 +8609,7 @@ export function topUpRiverGridCoverage(
     for (const mass of masses) {
       const massSet = new Set(mass);
       const massProfile = riverRoundProfile(mass.length, pangeaSingleMass);
-      if (!pangeaSingleMass || pass === 0) {
+      if (massProfile === 'normal' || pass === 0) {
         passPlaced += enforceHardRiverGridStarts(
           hexes,
           massSet,
@@ -8570,9 +8625,9 @@ export function topUpRiverGridCoverage(
           params.gridTraceMinLen,
         );
       }
-      enforceMaxDryLowlandPatches(massSet, gridCtx);
+      enforceMaxDryLowlandPatches(massSet, gridCtx, massProfile);
       passPlaced += ensureRiverGridAndProximity(
-        hexes, massSet, cellSize, seaDist, gridCtx, riverProximityMaxDist(cellSize), massProfile,
+        hexes, massSet, cellSize, seaDist, gridCtx, riverProximityEnforceTarget(cellSize), massProfile,
       );
       step++;
       onProgress?.(Math.min(100, (step / totalSteps) * 100));

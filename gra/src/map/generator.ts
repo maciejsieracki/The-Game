@@ -432,22 +432,7 @@ export function generateMap(
     },
   });
   reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 100);
-  reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 5);
-  topUpRiverGridCoverage(
-    hexes,
-    width,
-    height,
-    riverPaths,
-    riverPathKinds,
-    rand,
-    riversTier,
-    riverParams.minLen,
-    riverParams.maxLen,
-    riverParams,
-    (localPct) => {
-      reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, localPct * 0.35);
-    },
-  );
+  reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 0);
   stripRiverMarksFromOpenSea(hexes);
   // B0.7/B0.8: „zero sierot" — usun sciezki niepolaczone z morzem (finalny stan, jak widzi test).
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
@@ -456,7 +441,12 @@ export function generateMap(
   // "0 rzek bez ujścia do wody" niezależnie od ewentualnych późniejszych przesunięć wybrzeża.
   ({ paths: riverPaths, kinds: riverPathKinds } =
     pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
-  // Maciej 2026-08-01: domknięcie siatki/proximity PO prune — inaczej sieroty kasują force-fill.
+  ({ paths: riverPaths, kinds: riverPathKinds } =
+    pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+  ({ paths: riverPaths, kinds: riverPathKinds } =
+    pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
+  // Jeden topUp PO obu przebiegach prune (perf FALA 133b): wcześniejszy podwójny topUp
+  // mielił 2× koszt fill — pierwszy pass i tak kasowany przez prune sierot.
   topUpRiverGridCoverage(
     hexes,
     width,
@@ -469,14 +459,9 @@ export function generateMap(
     riverParams.maxLen,
     riverParams,
     (localPct) => {
-      reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 35 + localPct * 0.35);
+      reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 5 + localPct * 0.75);
     },
   );
-  reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 72);
-  ({ paths: riverPaths, kinds: riverPathKinds } =
-    pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
-  ({ paths: riverPaths, kinds: riverPathKinds } =
-    pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 85);
   // B0.1: purge wody→ląd tylko PRZED generateRivers — po rzekach kasował ujścia
   // ZADANIE 2 / C2: spłaszcz fałszywe "wcięcia/ujścia" (Wybrzeże bez własnej rzeki, kształtem
