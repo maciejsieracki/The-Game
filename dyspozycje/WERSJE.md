@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `58755ecf` - 2026-08-01 10:16 - FALA 128: poluzowane reguly rzek (stride 1, suchy plat, fill) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `2806b932` - 2026-08-01 11:19 - FALA 129: siatka rzek 5x5 + stride 1 + inland + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `2806b9320aab2c233478b8c8ac285019` · stempel: `ROBOCZA · 2026-08-01 11:19`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: Normalnie/Dużo siatka 5×5; Mało 10×10; mainGridStride 1; domknięcie inland na dużych; post-prune topUp.
+- Commity: `b86913a` · `1873d07`. tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `58755ecf` - 2026-08-01 10:16 - FALA 128: poluzowane reguly rzek (stride 1, suchy plat, fill) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `58755ecf53bcb4d2e637fbbb8002552a` · stempel: `ROBOCZA · 2026-08-01 10:16`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: MAIN stride 1; suchy płat = cały ląd bez rzeki (relief nie dzieli); fill przez wzgórza/góry; niższy próg komórki; bez wczesnego break.

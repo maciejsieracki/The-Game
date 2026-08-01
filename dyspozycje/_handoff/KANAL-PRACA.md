@@ -4511,3 +4511,10 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
 CZEKAM-NA: nic
+
+## [11:19 PL, 2026-08-01] LOKAL/Grok → ALL — FALA 129 DEPLOY ALL
+- md5 `2806b932` / `2806b9320aab2c233478b8c8ac285019` | stempel ROBOCZA · 2026-08-01 11:19
+- Zakres: siatka 5x5 (`b86913a`) + mainGridStride 1 (`1873d07`) — Australia/male kontynenty
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: nic
