@@ -242,9 +242,38 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
 };
 
 /** Obrys granicy państwa — szeroki pas (world units), nie cienka linia WebGL 1px. */
-export const TERRITORY_BORDER_BAND_WIDTH = 0.375;
-export const TERRITORY_BORDER_OPACITY = 0.45;
+export const TERRITORY_BORDER_BAND_WIDTH = 0.45;
+/** Alpha przy wewnętrznej krawędzi pasa (dalej od granicy heksa). */
+export const TERRITORY_BORDER_OPACITY_INNER = 0.5;
+/** Alpha przy krawędzi heksa (zewnętrzna granica terytorium). */
+export const TERRITORY_BORDER_OPACITY_EDGE = 0.7;
 export const TERRITORY_BORDER_Y_OFFSET = 0.042;
+
+function createTerritoryBorderGradientMaterial(color: number): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    uniforms: {
+      uColor: { value: new THREE.Color(color) },
+    },
+    vertexShader: `
+      attribute float alpha;
+      varying float vAlpha;
+      void main() {
+        vAlpha = alpha;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      varying float vAlpha;
+      void main() {
+        gl_FragColor = vec4(uColor, vAlpha);
+      }
+    `,
+  });
+}
 
 function segmentOutwardNormal(
   ax: number,
@@ -283,8 +312,11 @@ function appendBorderBandLoop(
   bandWidth: number,
   y: number,
   positions: number[],
+  alphas: number[],
   indices: number[],
   viRef: { v: number },
+  opacityEdge: number,
+  opacityInner: number,
 ): void {
   const n = loop.length;
   if (n < 3) return;
@@ -316,6 +348,7 @@ function appendBorderBandLoop(
       b1.x, y, b1.z,
       b0.x, y, b0.z,
     );
+    alphas.push(opacityEdge, opacityEdge, opacityInner, opacityInner);
     indices.push(vi, vi + 1, vi + 2, vi, vi + 2, vi + 3);
     viRef.v += 4;
   }
@@ -334,6 +367,7 @@ function appendBorderBandLoop(
       oNext.x, y, oNext.z,
       cur.x, y, cur.z,
     );
+    alphas.push(opacityInner, opacityInner, opacityEdge);
     indices.push(vi, vi + 1, vi + 2);
     viRef.v += 3;
   }
@@ -347,9 +381,10 @@ function buildTerritoryBorderMesh(
   map: GameMap,
   hexKeys: Set<string>,
   color: number,
-  opacity: number,
   bandWidth: number,
   flatY: number,
+  opacityInner: number,
+  opacityEdge: number,
 ): THREE.Mesh | null {
   if (bandWidth <= 0) return null;
   const y = flatY + 0.004;
@@ -364,25 +399,23 @@ function buildTerritoryBorderMesh(
   if (loops.length === 0) return null;
 
   const positions: number[] = [];
+  const alphas: number[] = [];
   const indices: number[] = [];
   const viRef = { v: 0 };
 
   for (const loop of loops) {
-    appendBorderBandLoop(loop, bandWidth, y, positions, indices, viRef);
+    appendBorderBandLoop(
+      loop, bandWidth, y, positions, alphas, indices, viRef, opacityEdge, opacityInner,
+    );
   }
 
   if (positions.length === 0) return null;
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('alpha', new THREE.Float32BufferAttribute(alphas, 1));
   geo.setIndex(indices);
   geo.computeVertexNormals();
-  const mat = new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-  });
+  const mat = createTerritoryBorderGradientMaterial(color);
   const mesh = new THREE.Mesh(geo, mat);
   mesh.renderOrder = 6;
   return mesh;
@@ -393,8 +426,9 @@ export function buildTerritoryBorderGroup(
   map: GameMap,
   hexKeysByOwner: Map<number, Set<string>>,
   colorFn: (ownerId: number) => number,
-  opacity = TERRITORY_BORDER_OPACITY,
   bandWidth = TERRITORY_BORDER_BAND_WIDTH,
+  opacityInner = TERRITORY_BORDER_OPACITY_INNER,
+  opacityEdge = TERRITORY_BORDER_OPACITY_EDGE,
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = 'territory-border-overlay';
@@ -407,9 +441,10 @@ export function buildTerritoryBorderGroup(
       map,
       hexKeys,
       colorFn(ownerId),
-      opacity,
       bandWidth,
       flatBorderY,
+      opacityInner,
+      opacityEdge,
     );
     if (border) {
       border.name = `territory-border-${ownerId}`;
