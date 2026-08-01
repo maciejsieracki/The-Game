@@ -81,6 +81,7 @@ import {
   purgeDesertEnclaveWater,
   thickenCoastAndSmoothInlets,
   applyCoastRing,
+  enforceTargetDryLandFraction,
   type StartPosition,
   type TypSwiata,
 } from './gen-helpers';
@@ -414,6 +415,9 @@ export function generateMap(
   }
   enforceMapBorderOcean(hexes, width, height);
   enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
+  if (typ !== 'ziemia') {
+    enforceTargetDryLandFraction(hexes, landScores, landFraction, width, height, coastOpts);
+  }
   reportMapGenPhase(onProgress, 5, MAP_GEN_PHASE_LABELS.coast, 100);
   // ── Przebieg 3h: rzeki DOPIERO po finalnym wybrzeżu (Maciej: bufor 2 hex od morza) ─
   reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 0);

@@ -1202,7 +1202,7 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## BUG-RZEKI-PERF-FALA138 — regresja czasu generowania głównych rzek · STATUS: **GOTOWE (kod)** (2026-08-01)
+## BUG-RZEKI-PERF-FALA138 — regresja czasu generowania głównych rzek · STATUS: **ZAMKNIĘTE** (2026-08-01 ~20:58)
 
 **Cytat Macieja (~19:00):** generowanie głównych rzek **>2 min** vs wcześniej **~10 s**.
 
@@ -1211,6 +1211,8 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Wynik bench Duży seed 42:** etap 1 (główne) **~146 ms** (było **~295 s** Pangea); traceRiver ×1285 (było ×53246). Gęstość Pangea: **604 rzek** (111 main + 544 medium vs 637 wcześniej).
 
 **Constraint gęstości:** zachowana (~95% liczby rzek Pangea); topUp hardStarts + etap 2 medium bez zmian logiki fill.
+
+**Weryfikacja Macieja (~20:58, FALA 140 `935d1642`):** etap głównych rzek **~20 s OK** — temat zamknięty.
 
 **Powiązane:** `R-RZEKI-PERF-FALA138` · sibling ujścia: `BUG-RZEKI-UJSCIE-FALA138`.
 
@@ -1230,7 +1232,7 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## BUG-SCENA-PERF-FALA138 — Budowanie sceny: bardzo długo (~kilkanaście minut) · STATUS: **GOTOWE (kod)** (2026-08-01 ~19:25)
+## BUG-SCENA-PERF-FALA138 — Budowanie sceny: bardzo długo (~kilkanaście minut) · STATUS: **GOTOWE (kod) / ODŁOŻONE Z DEPLOYU** (Maciej 2026-08-01 ~22:31: deploy bez sceny)
 
 **Cytat Macieja (~19:03):** „Rzeki Uzupełnienie to może jedna sekunda natomiast budowanie sceny nadal trwa bardzo długo. Coś jest nie tak. Do zapisania. Jak napiszę Działa i to wtedy zaczniesz to analizować."
 
@@ -1238,15 +1240,72 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Korekta diagnozy (~19:15):** „OK, przynajmniej wiemy, że to nie jest zwieszanie się, tylko po prostu bardzo długi okres generowania. Na pewno to było teraz kilkanaście minut." — **NIE hang/freeze**, lecz **bardzo długie Budowanie sceny (~kilkanaście minut)**.
 
-**Root cause:** FALA 138 → ~637 ścieżek rzek + ~40k hex; `mapDetail=high` nie włączał `robloxLite`; `collapseToMergedMesh` wołał `updateMatrixWorld(true)` per overlay wybrzeża (tysiące × pełne drzewo sceny).
+**Fix FALA 139 (niewystarczający):** `mergeDecor.ts` (merge bez pełnego updateMatrixWorld); `mapRenderStyle.ts` (`robloxLite` >8000 hex); `scene.ts` (batch medium rzek 32/trasa). Deploy `73c18fc2` — **nie rozwiązał** problemu w grze.
 
-**Fix (kod):** `mergeDecor.ts` (merge bez pełnego updateMatrixWorld); `mapRenderStyle.ts` (`robloxLite` >8000 hex); `scene.ts` (batch medium rzek 32/trasa).
+**Weryfikacja Macieja (~20:58, FALA 140 `935d1642`):** rzeki **~20 s OK**; **Budowanie sceny nadal za długo** — „tak nigdy nie było". **Hipoteza:** wąskie gardło to **inne elementy sceny** (nie samych rzek).
 
-**Kontekst deployu:** ROBOCZA FALA 138 md5 `cbc79e63`. FALA 137 yield/cache — niewystarczające przy skali FALA 138.
+**Korekta diagnozy (~21:11):** *„ilość generowanych rzek jest zadowalająca. Problem leży w tym ostatnim etapie."* — **gęstość/mapgen rzek = OK**; problem = **ostatni etap UI = Budowanie sceny** (nie generowanie rzek). Plan eksperymentu kill-switch wyłączania rzek (stage 0–5) → **ODŁOŻONY / NIE POTRZEBNY** na razie.
 
-**Objaw:** etap UI „Budowanie sceny" trwa **bardzo długo (~kilkanaście minut)**; etap „Rzeki — Uzupełnienie" ~**1 s** (OK).
+**Fix FALA 141 (w toku):** coast InstancedMesh + shared geo (`6556fa7`). Deploy `0b70e93f` (21:06) — **W TRAKCIE** (deploy mógł wisieć).
 
-**Osobny temat:** `BUG-RZEKI-PERF-FALA138` (główne rzeki >2 min w mapgen) — **nie naprawione** w tej sesji.
+**Fix Pangea-only (kod 2026-08-01 ~22:33):** `isDenseLandmassMap` + skip collapse lasów + batch rzek/yield. **Patch odłożony z deployu** (Maciej): `dyspozycje/_handoff/PATCH-SCENA-PANGEA-PERF-2026-08-01.patch`.
 
-**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138`.
+**Root cause (częściowy, FALA 138):** ~637 ścieżek rzek + ~40k hex; `mapDetail=high` nie włączał `robloxLite`; `collapseToMergedMesh` wołał `updateMatrixWorld(true)` per overlay wybrzeża.
 
+**Objaw:** etap UI „Budowanie sceny" trwa **bardzo długo**; etap „Rzeki — Uzupełnienie" ~**1 s** (OK); etap głównych rzek ~**20 s** (OK).
+
+**Osobny temat:** `BUG-RZEKI-PERF-FALA138` — **ZAMKNIĘTE** (~20 s OK).
+
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138` · `R-RZEKI-KILLSWITCH-DIAG` (ODŁOŻONY).
+
+---
+
+## BUG-SPAWN-CLUSTER-KULTURA — cywilizacje tego samego typu rozjeżdżają się między kręgami · STATUS: **WDROŻONE (kod)** (2026-08-01)
+
+**Sytuacja.** Po MAP-SPAWN-Q2 (wyspy, quota kontynentów, FALA 138) spawn działa lepiej na poziomie mas lądu, ale Maciej widział regresję **jakości klastrów kulturowych**: cywilizacje jednego typu czasem „przerzucają się" do kręgu innego typu zamiast generować się **wszystkie razem wokół siebie** (stolica + miasta-państwa tego samego typu w jednym skupisku).
+
+**Fix (2026-08-01):** `clusters.ts` → `assignTypesToClusterCenters()` — typy przypisywane do środków **po** finalnych pozycjach i masach lądu (quota `allocateTypyToMasses`), nie shuffle po indeksie. `clusterCohesionMaxHex()` + test spójności MP w `cluster-start-test.cjs`.
+
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-SPAWN-CLUSTER-KULTURA` · kontekst historyczny: MAP-SPAWN-Q2 (FALA 138).
+
+---
+
+## BUG-SPAWN-ODLEGLOSC-MORZE — start cywilizacji za blisko morza · STATUS: **WDROŻONE (kod)** (2026-08-01)
+
+**Sytuacja.** Maciej oczekuje, że cywilizacje (zwłaszcza główna / stolice startowe) na mapie **standardowej** startują **co najmniej ~10 heksów od morza** — miejsce na miasta-państwa, unikanie wysp i dziwnych miejsc, preferencja większych lądów. Parametr ma się **skalować z wielkością mapy** (10 = baza dla Standard; Mała/Duża inne wartości).
+
+**Fix (2026-08-01):** `clusters.ts` → `buildSeaDistanceField` + `capitalMinSeaDist()` (mala=4, srednia=7, **duza/Standard=10**, ogromna=12, super=14) + `capitalMinSeaDistForMap` (clamp do rozmiaru; mapy <80 hex boku → 0 dla harnessów) w pick stolic; końcowa bramka stolicy gracza.
+
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-SPAWN-ODLEGLOSC-MORZE` · sibling: `BUG-SPAWN-CLUSTER-KULTURA`.
+
+---
+
+## BUG-MP-NAZWA-CIV-MISMATCH — miasto-państwo: nazwa miasta ≠ kultura/cyw (Jin vs Argos·Grecy) · STATUS: **WDROŻONE (kod)** (2026-08-01)
+
+**Sytuacja.** Obce miasto-państwo na mapie: tytuł miasta **Jin** (brzmi chińsko), podpis **Argos · Grecy · miasto-państwo**, dyplomacja „Audiencja z Argos · Grecy · miasto-państwo". Drugi screen (~21:14): skupisko miast-państw w czerwonej granicy / przy rzekach — Maciej: *„chińskie państwa miasta system określa jako państwa miasta greckie, coś jest nie tak z Chińczykami"*.
+
+**Fix (2026-08-01):** Rozdzielenie alokacji `ownerId` — obce typy dostają ID 1..N w `cluster-spawn.ts`; rywale tego samego typu **zarezerwowane** w `pendingSameTypeRivalOwnerIds` po obcych; `main.ts` `spawnPendingSameTypeRivals` używa zarezerwowanych ID + **nie nadpisuje** `aiOwnerCivMap` obcego typuna kolizji (fallback wolne ID). Kontrakt: `cluster-start.ts` + test kolizji w `cluster-start-test.cjs`.
+
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-MP-NAZWA-CIV-MISMATCH` · sibling (osobny): `BUG-SPAWN-CLUSTER-KULTURA` (rozmieszczenie typów na mapie).
+
+---
+
+## BUG-LAND-FRACTION-SLIDER — suwak % lądu prawie nie działa · STATUS: **WDROŻONE (kod)** (Maciej 2026-08-01 ~22:25)
+
+**Sytuacja.** W opcjach nowej gry „Udział lądu na mapie” (20% / 40% itd.) — mapa wygląda tak samo. Szczególnie Pangea.
+
+**Dowód (probe 84×60, seed 4242, przed fixem):** Pangea 20%→29,4% suchego lądu, 40%→42,8%, 60%→47,1%. Kontynenty też kompresują (60%→39,8%). Suwak dochodzi do generatora; post-processing (wybrzeże, zatoki, inland) zjada różnicę.
+
+**Fix (2026-08-01):** `enforceTargetDryLandFraction` po `thickenCoast`, przed rzekami; `applyLandFractionByContinent` liczy tylko suchy ląd. Probe: `gra/tools/land-frac-probe.cjs`.
+
+**Cel.** Po generacji suchy ląd (`countLandSeaHexes`, Wybrzeże=woda) ≈ wybrany % (±5 pkt).
+
+**Powiązane:** scena Pangea (osobny), spawn MP.
+
+---
+
+## SPAWN-EXPANSION-ARC-Q1 — państwa tylko z jednej strony stolicy · STATUS: **🟢 WDROŻONE (kod)** (Maciej 2026-08-01)
+
+**Decyzja:** **A — półpłaszczyzna (180°)**. MP tego samego typu tylko po jednej stronie stolicy; druga połowa wolna pod własne miasta.
+
+**Plik:** `docs/decyzje/SPAWN-EXPANSION-ARC-Q1.md` · kod: `clusters.ts` + `cluster-spawn.ts` · test `cluster-start-test.cjs`.

@@ -1,6 +1,6 @@
 # STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-01 ~21:11** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-01 ~21:14** · Projekt: Civ „The Game"
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -36,7 +36,7 @@ git status --short
 
 **OTWARTE (2026-08-01 ~21:11):** Budowanie sceny — **nadal za długo**; rzeki ~20 s OK, gęstość OK → wąskie gardło = **Budowanie sceny** (ostatni etap), nie mapgen rzek. FALA 141 (`0b70e93f`, coast InstancedMesh) — **W TRAKCIE** (deploy mógł wisieć). Zapis: `PYTANIA-OTWARTE.md` → `BUG-SCENA-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138`.
 
-**OTWARTE (2026-08-01 ~21:10):** Jakość spawnu cywilizacji — **dwa osobne zgłoszenia, ZAPISANE / CZEKA** (≠ MAP-SPAWN-Q2, ≠ rzeki, ≠ scena): (1) klastry kulturowe — typy rozjeżdżają się między kręgami; (2) min. odległość od morza ~10 hex (Standard, skalować z mapą). Zapis: `PYTANIA-OTWARTE.md` → `BUG-SPAWN-CLUSTER-KULTURA` + `BUG-SPAWN-ODLEGLOSC-MORZE` · `REJESTR-PROSB-I-ZADAN.md` → `R-SPAWN-CLUSTER-KULTURA` + `R-SPAWN-ODLEGLOSC-MORZE`.
+**WDROŻONE (2026-08-01):** spawn A/B/C — kolizja `ownerId` MP (`cluster-spawn` + `main.ts`), typy→masa (`assignTypesToClusterCenters`), min. odległość od morza (`capitalMinSeaDist`, Standard=10). Zapis: `PYTANIA-OTWARTE.md` → `BUG-MP-NAZWA-CIV-MISMATCH` + `BUG-SPAWN-CLUSTER-KULTURA` + `BUG-SPAWN-ODLEGLOSC-MORZE`.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

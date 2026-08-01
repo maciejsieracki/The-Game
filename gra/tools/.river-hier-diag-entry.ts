@@ -1,0 +1,2 @@
+export { generateMap } from '../src/map/generator';
+export { collectPathHexKeysForKinds, nearestRiverHexDistance, SHORT_RIVER_MAX_DIST_FROM_MEDIUM, pathHasValidRiverOutlet, pathReachesRealSea } from '../src/map/gen-helpers';

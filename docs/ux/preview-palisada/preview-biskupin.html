@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Palisada Biskupin — propozycja UX (Kamień + Brąz)</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #141a20;
+      color: #c8d8e8;
+      margin: 24px;
+      line-height: 1.55;
+    }
+    h1 { font-size: 1.15rem; margin-bottom: 0.25rem; color: #e8f0f8; }
+    h2 { font-size: 0.95rem; margin-top: 28px; color: #a8c0d8; }
+    p { color: #9ab0c0; max-width: 58rem; }
+    .row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      align-items: flex-start;
+    }
+    figure {
+      background: #1e2830;
+      border: 1px solid #3a4a58;
+      border-radius: 8px;
+      padding: 12px 16px;
+      max-width: 640px;
+    }
+    figure.prop { border-color: #6a5a3a; }
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      background: #0e1216;
+    }
+    figcaption {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #b0c4d4;
+    }
+    figcaption strong { color: #e8f0f8; }
+    .tag {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .tag.prop { background: #4a3a22; color: #ffb86c; }
+    .diff {
+      background: #1a2228;
+      border-left: 3px solid #6a8aa8;
+      padding: 12px 16px;
+      margin: 20px 0;
+      max-width: 58rem;
+      font-size: 0.9rem;
+      color: #b8c8d8;
+    }
+    ul.layers { margin: 8px 0 0 1.2rem; color: #8aa0b0; font-size: 0.88rem; }
+    a { color: #7ab4f8; }
+    code { font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <h1>Palisada w stylu Biskupin — propozycja wizualna</h1>
+  <p>
+    Referencja: drewniana fortyfikacja ze skarpą, żerdziami na skos, ścianą z belek poziomych
+    i pale pionowych, koroną o nierównej wysokości, szarym zwietrzałym drewnem; woda i trawa w tle.
+    <strong>Nie wdrożone do gry</strong> — tylko podgląd do akceptacji Macieja.
+    Regeneracja: <code>node tools/build-palisada-biskupin-preview.cjs</code> +
+    <code>node tools/capture-palisada-biskupin-preview.cjs</code> (z <code>gra/</code>).
+  </p>
+
+  <div class="diff">
+    <strong>Różnica vs obecny <code>wal()</code> (proste pale):</strong>
+    Obecny <code>wal()</code> to jeden pierścień zaostrzonych stożków (zerdzi) z lekkim pochyleniem
+    i kilkoma głazami u podstawy — brak warstwy ziemnej (skarpy), belek poziomych i wyraźnej korony.
+    Propozycja Biskupin buduje czterowarstwową strukturę: skarpa z żerdziami na skos → ściana
+    belek+pali → nierówna korona → brama z nadprożem; drewno jest szare i zwietrzałe zamiast brązowych stożków.
+    Wariant Brąz zachowuje tę samą geometrię, ale ciemniejsze drewno i metalowe okucia na belkach i słupach bramy.
+  </div>
+
+  <h2>Warstwy konstrukcyjne (propozycja)</h2>
+  <ul class="layers">
+    <li><strong>Skarpa</strong> — pierścień ziemi/trawy z żerdziami nachylonymi na zewnątrz</li>
+    <li><strong>Ściana</strong> — pionowe pale + 3 poziomy belek</li>
+    <li><strong>Korona</strong> — żerdzie o zmiennej wysokości nad murem</li>
+    <li><strong>Brama</strong> — dwa słupy + nadproże (+ okucia w Brązie)</li>
+  </ul>
+
+  <div class="row">
+    <figure class="prop">
+      <img src="ref-styl-biskupin-kamien.png" alt="Miasto epoki Kamienia — palisada styl Biskupin" width="640">
+      <figcaption>
+        <strong>Epoka Kamienia</strong> — szare zwietrzałe drewno, skarpa + belki + korona
+        <span class="tag prop">PROPOZYCJA</span>
+      </figcaption>
+    </figure>
+    <figure class="prop">
+      <img src="ref-styl-biskupin-braz.png" alt="Propozycja Brąz — palisada styl Biskupin" width="640">
+      <figcaption>
+        <strong>Epoka Brązu</strong> — ciemniejsze drewno + metalowe okucia
+        <span class="tag prop">PROPOZYCJA</span>
+      </figcaption>
+    </figure>
+  </div>
+
+  <p style="margin-top:24px;font-size:0.85rem">
+  Porównanie z obecnym modelem gry: <a href="preview.html">preview.html</a> ·
+  interaktywny podgląd 3D: <a href="_tmp/preview-biskupin.html">_tmp/preview-biskupin.html</a> ·
+  ikona panelu: <a href="bld-palisada-proposal.svg">bld-palisada-proposal.svg</a>
+  </p>
+</body>
+</html>

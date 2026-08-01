@@ -91,6 +91,7 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
 5. **Publikacja tylko na wyraźny sygnał.** `git push` i deploy do wersji roboczej **wyłącznie** gdy Maciej powie („pushuj", „deploy", „wdrażaj") — on jest jedyną bramką publikacji i jedynym playtesterem.
 6. **Nie zgaduj przy niejednoznaczności** — zrób resztę, a sporny punkt opisz i zapytaj. Ta zasada wielokrotnie uchroniła projekt przed kosztownymi błędami.
 7. **Nie twórz problemów, których nie ma.** Maciej kilkakrotnie korygował nadmierne komplikowanie („znajdujesz problemy, których nie ma"). Najprostsze rozwiązanie spełniające wymaganie wygrywa.
+8. **Po każdej paczce pracy — zaproponuj następny krok (Maciej 2026-08-01).** Nie czekaj na „co dalej?”. Kończ wiadomość blokiem **„Następny krok”** z max 3 konkretnymi opcjami (pierwsza = rekomendacja). Reguła: `.cursor/rules/maciej-nastepny-krok.mdc`.
 
 ## STRUKTURA
 - `gra/src` — kod TS (`game/`, `map/`, `render/`, `ui/`) · `gra/data` — JSON (kanon danych gry)

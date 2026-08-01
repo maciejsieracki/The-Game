@@ -4603,3 +4603,10 @@ CZEKAM-NA: pomiar Macieja
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — czas sceny + brzeg
 CZEKAM-NA: pomiar Macieja (gestosc rzek OK — problem = scena)
+
+## [22:38 PL, 2026-08-01] LOKAL/Grok › ALL — FALA 142 DEPLOY ALL
+- md5 `2b1e072c` / `2b1e072c1b915bf53faf6a478ac0a680` | stempel ROBOCZA · 2026-08-01 22:38
+- Zakres: l¹d% suwak; spawn MP ownerId; klastry typów; seaDist~10; pó³p³aszczyzna A — BEZ sceny Pangea
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: playtest Macieja (Memfis/Jin, % l¹du, pó³p³aszczyzna MP)

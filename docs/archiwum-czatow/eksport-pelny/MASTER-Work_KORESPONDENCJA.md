@@ -99925,3 +99925,1496 @@ Przyjąłem dokładnie:
 <timestamp>Saturday, Aug 1, 2026, 1:26 PM (UTC+2)</timestamp>
 
 OK, zrób deploy do robocza to, co już masz gotowe.
+
+
+---
+
+## Dopisek synchronizacji — 2026-08-01 19:03 UTC (linie 12986–13243)
+
+
+### Linia 12986 — MACIEJ
+
+<mcp_meta_tools>
+You have access to MCP (Model Context Protocol) tools through `GetMcpTools` and `CallMcpTool`.
+
+## MCP Tool Discovery and Invocation
+
+Use `GetMcpTools` to discover tool schemas, then `CallMcpTool` to invoke them. Aim to minimize round-trips: ideally one `GetMcpTools` call followed by one `CallMcpTool` call.
+
+If the user mentions, references, or links to a product or service that corresponds to an available MCP server, and the request likely depends on information from that service, proactively inspect that MCP server before answering. Do not wait for the user to explicitly ask you to use MCP. If you are unsure which server matches, use `GetMcpTools` with a pattern based on the service name.
+
+`GetMcpTools` supports four modes:
+
+1. `{"server":"<id>"}`: returns full input schemas and full descriptions for every tool on that server. Preferred when you know which server to use.
+2. `{"server":"<id>","toolName":"<name>"}`: returns the full schema and full description for one tool.
+3. `{"pattern":"<regex>"}`: searches tool and server names across all servers using RE2 syntax (no backreferences, lookahead, or lookbehind). Use when you're unsure which server has the tool you need.
+4. No arguments: returns a catalog of all servers with tool names and short descriptions. Only use this if you have no idea which server or tool to look for — in most cases, prefer fetching by server or pattern instead.
+
+Pattern-search and catalog results shorten long descriptions, marked by a trailing "... [truncated]"; server and single-tool lookups always return the complete description.
+
+MANDATORY - Always call `GetMcpTools` to discover a tool's schema before invoking it with `CallMcpTool`. If you already know the server, go directly to it rather than listing the full catalog first.
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+Available MCP servers:
+
+<mcp_meta_tool_servers>
+<mcp_meta_tool_server name="cursor-app-control" tools="move_agent_to_root, move_agent_to_cloned_root, create_project, rename_chat, cursor_dialog, open_resource, open_automation" serverUseInstructions="Controls the Cursor application itself (workspace root, projects, opening resources and automations, user rules, chat title). See each tool description for usage." />
+<mcp_meta_tool_server name="plugin-datadog-datadog" />
+<mcp_meta_tool_server name="plugin-notion-workspace-notion" />
+<mcp_meta_tool_server name="plugin-slack-slack" tools="slack_send_message, slack_schedule_message, slack_add_reaction, slack_create_conversation, slack_create_canvas, slack_update_canvas, slack_search_public, slack_search_public_and_private, slack_search_channels, slack_search_users, slack_read_channel, slack_read_thread, slack_read_canvas, slack_read_user_profile, slack_list_channel_members, slack_read_file, slack_send_message_draft, slack_search_emojis, slack_get_reactions" />
+</mcp_meta_tool_servers>
+
+## MCP Resource Access
+
+You also have access to MCP resources via `FetchMcpResource`.
+If a relevant server is marked as needing authentication, or if an MCP tool call fails with an authentication/authorization error, call `mcp_auth` for that server, then inspect that server again and retry the original request if appropriate. Do not call `mcp_auth` just because it is listed, and do not repeatedly call it if authentication did not fix the failure. Do not call `mcp_auth` in parallel; authenticate only one server at a time.
+</mcp_meta_tools>
+
+### Linia 12987 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 1:26 PM (UTC+2)</timestamp>
+
+OK, zrób deploy do robocza to, co już masz gotowe.
+
+### Linia 12988 — AGENT
+
+Deployuję wszystko, co już jest w commitach.
+
+### Linia 12990 — AGENT
+
+Perf Pangei jest w roboczym pliku — sprawdzam, czy jest gotowy do włączenia w ten deploy; inaczej wdrażam tylko 4 gotowe commity.
+
+### Linia 12995 — AGENT
+
+Weryfikacja perf Pangei trwa za długo — wdrażam 4 gotowe commity; lokalne zmiany perf odkładam na bok.
+
+### Linia 13000 — AGENT
+
+Buduję FALA 131 (4 gotowe commity, bez WIP perf).
+
+### Linia 13008 — AGENT
+
+✅ **FALA 131** w roboczej — md5 **`2cb47461`**
+
+Wejście: `gra-robocza/START.html` · **Ctrl+F5** · **Nowa gra**
+
+Weszło:
+- realny postęp generacji mapy (10 etapów zamiast wiszącego „1/6”)
+- zbiegi rzek na wspólnej krawędzi hex
+- granice państw: szerszy pas + gradient opacity
+
+**Nie weszło:** optymalizacja szybkości Pangei (jeszcze WIP — odłożona w stash). Kontynenty jak wcześniej; Pangea nadal może długo się liczyć, ale zobaczysz prawdziwe etapy.
+
+### Linia 13009 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 1:41 PM (UTC+2)</timestamp>
+
+wiesz co? System nie potrafi wygenerować tego gradientu do środka. Dostosuj tylko i wyłącznie jeden gradient, 70 procent. Bez tego wnętrza i do środka. Do granicy usuń ten element, wewnętrzny, zewnętrzny gradient
+
+### Linia 13010 — AGENT
+
+Upraszczam granice do jednej stałej opacity 70% — bez gradientu wewnętrzny/zewnętrzny.
+
+### Linia 13011 — AGENT
+
+Robię: jedna stała opacity **70%**, bez gradientu wewnętrzny/zewnętrzny — szerokość pasa bez zmian. Dam znać, jak będzie w kodzie.
+
+### Linia 13012 — MACIEJ
+
+[Image]
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-06889ace-2c56-4199-900a-3ee7e2a6463b.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-182a22eb-8fa4-47cb-a36f-ef1e5572f7da.png
+3. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-c7d05fd6-fef5-4c11-9304-cd4b57f586c8.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 1:41 PM (UTC+2)</timestamp>
+
+jeszcze jedna kwestia. Bardzo często cywilizacje generują się na małych wyspach. Ponownie wraca ten problem. Powinno być tak że nowe cywilizacje są generowane tak aby mieć dostęp do jak największej przestrzeni rozwoju. A prowadzić jakieś reguły które mówią że całość lądu jest dzielona na ilość cywilizacji a potem dostępność lądu danego kontynentu jest dzielona równo pomiędzy inne cywilizacje. Tak żeby każda mniej więcej lądowała w takim miejscu żeby mieć jak najwięcej miejsca na rozwój a nie że są na przykład wszystkie nadziubdziane w jednym miejscu na małej wyspie. Często już potem nawet nie mieszczą się państwa, miasta tej cywilizacji. Od czas gdy całe kontynenty często stoją puste i odkryte. Bez żadnej cywilizacji.
+
+### Linia 13014 — AGENT
+
+Widzę to na screenach: kilka civ na ciasnej wyspie, a duże kontynenty puste.
+
+Biorę to jako osobny temat **startów cywilizacji** — reguła ma być: ląd dzielony sensownie między civy, start tam gdzie jest realna przestrzeń rozwoju, nie klaster na małej wyspie.
+
+Najpierw sprawdzam, jak dziś działa spawn (i czy była już decyzja `MAP-SPAWN`). Potem albo od razu poprawka, albo jedno krótkie ABC tylko jeśli zostaną realne warianty.
+
+Równolegle idzie jeszcze poprawka granic (stałe 70%, bez gradientu).
+
+### Linia 13015 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-5fd7a271-faac-4815-b031-564a9e732d77.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 1:42 PM (UTC+2)</timestamp>
+
+faktycznie mieli na rzekach.
+
+### Linia 13016 — AGENT
+
+Tak — UI już pokazuje prawdę (6/10 · Rzeki — główne); bottleneck to właśnie rzeki. Dociągam optymalizację tego etapu.
+
+### Linia 13017 — AGENT
+
+Tak — to już nie „fałszywy 1/6”, tylko realnie **mielą na rzekach** (u Ciebie: główne).
+
+Dociągam przyspieszenie tego etapu (cache + mniej zbędnej roboty na dużych masach). Jak będzie w kodzie i sprawdzone — dam znać / deploy.
+
+### Linia 13019 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 1:43 PM (UTC+2)</timestamp>
+
+Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
+
+### Linia 13020 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 1:43 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13022 — AGENT
+
+Granice gotowe — wdrażam je do roboczej. Lokalne zmiany rzek odkładam na bok na czas buildu.
+
+### Linia 13028 — AGENT
+
+Granice: stała **70%**, bez gradientu — już w roboczej.
+
+✅ **FALA 132** · md5 **`a2b17df5`** · `gra-robocza/START.html` (Ctrl+F5)
+
+Pas granicy bez zmian (0.45). Przyspieszenie rzek jest w kodzie źródłowym, ale jeszcze nie w tym bundlu — wejdzie następnym deployem.
+
+### Linia 13030 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 4:58 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13031 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 4:58 PM (UTC+2)</timestamp>
+
+Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
+
+### Linia 13032 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 4:58 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13033 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 4:58 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13034 — AGENT
+
+Audyt spawnów gotowy — poniżej decyzja. Równolegle domykam regresję testów rzek po optymalizacji (2 FAIL), żeby nie wdrażać półproduktem.
+
+### Linia 13036 — AGENT
+
+**Spawny:** stary fix (MAP-SPAWN-Q1) ogranicza mikro-wyspy, ale nadal **dokłada cywilizacje w kółko** na te same masy i **nie dzieli lądu proporcjonalnie** — stąd kilka civ na małej wyspie przy pustym kontynencie.
+
+**Rzeki:** przyspieszenie jest w kodzie, ale jeszcze **nie w roboczej** — dwa testy pokrycia na kontynentach padły; to się właśnie domyka przed deployem.
+
+---
+
+`[TEMAT: Start cywilizacji — podział lądu]` · **MAP-SPAWN-Q2**
+
+**Sytuacja**  
+Dziś starty idą przez klastry: najpierw duże masy, potem round-robin. Nie ma limitu „ile typów na jedną wyspę” ani podziału `liczba cywilizacji ∝ rozmiar lądu`. Lokalny test (70% lądu w promieniu 3 hex) przepuszcza ciasną wyspę.
+
+**Cel pytania**  
+Wybrać regułę, która da każdej cywilizacji realną przestrzeń rozwoju i opróżni duże kontynenty z „pustki”.
+
+**Dlaczego teraz**  
+To wraca u Ciebie na screenach mimo wcześniejszego Q1.
+
+**A — Twardy zakaz małych mas**  
+Start tylko na masie ≥ ok. 60 hex (albo ≥ 10% największej). Wyspa poniżej progu = nigdy.  
+Za: proste · zero klastrów na mikro-wyspach.  
+Przeciw: przy mapie Wyspy może zabraknąć miejsc · mniej elastyczne.
+
+**B — Quota proporcjonalna + limit na masę** *(rekomendacja)*  
+Ląd kwalifikujący dzielony między typy; na małą masę max 1 typ; preferencja miejsc z największą przestrzenią rozwoju.  
+Za: zgadza się z Twoim opisem · kontynenty dostają większość startów · Pangea naturalnie OK.  
+Przeciw: więcej logiki · trzeba dobrać progi hexów.
+
+**C — Alokacja po kontynentach generatora**  
+Dla typu mapy „Kontynenty” dzielić po kontynentach z generatora, nie po flood-fill.  
+Za: bliżej „kontynentów” w UI.  
+Przeciw: nie działa tak samo na Pangei/Wyspach · dwa systemy.
+
+**Rekomendacja: B**
+
+Odpowiedz **A / B / C**.
+
+### Linia 13038 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:02 PM (UTC+2)</timestamp>
+
+b
+
+### Linia 13039 — AGENT
+
+Zapisuję **MAP-SPAWN-Q2 = B** (quota proporcjonalna + limit na masę).
+
+### Linia 13040 — AGENT
+
+Zapisałem **MAP-SPAWN-Q2 → B**: quota proporcjonalna do lądu + limit typów na masę + preferencja miejsc z największą przestrzenią rozwoju.
+
+Wdrażać teraz w kodzie startów (`clusters.ts`)?  
+**Tak — wdrażaj** / **Jeszcze doprecyzujmy** (np. progi hexów).
+
+### Linia 13042 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:04 PM (UTC+2)</timestamp>
+
+qsrazaj
+
+### Linia 13043 — AGENT
+
+Przyjąłem «wdrażaj» — wdrażam MAP-SPAWN-Q2 = B (quota + limit na masę).
+
+### Linia 13044 — AGENT
+
+Wdrażam **B**: podział lądu proporcjonalnie między cywilizacje + limit na małych masach. Dam znać, jak będzie gotowe do roboczej.
+
+### Linia 13046 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:21 PM (UTC+2)</timestamp>
+
+a co z tą pracą nad rzekami? Bo widzę, że nadal to mieli ?
+
+### Linia 13047 — AGENT
+
+Sprawdzam, co z rzekami jest w kodzie, a czego jeszcze nie ma w roboczej.
+
+### Linia 13049 — AGENT
+
+Pierwsza fala przyspieszenia jest już w roboczej (FALA 133), ale **za słaba**: Duży / Pangea nadal mielą na etapie rzek (czasem >7 min). Dociskam mocniejszą drugą falę.
+
+### Linia 13050 — AGENT
+
+Masz rację — to nie jest „zapomniane”.
+
+**Stan:** pierwsza optymalizacja (cache + szybsze A*) **jest już w FALA 133**, ale na Duży/Pangea daje za mało — etap **Rzeki — główne** nadal może trwać wiele minut. Duży Pangea w pomiarze wciąż potrafił wyjść poza 7 minut.
+
+**Teraz:** idzie druga, mocniejsza fala (m.in. zbędne powtórzenia topUp i twardsze limity na dużych mapach). Jak przejdzie testy jakości — od razu deploy do roboczej.
+
+### Linia 13051 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:22 PM (UTC+2)</timestamp>
+
+Chyba się zwiesiło. ?
+
+### Linia 13053 — AGENT
+
+Nie na amen — tylko **długo**.
+
+Jeśli chodzi o **grę** (loader na „Rzeki — główne”): to nie crash, tylko ciężki etap. Przy Duży może stać kilka–kilkanaście minut; Pangea bywa jeszcze dłużej. Progress 6/10 się nie kłamie — naprawdę liczy rzeki.
+
+Jeśli o **moją pracę**: agent drugi raz optymalizuje, ale testy rzek same potrafią wisieć 5–10+ min, więc wygląda jak zawieszenie. Robotę kontynuuję; jak będzie gotowa poprawka — od razu wrzucę do roboczej.
+
+### Linia 13054 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-3cf228f4-1952-428a-aa8a-da65407ef7a7.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 5:23 PM (UTC+2)</timestamp>
+
+### Linia 13055 — AGENT
+
+Widzę — „Fix river coverage” wisi na progu. Sprawdzam i odblokowuję.
+
+### Linia 13059 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-d59f127e-df5e-4512-98ff-2f17754e313b.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 5:24 PM (UTC+2)</timestamp>
+
+na dużej mapie wyszło około 2-3 minut.
+
+### Linia 13060 — AGENT
+
+To dobra informacja: **Duży · Kontynenty ≈ 2–3 min** do „Budowanie sceny” — rzeki już nie wiszą w nieskończoność.
+
+Główny bloker zostaje **Pangea** (duża pojedyncza masa). Dociskam głównie to; Kontynenty traktuję jako akceptowalne na teraz, chyba że chcesz je też mocno poniżej 2 minut.
+
+### Linia 13061 — AGENT
+
+OK — **Kontynenty Duży ~2–3 min** zostawiam. Skupiam się na przyspieszeniu **Pangei**.
+
+### Linia 13062 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:24 PM (UTC+2)</timestamp>
+
+ale to jest nadal za dużo. 90% czasu to rzeki.
+
+### Linia 13063 — AGENT
+
+Jasne — 2–3 min to za dużo, skoro ~90% to rzeki. Dociskam Kontynenty i Pangeę.
+
+### Linia 13064 — AGENT
+
+Przyjąłem — tnę czas rzek na **Duży Kontynenty** i **Pangei**, nie tylko na jednej. Jak będzie gotowe w kodzie, wrzucam do roboczej.
+
+### Linia 13065 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:24 PM (UTC+2)</timestamp>
+
+cały clue polega na tym jak najlepszy efekt osiągnąć przy minimalnym nakładzie, co można usunąć z całego procesu, żeby wolno tego rzeki się robiły, ale jednak żeby to tyle nie trwało. Czyli gdzie będzie najlepszy stosunek jakości do ceny?
+
+### Linia 13066 — AGENT
+
+Cel: największy zysk czasu przy najmniejszej utracie jakości. Szybko sprawdzam, gdzie generator realnie podwaja robotę.
+
+### Linia 13067 — AGENT
+
+Dokładnie o to chodzi: nie „szybciej za wszelką cenę”, tylko **gdzie 1 jednostka jakości kupuje najwięcej sekund**.
+
+### Ranking (najlepszy stosunek jakość → czas)
+
+| # | Co uciąć | Zysk czasu | Koszt jakości |
+|---|----------|------------|---------------|
+| 1 | **Drugi przebieg `topUp` w generatorze** (to samo fill dwa razy) | bardzo duży | niski — pierwszy topUp + generacja i tak domykają siatkę |
+| 2 | **Mniej rund „dociskania siatki”** (coverage/proximity) na Duży — early stop gdy 2–3 rundy nic nie dają | duży | niski/średni — końcówka i tak ma malejące zwroty |
+| 3 | **Skip dekoracyjnych dopływów** na Duży | średni | niski — to ozdoba, nie szkielet rzek |
+| 4 | **Limit prób ujść / mniej retry A*** | średni | niski — mniej ślepych prób |
+| 5 | **Proximity nie co rundę, tylko co N** | średni | niski |
+| 6 | Rzadsza siatka / mniej rzek głównych | duży | **wysoki** — widać puste płaty (tego nie jako pierwsze) |
+
+### Sweet spot (rekomendacja)
+Zrobić **1+2+3+4** — ucina większość z tych ~90% czasu rzek, a mapa nadal ma główne/średnie rzeki, ujścia i gęstość „prawie jak dziś”.  
+**Nie ruszać na start:** reguł ujścia do morza, sep głównych, startu od oceanu, wizualnych zbiegów.
+
+To jest dokładnie „minimalny nakład → maksymalny efekt”: wyrzucamy **powtórki i ozdoby**, zostawiamy **szkielet**.
+
+Jak OK — wdrażam ten pakiet i wrzucam do roboczej.
+
+### Linia 13069 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:25 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13070 — AGENT
+
+OK — ten wiszący wątek coverage jest zamknięty. Czekam na Twoje OK do pakietu sweet-spot (1+2+3+4), wtedy wdrażam.
+
+### Linia 13072 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:31 PM (UTC+2)</timestamp>
+
+nadal mieli na rzekach, nadal długo, żeby pomyśleć, które parametry należy zluzować lub całkowicie z nich zrezygnować i co najbardziej jest czasochłonne w całym procesie, czy ilościowo, czy jakościowo
+
+### Linia 13073 — AGENT
+
+Mierzę realny rozkład czasu na Duży — żeby wskazać, co uciąć ilościowo, a co jakościowo.
+
+### Linia 13074 — AGENT
+
+Werdykt z dotychczasowej analizy (pomiar jeszcze leci):
+
+**To jest problem ilościowy, nie jakościowy.**  
+Same trasy A* (ładna rzeka od oceanu do ujścia) są OK. Zabija **powtarzanie tego samego „domykania”**: setki/tysiące razy „czy tu jest rzeka / suchy płat / komórka siatki” × wiele rund.
+
+### Co pożera czas (kolejność)
+1. **`topUp` → proximity fill** — wielokrotne dociąganie „żeby wszędzie było blisko do rzeki”
+2. **Etap 2 coverage** — to samo zasiewanie siatki jeszcze przed topUp
+3. **Suche płaty + retry grid** — kolejne A* na puste komórki
+
+Jakość trasy (sep 3, ujście, anty-pętla) = tania.  
+Ilość passów = droga.
+
+### Co bym **całkowicie wyłączył na Duży** (najlepszy ROI)
+| Wyłączyć | Skutek |
+|----------|--------|
+| **Proximity fill** (albo zostawić max 1 lekką rundę) | największy zysk czasu; lokalnie większe „dziury” bez rzeki |
+| **Drugi/trzeci topUp** (zostawić 0–1) | duży zysk; siatka mniej „idealna” |
+| **Dry-patch enforce w pętli** | średni zysk; większe płaty nizin bez rzeki |
+| **Etap 3 short/feeder** | mały–średni; mniej drobnych dopływów |
+
+### Co tylko **poluzować** (nie zabijać)
+- cell siatki 5→6/7 (mniej komórek = mniej A*)
+- coverage rounds 2–3 max
+- retry grid 1 zamiast 3–5
+
+**Nie ruszać:** start od oceanu, ujście do morza, sep głównych, anty-pętle — to tanie i widać w grze.
+
+Jak wróci pomiar z procentami ms, dam Ci jedną konkretną listę „wyłącz A/B/C” do decyzji — albo od razu odetnę proximity+topUp na Duży, jeśli powiesz **działaj radykalnie**.
+
+### Linia 13076 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-460c318d-f41f-4ce4-ae7a-051778e22359.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 5:37 PM (UTC+2)</timestamp>
+
+tutaj trzeba coś zrobić.
+
+### Linia 13077 — AGENT
+
+Widzę: **Duży · Pangea**, 6:45 na „Rzeki — główne” — to za dużo. Tnę agresywnie etap rzek na Pangei i wrzucam do roboczej.
+
+### Linia 13078 — AGENT
+
+Tak — **Pangea Duży** na „Rzeki — główne” po 6+ min to bloker.
+
+Wycinam na Pangei najdroższe pętle (proximity / dry-patch / wielokrotny topUp). Jak przejdzie kompilacja — od razu deploy do roboczej.
+
+### Linia 13079 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:37 PM (UTC+2)</timestamp>
+
+czekam na pomiary. Ja będziesz miał konkretne wnioski, wysyłaj.
+
+### Linia 13080 — AGENT
+
+OK — najpierw twarde pomiary, potem decyzja. Sprawdzam, czy profil już coś zwrócił.
+
+### Linia 13082 — AGENT
+
+Przyjąłem — **najpierw pomiary, bez radykalnego cięcia na ślepo**.
+
+Profiler już instrumentuje fazy (generateRivers / topUp / proximity). Jak dostanę twarde ms/% — od razu wyślę wnioski: co wyłączyć, co tylko poluzować.
+
+### Linia 13084 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:38 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13085 — AGENT
+
+OK — radykalny cut wstrzymany. Czekamy na profil.
+
+### Linia 13087 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-a61fccaa-84e6-449f-a1f6-fc585e58e62f.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 5:48 PM (UTC+2)</timestamp>
+
+### Linia 13088 — AGENT
+
+**18 minut** na Pangei przy „Rzeki — główne” — to już nie do przyjęcia. Wdrażam pakiet z pomiarów i od razu deploy.
+
+### Linia 13089 — AGENT
+
+Widzę **18:22** na Pangei — to bloker.
+
+Wycinam z pomiarów: etap 3, dry-patch, pełną siatkę etapu 1 (zostaje bootstrap głównych). Jak kod przejdzie — od razu wrzucam do roboczej. Możesz przerwać ten loader (Ctrl+F5 później).
+
+### Linia 13091 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:49 PM (UTC+2)</timestamp>
+
+ok. To możesz wdrożyć te wszystkie cztery etapy zgodnie z Twoją propozycją. Zobaczymy, o ile to się przyspieszy.
+
+### Linia 13093 — AGENT
+
+Przyjąłem — wdrażam wszystkie **4** cięcia (etap 3, dry-patch, bootstrap etap 1, topUp×1) na Duży/Pangea. Po wrzuceniu do roboczej dam md5 — wtedy **Ctrl+F5 + Nowa gra** i porównaj czas.
+
+### Linia 13095 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:54 PM (UTC+2)</timestamp>
+
+czy wszystko jest w roboczo?
+
+### Linia 13097 — AGENT
+
+Tak — **wszystko gotowe jest w roboczej**.
+
+Aktualna: **FALA 135** · md5 **`5c9e2265`** · zsynchronizowane z `main`.
+
+W bundlu m.in.:
+- 4 cięcia ROI rzek (etap 3 / dry-patch / bootstrap / topUp×1)
+- spawn MAP-SPAWN-Q2 (z FALA 133)
+- granice 70% (z FALA 132)
+
+Wejście: `gra-robocza/START.html` · **Ctrl+F5** · **Nowa gra**.
+
+### Linia 13099 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 5:57 PM (UTC+2)</timestamp>
+
+teraz rzeki główne idzie dosyć szybko. Myślę że to z koło dziesięciu sekund. Ale rzeki uzupełnienie już idzie po nad minutę.
+
+### Linia 13100 — AGENT
+
+Etap głównych OK (~10 s). Wąskie gardło to teraz **uzupełnianie** (topUp) — tnę je na Duży/Pangea.
+
+### Linia 13101 — AGENT
+
+Tak — główne złapaliśmy (~10 s), zostaje **uzupełnianie**. Wyłączam ciężki topUp/fill na Duży/Pangea i zaraz wrzucę do roboczej.
+
+### Linia 13103 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:33 PM (UTC+2)</timestamp>
+
+teraz było troszeczkę inaczej. Główne rzeki trochę dłużej się ładowały, ale poboczne praktycznie przeleciały parę sekund.
+
+### Linia 13104 — AGENT
+
+Pasuje do FALA 136: **uzupełnianie** ma być krótkie (kilka sekund) — to właśnie wyłączyliśmy.
+
+**Główne** mogą być trochę wolniejsze niż te ~10 s wcześniej (bootstrap nadal robi robotę), ale nie powinny wracać do minut.
+
+Jak dasz łączny czas całej generacji Duży·Pangea (od startu do mapy), będę wiedział, czy jeszcze coś ucinać przy głównych, czy zostawiamy.
+
+### Linia 13106 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-33b93618-01ad-4834-96d6-da14d4fcb70e.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 6:34 PM (UTC+2)</timestamp>
+
+ale nie wiem czemu zwiesiło się na budowaniu sceny.
+
+### Linia 13107 — AGENT
+
+Sprawdzam, co robi etap „Budowanie sceny” i czemu może wisieć na Duży·Pangea.
+
+### Linia 13110 — AGENT
+
+To **raczej nie crash rzek** — jesteś już po nich. „Budowanie sceny” to składanie mapy 3D (tysiące heksów, dekor, rzeki wizualne) na Duży·Pangea.
+
+Często wygląda jak zawieszenie, bo:
+- pasek stoi na „prawie pełno”, a w środku nadal leci ciężka robota,
+- albo jedna porcja jest długa i % się nie odświeża przez dłuższy czas.
+
+Daj mu jeszcze chwilę (nawet 1–2 min na Duży). Jeśli **wisi >3–4 min bez ruchu** albo w DevTools (F12) widać błąd czerwony — daj znać, wtedy to już prawdziwy hang/błąd, nie tylko wolny build sceny.
+
+### Linia 13112 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:35 PM (UTC+2)</timestamp>
+
+ale ostatnio z reguły dosyć szybko szło. Poza tym nie idą sekundy, więc coś jest nie tak.
+
+### Linia 13113 — AGENT
+
+Zatrzymany licznik sekund = wątek UI zablokowany (prawdziwy problem, nie „wolno, ale działa”). Szukam, co blokuje po ostatnich zmianach rzek.
+
+### Linia 13114 — AGENT
+
+Masz rację — jeśli **nie tykają sekundy**, to UI jest zablokowany (hang), nie „powoli liczy”.
+
+Szukam blokady w budowaniu sceny (często po nowych ścieżkach rzek) i naprawiam.
+
+### Linia 13117 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:41 PM (UTC+2)</timestamp>
+
+ta mapa zamknęła się w 20 sekund po zabudowaniu sceny, który wydaje się jakby się zawieszał. Coś jest nie tak.
+
+### Linia 13118 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:41 PM (UTC+2)</timestamp>
+
+wcześniej chyba tak nie było.
+
+### Linia 13122 — AGENT
+
+Znalazłem przyczynę: przy każdym heksie wybrzeża przeliczano ujścia rzek od zera — stąd „zamrożenie” UI na ~20 s. Fix jest w kodzie; wdrażam do roboczej.
+
+### Linia 13127 — AGENT
+
+Masz rację — to nie było „wolno, ale OK”.
+
+**Przyczyna:** przy budowie sceny dla **każdego** heksa wybrzeża przeliczano od zera krawędzie ujść rzek → main thread stawał na ~20 s, więc **sekundy w overlay się nie ruszały**.
+
+**Fix** jest w roboczej:
+
+✅ **FALA 137** · md5 **`09e5ecb7`**  
+(ujścia liczone **raz** na mapę + lepszy yield)
+
+`gra-robocza/START.html` · **Ctrl+F5** · **Nowa gra** — „Budowanie sceny” powinno iść z tykającym czasem, bez wrażenia zawieszenia.
+
+### Linia 13128 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:47 PM (UTC+2)</timestamp>
+
+w sensie chciałem napisać, że w 20 sekund załadowała się cała duża mapa łącznie z rzekami, ale podczas budowania sceny wygląda jakby się zwieszało.
+
+### Linia 13130 — AGENT
+
+Rozumiem — dzięki za doprecyzowanie.
+
+**Całość ~20 s na Duży·Pangea (z rzekami) to bardzo dobry wynik** względem wcześniejszych 18 minut. Problem, o którym mówisz, to głównie **wrażenie**: w „Budowanie sceny” UI na chwilę przestaje tykać sekundy, więc wygląda jak hang, choć mapa i tak kończy szybko.
+
+FALA 137 (`09e5ecb7`) właśnie to celuje — żeby ten etap **nie zamrażał** licznika. Warto jeszcze raz **Ctrl+F5 · Nowa gra · Duży·Pangea** i sprawdzić, czy „Budowanie sceny” już wygląda płynniej (sekundy idą).
+
+### Linia 13131 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:47 PM (UTC+2)</timestamp>
+
+więc jestem przekonany, że coś musieliście w kodzie więcej zmienić i coś popsuć.
+
+### Linia 13132 — AGENT
+
+Tak — coś zmieniliśmy, i to mogło **uwydatnić** problem.
+
+Niekoniecznie „nowy bug z kosmosu”, tylko łańcuch:
+
+1. **FALA 135/136** — mocno zmieniliśmy generację rzek (bootstrap zamiast pełnej siatki, bez ciężkiego topUp). Inne ścieżki rzek → inny materiał do renderu.
+2. Przy budowie sceny był już kosztowny wzorzec: **dla każdego heksa wybrzeża** przeliczanie ujść rzek. Przy starych rzekach bywało znośne; po zmianach (Duży·Pangea) potrafiło **zatkać main thread na kilkanaście sekund** — stąd stojące „Upłynęło”, choć mapa i tak kończyła się w ~20 s.
+3. **FALA 137** — to naprawa właśnie tego: ujścia liczone **raz**, nie przy każdym heksie.
+
+Czyli: przyspieszyliśmy rzeki, a przy okazji **odsłoniliśmy** wolny kawałek budowania sceny (i wyglądało jak zawieszenie). To nie znaczy, że „wszystko popsute” — wynik ~20 s na Duży jest dobry — ale masz rację, że regresja UX (zamrożony timer) poszła z naszych zmian.
+
+Po **Ctrl+F5** na `09e5ecb7` ten etap powinien wyglądać normalniej. Jak dalej „stoi” przy tykaniu sekund albo mapa wygląda źle (rzeki/brzeg) — napisz, wtedy dopinam konkret.
+
+### Linia 13133 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:47 PM (UTC+2)</timestamp>
+
+z kolei na lądzie duży ziemia. Też na budowaniu sceny się zwiesiło, ale w końcu się zrobiło. I całość chyba zamknęła się do budowania sceny w 6 sekund.
+
+### Linia 13134 — AGENT
+
+To się zgadza z obrazem:
+
+- **Szybkość OK** — Duży·Ziemia ~**6 s** do końca to bardzo dobrze.
+- **Wygląd „zawieszenia”** — nadal ten sam efekt: w „Budowanie sceny” na chwilę **staje timer**, bo main thread jest zajęty (nawet jeśli to tylko 1–2 s).
+
+Czy to było już po **Ctrl+F5** na FALA 137 (`09e5ecb7`), czy jeszcze na poprzedniej roboczej?
+
+- Jeśli **przed** 137 — po odświeżeniu powinno być wyraźnie mniej „zawieszone”.
+- Jeśli **już na 137** i nadal stoi „Upłynęło” — dopnę kolejne yield’y w końcówce budowania sceny (żeby sekundy tykały cały czas).
+
+### Linia 13135 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-31754983-12f0-4977-b96e-11ca6309555c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 6:47 PM (UTC+2)</timestamp>
+
+niestety część cywilizacji nadal wylądowała na wyspach poza tym wybrałem siedem cywilizacji, a wystartowało tylko 6 Miejsca na Londzie jest jeszcze bardzo dużo. Chociażby cała Ameryka Północna i Południowa jest pusta. Cała prawie Azja pusta.
+
+### Linia 13136 — AGENT
+
+Spawn nadal słabo trzyma regułę — sprawdzam, czemu civy lądują na wyspach i dlaczego z 7 startuje tylko 6.
+
+### Linia 13137 — AGENT
+
+Widzę — to regresja spawnu mimo Q2: civy na wyspach + **7→6**, a Ameryki/Azja puste.
+
+Dociskam reguły: twarde wykluczenie małych mas i dokończenie wszystkich wybranych cywilizacji na dużych kontynentach. Potem wrzucę do roboczej.
+
+### Linia 13138 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-cb276dac-7252-4100-a10d-33700c6591a1.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 6:48 PM (UTC+2)</timestamp>
+
+### Linia 13140 — AGENT
+
+Tak — screen potwierdza: wielkie kontynenty puste, civy ściśnięte gdzie indziej. To właśnie naprawiam w spawnie.
+
+### Linia 13141 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:49 PM (UTC+2)</timestamp>
+
+no może przyśpieszyliśmy efekt generowania, ale za to rzeki wyszły do punktu wyjścia, praktycznie znowu większość lądu jest bez rzek.
+
+### Linia 13142 — AGENT
+
+Tak — to skutek cięć ROI (bootstrap + topUp OFF). Przywracam gęstość rzek tanim wariantem: bez pełnego proximity, ale z lekkim uzupełnieniem siatki.
+
+### Linia 13143 — AGENT
+
+Masz rację — za mocno ucięliśmy fill: mapa szybka, ale ląd znów „suchy”.
+
+Przywracam **tanie** uzupełnienie (1× zasiew siatki, **bez** drogiego proximity), żeby rzeki wróciły na kontynenty, a czas nie wrócił do minut. Potem deploy.
+
+### Linia 13145 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:49 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13146 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 6:49 PM (UTC+2)</timestamp>
+
+Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
+
+### Linia 13148 — AGENT
+
+Fix „Budowanie sceny” jest już w roboczej (**FALA 137**, `09e5ecb7`) — to ten sam, o którym pisałem.
+
+Pierwszy przebieg deployu miał chwilowy błąd OneDrive na `START.html`, ale bundel i push doszły poprawnie.
+
+### Linia 13150 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:00 PM (UTC+2)</timestamp>
+
+na razie z tym nic nie rób, tylko sobie zapisz, bo chcę włączyć komputer chwilowo. Generowanie głównych rzek trwa już ponad dwie minuty, a wcześniej to było 10 sekund, więc to będzie chyba znowu do poprawy coś.
+
+### Linia 13151 — AGENT
+
+Zapisuję tylko notatkę — bez poprawek ani deployu.
+
+### Linia 13152 — AGENT
+
+Zapisane — **nie ruszam**. Regresja: główne rzeki >2 min (było ~10 s) po FALA 138. Możesz spokojnie wyłączyć komputer; wrócimy do tego później.
+
+### Linia 13154 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:03 PM (UTC+2)</timestamp>
+
+Rzeki Uzupełnienie to może jedna sekunda natomiast budowanie sceny nadal trwa bardzo długo. Coś jest nie tak. Do zapisania. Jak napiszę Działa i to wtedy zaczniesz to analizować.
+
+### Linia 13158 — AGENT
+
+Zapisuję. Uzupełnienie rzek ~OK; **Budowanie sceny** nadal za długie — analiza dopiero po Twoim **„Działa”**.
+
+### Linia 13160 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:06 PM (UTC+2)</timestamp>
+
+budowanien sceny cakowicie chyba zawiesza do weryfikacji i testu
+
+### Linia 13161 — AGENT
+
+Aktualizuję notatkę: Budowanie sceny nie tylko wolne — prawdopodobnie całkowicie zawiesza. Analizy nie startuję, dopóki nie napiszesz **„Działa”**.
+
+### Linia 13162 — AGENT
+
+Zapisuję eskalację (możliwy hang). Analiza dopiero po **„Działa”**.
+
+### Linia 13163 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:07 PM (UTC+2)</timestamp>
+
+dzialaj
+
+### Linia 13164 — AGENT
+
+Przyjąłem **„działaj”** — analizuję zawieszenie **Budowanie sceny** (i powiązaną regresję po FALA 138).
+
+### Linia 13165 — AGENT
+
+Przyjąłem — analizuję zawieszenie **Budowanie sceny**. Dam znać, jak będzie gotowe do deployu.
+
+### Linia 13167 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:07 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13168 — AGENT
+
+Nic do zrobienia — analiza sceny już idzie po **„działaj”**.
+
+### Linia 13170 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:09 PM (UTC+2)</timestamp>
+
+miałeś sobie zapisać rzeczy do zrobienia i je wystartować jak powiem więc powiedziałem sprawdźcie czy miałeś jeszcze do zrobienia
+
+### Linia 13171 — AGENT
+
+Sprawdzam zapisane zadania i czy wszystko już ruszyło po **„działaj”**.
+
+### Linia 13172 — AGENT
+
+Były **dwa** zapisane tematy. Scena już ruszyła; dokladam osobno **główne rzeki >2 min**.
+
+### Linia 13174 — AGENT
+
+Miałem zapisane **dwa** tematy — oba już lecą:
+
+1. **Budowanie sceny** (hang) — w toku  
+2. **Główne rzeki >2 min** — dokładałem osobno (Uzupełnienie ~1 s zostaje)
+
+Jak oba wrócą z fixem → deploy.
+
+### Linia 13176 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:10 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13177 — AGENT
+
+Skan plików był nieaktualny (nadal „NIE PRACOWAĆ”) — po **„działaj”** oba tematy już lecą. Aktualizuję statusy w rejestrze.
+
+### Linia 13179 — AGENT
+
+Skan [Skan: otwarte po działaj](8353b6ae-5f17-4952-82dc-df7e107284ea) czytał stare „NIE PRACOWAĆ” — po **działaj** oba tematy już są w toku (scena + główne rzeki). Rejestr dogrywam do **W TRAKCIE**.
+
+### Linia 13181 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:15 PM (UTC+2)</timestamp>
+
+OK, przynajmniej wiemy, że to nie jest zwieszanie się, tylko po prostu bardzo długi okres generowania. Na pewno to było teraz kilkanaście minut.
+
+### Linia 13184 — AGENT
+
+Dzięki — to ważne: nie hang, tylko **kilkanaście minut** Budowania sceny. Idzie w diagnozę; cel to zejść z minut do sekund.
+
+### Linia 13186 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:17 PM (UTC+2)</timestamp>
+
+natomiast efekt rzek był całkiem nie najgorszy.
+
+### Linia 13190 — AGENT
+
+OK — zapisuję: **efekt rzek zostaje**, przyśpieszamy bez wycinania gęstości.
+
+### Linia 13192 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:18 PM (UTC+2)</timestamp>
+
+natomiast część rzek zamiast wpadać do innej rzeki lub do morza kończyły w połowie lądu swój bieg i nie wiadomo gdzie się zaczynają, a gdzie kończą. Tutaj jest akurat Regres. rzeka jeżeli gdzieś startuje, to powinna tak długo się wić, aż sięgnie innej rzeki lub oceanu.
+
+### Linia 13193 — AGENT
+
+To regres jakości rzek — zapisuję i dokładam do naprawy: każdy bieg musi dojść do innej rzeki albo oceanu.
+
+### Linia 13194 — AGENT
+
+Zapisane jako regres. Reguła: start → wić się aż do **innej rzeki albo oceanu**. Idzie razem z przyspieszeniem głównych.
+
+### Linia 13196 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:19 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13197 — AGENT
+
+Scena gotowa do deployu — sprawdzam, czy agent rzek (ujścia) skończył, żeby ewentualnie włożyć wszystko w jedną falę.
+
+### Linia 13198 — AGENT
+
+Deployuję FALA 139 (fix sceny + częściowy perf rzek). Regres ujść jeszcze dopina drugi agent.
+
+### Linia 13203 — AGENT
+
+✅ **Gotowe: FALA 139** — md5 `73c18fc2`
+
+Z [Fix: scena hang](739feeed-c0c0-4e7c-9b07-e8a3bbc87c2b): Budowanie sceny powinno zejść z **minut do sekund**. Częściowy przyspieszenie głównych rzek też weszło.
+
+`gra-robocza/START.html` — Ctrl+F5 + **Nowa gra**. Sprawdź czas sceny.
+
+Jeszcze w toku: **ujścia inland** (regres) — osobny deploy jak agent skończy.
+
+### Linia 13205 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:24 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13206 — AGENT
+
+Notatka o ujściach jest — czekam na fix kodu.
+
+### Linia 13208 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:27 PM (UTC+2)</timestamp>
+
+ok, rozpisz mi wszystkie problemy, jakie do tej pory były zapisane w temacie rzek oraz moje decyzje, które były w temacie rzek. Zapisz mi to wszystko w jednym miejscu. Przekażę to do mocniejszego modelu, może on znajdzie rozwiązania.
+
+### Linia 13209 — AGENT
+
+Zbieram z rejestrów i historii decyzji jeden dokument handoffu o rzekach.
+
+### Linia 13211 — AGENT
+
+Składam jeden handoff z problemami i Twoimi decyzjami o rzekach — dam ścieżkę, jak będzie gotowy.
+
+### Linia 13213 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:28 PM (UTC+2)</timestamp>
+
+najpierw zrób git push tego, co już masz obecnie najnowsze.
+
+### Linia 13215 — AGENT
+
+`main` jest już zsynchronizowany z origin (FALA 139). Są lokalne zmiany rzek (ujścia) — sprawdzam, czy można je commitnąć i wypchnąć.
+
+### Linia 13216 — AGENT
+
+FALA 139 już na origin. Commituję lokalny fix ujść i pushuję.
+
+### Linia 13218 — AGENT
+
+Push zrobiony.
+
+Na `origin/main` jest teraz:
+- `a2df580` — FALA 139 (scena + perf)
+- `9c4320b` — bramki ujść po topUp/wybrzeżu + scrub oznaczeń
+
+Uwaga: **robocza** nadal ma md5 `73c18fc2` (bez tego ostatniego commita ujść) — deploy osobno, jak będziesz chciał. Wracam do handoffu rzek.
+
+### Linia 13220 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 7:33 PM (UTC+2)</timestamp>
+
+wiesz co, nie mogę na razie przeprowadzić tej analizy problemu poprzez mocniejszy model. Zrób sam tą analizę, ale za pomocą grok.
+
+### Linia 13221 — AGENT
+
+Analizuję handoff i kluczowe miejsca w kodzie samodzielnie (Grok) — bez subagenta.
+
+### Linia 13223 — AGENT
+
+## Analiza Grok — temat rzek (FALA 134→139)
+
+Źródło: `dyspozycje/_handoff/HANDOFF-RZEKI-PELNY-2026-08-01.md` + aktualny kod na `main`.
+
+---
+
+### Werdykt w jednym zdaniu
+
+Mamy **trzy osobne problemy**, które FALA 138 połączyła w jeden „ból mapy”: (1) **za dużo pracy w etapie „główne”**, (2) **ścieżki bez domknięcia ujść po topUp/wybrzeżu**, (3) **scena skaliowała się z liczbą rzek** — (3) jest już naprawione w bundlu; (2) jest na `main`, ale nie w roboczej; (1) jest tylko częściowo ucięte.
+
+---
+
+### 1. Budowanie sceny (~kilkanaście minut) — **naprawione w FALA 139**
+
+**Przyczyna:** nie hang UI, tylko koszt renderu przy ~637 ścieżkach × ~40k hex:
+- `collapseToMergedMesh` + pełne `updateMatrixWorld` na tysiącach overlayi wybrzeża,
+- `mapDetail=high` **bez** `robloxLite` na Duży/Pangea,
+- osobny mesh na prawie każdą trasę rzeki.
+
+**Fix (`25b6135`, w `73c18fc2`):** lżejszy merge, wymuszony `robloxLite` >8k hex, batch 32 tras.  
+**Status:** czekasz tylko na pomiar w grze (cel: sekundy). To **nie** wraca przy samym mapgenie, o ile nie wrócimy do 600+ osobnych meshy.
+
+---
+
+### 2. Ujścia inland (regres jakości) — **kod na main, brak w roboczej**
+
+**Kanon (Twoja decyzja):** start → wić się aż do **innej rzeki albo oceanu**.
+
+**Przyczyna łańcuchowa (pewna z pipeline):**
+
+```
+generateRivers → prune ujść → topUp (hardStarts) → [tu brakowało bramki] → relief/złoża → ensureRiverOutlets → wybrzeże
+```
+
+1. **topUp** dokłada trasy **po** prune → część bez ujścia zostaje do końca fazy 7.  
+2. **`finalizeCoastAndInlandWater`** potrafi **odciąć** ujście po ostatniej bramce.  
+3. Oznaczenia `hex.rzeka` poza zachowanymi `paths` → wizualnie „urywane” biegi (stąd `scrubStrayRiverHexMarks`).
+
+**Fix `9c4320b`:** `ensureRiverOutlets` zaraz po topUp + ponownie po wybrzeżu + scrub.  
+**Ryzyko:** potrójne prune może **ściąć gęstość** (kolizja z „efekt był OK”). Trzeba zmierzyć liczbę ścieżek przed/po deployu.
+
+**Robocza `73c18fc2` tego jeszcze nie ma** — playtest ujść na obecnym START.html = stary stan.
+
+---
+
+### 3. „Rzeki — główne” >2 min — **nadal otwarte (główny tor)**
+
+**Przyczyna (H1 — najsilniejsza):** FALA 138 (`0c4faac`) przywróciła gęstość przez:
+- Pangea bootstrap **40–60** głównych + grid seed,
+- Duży `mainGridStride` **2**,
+- topUp=1 hardStarts,
+
+przy czym **koszt jest w ilości `traceRiver`**, nie w samym A*. Uzupełnienie ~1 s jest OK, bo to tani hardStarts — drogie jest **etap 1 / faza 6**.
+
+**Częściowy fix `d2db99c` (już w 139):**
+- `pangeaBootstrapRiverTarget` → **22–32** (nie 40–60),
+- `fastTrace` (mniej retry długości),
+- cache `mainKeys`, limit komórek 72, stride 3 na Pangea.
+
+To **nie gwarantuje ~10 s**. Jeśli nadal >2 min, zostaje:
+- za dużo komórek siatki na Duży Kontynenty/Ziemia (pętla `cellList` + `tryPlaceMainRiverFromCoast` per komórka),
+- albo medium (etap 2) liczy się w progressie „główne” i psuje odczyt czasu UI,
+- albo bootstrap nadal za często woła `traceRiverFromCoast` przy niskim hit-rate.
+
+**Constraint:** nie wracać do FALA 136 (`topUp=0` ≈ pusta mapa). Cel = **ten sam efekt, tańsze próby**.
+
+---
+
+### Oś przyczynowa (jak się to złożyło)
+
+| FALA | Intencja | Skutek uboczny |
+|------|----------|----------------|
+| 134–136 | Cięcia perf | Szybko, ale **za mało rzek** |
+| 138 tani fill | Gęstość bez proximity | Efekt OK + **główne >2 min** + **ujścia** + scena minuty |
+| 139 | Scena + częściTrace | Scena OK; perf głównych **częściowo**; ujścia **później** na main |
+
+To nie jest jeden bug — to **wahadło gęstość↔czas** bez twardej bramki „ujście zaraz po każdym fill”.
+
+---
+
+### Co robić dalej (kolejność, bez kodu teraz)
+
+1. **Deploy FALA 140** = `9c4320b` (+ aktualny main) → weryfikacja **ujść** i czy gęstość nie spadła.  
+2. **Pomiar sceny** na `73c18fc2` / 140 — potwierdzenie sekund.  
+3. **Perf głównych** (jeśli nadal >~30 s):  
+   - zmierzyć fazy (`_tmp-river-phase-timing`): etap1 vs etap2 vs topUp,  
+   - ciąć **liczbę prób**, nie finalną liczbę rzek (wyższy hit-rate ujść, mniejszy `cellList`, nie wyłączać hardStarts),  
+   - nie włączać z powrotem proximity/etap3 bez limitu czasu.  
+4. Bramka: `map-gen-regression` → A=B + **0 bez ujścia**; osobno licznik ścieżek vs FALA 138.
+
+---
+
+### Czego nie robić
+
+- Nie cofać taniego fill do `topUp=0`.  
+- Nie „naprawiać” gęstości przez proximity (minuty).  
+- Nie łączyć spawn z diagnozą rzek.  
+- Nie uważać `9c4320b` za zamknięty temat, dopóki nie zobaczysz go w **roboczej**.
+
+Jak napiszesz **deploy** — zrobię FALA 140 z ujściami. Jak napiszesz **działaj** na perf głównych — wtedy dopiero kopanie w `generatePhase1MainRivers` pod konkretny timing.
+
+### Linia 13225 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 8:56 PM (UTC+2)</timestamp>
+
+ok, jakie teraz masz konkretne propozycje zmian w związku z tym raportem?
+
+### Linia 13226 — AGENT
+
+Po FALA 140 (`935d1642`) większość z raportu jest już **wdrożona**. Konkretne propozycje dzielę na: **najpierw weryfikacja**, potem **opcjonalne dalsze cięcia**, jeśli coś jeszcze boli.
+
+---
+
+### A. Najpierw sprawdź (bez nowego kodu)
+
+1. **Główne rzeki** — czy etap jest w sekundach (~10–30 s), nie minutach.  
+2. **Ujścia** — czy żadna (prawie żadna) rzeka nie urywa się na suchym lądzie.  
+3. **Gęstość** — czy nadal „nie najgorzej” (bench: Pangea ~604 vs ~637 ≈ 95%).  
+4. **Budowanie sceny** — czy sekundy, nie kilkanaście minut.
+
+Jeśli **1–4 OK** → temat rzek z tego raportu zamykamy; nie dokładamy „ulepszeń”.
+
+---
+
+### B. Jeśli coś jeszcze nie gra — konkretne zmiany
+
+| Objaw | Propozycja zmiany | Pliki |
+|--------|-------------------|--------|
+| Główne nadal wolne na **Duży·Ziemia/Kontynenty** (nie tylko Pangea) | Ten sam pakiet co Pangea: limit `cellList`, `fastTrace`, cache `mainKeys`, mniejszy `mouthLimit` — **tylko** dla `largeMapPerf`, bez ruszania Standard | `gen-helpers.ts` → `generatePhase1MainRivers` (gałąź nie-Pangea) |
+| Ujścia OK w logice, ale wizualnie „ucięte” | Osobny tor renderu (dual wstęga/delta na Wybrzeżu) — **nie** kolejny prune | `scene.ts` / `mapRenderStyle.ts` (stara diagnoza B0.8b) |
+| Gęstość za niska po 140 | Lekko podnieść `pangeaBootstrapRiverTarget` (np. 22–32 → 28–40) **albo** `maxCellsToProcess` 72→100 — **nie** wracać proximity | `gen-helpers.ts` |
+| Potrójne `ensureRiverOutlets` obcina za dużo | Zostawić bramkę **po topUp** + **po wybrzeżu**; usunąć środkową (po złożach) jeśli redundantna — pomiar `paths.length` przed/po | `generator.ts` |
+| Scena nadal wolna | Sprawdzić czy `robloxLite` faktycznie ON (>8k); ewentualnie batch rzek 32→64 | `mapRenderStyle.ts`, `scene.ts` |
+
+---
+
+### C. Czego **nie** proponuję
+
+- Przywracać **etap 3 / proximity / dry-patch** na Duży/Pangea (z powrotem minuty).  
+- Cofać tani fill do `topUp=0` (pusta mapa).  
+- Mieszać to ze spawnem.  
+- Pełny `map-gen-regression` jako bramka czasu (timeout ≠ regresja logiki).
+
+---
+
+### D. Jedna rekomendacja „co dalej”
+
+**Teraz:** playtest A.1–4 na FALA 140.  
+**Potem:** tylko jeśli coś z tabeli B się potwierdzi — jedna paczka, jeden objaw.
+
+Napisz wynik (np. „główne OK / ujścia nie / gęstość OK / scena OK”) — wtedy wdrażam wyłącznie to, co realnie padnie.
+
+### Linia 13228 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 8:58 PM (UTC+2)</timestamp>
+
+generowanie rzek skróciło się do 20 sekund, czyli jest ok, ale budowanie sceny trwa za długo. Tak nigdy nie było. Coś jest nie tak. To jest jakiś efekt innych elementów
+
+### Linia 13229 — AGENT
+
+Rzeki ~20 s — OK. Scena nadal za długa — szukam kosztu poza rzekami (wybrzeże, relief, las, merge).
+
+### Linia 13230 — AGENT
+
+Rzeki ~20 s zamykam jako OK. Scena — szukam kosztu w **innych elementach** (wybrzeże, góry, las, merge), nie w generatorze rzek. Dam znać z root cause i fixem.
+
+### Linia 13231 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 8:58 PM (UTC+2)</timestamp>
+
+pytanie. Co jest w budowaniu sceny? I trzeba to przeaudytować, że nie ma jakichś błędów w kodzie.
+
+### Linia 13232 — AGENT
+
+Sprawdzam w kodzie, z czego składa się „Budowanie sceny”, i audytuję pod kątem błędów.
+
+### Linia 13233 — AGENT
+
+**Budowanie sceny** to nie generowanie mapy — to złożenie **3D z już gotowej mapy** (heksy, woda, rzeki, dekoracje).
+
+Typowa kolejność w `buildScene`:
+1. teren / heksy (mesh lądu i wody),
+2. wybrzeże i nakładki wody,
+3. **rzeki** (wstęgi z `riverPaths`),
+4. relief — góry, wzgórza,
+5. lasy i inne dekoracje,
+6. scalanie (`collapseToMergedMesh`) — tu często idzie czas,
+7. niebo / światło / drobne UI sceny.
+
+Robię pełny audyt kodu pod błędy i pułapki O(n²) — zaraz dam listę etapów z pliku + podejrzane miejsca.
+
+### Linia 13235 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:00 PM (UTC+2)</timestamp>
+
+więc pewnie problem jest z nakładkami wody i stęgami czyli dwójka i trójka.
+
+### Linia 13237 — AGENT
+
+Tak — to najbardziej prawdopodobne: **nakładki wody/wybrzeże** i **wstęgi rzek**. Audyt i fix idą właśnie w te dwa.
+
+### Linia 13239 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:00 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13240 — AGENT
+
+Audyt potwierdza Twoją intuicję — przekazuję wynik agentowi perf i skracam Ci wnioski.
+
+### Linia 13242 — AGENT
+
+Audyt [Audyt: co w buildScene](02eba28e-3931-45ab-a651-57d33f05d72f) potwierdza Twoją intuicję.
+
+**Budowanie sceny — skrót:**
+1. konfiguracja + InstancedMesh terenu  
+2. **nakładki wody / wybrzeże** (per heks + później merge) ← tu jest problem  
+3. **wstęgi rzek** (batch już jest; drugorzędne)  
+4. góry / las / finał
+
+**Główne wąskie gardła:**
+- merge tysięcy overlayów wybrzeża (`collapseToMergedMesh`) w fazie 80–90%,
+- nowe geometrie `buildStyleCoastWaterCap` **per heks** (nawet w `robloxLite`).
+
+Cache ujść rzek jest OK — to nie ten bug co w FALA 137. Fix idzie w **wybrzeże + merge**.
+
+
+---
+
+## Dopisek synchronizacji — 2026-08-01 19:20 UTC (linie 13244–13285)
+
+
+### Linia 13244 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:04 PM (UTC+2)</timestamp>
+
+mam może inną, bardziej drastyczną propozycję. Co gdybyśmy usunęli całkowicie kod dotyczący generowania rzek i na razie sprawdzili, jak szybko będzie generować się świat bez rzek. Ale warunek, trzeba cały kod z wszystkich miejsc, gdzie odnosimy się do rzek pod kątem generowania mapy tylko zapisać sobie, żebyśmy mogli powoli przywracać. Będziemy myśleć jak powoli przywracać rzeki minimalnym nakładem pracy. Na początku najważniejsze zasady i reguły i zobaczymy jaki będzie miało to efekt. Będziemy powoli dołączać kolejne elementy tak aż osiągniemy satysfakcjonujący poziom. Pełnienie rzekami oraz szybkość ładowania się gry. Będziemy też wiedzieć kiedy jest regres który element daje największy regres bo będziemy to robić stopniowo jeden po drugim. Najpierw rozpisz co usuwamy wycinamy z gry generowania gry temat dotyczy tylko generowania gry. Potem ustal pięciostopniowy plan co w pierwszym co w drugim i co w kolejnym kroku wprowadzamy jako najważniejsze, ale idziemy krok po kroku zobaczymy co da największy efekt i co daje największy regres pod kątem czasu generowania mapy
+
+### Linia 13245 — AGENT
+
+Rozpisuję inwentarz wycięć (tylko mapgen) i pięciostopniowy plan stopniowego przywracania — bez wycinania kodu na razie.
+
+### Linia 13246 — AGENT
+
+Poniżej plan **bez wycinania kodu na razie** — najpierw rozpis, potem Twoje „działaj”.
+
+---
+
+## 1. Co wycinaamy / wyłączamy (tylko **generowanie mapy**)
+
+Cel: mapa powstaje **bez** tras rzek (`riverPaths = []`, brak `hex.rzeka`). Reszta gry (render, MP, bitwa) zostaje — po prostu nie ma czego rysować / używać.
+
+### A. Pipeline w `generator.ts` (to jest „włącznik”)
+
+| Element | Rola | Akcja |
+|---------|------|--------|
+| Faza UI **„Rzeki — główne”** | `generateRivers(...)` | **SKIP** — puste `paths`/`kinds` |
+| `stripRiverMarksFromOpenSea` | czyści oznaczenia | SKIP (no-op przy pustych) |
+| `pruneOrphanRiverPaths` / `pruneRiversNotReachingRealSea` (×2) | bramki ujść | SKIP |
+| Faza UI **„Rzeki — Uzupełnienie”** | `topUpRiverGridCoverage` | SKIP |
+| `ensureRiverOutlets` (po topUp / po złożach / po wybrzeżu) | bramki | SKIP |
+| `flattenFalseCoastalRiverNotches` | fałszywe delty | SKIP lub zostawić (zależne od rzek — bezpieczniej SKIP) |
+| `clearRiverMarks` na starcie | i tak OK | zostawić |
+
+### B. Logika w `gen-helpers.ts` (nie kasować pliku)
+
+Cały blok: `generateRivers`, etapy 1/2/3, bootstrap, grid, hardStarts, proximity, dry-patch, `traceRiver*`, `markRiverPath`, prune, outlets…  
+**Nie usuwamy z dysku** — wyłączamy **wywołania**. Kod zostaje w repo (branch/archiwum + flaga).
+
+### C. Zależności „po rzekach” (zostają, ale na pustych rzekach)
+
+| Element | Efekt bez rzek |
+|---------|----------------|
+| Las / złoża (kolejność po rzekach) | działają; glina „przy rzece” → mniej / zero |
+| Relief przed rzekami | bez zmian |
+| Spawn klastrów | bez zmian (osobny tor) |
+
+### D. Poza zakresem (NIE ruszamy w tym eksperymencie)
+
+- render wstęg / wybrzeże w `scene.ts` (i tak puste paths → faza rzek ~0),
+- koszt ruchu 1 MP, bród, irygacja, port, yield gliny w danych,
+- testy `river-*.cjs` (mogą FAIL — OK na czas eksperymentu).
+
+### E. Jak **zachować** kod (żeby przywracać)
+
+1. Branch: `archive/rivers-mapgen-baseline-2026-08-01` (pełny stan sprzed wyłączenia).  
+2. Flaga w mapgen, np. `RIVER_MAPGEN_STAGE = 0` (0=off … 5=pełny).  
+3. Jedno miejsce w `generator.ts`: `if (stage === 0) { riverPaths=[]; … skip fazy 6–7 }`.  
+4. Krótki plik `dyspozycje/_handoff/RZEKI-REINTRO-PLAN.md` z tym planem + pomiary.
+
+**Nie kasujemy** funkcji z `gen-helpers.ts` — tylko sterujemy flagą. Kasowanie = utrata historii i trudniejsze przywracanie.
+
+---
+
+## 2. Pięciostopniowy plan przywracania (krok po kroku + pomiar)
+
+Po każdym kroku: **ta sama mapa** (np. Duży · Pangea/Ziemia · seed 42) + zapis czasu:
+- „Rzeki — główne”
+- „Rzeki — Uzupełnienie” (gdy wróci)
+- **cały mapgen**
+- opcjonalnie „Budowanie sceny” (osobno — bo to nie mapgen, ale ciekawe)
+
+| Krok | Co włączamy (najważniejsze najpierw) | Cel jakości | Co mierzymy (regres czasu) |
+|------|--------------------------------------|-------------|----------------------------|
+| **0** | **ZERO rzek** — baseline | mapa bez rzek | czas mapgen / scena bez wstęg |
+| **1** | **Tylko główne** — mało, od oceanu, z bramką ujść (morze **lub** inna rzeka). Bez medium/short, bez topUp, bez etap3, bez proximity/dry | „jest sieć główna, ciągła” | Δ vs krok 0 — **koszt samego etapu 1** |
+| **2** | **+ średnie (dopływy)** wpadające w main/morze; nadal bez short/feeder, bez heavy fill | gęstość „nie najgorzej” | Δ vs krok 1 — **koszt medium** |
+| **3** | **+ tani topUp** (1× hardStarts, **bez** proximity) | pokrycie suchych plam | Δ vs krok 2 — **koszt uzupełnienia** |
+| **4** | **+ twarde reguły jakości**: prune sierot, `ensureRiverOutlets` po topUp i po wybrzeżu, scrub oznaczeń | 0 urwań na lądzie | Δ vs krok 3 — zwykle mały czas, duży zysk jakości |
+| **5** | **Opcjonalny luksus** (tylko jeśli 1–4 OK i czas pozwala): lekki grid/coverage **albo** ograniczone dry-patch; **NIE** pełny proximity z minutami | max gęstość w limicie czasu | Δ vs krok 4 — tu zwykle największy regres |
+
+### Kolejność „najważniejsze reguły” (Twoje kanony)
+
+1. Ciągłość: start → ujście (rzeka lub ocean).  
+2. Główne od oceanu / sensowny bieg (nie sieroty).  
+3. Dopływy do main (DESIGN sieci).  
+4. Gęstość (efekt wizualny).  
+5. Fill/dry (perf-ryzyko) — na końcu.
+
+### Jak czytać wyniki
+
+- Duży skok czasu na kroku **1** → problem w `traceRiver` / bootstrap / siatce main.  
+- Skok na **2** → za dużo medium / `traceRiver`.  
+- Skok na **3** → hardStarts / topUp.  
+- Skok na **5** → nie wracać; zostawić 1–4 jako „satysfakcjonujący poziom”.
+
+---
+
+## 3. Rekomendacja startu
+
+1. Zapiszesz baseline (branch + flaga `STAGE=0`).  
+2. Deploy roboczej **bez rzek** → mierzysz mapgen + scenę.  
+3. Dopiero **krok 1** (same główne + ujścia).  
+4. Nie skaczemy do 5, dopóki 1–4 nie dadzą OK czasu i wyglądu.
+
+Jak napiszesz **działaj** — robię flagę + stage 0 (kod zostaje, tylko wyłączony) i krótką notatkę w `_handoff`. Inwentarz plików z agenta dogram do tej notatki.
+
+### Linia 13248 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:05 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13249 — AGENT
+
+Scena gotowa (`6556fa7`) — deployuję FALA 141.
+
+### Linia 13256 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:10 PM (UTC+2)</timestamp>
+
+czy zabezpieczyłeś sobie kod, który chcesz usunąć teraz z gry dotyczący rzek? Czy zrobiłeś sobie ewentualnie backup plików, w których te rzeki występują? ?
+
+### Linia 13257 — AGENT
+
+Nie — **jeszcze nic nie wycinałem** z generowania rzek. Był tylko **plan** (flaga stage 0–5 + branch archiwum); czekałem na Twoje **„działaj”**.
+
+Dlatego:
+- **nie** ma osobnego backupu plików rzek,
+- **nie** ma brancha `archive/rivers-…`,
+- kod rzek nadal jest w `main` / w `gen-helpers.ts` + `generator.ts` jak dotychczas.
+
+FALA 141 (scena / wybrzeże) to **osobny** tor renderu — też nie kasuje mapgenu rzek.
+
+Zanim cokolwiek wyłączymy, mogę od razu zrobić zabezpieczenie:
+1. branch `archive/rivers-mapgen-baseline-2026-08-01` (pełny snapshot),
+2. opcjonalnie kopie `generator.ts` / `gen-helpers.ts` do `dyspozycje/_archiwum-rzeki/`,
+3. dopiero potem flaga `RIVER_MAPGEN_STAGE=0`.
+
+Napisz **działaj** (backup + stage 0) albo **tylko backup** — wtedy robię samo zabezpieczenie bez wyłączania.
+
+### Linia 13258 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:10 PM (UTC+2)</timestamp>
+
+zauważył też ostatnio jeden problem, mianowicie cywilizacje jednego typu czasem przerzucają się do kręgu innego kulturowego cywilizacji przeciwnej a powinny generować się wszystkie razem wokół siebie. Poza tym wydaje mi się że inne cywilizacje powinny być generowane w ten sposób że główna cywilizacja generuje się co najmniej w odległości dziesięć heks od morza po to żeby było miejsce dla państw miast i tym samym żeby nie wybierało jakiś wysp dziwnych miejsc tylko raczej większe lądy. Oczywiście ten parametr 10 powinien być dostosowany dla wielkości map, bo ja mówię tutaj przy mapie normalnej. standardowej.
+
+### Linia 13259 — AGENT
+
+Zapisuję oba problemy spawnu (klastry kulturowe + dystans od morza skalowany wielkością mapy). Kod rzek nadal nietknięty — backup dopiero po Twoim sygnale.
+
+### Linia 13261 — AGENT
+
+Zapisuję. Dwa punkty:
+
+1. **Klastry kulturowe** — ten sam typ ma trzymać się razem, nie „przeskakiwać” do obcego kręgu.  
+2. **Dystans od morza** — na Standardzie baza **~10 hex** (miejsce na miasta-państwa, większy ląd, bez dziwnych wysp); na Małej/Dużej **skala**.
+
+Kod rzek nadal nietknięty. Spawn też **nie wdrażam**, dopóki nie powiesz **działaj** (albo wybierzesz: najpierw backup rzek / scena / spawn).
+
+### Linia 13262 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:11 PM (UTC+2)</timestamp>
+
+ale przyznam teraz szczerze, że ilość generowanych rzek jest zadowolająca. Problem leży w tym ostatnim etapie.
+
+### Linia 13263 — AGENT
+
+Rozumiem — gęstość rzek OK, nie ruszamy mapgenu. Problem to ostatni etap: Budowanie sceny. Sprawdzam, czy FALA 141 (InstancedMesh wybrzeża) jest już w roboczej.
+
+### Linia 13264 — AGENT
+
+Gęstość rzek OK — eksperyment „wyłącz rzeki” odkładam. FALA 141 (szybsze Budowanie sceny) jest lokalnie w roboczej; domykam commit i push.
+
+### Linia 13266 — AGENT
+
+OK — **gęstość rzek zostawiamy**. Eksperyment „wyłącz rzeki” **nie robimy**.
+
+Problem = **Budowanie sceny**. Właśnie domknięta **FALA 141** `0b70e93f` (InstancedMesh wybrzeża zamiast tysięcy geometrii per heks).
+
+`gra-robocza/START.html` — Ctrl+F5 + **Nowa gra**. Sprawdź czas **ostatniego etapu** i wygląd brzegu.
+
+### Linia 13267 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-f4236440-ef29-499c-ba9d-e65ffabe47ec.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 9:13 PM (UTC+2)</timestamp>
+
+to jest jakiś grubszy, inny problem.
+
+### Linia 13268 — AGENT
+
+To osobny, poważniejszy bug: nazwa miasta z jednego kręgu kulturowego, a etykieta cywilizacji z innego. Zapisuję i sprawdzam, skąd się bierze.
+
+### Linia 13270 — AGENT
+
+Tak — to grubsze i **inne** niż klastry na mapie.
+
+Na screenie: miasto **Jin**, a podpis **Argos · Grecy · miasto-państwo** — nazwa z jednego kręgu, cywilizacja z drugiego.
+
+Zapisuję osobno i szukam w kodzie, skąd się bierze ta niespójność. Nie mieszam z rzekami ani sceną.
+
+### Linia 13271 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-8f036972-990e-4002-bafb-101844343179.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Saturday, Aug 1, 2026, 9:14 PM (UTC+2)</timestamp>
+
+tu jest jakiś inny dziwny problem, mianowicie chińskie państwa miasta system określa jako państwa miasta greckie, coś jest nie tak z Chińczykami
+
+### Linia 13273 — AGENT
+
+Jasne — chińskie miasta-państwa dostają etykietę **grecką**. Szukam w danych/kodzie Chin vs Grecy; dam hipotezę, bez fixu na razie.
+
+### Linia 13275 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:14 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13276 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:14 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13277 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:14 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13278 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:14 PM (UTC+2)</timestamp>
+
+Perform any necessary follow-up actions in response to the subagent completion above. If no follow-up work is needed, no further action is required. If you mention an agent or subagent in your response, link it with the `[Name](id)` Don't use generic label such as `[agent]`, `[worker]`, or `[subagent]`. For cloud subagents, when the agent has edited code, link to `[Review](bc-id#changes)`, or, if you know the exact added and deleted line counts, `[Review +A −D](bc-id#changes)`, replacing A and D with those counts. Never write A or D literally. Use `[Try Live](bc-id#desktop)` only when the agent used computer use. Don't repeat the same confirmation every time.
+
+### Linia 13279 — AGENT
+
+Notatki zsynchronizowane. Eksperyment wyłączania rzek zostaje odłożony.
+
+**Budowanie sceny:** FALA 141 `0b70e93f` już w roboczej — Ctrl+F5 + Nowa gra. Równolegle trwa recon **Chińczycy → Grecy** przy miastach-państwach.
+
+### Linia 13281 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:18 PM (UTC+2)</timestamp>
+
+ok, nad czym teraz pracujesz? ?
+
+### Linia 13282 — AGENT
+
+Aktualnie **nic nie koduję** — czekam na Twoją decyzję. Stan wątków:
+
+| Temat | Status |
+|--------|--------|
+| **Rzeki (gęstość + czas ~20 s)** | OK — zamknięte |
+| **Budowanie sceny** | FALA 141 `0b70e93f` w roboczej — czekam na Twój pomiar czasu/brzegu |
+| **Kill-switch rzek** | Odłożony (gęstość OK) |
+| **Spawn: klastry kulturowe + 10 hex od morza** | Zapisane, bez wdrożenia |
+| **Chińskie MP → etykieta Grecy** (`ownerId`) | Zdiagnozowane, **bez fixu** — czeka na **działaj** |
+
+Jak napiszesz **działaj**, biorę w kolejności: najpierw **Jin/Argos (ownerId)**, albo scenę jeśli nadal wolna — powiedz które pierwsze.
+
+### Linia 13284 — MACIEJ
+
+<timestamp>Saturday, Aug 1, 2026, 9:19 PM (UTC+2)</timestamp>
+
+Prośba, żebyś zapisał sobie do swoich głównych wytycznych, że za każdym razem, gdy coś zrobisz, pytaj się o następny krok i proponuj konkretne kroki, kolejne, żeby się nie dopytywał za każdym razem.
+
+### Linia 13285 — AGENT
+
+Zapisuję to jako stałą wytyczną w regułach projektu.

@@ -13,6 +13,7 @@ import {
 } from '../game/civ-names';
 import {
   computeClusters,
+  computeSameTypeRivalHalfPlaneAxis,
   packRivalCitiesAroundCore,
   packCityStatesAroundCapital,
   MIN_DIST_START_CITY_STATE,
@@ -21,10 +22,11 @@ import {
   passesPlayerStartMassGate,
   passesLocalLandGate,
   pickPlayerClusterCenter,
+  capitalMinSeaDistForMap,
   type ClusterPlacement,
   type TypeCluster,
 } from './clusters';
-import { hexDistanceAxial, mulberry32 } from './gen-helpers';
+import { hexDistanceAxial, mulberry32, buildSeaDistanceField } from './gen-helpers';
 import { TerenBazowy } from '../types/hex';
 
 /** Slot startowy — kontrakt dla SILNIK (D-START). */
@@ -60,6 +62,8 @@ export interface ClusterSpawnPlan {
   pendingSameTypeRivalHexes: Array<{ q: number; r: number }>;
   /** Ownerzy stolic klastrów — ekspansyjna AI (faza 1 konsolidacji). */
   clusterCapitalOwnerIds: number[];
+  /** Zarezerwowane ownerId dla deferred same-type rivals (po obcych slotach). */
+  pendingSameTypeRivalOwnerIds: number[];
 }
 
 function landHexesFromMap(map: GameMap): Array<{ q: number; r: number }> {
@@ -70,6 +74,13 @@ function landHexesFromMap(map: GameMap): Array<{ q: number; r: number }> {
     out.push({ q: h.coords.q, r: h.coords.r });
   }
   return out;
+}
+
+function mapCenterFromGameMap(map: GameMap): { q: number; r: number } {
+  return {
+    q: (map.szerokoscQ - 1) / 2,
+    r: (map.wysokoscR - 1) / 2,
+  };
 }
 
 /**
@@ -92,6 +103,7 @@ export function buildSameTypeRivalSlots(
     rivalCount,
     MIN_DIST_START_CITY_STATE,
     seed,
+    mapCenterFromGameMap(map),
   );
   const slots: ClusterSpawnSlot[] = [];
   let ownerId = firstOwnerId;
@@ -123,6 +135,7 @@ export function buildSameTypeRivalCandidateHexes(
   const land = landHexesFromMap(map);
   const minDist = MIN_DIST_START_CITY_STATE;
 
+  const mapCenter = mapCenterFromGameMap(map);
   const { stateCities } = packCityStatesAroundCapital(
     land,
     land,
@@ -130,7 +143,11 @@ export function buildSameTypeRivalCandidateHexes(
     rivalCount,
     minDist,
     seed,
-    { excludeHex: core, growthReserve: 0 },
+    {
+      excludeHex: core,
+      growthReserve: 0,
+      halfPlaneAxis: computeSameTypeRivalHalfPlaneAxis(core, mapCenter, seed),
+    },
   );
   return stateCities;
 }
@@ -201,19 +218,26 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
       pendingSameTypeRivals: rywaleNaKlaster,
       pendingSameTypeRivalHexes: [],
       clusterCapitalOwnerIds: [],
+      pendingSameTypeRivalOwnerIds: [],
     };
   }
 
   const capPosRaw = capitalOf(playerCluster) ?? fallbackHex;
   const land = landHexesFromMap(map);
   const masses = groupHabitableMasses(land);
+  const seaDist = buildSeaDistanceField(map.hexes);
+  const minSeaDist = capitalMinSeaDistForMap(
+    placement.rozmiarMapy,
+    map.szerokoscQ,
+    map.wysokoscR,
+  );
   let capPos = capPosRaw;
   if (!passesPlayerStartMassGate(map, capPos.q, capPos.r, masses)) {
     const mapCenter = {
       q: (map.szerokoscQ - 1) / 2,
       r: (map.wysokoscR - 1) / 2,
     };
-    const fixed = pickPlayerClusterCenter(map, masses, land, mapCenter, mulberry32(seed));
+    const fixed = pickPlayerClusterCenter(map, masses, land, mapCenter, mulberry32(seed), seaDist, minSeaDist);
     if (fixed) capPos = fixed;
   }
 
@@ -258,6 +282,12 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     }
   }
 
+  // Zarezerwuj ownerId dla deferred same-type rivals PO obcych slotach (BUG-MP-NAZWA-CIV-MISMATCH).
+  const pendingSameTypeRivalOwnerIds: number[] = [];
+  for (let i = 0; i < pendingSameTypeRivals; i++) {
+    pendingSameTypeRivalOwnerIds.push(nextOwnerId++);
+  }
+
   return {
     playerStartHex: capPos,
     playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
@@ -267,6 +297,7 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     pendingSameTypeRivals,
     pendingSameTypeRivalHexes,
     clusterCapitalOwnerIds,
+    pendingSameTypeRivalOwnerIds,
   };
 }
 

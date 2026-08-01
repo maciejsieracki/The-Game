@@ -5008,6 +5008,7 @@ async function boot(): Promise<void> {
     let pendingSameTypeRivalCount = 0;
     /** Pre-planowane hexy państw gracza (klaster z mapgen). */
     let pendingSameTypeRivalHexes: Array<{ q: number; r: number }> = [];
+    let pendingSameTypeRivalOwnerIds: number[] = [];
     /** Obcy typy cywilizacji — spawn po stolicy gracza i rywalach tego samego typu. */
     let pendingForeignSpawnCities: Array<{ q: number; r: number; ownerId: number; name: string }> = [];
     /** Stolice klastrów obcych typów — ekspansyjna AI. */
@@ -5594,6 +5595,7 @@ async function boot(): Promise<void> {
       clusterPlayerStartCityName = plan.playerStartCityName;
       pendingSameTypeRivalCount = plan.pendingSameTypeRivals;
       pendingSameTypeRivalHexes = plan.pendingSameTypeRivalHexes.slice();
+      pendingSameTypeRivalOwnerIds = plan.pendingSameTypeRivalOwnerIds.slice();
       clusterPlacement = plan.placement;
       clusterStartSeed = seed;
       clusterCapitalOwnerIds.clear();
@@ -5680,10 +5682,8 @@ async function boot(): Promise<void> {
       pendingSameTypeRivalCount = 0;
       // Pre-plan z mapgen zostaje tylko do podglądu UI — nie używamy go do spawnu.
       pendingSameTypeRivalHexes = [];
-
-      let nextOwnerId = 1;
-      for (const c of cities) if (c.ownerId >= nextOwnerId) nextOwnerId = c.ownerId + 1;
-      for (const u of units) if (u.ownerId >= nextOwnerId) nextOwnerId = u.ownerId + 1;
+      const rivalOwnerIds = pendingSameTypeRivalOwnerIds.slice();
+      pendingSameTypeRivalOwnerIds = [];
 
       const core = { q: _coreQ, r: _coreR };
       const candidates = buildSameTypeRivalCandidateHexes(
@@ -5693,12 +5693,42 @@ async function boot(): Promise<void> {
         clusterStartSeed,
       );
 
+      const reservedForeignOwnerIds = new Set(
+        pendingForeignSpawnCities.map(sc => sc.ownerId),
+      );
+      const allocFreeRivalOwnerId = (): number => {
+        let next = 1;
+        const bump = (oid: number) => {
+          if (oid >= next) next = oid + 1;
+        };
+        for (const c of cities) bump(c.ownerId);
+        for (const u of units) bump(u.ownerId);
+        for (const oid of aiOwnerCivMap.keys()) bump(oid);
+        for (const oid of reservedForeignOwnerIds) bump(oid);
+        while (
+          aiOwnerCivMap.has(next)
+          || reservedForeignOwnerIds.has(next)
+          || cities.some(c => c.ownerId === next)
+        ) {
+          next += 1;
+        }
+        return next;
+      };
+
       let _rivalsFounded = 0;
       let _rivalsRejected = 0;
-      for (const pos of candidates) {
+      for (let ri = 0; ri < candidates.length; ri++) {
         if (_rivalsFounded >= targetCount) break;
-
-        const ownerId = nextOwnerId + _rivalsFounded;
+        const pos = candidates[ri]!;
+        let ownerId = rivalOwnerIds[_rivalsFounded] ?? allocFreeRivalOwnerId();
+        // BUG-MP-NAZWA-CIV-MISMATCH: nie nadpisuj obcego typ/civ na współdzielonym ownerId.
+        const existingCiv = aiOwnerCivMap.get(ownerId);
+        if (
+          (existingCiv != null && existingCiv !== _menuCivId)
+          || reservedForeignOwnerIds.has(ownerId)
+        ) {
+          ownerId = allocFreeRivalOwnerId();
+        }
         const nazwa = clusterRivalCityName(
           data.civs,
           _menuCivId,

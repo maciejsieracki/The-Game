@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `0b70e93f` - 2026-08-01 21:06 - FALA 141: coast InstancedMesh + shared geo (Budowanie sceny) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `2b1e072c` - 2026-08-01 22:38 - FALA 142: ląd% + spawn MP/ownerId + półpłaszczyzna A + ~10 hex od morza + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `2b1e072c1b915bf53faf6a478ac0a680` · stempel: `ROBOCZA · 2026-08-01 22:38`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: `enforceTargetDryLandFraction` (suwak 20/40/60%); ownerId rivals vs obce MP; `assignTypesToClusterCenters`; `capitalMinSeaDist` Standard=10; SPAWN-EXPANSION-ARC-Q1=A (półpłaszczyzna MP). **Bez** fixu sceny Pangea (patch odłożony).
+- tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `0b70e93f` - 2026-08-01 21:06 - FALA 141: coast InstancedMesh + shared geo (Budowanie sceny) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `0b70e93fd0c0db0a893be4a1577e7fc8` · stempel: `ROBOCZA · 2026-08-01 21:06`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: wybrzeże/piasek — współdzielone geometrie + max 5 InstancedMesh (bez alokacji per heks); ujścia rzek 1 ribbon; mapgen bez zmian.

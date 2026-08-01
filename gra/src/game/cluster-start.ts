@@ -40,6 +40,8 @@ export interface ClusterStartPlan {
   pendingSameTypeRivals: number;
   /** Pre-planowane hexy państw gracza (klaster z mapgen). */
   pendingSameTypeRivalHexes: Array<{ q: number; r: number }>;
+  /** Zarezerwowane ownerId dla deferred same-type rivals (BUG-MP-NAZWA-CIV-MISMATCH). */
+  pendingSameTypeRivalOwnerIds: number[];
   /** Stolice klastrów obcych typów — ekspansyjna AI (faza 1). */
   clusterCapitalOwnerIds: number[];
 }
@@ -110,5 +112,6 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     pendingSameTypeRivals: spawnPlan.pendingSameTypeRivals,
     pendingSameTypeRivalHexes: spawnPlan.pendingSameTypeRivalHexes,
     clusterCapitalOwnerIds: spawnPlan.clusterCapitalOwnerIds,
+    pendingSameTypeRivalOwnerIds: spawnPlan.pendingSameTypeRivalOwnerIds,
   };
 }

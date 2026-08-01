@@ -1,7 +1,7 @@
 # HANDOFF RZEKI — pełny kontekst 2026-08-01
 
 > **Dla:** mocniejszy model (planowanie / naprawa regresji FALA 138–139)  
-> **Stan źródeł:** `STAN-PRACY-HANDOFF.md` (2026-08-01 ~19:27) · ROBOCZA **`73c18fc2`** (FALA 139, 19:20) · **main** `9c4320b` (fix ujść, **nie** w bundle)  
+> **Stan źródeł:** `STAN-PRACY-HANDOFF.md` (2026-08-01 ~21:11) · ROBOCZA **`0b70e93f`** (FALA 141, 21:06) · **main** `9c4320b` (fix ujść) + `6556fa7` (coast InstancedMesh)  
 > **Wejście gry:** `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**
 
 ---
@@ -40,10 +40,11 @@ Maciej 2026-08-01 ~19:27: *„rozpisz mi wszystkie problemy, jakie do tej pory b
 | 2026-07-29 | **BUG-RZEKI-DOPLYWY** | *„Rzeki nie powinny się zaczynać i kończyć na lądzie, jeżeli co najmniej nie wpadną do innej rzeki lub morza"* | 🟢 wdrożone (`ensureRiverOutlets`, `finalizeTributaryPath`) |
 | 2026-07-10 | **Render styl** | **Kanciasty wall-tracing** (`sharp=true`) — NIE centrolinia, NIE CatmullRom; commit `3d5da76` | 🟢 wdrożone |
 | 2026-07-23 | **C-BTL-BROD-Q1=C** | Bród: ruch ×0,5, −25% atak/obrona w brodzie, +15% obrony brzegu | 🟢 wdrożone (osobny tor bitwy) |
-| 2026-08-01 ~19:00 | **Constraint perf** | Główne rzeki było **~10 s** → po FALA 138 **>2 min** — do naprawy, **bez degradacji gęstości** | 🔵 W TRAKCIE |
+| 2026-08-01 ~19:00 | **Constraint perf** | Główne rzeki było **~10 s** → po FALA 138 **>2 min** — do naprawy, **bez degradacji gęstości** | 🟢 **ZAMKNIĘTE** (~20 s OK, Maciej ~20:58) |
 | 2026-08-01 ~19:17 | **Constraint efekt** | *„natomiast efekt rzek był całkiem nie najgorszy"* — **nie wracać do pustej mapy** | 🔵 obowiązuje przy fixach |
 | 2026-08-01 ~19:18 | **Constraint ciągłość** | *„rzeka jeżeli gdzieś startuje, to powinna tak długo się wić, aż sięgnie innej rzeki lub oceanu"* — regres po FALA 138 | 🔵 W TRAKCIE |
 | 2026-08-01 ~19:03 | **Constraint scena** | „Rzeki Uzupełnienie ~1 s OK"; „Budowanie sceny" **kilkanaście minut** (nie hang) — do naprawy | 🟡 scena: fix FALA 139; ujścia: fix `9c4320b` na main, **nie** w ROBOCZA |
+| 2026-08-01 ~21:11 | **Constraint gęstość + diagnoza** | *„ilość generowanych rzek jest zadowalająca. Problem leży w tym ostatnim etapie."* — gęstość/mapgen **OK**; problem = **Budowanie sceny** (ostatni etap UI), nie generowanie rzek | 🔵 obowiązuje; kill-switch rzek stage 0–5 → **ODŁOŻONY** |
 
 **Reguła `reguły mapa` (skrót kanonu generatora):**
 
@@ -59,17 +60,17 @@ Maciej 2026-08-01 ~19:27: *„rozpisz mi wszystkie problemy, jakie do tej pory b
 
 | ID | Objaw | Status | FALA | Constraint |
 |----|-------|--------|------|------------|
-| **BUG-RZEKI-PERF-FALA138** | Etap UI „Rzeki — główne" **>2 min** (było **~10 s**) | **W TRAKCIE** (Maciej „działaj" ~19:07) | 138 `cbc79e63` wprowadził regres; 139 `d2db99c` częściowy fix | Nie degradować gęstości/wyglądu |
-| **BUG-RZEKI-UJSCIE-FALA138** | Część rzek **urywa bieg na lądzie** zamiast ujściem w rzekę/ocean | **KOD NA MAIN** `9c4320b` — **nie** w bundle `73c18fc2`; deploy czeka | 138 `0c4faac` (tani fill) → fix `9c4320b` | Zachować gęstość; zweryfikować po deploy |
-| **R-RZEKI-PERF-FALA138** | Rejestr prosby — mirror BUG-RZEKI-PERF | W TRAKCIE | j.w. | j.w. |
-| **R-RZEKI-UJSCIE-FALA138** | Rejestr prosby — mirror BUG-RZEKI-UJSCIE | KOD NA MAIN (jak wyżej) | fix `9c4320b` | j.w. |
+| **BUG-SCENA-PERF-FALA138** | „Budowanie sceny" **nadal za długo** („tak nigdy nie było") | **W TRAKCIE** (ponownie, Maciej ~21:11) | 141 `0b70e93f` (coast InstancedMesh) — deploy mógł wisieć | Maciej ~21:11: gęstość rzek OK; problem = **ostatni etap = Budowanie sceny** (nie mapgen). Kill-switch rzek → **ODŁOŻONY** |
+| **BUG-RZEKI-UJSCIE-FALA138** | Część rzek **urywa bieg na lądzie** zamiast ujściem w rzekę/ocean | **KOD NA MAIN** `9c4320b` — deploy FALA 140 | 138 `0c4faac` (tani fill) → fix `9c4320b` | Zachować gęstość; zweryfikować po deploy |
+| **R-SCENA-PERF-FALA138** | Rejestr prosby — mirror BUG-SCENA | W TRAKCIE (ponownie) | j.w. | j.w. |
+| **R-RZEKI-UJSCIE-FALA138** | Rejestr prosby — mirror BUG-RZEKI-UJSCIE | deploy FALA 140 | fix `9c4320b` | j.w. |
 
 ### 2.2 ZAMKNIĘTE / GOTOWE (kod) w serii 2026-08-01
 
 | ID | Objaw | Status | FALA / commit | Uwagi |
 |----|-------|--------|---------------|-------|
-| **BUG-SCENA-PERF-FALA138** | „Budowanie sceny" **~kilkanaście minut** (~637 ścieżek, ~40k hex) | **GOTOWE (kod)** — deploy FALA 139 | `25b6135` · md5 `73c18fc2` | Root: `updateMatrixWorld(true)` per overlay; fix: `mergeDecor.ts`, `robloxLite` >8k, batch rzek |
-| **R-SCENA-PERF-FALA138** | Rejestr — mirror BUG-SCENA | GOTOWE (kod) | 139 | Czeka pomiar czasu w grze po deploy |
+| **BUG-RZEKI-PERF-FALA138** | Etap UI „Rzeki — główne" **>2 min** (było **~10 s**) | **ZAMKNIĘTE** (Maciej ~20:58) | 140 `935d1642` | Maciej: **~20 s OK**; fix `d2db99c`+`9c4320b` |
+| **R-RZEKI-PERF-FALA138** | Rejestr — mirror BUG-RZEKI-PERF | ZAMKNIĘTE | 140 | j.w. |
 | **Perf uzupełnienie rzek** | „Rzeki — Uzupełnienie" ~**1 s** | **OK** (Maciej ~19:03) | — | Nie jest problemem |
 
 ### 2.3 ZAMKNIĘTE wcześniej (kontekst — nie regresja FALA 138)
@@ -201,9 +202,9 @@ Kolejność (skrót):
 
 | Tor | Agent / status | Cel |
 |-----|----------------|-----|
-| **BUG-RZEKI-PERF-FALA138** | W TRAKCIE | Główne rzeki z >2 min → ~10 s **bez** utraty gęstości FALA 138 |
-| **BUG-RZEKI-UJSCIE-FALA138** | **KOD NA MAIN** `9c4320b` | Fix zacommitowany; **deploy** do ROBOCZA czeka; zweryfikować gęstość po deploy |
-| Pomiar Macieja | CZEKA | Czas „Budowanie sceny" po `73c18fc2` |
+| **BUG-SCENA-PERF-FALA138** | **W TRAKCIE** (ponownie) | Budowanie sceny — FALA 141 coast InstancedMesh (`0b70e93f`); Maciej ~21:11: gęstość rzek OK, problem = ostatni etap sceny |
+| **BUG-RZEKI-UJSCIE-FALA138** | deploy FALA 140 `935d1642` | Zweryfikować ciągłość ujść + gęstość po deploy |
+| Pomiar Macieja | **częściowy** (~21:11) | Rzeki ~20 s OK ✓ · gęstość OK ✓ · scena nadal za długo ✗ · kill-switch rzek **ODŁOŻONY** |
 
 ### 5.2 Stan kodu ujść — **nie dirty tree**
 
@@ -226,10 +227,10 @@ Wiele `gra/tools/_tmp-river-*`, `.river-*-bundle.cjs` — harnessy diagnostyczne
 
 ## 6. Constrainty twarde (nie łamać)
 
-1. **Główne rzeki:** było **~10 s** → po FALA 138 **>2 min** — cel: przywrócić czas, **nie** pustą mapę.
+1. **Główne rzeki:** było **~10 s** → po FALA 138 **>2 min** — **ZAMKNIĘTE** (~20 s OK na FALA 140 `935d1642`, Maciej ~20:58).
 2. **Uzupełnienie rzek:** ~**1 s** — **OK**, nie psuć.
-3. **Budowanie sceny:** nie hang, ale było **kilkanaście minut** — FALA 139 `25b6135` ma skrócić do sekund; zweryfikować na `73c18fc2`.
-4. **Efekt/gęstość po FALA 138:** Maciej: *„całkiem nie najgorszy"* — **nie cofać** do stanu sprzed fill.
+3. **Budowanie sceny:** **nadal za długo** — Maciej ~21:11: *„Problem leży w tym ostatnim etapie"* (ostatni etap UI = Budowanie sceny, **nie** mapgen rzek). FALA 141 `0b70e93f` (coast InstancedMesh) — **W TRAKCIE**. Kill-switch rzek stage 0–5 → **ODŁOŻONY**.
+4. **Efekt/gęstość po FALA 138:** Maciej ~21:11: *„ilość generowanych rzek jest zadowalająca"* — **nie cofać** gęstości; nie robić eksperymentu „wyłącz wszystkie rzeki".
 5. **Ciągłość:** rzeka startująca musi dojść do **innej rzeki LUB oceanu** — brak sierot na lądzie.
 6. **Perf cięcia FALA 135–136** (Duży/Pangea): etap3 OFF, dry-patch OFF, topUp=0 potem tani fill topUp=1 hardStarts **bez proximity** — balans perf↔gęstość jest **świadomym kompromisem**; nie przywracać pełnego etap3/dry bez pomiaru.
 7. **Spawn:** MAP-SPAWN-Q2 — **poza** tym handoffem (tylko wzmianka: FALA 138 bundle łączy spawn + fill).
@@ -243,16 +244,18 @@ Wiele `gra/tools/_tmp-river-*`, `.river-*-bundle.cjs` — harnessy diagnostyczne
 
 | # | Hipoteza | Dowód w plikach | Dotyczy |
 |---|----------|-----------------|---------|
-| H1 | **FALA 138 `0c4faac`** włączyła tani fill (topUp=1, hardStarts, bootstrap 40–60, stride 2) → więcej tras + więcej pracy w `generateRivers` | `WERSJE.md` FALA 138; `PYTANIA-OTWARTE` BUG-RZEKI-PERF | Perf >2 min |
-| H2 | **`fastTrace`/cache mainKeys** (FALA 139) poprawia Pangea/Duży, ale **nie wystarczy** do ~10 s | `d2db99c`; handoff FALA 139 „częściowy" | Perf nadal otwarty |
+| H1 | **FALA 138 `0c4faac`** włączyła tani fill (topUp=1, hardStarts, bootstrap 40–60, stride 2) → więcej tras + więcej pracy w `generateRivers` | `WERSJE.md` FALA 138; `PYTANIA-OTWARTE` BUG-RZEKI-PERF | Perf >2 min (**ZAMKNIĘTE** ~20 s OK) |
+| H2 | **`fastTrace`/cache mainKeys** (FALA 139) poprawia Pangea/Duży — **wystarczające** po FALA 140 | `d2db99c`; Maciej ~20:58 | Perf rzek (**ZAMKNIĘTE**) |
 | H3 | **topUp dodaje ścieżki bez natychmiastowej bramki ujść** w deploy 139 → ścieżki bez morza/junction | fix `9c4320b` dodaje `ensureRiverOutlets` po topUp (main, nie bundle) | Ujścia inland |
 | H4 | **`finalizeCoastAndInlandWater`** po `ensureRiverOutlets` **odcina** ujścia wizualnie/logicznie | komentarz w `generator.ts` (`9c4320b`) | Ujścia inland |
 | H5 | **`scrubStrayRiverHexMarks`** — heksy oznaczone rzeką poza `paths` → wizualnie „urywane" biegi | `gen-helpers.ts` (`9c4320b`) | Ujścia / czytelność |
-| H6 | Scena: **637 ścieżek × overlay wybrzeża × `updateMatrixWorld(true)`** | `PYTANIA-OTWARTE` BUG-SCENA; fix `25b6135` | Scena (naprawione w kodzie) |
-| H7 | **`mapDetail=high`** nie włączał `robloxLite` na ~40k hex | BUG-SCENA root cause | Scena (naprawione) |
+| H6 | Scena: **637 ścieżek × overlay wybrzeża × `updateMatrixWorld(true)`** | `PYTANIA-OTWARTE` BUG-SCENA; fix `25b6135` | Scena (częściowy fix — **niewystarczający**) |
+| H7 | **`mapDetail=high`** nie włączał `robloxLite` na ~40k hex | BUG-SCENA root cause | Scena (częściowy fix) |
 | H8 | Historycznie: **purge wody→ląd po rzekach** (B0.1) kasował ujścia — naprawione, ale **kolejność pipeline** pozostaje wrażliwa | `BLEDY-DO-NAPRAWY` B0.1 | Regresja jeśli kolejność złamana |
 | H9 | Dual render: wstęga lądowa `break` na Wybrzeżu vs delta tylko dla `main` | `RZEKI-DIAGNOZA-UJSCIA.md` | Ujścia wizualne (starsze) |
 | H10 | **`pruneOrphanRiverPaths` przed reliefem** (BUG-RZEKI-DOPLYWY) — naprawione przez `ensureRiverOutlets` na końcu; **relief/złoża** mogą nadal rozłączać bez ponownego prune | BUG-RZEKI-DOPLYWY wdrożenie | Ziemia / dopływy |
+| H11 | **Wąskie gardło = Budowanie sceny (ostatni etap)** — Maciej ~21:11: gęstość rzek OK, *„Problem leży w tym ostatnim etapie"*; rzeki ~20 s OK | weryfikacja `935d1642` + `~21:11` | Scena (**otwarte**) |
+| H12 | Eksperyment kill-switch wyłączania rzek (stage 0–5) **niepotrzebny** — gęstość zadowalająca | Maciej ~21:11 | Diagnoza → **ODŁOŻONY** |
 
 ---
 

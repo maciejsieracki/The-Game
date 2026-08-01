@@ -3129,7 +3129,7 @@ export function applyLandFractionByScore(
     }
   } else if (land > targetLand) {
     const landCandidates = sortLandKeysForErosion(
-      keys.filter((k) => hexes[k]!.terenBazowy !== TerenBazowy.Morze),
+      keys.filter((k) => isDryLandTerrain(hexes[k]!.terenBazowy)),
       hexes,
       landScores,
       width ?? 1,
@@ -3203,7 +3203,7 @@ export function applyLandFractionByContinent(
       ? targetLand - assigned
       : Math.round(targetLand * (scoreSums[ci]! / totalScore));
     assigned += quota;
-    let land = keys.filter((k) => hexes[k]!.terenBazowy !== TerenBazowy.Morze).length;
+    let land = keys.filter((k) => isDryLandTerrain(hexes[k]!.terenBazowy)).length;
 
     if (land < quota) {
       const morseCandidates = keys
@@ -3226,7 +3226,7 @@ export function applyLandFractionByContinent(
       }
     } else if (land > quota) {
       const landCandidates = sortLandKeysForErosion(
-        keys.filter((k) => hexes[k]!.terenBazowy !== TerenBazowy.Morze),
+        keys.filter((k) => isDryLandTerrain(hexes[k]!.terenBazowy)),
         hexes,
         landScores,
         width ?? 1,
@@ -4218,6 +4218,50 @@ export function finalizeLandMassAfterCoast(
   finalizeCoastAndInlandWater(hexes, width, height, coastPasses, coastOpts);
   enforceMapBorderOcean(hexes, width, height);
   return total;
+}
+
+/** Domyślna tolerancja wymuszenia suchego lądu: ±3 pkt % mapy. */
+const DRY_LAND_FRACTION_TOLERANCE_PP = 3;
+
+/**
+ * Ostatni pass przed rzekami: wymusza docelowy udział **suchego lądu** (Wybrzeże = woda,
+ * jak {@link countLandSeaHexes}) po wszystkich krokach kształtowania wybrzeża.
+ * Lekki coast pass + ewentualna korekta jeśli pierścień przesunął licznik.
+ */
+export function enforceTargetDryLandFraction(
+  hexes: Record<string, Hex>,
+  landScores: Map<string, number>,
+  targetLandFraction: number,
+  width: number,
+  height: number,
+  coastOpts?: { maxInlandPoolSize?: number },
+  tolerancePctPoints = DRY_LAND_FRACTION_TOLERANCE_PP,
+): number {
+  const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
+  const total = Object.keys(hexes).length;
+  const targetLand = Math.round(total * clamped);
+  const toleranceHexes = Math.max(1, Math.round(total * tolerancePctPoints / 100));
+  let adjusted = 0;
+
+  adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height);
+  enforceMapBorderOcean(hexes, width, height);
+
+  finalizeCoastAndInlandWater(hexes, width, height, 1, coastOpts);
+  enforceMapBorderOcean(hexes, width, height);
+
+  let { land } = countLandSeaHexes(hexes);
+  if (Math.abs(land - targetLand) > toleranceHexes) {
+    adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height);
+    enforceMapBorderOcean(hexes, width, height);
+    applyCoastRing(hexes);
+    land = countLandSeaHexes(hexes).land;
+    if (Math.abs(land - targetLand) > toleranceHexes) {
+      adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height);
+      enforceMapBorderOcean(hexes, width, height);
+    }
+  }
+
+  return adjusted;
 }
 
 /**

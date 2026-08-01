@@ -55,8 +55,12 @@ nie domyślaj się, że skomplikowany temat kwalifikuje się automatycznie.
 repo, nie czat. **Dotyczy też odpowiedzi już udzielonych w czacie** — jeśli brakuje sekcji
 **„Odpowiedź Macieja"** w pliku, uzupełnij natychmiast (retroaktywnie). Szczegóły: `docs/decyzje/ABC-ZAPIS-PLIKOWY.md` §„Kolejność obowiązkowa".
 
-**Gdzie te cztery zasady muszą być widoczne** (sprawdzaj przy każdej większej aktualizacji dokumentacji):
-`CLAUDE.md` §„Jak pracować z właścicielem" (pkt 2–4) · ten plik (wyżej) · `dyspozycje/BACKLOG-PRZYSZLOSC.md` §E.
+**5. Po każdej paczce pracy — zaproponuj następny krok (Maciej 2026-08-01).** Agent **nie czeka** na pytanie
+„co dalej?” / „nad czym pracujesz?”. Kończy wiadomość blokiem **„Następny krok”** z max 3 konkretnymi
+opcjami (pierwsza = rekomendacja). Reguła Cursor: `.cursor/rules/maciej-nastepny-krok.mdc`.
+
+**Gdzie te zasady muszą być widoczne** (sprawdzaj przy każdej większej aktualizacji dokumentacji):
+`CLAUDE.md` §„Jak pracować z właścicielem" · ten plik · `.cursor/rules/maciej-nastepny-krok.mdc` · `dyspozycje/BACKLOG-PRZYSZLOSC.md` §E.
 
 ---
 

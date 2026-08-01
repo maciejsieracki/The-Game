@@ -1,0 +1,39 @@
+---
+description: Po każdym zakończonym kroku — zaproponuj konkretne następne kroki (Maciej 2026-08-01)
+alwaysApply: true
+---
+
+# Następny krok — obowiązek po każdej paczce (Maciej 2026-08-01)
+
+**Problem:** Maciej musi dopytywać „nad czym pracujesz?” / „co dalej?” — agent kończy zadanie i milczy.
+
+**Zasada:** po **każdym** zamknięciu sensownej jednostki pracy (fix, deploy, diagnoza, zapis notatki, odpowiedź na decyzję) agent **sam** kończy wiadomość blokiem **„Następny krok”**.
+
+## Format (zawsze na końcu odpowiedzi)
+
+```
+### Następny krok
+1. **…** — jedno zdanie (rekomendacja pierwsza)
+2. **…** — alternatywa
+3. **…** — opcjonalnie trzecia
+Napisz: działaj / 1 / 2 / 3 (albo inną dyspozycję).
+```
+
+## Reguły
+
+1. Propozycje **konkretne** (co zrobić, w jakim pliku/torze, po co) — nie „mogę pomóc dalej”.
+2. Max **3** opcje; pierwsza = rekomendacja (najpilniejsza / naturalna kontynuacja).
+3. Uwzględnij otwarte wpisy z `PYTANIA-OTWARTE.md` / `REJESTR-PROSB` / bieżący wątek czatu.
+4. **Nie czekaj** aż Maciej zapyta „co dalej?” — blok jest obowiązkowy.
+5. Wyjątek: Maciej wyraźnie kończy sesję („stop”, „na dziś”, „wyłączam komputer”) — wtedy krótki status bez menu.
+6. Nie mylić z ABC gameplay — to **kolejka operacyjna**, nie decyzja produktowa A/B/C.
+
+## Przykład
+
+Po deployu FALA N:
+### Następny krok
+1. **Pomiar Budowania sceny** — Ctrl+F5 + Nowa gra, czas ostatniego etapu (rekomendacja)
+2. **Fix Jin/Argos (ownerId)** — miasta-państwa Chin vs etykieta Grecy
+3. **Spawn: 10 hex od morza** — skala Standard
+
+Napisz: działaj / 1 / 2 / 3.
