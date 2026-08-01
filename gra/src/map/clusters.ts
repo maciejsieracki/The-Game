@@ -184,6 +184,13 @@ export const DEVELOPMENT_SPACE_RADIUS = 6;
 /** Wyspa kwalifikuje się do round-robin dopiero gdy ≥ tej frakcji największej masy (MAP-SPAWN-Q1 C). */
 export const ISLAND_FALLBACK_MASS_FRAC = 0.25;
 /**
+ * Min. rozmiar masy dla obcych typów — bezwzględny (MAP-SPAWN-Q2 regresja 2026-08-01).
+ * Środek zakresu 80–100 z decyzji.
+ */
+export const FOREIGN_MASS_MIN_ABSOLUTE = 90;
+/** Min. udział największej masy — środek 8–10% (MAP-SPAWN-Q2 regresja 2026-08-01). */
+export const FOREIGN_MASS_FRAC_OF_LARGEST = 0.09;
+/**
  * Min. udział lądu zamieszkiwalnego w promieniu R wokół stolicy startowej (MAP-SPAWN-Q1 B, Maciej 2026-07-28).
  * Morze / wybrzeże / góry nie liczą się jako ląd — bramka blokuje start na wysepkach otoczonych wodą.
  */
@@ -202,6 +209,24 @@ function qualifyingMassThreshold(largestMassSize: number): number {
     MIN_MASS_HEXES_FOR_CENTER,
     Math.floor(largestMassSize * ISLAND_FALLBACK_MASS_FRAC),
   );
+}
+
+/** Próg masy kwalifikującej się do spawnu obcych typów (MAP-SPAWN-Q2 regresja 2026-08-01). */
+export function foreignSpawnMassThreshold(largestMassSize: number): number {
+  return Math.max(
+    FOREIGN_MASS_MIN_ABSOLUTE,
+    Math.floor(largestMassSize * FOREIGN_MASS_FRAC_OF_LARGEST),
+  );
+}
+
+/** Czy masa kwalifikuje się do przydziału obcych typów. Pangea (1 masa) — zawsze tak. */
+export function massQualifiesForForeignSpawn(
+  massSize: number,
+  masses: Array<Array<{ q: number; r: number }>>,
+): boolean {
+  if (masses.length === 1) return true;
+  const largest = masses[0]?.length ?? 0;
+  return massSize >= foreignSpawnMassThreshold(largest);
 }
 
 /** Mapa hex → indeks masy (flood-fill). */
@@ -355,14 +380,15 @@ export function allocateTypyToMasses(
   }
 
   const caps = masses.map(m => massTypeCap(m.length));
+  const largestSize = masses[0]?.length ?? 0;
   const qualifyingIndices: number[] = [];
   for (let i = 0; i < masses.length; i++) {
-    if (masses[i]!.length >= MIN_MASS_HEXES_FOR_SPAWN) {
+    if (massQualifiesForForeignSpawn(masses[i]!.length, masses)) {
       qualifyingIndices.push(i);
     }
   }
 
-  // Brak mas kwalifikujących — całość na największą masę.
+  // Brak mas kwalifikujących — całość na największą masę (Pangea edge / awaryjnie).
   if (qualifyingIndices.length === 0) {
     slots[0] = nForeignTypy;
     return slots;
@@ -370,23 +396,37 @@ export function allocateTypyToMasses(
 
   const totalQualifying = qualifyingIndices.reduce((s, i) => s + masses[i]!.length, 0);
 
-  type RemainderEntry = { massIdx: number; remainder: number; exact: number };
+  // Najpierw: po 1 typie na każdą kwalifikującą masę (rozłożenie po kontynentach).
+  const sortedQualifying = [...qualifyingIndices].sort((a, b) => masses[b]!.length - masses[a]!.length);
+  let nRemaining = nForeignTypy;
+  for (const mi of sortedQualifying) {
+    if (nRemaining <= 0) break;
+    if (slots[mi]! < caps[mi]!) {
+      slots[mi]! += 1;
+      nRemaining -= 1;
+    }
+  }
+
+  type RemainderEntry = { massIdx: number; remainder: number; exact: number; massSize: number };
   const remainders: RemainderEntry[] = [];
   let assigned = 0;
 
   for (const mi of qualifyingIndices) {
     const massSize = masses[mi]!.length;
-    const exact = nForeignTypy * massSize / totalQualifying;
+    const exact = nRemaining * massSize / totalQualifying;
     const floor = Math.floor(exact);
-    const capped = Math.min(floor, caps[mi]!);
-    slots[mi] = capped;
-    assigned += capped;
-    remainders.push({ massIdx: mi, remainder: exact - floor, exact });
+    const room = caps[mi]! - slots[mi]!;
+    const add = Math.min(floor, room);
+    slots[mi]! += add;
+    assigned += add;
+    remainders.push({ massIdx: mi, remainder: exact - floor, exact, massSize });
   }
 
-  // Largest remainder — rozdziel pozostałe sloty.
-  let leftover = nForeignTypy - assigned;
-  remainders.sort((a, b) => b.remainder - a.remainder || b.exact - a.exact || a.massIdx - b.massIdx);
+  // Largest remainder — rozdziel pozostałe sloty; tie-break: większa masa pierwsza.
+  let leftover = nRemaining - assigned;
+  remainders.sort((a, b) =>
+    b.remainder - a.remainder || b.massSize - a.massSize || b.exact - a.exact || a.massIdx - b.massIdx,
+  );
 
   for (const entry of remainders) {
     if (leftover <= 0) break;
@@ -396,7 +436,7 @@ export function allocateTypyToMasses(
     }
   }
 
-  // Redystrybucja gdy capy zablokowały — preferuj większe masy.
+  // Redystrybucja gdy capy zablokowały — preferuj większe masy (nigdy na wyspy poniżej progu).
   if (leftover > 0) {
     const sorted = [...qualifyingIndices].sort((a, b) => masses[b]!.length - masses[a]!.length);
     for (const mi of sorted) {
@@ -407,17 +447,24 @@ export function allocateTypyToMasses(
     }
   }
 
+  if (leftover > 0 && typeof console !== 'undefined') {
+    console.warn(
+      `[clusters] allocateTypyToMasses: ${leftover} obcych typów bez miejsca po capach` +
+      ` (n=${nForeignTypy}, largest=${largestSize}, threshold=${foreignSpawnMassThreshold(largestSize)})`,
+    );
+  }
+
   return slots;
 }
 
-/** Indeksy mas kwalifikujących się do spawnu typów (MAP-SPAWN-Q2 B). */
+/** Indeksy mas kwalifikujących się do spawnu obcych typów (MAP-SPAWN-Q2). */
 export function qualifyingMassIndicesForSpawn(
   masses: Array<Array<{ q: number; r: number }>>,
 ): number[] {
   if (masses.length === 1) return [0];
   const out: number[] = [];
   for (let i = 0; i < masses.length; i++) {
-    if (masses[i]!.length >= MIN_MASS_HEXES_FOR_SPAWN) out.push(i);
+    if (massQualifiesForForeignSpawn(masses[i]!.length, masses)) out.push(i);
   }
   return out;
 }
@@ -710,11 +757,15 @@ function placeClusterCentersAcrossLandmasses(
   const playerOnMass0 = playerCenter
     && massContainingHex(hexIndex, playerCenter.q, playerCenter.r) === 0;
 
-  // Faza 1 (MAP-SPAWN-Q2 B): quota proporcjonalna — bez round-robin ponad limit.
+  const qualifyingOrder = qualifyingMassIndicesForSpawn(masses)
+    .sort((a, b) => masses[b]!.length - masses[a]!.length);
+
+  // Faza 1 (MAP-SPAWN-Q2): quota na kwalifikujących masach — największe pierwsze.
   for (let minDist = minDistBase; minDist >= 6 && centers.length < nNeeded; minDist -= 2) {
     const relaxMargin = minDist < minDistBase;
 
-    for (let mi = 0; mi < masses.length && centers.length < nNeeded; mi++) {
+    for (const mi of qualifyingOrder) {
+      if (centers.length >= nNeeded) break;
       const targetForeign = foreignAllocation[mi] ?? 0;
       const playerOnMass = mi === 0 && playerOnMass0;
 
@@ -732,21 +783,10 @@ function placeClusterCentersAcrossLandmasses(
     }
   }
 
-  // Ostateczny fallback: najlepsze hexy lądu z bramką ≥70% (min 4 hex między środkami).
-  if (centers.length < nNeeded) {
-    const shuffled = ladowe.slice();
-    shuffleInPlace(shuffled, rand);
-    for (const c of shuffled) {
-      if (centers.length >= nNeeded) break;
-      tryPlace(c, 4, true);
-    }
-  }
-
   // Pakowanie na dużych masach — luzuj dystans zanim oddasz mniej typów niż trzeba.
-  const spawnQualifying = qualifyingMassIndicesForSpawn(masses);
-  if (centers.length < nNeeded && spawnQualifying.length > 0) {
+  if (centers.length < nNeeded && qualifyingOrder.length > 0) {
     for (let minDist = 4; minDist >= 2 && centers.length < nNeeded; minDist--) {
-      for (const mi of spawnQualifying) {
+      for (const mi of qualifyingOrder) {
         if (centers.length >= nNeeded) break;
         const targetForeign = foreignAllocation[mi] ?? 0;
         const playerOnMass = mi === 0 && playerOnMass0;
@@ -759,6 +799,27 @@ function placeClusterCentersAcrossLandmasses(
         );
       }
     }
+  }
+
+  // Ostateczny fallback: TYLKO kwalifikujące masy, największe pierwsze — NIGDY losowy ląd / wyspy.
+  if (centers.length < nNeeded && qualifyingOrder.length > 0) {
+    for (let minDist = 2; minDist >= 1 && centers.length < nNeeded; minDist--) {
+      for (const mi of qualifyingOrder) {
+        if (centers.length >= nNeeded) break;
+        tryPlace(
+          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, masses, undefined, rand),
+          minDist,
+          true,
+        );
+      }
+    }
+  }
+
+  if (centers.length < nNeeded && typeof console !== 'undefined') {
+    console.warn(
+      `[clusters] placeClusterCenters: tylko ${centers.length}/${nNeeded} środków` +
+      ` (kwalifikujące masy: ${qualifyingOrder.length}, threshold=${foreignSpawnMassThreshold(masses[0]?.length ?? 0)})`,
+    );
   }
 
   return centers.slice(0, nNeeded);
@@ -1224,8 +1285,10 @@ function enforceLocalLandDominance(
     } else {
       newCenter = pickBestLocalLandSpawn(map, region, others, minDist, masses, rand);
       if (!newCenter) {
-        for (const mass of masses) {
-          newCenter = pickCenterInMassWithLandGate(map, mass, others, minDist, masses, undefined, rand);
+        const qualifying = qualifyingMassIndicesForSpawn(masses)
+          .sort((a, b) => masses[b]!.length - masses[a]!.length);
+        for (const mi of qualifying) {
+          newCenter = pickCenterInMassWithLandGate(map, masses[mi]!, others, minDist, masses, undefined, rand);
           if (newCenter) break;
         }
       }
@@ -1265,6 +1328,15 @@ function enforceLocalLandDominance(
   const newCentrumy = centrumy.filter((_, i) => keep[i]);
   const newAktywneKlucze = aktywneKlucze.filter((_, i) => keep[i]);
   const newRegiony = assignVoronoiRegions(ladowe, newCentrumy);
+
+  const dropped = aktywneKlucze.length - newAktywneKlucze.length;
+  if (dropped > 0 && typeof console !== 'undefined') {
+    const droppedKeys = aktywneKlucze.filter((_, i) => !keep[i]);
+    console.warn(
+      `[clusters] enforceLocalLandDominance: odrzucono ${dropped} typ(ów)` +
+      ` (${droppedKeys.join(', ')}) — bramka lokalnego lądu ≥${LOCAL_LAND_DOMINANCE_FRAC * 100}%`,
+    );
+  }
 
   return { centrumy: newCentrumy, regiony: newRegiony, aktywneKlucze: newAktywneKlucze };
 }
@@ -1309,8 +1381,10 @@ function buildClusterCitiesWithLandGate(
     const altCenter = pickBestLocalLandSpawn(map, region, existingCenters, minClusterDist, masses, rand);
     let nextCenter = altCenter;
     if (!nextCenter) {
-      for (const mass of masses) {
-        nextCenter = pickCenterInMassWithLandGate(map, mass, existingCenters, minClusterDist, masses, undefined, rand);
+      const qualifying = qualifyingMassIndicesForSpawn(masses)
+        .sort((a, b) => masses[b]!.length - masses[a]!.length);
+      for (const mi of qualifying) {
+        nextCenter = pickCenterInMassWithLandGate(map, masses[mi]!, existingCenters, minClusterDist, masses, undefined, rand);
         if (nextCenter) break;
       }
     }
@@ -1577,7 +1651,15 @@ export function computeClusters(
       activeCentrumy.slice(0, ci),
       minDystKlastrow,
     );
-    if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) continue;
+    if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) {
+      if (typeof console !== 'undefined') {
+        console.warn(
+          `[clusters] Pominięto typ '${activeKlucze[ci] ?? `typ${ci}`}'` +
+          ` — brak hexu startowego z bramką lądu (region=${region.length} hex)`,
+        );
+      }
+      continue;
+    }
 
     const foreignCap = foreignLayoutResult.cities.find(m => m.isCapital)
       ?? foreignLayoutResult.cities[0]!;

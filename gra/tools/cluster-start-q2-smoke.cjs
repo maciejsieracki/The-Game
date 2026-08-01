@@ -10,7 +10,7 @@ const entry = path.join(__dirname, '.cluster-start-q2-smoke-entry.ts');
 const bundle = path.join(__dirname, '.cluster-start-q2-smoke-bundle.cjs');
 
 fs.writeFileSync(entry, `
-export { computeClusters, groupHabitableMasses, allocateTypyToMasses, massTypeCap, developmentSpaceScore, MIN_MASS_HEXES_FOR_SPAWN, MIN_DEVELOPMENT_HEX_PER_CIV, SMALL_MASS_CAP_THRESHOLD } from '../src/map/clusters';
+export { computeClusters, groupHabitableMasses, allocateTypyToMasses, massTypeCap, developmentSpaceScore, MIN_MASS_HEXES_FOR_SPAWN, MIN_DEVELOPMENT_HEX_PER_CIV, SMALL_MASS_CAP_THRESHOLD, foreignSpawnMassThreshold, massQualifiesForForeignSpawn, qualifyingMassIndicesForSpawn } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
 export { buildClusterStartPlan } from '../src/game/cluster-start';
 export { generateMap } from '../src/map/generator';
@@ -73,6 +73,13 @@ const land = Object.values(synth.hexes)
   .filter(h => h.terenBazowy === 'laka')
   .map(h => ({ q: h.coords.q, r: h.coords.r }));
 const masses = M.groupHabitableMasses(land);
+const largest = masses[0].length;
+const foreignThresh = M.foreignSpawnMassThreshold(largest);
+assert(foreignThresh >= 90, 'foreign threshold >= 90');
+assert(!M.massQualifiesForForeignSpawn(masses[1].length, masses),
+  'mała wyspa nie kwalifikuje się (size=' + masses[1].length + ', thresh=' + foreignThresh + ')');
+assert(M.massQualifiesForForeignSpawn(masses[0].length, masses), 'duży kontynent kwalifikuje się');
+
 const alloc = M.allocateTypyToMasses(3, masses);
 assert(alloc[1] === 0, 'mała wyspa alloc=0');
 assert(alloc[0] >= 2, 'kontynent alloc>=2');
@@ -104,6 +111,53 @@ const plan = M.buildClusterStartPlan({
 });
 assert(plan.playerStartCityName === 'Ateny', 'stolica gracza Ateny');
 assert(plan.foreignTypeClusters.length >= 1, 'obce klastry');
+
+// Duży kontynent + archipelag: 7 typów, 0 na wyspach poniżej progu
+function makeArchipelagoMap() {
+  const hexes = {};
+  for (let q = 0; q < 50; q++) {
+    for (let r = 0; r < 50; r++) {
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
+    }
+  }
+  const islands = [
+    [55, 55, 3, 4], [60, 55, 4, 3], [55, 60, 3, 3],
+    [62, 62, 5, 4], [58, 65, 4, 5],
+  ];
+  for (const [oq, or_, ow, oh] of islands) {
+    for (let q = oq; q < oq + ow; q++) {
+      for (let r = or_; r < or_ + oh; r++) {
+        hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
+      }
+    }
+  }
+  fillSea(hexes, 0, 70, 0, 70);
+  return { hexes };
+}
+
+const archMap = makeArchipelagoMap();
+const archLand = Object.values(archMap.hexes)
+  .filter(h => h.terenBazowy === 'laka')
+  .map(h => ({ q: h.coords.q, r: h.coords.r }));
+const archMasses = M.groupHabitableMasses(archLand);
+const archLargest = archMasses[0].length;
+const archThresh = M.foreignSpawnMassThreshold(archLargest);
+const archQualifying = M.qualifyingMassIndicesForSpawn(archMasses);
+const archPlacement = M.computeClusters(archMap, { seed: 7777, aktywneTypy: 7, rywaleNaKlaster: 2 });
+assert(archPlacement.klastry.length >= 6,
+  'archipelag+ kontynent: >=6 klastrów (got ' + archPlacement.klastry.length + '/7)');
+for (let mi = 0; mi < archMasses.length; mi++) {
+  if (M.massQualifiesForForeignSpawn(archMasses[mi].length, archMasses)) continue;
+  const onIsland = archPlacement.klastry.filter(k => {
+    for (const h of archMasses[mi]) {
+      if (M.hexDistanceAxial(h.q, h.r, k.centrum.q, k.centrum.r) <= 2) return true;
+    }
+    return false;
+  }).length;
+  assert(onIsland === 0,
+    '0 środków na wyspie size=' + archMasses[mi].length + ' < thresh=' + archThresh);
+}
+assert(archQualifying.length >= 1, 'archipelag: >=1 kwalifikująca masa');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
