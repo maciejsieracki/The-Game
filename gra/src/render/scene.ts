@@ -1135,6 +1135,15 @@ async function renderLandRiversFromPaths(
 ): Promise<Set<string>> {
   const landHexKeys = new Set<string>();
   const pathTotal = paths.length;
+  let batchBucket: RiverGeoBucket | null = null;
+  let batchCount = 0;
+
+  const flushBatch = (): void => {
+    if (!batchBucket || batchBucket.geos.length === 0) return;
+    flushRiverBucket(scene, batchBucket, riverEntries);
+    batchBucket = null;
+    batchCount = 0;
+  };
 
   for (let pi = 0; pi < paths.length; pi++) {
     const path = paths[pi]!;
@@ -1163,20 +1172,31 @@ async function renderLandRiversFromPaths(
     );
     if (pts.length < 2 || pts.length > RIVER_RIBBON_MAX_PTS) continue;
 
-    // Jedna trasa = jeden wpis fog (nie scalać wszystkich rzek mapy w jeden mesh).
-    const pathBucket: RiverGeoBucket = {
-      mat: riverMat, geos: [], hexKeys: new Set(), renderOrder,
-    };
-    // sharp=true → KANCIASTA wstęga po ściankach (proste odcinki + załamania na rogach), ZERO
-    // wygładzania (owner: „to nie styl Roblox" o krzywych). Punkty to już polilinia po obwodzie.
-    pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, true);
-    flushRiverBucket(scene, pathBucket, riverEntries, pointHex);
+    const isMain = kind === 'main';
+    if (isMain) {
+      flushBatch();
+      // Główna rzeka: osobny mesh + pointHex (mgła per-heks na wstędze).
+      const pathBucket: RiverGeoBucket = {
+        mat: riverMat, geos: [], hexKeys: new Set(), renderOrder,
+      };
+      pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, true);
+      flushRiverBucket(scene, pathBucket, riverEntries, pointHex);
+    } else {
+      // Medium/short/tributary: batch — setki tras po FALA 138 → jeden merge zamiast N meshy.
+      if (!batchBucket) {
+        batchBucket = { mat: riverMat, geos: [], hexKeys: new Set(), renderOrder };
+      }
+      pushRiverMesh(batchBucket, pts, hexKeys, halfWidth, 8, true);
+      batchCount++;
+      if (batchCount >= RIVER_BATCH_PATHS) flushBatch();
+    }
     for (const k of hexKeys) landHexKeys.add(k);
-    if (pi > 0 && pi % 6 === 0) {
+    if (pi > 0 && pi % 12 === 0) {
       onSlice?.(pi + 1, pathTotal);
       await c3NextFrame();
     }
   }
+  flushBatch();
   onSlice?.(pathTotal, pathTotal);
   return landHexKeys;
 }
@@ -1262,6 +1282,8 @@ const C3_CHUNK_TIME_BUDGET_MS = 14;
 const C3_CHUNK_MAX_HEXES = 1200;
 /** Maks. punktów wstęgi rzeki — degenerate path po bootstrap FALA 135. */
 const RIVER_RIBBON_MAX_PTS = 6000;
+/** FALA 138 perf: scala medium/short w jeden mesh co N tras (mgła per hexKeys, nie pointHex). */
+const RIVER_BATCH_PATHS = 32;
 
 /** Oddaj jedną klatkę (rAF) — pozwala przeglądarce odświeżyć overlay i nie zawiesić się. */
 function c3NextFrame(): Promise<void> {
@@ -2290,12 +2312,13 @@ export async function buildScene(
   // skalują się z rozmiarem mapy) → 1 zmergowany mesh + zamrożona macierz. Fog działa bez zmian
   // (własny materiał vertexColors → applyFogDimToObject3D dimuje per-grupa jak dotąd).
   const overlayTotal = styledOverlays.length;
+  const overlayYieldStep = overlayTotal > 3000 ? 80 : overlayTotal > 1500 ? 40 : 20;
   for (let oi = 0; oi < overlayTotal; oi++) {
     const { group } = styledOverlays[oi]!;
     collapseToMergedMesh(group);
     group.matrixAutoUpdate = false;
     group.updateMatrix();
-    if (oi > 0 && oi % 20 === 0) {
+    if (oi > 0 && oi % overlayYieldStep === 0) {
       onProgress?.(80 + (oi / Math.max(1, overlayTotal)) * 10);
       await c3NextFrame();
     }

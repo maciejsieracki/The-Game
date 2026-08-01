@@ -48,6 +48,8 @@ export const DEFAULT_MAP_RENDER_OPTIONS: MapRenderOptions = {
 
 /** Próg hexów: mapDetail=medium → robloxLite powyżej tej liczby. */
 export const MAP_DETAIL_MEDIUM_HEX_THRESHOLD = 3000;
+/** Duża mapa (Duży/Pangea): wymuś robloxLite niezależnie od mapDetailQuality — buildScene sekundy zamiast minut. */
+export const LARGE_MAP_LITE_HEX_THRESHOLD = 8000;
 
 export interface ResolvedRenderPreset {
   robloxLite: boolean;
@@ -86,6 +88,8 @@ export function resolveRenderPreset(
     } else if (options.mapDetailQuality === 'medium') {
       robloxLite = hexCount > MAP_DETAIL_MEDIUM_HEX_THRESHOLD;
     }
+    // FALA 138 perf: mapDetail=high na Duży/Pangea (~40k hex) budowała scenę minutami (pełne meshe wybrzeża).
+    if (hexCount > LARGE_MAP_LITE_HEX_THRESHOLD) robloxLite = true;
   }
 
   switch (options.renderQuality) {
@@ -1343,6 +1347,7 @@ export function computeRiverDeltaHexKeys(map: GameMap, maxHexes = 3): Set<string
     const queue: Array<{ q: number; r: number }> = [mouth];
     keys.add(startKey);
     let mouthCount = 1; // limit maxHexes liczony PER-ujście (nie globalnie)
+    const pathHexSet = new Set(path.map((p) => `${p.q},${p.r}`));
 
     while (queue.length > 0 && mouthCount < maxHexes) {
       const cur = queue.shift()!;
@@ -1355,7 +1360,7 @@ export function computeRiverDeltaHexKeys(map: GameMap, maxHexes = 3): Set<string
         const nh = map.hexes[nk];
         if (nh?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
         let score = hasMorzeNeighbor(map, nq, nr) ? 3 : 1;
-        if (path.some(p => p.q === nq && p.r === nr)) score += 2;
+        if (pathHexSet.has(nk)) score += 2;
         scored.push({ q: nq, r: nr, score });
       }
       scored.sort((a, b) => b.score - a.score);

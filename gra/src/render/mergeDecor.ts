@@ -18,9 +18,18 @@ const WHITE = new THREE.Color(1, 1, 1);
  * Buduje pojedynczy zmergowany mesh z wszystkich Mesh-dzieci grupy (w przestrzeni
  * LOKALNEJ grupy). flatShading = normalne liczone w shaderze, więc nie pieczemy normalnych.
  */
+/** Macierz mesh w układzie grupy-root — bez pełnego updateMatrixWorld (O(głębokość), nie O(drzewo)). */
+function meshMatrixInGroupSpace(mesh: THREE.Mesh, root: THREE.Object3D, out: THREE.Matrix4): void {
+  out.identity();
+  let o: THREE.Object3D | null = mesh;
+  while (o && o !== root) {
+    o.updateMatrix();
+    out.premultiply(o.matrix);
+    o = o.parent;
+  }
+}
+
 function buildMergedMesh(group: THREE.Object3D): THREE.Mesh {
-  group.updateMatrixWorld(true);
-  const invRoot = new THREE.Matrix4().copy(group.matrixWorld).invert();
   const _m = new THREE.Matrix4();
   const _v = new THREE.Vector3();
   const _c = new THREE.Color();
@@ -34,7 +43,7 @@ function buildMergedMesh(group: THREE.Object3D): THREE.Mesh {
     const idx = geo.index;
     const posAttr = geo.getAttribute('position') as THREE.BufferAttribute | undefined;
     if (!posAttr) return;
-    _m.multiplyMatrices(invRoot, mesh.matrixWorld);
+    meshMatrixInGroupSpace(mesh, group, _m);
     const mat0 = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) as
       | THREE.MeshLambertMaterial
       | undefined;

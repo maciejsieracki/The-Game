@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-07-29. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md` (1–17 odpowiedziane).
+Aktualizacja: 2026-08-01. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md` (1–17 odpowiedziane).
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ---
@@ -1199,4 +1199,42 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 ## WOJNA-PM-GRACZ-Q1 — tempo odbudowy PM po wojnie AI→gracz · STATUS: **ZAMKNIĘTE** (Maciej 2026-07-31)
 
 **Decyzja: 4B** — cytat: „1a, 2a, 3a, 4b, 5a, 6a, 7a". Zostawić **60%/turę** odbudowy Manpower po wojnie wymuszonej przez AI na gracza. Bez zmian kodu.
+
+---
+
+## BUG-RZEKI-PERF-FALA138 — regresja czasu generowania głównych rzek · STATUS: **W TRAKCIE** (Maciej „działaj" 2026-08-01 ~19:07)
+
+**Cytat Macieja (~19:00):** „na razie z tym nic nie rób, tylko sobie zapisz" — generowanie głównych rzek trwa już **ponad dwie minuty**, wcześniej było **~10 sekund**.
+
+**Odblokowanie (~19:07):** Maciej **„działaj"** — agent kodowy w toku.
+
+**Kontekst deployu:** ROBOCZA FALA 138 md5 `cbc79e63` (spawn Q2 `a06a615` + tani fill rzek `0c4faac`). Tani fill włączył m.in. `effectiveTopUpPasses=1` (hardStarts), Pangea bootstrap 40–60 + grid stride 2, Duży `mainGridStride` 2.
+
+**Objaw:** etap UI „Rzeki — główne" / generowanie głównych rzek **>2 min** vs wcześniej **~10 s**.
+
+**Constraint (~19:17):** Maciej: „natomiast efekt rzek był całkiem nie najgorszy." — **gęstość/wygląd rzek po FALA 138 akceptowalny**. Przy optymalizacji perf głównych rzek **NIE degradować** efektu wizualnego (nie wracać do pustej mapy); **ciąć czas, zachować efekt**.
+
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138`.
+
+---
+
+## BUG-SCENA-PERF-FALA138 — Budowanie sceny: bardzo długo (~kilkanaście minut) · STATUS: **GOTOWE (kod)** (2026-08-01 ~19:25)
+
+**Cytat Macieja (~19:03):** „Rzeki Uzupełnienie to może jedna sekunda natomiast budowanie sceny nadal trwa bardzo długo. Coś jest nie tak. Do zapisania. Jak napiszę Działa i to wtedy zaczniesz to analizować."
+
+**Eskalacja (~19:06):** „budowanie sceny całkowicie chyba zawiesza do weryfikacji i testu" — wstępnie podejrzenie hang/freeze.
+
+**Korekta diagnozy (~19:15):** „OK, przynajmniej wiemy, że to nie jest zwieszanie się, tylko po prostu bardzo długi okres generowania. Na pewno to było teraz kilkanaście minut." — **NIE hang/freeze**, lecz **bardzo długie Budowanie sceny (~kilkanaście minut)**.
+
+**Root cause:** FALA 138 → ~637 ścieżek rzek + ~40k hex; `mapDetail=high` nie włączał `robloxLite`; `collapseToMergedMesh` wołał `updateMatrixWorld(true)` per overlay wybrzeża (tysiące × pełne drzewo sceny).
+
+**Fix (kod):** `mergeDecor.ts` (merge bez pełnego updateMatrixWorld); `mapRenderStyle.ts` (`robloxLite` >8000 hex); `scene.ts` (batch medium rzek 32/trasa).
+
+**Kontekst deployu:** ROBOCZA FALA 138 md5 `cbc79e63`. FALA 137 yield/cache — niewystarczające przy skali FALA 138.
+
+**Objaw:** etap UI „Budowanie sceny" trwa **bardzo długo (~kilkanaście minut)**; etap „Rzeki — Uzupełnienie" ~**1 s** (OK).
+
+**Osobny temat:** `BUG-RZEKI-PERF-FALA138` (główne rzeki >2 min w mapgen) — **nie naprawione** w tej sesji.
+
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138`.
 
