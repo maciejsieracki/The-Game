@@ -1,6 +1,8 @@
-- **2026-08-01 22:45** ? ? FALA 143 ROBOCZA `2b524ff0` (Pangea Budowanie sceny: dense landmass + batch rzek + skip forest collapse). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** Standard�Pangea ? czas ostatniego etapu).
+﻿- **2026-08-01 22:52** — OK FALA 144 ROBOCZA `bec88c78` (sceneBuildAggressive Duza/Pangea). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** Duza·Pangea — czas Budowanie sceny).
 
-- **2026-08-01 22:38** ? ? FALA 142 ROBOCZA `2b1e072c` (l?d% + spawn MP/ownerId + p�?p?aszczyzna A + ~10 hex od morza). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
+- **2026-08-01 22:45** ? ? FALA 143 ROBOCZA `2b524ff0` (Pangea Budowanie sceny: dense landmass + batch rzek + skip forest collapse). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra** Standard�Pangea ? czas ostatniego etapu).
+
+- **2026-08-01 22:38** ? ? FALA 142 ROBOCZA `2b1e072c` (l?d% + spawn MP/ownerId + p�?p?aszczyzna A + ~10 hex od morza). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).
 
 - **2026-08-01 21:11** ? ?? Maciej: g?sto?? rzek **OK**; problem = **Budowanie sceny** (nie generowanie). Kill-switch rzek ? OD?O?ONY. BUG-SCENA-PERF ? FALA 143.
 

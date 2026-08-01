@@ -1,4 +1,4 @@
-# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
+﻿# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
 
 ZASADA: md5/stempel wpisuje siÄ™ TYLKO tutaj, zaraz po publishu. Inne pliki linkujÄ…,
 nigdy nie kopiujÄ… (stary system miaĹ‚ 4 sprzeczne â€žaktualne" md5 â€” nigdy wiÄ™cej).
@@ -14,7 +14,13 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `2b524ff0` - 2026-08-01 22:45 - FALA 143: Pangea Budowanie sceny (dense landmass) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `bec88c78` - 2026-08-01 22:52 - FALA 144: sceneBuildAggressive (Duza/Pangea) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `bec88c7855ff523fb73877182ed3ebf5` · stempel: `ROBOCZA · 2026-08-01 22:52`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: isSceneBuildAggressive (fast∨dense); skip piasek lądu/blend/wydmy/oazy; batch ujść rzek (3 merge); overlay bez collapse; ribbon ląd 4 / ujście 6.
+- tsc 0 · VERIFY OK. Kod: Composer; deploy: Grok.
+- Wizualnie Duzy+: bez piasku lądu przy brzegu, bez oaz/wydm 3D.
+## ROBOCZA `2b524ff0` - 2026-08-01 22:45 - FALA 143: Pangea Budowanie sceny (dense landmass) + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `2b524ff05b4b1af28d4fd3a97b87a20b` · stempel: `ROBOCZA · 2026-08-01 22:45`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: `isDenseLandmassMap` (≥120 riverPaths lub ≥80 + >50% lądu); Pangea: skip forest collapse (robloxLite), batch ALL rzek (64), ribbonSegs 6, gęstsze yield overlay/ujść. Kontynenty bez zmian ścieżki.

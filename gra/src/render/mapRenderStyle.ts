@@ -50,12 +50,17 @@ export const DEFAULT_MAP_RENDER_OPTIONS: MapRenderOptions = {
 export const MAP_DETAIL_MEDIUM_HEX_THRESHOLD = 3000;
 /** Duża mapa (Duży/Pangea): wymuś robloxLite niezależnie od mapDetailQuality — buildScene sekundy zamiast minut. */
 export const LARGE_MAP_LITE_HEX_THRESHOLD = 8000;
-/** Duży+ (~40k hex): szybka ścieżka budowy sceny — pomija ciężkie dekoracje brzegu / oazy. Standard (~20k) bez zmian. */
+/** Duży (~40k hex, 240×168): szybka ścieżka budowy sceny — pomija piasek lądu przy brzegu / oazy 3D. Standard (~20k) bez zmian. */
 export const SCENE_BUILD_FAST_HEX_THRESHOLD = 32000;
 
-/** true = Duży / Ogromny / Super Huge — agresywniejsze skróty buildScene (nie wpływa na Standard). */
+/** true = Duży / Ogromny / Super Huge — agresywniejsze skróty buildScene (nie wpływa na Standard ~20k). */
 export function isSceneBuildFastPath(hexCount: number): boolean {
   return hexCount >= SCENE_BUILD_FAST_HEX_THRESHOLD;
+}
+
+/** FALA 144: Duży+ LUB Pangea/gęsta masa — łączy sceneBuildFast i denseLandmass (Standard Pangea ~20k też). */
+export function isSceneBuildAggressive(hexCount: number, map: GameMap): boolean {
+  return isSceneBuildFastPath(hexCount) || isDenseLandmassMap(map);
 }
 
 /**

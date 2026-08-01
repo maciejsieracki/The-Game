@@ -51,6 +51,7 @@ import {
   computeRiverDeltaHexKeys,
   landCoastSandNeeded,
   isSceneBuildFastPath,
+  isSceneBuildAggressive,
   isDenseLandmassMap,
   findLandCoastSandCandidates,
   createCoastInstBuffers,
@@ -729,6 +730,7 @@ function renderCoastalRiverExtension(
   coastFunnelBucket: RiverGeoBucket,
   halfWidth: number,
   deltaKeys: Set<string>,
+  ribbonSegs = 12,
 ): void {
   const { pts: chainPts, hexKeys } = buildCoastalRiverPointChain(map, path, R, riverMouthY);
   if (chainPts.length < 2) return;
@@ -758,7 +760,7 @@ function renderCoastalRiverExtension(
       const t = segCount <= 1 ? 1 : i / (segCount - 1);
       halfWidths.push(halfWidth * (1.08 + t * 2.65));
     }
-    const geo = buildRibbonGeometry(pts, halfWidths, 12, true);
+    const geo = buildRibbonGeometry(pts, halfWidths, ribbonSegs, true);
     queueRiverGeo(riverWaterBucket, geo, hexKeys);
   } else {
     let deltaStart = pts.length;
@@ -773,7 +775,7 @@ function renderCoastalRiverExtension(
         const t = segCount <= 1 ? 1 : i / (segCount - 1);
         preWidths.push(halfWidth * (1.08 + t * 2.65));
       }
-      const preGeo = buildRibbonGeometry(prePts, preWidths, 12, true);
+      const preGeo = buildRibbonGeometry(prePts, preWidths, ribbonSegs, true);
       queueRiverGeo(riverWaterBucket, preGeo, hexKeys);
     }
     const postPts = pts.slice(deltaStart);
@@ -783,7 +785,7 @@ function renderCoastalRiverExtension(
         const t = segCount <= 1 ? 1 : i / (segCount - 1);
         postWidths.push(halfWidth * (1.08 + t * 2.65));
       }
-      const postGeo = buildRibbonGeometry(postPts, postWidths, 12, true);
+      const postGeo = buildRibbonGeometry(postPts, postWidths, ribbonSegs, true);
       queueRiverGeo(riverDeltaTopBucket, postGeo, hexKeys);
     }
   }
@@ -1382,8 +1384,9 @@ export async function buildScene(
   const robloxLite = preset.robloxLite;
   /** Pangea (jedna masa): gęsta sieć rzek + ~2× dekoracji lądowej vs Kontynenty — skróty końcówki buildScene. */
   const denseLandmass = isDenseLandmassMap(map);
-  /** Duży/Pangea (~40k+): pomija piasek lądu przy brzegu i oazy 3D — Standard (~20k) nietknięty. */
+  /** Duży (~40k+, 240×168≥32k) LUB Pangea/gęsta masa — agresywne skróty (piasek lądu, blend, batch ujść). */
   const sceneBuildFast = isSceneBuildFastPath(hexCount);
+  const sceneBuildAggressive = isSceneBuildAggressive(hexCount, map);
   // GRAFIKA-3D: jakość dekoracji ulepszeń (stadnina 1/2 konie itp.) wg ustawienia gracza.
   setImprovementDetailQuality(renderOptions.mapDetailQuality);
   const palette = styleScenePalette(renderStyle);
@@ -1849,8 +1852,8 @@ export async function buildScene(
   const seaSurfaceY = seaVisEarly.height + seaVisEarly.yOffset;
   const deltaHexKeys = renderStyle === 'roblox' ? computeRiverDeltaHexKeys(map) : new Set<string>();
   const cachedMouthEdges = renderStyle === 'roblox' ? computeRiverMouthEdgeKeys(map) : undefined;
-  /** Piasek na lądzie przy Wybrzeżu — pre-pass raz (O(hex)), nie neighbor-scan per heks w pętli. */
-  const landCoastSandKeys = (useStyledDecor && renderStyle === 'roblox')
+  /** Piasek na lądzie przy Wybrzeżu — pre-pass raz (O(hex)); FALA 144: pomijany gdy sceneBuildAggressive. */
+  const landCoastSandKeys = (useStyledDecor && renderStyle === 'roblox' && !sceneBuildAggressive)
     ? new Set(findLandCoastSandCandidates(map))
     : null;
   /** Roblox brzeg: macierze instancji zamiast Group×Mesh×geo per heks (FALA 141). */
@@ -1867,7 +1870,9 @@ export async function buildScene(
   // (c3NextFrame) i raportujemy postęp do overlaya „Budowanie sceny… N%".
   const c3Hexes = Object.values(map.hexes);
   const c3Total = c3Hexes.length;
-  const c3ChunkMaxHexes = sceneBuildFast ? 3000 : hexCount > 20000 ? 2000 : C3_CHUNK_MAX_HEXES;
+  const c3ChunkMaxHexes = sceneBuildAggressive ? 3000 : hexCount > 20000 ? 2000 : C3_CHUNK_MAX_HEXES;
+  /** FALA 144: lite brzeg (bez pasków krawędzi wody) na Duży/Pangea — mniej macierzy per Wybrzeże. */
+  const coastCollectLite = robloxLite || sceneBuildAggressive;
   onProgress?.(0);
   let c3ChunkStart = performance.now();
   let c3ChunkCount = 0;
@@ -1944,7 +1949,7 @@ export async function buildScene(
         || isCoastRoblox
         || (t === TerenBazowy.Wybrzeze && renderStyle !== 'roblox');
       const baseTerrainHex = styleTerrainColor(t, renderStyle);
-      const blendedHex = isCoastRoblox
+      const blendedHex = isCoastRoblox || sceneBuildAggressive
         ? baseTerrainHex
         : blendedTerrainHex(map, hex.coords.q, hex.coords.r, baseTerrainHex, isWater, renderStyle, t);
       // Łąka/Równina (styl roblox): 5 dyskretnych odcieni zamiast ozdobników. Inne tereny: jitter HSL.
@@ -2142,7 +2147,7 @@ export async function buildScene(
       const isDelta = deltaHexKeys.has(hexKey);
       collectRobloxCoastWaterInst(
         coastInstBuf, map, hexQ, hexR, x, z, seaSurfaceY, R, hexKey,
-        { lite: robloxLite, isDelta, mouthEdges: cachedMouthEdges },
+        { lite: coastCollectLite, isDelta, mouthEdges: cachedMouthEdges },
         dummy,
       );
     } else if (useStyledDecor && renderStyle === 'roblox' && landCoastSandKeys?.has(hexKey) && coastInstBuf) {
@@ -2181,7 +2186,7 @@ export async function buildScene(
 
     if (t === TerenBazowy.Pustynia) {
       const q = hex.coords.q, r = hex.coords.r;
-      if (useStyledDecor) {
+      if (useStyledDecor && !sceneBuildAggressive) {
         const dune = buildStyleDune(renderStyle, q, r, x, z, vis.height + vis.yOffset, map.seed, R);
         if (dune) {
           styledOverlays.push({ group: dune, hexKey });
@@ -2209,7 +2214,7 @@ export async function buildScene(
       const oasisRoll = rnd();
       if (oasisRoll < 1.0 / 6.0) {
         const baseY = vis.height + vis.yOffset;
-        if (useStyledDecor && !sceneBuildFast) {
+        if (useStyledDecor && !sceneBuildAggressive) {
           const palmCount = oasisRoll < 1.0 / 12.0 ? 1 : 2;
           // GRAFIKA-TEREN-2: oaza klockowa (348 tri) w miejscu buildStyleOasis (decyzja C — LCG bez zmian).
           const oasis = buildOaza();
@@ -2219,8 +2224,8 @@ export async function buildScene(
           scene.add(oasis);
           // Zachowaj strumień LCG: stary buildStyleOasis (roblox) konsumował 2×palmCount rnd() — utrzymuje zestaw oaz.
           for (let i = 0; i < palmCount; i++) { rnd(); rnd(); }
-        } else if (useStyledDecor && sceneBuildFast) {
-          // Duży+: oaza 3D pominięta (build+merge); LCG identyczny jak przy pełnej oazie.
+        } else if (useStyledDecor && sceneBuildAggressive) {
+          // FALA 144: Duży/Pangea — oaza 3D pominięta; LCG identyczny jak przy pełnej oazie.
           const palmCount = oasisRoll < 1.0 / 12.0 ? 1 : 2;
           for (let i = 0; i < palmCount; i++) { rnd(); rnd(); }
         } else {
@@ -2392,7 +2397,10 @@ export async function buildScene(
     flushCoastLayer(coastInstBuf.waterEdge, coastGeo.waterEdge, waterMat, 1);
     flushCoastLayer(coastInstBuf.waterLagoon, coastGeo.lagoon, waterMat, 1);
     flushCoastLayer(coastInstBuf.waterTongue, coastGeo.tongue, waterMat, 1);
-    flushCoastLayer(coastInstBuf.landSand, coastGeo.landSand, sandMat, 3);
+    // FALA 144: piasek lądu przy brzegu pominięty gdy sceneBuildAggressive (pre-pass wyłączony).
+    if (!sceneBuildAggressive) {
+      flushCoastLayer(coastInstBuf.landSand, coastGeo.landSand, sandMat, 3);
+    }
     onProgress?.(78);
     await c3NextFrame();
   }
@@ -2402,18 +2410,21 @@ export async function buildScene(
   // overlayów wybrzeża = minuty CPU (O(hex×wierzchołki)); draw calli brzegu akceptowalne.
   // Pangea: ~2× lasów vs Kontynenty — collapse per-heks lasu = minuty; pomijamy gdy robloxLite.
   const overlayTotal = styledOverlays.length;
-  const skipForestCollapse = robloxLite && (denseLandmass || overlayTotal > 2000);
-  const overlayYieldStep = denseLandmass
-    ? (overlayTotal > 4000 ? 8 : overlayTotal > 2000 ? 12 : 20)
+  const skipForestCollapse = robloxLite && (sceneBuildAggressive || overlayTotal > 2000);
+  const overlayYieldStep = sceneBuildAggressive
+    ? (overlayTotal > 4000 ? 6 : overlayTotal > 2000 ? 10 : 16)
     : overlayTotal > 8000 ? 15 : overlayTotal > 3000 ? 25 : overlayTotal > 1500 ? 40 : 80;
   let overlayChunkStart = performance.now();
   for (let oi = 0; oi < overlayTotal; oi++) {
     const { group, kind } = styledOverlays[oi]!;
-    const heavy = (kind === 'forest' && !skipForestCollapse)
-      || countMeshesInGroup(group) >= OVERLAY_COLLAPSE_MIN_MESHES;
+    const heavy = !sceneBuildAggressive
+      && ((kind === 'forest' && !skipForestCollapse)
+        || countMeshesInGroup(group) >= OVERLAY_COLLAPSE_MIN_MESHES);
     if (heavy) collapseToMergedMesh(group);
-    group.matrixAutoUpdate = false;
-    group.updateMatrix();
+    if (!sceneBuildAggressive) {
+      group.matrixAutoUpdate = false;
+      group.updateMatrix();
+    }
     if (
       oi > 0 && oi < overlayTotal - 1
       && (oi % overlayYieldStep === 0 || performance.now() - overlayChunkStart >= C3_CHUNK_TIME_BUDGET_MS)
@@ -2469,14 +2480,26 @@ export async function buildScene(
     (done, total) => {
       onProgress?.(90 + (done / Math.max(1, total)) * 8);
     },
-    denseLandmass ? {
+    sceneBuildAggressive ? {
       batchAllPaths: true,
       batchSize: RIVER_BATCH_PATHS_DENSE,
-      ribbonSegments: 6,
+      ribbonSegments: sceneBuildFast ? 4 : 6,
     } : undefined,
   );
   for (const k of landHexKeysAll) riverHexKeys.push(k);
 
+  // FALA 144: ujścia main rivers — jeden merge na warstwę zamiast 3×flush per rzeka (Pangea ~80–150 ujść).
+  const coastalRibbonSegs = sceneBuildAggressive ? 6 : 12;
+  const batchCoastalMouths = sceneBuildAggressive;
+  const aggCoastDeltaBucket: RiverGeoBucket | null = batchCoastalMouths
+    ? { mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: 50 }
+    : null;
+  const aggCoastRiverBucket: RiverGeoBucket | null = batchCoastalMouths
+    ? { mat: riverWaterMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER }
+    : null;
+  const aggCoastRiverDeltaTopBucket: RiverGeoBucket | null = batchCoastalMouths
+    ? { mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER }
+    : null;
   let coastChunkStart = performance.now();
   let coastDone = 0;
   let coastTotal = 0;
@@ -2492,25 +2515,33 @@ export async function buildScene(
     // pathReachesOpenSeaRender wystarcza (buildCoastalRiverPointChain sam buduje łańcuch lub
     // zwraca pusto) — dawny dodatkowy warunek pathNearCoast blokował rzeki wpadające wprost w Morze.
     if (pathReachesOpenSeaRender(map, path)) {
-      const coastRiverBucket: RiverGeoBucket = {
-        mat: riverWaterMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER,
-      };
-      const coastRiverDeltaTopBucket: RiverGeoBucket = {
-        mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER,
-      };
-      const coastDeltaBucket: RiverGeoBucket = {
-        mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: 50,
-      };
-      renderCoastalRiverExtension(
-        map, path, R, riverMouthY,
-        coastRiverBucket, coastRiverDeltaTopBucket, coastDeltaBucket,
-        RIVER_MAIN_HALF_WIDTH, deltaHexKeys,
-      );
-      flushRiverBucket(scene, coastDeltaBucket, riverEntries);
-      flushRiverBucket(scene, coastRiverBucket, riverEntries);
-      flushRiverBucket(scene, coastRiverDeltaTopBucket, riverEntries);
+      if (batchCoastalMouths && aggCoastRiverBucket && aggCoastRiverDeltaTopBucket && aggCoastDeltaBucket) {
+        renderCoastalRiverExtension(
+          map, path, R, riverMouthY,
+          aggCoastRiverBucket, aggCoastRiverDeltaTopBucket, aggCoastDeltaBucket,
+          RIVER_MAIN_HALF_WIDTH, deltaHexKeys, coastalRibbonSegs,
+        );
+      } else {
+        const coastRiverBucket: RiverGeoBucket = {
+          mat: riverWaterMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER,
+        };
+        const coastRiverDeltaTopBucket: RiverGeoBucket = {
+          mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER,
+        };
+        const coastDeltaBucket: RiverGeoBucket = {
+          mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: 50,
+        };
+        renderCoastalRiverExtension(
+          map, path, R, riverMouthY,
+          coastRiverBucket, coastRiverDeltaTopBucket, coastDeltaBucket,
+          RIVER_MAIN_HALF_WIDTH, deltaHexKeys, coastalRibbonSegs,
+        );
+        flushRiverBucket(scene, coastDeltaBucket, riverEntries);
+        flushRiverBucket(scene, coastRiverBucket, riverEntries);
+        flushRiverBucket(scene, coastRiverDeltaTopBucket, riverEntries);
+      }
       coastDone++;
-      const coastYieldEvery = denseLandmass ? 2 : 4;
+      const coastYieldEvery = sceneBuildAggressive ? 1 : denseLandmass ? 2 : 4;
       if (
         coastDone % coastYieldEvery === 0
         || performance.now() - coastChunkStart >= C3_CHUNK_TIME_BUDGET_MS
@@ -2520,6 +2551,11 @@ export async function buildScene(
         coastChunkStart = performance.now();
       }
     }
+  }
+  if (batchCoastalMouths && aggCoastDeltaBucket && aggCoastRiverBucket && aggCoastRiverDeltaTopBucket) {
+    flushRiverBucket(scene, aggCoastDeltaBucket, riverEntries);
+    flushRiverBucket(scene, aggCoastRiverBucket, riverEntries);
+    flushRiverBucket(scene, aggCoastRiverDeltaTopBucket, riverEntries);
   }
   onProgress?.(100);
 

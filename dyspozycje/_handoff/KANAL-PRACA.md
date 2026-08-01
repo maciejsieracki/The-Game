@@ -4617,3 +4617,10 @@ CZEKAM-NA: playtest Macieja (Memfis/Jin, % l?du, p?p?aszczyzna MP)
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) ? Standard�Pangea czas ?Budowanie sceny?
 CZEKAM-NA: pomiar Macieja (Pangea scena)
+
+## [22:52 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 144 DEPLOY ALL
+- md5 `bec88c78` / `bec88c7855ff523fb73877182ed3ebf5` | stempel ROBOCZA · 2026-08-01 22:52
+- Zakres: sceneBuildAggressive — skip sand/blend/oasis; batch coastal mouths; overlay lite
+- tsc 0 | VERIFY OK | agent Pangea scena further perf
+- Graj: gra-robocza/START.html (Ctrl+F5 + Nowa gra) — Duza·Pangea czas Budowanie sceny
+CZEKAM-NA: pomiar Macieja (Duza Pangea)
