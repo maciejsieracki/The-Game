@@ -7273,8 +7273,8 @@ function effectiveTopUpPasses(
   basePasses: number,
   perf: RiverPerfCtx,
 ): number {
-  // Pangea + Duży: wyłącz ciężki topUp (grid/proximity/hardStarts >1min, Maciej 2026-08-01).
-  if (perf.pangeaSingleMass || perf.largeMapPerf) return 0;
+  // Pangea + Duży: 1× tani pass (tylko hardStarts, bez proximity/dry-patch, Maciej 2026-08-01).
+  if (perf.pangeaSingleMass || perf.largeMapPerf) return 1;
   return basePasses;
 }
 
@@ -8022,7 +8022,6 @@ function enforceHardRiverGridStarts(
       ? [
         { acceptLen, sourceSep: baseSourceSep, expand: expandSourceRadius, minInland: minInlandFromSea },
         { acceptLen: 3, sourceSep: Math.max(1, baseSourceSep - 2), expand: expandSourceRadius + 2, minInland: 1 },
-        { acceptLen: 3, sourceSep: 0, expand: expandSourceRadius + 3, minInland: 1 },
       ]
       : [
         { acceptLen, sourceSep: baseSourceSep, expand: expandSourceRadius, minInland: minInlandFromSea },
@@ -8349,15 +8348,38 @@ function generatePhase1MainRivers(
   const ctx: GridSourcePlaceCtx = { ...gridCtx, placeMode: 'main-only' };
   const acceptLen = gridCtx.acceptLen;
 
-  // Pangea: bootstrap od oceanu (8–20 głównych), bez pełnej siatki.
+  // Pangea: bootstrap od oceanu (40–60 głównych) + lekki grid seed stride 2.
   if (riverPerf.pangeaSingleMass) {
-    const maxRivers = Math.max(8, Math.min(20, Math.round(8 + riverParams.areaScale * 4)));
-    return bootstrapMainRiversFromCoast(massSet, seaDist, ctx, maxRivers, acceptLen, onAttempt);
+    const maxRivers = Math.max(40, Math.min(60, Math.round(35 + riverParams.areaScale * 16)));
+    let placed = bootstrapMainRiversFromCoast(massSet, seaDist, ctx, maxRivers, acceptLen, onAttempt);
+    const tryMain = (sq: number, sr: number) => tryPlaceGridSource(ctx, sq, sr, massSet);
+    placed += ensureMassRiverGridCoverage(
+      hexes,
+      massSet,
+      riverParams.mainCell,
+      seaDist,
+      riverPaths,
+      riverKinds,
+      usedSources,
+      tryMain,
+      gridCtx.rand,
+      maxLen,
+      {
+        sparseMainOnly: true,
+        gridStride: 2,
+        reliefSourceBonus: 0,
+        expandSourceRadius: riverParams.expandSourceRadius,
+        minInlandFromSea: 1,
+        gridCtx: ctx,
+        acceptLen,
+      },
+    );
+    return placed;
   }
 
   const tryMain = (sq: number, sr: number) => tryPlaceGridSource(ctx, sq, sr, massSet);
   const gridStride = riverPerf.largeMapPerf
-    ? Math.max(3, riverParams.mainGridStride)
+    ? Math.max(2, riverParams.mainGridStride)
     : riverParams.mainGridStride;
 
   const cellList = [...landHexesByCoverageCell(massSet, riverParams.mainCell).values()]
@@ -8953,11 +8975,9 @@ export function topUpRiverGridCoverage(
         );
         if (RIVER_PROFILE_ON) rpEnsure().topUpHardStartsMs += rpNow() - _hsT0;
       }
-      if (massProfile === 'normal' || isLastPass) {
+      if (!riverAggressivePerf(riverPerf) && (massProfile === 'normal' || isLastPass)) {
         const _dpT0 = RIVER_PROFILE_ON ? rpNow() : 0;
-        if (!riverAggressivePerf(riverPerf)) {
-          enforceMaxDryLowlandPatches(massSet, gridCtx, massProfile);
-        }
+        enforceMaxDryLowlandPatches(massSet, gridCtx, massProfile);
         if (RIVER_PROFILE_ON) rpEnsure().topUpDryPatchMs += rpNow() - _dpT0;
         const _gpT0 = RIVER_PROFILE_ON ? rpNow() : 0;
         passPlaced += ensureRiverGridAndProximity(

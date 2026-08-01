@@ -446,7 +446,7 @@ export function generateMap(
   ({ paths: riverPaths, kinds: riverPathKinds } =
     pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   // Jeden topUp PO prune (perf 2026-08-01): generateRivers pomija dry-patch na dużych mapach;
-  // Pangea + Duży Kontynenty: effectiveTopUpPasses=0 — tylko tanie prune/strip powyżej, bez grid fill.
+  // Pangea + Duży: effectiveTopUpPasses=1 — tylko 1× enforceHardRiverGridStarts, bez proximity/dry-patch.
   topUpRiverGridCoverage(
     hexes,
     width,
