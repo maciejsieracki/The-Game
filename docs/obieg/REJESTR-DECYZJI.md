@@ -44,6 +44,7 @@
 
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
+| **MAP-SPAWN-Q2** | 2026-08-01 | **B** — quota proporcjonalna (largest remainder) + cap 1 typ na małą masę; preferencja hexów rozwoju; Pangea = wszystkie typy OK | A | 🟡 **ZAPISANA** | `docs/decyzje/MAP-SPAWN-Q2.md` | Maciej: „b" · ZAMKNIĘTE (dyskusja) — czeka `działaj` |
 | **HANDEL-SPLIT-Q1** | 2026-07-29 | **B** — dwa traktaty: `umowa_szlakow` + `umowa_wymiany` | D+E | 🟢 **WDROŻONA** | FALA 80 `7d266143` · `HANDEL-SPLIT-Q1.md` | Maciej: „b” |
 | **C-UNIT-CARD-Q2** | 2026-07-27 | **A** — max HP efektywne na karcie + pasek | E | 🔵 **W TRAKCIE** | j.w. | |
 | **C-UNIT-CARD-Q3** | 2026-07-27 | **A** — osobny wiersz Pancerz efektywny (parytet AI) | E | 🔵 **W TRAKCIE** | j.w. | |
