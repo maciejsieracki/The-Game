@@ -1,3 +1,5 @@
+- **2026-08-01 13:44** — ✅ FALA 132 ROBOCZA `a2b17df5` (granice stała opacity 70% bez gradientu + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5).
+
 - **2026-08-01 13:35** — ✅ FALA 131 ROBOCZA `2cb47461` (postęp UI 10 etapów + zbiegi rzek + granice państw + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**). Perf Pangea jeszcze nie weszła.
 
 - **2026-08-01 12:52** — ✅ FALA 130 ROBOCZA `85767de4` (rzeki od oceanu + sep 3 + bez relief + bez pętli + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**).

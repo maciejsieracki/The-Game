@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `2cb47461` - 2026-08-01 13:35 - FALA 131: postep UI 10 etapow + zbiegi rzek + granice panstw + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `a2b17df5` - 2026-08-01 13:44 - FALA 132: granice stala opacity 0.7 bez gradientu + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `a2b17df5eb7126594fc62c8597550b29` · stempel: `ROBOCZA · 2026-08-01 13:44`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: granice państw — jedna opacity 0.7 na cały pas; usunięty gradient INNER/EDGE i ShaderMaterial; pas 0.45 bez zmian.
+- Commit: `ea85db8`. tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `2cb47461` - 2026-08-01 13:35 - FALA 131: postep UI 10 etapow + zbiegi rzek + granice panstw + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `2cb4746134631f9da988eeb78f5fdf4c` · stempel: `ROBOCZA · 2026-08-01 13:35`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: realne etapy postępu generacji mapy (10 faz zamiast fałszywego 1/6); wizualne zbiegi rzek na wspólnej krawędzi hex; granice państw — pas 0.45 + gradient opacity INNER 0.5 → EDGE 0.7.

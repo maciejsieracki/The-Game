@@ -4533,3 +4533,10 @@ CZEKAM-NA: nic
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
 CZEKAM-NA: nic
+
+## [13:44 PL, 2026-08-01] LOKAL/Grok → ALL — FALA 132 DEPLOY ALL
+- md5 `a2b17df5` / `a2b17df5eb7126594fc62c8597550b29` | stempel ROBOCZA · 2026-08-01 13:44
+- Zakres: granice stała opacity 0.7 bez gradientu (`ea85db8`)
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5)
+CZEKAM-NA: nic
