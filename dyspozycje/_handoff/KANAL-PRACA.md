@@ -4618,61 +4618,68 @@ CZEKAM-NA: playtest Macieja (Memfis/Jin, % l?du, p?p?aszczyzna MP)
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) ? StandardPangea czas ?Budowanie sceny?
 CZEKAM-NA: pomiar Macieja (Pangea scena)
 
-## [22:52 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 144 DEPLOY ALL
-- md5 `bec88c78` / `bec88c7855ff523fb73877182ed3ebf5` | stempel ROBOCZA · 2026-08-01 22:52
-- Zakres: sceneBuildAggressive — skip sand/blend/oasis; batch coastal mouths; overlay lite
+## [22:52 PL, 2026-08-01] LOKAL/Grok -> ALL  FALA 144 DEPLOY ALL
+- md5 `bec88c78` / `bec88c7855ff523fb73877182ed3ebf5` | stempel ROBOCZA  2026-08-01 22:52
+- Zakres: sceneBuildAggressive  skip sand/blend/oasis; batch coastal mouths; overlay lite
 - tsc 0 | VERIFY OK | agent Pangea scena further perf
-- Graj: gra-robocza/START.html (Ctrl+F5 + Nowa gra) — Duza·Pangea czas Budowanie sceny
+- Graj: gra-robocza/START.html (Ctrl+F5 + Nowa gra)  DuzaPangea czas Budowanie sceny
 CZEKAM-NA: pomiar Macieja (Duza Pangea)
 
-## [23:00 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 145 DEPLOY ALL
-- md5 `daf2c51b` / `daf2c51b0e56ecd4f3d7e5c35d4d8f16` | stempel ROBOCZA · 2026-08-01 23:00
+## [23:00 PL, 2026-08-01] LOKAL/Grok -> ALL  FALA 145 DEPLOY ALL
+- md5 `daf2c51b` / `daf2c51b0e56ecd4f3d7e5c35d4d8f16` | stempel ROBOCZA  2026-08-01 23:00
 - Zakres: rzeki widoczne przy zaloz 1. miasto; suwak PODZIAL PRACY = jak Wyzywienie
 - tsc 0 | VERIFY OK
 - Graj: gra-robocza/START.html (Ctrl+F5 + Nowa gra)
 CZEKAM-NA: smoke Macieja (settle rzeki + panel pracy)
 
-## [23:04 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 146 DEPLOY ALL
-- md5 `78a1b727` / `78a1b727501f88348d3cfc88855a4614` | stempel ROBOCZA · 2026-08-01 23:04
+## [23:04 PL, 2026-08-01] LOKAL/Grok -> ALL  FALA 146 DEPLOY ALL
+- md5 `78a1b727` / `78a1b727501f88348d3cfc88855a4614` | stempel ROBOCZA  2026-08-01 23:04
 - Zakres: isRiverRenderFast + dekoracje z powrotem; testuj rzeki przy 1. miescie
-CZEKAM-NA: Maciej — widocznosc rzek przed settle (OK/BUG)
+CZEKAM-NA: Maciej  widocznosc rzek przed settle (OK/BUG)
 
-## [23:14 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 147 DEPLOY ALL
-- md5 `6a8ba59a` / `6a8ba59a6657d1d1bdbe66290411a46f` | stempel ROBOCZA · 2026-08-01 23:14
-- Zakres: TYLKO perf rzek/ujsc (batch 128, decymacja tributary) — dekoracje nietkniete
-- Graj: gra-robocza/START.html Ctrl+F5 Nowa gra — Duza·Pangea czas Budowanie sceny
+## [23:14 PL, 2026-08-01] LOKAL/Grok -> ALL  FALA 147 DEPLOY ALL
+- md5 `6a8ba59a` / `6a8ba59a6657d1d1bdbe66290411a46f` | stempel ROBOCZA  2026-08-01 23:14
+- Zakres: TYLKO perf rzek/ujsc (batch 128, decymacja tributary)  dekoracje nietkniete
+- Graj: gra-robocza/START.html Ctrl+F5 Nowa gra  DuzaPangea czas Budowanie sceny
 CZEKAM-NA: pomiar Macieja
 
-## [23:24 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 148 DEPLOY (re-stamp)
-- md5 `b629a26d` / `b629a26dbd6aceca18e3480a3b95e590` | stempel ROBOCZA · 2026-08-01 23:24
-- Ten sam kod co 147 — swiezy plik po zgloszeniu „stara wersja”
-CZEKAM-NA: Maciej — w START.html ma byc kod `b629a26d` i czas 23:24
+## [23:24 PL, 2026-08-01] LOKAL/Grok -> ALL  FALA 148 DEPLOY (re-stamp)
+- md5 `b629a26d` / `b629a26dbd6aceca18e3480a3b95e590` | stempel ROBOCZA  2026-08-01 23:24
+- Ten sam kod co 147  swiezy plik po zgloszeniu stara wersja
+CZEKAM-NA: Maciej  w START.html ma byc kod `b629a26d` i czas 23:24
 
-## [23:33 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 149 DIAG stage 0
-- md5 `7381ff21` / `7381ff210874dab7c5a138da038f9ac6` | stempel ROBOCZA · 2026-08-01 23:33
-- riverRenderStage default 0 — zero rzek w Budowanie sceny; archiwum _archiwum-rzeki
+## [23:33 PL, 2026-08-01] LOKAL/Grok -> ALL  FALA 149 DIAG stage 0
+- md5 `7381ff21` / `7381ff210874dab7c5a138da038f9ac6` | stempel ROBOCZA  2026-08-01 23:33
+- riverRenderStage default 0  zero rzek w Budowanie sceny; archiwum _archiwum-rzeki
 CZEKAM-NA: pomiar Macieja (czas sceny BEZ rzek na mapie)
 
-## [23:40 PL, 2026-08-01] LOKAL/Grok -> ALL — FALA 150 DIAG timings
-- md5 `a1037b66` / `a1037b66b0899ba0af77e82686ebf060` | stempel ROBOCZA · 2026-08-01 23:40
+## [23:40 PL, 2026-08-01] LOKAL/Grok -> ALL  FALA 150 DIAG timings
+- md5 `a1037b66` / `a1037b66b0899ba0af77e82686ebf060` | stempel ROBOCZA  2026-08-01 23:40
 - Instrumentacja buildScene; stage 0 rzek zostaje
-CZEKAM-NA: Maciej — ktora etykieta stoi + F12 `[civ] buildScene ms`
+CZEKAM-NA: Maciej  ktora etykieta stoi + F12 `[civ] buildScene ms`
 
-## [2026-08-01 23:48 PL] LOKAL/Grok -> ALL — FALA 151 plain console line
+## [2026-08-01 23:48 PL] LOKAL/Grok -> ALL  FALA 151 plain console line
 - md5 `ed322ecd` / `ed322ecdca71eef54173fa20555c1479`
-CZEKAM-NA: Maciej — wklej linike buildScene ms
+CZEKAM-NA: Maciej  wklej linike buildScene ms
 
-## [2026-08-01 23:52 PL] LOKAL/Grok -> ALL — FALA 152 on-screen timings
+## [2026-08-01 23:52 PL] LOKAL/Grok -> ALL  FALA 152 on-screen timings
 - md5 `6c8a1f92` / `6c8a1f92accad4df6a2bdfa564516088`
 CZEKAM-NA: print screen panelu czasow od Macieja
 
-## [00:12 PL, 2026-08-02] LOKAL/Composer -> ALL — FALA 154 timing panel hard fix
-- md5 `d3a11217` / `d3a11217a5a22dd9ba75569500557d8d` | stempel ROBOCZA · 2026-08-02 00:12
+## [00:12 PL, 2026-08-02] LOKAL/Composer -> ALL  FALA 154 timing panel hard fix
+- md5 `d3a11217` / `d3a11217a5a22dd9ba75569500557d8d` | stempel ROBOCZA  2026-08-02 00:12
 - mapLoadingOverlay: z-index 3M, canvas pointer-events:none, OK pointerdown/up/click, Enter/Escape, auto 3s
-CZEKAM-NA: Maciej — gra startuje bez kliku po 3 s (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: Maciej  gra startuje bez kliku po 3 s (Ctrl+F5 + Nowa gra)
 
 ## [00:05 PL, 2026-08-02] LOKAL/Composer -> ALL FALA 154 usunieto panel czasow sceny
 - md5 `ac11d6e8` / `ac11d6e8c8f632fd205b24d397463619` | stempel ROBOCZA 2026-08-02 00:05
 - Usunieto showSceneTimingReport + OK graj; po buildScene natychmiast hide overlay; czasy tylko console.info
 - tsc 0 | VERIFY OK
 CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra, wejscie bez OK
+
+## [00:30 PL, 2026-08-02] LOKAL/Composer -> ALL FALA 155 timing detail + mapGen phases
+- md5 `61d74797` / `61d74797f7397e25b03c07935499c99d` | stempel ROBOCZA 2026-08-02 00:30
+- buildTimings.detail: heksy (alokacja/pryzmy/instancjeReliefu/styledWPetli/brzegWPetli/pustynia/finalizacja) + nakladki (scalMerge/instancjePlazaWydmy)
+- mapGenTimings na mapie (10 faz) + panel nieblokujacy 4.5s (pointer-events:none), console.info
+- tsc 0 | vite build OK | VERIFY OK
+CZEKAM-NA: Maciej print screen Pangea vs Kontynenty (panel prawy gorny)

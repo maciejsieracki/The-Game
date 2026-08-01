@@ -45,3 +45,57 @@ export function reportMapGenPhase(
     : Math.min(99, Math.round(globalPct));
   onProgress(faza, capped, phaseNum, phaseTotal);
 }
+
+/** Klucze faz generatora (zgodne z MAP_GEN_PHASE_LABELS). */
+export type MapGenPhaseKey = keyof typeof MAP_GEN_PHASE_LABELS;
+
+/** Czasy faz generacji mapy (ms) — do raportu Pangea vs Kontynenty. */
+export interface MapGenPhaseTimings {
+  prep: number;
+  terrain: number;
+  landSea: number;
+  relief: number;
+  coast: number;
+  riversMain: number;
+  riversFill: number;
+  forest: number;
+  deposits: number;
+  starts: number;
+  total: number;
+}
+
+const MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS) as MapGenPhaseKey[];
+
+/** Licznik ms per faza — wołaj begin() na starcie każdej fazy, finish() na końcu generateMap. */
+export function createMapGenTimer(): {
+  begin: (key: MapGenPhaseKey) => void;
+  finish: () => MapGenPhaseTimings;
+} {
+  const ms: Partial<Record<MapGenPhaseKey, number>> = {};
+  const genStart = performance.now();
+  let lastMark = genStart;
+  let current: MapGenPhaseKey | null = null;
+
+  return {
+    begin(key: MapGenPhaseKey) {
+      const now = performance.now();
+      if (current) {
+        ms[current] = Math.round(now - lastMark);
+      }
+      current = key;
+      lastMark = now;
+    },
+    finish() {
+      const now = performance.now();
+      if (current) {
+        ms[current] = Math.round(now - lastMark);
+      }
+      const result = {} as MapGenPhaseTimings;
+      for (const k of MAP_GEN_PHASE_KEYS) {
+        result[k] = ms[k] ?? 0;
+      }
+      result.total = Math.round(now - genStart);
+      return result;
+    },
+  };
+}

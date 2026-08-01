@@ -57,12 +57,24 @@ import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
-import { buildScene, getLastSetFogMs } from './render/scene';
+import { buildScene, getLastSetFogMs, type SceneBuildTimings } from './render/scene';
 import { showMapLoadingOverlay, type MapLoadingOverlayHandle } from './ui/mapLoadingOverlay';
+import { showSceneTimingReport } from './ui/sceneTimingReport';
+import type { MapGenPhaseTimings } from './map/mapGenProgress';
 
-/** Po buildScene zamknij overlay — czasy sceny tylko w console.info (scene.ts). */
-function finishLoadingAfterSceneBuild(loading: MapLoadingOverlayHandle): void {
+/** Po buildScene: ukryj overlay ładowania + nieblokujący raport czasów (gra startuje od razu). */
+function finishLoadingAfterSceneBuild(
+  loading: MapLoadingOverlayHandle,
+  report?: { mapGen?: MapGenPhaseTimings; scene?: SceneBuildTimings; typLabel?: string },
+): void {
   loading.hide();
+  if (report?.scene) {
+    showSceneTimingReport({
+      mapGen: report.mapGen,
+      scene: report.scene,
+      typLabel: report.typLabel,
+    });
+  }
 }
 import {
   CIV_PERF_DEBUG_MARKER,
@@ -21460,7 +21472,11 @@ async function boot(): Promise<void> {
         const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
           loading.setProgress(phase ? `Przywracanie widoku mapy — ${phase}` : 'Przywracanie widoku mapy…', pct);
         });
-        finishLoadingAfterSceneBuild(loading);
+        finishLoadingAfterSceneBuild(loading, {
+          mapGen: map.mapGenTimings,
+          scene: newSceneResult.buildTimings,
+          typLabel: params.worldType || _menuTypSwiata,
+        });
         scene = newSceneResult.scene;
         camera = newSceneResult.camera;
         renderer = newSceneResult.renderer;
@@ -21553,7 +21569,11 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      finishLoadingAfterSceneBuild(loading);
+      finishLoadingAfterSceneBuild(loading, {
+        mapGen: map.mapGenTimings,
+        scene: newSceneResult.buildTimings,
+        typLabel: params.worldType || _menuTypSwiata,
+      });
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -21821,7 +21841,11 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      finishLoadingAfterSceneBuild(loading);
+      finishLoadingAfterSceneBuild(loading, {
+        mapGen: map.mapGenTimings,
+        scene: newSceneResult.buildTimings,
+        typLabel: params.worldType || _menuTypSwiata,
+      });
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -22050,7 +22074,11 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      finishLoadingAfterSceneBuild(loading);
+      finishLoadingAfterSceneBuild(loading, {
+        mapGen: map.mapGenTimings,
+        scene: newSceneResult.buildTimings,
+        typLabel: 'Kontynenty',
+      });
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -22250,7 +22278,11 @@ async function boot(): Promise<void> {
       const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct, phase) => {
         loading.setProgress(phase ? `Budowanie sceny — ${phase}` : 'Budowanie sceny…', pct);
       });
-      finishLoadingAfterSceneBuild(loading);
+      finishLoadingAfterSceneBuild(loading, {
+        mapGen: map.mapGenTimings,
+        scene: newSceneResult.buildTimings,
+        typLabel: 'Kontynenty',
+      });
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;

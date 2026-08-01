@@ -255,6 +255,31 @@ interface RiverGeoBucket {
   renderOrder: number;
 }
 
+export interface SceneBuildDetailTimings {
+  heksy: {
+    /** Alokacja InstancedMesh + geometrie współdzielone (przed pętlą C3). */
+    alokacja: number;
+    /** Pętla C3: pryzmy terenu + kolory instancji. */
+    pryzmy: number;
+    /** Pętla C3: instancje las/góry/wzgórza/mikrodekor. */
+    instancjeReliefu: number;
+    /** Pętla C3: styled overlay (dżungla, szczyty stylizowane, plaże minecraft). */
+    styledWPetli: number;
+    /** Pętla C3: zbieranie macierzy brzegu (Roblox coast buffers). */
+    brzegWPetli: number;
+    /** Pętla C3: wydmy + oazy pustynne. */
+    pustynia: number;
+    /** Po pętli: needsUpdate + trim count instancji. */
+    finalizacja: number;
+  };
+  nakladki: {
+    /** collapseToMergedMesh na ciężkich styledOverlays. */
+    scalMerge: number;
+    /** Finalizacja plaż/wydm/oaz (InstancedMesh count). */
+    instancjePlazaWydmy: number;
+  };
+}
+
 export interface SceneBuildTimings {
   hexes: number;
   coast: number;
@@ -265,6 +290,8 @@ export interface SceneBuildTimings {
   hexCount: number;
   overlayTotal: number;
   riverStage: number;
+  /** FALA 155: podetapy heksów i nakładek (ms). */
+  detail?: SceneBuildDetailTimings;
 }
 
 export interface SceneResult {
@@ -1589,6 +1616,7 @@ export async function buildScene(
   // CylinderGeometry(6) jest juz pointy-top -- bez rotacji.
 
   // Zlicz ilosc per teren i nakladke
+  const alokacjaT0 = performance.now();
   // GRAFIKA-3D partia TEREN stage 2: w stylu roblox góry/wzgórza renderujemy jako
   // 10 InstancedMesh (5 wariantów gór + 5 wzgórz) zamiast per-heks styledOverlays.
   const NW = LICZBA_WARIANTOW_TERENU;
@@ -1986,6 +2014,13 @@ export async function buildScene(
   const buildMs: { hexes: number; coast: number; overlays: number; rivers: number; tail: number } = {
     hexes: 0, coast: 0, overlays: 0, rivers: 0, tail: 0,
   };
+  const buildDetail: SceneBuildDetailTimings = {
+    heksy: {
+      alokacja: Math.round(buildT0 - alokacjaT0),
+      pryzmy: 0, instancjeReliefu: 0, styledWPetli: 0, brzegWPetli: 0, pustynia: 0, finalizacja: 0,
+    },
+    nakladki: { scalMerge: 0, instancjePlazaWydmy: 0 },
+  };
   const markBuildPhase = (key: keyof typeof buildMs): void => {
     const now = performance.now();
     buildMs[key] = Math.round(now - buildLastMark);
@@ -1994,8 +2029,16 @@ export async function buildScene(
   reportSceneProgress(onProgress, 0, SCENE_BUILD_PHASE_LABELS.hexes);
   let c3ChunkStart = performance.now();
   let c3ChunkCount = 0;
+  const hexAcc = { pryzmy: 0, instancjeReliefu: 0, styledWPetli: 0, brzegWPetli: 0, pustynia: 0 };
+  const pushStyledOverlay = (group: THREE.Group, hexKey: string, kind?: 'forest'): void => {
+    const t0 = performance.now();
+    styledOverlays.push({ group, hexKey, kind });
+    scene.add(group);
+    hexAcc.styledWPetli += performance.now() - t0;
+  };
   for (let c3i = 0; c3i < c3Total; c3i++) {
     const hex = c3Hexes[c3i]!;
+    let sectT = performance.now();
     const t   = hex.terenBazowy;
     const vis = terrainVis(t, renderStyle);
     const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, R);
@@ -2088,6 +2131,8 @@ export async function buildScene(
       terrainInstanceIdx[t] = iIdx + 1;
     }
 
+    { const t = performance.now(); hexAcc.pryzmy += t - sectT; sectT = t; }
+
     // Las — dekoracja 3D gdy nakladka=Las (logika gry); robloxLite tylko upraszcza meshe (E1).
     if (hex.nakladka === Nakladka.Las && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
       const baseY = vis.height + vis.yOffset;
@@ -2109,8 +2154,7 @@ export async function buildScene(
       } else if (useStyledDecor) {
         // Dżungla tropikalna (palmy/parasole) — stara ścieżka klastra drzew (poza zakresem GRAFIKA-TEREN-2).
         const cluster = buildStyleForestCluster(renderStyle, { q, r, x, z, baseY, seed: map.seed, R, mapHeight: map.wysokoscR }, robloxLite);
-        styledOverlays.push({ group: cluster, hexKey, kind: 'forest' });
-        scene.add(cluster);
+        pushStyledOverlay(cluster, hexKey, 'forest');
       } else {
       const treeCount = 3 + Math.floor(hash2D(q, r, map.seed, 1) * 3); // 3..5
       for (let ti = 0; ti < treeCount && forestIdx < forestMesh.count; ti++) {
@@ -2170,8 +2214,7 @@ export async function buildScene(
         goraIdx[v] = gi + 1;
       } else if (useStyledDecor) {
         const peak = buildStyleMountainPeak(renderStyle, { q, r, x, z, topY, seed: map.seed, R }, robloxLite);
-        styledOverlays.push({ group: peak, hexKey });
-        scene.add(peak);
+        pushStyledOverlay(peak, hexKey);
       } else {
       const peakH = R * (0.35 + hash2D(q, r, map.seed, 5) * 0.22);
       const peakYaw = hash2D(q, r, map.seed, 6) * Math.PI * 2;
@@ -2219,8 +2262,7 @@ export async function buildScene(
         wzgorzeIdx[v] = wi + 1;
       } else if (useStyledDecor && !hillLayers.includes('tarasy')) {
         const hill = buildStyleHillBump(renderStyle, { q, r, x, z, baseY, seed: map.seed, R }, robloxLite);
-        styledOverlays.push({ group: hill, hexKey });
-        scene.add(hill);
+        pushStyledOverlay(hill, hexKey);
       } else {
       const bumpH = 0.14 + hash2D(q, r, map.seed, 2) * 0.16;
       const bumpW = 0.80 + hash2D(q, r, map.seed, 3) * 0.30;
@@ -2257,6 +2299,8 @@ export async function buildScene(
       }
     }
 
+    { const t = performance.now(); hexAcc.instancjeReliefu += t - sectT; sectT = t; }
+
     // Brzeg hybryda C: ląd = pas piasku; Wybrzeże = pełna tafła piasku + woda od strony Morza.
     const topYCoast = surfaceTopY;
     if (useStyledDecor && renderStyle === 'roblox' && t === TerenBazowy.Wybrzeze && coastInstBuf) {
@@ -2284,13 +2328,11 @@ export async function buildScene(
         self: t,
       }, robloxLite);
       if (sand.children.length > 0) {
-        styledOverlays.push({ group: sand, hexKey });
-        scene.add(sand);
+        pushStyledOverlay(sand, hexKey);
       }
     } else if (t === TerenBazowy.Wybrzeze && useStyledDecor && renderStyle === 'minecraft') {
       const beach = buildStyleBeachRing(renderStyle, x, topYCoast, z, R);
-      styledOverlays.push({ group: beach, hexKey });
-      scene.add(beach);
+      pushStyledOverlay(beach, hexKey);
     } else if (t === TerenBazowy.Wybrzeze && !useStyledDecor) {
       dummy.position.set(x, topYCoast + R * 0.015, z);
       dummy.rotation.set(0, 0, 0);
@@ -2302,13 +2344,14 @@ export async function buildScene(
       beachIdx++;
     }
 
+    { const t = performance.now(); hexAcc.brzegWPetli += t - sectT; sectT = t; }
+
     if (t === TerenBazowy.Pustynia) {
       const q = hex.coords.q, r = hex.coords.r;
       if (useStyledDecor) {
         const dune = buildStyleDune(renderStyle, q, r, x, z, vis.height + vis.yOffset, map.seed, R);
         if (dune) {
-          styledOverlays.push({ group: dune, hexKey });
-          scene.add(dune);
+          pushStyledOverlay(dune, hexKey);
         }
       } else if (hash2D(q, r, map.seed, 9) < 0.34) {
         const baseY = vis.height + vis.yOffset;
@@ -2338,8 +2381,7 @@ export async function buildScene(
           const oasis = buildOaza();
           oasis.position.set(x, baseY, z);
           oasis.rotation.y = rotacjaOazy(hex.coords.q, hex.coords.r, map.seed);
-          styledOverlays.push({ group: oasis, hexKey });
-          scene.add(oasis);
+          pushStyledOverlay(oasis, hexKey);
           // Zachowaj strumień LCG: stary buildStyleOasis (roblox) konsumował 2×palmCount rnd() — utrzymuje zestaw oaz.
           for (let i = 0; i < palmCount; i++) { rnd(); rnd(); }
         } else {
@@ -2404,6 +2446,8 @@ export async function buildScene(
       }
     }
 
+    { const t = performance.now(); hexAcc.pustynia += t - sectT; sectT = t; }
+
     // --- C3: granica porcji (chunk) ---------------------------------------
     // Po przekroczeniu budżetu czasu LUB twardego limitu heksów: oddaj klatkę
     // (rAF), zaktualizuj pasek postępu i zacznij nowy budżet. Await TYLKO na
@@ -2422,7 +2466,13 @@ export async function buildScene(
     }
   }
   reportSceneProgress(onProgress, 80, SCENE_BUILD_PHASE_LABELS.hexes);
+  buildDetail.heksy.pryzmy = Math.round(hexAcc.pryzmy);
+  buildDetail.heksy.instancjeReliefu = Math.round(hexAcc.instancjeReliefu);
+  buildDetail.heksy.styledWPetli = Math.round(hexAcc.styledWPetli);
+  buildDetail.heksy.brzegWPetli = Math.round(hexAcc.brzegWPetli);
+  buildDetail.heksy.pustynia = Math.round(hexAcc.pustynia);
 
+  const finalizacjaT0 = performance.now();
   // Aktualizuj bufor instancji + przycinaj count do faktycznie użytych instancji
   for (const t of terrainTypes) {
     const meshIdx = terrainIndex[t];
@@ -2472,6 +2522,7 @@ export async function buildScene(
     dekorRowninaInst[w]!.count = dekorRowninaIdx[w]!;
     dekorRowninaInst[w]!.instanceMatrix.needsUpdate = true;
   }
+  buildDetail.heksy.finalizacja = Math.round(performance.now() - finalizacjaT0);
   markBuildPhase('hexes');
 
   // FALA 141: zebrane macierze brzegu → kilka InstancedMesh (wspólna geometria, bez alloc/geo per heks).
@@ -2527,6 +2578,7 @@ export async function buildScene(
   const skipForestCollapse = robloxLite && overlayTotal > 2000;
   const overlayYieldStep = overlayTotal > 8000 ? 15 : overlayTotal > 3000 ? 25 : overlayTotal > 1500 ? 40 : 80;
   let overlayChunkStart = performance.now();
+  const overlayMergeT0 = performance.now();
   reportSceneProgress(onProgress, 83, SCENE_BUILD_PHASE_LABELS.overlays);
   for (let oi = 0; oi < overlayTotal; oi++) {
     const { group, kind } = styledOverlays[oi]!;
@@ -2544,8 +2596,10 @@ export async function buildScene(
       overlayChunkStart = performance.now();
     }
   }
+  buildDetail.nakladki.scalMerge = Math.round(performance.now() - overlayMergeT0);
   markBuildPhase('overlays');
   reportSceneProgress(onProgress, 90, SCENE_BUILD_PHASE_LABELS.overlays);
+  const plazaT0 = performance.now();
   beachMesh.count = beachIdx;
   beachMesh.instanceMatrix.needsUpdate = true;
   duneMesh.count = duneIdx;
@@ -2556,6 +2610,7 @@ export async function buildScene(
   oasisTrunkMesh.instanceMatrix.needsUpdate = true;
   oasisFrondMesh.count = oasisFrondIdx;
   oasisFrondMesh.instanceMatrix.needsUpdate = true;
+  buildDetail.nakladki.instancjePlazaWydmy = Math.round(performance.now() - plazaT0);
 
   // ---------------------------------------------------------------------------
   // Rzeki -- wczytywane z map.riverPaths (dane generatora mapy)
@@ -3394,12 +3449,23 @@ export async function buildScene(
     hexCount,
     overlayTotal,
     riverStage,
+    detail: buildDetail,
   };
-  // FALA 151/152: linia tekstu w konsoli + obiekt do panelu na ekranie (print screen).
+  const hd = buildDetail.heksy;
+  const nd = buildDetail.nakladki;
+  // FALA 155: linia tekstu w konsoli + obiekt do panelu na ekranie (print screen).
   console.info(
     `[civ] buildScene ms | hexes=${buildTimings.hexes} coast=${buildTimings.coast} overlays=${buildTimings.overlays}`
     + ` rivers=${buildTimings.rivers} tail=${buildTimings.tail} total=${buildTimings.total}`
     + ` | hexCount=${hexCount} overlaysN=${overlayTotal} riverStage=${riverStage}`,
+  );
+  console.info(
+    `[civ] buildScene detail heksy | alokacja=${hd.alokacja} pryzmy=${hd.pryzmy}`
+    + ` instancjeReliefu=${hd.instancjeReliefu} styledWPetli=${hd.styledWPetli}`
+    + ` brzegWPetli=${hd.brzegWPetli} pustynia=${hd.pustynia} finalizacja=${hd.finalizacja}`,
+  );
+  console.info(
+    `[civ] buildScene detail nakladki | scalMerge=${nd.scalMerge} instancjePlazaWydmy=${nd.instancjePlazaWydmy}`,
   );
   reportSceneProgress(onProgress, 100, SCENE_BUILD_PHASE_LABELS.tail);
 

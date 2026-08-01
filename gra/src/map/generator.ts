@@ -102,11 +102,13 @@ import {
   MAP_GEN_PHASE_LABELS,
   MAP_GEN_PHASE_TOTAL,
   reportMapGenPhase,
+  createMapGenTimer,
   type MapGenProgressCallback,
+  type MapGenPhaseTimings,
 } from './mapGenProgress';
 
 export type { WorldGenOptions };
-export type { MapGenProgressCallback };
+export type { MapGenProgressCallback, MapGenPhaseTimings };
 
 // ---------------------------------------------------------------------------
 // Rozmiar mapy + typ wyniku
@@ -124,6 +126,8 @@ export const DEFAULT_HEIGHT = 28;
 export type GameMapWithStarts = GameMap & {
   /** Deterministyczne pozycje startowe (>=5, parami oddalone >=5) na ladzie. */
   startPositions?: StartPosition[];
+  /** FALA 155: czasy faz generatora (ms) — raport Pangea vs Kontynenty. */
+  mapGenTimings?: MapGenPhaseTimings;
 };
 
 /**
@@ -142,6 +146,8 @@ export function generateMap(
   genOpts?: WorldGenOptions,
   onProgress?: MapGenProgressCallback,
 ): GameMapWithStarts {
+  const genTimer = createMapGenTimer();
+  genTimer.begin('prep');
   // Jeśli seed=0 lub undefined, użyj domyślnego 42
   const effectiveSeed = seed || 42;
   const wgn = resolveWorldGenNumbers(genOpts);
@@ -198,6 +204,7 @@ export function generateMap(
   const terrainScratch = new Map<string, TerrainScratch>();
 
   reportMapGenPhase(onProgress, 1, MAP_GEN_PHASE_LABELS.prep, 100);
+  genTimer.begin('terrain');
 
   // ── Przebieg 1: teren bazowy (szum → klasyfikacja; las dopiero w przebiegu 3h) ─
   const terrainRowStep = Math.max(1, Math.floor(height / 24));
@@ -267,6 +274,7 @@ export function generateMap(
   }
 
   reportMapGenPhase(onProgress, 2, MAP_GEN_PHASE_LABELS.terrain, 100);
+  genTimer.begin('landSea');
 
   // ── Przebieg 1a: usuń zamknięte morze + głębokie zatoki ─────────────────────
   reportMapGenPhase(onProgress, 3, MAP_GEN_PHASE_LABELS.landSea, 5);
@@ -338,6 +346,7 @@ export function generateMap(
 
   purgeReliefValleyWater(hexes, width, height);
   reportMapGenPhase(onProgress, 3, MAP_GEN_PHASE_LABELS.landSea, 100);
+  genTimer.begin('relief');
 
   // ── Przebieg 3: sanity woda/ląd + bufor plaży (PRZED złożami — patrz 3e) ───
   reportMapGenPhase(onProgress, 4, MAP_GEN_PHASE_LABELS.relief, 10);
@@ -400,6 +409,7 @@ export function generateMap(
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
   reportMapGenPhase(onProgress, 4, MAP_GEN_PHASE_LABELS.relief, 100);
+  genTimer.begin('coast');
   // ── Przebieg 3h-coast: grubsze (≥2 hex) + gładsze wybrzeże PRZED rzekami (Zmiana 2) ─
   reportMapGenPhase(onProgress, 5, MAP_GEN_PHASE_LABELS.coast, 20);
   thickenCoastAndSmoothInlets(hexes, width, height, 2);
@@ -419,6 +429,7 @@ export function generateMap(
     enforceTargetDryLandFraction(hexes, landScores, landFraction, width, height, coastOpts);
   }
   reportMapGenPhase(onProgress, 5, MAP_GEN_PHASE_LABELS.coast, 100);
+  genTimer.begin('riversMain');
   // ── Przebieg 3h: rzeki DOPIERO po finalnym wybrzeżu (Maciej: bufor 2 hex od morza) ─
   reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 0);
   const riversTier = genOpts?.worldDensity?.rivers ?? 'medium';
@@ -436,6 +447,7 @@ export function generateMap(
     },
   });
   reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 100);
+  genTimer.begin('riversFill');
   reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 0);
   stripRiverMarksFromOpenSea(hexes);
   // B0.7/B0.8: „zero sierot" — usun sciezki niepolaczone z morzem (finalny stan, jak widzi test).
@@ -513,6 +525,7 @@ export function generateMap(
     hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
   );
   reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 100);
+  genTimer.begin('forest');
 
   // ── Przebieg 3h-las: las DOPIERO po finalnym terenie (relief/pasma) i finalnych rzekach
   reportMapGenPhase(onProgress, 8, MAP_GEN_PHASE_LABELS.forest, 10);
@@ -528,6 +541,7 @@ export function generateMap(
   reapplyForestOverlay(hexes, terrainScratch, terrainTh, typ, forestTier, zoneOf, nZones, height);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   reportMapGenPhase(onProgress, 8, MAP_GEN_PHASE_LABELS.forest, 100);
+  genTimer.begin('deposits');
 
   // ── Przebieg 3i: złoża DOPIERO po finalnych rzekach, finalnym wybrzeżu i finalnym lesie
   reportMapGenPhase(onProgress, 9, MAP_GEN_PHASE_LABELS.deposits, 15);
@@ -542,6 +556,7 @@ export function generateMap(
   ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   stripDepositsFromWater(hexes);
   reportMapGenPhase(onProgress, 9, MAP_GEN_PHASE_LABELS.deposits, 100);
+  genTimer.begin('starts');
 
   reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 10);
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
@@ -608,6 +623,14 @@ export function generateMap(
   ({ paths: riverPaths, kinds: riverPathKinds } =
     ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
   reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 100);
+  const mapGenTimings = genTimer.finish();
+  console.info(
+    `[civ] mapGen ms | prep=${mapGenTimings.prep} terrain=${mapGenTimings.terrain}`
+    + ` landSea=${mapGenTimings.landSea} relief=${mapGenTimings.relief} coast=${mapGenTimings.coast}`
+    + ` riversMain=${mapGenTimings.riversMain} riversFill=${mapGenTimings.riversFill}`
+    + ` forest=${mapGenTimings.forest} deposits=${mapGenTimings.deposits} starts=${mapGenTimings.starts}`
+    + ` total=${mapGenTimings.total}`,
+  );
 
   return {
     szerokoscQ: width,
@@ -617,6 +640,7 @@ export function generateMap(
     riverPaths,
     riverPathKinds,
     startPositions,
+    mapGenTimings,
   };
 }
 

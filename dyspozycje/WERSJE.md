@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `ac11d6e8` - 2026-08-02 00:05 - FALA 154: usunieto blokujacy panel czasow sceny + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `61d74797` - 2026-08-02 00:30 - FALA 155: rozbicie czasow heksy/nakladki + fazy generatora + overlay nieblokujacy - **AKTUALNA**
+- md5 (pelne): `61d74797f7397e25b03c07935499c99d` · stempel: `ROBOCZA · 2026-08-02 00:30`
+- **VERIFY OK.** buildTimings.detail (heksy 7 podetapow + nakladki 2) + mapGenTimings (10 faz). Panel prawy gorny, pointer-events:none, auto-hide 4.5s, gra bez OK.
+- tsc 0 · VERIFY OK.
+## ROBOCZA `ac11d6e8` - 2026-08-02 00:05 - FALA 154: usunieto blokujacy panel czasow sceny + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `ac11d6e8c8f632fd205b24d397463619` · stempel: `ROBOCZA · 2026-08-02 00:05`
 - **VERIFY OK.** Po buildScene: natychmiast hide overlay; czasy tylko console.info (F12).
 - tsc 0 · VERIFY OK.
