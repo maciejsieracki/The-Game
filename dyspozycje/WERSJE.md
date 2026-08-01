@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `a1037b66` - 2026-08-01 23:40 - FALA 150: instrumentacja buildScene (fazy UI + console ms) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `ed322ecd` - 2026-08-01 23:48 - FALA 151: buildScene ms jako jedna linia tekstu + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `ed322ecdca71eef54173fa20555c1479` · stempel: `ROBOCZA · 2026-08-01 23:48`
+- **VERIFY OK.** Console: `[civ] buildScene ms | hexes=… coast=… overlays=… total=…` (bez rozwijania obiektu).
+- tsc 0 · VERIFY OK.
+## ROBOCZA `a1037b66` - 2026-08-01 23:40 - FALA 150: instrumentacja buildScene (fazy UI + console ms) + DEPLOY ALL - **ZASTAPIONA**
 - md5 (pelne): `a1037b66b0899ba0af77e82686ebf060` · stempel: `ROBOCZA · 2026-08-01 23:40`
 - **VERIFY OK.** Stage 0 rzek zostaje. Overlay: heksy/brzeg/nakladki/rzeki/final. F12: `[civ] buildScene ms`.
 - tsc 0 · VERIFY OK.

@@ -3369,17 +3369,12 @@ export async function buildScene(
 
   markBuildPhase('tail');
   const buildTotalMs = Math.round(performance.now() - buildT0);
-  console.info('[civ] buildScene ms', {
-    hexes: buildMs.hexes,
-    coast: buildMs.coast,
-    overlays: buildMs.overlays,
-    rivers: buildMs.rivers,
-    tail: buildMs.tail,
-    total: buildTotalMs,
-    hexCount,
-    overlayTotal,
-    riverStage,
-  });
+  // FALA 151: jedna linia tekstu — bez rozwijania obiektu w DevTools (Maciej / file://).
+  console.info(
+    `[civ] buildScene ms | hexes=${buildMs.hexes} coast=${buildMs.coast} overlays=${buildMs.overlays}`
+    + ` rivers=${buildMs.rivers} tail=${buildMs.tail} total=${buildTotalMs}`
+    + ` | hexCount=${hexCount} overlaysN=${overlayTotal} riverStage=${riverStage}`,
+  );
   reportSceneProgress(onProgress, 100, SCENE_BUILD_PHASE_LABELS.tail);
 
   return {

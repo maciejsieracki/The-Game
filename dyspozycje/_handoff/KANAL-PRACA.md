@@ -4657,3 +4657,7 @@ CZEKAM-NA: pomiar Macieja (czas sceny BEZ rzek na mapie)
 - md5 `a1037b66` / `a1037b66b0899ba0af77e82686ebf060` | stempel ROBOCZA · 2026-08-01 23:40
 - Instrumentacja buildScene; stage 0 rzek zostaje
 CZEKAM-NA: Maciej — ktora etykieta stoi + F12 `[civ] buildScene ms`
+
+## [2026-08-01 23:48 PL] LOKAL/Grok -> ALL — FALA 151 plain console line
+- md5 `ed322ecd` / `ed322ecdca71eef54173fa20555c1479`
+CZEKAM-NA: Maciej — wklej linike buildScene ms
