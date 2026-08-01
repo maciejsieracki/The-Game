@@ -1,6 +1,6 @@
 # STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-07-28** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-01 ~21:11** · Projekt: Civ „The Game"
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -26,13 +26,17 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`935d1642`** (FALA 140, 20:45) — ujścia inland (`9c4320b`) + perf głównych Pangea (`d2db99c`) + scena z 139. Poprzedni: FALA 139 `73c18fc2`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
+**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA **`0b70e93f`** (FALA 141, 21:06) — Budowanie sceny: coast InstancedMesh + shared geo (`6556fa7`). Poprzedni: FALA 140 `935d1642`. Wejście: `gra-robocza/START.html` · Ctrl+F5 + **Nowa gra**.
 
-**OTWARTE (2026-08-01):** regresja czasu głównych rzek (**>2 min** vs **~10 s** wcześniej) po FALA 138 — **W TRAKCIE po „działaj"** (~19:07); agent kodowy w toku. **Constraint ~19:17:** efekt/gęstość rzek OK — przy perf-fix nie degradować. Zapis: `dyspozycje/PYTANIA-OTWARTE.md` → `BUG-RZEKI-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138`.
+**ZAMKNIĘTE (2026-08-01 ~20:58):** regresja czasu głównych rzek — Maciej na FALA 140 `935d1642`: **~20 s OK** (było **>2 min**). Zapis: `PYTANIA-OTWARTE.md` → `BUG-RZEKI-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138`.
+
+**Constraint gęstości rzek (~21:11):** Maciej: *„ilość generowanych rzek jest zadowalająca"* — **gęstość/mapgen rzek = OK**; problem leży w **ostatnim etapie = Budowanie sceny** (nie generowanie rzek). Plan eksperymentu kill-switch wyłączania rzek (stage 0–5) → **ODŁOŻONY / NIE POTRZEBNY** na razie.
 
 **OTWARTE (2026-08-01):** regres ciągłości rzek — część biegów **urywa się na lądzie** zamiast ujściem w inną rzekę lub ocean (~19:18) — **W TRAKCIE po „działaj"** (ten sam tor co perf); **constraint ~19:17:** gęstość/efekt OK — naprawić ciągłość do ujścia, nie wyzerować gęstości. Zapis: `PYTANIA-OTWARTE.md` → `BUG-RZEKI-UJSCIE-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-UJSCIE-FALA138`.
 
-**OTWARTE (2026-08-01):** Budowanie sceny — **bardzo długo (~kilkanaście minut, NIE hang/freeze)** mimo FALA 137 — **W TRAKCIE po „działaj"** (~19:07); korekta diagnozy Maciej ~19:15. Zapis: `dyspozycje/PYTANIA-OTWARTE.md` → `BUG-SCENA-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138`.
+**OTWARTE (2026-08-01 ~21:11):** Budowanie sceny — **nadal za długo**; rzeki ~20 s OK, gęstość OK → wąskie gardło = **Budowanie sceny** (ostatni etap), nie mapgen rzek. FALA 141 (`0b70e93f`, coast InstancedMesh) — **W TRAKCIE** (deploy mógł wisieć). Zapis: `PYTANIA-OTWARTE.md` → `BUG-SCENA-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138`.
+
+**OTWARTE (2026-08-01 ~21:10):** Jakość spawnu cywilizacji — **dwa osobne zgłoszenia, ZAPISANE / CZEKA** (≠ MAP-SPAWN-Q2, ≠ rzeki, ≠ scena): (1) klastry kulturowe — typy rozjeżdżają się między kręgami; (2) min. odległość od morza ~10 hex (Standard, skalować z mapą). Zapis: `PYTANIA-OTWARTE.md` → `BUG-SPAWN-CLUSTER-KULTURA` + `BUG-SPAWN-ODLEGLOSC-MORZE` · `REJESTR-PROSB-I-ZADAN.md` → `R-SPAWN-CLUSTER-KULTURA` + `R-SPAWN-ODLEGLOSC-MORZE`.
 
 **Poprzedni wpis (PRZESTARZAŁY — nie używać):** deploy ROBOCZA **`95021308`** (FALA 44).
 

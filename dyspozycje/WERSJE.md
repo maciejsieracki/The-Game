@@ -14,7 +14,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `935d1642` - 2026-08-01 20:45 - FALA 140: ujścia inland + perf głównych rzek (Pangea) + DEPLOY ALL - **AKTUALNA**
+## ROBOCZA `0b70e93f` - 2026-08-01 21:06 - FALA 141: coast InstancedMesh + shared geo (Budowanie sceny) + DEPLOY ALL - **AKTUALNA**
+- md5 (pelne): `0b70e93fd0c0db0a893be4a1577e7fc8` · stempel: `ROBOCZA · 2026-08-01 21:06`
+- **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
+- Zakres: wybrzeże/piasek — współdzielone geometrie + max 5 InstancedMesh (bez alokacji per heks); ujścia rzek 1 ribbon; mapgen bez zmian.
+- Commit: `6556fa7`. tsc 0 · VERIFY OK.
+- Deploy: Grok sam (bez subagenta).
+
+## ROBOCZA `935d1642` - 2026-08-01 20:45 - FALA 140: ujścia inland + perf głównych rzek (Pangea) + DEPLOY ALL - **ZASTĄPIONA**
 - md5 (pelne): `935d16420541e2746b5be7de870fdc16` · stempel: `ROBOCZA · 2026-08-01 20:45`
 - **VERIFY OK.** Gra-ROBOCZA.html md5 = manifest.
 - Zakres: `ensureRiverOutlets` po topUp + po wybrzeżu + scrub; Pangea bootstrap 22–32 + fastTrace (etap1 ~146 ms vs ~295 s); scena z FALA 139.

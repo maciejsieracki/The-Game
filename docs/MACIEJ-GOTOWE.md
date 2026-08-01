@@ -1,3 +1,9 @@
+- **2026-08-01 21:11** — ⏸️ Maciej: gęstość rzek **OK** (*„ilość generowanych rzek jest zadowalająca"*); problem = **ostatni etap = Budowanie sceny** (nie generowanie). Kill-switch rzek stage 0–5 → **ODŁOŻONY**. BUG-SCENA-PERF → W TRAKCIE (FALA 141); BUG-RZEKI-PERF → ZAMKNIĘTE (~20 s).
+
+- **2026-08-01 21:06** — ✅ FALA 141 ROBOCZA `0b70e93f` (coast InstancedMesh + shared geo — Budowanie sceny + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**). Sprawdź czas sceny + wygląd brzegu/ujść.
+
+- **2026-08-01 20:58** — ⏸️ Weryfikacja FALA 140 `935d1642`: rzeki **~20 s OK** (BUG-RZEKI-PERF → ZAMKNIĘTE); **Budowanie sceny nadal za długo** — BUG-SCENA-PERF → W TRAKCIE ponownie; hipoteza: inne elementy sceny.
+
 - **2026-08-01 20:45** — ✅ FALA 140 ROBOCZA `935d1642` (ujścia inland + perf głównych Pangea + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**). Sprawdź: czas głównych, ujścia, gęstość, scena.
 
 - **2026-08-01 19:20** — ✅ FALA 139 ROBOCZA `73c18fc2` (Budowanie sceny szybciej + częściowy perf głównych rzek + DEPLOY ALL). START: `gra-robocza/START.html` (Ctrl+F5, **Nowa gra**). Sprawdź czas sceny; ujścia inland jeszcze w toku.

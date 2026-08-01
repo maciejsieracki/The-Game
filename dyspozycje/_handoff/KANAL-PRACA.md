@@ -4596,3 +4596,10 @@ CZEKAM-NA: agent rzek (ujscia) + pomiar Macieja
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — czas glownych, ujscia, gestosc
 CZEKAM-NA: pomiar Macieja
+
+## [21:06 PL, 2026-08-01] LOKAL/Grok › ALL — FALA 141 DEPLOY ALL
+- md5 `0b70e93f` / `0b70e93fd0c0db0a893be4a1577e7fc8` | stempel ROBOCZA · 2026-08-01 21:06
+- Zakres: coast InstancedMesh + shared geo (6556fa7) — Budowanie sceny; mapgen bez zmian
+- tsc 0 | VERIFY OK
+- Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) — czas sceny + brzeg
+CZEKAM-NA: pomiar Macieja (gestosc rzek OK — problem = scena)
