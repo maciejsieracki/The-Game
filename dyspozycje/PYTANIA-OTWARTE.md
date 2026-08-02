@@ -1475,3 +1475,13 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## BUG-RZEKI-MEDIUM-FOW — średnie rzeki znikają przy wyłączonym FoW · STATUS: **NAPRAWIONE w źródle** (2026-08-02)
+
+**Źródło:** Maciej 2026-08-02 — średnie rzeki pojawiają się/znikają w zależności od Fog of War (F).
+
+**Root cause:** (1) scalone meshe medium bez fast-path gdy FoW off; (2) `riverWaterMat` z `fog: true` → atmosferyczny fog Three.js przy FoW off.
+
+**Fix:** `mergedRiverVisibleInFog` + przy `!anyHidden` pokaż wszystkie rzeki; `fog: false` na materiale wody rzek.
+
+**ID:** R-RZEKI-MEDIUM-FOW · branch `cursor/fix-medium-rivers-fow-63a1`

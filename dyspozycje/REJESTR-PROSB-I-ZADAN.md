@@ -446,3 +446,4 @@ w ogóle — gracz odczytuje je wyłącznie z panelu jednostki.
 **NIE ROZSTRZYGNIĘTE — do decyzji ABC przed wdrożeniem:** czy tabliczka jest widoczna
 zawsze, czy tylko dla jednostki zaznaczonej/najechanej; czy medalion właściciela wchodzi
 DO tabliczki (zmniejsza się, traci czytelność portretu), czy zostaje osobno przy heksie.
+| R-RZEKI-MEDIUM-FOW | 2026-08-02 | Średnie rzeki znikają gdy FoW wyłączony (F) | **NAPRAWIONE w źródle** | scene.ts fast-path + fog:false; test river-fog-visibility 4/4. Branch `cursor/fix-medium-rivers-fow-63a1`. |
