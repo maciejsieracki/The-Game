@@ -910,6 +910,16 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
+## BUG-DYPLO-NAP-FAIRMIN-FALSE — NAP pokazuje fałszywe „Brakuje PW" (fair min handlu) · STATUS: **NAPRAWIONE w źródle** (2026-08-02)
+
+**Cytat (screen Macieja):** NAP @ Rel 52, symetryczne 296/296 PW — panel pokazywał „Brakuje 274 PW" / „Poniżej progu fair min (570 PW)", mimo że koszyk PW jest opcjonalny, a NAP akceptuje się progiem Relacji (≥50).
+
+**Przyczyna:** `treatySummaryHtml` wołał `renderPnBalancePanelFromBasket` dla wszystkich traktatów z bazą PW (nie tylko pokoju) — `diplomacyFairGivePn(296, 52)` dawało fair min 570.
+
+**Fix:** `renderPnBalancePanelForTreaty` (uogólnienie ścieżki pokoju) w `diplomacyAcceptanceBalance.ts`; `treatySummaryHtml` przy `bil > 0` używa panelu traktatowego (bilans = słodzik netto koszyka, meta „Traktat: X PW @ Rel Y"); przy niskiej Relacji komunikat o progu Relacji, nie fair-min handlu. Test: `diplomacy-acceptance-points-test.cjs` (NAP @52/@40 + regresja pokoju).
+
+---
+
 ## BUG-DYPLO-UMOWY-DUPLIKAT — wielokrotne klikanie tej samej umowy na stole · STATUS: **ZAMKNIĘTE** (fix 2026-07-29)
 
 **Cytat:** Można wielokrotnie naciskać tę samą umowę (np. Traktat handlowy) — na stole pojawia się wiele kart i rzędów Przyjmij/Odrzuć.
