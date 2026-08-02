@@ -81,7 +81,7 @@ for (const { w, h, seed, typ, landFraction } of cases) {
   const maxGap = M.mainRiverCoastMouthMaxGapForDims(w, h);
   const ocean = M.oceanConnectedWaterKeys(map.hexes, w, h);
   const masses = M.groupLandMassKeys(map.hexes).filter((m) => m.length >= 8);
-  const coastTol = typ === 'ziemia' ? maxGap + 35 : maxGap + 5;
+  const coastTol = typ === 'ziemia' ? maxGap + 35 : maxGap;
   let worstCoastGap = 0;
   let badCoastGaps = 0;
   for (const mass of masses) {

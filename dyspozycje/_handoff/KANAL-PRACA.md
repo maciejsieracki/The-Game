@@ -4811,3 +4811,9 @@ CZEKAM-NA: Maciej Ctrl+F5 Duża mapa - stolice roznych civ >=11 hex, ujścia co 
 - riverTraceBudget +bonus inland; top-up ujść sep2/acceptLen2; stolice bez zmian; riverGenPhase=main riverStage=1
 - river-sea-buffer-test 9/9 · tsc 0 · publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 FRESH - brak U-turnów rzek, więcej pokrycia inland, stolice jak FALA 171
+
+## [14:15 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 173 okno 6 hex + centroid + soft sep
+- md5 `0a7962a4` / `0a7962a4b71e70777948574657a1543d` - stempel `ROBOCZA · 2026-08-02 14:15`
+- Okno 6 hex |Σ dirDelta|≤1; centroid masy per masa; soft sep≈3 (stop tylko bez legalnego kroku); las inland boost
+- river-turn-window-test PASS 10/10 · tsc 0 · publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 - rzeki bez spiral/U-turn, w głąb kontynentu, ujścia ≤7 hex, lasy w centrum

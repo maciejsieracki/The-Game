@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `e3b17661` - 2026-08-02 13:41 - FALA 172: rzeki max skręt ±60° + inland coverage - **AKTUALNA**
+## ROBOCZA `0a7962a4` - 2026-08-02 14:15 - FALA 173: okno skrętu 6 hex + centroid + soft sep - **AKTUALNA**
+- md5 (pelne): `0a7962a4b71e70777948574657a1543d` · stempel: `ROBOCZA · 2026-08-02 14:15`
+- **FALA 173.** (1) Okno 6 hex: |Σ signed dirDelta|≤1 (bez spirali ±60°); per-krok zakaz 120°/180°; sanitizeRiverTurnWindow. (2) Centroid masy lądu per masa — główne rzeki dążą do środka kontynentu. (3) Soft sep≈3: stop tylko bez legalnego kroku (retry relaxHardMeander). (4) Las: inland boost forNoise w reapplyForestOverlay. refillMainRiverCoastMouthGaps post-flatten bez zmian (≤7).
+- river-turn-window-test.cjs — PASS 10/10 · river-sea-buffer-test.cjs — TIMEOUT 360s (168×120 gen >6 min/karta, osobny perf) · tsc 0.
+## ROBOCZA `e3b17661` - 2026-08-02 13:41 - FALA 172: rzeki max skręt ±60° + inland coverage - **ZASTAPIONA**
 - md5 (pelne): `e3b17661618bd62223a7006869b66dac` · stempel: `ROBOCZA · 2026-08-02 13:41`
 - **VERIFY OK (Gra-ROBOCZA.html).** growRiverFromCoastInland: dirDelta ∈ {0,1,5} (zakaz 120°/180° U-turn); prefer seaDist↑ + centroid masy; stop bez kandydata ±60°. riverTraceBudget +bonus inland; top-up ujść sep2/acceptLen2. Stolice bez zmian. riverGenPhase=main + riverStage=1.
 - river-sea-buffer-test.cjs — PASS 9/9 · tsc 0.
