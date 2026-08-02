@@ -16,6 +16,8 @@ fs.writeFileSync(ENTRY, `
 export {
   computeDiplomaticContacts,
   filterDiplomacyCommandsForEstablishedContact,
+  filterDiplomacyCommandsForLayer,
+  filterCityStateTributeCommands,
   diplomacyLayerForOwner,
   barbarianWarRelation,
   audienceRestrictedActionLockNote,
@@ -39,6 +41,8 @@ esbuild.buildSync({
 const {
   computeDiplomaticContacts,
   filterDiplomacyCommandsForEstablishedContact,
+  filterDiplomacyCommandsForLayer,
+  filterCityStateTributeCommands,
   diplomacyLayerForOwner,
   barbarianWarRelation,
   audienceRestrictedActionLockNote,
@@ -143,6 +147,18 @@ ok(
     AUDIENCE_LOCK_NOTE_CITY_STATE === 'Niedostępne u miasta-państwa',
     'kanon etykiety MP',
   );
+}
+
+// Maciej 2026-08-02 — miasta-państwa nie generują komend trybutu (spójnie z UI).
+{
+  const cmds = [
+    { type: 'zadaj_trybut', targetId: '0', powod: 'test' },
+    { type: 'oferuj_trybut_za_pokoj', targetId: '0', powod: 'test' },
+    { type: 'wypowiedz_wojne', targetId: '0', powod: 'test' },
+  ];
+  const filtered = filterCityStateTributeCommands(cmds, true);
+  ok(filtered.length === 1 && filtered[0].type === 'wypowiedz_wojne', 'CS: trybut odfiltrowany, wojna zostaje');
+  ok(filterCityStateTributeCommands(cmds, false).length === 3, 'pełne AI: trybut bez zmian');
 }
 
 console.log(`\ndiplomacy-layers-test: ${passed} passed, ${failed} failed`);

@@ -23,6 +23,7 @@ __export(dip_proposal_entry_exports, {
   AI_TRADE_GOLD_MAX: () => AI_TRADE_GOLD_MAX,
   AI_TRADE_GOLD_ONCE: () => AI_TRADE_GOLD_ONCE,
   ECO_GOLD_MAX: () => AI_TRADE_GOLD_MAX,
+  TRIBUTE_PROPOSAL_ACTIONS: () => TRIBUTE_PROPOSAL_ACTIONS,
   addTreaty: () => addTreaty,
   aiCommandToPendingProposal: () => aiCommandToPendingProposal,
   applyAcceptedProposal: () => applyAcceptedProposal,
@@ -34,6 +35,7 @@ __export(dip_proposal_entry_exports, {
   getEffectiveDiplomacyParams: () => getEffectiveDiplomacyParams,
   hasTreaty: () => hasTreaty,
   makeDealId: () => makeDealId,
+  negotiationStillValid: () => negotiationStillValid,
   proposalHasResourceAccess: () => proposalHasResourceAccess,
   resolvePlayerAcceptsAiPending: () => resolvePlayerAcceptsAiPending,
   resolvePokojTrustTier: () => resolvePokojTrustTier,
@@ -3968,7 +3970,7 @@ var e_start_params_default = {
     },
     Standardowy: {
       rywale_ai: 6,
-      miasta_panstwa: 6,
+      miasta_panstwa: 5,
       typy_cywilizacji: 6,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 5, min: 4, max: 6 },
@@ -3980,7 +3982,7 @@ var e_start_params_default = {
     },
     Du\u017Cy: {
       rywale_ai: 7,
-      miasta_panstwa: 7,
+      miasta_panstwa: 6,
       typy_cywilizacji: 10,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 6, min: 5, max: 7 },
@@ -3992,7 +3994,7 @@ var e_start_params_default = {
     },
     Ogromny: {
       rywale_ai: 8,
-      miasta_panstwa: 8,
+      miasta_panstwa: 7,
       typy_cywilizacji: 12,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 7, min: 6, max: 8 },
@@ -4007,7 +4009,7 @@ var e_start_params_default = {
       miasta_panstwa: 8,
       typy_cywilizacji: 14,
       typy_cywilizacji_per_epoka: {
-        kamien: { default: 7, min: 6, max: 8 },
+        kamien: { default: 8, min: 7, max: 8 },
         braz: { default: 13, min: 12, max: 14 },
         zelazo: { default: 14, min: 13, max: 15 }
       },
@@ -4088,6 +4090,21 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
+// src/map/mapGenProgress.ts
+var MAP_GEN_PHASE_LABELS = {
+  prep: "Przygotowanie siatki",
+  terrain: "Klimat i teren bazowy",
+  landSea: "L\u0105d i ocean",
+  relief: "Relief (g\xF3ry i wzg\xF3rza)",
+  coast: "Wybrze\u017Ce",
+  riversMain: "Rzeki \u2014 g\u0142\xF3wne",
+  riversFill: "Rzeki \u2014 uzupe\u0142nianie",
+  forest: "Las i ro\u015Blinno\u015B\u0107",
+  deposits: "Z\u0142o\u017Ca mineralne",
+  starts: "Pozycje startowe"
+};
+var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
+
 // src/map/generator.ts
 var ROZMIAR_DIMS = mapGenRozmiarDims();
 
@@ -4133,6 +4150,7 @@ var ELEVATION_RANK = {
   ["gory" /* Gory */]: 6,
   ["polarny" /* Polarny */]: 2
 };
+var RIVER_PROFILE_ON = globalThis.process?.env?.CIV_RIVER_PROFILE === "1";
 var BASE_DEPOSIT_RULES = [
   {
     id: "miedz",
@@ -4200,6 +4218,10 @@ var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
   const rarity = _depositRarities[rule.id];
   return typeof rarity === "number" ? { ...rule, rarity } : rule;
 });
+
+// src/map/clusters.ts
+var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
+var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
 
 // data/terrain-improvements.json
 var terrain_improvements_default = {
@@ -12877,6 +12899,9 @@ function evaluateProposal(proposal, ctx) {
   if (stanWojny && isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
     return { accepted: false, reason: "W wojnie pieni\u0105dze tylko w ugodzie pokojowej" };
   }
+  if (TRIBUTE_PROPOSAL_ACTIONS.has(actionId) && tributeBlockedForCityState(ctx)) {
+    return { accepted: false, reason: CITY_STATE_TRIBUTE_BLOCK_REASON };
+  }
   const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
   if (pnReject) return pnReject;
   switch (actionId) {
@@ -13517,11 +13542,50 @@ function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
       return { accepted: false, reason: "Nieznana akcja dyplomatyczna" };
   }
 }
+var TRIBUTE_PROPOSAL_ACTIONS = /* @__PURE__ */ new Set([
+  "trybut_zadanie",
+  "trybut_oferta"
+]);
+var CITY_STATE_TRIBUTE_BLOCK_REASON = "Trybut niedost\u0119pny u miasta-pa\u0144stwa";
+function tributeBlockedForCityState(ctx) {
+  return ctx.proposerIsCityState === true || ctx.responderIsCityState === true;
+}
+var NEGOTIATION_PEACE_REQUIRED = /* @__PURE__ */ new Set([
+  "nap",
+  "sojusz_defensywny",
+  "sojusz_pelny",
+  "handel",
+  "umowa_handlowa",
+  "umowa_szlakow",
+  "granice",
+  "tech",
+  "wasal",
+  "trybut_zadanie"
+]);
+function negotiationStillValid(entry, world) {
+  if (world.proposerEliminated || world.responderEliminated) {
+    return { valid: false, reason: "Jedna ze stron zosta\u0142a wyeliminowana z gry \u2014 propozycja wygas\u0142a" };
+  }
+  if (world.turn > entry.expiresTurn) {
+    return { valid: false, reason: "Propozycja wygas\u0142a \u2014 brak odpowiedzi w terminie" };
+  }
+  if (TRIBUTE_PROPOSAL_ACTIONS.has(entry.actionId) && (world.proposerIsCityState || world.responderIsCityState)) {
+    return { valid: false, reason: CITY_STATE_TRIBUTE_BLOCK_REASON };
+  }
+  if (world.isAtWar && NEGOTIATION_PEACE_REQUIRED.has(entry.actionId)) {
+    return { valid: false, reason: "Wybuch\u0142a wojna \u2014 warunki straci\u0142y aktualno\u015B\u0107" };
+  }
+  if (world.isAtWar && entry.actionId === "trybut_oferta" && (world.proposerIsCityState || world.responderIsCityState)) {
+    return { valid: false, reason: "Wybuch\u0142a wojna \u2014 warunki straci\u0142y aktualno\u015B\u0107" };
+  }
+  return { valid: true };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AI_TRADE_GOLD_MAX,
   AI_TRADE_GOLD_ONCE,
   ECO_GOLD_MAX,
+  TRIBUTE_PROPOSAL_ACTIONS,
   addTreaty,
   aiCommandToPendingProposal,
   applyAcceptedProposal,
@@ -13533,6 +13597,7 @@ function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
   getEffectiveDiplomacyParams,
   hasTreaty,
   makeDealId,
+  negotiationStillValid,
   proposalHasResourceAccess,
   resolvePlayerAcceptsAiPending,
   resolvePokojTrustTier,

@@ -16,6 +16,7 @@ export {
   makeDealId, proposalHasResourceAccess, clampDealTurns,
   resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage,
+  negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
 } from '../src/game/diplomacy-proposals.ts';
 export { capAiGoldOffer, AI_TRADE_GOLD_MAX as ECO_GOLD_MAX } from '../src/game/diplomacy-economy.ts';
 export { addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier } from '../src/game/diplomacy-treaties.ts';
@@ -38,6 +39,7 @@ const {
   getEffectiveDiplomacyParams, proposalHasResourceAccess, clampDealTurns,
   resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage, capAiGoldOffer,
+  negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -255,6 +257,31 @@ r = evaluateProposal(prop('trybut_oferta', 0, 1, { goldOnce: 50 }), ctx({
   militaryRatio: 1.5,
 }));
 ok(r.accepted && r.oneShotTrade, 'trybut oferta jednorazowy');
+
+// 8a Maciej 2026-08-02 — trybut zablokowany u miasta-państwa (Tarent-path)
+r = evaluateProposal(prop('trybut_oferta', 0, 7, { goldOnce: 50 }), ctx({
+  responderIsCityState: true,
+  militaryRatio: 1.5,
+}));
+ok(!r.accepted && r.reason.includes('miasta-państwa'), 'trybut oferta reject CS partner');
+r = evaluateProposal(prop('trybut_zadanie', 0, 7, { goldPerTurn: 15 }), ctx({
+  proposerIsCityState: true,
+  proposerRespekt: 80,
+}));
+ok(!r.accepted, 'trybut żądanie reject CS proposer');
+ok(TRIBUTE_PROPOSAL_ACTIONS.has('trybut_oferta'), 'TRIBUTE_PROPOSAL_ACTIONS exported');
+{
+  const entry = {
+    id: 'n1', actionId: 'trybut_oferta', proposerOwnerId: 7, responderOwnerId: 0,
+    payload: {}, createdTurn: 1, expiresTurn: 20, round: 1, authorOwnerId: 7,
+    awaitingOwnerId: 0, lastActionTurn: 1, source: 'ai',
+  };
+  const v = negotiationStillValid(entry, {
+    turn: 5, isAtWar: false, proposerEliminated: false, responderEliminated: false,
+    proposerIsCityState: true,
+  });
+  ok(!v.valid && v.reason.includes('miasta-państwa'), 'negotiationStillValid gasi trybut CS');
+}
 
 // 9 Handel fair (strict PN W4-A) @ normal — givePn skalowany do fair @ Rel 45
 r = evaluateProposal(prop('handel', 0, 1, { givePn: 250, receivePn: 100 }), ctx({

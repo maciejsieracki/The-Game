@@ -154,6 +154,9 @@ export interface ProposalEvalContext {
   responderPlayer?: Player;
   proposerPlayer?: Player;
   isMinorCiv?: boolean;
+  /** Miasto-państwo klastra — blokuje trybut (Maciej 2026-08-02). */
+  proposerIsCityState?: boolean;
+  responderIsCityState?: boolean;
   /** Istniejące traktaty — blokada duplikatów */
   activeDeals?: readonly ActiveDeal[];
   /** Poziom trudności gry — skaluje progi relacji/zaufania (Maciej 2026-07-21). */
@@ -458,6 +461,9 @@ export function evaluateProposal(
   }
   if (stanWojny && isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
     return { accepted: false, reason: 'W wojnie pieniądze tylko w ugodzie pokojowej' };
+  }
+  if (TRIBUTE_PROPOSAL_ACTIONS.has(actionId) && tributeBlockedForCityState(ctx)) {
+    return { accepted: false, reason: CITY_STATE_TRIBUTE_BLOCK_REASON };
   }
 
   const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
@@ -1390,6 +1396,21 @@ export interface NegotiationWorldCtx {
   isAtWar: boolean;
   proposerEliminated: boolean;
   responderEliminated: boolean;
+  /** Gdy któraś strona to miasto-państwo — trybut niedostępny. */
+  proposerIsCityState?: boolean;
+  responderIsCityState?: boolean;
+}
+
+/** Akcje trybutu — blokada u miast-państw + gaszenie przy wojnie (poza ofertą pokojową majorów). */
+export const TRIBUTE_PROPOSAL_ACTIONS: ReadonlySet<ProposalActionId> = new Set([
+  'trybut_zadanie',
+  'trybut_oferta',
+]);
+
+const CITY_STATE_TRIBUTE_BLOCK_REASON = 'Trybut niedostępny u miasta-państwa';
+
+function tributeBlockedForCityState(ctx: ProposalEvalContext): boolean {
+  return ctx.proposerIsCityState === true || ctx.responderIsCityState === true;
 }
 
 /**
@@ -1425,7 +1446,17 @@ export function negotiationStillValid(
   if (world.turn > entry.expiresTurn) {
     return { valid: false, reason: 'Propozycja wygasła — brak odpowiedzi w terminie' };
   }
+  if (
+    TRIBUTE_PROPOSAL_ACTIONS.has(entry.actionId)
+    && (world.proposerIsCityState || world.responderIsCityState)
+  ) {
+    return { valid: false, reason: CITY_STATE_TRIBUTE_BLOCK_REASON };
+  }
   if (world.isAtWar && NEGOTIATION_PEACE_REQUIRED.has(entry.actionId)) {
+    return { valid: false, reason: 'Wybuchła wojna — warunki straciły aktualność' };
+  }
+  if (world.isAtWar && entry.actionId === 'trybut_oferta'
+    && (world.proposerIsCityState || world.responderIsCityState)) {
     return { valid: false, reason: 'Wybuchła wojna — warunki straciły aktualność' };
   }
   return { valid: true };

@@ -3039,7 +3039,8 @@ export function decideAIDiplomacy(
     );
 
     // ---- Priorytet 1: oferuj_trybut_za_pokoj (b. słaby w trakcie wojny) ----
-    if (rel.stanWojny && rw <= p.progTrybutKrytyczny) {
+    const csBlocksTribute = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
+    if (rel.stanWojny && rw <= p.progTrybutKrytyczny && !csBlocksTribute) {
       const peaceGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRIBUTE_PEACE_MAX);
       if (peaceGold > 0) {
         komendy.push({
@@ -3146,7 +3147,8 @@ export function decideAIDiplomacy(
     const tributeAgresjaMin = p.progWojnaAgresja * bias.tributeAgresjaFactor;
     const tributeAgresjaMax = bias.aggressive ? 0.95 : p.progTrybutAgresjaMax;
     if (
-      !rel.stanWojny
+      !csBlocksTribute
+      && !rel.stanWojny
       && !bias.skipTributeDemand
       && proposerRespektPct > tributeRespektMin
       && (!bias.aggressive || rw >= p.progTrybut)

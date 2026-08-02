@@ -1347,6 +1347,18 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
+## BUG-MP-TRYBUT-WOJNA — miasto-państwo: DOW + „Oferta trybutu przyjęta" w jednej turze (Tarent) · STATUS: **WDROŻONE (kod, 2026-08-02)**
+
+**Sytuacja.** Audiencja z Tarent · Rzymianie · miasto-państwo: status WOJNA, czynnik „Wypowiedzenie wojny" oraz „Oferta trybutu przyjęta" (+5) — sprzeczność; akcja 8 w UI = „Niedostępne u miasta-państwa".
+
+**Root cause.** Obcy typ MP (np. Tarent) jest w `typCityCopyOwners` / `isOwnerClusterCityState`, ale NIE w `simplifiedDiplomacyOwners` (tylko rywale tego samego typu). Silnik traktował go jako pełną dyplomację (`full` layer) → `decideAIDiplomacy` generował trybut, `evaluateProposal` akceptował, a w tej samej turze `shouldCityStateRollWarOnPlayer` (PM hard) wypowiadał wojnę.
+
+**Fix (2026-08-02):** Blokada trybutu dla WSZYSTKICH miast-państw (AI + evaluateProposal + gaszenie pending przy DOW). Branch `cursor/fix-cs-war-tribute-contradiction-63a1`.
+
+**Powiązane:** `REJESTR-PROSB-I-ZADAN.md` → `R-MP-TRYBUT-WOJNA`.
+
+---
+
 ## BUG-MP-NAZWA-CIV-MISMATCH — miasto-państwo: nazwa miasta ≠ kultura/cyw (Jin vs Argos·Grecy) · STATUS: **✅ ZAMKNIĘTE** (Maciej 2026-08-01 ~23:15: rozkład/etykiety OK w playteście)
 
 **Sytuacja.** Obce miasto-państwo na mapie: tytuł miasta **Jin** (brzmi chińsko), podpis **Argos · Grecy · miasto-państwo**, dyplomacja „Audiencja z Argos · Grecy · miasto-państwo". Drugi screen (~21:14): skupisko miast-państw w czerwonej granicy / przy rzekach — Maciej: *„chińskie państwa miasta system określa jako państwa miasta greckie, coś jest nie tak z Chińczykami"*.
