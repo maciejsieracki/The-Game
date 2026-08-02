@@ -5002,3 +5002,11 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno
 - **FALA 201.** PR #5 Inkowie MP · PR #6 zwrot surowca kolejki · (+ NAP fair-min + sep 15 z main)
 - build: /tmp/civ-dist-fala201 · poprzedni `26b05753` ZASTĄPIONA
 CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Inkowie z MP) + Stolarnia→Usuń (drewno wraca)
+
+## [23:30 PL, 2026-08-02] CLOUD -> Maciej — UX powiadomienie awansu epoki
+- Branch: `cursor/feat-era-change-notify-63a1`
+- Toast + WYDARZENIA gdy player.era wzrasta (badania / chatka / dyplomacja tech)
+- Copy: `gra/src/game/era-change-notify.ts` (tytuł „Nowa epoka”, treść „Wkraczasz w epokę Brązu.”)
+- Test: era-change-notify-test.cjs 8/8 PASS · tsc OK
+- Bez deployu (zgodnie z zleceniem)
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (zbadaj Brązownictwo → toast epoki)

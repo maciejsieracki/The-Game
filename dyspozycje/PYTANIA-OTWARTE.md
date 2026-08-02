@@ -1475,3 +1475,12 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## UX-EPOKA-NOTIFY — komunikat przy awansie epoki gracza · STATUS: **WDROŻONE W KODZIE** (2026-08-02)
+
+**Źródło:** Maciej 2026-08-02 — brak informacji, że przeszło się do innej epoki.
+
+**Fix:** toast `showHintMessage` + wpis WYDARZENIA (`warEventLog`, kind `science`) przy `player.era` ↑ (ownerId 0). Copy w `gra/src/game/era-change-notify.ts`. Ścieżki: koniec tury (`researchStep`), nagroda chatki (tech), tech z dyplomacji.
+
+**Test:** `node tools/era-change-notify-test.cjs` — 8/8 PASS.
+**Branch:** `cursor/feat-era-change-notify-63a1`
