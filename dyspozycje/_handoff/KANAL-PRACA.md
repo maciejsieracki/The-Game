@@ -4980,3 +4980,11 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (Ctrl+F5, Nowa gra Standard)
 - Branch merge: `cursor/merge-nap-and-sep15-63a1` → push `main`
 - **Bez deploy ROBOCZA** w tym kroku (kod na main)
 CZEKAM-NA: Maciej deploy ROBOCZA (Ctrl+F5: NAP @ Rel~52 + Nowa gra Standard sep 15)
+
+## [21:55 PL, 2026-08-02] CLOUD -> Maciej — fix Inkowie bez miast-państw
+- Branch/PR: `cursor/fix-inkowie-mp-missing-63a1`
+- Bug: klastry Inkowie (i inne obce) często capital-only po body-sep; deferred spawn odpadał na dystansie `canFoundCity`
+- Fix: sparse repack MP (pierścień 5→2 + desperate) + `clusterStartSlot` przy foreign spawn
+- Weryfikacja: diag seeds 1–40 onlyCap=0; harness Inkowie 20/20 MP + seed 25 spawn 5/5
+- ID: BUG-INKOWIE-MP-BRAK · R-INKOWIE-MP-BRAK
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (Nowa gra — Inkowie z MP wokół stolicy)

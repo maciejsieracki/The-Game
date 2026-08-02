@@ -1449,3 +1449,18 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Cytat:** „nie powinno być żadnego limitera ilości rzek. Po prostu powinny się generować zgodnie z zasadami bez limitu. Powinny tak długo siewić jak są w stanie siewić, a nie kończyć się np. po jakimś wyznaczonym czasie lub długości."
 **Implikacja:** usunąć/wyłączyć twarde capy typu `pangeaBootstrapRiverTarget` (~32), `maxCellsToProcess`, quota `capRiverQuotas` / `mapGenMaxRivers*`, early-stop po budżecie czasu; siew aż reguły (źródło, sep, ujście, masa) nie dadzą kolejnej poprawnej rzeki. `maxLen` trasy = ograniczenie techniczne A* jednej ścieżki — rozróżnić od limitu **liczby** rzek (ten drugi = zakazany).
 **Wdrożyć w paczce rzek z AC-RZEKI-PER-MASA + fix obwarzanka.** Uwaga: bez limitu na Super Huge wall-clock mocno urośnie — perf osobno, nie przez cięcie pokrycia.
+
+## BUG-INKOWIE-MP-BRAK — Inkowie bez miast-państw · STATUS: **NAPRAWIONE w źródle** (2026-08-02)
+
+**Źródło:** Maciej 2026-08-02 — Cusco jako „OBCE MIASTO / Inkowie" bez klastra MP wokół stolicy.
+
+**Root cause (2 warstwy):**
+1. **Placement:** po FALA 185 body-sep obce klastry często zostawały capital-only (ciasny Voronoi / pierścień 5 poza lądem / bufory).
+2. **Spawn:** deferred `spawnPendingForeignClusters` odrzucał sloty przez `canFoundCity` (dystans do już założonych miast), mimo że plan klastra już je zweryfikował.
+
+**Fix:**
+- `repackAllSparseClusterStateCities` po body-sep — pack z pełnego lądu + last-resort (luźniejszy bufor, pierścienie 5→2, desperate bez buforów).
+- `clusterStartSlot` w `canFoundCity` / `foundCityAt`; `main.ts` przekazuje `true` przy foreign spawn.
+- Test: seeds 1–20 Inkowie 20/20 z MP; seed 25 Cusco+4 MP spawn OK. Diag 1–40: onlyCap=0.
+
+**ID rejestru:** R-INKOWIE-MP-BRAK · branch `cursor/fix-inkowie-mp-missing-63a1`
