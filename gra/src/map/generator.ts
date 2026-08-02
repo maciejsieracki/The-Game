@@ -98,7 +98,7 @@ import {
 } from './newGameMapDefaults';
 import { mapGenRozmiarDims } from '../data/map-gen-params-loader';
 import { normPlMenuLabel } from '../util/norm-pl-label';
-import { getRiverGenEnabled, isRiverGenMainOnly } from './riverGenSwitch';
+import { getRiverGenEnabled, getRiverGenPhase, isRiverGenMainOnly } from './riverGenSwitch';
 import {
   MAP_GEN_PHASE_LABELS,
   MAP_GEN_PHASE_TOTAL,
@@ -437,7 +437,9 @@ export function generateMap(
   if (!riverGenOn) {
     console.info('[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)');
   } else if (riverGenMainOnly) {
-    console.info('[civ] riverGenPhase: main (tylko główne — FALA 166 Etap A; pełny tor: ?riverGenPhase=all)');
+    console.info('[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)');
+  } else if (getRiverGenPhase() === 'main+medium') {
+    console.info('[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)');
   }
   reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 0);
   const riversTier = genOpts?.worldDensity?.rivers ?? 'medium';

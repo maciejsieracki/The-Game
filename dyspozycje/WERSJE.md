@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `0a7962a4` - 2026-08-02 14:15 - FALA 173: okno skrętu 6 hex + centroid + soft sep - **AKTUALNA**
+## ROBOCZA `2dc296b0` - 2026-08-02 14:45 - FALA 174: średnie rzeki w playtestu (main+medium) - **AKTUALNA**
+- md5 (pelne): `2dc296b08bb1fcfc67526557165fb3ae` · stempel: `ROBOCZA · 2026-08-02 14:45`
+- **FALA 174.** Domyślnie gen `riverGenPhase=main+medium` + render `riverStage=2` (główne+średnie; krótkie/dekor OFF). Algorytm main (FALA 173) bez zmian. Pełny tor: ?riverGenPhase=all&riverStage=5 · tylko main: ?riverGenPhase=main&riverStage=1.
+- river-turn-window-test.cjs — PASS 10/10 (okno skrętu tylko main) · tsc 0.
+## ROBOCZA `0a7962a4` - 2026-08-02 14:15 - FALA 173: okno skrętu 6 hex + centroid + soft sep - **ZASTAPIONA**
 - md5 (pelne): `0a7962a4b71e70777948574657a1543d` · stempel: `ROBOCZA · 2026-08-02 14:15`
 - **FALA 173.** (1) Okno 6 hex: |Σ signed dirDelta|≤1 (bez spirali ±60°); per-krok zakaz 120°/180°; sanitizeRiverTurnWindow. (2) Centroid masy lądu per masa — główne rzeki dążą do środka kontynentu. (3) Soft sep≈3: stop tylko bez legalnego kroku (retry relaxHardMeander). (4) Las: inland boost forNoise w reapplyForestOverlay. refillMainRiverCoastMouthGaps post-flatten bez zmian (≤7).
 - river-turn-window-test.cjs — PASS 10/10 · river-sea-buffer-test.cjs — TIMEOUT 360s (168×120 gen >6 min/karta, osobny perf) · tsc 0.

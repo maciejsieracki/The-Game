@@ -4817,3 +4817,10 @@ CZEKAM-NA: Maciej Ctrl+F5 FRESH - brak U-turnów rzek, więcej pokrycia inland, 
 - Okno 6 hex |Σ dirDelta|≤1; centroid masy per masa; soft sep≈3 (stop tylko bez legalnego kroku); las inland boost
 - river-turn-window-test PASS 10/10 · tsc 0 · publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 - rzeki bez spiral/U-turn, w głąb kontynentu, ujścia ≤7 hex, lasy w centrum
+
+## [14:45 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 174 średnie rzeki w playtestu
+- md5 `2dc296b0` / `2dc296b08bb1fcfc67526557165fb3ae` - stempel `ROBOCZA · 2026-08-02 14:45`
+- Domyślnie riverGenPhase=main+medium + riverStage=2 (główne+średnie; krótkie/dekor OFF). Algorytm main FALA 173 bez zmian.
+- Pełny tor: ?riverGenPhase=all&riverStage=5 · tylko main: ?riverGenPhase=main&riverStage=1
+- river-turn-window-test PASS 10/10 · tsc 0 · publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 FRESH - widać cieńsze średnie rzeki łączące się z głównymi; czas ładowania OK-ish

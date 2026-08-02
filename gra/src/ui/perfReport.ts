@@ -94,6 +94,8 @@ export function buildPerfReportText(opts: PerfReportPersistOptions): string {
     lines.push('  Rzeki (gen): WYŁĄCZONE');
   } else if (getRiverGenPhase() === 'main') {
     lines.push('  Rzeki (gen): TYLKO GŁÓWNE (riverGenPhase=main)');
+  } else if (getRiverGenPhase() === 'main+medium') {
+    lines.push('  Rzeki (gen): GŁÓWNE + ŚREDNIE (riverGenPhase=main+medium)');
   }
   if (gen) {
     for (const [k, label] of Object.entries(MAP_GEN_PHASE_LABELS) as [keyof MapGenPhaseTimings, string][]) {

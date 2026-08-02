@@ -1,7 +1,7 @@
 /**
  * Kill-switch generowania rzek w mapgen.
- * FALA 166/167 — Etap A Maciej: domyślnie tylko główne (gen phase main + render stage 1).
- * Pełny tor: ?riverGenPhase=all&riverStage=5 lub localStorage.
+ * FALA 174 — domyślnie główne + średnie (gen phase main+medium + render stage 2).
+ * Tylko główne: ?riverGenPhase=main&riverStage=1 · pełny tor: ?riverGenPhase=all&riverStage=5.
  * Wyłączenie gen: ?riverGen=0 lub localStorage civ-river-gen=0.
  * Render: getRiverRenderStage() w scene.ts (osobny przełącznik).
  */
@@ -9,7 +9,7 @@
 export const RIVER_GEN_STORAGE_KEY = 'civ-river-gen';
 export const RIVER_GEN_PHASE_STORAGE_KEY = 'civ-river-gen-phase';
 
-export type RiverGenPhase = 'main' | 'all';
+export type RiverGenPhase = 'main' | 'main+medium' | 'all';
 
 let _override: boolean | null = null;
 let _phaseOverride: RiverGenPhase | null = null;
@@ -30,7 +30,7 @@ function parse01(raw: string | null): boolean | null {
 }
 
 function parsePhase(raw: string | null): RiverGenPhase | null {
-  if (raw === 'main' || raw === 'all') return raw;
+  if (raw === 'main' || raw === 'main+medium' || raw === 'all') return raw;
   return null;
 }
 
@@ -53,7 +53,7 @@ export function getRiverGenEnabled(): boolean {
   return true;
 }
 
-/** Etap generacji: main = tylko główne nurt; all = pełny tor (medium/short/tributary/topUp). */
+/** Etap generacji: main = tylko główne · main+medium = główne+średnie · all = pełny tor. */
 export function getRiverGenPhase(): RiverGenPhase {
   if (_phaseOverride !== null) return _phaseOverride;
 
@@ -69,10 +69,15 @@ export function getRiverGenPhase(): RiverGenPhase {
     }
   } catch { /* private mode / worker */ }
 
-  // FALA 166/167 Etap A — tymczasowo tylko główne (Maciej: czas + wygląd main przed pobocznymi).
-  return 'main';
+  // FALA 174 — główne + średnie (bez krótkich/dekoracyjnych); pełny tor: ?riverGenPhase=all.
+  return 'main+medium';
 }
 
 export function isRiverGenMainOnly(): boolean {
   return getRiverGenPhase() === 'main';
+}
+
+/** Pełny tor: krótkie dopływy + dekoracyjne tributary (etap 3+). */
+export function isRiverGenFull(): boolean {
+  return getRiverGenPhase() === 'all';
 }

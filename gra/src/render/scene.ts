@@ -1433,7 +1433,7 @@ type RiverPathKind = 'main' | 'medium' | 'short' | 'tributary';
 
 /**
  * Kill-switch renderu rzek w buildScene (nie mapgen).
- * FALA 166/167 — Etap A Maciej: domyślnie 1 (tylko main); pełny tor ?riverStage=5.
+ * FALA 174 — domyślnie 2 (main+medium); tylko main ?riverStage=1 · pełny tor ?riverStage=5.
  * Etap A (optymalizacja perf) — osobny tor od gen/render.
  * 0 = zero meshów · 1 = main · 2 = main+medium · 3 = +short/tributary ·
  * 4 = +ujścia coastal · 5 = pełny tor produkcyjny.
@@ -1454,7 +1454,7 @@ export function getRiverRenderStage(): number {
       if (!Number.isNaN(n) && n >= 0 && n <= 5) return n;
     }
   } catch { /* private mode / SSR */ }
-  return 1; // FALA 166/167 Etap A: tymczasowo tylko main (Maciej test czas+wygląd)
+  return 2; // FALA 174: główne + średnie (Maciej playtest)
 }
 
 function filterRiverPathsForStage(

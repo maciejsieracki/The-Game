@@ -72,8 +72,12 @@ for (const { w, h, seed, typ, label } of cases) {
   });
   let windowViol = 0;
   let uturns = 0;
-  for (const path of map.riverPaths) {
+  const kinds = map.riverPathKinds ?? map.riverPaths.map(() => 'main');
+  for (let i = 0; i < map.riverPaths.length; i++) {
+    const path = map.riverPaths[i];
     if (!path?.length) continue;
+    // FALA 173 okno skrętu dotyczy głównych; średnie/krótkie mają inny tor (A* + meandry).
+    if (kinds[i] !== 'main') continue;
     if (M.riverPathViolatesTurnWindow(path)) windowViol++;
     if (M.riverPathHasSharpUTurn(path)) uturns++;
   }

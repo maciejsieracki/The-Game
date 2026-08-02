@@ -27,7 +27,7 @@ import {
   type DensityTier,
   type RiverMapParams,
 } from './newGameMapDefaults';
-import { isRiverGenMainOnly } from './riverGenSwitch';
+import { isRiverGenFull, isRiverGenMainOnly } from './riverGenSwitch';
 
 export type { RiverMapParams };
 import { earthPolarOceanRows, earthTemplateLandAt } from './earth-land-mask';
@@ -9711,6 +9711,12 @@ export function generateRivers(
     }
   }
   if (RIVER_PROFILE_ON) rpEnsure().genStage2Ms += rpNow() - _s2T0;
+
+  if (!isRiverGenFull()) {
+    report(100);
+    if (RIVER_PROFILE_ON) rpEnsure().generateRiversMs += rpNow() - _genT0;
+    return { paths: riverPaths, kinds: riverKinds };
+  }
 
   // ETAP 3 — krótkie dopływy: bufor 5 hex od średnich, ujście tylko do średnich.
   const _s3T0 = RIVER_PROFILE_ON ? rpNow() : 0;
