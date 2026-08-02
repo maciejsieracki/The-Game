@@ -1,7 +1,9 @@
 /**
- * Tymczasowy kill-switch generowania rzek w mapgen (FALA 160).
- * Domyślnie WYŁĄCZONE — po optymalizacji przywrócić default true.
- * Render: getRiverRenderStage() w scene.ts (osobny przełącznik).
+ * Kill-switch generowania rzek w mapgen.
+ * FALA 165 — Etap B przywracania: domyślnie WŁĄCZONE (gen rzek w danych mapy).
+ * Etap A (optymalizacja perf „Rzeki — główne") nadal otwarty — Pangea może być wolna.
+ * Wyłączenie: ?riverGen=0 lub localStorage civ-river-gen=0.
+ * Render: getRiverRenderStage() w scene.ts (osobny przełącznik, Etap C).
  */
 
 export const RIVER_GEN_STORAGE_KEY = 'civ-river-gen';
@@ -35,5 +37,5 @@ export function getRiverGenEnabled(): boolean {
     }
   } catch { /* private mode / worker */ }
 
-  return false; // tymczasowo wyłączone — po optymalizacji → true
+  return true; // FALA 165 Etap B: domyślnie generuj rzeki
 }

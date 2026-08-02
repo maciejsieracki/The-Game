@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `440cf7da` - 2026-08-02 03:15 - FALA 164: cluster start plan perf — MassLandCache (113s→~1s) - **AKTUALNA**
+## ROBOCZA `90803b6b` - 2026-08-02 10:50 - FALA 165: przywrócenie rzek głównych (gen ON + render stage 5) - **AKTUALNA**
+- md5 (pelne): `90803b6b1817cdfcb7ce120190d7cd42` · stempel: `ROBOCZA · 2026-08-02 10:50`
+- **VERIFY OK (Gra-ROBOCZA.html).** Etap B+C przywracania: getRiverGenEnabled() default true, getRiverRenderStage() default 5. Wyłączenie: ?riverGen=0 / ?riverStage=0. Etap A (perf „Rzeki — główne") nadal otwarty — Pangea może być wolna (~174s historycznie).
+- tsc 0 · vite build OK.
+## ROBOCZA `440cf7da` - 2026-08-02 03:15 - FALA 164: cluster start plan perf — MassLandCache (113s→~1s) - **ZASTAPIONA**
 - md5 (pelne): `440cf7dab49b05d809a39aaa3d0e68b7` · stempel: `ROBOCZA · 2026-08-02 03:15`
 - **VERIFY OK (Gra-ROBOCZA.html).** Winowajca: `developmentSpaceScore`/`passesPlayerStartMassGate` przebudowywały `buildMassHexIndex` per hex → O(n²) na ~15k lądu Pangea (~113 s w civ-perf „plan klastra startowego”). Fix: `MassLandCache` (hexIndex + massSets) jednorazowo w `computeClusters`; reuse `spawnCache` w cluster-spawn (bez drugiego `buildSeaDistanceField`). Bench Standard 168×120: buildClusterStartPlan ~1041 ms. Gameplay bez zmian.
 - cluster-start-test.cjs — PASS 375/375 · tsc 0.

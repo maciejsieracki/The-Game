@@ -1432,10 +1432,12 @@ function reportSceneProgress(
 type RiverPathKind = 'main' | 'medium' | 'short' | 'tributary';
 
 /**
- * FALA 149 DIAG — kill-switch renderu rzek w buildScene (nie mapgen).
- * 0 = zero meshów rzek · 1 = main · 2 = main+medium · 3 = +short/tributary ląd ·
+ * Kill-switch renderu rzek w buildScene (nie mapgen).
+ * FALA 165 — Etap C przywracania: domyślnie 5 (pełne rysowanie).
+ * Etap A (optymalizacja perf) nadal otwarty — osobny tor od gen/render.
+ * 0 = zero meshów · 1 = main · 2 = main+medium · 3 = +short/tributary ·
  * 4 = +ujścia coastal · 5 = pełny tor produkcyjny.
- * Po diagnozie zmienić domyślny return na 5.
+ * Wyłączenie: ?riverStage=0 lub localStorage civ-river-render-stage=0.
  */
 export function getRiverRenderStage(): number {
   if (typeof location !== 'undefined') {
@@ -1452,7 +1454,7 @@ export function getRiverRenderStage(): number {
       if (!Number.isNaN(n) && n >= 0 && n <= 5) return n;
     }
   } catch { /* private mode / SSR */ }
-  return 0; // FALA 149 DIAG: domyślnie bez rzek — po eksperymencie → 5
+  return 5; // FALA 165 Etap C: domyślnie pełny render rzek
 }
 
 function filterRiverPathsForStage(
