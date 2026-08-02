@@ -5002,3 +5002,12 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno
 - **FALA 201.** PR #5 Inkowie MP · PR #6 zwrot surowca kolejki · (+ NAP fair-min + sep 15 z main)
 - build: /tmp/civ-dist-fala201 · poprzedni `26b05753` ZASTĄPIONA
 CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Inkowie z MP) + Stolarnia→Usuń (drewno wraca)
+
+## [23:20 PL, 2026-08-02] CLOUD -> Maciej — fix ruch przez wzgórza (MIN-MOVE)
+- Branch: `cursor/fix-move-hills-stuck-63a1`
+- Bug: podgląd trasy przez wzgórza OK, egzekucja często odmawia ruchu
+- Fix: MIN-MOVE w truncatePathToBudget (spójne z computeReachable); aliasy terrain-movement.json
+- Reguły: Wzgórza koszt 2 (+1 las), przejezdne; Góry nieprzejezdne
+- Test: terrain-hill-movement-test.cjs 10/10, planned-march-test.cjs 18/18, tsc 0
+- ID: R-RUCH-WZGORZA-3
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (marsz przez wzgórza z lasem przy 2 MP)

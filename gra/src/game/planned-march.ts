@@ -5,7 +5,7 @@
 
 import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
-import { computePath, pathCost, type RuntimeUnit } from '../units/setup';
+import { computePath, pathCost, keyOf, terrainMoveCost, type RuntimeUnit } from '../units/setup';
 
 /** TEMAT #15 (embarkacja): opcjonalny koszt wejścia na heks (woda przejezdna). */
 export type MarchCostFn = (hex: Hex) => number;
@@ -186,12 +186,23 @@ export function truncatePathToBudget(
   costFn?: MarchCostFn,
 ): { q: number; r: number }[] {
   if (budget <= 0 || path.length === 0) return [];
+  const fn = costFn ?? terrainMoveCost;
   const out: { q: number; r: number }[] = [];
   for (let i = 0; i < path.length; i++) {
     const sub = path.slice(0, i + 1);
-    const c = pathCost(sub, map, costFn);
+    const c = pathCost(sub, map, fn);
     if (c > budget) break;
     out.push(path[i]!);
+  }
+  // MIN-MOVE (spójne z computeReachable w units/setup.ts): przy budget ≥ 1
+  // jednostka zawsze może wejść na pierwszy przejezdny hex ścieżki, nawet gdy
+  // koszt wejścia > budget (np. wzgórze+las = 3 przy 2 MP).
+  if (out.length === 0 && budget >= 1) {
+    const first = path[0]!;
+    const hex = map.hexes[keyOf(first.q, first.r)];
+    if (hex && fn(hex) !== Infinity) {
+      out.push(first);
+    }
   }
   return out;
 }

@@ -766,6 +766,7 @@ import {
   planPathTurns,
   plannedMarchesFromSave,
   plannedMarchesToSave,
+  truncatePathToBudget,
   type MarchFogContext,
   type PlannedMarchDest,
 } from './game/planned-march';
@@ -15300,13 +15301,7 @@ async function boot(): Promise<void> {
       let moveDestR = destR;
       let cost = pathCost(path, map, moveCostFn);
       if (cost > stackRuch) {
-        let truncated: typeof path = [];
-        for (let i = 0; i < path.length; i++) {
-          const sub = path.slice(0, i + 1);
-          const c = pathCost(sub, map, moveCostFn);
-          if (c > stackRuch) break;
-          truncated = sub;
-        }
+        const truncated = truncatePathToBudget(path, stackRuch, map, moveCostFn);
         if (truncated.length === 0) return false;
         movePath = truncated;
         const last = truncated[truncated.length - 1]!;
