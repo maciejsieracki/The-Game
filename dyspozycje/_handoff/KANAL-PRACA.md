@@ -4769,3 +4769,11 @@ CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra Pangea Standard: rzeki widoczne; spod
 - Pelny tor: ?riverGenPhase=all&riverStage=5
 - tsc 0 - vite build OK - publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra: civ-perf linia Rzeki glowne + TYLKO GLOWNE; render tylko main mesh
+
+## [11:25 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 167 rzeki minLen + stolice seaDist
+- md5 `cf796528` / `cf796528a620ab71a3339427a247586d` - stempel `ROBOCZA - 2026-08-02 11:25`
+- Rzeki glowne: traceRiverFromCoast cel = tier minLen (~25), stop przy sep 3 hex od innej rzeki; soft-accept tylko awaryjnie
+- Stolice: pickCapitalHexInRegion twarda bramka seaDist>=10 Standard (gracz+obcy AI), bez seaFirst na brzeg
+- riverGenPhase=main + riverStage=1 bez zmian (Etap A)
+- cluster-start-test 375/375 - tsc 0 - publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 - sprawdz dlugosc rzek glownych + stolice AI >=10 hex od morza (Standard)

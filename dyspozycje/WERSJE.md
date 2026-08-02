@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `5bc8737c` - 2026-08-02 11:05 - FALA 166/167: riverGenPhase=main default + render stage 1 (Etap A Maciej) - **AKTUALNA**
+## ROBOCZA `cf796528` - 2026-08-02 11:25 - FALA 167: rzeki główne minLen + stolice seaDist≥10 - **AKTUALNA**
+- md5 (pelne): `cf796528a620ab71a3339427a247586d` · stempel: `ROBOCZA · 2026-08-02 11:25`
+- **VERIFY OK (Gra-ROBOCZA.html).** A) traceRiverFromCoast: cel inland = tier minLen (~25 Normalnie), stop przy MAIN_RIVER_MIN_PATH_SEP=3; soft-accept tylko awaryjnie. B) stolice: pickCapitalHexInRegion z twardą bramką seaDist (gracz+AI), bez seaFirst na plażę. riverGenPhase=main + riverStage=1 bez zmian (Etap A).
+- cluster-start-test.cjs — PASS 375/375 · tsc 0.
+## ROBOCZA `5bc8737c` - 2026-08-02 11:05 - FALA 166/167: riverGenPhase=main default + render stage 1 (Etap A Maciej) - **ZASTAPIONA**
 - md5 (pelne): `5bc8737c6197af2ef01b9105d98f7202` · stempel: `ROBOCZA · 2026-08-02 11:05`
 - **VERIFY OK (Gra-ROBOCZA.html).** Domyślnie tylko główne rzeki (gen phase main, render stage 1). Gen pomija medium/short/tributary/topUp. Perf: cache mainKeysCache, skip tributary w buildGridRouteCandidates. Pełny tor: ?riverGenPhase=all&riverStage=5.
 - tsc 0 · vite build OK.

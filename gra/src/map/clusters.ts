@@ -634,15 +634,6 @@ export function pickPlayerClusterCenter(
     if (picked) return picked;
   }
 
-  if (seaDist && minSeaDist > 0) {
-    const relaxed = playerStartCandidatesOnMasses(map, landCache, seaDist, minSeaDist, false);
-    if (relaxed.length > 0) {
-      sortSpawnLandCandidates(relaxed, mapCenter, true);
-      const picked = pickTiedSpawnLandCandidate(relaxed, rand);
-      if (picked) return picked;
-    }
-  }
-
   let fallback = ladowe
     .map(h => ({
       h,
@@ -652,19 +643,7 @@ export function pickPlayerClusterCenter(
     }))
     .filter(x => passesPlayerStartMassGate(map, x.h.q, x.h.r, landCache))
     .filter(x => !seaDist || passesMinSeaDistGate(seaDist, x.h.q, x.h.r, minSeaDist));
-  if (fallback.length === 0 && seaDist && minSeaDist > 0) {
-    fallback = ladowe
-      .map(h => ({
-        h,
-        land: localLandFraction(map, h.q, h.r),
-        dev: developmentSpaceScore(map, h.q, h.r, landCache),
-        sea: seaDistAt(seaDist, h.q, h.r),
-      }))
-      .filter(x => passesPlayerStartMassGate(map, x.h.q, x.h.r, landCache));
-    sortSpawnLandCandidates(fallback, mapCenter, true);
-  } else {
-    sortSpawnLandCandidates(fallback, mapCenter);
-  }
+  sortSpawnLandCandidates(fallback, mapCenter);
   return fallback[0]?.h ?? null;
 }
 
@@ -1365,7 +1344,49 @@ function isFarEnough(
 }
 
 /**
- * Planuje klaster: państwa w środku (~minDist), stolica na obwodzie, +1 slot wzrostu.
+ * Stolica klastra: twarda bramka seaDist, potem preferencja obwodu (edge-capital).
+ * Bez soft-failu na brzeg — brak kandydata = null.
+ */
+function pickCapitalHexInRegion(
+  region: Array<{ q: number; r: number }>,
+  blobCenter: { q: number; r: number },
+  rand: () => number,
+  map?: GameMap,
+  seaDist?: Map<string, number>,
+  minSeaDist = 0,
+  anchor?: { q: number; r: number; minDist: number },
+): { q: number; r: number } | null {
+  let candidates = region;
+  if (anchor) {
+    const filtered = candidates.filter(
+      c => hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) >= anchor.minDist,
+    );
+    if (filtered.length > 0) candidates = filtered;
+  }
+  if (map) {
+    const gated = candidates.filter(c => passesLocalLandGate(map, c.q, c.r));
+    if (gated.length > 0) candidates = gated;
+  }
+  if (seaDist && minSeaDist > 0) {
+    const seaGated = candidates.filter(
+      c => passesMinSeaDistGate(seaDist, c.q, c.r, minSeaDist),
+    );
+    if (seaGated.length === 0) return null;
+    candidates = seaGated;
+  }
+  if (candidates.length === 0) return null;
+
+  candidates.sort((a, b) => {
+    const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
+    const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
+    const jitter = rand() * 0.01;
+    return (db + jitter) - (da + jitter) || a.q - b.q || a.r - b.r;
+  });
+  return candidates[0]!;
+}
+
+/**
+ * Planuje klaster: najpierw stolica (seaDist + obwód), potem państwa wokół.
  * Deterministyczne dla rand().
  */
 export function buildClusterLayoutWithEdgeCapital(
@@ -1378,27 +1399,16 @@ export function buildClusterLayoutWithEdgeCapital(
   growthReserve = CLUSTER_GROWTH_RESERVE,
   map?: GameMap,
   seed = 42,
+  seaDist?: Map<string, number>,
+  minSeaDist = 0,
 ): ClusterLayoutPlan | null {
   if (stateCityCount < 0) return null;
 
   const blobCenter = centroidOf(region.length > 0 ? region : [centrum]);
-  let capitalCandidates = region.filter(c => {
-    if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
-    return true;
-  });
-  if (map) {
-    const gated = capitalCandidates.filter(c => passesLocalLandGate(map, c.q, c.r));
-    if (gated.length > 0) capitalCandidates = gated;
-  }
-  if (capitalCandidates.length === 0) return null;
-
-  capitalCandidates.sort((a, b) => {
-    const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
-    const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
-    const jitter = rand() * 0.01;
-    return (db + jitter) - (da + jitter) || a.q - b.q || a.r - b.r;
-  });
-  const capital = capitalCandidates[0]!;
+  const capital = pickCapitalHexInRegion(
+    region, blobCenter, rand, map, seaDist, minSeaDist, anchor,
+  );
+  if (!capital) return null;
 
   const { stateCities, growthSlot } = packCityStatesAroundCapital(
     region,
@@ -1434,13 +1444,16 @@ function buildClusterCities(
   anchor?: { q: number; r: number; minDist: number },
   seed?: number,
   map?: GameMap,
+  seaDist?: Map<string, number>,
+  minSeaDist = 0,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   const layout = buildClusterLayoutWithEdgeCapital(
     region, centrum, stateCityCount, minDist, rand, anchor, CLUSTER_GROWTH_RESERVE, map, seed ?? 42,
+    seaDist, minSeaDist,
   );
   if (!layout) {
     return buildClusterCitiesSimpleFallback(
-      region, centrum, stateCityCount, minDist, anchor, seed ?? 42, map,
+      region, centrum, stateCityCount, minDist, anchor, seed ?? 42, map, seaDist, minSeaDist,
     );
   }
   return {
@@ -1462,6 +1475,8 @@ function buildClusterCitiesSimpleFallback(
   anchor: { q: number; r: number; minDist: number } | undefined,
   seed: number,
   map?: GameMap,
+  seaDist?: Map<string, number>,
+  minSeaDist = 0,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   let pool = region;
   if (anchor) {
@@ -1475,16 +1490,10 @@ function buildClusterCitiesSimpleFallback(
   }
 
   const cen = centroidOf(pool);
-  const capSorted = pool.slice().sort((a, b) => {
-    const da = hexDistanceAxial(a.q, a.r, cen.q, cen.r);
-    const db = hexDistanceAxial(b.q, b.r, cen.q, cen.r);
-    return db - da || a.q - b.q || a.r - b.r;
-  });
-  const gatedCaps = map
-    ? capSorted.filter(c => passesLocalLandGate(map, c.q, c.r))
-    : capSorted;
-  const capital = gatedCaps[0] ?? (map ? null : capSorted[0]) ?? centrum;
-  if (map && !passesLocalLandGate(map, capital.q, capital.r)) {
+  const capital = pickCapitalHexInRegion(
+    pool, cen, () => 0, map, seaDist, minSeaDist, anchor,
+  );
+  if (!capital) {
     return { cities: [], pendingStateSlots: [], growthSlot: null };
   }
 
@@ -1681,9 +1690,13 @@ function buildClusterCitiesWithLandGate(
       anchor,
       seed,
       map,
+      seaDist,
+      minSeaDist,
     );
     const cap = clusterCapitalPos(layout, activeCentrum);
-    if (passesLocalLandGate(map, cap.q, cap.r)) {
+    const landOk = passesLocalLandGate(map, cap.q, cap.r);
+    const seaOk = !seaDist || minSeaDist <= 0 || passesMinSeaDistGate(seaDist, cap.q, cap.r, minSeaDist);
+    if (landOk && seaOk) {
       return { ...layout, centrum: activeCentrum };
     }
     const altCenter = pickBestLocalLandSpawn(map, region, existingCenters, minClusterDist, landCache, rand, seaDist, minSeaDist);
@@ -2027,6 +2040,19 @@ export function computeClusters(
 
     const foreignCap = foreignLayoutResult.cities.find(m => m.isCapital)
       ?? foreignLayoutResult.cities[0]!;
+    if (
+      seaDist
+      && minSeaDist > 0
+      && !passesMinSeaDistGate(seaDist, foreignCap.q, foreignCap.r, minSeaDist)
+    ) {
+      if (typeof console !== 'undefined') {
+        console.warn(
+          `[clusters] Pominięto typ '${activeKlucze[ci] ?? `typ${ci}`}'` +
+          ` — stolica zbyt blisko morza (seaDist=${seaDistAt(seaDist, foreignCap.q, foreignCap.r)}, min=${minSeaDist})`,
+        );
+      }
+      continue;
+    }
     const foreignAnchor = {
       q: playerCapitalPos.q,
       r: playerCapitalPos.r,

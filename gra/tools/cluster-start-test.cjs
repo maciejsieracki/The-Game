@@ -727,8 +727,17 @@ const stdSeaDist = M.buildSeaDistanceField(stdMap.hexes);
 const minSeaStd = M.capitalMinSeaDist(stdPlan.placement.rozmiarMapy);
 assert(minSeaStd === 10, 'Standard (duza): minSeaDist=10 (got ' + minSeaStd + ')');
 const stdCapSea = M.seaDistAt(stdSeaDist, stdPlan.playerStartHex.q, stdPlan.playerStartHex.r);
-assert(stdCapSea >= minSeaStd || stdCapSea >= 8,
-  'Standard: stolica gracza min ~10 hex od morza (seaDist=' + stdCapSea + ', min=' + minSeaStd + ')');
+assert(stdCapSea >= minSeaStd,
+  'Standard: stolica gracza min 10 hex od morza (seaDist=' + stdCapSea + ', min=' + minSeaStd + ')');
+
+// BUG-SPAWN-ODLEGLOSC-MORZE: stolice obcych typów ≥ minSeaDist na Standard
+for (const fcl of stdPlan.foreignTypeClusters) {
+  const capPos = fcl.positions[0];
+  if (!capPos) continue;
+  const capSea = M.seaDistAt(stdSeaDist, capPos.q, capPos.r);
+  assert(capSea >= minSeaStd,
+    `Standard: stolica obcego typu ${fcl.typ} min ${minSeaStd} hex od morza (seaDist=${capSea})`);
+}
 
 // BUG-SPAWN-CLUSTER-KULTURA: miasta obcego typu w zasięgu spójności od stolicy klastra
 const cohesionMax = M.clusterCohesionMaxHex(6);
