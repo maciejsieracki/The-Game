@@ -1481,3 +1481,11 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Źródło:** Maciej 2026-08-02 — auto budowa ulepszeń; profile typów (żywność/produkcja/…) albo tylko heksy z obywatelami.
 
 **Plan:** `dyspozycje/PLAN-AUTO-ULEPSZENIA-2026-08-02.md` (warianty A terytorium / B tylko 👤 / C hybryda; profile; UI; architektura).
+
+## FEAT-AUTO-LISTA-BUDOWNICZA — auto-budowa z listy + szablony epok · STATUS: **PLAN** (rozmowa jutro)
+
+**Źródło:** Maciej 2026-08-02 — „nie wybierasz typu budynku, tylko buduje po kolei z listy”; w przyszłości lista per epoka; wgraj listę do miasta → buduje zgodnie z nią.
+
+**Uwaga:** dziś jest już auto **wg profilu kategorii** (wzrost/wojsko/…); brakuje trybu **Lista** (ścisła kolejność ID) oraz szablonów epok.
+
+**Plan:** `dyspozycje/PLAN-AUTO-LISTA-BUDOWNICZA-2026-08-02.md` (tryby Ręczny/Profil/Lista; v1 lista miasta; v2 szablony epok + wgraj).
