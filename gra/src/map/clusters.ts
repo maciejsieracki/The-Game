@@ -1429,14 +1429,15 @@ export function capitalSeaBandPenalty(
   return Math.abs(sea - ideal);
 }
 
-/** Min. odległość między stolicami różnych cywilizacji (Maciej 2026-08-02, FALA 182 +2 hex).
- * Osobno od seaDist: Mała/Średnia=12, Standard=14, Duża=16, Super=19.
+/** Min. odległość między stolicami różnych cywilizacji (Maciej 2026-08-02, FALA 182 +2 hex;
+ * Standard +1 hex 2026-08-02 wieczór: 14→15 — tylko duza, bez zmiany MP w klastrze).
+ * Osobno od seaDist: Mała/Średnia=12, Standard=15, Duża=16, Super=19.
  */
 export function capitalMinSeparation(rozmiar: RozmiarKlaster): number {
   const lut: Record<RozmiarKlaster, number> = {
     mala: 12,
     srednia: 12,
-    duza: 14,
+    duza: 15,
     ogromna: 16,
     super: 19,
   };
@@ -1459,7 +1460,7 @@ export function capitalMinSeparationForMap(
 
 /**
  * FALA 185: min. odległość między dowolnymi miastami różnych civ (bryła klastra).
- * S_cluster = capitalMinSeparation (tabela 12/12/14/16/19 — bez luzowania).
+ * S_cluster = capitalMinSeparation (tabela 12/12/15/16/19 — bez luzowania).
  * Bufor MP = S/2 wokół obcej stolicy; egzekwowany przy pakowaniu.
  */
 export function clusterBodySeparation(rozmiar: RozmiarKlaster): number {
@@ -1468,7 +1469,7 @@ export function clusterBodySeparation(rozmiar: RozmiarKlaster): number {
 
 /**
  * Min. odległość środków klastrów przy farthest-point (+2 na pierścień MP 5 hex
- * wewnątrz bufora bryły S/2 — np. Standard: sep stolic 14, placement 16, bufor 7).
+ * wewnątrz bufora bryły S/2 — np. Standard: sep stolic 15, placement 17, bufor 8).
  */
 export function clusterCenterPlacementSep(rozmiar: RozmiarKlaster): number {
   return capitalMinSeparation(rozmiar) + 2;

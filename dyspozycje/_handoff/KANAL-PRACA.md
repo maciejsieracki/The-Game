@@ -4959,7 +4959,6 @@ CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (różne % lądu)
 - ROBOCZA `26b05753` VERIFY OK — Maciej: obwarzanek OK, rzeki do centrum, szybciej
 - FALA 199: most Morze+Wybrzeże · rzeki bez limitu · FALA 200: stolice pas 10–15
 CZEKAM-NA: nic (stan zapisany)
-
 ## [23:24 PL, 2026-08-02] CLOUD -> Maciej — fix NAP fałszywy fair-min PW
 - Branch/PR: `cursor/fix-nap-pw-fairmin-false-alarm-63a1`
 - Bug: okno Paktu o nieagresji @ Rel 52 pokazywało „Brakuje 274 PW" / fair min 570 (handel) na wartości traktatu 296 PW
@@ -4967,3 +4966,17 @@ CZEKAM-NA: nic (stan zapisany)
 - Test: diplomacy-acceptance-points-test.cjs 164/164 PASS
 - ID: BUG-DYPLO-NAP-FAIRMIN-FALSE · R-DYPLO-NAP-FAIRMIN-FALSE
 CZEKAM-NA: Maciej merge/deploy ROBOCZA + Ctrl+F5 sprawdzenie okna NAP
+
+## [23:30 PL, 2026-08-02] GROK -> Maciej — sep stolic Standard 15 (kod, bez deploy)
+- Decyzja Macieja: Standard (`duza`) sep stolic różnych civ **14→15**; Mała/Średnia 12, Duża 16, Super 19 bez zmian
+- `clusters.ts`: `capitalMinSeparation` LUT `duza: 15`; placement sep 17; bufor MP ceil(15/2)=8
+- NIE zmienia pierścienia MP 5 hex w klastrze — tylko odległość stolic między civ
+- Testy: capital-sep-unit 21/21 PASS · capital-sep-pangea 3/3 PASS
+- Branch: `cursor/capital-sep-standard-15-63a1`
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (Ctrl+F5, Nowa gra Standard)
+
+## [23:48 PL, 2026-08-02] GROK -> Maciej — MERGE PR #2 + #3 na main
+- Scalono: NAP fair-min fix + sep stolic Standard 15
+- Branch merge: `cursor/merge-nap-and-sep15-63a1` → push `main`
+- **Bez deploy ROBOCZA** w tym kroku (kod na main)
+CZEKAM-NA: Maciej deploy ROBOCZA (Ctrl+F5: NAP @ Rel~52 + Nowa gra Standard sep 15)
