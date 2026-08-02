@@ -1,2 +1,2 @@
 
-export { advanceProduction, splitPraca, cityPracaInteger, pracaImperialPoolGain } from '../src/game/production';
+export { advanceProduction, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto } from '../src/game/production';

@@ -1378,6 +1378,36 @@ export function pracaImperialPoolGain(
   return queueEmpty ? split.doPuli + split.doBudynkow : split.doPuli;
 }
 
+/** Tick Pracy miasta do podglądu HUD (doBudynkow/doPuli z previewCityEconomy). */
+export interface PracaSplitTick {
+  doBudynkow: number;
+  doPuli: number;
+}
+
+/**
+ * Suma brutto Pracy trafiającej do puli imperium w tej turze (podgląd HUD).
+ * Parytet z main.ts: pracaImperialPoolGain per miasto + pusta kolejka z cityProd.
+ */
+export function previewPracaPoolBrutto(
+  ticks: ReadonlyArray<PracaSplitTick>,
+  options: {
+    queueEmpty: ReadonlyArray<boolean>;
+    paused?: ReadonlyArray<boolean>;
+  },
+): number {
+  let sum = 0;
+  for (let i = 0; i < ticks.length; i++) {
+    if (options.paused?.[i]) continue;
+    const tk = ticks[i];
+    if (!tk) continue;
+    sum += pracaImperialPoolGain(
+      { doBudynkow: tk.doBudynkow, doPuli: tk.doPuli },
+      options.queueEmpty[i] ?? true,
+    );
+  }
+  return sum;
+}
+
 /** Q1: tryb kosztu jednostki -- zawsze 'pieniadz' (zakup ze skarbca) we WSZYSTKICH epokach.
  *  Decyzja Maciej 2026-06-25: jeden surowiec przez cala gre; wyjątek epoki Kamien usunieto. */
 export function unitCostMode(_def: UnitDef): 'praca' | 'pieniadz' {

@@ -621,7 +621,7 @@ import {
 import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
-  enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, availableProduction, availableReplacementsFor,
+  enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued,
@@ -11364,7 +11364,24 @@ async function boot(): Promise<void> {
         map, buildAllTerritoryNodes(), data, _menuDifficulty,
       ).get(0) ?? 0;
       _lastPracaUpkeep = pracaUpkeepPreview;
-      _lastPracaRate = playerEcon.doPuli - pracaUpkeepPreview;
+      // NAPRAWA HUD-PRACA-OVERFLOW (Maciej 2026-08-02): przy pustej kolejce budowy
+      // cała Praca miasta (doPuli + doBudynkow) trafia do puli imperium — ten sam
+      // pracaImperialPoolGain co w ticku końca tury (main.ts pętla produkcji).
+      const pracaTicks: Array<{ doBudynkow: number; doPuli: number }> = [];
+      const pracaQueueEmpty: boolean[] = [];
+      const pracaPaused: boolean[] = [];
+      for (const tk of preview.perCity) {
+        if (tk.ownerId !== 0 || tk.oblegany) continue;
+        const prod = cityProd.get(tk.cityId);
+        pracaTicks.push({ doBudynkow: tk.doBudynkow, doPuli: tk.doPuli });
+        pracaQueueEmpty.push(frontItem(prod ?? { kolejka: [], postep: 0 }) === null);
+        pracaPaused.push(prod?.wstrzymana === true);
+      }
+      const pracaPoolBrutto = previewPracaPoolBrutto(pracaTicks, {
+        queueEmpty: pracaQueueEmpty,
+        paused: pracaPaused,
+      });
+      _lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview;
       let brutto = 0;
       for (const tk of preview.perCity) {
         if (tk.ownerId !== 0 || tk.oblegany) continue;

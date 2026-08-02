@@ -1449,3 +1449,9 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Cytat:** „nie powinno być żadnego limitera ilości rzek. Po prostu powinny się generować zgodnie z zasadami bez limitu. Powinny tak długo siewić jak są w stanie siewić, a nie kończyć się np. po jakimś wyznaczonym czasie lub długości."
 **Implikacja:** usunąć/wyłączyć twarde capy typu `pangeaBootstrapRiverTarget` (~32), `maxCellsToProcess`, quota `capRiverQuotas` / `mapGenMaxRivers*`, early-stop po budżecie czasu; siew aż reguły (źródło, sep, ujście, masa) nie dadzą kolejnej poprawnej rzeki. `maxLen` trasy = ograniczenie techniczne A* jednej ścieżki — rozróżnić od limitu **liczby** rzek (ten drugi = zakazany).
 **Wdrożyć w paczce rzek z AC-RZEKI-PER-MASA + fix obwarzanka.** Uwaga: bez limitu na Super Huge wall-clock mocno urośnie — perf osobno, nie przez cięcie pokrycia.
+
+## BUG-PRACA-OVERFLOW-BUDOWA — pusta kolejka + suwak na budowę · STATUS: **NAPRAWIONE (kod)** (2026-08-02)
+**Sytuacja.** Miasto bez budynku w kolejce, suwak PODZIAŁ PRACY 100% budowa / 0% pula → cała Praca miasta powinna trafiać do puli cywilizacji (HUD: Praca +N). HUD pokazywał +0.
+**Przyczyna.** Regresja z commit `6e1e0e48` (NAPRAWA HUD-PRACA 2026-07-26): `refreshLiveEmpireRates()` liczył `_lastPracaRate` tylko z `playerEcon.doPuli`, pomijając `doBudynkow` przy pustej kolejce. Tick końca tury (`pracaImperialPoolGain` w main.ts ~19431) był poprawny — dotyczyło głównie podglądu HUD.
+**Fix:** `previewPracaPoolBrutto()` w `production.ts` + pętla per-miasto w `refreshLiveEmpireRates()` (main.ts ~11367) z `cityProd` / `frontItem`. Test: `production-overflow-test.cjs` §7 (24/24 PASS).
+**Czeka:** deploy ROBOCZA (bez commitu w tej sesji — parent).

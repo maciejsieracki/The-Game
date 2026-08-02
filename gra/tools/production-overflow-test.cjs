@@ -20,7 +20,7 @@ const ENTRY_FILE = path.resolve(__dirname, '.production-overflow-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.production-overflow-bundle.cjs');
 
 const ENTRY_TS = `
-export { advanceProduction, splitPraca, cityPracaInteger, pracaImperialPoolGain } from '../src/game/production';
+export { advanceProduction, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto } from '../src/game/production';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -113,6 +113,23 @@ console.log('\n6. Budynek w kolejce: tylko doPuli na pulę');
   );
   eq(r.overflowToPool, undefined, 'brak overflow — Praca idzie na postęp');
   eq(r.prod.postep, 7, 'postep = 7');
+}
+
+console.log('\n7. HUD preview: 100% budowa, pusta kolejka → brutto = cała Praca (nie tylko doPuli)');
+{
+  const split = M.splitPraca(13, 1.0);
+  eq(split.doBudynkow, 13, 'doBudynkow = 13 (100% budowa)');
+  eq(split.doPuli, 0, 'doPuli = 0');
+  const hudBrutto = M.previewPracaPoolBrutto(
+    [split],
+    { queueEmpty: [true], paused: [false] },
+  );
+  eq(hudBrutto, 13, 'previewPracaPoolBrutto = 13 (regresja HUD 2026-07-26)');
+  const hudWithBuild = M.previewPracaPoolBrutto(
+    [split],
+    { queueEmpty: [false], paused: [false] },
+  );
+  eq(hudWithBuild, 0, 'z budynkiem w kolejce → tylko doPuli (0)');
 }
 
 console.log('\n--- production-overflow-test: ' + passed + ' OK, ' + failed + ' FAIL ---');

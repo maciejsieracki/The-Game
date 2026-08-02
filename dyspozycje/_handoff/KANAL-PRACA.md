@@ -4980,3 +4980,11 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (Ctrl+F5, Nowa gra Standard)
 - Branch merge: `cursor/merge-nap-and-sep15-63a1` → push `main`
 - **Bez deploy ROBOCZA** w tym kroku (kod na main)
 CZEKAM-NA: Maciej deploy ROBOCZA (Ctrl+F5: NAP @ Rel~52 + Nowa gra Standard sep 15)
+
+## [21:50 PL, 2026-08-02] SUBAGENT -> Maciej — FIX HUD Praca overflow (pusta kolejka budowy)
+- Bug: suwak 100% budowa, brak budynku w kolejce → HUD Praca +0 (powinno +N całej Pracy miasta)
+- Root cause: regresja `6e1e0e48` — `refreshLiveEmpireRates` liczył tylko `doPuli`, tick końca tury OK (`pracaImperialPoolGain`)
+- Fix: `previewPracaPoolBrutto` (`production.ts`) + pętla per-miasto w `main.ts` ~11367
+- Test: `production-overflow-test.cjs` 24/24 PASS · `tsc` 0
+- Branch: `cursor/fix-praca-overflow-idle-build-63a1` (bez commitu — parent)
+CZEKAM-NA: deploy ROBOCZA → Ctrl+F5 → miasto bez kolejki, suwak budowa → chip Praca +N
