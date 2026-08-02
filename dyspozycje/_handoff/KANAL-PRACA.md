@@ -4784,3 +4784,10 @@ CZEKAM-NA: Maciej Ctrl+F5 - sprawdz dlugosc rzek glownych + stolice AI >=10 hex 
 - minLen = próg akceptacji (tryPlaceMainRiverFromCoast), nie limit wzrostu
 - river-sea-buffer-test 6/6 - tsc 0 - publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra Pangea/Standard: rzeki glowne znacznie dluzsze w gleb ladu
+
+## [12:00 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 169 separacja stolic
+- md5 `af7216a4` / `af7216a4d1eed872a08dab1068612663` - stempel `ROBOCZA - 2026-08-02 12:00`
+- Stolice roznych cywilizacji: min dystans hex = capitalMinSeparationForMap (ta sama skala co od morza; Standard=10)
+- Kolejnosc: gracz pierwszy, potem obce typy - kazda stolica vs wszystkie poprzednie; brak hexu = pomin typ
+- cluster-start-test 384/384 - tsc 0 - publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 - Nowa gra Standard: stolice AI daleko od siebie i od morza (>=10 hex)

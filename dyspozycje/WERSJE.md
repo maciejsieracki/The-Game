@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `33fbf82d` - 2026-08-02 11:45 - FALA 168: rzeki coast — minLen akceptacja, wzrost do maxLen - **AKTUALNA**
+## ROBOCZA `af7216a4` - 2026-08-02 12:00 - FALA 169: separacja stolic ≥10 hex (skala jak od morza) - **AKTUALNA**
+- md5 (pelne): `af7216a4d1eed872a08dab1068612663` · stempel: `ROBOCZA · 2026-08-02 12:00`
+- **VERIFY OK (Gra-ROBOCZA.html).** Stolice gracza + obcych: `capitalMinSeparationForMap` (= tabela `capitalMinSeaDist`: mala=4, srednia=7, duza/Standard=10, ogromna=12, super=14); kolejność gracz→obcy, każda vs poprzednie; brak kandydata = pominięcie typu (bez soft-failu).
+- cluster-start-test.cjs — PASS 384/384 · tsc 0.
+## ROBOCZA `33fbf82d` - 2026-08-02 11:45 - FALA 168: rzeki coast — minLen akceptacja, wzrost do maxLen - **ZASTAPIONA**
 - md5 (pelne): `33fbf82d9fcbd3ad36de2ec4fd464618` · stempel: `ROBOCZA · 2026-08-02 11:45`
 - **VERIFY OK (Gra-ROBOCZA.html).** Fix: growRiverFromCoastInland nie zatrzymuje się na minLen (~25) — wzrost do traceMax (riverTraceBudgetForSeaDist) lub braku lądu / sep 3 / bufor 2 hex od morza. minLen = próg akceptacji w tryPlaceMainRiverFromCoast. riverGenPhase=main + riverStage=1 bez zmian.
 - river-sea-buffer-test.cjs — PASS 6/6 · tsc 0.

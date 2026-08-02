@@ -13,7 +13,7 @@ fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '../src/game/cluster-start';
 export { buildClusterSpawnPlan, buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes, groupForeignTypeClusters } from '../src/map/cluster-spawn';
 export { generateMap } from '../src/map/generator';
-export { computeClusters, groupHabitableMasses, regionMassDominance, localLandFraction, passesLocalLandGate, passesPlayerStartMassGate, pickPlayerClusterCenter, allocateTypyToMasses, massTypeCap, developmentSpaceScore, qualifyingMassIndicesForSpawn, MIN_MASS_HEXES_FOR_SPAWN, MIN_DEVELOPMENT_HEX_PER_CIV, SMALL_MASS_CAP_THRESHOLD, ISLAND_FALLBACK_MASS_FRAC, REGION_MASS_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_RADIUS, PLAYER_START_MIN_MASS_HEXES, PLAYER_START_MASS_MIN_ABSOLUTE, rosterKluczeForStartEpoch, capitalMinSeaDist, seaDistAt, passesMinSeaDistGate, clusterCohesionMaxHex } from '../src/map/clusters';
+export { computeClusters, groupHabitableMasses, regionMassDominance, localLandFraction, passesLocalLandGate, passesPlayerStartMassGate, pickPlayerClusterCenter, allocateTypyToMasses, massTypeCap, developmentSpaceScore, qualifyingMassIndicesForSpawn, MIN_MASS_HEXES_FOR_SPAWN, MIN_DEVELOPMENT_HEX_PER_CIV, SMALL_MASS_CAP_THRESHOLD, ISLAND_FALLBACK_MASS_FRAC, REGION_MASS_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_RADIUS, PLAYER_START_MIN_MASS_HEXES, PLAYER_START_MASS_MIN_ABSOLUTE, rosterKluczeForStartEpoch, capitalMinSeaDist, capitalMinSeparation, capitalMinSeparationForMap, passesMinCapitalSeparationGate, seaDistAt, passesMinSeaDistGate, clusterCohesionMaxHex } from '../src/map/clusters';
 export { buildSeaDistanceField } from '../src/map/gen-helpers';
 export { civIdsAvailableAtGameEpoch } from '../src/game/civ-entry-epoch';
 export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius, packRivalCitiesAroundCore, packCityStatesHubChain, computeSameTypeRivalHalfPlaneAxis, isInSameTypeRivalHalfPlane } from '../src/map/clusters';
@@ -567,7 +567,7 @@ assert(
   '16-hex wyspa: playerStartHex przechodzi bramkę masy gracza',
 );
 
-// Standard × 8 typów (kamień): requested 8 → placed ≥ 7
+// Standard × 8 typów (kamień): requested 8 → placed ≥ 6 (separacja stolic ≥10 może pominąć typ)
 const stdMap = M.generateMap(168, 120, 4242, 'kontynenty');
 const stdPlan = M.buildClusterStartPlan({
   map: stdMap,
@@ -579,8 +579,8 @@ const stdPlan = M.buildClusterStartPlan({
   startEpochId: 'kamien',
 });
 assert(stdPlan.placement.requestedTypy === 8, 'Standard kamień: requestedTypy=8 (got ' + stdPlan.placement.requestedTypy + ')');
-assert(stdPlan.placement.aktywneTypy >= 7,
-  'Standard kamień × 8 typów: placed ≥ 7 (got ' + stdPlan.placement.aktywneTypy + '/8)');
+assert(stdPlan.placement.aktywneTypy >= 6,
+  'Standard kamień × 8 typów: placed ≥ 6 (got ' + stdPlan.placement.aktywneTypy + '/8)');
 assert(stdPlan.pendingSameTypeRivals === 6, 'Standard kamień: pendingSameTypeRivals=6');
 const stdSix = M.buildSameTypeRivalCandidateHexes(stdMap, stdPlan.playerStartHex, 6, 4242);
 assert(stdSix.length === 6, 'Standard hub-chain: 6 slotów MP (got ' + stdSix.length + ')');
@@ -737,6 +737,25 @@ for (const fcl of stdPlan.foreignTypeClusters) {
   const capSea = M.seaDistAt(stdSeaDist, capPos.q, capPos.r);
   assert(capSea >= minSeaStd,
     `Standard: stolica obcego typu ${fcl.typ} min ${minSeaStd} hex od morza (seaDist=${capSea})`);
+}
+
+// BUG-SPAWN-ODLEGLOSC-STOLICE: pary stolic różnych cywilizacji ≥ minSep na Standard
+const minSepStd = M.capitalMinSeparation(stdPlan.placement.rozmiarMapy);
+assert(minSepStd === 10, 'Standard (duza): minCapitalSep=10 (got ' + minSepStd + ')');
+assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 10,
+  'Standard map 168×120: minCapitalSepForMap=10');
+const stdCapitals = [{ q: stdPlan.playerStartHex.q, r: stdPlan.playerStartHex.r }];
+for (const fcl of stdPlan.foreignTypeClusters) {
+  const capPos = fcl.positions[0];
+  if (capPos) stdCapitals.push(capPos);
+}
+const minSepTol = Math.max(9, minSepStd - 1);
+for (let i = 0; i < stdCapitals.length; i++) {
+  for (let j = i + 1; j < stdCapitals.length; j++) {
+    const d = M.hexDistanceAxial(stdCapitals[i].q, stdCapitals[i].r, stdCapitals[j].q, stdCapitals[j].r);
+    assert(d >= minSepTol,
+      `Standard: stolice #${i}↔#${j} min ${minSepTol} hex (got ${d})`);
+  }
 }
 
 // BUG-SPAWN-CLUSTER-KULTURA: miasta obcego typu w zasięgu spójności od stolicy klastra

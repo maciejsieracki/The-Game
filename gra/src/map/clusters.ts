@@ -1018,6 +1018,31 @@ export function passesMinSeaDistGate(
   return seaDistAt(seaDist, q, r) >= minDist;
 }
 
+/** Min. odległość między stolicami różnych cywilizacji — ta sama skala co od morza. */
+export function capitalMinSeparation(rozmiar: RozmiarKlaster): number {
+  return capitalMinSeaDist(rozmiar);
+}
+
+/** Clamp minSep do rozmiaru mapy — identyczna logika co capitalMinSeaDistForMap. */
+export function capitalMinSeparationForMap(
+  rozmiar: RozmiarKlaster,
+  mapW: number,
+  mapH: number,
+): number {
+  return capitalMinSeaDistForMap(rozmiar, mapW, mapH);
+}
+
+export function passesMinCapitalSeparationGate(
+  c: { q: number; r: number },
+  priorCapitals: Array<{ q: number; r: number }>,
+  minSep: number,
+): boolean {
+  if (minSep <= 0 || priorCapitals.length === 0) return true;
+  return priorCapitals.every(
+    p => hexDistanceAxial(c.q, c.r, p.q, p.r) >= minSep,
+  );
+}
+
 /** Pola lądowe w promieniu od rdzenia, posortowane od najbliższych (do ciasnego pakowania). */
 function landPoolNearCore(
   region: Array<{ q: number; r: number }>,
@@ -1355,6 +1380,8 @@ function pickCapitalHexInRegion(
   seaDist?: Map<string, number>,
   minSeaDist = 0,
   anchor?: { q: number; r: number; minDist: number },
+  priorCapitals: Array<{ q: number; r: number }> = [],
+  minCapitalSep = 0,
 ): { q: number; r: number } | null {
   let candidates = region;
   if (anchor) {
@@ -1373,6 +1400,13 @@ function pickCapitalHexInRegion(
     );
     if (seaGated.length === 0) return null;
     candidates = seaGated;
+  }
+  if (minCapitalSep > 0 && priorCapitals.length > 0) {
+    const sepGated = candidates.filter(
+      c => passesMinCapitalSeparationGate(c, priorCapitals, minCapitalSep),
+    );
+    if (sepGated.length === 0) return null;
+    candidates = sepGated;
   }
   if (candidates.length === 0) return null;
 
@@ -1401,12 +1435,15 @@ export function buildClusterLayoutWithEdgeCapital(
   seed = 42,
   seaDist?: Map<string, number>,
   minSeaDist = 0,
+  priorCapitals: Array<{ q: number; r: number }> = [],
+  minCapitalSep = 0,
 ): ClusterLayoutPlan | null {
   if (stateCityCount < 0) return null;
 
   const blobCenter = centroidOf(region.length > 0 ? region : [centrum]);
   const capital = pickCapitalHexInRegion(
     region, blobCenter, rand, map, seaDist, minSeaDist, anchor,
+    priorCapitals, minCapitalSep,
   );
   if (!capital) return null;
 
@@ -1446,14 +1483,17 @@ function buildClusterCities(
   map?: GameMap,
   seaDist?: Map<string, number>,
   minSeaDist = 0,
+  priorCapitals: Array<{ q: number; r: number }> = [],
+  minCapitalSep = 0,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   const layout = buildClusterLayoutWithEdgeCapital(
     region, centrum, stateCityCount, minDist, rand, anchor, CLUSTER_GROWTH_RESERVE, map, seed ?? 42,
-    seaDist, minSeaDist,
+    seaDist, minSeaDist, priorCapitals, minCapitalSep,
   );
   if (!layout) {
     return buildClusterCitiesSimpleFallback(
       region, centrum, stateCityCount, minDist, anchor, seed ?? 42, map, seaDist, minSeaDist,
+      priorCapitals, minCapitalSep,
     );
   }
   return {
@@ -1477,6 +1517,8 @@ function buildClusterCitiesSimpleFallback(
   map?: GameMap,
   seaDist?: Map<string, number>,
   minSeaDist = 0,
+  priorCapitals: Array<{ q: number; r: number }> = [],
+  minCapitalSep = 0,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   let pool = region;
   if (anchor) {
@@ -1492,6 +1534,7 @@ function buildClusterCitiesSimpleFallback(
   const cen = centroidOf(pool);
   const capital = pickCapitalHexInRegion(
     pool, cen, () => 0, map, seaDist, minSeaDist, anchor,
+    priorCapitals, minCapitalSep,
   );
   if (!capital) {
     return { cities: [], pendingStateSlots: [], growthSlot: null };
@@ -1677,6 +1720,8 @@ function buildClusterCitiesWithLandGate(
   minClusterDist: number,
   seaDist?: Map<string, number>,
   minSeaDist = 0,
+  priorCapitals: Array<{ q: number; r: number }> = [],
+  minCapitalSep = 0,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null; centrum: { q: number; r: number } } | null {
   const masses = landCache.masses;
   let activeCentrum = centrum;
@@ -1692,11 +1737,14 @@ function buildClusterCitiesWithLandGate(
       map,
       seaDist,
       minSeaDist,
+      priorCapitals,
+      minCapitalSep,
     );
     const cap = clusterCapitalPos(layout, activeCentrum);
     const landOk = passesLocalLandGate(map, cap.q, cap.r);
     const seaOk = !seaDist || minSeaDist <= 0 || passesMinSeaDistGate(seaDist, cap.q, cap.r, minSeaDist);
-    if (landOk && seaOk) {
+    const sepOk = passesMinCapitalSeparationGate(cap, priorCapitals, minCapitalSep);
+    if (landOk && seaOk && sepOk) {
       return { ...layout, centrum: activeCentrum };
     }
     const altCenter = pickBestLocalLandSpawn(map, region, existingCenters, minClusterDist, landCache, rand, seaDist, minSeaDist);
@@ -1808,6 +1856,7 @@ export function computeClusters(
   const marginBrzeg = Math.max(2, Math.floor(minDystKlastrow / 3));
   const seaDist = buildSeaDistanceField(map.hexes);
   const minSeaDist = capitalMinSeaDistForMap(rozmiarMapy, W, H);
+  const minCapitalSep = capitalMinSeparationForMap(rozmiarMapy, W, H);
   const landCache = createMassLandCache(ladowe);
   const masses = landCache.masses;
 
@@ -1882,6 +1931,7 @@ export function computeClusters(
   // --- MIASTA: klaster gracza (min 5 hex), obce typy min 12 od stolicy, mp obcych min 5 w klastrze ---
   const klastry: TypeCluster[] = [];
   const stateCityCount = rywaleNaKlaster;
+  const placedCapitals: Array<{ q: number; r: number }> = [];
 
   const playerCentrum = activeCentrumy[0]!;
   const playerRegion = regiony[0]!;
@@ -1899,6 +1949,8 @@ export function computeClusters(
     minDystKlastrow,
     seaDist,
     minSeaDist,
+    placedCapitals,
+    minCapitalSep,
   );
 
   let playerCentrumFinal = playerCentrum;
@@ -1964,6 +2016,8 @@ export function computeClusters(
         minDystKlastrow,
         seaDist,
         minSeaDist,
+        placedCapitals,
+        minCapitalSep,
       );
       if (relocatedLayout) {
         playerLayout = relocatedLayout;
@@ -1990,6 +2044,8 @@ export function computeClusters(
       }
     }
   }
+
+  placedCapitals.push(playerCapitalPos);
 
   // Pre-plan państw gracza: ciasne skupisko wokół stolicy (min/max 5 hex — Maciej 2026-07-29).
   const playerStateSlots = packRivalCitiesAroundCore(
@@ -2027,6 +2083,8 @@ export function computeClusters(
       minDystKlastrow,
       seaDist,
       minSeaDist,
+      placedCapitals,
+      minCapitalSep,
     );
     if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) {
       if (typeof console !== 'undefined') {
@@ -2049,6 +2107,19 @@ export function computeClusters(
         console.warn(
           `[clusters] Pominięto typ '${activeKlucze[ci] ?? `typ${ci}`}'` +
           ` — stolica zbyt blisko morza (seaDist=${seaDistAt(seaDist, foreignCap.q, foreignCap.r)}, min=${minSeaDist})`,
+        );
+      }
+      continue;
+    }
+    if (!passesMinCapitalSeparationGate(
+      { q: foreignCap.q, r: foreignCap.r },
+      placedCapitals,
+      minCapitalSep,
+    )) {
+      if (typeof console !== 'undefined') {
+        console.warn(
+          `[clusters] Pominięto typ '${activeKlucze[ci] ?? `typ${ci}`}'` +
+          ` — stolica zbyt blisko innej stolicy (minSep=${minCapitalSep})`,
         );
       }
       continue;
@@ -2083,6 +2154,7 @@ export function computeClusters(
       miasta: foreignCities,
       growthSlot: foreignRepack.growthSlot ?? foreignLayoutResult.growthSlot,
     });
+    placedCapitals.push({ q: foreignCap.q, r: foreignCap.r });
   }
 
   // Logowanie diagnostyczne (tylko w dev — nie blokuje funkcji)
