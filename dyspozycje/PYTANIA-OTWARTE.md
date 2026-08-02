@@ -910,6 +910,16 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
+## BUG-DYPLO-GIFT-WAR-FALSE — dar pieniędzy blokowany komunikatem o wojnie mimo pokoju · STATUS: **NAPRAWIONE w źródle** (2026-08-02)
+
+**Cytat (screen Macieja):** Modal „Prezent / dar" przy audiencji z Rzymianami (stan POKÓJ, Życzliwy) pokazuje czerwony komunikat „W wojnie pieniądze tylko w ugodzie pokojowej" i wyłącza ZAPROPONUJ — mimo że „Wypowiedzenie wojny" jest dostępne (nie ma wojny).
+
+**Przyczyna:** `validateBasketForm` w `diplomacyTradeBasket.ts` wołał `isCurrencyProposalForbiddenDuringWar(..., true)` z hardkodowanym `atWar: true`, ignorując `ctx.atWar` z audiencji.
+
+**Fix:** trzeci argument = `ctx.atWar ?? false`. Silnik (`diplomacy-proposals.ts`) był poprawny — błąd tylko w walidacji UI koszyka. Testy: `diplomacy-war-gates-test.cjs`, `diplomacy-proposal-test.cjs` §17.
+
+---
+
 ## BUG-DYPLO-NAP-FAIRMIN-FALSE — NAP pokazuje fałszywe „Brakuje PW" (fair min handlu) · STATUS: **NAPRAWIONE w źródle** (2026-08-02)
 
 **Cytat (screen Macieja):** NAP @ Rel 52, symetryczne 296/296 PW — panel pokazywał „Brakuje 274 PW" / „Poniżej progu fair min (570 PW)", mimo że koszyk PW jest opcjonalny, a NAP akceptuje się progiem Relacji (≥50).
