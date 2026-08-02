@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `1c8dcfe6` - 2026-08-02 13:15 - FALA 171: stolice sep apply + ujścia post-flatten + rzeki inland maxLen - **AKTUALNA**
+## ROBOCZA `e3b17661` - 2026-08-02 13:41 - FALA 172: rzeki max skręt ±60° + inland coverage - **AKTUALNA**
+- md5 (pelne): `e3b17661618bd62223a7006869b66dac` · stempel: `ROBOCZA · 2026-08-02 13:41`
+- **VERIFY OK (Gra-ROBOCZA.html).** growRiverFromCoastInland: dirDelta ∈ {0,1,5} (zakaz 120°/180° U-turn); prefer seaDist↑ + centroid masy; stop bez kandydata ±60°. riverTraceBudget +bonus inland; top-up ujść sep2/acceptLen2. Stolice bez zmian. riverGenPhase=main + riverStage=1.
+- river-sea-buffer-test.cjs — PASS 9/9 · tsc 0.
+## ROBOCZA `1c8dcfe6` - 2026-08-02 13:15 - FALA 171: stolice sep apply + ujścia post-flatten + rzeki inland maxLen - **ZASTAPIONA**
 - md5 (pelne): `1c8dcfe6b6d6bcf437a5e5037e3ac9ae` · stempel: `ROBOCZA · 2026-08-02 13:15`
 - **VERIFY OK (Gra-ROBOCZA.html).** (1) cluster-spawn: bramka minSep stolic przy apply (relokacja gracza + filtr obcych); Duża N=12. (2) refillMainRiverCoastMouthGapsOnMap po flattenFalseCoastalRiverNotches; ocean coast BFS; acceptLen 2 w top-up. (3) traceRiver inland do maxLen/sep3; riverTraceBudget nie ścina maxLen na Dużej. riverGenPhase=main + riverStage=1.
 - cluster-start-test.cjs — PASS 407/407 · river-sea-buffer-test.cjs — PASS 9/9 · tsc 0.

@@ -4804,3 +4804,10 @@ CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra: ujścia rzek co ~≤7 hex wzdłuż b
 - (1) cluster-spawn: minSep stolic egzekwowany przy apply (Duża N=12); (2) top-up ujść PO flatten wybrzeża + ocean coast; (3) inland growth do maxLen/sep3
 - cluster-start-test 407/407 · river-sea-buffer-test 9/9 · tsc 0 · riverGenPhase=main riverStage=1
 CZEKAM-NA: Maciej Ctrl+F5 Duża mapa - stolice roznych civ >=11 hex, ujścia co <=7 hex ocean brzeg, rzeki w głąb lądu
+
+## [13:41 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 172 rzeki max skręt ±60° + inland
+- md5 `e3b17661` / `e3b17661618bd62223a7006869b66dac` - stempel `ROBOCZA - 2026-08-02 13:41`
+- growRiverFromCoastInland: dirDelta tylko {0,1,5} (zakaz U-turn 120°/180°); prefer seaDist↑ + centroid masy; stop bez kandydata ±60°
+- riverTraceBudget +bonus inland; top-up ujść sep2/acceptLen2; stolice bez zmian; riverGenPhase=main riverStage=1
+- river-sea-buffer-test 9/9 · tsc 0 · publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 FRESH - brak U-turnów rzek, więcej pokrycia inland, stolice jak FALA 171
