@@ -223,6 +223,30 @@ export function applyRiverLodVisibility(
  * @param isExplored predykat: hex "q,r" odkryty (ale niekoniecznie widoczny).
  * @param hideFromLevel próg ukrycia LOD (domyślnie RIVER_LOD_HIDE_FROM_LEVEL).
  */
+/**
+ * Widoczność scalonej wstęgi (medium/short/tributary bez pointHex) przy aktywnej mgle.
+ * Gdy fogActive=false (FoW wyłączony / brak ukrytych heksów) → zawsze true.
+ */
+export function mergedRiverVisibleInFog(
+  fogActive: boolean,
+  riverRevealKeys: ReadonlySet<string> | null | undefined,
+  isHidden: (hexKey: string) => boolean,
+  hexKeys: Iterable<string>,
+): boolean {
+  if (!fogActive) return true;
+  const riverHidden = (k: string) => isHidden(k) && !riverRevealKeys?.has(k);
+  if (riverRevealKeys) {
+    for (const hk of hexKeys) {
+      if (!riverHidden(hk)) return true;
+    }
+    return false;
+  }
+  for (const hk of hexKeys) {
+    if (riverHidden(hk)) return false;
+  }
+  return true;
+}
+
 export function applyRiverVisibility(
   entries: Iterable<RiverBucketMesh>,
   level: number,

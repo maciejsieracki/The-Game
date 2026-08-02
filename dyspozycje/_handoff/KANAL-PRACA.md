@@ -5002,3 +5002,11 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno
 - **FALA 201.** PR #5 Inkowie MP · PR #6 zwrot surowca kolejki · (+ NAP fair-min + sep 15 z main)
 - build: /tmp/civ-dist-fala201 · poprzedni `26b05753` ZASTĄPIONA
 CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Inkowie z MP) + Stolarnia→Usuń (drewno wraca)
+
+## [23:40 PL, 2026-08-02] CLOUD -> Maciej — fix średnie rzeki znikają przy FoW OFF
+- Branch: `cursor/fix-medium-rivers-fow-63a1`
+- Root cause: (1) scalone medium batche bez `pointHex` nie miały bypassu `!lastAnyHidden` (FoW wyłączony F); (2) `riverWaterMat` bez `fog:false` — przy FoW OFF `scene.fog` włączone, cienkie wstęgi znikały w mgle 3D
+- Fix: `scene.ts` — fast-path gdy mgła nieaktywna + `mergedRiverVisibleInFog` w `riverLod.ts`; materiał rzeki `fog:false`
+- Test: `river-fog-visibility-test.cjs` 4/4 PASS · `tsc` OK
+- **Bez deploy ROBOCZA**
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (F toggle: średnie rzeki widoczne ON i OFF)
