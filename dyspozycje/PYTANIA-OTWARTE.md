@@ -1475,3 +1475,11 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## FEAT-LUDY-MORZA-BEZ-OBOZU — Ludy Morza: łódki bez obozu na wodzie · STATUS: **PLAN** (Maciej 2026-08-02)
+
+**Źródło:** Maciej — screen obozu ze czaszką na wodzie + jednostki na łódkach w Brązie; „bez obozu… głupia ta".
+
+**Uwaga:** to **nie** miasta-państwa — to **Ludy Morza** (barbarzyńcy epoki Brąz).
+
+**Plan:** `dyspozycje/PLAN-LUDY-MORZA-BEZ-OBOZU-2026-08-02.md` — wyłączyć `spawnSeaCamps` / nie rysować obozu naval; spawn embarked na wodzie; rekomendacja A (lądowe obozy mogą zostać).
