@@ -5002,3 +5002,11 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno
 - **FALA 201.** PR #5 Inkowie MP · PR #6 zwrot surowca kolejki · (+ NAP fair-min + sep 15 z main)
 - build: /tmp/civ-dist-fala201 · poprzedni `26b05753` ZASTĄPIONA
 CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Inkowie z MP) + Stolarnia→Usuń (drewno wraca)
+
+## [23:35 PL, 2026-08-02] CLOUD -> Maciej — fix etykiet AI N w dyplomacji
+- Branch/PR: `cursor/fix-mp-ai-number-label-63a1`
+- Bug: lista Znane cywilizacje pokazywała AI 32/34/35 (duchy po eliminacji)
+- Fix: bez fallbacku AI N; sanitize; eliminateOwner czyści discovery; lista pomija martwych
+- Test: display-names-test 16/16
+- ID: BUG-MP-AI-LABEL · R-MP-AI-LABEL
+CZEKAM-NA: Maciej merge + deploy ROBOCZA
