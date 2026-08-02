@@ -4761,3 +4761,11 @@ CZEKAM-NA: Maciej Ctrl+F5 FRESH - Standard Pangea riverGen OFF: civ-perf postSce
 - Etap A (optymalizacja perf Rzeki glowne) nadal otwarty - Pangea moze byc wolna (~174s historycznie przy gen ON)
 - tsc 0 - vite build OK - publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra Pangea Standard: rzeki widoczne; spodziewac sie wolniejszego startu (faza Rzeki glowne)
+
+## [11:05 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 166/167 riverGenPhase=main default + render stage 1
+- md5 `5bc8737c` / `5bc8737c6197af2ef01b9105d98f7202` - stempel `ROBOCZA - 2026-08-02 11:05`
+- Domyslnie TYLKO glowne rzeki (Etap A Maciej): riverGenPhase=main, riverStage=1
+- Gen pomija medium/short/tributary/topUp; perf mainKeysCache + skip tributary candidates w main-only
+- Pelny tor: ?riverGenPhase=all&riverStage=5
+- tsc 0 - vite build OK - publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra: civ-perf linia Rzeki glowne + TYLKO GLOWNE; render tylko main mesh

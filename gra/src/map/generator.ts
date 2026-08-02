@@ -98,7 +98,7 @@ import {
 } from './newGameMapDefaults';
 import { mapGenRozmiarDims } from '../data/map-gen-params-loader';
 import { normPlMenuLabel } from '../util/norm-pl-label';
-import { getRiverGenEnabled } from './riverGenSwitch';
+import { getRiverGenEnabled, isRiverGenMainOnly } from './riverGenSwitch';
 import {
   MAP_GEN_PHASE_LABELS,
   MAP_GEN_PHASE_TOTAL,
@@ -433,8 +433,11 @@ export function generateMap(
   genTimer.begin('riversMain');
   // ── Przebieg 3h: rzeki DOPIERO po finalnym wybrzeżu (Maciej: bufor 2 hex od morza) ─
   const riverGenOn = getRiverGenEnabled();
+  const riverGenMainOnly = riverGenOn && isRiverGenMainOnly();
   if (!riverGenOn) {
     console.info('[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)');
+  } else if (riverGenMainOnly) {
+    console.info('[civ] riverGenPhase: main (tylko główne — FALA 166 Etap A; pełny tor: ?riverGenPhase=all)');
   }
   reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 0);
   const riversTier = genOpts?.worldDensity?.rivers ?? 'medium';
@@ -458,7 +461,7 @@ export function generateMap(
   reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 100);
   genTimer.begin('riversFill');
   reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 0);
-  if (riverGenOn) {
+  if (riverGenOn && !riverGenMainOnly) {
     stripRiverMarksFromOpenSea(hexes);
     // B0.7/B0.8: „zero sierot" — usun sciezki niepolaczone z morzem (finalny stan, jak widzi test).
     ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
@@ -491,6 +494,11 @@ export function generateMap(
     // topUp dodaje trasy — bramka ujść zaraz po (Maciej 2026-08-01 BUG-RZEKI-PERF-FALA138).
     ({ paths: riverPaths, kinds: riverPathKinds } =
       ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
+  } else if (riverGenMainOnly) {
+    stripRiverMarksFromOpenSea(hexes);
+    ({ paths: riverPaths, kinds: riverPathKinds } =
+      pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+    reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 100);
   }
   reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 85);
   // B0.1: purge wody→ląd tylko PRZED generateRivers — po rzekach kasował ujścia

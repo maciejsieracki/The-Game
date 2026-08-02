@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `90803b6b` - 2026-08-02 10:50 - FALA 165: przywrócenie rzek głównych (gen ON + render stage 5) - **AKTUALNA**
+## ROBOCZA `5bc8737c` - 2026-08-02 11:05 - FALA 166/167: riverGenPhase=main default + render stage 1 (Etap A Maciej) - **AKTUALNA**
+- md5 (pelne): `5bc8737c6197af2ef01b9105d98f7202` · stempel: `ROBOCZA · 2026-08-02 11:05`
+- **VERIFY OK (Gra-ROBOCZA.html).** Domyślnie tylko główne rzeki (gen phase main, render stage 1). Gen pomija medium/short/tributary/topUp. Perf: cache mainKeysCache, skip tributary w buildGridRouteCandidates. Pełny tor: ?riverGenPhase=all&riverStage=5.
+- tsc 0 · vite build OK.
+## ROBOCZA `90803b6b` - 2026-08-02 10:50 - FALA 165: przywrócenie rzek głównych (gen ON + render stage 5) - **ZASTAPIONA**
 - md5 (pelne): `90803b6b1817cdfcb7ce120190d7cd42` · stempel: `ROBOCZA · 2026-08-02 10:50`
 - **VERIFY OK (Gra-ROBOCZA.html).** Etap B+C przywracania: getRiverGenEnabled() default true, getRiverRenderStage() default 5. Wyłączenie: ?riverGen=0 / ?riverStage=0. Etap A (perf „Rzeki — główne") nadal otwarty — Pangea może być wolna (~174s historycznie).
 - tsc 0 · vite build OK.

@@ -4,8 +4,11 @@
 import { generujSwiat, type RozmiarSwiata, type GameMapWithStarts } from './generator';
 import type { TypSwiata } from './gen-helpers';
 import type { WorldGenOptions } from './newGameMapDefaults';
-import { setRiverGenEnabledOverride } from './riverGenSwitch';
-import { getRiverGenEnabled } from './riverGenSwitch';
+import {
+  setRiverGenEnabledOverride,
+  setRiverGenPhaseOverride,
+  type RiverGenPhase,
+} from './riverGenSwitch';
 
 export type GenWorkerRequest = {
   type: 'generate';
@@ -14,6 +17,7 @@ export type GenWorkerRequest = {
   typ: TypSwiata;
   genOpts?: WorldGenOptions;
   riverGenEnabled?: boolean;
+  riverGenPhase?: RiverGenPhase;
 };
 
 export type GenWorkerResponse =
@@ -26,6 +30,7 @@ self.onmessage = (ev: MessageEvent<GenWorkerRequest>) => {
   if (msg.type !== 'generate') return;
   try {
     setRiverGenEnabledOverride(msg.riverGenEnabled ?? null);
+    setRiverGenPhaseOverride(msg.riverGenPhase ?? null);
     const map = generujSwiat(msg.seed, msg.rozmiar, msg.typ, msg.genOpts, (faza, pct, phaseNum, phaseTotal) => {
       const out: GenWorkerResponse = { type: 'progress', faza, pct, phaseNum, phaseTotal };
       self.postMessage(out);

@@ -26,6 +26,7 @@ import {
   type DensityTier,
   type RiverMapParams,
 } from './newGameMapDefaults';
+import { isRiverGenMainOnly } from './riverGenSwitch';
 
 export type { RiverMapParams };
 import { earthPolarOceanRows, earthTemplateLandAt } from './earth-land-mask';
@@ -6893,7 +6894,10 @@ function isPathTooCloseToRiverHexes(
 ): boolean {
   if (riverKeys.size === 0 || minSep <= 0) return false;
   for (const p of path) {
-    if (nearestRiverHexDistance(p.q, p.r, riverKeys) < minSep) return true;
+    for (const k of riverKeys) {
+      const { q, r } = parseHexKey(k);
+      if (hexAxialDistance(p.q, p.r, q, r) < minSep) return true;
+    }
   }
   return false;
 }
@@ -6960,6 +6964,8 @@ interface GridSourcePlaceCtx {
   /** Pangea lub duża mapa — agresywniejsze limity perf (ujścia, topUp). */
   pangeaSingleMass?: boolean;
   largeMapPerf?: boolean;
+  /** Cache heksów main — unika O(n) rebuild per pushMain (FALA 166 perf). */
+  mainKeysCache?: Set<string>;
 }
 
 function buildGridRouteCandidates(
@@ -7001,6 +7007,8 @@ function buildGridRouteCandidates(
     }
   }
 
+  if (mode === 'main-only') return out;
+
   const riverKeys = new Set(
     [...collectRiverPathHexKeys(riverPaths)].filter((k) => !massSet || massSet.has(k)),
   );
@@ -7011,7 +7019,7 @@ function buildGridRouteCandidates(
     : riverKeys;
   const tribKeysForTrace = tribRiverKeys.size > 0 ? tribRiverKeys : riverKeys;
 
-  if (mode !== 'main-only' && tribKeysForTrace.size > 0) {
+  if (tribKeysForTrace.size > 0) {
     let bestTrib: RiverCoord[] = [];
     for (const j of rankNetworkJunctionCandidates(sq, sr, tribKeysForTrace, seaDist, traceMax, rand, junctionCap)) {
       const p = traceTributary(hexes, sq, sr, j.q, j.r, traceMax, seaDist, rand, minLen);
@@ -7078,7 +7086,7 @@ function tryPlaceMainRiverFromCoast(
   acceptLen: number,
   mainKeysCache?: Set<string>,
 ): boolean {
-  const mainKeys = mainKeysCache
+  const mainKeys = mainKeysCache ?? ctx.mainKeysCache
     ?? collectPathHexKeysForKinds(ctx.riverPaths, ctx.riverKinds, ['main']);
   const mouths = collectCoastMouthCandidates(land, ctx.hexes, ctx.seaDist, 2);
   if (!ctx.pangeaSingleMass) {
@@ -8380,7 +8388,8 @@ function bootstrapMainRiversFromCoast(
   }
   const candidates = picked.length > 0 ? picked : mouths.slice(0, mouthPoolCap);
 
-  let mainKeys = collectPathHexKeysForKinds(gridCtx.riverPaths, gridCtx.riverKinds, ['main']);
+  let mainKeys = gridCtx.mainKeysCache
+    ?? collectPathHexKeysForKinds(gridCtx.riverPaths, gridCtx.riverKinds, ['main']);
   let consecutiveFails = 0;
   const maxConsecutiveFails = 10;
 
@@ -8736,6 +8745,7 @@ export function generateRivers(
   } = {},
 ): GenerateRiversResult {
   const _genT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  const mainOnly = isRiverGenMainOnly();
   const riversTier = opts.riversTier ?? 'medium';
   const riverParams = opts.riverParams ?? resolveRiverMapParams(riversTier, width, height);
   const minLen = opts.minLen ?? riverParams.minLen;
@@ -8767,15 +8777,17 @@ export function generateRivers(
     mouthTail: riverParams.mouthTailLen,
   };
 
+  const mainKeysCache = new Set<string>();
+
   const pushMain = (path: RiverCoord[], sq: number, sr: number): boolean => {
-    const mainKeys = collectPathHexKeysForKinds(riverPaths, riverKinds, ['main']);
-    if (isPathTooCloseToRiverHexes(path, mainKeys, MAIN_RIVER_MIN_PATH_SEP)) return false;
+    if (isPathTooCloseToRiverHexes(path, mainKeysCache, MAIN_RIVER_MIN_PATH_SEP)) return false;
     const finalized = finalizeMainRiverPath(hexes, path, width, height, oceanConnected);
     if (!finalized) return false;
     riverPaths.push(finalized);
     riverKinds.push('main');
     usedSources.add(hexKey(sq, sr));
     markRiverPath(hexes, finalized);
+    addPathKeysToSet(finalized, mainKeysCache);
     return true;
   };
 
@@ -8824,7 +8836,7 @@ export function generateRivers(
     minLen, maxLen, acceptLen: gridTraceMinLen, traceMinLen: gridTraceMinLen,
     sourceSep: minSourceSep,
     traceOptsBase, seaBufferOpts, pushMain, pushTributary, pushMedium, pushShort,
-    pangeaSingleMass, largeMapPerf,
+    pangeaSingleMass, largeMapPerf, mainKeysCache,
   };
 
   const report = (localPct: number) => {
@@ -8861,6 +8873,12 @@ export function generateRivers(
   }
   if (riverAggressivePerf(riverPerf)) report(28);
   if (RIVER_PROFILE_ON) rpEnsure().genStage1Ms += rpNow() - _s1T0;
+
+  if (mainOnly) {
+    report(100);
+    if (RIVER_PROFILE_ON) rpEnsure().generateRiversMs += rpNow() - _genT0;
+    return { paths: riverPaths, kinds: riverKinds };
+  }
 
   // ETAP 2 — średnie rzeki: pełna siatka tier, priorytet merge do sieci, ocean fallback.
   const _s2T0 = RIVER_PROFILE_ON ? rpNow() : 0;
