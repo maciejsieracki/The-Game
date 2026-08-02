@@ -38,7 +38,7 @@ import {
 } from './diplomacyDealDisplay';
 import type { BasketItemFormatCtx } from '../game/diplomacy-display';
 import { formatBasketListBrief, resourceDisplayLabel } from '../game/diplomacy-display';
-import { renderPnBalancePanelFromBasket, renderPnBalancePanelForPeace } from './diplomacyAcceptanceBalance';
+import { renderPnBalancePanelFromBasket, renderPnBalancePanelForTreaty } from './diplomacyAcceptanceBalance';
 import {
   bilateralTreatyDisplayPw,
   computePlayerAcceptanceSides,
@@ -538,10 +538,14 @@ function treatySummaryHtml(
   const basketReceivePn = sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns) ?? 0;
 
   let html = '';
-  if (cywId === 'pokoj' && (sides.my.treatyEffectivePn ?? sides.their.treatyEffectivePn ?? 0) > 0) {
-    const treatyPw = sides.my.treatyEffectivePn ?? sides.their.treatyEffectivePn ?? 0;
-    html += renderPnBalancePanelForPeace(treatyPw, basketGivePn, basketReceivePn, rel, action.label);
-  } else if ((bil != null && bil > 0) || myPw > 0 || theirPw > 0) {
+  if (bil != null && bil > 0) {
+    const treatyPw = sides.my.treatyEffectivePn ?? sides.their.treatyEffectivePn ?? bil;
+    const relRequired = sides.my.relRequired ?? sides.their.relRequired;
+    const treatyMetaLabel = cywId === 'pokoj' ? 'Traktat pokoju' : 'Traktat';
+    html += renderPnBalancePanelForTreaty(
+      treatyPw, basketGivePn, basketReceivePn, rel, action.label, relRequired, treatyMetaLabel,
+    );
+  } else if (myPw > 0 || theirPw > 0) {
     html += renderPnBalancePanelFromBasket(myPw, theirPw, rel, action.label);
   }
 

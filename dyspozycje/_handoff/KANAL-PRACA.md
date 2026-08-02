@@ -4959,3 +4959,11 @@ CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (różne % lądu)
 - ROBOCZA `26b05753` VERIFY OK — Maciej: obwarzanek OK, rzeki do centrum, szybciej
 - FALA 199: most Morze+Wybrzeże · rzeki bez limitu · FALA 200: stolice pas 10–15
 CZEKAM-NA: nic (stan zapisany)
+
+## [23:24 PL, 2026-08-02] CLOUD -> Maciej — fix NAP fałszywy fair-min PW
+- Branch/PR: `cursor/fix-nap-pw-fairmin-false-alarm-63a1`
+- Bug: okno Paktu o nieagresji @ Rel 52 pokazywało „Brakuje 274 PW" / fair min 570 (handel) na wartości traktatu 296 PW
+- Fix: `renderPnBalancePanelForTreaty` — jak pokój, bez `diplomacyFairGivePn` na dwustronnym traktacie; Rel < prog → komunikat Relacji
+- Test: diplomacy-acceptance-points-test.cjs 164/164 PASS
+- ID: BUG-DYPLO-NAP-FAIRMIN-FALSE · R-DYPLO-NAP-FAIRMIN-FALSE
+CZEKAM-NA: Maciej merge/deploy ROBOCZA + Ctrl+F5 sprawdzenie okna NAP

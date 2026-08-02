@@ -36,6 +36,10 @@ export {
   relationPnModPct,
   resolveProposalPn,
 } from './game/diplomacy-pn-engine';
+export {
+  renderPnBalancePanelForTreaty,
+  renderPnBalancePanelForPeace,
+} from './ui/diplomacyAcceptanceBalance';
 `);
 
 esbuild.buildSync({
@@ -278,6 +282,26 @@ const peaceSweet77 = mod.computePlayerAcceptanceSides(
 );
 ok(peaceSweet77.their.accepted, 'pokój + dar 50¤: accepted');
 ok(peaceSweet77.their.balancePn === 50, 'pokój + dar 50¤: nadwyżka +50 PW');
+
+// NAP @ rel 52 — panel traktatowy NIE fair-min (Maciej 2026-08-02, BUG-DYPLO-NAP-FAIRMIN-FALSE)
+ok(mod.effectiveTreatyPnRequired(200, 52) === 296, 'NAP @ rel 52: effective 296 PW');
+const napPanel52 = mod.renderPnBalancePanelForTreaty(296, 0, 0, 52, 'Pakt o nieagresji', 50);
+ok(napPanel52.includes('296 PW @ Rel 52'), 'NAP panel @ rel 52: meta traktatu');
+ok(!napPanel52.includes('fair min'), 'NAP panel @ rel 52: bez fair min');
+ok(!napPanel52.includes('Brakuje 274'), 'NAP panel @ rel 52: bez fałszywego Brakuje 274');
+ok(napPanel52.includes('da-pn-balance-bar ok'), 'NAP panel @ rel 52: tone ok przy Rel ≥50');
+
+const napPanel40 = mod.renderPnBalancePanelForTreaty(300, 0, 0, 40, 'Pakt o nieagresji', 50);
+ok(napPanel40.includes('wym. 50'), 'NAP panel @ rel 40: komunikat Relacji');
+ok(!napPanel40.includes('fair min'), 'NAP panel @ rel 40: bez fair-min handlu');
+ok(napPanel40.includes('da-pn-balance-bar no'), 'NAP panel @ rel 40: tone no');
+
+// Pokój — panel traktatowy (regresja po uogólnieniu)
+const peacePanel77 = mod.renderPnBalancePanelForPeace(615, 0, 0, 77, 'Propozycja pokoju');
+ok(peacePanel77.includes('Traktat pokoju: 615 PW @ Rel 77'), 'pokój panel: meta traktatu');
+ok(!peacePanel77.includes('fair min'), 'pokój panel: bez fair min');
+ok(!peacePanel77.includes('Brakuje'), 'pokój panel: bez fałszywego Brakuje');
+ok(peacePanel77.includes('da-pn-balance-bar ok'), 'pokój panel: tone ok');
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 

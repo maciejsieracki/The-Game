@@ -288,32 +288,44 @@ export function renderPnBalancePanelFromBasket(
 }
 
 /**
- * Koszyk pokoju — PN traktatu @ Relacji + koszyk osobno (NIE fair-min na sumie 615+615).
- * Bilans = słodzik netto proponenta (jak peaceProposalOfferPn w silniku).
+ * Koszyk traktatu (pokój, NAP, sojusz, …) — PN traktatu @ Relacji + koszyk osobno.
+ * NIE stosuje diplomacyFairGivePn na dwustronnej wartości traktatu (fałszywe „Brakuje PW").
+ * Bilans = słodzik netto proponenta max(0, give−receive), jak peaceProposalOfferPn w silniku.
  */
-export function renderPnBalancePanelForPeace(
+export function renderPnBalancePanelForTreaty(
   treatyEffectivePw: number,
   basketGivePn: number,
   basketReceivePn: number,
   relTotal: number,
-  actionLabel = 'Propozycja pokoju',
+  actionLabel: string,
+  relRequired?: number,
+  treatyMetaLabel = 'Traktat',
 ): string {
   const basketNet = Math.max(0, basketGivePn - basketReceivePn);
-  const surplus = basketNet;
   const myDisplay = treatyEffectivePw + basketGivePn;
   const theirDisplay = treatyEffectivePw + basketReceivePn;
-  const accepted = true;
-  const balancePn = surplus;
+  const relOk = relRequired == null || relTotal >= relRequired;
+  const accepted = relOk;
+  const balancePn = basketNet;
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
   const deltaCls = balancePn >= 0 ? 'pos' : 'neg';
-  const hint = balancePn > 0 ? `Nadwyżka ${balancePn} PW` : 'Równo — spełnia';
-  const verdict = balancePn > 0
-    ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
-    : 'Pokój @ Rel ' + relTotal + ': wym. ' + treatyEffectivePw + ' PW traktatu — spełnione';
+  const hint = !relOk
+    ? `Relacja ${relTotal} — wym. ${relRequired}`
+    : (balancePn > 0 ? `Nadwyżka ${balancePn} PW` : 'Równo — spełnia');
+  const verdict = !relOk
+    ? `Relacja ${relTotal} — wymagane ≥ ${relRequired} (nie progu fair-min handlu)`
+    : (balancePn > 0
+      ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
+      : treatyMetaLabel + ': ' + treatyEffectivePw + ' PW @ Rel ' + relTotal + ' — spełnione');
+
+  const relNote = !relOk
+    ? '<div class="da-pn-bal-meta warn">Relacja ' + relTotal
+      + ' — wym. ' + relRequired + '</div>'
+    : '';
 
   return (
-    '<div class="da-pn-balance-bar ' + balCls + ' da-pn-balance-bar--basket da-pn-balance-bar--peace">'
+    '<div class="da-pn-balance-bar ' + balCls + ' da-pn-balance-bar--basket da-pn-balance-bar--treaty">'
     + '<div class="da-pn-bal-head">'
     + pwTitleHeadHtml()
     + '<span class="da-pn-bal-deal">' + esc(actionLabel) + '</span>'
@@ -333,13 +345,33 @@ export function renderPnBalancePanelForPeace(
     + pwAmountHtml(theirDisplay)
     + '</div>'
     + '</div>'
-    + '<div class="da-pn-bal-meta">Traktat pokoju: ' + treatyEffectivePw + ' PW @ Rel ' + relTotal
+    + '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ': ' + treatyEffectivePw + ' PW @ Rel ' + relTotal
     + (basketGivePn > 0 || basketReceivePn > 0
       ? ' · koszyk netto ' + (basketNet > 0 ? '+' + basketNet : '0') + ' PW'
       : '')
     + '</div>'
-    + '<div class="da-pn-bal-verdict ok">' + esc(verdict) + '</div>'
+    + relNote
+    + '<div class="da-pn-bal-verdict ' + balCls + '">' + esc(verdict) + '</div>'
     + '</div>'
+  );
+}
+
+/** @deprecated alias — użyj renderPnBalancePanelForTreaty */
+export function renderPnBalancePanelForPeace(
+  treatyEffectivePw: number,
+  basketGivePn: number,
+  basketReceivePn: number,
+  relTotal: number,
+  actionLabel = 'Propozycja pokoju',
+): string {
+  return renderPnBalancePanelForTreaty(
+    treatyEffectivePw,
+    basketGivePn,
+    basketReceivePn,
+    relTotal,
+    actionLabel,
+    undefined,
+    'Traktat pokoju',
   );
 }
 
