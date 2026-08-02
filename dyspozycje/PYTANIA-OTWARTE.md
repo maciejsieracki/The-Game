@@ -1475,3 +1475,14 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## BUG-DYPLO-TRADE-WILLINGNESS — „Brak chęci do handlu" mimo bilansu 0 · STATUS: **FIX branch** (2026-08-02)
+
+**Źródło:** Maciej 2026-08-02 — traktat handlowy (stół negocjacji): BILANS (ONI) 0, „Równo — spełnia", werdykt „Nie spełnia warunków: Brak chęci do handlu".
+
+**Root cause:** `evaluateProposal` w gałęziach `handel` / `umowa_szlakow` twardo odrzucała gdy `stance.willingnessTrade < progHandelWillingnessMin` (0,5) — **przed** oceną uczciwej oferty PW. `willingnessTrade` służy inicjatywie AI (`decideAIDiplomacy`), nie akceptacji zrównoważonej propozycji na stole. Pokój (`pokoj`) nie używa tej bramki.
+
+**Fix:** `tradeWillingnessBlocksAcceptance` w `diplomacy-proposals.ts` — pomija bramkę gdy: (a) sam traktat bez koszyka, (b) oferta spełnia `pnDealAcceptedByAi` (fair PW @ Relacji). Nieuczciwa oferta + niska chęć → nadal „Brak chęci do handlu".
+
+**Test:** `node tools/diplomacy-proposal-test.cjs` §17 (70/70) · regresja `diplomacy-acceptance-points-test.cjs` (NAP fair-min, pokój).
+**ID:** R-DYPLO-TRADE-WILLINGNESS · branch `cursor/fix-trade-willingness-block-63a1`

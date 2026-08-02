@@ -432,6 +432,29 @@ function treatyPnGate(
 }
 
 /**
+ * Bramka chęci do handlu przy akceptacji oferty gracza.
+ * willingnessTrade dotyczy inicjatywy AI (decideAIDiplomacy); przy ocenie propozycji
+ * na stole — uczciwa oferta PW @ Relacji nie może paść na „Brak chęci do handlu",
+ * a sam traktat handlowy bez koszyka wymaga tylko progów Relacji (Maciej 2026-08-02).
+ */
+function tradeWillingnessBlocksAcceptance(
+  stance: ReturnType<typeof aiDiplomacyStance>,
+  params: ReturnType<typeof getEffectiveDiplomacyParams>,
+  givePn: number,
+  receivePn: number,
+  relTotal: number,
+  payload: ProposalPayload,
+): boolean {
+  if (stance.willingnessTrade >= params.progHandelWillingnessMin) return false;
+  const hasBasket = givePn > 0 || receivePn > 0
+    || (payload.giveItems?.length ?? 0) > 0
+    || (payload.receiveItems?.length ?? 0) > 0;
+  if (!hasBasket) return false;
+  if (pnDealAcceptedByAi(givePn, receivePn, relTotal)) return false;
+  return true;
+}
+
+/**
  * Ocena propozycji gracza (lub odwrotnej strony) przez AI/respondenta.
  * Pure function — bez mutacji stanu gry.
  */
@@ -642,7 +665,7 @@ export function evaluateProposal(
         return { accepted: true, reason: 'Dar przyjęty', oneShotTrade: true };
       }
 
-      if (stance.willingnessTrade < p.progHandelWillingnessMin) {
+      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
         return { accepted: false, reason: 'Brak chęci do handlu' };
       }
       if (score < p.progHandelRelacja) {
@@ -710,14 +733,14 @@ export function evaluateProposal(
     }
 
     case 'umowa_szlakow': {
-      if (stance.willingnessTrade < p.progHandelWillingnessMin) {
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+      const relTotal = relationTotal(relation);
+      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
         return { accepted: false, reason: 'Brak chęci do handlu' };
       }
       if (score < p.progHandelRelacja) {
         return { accepted: false, reason: `Relacja zbyt niska na traktat handlowy (wymagane ≥ ${p.progHandelRelacja})` };
       }
-      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const relTotal = relationTotal(relation);
       const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
       if (hasItems && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
         return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
