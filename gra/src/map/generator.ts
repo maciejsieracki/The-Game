@@ -25,6 +25,7 @@ import {
   landMaskWyspy,
   landMaskZiemia,
   buildContinentCenters,
+  buildPangeaBlobCenters,
   buildFiveZoneContinentCenters,
   buildSixteenGridIslandCenters,
   continentCenterCount,
@@ -40,6 +41,9 @@ import {
   findInlandSeaHexes,
   purgeInlandWaterForMultiLandTyp,
   removeInlandSeaPools,
+  fillPangeaAnnularSeaCorridors,
+  ensurePangeaSingleContinent,
+  snapPangeaBagelAudit,
   removeTinyLandIslands,
   countOpenOceanLandSpecks,
   finalizeLandMassAfterCoast,
@@ -55,6 +59,7 @@ import {
   growMountainRanges,
   applyMarginalLandZoneCaps,
   rebalanceLandFractionWithMargins,
+  rebalanceLandFractionPangea,
   enforceMapBorderOcean,
   isInMapBorder,
   type ReliefDensityTier,
@@ -82,6 +87,7 @@ import {
   thickenCoastAndSmoothInlets,
   applyCoastRing,
   enforceTargetDryLandFraction,
+  pangeaLandLayoutParams,
   type StartPosition,
   type TypSwiata,
 } from './gen-helpers';
@@ -185,12 +191,10 @@ export function generateMap(
     zoneCenters = buildFiveZoneContinentCenters(rand, width, height, kontynentyRadiusMin, kontynentyRadiusMax);
   } else if (typ === 'wyspy') {
     zoneCenters = buildSixteenGridIslandCenters(rand, width, height);
+  } else if (typ === 'pangea') {
+    zoneCenters = buildPangeaBlobCenters(rand, width, height, landFraction);
   } else {
-    zoneCenters = buildContinentCenters(
-      rand,
-      nCenters,
-      { width, height, anchorCenter: typ === 'pangea' },
-    );
+    zoneCenters = buildContinentCenters(rand, nCenters, { width, height });
   }
 
   const nZones = typ === 'kontynenty' || typ === 'wyspy' ? zoneCenters.length : 0;
@@ -217,7 +221,7 @@ export function generateMap(
       // Maska kontynentalna zalezy od TypSwiata.
       let landMask: number;
       if (typ === 'pangea') {
-        landMask = landMaskPangea(q, r, width, height, perm, shape.noiseScale, sparseLand);
+        landMask = landMaskPangea(q, r, width, height, zoneCenters, perm, shape.noiseScale, landFraction);
       } else if (typ === 'wyspy') {
         landMask = landMaskWyspy(q, r, width, height, zoneCenters, perm, shape.noiseScale);
       } else if (typ === 'ziemia') {
@@ -291,8 +295,10 @@ export function generateMap(
     removeInlandWaterPools(hexes, width, height);
   } else {
     removeInlandSeaPools(hexes, width, height);
+    fillPangeaAnnularSeaCorridors(hexes, width, height);
   }
   if (typ === 'pangea') {
+    snapPangeaBagelAudit('01_po_mask_annular', hexes, width, height);
     trimDeepOceanBays(hexes, width, height);
   }
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
@@ -318,6 +324,9 @@ export function generateMap(
   } else if (typ === 'ziemia') {
     enforceEarthTemplateOnHexes(hexes, width, height);
     purgeOceanInsideEarthLandMask(hexes, width, height);
+  } else if (typ === 'pangea') {
+    rebalanceLandFractionPangea(hexes, landScores, landFraction, width, height, perm);
+    snapPangeaBagelAudit('02_po_rebalance1', hexes, width, height);
   } else {
     rebalanceLandFractionWithMargins(hexes, landScores, landFraction, width, height);
   }
@@ -370,10 +379,13 @@ export function generateMap(
   if (typ === 'ziemia') {
     enforceEarthTemplateOnHexes(hexes, width, height);
     purgeOceanInsideEarthLandMask(hexes, width, height);
+  } else if (typ === 'pangea') {
+    rebalanceLandFractionPangea(hexes, landScores, landFraction, width, height, perm);
+    snapPangeaBagelAudit('03_po_rebalance2', hexes, width, height);
   } else {
     rebalanceLandFractionWithMargins(hexes, landScores, landFraction, width, height);
   }
-  if (typ !== 'ziemia') {
+  if (typ !== 'ziemia' && typ !== 'pangea') {
     applyJaggedCoastNoise(hexes, perm, width, height, 1);
   }
   removeSmallInlandWaterPools(hexes, width, height, 14);
@@ -414,6 +426,9 @@ export function generateMap(
   // ── Przebieg 3h-coast: grubsze (≥2 hex) + gładsze wybrzeże PRZED rzekami (Zmiana 2) ─
   reportMapGenPhase(onProgress, 5, MAP_GEN_PHASE_LABELS.coast, 20);
   thickenCoastAndSmoothInlets(hexes, width, height, 2);
+  if (typ === 'pangea') {
+    snapPangeaBagelAudit('04_po_thickenCoast', hexes, width, height);
+  }
   // ── Przebieg 3h-post (Ziemia, Zmiana 1): heurystyki „domykania zatok" powyżej nie znają
   // konturu Ziemi i przy zachowanym (nie-zjadanym) lądzie potrafią zalać lądem prawdziwą wąską
   // zatokę/cieśninę tuż za maską — cofnij taki suchy ląd do Morza i odtwórz pierścień wybrzeża.
@@ -427,7 +442,36 @@ export function generateMap(
   enforceMapBorderOcean(hexes, width, height);
   enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   if (typ !== 'ziemia') {
-    enforceTargetDryLandFraction(hexes, landScores, landFraction, width, height, coastOpts);
+    const pangeaFillMin = typ === 'pangea'
+      ? pangeaLandLayoutParams(landFraction, width, height).fillMinScore
+      : undefined;
+    enforceTargetDryLandFraction(
+      hexes, landScores, landFraction, width, height, coastOpts,
+      undefined,
+      typ === 'pangea' ? 'mask' : 'center',
+      pangeaFillMin,
+    );
+    if (typ === 'pangea') {
+      snapPangeaBagelAudit('05_po_enforceLandPct', hexes, width, height);
+      // Po ścięciu % lądu (często znów otwiera dolinę pierścienia) — most NATYCHMIAST.
+      fillPangeaAnnularSeaCorridors(hexes, width, height);
+      ensurePangeaSingleContinent(hexes, width, height);
+      snapPangeaBagelAudit('06_po_ensure_A', hexes, width, height);
+      enforceMapBorderOcean(hexes, width, height);
+      finalizeCoastAndInlandWater(hexes, width, height, 1, coastOpts);
+      snapPangeaBagelAudit('07_po_finalizeCoast', hexes, width, height);
+      // Wybrzeże/finalize potrafi znów rozciąć — MOST na sam koniec PRZED rzekami.
+      fillPangeaAnnularSeaCorridors(hexes, width, height);
+      ensurePangeaSingleContinent(hexes, width, height);
+      snapPangeaBagelAudit('08_po_ensure_B', hexes, width, height);
+      enforceMapBorderOcean(hexes, width, height);
+      applyCoastRing(hexes);
+    }
+  }
+  if (typ === 'pangea') {
+    fillPangeaAnnularSeaCorridors(hexes, width, height);
+    ensurePangeaSingleContinent(hexes, width, height);
+    snapPangeaBagelAudit('09_przed_rzekami', hexes, width, height);
   }
   reportMapGenPhase(onProgress, 5, MAP_GEN_PHASE_LABELS.coast, 100);
   genTimer.begin('riversMain');
@@ -521,6 +565,9 @@ export function generateMap(
       riverParams,
       riverParams.minLen,
     );
+  }
+  if (typ === 'pangea') {
+    snapPangeaBagelAudit('10_po_rzekach', hexes, width, height);
   }
 
   // ── Przebieg 3h-relief-final: domknij siatkę fair play reliefu (floor: min 2 Gór/2 Wzgórz na

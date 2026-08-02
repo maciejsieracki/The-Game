@@ -37,7 +37,15 @@ export function earthSouthOceanRows(height: number): number {
 
 function earthPolarOceanRows(height: number): number {
   const innerH = earthPlayableInnerHeight(height);
-  return Math.max(2, Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H));
+  // Skala vs standard (~30 @ innerH 115), ale z CAP — inaczej Super Huge
+  // pożera ~52% wysokości samym oceanem biegunowym i Ziemia wygląda „tak samo
+  // mała, tylko więcej wody” (Maciej 2026-08-02).
+  const scaled = Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H);
+  const cap = Math.max(
+    EARTH_POLAR_OCEAN_REF_ROWS,
+    Math.round(innerH * 0.12), // max ~12% wysokości na biegun
+  );
+  return Math.max(2, Math.min(scaled, cap));
 }
 
 /** Eksport dla gen-helpers (bufor oceanu Ziemi ~30 hex na mapie standardowej). */

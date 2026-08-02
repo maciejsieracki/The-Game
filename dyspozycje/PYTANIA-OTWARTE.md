@@ -1232,6 +1232,45 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
+## BUG-RZEKI-MEDIUM-JOIN-FALA180 — średnie / „samotne” nie wpadają do main · STATUS: **✅ NA ROBOCZA — czeka werdykt** (`ab9e6d3c`, 2026-08-02 18:17)
+
+**Cytat / playtest (robocza `13beb5fb`, po FALA 173–180):** nadal samotne odcinki rzek; **większość średnich (drugi rzut) w ogóle nie wpada do głównej**. Screeny w czacie.
+
+**Decyzja wdrożenia (2026-08-02 ~15:13):** Maciej — wstrzymanie zdjęte; **opcja 2** (dopływy od main co 4 boki hex, prostopadle, max dystans aż góry/inna rzeka / soft stop ~3). Tor A* „celuj w sieć” na razie nie.
+
+**Krytyczne wymaganie (Maciej):** średnia musi być połączona z siecią (start z main).
+
+**Wdrożenie:** FALA 181–187 · ROBOCZA `ab9e6d3c` (co 4 L/R, oxbow, centrum 5×5, no-wrap 120°, render bez wybrzeżników).
+
+---
+
+## MAP-PANGEA-SHAPE-FALA187 — Pangea za regularna / prostokąt · STATUS: **✅ NA ROBOCZA — czeka werdykt** (`ab9e6d3c`, 2026-08-02)
+
+**Cytat Macieja:** Pangea wygląda jak regularny prostokąt; chce ~5 zbliżonych kontynentów zlewających się w jeden nieregularny ląd.
+
+**Rozwiązanie:** `buildPangeaBlobCenters` + `landMaskPangea` (suma+max blobów, bez `edgeRect`/`centerBias`). Test `pangea-land-shape-test.cjs`.
+
+---
+
+## BUG-RZEKI-MEDIUM-WRAP-CENTER-FALA187 — dopływy: zawijanie na heksie + kierunek ku centrum · STATUS: **✅ NA ROBOCZA — czeka werdykt** (`ab9e6d3c`, 2026-08-02)
+
+**Cytat Macieja:** dopływy mają wpadać najbliższym połączeniem, bez zawijania na heksie; mają też kierować się ku centrum kontynentu (5×5).
+
+**Root cause zawijania:** detektor szukał skrętu 60°; owijanie heksu = **120°** (Δdir ±2) + chord 1.
+
+**Rozwiązanie:** `isHexWrapTriplet` / `trimMediumBranchHexWrap` / `trimMediumJoinHexWrap`; `pickPerpDirTowardLandCenter` + silniejszy `scoreRiverStepTowardLandCenter` w grow medium; `mediumRiverRenderPath` (widoczność).
+
+---
+
+## SPAWN-CLUSTER-SOLID-FALA185 — równomierny rozkład civ (bryły) · STATUS: **✅ NA ROBOCZA — czeka werdykt** (`ab9e6d3c`, 2026-08-02)
+
+**Problem:** kupki terytoriów + puste ćwiartki mimo sep stolic; MP kleją granice.
+
+**Decyzja:** sep między dowolnymi miastami różnych civ; maximin + bias ćwiartek; bufor MP; 1–2 iteracje wyrównania. **Zakaz:** luzowanie sep stolic, szachownica, samo ↑N bez bufora.
+
+**Wdrożenie:** FALA 185 + fix ćwiartek (`enforceQuarterSpreadOnCenters`, twardy filtr) · ROBOCZA `ab9e6d3c`.
+
+---
 ## BUG-SCENA-PERF-FALA138 — Budowanie sceny: bardzo długo (~kilkanaście minut) · STATUS: **W TRAKCIE** (FALA 150 — instrumentacja + diagnoza)
 
 **Cytat Macieja (~19:03):** „Rzeki Uzupełnienie to może jedna sekunda natomiast budowanie sceny nadal trwa bardzo długo. Coś jest nie tak. Do zapisania. Jak napiszę Działa i to wtedy zaczniesz to analizować."
@@ -1308,15 +1347,15 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## BUG-LAND-FRACTION-SLIDER — suwak % lądu prawie nie działa · STATUS: **WDROŻONE (kod)** (Maciej 2026-08-01 ~22:25)
+## BUG-LAND-FRACTION-SLIDER — suwak % lądu prawie nie działa · STATUS: **WDROŻONE FALA 191 (kod, 2026-08-02)** (Maciej 2026-08-01 ~22:25; regres playtest 2026-08-02)
 
-**Sytuacja.** W opcjach nowej gry „Udział lądu na mapie” (20% / 40% itd.) — mapa wygląda tak samo. Szczególnie Pangea.
+**Sytuacja.** W opcjach nowej gry „Udział lądu na mapie” (20% / 40% / 80%) — mapa wygląda tak samo. Szczególnie Pangea.
 
-**Dowód (probe 84×60, seed 4242, przed fixem):** Pangea 20%→29,4% suchego lądu, 40%→42,8%, 60%→47,1%. Kontynenty też kompresują (60%→39,8%). Suwak dochodzi do generatora; post-processing (wybrzeże, zatoki, inland) zjada różnicę.
+**Root cause FALA 191:** UI % dochodzi OK; maska Pangea używała tylko boolean `sparseLand` (≤35%) → 50% i 80% = ten sam footprint. Fix: `pangeaLandLayoutParams(landFraction)` skaluje bloby/ring/clusterFade.
 
-**Fix (2026-08-01):** `enforceTargetDryLandFraction` po `thickenCoast`, przed rzekami; `applyLandFractionByContinent` liczy tylko suchy ląd. Probe: `gra/tools/land-frac-probe.cjs`.
+**Otwarte (cicho):** faktyczny % lądu nadal niższy od suwaka (np. 20%→~4%, 80%→~52%) przez ocean brzegowy + wybrzeża — osobny temat kalibracji, nie blokuje różnicy 20 vs 80.
 
-**Cel.** Po generacji suchy ląd (`countLandSeaHexes`, Wybrzeże=woda) ≈ wybrany % (±5 pkt).
+**Cel.** Po generacji suchy ląd wyraźnie rośnie z suwakiem; idealnie ≈ wybrany % (±5 pkt) — kalibracja absolute %.
 
 **Powiązane:** scena Pangea (osobny), spawn MP.
 
@@ -1335,3 +1374,68 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Sytuacja.** Panel miasta → PODZIAŁ PRACY: gruby pasek % (złoty/niebieski) + osobny cienki track suwaka pod spodem. Maciej: identycznie jak suwak Wyżywienie (żywność) — jedna kontrolka.
 
 **Fix (2026-08-01):** `cityPanel.ts` → `renderPodzialPracy`: usunięty `praca-split-bar`; jeden `slider-row` + `input[type=range]` jak `renderMagazyn` / Wyżywienie. Chipy + lista szczegółów bez zmian.
+
+---
+
+## SPAWN-SEP-STOLICE — odległość stolic różnych cywilizacji · STATUS: **✅ ZAMKNIĘTE** (Maciej 2026-08-02 ~15:22)
+
+**Decyzja:** Playtest rozkładu civ OK; jedyna korekta: **+2 hex sep stolic na każdym rozmiarze** (FALA 182). `capitalMinSeparation`: mala/srednia **12**, Standard **14**, Duża **16**, Super **19**. `capitalMinSeaDist` bez zmian.
+
+**Kod:** `clusters.ts` LUT + testy `capital-sep-unit-test.cjs`, `capital-sep-pangea-test.cjs`, `cluster-start-test.cjs`.
+
+## BUG-PANGEA-RECT-FALA188 — Pangea nadal prostokąt po FALA 187 · STATUS: **W TRAKCIE** (playtest `ab9e6d3c`, 2026-08-02 ~18:27)
+**Cytat / screen:** ląd jak wypełniony prostokąt + cienka ramka oceanu; 7 civ → widoczne **4**; dużo pustego miejsca.
+**Akcja:** diagnoza rebalance/maska + dropy klastrów (bez luzowania sep).
+
+
+## BUG-RZEKI-COAST-PARALLEL-FALA188 — rzeki wzdłuż boków Pangei, brak dopływów · STATUS: **W TRAKCIE** (playtest `ab9e6d3c`, 2026-08-02 ~18:29)
+**Cytat:** miały iść ku centrum; „zabijają się wzdłuż boków prostokąta”; zero widocznych dopływów — regres.
+**Hipoteza:** prostokątny ląd → coast-inland równolegle do boku; medium niewidoczne / nie spawn.
+
+## PERF-SUPER-HUGE-PANGEA-80 — gen ~14,6 min wall-clock · STATUS: **W TRAKCIE** (Maciej 2026-08-02 ~20:23)
+
+**Źródło:** `Downloads/civ-perf-super-huge-pangea-20260802-202347.txt` · bundel `ea234151` · Super Huge · Pangea · **319 872 heksów** · ~80% lądu.
+
+| Etap | Czas |
+|------|------|
+| Ląd i ocean | 14,3 s |
+| Relief | **77,0 s** |
+| **Rzeki — główne** | **523,0 s (~8,7 min)** ← ~70% generatora |
+| Rzeki — uzupełnianie | 113,2 s |
+| RAZEM generator | **746 s (~12,4 min)** |
+| Scena — heksy | **110,9 s** |
+| RAZEM scena | **120,8 s** |
+| **WALL-CLOCK** | **873,6 s (~14,6 min)** |
+
+**Porównanie:** Duży Pangea ~40k hex → wall ~13,5 s, rzeki główne ~4,4 s (**~64× wolniej rzeki przy ~8× więcej hexów**).
+
+**Root cause (quota):** `pangeaBootstrapRiverTarget` cap 32 + `maxCellsToProcess=72` + `gridStride=3` → ~32 główne na ~256k hex lądu (~8000 hex/rzekę). Fix w źródłach: skala z `landHexCount`, `pangeaMaxGridCellsToProcess`, obwarzanek radial fill.
+
+**Akcja:** audyt+fix obwarzanek + quota rzek + perf `RiverHexSpatialIndex` (bez cięcia pokrycia). **NIE deploy** do potwierdzenia w źródłach.
+
+## BUG-OBWARZANEK-20PCT — pierścień morza przy 20% lądu · STATUS: **W TRAKCIE** (FALA 195 w deploy)
+**Cytat Maciej 2026-08-02 ~21:22:** przy 20% lądu nadal obwarzanek; „jest miejsce na ląd”.
+**Root cause:** `valley` w `pangeaLandLayoutParams` było **najwyższe przy niskim %** → dolina między rdzeniem a pierścieniem blobów; `ringPull` tylko przy wysokim %; annular fill za wąski.
+**Fix Grok:** valley spłaszczone; ciasne bloby; `ensurePangeaSingleContinent`; test 20% annular=0 / 1 masa.
+
+**Cytat:** „Ustawiłem siedem, a pojawia się pięć” + słabe rozłożenie.
+**Fix:** top-up klastrów po dominance/`continue`/HARD sep; dominance nie dropuje. Test: caps **7/7**; spread Q jeszcze słaby na części seedów Standard.
+
+## BUG-ZIEMIA-SCALE — Duża/Huge/SH: ląd „ten sam”, rośnie woda · STATUS: **W TRAKCIE** (cap polar ocean)
+**Przyczyna:** `earthPolarOceanRows` skalował liniowo (~52% wysokości = ocean). Cap max ~12% wysokości na biegun.
+
+## BUG-RZEKI-LODOWCE — brak rzek w pasie lodowców / polarnym na brzegu kontynentu · STATUS: **GOTOWE (kod)** (2026-08-02)
+**Objaw:** biały pas polarny przy brzegu — zero ujść/startów rzek; rzeki tylko w zielonym lądzie głębiej.
+**Root cause:** `isRiverLandTerrain` (`gen-helpers.ts` ~6596) nie zawierało `TerenBazowy.Polarny` → wykluczenie z kandydatów ujść (`collectCoastMouthCandidates`), grow path, markRiverEdge, medium fill.
+**Fix:** dodać `Polarny` do `isRiverLandTerrain` (lodowiec nie blokuje generacji — odpływ może zamarzać wizualnie później).
+**Weryfikacja:** `tsc` + `medium-river-test.cjs` + `map-gen-regression-test.cjs` + `polar-river-mouth-diag.cjs`.
+
+## AC-RZEKI-PER-MASA — każda wyspa/masa jak kontynent · STATUS: **ZEBRANE** (Maciej 2026-08-02 ~22:27)
+**Cytat:** zasady obowiązujące dla kontynentu mają obowiązywać **dla każdej wyspy** — nie generować masy lądu bez rzek.
+**Powiązanie z audytem obwarzanka:** przy 20–60% Pangea zostają **2 masy suchego lądu** rozdzielone korytarzem **Wybrzeża** (nie Morza); rzeki gęste przy brzegu (0–5), interior/„wyspa wewnętrzna” sucha. Kod ma `landMassHasMainRiver` / topUp per masa, ale filtr `m.length >= 8` + ścieżka Pangea coast-only + ensure ślepy na Wybrzeże → luki.
+**Wdrożyć razem z fixem obwarzanka (po wyborze A/B/C mostu przez Wybrzeże).** Nie osobny wątek ABC.
+
+## AC-RZEKI-BEZ-LIMITERA — brak cap liczby / czasu siewu · STATUS: **ZEBRANE** (Maciej 2026-08-02 ~22:28)
+**Cytat:** „nie powinno być żadnego limitera ilości rzek. Po prostu powinny się generować zgodnie z zasadami bez limitu. Powinny tak długo siewić jak są w stanie siewić, a nie kończyć się np. po jakimś wyznaczonym czasie lub długości."
+**Implikacja:** usunąć/wyłączyć twarde capy typu `pangeaBootstrapRiverTarget` (~32), `maxCellsToProcess`, quota `capRiverQuotas` / `mapGenMaxRivers*`, early-stop po budżecie czasu; siew aż reguły (źródło, sep, ujście, masa) nie dadzą kolejnej poprawnej rzeki. `maxLen` trasy = ograniczenie techniczne A* jednej ścieżki — rozróżnić od limitu **liczby** rzek (ten drugi = zakazany).
+**Wdrożyć w paczce rzek z AC-RZEKI-PER-MASA + fix obwarzanka.** Uwaga: bez limitu na Super Huge wall-clock mocno urośnie — perf osobno, nie przez cięcie pokrycia.

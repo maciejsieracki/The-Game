@@ -4832,3 +4832,130 @@ CZEKAM-NA: Maciej Ctrl+F5 FRESH - widać cieńsze średnie rzeki łączące się
 - medium-river-test PASS 12/12 · river-turn-window-test PASS 10/10 · main FALA 173 bez zmian
 - gra-robocza/Gra-ROBOCZA.html + playtest kopie · WERSJE.md zaktualizowane
 CZEKAM-NA: Maciej Ctrl+F5 START.html — średnie łączą się z główną, bez samotnych, bez przecięć, bez zawijasów
+
+## [14:25 PL, 2026-08-02] GROK -> Maciej - FALA 176 stolice twarde N (2x ZWIS -> Grok)
+- md5 `e1d8bc68` / `e1d8bc6869f93d4c9f814c035d475ede`
+- dimCap short/12 usuniety (Standard=10); cluster-spawn retry gracza bez soft-fail
+- capital-sep-unit-test 10/10 � tsc 0 � publish gra-robocza/
+- watchdog: 5-7 min ciszy=restart; 2x ZWIS=Grok przejmuje; 1 temat=1 agent
+CZEKAM-NA: Maciej Ctrl+F5 - stolice roznych civ >=10 (Standard) / >=12 Duza
+
+## [14:35 PL, 2026-08-02] GROK -> Maciej - FALA 177 ujscia coastal stage>=1
+- md5 `a2fb021d` / `a2fb021d8b78df11b0e775ed9a20b42d`
+- Przyczyna regresu: renderCoastalRiverExtension tylko przy riverStage>=4; default stage=2 = brak ujsc
+- Fix: coastal mouths przy riverStage>=1 (z main). Gen ensureRiverOutlets bez zmian.
+CZEKAM-NA: Maciej Ctrl+F5 - rzeki glownie wplywaja w Wybrzeze/morze (nie urywaja sie na ladzie)
+
+## [14:40 PL, 2026-08-02] GROK -> Maciej - FALA 178 main coast-only (bez A* fallback)
+- md5 `304b2631` / `304b2631e7985f0e1eed790d77ed4610`
+- Etap 1 main: tylko coast�inland; wyci�ty tryPlaceGridSource/inland A* w generatePhase1MainRivers
+- Ujscie graficzne: FALA 177 (stage>=1). Srednie nadal moga uzywac A* do sieci.
+CZEKAM-NA: Maciej Ctrl+F5 - ujscia OK + czas gen; decyzja sep stolic 10/10/12/14/17
+
+## [14:42 PL, 2026-08-02] GROK -> Maciej - FALA 179 sep stolic 12 Standard
+- md5 `ab6d3cc9` / `ab6d3cc927ef5281b22cb6a88b5303fe`
+- sep: 10/10/12/14/17 � seaDist bez zmian (Standard 10)
+CZEKAM-NA: Maciej Ctrl+F5 - stolice roznych civ >=12 na Standard
+
+## [14:55 PL, 2026-08-02] GROK -> Maciej - FALA 180 farthest-point + sep stolic
+- md5 367e0763 / 367e07633704424a3372eb9a5c4d4ec0
+- clusters.ts: rozkład startów civ farthest-point; twarda sep 10/10/12/14/17
+- build: TEMP\civ-dist-fala180 -> publish-robocza-snapshot.ps1
+CZEKAM-NA: Maciej Ctrl+F5 START.html - rozrzut civ + odleglosci stolic (Standard >=12)
+
+## [14:59 PL, 2026-08-02] GROK -> Maciej - FALA 180 HARD SYNC md5 (bez rebuild)
+- file/manifest/WERSJE: md5 `13beb5fb` / `13beb5fb5875e83781f989abdb851d86`
+- korekta: WERSJE mial bledny 367e0763; gra-robocza+manifest juz OK (publish 14:56:59)
+- bez zmian kodu spawn; bez commit/push
+CZEKAM-NA: Maciej Ctrl+F5 START.html - rozrzut civ + odleglosci stolic (Standard >=12)
+
+## [15:23 PL, 2026-08-02] GROK -> Maciej - FALA 181 srednie doplywy co 4 hex od main
+- md5 `5424b604` / `5424b60469bbcd229e2bee2ccfdec437`
+- gen-helpers.ts: srednie jako doplywy od main co 4 hex wzdluz sieci main
+- build: TEMP\civ-dist-fala181 -> publish-robocza-snapshot.ps1
+CZEKAM-NA: Maciej Ctrl+F5 START.html - srednie doplywy od main (co ~4 hex)
+
+## [15:28 PL, 2026-08-02] GROK -> Maciej - FALA 182 sep stolic +2 (12/12/14/16/19)
+- md5 `c6d0caa5` / `c6d0caa56da75755d36964a52059bc53`
+- clusters.ts: separacja stolic +2 vs FALA 180; zawiera FALA 181 (doplywy srednich co 4 hex od main)
+- build: TEMP\civ-dist-fala182 -> publish-robocza-snapshot.ps1 (playtest kopie dokonczone recznie po lock Copy-Item)
+CZEKAM-NA: Maciej Ctrl+F5 START.html - odleglosci stolic Standard >=14
+
+## [15:34 PL, 2026-08-02] GROK -> Maciej - FALA 183 defaults typy×MP
+- md5 a0670a3d / a0670a3d46edb2a42da600c34659e296
+- e-start-params.json: Standard 5×5, Duża 6×6, Ogromna 7×7, Super Huge 8×8 (Kamień); zawiera FALA 182+181
+- build: TEMP\civ-dist-fala183 -> publish-robocza-snapshot.ps1
+CZEKAM-NA: Maciej Ctrl+F5 START.html - Nowa gra: domyślne typy×MP na Standard/Duża/Ogromna/Super
+
+## [16:02 PL, 2026-08-02] GROK -> Maciej - FALA 184 oxbow fix (medium)
+- md5 005dcb06 / 005dcb06290a116b143e9970e26530c5 / file=manifest=WERSJE OK
+- gen-helpers: min net len doplywow, bez wczesnego junction (fix starorzecza); zawiera 181-183
+CZEKAM-NA: Maciej Ctrl+F5 - srednie bez krotkich oxbow
+
+## [17:30] INTEGRATOR -> Maciej / sesja lokalna -- deploy FALA 185+186 ROBOCZA
+FALA 185 (clusters.ts: sep bryl, maximin+cwiartki, bufor MP) + FALA 186 (gen-helpers: centrum rzek 5x5, doplywy co 4 L/R). Build civ-dist-fala185, publish gra-robocza.
+md5: d535b702b708f7bcc80e47e4f87d74aa (trójka file=manifest=WERSJE). Poprzednia 005dcb06 -> ZASTAPIONA.
+Sesja lokalna: pull/sync dysk, Ctrl+F5 START.html, Nowa gra -- spawn/rozklad civ + siatka rzek.
+CZEKAM-NA: Maciej (wizualny check mapgen) / push na dysk
+
+## [18:17 PL, 2026-08-02] LOKALNA → Maciej — deploy ROBOCZA ab9e6d3c
+Paczka: FALA 187 Pangea + spread civ ćwiartki + dopływy (no-wrap 120°, centrum, widoczne).
+md5: `ab9e6d3c` · VERIFY OK · gra-robocza/START.html
+CZEKAM-NA: Maciej Ctrl+F5 + Nowa gra (mała mapa)
+
+
+## [19:46 PL, 2026-08-02] GROK -> Maciej — deploy FALA 188 ROBOCZA
+- md5: `c0d51bd4` / `c0d51bd4192c50c1d266246702be1482` · VERIFY OK
+- Soft seaDist (sep stolic twarde) → 7/7 civ · Pangea nieregularna · bias rzek ku centrum
+- Screen Macieja (prostokąt + 4 civ) = stary `ab9e6d3c` — ten bundel go zastępuje
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (mała mapa)
+
+## [19:53 PL, 2026-08-02] GROK -> Maciej — deploy FALA 189 ROBOCZA
+- md5: `f467bdf6` / `f467bdf6ceeb44770c80e0f6729fe634` · VERIFY OK
+- Root cause kapsuły: okrąg w nq/nr na mapie 168×120 = owal. Fix: dystans izotropowy + zatoki
+- aspect ~1.05 · cluster-spread 5/5 (7/7) · pangea-shape 5/5
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (mała mapa) — kształt + 7 civ + rzeki
+
+## [20:13 PL, 2026-08-02] GROK -> Maciej — deploy ROBOCZA dbbe3c4b (FALA 190+191)
+- md5: `dbbe3c4b` / `dbbe3c4b6aef821e123e9613bdeaf80b` · VERIFY OK
+- % lądu skaluje bloby · dopływy sepBlockKeys; obwarzanek FALA 192 w toku
+CZEKAM-NA: Maciej Ctrl+F5 + Nowa gra
+
+## [21:03 PL, 2026-08-02] GROK -> Maciej — deploy FALA 193 ROBOCZA
+- md5: `7b91c73a` / `7b91c73abc9d0c881090e41a7e0de67c` · VERIFY OK
+- Rzeki quota+spatial index · Pangea anti-annular · civ 7→5 top-up · audio menu · Ziemia polar cap
+- build: %TEMP%\civ-dist-fala193 · poprzedni `ea234151` ZASTĄPIONA
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Pangea + Ziemia + menu audio)
+
+
+## [21:10 PL, 2026-08-02] GROK -> Maciej - deploy FALA 194 ROBOCZA (pelny redeploy)
+- md5: `ecdb4df4` / `ecdb4df48262ceb29f6db548cc9d1bdd` · VERIFY OK
+- build: %TEMP%\civ-dist-fala194 · poprzedni `7b91c73a` ZASTAPIONA (md5 zmieniony vs 193)
+- dirty tree: 10 plikow gra/src+data w bundlu
+CZEKAM-NA: Maciej Ctrl+F5 START.html
+
+
+## [21:45 PL, 2026-08-02] GROK -> Maciej - deploy FALA 196 ROBOCZA (ćwiartki civów)
+- md5: `c01438a2` / `c01438a20f9073e13f9bb30d742e389e` · VERIFY OK
+- **FALA 196.** clusters.ts: bias ćwiartek w pickSpawnHexWithCapitalGates + enforceQuarterSpreadOnKlastry. cluster-spread-test 5/5 PASS. Sep 12/14/16/19 bez zmian.
+- build: %TEMP%\civ-dist-fala196 · poprzedni `ecdb4df4` ZASTAPIONA
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra Pangea Standard — rozłożenie 7 civów (≥3 ćwiartki lądu)
+
+
+## [22:03 PL, 2026-08-02] GROK -> Maciej - deploy FALA 197 ROBOCZA (galeria G off)
+- md5: `03a46dd2` / `03a46dd2c6722906756343cedaa31599` · VERIFY OK
+- **FALA 197.** main.ts: unitGalleryShortcutEnabled = import.meta.env.DEV; handler G ma gate przed toggle.
+- build: %TEMP%\civ-dist-fala197 · poprzedni `c01438a2` ZASTĄPIONA
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra — klawisz G nie otwiera galerii
+
+
+## [22:32 PL, 2026-08-02] GROK -> Maciej - deploy FALA 199 ROBOCZA
+- md5: `046c3ec9` / `046c3ec91f7391d9a4c16d6a2c0f37f5` · VERIFY OK
+- Obwarzanek: most Morze+Wybrzeże (dryMasses=1 na 20–80%) · rzeki bez limitu liczby · spawn bliżej brzegu
+- build: %TEMP%\civ-dist-fala199 · poprzedni `b6a7e049` ZASTAPIONA
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (różne % lądu)
+
+## [22:52 PL, 2026-08-02] GROK -> Maciej - FALA 199+200 snapshot (git push)
+- ROBOCZA `26b05753` VERIFY OK — Maciej: obwarzanek OK, rzeki do centrum, szybciej
+- FALA 199: most Morze+Wybrzeże · rzeki bez limitu · FALA 200: stolice pas 10–15
+CZEKAM-NA: nic (stan zapisany)

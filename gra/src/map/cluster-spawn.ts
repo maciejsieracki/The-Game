@@ -19,13 +19,11 @@ import {
   MIN_DIST_START_CITY_STATE,
   CLUSTER_CITY_STATE_MAX_HEX,
   createMassLandCache,
-  passesPlayerStartMassGate,
   passesLocalLandGate,
-  pickPlayerClusterCenter,
+  pickSpawnHexWithCapitalGates,
   capitalMinSeaDistForMap,
   capitalMinSeparationForMap,
   passesMinCapitalSeparationGate,
-  passesMinSeaDistGate,
   type ClusterPlacement,
   type TypeCluster,
 } from './clusters';
@@ -249,51 +247,59 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
   }
 
   let capPos = capPosRaw;
-  if (!passesPlayerStartMassGate(map, capPos.q, capPos.r, landCache)) {
-    const mapCenter = {
-      q: (map.szerokoscQ - 1) / 2,
-      r: (map.wysokoscR - 1) / 2,
-    };
-    const fixed = pickPlayerClusterCenter(
-      map,
-      landCache,
-      spawnCache?.ladowe ?? landHexesFromMap(map),
-      mapCenter,
-      mulberry32(seed),
-      seaDist,
-      minSeaDist,
-    );
-    if (
-      fixed
-      && passesMinSeaDistGate(seaDist ?? new Map(), fixed.q, fixed.r, minSeaDist)
-      && passesMinCapitalSeparationGate(fixed, plannedForeignCapitals, minCapitalSep)
-    ) {
-      capPos = fixed;
-    }
-  }
+  const mapCenter = {
+    q: (map.szerokoscQ - 1) / 2,
+    r: (map.wysokoscR - 1) / 2,
+  };
+  const landPool = spawnCache?.ladowe ?? landHexesFromMap(map);
 
-  if (
-    minCapitalSep > 0
-    && !passesMinCapitalSeparationGate(capPos, plannedForeignCapitals, minCapitalSep)
-  ) {
-    const mapCenter = {
-      q: (map.szerokoscQ - 1) / 2,
-      r: (map.wysokoscR - 1) / 2,
-    };
-    const fixed = pickPlayerClusterCenter(
-      map,
-      landCache,
-      spawnCache?.ladowe ?? landHexesFromMap(map),
-      mapCenter,
-      mulberry32(seed ^ 0x9e3779b1),
+  const resolvedPlayerCap = pickSpawnHexWithCapitalGates(
+    map,
+    landPool,
+    landCache,
+    mapCenter,
+    mulberry32(seed ^ 0xca041a01),
+    {
       seaDist,
       minSeaDist,
+      priorCapitals: plannedForeignCapitals,
+      minCapitalSep,
+      requirePlayerMassGate: true,
+      requireLocalLand: true,
+      preferred: capPos,
+    },
+  );
+  if (resolvedPlayerCap) {
+    capPos = resolvedPlayerCap;
+  } else {
+    // FALA 176: zero soft-fail — drugi rzut bez preferred; ostatecznie hard apply
+    // i tak dropnie obce stolice kolidujące z graczem (nie zostawiamy świadomie pary <N).
+    const retryPlayerCap = pickSpawnHexWithCapitalGates(
+      map,
+      landPool,
+      landCache,
+      mapCenter,
+      mulberry32(seed ^ 0xca041a02),
+      {
+        seaDist,
+        minSeaDist,
+        priorCapitals: plannedForeignCapitals,
+        minCapitalSep,
+        requirePlayerMassGate: true,
+        requireLocalLand: true,
+      },
     );
-    if (
-      fixed
-      && passesMinCapitalSeparationGate(fixed, plannedForeignCapitals, minCapitalSep)
+    if (retryPlayerCap) {
+      capPos = retryPlayerCap;
+    } else if (
+      minCapitalSep > 0
+      && !passesMinCapitalSeparationGate(capPos, plannedForeignCapitals, minCapitalSep)
     ) {
-      capPos = fixed;
+      if (typeof console !== 'undefined') {
+        console.warn(
+          `[cluster-spawn] HARD: brak legalnego hexu gracza ≥${minCapitalSep} — hard apply dropnie kolidujące obce typy`,
+        );
+      }
     }
   }
 
@@ -359,15 +365,43 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     pendingSameTypeRivalOwnerIds.push(nextOwnerId++);
   }
 
+  // HARD final gate apply: stolice różnych civ ≥ minCapitalSep (zero fail-open).
+  const hardPlacedCapitals: Array<{ q: number; r: number }> = [{ q: capPos.q, r: capPos.r }];
+  const hardAcceptedSlots: ClusterSpawnSlot[] = [];
+  const droppedForeignTyps = new Set<string>();
+  for (const slot of slots) {
+    if (slot.isClusterCapital) {
+      if (!passesMinCapitalSeparationGate(
+        { q: slot.q, r: slot.r },
+        hardPlacedCapitals,
+        minCapitalSep,
+      )) {
+        droppedForeignTyps.add(slot.typ);
+        if (typeof console !== 'undefined') {
+          console.warn(
+            `[cluster-spawn] HARD apply: pominięto typ '${slot.typ}' — stolica (${slot.q},${slot.r}) < ${minCapitalSep} hex od innej stolicy`,
+          );
+        }
+        continue;
+      }
+      hardPlacedCapitals.push({ q: slot.q, r: slot.r });
+    }
+    if (droppedForeignTyps.has(slot.typ)) continue;
+    hardAcceptedSlots.push(slot);
+  }
+  const hardClusterCapitalOwnerIds = hardAcceptedSlots
+    .filter(s => s.isClusterCapital)
+    .map(s => s.ownerId);
+
   return {
     playerStartHex: capPos,
     playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
-    slots,
-    foreignTypeClusters: groupForeignTypeClusters(slots),
+    slots: hardAcceptedSlots,
+    foreignTypeClusters: groupForeignTypeClusters(hardAcceptedSlots),
     placement,
     pendingSameTypeRivals,
     pendingSameTypeRivalHexes,
-    clusterCapitalOwnerIds,
+    clusterCapitalOwnerIds: hardClusterCapitalOwnerIds,
     pendingSameTypeRivalOwnerIds,
   };
 }

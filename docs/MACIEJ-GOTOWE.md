@@ -1,4 +1,27 @@
-﻿- **2026-08-02 13:53** — OK FALA 175 ROBOCZA `00623e5b` (średnie rzeki: main junction, okno skrętu, prune orphan). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — średnie ON.
+﻿- **2026-08-02 22:48** - ✅ Gotowe FALA 200 ROBOCZA `26b05753`. Stolice w pasie **10–15 hex** od morza (Standard). Zawiera FALA 199 (obwarzanek/Wybrzeże, rzeki). START: `gra-robocza/Gra-ROBOCZA.html` Ctrl+F5 **Nowa gra**.
+- **2026-08-02 22:32** - ✅ Gotowe FALA 199 ROBOCZA `046c3ec9`. Obwarzanek: most przez Wybrzeże (1 masa). Rzeki bez limitu liczby; stolice bliżej brzegu (min 10). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — różne % lądu, Pangea bez pierścienia.
+- **2026-08-02 22:10** - ✅ Gotowe FALA 198 ROBOCZA `b6a7e049`. Anti-obwarzanek (ponowny merge lądu przed rzekami) · galeria G wyłączona poza DEV. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — Pangea **bez pierścienia**, rzeki do wnętrza, klawisz **G** nie otwiera galerii.
+- **2026-08-02 22:03** - ✅ GOTÓW FALA 197 ROBOCZA `03a46dd2`. Klawisz **G** (galeria jednostek) wyłączony w bundlu (tylko vite DEV). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — **G** nie otwiera galerii.
+- **2026-08-02 21:45** - ✅ GOTÓW FALA 196 ROBOCZA `c01438a2`. Ćwiartki civów: spread top-up + bias pustych rogów (7/7, ≥3 ćwiartki). Sep stolic bez zmian. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — Pangea Standard, rozłożenie 7 civów.
+- **2026-08-02 21:10** - ✅ GOTÓW FALA 194 ROBOCZA `ecdb4df4`. Pełny redeploy dirty tree (mapa clusters/gen-helpers/generator, scene, main/menu, e-start-params). Poprzedni `7b91c73a` zastąpiony. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
+- **2026-08-02 21:03** — ✅ GOTÓW FALA 193 ROBOCZA `7b91c73a`. Rzeki (quota landHex + index, medium ~4) · Pangea obwarzanek/radial · 7 civ top-up · audio menu · Ziemia polar cap. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — Pangea Duża + typ Ziemia.
+- **2026-08-02 20:18** — ✅ GOTÓW FALA 192 ROBOCZA `ea234151`. Bez obwarzanka · 80%≈74% lądu · dopływy. START: Ctrl+F5 **Nowa gra**.
+
+- **2026-08-02 20:13** — ✅ GOTÓW ROBOCZA `dbbe3c4b` (FALA 190+191). Maciej: wcześniej testował bez deployu — błąd procesu, naprawione. START: Ctrl+F5 **Nowa gra**. Obwarzanek nadal w naprawie (192).
+
+- **2026-08-02 ~20:02** — ✅ Gotowe w źródłach FALA 190+191: dopływy (sep bez bloku parent main) + % lądu skaluje bloby. Testy medium 38/38 · land-fraction PASS. **→ deployed 20:13.**
+
+- **2026-08-02 ~20:00** — ✅ Gotowe w źródłach FALA 191 (% lądu skaluje bloby Pangei — 20≠50≠80). Test land-fraction 3/3 · shape 5/5. **→ czekamy razem z FALA 190.**
+
+- **2026-08-02 19:53** — ✅ GOTÓW FALA 189 ROBOCZA `f467bdf6`. Pangea izotropowa (nie kapsuła, aspect~1.05) · 7/7 civ. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — **mała mapa**.
+
+- **2026-08-02 19:46** — ✅ GOTÓW FALA 188 ROBOCZA `c0d51bd4` (stempel 19:46). Soft sea → 7 civ · Pangea nieregularna · rzeki ku centrum. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — **mała mapa**.
+
+- **2026-08-02 ~19:00** — ✅ Gotowe w źródłach FALA 188 (Grok po 1× ZWIS): soft seaDist przy dropie civ (sep 12/14 twarde) → 7/7 stolic · silniejszy bias rzek ku centrum · Pangea bboxFill ~0.75. Testy: cluster-spread 5/5 · medium-river 38/0 · pangea-shape 5/5 · tsc OK. **→ deployed 19:46.**
+
+- **2026-08-02 18:17** — ✅ GOTÓW FALA 187+spread+dopływy ROBOCZA `ab9e6d3c` (UI stempel `4e9eaf8b` · 18:16). Pangea nieregularna · ćwiartki civ · dopływy bez zawijania + ku centrum. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — **mała mapa**.
+
+- **2026-08-02 13:53** — OK FALA 175 ROBOCZA `00623e5b` (średnie rzeki: main junction, okno skrętu, prune orphan). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — średnie ON.
 
 - **2026-08-02 13:15** — OK FALA 171 ROBOCZA `1c8dcfe6` (stolice sep apply + ujścia post-flatten + inland maxLen). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra Duża**.
 
@@ -180,3 +203,4 @@
 - Tooltip HUD/toolbar ×2 · mapa: 👤 + granice + ⛏ domyślnie ON · surowce widoczne · glina nie chowa overlay.
 - tsc 0 · dip-accept 142/142 · dip-ai-offer 18/18 · hex-plony 9/9 · qualify 94/94 · dip-treaties 12/12 · POLE-BITWY `dd399c4b`.
 - Rzeki dopływy: nie w bundlu (bez zmian kodu rzek).
+

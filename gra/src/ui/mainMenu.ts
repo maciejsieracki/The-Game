@@ -44,6 +44,8 @@ export interface MainMenuConfig {
   onLoad?: () => void;
   onAbout?: () => void;
   onQuit?: () => void;
+  /** Sync audio row indices from persisted 0..1 volumes before render. */
+  initialAudioVolumes?: { muzyka?: number; efekty?: number };
   /** Called whenever a setting changes, with the current values keyed by setting key. */
   onSettingsChange?: (values: Record<string, string>) => void;
   /** Dev: panel testu wydajności (CPU/GPU). */
@@ -72,6 +74,49 @@ export function getMenuSettings(): Record<string, string> {
   const out: Record<string, string> = {};
   for (const s of SETTINGS) out[s.key] = s.opts[s.idx] ?? '';
   return out;
+}
+
+/** Parse volume label from ui-params desc (e.g. "20%" → 0.2, "Bez muzyki" → 0). */
+function volumeFromDesc(desc: string): number {
+  if (/bez/i.test(desc)) return 0;
+  const m = desc.match(/(\d+)\s*%/);
+  if (!m?.[1]) return 0.55;
+  return Math.max(0, Math.min(1, parseInt(m[1], 10) / 100));
+}
+
+function volumeToIndex(s: MenuSetting, vol: number): number {
+  let bestIdx = s.idx;
+  let bestDiff = Infinity;
+  for (let i = 0; i < s.descs.length; i++) {
+    const d = Math.abs(volumeFromDesc(s.descs[i] ?? '') - vol);
+    if (d < bestDiff) {
+      bestDiff = d;
+      bestIdx = i;
+    }
+  }
+  return bestIdx;
+}
+
+/** Map persisted audio volumes to the closest menu row index (muzyka / efekty). */
+export function syncMenuAudioVolumes(volumes: { muzyka?: number; efekty?: number }): void {
+  for (const s of SETTINGS) {
+    if (s.key === 'muzyka' && volumes.muzyka !== undefined) {
+      s.idx = volumeToIndex(s, volumes.muzyka);
+    }
+    if (s.key === 'efekty' && volumes.efekty !== undefined) {
+      s.idx = volumeToIndex(s, volumes.efekty);
+    }
+  }
+}
+
+/** Current menu audio levels as 0..1 (from row descs, not option labels). */
+export function getMenuAudioVolumes(): { muzyka: number; efekty: number } {
+  const muzyka = SETTINGS.find(s => s.key === 'muzyka');
+  const efekty = SETTINGS.find(s => s.key === 'efekty');
+  return {
+    muzyka: muzyka ? volumeFromDesc(muzyka.descs[muzyka.idx] ?? '') : 0.7,
+    efekty: efekty ? volumeFromDesc(efekty.descs[efekty.idx] ?? '') : 0.35,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -447,6 +492,7 @@ function build(): void {
 /** Show the main menu overlay.  Optionally (re)configure callbacks. */
 export function showMainMenu(config?: MainMenuConfig): void {
   if (config) cfg = { ...cfg, ...config };
+  if (cfg.initialAudioVolumes) syncMenuAudioVolumes(cfg.initialAudioVolumes);
   ensureStyles();
   if (rootEl === null) {
     rootEl = document.createElement('div');

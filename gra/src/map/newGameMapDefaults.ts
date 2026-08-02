@@ -567,9 +567,9 @@ interface MapScaleTriple {
 const MIASTA_PANSTWA_MENU_BY_TIER: readonly MapScaleTriple[] = [
   { min: 2, default: 3, max: 4 },
   { min: 3, default: 4, max: 5 },
-  { min: 4, default: 6, max: 7 },
-  { min: 5, default: 7, max: 8 },
-  { min: 6, default: 8, max: MAX_MIAST_PANSTWA },
+  { min: 4, default: 5, max: 7 },
+  { min: 5, default: 6, max: 8 },
+  { min: 6, default: 7, max: MAX_MIAST_PANSTWA },
   { min: 7, default: 8, max: MAX_MIAST_PANSTWA },
 ];
 
@@ -604,7 +604,7 @@ function tripleFromDefault(def: number, pool: number): MapScaleTriple {
 const TYPY_CYWILIZACJI_DEFAULT_BY_TIER: Readonly<
   Record<StartEpochId, readonly number[]>
 > = {
-  kamien: [3, 4, 5, 6, 7, 7],
+  kamien: [3, 4, 5, 6, 7, 8],
   braz: [4, 5, 6, 9, 11, 13],
   zelazo: [4, 5, 6, 10, 12, 14],
 };

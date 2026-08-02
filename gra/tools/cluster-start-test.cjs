@@ -6,14 +6,15 @@ const path = require('path');
 const fs = require('fs');
 
 const GRA = path.resolve(__dirname, '..');
-const entry = path.join(__dirname, '.cluster-start-entry.ts');
-const bundle = path.join(__dirname, '.cluster-start-bundle.cjs');
+const entry = path.join(__dirname, '.cluster-start-entry-f200.ts');
+const bundle = path.join(__dirname, '.cluster-start-bundle-f200.cjs');
 
 fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '../src/game/cluster-start';
 export { buildClusterSpawnPlan, buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes, groupForeignTypeClusters } from '../src/map/cluster-spawn';
 export { generateMap } from '../src/map/generator';
-export { computeClusters, groupHabitableMasses, regionMassDominance, localLandFraction, passesLocalLandGate, passesPlayerStartMassGate, pickPlayerClusterCenter, allocateTypyToMasses, massTypeCap, developmentSpaceScore, qualifyingMassIndicesForSpawn, MIN_MASS_HEXES_FOR_SPAWN, MIN_DEVELOPMENT_HEX_PER_CIV, SMALL_MASS_CAP_THRESHOLD, ISLAND_FALLBACK_MASS_FRAC, REGION_MASS_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_RADIUS, PLAYER_START_MIN_MASS_HEXES, PLAYER_START_MASS_MIN_ABSOLUTE, rosterKluczeForStartEpoch, capitalMinSeaDist, capitalMinSeparation, capitalMinSeparationForMap, passesMinCapitalSeparationGate, seaDistAt, passesMinSeaDistGate, clusterCohesionMaxHex } from '../src/map/clusters';
+export { setRiverGenPhaseOverride } from '../src/map/riverGenSwitch';
+export { computeClusters, groupHabitableMasses, regionMassDominance, localLandFraction, passesLocalLandGate, passesPlayerStartMassGate, pickPlayerClusterCenter, allocateTypyToMasses, massTypeCap, developmentSpaceScore, qualifyingMassIndicesForSpawn, MIN_MASS_HEXES_FOR_SPAWN, MIN_DEVELOPMENT_HEX_PER_CIV, SMALL_MASS_CAP_THRESHOLD, ISLAND_FALLBACK_MASS_FRAC, REGION_MASS_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_FRAC, LOCAL_LAND_DOMINANCE_RADIUS, PLAYER_START_MIN_MASS_HEXES, PLAYER_START_MASS_MIN_ABSOLUTE, rosterKluczeForStartEpoch, capitalMinSeaDist, capitalMaxSeaDist, capitalMinSeparation, capitalMinSeparationForMap, passesMinCapitalSeparationGate, seaDistAt, passesMinSeaDistGate, passesCapitalSeaBandGate, clusterCohesionMaxHex } from '../src/map/clusters';
 export { buildSeaDistanceField } from '../src/map/gen-helpers';
 export { civIdsAvailableAtGameEpoch } from '../src/game/civ-entry-epoch';
 export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius, packRivalCitiesAroundCore, packCityStatesHubChain, computeSameTypeRivalHalfPlaneAxis, isInSameTypeRivalHalfPlane } from '../src/map/clusters';
@@ -240,12 +241,13 @@ for (let i = 0; i < sameType.length; i++) {
 assert(isValidHubChain(playerCap, sameType, clusterMax, clusterMin), 'pre-plan MP: poprawny łańcuch hubów');
 assertAllSameTypeRivalHalfPlane(playerCap, sameType, map, 4242, 'pre-plan pendingStateSlots');
 const foreignCities = plan.spawnCities.filter(c => plan.foreignTypeOwners.has(c.ownerId));
+const minObcyOdGracza = plan.placement.minDystansObcyOdGracza;
 for (const fc of foreignCities) {
   const d = M.hexDistanceAxial(fc.q, fc.r, playerCap.q, playerCap.r);
-  if (d < M.MIN_DIST_FOREIGN_FROM_PLAYER) {
-    console.log('NOTE: obcy typ blisko gracza na 50×50 (' + d + ' < ' + M.MIN_DIST_FOREIGN_FROM_PLAYER + ')');
+  if (d < minObcyOdGracza) {
+    console.log('NOTE: obcy typ blisko gracza na 50×50 (' + d + ' < ' + minObcyOdGracza + ')');
   } else {
-    assert(d >= M.MIN_DIST_FOREIGN_FROM_PLAYER, `obcy typ >= ${M.MIN_DIST_FOREIGN_FROM_PLAYER} hex od stolicy gracza (${d})`);
+    assert(d >= minObcyOdGracza, `obcy typ >= ${minObcyOdGracza} hex od stolicy gracza (${d})`);
   }
 }
 for (const fcl of plan.foreignTypeClusters) {
@@ -567,7 +569,7 @@ assert(
   '16-hex wyspa: playerStartHex przechodzi bramkę masy gracza',
 );
 
-// Standard × 8 typów (kamień): requested 8 → placed ≥ 6 (separacja stolic ≥10 może pominąć typ)
+// Standard × 8 typów (kamień): requested 8 → placed ≥ 6 (separacja stolic ≥14 może pominąć typ)
 const stdMap = M.generateMap(168, 120, 4242, 'kontynenty');
 const stdPlan = M.buildClusterStartPlan({
   map: stdMap,
@@ -726,9 +728,13 @@ assert(plan.pendingSameTypeRivalOwnerIds.length === plan.pendingSameTypeRivals,
 const stdSeaDist = M.buildSeaDistanceField(stdMap.hexes);
 const minSeaStd = M.capitalMinSeaDist(stdPlan.placement.rozmiarMapy);
 assert(minSeaStd === 10, 'Standard (duza): minSeaDist=10 (got ' + minSeaStd + ')');
+const maxSeaStd = M.capitalMaxSeaDist(stdPlan.placement.rozmiarMapy);
+assert(maxSeaStd === 15, 'Standard (duza): maxSeaDist=15 (got ' + maxSeaStd + ')');
 const stdCapSea = M.seaDistAt(stdSeaDist, stdPlan.playerStartHex.q, stdPlan.playerStartHex.r);
 assert(stdCapSea >= minSeaStd,
   'Standard: stolica gracza min 10 hex od morza (seaDist=' + stdCapSea + ', min=' + minSeaStd + ')');
+assert(stdCapSea <= maxSeaStd + 8,
+  'Standard: stolica gracza nie daleko poza pas 10–15 (seaDist=' + stdCapSea + ', max=' + maxSeaStd + ')');
 
 // BUG-SPAWN-ODLEGLOSC-MORZE: stolice obcych typów ≥ minSeaDist na Standard
 for (const fcl of stdPlan.foreignTypeClusters) {
@@ -741,15 +747,17 @@ for (const fcl of stdPlan.foreignTypeClusters) {
 
 // BUG-SPAWN-ODLEGLOSC-STOLICE: pary stolic różnych cywilizacji ≥ minSep na Standard
 const minSepStd = M.capitalMinSeparation(stdPlan.placement.rozmiarMapy);
-assert(minSepStd === 10, 'Standard (duza): minCapitalSep=10 (got ' + minSepStd + ')');
-assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 10,
-  'Standard map 168×120: minCapitalSepForMap=10');
+assert(minSepStd === 14, 'Standard (duza): minCapitalSep=14 (got ' + minSepStd + ')');
+assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 14,
+  'Standard map 168×120: minCapitalSepForMap=14');
+assert(stdPlan.placement.minDystansObcyOdGracza === 14,
+  'Standard: minDystansObcyOdGracza=14 (got ' + stdPlan.placement.minDystansObcyOdGracza + ')');
 const stdCapitals = [{ q: stdPlan.playerStartHex.q, r: stdPlan.playerStartHex.r }];
 for (const fcl of stdPlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];
   if (capPos) stdCapitals.push(capPos);
 }
-const minSepTol = Math.max(9, minSepStd - 1);
+const minSepTol = minSepStd;
 for (let i = 0; i < stdCapitals.length; i++) {
   for (let j = i + 1; j < stdCapitals.length; j++) {
     const d = M.hexDistanceAxial(stdCapitals[i].q, stdCapitals[i].r, stdCapitals[j].q, stdCapitals[j].r);
@@ -769,7 +777,7 @@ for (const fcl of stdPlan.foreignTypeClusters) {
   }
 }
 
-// BUG-SPAWN-ODLEGLOSC-STOLICE: Duża 240×168 — minSep=12, twardy assert par stolic ≥ N-1
+// BUG-SPAWN-ODLEGLOSC-STOLICE / FALA 182: Duża (ogromna) 240×168 — minSep=16, obcy od gracza ≥16
 const largeMap = M.generateMap(240, 168, 4242, 'kontynenty');
 const largePlan = M.buildClusterStartPlan({
   map: largeMap,
@@ -780,12 +788,15 @@ const largePlan = M.buildClusterStartPlan({
   startEpochId: 'zelazo',
 });
 assert(
-  M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) === 12,
-  'Duża 240×168: minCapitalSepForMap=12 (got ' +
+  M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) === 16,
+  'Duża 240×168: minCapitalSepForMap=16 (got ' +
     M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) + ')',
 );
+assert(
+  largePlan.placement.minDystansObcyOdGracza === 16,
+  'Duża: minDystansObcyOdGracza=16 (got ' + largePlan.placement.minDystansObcyOdGracza + ')',
+);
 const minSepLarge = M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168);
-const minSepTolLarge = minSepLarge - 1;
 const largeCapitals = [{ q: largePlan.playerStartHex.q, r: largePlan.playerStartHex.r }];
 for (const fcl of largePlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];
@@ -798,11 +809,52 @@ for (let i = 0; i < largeCapitals.length; i++) {
       largeCapitals[j].q, largeCapitals[j].r,
     );
     assert(
-      d >= minSepTolLarge,
-      `Duża: stolice #${i}↔#${j} min ${minSepTolLarge} hex (got ${d}, N=${minSepLarge})`,
+      d >= minSepLarge,
+      `Duża: stolice #${i}↔#${j} min ${minSepLarge} hex (got ${d}, N=${minSepLarge})`,
     );
   }
 }
+const largePlayerCap = largePlan.playerStartHex;
+for (const fcl of largePlan.foreignTypeClusters) {
+  const capPos = fcl.positions[0];
+  if (!capPos) continue;
+  const d = M.hexDistanceAxial(capPos.q, capPos.r, largePlayerCap.q, largePlayerCap.r);
+  assert(
+    d >= minSepLarge,
+    `Duża: obcy typ ${fcl.typ} ≥${minSepLarge} hex od gracza (got ${d})`,
+  );
+}
+
+// FALA 199: Pangea Standard — stolice bliżej brzegu (min 10, nie w środku lądu)
+const pangeaStdMap = M.generateMap(168, 120, 4242, 'pangea');
+const pangeaStdPlan = M.buildClusterStartPlan({
+  map: pangeaStdMap,
+  civs,
+  seed: 4242,
+  playerCivId: 'grecy',
+  rywaleNaKlaster: 4,
+  aktywneTypy: 7,
+});
+const pangeaStdSea = M.buildSeaDistanceField(pangeaStdMap.hexes);
+const pangeaMinSea = M.capitalMinSeaDist(pangeaStdPlan.placement.rozmiarMapy);
+const pangeaCapSeaDists = [M.seaDistAt(pangeaStdSea, pangeaStdPlan.playerStartHex.q, pangeaStdPlan.playerStartHex.r)];
+for (const fcl of pangeaStdPlan.foreignTypeClusters) {
+  const cap = fcl.positions[0];
+  if (cap) pangeaCapSeaDists.push(M.seaDistAt(pangeaStdSea, cap.q, cap.r));
+}
+for (const sd of pangeaCapSeaDists) {
+  assert(sd >= pangeaMinSea, `Pangea Standard: stolica min ${pangeaMinSea} hex od morza (seaDist=${sd})`);
+}
+const pangeaAvgSea = pangeaCapSeaDists.reduce((a, b) => a + b, 0) / pangeaCapSeaDists.length;
+const pangeaMaxSea = Math.max(...pangeaCapSeaDists);
+const pangeaMaxSeaBand = M.capitalMaxSeaDist(pangeaStdPlan.placement.rozmiarMapy);
+const pangeaInBand = pangeaCapSeaDists.filter(sd => sd >= pangeaMinSea && sd <= pangeaMaxSeaBand).length;
+assert(pangeaInBand >= Math.ceil(pangeaCapSeaDists.length * 0.5),
+  `Pangea Standard: ≥50% stolic w pasie ${pangeaMinSea}–${pangeaMaxSeaBand} (inBand=${pangeaInBand}/${pangeaCapSeaDists.length})`);
+assert(pangeaAvgSea <= pangeaMinSea + 18,
+  `Pangea Standard: średni seaDist stolic ≤ min+18 (avg=${pangeaAvgSea.toFixed(1)}, min=${pangeaMinSea})`);
+assert(pangeaMaxSea <= pangeaMinSea + 35,
+  `Pangea Standard: max seaDist stolicy ≤ min+35 (max=${pangeaMaxSea}, min=${pangeaMinSea})`);
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

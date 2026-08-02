@@ -33,7 +33,7 @@
     },
     "Standardowy": {
       "rywale_ai": 6,
-      "miasta_panstwa": 6,
+      "miasta_panstwa": 5,
       "typy_cywilizacji": 6,
       "typy_cywilizacji_per_epoka": {
         "kamien": { "default": 5, "min": 4, "max": 6 },
@@ -45,7 +45,7 @@
     },
     "Duży": {
       "rywale_ai": 7,
-      "miasta_panstwa": 7,
+      "miasta_panstwa": 6,
       "typy_cywilizacji": 10,
       "typy_cywilizacji_per_epoka": {
         "kamien": { "default": 6, "min": 5, "max": 7 },
@@ -57,7 +57,7 @@
     },
     "Ogromny": {
       "rywale_ai": 8,
-      "miasta_panstwa": 8,
+      "miasta_panstwa": 7,
       "typy_cywilizacji": 12,
       "typy_cywilizacji_per_epoka": {
         "kamien": { "default": 7, "min": 6, "max": 8 },
@@ -72,7 +72,7 @@
       "miasta_panstwa": 8,
       "typy_cywilizacji": 14,
       "typy_cywilizacji_per_epoka": {
-        "kamien": { "default": 7, "min": 6, "max": 8 },
+        "kamien": { "default": 8, "min": 7, "max": 8 },
         "braz": { "default": 13, "min": 12, "max": 14 },
         "zelazo": { "default": 14, "min": 13, "max": 15 }
       },

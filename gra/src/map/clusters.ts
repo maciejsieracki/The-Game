@@ -558,16 +558,79 @@ function sortSpawnLandCandidates(
   candidates: SpawnLandCandidate[],
   mapCenter: { q: number; r: number },
   seaFirst = false,
+  minSeaDist = 0,
+  maxSeaDist = 0,
 ): void {
   candidates.sort((a, b) => {
     const da = hexDistanceAxial(a.h.q, a.h.r, mapCenter.q, mapCenter.r);
     const db = hexDistanceAxial(b.h.q, b.h.r, mapCenter.q, mapCenter.r);
+    // seaFirst = drabinka ratunkowa: szukaj głębiej w lądzie gdy brak hexów przy minSeaDist.
     if (seaFirst && b.sea !== a.sea) return b.sea - a.sea;
+    // FALA 200: pas min…max od morza (Standard 10–15), nie „jak najbliżej 10”.
+    if (!seaFirst && (minSeaDist > 0 || maxSeaDist > 0)) {
+      const pa = capitalSeaBandPenalty(a.sea, minSeaDist, maxSeaDist);
+      const pb = capitalSeaBandPenalty(b.sea, minSeaDist, maxSeaDist);
+      if (pa !== pb) return pa - pb;
+    }
     const core = b.dev - a.dev || b.land.ratio - a.land.ratio;
     if (core !== 0) return core;
-    if (!seaFirst && b.sea !== a.sea) return b.sea - a.sea;
-    return da - db || a.h.q - b.h.q || a.h.r - b.h.r;
+    return db - da || a.h.q - b.h.q || a.h.r - b.h.r;
   });
+}
+
+/** FALA 196: farthest-point + bias pustych ćwiartek przy top-up / relokacji stolic. */
+function sortSpawnCandidatesWithSpreadBias(
+  candidates: SpawnLandCandidate[],
+  mapCenter: { q: number; r: number },
+  priorCapitals: Array<{ q: number; r: number }>,
+  landBBox: { minQ: number; maxQ: number; minR: number; maxR: number },
+  spreadN: number,
+  seaFirst = false,
+  minSeaDist = 0,
+  maxSeaDist = 0,
+): void {
+  const midQ = (landBBox.minQ + landBBox.maxQ) / 2;
+  const midR = (landBBox.minR + landBBox.maxR) / 2;
+  const quadCounts = countCentersPerQuadrant(priorCapitals, midQ, midR);
+  const preferred = preferredQuadrantsForSpread(quadCounts, spreadN);
+
+  type Enriched = SpawnLandCandidate & { quad: number; minExist: number };
+  const enriched: Enriched[] = candidates.map(c => ({
+    ...c,
+    quad: landQuadrantIndex(c.h.q, c.h.r, midQ, midR),
+    minExist: priorCapitals.length === 0
+      ? 999
+      : Math.min(...priorCapitals.map(p => hexDistanceAxial(c.h.q, c.h.r, p.q, p.r))),
+  }));
+
+  let pool: Enriched[] = enriched;
+  if (preferred && preferred.size > 0) {
+    const quadFiltered = enriched.filter(c => preferred.has(c.quad));
+    if (quadFiltered.length > 0) pool = quadFiltered;
+  }
+
+  pool.sort((a, b) => {
+    if (b.minExist !== a.minExist) return b.minExist - a.minExist;
+    const qa = quadCounts[a.quad] ?? 0;
+    const qb = quadCounts[b.quad] ?? 0;
+    if (qa !== qb) return qa - qb;
+    const da = hexDistanceAxial(a.h.q, a.h.r, mapCenter.q, mapCenter.r);
+    const db = hexDistanceAxial(b.h.q, b.h.r, mapCenter.q, mapCenter.r);
+    if (seaFirst && b.sea !== a.sea) return b.sea - a.sea;
+    if (!seaFirst && (minSeaDist > 0 || maxSeaDist > 0)) {
+      const pa = capitalSeaBandPenalty(a.sea, minSeaDist, maxSeaDist);
+      const pb = capitalSeaBandPenalty(b.sea, minSeaDist, maxSeaDist);
+      if (pa !== pb) return pa - pb;
+    }
+    const core = b.dev - a.dev || b.land.ratio - a.land.ratio;
+    if (core !== 0) return core;
+    return db - da || a.h.q - b.h.q || a.h.r - b.h.r;
+  });
+
+  candidates.length = 0;
+  for (const e of pool) {
+    candidates.push({ h: e.h, land: e.land, dev: e.dev, sea: e.sea });
+  }
 }
 
 function pickTiedSpawnLandCandidate(
@@ -580,7 +643,7 @@ function pickTiedSpawnLandCandidate(
   const tie = candidates.filter(x =>
     x.dev >= top.dev - 1
     && x.land.ratio >= top.land.ratio - 0.001
-    && x.sea >= top.sea - 1,
+    && x.sea <= top.sea + 1,
   );
   return tie[Math.floor(rand() * tie.length)]!.h;
 }
@@ -615,7 +678,7 @@ function playerStartCandidatesOnMasses(
 /**
  * Hex startu gracza — zawsze preferuj masses[0] (największy kontynent) gdy spełnia bramki.
  * BUG-SPAWN-ODLEGLOSC-MORZE: najpierw szukaj hexu z minSeaDist na WSZYSTKICH masach;
- * dopiero potem fallback z priorytetem największego seaDist (nie najwyższego dev przy brzegu).
+ * dopiero potem fallback — preferuj mniejszy seaDist (bliżej brzegu, FALA 199).
  */
 export function pickPlayerClusterCenter(
   map: GameMap,
@@ -674,13 +737,13 @@ function pickBestLocalLandSpawn(
     if (seaFirst && b.sea !== a.sea) return b.sea - a.sea;
     const core = b.dev - a.dev || b.land.ratio - a.land.ratio;
     if (core !== 0) return core;
-    return b.sea - a.sea || a.h.q - b.h.q || a.h.r - b.h.r;
+    return a.sea - b.sea || a.h.q - b.h.q || a.h.r - b.h.r;
   });
   if (candidates.length === 0) return null;
   const top = candidates[0]!;
   if (candidates.length > 1 && rand) {
     const tieBand = candidates.filter(x =>
-      x.dev >= top.dev - 1 && x.land.ratio >= top.land.ratio - 0.001 && x.sea >= top.sea - 1,
+      x.dev >= top.dev - 1 && x.land.ratio >= top.land.ratio - 0.001 && x.sea <= top.sea + 1,
     );
     return tieBand[Math.floor(rand() * tieBand.length)]!.h;
   }
@@ -813,8 +876,238 @@ function pickCenterInMassWithLandGate(
 }
 
 /**
- * Rozmieszcza środki klastrów wg quota na masach lądu (MAP-SPAWN-Q2 B),
- * z progresywnym luzowaniem min odległości gdy żądana liczba nie mieści się na mapie.
+ * FALA 180/185: farthest-point na masie — równomierny rozkład wzdłuż kontynentu.
+ * FALA 185: bias do pustych ćwiartek bboxa lądu przy remisie minExist.
+ */
+function pickCenterInMassSpread(
+  map: GameMap,
+  mass: Array<{ q: number; r: number }>,
+  existing: Array<{ q: number; r: number }>,
+  minDist: number,
+  landCache: MassLandCache,
+  rand?: () => number,
+  seaDist?: Map<string, number>,
+  minSeaDist = 0,
+  landBBox?: { minQ: number; maxQ: number; minR: number; maxR: number },
+  spreadOpts?: ClusterSpreadOpts,
+): { q: number; r: number } | null {
+  const midQ = landBBox ? (landBBox.minQ + landBBox.maxQ) / 2 : 0;
+  const midR = landBBox ? (landBBox.minR + landBBox.maxR) / 2 : 0;
+  const quadCounts = landBBox
+    ? countCentersPerQuadrant(existing, midQ, midR)
+    : null;
+
+  const base = mass
+    .filter(h => existing.every(p => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minDist))
+    .map(h => ({
+      h,
+      land: localLandFraction(map, h.q, h.r),
+      sea: seaDist ? seaDistAt(seaDist, h.q, h.r) : minSeaDist,
+      minExist: existing.length === 0
+        ? 999
+        : Math.min(...existing.map(p => hexDistanceAxial(h.q, h.r, p.q, p.r))),
+      quad: landBBox ? landQuadrantIndex(h.q, h.r, midQ, midR) : 0,
+    }))
+    .filter(x => x.land.ratio >= LOCAL_LAND_DOMINANCE_FRAC);
+  let candidates = base.filter(x => !seaDist || passesMinSeaDistGate(seaDist, x.h.q, x.h.r, minSeaDist));
+  if (candidates.length === 0 && seaDist != null && minSeaDist > 0) {
+    candidates = base.slice();
+  }
+  if (candidates.length === 0) return null;
+
+  // FALA 186: twardy filtr ćwiartek PRZED farthest-point (nie tylko tie-break).
+  if (landBBox && quadCounts && spreadOpts && spreadOpts.nNeeded >= 5) {
+    const preferred = preferredQuadrantsForSpread(quadCounts, spreadOpts.nNeeded);
+    if (preferred && preferred.size > 0) {
+      const quadFiltered = candidates.filter(c => preferred.has(c.quad));
+      if (quadFiltered.length > 0) candidates = quadFiltered;
+    }
+  }
+
+  candidates.sort((a, b) => {
+    if (b.minExist !== a.minExist) return b.minExist - a.minExist;
+    if (quadCounts) {
+      const qa = quadCounts[a.quad] ?? 0;
+      const qb = quadCounts[b.quad] ?? 0;
+      if (qa !== qb) return qa - qb;
+    }
+    const aSeaScore = Math.min(a.sea, minSeaDist + 4);
+    const bSeaScore = Math.min(b.sea, minSeaDist + 4);
+    if (bSeaScore !== aSeaScore) return bSeaScore - aSeaScore;
+    return (rand ? rand() * 2 - 1 : 0) || a.h.q - b.h.q;
+  });
+  const top = candidates[0]!;
+  if (rand && candidates.length > 1) {
+    const band = candidates.filter(x => {
+      if (x.minExist < top.minExist - 1) return false;
+      if (quadCounts) {
+        const tq = quadCounts[top.quad] ?? 0;
+        return (quadCounts[x.quad] ?? 0) <= tq + 1;
+      }
+      return true;
+    });
+    return band[Math.floor(rand() * band.length)]!.h;
+  }
+  return top.h;
+}
+
+/** FALA 185: farthest-point na całej puli lądu (wszystkie kwalifikujące masy). */
+function pickCenterOnLandPoolSpread(
+  map: GameMap,
+  pool: Array<{ q: number; r: number }>,
+  existing: Array<{ q: number; r: number }>,
+  minDist: number,
+  landCache: MassLandCache,
+  rand: () => number,
+  seaDist?: Map<string, number>,
+  minSeaDist = 0,
+  landBBox?: { minQ: number; maxQ: number; minR: number; maxR: number },
+  spreadOpts?: ClusterSpreadOpts,
+): { q: number; r: number } | null {
+  return pickCenterInMassSpread(
+    map, pool, existing, minDist, landCache, rand, seaDist, minSeaDist, landBBox, spreadOpts,
+  );
+}
+
+/**
+ * FALA 185: 1–2 iteracje wyrównania — przesuń najciaśniejszy środek w stronę dziury lądu.
+ */
+function balanceClusterSpread(
+  map: GameMap,
+  centers: Array<{ q: number; r: number }>,
+  ladowe: Array<{ q: number; r: number }>,
+  landCache: MassLandCache,
+  minDist: number,
+  rand: () => number,
+  seaDist: Map<string, number> | undefined,
+  minSeaDist: number,
+  landBBox: { minQ: number; maxQ: number; minR: number; maxR: number },
+  maxIterations = 2,
+  spreadOpts?: ClusterSpreadOpts,
+): Array<{ q: number; r: number }> {
+  if (centers.length < 2 || maxIterations <= 0) return centers;
+  const out = centers.map(c => ({ ...c }));
+
+  for (let iter = 0; iter < maxIterations; iter++) {
+    let farthestHole: { q: number; r: number; minCenterDist: number } | null = null;
+    for (const h of ladowe) {
+      if (!passesLocalLandGate(map, h.q, h.r)) continue;
+      if (seaDist && minSeaDist > 0 && !passesMinSeaDistGate(seaDist, h.q, h.r, minSeaDist)) continue;
+      const minCenterDist = Math.min(...out.map(c => hexDistanceAxial(h.q, h.r, c.q, c.r)));
+      if (!farthestHole || minCenterDist > farthestHole.minCenterDist) {
+        farthestHole = { q: h.q, r: h.r, minCenterDist };
+      }
+    }
+    if (!farthestHole || farthestHole.minCenterDist < minDist * 0.75) break;
+
+    let tightestIdx = 0;
+    let tightestSep = Infinity;
+    for (let i = 0; i < out.length; i++) {
+      const others = out.filter((_, j) => j !== i);
+      const sep = minCapitalSeparationDistance(out[i]!, others) ?? Infinity;
+      if (sep < tightestSep) {
+        tightestSep = sep;
+        tightestIdx = i;
+      }
+    }
+
+    const others = out.filter((_, j) => j !== tightestIdx);
+    const relocated = pickCenterOnLandPoolSpread(
+      map,
+      ladowe,
+      others,
+      minDist,
+      landCache,
+      rand,
+      seaDist,
+      minSeaDist,
+      landBBox,
+      spreadOpts,
+    );
+    if (!relocated) break;
+
+    const towardHole = hexDistanceAxial(relocated.q, relocated.r, farthestHole.q, farthestHole.r);
+    const currentToward = hexDistanceAxial(out[tightestIdx]!.q, out[tightestIdx]!.r, farthestHole.q, farthestHole.r);
+    const spreadBefore = clusterCenterQuadrantSpread(out, landBBox).occupiedQuadrants;
+    const spreadAfter = clusterCenterQuadrantSpread(
+      [...others, relocated],
+      landBBox,
+    ).occupiedQuadrants;
+    if (
+      towardHole < currentToward - 2
+      || farthestHole.minCenterDist > minDist * 1.25
+      || spreadAfter > spreadBefore
+    ) {
+      out[tightestIdx] = relocated;
+    } else {
+      break;
+    }
+  }
+
+  return out;
+}
+
+/**
+ * FALA 186: po balance — przesuń środek z przepełnionej ćwiartki do pustej (maximinin + minDist).
+ */
+function enforceQuarterSpreadOnCenters(
+  map: GameMap,
+  centers: Array<{ q: number; r: number }>,
+  ladowe: Array<{ q: number; r: number }>,
+  landCache: MassLandCache,
+  minDist: number,
+  rand: () => number,
+  seaDist: Map<string, number> | undefined,
+  minSeaDist: number,
+  landBBox: { minQ: number; maxQ: number; minR: number; maxR: number },
+  nNeeded: number,
+): Array<{ q: number; r: number }> {
+  if (nNeeded < 5 || centers.length < 3) return centers;
+  const required = minimumSpreadQuartersRequired(nNeeded);
+  const out = centers.map(c => ({ ...c }));
+  const midQ = (landBBox.minQ + landBBox.maxQ) / 2;
+  const midR = (landBBox.minR + landBBox.maxR) / 2;
+  const spreadOpts: ClusterSpreadOpts = { nNeeded };
+
+  for (let iter = 0; iter < 10; iter++) {
+    const spread = clusterCenterQuadrantSpread(out, landBBox);
+    if (spread.occupiedQuadrants >= required) break;
+
+    const counts = countCentersPerQuadrant(out, midQ, midR);
+    let relocateIdx = -1;
+    let maxQuadLoad = -1;
+    for (let i = 0; i < out.length; i++) {
+      const q = landQuadrantIndex(out[i]!.q, out[i]!.r, midQ, midR);
+      if (counts[q]! > maxQuadLoad) {
+        maxQuadLoad = counts[q]!;
+        relocateIdx = i;
+      }
+    }
+    if (relocateIdx < 0 || maxQuadLoad <= 1) break;
+
+    const others = out.filter((_, j) => j !== relocateIdx);
+    const relocated = pickCenterOnLandPoolSpread(
+      map, ladowe, others, minDist, landCache, rand, seaDist, minSeaDist, landBBox, spreadOpts,
+    );
+    if (!relocated) break;
+
+    const newSpread = clusterCenterQuadrantSpread([...others, relocated], landBBox);
+    const newQuad = landQuadrantIndex(relocated.q, relocated.r, midQ, midR);
+    const movingToEmpty = counts[newQuad] === 0;
+    if (newSpread.occupiedQuadrants > spread.occupiedQuadrants || movingToEmpty) {
+      out[relocateIdx] = relocated;
+    } else {
+      break;
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Rozmieszcza środki klastrów wg quota na masach lądu (MAP-SPAWN-Q2 B).
+ * FALA 180: minDist = twarde capitalMinSep (bez luzowania do 2);
+ * FALA 185: S_cluster na całej masie lądu + bias ćwiartek + wyrównanie 1–2 iter.
  */
 function placeClusterCentersAcrossLandmasses(
   map: GameMap,
@@ -830,9 +1123,16 @@ function placeClusterCentersAcrossLandmasses(
   minSeaDist = 0,
 ): Array<{ q: number; r: number }> {
   const { minQ, maxQ, minR, maxR } = bounds;
+  const landBBox = {
+    minQ: Math.min(...ladowe.map(h => h.q)),
+    maxQ: Math.max(...ladowe.map(h => h.q)),
+    minR: Math.min(...ladowe.map(h => h.r)),
+    maxR: Math.max(...ladowe.map(h => h.r)),
+  };
   const masses = landCache.masses;
   const hexIndex = landCache.hexIndex;
   const centers: Array<{ q: number; r: number }> = [];
+  const hardMin = Math.max(1, minDistBase);
 
   function okMargins(q: number, r: number, relax: boolean): boolean {
     if (relax) return true;
@@ -855,20 +1155,29 @@ function placeClusterCentersAcrossLandmasses(
     minDist: number,
     relaxMargin: boolean,
     forPlayer = false,
+    softLocalLand = false,
   ): boolean {
     if (!c || hasCenter(c)) return false;
     if (!okMargins(c.q, c.r, relaxMargin)) return false;
     if (centers.some(p => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDist)) return false;
     if (forPlayer) {
       if (!passesPlayerStartMassGate(map, c.q, c.r, landCache)) return false;
-    } else if (!passesLocalLandGate(map, c.q, c.r)) {
+    } else if (!softLocalLand && !passesLocalLandGate(map, c.q, c.r)) {
       return false;
     }
     centers.push(c);
     return true;
   }
 
-  // Faza 0: gracz ZAWSZE na największej masie spełniającej bramki (MAP-SPAWN-Q1 B).
+  const qualifyingIndices = qualifyingMassIndicesForSpawn(masses);
+  const fullLandPool: Array<{ q: number; r: number }> = [];
+  for (const mi of qualifyingIndices) {
+    for (const h of masses[mi]!) fullLandPool.push(h);
+  }
+  const placementPool = fullLandPool.length > 0 ? fullLandPool : ladowe;
+  const spreadOpts: ClusterSpreadOpts = { nNeeded };
+
+  // Faza 0: gracz ZAWSZY na największej masie spełniającej bramki (MAP-SPAWN-Q1 B).
   const playerCenter = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
   if (playerCenter) {
     centers.push(playerCenter);
@@ -879,68 +1188,121 @@ function placeClusterCentersAcrossLandmasses(
   const playerOnMass0 = playerCenter
     && massContainingHex(hexIndex, playerCenter.q, playerCenter.r) === 0;
 
-  const qualifyingOrder = qualifyingMassIndicesForSpawn(masses)
+  const qualifyingOrder = qualifyingIndices
     .sort((a, b) => masses[b]!.length - masses[a]!.length);
 
-  // Faza 1 (MAP-SPAWN-Q2): quota na kwalifikujących masach — największe pierwsze.
-  for (let minDist = minDistBase; minDist >= 6 && centers.length < nNeeded; minDist -= 2) {
-    const relaxMargin = minDist < minDistBase;
+  // Faza 1: quota — farthest-point na całej masie lądu + bias ćwiartek (FALA 185).
+  for (const mi of qualifyingOrder) {
+    if (centers.length >= nNeeded) break;
+    const targetForeign = foreignAllocation[mi] ?? 0;
+    const playerOnMass = mi === 0 && playerOnMass0;
 
-    for (const mi of qualifyingOrder) {
-      if (centers.length >= nNeeded) break;
-      const targetForeign = foreignAllocation[mi] ?? 0;
-      const playerOnMass = mi === 0 && playerOnMass0;
-
-      while (centers.length < nNeeded) {
-        const currentForeign = countCentersOnMass(mi) - (playerOnMass ? 1 : 0);
-        if (currentForeign >= targetForeign) break;
-        const before = centers.length;
-        tryPlace(
-          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, landCache, undefined, rand, seaDist, minSeaDist),
-          minDist,
-          relaxMargin,
+    while (centers.length < nNeeded) {
+      const currentForeign = countCentersOnMass(mi) - (playerOnMass ? 1 : 0);
+      if (currentForeign >= targetForeign) break;
+      const before = centers.length;
+      const candidate = masses.length === 1
+        ? pickCenterOnLandPoolSpread(
+          map, placementPool, centers, hardMin, landCache, rand, seaDist, minSeaDist, landBBox, spreadOpts,
+        )
+        : pickCenterInMassSpread(
+          map, masses[mi]!, centers, hardMin, landCache, rand, seaDist, minSeaDist, landBBox, spreadOpts,
         );
-        if (centers.length === before) break;
-      }
+      tryPlace(candidate, hardMin, false);
+      if (centers.length === before) break;
     }
   }
 
-  // Pakowanie na dużych masach — luzuj dystans zanim oddasz mniej typów niż trzeba.
+  // Faza 2: dopełnij brakujące typy — cała masa lądu (Pangea) lub największe masy.
   if (centers.length < nNeeded && qualifyingOrder.length > 0) {
-    for (let minDist = 4; minDist >= 2 && centers.length < nNeeded; minDist--) {
-      for (const mi of qualifyingOrder) {
-        if (centers.length >= nNeeded) break;
-        const targetForeign = foreignAllocation[mi] ?? 0;
-        const playerOnMass = mi === 0 && playerOnMass0;
-        const currentForeign = countCentersOnMass(mi) - (playerOnMass ? 1 : 0);
-        if (currentForeign >= targetForeign) continue;
-        tryPlace(
-          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, landCache, undefined, rand, seaDist, minSeaDist),
-          minDist,
-          true,
-        );
+    let guard = 0;
+    while (centers.length < nNeeded && guard++ < nNeeded * 6) {
+      let placedAny = false;
+      const candidate = masses.length === 1
+        ? pickCenterOnLandPoolSpread(
+          map, placementPool, centers, hardMin, landCache, rand, seaDist, minSeaDist, landBBox, spreadOpts,
+        )
+        : null;
+      if (candidate) {
+        if (tryPlace(candidate, hardMin, true)) placedAny = true;
       }
+      if (!placedAny) {
+        for (const mi of qualifyingOrder) {
+          if (centers.length >= nNeeded) break;
+          const before = centers.length;
+          tryPlace(
+            pickCenterInMassSpread(
+              map, masses[mi]!, centers, hardMin, landCache, rand, seaDist, minSeaDist, landBBox, spreadOpts,
+            ),
+            hardMin,
+            true,
+          );
+          if (centers.length > before) { placedAny = true; break; }
+        }
+      }
+      if (!placedAny) break;
     }
   }
 
-  // Ostateczny fallback: TYLKO kwalifikujące masy, największe pierwsze — NIGDY losowy ląd / wyspy.
-  if (centers.length < nNeeded && qualifyingOrder.length > 0) {
-    for (let minDist = 2; minDist >= 1 && centers.length < nNeeded; minDist--) {
-      for (const mi of qualifyingOrder) {
-        if (centers.length >= nNeeded) break;
-        tryPlace(
-          pickCenterInMassWithLandGate(map, masses[mi]!, centers, minDist, landCache, undefined, rand, seaDist, minSeaDist),
-          minDist,
-          true,
-        );
-      }
+  // Faza 3: wyrównanie spreadu (do 6 iteracji przy większej liczbie typów).
+  if (centers.length >= 2) {
+    const balanceIters = Math.max(2, Math.min(6, Math.ceil(nNeeded / 2)));
+    const balanced = balanceClusterSpread(
+      map, centers, placementPool, landCache, hardMin, rand, seaDist, minSeaDist, landBBox, balanceIters, spreadOpts,
+    );
+    centers.length = 0;
+    centers.push(...balanced);
+  }
+
+  // Faza 4: twardy coverage ćwiartek (Pangea N≥5).
+  if (centers.length >= 3 && nNeeded >= 5) {
+    const quarterFixed = enforceQuarterSpreadOnCenters(
+      map, centers, placementPool, landCache, hardMin, rand, seaDist, minSeaDist, landBBox, nNeeded,
+    );
+    centers.length = 0;
+    centers.push(...quarterFixed);
+  }
+
+  // Faza 5: dopełnij brakujące środki (Pangea N=7 — twardy minSep, pełna masa lądu).
+  if (centers.length < nNeeded) {
+    let guard = 0;
+    while (centers.length < nNeeded && guard++ < nNeeded * 12) {
+      const before = centers.length;
+      tryPlace(
+        pickCenterOnLandPoolSpread(
+          map, placementPool, centers, hardMin, landCache, rand, seaDist, minSeaDist, landBBox, spreadOpts,
+        ),
+        hardMin,
+        true,
+      );
+      if (centers.length === before) break;
+    }
+  }
+
+  // Faza 5b FALA 188: soft local-land — lepiej 7 civ na brzegu niż drop przy wolnym lądzie.
+  if (centers.length < nNeeded) {
+    let guard = 0;
+    while (centers.length < nNeeded && guard++ < nNeeded * 16) {
+      const before = centers.length;
+      const candidate = placementPool
+        .filter(h => centers.every(p => hexDistanceAxial(h.q, h.r, p.q, p.r) >= hardMin))
+        .map(h => ({
+          h,
+          minExist: centers.length === 0
+            ? 999
+            : Math.min(...centers.map(p => hexDistanceAxial(h.q, h.r, p.q, p.r))),
+          sea: seaDist ? seaDistAt(seaDist, h.q, h.r) : 0,
+        }))
+        .sort((a, b) => b.minExist - a.minExist || b.sea - a.sea)[0]?.h ?? null;
+      tryPlace(candidate, hardMin, true, false, true);
+      if (centers.length === before) break;
     }
   }
 
   if (centers.length < nNeeded && typeof console !== 'undefined') {
     console.warn(
       `[clusters] placeClusterCenters: tylko ${centers.length}/${nNeeded} środków` +
-      ` (kwalifikujące masy: ${qualifyingOrder.length}, threshold=${foreignSpawnMassThreshold(masses[0]?.length ?? 0)})`,
+      ` (twardy minSep=${hardMin}; bez luzowania — lepiej mniej civ niż kupa)`,
     );
   }
 
@@ -982,18 +1344,38 @@ export function capitalMinSeaDist(rozmiar: RozmiarKlaster): number {
   return lut[rozmiar];
 }
 
-/** Clamp minSeaDist do rozmiaru mapy — 50×50 nie uniesie progu 6–10 (regresja pack MP). */
+/**
+ * Maks. odległość stolicy od morza — pas min…max (Maciej 2026-08-02).
+ * Standard: 10–15 hex. Szerokość pasa = +5 względem min.
+ */
+export function capitalMaxSeaDist(rozmiar: RozmiarKlaster): number {
+  return capitalMinSeaDist(rozmiar) + 5;
+}
+
+/**
+ * Clamp minSeaDist do rozmiaru mapy.
+ * Harness 50×50 / short&lt;80: bez inland gate (Voronoi/MP).
+ * FALA 176: NIE ścinaj tabeli przez short/12 (dawało Standard&lt;10 przy H≈100) —
+ * Maciej: Standard = twarde 10 hex (jak od morza).
+ */
 export function capitalMinSeaDistForMap(
   rozmiar: RozmiarKlaster,
   mapW: number,
   mapH: number,
 ): number {
   const short = Math.min(mapW, mapH);
-  // Harness 50×50 / bardzo małe mapy: bez inland gate (inaczej Voronoi/MP się duszą).
   if (short < 80) return 0;
-  const raw = capitalMinSeaDist(rozmiar);
-  const dimCap = Math.max(0, Math.floor(short / 12));
-  return Math.min(raw, dimCap);
+  return capitalMinSeaDist(rozmiar);
+}
+
+export function capitalMaxSeaDistForMap(
+  rozmiar: RozmiarKlaster,
+  mapW: number,
+  mapH: number,
+): number {
+  const short = Math.min(mapW, mapH);
+  if (short < 80) return 0;
+  return capitalMaxSeaDist(rozmiar);
 }
 
 /** Maks. odległość miasta od stolicy klastra — spójność kręgu (BUG-SPAWN-CLUSTER-KULTURA). */
@@ -1018,18 +1400,197 @@ export function passesMinSeaDistGate(
   return seaDistAt(seaDist, q, r) >= minDist;
 }
 
-/** Min. odległość między stolicami różnych cywilizacji — ta sama skala co od morza. */
-export function capitalMinSeparation(rozmiar: RozmiarKlaster): number {
-  return capitalMinSeaDist(rozmiar);
+/** Pas stolicy od morza: min ≤ seaDist ≤ max (max≤0 = tylko min). */
+export function passesCapitalSeaBandGate(
+  seaDist: Map<string, number>,
+  q: number,
+  r: number,
+  minDist: number,
+  maxDist: number,
+): boolean {
+  const d = seaDistAt(seaDist, q, r);
+  if (minDist > 0 && d < minDist) return false;
+  if (maxDist > 0 && d > maxDist) return false;
+  return true;
 }
 
-/** Clamp minSep do rozmiaru mapy — identyczna logika co capitalMinSeaDistForMap. */
+/** Kara sortowania: 0 w środku pasa, duża poza pasem. */
+export function capitalSeaBandPenalty(
+  sea: number,
+  minDist: number,
+  maxDist: number,
+): number {
+  if (!(minDist > 0) && !(maxDist > 0)) return 0;
+  const lo = Math.max(0, minDist);
+  const hi = maxDist > 0 ? maxDist : lo + 5;
+  if (sea < lo) return 1000 + (lo - sea);
+  if (sea > hi) return 100 + (sea - hi);
+  const ideal = (lo + hi) / 2;
+  return Math.abs(sea - ideal);
+}
+
+/** Min. odległość między stolicami różnych cywilizacji (Maciej 2026-08-02, FALA 182 +2 hex).
+ * Osobno od seaDist: Mała/Średnia=12, Standard=14, Duża=16, Super=19.
+ */
+export function capitalMinSeparation(rozmiar: RozmiarKlaster): number {
+  const lut: Record<RozmiarKlaster, number> = {
+    mala: 12,
+    srednia: 12,
+    duza: 14,
+    ogromna: 16,
+    super: 19,
+  };
+  return lut[rozmiar];
+}
+
+/**
+ * Clamp sep stolic do rozmiaru mapy.
+ * short&lt;80 (harness): bez bramki. Inaczej tabela capitalMinSeparation — bez ścinania short/12.
+ */
 export function capitalMinSeparationForMap(
   rozmiar: RozmiarKlaster,
   mapW: number,
   mapH: number,
 ): number {
-  return capitalMinSeaDistForMap(rozmiar, mapW, mapH);
+  const short = Math.min(mapW, mapH);
+  if (short < 80) return 0;
+  return capitalMinSeparation(rozmiar);
+}
+
+/**
+ * FALA 185: min. odległość między dowolnymi miastami różnych civ (bryła klastra).
+ * S_cluster = capitalMinSeparation (tabela 12/12/14/16/19 — bez luzowania).
+ * Bufor MP = S/2 wokół obcej stolicy; egzekwowany przy pakowaniu.
+ */
+export function clusterBodySeparation(rozmiar: RozmiarKlaster): number {
+  return capitalMinSeparation(rozmiar);
+}
+
+/**
+ * Min. odległość środków klastrów przy farthest-point (+2 na pierścień MP 5 hex
+ * wewnątrz bufora bryły S/2 — np. Standard: sep stolic 14, placement 16, bufor 7).
+ */
+export function clusterCenterPlacementSep(rozmiar: RozmiarKlaster): number {
+  return capitalMinSeparation(rozmiar) + 2;
+}
+
+export function clusterBodySeparationForMap(
+  rozmiar: RozmiarKlaster,
+  mapW: number,
+  mapH: number,
+): number {
+  const short = Math.min(mapW, mapH);
+  if (short < 80) return 0;
+  return clusterBodySeparation(rozmiar);
+}
+
+export function clusterCenterPlacementSepForMap(
+  rozmiar: RozmiarKlaster,
+  mapW: number,
+  mapH: number,
+): number {
+  const short = Math.min(mapW, mapH);
+  if (short < 80) return 0;
+  return clusterCenterPlacementSep(rozmiar);
+}
+
+/** Promień bufora obcego klastra wokół stolicy — MP nie mogą tu wejść (FALA 185). */
+export function clusterBodyBufferRadius(sCluster: number): number {
+  if (!Number.isFinite(sCluster) || sCluster <= 0) return 0;
+  return Math.ceil(sCluster / 2);
+}
+
+export interface ForeignClusterBuffer {
+  q: number;
+  r: number;
+  radius: number;
+}
+
+export function passesForeignClusterBufferGate(
+  h: { q: number; r: number },
+  buffers: ReadonlyArray<ForeignClusterBuffer>,
+): boolean {
+  for (const b of buffers) {
+    if (hexDistanceAxial(h.q, h.r, b.q, b.r) < b.radius) return false;
+  }
+  return true;
+}
+
+/** Ćwiartka bounding-boxa lądu (0..3) — bias spawnu w puste rogi (FALA 185). */
+export function landQuadrantIndex(
+  q: number,
+  r: number,
+  midQ: number,
+  midR: number,
+): number {
+  const east = q >= midQ ? 1 : 0;
+  const south = r >= midR ? 1 : 0;
+  return east + south * 2;
+}
+
+function countCentersPerQuadrant(
+  centers: Array<{ q: number; r: number }>,
+  midQ: number,
+  midR: number,
+): [number, number, number, number] {
+  const counts: [number, number, number, number] = [0, 0, 0, 0];
+  for (const c of centers) {
+    counts[landQuadrantIndex(c.q, c.r, midQ, midR)]! += 1;
+  }
+  return counts;
+}
+
+/** Min. liczba ćwiartek bboxa lądu z ≥1 środkiem — FALA 186+ spread. */
+export function minimumSpreadQuartersRequired(nNeeded: number): number {
+  if (nNeeded >= 6) return 3;
+  if (nNeeded >= 5) return 3;
+  if (nNeeded >= 3) return 2;
+  return 1;
+}
+
+type ClusterSpreadOpts = { nNeeded: number };
+
+/** Ćwiartki preferowane dla kolejnego środka — puste najpierw, potem round-robin najsłabszych. */
+function preferredQuadrantsForSpread(
+  quadCounts: [number, number, number, number],
+  nNeeded: number,
+): Set<number> | null {
+  if (nNeeded < 5) return null;
+  const required = minimumSpreadQuartersRequired(nNeeded);
+  const occupied = quadCounts.filter(c => c > 0).length;
+  const empty = [0, 1, 2, 3].filter(q => quadCounts[q] === 0);
+  if (occupied < required && empty.length > 0) return new Set(empty);
+  const minCount = Math.min(...quadCounts);
+  return new Set([0, 1, 2, 3].filter(q => quadCounts[q] === minCount));
+}
+
+/** Zakres Q/R środków po ćwiartkach bboxa lądu — eksport do testów spreadu. */
+export function clusterCenterQuadrantSpread(
+  centers: Array<{ q: number; r: number }>,
+  landBBox: { minQ: number; maxQ: number; minR: number; maxR: number },
+): { occupiedQuadrants: number; qSpan: number; rSpan: number } {
+  if (centers.length === 0) {
+    return { occupiedQuadrants: 0, qSpan: 0, rSpan: 0 };
+  }
+  const midQ = (landBBox.minQ + landBBox.maxQ) / 2;
+  const midR = (landBBox.minR + landBBox.maxR) / 2;
+  const quads = new Set<number>();
+  let minQ = Infinity;
+  let maxQ = -Infinity;
+  let minR = Infinity;
+  let maxR = -Infinity;
+  for (const c of centers) {
+    quads.add(landQuadrantIndex(c.q, c.r, midQ, midR));
+    if (c.q < minQ) minQ = c.q;
+    if (c.q > maxQ) maxQ = c.q;
+    if (c.r < minR) minR = c.r;
+    if (c.r > maxR) maxR = c.r;
+  }
+  return {
+    occupiedQuadrants: quads.size,
+    qSpan: maxQ - minQ,
+    rSpan: maxR - minR,
+  };
 }
 
 export function passesMinCapitalSeparationGate(
@@ -1037,10 +1598,138 @@ export function passesMinCapitalSeparationGate(
   priorCapitals: Array<{ q: number; r: number }>,
   minSep: number,
 ): boolean {
-  if (minSep <= 0 || priorCapitals.length === 0) return true;
+  if (!Number.isFinite(minSep) || minSep <= 0 || priorCapitals.length === 0) return true;
   return priorCapitals.every(
     p => hexDistanceAxial(c.q, c.r, p.q, p.r) >= minSep,
   );
+}
+
+/** Najbliższa odległość stolicy od jakiejkolwiek innej (hex); null gdy brak innych. */
+export function minCapitalSeparationDistance(
+  c: { q: number; r: number },
+  others: Array<{ q: number; r: number }>,
+): number | null {
+  if (others.length === 0) return null;
+  let best = Infinity;
+  for (const p of others) {
+    const d = hexDistanceAxial(c.q, c.r, p.q, p.r);
+    if (d < best) best = d;
+  }
+  return best;
+}
+
+export interface PickSpawnHexWithCapitalGatesOpts {
+  seaDist?: Map<string, number>;
+  minSeaDist?: number;
+  /** FALA 200: górny kraniec pasa (Standard 15 przy min 10). 0 = bez max. */
+  maxSeaDist?: number;
+  priorCapitals?: Array<{ q: number; r: number }>;
+  minCapitalSep?: number;
+  requirePlayerMassGate?: boolean;
+  requireLocalLand?: boolean;
+  preferred?: { q: number; r: number };
+  /**
+   * FALA 188: gdy brak hexu przy pełnym minSeaDist — schodź seaDist w dół (sep stolic
+   * ZOSTAJE twarde). Bez tego nieregularna Pangea + sep 12/14 dawała max ~4 civ.
+   */
+  progressiveSoftSea?: boolean;
+  /** FALA 196: bbox lądu — bias pustych ćwiartek przy top-up / relokacji. */
+  landBBox?: { minQ: number; maxQ: number; minR: number; maxR: number };
+  /** FALA 196: liczba typów (N) — minimum ćwiartek wg minimumSpreadQuartersRequired. */
+  spreadN?: number;
+}
+
+/** Drabinka seaDist: najpierw pełny wymóg, potem miększe — sep stolic nietknięte. */
+export function seaDistRescueLadder(minSeaDist: number): number[] {
+  if (!Number.isFinite(minSeaDist) || minSeaDist <= 0) return [0];
+  const steps = [
+    minSeaDist,
+    Math.max(2, Math.ceil(minSeaDist * 0.75)),
+    Math.max(2, Math.ceil(minSeaDist * 0.55)),
+    Math.max(2, Math.floor(minSeaDist * 0.4)),
+    2,
+    0, // absolutna ostatnia szansa — wolny ląd przy brzegu > drop civ
+  ];
+  return [...new Set(steps)];
+}
+
+/**
+ * Szuka hexu spawnu spełniającego twardo: lokalny ląd, masa gracza (opcjonalnie),
+ * seaDist i minSep od wcześniejszych stolic. Zero fail-open — brak kandydata = null.
+ * Przy progressiveSoftSea: seaDist mięknie; minCapitalSep nigdy.
+ * FALA 200: wśród legalnych preferuj pas min…max (np. 10–15), nie głęboki interior.
+ */
+export function pickSpawnHexWithCapitalGates(
+  map: GameMap,
+  pool: Array<{ q: number; r: number }>,
+  landCache: MassLandCache,
+  mapCenter: { q: number; r: number },
+  rand: () => number,
+  opts: PickSpawnHexWithCapitalGatesOpts = {},
+): { q: number; r: number } | null {
+  const {
+    seaDist,
+    minSeaDist = 0,
+    priorCapitals = [],
+    minCapitalSep = 0,
+    requirePlayerMassGate = false,
+    requireLocalLand = true,
+    preferred,
+    progressiveSoftSea = false,
+    landBBox,
+    spreadN,
+  } = opts;
+  const maxSeaDist = opts.maxSeaDist != null
+    ? opts.maxSeaDist
+    : (minSeaDist > 0 ? minSeaDist + 5 : 0);
+
+  const seaSteps = progressiveSoftSea
+    ? seaDistRescueLadder(minSeaDist)
+    : [minSeaDist];
+
+  for (const seaMin of seaSteps) {
+    const passes = (h: { q: number; r: number }): boolean => {
+      if (requireLocalLand && !passesLocalLandGate(map, h.q, h.r)) return false;
+      if (requirePlayerMassGate && !passesPlayerStartMassGate(map, h.q, h.r, landCache)) return false;
+      if (seaDist && seaMin > 0 && !passesMinSeaDistGate(seaDist, h.q, h.r, seaMin)) return false;
+      if (!passesMinCapitalSeparationGate(h, priorCapitals, minCapitalSep)) return false;
+      return true;
+    };
+
+    if (preferred && passes(preferred)) {
+      if (!seaDist || maxSeaDist <= 0 || seaMin < minSeaDist
+        || passesCapitalSeaBandGate(seaDist, preferred.q, preferred.r, seaMin, maxSeaDist)) {
+        return preferred;
+      }
+    }
+
+    let candidates: SpawnLandCandidate[] = pool
+      .filter(passes)
+      .map(h => ({
+        h,
+        land: localLandFraction(map, h.q, h.r),
+        dev: developmentSpaceScore(map, h.q, h.r, landCache),
+        sea: seaDist ? seaDistAt(seaDist, h.q, h.r) : seaMin,
+      }));
+    if (candidates.length === 0) continue;
+
+    // Pełny wymóg min: najpierw pas min…max; soft ladder — tylko ≥ seaMin.
+    const bandMax = seaMin >= minSeaDist && maxSeaDist > 0 ? maxSeaDist : 0;
+    if (bandMax > 0) {
+      const inBand = candidates.filter(c => c.sea <= bandMax);
+      if (inBand.length > 0) candidates = inBand;
+    }
+
+    if (landBBox && spreadN && spreadN >= 5 && priorCapitals.length > 0) {
+      sortSpawnCandidatesWithSpreadBias(
+        candidates, mapCenter, priorCapitals, landBBox, spreadN, false, seaMin, bandMax || maxSeaDist,
+      );
+    } else {
+      sortSpawnLandCandidates(candidates, mapCenter, false, seaMin, bandMax || maxSeaDist);
+    }
+    return pickTiedSpawnLandCandidate(candidates, rand) ?? candidates[0]!.h;
+  }
+  return null;
 }
 
 /** Pola lądowe w promieniu od rdzenia, posortowane od najbliższych (do ciasnego pakowania). */
@@ -1195,6 +1884,8 @@ export function packCityStatesHubChain(
     excludeHex?: { q: number; r: number };
     anchor?: { q: number; r: number; minDist: number };
     halfPlaneAxis?: SameTypeRivalHalfPlaneAxis;
+    /** FALA 185: bufor obcych klastrów — MP nie mogą wejść w promień S_cluster/2. */
+    foreignBuffers?: ReadonlyArray<ForeignClusterBuffer>;
   },
 ): Array<{ q: number; r: number }> {
   if (count <= 0) return [];
@@ -1203,12 +1894,14 @@ export function packCityStatesHubChain(
   const exclude = opts?.excludeHex ?? core;
   const anchor = opts?.anchor;
   const halfPlaneAxis = opts?.halfPlaneAxis;
+  const foreignBuffers = opts?.foreignBuffers ?? [];
   const landSet = new Set(landHexes.map(h => `${h.q},${h.r}`));
 
   function validCandidate(h: { q: number; r: number }, hub: { q: number; r: number }): boolean {
     if (!landSet.has(`${h.q},${h.r}`)) return false;
     if (halfPlaneAxis && !isInSameTypeRivalHalfPlane(h, core, halfPlaneAxis)) return false;
     if (h.q === exclude.q && h.r === exclude.r) return false;
+    if (!passesForeignClusterBufferGate(h, foreignBuffers)) return false;
     if (hexDistanceAxial(h.q, h.r, hub.q, hub.r) !== ringDist) return false;
     if (hexDistanceAxial(h.q, h.r, core.q, core.r) < minSep) return false;
     if (anchor && hexDistanceAxial(h.q, h.r, anchor.q, anchor.r) < anchor.minDist) return false;
@@ -1254,6 +1947,7 @@ export function packCityStatesAroundCapital(
     anchor?: { q: number; r: number; minDist: number };
     growthReserve?: number;
     halfPlaneAxis?: SameTypeRivalHalfPlaneAxis;
+    foreignBuffers?: ReadonlyArray<ForeignClusterBuffer>;
   },
 ): { stateCities: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   if (stateCityCount <= 0) {
@@ -1266,6 +1960,7 @@ export function packCityStatesAroundCapital(
     excludeHex: opts?.excludeHex ?? capital,
     anchor: opts?.anchor,
     halfPlaneAxis,
+    foreignBuffers: opts?.foreignBuffers,
   };
   const expandedR = clusterPackRadius(totalPack, minDist) * 2;
 
@@ -1394,13 +2089,6 @@ function pickCapitalHexInRegion(
     const gated = candidates.filter(c => passesLocalLandGate(map, c.q, c.r));
     if (gated.length > 0) candidates = gated;
   }
-  if (seaDist && minSeaDist > 0) {
-    const seaGated = candidates.filter(
-      c => passesMinSeaDistGate(seaDist, c.q, c.r, minSeaDist),
-    );
-    if (seaGated.length === 0) return null;
-    candidates = seaGated;
-  }
   if (minCapitalSep > 0 && priorCapitals.length > 0) {
     const sepGated = candidates.filter(
       c => passesMinCapitalSeparationGate(c, priorCapitals, minCapitalSep),
@@ -1410,13 +2098,45 @@ function pickCapitalHexInRegion(
   }
   if (candidates.length === 0) return null;
 
-  candidates.sort((a, b) => {
+  // FALA 188: seaDist mięknie w regionie (sep już przefiltrowany) — unikaj dropu civ.
+  let seaPool = candidates;
+  let activeMinSea = minSeaDist;
+  if (seaDist && minSeaDist > 0) {
+    seaPool = [];
+    for (const seaMin of seaDistRescueLadder(minSeaDist)) {
+      const seaGated = candidates.filter(
+        c => passesMinSeaDistGate(seaDist, c.q, c.r, seaMin),
+      );
+      if (seaGated.length > 0) {
+        seaPool = seaGated;
+        activeMinSea = seaMin;
+        break;
+      }
+    }
+    if (seaPool.length === 0) return null;
+  }
+
+  const bandMax = activeMinSea >= minSeaDist && minSeaDist > 0 ? minSeaDist + 5 : 0;
+  if (bandMax > 0 && seaDist) {
+    const inBand = seaPool.filter(c => seaDistAt(seaDist, c.q, c.r) <= bandMax);
+    if (inBand.length > 0) seaPool = inBand;
+  }
+
+  seaPool.sort((a, b) => {
+    const seaA = seaDist ? seaDistAt(seaDist, a.q, a.r) : 0;
+    const seaB = seaDist ? seaDistAt(seaDist, b.q, b.r) : 0;
+    // FALA 200: pas min…max (np. 10–15), nie „najbliżej brzegu”.
+    if (minSeaDist > 0 || bandMax > 0) {
+      const pa = capitalSeaBandPenalty(seaA, activeMinSea, bandMax || minSeaDist + 5);
+      const pb = capitalSeaBandPenalty(seaB, activeMinSea, bandMax || minSeaDist + 5);
+      if (pa !== pb) return pa - pb;
+    }
     const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
     const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
     const jitter = rand() * 0.01;
     return (db + jitter) - (da + jitter) || a.q - b.q || a.r - b.r;
   });
-  return candidates[0]!;
+  return seaPool[0]!;
 }
 
 /**
@@ -1645,7 +2365,7 @@ function enforceLocalLandDominance(
         const qualifying = qualifyingMassIndicesForSpawn(masses)
           .sort((a, b) => masses[b]!.length - masses[a]!.length);
         for (const mi of qualifying) {
-          newCenter = pickCenterInMassWithLandGate(map, masses[mi]!, others, minDist, landCache, undefined, rand, seaDist, minSeaDist);
+          newCenter = pickCenterInMassSpread(map, masses[mi]!, others, minDist, landCache, rand, seaDist, minSeaDist);
           if (newCenter) break;
         }
       }
@@ -1668,6 +2388,49 @@ function enforceLocalLandDominance(
     if (ci === 0) return true;
     return passesLocalLandGate(map, c.q, c.r);
   });
+
+  const landBBox = {
+    minQ: Math.min(...ladowe.map(h => h.q)),
+    maxQ: Math.max(...ladowe.map(h => h.q)),
+    minR: Math.min(...ladowe.map(h => h.r)),
+    maxR: Math.max(...ladowe.map(h => h.r)),
+  };
+  const spreadOpts: ClusterSpreadOpts = { nNeeded: centrumy.length };
+  const dominanceSpreadGate = { landBBox, spreadN: centrumy.length };
+
+  // FALA 188/193: relokacja zamiast dropu — nigdy nie ucinaj typów gdy ląd istnieje.
+  // keep[] tylko diagnostyka; wszystkie środki zostają (top-up i soft sea łatają dalej).
+  for (let ci = 1; ci < centrumy.length; ci++) {
+    if (keep[ci]) continue;
+    const others = centrumy.filter((_, i) => i !== ci && keep[i]);
+    let rescued = pickSpawnHexWithCapitalGates(
+      map, ladowe, landCache, mapCenter, rand,
+      {
+        seaDist, minSeaDist, priorCapitals: others, minCapitalSep: minDist,
+        requireLocalLand: true,
+        progressiveSoftSea: true,
+        ...dominanceSpreadGate,
+      },
+    );
+    if (!rescued) {
+      rescued = pickSpawnHexWithCapitalGates(
+        map, ladowe, landCache, mapCenter, rand,
+        {
+          seaDist, minSeaDist, priorCapitals: others, minCapitalSep: minDist,
+          requireLocalLand: false,
+          progressiveSoftSea: true,
+          ...dominanceSpreadGate,
+        },
+      );
+    }
+    if (rescued) {
+      centrumy[ci] = rescued;
+      keep[ci] = true;
+    } else {
+      // Zostaw oryginał — lepiej 7 civ na słabszym hexie niż drop.
+      keep[ci] = true;
+    }
+  }
 
   if (!passesLocalLandGate(map, centrumy[0]!.q, centrumy[0]!.r)
     || !passesPlayerStartMassGate(map, centrumy[0]!.q, centrumy[0]!.r, landCache)) {
@@ -1753,7 +2516,7 @@ function buildClusterCitiesWithLandGate(
       const qualifying = qualifyingMassIndicesForSpawn(masses)
         .sort((a, b) => masses[b]!.length - masses[a]!.length);
       for (const mi of qualifying) {
-        nextCenter = pickCenterInMassWithLandGate(map, masses[mi]!, existingCenters, minClusterDist, landCache, undefined, rand, seaDist, minSeaDist);
+        nextCenter = pickCenterInMassSpread(map, masses[mi]!, existingCenters, minClusterDist, landCache, rand, seaDist, minSeaDist);
         if (nextCenter) break;
       }
     }
@@ -1761,6 +2524,542 @@ function buildClusterCitiesWithLandGate(
     activeCentrum = nextCenter;
   }
   return null;
+}
+
+function clusterCapitalHex(k: TypeCluster): { q: number; r: number } | null {
+  const m = k.miasta.find(x => x.isCapital) ?? k.miasta[0];
+  return m ? { q: m.q, r: m.r } : null;
+}
+
+/** Twarda bramka końcowa: pary stolic różnych civ ≥ minSep — relokacja w regionie lub drop typu. */
+function enforceHardCapitalSeparationOnKlastry(
+  klastry: TypeCluster[],
+  clusterRegions: Array<Array<{ q: number; r: number }>>,
+  map: GameMap,
+  rand: () => number,
+  seaDist: Map<string, number> | undefined,
+  minSeaDist: number,
+  minCapitalSep: number,
+  minDystObcyOdGracza: number,
+  ladowe: Array<{ q: number; r: number }>,
+  landCache: MassLandCache,
+  seed: number,
+  stateCityCount: number,
+  mapCenter: { q: number; r: number },
+  minDystMiastaPanstwa: number,
+  spreadGateOpts?: { landBBox: { minQ: number; maxQ: number; minR: number; maxR: number }; spreadN: number },
+): void {
+  if (!Number.isFinite(minCapitalSep) || minCapitalSep <= 0) return;
+
+  const dropCluster = (ki: number): void => {
+    const dropped = klastry[ki]?.typ ?? `idx${ki}`;
+    klastry.splice(ki, 1);
+    clusterRegions.splice(ki, 1);
+    for (let i = 0; i < klastry.length; i++) klastry[i]!.typIndex = i;
+    if (typeof console !== 'undefined') {
+      console.warn(
+        `[clusters] HARD sep: usunięto typ '${dropped}' — brak hexu stolicy ≥${minCapitalSep} hex od innych`,
+      );
+    }
+  };
+
+  let repaired = true;
+  let guard = 0;
+  while (repaired && guard++ < klastry.length * 4) {
+    repaired = false;
+    const caps: Array<{ q: number; r: number; ki: number }> = [];
+    for (let ki = 0; ki < klastry.length; ki++) {
+      const c = clusterCapitalHex(klastry[ki]!);
+      if (c) caps.push({ ...c, ki });
+    }
+
+    outer:
+    for (let i = 0; i < caps.length; i++) {
+      for (let j = i + 1; j < caps.length; j++) {
+        const d = hexDistanceAxial(caps[i]!.q, caps[i]!.r, caps[j]!.q, caps[j]!.r);
+        if (d >= minCapitalSep) continue;
+
+        const fixIdx = caps[j]!.ki > caps[i]!.ki ? j : i;
+        const fixKi = caps[fixIdx]!.ki;
+        const region = clusterRegions[fixKi];
+        if (!region || region.length === 0) {
+          dropCluster(fixKi);
+          repaired = true;
+          break outer;
+        }
+
+        const priorCaps = caps
+          .filter((_, idx) => idx !== fixIdx)
+          .map(c => ({ q: c.q, r: c.r }));
+
+        const playerCap = caps.find(c => c.ki === 0);
+        const anchor = fixKi === 0 || !playerCap ? undefined : {
+          q: playerCap.q,
+          r: playerCap.r,
+          minDist: minDystObcyOdGracza,
+        };
+
+        const blobCenter = centroidOf(region);
+        let newCap = pickCapitalHexInRegion(
+          region,
+          blobCenter,
+          rand,
+          map,
+          seaDist,
+          minSeaDist,
+          anchor,
+          priorCaps,
+          minCapitalSep,
+        );
+
+        if (!newCap) {
+          newCap = pickSpawnHexWithCapitalGates(
+            map, ladowe, landCache, mapCenter, rand,
+            {
+              seaDist, minSeaDist, priorCapitals: priorCaps, minCapitalSep,
+              requireLocalLand: true,
+              requirePlayerMassGate: fixKi === 0,
+              progressiveSoftSea: true,
+              ...spreadGateOpts,
+            },
+          );
+        }
+        if (!newCap) {
+          newCap = pickSpawnHexWithCapitalGates(
+            map, ladowe, landCache, mapCenter, rand,
+            {
+              seaDist, minSeaDist, priorCapitals: priorCaps, minCapitalSep,
+              requireLocalLand: false,
+              requirePlayerMassGate: fixKi === 0,
+              progressiveSoftSea: true,
+              ...spreadGateOpts,
+            },
+          );
+        }
+
+        if (!newCap) {
+          dropCluster(fixKi);
+          repaired = true;
+          break outer;
+        }
+
+        const k = klastry[fixKi]!;
+        const minDist = fixKi === 0 ? minDystMiastaPanstwa : MIN_DIST_FOREIGN_IN_CLUSTER;
+        const { stateCities, growthSlot } = packCityStatesAroundCapital(
+          ladowe,
+          region,
+          newCap,
+          stateCityCount,
+          minDist,
+          (seed + fixKi * 0x9e3779b1) >>> 0,
+          { excludeHex: newCap, anchor },
+        );
+        const cities: ClusterCity[] = [{ q: newCap.q, r: newCap.r, isCapital: true }];
+        for (const s of stateCities) {
+          cities.push({ q: s.q, r: s.r, isCapital: false });
+        }
+        k.miasta = cities;
+        k.growthSlot = growthSlot;
+        if (fixKi === 0) {
+          k.pendingStateSlots = packRivalCitiesAroundCore(
+            ladowe,
+            newCap,
+            stateCityCount,
+            minDystMiastaPanstwa,
+            seed,
+            mapCenter,
+          );
+        }
+        caps[fixIdx] = { q: newCap.q, r: newCap.r, ki: fixKi };
+        repaired = true;
+        break outer;
+      }
+    }
+  }
+}
+
+/** Wszystkie miasta klastra (stolica + MP). */
+function allClusterCities(k: TypeCluster): Array<{ q: number; r: number }> {
+  return k.miasta.map(m => ({ q: m.q, r: m.r }));
+}
+
+/** Bufor obcych klastrów dla pakowania MP (FALA 185). */
+function foreignBuffersForCluster(
+  klastry: TypeCluster[],
+  excludeKi: number,
+  bufferRadius: number,
+): ForeignClusterBuffer[] {
+  const out: ForeignClusterBuffer[] = [];
+  for (let ki = 0; ki < klastry.length; ki++) {
+    if (ki === excludeKi) continue;
+    const cap = clusterCapitalHex(klastry[ki]!);
+    if (cap) out.push({ q: cap.q, r: cap.r, radius: bufferRadius });
+  }
+  return out;
+}
+
+/**
+ * FALA 185: twarda bramka sep brył — stolice ≥ minCapitalSep; MP ≥ bufor S/2 od obcych stolic.
+ * Relokacja stolicy + repack MP; drop typu dopiero po retry.
+ */
+function enforceClusterBodySeparationOnKlastry(
+  klastry: TypeCluster[],
+  clusterRegions: Array<Array<{ q: number; r: number }>>,
+  map: GameMap,
+  rand: () => number,
+  seaDist: Map<string, number> | undefined,
+  minSeaDist: number,
+  sCluster: number,
+  minCapitalSep: number,
+  minDystObcyOdGracza: number,
+  ladowe: Array<{ q: number; r: number }>,
+  landCache: MassLandCache,
+  seed: number,
+  stateCityCount: number,
+  mapCenter: { q: number; r: number },
+  minDystMiastaPanstwa: number,
+  bufferRadius: number,
+  spreadGateOpts?: { landBBox: { minQ: number; maxQ: number; minR: number; maxR: number }; spreadN: number },
+): void {
+  if (!Number.isFinite(sCluster) || sCluster <= 0) return;
+
+  function bodyViolation(i: number, j: number): boolean {
+    const citiesA = allClusterCities(klastry[i]!);
+    const citiesB = allClusterCities(klastry[j]!);
+    const capA = clusterCapitalHex(klastry[i]!);
+    const capB = clusterCapitalHex(klastry[j]!);
+    for (const a of citiesA) {
+      for (const b of citiesB) {
+        const d = hexDistanceAxial(a.q, a.r, b.q, b.r);
+        const aIsCap = capA && a.q === capA.q && a.r === capA.r;
+        const bIsCap = capB && b.q === capB.q && b.r === capB.r;
+        if (aIsCap && bIsCap) {
+          if (d < minCapitalSep) return true;
+        } else if (aIsCap || bIsCap) {
+          if (d < bufferRadius) return true;
+        } else if (d < bufferRadius) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  const dropCluster = (ki: number): void => {
+    const dropped = klastry[ki]?.typ ?? `idx${ki}`;
+    klastry.splice(ki, 1);
+    clusterRegions.splice(ki, 1);
+    for (let i = 0; i < klastry.length; i++) klastry[i]!.typIndex = i;
+    if (typeof console !== 'undefined') {
+      console.warn(
+        `[clusters] HARD body sep: usunięto typ '${dropped}' — brak legalnej bryły ≥${sCluster} hex`,
+      );
+    }
+  };
+
+  let repaired = true;
+  let guard = 0;
+  while (repaired && guard++ < klastry.length * 6) {
+    repaired = false;
+
+    outer:
+    for (let i = 0; i < klastry.length; i++) {
+      for (let j = i + 1; j < klastry.length; j++) {
+        if (!bodyViolation(i, j)) continue;
+
+        const fixKi = j;
+        const region = clusterRegions[fixKi];
+        if (!region || region.length === 0) {
+          dropCluster(fixKi);
+          repaired = true;
+          break outer;
+        }
+
+        const priorCaps: Array<{ q: number; r: number }> = [];
+        for (let ki = 0; ki < klastry.length; ki++) {
+          if (ki === fixKi) continue;
+          const c = clusterCapitalHex(klastry[ki]!);
+          if (c) priorCaps.push(c);
+        }
+
+        const playerCap = clusterCapitalHex(klastry[0]!);
+        const anchor = fixKi === 0 || !playerCap ? undefined : {
+          q: playerCap.q,
+          r: playerCap.r,
+          minDist: minDystObcyOdGracza,
+        };
+
+        const foreignBufs = foreignBuffersForCluster(klastry, fixKi, bufferRadius);
+        const blobCenter = centroidOf(region);
+        let newCap = pickCapitalHexInRegion(
+          region,
+          blobCenter,
+          rand,
+          map,
+          seaDist,
+          minSeaDist,
+          anchor,
+          priorCaps,
+          minCapitalSep,
+        );
+
+        if (!newCap) {
+          newCap = pickSpawnHexWithCapitalGates(
+            map, ladowe, landCache, mapCenter, rand,
+            {
+              seaDist, minSeaDist, priorCapitals: priorCaps, minCapitalSep,
+              requireLocalLand: true,
+              requirePlayerMassGate: fixKi === 0,
+              progressiveSoftSea: true,
+              ...spreadGateOpts,
+            },
+          );
+        }
+        if (!newCap) {
+          newCap = pickSpawnHexWithCapitalGates(
+            map, ladowe, landCache, mapCenter, rand,
+            {
+              seaDist, minSeaDist, priorCapitals: priorCaps, minCapitalSep,
+              requireLocalLand: false,
+              requirePlayerMassGate: fixKi === 0,
+              progressiveSoftSea: true,
+              ...spreadGateOpts,
+            },
+          );
+        }
+
+        if (!newCap) {
+          dropCluster(fixKi);
+          repaired = true;
+          break outer;
+        }
+
+        const k = klastry[fixKi]!;
+        const minDist = fixKi === 0 ? minDystMiastaPanstwa : MIN_DIST_FOREIGN_IN_CLUSTER;
+        const { stateCities, growthSlot } = packCityStatesAroundCapital(
+          ladowe,
+          region,
+          newCap,
+          stateCityCount,
+          minDist,
+          (seed + fixKi * 0x9e3779b1) >>> 0,
+          {
+            excludeHex: newCap,
+            anchor,
+            foreignBuffers: foreignBufs,
+            halfPlaneAxis: fixKi === 0
+              ? computeSameTypeRivalHalfPlaneAxis(newCap, mapCenter, seed)
+              : undefined,
+          },
+        );
+        const cities: ClusterCity[] = [{ q: newCap.q, r: newCap.r, isCapital: true }];
+        for (const s of stateCities) {
+          cities.push({ q: s.q, r: s.r, isCapital: false });
+        }
+        k.miasta = cities;
+        k.growthSlot = growthSlot;
+        if (fixKi === 0) {
+          k.pendingStateSlots = packRivalCitiesAroundCore(
+            ladowe,
+            newCap,
+            stateCityCount,
+            minDystMiastaPanstwa,
+            seed,
+            mapCenter,
+          );
+        }
+
+        let stillBad = false;
+        for (let ki = 0; ki < klastry.length; ki++) {
+          if (ki === fixKi) continue;
+          if (bodyViolation(Math.min(ki, fixKi), Math.max(ki, fixKi))) {
+            stillBad = true;
+            break;
+          }
+        }
+        if (stillBad) {
+          // Zostaw tylko stolicę — MP klastra naprawianego mogą łamać bufor.
+          k.miasta = [{ q: newCap.q, r: newCap.r, isCapital: true }];
+          k.pendingStateSlots = [];
+          k.growthSlot = null;
+          // FALA 188: obetnij też obce MP kolidujące z tą stolicą (zamiast dropu civ).
+          for (let ki = 0; ki < klastry.length; ki++) {
+            if (ki === fixKi) continue;
+            const other = klastry[ki]!;
+            const otherCap = clusterCapitalHex(other);
+            other.miasta = other.miasta.filter((m) => {
+              if (otherCap && m.q === otherCap.q && m.r === otherCap.r) return true;
+              return hexDistanceAxial(m.q, m.r, newCap.q, newCap.r) >= bufferRadius;
+            });
+            if (ki === 0) {
+              other.pendingStateSlots = (other.pendingStateSlots ?? []).filter(
+                (s) => hexDistanceAxial(s.q, s.r, newCap.q, newCap.r) >= bufferRadius,
+              );
+            }
+          }
+          let stillCapConflict = false;
+          for (let ki = 0; ki < klastry.length; ki++) {
+            if (ki === fixKi) continue;
+            if (bodyViolation(Math.min(ki, fixKi), Math.max(ki, fixKi))) {
+              stillCapConflict = true;
+              break;
+            }
+          }
+          if (stillCapConflict) {
+            // Ostatnia próba: globalny relocate z soft sea, bez dropu od razu.
+            const lastTry = pickSpawnHexWithCapitalGates(
+              map, ladowe, landCache, mapCenter, rand,
+              {
+                seaDist, minSeaDist, priorCapitals: priorCaps, minCapitalSep,
+                requireLocalLand: false,
+                requirePlayerMassGate: fixKi === 0,
+                progressiveSoftSea: true,
+                ...spreadGateOpts,
+              },
+            );
+            if (lastTry) {
+              k.miasta = [{ q: lastTry.q, r: lastTry.r, isCapital: true }];
+              stillCapConflict = false;
+              for (let ki = 0; ki < klastry.length; ki++) {
+                if (ki === fixKi) continue;
+                if (bodyViolation(Math.min(ki, fixKi), Math.max(ki, fixKi))) {
+                  stillCapConflict = true;
+                  break;
+                }
+              }
+            }
+            if (stillCapConflict) {
+              dropCluster(fixKi);
+            }
+          }
+        }
+        repaired = true;
+        break outer;
+      }
+    }
+  }
+}
+
+/**
+ * FALA 196: końcowe wyrównanie ćwiartek bboxa lądu na faktycznych stolicach.
+ * Top-up / HARD sep mogły skupić civy — relokacja z przepełnionej ćwiartki do pustej.
+ */
+function enforceQuarterSpreadOnKlastry(
+  klastry: TypeCluster[],
+  clusterRegions: Array<Array<{ q: number; r: number }>>,
+  map: GameMap,
+  landCache: MassLandCache,
+  ladowe: Array<{ q: number; r: number }>,
+  landBBox: { minQ: number; maxQ: number; minR: number; maxR: number },
+  nNeeded: number,
+  rand: () => number,
+  seaDist: Map<string, number> | undefined,
+  minSeaDist: number,
+  minCapitalSep: number,
+  minDystObcyOdGracza: number,
+  seed: number,
+  stateCityCount: number,
+  mapCenter: { q: number; r: number },
+  minDystMiastaPanstwa: number,
+  bodyBufferRadius: number,
+): void {
+  if (nNeeded < 5 || klastry.length < 3) return;
+  const required = minimumSpreadQuartersRequired(nNeeded);
+  const midQ = (landBBox.minQ + landBBox.maxQ) / 2;
+  const midR = (landBBox.minR + landBBox.maxR) / 2;
+  const spreadGate = { landBBox, spreadN: nNeeded };
+
+  for (let iter = 0; iter < 10; iter++) {
+    const caps: Array<{ q: number; r: number; ki: number }> = [];
+    for (let ki = 0; ki < klastry.length; ki++) {
+      const c = clusterCapitalHex(klastry[ki]!);
+      if (c) caps.push({ ...c, ki });
+    }
+    if (caps.length < 3) break;
+
+    const centers = caps.map(c => ({ q: c.q, r: c.r }));
+    const spread = clusterCenterQuadrantSpread(centers, landBBox);
+    if (spread.occupiedQuadrants >= required) break;
+
+    const counts = countCentersPerQuadrant(centers, midQ, midR);
+    let relocateKi = -1;
+    let maxLoad = -1;
+    for (const c of caps) {
+      const q = landQuadrantIndex(c.q, c.r, midQ, midR);
+      if (counts[q]! > maxLoad) {
+        maxLoad = counts[q]!;
+        relocateKi = c.ki;
+      }
+    }
+    if (relocateKi < 0 || maxLoad <= 1) break;
+
+    const priorCaps = caps.filter(c => c.ki !== relocateKi).map(c => ({ q: c.q, r: c.r }));
+    const playerCap = caps.find(c => c.ki === 0);
+    const anchor = relocateKi === 0 || !playerCap ? undefined : {
+      q: playerCap.q,
+      r: playerCap.r,
+      minDist: minDystObcyOdGracza,
+    };
+    const region = clusterRegions[relocateKi] ?? ladowe;
+
+    let newCap = pickSpawnHexWithCapitalGates(
+      map, ladowe, landCache, mapCenter, rand,
+      {
+        seaDist, minSeaDist, priorCapitals: priorCaps, minCapitalSep,
+        requireLocalLand: true,
+        requirePlayerMassGate: relocateKi === 0,
+        progressiveSoftSea: true,
+        ...spreadGate,
+      },
+    );
+    if (!newCap) {
+      newCap = pickSpawnHexWithCapitalGates(
+        map, ladowe, landCache, mapCenter, rand,
+        {
+          seaDist, minSeaDist, priorCapitals: priorCaps, minCapitalSep,
+          requireLocalLand: false,
+          requirePlayerMassGate: relocateKi === 0,
+          progressiveSoftSea: true,
+          ...spreadGate,
+        },
+      );
+    }
+    if (!newCap) break;
+
+    const newQuad = landQuadrantIndex(newCap.q, newCap.r, midQ, midR);
+    const oldQuad = landQuadrantIndex(caps.find(c => c.ki === relocateKi)!.q, caps.find(c => c.ki === relocateKi)!.r, midQ, midR);
+    const newSpread = clusterCenterQuadrantSpread(
+      [...priorCaps, newCap],
+      landBBox,
+    );
+    if (newSpread.occupiedQuadrants <= spread.occupiedQuadrants && counts[newQuad] !== 0) break;
+    if (newQuad === oldQuad && counts[oldQuad]! <= 1) break;
+
+    const k = klastry[relocateKi]!;
+    const minDist = relocateKi === 0 ? minDystMiastaPanstwa : MIN_DIST_FOREIGN_IN_CLUSTER;
+    const foreignBufs = foreignBuffersForCluster(klastry, relocateKi, bodyBufferRadius);
+    const { stateCities, growthSlot } = packCityStatesAroundCapital(
+      ladowe,
+      region.length > 0 ? region : ladowe,
+      newCap,
+      stateCityCount,
+      minDist,
+      (seed + relocateKi * 0x9e3779b1) >>> 0,
+      { excludeHex: newCap, anchor, foreignBuffers: foreignBufs },
+    );
+    const cities: ClusterCity[] = [{ q: newCap.q, r: newCap.r, isCapital: true }];
+    for (const s of stateCities) {
+      cities.push({ q: s.q, r: s.r, isCapital: false });
+    }
+    k.miasta = cities;
+    k.centrum = newCap;
+    k.growthSlot = growthSlot;
+    if (relocateKi === 0) {
+      k.pendingStateSlots = packRivalCitiesAroundCore(
+        ladowe, newCap, stateCityCount, minDystMiastaPanstwa, seed, mapCenter,
+      );
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1796,9 +3095,7 @@ export function computeClusters(
   const seed             = opts?.seed ?? 42;
   const playerTypKlucz   = opts?.playerTyp ?? ROSTER_KLUCZE[0]!;
   const rywaleNaKlaster  = opts?.rywaleNaKlaster ?? 9;
-  const minDystKlastrowBase = opts?.minDystansKlastrow ?? 12;
   const minDystMiastaPanstwa = opts?.minDystans ?? MIN_DIST_START_CITY_STATE;
-  const minDystObcyOdGracza = MIN_DIST_FOREIGN_FROM_PLAYER;
 
   const rand = mulberry32(seed);
 
@@ -1819,12 +3116,21 @@ export function computeClusters(
   const epochRoster = rosterKluczeForStartEpoch(opts?.civRoster, opts?.startEpochId);
   const rosterCap = epochRoster.length > 0 ? epochRoster.length : ROSTER_KLUCZE.length;
   const nTypy = Math.min(requestedTypy, rosterCap);
-  const area = W * H;
-  /** Skaluje min odległość środków — więcej typów na dużej mapie = ciaśniejszy szyk. */
-  const minDystKlastrow = Math.max(
-    6,
-    Math.min(minDystKlastrowBase, Math.floor(Math.sqrt(area / Math.max(nTypy, 1)) * 0.9)),
+  const seaDistEarly = buildSeaDistanceField(
+    Object.fromEntries(allHexes.map(h => [`${h.coords.q},${h.coords.r}`, h])),
   );
+  // FALA 182/188: środki klastrów — ta sama twarda sep co stolice; short<80: miękki
+  // fallback (nie sztywne 12 — inaczej harness 80×60 zostawia 3/7 środków).
+  const minCapitalSepEarly = capitalMinSeparationForMap(rozmiarMapy, W, H);
+  const centerPlacementSep = clusterCenterPlacementSepForMap(rozmiarMapy, W, H);
+  const shortSide = Math.min(W, H);
+  const minDystKlastrow = opts?.minDystansKlastrow
+    ?? (centerPlacementSep > 0
+      ? centerPlacementSep
+      : (minCapitalSepEarly > 0
+        ? minCapitalSepEarly
+        : Math.max(4, Math.floor(shortSide / 15))));
+  const minDystObcyOdGracza = Math.max(MIN_DIST_FOREIGN_FROM_PLAYER, minDystKlastrow);
 
   // --- Pola lądowe (zamieszkiwalne — bez Morza, Gór i Wybrzeża) ---
   // Wybrzeze wykluczone, bo canFoundCity je odrzuca (cities.ts) — trzymanie go w
@@ -1856,9 +3162,19 @@ export function computeClusters(
   const marginBrzeg = Math.max(2, Math.floor(minDystKlastrow / 3));
   const seaDist = buildSeaDistanceField(map.hexes);
   const minSeaDist = capitalMinSeaDistForMap(rozmiarMapy, W, H);
+  const maxSeaDist = capitalMaxSeaDistForMap(rozmiarMapy, W, H);
   const minCapitalSep = capitalMinSeparationForMap(rozmiarMapy, W, H);
+  const sCluster = clusterBodySeparationForMap(rozmiarMapy, W, H);
+  const bodyBufferRadius = clusterBodyBufferRadius(sCluster);
   const landCache = createMassLandCache(ladowe);
   const masses = landCache.masses;
+  const landBBox = {
+    minQ: Math.min(...ladowe.map(h => h.q)),
+    maxQ: Math.max(...ladowe.map(h => h.q)),
+    minR: Math.min(...ladowe.map(h => h.r)),
+    maxR: Math.max(...ladowe.map(h => h.r)),
+  };
+  const spreadGateOpts = { landBBox, spreadN: nTypy };
 
   // --- ŚRODKI TYPÓW: równomiernie po masach lądu (kontynenty/wyspy), nie tylko greedy shuffle ---
   const centrumy = placeClusterCentersAcrossLandmasses(
@@ -1874,6 +3190,28 @@ export function computeClusters(
     seaDist,
     minSeaDist,
   );
+
+  // FALA 188: dopełnij brakujące środki — twarda sep + seaDist + lokalny ląd (bez luzowania sep).
+  while (centrumy.length < nTypy) {
+    const cap = pickSpawnHexWithCapitalGates(
+      map,
+      ladowe,
+      landCache,
+      mapCenter,
+      rand,
+      {
+        seaDist,
+        minSeaDist,
+        priorCapitals: centrumy,
+        minCapitalSep: minDystKlastrow,
+        requireLocalLand: true,
+        requirePlayerMassGate: centrumy.length === 0,
+        ...spreadGateOpts,
+      },
+    );
+    if (!cap) break;
+    centrumy.push(cap);
+  }
 
   if (centrumy.length < nTypy && typeof console !== 'undefined') {
     console.warn(
@@ -1928,8 +3266,64 @@ export function computeClusters(
     );
   }
 
+  // FALA 193: dopełnij środki po dropie dominance — 7 w menu ≠ 5 na mapie przy wolnym lądzie.
+  while (activeCentrumy.length < nTypy) {
+    const cap = pickSpawnHexWithCapitalGates(
+      map,
+      ladowe,
+      landCache,
+      mapCenter,
+      rand,
+      {
+        seaDist,
+        minSeaDist,
+        priorCapitals: activeCentrumy,
+        minCapitalSep: minDystKlastrow,
+        requireLocalLand: activeCentrumy.length < nTypy - 1,
+        progressiveSoftSea: true,
+        ...spreadGateOpts,
+      },
+    );
+    if (!cap) {
+      const last = pickSpawnHexWithCapitalGates(
+        map,
+        ladowe,
+        landCache,
+        mapCenter,
+        rand,
+        {
+          seaDist,
+          minSeaDist,
+          priorCapitals: activeCentrumy,
+          minCapitalSep: minDystKlastrow,
+          requireLocalLand: false,
+          progressiveSoftSea: true,
+          ...spreadGateOpts,
+        },
+      );
+      if (!last) break;
+      activeCentrumy.push(last);
+    } else {
+      activeCentrumy.push(cap);
+    }
+  }
+  if (activeCentrumy.length > regiony.length || activeCentrumy.length > activeKlucze.length) {
+    regiony = assignVoronoiRegions(ladowe, activeCentrumy);
+    activeKlucze = assignTypesToClusterCenters(
+      activeCentrumy,
+      masses,
+      playerKlucz,
+      rosterBezGracza.slice(0, Math.max(0, nTypy - 1)),
+      rand,
+    );
+    while (activeKlucze.length < activeCentrumy.length) {
+      activeKlucze.push(`typ${activeKlucze.length}`);
+    }
+  }
+
   // --- MIASTA: klaster gracza (min 5 hex), obce typy min 12 od stolicy, mp obcych min 5 w klastrze ---
   const klastry: TypeCluster[] = [];
+  const clusterRegions: Array<Array<{ q: number; r: number }>> = [];
   const stateCityCount = rywaleNaKlaster;
   const placedCapitals: Array<{ q: number; r: number }> = [];
 
@@ -1982,20 +3376,36 @@ export function computeClusters(
     ? { q: playerCapital.q, r: playerCapital.r }
     : playerCentrumFinal;
 
+  const resolvePlayerCapitalPos = (): void => {
+    const resolved = pickSpawnHexWithCapitalGates(
+      map,
+      ladowe,
+      landCache,
+      mapCenter,
+      rand,
+      {
+        seaDist,
+        minSeaDist,
+        priorCapitals: placedCapitals,
+        minCapitalSep,
+        requirePlayerMassGate: true,
+        requireLocalLand: true,
+        preferred: playerCapitalPos,
+        ...spreadGateOpts,
+      },
+    );
+    if (!resolved) return;
+    playerCentrumFinal = resolved;
+    playerCapitalPos = resolved;
+    playerLayout = {
+      cities: [{ q: resolved.q, r: resolved.r, isCapital: true }],
+      pendingStateSlots: [],
+      growthSlot: null,
+    };
+  };
+
   if (!passesPlayerStartMassGate(map, playerCapitalPos.q, playerCapitalPos.r, landCache)) {
-    const fixed = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
-    if (
-      fixed
-      && passesMinCapitalSeparationGate(fixed, placedCapitals, minCapitalSep)
-    ) {
-      playerCentrumFinal = fixed;
-      playerCapitalPos = fixed;
-      playerLayout = {
-        cities: [{ q: fixed.q, r: fixed.r, isCapital: true }],
-        pendingStateSlots: [],
-        growthSlot: null,
-      };
-    }
+    resolvePlayerCapitalPos();
   }
 
   if (
@@ -2003,7 +3413,22 @@ export function computeClusters(
     && minSeaDist > 0
     && !passesMinSeaDistGate(seaDist, playerCapitalPos.q, playerCapitalPos.r, minSeaDist)
   ) {
-    const fixed = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
+    const fixed = pickSpawnHexWithCapitalGates(
+      map,
+      ladowe,
+      landCache,
+      mapCenter,
+      rand,
+      {
+        seaDist,
+        minSeaDist,
+        priorCapitals: placedCapitals,
+        minCapitalSep,
+        requirePlayerMassGate: true,
+        requireLocalLand: true,
+        ...spreadGateOpts,
+      },
+    );
     if (fixed) {
       const relocatedLayout = buildClusterCitiesWithLandGate(
         map,
@@ -2022,21 +3447,23 @@ export function computeClusters(
         placedCapitals,
         minCapitalSep,
       );
-      if (relocatedLayout) {
+      if (
+        relocatedLayout
+        && passesMinSeaDistGate(seaDist, relocatedLayout.cities.find(m => m.isCapital)?.q ?? fixed.q, relocatedLayout.cities.find(m => m.isCapital)?.r ?? fixed.r, minSeaDist)
+        && passesMinCapitalSeparationGate(
+          clusterCapitalPos(relocatedLayout, fixed),
+          placedCapitals,
+          minCapitalSep,
+        )
+      ) {
         playerLayout = relocatedLayout;
         playerCentrumFinal = relocatedLayout.centrum;
         const cap = relocatedLayout.cities.find(m => m.isCapital) ?? relocatedLayout.cities[0];
         playerCapitalPos = cap ? { q: cap.q, r: cap.r } : fixed;
-      } else {
-        playerCentrumFinal = fixed;
-        playerCapitalPos = fixed;
-        playerLayout = {
-          cities: [{ q: fixed.q, r: fixed.r, isCapital: true }],
-          pendingStateSlots: [],
-          growthSlot: null,
-        };
-      }
-      if (!passesMinSeaDistGate(seaDist, playerCapitalPos.q, playerCapitalPos.r, minSeaDist)) {
+      } else if (
+        passesMinSeaDistGate(seaDist, fixed.q, fixed.r, minSeaDist)
+        && passesMinCapitalSeparationGate(fixed, placedCapitals, minCapitalSep)
+      ) {
         playerCentrumFinal = fixed;
         playerCapitalPos = fixed;
         playerLayout = {
@@ -2046,6 +3473,13 @@ export function computeClusters(
         };
       }
     }
+  }
+
+  if (
+    minCapitalSep > 0
+    && !passesMinCapitalSeparationGate(playerCapitalPos, placedCapitals, minCapitalSep)
+  ) {
+    resolvePlayerCapitalPos();
   }
 
   placedCapitals.push(playerCapitalPos);
@@ -2059,6 +3493,35 @@ export function computeClusters(
     seed,
     mapCenter,
   );
+  const playerRepack = packCityStatesAroundCapital(
+    ladowe,
+    playerRegion,
+    playerCapitalPos,
+    stateCityCount,
+    minDystMiastaPanstwa,
+    seed,
+    {
+      excludeHex: playerCapitalPos,
+      growthReserve: CLUSTER_GROWTH_RESERVE,
+      halfPlaneAxis: computeSameTypeRivalHalfPlaneAxis(playerCapitalPos, mapCenter, seed),
+      foreignBuffers: [],
+    },
+  );
+  if (playerRepack.stateCities.length > 0) {
+    const playerCities: ClusterCity[] = [{
+      q: playerCapitalPos.q,
+      r: playerCapitalPos.r,
+      isCapital: true,
+    }];
+    for (const s of playerRepack.stateCities) {
+      playerCities.push({ q: s.q, r: s.r, isCapital: false });
+    }
+    playerLayout = {
+      cities: playerCities,
+      pendingStateSlots: playerRepack.stateCities,
+      growthSlot: playerRepack.growthSlot,
+    };
+  }
 
   klastry.push({
     typIndex: 0,
@@ -2068,11 +3531,12 @@ export function computeClusters(
     pendingStateSlots: playerStateSlots,
     growthSlot: playerLayout.growthSlot,
   });
+  clusterRegions.push(playerRegion);
 
   for (let ci = 1; ci < activeCentrumy.length; ci++) {
     const centrum = activeCentrumy[ci]!;
     const region = regiony[ci]!;
-    const foreignLayoutResult = buildClusterCitiesWithLandGate(
+    let foreignLayoutResult = buildClusterCitiesWithLandGate(
       map,
       region,
       centrum,
@@ -2090,6 +3554,64 @@ export function computeClusters(
       minCapitalSep,
     );
     if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) {
+      const retryCap = pickSpawnHexWithCapitalGates(
+        map,
+        ladowe,
+        landCache,
+        mapCenter,
+        rand,
+        {
+          seaDist,
+          minSeaDist,
+          priorCapitals: placedCapitals,
+          minCapitalSep,
+          requireLocalLand: true,
+          preferred: centrum,
+          progressiveSoftSea: true,
+          ...spreadGateOpts,
+        },
+      );
+      if (retryCap) {
+        foreignLayoutResult = {
+          cities: [{ q: retryCap.q, r: retryCap.r, isCapital: true }],
+          pendingStateSlots: [],
+          growthSlot: null,
+          centrum: retryCap,
+        };
+        activeCentrumy[ci] = retryCap;
+      }
+    }
+    // FALA 188: ostatnia szansa — bez bramki lokalnego lądu 70% + soft seaDist
+    // (sep stolic twarde). Nieregularna Pangea: minSea+sep dawało max ~4 civ.
+    if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) {
+      const lastCap = pickSpawnHexWithCapitalGates(
+        map,
+        ladowe,
+        landCache,
+        mapCenter,
+        rand,
+        {
+          seaDist,
+          minSeaDist,
+          priorCapitals: placedCapitals,
+          minCapitalSep,
+          requireLocalLand: false,
+          preferred: centrum,
+          progressiveSoftSea: true,
+          ...spreadGateOpts,
+        },
+      );
+      if (lastCap) {
+        foreignLayoutResult = {
+          cities: [{ q: lastCap.q, r: lastCap.r, isCapital: true }],
+          pendingStateSlots: [],
+          growthSlot: null,
+          centrum: lastCap,
+        };
+        activeCentrumy[ci] = lastCap;
+      }
+    }
+    if (!foreignLayoutResult || foreignLayoutResult.cities.length === 0) {
       if (typeof console !== 'undefined') {
         console.warn(
           `[clusters] Pominięto typ '${activeKlucze[ci] ?? `typ${ci}`}'` +
@@ -2101,15 +3623,17 @@ export function computeClusters(
 
     const foreignCap = foreignLayoutResult.cities.find(m => m.isCapital)
       ?? foreignLayoutResult.cities[0]!;
+    // FALA 188: nie dropuj po soft-sea rescue — sep poniżej jest twarde.
+    const softSeaFloor = seaDistRescueLadder(minSeaDist).slice(-1)[0] ?? 0;
     if (
       seaDist
-      && minSeaDist > 0
-      && !passesMinSeaDistGate(seaDist, foreignCap.q, foreignCap.r, minSeaDist)
+      && softSeaFloor > 0
+      && !passesMinSeaDistGate(seaDist, foreignCap.q, foreignCap.r, softSeaFloor)
     ) {
       if (typeof console !== 'undefined') {
         console.warn(
           `[clusters] Pominięto typ '${activeKlucze[ci] ?? `typ${ci}`}'` +
-          ` — stolica zbyt blisko morza (seaDist=${seaDistAt(seaDist, foreignCap.q, foreignCap.r)}, min=${minSeaDist})`,
+          ` — stolica zbyt blisko morza (seaDist=${seaDistAt(seaDist, foreignCap.q, foreignCap.r)}, floor=${softSeaFloor})`,
         );
       }
       continue;
@@ -2132,6 +3656,7 @@ export function computeClusters(
       r: playerCapitalPos.r,
       minDist: minDystObcyOdGracza,
     };
+    const foreignBufs = foreignBuffersForCluster(klastry, klastry.length, bodyBufferRadius);
     const foreignRepack = packCityStatesAroundCapital(
       ladowe,
       region,
@@ -2139,7 +3664,11 @@ export function computeClusters(
       stateCityCount,
       MIN_DIST_FOREIGN_IN_CLUSTER,
       (seed + ci * 0x9e3779b1) >>> 0,
-      { excludeHex: { q: foreignCap.q, r: foreignCap.r }, anchor: foreignAnchor },
+      {
+        excludeHex: { q: foreignCap.q, r: foreignCap.r },
+        anchor: foreignAnchor,
+        foreignBuffers: foreignBufs,
+      },
     );
     const foreignCities: ClusterCity[] = [{
       q: foreignCap.q,
@@ -2157,8 +3686,221 @@ export function computeClusters(
       miasta: foreignCities,
       growthSlot: foreignRepack.growthSlot ?? foreignLayoutResult.growthSlot,
     });
+    clusterRegions.push(region);
     placedCapitals.push({ q: foreignCap.q, r: foreignCap.r });
   }
+
+  // FALA 193: po `continue` w pętli obcych — dopełnij brakujące typy (7→5 bug).
+  {
+    const usedTyps = new Set(klastry.map(k => k.typ));
+    const unusedKeys = [
+      ...rosterSource.filter(k => k !== playerKlucz && !usedTyps.has(k)),
+      ...activeKlucze.filter(k => k !== playerKlucz && !usedTyps.has(k)),
+    ].filter((k, i, a) => a.indexOf(k) === i);
+    let keyIdx = 0;
+    while (klastry.length < nTypy) {
+      const cap = pickSpawnHexWithCapitalGates(
+        map,
+        ladowe,
+        landCache,
+        mapCenter,
+        rand,
+        {
+          seaDist,
+          minSeaDist,
+          priorCapitals: placedCapitals,
+          minCapitalSep,
+          requireLocalLand: false,
+          progressiveSoftSea: true,
+          ...spreadGateOpts,
+        },
+      );
+      if (!cap) break;
+      if (hexDistanceAxial(cap.q, cap.r, playerCapitalPos.q, playerCapitalPos.r) < minDystObcyOdGracza) {
+        // spróbuj inny hex — nie akceptuj zbyt blisko gracza
+        const alt = pickSpawnHexWithCapitalGates(
+          map,
+          ladowe,
+          landCache,
+          mapCenter,
+          rand,
+          {
+            seaDist,
+            minSeaDist,
+            priorCapitals: [...placedCapitals, playerCapitalPos],
+            minCapitalSep: Math.max(minCapitalSep, minDystObcyOdGracza),
+            requireLocalLand: false,
+            progressiveSoftSea: true,
+            ...spreadGateOpts,
+          },
+        );
+        if (!alt) break;
+        const typ = unusedKeys[keyIdx++] ?? `typ${klastry.length}`;
+        klastry.push({
+          typIndex: klastry.length,
+          typ,
+          centrum: alt,
+          miasta: [{ q: alt.q, r: alt.r, isCapital: true }],
+          pendingStateSlots: [],
+          growthSlot: null,
+        });
+        clusterRegions.push(ladowe.filter(h =>
+          hexDistanceAxial(h.q, h.r, alt.q, alt.r) <= Math.max(8, Math.floor(minDystKlastrow / 2)),
+        ));
+        placedCapitals.push(alt);
+        continue;
+      }
+      const typ = unusedKeys[keyIdx++] ?? `typ${klastry.length}`;
+      klastry.push({
+        typIndex: klastry.length,
+        typ,
+        centrum: cap,
+        miasta: [{ q: cap.q, r: cap.r, isCapital: true }],
+        pendingStateSlots: [],
+        growthSlot: null,
+      });
+      clusterRegions.push(ladowe.filter(h =>
+        hexDistanceAxial(h.q, h.r, cap.q, cap.r) <= Math.max(8, Math.floor(minDystKlastrow / 2)),
+      ));
+      placedCapitals.push(cap);
+    }
+    if (klastry.length < nTypy && typeof console !== 'undefined') {
+      console.warn(
+        `[clusters] FALA 193 top-up: nadal ${klastry.length}/${nTypy} klastrów po dopełnieniu`,
+      );
+    }
+  }
+
+  // FALA 185: repack MP gracza z buforami obcych klastrów (po znanych pozycjach obcych).
+  if (klastry.length > 0 && klastry[0]!.miasta.length > 0) {
+    const playerCap = clusterCapitalHex(klastry[0]!) ?? playerCapitalPos;
+    const playerBufs = foreignBuffersForCluster(klastry, 0, bodyBufferRadius);
+    const playerRegionFinal = clusterRegions[0] ?? playerRegion;
+    const playerRepackFinal = packCityStatesAroundCapital(
+      ladowe,
+      playerRegionFinal,
+      playerCap,
+      stateCityCount,
+      minDystMiastaPanstwa,
+      seed,
+      {
+        excludeHex: playerCap,
+        growthReserve: CLUSTER_GROWTH_RESERVE,
+        halfPlaneAxis: computeSameTypeRivalHalfPlaneAxis(playerCap, mapCenter, seed),
+        foreignBuffers: playerBufs,
+      },
+    );
+    if (playerRepackFinal.stateCities.length > 0 || playerRepackFinal.growthSlot) {
+      const cities: ClusterCity[] = [{ q: playerCap.q, r: playerCap.r, isCapital: true }];
+      for (const s of playerRepackFinal.stateCities) {
+        cities.push({ q: s.q, r: s.r, isCapital: false });
+      }
+      klastry[0]!.miasta = cities;
+      klastry[0]!.pendingStateSlots = playerRepackFinal.stateCities;
+      klastry[0]!.growthSlot = playerRepackFinal.growthSlot;
+    }
+  }
+
+  enforceHardCapitalSeparationOnKlastry(
+    klastry,
+    clusterRegions,
+    map,
+    rand,
+    seaDist,
+    minSeaDist,
+    minCapitalSep,
+    minDystObcyOdGracza,
+    ladowe,
+    landCache,
+    seed,
+    stateCityCount,
+    mapCenter,
+    minDystMiastaPanstwa,
+    spreadGateOpts,
+  );
+
+  enforceClusterBodySeparationOnKlastry(
+    klastry,
+    clusterRegions,
+    map,
+    rand,
+    seaDist,
+    minSeaDist,
+    sCluster,
+    minCapitalSep,
+    minDystObcyOdGracza,
+    ladowe,
+    landCache,
+    seed,
+    stateCityCount,
+    mapCenter,
+    minDystMiastaPanstwa,
+    bodyBufferRadius,
+    spreadGateOpts,
+  );
+
+  // FALA 193: HARD sep może dropnąć typ — dopełnij z powrotem do nTypy (sep twarde).
+  if (klastry.length < nTypy) {
+    const capsNow: Array<{ q: number; r: number }> = [];
+    for (const k of klastry) {
+      const c = clusterCapitalHex(k);
+      if (c) capsNow.push(c);
+    }
+    const usedTyps = new Set(klastry.map(k => k.typ));
+    const unusedKeys = rosterSource.filter(k => !usedTyps.has(k));
+    let keyIdx = 0;
+    while (klastry.length < nTypy) {
+      const cap = pickSpawnHexWithCapitalGates(
+        map,
+        ladowe,
+        landCache,
+        mapCenter,
+        rand,
+        {
+          seaDist,
+          minSeaDist,
+          priorCapitals: capsNow,
+          minCapitalSep,
+          requireLocalLand: false,
+          progressiveSoftSea: true,
+          ...spreadGateOpts,
+        },
+      );
+      if (!cap) break;
+      const typ = unusedKeys[keyIdx++] ?? `typ${klastry.length}`;
+      klastry.push({
+        typIndex: klastry.length,
+        typ,
+        centrum: cap,
+        miasta: [{ q: cap.q, r: cap.r, isCapital: true }],
+        pendingStateSlots: [],
+        growthSlot: null,
+      });
+      clusterRegions.push([]);
+      capsNow.push(cap);
+    }
+  }
+
+  // FALA 196: końcowe wyrównanie ćwiartek po sep/top-up.
+  enforceQuarterSpreadOnKlastry(
+    klastry,
+    clusterRegions,
+    map,
+    landCache,
+    ladowe,
+    landBBox,
+    nTypy,
+    rand,
+    seaDist,
+    minSeaDist,
+    minCapitalSep,
+    minDystObcyOdGracza,
+    seed,
+    stateCityCount,
+    mapCenter,
+    minDystMiastaPanstwa,
+    bodyBufferRadius,
+  );
 
   // Logowanie diagnostyczne (tylko w dev — nie blokuje funkcji)
   if (typeof console !== 'undefined') {

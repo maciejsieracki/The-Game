@@ -841,7 +841,7 @@ import {
 } from './game/embarkation';
 import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem } from './game/auto-manage';
-import { showMainMenu, hideMainMenu, isMainMenuOpen } from './ui/mainMenu';
+import { showMainMenu, hideMainMenu, isMainMenuOpen, getMenuAudioVolumes } from './ui/mainMenu';
 import { showPerfTestPanel } from './ui/perfTestPanel';
 import {
   configureGamePauseMenu, hideGamePauseMenu,
@@ -6539,6 +6539,13 @@ async function boot(): Promise<void> {
       return true;
     }
     const FOG_DEV_SHORTCUTS = civFogShortcutsEnabled();
+
+    /** Galeria jednostek (G) — TYLKO vite `import.meta.env.DEV`. Nigdy w ROBOCZA/produkcji. */
+    function unitGalleryShortcutEnabled(): boolean {
+      return import.meta.env.DEV === true;
+    }
+    const GALLERY_DEV_SHORTCUT = unitGalleryShortcutEnabled();
+
     /** All hex keys on the map — odświeżane po regeneracji (doStartGame / load). */
     let ALL_KEYS = new Set(allHexKeys(map));
     /** Klucze lądu + wybrzeża (bez Morza) — skrót M. */
@@ -13876,6 +13883,16 @@ async function boot(): Promise<void> {
       resumeIntroMusic();
       showMainMenu({
         hasSave: hasAnySaveSlot,
+        initialAudioVolumes: { muzyka: musicVolumeState, efekty: sfxVolumeState },
+        onSettingsChange: () => {
+          const { muzyka, efekty } = getMenuAudioVolumes();
+          musicVolumeState = muzyka;
+          saveMusicPrefs({ volume: musicVolumeState });
+          setMusicVolume(muzyka);
+          sfxVolumeState = efekty;
+          saveSfxPrefs({ volume: sfxVolumeState });
+          setMarchVolume(efekty);
+        },
         onNewGame: () => {
           hideMainMenu();
           showNewGameFlow({
@@ -20894,8 +20911,12 @@ async function boot(): Promise<void> {
         return;
       }
 
-      // --- Gallery toggle ---
+      // --- Gallery toggle (dev only: vite dev lub ?debug=1 / ?gallery=1) ---
       if (e.key.toLowerCase() === 'g') {
+        if (!GALLERY_DEV_SHORTCUT) return;
+        if (e.repeat) return;
+        const aeG = document.activeElement as HTMLElement | null;
+        if (aeG && (aeG.tagName === 'INPUT' || aeG.tagName === 'TEXTAREA' || aeG.isContentEditable)) return;
         galleryOn = !galleryOn;
         if (galleryOn) {
           hideCityPanelFull();

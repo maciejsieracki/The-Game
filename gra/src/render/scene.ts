@@ -101,7 +101,11 @@ import {
   effectivePixelRatio,
 } from './zoomLod';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './fogDim';
-import { landRiverRenderPath, trimMediumRenderPathAtMain } from '../map/gen-helpers';
+import {
+  landRiverRenderPath,
+  mediumRiverRenderPath,
+  trimMediumRenderPathAtMain,
+} from '../map/gen-helpers';
 import { refreshInstancedPickBounds } from '../input/picker';
 
 export type { MapRenderStyle, MapRenderOptions, QualityTier } from './mapRenderStyle';
@@ -1258,7 +1262,9 @@ async function renderLandRiversFromPaths(
     const pathForRender = kind === 'medium'
       ? trimMediumRenderPathAtMain(path, mainPathsForJunction)
       : path;
-    const landPath = landRiverRenderPath(map.hexes, pathForRender);
+    const landPath = kind === 'medium'
+      ? mediumRiverRenderPath(map.hexes, pathForRender)
+      : landRiverRenderPath(map.hexes, pathForRender);
     if (landPath.length < 2) continue;
     if (landPath.length > 480) continue;
 
@@ -1438,10 +1444,9 @@ type RiverPathKind = 'main' | 'medium' | 'short' | 'tributary';
 
 /**
  * Kill-switch renderu rzek w buildScene (nie mapgen).
- * FALA 174 — domyślnie 2 (main+medium); tylko main ?riverStage=1 · pełny tor ?riverStage=5.
- * Etap A (optymalizacja perf) — osobny tor od gen/render.
+ * FALA 174/177 — domyślnie 2 (main+medium); tylko main ?riverStage=1 · pełny ?riverStage=5.
  * 0 = zero meshów · 1 = main · 2 = main+medium · 3 = +short/tributary ·
- * 4 = +ujścia coastal · 5 = pełny tor produkcyjny.
+ * 4–5 = pełny tor (legacy; ujścia coastal są z main od FALA 177 — NIE dopiero od 4).
  * Wyłączenie: ?riverStage=0 lub localStorage civ-river-render-stage=0.
  */
 export function getRiverRenderStage(): number {
@@ -2687,8 +2692,9 @@ export async function buildScene(
   );
   for (const k of landHexKeysAll) riverHexKeys.push(k);
 
-  // FALA 149 DIAG: ujścia coastal tylko stage ≥ 4 (stage 5 = pełny tor).
-  if (riverStage >= 4) {
+  // FALA 177: ujścia coastal razem z main (stage ≥ 1). FALA 149 diag trzymał je
+  // dopiero od stage ≥ 4 — przy domyślnym stage=2 rzeka urywała się na lądzie przed morzem.
+  if (riverStage >= 1) {
   // FALA 145/147: ujścia main — jeden merge na warstwę (3×flush) zamiast per rzeka.
   const coastalRibbonSegs = riverRenderFast ? (sceneBuildFast ? 3 : 4) : 12;
   const coastalDedupDist = riverRenderFast ? R * (sceneBuildFast ? 0.045 : 0.032) : R * 0.02;
@@ -2762,7 +2768,7 @@ export async function buildScene(
     flushRiverBucket(scene, aggCoastRiverBucket, riverEntries);
     flushRiverBucket(scene, aggCoastRiverDeltaTopBucket, riverEntries);
   }
-  } // riverStage >= 4 (coastal mouths)
+  } // riverStage >= 1 (coastal mouths with main)
   markBuildPhase('rivers');
   reportSceneProgress(onProgress, 98, SCENE_BUILD_PHASE_LABELS.rivers);
   } // riverStage > 0

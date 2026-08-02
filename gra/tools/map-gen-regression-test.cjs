@@ -16,9 +16,10 @@ const BUNDLE = path.join(__dirname, '.map-gen-regression-bundle.cjs');
 fs.writeFileSync(
   ENTRY,
   `export { generujSwiat } from '../src/map/generator';
-export { pathEndsAtSea, pathReachesRealSea, pathHasValidRiverOutlet, verifyRiverNetworkConnectivity, checkTributaryJunctions } from '../src/map/gen-helpers';
+export { pathEndsAtSea, pathReachesRealSea, pathHasValidRiverOutlet, verifyRiverNetworkConnectivity, checkTributaryJunctions, groupLandMassKeys } from '../src/map/gen-helpers';
 export { expectedStartCityCount, targetVillageHutCount } from '../src/map/villages';
-export { defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel } from '../src/map/newGameMapDefaults';`,
+export { defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel } from '../src/map/newGameMapDefaults';
+export { TerenBazowy } from '../src/types/hex';`,
   'utf8',
 );
 
@@ -172,6 +173,52 @@ console.log(`  0 main bez REALNEGO morza: ${totalBadReal === 0 ? 'PASS' : 'FAIL'
 console.log(`  0 sierot sieci rzecznej: ${netOrphans === 0 ? 'PASS' : 'FAIL'} (${netOrphans})`);
 console.log(`  dopływy z junction: ${tribJunctionFails === 0 ? 'PASS' : 'FAIL'} (${tribJunctionFails})`);
 console.log(`  determinizm: ${detOk ? 'PASS' : 'FAIL'}`);
+
+console.log('\n=== Pangea nieregularna (FALA 187, 5 seedów standardowy) ===');
+const TB = M.TerenBazowy;
+const PANGEA_DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
+function pangeaShapeMetrics(map) {
+  const hexes = map.hexes;
+  const masses = M.groupLandMassKeys(hexes);
+  const landKeys = masses.flat();
+  const landCount = landKeys.length;
+  if (landCount === 0) return { massCount: 0, dominantRatio: 0, bboxFill: 0, coastRatio: 0 };
+  let qMin = Infinity, qMax = -Infinity, rMin = Infinity, rMax = -Infinity;
+  let coast = 0;
+  for (const k of landKeys) {
+    const [q, r] = k.split(',').map(Number);
+    qMin = Math.min(qMin, q); qMax = Math.max(qMax, q);
+    rMin = Math.min(rMin, r); rMax = Math.max(rMax, r);
+    for (const [dq, dr] of PANGEA_DIRS) {
+      const nh = hexes[`${q + dq},${r + dr}`];
+      if (!nh || nh.terenBazowy === TB.Morze) { coast++; break; }
+    }
+  }
+  const bboxArea = (qMax - qMin + 1) * (rMax - rMin + 1);
+  const massSizes = masses.map((m) => m.length).sort((a, b) => b - a);
+  return {
+    massCount: masses.length,
+    dominantRatio: massSizes[0] / landCount,
+    bboxFill: landCount / bboxArea,
+    coastRatio: coast / Math.sqrt(landCount),
+  };
+}
+let pangeaShapeFail = 0;
+for (const seed of SEEDS) {
+  const pmap = M.generujSwiat(seed, 'standardowy', 'pangea', { worldDensity: DENSITY });
+  const pm = pangeaShapeMetrics(pmap);
+  const ok = pm.massCount === 1 && pm.dominantRatio >= 0.97
+    && pm.bboxFill < 0.87 && pm.coastRatio > 3.8;
+  if (!ok) {
+    pangeaShapeFail++;
+    fail++;
+    console.error(
+      `FAIL seed=${seed}: masy=${pm.massCount} dom=${pm.dominantRatio.toFixed(3)} `
+      + `bboxFill=${pm.bboxFill.toFixed(3)} coast/√A=${pm.coastRatio.toFixed(3)}`,
+    );
+  }
+}
+console.log(`  1 masa + nieregularny obrys: ${pangeaShapeFail === 0 ? 'PASS' : 'FAIL'} (${pangeaShapeFail} fail)`);
 
 console.log('\n=== Chat ze skarbami (miasta x trudnosc) ===');
 function countVillages(map) {

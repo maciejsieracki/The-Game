@@ -1,4 +1,4 @@
-# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
+﻿# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
 
 ZASADA: md5/stempel wpisuje siÄ™ TYLKO tutaj, zaraz po publishu. Inne pliki linkujÄ…,
 nigdy nie kopiujÄ… (stary system miaĹ‚ 4 sprzeczne â€žaktualne" md5 â€” nigdy wiÄ™cej).
@@ -10,11 +10,114 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
+## ROBOCZA `26b05753` - 2026-08-02 22:48 - FALA 200: stolice w pasie 10–15 hex od morza (+ FALA 199) - **AKTUALNA**
+- md5 (pelne): `26b057536880c97db040ec0d3a123dc7` · stempel: `ROBOCZA · 2026-08-02 22:48`
+- **FALA 200.** `clusters.ts`: pas stolicy `capitalMinSeaDist`…`capitalMaxSeaDist` (Standard **10–15** hex; inne rozmiary min+5). Preferencja środka pasa, nie „jak najbliżej 10” i nie głęboki interior. Zawiera FALA 199 (obwarzanek Wybrzeże, rzeki bez limitu).
+- tsc 0 · vite · VERIFY OK · build %TEMP%\civ-dist-fala200.
+
+## ROBOCZA `046c3ec9` - 2026-08-02 22:32 - FALA 199: obwarzanek=Wybrzeże most + rzeki bez limitu + stolice bliżej brzegu - **ZASTAPIONA**
+- md5 (pelne): `046c3ec91f7391d9a4c16d6a2c0f37f5` · stempel: `ROBOCZA · 2026-08-02 22:32`
+- **FALA 199.** Root cause obwarzanka: 2 masy suchego lądu rozdzielone korytarzem **Wybrzeża** (nie Morza). `ensure`/`fill` annular mostują Morze+Wybrzeże. Rzeki: bez cap liczby/komórek na Pangea; masy od 5 hex. Spawn: prefer seaDist ≥ min (10). Zawiera FALA 198.
+- tsc 0 · pangea-land-shape dry=1 (default+20%) · gap-audit 30–80% dryMasses=1 · VERIFY OK · build %TEMP%\civ-dist-fala199.
+
+## ROBOCZA `b6a7e049` - 2026-08-02 22:06 - FALA 198: anti-obwarzanek przed rzekami + G DEV - **ZASTAPIONA**
+- md5 (pelne): `b6a7e049ddf953db78e25056ef969dc6` · stempel: `ROBOCZA · 2026-08-02 22:06`
+- **FALA 198.** `generator.ts`: po finalizeCoast ponowny `ensurePangeaSingleContinent` / anti-annular tuż przed rzekami. `gen-helpers.ts`: szerszy maxBridge, agresywne usuwanie obręczy (195). `main.ts`: galeria G tylko `import.meta.env.DEV`. Zawiera FALA 197.
+- tsc 0 · pangea-land-shape-test PASS (20% annular=0) · vite · VERIFY OK · build %TEMP%\civ-dist-fala198.
 
 
 
 
-## ROBOCZA `00623e5b` - 2026-08-02 13:53 - FALA 175: średnie rzeki — main junction + okno skrętu - **AKTUALNA**
+
+
+
+## ROBOCZA `7b91c73a` - 2026-08-02 21:03 - FALA 193: rzeki quota+index, civ 7→5 top-up, audio menu, Ziemia polar cap - **ZASTAPIONA**
+- md5 (pelne): `7b91c73abc9d0c881090e41a7e0de67c` · stempel: `ROBOCZA · 2026-08-02 21:03`
+- **FALA 193.** Rzeki: quota z landHex + RiverHexSpatialIndex + medium co ~4 (bez cięcia pokrycia). Pangea: radial fill / anti-annular (obwarzanek). Audio menu: mainMenu.ts + main.ts onSettingsChange. Civ 7→5: top-up clusters.ts (bez dropu typów). Ziemia: cap polar ocean earth-land-mask.ts. Zawiera FALA 192.
+- vite · VERIFY OK · build %TEMP%\civ-dist-fala193.
+
+
+## ROBOCZA `03a46dd2` - 2026-08-02 22:03 - FALA 197: galeria jednostek (G) tylko DEV - **ZASTAPIONA**
+- md5 (pełne): `03a46dd2c6722906756343cedaa31599` · stempel: `ROBOCZA · 2026-08-02 22:03`
+- **FALA 197.** `main.ts`: `unitGalleryShortcutEnabled()` = `import.meta.env.DEV` (klawisz G wyłączony w ROBOCZA/produkcji). Zawiera FALA 196.
+- tsc 0 · vite · VERIFY OK · build %TEMP%\civ-dist-fala197.
+## ROBOCZA `c01438a2` - 2026-08-02 21:45 - FALA 196: ćwiartki civów (spread top-up) + dirty tree - **ZASTĄPIONA**
+- md5 (pelne): `c01438a20f9073e13f9bb30d742e389e` · stempel: `ROBOCZA · 2026-08-02 21:45`
+- **FALA 196.** `clusters.ts`: bias pustych ćwiartek w `pickSpawnHexWithCapitalGates` (top-up FALA 193, HARD sep, enforceQuarterSpreadOnKlastry). Sep stolic bez zmian (12/14/16/19). Zawiera FALA 194+195 dirty (bagel, polar rivers, scene).
+- tsc 0 · cluster-spread-test 5/5 PASS · vite · VERIFY OK · build %TEMP%\civ-dist-fala196.
+
+## ROBOCZA `ecdb4df4` - 2026-08-02 21:10 - FALA 194: pelny redeploy dirty tree (mapa+scene+menu) - **ZASTAPIONA**
+- md5 (pelne): `ecdb4df48262ceb29f6db548cc9d1bdd` · stempel: `ROBOCZA · 2026-08-02 21:10`
+- **FALA 194.** Pelny swiezy deploy working tree gra/src + gra/data (10 plikow). clusters, gen-helpers, generator, spawn, scene, main/menu, e-start-params. Poprzednia `7b91c73a` ZASTAPIONA — md5 zmieniony.
+- tsc 0 · vite · VERIFY OK · build %TEMP%\civ-dist-fala194.
+## ROBOCZA `ea234151` - 2026-08-02 20:18 - FALA 192: obwarzanek + 80% lądu + dopływy - **ZASTĄPIONA**
+- md5 (pelne): `ea2341511c803220967da480a1859c71` · stempel: `ROBOCZA · 2026-08-02 20:18`
+- **FALA 192.** Bez obwarzanka (overlap blobów + fill annular). Target 80% → actual ~74%. Dopływy: sep=1 + bias centrum. Zawiera 190+191.
+- vite · VERIFY OK · land-fraction/shape/medium PASS.
+
+## ROBOCZA `dbbe3c4b` - 2026-08-02 20:13 - FALA 190+191 (+w toku 192) - **ZASTĄPIONA**
+- md5 (pelne): `dbbe3c4b6aef821e123e9613bdeaf80b` · stempel: `ROBOCZA · 2026-08-02 20:13`
+- **FALA 191** % lądu skaluje bloby Pangei. **FALA 190** dopływy (sep bez bloku parent main). Obwarzanek/80% absolute — dalsza korekta w toku (FALA 192).
+- vite build OK · VERIFY OK.
+
+## ROBOCZA `f467bdf6` - 2026-08-02 19:53 - FALA 189: Pangea izotropowa (nie kapsuła) - **ZASTĄPIONA**
+- md5 (pelne): `f467bdf6ceeb44770c80e0f6729fe634` · stempel: `ROBOCZA · 2026-08-02 19:53`
+- **FALA 189.** Maska Pangea: dystans izotropowy (okrąg na heksach, nie owal mapy) + zatoki na długich bokach. Aspect ~1.05 · 7/7 civ. Zawiera FALA 188 (soft sea).
+- vite build OK · publish robocza · VERIFY OK.
+
+## ROBOCZA `c0d51bd4` - 2026-08-02 19:46 - FALA 188: soft sea civ + Pangea + rzeki centrum - **ZASTĄPIONA**
+- md5 (pelne): `c0d51bd4192c50c1d266246702be1482` · stempel: `ROBOCZA · 2026-08-02 19:46`
+- **FALA 188.** Soft seaDist przy dropie civ (sep stolic **twarde** 12/12/14/16/19) → 7/7 stolic. Pangea rebalance/erode (bboxFill ~0.75). Silniejszy bias rzek ku centrum 5×5. Zawiera FALA 187+.
+- vite build OK · publish robocza · VERIFY OK.
+
+## ROBOCZA `ab9e6d3c` - 2026-08-02 18:17 - FALA 187+spread+dopływy - **ZASTĄPIONA**
+- md5 (pelne): `ab9e6d3c79257099fb66ce36a80bd3c3` · stempel: `ROBOCZA · 2026-08-02 18:17`
+- **FALA 187** Pangea ~5 blobów. **Spread civ** twarde ćwiartki. **Dopływy:** bez zawijania heksu (120°), bias ku centrum 5×5, widoczne (nie wybrzeżniki).
+- vite build OK · publish robocza · VERIFY OK.
+## ROBOCZA `d535b702` - 2026-08-02 17:29 - FALA 185+186: sep brył + rzeki 5×5 - **ZASTĄPIONA**
+- md5 (pelne): `d535b702b708f7bcc80e47e4f87d74aa` · stempel: `ROBOCZA · 2026-08-02 17:29`
+- **FALA 185.** `clusters.ts`: sep brył, maximin+ćwiartki, bufor MP. **FALA 186.** `gen-helpers.ts`: centrum rzek **5×5**, doplywy co 4 L/R. Zawiera FALA 184 (oxbow) + wczesniejsze.
+- vite build OK · publish robocza.
+## ROBOCZA `005dcb06` - 2026-08-02 16:02 - FALA 184: oxbow fix (medium junction) - **ZASTAPIONA**
+- md5 (pelne): `005dcb06290a116b143e9970e26530c5` · stempel: `ROBOCZA · 2026-08-02 16:02`
+- **FALA 184.** `gen-helpers.ts`: junction dopływu średniej dopiero po sensownym odcinku w głąb (fix oxbow 1–3 hex). Zawiera FALA 183 (defaults typy×MP) + FALA 182+181.
+- vite build OK · publish robocza.
+## ROBOCZA `a0670a3d` - 2026-08-02 15:34 - FALA 183: defaults typy×MP (5×5/6×6/7×7/8×8) - **ZASTĄPIONA**
+- md5 (pelne): `a0670a3d46edb2a42da600c34659e296` · stempel: `ROBOCZA · 2026-08-02 15:34`
+- **FALA 183.** `e-start-params.json`: domyślne typy cywilizacji × miasta państwa — Standard **5×5**, Duża **6×6**, Ogromna **7×7**, Super Huge **8×8** (epoka domyślna Kamień). Zawiera FALA 182 (sep stolic 12/12/14/16/19) + FALA 181.
+- vite build OK · publish robocza.
+## ROBOCZA `c6d0caa5` - 2026-08-02 15:28 - FALA 182: sep stolic +2 (12/12/14/16/19) - **ZASTĄPIONA**
+- md5 (pelne): `c6d0caa56da75755d36964a52059bc53` · stempel: `ROBOCZA · 2026-08-02 15:28`
+- **FALA 182.** `clusters.ts`: separacja stolic +2: Mala/Srednia **12**, Standard **14**, Duza **16**, Super **19**. Zawiera tez **FALA 181** (srednie doplywy od main co 4 hex).
+- vite build OK · publish robocza.
+
+## ROBOCZA `5424b604` - 2026-08-02 15:23 - FALA 181: srednie doplywy od main co 4 hex - **ZASTĄPIONA**
+- md5 (pelne): `5424b60469bbcd229e2bee2ccfdec437` · stempel: `ROBOCZA · 2026-08-02 15:23`
+- **FALA 181.** `gen-helpers.ts`: srednie rzeki jako doplywy od main co **4 hex** (odleglosc wzdluz sieci main). Spawn/farthest-point (FALA 180) bez zmian.
+- vite build OK · publish robocza.
+
+## ROBOCZA `13beb5fb` - 2026-08-02 14:56 - FALA 180: farthest-point spawn + twarda sep 10/10/12/14/17 - **ZASTAPIONA**
+- md5 (pelne): `13beb5fb5875e83781f989abdb851d86` · stempel: `ROBOCZA · 2026-08-02 14:56`
+- **FALA 180.** `clusters.ts`: rozklad startow civ farthest-point; twarda separacja stolic Mala/Srednia **10**, Standard **12**, Duza **14**, Super **17** (seaDist bez zmian).
+- tsc 0 · vite build OK.
+
+## ROBOCZA `ab6d3cc9` - 2026-08-02 14:42 - FALA 179: sep stolic 10/10/12/14/17, seaDist bez zmian - **ZASTAPIONA**
+- md5 (pelne): `ab6d3cc927ef5281b22cb6a88b5303fe` · stempel: `ROBOCZA · 2026-08-02 14:42`
+- **FALA 179.** `capitalMinSeparation` osobno od morza: Mała/Średnia **10**, Standard **12**, Duża **14**, Super **17**. `capitalMinSeaDist` bez zmian (Standard **10**).
+- capital-sep-unit-test 17/17 · tsc 0.
+## ROBOCZA `304b2631` - 2026-08-02 14:40 - FALA 178: main tylko coast→inland (bez A* fallback) - **ZASTAPIONA**
+- md5 (pelne): `304b2631e7985f0e1eed790d77ed4610` · stempel: `ROBOCZA · 2026-08-02 14:40`
+- **FALA 178.** Główne: wycięty fallback `tryPlaceGridSource` / inland→A*→morze w etapie 1; tylko `tryPlaceMainRiverFromCoast` (+ soft). Ujście wizualne: `renderCoastalRiverExtension` (FALA 177, stage≥1). `traceRiver` zostaje dla średnich/legacy.
+- river-turn-window 10/10 · medium-river 12/12 · tsc 0.
+## ROBOCZA `a2fb021d` - 2026-08-02 14:35 - FALA 177: ujścia coastal z powrotem przy stage≥1 - **ZASTAPIONA**
+- md5 (pelne): `a2fb021d8b78df11b0e775ed9a20b42d` · stempel: `ROBOCZA · 2026-08-02 14:35`
+- **FALA 177.** Regres ujść: FALA 149 diag trzymał `renderCoastalRiverExtension` tylko przy `riverStage≥4`; domyślny stage=2 (main+medium) → rzeka urywała się na lądzie. Fix: ujścia coastal przy `riverStage≥1` (razem z main). Kod ujść: `buildCoastalRiverPointChain` / `pathReachesOpenSeaRender` / `renderCoastalRiverExtension` w `scene.ts`; gen: `ensureRiverOutlets` bez zmian.
+- tsc 0.
+## ROBOCZA `e1d8bc68` - 2026-08-02 14:25 - FALA 176: stolice — twarde N bez dimCap + retry gracza - **ZASTAPIONA**
+- md5 (pelne): `e1d8bc6869f93d4c9f814c035d475ede` · stempel: `ROBOCZA · 2026-08-02 14:25`
+- **FALA 176 (Grok, 2×ZWIS subagent).** (1) `capitalMinSeaDistForMap` / sep: bez ścinania `short/12` (Standard zostaje **10**). (2) cluster-spawn: retry pick stolicy gracza bez preferred — zero soft-fail „zostaje plan”. Hard apply nadal dropuje obce &lt;N. Sep stolic = seaDist (10/12…).
+- capital-sep-unit-test.cjs — PASS 10/10 · tsc 0.
+## ROBOCZA `00623e5b` - 2026-08-02 13:53 - FALA 175: średnie rzeki — main junction + okno skrętu - **ZASTAPIONA**
 - md5 (pelne): `00623e5b414c3c8595d580f2077bc71c` · stempel: `ROBOCZA · 2026-08-02 13:53`
 - **FALA 175.** Średnie: A* do main/sieci (najkrótsza trasa), okno skrętu 6hex jak main (sanitizeRiverTurnWindow), hard prune orphan/dead-end, junction bez ogona przez main (gen+render). Ocean tylko fallback. Main (FALA 173) bez zmian.
 - medium-river-test.cjs — PASS 12/12 · river-turn-window-test.cjs — PASS 10/10 · tsc 0.
