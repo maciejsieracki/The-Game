@@ -1377,11 +1377,11 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## SPAWN-SEP-STOLICE — odległość stolic różnych cywilizacji · STATUS: **✅ ZAMKNIĘTE** (Maciej 2026-08-02 ~15:22)
+## SPAWN-SEP-STOLICE — odległość stolic różnych cywilizacji · STATUS: **✅ ZAMKNIĘTE** (Maciej 2026-08-02 ~15:22, korekta ~23:30)
 
-**Decyzja:** Playtest rozkładu civ OK; jedyna korekta: **+2 hex sep stolic na każdym rozmiarze** (FALA 182). `capitalMinSeparation`: mala/srednia **12**, Standard **14**, Duża **16**, Super **19**. `capitalMinSeaDist` bez zmian.
+**Decyzja:** Playtest rozkładu civ OK; FALA 182: **+2 hex sep stolic na każdym rozmiarze**. Korekta 2026-08-02 wieczór: **Standard (duza) +1 hex** (14→**15**); Mała/Średnia **12**, Duża **16**, Super **19** bez zmian. Nie rozsuwa MP w klastrze (pierścień 5 hex). `capitalMinSeaDist` bez zmian.
 
-**Kod:** `clusters.ts` LUT + testy `capital-sep-unit-test.cjs`, `capital-sep-pangea-test.cjs`, `cluster-start-test.cjs`.
+**Kod:** `clusters.ts` LUT + testy `capital-sep-unit-test.cjs`, `capital-sep-pangea-test.cjs`, `cluster-start-test.cjs`. Rejestr: `R-SPAWN-SEP-STOLICE-15`.
 
 ## BUG-PANGEA-RECT-FALA188 — Pangea nadal prostokąt po FALA 187 · STATUS: **W TRAKCIE** (playtest `ab9e6d3c`, 2026-08-02 ~18:27)
 **Cytat / screen:** ląd jak wypełniony prostokąt + cienka ramka oceanu; 7 civ → widoczne **4**; dużo pustego miejsca.

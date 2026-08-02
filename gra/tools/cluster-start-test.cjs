@@ -569,7 +569,7 @@ assert(
   '16-hex wyspa: playerStartHex przechodzi bramkę masy gracza',
 );
 
-// Standard × 8 typów (kamień): requested 8 → placed ≥ 6 (separacja stolic ≥14 może pominąć typ)
+// Standard × 8 typów (kamień): requested 8 → placed ≥ 6 (separacja stolic ≥15 może pominąć typ)
 const stdMap = M.generateMap(168, 120, 4242, 'kontynenty');
 const stdPlan = M.buildClusterStartPlan({
   map: stdMap,
@@ -747,11 +747,11 @@ for (const fcl of stdPlan.foreignTypeClusters) {
 
 // BUG-SPAWN-ODLEGLOSC-STOLICE: pary stolic różnych cywilizacji ≥ minSep na Standard
 const minSepStd = M.capitalMinSeparation(stdPlan.placement.rozmiarMapy);
-assert(minSepStd === 14, 'Standard (duza): minCapitalSep=14 (got ' + minSepStd + ')');
-assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 14,
-  'Standard map 168×120: minCapitalSepForMap=14');
-assert(stdPlan.placement.minDystansObcyOdGracza === 14,
-  'Standard: minDystansObcyOdGracza=14 (got ' + stdPlan.placement.minDystansObcyOdGracza + ')');
+assert(minSepStd === 15, 'Standard (duza): minCapitalSep=15 (got ' + minSepStd + ')');
+assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 15,
+  'Standard map 168×120: minCapitalSepForMap=15');
+assert(stdPlan.placement.minDystansObcyOdGracza === 17,
+  'Standard: minDystansObcyOdGracza=17 (got ' + stdPlan.placement.minDystansObcyOdGracza + ')');
 const stdCapitals = [{ q: stdPlan.playerStartHex.q, r: stdPlan.playerStartHex.r }];
 for (const fcl of stdPlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];

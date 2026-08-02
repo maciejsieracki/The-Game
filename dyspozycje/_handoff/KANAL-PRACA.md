@@ -4959,3 +4959,11 @@ CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (różne % lądu)
 - ROBOCZA `26b05753` VERIFY OK — Maciej: obwarzanek OK, rzeki do centrum, szybciej
 - FALA 199: most Morze+Wybrzeże · rzeki bez limitu · FALA 200: stolice pas 10–15
 CZEKAM-NA: nic (stan zapisany)
+
+## [23:30 PL, 2026-08-02] GROK -> Maciej — sep stolic Standard 15 (kod, bez deploy)
+- Decyzja Macieja: Standard (`duza`) sep stolic różnych civ **14→15**; Mała/Średnia 12, Duża 16, Super 19 bez zmian
+- `clusters.ts`: `capitalMinSeparation` LUT `duza: 15`; placement sep 17; bufor MP ceil(15/2)=8
+- NIE zmienia pierścienia MP 5 hex w klastrze — tylko odległość stolic między civ
+- Testy: capital-sep-unit 21/21 PASS · capital-sep-pangea 3/3 PASS
+- Branch: `cursor/capital-sep-standard-15-63a1`
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (Ctrl+F5, Nowa gra Standard)
