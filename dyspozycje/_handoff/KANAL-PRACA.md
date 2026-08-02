@@ -4791,3 +4791,10 @@ CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra Pangea/Standard: rzeki glowne znaczni
 - Kolejnosc: gracz pierwszy, potem obce typy - kazda stolica vs wszystkie poprzednie; brak hexu = pomin typ
 - cluster-start-test 384/384 - tsc 0 - publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 - Nowa gra Standard: stolice AI daleko od siebie i od morza (>=10 hex)
+
+## [12:30 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 170 ujścia main co 7 hex wybrzeże
+- md5 `616afdfa` / `616afdfaa7c82883f64228d878b34ff2` - stempel `ROBOCZA - 2026-08-02 12:30`
+- Reguła: MAIN_RIVER_COAST_MOUTH_MAX_GAP=7 (Standard/Duża; Mała=5) - BFS wzdłuż wybrzeża, top-up greedy po fazie main
+- riverGenPhase=main + riverStage=1 bez zmian; sep 3 / bufor 2 / MassLandCache nietknięte
+- river-sea-buffer-test 9/9 - tsc 0 - publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra: ujścia rzek co ~≤7 hex wzdłuż brzegu kontynentu

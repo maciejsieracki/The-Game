@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `af7216a4` - 2026-08-02 12:00 - FALA 169: separacja stolic ≥10 hex (skala jak od morza) - **AKTUALNA**
+## ROBOCZA `616afdfa` - 2026-08-02 12:30 - FALA 170: ujścia main co ≤7 hex wzdłuż wybrzeża - **AKTUALNA**
+- md5 (pelne): `616afdfaa7c82883f64228d878b34ff2` · stempel: `ROBOCZA · 2026-08-02 12:30`
+- **VERIFY OK (Gra-ROBOCZA.html).** Główne rzeki: po fazie main BFS wzdłuż wybrzeża — top-up ujść gdy luka > `MAIN_RIVER_COAST_MOUTH_MAX_GAP` (7 Standard/Duża, 5 Mała). `tryPlaceMainRiverAtMouth` + greedy domknięcie; sep 3 / bufor 2 / MassLandCache bez zmian. riverGenPhase=main + riverStage=1.
+- river-sea-buffer-test.cjs — PASS 9/9 · tsc 0.
+## ROBOCZA `af7216a4` - 2026-08-02 12:00 - FALA 169: separacja stolic ≥10 hex (skala jak od morza) - **ZASTAPIONA**
 - md5 (pelne): `af7216a4d1eed872a08dab1068612663` · stempel: `ROBOCZA · 2026-08-02 12:00`
 - **VERIFY OK (Gra-ROBOCZA.html).** Stolice gracza + obcych: `capitalMinSeparationForMap` (= tabela `capitalMinSeaDist`: mala=4, srednia=7, duza/Standard=10, ogromna=12, super=14); kolejność gracz→obcy, każda vs poprzednie; brak kandydata = pominięcie typu (bez soft-failu).
 - cluster-start-test.cjs — PASS 384/384 · tsc 0.

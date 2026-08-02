@@ -15,6 +15,10 @@ export {
   riverPathRespectsSeaBuffer,
   buildSeaDistanceField,
   RIVER_MIN_INLAND_FROM_SEA,
+  worstMainRiverCoastMouthGapOnMass,
+  mainRiverCoastMouthMaxGapForDims,
+  groupLandMassKeys,
+  oceanConnectedWaterKeys,
 } from '../src/map/gen-helpers';
 export { TerenBazowy } from '../src/types/hex';`,
   'utf8',
@@ -73,6 +77,25 @@ for (const { w, h, seed, typ, landFraction } of cases) {
     if (!M.riverPathRespectsSeaBuffer(map.hexes, path, seaDist, M.RIVER_MIN_INLAND_FROM_SEA)) badMain++;
   }
   ok(badMain === 0, `${typ} seed ${seed}: główne nurty respektują bufor ${M.RIVER_MIN_INLAND_FROM_SEA} hex (${badMain} złych)`);
+
+  const maxGap = M.mainRiverCoastMouthMaxGapForDims(w, h);
+  const ocean = M.oceanConnectedWaterKeys(map.hexes, w, h);
+  const masses = M.groupLandMassKeys(map.hexes).filter((m) => m.length >= 8);
+  const coastTol = typ === 'ziemia' ? maxGap + 35 : maxGap + 5;
+  let worstCoastGap = 0;
+  let badCoastGaps = 0;
+  for (const mass of masses) {
+    const massSet = new Set(mass);
+    const { ok: gapOk, worstGap } = M.worstMainRiverCoastMouthGapOnMass(
+      massSet, map.hexes, map.riverPaths, map.riverPathKinds ?? [], w, h, ocean, coastTol,
+    );
+    if (worstGap > worstCoastGap) worstCoastGap = worstGap;
+    if (!gapOk) badCoastGaps++;
+  }
+  ok(
+    badCoastGaps === 0,
+    `${typ} seed ${seed}: ujścia main co ≤${coastTol} hex wzdłuż brzegu (złe masy ${badCoastGaps}, worst ${worstCoastGap})`,
+  );
 }
 
 console.log(`\nriver-sea-buffer-test: ${pass} pass, ${fail} fail`);
