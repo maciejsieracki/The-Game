@@ -23,6 +23,9 @@ import {
   passesLocalLandGate,
   pickPlayerClusterCenter,
   capitalMinSeaDistForMap,
+  capitalMinSeparationForMap,
+  passesMinCapitalSeparationGate,
+  passesMinSeaDistGate,
   type ClusterPlacement,
   type TypeCluster,
 } from './clusters';
@@ -231,6 +234,20 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     map.szerokoscQ,
     map.wysokoscR,
   );
+  const minCapitalSep = capitalMinSeparationForMap(
+    placement.rozmiarMapy,
+    map.szerokoscQ,
+    map.wysokoscR,
+  );
+
+  /** Stolice obcych typów z computeClusters — do bramki sep przy relokacji gracza. */
+  const plannedForeignCapitals: Array<{ q: number; r: number }> = [];
+  for (const klaster of placement.klastry) {
+    if (klaster.typIndex === placement.playerTypIndex) continue;
+    const fc = klaster.miasta.find(m => m.isCapital) ?? klaster.miasta[0];
+    if (fc) plannedForeignCapitals.push({ q: fc.q, r: fc.r });
+  }
+
   let capPos = capPosRaw;
   if (!passesPlayerStartMassGate(map, capPos.q, capPos.r, landCache)) {
     const mapCenter = {
@@ -246,7 +263,38 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
       seaDist,
       minSeaDist,
     );
-    if (fixed) capPos = fixed;
+    if (
+      fixed
+      && passesMinSeaDistGate(seaDist ?? new Map(), fixed.q, fixed.r, minSeaDist)
+      && passesMinCapitalSeparationGate(fixed, plannedForeignCapitals, minCapitalSep)
+    ) {
+      capPos = fixed;
+    }
+  }
+
+  if (
+    minCapitalSep > 0
+    && !passesMinCapitalSeparationGate(capPos, plannedForeignCapitals, minCapitalSep)
+  ) {
+    const mapCenter = {
+      q: (map.szerokoscQ - 1) / 2,
+      r: (map.wysokoscR - 1) / 2,
+    };
+    const fixed = pickPlayerClusterCenter(
+      map,
+      landCache,
+      spawnCache?.ladowe ?? landHexesFromMap(map),
+      mapCenter,
+      mulberry32(seed ^ 0x9e3779b1),
+      seaDist,
+      minSeaDist,
+    );
+    if (
+      fixed
+      && passesMinCapitalSeparationGate(fixed, plannedForeignCapitals, minCapitalSep)
+    ) {
+      capPos = fixed;
+    }
   }
 
   /** MAP-SPAWN-Q2 B: walidacja stolic obcych typów — lokalny ląd ≥70% (jak gracz). */
@@ -256,6 +304,7 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
   const slots: ClusterSpawnSlot[] = [];
   const clusterCapitalOwnerIds: number[] = [];
   let nextOwnerId = 1;
+  const placedCapitals: Array<{ q: number; r: number }> = [{ q: capPos.q, r: capPos.r }];
 
   // Miasta-państwa tego samego typu — dopiero po założeniu miasta gracza (Maciej 2026-07-07).
   const pendingSameTypeRivals = rywaleNaKlaster;
@@ -265,7 +314,20 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
   for (const klaster of placement.klastry) {
     if (klaster.typIndex === placement.playerTypIndex) continue;
     const cap = klaster.miasta.find(m => m.isCapital) ?? klaster.miasta[0];
-    if (cap && !validateForeignCapital(cap.q, cap.r)) continue;
+    if (!cap) continue;
+    if (!validateForeignCapital(cap.q, cap.r)) continue;
+    if (!passesMinCapitalSeparationGate(
+      { q: cap.q, r: cap.r },
+      placedCapitals,
+      minCapitalSep,
+    )) {
+      if (typeof console !== 'undefined') {
+        console.warn(
+          `[cluster-spawn] Pominięto typ '${klaster.typ}' — stolica zbyt blisko innej (minSep=${minCapitalSep})`,
+        );
+      }
+      continue;
+    }
     let rivalIdx = 0;
     for (const m of klaster.miasta) {
       const ownerId = nextOwnerId++;
@@ -288,6 +350,7 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
         isClusterCapital: m.isCapital,
       });
     }
+    placedCapitals.push({ q: cap.q, r: cap.r });
   }
 
   // Zarezerwuj ownerId dla deferred same-type rivals PO obcych slotach (BUG-MP-NAZWA-CIV-MISMATCH).

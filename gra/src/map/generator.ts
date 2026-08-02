@@ -85,7 +85,7 @@ import {
   type StartPosition,
   type TypSwiata,
 } from './gen-helpers';
-import { pruneOrphanRiverPaths, pruneRiversNotReachingRealSea, flattenFalseCoastalRiverNotches, ensureRiverOutlets } from './gen-helpers';
+import { pruneOrphanRiverPaths, pruneRiversNotReachingRealSea, flattenFalseCoastalRiverNotches, ensureRiverOutlets, refillMainRiverCoastMouthGapsOnMap } from './gen-helpers';
 import { placeVillages, targetVillageHutCount, expectedStartCityCount } from './villages';
 import {
   resolveWorldGenNumbers,
@@ -506,6 +506,20 @@ export function generateMap(
   // udające deltę) — OSTATNI krok geografii, po finalnym oznakowaniu rzek, żeby znać PRAWDZIWE
   // ujścia i nigdy ich nie ruszać.
   flattenFalseCoastalRiverNotches(hexes, width, height);
+
+  // FALA 171: flatten wybrzeża może otworzyć luki 15–20 hex między ujściami — top-up po flatten.
+  if (riverGenOn) {
+    refillMainRiverCoastMouthGapsOnMap(
+      hexes,
+      width,
+      height,
+      riverPaths,
+      riverPathKinds,
+      rand,
+      riverParams,
+      riverParams.minLen,
+    );
+  }
 
   // ── Przebieg 3h-relief-final: domknij siatkę fair play reliefu (floor: min 2 Gór/2 Wzgórz na
   // komórkę) PONOWNIE, na PRAWDZIWIE finalnej geografii (po wybrzeżu, po rzekach) — Maciej

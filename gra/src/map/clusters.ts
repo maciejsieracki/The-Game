@@ -1984,7 +1984,10 @@ export function computeClusters(
 
   if (!passesPlayerStartMassGate(map, playerCapitalPos.q, playerCapitalPos.r, landCache)) {
     const fixed = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
-    if (fixed) {
+    if (
+      fixed
+      && passesMinCapitalSeparationGate(fixed, placedCapitals, minCapitalSep)
+    ) {
       playerCentrumFinal = fixed;
       playerCapitalPos = fixed;
       playerLayout = {

@@ -4798,3 +4798,9 @@ CZEKAM-NA: Maciej Ctrl+F5 - Nowa gra Standard: stolice AI daleko od siebie i od 
 - riverGenPhase=main + riverStage=1 bez zmian; sep 3 / bufor 2 / MassLandCache nietknięte
 - river-sea-buffer-test 9/9 - tsc 0 - publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra: ujścia rzek co ~≤7 hex wzdłuż brzegu kontynentu
+
+## [13:15 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 171 stolice sep + ujścia post-flatten + rzeki inland
+- md5 `1c8dcfe6` / `1c8dcfe6b6d6bcf437a5e5037e3ac9ae` - stempel `ROBOCZA - 2026-08-02 13:15`
+- (1) cluster-spawn: minSep stolic egzekwowany przy apply (Duża N=12); (2) top-up ujść PO flatten wybrzeża + ocean coast; (3) inland growth do maxLen/sep3
+- cluster-start-test 407/407 · river-sea-buffer-test 9/9 · tsc 0 · riverGenPhase=main riverStage=1
+CZEKAM-NA: Maciej Ctrl+F5 Duża mapa - stolice roznych civ >=11 hex, ujścia co <=7 hex ocean brzeg, rzeki w głąb lądu

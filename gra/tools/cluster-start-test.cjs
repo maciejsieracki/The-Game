@@ -769,5 +769,40 @@ for (const fcl of stdPlan.foreignTypeClusters) {
   }
 }
 
+// BUG-SPAWN-ODLEGLOSC-STOLICE: Duża 240×168 — minSep=12, twardy assert par stolic ≥ N-1
+const largeMap = M.generateMap(240, 168, 4242, 'kontynenty');
+const largePlan = M.buildClusterStartPlan({
+  map: largeMap,
+  civs,
+  seed: 4242,
+  playerCivId: 'grecy',
+  rywaleNaKlaster: 6,
+  startEpochId: 'zelazo',
+});
+assert(
+  M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) === 12,
+  'Duża 240×168: minCapitalSepForMap=12 (got ' +
+    M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) + ')',
+);
+const minSepLarge = M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168);
+const minSepTolLarge = minSepLarge - 1;
+const largeCapitals = [{ q: largePlan.playerStartHex.q, r: largePlan.playerStartHex.r }];
+for (const fcl of largePlan.foreignTypeClusters) {
+  const capPos = fcl.positions[0];
+  if (capPos) largeCapitals.push(capPos);
+}
+for (let i = 0; i < largeCapitals.length; i++) {
+  for (let j = i + 1; j < largeCapitals.length; j++) {
+    const d = M.hexDistanceAxial(
+      largeCapitals[i].q, largeCapitals[i].r,
+      largeCapitals[j].q, largeCapitals[j].r,
+    );
+    assert(
+      d >= minSepTolLarge,
+      `Duża: stolice #${i}↔#${j} min ${minSepTolLarge} hex (got ${d}, N=${minSepLarge})`,
+    );
+  }
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

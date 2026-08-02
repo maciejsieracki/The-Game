@@ -1,4 +1,6 @@
-﻿- **2026-08-01 23:40** — FALA 150 ROBOCZA `a1037b66` (pomiary sceny). START Ctrl+F5 Nowa gra; patrz etykiety + F12 `buildScene ms`.
+﻿- **2026-08-02 13:15** — OK FALA 171 ROBOCZA `1c8dcfe6` (stolice sep apply + ujścia post-flatten + inland maxLen). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra Duża**.
+
+- **2026-08-01 23:40** — FALA 150 ROBOCZA `a1037b66` (pomiary sceny). START Ctrl+F5 Nowa gra; patrz etykiety + F12 `buildScene ms`.
 
 - **2026-08-01 23:33** — DIAG FALA 149 ROBOCZA `7381ff21` (stage 0 = bez rzek w scenie). START: `gra-robocza/START.html` Ctrl+F5 Nowa gra — mierz czas Budowanie sceny.
 

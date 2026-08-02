@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `616afdfa` - 2026-08-02 12:30 - FALA 170: ujścia main co ≤7 hex wzdłuż wybrzeża - **AKTUALNA**
+## ROBOCZA `1c8dcfe6` - 2026-08-02 13:15 - FALA 171: stolice sep apply + ujścia post-flatten + rzeki inland maxLen - **AKTUALNA**
+- md5 (pelne): `1c8dcfe6b6d6bcf437a5e5037e3ac9ae` · stempel: `ROBOCZA · 2026-08-02 13:15`
+- **VERIFY OK (Gra-ROBOCZA.html).** (1) cluster-spawn: bramka minSep stolic przy apply (relokacja gracza + filtr obcych); Duża N=12. (2) refillMainRiverCoastMouthGapsOnMap po flattenFalseCoastalRiverNotches; ocean coast BFS; acceptLen 2 w top-up. (3) traceRiver inland do maxLen/sep3; riverTraceBudget nie ścina maxLen na Dużej. riverGenPhase=main + riverStage=1.
+- cluster-start-test.cjs — PASS 407/407 · river-sea-buffer-test.cjs — PASS 9/9 · tsc 0.
+## ROBOCZA `616afdfa` - 2026-08-02 12:30 - FALA 170: ujścia main co ≤7 hex wzdłuż wybrzeża - **ZASTAPIONA**
 - md5 (pelne): `616afdfaa7c82883f64228d878b34ff2` · stempel: `ROBOCZA · 2026-08-02 12:30`
 - **VERIFY OK (Gra-ROBOCZA.html).** Główne rzeki: po fazie main BFS wzdłuż wybrzeża — top-up ujść gdy luka > `MAIN_RIVER_COAST_MOUTH_MAX_GAP` (7 Standard/Duża, 5 Mała). `tryPlaceMainRiverAtMouth` + greedy domknięcie; sep 3 / bufor 2 / MassLandCache bez zmian. riverGenPhase=main + riverStage=1.
 - river-sea-buffer-test.cjs — PASS 9/9 · tsc 0.
