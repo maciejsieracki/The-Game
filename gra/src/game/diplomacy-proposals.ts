@@ -979,6 +979,7 @@ export function aiCommandToPendingProposal(
         payload: {
           goldOnce,
           giveItems: [goldBasket],
+          isGift: true,
         },
         actionId: 'handel',
       };
@@ -1054,6 +1055,17 @@ export function evaluatePendingFromAI(
 }
 
 /**
+ * Akcje, dla których wybuch wojny między stronami unieważnia propozycję. Świadomie
+ * POZA tym zbiorem: 'trybut_oferta' i 'ultimatum' — dotyczą WŁAŚNIE stanu
+ * wojny/napięcia, więc jej wybuch ich nie gasi (odwrotnie — to ich kontekst).
+ * 'namow_wojne' też poza zbiorem — nie wymaga pokoju między proponentem/respondentem.
+ */
+const NEGOTIATION_PEACE_REQUIRED: ReadonlySet<ProposalActionId> = new Set([
+  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'handel',
+  'umowa_handlowa' as ProposalActionId, 'umowa_szlakow', 'granice', 'tech', 'wasal', 'trybut_zadanie',
+]);
+
+/**
  * Gracz klika AKCEPTUJ na propozycji AI — bez ponownej oceny progów AI/respondenta.
  * Zwraca wynik gotowy do applyProposalOutcome (deal / oneShotTrade).
  *
@@ -1065,12 +1077,25 @@ export function evaluatePendingFromAI(
  * 1:1 budowę traktatu z odpowiadającej gałęzi `accepted` w evaluateProposal powyżej,
  * bez progów (gracz już się zgodził ręcznie — jak reszta tej funkcji).
  */
+const PEACE_ACTIONS_DURING_WAR: ReadonlySet<ProposalActionId> = new Set([
+  'pokoj', 'trybut_oferta', 'ultimatum',
+]);
+
 export function resolvePlayerAcceptsAiPending(
   pending: PendingProposal,
   turn: number,
   difficulty: GameDifficulty = 'normal',
+  opts?: { atWar?: boolean },
 ): ProposalEvalResult {
   const { actionId, fromOwnerId, toOwnerId, payload } = pending;
+  if (opts?.atWar === true) {
+    if (isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
+      return { accepted: false, reason: 'W wojnie pieniądze tylko w ugodzie pokojowej' };
+    }
+    if (NEGOTIATION_PEACE_REQUIRED.has(actionId) && !PEACE_ACTIONS_DURING_WAR.has(actionId)) {
+      return { accepted: false, reason: 'Wybuchła wojna — warunki straciły aktualność' };
+    }
+  }
   switch (actionId) {
     case 'nap': {
       const turns = clamp(payload.turns ?? 15, 10, 20);
@@ -1391,17 +1416,6 @@ export interface NegotiationWorldCtx {
   proposerEliminated: boolean;
   responderEliminated: boolean;
 }
-
-/**
- * Akcje, dla których wybuch wojny między stronami unieważnia propozycję. Świadomie
- * POZA tym zbiorem: 'trybut_oferta' i 'ultimatum' — dotyczą WŁAŚNIE stanu
- * wojny/napięcia, więc jej wybuch ich nie gasi (odwrotnie — to ich kontekst).
- * 'namow_wojne' też poza zbiorem — nie wymaga pokoju między proponentem/respondentem.
- */
-const NEGOTIATION_PEACE_REQUIRED: ReadonlySet<ProposalActionId> = new Set([
-  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'handel',
-  'umowa_handlowa' as ProposalActionId, 'umowa_szlakow', 'granice', 'tech', 'wasal', 'trybut_zadanie',
-]);
 
 export interface NegotiationValidity {
   valid: boolean;

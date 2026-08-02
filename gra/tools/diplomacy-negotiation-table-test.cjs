@@ -191,6 +191,13 @@ ok(NEGOTIATION_EXPIRY_TURNS > 0, 'NEGOTIATION_EXPIRY_TURNS > 0');
   );
   const tributeDuringWar = negotiationStillValid(tributeEntry, { turn: 11, isAtWar: true, proposerEliminated: false, responderEliminated: false });
   ok(tributeDuringWar.valid, 'trybut_oferta: wojna NIE unieważnia (to jej właśnie dotyczy)');
+
+  const giftEntry = createNegotiation(
+    { actionId: 'handel', proposerOwnerId: 1, responderOwnerId: 0, payload: { goldOnce: 50, giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 50 }], isGift: true } },
+    10, 'ai', 6,
+  );
+  const giftDuringWar = negotiationStillValid(giftEntry, { turn: 11, isAtWar: true, proposerEliminated: false, responderEliminated: false });
+  ok(!giftDuringWar.valid && /wojna/i.test(giftDuringWar.reason ?? ''), 'handel (dar goldOnce) + wojna: negotiationStillValid invalid');
 }
 
 // 8 — Przetrwanie zapisu gry: PendingNegotiation to zwykły JSON-owalny obiekt (round-trip).

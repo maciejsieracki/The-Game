@@ -6684,6 +6684,7 @@ async function boot(): Promise<void> {
         applyDiploEventTracked(0, ownerId, getDiploRelation(0, ownerId), 'wojna_wypowiedziana'),
       );
       recordWarDeclarationEvent(0, ownerId);
+      pruneInvalidNegotiations();
       showHintMessage('\u2694 Wypowiedziałeś wojnę: ' + civName, 4500);
       updateDiplomacyAudience();
       updateDiplomacyPanel();
@@ -6713,6 +6714,7 @@ async function boot(): Promise<void> {
         recordWarDeclarationEvent(attackerId, defenderId);
       }
       if (defenderId === 0) {
+        pruneInvalidNegotiations();
         showHintMessage('\u2694 ' + ownerDiploLabel(attackerId) + ' wypowiada wojnę (ultimatum)', 4500);
         updateDiplomacyAudience();
         if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
@@ -10829,6 +10831,20 @@ async function boot(): Promise<void> {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
+      const validity = negotiationStillValid(entry, {
+        turn,
+        isAtWar: getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
+        proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
+        responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
+      });
+      if (!validity.valid) {
+        negotiationTable.splice(idx, 1);
+        showHintMessage('Propozycja wygasła — ' + (validity.reason ?? ''), 4000);
+        refreshD1bHud();
+        updateDiplomacyAudience();
+        if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+        return;
+      }
       if (entry.awaitingOwnerId !== 0) {
         handleRequestAiNegotiationResponse(negotiationId);
         return;
@@ -10839,7 +10855,13 @@ async function boot(): Promise<void> {
         return;
       }
       negotiationTable.splice(idx, 1);
-      const result = resolvePlayerAcceptsAiPending(negotiationToLegacyPending(entry), turn, _menuDifficulty);
+      const atWar = getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna';
+      const result = resolvePlayerAcceptsAiPending(
+        negotiationToLegacyPending(entry),
+        turn,
+        _menuDifficulty,
+        { atWar },
+      );
       applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
       refreshD1bHud();
       updateDiplomacyAudience();
@@ -10974,7 +10996,16 @@ async function boot(): Promise<void> {
     ): PendingNegotiationRow[] {
       const rel = getDiploRelation(0, ownerId);
       const relTotal = audienceRelTotal(ownerId, rel);
-      return getNegotiationsForPair(ownerId).map(entry => {
+      const isAtWar = rel.status === 'wojna';
+      return getNegotiationsForPair(ownerId).filter(entry => {
+        const validity = negotiationStillValid(entry, {
+          turn,
+          isAtWar,
+          proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
+          responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
+        });
+        return validity.valid;
+      }).map(entry => {
         const direction: 'own' | 'incoming' = entry.awaitingOwnerId === 0 ? 'incoming' : 'own';
         const incoming = direction === 'incoming';
         const uiActionId = CYW_ACTION_TO_UI_ID[entry.actionId] ?? '5';

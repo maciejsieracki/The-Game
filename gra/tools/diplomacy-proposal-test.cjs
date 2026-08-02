@@ -393,14 +393,29 @@ const pendingHandel = aiCommandToPendingProposal(
 );
 ok(
   pendingHandel?.actionId === 'handel'
-    && pendingHandel.payload.goldOnce === 5,
-  'AI pending handel goldOnce 5',
+    && pendingHandel.payload.goldOnce === 5
+    && pendingHandel.payload.isGift === true,
+  'AI pending handel goldOnce 5 + isGift',
 );
 const acceptHandel = resolvePlayerAcceptsAiPending(pendingHandel, 12);
 ok(
   acceptHandel.accepted && acceptHandel.oneShotTrade && !acceptHandel.deal,
   'gracz akceptuje AI handel → oneShotTrade',
 );
+
+// BUG-DYP-GIFT-WAR: dar/handel złota w wojnie — evaluateProposal i resolvePlayerAcceptsAiPending
+{
+  const giftPayload = { goldOnce: 50, giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 50 }], isGift: true };
+  const giftProp = prop('handel', 3, 0, giftPayload);
+  const warReject = evaluateProposal(giftProp, ctx({ stanWojny: true }));
+  ok(!warReject.accepted && /wojna/i.test(warReject.reason ?? ''), 'evaluateProposal handel gift + wojna: rejected');
+
+  const atWarReject = resolvePlayerAcceptsAiPending(pendingHandel, 12, 'normal', { atWar: true });
+  ok(!atWarReject.accepted && /wojnie pieniądze/i.test(atWarReject.reason ?? ''), 'resolvePlayerAcceptsAiPending handel gift + atWar: rejected');
+
+  const peaceAccept = resolvePlayerAcceptsAiPending(pendingHandel, 12, 'normal', { atWar: false });
+  ok(peaceAccept.accepted && peaceAccept.oneShotTrade, 'resolvePlayerAcceptsAiPending handel gift + atWar false: accepted (regresja)');
+}
 
 ok(
   aiCommandToPendingProposal(
