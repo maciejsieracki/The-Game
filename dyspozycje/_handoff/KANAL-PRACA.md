@@ -4980,3 +4980,11 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (Ctrl+F5, Nowa gra Standard)
 - Branch merge: `cursor/merge-nap-and-sep15-63a1` → push `main`
 - **Bez deploy ROBOCZA** w tym kroku (kod na main)
 CZEKAM-NA: Maciej deploy ROBOCZA (Ctrl+F5: NAP @ Rel~52 + Nowa gra Standard sep 15)
+
+## [22:55 PL, 2026-08-02] CLOUD -> Maciej — fix zwrot surowca przy anulowaniu kolejki
+- Branch/PR: `cursor/fix-queue-cancel-refund-63a1`
+- Bug: Usuń z kolejki budowy nie zwracał koszt_surowce (pobór przy enqueue)
+- Fix: refundBuildingStockCostAcrossCities + cancelQueueItem w cityPanel
+- Test: building-queue-refund-test.cjs 5/5 PASS
+- ID: BUG-KOLEJKA-ZWROT-SUROWCA · R-KOLEJKA-ZWROT-SUROWCA
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno wraca)
