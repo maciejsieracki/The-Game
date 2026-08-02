@@ -210,6 +210,7 @@ import {
   isOwnerClusterCityState,
   isTechnicalOwnerLabel,
   resolveOwnerBaseName,
+  sanitizeOwnerDisplayBase,
 } from './game/display-names';
 import {
   computeDiplomaticContacts,
@@ -4372,11 +4373,17 @@ async function boot(): Promise<void> {
      * Lista dyplomacji (panel + toolbar) — wszystkie ODKRYTE w mgle cywilizacje.
      * Kontakt formalny = automatyczny przy pierwszym odkryciu (karta informacyjna).
      */
+    function isActiveDiploOwner(ownerId: number): boolean {
+      if (ownerId === 0 || isBarbarian(ownerId) || eliminatedOwners.has(ownerId)) return false;
+      if (aiOwnerCivMap.has(ownerId)) return true;
+      return cities.some(c => c.ownerId === ownerId) || units.some(u => u.ownerId === ownerId);
+    }
+
     function buildPlayerDiploRelations(): DiploRelation[] {
       const rels: DiploRelation[] = [];
       const contacted = getDiplomaticContacts();
       for (const otherId of contacted) {
-        if (otherId === 0 || isBarbarian(otherId)) continue;
+        if (!isActiveDiploOwner(otherId)) continue;
         const rel = getDiploRelation(0, otherId);
         const layer = diplomacyLayerForOwner(
           otherId,
@@ -5556,22 +5563,68 @@ async function boot(): Promise<void> {
       return row?.Cywilizacja != null ? String(row.Cywilizacja) : undefined;
     }
 
+  /** Indeks rywala klastra (1-based) wśród ownerów tego samego typu — do puli nazw miast-państw. */
+    function clusterRivalIndexForOwner(ownerId: number, civKey: string): number {
+      const peerSet = new Set<number>([...simplifiedDiplomacyOwners, ...typCityCopyOwners]);
+      const peers = [...peerSet]
+        .filter(oid => aiOwnerCivMap.get(oid) === civKey)
+        .sort((a, b) => a - b);
+      const pos = peers.indexOf(ownerId);
+      if (pos >= 0) return pos + 1;
+      const foreignPeers = [...foreignTypeOwners]
+        .filter(oid => aiOwnerCivMap.get(oid) === civKey && !clusterCapitalOwnerIds.has(oid))
+        .sort((a, b) => a - b);
+      const fpos = foreignPeers.indexOf(ownerId);
+      return fpos >= 0 ? fpos + 1 : 1;
+    }
+
+    /** Nazwa z puli klastra gdy brak miasta / cache (nigdy AI N / Rywal N w UI). */
+    function poolCityStateNameForOwner(ownerId: number): string | undefined {
+      const civKey = aiOwnerCivMap.get(ownerId);
+      if (!civKey) return undefined;
+      const rivalIdx = clusterRivalIndexForOwner(ownerId, civKey);
+      const fromPool = clusterRivalCityName(
+        data.civs,
+        civKey,
+        rivalIdx,
+        data.cityNamesPools,
+      );
+      return isTechnicalOwnerLabel(fromPool) ? undefined : fromPool;
+    }
+
     function ownerDiploLabel(ownerId: number): string {
       if (isBarbarian(ownerId)) return 'Barbarzyńcy';
       const opts = ownerCityStateOpts();
       const isCS = isOwnerClusterCityState(ownerId, opts);
-      const base = resolveOwnerBaseName({
+      const civDisplay = civDisplayNameForOwner(ownerId);
+      let base = resolveOwnerBaseName({
         ownerId,
         cached: ownerDisplayName.get(ownerId),
         cityName: ownerCityLabelFromMap(ownerId),
-        civDisplayName: civDisplayNameForOwner(ownerId),
+        civDisplayName: civDisplay,
         isCityState: isCS,
         isClusterCapital: clusterCapitalOwnerIds.has(ownerId),
       });
-      if (!isTechnicalOwnerLabel(base)) {
+      base = sanitizeOwnerDisplayBase(base, civDisplay);
+      if (!base.trim()) {
+        const fromPool = poolCityStateNameForOwner(ownerId);
+        if (fromPool) base = fromPool;
+      }
+      if (!base.trim()) {
+        base = sanitizeOwnerDisplayBase(ownerDisplayName.get(ownerId) ?? '', civDisplay);
+      }
+      if (!base.trim() && civDisplay && !isTechnicalOwnerLabel(civDisplay)) {
+        base = civDisplay;
+      }
+      if (!isTechnicalOwnerLabel(base) && base.trim()) {
         ownerDisplayName.set(ownerId, base);
       }
-      return formatOwnerDiploLabel(base, ownerId, opts);
+      const formatted = formatOwnerDiploLabel(base, ownerId, opts);
+      if (!isTechnicalOwnerLabel(formatted) && formatted.trim()) return formatted;
+      if (civDisplay && !isTechnicalOwnerLabel(civDisplay)) {
+        return formatOwnerDiploLabel(civDisplay, ownerId, opts);
+      }
+      return formatted.trim() || civDisplay || '';
     }
 
     /** Wojna z udziałem gracza — wpisy w panelu WYDARZENIA (bez stałego paska na HUD). */
@@ -11553,7 +11606,9 @@ async function boot(): Promise<void> {
     /** Aktualizuje trwały zbiór odkrytych nacji wg bieżącego zasięgu widzenia. */
     function updateDiplomaticDiscovery(visible: ReadonlySet<string>): void {
       const seenNow = computeDiplomaticContacts(visible, cities, units);
-      for (const oid of seenNow) diplomaticallyDiscoveredOwners.add(oid);
+      for (const oid of seenNow) {
+        if (!eliminatedOwners.has(oid)) diplomaticallyDiscoveredOwners.add(oid);
+      }
     }
 
     function resetDiplomaticDiscoveryUiState(): void {
@@ -17455,6 +17510,8 @@ async function boot(): Promise<void> {
       ownerStartEraByOwner.delete(ownerId);
       clusterCapitalOwnerIds.delete(ownerId);
       diplomaticContactEstablished.delete(ownerId);
+      diplomaticallyDiscoveredOwners.delete(ownerId);
+      diplomaticDiscoveryPopupShown.delete(ownerId);
       battlePowerPtsByOwner.delete(ownerId);
       // Follow-up „przenieś stolicę"/„Power-zdobycze": cywilizacja skasowana, jej
       // wyznaczenie stolicy i (ew. własne) zdobycze nie mają już znaczenia. Zdobycze
@@ -22970,7 +23027,9 @@ async function boot(): Promise<void> {
       }
       const savedDiscovered = saved.meta?.diplomaticallyDiscoveredOwners as number[] | undefined;
       if (savedDiscovered?.length) {
-        for (const oid of savedDiscovered) { if (!isBarbarian(oid)) diplomaticallyDiscoveredOwners.add(oid); }
+        for (const oid of savedDiscovered) {
+          if (!isBarbarian(oid) && !eliminatedOwners.has(oid)) diplomaticallyDiscoveredOwners.add(oid);
+        }
       } else {
         for (const oid of diplomaticContactEstablished) diplomaticallyDiscoveredOwners.add(oid);
       }

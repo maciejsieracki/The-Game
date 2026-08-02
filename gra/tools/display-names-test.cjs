@@ -18,6 +18,7 @@ export {
   isClusterCityStateSlot,
   isTechnicalOwnerLabel,
   resolveOwnerBaseName,
+  sanitizeOwnerDisplayBase,
   CITY_STATE_LABEL,
 } from '../src/game/display-names';
 `, 'utf8');
@@ -124,6 +125,32 @@ assert(
     cities: [{ ownerId: 10, name: 'Mykeny', startCityState: true }],
   }) === 'Mykeny' + suffix,
   'audiencja: Mykeny · miasto-państwo',
+);
+
+assert(
+  M.resolveOwnerBaseName({
+    ownerId: 32,
+    cached: undefined,
+    cityName: undefined,
+    civDisplayName: undefined,
+    isCityState: true,
+  }) === '',
+  'brak danych → pusty string (nie AI 32)',
+);
+
+assert(
+  M.sanitizeOwnerDisplayBase('AI 32', 'Grecy') === 'Grecy',
+  'sanitize: AI N → nazwa kultury',
+);
+
+assert(
+  M.sanitizeOwnerDisplayBase('Sparta · Grecy', 'Grecy') === 'Sparta · Grecy',
+  'sanitize: prawdziwa nazwa bez zmian',
+);
+
+assert(
+  M.sanitizeOwnerDisplayBase('Rywal 5', 'Egipt') === 'Egipt',
+  'sanitize: Rywal N → kultura (stolica obcego typu bez miasta)',
 );
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

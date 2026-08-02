@@ -27,7 +27,8 @@ __export(display_names_entry_exports, {
   isClusterCityStateSlot: () => isClusterCityStateSlot,
   isOwnerClusterCityState: () => isOwnerClusterCityState,
   isTechnicalOwnerLabel: () => isTechnicalOwnerLabel,
-  resolveOwnerBaseName: () => resolveOwnerBaseName
+  resolveOwnerBaseName: () => resolveOwnerBaseName,
+  sanitizeOwnerDisplayBase: () => sanitizeOwnerDisplayBase
 });
 module.exports = __toCommonJS(display_names_entry_exports);
 
@@ -102,7 +103,13 @@ function resolveOwnerBaseName(input) {
   if (cleanCiv) return cleanCiv;
   if (cached?.trim()) return stripCityStateSuffix(cached);
   if (cityName?.trim()) return stripCityStateSuffix(cityName);
-  return `AI ${ownerId}`;
+  return "";
+}
+function sanitizeOwnerDisplayBase(base, civDisplayName) {
+  const trimmed = (base ?? "").trim();
+  if (trimmed && !isTechnicalOwnerLabel(trimmed)) return stripCityStateSuffix(trimmed);
+  const civ = civDisplayName && !isTechnicalOwnerLabel(civDisplayName) ? stripCityStateSuffix(civDisplayName) : void 0;
+  return civ ?? "";
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
@@ -113,5 +120,6 @@ function resolveOwnerBaseName(input) {
   isClusterCityStateSlot,
   isOwnerClusterCityState,
   isTechnicalOwnerLabel,
-  resolveOwnerBaseName
+  resolveOwnerBaseName,
+  sanitizeOwnerDisplayBase
 });
