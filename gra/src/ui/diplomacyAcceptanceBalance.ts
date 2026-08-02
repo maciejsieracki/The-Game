@@ -124,10 +124,37 @@ function balanceHint(balance: AcceptanceSideBalance): string {
   return balance.statusLabel;
 }
 
+/** Przychodząca wymiana PN — panel netto (nie fair-min AI). */
+export function isIncomingBasketTradePanel(data: PnBalancePanelData): boolean {
+  if (data.direction !== 'incoming') return false;
+  const mode = data.myBalance?.mode ?? data.theirBalance.mode;
+  return mode === 'basket' || mode === 'mixed';
+}
+
+/** Netto PW: dodatnie = gracz oddaje więcej (przewaga partnera). */
+export function incomingTradeNetBalancePw(data: PnBalancePanelData): number {
+  return data.myOfferPn - data.theirOfferPn;
+}
+
+function incomingTradeBalanceHint(netPw: number): string {
+  if (netPw > 0) return `Przewaga u nich: +${netPw} PW`;
+  if (netPw < 0) return `Przewaga u Ciebie: +${Math.abs(netPw)} PW`;
+  return 'Równo — symetryczna wymiana';
+}
+
 function verdictHtml(data: PnBalancePanelData): { html: string; tone: 'ok' | 'no' | 'wait' } {
   const their = data.theirBalance;
   if (data.direction === 'incoming') {
-    if (data.canAccept) {
+    if (data.canAccept !== false) {
+      if (isIncomingBasketTradePanel(data)) {
+        const net = incomingTradeNetBalancePw(data);
+        const html = net > 0
+          ? `Możesz przyjąć — oddajesz więcej o ${net} PW (korzyść partnera)`
+          : net < 0
+            ? `Możesz przyjąć — przewaga u Ciebie o ${Math.abs(net)} PW`
+            : 'Możesz przyjąć — wymiana symetryczna';
+        return { tone: 'ok', html };
+      }
       return {
         tone: 'ok',
         html: 'Spełnia warunki — możesz przyjąć (Przyjmij aktywne)',
@@ -135,9 +162,6 @@ function verdictHtml(data: PnBalancePanelData): { html: string; tone: 'ok' | 'no
     }
     if (data.myBalance && !data.myBalance.accepted) {
       return { tone: 'no', html: 'Twoje warunki: ' + data.myBalance.statusLabel };
-    }
-    if (!their.accepted) {
-      return { tone: 'no', html: 'Oni nie spełniają progu: ' + their.statusLabel };
     }
     return { tone: 'wait', html: 'Oceń ofertę lub kontruj, aby osiągnąć bilans' };
   }
@@ -177,9 +201,19 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
   }
 
   const their = data.theirBalance;
-  const balCls = their.accepted ? 'ok' : 'no';
-  const delta = formatBalanceDelta(their.balancePn, their.accepted);
-  const deltaCls = their.balancePn >= 0 ? 'pos' : 'neg';
+  const incomingTrade = isIncomingBasketTradePanel(data);
+  const netPw = incomingTrade ? incomingTradeNetBalancePw(data) : their.balancePn;
+  const balCls = incomingTrade
+    ? (data.canAccept !== false ? 'ok' : 'no')
+    : (their.accepted ? 'ok' : 'no');
+  const delta = incomingTrade
+    ? (netPw > 0 ? `+${netPw}` : String(netPw))
+    : formatBalanceDelta(their.balancePn, their.accepted);
+  const deltaCls = netPw >= 0 ? 'pos' : 'neg';
+  const centerLabel = incomingTrade ? 'Bilans (netto)' : 'Bilans (Oni)';
+  const hint = incomingTrade
+    ? incomingTradeBalanceHint(netPw)
+    : balanceHint(their);
   const verdict = verdictHtml(data);
   const extraNote = (data.extraOnTable ?? 0) > 0
     ? '<span class="da-pn-bal-more">+' + data.extraOnTable + ' inna na stole</span>'
@@ -211,9 +245,9 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + pwAmountHtml(data.myOfferPn)
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
-    + '<span class="da-pn-bal-lbl">Bilans (Oni)</span>'
+    + '<span class="da-pn-bal-lbl">' + esc(centerLabel) + '</span>'
     + '<span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + '>' + esc(delta) + '</span>'
-    + '<span class="da-pn-bal-hint">' + esc(balanceHint(their)) + '</span>'
+    + '<span class="da-pn-bal-hint">' + esc(hint) + '</span>'
     + '</div>'
     + '<div class="da-pn-bal-cell they">'
     + '<span class="da-pn-bal-lbl">Oni oddają</span>'

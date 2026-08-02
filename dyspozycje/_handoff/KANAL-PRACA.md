@@ -5002,3 +5002,10 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno
 - **FALA 201.** PR #5 Inkowie MP · PR #6 zwrot surowca kolejki · (+ NAP fair-min + sep 15 z main)
 - build: /tmp/civ-dist-fala201 · poprzedni `26b05753` ZASTĄPIONA
 CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Inkowie z MP) + Stolarnia→Usuń (drewno wraca)
+
+## [00:15 PL, 2026-08-02] CLOUD -> Maciej — fix trade incoming accept + bilans + edycja koszyka
+- Branch: `cursor/fix-trade-offer-edit-balance-63a1`
+- Fix: Przyjmij incoming bez fair-min gate; bilans netto +120 (nie Brakuje); klik karty -> edycja obu stron
+- Test: diplomacy-acceptance-points-test.cjs 177/177 PASS
+- ID: BUG-DYPLO-TRADE-INCOMING-ACCEPT · R-DYPLO-TRADE-INCOMING
+CZEKAM-NA: Maciej merge (bez deploy w tej sesji)

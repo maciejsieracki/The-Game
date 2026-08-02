@@ -10984,7 +10984,9 @@ async function boot(): Promise<void> {
         }
         const responderPreview = previewNegotiationEntry(entry);
         const legacyAccess = proposalHasResourceAccess(entry.payload);
-        const canAccept = direction === 'incoming' && responderPreview.accepted && !legacyAccess;
+        // Incoming: gracz może przyjąć propozycję AI nawet gdy jest dla niego niekorzystna
+        // (Maciej 2026-08-02). evaluateProposal/fair-min dotyczy auto-akceptacji AI, nie Przyjmij.
+        const canAccept = direction === 'incoming' && !legacyAccess;
         const awaitingAiResponse = direction === 'own' && entry.awaitingOwnerId !== 0;
         const dealDetails = negotiationSummary(entry);
         const canCounter = direction === 'incoming' && canCounterNegotiation(entry);

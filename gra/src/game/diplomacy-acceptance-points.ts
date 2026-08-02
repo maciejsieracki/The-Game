@@ -302,6 +302,21 @@ export function computePlayerAcceptanceSides(
     their.statusLabel = formatBalanceLabel(their.balancePn, their.accepted);
   }
 
+  // Przychodząca wymiana PN: gracz może przyjąć niekorzystny deal; bilans UI = netto
+  // (nie fair-min respondenta — to dawało fałszywe „Brakuje PW" przy Przyjmij).
+  if (incoming && !isGift && (mode === 'basket' || mode === 'mixed')) {
+    my.accepted = true;
+    my.statusLabel = 'Twoja decyzja — możesz przyjąć';
+    const netTheirAdvantage = myOfferPn - theirOfferPn;
+    their.balancePn = netTheirAdvantage;
+    their.accepted = netTheirAdvantage >= 0;
+    their.statusLabel = netTheirAdvantage > 0
+      ? `Przewaga u nich +${netTheirAdvantage} PW`
+      : netTheirAdvantage < 0
+        ? `Przewaga u Ciebie +${-netTheirAdvantage} PW`
+        : 'Równo — wymiana symetryczna';
+  }
+
   return { my, their, isGift };
 }
 

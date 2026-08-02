@@ -920,6 +920,16 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
+## BUG-DYPLO-TRADE-INCOMING-ACCEPT — Przyjmij zablokowany + fałszywe „Brakuje PW" na propozycji AI · STATUS: **NAPRAWIONE w źródle** (2026-08-02)
+
+**Cytat (screen Macieja):** Traktat handlowy — My: 10 Glina/turę (200 PW), Oni: 8 ¤/turę (80 PW). Panel: Bilans (Oni) **−120**, „Brakuje 120 PW", „Oni nie spełniają progu". Przyjmij disabled (tooltip fair min @ Relacji). Karty statyczne — brak edycji obu stron koszyka.
+
+**Przyczyna:** `canAccept` w `main.ts` wymagał `responderPreview.accepted` z `evaluateProposal` (fair-min proponenta AI); przy korzystnym dla AI dealu zwracało false. Panel PW używał `their.balancePn = offer − fairMin` zamiast netto wymiany. Edycja tylko przez przycisk Kontruj.
+
+**Fix:** Incoming `canAccept = !legacyAccess` (gracz decyduje). `computePlayerAcceptanceSides` + `renderPnBalancePanelHtml`: bilans netto `my−their`, bez „Brakuje" gdy gracz oddaje więcej. Klik w kartę przychodzącej propozycji → koszyk edycji obu stron (jak Kontruj). Test: `diplomacy-acceptance-points-test.cjs` (incoming traktat +120).
+
+---
+
 ## BUG-DYPLO-UMOWY-DUPLIKAT — wielokrotne klikanie tej samej umowy na stole · STATUS: **ZAMKNIĘTE** (fix 2026-07-29)
 
 **Cytat:** Można wielokrotnie naciskać tę samą umowę (np. Traktat handlowy) — na stole pojawia się wiele kart i rzędów Przyjmij/Odrzuć.
