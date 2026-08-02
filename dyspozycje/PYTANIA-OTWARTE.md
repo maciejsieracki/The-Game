@@ -1475,3 +1475,13 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## BUG-AI-MP-BUILD-BLOCKED — MP/AI nie budują budynków (pusta kolejka) · STATUS: **NAPRAWIONE w źródle** (2026-08-02)
+
+**Źródło:** diagnoza sesji cloud — `chooseCityProduction` wybierał budynki bez bramki tech/epoki; handler `build` w `main.ts` odrzucał je (`Build blocked (epoka/tech)`).
+
+**Fix:** `AITurnOpts.isProductionAllowed` + filtr w `chooseCityProduction`; `main.ts` woła `availableProduction` (parytet z graczem).
+
+**Test:** `node tools/ai-test.cjs` — T7D-j/k PASS; T7D-h bez callbacka = zero regresji.
+
+**ID:** P-AI-014 · branch `cursor/fix-mp-ai-build-blocked-63a1`

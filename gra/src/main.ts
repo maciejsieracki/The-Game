@@ -19785,6 +19785,42 @@ async function boot(): Promise<void> {
                 if (Object.keys(unitCost).length === 0) return true;
                 return canAffordBuildingStock(ownerSurowcePoolFor(c.ownerId), unitCost);
               },
+              // P-AI-014: bramka tech/epoka/prereq — ta sama semantyka co handler build niżej
+              // (availableProduction). Bez tego chooseCityProduction wybiera studnia/mury itd.
+              // zanim tech odblokowany → Build blocked (epoka/tech) → pusta kolejka.
+              isProductionAllowed: (cityId: string, itemId: string) => {
+                const c = cities.find(x => x.id === cityId && x.ownerId === ownerId);
+                if (!c) return false;
+                const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+                const builtIds = cityBuilt.get(c.id) ?? [];
+                const ownImprovements = placedImprovementsForOwner(ownerId);
+                const allowed = availableProduction(
+                  c,
+                  data,
+                  Array.from(unlockedTechSetForOwner(ownerId)),
+                  {
+                    epoch: empireEpochForOwner(ownerId),
+                    builtBuildingIds: builtIds,
+                    productionQueue: prod0.kolejka,
+                    civBonusy: civBonusyForOwnerId(ownerId),
+                    civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
+                    placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
+                    hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
+                    aliveUnitTypeNames: new Set(
+                      units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
+                    ),
+                    buildingCostPace: player.buildingCostPace ?? 'niski',
+                    ownerId,
+                    difficulty: _menuDifficulty,
+                    empireActiveResourceLabels: empireActiveResourceLabelsForOwner(ownerId),
+                    empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
+                    empireResourceStock: citySurowceSumForOwner(ownerId),
+                    cityHasCoastOrRiver: cityHasCoastOrRiverAccess(c),
+                    isCapital: capitalCityIdForOwner(ownerId) === c.id,
+                  },
+                );
+                return allowed.some(a => a.id === itemId || a.nazwa === itemId);
+              },
             };
             const myCivTyp = aiOwnerCivMap.get(ownerId);
             const tc = clusterPlacement?.klastry.find(k => k.typ === myCivTyp);

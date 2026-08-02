@@ -2301,7 +2301,61 @@ console.log('\n--- T7D-i: defensiveCopy bez garnizonu -> nadal Wojownik pierwszy
     map,
     diff,
   );
-  eq(pick, 'Wojownik', 'T7D-i: bez garnizonu najpierw Wojownik');
+  eq(pick, 'Wojownik', 'T7D-i: bez garnizonu najpierz Wojownik');
+}
+
+console.log('\n--- T7D-j: defensiveCopy + garnizon + isProductionAllowed odrzuca budynki -> Wojownik ---');
+{
+  const map = makeMap(10, 10);
+  const city = makeCity('cs3', 4, 3, 3);
+  const guard = makeUnit('g3', 4, 3, 3, 'miecznik');
+  const dataCs = makeGameData();
+  dataCs.buildings.push(
+    { id: 'studnia', nazwa: 'Studnia' },
+    { id: 'garncarnia', nazwa: 'Garncarnia' },
+    { id: 'palac', nazwa: 'Pałac' },
+  );
+  const diff = loadDifficultyParams(dataCs, 2);
+  const isProductionAllowed = (_cityId, itemId) => itemId === 'Wojownik';
+  const pick = chooseCityProduction(
+    'cs3',
+    [city],
+    [guard],
+    4,
+    dataCs,
+    { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 },
+    { defensiveCopy: true, cityBuildings: { cs3: [] }, isProductionAllowed },
+    map,
+    diff,
+  );
+  eq(pick, 'Wojownik', 'T7D-j: gdy bramka tech blokuje budynki, wybiera Wojownika');
+}
+
+console.log('\n--- T7D-k: defensiveCopy + garnizon + isProductionAllowed tylko studnia -> studnia ---');
+{
+  const map = makeMap(10, 10);
+  const city = makeCity('cs4', 4, 3, 3);
+  const guard = makeUnit('g4', 4, 3, 3, 'miecznik');
+  const dataCs = makeGameData();
+  dataCs.buildings.push(
+    { id: 'studnia', nazwa: 'Studnia' },
+    { id: 'garncarnia', nazwa: 'Garncarnia' },
+    { id: 'palac', nazwa: 'Pałac' },
+  );
+  const diff = loadDifficultyParams(dataCs, 2);
+  const isProductionAllowed = (_cityId, itemId) => itemId === 'studnia';
+  const pick = chooseCityProduction(
+    'cs4',
+    [city],
+    [guard],
+    4,
+    dataCs,
+    { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 },
+    { defensiveCopy: true, cityBuildings: { cs4: [] }, isProductionAllowed },
+    map,
+    diff,
+  );
+  eq(pick, 'studnia', 'T7D-k: gdy bramka przepuszcza tylko studnia, wybiera studnia');
 }
 
 console.log('\n--- T11-scout-c: zwiadowca rusza w stronę neutralnej wioski ---');
