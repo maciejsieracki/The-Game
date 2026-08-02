@@ -3,6 +3,8 @@
 **Status:** plan do rozmowy jutro — **bez implementacji**.  
 **Cytat:** „przydałaby się też w budowaniu ulepszeń automatyczna funkcja… podzielić na typy… albo tylko tam, gdzie produkują obywatele”.
 
+Powiązane (budynki, nie teren): `PLAN-AUTO-LISTA-BUDOWNICZA-2026-08-02.md` — auto z listy kolejności + szablony epok.
+
 ---
 
 ## 1. Co jest dziś
