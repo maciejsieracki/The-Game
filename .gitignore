@@ -52,3 +52,5 @@ desktop.ini
 # tymczasowe artefakty narzedziowe (bundle testowe sa juz sledzone, wiec ich nie ignorujemy)
 gra/tmp-*.ts
 gra/tools/.probe-*
+gra/tools/.capital-sep-*-entry.ts
+gra/tools/.capital-sep-*-bundle.cjs

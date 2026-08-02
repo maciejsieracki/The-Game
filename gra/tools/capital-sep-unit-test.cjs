@@ -1,5 +1,10 @@
 'use strict';
-/** node tools/capital-sep-unit-test.cjs — szybki test N i bramki (bez pełnej Pangea) */
+/**
+ * node tools/capital-sep-unit-test.cjs — szybki test N i bramki (bez pełnej Pangea)
+ *
+ * 4 bliskie etykiety ≠ bypass sep stolic — to design klastra:
+ * sep STOLIC różnych civ (Standard=14) jest twarde; bliskie etykiety (~5 hex) to miasta-państwa w klastrze.
+ */
 
 const path = require('path');
 const fs = require('fs');
@@ -16,6 +21,10 @@ export {
   capitalMinSeparation,
   capitalMinSeparationForMap,
   passesMinCapitalSeparationGate,
+  CLUSTER_CITY_STATE_MIN_HEX,
+  CLUSTER_CITY_STATE_MAX_HEX,
+  MIN_DIST_FOREIGN_IN_CLUSTER,
+  packCityStatesHubChain,
 } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
 `, 'utf8');
@@ -73,6 +82,40 @@ assert(M.capitalMinSeparationForMap('ogromna', 240, 168) === 16, 'FALA182: Duża
 // minDystObcyOdGracza = max(12 floor, minDystKlastrow) → na Dużej 16, nie hardcode 12
 assert(Math.max(12, M.capitalMinSeparationForMap('ogromna', 240, 168)) === 16,
   'FALA182: obcy od gracza na Dużej ≥16 (nie 12)');
+
+// Klastr MP: MIN=MAX=5 hex — bliskie etykiety to design klastra, nie bypass sep stolic (14)
+assert(M.CLUSTER_CITY_STATE_MIN_HEX === 5, 'CLUSTER_CITY_STATE_MIN_HEX=5');
+assert(M.CLUSTER_CITY_STATE_MAX_HEX === 5, 'CLUSTER_CITY_STATE_MAX_HEX=5');
+assert(M.MIN_DIST_FOREIGN_IN_CLUSTER === 5, 'MIN_DIST_FOREIGN_IN_CLUSTER=5');
+
+/** Dysk heksów axial wokół (cq, cr) w promieniu `radius`. */
+function landDisk(cq, cr, radius) {
+  const land = [];
+  for (let dq = -radius; dq <= radius; dq++) {
+    for (let dr = Math.max(-radius, -dq - radius); dr <= Math.min(radius, -dq + radius); dr++) {
+      land.push({ q: cq + dq, r: cr + dr });
+    }
+  }
+  return land;
+}
+
+const core = { q: 0, r: 0 };
+const land = landDisk(core.q, core.r, 12);
+const hubMps = M.packCityStatesHubChain(land, core, 4, 5, 5, 12345);
+
+assert(hubMps.length === 4, `packCityStatesHubChain: 4 MP (got ${hubMps.length})`);
+for (let i = 0; i < hubMps.length; i++) {
+  const dCore = M.hexDistanceAxial(hubMps[i].q, hubMps[i].r, core.q, core.r);
+  assert(dCore >= 5, `hub MP[${i}] dystans do core >= 5 (${dCore})`);
+  for (let j = i + 1; j < hubMps.length; j++) {
+    const d = M.hexDistanceAxial(hubMps[i].q, hubMps[i].r, hubMps[j].q, hubMps[j].r);
+    assert(d >= 5, `hub MP pairwise[${i},${j}] >= 5 (${d})`);
+  }
+}
+const hasRing5 = hubMps.some(
+  (mp) => M.hexDistanceAxial(mp.q, mp.r, core.q, core.r) === 5,
+);
+assert(hasRing5, 'pierwszy pierścień hub: przynajmniej jedno MP ma dystans do core === 5');
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
