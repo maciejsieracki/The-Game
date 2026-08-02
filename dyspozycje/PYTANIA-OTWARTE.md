@@ -1464,3 +1464,14 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 - Test: seeds 1–20 Inkowie 20/20 z MP; seed 25 Cusco+4 MP spawn OK. Diag 1–40: onlyCap=0.
 
 **ID rejestru:** R-INKOWIE-MP-BRAK · branch `cursor/fix-inkowie-mp-missing-63a1`
+
+## BUG-KOLEJKA-ZWROT-SUROWCA — anulowanie budynku nie zwraca koszt_surowce · STATUS: **NAPRAWIONE w źródle** (2026-08-02)
+
+**Źródło:** Maciej 2026-08-02 — usunięcie budynku z kolejki Pracy nie zwracało surowca pobranego przy enqueue.
+
+**Root cause:** `addItem()` w `cityPanel.ts` pobiera `koszt_surowce` raz przy dodaniu do kolejki (`deductBuildingStockCostAcrossCities`); przyciski ✕/`Usuń` wołały tylko `dequeue()` — bez zwrotu. Rekrutacja miała już `onCancelRecruitment`; kolejka budowy — nie.
+
+**Fix:** `refundBuildingStockCostAcrossCities` + `cancelQueueItem()` (zwrot → dequeue). Praca nie jest pobierana z góry — postęp się gubi (OK).
+
+**Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
+**ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`

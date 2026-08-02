@@ -161,6 +161,22 @@ export function ownerResourceStock(
 }
 
 /**
+ * Zwraca koszt surowcowy do puli państwa (symetria deductBuildingStockCostAcrossCities).
+ * Używane przy anulowaniu pozycji w kolejce budowy — bez capPerType (to zwrot, nie produkcja).
+ */
+export function refundBuildingStockCostAcrossCities<T extends StockCitySource>(
+  cities: ReadonlyArray<T>,
+  ownerId: number,
+  cost: Record<string, number>,
+): void {
+  for (const [key, amount] of Object.entries(cost)) {
+    if (typeof amount === 'number' && Number.isFinite(amount) && amount > 0) {
+      creditOwnerResourceStock(cities, ownerId, key, amount);
+    }
+  }
+}
+
+/**
  * Pobiera koszt budynku Z PULI PANSTWA: rozklada pobor po miastach ownera, biorac
  * NAJPIERW z miast o NAJWIEKSZYM zapasie danego surowca (deterministycznie -- stabilne
  * sortowanie malejaco po ilosci, remis rozstrzyga id miasta rosnaco), az koszt pokryty.

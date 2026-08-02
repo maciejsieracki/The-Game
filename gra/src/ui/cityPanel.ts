@@ -100,6 +100,7 @@ import {
   stockResourceLabel,
   ownerResourceStockAll,
   deductBuildingStockCostAcrossCities,
+  refundBuildingStockCostAcrossCities,
 } from '../game/building-stock-cost';
 import {
   upgradeChainSteps,
@@ -5099,6 +5100,26 @@ function unitStockCostForItem(item: ProductionItem): Record<string, number> {
   return unitStockCost(def);
 }
 
+/** Koszt surowcowy pobrany przy enqueue — do zwrotu przy anulowaniu z kolejki. */
+function stockCostForQueueItem(item: ProductionItem): Record<string, number> {
+  if (item.kind === 'budynek') return buildingStockCostForItem(item);
+  if (item.kind === 'jednostka') return unitStockCostForItem(item);
+  return {};
+}
+
+/** Usuń pozycję z kolejki Pracy i zwróć jednorazowy koszt surowcowy do puli państwa. */
+function cancelQueueItem(city: City, index: number): void {
+  const prod = getProd(city.id);
+  if (index < 0 || index >= prod.kolejka.length) return;
+  const item = prod.kolejka[index] as ProductionItem;
+  const cost = stockCostForQueueItem(item);
+  if (Object.keys(cost).length > 0) {
+    refundBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
+  }
+  setProd(city.id, dequeue(prod, index));
+  rerender();
+}
+
 /**
  * SUROW-CIV-01 (Maciej 2026-07-24): magazyn surowcow = pula PANSTWA (civ-wide, suma po
  * WSZYSTKICH miastach ownera), nie tylko lokalne City.surowce. Brak cfg.getCities (np.
@@ -5202,8 +5223,7 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
     }
   } else if (item.kind === 'jednostka') {
     // JEDNOSTKI-SUROWIEC-01: identyczny wzorzec jak budynki powyżej -- pobór RAZ przy
-    // enqueue do kolejki Pracy, rozłożony po miastach ownera (pula PAŃSTWA); dequeue
-    // (anulowanie z kolejki Pracy) NIE zwraca surowca -- matchuje zachowanie budynków.
+    // enqueue do kolejki Pracy; anulowanie (cancelQueueItem) zwraca surowiec symetrycznie.
     const cost = unitStockCostForItem(item);
     if (Object.keys(cost).length > 0) {
       if (!canAffordBuildingStock(ownerSurowcePoolFor(city), cost)) return; // blokada: pula panstwa nie starcza
@@ -6698,7 +6718,8 @@ function appendBuildQueueSection(
       down.addEventListener('click', () => { setProd(city.id, moveQueueItem(getProd(city.id), idx, 1)); rerender(); });
       const x = el('button', 'btn btn-sm', '✕');
       x.style.cssText = 'padding:0 0.35em;';
-      x.addEventListener('click', () => { setProd(city.id, dequeue(getProd(city.id), idx)); rerender(); });
+      x.title = 'Usuń z kolejki (zwrot surowców do puli państwa)';
+      x.addEventListener('click', () => { cancelQueueItem(city, idx); });
       if (player) { qi.appendChild(up); qi.appendChild(down); qi.appendChild(x); }
       sc.appendChild(qi);
     }
@@ -6788,7 +6809,8 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     });
     actions.appendChild(wstBtn);
     const usun = el('button', 'btn btn-sm', '✕ Usuń');
-    usun.addEventListener('click', () => { setProd(city.id, dequeue(getProd(city.id), 0)); rerender(); });
+    usun.title = 'Usuń z kolejki (zwrot surowców do puli państwa)';
+    usun.addEventListener('click', () => { cancelQueueItem(city, 0); });
     actions.appendChild(usun);
     if (player) mount.appendChild(actions);
   }

@@ -4988,3 +4988,11 @@ CZEKAM-NA: Maciej deploy ROBOCZA (Ctrl+F5: NAP @ Rel~52 + Nowa gra Standard sep 
 - Weryfikacja: diag seeds 1–40 onlyCap=0; harness Inkowie 20/20 MP + seed 25 spawn 5/5
 - ID: BUG-INKOWIE-MP-BRAK · R-INKOWIE-MP-BRAK
 CZEKAM-NA: Maciej merge + deploy ROBOCZA (Nowa gra — Inkowie z MP wokół stolicy)
+
+## [22:55 PL, 2026-08-02] CLOUD -> Maciej — fix zwrot surowca przy anulowaniu kolejki
+- Branch/PR: `cursor/fix-queue-cancel-refund-63a1`
+- Bug: Usuń z kolejki budowy nie zwracał koszt_surowce (pobór przy enqueue)
+- Fix: refundBuildingStockCostAcrossCities + cancelQueueItem w cityPanel
+- Test: building-queue-refund-test.cjs 5/5 PASS
+- ID: BUG-KOLEJKA-ZWROT-SUROWCA · R-KOLEJKA-ZWROT-SUROWCA
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno wraca)
