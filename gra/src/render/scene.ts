@@ -101,7 +101,7 @@ import {
   effectivePixelRatio,
 } from './zoomLod';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './fogDim';
-import { landRiverRenderPath } from '../map/gen-helpers';
+import { landRiverRenderPath, trimMediumRenderPathAtMain } from '../map/gen-helpers';
 import { refreshInstancedPickBounds } from '../input/picker';
 
 export type { MapRenderStyle, MapRenderOptions, QualityTier } from './mapRenderStyle';
@@ -1248,15 +1248,20 @@ async function renderLandRiversFromPaths(
     batchCount = 0;
   };
 
+  const mainPathsForJunction = paths.filter((_, i) => (kinds[i] ?? 'main') === 'main');
+
   for (let pi = 0; pi < paths.length; pi++) {
     const path = paths[pi]!;
     if (path.length < 2) continue;
     if (path.length > 512) continue;
-    const landPath = landRiverRenderPath(map.hexes, path);
+    const kind = kinds[pi] ?? 'main';
+    const pathForRender = kind === 'medium'
+      ? trimMediumRenderPathAtMain(path, mainPathsForJunction)
+      : path;
+    const landPath = landRiverRenderPath(map.hexes, pathForRender);
     if (landPath.length < 2) continue;
     if (landPath.length > 480) continue;
 
-    const kind = kinds[pi] ?? 'main';
     const landLen = landPath.length;
     let widthMul = kind === 'main'
       ? Math.min(1.35, 0.85 + landLen * 0.008)

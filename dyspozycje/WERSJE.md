@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `2dc296b0` - 2026-08-02 14:45 - FALA 174: średnie rzeki w playtestu (main+medium) - **AKTUALNA**
+## ROBOCZA `00623e5b` - 2026-08-02 13:53 - FALA 175: średnie rzeki — main junction + okno skrętu - **AKTUALNA**
+- md5 (pelne): `00623e5b414c3c8595d580f2077bc71c` · stempel: `ROBOCZA · 2026-08-02 13:53`
+- **FALA 175.** Średnie: A* do main/sieci (najkrótsza trasa), okno skrętu 6hex jak main (sanitizeRiverTurnWindow), hard prune orphan/dead-end, junction bez ogona przez main (gen+render). Ocean tylko fallback. Main (FALA 173) bez zmian.
+- medium-river-test.cjs — PASS 12/12 · river-turn-window-test.cjs — PASS 10/10 · tsc 0.
+## ROBOCZA `2dc296b0` - 2026-08-02 14:45 - FALA 174: średnie rzeki w playtestu (main+medium) - **ZASTAPIONA**
 - md5 (pelne): `2dc296b08bb1fcfc67526557165fb3ae` · stempel: `ROBOCZA · 2026-08-02 14:45`
 - **FALA 174.** Domyślnie gen `riverGenPhase=main+medium` + render `riverStage=2` (główne+średnie; krótkie/dekor OFF). Algorytm main (FALA 173) bez zmian. Pełny tor: ?riverGenPhase=all&riverStage=5 · tylko main: ?riverGenPhase=main&riverStage=1.
 - river-turn-window-test.cjs — PASS 10/10 (okno skrętu tylko main) · tsc 0.

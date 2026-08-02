@@ -6390,6 +6390,138 @@ function finalizeTributaryPath(
   return out;
 }
 
+/** Czy ścieżka dotyka heksa głównego nurtu (włącznie z sąsiedztwem końca). */
+function pathTouchesMainNetwork(path: RiverCoord[], mainKeys: Set<string>): boolean {
+  if (mainKeys.size === 0) return false;
+  for (const p of path) {
+    if (mainKeys.has(hexKey(p.q, p.r))) return true;
+  }
+  const end = path[path.length - 1];
+  if (!end) return false;
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    if (mainKeys.has(hexKey(end.q + dq, end.r + dr))) return true;
+  }
+  return false;
+}
+
+/**
+ * Usuwa ogon średniej biegnący wzdłuż głównego nurtu po junction (FALA 175).
+ * Koniec zostaje na pierwszym heksie styku z main — bez przejścia na drugą stronę.
+ */
+function trimMediumTailAlongMain(path: RiverCoord[], mainKeys: Set<string>): RiverCoord[] {
+  if (path.length < 3 || mainKeys.size === 0) return path;
+  const out = [...path];
+  while (out.length >= 3) {
+    const last = out[out.length - 1]!;
+    const prev = out[out.length - 2]!;
+    if (mainKeys.has(hexKey(last.q, last.r)) && mainKeys.has(hexKey(prev.q, prev.r))) {
+      out.pop();
+    } else break;
+  }
+  return out;
+}
+
+/** Heksy main + medium już w sieci spływającej do morza (cel routingu etapu 2). */
+function buildMediumRouteTargetKeys(
+  hexes: Record<string, Hex>,
+  paths: RiverCoord[][],
+  kinds: RiverPathKind[],
+  width: number,
+  height: number,
+  oceanConnected: Set<string>,
+): Set<string> {
+  const mainKeys = collectPathHexKeysForKinds(paths, kinds, ['main']);
+  const reached = buildOceanReachableRiverHexKeys(
+    hexes, paths, kinds, width, height, oceanConnected,
+  );
+  const targets = new Set(mainKeys);
+  for (const k of collectPathHexKeysForKinds(paths, kinds, ['medium'])) {
+    if (reached.has(k)) targets.add(k);
+  }
+  return targets;
+}
+
+/** A* do sieci (main / ocean-reachable medium) — bez meandrów, z oknem skrętu FALA 173. */
+function traceMediumRiver(
+  hexes: Record<string, Hex>,
+  sq: number,
+  sr: number,
+  tq: number,
+  tr: number,
+  maxLen: number,
+  seaDist: Map<string, number>,
+  rand: () => number,
+  minLen = 3,
+): RiverCoord[] {
+  const srcKey = hexKey(sq, sr);
+  let path = aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, srcKey);
+  if (path.length < 3) return [];
+  path = extendRiverToMinimumLength(path, hexes, seaDist, rand, minLen, maxLen);
+  path = repairRiverPathAdjacency(path, hexes, srcKey);
+  if (path.length > maxLen) path = path.slice(0, maxLen);
+  if (riverPathViolatesTurnWindow(path)) {
+    path = sanitizeRiverTurnWindow(path, hexes, srcKey);
+  }
+  return path.length >= 3 ? path : [];
+}
+
+/**
+ * Finalizacja średniej rzeki (FALA 175): okno skrętu jak main, junction bez ogona przez main,
+ * wymóg połączenia z main/siecią; ocean tylko gdy brak trasy do sieci.
+ */
+function finalizeMediumPath(
+  hexes: Record<string, Hex>,
+  path: RiverCoord[],
+  riverPaths: RiverCoord[][],
+  riverKinds: RiverPathKind[],
+  width: number,
+  height: number,
+  oceanConnected: Set<string>,
+): RiverCoord[] | null {
+  if (path.length < 3) return null;
+  const srcKey = hexKey(path[0]!.q, path[0]!.r);
+  let out = sanitizeRiverPath(path);
+  if (riverPathViolatesTurnWindow(out)) {
+    out = sanitizeRiverTurnWindow(out, hexes, srcKey);
+  }
+  if (out.length < 3) return null;
+  out = trimRiverPathRings(hexes, out);
+  if (out.length < 3) return null;
+
+  const mainKeys = collectPathHexKeysForKinds(riverPaths, riverKinds, ['main']);
+  out = trimMediumTailAlongMain(out, mainKeys);
+  if (out.length < 3) return null;
+
+  const reached = buildOceanReachableRiverHexKeys(
+    hexes, riverPaths, riverKinds, width, height, oceanConnected,
+  );
+  const touchesMain = pathTouchesMainNetwork(out, mainKeys);
+  const onNetwork = tributaryTouchesOceanReachable(out, reached);
+  const endsSea = pathEndsAtSea(hexes, out, width, height, oceanConnected);
+
+  if (!onNetwork && !endsSea) return null;
+  if (!touchesMain && !onNetwork) {
+    if (!endsSea) return null;
+  }
+  if (!touchesMain && onNetwork && !endsSea) {
+    // połączenie wyłącznie przez medium w sieci — OK
+  }
+
+  return out;
+}
+
+/** Render: utnij ogon średniej wzdłuż main (junction snap, bez przejścia przez nurt). */
+export function trimMediumRenderPathAtMain(
+  path: RiverCoord[],
+  mainPaths: RiverCoord[][],
+): RiverCoord[] {
+  const mainKeys = new Set<string>();
+  for (const mp of mainPaths) {
+    for (const p of mp ?? []) mainKeys.add(hexKey(p.q, p.r));
+  }
+  return trimMediumTailAlongMain(path, mainKeys);
+}
+
 /**
  * Etap 3: krótki dopływ — tylko do średniej rzeki (etap 2), bez bezpośredniego ujścia do oceanu.
  */
@@ -7127,6 +7259,69 @@ function pruneInvalidShortRiverPaths(
   return { paths: keptPaths, kinds: keptKinds };
 }
 
+/** FALA 175: usuwa średnie bez styku z main/siecią, z łamanym oknem skrętu lub dead-end na lądzie. */
+export function pruneInvalidMediumRiverPaths(
+  hexes: Record<string, Hex>,
+  paths: RiverCoord[][],
+  kinds: RiverPathKind[],
+  width: number,
+  height: number,
+  oceanConnected?: Set<string>,
+): { paths: RiverCoord[][]; kinds: RiverPathKind[] } {
+  const ocean = oceanConnected ?? oceanConnectedWaterKeys(hexes, width, height);
+  const mainKeys = collectPathHexKeysForKinds(paths, kinds, ['main']);
+  const reached = buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, ocean);
+
+  const hexToPaths = new Map<string, Set<number>>();
+  for (let pi = 0; pi < paths.length; pi++) {
+    for (const p of paths[pi] ?? []) {
+      const k = hexKey(p.q, p.r);
+      const s = hexToPaths.get(k) ?? new Set<number>();
+      s.add(pi);
+      hexToPaths.set(k, s);
+    }
+  }
+
+  const drop = new Set<number>();
+  for (let i = 0; i < paths.length; i++) {
+    if (kinds[i] !== 'medium') continue;
+    const p = paths[i] ?? [];
+    if (p.length < 3) { drop.add(i); continue; }
+    if (riverPathViolatesTurnWindow(p)) { drop.add(i); continue; }
+
+    const endsSea = pathEndsAtSea(hexes, p, width, height, ocean);
+    const onNetwork = tributaryTouchesOceanReachable(p, reached);
+    const touchesMain = pathTouchesMainNetwork(p, mainKeys);
+
+    if (!onNetwork && !endsSea) { drop.add(i); continue; }
+    if (!touchesMain && !onNetwork && endsSea) {
+      // samotna średnia do oceanu bez styku z main — odrzuć (ocean tylko w gen, nie orphan)
+      drop.add(i);
+      continue;
+    }
+
+    if (!endsSea) {
+      const end = p[p.length - 1]!;
+      const eh = hexes[hexKey(end.q, end.r)];
+      let closed = false;
+      for (const edgeIdx of eh?.rzeka?.krawedzie ?? []) {
+        const dir = HEX_DIRECTIONS[edgeIdx];
+        if (!dir) continue;
+        const owners = hexToPaths.get(hexKey(end.q + dir[0], end.r + dir[1]));
+        if (owners && [...owners].some((x) => x !== i)) { closed = true; break; }
+      }
+      if (!closed) drop.add(i);
+    }
+  }
+
+  if (drop.size === 0) return { paths, kinds };
+  const keptPaths = paths.filter((_, i) => !drop.has(i));
+  const keptKinds = kinds.filter((_, i) => !drop.has(i));
+  clearRiverMarks(hexes);
+  for (const p of keptPaths) markRiverPath(hexes, p);
+  return { paths: keptPaths, kinds: keptKinds };
+}
+
 /**
  * B0.10 (Z3) — ZAKAZ PIERŚCIENI RZECZNYCH. Żaden heks nie może mieć ≥4 oznakowanych krawędzi
  * rzeki (rzeka zawija się wokół heksa = pierścień), CHYBA że jest junctionem ≥2 ścieżek — wtedy
@@ -7374,16 +7569,28 @@ function buildGridRouteCandidates(
   );
   const tribTargetKinds = ctx.targetRiverKinds
     ?? (mode === 'short' ? ['medium'] as RiverPathKind[] : undefined);
-  const tribRiverKeys = tribTargetKinds
-    ? collectPathHexKeysForKinds(riverPaths, ctx.riverKinds, tribTargetKinds)
-    : riverKeys;
-  const tribKeysForTrace = tribRiverKeys.size > 0 ? tribRiverKeys : riverKeys;
+  let tribKeysForTrace: Set<string>;
+  if (mode === 'medium') {
+    tribKeysForTrace = buildMediumRouteTargetKeys(
+      hexes, riverPaths, ctx.riverKinds, width, height, oceanConnected,
+    );
+  } else {
+    const tribRiverKeys = tribTargetKinds
+      ? collectPathHexKeysForKinds(riverPaths, ctx.riverKinds, tribTargetKinds)
+      : riverKeys;
+    tribKeysForTrace = tribRiverKeys.size > 0 ? tribRiverKeys : riverKeys;
+  }
 
   if (tribKeysForTrace.size > 0) {
     let bestTrib: RiverCoord[] = [];
+    let bestTribLen = Infinity;
+    const traceFn = mode === 'medium' ? traceMediumRiver : traceTributary;
     for (const j of rankNetworkJunctionCandidates(sq, sr, tribKeysForTrace, seaDist, traceMax, rand, junctionCap)) {
-      const p = traceTributary(hexes, sq, sr, j.q, j.r, traceMax, seaDist, rand, minLen);
-      if (p.length >= acceptLen && p.length > bestTrib.length) bestTrib = p;
+      const p = traceFn(hexes, sq, sr, j.q, j.r, traceMax, seaDist, rand, minLen);
+      if (p.length >= acceptLen && p.length < bestTribLen) {
+        bestTrib = p;
+        bestTribLen = p.length;
+      }
     }
     if (bestTrib.length >= acceptLen) {
       out.push({ path: bestTrib, kind: 'tributary', len: bestTrib.length });
@@ -7393,13 +7600,15 @@ function buildGridRouteCandidates(
   return out;
 }
 
-/** Etap 2: priorytet dopływu do sieci, ocean jako fallback. */
+/** Etap 2: priorytet dopływu do main/sieci (najkrótsza trasa A*), ocean tylko jako fallback. */
 function pickPhase2Route(candidates: GridRouteCandidate[]): GridRouteCandidate | null {
   const tribs = candidates.filter((c) => c.kind === 'tributary');
+  if (tribs.length > 0) {
+    return tribs.reduce((a, b) => (a.len <= b.len ? a : b));
+  }
   const seas = candidates.filter((c) => c.kind === 'main');
-  const pool = tribs.length > 0 ? tribs : seas;
-  if (pool.length === 0) return null;
-  return pool.reduce((a, b) => (a.len >= b.len ? a : b));
+  if (seas.length === 0) return null;
+  return seas.reduce((a, b) => (a.len <= b.len ? a : b));
 }
 
 /** Morze vs rzeka geograficznie; w ramach wyboru — najdłuższa poprawna trasa. */
@@ -9598,7 +9807,7 @@ export function generateRivers(
   };
 
   const pushMedium = (path: RiverCoord[], sq: number, sr: number): boolean => {
-    const out = finalizeTributaryPath(
+    const out = finalizeMediumPath(
       hexes, path, riverPaths, riverKinds, width, height, oceanConnected,
     );
     if (!out) return false;
@@ -9711,6 +9920,15 @@ export function generateRivers(
     }
   }
   if (RIVER_PROFILE_ON) rpEnsure().genStage2Ms += rpNow() - _s2T0;
+
+  // FALA 175: hard prune średnich bez styku main/sieci, dead-end, złamane okno skrętu.
+  {
+    const pruned = pruneInvalidMediumRiverPaths(
+      hexes, riverPaths, riverKinds, width, height, oceanConnected,
+    );
+    riverPaths.splice(0, riverPaths.length, ...pruned.paths);
+    riverKinds.splice(0, riverKinds.length, ...pruned.kinds);
+  }
 
   if (!isRiverGenFull()) {
     report(100);
@@ -9857,7 +10075,7 @@ export function topUpRiverGridCoverage(
   };
 
   const pushMedium = (path: RiverCoord[], sq: number, sr: number): boolean => {
-    const out = finalizeTributaryPath(
+    const out = finalizeMediumPath(
       hexes, path, riverPaths, riverKinds, width, height, oceanConnected,
     );
     if (!out) return false;

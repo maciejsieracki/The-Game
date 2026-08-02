@@ -4824,3 +4824,11 @@ CZEKAM-NA: Maciej Ctrl+F5 - rzeki bez spiral/U-turn, w głąb kontynentu, ujści
 - Pełny tor: ?riverGenPhase=all&riverStage=5 · tylko main: ?riverGenPhase=main&riverStage=1
 - river-turn-window-test PASS 10/10 · tsc 0 · publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 FRESH - widać cieńsze średnie rzeki łączące się z głównymi; czas ładowania OK-ish
+
+## [13:53 PL, 2026-08-02] CLOUD → LOKALNA — FALA 175 deploy ROBOCZA średnie rzeki
+
+- md5: `00623e5b` (pełne `00623e5b414c3c8595d580f2077bc71c`) · FALA 175
+- Średnie: finalizeMediumPath + traceMediumRiver (A* bez meandrów, okno 6hex), pickPhase2 najkrótsza do main, pruneInvalidMediumRiverPaths po etapie 2, render trimMediumRenderPathAtMain
+- medium-river-test PASS 12/12 · river-turn-window-test PASS 10/10 · main FALA 173 bez zmian
+- gra-robocza/Gra-ROBOCZA.html + playtest kopie · WERSJE.md zaktualizowane
+CZEKAM-NA: Maciej Ctrl+F5 START.html — średnie łączą się z główną, bez samotnych, bez przecięć, bez zawijasów

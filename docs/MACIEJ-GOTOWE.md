@@ -1,4 +1,6 @@
-﻿- **2026-08-02 13:15** — OK FALA 171 ROBOCZA `1c8dcfe6` (stolice sep apply + ujścia post-flatten + inland maxLen). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra Duża**.
+﻿- **2026-08-02 13:53** — OK FALA 175 ROBOCZA `00623e5b` (średnie rzeki: main junction, okno skrętu, prune orphan). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — średnie ON.
+
+- **2026-08-02 13:15** — OK FALA 171 ROBOCZA `1c8dcfe6` (stolice sep apply + ujścia post-flatten + inland maxLen). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra Duża**.
 
 - **2026-08-01 23:40** — FALA 150 ROBOCZA `a1037b66` (pomiary sceny). START Ctrl+F5 Nowa gra; patrz etykiety + F12 `buildScene ms`.
 
