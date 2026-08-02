@@ -1475,3 +1475,9 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## FEAT-AUTO-ULEPSZENIA — automatyczne ulepszenia terenu (jak auto budynków) · STATUS: **PLAN** (rozmowa jutro)
+
+**Źródło:** Maciej 2026-08-02 — auto budowa ulepszeń; profile typów (żywność/produkcja/…) albo tylko heksy z obywatelami.
+
+**Plan:** `dyspozycje/PLAN-AUTO-ULEPSZENIA-2026-08-02.md` (warianty A terytorium / B tylko 👤 / C hybryda; profile; UI; architektura).
