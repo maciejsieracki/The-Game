@@ -1475,3 +1475,13 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## BUG-RUCH-WZGORZA-3 — wojsko nie rusza przez wzgórza (żółta trasa, 0 ruchu) · STATUS: **NAPRAWIONE w źródle** (2026-08-02)
+
+**Źródło:** Maciej 2026-08-02 — przez wzgórza (zwł. zalesione) jednostka często się zatrzymuje; góry OK jeśli nieprzejdne.
+
+**Root cause:** podgląd trasy pełny; egzekucja `truncatePathToBudget` bez MIN-MOVE → koszt wzgórze+las=3 przy 2 MP → pusty segment.
+
+**Fix:** MIN-MOVE w `truncatePathToBudget` (jak `computeReachable`); aliasy JSON terenu. Wzgórza koszt 2 (+1 las); Góry nieprzejdne.
+
+**ID:** R-RUCH-WZGORZA-3 · branch `cursor/fix-move-hills-stuck-63a1`
