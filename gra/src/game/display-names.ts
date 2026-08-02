@@ -40,19 +40,54 @@ export function isClusterCityStateSlot(slot: {
   return !slot.isClusterCapital;
 }
 
+export interface OwnerCityStateOpts {
+  simplifiedOwners?: ReadonlySet<number>;
+  typCopyOwners?: ReadonlySet<number>;
+  cities?: ReadonlyArray<{ ownerId: number; startCityState?: boolean }>;
+}
+
 /** Czy owner to miasto-państwo klastra (nie pełne imperium). ownerId 0 = gracz → zawsze false. */
 export function isOwnerClusterCityState(
   ownerId: number,
-  opts?: {
-    simplifiedOwners?: ReadonlySet<number>;
-    typCopyOwners?: ReadonlySet<number>;
-    cities?: ReadonlyArray<{ ownerId: number; startCityState?: boolean }>;
-  },
+  opts?: OwnerCityStateOpts,
 ): boolean {
   if (ownerId <= 0) return false;
   if (opts?.simplifiedOwners?.has(ownerId)) return true;
   if (opts?.typCopyOwners?.has(ownerId)) return true;
   if (opts?.cities?.some(c => c.ownerId === ownerId && c.startCityState)) return true;
+  return false;
+}
+
+export interface ForceCultureIconOpts extends OwnerCityStateOpts {
+  /** Stolice klastrów obcych typów — pełne imperia, portret władcy OK. */
+  clusterCapitalOwnerIds?: ReadonlySet<number>;
+  /** ikonaId gracza (civs.json). */
+  playerCivKey?: string;
+  /** ikonaId rozmówcy (civs.json). */
+  ownerCivKey?: string;
+}
+
+/**
+ * R-MP-PORTRET — czy medalion ma pokazać symbol kultury zamiast portretu-zdjęcia władcy.
+ * Miasto-państwo klastra + fallback: AI o tym samym ikonaId co gracz (rywale tego samego
+ * typu), gdy meta/sety sejwu zawiodą i isOwnerClusterCityState zwróci false.
+ */
+export function shouldForceCultureIconForOwner(
+  ownerId: number,
+  opts?: ForceCultureIconOpts,
+): boolean {
+  if (ownerId <= 0) return false;
+  if (isOwnerClusterCityState(ownerId, opts)) return true;
+  const playerKey = (opts?.playerCivKey ?? '').trim();
+  const ownerKey = (opts?.ownerCivKey ?? '').trim();
+  if (
+    playerKey
+    && ownerKey
+    && playerKey === ownerKey
+    && !opts?.clusterCapitalOwnerIds?.has(ownerId)
+  ) {
+    return true;
+  }
   return false;
 }
 

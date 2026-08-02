@@ -18,6 +18,7 @@ export {
   isClusterCityStateSlot,
   isTechnicalOwnerLabel,
   resolveOwnerBaseName,
+  shouldForceCultureIconForOwner,
   CITY_STATE_LABEL,
 } from '../src/game/display-names';
 `, 'utf8');
@@ -124,6 +125,48 @@ assert(
     cities: [{ ownerId: 10, name: 'Mykeny', startCityState: true }],
   }) === 'Mykeny' + suffix,
   'audiencja: Mykeny · miasto-państwo',
+);
+
+// BUG-MP-LOGO-SAME-AS-PLAYER (2026-08-02): rywal tego samego typu = symbol kultury, nie portret.
+assert(
+  M.shouldForceCultureIconForOwner(34, {
+    simplifiedOwners: new Set(),
+    typCopyOwners: new Set(),
+    cities: [],
+    clusterCapitalOwnerIds: new Set(),
+    playerCivKey: 'grecy',
+    ownerCivKey: 'grecy',
+  }) === true,
+  'fallback: ten sam ikonaId co gracz → forceCultureIcon',
+);
+
+assert(
+  M.shouldForceCultureIconForOwner(5, {
+    simplifiedOwners: new Set(),
+    typCopyOwners: new Set(),
+    cities: [],
+    clusterCapitalOwnerIds: new Set([5]),
+    playerCivKey: 'grecy',
+    ownerCivKey: 'grecy',
+  }) === false,
+  'stolica obcego klastra (clusterCapital) → portret OK mimo tego samego klucza',
+);
+
+assert(
+  M.shouldForceCultureIconForOwner(0, {
+    playerCivKey: 'grecy',
+    ownerCivKey: 'grecy',
+  }) === false,
+  'gracz nigdy nie dostaje forceCultureIcon',
+);
+
+assert(
+  M.shouldForceCultureIconForOwner(12, {
+    simplifiedOwners: new Set([12]),
+    playerCivKey: 'grecy',
+    ownerCivKey: 'heteci',
+  }) === true,
+  'simplifiedOwners → forceCultureIcon (obce MP)',
 );
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

@@ -1475,3 +1475,14 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## BUG-MP-LOGO-SAME-AS-PLAYER — audiencja: MP ma ten sam portret co gracz · STATUS: **WDROŻONE (kod)** (2026-08-02)
+
+**Źródło:** Maciej 2026-08-02 — audiencja dyplomatyczna: miasto-państwo (rywal tego samego typu, Kimon/Grecy) pokazuje identyczny portret-zdjęcie władcy co gracz (Perykles).
+
+**Root cause:** `otherIsCityState` opierało się wyłącznie na `isOwnerClusterCityState` (sety meta + `startCityState`). Gdy profile MP w sejwie/meta były puste lub niezsynchronizowane, MP z tym samym `ikonaId` co gracz dostawało portret `portrait-{civ}-{epoka}.jpg` zamiast symbolu kultury (`civIconSvg`, R-MP-PORTRET).
+
+**Fix:** `shouldForceCultureIconForOwner` w `display-names.ts` — fallback: AI o tym samym `ikonaId` co gracz (nie stolica obcego klastra) → `forceCultureIcon`; `foundCityAt` ustawia `startCityState` przy `foundingCityState`; load odtwarza `simplifiedDiplomacyOwners` z `startCityState` gdy meta puste.
+
+**Test:** `node tools/display-names-test.cjs` — +4 asercje portrait mapping.
+**ID:** R-MP-LOGO-SAME-AS-PLAYER · branch `cursor/fix-mp-logo-same-as-player-63a1`

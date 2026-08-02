@@ -407,6 +407,7 @@ export function foundCityAt(
     podzialHandluOverride: false,
     podzialPracy:  podzial.podzialPracy,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ,
+    ...(foundingCityState ? { startCityState: true as const } : {}),
   };
 }
 

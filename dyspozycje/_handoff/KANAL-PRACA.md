@@ -5002,3 +5002,11 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno
 - **FALA 201.** PR #5 Inkowie MP · PR #6 zwrot surowca kolejki · (+ NAP fair-min + sep 15 z main)
 - build: /tmp/civ-dist-fala201 · poprzedni `26b05753` ZASTĄPIONA
 CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Inkowie z MP) + Stolarnia→Usuń (drewno wraca)
+
+## [23:15 PL, 2026-08-02] CLOUD -> Maciej — fix MP ten sam portret co gracz (audiencja)
+- Branch: `cursor/fix-mp-logo-same-as-player-63a1`
+- Bug: miasto-państwo (rywal tego samego typu) w audiencji miało identyczny portret-zdjęcie co gracz
+- Fix: `shouldForceCultureIconForOwner` (fallback: ten sam ikonaId → symbol kultury); load simplifiedDiplomacyOwners; foundCityAt startCityState
+- Test: display-names-test.cjs PASS (+4)
+- ID: BUG-MP-LOGO-SAME-AS-PLAYER · R-MP-LOGO-SAME-AS-PLAYER
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (audiencja z MP tego samego typu — symbol kultury, nie portret)
