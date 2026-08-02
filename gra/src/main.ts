@@ -5882,7 +5882,7 @@ async function boot(): Promise<void> {
       let _scFounded = 0, _scRejected = 0;
       for (const sc of toSpawn) {
         const isCS = simplifiedDiplomacyOwners.has(sc.ownerId) || typCityCopyOwners.has(sc.ownerId);
-        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name, isCS);
+        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name, isCS, true);
         if (c) {
           if (isCS) {
             c.startCityState = true;

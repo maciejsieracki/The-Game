@@ -19,6 +19,7 @@ export { buildSeaDistanceField } from '../src/map/gen-helpers';
 export { civIdsAvailableAtGameEpoch } from '../src/game/civ-entry-epoch';
 export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius, packRivalCitiesAroundCore, packCityStatesHubChain, computeSameTypeRivalHalfPlaneAxis, isInSameTypeRivalHalfPlane } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
+export { canFoundCity } from '../src/game/cities';
 `, 'utf8');
 
 esbuild.buildSync({
@@ -855,6 +856,51 @@ assert(pangeaAvgSea <= pangeaMinSea + 18,
   `Pangea Standard: średni seaDist stolic ≤ min+18 (avg=${pangeaAvgSea.toFixed(1)}, min=${pangeaMinSea})`);
 assert(pangeaMaxSea <= pangeaMinSea + 35,
   `Pangea Standard: max seaDist stolicy ≤ min+35 (max=${pangeaMaxSea}, min=${pangeaMinSea})`);
+
+// BUG-INKOWIE-MP-BRAK: wśród seedów 1–20 Inkowie rzadko capital-only (repack + spawn slot)
+{
+  let inkWithMp = 0;
+  let inkPresent = 0;
+  for (let s = 1; s <= 20; s++) {
+    const m = M.generateMap(50, 50, s, 'kontynenty');
+    const p = M.buildClusterStartPlan({
+      map: m, civs, seed: s, playerCivId: 'grecy', rywaleNaKlaster: 4, aktywneTypy: 5,
+    });
+    const ink = p.foreignTypeClusters.find(fc => fc.typ === 'inkowie');
+    if (!ink) continue;
+    inkPresent++;
+    if (ink.positions.length >= 2) inkWithMp++;
+  }
+  assert(inkPresent >= 10, `Inkowie obecni w ≥10/20 seedów (got ${inkPresent})`);
+  assert(inkWithMp >= Math.max(1, inkPresent - 3),
+    `Inkowie z MP: ${inkWithMp}/${inkPresent} (max 3 capital-only)`);
+}
+
+// BUG-INKOWIE-MP-BRAK: deferred spawn — clusterStartSlot omija dystans (seed 25 Cusco↔Qin)
+{
+  const inkSpawnMap = M.generateMap(50, 50, 25, 'kontynenty');
+  const inkSpawnPlan = M.buildClusterStartPlan({
+    map: inkSpawnMap, civs, seed: 25, playerCivId: 'grecy', rywaleNaKlaster: 4, aktywneTypy: 5,
+  });
+  const inkForeign = inkSpawnPlan.foreignTypeClusters.find(fc => fc.typ === 'inkowie');
+  if (inkForeign && inkForeign.positions.length >= 1) {
+    const simCities = [];
+    const pCap = inkSpawnPlan.playerStartHex;
+    simCities.push({ ownerId: 0, q: pCap.q, r: pCap.r, name: 'Ateny' });
+    let inkSpawned = 0;
+    for (const sc of inkSpawnPlan.spawnCities) {
+      if (inkSpawnPlan.aiOwnerCivMap.get(sc.ownerId) !== 'inkowie') continue;
+      const isCS = inkSpawnPlan.typCityCopyOwners.has(sc.ownerId);
+      const check = M.canFoundCity(sc.q, sc.r, simCities, inkSpawnMap, {
+        foundingCityState: isCS, clusterStartSlot: true,
+      });
+      assert(check.ok, `seed 25 ink slot ${sc.name}: ${check.reason}`);
+      simCities.push({ ownerId: sc.ownerId, q: sc.q, r: sc.r, name: sc.name });
+      inkSpawned++;
+    }
+    assert(inkSpawned === inkForeign.positions.length, 'seed 25: wszystkie ink sloty spawnują');
+  }
+}
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

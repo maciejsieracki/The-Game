@@ -1949,6 +1949,8 @@ export function packCityStatesAroundCapital(
     growthReserve?: number;
     halfPlaneAxis?: SameTypeRivalHalfPlaneAxis;
     foreignBuffers?: ReadonlyArray<ForeignClusterBuffer>;
+    /** Pierścienie hub-chain (domyślnie tylko 5). Luźniej przy krawędzi mapy. */
+    ringDistances?: ReadonlyArray<number>;
   },
 ): { stateCities: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   if (stateCityCount <= 0) {
@@ -1987,20 +1989,28 @@ export function packCityStatesAroundCapital(
     ].filter(d => d >= 3))]
     : [minDist];
 
+  const ringDistances = opts?.ringDistances?.length
+    ? [...opts.ringDistances]
+    : [CLUSTER_CITY_STATE_MAX_HEX];
+
   let best: Array<{ q: number; r: number }> = [];
-  for (const tryMinDist of minDistLevels) {
-    for (const pool of pools) {
-      for (const s of seeds) {
-        const packed = packCityStatesHubChain(
-          pool,
-          capital,
-          totalPack,
-          tryMinDist,
-          CLUSTER_CITY_STATE_MAX_HEX,
-          s,
-          packOpts,
-        );
-        if (packed.length > best.length) best = packed;
+  for (const ringDist of ringDistances) {
+    for (const tryMinDist of minDistLevels) {
+      const sep = Math.min(tryMinDist, ringDist);
+      for (const pool of pools) {
+        for (const s of seeds) {
+          const packed = packCityStatesHubChain(
+            pool,
+            capital,
+            totalPack,
+            sep,
+            ringDist,
+            s,
+            packOpts,
+          );
+          if (packed.length > best.length) best = packed;
+          if (best.length >= stateCityCount) break;
+        }
         if (best.length >= stateCityCount) break;
       }
       if (best.length >= stateCityCount) break;
@@ -2697,6 +2707,174 @@ function foreignBuffersForCluster(
     if (cap) out.push({ q: cap.q, r: cap.r, radius: bufferRadius });
   }
   return out;
+}
+
+/** Anchor od gracza dla obcych MP — pomijany gdy po body-sep stolica jest za blisko (BUG-INKOWIE-MP-BRAK). */
+function foreignRepackAnchor(
+  ki: number,
+  cap: { q: number; r: number },
+  playerCap: { q: number; r: number } | null,
+  minDystObcyOdGracza: number,
+): { q: number; r: number; minDist: number } | undefined {
+  if (ki === 0 || !playerCap) return undefined;
+  const capDist = hexDistanceAxial(cap.q, cap.r, playerCap.q, playerCap.r);
+  if (capDist + CLUSTER_CITY_STATE_MAX_HEX < minDystObcyOdGracza) return undefined;
+  return { q: playerCap.q, r: playerCap.r, minDist: minDystObcyOdGracza };
+}
+
+/**
+ * BUG-INKOWIE-MP-BRAK: po body-sep / ciasnym Voronoi dopełnia MP z rozszerzonej puli lądu.
+ * enforceClusterBodySeparation często zostawia samą stolicę — tu repack z ladowe + buforami.
+ */
+function repackClusterStateCitiesIfSparse(
+  klastry: TypeCluster[],
+  clusterRegions: Array<Array<{ q: number; r: number }>>,
+  ki: number,
+  stateCityCount: number,
+  minDystObcyOdGracza: number,
+  ladowe: Array<{ q: number; r: number }>,
+  seed: number,
+  bufferRadius: number,
+  mapCenter: { q: number; r: number },
+  minDystMiastaPanstwa: number,
+): void {
+  const k = klastry[ki];
+  if (!k) return;
+  const cap = clusterCapitalHex(k);
+  if (!cap) return;
+  const mpNow = k.miasta.filter(m => !m.isCapital).length;
+  if (mpNow >= stateCityCount) return;
+
+  const playerCap = clusterCapitalHex(klastry[0]!);
+  const anchor = foreignRepackAnchor(ki, cap, playerCap, minDystObcyOdGracza);
+  const foreignBufs = foreignBuffersForCluster(klastry, ki, bufferRadius);
+  const minDist = ki === 0 ? minDystMiastaPanstwa : MIN_DIST_FOREIGN_IN_CLUSTER;
+  // Pełny ląd — Voronoi region często za mały po body-sep (BUG-INKOWIE-MP-BRAK).
+  const { stateCities, growthSlot } = packCityStatesAroundCapital(
+    ladowe,
+    ladowe,
+    cap,
+    stateCityCount,
+    minDist,
+    (seed + ki * 0x9e3779b1) >>> 0,
+    {
+      excludeHex: cap,
+      anchor,
+      foreignBuffers: foreignBufs,
+      growthReserve: CLUSTER_GROWTH_RESERVE,
+      halfPlaneAxis: ki === 0
+        ? computeSameTypeRivalHalfPlaneAxis(cap, mapCenter, seed)
+        : undefined,
+    },
+  );
+
+  let validMp = stateCities.filter(s =>
+    passesForeignClusterBufferGate(s, foreignBufs),
+  );
+  let usedGrowth = growthSlot;
+
+  // Last-resort: krawędź mapy / ciasny bufor / anchor niemożliwy (seed 17,32,85 Inkowie).
+  if (validMp.length === 0) {
+    const looseRadius = Math.max(0, Math.floor(bufferRadius / 2));
+    const looseBufs = foreignBuffersForCluster(klastry, ki, looseRadius);
+    const looseMin = Math.max(3, minDist - 2);
+    const retry = packCityStatesAroundCapital(
+      ladowe,
+      ladowe,
+      cap,
+      stateCityCount,
+      looseMin,
+      (seed + ki * 0x85ebca6b) >>> 0,
+      {
+        excludeHex: cap,
+        // Stolica już na mapie — nie wymuszaj 12 hex od gracza na MP (body-sep mógł przesunąć stolicę).
+        anchor: undefined,
+        foreignBuffers: looseBufs,
+        growthReserve: 0,
+        ringDistances: [CLUSTER_CITY_STATE_MAX_HEX, 4, 3, 2],
+        halfPlaneAxis: ki === 0
+          ? computeSameTypeRivalHalfPlaneAxis(cap, mapCenter, (seed + 17) >>> 0)
+          : undefined,
+      },
+    );
+    validMp = retry.stateCities.filter(s =>
+      passesForeignClusterBufferGate(s, looseBufs),
+    );
+    usedGrowth = retry.growthSlot;
+
+    // Desperate: minDist=2, bez buforów — tylko sep w klastrze.
+    if (validMp.length === 0) {
+      const desperate = packCityStatesAroundCapital(
+        ladowe,
+        ladowe,
+        cap,
+        stateCityCount,
+        2,
+        (seed + ki * 0xc2b2ae35) >>> 0,
+        {
+          excludeHex: cap,
+          foreignBuffers: [],
+          growthReserve: 0,
+          ringDistances: [3, 2],
+        },
+      );
+      validMp = desperate.stateCities;
+      usedGrowth = desperate.growthSlot;
+    }
+
+    if (validMp.length === 0) {
+      if (typeof console !== 'undefined' && ki > 0) {
+        console.warn(
+          `[clusters] repack sparse ki=${ki} typ=${k.typ}: 0 MP (packed=${stateCities.length}, loose=${retry.stateCities.length})`,
+        );
+      }
+      return;
+    }
+  }
+
+  const cities: ClusterCity[] = [{ q: cap.q, r: cap.r, isCapital: true }];
+  for (const s of validMp.slice(0, stateCityCount)) {
+    cities.push({ q: s.q, r: s.r, isCapital: false });
+  }
+  k.miasta = cities;
+  k.growthSlot = usedGrowth;
+  if (ki === 0) {
+    k.pendingStateSlots = packRivalCitiesAroundCore(
+      ladowe,
+      cap,
+      stateCityCount,
+      minDystMiastaPanstwa,
+      seed,
+      mapCenter,
+    );
+  }
+}
+
+function repackAllSparseClusterStateCities(
+  klastry: TypeCluster[],
+  clusterRegions: Array<Array<{ q: number; r: number }>>,
+  stateCityCount: number,
+  minDystObcyOdGracza: number,
+  ladowe: Array<{ q: number; r: number }>,
+  seed: number,
+  bufferRadius: number,
+  mapCenter: { q: number; r: number },
+  minDystMiastaPanstwa: number,
+): void {
+  for (let ki = 0; ki < klastry.length; ki++) {
+    repackClusterStateCitiesIfSparse(
+      klastry,
+      clusterRegions,
+      ki,
+      stateCityCount,
+      minDystObcyOdGracza,
+      ladowe,
+      seed,
+      bufferRadius,
+      mapCenter,
+      minDystMiastaPanstwa,
+    );
+  }
 }
 
 /**
@@ -3901,6 +4079,19 @@ export function computeClusters(
     mapCenter,
     minDystMiastaPanstwa,
     bodyBufferRadius,
+  );
+
+  // BUG-INKOWIE-MP-BRAK: body-sep / ciasny region często zostawia samą stolicę obcego typu.
+  repackAllSparseClusterStateCities(
+    klastry,
+    clusterRegions,
+    stateCityCount,
+    minDystObcyOdGracza,
+    ladowe,
+    seed,
+    bodyBufferRadius,
+    mapCenter,
+    minDystMiastaPanstwa,
   );
 
   // Logowanie diagnostyczne (tylko w dev — nie blokuje funkcji)

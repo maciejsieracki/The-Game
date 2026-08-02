@@ -304,7 +304,12 @@ export function canFoundCity(
   r: number,
   cities: City[],
   map: GameMap,
-  opts?: { withinTerritory?: (q: number, r: number) => boolean; foundingCityState?: boolean },
+  opts?: {
+    withinTerritory?: (q: number, r: number) => boolean;
+    foundingCityState?: boolean;
+    /** Slot z planu klastra (deferred spawn) — dystans do innych miast już zweryfikowany w map/clusters. */
+    clusterStartSlot?: boolean;
+  },
 ): { ok: boolean; reason: string } {
   const key = `${q},${r}`;
 
@@ -323,17 +328,19 @@ export function canFoundCity(
     }
   }
 
-  for (const city of cities) {
-    // Próg 3 obowiązuje gdy ALBO istniejące miasto jest państwem-miastem,
-    // ALBO zakładane miasto jest państwem-miastem (kopia typu). Wcześniej brano
-    // pod uwagę tylko flagę istniejącego miasta — a stolice (gracza i klastrów)
-    // nie mają startCityState, więc państwa-miasta pakowane 3 hex od stolicy były
-    // odrzucane przez próg 5 i "znikały" (15 żądanych → ~1 na mapie).
-    const minDist = (opts?.foundingCityState || city.startCityState)
-      ? MIN_CITY_DISTANCE_START_CITY_STATE
-      : MIN_CITY_DISTANCE;
-    if (hexDistance(q, r, city.q, city.r) < minDist) {
-      return { ok: false, reason: 'za blisko innego miasta' };
+  if (!opts?.clusterStartSlot) {
+    for (const city of cities) {
+      // Próg 3 obowiązuje gdy ALBO istniejące miasto jest państwem-miastem,
+      // ALBO zakładane miasto jest państwem-miastem (kopia typu). Wcześniej brano
+      // pod uwagę tylko flagę istniejącego miasta — a stolice (gracza i klastrów)
+      // nie mają startCityState, więc państwa-miasta pakowane 3 hex od stolicy były
+      // odrzucane przez próg 5 i "znikały" (15 żądanych → ~1 na mapie).
+      const minDist = (opts?.foundingCityState || city.startCityState)
+        ? MIN_CITY_DISTANCE_START_CITY_STATE
+        : MIN_CITY_DISTANCE;
+      if (hexDistance(q, r, city.q, city.r) < minDist) {
+        return { ok: false, reason: 'za blisko innego miasta' };
+      }
     }
   }
 
@@ -380,8 +387,9 @@ export function foundCityAt(
   map: GameMap,
   name: string,
   foundingCityState = false,
+  clusterStartSlot = false,
 ): City | null {
-  const { ok } = canFoundCity(q, r, cities, map, { foundingCityState });
+  const { ok } = canFoundCity(q, r, cities, map, { foundingCityState, clusterStartSlot });
   if (!ok) {
     return null;
   }
