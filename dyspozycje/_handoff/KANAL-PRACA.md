@@ -4996,3 +4996,9 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (Nowa gra — Inkowie z MP wokół stol
 - Test: building-queue-refund-test.cjs 5/5 PASS
 - ID: BUG-KOLEJKA-ZWROT-SUROWCA · R-KOLEJKA-ZWROT-SUROWCA
 CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno wraca)
+
+## [22:58 PL, 2026-08-02] GROK -> Maciej — deploy FALA 201 ROBOCZA
+- md5: `48646cd6` / `48646cd639ec75608b3c064da9ae5c45` · VERIFY OK
+- **FALA 201.** PR #5 Inkowie MP · PR #6 zwrot surowca kolejki · (+ NAP fair-min + sep 15 z main)
+- build: /tmp/civ-dist-fala201 · poprzedni `26b05753` ZASTĄPIONA
+CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Inkowie z MP) + Stolarnia→Usuń (drewno wraca)

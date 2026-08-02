@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `26b05753` - 2026-08-02 22:48 - FALA 200: stolice w pasie 10–15 hex od morza (+ FALA 199) - **AKTUALNA**
+## ROBOCZA `48646cd6` - 2026-08-02 22:58 - FALA 201: Inkowie MP + zwrot surowca kolejki (+ NAP/sep15 z main) - **AKTUALNA**
+- md5 (pelne): `48646cd639ec75608b3c064da9ae5c45` · stempel: `ROBOCZA · 2026-08-02 22:58`
+- **FALA 201.** PR #5 Inkowie MP (`repackAllSparse` + `clusterStartSlot`). PR #6 zwrot `koszt_surowce` przy Usuń z kolejki. Na main też: NAP fair-min + sep stolic Standard 15 (wcześniej bez deployu).
+- tsc 0 · vite · VERIFY OK · build /tmp/civ-dist-fala201.
+
+## ROBOCZA `26b05753` - 2026-08-02 22:48 - FALA 200: stolice w pasie 10–15 hex od morza (+ FALA 199) - **ZASTĄPIONA**
 - md5 (pelne): `26b057536880c97db040ec0d3a123dc7` · stempel: `ROBOCZA · 2026-08-02 22:48`
 - **FALA 200.** `clusters.ts`: pas stolicy `capitalMinSeaDist`…`capitalMaxSeaDist` (Standard **10–15** hex; inne rozmiary min+5). Preferencja środka pasa, nie „jak najbliżej 10” i nie głęboki interior. Zawiera FALA 199 (obwarzanek Wybrzeże, rzeki bez limitu).
 - tsc 0 · vite · VERIFY OK · build %TEMP%\civ-dist-fala200.
