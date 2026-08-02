@@ -14,7 +14,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `cf796528` - 2026-08-02 11:25 - FALA 167: rzeki główne minLen + stolice seaDist≥10 - **AKTUALNA**
+## ROBOCZA `33fbf82d` - 2026-08-02 11:45 - FALA 168: rzeki coast — minLen akceptacja, wzrost do maxLen - **AKTUALNA**
+- md5 (pelne): `33fbf82d9fcbd3ad36de2ec4fd464618` · stempel: `ROBOCZA · 2026-08-02 11:45`
+- **VERIFY OK (Gra-ROBOCZA.html).** Fix: growRiverFromCoastInland nie zatrzymuje się na minLen (~25) — wzrost do traceMax (riverTraceBudgetForSeaDist) lub braku lądu / sep 3 / bufor 2 hex od morza. minLen = próg akceptacji w tryPlaceMainRiverFromCoast. riverGenPhase=main + riverStage=1 bez zmian.
+- river-sea-buffer-test.cjs — PASS 6/6 · tsc 0.
+## ROBOCZA `cf796528` - 2026-08-02 11:25 - FALA 167: rzeki główne minLen + stolice seaDist≥10 - **ZASTAPIONA**
 - md5 (pelne): `cf796528a620ab71a3339427a247586d` · stempel: `ROBOCZA · 2026-08-02 11:25`
 - **VERIFY OK (Gra-ROBOCZA.html).** A) traceRiverFromCoast: cel inland = tier minLen (~25 Normalnie), stop przy MAIN_RIVER_MIN_PATH_SEP=3; soft-accept tylko awaryjnie. B) stolice: pickCapitalHexInRegion z twardą bramką seaDist (gracz+AI), bez seaFirst na plażę. riverGenPhase=main + riverStage=1 bez zmian (Etap A).
 - cluster-start-test.cjs — PASS 375/375 · tsc 0.

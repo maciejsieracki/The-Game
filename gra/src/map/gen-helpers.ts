@@ -5050,7 +5050,6 @@ function growRiverFromCoastInland(
   seaDist: Map<string, number>,
   openOceanDist: Map<string, number>,
   rand: () => number,
-  inlandTargetLen: number,
   stepCap: number,
   hardMeanderLen: number = RIVER_HARD_MEANDER_LEN,
   allowReliefTraversal = false,
@@ -5061,7 +5060,7 @@ function growRiverFromCoastInland(
   const path: RiverCoord[] = [{ q: mq, r: mr }];
   const visited = new Set<string>([mouthKey]);
 
-  while (path.length < inlandTargetLen && path.length < stepCap) {
+  while (path.length < stepCap) {
     const cur = path[path.length - 1]!;
     const curKey = hexKey(cur.q, cur.r);
     const curD = seaDist.get(curKey) ?? 0;
@@ -5077,6 +5076,7 @@ function growRiverFromCoastInland(
       if (blockRiverKeys && blockRiverKeys.size > 0 && minPathSep > 0
         && nearestRiverHexDistance(nq, nr, blockRiverKeys) < minPathSep) continue;
       const nd = seaDist.get(nk) ?? 0;
+      if (path.length >= 1 && nd < RIVER_MIN_INLAND_FROM_SEA) continue;
       if (hardMeander && nd < curD) continue;
       let score = nd * 35;
       if (nd > curD) score += 22;
@@ -5117,16 +5117,16 @@ function traceRiverFromCoast(
   const startD = seaDist.get(mouthKey);
   if (startD == null || startD > 2) return [];
 
-  const inlandTarget = traceOpts.minLen ?? 4;
   const hardMeanderLen = traceOpts.hardMeanderLen ?? RIVER_HARD_MEANDER_LEN;
   const allowReliefTraversal = traceOpts.allowReliefTraversal ?? false;
-  const stepCap = Math.max(inlandTarget + 8, Math.min(maxLen, inlandTarget + 24));
+  // minLen = próg akceptacji u wołającego; wzrost do maxLen (bufor A*) lub braku lądu / sep 3.
+  const growthCap = maxLen;
   const blockRiverKeys = traceOpts.blockRiverKeys;
   const minPathSep = traceOpts.minPathSep ?? MAIN_RIVER_MIN_PATH_SEP;
 
   const mouthToInland = growRiverFromCoastInland(
     hexes, mq, mr, seaDist, openOceanDist, rand,
-    inlandTarget, stepCap, hardMeanderLen, allowReliefTraversal,
+    growthCap, hardMeanderLen, allowReliefTraversal,
     blockRiverKeys, minPathSep,
   );
   if (mouthToInland.length < 2) return [];

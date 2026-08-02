@@ -4777,3 +4777,10 @@ CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra: civ-perf linia Rzeki glowne + TYLKO 
 - riverGenPhase=main + riverStage=1 bez zmian (Etap A)
 - cluster-start-test 375/375 - tsc 0 - publish gra-robocza/
 CZEKAM-NA: Maciej Ctrl+F5 - sprawdz dlugosc rzek glownych + stolice AI >=10 hex od morza (Standard)
+
+## [11:45 PL, 2026-08-02] INTEGRATOR -> Maciej - FALA 168 rzeki coast minLen fix
+- md5 `33fbf82d` / `33fbf82d9fcbd3ad36de2ec4fd464618` - stempel `ROBOCZA - 2026-08-02 11:45`
+- Bug: growRiverFromCoastInland zatrzymywal sie na minLen (~25) jak na celu; fix: wzrost do traceMax lub brak ladu / sep 3 / bufor 2 hex
+- minLen = próg akceptacji (tryPlaceMainRiverFromCoast), nie limit wzrostu
+- river-sea-buffer-test 6/6 - tsc 0 - publish gra-robocza/
+CZEKAM-NA: Maciej Ctrl+F5 FRESH - Nowa gra Pangea/Standard: rzeki glowne znacznie dluzsze w gleb ladu
