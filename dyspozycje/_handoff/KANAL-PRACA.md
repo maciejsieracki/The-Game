@@ -5002,3 +5002,11 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (enqueue Stolarnia → Usuń → drewno
 - **FALA 201.** PR #5 Inkowie MP · PR #6 zwrot surowca kolejki · (+ NAP fair-min + sep 15 z main)
 - build: /tmp/civ-dist-fala201 · poprzedni `26b05753` ZASTĄPIONA
 CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Inkowie z MP) + Stolarnia→Usuń (drewno wraca)
+
+## [23:05 PL, 2026-08-02] CLOUD -> Maciej — barbarzyńcy bez głodu + rajd po 2 jednostkach
+- Branch: `cursor/fix-barb-no-hunger-attack-63a1`
+- Głód: `advanceEmpireFood` pomija ownerId=-1; `isArmyHungry`/`isArmyStarving` false dla barbarzyńców
+- Rajd: `isCampRaidReady` (>= unitsPerCamp w campControlRadius) → maszer bez aggroRadius; `campId` + ruchLeft przy spawnie
+- Test: barbarians-test 157/157 · empire-food-b5 19/19 PASS
+- ID: BUG-BARB-GLOD · R-BARB-GLOD-ATAK
+CZEKAM-NA: Maciej merge + deploy ROBOCZA (obóz barbarzyński: 2 wojowników → marsz na cywilizację, brak głodu)

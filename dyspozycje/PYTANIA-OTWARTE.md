@@ -1475,3 +1475,16 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## BUG-BARB-GLOD — barbarzyńcy bez głodu + rajd po 2 jednostkach · STATUS: **WDROŻONE (kod)** (2026-08-02)
+
+**Źródło:** Maciej 2026-08-02 — barbarzyńcy nie powinni mieć głodu; gdy obóz ma 2 wojowników, od razu maszerują na najbliższą cywilizację.
+
+**Root cause głodu:** `advanceEmpireFood` zbierał `ownerId` z jednostek na mapie — barbarzyńcy (`BARBARIAN_OWNER_ID=-1`) dostawali tick bez miast/produkcji, koszt armii schodził z pustych zapasów → `glodWojska` + atrycja HP.
+
+**Fix głód:** `empire-food.ts` pomija `isBarbarian(ownerId)`; `isArmyHungry`/`isArmyStarving` zwracają false dla barbarzyńców.
+
+**Fix rajd:** `isCampRaidReady` (>= `unitsPerCamp` wojowników lądowych w `campControlRadius`) → `decideBarbarianMoves` ignoruje `aggroRadius` i maszeruje ku najbliższemu miastu/jednostce cywilizacji; `main.ts` ustawia `campId` przy spawnie i daje `ruchLeft` gdy obóz osiągnie cap.
+
+**Test:** `barbarians-test.cjs` 157/157 · `empire-food-b5-test.cjs` 19/19 PASS.
+**ID:** R-BARB-GLOD-ATAK · branch `cursor/fix-barb-no-hunger-attack-63a1`

@@ -29,7 +29,7 @@ export {
   BARBARIAN_OWNER_ID, isBarbarian,
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
   EPOKA_SREDNIOWIECZE_BARBARZY,
-  spawnCamps, tickCamps, decideBarbarianMoves,
+  spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
@@ -66,7 +66,7 @@ const {
   BARBARIAN_OWNER_ID, isBarbarian,
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
   EPOKA_SREDNIOWIECZE_BARBARZY,
-  spawnCamps, tickCamps, decideBarbarianMoves,
+  spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
@@ -367,6 +367,30 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
     eq(cmds[0].type, 'move', 'city raid approach is a move');
     const dNew = hexDistance(cmds[0].toQ, cmds[0].toR, 3, 0);
     assert(dNew < 3, 'step gets closer to the city');
+  }
+
+  // 6i. BUG-BARB-GLOD (Maciej 2026-08-02): pełny obóz (>= unitsPerCamp) maszeruje
+  // ku najbliższej cywilizacji BEZ limitu aggroRadius.
+  {
+    const raidCamp = [{ id: 'rc', q: 0, r: 0, spawnCooldown: 0 }];
+    const b1 = barb('b1', 3, 0, { campId: 'rc' });
+    const b2 = barb('b2', 0, 1, { campId: 'rc' });
+    const farCity = { q: 11, r: 0, ownerId: 0 };
+    const noAggro = Object.assign({}, P, { aggroRadius: 2, unitsPerCamp: 2, campControlRadius: 3 });
+    assert(isCampRaidReady(raidCamp[0], [b2], noAggro) === false, 'isCampRaidReady false below cap');
+    assert(isCampRaidReady(raidCamp[0], [b1, b2], noAggro) === true, 'isCampRaidReady true at cap');
+    const cmdsIdle = decideBarbarianMoves([b1], [], [farCity], raidCamp, map, noAggro);
+    eq(cmdsIdle.length, 1, 'under cap: drifts toward camp, not far city');
+    eq(cmdsIdle[0].type, 'move', 'under cap drift is a move');
+    const cmdsRaid = decideBarbarianMoves([b1, b2], [], [farCity], raidCamp, map, noAggro);
+    eq(cmdsRaid.length, 2, 'full camp issues march commands for both units');
+    for (const cmd of cmdsRaid) {
+      eq(cmd.type, 'move', 'raid-ready units march (not idle)');
+      const fromQ = cmd.unitId === 'b1' ? 3 : 0;
+      const fromR = cmd.unitId === 'b1' ? 0 : 1;
+      assert(hexDistance(cmd.toQ, cmd.toR, 11, 0) < hexDistance(fromQ, fromR, 11, 0),
+        'raid march step reduces distance to civilization');
+    }
   }
 }
 

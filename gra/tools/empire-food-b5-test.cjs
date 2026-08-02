@@ -14,7 +14,7 @@ const BUNDLE = path.resolve(__dirname, '.empire-food-b5-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export {
   advanceEmpireFood, freshEmpireFoodState, buildEmpireFoodParams,
-  bindEmpireFoodRuntime, getEmpireFoodMaxCap, isArmyStarving,
+  bindEmpireFoodRuntime, getEmpireFoodMaxCap, isArmyStarving, isArmyHungry,
   clearLastEmpireFoodTicks,
 } from '../src/game/empire-food';
 export { advanceCityEconomy } from '../src/game/turn-economy';
@@ -141,6 +141,16 @@ ok(
   noArmy.perCity[0].bilansLokalny === withArmy.perCity[0].bilansLokalny,
   'bilans lokalny nie zależy od armii',
 );
+
+// Barbarzyńcy (ownerId=-1) pomijani w advanceEmpireFood — brak głodu wojska
+{
+  const BARBARIAN_OWNER_ID = -1;
+  const states = new Map([[BARBARIAN_OWNER_ID, M.freshEmpireFoodState()]]);
+  const barbUnits = [{ ownerId: BARBARIAN_OWNER_ID, typeId: 'woj', camping: false }];
+  const ef = M.advanceEmpireFood({ perCity: [] }, barbUnits, states, upkeep, params);
+  ok(!ef.byOwner.has(BARBARIAN_OWNER_ID), 'barbarians skipped in empire food tick');
+  ok(M.isArmyStarving(BARBARIAN_OWNER_ID) === false, 'barbarians never army-starving');
+}
 
 console.log('empire-food-b5-test: ' + passed + ' pass, ' + failed + ' fail');
 process.exit(failed > 0 ? 1 : 0);

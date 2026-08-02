@@ -7,6 +7,7 @@
 import type { EconomyTickResult, EconUnit } from './turn-economy';
 import type { UpkeepParams, UnitFoodTable } from './economy-upkeep';
 import { militaryFoodConsumptionWithSpichlerz } from './turn-economy';
+import { isBarbarian } from './barbarians';
 import { SPICHLERZ_EMPIRE_CAP_I, SPICHLERZ_EMPIRE_CAP_II_FULL, resolveSpichlerzCityBonusState } from './building-resource-gate';
 import type { SpichlerzCityBonusState } from './building-resource-gate';
 import {
@@ -181,6 +182,9 @@ export function advanceEmpireFood(
   ]);
 
   for (const ownerId of ownerIds) {
+    // Barbarzyńcy (ownerId=-1) nie mają miast ani magazynu państwa — pomijamy głód wojska.
+    if (isBarbarian(ownerId)) continue;
+
     const st = states.get(ownerId) ?? freshEmpireFoodState();
     if (!states.has(ownerId)) states.set(ownerId, st);
 
@@ -306,11 +310,13 @@ export function getEmpireFoodSplit(_ownerId: number): number {
  * Wcześniejsze niż isArmyStarving (atrycja HP po karencji).
  */
 export function isArmyHungry(ownerId: number): boolean {
+  if (isBarbarian(ownerId)) return false;
   return _lastTicks.get(ownerId)?.glodWojska ?? false;
 }
 
 /** Atrycja HP wojska — aktywna PO karencji glodWojskaKarencjaTur tur ujemnych zapasów. */
 export function isArmyStarving(ownerId: number): boolean {
+  if (isBarbarian(ownerId)) return false;
   return _lastTicks.get(ownerId)?.glodWojskaAtrycjaAktywna ?? false;
 }
 

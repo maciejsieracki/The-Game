@@ -721,6 +721,59 @@ function isFreeLand(q: number, r: number, map: GameMap, occupied: Set<string>): 
   return !isImpassableTerrain(hex.terenBazowy);
 }
 
+/**
+ * Liczba żyjących jednostek barbarzyńskich w zasięgu kontroli obozu
+ * (ten sam promień co tickCamps — campControlRadius).
+ */
+function countCampGarrison(
+  camp: BarbCamp,
+  barbUnits: BarbUnit[],
+  campControlRadius: number,
+): number {
+  return barbUnits.filter(
+    u => hexDistance(u.q, u.r, camp.q, camp.r) <= campControlRadius,
+  ).length;
+}
+
+/**
+ * Obóz „gotowy do rajdu": ma pełny kontyngent bojowników.
+ * „Dwie jednostki" (Maciej 2026-08-02) = unitsPerCamp (domyślnie 2) żywych
+ * wojowników w promieniu campControlRadius — nie osadnicy, nie rajderzy morscy
+ * (ci mają decideSeaPeoplesRaids).
+ */
+export function isCampRaidReady(
+  camp: BarbCamp,
+  barbUnits: BarbUnit[],
+  params: BarbParams,
+): boolean {
+  const landUnits = barbUnits.filter(
+    u => u.seaRaider !== true && u.embarked !== true,
+  );
+  return countCampGarrison(camp, landUnits, params.campControlRadius) >= params.unitsPerCamp;
+}
+
+/** Obóz macierzysty jednostki: campId albo najbliższy obóz w zasięgu kontroli. */
+function homeCampForUnit(
+  unit: BarbUnit,
+  camps: BarbCamp[],
+  campControlRadius: number,
+): BarbCamp | undefined {
+  if (unit.campId) {
+    const byId = camps.find(c => c.id === unit.campId);
+    if (byId !== undefined) return byId;
+  }
+  let best: BarbCamp | undefined;
+  let bestDist = Infinity;
+  for (const c of camps) {
+    const d = hexDistance(unit.q, unit.r, c.q, c.r);
+    if (d <= campControlRadius && d < bestDist) {
+      bestDist = d;
+      best = c;
+    }
+  }
+  return best;
+}
+
 // ---------------------------------------------------------------------------
 // Aggression / movement
 // ---------------------------------------------------------------------------
@@ -732,8 +785,10 @@ function isFreeLand(q: number, r: number, map: GameMap, occupied: Set<string>): 
  *   1. Low HP (healthFrac < params.retreatHpFrac): step toward the nearest
  *      camp (§2.3 retreat to regenerate). If already adjacent, no command.
  *   2. Adjacent enemy (player/AI) unit: attack it.
- *   3. A target (enemy unit or city) within params.aggroRadius: step toward
- *      the nearest such target (zatrzymuje się obok miasta — nie wchodzi na heks).
+ *   3. A target (enemy unit or city) within params.aggroRadius — OR, when the
+ *      unit's home camp is raid-ready (>= unitsPerCamp living land warriors in
+ *      campControlRadius), ANY distance to the nearest civilization target:
+ *      step toward the nearest enemy unit or city.
  *   4. Otherwise idle: if more than 1 hex from the home camp, step back toward
  *      it; if no camps exist, no command.
  *
@@ -810,9 +865,10 @@ export function decideBarbarianMoves(
       continue;
     }
 
-    // 3. Chase the nearest target (unit or city) inside the aggro radius.
+    // 3. Chase the nearest civilization target (unit or city).
     const nearestEnemyUnit = nearest(unit.q, unit.r, enemies);
-    const nearestCity = nearest(unit.q, unit.r, cities);
+    const civCities = cities.filter(c => c.ownerId === undefined || !isBarbarian(c.ownerId));
+    const nearestCity = nearest(unit.q, unit.r, civCities);
     const targets: { q: number; r: number; d: number }[] = [];
     if (nearestEnemyUnit !== undefined) {
       targets.push({ q: nearestEnemyUnit.q, r: nearestEnemyUnit.r, d: hexDistance(unit.q, unit.r, nearestEnemyUnit.q, nearestEnemyUnit.r) });
@@ -822,7 +878,10 @@ export function decideBarbarianMoves(
     }
     targets.sort((a, b) => a.d - b.d);
     const target = targets[0];
-    if (target !== undefined && target.d <= params.aggroRadius) {
+    const homeCamp = homeCampForUnit(unit, camps, params.campControlRadius);
+    const raidReady = homeCamp !== undefined && isCampRaidReady(homeCamp, barbUnits, params);
+    const chaseRadius = raidReady ? Infinity : params.aggroRadius;
+    if (target !== undefined && target.d <= chaseRadius) {
       const step = firstStep(unit, map, target.q, target.r, occ);
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
@@ -830,10 +889,11 @@ export function decideBarbarianMoves(
       }
     }
 
-    // 4. Idle: drift back toward the home camp.
-    const homeCamp = nearest(unit.q, unit.r, camps);
-    if (homeCamp !== undefined && hexDistance(unit.q, unit.r, homeCamp.q, homeCamp.r) > 1) {
-      const step = firstStep(unit, map, homeCamp.q, homeCamp.r, occ);
+    // 4. Idle: drift back toward the home camp (tylko gdy obóz nie wysłał rajdu).
+    if (raidReady) continue;
+    const homeCampIdle = homeCamp ?? nearest(unit.q, unit.r, camps);
+    if (homeCampIdle !== undefined && hexDistance(unit.q, unit.r, homeCampIdle.q, homeCampIdle.r) > 1) {
+      const step = firstStep(unit, map, homeCampIdle.q, homeCampIdle.r, occ);
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
       }

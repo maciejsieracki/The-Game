@@ -829,7 +829,7 @@ import {
 } from './ui/victoryScreen';
 import {
   loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
-  scaleBarbParamsForLevel, pickBronzeBarbUnit,
+  scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady,
   BARBARIAN_OWNER_ID, isBarbarian,
   loadSeaBarbParams, spawnSeaCamps, decideSeaPeoplesRaids, collectSeaRaidTargets,
   isCoastalCity,
@@ -20661,6 +20661,7 @@ async function boot(): Promise<void> {
                 r: spawn.r,
                 ruch,
                 ruchLeft: 0,
+                campId: spawn.campId,
               };
               // TEMAT #15: spawn z obozu nadmorskiego = rajder Ludów Morza,
               // na wodzie startuje zaokrętowany (permanentnie pływa do rajdu).
@@ -20669,6 +20670,22 @@ async function boot(): Promise<void> {
               if (spawn.embarked === true) newUnit.embarked = true;
               units.push(newUnit);
               console.log(`[Barbarzyncy] Spawn: ${spawn.typeId} @ (${spawn.q},${spawn.r})` + (spawn.embarked ? ' [na wodzie]' : ''));
+
+              // BUG-BARB-GLOD (Maciej 2026-08-02): gdy obóz osiągnie unitsPerCamp
+              // żywych wojowników lądowych, puść kontyngent od razu w stronę cywilizacji.
+              const spawnCamp = barbCamps.find(c => c.id === spawn.campId);
+              if (spawnCamp && spawnCamp.naval !== true && spawn.embarked !== true) {
+                const landBarbsNearCamp = (units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[]).filter(
+                  u => u.seaRaider !== true
+                    && u.embarked !== true
+                    && hexDistance(u.q, u.r, spawnCamp.q, spawnCamp.r) <= barbLiveForSpawn.campControlRadius,
+                );
+                if (isCampRaidReady(spawnCamp, landBarbsNearCamp, barbLiveForSpawn)) {
+                  for (const u of landBarbsNearCamp) {
+                    if (u.ruchLeft <= 0) u.ruchLeft = u.ruch;
+                  }
+                }
+              }
             }
 
             // Move barbarian units.
