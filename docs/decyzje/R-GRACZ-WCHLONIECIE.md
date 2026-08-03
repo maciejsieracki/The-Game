@@ -1,31 +1,41 @@
 # R-GRACZ-WCHLONIECIE — dyplomatyczne wchłonięcie miasta przez gracza
 
-**Status:** CZEKA-NA-DECYZJĘ (ABC)  
+**Status:** 🟡 ZAPISANA (ECHO 2026-08-03) — czeka wdrożenie / doprecyzowanie liczb  
 **Data:** 2026-08-03  
-**Powiązane:** `R-AI-MP-WASAL-WCHLONIECIE` Q3 (odłożone A+B) · D3-PROG-G2 (Respekt ≥ 90, nigdy nie wdrożone jako akcja) · `progWasalizacjaRespekt` = 70
+**Powiązane:** `R-AI-MP-WASAL-WCHLONIECIE` Q3 · D3-PROG-G2 · `progWasalizacjaRespekt` = 70
 
-## Stan dziś
+## ECHO — decyzja Macieja (2026-08-03)
+
+Cytat: `R-GRACZ-WCHLONIECIE-Q1 a / R-GRACZ-WCHLONIECIE-Q2 a / R-GRACZ-WCHLONIECIE-Q3 a`
+
+| ID | Odpowiedź | Treść |
+|----|-----------|--------|
+| **R-GRACZ-WCHLONIECIE-Q1** | **A** | Po wasalizacji, od tury **N** (domyślnie **10**) — akcja „Wchłonięcie” |
+| **R-GRACZ-WCHLONIECIE-Q2** | **A** | Próg **Respekt ≥ 90** |
+| **R-GRACZ-WCHLONIECIE-Q3** | **A** | **Drogo** (złoto) **+ zgoda** partnera |
+
+## Proponowane domyślne liczby (do potwierdzenia przed kodem)
+
+| Parametr | Propozycja | Skąd |
+|----------|------------|------|
+| `gracz_wchloniecie_po_wasalu_tur` | **10** | Q1A + szkic Macieja / AI Normalny |
+| Okno czasowe | **od tury 10 w górę** (bez górnego limitu), póki trwa wasal | domyślne — do potwierdzenia |
+| `progWchloniecieRespekt` | **90** | Q2A / D3-PROG-G2 |
+| Zakres v1 | **tylko miasta-państwa** (wasal 1-miastowy) | propozycja z ABC |
+| Koszt ¤ | **`150 + 25 × ludność` miasta** (min 200) | „drogo”; strojenie po playteście |
+| Zgoda | propozycja jak inne umowy — partner AI może **odmówić** (willingness / fair PN) | Q3A |
+| Kara W | **brak** w v1 (Q3A = zgoda, nie jednostronne+kara) | — |
+
+## Stan dziś (przed wdrożeniem)
 
 | Ścieżka | Gracz |
 |---------|--------|
-| Wojna / oblężenie / puste miasto | TAK — przejęcie miasta |
-| Wasalizacja (audiencja) | TAK — Respekt ≥ 70; miasto zostaje u partnera |
-| Dyplomatyczne **wchłonięcie** | **NIE** (UI odłożone; AI→MP ma timer) |
+| Wojna / oblężenie / puste miasto | TAK |
+| Wasalizacja | TAK — Respekt ≥ 70 |
+| Dyplomatyczne wchłonięcie | **NIE** (do wdrożenia po `działaj`) |
 
-JSON `diplomacy.json` nadal opisuje akcję 12 jako „Wasalizacja / wchłonięcie”, ale silnik robi tylko wasala.
+## Następny krok operacyjny
 
-## Szkic Macieja (2026-08-03)
-
-Po **wasalizacji** przez okres **~10 tur** dostępna opcja wchłonięcia, z progami (np. **Respekt ≥ 90**).
-
-## Paczka ABC `[PACZKA 1/1 — 3 pytania]`
-
-Zobacz czat + `dyspozycje/PYTANIA-OTWARTE.md` § R-GRACZ-WCHLONIECIE.
-
-| ID | Temat | Rekomendacja |
-|----|-------|--------------|
-| **R-GRACZ-WCHLONIECIE-Q1** | Kiedy dostępne | **A** — po wasalu, od tury N (domyślnie 10) |
-| **R-GRACZ-WCHLONIECIE-Q2** | Progi | **A** — Respekt ≥ 90 |
-| **R-GRACZ-WCHLONIECIE-Q3** | Koszt / zgoda | **A** — drogo + zgoda partnera (kontynuacja Q3 z R-AI-MP) |
-
-**Odpowiedź Macieja:** wpisz np. `R-GRACZ-WCHLONIECIE Q1A Q2A Q3A` (albo mieszankę liter).
+1. Maciej: **`działaj`** = wdrażaj z liczbami wyżej · **albo** skoryguj koszt / okno / zakres.  
+2. Kod: nowa akcja `wchloniecie` (lub rozszerzenie 12) · bramki wasal≥10 · Respekt≥90 · transfer miasta przy akceptacji · UI audiencji.  
+3. Deploy osobno na hasło.

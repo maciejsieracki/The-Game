@@ -8,84 +8,20 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## R-GRACZ-WCHLONIECIE — wchłonięcie dyplomatyczne przez gracza · STATUS: **CZEKA-NA-DECYZJĘ**
+## R-GRACZ-WCHLONIECIE — wchłonięcie dyplomatyczne przez gracza · STATUS: **🟡 ZAPISANA — Q1A Q2A Q3A**
 
-**Sytuacja.** Gracz dziś przejmuje miasta tylko **wojną** (bitwa / puste miasto / kapitulacja z głodu). **Wasalizacja** (Respekt ≥ 70) zostawia miasto u partnera. Dyplomatycznego wchłonięcia dla gracza **nie ma** (odłożone w `R-AI-MP-WASAL-WCHLONIECIE` Q3). AI→MP ma timer po wasalu (Normalny: 10 tur). Historyczne D3-PROG-G2: Respekt ≥ 90 — param usunięty jako martwy. Maciej szkicuje: po wasalu ~10 tur + próg (np. Respekt ≥ 90).
+**ECHO (2026-08-03):** `R-GRACZ-WCHLONIECIE-Q1 a / R-GRACZ-WCHLONIECIE-Q2 a / R-GRACZ-WCHLONIECIE-Q3 a`
 
-**Cel.** Ustalić ścieżkę, progi i koszt/zgodę — zanim kod/UI.
+| ID | Decyzja |
+|----|---------|
+| Q1 | **A** — po wasalu, od tury N (10) |
+| Q2 | **A** — Respekt ≥ 90 |
+| Q3 | **A** — drogo (złoto) + zgoda partnera |
 
-**Dlaczego teraz.** Domknięcie luki „Wasalizacja / wchłonięcie” z opisu akcji 12; spójność z AI; Maciej otworzył temat.
+**Propozycja liczb v1:** okno **od tury 10 w górę** · koszt **`150 + 25 × ludność` (min 200)** · zakres **tylko MP** · szczegóły: `docs/decyzje/R-GRACZ-WCHLONIECIE.md`.
 
-### R-GRACZ-WCHLONIECIE-Q1 — kiedy dostępne
+**Czeka:** `działaj` (z tymi liczbami) albo korekta kosztu/okna/zakresu.
 
-**A. Po wasalizacji, od tury N (domyślnie 10) — akcja „Wchłonięcie”** *(rekomendacja)*  
-Wasal N tur → jeśli progi OK, można zaproponować pełne przejęcie miasta/ów wasala.  
-- Za: naturalna eskalacja wasal→aneksja; zbieżne z AI (Normalny = 10).  
-- Za: pasuje do szkicu Macieja.  
-- Przeciw: wymaga aktywnego traktatu wasala (nie da się „od razu” przy samym Respekcie).  
-- Przeciw: trzeba zdefiniować, czy okno jest od tury 10 **w górę** (bez końca), czy tylko tury 10–X.
-
-**B. Osobna akcja zawsze przy wysokim Respekcie — bez wasala**  
-Jak dawne D3-PROG-G2: samotne „Wchłonięcie” gdy Respekt ≥ próg.  
-- Za: prostszy flow (jedna bramka).  
-- Za: nie trzeba czekać 10 tur.  
-- Przeciw: omija sens wasala jako etapu pośredniego.  
-- Przeciw: łatwiej „kupić” aneksję samym Respektem.
-
-**C. Tylko wojna — bez dyplomatycznego wchłonięcia**  
-Zostawić jak dziś; wasal = tylko trybut/opieka.  
-- Za: zero nowej złożoności UI/silnika.  
-- Za: aneksja zawsze kosztuje wojnę.  
-- Przeciw: opis JSON i oczekiwanie „wchłonięcie” zostają rozjechane.  
-- Przeciw: AI ma dyplo-aneksję, gracz nie (asymetria).
-
-### R-GRACZ-WCHLONIECIE-Q2 — progi (gdy Q1 ≠ C)
-
-**A. Respekt ≥ 90** *(rekomendacja)*  
-Jak D3-PROG-G2 / dawny `progWchloniecieRespekt`. Wasal = 70, wchłonięcie = wyraźnie wyżej.  
-- Za: już raz ustalone historycznie.  
-- Za: czytelny skok vs wasal.  
-- Przeciw: sam Respekt bez Relacji/Wiarygodności.  
-- Przeciw: przy bardzo słabym partnerze Respekt 90 bywa „tani” dominacją.
-
-**B. Respekt ≥ 90 + Relacja ≥ 100 (lub Zaufanie ≥ 45)**  
-Pas i szelki — dominacja + nieźle stosunki.  
-- Za: trudniej wchłonąć znienawidzonego wasala.  
-- Za: spójne z innymi umowami (granice też Rel+Zauf).  
-- Przeciw: więcej parametrów do strojenia.  
-- Przeciw: może rzadko się spinać w praktyce.
-
-**C. Respekt ≥ 80 (łagodniej) · bez dodatków**  
-Niższy próg niż historyczne 90.  
-- Za: częstsza opcja dla gracza.  
-- Za: bliżej wasala (70).  
-- Przeciw: mniejsza różnica wasal↔wchłonięcie.  
-- Przeciw: odstępstwo od D3-PROG-G2.
-
-### R-GRACZ-WCHLONIECIE-Q3 — koszt i zgoda
-
-**A. Drogo (złoto) + zgoda partnera** *(rekomendacja — kontynuacja Q3 A+B z R-AI-MP)*  
-Propozycja jak inne umowy: partner może odmówić; cena w ¤ (skala od epoki/populacji — liczby w drugim kroku).  
-- Za: Maciej już wskazał „drogo + zgoda” jako przyszły design gracza.  
-- Za: nie jest „darmowym” przejęciem jak AI na Hard.  
-- Przeciw: AI może nadal wchłaniać taniej — asymetria (świadoma).  
-- Przeciw: wymaga wyceny PN/¤ i UI akceptacji.
-
-**B. Drogo, jednostronnie (gdy progi OK) + kara Wiarygodności**  
-Bez zgody wasala; płacisz złoto i dostajesz karę W (jak zdrada „miękka”).  
-- Za: pewne przejęcie gdy dominujesz.  
-- Za: Wiarygodność dostaje zęby.  
-- Przeciw: omija „zgoda” z wcześniejszego Q3.  
-- Przeciw: może czuć się jak exploit vs słabe MP.
-
-**C. Jak AI Normalny — timer, koszt 0, bez zgody**  
-Po 10 turach wasala + progi → przycisk wchłania od razu.  
-- Za: prostota; parytet z AI Ł/N.  
-- Za: szybkie wdrożenie.  
-- Przeciw: dla gracza zbyt łatwe vs zamysł „drogo”.  
-- Przeciw: zero dramaturgii negocjacji.
-
-**Zakres (dopisek do decyzji):** na start rekomendacja **tylko miasta-państwa / wasale 1-miastowe**; pełne cywilacje AI — osobna decyzja później (unikamy kasowania całego imperium jednym kliknięciem).
 
 ---
 

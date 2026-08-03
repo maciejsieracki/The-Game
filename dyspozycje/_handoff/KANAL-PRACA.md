@@ -1,3 +1,7 @@
+## [20:48 PL, 2026-08-03] CLOUD → MASTER — ECHO R-GRACZ-WCHLONIECIE Q1A Q2A Q3A
+Wasal→od tury 10 · Respekt≥90 · drogo+zgoda. Propozycja liczb w `docs/decyzje/R-GRACZ-WCHLONIECIE.md`.
+CZEKAM-NA: Maciej — `działaj` (z liczbami) albo korekta kosztu/okna/zakresu
+
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35
 - **#29** R-STAWKI ×2 · **#33** AI→MP wasal/wchłonięcie · **#4** HUD Praca overflow · **#1** audyt sep vs MP (docs)

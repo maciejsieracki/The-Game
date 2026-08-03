@@ -27,7 +27,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-AUTO-V2 | 2026-08-03 | Domknięcie auto: budowa+ulepszenia Q1–Q9 | **ZDEPLOYOWANE (FALA 204)** | `docs/decyzje/R-AUTO-V2.md` · branch `cursor/fix-auto-v2-63a1` |
 | R-LUDY-MORZA | 2026-08-03 | Brąz: Ludy Morza bez obozu na wodzie; lądowe obozy zostają (Q1=A) | **ZDEPLOYOWANE (FALA 204)** | `docs/decyzje/R-LUDY-MORZA.md` · w merge z V2 |
 | R-AI-MP-WASAL-WCHLONIECIE | 2026-08-03 | AI→MP: trybut/wasal/wchłonięcie ułatwione (skala trudności); sojusze sióstr tylko vs gracz; gracz bez zmian teraz | **ZDEPLOYOWANE (FALA 205)** | Q1=A · Q2=A(Ł/N)+C(Hard) · `ai-cs-absorption.ts` + main.ts · md5 `f41c6550` |
-| R-GRACZ-WCHLONIECIE | 2026-08-03 | Gracz: dyplomatyczne wchłonięcie miasta (wasal→okno / progi / koszt+zgoda) | **CZEKA-NA-DECYZJĘ** | ABC Q1–Q3 · `docs/decyzje/R-GRACZ-WCHLONIECIE.md` · PYTANIA-OTWARTE |
+| R-GRACZ-WCHLONIECIE | 2026-08-03 | Gracz: dyplomatyczne wchłonięcie miasta (wasal→okno / progi / koszt+zgoda) | **CZEKA-NA-WDROŻENIE** | ECHO **Q1A Q2A Q3A** · `docs/decyzje/R-GRACZ-WCHLONIECIE.md` |
 
 ## ⚠️ LEGENDA STATUSÓW (Maciej 2026-08-03)
 
@@ -37,7 +37,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 
 | ID | Status | Uwagi |
 |----|--------|-------|
-| R-GRACZ-WCHLONIECIE | CZEKA-NA-DECYZJĘ | Dyplomatyczne wchłonięcie przez gracza (po wasalu?) · ABC Q1–Q3 · `docs/decyzje/R-GRACZ-WCHLONIECIE.md` |
+| R-GRACZ-WCHLONIECIE | CZEKA-NA-WDROŻENIE | ECHO Q1A Q2A Q3A · liczby: 10 tur / Respekt≥90 / drogo+zgoda · `docs/decyzje/R-GRACZ-WCHLONIECIE.md` |
 | R-HANDEL-AI-FALA | CZEKA-NA-DECYZJĘ | AI koszyki — ABC w czacie Integrator 2026-08-03 · kod częściowo (`computeQuickDealBasket`) |
 | R-ZAMIEN-ULEPSZENIE-CONFIRM | **ZAMKNIĘTE Q1=A** | Zawsze modal przy zastąpieniu (jak dziś) · `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md` · bez zmian kodu |
 | BUG-ARMIA-BRAK-POLACZ | W TOKU (weryfikacja) | Ikona Połącz jest w kodzie (`merge` obok `split`) — najpierw check na FALA 205; bez ABC |
