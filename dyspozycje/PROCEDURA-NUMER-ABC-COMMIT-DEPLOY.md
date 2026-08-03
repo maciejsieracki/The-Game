@@ -73,25 +73,44 @@ Agent:
 
 ---
 
+## 3a. PEŁNE ID PYTANIA — zakaz gołego Q1 (Maciej 2026-08-03)
+
+**ID reguły:** `R-PROC-ABC-FULL-ID`
+
+W grze leci **wiele wątków naraz**. Agenci i Maciej gubią się, gdy w czacie/Ask pada samo „Q1” / „a / q3b”.
+
+| ZAKAZ | WYMAGANE |
+|-------|----------|
+| `Q1`, `Q2`, `Q3` bez tematu | `R-AUTO-BUDOWA-LISTA-Q2`, `P-SCOUT-EXPLORE-Q1`, `R-AI-MP-WASAL-WCHLONIECIE-Q3` |
+| Nagłówek `[PACZKA 1/1 — 2 pytania]` bez ID | `[PACZKA 1/1 — R-FOO-Q2, R-FOO-Q3]` |
+| ECHO „przyjąłem A i Q3=B” | ECHO `R-FOO-Q2=A · R-FOO-Q3=B` |
+| Ask `id: "q1"` | Ask `id: "R-FOO-Q1"` (pełny string) |
+
+**Zasada:** każde pytanie ABC = **`<ID-TEMATU>-Q<n>`**. Litera odpowiedzi Macieja zawsze z tym samym pełnym ID.
+
+---
+
 ## 4. Odpowiedź Macieja → commit
 
 Format decyzji (równoważne):
 
 ```
-42 A
 R-STAWKI-STROJENIE B
+R-AUTO-BUDOWA-LISTA-Q2 A
+R-AUTO-BUDOWA-LISTA-Q3 B
 P-AI-017 A
-R-ZEGLUGA-TOOLTIP: C
 ```
+
+**Preferuj** pełne ID pytania (`…-Q2`), nie samo ID tematu, gdy w temacie jest kilka ABC.
 
 Agent **w tej samej sesji**:
 
-1. **ECHO** — „Przyjąłem **\<ID\> = \<litera\>** …”
+1. **ECHO** — „Przyjąłem **\<pełne-ID\> = \<litera\>** …” (wszystkie ID z paczki)
 2. Zapis odpowiedzi w pliku decyzji / rejestrze (status → `W TOKU` / `WDROŻONE (kod)`).
 3. **Dopiero wtedy** implementacja + testy lane.
 4. **`git commit`** (+ push branch) — **bez** deployu do `gra-robocza/`, **bez** edycji `WERSJE.md` jako AKTUALNA FALA.
 
-Hasła historyczne **`działaj` / `wdrażaj`** = zgoda na wdrożenie **bieżącego** otwartego ID (jeśli jeden); przy wielu otwartych — dopytaj o numer albo wdróż tylko ten, o którym mowa w wątku.
+Hasła historyczne **`działaj` / `wdrażaj`** = zgoda na wdrożenie **bieżącego** otwartego ID (jeśli jeden); przy wielu otwartych — dopytaj o **pełny numer** albo wdróż tylko ten, o którym mowa w wątku.
 
 ---
 
@@ -111,9 +130,9 @@ Po deployu: stempel md5 w `WERSJE.md`, meldunek w kanale, status zadania → `ZD
 
 ```
 [ ] Case Macieja? → NADANIE ID + wpis REJESTR (+ PYTANIA jeśli ABC)
-[ ] Przedstaw rozwiązanie (± ABC) — BEZ kodu gry
-[ ] Czekaj: „<ID> A|B|C”
-[ ] ECHO + zapis plikowy → kod → commit (bez deploy)
+[ ] Przedstaw rozwiązanie (± ABC z **pełnym** ID pytania, nie gołe Q1) — BEZ kodu gry
+[ ] Czekaj: „<pełne-ID> A|B|C”
+[ ] ECHO z pełnymi ID + zapis plikowy → kod → commit (bez deploy)
 [ ] Deploy TYLKO po „deploy”
 [ ] Koniec wiadomości: „Następny krok” (max 3)
 ```
