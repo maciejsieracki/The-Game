@@ -238,3 +238,5 @@ Po wdrożeniu ten sam wiersz przechodzi w górę statusów aż do ✅ (Master). 
 
 ---
 🔗 Historia: `docs/archiwum/` · Pełna treść decyzji: `docs/decyzje/<ID>.md`
+
+| **R-AUTO-BUDOWA-LISTA-Q1** | 2026-08-03 | **A** doprec. | B | 🟡 **ZAPISANA** | — | |
