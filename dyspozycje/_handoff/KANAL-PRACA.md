@@ -5058,3 +5058,10 @@ CZEKAM-NA: Maciej — ewentualnie `deploy` docs na main (albo merge branch); gra
 - ID: R-SCOUT-ZWIEDZAJ · P-SCOUT-EXPLORE
 CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja
 
+
+## [14:26 PL, 2026-08-03] CLOUD → Maciej — Q2=B Zwiedzaj EOT + triumf MP
+- Branch: `cursor/fix-scout-q2b-triumph-hint-63a1` · commit `906155a` · PR #26
+- P-SCOUT-EXPLORE-Q2=B: Zwiedzaj = flaga only (bez natychmiastowego ruchu)
+- P-TRIUMPH-CS-Q1=B: dłuższy hint po ostatnim MP tej samej cyw. (gracz)
+- Test: scout 15/15 · triumph 10/10 · tsc 0
+CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`

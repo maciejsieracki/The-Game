@@ -1,3 +1,5 @@
+- **2026-08-03 14:26** — ✅ Gotowe w kodzie (bez deploy): P-SCOUT-EXPLORE-Q2=B + P-TRIUMPH-CS-Q1=B. Branch `cursor/fix-scout-q2b-triumph-hint-63a1` · PR #26. Napisz **deploy** gdy wgrać do ROBOCZA.
+
 ﻿- **2026-08-02 22:48** - ✅ Gotowe FALA 200 ROBOCZA `26b05753`. Stolice w pasie **10–15 hex** od morza (Standard). Zawiera FALA 199 (obwarzanek/Wybrzeże, rzeki). START: `gra-robocza/Gra-ROBOCZA.html` Ctrl+F5 **Nowa gra**.
 - **2026-08-02 22:32** - ✅ Gotowe FALA 199 ROBOCZA `046c3ec9`. Obwarzanek: most przez Wybrzeże (1 masa). Rzeki bez limitu liczby; stolice bliżej brzegu (min 10). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — różne % lądu, Pangea bez pierścienia.
 - **2026-08-02 22:10** - ✅ Gotowe FALA 198 ROBOCZA `b6a7e049`. Anti-obwarzanek (ponowny merge lądu przed rzekami) · galeria G wyłączona poza DEV. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — Pangea **bez pierścienia**, rzeki do wnętrza, klawisz **G** nie otwiera galerii.
