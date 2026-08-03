@@ -639,7 +639,7 @@ function validateBasketForm(
     giveItems,
     receiveItems,
   };
-  if (isCurrencyProposalForbiddenDuringWar(propActionId, currencyPayload, true)) {
+  if (isCurrencyProposalForbiddenDuringWar(propActionId, currencyPayload, ctx.atWar ?? false)) {
     return { valid: false, reason: 'W wojnie pieniądze tylko w ugodzie pokojowej' };
   }
   if (mode === 'treaty') {

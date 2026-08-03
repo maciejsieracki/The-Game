@@ -5019,3 +5019,11 @@ CZEKAM-NA: Maciej Ctrl+F5 START.html + Nowa gra (Inkowie z MP) + Stolarnia→Usu
 - Test: barbarians-test 157/157 · empire-food-b5 19/19 PASS
 - ID: BUG-BARB-GLOD · R-BARB-GLOD-ATAK
 CZEKAM-NA: Maciej merge + deploy ROBOCZA (obóz barbarzyński: 2 wojowników → marsz na cywilizację, brak głodu)
+
+## [00:15 PL, 2026-08-03] CLOUD -> Maciej — fix dar pieniędzy fałszywa blokada wojny
+- Branch: `cursor/fix-gift-money-false-war-63a1`
+- Bug: modal Prezent/dar pokazywał „W wojnie pieniądze tylko w ugodzie pokojowej" przy POKÓJ (hardkod atWar=true w validateBasketForm)
+- Fix: `diplomacyTradeBasket.ts` — `ctx.atWar ?? false`
+- Testy: diplomacy-war-gates-test.cjs, diplomacy-proposal-test.cjs §17–18 · tsc PASS
+- ID: BUG-DYPLO-GIFT-WAR-FALSE · R-DYPLO-GIFT-WAR-FALSE
+CZEKAM-NA: Maciej merge (bez deploy w tym kroku)

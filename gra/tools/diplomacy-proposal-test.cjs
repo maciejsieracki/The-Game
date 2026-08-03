@@ -475,5 +475,23 @@ r = evaluateProposal(prop('pokoj', 0, 1, { givePn: 615, receivePn: 615 }), {
 });
 ok(r.accepted, 'pokój symetryczny: bez bramki willingnessTrade (willingnessPeace)');
 
+// 18 Dar złota — pokój OK, wojna zablokowana; ugoda pokojowa ze złotem w wojnie OK
+r = evaluateProposal(prop('handel', 0, 1, {
+  isGift: true,
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 50 }],
+  givePn: 50,
+}), ctx({ relation: rel(60, 50), stanWojny: false }));
+ok(r.accepted && r.oneShotTrade, 'dar złota w pokoju accepted');
+
+r = evaluateProposal(prop('handel', 0, 1, {
+  isGift: true,
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 50 }],
+  givePn: 50,
+}), ctx({ stanWojny: true }));
+ok(!r.accepted && r.reason.includes('wojna'), 'dar złota w wojnie blocked');
+
+r = evaluateProposal(prop('pokoj', 0, 1, { goldOnce: 50 }), ctx({ stanWojny: true }));
+ok(!r.reason.includes('pieniądze tylko w ugodzie'), 'pokój ze złotem w wojnie — brak blokady waluty');
+
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);

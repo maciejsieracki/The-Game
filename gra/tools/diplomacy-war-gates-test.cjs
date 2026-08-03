@@ -74,6 +74,21 @@ ok(
   'handel+złoto OK poza wojną',
 );
 
+// BUG 2026-08-02: modal daru hardkodował atWar=true — regresja gift + pokój ze złotem w wojnie
+const giftGoldPayload = { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100 }] };
+ok(
+  !isCurrencyProposalForbiddenDuringWar('handel', giftGoldPayload, false),
+  'dar złota w pokoju OK (actionId handel jak mode=gift)',
+);
+ok(
+  isCurrencyProposalForbiddenDuringWar('handel', giftGoldPayload, true),
+  'dar złota w wojnie zablokowany',
+);
+ok(
+  !isCurrencyProposalForbiddenDuringWar('pokoj', { goldOnce: 100 }, true),
+  'ugoda pokojowa ze złotem w wojnie OK',
+);
+
 ok(
   !shouldCityStateRollWarOnPlayer('hard', 25, false, false, () => 0, false, true),
   'PM roll: NAP blokuje DOW',
