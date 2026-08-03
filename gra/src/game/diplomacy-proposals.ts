@@ -82,6 +82,8 @@ export type ProposalActionId =
   | 'namow_wojne'
   | 'ultimatum'
   | 'wasal'
+  /** R-GRACZ-WCHLONIECIE: wchłonięcie miasta-państwa po wasalu (gracz→MP, v1). */
+  | 'wchloniecie'
   /** Zakończenie wojny — stoł negocjacyjny, PN bazowe 500 (Maciej 2026-07-29). */
   | 'pokoj';
 
@@ -157,6 +159,10 @@ export interface ProposalEvalContext {
   /** Miasto-państwo klastra — blokuje trybut (Maciej 2026-08-02). */
   proposerIsCityState?: boolean;
   responderIsCityState?: boolean;
+  /** Ludność miast respondenta (suma) — koszt wchłonięcia */
+  responderPopulation?: number;
+  /** Ile tur trwa aktywny wasal (proposer=suzeren, responder=wasal); undefined = brak */
+  wasalAgeTurns?: number;
   /** Istniejące traktaty — blokada duplikatów */
   activeDeals?: readonly ActiveDeal[];
   /** Poziom trudności gry — skaluje progi relacji/zaufania (Maciej 2026-07-21). */
@@ -204,6 +210,40 @@ function pairHasKind(
   return deals.some(
     d => d.strony[0] === p0 && d.strony[1] === p1 && normalizeTreatyKind(d.rodzaj) === k,
   );
+}
+
+/** R-GRACZ-WCHLONIECIE: koszt jednorazowego wchłonięcia MP (¤). */
+export function graczWchloniecieKosztZloto(
+  population: number,
+  p: ReturnType<typeof getEffectiveDiplomacyParams> = getEffectiveDiplomacyParams('normal'),
+): number {
+  return Math.max(
+    p.graczWchloniecieKosztMin,
+    p.graczWchloniecieKosztBaza + p.graczWchloniecieKosztPerLudnosc * Math.max(0, population),
+  );
+}
+
+/** Aktywny wasalizacja: suzeren=`suzerenId`, wasal=`wasalId`. */
+export function findWasalDeal(
+  deals: readonly ActiveDeal[] | undefined,
+  suzerenId: number,
+  wasalId: number,
+): ActiveDeal | undefined {
+  if (!deals?.length) return undefined;
+  const p0 = Math.min(suzerenId, wasalId);
+  const p1 = Math.max(suzerenId, wasalId);
+  return deals.find(d => {
+    if (d.strony[0] !== p0 || d.strony[1] !== p1) return false;
+    if (normalizeTreatyKind(d.rodzaj) !== RodzajTraktatu.Wasalizacja) return false;
+    const econ = d.ekonomia;
+    if (!econ) return true;
+    return econ.receiverOwnerId === suzerenId && econ.payerOwnerId === wasalId;
+  });
+}
+
+export function wasalAgeTurns(deal: ActiveDeal | undefined, turn: number): number | undefined {
+  if (!deal || deal.zawartaTura == null) return undefined;
+  return Math.max(0, turn - deal.zawartaTura);
 }
 
 export function makeDealId(
@@ -881,6 +921,45 @@ export function evaluateProposal(
       return { accepted: true, reason: 'Wasalizacja zaakceptowana', deal };
     }
 
+    case 'wchloniecie': {
+      if (!ctx.responderIsCityState) {
+        return { accepted: false, reason: 'Wchłonięcie v1 tylko miasta-państwa' };
+      }
+      const wasalDeal = findWasalDeal(ctx.activeDeals, proposerOwnerId, responderOwnerId);
+      if (!wasalDeal) {
+        return { accepted: false, reason: 'Brak aktywnej wasalizacji z tym miastem-państwem' };
+      }
+      const age = ctx.wasalAgeTurns ?? wasalAgeTurns(wasalDeal, ctx.turn);
+      if (age == null || age < p.graczWchlonieciePoWasaluTur) {
+        const remain = p.graczWchlonieciePoWasaluTur - (age ?? 0);
+        return {
+          accepted: false,
+          reason: `Wasal musi trwać ≥ ${p.graczWchlonieciePoWasaluTur} tur (pozostało ${remain})`,
+        };
+      }
+      if (ctx.proposerRespekt < p.progWchloniecieRespekt) {
+        return {
+          accepted: false,
+          reason: `Wchłonięcie wymaga Respekt ≥ ${p.progWchloniecieRespekt}`,
+        };
+      }
+      // Q3A: zgoda wasala — Relacja ≥ 60 (środek pasma Przyjazny, consent gate).
+      const WCHLONIECIE_CONSENT_REL = 60;
+      if (score < WCHLONIECIE_CONSENT_REL) {
+        return { accepted: false, reason: 'Wasal odmawia wchłonięcia — zbyt niska Relacja' };
+      }
+      const pop = ctx.responderPopulation ?? 0;
+      const koszt = graczWchloniecieKosztZloto(pop, p);
+      const goldOnce = payload.goldOnce ?? 0;
+      if (goldOnce < koszt) {
+        return {
+          accepted: false,
+          reason: `Wchłonięcie wymaga jednorazowej opłaty ≥ ${koszt} ¤`,
+        };
+      }
+      return { accepted: true, reason: `Wchłonięcie zaakceptowane (${koszt} ¤)` };
+    }
+
     default:
       return { accepted: false, reason: 'Nieznana akcja dyplomatyczna' };
   }
@@ -1091,7 +1170,7 @@ export function evaluatePendingFromAI(
  */
 const NEGOTIATION_PEACE_REQUIRED: ReadonlySet<ProposalActionId> = new Set([
   'nap', 'sojusz_defensywny', 'sojusz_pelny', 'handel',
-  'umowa_handlowa' as ProposalActionId, 'umowa_szlakow', 'granice', 'tech', 'wasal', 'trybut_zadanie',
+  'umowa_handlowa' as ProposalActionId, 'umowa_szlakow', 'granice', 'tech', 'wasal', 'wchloniecie', 'trybut_zadanie',
 ]);
 
 /**

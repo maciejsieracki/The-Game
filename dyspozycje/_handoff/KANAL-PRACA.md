@@ -1,3 +1,10 @@
+## [21:00 PL, 2026-08-03] CLOUD → Maciej — R-GRACZ-WCHLONIECIE (kod, bez deploy)
+- Branch: `cursor/fix-gracz-wchloniecie-63a1`
+- Gracz→MP wchłonięcie po wasalu (Q1A N=10 · Q2A Respekt 90 · Q3A złoto+zgoda) · UI akcja 15
+- Test: diplomacy-proposal + diplomacy-locks · tsc 0
+- Bez deploy / bez WERSJE AKTUALNA FALA
+CZEKAM-NA: Maciej **deploy** gdy OK
+
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35
 - **#29** R-STAWKI ×2 · **#33** AI→MP wasal/wchłonięcie · **#4** HUD Praca overflow · **#1** audyt sep vs MP (docs)

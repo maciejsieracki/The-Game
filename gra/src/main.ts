@@ -928,6 +928,7 @@ import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
   enrichAiCommandWithTreasury, clampDealTurns,
+  findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
   type ProposalEvalContext, type ProposalPayload,
   // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta/odpowiedź.
   type PendingNegotiation, createNegotiation, applyCounterOffer, canCounterNegotiation,
@@ -11205,7 +11206,7 @@ async function boot(): Promise<void> {
     const CYW_ACTION_TO_UI_ID: Record<string, string> = {
       nap: '2', sojusz_defensywny: '3', sojusz_pelny: '3', granice: '4', pokoj: '10',
       handel: '14', umowa_handlowa: '5', umowa_szlakow: '5', tech: '6', namow_wojne: '7',
-      trybut_zadanie: '8', trybut_oferta: '8', ultimatum: '9', wasal: '12',
+      trybut_zadanie: '8', trybut_oferta: '8', ultimatum: '9', wasal: '12', wchloniecie: '15',
     };
 
     /** C-DYP-Q1=A: krótki opis WARUNKÓW aktualnie na stole (bez nowej wyceny — tylko odczyt payloadu). */
@@ -11231,6 +11232,7 @@ async function boot(): Promise<void> {
         case 'pokoj': return basketDetail || 'Propozycja pokoju (PW baza 500)';
         case 'ultimatum': return `Ultimatum — ${p.goldOnce ?? 0} ¤`;
         case 'wasal': return `Wasalizacja — ${p.goldPerTurn ?? 0} ¤/turę`;
+        case 'wchloniecie': return `Wchłonięcie — ${p.goldOnce ?? 0} ¤`;
         default: return basketDetail || entry.actionId;
       }
     }
@@ -11933,7 +11935,7 @@ async function boot(): Promise<void> {
     }
 
     /** D3-Q4 poboczni + warstwa uproszczona — pokój, wojna, handel (szlaki+wymiana), NAP. */
-    const AUDIENCE_BASIC_IDS = new Set(['2', '5', '14', '10', '11']);
+    const AUDIENCE_BASIC_IDS = new Set(['2', '5', '14', '10', '11', '15']);
 
     function buildDiploTreasury() {
       return {
@@ -13213,6 +13215,10 @@ async function boot(): Promise<void> {
         responderPlayer: { ownerId: responderId, typCywilizacji: responderTyp } as unknown as Player,
         proposerIsCityState: isOwnerClusterCityState(proposerId, ownerCityStateOpts()),
         responderIsCityState: isOwnerClusterCityState(responderId, ownerCityStateOpts()),
+        responderPopulation: cities
+          .filter(c => c.ownerId === responderId)
+          .reduce((sum, c) => sum + (c.population ?? 0), 0),
+        wasalAgeTurns: wasalAgeTurns(findWasalDeal(activeDeals, proposerId, responderId), turn),
       };
     }
 
@@ -13263,6 +13269,23 @@ async function boot(): Promise<void> {
           const cur = getDiploRelation(proposerId, responderId);
           setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_odmowa'));
         }
+        return;
+      }
+      if (cywAction === 'wchloniecie') {
+        const pop = cities
+          .filter(c => c.ownerId === responderId)
+          .reduce((sum, c) => sum + (c.population ?? 0), 0);
+        const koszt = graczWchloniecieKosztZloto(pop, _diplomacyParams());
+        applyOneShotGoldTransfer(proposerId, responderId, koszt, buildDiploTreasury());
+        annexCityStateToOwner(responderId, proposerId);
+        const wasalDeal = findWasalDeal(activeDeals, proposerId, responderId);
+        if (wasalDeal) activeDeals = removeTreatiesById(activeDeals, [wasalDeal.id]);
+        for (const oid of aiOwnerCivMap.keys()) {
+          if (oid !== responderId) clearAiCsPairState(oid, responderId);
+        }
+        showHintMessage('Miasto-państwo wchłonięte do imperium', 4000);
+        refreshD1bHud();
+        if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
         return;
       }
       if (result.deal) {
@@ -13499,6 +13522,7 @@ async function boot(): Promise<void> {
       const breakingDeal = brokenIds.length > 0
         ? activeDeals.find(d => d.id === brokenIds[0])
         : undefined;
+      const wasalDeal = findWasalDeal(activeDeals, 0, ownerId);
       return {
         contact: true,
         atWar,
@@ -13521,8 +13545,13 @@ async function boot(): Promise<void> {
         progWymianaTechZaufanie: dip.progWymianaTechZaufanie,
         progNamowWojneZaufanie: dip.progNamowWojneZaufanie,
         progWasalizacjaRespekt: dip.progWasalizacjaRespekt,
+        progWchloniecieRespekt: dip.progWchloniecieRespekt,
         progTrybutZadanieMinRespekt: dip.progTrybutZadanieMinRespekt,
         progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
+        isCityStatePartner: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+        hasWasal: wasalDeal != null,
+        wasalAgeTurns: wasalAgeTurns(wasalDeal, turn) ?? 0,
+        graczWchlonieciePoWasaluTur: dip.graczWchlonieciePoWasaluTur,
       };
     }
 
@@ -13813,6 +13842,9 @@ async function boot(): Promise<void> {
         getNegotiationContext: (actionId: string) => {
           const rel = getDiploRelation(0, ownerId);
           const dip = _diplomacyParams();
+          const csPop = cities
+            .filter(c => c.ownerId === ownerId)
+            .reduce((sum, c) => sum + (c.population ?? 0), 0);
           return {
             civName: ownerDiploLabel(ownerId),
             rivalOptions: getKnownRivalsFor(ownerId),
@@ -13825,6 +13857,7 @@ async function boot(): Promise<void> {
             trustPnGainedThisTurn: getDiploPairMeta(0, ownerId).trustPnGainedThisTurn,
             progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
             progHandelRelacja: dip.progHandelRelacja,
+            wchloniecieGoldRequired: graczWchloniecieKosztZloto(csPop, dip),
             // #45: miasta gracza z zapasem spichlerza — bez tego koszyk PN "zywnosc" byl martwy
             // (readItemFromForm zawsze dostawal cityId='' -> null). Transfer w silniku dziala
             // per-panstwo (empireFoodStates/zapasyPanstwa), nie per-miasto (main.ts:3592-3601).

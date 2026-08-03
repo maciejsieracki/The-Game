@@ -202,6 +202,27 @@ eq(
 }
 
 // ===========================================================================
+// 5b. id '15' Wchłonięcie MP (R-GRACZ-WCHLONIECIE)
+// ===========================================================================
+{
+  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '15', isCityStatePartner: false }));
+  eq(r.locked, true, 'id15: locked gdy partner nie jest MP');
+}
+{
+  const r = resolveDiplomacyActionLock(baseCtx({
+    actionId: '15', isCityStatePartner: true, hasWasal: false, respekt: 95,
+  }));
+  eq(r.locked, true, 'id15: locked bez wasalu');
+}
+{
+  const r = resolveDiplomacyActionLock(baseCtx({
+    actionId: '15', isCityStatePartner: true, hasWasal: true, wasalAgeTurns: 10,
+    respekt: 95, graczWchlonieciePoWasaluTur: 10,
+  }));
+  eq(r.locked, false, 'id15: unlocked CS + wasal 10t + respekt 95');
+}
+
+// ===========================================================================
 // 6. id '5' Umowa handlowa -- "już zawarta" (KRYTYCZNE: silnik dotąd tego nie sprawdzał)
 // ===========================================================================
 {

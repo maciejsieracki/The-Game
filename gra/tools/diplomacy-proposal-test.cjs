@@ -17,6 +17,7 @@ export {
   resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage,
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
+  findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
 } from '../src/game/diplomacy-proposals.ts';
 export { capAiGoldOffer, AI_TRADE_GOLD_MAX as ECO_GOLD_MAX } from '../src/game/diplomacy-economy.ts';
 export { addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier } from '../src/game/diplomacy-treaties.ts';
@@ -40,6 +41,7 @@ const {
   resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage, capAiGoldOffer,
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
+  findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -492,6 +494,37 @@ ok(!r.accepted && r.reason.includes('wojna'), 'dar złota w wojnie blocked');
 
 r = evaluateProposal(prop('pokoj', 0, 1, { goldOnce: 50 }), ctx({ stanWojny: true }));
 ok(!r.reason.includes('pieniądze tylko w ugodzie'), 'pokój ze złotem w wojnie — brak blokady waluty');
+
+// R-GRACZ-WCHLONIECIE
+ok(graczWchloniecieKosztZloto(4) === 250, 'koszt wchłonięcia pop 4 → max(200,150+100)=250');
+const wasalDeal = {
+  id: 'wasal-0-5-t10', rodzaj: 'wasalizacja', strony: [0, 5],
+  wygasaTura: null, zawartaTura: 10,
+  ekonomia: { payerOwnerId: 5, receiverOwnerId: 0, pieniadzePerTura: 10 },
+};
+r = evaluateProposal(prop('wchloniecie', 0, 5, { goldOnce: 300 }), ctx({
+  responderIsCityState: false, activeDeals: [wasalDeal], wasalAgeTurns: 10,
+  proposerRespekt: 90, relation: rel(70, 70),
+}));
+ok(!r.accepted && r.reason.includes('miasta-państwa'), 'wchłonięcie reject not CS');
+
+r = evaluateProposal(prop('wchloniecie', 0, 5, { goldOnce: 300 }), ctx({
+  responderIsCityState: true, activeDeals: [], wasalAgeTurns: undefined,
+  proposerRespekt: 90, relation: rel(70, 70),
+}));
+ok(!r.accepted && r.reason.includes('wasalizacji'), 'wchłonięcie reject no wasal');
+
+r = evaluateProposal(prop('wchloniecie', 0, 5, { goldOnce: 300 }), ctx({
+  responderIsCityState: true, activeDeals: [wasalDeal], wasalAgeTurns: 9, turn: 19,
+  proposerRespekt: 90, relation: rel(70, 70),
+}));
+ok(!r.accepted && r.reason.includes('pozostało'), 'wchłonięcie reject wasal age 9');
+
+r = evaluateProposal(prop('wchloniecie', 0, 5, { goldOnce: 250 }), ctx({
+  responderIsCityState: true, activeDeals: [wasalDeal], wasalAgeTurns: 10,
+  responderPopulation: 4, proposerRespekt: 90, relation: rel(70, 70),
+}));
+ok(r.accepted && !r.deal && !r.oneShotTrade, 'wchłonięcie accept age 10 respekt 90 CS goldOnce ok');
 
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);
