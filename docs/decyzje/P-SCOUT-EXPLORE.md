@@ -8,7 +8,7 @@
 | ID | Odpowiedź | Treść |
 |----|-----------|-------|
 | **P-SCOUT-EXPLORE-Q1** | **A** | Przycisk „Zwiedzaj" / „Wyłącz zwiedzanie" na zwiadowcy; domyślnie **WYŁĄCZONE** (`autoExplore` false/undefined). |
-| **P-SCOUT-EXPLORE-Q2** | **A [ZAŁOŻENIE]** | Po włączeniu od razu zużywa pozostały ruch w tej turze + na koniec kolejnych tur kontynuuje, dopóki flaga ON. |
+| **P-SCOUT-EXPLORE-Q2** | **B** | Przycisk „Zwiedzaj" ustawia tylko flagę `autoExplore`; ruch na koniec tury (`runScoutsAutoExplore`), **bez** natychmiastowego ruchu po włączeniu. |
 
 ## Implementacja
 

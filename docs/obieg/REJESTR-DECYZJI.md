@@ -193,6 +193,8 @@
 
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
+| **P-SCOUT-EXPLORE-Q2** | 2026-08-03 | **B** — Zwiedzaj = flaga only; ruch EOT (`runScoutsAutoExplore`) | E+F | 🟢 **WDROŻONA** | `main.ts` `scout-explore` · `scout-auto-explore-test.cjs` 15/15 | Q1=A |
+| **P-TRIUMPH-CS-Q1** | 2026-08-03 | **B** — dłuższy hint triumfu po zjednoczeniu ostatniego MP tej samej cyw. | D+E | 🟢 **WDROŻONA** | `triumph-city-state.ts` · `runCapitalCapturePlunder` · test 10/10 | R-TRIUMPH-CS |
 | E1-Q-BUNDLE | 2026-06-29 | Jeden suwak jakości mapy → bundled GPU+dekoracje; las parity gameplay-safe | F+A+E | 🟢 WDROŻONA | ROBOCZA/kanon md5 `611613f4…` *(stary — aktualny kanon: `4602e752…`)* · `bundledMapQualityPreset` | czeka Opus + ISO-4 Maciej |
 | F-CITY-HEX | 2026-06-29 | Hex pod miastem czysty; plony centrum w snapshotcie | F+B | 🟢 WDROŻONA | `city-hex-clear.ts` · md5 `611613f4…` *(stary — aktualny kanon: `4602e752…`)* | sign-off Maciej ✅ · ISO-4 founding na lesie ⬜ |
 | PANEL-1…4 | 2026-06-28 | Standard paneli sterowania (zakres A–E, Excel=źródło prawdy, struktura, lokalizacja) | Master | 🟢 WDROŻONA | `docs/obieg/PANEL-STEROWANIA-SPEC.md` + `panele-sterowania/` | standard gotowy; wykonanie paneli = PANEL-EXEC (otwarte) |

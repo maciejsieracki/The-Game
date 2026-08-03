@@ -155,7 +155,12 @@ import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
 import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
-import { advanceScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
+import { isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
+import {
+  buildTriumphCityStateUnificationMessage,
+  shouldShowPlayerTriumphCityStateUnification,
+  TRIUMPH_CS_HINT_MS,
+} from './game/triumph-city-state';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
 import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, normalizePodzialHandlu, type City, type BudowaFocus, type CityPodzialHandlu } from './game/cities';
 import {
@@ -14013,27 +14018,6 @@ async function boot(): Promise<void> {
         const enabling = u.autoExplore !== true;
         if (enabling) {
           u.autoExplore = true;
-          if (u.ruchLeft > 0 && !u.inGarnizon && !u.oblegaCityId) {
-            const scoutStep = (su: RuntimeUnit) => {
-              if (su.ownerId === 0) checkVillageRewardAt(su.q, su.r);
-              if (applyCityVisitBonusesAtHex(su, su.q, su.r, su.ownerId === 0)) {
-                syncUnitsRender();
-              }
-            };
-            const res = advanceScoutAutoExplore(
-              u,
-              map,
-              explored,
-              units,
-              unitSight(u),
-              Math.random,
-              scoutStep,
-            );
-            if (res.moved) {
-              syncUnitsRender();
-              refreshFog();
-            }
-          }
           showHintMessage(u.typeId + ' zwiedza map\u0119', 2500);
         } else {
           u.autoExplore = false;
@@ -17812,6 +17796,20 @@ async function boot(): Promise<void> {
           `${civLabelForOwner(oldOwner)} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`,
           6000,
         );
+        if (shouldShowPlayerTriumphCityStateUnification({
+          newOwner,
+          oldOwner,
+          playerCivKey: civKeyForOwnerId(0),
+          typCityCopyOwners,
+          aiOwnerCivMap,
+          cities,
+        })) {
+          const triumphCivLabel = civDisplayNameForOwner(0) ?? civLabelForOwner(0);
+          showHintMessage(
+            buildTriumphCityStateUnificationMessage(triumphCivLabel, city.name),
+            TRIUMPH_CS_HINT_MS,
+          );
+        }
         eliminateOwner(oldOwner);
       }
       markCityStateDirty();
