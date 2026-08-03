@@ -1,6 +1,6 @@
 # PLAN — Ludy Morza bez obozu na wodzie (Maciej 2026-08-02)
 
-**Status:** plan / ustalenie produktowe — **bez implementacji** do hasła `działaj`.  
+**Status:** Q1=A **wdrożone** (kod 2026-08-03). Plan historyczny poniżej.  
 **Cytat:** „w brązie… nie powinno tak wyglądać ich obozowisko… powinni się pojawiać w różnych miejscach na łódkach i atakować… bez obozu, bo jeszcze obóz jest na wodzie, no to głupia ta.”
 
 ---

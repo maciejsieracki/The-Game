@@ -32,6 +32,7 @@ export {
   spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
+  spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
 } from '../src/game/barbarians';
 export {
@@ -69,6 +70,7 @@ const {
   spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
+  spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
   hexDistance, computePath, computeReachable,
   isWaterTerrain, embarkMoveCost, EMBARKED_WATER_MOVE_COST,
@@ -567,6 +569,57 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
   // Oboz ladowy: zachowanie bez zmian (spawn na ladzie, bez embarked).
   const landRes = tickCamps([{ id: 'lc', q: 8, r: 8, spawnCooldown: 0 }], [], [], map, P);
   assert(landRes.spawns[0].embarked === undefined, 'land camp spawn not embarked (no regression)');
+}
+
+// ===========================================================================
+// 9b. R-LUDY-MORZA-Q1=A -- Rajderzy na wodzie bez obozow naval
+// ===========================================================================
+{
+  const morze = [];
+  const wybrzeze = [];
+  for (let r = 0; r < 12; r++) {
+    for (let q = 0; q <= 2; q++) morze.push(`${q},${r}`);
+    wybrzeze.push(`3,${r}`);
+  }
+  const map = makeMap(12, 12, { morze, wybrzeze });
+  const params = Object.assign({}, P, { minDistFromCity: 0, spawnInterval: 1, startTurn: 1 });
+  const seaParams = { maxSeaCamps: 2, raidRadius: 8, raidPeriod: 1 };
+  const coastalCity = [{ q: 4, r: 5, ownerId: 0 }];
+
+  // purgeNavalCamps usuwa tylko naval.
+  const mixed = [
+    { id: 'L', q: 8, r: 8, spawnCooldown: 0 },
+    { id: 'S', q: 3, r: 5, spawnCooldown: 0, naval: true },
+  ];
+  const purged = purgeNavalCamps(mixed);
+  eq(purged.length, 1, 'purgeNavalCamps keeps land camps');
+  assert(purged[0].naval !== true, 'purged camp is land');
+
+  // spawnSeaPeoplesRaiders: embarked na wodzie, deterministyczny.
+  const sp1 = spawnSeaPeoplesRaiders(map, coastalCity, [], [], params, seaParams, 10, 9999);
+  eq(sp1.length, 1, 'spawnSeaPeoplesRaiders produces one spawn when under cap');
+  assert(sp1[0].embarked === true, 'sea peoples spawn is embarked');
+  eq(sp1[0].campId, SEA_WAVE_CAMP_ID, 'sea wave camp id');
+  assert(isWaterTerrain(map.hexes[`${sp1[0].q},${sp1[0].r}`].terenBazowy), 'spawn on water');
+
+  const spAgain = spawnSeaPeoplesRaiders(map, coastalCity, [], [], params, seaParams, 10, 9999);
+  eq(JSON.stringify(spAgain), JSON.stringify(sp1), 'spawnSeaPeoplesRaiders deterministic for fixed seed');
+
+  // Limit zywych rajderow.
+  const maxAlive = seaParams.maxSeaCamps * params.unitsPerCamp;
+  const fullBarbs = [];
+  for (let i = 0; i < maxAlive; i++) {
+    fullBarbs.push(barb(`sr${i}`, 0, i, { seaRaider: true, embarked: true }));
+  }
+  eq(spawnSeaPeoplesRaiders(map, coastalCity, fullBarbs, fullBarbs, params, seaParams, 10, 123).length, 0,
+    'no spawn when alive raiders at cap');
+
+  // Czestotliwosc: co spawnInterval tur od startTurn.
+  const slow = Object.assign({}, params, { spawnInterval: 6, startTurn: 5 });
+  eq(spawnSeaPeoplesRaiders(map, coastalCity, [], [], slow, seaParams, 5, 1).length, 0,
+    'no spawn on startTurn before interval elapses');
+  eq(spawnSeaPeoplesRaiders(map, coastalCity, [], [], slow, seaParams, 11, 1).length, 1,
+    'spawn when (turn - startTurn) % spawnInterval === 0');
 }
 
 // ===========================================================================
