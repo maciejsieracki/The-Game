@@ -1,5 +1,6 @@
 ﻿- **2026-08-03 ~22:00** — ✅ Gotowe w kodzie (bez deploy): **R-WIARYGODNOSC-TEMPO** WIAR-Q3=C — mnożnik tempa W→Z w tickDiplomacy; strumień W/20 usunięty; D4 bez zmian. Branch `cursor/wiarygodnosc-tempo-q3-63a1`. Napisz **deploy**.
 - **2026-08-03 ~21:35** — ✅ Gotowe w kodzie (bez deploy): **progi 1+2** — D3 W + cleanup martwych (NAP Zauf/fair-ratio; **progWchloniecieRespekt zostaje** dla #56). Branch `cursor/wiarygodnosc-progi-1-2-63a1`.
+- **2026-08-03 ~21:30** — ✅ Gotowe w kodzie (bez deploy): **epoka kamienia manpowerNaJednostke 1000→500** (2 jednostki / ludek). PR branch `cursor/manpower-epoka1-500-63a1`. Napisz **deploy**.
 - **2026-08-03 ~21:00** — ✅ Gotowe w kodzie (bez deploy): **R-GRACZ-WCHLONIECIE** Q1A Q2A Q3A — wchłonięcie MP. Branch `cursor/fix-gracz-wchloniecie-63a1`.
 - **2026-08-03 ~20:30** — ✅ Gotowe w kodzie (bez deploy): usunięcie **Dźwigni 2** (R-WIARYGODNOSC-DZWIGNIA2-Q1=A). Flat `max_zaufanie_na_ture=5` — bez limitu zależnego od W. Branch `cursor/wiarygodnosc-usun-dzwignia2-63a1`. Napisz **deploy** gdy wgrać.
 - **2026-08-03 ~20:25** — ✅ Gotowe w kodzie (bez deploy): **D3 progi W** — sojusz W≥0 / NAP W≥−40. Branch `cursor/wiarygodnosc-d3-progi-63a1`.
