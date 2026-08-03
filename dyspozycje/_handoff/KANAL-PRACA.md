@@ -5136,3 +5136,10 @@ CZEKAM-NA: Maciej Q2/Q3
 - Q2=A · Q3=A · tryb priorytet typów (wyczerp #1 zanim #2); Lista = v2
 - Test: auto-manage 33/33 · tsc 0
 CZEKAM-NA: deploy na hasło
+## [21:50 PL, 2026-08-02] SUBAGENT -> Maciej — FIX HUD Praca overflow (pusta kolejka budowy)
+- Bug: suwak 100% budowa, brak budynku w kolejce → HUD Praca +0 (powinno +N całej Pracy miasta)
+- Root cause: regresja `6e1e0e48` — `refreshLiveEmpireRates` liczył tylko `doPuli`, tick końca tury OK (`pracaImperialPoolGain`)
+- Fix: `previewPracaPoolBrutto` (`production.ts`) + pętla per-miasto w `main.ts` ~11367
+- Test: `production-overflow-test.cjs` 24/24 PASS · `tsc` 0
+- Branch: `cursor/fix-praca-overflow-idle-build-63a1` (bez commitu — parent)
+CZEKAM-NA: deploy ROBOCZA → Ctrl+F5 → miasto bez kolejki, suwak budowa → chip Praca +N
