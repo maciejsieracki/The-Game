@@ -4153,6 +4153,7 @@ export class BattleScene {
         mats,
         perTokenGeos,
       };
+      this._updateHpBar(ru);
       this._updateMoraleBar(ru);
       this._updateAmmoBar(ru);
       this.occByKey.set(key, ru);
@@ -4295,6 +4296,7 @@ export class BattleScene {
         attackDirection: 'front',
         mats, perTokenGeos,
       };
+      this._updateHpBar(ru);
       this._updateMoraleBar(ru);
       this._updateAmmoBar(ru);
       this.occByKey.set(key, ru);
@@ -5050,7 +5052,8 @@ export class BattleScene {
           mats,
           perTokenGeos,
         };
-        // Initialise the morale bar to full + the ammo bar to its starting fill.
+        // Initialise HP, morale, and ammo bars to match unit state at spawn.
+        this._updateHpBar(ru);
         this._updateMoraleBar(ru);
         this._updateAmmoBar(ru);
         this.occByKey.set(key, ru);
@@ -15609,6 +15612,7 @@ export class BattleScene {
         mats,
         perTokenGeos,
       };
+      this._updateHpBar(ru);
       this._updateMoraleBar(ru);
       this._updateAmmoBar(ru);
       this.occByKey.set(key, ru);

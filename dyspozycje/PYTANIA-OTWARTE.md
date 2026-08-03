@@ -4,6 +4,16 @@ Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw +
 
 ---
 
+## P-AI-017 — pasek HP w bitwie pokazywał 100% mimo uszkodzonej jednostki z mapy · STATUS: **FIX gotowy** (`cursor/fix-battle-hp-display-63a1`)
+
+**Temat:** Jednostka z minimalnym HP/energią na mapie wchodziła do bitwy z pełnym zielonym paskiem HP, ale szybko ginęła (logika walki miała poprawne `u.hp`, kłamała tylko wizualizacja).
+
+**Przyczyna:** Brak `_updateHpBar(ru)` przy spawnie w `battleScene.ts` / `manualBattle.ts` (morale i ammo były syncowane). `preBattleUnitFromRuntime` w `main.ts` ignorował `u.hp` i zawsze ustawiał max.
+
+**Fix:** `_updateHpBar` przy każdym spawnie + `preBattleUnitFromRuntime` jak `runtimeToBattleUnit` + test `battle-hp-display-test.cjs`.
+
+---
+
 ## PYTANIE 18 — profil Pretorium po sprzątnięciu · STATUS: **WDROŻONE W DANYCH** (2026-07-25 decyzja · `buildings.json` pretorium)
 
 **Sytuacja.** Po wdrożeniu decyzji 16A (`obrona` → 0) i decyzji 6 (`mnoznik` → 0, jak przy Pałacu) Pretorium zostaje
