@@ -1,17 +1,23 @@
+## [23:11 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 206 `1c7e9df7`
+- md5: `1c7e9df7bf4c74258ae122fc0bda846d` · stempel: ROBOCZA · 2026-08-03 23:11
+- **#56** wchłonięcie MP · **#54** D3 W + cleanup · **#53** bez Dźwigni 2 · **#49** tempo WIAR-Q3 · **#48** manpower ep1 500 · **#50** UI Relacja ±%
+- Wejście: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: Maciej playtest / OK / BUG · sesja lokalna: pull na dysk
+
 ## [21:35 PL, 2026-08-03] CLOUD → MASTER — progi 1+2: D3 W + cleanup (z korektą)
 Branch: cursor/wiarygodnosc-progi-1-2-63a1 (merge na FALA 206)
 (1) D3 sojusz W≥0 / NAP W≥−40
 (2) Usunięto martwe: progNapZaufanie, progHandelFairRatio* — **progWchloniecieRespekt ZACHOWANY** (R-GRACZ-WCHLONIECIE)
-CZEKAM-NA: deploy FALA 206
+CZEKAM-NA: nic (w FALA 206)
 
 ## [21:00 PL, 2026-08-03] CLOUD → Maciej — R-GRACZ-WCHLONIECIE (kod)
 - Branch: `cursor/fix-gracz-wchloniecie-63a1` · UI akcja 15
-CZEKAM-NA: deploy FALA 206
+CZEKAM-NA: nic (w FALA 206)
 
 ## [20:30 PL, 2026-08-03] CLOUD → MASTER — usunięcie Dźwigni 2 (DZWIGNIA2=A)
 Skasowano W-zależny limit max_zaufanie_na_ture. Zostaje flat 5/turę.
 Branch: cursor/wiarygodnosc-usun-dzwignia2-63a1
-CZEKAM-NA: Maciej — deploy (nie deployuję)
+CZEKAM-NA: nic (w FALA 206)
 
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35

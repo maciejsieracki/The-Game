@@ -1,13 +1,14 @@
-﻿- **2026-08-03 ~22:00** — ✅ Gotowe w kodzie (bez deploy): **R-WIARYGODNOSC-TEMPO** WIAR-Q3=C — mnożnik tempa W→Z w tickDiplomacy; strumień W/20 usunięty; D4 bez zmian. Branch `cursor/wiarygodnosc-tempo-q3-63a1`. Napisz **deploy**.
-- **2026-08-03 ~21:35** — ✅ Gotowe w kodzie (bez deploy): **progi 1+2** — D3 W + cleanup martwych (NAP Zauf/fair-ratio; **progWchloniecieRespekt zostaje** dla #56). Branch `cursor/wiarygodnosc-progi-1-2-63a1`.
-- **2026-08-03 ~21:30** — ✅ Gotowe w kodzie (bez deploy): **epoka kamienia manpowerNaJednostke 1000→500** (2 jednostki / ludek). PR branch `cursor/manpower-epoka1-500-63a1`. Napisz **deploy**.
-- **2026-08-03 ~21:15** — ✅ Gotowe w kodzie (bez deploy): **R-UI-RELACJA-DEAL-MOD** — widoczny wiersz „Wpływ Relacji na deal” w panelu PW (stół, koszyk, traktat). Branch `cursor/ui-relacja-deal-mod-63a1`.
-- **2026-08-03 ~21:00** — ✅ Gotowe w kodzie (bez deploy): **R-GRACZ-WCHLONIECIE** Q1A Q2A Q3A — wchłonięcie MP. Branch `cursor/fix-gracz-wchloniecie-63a1`.
-- **2026-08-03 ~20:30** — ✅ Gotowe w kodzie (bez deploy): usunięcie **Dźwigni 2** (R-WIARYGODNOSC-DZWIGNIA2-Q1=A). Flat `max_zaufanie_na_ture=5` — bez limitu zależnego od W. Branch `cursor/wiarygodnosc-usun-dzwignia2-63a1`. Napisz **deploy** gdy wgrać.
-- **2026-08-03 ~20:25** — ✅ Gotowe w kodzie (bez deploy): **D3 progi W** — sojusz W≥0 / NAP W≥−40. Branch `cursor/wiarygodnosc-d3-progi-63a1`.
+﻿- **2026-08-03 23:11** — ✅ Gotowe FALA 206 ROBOCZA `1c7e9df7`. Wiarygodność (D3+tempo, bez Dźwigni 2) + wchłonięcie MP + manpower ep1 500 + UI Relacja ±%. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
+- **2026-08-03 ~22:00** — ✅ (w FALA 206) **R-WIARYGODNOSC-TEMPO** WIAR-Q3=C.
+- **2026-08-03 ~21:35** — ✅ (w FALA 206) **progi 1+2** — D3 W + cleanup (`progWchloniecieRespekt` zachowany).
+- **2026-08-03 ~21:30** — ✅ (w FALA 206) manpower ep1 1000→500.
+- **2026-08-03 ~21:15** — ✅ (w FALA 206) **R-UI-RELACJA-DEAL-MOD**.
+- **2026-08-03 ~21:00** — ✅ (w FALA 206) **R-GRACZ-WCHLONIECIE** Q1A Q2A Q3A.
+- **2026-08-03 ~20:30** — ✅ (w FALA 206) bez Dźwigni 2 (flat max_zaufanie_na_ture=5).
+- **2026-08-03 ~20:25** — ✅ (w FALA 206) **D3 progi W** sojusz≥0 / NAP≥−40.
 - **2026-08-03 ~21:05** — ✅ Decyzja **R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A** (zawsze modal). Kod bez zmian — już działa. Docs: `cursor/zamien-ulepszenie-q1a-63a1`.
 - **2026-08-03 ~19:50** — ✅ Gotowe docs (bez deploy gry): cleanup REJESTR + wchłonięcie PR #35 (R-PROC-ABC-FULL-ID). PR #31/#30/#27 SUPERSEDED. Kolejka otwarta: handel AI · potwierdzenie zamiany ulepszeń · Połącz armię · Design badania/miasto · wiarygodność. Branch `cursor/cleanup-docs-rejestr-63a1`.
-- **2026-08-03 18:35** — ✅ Gotowe FALA 205 ROBOCZA `f41c6550`. Stawki×2 + AI→MP wasal/wchłonięcie + HUD Praca overflow + audyt sep. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
+- **2026-08-03 18:35** — ✅ FALA 205 ROBOCZA `f41c6550` — **ZASTĄPIONA** przez FALA 206.
 - **2026-08-03 ~18:10** — ✅ Gotowe w kodzie (bez deploy): **R-STAWKI-STROJENIE** ×2 kosztów (badania, upkeep, budynki, żywność ludność+wojsko). Stała `R_STAWKI_KOSZT_MULT=2`. Napisz **deploy**.
 - **2026-08-03 ~17:00** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-ULEPSZENIA-Q1=C**. Panel miasta → Ulepszenia: Auto + profile + „Tylko pola z obywatelami”. Napisz **deploy** gdy wgrać.
 - **2026-08-03 18:22** — ✅ Gotowe FALA 204 ROBOCZA `d7754a22`. R-AUTO-V2 (budowa+ulepszenia Q1–Q9) + Ludy Morza Q1=A. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.

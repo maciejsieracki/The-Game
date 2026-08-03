@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `f41c6550` - 2026-08-03 18:35 - FALA 205: stawki×2 + AI→MP + overflow Pracy + audyt sep - **AKTUALNA**
+## ROBOCZA `1c7e9df7` - 2026-08-03 23:11 - FALA 206: Wiarygodność D3+tempo + wchłonięcie MP + manpower 500 + UI Relacja - **AKTUALNA**
+- md5 (pelne): `1c7e9df7bf4c74258ae122fc0bda846d` · stempel: `ROBOCZA · 2026-08-03 23:11`
+- **FALA 206.** #56 R-GRACZ-WCHLONIECIE (wchłonięcie MP po wasalu ≥10 tur, Respekt≥90, złoto). #54 D3 progi W (sojusz≥0 / NAP≥−40) + cleanup martwych (NAP Zauf/fair-ratio; **progWchloniecieRespekt zostaje**). #53 bez Dźwigni 2 (flat max_zaufanie_na_ture=5). #49 WIAR-Q3 tempo W→Z. #48 manpower ep1 1000→500. #50 UI „Wpływ Relacji na deal”. Branch `cursor/deploy-fala206-merge-63a1` (PR #57).
+- tsc 0 · wiarygodnosc 93/93 · diplomacy-proposal 82/82 · diplomacy 148/148 · vite · VERIFY OK · build /tmp/civ-dist-fala206.
+
+## ROBOCZA `f41c6550` - 2026-08-03 18:35 - FALA 205: stawki×2 + AI→MP + overflow Pracy + audyt sep - **ZASTĄPIONA**
 - md5 (pelne): `f41c6550fb5913c3413da6575593eddb` · stempel: `ROBOCZA · 2026-08-03 18:35`
 - **FALA 205.** #29 R-STAWKI ×2 kosztów (badania, upkeep, budynki, żywność). #33 R-AI-MP-WASAL-WCHLONIECIE (AI→MP trybut/wasal/wchłonięcie + sojusze sióstr vs gracz). #4 HUD Praca overflow (pusta kolejka + suwak budowa). #1 audyt sep stolic vs MP (docs + test 36 PASS, bez zmiany gameplay). Na bazie FALA 204 (R-AUTO-V2 + Ludy Morza).
 - tsc 0 · auto-improvements 15/15 · auto-manage 43/43 · barbarians 167/167 · ai-cs-absorption 18/18 · difficulty-cost 22/22 · upkeep 67/67 · vite · VERIFY OK · build /tmp/civ-dist-fala205.
