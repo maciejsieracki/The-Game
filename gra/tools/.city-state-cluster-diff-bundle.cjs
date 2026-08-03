@@ -934,7 +934,7 @@ var e_start_params_default = {
     },
     Standardowy: {
       rywale_ai: 6,
-      miasta_panstwa: 6,
+      miasta_panstwa: 5,
       typy_cywilizacji: 6,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 5, min: 4, max: 6 },
@@ -946,7 +946,7 @@ var e_start_params_default = {
     },
     Du\u017Cy: {
       rywale_ai: 7,
-      miasta_panstwa: 7,
+      miasta_panstwa: 6,
       typy_cywilizacji: 10,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 6, min: 5, max: 7 },
@@ -958,7 +958,7 @@ var e_start_params_default = {
     },
     Ogromny: {
       rywale_ai: 8,
-      miasta_panstwa: 8,
+      miasta_panstwa: 7,
       typy_cywilizacji: 12,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 7, min: 6, max: 8 },
@@ -973,7 +973,7 @@ var e_start_params_default = {
       miasta_panstwa: 8,
       typy_cywilizacji: 14,
       typy_cywilizacji_per_epoka: {
-        kamien: { default: 7, min: 6, max: 8 },
+        kamien: { default: 8, min: 7, max: 8 },
         braz: { default: 13, min: 12, max: 14 },
         zelazo: { default: 14, min: 13, max: 15 }
       },
@@ -1054,6 +1054,21 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
+// src/map/mapGenProgress.ts
+var MAP_GEN_PHASE_LABELS = {
+  prep: "Przygotowanie siatki",
+  terrain: "Klimat i teren bazowy",
+  landSea: "L\u0105d i ocean",
+  relief: "Relief (g\xF3ry i wzg\xF3rza)",
+  coast: "Wybrze\u017Ce",
+  riversMain: "Rzeki \u2014 g\u0142\xF3wne",
+  riversFill: "Rzeki \u2014 uzupe\u0142nianie",
+  forest: "Las i ro\u015Blinno\u015B\u0107",
+  deposits: "Z\u0142o\u017Ca mineralne",
+  starts: "Pozycje startowe"
+};
+var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
+
 // src/map/generator.ts
 var ROZMIAR_DIMS = mapGenRozmiarDims();
 
@@ -1099,6 +1114,7 @@ var ELEVATION_RANK = {
   ["gory" /* Gory */]: 6,
   ["polarny" /* Polarny */]: 2
 };
+var RIVER_PROFILE_ON = globalThis.process?.env?.CIV_RIVER_PROFILE === "1";
 var BASE_DEPOSIT_RULES = [
   {
     id: "miedz",
@@ -1166,6 +1182,10 @@ var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
   const rarity = _depositRarities[rule.id];
   return typeof rarity === "number" ? { ...rule, rarity } : rule;
 });
+
+// src/map/clusters.ts
+var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
+var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
 
 // data/terrain-improvements.json
 var terrain_improvements_default = {
@@ -20199,7 +20219,8 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
       0.15,
       p.progWojnaAgresja - podbojBoost * 0.5 + bias.warAgresjaBonus
     );
-    if (rel.stanWojny && rw <= p.progTrybutKrytyczny) {
+    const csBlocksTribute = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
+    if (rel.stanWojny && rw <= p.progTrybutKrytyczny && !csBlocksTribute) {
       const peaceGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRIBUTE_PEACE_MAX);
       if (peaceGold > 0) {
         komendy.push({
@@ -20270,7 +20291,7 @@ function decideAIDiplomacy(inp, params, agresjaMnoznik = 1, dyplomacjaAktywnosc 
     const tributeRespektMin = dipTrybut.progTrybutZadanieMinRespekt - bias.tributeRespektEase;
     const tributeAgresjaMin = p.progWojnaAgresja * bias.tributeAgresjaFactor;
     const tributeAgresjaMax = bias.aggressive ? 0.95 : p.progTrybutAgresjaMax;
-    if (!rel.stanWojny && !bias.skipTributeDemand && proposerRespektPct > tributeRespektMin && (!bias.aggressive || rw >= p.progTrybut) && effAgresja >= tributeAgresjaMin && effAgresja < tributeAgresjaMax) {
+    if (!csBlocksTribute && !rel.stanWojny && !bias.skipTributeDemand && proposerRespektPct > tributeRespektMin && (!bias.aggressive || rw >= p.progTrybut) && effAgresja >= tributeAgresjaMin && effAgresja < tributeAgresjaMax) {
       komendy.push({
         type: "zadaj_trybut",
         targetId: rel.partnerId,

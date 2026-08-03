@@ -11,6 +11,12 @@ import { isBarbarian } from './barbarians';
 
 export type DiplomacyLayer = 'simplified' | 'full' | 'pre_contact';
 
+/** Komendy trybutu — zabronione u miast-państw (UI + silnik, Maciej 2026-08-02). */
+export const CITY_STATE_TRIBUTE_CMDS = new Set<string>([
+  'zadaj_trybut',
+  'oferuj_trybut_za_pokoj',
+]);
+
 const SIMPLIFIED_CMD = new Set<string>([
   'wypowiedz_wojne',
   'zaproponuj_pokoj',
@@ -199,6 +205,19 @@ export function filterDiplomacyCommandsForLayer(
   if (layer === 'pre_contact') return [];
   if (layer === 'full') return list;
   return list.filter(c => SIMPLIFIED_CMD.has(c.type));
+}
+
+/**
+ * Miasta-państwa (klaster, kopie typu) nie oferują ani nie żądają trybutu —
+ * spójnie z audiencją (action 8 = „Niedostępne u miasta-państwa").
+ */
+export function filterCityStateTributeCommands(
+  cmds: AIDiplomacyCommand[] | null | undefined,
+  ownerIsCityState: boolean,
+): AIDiplomacyCommand[] {
+  const list = cmds ?? [];
+  if (!ownerIsCityState) return list;
+  return list.filter(c => !CITY_STATE_TRIBUTE_CMDS.has(c.type));
 }
 
 const ESTABLISHED_CONTACT_CMDS = new Set<string>([

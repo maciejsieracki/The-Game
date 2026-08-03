@@ -217,6 +217,7 @@ import {
   barbarianWarRelation,
   diplomacyLayerForOwner,
   filterDiplomacyCommandsForLayer,
+  filterCityStateTributeCommands,
   filterDiplomacyCommandsForEstablishedContact,
   audienceRestrictedActionLockNote,
   playerDiplomacyActionAllowed,
@@ -6683,6 +6684,7 @@ async function boot(): Promise<void> {
         ownerId,
         applyDiploEventTracked(0, ownerId, getDiploRelation(0, ownerId), 'wojna_wypowiedziana'),
       );
+      pruneTributeNegotiationsBetween(0, ownerId);
       recordWarDeclarationEvent(0, ownerId);
       showHintMessage('\u2694 Wypowiedziałeś wojnę: ' + civName, 4500);
       updateDiplomacyAudience();
@@ -6710,6 +6712,7 @@ async function boot(): Promise<void> {
         ),
       );
       if (defenderId === 0 || attackerId === 0) {
+        pruneTributeNegotiationsBetween(attackerId, defenderId);
         recordWarDeclarationEvent(attackerId, defenderId);
       }
       if (defenderId === 0) {
@@ -10635,6 +10638,10 @@ async function boot(): Promise<void> {
      */
     function enqueueNegotiationFromAiCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
       let workingCmd = cmd;
+      const ownerIsCityState = isOwnerClusterCityState(ownerId, ownerCityStateOpts());
+      if (ownerIsCityState && (cmd.type === 'zadaj_trybut' || cmd.type === 'oferuj_trybut_za_pokoj')) {
+        return;
+      }
       const atWarWithPlayer = getDiploRelation(ownerId, 0).status === 'wojna';
       if (
         atWarWithPlayer
@@ -10721,12 +10728,11 @@ async function boot(): Promise<void> {
       let changed = false;
       for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
         const entry = negotiationTable[ni]!;
-        const validity = negotiationStillValid(entry, {
-          turn,
-          isAtWar: getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
-          proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
-          responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
-        });
+        const validity = negotiationStillValid(entry, buildNegotiationWorldCtx(
+          entry.proposerOwnerId,
+          entry.responderOwnerId,
+          getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
+        ));
         if (!validity.valid) {
           negotiationTable.splice(ni, 1);
           changed = true;
@@ -10758,12 +10764,11 @@ async function boot(): Promise<void> {
       const entry = negotiationTable[ni];
       if (!entry) return;
       const awaitingId = entry.awaitingOwnerId;
-      const validity = negotiationStillValid(entry, {
-        turn,
-        isAtWar: getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
-        proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
-        responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
-      });
+      const validity = negotiationStillValid(entry, buildNegotiationWorldCtx(
+        entry.proposerOwnerId,
+        entry.responderOwnerId,
+        getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
+      ));
       if (!validity.valid) {
         negotiationTable.splice(ni, 1);
         showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
@@ -12901,7 +12906,43 @@ async function boot(): Promise<void> {
         difficulty: _menuDifficulty,
         proposerPlayer: { ownerId: proposerId, typCywilizacji: proposerTyp } as unknown as Player,
         responderPlayer: { ownerId: responderId, typCywilizacji: responderTyp } as unknown as Player,
+        proposerIsCityState: isOwnerClusterCityState(proposerId, ownerCityStateOpts()),
+        responderIsCityState: isOwnerClusterCityState(responderId, ownerCityStateOpts()),
       };
+    }
+
+    function buildNegotiationWorldCtx(
+      proposerId: number,
+      responderId: number,
+      isAtWar: boolean,
+    ): import('./game/diplomacy-proposals').NegotiationWorldCtx {
+      const csOpts = ownerCityStateOpts();
+      return {
+        turn,
+        isAtWar,
+        proposerEliminated: eliminatedOwners.has(proposerId),
+        responderEliminated: eliminatedOwners.has(responderId),
+        proposerIsCityState: isOwnerClusterCityState(proposerId, csOpts),
+        responderIsCityState: isOwnerClusterCityState(responderId, csOpts),
+      };
+    }
+
+    /** Usuwa oczekujące propozycje trybutu między parą (np. po DOW miasta-państwa). */
+    function pruneTributeNegotiationsBetween(a: number, b: number): void {
+      let changed = false;
+      for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
+        const entry = negotiationTable[ni]!;
+        const match = (entry.proposerOwnerId === a && entry.responderOwnerId === b)
+          || (entry.proposerOwnerId === b && entry.responderOwnerId === a);
+        if (!match) continue;
+        if (entry.actionId !== 'trybut_zadanie' && entry.actionId !== 'trybut_oferta') continue;
+        negotiationTable.splice(ni, 1);
+        changed = true;
+      }
+      if (changed) {
+        refreshD1bHud();
+        if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+      }
     }
 
     function applyProposalOutcome(
@@ -19986,7 +20027,7 @@ async function boot(): Promise<void> {
                       }
                     : undefined,
                   hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(ownerId, otherId),
-                  isMinorCivPartner: simplifiedDiplomacyOwners.has(otherId),
+                  isMinorCivPartner: isOwnerClusterCityState(otherId, ownerCityStateOpts()),
                   lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
                   peaceLocked: isPeaceLockedBetween(ownerId, otherId),
                 });
@@ -20046,16 +20087,19 @@ async function boot(): Promise<void> {
                   agresywnoscRaw: civAiProf?.agresywnosc,
                   tolerancjaRyzyka: civAiProf?.tolerancjaRyzyka,
                   fullDiplomacyLayer: dipLayer === 'full',
-                  isMinorCivSelf: simplifiedDiplomacyOwners.has(ownerId),
+                  isMinorCivSelf: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
                   clusterForceWarTargetId,
                 };
                 const dipCmdsRaw = decideAIDiplomacy(
                   diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
                   effectiveGameDifficultyForOwner(ownerId),
                 );
-                const dipCmdsLayered = filterDiplomacyCommandsForLayer(
-                  Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
-                  dipLayer,
+                const dipCmdsLayered = filterCityStateTributeCommands(
+                  filterDiplomacyCommandsForLayer(
+                    Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
+                    dipLayer,
+                  ),
+                  isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
                 );
                 for (const cmd of dipCmdsLayered) {
                   if (cmd.type === 'zaproponuj_audiencje' && cmd.targetId === '0') {
@@ -20083,6 +20127,7 @@ async function boot(): Promise<void> {
                       );
                       setDiploRelation(ownerId, targetId, newRel);
                       if (targetId === 0 || ownerId === 0) {
+                        pruneTributeNegotiationsBetween(ownerId, targetId);
                         recordWarDeclarationEvent(ownerId, targetId);
                       }
                       if (targetId === 0) {
@@ -20158,6 +20203,7 @@ async function boot(): Promise<void> {
                       ownerId, 0, getDiploRelation(ownerId, 0), 'wojna_wypowiedziana',
                     );
                     setDiploRelation(ownerId, 0, newRel);
+                    pruneTributeNegotiationsBetween(ownerId, 0);
                     recordWarDeclarationEvent(ownerId, 0);
                     console.log(`[Dyplomacja] PM${ownerId} wypowiada wojne graczowi (trudnosc PM=hard, 60%)`);
                     showHintMessage(

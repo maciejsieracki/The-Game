@@ -172,5 +172,39 @@ assert(
   'T6h: roll 0.60 → no war (strict <)',
 );
 
+console.log('\n--- T7: miasto-państwo nie generuje trybutu (Maciej 2026-08-02) ---');
+const dipCsTribute = decideAIDiplomacy({
+  myPlayerId: '7',
+  relacje: [{
+    partnerId: '0',
+    relation: { status: 'wojna', zaufanie: 10, respekt: 20 },
+    respektWzgledny: 0.15,
+    stanWojny: true,
+  }],
+  agresja: 0.5,
+  skarbiecGold: 100,
+  isMinorCivSelf: true,
+});
+assert(
+  !dipCsTribute.some(c => c.type === 'oferuj_trybut_za_pokoj' || c.type === 'zadaj_trybut'),
+  'T7a: CS w wojnie nie oferuje trybutu',
+);
+const dipMajorTribute = decideAIDiplomacy({
+  myPlayerId: '1',
+  relacje: [{
+    partnerId: '0',
+    relation: { status: 'wojna', zaufanie: 10, respekt: 20 },
+    respektWzgledny: 0.15,
+    stanWojny: true,
+  }],
+  agresja: 0.5,
+  skarbiecGold: 100,
+  isMinorCivSelf: false,
+});
+assert(
+  dipMajorTribute.some(c => c.type === 'oferuj_trybut_za_pokoj'),
+  'T7b: pełne AI w wojnie nadal może oferować trybut za pokój',
+);
+
 console.log(`\n=== city-state-cluster-diff-test: ${passed} passed, ${failed} failed ===`);
 process.exit(failed > 0 ? 1 : 0);

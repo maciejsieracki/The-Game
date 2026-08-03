@@ -1,3 +1,12 @@
+## [00:15 PL, 2026-08-02] CLOUD -> Maciej — fix MP trybut + DOW (Tarent)
+- Branch: `cursor/fix-cs-war-tribute-contradiction-63a1`
+- Bug: miasto-państwo obcego typu (Tarent) — WOJNA + „Oferta trybutu przyjęta" w jednej turze; UI akcja 8 zablokowana
+- Root: MP w `typCityCopyOwners` ale nie `simplifiedDiplomacyOwners` → silnik `full` layer + trybut AI, potem CS war roll 60%
+- Fix: blokada trybutu CS (AI/evaluateProposal/negotiation), `isMinorCiv*` z `isOwnerClusterCityState`, prune pending przy DOW
+- Test: diplomacy-layers 22/22 · proposal 69/69 · city-state-cluster-diff 25/25 · tsc 0
+- ID: BUG-MP-TRYBUT-WOJNA · R-MP-TRYBUT-WOJNA
+CZEKAM-NA: Maciej merge (bez deploy w tym kroku)
+
 # KANAL-PRACA ? MASTER ? INTEGRATOR (sta?y kana?, od 2026-07-06)
 
 PROTOK�?: wpisy dopisuj NA KO?CU, format `## [HH:MM] OD ? DO ? temat`, na ko?cu wpisu
