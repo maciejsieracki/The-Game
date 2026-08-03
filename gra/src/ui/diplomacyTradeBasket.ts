@@ -1174,6 +1174,7 @@ function renderBasket(
   resourceTradeMode: 'once' | 'per_turn',
   treatyState: TreatyFormState,
   warThreat: boolean,
+  modalOpts?: TradeBasketModalOptions,
 ): void {
   const rel = ctx.relacjaTotal ?? 0;
   const progHandel = ctx.progHandelRelacja ?? PROG_HANDEL_REL;
@@ -1188,7 +1189,8 @@ function renderBasket(
     blocked = '<div class="cdb-blocked">Dar wymaga Relacji ≥ ' + progDar + ' (obecnie: ' + rel + ')</div>';
   }
 
-  const title = mode === 'gift' ? 'Prezent / dar' : action.label;
+  const title = modalOpts?.dialogTitle
+    ?? (mode === 'gift' ? 'Prezent / dar' : action.label);
   const sub = mode === 'treaty'
     ? 'Ustal warunki traktatu — wymiana PW jest opcjonalna · partner: <strong>' + esc(ctx.civName) + '</strong>'
     : mode === 'gift'
@@ -1290,8 +1292,16 @@ function renderBasket(
     invalidHtml +
     '<div class="cdb-btns">' +
       '<button type="button" class="dip-muted-btn cdb-cancel">Anuluj</button>' +
-      '<button type="button" class="dip-gold-btn cdb-submit"' + (blocked || !validation.valid ? ' disabled' : '') + '>Zaproponuj</button>' +
+      '<button type="button" class="dip-gold-btn cdb-submit"' + (blocked || !validation.valid ? ' disabled' : '') + '>'
+      + esc(modalOpts?.submitLabel ?? 'Zaproponuj') + '</button>' +
     '</div>';
+}
+
+export interface TradeBasketModalOptions {
+  /** Nagłówek okna (domyślnie: etykieta akcji). */
+  dialogTitle?: string;
+  /** Etykieta przycisku wysłania (domyślnie: Zaproponuj). */
+  submitLabel?: string;
 }
 
 export interface TradeBasketInitial {
@@ -1314,6 +1324,7 @@ export function showTradeBasketModal(
   onSubmit: (payload: NegotiationPayload) => void,
   onCancel: () => void,
   initial?: TradeBasketInitial,
+  modalOpts?: TradeBasketModalOptions,
 ): void {
   closeModal();
   ensureStyles();
@@ -1358,7 +1369,7 @@ export function showTradeBasketModal(
     readDealTurnsFromDom();
     readResourceTradeModeFromDom();
     if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState);
-    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat);
+    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat, modalOpts);
     bindEvents();
   };
 

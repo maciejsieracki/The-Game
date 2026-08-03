@@ -39,6 +39,10 @@ export {
 export {
   renderPnBalancePanelForTreaty,
   renderPnBalancePanelForPeace,
+  renderPnBalancePanelHtml,
+  balancePanelDataFromRow,
+  isIncomingBasketTradePanel,
+  incomingTradeNetBalancePw,
 } from './ui/diplomacyAcceptanceBalance';
 `);
 
@@ -302,6 +306,38 @@ ok(peacePanel77.includes('Traktat pokoju: 615 PW @ Rel 77'), 'pokój panel: meta
 ok(!peacePanel77.includes('fair min'), 'pokój panel: bez fair min');
 ok(!peacePanel77.includes('Brakuje'), 'pokój panel: bez fałszywego Brakuje');
 ok(peacePanel77.includes('da-pn-balance-bar ok'), 'pokój panel: tone ok');
+
+// Traktat handlowy incoming: gracz oddaje więcej — net +120, bez „Brakuje" / fair-min (Maciej 2026-08-02)
+const incomingTradePayload = {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 8 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 20 }],
+  resourceTradeMode: 'per_turn',
+  turns: 10,
+};
+const incomingTrade = mod.computePlayerAcceptanceSides('umowa_szlakow', incomingTradePayload, 100, true);
+ok(incomingTrade.my.accepted, 'incoming traktat handlowy: gracz może przyjąć (my.accepted)');
+ok(incomingTrade.my.offerPn === 200, 'incoming: my oddaję 200 PW');
+ok(incomingTrade.their.offerPn === 80, 'incoming: oni oddają 80 PW');
+ok(incomingTrade.their.balancePn === 120, 'incoming: net przewaga u nich +120 PW');
+ok(incomingTrade.their.statusLabel.includes('Przewaga u nich'), 'incoming: status przewaga u nich');
+ok(!incomingTrade.their.statusLabel.includes('Brakuje'), 'incoming: bez fałszywego Brakuje');
+
+const incomingRow = {
+  direction: 'incoming',
+  actionLabel: 'Traktat handlowy',
+  acceptanceMy: incomingTrade.my,
+  acceptanceTheir: incomingTrade.their,
+  canAccept: true,
+};
+const panelData = mod.balancePanelDataFromRow(incomingRow, 0);
+ok(panelData != null, 'incoming: panel data');
+ok(mod.isIncomingBasketTradePanel(panelData), 'incoming: basket trade panel');
+ok(mod.incomingTradeNetBalancePw(panelData) === 120, 'incoming: net helper 120');
+const incomingPanel = mod.renderPnBalancePanelHtml(panelData);
+ok(incomingPanel.includes('+120'), 'incoming panel: +120 netto');
+ok(!incomingPanel.includes('Brakuje'), 'incoming panel: bez Brakuje');
+ok(incomingPanel.includes('Bilans (netto)'), 'incoming panel: etykieta netto');
+ok(incomingPanel.includes('da-pn-balance-bar ok'), 'incoming panel: tone ok przy canAccept');
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 

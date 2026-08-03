@@ -339,6 +339,10 @@ function openCounterNegotiationModal(
       (payload) => cfg!.onCounterNegotiation?.(row.id, payload),
       () => { /* anulowano */ },
       row.counterInitial,
+      {
+        dialogTitle: 'Edytuj propozycję na stole',
+        submitLabel: 'Wyślij kontrofertę',
+      },
     );
     return;
   }
@@ -502,6 +506,9 @@ ${DIPLO_1E_SHARED_CSS}
 .da-negot-linked-they[data-negot-linked]::before{content:'';position:absolute;left:-6px;top:50%;
   width:4px;height:60%;transform:translateY(-50%);border-radius:2px;background:rgba(90,208,122,.35);}
 .da-negot-linked-they{position:relative;}
+.da-negot-linked.can-edit{cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.da-negot-linked.can-edit:hover{border-color:rgba(232,216,138,.55);box-shadow:0 0 0 1px rgba(232,216,138,.25);}
+.da-negot-edit-hint{font-size:0.62em;color:#8a8070;margin-top:4px;font-style:italic;}
 .da-deal-side-only .da-deal-col{max-width:100%;}
 .da-negot .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;display:flex;align-items:center;gap:6px;}
 .da-negot .da-nm .dir{font-size:0.62em;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
@@ -1363,10 +1370,16 @@ function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
   const dealBlock = dealHtml
     ? '<div class="da-deal-detail">' + dealHtml + '</div>'
     : '<div class="da-deal-detail"><span class="da-deal-empty">—</span></div>';
+  const editCls = r.canCounter ? ' can-edit' : '';
+  const editHint = r.canCounter
+    ? '<div class="da-negot-edit-hint" title="Otwórz edycję obu stron koszyka">Kliknij kartę, aby edytować kwoty i surowce</div>'
+    : '';
   return (
-    '<div class="da-negot da-negot-linked da-negot-linked-we" data-negot-id="' + esc(r.id) + '" data-negot-linked="we">' +
+    '<div class="da-negot da-negot-linked da-negot-linked-we' + editCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="we"'
+    + (r.canCounter ? ' data-negot-editable="1"' : '') + '>' +
       '<div class="da-nm"><span class="dir">' + esc('W ofercie oddajemy') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
+      editHint +
       pendingNegotiationMetaHtml(r) +
     '</div>'
   );
@@ -1386,11 +1399,17 @@ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
   const giftCls = r.isGift ? ' da-negot-gift' : '';
   const dirLabel = r.isGift ? 'Prezent od nich' : 'Ich propozycja';
   const titleLabel = r.isGift ? 'Dar / prezent' : r.actionLabel;
+  const editCls = r.canCounter && !r.isGift ? ' can-edit' : '';
+  const editHint = r.canCounter && !r.isGift
+    ? '<div class="da-negot-edit-hint" title="Otwórz edycję obu stron koszyka">Kliknij kartę, aby edytować kwoty i surowce</div>'
+    : '';
   return (
-    '<div class="da-negot incoming da-negot-linked da-negot-linked-they' + giftCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="they">' +
+    '<div class="da-negot incoming da-negot-linked da-negot-linked-they' + giftCls + editCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="they"'
+    + (r.canCounter && !r.isGift ? ' data-negot-editable="1"' : '') + '>' +
       '<div class="da-nm"><span class="dir">' + dirIcon + esc(dirLabel) + '</span>' + esc(titleLabel) + '</div>' +
       dealBlock +
       legacyNote +
+      editHint +
       pendingNegotiationMetaHtml(r) +
     '</div>'
   );
@@ -1677,6 +1696,20 @@ function render(): void {
         if (!row) return;
         openCounterNegotiationModal(st, row, mergeBasketCtx);
       }
+    });
+  });
+
+  /** Klik w kartę przychodzącej propozycji → ten sam koszyk co Kontruj (edycja obu stron). */
+  rootEl.querySelectorAll<HTMLElement>('.da-negot-linked[data-negot-editable="1"]').forEach(card => {
+    card.addEventListener('click', (ev) => {
+      if (cfg === null) return;
+      const target = ev.target as HTMLElement | null;
+      if (target?.closest('button')) return;
+      const negotId = card.getAttribute('data-negot-id');
+      if (!negotId) return;
+      const row = (st.pendingNegotiations ?? []).find(r => r.id === negotId);
+      if (!row?.canCounter) return;
+      openCounterNegotiationModal(st, row, mergeBasketCtx);
     });
   });
 
