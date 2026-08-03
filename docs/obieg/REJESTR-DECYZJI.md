@@ -44,6 +44,15 @@
 
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
+| **R-WIARYGODNOSC-TEMPO-PRZYWROCENIE** | 2026-08-03 | **WIAR-Q3=C** — przywrócić mnożnik tempa; skasować strumień W/20 z tickDiplomacy | D | 🔵 **W TRAKCIE** | PR **#49** · `R-WIARYGODNOSC-TEMPO-PRZYWROCENIE-2026-08-03.md` | bez merge/deploy · wzór: wzrostMult=1+(W/100)×0.5 |
+| **R-WIARYGODNOSC-DZWIGNIA2-Q1** | 2026-08-03 | **A** — bez Dźwigni 2 (sufit darów od W); paczka NAP-BEZTERMIN=A, START-ETAP=A | D | 🟠 **U INTEGRATORA** | PR **#47** · `R-WIARYGODNOSC-PACZKA-2026-08-03.md` | D2 nadal w main — luka |
+| **WIAR-Q6** | 2026-08-03 | Start W: Łatwy **+40**, Normalny **+20**, Trudny **0** (nie wszyscy 70) | D | 🟠 **U INTEGRATORA** | `WIARYGODNOSC-SPECYFIKACJA.md` §1 · PR #47 badge | Maciej potwierdził +20=Normalny |
+| **R-UI-RELACJA-DEAL-MOD** | 2026-08-03 | UI „Wpływ Relacji na deal" ±%; Relacja 100=balans, clamp ±90% | D+E | 🟠 **U INTEGRATORA** | PR **#50** · `R-UI-RELACJA-DEAL-MOD-2026-08-03.md` | bez deploy |
+| **R-MANPOWER-EPOKA1-500** | 2026-08-03 | `manpowerNaJednostke` epoka 1: 1000→**500** | B | 🟠 **U INTEGRATORA** | PR **#48** · `R-MANPOWER-EPOKA1-500-2026-08-03.md` | bez deploy |
+| **C-WIAR-SKALA** | 2026-07-26 | Dzielnik strumienia = **20** (C-WIAR-SKALA) — **do wycofania** po WIAR-Q3 tempo | D | ⚪ **ZMIENIONA** | `WIARYGODNOSC-SPECYFIKACJA.md` §5 · PR #49 | zastąpione mnożnikiem tempa 2026-08-03 |
+| **C-WIAR-SUMA** | 2026-07-26 | **A** — składnik W dodaje się do dZ (nie zastępuje) | D | 🟢 **WDROŻONA** (strumień) | FALA 36+ · `diplomacy.ts` | po #49: mnożnik zamiast addend W/20 |
+| **C-WIAR-WOJNA** | 2026-07-26 | **B** — wpływ W działa także podczas wojny (z niezaangażowanymi) | D | 🟢 **WDROŻONA** | `diplomacy.ts` tickDiplomacy | patrz C-WIAR-WROG |
+| **C-WIAR-WROG** | 2026-07-26 | **A** — brak strumienia wobec aktualnego przeciwnika wojennego | D | 🟢 **WDROŻONA** | `diplomacy.ts` gating | |
 | **MAP-SPAWN-Q2** | 2026-08-01 | **B** — quota proporcjonalna (largest remainder) + cap 1 typ na małą masę; preferencja hexów rozwoju; Pangea = wszystkie typy OK | A | 🟠 **U INTEGRATORA** | `allocateTypyToMasses` · `developmentSpaceScore` · `clusters.ts` · `cluster-start-test.cjs` | Maciej: „wdrażaj" · gotowe do batch F |
 | **HANDEL-SPLIT-Q1** | 2026-07-29 | **B** — dwa traktaty: `umowa_szlakow` + `umowa_wymiany` | D+E | 🟢 **WDROŻONA** | FALA 80 `7d266143` · `HANDEL-SPLIT-Q1.md` | Maciej: „b” |
 | **C-UNIT-CARD-Q2** | 2026-07-27 | **A** — max HP efektywne na karcie + pasek | E | 🔵 **W TRAKCIE** | j.w. | |

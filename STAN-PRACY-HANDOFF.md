@@ -1,6 +1,6 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-01 ~21:14** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-03 ~21:20** · Projekt: Civ „The Game"
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -16,6 +16,10 @@
 ## 1. CZY MOŻNA PRACOWAĆ? (przeczytaj najpierw)
 
 > **⛔ PROCES 2026-08-03:** `R-PROC-NUMER-ABC` — każdy case → ID → propozycja ± ABC → kod+commit dopiero po `ID+A|B|C` → **deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
+
+### Wiarygodność / Relacja 2026-08-03 (docs, bez deploy)
+
+Sesja cloud wieczór: model kanon **W → (tempo) Zaufanie → Relacja (Z+R, 0–200) → deal ±%**. Decyzje i luki w [`docs/decyzje/SESJA-WIARYGODNOSC-RELACJA-2026-08-03.md`](docs/decyzje/SESJA-WIARYGODNOSC-RELACJA-2026-08-03.md). PR **#47–#50** na branchach (wiarygodność paczka, manpower 500, przywrócenie tempa WIAR-Q3, UI Relacja deal) — **czekają merge + deploy**. Otwarte: Dźwignia 2 w main vs decyzja A; D3 progi tylko na PR #47; NAP nie tipuje bilansu deala.
 
 
 **TAK — ale najpierw sprawdź stan drzewa:**

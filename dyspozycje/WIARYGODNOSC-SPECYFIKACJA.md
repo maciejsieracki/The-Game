@@ -496,6 +496,13 @@ nawet gdy świeże zdarzenia dawno wygasły do podłogi.
 
 ## 5. WPŁYW NA ZAUFANIE — cztery dźwignie
 
+> **⛔ NADRZĘDNE 2026-08-03 (Maciej: „Przywrócić TEMPO", WIAR-Q3=C):** Obowiązuje **mnożnik tempa** na składniki `dZ` w `tickDiplomacy`:
+> `wzrostMult = 1 + (W/100)×0.5`, `spadekMult = 1 − (W/100)×0.5`.
+> Strumień **`W/20` co turę w `tickDiplomacy` jest ANULOWANY** (był błędnym zamiennikiem tempa).
+> **Wyjątek:** `round(W/20)` na **pierwszym kontakcie** (Dźwignia 4 / C-WIAR-D4) — zostaje.
+> Implementacja: PR **#49** · docs: `docs/decyzje/R-WIARYGODNOSC-TEMPO-PRZYWROCENIE-2026-08-03.md`.
+> Poniższy opis strumienia `/20` = stan historyczny spec do czasu pełnej aktualizacji sekcji.
+
 ### Dźwignia 1 — strumień bezpośredni Wiarygodność → Zaufanie (ZASTĘPUJE mnożnik tempa)
 
 Pierwotny pomysł „mnożnik tempa wzrostu/spadku Zaufania" jest ANULOWANY i zastąpiony bezpośrednim

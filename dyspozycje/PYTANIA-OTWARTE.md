@@ -2,6 +2,16 @@
 Aktualizacja: 2026-08-03. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
+## Luki techniczne — Wiarygodność (sesja 2026-08-03, bez ABC — czeka merge/deploy)
+
+| Temat | Opis | Status |
+|-------|------|--------|
+| D3 na main | Progi sojusz W≥0 / NAP W≥−40 tylko na PR #47 | ⏸ merge |
+| D2 vs decyzja A | Dźwignia 2 (sufit darów) nadal w kodzie main mimo R-WIARYGODNOSC-DZWIGNIA2-Q1=A | ⏸ usunąć przy merge |
+| NAP ≠ tip bilansu | Przy dobrej Relacji NAP nie przechyla bilansu deala „na plus" (oczekiwanie Macieja) | przyszłe ABC |
+
+Źródło: `docs/decyzje/SESJA-WIARYGODNOSC-RELACJA-2026-08-03.md` §C.
+
 ## ⛔ Obieg (Maciej 2026-08-03)
 Nowy case → **ID w REJESTR-PROSB** + wpis tu (jeśli ABC) → agent **proponuje, nie koduje** → Maciej: **`ID + A|B|C`** → commit → **`deploy`** osobno.
 Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).

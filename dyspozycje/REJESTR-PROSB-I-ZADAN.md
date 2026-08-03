@@ -41,7 +41,10 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | BUG-ARMIA-BRAK-POLACZ | W TOKU (weryfikacja) | Ikona Połącz jest w kodzie (`merge` obok `split`) — najpierw check na FALA 205; bez ABC |
 | R-DESIGN-BADANIA | GOTOWE-DO-WDROŻENIA | Design dostarczył panel boczny Badania v1 (2026-07-26) — czeka integrator reskin `scienceHubHud.ts` |
 | R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Brak mockupu v2 (obrona %, brand) · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
-| R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ | Spec `WIARYGODNOSC-SPECYFIKACJA.md` — rdzeń OK; paczka ABC §9 strojenie (później) |
+| R-WIARYGODNOSC | **W TRAKCIE / CZĘŚCIOWO WDROŻONE** | Model kanon 2026-08-03 · PR #47–#49 · `SESJA-WIARYGODNOSC-RELACJA-2026-08-03.md` · otwarte: merge D3, usunąć D2, deploy |
+| R-WIARYGODNOSC-TEMPO | W TRAKCIE | PR **#49** — przywrócenie mnożnika tempa WIAR-Q3=C |
+| R-UI-RELACJA-DEAL-MOD | W TRAKCIE | PR **#50** — wiersz ±% Relacji w panelu PW |
+| R-MANPOWER-EPOKA1-500 | W TRAKCIE | PR **#48** — manpower epoka 1: 500 |
 
 **PR-y docs — SUPERSEDED (cleanup 2026-08-03):** #35 R-PROC-ABC-FULL-ID → wchłonięte w `cursor/cleanup-docs-rejestr-63a1` · #31 plan AUTO-BUDOWA Q1 → R-AUTO-V2 / FALA 204 · #30 plan AI wasal → FALA 205 / R-AI-MP-WASAL-WCHLONIECIE · #27 backlog IDs → wchłonięte; deploy FALA 204/205.
 
@@ -109,7 +112,10 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-DESIGN-BADANIA | 2026-07-25 | Playtest: mockup ekranu badań przestarzały vs drzewko. | **GOTOWE-DO-WDROŻENIA** | Design: panel boczny Badania v1 (2026-07-26) · `DO-DESIGN-EKRAN-BADAN-2026-07-25.md` · reskin `scienceHubHud.ts` |
 | R-DESIGN-PANEL-MIASTA | 2026-07-25 | Playtest (ze zrzutami ekranu): panel widoku miast na mapie głównej przestarzały. | **CZEKA-NA-DESIGN** | `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` · patrz KOLEJKA OTWARTA |
 | R-DYP-IKONA-TLO | 2026-07-25 | Playtest (ze zrzutami ekranu): w panelu dyplomacji pod ikoną państwa jest niebieskie kwadratowe tło. Decyzja Macieja: usunąć ALBO zamienić na obramówkę w tym kolorze. | **ZDEPLOYOWANE `c08b5fcc`** | WERSJE 2026-07-26: obramówka `.dip-pennant` (brak numeru FALA w WERSJE). |
-| R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **CZEKA-NA-DECYZJĘ** | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` (rdzeń zatwierdzony WIAR-Q*); draft: `PROJEKT-WIARYGODNOSC-CYWILIZACJI.md`. Otwarte: §9 strojenie (paczka ABC później) · patrz KOLEJKA OTWARTA |
+| R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **W TRAKCIE / CZĘŚCIOWO WDROŻONE** | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` · sesja 2026-08-03: `SESJA-WIARYGODNOSC-RELACJA-2026-08-03.md` · PR #47–#50 czekają merge/deploy · otwarte: D3 na main, usunąć D2, NAP≠tip bilansu |
+| R-WIARYGODNOSC-TEMPO | 2026-08-03 | Przywrócić mnożnik tempa (WIAR-Q3=C); skasować W/20 z tickDiplomacy | **W TRAKCIE** | PR #49 · `R-WIARYGODNOSC-TEMPO-PRZYWROCENIE-2026-08-03.md` |
+| R-UI-RELACJA-DEAL-MOD | 2026-08-03 | UI „Wpływ Relacji na deal" ±% w panelu PW | **W TRAKCIE** | PR #50 · `R-UI-RELACJA-DEAL-MOD-2026-08-03.md` |
+| R-MANPOWER-EPOKA1-500 | 2026-08-03 | Manpower epoka 1: `manpowerNaJednostke` 1000→500 | **W TRAKCIE** | PR #48 · `R-MANPOWER-EPOKA1-500-2026-08-03.md` |
 
 ## ZAMKNIĘTE (ta sesja, 2026-07-23/24)
 

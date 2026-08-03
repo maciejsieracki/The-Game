@@ -1,3 +1,11 @@
+## [21:20 PL, 2026-08-03] CLOUD → wszyscy — docs sesja Wiarygodność/Relacja
+- Branch: `cursor/docs-sesja-wiarygodnosc-2026-08-03-63a1` (tylko docs/dyspozycje/rejestr, bez `gra/src`)
+- Handoff: `docs/decyzje/SESJA-WIARYGODNOSC-RELACJA-2026-08-03.md`
+- Decyzje: WIAR-Q3=C (tempo) · DZWIGNIA2=A · WIAR-Q6 +40/+20/0 · Relacja ±90% UI
+- PR czekają merge/deploy: **#47** wiarygodność paczka · **#48** manpower 500 · **#49** tempo · **#50** UI Relacja deal
+- Otwarte luki: D3/D2 na main · NAP nie tipuje bilansu deala
+CZEKAM-NA: Maciej merge PR #47–#50 + hasło **deploy**
+
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35
 - **#29** R-STAWKI ×2 · **#33** AI→MP wasal/wchłonięcie · **#4** HUD Praca overflow · **#1** audyt sep vs MP (docs)
