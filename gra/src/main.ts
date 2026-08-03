@@ -162,7 +162,7 @@ import {
   TRIUMPH_CS_HINT_MS,
 } from './game/triumph-city-state';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
-import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, normalizePodzialHandlu, type City, type BudowaFocus, type CityPodzialHandlu } from './game/cities';
+import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, DEFAULT_BUDOWA_PRIORYTET_TYPOW, normalizePodzialHandlu, type City, type BudowaFocus, type BudowaTryb, type CityPodzialHandlu } from './game/cities';
 import {
   migrateHandelSplitOnLoad,
   resolveCityPodzialHandlu,
@@ -4953,16 +4953,21 @@ async function boot(): Promise<void> {
         getBudowaState: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
-          return {
-            focus: city.budowaFocus ?? 'zrownowazone',
-            tryb: city.budowaTryb ?? DEFAULT_BUDOWA_TRYB,
-          };
+          ensureCitySaveDefaults(city);
+          const tryb = city.budowaTryb ?? DEFAULT_BUDOWA_TRYB;
+          const priorytetTypow = city.budowaPriorytetTypow?.length
+            ? [...city.budowaPriorytetTypow]
+            : [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
+          return { tryb, priorytetTypow };
         },
-        onBudowaFocusChange: (cityId: string, focus: BudowaFocus) => {
+        onBudowaPriorytetChange: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return;
-          city.budowaFocus = focus;
-          city.budowaTryb = 'auto';
+          city.budowaTryb = tryb;
+          city.budowaPriorytetTypow = priorytetTypow.length > 0
+            ? [...priorytetTypow]
+            : [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
+          city.budowaFocus = city.budowaPriorytetTypow[0] ?? 'zrownowazone';
           const labels: Record<BudowaFocus, string> = {
             wzrost: 'Wzrost',
             wojsko: 'Wojsko',
@@ -4971,11 +4976,14 @@ async function boot(): Promise<void> {
             produkcja: 'Produkcja',
             zrownowazone: 'Zrównoważone',
           };
-          const enqueued = tryAutoEnqueueBuild(cityId);
+          const prioText = city.budowaPriorytetTypow
+            .map((f, i) => `${i + 1}. ${labels[f] ?? f}`)
+            .join(' → ');
+          const enqueued = tryb === 'priorytet' ? tryAutoEnqueueBuild(cityId) : null;
           showHintMessage(
             enqueued
-              ? `${city.name}: auto budowa · ${labels[focus]} → ${enqueued.nazwa}`
-              : `${city.name}: auto budowa · profil ${labels[focus] ?? focus}`,
+              ? `${city.name}: priorytet budowy · ${prioText} → ${enqueued.nazwa}`
+              : `${city.name}: priorytet budowy · ${prioText}`,
             3200,
           );
           updateHud();
@@ -5329,7 +5337,7 @@ async function boot(): Promise<void> {
     /** Auto-budowa: dodaj następny budynek gdy kolejka pusta i tryb auto. */
     function tryAutoEnqueueBuild(cityId: string) {
       const city = cities.find(c => c.id === cityId);
-      if (!city || (city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'auto') return null;
+      if (!city || (city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'priorytet') return null;
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       if (frontItem(prod0) !== null) return null;
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
@@ -9885,7 +9893,7 @@ async function boot(): Promise<void> {
 
     /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta) — tylko realnie dostępne teraz. */
     function cityHasActionableProduction(city: City): boolean {
-      if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'auto') return false;
+      if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'priorytet') return false;
       const ctx = productionAvailabilityCtxForCity(city);
       if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;
       if (cityHasAffordableUnitRecruitment(city, ctx)) return true;
@@ -19669,7 +19677,7 @@ async function boot(): Promise<void> {
                 } catch (eAM) {
                   console.error(`[AutoManage] Blad dla miasta ${city.name}:`, eAM);
                 }
-              } else if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'auto') {
+              } else if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'priorytet') {
                 // Auto-budowa bez globalnego Zarządcy (⚙)
                 const enq = tryAutoEnqueueBuild(cid);
                 if (enq) prod0 = cityProd.get(cid) ?? prod0;
@@ -19720,7 +19728,7 @@ async function boot(): Promise<void> {
                 const applied = applyProductionCompleted(city, cid, completed, prodPo);
                 prodFinal = applied.prod;
                 cityProd.set(cid, prodFinal);
-                if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'auto' && frontItem(prodFinal) === null) {
+                if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'priorytet' && frontItem(prodFinal) === null) {
                   tryAutoEnqueueBuild(cid);
                   prodFinal = cityProd.get(cid) ?? prodFinal;
                 }

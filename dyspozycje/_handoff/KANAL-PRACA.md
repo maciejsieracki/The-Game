@@ -5072,3 +5072,14 @@ CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`
 - Test: scout 15/15 · triumph 10/10 · tsc 0 · VERIFY OK
 - Sesja lokalna: `git pull` na dysk właściciela
 CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
+
+## [18:25 PL, 2026-08-03] CLOUD → Maciej — R-AUTO-BUDOWA-LISTA Q1=A doprec.
+- Tryby: Ręczny · Priorytet typów (wyczerp pulę) · Lista nazwana A/B/C epoki
+- Plan zaktualizowany. Czeka Q2 (skip) + Q3 (zakres v1)
+CZEKAM-NA: Maciej Q2/Q3
+
+## [18:35 PL, 2026-08-03] CLOUD → Maciej — R-AUTO-BUDOWA-LISTA v1 Priorytet WDROŻONE (kod)
+- Branch: `cursor/fix-auto-budowa-priorytet-63a1`
+- Q2=A · Q3=A · tryb priorytet typów (wyczerp #1 zanim #2); Lista = v2
+- Test: auto-manage 33/33 · tsc 0
+CZEKAM-NA: deploy na hasło

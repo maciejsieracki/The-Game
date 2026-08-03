@@ -9,7 +9,10 @@
  */
 
 import type { City, BudowaFocus } from './cities';
-import { DEFAULT_BUDOWA_FOCUS, DEFAULT_BUDOWA_TRYB } from './cities';
+import {
+  DEFAULT_BUDOWA_FOCUS,
+  DEFAULT_BUDOWA_TRYB,
+} from './cities';
 import type { GameMap } from '../types/map';
 import type { TerritoryNode } from '../map/territory';
 import {
@@ -117,6 +120,44 @@ function priorityForItem(
   return PRIORYTET_JEDNOSTKA;
 }
 
+/** Czy kategoria budynku pasuje do profilu auto-budowy. */
+export function buildingMatchesFocus(kategoria: string, focus: BudowaFocus): boolean {
+  if (focus === 'zrownowazone') return true;
+  const map = prioritiesForBudowaFocus(focus);
+  return kategoria in map;
+}
+
+function budowaPriorytetTypowFor(city: Readonly<City>): BudowaFocus[] {
+  const list = city.budowaPriorytetTypow;
+  if (list && list.length > 0) return [...list];
+  return [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS];
+}
+
+function bestCandidateForFocus(
+  candidates: ProductionItem[],
+  data: ProductionData,
+  focus: BudowaFocus,
+): ProductionItem | null {
+  const matching = candidates.filter(item => {
+    if (item.kind !== 'budynek') return false;
+    const def = data.buildings.find(b => b.id === item.id);
+    const kat = def?.kategoria ?? '';
+    return buildingMatchesFocus(kat, focus);
+  });
+  if (matching.length === 0) return null;
+
+  const scored = matching.map(item => ({
+    item,
+    prio: priorityForItem(item, data.buildings, focus),
+  }));
+  scored.sort((a, b) => {
+    if (a.prio !== b.prio) return a.prio - b.prio;
+    if (a.item.koszt !== b.item.koszt) return a.item.koszt - b.item.koszt;
+    return a.item.nazwa.localeCompare(b.item.nazwa);
+  });
+  return scored[0]?.item ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Context required by autoManageCity
 // ---------------------------------------------------------------------------
@@ -178,9 +219,8 @@ export function pickAutoBuildItem(
   input: Pick<AutoManageInput, 'unlockedTechs' | 'ctx' | 'ownerSurowcePool'>,
 ): ProductionItem | null {
   if (frontItem(prod) !== null) return null;
-  if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'auto') return null;
+  if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'priorytet') return null;
 
-  const focus = city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS;
   const unlockedTechs = input.unlockedTechs ?? [];
   const ctx = input.ctx ?? {};
   const allCandidates = buildableProduction(city, data, unlockedTechs, ctx);
@@ -199,16 +239,12 @@ export function pickAutoBuildItem(
 
   if (candidates.length === 0) return null;
 
-  const scored = candidates.map(item => ({
-    item,
-    prio: priorityForItem(item, data.buildings, focus),
-  }));
-  scored.sort((a, b) => {
-    if (a.prio !== b.prio) return a.prio - b.prio;
-    if (a.item.koszt !== b.item.koszt) return a.item.koszt - b.item.koszt;
-    return a.item.nazwa.localeCompare(b.item.nazwa);
-  });
-  return (scored[0] as typeof scored[number]).item;
+  const typy = budowaPriorytetTypowFor(city);
+  for (const focus of typy) {
+    const pick = bestCandidateForFocus(candidates, data, focus);
+    if (pick) return pick;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------

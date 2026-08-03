@@ -43,11 +43,20 @@ export type BudowaFocus =
   | 'prawo'
   | 'produkcja';
 
-/** auto = AI dobiera budynki wg budowaFocus; reczny = gracz wybiera ręcznie. */
-export type BudowaTryb = 'auto' | 'reczny';
+/** priorytet = AI wg budowaPriorytetTypow; reczny = gracz wybiera ręcznie. */
+export type BudowaTryb = 'reczny' | 'priorytet';
 
 export const DEFAULT_BUDOWA_FOCUS: BudowaFocus = 'zrownowazone';
 export const DEFAULT_BUDOWA_TRYB: BudowaTryb = 'reczny';
+
+/** Domyślna kolejność typów auto-budowy (bez zrownowazone — catch-all na końcu listy gracza). */
+export const DEFAULT_BUDOWA_PRIORYTET_TYPOW: readonly BudowaFocus[] = [
+  'wzrost',
+  'produkcja',
+  'wojsko',
+  'kultura',
+  'prawo',
+];
 
 /**
  * Domyslny podzial Daniny netto nowego miasta — zgodny z econ-params.json
@@ -151,7 +160,19 @@ export function ensureCitySaveDefaults(city: City): void {
   if (!city.okolicaFocus) city.okolicaFocus = DEFAULT_OKOLICA_FOCUS;
   if (!city.okolicaTryb) city.okolicaTryb = DEFAULT_OKOLICA_TRYB;
   if (!city.budowaFocus) city.budowaFocus = DEFAULT_BUDOWA_FOCUS;
-  if (!city.budowaTryb) city.budowaTryb = DEFAULT_BUDOWA_TRYB;
+  // Migracja: legacy budowaTryb 'auto' → 'priorytet' + [budowaFocus]
+  const rawTryb = city.budowaTryb as BudowaTryb | 'auto' | undefined;
+  if (rawTryb === 'auto') {
+    city.budowaTryb = 'priorytet';
+    if (!city.budowaPriorytetTypow?.length) {
+      city.budowaPriorytetTypow = [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS];
+    }
+  } else if (!city.budowaTryb) {
+    city.budowaTryb = DEFAULT_BUDOWA_TRYB;
+  }
+  if (city.budowaTryb === 'priorytet' && !city.budowaPriorytetTypow?.length) {
+    city.budowaPriorytetTypow = [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS];
+  }
   const buf = readCityFoodBuffer(city.magazynZywnosci);
   if (city.magazynZywnosci !== buf) city.magazynZywnosci = buf;
   ensureCityRationDefaults(city);
@@ -260,10 +281,12 @@ export interface City {
   okolicaTryb?: OkolicaTryb;
   /** Ręczne przypisanie: "q,r" → liczba 👤 (0|1). */
   okolicaReczne?: Record<string, number>;
-  /** Profil auto-kolejki budynków (panel Produkcja). */
+  /** Profil auto-kolejki budynków (panel Produkcja) — legacy / pierwszy typ priorytetu. */
   budowaFocus?: BudowaFocus;
-  /** auto | reczny — ręczny wybór budynków w kolejce. */
+  /** priorytet | reczny — ręczny wybór budynków w kolejce. */
   budowaTryb?: BudowaTryb;
+  /** Kolejność typów auto-budowy (wyczerp #1 zanim #2). */
+  budowaPriorytetTypow?: BudowaFocus[];
   /** B2-Q12=C: tury grace przed rebelią AI (null = brak). */
   revoltGraceRemaining?: number | null;
   /** Miasto pod kontrolą rebeliantów. */

@@ -347,12 +347,12 @@ export interface CityPanelConfig {
   onOkolicaTileAdjust?: (cityId: string, q: number, r: number, delta: number) => void;
   /** Otwórz mapę w trybie ręcznej okolicy (👤 na heksach). */
   onOpenMapForOkolica?: (cityId: string) => void;
-  /** Auto-budowa — profile + tryb ręczny. */
+  /** Auto-budowa — tryb + kolejność typów. */
   getBudowaState?: (cityId: string) => {
-    focus: BudowaFocus;
     tryb: BudowaTryb;
+    priorytetTypow: BudowaFocus[];
   } | null;
-  onBudowaFocusChange?: (cityId: string, focus: BudowaFocus) => void;
+  onBudowaPriorytetChange?: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => void;
   onBudowaEnterManual?: (cityId: string) => void;
   onArtView?: (cityId: string) => void;
   /**
@@ -6753,7 +6753,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
       const bToolbar = el('div', 'okolica-toolbar budowa-toolbar');
       bToolbar.style.cssText = 'margin:0.06em 0 0.18em;';
       const bProfiles = el('div', 'okolica-toolbar-profiles');
-      appendBudowaToolbarProfiles(bProfiles, city, bState.focus, bState.tryb);
+      appendBudowaToolbarProfiles(bProfiles, city, bState.priorytetTypow, bState.tryb);
       bToolbar.appendChild(bProfiles);
       mount.appendChild(bToolbar);
     }
@@ -8943,20 +8943,53 @@ function appendOkolicaToolbarProfiles(
 function appendBudowaToolbarProfiles(
   wrap: HTMLElement,
   city: City,
-  focus: BudowaFocus,
+  priorytetTypow: BudowaFocus[],
   tryb: BudowaTryb,
 ): void {
   const profiles: BudowaFocus[] = [
     'wzrost', 'wojsko', 'kultura', 'prawo', 'produkcja', 'zrownowazone',
   ];
+  const active = tryb === 'priorytet' ? priorytetTypow : [];
   for (const id of profiles) {
+    const idx = active.indexOf(id);
+    const inList = idx >= 0;
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = tryb !== 'reczny' && id === focus ? 'on' : '';
+    b.className = tryb === 'priorytet' && inList ? 'on' : '';
     setOkolicaProfileButtonIconOnly(b, BUDOWA_FOCUS_BRAND[id]);
-    b.title = BUDOWA_FOCUS_TITLE[id];
-    b.disabled = !cfg.onBudowaFocusChange;
-    b.addEventListener('click', () => { cfg.onBudowaFocusChange?.(city.id, id); rerender(); });
+    const prioLabel = inList ? `${idx + 1}. ` : '';
+    b.title = `${prioLabel}${BUDOWA_FOCUS_TITLE[id]}${inList ? ` (priorytet ${idx + 1})` : ''}`;
+    b.disabled = !cfg.onBudowaPriorytetChange;
+    if (inList && tryb === 'priorytet') {
+      const badge = document.createElement('span');
+      badge.className = 'budowa-prio-badge';
+      badge.textContent = String(idx + 1);
+      badge.style.cssText =
+        'position:absolute;top:-0.15em;right:-0.15em;font-size:0.62em;font-weight:700;' +
+        'background:var(--gold);color:#1a1208;border-radius:50%;min-width:1.1em;height:1.1em;' +
+        'line-height:1.1em;text-align:center;pointer-events:none;';
+      b.style.position = 'relative';
+      b.appendChild(badge);
+    }
+    b.addEventListener('click', () => {
+      if (!cfg.onBudowaPriorytetChange) return;
+      let next: BudowaFocus[];
+      let nextTryb: BudowaTryb;
+      if (tryb === 'reczny') {
+        nextTryb = 'priorytet';
+        next = inList ? [...priorytetTypow] : [...priorytetTypow, id];
+        if (!inList && next.length === 0) next = [id];
+      } else if (inList) {
+        nextTryb = 'priorytet';
+        next = priorytetTypow.filter(f => f !== id);
+        if (next.length === 0) next = [id];
+      } else {
+        nextTryb = 'priorytet';
+        next = [...priorytetTypow, id];
+      }
+      cfg.onBudowaPriorytetChange?.(city.id, next, nextTryb);
+      rerender();
+    });
     wrap.appendChild(b);
   }
   if (cfg.onBudowaEnterManual) {
