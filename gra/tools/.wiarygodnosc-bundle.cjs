@@ -22,6 +22,7 @@ var wiarygodnosc_entry_exports = {};
 __export(wiarygodnosc_entry_exports, {
   DIPLOMACY_PARAMS: () => DIPLOMACY_PARAMS,
   appendCredibilityEvent: () => appendCredibilityEvent,
+  applyWiarygodnoscTempoDoDelty: () => applyWiarygodnoscTempoDoDelty,
   credibilityEventSign: () => credibilityEventSign,
   credibilityStreamWeight: () => credibilityStreamWeight,
   diplomacyClampTrustGainNaTure: () => diplomacyClampTrustGainNaTure,
@@ -38,7 +39,9 @@ __export(wiarygodnosc_entry_exports, {
   wartoscBiezaca: () => wartoscBiezaca,
   wiarygodnoscBand: () => wiarygodnoscBand,
   wiarygodnoscLabelPl: () => wiarygodnoscLabelPl,
+  wiarygodnoscSpadekMult: () => wiarygodnoscSpadekMult,
   wiarygodnoscStartowa: () => wiarygodnoscStartowa,
+  wiarygodnoscWzrostMult: () => wiarygodnoscWzrostMult,
   zaufaniePierwszyKontaktZD4: () => zaufaniePierwszyKontaktZD4
 });
 module.exports = __toCommonJS(wiarygodnosc_entry_exports);
@@ -5222,9 +5225,8 @@ function tickDiplomacy(rdip, ctx) {
   if (ctx.wspolnaReligia) dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia) dZ += p.odmiennaReligia_zaufanie_perTura;
   if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
-  if (ctx.wiarygodnoscSelf !== void 0) {
-    const wKlamrowane = clamp(ctx.wiarygodnoscSelf, p.wiarygodnoscSkalaMin, p.wiarygodnoscSkalaMax);
-    dZ += wKlamrowane / p.wiarygodnoscZaufanieDzielnikPerTura;
+  if (ctx.wiarygodnoscSelf !== void 0 && dZ !== 0) {
+    dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
   }
   let noweUrazy = rdip.urazyHistoryczne ?? 0;
   if (ctx.turn % 20 === 0 && noweUrazy !== 0) {
@@ -5380,6 +5382,19 @@ function sumaWiarygodnosciCalkowita(zdarzenia, wpisyStrumienia, startowa, tura, 
   }
   suma += sumaStrumienia(wpisyStrumienia);
   return clamp2(suma, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+}
+function wiarygodnoscWzrostMult(w) {
+  const wKlamrowane = clamp2(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+  return 1 + wKlamrowane / 100 * 0.5;
+}
+function wiarygodnoscSpadekMult(w) {
+  const wKlamrowane = clamp2(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+  return 1 - wKlamrowane / 100 * 0.5;
+}
+function applyWiarygodnoscTempoDoDelty(dZ, w) {
+  if (w === void 0 || dZ === 0) return dZ;
+  if (dZ > 0) return dZ * wiarygodnoscWzrostMult(w);
+  return dZ * wiarygodnoscSpadekMult(w);
 }
 function strumienWiarygodnoscDoZaufania(w) {
   const wKlamrowane = clamp2(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
@@ -13524,6 +13539,7 @@ function tributeBlockedForCityState(ctx) {
 0 && (module.exports = {
   DIPLOMACY_PARAMS,
   appendCredibilityEvent,
+  applyWiarygodnoscTempoDoDelty,
   credibilityEventSign,
   credibilityStreamWeight,
   diplomacyClampTrustGainNaTure,
@@ -13540,6 +13556,8 @@ function tributeBlockedForCityState(ctx) {
   wartoscBiezaca,
   wiarygodnoscBand,
   wiarygodnoscLabelPl,
+  wiarygodnoscSpadekMult,
   wiarygodnoscStartowa,
+  wiarygodnoscWzrostMult,
   zaufaniePierwszyKontaktZD4
 });
