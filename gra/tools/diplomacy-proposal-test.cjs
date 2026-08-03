@@ -452,5 +452,28 @@ ok(
   'AI pending handel 0¤ → null',
 );
 
+// 17 willingnessTrade vs uczciwa oferta (Maciej 2026-08-02, BUG-DYPLO-TRADE-WILLINGNESS)
+const zulusResponder = { typCywilizacji: 'zulusi' };
+const rzymProposer = { typCywilizacji: 'rzymianie' };
+const lowTradeCtx = {
+  relation: rel(25, 25),
+  responderPlayer: zulusResponder,
+  proposerPlayer: rzymProposer,
+};
+r = evaluateProposal(prop('handel', 0, 1, { givePn: 250, receivePn: 100 }), lowTradeCtx);
+ok(r.accepted && r.oneShotTrade, 'handel fair PW: akceptacja mimo niskiej willingnessTrade (Zulusi)');
+r = evaluateProposal(prop('handel', 0, 1, { givePn: 50, receivePn: 100 }), lowTradeCtx);
+ok(!r.accepted && r.reason.includes('chęci'), 'handel unfair + niska willingness: Brak chęci do handlu');
+r = evaluateProposal(prop('umowa_szlakow', 0, 1, { givePn: 250, receivePn: 100, turns: 20 }), lowTradeCtx);
+ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'traktat handlowy fair PW: akceptacja mimo willingness');
+r = evaluateProposal(prop('umowa_szlakow', 0, 1, { turns: 20 }), lowTradeCtx);
+ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'traktat handlowy bez koszyka: Relacja wystarczy (bez willingness)');
+r = evaluateProposal(prop('pokoj', 0, 1, { givePn: 615, receivePn: 615 }), {
+  ...lowTradeCtx,
+  stanWojny: true,
+  relation: rel(30, 47, 'wojna'),
+});
+ok(r.accepted, 'pokój symetryczny: bez bramki willingnessTrade (willingnessPeace)');
+
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);
