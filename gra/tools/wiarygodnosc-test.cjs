@@ -56,7 +56,8 @@ export {
   diplomacyMaxZaufanieNaTureForWiarygodnosc,
   diplomacyPnRelacjaParams,
   diplomacyClampTrustGainNaTure,
-} from '../src/game/diplomacy-value-catalog';\n`,
+} from '../src/game/diplomacy-value-catalog';
+export { evaluateProposal } from '../src/game/diplomacy-proposals';\n`,
   'utf8',
 );
 
@@ -384,6 +385,53 @@ function freshRdip(zaufanie, status) {
   const after = WC.tickDiplomacy(before, { turn: 1, wiarygodnoscSelf: 100000 });
   ok(approxEqual(after.zaufanie, 10 + 100 / P.wiarygodnoscZaufanieDzielnikPerTura), `tickDiplomacy: klamruje W>100 przed dzieleniem (got ${after.zaufanie})`);
   ok(approxEqual(after.zaufanie, WC.strumienWiarygodnoscDoZaufania(100000) + 10), 'tickDiplomacy: spójne ze strumienWiarygodnoscDoZaufania (ta sama formuła)');
+}
+
+// ---------------------------------------------------------------------------
+// 8d) Dźwignia 3 — twarde progi sojusz/NAP (WIARYGODNOSC §5)
+// ---------------------------------------------------------------------------
+
+function baseEvalCtx(overrides) {
+  return {
+    relation: { zaufanie: 80, respekt: 50, status: 'neutralni', traktaty: [] },
+    stanWojny: false,
+    turn: 5,
+    proposerRespekt: 60,
+    responderRespekt: 40,
+    militaryRatio: 1,
+    respektWzgledny: 0.5,
+    activeDeals: [],
+    difficulty: 'normal',
+    proposerWiarygodnosc: 20,
+    responderWiarygodnosc: 20,
+    ...overrides,
+  };
+}
+function evalNap(payload, ctxOverrides) {
+  return WC.evaluateProposal(
+    { actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1, payload },
+    baseEvalCtx(ctxOverrides),
+  );
+}
+function evalSojusz(ctxOverrides) {
+  return WC.evaluateProposal(
+    { actionId: 'sojusz_pelny', proposerOwnerId: 0, responderOwnerId: 1, payload: {} },
+    baseEvalCtx(ctxOverrides),
+  );
+}
+{
+  const napLow = evalNap({ turns: 15 }, { proposerWiarygodnosc: -50 });
+  ok(!napLow.accepted && napLow.reason.includes('Wiarygodność'), 'NAP odrzucony gdy W proponenta < -40');
+  const napOk = evalNap({ turns: 15 }, { proposerWiarygodnosc: -40 });
+  ok(napOk.accepted, 'NAP akceptowany gdy W proponenta = -40 (próg)');
+  const sojuszLow = evalSojusz({ proposerWiarygodnosc: -1 });
+  ok(!sojuszLow.accepted && sojuszLow.reason.includes('Wiarygodność'), 'Sojusz odrzucony gdy W proponenta < 0');
+  const sojuszOk = evalSojusz({ proposerWiarygodnosc: 0 });
+  if (!sojuszOk.accepted) {
+    ok(!sojuszOk.reason.includes('Wiarygodność'), 'Sojusz W=0 nie pada na bramkę Wiarygodności (inne progi mogą odrzucić)');
+  } else {
+    ok(sojuszOk.accepted, 'Sojusz akceptowany gdy W proponenta = 0 i progi relacji spełnione');
+  }
 }
 
 // ---------------------------------------------------------------------------

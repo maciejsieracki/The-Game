@@ -161,6 +161,10 @@ export interface ProposalEvalContext {
   activeDeals?: readonly ActiveDeal[];
   /** Poziom trudności gry — skaluje progi relacji/zaufania (Maciej 2026-07-21). */
   difficulty?: GameDifficulty;
+  /** Globalna Wiarygodność proponenta (−100…+100) — Dźwignia 3 (WIARYGODNOSC §5). */
+  proposerWiarygodnosc?: number;
+  /** Globalna Wiarygodność respondenta (−100…+100) — Dźwignia 3 (opcjonalnie). */
+  responderWiarygodnosc?: number;
 }
 
 export interface ProposalEvalResult {
@@ -494,6 +498,12 @@ export function evaluateProposal(
 
   switch (actionId) {
     case 'nap': {
+      if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgNapMin) {
+        return {
+          accepted: false,
+          reason: `Wiarygodność zbyt niska na pakt (wymagana ≥ ${p.wiarygodnoscProgNapMin})`,
+        };
+      }
       // C-DYP-STOL-Q1=B: słodzik (giveItems/receiveItems w payload) obniża próg Relacji.
       const napEase = sweetenerEasePoints(payload, pnOpts);
       const napThreshold = Math.max(0, p.progNapRelacja - napEase);
@@ -519,6 +529,12 @@ export function evaluateProposal(
 
     case 'sojusz_defensywny':
     case 'sojusz_pelny': {
+      if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgSojuszMin) {
+        return {
+          accepted: false,
+          reason: `Wiarygodność zbyt niska na sojusz (wymagana ≥ ${p.wiarygodnoscProgSojuszMin})`,
+        };
+      }
       const kind = actionId === 'sojusz_defensywny' ? 'sojusz_defensywny' : 'sojusz_pelny';
       const milRatio = ctx.militaryRatio ?? 1;
       const adj = diplomacyAllianceStrengthAdjust(
