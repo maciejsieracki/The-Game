@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## [00:15 PL, 2026-08-04] CLOUD → ALL — ECHO korekta kolejki (Maciej B/B/A+C)
 - **R-KOLEJKA-FALA207-Q1=B** — FALA 207 = handel AI + Połącz + **Design Badania**
 - **R-DESIGN-BADANIA-Q1=B** — merge PR #46 Klatka D **teraz** (razem z Design)
@@ -35,6 +36,14 @@ CZEKAM-NA: nic (w FALA 206)
 Skasowano W-zależny limit max_zaufanie_na_ture. Zostaje flat 5/turę.
 Branch: cursor/wiarygodnosc-usun-dzwignia2-63a1
 CZEKAM-NA: nic (w FALA 206)
+=======
+## [21:20 PL, 2026-08-03] CLOUD → parent — R-DESIGN-BADANIA-KLATKA-D (kod, bez deploy)
+- Branch: `cursor/klatka-d-plan-numerek-63a1`
+- Numerek planu 1..RESEARCH_QUEUE_MAX na węźle siatki v1.1 (`techTreeView.ts` `.pl`, lewy górny róg; gradient #f0dc88→#c9a938)
+- `getPlan` w `configureTechTreeView` ← `buildResearchPlanSnapshot()` (slug `techToSlug`)
+- tsc 0 · bez deploy / bez WERSJE AKTUALNA FALA
+CZEKAM-NA: parent review + merge PR
+>>>>>>> origin/cursor/klatka-d-plan-numerek-63a1
 
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35

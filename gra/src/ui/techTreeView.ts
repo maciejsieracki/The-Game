@@ -51,6 +51,8 @@ export interface TechTreeViewConfig {
   isImprovementGateMet?: (ownerId: number, techName: string) => boolean;
   /** Rozpocznij badanie (istniejąca ścieżka silnika — setPlayerResearchTarget). */
   onStartResearch?: (techSlug: string) => void;
+  /** Plan badań (aktywny cel + kolejka): slug tech → pozycja 1..RESEARCH_QUEUE_MAX. */
+  getPlan?: (ownerId: number) => { id: string; pos: number }[];
 }
 
 let cfg: TechTreeViewConfig = {};
@@ -241,10 +243,13 @@ interface TtvState {
   naukaRate: number;
   tempo: TempoGry;
   difficulty: GameDifficulty;
+  planPosById: Map<string, number>;
 }
 
 function readState(ownerId: number): TtvState {
   const st = cfg.getResearchState?.(ownerId) ?? null;
+  const planPosById = new Map<string, number>();
+  for (const p of cfg.getPlan?.(ownerId) ?? []) planPosById.set(p.id, p.pos);
   return {
     researched: new Set(cfg.getResearchedTechs?.(ownerId) ?? []),
     available: new Set(cfg.getAvailableTechs?.(ownerId) ?? []),
@@ -256,6 +261,7 @@ function readState(ownerId: number): TtvState {
     naukaRate: cfg.getNaukaRate?.(ownerId) ?? 0,
     tempo: cfg.getTempoGry?.(ownerId) ?? 'standardowa',
     difficulty: cfg.getDifficulty?.(ownerId) ?? 'normal',
+    planPosById,
   };
 }
 
@@ -348,6 +354,10 @@ function ensureStyles(): void {
 .civ-ttv-tn .tx i{display:block;font-style:normal;font-size:9px;color:#8a8070;margin-top:2px;
   font-variant-numeric:tabular-nums;}
 .civ-ttv-tn .tx .why{display:block;font-size:8.5px;color:#c88a7a;margin-top:2px;line-height:1.25;}
+.civ-ttv-tn .pl{position:absolute;top:-7px;left:-7px;width:18px;height:18px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;z-index:2;
+  background:linear-gradient(180deg,#f0dc88,#c9a938);border:2px solid #1a1400;
+  color:#2e2708;font-family:Georgia,serif;font-size:10px;font-weight:700;line-height:1;}
 .civ-ttv-tn .st{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;}
 .civ-ttv-tn .st svg{width:10px;height:10px;}
@@ -613,6 +623,10 @@ function renderWorldHTML(s: TtvState): string {
       }
     }
     inner += '</span>';
+    const planPos = s.planPosById.get(node.id);
+    if (planPos !== undefined) {
+      inner += `<span class="pl" title="Pozycja ${planPos} w planie badań">${planPos}</span>`;
+    }
     const badge = st === 'od' ? SVG_CHECK
       : st === 'av' ? SVG_CHEV
         : st === 'ip' ? scienceProgressRingHtml(s.postepFraction, 18, 3)
