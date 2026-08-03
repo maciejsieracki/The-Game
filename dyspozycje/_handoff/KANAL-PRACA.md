@@ -1,3 +1,10 @@
+## [23:35 PL, 2026-08-03] CLOUD → ALL — ECHO paczka kolejki (Maciej opcja 1)
+- **R-KOLEJKA-FALA207-Q1=A** — FALA 207 = handel AI + Połącz **tylko** (bez Design w deploy)
+- **R-DESIGN-BADANIA-Q1=A** — merge PR #44 Design Badania na main (deploy osobno)
+- **R-KOLEJKA-NASTEPNY-Q1=B** — deploy 207 **przed** kolonizacją AI
+- Docs: `docs/decyzje/R-KOLEJKA-FALA207-DESIGN.md`
+CZEKAM-NA: merge #44 · Maciej **deploy** FALA 207
+
 ## [23:25 PL, 2026-08-03] CLOUD → ALL — zamknięte zbędne PR (FALA 206)
 - CLOSED (SUPERSEDED FALA 206): #47, #52, #55, #45, #51
 - Otwarte feat: #44 Design Badania · #46 Klatka D · #59 ECHO kolonizacja (docs)

@@ -37,10 +37,11 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 
 | ID | Status | Uwagi |
 |----|--------|-------|
-| R-HANDEL-AI-FALA | WDROŻONE (kod) | R-HANDEL-AI-FALA-Q1=B · `buildClampedAiTradeAgreementPayload` · merge PR #42 · **czeka deploy** |
+| R-HANDEL-AI-FALA | WDROŻONE (kod) | R-HANDEL-AI-FALA-Q1=B · merge PR #42 · **FALA 207 scope=A** (handel+Połącz tylko) · czeka **deploy** |
 | R-ZAMIEN-ULEPSZENIE-CONFIRM | **ZAMKNIĘTE Q1=A** | Zawsze modal przy zastąpieniu (jak dziś) · `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md` · bez zmian kodu |
-| BUG-ARMIA-BRAK-POLACZ | WDROŻONE (kod) | UX: hex panel zasłaniał dock · fix w PR #42 · **czeka deploy** |
-| R-DESIGN-BADANIA | GOTOWE-DO-WDROŻENIA | Design dostarczył panel boczny Badania v1 (2026-07-26) — czeka integrator reskin `scienceHubHud.ts` |
+| BUG-ARMIA-BRAK-POLACZ | WDROŻONE (kod) | UX: hex panel zasłaniał dock · fix w PR #42 · **FALA 207** · czeka **deploy** |
+| R-DESIGN-BADANIA | **MERGING** | R-DESIGN-BADANIA-Q1=A · merge PR #44 na main · **poza FALA 207** · deploy później |
+| R-KOLEJKA-NASTEPNY | **ZAPISANE B** | Po deploy FALA 207 → kolonizacja AI (PR #59) |
 | R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Brak mockupu v2 (obrona %, brand) · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
 | R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ | Spec `WIARYGODNOSC-SPECYFIKACJA.md` — rdzeń OK; paczka ABC §9 strojenie (później) |
 

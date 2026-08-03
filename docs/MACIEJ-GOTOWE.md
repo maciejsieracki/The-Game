@@ -1,4 +1,5 @@
-﻿- **2026-08-03 ~23:20** — ✅ Gotowe w kodzie (bez deploy): **R-HANDEL-AI-FALA-Q1=B** + **BUG-ARMIA-BRAK-POLACZ**. Merge PR #42 → `main`. Napisz **deploy** (FALA 207).
+﻿- **2026-08-03 ~23:35** — ✅ ECHO paczka kolejki: **R-KOLEJKA-FALA207-Q1=A** (207=handel+Połącz tylko) · **R-DESIGN-BADANIA-Q1=A** (merge #44) · **R-KOLEJKA-NASTEPNY-Q1=B** (207 przed kolonizacją). Docs: `docs/decyzje/R-KOLEJKA-FALA207-DESIGN.md`. Napisz **deploy** na FALA 207.
+- **2026-08-03 ~23:20** — ✅ Gotowe w kodzie (bez deploy): **R-HANDEL-AI-FALA-Q1=B** + **BUG-ARMIA-BRAK-POLACZ**. Merge PR #42 → `main`. Napisz **deploy** (FALA 207).
 - **2026-08-03 23:11** — ✅ Gotowe FALA 206 ROBOCZA `1c7e9df7`. Wiarygodność (D3+tempo, bez Dźwigni 2) + wchłonięcie MP + manpower ep1 500 + UI Relacja ±%. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 - **2026-08-03 ~22:00** — ✅ (w FALA 206) **R-WIARYGODNOSC-TEMPO** WIAR-Q3=C.
 - **2026-08-03 ~21:35** — ✅ (w FALA 206) **progi 1+2** — D3 W + cleanup (`progWchloniecieRespekt` zachowany).
