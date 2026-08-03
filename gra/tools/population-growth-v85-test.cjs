@@ -119,8 +119,8 @@ const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJedn
   const ef = M.advanceEmpireFood(econ, units, states, upkeep, efParams);
   const t = ef.byOwner.get(0);
   ok(t.spichlerzStolicy === 16, 'Q2: surplus 16 in central before army');
-  ok(t.wojsko === 1, 'Q2: army costs 1 after central pool');
-  ok(states.get(0).zapasyPanstwa === 15, 'Q2: central ends at 15 (16-1 army)');
+  ok(t.wojsko === 2, 'Q2: army costs 2 after central pool (×2 R-STAWKI)');
+  ok(states.get(0).zapasyPanstwa === 14, 'Q2: central ends at 14 (16-2 army)');
 }
 
 // --- Q6: cap 500 + magazyn +100 ---
@@ -178,7 +178,7 @@ const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJedn
   ];
   for (const [level, pct] of table) {
     ok(M.rationGrowthPercent(level, rationParams) === pct, `Wyżywienie ${level} → ${pct}%`);
-    ok(M.rationFoodCostPerPop(level, rationParams) === level, `koszt żywności ${level} = ${level}`);
+    ok(M.rationFoodCostPerPop(level, rationParams) === level * 2, `koszt żywności ${level} = ${level * 2} (×2 R-STAWKI)`);
   }
   ok(M.migrateLegacyRationLevel(1) === 2, 'migracja stara racja 1 → Wyżywienie 2');
   ok(M.migrateLegacyRationLevel(2) === 4, 'migracja stara racja 2 → Wyżywienie 4');

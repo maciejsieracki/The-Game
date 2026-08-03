@@ -1,4 +1,5 @@
-﻿- **2026-08-03 ~17:00** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-ULEPSZENIA-Q1=C**. Panel miasta → Ulepszenia: Auto + profile + „Tylko pola z obywatelami”. Napisz **deploy** gdy wgrać.
+﻿- **2026-08-03 ~18:10** — ✅ Gotowe w kodzie (bez deploy): **R-STAWKI-STROJENIE** ×2 kosztów (badania, upkeep, budynki, żywność ludność+wojsko). Stała `R_STAWKI_KOSZT_MULT=2`. Napisz **deploy**.
+- **2026-08-03 ~17:00** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-ULEPSZENIA-Q1=C**. Panel miasta → Ulepszenia: Auto + profile + „Tylko pola z obywatelami”. Napisz **deploy** gdy wgrać.
 - **2026-08-03 18:22** — ✅ Gotowe FALA 204 ROBOCZA `d7754a22`. R-AUTO-V2 (budowa+ulepszenia Q1–Q9) + Ludy Morza Q1=A. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 - **2026-08-03 ~16:55** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-BUDOWA-LISTA** Q2=A · **Q3=B** — Priorytet typów **i** Lista A/B/C (Wgraj/Zapisz). Branch `cursor/fix-auto-budowa-lista-q3b-63a1`. Napisz **deploy**.
 

@@ -25,14 +25,16 @@ import {
   WZROST_LUDNOSCI_PACE,
   type WzrostLudnosciPace,
 } from './population-growth-tempo';
+import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
 
 export type GameDifficulty = 'easy' | 'normal' | 'hard';
 
 /**
  * Maciej 2026-07-24 (B-RESEARCH-COST-MODEL): dawniej x2 w kodzie — teraz wchloniete do tech.json.
- * GLOBAL=1; efektywny koszt = JSON (tempo Szybka) × tempo kreatora × asymetria trudnosci.
+ * R-STAWKI-STROJENIE 2026-08-03: ×2 kosztów badań (playtest; cofnij → R_STAWKI_KOSZT_MULT=1).
+ * Efektywny koszt = JSON × tempo kreatora × GLOBAL × asymetria trudnosci.
  */
-export const GLOBAL_RESEARCH_COST_MULT = 1;
+export const GLOBAL_RESEARCH_COST_MULT = R_STAWKI_KOSZT_MULT;
 
 /** Gracz ludzki — ownerId 0. Wszystko inne (AI, miasta-panstwa) = strona AI. */
 export function isPlayerOwner(ownerId: number): boolean {

@@ -44,6 +44,7 @@
 
 import type { BuildingRecord } from './economy';
 import { buildingEffectAtLevel } from './production';
+import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
 
 // ===========================================================================
 // Difficulty + raw econ-params reader
@@ -624,10 +625,14 @@ export function unitUpkeep(
 ): number {
   const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
   if (typeof byCat === 'number' && byCat === 0) return 0;
+  let base: number;
   const byType = table[unit.typeId];
-  if (typeof byType === 'number' && Number.isFinite(byType)) return byType;
-  if (typeof byCat === 'number' && Number.isFinite(byCat)) return byCat;
-  return Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
+  if (typeof byType === 'number' && Number.isFinite(byType)) base = byType;
+  else if (typeof byCat === 'number' && Number.isFinite(byCat)) base = byCat;
+  else base = Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
+  if (base <= 0) return 0;
+  // R-STAWKI-STROJENIE 2026-08-03: ×2 utrzymanie jednostek (Pieniądz/turę)
+  return Math.round(base * R_STAWKI_KOSZT_MULT);
 }
 
 /** Total gold unit upkeep for a set of units (Spec s.6.2). */
@@ -719,7 +724,10 @@ export function unitFoodPerTurn(
   const mnoznikTerytorium = onOwnTerritory
     ? (p.zywnoscMnoznikTerytorium ?? 1)
     : (p.zywnoscMnoznikPozaTerytorium ?? 2);
-  return base * mnoznikTerytorium;
+  const food = base * mnoznikTerytorium;
+  if (food <= 0) return 0;
+  // R-STAWKI-STROJENIE 2026-08-03: ×2 żywność wojska
+  return food * R_STAWKI_KOSZT_MULT;
 }
 
 /** Build typeId -> food/turn from units.json rows. */

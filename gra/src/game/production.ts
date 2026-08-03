@@ -68,6 +68,7 @@ import {
   upgradeProductionDisplayName,
 } from './building-upgrades';
 import miastoParams from '../../data/miasto-params.json';
+import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
 
 export {
   buildingRuntimeGateMet,
@@ -465,7 +466,8 @@ export function buildingWorkCost(
 ): number {
   const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
   const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
-  const afterGlobal = Math.max(1, Math.round(afterPace * GLOBAL_BUILDING_PROD_MULT));
+  // GLOBAL_BUILDING_PROD_MULT=0.5 (2026-07-22) × R-STAWKI-STROJENIE ×2 (2026-08-03) → efekt 1.0 vs JSON
+  const afterGlobal = Math.max(1, Math.round(afterPace * GLOBAL_BUILDING_PROD_MULT * R_STAWKI_KOSZT_MULT));
   return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
 }
 

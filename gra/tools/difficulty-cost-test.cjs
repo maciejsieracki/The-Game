@@ -100,8 +100,8 @@ const aiCost = applyDifficultyCostMultiplier(
 eq(playerCost, 20, 'easy + normalny tempo budynkow: gracz 2x bazy (20)');
 eq(aiCost, 40, 'easy + normalny tempo budynkow: AI 4x bazy (40)');
 
-// Badania: tempo standardowa x2 + GLOBAL=1 (B-RESEARCH-COST-MODEL) + trudna gracz x2
-eq(scaledResearchCost(24, 'standardowa', 0, 'hard'), 96, 'hard gracz: tech JSON 24 -> 96');
+// Badania: tempo standardowa x2 + GLOBAL=2 (R-STAWKI-STROJENIE) + trudna gracz x2
+eq(scaledResearchCost(24, 'standardowa', 0, 'hard'), 192, 'hard gracz: tech JSON 24 -> 192');
 
 // Wzrost ludnosci — trudnosc
 eq(getPopulationGrowthDifficultyMultiplier(0, 'hard'), 2, 'hard gracz prog x2');
