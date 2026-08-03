@@ -37,9 +37,9 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 
 | ID | Status | Uwagi |
 |----|--------|-------|
-| R-HANDEL-AI-FALA | WDROŻONE (kod) | R-HANDEL-AI-FALA-Q1=B · `buildClampedAiTradeAgreementPayload` · merge PR #42 · **czeka deploy** |
+| R-HANDEL-AI-FALA | **ZDEPLOYOWANE `47a2e73b`** (FALA 207) | R-HANDEL-AI-FALA-Q1=B · skalowany koszyk AI |
 | R-ZAMIEN-ULEPSZENIE-CONFIRM | **ZAMKNIĘTE Q1=A** | Zawsze modal przy zastąpieniu (jak dziś) · `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md` · bez zmian kodu |
-| BUG-ARMIA-BRAK-POLACZ | WDROŻONE (kod) | UX: hex panel zasłaniał dock · fix w PR #42 · **czeka deploy** |
+| BUG-ARMIA-BRAK-POLACZ | **ZDEPLOYOWANE `47a2e73b`** (FALA 207) | Połącz widoczny w docku jednostki |
 | R-DESIGN-BADANIA | **WDROŻONE (kod)** | R-DESIGN-BADANIA-Q1=B · merge PR #44+#46 · Design+Klatka w FALA 207 |
 | R-DESIGN-BADANIA-KLATKA-D | **WDROŻONE (kod)** | Numerek planu 1..3 na węźle siatki v1.1 (`techTreeView.ts` `.pl`) · merge #46 · deploy w FALA 207 |
 | R-KOLEJKA-NASTEPNY | **W TRAKCIE A+C** | Kolonizacja AI teraz → deploy FALA 207 (handel+Połącz+Design+Klatka+kolonizacja) |

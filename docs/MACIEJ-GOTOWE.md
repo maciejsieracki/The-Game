@@ -1,10 +1,11 @@
-﻿- **2026-08-04 ~00:45** — ✅ Gotowe w kodzie (bez deploy): **R-AI-KOLONIZACJA** Q1A Q2A Q3B + merge **#46 Klatka D** + ECHO korekta kolejki B/B/A+C. Napisz **deploy** na FALA 207 (handel+Połącz+Design+Klatka+kolonizacja).
-- **2026-08-03 ~23:45** — ⏸️ ECHO zapisane (bez kodu): **R-AI-KOLONIZACJA** Q1A Q2A Q3B + dystans 4 hex + pokrycie mapy zasięgiem. Docs: `docs/decyzje/R-AI-KOLONIZACJA.md`.
-- **2026-08-03 ~21:20** — ✅ Gotowe w kodzie (bez deploy): **R-DESIGN-BADANIA-KLATKA-D** — numerek planu 1..3 na węźle drzewka v1.1 (`techTreeView` `.pl`, lewy górny róg). Merge #46. Napisz **deploy** gdy wgrać.
-- **2026-08-03 ~23:20** — ✅ Gotowe w kodzie (bez deploy): **R-HANDEL-AI-FALA-Q1=B** + **BUG-ARMIA-BRAK-POLACZ**. Merge PR #42 → `main`. Napisz **deploy** (FALA 207).
+﻿- **2026-08-04 00:30** — ✅ Gotowe FALA 207 ROBOCZA `47a2e73b`. Handel AI + Połącz + Design Badania + Klatka D + kolonizacja AI. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
+- **2026-08-04 ~00:45** — ✅ (w FALA 207) **R-AI-KOLONIZACJA** + **#46 Klatka D**.
+- **2026-08-03 ~23:20** — ✅ (w FALA 207) **R-HANDEL-AI-FALA-Q1=B** + **BUG-ARMIA-BRAK-POLACZ**.
+- **2026-08-03 ~21:20** — ✅ (w FALA 207) Design Badania + Klatka D.
+- **2026-08-03 23:11** — ✅ FALA 206 ROBOCZA `1c7e9df7` — **ZASTĄPIONA** przez FALA 207.
 - **2026-08-03 ~21:05** — ✅ Decyzja **R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A** (zawsze modal). Kod bez zmian — już działa. Docs: `cursor/zamien-ulepszenie-q1a-63a1`.
-- **2026-08-03 ~19:50** — ✅ Gotowe docs (bez deploy gry): cleanup REJESTR + wchłonięcie PR #35 (R-PROC-ABC-FULL-ID). PR #31/#30/#27 SUPERSEDED. Kolejka otwarta: handel AI · potwierdzenie zamiany ulepszeń · Połącz armię · Design badania/miasto · wiarygodność. Branch `cursor/cleanup-docs-rejestr-63a1`.
-- **2026-08-03 18:35** — ✅ FALA 205 ROBOCZA `f41c6550` — **ZASTĄPIONA** przez FALA 206.
+- **2026-08-03 ~19:50** — ✅ Gotowe docs (bez deploy gry): cleanup REJESTR + wchłonięcie PR #35 (R-PROC-ABC-FULL-ID). PR #31/#30/#27 SUPERSEDED. Kolejka otwarta: Design panel miasta · strojenie wiarygodności §9.
+- **2026-08-03 18:35** — ✅ FALA 205 ROBOCZA `f41c6550` — **ZASTĄPIONA**.
 - **2026-08-03 ~18:10** — ✅ Gotowe w kodzie (bez deploy): **R-STAWKI-STROJENIE** ×2 kosztów (badania, upkeep, budynki, żywność ludność+wojsko). Stała `R_STAWKI_KOSZT_MULT=2`. Napisz **deploy**.
 - **2026-08-03 ~17:00** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-ULEPSZENIA-Q1=C**. Panel miasta → Ulepszenia: Auto + profile + „Tylko pola z obywatelami”. Napisz **deploy** gdy wgrać.
 - **2026-08-03 18:22** — ✅ Gotowe FALA 204 ROBOCZA `d7754a22`. R-AUTO-V2 (budowa+ulepszenia Q1–Q9) + Ludy Morza Q1=A. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.

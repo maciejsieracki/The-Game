@@ -1,10 +1,16 @@
+## [00:30 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 207 `47a2e73b`
+- md5: `47a2e73b266037c1f7b21406370a78b0` · stempel: ROBOCZA · 2026-08-04 00:30
+- Handel AI + Połącz · Design Badania · Klatka D · kolonizacja AI (pop≥5, dystans 4, surge)
+- Wejście: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: Maciej playtest / OK / BUG · sesja lokalna: pull na dysk
+
 ## [00:45 PL, 2026-08-04] CLOUD → ALL — R-AI-KOLONIZACJA kod + merge #46 Klatka D
 - **R-AI-KOLONIZACJA** Q1A Q2A Q3B: pop≥5, surge 2/turę bez MP, ep1–3 agresja, dystans 4, hexCityScore min
 - Merge PR #46 Klatka D (`techTreeView.ts` numerek planu)
 - Pliki: `ai.ts`, `city-founding.ts`, `miasto-params.json`, `ai-params.json`, `main.ts`
 - tsc 0 · ai-test T8* PASS · ai-war-gate W4e PASS
-- **BEZ deploy** gra-robocza / **BEZ** WERSJE AKTUALNA FALA
-CZEKAM-NA: Maciej **deploy** FALA 207 (handel+Połącz+Design+Klatka+kolonizacja)
+- **ZDEPLOYOWANE** w FALA 207 `47a2e73b`
+CZEKAM-NA: nic
 
 ## [00:15 PL, 2026-08-04] CLOUD → ALL — ECHO korekta kolejki (Maciej B/B/A+C)
 - **R-KOLEJKA-FALA207-Q1=B** — FALA 207 = handel AI + Połącz + **Design Badania**

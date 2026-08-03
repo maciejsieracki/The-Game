@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `1c7e9df7` - 2026-08-03 23:11 - FALA 206: Wiarygodność D3+tempo + wchłonięcie MP + manpower 500 + UI Relacja - **AKTUALNA**
+## ROBOCZA `47a2e73b` - 2026-08-04 00:30 - FALA 207: handel+Połącz + Design Badania + Klatka D + kolonizacja AI - **AKTUALNA**
+- md5 (pelne): `47a2e73b266037c1f7b21406370a78b0` · stempel: `ROBOCZA · 2026-08-04 00:30`
+- **FALA 207.** Handel AI Q1=B + Połącz (#42). Design Badania v1 (#44). Klatka D numerek planu (#46). R-AI-KOLONIZACJA (pop≥5, dystans 4, surge, score). Na bazie FALA 206 (wiarygodność/wchłonięcie/manpower/UI Relacja). Branch `cursor/deploy-fala207-63a1`.
+- tsc 0 · vite · VERIFY OK · build /tmp/civ-dist-fala207.
+
+## ROBOCZA `1c7e9df7` - 2026-08-03 23:11 - FALA 206: Wiarygodność D3+tempo + wchłonięcie MP + manpower 500 + UI Relacja - **ZASTĄPIONA**
 - md5 (pelne): `1c7e9df7bf4c74258ae122fc0bda846d` · stempel: `ROBOCZA · 2026-08-03 23:11`
 - **FALA 206.** #56 R-GRACZ-WCHLONIECIE (wchłonięcie MP po wasalu ≥10 tur, Respekt≥90, złoto). #54 D3 progi W (sojusz≥0 / NAP≥−40) + cleanup martwych (NAP Zauf/fair-ratio; **progWchloniecieRespekt zostaje**). #53 bez Dźwigni 2 (flat max_zaufanie_na_ture=5). #49 WIAR-Q3 tempo W→Z. #48 manpower ep1 1000→500. #50 UI „Wpływ Relacji na deal”. Branch `cursor/deploy-fala206-merge-63a1` (PR #57).
 - tsc 0 · wiarygodnosc 93/93 · diplomacy-proposal 82/82 · diplomacy 148/148 · vite · VERIFY OK · build /tmp/civ-dist-fala206.
