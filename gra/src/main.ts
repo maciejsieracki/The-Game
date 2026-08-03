@@ -16333,12 +16333,13 @@ async function boot(): Promise<void> {
 
     function preBattleUnitFromRuntime(u: RuntimeUnit): PreBattleUnit {
       const def = unitDefFor(u);
-      const hp = unitHealth(def);
+      const maxHp = unitHealth(def);
+      const hp = u.hp != null ? Math.min(maxHp, Math.max(0, u.hp)) : maxHp;
       return {
         nazwa: u.typeId,
         kategoria: u.category,
         hp,
-        maxHp: hp,
+        maxHp,
         atak: unitAtak(def),
         moc: armyFieldPower(def),
         veteranBadge: veteranBadgeLabel(u),

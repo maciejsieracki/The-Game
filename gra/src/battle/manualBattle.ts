@@ -753,6 +753,7 @@ export class ManualBattle {
           acted: false, moveLeft: movementPoints(bu),
           facingRight, mats, perTokenGeos,
         };
+        this._updateHpBar(ru);
         this.occByKey.set(key, ru);
         return ru;
       });
