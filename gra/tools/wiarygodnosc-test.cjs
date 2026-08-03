@@ -362,9 +362,9 @@ function freshRdip(zaufanie, status) {
 }
 
 {
-  // Undefined = brak wpływu (dokładnie jak dziś, przed Etapem 4) — caller (main.ts)
-  // zostawia pole puste, gdy TA para jest aktualnie w stanie wojny (C-WIAR-WROG=A).
-  const before = freshRdip(50, 'wojna');
+  // Undefined = brak wpływu W na dZ. Status pokoju (nie wojna): clampRelationForWar
+  // na 'wojna' zeruje zaufanie niezależnie od wiarygodnoscSelf — to nie ten kontrakt.
+  const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1 });
   ok(after.zaufanie === 50, `tickDiplomacy: wiarygodnoscSelf undefined -> brak zmiany (got ${after.zaufanie})`);
 }
