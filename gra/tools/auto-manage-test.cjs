@@ -25,7 +25,7 @@ const ENTRY_FILE  = path.resolve(__dirname, '.auto-manage-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.auto-manage-bundle.cjs');
 
 const ENTRY_TS = `
-export { autoManageCity, pickAutoBuildItem, prioritiesForBudowaFocus } from '../src/game/auto-manage';
+export { autoManageCity, pickAutoBuildItem, pickNextFromBudowaLista, isBudowaListaUkonczonaForCity, prioritiesForBudowaFocus, buildingMatchesFocus } from '../src/game/auto-manage';
 export { frontItem, enqueue as enqueueItem, buildableProduction, availableProduction } from '../src/game/production';
 export { cityRangeForPopulation, assignWorkedTiles } from '../src/game/okolica';
 `;
@@ -49,7 +49,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { autoManageCity, frontItem, enqueueItem, buildableProduction, cityRangeForPopulation, pickAutoBuildItem } = M;
+const { autoManageCity, frontItem, enqueueItem, buildableProduction, cityRangeForPopulation, pickAutoBuildItem, pickNextFromBudowaLista, isBudowaListaUkonczonaForCity } = M;
 
 // --- test harness ----------------------------------------------------------
 let passed = 0;
@@ -94,7 +94,8 @@ const cityBase = {
   r: 0,
   name: 'Testowo',
   population: 2,
-  budowaTryb: 'auto',
+  budowaTryb: 'priorytet',
+  budowaPriorytetTypow: ['zrownowazone'],
   budowaFocus: 'zrownowazone',
 };
 
@@ -137,10 +138,8 @@ const dataMinimal = {
 // --- tests -----------------------------------------------------------------
 console.log('\n[auto-manage-test] Running tests...\n');
 
-// TEMAT 8 (2026-07-24): Stolarnia wymaga aktywnego dostepu do etykiety "Drewno" w imperium
-// (building-resource-gate.ts DEPOSIT_LINKED_BUILDING_LABELS) -- bez tego kontekstu bramka
-// odrzuca kandydata i pickAutoBuildItem zwraca null. Fixture dostarcza aktywna etykiete.
-const ctxWithDrewno = { ctx: { activeResourceLabels: ['Drewno'] } };
+// TEMAT 8 (2026-07-24): Stolarnia wymaga zapasu Drewna w puli panstwa (building-resource-gate).
+const ctxWithDrewno = { ctx: { epoch: 1, empireResourceStock: { drewno: 5 } } };
 
 // Test 1: wynik jest obiektem z poprawnymi kluczami
 console.log('1. Struktura zwracanego obiektu');
@@ -254,7 +253,12 @@ const dataWojsko = {
   ],
   units: [],
 };
-const cityWojsko = { ...cityBase, budowaTryb: 'auto', budowaFocus: 'wojsko' };
+const cityWojsko = {
+  ...cityBase,
+  budowaTryb: 'priorytet',
+  budowaPriorytetTypow: ['wojsko'],
+  budowaFocus: 'wojsko',
+};
 const r15 = pickAutoBuildItem(cityWojsko, emptyProd, dataWojsko, { unlockedTechs: [], ctx: { epoch: 1 } });
 eq(r15 && r15.id, 'koszary', 'wojsko -> koszary');
 
@@ -269,12 +273,134 @@ const dataWzrost = {
 };
 // TEMAT 8 (2026-07-24): Spichlerz wymaga aktywnego dostepu do etykiety "Ceramika" w imperium
 // (decyzja Temat 8 z 2026-07-24) -- bez niej bramka odrzuca kandydata (podobnie Stolarnia/Drewno).
-const cityWzrost = { ...cityBase, budowaTryb: 'auto', budowaFocus: 'wzrost' };
+const cityWzrost = {
+  ...cityBase,
+  budowaTryb: 'priorytet',
+  budowaPriorytetTypow: ['wzrost'],
+  budowaFocus: 'wzrost',
+};
 const r16 = pickAutoBuildItem(cityWzrost, emptyProd, dataWzrost, {
   unlockedTechs: [],
   ctx: { epoch: 1, activeResourceLabels: ['Drewno', 'Ceramika'] },
 });
 eq(r16 && r16.id, 'spichlerz', 'wzrost -> spichlerz');
+
+// Test 17: priorytet [wojsko, wzrost] -> koszary przed spichlerzem
+console.log('\n17. Priorytet [wojsko, wzrost] -> koszary najpierw');
+const dataWojskoWzrost = {
+  buildings: [
+    { id: 'stolarnia', nazwa: 'Stolarnia', kategoria: 'Produkcja', epokaWejscia: 1, maksPoziom: 10, kosztBudowy: 15, techUnlock: '' },
+    { id: 'koszary', nazwa: 'Koszary', kategoria: 'Wojsko', epokaWejscia: 1, maksPoziom: 10, kosztBudowy: 25, techUnlock: '' },
+    { id: 'spichlerz', nazwa: 'Spichlerz', kategoria: 'Zywnosc', epokaWejscia: 1, maksPoziom: 10, kosztBudowy: 20, techUnlock: '' },
+  ],
+  units: [],
+};
+const cityWojskoWzrost = {
+  ...cityBase,
+  budowaTryb: 'priorytet',
+  budowaPriorytetTypow: ['wojsko', 'wzrost'],
+  budowaFocus: 'wojsko',
+};
+const r17 = pickAutoBuildItem(cityWojskoWzrost, emptyProd, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r17 && r17.id, 'koszary', '[wojsko,wzrost] -> koszary (#1 wojsko)');
+
+// Test 18: po zbudowaniu wojska -> wzrost (spichlerz)
+console.log('\n18. Po wyczerpaniu wojska -> spichlerz (wzrost #2)');
+const r18 = pickAutoBuildItem(cityWojskoWzrost, emptyProd, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, builtBuildingIds: ['koszary'], activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r18 && r18.id, 'spichlerz', 'po koszarach -> spichlerz');
+
+// Test 19: single-element priorytet ≡ stary profil focus
+console.log('\n19. Pojedynczy typ priorytetu ≡ profil focus');
+const r19a = pickAutoBuildItem(cityWojsko, emptyProd, dataWojsko, { unlockedTechs: [], ctx: { epoch: 1 } });
+const cityWojskoLegacy = { ...cityBase, budowaTryb: 'priorytet', budowaPriorytetTypow: ['wojsko'], budowaFocus: 'wojsko' };
+const r19b = pickAutoBuildItem(cityWojskoLegacy, emptyProd, dataWojsko, { unlockedTechs: [], ctx: { epoch: 1 } });
+eq(r19a && r19a.id, r19b && r19b.id, 'single wojsko ≡ wojsko focus');
+
+// Test 20: reczny -> pickAutoBuildItem null
+console.log('\n20. pickAutoBuildItem reczny -> null');
+const r20 = pickAutoBuildItem(cityReczny, emptyProd, dataMinimal, { yieldOf, ...ctxWithDrewno });
+eq(r20, null, 'reczny -> null w pickAutoBuildItem');
+
+// Test 21: lista — pierwszy legalny (koszary zablokowany → spichlerz)
+console.log('\n21. Lista: pierwszy legalny z listy (tylko spichlerz dostępny)');
+const cityLista21 = {
+  ...cityBase,
+  budowaTryb: 'lista',
+  budowaLista: ['koszary', 'spichlerz'],
+};
+const r21 = pickAutoBuildItem(cityLista21, emptyProd, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, builtBuildingIds: ['koszary'], activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r21 && r21.id, 'spichlerz', 'lista [koszary,spichlerz] po koszarach -> spichlerz');
+
+// Test 22: lista — skan od początku, oba dostępne → pierwszy na liście
+console.log('\n22. Lista: oba dostępne -> pierwszy (koszary)');
+const cityLista22 = {
+  ...cityBase,
+  budowaTryb: 'lista',
+  budowaLista: ['koszary', 'spichlerz'],
+};
+const r22 = pickAutoBuildItem(cityLista22, emptyProd, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r22 && r22.id, 'koszary', 'lista oba dostępne -> koszary (#1)');
+
+// Test 23: lista — wszystkie zablokowane -> null
+console.log('\n23. Lista: wszystkie zablokowane -> null');
+const cityLista23 = {
+  ...cityBase,
+  budowaTryb: 'lista',
+  budowaLista: ['koszary', 'spichlerz'],
+};
+const r23 = pickAutoBuildItem(cityLista23, emptyProd, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, builtBuildingIds: ['koszary', 'spichlerz'], activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r23, null, 'lista wszystkie zbudowane -> null');
+
+// Test 24: lista + front niepusty -> null
+console.log('\n24. Lista + front niepusty -> null');
+const prodWithFront = {
+  kolejka: [{ id: 'stolarnia', nazwa: 'Stolarnia', kind: 'budynek', koszt: 15 }],
+  postep: 0,
+};
+const r24 = pickAutoBuildItem(cityLista22, prodWithFront, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r24, null, 'lista + front -> null');
+
+// Test 25: pickNextFromBudowaLista helper
+console.log('\n25. pickNextFromBudowaLista helper');
+const cand = [
+  { id: 'spichlerz', nazwa: 'Spichlerz', kind: 'budynek', koszt: 20 },
+  { id: 'koszary', nazwa: 'Koszary', kind: 'budynek', koszt: 25 },
+];
+eq(pickNextFromBudowaLista(['koszary', 'spichlerz'], cand)?.id, 'koszary', 'helper: pierwszy match');
+eq(pickNextFromBudowaLista(['nieznany', 'spichlerz'], cand)?.id, 'spichlerz', 'helper: skip zablokowany');
+eq(pickNextFromBudowaLista(['nieznany'], cand), null, 'helper: brak match -> null');
+
+// Test 26: priorytet regresja po dodaniu listy
+console.log('\n26. Priorytet nadal działa (regresja)');
+const r26 = pickAutoBuildItem(cityWojsko, emptyProd, dataWojsko, { unlockedTechs: [], ctx: { epoch: 1 } });
+eq(r26 && r26.id, 'koszary', 'priorytet wojsko -> koszary (regresja)');
+
+// Test 27: isBudowaListaUkonczonaForCity
+console.log('\n27. Lista ukończona — wszystkie id zbudowane');
+const cityDone = {
+  budowaTryb: 'lista',
+  budowaLista: ['koszary', 'spichlerz'],
+};
+eq(isBudowaListaUkonczonaForCity(cityDone, dataWojskoWzrost, ['koszary', 'spichlerz']), true, 'oba zbudowane -> ukończona');
+eq(isBudowaListaUkonczonaForCity(cityDone, dataWojskoWzrost, ['koszary']), false, 'spichlerz brak -> nie ukończona');
 
 // --- summary ---------------------------------------------------------------
 const total = passed + failed;

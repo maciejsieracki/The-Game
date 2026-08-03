@@ -1,3 +1,12 @@
+## [16:55 PL, 2026-08-03] CLOUD → parent — R-AUTO-BUDOWA-LISTA Q2=A Q3=B
+- Branch: `cursor/fix-auto-budowa-lista-q3b-63a1`
+- Tryb Budowa **Lista** + szablony A/B/C (save meta `budowaListaSzablony`)
+- Picker Q2=A: `pickNextFromBudowaLista` — skan od 0, skip zablokowane
+- UI: przycisk Lista, edycja kolejności, Wgraj/Zapisz A/B/C
+- Test: auto-manage 41/41 · tsc 0
+- Bez deploy / bez WERSJE AKTUALNA FALA
+CZEKAM-NA: parent review + merge PR #32 bazę
+
 ## [00:15 PL, 2026-08-02] CLOUD -> Maciej — fix MP trybut + DOW (Tarent)
 - Branch: `cursor/fix-cs-war-tribute-contradiction-63a1`
 - Bug: miasto-państwo obcego typu (Tarent) — WOJNA + „Oferta trybutu przyjęta" w jednej turze; UI akcja 8 zablokowana
@@ -5086,3 +5095,14 @@ CZEKAM-NA: merge + deploy na hasło Macieja
 - Branch: `cursor/fix-auto-ulepszenia-q2b-q3b-63a1`
 - Test: auto-improvements 13/13 · tsc 0
 CZEKAM-NA: R-AUTO-ULEPSZENIA-Q4 + deploy na hasło
+
+## [18:25 PL, 2026-08-03] CLOUD → Maciej — R-AUTO-BUDOWA-LISTA Q1=A doprec.
+- Tryby: Ręczny · Priorytet typów (wyczerp pulę) · Lista nazwana A/B/C epoki
+- Plan zaktualizowany. Czeka Q2 (skip) + Q3 (zakres v1)
+CZEKAM-NA: Maciej Q2/Q3
+
+## [18:35 PL, 2026-08-03] CLOUD → Maciej — R-AUTO-BUDOWA-LISTA v1 Priorytet WDROŻONE (kod)
+- Branch: `cursor/fix-auto-budowa-priorytet-63a1`
+- Q2=A · Q3=A · tryb priorytet typów (wyczerp #1 zanim #2); Lista = v2
+- Test: auto-manage 33/33 · tsc 0
+CZEKAM-NA: deploy na hasło

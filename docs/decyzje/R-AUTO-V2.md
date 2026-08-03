@@ -1,6 +1,6 @@
 # R-AUTO-V2 — domknięcie automatyzacji (budowa + ulepszenia)
 
-**Status:** Q1–Q9 ZAPISANE (Q5 domknięte doprecyzowaniem) · wdrożenie w kolejce  
+**Status:** wdrożone (kod) · Q1–Q9  
 **Data:** 2026-08-03  
 **Powiązane:** `R-AUTO-BUDOWA-LISTA` · `R-AUTO-ULEPSZENIA` (Q1–Q5)
 

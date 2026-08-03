@@ -162,7 +162,37 @@ import {
   TRIUMPH_CS_HINT_MS,
 } from './game/triumph-city-state';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
-import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, DEFAULT_ULEPSZENIA_TRYB, DEFAULT_ULEPSZENIA_FOCUS, DEFAULT_ULEPSZENIA_PER_TURN, clampUlepszeniaPerTurn, normalizePodzialHandlu, type City, type BudowaFocus, type UlepszeniaFocus, type UlepszeniaTryb, type UlepszeniaPerTurn, type CityPodzialHandlu } from './game/cities';
+import {
+  canFoundCity,
+  foundCity,
+  foundCityAt,
+  ensureCitySaveDefaults,
+  DEFAULT_PODZIAL_HANDLU,
+  DEFAULT_PODZIAL_PRACY,
+  DEFAULT_PROCENT_ROZWOJ,
+  DEFAULT_BUDOWA_TRYB,
+  DEFAULT_BUDOWA_PRIORYTET_TYPOW,
+  EMPTY_BUDOWA_LISTA_SZABLONY,
+  DEFAULT_ULEPSZENIA_TRYB,
+  DEFAULT_ULEPSZENIA_FOCUS,
+  DEFAULT_ULEPSZENIA_PER_TURN,
+  clampUlepszeniaPerTurn,
+  freshUlepszeniaEmpirePolicy,
+  resolveEffectiveUlepszenia,
+  normalizePodzialHandlu,
+  isAutoBudowaTryb,
+  type City,
+  type BudowaFocus,
+  type BudowaTryb,
+  type BudowaListaSlot,
+  type BudowaListaSzablony,
+  type CityPodzialHandlu,
+  type UlepszeniaFocus,
+  type UlepszeniaTryb,
+  type UlepszeniaPerTurn,
+  type UlepszeniaEmpirePolicy,
+  type EffectiveUlepszeniaSettings,
+} from './game/cities';
 import {
   migrateHandelSplitOnLoad,
   resolveCityPodzialHandlu,
@@ -857,8 +887,8 @@ import {
   EMBARK_TECH, EMBARK_DEFENSE_MULT, moveCostFnFor, applyEmbarkStateAfterMove,
 } from './game/embarkation';
 import { isWaterTerrain } from './units/setup';
-import { autoManageCity, pickAutoBuildItem } from './game/auto-manage';
-import { pickAutoImprovements } from './game/auto-improvements';
+import { autoManageCity, pickAutoBuildItem, isBudowaListaUkonczonaForCity } from './game/auto-manage';
+import { pickAutoImprovements, AUTO_ULEPSZENIA_PRACA_RESERVE } from './game/auto-improvements';
 import { showMainMenu, hideMainMenu, isMainMenuOpen, getMenuAudioVolumes } from './ui/mainMenu';
 import { showPerfTestPanel } from './ui/perfTestPanel';
 import {
@@ -2995,6 +3025,7 @@ async function boot(): Promise<void> {
     const empireFoodStates = new Map<number, EmpireFoodState>();
     /** DYSPOZYCJA-85-SUWAK: domyślny podział Daniny/Podatku per owner (Skarb/Nauka/Zamożność). */
     const ownerDefaultPodzialHandlu = new Map<number, CityPodzialHandlu>();
+    const ulepszeniaEmpireByOwner = new Map<number, UlepszeniaEmpirePolicy>();
     /** PYTANIE-77-DOP=B: łaska 1 tury Mennicy po utracie dostępu do złota (per owner). */
     const mennicaZlotoGraceState: MennicaZlotoGraceState = createMennicaZlotoGraceState();
     let playerArmyFoodHintShown = false;
@@ -3446,6 +3477,25 @@ async function boot(): Promise<void> {
           ownerDefaultPodzialHandlu.set(ai.ownerId, freshOwnerDefaultPodzialHandlu());
         }
       }
+    }
+
+    function initUlepszeniaEmpireByOwner(): void {
+      ulepszeniaEmpireByOwner.clear();
+      ulepszeniaEmpireByOwner.set(0, freshUlepszeniaEmpirePolicy());
+      for (const ai of aiStartHexes) {
+        if (!ulepszeniaEmpireByOwner.has(ai.ownerId)) {
+          ulepszeniaEmpireByOwner.set(ai.ownerId, freshUlepszeniaEmpirePolicy());
+        }
+      }
+    }
+
+    function ulepszeniaEmpireForOwner(ownerId: number): UlepszeniaEmpirePolicy {
+      return ulepszeniaEmpireByOwner.get(ownerId) ?? freshUlepszeniaEmpirePolicy();
+    }
+
+    function effectiveUlepszeniaForCity(city: City): EffectiveUlepszeniaSettings {
+      ensureCitySaveDefaults(city);
+      return resolveEffectiveUlepszenia(city, ulepszeniaEmpireForOwner(city.ownerId));
     }
 
     function effectivePodzialHandlu(city: City): CityPodzialHandlu {
@@ -4954,16 +5004,30 @@ async function boot(): Promise<void> {
         getBudowaState: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
+          ensureCitySaveDefaults(city);
+          const tryb = city.budowaTryb ?? DEFAULT_BUDOWA_TRYB;
+          const priorytetTypow = city.budowaPriorytetTypow?.length
+            ? [...city.budowaPriorytetTypow]
+            : [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
           return {
-            focus: city.budowaFocus ?? 'zrownowazone',
-            tryb: city.budowaTryb ?? DEFAULT_BUDOWA_TRYB,
+            tryb,
+            priorytetTypow,
+            lista: [...(city.budowaLista ?? [])],
+            szablony: {
+              A: [...budowaListaSzablony.A],
+              B: [...budowaListaSzablony.B],
+              C: [...budowaListaSzablony.C],
+            },
           };
         },
-        onBudowaFocusChange: (cityId: string, focus: BudowaFocus) => {
+        onBudowaPriorytetChange: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return;
-          city.budowaFocus = focus;
-          city.budowaTryb = 'auto';
+          city.budowaTryb = tryb;
+          city.budowaPriorytetTypow = priorytetTypow.length > 0
+            ? [...priorytetTypow]
+            : [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
+          city.budowaFocus = city.budowaPriorytetTypow[0] ?? 'zrownowazone';
           const labels: Record<BudowaFocus, string> = {
             wzrost: 'Wzrost',
             wojsko: 'Wojsko',
@@ -4972,11 +5036,14 @@ async function boot(): Promise<void> {
             produkcja: 'Produkcja',
             zrownowazone: 'Zrównoważone',
           };
-          const enqueued = tryAutoEnqueueBuild(cityId);
+          const prioText = city.budowaPriorytetTypow
+            .map((f, i) => `${i + 1}. ${labels[f] ?? f}`)
+            .join(' → ');
+          const enqueued = isAutoBudowaTryb(tryb) ? tryAutoEnqueueBuild(cityId) : null;
           showHintMessage(
             enqueued
-              ? `${city.name}: auto budowa · ${labels[focus]} → ${enqueued.nazwa}`
-              : `${city.name}: auto budowa · profil ${labels[focus] ?? focus}`,
+              ? `${city.name}: priorytet budowy · ${prioText} → ${enqueued.nazwa}`
+              : `${city.name}: priorytet budowy · ${prioText}`,
             3200,
           );
           updateHud();
@@ -4987,6 +5054,60 @@ async function boot(): Promise<void> {
           if (!city) return;
           city.budowaTryb = 'reczny';
           showHintMessage(`${city.name}: ręczna kolejka budowy`, 2800);
+          refreshCityPanelIfOpen();
+        },
+        onBudowaListaChange: (cityId: string, lista: string[], tryb: 'lista') => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.budowaLista = [...lista];
+          city.budowaTryb = tryb;
+          delete city.budowaListaUkonczonaHintShown;
+          const enqueued = tryAutoEnqueueBuild(cityId);
+          showHintMessage(
+            enqueued
+              ? `${city.name}: lista budowy → ${enqueued.nazwa}`
+              : `${city.name}: tryb lista (${lista.length} pozycji)`,
+            2800,
+          );
+          updateHud();
+          refreshCityPanelIfOpen();
+        },
+        onBudowaListaSaveSlot: (cityId: string, slot: BudowaListaSlot) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          budowaListaSzablony[slot] = [...(city.budowaLista ?? [])];
+          showHintMessage(`${city.name}: zapisano listę jako szablon ${slot}`, 2400);
+          refreshCityPanelIfOpen();
+        },
+        onBudowaListaLoadSlot: (cityId: string, slot: BudowaListaSlot) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.budowaLista = [...budowaListaSzablony[slot]];
+          city.budowaTryb = 'lista';
+          delete city.budowaListaUkonczonaHintShown;
+          const enqueued = tryAutoEnqueueBuild(cityId);
+          showHintMessage(
+            enqueued
+              ? `${city.name}: wgrano listę ${slot} → ${enqueued.nazwa}`
+              : `${city.name}: wgrano listę ${slot}`,
+            2800,
+          );
+          updateHud();
+          refreshCityPanelIfOpen();
+        },
+        onBudowaListaLoadAllCities: (cityId: string, lista: string[]) => {
+          const src = cities.find(c => c.id === cityId);
+          if (!src) return;
+          const msg = `Wgraj Listę budowy do wszystkich twoich miast?\n\nNadpisze tryb Lista i kolejność budynków we wszystkich miastach (${lista.length} pozycji).`;
+          if (!window.confirm(msg)) return;
+          for (const c of cities.filter(c => c.ownerId === 0)) {
+            c.budowaLista = [...lista];
+            c.budowaTryb = 'lista';
+            delete c.budowaListaUkonczonaHintShown;
+            tryAutoEnqueueBuild(c.id);
+          }
+          showHintMessage(`Lista wgrana do wszystkich miast (${lista.length} pozycji)`, 3200);
+          updateHud();
           refreshCityPanelIfOpen();
         },
         getUnitsAt: (q: number, r: number) => {
@@ -5054,6 +5175,7 @@ async function boot(): Promise<void> {
 
     initEmpireFoodStates();
     initOwnerDefaultPodzialHandlu();
+    initUlepszeniaEmpireByOwner();
 
     // -----------------------------------------------------------------------
     // AI / Barbarians / Victory state
@@ -5330,7 +5452,7 @@ async function boot(): Promise<void> {
     /** Auto-budowa: dodaj następny budynek gdy kolejka pusta i tryb auto. */
     function tryAutoEnqueueBuild(cityId: string) {
       const city = cities.find(c => c.id === cityId);
-      if (!city || (city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'auto') return null;
+      if (!city || !isAutoBudowaTryb(city.budowaTryb)) return null;
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       if (frontItem(prod0) !== null) return null;
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
@@ -5345,21 +5467,26 @@ async function boot(): Promise<void> {
           civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
           placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
           hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
-          // Parytet z ręczną budową gracza (Maciej 2026-07-24): bramka B-SUROW-BUD dostaje te same
-          // wejścia — aktywne źródła + budynki imperium + ZAPAS puli państwa (bramka spełniona zapasem).
           empireActiveResourceLabels: empireActiveResourceLabelsForOwner(city.ownerId),
           empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
           empireResourceStock: citySurowceSumForOwner(city.ownerId),
-          // TEMAT 8 Q2 (2026-07-24): parytet — Port/Port wielki dostają tu tę samą bramkę
-          // wybrzeże/rzeka co ręczna budowa gracza (cityPanel.ts) i AI (main.ts cmd 'build').
           cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
-          // ADMIN-STOLICA (2026-07-25): parytet — ta sama bramka stolica/region (Pałac vs
-          // Dom Starszyzny/Dwór Zarządcy/Pretorium) co ręczna budowa i AI, jedno źródło
-          // prawdy capitalCityIdForOwner (nie duplikat heurystyki turn-economy.ts).
           isCapital: capitalCityIdForOwner(city.ownerId) === city.id,
         },
       });
-      if (!item) return null;
+      if (!item) {
+        if (city.budowaTryb === 'lista') {
+          const builtIds = cityBuilt.get(cityId) ?? [];
+          if (
+            isBudowaListaUkonczonaForCity(city, data, builtIds)
+            && !city.budowaListaUkonczonaHintShown
+          ) {
+            city.budowaListaUkonczonaHintShown = true;
+            showHintMessage(`Lista ukończona — ${city.name}`, 3200);
+          }
+        }
+        return null;
+      }
       // TEMAT #6: pickAutoBuildItem juz odfiltrowal budynki bez pokrycia w puli PANSTWA —
       // tu tylko pobieramy koszt (start budowy), symetrycznie z addItem (ui/cityPanel.ts).
       // SUROW-CIV-01: pobor rozlozony po miastach ownera (deductOwnerStockCost), nie tylko
@@ -5837,6 +5964,7 @@ async function boot(): Promise<void> {
 
       initEmpireFoodStates();
       initOwnerDefaultPodzialHandlu();
+      initUlepszeniaEmpireByOwner();
       migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, undefined);
       console.log(
         '[ClusterStart] typ=' + playerCivId +
@@ -7278,6 +7406,11 @@ async function boot(): Promise<void> {
     // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)
     /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
     let playerPracaPool: number = 0;
+    let budowaListaSzablony: BudowaListaSzablony = {
+      A: [...EMPTY_BUDOWA_LISTA_SZABLONY.A],
+      B: [...EMPTY_BUDOWA_LISTA_SZABLONY.B],
+      C: [...EMPTY_BUDOWA_LISTA_SZABLONY.C],
+    };
     let _lastPraca: number = 0;
     /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z playerPracaPool za utrzymanie
      *  ulepszeń surowcowych (civ-wide) w ostatniej turze -- wyłącznie do wyświetlenia
@@ -9888,7 +10021,7 @@ async function boot(): Promise<void> {
 
     /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta) — tylko realnie dostępne teraz. */
     function cityHasActionableProduction(city: City): boolean {
-      if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'auto') return false;
+      if (isAutoBudowaTryb(city.budowaTryb)) return false;
       const ctx = productionAvailabilityCtxForCity(city);
       if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;
       if (cityHasAffordableUnitRecruitment(city, ctx)) return true;
@@ -14421,34 +14554,90 @@ async function boot(): Promise<void> {
             ulepszeniaHudCityId = cityId;
             refreshD1bHud();
           },
-          getUlepszeniaState: (cityId: string) => {
-            const city = cities.find(c => c.id === cityId);
-            if (!city) return null;
-            ensureCitySaveDefaults(city);
-            return {
-              focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
-              tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
-              onlyWorked: city.ulepszeniaOnlyWorked ?? false,
-              perTurn: clampUlepszeniaPerTurn(city.ulepszeniaPerTurn ?? DEFAULT_ULEPSZENIA_PER_TURN),
-            };
+          getUlepszeniaEmpireState: () => {
+            const pol = ulepszeniaEmpireForOwner(0);
+            return { ...pol };
           },
-          onUlepszeniaFocusChange: (cityId: string, focus: UlepszeniaFocus) => {
-            const city = cities.find(c => c.id === cityId);
-            if (!city) return;
-            city.ulepszeniaFocus = focus;
-            city.ulepszeniaTryb = 'auto';
-            const labels: Record<UlepszeniaFocus, string> = {
-              zywnosc: 'Żywność',
-              surowce: 'Surowce',
-              infrastruktura: 'Infrastruktura',
-              zrownowazone: 'Zrównoważone',
-            };
-            showHintMessage(`${city.name}: auto ulepszenia · ${labels[focus] ?? focus}`, 3200);
+          onUlepszeniaEmpireFocusChange: (focus: UlepszeniaFocus) => {
+            const pol = ulepszeniaEmpireForOwner(0);
+            pol.focus = focus;
+            pol.tryb = 'auto';
+            ulepszeniaEmpireByOwner.set(0, pol);
+            showHintMessage(`Państwo: auto ulepszenia · ${focus}`, 2800);
             refreshD1bHud();
           },
-          onUlepszeniaTrybChange: (cityId: string, tryb: UlepszeniaTryb) => {
+          onUlepszeniaEmpireTrybChange: (tryb: UlepszeniaTryb) => {
+            const pol = ulepszeniaEmpireForOwner(0);
+            pol.tryb = tryb;
+            ulepszeniaEmpireByOwner.set(0, pol);
+            showHintMessage(
+              tryb === 'reczny' ? 'Państwo: ręczne ulepszenia terenu' : 'Państwo: auto ulepszenia terenu',
+              2800,
+            );
+            refreshD1bHud();
+          },
+          onUlepszeniaEmpireOnlyWorkedChange: (onlyWorked: boolean) => {
+            const pol = ulepszeniaEmpireForOwner(0);
+            pol.onlyWorked = onlyWorked;
+            pol.tryb = 'auto';
+            ulepszeniaEmpireByOwner.set(0, pol);
+            showHintMessage(
+              onlyWorked
+                ? 'Państwo: auto ulepszenia tylko na polach z 👤'
+                : 'Państwo: auto ulepszenia w całym terytorium',
+              2800,
+            );
+            refreshD1bHud();
+          },
+          onUlepszeniaEmpirePerTurnChange: (perTurn: UlepszeniaPerTurn) => {
+            const pol = ulepszeniaEmpireForOwner(0);
+            pol.perTurn = clampUlepszeniaPerTurn(perTurn);
+            pol.tryb = 'auto';
+            ulepszeniaEmpireByOwner.set(0, pol);
+            showHintMessage(`Państwo: auto ulepszenia · ${pol.perTurn}/turę`, 2800);
+            refreshD1bHud();
+          },
+          getUlepszeniaCityOverride: (cityId: string) => {
+            const city = cities.find(c => c.id === cityId);
+            return city?.ulepszeniaOverride === true;
+          },
+          onUlepszeniaCityOverrideChange: (cityId: string, override: boolean) => {
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
+            city.ulepszeniaOverride = override;
+            if (override) {
+              const pol = ulepszeniaEmpireForOwner(0);
+              city.ulepszeniaFocus = city.ulepszeniaFocus ?? pol.focus;
+              city.ulepszeniaTryb = city.ulepszeniaTryb ?? pol.tryb;
+              city.ulepszeniaOnlyWorked = city.ulepszeniaOnlyWorked ?? pol.onlyWorked;
+              city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(city.ulepszeniaPerTurn ?? pol.perTurn);
+            }
+            showHintMessage(
+              override
+                ? `${city.name}: własne ustawienia ulepszeń`
+                : `${city.name}: polityka państwa`,
+              2800,
+            );
+            refreshD1bHud();
+          },
+          getUlepszeniaEffectiveState: (cityId: string) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return null;
+            return effectiveUlepszeniaForCity(city);
+          },
+          onUlepszeniaCityFocusChange: (cityId: string, focus: UlepszeniaFocus) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return;
+            city.ulepszeniaOverride = true;
+            city.ulepszeniaFocus = focus;
+            city.ulepszeniaTryb = 'auto';
+            showHintMessage(`${city.name}: auto ulepszenia · ${focus}`, 3200);
+            refreshD1bHud();
+          },
+          onUlepszeniaCityTrybChange: (cityId: string, tryb: UlepszeniaTryb) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return;
+            city.ulepszeniaOverride = true;
             city.ulepszeniaTryb = tryb;
             showHintMessage(
               tryb === 'reczny'
@@ -14458,10 +14647,12 @@ async function boot(): Promise<void> {
             );
             refreshD1bHud();
           },
-          onUlepszeniaOnlyWorkedChange: (cityId: string, onlyWorked: boolean) => {
+          onUlepszeniaCityOnlyWorkedChange: (cityId: string, onlyWorked: boolean) => {
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
+            city.ulepszeniaOverride = true;
             city.ulepszeniaOnlyWorked = onlyWorked;
+            city.ulepszeniaTryb = 'auto';
             showHintMessage(
               onlyWorked
                 ? `${city.name}: auto ulepszenia tylko na polach z 👤`
@@ -14470,15 +14661,13 @@ async function boot(): Promise<void> {
             );
             refreshD1bHud();
           },
-          onUlepszeniaPerTurnChange: (cityId: string, perTurn: UlepszeniaPerTurn) => {
+          onUlepszeniaCityPerTurnChange: (cityId: string, perTurn: UlepszeniaPerTurn) => {
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
+            city.ulepszeniaOverride = true;
             city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(perTurn);
             city.ulepszeniaTryb = 'auto';
-            showHintMessage(
-              `${city.name}: auto ulepszenia · ${city.ulepszeniaPerTurn}/turę`,
-              2800,
-            );
+            showHintMessage(`${city.name}: auto ulepszenia · ${city.ulepszeniaPerTurn}/turę`, 2800);
             refreshD1bHud();
           },
         },
@@ -18563,8 +18752,14 @@ async function boot(): Promise<void> {
           loadLandFraction: _lastNewGameParams?.landFractionPercent ?? 30,
           empireFoodStates: Array.from(empireFoodStates.entries()),
           ownerDefaultPodzialHandlu: Array.from(ownerDefaultPodzialHandlu.entries()),
+          ulepszeniaEmpireByOwner: Array.from(ulepszeniaEmpireByOwner.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
+          budowaListaSzablony: {
+            A: [...budowaListaSzablony.A],
+            B: [...budowaListaSzablony.B],
+            C: [...budowaListaSzablony.C],
+          },
           siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
           siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
           siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
@@ -19755,7 +19950,7 @@ async function boot(): Promise<void> {
                 } catch (eAM) {
                   console.error(`[AutoManage] Blad dla miasta ${city.name}:`, eAM);
                 }
-              } else if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'auto') {
+              } else if (isAutoBudowaTryb(city.budowaTryb)) {
                 // Auto-budowa bez globalnego Zarządcy (⚙)
                 const enq = tryAutoEnqueueBuild(cid);
                 if (enq) prod0 = cityProd.get(cid) ?? prod0;
@@ -19806,7 +20001,7 @@ async function boot(): Promise<void> {
                 const applied = applyProductionCompleted(city, cid, completed, prodPo);
                 prodFinal = applied.prod;
                 cityProd.set(cid, prodFinal);
-                if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'auto' && frontItem(prodFinal) === null) {
+                if (isAutoBudowaTryb(city.budowaTryb) && frontItem(prodFinal) === null) {
                   tryAutoEnqueueBuild(cid);
                   prodFinal = cityProd.get(cid) ?? prodFinal;
                 }
@@ -19934,13 +20129,15 @@ async function boot(): Promise<void> {
             // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
             // Q4=A: commit od razu na EOT (bez pendingImprovementsTurn / cofnięcia).
             try {
-              const autoImpCities = cities.filter(
-                c => c.ownerId === 0 && (c.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB) === 'auto',
-              );
-              if (autoImpCities.length > 0 && playerPracaPool > 0) {
+              const autoImpCities = cities.filter(c => {
+                if (c.ownerId !== 0) return false;
+                return effectiveUlepszeniaForCity(c).tryb === 'auto';
+              });
+              if (autoImpCities.length > 0 && playerPracaPool > AUTO_ULEPSZENIA_PRACA_RESERVE) {
                 const territoryNodesAuto = buildAllTerritoryNodes();
                 const playerCivArch = civTypeForOwner(0);
                 const workingPlaced = new Map(placedImprovements);
+                const empirePol = ulepszeniaEmpireForOwner(0);
                 const picks = pickAutoImprovements({
                   cities: autoImpCities,
                   ownerId: 0,
@@ -19949,13 +20146,13 @@ async function boot(): Promise<void> {
                   placedImprovements: workingPlaced,
                   pracaAvailable: playerPracaPool,
                   unlockedTechs: unlockedTechSetForOwner(0),
-                  pracaSurplusThreshold: 0,
-                  skipWyrab: true, // R-AUTO-ULEPSZENIA-Q3=B
+                  pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
+                  skipWyrab: true,
                   civArchetype: playerCivArch,
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
-                  getMaxPerCity: c => clampUlepszeniaPerTurn(
-                    (c as City).ulepszeniaPerTurn ?? DEFAULT_ULEPSZENIA_PER_TURN,
-                  ),
+                  getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
+                  getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
+                  getMaxPerCity: c => effectiveUlepszeniaForCity(c as City).perTurn,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(city as City, map, territoryNodesAuto);
                     return new Set(coords.map(({ q, r }) => `${q},${r}`));
@@ -19966,6 +20163,7 @@ async function boot(): Promise<void> {
                   if (!isImprovementTechUnlocked(pick.key, player.zbadane)) continue;
                   if (!isImprovementAllowedForCiv(pick.key, playerCivArch)) continue;
                   if (playerPracaPool < pick.kosztPraca) continue;
+                  if (playerPracaPool - pick.kosztPraca < AUTO_ULEPSZENIA_PRACA_RESERVE) continue;
                   const hexKey = keyOf(pick.q, pick.r);
                   const hexForImprovement = map.hexes[hexKey];
                   if (!hexForImprovement) continue;
@@ -22263,6 +22461,11 @@ async function boot(): Promise<void> {
       playerEverOwnedCity = false;
       turn = 1;
       playerPracaPool = 0;
+      budowaListaSzablony = {
+        A: [...EMPTY_BUDOWA_LISTA_SZABLONY.A],
+        B: [...EMPTY_BUDOWA_LISTA_SZABLONY.B],
+        C: [...EMPTY_BUDOWA_LISTA_SZABLONY.C],
+      };
       _lastPraca = 0;
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;
@@ -23461,12 +23664,40 @@ async function boot(): Promise<void> {
       ownerDefaultPodzialHandlu.clear();
       const savedHandel = saved.meta?.ownerDefaultPodzialHandlu as Array<[number, CityPodzialHandlu]> | undefined;
       migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, savedHandel);
+      ulepszeniaEmpireByOwner.clear();
+      const savedUlepszenia = saved.meta?.ulepszeniaEmpireByOwner as Array<[number, UlepszeniaEmpirePolicy]> | undefined;
+      if (savedUlepszenia?.length) {
+        for (const [oid, pol] of savedUlepszenia) {
+          ulepszeniaEmpireByOwner.set(oid, {
+            focus: pol.focus ?? DEFAULT_ULEPSZENIA_FOCUS,
+            tryb: pol.tryb ?? DEFAULT_ULEPSZENIA_TRYB,
+            onlyWorked: pol.onlyWorked ?? false,
+            perTurn: clampUlepszeniaPerTurn(pol.perTurn),
+          });
+        }
+      } else {
+        initUlepszeniaEmpireByOwner();
+      }
       restoreMennicaZlotoGrace(
         mennicaZlotoGraceState,
         saved.meta?.mennicaZlotoGrace as MennicaZlotoGraceSave | undefined,
       );
       const savedPracaPool = saved.meta?.playerPracaPool as number | undefined;
       playerPracaPool = typeof savedPracaPool === 'number' ? savedPracaPool : 0;
+      const savedListaTpl = saved.meta?.budowaListaSzablony as BudowaListaSzablony | undefined;
+      if (savedListaTpl) {
+        budowaListaSzablony = {
+          A: [...(savedListaTpl.A ?? [])],
+          B: [...(savedListaTpl.B ?? [])],
+          C: [...(savedListaTpl.C ?? [])],
+        };
+      } else {
+        budowaListaSzablony = {
+          A: [...EMPTY_BUDOWA_LISTA_SZABLONY.A],
+          B: [...EMPTY_BUDOWA_LISTA_SZABLONY.B],
+          C: [...EMPTY_BUDOWA_LISTA_SZABLONY.C],
+        };
+      }
       const playerCityCountOnLoad = cities.filter(c => c.ownerId === 0).length;
       const maxReasonablePracaPool = Math.max(50, playerCityCountOnLoad * 100);
       if (playerPracaPool > maxReasonablePracaPool) {

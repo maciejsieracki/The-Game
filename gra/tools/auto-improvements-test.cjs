@@ -25,6 +25,7 @@ const ENTRY_TS = `
 export {
   pickAutoImprovements,
   prioritiesForUlepszeniaFocus,
+  AUTO_ULEPSZENIA_PRACA_RESERVE,
 } from ${JSON.stringify(SRC + '/game/auto-improvements')};
 `;
 
@@ -46,7 +47,7 @@ try {
   process.exit(1);
 }
 
-const { pickAutoImprovements } = require(BUNDLE_FILE);
+const { pickAutoImprovements, AUTO_ULEPSZENIA_PRACA_RESERVE } = require(BUNDLE_FILE);
 
 let passed = 0;
 let failed = 0;
@@ -203,6 +204,21 @@ console.log('8. getMaxPerCity=3');
   opts.pracaAvailable = 300;
   const picks = pickAutoImprovements(opts);
   assert(picks.length === 3, `getMaxPerCity=3 → 3 picki (got ${picks.length})`);
+}
+
+// 9. rezerwa Pracy — nie zjada całej puli
+console.log('9. rezerwa Pracy ' + AUTO_ULEPSZENIA_PRACA_RESERVE);
+{
+  const map = makeFlatMap(30, 30);
+  const city = makeCity('c9', 0, 15, 15, 5, { ulepszeniaFocus: 'zywnosc' });
+  const opts = baseOpts(city, map);
+  opts.pracaAvailable = AUTO_ULEPSZENIA_PRACA_RESERVE + 5;
+  opts.pracaSurplusThreshold = AUTO_ULEPSZENIA_PRACA_RESERVE;
+  const picks = pickAutoImprovements(opts);
+  eq(picks.length, 0, 'pula = rezerwa+5, koszt farmy > 5 -> 0 picków');
+  opts.pracaAvailable = AUTO_ULEPSZENIA_PRACA_RESERVE + 25;
+  const picks2 = pickAutoImprovements(opts);
+  eq(picks2.length, 1, 'pula wystarcza z rezerwą -> 1 pick');
 }
 
 console.log(`\nauto-improvements-test: ${passed} passed, ${failed} failed`);

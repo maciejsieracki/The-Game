@@ -43,8 +43,19 @@ export type BudowaFocus =
   | 'prawo'
   | 'produkcja';
 
-/** auto = AI dobiera budynki wg budowaFocus; reczny = gracz wybiera ręcznie. */
-export type BudowaTryb = 'auto' | 'reczny';
+/** priorytet = AI wg budowaPriorytetTypow; lista = kolejność budowaLista; reczny = ręczna kolejka. */
+export type BudowaTryb = 'reczny' | 'priorytet' | 'lista';
+
+/** Sloty szablonów listy budowy (gracz — zapis w save). */
+export type BudowaListaSlot = 'A' | 'B' | 'C';
+export type BudowaListaSzablony = Record<BudowaListaSlot, string[]>;
+export const EMPTY_BUDOWA_LISTA_SZABLONY: BudowaListaSzablony = { A: [], B: [], C: [] };
+
+/** Tryb auto-enqueue: Priorytet lub Lista (nie Ręczny). */
+export function isAutoBudowaTryb(t: BudowaTryb | undefined): boolean {
+  const v = t ?? DEFAULT_BUDOWA_TRYB;
+  return v === 'priorytet' || v === 'lista';
+}
 
 export const DEFAULT_BUDOWA_FOCUS: BudowaFocus = 'zrownowazone';
 export const DEFAULT_BUDOWA_TRYB: BudowaTryb = 'reczny';
@@ -66,6 +77,63 @@ export function clampUlepszeniaPerTurn(n: number | undefined | null): Ulepszenia
   if (n === 2 || n === 3) return n;
   return 1;
 }
+
+/** Domyślna polityka auto-ulepszeń imperium (R-AUTO-V2-Q3=C). */
+export interface UlepszeniaEmpirePolicy {
+  focus: UlepszeniaFocus;
+  tryb: UlepszeniaTryb;
+  onlyWorked: boolean;
+  perTurn: UlepszeniaPerTurn;
+}
+
+export function freshUlepszeniaEmpirePolicy(): UlepszeniaEmpirePolicy {
+  return {
+    focus: DEFAULT_ULEPSZENIA_FOCUS,
+    tryb: DEFAULT_ULEPSZENIA_TRYB,
+    onlyWorked: false,
+    perTurn: DEFAULT_ULEPSZENIA_PER_TURN,
+  };
+}
+
+/** Efektywne ustawienia auto-ulepszeń miasta (empire lub override lokalny). */
+export interface EffectiveUlepszeniaSettings {
+  focus: UlepszeniaFocus;
+  tryb: UlepszeniaTryb;
+  onlyWorked: boolean;
+  perTurn: UlepszeniaPerTurn;
+  override: boolean;
+}
+
+export function resolveEffectiveUlepszenia(
+  city: City,
+  empire: UlepszeniaEmpirePolicy,
+): EffectiveUlepszeniaSettings {
+  if (city.ulepszeniaOverride === true) {
+    return {
+      focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
+      tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
+      onlyWorked: city.ulepszeniaOnlyWorked ?? false,
+      perTurn: clampUlepszeniaPerTurn(city.ulepszeniaPerTurn),
+      override: true,
+    };
+  }
+  return {
+    focus: empire.focus,
+    tryb: empire.tryb,
+    onlyWorked: empire.onlyWorked,
+    perTurn: empire.perTurn,
+    override: false,
+  };
+}
+
+/** Domyślna kolejność typów auto-budowy (bez zrownowazone — catch-all na końcu listy gracza). */
+export const DEFAULT_BUDOWA_PRIORYTET_TYPOW: readonly BudowaFocus[] = [
+  'wzrost',
+  'produkcja',
+  'wojsko',
+  'kultura',
+  'prawo',
+];
 
 /**
  * Domyslny podzial Daniny netto nowego miasta — zgodny z econ-params.json
@@ -169,11 +237,26 @@ export function ensureCitySaveDefaults(city: City): void {
   if (!city.okolicaFocus) city.okolicaFocus = DEFAULT_OKOLICA_FOCUS;
   if (!city.okolicaTryb) city.okolicaTryb = DEFAULT_OKOLICA_TRYB;
   if (!city.budowaFocus) city.budowaFocus = DEFAULT_BUDOWA_FOCUS;
-  if (!city.budowaTryb) city.budowaTryb = DEFAULT_BUDOWA_TRYB;
-  if (!city.ulepszeniaFocus) city.ulepszeniaFocus = DEFAULT_ULEPSZENIA_FOCUS;
-  if (!city.ulepszeniaTryb) city.ulepszeniaTryb = DEFAULT_ULEPSZENIA_TRYB;
-  if (city.ulepszeniaOnlyWorked == null) city.ulepszeniaOnlyWorked = false;
-  city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(city.ulepszeniaPerTurn);
+  // Migracja: legacy budowaTryb 'auto' → 'priorytet' + [budowaFocus]
+  const rawTryb = city.budowaTryb as BudowaTryb | 'auto' | undefined;
+  if (rawTryb === 'auto') {
+    city.budowaTryb = 'priorytet';
+    if (!city.budowaPriorytetTypow?.length) {
+      city.budowaPriorytetTypow = [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS];
+    }
+  } else if (!city.budowaTryb) {
+    city.budowaTryb = DEFAULT_BUDOWA_TRYB;
+  }
+  if (city.budowaTryb === 'priorytet' && !city.budowaPriorytetTypow?.length) {
+    city.budowaPriorytetTypow = [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS];
+  }
+  if (!city.budowaLista) city.budowaLista = [];
+  if (city.ulepszeniaOverride === true) {
+    if (!city.ulepszeniaFocus) city.ulepszeniaFocus = DEFAULT_ULEPSZENIA_FOCUS;
+    if (!city.ulepszeniaTryb) city.ulepszeniaTryb = DEFAULT_ULEPSZENIA_TRYB;
+    if (city.ulepszeniaOnlyWorked == null) city.ulepszeniaOnlyWorked = false;
+    city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(city.ulepszeniaPerTurn);
+  }
   const buf = readCityFoodBuffer(city.magazynZywnosci);
   if (city.magazynZywnosci !== buf) city.magazynZywnosci = buf;
   ensureCityRationDefaults(city);
@@ -282,17 +365,25 @@ export interface City {
   okolicaTryb?: OkolicaTryb;
   /** Ręczne przypisanie: "q,r" → liczba 👤 (0|1). */
   okolicaReczne?: Record<string, number>;
-  /** Profil auto-kolejki budynków (panel Produkcja). */
+  /** Profil auto-kolejki budynków (panel Produkcja) — legacy / pierwszy typ priorytetu. */
   budowaFocus?: BudowaFocus;
-  /** auto | reczny — ręczny wybór budynków w kolejce. */
+  /** priorytet | reczny — ręczny wybór budynków w kolejce. */
   budowaTryb?: BudowaTryb;
-  /** Profil auto-ulepszeń terenu (żywność / surowce / infra / zrównoważone). */
+  /** Kolejność typów auto-budowy (wyczerp #1 zanim #2). */
+  budowaPriorytetTypow?: BudowaFocus[];
+  /** ID budynków w kolejności auto-budowy (tryb lista). */
+  budowaLista?: string[];
+  /** R-AUTO-V2-Q6=A: toast „Lista ukończona” już pokazany dla tego miasta. */
+  budowaListaUkonczonaHintShown?: boolean;
+  /** R-AUTO-V2-Q3=C: true = własne pola ulepszenia*; false = polityka imperium. */
+  ulepszeniaOverride?: boolean;
+  /** Profil auto-ulepszeń terenu (żywność / surowce / infra / zrównoważone) — gdy override. */
   ulepszeniaFocus?: UlepszeniaFocus;
-  /** auto | reczny — auto na końcu tury z puli Pracy państwa. */
+  /** auto | reczny — auto na końcu tury z puli Pracy państwa — gdy override. */
   ulepszeniaTryb?: UlepszeniaTryb;
-  /** Gdy true — auto tylko na heksach z 👤 (workedTiles); domyślnie całe terytorium. */
+  /** Gdy true — auto tylko na heksach z 👤 (workedTiles) — gdy override. */
   ulepszeniaOnlyWorked?: boolean;
-  /** R-AUTO-ULEPSZENIA-Q2=B: ile ulepszeń auto / turę (1–3). */
+  /** R-AUTO-ULEPSZENIA-Q2=B: ile ulepszeń auto / turę (1–3) — gdy override. */
   ulepszeniaPerTurn?: UlepszeniaPerTurn;
   /** B2-Q12=C: tury grace przed rebelią AI (null = brak). */
   revoltGraceRemaining?: number | null;

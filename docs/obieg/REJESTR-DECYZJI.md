@@ -239,3 +239,7 @@ Po wdrożeniu ten sam wiersz przechodzi w górę statusów aż do ✅ (Master). 
 
 ---
 🔗 Historia: `docs/archiwum/` · Pełna treść decyzji: `docs/decyzje/<ID>.md`
+
+| **R-AUTO-BUDOWA-LISTA-Q2** | 2026-08-03 | **A** — Lista: pomiń zablokowane i wróć później (v2) | B | 🟡 **ZAPISANA** | v2 Lista | R-AUTO-BUDOWA-LISTA |
+| **R-AUTO-BUDOWA-LISTA-Q3** | 2026-08-03 | **A** — v1 = tylko Priorytet typów; Lista nazwana później | B | 🟢 **WDROŻONE (kod)** | cities.ts · auto-manage.ts · cityPanel · main.ts | R-AUTO-BUDOWA-LISTA |
+| **R-AUTO-BUDOWA-LISTA-Q1** | 2026-08-03 | **A** doprec. | B | 🟡 **ZAPISANA** | — | |

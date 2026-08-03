@@ -8,7 +8,7 @@ import type { ImprovementKey } from '../render/improvements';
 import { HUD_EDGE_PX } from './hudLayout';
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
-import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPerTurn } from '../game/cities';
+import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPerTurn, UlepszeniaEmpirePolicy } from '../game/cities';
 
 export interface BuildTypeInfo {
   key: ImprovementKey;
@@ -60,20 +60,29 @@ export interface BuildModeHudConfig {
   getFoundCityLockHint?: () => string | null;
   /** R-PIERWSZE-MIASTO: tylko przycisk Załóż miasto (bez ulepszeń/cudów). */
   isFoundCityOnly?: () => boolean;
-  /** Auto-ulepszenia terenu — per miasto (R-AUTO-ULEPSZENIA-Q5). */
+  /** Auto-ulepszenia terenu — polityka państwa + wyjątek per miasto (R-AUTO-V2-Q3=C). */
   listPlayerCities?: () => { id: string; name: string }[];
   getUlepszeniaCityId?: () => string | null;
   onUlepszeniaCityIdChange?: (cityId: string) => void;
-  getUlepszeniaState?: (cityId: string) => {
+  getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
+  onUlepszeniaEmpireFocusChange?: (focus: UlepszeniaFocus) => void;
+  onUlepszeniaEmpireTrybChange?: (tryb: UlepszeniaTryb) => void;
+  onUlepszeniaEmpireOnlyWorkedChange?: (onlyWorked: boolean) => void;
+  onUlepszeniaEmpirePerTurnChange?: (perTurn: UlepszeniaPerTurn) => void;
+  getUlepszeniaCityOverride?: (cityId: string) => boolean;
+  onUlepszeniaCityOverrideChange?: (cityId: string, override: boolean) => void;
+  /** Efektywne ustawienia wybranego miasta (empire lub override). */
+  getUlepszeniaEffectiveState?: (cityId: string) => {
     focus: UlepszeniaFocus;
     tryb: UlepszeniaTryb;
     onlyWorked: boolean;
     perTurn: UlepszeniaPerTurn;
+    override: boolean;
   } | null;
-  onUlepszeniaFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
-  onUlepszeniaTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
-  onUlepszeniaOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
-  onUlepszeniaPerTurnChange?: (cityId: string, perTurn: UlepszeniaPerTurn) => void;
+  onUlepszeniaCityFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
+  onUlepszeniaCityTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
+  onUlepszeniaCityOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
+  onUlepszeniaCityPerTurnChange?: (cityId: string, perTurn: UlepszeniaPerTurn) => void;
 }
 
 export interface BuildModeHudApi {
@@ -158,12 +167,32 @@ function ensureStyles(): void {
 .civ-build-auto-row{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:#9a9070;flex-wrap:wrap;}
 .civ-build-auto-row label{display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
 .civ-build-auto-speed{display:inline-flex;align-items:center;gap:3px;}
-.civ-build-auto-speed button{min-width:1.6em;padding:2px 5px;}
+.civ-build-auto-city-wrap{margin-top:4px;}
+.civ-build-auto-eff{font-size:9px;color:#8a8060;line-height:1.35;margin:4px 0 2px;}
+.civ-build-auto-override{font-size:10px;color:#9a9070;margin:4px 0;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
   s.textContent = css;
   document.head.appendChild(s);
+}
+
+function renderUlepszeniaProfileRow(
+  focus: UlepszeniaFocus,
+  tryb: UlepszeniaTryb,
+  scope: 'empire' | 'city',
+): string {
+  let html = '<div class="civ-build-auto-profiles">';
+  for (const id of ULEPSZENIA_PROFILES) {
+    const on = tryb !== 'reczny' && id === focus ? ' on' : '';
+    html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-${scope}-focus="${id}"`
+      + ` title="${ULEPSZENIA_FOCUS_TITLES[id]}">${ULEPSZENIA_FOCUS_LABELS[id]}</button>`;
+  }
+  const recOn = tryb === 'reczny' ? ' on' : '';
+  html += `<button type="button" class="civ-build-auto-btn reczny${recOn}" data-ulepszenia-${scope}-reczny`
+    + ` title="Ręczny — buduj ulepszenia na mapie (🔨)">Ręczny</button>`;
+  html += '</div>';
+  return html;
 }
 
 /** Montuje banner + panel wyboru ulepszeń (D1B mockup G2). */
@@ -282,45 +311,76 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       }
       const playerCities = config.listPlayerCities?.() ?? [];
       const uCityId = config.getUlepszeniaCityId?.() ?? null;
-      const uState = uCityId ? config.getUlepszeniaState?.(uCityId) ?? null : null;
-      if (playerCities.length > 0 && uState) {
+      const empireState = config.getUlepszeniaEmpireState?.() ?? null;
+      const effState = uCityId ? config.getUlepszeniaEffectiveState?.(uCityId) ?? null : null;
+      const cityOverride = uCityId ? (config.getUlepszeniaCityOverride?.(uCityId) ?? false) : false;
+      if (playerCities.length > 0 && empireState) {
         html += '<div class="civ-build-auto">';
-        html += '<div class="lbl">Auto ulepszenia</div>';
+        html += '<div class="lbl">Polityka państwa — auto ulepszenia</div>';
+        html += renderUlepszeniaProfileRow(
+          empireState.focus,
+          empireState.tryb,
+          'empire',
+        );
+        if (empireState.tryb === 'auto') {
+          const chkE = empireState.onlyWorked ? ' checked' : '';
+          html += '<div class="civ-build-auto-row">';
+          html += `<label title="Buduj tylko na polach z obywatelami (👤)">`
+            + `<input type="checkbox" data-ulepszenia-empire-only-worked${chkE}> Tylko pola z obywatelami</label>`;
+          html += '</div>';
+          html += '<div class="civ-build-auto-row civ-build-auto-speed">';
+          html += '<span title="Ile ulepszeń auto stawia w mieście na turę">Na turę:</span>';
+          for (const n of [1, 2, 3] as const) {
+            const on = empireState.perTurn === n ? ' on' : '';
+            html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-empire-per-turn="${n}"`
+              + ` title="${n} ulepszenie/a na miasto na turę">${n}</button>`;
+          }
+          html += '</div>';
+        }
         if (playerCities.length > 1) {
+          html += '<div class="civ-build-auto-city-wrap">';
           html += '<select class="civ-build-auto-city" data-ulepszenia-city>';
           for (const c of playerCities) {
             const sel = c.id === uCityId ? ' selected' : '';
             html += `<option value="${c.id.replace(/"/g, '&quot;')}"${sel}>${c.name}</option>`;
           }
-          html += '</select>';
+          html += '</select></div>';
         } else if (playerCities.length === 1) {
           const sole = playerCities[0];
           if (sole) html += `<div class="civ-build-wonders-sub">${sole.name}</div>`;
         }
-        html += '<div class="civ-build-auto-profiles">';
-        for (const id of ULEPSZENIA_PROFILES) {
-          const on = uState.tryb !== 'reczny' && id === uState.focus ? ' on' : '';
-          html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-focus="${id}"`
-            + ` title="${ULEPSZENIA_FOCUS_TITLES[id]}">${ULEPSZENIA_FOCUS_LABELS[id]}</button>`;
+        if (effState) {
+          const effLabel = effState.tryb === 'reczny'
+            ? 'Ręczny'
+            : `${ULEPSZENIA_FOCUS_LABELS[effState.focus]} · ${effState.perTurn}/turę`
+              + (effState.onlyWorked ? ' · tylko 👤' : '');
+          html += `<div class="civ-build-auto-eff">Efekt w mieście: ${effLabel}`
+            + (effState.override ? ' (własne)' : ' (państwo)') + '</div>';
         }
-        const recOn = uState.tryb === 'reczny' ? ' on' : '';
-        html += `<button type="button" class="civ-build-auto-btn reczny${recOn}" data-ulepszenia-reczny`
-          + ` title="Ręczny — buduj ulepszenia na mapie (🔨)">Ręczny</button>`;
-        html += '</div>';
-        if (uState.tryb === 'auto') {
-          const chk = uState.onlyWorked ? ' checked' : '';
-          html += '<div class="civ-build-auto-row">';
-          html += `<label title="Buduj tylko na polach z obywatelami (👤)">`
-            + `<input type="checkbox" data-ulepszenia-only-worked${chk}> Tylko pola z obywatelami</label>`;
-          html += '</div>';
-          html += '<div class="civ-build-auto-row civ-build-auto-speed">';
-          html += '<span title="Ile ulepszeń auto stawia w tym mieście na jedną turę">Na turę:</span>';
-          for (const n of [1, 2, 3] as const) {
-            const on = uState.perTurn === n ? ' on' : '';
-            html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-per-turn="${n}"`
-              + ` title="${n} ulepszenie/a na miasto na turę">${n}</button>`;
+        const ovChk = cityOverride ? ' checked' : '';
+        html += `<div class="civ-build-auto-override">`
+          + `<label><input type="checkbox" data-ulepszenia-city-override${ovChk}> Własne ustawienia tego miasta</label>`
+          + '</div>';
+        if (cityOverride && uCityId && effState) {
+          html += '<div class="lbl">Ustawienia miasta</div>';
+          html += renderUlepszeniaProfileRow(
+            effState.focus,
+            effState.tryb,
+            'city',
+          );
+          if (effState.tryb === 'auto') {
+            const chkC = effState.onlyWorked ? ' checked' : '';
+            html += '<div class="civ-build-auto-row">';
+            html += `<label><input type="checkbox" data-ulepszenia-city-only-worked${chkC}> Tylko pola z obywatelami</label>`;
+            html += '</div>';
+            html += '<div class="civ-build-auto-row civ-build-auto-speed">';
+            html += '<span>Na turę:</span>';
+            for (const n of [1, 2, 3] as const) {
+              const on = effState.perTurn === n ? ' on' : '';
+              html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-city-per-turn="${n}">${n}</button>`;
+            }
+            html += '</div>';
           }
-          html += '</div>';
         }
         html += '</div>';
       }
@@ -404,42 +464,76 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       });
     });
 
+    el.querySelectorAll('[data-ulepszenia-empire-focus]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const focus = (btn as HTMLElement).getAttribute('data-ulepszenia-empire-focus') as UlepszeniaFocus;
+        if (focus) config.onUlepszeniaEmpireFocusChange?.(focus);
+        render();
+      });
+    });
+
+    el.querySelector('[data-ulepszenia-empire-reczny]')?.addEventListener('click', () => {
+      config.onUlepszeniaEmpireTrybChange?.('reczny');
+      render();
+    });
+
+    const empireOnlyWorked = el.querySelector('[data-ulepszenia-empire-only-worked]') as HTMLInputElement | null;
+    empireOnlyWorked?.addEventListener('change', () => {
+      config.onUlepszeniaEmpireOnlyWorkedChange?.(empireOnlyWorked.checked);
+      render();
+    });
+
+    el.querySelectorAll('[data-ulepszenia-empire-per-turn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const n = Number((btn as HTMLElement).getAttribute('data-ulepszenia-empire-per-turn')) as UlepszeniaPerTurn;
+        if (n === 1 || n === 2 || n === 3) config.onUlepszeniaEmpirePerTurnChange?.(n);
+        render();
+      });
+    });
+
+    el.querySelectorAll('[data-ulepszenia-city-focus]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cityId = config.getUlepszeniaCityId?.();
+        const focus = (btn as HTMLElement).getAttribute('data-ulepszenia-city-focus') as UlepszeniaFocus;
+        if (cityId && focus) config.onUlepszeniaCityFocusChange?.(cityId, focus);
+        render();
+      });
+    });
+
+    el.querySelector('[data-ulepszenia-city-reczny]')?.addEventListener('click', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (cityId) config.onUlepszeniaCityTrybChange?.(cityId, 'reczny');
+      render();
+    });
+
+    const cityOnlyWorked = el.querySelector('[data-ulepszenia-city-only-worked]') as HTMLInputElement | null;
+    cityOnlyWorked?.addEventListener('change', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (cityId) config.onUlepszeniaCityOnlyWorkedChange?.(cityId, cityOnlyWorked.checked);
+      render();
+    });
+
+    el.querySelectorAll('[data-ulepszenia-city-per-turn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cityId = config.getUlepszeniaCityId?.();
+        const n = Number((btn as HTMLElement).getAttribute('data-ulepszenia-city-per-turn')) as UlepszeniaPerTurn;
+        if (cityId && (n === 1 || n === 2 || n === 3)) config.onUlepszeniaCityPerTurnChange?.(cityId, n);
+        render();
+      });
+    });
+
+    const overrideChk = el.querySelector('[data-ulepszenia-city-override]') as HTMLInputElement | null;
+    overrideChk?.addEventListener('change', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (cityId) config.onUlepszeniaCityOverrideChange?.(cityId, overrideChk.checked);
+      render();
+    });
+
     const citySel = el.querySelector('[data-ulepszenia-city]') as HTMLSelectElement | null;
     citySel?.addEventListener('change', () => {
       const id = citySel.value;
       if (id) config.onUlepszeniaCityIdChange?.(id);
       render();
-    });
-
-    el.querySelectorAll('[data-ulepszenia-focus]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const focus = (btn as HTMLElement).getAttribute('data-ulepszenia-focus') as UlepszeniaFocus;
-        const cityId = config.getUlepszeniaCityId?.();
-        if (cityId && focus) config.onUlepszeniaFocusChange?.(cityId, focus);
-        render();
-      });
-    });
-
-    el.querySelector('[data-ulepszenia-reczny]')?.addEventListener('click', () => {
-      const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) config.onUlepszeniaTrybChange?.(cityId, 'reczny');
-      render();
-    });
-
-    const onlyWorkedChk = el.querySelector('[data-ulepszenia-only-worked]') as HTMLInputElement | null;
-    onlyWorkedChk?.addEventListener('change', () => {
-      const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) config.onUlepszeniaOnlyWorkedChange?.(cityId, onlyWorkedChk.checked);
-      render();
-    });
-
-    el.querySelectorAll('[data-ulepszenia-per-turn]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const cityId = config.getUlepszeniaCityId?.();
-        const n = Number((btn as HTMLElement).getAttribute('data-ulepszenia-per-turn')) as UlepszeniaPerTurn;
-        if (cityId && (n === 1 || n === 2 || n === 3)) config.onUlepszeniaPerTurnChange?.(cityId, n);
-        render();
-      });
     });
 
     syncOutsideDismiss();

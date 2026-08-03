@@ -9,7 +9,10 @@
  */
 
 import type { City, BudowaFocus } from './cities';
-import { DEFAULT_BUDOWA_FOCUS, DEFAULT_BUDOWA_TRYB } from './cities';
+import {
+  DEFAULT_BUDOWA_FOCUS,
+  DEFAULT_BUDOWA_TRYB,
+} from './cities';
 import type { GameMap } from '../types/map';
 import type { TerritoryNode } from '../map/territory';
 import {
@@ -117,6 +120,44 @@ function priorityForItem(
   return PRIORYTET_JEDNOSTKA;
 }
 
+/** Czy kategoria budynku pasuje do profilu auto-budowy. */
+export function buildingMatchesFocus(kategoria: string, focus: BudowaFocus): boolean {
+  if (focus === 'zrownowazone') return true;
+  const map = prioritiesForBudowaFocus(focus);
+  return kategoria in map;
+}
+
+function budowaPriorytetTypowFor(city: Readonly<City>): BudowaFocus[] {
+  const list = city.budowaPriorytetTypow;
+  if (list && list.length > 0) return [...list];
+  return [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS];
+}
+
+function bestCandidateForFocus(
+  candidates: ProductionItem[],
+  data: ProductionData,
+  focus: BudowaFocus,
+): ProductionItem | null {
+  const matching = candidates.filter(item => {
+    if (item.kind !== 'budynek') return false;
+    const def = data.buildings.find(b => b.id === item.id);
+    const kat = def?.kategoria ?? '';
+    return buildingMatchesFocus(kat, focus);
+  });
+  if (matching.length === 0) return null;
+
+  const scored = matching.map(item => ({
+    item,
+    prio: priorityForItem(item, data.buildings, focus),
+  }));
+  scored.sort((a, b) => {
+    if (a.prio !== b.prio) return a.prio - b.prio;
+    if (a.item.koszt !== b.item.koszt) return a.item.koszt - b.item.koszt;
+    return a.item.nazwa.localeCompare(b.item.nazwa);
+  });
+  return scored[0]?.item ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Context required by autoManageCity
 // ---------------------------------------------------------------------------
@@ -171,6 +212,57 @@ export interface AutoManageDecision {
  * Wybiera nastepny budynek do kolejki gdy front jest pusty.
  * PURE — nie mutuje argumentow.
  */
+/**
+ * Tryb Lista (Q2=A): skan od indeksu 0; pierwszy id z listy obecny w candidates → zwróć;
+ * zablokowane / nieaffordable pomijane (wracają gdy pojawią się w candidates).
+ */
+export function pickNextFromBudowaLista(
+  lista: readonly string[],
+  candidates: readonly ProductionItem[],
+): ProductionItem | null {
+  for (const id of lista) {
+    const item = candidates.find(c => c.kind === 'budynek' && c.id === id);
+    if (item) return item;
+  }
+  return null;
+}
+
+/**
+ * R-AUTO-V2-Q6=A: lista niepusta, każdy id zbudowany w mieście lub nie w katalogu.
+ */
+export function isBudowaListaUkonczonaForCity(
+  city: Readonly<City>,
+  data: ProductionData,
+  builtBuildingIds: readonly string[],
+): boolean {
+  const tryb = city.budowaTryb ?? DEFAULT_BUDOWA_TRYB;
+  if (tryb !== 'lista') return false;
+  const lista = city.budowaLista ?? [];
+  if (lista.length === 0) return false;
+  const catalogIds = new Set(data.buildings.map(b => b.id));
+  for (const id of lista) {
+    if (!catalogIds.has(id)) continue;
+    if (!builtBuildingIds.includes(id)) return false;
+  }
+  return true;
+}
+
+function affordableCandidates(
+  city: Readonly<City>,
+  data: ProductionData,
+  input: Pick<AutoManageInput, 'unlockedTechs' | 'ctx' | 'ownerSurowcePool'>,
+): ProductionItem[] {
+  const unlockedTechs = input.unlockedTechs ?? [];
+  const ctx = input.ctx ?? {};
+  const allCandidates = buildableProduction(city, data, unlockedTechs, ctx);
+  const surowcePool = input.ownerSurowcePool ?? city.surowce;
+  return allCandidates.filter(item => {
+    const def = data.buildings.find(b => b.id === item.id);
+    const cost = buildingStockCost(def);
+    return Object.keys(cost).length === 0 || canAffordBuildingStock(surowcePool, cost);
+  });
+}
+
 export function pickAutoBuildItem(
   city: Readonly<City>,
   prod: Readonly<CityProduction>,
@@ -178,37 +270,22 @@ export function pickAutoBuildItem(
   input: Pick<AutoManageInput, 'unlockedTechs' | 'ctx' | 'ownerSurowcePool'>,
 ): ProductionItem | null {
   if (frontItem(prod) !== null) return null;
-  if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'auto') return null;
+  const tryb = city.budowaTryb ?? DEFAULT_BUDOWA_TRYB;
+  if (tryb !== 'priorytet' && tryb !== 'lista') return null;
 
-  const focus = city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS;
-  const unlockedTechs = input.unlockedTechs ?? [];
-  const ctx = input.ctx ?? {};
-  const allCandidates = buildableProduction(city, data, unlockedTechs, ctx);
-  // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24): auto-kolejka nigdy nie proponuje
-  // budynek, na ktorego koszt surowcowy (cegla/ceramika — koszt_surowce) nie starcza
-  // magazyn PANSTWA ownera (suma City.surowce po wszystkich miastach — pula, nie tylko to
-  // miasto). Brak `input.ownerSurowcePool` -> fallback na city.surowce lokalnie (zachowanie
-  // sprzed SUROW-CIV-01, testowalnosc bez pelnego stanu gry). Jednostki i budynki bez
-  // koszt_surowce przechodza bez zmian (zero regresji).
-  const surowcePool = input.ownerSurowcePool ?? city.surowce;
-  const candidates = allCandidates.filter(item => {
-    const def = data.buildings.find(b => b.id === item.id);
-    const cost = buildingStockCost(def);
-    return Object.keys(cost).length === 0 || canAffordBuildingStock(surowcePool, cost);
-  });
-
+  const candidates = affordableCandidates(city, data, input);
   if (candidates.length === 0) return null;
 
-  const scored = candidates.map(item => ({
-    item,
-    prio: priorityForItem(item, data.buildings, focus),
-  }));
-  scored.sort((a, b) => {
-    if (a.prio !== b.prio) return a.prio - b.prio;
-    if (a.item.koszt !== b.item.koszt) return a.item.koszt - b.item.koszt;
-    return a.item.nazwa.localeCompare(b.item.nazwa);
-  });
-  return (scored[0] as typeof scored[number]).item;
+  if (tryb === 'lista') {
+    return pickNextFromBudowaLista(city.budowaLista ?? [], candidates);
+  }
+
+  const typy = budowaPriorytetTypowFor(city);
+  for (const focus of typy) {
+    const pick = bestCandidateForFocus(candidates, data, focus);
+    if (pick) return pick;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------

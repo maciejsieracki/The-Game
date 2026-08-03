@@ -49,7 +49,7 @@ import {
 import { setMapHudChromeSuppressed } from './hud';
 import type { City } from '../game/cities';
 import { formatCityMapLabel } from '../game/display-names';
-import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb } from '../game/cities';
+import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb, BudowaListaSlot, BudowaListaSzablony } from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import type { GameMap } from '../types/map';
@@ -347,13 +347,20 @@ export interface CityPanelConfig {
   onOkolicaTileAdjust?: (cityId: string, q: number, r: number, delta: number) => void;
   /** Otwórz mapę w trybie ręcznej okolicy (👤 na heksach). */
   onOpenMapForOkolica?: (cityId: string) => void;
-  /** Auto-budowa — profile + tryb ręczny. */
+  /** Auto-budowa — tryb + kolejność typów / lista. */
   getBudowaState?: (cityId: string) => {
-    focus: BudowaFocus;
     tryb: BudowaTryb;
+    priorytetTypow: BudowaFocus[];
+    lista: string[];
+    szablony?: BudowaListaSzablony;
   } | null;
-  onBudowaFocusChange?: (cityId: string, focus: BudowaFocus) => void;
+  onBudowaPriorytetChange?: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => void;
   onBudowaEnterManual?: (cityId: string) => void;
+  onBudowaListaChange?: (cityId: string, lista: string[], tryb: 'lista') => void;
+  onBudowaListaSaveSlot?: (cityId: string, slot: BudowaListaSlot) => void;
+  onBudowaListaLoadSlot?: (cityId: string, slot: BudowaListaSlot) => void;
+  /** R-AUTO-V2-Q1=B: wgraj bieżącą listę + tryb Lista do wszystkich miast gracza. */
+  onBudowaListaLoadAllCities?: (cityId: string, lista: string[]) => void;
   onArtView?: (cityId: string) => void;
   /**
    * Surowce w zasięgu: aktywny dostęp (legacy string[]) lub split ABC-19 { potential, active }.
@@ -2354,6 +2361,11 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles button.okolica-profile-btn-ic-only{
   padding:0.18em;border-radius:4px;line-height:0;}
 .civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-profile-btn-ic-only .okolica-profile-glyph{width:1.35em;height:1.35em;}
+.civ-ux-panel-scope.civ-cs .budowa-lista-bar{margin:0.12em 0 0.22em;padding:0.18em 0.28em;border:1px solid rgba(120,90,40,0.35);border-radius:4px;background:rgba(20,16,10,0.35);}
+.civ-ux-panel-scope.civ-cs .budowa-lista-row{display:flex;align-items:center;gap:0.28em;font-size:0.72em;margin:0.1em 0;}
+.civ-ux-panel-scope.civ-cs .budowa-lista-row .budowa-lista-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.civ-ux-panel-scope.civ-cs .budowa-lista-slots{display:flex;gap:0.35em;flex-wrap:wrap;margin-top:0.15em;font-size:0.65em;}
+.civ-ux-panel-scope.civ-cs .budowa-lista-slots button{padding:0.1em 0.35em;cursor:pointer;}
 .civ-v-left-col{display:flex!important;flex-direction:column!important;flex:1;min-height:0;width:100%;gap:0;}
 .civ-v-right-col{display:flex!important;flex-direction:column!important;flex:1;min-height:0;width:100%;height:100%!important;gap:0;}
 .civ-v-right-head{flex:0 0 auto;padding-bottom:0.38em;margin-bottom:0.28em;border-bottom:1px solid rgba(212,175,90,0.28);}
@@ -6753,8 +6765,11 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
       const bToolbar = el('div', 'okolica-toolbar budowa-toolbar');
       bToolbar.style.cssText = 'margin:0.06em 0 0.18em;';
       const bProfiles = el('div', 'okolica-toolbar-profiles');
-      appendBudowaToolbarProfiles(bProfiles, city, bState.focus, bState.tryb);
+      appendBudowaToolbarProfiles(bProfiles, city, bState.priorytetTypow, bState.tryb, bState.lista);
       bToolbar.appendChild(bProfiles);
+      if (bState.tryb === 'lista') {
+        appendBudowaListaBar(bToolbar, city, bState.lista, bState.szablony);
+      }
       mount.appendChild(bToolbar);
     }
   }
@@ -8943,21 +8958,68 @@ function appendOkolicaToolbarProfiles(
 function appendBudowaToolbarProfiles(
   wrap: HTMLElement,
   city: City,
-  focus: BudowaFocus,
+  priorytetTypow: BudowaFocus[],
   tryb: BudowaTryb,
+  lista: string[],
 ): void {
   const profiles: BudowaFocus[] = [
     'wzrost', 'wojsko', 'kultura', 'prawo', 'produkcja', 'zrownowazone',
   ];
+  const active = tryb === 'priorytet' ? priorytetTypow : [];
   for (const id of profiles) {
+    const idx = active.indexOf(id);
+    const inList = idx >= 0;
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = tryb !== 'reczny' && id === focus ? 'on' : '';
+    b.className = tryb === 'priorytet' && inList ? 'on' : '';
     setOkolicaProfileButtonIconOnly(b, BUDOWA_FOCUS_BRAND[id]);
-    b.title = BUDOWA_FOCUS_TITLE[id];
-    b.disabled = !cfg.onBudowaFocusChange;
-    b.addEventListener('click', () => { cfg.onBudowaFocusChange?.(city.id, id); rerender(); });
+    const prioLabel = inList ? `${idx + 1}. ` : '';
+    b.title = `${prioLabel}${BUDOWA_FOCUS_TITLE[id]}${inList ? ` (priorytet ${idx + 1})` : ''}`;
+    b.disabled = !cfg.onBudowaPriorytetChange;
+    if (inList && tryb === 'priorytet') {
+      const badge = document.createElement('span');
+      badge.className = 'budowa-prio-badge';
+      badge.textContent = String(idx + 1);
+      badge.style.cssText =
+        'position:absolute;top:-0.15em;right:-0.15em;font-size:0.62em;font-weight:700;' +
+        'background:var(--gold);color:#1a1208;border-radius:50%;min-width:1.1em;height:1.1em;' +
+        'line-height:1.1em;text-align:center;pointer-events:none;';
+      b.style.position = 'relative';
+      b.appendChild(badge);
+    }
+    b.addEventListener('click', () => {
+      if (!cfg.onBudowaPriorytetChange) return;
+      let next: BudowaFocus[];
+      let nextTryb: BudowaTryb;
+      if (tryb === 'reczny') {
+        nextTryb = 'priorytet';
+        next = inList ? [...priorytetTypow] : [...priorytetTypow, id];
+        if (!inList && next.length === 0) next = [id];
+      } else if (inList) {
+        nextTryb = 'priorytet';
+        next = priorytetTypow.filter(f => f !== id);
+        if (next.length === 0) next = [id];
+      } else {
+        nextTryb = 'priorytet';
+        next = [...priorytetTypow, id];
+      }
+      cfg.onBudowaPriorytetChange?.(city.id, next, nextTryb);
+      rerender();
+    });
     wrap.appendChild(b);
+  }
+  if (cfg.onBudowaListaChange) {
+    const listaBtn = document.createElement('button');
+    listaBtn.type = 'button';
+    listaBtn.className = tryb === 'lista' ? 'on' : '';
+    listaBtn.textContent = 'Lista';
+    listaBtn.title = 'Lista nazwana — buduj wg kolejności (A/B/C szablony)';
+    listaBtn.style.cssText = 'font-size:0.68em;padding:0.15em 0.45em;min-width:auto;';
+    listaBtn.addEventListener('click', () => {
+      cfg.onBudowaListaChange?.(city.id, [...lista], 'lista');
+      rerender();
+    });
+    wrap.appendChild(listaBtn);
   }
   if (cfg.onBudowaEnterManual) {
     const recBtn = document.createElement('button');
@@ -8968,6 +9030,167 @@ function appendBudowaToolbarProfiles(
     recBtn.addEventListener('click', () => { cfg.onBudowaEnterManual?.(city.id); rerender(); });
     wrap.appendChild(recBtn);
   }
+}
+
+function appendBudowaListaBar(
+  parent: HTMLElement,
+  city: City,
+  lista: string[],
+  szablony?: BudowaListaSzablony,
+): void {
+  const data = gameData();
+  const bar = el('div', 'budowa-lista-bar');
+  const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const buildingName = (id: string): string => {
+    const def = data?.buildings.find(b => b.id === id);
+    return def?.nazwa ?? id;
+  };
+
+  if (lista.length === 0) {
+    bar.appendChild(el('div', 'muted', 'Lista pusta — dodaj budynki (+)'));
+  } else {
+    for (let i = 0; i < lista.length; i++) {
+      const id = lista[i];
+      if (!id) continue;
+      const def = data?.buildings.find(b => b.id === id);
+      const bEpoch = def?.epokaWejscia ?? 1;
+      const epochLocked = bEpoch > epoch;
+      const row = el('div', 'budowa-lista-row');
+      if (epochLocked) row.style.opacity = '0.55';
+      const name = el('span', 'budowa-lista-name');
+      name.textContent = `${i + 1}. ${buildingName(id)}${epochLocked ? ' 🔒' : ''}`;
+      row.appendChild(name);
+      if (cfg.onBudowaListaChange) {
+        const up = document.createElement('button');
+        up.type = 'button';
+        up.textContent = '↑';
+        up.title = 'Wyżej';
+        up.disabled = i === 0;
+        up.addEventListener('click', () => {
+          const next = [...lista];
+          const a = next[i - 1];
+          const b = next[i];
+          if (!a || !b) return;
+          next[i - 1] = b;
+          next[i] = a;
+          cfg.onBudowaListaChange?.(city.id, next, 'lista');
+          rerender();
+        });
+        row.appendChild(up);
+        const down = document.createElement('button');
+        down.type = 'button';
+        down.textContent = '↓';
+        down.title = 'Niżej';
+        down.disabled = i === lista.length - 1;
+        down.addEventListener('click', () => {
+          const next = [...lista];
+          const a = next[i];
+          const b = next[i + 1];
+          if (!a || !b) return;
+          next[i] = b;
+          next[i + 1] = a;
+          cfg.onBudowaListaChange?.(city.id, next, 'lista');
+          rerender();
+        });
+        row.appendChild(down);
+        const rm = document.createElement('button');
+        rm.type = 'button';
+        rm.textContent = '✕';
+        rm.title = 'Usuń z listy';
+        rm.addEventListener('click', () => {
+          const next = lista.filter((_, j) => j !== i);
+          cfg.onBudowaListaChange?.(city.id, next, 'lista');
+          rerender();
+        });
+        row.appendChild(rm);
+      }
+      bar.appendChild(row);
+    }
+  }
+
+  const addRow = el('div');
+  addRow.style.cssText = 'display:flex;gap:0.3em;align-items:center;margin-top:0.12em;flex-wrap:wrap;';
+  if (cfg.onBudowaListaChange && data) {
+    const sel = document.createElement('select');
+    sel.style.cssText = 'font-size:0.68em;max-width:9em;';
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = '+ dodaj…';
+    sel.appendChild(ph);
+    const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+    const prodCtx = productionCtxForCity(city);
+    const buildableIds = new Set(
+      buildableProduction(city, data, techs, prodCtx).map(it => it.id),
+    );
+    const allBuildings = [...data.buildings].sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'));
+    for (const b of allBuildings) {
+      if (lista.includes(b.id)) continue;
+      const epochLocked = (b.epokaWejscia ?? 1) > epoch;
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = b.nazwa;
+      if (epochLocked) {
+        opt.style.color = '#888';
+        opt.textContent += ' 🔒';
+      } else if (!buildableIds.has(b.id)) {
+        opt.style.color = '#888';
+        opt.textContent += ' (zabl.)';
+      }
+      sel.appendChild(opt);
+    }
+    sel.addEventListener('change', () => {
+      const id = sel.value;
+      if (!id) return;
+      cfg.onBudowaListaChange?.(city.id, [...lista, id], 'lista');
+      sel.value = '';
+      rerender();
+    });
+    addRow.appendChild(sel);
+  }
+  bar.appendChild(addRow);
+
+  if (cfg.onBudowaListaSaveSlot || cfg.onBudowaListaLoadSlot) {
+    const slots = el('div', 'budowa-lista-slots');
+    const slotLabels: BudowaListaSlot[] = ['A', 'B', 'C'];
+    for (const slot of slotLabels) {
+      const hasTpl = (szablony?.[slot]?.length ?? 0) > 0;
+      if (cfg.onBudowaListaLoadSlot) {
+        const loadBtn = document.createElement('button');
+        loadBtn.type = 'button';
+        loadBtn.textContent = `Wgraj ${slot}`;
+        loadBtn.title = `Wgraj listę ${slot}${hasTpl ? '' : ' (pusty)'}`;
+        loadBtn.addEventListener('click', () => {
+          cfg.onBudowaListaLoadSlot?.(city.id, slot);
+          rerender();
+        });
+        slots.appendChild(loadBtn);
+      }
+      if (cfg.onBudowaListaSaveSlot) {
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.textContent = `Zapisz ${slot}`;
+        saveBtn.title = `Zapisz bieżącą listę jako szablon ${slot}`;
+        saveBtn.addEventListener('click', () => {
+          cfg.onBudowaListaSaveSlot?.(city.id, slot);
+          rerender();
+        });
+        slots.appendChild(saveBtn);
+      }
+    }
+    if (cfg.onBudowaListaLoadAllCities && lista.length > 0) {
+      const allBtn = document.createElement('button');
+      allBtn.type = 'button';
+      allBtn.textContent = 'Wgraj do wszystkich miast';
+      allBtn.title = 'Nadpisze Listę i tryb Lista we wszystkich twoich miastach';
+      allBtn.addEventListener('click', () => {
+        cfg.onBudowaListaLoadAllCities?.(city.id, [...lista]);
+        rerender();
+      });
+      slots.appendChild(allBtn);
+    }
+    bar.appendChild(slots);
+  }
+  parent.appendChild(bar);
 }
 
 function renderTopStatsBar(mount: HTMLElement, city: City, view: CityView | null): void {

@@ -63,6 +63,9 @@ const ULEPSZENIA_FOCUS_ZROWNOWAZONE: readonly ImprovementKey[] = AI_IMPROVEMENT_
 /** TEMAT #8: próg zachowania lasu przy wyrębie (>= N heksów lasu w promieniu miasta). */
 export const WYRAB_MIN_FOREST_IN_RADIUS = 3;
 
+/** R-AUTO-V2-Q4=B: minimalna rezerwa Pracy państwa po auto-ulepszeniu (placeholder do strojenia). */
+export const AUTO_ULEPSZENIA_PRACA_RESERVE = 30;
+
 /** Zwraca listę typów ulepszeń wg profilu focus. */
 export function prioritiesForUlepszeniaFocus(
   focus: UlepszeniaFocus,
@@ -144,7 +147,8 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   if (cities.length === 0 || !territoryNodes) return [];
 
   let pracaLeft = opts.pracaAvailable;
-  if (pracaLeft <= pracaSurplusThreshold) return [];
+  const reserve = opts.pracaSurplusThreshold ?? 0;
+  if (pracaLeft <= reserve) return [];
 
   const workingPlaced = new Map<string, string[]>();
   if (placedImprovements) {
@@ -170,7 +174,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   const scheduledWyrabHexes = new Set<string>();
 
   for (const city of orderedCities) {
-    if (pracaLeft <= pracaSurplusThreshold) break;
+    if (pracaLeft <= reserve) break;
 
     const focus = getFocus(city);
     const basePriority = priorityOverride ?? prioritiesForUlepszeniaFocus(focus, skipWyrab);
@@ -197,6 +201,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       const meta = getImprovementMeta(key);
       if (!meta) continue;
       if (meta.kosztPraca > pracaLeft) continue;
+      if (pracaLeft - meta.kosztPraca < reserve) continue;
       if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
       if (!civGate(key, civArchetype)) continue;
 
@@ -211,6 +216,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
 
       // Q2=B: ten sam typ (np. farma) wielokrotnie na różnych heksach aż do cityMax.
       while (placedThisCity < cityMax && meta.kosztPraca <= pracaLeft) {
+        if (pracaLeft - meta.kosztPraca < reserve) break;
         let placedOne = false;
         for (const { q, r } of candidateHexes) {
           const hexKey = `${q},${r}`;
@@ -239,7 +245,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
         }
         if (!placedOne) break;
       }
-      if (pracaLeft <= pracaSurplusThreshold) break;
+      if (pracaLeft <= reserve) break;
     }
   }
 
