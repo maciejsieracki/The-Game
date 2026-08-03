@@ -14965,6 +14965,8 @@ async function boot(): Promise<void> {
         selectPlayerResearchSlug(techSlug);
         refreshTechTreeViewIfOpen();
       },
+      getPlan: (_ownerId: number) =>
+        buildResearchPlanSnapshot().map(({ id, pos }) => ({ id, pos })),
     });
 
     // Initial HUD (D1B — moduł hud.ts)

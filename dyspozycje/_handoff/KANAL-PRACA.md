@@ -1,3 +1,10 @@
+## [21:20 PL, 2026-08-03] CLOUD → parent — R-DESIGN-BADANIA-KLATKA-D (kod, bez deploy)
+- Branch: `cursor/klatka-d-plan-numerek-63a1`
+- Numerek planu 1..RESEARCH_QUEUE_MAX na węźle siatki v1.1 (`techTreeView.ts` `.pl`, lewy górny róg; gradient #f0dc88→#c9a938)
+- `getPlan` w `configureTechTreeView` ← `buildResearchPlanSnapshot()` (slug `techToSlug`)
+- tsc 0 · bez deploy / bez WERSJE AKTUALNA FALA
+CZEKAM-NA: parent review + merge PR
+
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35
 - **#29** R-STAWKI ×2 · **#33** AI→MP wasal/wchłonięcie · **#4** HUD Praca overflow · **#1** audyt sep vs MP (docs)
