@@ -19932,6 +19932,7 @@ async function boot(): Promise<void> {
               console.error('[Cuda] Błąd postępu budowy na mapie:', errWonderMap);
             }
             // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
+            // Q4=A: commit od razu na EOT (bez pendingImprovementsTurn / cofnięcia).
             try {
               const autoImpCities = cities.filter(
                 c => c.ownerId === 0 && (c.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB) === 'auto',
