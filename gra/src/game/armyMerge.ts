@@ -333,6 +333,30 @@ export function stackKey(q: number, r: number): string {
   return keyOf(q, r);
 }
 
+/** Split/merge przyciski paska akcji jednostki (testowalne, main.ts). */
+export function stackHudMergeSplitActions(
+  stackLength: number,
+  canMerge: boolean,
+  splitDestinationCount: number,
+): Array<{ id: 'split' | 'merge'; label: string; disabled: boolean }> {
+  const actions: Array<{ id: 'split' | 'merge'; label: string; disabled: boolean }> = [];
+  if (stackLength >= 2) {
+    actions.push({
+      id: 'split',
+      label: 'Rozdziel',
+      disabled: splitDestinationCount === 0,
+    });
+    actions.push({
+      id: 'merge',
+      label: 'Po\u0142\u0105cz',
+      disabled: !canMerge,
+    });
+  } else if (canMerge) {
+    actions.push({ id: 'merge', label: 'Po\u0142\u0105cz', disabled: false });
+  }
+  return actions;
+}
+
 /** Wspólny pul ruchu stosu — minimum z członków (par. 6b: armia rusza łącznie). */
 export function stackRuchLeft(stack: ReadonlyArray<RuntimeUnit>): number {
   if (stack.length === 0) return 0;

@@ -372,6 +372,7 @@ import { techIconSvg } from './ui/techIcons';
 import {
   visibleStackOnHex,
   coLocatedForMergePrompt,
+  stackHudMergeSplitActions,
   adjacentVisibleArmyHexes,
   computeStackDisplay,
   unitAtRepresentative,
@@ -990,6 +991,7 @@ import {
 import { computePlayerAcceptanceSides } from './game/diplomacy-acceptance-points';
 import {
   basketItemsAffordableExtended,
+  buildClampedAiTradeAgreementPayload,
   clampAiResourceTradeCommand,
   clampBasketItemsToAffordable,
   type AiResourceTradeClampCtx,
@@ -4050,6 +4052,7 @@ async function boot(): Promise<void> {
       unitRenderer.clearPathRoute();
       hoverKey = null;
       foreignUnitInspectId = null;
+      hexDetailHex = null;
       selectedId = u.id;
       lastBHex = { q: u.q, r: u.r };
       if (isSiegeMapPanelOpen()) {
@@ -10926,13 +10929,17 @@ async function boot(): Promise<void> {
           theirQuantityResourceOptions: quantityTradableGoodOptions(0),
           difficulty: effectiveGameDifficultyForOwner(ownerId),
         });
-        const hasBasket = quick.giveItems.length > 0 || quick.receiveItems.length > 0;
-        const sweetener = workingCmd.sweetenerGold ?? 0;
-        if (!hasBasket && sweetener <= 0) return;
+        const tradeBasket = buildClampedAiTradeAgreementPayload(
+          quick,
+          workingCmd.sweetenerGold,
+          ownerBasketAffordCtx(ownerId, treasury),
+          ownerBasketAffordCtx(0, treasury),
+        );
+        if (!tradeBasket) return;
         converted.payload = {
           ...converted.payload,
-          ...(quick.giveItems.length ? { giveItems: quick.giveItems } : {}),
-          ...(quick.receiveItems.length ? { receiveItems: quick.receiveItems } : {}),
+          ...tradeBasket,
+          goldOnce: undefined,
         };
       }
 
@@ -14022,29 +14029,18 @@ async function boot(): Promise<void> {
           || computeUnitReplacements(active).length === 0;
         actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
       }
-      if (stack.length >= 2) {
-        const splitDests = findAdjacentEmptyHexes(
-          units,
-          active.q,
-          active.r,
-          isHexPassableForUnit,
-        );
-        actions.push({
-          id: 'split',
-          label: 'Rozdziel',
-          disabled: splitDests.length === 0,
-        });
-        actions.push({
-          id: 'merge',
-          label: 'Po\u0142\u0105cz',
-          disabled: !canMergeSelectedStack(active, stack),
-        });
-      } else if (canMergeSelectedStack(active, stack)) {
-        actions.push({
-          id: 'merge',
-          label: 'Po\u0142\u0105cz',
-          disabled: false,
-        });
+      const splitDests = findAdjacentEmptyHexes(
+        units,
+        active.q,
+        active.r,
+        isHexPassableForUnit,
+      );
+      for (const a of stackHudMergeSplitActions(
+        stack.length,
+        canMergeSelectedStack(active, stack),
+        splitDests.length,
+      )) {
+        actions.push(a);
       }
       actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });
       actions.push({ id: 'disband', label: 'ROZWI\u0104\u017d', danger: true });

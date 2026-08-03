@@ -216,3 +216,5 @@
 - tsc 0 · dip-accept 142/142 · dip-ai-offer 18/18 · hex-plony 9/9 · qualify 94/94 · dip-treaties 12/12 · POLE-BITWY `dd399c4b`.
 - Rzeki dopływy: nie w bundlu (bez zmian kodu rzek).
 
+## [20:10] ✅ Gotowe — R-HANDEL-AI-FALA + BUG-ARMIA-BRAK-POLACZ (kod, branch `cursor/handel-ai-polacz-63a1`, bez deploy ROBOCZA)
+

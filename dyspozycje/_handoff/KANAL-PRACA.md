@@ -5175,3 +5175,10 @@ CZEKAM-NA: merge docs (bez deploy gry)
 - PR #27 backlog IDs → SUPERSEDED (IDs wchłonięte; deploy FALA 204/205)
 - REJESTR: FALA 202 `5e0f30e7` / 201 `48646cd6` / 200 `26b05753` — statusy ZDEPLOYOWANE
 CZEKAM-NA: parent commit cleanup branch
+
+## [20:10 PL, 2026-08-03] CLOUD → ALL — R-HANDEL-AI-FALA + BUG-ARMIA-BRAK-POLACZ (kod, bez deploy)
+- Branch: `cursor/handel-ai-polacz-63a1`
+- R-HANDEL-AI-FALA-Q1=B: `buildClampedAiTradeAgreementPayload` — koszyk z realnych zapasów, pusty skip, cap złota
+- BUG-ARMIA-BRAK-POLACZ: edge case — `hexDetailHex` + jednostka na tym heksie chowała dock akcji; fix `selectPlayerUnit` czyści hex panel; CSS `.sp-unit-card-foot` zawsze widoczny
+- Testy: `diplomacy-ai-balance-test.cjs`, `army-merge-colocated-test.cjs`
+CZEKAM-NA: PR parent (Grok) · deploy ROBOCZA na hasło Macieja
