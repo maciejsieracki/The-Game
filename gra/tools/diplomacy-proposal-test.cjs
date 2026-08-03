@@ -76,9 +76,6 @@ ok(dipEasy.progNapRelacja === 40, 'easy progNapRelacja 40');
 ok(dipEasy.progHandelRelacja === 0, 'easy progHandelRelacja 0');
 ok(dipHard.progNapRelacja === 60, 'hard progNapRelacja 60');
 ok(dipHard.progHandelRelacja === 0, 'hard progHandelRelacja 0 (bez skali trudnosci)');
-ok(dipNormal.progNapZaufanie === 40, 'normal progNapZaufanie 40');
-ok(dipEasy.progNapZaufanie === 30, 'easy progNapZaufanie 30');
-ok(dipHard.progNapZaufanie === 50, 'hard progNapZaufanie 50');
 
 // 1 NAP accept — Relacja >= 50 @ normal (bez progu Zaufania, Maciej 2026-07-21)
 let r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({ relation: rel(40, 10) }));

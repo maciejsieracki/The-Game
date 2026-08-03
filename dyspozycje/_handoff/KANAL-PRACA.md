@@ -1,3 +1,9 @@
+## [21:35 PL, 2026-08-03] CLOUD → MASTER — progi 1+2: D3 W + cleanup martwych
+Branch: cursor/wiarygodnosc-progi-1-2-63a1
+(1) D3 sojusz W≥0 / NAP W≥−40 w evaluateProposal
+(2) Usunięto martwe: progNapZaufanie (AI=Rel only), progWchloniecieRespekt, progHandelFairRatio*
+CZEKAM-NA: Maciej — deploy / merge
+
 ## [20:20 PL, 2026-08-03] CLOUD → MASTER — D3 progi W (sojusz≥0 / NAP≥−40)
 Wpięte twarde bramki Dźwignia 3 w evaluateProposal + buildProposalEvalContext.
 Branch: cursor/wiarygodnosc-d3-progi-63a1. Testy wiarygodnosc-test D3 PASS.

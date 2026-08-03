@@ -163,8 +163,6 @@ export const DIPLOMACY_PARAMS = {
   progWymianaTechZaufanie:   70,
   /** Respekt >= 70 required to demand Wasalizacja */
   progWasalizacjaRespekt:    70,
-  /** Respekt >= 90 required to demand Wchloniecie */
-  progWchloniecieRespekt:    90,
   /** Relacja < 30 = diplomacy nearly impossible */
   progMinimalnyRelacja:      30,
   /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
@@ -197,9 +195,7 @@ export const DIPLOMACY_PARAMS = {
   progPoboczneWojna:     15,
 
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Zaufanie >= wartość wymagane do NAP */
-  progNapZaufanie:                 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
   progNapRelacja:                  50,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja:               0,
@@ -254,10 +250,6 @@ export const DIPLOMACY_PARAMS = {
   progTrybutOfertaEpokaGold:       5,
   /** willingnessTrade min dla handlu */
   progHandelWillingnessMin:        0.5,
-  /** Fair deal: offered/fair min */
-  progHandelFairRatioMin:          0.8,
-  /** Fair deal: offered/fair max */
-  progHandelFairRatioMax:          1.2,
   /** Zaufanie min dla namówienia do wojny */
   progNamowWojneZaufanie:          50,
   /** Łapówka min = base × (epoka + 1) */
@@ -438,7 +430,6 @@ const DIPLO_RELATION_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
 const DIPLO_ZAUFANIE_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
   'progSojuszZaufanie',
   'progWymianaTechZaufanie',
-  'progNapZaufanie',
   'progNamowWojneZaufanie',
   'progGraniceZaufanie',
   'progTrybutOfertaNearWarZaufanie',
@@ -449,7 +440,6 @@ const DIPLO_ZAUFANIE_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
 /** Progi Respektu (0–100) — bramki trybutu/wasalizacji/granic wojskowych. */
 const DIPLO_RESPEKT_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
   'progWasalizacjaRespekt',
-  'progWchloniecieRespekt',
   'progGraniceWojskoweRespekt',
   'progTrybutZadanieMinRespekt',
   'progPoboczneAkceptacja',

@@ -112,12 +112,11 @@ const ctx = (o = {}) => Object.assign(
 eq(DIPLOMACY_PARAMS.progSojuszZaufanie,      91, 'prog Sojusz Zaufanie = 91');
 eq(DIPLOMACY_PARAMS.progWymianaTechZaufanie, 70, 'prog Wymiana tech Zaufanie = 70');
 eq(DIPLOMACY_PARAMS.progWasalizacjaRespekt,  70, 'prog Wasalizacja Respekt = 70');
-eq(DIPLOMACY_PARAMS.progWchloniecieRespekt,  90, 'prog Wchloniecie Respekt = 90');
 eq(DIPLOMACY_PARAMS.progMinimalnyRelacja,    30, 'prog Minimalny Relacja = 30');
 eq(DIPLOMACY_PARAMS.progSojuszRelacja,      151, 'prog Sojusz Relacja = 151');
 eq(DIPLOMACY_PARAMS.progUmowaMinRelacja,    151, 'prog Umowa min Relacja = 151');
-eq(DIPLOMACY_PARAMS.progNapRelacja,        110, 'prog NAP Relacja = 110');
-eq(DIPLOMACY_PARAMS.progHandelRelacja,     100, 'prog Handel Relacja = 100');
+eq(DIPLOMACY_PARAMS.progNapRelacja,        50, 'prog NAP Relacja = 50');
+eq(DIPLOMACY_PARAMS.progHandelRelacja,     0, 'prog Handel Relacja = 0');
 eq(DIPLOMACY_PARAMS.startZaufanie,           20, 'start Zaufanie = 20');
 eq(DIPLOMACY_PARAMS.startRespekt,            30, 'start Respekt = 30');
 eq(DIPLOMACY_PARAMS.turyEfektuPodarunku,      5, 'tury efektu podarunku = 5');

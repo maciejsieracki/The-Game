@@ -3090,7 +3090,6 @@ export function decideAIDiplomacy(
       && bias.proposeNap
       && !rel.hasNapTreaty
       && score >= dipP.progNapRelacja - bias.napScoreEase
-      && rel.relation.zaufanie >= dipP.progNapZaufanie - (bias.peaceful ? 5 : 0)
     ) {
       komendy.push({
         type:     'zaproponuj_pakt',

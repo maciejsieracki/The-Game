@@ -123,8 +123,6 @@ export interface DiplomacyConfig {
   progWymianaTechZaufanie: number;
   /** Prog Respektu odblokujacy zadanie Wasalizacji (domyslnie 70). */
   progWasalizacjaRespekt: number;
-  /** Prog Respektu odblokujacy zadanie Wchloniecia (domyslnie 90). */
-  progWchloniecieRespekt: number;
   /** Prog Relacji ogolnej, ponizej ktorego dyplomacja jest prawie niemozliwa (domyslnie 30). */
   progMinimalnyRelacja: number;
   /** Prog Relacji ogolnej, od ktorego sojusze sa realistyczne (domyslnie 120). */
