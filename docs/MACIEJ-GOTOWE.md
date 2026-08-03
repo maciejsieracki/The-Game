@@ -1,4 +1,4 @@
-- **2026-08-03 ~18:35** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-BUDOWA-LISTA v1** — Priorytet typów w Budowie (klikaj kolejność chipów). Lista A/B/C = później. Napisz **deploy**.
+﻿- **2026-08-03 ~16:55** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-BUDOWA-LISTA** Q2=A · **Q3=B** — Priorytet typów **i** Lista A/B/C (Wgraj/Zapisz). Branch `cursor/fix-auto-budowa-lista-q3b-63a1`. Napisz **deploy**.
 
 - **2026-08-03 14:28** — ✅ Gotowe FALA 203 ROBOCZA `5f529a24`. Zwiedzaj (EOT) + triumf ostatniego MP cywu. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 
