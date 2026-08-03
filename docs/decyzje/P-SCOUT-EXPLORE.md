@@ -1,6 +1,6 @@
 # P-SCOUT-EXPLORE — przycisk Zwiedzaj (zwiadowca)
 
-**Status:** WDROŻONE (kod)  
+**Status:** ZDEPLOYOWANE `5f529a24` (FALA 203)  
 **Data decyzji:** 2026-08-03
 
 ## Decyzje Macieja

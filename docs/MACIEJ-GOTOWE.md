@@ -1,3 +1,5 @@
+- **2026-08-03 14:28** — ✅ Gotowe FALA 203 ROBOCZA `5f529a24`. Zwiedzaj (EOT) + triumf ostatniego MP cywu. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
+
 - **2026-08-03 14:26** — ✅ Gotowe w kodzie (bez deploy): P-SCOUT-EXPLORE-Q2=B + P-TRIUMPH-CS-Q1=B. Branch `cursor/fix-scout-q2b-triumph-hint-63a1` · PR #26. Napisz **deploy** gdy wgrać do ROBOCZA.
 
 ﻿- **2026-08-02 22:48** - ✅ Gotowe FALA 200 ROBOCZA `26b05753`. Stolice w pasie **10–15 hex** od morza (Standard). Zawiera FALA 199 (obwarzanek/Wybrzeże, rzeki). START: `gra-robocza/Gra-ROBOCZA.html` Ctrl+F5 **Nowa gra**.

@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `5e0f30e7` - 2026-08-03 08:45 - FALA 202: bulk fix PRs #7–#16+#18–#22 + plany - **AKTUALNA**
+## ROBOCZA `5f529a24` - 2026-08-03 14:28 - FALA 203: Zwiedzaj (Q1=A,Q2=B) + triumf MP (Q1=B) - **AKTUALNA**
+- md5 (pelne): `5f529a243d506a55cc84b57ee09fee8f` · stempel: `ROBOCZA · 2026-08-03 14:28`
+- **FALA 203.** P-SCOUT-EXPLORE-Q1=A + Q2=B (przycisk Zwiedzaj, ruch tylko EOT; priorytet chatka>mgła). P-TRIUMPH-CS-Q1=B (dłuższy hint po ostatnim MP tej samej cyw.). Branch `cursor/fix-scout-q2b-triumph-hint-63a1` (zawiera Q1).
+- tsc 0 · scout-auto-explore 15/15 · triumph-city-state 10/10 · vite · VERIFY OK · build /tmp/civ-dist-fala203.
+
+## ROBOCZA `5e0f30e7` - 2026-08-03 08:45 - FALA 202: bulk fix PRs #7–#16+#18–#22 + plany - **ZASTĄPIONA**
 - md5 (pelne): `5e0f30e7592074c9303b48162e862bee` · stempel: `ROBOCZA · 2026-08-03 08:45`
 - **FALA 202.** Merge MERGEABLE: barb head hunger/raid (#7), MP logo (#8), trade accept/edit (#9), trade willingness (#10), gift false-war (#11), hills MIN-MOVE (#12), CS war tribute (#13), era notify (#14), MP AI label (#15), medium rivers FoW (#16), AI build filter (#18), gift-during-war (#19), orphan units (#21), battle HP bar (#22). Plany docs: auto-ulepszenia, Ludy Morza, zwiadowcy, balans nadmiar. **POMINIĘTE (konflikty):** #1 audyt, #4 praca overflow.
 - tsc 0 · battle-hp 7/7 · barb 157/157 · display-names 20/20 · diplo-proposal 80/80 · capital-capture 58/58 · ai-test 248/4 (te same 4 FAIL co na main) · vite · VERIFY OK · build /tmp/civ-dist-fala202.

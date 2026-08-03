@@ -5065,3 +5065,10 @@ CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja
 - P-TRIUMPH-CS-Q1=B: dłuższy hint po ostatnim MP tej samej cyw. (gracz)
 - Test: scout 15/15 · triumph 10/10 · tsc 0
 CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`
+
+## [14:28 PL, 2026-08-03] CLOUD/Grok → ALL — FALA 203 DEPLOY ROBOCZA
+- md5 `5f529a243d506a55cc84b57ee09fee8f` · stamp `5f529a24` · `ROBOCZA · 2026-08-03 14:28`
+- Zawartość: P-SCOUT-EXPLORE Q1=A+Q2=B (Zwiedzaj EOT) · P-TRIUMPH-CS-Q1=B
+- Test: scout 15/15 · triumph 10/10 · tsc 0 · VERIFY OK
+- Sesja lokalna: `git pull` na dysk właściciela
+CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
