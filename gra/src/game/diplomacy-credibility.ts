@@ -345,17 +345,44 @@ export function sumaWiarygodnosciCalkowita(
 }
 
 // ---------------------------------------------------------------------------
-// §5 — Dźwignia 1: strumień bezpośredni Wiarygodność → Zaufanie
+// §5 — Dźwignia 1: mnożnik tempa Wiarygodność → Zaufanie (WIAR-Q3=C)
 // ---------------------------------------------------------------------------
 
 /**
- * ΔZaufanie na turę = Wiarygodność / dzielnik (§5, dzielnik = 20 —
- * C-WIAR-SKALA=20, skorygowany z pierwotnych 10). Dodaje się do istniejącego
- * `dZ` w tickDiplomacy (C-WIAR-SUMA=A) — NIE zastępuje żadnego składnika.
- *
- * Klamruje wejście do −100…+100 przed dzieleniem (§4 pkt 10: klamrowanie
- * obowiązkowe wszędzie tam, gdzie W wchodzi do wzorów §5), tak by wołający
- * mógł podać nieklamrowaną, surową sumę bez utraty poprawności wyniku.
+ * Mnożnik tempa wzrostu Zaufania od Wiarygodności (§5, WIAR-Q3=C):
+ *   wzrostMult(W) = 1 + (W/100) × 0,5
+ * W=+100 → ×1,5 · W=0 → ×1,0 · W=−100 → ×0,5
+ */
+export function wiarygodnoscWzrostMult(w: number): number {
+  const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+  return 1 + (wKlamrowane / 100) * 0.5;
+}
+
+/**
+ * Mnożnik tempa spadku Zaufania od Wiarygodności (§5, WIAR-Q3=C):
+ *   spadekMult(W) = 1 − (W/100) × 0,5
+ * W=+100 → ×0,5 · W=0 → ×1,0 · W=−100 → ×1,5
+ */
+export function wiarygodnoscSpadekMult(w: number): number {
+  const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+  return 1 - (wKlamrowane / 100) * 0.5;
+}
+
+/**
+ * Stosuje mnożnik tempa Dźwigni 1 do zsumowanego ΔZ (tickDiplomacy).
+ * dZ>0 → × wzrostMult · dZ<0 → × spadekMult · dZ=0 → 0 · w undefined → dZ bez zmian.
+ */
+export function applyWiarygodnoscTempoDoDelty(dZ: number, w: number | undefined): number {
+  if (w === undefined || dZ === 0) return dZ;
+  if (dZ > 0) return dZ * wiarygodnoscWzrostMult(w);
+  return dZ * wiarygodnoscSpadekMult(w);
+}
+
+/**
+ * @deprecated ANULOWANY (2026-08-03, WIAR-Q3=C) — zastąpiony mnożnikiem tempa
+ * (`wiarygodnoscWzrostMult` / `wiarygodnoscSpadekMult` / `applyWiarygodnoscTempoDoDelty`).
+ * Usunięty z tickDiplomacy; zachowany dla kompatybilności testów legacy.
+ * D4 nadal używa `modyfikatorZaufaniaD4OdWiarygodnosci` (round(W/20)) — NIE ruszać.
  */
 export function strumienWiarygodnoscDoZaufania(w: number): number {
   const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);

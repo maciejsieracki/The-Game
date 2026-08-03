@@ -1,4 +1,5 @@
-﻿- **2026-08-03 ~21:05** — ✅ Decyzja **R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A** (zawsze modal). Kod bez zmian — już działa. Docs: `cursor/zamien-ulepszenie-q1a-63a1`.
+﻿- **2026-08-03 ~22:00** — ✅ Gotowe w kodzie (bez deploy): **R-WIARYGODNOSC-TEMPO** WIAR-Q3=C — mnożnik tempa W→Z w tickDiplomacy; strumień W/20 usunięty; D4 bez zmian. Branch `cursor/wiarygodnosc-tempo-q3-63a1`. Napisz **deploy**.
+- **2026-08-03 ~21:05** — ✅ Decyzja **R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A** (zawsze modal). Kod bez zmian — już działa. Docs: `cursor/zamien-ulepszenie-q1a-63a1`.
 - **2026-08-03 ~19:50** — ✅ Gotowe docs (bez deploy gry): cleanup REJESTR + wchłonięcie PR #35 (R-PROC-ABC-FULL-ID). PR #31/#30/#27 SUPERSEDED. Kolejka otwarta: handel AI · potwierdzenie zamiany ulepszeń · Połącz armię · Design badania/miasto · wiarygodność. Branch `cursor/cleanup-docs-rejestr-63a1`.
 - **2026-08-03 18:35** — ✅ Gotowe FALA 205 ROBOCZA `f41c6550`. Stawki×2 + AI→MP wasal/wchłonięcie + HUD Praca overflow + audyt sep. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 - **2026-08-03 ~18:10** — ✅ Gotowe w kodzie (bez deploy): **R-STAWKI-STROJENIE** ×2 kosztów (badania, upkeep, budynki, żywność ludność+wojsko). Stała `R_STAWKI_KOSZT_MULT=2`. Napisz **deploy**.
