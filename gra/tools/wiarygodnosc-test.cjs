@@ -8,8 +8,8 @@
  *   - test parytetu (ownerId=0 vs ownerId=N daje identyczną deltę);
  *   - różnice między poziomami trudności (start, czasy zapomnienia).
  *   - Etap 2–4: STRUMIEŃ (fresh/tick, bez trwałej podłogi), Wiarygodność CAŁKOWITA
- *     (zdarzenia jednorazowe + strumień, klamrowana), Dźwignia 1 (tickDiplomacy +
- *     wiarygodnoscSelf → ΔZaufanie, C-WIAR-SUMA=A: dodaje się do dZ).
+ *     (zdarzenia jednorazowe + strumień, klamrowana), Dźwignia 1 (WIAR-Q3=C:
+ *     mnożnik tempa w tickDiplomacy — wzrost/spadek ×0,5…×1,5 od W).
  * Haki silnika (main.ts — N1–N7, S1–S4, P1–P5, save/load) nie są tu wprost jednostkowo
  * testowalne (żyją w domknięciu main.ts) — pokryte pośrednio przez zielone bramki
  * ai-test/logic-test/diplomacy-*-test (brak regresji) i manualny playtest (raport).
@@ -45,6 +45,9 @@ fs.writeFileSync(
   credibilityStreamWeight,
   sumaStrumienia,
   strumienWiarygodnoscDoZaufania,
+  wiarygodnoscWzrostMult,
+  wiarygodnoscSpadekMult,
+  applyWiarygodnoscTempoDoDelty,
   modyfikatorZaufaniaD4OdWiarygodnosci,
   zaufaniePierwszyKontaktZD4,
   freshCredibilityStreamEntry,
@@ -127,9 +130,9 @@ ok(P.wiarygodnoscSkalaMax === 100, 'DIPLOMACY_PARAMS.wiarygodnoscSkalaMax = 100'
 }
 
 ok(WC.strumienWiarygodnoscDoZaufania(100000) === 100 / P.wiarygodnoscZaufanieDzielnikPerTura,
-  'strumienWiarygodnoscDoZaufania klamruje wejście > 100 przed dzieleniem');
+  'strumienWiarygodnoscDoZaufania (legacy) klamruje wejście > 100 przed dzieleniem');
 ok(WC.strumienWiarygodnoscDoZaufania(-100000) === -100 / P.wiarygodnoscZaufanieDzielnikPerTura,
-  'strumienWiarygodnoscDoZaufania klamruje wejście < -100 przed dzieleniem');
+  'strumienWiarygodnoscDoZaufania (legacy) klamruje wejście < -100 przed dzieleniem');
 
 // ---------------------------------------------------------------------------
 // 1b) Dźwignia 4 — pierwszy kontakt (C-WIAR-D4=A): round(W/20) per strona
@@ -344,46 +347,86 @@ ok(WC.credibilityStreamWeight('strumien_przemarsz') === P.wiarygodnoscS4Przemars
 }
 
 // ---------------------------------------------------------------------------
-// 8) Etap 4: Dźwignia 1 — tickDiplomacy + TickCtx.wiarygodnoscSelf (C-WIAR-SUMA=A:
-//    dodaje się do dZ, nie zastępuje reszty; C-WIAR-WROG/WOJNA — gating jest
-//    obowiązkiem WOŁAJĄCEGO (main.ts), tickDiplomacy tylko dodaje gdy pole podane).
+// 8) Dźwignia 1 (WIAR-Q3=C) — mnożnik tempa w tickDiplomacy + czyste funkcje mult
 // ---------------------------------------------------------------------------
+
+// Czyste funkcje mnożnika
+ok(approxEqual(WC.wiarygodnoscWzrostMult(100), 1.5), 'wzrostMult W=+100 → ×1.5');
+ok(approxEqual(WC.wiarygodnoscWzrostMult(0), 1.0), 'wzrostMult W=0 → ×1.0');
+ok(approxEqual(WC.wiarygodnoscWzrostMult(-100), 0.5), 'wzrostMult W=−100 → ×0.5');
+ok(approxEqual(WC.wiarygodnoscSpadekMult(100), 0.5), 'spadekMult W=+100 → ×0.5');
+ok(approxEqual(WC.wiarygodnoscSpadekMult(0), 1.0), 'spadekMult W=0 → ×1.0');
+ok(approxEqual(WC.wiarygodnoscSpadekMult(-100), 1.5), 'spadekMult W=−100 → ×1.5');
+
+// applyWiarygodnoscTempoDoDelty — helper
+ok(WC.applyWiarygodnoscTempoDoDelty(3, 100) === 4.5, 'applyTempo: +3 przy W=100 → 4.5');
+ok(WC.applyWiarygodnoscTempoDoDelty(3, -100) === 1.5, 'applyTempo: +3 przy W=−100 → 1.5');
+ok(WC.applyWiarygodnoscTempoDoDelty(-2, 100) === -1, 'applyTempo: −2 przy W=100 → −1');
+ok(WC.applyWiarygodnoscTempoDoDelty(-2, -100) === -3, 'applyTempo: −2 przy W=−100 → −3');
+ok(WC.applyWiarygodnoscTempoDoDelty(3, 0) === 3, 'applyTempo: W=0 → bez zmian mnożnika');
+ok(WC.applyWiarygodnoscTempoDoDelty(3, undefined) === 3, 'applyTempo: brak W → bez mnożnika');
+ok(WC.applyWiarygodnoscTempoDoDelty(0, 100) === 0, 'applyTempo: dZ=0 → 0');
 
 function freshRdip(zaufanie, status) {
   return { zaufanie, respekt: 30, status, traktaty: [], urazyHistoryczne: 0, relacjaOgolna: zaufanie + 30 };
 }
 
 {
+  // sojusz +3 przy W=100 → dZ = 3×1.5 = 4.5
   const before = freshRdip(50, 'neutralni');
-  const after = WC.tickDiplomacy(before, { turn: 1, wiarygodnoscSelf: 50 });
-  const expectedDelta = 50 / P.wiarygodnoscZaufanieDzielnikPerTura; // = 2.5
-  ok(approxEqual(after.zaufanie, 50 + expectedDelta), `tickDiplomacy: wiarygodnoscSelf=50 -> dZ=+2.5 (got ${after.zaufanie})`);
+  const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 100 });
+  ok(approxEqual(after.zaufanie, 50 + 4.5), `tickDiplomacy: sojusz +3 przy W=100 → dZ=4.5 (got ${after.zaufanie})`);
 }
 
 {
-  // Undefined = brak dZ z W. Status pokoju (nie wojna): clampRelationForWar
-  // na 'wojna' zeruje zaufanie niezależnie od wiarygodnoscSelf — to nie ten kontrakt.
+  // sojusz +3 przy W=−100 → dZ = 3×0.5 = 1.5
   const before = freshRdip(50, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: -100 });
+  ok(approxEqual(after.zaufanie, 51.5), `tickDiplomacy: sojusz +3 przy W=−100 → dZ=1.5 (got ${after.zaufanie})`);
+}
+
+{
+  // ekspansja −2 przy W=100 → dZ = −2×0.5 = −1
+  const before = freshRdip(50, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, ekspansjaPrzyGranicy: true, wiarygodnoscSelf: 100 });
+  ok(approxEqual(after.zaufanie, 49), `tickDiplomacy: ekspansja −2 przy W=100 → dZ=−1 (got ${after.zaufanie})`);
+}
+
+{
+  // ekspansja −2 przy W=−100 → dZ = −2×1.5 = −3
+  const before = freshRdip(50, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, ekspansjaPrzyGranicy: true, wiarygodnoscSelf: -100 });
+  ok(approxEqual(after.zaufanie, 47), `tickDiplomacy: ekspansja −2 przy W=−100 → dZ=−3 (got ${after.zaufanie})`);
+}
+
+{
+  // W=0 → bez zmian mnożnika (sojusz +3 pozostaje +3)
+  const before = freshRdip(50, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 0 });
+  ok(approxEqual(after.zaufanie, 53), `tickDiplomacy: sojusz +3 przy W=0 → dZ=3 (got ${after.zaufanie})`);
+}
+
+{
+  // brak wiarygodnoscSelf → dZ bez mnożnika
+  const before = freshRdip(50, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz' });
+  ok(approxEqual(after.zaufanie, 53), `tickDiplomacy: sojusz +3 bez W → dZ=3 (got ${after.zaufanie})`);
+}
+
+{
+  // Undefined przy wojnie — brak mnożnika, dZ=0 (C-WIAR-WROG=A: main przekazuje undefined).
+  // Wartości w limicie wojny (score≤29), żeby clampRelationForWar nie zmieniał wyniku.
+  const before = { zaufanie: 0, respekt: 29, status: 'wojna', traktaty: [], urazyHistoryczne: 0, relacjaOgolna: 29 };
   const after = WC.tickDiplomacy(before, { turn: 1 });
-  ok(after.zaufanie === 50, `tickDiplomacy: wiarygodnoscSelf undefined -> brak zmiany (got ${after.zaufanie})`);
+  ok(after.zaufanie === 0, `tickDiplomacy: wojna bez W → dZ=0, zaufanie bez zmian (got ${after.zaufanie})`);
 }
 
 {
-  // C-WIAR-SUMA=A: strumień DODAJE SIĘ do istniejących składników dZ (np. sojusz +3), nie zastępuje.
-  const before = freshRdip(50, 'neutralni');
-  const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 40 });
-  const expectedDelta = P.sojusz_zaufanie_perTura + 40 / P.wiarygodnoscZaufanieDzielnikPerTura;
-  ok(approxEqual(after.zaufanie, 50 + expectedDelta), `tickDiplomacy: sojusz(+3) + wiarygodnoscSelf(+2) sumują się (got ${after.zaufanie}, want ${50 + expectedDelta})`);
-}
-
-{
-  // Klamrowanie wejścia: W spoza -100..100 (nie powinno się zdarzyć w praniu ownera
-  // Wiarygodności, ale funkcja musi być odporna) nie psuje wyniku — identyczne z
-  // strumienWiarygodnoscDoZaufania.
+  // Klamrowanie W>100 przed wzorem mnożnika
   const before = freshRdip(10, 'neutralni');
-  const after = WC.tickDiplomacy(before, { turn: 1, wiarygodnoscSelf: 100000 });
-  ok(approxEqual(after.zaufanie, 10 + 100 / P.wiarygodnoscZaufanieDzielnikPerTura), `tickDiplomacy: klamruje W>100 przed dzieleniem (got ${after.zaufanie})`);
-  ok(approxEqual(after.zaufanie, WC.strumienWiarygodnoscDoZaufania(100000) + 10), 'tickDiplomacy: spójne ze strumienWiarygodnoscDoZaufania (ta sama formuła)');
+  const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 100000 });
+  const expectedDelta = P.sojusz_zaufanie_perTura * WC.wiarygodnoscWzrostMult(100);
+  ok(approxEqual(after.zaufanie, 10 + expectedDelta), `tickDiplomacy: klamruje W>100 przed mnożnikiem (got ${after.zaufanie})`);
 }
 
 // ---------------------------------------------------------------------------

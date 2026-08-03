@@ -28,6 +28,7 @@ import {
   resolveArchetypeTrade,
 } from './civ-ai-data';
 import { isBarbarian } from './barbarians';
+import { applyWiarygodnoscTempoDoDelty } from './diplomacy-credibility';
 
 // ---------------------------------------------------------------------------
 // Re-exported Relation interface (spec-aligned alias over RelacjaDyplomatyczna)
@@ -779,6 +780,9 @@ export type DiplomaticEvent =
  * for testing different calibrations without changing the module constants.
  *
  * All values are clamped to [0, 100] per component after application.
+ *
+ * TODO (WIAR-Q3=C): opcjonalny parametr `wiarygodnosc?: number` do mnożnika tempa
+ * na dZ — wymaga aktualizacji call-site'ów w main.ts; na razie tylko tickDiplomacy.
  */
 export function applyDiplomaticEvent(
   rel:    Relation,
@@ -1547,21 +1551,12 @@ export interface TickCtx {
   /** Czy gracz rozbudowuje się przy granicy partnera? (-2 Zaufanie/turę). */
   ekspansjaPrzyGranicy?: boolean;
   /**
-   * WIARYGODNOSC-SPECYFIKACJA.md §5, Dźwignia 1 — Wiarygodność GLOBALNA (nie per
-   * para) strony, której reputacja ma tu wpływać na Zaufanie tej pary (surowa,
-   * nieklamrowana suma — klamrowanie do −100…+100 dzieje się WEWNĄTRZ tej funkcji,
-   * identycznie jak `strumienWiarygodnoscDoZaufania`, patrz niżej). `undefined` =
-   * brak wkładu tej tury (SILNIK zostawia pole puste m.in. gdy ta konkretna para
-   * jest AKTUALNIE w stanie wojny — C-WIAR-WROG=A: strumień nie działa wobec
-   * aktualnego przeciwnika wojennego, ale działa normalnie wobec reszty, także
-   * w trakcie tej samej wojny — C-WIAR-WOJNA=B). C-WIAR-SUMA=A: DODAJE SIĘ do
-   * `dZ`, nie zastępuje żadnego istniejącego składnika.
-   *
-   * Formuła wzięta wprost ze `strumienWiarygodnoscDoZaufania` (game/diplomacy-credibility.ts)
-   * — NIE importowana stamtąd wprost (ten moduł już importuje DIPLOMACY_PARAMS
-   * STĄD, import w drugą stronę utworzyłby cykl); dzielnik czytany z tego samego
-   * DIPLOMACY_PARAMS.wiarygodnoscZaufanieDzielnikPerTura, więc obie ścieżki
-   * zawsze się zgadzają.
+   * WIARYGODNOSC-SPECYFIKACJA.md §5, Dźwignia 1 (WIAR-Q3=C) — Wiarygodność GLOBALNA
+   * (nie per para) strony, której reputacja mnoży tempo ΔZ tej pary (surowa,
+   * nieklamrowana suma — klamrowanie do −100…+100 w `applyWiarygodnoscTempoDoDelty`).
+   * `undefined` = brak mnożnika (SILNIK zostawia pole puste m.in. gdy ta konkretna
+   * para jest AKTUALNIE w stanie wojny — C-WIAR-WROG=A). Mnożnik stosowany do
+   * zsumowanego dZ (handel/sojusz/religia/ekspansja), przed war-zeroing i clamp.
    */
   wiarygodnoscSelf?: number;
 }
@@ -1609,11 +1604,10 @@ export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): Relacja
   if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;
   if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
-  // WIARYGODNOSC §5 Dźwignia 1 (C-WIAR-SUMA=A) — składnik NIEZALEŻNY od reszty dZ,
-  // patrz komentarz TickCtx.wiarygodnoscSelf powyżej (formuła = strumienWiarygodnoscDoZaufania).
-  if (ctx.wiarygodnoscSelf !== undefined) {
-    const wKlamrowane = clamp(ctx.wiarygodnoscSelf, p.wiarygodnoscSkalaMin, p.wiarygodnoscSkalaMax);
-    dZ += wKlamrowane / p.wiarygodnoscZaufanieDzielnikPerTura;
+
+  // WIARYGODNOSC §5 Dźwignia 1 (WIAR-Q3=C) — mnożnik tempa na zsumowanym dZ.
+  if (ctx.wiarygodnoscSelf !== undefined && dZ !== 0) {
+    dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
   }
 
   // --- zanik urazów historycznych co 20 tur ---
