@@ -307,6 +307,19 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .da-pn-bal-num.neg{color:#e0a868;}
 .civ-diplo-basket .da-pn-bal-hint{font-size:0.62em;color:#a8a090;}
 .civ-diplo-basket .da-pn-bal-meta{font-size:0.62em;color:#8a8070;margin-top:6px;}
+.civ-diplo-basket .da-pn-rel-mod{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-top:8px;padding:6px 10px;
+  border-radius:7px;border:1px solid rgba(140,150,165,.25);background:rgba(0,0,0,.18);cursor:help;}
+.civ-diplo-basket .da-pn-rel-mod-label{font-size:0.58em;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8a8070;}
+.civ-diplo-basket .da-pn-rel-mod-text{font-size:0.7em;line-height:1.35;color:#d8d0c0;}
+.civ-diplo-basket .da-pn-rel-mod-text strong{color:#f0e8d8;font-weight:700;}
+.civ-diplo-basket .da-pn-rel-mod-deal{font-weight:600;}
+.civ-diplo-basket .da-pn-rel-mod-balance{font-size:0.92em;color:#8a8070;}
+.civ-diplo-basket .da-pn-rel-mod.better{border-color:rgba(90,208,122,.4);background:rgba(40,80,50,.2);}
+.civ-diplo-basket .da-pn-rel-mod.better .da-pn-rel-mod-deal{color:#7ad0a0;}
+.civ-diplo-basket .da-pn-rel-mod.worse{border-color:rgba(224,136,104,.4);background:rgba(80,40,30,.18);}
+.civ-diplo-basket .da-pn-rel-mod.worse .da-pn-rel-mod-deal{color:#e0a868;}
+.civ-diplo-basket .da-pn-rel-mod.neutral{border-color:rgba(140,150,165,.3);}
+.civ-diplo-basket .da-pn-rel-mod.neutral .da-pn-rel-mod-deal{color:#c8b898;}
 .civ-diplo-basket .da-pn-bal-verdict{margin-top:8px;padding:7px 10px;border-radius:7px;font-size:0.72em;font-weight:600;}
 .civ-diplo-basket .da-pn-bal-verdict.ok{color:#7ad0a0;background:rgba(80,176,112,.12);border:1px solid rgba(80,176,112,.35);}
 .civ-diplo-basket .da-pn-bal-verdict.no{color:#e0a868;background:rgba(224,168,104,.1);border:1px solid rgba(224,168,104,.35);}
@@ -955,7 +968,7 @@ function summaryHtml(
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
 ): string {
-  const rel = ctx.relacjaTotal ?? 0;
+  const rel = ctx.relacjaTotal ?? 100;
   const trustGained = ctx.trustPnGainedThisTurn ?? 0;
   const pnParams = diplomacyPnRelacjaParams();
   const maxTrust = pnParams.max_zaufanie_na_ture;
