@@ -8,6 +8,10 @@ CZEKAM-NA: deploy FALA 206
 - Branch: `cursor/fix-gracz-wchloniecie-63a1` · UI akcja 15
 CZEKAM-NA: deploy FALA 206
 
+## [20:30 PL, 2026-08-03] CLOUD → MASTER — usunięcie Dźwigni 2 (DZWIGNIA2=A)
+Skasowano W-zależny limit max_zaufanie_na_ture. Zostaje flat 5/turę.
+Branch: cursor/wiarygodnosc-usun-dzwignia2-63a1
+CZEKAM-NA: Maciej — deploy (nie deployuję)
 
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35

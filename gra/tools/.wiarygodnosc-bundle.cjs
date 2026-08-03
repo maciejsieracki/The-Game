@@ -25,7 +25,6 @@ __export(wiarygodnosc_entry_exports, {
   credibilityEventSign: () => credibilityEventSign,
   credibilityStreamWeight: () => credibilityStreamWeight,
   diplomacyClampTrustGainNaTure: () => diplomacyClampTrustGainNaTure,
-  diplomacyMaxZaufanieNaTureForWiarygodnosc: () => diplomacyMaxZaufanieNaTureForWiarygodnosc,
   diplomacyPnRelacjaParams: () => diplomacyPnRelacjaParams,
   evaluateProposal: () => evaluateProposal,
   freshCredibilityStreamEntry: () => freshCredibilityStreamEntry,
@@ -76,6 +75,7 @@ var diplomacy_default = {
     progSojuszZaufanie: 91,
     progWymianaTechZaufanie: 70,
     progWasalizacjaRespekt: 70,
+    progWchloniecieRespekt: 90,
     progMinimalnyRelacja: 30,
     progSojuszRelacja: 151,
     progUmowaMinRelacja: 151,
@@ -125,7 +125,11 @@ var diplomacy_default = {
     karaPrzemarszNieautoryzowany_zaufanie_perTura: 5,
     progUltimatumMilitaryRatio: 1.3,
     progUltimatumMinGold: 20,
-    progWasalDefaultGoldPerTurn: 10
+    progWasalDefaultGoldPerTurn: 10,
+    graczWchlonieciePoWasaluTur: 10,
+    graczWchloniecieKosztBaza: 150,
+    graczWchloniecieKosztPerLudnosc: 25,
+    graczWchloniecieKosztMin: 200
   },
   handel_zloze: {
     _opis: "Dost\u0119p do jednego z\u0142o\u017Ca mineralnego/strategicznego (hex) \u2014 NIE hodowla (byd\u0142o/owce/lama = ulepszenia terenu, poza tym cennikiem). Cena w \xA4 lub Praca @ Rel 100.",
@@ -208,12 +212,7 @@ var diplomacy_default = {
     dobra_wola_po_wymianie: true,
     dobra_wola_tur: 3,
     dobra_wola_min_nadmiar_pn: 100,
-    dobra_wola_zaufanie_per_tura: 1,
-    _opis_wiarygodnosc_limit: "Dzwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md \xA75, decyzja WIAR-9.5b=B, 2026-07-26): limit max_zaufanie_na_ture zaleny od Wiarygodnosci SPRAWCY daru/handlu (proposerId). Reputacja dodatnia (W>=0) NIE zmienia limitu (zostaje max_zaufanie_na_ture=5) \u2014 karzemy zla reputacje, nie nagradzamy dobrej. Pasmo Chwiejny (W<0, W>wiarygodnoscProgWiarolomny=-40): limit obnizony. Pasmo Wiarolomny gorne (-70<W<=-40): limit dalej obnizony. Dno (W<=-70): zakup Zaufania darem calkowicie zablokowany.",
-    wiarygodnosc_limit_zaufanie_chwiejny: 3,
-    wiarygodnosc_limit_zaufanie_wiarolomny: 1,
-    wiarygodnosc_limit_zaufanie_dno: 0,
-    wiarygodnosc_limit_prog_dno: -70
+    dobra_wola_zaufanie_per_tura: 1
   },
   akcje_dyplomatyczne: [
     {
@@ -313,12 +312,20 @@ var diplomacy_default = {
       Efekt: "Z casus belli: \u221210 Relacja u wszystkich. Bez c.b.: \u221225 Relacja u wszystkich, \u221220 Zaufanie, flaga agresor"
     },
     {
-      Akcja: "12. Wasalizacja / wch\u0142oni\u0119cie",
-      Opis: "S\u0142absza cywilizacja staje si\u0119 wasalem (zachowuje terytorium, p\u0142aci trybut) lub zostaje w pe\u0142ni wch\u0142oni\u0119ta przez gracza.",
+      Akcja: "12. Wasalizacja",
+      Opis: "Miasto-pa\u0144stwo staje si\u0119 wasalem \u2014 zachowuje terytorium, p\u0142aci trybut co tur\u0119. Wymaga Respektu \u2265 prog_wasalizacja.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "TAK",
-      Koszt: "Wasalizacja: 100\u2013300 Pieni\u0119dzy gwarancji + zobowi\u0105zanie ochrony; Wch\u0142oni\u0119cie: kary reputacyjne",
-      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody. Wch\u0142oni\u0119cie: miasta przechodz\u0105, niezadowolenie N tur"
+      Koszt: "Wasalizacja: trybut \xA4/tur\u0119 (domy\u015Blnie 10) + zobowi\u0105zanie ochrony",
+      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody suzerena"
+    },
+    {
+      Akcja: "15. Wch\u0142oni\u0119cie",
+      Opis: "Po aktywnym wasalu (min. 10 tur) gracz mo\u017Ce w pe\u0142ni wch\u0142oni\u0107 miasto-pa\u0144stwo \u2014 jednorazowa op\u0142ata \xA4 (skala ludno\u015Bci), zgoda wasala.",
+      "Dost\u0119pne: G\u0142\xF3wni rywale": "NIE",
+      "Dost\u0119pne: Poboczni": "TAK",
+      Koszt: "max(200, 150 + 25 \xD7 ludno\u015B\u0107 MP) \xA4 jednorazowo",
+      Efekt: "Miasta MP przechodz\u0105 do gracza; wasalizacja znika; MP eliminowane z mapy"
     },
     {
       Akcja: "13. Prezent / dar",
@@ -4701,6 +4708,8 @@ var DIPLOMACY_PARAMS = {
   progWymianaTechZaufanie: 70,
   /** Respekt >= 70 required to demand Wasalizacja */
   progWasalizacjaRespekt: 70,
+  /** Respekt >= 90 required to demand Wchloniecie */
+  progWchloniecieRespekt: 90,
   /** Relacja < 30 = diplomacy nearly impossible */
   progMinimalnyRelacja: 30,
   /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
@@ -4800,6 +4809,14 @@ var DIPLOMACY_PARAMS = {
   progUltimatumMinGold: 20,
   /** Domyślny trybut wasala (¤/turę) */
   progWasalDefaultGoldPerTurn: 10,
+  /** R-GRACZ-WCHLONIECIE: min tur wasalu przed wchłonięciem MP przez gracza */
+  graczWchlonieciePoWasaluTur: 10,
+  /** R-GRACZ-WCHLONIECIE: baza kosztu wchłonięcia (¤) */
+  graczWchloniecieKosztBaza: 150,
+  /** R-GRACZ-WCHLONIECIE: koszt per ludność MP (¤) */
+  graczWchloniecieKosztPerLudnosc: 25,
+  /** R-GRACZ-WCHLONIECIE: minimalny koszt wchłonięcia (¤) */
+  graczWchloniecieKosztMin: 200,
   // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
   // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
   // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —
@@ -4934,6 +4951,7 @@ var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
 ];
 var DIPLO_RESPEKT_THRESHOLD_KEYS = [
   "progWasalizacjaRespekt",
+  "progWchloniecieRespekt",
   "progGraniceWojskoweRespekt",
   "progTrybutZadanieMinRespekt",
   "progPoboczneAkceptacja"
@@ -12693,10 +12711,6 @@ var DEFAULT_DOBRA_WOLA_TUR = 3;
 var DEFAULT_PN_NA_ZAUFANIE = 100;
 var DEFAULT_MAX_ZAUFANIE_NA_TURE = 5;
 var DEFAULT_MIN_NADMIAR = 1;
-var DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY = 3;
-var DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY = 1;
-var DEFAULT_WIARYGODNOSC_LIMIT_DNO = 0;
-var DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO = -70;
 function loadPnRelacjaParams() {
   const block = diplomacy_default.pn_relacja ?? {};
   const maxNaTure = typeof block.max_zaufanie_na_ture === "number" && block.max_zaufanie_na_ture > 0 ? block.max_zaufanie_na_ture : typeof block.max_zaufanie_jednorazowo === "number" && block.max_zaufanie_jednorazowo > 0 ? block.max_zaufanie_jednorazowo : DEFAULT_MAX_ZAUFANIE_NA_TURE;
@@ -12707,25 +12721,13 @@ function loadPnRelacjaParams() {
     prog_dar_relacja: typeof block.prog_dar_relacja === "number" && block.prog_dar_relacja >= 0 ? block.prog_dar_relacja : DEFAULT_PROG_DAR_RELACJA,
     dobra_wola_min_nadmiar_pn: typeof block.dobra_wola_min_nadmiar_pn === "number" && block.dobra_wola_min_nadmiar_pn > 0 ? block.dobra_wola_min_nadmiar_pn : DEFAULT_DOBRA_WOLA_MIN_PN,
     dobra_wola_tur: typeof block.dobra_wola_tur === "number" && block.dobra_wola_tur > 0 ? block.dobra_wola_tur : DEFAULT_DOBRA_WOLA_TUR,
-    dobra_wola_zaufanie_per_tura: typeof block.dobra_wola_zaufanie_per_tura === "number" && block.dobra_wola_zaufanie_per_tura > 0 ? block.dobra_wola_zaufanie_per_tura : 1,
-    wiarygodnosc_limit_zaufanie_chwiejny: typeof block.wiarygodnosc_limit_zaufanie_chwiejny === "number" && block.wiarygodnosc_limit_zaufanie_chwiejny >= 0 ? block.wiarygodnosc_limit_zaufanie_chwiejny : DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY,
-    wiarygodnosc_limit_zaufanie_wiarolomny: typeof block.wiarygodnosc_limit_zaufanie_wiarolomny === "number" && block.wiarygodnosc_limit_zaufanie_wiarolomny >= 0 ? block.wiarygodnosc_limit_zaufanie_wiarolomny : DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY,
-    wiarygodnosc_limit_zaufanie_dno: typeof block.wiarygodnosc_limit_zaufanie_dno === "number" && block.wiarygodnosc_limit_zaufanie_dno >= 0 ? block.wiarygodnosc_limit_zaufanie_dno : DEFAULT_WIARYGODNOSC_LIMIT_DNO,
-    wiarygodnosc_limit_prog_dno: typeof block.wiarygodnosc_limit_prog_dno === "number" ? block.wiarygodnosc_limit_prog_dno : DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO
+    dobra_wola_zaufanie_per_tura: typeof block.dobra_wola_zaufanie_per_tura === "number" && block.dobra_wola_zaufanie_per_tura > 0 ? block.dobra_wola_zaufanie_per_tura : 1
   };
 }
 var _pnRelacja = loadPnRelacjaParams();
 function diplomacyFairGivePn(receivePn, relacja) {
   const rel = Math.max(1, relacja);
   return Math.ceil(Math.max(0, receivePn) * (100 / rel));
-}
-function diplomacyMaxZaufanieNaTureForWiarygodnosc(wiarygodnoscProposera, params = _pnRelacja) {
-  const cfg = { ..._pnRelacja, ...params };
-  const w = Math.min(100, Math.max(-100, wiarygodnoscProposera));
-  if (w >= 0) return cfg.max_zaufanie_na_ture;
-  if (w > DIPLOMACY_PARAMS.wiarygodnoscProgWiarolomny) return cfg.wiarygodnosc_limit_zaufanie_chwiejny;
-  if (w > cfg.wiarygodnosc_limit_prog_dno) return cfg.wiarygodnosc_limit_zaufanie_wiarolomny;
-  return cfg.wiarygodnosc_limit_zaufanie_dno;
 }
 function diplomacyClampTrustGainNaTure(proposedDelta, alreadyGainedThisTurn, params = _pnRelacja) {
   const cfg = { ..._pnRelacja, ...params };
@@ -12933,6 +12935,28 @@ function pairHasKind(deals, a, b, rodzaj) {
   return deals.some(
     (d) => d.strony[0] === p0 && d.strony[1] === p1 && normalizeTreatyKind(d.rodzaj) === k
   );
+}
+function graczWchloniecieKosztZloto(population, p = getEffectiveDiplomacyParams("normal")) {
+  return Math.max(
+    p.graczWchloniecieKosztMin,
+    p.graczWchloniecieKosztBaza + p.graczWchloniecieKosztPerLudnosc * Math.max(0, population)
+  );
+}
+function findWasalDeal(deals, suzerenId, wasalId) {
+  if (!deals?.length) return void 0;
+  const p0 = Math.min(suzerenId, wasalId);
+  const p1 = Math.max(suzerenId, wasalId);
+  return deals.find((d) => {
+    if (d.strony[0] !== p0 || d.strony[1] !== p1) return false;
+    if (normalizeTreatyKind(d.rodzaj) !== "wasalizacja" /* Wasalizacja */) return false;
+    const econ = d.ekonomia;
+    if (!econ) return true;
+    return econ.receiverOwnerId === suzerenId && econ.payerOwnerId === wasalId;
+  });
+}
+function wasalAgeTurns(deal, turn) {
+  if (!deal || deal.zawartaTura == null) return void 0;
+  return Math.max(0, turn - deal.zawartaTura);
 }
 function makeDealId(prefix, turn, a, b) {
   const [p0, p1] = a < b ? [a, b] : [b, a];
@@ -13447,6 +13471,43 @@ function evaluateProposal(proposal, ctx) {
       );
       return { accepted: true, reason: "Wasalizacja zaakceptowana", deal };
     }
+    case "wchloniecie": {
+      if (!ctx.responderIsCityState) {
+        return { accepted: false, reason: "Wch\u0142oni\u0119cie v1 tylko miasta-pa\u0144stwa" };
+      }
+      const wasalDeal = findWasalDeal(ctx.activeDeals, proposerOwnerId, responderOwnerId);
+      if (!wasalDeal) {
+        return { accepted: false, reason: "Brak aktywnej wasalizacji z tym miastem-pa\u0144stwem" };
+      }
+      const age = ctx.wasalAgeTurns ?? wasalAgeTurns(wasalDeal, ctx.turn);
+      if (age == null || age < p.graczWchlonieciePoWasaluTur) {
+        const remain = p.graczWchlonieciePoWasaluTur - (age ?? 0);
+        return {
+          accepted: false,
+          reason: `Wasal musi trwa\u0107 \u2265 ${p.graczWchlonieciePoWasaluTur} tur (pozosta\u0142o ${remain})`
+        };
+      }
+      if (ctx.proposerRespekt < p.progWchloniecieRespekt) {
+        return {
+          accepted: false,
+          reason: `Wch\u0142oni\u0119cie wymaga Respekt \u2265 ${p.progWchloniecieRespekt}`
+        };
+      }
+      const WCHLONIECIE_CONSENT_REL = 60;
+      if (score < WCHLONIECIE_CONSENT_REL) {
+        return { accepted: false, reason: "Wasal odmawia wch\u0142oni\u0119cia \u2014 zbyt niska Relacja" };
+      }
+      const pop = ctx.responderPopulation ?? 0;
+      const koszt = graczWchloniecieKosztZloto(pop, p);
+      const goldOnce = payload.goldOnce ?? 0;
+      if (goldOnce < koszt) {
+        return {
+          accepted: false,
+          reason: `Wch\u0142oni\u0119cie wymaga jednorazowej op\u0142aty \u2265 ${koszt} \xA4`
+        };
+      }
+      return { accepted: true, reason: `Wch\u0142oni\u0119cie zaakceptowane (${koszt} \xA4)` };
+    }
     default:
       return { accepted: false, reason: "Nieznana akcja dyplomatyczna" };
   }
@@ -13466,7 +13527,6 @@ function tributeBlockedForCityState(ctx) {
   credibilityEventSign,
   credibilityStreamWeight,
   diplomacyClampTrustGainNaTure,
-  diplomacyMaxZaufanieNaTureForWiarygodnosc,
   diplomacyPnRelacjaParams,
   evaluateProposal,
   freshCredibilityStreamEntry,

@@ -17,7 +17,6 @@ export {
 } from '../src/game/diplomacy-credibility';
 export { DIPLOMACY_PARAMS, tickDiplomacy } from '../src/game/diplomacy';
 export {
-  diplomacyMaxZaufanieNaTureForWiarygodnosc,
   diplomacyPnRelacjaParams,
   diplomacyClampTrustGainNaTure,
 } from '../src/game/diplomacy-value-catalog';

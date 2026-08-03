@@ -1,5 +1,6 @@
+﻿- **2026-08-03 ~21:35** — ✅ Gotowe w kodzie (bez deploy): **progi 1+2** — D3 W + cleanup martwych (NAP Zauf/fair-ratio; **progWchloniecieRespekt zostaje** dla #56). Branch `cursor/wiarygodnosc-progi-1-2-63a1`.
 - **2026-08-03 ~21:00** — ✅ Gotowe w kodzie (bez deploy): **R-GRACZ-WCHLONIECIE** Q1A Q2A Q3A — wchłonięcie MP. Branch `cursor/fix-gracz-wchloniecie-63a1`.
-- **2026-08-03 ~21:35** — ✅ Gotowe w kodzie (bez deploy): **progi 1+2** — D3 W + cleanup martwych (NAP Zauf/fair-ratio; **progWchloniecieRespekt zostaje** dla #56). Branch `cursor/wiarygodnosc-progi-1-2-63a1`.
+- **2026-08-03 ~20:30** — ✅ Gotowe w kodzie (bez deploy): usunięcie **Dźwigni 2** (R-WIARYGODNOSC-DZWIGNIA2-Q1=A). Flat `max_zaufanie_na_ture=5` — bez limitu zależnego od W. Branch `cursor/wiarygodnosc-usun-dzwignia2-63a1`. Napisz **deploy** gdy wgrać.
 - **2026-08-03 ~20:25** — ✅ Gotowe w kodzie (bez deploy): **D3 progi W** — sojusz W≥0 / NAP W≥−40. Branch `cursor/wiarygodnosc-d3-progi-63a1`.
 - **2026-08-03 ~21:05** — ✅ Decyzja **R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A** (zawsze modal). Kod bez zmian — już działa. Docs: `cursor/zamien-ulepszenie-q1a-63a1`.
 - **2026-08-03 ~19:50** — ✅ Gotowe docs (bez deploy gry): cleanup REJESTR + wchłonięcie PR #35 (R-PROC-ABC-FULL-ID). PR #31/#30/#27 SUPERSEDED. Kolejka otwarta: handel AI · potwierdzenie zamiany ulepszeń · Połącz armię · Design badania/miasto · wiarygodność. Branch `cursor/cleanup-docs-rejestr-63a1`.

@@ -213,11 +213,9 @@ export interface TrustApplyResult {
 /**
  * Zastosuj ΔZaufanie z PN (handel lub dar) + ewentualna dobra wola.
  *
- * `pnRelacjaParams` (opcjonalny) — Dźwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md §5,
- * WIAR-9.5b=B): main.ts przekazuje tu `{ max_zaufanie_na_ture: <limit zależny
- * od Wiarygodności SPRAWCY daru/handlu> }`, obliczony przez
- * `diplomacyMaxZaufanieNaTureForWiarygodnosc` — patrz diplomacy-value-catalog.ts.
- * Pominięty (undefined) = zachowanie dokładnie jak dziś (domyślne 5/turę).
+ * `pnRelacjaParams` (opcjonalny) — nadpisanie parametrów PN→Zaufanie (np.
+ * `max_zaufanie_na_ture` z `diplomacy.json`). Domyślnie flat `max_zaufanie_na_ture`
+ * (dziś 5 pkt/turę) — bez modyfikacji zależnej od Wiarygodności (R-WIARYGODNOSC-DZWIGNIA2-Q1=A).
  */
 export function applyPnTrustToRelation(
   rel: Relation,
