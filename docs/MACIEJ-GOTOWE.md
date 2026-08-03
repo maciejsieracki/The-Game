@@ -1,3 +1,4 @@
+- **2026-08-03 ~21:15** — ECHO Wiarygodność: NAP-BEZTERMIN=A · START-ETAP=A. **Brak litery** na DZWIGNIA2-Q1 — napisz A/B/C.
 ﻿- **2026-08-03 ~21:05** — ✅ Decyzja **R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A** (zawsze modal). Kod bez zmian — już działa. Docs: `cursor/zamien-ulepszenie-q1a-63a1`.
 - **2026-08-03 ~19:50** — ✅ Gotowe docs (bez deploy gry): cleanup REJESTR + wchłonięcie PR #35 (R-PROC-ABC-FULL-ID). PR #31/#30/#27 SUPERSEDED. Kolejka otwarta: handel AI · potwierdzenie zamiany ulepszeń · Połącz armię · Design badania/miasto · wiarygodność. Branch `cursor/cleanup-docs-rejestr-63a1`.
 - **2026-08-03 18:35** — ✅ Gotowe FALA 205 ROBOCZA `f41c6550`. Stawki×2 + AI→MP wasal/wchłonięcie + HUD Praca overflow + audyt sep. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.

@@ -5181,3 +5181,9 @@ CZEKAM-NA: parent commit cleanup branch
 - Docs: `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md` · bez zmian kodu gry
 - Branch: `cursor/zamien-ulepszenie-q1a-63a1`
 CZEKAM-NA: merge docs (bez deploy)
+
+## [21:15 PL, 2026-08-03] CLOUD → Maciej — R-WIARYGODNOSC ECHO częściowe
+- NAP-BEZTERMIN-Q1=A · START-ETAP-Q1=A
+- DZWIGNIA2-Q1: BRAK LITERY w odpowiedzi — czekam A/B/C
+- Docs: `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md`
+CZEKAM-NA: Maciej R-WIARYGODNOSC-DZWIGNIA2-Q1 + A|B|C

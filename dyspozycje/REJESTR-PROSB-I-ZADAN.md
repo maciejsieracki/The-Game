@@ -41,7 +41,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | BUG-ARMIA-BRAK-POLACZ | W TOKU (weryfikacja) | Ikona Połącz jest w kodzie (`merge` obok `split`) — najpierw check na FALA 205; bez ABC |
 | R-DESIGN-BADANIA | GOTOWE-DO-WDROŻENIA | Design dostarczył panel boczny Badania v1 (2026-07-26) — czeka integrator reskin `scienceHubHud.ts` |
 | R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Brak mockupu v2 (obrona %, brand) · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
-| R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ | Spec `WIARYGODNOSC-SPECYFIKACJA.md` — rdzeń OK; paczka ABC §9 strojenie (później) |
+| R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ (1/3) | NAP-BEZTERMIN-Q1=**A** · START-ETAP-Q1=**A** · **brak litery** DZWIGNIA2-Q1 · `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md` |
 
 **PR-y docs — SUPERSEDED (cleanup 2026-08-03):** #35 R-PROC-ABC-FULL-ID → wchłonięte w `cursor/cleanup-docs-rejestr-63a1` · #31 plan AUTO-BUDOWA Q1 → R-AUTO-V2 / FALA 204 · #30 plan AI wasal → FALA 205 / R-AI-MP-WASAL-WCHLONIECIE · #27 backlog IDs → wchłonięte; deploy FALA 204/205.
 
@@ -109,7 +109,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-DESIGN-BADANIA | 2026-07-25 | Playtest: mockup ekranu badań przestarzały vs drzewko. | **GOTOWE-DO-WDROŻENIA** | Design: panel boczny Badania v1 (2026-07-26) · `DO-DESIGN-EKRAN-BADAN-2026-07-25.md` · reskin `scienceHubHud.ts` |
 | R-DESIGN-PANEL-MIASTA | 2026-07-25 | Playtest (ze zrzutami ekranu): panel widoku miast na mapie głównej przestarzały. | **CZEKA-NA-DESIGN** | `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` · patrz KOLEJKA OTWARTA |
 | R-DYP-IKONA-TLO | 2026-07-25 | Playtest (ze zrzutami ekranu): w panelu dyplomacji pod ikoną państwa jest niebieskie kwadratowe tło. Decyzja Macieja: usunąć ALBO zamienić na obramówkę w tym kolorze. | **ZDEPLOYOWANE `c08b5fcc`** | WERSJE 2026-07-26: obramówka `.dip-pennant` (brak numeru FALA w WERSJE). |
-| R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **CZEKA-NA-DECYZJĘ** | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` (rdzeń zatwierdzony WIAR-Q*); draft: `PROJEKT-WIARYGODNOSC-CYWILIZACJI.md`. Otwarte: §9 strojenie (paczka ABC później) · patrz KOLEJKA OTWARTA |
+| R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **CZEKA-NA-DECYZJĘ** (NAP=A · START=A · DZWIGNIA2=?) | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` · paczka: `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md` · patrz KOLEJKA OTWARTA |
 
 ## ZAMKNIĘTE (ta sesja, 2026-07-23/24)
 
