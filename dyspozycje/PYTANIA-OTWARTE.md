@@ -1552,3 +1552,17 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Przyczyna.** Regresja z commit `6e1e0e48` (NAPRAWA HUD-PRACA 2026-07-26): `refreshLiveEmpireRates()` liczył `_lastPracaRate` tylko z `playerEcon.doPuli`, pomijając `doBudynkow` przy pustej kolejce. Tick końca tury (`pracaImperialPoolGain` w main.ts ~19431) był poprawny — dotyczyło głównie podglądu HUD.
 **Fix:** `previewPracaPoolBrutto()` w `production.ts` + pętla per-miasto w `refreshLiveEmpireRates()` (main.ts ~11367) z `cityProd` / `frontItem`. Test: `production-overflow-test.cjs` §7 (24/24 PASS).
 **Czeka:** deploy FALA 205.
+
+---
+
+## MAP-UX-CLUSTER-LABEL — 4 bliskie etykiety miast (stolica vs MP) · STATUS: **OTWARTE** (audyt 2026-08-02, bez zmiany kodu)
+
+**Źródło:** Maciej: 4 bliskie etykiety (np. krótkie nazwy ~2–4 hex); pamięta min. ~12 hex między stolicami.
+**Audyt:** `dyspozycje/AUDYT-STOLICE-VS-MIASTA-PANSTWA-2026-08-02.md` · **VERDICT: DESIGN_KLASTRA** — sep stolic Standard=14 twarde; skupisko = 1 stolica + MP (pierścień 5 hex). Menu Standard min 4 MP → dokładnie 4 etykiety w klastrze.
+**NIE bug bramki** — nie zmieniać sep/pack bez decyzji.
+
+**ABC (tylko jeśli chce czytelniejszy UX mapy):**
+- **A)** Zostawić (dopisek „· miasto-państwo” na chipie MP).
+- **B)** Stolica obca = nazwa cywilizacji; MP = nazwa miasta + dopisek.
+- **C)** Marker wizualny stolicy (korona/obwódka), nazwy bez zmian.
+**Rekomendacja:** B (gdy w ogóle zmieniać).

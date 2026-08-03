@@ -5143,3 +5143,15 @@ CZEKAM-NA: deploy na hasło
 - Test: `production-overflow-test.cjs` 24/24 PASS · `tsc` 0
 - Branch: `cursor/fix-praca-overflow-idle-build-63a1` (bez commitu — parent)
 CZEKAM-NA: deploy ROBOCZA → Ctrl+F5 → miasto bez kolejki, suwak budowa → chip Praca +N
+
+CZEKAM-NA: nic (stan zapisany)
+
+## [23:20 PL, 2026-08-02] CLOUD -> Maciej / lokalna — audyt 4 bliskich etykiet miast
+- Branch: `cursor/audit-capital-sep-vs-city-states-63a1` (PR z main)
+- VERDICT: **DESIGN_KLASTRA** — NIE bypass sep stolic
+- Sep stolic Standard=14 twarde (`clusters.ts` + HARD apply w cluster-spawn); MP w klastrze pierścień 5 hex
+- 4 etykiety = typowo 1 stolica + 3 MP (menu min=4) albo 1+5 przy default — te same krótkie nazwy z puli
+- Dowód: `dyspozycje/AUDYT-STOLICE-VS-MIASTA-PANSTWA-2026-08-02.md`
+- Test: `capital-sep-unit-test.cjs` 36 PASS (bez zmiany gameplay)
+- UX opcjonalnie (ABC): `MAP-UX-CLUSTER-LABEL` w PYTANIA-OTWARTE — NIE wdrażać bez decyzji
+CZEKAM-NA: Maciej review PR / ewentualnie ABC MAP-UX-CLUSTER-LABEL
