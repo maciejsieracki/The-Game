@@ -13219,6 +13219,8 @@ async function boot(): Promise<void> {
           .filter(c => c.ownerId === responderId)
           .reduce((sum, c) => sum + (c.population ?? 0), 0),
         wasalAgeTurns: wasalAgeTurns(findWasalDeal(activeDeals, proposerId, responderId), turn),
+        proposerWiarygodnosc: getWiarygodnosc(proposerId),
+        responderWiarygodnosc: getWiarygodnosc(responderId),
       };
     }
 
