@@ -162,7 +162,7 @@ import {
   TRIUMPH_CS_HINT_MS,
 } from './game/triumph-city-state';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
-import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, normalizePodzialHandlu, type City, type BudowaFocus, type CityPodzialHandlu } from './game/cities';
+import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, DEFAULT_ULEPSZENIA_TRYB, DEFAULT_ULEPSZENIA_FOCUS, normalizePodzialHandlu, type City, type BudowaFocus, type UlepszeniaFocus, type UlepszeniaTryb, type CityPodzialHandlu } from './game/cities';
 import {
   migrateHandelSplitOnLoad,
   resolveCityPodzialHandlu,
@@ -858,6 +858,7 @@ import {
 } from './game/embarkation';
 import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem } from './game/auto-manage';
+import { pickAutoImprovements } from './game/auto-improvements';
 import { showMainMenu, hideMainMenu, isMainMenuOpen, getMenuAudioVolumes } from './ui/mainMenu';
 import { showPerfTestPanel } from './ui/perfTestPanel';
 import {
@@ -4986,6 +4987,54 @@ async function boot(): Promise<void> {
           if (!city) return;
           city.budowaTryb = 'reczny';
           showHintMessage(`${city.name}: ręczna kolejka budowy`, 2800);
+          refreshCityPanelIfOpen();
+        },
+        getUlepszeniaState: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return null;
+          return {
+            focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
+            tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
+            onlyWorked: city.ulepszeniaOnlyWorked ?? false,
+          };
+        },
+        onUlepszeniaFocusChange: (cityId: string, focus: UlepszeniaFocus) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.ulepszeniaFocus = focus;
+          city.ulepszeniaTryb = 'auto';
+          const labels: Record<UlepszeniaFocus, string> = {
+            zywnosc: 'Żywność',
+            surowce: 'Surowce',
+            infrastruktura: 'Infrastruktura',
+            zrownowazone: 'Zrównoważone',
+          };
+          showHintMessage(`${city.name}: auto ulepszenia · ${labels[focus] ?? focus}`, 3200);
+          updateHud();
+          refreshCityPanelIfOpen();
+        },
+        onUlepszeniaTrybChange: (cityId: string, tryb: UlepszeniaTryb) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.ulepszeniaTryb = tryb;
+          showHintMessage(
+            tryb === 'reczny'
+              ? `${city.name}: ręczne ulepszenia terenu`
+              : `${city.name}: auto ulepszenia terenu`,
+            2800,
+          );
+          refreshCityPanelIfOpen();
+        },
+        onUlepszeniaOnlyWorkedChange: (cityId: string, onlyWorked: boolean) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.ulepszeniaOnlyWorked = onlyWorked;
+          showHintMessage(
+            onlyWorked
+              ? `${city.name}: auto ulepszenia tylko na polach z 👤`
+              : `${city.name}: auto ulepszenia w całym terytorium`,
+            2800,
+          );
           refreshCityPanelIfOpen();
         },
         getUnitsAt: (q: number, r: number) => {
@@ -19844,6 +19893,63 @@ async function boot(): Promise<void> {
               }
             } catch (errWonderMap) {
               console.error('[Cuda] Błąd postępu budowy na mapie:', errWonderMap);
+            }
+            // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
+            try {
+              const autoImpCities = cities.filter(
+                c => c.ownerId === 0 && (c.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB) === 'auto',
+              );
+              if (autoImpCities.length > 0 && playerPracaPool > 0) {
+                const territoryNodesAuto = buildAllTerritoryNodes();
+                const playerCivArch = civTypeForOwner(0);
+                const workingPlaced = new Map(placedImprovements);
+                const picks = pickAutoImprovements({
+                  cities: autoImpCities,
+                  ownerId: 0,
+                  map,
+                  territoryNodes: territoryNodesAuto,
+                  placedImprovements: workingPlaced,
+                  pracaAvailable: playerPracaPool,
+                  unlockedTechs: unlockedTechSetForOwner(0),
+                  pracaSurplusThreshold: 0,
+                  skipWyrab: true,
+                  civArchetype: playerCivArch,
+                  isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
+                  getWorkedHexKeys: city => {
+                    const coords = workedHexCoordsForCity(city as City, map, territoryNodesAuto);
+                    return new Set(coords.map(({ q, r }) => `${q},${r}`));
+                  },
+                });
+                const toastLines: string[] = [];
+                for (const pick of picks) {
+                  if (!isImprovementTechUnlocked(pick.key, player.zbadane)) continue;
+                  if (!isImprovementAllowedForCiv(pick.key, playerCivArch)) continue;
+                  if (playerPracaPool < pick.kosztPraca) continue;
+                  const hexKey = keyOf(pick.q, pick.r);
+                  const hexForImprovement = map.hexes[hexKey];
+                  if (!hexForImprovement) continue;
+                  if (!isTerritoryHexOwnedBy(pick.q, pick.r, 0, territoryNodesAuto)) continue;
+                  const prevLayers = workingPlaced.get(hexKey) ?? placedImprovements.get(hexKey) ?? [];
+                  if (prevLayers.includes(pick.key)) continue;
+                  playerPracaPool -= pick.kosztPraca;
+                  _lastPraca = playerPracaPool;
+                  const nextLayers: PlacedLayers = [...prevLayers, pick.key];
+                  placedImprovements.set(hexKey, nextLayers);
+                  workingPlaced.set(hexKey, nextLayers);
+                  syncHexUlepszenieFields(hexKey, nextLayers);
+                  spawnImprovementMesh(hexKey);
+                  syncResourceOverlayAtHex(hexKey);
+                  const meta = getImprovementMeta(pick.key);
+                  toastLines.push(`${meta?.nazwa ?? pick.key} @ (${pick.q},${pick.r})`);
+                }
+                if (toastLines.length === 1) {
+                  showHintMessage(`Auto ulepszenie: ${toastLines[0]}`, 3200);
+                } else if (toastLines.length > 1) {
+                  showHintMessage(`Auto ulepszenia: ${toastLines.length}× (−Praca)`, 3200);
+                }
+              }
+            } catch (errAutoImp) {
+              console.error('[Ulepszenia] Błąd auto-ulepszeń gracza:', errAutoImp);
             }
             _lastKultura = cities
               .filter(c => c.ownerId === 0)

@@ -5072,3 +5072,9 @@ CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`
 - Test: scout 15/15 · triumph 10/10 · tsc 0 · VERIFY OK
 - Sesja lokalna: `git pull` na dysk właściciela
 CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
+
+## [17:00 PL, 2026-08-03] CLOUD → Maciej — R-AUTO-ULEPSZENIA-Q1=C WDROŻONE (kod)
+- Branch: `cursor/fix-auto-ulepszenia-q1c-63a1`
+- Profile + checkbox „Tylko pola z obywatelami” (domyślnie off) · max 1/miasto/turę · EOT
+- Test: auto-improvements 11/11 · tsc 0 · ai-improvements 14/1 (fail #7 wyrab — PRE na main)
+CZEKAM-NA: merge + deploy na hasło Macieja

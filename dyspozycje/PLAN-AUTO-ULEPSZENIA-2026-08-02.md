@@ -1,6 +1,6 @@
 # PLAN — automatyczne ulepszenia terenu (Maciej 2026-08-02)
 
-**Status:** plan do rozmowy jutro — **bez implementacji**.  
+**Status:** decyzja **Q1=C** (2026-08-03) — wdrażanie. Profile + checkbox „tylko 👤” (domyślnie off).  
 **Cytat:** „przydałaby się też w budowaniu ulepszeń automatyczna funkcja… podzielić na typy… albo tylko tam, gdzie produkują obywatele”.
 
 Powiązane (budynki, nie teren): `PLAN-AUTO-LISTA-BUDOWNICZA-2026-08-02.md` — auto z listy kolejności + szablony epok.

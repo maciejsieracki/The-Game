@@ -49,6 +49,15 @@ export type BudowaTryb = 'auto' | 'reczny';
 export const DEFAULT_BUDOWA_FOCUS: BudowaFocus = 'zrownowazone';
 export const DEFAULT_BUDOWA_TRYB: BudowaTryb = 'reczny';
 
+/** Profile auto-ulepszeń terenu (panel Produkcja / EOT). */
+export type UlepszeniaFocus = 'zywnosc' | 'surowce' | 'infrastruktura' | 'zrownowazone';
+
+/** auto = gra buduje ulepszenia na końcu tury; reczny = gracz klika na mapie. */
+export type UlepszeniaTryb = 'auto' | 'reczny';
+
+export const DEFAULT_ULEPSZENIA_FOCUS: UlepszeniaFocus = 'zrownowazone';
+export const DEFAULT_ULEPSZENIA_TRYB: UlepszeniaTryb = 'reczny';
+
 /**
  * Domyslny podzial Daniny netto nowego miasta — zgodny z econ-params.json
  * (suwak_handel_*_domyslnie, wszystkie poziomy trudnosci).
@@ -152,6 +161,9 @@ export function ensureCitySaveDefaults(city: City): void {
   if (!city.okolicaTryb) city.okolicaTryb = DEFAULT_OKOLICA_TRYB;
   if (!city.budowaFocus) city.budowaFocus = DEFAULT_BUDOWA_FOCUS;
   if (!city.budowaTryb) city.budowaTryb = DEFAULT_BUDOWA_TRYB;
+  if (!city.ulepszeniaFocus) city.ulepszeniaFocus = DEFAULT_ULEPSZENIA_FOCUS;
+  if (!city.ulepszeniaTryb) city.ulepszeniaTryb = DEFAULT_ULEPSZENIA_TRYB;
+  if (city.ulepszeniaOnlyWorked == null) city.ulepszeniaOnlyWorked = false;
   const buf = readCityFoodBuffer(city.magazynZywnosci);
   if (city.magazynZywnosci !== buf) city.magazynZywnosci = buf;
   ensureCityRationDefaults(city);
@@ -264,6 +276,12 @@ export interface City {
   budowaFocus?: BudowaFocus;
   /** auto | reczny — ręczny wybór budynków w kolejce. */
   budowaTryb?: BudowaTryb;
+  /** Profil auto-ulepszeń terenu (żywność / surowce / infra / zrównoważone). */
+  ulepszeniaFocus?: UlepszeniaFocus;
+  /** auto | reczny — auto na końcu tury z puli Pracy państwa. */
+  ulepszeniaTryb?: UlepszeniaTryb;
+  /** Gdy true — auto tylko na heksach z 👤 (workedTiles); domyślnie całe terytorium. */
+  ulepszeniaOnlyWorked?: boolean;
   /** B2-Q12=C: tury grace przed rebelią AI (null = brak). */
   revoltGraceRemaining?: number | null;
   /** Miasto pod kontrolą rebeliantów. */

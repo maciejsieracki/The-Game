@@ -49,7 +49,7 @@ import {
 import { setMapHudChromeSuppressed } from './hud';
 import type { City } from '../game/cities';
 import { formatCityMapLabel } from '../game/display-names';
-import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb } from '../game/cities';
+import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb, UlepszeniaFocus, UlepszeniaTryb } from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import type { GameMap } from '../types/map';
@@ -354,6 +354,15 @@ export interface CityPanelConfig {
   } | null;
   onBudowaFocusChange?: (cityId: string, focus: BudowaFocus) => void;
   onBudowaEnterManual?: (cityId: string) => void;
+  /** Auto-ulepszenia terenu — profile + tryb ręczny. */
+  getUlepszeniaState?: (cityId: string) => {
+    focus: UlepszeniaFocus;
+    tryb: UlepszeniaTryb;
+    onlyWorked: boolean;
+  } | null;
+  onUlepszeniaFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
+  onUlepszeniaTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
+  onUlepszeniaOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
   onArtView?: (cityId: string) => void;
   /**
    * Surowce w zasięgu: aktywny dostęp (legacy string[]) lub split ABC-19 { potential, active }.
@@ -1532,6 +1541,27 @@ const BUDOWA_FOCUS_TITLE: Record<BudowaFocus, string> = {
   prawo: 'Prawo — administracja i porządek',
   produkcja: 'Produkcja — Praca i warsztaty',
   zrownowazone: 'Zrównoważony rozwój',
+};
+
+const ULEPSZENIA_FOCUS_BRAND: Record<UlepszeniaFocus, string> = {
+  zywnosc: 'field-food',
+  surowce: 'res-work',
+  infrastruktura: 'cp-buildings',
+  zrownowazone: 'field-balanced',
+};
+
+const ULEPSZENIA_FOCUS_SHORT: Record<UlepszeniaFocus, string> = {
+  zywnosc: 'Żywność',
+  surowce: 'Surowce',
+  infrastruktura: 'Infra',
+  zrownowazone: 'Zrówn.',
+};
+
+const ULEPSZENIA_FOCUS_TITLE: Record<UlepszeniaFocus, string> = {
+  zywnosc: 'Żywność — farma, hodowla, irygacja',
+  surowce: 'Surowce — tartak, kamieniołom, kopalnie',
+  infrastruktura: 'Infrastruktura — drogi, fort',
+  zrownowazone: 'Zrównoważone — żywność, surowce, infra',
 };
 
 function okolicaProfileIconHtml(iconId: string, size: BrandIconSize = 24): string {
@@ -6740,7 +6770,8 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
   const hasBuildQueue = prod.kolejka.length > 1;
   const hasRecruitQueue = (prod.rekrutacja ?? []).length > 0;
   const hasAutoToolbar = !!(player && cfg.getBudowaState?.(city.id));
-  if (!front && !hasBuildQueue && !hasRecruitQueue && !hasAutoToolbar) {
+  const hasUlepszeniaToolbar = !!(player && cfg.getUlepszeniaState?.(city.id));
+  if (!front && !hasBuildQueue && !hasRecruitQueue && !hasAutoToolbar && !hasUlepszeniaToolbar) {
     mount.style.display = 'none';
     return;
   }
@@ -6756,6 +6787,33 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
       appendBudowaToolbarProfiles(bProfiles, city, bState.focus, bState.tryb);
       bToolbar.appendChild(bProfiles);
       mount.appendChild(bToolbar);
+    }
+  }
+
+  if (player && cfg.getUlepszeniaState) {
+    const uState = cfg.getUlepszeniaState(city.id);
+    if (uState) {
+      const uToolbar = el('div', 'okolica-toolbar ulepszenia-toolbar');
+      uToolbar.style.cssText = 'margin:0.06em 0 0.18em;';
+      const uProfiles = el('div', 'okolica-toolbar-profiles');
+      appendUlepszeniaToolbarProfiles(uProfiles, city, uState.focus, uState.tryb);
+      uToolbar.appendChild(uProfiles);
+      if (uState.tryb === 'auto' && cfg.onUlepszeniaOnlyWorkedChange) {
+        const chkWrap = el('label', 'ulepszenia-only-worked');
+        chkWrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.28em;font-size:0.72em;margin-left:0.35em;white-space:nowrap;';
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = uState.onlyWorked;
+        chk.title = 'Buduj tylko na polach z obywatelami (👤)';
+        chk.addEventListener('change', () => {
+          cfg.onUlepszeniaOnlyWorkedChange?.(city.id, chk.checked);
+          rerender();
+        });
+        chkWrap.appendChild(chk);
+        chkWrap.appendChild(document.createTextNode('Tylko pola z obywatelami'));
+        uToolbar.appendChild(chkWrap);
+      }
+      mount.appendChild(uToolbar);
     }
   }
 
@@ -8966,6 +9024,36 @@ function appendBudowaToolbarProfiles(
     setOkolicaProfileButtonIconOnly(recBtn, 'chip-manpower');
     recBtn.title = 'Ręczny — własny wybór budynków w kolejce';
     recBtn.addEventListener('click', () => { cfg.onBudowaEnterManual?.(city.id); rerender(); });
+    wrap.appendChild(recBtn);
+  }
+}
+
+function appendUlepszeniaToolbarProfiles(
+  wrap: HTMLElement,
+  city: City,
+  focus: UlepszeniaFocus,
+  tryb: UlepszeniaTryb,
+): void {
+  const profiles: UlepszeniaFocus[] = [
+    'zywnosc', 'surowce', 'infrastruktura', 'zrownowazone',
+  ];
+  for (const id of profiles) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = tryb !== 'reczny' && id === focus ? 'on' : '';
+    setOkolicaProfileButtonContent(b, ULEPSZENIA_FOCUS_BRAND[id], ULEPSZENIA_FOCUS_SHORT[id]);
+    b.title = ULEPSZENIA_FOCUS_TITLE[id];
+    b.disabled = !cfg.onUlepszeniaFocusChange;
+    b.addEventListener('click', () => { cfg.onUlepszeniaFocusChange?.(city.id, id); rerender(); });
+    wrap.appendChild(b);
+  }
+  if (cfg.onUlepszeniaTrybChange) {
+    const recBtn = document.createElement('button');
+    recBtn.type = 'button';
+    recBtn.className = 'reczny' + (tryb === 'reczny' ? ' on' : '');
+    setOkolicaProfileButtonContent(recBtn, 'chip-manpower', 'Ręczny');
+    recBtn.title = 'Ręczny — buduj ulepszenia na mapie (🔨)';
+    recBtn.addEventListener('click', () => { cfg.onUlepszeniaTrybChange?.(city.id, 'reczny'); rerender(); });
     wrap.appendChild(recBtn);
   }
 }
