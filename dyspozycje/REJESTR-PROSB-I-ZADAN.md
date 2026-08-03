@@ -36,12 +36,12 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 
 | ID | Status | Uwagi |
 |----|--------|-------|
-| R-HANDEL-AI-FALA | CZEKA-NA-DECYZJĘ | AI koszyki handlu (`zaproponuj_umowe_handlowa`) — brak ABC · plan w `HANDOFF-SESJA-2026-07-28-KARTA-ARMII.md` §4 |
-| R-ZAMIEN-ULEPSZENIE-CONFIRM | CZEKA-NA-DECYZJĘ | Dialog przy zamianie wykluczających ulepszeń (np. Tartak→Owce) · `PYTANIA-OTWARTE.md` |
-| BUG-ARMIA-BRAK-POLACZ | NOWE | Brak akcji „Połącz" przy wielu jednostkach na heksie · `PYTANIA-OTWARTE.md` |
-| R-DESIGN-BADANIA | CZEKA-NA-DESIGN | Mockup ekranu badań · `DO-DESIGN-EKRAN-BADAN-2026-07-25.md` |
-| R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Panel miast na mapie · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
-| R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ | Mechanizm wiarygodności — projekt, bez ABC · `PROJEKT-WIARYGODNOSC-CYWILIZACJI.md` |
+| R-HANDEL-AI-FALA | CZEKA-NA-DECYZJĘ | AI koszyki — ABC w czacie Integrator 2026-08-03 · kod częściowo (`computeQuickDealBasket`) |
+| R-ZAMIEN-ULEPSZENIE-CONFIRM | CZEKA-NA-DECYZJĘ | Modal już jest — ABC = polityka kiedy pytać · poprawny przykład: sektor food/hodowla, nie Tartak→Owce na lesie |
+| BUG-ARMIA-BRAK-POLACZ | W TOKU (weryfikacja) | Ikona Połącz jest w kodzie (`merge` obok `split`) — najpierw check na FALA 205; bez ABC |
+| R-DESIGN-BADANIA | GOTOWE-DO-WDROŻENIA | Design dostarczył panel boczny Badania v1 (2026-07-26) — czeka integrator reskin `scienceHubHud.ts` |
+| R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Brak mockupu v2 (obrona %, brand) · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
+| R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ | Spec `WIARYGODNOSC-SPECYFIKACJA.md` — rdzeń OK; paczka ABC §9 strojenie (później) |
 
 **PR-y docs — SUPERSEDED (cleanup 2026-08-03):** #35 R-PROC-ABC-FULL-ID → wchłonięte w `cursor/cleanup-docs-rejestr-63a1` · #31 plan AUTO-BUDOWA Q1 → R-AUTO-V2 / FALA 204 · #30 plan AI wasal → FALA 205 / R-AI-MP-WASAL-WCHLONIECIE · #27 backlog IDs → wchłonięte; deploy FALA 204/205.
 
@@ -106,10 +106,10 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-MAGAZYN-PANSTWO | 2026-07-24 | Magazyn = pula PAŃSTWA: 100 + 100/Magazyn, nadmiar przepada, surowce wspólne dla imperium | **ZDEPLOYOWANE `ea75f5ba`** | Cap płaski 100/100/100. Parytet AI 44/44. |
 | R-HANDEL-SUROWCE | 2026-07-24 | Handel surowcami w dyplomacji: za pieniądz/Pracę; jednorazowy i przez X tur; AI też | **ZDEPLOYOWANE `ea75f5ba`** | Parytet AI (AI↔AI) 42/42. |
 | R-FULLSCREEN-PASEK | 2026-07-25 | Playtest (ze zrzutami ekranu): w trybie pełnego ekranu na dole pojawia się pasek, którego nie powinno być; blokuje przesuwanie mapy myszką przy dolnej krawędzi (edge-pan nie działa w tym miejscu). | **ZDEPLOYOWANE `c08b5fcc`** | WERSJE 2026-07-26 playtest batch: `scene.ts` fullscreenchange + updateStyle=false (brak numeru FALA w WERSJE). |
-| R-DESIGN-BADANIA | 2026-07-25 | Playtest (ze zrzutami ekranu): mockup ekranu badań w Designerze jest przestarzały (drzewko technologii dawno wymienione, mockup tego nie odzwierciedla). | **CZEKA-NA-DESIGN** | `DO-DESIGN-EKRAN-BADAN-2026-07-25.md` · patrz KOLEJKA OTWARTA |
+| R-DESIGN-BADANIA | 2026-07-25 | Playtest: mockup ekranu badań przestarzały vs drzewko. | **GOTOWE-DO-WDROŻENIA** | Design: panel boczny Badania v1 (2026-07-26) · `DO-DESIGN-EKRAN-BADAN-2026-07-25.md` · reskin `scienceHubHud.ts` |
 | R-DESIGN-PANEL-MIASTA | 2026-07-25 | Playtest (ze zrzutami ekranu): panel widoku miast na mapie głównej przestarzały. | **CZEKA-NA-DESIGN** | `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` · patrz KOLEJKA OTWARTA |
 | R-DYP-IKONA-TLO | 2026-07-25 | Playtest (ze zrzutami ekranu): w panelu dyplomacji pod ikoną państwa jest niebieskie kwadratowe tło. Decyzja Macieja: usunąć ALBO zamienić na obramówkę w tym kolorze. | **ZDEPLOYOWANE `c08b5fcc`** | WERSJE 2026-07-26: obramówka `.dip-pennant` (brak numeru FALA w WERSJE). |
-| R-WIARYGODNOSC | 2026-07-25 | Playtest (ze zrzutami ekranu): NOWY MECHANIZM — wiarygodność cywilizacji (jak często dotrzymuje słowa vs łamie zasady), wpływająca na zaufanie; ewentualnie jako trzeci wskaźnik obok Zaufania i Respektu. Maciej prosił o mechanizm + schemat (+/−) + implementację. | **CZEKA-NA-DECYZJĘ** | `PROJEKT-WIARYGODNOSC-CYWILIZACJI.md` — projekt, bez ABC; implementacja po decyzji · patrz KOLEJKA OTWARTA |
+| R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **CZEKA-NA-DECYZJĘ** | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` (rdzeń zatwierdzony WIAR-Q*); draft: `PROJEKT-WIARYGODNOSC-CYWILIZACJI.md`. Otwarte: §9 strojenie (paczka ABC później) · patrz KOLEJKA OTWARTA |
 
 ## ZAMKNIĘTE (ta sesja, 2026-07-23/24)
 
