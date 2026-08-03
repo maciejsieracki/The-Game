@@ -76,7 +76,6 @@ var diplomacy_default = {
     progSojuszZaufanie: 91,
     progWymianaTechZaufanie: 70,
     progWasalizacjaRespekt: 70,
-    progWchloniecieRespekt: 90,
     progMinimalnyRelacja: 30,
     progSojuszRelacja: 151,
     progUmowaMinRelacja: 151,
@@ -89,7 +88,6 @@ var diplomacy_default = {
     progPoboczneAkceptacja: 60,
     progPoboczneHandel: 30,
     progPoboczneWojna: 15,
-    progNapZaufanie: 40,
     progNapRelacja: 50,
     progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
@@ -119,8 +117,6 @@ var diplomacy_default = {
     progTrybutOfertaBaseGold: 10,
     progTrybutOfertaEpokaGold: 5,
     progHandelWillingnessMin: 0.5,
-    progHandelFairRatioMin: 0.8,
-    progHandelFairRatioMax: 1.2,
     progNamowWojneZaufanie: 50,
     progNamowWojneBribeBase: 30,
     progGraniceZaufanie: 45,
@@ -4705,8 +4701,6 @@ var DIPLOMACY_PARAMS = {
   progWymianaTechZaufanie: 70,
   /** Respekt >= 70 required to demand Wasalizacja */
   progWasalizacjaRespekt: 70,
-  /** Respekt >= 90 required to demand Wchloniecie */
-  progWchloniecieRespekt: 90,
   /** Relacja < 30 = diplomacy nearly impossible */
   progMinimalnyRelacja: 30,
   /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
@@ -4735,9 +4729,7 @@ var DIPLOMACY_PARAMS = {
    */
   progPoboczneWojna: 15,
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Zaufanie >= wartość wymagane do NAP */
-  progNapZaufanie: 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
   progNapRelacja: 50,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja: 0,
@@ -4792,10 +4784,6 @@ var DIPLOMACY_PARAMS = {
   progTrybutOfertaEpokaGold: 5,
   /** willingnessTrade min dla handlu */
   progHandelWillingnessMin: 0.5,
-  /** Fair deal: offered/fair min */
-  progHandelFairRatioMin: 0.8,
-  /** Fair deal: offered/fair max */
-  progHandelFairRatioMax: 1.2,
   /** Zaufanie min dla namówienia do wojny */
   progNamowWojneZaufanie: 50,
   /** Łapówka min = base × (epoka + 1) */
@@ -4938,7 +4926,6 @@ var DIPLO_RELATION_THRESHOLD_KEYS = [
 var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
   "progSojuszZaufanie",
   "progWymianaTechZaufanie",
-  "progNapZaufanie",
   "progNamowWojneZaufanie",
   "progGraniceZaufanie",
   "progTrybutOfertaNearWarZaufanie",
@@ -4947,7 +4934,6 @@ var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
 ];
 var DIPLO_RESPEKT_THRESHOLD_KEYS = [
   "progWasalizacjaRespekt",
-  "progWchloniecieRespekt",
   "progGraniceWojskoweRespekt",
   "progTrybutZadanieMinRespekt",
   "progPoboczneAkceptacja"

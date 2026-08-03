@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// gra/tools/.dip-entry.ts
+// tools/.dip-entry.ts
 var dip_entry_exports = {};
 __export(dip_entry_exports, {
   DEFAULT_POTEGA_WAGI: () => DEFAULT_POTEGA_WAGI,
@@ -40,7 +40,7 @@ __export(dip_entry_exports, {
 });
 module.exports = __toCommonJS(dip_entry_exports);
 
-// gra/src/types/diplomacy.ts
+// src/types/diplomacy.ts
 var RodzajTraktatu = /* @__PURE__ */ ((RodzajTraktatu2) => {
   RodzajTraktatu2["PaktNieagresji"] = "pakt_nieagresji";
   RodzajTraktatu2["SojuszWojskowy"] = "sojusz_wojskowy";
@@ -63,7 +63,7 @@ var StanWojny = /* @__PURE__ */ ((StanWojny2) => {
   return StanWojny2;
 })(StanWojny || {});
 
-// gra/src/types/player.ts
+// src/types/player.ts
 var TypCywilizacji = /* @__PURE__ */ ((TypCywilizacji2) => {
   TypCywilizacji2["Grecy"] = "grecy";
   TypCywilizacji2["Rzymianie"] = "rzymianie";
@@ -85,7 +85,7 @@ var TypCywilizacji = /* @__PURE__ */ ((TypCywilizacji2) => {
   return TypCywilizacji2;
 })(TypCywilizacji || {});
 
-// gra/data/diplomacy.json
+// data/diplomacy.json
 var diplomacy_default = {
   params: {
     handelZawarcie_zaufanie: 2,
@@ -117,7 +117,6 @@ var diplomacy_default = {
     progSojuszZaufanie: 91,
     progWymianaTechZaufanie: 70,
     progWasalizacjaRespekt: 70,
-    progWchloniecieRespekt: 90,
     progMinimalnyRelacja: 30,
     progSojuszRelacja: 151,
     progUmowaMinRelacja: 151,
@@ -130,7 +129,6 @@ var diplomacy_default = {
     progPoboczneAkceptacja: 60,
     progPoboczneHandel: 30,
     progPoboczneWojna: 15,
-    progNapZaufanie: 40,
     progNapRelacja: 50,
     progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
@@ -160,8 +158,6 @@ var diplomacy_default = {
     progTrybutOfertaBaseGold: 10,
     progTrybutOfertaEpokaGold: 5,
     progHandelWillingnessMin: 0.5,
-    progHandelFairRatioMin: 0.8,
-    progHandelFairRatioMax: 1.2,
     progNamowWojneZaufanie: 50,
     progNamowWojneBribeBase: 30,
     progGraniceZaufanie: 45,
@@ -986,7 +982,7 @@ var diplomacy_default = {
   ]
 };
 
-// gra/data/civs.json
+// data/civs.json
 var civs_default = {
   cywilizacje: [
     {
@@ -3563,7 +3559,7 @@ var civs_default = {
   ]
 };
 
-// gra/data/civ-ai.json
+// data/civ-ai.json
 var civ_ai_default = {
   cywilizacje: [
     {
@@ -3752,7 +3748,7 @@ var civ_ai_default = {
   }
 };
 
-// gra/src/game/civ-ai-data.ts
+// src/game/civ-ai-data.ts
 function civAiAggressionNorm(data, civName) {
   const row = data.civAi?.cywilizacje?.find((c) => c.Cywilizacja === civName);
   if (!row || row.agresywnosc == null) return void 0;
@@ -3794,7 +3790,7 @@ function nastawienieBazoweZaufanieDelta(typ, baseTotal = 50) {
   return (row.nastawienieBazowe - baseTotal) / 2;
 }
 
-// gra/data/map-gen-params.json
+// data/map-gen-params.json
 var map_gen_params_default = {
   _meta: {
     opis: "Panel-A export \u2014 generator E2 + mg\u0142a. Kod czyta po P3 / handoff Integratora.",
@@ -3912,7 +3908,7 @@ var map_gen_params_default = {
   }
 };
 
-// gra/src/data/map-gen-params-loader.ts
+// src/data/map-gen-params-loader.ts
 var FALLBACK_ROZMIAR = {
   malenki: [76, 52],
   maly: [108, 74],
@@ -3981,7 +3977,7 @@ function mapGenAllDepositRarities() {
   return out;
 }
 
-// gra/data/e-start-params.json
+// data/e-start-params.json
 var e_start_params_default = {
   _opis: "Panel-E (Grupa E): start, meta, generator E2, zwyci\u0119stwo, tempo. \u0179r\xF3d\u0142o: panele-sterowania/Panel-E.xlsx \u2192 export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i regu\u0142y silnika (docelowo odczyt w TS \u2014 dzi\u015B sync z kodem).",
   defaulty: {
@@ -4017,7 +4013,7 @@ var e_start_params_default = {
     },
     Standardowy: {
       rywale_ai: 6,
-      miasta_panstwa: 6,
+      miasta_panstwa: 5,
       typy_cywilizacji: 6,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 5, min: 4, max: 6 },
@@ -4029,7 +4025,7 @@ var e_start_params_default = {
     },
     Du\u017Cy: {
       rywale_ai: 7,
-      miasta_panstwa: 7,
+      miasta_panstwa: 6,
       typy_cywilizacji: 10,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 6, min: 5, max: 7 },
@@ -4041,7 +4037,7 @@ var e_start_params_default = {
     },
     Ogromny: {
       rywale_ai: 8,
-      miasta_panstwa: 8,
+      miasta_panstwa: 7,
       typy_cywilizacji: 12,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 7, min: 6, max: 8 },
@@ -4056,7 +4052,7 @@ var e_start_params_default = {
       miasta_panstwa: 8,
       typy_cywilizacji: 14,
       typy_cywilizacji_per_epoka: {
-        kamien: { default: 7, min: 6, max: 8 },
+        kamien: { default: 8, min: 7, max: 8 },
         braz: { default: 13, min: 12, max: 14 },
         zelazo: { default: 14, min: 13, max: 15 }
       },
@@ -4123,7 +4119,7 @@ var e_start_params_default = {
   }
 };
 
-// gra/src/data/e-start-params-loader.ts
+// src/data/e-start-params-loader.ts
 var R = e_start_params_default;
 function eStartPlayerCivId() {
   return R.defaulty?.player_civ_id ?? "rzymianie";
@@ -4137,10 +4133,25 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
-// gra/src/map/generator.ts
+// src/map/mapGenProgress.ts
+var MAP_GEN_PHASE_LABELS = {
+  prep: "Przygotowanie siatki",
+  terrain: "Klimat i teren bazowy",
+  landSea: "L\u0105d i ocean",
+  relief: "Relief (g\xF3ry i wzg\xF3rza)",
+  coast: "Wybrze\u017Ce",
+  riversMain: "Rzeki \u2014 g\u0142\xF3wne",
+  riversFill: "Rzeki \u2014 uzupe\u0142nianie",
+  forest: "Las i ro\u015Blinno\u015B\u0107",
+  deposits: "Z\u0142o\u017Ca mineralne",
+  starts: "Pozycje startowe"
+};
+var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
+
+// src/map/generator.ts
 var ROZMIAR_DIMS = mapGenRozmiarDims();
 
-// gra/src/map/newGameMapDefaults.ts
+// src/map/newGameMapDefaults.ts
 var DEFAULT_PLAYER_CIV_ID = eStartPlayerCivId();
 var DEFAULT_START_EPOCH_ID = eStartEpochId();
 var DEFAULT_RENDER_QUALITY = eStartRenderQualityBundled();
@@ -4154,7 +4165,7 @@ var RIVER_SCALE_BY_SIZE = {
 var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
-// gra/src/map/gen-helpers.ts
+// src/map/gen-helpers.ts
 var CLIMATE_DESERT_HALF_ROWS = 3.5;
 var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
@@ -4182,6 +4193,7 @@ var ELEVATION_RANK = {
   ["gory" /* Gory */]: 6,
   ["polarny" /* Polarny */]: 2
 };
+var RIVER_PROFILE_ON = globalThis.process?.env?.CIV_RIVER_PROFILE === "1";
 var BASE_DEPOSIT_RULES = [
   {
     id: "miedz",
@@ -4250,7 +4262,11 @@ var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
   return typeof rarity === "number" ? { ...rule, rarity } : rule;
 });
 
-// gra/data/terrain-improvements.json
+// src/map/clusters.ts
+var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
+var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
+
+// data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
     opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
@@ -4619,7 +4635,7 @@ var terrain_improvements_default = {
   }
 };
 
-// gra/src/game/terrain-improvements.ts
+// src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
 var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
@@ -4628,10 +4644,10 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
 
-// gra/src/map/road-movement.ts
+// src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
-// gra/src/units/setup.ts
+// src/units/setup.ts
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -4643,8 +4659,31 @@ var DEFAULT_TERRAIN_COSTS = {
   ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
 
-// gra/src/game/diplomacy.ts
+// src/game/diplomacy.ts
 var DIPLOMACY_PARAMS = {
   // ---- one-shot Zaufanie deltas (jednorazowo) ----
   /** "Zawarcie umowy handlowej" (+2 Zaufanie, jednorazowo) */
@@ -4708,8 +4747,6 @@ var DIPLOMACY_PARAMS = {
   progWymianaTechZaufanie: 70,
   /** Respekt >= 70 required to demand Wasalizacja */
   progWasalizacjaRespekt: 70,
-  /** Respekt >= 90 required to demand Wchloniecie */
-  progWchloniecieRespekt: 90,
   /** Relacja < 30 = diplomacy nearly impossible */
   progMinimalnyRelacja: 30,
   /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
@@ -4738,9 +4775,7 @@ var DIPLOMACY_PARAMS = {
    */
   progPoboczneWojna: 15,
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Zaufanie >= wartość wymagane do NAP */
-  progNapZaufanie: 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
   progNapRelacja: 50,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja: 0,
@@ -4795,10 +4830,6 @@ var DIPLOMACY_PARAMS = {
   progTrybutOfertaEpokaGold: 5,
   /** willingnessTrade min dla handlu */
   progHandelWillingnessMin: 0.5,
-  /** Fair deal: offered/fair min */
-  progHandelFairRatioMin: 0.8,
-  /** Fair deal: offered/fair max */
-  progHandelFairRatioMax: 1.2,
   /** Zaufanie min dla namówienia do wojny */
   progNamowWojneZaufanie: 50,
   /** Łapówka min = base × (epoka + 1) */
@@ -4941,7 +4972,6 @@ var DIPLO_RELATION_THRESHOLD_KEYS = [
 var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
   "progSojuszZaufanie",
   "progWymianaTechZaufanie",
-  "progNapZaufanie",
   "progNamowWojneZaufanie",
   "progGraniceZaufanie",
   "progTrybutOfertaNearWarZaufanie",
@@ -4950,7 +4980,6 @@ var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
 ];
 var DIPLO_RESPEKT_THRESHOLD_KEYS = [
   "progWasalizacjaRespekt",
-  "progWchloniecieRespekt",
   "progGraniceWojskoweRespekt",
   "progTrybutZadanieMinRespekt",
   "progPoboczneAkceptacja"

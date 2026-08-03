@@ -75,7 +75,6 @@ var diplomacy_default = {
     progSojuszZaufanie: 91,
     progWymianaTechZaufanie: 70,
     progWasalizacjaRespekt: 70,
-    progWchloniecieRespekt: 90,
     progMinimalnyRelacja: 30,
     progSojuszRelacja: 151,
     progUmowaMinRelacja: 151,
@@ -88,7 +87,6 @@ var diplomacy_default = {
     progPoboczneAkceptacja: 60,
     progPoboczneHandel: 30,
     progPoboczneWojna: 15,
-    progNapZaufanie: 40,
     progNapRelacja: 50,
     progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
@@ -118,8 +116,6 @@ var diplomacy_default = {
     progTrybutOfertaBaseGold: 10,
     progTrybutOfertaEpokaGold: 5,
     progHandelWillingnessMin: 0.5,
-    progHandelFairRatioMin: 0.8,
-    progHandelFairRatioMax: 1.2,
     progNamowWojneZaufanie: 50,
     progNamowWojneBribeBase: 30,
     progGraniceZaufanie: 45,
@@ -4616,6 +4612,29 @@ var DEFAULT_TERRAIN_COSTS = {
   ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
 
 // src/game/diplomacy.ts
 var DIPLOMACY_PARAMS = {
@@ -4681,8 +4700,6 @@ var DIPLOMACY_PARAMS = {
   progWymianaTechZaufanie: 70,
   /** Respekt >= 70 required to demand Wasalizacja */
   progWasalizacjaRespekt: 70,
-  /** Respekt >= 90 required to demand Wchloniecie */
-  progWchloniecieRespekt: 90,
   /** Relacja < 30 = diplomacy nearly impossible */
   progMinimalnyRelacja: 30,
   /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
@@ -4711,9 +4728,7 @@ var DIPLOMACY_PARAMS = {
    */
   progPoboczneWojna: 15,
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Zaufanie >= wartość wymagane do NAP */
-  progNapZaufanie: 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
   progNapRelacja: 50,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja: 0,
@@ -4768,10 +4783,6 @@ var DIPLOMACY_PARAMS = {
   progTrybutOfertaEpokaGold: 5,
   /** willingnessTrade min dla handlu */
   progHandelWillingnessMin: 0.5,
-  /** Fair deal: offered/fair min */
-  progHandelFairRatioMin: 0.8,
-  /** Fair deal: offered/fair max */
-  progHandelFairRatioMax: 1.2,
   /** Zaufanie min dla namówienia do wojny */
   progNamowWojneZaufanie: 50,
   /** Łapówka min = base × (epoka + 1) */
@@ -4914,7 +4925,6 @@ var DIPLO_RELATION_THRESHOLD_KEYS = [
 var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
   "progSojuszZaufanie",
   "progWymianaTechZaufanie",
-  "progNapZaufanie",
   "progNamowWojneZaufanie",
   "progGraniceZaufanie",
   "progTrybutOfertaNearWarZaufanie",
@@ -4923,7 +4933,6 @@ var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
 ];
 var DIPLO_RESPEKT_THRESHOLD_KEYS = [
   "progWasalizacjaRespekt",
-  "progWchloniecieRespekt",
   "progGraniceWojskoweRespekt",
   "progTrybutZadanieMinRespekt",
   "progPoboczneAkceptacja"
@@ -12879,6 +12888,13 @@ function treatyPnGate(actionId, payload, relation, pnOpts) {
   }
   return null;
 }
+function tradeWillingnessBlocksAcceptance(stance, params, givePn, receivePn, relTotal, payload) {
+  if (stance.willingnessTrade >= params.progHandelWillingnessMin) return false;
+  const hasBasket = givePn > 0 || receivePn > 0 || (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
+  if (!hasBasket) return false;
+  if (pnDealAcceptedByAi(givePn, receivePn, relTotal)) return false;
+  return true;
+}
 function evaluateProposal(proposal, ctx) {
   const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
   const { relation, stanWojny } = ctx;
@@ -12906,6 +12922,12 @@ function evaluateProposal(proposal, ctx) {
   if (pnReject) return pnReject;
   switch (actionId) {
     case "nap": {
+      if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgNapMin) {
+        return {
+          accepted: false,
+          reason: `Wiarygodno\u015B\u0107 zbyt niska na pakt (wymagana \u2265 ${p.wiarygodnoscProgNapMin})`
+        };
+      }
       const napEase = sweetenerEasePoints(payload, pnOpts);
       const napThreshold = Math.max(0, p.progNapRelacja - napEase);
       if (score < napThreshold) {
@@ -12929,6 +12951,12 @@ function evaluateProposal(proposal, ctx) {
     }
     case "sojusz_defensywny":
     case "sojusz_pelny": {
+      if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgSojuszMin) {
+        return {
+          accepted: false,
+          reason: `Wiarygodno\u015B\u0107 zbyt niska na sojusz (wymagana \u2265 ${p.wiarygodnoscProgSojuszMin})`
+        };
+      }
       const kind = actionId === "sojusz_defensywny" ? "sojusz_defensywny" : "sojusz_pelny";
       const milRatio = ctx.militaryRatio ?? 1;
       const adj = diplomacyAllianceStrengthAdjust(
@@ -13061,7 +13089,7 @@ function evaluateProposal(proposal, ctx) {
         }
         return { accepted: true, reason: "Dar przyj\u0119ty", oneShotTrade: true };
       }
-      if (stance.willingnessTrade < p.progHandelWillingnessMin) {
+      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
         return { accepted: false, reason: "Brak ch\u0119ci do handlu" };
       }
       if (score < p.progHandelRelacja) {
@@ -13120,14 +13148,14 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
     }
     case "umowa_szlakow": {
-      if (stance.willingnessTrade < p.progHandelWillingnessMin) {
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+      const relTotal = relationTotal(relation);
+      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
         return { accepted: false, reason: "Brak ch\u0119ci do handlu" };
       }
       if (score < p.progHandelRelacja) {
         return { accepted: false, reason: `Relacja zbyt niska na traktat handlowy (wymagane \u2265 ${p.progHandelRelacja})` };
       }
-      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const relTotal = relationTotal(relation);
       const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
       if (hasItems && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
         return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
@@ -13347,7 +13375,8 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
         id: makeDealId("pending-handel", turn, fromOwnerId, toOwnerId),
         payload: {
           goldOnce,
-          giveItems: [goldBasket]
+          giveItems: [goldBasket],
+          isGift: true
         },
         actionId: "handel"
       };
@@ -13401,8 +13430,33 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
       return null;
   }
 }
-function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
+var NEGOTIATION_PEACE_REQUIRED = /* @__PURE__ */ new Set([
+  "nap",
+  "sojusz_defensywny",
+  "sojusz_pelny",
+  "handel",
+  "umowa_handlowa",
+  "umowa_szlakow",
+  "granice",
+  "tech",
+  "wasal",
+  "trybut_zadanie"
+]);
+var PEACE_ACTIONS_DURING_WAR = /* @__PURE__ */ new Set([
+  "pokoj",
+  "trybut_oferta",
+  "ultimatum"
+]);
+function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal", opts) {
   const { actionId, fromOwnerId, toOwnerId, payload } = pending;
+  if (opts?.atWar === true) {
+    if (isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
+      return { accepted: false, reason: "W wojnie pieni\u0105dze tylko w ugodzie pokojowej" };
+    }
+    if (NEGOTIATION_PEACE_REQUIRED.has(actionId) && !PEACE_ACTIONS_DURING_WAR.has(actionId)) {
+      return { accepted: false, reason: "Wybuch\u0142a wojna \u2014 warunki straci\u0142y aktualno\u015B\u0107" };
+    }
+  }
   switch (actionId) {
     case "nap": {
       const turns = clamp2(payload.turns ?? 15, 10, 20);
@@ -13550,18 +13604,6 @@ var CITY_STATE_TRIBUTE_BLOCK_REASON = "Trybut niedost\u0119pny u miasta-pa\u0144
 function tributeBlockedForCityState(ctx) {
   return ctx.proposerIsCityState === true || ctx.responderIsCityState === true;
 }
-var NEGOTIATION_PEACE_REQUIRED = /* @__PURE__ */ new Set([
-  "nap",
-  "sojusz_defensywny",
-  "sojusz_pelny",
-  "handel",
-  "umowa_handlowa",
-  "umowa_szlakow",
-  "granice",
-  "tech",
-  "wasal",
-  "trybut_zadanie"
-]);
 function negotiationStillValid(entry, world) {
   if (world.proposerEliminated || world.responderEliminated) {
     return { valid: false, reason: "Jedna ze stron zosta\u0142a wyeliminowana z gry \u2014 propozycja wygas\u0142a" };
