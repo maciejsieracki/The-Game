@@ -1,3 +1,12 @@
+## [23:45 PL, 2026-08-03] CLOUD → Maciej — ECHO R-AI-KOLONIZACJA (docs only)
+- **Q1=A** pop źródła ≥5 (5→4) · priorytet founding · `foundCityAt` bez osadnika
+- **Q2=A** max 1 miasto/turę/cyw. + surge 2/turę gdy brak wolnych MP na mapie
+- **Q3=B** agresja epok 1–3 (Kamień–Żelazo); potem founding jeśli dobre hexy poza zasięgiem
+- **DYSTANS=4 hex** (`min_dystans_miast` + `ekspansja_min_dystans_miast`) — gracz i AI
+- Cel: pokrycie mapy zasięgiem miast · `hexCityScore` odrzuca słabe hexy
+- Docs: `docs/decyzje/R-AI-KOLONIZACJA.md` · branch `cursor/abc-ai-kolonizacja-63a1`
+CZEKAM-NA: Maciej **`działaj`**
+
 ## [23:11 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 206 `1c7e9df7`
 - md5: `1c7e9df7bf4c74258ae122fc0bda846d` · stempel: ROBOCZA · 2026-08-03 23:11
 - **#56** wchłonięcie MP · **#54** D3 W + cleanup · **#53** bez Dźwigni 2 · **#49** tempo WIAR-Q3 · **#48** manpower ep1 500 · **#50** UI Relacja ±%

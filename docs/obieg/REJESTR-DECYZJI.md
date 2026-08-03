@@ -245,3 +245,7 @@ Po wdrożeniu ten sam wiersz przechodzi w górę statusów aż do ✅ (Master). 
 | **R-AUTO-BUDOWA-LISTA-Q2** | 2026-08-03 | **A** — Lista: pomiń zablokowane i wróć później (v2) | B | 🟡 **ZAPISANA** | v2 Lista | R-AUTO-BUDOWA-LISTA |
 | **R-AUTO-BUDOWA-LISTA-Q3** | 2026-08-03 | **A** — v1 = tylko Priorytet typów; Lista nazwana później | B | 🟢 **WDROŻONE (kod)** | cities.ts · auto-manage.ts · cityPanel · main.ts | R-AUTO-BUDOWA-LISTA |
 | **R-AUTO-BUDOWA-LISTA-Q1** | 2026-08-03 | **A** doprec. | B | 🟡 **ZAPISANA** | — | |
+| **R-AI-KOLONIZACJA-Q1** | 2026-08-03 | **A** — pop źródła ≥5 (5→4); priorytet founding; `foundCityAt` bez osadnika | D | 🟡 **ZAPISANA** | — | [`R-AI-KOLONIZACJA.md`](../decyzje/R-AI-KOLONIZACJA.md) · czeka `działaj` |
+| **R-AI-KOLONIZACJA-Q2** | 2026-08-03 | **A** — max 1 miasto/turę/cyw. + surge 2/turę gdy brak wolnych MP | D | 🟡 **ZAPISANA** | — | j.w. |
+| **R-AI-KOLONIZACJA-Q3** | 2026-08-03 | **B** — agresywna reguła epok 1–3 (Kamień–Żelazo) | D | 🟡 **ZAPISANA** | — | j.w. |
+| **R-AI-KOLONIZACJA-DYSTANS** | 2026-08-03 | **4 hex** min od innego miasta (`min_dystans_miast` + `ekspansja_min_dystans_miast`); gracz i AI | D | 🟡 **ZAPISANA** | — | dopisek Macieja · j.w. |
