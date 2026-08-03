@@ -5072,3 +5072,9 @@ CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`
 - Test: scout 15/15 · triumph 10/10 · tsc 0 · VERIFY OK
 - Sesja lokalna: `git pull` na dysk właściciela
 CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
+
+## [14:30 PL, 2026-08-03] CLOUD → Maciej — backlog 3 tematy (bez kodu)
+- R-AUTO-BUDOWA-LISTA · R-AUTO-ULEPSZENIA · R-STAWKI-STROJENIE (NADMIAR)
+- Plany gotowe: PLAN-AUTO-LISTA-BUDOWNICZA · PLAN-AUTO-ULEPSZENIA · PLAN-BALANS-NADMIAR-SUROWCOW
+- FALA 203 już na ROBOCZA (`5f529a24`)
+CZEKAM-NA: Maciej wybór kolejności (rekom.: najpierw balans surowców)
