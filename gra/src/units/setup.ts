@@ -69,6 +69,9 @@ export interface RuntimeUnit {
    *  tury, ownerId-agnostyczne). Trwałe między turami poza tym — nic innego nie
    *  czyści tego pola automatycznie. */
   sentry?: boolean;
+  /** P-SCOUT-EXPLORE-Q1=A: auto-zwiedzanie mapy — domyślnie wyłączone (undefined/false).
+   *  Po włączeniu zużywa ruch od razu + kontynuuje na EOT (Q2=A założenie). */
+  autoExplore?: boolean;
   /** DYSPOZYCJA Macieja 2026-07-26 ("fortyfikacja w polu"): jednostka ufortyfikowana
    *  POZA hexem własnego miasta (akcja „Ufortyfikuj" gdy cityAtUnit(u) nie zwraca
    *  własnego miasta -- w tym KAŻDA jednostka oblegająca, bo oblegający stoją przy

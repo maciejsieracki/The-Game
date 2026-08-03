@@ -155,7 +155,7 @@ import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
 import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
-import { runScoutsAutoExplore } from './game/scout-auto-explore';
+import { advanceScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
 import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, normalizePodzialHandlu, type City, type BudowaFocus, type CityPodzialHandlu } from './game/cities';
 import {
@@ -3722,6 +3722,7 @@ async function boot(): Promise<void> {
         veteranPanelExplanation: vetEdu?.veteranPanelExplanation,
         inGarnizon: u.inGarnizon === true,
         sentry: u.sentry === true,
+        autoExplore: u.autoExplore === true,
         ufortyfikowanyWPolu: u.ufortyfikowanyWPolu === true,
         oblegaCityName: siegeCity?.name,
         buildingBonusLabel: unitBuildingBonusLabel(u),
@@ -13836,6 +13837,15 @@ async function boot(): Promise<void> {
           label: enteringSentry ? 'Czuwaj' : 'Obud\u017a',
           disabled: unitSentryActionDisabled(active, stackRuch),
         });
+        // P-SCOUT-EXPLORE-Q1=A: przycisk Zwiedzaj — tylko zwiadowca, domyślnie OFF.
+        if (isScoutUnit(active)) {
+          const exploring = active.autoExplore === true;
+          actions.push({
+            id: 'scout-explore',
+            label: exploring ? 'Wy\u0142\u0105cz zwiedzanie' : 'Zwiedzaj',
+            disabled: false,
+          });
+        }
         // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
         // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
         // jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
@@ -13996,6 +14006,38 @@ async function boot(): Promise<void> {
         } else {
           for (const su of stack) su.sentry = false;
           showHintMessage('Obudzono: ' + u.typeId, 2000);
+        }
+        refreshD1bHud();
+      } else if (actionId === 'scout-explore') {
+        if (!isScoutUnit(u)) return;
+        const enabling = u.autoExplore !== true;
+        if (enabling) {
+          u.autoExplore = true;
+          if (u.ruchLeft > 0 && !u.inGarnizon && !u.oblegaCityId) {
+            const scoutStep = (su: RuntimeUnit) => {
+              if (su.ownerId === 0) checkVillageRewardAt(su.q, su.r);
+              if (applyCityVisitBonusesAtHex(su, su.q, su.r, su.ownerId === 0)) {
+                syncUnitsRender();
+              }
+            };
+            const res = advanceScoutAutoExplore(
+              u,
+              map,
+              explored,
+              units,
+              unitSight(u),
+              Math.random,
+              scoutStep,
+            );
+            if (res.moved) {
+              syncUnitsRender();
+              refreshFog();
+            }
+          }
+          showHintMessage(u.typeId + ' zwiedza map\u0119', 2500);
+        } else {
+          u.autoExplore = false;
+          showHintMessage('Wy\u0142\u0105czono zwiedzanie', 2000);
         }
         refreshD1bHud();
       }

@@ -1,6 +1,6 @@
 /**
  * scout-auto-explore.ts — automatyczne zwiedzanie mapy przez zwiadowców.
- * Losowy kierunek z preferencją nieodkrytych heksów (mgła).
+ * Priorytet: widoczna chatka → mgła. Tylko jednostki z autoExplore=true.
  */
 
 import type { GameMap } from '../types/map';
@@ -17,8 +17,10 @@ const HEX_NEIGHBORS: ReadonlyArray<readonly [number, number]> = [
   [+1, 0], [-1, 0], [0, +1], [0, -1], [+1, -1], [-1, +1],
 ];
 
+const SCOUT_TYPE_ID = 'Zwiadowca';
+
 export function isScoutUnit(unit: RuntimeUnit): boolean {
-  return unit.category === 'zwiadowca';
+  return unit.category === 'zwiadowca' || unit.typeId === SCOUT_TYPE_ID;
 }
 
 /** Punkty za heksy nieodkryte w zasięgu wzroku + sąsiednie ukryte. */
@@ -57,8 +59,44 @@ function deductStepCost(unit: RuntimeUnit, cost: number): void {
   }
 }
 
+/** Priorytet 1: najbliższa widoczna, nieprzejęta chatka w zasięgu ruchu. */
+function pickVisibleVillageTarget(
+  unit: RuntimeUnit,
+  map: GameMap,
+  reachable: ReadonlySet<string>,
+  occupied: ReadonlySet<string>,
+  sight: number,
+): { q: number; r: number } | null {
+  const visible = computeVisibleAt(unit.q, unit.r, map, sight);
+  let bestDist = Infinity;
+  let best: { q: number; r: number } | null = null;
+
+  for (const key of visible) {
+    if (!reachable.has(key)) continue;
+    const hex = map.hexes[key];
+    if (!hex?.wioska?.istnieje) continue;
+    if (hex.wlasciciel !== null) continue;
+
+    const parts = key.split(',');
+    if (parts.length !== 2) continue;
+    const q = Number(parts[0]);
+    const r = Number(parts[1]);
+    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+
+    const path = computePath(unit, map, q, r, new Set(occupied));
+    if (path.length === 0) continue;
+
+    if (path.length < bestDist) {
+      bestDist = path.length;
+      best = { q, r };
+    }
+  }
+
+  return best;
+}
+
 /**
- * Wybiera docelowy heks w zasięgu ruchu — preferuje mgłę + losowy szum.
+ * Wybiera docelowy heks w zasięgu ruchu — priorytet: widoczna chatka, potem mgła.
  */
 export function pickScoutExploreTarget(
   unit: RuntimeUnit,
@@ -71,6 +109,9 @@ export function pickScoutExploreTarget(
   const reachable = computeReachable(unit, map, new Set(occupied));
   reachable.delete(keyOf(unit.q, unit.r));
   if (reachable.size === 0) return null;
+
+  const villageTarget = pickVisibleVillageTarget(unit, map, reachable, occupied, sight);
+  if (villageTarget) return villageTarget;
 
   let bestScore = -Infinity;
   const candidates: { q: number; r: number }[] = [];
@@ -97,7 +138,7 @@ export function pickScoutExploreTarget(
 }
 
 /**
- * Zużywa pozostały ruch zwiadowcy — krok po kroku w stronę nieodkrytych pól.
+ * Zużywa pozostały ruch zwiadowcy — krok po kroku w stronę chatki lub mgły.
  */
 export function advanceScoutAutoExplore(
   unit: RuntimeUnit,
@@ -148,7 +189,7 @@ export function advanceScoutAutoExplore(
   return { moved, steps };
 }
 
-/** Wszystkie zwiadowcy danego gracza — auto-zwiedzanie przed końcem tury. */
+/** Zwiadowcy gracza z autoExplore=true — auto-zwiedzanie przed końcem tury. */
 export function runScoutsAutoExplore(
   units: RuntimeUnit[],
   map: GameMap,
@@ -162,6 +203,9 @@ export function runScoutsAutoExplore(
   let totalSteps = 0;
   for (const u of units) {
     if (u.ownerId !== playerOwnerId) continue;
+    if (!isScoutUnit(u)) continue;
+    if (u.autoExplore !== true) continue;
+    if (u.sentry === true) continue;
     const r = advanceScoutAutoExplore(
       u,
       map,

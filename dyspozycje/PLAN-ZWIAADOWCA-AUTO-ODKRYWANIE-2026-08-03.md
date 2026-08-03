@@ -3,6 +3,7 @@
 **Data:** 2026-08-03  
 **Branch planu:** `cursor/plan-scout-auto-explore-btn-63a1`  
 **ID:** P-SCOUT-EXPLORE-Q1  
+**Status:** WDROŻONE (kod) — branch `cursor/fix-scout-auto-explore-btn-63a1`
 
 ## Sytuacja (dziś w grze)
 

@@ -36,7 +36,7 @@ function assert(cond, msg) {
   }
 }
 
-function makeMap() {
+function makeMap(extraHexes = {}) {
   const hexes = {};
   for (let q = 0; q < 8; q++) {
     for (let r = 0; r < 8; r++) {
@@ -46,13 +46,16 @@ function makeMap() {
         terenBazowy: 'rownina',
         nakladka: null,
         rzeka: { obecna: false },
+        wioska: { istnieje: false, ludnosc: 0 },
+        wlasciciel: null,
+        ...extraHexes[key],
       };
     }
   }
   return { szerokoscQ: 8, wysokoscR: 8, hexes };
 }
 
-function scout(q, r, ruchLeft = 3) {
+function scout(q, r, ruchLeft = 3, extra = {}) {
   return {
     id: 'scout-1',
     ownerId: 0,
@@ -62,13 +65,18 @@ function scout(q, r, ruchLeft = 3) {
     r,
     ruch: 3,
     ruchLeft,
+    ...extra,
   };
 }
 
 console.log('scout-auto-explore-test');
 
 assert(isScoutUnit(scout(0, 0)), 'zwiadowca rozpoznawany');
-assert(!isScoutUnit({ ...scout(0, 0), category: 'miecznik' }), 'wojownik nie jest zwiadowcą');
+assert(!isScoutUnit({ ...scout(0, 0), category: 'miecznik', typeId: 'Wojownik' }), 'wojownik nie jest zwiadowcą');
+assert(
+  isScoutUnit({ ...scout(0, 0), category: 'miecznik', typeId: 'Zwiadowca' }),
+  'isScoutUnit po typeId Zwiadowca',
+);
 
 const map = makeMap();
 const explored = new Set(['0,0', '1,0', '0,1']);
@@ -101,8 +109,12 @@ assert(stepCalls > 0 && stepCalls === res.steps, 'onAfterStep wywoływany po ka�
 const u2 = scout(3, 3, 0);
 assert(!advanceScoutAutoExplore(u2, map, explored, [u2], sight).moved, 'brak ruchu = brak ruchu');
 
+// runScoutsAutoExplore: tylko autoExplore=true
+const offScout = scout(1, 1, 2, { id: 'scout-off', autoExplore: false });
+const onScout = scout(4, 4, 2, { id: 'scout-on', autoExplore: true });
+const foreign = { ...scout(5, 5, 2), id: 'scout-2', ownerId: 1, autoExplore: true };
 const batch = runScoutsAutoExplore(
-  [scout(1, 1, 2), { ...scout(4, 4, 2), id: 'scout-2', ownerId: 1 }],
+  [offScout, onScout, foreign],
   map,
   explored,
   0,
@@ -110,7 +122,41 @@ const batch = runScoutsAutoExplore(
   () => 0.33,
 );
 assert(batch.movedUnitIds.length >= 1, 'runScoutsAutoExplore porusza zwiadowcę gracza');
+assert(batch.movedUnitIds.includes('scout-on'), 'rusza tylko autoExplore=true');
+assert(!batch.movedUnitIds.includes('scout-off'), 'nie rusza bez autoExplore');
 assert(batch.movedUnitIds.every(id => id !== 'scout-2'), 'nie rusza obcych zwiadowców');
+
+// sentry pomijany w runScoutsAutoExplore
+const sentryScout = scout(2, 2, 2, { id: 'scout-sentry', autoExplore: true, sentry: true });
+const batchSentry = runScoutsAutoExplore(
+  [sentryScout],
+  map,
+  explored,
+  0,
+  () => 2,
+  () => 0.33,
+);
+assert(batchSentry.movedUnitIds.length === 0, 'sentry=true pomijany mimo autoExplore');
+
+// widoczna wioska wygrywa z samym fog score
+const villageMap = makeMap({
+  '3,1': {
+    wioska: { istnieje: true, ludnosc: 1 },
+    wlasciciel: null,
+  },
+});
+const villageScout = scout(1, 1, 3);
+const villageExplored = new Set(['0,0', '1,0', '0,1', '1,1', '2,1']);
+const villageTarget = pickScoutExploreTarget(
+  villageScout,
+  villageMap,
+  villageExplored,
+  new Set(),
+  3,
+  () => 0,
+);
+assert(villageTarget !== null && villageTarget.q === 3 && villageTarget.r === 1,
+  'widoczna wioska wygrywa z fog score');
 
 console.log(`\nWynik: ${passed} OK, ${failed} FAIL`);
 process.exit(failed > 0 ? 1 : 0);

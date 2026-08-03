@@ -5049,3 +5049,12 @@ CZEKAM-NA: sesja lokalna pull na dysk właściciela + smoke Macieja
 - Wpięte: START-TU, CLAUDE.md, PAMIEC, KOMENDY, REJESTR-PROSB, PYTANIA-OTWARTE
 CZEKAM-NA: Maciej — ewentualnie `deploy` docs na main (albo merge branch); gra bez zmian
 
+## [12:30 PL, 2026-08-03] CLOUD -> wszyscy — P-SCOUT-EXPLORE (Zwiedzaj)
+- Branch: `cursor/fix-scout-auto-explore-btn-63a1`
+- Q1=A: przycisk Zwiedzaj/Wyłącz zwiedzanie, domyślnie OFF (`autoExplore`)
+- Q2=A [ZAŁOŻENIE]: ruch od razu po włączeniu + EOT gdy flaga ON
+- Priorytet celu: widoczna chatka (`wioska.istnieje`, wlasciciel null) > mgła
+- Test: scout-auto-explore-test.cjs PASS · tsc pending
+- ID: R-SCOUT-ZWIEDZAJ · P-SCOUT-EXPLORE
+CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja
+

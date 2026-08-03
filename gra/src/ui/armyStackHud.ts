@@ -188,6 +188,12 @@ const ASH_ACTION_ICONS: Partial<Record<string, string>> = {
     '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none">'
     + '<path d="M20.7 14.9A9 9 0 1 1 9.4 3.3a7.2 7.2 0 0 0 11.3 11.6z"/>'
     + '</svg>',
+  'scout-explore':
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<circle cx="12" cy="12" r="9"/>'
+    + '<path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>'
+    + '<path d="m8 8 8 8M16 8l-8 8" stroke-width="1.5" opacity=".35"/>'
+    + '</svg>',
 };
 
 function outlineBtn(label: string, dataAttr: string, extraClass = '', disabled = false, title = ''): string {
