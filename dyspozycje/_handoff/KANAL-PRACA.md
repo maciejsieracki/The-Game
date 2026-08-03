@@ -5072,3 +5072,9 @@ CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`
 - Test: scout 15/15 · triumph 10/10 · tsc 0 · VERIFY OK
 - Sesja lokalna: `git pull` na dysk właściciela
 CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
+
+## [16:55 PL, 2026-08-03] CLOUD → ALL — R-PROC-ABC-FULL-ID
+- Maciej: przy ABC **zakaz gołego Q1** — zawsze pełne ID (`R-TEMAT-Qn`), bo wiele wątków.
+- Wpięte: PROCEDURA §3a · PAMIEC · abc-pelna-forma · numer-abc-commit-deploy.mdc · REJESTR
+- Branch: `cursor/proc-abc-full-id-63a1`
+CZEKAM-NA: merge docs (bez deploy gry)

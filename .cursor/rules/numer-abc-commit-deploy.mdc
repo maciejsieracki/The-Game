@@ -12,8 +12,14 @@ alwaysApply: true
 
 1. **Każdy** case Macieja (pytanie o konkret, bug, poprawka, zmiana, innowacja) → **natychmiast numer (ID)** + wpis w `dyspozycje/REJESTR-PROSB-I-ZADAN.md` (bugi też `REJESTR-PROBLEMOW-AI.md` / `P-AI-###`).
 2. Po rozpoznaniu tematu: **NIE** edytuj `gra/src` ani `gra/data` od razu — **przedstaw rozwiązanie** (± pełne ABC). STOP i czekaj.
-3. Kod + **`git commit`** dopiero po decyzji w formie **`numer + A|B|C`** (np. `42 A`, `R-STAWKI-STROJENIE B`).
+3. Kod + **`git commit`** dopiero po decyzji w formie **`pełne-ID + A|B|C`** (np. `R-AUTO-BUDOWA-LISTA-Q2 A`, `R-STAWKI-STROJENIE B`).
 4. **Deploy** do `gra-robocza/` **tylko** gdy Maciej napisze **`deploy`** / „deploy do robocza” / „publish robocza”. Sam commit ≠ deploy. Autonomia C-ORG-Q17 **nie** nadpisuje tej reguły.
+
+## Pełne ID pytań (`R-PROC-ABC-FULL-ID`)
+
+- **ZAKAZ** gołego `Q1` / `Q2` / `Q3` w paczkach ABC, Ask i ECHO (wiele wątków naraz).
+- **WYMAGANE:** `R-<TEMAT>-Qn` (np. `R-AUTO-BUDOWA-LISTA-Q3`).
+- Nagłówek paczki wymienia pełne ID; ECHO powtarza `ID=litera` dla każdego.
 
 ## Checklist
 
