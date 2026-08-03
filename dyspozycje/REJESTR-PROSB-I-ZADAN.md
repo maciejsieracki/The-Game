@@ -23,6 +23,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-SCOUT-ZWIEDZAJ | 2026-08-03 | Zwiadowca: przycisk Zwiedzaj (autoExplore), priorytet chatka > mgła | **ZDEPLOYOWANE `5f529a24`** (FALA 203) | P-SCOUT-EXPLORE-Q1=A, Q2=B · `docs/decyzje/P-SCOUT-EXPLORE.md` |
 | R-AUTO-ULEPSZENIA | 2026-08-03 | Auto-ulepszenia: Q1=C · Q2=B · Q3=B · Q4=A (EOT commit, bez cofnięcia) · Q5 UI mapa | **GOTOWE (PR #37)** | `docs/decyzje/P-AUTO-ULEPSZENIA.md` · branch `cursor/fix-ulepszenia-map-build-hud-63a1` |
 | R-TRIUMPH-CS | 2026-08-03 | Triumf po zjednoczeniu ostatniego miasta-państwa tej samej cywilizacji (gracz) | **ZDEPLOYOWANE `5f529a24`** (FALA 203) | P-TRIUMPH-CS-Q1=B · `docs/decyzje/P-TRIUMPH-CS.md` · `triumph-city-state.ts` |
+| R-AUTO-V2 | 2026-08-03 | Domknięcie auto: budowa+ulepszenia Q1–Q9 | **ZAPISANE (docs)** | `docs/decyzje/R-AUTO-V2.md` · Q4=B Q5=doprec. Q6–Q9=A · wdrożenie w kolejce |
 
 ---
 
