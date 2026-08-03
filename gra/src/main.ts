@@ -1017,8 +1017,6 @@ import {
   diplomacyHandelSurowcePakietWielkosc,
   diplomacyHandelSurowceCatalog,
   diplomacyPnSurowiecIlosc,
-  diplomacyMaxZaufanieNaTureForWiarygodnosc,
-  type PnRelacjaParams,
 } from './game/diplomacy-value-catalog';
 import {
   collectUnauthorizedBorderPairs,
@@ -6435,15 +6433,7 @@ async function boot(): Promise<void> {
     ): void {
       const cur = getDiploRelation(proposerId, responderId);
       const meta = getDiploPairMeta(proposerId, responderId);
-      // Dźwignia 2 (§5, WIAR-9.5b=B) — limit Zaufania kupowalnego na turę zależy od
-      // Wiarygodności SPRAWCY (proposerId, ten kto daje/dopłaca) — im gorsza reputacja
-      // proponenta, tym mniej Zaufania może "kupić" darem/nadwyżką handlową w tej
-      // turze. Reputacja dodatnia nie zmienia niczego (zostaje dzisiejsze 5/turę) —
-      // patrz diplomacyMaxZaufanieNaTureForWiarygodnosc (diplomacy-value-catalog.ts).
-      const pnRelacjaParams: PnRelacjaParams = {
-        max_zaufanie_na_ture: diplomacyMaxZaufanieNaTureForWiarygodnosc(getWiarygodnosc(proposerId)),
-      };
-      const applied = applyPnTrustToRelation(cur, meta, givePn, receivePn, isGift, pnRelacjaParams);
+      const applied = applyPnTrustToRelation(cur, meta, givePn, receivePn, isGift);
       setDiploRelation(proposerId, responderId, applied.rel);
       setDiploPairMeta(proposerId, responderId, applied.meta);
       // FAZA 1 pkt 6: to jest RZECZYWISTA delta Zaufania z PN (dar/handel) — inna niż

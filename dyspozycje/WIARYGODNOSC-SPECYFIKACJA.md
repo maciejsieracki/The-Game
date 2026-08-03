@@ -556,6 +556,13 @@ każdą wielkość `dZ` automatycznie — nie trzeba nowego klampowania w `tickD
 
 ### Dźwignia 2 — wpływ na istniejący SUFIT Zaufania
 
+**WYCOFANE — decyzja R-WIARYGODNOSC-DZWIGNIA2-Q1=A (2026-08-03).** Nie wdrażać.
+Kod usunięty 2026-08-03 (branch `cursor/wiarygodnosc-usun-dzwignia2-63a1`). Zostaje flat
+`max_zaufanie_na_ture = 5` pkt Zaufania/turę z darów/handlu — bez obniżania limitu wg W.
+Szczegóły: `docs/decyzje/R-WIARYGODNOSC-DZWIGNIA2-USUNIECIE-2026-08-03.md`.
+
+~~⚠️ NIE PROJEKTUJEMY nowego sufitu ani nie ruszamy mechaniki Zaufania.~~ (historyczny opis poniżej — nie obowiązuje)
+
 ⚠️ **NIE PROJEKTUJEMY nowego sufitu ani nie ruszamy mechaniki Zaufania.** Sufit zaufania i ochrona przed
 kupowaniem go darami JUŻ ISTNIEJĄ i działają — zostają nietknięte. Rola Wiarygodności: wchodzi jako
 WEJŚCIE do istniejącego mechanizmu sufitu, obniżając go dla cywilizacji o złej reputacji. Implementacja:
@@ -822,7 +829,7 @@ zweryfikowane grepem). Część haków trzeba dopiero dobudować, nie tylko pod�
 | P4 (30 tur bez wojny) | ❌ NOWY HAK, wymaga licznika kolejnych tur pokoju | wzorem zaniku `urazyHistoryczne` co 20 tur, `game/diplomacy.ts:1425-1433` |
 | P5 (pomoc sojusznikowi) | ❌ NOWY HAK, dane już policzone | `main.ts:8523-8577`, `joinedWarOwnerIds.push`, linie 8531/8556 |
 | Strumień Wiarygodność→Zaufanie (§5) | ❌ NOWY HAK | `tickDiplomacy`, `game/diplomacy.ts:1403-1452`, nowy składnik `dZ` |
-| Sufit Zaufania (Dźwignia 2) | ❌ NOWY HAK, znaleźć istniejące miejsce liczenia sufitu | do namierzenia przy implementacji |
+| Sufit Zaufania (Dźwignia 2) | **WYCOFANE** (DZWIGNIA2=A, 2026-08-03) — flat `max_zaufanie_na_ture=5` | `diplomacyClampTrustGainNaTure` |
 | Twarde progi (Dźwignia 3) | ❌ NOWY HAK | `game/diplomacy-proposals.ts:371-420` (sojusz), bramka NAP do namierzenia analogicznie |
 | Pierwszy kontakt (Dźwignia 4) | ❌ NOWY HAK | miejsce nawiązania kontaktu dyplomatycznego, do namierzenia |
 
