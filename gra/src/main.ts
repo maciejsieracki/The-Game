@@ -848,8 +848,8 @@ import {
   loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
   scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady,
   BARBARIAN_OWNER_ID, isBarbarian,
-  loadSeaBarbParams, spawnSeaCamps, decideSeaPeoplesRaids, collectSeaRaidTargets,
-  isCoastalCity,
+  loadSeaBarbParams, spawnSeaPeoplesRaiders, purgeNavalCamps, decideSeaPeoplesRaids,
+  collectSeaRaidTargets, isCoastalCity, SEA_WAVE_CAMP_ID,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
@@ -20910,23 +20910,23 @@ async function boot(): Promise<void> {
           const barbLevel = _menuAdvanced?.barbariansLevel ?? 'wielu';
           const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel);
           if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
+            const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
+
+            // R-LUDY-MORZA-Q1=A: w Brązie zero obozów naval — usuń stare z save.
+            if (player.era === 2) {
+              const beforePurge = barbCamps.length;
+              barbCamps = purgeNavalCamps(barbCamps);
+              if (beforePurge !== barbCamps.length) {
+                console.log(`[Ludy Morza] Tura ${turn}: usunięto ${beforePurge - barbCamps.length} obozów naval`);
+              }
+            }
+
             // Spawn new camps if needed (seed from turn to vary each game).
             // TEMAT #15: sloty lądowe liczone bez obozów nadmorskich (osobny limit).
             const newCamps = spawnCamps(map, barbCamps.filter(c => c.naval !== true), cities, barbLive, turn * 31337);
             barbCamps = [...barbCamps, ...newCamps];
             if (newCamps.length > 0) {
               console.log(`[Barbarzyncy] Tura ${turn}: nowe obozy: ${newCamps.length}`);
-            }
-
-            // TEMAT #15 (Ludy Morza na morzu): w epoce Brązu obozy nadmorskie
-            // na Wybrzeżu/wysepkach — jednostki spawnują ZAOKRĘTOWANE na wodzie.
-            const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
-            if (player.era === 2) {
-              const newSeaCamps = spawnSeaCamps(map, barbCamps, cities, barbLive, seaBarbParams, turn * 31337 + 7);
-              barbCamps = [...barbCamps, ...newSeaCamps];
-              if (newSeaCamps.length > 0) {
-                console.log(`[Ludy Morza] Tura ${turn}: nowe obozy nadmorskie: ${newSeaCamps.length}`);
-              }
             }
 
             // Tick camps: decrement cooldowns + collect spawns.
@@ -20940,8 +20940,15 @@ async function boot(): Promise<void> {
             const tickRes = tickCamps(barbCamps, barbUnitsNow, units, map, barbLiveForSpawn);
             barbCamps = tickRes.camps;
 
+            // R-LUDY-MORZA-Q1=A: w Brązie rajderzy spawnują zaokrętowani na wodzie (bez obozów naval).
+            const seaRaiderSpawns = player.era === 2
+              ? spawnSeaPeoplesRaiders(
+                map, cities, barbUnitsNow, units, barbLive, seaBarbParams, turn, turn * 31337 + 7,
+              )
+              : [];
+
             // Instantiate spawned barbarian units.
-            for (const spawn of tickRes.spawns) {
+            for (const spawn of [...tickRes.spawns, ...seaRaiderSpawns]) {
               const def = (data.units as any[]).find((u: any) => u['Jednostka'] === spawn.typeId);
               const ruch = def ? normFieldVal(def['Ruch'], 2) : 2;
               const newUnit: BarbUnit = {
@@ -20955,10 +20962,10 @@ async function boot(): Promise<void> {
                 ruchLeft: 0,
                 campId: spawn.campId,
               };
-              // TEMAT #15: spawn z obozu nadmorskiego = rajder Ludów Morza,
-              // na wodzie startuje zaokrętowany (permanentnie pływa do rajdu).
+              // TEMAT #15 / Q1=A: rajder Ludów Morza — zaokrętowany na wodzie.
               const fromNavalCamp = barbCamps.find(c => c.id === spawn.campId)?.naval === true;
-              if (fromNavalCamp) newUnit.seaRaider = true;
+              const fromSeaWave = spawn.campId === SEA_WAVE_CAMP_ID;
+              if (fromNavalCamp || fromSeaWave) newUnit.seaRaider = true;
               if (spawn.embarked === true) newUnit.embarked = true;
               units.push(newUnit);
               console.log(`[Barbarzyncy] Spawn: ${spawn.typeId} @ (${spawn.q},${spawn.r})` + (spawn.embarked ? ' [na wodzie]' : ''));

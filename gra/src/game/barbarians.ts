@@ -484,6 +484,9 @@ export function spawnCamps(
  * lądowego params.maxCamps — obozy nadmorskie są „obok istniejących lądowych").
  *
  * @returns nowe obozy z naval=true (możliwie pusta tablica).
+ *
+ * R-LUDY-MORZA-Q1=A: silnik NIE woła tej funkcji w epoce Brązu (era 2).
+ * Zostaje dla testów historycznych / ewentualnej opcji C (inny model obozu).
  */
 export function spawnSeaCamps(
   map: GameMap,
@@ -553,6 +556,112 @@ export function spawnSeaCamps(
   }
 
   return result;
+}
+
+/** Id „wirtualnego" obozu dla spawnów Ludów Morza bez obozu naval (Q1=A). */
+export const SEA_WAVE_CAMP_ID = 'sea_wave';
+
+/**
+ * R-LUDY-MORZA-Q1=A: usuwa obozy nadmorskie (naval) z save — Brąz bez obozów na wodzie.
+ */
+export function purgeNavalCamps(camps: BarbCamp[]): BarbCamp[] {
+  return camps.filter(c => c.naval !== true);
+}
+
+/** Woda przy lądzie (≥1 sąsiad nie-woda). */
+function isWaterAdjacentToLand(map: GameMap, q: number, r: number): boolean {
+  for (const [dq, dr] of HEX_NEIGHBORS) {
+    const hex = map.hexes[keyOf(q + dq, r + dr)];
+    if (hex !== undefined && !isWaterTerrain(hex.terenBazowy)) return true;
+  }
+  return false;
+}
+
+/** Woda w zasięgu rajdu od nadmorskiego miasta. */
+function isWaterNearCoastalCity(
+  map: GameMap,
+  q: number,
+  r: number,
+  cities: CityLike[],
+  raidRadius: number,
+): boolean {
+  for (const c of cities) {
+    if (!isCoastalCity(map, c)) continue;
+    if (hexDistance(q, r, c.q, c.r) <= raidRadius) return true;
+  }
+  return false;
+}
+
+/**
+ * R-LUDY-MORZA-Q1=A: spawn zaokrętowanych rajderów Ludów Morza na wodzie (bez obozów naval).
+ *
+ * Caller filtruje erę (Brąz). Zwraca 0 lub 1 spawn na wywołanie:
+ *   - limit żywych: seaParams.maxSeaCamps × params.unitsPerCamp (rajderzy seaRaider/embarked);
+ *   - częstotliwość: co params.spawnInterval tur (liczone od startTurn);
+ *   - heks: woda (Morze/Wybrzeże), minDistFromCity od miast, wolny, przy lądzie LUB w raidRadius
+ *     od nadmorskiego miasta; deterministyczny LCG z `seed`.
+ */
+export function spawnSeaPeoplesRaiders(
+  map: GameMap,
+  cities: CityLike[],
+  barbUnits: BarbUnit[],
+  allUnits: RuntimeUnit[],
+  params: BarbParams,
+  seaParams: SeaBarbParams,
+  turn: number,
+  seed: number,
+): BarbSpawn[] {
+  const alive = barbUnits.filter(u => u.seaRaider === true || u.embarked === true).length;
+  const maxAlive = seaParams.maxSeaCamps * params.unitsPerCamp;
+  if (alive >= maxAlive) return [];
+
+  if (turn < params.startTurn) return [];
+  const turnsSinceStart = turn - params.startTurn;
+  if (turnsSinceStart <= 0 || turnsSinceStart % params.spawnInterval !== 0) return [];
+
+  const occupied = new Set<string>();
+  for (const u of allUnits) occupied.add(keyOf(u.q, u.r));
+
+  const candidates: { q: number; r: number }[] = [];
+  for (const key of Object.keys(map.hexes)) {
+    const hex = map.hexes[key];
+    if (hex === undefined) continue;
+    if (hex.wlasciciel !== null) continue;
+    if (!isWaterTerrain(hex.terenBazowy)) continue;
+
+    const { q, r } = hex.coords;
+    if (occupied.has(key)) continue;
+
+    const tooCloseToCity = cities.some(c => hexDistance(q, r, c.q, c.r) < params.minDistFromCity);
+    if (tooCloseToCity) continue;
+
+    const nearCoast = isWaterAdjacentToLand(map, q, r)
+      || isWaterNearCoastalCity(map, q, r, cities, seaParams.raidRadius);
+    if (!nearCoast) continue;
+
+    candidates.push({ q, r });
+  }
+
+  if (candidates.length === 0) return [];
+
+  let lcg = seed >>> 0;
+  for (let i = candidates.length - 1; i > 0; i--) {
+    let rnd: number;
+    [lcg, rnd] = lcgNext(lcg);
+    const j = Math.floor(rnd * (i + 1));
+    const tmp = candidates[i]!;
+    candidates[i] = candidates[j]!;
+    candidates[j] = tmp;
+  }
+
+  const spot = candidates[0]!;
+  return [{
+    campId: SEA_WAVE_CAMP_ID,
+    q: spot.q,
+    r: spot.r,
+    typeId: pickBronzeBarbUnit(turn),
+    embarked: true,
+  }];
 }
 
 // ---------------------------------------------------------------------------
