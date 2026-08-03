@@ -1,3 +1,5 @@
+﻿- **2026-08-03 ~16:50** — ✅ Gotowe w kodzie (bez deploy): R-AI-MP-WASAL-WCHLONIECIE Q1=A · Q2=A(Ł/N)+C(Hard) · Q3=A+B odłożone. AI→MP trybut/wasal/wchłonięcie + sojusze sióstr tylko vs gracz. Branch `cursor/fix-ai-mp-wasal-wchloniecie-63a1`. Napisz **deploy** gdy wgrać do ROBOCZA.
+
 - **2026-08-03 14:28** — ✅ Gotowe FALA 203 ROBOCZA `5f529a24`. Zwiedzaj (EOT) + triumf ostatniego MP cywu. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 
 - **2026-08-03 14:26** — ✅ Gotowe w kodzie (bez deploy): P-SCOUT-EXPLORE-Q2=B + P-TRIUMPH-CS-Q1=B. Branch `cursor/fix-scout-q2b-triumph-hint-63a1` · PR #26. Napisz **deploy** gdy wgrać do ROBOCZA.
