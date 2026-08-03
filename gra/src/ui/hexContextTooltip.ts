@@ -720,7 +720,8 @@ ${UNIT_ACTION_BAR_CSS}
 .sp-unit-card-expanded .sp-unit-card-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;align-items:start;}
 .sp-unit-card-expanded .sp-unit-card-col{min-width:0;}
 .sp-unit-card-expanded .sp-unit-card-col-detail{border-left:1px solid rgba(212,175,90,.18);padding-left:12px;}
-.sp-unit-card-expanded .sp-unit-card-foot{display:flex;flex-direction:column;gap:0;margin-top:8px;}
+.sp-unit-card-foot{display:flex;flex-direction:column;gap:0;margin-top:8px;}
+.sp-unit-card-expanded .sp-unit-card-foot{margin-top:8px;}
 .sp-unit-card-expanded .sp-unit-stack{flex-wrap:wrap;overflow-x:visible;justify-content:flex-start;}
 .sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
   border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);

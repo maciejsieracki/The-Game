@@ -8,9 +8,15 @@
 
 import type { AIDiplomacyCommand } from './ai';
 
-import type { BasketItem } from './diplomacy-pn-engine';
+import type { BasketItem, QuickDealResult } from './diplomacy-pn-engine';
 
 import { diplomacyPnPraca, diplomacyPnZloto } from './diplomacy-value-catalog';
+
+import {
+  AI_TRADE_AGREEMENT_SWEETENER_MAX,
+  AI_TRADE_GOLD_MAX,
+  capAiGoldOffer,
+} from './diplomacy-economy';
 
 
 
@@ -548,6 +554,71 @@ export function clampBasketItemsToAffordable(
 
   return out;
 
+}
+
+export interface AiTradeAgreementBasketPayload {
+  giveItems?: BasketItem[];
+  receiveItems?: BasketItem[];
+}
+
+/**
+ * R-HANDEL-AI-FALA-Q1=B: koszyk Umowy Handlowej AI — realne zapasy obu stron,
+ * słodzik w giveItems (cap skarbca), pusty koszyk → null (nie trafia na stół).
+ */
+export function buildClampedAiTradeAgreementPayload(
+  quick: QuickDealResult,
+  sweetenerGold: number | undefined,
+  proposerCtx: OwnerBasketAffordCtx,
+  responderCtx: OwnerBasketAffordCtx,
+): AiTradeAgreementBasketPayload | null {
+  let giveItems: BasketItem[] = [...quick.giveItems];
+  const receiveItems: BasketItem[] = [...quick.receiveItems];
+
+  const sweetenerCap = capAiGoldOffer(
+    proposerCtx.gold,
+    Math.min(sweetenerGold ?? 0, AI_TRADE_AGREEMENT_SWEETENER_MAX),
+  );
+  if (sweetenerCap > 0) {
+    const goldIdx = giveItems.findIndex(i => i.typ === 'zloto');
+    if (goldIdx >= 0) {
+      giveItems[goldIdx] = {
+        ...giveItems[goldIdx]!,
+        ilosc: (giveItems[goldIdx]!.ilosc ?? 0) + sweetenerCap,
+      };
+    } else {
+      giveItems.push({ typ: 'zloto', id: 'zloto', ilosc: sweetenerCap });
+    }
+  }
+
+  giveItems = clampBasketItemsToAffordable(giveItems, proposerCtx, 1, 'once');
+  const clampedReceive = clampBasketItemsToAffordable(receiveItems, responderCtx, 1, 'once');
+
+  const goldItemIdx = giveItems.findIndex(i => i.typ === 'zloto');
+  if (goldItemIdx >= 0) {
+    const maxGoldQty = capAiGoldOffer(proposerCtx.gold, AI_TRADE_GOLD_MAX);
+    if (maxGoldQty <= 0) {
+      giveItems = giveItems.filter((_, i) => i !== goldItemIdx);
+    } else {
+      const capped = clampBasketItemsToAffordable(
+        [giveItems[goldItemIdx]!],
+        proposerCtx,
+        1,
+        'once',
+      );
+      if (capped.length === 0) {
+        giveItems = giveItems.filter((_, i) => i !== goldItemIdx);
+      } else {
+        giveItems[goldItemIdx] = capped[0]!;
+      }
+    }
+  }
+
+  if (giveItems.length === 0 && clampedReceive.length === 0) return null;
+
+  return {
+    ...(giveItems.length ? { giveItems } : {}),
+    ...(clampedReceive.length ? { receiveItems: clampedReceive } : {}),
+  };
 }
 
 

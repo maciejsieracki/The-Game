@@ -1,1 +1,1 @@
-export { coLocatedForMergePrompt, visibleStackOnHex } from '../src/game/armyMerge';
+export { coLocatedForMergePrompt, visibleStackOnHex, stackHudMergeSplitActions } from '../src/game/armyMerge';

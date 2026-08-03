@@ -1,4 +1,5 @@
-﻿- **2026-08-03 23:11** — ✅ Gotowe FALA 206 ROBOCZA `1c7e9df7`. Wiarygodność (D3+tempo, bez Dźwigni 2) + wchłonięcie MP + manpower ep1 500 + UI Relacja ±%. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
+﻿- **2026-08-03 ~23:20** — ✅ Gotowe w kodzie (bez deploy): **R-HANDEL-AI-FALA-Q1=B** + **BUG-ARMIA-BRAK-POLACZ**. Merge PR #42 → `main`. Napisz **deploy** (FALA 207).
+- **2026-08-03 23:11** — ✅ Gotowe FALA 206 ROBOCZA `1c7e9df7`. Wiarygodność (D3+tempo, bez Dźwigni 2) + wchłonięcie MP + manpower ep1 500 + UI Relacja ±%. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 - **2026-08-03 ~22:00** — ✅ (w FALA 206) **R-WIARYGODNOSC-TEMPO** WIAR-Q3=C.
 - **2026-08-03 ~21:35** — ✅ (w FALA 206) **progi 1+2** — D3 W + cleanup (`progWchloniecieRespekt` zachowany).
 - **2026-08-03 ~21:30** — ✅ (w FALA 206) manpower ep1 1000→500.
@@ -224,4 +225,6 @@
 - Tooltip HUD/toolbar ×2 · mapa: 👤 + granice + ⛏ domyślnie ON · surowce widoczne · glina nie chowa overlay.
 - tsc 0 · dip-accept 142/142 · dip-ai-offer 18/18 · hex-plony 9/9 · qualify 94/94 · dip-treaties 12/12 · POLE-BITWY `dd399c4b`.
 - Rzeki dopływy: nie w bundlu (bez zmian kodu rzek).
+
+## [20:10] ✅ Gotowe — R-HANDEL-AI-FALA + BUG-ARMIA-BRAK-POLACZ (kod, branch `cursor/handel-ai-polacz-63a1`, bez deploy ROBOCZA)
 

@@ -21,17 +21,12 @@ const BUNDLE = path.resolve(__dirname, '.dip-ai-balance-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 
 export {
-
   clampAiResourceTradeCommand,
-
   basketItemsAffordableExtended,
-
   maxSustainablePakietyPerTura,
-
   maxResourcePakiety,
-
   clampBasketItemsToAffordable,
-
+  buildClampedAiTradeAgreementPayload,
 } from '../src/game/diplomacy-ai-balance.ts';
 
 `, 'utf8');
@@ -389,6 +384,44 @@ const baseCmd = {
   ok(B.basketItemsAffordableExtended(items, ownerCtx, 9),
 
     'accepts zloto when 10/turę × 9 tur fits treasury');
+
+}
+
+
+
+{
+
+  const quick = { giveItems: [], receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }] };
+
+  const aiCtx = { gold: 50, praca: 0, foodReserve: 0, stock: { drewno: 100 }, pakietWielkosc: 10 };
+
+  const playerCtx = { gold: 0, praca: 0, foodReserve: 0, stock: {}, pakietWielkosc: 10 };
+
+  const empty = B.buildClampedAiTradeAgreementPayload(quick, 0, aiCtx, playerCtx);
+
+  ok(empty === null, 'empty receive after clamp → null (no enqueue)');
+
+}
+
+
+
+{
+
+  const quick = { giveItems: [], receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 2 }] };
+
+  const aiCtx = { gold: 30, praca: 0, foodReserve: 0, stock: {}, pakietWielkosc: 10 };
+
+  const playerCtx = { gold: 0, praca: 0, foodReserve: 0, stock: { drewno: 25 }, pakietWielkosc: 10 };
+
+  const out = B.buildClampedAiTradeAgreementPayload(quick, 20, aiCtx, playerCtx);
+
+  ok(out != null && (out.giveItems?.length ?? 0) > 0 && (out.receiveItems?.length ?? 0) > 0,
+
+    'sweetener + receive clamped to player stock');
+
+  const gold = out?.giveItems?.find(i => i.typ === 'zloto');
+
+  ok(gold != null && gold.ilosc === 15, `sweetener capped to AI_TRADE_AGREEMENT_SWEETENER_MAX (got ${gold?.ilosc})`);
 
 }
 

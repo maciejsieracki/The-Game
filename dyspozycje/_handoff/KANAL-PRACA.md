@@ -5201,4 +5201,11 @@ CZEKAM-NA: parent commit cleanup branch
 - Maciej: zawsze modal przy zastąpieniu (jak dziś)
 - Docs: `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md` · bez zmian kodu gry
 - Branch: `cursor/zamien-ulepszenie-q1a-63a1`
-CZEKAM-NA: merge docs (bez deploy)
+CZEKAM-NA: nic (docs)
+
+## [20:10 PL, 2026-08-03] CLOUD → ALL — R-HANDEL-AI-FALA + BUG-ARMIA-BRAK-POLACZ (kod, bez deploy)
+- Branch: `cursor/handel-ai-polacz-63a1` · merge PR #42 na `cursor/merge-handel-ai-42-63a1`
+- R-HANDEL-AI-FALA-Q1=B: `buildClampedAiTradeAgreementPayload` — koszyk z realnych zapasów, pusty skip, cap złota
+- BUG-ARMIA-BRAK-POLACZ: `hexDetailHex` chował dock; fix + CSS foot
+- Testy: `diplomacy-ai-balance-test.cjs`, `army-merge-colocated-test.cjs`
+CZEKAM-NA: Maciej — **deploy** (FALA 207) gdy wgrać do ROBOCZA
