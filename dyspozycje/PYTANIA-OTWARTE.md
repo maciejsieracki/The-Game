@@ -1475,3 +1475,13 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Test:** `node tools/building-queue-refund-test.cjs` — 5/5 PASS.
 **ID:** R-KOLEJKA-ZWROT-SUROWCA · branch `cursor/fix-queue-cancel-refund-63a1`
+
+## BUG-ORPHAN-UNITS-ELIM — jednostki bez miasta po eliminacji AI („AI 32") · STATUS: **NAPRAWIONE** (2026-08-02)
+
+**Źródło:** Maciej 2026-08-02 — na mapie oddziały z badge/Mocą, brak miasta właściciela; w dyplomacji etykieta „AI 32".
+
+**Root cause:** `eliminateOwner` (Q5=B) usuwał cywilizację z AI/dyplomacji, ale zostawiał jednostki w polu → sieroty wyglądały jak „AI bez miasta". Liczba na żetonie = Moc pola; „AI 32" = fallback `resolveOwnerBaseName`.
+
+**Fix:** `disbandOwnerUnits` w `capital-capture.ts`; `eliminateOwner` usuwa wszystkie jednostki ownerId + `syncUnitsRender` + `refreshFog`. Test: `capital-capture-test.cjs` §11.
+
+**ID rejestru:** R-ORPHAN-UNITS-ELIM · P-AI-014 · branch `cursor/fix-orphan-units-on-elim-63a1`

@@ -615,6 +615,7 @@ import {
 } from './game/battle-loot';
 import {
   applyCapitalCapturePlunder,
+  disbandOwnerUnits,
   oldestCityOfOwner,
   type OwnerResourceAccess,
 } from './game/capital-capture';
@@ -17432,14 +17433,40 @@ async function boot(): Promise<void> {
 
     /**
      * Q5=B — pełne usunięcie skasowanej cywilizacji (ownerId, po utracie ostatniego
-     * miasta) z list graczy i dyplomacji. NIE usuwa ewentualnych osamotnionych
-     * jednostek w polu (poza zakresem RDZENIA) — te po prostu przestają być
-     * dowodzone (ownerId filtrowany z aiOwnerList), a wszystkie *ByOwner gettery
-     * mają fallback ?? domyślna wartość, więc nie ma ryzyka wyjątku w UI/rendererze.
+     * miasta) z list graczy i dyplomacji. Usuwa też osamotnione jednostki w polu
+     * (decyzja playtest Maciej 2026-08-02 — sieroty myliły z „AI bez miasta").
      */
     function eliminateOwner(ownerId: number): void {
       if (ownerId === 0 || eliminatedOwners.has(ownerId)) return;
       eliminatedOwners.add(ownerId);
+
+      const removedUnitCount = units.filter(u => u.ownerId === ownerId).length;
+      if (removedUnitCount > 0) {
+        const siegeCityIdsAffected = new Set<string>();
+        for (const u of units) {
+          if (u.ownerId !== ownerId) continue;
+          if (u.oblegaCityId) siegeCityIdsAffected.add(u.oblegaCityId);
+        }
+        const remaining = disbandOwnerUnits(units, ownerId);
+        units.length = 0;
+        units.push(...remaining);
+        syncUnitsRender();
+        refreshFog();
+        for (const siegeCityId of siegeCityIdsAffected) {
+          const stillMarked = units.some(x => x.oblegaCityId === siegeCityId);
+          if (!stillMarked) {
+            const sc = cities.find(c => c.id === siegeCityId);
+            if (sc?.oblegane) {
+              const bId = sc.oblegajacyOwnerId ?? siegeBesiegerByCity.get(siegeCityId);
+              const adj = bId !== undefined && units.some(
+                x => x.ownerId === bId && hexDistance(x.q, x.r, sc.q, sc.r) === 1,
+              );
+              if (!adj) endMapSiege(siegeCityId);
+            }
+          }
+        }
+        console.log(`[Eliminacja] Usunięto ${removedUnitCount} jednostek ownerId=${ownerId}.`);
+      }
 
       aiSkarbiecByOwner.delete(ownerId);
       aiPracaPoolByOwner.delete(ownerId);
