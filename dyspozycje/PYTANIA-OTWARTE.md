@@ -1,6 +1,18 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-01. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md` (1–17 odpowiedziane).
+Aktualizacja: 2026-08-03. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md` (1–17 odpowiedziane).
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
+
+---
+
+## P-BALANS-NADMIAR — nadmiar Skarbiec/Praca/Spichlerz/Nauka · STATUS: **SESJA JUTRO** (2026-08-03)
+
+**Sygnał playtestu:** HUD mid-game ~ Skarbiec 5190 (+188), Praca 3781 (+259), Spichlerz 1300 (+250), Nauka 721 (+236) — „praktycznie bez wysiłku jest nadmiar".
+
+**Do przemyślenia jutro (Maciej):** podrożyć koszty budynków i ulepszeń **vs** zwiększyć koszty produkcji + ulepszeń + nauki (**vs** mix / cięcie dochodów).
+
+**Plan:** `dyspozycje/PLAN-BALANS-NADMIAR-SUROWCOW-2026-08-03.md` · powiązane: **R-STAWKI-STROJENIE**, `BILANS-SUROWCE-100T-2026-07-25.md`.
+
+**Zakaz dziś:** bez zmian liczb w JSON — najpierw ABC na sesji.
 
 ---
 
