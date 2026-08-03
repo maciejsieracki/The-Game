@@ -109,7 +109,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-DESIGN-BADANIA | 2026-07-25 | Playtest: mockup ekranu badań przestarzały vs drzewko. | **GOTOWE-DO-WDROŻENIA** | Design: panel boczny Badania v1 (2026-07-26) · `DO-DESIGN-EKRAN-BADAN-2026-07-25.md` · reskin `scienceHubHud.ts` |
 | R-DESIGN-PANEL-MIASTA | 2026-07-25 | Playtest (ze zrzutami ekranu): panel widoku miast na mapie głównej przestarzały. | **CZEKA-NA-DESIGN** | `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` · patrz KOLEJKA OTWARTA |
 | R-DYP-IKONA-TLO | 2026-07-25 | Playtest (ze zrzutami ekranu): w panelu dyplomacji pod ikoną państwa jest niebieskie kwadratowe tło. Decyzja Macieja: usunąć ALBO zamienić na obramówkę w tym kolorze. | **ZDEPLOYOWANE `c08b5fcc`** | WERSJE 2026-07-26: obramówka `.dip-pennant` (brak numeru FALA w WERSJE). |
-| R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **CZEKA-NA-DECYZJĘ** (NAP=A · START=A · DZWIGNIA2=?) | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` · paczka: `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md` · patrz KOLEJKA OTWARTA |
+| R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **W TOKU** DZWIGNIA2=A · NAP=A · START=A | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` · paczka: `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md` · Etap 0–2 bez Dźwigni 2 |
 
 ## ZAMKNIĘTE (ta sesja, 2026-07-23/24)
 
