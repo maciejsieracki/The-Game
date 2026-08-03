@@ -997,9 +997,11 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## R-ZAMIEN-ULEPSZENIE-CONFIRM — potwierdzenie zamiany wykluczających ulepszeń (np. Tartak→Owce) · STATUS: **OTWARTE** (Maciej 2026-07-29 ~01:34)
+## R-ZAMIEN-ULEPSZENIE-CONFIRM — potwierdzenie zamiany wykluczających ulepszeń · STATUS: **ZAMKNIĘTE (Q1=A)** (Maciej 2026-08-03)
 
-**Cytat:** Przy budowie ulepszenia wykluczającego istniejące (las+Tartak → Owce) — dialog „zastąpić?"
+**Cytat pierwotny:** Przy budowie ulepszenia wykluczającego istniejące — dialog „zastąpić?"
+
+**Decyzja:** **A** — zawsze modal przy zastąpieniu. Kod już tak działa (`showImprovementBuildConfirmModal`). Szczegóły: `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md`.
 
 ---
 

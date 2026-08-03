@@ -5175,3 +5175,9 @@ CZEKAM-NA: merge docs (bez deploy gry)
 - PR #27 backlog IDs → SUPERSEDED (IDs wchłonięte; deploy FALA 204/205)
 - REJESTR: FALA 202 `5e0f30e7` / 201 `48646cd6` / 200 `26b05753` — statusy ZDEPLOYOWANE
 CZEKAM-NA: parent commit cleanup branch
+
+## [21:05 PL, 2026-08-03] CLOUD → ALL — R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A
+- Maciej: zawsze modal przy zastąpieniu (jak dziś)
+- Docs: `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md` · bez zmian kodu gry
+- Branch: `cursor/zamien-ulepszenie-q1a-63a1`
+CZEKAM-NA: merge docs (bez deploy)

@@ -37,7 +37,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | ID | Status | Uwagi |
 |----|--------|-------|
 | R-HANDEL-AI-FALA | CZEKA-NA-DECYZJĘ | AI koszyki — ABC w czacie Integrator 2026-08-03 · kod częściowo (`computeQuickDealBasket`) |
-| R-ZAMIEN-ULEPSZENIE-CONFIRM | CZEKA-NA-DECYZJĘ | Modal już jest — ABC = polityka kiedy pytać · poprawny przykład: sektor food/hodowla, nie Tartak→Owce na lesie |
+| R-ZAMIEN-ULEPSZENIE-CONFIRM | **ZAMKNIĘTE Q1=A** | Zawsze modal przy zastąpieniu (jak dziś) · `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md` · bez zmian kodu |
 | BUG-ARMIA-BRAK-POLACZ | W TOKU (weryfikacja) | Ikona Połącz jest w kodzie (`merge` obok `split`) — najpierw check na FALA 205; bez ABC |
 | R-DESIGN-BADANIA | GOTOWE-DO-WDROŻENIA | Design dostarczył panel boczny Badania v1 (2026-07-26) — czeka integrator reskin `scienceHubHud.ts` |
 | R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Brak mockupu v2 (obrona %, brand) · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
