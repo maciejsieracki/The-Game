@@ -228,6 +228,13 @@ import {
 } from './game/diplomacy-layers';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch } from './game/owner-epoch';
+import {
+  ERA_CHANGE_NOTIFY,
+  shouldNotifyPlayerEraChange,
+  eraChangeNotifyToastHtml,
+  eraChangeJournalTitle,
+  eraChangeJournalSubtitle,
+} from './game/era-change-notify';
 import { cityPalacTier } from './game/building-upgrades';
 import {
   evaluateOrderFromBreakdown,
@@ -6416,8 +6423,15 @@ async function boot(): Promise<void> {
                 // inaczej zbadane/era się rozjeżdżają (Ludy Morza itp. gatują po era).
                 const grantedDef = data.tech.find(t => t.Technologia === item.id);
                 if (grantedDef) {
+                  const prevPlayerEra = player.era;
                   const awansTarget = eraAdvanceTarget(grantedDef);
                   if (awansTarget !== null) player.era = Math.max(player.era, awansTarget);
+                  if (shouldNotifyPlayerEraChange(prevPlayerEra, player.era)) {
+                    overlayDepositEra = player.era;
+                    rebuildResourceOverlays();
+                    setEra(player.era);
+                    notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+                  }
                 }
               } else {
                 aiResearchDone.set(
@@ -9019,6 +9033,27 @@ async function boot(): Promise<void> {
         hintToast.style.display = 'none';
         hintOverrideTimer = null;
       }, durationMs);
+    }
+
+    /** Awans epoki gracza — toast + trwały wpis WYDARZENIA (raz na przejście). */
+    function notifyPlayerEraChangeIfAdvanced(prevEra: number): void {
+      if (!shouldNotifyPlayerEraChange(prevEra, player.era)) return;
+      showHintMessage(
+        eraChangeNotifyToastHtml(player.era),
+        ERA_CHANGE_NOTIFY.toastDurationMs,
+      );
+      const evId = 'era-' + turn + '-' + player.era;
+      if (!warEventLog.some(e => e.id === evId)) {
+        warEventLog.unshift({
+          id: evId,
+          icon: '\u{1F3DB}',
+          title: eraChangeJournalTitle(player.era),
+          subtitle: eraChangeJournalSubtitle(player.era),
+          kind: 'science',
+        });
+        if (warEventLog.length > 8) warEventLog.length = 8;
+      }
+      refreshD1bHud();
     }
 
     /** Po pierwszej jednostce gracza — przypomnienie o magazynie centralnym (PYTANIE-85). */
@@ -15237,6 +15272,7 @@ async function boot(): Promise<void> {
       let summary = '';
       let icon = '\u{1F381}'; // 🎁
       let evKind: SidePanelEvent['kind'] = 'info';
+      let villageEraAdvanced = false;
 
       const grantGold = (label: string): void => {
         const amount = villageGoldAmount(player.era);
@@ -15259,15 +15295,20 @@ async function boot(): Promise<void> {
           summary = 'Chatka: +' + amount + ' postępu badań (' + player.badana + ')';
           icon = '\u{1F52C}'; // 🔬
           evKind = 'science';
+          const prevPlayerEra = player.era;
           const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
           for (const done of step.completed) {
             summary += ' \xb7 zbadano ' + done.id;
-            if (done.awansEpoki) summary += ' (epoka ' + done.era + ')';
           }
+          const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
+          villageEraAdvanced = eraAdvanced;
           if (step.completed.some(d => d.awansEpoki)) {
             overlayDepositEra = player.era;
             rebuildResourceOverlays();
             setEra(player.era);
+          }
+          if (eraAdvanced) {
+            notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
           }
         }
       } else {
@@ -15310,7 +15351,10 @@ async function boot(): Promise<void> {
 
       if (summary) {
         // Jeden trwały toast (5 s) + wpis w panelu WYDARZENIA (nie ginie jak toast).
-        showHintMessage(icon + ' ' + summary, 5000);
+        // Awans epoki ma własny toast — nie nadpisuj go podsumowaniem chatki.
+        if (!villageEraAdvanced) {
+          showHintMessage(icon + ' ' + summary, 5000);
+        }
         villageEventLog.unshift({
           id: 'village-' + turn + '-' + q + '-' + r,
           icon,
@@ -19083,23 +19127,25 @@ async function boot(): Promise<void> {
             }
 
             // Auto-research: spend banked science on the cheapest available tech.
+            const prevPlayerEra = player.era;
             const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
+            const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
             for (const done of step.completed) {
               const doneIcon = techIconSvg(done.id, 16);
               const doneIconHtml = doneIcon
                 ? `<span style="display:inline-flex;width:16px;height:16px;vertical-align:-3px;margin-right:5px;color:#e8d88a">${doneIcon}</span>`
                 : '';
               let msg = doneIconHtml + 'Zbadano: ' + done.id + ' (-' + done.koszt + ' nauki)';
-              if (done.awansEpoki) msg += ' \xb7 nowa epoka ' + done.era;
               if (done.pieniadz)   msg += ' \xb7 Pieni\u0105dz \xd710';
               console.log('[Nauka] Tura ' + turn + ': ' + msg);
-              showHintMessage(msg, 3500);
+              if (!eraAdvanced) showHintMessage(msg, 3500);
             }
             if (step.completed.length > 0) {
-              if (step.completed.some(d => d.awansEpoki)) {
+              if (eraAdvanced) {
                 overlayDepositEra = player.era;
                 rebuildResourceOverlays();
-                setEra(player.era); // DYSPOZYCJA-MUZYKA §2 pkt 3 — awans epoki gracza (toast „nowa epoka")
+                setEra(player.era); // DYSPOZYCJA-MUZYKA §2 pkt 3 — awans epoki gracza
+                notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
               }
               console.log(
                 '[Nauka] Skarbiec=' + player.skarbiec +

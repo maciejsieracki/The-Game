@@ -452,3 +452,4 @@ w ogóle — gracz odczytuje je wyłącznie z panelu jednostki.
 **NIE ROZSTRZYGNIĘTE — do decyzji ABC przed wdrożeniem:** czy tabliczka jest widoczna
 zawsze, czy tylko dla jednostki zaznaczonej/najechanej; czy medalion właściciela wchodzi
 DO tabliczki (zmniejsza się, traci czytelność portretu), czy zostaje osobno przy heksie.
+| R-EPOKA-KOMUNIKAT | 2026-08-02 | Brak informacji o przejściu do nowej epoki | **WDROŻONE (kod)** | Toast + WYDARZENIA: „Nowa epoka — Wkraczasz w epokę Brązu/Żelaza.” `era-change-notify.ts`. Branch `cursor/feat-era-change-notify-63a1`. |
