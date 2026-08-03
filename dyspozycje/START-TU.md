@@ -3,8 +3,16 @@
 Projekt: The Game (4X, TypeScript+Three.js). Właściciel i decyzje: Maciej.
 Od 2026-07-06 praca odbywa się w Cowork (Cursor tylko od święta — promocje do finalnej).
 
+## ⛔ PROCEDURA DECYZJI (Maciej 2026-08-03) — czytaj PRZED kodem
+**Pełny tekst:** [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md)
+
+1. Case / bug / poprawka / innowacja → **nadaj ID** + zapisz w `REJESTR-PROSB-I-ZADAN.md`.
+2. **Nie koduj od razu** — przedstaw rozwiązanie (± ABC) i czekaj.
+3. Maciej: **`numer + A|B|C`** → dopiero wtedy implementacja + **commit**.
+4. **Deploy** do ROBOCZA **tylko** na hasło **`deploy`** (nie przy samym commicie).
+
 ## Przeczytaj w tej kolejności
-1. TEN plik (30 sekund).
+1. TEN plik (30 sekund) + procedura NUMER→ABC wyżej.
 2. `SCHEMAT-PRACY-COWORK-2026-07-05.md` — role (MASTER / INTEGRATOR / UX / Maciej),
    łańcuch wersji robocza→kanon→finalna, pętla robocza.
 3. `_handoff/KANAL-PRACA.md` — protokół komunikacji + bieżące zadania (ostatnie wpisy!).
@@ -12,8 +20,8 @@ Od 2026-07-06 praca odbywa się w Cowork (Cursor tylko od święta — promocje 
 
 ## Żelazne zasady (skrót — pełne w schemacie)
 1. TYLKO DO PRZODU: zero restore, backupów, archeologii. Braki = piszemy kod od nowa.
-2. JEDEN publikujący: build+wgranie robi wyłącznie INTEGRATOR. Cele: gra-robocza\
-   Gra-ROBOCZA.html + PLAYTEST-* + hub START.html. Root i gra-kanon = nie dotykać.
+2. JEDEN publikujący: build+wgranie robi wyłącznie INTEGRATOR **po haśle Macieja `deploy`**.
+   Cele: gra-robocza\ Gra-ROBOCZA.html + PLAYTEST-* + hub START.html. Root i gra-kanon = nie dotykać.
 3. Własność plików: nikt nie edytuje cudzych; cross-rola przez wpis w kanale.
 4. Wszystko istotne = WPIS w kanale (≤10 linii, stopka CZEKAM-NA). Maciej nie
    przenosi treści między czatami.
@@ -23,6 +31,7 @@ Od 2026-07-06 praca odbywa się w Cowork (Cursor tylko od święta — promocje 
 7. Aktualne numery wersji: TYLKO w `WERSJE.md` (nigdzie indziej nie kopiować).
 8. Testuje wyłącznie Maciej (gra); agenci — tylko testy konsolowe i kompilację.
 9. Zero sterowania ekranem Macieja bez jego wyraźnej prośby.
+10. NUMER → ABC → COMMIT → DEPLOY — patrz procedura na górze (2026-08-03).
 
 ## HISTORIA = OBOWIĄZKOWY KONTEKST (korekta Macieja 2026-07-06)
 Bannery „NIEAKTUALNE" na starych plikach dotyczą WYŁĄCZNIE procesu (role, publish,

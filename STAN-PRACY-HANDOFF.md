@@ -15,6 +15,9 @@
 
 ## 1. CZY MOŻNA PRACOWAĆ? (przeczytaj najpierw)
 
+> **⛔ PROCES 2026-08-03:** `R-PROC-NUMER-ABC` — każdy case → ID → propozycja ± ABC → kod+commit dopiero po `ID+A|B|C` → **deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
+
+
 **TAK — ale najpierw sprawdź stan drzewa:**
 
 ```bash

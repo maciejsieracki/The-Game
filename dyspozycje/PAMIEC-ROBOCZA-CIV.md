@@ -29,6 +29,17 @@ Maciej wymaga **pełnej formy** dla KAŻDEJ decyzji gameplayowej/produktowej/arc
 
 ---
 
+## 1a0. NUMER → ABC → COMMIT → DEPLOY (Maciej 2026-08-03) — NADRZĘDNE
+
+**Kanon:** `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md` · reguła Cursor: `.cursor/rules/numer-abc-commit-deploy.mdc`
+
+1. Każdy case (pytanie o konkret, bug, poprawka, innowacja) → **ID + wpis** w `REJESTR-PROSB-I-ZADAN.md` (bugi: też `REJESTR-PROBLEMOW-AI.md`).
+2. Po rozpoznaniu: **propozycja rozwiązania ± ABC** — **bez** automatycznej edycji `gra/`.
+3. Maciej odpowiada **`numer + A|B|C`** → ECHO → kod → **commit** (bez publish).
+4. **Deploy** tylko na hasło **`deploy`** / „deploy do robocza”. Stare AUTONOMIA / C-ORG-Q17 **nie** uprawniają do deployu bez hasła.
+
+---
+
 ## 1a. TRZY ZASADY PROCESU DOŁOŻONE 2026-07-25 (obowiązują razem z formatem ABC wyżej)
 
 **1. Zakaz otwierania nowych wątków pytaniami.** Wolno zadawać **wyłącznie pytania doprecyzowujące do wątku,

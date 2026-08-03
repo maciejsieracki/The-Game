@@ -5043,3 +5043,9 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA
 - build: /tmp/civ-dist-fala202 · poprzedni `48646cd6` ZASTĄPIONA
 CZEKAM-NA: sesja lokalna pull na dysk właściciela + smoke Macieja
 
+## [14:15 PL, 2026-08-03] CLOUD -> wszyscy agenci — R-PROC-NUMER-ABC (obowiązuje)
+- Procedura: NUMER tematu → propozycja ± ABC → Maciej `ID+A|B|C` → commit → **deploy tylko na hasło**
+- Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md` · reguła `.cursor/rules/numer-abc-commit-deploy.mdc`
+- Wpięte: START-TU, CLAUDE.md, PAMIEC, KOMENDY, REJESTR-PROSB, PYTANIA-OTWARTE
+CZEKAM-NA: Maciej — ewentualnie `deploy` docs na main (albo merge branch); gra bez zmian
+

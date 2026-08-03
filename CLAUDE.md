@@ -8,6 +8,7 @@ Gra strategiczna 4X (heksy, cywilizacje, epoki Kamień → Brąz → Żelazo). K
 To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy A", `organizationId`, planu E0–E8, hubu pracy NASTER — to Planify (inny projekt), zignoruj przy pracy nad Civ.
 
 ## ⛔ ZASADY KRYTYCZNE (złamanie = utrata pracy)
+0. **NUMER → ABC → COMMIT → DEPLOY (Maciej 2026-08-03).** Każdy case/bug/poprawka/innowacja → ID w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Nie koduj od razu** — przedstaw rozwiązanie ± ABC. Commit dopiero po **`numer + A|B|C`**. **Deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 1. **NIGDY `npm run build` ani `npm run dev`** w `gra/` — `prebuild`/`predev` uruchamia `tools/export-data.py`, który **NADPISUJE ręcznie edytowane pliki JSON** w `gra/data/`. Cała praca nad danymi (drzewko, jednostki, cywilizacje) żyje w JSON. Buduj **wyłącznie** z katalogu `gra`:
    `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir`
 2. **Źródłem prawdy są JSON-y w `gra/data/`.** Panele Excel (`panele-sterowania/`) DOGANIAMY do JSON — kierunek **JSON→Excel** przez `gen-panel-*.py`, NIGDY odwrotnie. **Nie uruchamiaj `export-*.py` na żywym `gra/data`** (nadpisze grę starym Excelem). Round-trip zawsze na kopii (`--data-dir <tmp>`).
@@ -53,13 +54,13 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
 ## JAK PRACOWAĆ Z WŁAŚCICIELEM (przeniesiona pamięć robocza)
 Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — odpowiadaj po polsku**. Podejmuje decyzje produktowe/gameplayowe; od Ciebie oczekuje architektury, analizy i wykonania. Woli **ustrukturyzowany, analityczny wywód** (tabele, numerowane sekcje) niż ściany tekstu.
 
-1. **KAŻDA decyzja gameplayowa/produktowa/architektoniczna → PEŁNA FORMA ABC.** Struktura pytania, dokładnie w tej kolejności: nagłówek `[TEMAT: …]` + **ID** (np. `C-MAP-Q1`) · **Sytuacja** (co jest DZIŚ w grze, pełne nazwy, zero skrótów) · **Cel pytania** · **Dlaczego teraz** (blokada/ryzyko) · **A / B / C** — każda opcja z opisem + **Za (≥2)** + **Przeciw (≥2)** · **Rekomendacja** (zawsze litera + jedno zdanie) · **formularz Ask na samym końcu** (tylko krótkie etykiety, rekomendacja pierwsza z dopiskiem „(Rekomendacja)"). **Max 3 pytania na turę** (dłuższa kolejka → `[PACZKA 1/N]`, następna dopiero po odpowiedzi). Po odpowiedzi: **ECHO** → potwierdź „wdrażaj?" → działaj po „Tak". Hasło **`format`** lub **`ABC`** = natychmiast przepisz pytanie w pełnej formie. Pełna specyfikacja: `dyspozycje/PAMIEC-ROBOCZA-CIV.md`.
+1. **KAŻDA decyzja gameplayowa/produktowa/architektoniczna → PEŁNA FORMA ABC** + **numer ID w rejestrze** (procedura 2026-08-03). Struktura pytania: nagłówek `[TEMAT: …]` + **ID** · **Sytuacja** · **Cel pytania** · **Dlaczego teraz** · **A / B / C** (Za≥2, Przeciw≥2) · **Rekomendacja**. **Max 3 pytania na turę**. Po odpowiedzi Macieja w formie **`ID + litera`**: **ECHO** → zapis plikowy → **kod + commit** (bez deployu). Deploy tylko na **`deploy`**. Hasło **`format`** / **`ABC`** = przepisz pytanie. Szczegóły: `dyspozycje/PAMIEC-ROBOCZA-CIV.md` · `PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 2. **⛔ ZAKAZ OTWIERANIA NOWYCH WĄTKÓW PYTANIAMI (Maciej, 2026-07-25).** Wolno zadawać **wyłącznie pytania
-   doprecyzowujące do wątku, który AKTUALNIE prowadzimy**. Pytań otwierających nowy temat **NIE ZADAJESZ**,
-   dopóki Maciej sam nie powie, że można. Znalezione przy okazji problemy **zapisujesz cicho** do
-   `dyspozycje/PYTANIA-OTWARTE.md` i **nie wspominasz o nich w czacie** — **każde pytanie/bug Macieja → ten plik zanim zmienisz temat** (2026-07-29). Powód (jego słowa): „ja odpowiadam na jedno,
-   a ty generujesz kolejnych pięć… nie jesteśmy w stanie zakończyć jednego, a ty wyciągasz kolejne".
-   **Kończymy jeden temat, dopiero potem następny.** Nie mieszaj wątków w jednej odpowiedzi.
+ doprecyzowujące do wątku, który AKTUALNIE prowadzimy**. Pytań otwierających nowy temat **NIE ZADAJESZ**,
+ dopóki Maciej sam nie powie, że można. Znalezione przy okazji problemy **zapisujesz cicho** do
+ `dyspozycje/PYTANIA-OTWARTE.md` i **nie wspominasz o nich w czacie** — **każde pytanie/bug Macieja → ten plik zanim zmienisz temat** (2026-07-29). Powód (jego słowa): „ja odpowiadam na jedno,
+ a ty generujesz kolejnych pięć… nie jesteśmy w stanie zakończyć jednego, a ty wyciągasz kolejne".
+ **Kończymy jeden temat, dopiero potem następny.** Nie mieszaj wątków w jednej odpowiedzi.
 3. **KAŻDA LICZBA MUSI MIEĆ NAZWANY PARAMETR I JEDNOSTKĘ (Maciej, 2026-07-25).** Zakaz pisania „baza 16",
    „przyrost +7", „daje 35" bez powiedzenia CZEGO dotyczy liczba. Zawsze: **czego** (Kultura / Praca / Prawo /
    Pieniądz / Zadowolenie / Obrona), **w jakiej jednostce** (pkt na turę, %, pkt Prawa) i **w jakim kontekście**
@@ -88,7 +89,7 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    co skończyło się ręcznym scalaniem i decyzją C-ZETON-DUP-Q1.
    **Gdy izolacja jest niemożliwa** (kilka zleceń musi dzielić drzewo): wypisz w `KANAL-PRACA.md`
    REZERWACJĘ PLIKÓW przed startem i commituj **wyłącznie pliki zamkniętego zlecenia**, nigdy `git add -A`.
-5. **Publikacja tylko na wyraźny sygnał.** `git push` i deploy do wersji roboczej **wyłącznie** gdy Maciej powie („pushuj", „deploy", „wdrażaj") — on jest jedyną bramką publikacji i jedynym playtesterem.
+5. **Publikacja / deploy tylko na hasło `deploy`.** Commit po `ID+A|B|C` **nie** publikuje ROBOCZA. `git push` branch OK; deploy bundla + `WERSJE.md` dopiero gdy Maciej powie **`deploy`** / „deploy do robocza". (Hasła „pushuj" / „wdrażaj" = nie mylić: wdrażaj = kod+commit; deploy = ROBOCZA.)
 6. **Nie zgaduj przy niejednoznaczności** — zrób resztę, a sporny punkt opisz i zapytaj. Ta zasada wielokrotnie uchroniła projekt przed kosztownymi błędami.
 7. **Nie twórz problemów, których nie ma.** Maciej kilkakrotnie korygował nadmierne komplikowanie („znajdujesz problemy, których nie ma"). Najprostsze rozwiązanie spełniające wymaganie wygrywa.
 8. **Po każdej paczce pracy — zaproponuj następny krok (Maciej 2026-08-01).** Nie czekaj na „co dalej?”. Kończ wiadomość blokiem **„Następny krok”** z max 3 konkretnymi opcjami (pierwsza = rekomendacja). Reguła: `.cursor/rules/maciej-nastepny-krok.mdc`.
