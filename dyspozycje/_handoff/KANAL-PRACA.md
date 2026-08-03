@@ -5187,3 +5187,9 @@ CZEKAM-NA: merge docs (bez deploy)
 - DZWIGNIA2-Q1: BRAK LITERY w odpowiedzi — czekam A/B/C
 - Docs: `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md`
 CZEKAM-NA: Maciej R-WIARYGODNOSC-DZWIGNIA2-Q1 + A|B|C
+
+## [21:20 PL, 2026-08-03] CLOUD → ALL — R-WIARYGODNOSC-DZWIGNIA2-Q1=A (paczka komplet)
+- DZWIGNIA2=A · NAP-BEZTERMIN=A · START-ETAP=A
+- Bez Dźwigni 2; start Etap 0–2 (strumień W/20 + NAP bezterminowy + progi)
+- Branch: `cursor/wiarygodnosc-dzwignia2-a-63a1`
+CZEKAM-NA: kod Etap 0–2 (bez deploy do hasła)

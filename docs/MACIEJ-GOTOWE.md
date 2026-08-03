@@ -1,3 +1,4 @@
+- **2026-08-03 ~21:20** — ECHO **R-WIARYGODNOSC-DZWIGNIA2-Q1=A** (bez sufitu). Paczka komplet: NAP=A · START=A · DZWIGNIA2=A. Wdrażam Etap 0–2.
 - **2026-08-03 ~21:15** — ECHO Wiarygodność: NAP-BEZTERMIN=A · START-ETAP=A. **Brak litery** na DZWIGNIA2-Q1 — napisz A/B/C.
 ﻿- **2026-08-03 ~21:05** — ✅ Decyzja **R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A** (zawsze modal). Kod bez zmian — już działa. Docs: `cursor/zamien-ulepszenie-q1a-63a1`.
 - **2026-08-03 ~19:50** — ✅ Gotowe docs (bez deploy gry): cleanup REJESTR + wchłonięcie PR #35 (R-PROC-ABC-FULL-ID). PR #31/#30/#27 SUPERSEDED. Kolejka otwarta: handel AI · potwierdzenie zamiany ulepszeń · Połącz armię · Design badania/miasto · wiarygodność. Branch `cursor/cleanup-docs-rejestr-63a1`.
