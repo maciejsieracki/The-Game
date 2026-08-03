@@ -823,7 +823,7 @@ zweryfikowane grepem). Część haków trzeba dopiero dobudować, nie tylko pod�
 | P5 (pomoc sojusznikowi) | ❌ NOWY HAK, dane już policzone | `main.ts:8523-8577`, `joinedWarOwnerIds.push`, linie 8531/8556 |
 | Strumień Wiarygodność→Zaufanie (§5) | ❌ NOWY HAK | `tickDiplomacy`, `game/diplomacy.ts:1403-1452`, nowy składnik `dZ` |
 | Sufit Zaufania (Dźwignia 2) | ❌ NOWY HAK, znaleźć istniejące miejsce liczenia sufitu | do namierzenia przy implementacji |
-| Twarde progi (Dźwignia 3) | ❌ NOWY HAK | `game/diplomacy-proposals.ts:371-420` (sojusz), bramka NAP do namierzenia analogicznie |
+| Twarde progi (Dźwignia 3) | ✅ WDROŻONE 2026-08-03 | `evaluateProposal` nap/sojusz + `buildProposalEvalContext` → `getWiarygodnosc` |
 | Pierwszy kontakt (Dźwignia 4) | ❌ NOWY HAK | miejsce nawiązania kontaktu dyplomatycznego, do namierzenia |
 
 **Zdarzenia świadomie POMINIĘTE** (poza zakresem tego projektu): szpiegostwo wykryte (brak systemu
