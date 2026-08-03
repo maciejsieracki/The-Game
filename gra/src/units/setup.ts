@@ -336,20 +336,53 @@ let _forestExtra: number = 1;
  *
  * Any incoming cost value >= 90 is treated as Infinity (impassable sentinel for Excel/JSON).
  * Built-in defaults remain correct even if this is never called.
+ * Klucze z JSON (Laka, Wzgorza…) są mapowane na {@link TerenBazowy}.
  *
- * @param costs       Partial map of TerenBazowy -> cost.
+ * @param costs       Mapa kosztów (TerenBazowy lub etykieta z terrain-movement.json).
  * @param forestExtra Extra cost added to finite base costs when Las overlay is present.
  */
+/** Mapuje etykiety z terrain-movement.json / Excel na {@link TerenBazowy}. */
+const TERRAIN_MOVEMENT_KEY_ALIASES: Record<string, TerenBazowy> = {
+  Laka: TerenBazowy.Laka,
+  'Łąka': TerenBazowy.Laka,
+  laka: TerenBazowy.Laka,
+  Rownina: TerenBazowy.Rownina,
+  'Równina': TerenBazowy.Rownina,
+  rownina: TerenBazowy.Rownina,
+  Pustynia: TerenBazowy.Pustynia,
+  pustynia: TerenBazowy.Pustynia,
+  Wybrzeze: TerenBazowy.Wybrzeze,
+  'Wybrzeże': TerenBazowy.Wybrzeze,
+  wybrzeze: TerenBazowy.Wybrzeze,
+  Wzgorza: TerenBazowy.Wzgorza,
+  'Wzgórza': TerenBazowy.Wzgorza,
+  wzgorza: TerenBazowy.Wzgorza,
+  Gory: TerenBazowy.Gory,
+  'Góry': TerenBazowy.Gory,
+  gory: TerenBazowy.Gory,
+  Morze: TerenBazowy.Morze,
+  morze: TerenBazowy.Morze,
+  Polarny: TerenBazowy.Polarny,
+  polarny: TerenBazowy.Polarny,
+};
+
+function resolveTerrainMovementKey(raw: string): TerenBazowy | undefined {
+  if (raw in _terrainCosts) return raw as TerenBazowy;
+  return TERRAIN_MOVEMENT_KEY_ALIASES[raw];
+}
+
 export function configureTerrainMovement(
-  costs: Partial<Record<TerenBazowy, number>>,
+  costs: Partial<Record<TerenBazowy, number>> | Record<string, number>,
   forestExtra: number,
 ): void {
   // Reset to defaults first so removed keys revert to default.
   _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
-  for (const key of Object.keys(costs) as TerenBazowy[]) {
-    const v = costs[key];
+  for (const rawKey of Object.keys(costs)) {
+    const teren = resolveTerrainMovementKey(rawKey);
+    if (!teren) continue;
+    const v = costs[rawKey as TerenBazowy];
     if (v !== undefined) {
-      _terrainCosts[key] = v >= 90 ? Infinity : v;
+      _terrainCosts[teren] = v >= 90 ? Infinity : v;
     }
   }
   _forestExtra = forestExtra >= 90 ? Infinity : forestExtra;
