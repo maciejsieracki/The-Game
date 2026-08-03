@@ -1,6 +1,6 @@
 # R-LUDY-MORZA — Ludy Morza bez obozu na wodzie
 
-**Status:** Q1 wdrożone (kod)  
+**Status:** 🟢 ZDEPLOYOWANE FALA 204 `d7754a22` · Q1=A  
 **Data:** 2026-08-03  
 **Plan:** `dyspozycje/PLAN-LUDY-MORZA-BEZ-OBOZU-2026-08-02.md`
 

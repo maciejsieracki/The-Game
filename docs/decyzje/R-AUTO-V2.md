@@ -1,6 +1,6 @@
 # R-AUTO-V2 — domknięcie automatyzacji (budowa + ulepszenia)
 
-**Status:** wdrożone (kod) · Q1–Q9  
+**Status:** 🟢 ZDEPLOYOWANE FALA 204 `d7754a22` · Q1–Q9  
 **Data:** 2026-08-03  
 **Powiązane:** `R-AUTO-BUDOWA-LISTA` · `R-AUTO-ULEPSZENIA` (Q1–Q5)
 

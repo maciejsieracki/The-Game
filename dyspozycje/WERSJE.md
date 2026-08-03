@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `5f529a24` - 2026-08-03 14:28 - FALA 203: Zwiedzaj (Q1=A,Q2=B) + triumf MP (Q1=B) - **AKTUALNA**
+## ROBOCZA `d7754a22` - 2026-08-03 18:22 - FALA 204: R-AUTO-V2 (Q1–Q9) + Ludy Morza Q1=A - **AKTUALNA**
+- md5 (pelne): `d7754a220111402ef98b78e59188bf07` · stempel: `ROBOCZA · 2026-08-03 18:22`
+- **FALA 204.** R-AUTO-V2: Lista wgraj do wszystkich · polityka ulepszeń państwa+wyjątek · rezerwa 30 Pracy · lista ukończona stop · szare epoki. Scalone v1 (#34+#37). R-LUDY-MORZA-Q1=A: Brąz bez obozu naval — raiderzy na łódkach; lądowe obozy zostają. Branch `cursor/fix-auto-v2-63a1` (+ merge Ludy Morza).
+- tsc 0 · auto-manage 43/43 · auto-improvements 15/15 · barbarians 167/167 · vite · VERIFY OK · build /tmp/civ-dist-fala204.
+
+## ROBOCZA `5f529a24` - 2026-08-03 14:28 - FALA 203: Zwiedzaj (Q1=A,Q2=B) + triumf MP (Q1=B) - **ZASTĄPIONA**
 - md5 (pelne): `5f529a243d506a55cc84b57ee09fee8f` · stempel: `ROBOCZA · 2026-08-03 14:28`
 - **FALA 203.** P-SCOUT-EXPLORE-Q1=A + Q2=B (przycisk Zwiedzaj, ruch tylko EOT; priorytet chatka>mgła). P-TRIUMPH-CS-Q1=B (dłuższy hint po ostatnim MP tej samej cyw.). Branch `cursor/fix-scout-q2b-triumph-hint-63a1` (zawiera Q1).
 - tsc 0 · scout-auto-explore 15/15 · triumph-city-state 10/10 · vite · VERIFY OK · build /tmp/civ-dist-fala203.

@@ -1,3 +1,9 @@
+## [18:22 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 204 `d7754a22`
+- md5: `d7754a220111402ef98b78e59188bf07` · stempel: ROBOCZA · 2026-08-03 18:22
+- **R-AUTO-V2 Q1–Q9** + **R-LUDY-MORZA-Q1=A** (PR #40 + #38)
+- Wejście: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: Maciej playtest / OK / BUG
+
 ## [16:55 PL, 2026-08-03] CLOUD → parent — R-AUTO-BUDOWA-LISTA Q2=A Q3=B
 - Branch: `cursor/fix-auto-budowa-lista-q3b-63a1`
 - Tryb Budowa **Lista** + szablony A/B/C (save meta `budowaListaSzablony`)
