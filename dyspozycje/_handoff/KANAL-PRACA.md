@@ -1,3 +1,9 @@
+## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
+- md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35
+- **#29** R-STAWKI ×2 · **#33** AI→MP wasal/wchłonięcie · **#4** HUD Praca overflow · **#1** audyt sep vs MP (docs)
+- Wejście: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: Maciej playtest / OK / BUG
+
 ## [18:22 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 204 `d7754a22`
 - md5: `d7754a220111402ef98b78e59188bf07` · stempel: ROBOCZA · 2026-08-03 18:22
 - **R-AUTO-V2 Q1–Q9** + **R-LUDY-MORZA-Q1=A** (PR #40 + #38)

@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `d7754a22` - 2026-08-03 18:22 - FALA 204: R-AUTO-V2 (Q1–Q9) + Ludy Morza Q1=A - **AKTUALNA**
+## ROBOCZA `f41c6550` - 2026-08-03 18:35 - FALA 205: stawki×2 + AI→MP + overflow Pracy + audyt sep - **AKTUALNA**
+- md5 (pelne): `f41c6550fb5913c3413da6575593eddb` · stempel: `ROBOCZA · 2026-08-03 18:35`
+- **FALA 205.** #29 R-STAWKI ×2 kosztów (badania, upkeep, budynki, żywność). #33 R-AI-MP-WASAL-WCHLONIECIE (AI→MP trybut/wasal/wchłonięcie + sojusze sióstr vs gracz). #4 HUD Praca overflow (pusta kolejka + suwak budowa). #1 audyt sep stolic vs MP (docs + test 36 PASS, bez zmiany gameplay). Na bazie FALA 204 (R-AUTO-V2 + Ludy Morza).
+- tsc 0 · auto-improvements 15/15 · auto-manage 43/43 · barbarians 167/167 · ai-cs-absorption 18/18 · difficulty-cost 22/22 · upkeep 67/67 · vite · VERIFY OK · build /tmp/civ-dist-fala205.
+
+## ROBOCZA `d7754a22` - 2026-08-03 18:22 - FALA 204: R-AUTO-V2 (Q1–Q9) + Ludy Morza Q1=A - **ZASTĄPIONA**
 - md5 (pelne): `d7754a220111402ef98b78e59188bf07` · stempel: `ROBOCZA · 2026-08-03 18:22`
 - **FALA 204.** R-AUTO-V2: Lista wgraj do wszystkich · polityka ulepszeń państwa+wyjątek · rezerwa 30 Pracy · lista ukończona stop · szare epoki. Scalone v1 (#34+#37). R-LUDY-MORZA-Q1=A: Brąz bez obozu naval — raiderzy na łódkach; lądowe obozy zostają. Branch `cursor/fix-auto-v2-63a1` (+ merge Ludy Morza).
 - tsc 0 · auto-manage 43/43 · auto-improvements 15/15 · barbarians 167/167 · vite · VERIFY OK · build /tmp/civ-dist-fala204.

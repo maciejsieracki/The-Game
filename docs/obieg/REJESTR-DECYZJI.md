@@ -240,7 +240,8 @@ Po wdrożeniu ten sam wiersz przechodzi w górę statusów aż do ✅ (Master). 
 ---
 🔗 Historia: `docs/archiwum/` · Pełna treść decyzji: `docs/decyzje/<ID>.md`
 
-| **R-STAWKI-STROJENIE** | 2026-08-03 | **×2** badań + upkeep jedn. + budowa budynków + żywność ludność/wojsko; bez cięcia produkcji | B | 🟢 **WDROŻONE** | `r-stawki-strojenie.ts` | ⏸ deploy FALA 205 |
+| **R-STAWKI-STROJENIE** | 2026-08-03 | **×2** badań + upkeep jedn. + budowa budynków + żywność ludność/wojsko; bez cięcia produkcji | B | 🟢 **WDROŻONA** | FALA 205 `f41c6550` · `r-stawki-strojenie.ts` | |
+| **R-AI-MP-WASAL-WCHLONIECIE** | 2026-08-03 | **Q1=A** · **Q2=A(Ł/N)+C(Hard)** · Q3 odłożone | D+F | 🟢 **WDROŻONA** | FALA 205 `f41c6550` · `ai-cs-absorption.ts` · main.ts | sojusze sióstr vs gracz |
 | **R-AUTO-BUDOWA-LISTA-Q2** | 2026-08-03 | **A** — Lista: pomiń zablokowane i wróć później (v2) | B | 🟡 **ZAPISANA** | v2 Lista | R-AUTO-BUDOWA-LISTA |
 | **R-AUTO-BUDOWA-LISTA-Q3** | 2026-08-03 | **A** — v1 = tylko Priorytet typów; Lista nazwana później | B | 🟢 **WDROŻONE (kod)** | cities.ts · auto-manage.ts · cityPanel · main.ts | R-AUTO-BUDOWA-LISTA |
 | **R-AUTO-BUDOWA-LISTA-Q1** | 2026-08-03 | **A** doprec. | B | 🟡 **ZAPISANA** | — | |
