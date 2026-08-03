@@ -1,6 +1,6 @@
 # R-AI-KOLONIZACJA — AI: agresywna kolonizacja mapy
 
-**Status:** 🟡 ZAPISANA · czeka `działaj`  
+**Status:** 🟢 WDROŻONA (kod) · czeka deploy FALA 207  
 **Data:** 2026-08-03  
 **Grupa:** D (Cywilizacje / AI)
 

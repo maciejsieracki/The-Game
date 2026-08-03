@@ -288,6 +288,24 @@ console.log('\n--- E6e: aiClusterOutsidePenalty ---');
   assert(EKSPANSJA_KLASTR_BYPASS === 4, 'E6e: prog bypass klastra = 4');
 }
 
+console.log('\n--- W4e: surge 2/ture gdy brak wolnych MP (R-AI-KOLONIZACJA-Q2) ---');
+{
+  const map = makeMap(25, 25);
+  const data = makeGameData({
+    'ekspansja_min_dystans_miast': { wartosc: 4, sekcja: 't', opis: '' },
+    'ekspansja_min_score_hex': { wartosc: 1, sekcja: 't', opis: '' },
+  });
+  const myCity = makeCity('mc1', 5, 5, 5, 6);
+  const csCity = { id: 'cs', ownerId: 3, q: 20, r: 20, population: 4, startCityState: true };
+  const result = decideAITurn(5, [], [myCity, csCity], map, data, {
+    pracaAvailable: 50,
+    civEra: 2,
+    vassalizedCityStateOwnerIds: [3],
+  });
+  const found = result.filter(c => c.type === 'foundCityAt');
+  assert(found.length === 2, 'W4e: surge 2 foundCityAt przy brak wolnych MP; got ' + found.length);
+}
+
 // ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------

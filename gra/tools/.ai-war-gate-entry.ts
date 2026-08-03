@@ -1,5 +1,5 @@
 
-export { decideAITurn, planCityFounding } from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/ai";
+export { decideAITurn, planCityFounding } from "/workspace/gra/src/game/ai";
 export {
   aiFoundingWorkReserve,
   aiTreasuryPracaForFounding,
@@ -7,4 +7,4 @@ export {
   aiPowerGoalFoundingInterval,
   aiClusterOutsidePenalty,
   EKSPANSJA_KLASTR_BYPASS,
-} from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/ai-expansion";
+} from "/workspace/gra/src/game/ai-expansion";

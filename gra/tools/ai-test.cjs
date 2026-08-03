@@ -31,7 +31,8 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-test-bundle.cjs');
 // Entry TS re-exports everything we need from ai.ts.
 // Uses AI_SRC path so env override works correctly.
 const ENTRY_TS = `
-export { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts, isLocalExpansionPhase } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP } from ${JSON.stringify(AI_SRC + '/game/city-founding')};
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
 export { diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } from ${JSON.stringify(AI_SRC + '/game/diplomacy-layers')};
 `;
@@ -55,7 +56,7 @@ try {
 }
 
 const AI = require(BUNDLE_FILE);
-const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase } = AI;
+const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
 let passed = 0;
@@ -2173,6 +2174,52 @@ console.log('\n--- T7D-f: bez defensiveCopy -> foundCityAt gdy stac (regresja) -
   });
   const found = result.filter(c => c.type === 'foundCityAt');
   assert(found.length === 1, 'T7D-f: ekspansyjny AI zaklada miasto przez foundCityAt');
+}
+
+// ============================================================================
+// TESTY T8: R-AI-KOLONIZACJA — pop≥5, dystans 4, surge MP
+// ============================================================================
+
+console.log('\n--- T8a: AI pickSourceCityForFounding wymaga pop >= 5 ---');
+{
+  const cities8a = [
+    { id: 'c-low', ownerId: 1, population: 4 },
+    { id: 'c-ok', ownerId: 1, population: 5 },
+  ];
+  const srcLow = pickSourceCityForFounding(cities8a.filter(c => c.population < 5), 1);
+  assert(srcLow === null, 'T8a: pop 4 -> brak zrodla');
+  const srcOk = pickSourceCityForFounding(cities8a, 1);
+  assert(srcOk && srcOk.id === 'c-ok', 'T8a: pop 5 -> zrodlo OK');
+  eq(AI_FOUNDING_SOURCE_MIN_POP, 5, 'T8a: prog min pop AI');
+  eq(AI_COLONIZATION_SOURCE_MIN_POP, 5, 'T8a: prog kolonizacji AI');
+}
+
+console.log('\n--- T8b: countFreeIndependentCityStates ---');
+{
+  const cities8b = [
+    { ownerId: 2, startCityState: true },
+    { ownerId: 3, startCityState: true },
+    { ownerId: 4, startCityState: true },
+  ];
+  eq(countFreeIndependentCityStates(cities8b), 3, 'T8b: 3 wolne MP');
+  eq(countFreeIndependentCityStates(cities8b, [3]), 2, 'T8b: 1 wasal -> 2 wolne');
+  eq(countFreeIndependentCityStates(cities8b, [2, 3, 4]), 0, 'T8b: wszyscy wasale -> surge');
+}
+
+console.log('\n--- T8c: planCityFounding z pop>=5 i civEra<=3 omija blokade skautow ---');
+{
+  const map8c = makeMap(20, 20);
+  const data8c = makeGameData({
+    'ekspansja_min_dystans_miast': { wartosc: 4, sekcja: 'test', opis: '' },
+    'ekspansja_min_score_hex': { wartosc: 1, sekcja: 'test', opis: '' },
+  });
+  const myCity8c = [{ id: 'c1', ownerId: 1, q: 2, r: 2, population: 5 }];
+  const cmd8c = planCityFounding(1, myCity8c, map8c, data8c, {
+    pracaAvailable: 30,
+    currentTurn: 5,
+    civEra: 2,
+  }, 4, []);
+  assert(cmd8c !== null && cmd8c.type === 'foundCityAt', 'T8c: pop>=5 + era2 -> founding bez skautow');
 }
 
 // ============================================================================

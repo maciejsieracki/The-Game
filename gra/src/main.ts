@@ -20310,6 +20310,19 @@ async function boot(): Promise<void> {
             const resumeCmdIdx = aiCmdResume?.cmdIdx ?? 0;
             aiCmdResume = null;
 
+            const vassalizedCsOwnerIds = (() => {
+              const csOwners = new Set(
+                cities.filter(c => c.startCityState && c.ownerId > 0).map(c => c.ownerId),
+              );
+              const out = new Set<number>();
+              for (const d of activeDeals) {
+                if (normalizeTreatyKind(d.rodzaj) !== RodzajTraktatu.Wasalizacja) continue;
+                const payer = d.ekonomia?.payerOwnerId;
+                if (payer != null && csOwners.has(payer)) out.add(payer);
+              }
+              return [...out];
+            })();
+
             ownerLoop: for (let oi = startOi; oi < aiOwnerList.length; oi++) {
               const ownerId = aiOwnerList[oi]!;
               // Bezpiecznik: gdyby lista pochodziła z aiCmdResume sprzed eliminacji
@@ -20427,6 +20440,7 @@ async function boot(): Promise<void> {
               pracaAvailable: aiPracaPoolByOwner.get(ownerId) ?? 0,
               resourceDeficitKeys: resourceDeficitKeysForOwner(ownerId),
               civEra: empireEpochForOwner(ownerId),
+              vassalizedCityStateOwnerIds: vassalizedCsOwnerIds,
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
               // Trudny MP: aktywne wsparcie ofensywne (Normal/Easy = legacy defend-only).

@@ -1,6 +1,6 @@
 {
   "min_dystans_miast": {
-    "wartosc": 5,
+    "wartosc": 4,
     "jednostka": "heksy",
     "opis": "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },

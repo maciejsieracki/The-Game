@@ -1,11 +1,24 @@
-<<<<<<< HEAD
+## [00:45 PL, 2026-08-04] CLOUD → ALL — R-AI-KOLONIZACJA kod + merge #46 Klatka D
+- **R-AI-KOLONIZACJA** Q1A Q2A Q3B: pop≥5, surge 2/turę bez MP, ep1–3 agresja, dystans 4, hexCityScore min
+- Merge PR #46 Klatka D (`techTreeView.ts` numerek planu)
+- Pliki: `ai.ts`, `city-founding.ts`, `miasto-params.json`, `ai-params.json`, `main.ts`
+- tsc 0 · ai-test T8* PASS · ai-war-gate W4e PASS
+- **BEZ deploy** gra-robocza / **BEZ** WERSJE AKTUALNA FALA
+CZEKAM-NA: Maciej **deploy** FALA 207 (handel+Połącz+Design+Klatka+kolonizacja)
+
 ## [00:15 PL, 2026-08-04] CLOUD → ALL — ECHO korekta kolejki (Maciej B/B/A+C)
 - **R-KOLEJKA-FALA207-Q1=B** — FALA 207 = handel AI + Połącz + **Design Badania**
 - **R-DESIGN-BADANIA-Q1=B** — merge PR #46 Klatka D **teraz** (razem z Design)
 - **R-KOLEJKA-NASTEPNY-Q1=A+C** — kolonizacja AI **teraz** + Design w deploy FALA 207
 - Korekta z pierwszego ECHO (było A/A/B)
 - Docs: `docs/decyzje/R-KOLEJKA-FALA207-DESIGN.md`
-CZEKAM-NA: merge #46 · implementacja kolonizacji · Maciej **deploy** FALA 207
+CZEKAM-NA: implementacja kolonizacji · Maciej **deploy** FALA 207
+
+## [21:20 PL, 2026-08-03] CLOUD → parent — R-DESIGN-BADANIA-KLATKA-D (merge #46)
+- Numerek planu 1..RESEARCH_QUEUE_MAX na węźle siatki v1.1 (`techTreeView.ts` `.pl`, lewy górny róg)
+- `getPlan` w `configureTechTreeView` ← `buildResearchPlanSnapshot()` (slug `techToSlug`)
+- tsc 0 · bez deploy / bez WERSJE AKTUALNA FALA
+CZEKAM-NA: implementacja kolonizacji · deploy FALA 207
 
 ## [23:45 PL, 2026-08-03] CLOUD → Maciej — ECHO R-AI-KOLONIZACJA (docs only)
 - **Q1=A** pop źródła ≥5 (5→4) · priorytet founding · `foundCityAt` bez osadnika
@@ -13,8 +26,8 @@ CZEKAM-NA: merge #46 · implementacja kolonizacji · Maciej **deploy** FALA 207
 - **Q3=B** agresja epok 1–3 (Kamień–Żelazo); potem founding jeśli dobre hexy poza zasięgiem
 - **DYSTANS=4 hex** (`min_dystans_miast` + `ekspansja_min_dystans_miast`) — gracz i AI
 - Cel: pokrycie mapy zasięgiem miast · `hexCityScore` odrzuca słabe hexy
-- Docs: `docs/decyzje/R-AI-KOLONIZACJA.md` · branch `cursor/abc-ai-kolonizacja-63a1`
-CZEKAM-NA: Maciej **`działaj`**
+- Docs: `docs/decyzje/R-AI-KOLONIZACJA.md`
+CZEKAM-NA: implementacja kodu (w toku)
 
 ## [23:11 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 206 `1c7e9df7`
 - md5: `1c7e9df7bf4c74258ae122fc0bda846d` · stempel: ROBOCZA · 2026-08-03 23:11
@@ -36,14 +49,6 @@ CZEKAM-NA: nic (w FALA 206)
 Skasowano W-zależny limit max_zaufanie_na_ture. Zostaje flat 5/turę.
 Branch: cursor/wiarygodnosc-usun-dzwignia2-63a1
 CZEKAM-NA: nic (w FALA 206)
-=======
-## [21:20 PL, 2026-08-03] CLOUD → parent — R-DESIGN-BADANIA-KLATKA-D (kod, bez deploy)
-- Branch: `cursor/klatka-d-plan-numerek-63a1`
-- Numerek planu 1..RESEARCH_QUEUE_MAX na węźle siatki v1.1 (`techTreeView.ts` `.pl`, lewy górny róg; gradient #f0dc88→#c9a938)
-- `getPlan` w `configureTechTreeView` ← `buildResearchPlanSnapshot()` (slug `techToSlug`)
-- tsc 0 · bez deploy / bez WERSJE AKTUALNA FALA
-CZEKAM-NA: parent review + merge PR
->>>>>>> origin/cursor/klatka-d-plan-numerek-63a1
 
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35

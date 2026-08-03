@@ -246,9 +246,9 @@ Po wdrożeniu ten sam wiersz przechodzi w górę statusów aż do ✅ (Master). 
 | **R-AUTO-BUDOWA-LISTA-Q3** | 2026-08-03 | **A** — v1 = tylko Priorytet typów; Lista nazwana później | B | 🟢 **WDROŻONE (kod)** | cities.ts · auto-manage.ts · cityPanel · main.ts | R-AUTO-BUDOWA-LISTA |
 | **R-AUTO-BUDOWA-LISTA-Q1** | 2026-08-03 | **A** doprec. | B | 🟡 **ZAPISANA** | — | |
 | **R-KOLEJKA-FALA207-Q1** | 2026-08-03 | **B** (korekta) — FALA 207 = handel AI + Połącz + Design Badania | CLOUD | 🟡 **ZAPISANA** | `docs/decyzje/R-KOLEJKA-FALA207-DESIGN.md` | czeka hasło **deploy** |
-| **R-DESIGN-BADANIA-Q1** | 2026-08-03 | **B** (korekta) — Design Badania razem z Klatką D (#46) | E+Design | 🔵 **W TRAKCIE** | PR #44+#46 · `scienceHubHud.ts` · `techTreeView.ts` | merge #46 · deploy w FALA 207 |
-| **R-KOLEJKA-NASTEPNY-Q1** | 2026-08-03 | **A+C** (korekta) — kolonizacja AI teraz + Design w FALA 207 | CLOUD | 🔵 **W TRAKCIE** | `docs/decyzje/R-AI-KOLONIZACJA.md` | kod kolonizacji przed deploy |
-| **R-AI-KOLONIZACJA-Q1** | 2026-08-03 | **A** — pop źródła ≥5 (5→4); foundCityAt bez osadnika | D | 🔵 **W TRAKCIE** | `ai.ts` · `city-founding.ts` | R-AI-KOLONIZACJA |
-| **R-AI-KOLONIZACJA-Q2** | 2026-08-03 | **A** — max 1 miasto/turę + surge 2 gdy brak wolnych MP | D | 🔵 **W TRAKCIE** | `ai.ts` | R-AI-KOLONIZACJA |
-| **R-AI-KOLONIZACJA-Q3** | 2026-08-03 | **B** — agresja epok 1–3; potem founding poza zasięgiem | D | 🔵 **W TRAKCIE** | `ai.ts` | R-AI-KOLONIZACJA |
-| **R-AI-KOLONIZACJA-DYSTANS** | 2026-08-03 | **4 hex** — min_dystans_miast + ekspansja_min_dystans_miast | D | 🔵 **W TRAKCIE** | `miasto-params.json` · `ai-params.json` | gracz + AI |
+| **R-DESIGN-BADANIA-Q1** | 2026-08-03 | **B** (korekta) — Design Badania razem z Klatką D (#46) | E+Design | 🟢 **WDROŻONA (kod)** | PR #44+#46 · `scienceHubHud.ts` · `techTreeView.ts` | deploy w FALA 207 |
+| **R-KOLEJKA-NASTEPNY-Q1** | 2026-08-03 | **A+C** (korekta) — kolonizacja AI teraz + Design w FALA 207 | CLOUD | 🔵 **W TRAKCIE** | `docs/decyzje/R-AI-KOLONIZACJA.md` | kod gotowy, czeka deploy |
+| **R-AI-KOLONIZACJA-Q1** | 2026-08-03 | **A** — pop źródła ≥5 (5→4); foundCityAt bez osadnika | D | 🟢 **WDROŻONA (kod)** | `ai.ts` · `city-founding.ts` | R-AI-KOLONIZACJA |
+| **R-AI-KOLONIZACJA-Q2** | 2026-08-03 | **A** — max 1 miasto/turę + surge 2 gdy brak wolnych MP | D | 🟢 **WDROŻONA (kod)** | `ai.ts` · `main.ts` | R-AI-KOLONIZACJA |
+| **R-AI-KOLONIZACJA-Q3** | 2026-08-03 | **B** — agresja epok 1–3; potem founding poza zasięgiem | D | 🟢 **WDROŻONA (kod)** | `ai.ts` | R-AI-KOLONIZACJA |
+| **R-AI-KOLONIZACJA-DYSTANS** | 2026-08-03 | **4 hex** — min_dystans_miast + ekspansja_min_dystans_miast | D | 🟢 **WDROŻONA (kod)** | `miasto-params.json` · `ai-params.json` | gracz + AI |

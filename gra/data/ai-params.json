@@ -320,9 +320,14 @@
     "opis": "Próg Health (% startowego) poniżej którego jednostka AI wycofuje się do obozu/miasta."
   },
   "ekspansja_min_dystans_miast": {
-    "wartosc": 5,
+    "wartosc": 4,
     "sekcja": "§3 Ekspansja",
     "opis": "Minimalna odległość (pola heksagonalne) między miastami AI przy zakładaniu nowego."
+  },
+  "ekspansja_min_score_hex": {
+    "wartosc": 3,
+    "sekcja": "§3 Ekspansja",
+    "opis": "Minimalny hexCityScore heksa kandydata przy founding AI (R-AI-KOLONIZACJA — odrzuca słabe lokalizacje)."
   },
   "ekspansja_zagroz_zasieg": {
     "wartosc": 7,

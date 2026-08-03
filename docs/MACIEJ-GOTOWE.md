@@ -1,4 +1,4 @@
-﻿- **2026-08-03 ~00:15** — ⏸️ ECHO korekta kolejki: **R-KOLEJKA-FALA207-Q1=B** (207=handel+Połącz+Design) · **R-DESIGN-BADANIA-Q1=B** (merge #46 Klatka D) · **R-KOLEJKA-NASTEPNY-Q1=A+C** (kolonizacja teraz + Design w 207). Docs: `docs/decyzje/R-KOLEJKA-FALA207-DESIGN.md`. Napisz **deploy** na FALA 207 (po merge #46 + kolonizacja).
+﻿- **2026-08-04 ~00:45** — ✅ Gotowe w kodzie (bez deploy): **R-AI-KOLONIZACJA** Q1A Q2A Q3B + merge **#46 Klatka D** + ECHO korekta kolejki B/B/A+C. Napisz **deploy** na FALA 207 (handel+Połącz+Design+Klatka+kolonizacja).
 - **2026-08-03 ~23:45** — ⏸️ ECHO zapisane (bez kodu): **R-AI-KOLONIZACJA** Q1A Q2A Q3B + dystans 4 hex + pokrycie mapy zasięgiem. Docs: `docs/decyzje/R-AI-KOLONIZACJA.md`.
 - **2026-08-03 ~21:20** — ✅ Gotowe w kodzie (bez deploy): **R-DESIGN-BADANIA-KLATKA-D** — numerek planu 1..3 na węźle drzewka v1.1 (`techTreeView` `.pl`, lewy górny róg). Merge #46. Napisz **deploy** gdy wgrać.
 - **2026-08-03 ~23:20** — ✅ Gotowe w kodzie (bez deploy): **R-HANDEL-AI-FALA-Q1=B** + **BUG-ARMIA-BRAK-POLACZ**. Merge PR #42 → `main`. Napisz **deploy** (FALA 207).

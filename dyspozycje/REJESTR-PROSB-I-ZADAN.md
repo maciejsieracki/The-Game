@@ -45,7 +45,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-KOLEJKA-NASTEPNY | **W TRAKCIE A+C** | Kolonizacja AI teraz → deploy FALA 207 (handel+Połącz+Design+Klatka+kolonizacja) |
 | R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Brak mockupu v2 (obrona %, brand) · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
 | R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ | Spec `WIARYGODNOSC-SPECYFIKACJA.md` — rdzeń OK; paczka ABC §9 strojenie (później) |
-| R-AI-KOLONIZACJA | **W TRAKCIE** | Q1A Q2A Q3B · dystans 4 · pop≥5 · surge po MP · ep1–3 agresja · kod w toku |
+| R-AI-KOLONIZACJA | **WDROŻONE (kod)** | Q1A Q2A Q3B · dystans 4 · pop≥5 · surge po MP · ep1–3 agresja · czeka deploy |
 
 **PR-y docs — SUPERSEDED (cleanup 2026-08-03):** #35 R-PROC-ABC-FULL-ID → wchłonięte w `cursor/cleanup-docs-rejestr-63a1` · #31 plan AUTO-BUDOWA Q1 → R-AUTO-V2 / FALA 204 · #30 plan AI wasal → FALA 205 / R-AI-MP-WASAL-WCHLONIECIE · #27 backlog IDs → wchłonięte; deploy FALA 204/205.
 

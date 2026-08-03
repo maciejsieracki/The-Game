@@ -353,6 +353,8 @@ export interface AITurnOpts {
   >;
   /** Bieżąca tura (silnik) — cel #1 Mocy co 3 tury. */
   currentTurn?: number;
+  /** R-AI-KOLONIZACJA-Q2: ownerIds miast-państw w wasalizacji (nie wolne MP). */
+  vassalizedCityStateOwnerIds?: readonly number[];
   /** Pozycja w rankingu Mocy (1 = najsilniejszy; silnik: computeAbsolutePowerRank). */
   powerRank?: number;
   /** Moc państwa ownerId — do wyboru słabszego celu wojskowego (C-AI-MOC-Q2=A). */
@@ -708,6 +710,62 @@ const AI_LOCAL_VILLAGE_SEARCH_RADIUS = 24;
 /** Po tej turze faza lokalna może się zakończyć mimo niewybranych hutów / MP. */
 const AI_LOCAL_PHASE_MAX_TURN = 45;
 
+/** R-AI-KOLONIZACJA-Q1: min pop miasta-źródła AI przed founding. */
+export const AI_COLONIZATION_SOURCE_MIN_POP = 5;
+/** Epoki pełnej agresji kolonizacyjnej (Kamień → Żelazo). */
+const AI_COLONIZATION_AGGRESSIVE_ERA_MAX = 3;
+const AI_COLONIZATION_OUTSIDE_TERRITORY_BONUS = 15;
+const AI_COLONIZATION_SURGE_MAX_PER_TURN = 2;
+
+/** Liczba wolnych niezależnych miast-państw (bez wasala). */
+export function countFreeIndependentCityStates(
+  cities: ReadonlyArray<{ ownerId: number; startCityState?: boolean }>,
+  vassalizedOwnerIds: readonly number[] = [],
+): number {
+  const vassalSet = new Set(vassalizedOwnerIds);
+  const csOwners = new Set<number>();
+  for (const c of cities) {
+    if (c.startCityState && c.ownerId > 0) csOwners.add(c.ownerId);
+  }
+  let free = 0;
+  for (const oid of csOwners) {
+    if (!vassalSet.has(oid)) free++;
+  }
+  return free;
+}
+
+function aiHasColonizationReadyCity(myCities: ReadonlyArray<{ population: number }>): boolean {
+  return myCities.some(c => c.population >= AI_COLONIZATION_SOURCE_MIN_POP);
+}
+
+function isHexWithinAnyCityReach(
+  q: number,
+  r: number,
+  allCities: ReadonlyArray<{ q: number; r: number; population: number }>,
+): boolean {
+  for (const c of allCities) {
+    const node = { q: c.q, r: c.r, pop: c.population, level: 1 };
+    if (hexDistance(q, r, c.q, c.r) <= cityTerritoryRadius(node)) return true;
+  }
+  return false;
+}
+
+function aiColonizationAggressiveMode(opts: AITurnOpts, myCities: AICity[]): boolean {
+  const era = opts.civEra ?? 1;
+  return era <= AI_COLONIZATION_AGGRESSIVE_ERA_MAX && aiHasColonizationReadyCity(myCities);
+}
+
+function aiMaxFoundingPerTurn(
+  cities: ReadonlyArray<{ ownerId: number; startCityState?: boolean }>,
+  opts: AITurnOpts,
+  playerId: number,
+): number {
+  const myCityCount = cities.filter(c => c.ownerId === playerId).length;
+  if (myCityCount === 0) return 1;
+  const freeCs = countFreeIndependentCityStates(cities, opts.vassalizedCityStateOwnerIds);
+  return freeCs === 0 ? AI_COLONIZATION_SURGE_MAX_PER_TURN : 1;
+}
+
 export function isScoutUnit(unit: RuntimeUnit): boolean {
   return unit.typeId === SCOUT_TYPE_ID || unit.category === 'zwiadowca';
 }
@@ -751,14 +809,26 @@ export function isLocalExpansionPhase(
   map: GameMap,
   units: readonly RuntimeUnit[],
   playerId: number,
+  allCities: ReadonlyArray<{ ownerId: number; startCityState?: boolean }> = myCities,
 ): boolean {
   if (opts.defensiveCopy) return false;
   if (myCities.length === 0) return false;
-  const turn = opts.currentTurn ?? 0;
-  if (turn >= AI_LOCAL_PHASE_MAX_TURN) return false;
 
   const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterTargets = opts.clusterStateTargets ?? [];
+  const colonizationReady = aiHasColonizationReadyCity(myCities);
+  const freeCs = countFreeIndependentCityStates(allCities, opts.vassalizedCityStateOwnerIds);
+  const aggressiveColonization = aiColonizationAggressiveMode(opts, myCities);
+
+  // R-AI-KOLONIZACJA: epoki 1–3 lub brak wolnych MP — nie blokuj skautami/wioskami.
+  if ((aggressiveColonization || (freeCs === 0 && colonizationReady)) && !opts.clusterConquestDeadlineActive) {
+    if (clusterTargets.length > 0 && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)) return true;
+    return false;
+  }
+
+  const turn = opts.currentTurn ?? 0;
+  if (turn >= AI_LOCAL_PHASE_MAX_TURN) return false;
+
   if (clusterTargets.length > 0 && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)) return true;
 
   if (countPlayerScouts(units, playerId) < AI_EARLY_SCOUT_TARGET) return true;
@@ -1411,14 +1481,20 @@ export function planCityFounding(
   opts: AITurnOpts,
   minCityDist: number,
   units: readonly RuntimeUnit[] = [],
+  excludeHexes: readonly { q: number; r: number }[] = [],
 ): AICmdFoundCityAt | null {
   if (opts.defensiveCopy) return null;
   const myCities = cities.filter(c => c.ownerId === playerId);
-  if (isLocalExpansionPhase(opts, myCities, map, units, playerId)) return null;
+  if (isLocalExpansionPhase(opts, myCities, map, units, playerId, cities)) return null;
 
   const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterConsolidationPhase = (opts.clusterStateTargets ?? []).length > 0;
-  if (clusterConsolidationPhase && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)) return null;
+  const aggressiveColonization = aiColonizationAggressiveMode(opts, myCities);
+  if (
+    clusterConsolidationPhase
+    && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)
+    && !(aggressiveColonization && !opts.clusterConquestDeadlineActive)
+  ) return null;
   const treasuryPraca = aiTreasuryPracaForFounding(opts.pracaAvailable ?? 0, ekspansywnosc);
   const turn = opts.currentTurn ?? 0;
   const aff = evaluateFoundCityAffordance(
@@ -1430,7 +1506,17 @@ export function planCityFounding(
   if (!aff.ok) return null;
 
   const enemyCities = cities.filter(c => c.ownerId !== playerId);
-  const targetHex = findCityFoundingHex(map, cities, enemyCities, data, minCityDist, opts);
+  const era = opts.civEra ?? 1;
+  const requireOutsideTerritory = era > AI_COLONIZATION_AGGRESSIVE_ERA_MAX;
+  const targetHex = findCityFoundingHex(
+    map,
+    cities,
+    enemyCities,
+    data,
+    minCityDist,
+    opts,
+    { excludeHexes, requireOutsideTerritory, applyMinScore: myCities.length > 0 },
+  );
   if (targetHex === null) return null;
 
   const { ok } = canFoundCity(targetHex.q, targetHex.r, cities, map);
@@ -1574,7 +1660,7 @@ export function decideAITurn(
   const clusterEnemyCities = engageableEnemyCities.filter(c => clusterTargetOwnerIds.has(c.ownerId));
   const sklonnoscPodboju = opts.civAiProfile?.sklonnoscDoPodboju ?? 2;
   const skipPatrol = sklonnoscPodboju >= 4;
-  const localExpansionPhase = isLocalExpansionPhase(opts, myCities, map, myUnits, playerId);
+  const localExpansionPhase = isLocalExpansionPhase(opts, myCities, map, myUnits, playerId, cities);
   const villageExploreRace = !opts.clusterConquestDeadlineActive
     && (localExpansionPhase || isVillageExploreRacePhase(opts, myCities));
 
@@ -1582,11 +1668,17 @@ export function decideAITurn(
   const minCityDist = getAiParam(data, 'ekspansja_min_dystans_miast', 5);
 
   // -------------------------------------------------------------------------
-  // Step 1b: CITY FOUNDING — max 1/turę (C-AI-EKSP-Q1)
+  // Step 1b: CITY FOUNDING — max 1/turę; surge 2 gdy brak wolnych MP (R-AI-KOLONIZACJA-Q2)
   // -------------------------------------------------------------------------
-  const foundingCmd = planCityFounding(playerId, cities, map, data, opts, minCityDist, myUnits);
-  if (foundingCmd !== null) {
+  const maxFoundingPerTurn = aiMaxFoundingPerTurn(cities, opts, playerId);
+  const foundingExcludeHexes: { q: number; r: number }[] = [];
+  for (let fi = 0; fi < maxFoundingPerTurn; fi++) {
+    const foundingCmd = planCityFounding(
+      playerId, cities, map, data, opts, minCityDist, myUnits, foundingExcludeHexes,
+    );
+    if (foundingCmd === null) break;
     commands.push(foundingCmd);
+    foundingExcludeHexes.push({ q: foundingCmd.q, r: foundingCmd.r });
   }
 
   // -------------------------------------------------------------------------
@@ -2126,6 +2218,11 @@ function findCityFoundingHex(
   data: GameData,
   minCityDist: number,
   opts: AITurnOpts = {},
+  hexOpts: {
+    excludeHexes?: readonly { q: number; r: number }[];
+    requireOutsideTerritory?: boolean;
+    applyMinScore?: boolean;
+  } = {},
 ): { q: number; r: number } | null {
   let bestScore = -Infinity;
   let bestHex: { q: number; r: number } | null = null;
@@ -2136,6 +2233,12 @@ function findCityFoundingHex(
     && opts.currentTurn % powerInterval === 0
     && (opts.powerRank ?? 1) > 1;
   const clusterOutsidePenalty = aiClusterOutsidePenalty(ekspansywnosc);
+  const minScore = hexOpts.applyMinScore
+    ? getAiParam(data, 'ekspansja_min_score_hex', 3)
+    : -Infinity;
+  const excludeSet = new Set(
+    (hexOpts.excludeHexes ?? []).map(h => `${h.q},${h.r}`),
+  );
 
   for (const key of Object.keys(map.hexes)) {
     const hex = map.hexes[key];
@@ -2145,12 +2248,17 @@ function findCityFoundingHex(
     if (t === 'morze' || t === 'wybrzeze' || t === 'gory') continue;
 
     const { q, r } = hex.coords;
+    if (excludeSet.has(`${q},${r}`)) continue;
 
     const tooClose = allCities.some(c => hexDistance(q, r, c.q, c.r) < minCityDist);
     if (tooClose) continue;
 
+    const withinReach = isHexWithinAnyCityReach(q, r, allCities);
+    if (hexOpts.requireOutsideTerritory && withinReach) continue;
+
     let score = hexCityScore(hex, q, r, data, enemyCities, opts) * ekspansjaScale;
     if (powerGoalBoost) score += 25;
+    if (!withinReach) score += AI_COLONIZATION_OUTSIDE_TERRITORY_BONUS;
 
     // pkt3: cluster bias — prefer hexes inside clusterCenter+clusterRadius
     // Faza 2: po konsolidacji klastra — nadal preferuj wnętrze regionu.
@@ -2163,12 +2271,15 @@ function findCityFoundingHex(
       }
     }
 
+    if (score < minScore) continue;
+
     if (score > bestScore) {
       bestScore = score;
       bestHex = { q, r };
     }
   }
 
+  if (bestHex !== null && bestScore < minScore) return null;
   return bestHex;
 }
 

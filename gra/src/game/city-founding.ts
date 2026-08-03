@@ -49,8 +49,12 @@ export function isSubsequentFoundCity(playerCities: ReadonlyArray<{ ownerId: num
   return playerCities.filter(c => c.ownerId === ownerId).length > 0;
 }
 
+/** R-AI-KOLONIZACJA-Q1: AI wymaga pop ≥ 5 w mieście-źródle (gracz: koszt+1). */
+export const AI_FOUNDING_SOURCE_MIN_POP = 5;
+
 /**
  * B1-FOUND-Q1=A+B: największe miasto cywilizacji z populacją ≥ koszt+1 (min. 1 zostaje).
+ * R-AI-KOLONIZACJA-Q1: AI (ownerId > 0) wymaga pop ≥ 5 — po founding źródło 5→4.
  * Przy remisie wielkości — losowe miasto spośród największych.
  */
 export function pickSourceCityForFounding(
@@ -59,7 +63,9 @@ export function pickSourceCityForFounding(
   rand: () => number = Math.random,
 ): FoundCitySourceCity | null {
   const popCost = foundCityPopulationCost();
-  const minPop = popCost + 1;
+  const minPop = ownerId > 0
+    ? Math.max(popCost + 1, AI_FOUNDING_SOURCE_MIN_POP)
+    : popCost + 1;
   const eligible = cities.filter(c => c.ownerId === ownerId && c.population >= minPop);
   if (eligible.length === 0) return null;
   const maxPop = Math.max(...eligible.map(c => c.population));
@@ -101,9 +107,12 @@ export function evaluateFoundCityAffordance(
 
   const source = pickSourceCityForFounding(cities, ownerId, rand);
   if (!source) {
+    const minNeeded = ownerId > 0
+      ? Math.max(kosztLudnosc + 1, AI_FOUNDING_SOURCE_MIN_POP)
+      : kosztLudnosc + 1;
     return {
       ok: false,
-      reason: 'Potrzebne miasto z co najmniej ' + (kosztLudnosc + 1) + ' ludności',
+      reason: 'Potrzebne miasto z co najmniej ' + minNeeded + ' ludności',
       kosztPraca,
       kosztLudnosc,
     };
