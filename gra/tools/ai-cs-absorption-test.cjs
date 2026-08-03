@@ -131,13 +131,38 @@ const war = decideAiCsClusterAction({
   turn: 35,
   militaryRatio: 1.5,
   hasWasalDeal: false,
-  hasTrybutDeal: true,
-  trybutSinceTurn: 32,
+  hasTrybutDeal: false,
   failCount: 2,
   alreadyAtWar: false,
   napBlocked: false,
 });
-eq(war.action, 'war', 'T7a: failCount≥2 + turn≥30');
+eq(war.action, 'war', 'T7a: brak deal + failCount≥2 + turn≥30 → war');
+
+const warAfterWasalFail = decideAiCsClusterAction({
+  difficulty: 'normal',
+  turn: 35,
+  militaryRatio: 1.5,
+  hasWasalDeal: false,
+  hasTrybutDeal: true,
+  trybutSinceTurn: 20,
+  failCount: 2,
+  alreadyAtWar: false,
+  napBlocked: false,
+});
+eq(warAfterWasalFail.action, 'war', 'T7b: trybut elapsed + failCount≥2 → war zamiast wasal');
+
+const waitWasal = decideAiCsClusterAction({
+  difficulty: 'normal',
+  turn: 35,
+  militaryRatio: 1.5,
+  hasWasalDeal: true,
+  wasalSinceTurn: 34,
+  hasTrybutDeal: true,
+  failCount: 5,
+  alreadyAtWar: false,
+  napBlocked: false,
+});
+eq(waitWasal.action, null, 'T7c: aktywny wasal → czekaj (bez wojny mimo faili)');
 
 console.log('\n--- T8: rollAiCsAccept ---');
 assert(rollAiCsAccept('trybut', easy, () => 0.0), 'T8a: rng 0 → accept');

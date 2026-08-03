@@ -20456,13 +20456,18 @@ async function boot(): Promise<void> {
                   ) {
                     clusterForceWarTargetId = absorptionWarTarget;
                   } else if (clusterForceWarTargetId == null) {
+                    // Q2=A: wojna dopiero po odmowach (decide→war) albo safety na deadline.
+                    // NIE wymuszaj wojny na clusterWarMinTurn bez ścieżki dyplomatycznej.
                     const forced = pickClusterCityStateWarTargetId(
                       turn,
                       opts.clusterStateTargets,
                       atWarIds,
                       refHex,
                       napBlockedCsIds,
-                      clusterTimingOpts,
+                      {
+                        warMinTurn: csAbsParams.clusterConquestDeadline,
+                        deadlineTurn: csAbsParams.clusterConquestDeadline,
+                      },
                     );
                     if (forced != null && !isPeaceLockedBetween(ownerId, forced)) {
                       clusterForceWarTargetId = forced;

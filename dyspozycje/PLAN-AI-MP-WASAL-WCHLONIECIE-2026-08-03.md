@@ -2,8 +2,10 @@
 
 **ID:** `R-AI-MP-WASAL-WCHLONIECIE`  
 **Data:** 2026-08-03  
-**Status:** plan do decyzji (bez implementacji)  
-**Źródło:** Maciej — AI nie radzi sobie z MP; gra za łatwa (gracz ma wiele miast, AI utyka na klastrze); potrzeba szybkiego wchłaniania MP bez walki + wyłączenie sojuszy sióstr przy wojnie AI↔MP; gracz też ma wchłaniać słabszych trybutariuszy, ale drogo/trudno.
+**Status:** DECYZJE ZAMKNIĘTE · wdrożenie w toku (2026-08-03)  
+**Decyzje:** Q1=A · Q2=A(Ł/N)+C(Hard) · Q3=A+B odłożone (gracz bez zmian teraz)  
+**Parametry kanon:** `docs/decyzje/R-AI-MP-WASAL-WCHLONIECIE.md`  
+**Źródło:** Maciej — AI nie radzi sobie z MP; ułatwienia przejęcia tylko dla AI, skala trudności; gracz↔MP bez zmian.
 
 ---
 

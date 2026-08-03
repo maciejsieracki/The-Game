@@ -142,24 +142,31 @@ export function decideAiCsClusterAction(
     return { action: null, reason: 'za_wczesnie_lub_za_slaby' };
   }
 
+  // Po wasalu czekamy wyłącznie na timer wchłonięcia — bez wojny w międzyczasie.
+  if (input.hasWasalDeal) {
+    return { action: null, reason: 'czekaj_na_annex' };
+  }
+
+  const canForceWar =
+    input.failCount >= params.vassalFailBeforeWar
+    && input.turn >= params.clusterWarMinTurn;
+
   if (
     input.hasTrybutDeal
-    && !input.hasWasalDeal
     && input.trybutSinceTurn != null
     && input.turn - input.trybutSinceTurn >= params.wasalAfterTrybutTurns
   ) {
+    if (canForceWar) {
+      return { action: 'war', reason: 'odmowy_wasal_i_czas' };
+    }
     return { action: 'wasal', reason: 'trybut_elapsed' };
   }
 
-  if (!input.hasTrybutDeal && !input.hasWasalDeal) {
+  if (!input.hasTrybutDeal) {
+    if (canForceWar) {
+      return { action: 'war', reason: 'odmowy_i_czas' };
+    }
     return { action: 'trybut', reason: 'pierwszy_krok' };
-  }
-
-  if (
-    input.failCount >= params.vassalFailBeforeWar
-    && input.turn >= params.clusterWarMinTurn
-  ) {
-    return { action: 'war', reason: 'odmowy_i_czas' };
   }
 
   return { action: null, reason: 'czekaj' };
