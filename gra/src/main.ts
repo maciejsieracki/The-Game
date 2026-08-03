@@ -20356,10 +20356,6 @@ async function boot(): Promise<void> {
                       .map(t => t.ownerId),
                   );
                   const csAbsParams = aiCsAbsorptionParams(_menuDifficulty);
-                  const clusterTimingOpts = {
-                    warMinTurn: csAbsParams.clusterWarMinTurn,
-                    deadlineTurn: csAbsParams.clusterConquestDeadline,
-                  };
                   const clusterTargetsSorted = [...opts.clusterStateTargets].sort((a, b) => {
                     if (!refHex) return a.ownerId - b.ownerId;
                     const da = hexDistance(a.q, a.r, refHex.q, refHex.r);
