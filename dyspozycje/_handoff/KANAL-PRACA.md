@@ -1,3 +1,9 @@
+## [23:25 PL, 2026-08-03] CLOUD → ALL — zamknięte zbędne PR (FALA 206)
+- CLOSED (SUPERSEDED FALA 206): #47, #52, #55, #45, #51
+- Otwarte feat: #44 Design Badania · #46 Klatka D · #59 ECHO kolonizacja (docs)
+- Handel+Połącz: już na `main` (merge #42) — czeka deploy
+CZEKAM-NA: Maciej litery paczki R-KOLEJKA (FALA207 / Design / priorytet)
+
 ## [23:11 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 206 `1c7e9df7`
 - md5: `1c7e9df7bf4c74258ae122fc0bda846d` · stempel: ROBOCZA · 2026-08-03 23:11
 - **#56** wchłonięcie MP · **#54** D3 W + cleanup · **#53** bez Dźwigni 2 · **#49** tempo WIAR-Q3 · **#48** manpower ep1 500 · **#50** UI Relacja ±%

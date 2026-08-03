@@ -44,6 +44,8 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Brak mockupu v2 (obrona %, brand) · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
 | R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ | Spec `WIARYGODNOSC-SPECYFIKACJA.md` — rdzeń OK; paczka ABC §9 strojenie (później) |
 
+**PR-y SUPERSEDED FALA 206 (cleanup 2026-08-03 wieczór):** #47/#52/#55/#45/#51 zamknięte. Otwarte: #44 Design Badania · #46 Klatka D · #59 kolonizacja ECHO.
+
 **PR-y docs — SUPERSEDED (cleanup 2026-08-03):** #35 R-PROC-ABC-FULL-ID → wchłonięte w `cursor/cleanup-docs-rejestr-63a1` · #31 plan AUTO-BUDOWA Q1 → R-AUTO-V2 / FALA 204 · #30 plan AI wasal → FALA 205 / R-AI-MP-WASAL-WCHLONIECIE · #27 backlog IDs → wchłonięte; deploy FALA 204/205.
 
 ---
