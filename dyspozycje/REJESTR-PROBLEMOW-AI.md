@@ -23,6 +23,7 @@
 | **P-AI-011** | 2026-07-26 | AI **nie proponuje handlu** gdy brakuje surowców (gracz + AI) | **NAPRAWIONE (kod)** | deficyt (`needsResource` + kolejka budowy) → zakup; `zaproponuj_audiencje`; margines `handlowosc`; hint AI↔AI; cooldown deficyt |
 | **P-AI-012** | 2026-07-26 | Pełne cywilizacje **nie produkują zwiadowców** na starcie — brak wyścigu o wioski | **NAPRAWIONE (kod)** | `ai.ts`: min. 2× Zwiadowca, ruch na wioski; `defensiveCopy` wyłączone |
 | **P-AI-013** | 2026-07-26 | Dyplomacja AI **jednakowa** dla wszystkich typów cywilizacji (stuby grecy/rzym) | **NAPRAWIONE (kod)** | `resolveDiplomacyCivBias` + `civ-ai.json`; pakt/handlu vs haracz/wojna; `ai-test` T12 |
+| **P-AI-015** | 2026-08-02 | **BUG-DYP-GIFT-WAR** — dar 50¤ od miasta-państwa widoczny i akceptowalny podczas wojny | **NAPRAWIONE (kod)** | `pruneInvalidNegotiations` po DOW; filtr UI + bramka Accept; `resolvePlayerAcceptsAiPending` + `isGift` · branch `cursor/fix-gift-during-war-63a1` |
 
 ---
 
@@ -32,4 +33,4 @@
 - „**P-AI-006** napraw" → uzupełniam dane + kod
 - „**P-AI-008** zostaw" → status → ŚWIADOMIE-ZOSTAJE
 
-**Następny wolny numer:** P-AI-014
+**Następny wolny numer:** P-AI-015
