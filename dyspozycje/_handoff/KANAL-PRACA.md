@@ -1,3 +1,9 @@
+## [23:40 PL, 2026-08-03] CLOUD → ALL — merge PR #44 Design Badania
+- Merge `cursor/design-badania-v1-63a1` → `main`
+- Plik: `gra/src/ui/scienceHubHud.ts` — Design v1 (złoto #e8d88a, Georgia, plan BADA SIĘ/TU UPUŚĆ, + PLAN hover)
+- **Poza FALA 207** per R-KOLEJKA-FALA207-Q1=A — deploy Design osobno
+CZEKAM-NA: Maciej **deploy** FALA 207 (handel+Połącz tylko)
+
 ## [23:35 PL, 2026-08-03] CLOUD → ALL — ECHO paczka kolejki (Maciej opcja 1)
 - **R-KOLEJKA-FALA207-Q1=A** — FALA 207 = handel AI + Połącz **tylko** (bez Design w deploy)
 - **R-DESIGN-BADANIA-Q1=A** — merge PR #44 Design Badania na main (deploy osobno)

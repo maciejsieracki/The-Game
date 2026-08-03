@@ -40,7 +40,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-HANDEL-AI-FALA | WDROŻONE (kod) | R-HANDEL-AI-FALA-Q1=B · merge PR #42 · **FALA 207 scope=A** (handel+Połącz tylko) · czeka **deploy** |
 | R-ZAMIEN-ULEPSZENIE-CONFIRM | **ZAMKNIĘTE Q1=A** | Zawsze modal przy zastąpieniu (jak dziś) · `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md` · bez zmian kodu |
 | BUG-ARMIA-BRAK-POLACZ | WDROŻONE (kod) | UX: hex panel zasłaniał dock · fix w PR #42 · **FALA 207** · czeka **deploy** |
-| R-DESIGN-BADANIA | **MERGING** | R-DESIGN-BADANIA-Q1=A · merge PR #44 na main · **poza FALA 207** · deploy później |
+| R-DESIGN-BADANIA | **WDROŻONE (kod)** | R-DESIGN-BADANIA-Q1=A · merge PR #44 · `scienceHubHud.ts` · **poza FALA 207** |
 | R-KOLEJKA-NASTEPNY | **ZAPISANE B** | Po deploy FALA 207 → kolonizacja AI (PR #59) |
 | R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Brak mockupu v2 (obrona %, brand) · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
 | R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ | Spec `WIARYGODNOSC-SPECYFIKACJA.md` — rdzeń OK; paczka ABC §9 strojenie (później) |
@@ -110,7 +110,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-MAGAZYN-PANSTWO | 2026-07-24 | Magazyn = pula PAŃSTWA: 100 + 100/Magazyn, nadmiar przepada, surowce wspólne dla imperium | **ZDEPLOYOWANE `ea75f5ba`** | Cap płaski 100/100/100. Parytet AI 44/44. |
 | R-HANDEL-SUROWCE | 2026-07-24 | Handel surowcami w dyplomacji: za pieniądz/Pracę; jednorazowy i przez X tur; AI też | **ZDEPLOYOWANE `ea75f5ba`** | Parytet AI (AI↔AI) 42/42. |
 | R-FULLSCREEN-PASEK | 2026-07-25 | Playtest (ze zrzutami ekranu): w trybie pełnego ekranu na dole pojawia się pasek, którego nie powinno być; blokuje przesuwanie mapy myszką przy dolnej krawędzi (edge-pan nie działa w tym miejscu). | **ZDEPLOYOWANE `c08b5fcc`** | WERSJE 2026-07-26 playtest batch: `scene.ts` fullscreenchange + updateStyle=false (brak numeru FALA w WERSJE). |
-| R-DESIGN-BADANIA | 2026-07-25 | Playtest: mockup ekranu badań przestarzały vs drzewko. | **GOTOWE-DO-WDROŻENIA** | Design: panel boczny Badania v1 (2026-07-26) · `DO-DESIGN-EKRAN-BADAN-2026-07-25.md` · reskin `scienceHubHud.ts` |
+| R-DESIGN-BADANIA | 2026-07-25 | Playtest: mockup ekranu badań przestarzały vs drzewko. | **WDROŻONE (kod)** | Design v1 reskin `scienceHubHud.ts` · branch `cursor/design-badania-v1-63a1` · Q2 siatka v1.1 dla „Wkrótce" |
 | R-DESIGN-PANEL-MIASTA | 2026-07-25 | Playtest (ze zrzutami ekranu): panel widoku miast na mapie głównej przestarzały. | **CZEKA-NA-DESIGN** | `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` · patrz KOLEJKA OTWARTA |
 | R-DYP-IKONA-TLO | 2026-07-25 | Playtest (ze zrzutami ekranu): w panelu dyplomacji pod ikoną państwa jest niebieskie kwadratowe tło. Decyzja Macieja: usunąć ALBO zamienić na obramówkę w tym kolorze. | **ZDEPLOYOWANE `c08b5fcc`** | WERSJE 2026-07-26: obramówka `.dip-pennant` (brak numeru FALA w WERSJE). |
 | R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **CZEKA-NA-DECYZJĘ** | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` (rdzeń zatwierdzony WIAR-Q*); draft: `PROJEKT-WIARYGODNOSC-CYWILIZACJI.md`. Otwarte: §9 strojenie (paczka ABC później) · patrz KOLEJKA OTWARTA |

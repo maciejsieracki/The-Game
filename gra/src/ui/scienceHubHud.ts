@@ -1,6 +1,7 @@
 /**
  * scienceHubHud.ts — hub badań (postęp + lista tech + wejście do drzewka).
  * Q-NAUKA-1: lista + postęp; drzewko osobno (sciencePicker dock).
+ * Design v1 reskin (PANEL-BADANIA-v1-2026-07-26).
  */
 
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
@@ -76,11 +77,16 @@ export interface ScienceHubHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-science-hub-hud-css-v1';
+const STYLE_ID = 'civ-science-hub-hud-css-v2';
 const TOP_H = SIDE_PANEL_TOP;
 const BOTTOM_BAR_H = 56;
 const PANEL_W = 340;
 const LEFT_INSET = SIDE_PANEL_LEFT;
+
+/** Ikona grafu (4 węzły) — przycisk „Drzewo technologii" (nie duplikat sowy). */
+const TREE_GRAPH_ICON_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="19" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>';
+
+const PLUS_ICON_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>';
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -88,80 +94,112 @@ function ensureStyles(): void {
 .civ-science-hub-hud{position:fixed;top:${TOP_H};left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
   width:min(24vw,${PANEL_W}px);min-width:260px;max-width:calc(100vw - ${LEFT_INSET} - 12px);z-index:313;display:none;flex-direction:column;
   pointer-events:auto;overflow:hidden;
-  background:linear-gradient(90deg,rgba(6,10,20,0.97) 0%,rgba(8,14,28,0.92) 88%,rgba(8,14,28,0.85) 100%);
-  border-right:1px solid rgba(107,196,232,0.28);box-shadow:6px 0 28px rgba(0,0,0,0.45);
-  font:14px 'Segoe UI',Tahoma,sans-serif;color:#e8ebf0;
-  --panel:#1e2430;--border:#2e3848;--muted:#8b97a8;--gold:#e0b24a;--sci:#6bc4e8;}
+  background:linear-gradient(90deg,rgba(8,11,18,.98) 0%,rgba(12,16,26,.95) 88%,rgba(12,16,26,.9) 100%);
+  border-right:2px solid rgba(232,216,138,.4);box-shadow:8px 0 30px rgba(0,0,0,.55);
+  font:14px 'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;
+  --panel-grad:linear-gradient(180deg,rgba(22,28,38,.95),rgba(10,13,20,.96));
+  --border-gold:rgba(232,216,138,.28);--muted:#8a8070;--gold:#e8d88a;--gold-bright:#f4e6a8;
+  --sci:#5a9bd4;--sci-light:#8fb6e0;--circle-grad:linear-gradient(180deg,#f0dc88,#c9a938);--circle-text:#2e2708;}
 .civ-science-hub-hud.open{display:flex;}
 .civ-science-hub-hud .sh-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:0.45rem 0.5rem 0.55rem;}
 .civ-science-hub-hud .sh-scroll::-webkit-scrollbar{width:6px;}
-.civ-science-hub-hud .sh-scroll::-webkit-scrollbar-thumb{background:rgba(107,196,232,0.25);border-radius:3px;}
-.civ-science-hub-hud .panel{background:var(--panel);border:1px solid var(--border);border-radius:6px;
-  padding:0.38em 0.52em;box-shadow:0 1px 0 rgba(255,255,255,0.03);margin-bottom:0.45em;}
-.civ-science-hub-hud .ptitle{font-size:0.74em;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-  color:var(--sci);border-bottom:1px solid var(--border);padding-bottom:0.18em;margin-bottom:0.35em;
+.civ-science-hub-hud .sh-scroll::-webkit-scrollbar-thumb{background:rgba(232,216,138,.22);border-radius:3px;}
+.civ-science-hub-hud .panel{background:var(--panel-grad);border:1px solid var(--border-gold);border-radius:8px;
+  padding:0.55em 0.65em;box-shadow:0 1px 0 rgba(255,255,255,.02);margin-bottom:0.45em;}
+.civ-science-hub-hud .ptitle{font-family:Georgia,'Times New Roman',serif;font-size:0.95em;font-weight:600;
+  letter-spacing:.05em;color:var(--gold);border-bottom:1px solid rgba(232,216,138,.18);padding-bottom:0.4em;margin-bottom:0.5em;
   display:flex;justify-content:space-between;align-items:center;gap:0.5em;}
-.civ-science-hub-hud .sh-title-owl{display:inline-flex;align-items:center;gap:0.35em;}
-.civ-science-hub-hud .sh-title-owl .civ-science-owl-ic{width:18px;height:18px;color:var(--sci);}
+.civ-science-hub-hud .sh-title-owl{display:inline-flex;align-items:center;gap:0.4em;}
+.civ-science-hub-hud .sh-title-owl .civ-science-owl-ic{width:19px;height:19px;color:var(--gold);}
 .civ-science-hub-hud .sh-close{background:none;border:none;color:var(--muted);font-size:1.15em;line-height:1;
   cursor:pointer;padding:0.1em 0.25em;border-radius:4px;}
-.civ-science-hub-hud .sh-close:hover{color:var(--sci);background:rgba(107,196,232,0.1);}
+.civ-science-hub-hud .sh-close:hover{color:var(--gold);background:rgba(232,216,138,.1);}
 .civ-science-hub-hud .sh-prog{margin-bottom:0.35em;}
-.civ-science-hub-hud .sh-prog-target{font-size:0.95em;font-weight:700;color:var(--gold);line-height:1.25;
-  display:flex;align-items:center;gap:0.35em;}
+.civ-science-hub-hud .sh-prog-target{font-family:Georgia,'Times New Roman',serif;font-size:1em;font-weight:600;
+  color:var(--gold);line-height:1.25;display:flex;align-items:center;gap:0.4em;}
 .civ-science-hub-hud .sh-prog-target .sh-owl{display:inline-flex;align-items:center;}
-.civ-science-hub-hud .sh-prog-target .civ-science-owl-ic{width:16px;height:16px;color:var(--sci);}
-.civ-science-hub-hud .sh-prog-meta{font-size:0.72em;color:var(--muted);margin-top:0.2em;line-height:1.4;}
-.civ-science-hub-hud .sh-bar{height:6px;background:rgba(30,40,55,0.9);border:1px solid rgba(107,196,232,0.25);
+.civ-science-hub-hud .sh-prog-meta{font-size:0.72em;color:var(--muted);margin-top:0.2em;line-height:1.4;font-variant-numeric:tabular-nums;}
+.civ-science-hub-hud .sh-prog-meta b{color:var(--sci-light);font-weight:600;}
+.civ-science-hub-hud .sh-bar{height:6px;background:rgba(16,22,34,.9);border:1px solid rgba(90,155,212,.3);
   border-radius:4px;overflow:hidden;margin-top:0.35em;}
-.civ-science-hub-hud .sh-bar-fill{height:100%;background:linear-gradient(90deg,#4a9fd4,var(--sci));transition:width .3s;}
-.civ-science-hub-hud .sh-sec{font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-  color:var(--muted);margin:0.35em 0 0.2em;}
-.civ-science-hub-hud .sh-item{display:flex;gap:0.5em;align-items:flex-start;padding:0.42em 0.32em;
-  margin-top:0.22em;border-radius:5px;border:1px solid transparent;cursor:pointer;transition:background .15s,border-color .15s;}
-.civ-science-hub-hud .sh-item:first-of-type{margin-top:0.1em;}
-.civ-science-hub-hud .sh-item:hover:not(.locked){background:rgba(107,196,232,0.08);border-color:rgba(107,196,232,0.35);}
-.civ-science-hub-hud .sh-item.on{border-color:rgba(224,178,74,0.55);background:rgba(224,178,74,0.08);}
-.civ-science-hub-hud .sh-item.locked{opacity:0.55;cursor:help;}
-.civ-science-hub-hud .sh-item.locked:hover{background:rgba(232,176,74,0.06);border-color:rgba(232,176,74,0.25);}
-.civ-science-hub-hud .sh-ico{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:1.35em;height:1.35em;}
-.civ-science-hub-hud .sh-ico svg{width:100%;height:100%;display:block;}
+.civ-science-hub-hud .sh-bar-fill{height:100%;background:linear-gradient(90deg,#3a6ad0,var(--sci-light));transition:width .3s;}
+.civ-science-hub-hud .sh-sec{display:flex;align-items:baseline;justify-content:space-between;gap:0.5em;
+  font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);
+  margin:0.35em 0 0.28em;}
+.civ-science-hub-hud .sh-sec .sh-sec-count{color:var(--gold);font-variant-numeric:tabular-nums;}
+.civ-science-hub-hud .sh-sec.sh-sec-muted .sh-sec-count{color:var(--muted);}
+.civ-science-hub-hud .sh-item{display:flex;gap:0.5em;align-items:flex-start;padding:0.42em 0.35em;
+  margin-top:0.18em;border-radius:6px;border:1px solid transparent;cursor:pointer;
+  transition:background .15s,border-color .15s;}
+.civ-science-hub-hud .sh-item:first-of-type{margin-top:0.08em;}
+.civ-science-hub-hud .sh-item:hover:not(.locked){background:rgba(232,216,138,.07);border-color:rgba(232,216,138,.4);}
+.civ-science-hub-hud .sh-item:hover:not(.locked) .sh-plan-act{opacity:1;}
+.civ-science-hub-hud .sh-item.on{border-color:rgba(232,216,138,.45);background:rgba(232,216,138,.07);}
+.civ-science-hub-hud .sh-item.locked{opacity:0.6;cursor:pointer;}
+.civ-science-hub-hud .sh-item.locked:hover{background:rgba(232,216,138,.05);border-color:rgba(232,216,138,.22);}
+.civ-science-hub-hud .sh-item:focus-visible,.civ-science-hub-hud .sh-plan-item:focus-visible{
+  outline:2px solid #f4e6a8;outline-offset:2px;}
+.civ-science-hub-hud .sh-ico{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:1.5em;height:1.5em;
+  border-radius:50%;border:1px solid rgba(232,216,138,.35);background:radial-gradient(circle at 38% 30%,#1c2432,#0a0d14);}
+.civ-science-hub-hud .sh-ico svg{width:72%;height:72%;display:block;}
 .civ-science-hub-hud .sh-close-ic{display:inline-flex;align-items:center;justify-content:center;width:1.1em;height:1.1em;}
 .civ-science-hub-hud .sh-close-ic svg{width:100%;height:100%;display:block;}
 .civ-science-hub-hud .sh-tree-btn .sh-tree-ic{display:inline-flex;align-items:center;margin-right:0.35em;vertical-align:middle;}
 .civ-science-hub-hud .sh-tree-btn .sh-tree-ic svg{width:1.1em;height:1.1em;display:block;}
 .civ-science-hub-hud .sh-body{flex:1;min-width:0;}
-.civ-science-hub-hud .sh-name{font-size:0.98em;font-weight:700;color:var(--gold);line-height:1.2;}
-.civ-science-hub-hud .sh-cost{font-size:0.72em;color:var(--muted);margin-top:0.1em;}
-.civ-science-hub-hud .sh-unlock{font-size:0.7em;color:#a8c8e0;margin-top:0.12em;line-height:1.35;}
-.civ-science-hub-hud .sh-lock{font-size:0.68em;color:#c9a060;margin-top:0.1em;}
-.civ-science-hub-hud .sh-empty{font-size:0.82em;color:var(--muted);line-height:1.45;padding:0.15em 0;}
-.civ-science-hub-hud .sh-tree-btn{width:100%;margin-top:0.35em;padding:0.45em 0.6em;border-radius:5px;cursor:pointer;
-  border:1px solid rgba(107,196,232,0.45);background:rgba(107,196,232,0.12);color:#d4ecff;
-  font-size:0.82em;font-weight:600;font-family:inherit;transition:background .15s,border-color .15s;}
-.civ-science-hub-hud .sh-tree-btn:hover{background:rgba(107,196,232,0.22);border-color:rgba(107,196,232,0.65);}
-.civ-science-hub-hud .sh-tree-btn.gold{border-color:rgba(232,216,138,0.5);background:rgba(232,216,138,0.1);color:#e8d88a;}
-.civ-science-hub-hud .sh-tree-btn.gold:hover{background:rgba(232,216,138,0.2);border-color:rgba(232,216,138,0.75);}
-.civ-science-hub-hud .sh-hint{font-size:0.7em;color:var(--muted);font-style:italic;margin-top:0.4em;line-height:1.4;}
-.civ-science-hub-hud .sh-plan-title{display:flex;align-items:baseline;justify-content:space-between;gap:0.5em;}
-.civ-science-hub-hud .sh-plan-empty{font-size:0.78em;color:var(--muted);font-style:italic;padding:0.2em 0;}
-.civ-science-hub-hud .sh-plan-item{display:flex;align-items:center;gap:0.45em;padding:0.32em 0.4em;
-  margin-top:0.22em;border-radius:5px;border:1px solid rgba(224,178,74,0.28);background:rgba(224,178,74,0.06);
+.civ-science-hub-hud .sh-name{font-family:Georgia,'Times New Roman',serif;font-size:0.92em;font-weight:600;
+  color:var(--gold);line-height:1.2;}
+.civ-science-hub-hud .sh-item:hover:not(.locked) .sh-name{color:var(--gold-bright);}
+.civ-science-hub-hud .sh-cost{font-size:0.7em;color:var(--muted);margin-top:0.1em;font-variant-numeric:tabular-nums;}
+.civ-science-hub-hud .sh-unlock{font-size:0.68em;color:#9fb8d8;margin-top:0.1em;line-height:1.35;}
+.civ-science-hub-hud .sh-lock{font-size:0.66em;color:#c9a060;margin-top:0.1em;}
+.civ-science-hub-hud .sh-empty{font-size:0.78em;color:var(--muted);line-height:1.45;padding:0.15em 0;}
+.civ-science-hub-hud .sh-plan-act{flex-shrink:0;font-size:0.62em;font-weight:700;letter-spacing:.08em;
+  color:var(--gold-bright);border:1px solid rgba(232,216,138,.5);border-radius:4px;padding:2px 6px;
+  white-space:nowrap;opacity:0;transition:opacity .15s;align-self:center;}
+.civ-science-hub-hud .sh-tree-btn{width:100%;margin-top:0.45em;padding:0.5em 0.65em;border-radius:7px;cursor:pointer;
+  border:1px solid #6a5212;border-top-color:#f8eea8;color:var(--circle-text);
+  background:linear-gradient(180deg,#f0dc88,#b99a28);box-shadow:inset 0 1px 0 rgba(255,255,255,.4);
+  font-size:0.72em;font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-family:inherit;
+  transition:filter .15s,box-shadow .15s;display:inline-flex;align-items:center;justify-content:center;gap:0.35em;}
+.civ-science-hub-hud .sh-tree-btn:hover{filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 10px rgba(232,216,138,.25);}
+.civ-science-hub-hud .sh-hint{font-size:9.5px;color:#6f6a5e;line-height:1.5;margin-top:0.55em;padding-top:0.5em;
+  border-top:1px solid rgba(232,216,138,.12);font-style:normal;}
+.civ-science-hub-hud .sh-plan-empty-wrap{display:flex;align-items:flex-start;gap:0.45em;padding:0.55em 0.65em;
+  border-radius:7px;border:1px dashed rgba(232,216,138,.28);background:rgba(232,216,138,.03);}
+.civ-science-hub-hud .sh-plan-empty-plus{color:var(--muted);display:flex;flex-shrink:0;margin-top:1px;}
+.civ-science-hub-hud .sh-plan-empty{font-size:0.78em;color:var(--muted);line-height:1.45;font-style:normal;padding:0;}
+.civ-science-hub-hud .sh-plan-item{display:flex;align-items:center;gap:0.45em;padding:0.35em 0.45em;
+  margin-top:0.2em;border-radius:7px;border:1px solid rgba(232,216,138,.28);background:rgba(232,216,138,.05);
   cursor:grab;}
-.civ-science-hub-hud .sh-plan-item.active{border-color:rgba(224,178,74,0.6);background:rgba(224,178,74,0.12);}
+.civ-science-hub-hud .sh-plan-item.active{border-color:rgba(232,216,138,.55);
+  background:linear-gradient(180deg,rgba(46,42,24,.9),rgba(22,19,11,.94));}
 .civ-science-hub-hud .sh-plan-item.dragging{opacity:0.4;}
-.civ-science-hub-hud .sh-plan-item.drop-target{box-shadow:inset 0 0 0 2px var(--sci);}
-.civ-science-hub-hud .sh-plan-num{flex-shrink:0;width:1.4em;height:1.4em;border-radius:50%;
-  background:var(--gold);color:#1a1400;font-size:0.72em;font-weight:800;display:flex;align-items:center;
-  justify-content:center;}
-.civ-science-hub-hud .sh-plan-name{flex:1;min-width:0;font-size:0.86em;font-weight:600;color:#f2e0b0;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.civ-science-hub-hud .sh-plan-item.drop-target{border-color:var(--sci);background:rgba(90,155,212,.1);
+  box-shadow:inset 0 0 0 2px var(--sci);}
+.civ-science-hub-hud .sh-plan-item.drop-target .sh-drop-label{display:inline;}
+.civ-science-hub-hud .sh-drop-label{display:none;font-size:0.62em;font-weight:700;letter-spacing:.08em;
+  color:var(--sci-light);white-space:nowrap;flex-shrink:0;}
+.civ-science-hub-hud .sh-plan-num{flex-shrink:0;width:1.25em;height:1.25em;border-radius:50%;
+  background:var(--circle-grad);color:var(--circle-text);font-size:0.68em;font-weight:800;
+  display:flex;align-items:center;justify-content:center;}
+.civ-science-hub-hud .sh-plan-name{flex:1;min-width:0;font-family:Georgia,'Times New Roman',serif;
+  font-size:0.82em;font-weight:600;color:#e8dcb8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.civ-science-hub-hud .sh-plan-item.active .sh-plan-name{color:var(--gold-bright);}
+.civ-science-hub-hud .sh-plan-chip{font-size:0.58em;font-weight:700;letter-spacing:.1em;color:var(--sci-light);
+  border:1px solid rgba(143,182,224,.45);border-radius:4px;padding:1px 6px;white-space:nowrap;flex-shrink:0;}
 .civ-science-hub-hud .sh-plan-del{flex-shrink:0;background:none;border:none;color:var(--muted);
   font-size:1.05em;line-height:1;cursor:pointer;padding:0.1em 0.3em;border-radius:4px;}
-.civ-science-hub-hud .sh-plan-del:hover{color:#e07a5f;background:rgba(224,122,95,0.12);}
-.civ-science-hub-hud .sh-item .sh-num-badge{flex-shrink:0;width:1.3em;height:1.3em;border-radius:50%;
-  background:var(--gold);color:#1a1400;font-size:0.68em;font-weight:800;display:flex;align-items:center;
-  justify-content:center;margin-left:0.3em;}
+.civ-science-hub-hud .sh-plan-del:hover{color:#e07a5f;background:rgba(224,122,95,.12);}
+.civ-science-hub-hud .sh-plan-slot{display:flex;align-items:center;gap:0.45em;padding:0.35em 0.45em;
+  margin-top:0.2em;border-radius:7px;border:1px dashed rgba(232,216,138,.2);}
+.civ-science-hub-hud .sh-plan-slot-num{flex-shrink:0;width:1.25em;height:1.25em;border-radius:50%;
+  border:1px dashed rgba(232,216,138,.35);color:#6f6a5e;font-size:0.65em;font-weight:800;
+  display:flex;align-items:center;justify-content:center;}
+.civ-science-hub-hud .sh-plan-slot-label{flex:1;font-size:0.72em;color:#6f6a5e;}
+.civ-science-hub-hud .sh-item .sh-num-badge{flex-shrink:0;width:1.2em;height:1.2em;border-radius:50%;
+  background:var(--circle-grad);color:var(--circle-text);font-size:0.62em;font-weight:800;
+  display:flex;align-items:center;justify-content:center;margin-top:0.15em;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -201,7 +239,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
 
   function renderProgressBlock(prog: ScienceHubProgress | null): HTMLElement {
     const box = document.createElement('div');
-    box.className = 'panel sh-prog';
+    box.className = 'sh-prog';
     if (!prog || !prog.targetName || prog.kosztCelu <= 0) {
       box.innerHTML = '<div class="sh-prog-target"><span class="sh-owl">' + scienceOwlIconHtml()
         + '</span> Wybierz technologię z listy poniżej</div>'
@@ -214,26 +252,39 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     const targetIcon = techIconSvg(prog.targetName, 16) ?? scienceOwlIconHtml();
     box.innerHTML = '<div class="sh-prog-target"><span class="sh-owl">' + targetIcon
       + '</span> ' + esc(prog.targetName) + '</div>'
-      + '<div class="sh-prog-meta">Pula: ' + Math.round(prog.pula) + ' / ' + Math.round(prog.kosztCelu) + ' PN'
-      + ' · ' + pct + '% · ETA ' + esc(eta) + rate + '</div>'
+      + '<div class="sh-prog-meta">Pula ' + Math.round(prog.pula) + ' / ' + Math.round(prog.kosztCelu) + ' PN'
+      + ' · <b>' + pct + '%</b> · ETA ' + esc(eta) + rate + '</div>'
       + '<div class="sh-bar"><div class="sh-bar-fill" style="width:' + pct + '%"></div></div>';
     return box;
   }
 
-  /** TEMAT 10 (C-RES-Q1=C/Q2=C): panel „Plan badań (n/PLAN_MAX)" — numerki + usuwanie + drag&drop. */
   function renderPlanPanel(plan: ScienceHubPlanEntry[]): HTMLElement {
     const box = document.createElement('div');
     box.className = 'panel';
+
     const title = document.createElement('div');
-    title.className = 'sh-sec sh-plan-title';
-    title.innerHTML = '<span>Plan badań (' + plan.length + '/' + PLAN_MAX + ')</span>';
+    title.className = 'sh-sec' + (plan.length === 0 ? ' sh-sec-muted' : '');
+    const titleLabel = document.createElement('span');
+    titleLabel.textContent = 'Plan badań';
+    const titleCount = document.createElement('span');
+    titleCount.className = 'sh-sec-count';
+    titleCount.textContent = plan.length + ' / ' + PLAN_MAX;
+    title.appendChild(titleLabel);
+    title.appendChild(titleCount);
     box.appendChild(title);
 
     if (plan.length === 0) {
+      const emptyWrap = document.createElement('div');
+      emptyWrap.className = 'sh-plan-empty-wrap';
+      const plus = document.createElement('span');
+      plus.className = 'sh-plan-empty-plus';
+      plus.innerHTML = PLUS_ICON_SVG;
       const empty = document.createElement('div');
       empty.className = 'sh-plan-empty';
       empty.textContent = 'Pusty — kliknij technologię na liście lub w drzewku, by dodać do planu.';
-      box.appendChild(empty);
+      emptyWrap.appendChild(plus);
+      emptyWrap.appendChild(empty);
+      box.appendChild(emptyWrap);
       return box;
     }
 
@@ -242,6 +293,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     plan.forEach((entry, idx) => {
       const row = document.createElement('div');
       row.className = 'sh-plan-item' + (entry.isActive ? ' active' : '');
+      row.tabIndex = 0;
       const canDrag = config.onReorder !== undefined;
       row.draggable = canDrag;
 
@@ -255,6 +307,18 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       name.title = entry.name;
       name.textContent = entry.name;
       row.appendChild(name);
+
+      if (entry.isActive) {
+        const chip = document.createElement('span');
+        chip.className = 'sh-plan-chip';
+        chip.textContent = 'BADA SIĘ';
+        row.appendChild(chip);
+      }
+
+      const dropLabel = document.createElement('span');
+      dropLabel.className = 'sh-drop-label';
+      dropLabel.textContent = 'TU UPUŚĆ';
+      row.appendChild(dropLabel);
 
       if (config.onDequeue) {
         const del = document.createElement('button');
@@ -298,6 +362,20 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       box.appendChild(row);
     });
 
+    for (let slot = plan.length + 1; slot <= PLAN_MAX; slot++) {
+      const slotRow = document.createElement('div');
+      slotRow.className = 'sh-plan-slot';
+      const slotNum = document.createElement('span');
+      slotNum.className = 'sh-plan-slot-num';
+      slotNum.textContent = String(slot);
+      const slotLabel = document.createElement('span');
+      slotLabel.className = 'sh-plan-slot-label';
+      slotLabel.textContent = 'wolne miejsce';
+      slotRow.appendChild(slotNum);
+      slotRow.appendChild(slotLabel);
+      box.appendChild(slotRow);
+    }
+
     return box;
   }
 
@@ -309,6 +387,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     for (const p of plan) planPosById.set(p.id, p.pos);
     const available = entries.filter(e => !e.locked);
     const locked = entries.filter(e => e.locked).slice(0, 4);
+    const canEnqueue = config.onEnqueue !== undefined || config.getPlan !== undefined;
 
     const scroll = document.createElement('div');
     scroll.className = 'sh-scroll';
@@ -329,13 +408,11 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     head.appendChild(titleRow);
     head.appendChild(renderProgressBlock(prog));
 
-    // Maciej 2026-07-24: usunięto stare (niebieskie) „Pełne drzewko technologii" (onOpenFullTree).
-    // Zostaje jedno drzewo — dawny „graf epok", przemianowany na „Drzewo technologii".
     if (config.onOpenTreeView) {
       const gridBtn = document.createElement('button');
       gridBtn.type = 'button';
-      gridBtn.className = 'sh-tree-btn gold';
-      gridBtn.innerHTML = '<span class="sh-tree-ic">' + brandIconSvg('res-science', 20) + '</span>Drzewo technologii';
+      gridBtn.className = 'sh-tree-btn';
+      gridBtn.innerHTML = '<span class="sh-tree-ic">' + TREE_GRAPH_ICON_SVG + '</span>Drzewo technologii';
       gridBtn.addEventListener('click', () => config.onOpenTreeView?.());
       head.appendChild(gridBtn);
     }
@@ -350,9 +427,13 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     listPanel.className = 'panel';
     const secAvail = document.createElement('div');
     secAvail.className = 'sh-sec';
-    secAvail.textContent = available.length > 0
-      ? 'Możesz wybrać (' + available.length + ')'
-      : 'Możesz wybrać';
+    const availLabel = document.createElement('span');
+    availLabel.textContent = 'Możesz wybrać';
+    const availCount = document.createElement('span');
+    availCount.className = 'sh-sec-count';
+    availCount.textContent = String(available.length);
+    secAvail.appendChild(availLabel);
+    secAvail.appendChild(availCount);
     listPanel.appendChild(secAvail);
 
     if (available.length === 0) {
@@ -369,7 +450,9 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     if (locked.length > 0) {
       const secLock = document.createElement('div');
       secLock.className = 'sh-sec';
-      secLock.textContent = 'Wkrótce (zablokowane)';
+      const lockLabel = document.createElement('span');
+      lockLabel.textContent = 'Wkrótce · zablokowane';
+      secLock.appendChild(lockLabel);
       listPanel.appendChild(secLock);
       for (const e of locked) {
         listPanel.appendChild(buildEntryRow(e, true));
@@ -379,8 +462,8 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     const hint = document.createElement('div');
     hint.className = 'sh-hint';
     hint.textContent = config.getPlan
-      ? 'Klik tech na liście lub w drzewku = dodaj do planu (do ' + PLAN_MAX + '). Przeciągnij pozycję w planie, by zmienić kolejność. Esc zamyka hub (najpierw drzewko).'
-      : 'Klik tech na liście lub w drzewku = ustaw cel. Esc zamyka hub (najpierw drzewko).';
+      ? 'Klik technologii = dodaj do planu (do ' + PLAN_MAX + '). Przeciągnij pozycję w planie, by zmienić kolejność. Esc zamyka hub.'
+      : 'Klik technologii = ustaw cel. Esc zamyka hub.';
 
     listPanel.appendChild(hint);
     scroll.appendChild(listPanel);
@@ -422,7 +505,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       }
       row.appendChild(ico);
       row.appendChild(body);
-      // TEMAT 10 (C-RES-Q1=C): numerek 1..RESEARCH_QUEUE_MAX gdy tech jest w planie badań (aktywny cel lub kolejka).
+
       const planPos = planPosById.get(e.id);
       if (planPos !== undefined) {
         const badge = document.createElement('span');
@@ -430,10 +513,22 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
         badge.title = 'Pozycja ' + planPos + ' w planie badań';
         badge.textContent = String(planPos);
         row.appendChild(badge);
+      } else if (!lockedRow && canEnqueue) {
+        const planAct = document.createElement('span');
+        planAct.className = 'sh-plan-act';
+        planAct.textContent = '+ PLAN';
+        planAct.setAttribute('aria-hidden', 'true');
+        row.appendChild(planAct);
       }
+
       const act = () => {
-        if (lockedRow) config.onShowInTree(e.id);
-        else config.onSelectTech(e.id);
+        if (lockedRow) {
+          // C-DESIGN-BADANIA-Q2: siatka v1.1 zamiast legacy sciencePicker gdy dostępna.
+          if (config.onOpenTreeView) config.onOpenTreeView();
+          else config.onShowInTree(e.id);
+        } else {
+          config.onSelectTech(e.id);
+        }
       };
       row.addEventListener('click', act);
       row.addEventListener('keydown', (ev: KeyboardEvent) => {
