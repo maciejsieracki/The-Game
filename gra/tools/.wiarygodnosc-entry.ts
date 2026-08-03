@@ -21,3 +21,4 @@ export {
   diplomacyPnRelacjaParams,
   diplomacyClampTrustGainNaTure,
 } from '../src/game/diplomacy-value-catalog';
+export { evaluateProposal } from '../src/game/diplomacy-proposals';

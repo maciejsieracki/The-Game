@@ -1,3 +1,8 @@
+## [20:20 PL, 2026-08-03] CLOUD → MASTER — D3 progi W (sojusz≥0 / NAP≥−40)
+Wpięte twarde bramki Dźwignia 3 w evaluateProposal + buildProposalEvalContext.
+Branch: cursor/wiarygodnosc-d3-progi-63a1. Testy wiarygodnosc-test D3 PASS.
+CZEKAM-NA: Maciej — deploy (nie deployuję bez hasła)
+
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35
 - **#29** R-STAWKI ×2 · **#33** AI→MP wasal/wchłonięcie · **#4** HUD Praca overflow · **#1** audyt sep vs MP (docs)
