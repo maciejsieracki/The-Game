@@ -35,7 +35,8 @@ Maciej musi dostać **kontekst + cel + opcje z za/przeciw + rekomendację**. Pe�
 | **4b** | **Rekomendacja** | **Zawsze** litera **A**, **B** albo **C** + jedno zdanie dlaczego |
 | **5** | **Formularz Ask** | **Jeden** `AskQuestion` na końcu — **krótkie** etykiety A/B/C (bez Za/Przeciw) |
 
-**Nagłówek:** `[EKRAN: …]` (gameplay) lub `[TEMAT: …]` (operacyjne) + ID (`C-BAL-Q1`, `B2-Q7`).
+**Nagłówek:** `[EKRAN: …]` (gameplay) lub `[TEMAT: …]` (operacyjne) + **pełne ID** (`R-AUTO-BUDOWA-LISTA-Q2`, `P-SCOUT-EXPLORE-Q1`).  
+**ZAKAZ gołego `Q1`/`Q2`/`Q3`** — Maciej 2026-08-03 (`R-PROC-ABC-FULL-ID`): wiele wątków → agent sam nie wie, do którego Q1 odpowiedź.
 
 **Szablon:** `docs/decyzje/SZABLON-PYTANIA-ABC.md`
 

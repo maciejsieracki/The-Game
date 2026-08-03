@@ -5161,3 +5161,17 @@ CZEKAM-NA: nic (stan zapisany)
 - Test: `capital-sep-unit-test.cjs` 36 PASS (bez zmiany gameplay)
 - UX opcjonalnie (ABC): `MAP-UX-CLUSTER-LABEL` w PYTANIA-OTWARTE — NIE wdrażać bez decyzji
 CZEKAM-NA: Maciej review PR / ewentualnie ABC MAP-UX-CLUSTER-LABEL
+
+## [16:55 PL, 2026-08-03] CLOUD → ALL — R-PROC-ABC-FULL-ID
+- Maciej: przy ABC **zakaz gołego Q1** — zawsze pełne ID (`R-TEMAT-Qn`), bo wiele wątków.
+- Wpięte: PROCEDURA §3a · PAMIEC · abc-pelna-forma · numer-abc-commit-deploy.mdc · REJESTR
+- Branch: `cursor/proc-abc-full-id-63a1`
+CZEKAM-NA: merge docs (bez deploy gry)
+
+## [19:45 PL, 2026-08-03] CLOUD → ALL — docs cleanup REJESTR (branch cleanup-docs-rejestr-63a1)
+- PR #35 R-PROC-ABC-FULL-ID → wchłonięte w cleanup branch
+- PR #31 plan AUTO-BUDOWA Q1 → SUPERSEDED by R-AUTO-V2 / FALA 204
+- PR #30 plan AI wasal → SUPERSEDED by FALA 205 / R-AI-MP-WASAL-WCHLONIECIE
+- PR #27 backlog IDs → SUPERSEDED (IDs wchłonięte; deploy FALA 204/205)
+- REJESTR: FALA 202 `5e0f30e7` / 201 `48646cd6` / 200 `26b05753` — statusy ZDEPLOYOWANE
+CZEKAM-NA: parent commit cleanup branch
