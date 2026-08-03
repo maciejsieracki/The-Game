@@ -5072,3 +5072,10 @@ CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`
 - Test: scout 15/15 · triumph 10/10 · tsc 0 · VERIFY OK
 - Sesja lokalna: `git pull` na dysk właściciela
 CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
+
+## [18:10 PL, 2026-08-03] CLOUD → Maciej — R-STAWKI ×2 WDROŻONE (kod)
+- Branch: `cursor/fix-stawki-x2-koszty-63a1`
+- `R_STAWKI_KOSZT_MULT=2`: badania · upkeep złoto · budowa budynków · żywność ludność+wojsko
+- Dochody/plony NIE ruszane. Cofnięcie: stała → 1
+- Test: difficulty 22/22 · upkeep 67/67 · pop-v85 47/47 · empire-food 19/19 · tsc 0
+CZEKAM-NA: deploy na hasło Macieja + playtest czy ×2 wystarczy

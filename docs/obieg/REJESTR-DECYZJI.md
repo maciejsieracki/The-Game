@@ -238,3 +238,5 @@ Po wdrożeniu ten sam wiersz przechodzi w górę statusów aż do ✅ (Master). 
 
 ---
 🔗 Historia: `docs/archiwum/` · Pełna treść decyzji: `docs/decyzje/<ID>.md`
+
+| **R-STAWKI-STROJENIE** | 2026-08-03 | **×2** badań + upkeep jedn. + budowa budynków + żywność ludność/wojsko; bez cięcia produkcji | B | 🟢 **WDROŻONE** | `r-stawki-strojenie.ts` | playtest |

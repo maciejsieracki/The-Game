@@ -89,8 +89,8 @@ const params = M.buildEmpireFoodParams({
   const ef = M.advanceEmpireFood(econ, units, states, upkeep, params);
   const t = ef.byOwner.get(0);
   ok(t.spichlerzStolicy === 16, 'pula przed wojskiem = 16');
-  ok(t.wojsko === 1, 'koszt wojska = 1');
-  ok(states.get(0).zapasyPanstwa === 15, 'po wojsku zostaje 15');
+  ok(t.wojsko === 2, 'koszt wojska = 2 (×2 R-STAWKI)');
+  ok(states.get(0).zapasyPanstwa === 14, 'po wojsku zostaje 14');
 }
 
 // Q6: cap 500 + Spichlerz +100

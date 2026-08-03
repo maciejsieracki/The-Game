@@ -1,3 +1,5 @@
+- **2026-08-03 ~18:10** — ✅ Gotowe w kodzie (bez deploy): **R-STAWKI-STROJENIE** ×2 kosztów (badania, upkeep, budynki, żywność ludność+wojsko). Stała `R_STAWKI_KOSZT_MULT=2`. Napisz **deploy**.
+
 - **2026-08-03 14:28** — ✅ Gotowe FALA 203 ROBOCZA `5f529a24`. Zwiedzaj (EOT) + triumf ostatniego MP cywu. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 
 - **2026-08-03 14:26** — ✅ Gotowe w kodzie (bez deploy): P-SCOUT-EXPLORE-Q2=B + P-TRIUMPH-CS-Q1=B. Branch `cursor/fix-scout-q2b-triumph-hint-63a1` · PR #26. Napisz **deploy** gdy wgrać do ROBOCZA.

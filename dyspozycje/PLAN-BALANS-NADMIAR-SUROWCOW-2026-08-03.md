@@ -1,3 +1,5 @@
+**Aktualizacja 2026-08-03:** Maciej → **×2 koszty** (badania, upkeep jednostek, budowa budynków, żywność ludność+wojsko); **bez** cięcia produkcji. Playtest po wdrożeniu.
+
 # Plan: nadmiar surowców / zasobów — sesja balansu (jutro)
 
 **Data zapisu:** 2026-08-03  

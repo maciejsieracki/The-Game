@@ -159,39 +159,39 @@ eq(U.buildingUpkeep({ utrzymanie: NaN, przyrostUtrzymania: 0 }, 1, 1), 1, 'ZAD1:
 
 // s.6.2 unit upkeep: typeId table > category default > standard
 const tbl = U.buildUnitUpkeepTable([{ Jednostka: 'Hetairoi', 'Utrzymanie (Pieniadz/ture)': 3 }]);
-eq(U.unitUpkeep({ typeId: 'Hetairoi', category: 'konnica' }, tbl, 1), 3, 's6.2: exact typeId from table = 3');
+eq(U.unitUpkeep({ typeId: 'Hetairoi', category: 'konnica' }, tbl, 1), 6, 's6.2: exact typeId from table = 6 (×2 R-STAWKI)');
 eq(U.unitUpkeep({ typeId: 'X', category: 'zwiadowca' }, {}, 1), 0, 's6.2: zwiadowca cywilny upkeep 0');
-eq(U.unitUpkeep({ typeId: 'X', category: 'falanga' }, {}, 1), 2, 's6.2: category falanga default = 2');
+eq(U.unitUpkeep({ typeId: 'X', category: 'falanga' }, {}, 1), 4, 's6.2: category falanga default = 4 (×2 R-STAWKI)');
 eq(U.unitUpkeep({ typeId: 'X', category: 'super' }, {}, 1), 0, 's6.2: super-unit upkeep 0');
-eq(U.unitUpkeep({ typeId: 'X', category: 'nieznana' }, {}, 1), 1, 's6.2: unknown -> standard 1');
+eq(U.unitUpkeep({ typeId: 'X', category: 'nieznana' }, {}, 1), 2, 's6.2: unknown -> standard 2 (×2 R-STAWKI)');
 
-// s.6.3 military food: 4 camping = 2; 4 marching = 4; mixed
-eq(U.militaryFoodConsumption([{camping:true},{camping:true},{camping:true},{camping:true}], UP), 2, 's6.3: 4 camping -> 2 food');
-eq(U.militaryFoodConsumption([{camping:false},{camping:false},{camping:false},{camping:false}], UP), 4, 's6.3: 4 marching -> 4 food');
-eq(U.militaryFoodConsumption([{camping:true},{camping:false}], UP), 1.5, 's6.3: 1 camp + 1 march -> 1.5');
+// s.6.3 military food: 4 camping = 4; 4 marching = 8; mixed (×2 R-STAWKI)
+eq(U.militaryFoodConsumption([{camping:true},{camping:true},{camping:true},{camping:true}], UP), 4, 's6.3: 4 camping -> 4 food');
+eq(U.militaryFoodConsumption([{camping:false},{camping:false},{camping:false},{camping:false}], UP), 8, 's6.3: 4 marching -> 8 food');
+eq(U.militaryFoodConsumption([{camping:true},{camping:false}], UP), 3, 's6.3: 1 camp + 1 march -> 3');
 
 // s.6.3 per-type food (units.json): Zwiadowca = 0
 const foodTbl = U.buildUnitFoodTable([{ Jednostka: 'Zwiadowca', 'żywność/turę': 0 }, { Jednostka: 'Wojownik', 'żywność/turę': 1 }]);
 eq(U.militaryFoodConsumption([{ typeId: 'Zwiadowca', camping: false }], UP, foodTbl), 0, 'Zwiadowca: 0 food marching');
 eq(U.militaryFoodConsumption([{ typeId: 'Zwiadowca', camping: true }], UP, foodTbl), 0, 'Zwiadowca: 0 food camping');
-eq(U.militaryFoodConsumption([{ typeId: 'Wojownik', camping: false }], UP, foodTbl), 1, 'Wojownik: 1 food');
+eq(U.militaryFoodConsumption([{ typeId: 'Wojownik', camping: false }], UP, foodTbl), 2, 'Wojownik: 2 food (×2 R-STAWKI)');
 eq(U.militaryFoodConsumption(
   [{ typeId: 'Zwiadowca', camping: false }, { typeId: 'Wojownik', camping: false }],
   UP,
   foodTbl,
-), 1, 'scout + warrior = 1 food total');
+), 2, 'scout + warrior = 2 food total');
 
-// s.6.4 / s.8.4 balance: income 8, 12 buildings (*1) + 5 units (lucznik=1) = 17 -> saldo -9, deficit
+// s.6.4 / s.8.4 balance: income 8, 12 buildings (*1) + 5 units (lucznik=2 each × R-STAWKI) = 22 -> saldo -14, deficit
 const units5 = Array.from({ length: 5 }, () => ({ typeId: 'L', category: 'lucznik' }));
 const bal = U.upkeepBalance(8, blds, units5, {}, UP);
 eq(bal.utrzymanieBudynki, 12, 's8.4: building upkeep 12');
-eq(bal.utrzymanieJednostki, 5, 's8.4: unit upkeep 5');
-eq(bal.utrzymanieRazem, 17, 's8.4: total upkeep 17');
-eq(bal.saldo, -9, 's8.4: saldo 8-17 = -9');
+eq(bal.utrzymanieJednostki, 10, 's8.4: unit upkeep 10 (5×2 R-STAWKI)');
+eq(bal.utrzymanieRazem, 22, 's8.4: total upkeep 22');
+eq(bal.saldo, -14, 's8.4: saldo 8-22 = -14');
 eq(bal.deficyt, true, 's8.4: deficit flagged');
 // surplus case: no deficit
-const balPlus = U.upkeepBalance(20, blds, units5, {}, UP);
-eq(balPlus.saldo, 3, 's6.4: surplus saldo 20-17 = 3'); eq(balPlus.deficyt, false, 's6.4: no deficit');
+const balPlus = U.upkeepBalance(25, blds, units5, {}, UP);
+eq(balPlus.saldo, 3, 's6.4: surplus saldo 25-22 = 3'); eq(balPlus.deficyt, false, 's6.4: no deficit');
 
 // loadUpkeepParams: reads correct groups + fallback
 const rawUp = { ekonomia_miasta: { zywnosc_jednostka_oboz: { normal: 0.5 } }, budynki: { utrzymanie_budynek: { normal: 1, hard: 2 } }, globalne: { utrzymanie_jednostka_standard: { normal: 1 } } };

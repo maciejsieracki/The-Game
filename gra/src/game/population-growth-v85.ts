@@ -17,6 +17,7 @@ import { rebalanceWorkersAfterPopulationChange } from './okolica';
 import type { GameMap } from '../types/map';
 import type { TerritoryNode } from '../map/territory';
 import { refreshManpowerAfterPopChange, civManpowerMults } from './manpower';
+import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
 
 /** Poziom suwaka Wyżywienie: 0 … 6 co 0,5 (koszt żywności na mieszkańca = ta wartość). */
 export type PoziomRacji = number;
@@ -118,9 +119,9 @@ export function getCityRationLevel(city: Pick<City, 'poziomRacji' | 'procentRozw
   return migrateProcentRozwojToPoziomRacji(city.procentRozwoj);
 }
 
-/** Koszt żywności na mieszkańca = poziom Wyżywienia. */
+/** Koszt żywności na mieszkańca = poziom Wyżywienia × R-STAWKI-STROJENIE. */
 export function rationFoodCostPerPop(level: PoziomRacji, _params?: RationParams): number {
-  return clampPoziomRacji(level);
+  return clampPoziomRacji(level) * R_STAWKI_KOSZT_MULT;
 }
 
 /** Wzrost ludności (%/turę) z tabeli Wyżywienie. */
