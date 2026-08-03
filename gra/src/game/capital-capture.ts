@@ -229,3 +229,8 @@ export function applyCapitalCapturePlunder(
     eliminacja,
   };
 }
+
+/** Usuwa wszystkie jednostki danego ownerId (eliminacja cywilizacji — playtest 2026-08-02). */
+export function disbandOwnerUnits<T extends { ownerId: number }>(units: readonly T[], ownerId: number): T[] {
+  return units.filter(u => u.ownerId !== ownerId);
+}

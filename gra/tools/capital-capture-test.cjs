@@ -46,6 +46,7 @@ export {
   wasCapitalOfOldOwner,
   remainingCitiesOfOwner,
   applyCapitalCapturePlunder,
+  disbandOwnerUnits,
 } from '../src/game/capital-capture';
 export { computeObjectivePower } from '../src/game/power-objective';
 `;
@@ -75,6 +76,7 @@ const {
   wasCapitalOfOldOwner,
   remainingCitiesOfOwner,
   applyCapitalCapturePlunder,
+  disbandOwnerUnits,
   computeObjectivePower,
 } = M;
 
@@ -346,6 +348,24 @@ console.log('10. computeObjectivePower -- skladowa "zdobycze" (Power-zdobycze)')
   eq(zdobyczeRow.coefficient, 1, 'coeff "zdobycze" zawsze 1 (wartosc to juz pkt, nie surowy licznik)');
   eq(zdobyczeRow.points, 1234, 'pkt "zdobycze" = zdobyczePower 1:1');
   eq(withZdobycze.power, 1234, 'Power calkowity = zdobycze (jedyna niezerowa skladowa w tym teście)');
+}
+
+// ===========================================================================
+// 11. Eliminacja — disbandOwnerUnits usuwa wszystkie jednostki ownera.
+// ===========================================================================
+console.log('11. disbandOwnerUnits — brak jednostek po eliminacji ownerId');
+{
+  const units = [
+    { id: 'u1', ownerId: 3, q: 1, r: 2 },
+    { id: 'u2', ownerId: 3, q: 4, r: 5 },
+    { id: 'u3', ownerId: 7, q: 0, r: 0 },
+    { id: 'u4', ownerId: 0, q: 2, r: 2 },
+  ];
+  const after = disbandOwnerUnits(units, 3);
+  eq(after.length, 2, 'zostają tylko jednostki innych ownerów');
+  assert(!after.some(u => u.ownerId === 3), 'brak jednostek ownerId=3 po disband');
+  eq(after.map(u => u.id).sort().join(','), 'u3,u4', 'zachowane jednostki owner 7 i 0');
+  eq(units.length, 4, 'oryginalna tablica nietknięta (pure helper)');
 }
 
 // --- summary ---------------------------------------------------------------
