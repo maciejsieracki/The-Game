@@ -8,6 +8,7 @@ import type { ImprovementKey } from '../render/improvements';
 import { HUD_EDGE_PX } from './hudLayout';
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
+import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPerTurn } from '../game/cities';
 
 export interface BuildTypeInfo {
   key: ImprovementKey;
@@ -59,6 +60,20 @@ export interface BuildModeHudConfig {
   getFoundCityLockHint?: () => string | null;
   /** R-PIERWSZE-MIASTO: tylko przycisk Załóż miasto (bez ulepszeń/cudów). */
   isFoundCityOnly?: () => boolean;
+  /** Auto-ulepszenia terenu — per miasto (R-AUTO-ULEPSZENIA-Q5). */
+  listPlayerCities?: () => { id: string; name: string }[];
+  getUlepszeniaCityId?: () => string | null;
+  onUlepszeniaCityIdChange?: (cityId: string) => void;
+  getUlepszeniaState?: (cityId: string) => {
+    focus: UlepszeniaFocus;
+    tryb: UlepszeniaTryb;
+    onlyWorked: boolean;
+    perTurn: UlepszeniaPerTurn;
+  } | null;
+  onUlepszeniaFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
+  onUlepszeniaTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
+  onUlepszeniaOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
+  onUlepszeniaPerTurnChange?: (cityId: string, perTurn: UlepszeniaPerTurn) => void;
 }
 
 export interface BuildModeHudApi {
@@ -69,6 +84,24 @@ export interface BuildModeHudApi {
 }
 
 const STYLE_ID = 'civ-build-mode-hud-css';
+
+const ULEPSZENIA_FOCUS_LABELS: Record<UlepszeniaFocus, string> = {
+  zywnosc: 'Żywność',
+  surowce: 'Surowce',
+  infrastruktura: 'Infra',
+  zrownowazone: 'Zrówn.',
+};
+
+const ULEPSZENIA_FOCUS_TITLES: Record<UlepszeniaFocus, string> = {
+  zywnosc: 'Żywność — farma, hodowla, irygacja',
+  surowce: 'Surowce — tartak, kamieniołom, kopalnie',
+  infrastruktura: 'Infrastruktura — drogi, fort',
+  zrownowazone: 'Zrównoważone — żywność, surowce, infra',
+};
+
+const ULEPSZENIA_PROFILES: UlepszeniaFocus[] = [
+  'zywnosc', 'surowce', 'infrastruktura', 'zrownowazone',
+];
 
 function impIconHtml(key: ImprovementKey | string): string {
   const svg = improvementIconSvg(key, 18);
@@ -85,7 +118,7 @@ function ensureStyles(): void {
 .civ-build-banner.open{display:flex;}
 .civ-build-banner button{background:rgba(255,255,255,.08);border:1px solid rgba(232,176,74,.4);
   color:#ffe8c0;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;}
-.civ-build-panel{position:fixed;top:90px;right:${HUD_EDGE_PX}px;z-index:311;width:240px;max-height:calc(100vh - 180px);
+.civ-build-panel{position:fixed;top:90px;right:${HUD_EDGE_PX}px;z-index:311;width:270px;max-height:calc(100vh - 180px);
   overflow-y:auto;display:none;flex-direction:column;gap:4px;padding:8px;
   background:rgba(12,18,35,.94);border:1px solid rgba(232,216,138,.28);border-radius:8px;
   font:12px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.55);}
@@ -113,6 +146,19 @@ function ensureStyles(): void {
 .civ-build-item.wonder.sel{background:rgba(212,175,95,.14);border-color:rgba(212,175,95,.55);}
 .civ-build-item.wonder .ic{color:#e8c878;}
 .civ-build-wonders-empty{font-size:10px;color:#7a7055;line-height:1.4;padding:4px 2px 2px;}
+.civ-build-auto{margin-top:8px;padding-top:8px;border-top:1px solid rgba(232,216,138,.22);}
+.civ-build-auto-city{width:100%;margin:4px 0 6px;padding:5px 8px;background:rgba(0,0,0,.35);
+  border:1px solid rgba(232,216,138,.25);border-radius:4px;color:#d4cba0;font-size:11px;cursor:pointer;}
+.civ-build-auto-profiles{display:flex;flex-wrap:wrap;gap:3px;margin:4px 0 2px;}
+.civ-build-auto-btn{padding:4px 7px;font-size:9px;border:1px solid rgba(232,216,138,.25);
+  background:rgba(255,255,255,.04);color:#d4cba0;border-radius:3px;cursor:pointer;font-family:inherit;}
+.civ-build-auto-btn:hover{background:rgba(232,216,138,.08);border-color:rgba(232,216,138,.35);}
+.civ-build-auto-btn.on{background:rgba(232,216,138,.15);border-color:rgba(232,216,138,.5);color:#f0e8b8;}
+.civ-build-auto-btn.reczny{margin-left:2px;}
+.civ-build-auto-row{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:#9a9070;flex-wrap:wrap;}
+.civ-build-auto-row label{display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
+.civ-build-auto-speed{display:inline-flex;align-items:center;gap:3px;}
+.civ-build-auto-speed button{min-width:1.6em;padding:2px 5px;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -234,6 +280,50 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             + '<span class="meta">' + (locked && hint ? hint : ('E' + w.epokaWejscia + ' · ' + costLabel + tag)) + '</span></div>';
         }
       }
+      const playerCities = config.listPlayerCities?.() ?? [];
+      const uCityId = config.getUlepszeniaCityId?.() ?? null;
+      const uState = uCityId ? config.getUlepszeniaState?.(uCityId) ?? null : null;
+      if (playerCities.length > 0 && uState) {
+        html += '<div class="civ-build-auto">';
+        html += '<div class="lbl">Auto ulepszenia</div>';
+        if (playerCities.length > 1) {
+          html += '<select class="civ-build-auto-city" data-ulepszenia-city>';
+          for (const c of playerCities) {
+            const sel = c.id === uCityId ? ' selected' : '';
+            html += `<option value="${c.id.replace(/"/g, '&quot;')}"${sel}>${c.name}</option>`;
+          }
+          html += '</select>';
+        } else if (playerCities.length === 1) {
+          const sole = playerCities[0];
+          if (sole) html += `<div class="civ-build-wonders-sub">${sole.name}</div>`;
+        }
+        html += '<div class="civ-build-auto-profiles">';
+        for (const id of ULEPSZENIA_PROFILES) {
+          const on = uState.tryb !== 'reczny' && id === uState.focus ? ' on' : '';
+          html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-focus="${id}"`
+            + ` title="${ULEPSZENIA_FOCUS_TITLES[id]}">${ULEPSZENIA_FOCUS_LABELS[id]}</button>`;
+        }
+        const recOn = uState.tryb === 'reczny' ? ' on' : '';
+        html += `<button type="button" class="civ-build-auto-btn reczny${recOn}" data-ulepszenia-reczny`
+          + ` title="Ręczny — buduj ulepszenia na mapie (🔨)">Ręczny</button>`;
+        html += '</div>';
+        if (uState.tryb === 'auto') {
+          const chk = uState.onlyWorked ? ' checked' : '';
+          html += '<div class="civ-build-auto-row">';
+          html += `<label title="Buduj tylko na polach z obywatelami (👤)">`
+            + `<input type="checkbox" data-ulepszenia-only-worked${chk}> Tylko pola z obywatelami</label>`;
+          html += '</div>';
+          html += '<div class="civ-build-auto-row civ-build-auto-speed">';
+          html += '<span title="Ile ulepszeń auto stawia w tym mieście na jedną turę">Na turę:</span>';
+          for (const n of [1, 2, 3] as const) {
+            const on = uState.perTurn === n ? ' on' : '';
+            html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-per-turn="${n}"`
+              + ` title="${n} ulepszenie/a na miasto na turę">${n}</button>`;
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+      }
       html += '<div class="lbl">Ulepszenia terenu</div>';
     }
     for (const t of types) {
@@ -310,6 +400,44 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           const togglingOff = id === activeWonder;
           config.onSelectWonder?.(togglingOff ? '' : id);
         }
+        render();
+      });
+    });
+
+    const citySel = el.querySelector('[data-ulepszenia-city]') as HTMLSelectElement | null;
+    citySel?.addEventListener('change', () => {
+      const id = citySel.value;
+      if (id) config.onUlepszeniaCityIdChange?.(id);
+      render();
+    });
+
+    el.querySelectorAll('[data-ulepszenia-focus]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const focus = (btn as HTMLElement).getAttribute('data-ulepszenia-focus') as UlepszeniaFocus;
+        const cityId = config.getUlepszeniaCityId?.();
+        if (cityId && focus) config.onUlepszeniaFocusChange?.(cityId, focus);
+        render();
+      });
+    });
+
+    el.querySelector('[data-ulepszenia-reczny]')?.addEventListener('click', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (cityId) config.onUlepszeniaTrybChange?.(cityId, 'reczny');
+      render();
+    });
+
+    const onlyWorkedChk = el.querySelector('[data-ulepszenia-only-worked]') as HTMLInputElement | null;
+    onlyWorkedChk?.addEventListener('change', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (cityId) config.onUlepszeniaOnlyWorkedChange?.(cityId, onlyWorkedChk.checked);
+      render();
+    });
+
+    el.querySelectorAll('[data-ulepszenia-per-turn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cityId = config.getUlepszeniaCityId?.();
+        const n = Number((btn as HTMLElement).getAttribute('data-ulepszenia-per-turn')) as UlepszeniaPerTurn;
+        if (cityId && (n === 1 || n === 2 || n === 3)) config.onUlepszeniaPerTurnChange?.(cityId, n);
         render();
       });
     });

@@ -4989,67 +4989,6 @@ async function boot(): Promise<void> {
           showHintMessage(`${city.name}: ręczna kolejka budowy`, 2800);
           refreshCityPanelIfOpen();
         },
-        getUlepszeniaState: (cityId: string) => {
-          const city = cities.find(c => c.id === cityId);
-          if (!city) return null;
-          ensureCitySaveDefaults(city);
-          return {
-            focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
-            tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
-            onlyWorked: city.ulepszeniaOnlyWorked ?? false,
-            perTurn: clampUlepszeniaPerTurn(city.ulepszeniaPerTurn ?? DEFAULT_ULEPSZENIA_PER_TURN),
-          };
-        },
-        onUlepszeniaFocusChange: (cityId: string, focus: UlepszeniaFocus) => {
-          const city = cities.find(c => c.id === cityId);
-          if (!city) return;
-          city.ulepszeniaFocus = focus;
-          city.ulepszeniaTryb = 'auto';
-          const labels: Record<UlepszeniaFocus, string> = {
-            zywnosc: 'Żywność',
-            surowce: 'Surowce',
-            infrastruktura: 'Infrastruktura',
-            zrownowazone: 'Zrównoważone',
-          };
-          showHintMessage(`${city.name}: auto ulepszenia · ${labels[focus] ?? focus}`, 3200);
-          updateHud();
-          refreshCityPanelIfOpen();
-        },
-        onUlepszeniaTrybChange: (cityId: string, tryb: UlepszeniaTryb) => {
-          const city = cities.find(c => c.id === cityId);
-          if (!city) return;
-          city.ulepszeniaTryb = tryb;
-          showHintMessage(
-            tryb === 'reczny'
-              ? `${city.name}: ręczne ulepszenia terenu`
-              : `${city.name}: auto ulepszenia terenu`,
-            2800,
-          );
-          refreshCityPanelIfOpen();
-        },
-        onUlepszeniaOnlyWorkedChange: (cityId: string, onlyWorked: boolean) => {
-          const city = cities.find(c => c.id === cityId);
-          if (!city) return;
-          city.ulepszeniaOnlyWorked = onlyWorked;
-          showHintMessage(
-            onlyWorked
-              ? `${city.name}: auto ulepszenia tylko na polach z 👤`
-              : `${city.name}: auto ulepszenia w całym terytorium`,
-            2800,
-          );
-          refreshCityPanelIfOpen();
-        },
-        onUlepszeniaPerTurnChange: (cityId: string, perTurn: UlepszeniaPerTurn) => {
-          const city = cities.find(c => c.id === cityId);
-          if (!city) return;
-          city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(perTurn);
-          city.ulepszeniaTryb = 'auto';
-          showHintMessage(
-            `${city.name}: auto ulepszenia · ${city.ulepszeniaPerTurn}/turę`,
-            2800,
-          );
-          refreshCityPanelIfOpen();
-        },
         getUnitsAt: (q: number, r: number) => {
           const city = cities.find(c => c.q === q && c.r === r);
           if (!city) return [];
@@ -7932,6 +7871,8 @@ async function boot(): Promise<void> {
     let buildModeOpen = false;
     let activeImprovementKey: ImprovementKey | null = null;
     let activeWonderId: string | null = null;
+    /** Miasto wybrane w HUD auto-ulepszeń (build mode). */
+    let ulepszeniaHudCityId: string | null = null;
 
     // --- Warstwy zasięgu kultury / religii / państwa na mapie 3D (A1-Q12 + toolbar [C]) ---
     let cultureRangeVisible = false;
@@ -14399,6 +14340,8 @@ async function boot(): Promise<void> {
             if (isAwaitingFirstPlayerCity()) {
               foundCityMode = true;
               activeImprovementKey = null;
+            } else {
+              ensureUlepszeniaHudCityId();
             }
             refreshBuildApi();
             refreshBuildHighlight();
@@ -14469,6 +14412,73 @@ async function boot(): Promise<void> {
               activeWonderId = wonderId;
             }
             refreshBuildHighlight();
+            refreshD1bHud();
+          },
+          listPlayerCities: () =>
+            cities.filter(c => c.ownerId === 0).map(c => ({ id: c.id, name: c.name })),
+          getUlepszeniaCityId: () => ensureUlepszeniaHudCityId(),
+          onUlepszeniaCityIdChange: (cityId: string) => {
+            ulepszeniaHudCityId = cityId;
+            refreshD1bHud();
+          },
+          getUlepszeniaState: (cityId: string) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return null;
+            ensureCitySaveDefaults(city);
+            return {
+              focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
+              tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
+              onlyWorked: city.ulepszeniaOnlyWorked ?? false,
+              perTurn: clampUlepszeniaPerTurn(city.ulepszeniaPerTurn ?? DEFAULT_ULEPSZENIA_PER_TURN),
+            };
+          },
+          onUlepszeniaFocusChange: (cityId: string, focus: UlepszeniaFocus) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return;
+            city.ulepszeniaFocus = focus;
+            city.ulepszeniaTryb = 'auto';
+            const labels: Record<UlepszeniaFocus, string> = {
+              zywnosc: 'Żywność',
+              surowce: 'Surowce',
+              infrastruktura: 'Infrastruktura',
+              zrownowazone: 'Zrównoważone',
+            };
+            showHintMessage(`${city.name}: auto ulepszenia · ${labels[focus] ?? focus}`, 3200);
+            refreshD1bHud();
+          },
+          onUlepszeniaTrybChange: (cityId: string, tryb: UlepszeniaTryb) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return;
+            city.ulepszeniaTryb = tryb;
+            showHintMessage(
+              tryb === 'reczny'
+                ? `${city.name}: ręczne ulepszenia terenu`
+                : `${city.name}: auto ulepszenia terenu`,
+              2800,
+            );
+            refreshD1bHud();
+          },
+          onUlepszeniaOnlyWorkedChange: (cityId: string, onlyWorked: boolean) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return;
+            city.ulepszeniaOnlyWorked = onlyWorked;
+            showHintMessage(
+              onlyWorked
+                ? `${city.name}: auto ulepszenia tylko na polach z 👤`
+                : `${city.name}: auto ulepszenia w całym terytorium`,
+              2800,
+            );
+            refreshD1bHud();
+          },
+          onUlepszeniaPerTurnChange: (cityId: string, perTurn: UlepszeniaPerTurn) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return;
+            city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(perTurn);
+            city.ulepszeniaTryb = 'auto';
+            showHintMessage(
+              `${city.name}: auto ulepszenia · ${city.ulepszeniaPerTurn}/turę`,
+              2800,
+            );
             refreshD1bHud();
           },
         },
@@ -17570,6 +17580,20 @@ async function boot(): Promise<void> {
       const explicit = capitalCityIdByOwner.get(ownerId);
       if (explicit && cities.some(c => c.id === explicit && c.ownerId === ownerId)) return explicit;
       return oldestCityOfOwner(ownerId, cities)?.id ?? null;
+    }
+
+    /** Domyślne miasto w HUD auto-ulepszeń (stolica gracza lub pierwsze miasto). */
+    function ensureUlepszeniaHudCityId(): string | null {
+      const pc = cities.filter(c => c.ownerId === 0);
+      if (pc.length === 0) return null;
+      if (ulepszeniaHudCityId && pc.some(c => c.id === ulepszeniaHudCityId)) {
+        return ulepszeniaHudCityId;
+      }
+      const capId = capitalCityIdForOwner(0);
+      const fallback = pc[0];
+      if (!fallback) return null;
+      ulepszeniaHudCityId = capId && pc.some(c => c.id === capId) ? capId : fallback.id;
+      return ulepszeniaHudCityId;
     }
 
     /** Dyplomacja — celownik na karcie państwa: kamera na stolicę ownera (pełne civ + miasto-państwo). */
