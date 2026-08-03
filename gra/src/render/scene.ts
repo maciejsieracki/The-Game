@@ -101,6 +101,7 @@ import {
   effectivePixelRatio,
 } from './zoomLod';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './fogDim';
+import { mergedRiverVisibleInFog } from './riverLod';
 import {
   landRiverRenderPath,
   mediumRiverRenderPath,
@@ -1929,6 +1930,9 @@ export async function buildScene(
     polygonOffset: true,
     polygonOffsetFactor: 2,
     polygonOffsetUnits: 2,
+    // Wstęgi nie reagują na scene.fog (mgła atmosferyczna). Gdy FoW wyłączony, setFog
+    // włącza scene.fog dla tła oceanu — bez tego cienkie średnie rzeki znikały w mgle 3D.
+    fog: false,
   });
 
   const riverBankMat = new THREE.MeshLambertMaterial({
@@ -3214,7 +3218,7 @@ export async function buildScene(
     // OBA końce leżą na odkrytym polu — przez przebudowę INDEKSU (pozycje wierzchołków nietknięte
     // → identyczny wygląd, 1 draw-call). Ciemne odcinki po prostu wypadają z indeksu.
     // Delty scalone (bez pointHex) → fallback: ukryj całą wstęgę, gdy KTÓRYKOLWIEK heks w czerni.
-    // Bez mgły (hasFog=false) riverHidden zawsze false → indeks pełny → cała rzeka widoczna.
+    // Gdy mgła nieaktywna (lastAnyHidden=false, np. FoW wyłączony F) → cała rzeka widoczna.
     //
     // FIX (TEMAT #7, 2026-07-23): rzeki reaguja WYLACZNIE na mgle (isHidden), NIGDY na
     // decorHiddenHexKeys. `overlayHidden` (isHidden || decorHiddenHexKeys) sluzy do chowania
@@ -3224,10 +3228,31 @@ export async function buildScene(
     // nawet po pelnym wylaczeniu FoW — zweryfikowane Playwright: rzeka znikala przy zalozeniu
     // miasta i zostawala niewidoczna takze z FoW=OFF). Rzeka to woda, nie dekor ladu — ma plynac
     // pod/obok miasta tak samo jak przed jego zalozeniem.
+    const fogActive = lastAnyHidden;
     const riverHidden = (k: string) =>
       isHidden(k) && !(lastRiverRevealKeys?.has(k));
     for (const entry of riverEntries) {
       const ph = entry.pointHex;
+      if (!fogActive) {
+        // FoW wyłączony / brak ukrytych heksów — przywróć pełną wstęgę (indeks) i pokaż mesh.
+        if (ph && ph.length >= 2) {
+          const fullSig = 0;
+          if (entry.lastFogSig !== fullSig) {
+            entry.lastFogSig = fullSig;
+            const idx: number[] = [];
+            for (let j = 0; j < ph.length - 1; j++) {
+              const b = 2 * j;
+              idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
+            }
+            entry.waterGeo.setIndex(idx);
+            entry.hasVisibleQuads = idx.length > 0;
+          }
+        }
+        const riverVis = zoomFlags.rivers;
+        entry.waterMesh.visible = riverVis;
+        entry.bankMesh.visible = riverVis;
+        continue;
+      }
       if (ph && ph.length >= 2) {
         // PERF: `setIndex` (re-upload GPU) TYLKO gdy zmienił się stan mgły tej rzeki. Sygnatura =
         // tani 32-bit hash odkryte/ciemne per punkt (same Set.has). Zoom lub setFog na niezmienionej
@@ -3251,19 +3276,13 @@ export async function buildScene(
         entry.waterMesh.visible = riverVis;
         entry.bankMesh.visible = riverVis;
       } else {
-        // Scalone batche (bez pointHex): onboarding → pokaż gdy JAKIKOLWIEK heks trasy odkryty;
-        // normalna gra → cała wstęga tylko gdy WSZYSTKIE heksy trasy odkryte.
-        let showMerged = false;
-        if (lastRiverRevealKeys) {
-          for (const hk of entry.hexKeys) {
-            if (!riverHidden(hk)) { showMerged = true; break; }
-          }
-        } else {
-          showMerged = true;
-          for (const hk of entry.hexKeys) {
-            if (riverHidden(hk)) { showMerged = false; break; }
-          }
-        }
+        // Scalone batche (bez pointHex): medium/short/tributary — widoczność per hexKeys.
+        const showMerged = mergedRiverVisibleInFog(
+          fogActive,
+          lastRiverRevealKeys,
+          riverHidden,
+          entry.hexKeys,
+        );
         const riverVis = zoomFlags.rivers && showMerged;
         entry.waterMesh.visible = riverVis;
         entry.bankMesh.visible = riverVis;
