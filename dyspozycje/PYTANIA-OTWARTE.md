@@ -1,3 +1,6 @@
+## R-AI-MP-WASAL-WCHLONIECIE (2026-08-03)
+AI utyka na MP; plan wasal→wchłonięcie + wyłączenie sojuszy sióstr vs AI; gracz drogie wchłonięcie. Plan: `PLAN-AI-MP-WASAL-WCHLONIECIE-2026-08-03.md`. Status: CZEKA-NA-DECYZJĘ (ABC Q1–Q3).
+
 # PYTANIA OTWARTE — czekają na decyzję Macieja
 Aktualizacja: 2026-08-03. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.

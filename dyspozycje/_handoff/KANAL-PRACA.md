@@ -5072,3 +5072,9 @@ CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`
 - Test: scout 15/15 · triumph 10/10 · tsc 0 · VERIFY OK
 - Sesja lokalna: `git pull` na dysk właściciela
 CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
+
+## [18:20 PL, 2026-08-03] CLOUD → Maciej — plan AI/MP wasal+wchłonięcie
+- ID: R-AI-MP-WASAL-WCHLONIECIE
+- Plan: dyspozycje/PLAN-AI-MP-WASAL-WCHLONIECIE-2026-08-03.md
+- Bez kodu — czekamy na ABC Q1–Q3
+CZEKAM-NA: decyzje Macieja (A/B/C)
