@@ -15,19 +15,18 @@
 
 > Korekta: wcześniejsze założenie Q3=A (tylko Priorytet) **nadpisane** odpowiedzią Macieja Q3=B.
 
-## Zakres wdrożenia (Q3=B)
+## Zakres wdrożenia (Q3=B) — w kodzie
 
-### Już w kodzie (Priorytet)
-- `budowaTryb: 'reczny' | 'priorytet'`
+### Priorytet
+- `budowaTryb: 'reczny' | 'priorytet' | 'lista'`
 - `budowaPriorytetTypow: BudowaFocus[]` — wyczerp typ #1 zanim #2
 - UI chipy z numerami 1..N
 
-### Do dopięcia (Lista)
-- `budowaTryb: 'lista'`
+### Lista (Q2=A)
 - `budowaLista: string[]` — ID budynków w kolejności
-- Picker Q2=A: skan od początku listy; pierwszy **legalny+affordable** → enqueue; zablokowane pomijane (wracają gdy odblokowane)
-- Szablony nazwane **Lista A / B / C** (zapis w save) + **Wgraj** / **Zapisz jako** w panelu miasta
-- UI: przełącznik trybu Lista + edycja kolejności (dodaj / ↑↓ / usuń)
+- Picker: skan od początku; pierwszy legalny+affordable; zablokowane pomijane (wracają gdy odblokowane)
+- Szablony **Lista A / B / C** w save (`meta.budowaListaSzablony`) + Wgraj / Zapisz w panelu
+- UI: przycisk Lista + edycja (dodaj / ↑↓ / usuń)
 
 ## Poza zakresem tej fali
 - Jednostki na liście

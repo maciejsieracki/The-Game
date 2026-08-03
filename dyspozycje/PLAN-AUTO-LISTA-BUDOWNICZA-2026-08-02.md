@@ -1,8 +1,8 @@
 # PLAN — auto-budowa: Ręczny / Priorytet typów / Lista epoki
 
 **ID:** `R-AUTO-BUDOWA-LISTA`  
-**Status:** Q1–Q3 zamknięte (2026-08-03) — **v1 = Priorytet typów** (Q3=A); Lista = v2; Q2=A dla Listy  
-**Powiązane:** `PLAN-AUTO-ULEPSZENIA-2026-08-02.md`
+**Status:** Q1–Q3 zamknięte (2026-08-03) — **Q3=B: Priorytet + Lista razem**; Q2=A (pomiń+wróć)  
+**Powiązane:** `PLAN-AUTO-ULEPSZENIA-2026-08-02.md` · `docs/decyzje/R-AUTO-BUDOWA-LISTA.md`
 
 ---
 
