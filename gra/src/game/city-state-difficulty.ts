@@ -57,12 +57,19 @@ function axialDistance(q1: number, r1: number, q2: number, r2: number): number {
   return (Math.abs(dq) + Math.abs(dq + dr) + Math.abs(dr)) / 2;
 }
 
-/** Twardy priorytet przejęcia CS z kręgu do tury 100 (bez kar przy niepowodzeniu). */
+export interface ClusterWarTimingOpts {
+  warMinTurn?: number;
+  deadlineTurn?: number;
+}
+
+/** Twardy priorytet przejęcia CS z kręgu do tury deadline (bez kar przy niepowodzeniu). */
 export function isClusterConquestDeadlineActive(
   turn: number,
   clusterStateTargets: ReadonlyArray<ClusterStateTarget>,
+  opts?: ClusterWarTimingOpts,
 ): boolean {
-  return turn <= CLUSTER_CS_CONQUEST_DEADLINE_TURN && clusterStateTargets.length > 0;
+  const deadline = opts?.deadlineTurn ?? CLUSTER_CS_CONQUEST_DEADLINE_TURN;
+  return turn <= deadline && clusterStateTargets.length > 0;
 }
 
 /**
@@ -78,9 +85,11 @@ export function pickClusterCityStateWarTargetId(
   referenceHex?: { q: number; r: number },
   /** OwnerIds chronione paktem nieagresji — nie wybieraj do wymuszonej wojny. */
   napBlockedOwnerIds?: ReadonlySet<number>,
+  opts?: ClusterWarTimingOpts,
 ): number | null {
   if (clusterStateTargets.length === 0) return null;
 
+  const warMinTurn = opts?.warMinTurn ?? CLUSTER_CS_WAR_MIN_TURN;
   const napBlocked = napBlockedOwnerIds ?? new Set<number>();
   const notAtWar = clusterStateTargets.filter(
     t => !atWarOwnerIds.has(t.ownerId) && !napBlocked.has(t.ownerId),
@@ -88,9 +97,9 @@ export function pickClusterCityStateWarTargetId(
   if (notAtWar.length === 0) return null;
 
   const anyAtWar = clusterStateTargets.some(t => atWarOwnerIds.has(t.ownerId));
-  const turn20Force = turn >= CLUSTER_CS_WAR_MIN_TURN && !anyAtWar;
-  const deadlineForce = turn >= CLUSTER_CS_WAR_MIN_TURN
-    && isClusterConquestDeadlineActive(turn, clusterStateTargets);
+  const turn20Force = turn >= warMinTurn && !anyAtWar;
+  const deadlineForce = turn >= warMinTurn
+    && isClusterConquestDeadlineActive(turn, clusterStateTargets, opts);
 
   if (!turn20Force && !deadlineForce) return null;
 

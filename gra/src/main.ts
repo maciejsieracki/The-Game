@@ -238,6 +238,12 @@ import {
   pickClusterCityStateWarTargetId,
   shouldCityStateRollWarOnPlayer,
 } from './game/city-state-difficulty';
+import {
+  aiCsAbsorptionParams,
+  decideAiCsClusterAction,
+  rollAiCsAccept,
+  unitTriggersSisterAllianceThreat,
+} from './game/ai-cs-absorption';
 import { clusterCityStateRadius, clusterHubChainReachHex, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
 import {
@@ -7485,6 +7491,10 @@ async function boot(): Promise<void> {
      * surowcem AI→gracz (cooldown per ownerId — gracz jest zawsze druga strona, 0).
      */
     const aiResourceTradeLastProposalTurn = new Map<number, number>();
+    /** R-AI-MP-WASAL-WCHLONIECIE: stan dyplomacji AI major → MP w klastrze (klucz `${aiId}:${csId}`). */
+    const aiCsFailCount = new Map<string, number>();
+    const aiCsTrybutSince = new Map<string, number>();
+    const aiCsWasalSince = new Map<string, number>();
     /** P-AI-011: cooldown prośby AI o audiencję handlową u gracza (per ownerId). */
     const aiAudienceLastRequestTurn = new Map<number, number>();
 
@@ -12153,7 +12163,7 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.ownerId === oid);
           if (!city) continue;
           const threatened = units.some(
-            u => !sisterOwnerSet.has(u.ownerId)
+            u => unitTriggersSisterAllianceThreat(u.ownerId, sisterOwnerSet)
               && hexDistance(u.q, u.r, city.q, city.r) <= threatRadius,
           );
           if (threatened) threatenedOwners.add(oid);
@@ -17912,6 +17922,39 @@ async function boot(): Promise<void> {
       return parts.length === 2 && (Number(parts[0]) === ownerId || Number(parts[1]) === ownerId);
     }
 
+    function aiCsPairKey(aiId: number, csId: number): string {
+      return `${aiId}:${csId}`;
+    }
+
+    function clearAiCsPairState(aiId: number, csId: number): void {
+      const key = aiCsPairKey(aiId, csId);
+      aiCsFailCount.delete(key);
+      aiCsTrybutSince.delete(key);
+      aiCsWasalSince.delete(key);
+    }
+
+    /**
+     * R-AI-MP-WASAL-WCHLONIECIE: dyplomatyczne wchłonięcie MP — bez jednostki na heksie.
+     */
+    function annexCityStateToOwner(csOwnerId: number, annexerId: number): void {
+      if (csOwnerId === annexerId || eliminatedOwners.has(csOwnerId)) return;
+      const csCities = cities.filter(c => c.ownerId === csOwnerId);
+      if (csCities.length === 0) return;
+
+      for (const city of csCities) {
+        city.ownerId = annexerId;
+        city.startCityState = false;
+      }
+      cityRenderer.sync(cities, _cityRenderOpts());
+      syncUnitsRender();
+      refreshFog();
+      markCityStateDirty();
+      eliminateOwner(csOwnerId);
+      console.log(
+        `[Dyplomacja] AI${annexerId} wchłania miasto-państwo ownerId=${csOwnerId} (dyplomatyczne)`,
+      );
+    }
+
     /**
      * Q5=B — pełne usunięcie skasowanej cywilizacji (ownerId, po utracie ostatniego
      * miasta) z list graczy i dyplomacji. Usuwa też osamotnione jednostki w polu
@@ -20435,9 +20478,11 @@ async function boot(): Promise<void> {
                 })
                 .map(c => ({ ownerId: c.ownerId, q: c.q, r: c.r }));
               if (opts.clusterStateTargets && opts.clusterStateTargets.length > 0) {
+                const csTiming = aiCsAbsorptionParams(_menuDifficulty);
                 opts.clusterConquestDeadlineActive = isClusterConquestDeadlineActive(
                   turn,
                   opts.clusterStateTargets,
+                  { deadlineTurn: csTiming.clusterConquestDeadline },
                 );
               }
             } else if (tc && !typCityCopyOwners.has(ownerId)) {
@@ -20648,21 +20693,126 @@ async function boot(): Promise<void> {
                   const refHex = refCity
                     ? { q: refCity.q, r: refCity.r }
                     : opts.clusterCenter;
-                  const forced = pickClusterCityStateWarTargetId(
-                    turn,
-                    opts.clusterStateTargets,
-                    atWarIds,
-                    refHex,
-                    new Set(
-                      opts.clusterStateTargets
-                        .filter(t => hasTreaty(
-                          activeDeals, ownerId, t.ownerId, RodzajTraktatu.PaktNieagresji,
-                        ))
-                        .map(t => t.ownerId),
-                    ),
+                  const napBlockedCsIds = new Set(
+                    opts.clusterStateTargets
+                      .filter(t => hasTreaty(
+                        activeDeals, ownerId, t.ownerId, RodzajTraktatu.PaktNieagresji,
+                      ))
+                      .map(t => t.ownerId),
                   );
-                  if (forced != null && !isPeaceLockedBetween(ownerId, forced)) {
-                    clusterForceWarTargetId = forced;
+                  const csAbsParams = aiCsAbsorptionParams(_menuDifficulty);
+                  const clusterTargetsSorted = [...opts.clusterStateTargets].sort((a, b) => {
+                    if (!refHex) return a.ownerId - b.ownerId;
+                    const da = hexDistance(a.q, a.r, refHex.q, refHex.r);
+                    const db = hexDistance(b.q, b.r, refHex.q, refHex.r);
+                    return da !== db ? da - db : a.ownerId - b.ownerId;
+                  });
+                  let absorptionWarTarget: number | undefined;
+                  for (const target of clusterTargetsSorted) {
+                    const csId = target.ownerId;
+                    if (eliminatedOwners.has(csId)) continue;
+                    const pairKey = aiCsPairKey(ownerId, csId);
+                    const alreadyAtWar = atWarIds.has(csId);
+                    const napBlocked = napBlockedCsIds.has(csId);
+                    const hasWasalDeal = aiCsWasalSince.has(pairKey);
+                    const hasTrybutDeal = aiCsTrybutSince.has(pairKey) && !hasWasalDeal;
+                    const militaryRatio = militaryRatioFromArmyM(
+                      sumArmyMForOwner(ownerId),
+                      sumArmyMForOwner(csId),
+                    );
+                    const decision = decideAiCsClusterAction({
+                      difficulty: _menuDifficulty,
+                      turn,
+                      militaryRatio,
+                      hasWasalDeal: aiCsWasalSince.has(pairKey),
+                      wasalSinceTurn: aiCsWasalSince.get(pairKey),
+                      hasTrybutDeal,
+                      trybutSinceTurn: aiCsTrybutSince.get(pairKey),
+                      failCount: aiCsFailCount.get(pairKey) ?? 0,
+                      alreadyAtWar,
+                      napBlocked,
+                    });
+                    if (!decision.action) continue;
+
+                    if (decision.action === 'trybut') {
+                      if (rollAiCsAccept('trybut', csAbsParams)) {
+                        const [p0, p1] = pairOwnerIds(ownerId, csId);
+                        activeDeals = addTreaty(activeDeals, {
+                          id: `ai_cs_trybut_${p0}_${p1}_${turn}`,
+                          rodzaj: RodzajTraktatu.Wasalizacja,
+                          strony: [p0, p1],
+                          wygasaTura: null,
+                          zawartaTura: turn,
+                          ekonomia: {
+                            payerOwnerId: csId,
+                            receiverOwnerId: ownerId,
+                            pieniadzePerTura: csAbsParams.trybutGoldPerTurn,
+                          },
+                        });
+                        aiCsTrybutSince.set(pairKey, turn);
+                        syncRelationFromDeals(ownerId, csId);
+                        console.log(
+                          `[Dyplomacja] AI${ownerId} → MP${csId}: trybut ${csAbsParams.trybutGoldPerTurn} ¤/turę (${decision.reason})`,
+                        );
+                      } else {
+                        aiCsFailCount.set(pairKey, (aiCsFailCount.get(pairKey) ?? 0) + 1);
+                      }
+                    } else if (decision.action === 'wasal') {
+                      if (rollAiCsAccept('wasal', csAbsParams)) {
+                        if (!hasTreaty(activeDeals, ownerId, csId, RodzajTraktatu.Wasalizacja)) {
+                          const [p0, p1] = pairOwnerIds(ownerId, csId);
+                          activeDeals = addTreaty(activeDeals, {
+                            id: `ai_cs_wasal_${p0}_${p1}_${turn}`,
+                            rodzaj: RodzajTraktatu.Wasalizacja,
+                            strony: [p0, p1],
+                            wygasaTura: null,
+                            zawartaTura: turn,
+                            ekonomia: {
+                              payerOwnerId: csId,
+                              receiverOwnerId: ownerId,
+                              pieniadzePerTura: csAbsParams.trybutGoldPerTurn,
+                            },
+                          });
+                        }
+                        aiCsWasalSince.set(pairKey, turn);
+                        syncRelationFromDeals(ownerId, csId);
+                        console.log(
+                          `[Dyplomacja] AI${ownerId} → MP${csId}: wasalizacja (${decision.reason})`,
+                        );
+                      } else {
+                        aiCsFailCount.set(pairKey, (aiCsFailCount.get(pairKey) ?? 0) + 1);
+                      }
+                    } else if (decision.action === 'instant_annex' || decision.action === 'annex') {
+                      annexCityStateToOwner(csId, ownerId);
+                      clearAiCsPairState(ownerId, csId);
+                    } else if (decision.action === 'war') {
+                      if (!isPeaceLockedBetween(ownerId, csId) && !napBlocked) {
+                        absorptionWarTarget = csId;
+                      }
+                    }
+                  }
+                  if (
+                    absorptionWarTarget != null
+                    && !isPeaceLockedBetween(ownerId, absorptionWarTarget)
+                  ) {
+                    clusterForceWarTargetId = absorptionWarTarget;
+                  } else if (clusterForceWarTargetId == null) {
+                    // Q2=A: wojna dopiero po odmowach (decide→war) albo safety na deadline.
+                    // NIE wymuszaj wojny na clusterWarMinTurn bez ścieżki dyplomatycznej.
+                    const forced = pickClusterCityStateWarTargetId(
+                      turn,
+                      opts.clusterStateTargets,
+                      atWarIds,
+                      refHex,
+                      napBlockedCsIds,
+                      {
+                        warMinTurn: csAbsParams.clusterConquestDeadline,
+                        deadlineTurn: csAbsParams.clusterConquestDeadline,
+                      },
+                    );
+                    if (forced != null && !isPeaceLockedBetween(ownerId, forced)) {
+                      clusterForceWarTargetId = forced;
+                    }
                   }
                 }
                 const diploInp: DiplomacjaInputs = {

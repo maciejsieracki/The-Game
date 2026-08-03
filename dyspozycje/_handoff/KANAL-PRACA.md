@@ -5088,6 +5088,23 @@ CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`
 - Sesja lokalna: `git pull` na dysk właściciela
 CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
 
+## [16:45 PL, 2026-08-03] CLOUD → PARENT — R-AI-MP-WASAL-WCHLONIECIE (kod, bez deploy)
+- Branch: `cursor/fix-ai-mp-wasal-wchloniecie-63a1`
+- P0: sojusze sióstr tylko vs gracz (`unitTriggersSisterAllianceThreat`)
+- P1+P2: `ai-cs-absorption.ts` + ścieżka AI→MP trybut/wasal/wchłonięcie/wojna w main.ts
+- Timing klastra per trudność gry (override warMin/deadline w city-state-difficulty.ts)
+- Test: ai-cs-absorption 16/16 · cluster-diff 27/27 · alliance 63/63 · tsc 0
+- P3 founding: pominięte (TODO w decyzji)
+CZEKAM-NA: parent push + deploy ROBOCZA na hasło Macieja
+
+## [16:50 PL, 2026-08-03] CLOUD → Maciej — R-AI-MP-WASAL-WCHLONIECIE kod GOTOWY
+- Branch: `cursor/fix-ai-mp-wasal-wchloniecie-63a1` · tip `cbd6b68`
+- Q1=A · Q2=A(Ł/N)+C(Hard) · Q3=A+B odłożone (gracz bez zmian)
+- Fix: force-war dopiero po odmowach / deadline (nie na warMinTurn)
+- Test: ai-cs-absorption 18/18 · cluster-diff 27/27 · tsc 0
+- **Bez deploy** — czekam na hasło `deploy`
+CZEKAM-NA: Maciej `deploy` (albo merge PR)
+
 ## [18:10 PL, 2026-08-03] CLOUD → Maciej — R-STAWKI ×2 WDROŻONE (kod)
 - Branch: `cursor/fix-stawki-x2-koszty-63a1`
 - `R_STAWKI_KOSZT_MULT=2`: badania · upkeep złoto · budowa budynków · żywność ludność+wojsko

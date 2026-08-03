@@ -118,6 +118,18 @@ eq(
   'T4b: po deadline → brak wymuszenia',
 );
 
+console.log('\n--- T4c: pickCluster override warMin=40 ---');
+eq(
+  pickClusterCityStateWarTargetId(30, targets, atWarEmpty, { q: 0, r: 0 }, undefined, { warMinTurn: 40 }),
+  null,
+  'T4c: tura 30 override 40 → null',
+);
+eq(
+  pickClusterCityStateWarTargetId(40, targets, atWarEmpty, { q: 0, r: 0 }, undefined, { warMinTurn: 40 }),
+  3,
+  'T4d: tura 40 override 40 → nearest CS',
+);
+
 console.log('\n--- T5: decideAIDiplomacy clusterForceWarTargetId ---');
 const relStub = {
   partnerId: '3',
