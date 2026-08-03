@@ -69,8 +69,18 @@ export interface DiplomacyActionLockContext {
   progWymianaTechZaufanie: number;
   progNamowWojneZaufanie: number;
   progWasalizacjaRespekt: number;
+  /** R-GRACZ-WCHLONIECIE: próg Respektu na wchłonięcie MP */
+  progWchloniecieRespekt?: number;
   progTrybutZadanieMinRespekt: number;
   progDarRelacja: number;
+  /** Partner to miasto-państwo (akcja 15) */
+  isCityStatePartner?: boolean;
+  /** Aktywna wasalizacja gracz→partner */
+  hasWasal?: boolean;
+  /** Wiek aktywnego wasalu w turach */
+  wasalAgeTurns?: number;
+  /** Min tur wasalu przed wchłonięciem */
+  graczWchlonieciePoWasaluTur?: number;
 }
 
 function fmtProg(n: number): string {
@@ -237,11 +247,34 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
       return { locked: false, note: '' };
     }
 
-    case '12': { // Wasalizacja / wchłonięcie
+    case '12': { // Wasalizacja
       if (ctx.atWar) return { locked: true, note: 'zablokowana — trwa wojna' };
       const gate = respektGate(ctx.progWasalizacjaRespekt, ctx.respekt);
       if (gate) return gate;
       return { locked: false, note: '' };
+    }
+
+    case '15': { // Wchłonięcie miasta-państwa (R-GRACZ-WCHLONIECIE)
+      if (ctx.atWar) return { locked: true, note: 'zablokowana — trwa wojna' };
+      if (!ctx.isCityStatePartner) {
+        return { locked: true, note: 'zablokowana — tylko miasta-państwa' };
+      }
+      if (!ctx.hasWasal) {
+        return { locked: true, note: 'zablokowana — brak aktywnej wasalizacji' };
+      }
+      const minAge = ctx.graczWchlonieciePoWasaluTur ?? 10;
+      const age = ctx.wasalAgeTurns ?? 0;
+      if (age < minAge) {
+        const remain = minAge - age;
+        return {
+          locked: true,
+          note: `zablokowana — wasal musi trwać ≥ ${minAge} tur (pozostało ${remain})`,
+        };
+      }
+      const wchRespekt = ctx.progWchloniecieRespekt ?? 90;
+      const gate = respektGate(wchRespekt, ctx.respekt);
+      if (gate) return gate;
+      return { locked: false, note: 'jednorazowa opłata ¤ + zgoda wasala' };
     }
 
     case '13': { // Prezent / dar

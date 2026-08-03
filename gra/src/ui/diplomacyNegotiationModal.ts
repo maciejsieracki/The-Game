@@ -82,6 +82,8 @@ export interface NegotiationModalContext {
   atWar?: boolean;
   /** Id akcji dyplomatycznej (np. '10' pokój, '8' trybut) — kontekst koszyka. */
   negotiationActionId?: string;
+  /** R-GRACZ-WCHLONIECIE: wymagana opłata ¤ za wchłonięcie MP */
+  wchloniecieGoldRequired?: number;
   /**
    * C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE (drewno/kamień/glina/cegła/
    * ceramika/ruda — City.surowce, patrz diplomacy-goods.ts) per STRONA, z prostą ceną
@@ -491,7 +493,7 @@ export function proposalActionIdFromPayload(payload: NegotiationPayload): string
   }
   const map: Record<string, string> = {
     '2': 'nap', '4': 'granice', '5': 'umowa_szlakow', '14': 'handel', '6': 'tech',
-    '7': 'namow_wojne', '9': 'ultimatum', '12': 'wasal', '10': 'pokoj',
+    '7': 'namow_wojne', '9': 'ultimatum', '12': 'wasal', '15': 'wchloniecie', '10': 'pokoj',
   };
   return map[payload.actionId] ?? payload.actionId;
 }

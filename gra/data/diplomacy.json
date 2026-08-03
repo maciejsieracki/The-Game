@@ -82,7 +82,11 @@
     "karaPrzemarszNieautoryzowany_zaufanie_perTura": 5,
     "progUltimatumMilitaryRatio": 1.3,
     "progUltimatumMinGold": 20,
-    "progWasalDefaultGoldPerTurn": 10
+    "progWasalDefaultGoldPerTurn": 10,
+    "graczWchlonieciePoWasaluTur": 10,
+    "graczWchloniecieKosztBaza": 150,
+    "graczWchloniecieKosztPerLudnosc": 25,
+    "graczWchloniecieKosztMin": 200
   },
   "handel_zloze": {
     "_opis": "Dostęp do jednego złoża mineralnego/strategicznego (hex) — NIE hodowla (bydło/owce/lama = ulepszenia terenu, poza tym cennikiem). Cena w ¤ lub Praca @ Rel 100.",
@@ -270,12 +274,20 @@
       "Efekt": "Z casus belli: −10 Relacja u wszystkich. Bez c.b.: −25 Relacja u wszystkich, −20 Zaufanie, flaga agresor"
     },
     {
-      "Akcja": "12. Wasalizacja / wchłonięcie",
-      "Opis": "Słabsza cywilizacja staje się wasalem (zachowuje terytorium, płaci trybut) lub zostaje w pełni wchłonięta przez gracza.",
+      "Akcja": "12. Wasalizacja",
+      "Opis": "Miasto-państwo staje się wasalem — zachowuje terytorium, płaci trybut co turę. Wymaga Respektu ≥ prog_wasalizacja.",
       "Dostępne: Główni rywale": "TAK",
       "Dostępne: Poboczni": "TAK",
-      "Koszt": "Wasalizacja: 100–300 Pieniędzy gwarancji + zobowiązanie ochrony; Wchłonięcie: kary reputacyjne",
-      "Efekt": "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody. Wchłonięcie: miasta przechodzą, niezadowolenie N tur"
+      "Koszt": "Wasalizacja: trybut ¤/turę (domyślnie 10) + zobowiązanie ochrony",
+      "Efekt": "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody suzerena"
+    },
+    {
+      "Akcja": "15. Wchłonięcie",
+      "Opis": "Po aktywnym wasalu (min. 10 tur) gracz może w pełni wchłonić miasto-państwo — jednorazowa opłata ¤ (skala ludności), zgoda wasala.",
+      "Dostępne: Główni rywale": "NIE",
+      "Dostępne: Poboczni": "TAK",
+      "Koszt": "max(200, 150 + 25 × ludność MP) ¤ jednorazowo",
+      "Efekt": "Miasta MP przechodzą do gracza; wasalizacja znika; MP eliminowane z mapy"
     },
     {
       "Akcja": "13. Prezent / dar",

@@ -31,15 +31,18 @@ __export(dip_proposal_entry_exports, {
   clampDealTurns: () => clampDealTurns,
   enrichAiCommandWithTreasury: () => enrichAiCommandWithTreasury,
   evaluateProposal: () => evaluateProposal,
+  findWasalDeal: () => findWasalDeal,
   formatAiDiplomacyPlayerMessage: () => formatAiDiplomacyPlayerMessage,
   getEffectiveDiplomacyParams: () => getEffectiveDiplomacyParams,
+  graczWchloniecieKosztZloto: () => graczWchloniecieKosztZloto,
   hasTreaty: () => hasTreaty,
   makeDealId: () => makeDealId,
   negotiationStillValid: () => negotiationStillValid,
   proposalHasResourceAccess: () => proposalHasResourceAccess,
   resolvePlayerAcceptsAiPending: () => resolvePlayerAcceptsAiPending,
   resolvePokojTrustTier: () => resolvePokojTrustTier,
-  treatiesBrokenByWar: () => treatiesBrokenByWar
+  treatiesBrokenByWar: () => treatiesBrokenByWar,
+  wasalAgeTurns: () => wasalAgeTurns
 });
 module.exports = __toCommonJS(dip_proposal_entry_exports);
 
@@ -128,7 +131,11 @@ var diplomacy_default = {
     karaPrzemarszNieautoryzowany_zaufanie_perTura: 5,
     progUltimatumMilitaryRatio: 1.3,
     progUltimatumMinGold: 20,
-    progWasalDefaultGoldPerTurn: 10
+    progWasalDefaultGoldPerTurn: 10,
+    graczWchlonieciePoWasaluTur: 10,
+    graczWchloniecieKosztBaza: 150,
+    graczWchloniecieKosztPerLudnosc: 25,
+    graczWchloniecieKosztMin: 200
   },
   handel_zloze: {
     _opis: "Dost\u0119p do jednego z\u0142o\u017Ca mineralnego/strategicznego (hex) \u2014 NIE hodowla (byd\u0142o/owce/lama = ulepszenia terenu, poza tym cennikiem). Cena w \xA4 lub Praca @ Rel 100.",
@@ -316,12 +323,20 @@ var diplomacy_default = {
       Efekt: "Z casus belli: \u221210 Relacja u wszystkich. Bez c.b.: \u221225 Relacja u wszystkich, \u221220 Zaufanie, flaga agresor"
     },
     {
-      Akcja: "12. Wasalizacja / wch\u0142oni\u0119cie",
-      Opis: "S\u0142absza cywilizacja staje si\u0119 wasalem (zachowuje terytorium, p\u0142aci trybut) lub zostaje w pe\u0142ni wch\u0142oni\u0119ta przez gracza.",
+      Akcja: "12. Wasalizacja",
+      Opis: "Miasto-pa\u0144stwo staje si\u0119 wasalem \u2014 zachowuje terytorium, p\u0142aci trybut co tur\u0119. Wymaga Respektu \u2265 prog_wasalizacja.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "TAK",
-      Koszt: "Wasalizacja: 100\u2013300 Pieni\u0119dzy gwarancji + zobowi\u0105zanie ochrony; Wch\u0142oni\u0119cie: kary reputacyjne",
-      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody. Wch\u0142oni\u0119cie: miasta przechodz\u0105, niezadowolenie N tur"
+      Koszt: "Wasalizacja: trybut \xA4/tur\u0119 (domy\u015Blnie 10) + zobowi\u0105zanie ochrony",
+      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody suzerena"
+    },
+    {
+      Akcja: "15. Wch\u0142oni\u0119cie",
+      Opis: "Po aktywnym wasalu (min. 10 tur) gracz mo\u017Ce w pe\u0142ni wch\u0142oni\u0107 miasto-pa\u0144stwo \u2014 jednorazowa op\u0142ata \xA4 (skala ludno\u015Bci), zgoda wasala.",
+      "Dost\u0119pne: G\u0142\xF3wni rywale": "NIE",
+      "Dost\u0119pne: Poboczni": "TAK",
+      Koszt: "max(200, 150 + 25 \xD7 ludno\u015B\u0107 MP) \xA4 jednorazowo",
+      Efekt: "Miasta MP przechodz\u0105 do gracza; wasalizacja znika; MP eliminowane z mapy"
     },
     {
       Akcja: "13. Prezent / dar",
@@ -4616,6 +4631,29 @@ var DEFAULT_TERRAIN_COSTS = {
   ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
 
 // src/game/diplomacy.ts
 var DIPLOMACY_PARAMS = {
@@ -4788,6 +4826,14 @@ var DIPLOMACY_PARAMS = {
   progUltimatumMinGold: 20,
   /** Domyślny trybut wasala (¤/turę) */
   progWasalDefaultGoldPerTurn: 10,
+  /** R-GRACZ-WCHLONIECIE: min tur wasalu przed wchłonięciem MP przez gracza */
+  graczWchlonieciePoWasaluTur: 10,
+  /** R-GRACZ-WCHLONIECIE: baza kosztu wchłonięcia (¤) */
+  graczWchloniecieKosztBaza: 150,
+  /** R-GRACZ-WCHLONIECIE: koszt per ludność MP (¤) */
+  graczWchloniecieKosztPerLudnosc: 25,
+  /** R-GRACZ-WCHLONIECIE: minimalny koszt wchłonięcia (¤) */
+  graczWchloniecieKosztMin: 200,
   // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
   // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
   // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —
@@ -12758,6 +12804,28 @@ function pairHasKind(deals, a, b, rodzaj) {
     (d) => d.strony[0] === p0 && d.strony[1] === p1 && normalizeTreatyKind(d.rodzaj) === k
   );
 }
+function graczWchloniecieKosztZloto(population, p = getEffectiveDiplomacyParams("normal")) {
+  return Math.max(
+    p.graczWchloniecieKosztMin,
+    p.graczWchloniecieKosztBaza + p.graczWchloniecieKosztPerLudnosc * Math.max(0, population)
+  );
+}
+function findWasalDeal(deals, suzerenId, wasalId) {
+  if (!deals?.length) return void 0;
+  const p0 = Math.min(suzerenId, wasalId);
+  const p1 = Math.max(suzerenId, wasalId);
+  return deals.find((d) => {
+    if (d.strony[0] !== p0 || d.strony[1] !== p1) return false;
+    if (normalizeTreatyKind(d.rodzaj) !== "wasalizacja" /* Wasalizacja */) return false;
+    const econ = d.ekonomia;
+    if (!econ) return true;
+    return econ.receiverOwnerId === suzerenId && econ.payerOwnerId === wasalId;
+  });
+}
+function wasalAgeTurns(deal, turn) {
+  if (!deal || deal.zawartaTura == null) return void 0;
+  return Math.max(0, turn - deal.zawartaTura);
+}
 function makeDealId(prefix, turn, a, b) {
   const [p0, p1] = a < b ? [a, b] : [b, a];
   return `${prefix}-${p0}-${p1}-t${turn}`;
@@ -12878,6 +12946,13 @@ function treatyPnGate(actionId, payload, relation, pnOpts) {
     return null;
   }
   return null;
+}
+function tradeWillingnessBlocksAcceptance(stance, params, givePn, receivePn, relTotal, payload) {
+  if (stance.willingnessTrade >= params.progHandelWillingnessMin) return false;
+  const hasBasket = givePn > 0 || receivePn > 0 || (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
+  if (!hasBasket) return false;
+  if (pnDealAcceptedByAi(givePn, receivePn, relTotal)) return false;
+  return true;
 }
 function evaluateProposal(proposal, ctx) {
   const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
@@ -13061,7 +13136,7 @@ function evaluateProposal(proposal, ctx) {
         }
         return { accepted: true, reason: "Dar przyj\u0119ty", oneShotTrade: true };
       }
-      if (stance.willingnessTrade < p.progHandelWillingnessMin) {
+      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
         return { accepted: false, reason: "Brak ch\u0119ci do handlu" };
       }
       if (score < p.progHandelRelacja) {
@@ -13120,14 +13195,14 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
     }
     case "umowa_szlakow": {
-      if (stance.willingnessTrade < p.progHandelWillingnessMin) {
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+      const relTotal = relationTotal(relation);
+      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
         return { accepted: false, reason: "Brak ch\u0119ci do handlu" };
       }
       if (score < p.progHandelRelacja) {
         return { accepted: false, reason: `Relacja zbyt niska na traktat handlowy (wymagane \u2265 ${p.progHandelRelacja})` };
       }
-      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const relTotal = relationTotal(relation);
       const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
       if (hasItems && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
         return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
@@ -13252,6 +13327,43 @@ function evaluateProposal(proposal, ctx) {
       );
       return { accepted: true, reason: "Wasalizacja zaakceptowana", deal };
     }
+    case "wchloniecie": {
+      if (!ctx.responderIsCityState) {
+        return { accepted: false, reason: "Wch\u0142oni\u0119cie v1 tylko miasta-pa\u0144stwa" };
+      }
+      const wasalDeal = findWasalDeal(ctx.activeDeals, proposerOwnerId, responderOwnerId);
+      if (!wasalDeal) {
+        return { accepted: false, reason: "Brak aktywnej wasalizacji z tym miastem-pa\u0144stwem" };
+      }
+      const age = ctx.wasalAgeTurns ?? wasalAgeTurns(wasalDeal, ctx.turn);
+      if (age == null || age < p.graczWchlonieciePoWasaluTur) {
+        const remain = p.graczWchlonieciePoWasaluTur - (age ?? 0);
+        return {
+          accepted: false,
+          reason: `Wasal musi trwa\u0107 \u2265 ${p.graczWchlonieciePoWasaluTur} tur (pozosta\u0142o ${remain})`
+        };
+      }
+      if (ctx.proposerRespekt < p.progWchloniecieRespekt) {
+        return {
+          accepted: false,
+          reason: `Wch\u0142oni\u0119cie wymaga Respekt \u2265 ${p.progWchloniecieRespekt}`
+        };
+      }
+      const WCHLONIECIE_CONSENT_REL = 60;
+      if (score < WCHLONIECIE_CONSENT_REL) {
+        return { accepted: false, reason: "Wasal odmawia wch\u0142oni\u0119cia \u2014 zbyt niska Relacja" };
+      }
+      const pop = ctx.responderPopulation ?? 0;
+      const koszt = graczWchloniecieKosztZloto(pop, p);
+      const goldOnce = payload.goldOnce ?? 0;
+      if (goldOnce < koszt) {
+        return {
+          accepted: false,
+          reason: `Wch\u0142oni\u0119cie wymaga jednorazowej op\u0142aty \u2265 ${koszt} \xA4`
+        };
+      }
+      return { accepted: true, reason: `Wch\u0142oni\u0119cie zaakceptowane (${koszt} \xA4)` };
+    }
     default:
       return { accepted: false, reason: "Nieznana akcja dyplomatyczna" };
   }
@@ -13347,7 +13459,8 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
         id: makeDealId("pending-handel", turn, fromOwnerId, toOwnerId),
         payload: {
           goldOnce,
-          giveItems: [goldBasket]
+          giveItems: [goldBasket],
+          isGift: true
         },
         actionId: "handel"
       };
@@ -13401,8 +13514,34 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
       return null;
   }
 }
-function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal") {
+var NEGOTIATION_PEACE_REQUIRED = /* @__PURE__ */ new Set([
+  "nap",
+  "sojusz_defensywny",
+  "sojusz_pelny",
+  "handel",
+  "umowa_handlowa",
+  "umowa_szlakow",
+  "granice",
+  "tech",
+  "wasal",
+  "wchloniecie",
+  "trybut_zadanie"
+]);
+var PEACE_ACTIONS_DURING_WAR = /* @__PURE__ */ new Set([
+  "pokoj",
+  "trybut_oferta",
+  "ultimatum"
+]);
+function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal", opts) {
   const { actionId, fromOwnerId, toOwnerId, payload } = pending;
+  if (opts?.atWar === true) {
+    if (isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
+      return { accepted: false, reason: "W wojnie pieni\u0105dze tylko w ugodzie pokojowej" };
+    }
+    if (NEGOTIATION_PEACE_REQUIRED.has(actionId) && !PEACE_ACTIONS_DURING_WAR.has(actionId)) {
+      return { accepted: false, reason: "Wybuch\u0142a wojna \u2014 warunki straci\u0142y aktualno\u015B\u0107" };
+    }
+  }
   switch (actionId) {
     case "nap": {
       const turns = clamp2(payload.turns ?? 15, 10, 20);
@@ -13550,18 +13689,6 @@ var CITY_STATE_TRIBUTE_BLOCK_REASON = "Trybut niedost\u0119pny u miasta-pa\u0144
 function tributeBlockedForCityState(ctx) {
   return ctx.proposerIsCityState === true || ctx.responderIsCityState === true;
 }
-var NEGOTIATION_PEACE_REQUIRED = /* @__PURE__ */ new Set([
-  "nap",
-  "sojusz_defensywny",
-  "sojusz_pelny",
-  "handel",
-  "umowa_handlowa",
-  "umowa_szlakow",
-  "granice",
-  "tech",
-  "wasal",
-  "trybut_zadanie"
-]);
 function negotiationStillValid(entry, world) {
   if (world.proposerEliminated || world.responderEliminated) {
     return { valid: false, reason: "Jedna ze stron zosta\u0142a wyeliminowana z gry \u2014 propozycja wygas\u0142a" };
@@ -13593,13 +13720,16 @@ function negotiationStillValid(entry, world) {
   clampDealTurns,
   enrichAiCommandWithTreasury,
   evaluateProposal,
+  findWasalDeal,
   formatAiDiplomacyPlayerMessage,
   getEffectiveDiplomacyParams,
+  graczWchloniecieKosztZloto,
   hasTreaty,
   makeDealId,
   negotiationStillValid,
   proposalHasResourceAccess,
   resolvePlayerAcceptsAiPending,
   resolvePokojTrustTier,
-  treatiesBrokenByWar
+  treatiesBrokenByWar,
+  wasalAgeTurns
 });

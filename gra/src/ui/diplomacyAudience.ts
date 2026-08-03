@@ -1141,6 +1141,7 @@ function actionIconId(id: string): string {
     case '10': return 'dip-peace';
     case '11': return 'dip-war';
     case '12': return 'tb-army';
+    case '15': return 'tb-army';
     case '13': return 'res-culture';
     default: return 'tb-diplomacy';
   }
@@ -1187,6 +1188,7 @@ const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: s
   { svg: 'trade', aid: '14', label: 'Umowa wymiany' },
   { svg: 'gift', aid: '13', label: 'Przekaż dar' },
   { svg: 'vassal', aid: '12', label: 'Wasalizacja' },
+  { svg: 'vassal', aid: '15', label: 'Wchłonięcie' },
 ];
 
 /**

@@ -398,9 +398,11 @@ interface TreatyFormState {
   tributeMode: 'demand' | 'offer';
   goldPerTurn: number;
   tributeTurns: number;
+  goldOnce: number;
 }
 
-function defaultTreatyState(actionId: string, initial?: TradeBasketInitial): TreatyFormState {
+function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?: NegotiationModalContext): TreatyFormState {
+  const wchlonGold = ctx?.wchloniecieGoldRequired ?? 200;
   return {
     turns: initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 10,
     allianceKind: initial?.allianceKind === 'defensywny' ? 'defensywny' : 'pelny',
@@ -408,6 +410,7 @@ function defaultTreatyState(actionId: string, initial?: TradeBasketInitial): Tre
     tributeMode: initial?.tributeMode === 'offer' ? 'offer' : 'demand',
     goldPerTurn: initial?.goldPerTurn ?? (actionId === '12' ? 10 : 15),
     tributeTurns: initial?.tributeTurns ?? 0,
+    goldOnce: initial?.goldOnce ?? (actionId === '15' ? wchlonGold : 0),
   };
 }
 
@@ -461,6 +464,13 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + '<input type="number" id="cdb-treaty-wasal-gpt" class="cdb-treaty-wasal-gpt" value="' + state.goldPerTurn + '" min="10" />'
         + '<p class="cdb-sub">Wasal zachowuje terytorium · płaci trybut co turę</p>';
       break;
+    case '15': {
+      const minGold = ctx.wchloniecieGoldRequired ?? 200;
+      body = '<label for="cdb-treaty-wchlon-gold">Opłata za wchłonięcie (¤)</label>'
+        + '<input type="number" id="cdb-treaty-wchlon-gold" class="cdb-treaty-wchlon-gold" value="' + state.goldOnce + '" min="' + minGold + '" />'
+        + '<p class="cdb-sub">Wymagane minimum ' + minGold + ' ¤ · wasal musi wyrazić zgodę (Relacja ≥ 60)</p>';
+      break;
+    }
     case '10':
       body = '<p class="cdb-sub">Zakończenie wojny — wymagana oferta PW (baza 500, modyfikator Relacji ±90%). '
         + 'Dołóż złoto lub surowce w koszyku poniżej.</p>';
@@ -490,11 +500,13 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): Treaty
     state.tributeTurns = parseInt((document.querySelector('.cdb-treaty-trib-turns') as HTMLInputElement)?.value ?? '0', 10);
   } else if (actionId === '12') {
     state.goldPerTurn = parseInt((document.querySelector('.cdb-treaty-wasal-gpt') as HTMLInputElement)?.value ?? '10', 10);
+  } else if (actionId === '15') {
+    state.goldOnce = parseInt((document.querySelector('.cdb-treaty-wchlon-gold') as HTMLInputElement)?.value ?? '0', 10);
   }
   return state;
 }
 
-function validateTreatyForm(actionId: string, state: TreatyFormState): BasketValidation {
+function validateTreatyForm(actionId: string, state: TreatyFormState, ctx?: NegotiationModalContext): BasketValidation {
   switch (actionId) {
     case '2':
       if (state.turns < 1 || state.turns > 20) {
@@ -511,6 +523,13 @@ function validateTreatyForm(actionId: string, state: TreatyFormState): BasketVal
         return { valid: false, reason: 'Trybut wasala: minimum 10 ¤/turę' };
       }
       break;
+    case '15': {
+      const minGold = ctx?.wchloniecieGoldRequired ?? 200;
+      if (state.goldOnce < minGold) {
+        return { valid: false, reason: 'Wchłonięcie: minimum ' + minGold + ' ¤' };
+      }
+      break;
+    }
   }
   return { valid: true };
 }
@@ -598,6 +617,9 @@ function buildTreatyPayload(
     case '12':
       payload.goldPerTurn = state.goldPerTurn;
       break;
+    case '15':
+      payload.goldOnce = state.goldOnce;
+      break;
   }
   if (giveItems.length > 0) {
     payload.giveItems = giveItems;
@@ -643,7 +665,7 @@ function validateBasketForm(
     return { valid: false, reason: 'W wojnie pieniądze tylko w ugodzie pokojowej' };
   }
   if (mode === 'treaty') {
-    const treatyVal = validateTreatyForm(actionId, treatyState ?? defaultTreatyState(actionId));
+    const treatyVal = validateTreatyForm(actionId, treatyState ?? defaultTreatyState(actionId, undefined, ctx), ctx);
     if (!treatyVal.valid) return treatyVal;
     if (giveItems.length === 0 && receiveItems.length === 0) return { valid: true };
     if (giveItems.length > 0 && receiveItems.length > 0) {
@@ -1199,9 +1221,10 @@ function renderBasket(
 
   const basketModeForForm: TradeBasketMode = mode === 'treaty' ? 'trade' : mode;
   const showReceiveCol = mode === 'trade' || mode === 'treaty';
+  const wchloniecieOnly = action.id === '15';
   /** Traktat (NAP/sojusz/…) bez koszyka PN — nie pokazuj pustego stołu OFERUJEMY|OFERUJĄ. */
   const treatyBasketsEmpty = mode === 'treaty' && giveItems.length === 0 && receiveItems.length === 0;
-  const showDealPreview = showReceiveCol && !blocked && !treatyBasketsEmpty;
+  const showDealPreview = showReceiveCol && !blocked && !treatyBasketsEmpty && !wchloniecieOnly;
 
   const giveCol =
     '<div class="cdb-col">' +
@@ -1260,14 +1283,14 @@ function renderBasket(
     : '';
 
   const treatyHtml = mode === 'treaty' ? treatySectionHtml(action.id, ctx, treatyState) : '';
-  const basketOptIntro = mode === 'treaty' && !blocked
+  const basketOptIntro = mode === 'treaty' && !blocked && !wchloniecieOnly
     ? '<div class="cdb-basket-opt"><div class="cdb-basket-opt-title">'
       + (treatyBasketsEmpty
         ? 'Opcjonalnie — dołóż wymianę PW (nie jest wymagana do zaproponowania traktatu)'
         : 'Dołóżona wymiana PW')
       + '</div>'
     : '';
-  const basketOptClose = mode === 'treaty' && !blocked ? '</div>' : '';
+  const basketOptClose = mode === 'treaty' && !blocked && !wchloniecieOnly ? '</div>' : '';
   const summaryBlock = mode === 'treaty'
     ? treatySummaryHtml(action, treatyState, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode)
     : summaryHtml(mode, giveItems, receiveItems, ctx, resourceTradeMode, dealTurns);
@@ -1284,7 +1307,7 @@ function renderBasket(
     basketOptIntro +
     dealPreview +
     dealSettings +
-    (blocked ? '' : '<div class="cdb-cols">' + giveCol + recvCol + '</div>') +
+    (blocked ? '' : '<div class="cdb-cols">' + (wchloniecieOnly ? '' : giveCol + recvCol) + '</div>') +
     basketOptClose +
     (blocked ? '' : summaryBlock) +
     (blocked ? '' : balanceButtonHtml(showBalanceBtn)) +
@@ -1336,7 +1359,7 @@ export function showTradeBasketModal(
   let dealTurns = initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 15;
   let resourceTradeMode: 'once' | 'per_turn' = initial?.resourceTradeMode ?? 'once';
   let warThreat = false;
-  let treatyState = defaultTreatyState(action.id, initial);
+  let treatyState = defaultTreatyState(action.id, initial, ctx);
 
   overlay = document.createElement('div');
   overlay.className = 'civ-diplo-basket-overlay';
@@ -1501,7 +1524,7 @@ export function showTradeBasketModal(
     box.querySelector('.cdb-deal-turns')?.addEventListener('input', () => refresh());
 
     box.querySelectorAll(
-      '.cdb-treaty-turns, .cdb-treaty-alliance, .cdb-treaty-mil, .cdb-treaty-trib-mode, .cdb-treaty-gpt, .cdb-treaty-trib-turns, .cdb-treaty-wasal-gpt',
+      '.cdb-treaty-turns, .cdb-treaty-alliance, .cdb-treaty-mil, .cdb-treaty-trib-mode, .cdb-treaty-gpt, .cdb-treaty-trib-turns, .cdb-treaty-wasal-gpt, .cdb-treaty-wchlon-gold',
     ).forEach(el => {
       el.addEventListener('change', () => refresh());
       el.addEventListener('input', () => refresh());
@@ -1624,7 +1647,7 @@ export function openQuickDealBasket(
 }
 
 /** Akcje obsługiwane przez koszyk PN (handel + dar + traktaty z wymianą). R-DYP-STOL-A=C */
-export const TRADE_BASKET_ACTION_IDS = new Set(['2', '3', '4', '8', '10', '12', '13', '14']);
+export const TRADE_BASKET_ACTION_IDS = new Set(['2', '3', '4', '8', '10', '12', '13', '14', '15']);
 
 export function getTradeBasketMode(actionId: string): TradeBasketMode {
   if (actionId === '13') return 'gift';
