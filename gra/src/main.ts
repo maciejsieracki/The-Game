@@ -162,7 +162,7 @@ import {
   TRIUMPH_CS_HINT_MS,
 } from './game/triumph-city-state';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
-import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, DEFAULT_BUDOWA_PRIORYTET_TYPOW, normalizePodzialHandlu, type City, type BudowaFocus, type BudowaTryb, type CityPodzialHandlu } from './game/cities';
+import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, DEFAULT_BUDOWA_PRIORYTET_TYPOW, EMPTY_BUDOWA_LISTA_SZABLONY, normalizePodzialHandlu, isAutoBudowaTryb, type City, type BudowaFocus, type BudowaTryb, type BudowaListaSlot, type BudowaListaSzablony, type CityPodzialHandlu } from './game/cities';
 import {
   migrateHandelSplitOnLoad,
   resolveCityPodzialHandlu,
@@ -4958,7 +4958,16 @@ async function boot(): Promise<void> {
           const priorytetTypow = city.budowaPriorytetTypow?.length
             ? [...city.budowaPriorytetTypow]
             : [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
-          return { tryb, priorytetTypow };
+          return {
+            tryb,
+            priorytetTypow,
+            lista: [...(city.budowaLista ?? [])],
+            szablony: {
+              A: [...budowaListaSzablony.A],
+              B: [...budowaListaSzablony.B],
+              C: [...budowaListaSzablony.C],
+            },
+          };
         },
         onBudowaPriorytetChange: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => {
           const city = cities.find(c => c.id === cityId);
@@ -4979,7 +4988,7 @@ async function boot(): Promise<void> {
           const prioText = city.budowaPriorytetTypow
             .map((f, i) => `${i + 1}. ${labels[f] ?? f}`)
             .join(' → ');
-          const enqueued = tryb === 'priorytet' ? tryAutoEnqueueBuild(cityId) : null;
+          const enqueued = isAutoBudowaTryb(tryb) ? tryAutoEnqueueBuild(cityId) : null;
           showHintMessage(
             enqueued
               ? `${city.name}: priorytet budowy · ${prioText} → ${enqueued.nazwa}`
@@ -4994,6 +5003,43 @@ async function boot(): Promise<void> {
           if (!city) return;
           city.budowaTryb = 'reczny';
           showHintMessage(`${city.name}: ręczna kolejka budowy`, 2800);
+          refreshCityPanelIfOpen();
+        },
+        onBudowaListaChange: (cityId: string, lista: string[], tryb: 'lista') => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.budowaLista = [...lista];
+          city.budowaTryb = tryb;
+          const enqueued = tryAutoEnqueueBuild(cityId);
+          showHintMessage(
+            enqueued
+              ? `${city.name}: lista budowy → ${enqueued.nazwa}`
+              : `${city.name}: tryb lista (${lista.length} pozycji)`,
+            2800,
+          );
+          updateHud();
+          refreshCityPanelIfOpen();
+        },
+        onBudowaListaSaveSlot: (cityId: string, slot: BudowaListaSlot) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          budowaListaSzablony[slot] = [...(city.budowaLista ?? [])];
+          showHintMessage(`${city.name}: zapisano listę jako szablon ${slot}`, 2400);
+          refreshCityPanelIfOpen();
+        },
+        onBudowaListaLoadSlot: (cityId: string, slot: BudowaListaSlot) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.budowaLista = [...budowaListaSzablony[slot]];
+          city.budowaTryb = 'lista';
+          const enqueued = tryAutoEnqueueBuild(cityId);
+          showHintMessage(
+            enqueued
+              ? `${city.name}: wgrano listę ${slot} → ${enqueued.nazwa}`
+              : `${city.name}: wgrano listę ${slot}`,
+            2800,
+          );
+          updateHud();
           refreshCityPanelIfOpen();
         },
         getUnitsAt: (q: number, r: number) => {
@@ -5337,7 +5383,7 @@ async function boot(): Promise<void> {
     /** Auto-budowa: dodaj następny budynek gdy kolejka pusta i tryb auto. */
     function tryAutoEnqueueBuild(cityId: string) {
       const city = cities.find(c => c.id === cityId);
-      if (!city || (city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'priorytet') return null;
+      if (!city || !isAutoBudowaTryb(city.budowaTryb)) return null;
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       if (frontItem(prod0) !== null) return null;
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
@@ -7285,6 +7331,11 @@ async function boot(): Promise<void> {
     // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)
     /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
     let playerPracaPool: number = 0;
+    let budowaListaSzablony: BudowaListaSzablony = {
+      A: [...EMPTY_BUDOWA_LISTA_SZABLONY.A],
+      B: [...EMPTY_BUDOWA_LISTA_SZABLONY.B],
+      C: [...EMPTY_BUDOWA_LISTA_SZABLONY.C],
+    };
     let _lastPraca: number = 0;
     /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z playerPracaPool za utrzymanie
      *  ulepszeń surowcowych (civ-wide) w ostatniej turze -- wyłącznie do wyświetlenia
@@ -9893,7 +9944,7 @@ async function boot(): Promise<void> {
 
     /** Czy w mieście jest coś do wyboru w produkcji (kolejka może być pusta) — tylko realnie dostępne teraz. */
     function cityHasActionableProduction(city: City): boolean {
-      if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'priorytet') return false;
+      if (isAutoBudowaTryb(city.budowaTryb)) return false;
       const ctx = productionAvailabilityCtxForCity(city);
       if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;
       if (cityHasAffordableUnitRecruitment(city, ctx)) return true;
@@ -18487,6 +18538,11 @@ async function boot(): Promise<void> {
           ownerDefaultPodzialHandlu: Array.from(ownerDefaultPodzialHandlu.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
+          budowaListaSzablony: {
+            A: [...budowaListaSzablony.A],
+            B: [...budowaListaSzablony.B],
+            C: [...budowaListaSzablony.C],
+          },
           siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
           siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
           siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
@@ -19677,7 +19733,7 @@ async function boot(): Promise<void> {
                 } catch (eAM) {
                   console.error(`[AutoManage] Blad dla miasta ${city.name}:`, eAM);
                 }
-              } else if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'priorytet') {
+              } else if (isAutoBudowaTryb(city.budowaTryb)) {
                 // Auto-budowa bez globalnego Zarządcy (⚙)
                 const enq = tryAutoEnqueueBuild(cid);
                 if (enq) prod0 = cityProd.get(cid) ?? prod0;
@@ -19728,7 +19784,7 @@ async function boot(): Promise<void> {
                 const applied = applyProductionCompleted(city, cid, completed, prodPo);
                 prodFinal = applied.prod;
                 cityProd.set(cid, prodFinal);
-                if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) === 'priorytet' && frontItem(prodFinal) === null) {
+                if (isAutoBudowaTryb(city.budowaTryb) && frontItem(prodFinal) === null) {
                   tryAutoEnqueueBuild(cid);
                   prodFinal = cityProd.get(cid) ?? prodFinal;
                 }
@@ -22124,6 +22180,11 @@ async function boot(): Promise<void> {
       playerEverOwnedCity = false;
       turn = 1;
       playerPracaPool = 0;
+      budowaListaSzablony = {
+        A: [...EMPTY_BUDOWA_LISTA_SZABLONY.A],
+        B: [...EMPTY_BUDOWA_LISTA_SZABLONY.B],
+        C: [...EMPTY_BUDOWA_LISTA_SZABLONY.C],
+      };
       _lastPraca = 0;
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;
@@ -23328,6 +23389,20 @@ async function boot(): Promise<void> {
       );
       const savedPracaPool = saved.meta?.playerPracaPool as number | undefined;
       playerPracaPool = typeof savedPracaPool === 'number' ? savedPracaPool : 0;
+      const savedListaTpl = saved.meta?.budowaListaSzablony as BudowaListaSzablony | undefined;
+      if (savedListaTpl) {
+        budowaListaSzablony = {
+          A: [...(savedListaTpl.A ?? [])],
+          B: [...(savedListaTpl.B ?? [])],
+          C: [...(savedListaTpl.C ?? [])],
+        };
+      } else {
+        budowaListaSzablony = {
+          A: [...EMPTY_BUDOWA_LISTA_SZABLONY.A],
+          B: [...EMPTY_BUDOWA_LISTA_SZABLONY.B],
+          C: [...EMPTY_BUDOWA_LISTA_SZABLONY.C],
+        };
+      }
       const playerCityCountOnLoad = cities.filter(c => c.ownerId === 0).length;
       const maxReasonablePracaPool = Math.max(50, playerCityCountOnLoad * 100);
       if (playerPracaPool > maxReasonablePracaPool) {

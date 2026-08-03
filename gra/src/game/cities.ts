@@ -43,8 +43,19 @@ export type BudowaFocus =
   | 'prawo'
   | 'produkcja';
 
-/** priorytet = AI wg budowaPriorytetTypow; reczny = gracz wybiera ręcznie. */
-export type BudowaTryb = 'reczny' | 'priorytet';
+/** priorytet = AI wg budowaPriorytetTypow; lista = kolejność budowaLista; reczny = ręczna kolejka. */
+export type BudowaTryb = 'reczny' | 'priorytet' | 'lista';
+
+/** Sloty szablonów listy budowy (gracz — zapis w save). */
+export type BudowaListaSlot = 'A' | 'B' | 'C';
+export type BudowaListaSzablony = Record<BudowaListaSlot, string[]>;
+export const EMPTY_BUDOWA_LISTA_SZABLONY: BudowaListaSzablony = { A: [], B: [], C: [] };
+
+/** Tryb auto-enqueue: Priorytet lub Lista (nie Ręczny). */
+export function isAutoBudowaTryb(t: BudowaTryb | undefined): boolean {
+  const v = t ?? DEFAULT_BUDOWA_TRYB;
+  return v === 'priorytet' || v === 'lista';
+}
 
 export const DEFAULT_BUDOWA_FOCUS: BudowaFocus = 'zrownowazone';
 export const DEFAULT_BUDOWA_TRYB: BudowaTryb = 'reczny';
@@ -173,6 +184,7 @@ export function ensureCitySaveDefaults(city: City): void {
   if (city.budowaTryb === 'priorytet' && !city.budowaPriorytetTypow?.length) {
     city.budowaPriorytetTypow = [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS];
   }
+  if (!city.budowaLista) city.budowaLista = [];
   const buf = readCityFoodBuffer(city.magazynZywnosci);
   if (city.magazynZywnosci !== buf) city.magazynZywnosci = buf;
   ensureCityRationDefaults(city);
@@ -287,6 +299,8 @@ export interface City {
   budowaTryb?: BudowaTryb;
   /** Kolejność typów auto-budowy (wyczerp #1 zanim #2). */
   budowaPriorytetTypow?: BudowaFocus[];
+  /** ID budynków w kolejności auto-budowy (tryb lista). */
+  budowaLista?: string[];
   /** B2-Q12=C: tury grace przed rebelią AI (null = brak). */
   revoltGraceRemaining?: number | null;
   /** Miasto pod kontrolą rebeliantów. */

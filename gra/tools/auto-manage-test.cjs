@@ -25,7 +25,7 @@ const ENTRY_FILE  = path.resolve(__dirname, '.auto-manage-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.auto-manage-bundle.cjs');
 
 const ENTRY_TS = `
-export { autoManageCity, pickAutoBuildItem, prioritiesForBudowaFocus, buildingMatchesFocus } from '../src/game/auto-manage';
+export { autoManageCity, pickAutoBuildItem, pickNextFromBudowaLista, prioritiesForBudowaFocus, buildingMatchesFocus } from '../src/game/auto-manage';
 export { frontItem, enqueue as enqueueItem, buildableProduction, availableProduction } from '../src/game/production';
 export { cityRangeForPopulation, assignWorkedTiles } from '../src/game/okolica';
 `;
@@ -49,7 +49,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { autoManageCity, frontItem, enqueueItem, buildableProduction, cityRangeForPopulation, pickAutoBuildItem } = M;
+const { autoManageCity, frontItem, enqueueItem, buildableProduction, cityRangeForPopulation, pickAutoBuildItem, pickNextFromBudowaLista } = M;
 
 // --- test harness ----------------------------------------------------------
 let passed = 0;
@@ -326,6 +326,72 @@ eq(r19a && r19a.id, r19b && r19b.id, 'single wojsko ≡ wojsko focus');
 console.log('\n20. pickAutoBuildItem reczny -> null');
 const r20 = pickAutoBuildItem(cityReczny, emptyProd, dataMinimal, { yieldOf, ...ctxWithDrewno });
 eq(r20, null, 'reczny -> null w pickAutoBuildItem');
+
+// Test 21: lista — pierwszy legalny (koszary zablokowany → spichlerz)
+console.log('\n21. Lista: pierwszy legalny z listy (tylko spichlerz dostępny)');
+const cityLista21 = {
+  ...cityBase,
+  budowaTryb: 'lista',
+  budowaLista: ['koszary', 'spichlerz'],
+};
+const r21 = pickAutoBuildItem(cityLista21, emptyProd, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, builtBuildingIds: ['koszary'], activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r21 && r21.id, 'spichlerz', 'lista [koszary,spichlerz] po koszarach -> spichlerz');
+
+// Test 22: lista — skan od początku, oba dostępne → pierwszy na liście
+console.log('\n22. Lista: oba dostępne -> pierwszy (koszary)');
+const cityLista22 = {
+  ...cityBase,
+  budowaTryb: 'lista',
+  budowaLista: ['koszary', 'spichlerz'],
+};
+const r22 = pickAutoBuildItem(cityLista22, emptyProd, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r22 && r22.id, 'koszary', 'lista oba dostępne -> koszary (#1)');
+
+// Test 23: lista — wszystkie zablokowane -> null
+console.log('\n23. Lista: wszystkie zablokowane -> null');
+const cityLista23 = {
+  ...cityBase,
+  budowaTryb: 'lista',
+  budowaLista: ['koszary', 'spichlerz'],
+};
+const r23 = pickAutoBuildItem(cityLista23, emptyProd, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, builtBuildingIds: ['koszary', 'spichlerz'], activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r23, null, 'lista wszystkie zbudowane -> null');
+
+// Test 24: lista + front niepusty -> null
+console.log('\n24. Lista + front niepusty -> null');
+const prodWithFront = {
+  kolejka: [{ id: 'stolarnia', nazwa: 'Stolarnia', kind: 'budynek', koszt: 15 }],
+  postep: 0,
+};
+const r24 = pickAutoBuildItem(cityLista22, prodWithFront, dataWojskoWzrost, {
+  unlockedTechs: [],
+  ctx: { epoch: 1, activeResourceLabels: ['Drewno', 'Ceramika'] },
+});
+eq(r24, null, 'lista + front -> null');
+
+// Test 25: pickNextFromBudowaLista helper
+console.log('\n25. pickNextFromBudowaLista helper');
+const cand = [
+  { id: 'spichlerz', nazwa: 'Spichlerz', kind: 'budynek', koszt: 20 },
+  { id: 'koszary', nazwa: 'Koszary', kind: 'budynek', koszt: 25 },
+];
+eq(pickNextFromBudowaLista(['koszary', 'spichlerz'], cand)?.id, 'koszary', 'helper: pierwszy match');
+eq(pickNextFromBudowaLista(['nieznany', 'spichlerz'], cand)?.id, 'spichlerz', 'helper: skip zablokowany');
+eq(pickNextFromBudowaLista(['nieznany'], cand), null, 'helper: brak match -> null');
+
+// Test 26: priorytet regresja po dodaniu listy
+console.log('\n26. Priorytet nadal działa (regresja)');
+const r26 = pickAutoBuildItem(cityWojsko, emptyProd, dataWojsko, { unlockedTechs: [], ctx: { epoch: 1 } });
+eq(r26 && r26.id, 'koszary', 'priorytet wojsko -> koszary (regresja)');
 
 // --- summary ---------------------------------------------------------------
 const total = passed + failed;

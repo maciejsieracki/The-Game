@@ -1,3 +1,12 @@
+## [16:55 PL, 2026-08-03] CLOUD → parent — R-AUTO-BUDOWA-LISTA Q2=A Q3=B
+- Branch: `cursor/fix-auto-budowa-lista-q3b-63a1`
+- Tryb Budowa **Lista** + szablony A/B/C (save meta `budowaListaSzablony`)
+- Picker Q2=A: `pickNextFromBudowaLista` — skan od 0, skip zablokowane
+- UI: przycisk Lista, edycja kolejności, Wgraj/Zapisz A/B/C
+- Test: auto-manage 41/41 · tsc 0
+- Bez deploy / bez WERSJE AKTUALNA FALA
+CZEKAM-NA: parent review + merge PR #32 bazę
+
 ## [00:15 PL, 2026-08-02] CLOUD -> Maciej — fix MP trybut + DOW (Tarent)
 - Branch: `cursor/fix-cs-war-tribute-contradiction-63a1`
 - Bug: miasto-państwo obcego typu (Tarent) — WOJNA + „Oferta trybutu przyjęta" w jednej turze; UI akcja 8 zablokowana
