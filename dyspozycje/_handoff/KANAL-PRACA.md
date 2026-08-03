@@ -1,21 +1,19 @@
-## [23:40 PL, 2026-08-03] CLOUD → ALL — merge PR #44 Design Badania
-- Merge `cursor/design-badania-v1-63a1` → `main`
-- Plik: `gra/src/ui/scienceHubHud.ts` — Design v1 (złoto #e8d88a, Georgia, plan BADA SIĘ/TU UPUŚĆ, + PLAN hover)
-- **Poza FALA 207** per R-KOLEJKA-FALA207-Q1=A — deploy Design osobno
-CZEKAM-NA: Maciej **deploy** FALA 207 (handel+Połącz tylko)
-
-## [23:35 PL, 2026-08-03] CLOUD → ALL — ECHO paczka kolejki (Maciej opcja 1)
-- **R-KOLEJKA-FALA207-Q1=A** — FALA 207 = handel AI + Połącz **tylko** (bez Design w deploy)
-- **R-DESIGN-BADANIA-Q1=A** — merge PR #44 Design Badania na main (deploy osobno)
-- **R-KOLEJKA-NASTEPNY-Q1=B** — deploy 207 **przed** kolonizacją AI
+## [00:15 PL, 2026-08-04] CLOUD → ALL — ECHO korekta kolejki (Maciej B/B/A+C)
+- **R-KOLEJKA-FALA207-Q1=B** — FALA 207 = handel AI + Połącz + **Design Badania**
+- **R-DESIGN-BADANIA-Q1=B** — merge PR #46 Klatka D **teraz** (razem z Design)
+- **R-KOLEJKA-NASTEPNY-Q1=A+C** — kolonizacja AI **teraz** + Design w deploy FALA 207
+- Korekta z pierwszego ECHO (było A/A/B)
 - Docs: `docs/decyzje/R-KOLEJKA-FALA207-DESIGN.md`
-CZEKAM-NA: merge #44 · Maciej **deploy** FALA 207
+CZEKAM-NA: merge #46 · implementacja kolonizacji · Maciej **deploy** FALA 207
 
-## [23:25 PL, 2026-08-03] CLOUD → ALL — zamknięte zbędne PR (FALA 206)
-- CLOSED (SUPERSEDED FALA 206): #47, #52, #55, #45, #51
-- Otwarte feat: #44 Design Badania · #46 Klatka D · #59 ECHO kolonizacja (docs)
-- Handel+Połącz: już na `main` (merge #42) — czeka deploy
-CZEKAM-NA: Maciej litery paczki R-KOLEJKA (FALA207 / Design / priorytet)
+## [23:45 PL, 2026-08-03] CLOUD → Maciej — ECHO R-AI-KOLONIZACJA (docs only)
+- **Q1=A** pop źródła ≥5 (5→4) · priorytet founding · `foundCityAt` bez osadnika
+- **Q2=A** max 1 miasto/turę/cyw. + surge 2/turę gdy brak wolnych MP na mapie
+- **Q3=B** agresja epok 1–3 (Kamień–Żelazo); potem founding jeśli dobre hexy poza zasięgiem
+- **DYSTANS=4 hex** (`min_dystans_miast` + `ekspansja_min_dystans_miast`) — gracz i AI
+- Cel: pokrycie mapy zasięgiem miast · `hexCityScore` odrzuca słabe hexy
+- Docs: `docs/decyzje/R-AI-KOLONIZACJA.md` · branch `cursor/abc-ai-kolonizacja-63a1`
+CZEKAM-NA: Maciej **`działaj`**
 
 ## [23:11 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 206 `1c7e9df7`
 - md5: `1c7e9df7bf4c74258ae122fc0bda846d` · stempel: ROBOCZA · 2026-08-03 23:11
