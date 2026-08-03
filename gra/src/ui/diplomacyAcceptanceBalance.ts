@@ -4,7 +4,12 @@
  */
 import type { AcceptanceSideBalance } from '../game/diplomacy-acceptance-points';
 import { bilateralTreatyDisplayPw, sideDisplayOfferPw } from '../game/diplomacy-acceptance-points';
-import { pnDealAcceptedByAi } from '../game/diplomacy-pn-engine';
+import {
+  formatRelationModLabel,
+  pnDealAcceptedByAi,
+  relationPnModPct,
+  relationSignedFromTotal,
+} from '../game/diplomacy-pn-engine';
 import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
 
 export interface NegotiationBalanceSource {
@@ -43,6 +48,75 @@ export const PW_EXCHANGE_TOOLTIP =
   + '„My oddajemy” vs „Oni oddają” — dodatni bilans oznacza, że możesz coś wyciągnąć lub przyjąć ofertę; '
   + 'ujemny bilans — trzeba dopłacić (surowce, ¤, ustępstwa). '
   + 'To nie jest waluta ¤ ani złoto-surowiec w magazynie.';
+
+/** Tooltip wiersza wpływu Relacji na deal (Maciej 2026-08-03). */
+export const RELATION_DEAL_TOOLTIP =
+  'Relacja = Zaufanie + Respekt. Powyżej 100 obniża wymagane PW traktatu (max −90%), '
+  + 'poniżej podnosi (max +90%).';
+
+type RelationDealContext = 'treaty' | 'trade';
+
+function relationModTone(modPct: number): 'better' | 'worse' | 'neutral' {
+  if (modPct > 0) return 'better';
+  if (modPct < 0) return 'worse';
+  return 'neutral';
+}
+
+function relationDealText(relTotal: number, context: RelationDealContext): string {
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  if (context === 'trade') {
+    if (relTotal >= 100) return 'parytet 1:1 przy uczciwej wymianie';
+    const mult = (100 / Math.max(1, relTotal)).toFixed(1).replace(/\.0$/, '');
+    return `musisz dać więcej (×${mult} PW), by oferta była uczciwa`;
+  }
+  if (modPct === 0) return 'balans (0% — cena bazowa)';
+  if (modPct > 0) return `deal tańszy o ${modPct}%`;
+  return `deal droższy o ${Math.abs(modPct)}%`;
+}
+
+function resolveRelationPanelContext(side: AcceptanceSideBalance): RelationDealContext {
+  const hasTreaty = (side.treatyBasePn ?? 0) > 0 || (side.treatyEffectivePn ?? 0) > 0;
+  if (hasTreaty || side.mode === 'treaty') return 'treaty';
+  return 'trade';
+}
+
+/** Widoczny wiersz „Wpływ Relacji na deal” — wszystkie warianty panelu PW. */
+export function renderRelationDealModRowHtml(
+  relTotal: number,
+  context: RelationDealContext = 'treaty',
+): string {
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  const tone = context === 'trade'
+    ? (relTotal >= 100 ? 'neutral' : 'worse')
+    : relationModTone(modPct);
+  const dealText = relationDealText(relTotal, context);
+  const relDisplay = context === 'trade' && relTotal >= 100
+    ? 'Relacja ≥100'
+    : `Relacja ${relTotal}`;
+  const balanceNote = context === 'treaty' && modPct !== 0
+    ? ' <span class="da-pn-rel-mod-balance">(punkt balansu: 100)</span>'
+    : '';
+  const tip = ' title="' + esc(RELATION_DEAL_TOOLTIP + ' ' + formatRelationModLabel(relTotal)) + '"';
+
+  return (
+    '<div class="da-pn-rel-mod ' + tone + '"' + tip + '>'
+    + '<span class="da-pn-rel-mod-label">Wpływ Relacji na deal</span>'
+    + '<span class="da-pn-rel-mod-text">'
+    + '<strong>' + esc(relDisplay) + '</strong>'
+    + ' · <span class="da-pn-rel-mod-deal">' + esc(dealText) + '</span>'
+    + balanceNote
+    + '</span>'
+    + '</div>'
+  );
+}
+
+function relationRowFromBalance(
+  side: AcceptanceSideBalance,
+  my?: AcceptanceSideBalance,
+): string {
+  const relTotal = side.relCurrent ?? my?.relCurrent ?? 100;
+  return renderRelationDealModRowHtml(relTotal, resolveRelationPanelContext(side));
+}
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -222,9 +296,10 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
   const treatyNote = their.treatyEffectivePn != null && their.treatyEffectivePn > 0
     ? '<div class="da-pn-bal-meta">Traktat: wym. '
       + their.treatyEffectivePn + ' PW'
-      + (their.relationModLabel ? ' · ' + esc(their.relationModLabel) : '')
       + '</div>'
     : '';
+
+  const relModRow = relationRowFromBalance(their, data.myBalance);
 
   const relNote = their.relRequired != null && their.relBalance != null && their.relBalance < 0
     ? '<div class="da-pn-bal-meta warn">Relacja ' + (their.relCurrent ?? 0)
@@ -254,6 +329,7 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + pwAmountHtml(data.theirOfferPn)
     + '</div>'
     + '</div>'
+    + relModRow
     + treatyNote + relNote
     + '<div class="da-pn-bal-verdict ' + verdict.tone + '">' + esc(verdict.html) + '</div>'
     + '</div>'
@@ -312,6 +388,7 @@ export function renderPnBalancePanelFromBasket(
     + pwAmountHtml(receivePn)
     + '</div>'
     + '</div>'
+    + renderRelationDealModRowHtml(relTotal, 'trade')
     + '<div class="da-pn-bal-meta">PW surowe (bez Relacji): oddajemy ' + givePn + ' · oni ' + receivePn
     + ' · bilans ' + (rawBalancePn >= 0 ? '+' : '') + rawBalancePn + '</div>'
     + '<div class="da-pn-bal-meta">PW @ Rel ' + relTotal + ': fair min ' + fairMin + ' · bilans '
@@ -379,6 +456,7 @@ export function renderPnBalancePanelForTreaty(
     + pwAmountHtml(theirDisplay)
     + '</div>'
     + '</div>'
+    + renderRelationDealModRowHtml(relTotal, 'treaty')
     + '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ': ' + treatyEffectivePw + ' PW @ Rel ' + relTotal
     + (basketGivePn > 0 || basketReceivePn > 0
       ? ' · koszyk netto ' + (basketNet > 0 ? '+' + basketNet : '0') + ' PW'
