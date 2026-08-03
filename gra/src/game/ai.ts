@@ -201,6 +201,13 @@ export interface AITurnOpts {
    */
   canAfford?: (cityId: string, buildingId: string) => boolean;
   /**
+   * Bramka dostępności produkcji (tech/epoka/prereq/zasoby imperium/stolica…) —
+   * ta sama semantyka co availableProduction w main.ts.
+   * Gdy podane: kandydaci z chooseCityProduction są filtrowani PRZED canAfford.
+   * Gdy brak — zero regresji (stare testy bez callbacka).
+   */
+  isProductionAllowed?: (cityId: string, itemId: string) => boolean;
+  /**
    * Item cost accessor (pkt5): returns the numeric cost of a given item (buildingId or unitId).
    * When provided together with canAfford, AI uses score/cost ratio to prefer cheaper affordable
    * options when the highest-scored item is not affordable.
@@ -1108,10 +1115,14 @@ export function chooseCityProduction(
   // §4.4 Filter out buildings already built (units can be built multiple times)
   // built (opts.cityBuildings) i candidates -- oba po id budynku (patrz cityBuilt w main.ts).
   const buildingNames = new Set(data.buildings.map(b => b.id));
-  const available = candidates.filter(c => {
+  let available = candidates.filter(c => {
     if (buildingNames.has(c.id) && built.includes(c.id)) return false;
     return true;
   });
+
+  if (opts.isProductionAllowed) {
+    available = available.filter(c => opts.isProductionAllowed!(cityId, c.id));
+  }
 
   if (available.length === 0) return null;
 
