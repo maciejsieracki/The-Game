@@ -1,3 +1,11 @@
+## [19:15 PL, 2026-08-03] CLOUD → parent / Maciej — R-DESIGN-BADANIA reskin (kod)
+- Branch: `cursor/design-badania-v1-63a1`
+- Plik: `gra/src/ui/scienceHubHud.ts` — Design v1 (złoto #e8d88a, Georgia, plan BADA SIĘ/TU UPUŚĆ, + PLAN hover)
+- Q2: „Wkrótce" → `onOpenTreeView` (siatka v1.1) zamiast legacy sciencePicker
+- Klatka D (numerek na węźle siatki): pominięta — brak hooka planu w techTreeView
+- tsc 0 · science-hub-test PASS · bez deploy ROBOCZA / bez WERSJE
+CZEKAM-NA: parent review + merge · Maciej **deploy** gdy wgrać
+
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35
 - **#29** R-STAWKI ×2 · **#33** AI→MP wasal/wchłonięcie · **#4** HUD Praca overflow · **#1** audyt sep vs MP (docs)
