@@ -5072,3 +5072,12 @@ CZEKAM-NA: merge + deploy ROBOCZA na hasło Macieja `deploy`
 - Test: scout 15/15 · triumph 10/10 · tsc 0 · VERIFY OK
 - Sesja lokalna: `git pull` na dysk właściciela
 CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
+
+## [16:45 PL, 2026-08-03] CLOUD → PARENT — R-AI-MP-WASAL-WCHLONIECIE (kod, bez deploy)
+- Branch: `cursor/fix-ai-mp-wasal-wchloniecie-63a1`
+- P0: sojusze sióstr tylko vs gracz (`unitTriggersSisterAllianceThreat`)
+- P1+P2: `ai-cs-absorption.ts` + ścieżka AI→MP trybut/wasal/wchłonięcie/wojna w main.ts
+- Timing klastra per trudność gry (override warMin/deadline w city-state-difficulty.ts)
+- Test: ai-cs-absorption 16/16 · cluster-diff 27/27 · alliance 63/63 · tsc 0
+- P3 founding: pominięte (TODO w decyzji)
+CZEKAM-NA: parent push + deploy ROBOCZA na hasło Macieja
