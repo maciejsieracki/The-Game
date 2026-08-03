@@ -210,6 +210,7 @@ import {
   isOwnerClusterCityState,
   isTechnicalOwnerLabel,
   resolveOwnerBaseName,
+  shouldForceCultureIconForOwner,
 } from './game/display-names';
 import {
   computeDiplomaticContacts,
@@ -3693,7 +3694,7 @@ async function boot(): Promise<void> {
         civKeyForOwner(ownerId),
         civKolorHexFn(ownerId),
         empireEpochForOwner(ownerId),
-        isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+        portraitForceCultureIcon(ownerId),
       );
     }
 
@@ -5531,7 +5532,7 @@ async function boot(): Promise<void> {
         // flaga isBarbarian, sprawdzana jako pierwsza.
         civId: isBarbarian(ownerId) ? null : civTypeForOwner(ownerId),
         era: empireEpochForOwner(ownerId),
-        isCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+        isCityState: portraitForceCultureIcon(ownerId),
         isBarbarian: isBarbarian(ownerId),
       }));
     }
@@ -5543,6 +5544,16 @@ async function boot(): Promise<void> {
         typCopyOwners: typCityCopyOwners,
         cities,
       };
+    }
+
+    /** R-MP-PORTRET: medalion dyplomacji/bitwa/map — symbol kultury zamiast portretu władcy. */
+    function portraitForceCultureIcon(ownerId: number): boolean {
+      return shouldForceCultureIconForOwner(ownerId, {
+        ...ownerCityStateOpts(),
+        clusterCapitalOwnerIds,
+        playerCivKey: civTypeForOwner(0),
+        ownerCivKey: civTypeForOwner(ownerId),
+      });
     }
 
     function civDisplayNameForOwner(ownerId: number): string | undefined {
@@ -13481,7 +13492,7 @@ async function boot(): Promise<void> {
             otherWodz: leaderNameForOwnerId(ownerId) ?? undefined,
             otherEra: empireEpochForOwner(ownerId),
             otherKolorHex: civKolorHexFn(ownerId),
-            otherIsCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+            otherIsCityState: portraitForceCultureIcon(ownerId),
             otherCultureLabel: civCultureLabelForKey(civKeyForOwner(ownerId)),
             cultureCircleSame: sameCultureCircle(civKeyForOwner(0), civKeyForOwner(ownerId)),
             thresholds: {
@@ -16464,7 +16475,7 @@ async function boot(): Promise<void> {
         wodz: leaderNameForOwnerId(ownerId) ?? undefined,
         civId: civTypeForOwner(ownerId),
         era: empireEpochForOwner(ownerId),
-        isCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+        isCityState: portraitForceCultureIcon(ownerId),
         // TEMAT 11 (2026-07-24): barbarzyncy (BARBARIAN_OWNER_ID) nie maja wpisu w
         // aiOwnerCivMap, wiec civTypeForOwner() spada na fallback 'grecy' -- medalion
         // dostawal portret/ikone Grecji zamiast wlasnego sygnetu. Flaga isBarbarian ma
@@ -22940,6 +22951,11 @@ async function boot(): Promise<void> {
       const savedSimplified = saved.meta?.simplifiedDiplomacyOwners as number[] | undefined;
       if (savedSimplified?.length) {
         for (const oid of savedSimplified) simplifiedDiplomacyOwners.add(oid);
+      } else {
+        // Legacy / pusty zapis — odtwórz z flagi miasta (jak typCityCopyOwners poniżej).
+        for (const c of cities) {
+          if (c.startCityState) simplifiedDiplomacyOwners.add(c.ownerId);
+        }
       }
       foreignTypeOwners.clear();
       const savedForeignType = saved.meta?.foreignTypeOwners as number[] | undefined;
