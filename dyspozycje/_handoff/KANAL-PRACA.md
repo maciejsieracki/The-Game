@@ -5078,3 +5078,11 @@ CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `5f529a24`
 - Profile + checkbox „Tylko pola z obywatelami” (domyślnie off) · max 1/miasto/turę · EOT
 - Test: auto-improvements 11/11 · tsc 0 · ai-improvements 14/1 (fail #7 wyrab — PRE na main)
 CZEKAM-NA: merge + deploy na hasło Macieja
+
+## [17:35 PL, 2026-08-03] CLOUD → Maciej — R-AUTO-ULEPSZENIA Q2=B Q3=B (bez deploy)
+- Q2=B: UI **Na turę: 1·2·3** per miasto (`ulepszeniaPerTurn`)
+- Q3=B: wyrąb tylko ręcznie (`skipWyrab: true`)
+- Q4: **czeka** na literę (commit od razu vs pending)
+- Branch: `cursor/fix-auto-ulepszenia-q2b-q3b-63a1`
+- Test: auto-improvements 13/13 · tsc 0
+CZEKAM-NA: R-AUTO-ULEPSZENIA-Q4 + deploy na hasło

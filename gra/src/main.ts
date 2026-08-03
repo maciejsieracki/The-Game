@@ -162,7 +162,7 @@ import {
   TRIUMPH_CS_HINT_MS,
 } from './game/triumph-city-state';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
-import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, DEFAULT_ULEPSZENIA_TRYB, DEFAULT_ULEPSZENIA_FOCUS, normalizePodzialHandlu, type City, type BudowaFocus, type UlepszeniaFocus, type UlepszeniaTryb, type CityPodzialHandlu } from './game/cities';
+import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, DEFAULT_PROCENT_ROZWOJ, DEFAULT_BUDOWA_TRYB, DEFAULT_ULEPSZENIA_TRYB, DEFAULT_ULEPSZENIA_FOCUS, DEFAULT_ULEPSZENIA_PER_TURN, clampUlepszeniaPerTurn, normalizePodzialHandlu, type City, type BudowaFocus, type UlepszeniaFocus, type UlepszeniaTryb, type UlepszeniaPerTurn, type CityPodzialHandlu } from './game/cities';
 import {
   migrateHandelSplitOnLoad,
   resolveCityPodzialHandlu,
@@ -4992,10 +4992,12 @@ async function boot(): Promise<void> {
         getUlepszeniaState: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
+          ensureCitySaveDefaults(city);
           return {
             focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
             tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
             onlyWorked: city.ulepszeniaOnlyWorked ?? false,
+            perTurn: clampUlepszeniaPerTurn(city.ulepszeniaPerTurn ?? DEFAULT_ULEPSZENIA_PER_TURN),
           };
         },
         onUlepszeniaFocusChange: (cityId: string, focus: UlepszeniaFocus) => {
@@ -5033,6 +5035,17 @@ async function boot(): Promise<void> {
             onlyWorked
               ? `${city.name}: auto ulepszenia tylko na polach z 👤`
               : `${city.name}: auto ulepszenia w całym terytorium`,
+            2800,
+          );
+          refreshCityPanelIfOpen();
+        },
+        onUlepszeniaPerTurnChange: (cityId: string, perTurn: UlepszeniaPerTurn) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(perTurn);
+          city.ulepszeniaTryb = 'auto';
+          showHintMessage(
+            `${city.name}: auto ulepszenia · ${city.ulepszeniaPerTurn}/turę`,
             2800,
           );
           refreshCityPanelIfOpen();
@@ -19912,9 +19925,12 @@ async function boot(): Promise<void> {
                   pracaAvailable: playerPracaPool,
                   unlockedTechs: unlockedTechSetForOwner(0),
                   pracaSurplusThreshold: 0,
-                  skipWyrab: true,
+                  skipWyrab: true, // R-AUTO-ULEPSZENIA-Q3=B
                   civArchetype: playerCivArch,
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
+                  getMaxPerCity: c => clampUlepszeniaPerTurn(
+                    (c as City).ulepszeniaPerTurn ?? DEFAULT_ULEPSZENIA_PER_TURN,
+                  ),
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(city as City, map, territoryNodesAuto);
                     return new Set(coords.map(({ q, r }) => `${q},${r}`));

@@ -55,8 +55,17 @@ export type UlepszeniaFocus = 'zywnosc' | 'surowce' | 'infrastruktura' | 'zrowno
 /** auto = gra buduje ulepszenia na końcu tury; reczny = gracz klika na mapie. */
 export type UlepszeniaTryb = 'auto' | 'reczny';
 
+/** R-AUTO-ULEPSZENIA-Q2=B: ile auto-ulepszeń / miasto / turę (1–3). */
+export type UlepszeniaPerTurn = 1 | 2 | 3;
+
 export const DEFAULT_ULEPSZENIA_FOCUS: UlepszeniaFocus = 'zrownowazone';
 export const DEFAULT_ULEPSZENIA_TRYB: UlepszeniaTryb = 'reczny';
+export const DEFAULT_ULEPSZENIA_PER_TURN: UlepszeniaPerTurn = 1;
+
+export function clampUlepszeniaPerTurn(n: number | undefined | null): UlepszeniaPerTurn {
+  if (n === 2 || n === 3) return n;
+  return 1;
+}
 
 /**
  * Domyslny podzial Daniny netto nowego miasta — zgodny z econ-params.json
@@ -164,6 +173,7 @@ export function ensureCitySaveDefaults(city: City): void {
   if (!city.ulepszeniaFocus) city.ulepszeniaFocus = DEFAULT_ULEPSZENIA_FOCUS;
   if (!city.ulepszeniaTryb) city.ulepszeniaTryb = DEFAULT_ULEPSZENIA_TRYB;
   if (city.ulepszeniaOnlyWorked == null) city.ulepszeniaOnlyWorked = false;
+  city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(city.ulepszeniaPerTurn);
   const buf = readCityFoodBuffer(city.magazynZywnosci);
   if (city.magazynZywnosci !== buf) city.magazynZywnosci = buf;
   ensureCityRationDefaults(city);
@@ -282,6 +292,8 @@ export interface City {
   ulepszeniaTryb?: UlepszeniaTryb;
   /** Gdy true — auto tylko na heksach z 👤 (workedTiles); domyślnie całe terytorium. */
   ulepszeniaOnlyWorked?: boolean;
+  /** R-AUTO-ULEPSZENIA-Q2=B: ile ulepszeń auto / turę (1–3). */
+  ulepszeniaPerTurn?: UlepszeniaPerTurn;
   /** B2-Q12=C: tury grace przed rebelią AI (null = brak). */
   revoltGraceRemaining?: number | null;
   /** Miasto pod kontrolą rebeliantów. */

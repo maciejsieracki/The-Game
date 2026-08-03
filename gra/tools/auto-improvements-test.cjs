@@ -181,5 +181,29 @@ console.log('6. focus surowce — kamieniolom na wzgorzach');
   eq(picks[0].key, 'kamieniolom', 'surowce wybiera kamieniolom');
 }
 
+// 7. R-AUTO-ULEPSZENIA-Q2=B — getMaxPerCity = 2
+console.log('7. getMaxPerCity=2');
+{
+  const map = makeFlatMap(30, 30);
+  const city = makeCity('c7', 0, 15, 15, 5, { ulepszeniaFocus: 'zywnosc' });
+  const opts = baseOpts(city, map);
+  opts.getMaxPerCity = () => 2;
+  opts.pracaAvailable = 200;
+  const picks = pickAutoImprovements(opts);
+  assert(picks.length === 2, `getMaxPerCity=2 → 2 picki (got ${picks.length})`);
+}
+
+// 8. getMaxPerCity = 3
+console.log('8. getMaxPerCity=3');
+{
+  const map = makeFlatMap(30, 30);
+  const city = makeCity('c8', 0, 15, 15, 6, { ulepszeniaFocus: 'zywnosc' });
+  const opts = baseOpts(city, map);
+  opts.getMaxPerCity = () => 3;
+  opts.pracaAvailable = 300;
+  const picks = pickAutoImprovements(opts);
+  assert(picks.length === 3, `getMaxPerCity=3 → 3 picki (got ${picks.length})`);
+}
+
 console.log(`\nauto-improvements-test: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

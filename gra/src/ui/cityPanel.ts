@@ -49,7 +49,7 @@ import {
 import { setMapHudChromeSuppressed } from './hud';
 import type { City } from '../game/cities';
 import { formatCityMapLabel } from '../game/display-names';
-import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb, UlepszeniaFocus, UlepszeniaTryb } from '../game/cities';
+import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb, UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPerTurn } from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import type { GameMap } from '../types/map';
@@ -359,10 +359,12 @@ export interface CityPanelConfig {
     focus: UlepszeniaFocus;
     tryb: UlepszeniaTryb;
     onlyWorked: boolean;
+    perTurn: UlepszeniaPerTurn;
   } | null;
   onUlepszeniaFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
   onUlepszeniaTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
   onUlepszeniaOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
+  onUlepszeniaPerTurnChange?: (cityId: string, perTurn: UlepszeniaPerTurn) => void;
   onArtView?: (cityId: string) => void;
   /**
    * Surowce w zasięgu: aktywny dostęp (legacy string[]) lub split ABC-19 { potential, active }.
@@ -6812,6 +6814,29 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
         chkWrap.appendChild(chk);
         chkWrap.appendChild(document.createTextNode('Tylko pola z obywatelami'));
         uToolbar.appendChild(chkWrap);
+      }
+      if (uState.tryb === 'auto' && cfg.onUlepszeniaPerTurnChange) {
+        const speedWrap = el('div', 'ulepszenia-per-turn');
+        speedWrap.style.cssText =
+          'display:inline-flex;align-items:center;gap:0.22em;margin-left:0.45em;font-size:0.72em;';
+        const speedLab = document.createElement('span');
+        speedLab.textContent = 'Na turę:';
+        speedLab.title = 'Ile ulepszeń auto stawia w tym mieście na jedną turę (tempo budowy)';
+        speedWrap.appendChild(speedLab);
+        for (const n of [1, 2, 3] as const) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = String(n);
+          b.className = uState.perTurn === n ? 'on' : '';
+          b.title = `${n} ulepszenie/a na miasto na turę`;
+          b.style.cssText = 'min-width:1.55em;padding:0.12em 0.3em;cursor:pointer;';
+          b.addEventListener('click', () => {
+            cfg.onUlepszeniaPerTurnChange?.(city.id, n);
+            rerender();
+          });
+          speedWrap.appendChild(b);
+        }
+        uToolbar.appendChild(speedWrap);
       }
       mount.appendChild(uToolbar);
     }

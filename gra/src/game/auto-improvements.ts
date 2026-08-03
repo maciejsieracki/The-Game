@@ -103,7 +103,10 @@ export interface PickAutoImprovementsOpts {
   /** Filtr heksów — tylko obrabiane (domyślnie city.ulepszeniaOnlyWorked ?? false). */
   getOnlyWorked?: (city: AutoImprovementCity) => boolean;
   getWorkedHexKeys?: (city: AutoImprovementCity) => ReadonlySet<string>;
+  /** Stały limit (gdy brak getMaxPerCity). */
   maxPerCity?: number;
+  /** R-AUTO-ULEPSZENIA-Q2=B: limit per miasto (1–3). Nadpisuje maxPerCity. */
+  getMaxPerCity?: (city: AutoImprovementCity) => number;
   pracaSurplusThreshold?: number;
   skipWyrab?: boolean;
   civArchetype?: string;
@@ -129,6 +132,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     getOnlyWorked = c => c.ulepszeniaOnlyWorked ?? false,
     getWorkedHexKeys,
     maxPerCity = 1,
+    getMaxPerCity,
     pracaSurplusThreshold = 0,
     skipWyrab = false,
     civArchetype,
@@ -172,6 +176,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     const basePriority = priorityOverride ?? prioritiesForUlepszeniaFocus(focus, skipWyrab);
     const onlyWorked = getOnlyWorked(city);
     const workedKeys = onlyWorked && getWorkedHexKeys ? getWorkedHexKeys(city) : null;
+    const cityMax = Math.max(1, Math.min(3, getMaxPerCity?.(city) ?? maxPerCity));
 
     const radius = cityTerritoryRadius({ q: city.q, r: city.r, pop: city.population, level: 1 }) + 1;
     let candidateHexes = hexKeysWithinRadius(city.q, city.r, radius, map)
@@ -188,7 +193,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     let placedThisCity = 0;
 
     for (const key of basePriority) {
-      if (placedThisCity >= maxPerCity) break;
+      if (placedThisCity >= cityMax) break;
       const meta = getImprovementMeta(key);
       if (!meta) continue;
       if (meta.kosztPraca > pracaLeft) continue;
@@ -204,33 +209,37 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
         if (forestCount < WYRAB_MIN_FOREST_IN_RADIUS) continue;
       }
 
-      let placed = false;
-      for (const { q, r } of candidateHexes) {
-        const hexKey = `${q},${r}`;
-        if (key === 'wyrab' && scheduledWyrabHexes.has(hexKey)) continue;
-        if (!qualifies(key, q, r)) continue;
+      // Q2=B: ten sam typ (np. farma) wielokrotnie na różnych heksach aż do cityMax.
+      while (placedThisCity < cityMax && meta.kosztPraca <= pracaLeft) {
+        let placedOne = false;
+        for (const { q, r } of candidateHexes) {
+          const hexKey = `${q},${r}`;
+          if (key === 'wyrab' && scheduledWyrabHexes.has(hexKey)) continue;
+          if (!qualifies(key, q, r)) continue;
 
-        picks.push({
-          ownerId,
-          cityId: city.id,
-          q,
-          r,
-          key,
-          kosztPraca: meta.kosztPraca,
-        });
-        pracaLeft -= meta.kosztPraca;
-        placedThisCity++;
+          picks.push({
+            ownerId,
+            cityId: city.id,
+            q,
+            r,
+            key,
+            kosztPraca: meta.kosztPraca,
+          });
+          pracaLeft -= meta.kosztPraca;
+          placedThisCity++;
 
-        if (key === 'wyrab') {
-          scheduledWyrabHexes.add(hexKey);
-        } else {
-          const cur = workingPlaced.get(hexKey) ?? [];
-          workingPlaced.set(hexKey, [...cur, key]);
+          if (key === 'wyrab') {
+            scheduledWyrabHexes.add(hexKey);
+          } else {
+            const cur = workingPlaced.get(hexKey) ?? [];
+            workingPlaced.set(hexKey, [...cur, key]);
+          }
+          placedOne = true;
+          break;
         }
-        placed = true;
-        break;
+        if (!placedOne) break;
       }
-      if (placed) break;
+      if (pracaLeft <= pracaSurplusThreshold) break;
     }
   }
 
