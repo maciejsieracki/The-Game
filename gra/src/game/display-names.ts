@@ -174,5 +174,22 @@ export function resolveOwnerBaseName(input: ResolveOwnerBaseNameInput): string {
   if (cleanCiv) return cleanCiv;
   if (cached?.trim()) return stripCityStateSuffix(cached);
   if (cityName?.trim()) return stripCityStateSuffix(cityName);
-  return `AI ${ownerId}`;
+  // UI nigdy nie powinno widzieć „AI N" — brak danych → pusty string (main.ts dobiera pulę / filtruje).
+  return '';
+}
+
+/**
+ * Ostatnia bramka przed UI — odrzuca placeholdery techniczne (AI N, Rywal N, oid-N).
+ * Gdy baza pusta/techniczna, zwraca nazwę kultury (dla miast-państw bez miasta na mapie).
+ */
+export function sanitizeOwnerDisplayBase(
+  base: string,
+  civDisplayName?: string,
+): string {
+  const trimmed = (base ?? '').trim();
+  if (trimmed && !isTechnicalOwnerLabel(trimmed)) return stripCityStateSuffix(trimmed);
+  const civ = civDisplayName && !isTechnicalOwnerLabel(civDisplayName)
+    ? stripCityStateSuffix(civDisplayName)
+    : undefined;
+  return civ ?? '';
 }

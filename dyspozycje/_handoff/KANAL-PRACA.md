@@ -5027,3 +5027,11 @@ CZEKAM-NA: Maciej merge + deploy ROBOCZA (obóz barbarzyński: 2 wojowników →
 - Testy: diplomacy-war-gates-test.cjs, diplomacy-proposal-test.cjs §17–18 · tsc PASS
 - ID: BUG-DYPLO-GIFT-WAR-FALSE · R-DYPLO-GIFT-WAR-FALSE
 CZEKAM-NA: Maciej merge (bez deploy w tym kroku)
+
+## [23:35 PL, 2026-08-02] CLOUD -> Maciej — fix etykiet AI N w dyplomacji
+- Branch/PR: `cursor/fix-mp-ai-number-label-63a1`
+- Bug: lista Znane cywilizacje pokazywała AI 32/34/35 (duchy po eliminacji)
+- Fix: bez fallbacku AI N; sanitize; eliminateOwner czyści discovery; lista pomija martwych
+- Test: display-names-test 16/16
+- ID: BUG-MP-AI-LABEL · R-MP-AI-LABEL
+CZEKAM-NA: Maciej merge + deploy ROBOCZA

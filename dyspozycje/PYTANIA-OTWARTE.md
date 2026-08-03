@@ -1399,6 +1399,18 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
+## BUG-DYPLO-AI-LABEL — lista dyplomacji: „AI 32" zamiast nazwy miasta · STATUS: **✅ ZAMKNIĘTE (kod 2026-08-02)**
+
+**Sytuacja.** Panel Dyplomacja / znane cywilizacje: wpisy **AI 32**, **AI 34** (Kamień, Ludność: 0, Neutral) zamiast Sparta/Mykeny/Tarent itd. Egipt i pełne nacje OK.
+
+**Przyczyna.** `resolveOwnerBaseName` fallback `AI ${ownerId}` gdy brak `aiOwnerCivMap` / `ownerDisplayName` / miasta — typowo **duchy po eliminacji** (Q5=B kasuje roster, ale `diplomaticallyDiscoveredOwners` zostawał). Ludność: 0 = ten sam byt (brak miast, nie osobny bug nazewnictwa).
+
+**Fix:** `sanitizeOwnerDisplayBase` + pula `clusterRivalCityName` w `ownerDiploLabel`; `eliminateOwner` czyści `diplomaticallyDiscoveredOwners`; lista filtruje `eliminatedOwners` / nieaktywnych; load sejwu pomija wyeliminowanych w discovered.
+
+**Pliki:** `gra/src/game/display-names.ts`, `gra/src/main.ts`, `gra/tools/display-names-test.cjs`.
+
+---
+
 ## BUG-LAND-FRACTION-SLIDER — suwak % lądu prawie nie działa · STATUS: **WDROŻONE FALA 191 (kod, 2026-08-02)** (Maciej 2026-08-01 ~22:25; regres playtest 2026-08-02)
 
 **Sytuacja.** W opcjach nowej gry „Udział lądu na mapie” (20% / 40% / 80%) — mapa wygląda tak samo. Szczególnie Pangea.
