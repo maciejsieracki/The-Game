@@ -5035,3 +5035,11 @@ CZEKAM-NA: Maciej merge (bez deploy w tym kroku)
 - Test: display-names-test 16/16
 - ID: BUG-MP-AI-LABEL · R-MP-AI-LABEL
 CZEKAM-NA: Maciej merge + deploy ROBOCZA
+
+## [08:45 PL, 2026-08-03] CLOUD -> Maciej/lokalna — DEPLOY FALA 202 ROBOCZA (bulk)
+- md5: `5e0f30e7` / `5e0f30e7592074c9303b48162e862bee` · VERIFY OK
+- **FALA 202.** Bulk merge MERGEABLE PRs #7–#16 + #18–#22 (+ plany docs). Pominięte konfliktujące #1, #4.
+- Wejście: `gra-robocza/START.html` · Ctrl+F5
+- build: /tmp/civ-dist-fala202 · poprzedni `48646cd6` ZASTĄPIONA
+CZEKAM-NA: sesja lokalna pull na dysk właściciela + smoke Macieja
+

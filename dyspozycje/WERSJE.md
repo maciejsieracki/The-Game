@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `48646cd6` - 2026-08-02 22:58 - FALA 201: Inkowie MP + zwrot surowca kolejki (+ NAP/sep15 z main) - **AKTUALNA**
+## ROBOCZA `5e0f30e7` - 2026-08-03 08:45 - FALA 202: bulk fix PRs #7–#16+#18–#22 + plany - **AKTUALNA**
+- md5 (pelne): `5e0f30e7592074c9303b48162e862bee` · stempel: `ROBOCZA · 2026-08-03 08:45`
+- **FALA 202.** Merge MERGEABLE: barb head hunger/raid (#7), MP logo (#8), trade accept/edit (#9), trade willingness (#10), gift false-war (#11), hills MIN-MOVE (#12), CS war tribute (#13), era notify (#14), MP AI label (#15), medium rivers FoW (#16), AI build filter (#18), gift-during-war (#19), orphan units (#21), battle HP bar (#22). Plany docs: auto-ulepszenia, Ludy Morza, zwiadowcy, balans nadmiar. **POMINIĘTE (konflikty):** #1 audyt, #4 praca overflow.
+- tsc 0 · battle-hp 7/7 · barb 157/157 · display-names 20/20 · diplo-proposal 80/80 · capital-capture 58/58 · ai-test 248/4 (te same 4 FAIL co na main) · vite · VERIFY OK · build /tmp/civ-dist-fala202.
+
+## ROBOCZA `48646cd6` - 2026-08-02 22:58 - FALA 201: Inkowie MP + zwrot surowca kolejki (+ NAP/sep15 z main) - **ZASTĄPIONA**
 - md5 (pelne): `48646cd639ec75608b3c064da9ae5c45` · stempel: `ROBOCZA · 2026-08-02 22:58`
 - **FALA 201.** PR #5 Inkowie MP (`repackAllSparse` + `clusterStartSlot`). PR #6 zwrot `koszt_surowce` przy Usuń z kolejki. Na main też: NAP fair-min + sep stolic Standard 15 (wcześniej bez deployu).
 - tsc 0 · vite · VERIFY OK · build /tmp/civ-dist-fala201.
