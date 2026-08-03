@@ -1,3 +1,4 @@
+﻿- **2026-08-03 ~22:10** — ✅ Gotowe w kodzie (bez deploy): **R-WIARYGODNOSC** Etap 0–2 — D1 tick W/20, D3 progi sojusz/NAP, D4 kontakt, NAP bezterminowy, badge W audiencja, save/load. Branch `cursor/wiarygodnosc-dzwignia2-a-63a1`. TODO: modale N1–N7. Napisz **deploy**.
 - **2026-08-03 ~21:20** — ECHO **R-WIARYGODNOSC-DZWIGNIA2-Q1=A** (bez sufitu). Paczka komplet: NAP=A · START=A · DZWIGNIA2=A. Wdrażam Etap 0–2.
 - **2026-08-03 ~21:15** — ECHO Wiarygodność: NAP-BEZTERMIN=A · START-ETAP=A. **Brak litery** na DZWIGNIA2-Q1 — napisz A/B/C.
 ﻿- **2026-08-03 ~21:05** — ✅ Decyzja **R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A** (zawsze modal). Kod bez zmian — już działa. Docs: `cursor/zamien-ulepszenie-q1a-63a1`.

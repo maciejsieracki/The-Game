@@ -41,7 +41,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | BUG-ARMIA-BRAK-POLACZ | W TOKU (weryfikacja) | Ikona Połącz jest w kodzie (`merge` obok `split`) — najpierw check na FALA 205; bez ABC |
 | R-DESIGN-BADANIA | GOTOWE-DO-WDROŻENIA | Design dostarczył panel boczny Badania v1 (2026-07-26) — czeka integrator reskin `scienceHubHud.ts` |
 | R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Brak mockupu v2 (obrona %, brand) · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
-| R-WIARYGODNOSC | **W TOKU (kod)** Q1–Q3=A | DZWIGNIA2=A · NAP-BEZTERMIN=A · START-ETAP=A · `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md` · bez Dźwigni 2 |
+| R-WIARYGODNOSC | **WDROŻONE (kod)** Q1–Q3=A | DZWIGNIA2=A (bez sufitu) · NAP-BEZTERMIN=A · START-ETAP=A · `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md` · Etap 0–2 w kodzie, bez deploy |
 
 **PR-y docs — SUPERSEDED (cleanup 2026-08-03):** #35 R-PROC-ABC-FULL-ID → wchłonięte w `cursor/cleanup-docs-rejestr-63a1` · #31 plan AUTO-BUDOWA Q1 → R-AUTO-V2 / FALA 204 · #30 plan AI wasal → FALA 205 / R-AI-MP-WASAL-WCHLONIECIE · #27 backlog IDs → wchłonięte; deploy FALA 204/205.
 
@@ -109,7 +109,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-DESIGN-BADANIA | 2026-07-25 | Playtest: mockup ekranu badań przestarzały vs drzewko. | **GOTOWE-DO-WDROŻENIA** | Design: panel boczny Badania v1 (2026-07-26) · `DO-DESIGN-EKRAN-BADAN-2026-07-25.md` · reskin `scienceHubHud.ts` |
 | R-DESIGN-PANEL-MIASTA | 2026-07-25 | Playtest (ze zrzutami ekranu): panel widoku miast na mapie głównej przestarzały. | **CZEKA-NA-DESIGN** | `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` · patrz KOLEJKA OTWARTA |
 | R-DYP-IKONA-TLO | 2026-07-25 | Playtest (ze zrzutami ekranu): w panelu dyplomacji pod ikoną państwa jest niebieskie kwadratowe tło. Decyzja Macieja: usunąć ALBO zamienić na obramówkę w tym kolorze. | **ZDEPLOYOWANE `c08b5fcc`** | WERSJE 2026-07-26: obramówka `.dip-pennant` (brak numeru FALA w WERSJE). |
-| R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **W TOKU** DZWIGNIA2=A · NAP=A · START=A | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` · paczka: `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md` · Etap 0–2 bez Dźwigni 2 |
+| R-WIARYGODNOSC | 2026-07-25 | Wiarygodność cywilizacji (−100…+100), wpływ na zaufanie; trzeci wskaźnik. | **WDROŻONE (kod)** DZWIGNIA2=A · NAP=A · START=A | Spec: `WIARYGODNOSC-SPECYFIKACJA.md` · paczka: `docs/decyzje/R-WIARYGODNOSC-PACZKA-2026-08-03.md` · Etap 0–2: state/save, D1 tick, D3 progi, D4 kontakt, NAP bezterminowy, badge UI · TODO: N1–N7 modale ostrzeżeń, ranking Potęgi |
 
 ## ZAMKNIĘTE (ta sesja, 2026-07-23/24)
 

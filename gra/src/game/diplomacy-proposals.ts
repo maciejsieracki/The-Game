@@ -86,8 +86,10 @@ export type ProposalActionId =
   | 'pokoj';
 
 export interface ProposalPayload {
-  /** NAP / rozejm — 10–20 tur */
+  /** NAP / rozejm — 10–20 tur (ignorowane gdy `bezterminowy`). */
   turns?: number;
+  /** NAP bezterminowy — `wygasaTura: null` (R-WIARYGODNOSC-NAP-BEZTERMIN-Q1=A). */
+  bezterminowy?: boolean;
   goldPerTurn?: number;
   goldOnce?: number;
   resource?: string;
@@ -161,6 +163,10 @@ export interface ProposalEvalContext {
   activeDeals?: readonly ActiveDeal[];
   /** Poziom trudności gry — skaluje progi relacji/zaufania (Maciej 2026-07-21). */
   difficulty?: GameDifficulty;
+  /** Globalna Wiarygodność proponenta (−100…+100) — Dźwignia 3 (WIARYGODNOSC §5). */
+  proposerWiarygodnosc?: number;
+  /** Globalna Wiarygodność respondenta (−100…+100) — Dźwignia 3 (opcjonalnie). */
+  responderWiarygodnosc?: number;
 }
 
 export interface ProposalEvalResult {
@@ -189,6 +195,13 @@ const STUB_PROPOSER: Player = { typCywilizacji: TypCywilizacji.Rzymianie } as Pl
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
+}
+
+/** NAP: data wygaśnięcia traktatu lub `null` = bezterminowy (R-WIARYGODNOSC-NAP-BEZTERMIN-Q1=A). */
+export function napWygasaTuraFromPayload(turn: number, payload: ProposalPayload): number | null {
+  if (payload.bezterminowy === true) return null;
+  const turns = clamp(payload.turns ?? 15, 10, 20);
+  return turn + turns;
 }
 
 function pairHasKind(
@@ -494,6 +507,14 @@ export function evaluateProposal(
 
   switch (actionId) {
     case 'nap': {
+      // Dźwignia 3 (WIARYGODNOSC §5) — twardy próg W proponenta, niezależnie od Relacji.
+      const proposerW = ctx.proposerWiarygodnosc ?? 0;
+      if (proposerW < p.wiarygodnoscProgNapMin) {
+        return {
+          accepted: false,
+          reason: `Wiarygodność zbyt niska na pakt (wymagana ≥ ${p.wiarygodnoscProgNapMin})`,
+        };
+      }
       // C-DYP-STOL-Q1=B: słodzik (giveItems/receiveItems w payload) obniża próg Relacji.
       const napEase = sweetenerEasePoints(payload, pnOpts);
       const napThreshold = Math.max(0, p.progNapRelacja - napEase);
@@ -506,19 +527,30 @@ export function evaluateProposal(
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, RodzajTraktatu.PaktNieagresji)) {
         return { accepted: false, reason: 'Pakt nieagresji już obowiązuje' };
       }
-      const turns = clamp(payload.turns ?? 15, 10, 20);
+      const wygasaTura = napWygasaTuraFromPayload(ctx.turn, payload);
       const deal = buildDeal(
         RodzajTraktatu.PaktNieagresji,
         proposerOwnerId,
         responderOwnerId,
         ctx.turn,
-        ctx.turn + turns,
+        wygasaTura,
       );
-      return { accepted: true, reason: `Pakt nieagresji na ${turns} tur`, deal };
+      const reason = wygasaTura === null
+        ? 'Pakt nieagresji bezterminowy zawarty'
+        : `Pakt nieagresji na ${wygasaTura - ctx.turn} tur`;
+      return { accepted: true, reason, deal };
     }
 
     case 'sojusz_defensywny':
     case 'sojusz_pelny': {
+      // Dźwignia 3 (WIARYGODNOSC §5) — twardy próg W proponenta, niezależnie od Relacji.
+      const proposerWSojusz = ctx.proposerWiarygodnosc ?? 0;
+      if (proposerWSojusz < p.wiarygodnoscProgSojuszMin) {
+        return {
+          accepted: false,
+          reason: `Wiarygodność zbyt niska na sojusz (wymagana ≥ ${p.wiarygodnoscProgSojuszMin})`,
+        };
+      }
       const kind = actionId === 'sojusz_defensywny' ? 'sojusz_defensywny' : 'sojusz_pelny';
       const milRatio = ctx.militaryRatio ?? 1;
       const adj = diplomacyAllianceStrengthAdjust(
@@ -1127,9 +1159,12 @@ export function resolvePlayerAcceptsAiPending(
   }
   switch (actionId) {
     case 'nap': {
-      const turns = clamp(payload.turns ?? 15, 10, 20);
-      const deal = buildDeal(RodzajTraktatu.PaktNieagresji, fromOwnerId, toOwnerId, turn, turn + turns);
-      return { accepted: true, reason: `Pakt nieagresji na ${turns} tur`, deal };
+      const wygasaTura = napWygasaTuraFromPayload(turn, payload);
+      const deal = buildDeal(RodzajTraktatu.PaktNieagresji, fromOwnerId, toOwnerId, turn, wygasaTura);
+      const reason = wygasaTura === null
+        ? 'Pakt nieagresji bezterminowy zawarty'
+        : `Pakt nieagresji na ${wygasaTura - turn} tur`;
+      return { accepted: true, reason, deal };
     }
     case 'sojusz_defensywny':
     case 'sojusz_pelny': {

@@ -16,6 +16,7 @@ export {
   sumaWiarygodnosciCalkowita,
 } from '../src/game/diplomacy-credibility';
 export { DIPLOMACY_PARAMS, tickDiplomacy } from '../src/game/diplomacy';
+export { evaluateProposal, napWygasaTuraFromPayload } from '../src/game/diplomacy-proposals';
 export {
   diplomacyMaxZaufanieNaTureForWiarygodnosc,
   diplomacyPnRelacjaParams,

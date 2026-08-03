@@ -1,3 +1,11 @@
+## [22:10 PL, 2026-08-03] CLOUD → parent / Maciej — R-WIARYGODNOSC Etap 0–2 (kod)
+- Branch: `cursor/wiarygodnosc-dzwignia2-a-63a1`
+- Wdrożone: state/save/load · D1 tick (W/20, skip wojna) · D3 bramki sojusz W≥0 / NAP W≥−40 · D4 pierwszy kontakt · NAP `bezterminowy` → `wygasaTura:null` · badge W audiencja
+- Bez Dźwigni 2 (decyzja A)
+- Test: `wiarygodnosc-test.cjs` 102/102 · `tsc --noEmit` 0
+- TODO: modale ostrzeżeń N1–N7 · ranking Potęgi · deploy na żądanie
+CZEKAM-NA: parent review / Maciej **deploy**
+
 ## [18:35 PL, 2026-08-03] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 205 `f41c6550`
 - md5: `f41c6550fb5913c3413da6575593eddb` · stempel: ROBOCZA · 2026-08-03 18:35
 - **#29** R-STAWKI ×2 · **#33** AI→MP wasal/wchłonięcie · **#4** HUD Praca overflow · **#1** audyt sep vs MP (docs)

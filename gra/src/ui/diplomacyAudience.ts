@@ -147,6 +147,8 @@ export interface DiplomacyAudienceState {
    * SILNIK: getWiarygodnosc(0) · diplomacy-credibility.ts.
    */
   playerWiarygodnosc?: number;
+  /** Globalna Wiarygodność rozmówcy (−100…+100). */
+  otherWiarygodnosc?: number;
   /** Skarbiec gracza (kwota złota) — pkt 5: u gracza zamiast paska Zaufanie/Respekt. */
   playerSkarbiec?: number;
   /** Dochód złota/turę gracza (informacyjnie, jeśli dostępny — cache silnika). */
@@ -436,6 +438,8 @@ ${DIPLO_1E_SHARED_CSS}
 .da-civname.has-brand-tip{cursor:help;}
 .da-civleader{font-size:0.72em;font-style:italic;color:var(--tg-gold-dim,#c9a84c);line-height:1.3;}
 .da-civtitle{font-size:0.68em;color:#8a8070;line-height:1.5;}
+.da-wiar-badge{display:inline-block;margin-top:3px;font-size:0.62em;font-weight:600;letter-spacing:.03em;
+  color:#9ab8e8;border:1px solid rgba(120,160,220,.35);border-radius:999px;padding:2px 8px;cursor:help;}
 .da-stance-badge{display:inline-flex;align-items:center;gap:5px;font-size:0.6em;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;border-radius:999px;padding:3px 10px;margin-top:2px;
   color:#e0a868;border:1px solid rgba(210,120,30,.5);background:rgba(210,120,30,.1);}
@@ -1038,18 +1042,13 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
         civNameHtml(st.playerCivName, st.playerIkonaId, st.playerIkonaId) +
         playerLeaderHtml(st) +
         '<div class="da-civtitle">' + esc(st.playerTitle) + '</div>' +
+        wiarygodnoscBadgeHtml(st.playerWiarygodnosc) +
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Atrybuty</div>' +
         attrBarHtml('Moc militarna', String(st.playerPower ?? 0), powerPct, 'you') +
         (potencjal ? attrBarHtml('Potencjał sojuszniczy', potencjal.label, potencjal.pct, 'gold') : '') +
       '</div>' +
-      (st.playerWiarygodnosc !== undefined
-        ? '<div>' +
-            '<div class="da-sec-title">Reputacja</div>' +
-            credibilityBarHtml(st.playerWiarygodnosc) +
-          '</div>'
-        : '') +
       '<div>' +
         '<div class="da-sec-title">Skarbiec</div>' +
         '<div class="da-attr-row"><span>Pieniądz (¤)</span><span class="v">' + skarbiec + '</span></div>' +
@@ -1081,6 +1080,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
         civNameHtml(st.otherCivName, st.otherIkonaId, st.otherIkonaId) +
         otherLeaderHtml(st) +
         '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
+        wiarygodnoscBadgeHtml(st.otherWiarygodnosc) +
         stanceBadgeHtml(st) +
       '</div>' +
       '<div>' +
@@ -1113,6 +1113,16 @@ function progressBarHtml(label: string, value: number, max: number, tooltip?: st
     '<div class="' + rowCls + '"' + tip + '><span>' + esc(label) + '</span><span class="v">' + value + ' / ' + max + '</span></div>' +
     '<div class="' + barCls + '"><i style="width:' + pct + '%"></i></div>'
   );
+}
+
+/** Kompaktowy badge W przy tytule cywilizacji (WIARYGODNOSC §1 — nie w wierszu Zaufanie/Respekt). */
+function wiarygodnoscBadgeHtml(value: number | undefined): string {
+  if (value === undefined) return '';
+  const w = Math.round(Math.max(-100, Math.min(100, value)));
+  const signed = w > 0 ? '+' + w : String(w);
+  const band = wiarygodnoscLabelPl(w);
+  const tip = ' title="' + esc(WIARYGODNOSC_TOOLTIP_PL) + '"';
+  return '<div class="da-wiar-badge"' + tip + '>W ' + signed + ' · ' + esc(band) + '</div>';
 }
 
 /** Pasek globalnej Wiarygodności gracza (−100…+100) — skala bipolarna jak Zaufanie/Respekt u rozmówcy. */

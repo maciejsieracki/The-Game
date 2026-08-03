@@ -12,6 +12,8 @@ import { TRAKTAT_HANDLOWY_LABEL } from '../game/diplomacy-display';
 export interface NegotiationPayload {
   actionId: string;
   turns?: number;
+  /** NAP bezterminowy (R-WIARYGODNOSC-NAP-BEZTERMIN-Q1=A). */
+  bezterminowy?: boolean;
   goldPerTurn?: number;
   goldOnce?: number;
   resource?: string;

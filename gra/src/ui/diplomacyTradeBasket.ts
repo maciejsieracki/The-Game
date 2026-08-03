@@ -393,6 +393,8 @@ interface BasketValidation {
 /** Pola traktatu (R-DYP-STOL-A=C) — współdzielone między refresh() w showTradeBasketModal. */
 interface TreatyFormState {
   turns: number;
+  /** NAP bezterminowy (R-WIARYGODNOSC-NAP-BEZTERMIN-Q1=A). */
+  napBezterminowy: boolean;
   allianceKind: 'defensywny' | 'pelny';
   borderMilitary: boolean;
   tributeMode: 'demand' | 'offer';
@@ -403,6 +405,7 @@ interface TreatyFormState {
 function defaultTreatyState(actionId: string, initial?: TradeBasketInitial): TreatyFormState {
   return {
     turns: initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 10,
+    napBezterminowy: false,
     allianceKind: initial?.allianceKind === 'defensywny' ? 'defensywny' : 'pelny',
     borderMilitary: initial?.borderMilitary ?? false,
     tributeMode: initial?.tributeMode === 'offer' ? 'offer' : 'demand',
@@ -422,9 +425,15 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         '<button type="button" class="cdb-chip cdb-chip-turn' + (state.turns === t ? ' selected' : '')
         + '" data-turns="' + t + '">' + t + '</button>',
       ).join('');
-      body = '<label for="cdb-treaty-turns">Czas paktu (tur)</label>'
-        + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
-        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns, 1, 20)
+      const turnsBlock = state.napBezterminowy
+        ? '<p class="cdb-sub">Pakt bezterminowy — wypowiedzialny, kara N3 przy ataku w oknie 10 tur po zerwaniu.</p>'
+        : '<label for="cdb-treaty-turns">Czas paktu (tur)</label>'
+          + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
+          + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns, 10, 20);
+      body = '<label class="cdb-nap-indef-row">'
+        + '<input type="checkbox" id="cdb-treaty-nap-indef" class="cdb-treaty-nap-indef"'
+        + (state.napBezterminowy ? ' checked' : '') + ' /> Bezterminowy</label>'
+        + turnsBlock
         + '<p class="cdb-sub">Złamanie: −30 Relacja, −20 Zaufanie</p>';
       break;
     }
@@ -476,8 +485,11 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
 function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): TreatyFormState {
   const state = { ...prev };
   if (actionId === '2') {
-    const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '10', 10);
-    state.turns = Math.max(1, Math.min(20, turns));
+    state.napBezterminowy = (document.querySelector('.cdb-treaty-nap-indef') as HTMLInputElement)?.checked ?? false;
+    if (!state.napBezterminowy) {
+      const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '15', 10);
+      state.turns = Math.max(10, Math.min(20, turns));
+    }
   } else if (actionId === '3') {
     const v = (document.querySelector('.cdb-treaty-alliance') as HTMLSelectElement)?.value;
     state.allianceKind = v === 'defensywny' ? 'defensywny' : 'pelny';
@@ -497,8 +509,8 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): Treaty
 function validateTreatyForm(actionId: string, state: TreatyFormState): BasketValidation {
   switch (actionId) {
     case '2':
-      if (state.turns < 1 || state.turns > 20) {
-        return { valid: false, reason: 'Czas paktu: od 1 do 20 tur' };
+      if (!state.napBezterminowy && (state.turns < 10 || state.turns > 20)) {
+        return { valid: false, reason: 'Czas paktu: od 10 do 20 tur (lub bezterminowy)' };
       }
       break;
     case '8':
@@ -579,7 +591,11 @@ function buildTreatyPayload(
   const payload: NegotiationPayload = { actionId };
   switch (actionId) {
     case '2':
-      payload.turns = state.turns;
+      if (state.napBezterminowy) {
+        payload.bezterminowy = true;
+      } else {
+        payload.turns = state.turns;
+      }
       break;
     case '3':
       payload.allianceKind = state.allianceKind;

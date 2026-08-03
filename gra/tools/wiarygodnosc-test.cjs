@@ -52,6 +52,7 @@ fs.writeFileSync(
   sumaWiarygodnosciCalkowita,
 } from '../src/game/diplomacy-credibility';
 export { DIPLOMACY_PARAMS, tickDiplomacy } from '../src/game/diplomacy';
+export { evaluateProposal, napWygasaTuraFromPayload } from '../src/game/diplomacy-proposals';
 export {
   diplomacyMaxZaufanieNaTureForWiarygodnosc,
   diplomacyPnRelacjaParams,
@@ -361,11 +362,21 @@ function freshRdip(zaufanie, status) {
 }
 
 {
-  // Undefined = brak wpływu (dokładnie jak dziś, przed Etapem 4) — caller (main.ts)
-  // zostawia pole puste, gdy TA para jest aktualnie w stanie wojny (C-WIAR-WROG=A).
-  const before = freshRdip(50, 'wojna');
+  // Undefined = brak wpływu strumienia W — caller (main.ts) zostawia pole puste
+  // gdy TA para jest aktualnie w stanie wojny (C-WIAR-WROG=A).
+  const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1 });
   ok(after.zaufanie === 50, `tickDiplomacy: wiarygodnoscSelf undefined -> brak zmiany (got ${after.zaufanie})`);
+}
+
+{
+  // C-WIAR-WROG=A: podczas wojny pozytywny dZ jest zerowany — strumień W też nie
+  // powinien być przekazywany przez caller; porównanie z/bez pola przy wojnie.
+  const beforeWar = freshRdip(50, 'wojna');
+  const afterWarNoW = WC.tickDiplomacy(beforeWar, { turn: 1 });
+  const afterWarWithW = WC.tickDiplomacy(beforeWar, { turn: 1, wiarygodnoscSelf: 60 });
+  ok(afterWarNoW.zaufanie === afterWarWithW.zaufanie,
+    `tickDiplomacy: wojna — brak wiarygodnoscSelf nie dodaje strumienia (got ${afterWarNoW.zaufanie} vs ${afterWarWithW.zaufanie})`);
 }
 
 {
@@ -384,6 +395,83 @@ function freshRdip(zaufanie, status) {
   const after = WC.tickDiplomacy(before, { turn: 1, wiarygodnoscSelf: 100000 });
   ok(approxEqual(after.zaufanie, 10 + 100 / P.wiarygodnoscZaufanieDzielnikPerTura), `tickDiplomacy: klamruje W>100 przed dzieleniem (got ${after.zaufanie})`);
   ok(approxEqual(after.zaufanie, WC.strumienWiarygodnoscDoZaufania(100000) + 10), 'tickDiplomacy: spójne ze strumienWiarygodnoscDoZaufania (ta sama formuła)');
+}
+
+// ---------------------------------------------------------------------------
+// 8b) Dźwignia 4 — pierwszy kontakt (C-WIAR-D4=A)
+// ---------------------------------------------------------------------------
+
+{
+  ok(WC.modyfikatorZaufaniaD4OdWiarygodnosci(40) === 2, 'D4: W=+40 -> +2 pkt Zaufania startowego');
+  ok(WC.modyfikatorZaufaniaD4OdWiarygodnosci(-60) === -3, 'D4: W=-60 -> -3 pkt Zaufania startowego');
+  const z = WC.zaufaniePierwszyKontaktZD4(20, 40, -60);
+  ok(z === 20 + 2 + (-3), `zaufaniePierwszyKontaktZD4 sumuje obie strony (got ${z}, want 19)`);
+}
+
+// ---------------------------------------------------------------------------
+// 8c) NAP bezterminowy — napWygasaTuraFromPayload (R-WIARYGODNOSC-NAP-BEZTERMIN-Q1=A)
+// ---------------------------------------------------------------------------
+
+{
+  ok(WC.napWygasaTuraFromPayload(10, { bezterminowy: true }) === null, 'NAP bezterminowy -> wygasaTura null');
+  ok(WC.napWygasaTuraFromPayload(10, { turns: 15 }) === 25, 'NAP 15 tur -> wygasa tura 25');
+  ok(WC.napWygasaTuraFromPayload(10, {}) === 25, 'NAP domyślnie 15 tur -> wygasa tura 25');
+}
+
+// ---------------------------------------------------------------------------
+// 8d) Dźwignia 3 — twarde progi sojusz/NAP (WIARYGODNOSC §5)
+// ---------------------------------------------------------------------------
+
+function baseEvalCtx(overrides) {
+  return {
+    relation: { zaufanie: 80, respekt: 50, status: 'neutralni', traktaty: [] },
+    stanWojny: false,
+    turn: 5,
+    proposerRespekt: 60,
+    responderRespekt: 40,
+    militaryRatio: 1,
+    respektWzgledny: 0.5,
+    activeDeals: [],
+    difficulty: 'normal',
+    proposerWiarygodnosc: 20,
+    responderWiarygodnosc: 20,
+    ...overrides,
+  };
+}
+
+function evalNap(payload, ctxOverrides) {
+  return WC.evaluateProposal(
+    { actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1, payload },
+    baseEvalCtx(ctxOverrides),
+  );
+}
+
+function evalSojusz(ctxOverrides) {
+  return WC.evaluateProposal(
+    { actionId: 'sojusz_pelny', proposerOwnerId: 0, responderOwnerId: 1, payload: {} },
+    baseEvalCtx(ctxOverrides),
+  );
+}
+
+{
+  const napLow = evalNap({ turns: 15 }, { proposerWiarygodnosc: -50 });
+  ok(!napLow.accepted && napLow.reason.includes('Wiarygodność'), 'NAP odrzucony gdy W proponenta < -40');
+
+  const napOk = evalNap({ turns: 15 }, { proposerWiarygodnosc: -40 });
+  ok(napOk.accepted, 'NAP akceptowany gdy W proponenta = -40 (próg)');
+
+  const napIndef = evalNap({ bezterminowy: true }, {});
+  ok(napIndef.accepted && napIndef.deal?.wygasaTura === null, 'NAP bezterminowy buduje deal z wygasaTura=null');
+
+  const sojuszLow = evalSojusz({ proposerWiarygodnosc: -1 });
+  ok(!sojuszLow.accepted && sojuszLow.reason.includes('Wiarygodność'), 'Sojusz odrzucony gdy W proponenta < 0');
+
+  const sojuszOk = evalSojusz({ proposerWiarygodnosc: 0 });
+  if (!sojuszOk.accepted) {
+    ok(!sojuszOk.reason.includes('Wiarygodność'), 'Sojusz W=0 nie pada na bramkę Wiarygodności (inne progi mogą odrzucić)');
+  } else {
+    ok(sojuszOk.accepted, 'Sojusz akceptowany gdy W proponenta = 0 i progi relacji spełnione');
+  }
 }
 
 // ---------------------------------------------------------------------------

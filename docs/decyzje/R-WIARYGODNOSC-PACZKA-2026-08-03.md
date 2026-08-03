@@ -18,4 +18,6 @@ Cytaty: `…NAP-BEZTERMIN-Q1a` · `…START-ETAP-Q1a` · `R-WIARYGODNOSC-DZWIGNI
 4. **Dźwignia 4** — startowe Zaufanie od W przy pierwszym kontakcie.
 5. **NAP** — UI/silnik: wariant `turns` albo `bezterminowy` (`wygasaTura: null`).
 
+**Status wdrożenia (2026-08-03):** 🟢 Etap 0–2 w kodzie na branchu `cursor/wiarygodnosc-dzwignia2-a-63a1` — state/save/load, D1 (main.ts AI tick), D3 (`evaluateProposal`), D4 (`diplomacy-layers`), NAP bezterminowy (silnik + checkbox UI), badge W w audiencji. **Bez deploy ROBOCZA.** **TODO:** modale N1–N7 (ostrzeżenia przed karą), ranking Potęgi, pełny rejestr czynników UI.
+
 Źródło: `dyspozycje/WIARYGODNOSC-SPECYFIKACJA.md` §5, §5a, §9.

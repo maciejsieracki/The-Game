@@ -13213,6 +13213,8 @@ async function boot(): Promise<void> {
         responderPlayer: { ownerId: responderId, typCywilizacji: responderTyp } as unknown as Player,
         proposerIsCityState: isOwnerClusterCityState(proposerId, ownerCityStateOpts()),
         responderIsCityState: isOwnerClusterCityState(responderId, ownerCityStateOpts()),
+        proposerWiarygodnosc: getWiarygodnosc(proposerId),
+        responderWiarygodnosc: getWiarygodnosc(responderId),
       };
     }
 
@@ -13778,6 +13780,7 @@ async function boot(): Promise<void> {
             playerKolorHex: civKolorHexFn(0),
             playerEra: empireEpochForOwner(0),
             playerWiarygodnosc: getWiarygodnosc(0),
+            otherWiarygodnosc: getWiarygodnosc(ownerId),
           };
         },
         onAction: applyAudienceAction,
