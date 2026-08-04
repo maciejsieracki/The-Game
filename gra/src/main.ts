@@ -19766,6 +19766,7 @@ async function boot(): Promise<void> {
                   zapasyPrzed: foodSt.zapasyPanstwa,
                   rationParams: efParams.rationParams,
                   spichlerzByCity: spichlerzByCityForAuto,
+                  requireProductionSurplus: ownerId === 0,
                 });
                 if (raiseResult.adjusted) {
                   autoRationAnyAdjusted = true;

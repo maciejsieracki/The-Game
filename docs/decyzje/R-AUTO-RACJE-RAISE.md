@@ -1,7 +1,9 @@
 # R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia u gracza na EOT
 
-**Status:** CZEKA-NA-DECYZJĘ · 2026-08-05  
+**Status:** WDROŻONE (kod) · Q1=B · czeka deploy · 2026-08-05  
 **ID:** `R-AUTO-RACJE-RAISE-Q1`  
+**Decyzja Macieja:** **B** — gracz: auto-raise tylko przy trwałej nadwyżce produkcji miast (≥0); zapasy Spichlerza nie uruchamiają podnoszenia. Major AI: bez zmian (może z zapasów).  
+**Branch:** `cursor/abc-auto-racje-raise-63a1`  
 **Źródło:** Maciej — suwak Wyżywienia/rozwoju wraca do max mimo ręcznego obniżenia (Spichlerz)
 
 ---
@@ -69,9 +71,9 @@ Zostawić auto-raise do max przy solvent + (nadwyżka lub zapasy > 0).
 
 ---
 
-## Implementacja (po decyzji)
+## Implementacja (Q1=B — WDROŻONE w kodzie)
 
-- `main.ts` ~19760: warunek `ownerId !== 0 && !typCityCopyOwners.has(ownerId)` (dla A)  
-  albo zaostrzenie `autoRaiseRationsForGrowth` (dla B: wymagać `nadwyzka > 0`, nie `zapasyPrzed > 0`).
-- Test: rozszerzyć `ai-major-economy-test` / nowy — gracz nie dostaje raise (A).
+- `empire-food.ts`: `AutoRaiseRationsOpts.requireProductionSurplus` — gracz wymaga `nadwyzka > 0` (start i w pętli raise).
+- `main.ts` ~19762: `requireProductionSurplus: ownerId === 0`.
+- Test: `ai-major-economy-test.cjs` sekcje G–I (AI zapasy OK; gracz bez nadwyżki = no-op; gracz z nadwyżką = raise).
 - Deploy osobno na hasło `deploy`.

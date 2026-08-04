@@ -26,12 +26,11 @@ Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-T
 
 ---
 
-## R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia u gracza · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-05)
+## R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia u gracza · STATUS: **WDROŻONE (kod) Q1=B** · czeka deploy (2026-08-05)
 
-**Objaw:** suwak Wyżywienia wraca w górę na EOT mimo ręcznego obniżenia (Spichlerz).  
-**Przyczyna:** `autoRaiseRationsForGrowth` działa też dla gracza (miało być tylko major AI).  
-**Ludność:** rekrutacja nie odejmuje; głód przy zbyt wysokich racjach może dać −1.  
-Szczegóły + ABC: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md).
+**Decyzja:** B — gracz podnosi Wyżywienie tylko przy nadwyżce produkcji miast; zapasy Spichlerza nie uruchamiają raise. Major AI bez zmian.  
+**Branch:** `cursor/abc-auto-racje-raise-63a1`  
+Szczegóły: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md).
 
 ---
 

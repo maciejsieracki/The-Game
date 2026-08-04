@@ -484,15 +484,18 @@ export interface AutoRaiseRationsOpts {
   zapasyPrzed: number;
   rationParams: RationParams;
   spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
+  /** Gracz (Q1=B): podnoś tylko przy trwałej nadwyżce produkcji miast; major AI — zapasy OK. */
+  requireProductionSurplus?: boolean;
 }
 
 /**
- * Maciej 2026-08-04 (major AI): gdy Spichlerz państwa jest solvent i jest nadwyżka
- * żywności — podnieś Wyżywienie (poziomRacji) o krok, aż do max lub braku nadwyżki.
- * Parytet SPICH-AUTO (obniżanie przy deficycie); tylko major AI woła z main.ts.
+ * Gdy Spichlerz państwa jest solvent — podnieś Wyżywienie (poziomRacji) o krok,
+ * aż do max lub braku nadwyżki. Parytet SPICH-AUTO (obniżanie przy deficycie).
+ * Gracz (requireProductionSurplus): tylko nadwyżka produkcji miast (Q1=B).
+ * Major AI: nadwyżka lub zapasy centralne (nie magazynuj zamiast rosnąć).
  */
 export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRationAdjustResult {
-  const { ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity } = opts;
+  const { ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity, requireProductionSurplus } = opts;
   const ownerCities = cities.filter(c => c.ownerId === ownerId);
   if (ownerCities.length === 0) {
     return { adjusted: false, changes: [] };
@@ -503,9 +506,13 @@ export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRatio
   }
 
   const nadwyzka = computeEmpireCityFoodNadwyzka(econ.perCity, ownerId);
-  // Major AI: nie magazynuj zamiast rosnąć — podnoś racje jeśli jest choć trochę żywności
-  // do przeznaczenia (nadwyżka miast lub zapasy centralne). Brak żywności = brak ruchu.
-  if (nadwyzka <= 0 && zapasyPrzed <= 0) {
+  if (requireProductionSurplus) {
+    // Gracz Q1=B: tylko trwała nadwyżka produkcji — zapasy Spichlerza nie uruchamiają raise.
+    if (nadwyzka <= 0) {
+      return { adjusted: false, changes: [] };
+    }
+  } else if (nadwyzka <= 0 && zapasyPrzed <= 0) {
+    // Major AI: nadwyżka miast lub zapasy centralne; brak żywności = brak ruchu.
     return { adjusted: false, changes: [] };
   }
 
@@ -532,6 +539,7 @@ export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRatio
 
     recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
     if (!isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId)) break;
+    if (requireProductionSurplus && computeEmpireCityFoodNadwyzka(econ.perCity, ownerId) <= 0) break;
   }
 
   const changes: AutoRationCityChange[] = [];

@@ -1,4 +1,10 @@
-﻿## [00:55 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE (ABC, bez kodu)
+﻿## [01:10 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE-Q1=B (kod, bez deploy)
+|- ECHO: Q1=B — gracz auto-raise tylko przy nadwyżce produkcji miast; zapasy Spichlerza nie startują raise
+|- Kod: empire-food.ts `requireProductionSurplus` · main.ts `ownerId===0` · test ai-major-economy G–I PASS
+|- Branch: cursor/abc-auto-racje-raise-63a1
+CZEKAM-NA: deploy
+
+## [00:55 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE (ABC, bez kodu)
 |- Objaw: EOT podnosi Wyżywienie gracza mimo ręcznego obniżenia
 |- Przyczyna: autoRaiseRationsForGrowth dla ownerId=0 (miało być tylko major AI)
 |- Ludność: nie rekrutacja; ryzyko głodu przy wymuszonym max

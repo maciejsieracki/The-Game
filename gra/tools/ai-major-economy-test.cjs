@@ -211,6 +211,101 @@ console.log('\n-- F. autoRaiseRationsForGrowth przy nadwyżce --');
   assert(cities[0].poziomRacji > 2, 'poziomRacji wzrosł');
 }
 
+console.log('\n-- G. major AI: zapasy>0, nadwyżka<=0 — nadal może podnieść --');
+{
+  const cities = [{
+    id: 'c1', ownerId: 1, name: 'A', population: 2, poziomRacji: 2,
+    q: 0, r: 0,
+  }];
+  const rationParams = {
+    racjeZywnosc1: 2, racjeZywnosc2: 4, racjeZywnosc3: 6,
+    racjeWzrostProc1: 3, racjeWzrostProc2: 5, racjeWzrostProc3: 7,
+  };
+  const econ = {
+    perCity: [{
+      cityId: 'c1',
+      ownerId: 1,
+      oblegany: false,
+      zywnoscBrutto: 8,
+      kosztRacji: 10,
+      bilansLokalny: -2,
+    }],
+  };
+  const r = autoRaiseRationsForGrowth({
+    ownerId: 1,
+    cities,
+    econ,
+    zapasyPrzed: 50,
+    rationParams,
+  });
+  assert(r.adjusted, 'AI major: zapasy pokrywają deficyt -> raise OK');
+  assert(cities[0].poziomRacji > 2, 'AI poziomRacji wzrosł mimo braku nadwyżki produkcji');
+}
+
+console.log('\n-- H. gracz Q1=B: zapasy>0, nadwyżka<=0 — brak raise --');
+{
+  const cities = [{
+    id: 'c1', ownerId: 0, name: 'P', population: 2, poziomRacji: 2,
+    q: 0, r: 0,
+  }];
+  const rationParams = {
+    racjeZywnosc1: 2, racjeZywnosc2: 4, racjeZywnosc3: 6,
+    racjeWzrostProc1: 3, racjeWzrostProc2: 5, racjeWzrostProc3: 7,
+  };
+  const econ = {
+    perCity: [{
+      cityId: 'c1',
+      ownerId: 0,
+      oblegany: false,
+      zywnoscBrutto: 8,
+      kosztRacji: 10,
+      bilansLokalny: -2,
+    }],
+  };
+  const r = autoRaiseRationsForGrowth({
+    ownerId: 0,
+    cities,
+    econ,
+    zapasyPrzed: 50,
+    rationParams,
+    requireProductionSurplus: true,
+  });
+  eq(r.adjusted, false, 'gracz: tylko zapasy, brak nadwyżki -> no raise');
+  eq(cities[0].poziomRacji, 2, 'gracz poziomRacji bez zmian');
+}
+
+console.log('\n-- I. gracz Q1=B: nadwyżka>0 — może podnieść --');
+{
+  const cities = [{
+    id: 'c1', ownerId: 0, name: 'P', population: 2, poziomRacji: 2,
+    q: 0, r: 0,
+  }];
+  const rationParams = {
+    racjeZywnosc1: 2, racjeZywnosc2: 4, racjeZywnosc3: 6,
+    racjeWzrostProc1: 3, racjeWzrostProc2: 5, racjeWzrostProc3: 7,
+  };
+  const econ = {
+    perCity: [{
+      cityId: 'c1',
+      ownerId: 0,
+      oblegany: false,
+      zywnoscBrutto: 20,
+      kosztRacji: 5,
+      bilansLokalny: 15,
+    }],
+  };
+  const r = autoRaiseRationsForGrowth({
+    ownerId: 0,
+    cities,
+    econ,
+    zapasyPrzed: 0,
+    rationParams,
+    requireProductionSurplus: true,
+  });
+  assert(r.adjusted, 'gracz: nadwyżka produkcji -> raise OK');
+  assert(cities[0].poziomRacji > 2, 'gracz poziomRacji wzrosł');
+}
+
 console.log(`\nai-major-economy-test: ${passed} passed, ${failed} failed`);
 
 try { fs.unlinkSync(ENTRY_FILE); } catch (_e) { /* noop */ }
