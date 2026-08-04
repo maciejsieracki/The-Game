@@ -725,7 +725,9 @@ import {
 } from './game/city-defense';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
+  tradeGoodsCategoriesFromParts,
   type TradeGoodEntry,
+  type TradeGoodsCategories,
 } from './game/diplomacy-goods';
 import {
   pickResourceTradeBetweenOwners,
@@ -14056,14 +14058,11 @@ async function boot(): Promise<void> {
      * zmianą (b) był globalny katalog (diplomacyResourceAccessCatalog) — ta sama lista po
      * OBU stronach niezależnie od faktycznego posiadania; teraz różni się realnie per owner.
      */
-    function tradeGoodsForOwner(ownerId: number): string[] {
+    /** R-DYPLO-DOBRA-KAT — kategorie bez cap 7; wszystkie surowce + techy ownera. */
+    function tradeGoodsCategoriesForOwner(ownerId: number): TradeGoodsCategories {
       const techs = Array.from(ownerResearchedTechs(ownerId))
-        .map(slug => techNameFromSlug(slug) ?? slug)
-        .slice(0, 3);
-      const goods = tradableGoodsIndexForOwner(ownerId)
-        .map(g => (g.ilosc != null ? g.label + ' ×' + g.ilosc : g.label))
-        .slice(0, 4);
-      return [...goods, ...techs].slice(0, 7);
+        .map(slug => techNameFromSlug(slug) ?? slug);
+      return tradeGoodsCategoriesFromParts(tradableGoodsIndexForOwner(ownerId), techs);
     }
 
     function openDiplomacyAudience(ownerId: number): void {
@@ -14156,8 +14155,8 @@ async function boot(): Promise<void> {
             playerSkarbiec: Math.floor(player.skarbiec),
             playerZlotoPerTura: Math.floor(_lastPieniadzRate),
             sojuszPotencjal: sojuszPotencjalForPair(zaufanieNorm, respektNorm, dip),
-            playerGoods: tradeGoodsForOwner(0),
-            otherGoods: tradeGoodsForOwner(ownerId),
+            playerGoodsCats: tradeGoodsCategoriesForOwner(0),
+            otherGoodsCats: tradeGoodsCategoriesForOwner(ownerId),
             playerIkonaId: civTypeForOwner(0),
             playerWodz: leaderNameForOwnerId(0) ?? undefined,
             playerKolorHex: civKolorHexFn(0),

@@ -1,3 +1,10 @@
+## [22:05 PL, 2026-08-04] CLOUD → Maciej — R-DYPLO-DOBRA-KAT + R-TRZODA-SCALE-MAP (kod, bez deploy)
+- Dobra handlowe: akordeon Surowce · Technologie · Inne (Q1–Q3=A), bez cap 7
+- Pastwisko/trzoda: PASTWISKO_S ×1.5 (krowa, świnia, owca, lama — Q1=B)
+- Bramki: tsc 0 · diplomacy-goods-kat-test PASS
+- Branch: `cursor/feat-dobra-kat-trzoda-63a1` (commit po push)
+CZEKAM-NA: Maciej deploy
+
 ## [22:05 PL, 2026-08-04] CLOUD → Maciej — R-EOT-EVENT-DEFER + R-DYPLO-WYMIANA-FLEX (kod, bez deploy)
 - Branch: `cursor/feat-eot-dyplo-flex-63a1` — **nie** w gra-robocza (czeka deploy Macieja)
 - Dyplo flex: one-way trade · steppery qty w koszyku · Edytuj/Usuń na kartach · jeden Przyjmij/Odrzuć pakietu
@@ -23,5 +30,3 @@ CZEKAM-NA: Maciej — **`deploy`** gdy OK
 - Test: `node tools/diplomacy-stol-pw-sum-test.cjs`
 - Branch: `cursor/fix-dyplo-stol-pw-sum-63a1` · bez deploy — czeka merge + `deploy`
 CZEKAM-NA: merge PR · Maciej: `deploy` gdy wgrać
-
-

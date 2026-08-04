@@ -28,6 +28,7 @@ import {
 import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { civCardDisplayName, leaderName } from './leaderPortraits';
 import { civBrandLineForKey } from './civBrandDisplay';
+import type { TradeGoodsCategories } from '../game/diplomacy-goods';
 import { renderNegotiationTableDealSideHtml } from './diplomacyDealDisplay';
 import { bilateralTreatyDisplayPw, partnerTreatyDisplayPw, playerTreatyDisplayPw } from '../game/diplomacy-acceptance-points';
 import {
@@ -161,10 +162,10 @@ export interface DiplomacyAudienceState {
    * niezależnie), więc identyczna na obu kartach — mirror zgodny z makietą.
    */
   sojuszPotencjal?: { pct: number; label: string };
-  /** „Dobra handlowe" gracza — nazwy (tech zbadane + katalog surowców, patrz main.ts). */
-  playerGoods?: readonly string[];
-  /** „Dobra handlowe" rozmówcy — nazwy (tech zbadane rozmówcy + katalog surowców). */
-  otherGoods?: readonly string[];
+  /** „Dobra handlowe" gracza — kategorie Surowce · Technologie · Inne (R-DYPLO-DOBRA-KAT). */
+  playerGoodsCats?: TradeGoodsCategories;
+  /** „Dobra handlowe" rozmówcy — kategorie Surowce · Technologie · Inne. */
+  otherGoodsCats?: TradeGoodsCategories;
   /**
    * Szczegóły bannera statusu formalnego (pkt 2) — od ilu tur trwa DOMINUJĄCY traktat
    * (ten sam co formalStatus.kind) + kara zerwania. Brak gdy kind=wojna/pokoj/brak
@@ -480,6 +481,19 @@ ${DIPLO_1E_SHARED_CSS}
 .da-good{font-size:0.62em;padding:3px 8px;border-radius:7px;border:1px solid rgba(232,216,138,.2);
   background:rgba(24,30,42,.65);color:#c8b898;white-space:nowrap;}
 .da-goods-empty{font-size:0.62em;color:#6a7280;}
+.da-goods-acc{display:flex;flex-direction:column;gap:3px;}
+.da-goods-cat-hdr{display:flex;align-items:center;gap:4px;width:100%;padding:4px 6px;border-radius:5px;
+  border:1px solid rgba(232,216,138,.15);background:rgba(18,22,32,.5);color:#c8b898;font-size:0.64em;
+  font-weight:600;cursor:pointer;font-family:inherit;text-align:left;}
+.da-goods-cat-hdr.is-empty{color:#6a7280;border-color:rgba(100,100,100,.2);background:rgba(12,14,20,.4);}
+.da-goods-cat-hdr.is-open{border-color:rgba(232,216,138,.28);}
+.da-goods-cat-hdr.is-open .da-goods-cat-chevron{transform:rotate(90deg);}
+.da-goods-cat-chevron{display:inline-block;transition:transform .15s;font-size:0.85em;color:#8a8070;flex:none;}
+.da-goods-cat-count{font-weight:400;color:#8a8070;font-size:0.92em;}
+.da-goods-cat-body{overflow:hidden;max-height:160px;transition:max-height .2s ease,padding .15s;}
+.da-goods-cat-body.is-collapsed{max-height:0;padding:0;margin:0;opacity:0;pointer-events:none;}
+.da-goods-cat-body .da-goods{padding:4px 2px 2px;}
+.da-goods-cat-none{font-size:0.62em;color:#6a7280;font-style:italic;padding:2px 6px;}
 .da-mood{font-size:0.66em;letter-spacing:.04em;padding:2px 0;color:#8a8070;}
 .da-culture{font-size:0.64em;color:#a8c0d8;}
 .da-tags{display:flex;flex-wrap:wrap;gap:4px;}
@@ -1053,11 +1067,48 @@ function civNameHtml(civName: string, ikonaId: string | undefined, displayIkonaI
     + esc(civCardDisplayName(civName, displayIkonaId ?? ikonaId)) + '</div>';
 }
 
-function goodsHtml(goods: readonly string[] | undefined): string {
-  if (!goods || goods.length === 0) {
+type GoodsAccordionSide = 'player' | 'other';
+
+const GOODS_CAT_LABELS: Readonly<Record<keyof TradeGoodsCategories, string>> = {
+  surowce: 'Surowce',
+  technologie: 'Technologie',
+  inne: 'Inne',
+};
+
+const GOODS_CAT_ORDER: readonly (keyof TradeGoodsCategories)[] = ['surowce', 'technologie', 'inne'];
+
+/** Niezależny stan rozwinięcia kategorii per karta (przetrwa re-render audiencji). */
+const goodsCatExpanded: Record<GoodsAccordionSide, Set<string>> = {
+  player: new Set(),
+  other: new Set(),
+};
+
+function goodsCategoriesHtml(cats: TradeGoodsCategories | undefined, side: GoodsAccordionSide): string {
+  if (!cats) {
     return '<div class="da-goods-empty">Brak danych o dobrach</div>';
   }
-  return '<div class="da-goods">' + goods.map(g => '<span class="da-good">' + esc(g) + '</span>').join('') + '</div>';
+  let html = '<div class="da-goods-acc" data-goods-side="' + side + '">';
+  for (const key of GOODS_CAT_ORDER) {
+    const items = cats[key];
+    const isEmpty = items.length === 0;
+    const expanded = goodsCatExpanded[side].has(key);
+    const hdrCls = 'da-goods-cat-hdr' + (isEmpty ? ' is-empty' : '') + (expanded ? ' is-open' : '');
+    const bodyCls = 'da-goods-cat-body' + (expanded ? '' : ' is-collapsed');
+    const pills = isEmpty
+      ? '<span class="da-goods-cat-none">—</span>'
+      : items.map(g => '<span class="da-good">' + esc(g) + '</span>').join('');
+    html +=
+      '<div class="da-goods-cat">' +
+        '<button type="button" class="' + hdrCls + '" data-goods-cat="' + key + '">' +
+          '<span class="da-goods-cat-chevron">▸</span>' +
+          esc(GOODS_CAT_LABELS[key]) +
+          (isEmpty ? '' : ' <span class="da-goods-cat-count">(' + items.length + ')</span>') +
+        '</button>' +
+        '<div class="' + bodyCls + '"><div class="da-goods">' + pills + '</div></div>' +
+      '</div>';
+  }
+  html += '</div>';
+  return html;
 }
 
 /** Imię władcy gracza (civs.json wodzowie) pod nazwą cywilizacji, pusty string gdy brak. */
@@ -1107,7 +1158,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Dobra handlowe</div>' +
-        goodsHtml(st.playerGoods) +
+        goodsCategoriesHtml(st.playerGoodsCats, 'player') +
       '</div>' +
       bonusListHtml(playerBon) +
     '</div>'
@@ -1144,7 +1195,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Dobra handlowe</div>' +
-        goodsHtml(st.otherGoods) +
+        goodsCategoriesHtml(st.otherGoodsCats, 'other') +
       '</div>' +
       cultureLineHtml(st) +
       personalityTagsHtml(st.personalityTags) +
@@ -1725,6 +1776,25 @@ function render(): void {
     ev.stopPropagation();
     if (cfg === null) return;
     cfg.onFocusCapital?.(cfg.ownerId);
+  });
+  rootEl.querySelectorAll<HTMLButtonElement>('.da-goods-cat-hdr').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const acc = btn.closest('.da-goods-acc');
+      const side = acc?.getAttribute('data-goods-side') as GoodsAccordionSide | null;
+      const cat = btn.getAttribute('data-goods-cat');
+      if (!side || !cat) return;
+      const set = goodsCatExpanded[side];
+      const body = btn.nextElementSibling;
+      if (set.has(cat)) {
+        set.delete(cat);
+        btn.classList.remove('is-open');
+        body?.classList.add('is-collapsed');
+      } else {
+        set.add(cat);
+        btn.classList.add('is-open');
+        body?.classList.remove('is-collapsed');
+      }
+    });
   });
   rootEl.querySelectorAll<HTMLButtonElement>('button[data-aid]').forEach(btn => {
     btn.addEventListener('click', () => {
