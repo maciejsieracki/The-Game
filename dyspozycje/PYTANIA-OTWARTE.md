@@ -26,10 +26,10 @@ Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-T
 
 ---
 
-## R-AUTO-RACJE-RAISE — Spichlerz ≥ 0 + auto-raise + limit suwaka · STATUS: **OTWARTE Q2–Q4** (Q1=B już w kodzie branch) (2026-08-05)
+## R-AUTO-RACJE-RAISE — Spichlerz ≥ 0 + auto + przełącznik miasta · STATUS: **OTWARTE Q2–Q5** (Q1=B w kodzie branch) (2026-08-05)
 
-**Q1=B (kod):** gracz raise tylko przy nadwyżce produkcji — Maciej: za mało; AI też szkodzi.  
-**Czeka:** Q2 (auto-raise podłoga 0) · Q3 (cap suwaka) · Q4 (Spichlerz nigdy < 0).  
+**Q1=B (kod):** gracz raise tylko przy nadwyżce — Maciej: za mało.  
+**Czeka:** Q2 podłoga 0 · Q3 cap suwaka · Q4 Spichlerz nigdy < 0 · **Q5 przełącznik Auto Wyżywienie w każdym mieście**.  
 **Branch:** `cursor/abc-auto-racje-raise-63a1`  
 Szczegóły: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md).
 

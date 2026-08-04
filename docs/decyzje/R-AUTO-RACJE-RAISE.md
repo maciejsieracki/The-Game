@@ -1,8 +1,8 @@
 # R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia + podłoga Spichlerza
 
-**Status:** 🟡 ZAPISANA (Q1=B wdrożone w kodzie branch; Q2–Q4 — **czekają odpowiedzi Macieja**)  
+**Status:** 🟡 ZAPISANA (Q1=B w kodzie branch; **Q2–Q5 czekają odpowiedzi Macieja**)  
 **Data:** 2026-08-04  
-**Źródło:** Maciej (playtest FALA 224) + doprecyzowanie po Q1=B
+**Źródło:** Maciej (playtest FALA 224) + doprecyzowanie po Q1=B + przełącznik auto (2026-08-05)
 
 ---
 
@@ -12,8 +12,9 @@
 2. Ten sam mechanizm dotyczy **AI** (major) — AI też może obniżać ludność przez agresywny raise.
 3. **Spichlerz nigdy nie powinien spadać poniżej zera.**
 4. **Nie powinno dać się** podnieść zużycia (suwak w mieście / auto) ponad to, co cywilizacja utrzyma bez ujemnego Spichlerza na następną turę.
+5. Powinien być **przycisk / przełącznik przy Spichlerzu** — czy gracz chce **automatyczne zarządzanie** (sam obniża i podnosi Wyżywienie wg sytuacji) — **w każdym mieście**.
 
-Powiązane: `SPICH-AUTO-Q1` (FALA 212) — auto-**obniżanie** przy deficycie — zostaje.
+Powiązane: `SPICH-AUTO-Q1` (FALA 212) — auto-**obniżanie** przy deficycie — zostaje (ale u gracza tylko gdy auto WŁ).
 
 ---
 
@@ -154,6 +155,50 @@ Po turze zawsze ≥ 0; w trakcie rozliczenia chwilowy minus OK.
 
 ---
 
+## [PACZKA 2/2 — 1 pytanie] Q5
+
+### Q5 — Przełącznik auto zarządzania Wyżywieniem / Spichlerzem w każdym mieście
+
+**Sytuacja:**  
+Dziś auto-obniżanie (`SPICH-AUTO`) i auto-podnoszenie (`autoRaiseRationsForGrowth`) działają **bez zgody gracza** na koniec tury — stąd „męczący” efekt podnoszenia mimo ręcznego obniżenia. Maciej: przy Spichlerzu / sekcji Wyżywienie ma być **przycisk**, czy gracz chce **automatyczne zarządzanie Spichlerzem**, które **samodzielnie obniża i podwyższa** poziom Wyżywienia w zależności od sytuacji — **w każdym mieście osobno**.
+
+**Cel pytania:**  
+Czy auto (raise + lower) u gracza ma być **opcją per miasto**, a nie zawsze-włączone?
+
+**Dlaczego teraz:**  
+Bez tego Q2–Q4 naprawiają podłogę Spichlerza, ale nie dają kontroli „chcę / nie chcę auto”.
+
+**A — Przełącznik per miasto; domyślnie WYŁ u gracza**  
+W panelu miasta (przy Wyżywienie / Spichlerz): przełącznik np. „Auto Wyżywienie”. **WŁ:** EOT obniża i podnosi wg reguł Q2–Q4 (Spichlerz ≥ 0). **WYŁ:** pełna ręczna kontrola suwaka — zero auto raise/lower dla tego miasta. Nowe miasta gracza: **WYŁ**. AI major: zawsze auto (bez UI).  
+**Za:**  
+1. Kończy „męczące” podnoszenie — gracz włącza auto tylko gdy chce.  
+2. Spełnia „w każdym mieście” + osobna polityka per miasto.  
+**Przeciw:**  
+1. Domyślnie WYŁ = mniej „opieki” dla nowych graczy (mogą zapomnieć obniżyć przy kryzysie).  
+2. Trzeba zapisać flagę na `City` + UI.
+
+**B — Przełącznik per miasto; domyślnie WŁ u gracza**  
+Jak A, ale start / nowe miasta: **WŁ** (jak dzisiejsze zachowanie, dopóki gracz nie wyłączy).  
+**Za:**  
+1. Zachowanie bliskie obecnemu dla osób, które lubią auto.  
+2. Kryzys: auto-lower nadal pomaga od razu.  
+**Przeciw:**  
+1. Maciej właśnie narzeka na auto raise — default WŁ znów zaskoczy.  
+2. Trzeba wiedzieć, że da się wyłączyć.
+
+**C — Jeden przełącznik dla całej cywilizacji (nie per miasto)**  
+Globalny „Auto Spichlerz” w HUD / panelu państwa.  
+**Za:**  
+1. Prostsze UI (jeden przełącznik).  
+2. Mniej stanu.  
+**Przeciw:**  
+1. Maciej powiedział wprost „w każdym mieście”.  
+2. Nie da się auto w stolicy i ręcznie w kolonii.
+
+**Rekomendacja:** **A** — per miasto, default WYŁ u gracza; AI zawsze auto.
+
+---
+
 ## Odpowiedzi (do uzupełnienia)
 
 | ID | Odpowiedź | Data |
@@ -162,5 +207,6 @@ Po turze zawsze ≥ 0; w trakcie rozliczenia chwilowy minus OK.
 | Q2 | — | — |
 | Q3 | — | — |
 | Q4 | — | — |
+| Q5 | — | — |
 
-**Hasło wdrożenia całej paczki Q2–Q4:** np. `R-AUTO-RACJE-RAISE-Q2A-Q3A-Q4A` albo `działaj` po odpowiedziach.
+**Hasło wdrożenia:** np. `R-AUTO-RACJE-RAISE-Q2A-Q3A-Q4A-Q5A` albo `działaj` po literach Q2–Q5.

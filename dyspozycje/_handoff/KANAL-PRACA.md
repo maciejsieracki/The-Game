@@ -1,8 +1,14 @@
-﻿## [01:25 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q2–Q4 (ABC, bez kodu)
+﻿## [01:35 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q5 (ABC, bez kodu)
+|- Maciej: przycisk auto zarządzania Spichlerzem (obniża+podnosi) — w każdym mieście
+|- Paczka 2/2: Q5 przełącznik per miasto
+|- Docs: docs/decyzje/R-AUTO-RACJE-RAISE.md
+CZEKAM-NA: Maciej — Q2–Q5 litery (np. A A A A)
+
+## [01:25 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q2–Q4 (ABC, bez kodu)
 |- Maciej po Q1=B: efekt męczący; AI też może obniżać ludność; Spichlerz nigdy < 0; limit suwaka
 |- Paczka: Q2 auto-raise podłoga 0 · Q3 cap suwaka · Q4 clamp Spichlerz ≥ 0
 |- Docs: docs/decyzje/R-AUTO-RACJE-RAISE.md
-CZEKAM-NA: Maciej — `R-AUTO-RACJE-RAISE-Q2 A|B|C` · `Q3 A|B|C` · `Q4 A|B|C`
+CZEKAM-NA: supersedowane — czeka też Q5
 
 ## [01:10 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE-Q1=B (kod, bez deploy)
 |- ECHO: Q1=B — gracz auto-raise tylko przy nadwyżce produkcji miast; zapasy Spichlerza nie startują raise
