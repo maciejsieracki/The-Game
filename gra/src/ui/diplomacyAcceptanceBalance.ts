@@ -199,6 +199,67 @@ export function balancePanelDataFromRow(
   };
 }
 
+/** Wiersze wymagające decyzji gracza na stole (pakiet Przyjmij/Odrzuć). */
+export function filterActionableNegotiationRows(
+  rows: readonly NegotiationBalanceSource[],
+): NegotiationBalanceSource[] {
+  return rows.filter(
+    r => r.direction === 'incoming' || (r.direction === 'own' && r.awaitingAiResponse),
+  );
+}
+
+/** R-DYPLO-STOL-ACCEPT-Q1=A — jeden bilans PW dla całego pakietu na stole. */
+export function balancePanelDataFromRows(
+  rows: readonly NegotiationBalanceSource[],
+): PnBalancePanelData | null {
+  const actionable = filterActionableNegotiationRows(rows);
+  if (actionable.length === 0) {
+    const primary = pickPrimaryNegotiationRow(rows);
+    return primary ? balancePanelDataFromRow(primary, Math.max(0, rows.length - 1)) : null;
+  }
+  const primary = pickPrimaryNegotiationRow(actionable) ?? actionable[0]!;
+  const base = balancePanelDataFromRow(primary, Math.max(0, actionable.length - 1));
+  if (!base) return null;
+
+  let myOfferPn = 0;
+  let theirOfferPn = 0;
+  let canAccept = true;
+  let blockReason: string | undefined;
+
+  for (const row of actionable) {
+    const d = balancePanelDataFromRow(row, 0);
+    if (!d) continue;
+    myOfferPn += d.myOfferPn;
+    theirOfferPn += d.theirOfferPn;
+    if (row.direction === 'incoming' && row.canAccept === false) {
+      canAccept = false;
+      blockReason = row.responderPreview?.reason ?? d.theirBalance.statusLabel;
+    }
+    if (row.direction === 'own' && row.awaitingAiResponse) {
+      const ownOk = row.responderPreview?.accepted !== false
+        && (row.acceptanceTheir?.accepted !== false);
+      if (!ownOk) {
+        canAccept = false;
+        blockReason = row.responderPreview?.reason
+          ?? row.acceptanceTheir?.statusLabel
+          ?? 'Oferta nieuczciwa dla partnera';
+      }
+    }
+  }
+
+  return {
+    ...base,
+    actionLabel: actionable.length > 1
+      ? `Pakiet na stole (${actionable.length} umów)`
+      : base.actionLabel,
+    myOfferPn,
+    theirOfferPn,
+    canAccept,
+    extraOnTable: 0,
+    responderPreview: canAccept ? base.responderPreview : { accepted: false, reason: blockReason },
+  };
+}
+
 function formatBalanceDelta(balancePn: number, accepted: boolean): string {
   if (accepted && balancePn > 0) return `+${balancePn}`;
   if (accepted && balancePn === 0) return '0';

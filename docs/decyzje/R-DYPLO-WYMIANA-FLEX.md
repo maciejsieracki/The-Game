@@ -1,6 +1,6 @@
 # R-DYPLO-WYMIANA-FLEX — stół / umowa wymiany: elastyczność UI
 
-**Status:** 🟡 ZAPISANA → 🔵 W TRAKCIE wdrożenia  
+**Status:** 🟢 WDROŻONE w kodzie (nie deploy)  
 **Data:** 2026-08-04  
 **Ekran:** Dyplomacja → Stół negocjacji · Umowa wymiany · panel PW
 

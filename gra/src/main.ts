@@ -773,6 +773,11 @@ import {
   type AutoRationAdjustResult,
 } from './game/empire-food';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
+import {
+  deferredHintsToSidePanelEvents,
+  shouldDeferEotEvents,
+  type DeferredEotHint,
+} from './game/eot-event-defer';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerBuildingResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
@@ -9442,6 +9447,10 @@ async function boot(): Promise<void> {
     let hintOverrideTimer: ReturnType<typeof setTimeout> | null = null;
 
     function showHintMessage(msg: string, durationMs: number = 3000): void {
+      if (shouldDeferEotEvents(endTurnInProgress)) {
+        deferredEotHints.push({ msg, durationMs });
+        return;
+      }
       if (hintOverrideTimer !== null) {
         clearTimeout(hintOverrideTimer);
         hintOverrideTimer = null;
@@ -10066,6 +10075,8 @@ async function boot(): Promise<void> {
     /** SPICH-AUTO-Q1: komunikat auto-obniżenia racji — widoczny przez turę gracza po EOT. */
     const rationAutoEventLog: SidePanelEvent[] = [];
     let pendingAutoRationForNextTurn: AutoRationAdjustResult | null = null;
+    /** R-EOT-EVENT-DEFER-Q1=A: toasty z fazy EOT — flush na starcie tury gracza. */
+    const deferredEotHints: DeferredEotHint[] = [];
 
     /** Miasta, w których gracz zamknął (✕) alert pustej kolejki — fingerprint opcji produkcji. */
     const prodEmptyDismissFp = new Map<string, string>();
@@ -10416,12 +10427,15 @@ async function boot(): Promise<void> {
     }
 
     function collectTurnEvents(): SidePanelEvent[] {
-      const events: SidePanelEvent[] = [
-        ...rationAutoEventLog,
-        ...warEventLog,
-        ...villageEventLog,
-        ...tradeRouteEventLog,
-      ];
+      const deferLogs = shouldDeferEotEvents(endTurnInProgress);
+      const events: SidePanelEvent[] = deferLogs
+        ? []
+        : [
+          ...rationAutoEventLog,
+          ...warEventLog,
+          ...villageEventLog,
+          ...tradeRouteEventLog,
+        ];
       for (const city of cities) {
         if (city.ownerId !== 0) continue;
         const st = cityOrderState.get(city.id);
@@ -11389,6 +11403,50 @@ async function boot(): Promise<void> {
       refreshD1bHud();
       updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    /** R-DYPLO-STOL-USUN-Q1=A — usuń pojedynczą pozycję ze stołu bez odrzucania całego pakietu. */
+    function handleNegotiationRemove(negotiationId: string): void {
+      const idx = negotiationTable.findIndex(n => n.id === negotiationId);
+      if (idx < 0) return;
+      const entry = negotiationTable[idx]!;
+      negotiationTable.splice(idx, 1);
+      if (entry.awaitingOwnerId !== 0) {
+        showHintMessage('Wycofano propozycję z stołu', 3500);
+      } else {
+        showHintMessage('Usunięto pozycję z pakietu na stole', 3000);
+      }
+      refreshD1bHud();
+      updateDiplomacyAudience();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    /** Identyfikatory wpisów stołu wymagających decyzji gracza u danego partnera. */
+    function actionableNegotiationIdsForPair(ownerId: number): string[] {
+      return getNegotiationsForPair(ownerId)
+        .filter(n => n.awaitingOwnerId === 0 || (n.proposerOwnerId === 0 && n.awaitingOwnerId !== 0))
+        .map(n => n.id)
+        .sort((a, b) => a.localeCompare(b));
+    }
+
+    /** R-DYPLO-STOL-ACCEPT-Q1=A — Przyjmij cały pakiet (stabilna kolejność). */
+    function handleNegotiationAcceptPackage(ownerId: number): void {
+      const ids = actionableNegotiationIdsForPair(ownerId);
+      for (const id of ids) {
+        if (negotiationTable.some(n => n.id === id)) {
+          handleNegotiationAccept(id);
+        }
+      }
+    }
+
+    /** R-DYPLO-STOL-ACCEPT-Q1=A — Odrzuć cały pakiet wymagający decyzji. */
+    function handleNegotiationRejectPackage(ownerId: number): void {
+      const ids = [...actionableNegotiationIdsForPair(ownerId)];
+      for (const id of ids) {
+        if (negotiationTable.some(n => n.id === id)) {
+          handleNegotiationReject(id);
+        }
+      }
     }
 
     /**
@@ -14183,6 +14241,9 @@ async function boot(): Promise<void> {
         previewBreakTreatyPenalties: (dealId: string) => buildBreakTreatyPenaltyPreview(dealId),
         onAcceptNegotiation: (negotiationId: string) => handleNegotiationAccept(negotiationId),
         onRejectNegotiation: (negotiationId: string) => handleNegotiationReject(negotiationId),
+        onAcceptNegotiationPackage: () => handleNegotiationAcceptPackage(ownerId),
+        onRejectNegotiationPackage: () => handleNegotiationRejectPackage(ownerId),
+        onRemoveNegotiation: (negotiationId: string) => handleNegotiationRemove(negotiationId),
         onCounterNegotiation: (negotiationId: string, payload: NegotiationPayload) =>
           handleNegotiationCounter(negotiationId, payload),
         onRequestAiNegotiationResponse: (negotiationId: string) =>
@@ -22216,6 +22277,14 @@ async function boot(): Promise<void> {
           );
           if (rationAutoEventLog.length > 4) rationAutoEventLog.length = 4;
           pendingAutoRationForNextTurn = null;
+        }
+        if (deferredEotHints.length > 0) {
+          const hintEvents = deferredHintsToSidePanelEvents(deferredEotHints, turn);
+          for (let hi = hintEvents.length - 1; hi >= 0; hi--) {
+            warEventLog.unshift(hintEvents[hi]!);
+          }
+          if (warEventLog.length > 8) warEventLog.length = 8;
+          deferredEotHints.length = 0;
         }
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();

@@ -1,6 +1,6 @@
 # R-EOT-EVENT-DEFER — wydarzenia ze skutków końca tury → start następnej
 
-**Status:** 🟡 ZAPISANA → 🔵 W TRAKCIE wdrożenia  
+**Status:** 🟢 WDROŻONE w kodzie (nie deploy)  
 **Data:** 2026-08-04  
 **ID pytania:** `R-EOT-EVENT-DEFER-Q1`  
 **Decyzja Macieja:** **A** (ECHO 2026-08-04)

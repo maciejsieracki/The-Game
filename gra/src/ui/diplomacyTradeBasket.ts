@@ -6,6 +6,7 @@ import type { AudienceAction } from './diplomacyAudience';
 import type { NegotiationModalContext, NegotiationPayload } from './diplomacyNegotiationModal';
 import { isCurrencyProposalForbiddenDuringWar } from '../game/diplomacy-war-gates';
 import { computeQuickDealBasket, proposalPnTurnsMultiplier, type BasketItem } from '../game/diplomacy-pn-engine';
+import { validateTradeBasketSides } from '../game/diplomacy-trade-validation';
 import { balanceGiveItemsToFairMin } from '../game/diplomacy-ai-offer-balance';
 import {
   proposalHasResourceAccess,
@@ -230,8 +231,11 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .da-deal-sched-foot{margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);
   font-size:0.82em;color:#b8a888;text-align:center;}
 .civ-diplo-basket .da-deal-empty{color:#6a6058;font-style:italic;font-size:0.88em;}
-.civ-diplo-basket .cdb-deal-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
+.civ-diplo-basket .cdb-deal-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;flex-wrap:wrap;}
 .civ-diplo-basket .cdb-deal-row .da-deal-item{flex:1;min-width:0;}
+.civ-diplo-basket .cdb-row-qty{display:inline-flex;align-items:center;gap:2px;flex-shrink:0;}
+.civ-diplo-basket .cdb-row-qty-inp{width:52px;padding:2px 4px;text-align:center;font-size:0.85em;}
+.civ-diplo-basket .cdb-row-qty-step{min-width:26px;padding:2px 6px;font-size:0.9em;line-height:1.2;}
 .civ-diplo-basket .cdb-col{border:1px solid rgba(232,216,138,.2);border-radius:8px;padding:10px;}
 .civ-diplo-basket .cdb-col-title{font-size:0.72em;color:#a8a090;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em;}
 .civ-diplo-basket .cdb-deal-settings{margin:10px 0 4px;display:flex;flex-direction:column;gap:8px;}
@@ -745,20 +749,22 @@ function validateBasketForm(
     return { valid: true };
   }
   if (mode === 'gift') {
-    if (giveItems.length === 0) {
-      return { valid: false, reason: 'Dodaj co najmniej jedną pozycję do daru' };
-    }
-  } else {
-    if (giveItems.length === 0) {
-      return { valid: false, reason: 'Dodaj co najmniej jedną pozycję w „Co oddaję"' };
-    }
-    if (receiveItems.length === 0) {
-      return { valid: false, reason: 'Dodaj co najmniej jedną pozycję w „Co dostaję"' };
-    }
+    const sides = validateTradeBasketSides(mode, giveItems, receiveItems);
+    if (!sides.valid) return sides;
+  } else if (mode === 'trade') {
+    const sides = validateTradeBasketSides(mode, giveItems, receiveItems);
+    if (!sides.valid) return sides;
   }
-  const givePn = sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns);
-  const receivePn = mode === 'trade' ? sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns) : 0;
-  if (givePn == null || (mode === 'trade' && receivePn == null)) {
+  const givePn = giveItems.length > 0
+    ? sumBasketPn(giveItems, ctx, 'give', resourceTradeMode, dealTurns)
+    : 0;
+  const receivePn = mode === 'trade' && receiveItems.length > 0
+    ? sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns)
+    : 0;
+  if (giveItems.length > 0 && givePn == null) {
+    return { valid: false, reason: 'Nie można wycenić pozycji — sprawdź typy i ilości' };
+  }
+  if (mode === 'trade' && receiveItems.length > 0 && receivePn == null) {
     return { valid: false, reason: 'Nie można wycenić pozycji — sprawdź typy i ilości' };
   }
   const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
@@ -971,23 +977,72 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   );
 }
 
+function basketItemQtyEditable(item: BasketItem): boolean {
+  return item.typ === 'zloto' || item.typ === 'praca' || item.typ === 'zywnosc' || item.typ === 'surowiec_ilosc';
+}
+
+function basketItemMaxQty(
+  item: BasketItem,
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+): number | undefined {
+  const qty = item.ilosc ?? 1;
+  if (item.typ === 'zloto' && side === 'give') {
+    const sk = Math.floor(ctx.playerSkarbiec ?? 0);
+    return sk > 0 ? sk : undefined;
+  }
+  if (item.typ === 'surowiec_ilosc') {
+    const opts = side === 'give'
+      ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
+      : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
+    const found = opts.find(o => o.id === item.id);
+    return found?.maxPakiety ?? qty;
+  }
+  return undefined;
+}
+
+function basketRowQtyStepperHtml(
+  item: BasketItem,
+  side: 'give' | 'receive',
+  idx: number,
+  ctx: NegotiationModalContext,
+): string {
+  const qty = Math.max(1, item.ilosc ?? 1);
+  const max = basketItemMaxQty(item, side, ctx);
+  const maxAttr = max != null ? ' max="' + max + '"' : '';
+  return (
+    '<div class="cdb-row-qty" data-side="' + side + '" data-idx="' + idx + '">'
+    + '<button type="button" class="cdb-row-qty-step dip-muted-btn" data-delta="-1" title="Zmniejsz">−</button>'
+    + '<input type="number" class="cdb-row-qty-inp" value="' + qty + '" min="1"' + maxAttr + ' />'
+    + '<button type="button" class="cdb-row-qty-step dip-muted-btn" data-delta="1" title="Zwiększ">+</button>'
+    + '</div>'
+  );
+}
+
 function editableDealItemsHtml(
   items: BasketItem[],
   side: 'give' | 'receive',
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
+  ctx: NegotiationModalContext,
 ): string {
   if (items.length === 0) return '<span class="da-deal-empty">—</span>';
   const fmtCtx: BasketItemFormatCtx = {
     perTurn: resourceTradeMode === 'per_turn',
     turns: dealTurns,
   };
-  return items.map((item, idx) => (
-    '<div class="cdb-deal-row" data-side="' + side + '" data-idx="' + idx + '">' +
-      '<div class="da-deal-item">' + renderBasketItemValueHtml(item, fmtCtx) + '</div>' +
-      '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń">×</button>' +
-    '</div>'
-  )).join('');
+  return items.map((item, idx) => {
+    const qtyHtml = basketItemQtyEditable(item)
+      ? basketRowQtyStepperHtml(item, side, idx, ctx)
+      : '';
+    return (
+      '<div class="cdb-deal-row" data-side="' + side + '" data-idx="' + idx + '">' +
+        '<div class="da-deal-item">' + renderBasketItemValueHtml(item, fmtCtx) + '</div>' +
+        qtyHtml +
+        '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń">×</button>' +
+      '</div>'
+    );
+  }).join('');
 }
 
 function dealSideColumnHtml(
@@ -997,12 +1052,13 @@ function dealSideColumnHtml(
   side: 'give' | 'receive',
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
+  ctx: NegotiationModalContext,
 ): string {
   return (
     '<div class="da-deal-col ' + colClass + '">' +
       '<div class="da-deal-col-head">' + esc(head) + '</div>' +
       '<div class="da-deal-col-body" data-list="' + side + '">' +
-        editableDealItemsHtml(items, side, resourceTradeMode, dealTurns) +
+        editableDealItemsHtml(items, side, resourceTradeMode, dealTurns, ctx) +
       '</div>' +
     '</div>'
   );
@@ -1013,10 +1069,11 @@ function tradeDealPreviewHtml(
   receiveItems: BasketItem[],
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
+  ctx: NegotiationModalContext,
 ): string {
   let html = '<div class="cdb-deal-preview"><div class="da-deal-table">';
-  html += dealSideColumnHtml('Oferujemy', 'da-deal-col-we', giveItems, 'give', resourceTradeMode, dealTurns);
-  html += dealSideColumnHtml('Oferują', 'da-deal-col-they', receiveItems, 'receive', resourceTradeMode, dealTurns);
+  html += dealSideColumnHtml('Oferujemy', 'da-deal-col-we', giveItems, 'give', resourceTradeMode, dealTurns, ctx);
+  html += dealSideColumnHtml('Oferują', 'da-deal-col-they', receiveItems, 'receive', resourceTradeMode, dealTurns, ctx);
   html += '</div>';
   if (resourceTradeMode === 'per_turn' && dealTurns > 0) {
     html += '<div class="da-deal-sched-foot">Wymiana co turę przez ' + dealTurns + ' tur</div>';
@@ -1334,10 +1391,10 @@ function renderBasket(
     : '';
 
   const dealPreview = showDealPreview
-    ? tradeDealPreviewHtml(giveItems, receiveItems, resourceTradeMode, dealTurns)
+    ? tradeDealPreviewHtml(giveItems, receiveItems, resourceTradeMode, dealTurns, ctx)
     : (mode === 'gift' && !blocked
       ? '<div class="cdb-deal-preview"><div class="da-deal-table">' +
-        dealSideColumnHtml('Co oddajesz', 'da-deal-col-we', giveItems, 'give', 'once', dealTurns) +
+        dealSideColumnHtml('Co oddajesz', 'da-deal-col-we', giveItems, 'give', 'once', dealTurns, ctx) +
         '</div></div>'
       : '');
 
@@ -1651,6 +1708,47 @@ export function showTradeBasketModal(
       });
     });
 
+    const applyRowQtyChange = (sideAttr: string | null, idx: number, newQty: number): void => {
+      if (idx < 0 || newQty < 1) return;
+      const list = sideAttr === 'give' ? giveItems : receiveItems;
+      const item = list[idx];
+      if (!item || !basketItemQtyEditable(item)) return;
+      const max = basketItemMaxQty(item, sideAttr === 'give' ? 'give' : 'receive', ctx);
+      const clamped = max != null ? Math.min(max, newQty) : newQty;
+      const updated = { ...item, ilosc: clamped };
+      if (sideAttr === 'give') {
+        giveItems = giveItems.map((it, i) => (i === idx ? updated : it));
+      } else {
+        receiveItems = receiveItems.map((it, i) => (i === idx ? updated : it));
+      }
+      refresh();
+    };
+
+    box.querySelectorAll('.cdb-row-qty-step').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const row = btn.closest('.cdb-row-qty');
+        if (!row) return;
+        const sideAttr = row.getAttribute('data-side');
+        const idx = parseInt(row.getAttribute('data-idx') ?? '-1', 10);
+        const delta = parseInt(btn.getAttribute('data-delta') ?? '0', 10);
+        const inp = row.querySelector('.cdb-row-qty-inp') as HTMLInputElement | null;
+        if (!inp || delta === 0) return;
+        const cur = parseInt(inp.value, 10) || 1;
+        applyRowQtyChange(sideAttr, idx, cur + delta);
+      });
+    });
+
+    box.querySelectorAll('.cdb-row-qty-inp').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const row = inp.closest('.cdb-row-qty');
+        if (!row) return;
+        const sideAttr = row.getAttribute('data-side');
+        const idx = parseInt(row.getAttribute('data-idx') ?? '-1', 10);
+        const newQty = parseInt((inp as HTMLInputElement).value, 10) || 1;
+        applyRowQtyChange(sideAttr, idx, newQty);
+      });
+    });
+
     box.querySelector('.cdb-submit')?.addEventListener('click', () => {
       const blocked = (mode === 'trade' && (ctx.relacjaTotal ?? 0) < (ctx.progHandelRelacja ?? PROG_HANDEL_REL))
         || (mode === 'gift' && (ctx.relacjaTotal ?? 0) < (ctx.progDarRelacja ?? diplomacyProgDarRelacja()));
@@ -1757,6 +1855,21 @@ export function getTradeBasketMode(actionId: string): TradeBasketMode {
 
 export function actionUsesTradeBasket(actionId: string): boolean {
   return TRADE_BASKET_ACTION_IDS.has(actionId);
+}
+
+export { validateTradeBasketSides } from '../game/diplomacy-trade-validation';
+
+/** Walidacja koszyka — eksport do testów (R-DYPLO-WYMIANA-ONEWAY). */
+export function validateTradeBasketForm(
+  mode: TradeBasketMode,
+  actionId: string,
+  giveItems: BasketItem[],
+  receiveItems: BasketItem[],
+  ctx: NegotiationModalContext,
+  dealTurns = 15,
+  resourceTradeMode: 'once' | 'per_turn' = 'once',
+): BasketValidation {
+  return validateBasketForm(mode, actionId, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, false);
 }
 
 /** Domyślny payload traktatu handlowego (szlaki) — D-DYPLO-KOSZYK-OD-RAZU. */

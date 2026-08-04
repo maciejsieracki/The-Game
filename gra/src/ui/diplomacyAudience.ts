@@ -31,8 +31,8 @@ import { civBrandLineForKey } from './civBrandDisplay';
 import { renderNegotiationTableDealSideHtml } from './diplomacyDealDisplay';
 import { bilateralTreatyDisplayPw, partnerTreatyDisplayPw, playerTreatyDisplayPw } from '../game/diplomacy-acceptance-points';
 import {
-  balancePanelDataFromRow,
-  pickPrimaryNegotiationRow,
+  balancePanelDataFromRows,
+  filterActionableNegotiationRows,
   renderPnBalancePanelHtml,
 } from './diplomacyAcceptanceBalance';
 import {
@@ -263,6 +263,12 @@ export interface DiplomacyAudienceConfig {
   onAcceptNegotiation?: (negotiationId: string) => void;
   /** C-DYP-Q1=A: gracz Odrzuca wpis stołu. */
   onRejectNegotiation?: (negotiationId: string) => void;
+  /** R-DYPLO-STOL-ACCEPT-Q1=A: Przyjmij cały pakiet na stole u tego partnera. */
+  onAcceptNegotiationPackage?: () => void;
+  /** R-DYPLO-STOL-ACCEPT-Q1=A: Odrzuć cały pakiet na stole u tego partnera. */
+  onRejectNegotiationPackage?: () => void;
+  /** R-DYPLO-STOL-USUN-Q1=A: Usuń pojedynczą pozycję ze stołu (bez odrzucenia reszty). */
+  onRemoveNegotiation?: (negotiationId: string) => void;
   /** C-DYP-Q1=A: gracz wysyła kontrofertę (nowy formularz negocjacji) do wpisu stołu. */
   onCounterNegotiation?: (negotiationId: string, payload: NegotiationPayload) => void;
   /**
@@ -519,6 +525,13 @@ ${DIPLO_1E_SHARED_CSS}
 .da-negot-linked.can-edit{cursor:pointer;transition:border-color .15s,box-shadow .15s;}
 .da-negot-linked.can-edit:hover{border-color:rgba(232,216,138,.55);box-shadow:0 0 0 1px rgba(232,216,138,.25);}
 .da-negot-edit-hint{font-size:0.62em;color:#8a8070;margin-top:4px;font-style:italic;}
+.da-card-actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.da-card-actions button{font-size:0.72em;padding:3px 8px;border-radius:5px;cursor:pointer;
+  border:1px solid rgba(232,216,138,.25);background:rgba(30,36,48,.85);color:#e8e0c8;}
+.da-card-actions button.da-rm-negot{color:#e08a8a;border-color:rgba(200,64,64,.35);}
+.da-package-hint{font-size:0.62em;color:#8a8070;line-height:1.45;margin-top:6px;}
+.da-negot-actionbar--package{padding:8px 10px;border-radius:8px;border:1px solid rgba(232,216,138,.2);
+  background:rgba(18,22,32,.75);margin-top:8px;}
 .da-deal-side-only .da-deal-col{max-width:100%;}
 .da-negot .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;display:flex;align-items:center;gap:6px;}
 .da-negot .da-nm .dir{font-size:0.62em;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
@@ -1333,7 +1346,8 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
     );
   }).join('');
   const multiHint = ownPendingCount > 0
-    ? '<div class="da-multi-deal-hint">Na stole: <b>' + ownPendingCount + '</b> · dodaj kolejną umowę z listy · każda pozycja wymaga osobnego „Przyjmij" w panelu PW</div>'
+    ? '<div class="da-multi-deal-hint">Na stole: <b>' + ownPendingCount
+      + '</b> · dodaj kolejną umowę z listy · jeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń</div>'
     : '';
   return (
     '<div class="da-col da-col-deals">' +
@@ -1433,13 +1447,25 @@ function tableDealSideHtml(
   );
 }
 
-/** Panel PN między kolumnami My / Oni — główny wpis stołu + licznik pozostałych. */
+/** Panel PN między kolumnami My / Oni — pakiet całego stołu (R-DYPLO-STOL-ACCEPT). */
 function negotiationBalanceBarHtml(st: DiplomacyAudienceState): string {
   const rows = st.pendingNegotiations ?? [];
-  const primary = pickPrimaryNegotiationRow(rows);
-  const extra = rows.length > 1 ? rows.length - 1 : 0;
-  const data = primary ? balancePanelDataFromRow(primary, extra) : null;
+  const data = balancePanelDataFromRows(rows);
   return renderPnBalancePanelHtml(data);
+}
+
+/** Przyciski Edytuj / Usuń na karcie pozycji stołu (bez stepperów na karcie). */
+function negotiationCardActionsHtml(r: PendingNegotiationRow): string {
+  const showEdit = !!r.canCounter && actionUsesTradeBasket(r.uiActionId);
+  let html = '<div class="da-card-actions">';
+  if (showEdit) {
+    html += '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="edit" data-negot-aid="'
+      + esc(r.uiActionId) + '">Edytuj</button>';
+  }
+  html += '<button type="button" class="da-rm-negot" data-negot-id="' + esc(r.id)
+    + '" data-negot-act="remove">Usuń</button>';
+  html += '</div>';
+  return html;
 }
 
 /** Karta wychodzącej propozycji gracza — kolumna „My oferujemy" (tylko przedmiot dealu). */
@@ -1453,6 +1479,7 @@ function renderOwnPendingCard(r: PendingNegotiationRow): string {
       '<div class="da-nm"><span class="dir">' + esc('Twoja propozycja') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
       pendingNegotiationMetaHtml(r) +
+      negotiationCardActionsHtml(r) +
     '</div>'
   );
 }
@@ -1465,7 +1492,7 @@ function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
     : '<div class="da-deal-detail"><span class="da-deal-empty">—</span></div>';
   const editCls = r.canCounter ? ' can-edit' : '';
   const editHint = r.canCounter
-    ? '<div class="da-negot-edit-hint" title="Otwórz edycję obu stron koszyka">Kliknij kartę, aby edytować kwoty i surowce</div>'
+    ? '<div class="da-negot-edit-hint" title="Edytuj kwoty w koszyku">Użyj Edytuj, aby zmienić ilości w koszyku</div>'
     : '';
   return (
     '<div class="da-negot da-negot-linked da-negot-linked-we' + editCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="we"'
@@ -1474,6 +1501,7 @@ function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
       dealBlock +
       editHint +
       pendingNegotiationMetaHtml(r) +
+      negotiationCardActionsHtml(r) +
     '</div>'
   );
 }
@@ -1494,7 +1522,7 @@ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
   const titleLabel = r.isGift ? 'Dar / prezent' : r.actionLabel;
   const editCls = r.canCounter && !r.isGift ? ' can-edit' : '';
   const editHint = r.canCounter && !r.isGift
-    ? '<div class="da-negot-edit-hint" title="Otwórz edycję obu stron koszyka">Kliknij kartę, aby edytować kwoty i surowce</div>'
+    ? '<div class="da-negot-edit-hint" title="Edytuj kwoty w koszyku">Użyj Edytuj, aby zmienić ilości w koszyku</div>'
     : '';
   return (
     '<div class="da-negot incoming da-negot-linked da-negot-linked-they' + giftCls + editCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="they"'
@@ -1504,6 +1532,7 @@ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
       legacyNote +
       editHint +
       pendingNegotiationMetaHtml(r) +
+      negotiationCardActionsHtml(r) +
     '</div>'
   );
 }
@@ -1519,6 +1548,7 @@ function renderOwnPendingTheyCard(r: PendingNegotiationRow): string {
       '<div class="da-nm"><span class="dir">' + esc('Oni oferują') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
       pendingNegotiationMetaHtml(r) +
+      negotiationCardActionsHtml(r) +
     '</div>'
   );
 }
@@ -1545,37 +1575,36 @@ function offersColumnHtml(st: DiplomacyAudienceState): string {
 }
 
 /**
- * Pasek akcji przy sekcji PN — Przyjmij/Odrzuć/Kontruj dla wpisów wymagających decyzji gracza
- * (przychodzące od AI oraz własne propozycje czekające na wysłanie do partnera).
+ * R-DYPLO-STOL-ACCEPT-Q1=A — jeden pasek Przyjmij/Odrzuć dla całego pakietu na stole.
  */
 function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
-  const rows = (st.pendingNegotiations ?? []).filter(
-    r => r.direction === 'incoming' || (r.direction === 'own' && r.awaitingAiResponse),
-  );
+  const rows = filterActionableNegotiationRows(st.pendingNegotiations ?? []);
   if (rows.length === 0) return '<div class="da-negot-actionbar"></div>';
-  const blocks = rows.map(r => {
-    const isOwn = r.direction === 'own' && r.awaitingAiResponse;
-    const legacyAccess = !isOwn && r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
-    const canAccept = isOwn
-      ? (r.responderPreview?.accepted !== false && r.acceptanceTheir?.accepted !== false)
-      : (r.canAccept !== false && !legacyAccess);
-    const acceptTitle = !canAccept
-      ? esc(r.responderPreview?.reason ?? r.acceptanceTheir?.statusLabel ?? RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON)
-      : '';
-    const btns =
-      '<div class="da-btnrow">'
-      + '<button type="button" class="acc"' + (!canAccept ? ' disabled title="' + acceptTitle + '"' : '')
-      + ' data-negot-id="' + esc(r.id) + '" data-negot-act="accept">Przyjmij</button>'
-      + '<button type="button" class="rej" data-negot-id="' + esc(r.id) + '" data-negot-act="reject">Odrzuć</button>'
-      + (!isOwn && r.canCounter
-        ? '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="counter" data-negot-aid="' + esc(r.uiActionId) + '">'
-          + (actionUsesTradeBasket(r.uiActionId) ? 'Edytuj' : 'Kontruj') + '</button>'
-        : '') +
-      '</div>';
-    return '<div class="da-neg-act-block" data-negot-id="' + esc(r.id) + '">' +
-      '<div class="da-neg-act-label">' + esc(r.actionLabel) + '</div>' + btns + '</div>';
-  }).join('');
-  return '<div class="da-negot-actionbar">' + blocks + '</div>';
+
+  const panel = balancePanelDataFromRows(st.pendingNegotiations ?? []);
+  const canAccept = panel?.canAccept !== false && rows.every(r => {
+    if (r.direction === 'incoming') return r.canAccept !== false;
+    if (r.awaitingAiResponse) {
+      return r.responderPreview?.accepted !== false
+        && (r.acceptanceTheir?.accepted !== false);
+    }
+    return true;
+  });
+  const acceptTitle = !canAccept
+    ? esc(panel?.responderPreview?.reason ?? 'Warunki pakietu niespełnione')
+    : '';
+
+  return (
+    '<div class="da-negot-actionbar da-negot-actionbar--package">'
+    + '<div class="da-neg-act-label">Decyzja dla całego pakietu (' + rows.length + ')</div>'
+    + '<div class="da-btnrow">'
+    + '<button type="button" class="acc"' + (!canAccept ? ' disabled title="' + acceptTitle + '"' : '')
+    + ' data-negot-act="accept-package">Przyjmij</button>'
+    + '<button type="button" class="rej" data-negot-act="reject-package">Odrzuć</button>'
+    + '</div>'
+    + '<div class="da-package-hint">Jeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń</div>'
+    + '</div>'
+  );
 }
 
 /**
@@ -1779,16 +1808,28 @@ function render(): void {
    * świeża propozycja — submit woła onCounterNegotiation zamiast onAction (nowe
    * warunki NADPISUJĄ poprzednie na tym samym wpisie stołu, nie tworzą nowego).
    */
-  rootEl.querySelectorAll<HTMLButtonElement>('[data-negot-id]').forEach(btn => {
+  rootEl.querySelectorAll<HTMLButtonElement>('[data-negot-act]').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (cfg === null) return;
-      const negotId = btn.getAttribute('data-negot-id');
+      if (cfg === null || btn.disabled) return;
       const act = btn.getAttribute('data-negot-act');
-      if (!negotId || !act) return;
-      if (btn.disabled) return;
+      if (!act) return;
+
+      if (act === 'accept-package') {
+        cfg.onAcceptNegotiationPackage?.();
+        return;
+      }
+      if (act === 'reject-package') {
+        cfg.onRejectNegotiationPackage?.();
+        return;
+      }
+
+      const negotId = btn.getAttribute('data-negot-id');
+      if (!negotId) return;
+
       if (act === 'accept') { cfg.onAcceptNegotiation?.(negotId); return; }
       if (act === 'reject') { cfg.onRejectNegotiation?.(negotId); return; }
-      if (act === 'counter') {
+      if (act === 'remove') { cfg.onRemoveNegotiation?.(negotId); return; }
+      if (act === 'edit' || act === 'counter') {
         const aid = btn.getAttribute('data-negot-aid');
         if (!aid) return;
         const row = (st.pendingNegotiations ?? []).find(r => r.id === negotId);
