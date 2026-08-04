@@ -1,0 +1,1 @@
+export { generateMap } from '../src/map/generator';

@@ -8,6 +8,12 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-NADMIAR-POOLS — nadmiar Pracy / Skarbca / Spichlerza · STATUS: **ODŁOŻONE** (Maciej myśli, 2026-08-04)
+
+**Bez ABC na razie.** Powiązane: `R-STAWKI-STROJENIE`, `R-BILANS-100T`. Gdy Maciej wróci → paczka ABC.
+
+---
+
 ## P-AI-017 — pasek HP w bitwie pokazywał 100% mimo uszkodzonej jednostki z mapy · STATUS: **FIX gotowy** (`cursor/fix-battle-hp-display-63a1`)
 
 **Temat:** Jednostka z minimalnym HP/energią na mapie wchodziła do bitwy z pełnym zielonym paskiem HP, ale szybko ginęła (logika walki miała poprawne `u.hp`, kłamała tylko wizualizacja).

@@ -240,6 +240,15 @@ function incomingTradeBalanceHint(netPw: number): string {
 function verdictHtml(data: PnBalancePanelData): { html: string; tone: 'ok' | 'no' | 'wait' } {
   const their = data.theirBalance;
   if (data.direction === 'incoming') {
+    if (isIncomingBasketTradePanel(data) && data.canAccept === false) {
+      const net = incomingTradeNetBalancePw(data);
+      return {
+        tone: 'no',
+        html: net < 0
+          ? `Przewaga u Ciebie — oferta nieuczciwa dla partnera (${Math.abs(net)} PW)`
+          : 'Nie można przyjąć — warunki niespełnione',
+      };
+    }
     if (data.canAccept !== false) {
       if (isIncomingBasketTradePanel(data)) {
         const net = incomingTradeNetBalancePw(data);
