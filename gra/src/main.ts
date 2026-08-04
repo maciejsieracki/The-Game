@@ -155,7 +155,7 @@ import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
 import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
-import { isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
+import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import {
   buildTriumphCityStateUnificationMessage,
   shouldShowPlayerTriumphCityStateUnification,
@@ -4108,6 +4108,9 @@ async function boot(): Promise<void> {
     function selectPlayerUnit(unitId: string, keepListOpen = false, preserveDetailExpanded = false): void {
       const u = units.find(x => x.id === unitId);
       if (!u || u.ownerId !== 0) return;
+      if (clearScoutAutoExplore(u)) {
+        showHintMessage('Wy\u0142\u0105czono zwiedzanie \u2014 ruch r\u0119czny', 2000);
+      }
       // Jednostka gracza ↔ lista/audiencja dyplomacji — wykluczają się (first contact + toolbar).
       ensureDiplomacyUiClosed();
       if (!preserveDetailExpanded) unitSideDetailExpanded = false;
@@ -15457,6 +15460,7 @@ async function boot(): Promise<void> {
       if (isCityUnitPickOpen()) return false;
       const u = units.find(x => x.id === selectedId);
       if (!u || u.ownerId !== 0) return false;
+      clearScoutAutoExplore(u);
       if (u.oblegaCityId) {
         const sc = cities.find(c => c.id === u.oblegaCityId);
         showHintMessage(

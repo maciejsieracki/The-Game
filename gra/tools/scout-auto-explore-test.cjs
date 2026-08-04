@@ -17,6 +17,7 @@ execSync(
 const mod = require(bundlePath);
 const {
   isScoutUnit,
+  clearScoutAutoExplore,
   scoreHexForExplore,
   pickScoutExploreTarget,
   advanceScoutAutoExplore,
@@ -137,6 +138,23 @@ const batchSentry = runScoutsAutoExplore(
   () => 0.33,
 );
 assert(batchSentry.movedUnitIds.length === 0, 'sentry=true pomijany mimo autoExplore');
+
+// clearScoutAutoExplore — po wyłączeniu jednostka nie w puli runScoutsAutoExplore
+const autoScout = scout(2, 2, 2, { id: 'scout-clear', autoExplore: true });
+assert(clearScoutAutoExplore(autoScout) === true, 'clearScoutAutoExplore zwraca true gdy było włączone');
+assert(autoScout.autoExplore === false, 'clearScoutAutoExplore ustawia autoExplore=false');
+assert(clearScoutAutoExplore(autoScout) === false, 'clearScoutAutoExplore idempotentne');
+const batchAfterClear = runScoutsAutoExplore(
+  [autoScout],
+  map,
+  explored,
+  0,
+  () => 2,
+  () => 0.33,
+);
+assert(batchAfterClear.movedUnitIds.length === 0, 'po clearScoutAutoExplore brak w puli auto-explore');
+assert(!clearScoutAutoExplore({ ...scout(0, 0), category: 'miecznik', typeId: 'Wojownik', autoExplore: true }),
+  'clearScoutAutoExplore ignoruje nie-zwiadowca');
 
 // widoczna wioska wygrywa z samym fog score
 const villageMap = makeMap({
