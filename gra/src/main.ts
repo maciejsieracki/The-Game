@@ -1597,6 +1597,8 @@ async function boot(): Promise<void> {
     let cityFogVisible: ((city: City, vis?: Set<string>) => boolean) | undefined;
     /** Podpinane po deklaracji cityBuilt (~L1830) — unika TDZ przy pierwszym sync. */
     let cityBuiltIdsForRender: ((cityId: string) => readonly string[]) | undefined;
+    /** Podpinane po deklaracji cityProd — pigułka: glif produkcji always-on lite. */
+    let cityProdForRender: ((cityId: string) => import('./game/production').CityProduction | null) | undefined;
     const _cityRenderOpts = (): CityRenderOptions => {
       // #27 perf: policz widoczność RAZ per wywołanie _cityRenderOpts (nie osobno dla
       // każdego obcego miasta w isVisible) — reużywane przez cache'ujący cityFogVisible.
@@ -1635,6 +1637,12 @@ async function boot(): Promise<void> {
         },
         hideStatChips: isCityPanelOpen(),
         ownerColorFn: civColorFn,
+        getBuiltBuildingIds: (cityId) => cityBuiltIdsForRender?.(cityId) ?? [],
+        getCivIconId: (ownerId) =>
+          ownerId === 0
+            ? (player.civType as string || _menuCivId || 'grecy')
+            : (aiOwnerCivMap.get(ownerId) ?? 'grecy'),
+        getProduction: (cityId) => cityProdForRender?.(cityId) ?? null,
       };
     };
 
@@ -1988,6 +1996,7 @@ async function boot(): Promise<void> {
     const cityProd  = new Map<string, CityProduction>();
     const cityBuilt = new Map<string, string[]>();
     cityBuiltIdsForRender = (cityId) => cityBuilt.get(cityId) ?? [];
+    cityProdForRender = (cityId) => cityProd.get(cityId) ?? null;
     const cityRelig = new Map<string, ReligionState>();
     /** Handel E3: aktywne trasy gracz<->obca cywilizacja (odswiezane co ture). */
     let tradeRoutes: TradeRoute[] = [];

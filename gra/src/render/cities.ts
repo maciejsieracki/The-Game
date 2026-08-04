@@ -35,10 +35,14 @@ import type { BronzeCiv } from './bronzeCity';
 // buildSettlementModel (styl 'civ'/'minecraft' bez zmian).
 import { buildMiastoKamien } from './miasto-kamien';
 import { buildMiastoBraz } from './miasto-braz';
+import type { CityProduction } from '../game/production';
+import { frontItem } from '../game/production';
 import {
   cityMapBadgeKey,
+  defenseTierFromCity,
   makeCityMapBadgeSprite,
   disposeCityStatChipTextures,
+  type CityMapBadgeInput,
 } from './cityMapStatChip';
 import {
   buildCityMapOutline,
@@ -310,6 +314,15 @@ export interface CityRenderOptions {
 
   /** Kolor właściciela (tint modelu osady); domyślnie stara paleta OWNER_COLORS. */
   ownerColorFn?: (ownerId: number) => number;
+
+  /** Zbudowane budynki miasta — obrona 3 stany na pigułce. */
+  getBuiltBuildingIds?: (cityId: string) => readonly string[];
+
+  /** ikonaId cywilizacji właściciela (civs.json). */
+  getCivIconId?: (ownerId: number) => string;
+
+  /** Kolejka produkcji — glif always-on lite (pełny hover po makiecie Design). */
+  getProduction?: (cityId: string) => CityProduction | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -397,11 +410,11 @@ export class CityRenderer {
           grp.scale.setScalar(CITY_MODEL_SCALE);
           this._syncRevolt(city.id, grp, options?.getRevolt?.(city.id) ?? false);
           this._syncStatChip(
-            city.id,
+            city,
             grp,
             formatCityMapLabel(city),
-            city.population ?? 1,
             visible && !options?.hideStatChips,
+            options,
           );
           this._syncMapOutline(city.id, q, r, topY, ownerIndex, options, visible);
           continue;
@@ -439,11 +452,11 @@ export class CityRenderer {
       this.scene.add(group);
       this._syncRevolt(city.id, group, options?.getRevolt?.(city.id) ?? false);
       this._syncStatChip(
-        city.id,
+        city,
         group,
         formatCityMapLabel(city),
-        city.population ?? 1,
         visible && !options?.hideStatChips,
+        options,
       );
       this._syncMapOutline(city.id, q, r, topY, ownerIndex, options, visible);
     }
@@ -470,11 +483,11 @@ export class CityRenderer {
       if (!grp) continue;
       const visible = options?.isVisible?.(city) ?? true;
       this._syncStatChip(
-        city.id,
+        city,
         grp,
         formatCityMapLabel(city),
-        city.population ?? 1,
         visible && grp.visible && !options?.hideStatChips,
+        options,
       );
     }
   }
@@ -608,18 +621,41 @@ export class CityRenderer {
     }
   }
 
+  private _buildBadgeInput(
+    city: City,
+    cityName: string,
+    options?: CityRenderOptions,
+  ): CityMapBadgeInput {
+    const built = options?.getBuiltBuildingIds?.(city.id) ?? [];
+    const prod = options?.getProduction?.(city.id) ?? null;
+    const front = prod ? frontItem(prod) : null;
+    const ownerCol = (options?.ownerColorFn ?? ownerColor)(city.ownerId);
+    return {
+      cityName,
+      population: city.population ?? 1,
+      defenseTier: defenseTierFromCity(built, city.maMur),
+      civIconId: options?.getCivIconId?.(city.ownerId) ?? 'grecy',
+      ownerColor: ownerCol,
+      prodActive: front !== null && prod?.wstrzymana !== true,
+      prodKind: front?.kind ?? null,
+      resourceWarning: false,
+    };
+  }
+
   private _syncStatChip(
-    cityId: string,
+    city: City,
     parent: THREE.Group,
     cityName: string,
-    population: number,
     show: boolean,
+    options?: CityRenderOptions,
   ): void {
+    const cityId = city.id;
     if (!show) {
       this._removeStatChip(cityId, parent);
       return;
     }
-    const key = cityMapBadgeKey(cityName, population);
+    const badge = this._buildBadgeInput(city, cityName, options);
+    const key = cityMapBadgeKey(badge);
     const prevKey = this.statSpriteKeys.get(cityId);
     if (prevKey === key && this.statSprites.has(cityId)) {
       const sp = this.statSprites.get(cityId)!;
@@ -627,7 +663,7 @@ export class CityRenderer {
       return;
     }
     this._removeStatChip(cityId, parent);
-    const sprite = makeCityMapBadgeSprite(cityName, population, this.statTexCache);
+    const sprite = makeCityMapBadgeSprite(badge, this.statTexCache);
     parent.add(sprite);
     this.statSprites.set(cityId, sprite);
     this.statSpriteKeys.set(cityId, key);

@@ -1,3 +1,9 @@
+## [06:00 PL, 2026-08-04] CLOUD → Maciej — pigułka miasta v1 (prototyp bez Design)
+- Kod: obrona 3 stany + medalion cywu + glif produkcji always-on lite
+- Odłożone: hover rozszerzony + ostrzeżenie surowców (czeka makieta Design)
+- Branch `cursor/fix-city-map-pill-v1-63a1` — **bez deploy** do ROBOCZA
+CZEKAM-NA: Maciej **deploy** · Design makieta v2 (dopracowanie wizualne)
+
 ## [07:45 PL, 2026-08-04] CLOUD → Maciej — audyt ROBOCZA vs main
 - FALA 207 `47a2e73b` **AKTUALNA** — wszystkie tematy z kodem sesji są w ROBOCZA
 - Po deploy tylko docs (ECHO pigułka miasta) — **brak nowego kodu do wgrania**
