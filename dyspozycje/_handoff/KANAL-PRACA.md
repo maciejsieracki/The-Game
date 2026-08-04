@@ -1,3 +1,10 @@
+﻿## [22:05 PL, 2026-08-04] CLOUD → Maciej — R-DYPLO-DOBRA-KAT + R-TRZODA-SCALE-MAP (kod, bez deploy)
+- Dobra handlowe: akordeon Surowce · Technologie · Inne (Q1–Q3=A), bez cap 7
+- Pastwisko/trzoda: PASTWISKO_S ×1.5 (krowa, świnia, owca, lama — Q1=B)
+- Bramki: tsc 0 · diplomacy-goods-kat-test PASS
+- Branch: `cursor/feat-dobra-kat-trzoda-63a1` (commit po push)
+CZEKAM-NA: Maciej deploy
+
 ## [21:17 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 220 8a3c6d6d
 |- md5: 8a3c6d6d88f9d8a482e1c0107c9cc122 · stempel: ROBOCZA · 2026-08-04 21:17
 |- AI-ALL batch: (1) utrzymanie budynków +1 surowiec/turę per typ z kosztu budowy + UI; (2) MP army cap easy/normal/hard + absorption rates; (3) same-civ AI↔MP Zaufanie 100 + priorytet absorpcji klastra; (4) major AI early wzrost/Spichlerz + 60/40 archetyp + early ulepszenia; (5) AI-FOUND pop≥2, AI-LOCAL faza ~tura 20 LUB 1 zwiadowca, AI-MANAGE auto-zarządca major (NIE MP).

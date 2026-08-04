@@ -26,6 +26,14 @@ export interface OwnerGoodsIndexInput {
   citySurowceSum: Readonly<Record<string, number>>;
 }
 
+/** Kategorie sekcji „Dobra handlowe" w audiencji dyplomacji (R-DYPLO-DOBRA-KAT). */
+export type TradeGoodsCategories = {
+  surowce: string[];
+  technologie: string[];
+  /** Slot na przyszłe dobra poza surowcami/techami — na razie puste (Q2=A: szary nagłówek). */
+  inne: string[];
+};
+
 export interface TradeGoodEntry {
   /** Klucz ASCII — zgodny z diplomacyResourceAccessCatalog (surowiec_boolean w koszyku PN)
    *  tam, gdzie dane dobro ma cenę; w przeciwnym razie tylko do wyświetlenia (karty „Dobra
@@ -92,6 +100,26 @@ export function tradableGoodsForOwner(input: OwnerGoodsIndexInput): TradeGoodEnt
   }
 
   return out;
+}
+
+/** Etykieta wyświetlana w karcie „Dobra handlowe" (z ilością magazynu, jeśli znana). */
+export function formatTradeGoodDisplayLabel(g: TradeGoodEntry): string {
+  return g.ilosc != null ? g.label + ' ×' + g.ilosc : g.label;
+}
+
+/**
+ * Buduje kategorie dóbr handlowych bez limitu długości (R-DYPLO-DOBRA-KAT-Q3=A).
+ * `techNames` — już przetłumaczone nazwy PL (main.ts: ownerResearchedTechs + techNameFromSlug).
+ */
+export function tradeGoodsCategoriesFromParts(
+  goods: readonly TradeGoodEntry[],
+  techNames: readonly string[],
+): TradeGoodsCategories {
+  return {
+    surowce: goods.map(formatTradeGoodDisplayLabel),
+    technologie: [...techNames],
+    inne: [],
+  };
 }
 
 /** Sumuje N rekordów City.surowce (main.ts: po wszystkich miastach jednego ownera). */

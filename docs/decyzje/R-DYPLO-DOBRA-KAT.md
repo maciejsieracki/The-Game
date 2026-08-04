@@ -1,7 +1,7 @@
 # R-DYPLO-DOBRA-KAT — Dobra handlowe: kategorie zamiast jednego pasa
 
 **Data:** 2026-08-04  
-**Status:** 🟡 ZAPISANA → 🔵 W TRAKCIE wdrożenia  
+**Status:** 🟢 WDROŻONE w kodzie  
 **Ekran:** Audiencja dyplomacji — karty gracza / rozmówcy → sekcja **Dobra handlowe**
 
 ## ECHO decyzji Macieja (2026-08-04)

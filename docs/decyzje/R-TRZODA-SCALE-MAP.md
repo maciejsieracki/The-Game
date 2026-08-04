@@ -1,7 +1,7 @@
 # R-TRZODA-SCALE-MAP — zwierzęta pastwiska / trzody za małe na mapie
 
 **Data:** 2026-08-04  
-**Status:** 🟡 ZAPISANA → 🔵 W TRAKCIE wdrożenia  
+**Status:** 🟢 WDROŻONE w kodzie  
 **Ekran:** Mapa świata — złoże / ulepszenie Trzoda + pastwisko
 
 ## ECHO decyzji Macieja (2026-08-04)

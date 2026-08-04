@@ -32,8 +32,8 @@
  */
 import * as THREE from 'three';
 
-/** Skala figur — identyczna z S w styleResources.ts (male nakladki surowcowe). */
-export const PASTWISKO_S = 2.05 / 3;
+/** Skala figur pastwiska/trzody na mapie — R-TRZODA-SCALE-MAP-Q1=B: ×1.5 vs bazowa S w styleResources. */
+export const PASTWISKO_S = (2.05 / 3) * 1.5;
 
 export type PozaKrowy = 'stojaca' | 'pasaca';
 export type WariantKrowy = 'lacata' | 'brazowa';
