@@ -339,6 +339,26 @@ ok(!incomingPanel.includes('Brakuje'), 'incoming panel: bez Brakuje');
 ok(incomingPanel.includes('Bilans (netto)'), 'incoming panel: etykieta netto');
 ok(incomingPanel.includes('da-pn-balance-bar ok'), 'incoming panel: tone ok przy canAccept');
 
+// Traktat handlowy @ rel 52 — silnik + UI „Wpływ Relacji” (Maciej 2026-08-04)
+ok(mod.effectiveTreatyPnRequired(80, 52) === 118, 'umowa_handlowa @ rel 52: 80 → 118 PW effective');
+const tradeTreaty52 = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 52, false);
+ok(mod.bilateralTreatyDisplayPw(tradeTreaty52.my, tradeTreaty52.their) === 118, 'umowa_handlowa @ rel 52: bilateral 118 PW');
+const tradePanel52 = mod.renderPnBalancePanelForTreaty(118, 0, 0, 52, 'Traktat handlowy', 0, 'Traktat', 80);
+ok(tradePanel52.includes('Wpływ Relacji na deal'), 'umowa_handlowa panel: wiersz wpływu Relacji');
+ok(tradePanel52.includes('+48%'), 'umowa_handlowa panel: badge +48% (droższy przy niskiej Relacji)');
+ok(tradePanel52.includes('baza 80 → 118'), 'umowa_handlowa panel: meta baza→effective');
+const tradeRow52 = {
+  direction: 'own',
+  actionLabel: 'Traktat handlowy',
+  acceptanceMy: tradeTreaty52.my,
+  acceptanceTheir: tradeTreaty52.their,
+  awaitingAiResponse: true,
+};
+const tradePanelData52 = mod.balancePanelDataFromRow(tradeRow52, 0);
+const tradeTablePanel52 = mod.renderPnBalancePanelHtml(tradePanelData52);
+ok(tradeTablePanel52.includes('da-pn-rel-mod'), 'stół negocjacji umowa_handlowa: rel-mod row');
+ok(tradeTablePanel52.includes('118 PW'), 'stół negocjacji umowa_handlowa: 118 PW display');
+
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 
 console.log(`diplomacy-acceptance-points-test: ${pass} pass, ${fail} fail`);

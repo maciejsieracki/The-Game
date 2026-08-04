@@ -124,10 +124,14 @@ export function renderNegotiationDealHtml(
 }
 
 /** Wpis traktatu dwustronnego — gdy koszyk pusty, obie strony stołu pokazują tę samą etykietę + PW. */
-export function renderTreatyDealItemHtml(label: string, pw?: number): string {
-  const pwSuffix = pw != null && pw > 0
-    ? `<span class="da-deal-pw" title="Punkty wymiany"> · ${pw} PW</span>`
-    : '';
+export function renderTreatyDealItemHtml(label: string, pw?: number, basePw?: number): string {
+  let pwSuffix = '';
+  if (pw != null && pw > 0) {
+    const modHint = basePw != null && basePw > 0 && basePw !== pw
+      ? ` <span class="da-deal-pw-base" title="Baza traktatu przed korektą Relacji">(baza ${basePw})</span>`
+      : '';
+    pwSuffix = `<span class="da-deal-pw" title="Punkty wymiany po korekcie Relacji"> · ${pw} PW${modHint}</span>`;
+  }
   return `<div class="da-deal-item da-deal-treaty"><span class="da-deal-amt">${esc(label)}${pwSuffix}</span></div>`;
 }
 
@@ -141,13 +145,14 @@ export function renderNegotiationTableDealSideHtml(
   incoming: boolean,
   treatyFallbackLabel?: string,
   treatyFallbackPw?: number,
+  treatyFallbackBasePw?: number,
 ): string {
   const split = splitNegotiationDealPlayerSides(payload, incoming);
   const items = split ? (focus === 'we' ? split.weOffer : split.theyOffer) : [];
 
   const treatyAppend =
     treatyFallbackLabel && treatyFallbackPw != null && treatyFallbackPw > 0
-      ? { label: treatyFallbackLabel, pw: treatyFallbackPw }
+      ? { label: treatyFallbackLabel, pw: treatyFallbackPw, basePw: treatyFallbackBasePw }
       : undefined;
 
   if (items.length > 0) {
@@ -161,7 +166,7 @@ export function renderNegotiationTableDealSideHtml(
       '<div class="da-deal-single da-deal-side-only">'
       + `<div class="da-deal-col ${colCls}">`
       + `<div class="da-deal-col-head">${headLabel}</div>`
-      + `<div class="da-deal-col-body">${renderTreatyDealItemHtml(treatyFallbackLabel, treatyFallbackPw)}</div>`
+      + `<div class="da-deal-col-body">${renderTreatyDealItemHtml(treatyFallbackLabel, treatyFallbackPw, treatyFallbackBasePw)}</div>`
       + '</div></div>'
     );
   }
@@ -174,7 +179,7 @@ export function renderNegotiationDealSideOnlyHtml(
   payload: ProposalPayload,
   focus: 'we' | 'they',
   incoming: boolean,
-  treatyAppend?: { label: string; pw?: number },
+  treatyAppend?: { label: string; pw?: number; basePw?: number },
 ): string {
   const split = splitNegotiationDealPlayerSides(payload, incoming);
   if (!split) return '';
@@ -194,7 +199,7 @@ export function renderNegotiationDealSideOnlyHtml(
   html += '<div class="da-deal-col-body">';
   html += renderBasketListHtml(items, ctx);
   if (treatyAppend) {
-    html += renderTreatyDealItemHtml(treatyAppend.label, treatyAppend.pw);
+    html += renderTreatyDealItemHtml(treatyAppend.label, treatyAppend.pw, treatyAppend.basePw);
   }
   html += '</div>';
   html += '</div></div>';

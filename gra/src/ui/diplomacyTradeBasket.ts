@@ -309,6 +309,10 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .da-pn-bal-meta{font-size:0.62em;color:#8a8070;margin-top:6px;}
 .civ-diplo-basket .da-pn-rel-mod{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-top:8px;padding:6px 10px;
   border-radius:7px;border:1px solid rgba(140,150,165,.25);background:rgba(0,0,0,.18);cursor:help;}
+.civ-diplo-basket .da-pn-rel-mod-pct{font-size:0.72em;font-weight:800;padding:2px 7px;border-radius:5px;
+  background:rgba(0,0,0,.25);color:#e8d88a;}
+.civ-diplo-basket .da-pn-rel-mod.worse .da-pn-rel-mod-pct{color:#e0a868;}
+.civ-diplo-basket .da-pn-rel-mod.better .da-pn-rel-mod-pct{color:#7ad0a0;}
 .civ-diplo-basket .da-pn-rel-mod-label{font-size:0.58em;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8a8070;}
 .civ-diplo-basket .da-pn-rel-mod-text{font-size:0.7em;line-height:1.35;color:#d8d0c0;}
 .civ-diplo-basket .da-pn-rel-mod-text strong{color:#f0e8d8;font-weight:700;}
@@ -572,10 +576,11 @@ function treatySummaryHtml(
   let html = '';
   if (bil != null && bil > 0) {
     const treatyPw = sides.my.treatyEffectivePn ?? sides.their.treatyEffectivePn ?? bil;
+    const treatyBasePw = sides.my.treatyBasePn ?? sides.their.treatyBasePn;
     const relRequired = sides.my.relRequired ?? sides.their.relRequired;
     const treatyMetaLabel = cywId === 'pokoj' ? 'Traktat pokoju' : 'Traktat';
     html += renderPnBalancePanelForTreaty(
-      treatyPw, basketGivePn, basketReceivePn, rel, action.label, relRequired, treatyMetaLabel,
+      treatyPw, basketGivePn, basketReceivePn, rel, action.label, relRequired, treatyMetaLabel, treatyBasePw,
     );
   } else if (myPw > 0 || theirPw > 0) {
     html += renderPnBalancePanelFromBasket(myPw, theirPw, rel, action.label);

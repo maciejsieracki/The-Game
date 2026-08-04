@@ -13779,7 +13779,7 @@ async function boot(): Promise<void> {
             otherCivName: ownerDiploLabel(ownerId),
             zaufanie: zaufanieNorm,
             respekt: respektNorm,
-            relacjaTotal: zaufanieNorm + respektNorm,
+            relacjaTotal: audienceRelTotal(ownerId, rel),
             trustPnGainedThisTurn: pairMeta.trustPnGainedThisTurn,
             progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
             playerPower,
