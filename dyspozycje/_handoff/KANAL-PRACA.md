@@ -1,8 +1,14 @@
-﻿## [01:10 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE-Q1=B (kod, bez deploy)
+﻿## [01:25 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q2–Q4 (ABC, bez kodu)
+|- Maciej po Q1=B: efekt męczący; AI też może obniżać ludność; Spichlerz nigdy < 0; limit suwaka
+|- Paczka: Q2 auto-raise podłoga 0 · Q3 cap suwaka · Q4 clamp Spichlerz ≥ 0
+|- Docs: docs/decyzje/R-AUTO-RACJE-RAISE.md
+CZEKAM-NA: Maciej — `R-AUTO-RACJE-RAISE-Q2 A|B|C` · `Q3 A|B|C` · `Q4 A|B|C`
+
+## [01:10 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE-Q1=B (kod, bez deploy)
 |- ECHO: Q1=B — gracz auto-raise tylko przy nadwyżce produkcji miast; zapasy Spichlerza nie startują raise
 |- Kod: empire-food.ts `requireProductionSurplus` · main.ts `ownerId===0` · test ai-major-economy G–I PASS
 |- Branch: cursor/abc-auto-racje-raise-63a1
-CZEKAM-NA: deploy
+CZEKAM-NA: supersedowane — czeka Q2–Q4 (nie deploy samego Q1=B)
 
 ## [00:55 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE (ABC, bez kodu)
 |- Objaw: EOT podnosi Wyżywienie gracza mimo ręcznego obniżenia
