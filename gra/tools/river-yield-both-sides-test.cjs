@@ -39,6 +39,7 @@ function assert(cond, msg) {
   else { failed++; console.error('FAIL:', msg); }
 }
 
+/** Globalna asymetria: krawędź rzeki na lądzie musi mieć obecna po OBU stronach. */
 function countLandRiverEdgeAsymmetry(hexes) {
   let asym = 0;
   for (const [k, h] of Object.entries(hexes)) {
@@ -57,40 +58,65 @@ function countLandRiverEdgeAsymmetry(hexes) {
   return asym;
 }
 
-function countMaciejPairs(hexes) {
+/** Maciej: heks A ma krawędź ei do lądowego B → B.obecna musi być true. */
+function countEdgeToNeighborMissingObecna(hexes) {
+  let n = 0;
+  for (const [k, h] of Object.entries(hexes)) {
+    if (!h.rzeka?.krawedzie?.length) continue;
+    const [q, r] = k.split(',').map(Number);
+    for (const ei of h.rzeka.krawedzie) {
+      const d = HEX_DIRECTIONS[ei];
+      const nk = `${q + d[0]},${r + d[1]}`;
+      const nh = hexes[nk];
+      if (!nh || nh.terenBazowy === M.TerenBazowy.Morze) continue;
+      if (!nh.rzeka?.obecna) n++;
+    }
+  }
+  return n;
+}
+
+/** Las+łąka po obu stronach wspólnej krawędzi rzeki — plony 5/6/7. */
+function countMaciejForestPairs(hexes) {
   let n = 0;
   for (const [k, h] of Object.entries(hexes)) {
     if (!h.rzeka?.obecna || h.nakladka !== M.Nakladka.Las) continue;
     if (h.terenBazowy !== M.TerenBazowy.Laka) continue;
-    const yRiver = M.tileYield({
-      terenBazowy: h.terenBazowy,
-      nakladka: h.nakladka,
-      maRzeke: true,
-    });
-    const yDry = M.tileYield({
-      terenBazowy: h.terenBazowy,
-      nakladka: h.nakladka,
-      maRzeke: false,
-    });
-    if (yRiver.zywnosc !== 5 || yRiver.praca !== 6 || yRiver.handel !== 7) continue;
     const [q, r] = k.split(',').map(Number);
     for (let ei = 0; ei < 6; ei++) {
+      if (!h.rzeka.krawedzie?.includes(ei)) continue;
       const d = HEX_DIRECTIONS[ei];
       const nk = `${q + d[0]},${r + d[1]}`;
       const nh = hexes[nk];
       if (!nh || nh.terenBazowy !== M.TerenBazowy.Laka || nh.nakladka !== M.Nakladka.Las) continue;
-      if (!h.rzeka.krawedzie?.includes(ei)) continue;
-      if (!nh.rzeka?.obecna) {
-        n++;
-      } else {
-        const yn = M.tileYield({
-          terenBazowy: nh.terenBazowy,
-          nakladka: nh.nakladka,
-          maRzeke: true,
-        });
-        if (yn.zywnosc !== 5 || yn.praca !== 6 || yn.handel !== 7) n++;
-      }
+      const yn = M.tileYield({
+        terenBazowy: nh.terenBazowy,
+        nakladka: nh.nakladka,
+        maRzeke: !!nh.rzeka?.obecna,
+      });
+      if (!nh.rzeka?.obecna || yn.zywnosc !== 5 || yn.praca !== 6 || yn.handel !== 7) n++;
     }
+  }
+  return n;
+}
+
+/** Ateny-case: czysta łąka przy krawędzi rzeki — 6/3/5 z bonusem, nie 3/1/2. */
+function countLakaRiverEdgeYieldGaps(hexes) {
+  let n = 0;
+  const yRiver = M.tileYield({ terenBazowy: M.TerenBazowy.Laka, nakladka: M.Nakladka.Brak, maRzeke: true });
+  const yDry = M.tileYield({ terenBazowy: M.TerenBazowy.Laka, nakladka: M.Nakladka.Brak, maRzeke: false });
+  assert(yDry.zywnosc === 3 && yDry.praca === 1 && yDry.handel === 2, 'łąka bez rzeki = 3/1/2 (Ateny baseline)');
+  assert(yRiver.zywnosc === 6 && yRiver.praca === 3 && yRiver.handel === 5, 'łąka z rzeką = 6/3/5');
+
+  for (const [k, h] of Object.entries(hexes)) {
+    if (h.terenBazowy !== M.TerenBazowy.Laka || h.nakladka !== M.Nakladka.Brak) continue;
+    if (!h.rzeka?.krawedzie?.length) continue;
+    const y = M.tileYield({
+      terenBazowy: h.terenBazowy,
+      nakladka: h.nakladka,
+      maRzeke: !!h.rzeka?.obecna,
+    });
+    if (h.rzeka.obecna && (y.zywnosc !== 6 || y.praca !== 3 || y.handel !== 5)) n++;
+    if (!h.rzeka.obecna) n++;
   }
   return n;
 }
@@ -100,12 +126,15 @@ const map = M.generateMap(168, 120, 42, 'kontynenty', {
 });
 
 const asym = countLandRiverEdgeAsymmetry(map.hexes);
-const maciej = countMaciejPairs(map.hexes);
+const edgeGap = countEdgeToNeighborMissingObecna(map.hexes);
+const forestGap = countMaciejForestPairs(map.hexes);
+const lakaGap = countLakaRiverEdgeYieldGaps(map.hexes);
 
 assert(asym === 0, `symetria krawędzi ląd–ląd (asym=${asym})`);
-assert(maciej === 0, `las+łąka po obu stronach krawędzi rzeki (naruszenia=${maciej})`);
+assert(edgeGap === 0, `A ma krawędź ei → B.obecna (naruszenia=${edgeGap})`);
+assert(forestGap === 0, `las+łąka po obu stronach krawędzi rzeki (naruszenia=${forestGap})`);
+assert(lakaGap === 0, `łąka przy krawędzi rzeki ma bonus 6/3/5 (naruszenia=${lakaGap})`);
 
-// Syntetyczny: ścieżka 3 hexów w linii — sąsiedzi prostopadle do nurtu dostają obecna gdy krawędź tranzytowa.
 let synthOk = false;
 for (const path of map.riverPaths ?? []) {
   if (path.length < 3) continue;
