@@ -8,15 +8,19 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
+## R-EOT-EVENT-DEFER — wydarzenia ze skutków EOT na start następnej tury · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
 
-**Sytuacja.** W panelu miasta (PRODUKCJA) ikona zrównoważonego jest w jednym rzędzie z priorytetami typów (wzrost / wojsko / kultura / prawo / produkcja) i dostaje numer kolejki jak one. Maciej: to ma być **osobny tryb auto**, nie szósty priorytet.
+**Sytuacja.** Po „Zakończ turę” skutki (ekonomia, AI, auto) pojawiają się w Wydarzeniach / toastach w trakcie przejścia — tylko migają, nie da się sprawdzić.
 
-**Cel.** Auto buduje różne kategorie budynków w zrównoważonym trybie; priorytety typów zostają osobną ścieżką.
+**Cel.** Pokazać je na **początku kolejnej tury gracza**; na samym końcu tury ich nie pokazywać.
 
-**Propozycja (A):** 5 chipów typów z numerami · osobny przełącznik „Zrównoważony” · włączenie zrównoważonego czyści/wyłącza typy · klik typu wyłącza zrównoważony.
+**ABC:** [`docs/decyzje/R-EOT-EVENT-DEFER.md`](../docs/decyzje/R-EOT-EVENT-DEFER.md) · odpowiedź: `R-EOT-EVENT-DEFER-Q1 A|B|C` (rekomendacja **A**).
 
-Szczegóły w czacie — bez kodu do `R-BUDOWA-ZROWNOWAZONE-TRYB-Q1 A|B|C` / `działaj`.
+---
+
+## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **WDROŻONE (kod)** Q1=A · PR #85 (2026-08-04)
+
+**ECHO Maciej:** `R-BUDOWA-ZROWNOWAZONE-TRYB-Q1 A`. Kod w PR #85 — czeka merge/`deploy`.
 
 ---
 
