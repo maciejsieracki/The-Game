@@ -1,4 +1,5 @@
-- **2026-08-04 ~22:25** — ✅ Gotowe w kodzie (bez deploy): **R-REKRUT-LUDNOSC-UI** — teksty bez „−1 obywatela”. Branch `cursor/fix-rekrut-ludnosc-ui-63a1`. Napisz **deploy**.
+- **2026-08-05 00:25** — ✅ **FALA 224** ROBOCZA `38df6ad7` — teksty rekrutacji bez „−1 obywatela”. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel w menu: `eef4e87e`.
+- **2026-08-04 ~22:25** — ✅ **R-REKRUT-LUDNOSC-UI** → w FALA 224 `38df6ad7`.
 - **2026-08-04 ~22:15** — ✅ Playtest **OK**: **R-BUDOWA-ZROWNOWAZONE-TRYB** zamknięte na `ee0e7e04` (osobny tryb Zrównoważony).
 - **2026-08-05 00:11** — ✅ **FALA 223** ROBOCZA `ee0e7e04` — tarcza pigułki = wallKind + Zwiedzaj złota ramka od razu. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel ma być `ee0e7e04`.
 - **2026-08-04 23:25** — ✅ **FALA 222** ROBOCZA `132401ef` — tempo bitwy ±/komputer + czerwone budynki (brak surowców) + zrównoważony tryb budowy + city pill (tarcza/emblemat). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.

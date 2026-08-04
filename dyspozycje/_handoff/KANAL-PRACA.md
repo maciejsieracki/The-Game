@@ -1,3 +1,10 @@
+## [00:25 PL, 2026-08-05] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 224 38df6ad7
+|- md5: 38df6ad74d2613e776a51b332eb2696c · stempel widoczny: ROBOCZA · eef4e87e · 2026-08-04 22:25
+|- Batch: R-REKRUT-LUDNOSC-UI (+ docs R-BUDOWA-ZROWNOWAZONE OK)
+|- Bramki: tsc 0 · vite · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: Maciej — **najpierw git pull**, potem Ctrl+F5 + Nowa gra · stempel `eef4e87e` (nie ee0e7e04) · OK/BUG
+
 ## [22:25 PL, 2026-08-04] CLOUD → Maciej — R-REKRUT-LUDNOSC-UI fix UI (kod, bez deploy)
 - Teksty intro Rekruci + Rekrutacja — szczegóły: bez „−1 obywatela”; „ludność miasta nie spada”
 - Plik: `gra/src/ui/cityPanel.ts` (~4749, ~7316)

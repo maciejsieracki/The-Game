@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA ee0e7e04 - 2026-08-04 22:10 - FALA 223: tarcza pigułki wallKind + Zwiedzaj złota ramka od razu - **AKTUALNA**
+## ROBOCZA 38df6ad7 - 2026-08-05 00:25 - FALA 224: R-REKRUT-LUDNOSC-UI teksty bez −1 obywatela - **AKTUALNA**
+|- md5 (pelne): 38df6ad74d2613e776a51b332eb2696c · stempel: ROBOCZA · 2026-08-04 22:25 (label eef4e87e)
+|- **FALA 224.** R-REKRUT-LUDNOSC-UI — intro Rekruci/Rekrutacja: werb = Manpower, ludność miasta nie spada (bez kłamstwa „−1 obywatela”). + docs close R-BUDOWA-ZROWNOWAZONE playtest OK. Na bazie FALA 223.
+|- tsc 0 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
+
+## ROBOCZA ee0e7e04 - 2026-08-04 22:10 - FALA 223: tarcza pigułki wallKind + Zwiedzaj złota ramka od razu - **ZASTĄPIONA** (→ 38df6ad7)
 |- md5 (pelne): ee0e7e046c317b101ca2eb07f7e349fe · stempel: ROBOCZA · 2026-08-04 22:10
 |- **FALA 223.** (1) R-PILL-TARCZA-BEZ-MURU-Q1=A — tarcza wyłącznie z `wallKind` (= model 3D); bez `maMur`. (2) R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A — WŁ Zwiedzaj: zostań zaznaczony + złota ramka od razu (bez deselect/cycle). Na bazie FALA 222.
 |- tsc 0 · city-map-badge 19/19 · scout-auto-explore 25/25 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.

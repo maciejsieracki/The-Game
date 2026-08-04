@@ -1,7 +1,7 @@
 # R-REKRUT-LUDNOSC-UI — teksty rekrutacji vs ludność miasta
 
 **Data:** 2026-08-04  
-**Status:** WDROŻONE (kod) · czeka deploy  
+**Status:** ZDEPLOYOWANE FALA 224 `38df6ad7`  
 **Branch:** `cursor/fix-rekrut-ludnosc-ui-63a1`
 
 ## Audyt (Maciej)
