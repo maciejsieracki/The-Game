@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `ddad7cf9` - 2026-08-04 08:22 - FALA 209: Civpedia/poradnik rev G2 (budynki) - **AKTUALNA**
+## ROBOCZA `000e19c1` - 2026-08-04 09:27 - FALA 210: Relacja PW + rzeki FoW/bonus + UI miasta - **AKTUALNA**
+- md5 (pelne): `000e19c1b4df3f77406ecd00b235d220` · stempel: `ROBOCZA · 2026-08-04 09:27`
+- **FALA 210.** #66 Relacja asymetryczna PW + UI Relacja (zawiera #60). #63 rzeki widoczne przy FoW OFF. #64 bonus rzeki obu brzegów. #62 ściągi + tooltipy Pula (zawiera #61). #65 etykieta Ulepszenia (chip/suwak). Na bazie FALA 209. Branch `cursor/deploy-fala210-9775`.
+- tsc 0 · river-fog 12/12 · river-yield 7/7 · diplomacy-acceptance 198/198 · vite · VERIFY OK · build /tmp/civ-dist-fala210.
+
+## ROBOCZA `ddad7cf9` - 2026-08-04 08:22 - FALA 209: Civpedia/poradnik rev G2 (budynki) - **ZASTĄPIONA**
 - md5 (pelne): `ddad7cf9e1578de9c07124ba738181c8` · stempel: `ROBOCZA · 2026-08-04 08:22`
 - **FALA 209.** Civpedia/poradnik rev G (FALA 206–208 docs) + rev G2 (obrona % + prawdziwe efekty budynków, katalog §45, wikiBundle). Na bazie FALA 208. Branch `cursor/deploy-fala209-63a1`.
 - tsc 0 · vite · VERIFY OK · build /tmp/civ-dist-fala209.

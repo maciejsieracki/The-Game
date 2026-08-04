@@ -1,3 +1,9 @@
+## [09:27 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 210 `000e19c1`
+- md5: `000e19c1b4df3f77406ecd00b235d220` · stempel: ROBOCZA · 2026-08-04 09:27
+- Merge: #66 Relacja PW asymetria+UI · #63 rzeki FoW OFF · #64 bonus obu brzegów · #62 ściągi/tooltipy · #65 etykieta Ulepszenia
+- Wejście: `gra-robocza/START.html` — **najpierw git pull, potem test** (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: Maciej playtest / OK / BUG · sesja lokalna: pull na dysk
+
 ## [06:50 PL, 2026-08-04] CLOUD → Maciej / INTEGRATOR — fix rzeki FoW OFF (bez deploy)
 - Root cause: `lastFogSig=0` (FoW ON, wszystkie punkty odkryte) = `fullSig=0` (FoW OFF) → pominięty `setIndex` pełnej wstęgi
 - Fix: `RIVER_FOG_SIG_OFF=-1` + helpery `riverLod.ts`; `coastDeltaMat.fog=false`
