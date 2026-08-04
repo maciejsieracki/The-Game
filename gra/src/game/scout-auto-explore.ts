@@ -1,6 +1,7 @@
 /**
  * scout-auto-explore.ts — automatyczne zwiedzanie mapy przez zwiadowców.
- * Priorytet: znana (odkryta) niewykorzystana chatka → mgła. Tylko autoExplore=true.
+ * Priorytet: chatka w widoku lub w zasięgu MP tej tury → nowe czarne heksy (R-SCOUT-BLACK-MAX).
+ * Tylko autoExplore=true.
  */
 
 import type { GameMap } from '../types/map';
@@ -31,7 +32,26 @@ export function clearScoutAutoExplore(unit: RuntimeUnit): boolean {
   return true;
 }
 
-/** Punkty za heksy nieodkryte w zasięgu wzroku + sąsiednie ukryte. */
+/** Liczba nowych czarnych heksów ujawnionych po kroku (marginal vs pozycja from). */
+export function scoreMarginalReveal(
+  fromQ: number,
+  fromR: number,
+  toQ: number,
+  toR: number,
+  explored: ReadonlySet<string>,
+  map: GameMap,
+  sight: number,
+): number {
+  const fromVisible = computeVisibleAt(fromQ, fromR, map, sight);
+  const toVisible = computeVisibleAt(toQ, toR, map, sight);
+  let count = 0;
+  for (const k of toVisible) {
+    if (!explored.has(k) && !fromVisible.has(k)) count++;
+  }
+  return count;
+}
+
+/** Punkty za heksy nieodkryte w zasięgu wzroku + sąsiednie ukryte (legacy scoring). */
 export function scoreHexForExplore(
   q: number,
   r: number,
@@ -68,15 +88,18 @@ function deductStepCost(unit: RuntimeUnit, cost: number): void {
 }
 
 /**
- * Priorytet 1: najbliższa znana (odkryta), nieprzejęta chatka.
- * Szuka w `explored` — także na krawędzi mgły / poza jednorazowym zasięgiem MP.
+ * Priorytet 1: najbliższa nieprzejęta chatka w bieżącym widoku lub w zasięgu MP tej tury.
  */
 function pickKnownVillageTarget(
   unit: RuntimeUnit,
   map: GameMap,
   explored: ReadonlySet<string>,
   occupied: ReadonlySet<string>,
+  sight: number,
 ): { q: number; r: number } | null {
+  const visible = computeVisibleAt(unit.q, unit.r, map, sight);
+  const reachable = computeReachable(unit, map, new Set(occupied));
+
   let bestPathLen = Infinity;
   let best: { q: number; r: number } | null = null;
 
@@ -86,6 +109,9 @@ function pickKnownVillageTarget(
     if (hex.wlasciciel !== null) continue;
 
     const { q, r } = hex.coords;
+    const hutKey = keyOf(q, r);
+    if (!visible.has(hutKey) && !reachable.has(hutKey)) continue;
+
     const path = computePath(unit, map, q, r, new Set(occupied));
     if (path.length === 0) continue;
 
@@ -98,8 +124,60 @@ function pickKnownVillageTarget(
   return best;
 }
 
+/** Najlepszy jednokrokowy ruch — max marginalnych nowych czarnych heksów. */
+function pickBestExploreStep(
+  unit: RuntimeUnit,
+  map: GameMap,
+  explored: ReadonlySet<string>,
+  occupied: ReadonlySet<string>,
+  sight: number,
+  rng: () => number,
+): { q: number; r: number } | null {
+  const reachable = computeReachable(unit, map, new Set(occupied));
+  reachable.delete(keyOf(unit.q, unit.r));
+  if (reachable.size === 0) return null;
+
+  const positive: { q: number; r: number; gain: number }[] = [];
+  const zero: { q: number; r: number }[] = [];
+
+  for (const key of reachable) {
+    const parts = key.split(',');
+    if (parts.length !== 2) continue;
+    const q = Number(parts[0]);
+    const r = Number(parts[1]);
+    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+
+    const path = computePath(unit, map, q, r, new Set(occupied));
+    if (path.length !== 1) continue;
+
+    const gain = scoreMarginalReveal(unit.q, unit.r, q, r, explored, map, sight);
+    if (gain > 0) positive.push({ q, r, gain });
+    else if (gain === 0) zero.push({ q, r });
+  }
+
+  const pool: { q: number; r: number; gain: number }[] =
+    positive.length > 0 ? positive : zero.map((c) => ({ ...c, gain: 0 }));
+  if (pool.length === 0) return null;
+
+  let bestGain = -Infinity;
+  const candidates: { q: number; r: number }[] = [];
+  for (const c of pool) {
+    const score = c.gain + rng() * 0.001;
+    if (score > bestGain + 0.0005) {
+      bestGain = score;
+      candidates.length = 0;
+      candidates.push({ q: c.q, r: c.r });
+    } else if (Math.abs(score - bestGain) <= 0.0005) {
+      candidates.push({ q: c.q, r: c.r });
+    }
+  }
+
+  if (candidates.length === 0) return null;
+  return candidates[Math.floor(rng() * candidates.length)]!;
+}
+
 /**
- * Wybiera docelowy heks — priorytet: znana chatka, potem mgła (w zasięgu MP).
+ * Wybiera docelowy heks — priorytet: chatka w widoku/zasięgu MP, potem max nowych czarnych.
  */
 export function pickScoutExploreTarget(
   unit: RuntimeUnit,
@@ -109,35 +187,10 @@ export function pickScoutExploreTarget(
   sight: number,
   rng: () => number,
 ): { q: number; r: number } | null {
-  const villageTarget = pickKnownVillageTarget(unit, map, explored, occupied);
+  const villageTarget = pickKnownVillageTarget(unit, map, explored, occupied, sight);
   if (villageTarget) return villageTarget;
 
-  const reachable = computeReachable(unit, map, new Set(occupied));
-  reachable.delete(keyOf(unit.q, unit.r));
-  if (reachable.size === 0) return null;
-
-  let bestScore = -Infinity;
-  const candidates: { q: number; r: number }[] = [];
-
-  for (const key of reachable) {
-    const parts = key.split(',');
-    if (parts.length !== 2) continue;
-    const q = Number(parts[0]);
-    const r = Number(parts[1]);
-    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
-
-    const score = scoreHexForExplore(q, r, explored, map, sight) + rng() * 1.5;
-    if (score > bestScore + 0.001) {
-      bestScore = score;
-      candidates.length = 0;
-      candidates.push({ q, r });
-    } else if (Math.abs(score - bestScore) <= 0.001) {
-      candidates.push({ q, r });
-    }
-  }
-
-  if (candidates.length === 0) return null;
-  return candidates[Math.floor(rng() * candidates.length)]!;
+  return pickBestExploreStep(unit, map, explored, occupied, sight, rng);
 }
 
 /**

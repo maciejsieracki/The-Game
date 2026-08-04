@@ -193,6 +193,7 @@
 
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
+| **R-MP-HARD-WAVE** | 2026-08-04 | **A/A/A** — Hard PM: więcej wojska, fala ≥3, sync DOW klastra | D | 🟢 **WDROŻONE (kod)** | `ai.ts` · `city-state-difficulty.ts` · `main.ts` · testy alliance+cluster | Q1–Q3 |
 | **P-SCOUT-EXPLORE-Q2** | 2026-08-03 | **B** — Zwiedzaj = flaga only; ruch EOT (`runScoutsAutoExplore`) | E+F | 🟢 **WDROŻONA** | `main.ts` `scout-explore` · `scout-auto-explore-test.cjs` 15/15 | Q1=A |
 | **R-AUTO-ULEPSZENIA-Q1** | 2026-08-03 | **C** — profile + checkbox tylko 👤 (domyślnie off) | B | 🟢 **WDROŻONA** | `auto-improvements.ts` · cityPanel · EOT | R-AUTO-ULEPSZENIA |
 | **P-TRIUMPH-CS-Q1** | 2026-08-03 | **B** — dłuższy hint triumfu po zjednoczeniu ostatniego MP tej samej cyw. | D+E | 🟢 **WDROŻONA** | `triumph-city-state.ts` · `runCapitalCapturePlunder` · test 10/10 | R-TRIUMPH-CS |
