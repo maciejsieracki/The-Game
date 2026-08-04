@@ -21,6 +21,12 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 
 | R-PROC-NUMER-ABC | 2026-08-03 | Procedura: numer tematu → ABC → commit; deploy tylko na hasło | **WDROŻONE (docs)** | Pliki: `PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`, `.cursor/rules/numer-abc-commit-deploy.mdc`, START-TU, CLAUDE, PAMIEC, KOMENDY |
 | R-PROC-ABC-FULL-ID | 2026-08-03 | W ABC/Ask/ECHO **zakaz gołego Q1** — zawsze pełne ID (`R-TEMAT-Qn`) bo wiele wątków | **WDROŻONE (docs)** | Maciej: „nie wystarczy Q1… sam nie będziesz wiedział”. Procedura §3a · PAMIEC · abc-pelna-forma · numer-abc rule |
+| R-PROC-NO-REGRESS | 2026-08-04 | Przy każdej zmianie: sprawdź diff (co zmienione/usunięte) — nie cofaj wcześniejszego fixa przy wdrażaniu nowego | **WDROŻONE (docs)** | Procedura §4a · checklist przed commit/deploy · PR #78 |
+| R-PW-ACCEPT-OVERPAY | 2026-08-04 | Przyjmij traktat: gracz może zaakceptować gdy oddaje więcej (+ bilans); blokada gdy bilans na minus (korzyść gracza) | **WDROŻONE (kod)** | Q1=A · `previewIncomingPlayerAccept` net≥0 · branch `cursor/fix-pw-accept-overpay-63a1` · bez deploy |
+| R-NADMIAR-POOLS | 2026-08-04 | Ponownie: nadmiar **Pracy · Skarbca · Spichlerza** — Maciej chce przemyśleć | **ODŁOŻONE (myśli Maciej)** | HUD: Skarbiec/Praca/Spichlerz duże +/turę · R-STAWKI-STROJENIE · R-BILANS-100T · bez ABC do sygnału |
+| R-UNIT-MODE-TOGGLE-UI | 2026-08-04 | Pasek akcji jednostki: wyróżnienie trybu WŁ/WYŁ osobno od dostępny/zablokowany | **WDROŻONE (kod)** | PR #77 · `cursor/fix-unit-mode-toggle-states-63a1` · bez deploy |
+| R-SCOUT-BLACK-MAX | 2026-08-04 | Zwiedzaj: każdy ruch max. nowych czarnych heksów (nie FoW); chatka gdy znana; po chatce znowu czarne | **CZEKA-NA-DECYZJĘ** | scoring pozycyjny · ABC Q1–Q2 |
+| R-MP-HARD-WAVE | 2026-08-04 | Hard MP: większe armie + zsynchronizowany wspólny atak na gracza (nie solo 1 jednostka) | **CZEKA-NA-DECYZJĘ** | solo adjacent + 1–2 marsze/turę · ABC Q1–Q3 |
 | R-SCOUT-ZWIEDZAJ | 2026-08-03 | Zwiadowca: przycisk Zwiedzaj (autoExplore), priorytet chatka > mgła | **ZDEPLOYOWANE `5f529a24`** (FALA 203) | P-SCOUT-EXPLORE-Q1=A, Q2=B · `docs/decyzje/P-SCOUT-EXPLORE.md` |
 | R-SCOUT-ZWIEDZAJ-UX | 2026-08-04 | Zwiedzaj UX: clear path + deselect + next unit (jak sentry); poza cyklem Spacji | **ZDEPLOYOWANE `6bf472e2`** (FALA 211) | clear path + deselect + next · poza cyklem Spacji |
 | R-AUTO-ULEPSZENIA | 2026-08-03 | Auto-ulepszenia: Q1–Q5 | **WCHŁONIĘTE w R-AUTO-V2 / FALA 204** | `docs/decyzje/P-AUTO-ULEPSZENIA.md` |
