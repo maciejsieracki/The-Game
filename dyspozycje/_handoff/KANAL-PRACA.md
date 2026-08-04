@@ -3,6 +3,13 @@
 - REL-WIARYG-DRIFT-Q1 · FORTIFY-MP0-Q1=C · ODFORT (fortify/odfort MP snapshot)
 - Wejście: gra-robocza/START.html - **git pull**, Ctrl+F5 + Nowa gra
 CZEKAM-NA: Maciej test / OK / BUG · sesja lokalna: pull na dysk
+
+## [16:03 PL, 2026-08-04] CLOUD → ALL — DEPLOY FALA 214 ROBOCZA `adefb5b8`
+- md5: `adefb5b8e5b60c597562ce218e886d6b` · stempel `ROBOCZA · 2026-08-04 16:03`
+- Batch #70–#81: AI/MP ulepszenia · Przyjmij overpay · Hard MP wave · Zwiedzaj black-max · lista nazwana · okolica · tryby UI · toast chatki · ikona zrównoważone · proc no-regress
+- Wejście: `gra-robocza/START.html`
+CZEKAM-NA: Maciej — **najpierw `git pull`**, potem Ctrl+F5 + Nowa gra · OK/BUG
+
 ## [11:24 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 212 `e38ad116`
 - md5: `e38ad116993cf1b8c18d1fce4a5e10d6` · stempel: ROBOCZA · 2026-08-04 11:24
 - SPICH-AUTO-Q1 · REL-MP-SAME-Q1 · obce MP · HEX magazyn UI · scout chatka · toast chatka · garnizon/split

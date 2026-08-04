@@ -11,7 +11,11 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `1d3b8755` - 2026-08-04 12:13 - FALA 213: Wiaryg drift + fortify/odfort - **AKTUALNA**
+## ROBOCZA `adefb5b8` - 2026-08-04 16:03 - FALA 214: batch #70–#81 (ulepszenia AI, dyplo PW, scout, MP Hard, UI) - **AKTUALNA**
+- md5 (pelne): `adefb5b8e5b60c597562ce218e886d6b` · stempel: `ROBOCZA · 2026-08-04 16:03`
+- **FALA 214.** Merge #70–#81: #73 ulepszenia AI/MP (regres FALA 204) · #79 Przyjmij overpay OK · #70 bilans PW własna oferta · #80 Hard MP fala+sync DOW · #81 Zwiedzaj max czarne · #75 exit auto · #71 toast chatki · #74 lista nazwana · #76 okolica żywność · #77 tryby WŁ/WYŁ · #72 ikona zrównoważone · #78 R-PROC-NO-REGRESS. Na bazie FALA 213.
+- tsc 0 · scout 25/25 · ai-improvements 18/18 · diplomacy-acceptance 212/212 · vite · VERIFY OK · build `gra/dist`.
+## ROBOCZA `1d3b8755` - 2026-08-04 12:13 - FALA 213: Wiaryg drift + fortify/odfort - **ZASTĄPIONA** (→ `adefb5b8`)
 - md5 (pelne): `1d3b8755445058c10957c81438912d1c` · stempel: `ROBOCZA · 2026-08-04 12:13`
 - **FALA 213.** REL-WIARYG-DRIFT-Q1: dryf Zaufania W×0.03 (±3 przy ±100), umowy osobno, UI Δ/turę w audiencji. FORTIFY-MP0-Q1=C + ODFORT: fortify bez wymogu MP, snapshot ruchLeft, odfort na heksie miasta z select + restore MP (anti-exploit). Na bazie FALA 212.
 - tsc 0 · vite · VERIFY OK · build `gra/dist`.
