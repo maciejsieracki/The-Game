@@ -50,7 +50,13 @@ import { setMapHudChromeSuppressed } from './hud';
 import type { City } from '../game/cities';
 import { formatCityMapLabel } from '../game/display-names';
 import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb, BudowaListaBiblioteka } from '../game/cities';
-import { dedupeBudowaLista, defaultBudowaListaNazwa } from '../game/cities';
+import {
+  dedupeBudowaLista,
+  defaultBudowaListaNazwa,
+  sanitizeBudowaPriorytetTypow,
+  BUDOWA_TYP_FOCUS,
+  DEFAULT_BUDOWA_PRIORYTET_TYPOW,
+} from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import type { GameMap } from '../types/map';
@@ -9167,9 +9173,7 @@ function appendBudowaToolbarProfiles(
   tryb: BudowaTryb,
   lista: string[],
 ): void {
-  const profiles: BudowaFocus[] = [
-    'wzrost', 'wojsko', 'kultura', 'prawo', 'produkcja', 'zrownowazone',
-  ];
+  const profiles = BUDOWA_TYP_FOCUS;
   const active = tryb === 'priorytet' ? priorytetTypow : [];
   for (const id of profiles) {
     const idx = active.indexOf(id);
@@ -9204,10 +9208,14 @@ function appendBudowaToolbarProfiles(
         nextTryb = 'priorytet';
         next = priorytetTypow.includes(id) ? [...priorytetTypow] : [...priorytetTypow, id];
         if (next.length === 0) next = [id];
+      } else if (tryb === 'zrownowazone') {
+        // Wyjście ze zrównoważonego: start od klikniętego typu (nie włączaj całej zapisanej piątki).
+        nextTryb = 'priorytet';
+        next = [id];
       } else if (tryb === 'reczny') {
         nextTryb = 'priorytet';
-        next = inList ? [...priorytetTypow] : [...priorytetTypow, id];
-        if (!inList && next.length === 0) next = [id];
+        next = priorytetTypow.includes(id) ? [...priorytetTypow] : [...priorytetTypow, id];
+        if (next.length === 0) next = [id];
       } else if (inList) {
         nextTryb = 'priorytet';
         next = priorytetTypow.filter(f => f !== id);
@@ -9216,10 +9224,28 @@ function appendBudowaToolbarProfiles(
         nextTryb = 'priorytet';
         next = [...priorytetTypow, id];
       }
-      cfg.onBudowaPriorytetChange?.(city.id, next, nextTryb);
+      cfg.onBudowaPriorytetChange?.(city.id, sanitizeBudowaPriorytetTypow(next), nextTryb);
       rerender();
     });
     wrap.appendChild(b);
+  }
+  if (cfg.onBudowaPriorytetChange) {
+    const zrownBtn = document.createElement('button');
+    zrownBtn.type = 'button';
+    zrownBtn.className = tryb === 'zrownowazone' ? 'on' : '';
+    setOkolicaProfileButtonIconOnly(zrownBtn, BUDOWA_FOCUS_BRAND.zrownowazone);
+    zrownBtn.title = tryb === 'zrownowazone'
+      ? 'Auto zrównoważone (wszystkie kategorie)'
+      : BUDOWA_FOCUS_TITLE.zrownowazone;
+    zrownBtn.addEventListener('click', () => {
+      cfg.onBudowaPriorytetChange?.(
+        city.id,
+        sanitizeBudowaPriorytetTypow(priorytetTypow),
+        'zrownowazone',
+      );
+      rerender();
+    });
+    wrap.appendChild(zrownBtn);
   }
   if (cfg.onBudowaListaChange) {
     const listaBtn = document.createElement('button');
@@ -9233,7 +9259,7 @@ function appendBudowaToolbarProfiles(
     listaBtn.addEventListener('click', () => {
       if (tryb === 'lista') {
         // Ponowne kliknięcie „Lista” zamyka edytor → Priorytet.
-        const next = priorytetTypow.length > 0 ? [...priorytetTypow] : (['zrownowazone'] as BudowaFocus[]);
+        const next = sanitizeBudowaPriorytetTypow(priorytetTypow);
         cfg.onBudowaPriorytetChange?.(city.id, next, 'priorytet');
       } else {
         cfg.onBudowaListaChange?.(city.id, [...lista], 'lista');
@@ -9284,9 +9310,11 @@ function appendBudowaListaBar(
     closeBtn.style.cssText = 'font-size:0.68em;padding:0.12em 0.4em;cursor:pointer;';
     closeBtn.addEventListener('click', () => {
       if (cfg.onBudowaPriorytetChange) {
-        const prio = (city.budowaPriorytetTypow?.length
-          ? [...city.budowaPriorytetTypow]
-          : (['zrownowazone'] as BudowaFocus[]));
+        const prio = sanitizeBudowaPriorytetTypow(
+          city.budowaPriorytetTypow?.length
+            ? city.budowaPriorytetTypow
+            : DEFAULT_BUDOWA_PRIORYTET_TYPOW,
+        );
         cfg.onBudowaPriorytetChange(city.id, prio, 'priorytet');
       } else {
         cfg.onBudowaEnterManual?.(city.id);

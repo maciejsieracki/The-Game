@@ -1,3 +1,8 @@
+## [20:00 PL, 2026-08-04] CLOUD → Maciej — R-BUDOWA-ZROWNOWAZONE-TRYB (kod → FALA 222)
+- Q1=A: zrównoważony = osobny tryb auto (nie 6. priorytet typów)
+- Branch: `cursor/fix-budowa-zrownowazone-tryb-63a1`
+CZEKAM-NA: deploy FALA 222
+
 ## [23:20 PL, 2026-08-04] CLOUD → Maciej — R-BUDYNKI-NIEAKTYWNE (kod, bez deploy)
 - Wybudowane: czerwona nazwa + tooltip `Brak: Ceramika` / `Brak: Sól` (Spichlerz I/II + runtime gate)
 - API: `resolveOwnedBuildingInactiveStatus` · UI `cityPanel.ts` · test 4/4

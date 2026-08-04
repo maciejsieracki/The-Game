@@ -12,6 +12,7 @@ import type { City, BudowaFocus } from './cities';
 import {
   DEFAULT_BUDOWA_FOCUS,
   DEFAULT_BUDOWA_TRYB,
+  sanitizeBudowaPriorytetTypow,
 } from './cities';
 import type { GameMap } from '../types/map';
 import type { TerritoryNode } from '../map/territory';
@@ -129,9 +130,7 @@ export function buildingMatchesFocus(kategoria: string, focus: BudowaFocus): boo
 }
 
 function budowaPriorytetTypowFor(city: Readonly<City>): BudowaFocus[] {
-  const list = city.budowaPriorytetTypow;
-  if (list && list.length > 0) return [...list];
-  return [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS];
+  return sanitizeBudowaPriorytetTypow(city.budowaPriorytetTypow ?? [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS]);
 }
 
 function bestCandidateForFocus(
@@ -272,13 +271,17 @@ export function pickAutoBuildItem(
 ): ProductionItem | null {
   if (frontItem(prod) !== null) return null;
   const tryb = city.budowaTryb ?? DEFAULT_BUDOWA_TRYB;
-  if (tryb !== 'priorytet' && tryb !== 'lista') return null;
+  if (tryb !== 'priorytet' && tryb !== 'lista' && tryb !== 'zrownowazone') return null;
 
   const candidates = affordableCandidates(city, data, input);
   if (candidates.length === 0) return null;
 
   if (tryb === 'lista') {
     return pickNextFromBudowaLista(city.budowaLista ?? [], candidates);
+  }
+
+  if (tryb === 'zrownowazone') {
+    return bestCandidateForFocus(candidates, data, 'zrownowazone');
   }
 
   const typy = budowaPriorytetTypowFor(city);

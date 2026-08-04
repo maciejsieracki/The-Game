@@ -172,6 +172,7 @@ import {
   DEFAULT_PROCENT_ROZWOJ,
   DEFAULT_BUDOWA_TRYB,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
+  sanitizeBudowaPriorytetTypow,
   EMPTY_BUDOWA_LISTA_BIBLIOTEKA,
   dedupeBudowaLista,
   newBudowaListaSzablonId,
@@ -5154,9 +5155,11 @@ async function boot(): Promise<void> {
           if (!city) return null;
           ensureCitySaveDefaults(city);
           const tryb = city.budowaTryb ?? DEFAULT_BUDOWA_TRYB;
-          const priorytetTypow = city.budowaPriorytetTypow?.length
-            ? [...city.budowaPriorytetTypow]
-            : [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
+          const priorytetTypow = sanitizeBudowaPriorytetTypow(
+            city.budowaPriorytetTypow?.length
+              ? city.budowaPriorytetTypow
+              : DEFAULT_BUDOWA_PRIORYTET_TYPOW,
+          );
           return {
             tryb,
             priorytetTypow,
@@ -5172,10 +5175,7 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.id === cityId);
           if (!city) return;
           city.budowaTryb = tryb;
-          city.budowaPriorytetTypow = priorytetTypow.length > 0
-            ? [...priorytetTypow]
-            : [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
-          city.budowaFocus = city.budowaPriorytetTypow[0] ?? 'zrownowazone';
+          city.budowaPriorytetTypow = sanitizeBudowaPriorytetTypow(priorytetTypow);
           const labels: Record<BudowaFocus, string> = {
             wzrost: 'Wzrost',
             wojsko: 'Wojsko',
@@ -5184,16 +5184,27 @@ async function boot(): Promise<void> {
             produkcja: 'Produkcja',
             zrownowazone: 'Zrównoważone',
           };
-          const prioText = city.budowaPriorytetTypow
-            .map((f, i) => `${i + 1}. ${labels[f] ?? f}`)
-            .join(' → ');
           const enqueued = isAutoBudowaTryb(tryb) ? tryAutoEnqueueBuild(cityId) : null;
-          showHintMessage(
-            enqueued
-              ? `${city.name}: priorytet budowy · ${prioText} → ${enqueued.nazwa}`
-              : `${city.name}: priorytet budowy · ${prioText}`,
-            3200,
-          );
+          if (tryb === 'zrownowazone') {
+            city.budowaFocus = 'zrownowazone';
+            showHintMessage(
+              enqueued
+                ? `${city.name}: budowa zrównoważona → ${enqueued.nazwa}`
+                : `${city.name}: budowa zrównoważona`,
+              3200,
+            );
+          } else {
+            city.budowaFocus = city.budowaPriorytetTypow[0] ?? 'zrownowazone';
+            const prioText = city.budowaPriorytetTypow
+              .map((f, i) => `${i + 1}. ${labels[f] ?? f}`)
+              .join(' → ');
+            showHintMessage(
+              enqueued
+                ? `${city.name}: priorytet budowy · ${prioText} → ${enqueued.nazwa}`
+                : `${city.name}: priorytet budowy · ${prioText}`,
+              3200,
+            );
+          }
           updateHud();
           refreshCityPanelIfOpen();
         },
