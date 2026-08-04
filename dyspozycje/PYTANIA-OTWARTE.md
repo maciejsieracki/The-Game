@@ -8,6 +8,15 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-SCOUT-ZWIEDZAJ-PODSWIETLENIE — Zwiedzaj bez złotej ramki · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
+
+**Problem:** Uśpienie podświetla się złotem; Zwiedzaj po kliknięciu wygląda jak martwy przycisk.  
+**Przyczyna:** WŁ Zwiedzaj = odznaczenie + skok na inną jednostkę (ukrywa `uc-act-btn--on`).  
+**ABC:** `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1` — rekomendacja **A** (zostań na zwiadowcy + złoto od razu).  
+Szczegóły: [`docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md`](../docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md).
+
+---
+
 ## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **WDROŻONE (kod)** Q1=A (2026-08-04)
 
 **ECHO Maciej:** `R-BUDOWA-ZROWNOWAZONE-TRYB-Q1 A` — osobny tryb auto „Zrównoważony” (5 chipów typów z numerami + osobny przełącznik).
