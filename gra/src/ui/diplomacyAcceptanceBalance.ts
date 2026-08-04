@@ -149,14 +149,17 @@ function pwAmountHtml(n: number, extraCls = ''): string {
 
 function pwAmountWithBaseHtml(pw: number, basePw?: number, modPct?: number, extraCls = ''): string {
   const cls = 'da-pn-bal-num' + (extraCls ? ' ' + extraCls : '');
-  let inner = String(pw) + ' PW';
+  const pwLine = '<span class="da-pn-bal-pw"' + pwTipAttr() + '>' + pw + ' PW</span>';
   if (basePw != null && basePw > 0 && basePw !== pw) {
     const modHint = modPct != null && modPct !== 0
       ? `, Relacja ${modPct > 0 ? '−' : '+'}${Math.abs(modPct)}% koszt`
       : '';
-    inner += ` <span class="da-pn-bal-base" title="Baza traktatu">(baza ${basePw}${modHint})</span>`;
+    return '<span class="' + cls + '">'
+      + pwLine
+      + '<span class="da-pn-bal-base" title="Baza traktatu">(baza ' + basePw + modHint + ')</span>'
+      + '</span>';
   }
-  return '<span class="' + cls + '"' + pwTipAttr() + '>' + inner + '</span>';
+  return '<span class="' + cls + '"' + pwTipAttr() + '>' + pw + ' PW</span>';
 }
 
 /** Wybiera wpis stołu do centralnego panelu PW (priorytet: incoming do decyzji). */

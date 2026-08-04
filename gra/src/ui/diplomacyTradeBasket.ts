@@ -195,6 +195,14 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket{background:linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98));
   border:2px solid rgba(232,216,138,.4);border-radius:12px;padding:18px 20px;max-width:760px;width:100%;max-height:92vh;overflow:auto;
   color:#e8e0c8;font:14px 'Segoe UI',Tahoma,sans-serif;pointer-events:auto;position:relative;z-index:1;}
+.civ-diplo-basket.cdb-treaty-mode{max-width:min(1180px,96vw);}
+.civ-diplo-basket.cdb-trade-mode{max-width:min(860px,96vw);}
+.civ-diplo-basket .cdb-landscape{display:grid;grid-template-columns:minmax(320px,0.42fr) minmax(380px,0.58fr);gap:14px;align-items:start;}
+.civ-diplo-basket .cdb-land-main{display:flex;flex-direction:column;gap:10px;position:sticky;top:0;}
+.civ-diplo-basket .cdb-land-side{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.civ-diplo-basket .cdb-land-side .cdb-basket-opt{border-top:none;padding-top:0;margin-top:0;}
+@media (max-width:900px){.civ-diplo-basket .cdb-landscape{grid-template-columns:1fr;}
+  .civ-diplo-basket .cdb-land-main{position:static;}}
 .civ-diplo-basket h3{margin:0 0 6px;font-family:Georgia,serif;font-size:1.05em;color:#e8d88a;}
 .civ-diplo-basket .cdb-sub{font-size:0.75em;color:#8a8070;margin-bottom:10px;line-height:1.45;}
 .civ-diplo-basket .cdb-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -302,7 +310,9 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .da-pn-bal-cell.center.ok{border-color:rgba(90,208,122,.5);background:rgba(40,80,50,.25);}
 .civ-diplo-basket .da-pn-bal-cell.center.no{border-color:rgba(224,136,104,.45);background:rgba(80,40,30,.2);}
 .civ-diplo-basket .da-pn-bal-lbl{font-size:0.58em;text-transform:uppercase;letter-spacing:.06em;color:#8a8070;}
-.civ-diplo-basket .da-pn-bal-num{font-size:1.1em;font-weight:700;color:#f0e8d8;}
+.civ-diplo-basket .da-pn-bal-num{font-size:1.1em;font-weight:700;color:#f0e8d8;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.civ-diplo-basket .da-pn-bal-pw{font-size:1em;font-weight:700;color:inherit;line-height:1.2;}
+.civ-diplo-basket .da-pn-bal-base{display:block;font-size:0.62em;font-weight:500;color:#8a8070;margin-top:2px;line-height:1.3;white-space:normal;}
 .civ-diplo-basket .da-pn-bal-num.pos{color:#7ad0a0;}
 .civ-diplo-basket .da-pn-bal-num.neg{color:#e0a868;}
 .civ-diplo-basket .da-pn-bal-hint{font-size:0.62em;color:#a8a090;}
@@ -1317,26 +1327,44 @@ function renderBasket(
   const showWarThreat = !blocked && (mode === 'trade' || mode === 'treaty');
   const showBalanceBtn = !blocked && mode === 'trade' && receiveItems.length > 0;
 
-  box.className = 'civ-diplo-basket' + (mode === 'gift' ? ' cdb-gift' : '');
+  const useTreatyLandscape = mode === 'treaty' && !blocked && !wchloniecieOnly;
+
+  const sideBlock = basketOptIntro
+    + dealPreview
+    + dealSettings
+    + (blocked ? '' : '<div class="cdb-cols">' + (wchloniecieOnly ? '' : giveCol + recvCol) + '</div>')
+    + basketOptClose;
+
+  const footerBlock = (blocked ? '' : balanceButtonHtml(showBalanceBtn))
+    + (blocked ? '' : warThreatBlockHtml(warThreat, showWarThreat))
+    + invalidHtml
+    + '<div class="cdb-btns">'
+    + '<button type="button" class="dip-muted-btn cdb-cancel">Anuluj</button>'
+    + '<button type="button" class="dip-gold-btn cdb-submit"' + (blocked || !validation.valid ? ' disabled' : '') + '>'
+    + esc(modalOpts?.submitLabel ?? 'Zaproponuj') + '</button>'
+    + '</div>';
+
+  let bodyHtml: string;
+  if (useTreatyLandscape) {
+    bodyHtml = '<div class="cdb-landscape">'
+      + '<div class="cdb-land-main">' + treatyHtml + (blocked ? '' : summaryBlock) + '</div>'
+      + '<div class="cdb-land-side">' + sideBlock + '</div>'
+      + '</div>'
+      + footerBlock;
+  } else {
+    bodyHtml = blocked
+      + treatyHtml
+      + sideBlock
+      + (blocked ? '' : summaryBlock)
+      + footerBlock;
+  }
+
+  const modeCls = mode === 'treaty' ? ' cdb-treaty-mode' : (mode === 'trade' ? ' cdb-trade-mode' : '');
+  box.className = 'civ-diplo-basket' + (mode === 'gift' ? ' cdb-gift' : '') + modeCls;
   box.innerHTML =
     '<h3>' + esc(title) + '</h3>' +
     '<div class="cdb-sub">' + sub + '</div>' +
-    blocked +
-    treatyHtml +
-    basketOptIntro +
-    dealPreview +
-    dealSettings +
-    (blocked ? '' : '<div class="cdb-cols">' + (wchloniecieOnly ? '' : giveCol + recvCol) + '</div>') +
-    basketOptClose +
-    (blocked ? '' : summaryBlock) +
-    (blocked ? '' : balanceButtonHtml(showBalanceBtn)) +
-    (blocked ? '' : warThreatBlockHtml(warThreat, showWarThreat)) +
-    invalidHtml +
-    '<div class="cdb-btns">' +
-      '<button type="button" class="dip-muted-btn cdb-cancel">Anuluj</button>' +
-      '<button type="button" class="dip-gold-btn cdb-submit"' + (blocked || !validation.valid ? ' disabled' : '') + '>'
-      + esc(modalOpts?.submitLabel ?? 'Zaproponuj') + '</button>' +
-    '</div>';
+    bodyHtml;
 }
 
 export interface TradeBasketModalOptions {

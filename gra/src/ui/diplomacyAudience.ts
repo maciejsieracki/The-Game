@@ -596,7 +596,10 @@ ${DIPLO_1E_SHARED_CSS}
 .da-pn-bal-cell.center.ok{border-color:rgba(90,208,122,.5);background:rgba(40,80,50,.25);}
 .da-pn-bal-cell.center.no{border-color:rgba(224,136,104,.45);background:rgba(80,40,30,.2);}
 .da-pn-bal-lbl{font-size:0.58em;text-transform:uppercase;letter-spacing:.06em;color:#8a8070;}
-.da-pn-bal-num{font-size:1.15em;font-weight:700;font-variant-numeric:tabular-nums;color:#f0e8d8;line-height:1.2;}
+.da-pn-bal-num{font-size:1.15em;font-weight:700;font-variant-numeric:tabular-nums;color:#f0e8d8;line-height:1.2;
+  display:flex;flex-direction:column;align-items:center;gap:2px;}
+.da-pn-bal-pw{font-size:1em;font-weight:700;color:inherit;line-height:1.2;}
+.da-pn-bal-base{display:block;font-size:0.62em;font-weight:500;color:#8a8070;margin-top:2px;line-height:1.3;white-space:normal;}
 .da-pn-bal-num.pos{color:#7ad0a0;}
 .da-pn-bal-num.neg{color:#e0a868;}
 .da-pn-bal-hint{font-size:0.62em;color:#a8a090;line-height:1.3;}

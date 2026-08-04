@@ -5299,3 +5299,10 @@ CZEKAM-NA: nic (docs)
 - BUG-ARMIA-BRAK-POLACZ: `hexDetailHex` chował dock; fix + CSS foot
 - Testy: `diplomacy-ai-balance-test.cjs`, `army-merge-colocated-test.cjs`
 CZEKAM-NA: Maciej — **deploy** (FALA 207) gdy wgrać do ROBOCZA
+
+## [10:10 PL, 2026-08-04] CLOUD → ALL — R-UI-TRAKTAT-LANDSCAPE
+- Maciej: propozycja traktatu gubi się w pionie za liniami → układ **landscape**
+- Lewa: warunki + panel PW (sticky) · Prawa: opcjonalna wymiana · modal ~1180px
+- PW: baza/Relacja pod liczbą (czytelniej)
+- Branch: `cursor/ui-traktat-landscape-63a1` · tsc 0
+CZEKAM-NA: Maciej — **deploy** (najlepiej razem z R-RELACJA-PW-INVERT #67)
