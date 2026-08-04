@@ -1,3 +1,10 @@
+﻿## [22:05 PL, 2026-08-04] CLOUD → Maciej — R-EOT-EVENT-DEFER + R-DYPLO-WYMIANA-FLEX (kod, bez deploy)
+- Branch: `cursor/feat-eot-dyplo-flex-63a1` — **nie** w gra-robocza (czeka deploy Macieja)
+- Dyplo flex: one-way trade · steppery qty w koszyku · Edytuj/Usuń na kartach · jeden Przyjmij/Odrzuć pakietu
+- EOT defer: toasty + logi wydarzeń z fazy końca tury → panel na starcie następnej tury gracza
+- Bramki: tsc 0 · negotiation-table 55/55 · acceptance-points 218/218 · trade-flex 8/8 · eot-defer 5/5
+CZEKAM-NA: Maciej deploy
+
 ## [21:17 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 220 8a3c6d6d
 |- md5: 8a3c6d6d88f9d8a482e1c0107c9cc122 · stempel: ROBOCZA · 2026-08-04 21:17
 |- AI-ALL batch: (1) utrzymanie budynków +1 surowiec/turę per typ z kosztu budowy + UI; (2) MP army cap easy/normal/hard + absorption rates; (3) same-civ AI↔MP Zaufanie 100 + priorytet absorpcji klastra; (4) major AI early wzrost/Spichlerz + 60/40 archetyp + early ulepszenia; (5) AI-FOUND pop≥2, AI-LOCAL faza ~tura 20 LUB 1 zwiadowca, AI-MANAGE auto-zarządca major (NIE MP).
